@@ -1,0 +1,37 @@
+#########################################################################
+# Dependabot configuration file
+#########################################################################
+
+version: 2
+
+updates:
+  - package-ecosystem: "github-actions"
+    # Workflow files stored in the
+    # default location of `.github/workflows`
+    directory: "/"
+    schedule:
+      interval: "daily"
+    commit-message:
+      prefix: "Upgrade: [dependabot] - "
+
+  ###################################
+  # NPM workspace  ##################
+  ###################################
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    versioning-strategy: increase
+    commit-message:
+      prefix: "Upgrade: [dependabot] - "
+
+  ###################################
+  # Poetry  #########################
+  ###################################
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    versioning-strategy: increase
+    commit-message:
+      prefix: "Upgrade: [dependabot] - "

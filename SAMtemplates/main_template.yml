@@ -1,0 +1,15 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Metadata:
+  cfn-lint:
+    config:
+      ignore_checks:
+        - W8003
+Conditions:
+  Never: !Equals ["A", "B"]
+
+Resources:
+  NonResource:
+    Type: Custom::NonResource
+    Condition: Never
+    Properties:
+      ServiceToken: "arn:aws:sns:us-east-1:84969EXAMPLE:CRTest"
