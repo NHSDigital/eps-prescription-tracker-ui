@@ -103,7 +103,6 @@ jobs:
           LOG_RETENTION_DAYS: ${{ inputs.LOG_RETENTION_DAYS }}
           stack_name: ${{ inputs.STACK_NAME }}
           TARGET_ENVIRONMENT: ${{ inputs.TARGET_ENVIRONMENT }}
-          target_spine_server: ${{ secrets.TARGET_SPINE_SERVER }}
           template_file: template.yaml
           VERSION_NUMBER: ${{ inputs.VERSION_NUMBER }}
         run: |
