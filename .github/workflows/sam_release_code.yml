@@ -1,0 +1,160 @@
+name: sam release code
+
+on:
+  workflow_call:
+    inputs:
+      STACK_NAME:
+        required: true
+        type: string
+      ARTIFACT_BUCKET_PREFIX:
+        required: true
+        type: string
+      TARGET_ENVIRONMENT:
+        required: true
+        type: string
+      BUILD_ARTIFACT:
+        required: true
+        type: string
+      VERSION_NUMBER:
+        required: true
+        type: string
+      COMMIT_ID:
+        required: true
+        type: string
+      LOG_LEVEL:
+        required: true
+        type: string
+      LOG_RETENTION_DAYS:
+        required: true
+        type: string
+      CREATE_INT_RELEASE_NOTES:
+        type: boolean
+        default: false
+      CREATE_INT_RC_RELEASE_NOTES:
+        type: boolean
+        default: false
+      CREATE_PROD_RELEASE_NOTES:
+        type: boolean
+        default: false
+      MARK_JIRA_RELEASED:
+        type: boolean
+        default: false
+    secrets:
+      CLOUD_FORMATION_DEPLOY_ROLE:
+        required: true
+      DEV_CLOUD_FORMATION_CHECK_VERSION_ROLE:
+        required: false
+      INT_CLOUD_FORMATION_CHECK_VERSION_ROLE:
+        required: false
+      PROD_CLOUD_FORMATION_CHECK_VERSION_ROLE:
+        required: false
+      DEV_CLOUD_FORMATION_EXECUTE_LAMBDA_ROLE:
+        required: false
+  
+jobs:
+  sam_release_code:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.TARGET_ENVIRONMENT }}
+    permissions:
+      id-token: write
+      contents: write
+
+    steps:
+      - name: Checkout local github actions
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.BRANCH_NAME }}
+          fetch-depth: 0
+          sparse-checkout: |
+            .github
+
+      - name: create_int_rc_release_notes
+        uses: ./.github/actions/update_confluence_jira
+        if: ${{ inputs.CREATE_INT_RC_RELEASE_NOTES == true }}
+        with:
+          TARGET_ENVIRONMENT: int
+          RELEASE_TAG: ${{ inputs.VERSION_NUMBER }}
+          CONFLUENCE_PAGE_ID: "899319592"
+          CREATE_RC_RELEASE_NOTES: true
+          DEV_CLOUD_FORMATION_CHECK_VERSION_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_CHECK_VERSION_ROLE }}
+          TARGET_CLOUD_FORMATION_CHECK_VERSION_ROLE: ${{ secrets.INT_CLOUD_FORMATION_CHECK_VERSION_ROLE }}
+          DEV_CLOUD_FORMATION_EXECUTE_LAMBDA_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_EXECUTE_LAMBDA_ROLE }}
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: eu-west-2
+          role-to-assume: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}
+          role-session-name: github-actions
+
+      - name: download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ inputs.BUILD_ARTIFACT }}
+          path: .
+
+      - name: release code
+        shell: bash
+        working-directory: .github/scripts
+        env:
+          artifact_bucket_prefix: clinical-tracker/${{ inputs.ARTIFACT_BUCKET_PREFIX }}
+          COMMIT_ID: ${{ inputs.COMMIT_ID }}
+          LOG_LEVEL: ${{ inputs.LOG_LEVEL }}
+          LOG_RETENTION_DAYS: ${{ inputs.LOG_RETENTION_DAYS }}
+          stack_name: ${{ inputs.STACK_NAME }}
+          TARGET_ENVIRONMENT: ${{ inputs.TARGET_ENVIRONMENT }}
+          template_file: template.yaml
+          VERSION_NUMBER: ${{ inputs.VERSION_NUMBER }}
+        run: |
+          ./release_code.sh
+
+      - name: create_int_release_notes
+        uses: ./.github/actions/update_confluence_jira
+        if: ${{ inputs.CREATE_INT_RELEASE_NOTES == true && always() && !failure() && !cancelled() }}
+        with:
+          TARGET_ENVIRONMENT: int
+          CONFLUENCE_PAGE_ID: "899319595"
+          CREATE_RC_RELEASE_NOTES: false
+          DEV_CLOUD_FORMATION_CHECK_VERSION_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_CHECK_VERSION_ROLE }}
+          TARGET_CLOUD_FORMATION_CHECK_VERSION_ROLE: ${{ secrets.INT_CLOUD_FORMATION_CHECK_VERSION_ROLE }}
+          DEV_CLOUD_FORMATION_EXECUTE_LAMBDA_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_EXECUTE_LAMBDA_ROLE }}
+
+      - name: create_prod_release_notes
+        uses: ./.github/actions/update_confluence_jira
+        if: ${{ inputs.CREATE_PROD_RELEASE_NOTES == true && always() && !failure() && !cancelled() }}
+        with:
+          TARGET_ENVIRONMENT: prod
+          CONFLUENCE_PAGE_ID: "899319597"
+          CREATE_RC_RELEASE_NOTES: false
+          DEV_CLOUD_FORMATION_CHECK_VERSION_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_CHECK_VERSION_ROLE }}
+          TARGET_CLOUD_FORMATION_CHECK_VERSION_ROLE: ${{ secrets.PROD_CLOUD_FORMATION_CHECK_VERSION_ROLE }}
+          DEV_CLOUD_FORMATION_EXECUTE_LAMBDA_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_EXECUTE_LAMBDA_ROLE }}
+
+      - name: mark_released_in_jira
+        uses: ./.github/actions/mark_jira_released
+        if: ${{ inputs.MARK_JIRA_RELEASED == true && always() && !failure() && !cancelled() }}
+        with:
+          RELEASE_TAG: ${{ inputs.VERSION_NUMBER }}
+          DEV_CLOUD_FORMATION_EXECUTE_LAMBDA_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_EXECUTE_LAMBDA_ROLE }}
+
+      - name: Checkout gh-pages
+        if: ${{ !startsWith(inputs.STACK_NAME, 'lambda-resources-pr-') }}
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: gh-pages
+
+      - name: update release tag in github pages
+        if: ${{ inputs.TARGET_ENVIRONMENT != 'dev-pr' }}
+        run: |
+          cd gh-pages
+          NOW=$(date +'%Y-%m-%dT%H:%M:%S')
+          echo "tag,release_datetime" > _data/${{ inputs.TARGET_ENVIRONMENT }}_latest.csv
+          echo "${{ inputs.VERSION_NUMBER }},${NOW}" >> _data/${{ inputs.TARGET_ENVIRONMENT }}_latest.csv
+          echo "${{ inputs.VERSION_NUMBER }},${NOW}" >> _data/${{ inputs.TARGET_ENVIRONMENT }}_deployments.csv
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add _data/${{ inputs.TARGET_ENVIRONMENT }}_latest.csv
+          git add _data/${{ inputs.TARGET_ENVIRONMENT }}_deployments.csv
+          git commit -m 'update releases for ${{ inputs.TARGET_ENVIRONMENT }}'
+          parallel --retries 10 --delay 3 ::: "git pull --rebase && git push"

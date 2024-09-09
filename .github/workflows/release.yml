@@ -1,0 +1,204 @@
+name: deploy to environments
+
+on:
+  workflow_dispatch:
+
+env:
+  BRANCH_NAME: ${{ github.event.ref.BRANCH_NAME }}
+
+jobs:
+  quality_checks:
+    uses: ./.github/workflows/quality_checks.yml
+    secrets:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+  get_commit_id:
+    runs-on: ubuntu-latest
+    outputs:
+      commit_id: ${{ steps.commit_id.outputs.commit_id }}
+    steps:
+      - name: Get Commit ID
+        id: commit_id
+        run: |
+          echo "commit_id=${{ github.sha }}" >> "$GITHUB_OUTPUT"
+
+  tag_release:
+    needs: quality_checks
+    runs-on: ubuntu-latest
+    outputs:
+      version_tag: ${{ steps.output_version_tag.outputs.VERSION_TAG }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.BRANCH_NAME }}
+          fetch-depth: 0
+
+      # using git commit sha for version of action to ensure we have stable version
+      - name: Install asdf
+        uses: asdf-vm/actions/setup@05e0d2ed97b598bfce82fd30daf324ae0c4570e6
+        with:
+          asdf_branch: v0.14.1
+  
+      - name: Cache asdf
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.asdf
+          key: ${{ runner.os }}-asdf-${{ hashFiles('**/.tool-versions') }}
+          restore-keys: |
+            ${{ runner.os }}-asdf-
+
+      - name: Install asdf dependencies in .tool-versions
+        uses: asdf-vm/actions/install@05e0d2ed97b598bfce82fd30daf324ae0c4570e6
+        with:
+          asdf_branch: v0.14.1
+        env:
+          PYTHON_CONFIGURE_OPTS: --enable-shared
+
+      - name: Install dependencies
+        run: |
+          make install
+  
+      - name: Set VERSION_TAG to be next tag varsion
+        id: output_version_tag
+        run: |
+          NEXT_VERSION=$(npx semantic-release --dry-run | grep -i 'The next release version is' | sed -E 's/.* ([[:digit:].]+)$/\1/')
+          tagFormat=$(node -e "const config=require('./release.config.js'); console.log(config.tagFormat)")
+          if [ "${tagFormat}" = "null" ]
+          then
+            tagFormat="v\${version}"
+          fi
+          # disabling shellcheck as replace does not work
+          # shellcheck disable=SC2001
+          VERSION_TAG=$(echo "$tagFormat" | sed "s/\${version}/$NEXT_VERSION/")
+          echo "## VERSION TAG : ${VERSION_TAG}" >> "$GITHUB_STEP_SUMMARY"
+          echo "VERSION_TAG=${VERSION_TAG}" >> "$GITHUB_OUTPUT"
+          echo "VERSION_TAG=${VERSION_TAG}" >> "$GITHUB_ENV"
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - name: tag release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          npx semantic-release
+
+      - name: Get release for editing
+        id: get_release
+        # version 1.2.4
+        uses: cardinalby/git-get-release-action@5172c3a026600b1d459b117738c605fabc9e4e44
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          tag: ${{ env.VERSION_TAG }}
+
+      - name: Edit Release
+        # version 1.2.0
+        uses: irongut/EditRelease@ccf529ad26dddf9996e7dd0f24ca5da4ea507cc2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          id: ${{ steps.get_release.outputs.id }}
+          body: |
+            ## Info
+            [See code diff](${{ github.event.compare }})
+            [Release workflow run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
+            It was initialized by [${{ github.event.sender.login }}](${{ github.event.sender.html_url }})
+
+  package_code:
+    needs: tag_release
+    uses: ./.github/workflows/sam_package_code.yml
+
+  release_dev:
+    needs: [tag_release, package_code, get_commit_id]
+    uses: ./.github/workflows/sam_release_code.yml
+    with:
+      ARTIFACT_BUCKET_PREFIX: ${{needs.tag_release.outputs.version_tag}}
+      STACK_NAME: clinical-tracker-ui
+      TARGET_ENVIRONMENT: dev
+      BUILD_ARTIFACT: packaged_code
+      VERSION_NUMBER: ${{needs.tag_release.outputs.version_tag}}
+      COMMIT_ID: ${{needs.get_commit_id.outputs.commit_id}}
+      LOG_LEVEL: DEBUG
+      LOG_RETENTION_DAYS: 30
+      CREATE_INT_RELEASE_NOTES: true
+      CREATE_PROD_RELEASE_NOTES: true
+    secrets:
+      CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_DEPLOY_ROLE }}
+      DEV_CLOUD_FORMATION_CHECK_VERSION_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_CHECK_VERSION_ROLE }}
+      INT_CLOUD_FORMATION_CHECK_VERSION_ROLE: ${{ secrets.INT_CLOUD_FORMATION_CHECK_VERSION_ROLE }}
+      PROD_CLOUD_FORMATION_CHECK_VERSION_ROLE: ${{ secrets.PROD_CLOUD_FORMATION_CHECK_VERSION_ROLE }}
+      DEV_CLOUD_FORMATION_EXECUTE_LAMBDA_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_EXECUTE_LAMBDA_ROLE }}
+
+  release_ref:
+    needs: [tag_release, release_dev, package_code, get_commit_id]
+    uses: ./.github/workflows/sam_release_code.yml
+    with:
+      ARTIFACT_BUCKET_PREFIX: ${{needs.tag_release.outputs.version_tag}}
+      STACK_NAME: clinical-tracker-ui
+      TARGET_ENVIRONMENT: ref
+      BUILD_ARTIFACT: packaged_code
+      VERSION_NUMBER: ${{needs.tag_release.outputs.version_tag}}
+      COMMIT_ID: ${{needs.get_commit_id.outputs.commit_id}}
+      LOG_LEVEL: DEBUG
+      LOG_RETENTION_DAYS: 30
+    secrets:
+      CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.REF_CLOUD_FORMATION_DEPLOY_ROLE }}
+
+  release_qa:
+    needs: [tag_release, release_dev, package_code, get_commit_id]
+    uses: ./.github/workflows/sam_release_code.yml
+    with:
+      ARTIFACT_BUCKET_PREFIX: ${{needs.tag_release.outputs.version_tag}}
+      STACK_NAME: clinical-tracker-ui
+      TARGET_ENVIRONMENT: qa
+      BUILD_ARTIFACT: packaged_code
+      VERSION_NUMBER: ${{needs.tag_release.outputs.version_tag}}
+      COMMIT_ID: ${{needs.get_commit_id.outputs.commit_id}}
+      LOG_LEVEL: DEBUG
+      LOG_RETENTION_DAYS: 30
+    secrets:
+      CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.QA_CLOUD_FORMATION_DEPLOY_ROLE }}
+
+  release_int:
+    needs: [tag_release, release_qa, package_code, get_commit_id]
+    uses: ./.github/workflows/sam_release_code.yml
+    with:
+      ARTIFACT_BUCKET_PREFIX: ${{needs.tag_release.outputs.version_tag}}
+      STACK_NAME: clinical-tracker-ui
+      TARGET_ENVIRONMENT: int
+      BUILD_ARTIFACT: packaged_code
+      VERSION_NUMBER: ${{needs.tag_release.outputs.version_tag}}
+      COMMIT_ID: ${{needs.get_commit_id.outputs.commit_id}}
+      LOG_LEVEL: DEBUG
+      LOG_RETENTION_DAYS: 30
+      CREATE_INT_RELEASE_NOTES: true
+      CREATE_INT_RC_RELEASE_NOTES: true
+    secrets:
+      CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.INT_CLOUD_FORMATION_DEPLOY_ROLE }}
+      DEV_CLOUD_FORMATION_CHECK_VERSION_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_CHECK_VERSION_ROLE }}
+      INT_CLOUD_FORMATION_CHECK_VERSION_ROLE: ${{ secrets.INT_CLOUD_FORMATION_CHECK_VERSION_ROLE }}
+      PROD_CLOUD_FORMATION_CHECK_VERSION_ROLE: ${{ secrets.PROD_CLOUD_FORMATION_CHECK_VERSION_ROLE }}
+      DEV_CLOUD_FORMATION_EXECUTE_LAMBDA_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_EXECUTE_LAMBDA_ROLE }}
+
+  release_prod:
+    needs: [tag_release, release_int, package_code, get_commit_id]
+    uses: ./.github/workflows/sam_release_code.yml
+    with:
+      ARTIFACT_BUCKET_PREFIX: ${{needs.tag_release.outputs.version_tag}}
+      STACK_NAME: clinical-tracker-ui
+      TARGET_ENVIRONMENT: prod
+      BUILD_ARTIFACT: packaged_code
+      VERSION_NUMBER: ${{needs.tag_release.outputs.version_tag}}
+      COMMIT_ID: ${{needs.get_commit_id.outputs.commit_id}}
+      LOG_LEVEL: INFO
+      LOG_RETENTION_DAYS: 731
+      MARK_JIRA_RELEASED: true
+      CREATE_PROD_RELEASE_NOTES: true
+    secrets:
+      CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.PROD_CLOUD_FORMATION_DEPLOY_ROLE }}
+      DEV_CLOUD_FORMATION_CHECK_VERSION_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_CHECK_VERSION_ROLE }}
+      INT_CLOUD_FORMATION_CHECK_VERSION_ROLE: ${{ secrets.INT_CLOUD_FORMATION_CHECK_VERSION_ROLE }}
+      PROD_CLOUD_FORMATION_CHECK_VERSION_ROLE: ${{ secrets.PROD_CLOUD_FORMATION_CHECK_VERSION_ROLE }}
+      DEV_CLOUD_FORMATION_EXECUTE_LAMBDA_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_EXECUTE_LAMBDA_ROLE }}
