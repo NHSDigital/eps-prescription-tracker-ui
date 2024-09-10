@@ -26,7 +26,11 @@ sam-sync: guard-AWS_DEFAULT_PROFILE guard-stack_name compile
 		--watch \
 		--template-file SAMtemplates/main_template.yaml \
 		--parameter-overrides \
-			  EnableSplunk=false
+			  Auth0ClientID=$$Auth0ClientID \
+			  Auth0ClientSecret=$$Auth0ClientSecret \
+			  Auth0Issuer=$$Auth0Issuer \
+			  Repository=$$Repository \
+			  OauthToken=$$OauthToken
 
 sam-deploy: guard-AWS_DEFAULT_PROFILE guard-stack_name
 	sam deploy \

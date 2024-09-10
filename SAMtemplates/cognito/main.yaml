@@ -1,0 +1,110 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: AWS Cognito User Pool
+
+Parameters:
+  StackName:
+    Type: String
+
+  Auth0ClientID:
+    Type: String
+
+  Auth0ClientSecret:
+    Type: String
+
+  Auth0Issuer:
+    Type: String
+
+Resources:
+  UserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UsernameAttributes:
+        - email
+      AdminCreateUserConfig:
+        AllowAdminCreateUserOnly: true
+
+  DnsARecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !ImportValue eps-route53-resources:EPS-ZoneID
+      Name:
+        Fn::Join:
+          - "."
+          - - !Ref StackName
+            - !ImportValue eps-route53-resources:EPS-domain
+      ResourceRecords:
+        - 127.0.0.1
+      TTL: 900
+      Type: A
+
+  UserPoolDomain:
+    Type: AWS::Cognito::UserPoolDomain
+    DependsOn:
+      - DnsARecord
+    Properties:
+      UserPoolId: !Ref UserPool
+      Domain: !Ref StackName
+  #     CustomDomainConfig:
+  #       CertificateArn: !Ref GenerateCertificate
+
+  # GenerateCertificate:
+  #   Type: AWS::CertificateManager::Certificate
+  #   Properties:
+  #     ValidationMethod: DNS
+  #     DomainName:
+  #       Fn::Join:
+  #         - "."
+  #         - - "auth"
+  #           - !Ref StackName
+  #           - !ImportValue eps-route53-resources:EPS-domain
+  #     DomainValidationOptions:
+  #       - DomainName:
+  #           Fn::Join:
+  #             - "."
+  #             - - "auth"
+  #               - !Ref StackName
+  #               - !ImportValue eps-route53-resources:EPS-domain
+  #         HostedZoneId: !ImportValue eps-route53-resources:EPS-ZoneID
+
+  UserPoolIdentityProvider:
+    Type: AWS::Cognito::UserPoolIdentityProvider
+    Properties:
+      UserPoolId: !Ref UserPool
+      ProviderName: "Auth0"
+      ProviderType: "OIDC"
+      ProviderDetails:
+        oidc_issuer: !Ref Auth0Issuer
+        authorize_scopes: "openid email phone profile"
+        attributes_request_method: "GET"
+        client_id: !Ref Auth0ClientID
+        client_secret: !Ref Auth0ClientSecret
+        attributes_url_add_attributes: false
+
+      AttributeMapping:
+        username: "sub"
+        email: "email"
+        email_verified: "email_verified"
+        phone_number: "phone_number"
+        phone_number_verified: "phone_number_verified"
+        profile: "profile"
+  ClientUserPool:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      AllowedOAuthFlows:
+        - code
+      AllowedOAuthScopes:
+        - openid
+        - email
+        - phone
+        - profile
+        - aws.cognito.signin.user.admin
+      CallbackURLs:
+        - http://localhost:5173/auth/
+      SupportedIdentityProviders:
+        - COGNITO
+      UserPoolId: !Ref UserPool
+
+Outputs:
+  UserPoolId:
+    Description: ID of the created Cognito User Pool
+    Value: !Ref UserPool

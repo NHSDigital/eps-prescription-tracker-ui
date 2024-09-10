@@ -1,0 +1,78 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: |
+  amplify stack
+
+Parameters:
+  StackName:
+    Type: String
+  Repository:
+    Type: String
+  OauthToken:
+    Type: String
+  CognitoUserPoolId:
+    Type: String
+
+Resources:
+  Amplify:
+    Type: AWS::Amplify::App
+    Properties:
+      Name: !Ref StackName
+      AutoBranchCreationConfig:
+        AutoBranchCreationPatterns:
+          - "*"
+          - "*/**"
+        EnableAutoBranchCreation: False
+        EnableAutoBuild: False
+      EnvironmentVariables:
+        - Name: USER_POOL_ID
+          Value: !Ref CognitoUserPoolId
+        - Name: HOSTED_LOGIN_DOMAIN
+          Value:
+            Fn::Join:
+              - "."
+              - - !Ref StackName
+                - !ImportValue eps-route53-resources:EPS-domain
+      IAMServiceRole: !Ref AmplifyRole
+      AccessToken: !Ref OauthToken
+      Platform: "WEB_COMPUTE"
+      Repository: !Ref Repository
+
+  AmplifyRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: amplify.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns: !Split
+        - ","
+        - !Join
+          - ","
+          - - !Ref AmplifyManagedPolicy
+            - arn:aws:iam::aws:policy/service-role/AmplifyBackendDeployFullAccess
+            - !ImportValue account-resources:CloudwatchEncryptionKMSPolicyArn
+            - !ImportValue account-resources:LambdaDecryptSecretsKMSPolicy
+
+  AmplifyLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/amplify/${StackName}
+  #      KmsKeyId: !ImportValue account-resources:CloudwatchLogsKmsKeyArn
+
+  AmplifyManagedPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+            Resource:
+              - !GetAtt AmplifyLogGroup.Arn
+              - !Sub ${AmplifyLogGroup.Arn}:log-stream:*
