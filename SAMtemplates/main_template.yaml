@@ -35,8 +35,4 @@ Resources:
         Repository: !Ref Repository
         OauthToken: !Ref OauthToken
         CognitoUserPoolId: !GetAtt Cognito.Outputs.UserPoolId
-
-Outputs:
-  UserPoolId:
-    Description: ID of the created Cognito User Pool
-    Value: !GetAtt Cognito.Outputs.UserPoolId
+        CognitoUserPoolClientId: !GetAtt Cognito.Outputs.UserPoolClientId

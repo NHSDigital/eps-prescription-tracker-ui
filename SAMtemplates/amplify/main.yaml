@@ -12,6 +12,8 @@ Parameters:
     Type: String
   CognitoUserPoolId:
     Type: String
+  CognitoUserPoolClientId:
+    Type: String
 
 Resources:
   Amplify:
@@ -27,6 +29,8 @@ Resources:
       EnvironmentVariables:
         - Name: USER_POOL_ID
           Value: !Ref CognitoUserPoolId
+        - Name: USER_POOL_CLIENT_ID
+          Value: !Ref CognitoUserPoolClientId
         - Name: HOSTED_LOGIN_DOMAIN
           Value:
             Fn::Join:

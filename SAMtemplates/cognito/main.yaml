@@ -108,3 +108,6 @@ Outputs:
   UserPoolId:
     Description: ID of the created Cognito User Pool
     Value: !Ref UserPool
+  UserPoolClientId:
+    Description: ID of the created Cognito User Pool client
+    Value: !Ref ClientUserPool
