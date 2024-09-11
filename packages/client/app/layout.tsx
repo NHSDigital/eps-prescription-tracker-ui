@@ -10,6 +10,7 @@ import LoginStatus from '../components/LoginStatus';
 
 import 'nhsuk-frontend/dist/nhsuk.css';
 import './styles.css';
+import { AuthProvider } from '../components/AuthProvider';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -38,7 +39,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <main className="nhsuk-main-wrapper" id="maincontent" role="main">
           <Row>
             <Col width="full">
-              {children}
+            <AuthProvider>{children}</AuthProvider>
             </Col>
           </Row>
         </main>
