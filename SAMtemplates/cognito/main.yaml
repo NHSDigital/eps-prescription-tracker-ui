@@ -114,6 +114,9 @@ Outputs:
   UserPoolId:
     Description: ID of the created Cognito User Pool
     Value: !Ref UserPool
+  UserPoolArn:
+    Description: ID of the created Cognito User Pool
+    Value: !GetAtt UserPool.Arn
   UserPoolClientId:
     Description: ID of the created Cognito User Pool client
     Value: !Ref ClientUserPool

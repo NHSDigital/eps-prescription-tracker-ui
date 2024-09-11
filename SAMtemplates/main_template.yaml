@@ -39,6 +39,7 @@ Resources:
         StackName: !Ref AWS::StackName
         StatusFunctionName: !GetAtt Functions.Outputs.StatusFunctionName
         StatusFunctionArn: !GetAtt Functions.Outputs.StatusFunctionArn
+        UserPoolArn: !GetAtt Cognito.Outputs.UserPoolArn
 
   # Amplify:
   #   Type: AWS::Serverless::Application
