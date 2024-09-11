@@ -22,6 +22,24 @@ Resources:
         Auth0ClientSecret: !Ref Auth0ClientSecret
         Auth0Issuer: !Ref Auth0Issuer
 
+  Functions:
+    Type: AWS::Serverless::Application
+    Properties:
+      Location: functions/main.yaml
+      Parameters:
+        StackName: !Ref AWS::StackName
+        VersionNumber: "foo"
+        CommitId: "bar"
+
+  Apis:
+    Type: AWS::Serverless::Application
+    Properties:
+      Location: apis/main.yaml
+      Parameters:
+        StackName: !Ref AWS::StackName
+        StatusFunctionName: !GetAtt Functions.Outputs.StatusFunctionName
+        StatusFunctionArn: !GetAtt Functions.Outputs.StatusFunctionArn
+
   # Amplify:
   #   Type: AWS::Serverless::Application
   #   Properties:

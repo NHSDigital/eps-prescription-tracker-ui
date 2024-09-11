@@ -94,6 +94,7 @@ Resources:
   ClientUserPool:
     Type: AWS::Cognito::UserPoolClient
     Properties:
+      AllowedOAuthFlowsUserPoolClient: true
       AllowedOAuthFlows:
         - code
       AllowedOAuthScopes:

@@ -15,7 +15,8 @@
     "license": "MIT",
     "workspaces": [
         "packages/server",
-        "packages/client"
+        "packages/client",
+        "packages/statusLambda"
     ],
     "devDependencies": {
         "@aws-amplify/backend": "^1.2.1",
