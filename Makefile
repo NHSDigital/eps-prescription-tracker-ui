@@ -20,7 +20,7 @@ install-hooks: install-python
 sam-build: sam-validate compile
 	sam build --template-file SAMtemplates/main_template.yaml --region eu-west-2
 
-sam-sync: guard-AWS_DEFAULT_PROFILE guard-stack_name compile
+sam-sync: guard-AWS_DEFAULT_PROFILE guard-stack_name
 	sam sync \
 		--stack-name $$stack_name \
 		--watch \
@@ -28,9 +28,7 @@ sam-sync: guard-AWS_DEFAULT_PROFILE guard-stack_name compile
 		--parameter-overrides \
 			  Auth0ClientID=$$Auth0ClientID \
 			  Auth0ClientSecret=$$Auth0ClientSecret \
-			  Auth0Issuer=$$Auth0Issuer \
-			  Repository=$$Repository \
-			  OauthToken=$$OauthToken
+			  Auth0Issuer=$$Auth0Issuer 
 
 sam-deploy: guard-AWS_DEFAULT_PROFILE guard-stack_name
 	sam deploy \

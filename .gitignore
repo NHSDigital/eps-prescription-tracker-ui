@@ -27,3 +27,5 @@ _site/
 vendor
 cfn_guard_output/
 test/
+packages/client/.next
+amplify_outputs.json
