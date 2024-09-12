@@ -54,8 +54,8 @@ Resources:
         client_id: !Ref Auth0ClientID
         client_secret: !Ref Auth0ClientSecret
         #attributes_url: https://identity.ptl.api.platform.nhs.uk/realms/Cis2-mock-internal-dev/protocol/openid-connect/userinfo
-        #authorize_url: https://identity.ptl.api.platform.nhs.uk/realms/Cis2-mock-internal-dev/protocol/openid-connect/auth
-        #token_url: https://identity.ptl.api.platform.nhs.uk/realms/Cis2-mock-internal-dev/protocol/openid-connect/token
+        #authorize_url: hhttps://dev-mhg8l3pi2hxgvvnt.uk.auth0.com/authorize
+        #token_url: https://dev-mhg8l3pi2hxgvvnt.uk.auth0.com/oauth/token
         #jwks_uri: https://identity.ptl.api.platform.nhs.uk/realms/Cis2-mock-internal-dev/protocol/openid-connect/certs
 
       AttributeMapping:
@@ -282,7 +282,7 @@ Resources:
     Properties:
       RestApiId: !Ref RestApiGateway
       ResourceId: !Ref TokenAPIGatewayResource
-      HttpMethod: GET
+      HttpMethod: POST
       AuthorizationType: NONE
       Integration:
         Type: AWS_PROXY
@@ -294,7 +294,7 @@ Resources:
   # If you add a new endpoint, then you need to change the name of this resource
   # You also need to change it in RestApiGatewayStage.Properties.DeploymentId
   # *********************************************************************
-  RestApiGatewayDeploymentA:
+  RestApiGatewayDeploymentB:
     Type: AWS::ApiGateway::Deployment
     DependsOn:
       # see note above if you add something in here when you add a new endpoint
@@ -310,7 +310,7 @@ Resources:
       RestApiId: !Ref RestApiGateway
       StageName: prod
       # See note above RestApiGatewayDeployment, if a new endpoint is added, then this resource name will need updating
-      DeploymentId: !Ref RestApiGatewayDeploymentA
+      DeploymentId: !Ref RestApiGatewayDeploymentB
       TracingEnabled: true
       AccessLogSetting:
         DestinationArn: !GetAtt RestApiGatewayResources.Outputs.ApiGwAccessLogsArn
