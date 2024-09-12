@@ -1,5 +1,17 @@
 AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
 Description: AWS Cognito User Pool
+
+Globals:
+  Function:
+    Timeout: 50
+    MemorySize: 256
+    Architectures:
+      - x86_64
+    Runtime: nodejs20.x
+    Environment:
+      Variables:
+        NODE_OPTIONS: "--enable-source-maps"
 
 Parameters:
   StackName:
@@ -23,48 +35,11 @@ Resources:
       AdminCreateUserConfig:
         AllowAdminCreateUserOnly: true
 
-  DnsARecord:
-    Type: AWS::Route53::RecordSet
-    Properties:
-      HostedZoneId: !ImportValue eps-route53-resources:EPS-ZoneID
-      Name:
-        Fn::Join:
-          - "."
-          - - !Ref StackName
-            - !ImportValue eps-route53-resources:EPS-domain
-      ResourceRecords:
-        - 127.0.0.1
-      TTL: 900
-      Type: A
-
   UserPoolDomain:
     Type: AWS::Cognito::UserPoolDomain
-    DependsOn:
-      - DnsARecord
     Properties:
       UserPoolId: !Ref UserPool
       Domain: !Ref StackName
-  #     CustomDomainConfig:
-  #       CertificateArn: !Ref GenerateCertificate
-
-  # GenerateCertificate:
-  #   Type: AWS::CertificateManager::Certificate
-  #   Properties:
-  #     ValidationMethod: DNS
-  #     DomainName:
-  #       Fn::Join:
-  #         - "."
-  #         - - "auth"
-  #           - !Ref StackName
-  #           - !ImportValue eps-route53-resources:EPS-domain
-  #     DomainValidationOptions:
-  #       - DomainName:
-  #           Fn::Join:
-  #             - "."
-  #             - - "auth"
-  #               - !Ref StackName
-  #               - !ImportValue eps-route53-resources:EPS-domain
-  #         HostedZoneId: !ImportValue eps-route53-resources:EPS-ZoneID
 
   UserPoolIdentityProvider:
     Type: AWS::Cognito::UserPoolIdentityProvider
@@ -109,6 +84,237 @@ Resources:
         - COGNITO
         - Auth0
       UserPoolId: !Ref UserPool
+
+  Auth:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${StackName}-auth
+      CodeUri: ../../packages
+      Handler: auth.handler
+      Role: !GetAtt AuthResources.Outputs.LambdaRoleArn
+      Environment:
+        Variables:
+          proxy_callback_uri: "foo"
+          idp_auth_uri: "bar"
+    Metadata:
+      BuildMethod: esbuild
+      guard:
+        SuppressedRules:
+          - LAMBDA_DLQ_CHECK
+          - LAMBDA_INSIDE_VPC
+          - LAMBDA_CONCURRENCY_CHECK
+      BuildProperties:
+        Minify: true
+        Target: es2020
+        Sourcemap: true
+        tsconfig: cognito/tsconfig.json
+        packages: bundle
+        EntryPoints:
+          - cognito/src/auth.ts
+
+  AuthResources:
+    Type: AWS::Serverless::Application
+    Properties:
+      Location: lambda_resources.yaml
+      Parameters:
+        StackName: !Ref StackName
+        LambdaName: !Sub ${StackName}-auth
+        LambdaArn: !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${StackName}-auth
+        IncludeAdditionalPolicies: false
+        LogRetentionInDays: 30
+        CloudWatchKMSKeyId: !ImportValue account-resources:CloudwatchLogsKmsKeyArn
+        EnableSplunk: False
+        SplunkSubscriptionFilterRole: !ImportValue lambda-resources:SplunkSubscriptionFilterRole
+        SplunkDeliveryStreamArn: !ImportValue lambda-resources:SplunkDeliveryStream
+
+  Callback:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${StackName}-callback
+      CodeUri: ../../packages
+      Handler: callback.handler
+      Role: !GetAtt CallbackResources.Outputs.LambdaRoleArn
+      Environment:
+        Variables:
+          cognito_idp_response_uri: "foo"
+    Metadata:
+      BuildMethod: esbuild
+      guard:
+        SuppressedRules:
+          - LAMBDA_DLQ_CHECK
+          - LAMBDA_INSIDE_VPC
+          - LAMBDA_CONCURRENCY_CHECK
+      BuildProperties:
+        Minify: true
+        Target: es2020
+        Sourcemap: true
+        tsconfig: cognito/tsconfig.json
+        packages: bundle
+        EntryPoints:
+          - cognito/src/callback.ts
+
+  CallbackResources:
+    Type: AWS::Serverless::Application
+    Properties:
+      Location: lambda_resources.yaml
+      Parameters:
+        StackName: !Ref StackName
+        LambdaName: !Sub ${StackName}-callback
+        LambdaArn: !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${StackName}-callback
+        IncludeAdditionalPolicies: false
+        LogRetentionInDays: 30
+        CloudWatchKMSKeyId: !ImportValue account-resources:CloudwatchLogsKmsKeyArn
+        EnableSplunk: False
+        SplunkSubscriptionFilterRole: !ImportValue lambda-resources:SplunkSubscriptionFilterRole
+        SplunkDeliveryStreamArn: !ImportValue lambda-resources:SplunkDeliveryStream
+
+  Token:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${StackName}-token
+      CodeUri: ../../packages
+      Handler: token.handler
+      Role: !GetAtt TokenResources.Outputs.LambdaRoleArn
+      Environment:
+        Variables:
+          idp_token_path: "foo"
+    Metadata:
+      BuildMethod: esbuild
+      guard:
+        SuppressedRules:
+          - LAMBDA_DLQ_CHECK
+          - LAMBDA_INSIDE_VPC
+          - LAMBDA_CONCURRENCY_CHECK
+      BuildProperties:
+        Minify: true
+        Target: es2020
+        Sourcemap: true
+        tsconfig: cognito/tsconfig.json
+        packages: bundle
+        EntryPoints:
+          - cognito/src/token.ts
+
+  TokenResources:
+    Type: AWS::Serverless::Application
+    Properties:
+      Location: lambda_resources.yaml
+      Parameters:
+        StackName: !Ref StackName
+        LambdaName: !Sub ${StackName}-token
+        LambdaArn: !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${StackName}-token
+        IncludeAdditionalPolicies: false
+        LogRetentionInDays: 30
+        CloudWatchKMSKeyId: !ImportValue account-resources:CloudwatchLogsKmsKeyArn
+        EnableSplunk: False
+        SplunkSubscriptionFilterRole: !ImportValue lambda-resources:SplunkSubscriptionFilterRole
+        SplunkDeliveryStreamArn: !ImportValue lambda-resources:SplunkDeliveryStream
+
+  RestApiGateway:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: !Sub ${StackName}-apigw-cognito
+      EndpointConfiguration:
+        Types:
+          - REGIONAL
+
+  RestApiGatewayResources:
+    Type: AWS::Serverless::Application
+    Properties:
+      Location: api_resources.yaml
+      Parameters:
+        AdditionalPolicies: !Join
+          - ","
+          - - !GetAtt TokenResources.Outputs.ExecuteLambdaPolicyArn
+            - !GetAtt CallbackResources.Outputs.ExecuteLambdaPolicyArn
+            - !GetAtt AuthResources.Outputs.ExecuteLambdaPolicyArn
+        ApiName: !Sub ${StackName}-apigw-cognito
+        LogRetentionInDays: 30
+
+  AuthAPIGatewayResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref RestApiGateway
+      ParentId: !GetAtt RestApiGateway.RootResourceId
+      PathPart: auth
+
+  AuthMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref RestApiGateway
+      ResourceId: !Ref AuthAPIGatewayResource
+      HttpMethod: GET
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        Credentials: !GetAtt RestApiGatewayResources.Outputs.ApiGwRoleArn
+        IntegrationHttpMethod: POST
+        Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${Auth.Arn}/invocations
+
+  CallbackAPIGatewayResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref RestApiGateway
+      ParentId: !GetAtt RestApiGateway.RootResourceId
+      PathPart: callback
+
+  CallbackMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref RestApiGateway
+      ResourceId: !Ref CallbackAPIGatewayResource
+      HttpMethod: GET
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        Credentials: !GetAtt RestApiGatewayResources.Outputs.ApiGwRoleArn
+        IntegrationHttpMethod: POST
+        Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${Callback.Arn}/invocations
+
+  TokenAPIGatewayResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref RestApiGateway
+      ParentId: !GetAtt RestApiGateway.RootResourceId
+      PathPart: token
+
+  TokenMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref RestApiGateway
+      ResourceId: !Ref TokenAPIGatewayResource
+      HttpMethod: GET
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        Credentials: !GetAtt RestApiGatewayResources.Outputs.ApiGwRoleArn
+        IntegrationHttpMethod: POST
+        Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${Token.Arn}/invocations
+
+  # *********************************************************************
+  # If you add a new endpoint, then you need to change the name of this resource
+  # You also need to change it in RestApiGatewayStage.Properties.DeploymentId
+  # *********************************************************************
+  RestApiGatewayDeploymentA:
+    Type: AWS::ApiGateway::Deployment
+    DependsOn:
+      # see note above if you add something in here when you add a new endpoint
+      - AuthMethod
+      - CallbackMethod
+      - TokenMethod
+    Properties:
+      RestApiId: !Ref RestApiGateway
+
+  RestApiGatewayStage:
+    Type: AWS::ApiGateway::Stage
+    Properties:
+      RestApiId: !Ref RestApiGateway
+      StageName: prod
+      # See note above RestApiGatewayDeployment, if a new endpoint is added, then this resource name will need updating
+      DeploymentId: !Ref RestApiGatewayDeploymentA
+      TracingEnabled: true
+      AccessLogSetting:
+        DestinationArn: !GetAtt RestApiGatewayResources.Outputs.ApiGwAccessLogsArn
+        Format: '{ "requestTime": "$context.requestTime", "apiId": "$context.apiId", "accountId": "$context.accountId", "resourcePath": "$context.resourcePath", "stage": "$context.stage", "requestId": "$context.requestId", "extendedRequestId": "$context.extendedRequestId", "status": "$context.status", "httpMethod": "$context.httpMethod", "protocol": "$context.protocol", "path": "$context.path", "responseLatency": "$context.responseLatency", "responseLength": "$context.responseLength", "domainName": "$context.domainName", "identity": { "sourceIp": "$context.identity.sourceIp", "userAgent": "$context.identity.userAgent", "clientCert":{ "subjectDN": "$context.identity.clientCert.subjectDN", "issuerDN": "$context.identity.clientCert.issuerDN", "serialNumber": "$context.identity.clientCert.serialNumber", "validityNotBefore": "$context.identity.clientCert.validity.notBefore", "validityNotAfter": "$context.identity.clientCert.validity.notAfter" }}, "integration":{ "error": "$context.integration.error", "integrationStatus": "$context.integration.integrationStatus", "latency": "$context.integration.latency", "requestId": "$context.integration.requestId", "status": "$context.integration.status" }}'
 
 Outputs:
   UserPoolId:
