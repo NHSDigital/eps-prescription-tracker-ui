@@ -40,14 +40,3 @@ Resources:
         StatusFunctionName: !GetAtt Functions.Outputs.StatusFunctionName
         StatusFunctionArn: !GetAtt Functions.Outputs.StatusFunctionArn
         UserPoolArn: !GetAtt Cognito.Outputs.UserPoolArn
-
-  # Amplify:
-  #   Type: AWS::Serverless::Application
-  #   Properties:
-  #     Location: amplify/main.yaml
-  #     Parameters:
-  #       StackName: !Ref AWS::StackName
-  #       Repository: !Ref Repository
-  #       OauthToken: !Ref OauthToken
-  #       CognitoUserPoolId: !GetAtt Cognito.Outputs.UserPoolId
-  #       CognitoUserPoolClientId: !GetAtt Cognito.Outputs.UserPoolClientId
