@@ -16,14 +16,15 @@ Globals:
 Parameters:
   StackName:
     Type: String
-
   Auth0ClientID:
     Type: String
-
   Auth0ClientSecret:
     Type: String
-
   Auth0Issuer:
+    Type: String
+  Auth0AuthorizeEndpoint:
+    Type: String
+  Auth0TokenEndpoint:
     Type: String
 
 Resources:
@@ -54,6 +55,8 @@ Resources:
         client_id: !Ref Auth0ClientID
         client_secret: !Ref Auth0ClientSecret
         attributes_url: https://dev-mhg8l3pi2hxgvvnt.uk.auth0.com/userinfo
+        #authorize_url: https://dev-mhg8l3pi2hxgvvnt.uk.auth0.com/authorize
+        #token_url: https://dev-mhg8l3pi2hxgvvnt.uk.auth0.com/oauth/token
         authorize_url: https://qylgtklxs0.execute-api.eu-west-2.amazonaws.com/prod/auth
         token_url: https://qylgtklxs0.execute-api.eu-west-2.amazonaws.com/prod/token
         jwks_uri: https://dev-mhg8l3pi2hxgvvnt.uk.auth0.com/.well-known/jwks.json
@@ -94,8 +97,8 @@ Resources:
       Role: !GetAtt AuthResources.Outputs.LambdaRoleArn
       Environment:
         Variables:
-          proxy_callback_uri: "foo"
-          idp_auth_uri: "bar"
+          proxy_callback_uri: https://qylgtklxs0.execute-api.eu-west-2.amazonaws.com/prod/callback
+          idp_auth_uri: !Ref Auth0AuthorizeEndpoint
     Metadata:
       BuildMethod: esbuild
       guard:
@@ -136,7 +139,7 @@ Resources:
       Role: !GetAtt CallbackResources.Outputs.LambdaRoleArn
       Environment:
         Variables:
-          cognito_idp_response_uri: "foo"
+          cognito_idp_response_uri: https://ab-clinical-tracker-amplify.auth.eu-west-2.amazoncognito.com/oauth2/idpresponse
     Metadata:
       BuildMethod: esbuild
       guard:
@@ -177,7 +180,8 @@ Resources:
       Role: !GetAtt TokenResources.Outputs.LambdaRoleArn
       Environment:
         Variables:
-          idp_token_path: "foo"
+          idp_token_path: !Ref Auth0TokenEndpoint
+          ResponseUri: https://qylgtklxs0.execute-api.eu-west-2.amazonaws.com/prod/callback
     Metadata:
       BuildMethod: esbuild
       guard:

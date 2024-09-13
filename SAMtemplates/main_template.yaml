@@ -10,6 +10,10 @@ Parameters:
     Type: String
   Auth0Issuer:
     Type: String
+  Auth0AuthorizeEndpoint:
+    Type: String
+  Auth0TokenEndpoint:
+    Type: String
 
 Resources:
   Cognito:
@@ -21,6 +25,8 @@ Resources:
         Auth0ClientID: !Ref Auth0ClientID
         Auth0ClientSecret: !Ref Auth0ClientSecret
         Auth0Issuer: !Ref Auth0Issuer
+        Auth0AuthorizeEndpoint: !Ref Auth0AuthorizeEndpoint
+        Auth0TokenEndpoint: !Ref Auth0TokenEndpoint
 
   Functions:
     Type: AWS::Serverless::Application

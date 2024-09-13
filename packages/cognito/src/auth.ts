@@ -24,7 +24,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     "apigw-request-id": event.requestContext.requestId
   })
 
-  const pathParams = event.pathParameters
+  const pathParams = event.queryStringParameters
   if (pathParams===null) {
     throw new Error("can not get params")
   }

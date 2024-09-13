@@ -4,7 +4,8 @@ import {injectLambdaContext} from "@aws-lambda-powertools/logger/middleware"
 import middy from "@middy/core"
 import inputOutputLogger from "@middy/input-output-logger"
 import errorHandler from "@nhs/fhir-middy-error-handler"
-import axios from "axios"
+import axios, {AxiosResponseHeaders, RawAxiosResponseHeaders} from "axios"
+import {parse, stringify} from "querystring"
 
 const logger = new Logger({serviceName: "status"})
 
@@ -29,19 +30,34 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   if (body===null) {
     throw new Error("can not get body")
   }
-
+  const object_body = parse(body)
+  object_body["redirect_uri"] = process.env["ResponseUri"] as string
   const axiosInstance = axios.create()
 
-  const response = await axiosInstance.post(idp_token_path, {
-    headers: event.headers,
-    body: event.body
-  })
+  logger.info("about to call idp with rewritten body", {idp_token_path, body: object_body})
 
+  const response = await axiosInstance.post(idp_token_path,
+    stringify(object_body)
+  )
+
+  // In real life we would store the response codes so it can be used for apigee token exchange
+  logger.info("response from external oidc", {data: response.data})
   return {
     statusCode: response.status,
-    body: response.data.body,
-    headers: response.data.headers
+    body: JSON.stringify(response.data),
+    headers: formatHeaders(response.headers)
   }
+}
+
+const formatHeaders = (headers: AxiosResponseHeaders | Partial<RawAxiosResponseHeaders>): { [header: string]: string } => {
+  const formattedHeaders: { [header: string]: string } = {}
+
+  // Iterate through the Axios headers and ensure values are stringified
+  for (const [key, value] of Object.entries(headers)) {
+    formattedHeaders[key] = String(value) // Ensure each value is converted to string
+  }
+
+  return formattedHeaders
 }
 
 export const handler = middy(lambdaHandler)

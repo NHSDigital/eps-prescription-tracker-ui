@@ -28,7 +28,9 @@ sam-sync: guard-AWS_DEFAULT_PROFILE guard-stack_name
 		--parameter-overrides \
 			  Auth0ClientID=$$Auth0ClientID \
 			  Auth0ClientSecret=$$Auth0ClientSecret \
-			  Auth0Issuer=$$Auth0Issuer 
+			  Auth0Issuer=$$Auth0Issuer \
+			  Auth0AuthorizeEndpoint=$$Auth0AuthorizeEndpoint \
+			  Auth0TokenEndpoint=$$Auth0TokenEndpoint
 
 sam-deploy: guard-AWS_DEFAULT_PROFILE guard-stack_name
 	sam deploy \
@@ -123,3 +125,9 @@ aws-login:
 
 cfn-guard:
 	./scripts/run_cfn_guard.sh
+
+build-localsite:
+	npm run build --workspace packages/client
+
+run-localsite:
+	npm run start --workspace packages/client
