@@ -5,9 +5,9 @@ import { signInWithRedirect, signOut, getCurrentUser, fetchAuthSession, JWT } fr
 import {Amplify} from "aws-amplify"
 
 import './App.css';
+import { authConfig } from './configureAmplify';
+Amplify.configure(authConfig, {ssr: true})
 
-import outputs from "./amplify_outputs.json"
-Amplify.configure(outputs, {ssr: true})
 function App() {
   const [user, setUser] = useState(null);
   const [error, setError] = useState(null);
