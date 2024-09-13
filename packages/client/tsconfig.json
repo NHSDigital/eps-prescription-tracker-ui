@@ -1,0 +1,14 @@
+{
+    "extends": "../../tsconfig.defaults.json",
+    "compilerOptions": {
+      "rootDir": ".",
+      "outDir": "lib",
+      "allowImportingTsExtensions": true,
+      "noEmit": true,
+      "strict": false
+    },
+    "references": [],
+    "include": ["src/**/*", "tests/**/*"],
+    "exclude": ["node_modules"]
+  }
+  
