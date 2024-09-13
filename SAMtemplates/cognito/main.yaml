@@ -50,7 +50,7 @@ Resources:
       ProviderType: "OIDC"
       ProviderDetails:
         oidc_issuer: !Ref Auth0Issuer
-        authorize_scopes: "openid"
+        authorize_scopes: "openid profile email"
         attributes_request_method: "GET"
         client_id: !Ref Auth0ClientID
         client_secret: !Ref Auth0ClientSecret
@@ -83,6 +83,8 @@ Resources:
         - aws.cognito.signin.user.admin
       CallbackURLs:
         - http://localhost:3000/auth/
+      LogoutURLs:
+        - http://localhost:3000/
       SupportedIdentityProviders:
         - COGNITO
         - Auth0

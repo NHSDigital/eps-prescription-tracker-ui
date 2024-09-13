@@ -15,7 +15,7 @@ function auth0Login(redirectPath: string) {
   console.log(Amplify.getConfig());
   signInWithRedirect({
     provider: {
-      custom: 'Auth0'
+      custom: 'Auth0' // this needs to match the ProviderName as defined in UserPoolIdentityProvider in SAM
     },
     customState: JSON.stringify({ redirectPath })
   }).catch(console.error);

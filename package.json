@@ -16,7 +16,8 @@
     "workspaces": [
         "packages/server",
         "packages/client",
-        "packages/statusLambda"
+        "packages/statusLambda",
+        "packages/auth-demo"
     ],
     "devDependencies": {
         "@aws-amplify/backend": "^1.2.1",

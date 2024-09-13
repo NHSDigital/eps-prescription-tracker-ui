@@ -127,7 +127,7 @@ cfn-guard:
 	./scripts/run_cfn_guard.sh
 
 build-localsite:
-	npm run build --workspace packages/client
+	npm run build --workspace packages/auth-demo
 
-run-localsite:
-	npm run start --workspace packages/client
+run-auth:
+	npm run start --workspace packages/auth-demo
