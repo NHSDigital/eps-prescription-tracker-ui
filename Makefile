@@ -30,7 +30,9 @@ sam-sync: guard-AWS_DEFAULT_PROFILE guard-stack_name
 			  Auth0ClientSecret=$$Auth0ClientSecret \
 			  Auth0Issuer=$$Auth0Issuer \
 			  Auth0AuthorizeEndpoint=$$Auth0AuthorizeEndpoint \
-			  Auth0TokenEndpoint=$$Auth0TokenEndpoint
+			  Auth0TokenEndpoint=$$Auth0TokenEndpoint \
+			  Auth0UserInfoEndpoint=$$Auth0UserInfoEndpoint \
+			  Auth0JWKSEndpoint=$$Auth0JWKSEndpoint
 
 sam-deploy: guard-AWS_DEFAULT_PROFILE guard-stack_name
 	sam deploy \

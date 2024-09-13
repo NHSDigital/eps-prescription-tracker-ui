@@ -26,6 +26,10 @@ Parameters:
     Type: String
   Auth0TokenEndpoint:
     Type: String
+  Auth0UserInfoEndpoint:
+    Type: String
+  Auth0JWKSEndpoint:
+    Type: String
 
 Resources:
   UserPool:
@@ -54,12 +58,10 @@ Resources:
         attributes_request_method: "GET"
         client_id: !Ref Auth0ClientID
         client_secret: !Ref Auth0ClientSecret
-        attributes_url: https://dev-mhg8l3pi2hxgvvnt.uk.auth0.com/userinfo
-        #authorize_url: https://dev-mhg8l3pi2hxgvvnt.uk.auth0.com/authorize
-        #token_url: https://dev-mhg8l3pi2hxgvvnt.uk.auth0.com/oauth/token
-        authorize_url: https://qylgtklxs0.execute-api.eu-west-2.amazonaws.com/prod/auth
-        token_url: https://qylgtklxs0.execute-api.eu-west-2.amazonaws.com/prod/token
-        jwks_uri: https://dev-mhg8l3pi2hxgvvnt.uk.auth0.com/.well-known/jwks.json
+        attributes_url: !Ref Auth0UserInfoEndpoint
+        authorize_url: !Sub https://${RestApiGateway}.execute-api.${AWS::Region}.amazonaws.com/prod/auth
+        token_url: !Sub https://${RestApiGateway}.execute-api.${AWS::Region}.amazonaws.com/prod/token
+        jwks_uri: !Ref Auth0JWKSEndpoint
 
       AttributeMapping:
         username: "sub"
@@ -99,7 +101,7 @@ Resources:
       Role: !GetAtt AuthResources.Outputs.LambdaRoleArn
       Environment:
         Variables:
-          proxy_callback_uri: https://qylgtklxs0.execute-api.eu-west-2.amazonaws.com/prod/callback
+          proxy_callback_uri: !Sub https://${RestApiGateway}.execute-api.${AWS::Region}.amazonaws.com/prod/callback
           idp_auth_uri: !Ref Auth0AuthorizeEndpoint
     Metadata:
       BuildMethod: esbuild
@@ -141,7 +143,7 @@ Resources:
       Role: !GetAtt CallbackResources.Outputs.LambdaRoleArn
       Environment:
         Variables:
-          cognito_idp_response_uri: https://ab-clinical-tracker-amplify.auth.eu-west-2.amazoncognito.com/oauth2/idpresponse
+          cognito_idp_response_uri: !Sub https://${StackName}.auth.${AWS::Region}.amazoncognito.com/oauth2/idpresponse
     Metadata:
       BuildMethod: esbuild
       guard:
@@ -183,7 +185,7 @@ Resources:
       Environment:
         Variables:
           idp_token_path: !Ref Auth0TokenEndpoint
-          ResponseUri: https://qylgtklxs0.execute-api.eu-west-2.amazonaws.com/prod/callback
+          ResponseUri: !Sub https://${RestApiGateway}.execute-api.${AWS::Region}.amazonaws.com/prod/callback
     Metadata:
       BuildMethod: esbuild
       guard:
