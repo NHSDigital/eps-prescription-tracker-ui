@@ -53,10 +53,10 @@ Resources:
         attributes_request_method: "GET"
         client_id: !Ref Auth0ClientID
         client_secret: !Ref Auth0ClientSecret
-        #attributes_url: https://identity.ptl.api.platform.nhs.uk/realms/Cis2-mock-internal-dev/protocol/openid-connect/userinfo
-        #authorize_url: hhttps://dev-mhg8l3pi2hxgvvnt.uk.auth0.com/authorize
-        #token_url: https://dev-mhg8l3pi2hxgvvnt.uk.auth0.com/oauth/token
-        #jwks_uri: https://identity.ptl.api.platform.nhs.uk/realms/Cis2-mock-internal-dev/protocol/openid-connect/certs
+        attributes_url: https://dev-mhg8l3pi2hxgvvnt.uk.auth0.com/userinfo
+        authorize_url: https://qylgtklxs0.execute-api.eu-west-2.amazonaws.com/prod/auth
+        token_url: https://qylgtklxs0.execute-api.eu-west-2.amazonaws.com/prod/token
+        jwks_uri: https://dev-mhg8l3pi2hxgvvnt.uk.auth0.com/.well-known/jwks.json
 
       AttributeMapping:
         username: "sub"
