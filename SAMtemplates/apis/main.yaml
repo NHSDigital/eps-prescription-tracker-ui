@@ -57,6 +57,7 @@ Resources:
     Properties:
       RestApiId: !Ref RestApiGateway
       ResourceId: !Ref StatusStatementResource
+      # AuthorizationScopes - add this to use access token. Leave out to use identity token
       HttpMethod: GET
       AuthorizationType: COGNITO_USER_POOLS
       AuthorizerId: !Ref Authorizer

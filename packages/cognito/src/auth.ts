@@ -7,15 +7,9 @@ import errorHandler from "@nhs/fhir-middy-error-handler"
 
 const logger = new Logger({serviceName: "status"})
 
-/* eslint-disable  max-len */
-
 /**
  *
- * Event doc: https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format
- * @param {Object} _event - API Gateway Lambda Proxy Input Format
- *
- * Return doc: https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html
- * @returns {Object} object - API Gateway Lambda Proxy Output Format
+ * adapted from https://github.com/aws-samples/cognito-external-idp-proxy/blob/main/lambda/authorize/authorize_flow.py
  *
  */
 
@@ -29,6 +23,8 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     throw new Error("can not get params")
   }
   const proxyCallbackUri = process.env["proxy_callback_uri"]
+
+  // rewrite the redirect uri in the query parameters to be our lambda
   pathParams["redirect_uri"] = proxyCallbackUri
 
   const filteredParams: Record<string, string> = Object.keys(pathParams)
@@ -40,6 +36,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
   const idp_redirect = process.env["idp_auth_uri"] + "?" + new URLSearchParams(filteredParams)
 
+  // return a status 302 redirect response
   return {
     statusCode: 302,
     body: JSON.stringify(event.body),

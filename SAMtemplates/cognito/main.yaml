@@ -50,7 +50,7 @@ Resources:
     Type: AWS::Cognito::UserPoolIdentityProvider
     Properties:
       UserPoolId: !Ref UserPool
-      ProviderName: "Auth0"
+      ProviderName: "Auth0" # This is the name of the provider we will use in our app to sign in
       ProviderType: "OIDC"
       ProviderDetails:
         oidc_issuer: !Ref Auth0Issuer
@@ -62,7 +62,6 @@ Resources:
         authorize_url: !Sub https://${RestApiGateway}.execute-api.${AWS::Region}.amazonaws.com/prod/auth
         token_url: !Sub https://${RestApiGateway}.execute-api.${AWS::Region}.amazonaws.com/prod/token
         jwks_uri: !Ref Auth0JWKSEndpoint
-
       AttributeMapping:
         username: "sub"
         email: "email"

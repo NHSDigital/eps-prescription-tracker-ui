@@ -13,11 +13,7 @@ const logger = new Logger({serviceName: "status"})
 
 /**
  *
- * Event doc: https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format
- * @param {Object} _event - API Gateway Lambda Proxy Input Format
- *
- * Return doc: https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html
- * @returns {Object} object - API Gateway Lambda Proxy Output Format
+ * adapted from https://github.com/aws-samples/cognito-external-idp-proxy/blob/main/lambda/token/token_flow.py
  *
  */
 
@@ -31,17 +27,24 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     throw new Error("can not get body")
   }
   const object_body = parse(body)
+
+  // change the redirect uri to be our callback lambda
   object_body["redirect_uri"] = process.env["ResponseUri"] as string
+
+  // TODO create a signed JWT and add it to the request
+
   const axiosInstance = axios.create()
 
-  logger.info("about to call idp with rewritten body", {idp_token_path, body: object_body})
+  logger.info("about to call downstream idp with rewritten body", {idp_token_path, body: object_body})
 
   const response = await axiosInstance.post(idp_token_path,
     stringify(object_body)
   )
 
-  // In real life we would store the response codes so it can be used for apigee token exchange
+  // TODO we should store the response so we can use the tokens returned by CIS2 in an apigee token exchange
   logger.info("response from external oidc", {data: response.data})
+
+  // return status code and body from request to downstream idp
   return {
     statusCode: response.status,
     body: JSON.stringify(response.data),
