@@ -33,6 +33,7 @@ Resources:
         Auth0TokenEndpoint: !Ref Auth0TokenEndpoint
         Auth0UserInfoEndpoint: !Ref Auth0UserInfoEndpoint
         Auth0JWKSEndpoint: !Ref Auth0JWKSEndpoint
+        CIS2TokensTableName: !GetAtt Tables.Outputs.CIS2TokensTableName
 
   Functions:
     Type: AWS::Serverless::Application
@@ -42,6 +43,7 @@ Resources:
         StackName: !Ref AWS::StackName
         VersionNumber: "foo"
         CommitId: "bar"
+        CIS2TokensTableName: !GetAtt Tables.Outputs.CIS2TokensTableName
 
   Apis:
     Type: AWS::Serverless::Application
@@ -52,3 +54,10 @@ Resources:
         StatusFunctionName: !GetAtt Functions.Outputs.StatusFunctionName
         StatusFunctionArn: !GetAtt Functions.Outputs.StatusFunctionArn
         UserPoolArn: !GetAtt Cognito.Outputs.UserPoolArn
+
+  Tables:
+    Type: AWS::Serverless::Application
+    Properties:
+      Location: tables/main.yaml
+      Parameters:
+        StackName: !Ref AWS::StackName

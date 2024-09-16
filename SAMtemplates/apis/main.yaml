@@ -7,19 +7,15 @@ Parameters:
   StackName:
     Type: String
     Default: none
-
   StatusFunctionName:
     Type: String
     Default: none
-
   StatusFunctionArn:
     Type: String
     Default: none
-
   LogRetentionInDays:
     Type: Number
     Default: 30
-
   EnableSplunk:
     Type: String
     Default: 30

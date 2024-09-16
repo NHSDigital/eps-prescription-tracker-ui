@@ -1,0 +1,103 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: |
+  PSU DynamoDB tables and related resources
+
+Parameters:
+  StackName:
+    Type: String
+    Default: none
+
+Resources:
+  CIS2TokensKMSKey:
+    Type: AWS::KMS::Key
+    Properties:
+      EnableKeyRotation: true
+      KeyPolicy:
+        Version: 2012-10-17
+        Id: key-s3
+        Statement:
+          - Sid: Enable IAM User Permissions
+            Effect: Allow
+            Principal:
+              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
+            Action:
+              - kms:*
+            Resource: "*"
+          - Sid: Enable read only decrypt
+            Effect: Allow
+            Principal:
+              AWS: "*"
+            Action:
+              - kms:DescribeKey
+              - kms:Decrypt
+            Resource: "*"
+            Condition:
+              ArnLike:
+                aws:PrincipalArn: !Sub "arn:aws:iam::${AWS::AccountId}:role/aws-reserved/sso.amazonaws.com/${AWS::Region}/AWSReservedSSO_ReadOnly*"
+
+  CIS2TokensKMSKeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: !Sub alias/${StackName}-CIS2TokensKMSKeyAlias
+      TargetKeyId: !Ref CIS2TokensKMSKey
+
+  UseCIS2TokensKMSKeyPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - kms:DescribeKey
+              - kms:GenerateDataKey*
+              - kms:Encrypt
+              - kms:ReEncrypt*
+              - kms:Decrypt
+            Resource: !GetAtt CIS2TokensKMSKey.Arn
+
+  CIS2TokensTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub ${StackName}-CIS2Tokens
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      AttributeDefinitions:
+        - AttributeName: Username
+          AttributeType: S
+      KeySchema:
+        - AttributeName: Username
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+      SSESpecification:
+        KMSMasterKeyId: !Ref CIS2TokensKMSKey
+        SSEEnabled: true
+        SSEType: KMS
+      TimeToLiveSpecification:
+        AttributeName: ExpiryTime
+        Enabled: true
+
+  CIS2TokensResources:
+    Type: AWS::Serverless::Application
+    Properties:
+      Location: dynamodb_resources.yaml
+      Parameters:
+        StackName: !Ref StackName
+        TableName: !Ref CIS2TokensTable
+        TableArn: !GetAtt CIS2TokensTable.Arn
+
+Outputs:
+  CIS2TokensTableName:
+    Description: CIS2 Tokens table name
+    Value: !Ref CIS2TokensTable
+
+  CIS2TokensTableArn:
+    Description: CIS2 tokens table arn
+    Value: !GetAtt CIS2TokensTable.Arn
+
+  UseCIS2TokensKMSKeyPolicyArn:
+    Description: Use kms key policy arn
+    Value: !GetAtt UseCIS2TokensKMSKeyPolicy.PolicyArn
+    Export:
+      Name: !Sub ${StackName}:tables:UseCIS2TokensKMSKeyPolicyArn

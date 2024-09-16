@@ -18,11 +18,11 @@ Parameters:
   StackName:
     Type: String
     Default: none
-
   VersionNumber:
     Type: String
-
   CommitId:
+    Type: String
+  CIS2TokensTableName:
     Type: String
 
 Resources:
@@ -37,6 +37,7 @@ Resources:
         Variables:
           VERSION_NUMBER: !Ref VersionNumber
           COMMIT_ID: !Ref CommitId
+          CIS2TokensTableName: !Ref CIS2TokensTableName
     Metadata:
       BuildMethod: esbuild
       guard:
@@ -65,6 +66,9 @@ Resources:
         AdditionalPolicies: !Join
           - ","
           - - !ImportValue account-resources:LambdaAccessSecretsPolicy
+            - Fn::ImportValue: !Sub ${StackName}:tables:${CIS2TokensTableName}:TableWritePolicyArn
+            - Fn::ImportValue: !Sub ${StackName}:tables:${CIS2TokensTableName}:TableReadPolicyArn
+            - Fn::ImportValue: !Sub ${StackName}:tables:UseCIS2TokensKMSKeyPolicyArn
         LogRetentionInDays: 30
         CloudWatchKMSKeyId: !ImportValue account-resources:CloudwatchLogsKmsKeyArn
         EnableSplunk: False

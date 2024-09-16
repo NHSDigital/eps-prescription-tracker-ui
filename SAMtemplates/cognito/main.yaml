@@ -30,6 +30,8 @@ Parameters:
     Type: String
   Auth0JWKSEndpoint:
     Type: String
+  CIS2TokensTableName:
+    Type: String
 
 Resources:
   UserPool:
@@ -122,7 +124,7 @@ Resources:
   AuthResources:
     Type: AWS::Serverless::Application
     Properties:
-      Location: lambda_resources.yaml
+      Location: ../functions/lambda_resources.yaml
       Parameters:
         StackName: !Ref StackName
         LambdaName: !Sub ${StackName}-auth
@@ -163,7 +165,7 @@ Resources:
   CallbackResources:
     Type: AWS::Serverless::Application
     Properties:
-      Location: lambda_resources.yaml
+      Location: ../functions/lambda_resources.yaml
       Parameters:
         StackName: !Ref StackName
         LambdaName: !Sub ${StackName}-callback
@@ -186,6 +188,7 @@ Resources:
         Variables:
           idp_token_path: !Ref Auth0TokenEndpoint
           ResponseUri: !Sub https://${RestApiGateway}.execute-api.${AWS::Region}.amazonaws.com/prod/callback
+          CIS2TokensTableName: !Ref CIS2TokensTableName
     Metadata:
       BuildMethod: esbuild
       guard:
@@ -205,12 +208,17 @@ Resources:
   TokenResources:
     Type: AWS::Serverless::Application
     Properties:
-      Location: lambda_resources.yaml
+      Location: ../functions/lambda_resources.yaml
       Parameters:
         StackName: !Ref StackName
         LambdaName: !Sub ${StackName}-token
         LambdaArn: !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${StackName}-token
-        IncludeAdditionalPolicies: false
+        IncludeAdditionalPolicies: true
+        AdditionalPolicies: !Join
+          - ","
+          - - Fn::ImportValue: !Sub ${StackName}:tables:${CIS2TokensTableName}:TableWritePolicyArn
+            - Fn::ImportValue: !Sub ${StackName}:tables:${CIS2TokensTableName}:TableReadPolicyArn
+            - Fn::ImportValue: !Sub ${StackName}:tables:UseCIS2TokensKMSKeyPolicyArn
         LogRetentionInDays: 30
         CloudWatchKMSKeyId: !ImportValue account-resources:CloudwatchLogsKmsKeyArn
         EnableSplunk: False
@@ -228,7 +236,7 @@ Resources:
   RestApiGatewayResources:
     Type: AWS::Serverless::Application
     Properties:
-      Location: api_resources.yaml
+      Location: ../apis/api_resources.yaml
       Parameters:
         AdditionalPolicies: !Join
           - ","
