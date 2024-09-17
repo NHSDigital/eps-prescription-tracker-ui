@@ -1,0 +1,36 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: AWS Certificates for deployment in us-east-1
+
+Parameters:
+  StackName:
+    Type: String
+  epsDomain:
+    Type: String
+  epsZoneId:
+    Type: String
+
+Resources:
+  UserPoolTLSCertificate:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      ValidationMethod: DNS
+      DomainName: !Join
+        - .
+        - - "id"
+          - !Ref StackName
+          - !Ref epsDomain
+      DomainValidationOptions:
+        - DomainName: !Join
+            - .
+            - - "id"
+              - !Ref StackName
+              - !Ref epsDomain
+          HostedZoneId: !Ref epsZoneId
+
+Outputs:
+  UserPoolTLSCertificateArn:
+    Description: arn of the user pool TLS certificate
+    Value: !Ref UserPoolTLSCertificate
+    Export:
+      Name: !Sub ${AWS::StackName}:TLS:UserPoolTLSCertificate

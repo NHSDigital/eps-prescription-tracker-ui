@@ -18,6 +18,8 @@ Parameters:
     Type: String
   PrimaryOIDCJWKSEndpoint:
     Type: String
+  UserPoolTLSCertificateArn:
+    Type: String
 
 Resources:
   Cognito:
@@ -34,6 +36,7 @@ Resources:
         PrimaryOIDCUserInfoEndpoint: !Ref PrimaryOIDCUserInfoEndpoint
         PrimaryOIDCJWKSEndpoint: !Ref PrimaryOIDCJWKSEndpoint
         TokenMappingTableName: !GetAtt Tables.Outputs.TokenMappingTableName
+        UserPoolTLSCertificateArn: !Ref UserPoolTLSCertificateArn
 
   Functions:
     Type: AWS::Serverless::Application

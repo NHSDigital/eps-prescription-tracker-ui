@@ -32,7 +32,19 @@ sam-sync: guard-AWS_DEFAULT_PROFILE guard-stack_name
 			  PrimaryOIDCAuthorizeEndpoint=$$Auth0AuthorizeEndpoint \
 			  PrimaryOIDCTokenEndpoint=$$Auth0TokenEndpoint \
 			  PrimaryOIDCUserInfoEndpoint=$$Auth0UserInfoEndpoint \
-			  PrimaryOIDCJWKSEndpoint=$$Auth0JWKSEndpoint
+			  PrimaryOIDCJWKSEndpoint=$$Auth0JWKSEndpoint \
+			  UserPoolTLSCertificateArn=$$UserPoolTLSCertificateArn
+
+sam-sync-certs: guard-AWS_DEFAULT_PROFILE
+	sam sync \
+		--stack-name $$stack_name \
+		--region us-east-1 \
+		--watch \
+		--template-file SAMtemplates/certificates/main.yaml \
+		--parameter-overrides \
+			  StackName=$$stack_name \
+			  epsDomain=$$epsDomain \
+			  epsZoneId=$$epsZoneId 
 
 sam-deploy: guard-AWS_DEFAULT_PROFILE guard-stack_name
 	sam deploy \
