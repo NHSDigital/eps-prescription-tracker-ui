@@ -4,19 +4,19 @@ Description: |
   Clinical Prescription Tracker UI
 
 Parameters:
-  Auth0ClientID:
+  PrimaryOIDCClientID:
     Type: String
-  Auth0ClientSecret:
+  PrimaryOIDClientSecret:
     Type: String
-  Auth0Issuer:
+  PrimaryOIDCIssuer:
     Type: String
-  Auth0AuthorizeEndpoint:
+  PrimaryOIDCAuthorizeEndpoint:
     Type: String
-  Auth0TokenEndpoint:
+  PrimaryOIDCTokenEndpoint:
     Type: String
-  Auth0UserInfoEndpoint:
+  PrimaryOIDCUserInfoEndpoint:
     Type: String
-  Auth0JWKSEndpoint:
+  PrimaryOIDCJWKSEndpoint:
     Type: String
 
 Resources:
@@ -26,13 +26,13 @@ Resources:
       Location: cognito/main.yaml
       Parameters:
         StackName: !Ref AWS::StackName
-        Auth0ClientID: !Ref Auth0ClientID
-        Auth0ClientSecret: !Ref Auth0ClientSecret
-        Auth0Issuer: !Ref Auth0Issuer
-        Auth0AuthorizeEndpoint: !Ref Auth0AuthorizeEndpoint
-        Auth0TokenEndpoint: !Ref Auth0TokenEndpoint
-        Auth0UserInfoEndpoint: !Ref Auth0UserInfoEndpoint
-        Auth0JWKSEndpoint: !Ref Auth0JWKSEndpoint
+        PrimaryOIDCClientID: !Ref PrimaryOIDCClientID
+        PrimaryOIDClientSecret: !Ref PrimaryOIDClientSecret
+        PrimaryOIDCIssuer: !Ref PrimaryOIDCIssuer
+        PrimaryOIDCAuthorizeEndpoint: !Ref PrimaryOIDCAuthorizeEndpoint
+        PrimaryOIDCTokenEndpoint: !Ref PrimaryOIDCTokenEndpoint
+        PrimaryOIDCUserInfoEndpoint: !Ref PrimaryOIDCUserInfoEndpoint
+        PrimaryOIDCJWKSEndpoint: !Ref PrimaryOIDCJWKSEndpoint
         TokenMappingTableName: !GetAtt Tables.Outputs.TokenMappingTableName
 
   Functions:

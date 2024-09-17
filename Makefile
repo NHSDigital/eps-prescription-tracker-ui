@@ -26,13 +26,13 @@ sam-sync: guard-AWS_DEFAULT_PROFILE guard-stack_name
 		--watch \
 		--template-file SAMtemplates/main_template.yaml \
 		--parameter-overrides \
-			  Auth0ClientID=$$Auth0ClientID \
-			  Auth0ClientSecret=$$Auth0ClientSecret \
-			  Auth0Issuer=$$Auth0Issuer \
-			  Auth0AuthorizeEndpoint=$$Auth0AuthorizeEndpoint \
-			  Auth0TokenEndpoint=$$Auth0TokenEndpoint \
-			  Auth0UserInfoEndpoint=$$Auth0UserInfoEndpoint \
-			  Auth0JWKSEndpoint=$$Auth0JWKSEndpoint
+			  PrimaryOIDCClientID=$$Auth0ClientID \
+			  PrimaryOIDClientSecret=$$Auth0ClientSecret \
+			  PrimaryOIDCIssuer=$$Auth0Issuer \
+			  PrimaryOIDCAuthorizeEndpoint=$$Auth0AuthorizeEndpoint \
+			  PrimaryOIDCTokenEndpoint=$$Auth0TokenEndpoint \
+			  PrimaryOIDCUserInfoEndpoint=$$Auth0UserInfoEndpoint \
+			  PrimaryOIDCJWKSEndpoint=$$Auth0JWKSEndpoint
 
 sam-deploy: guard-AWS_DEFAULT_PROFILE guard-stack_name
 	sam deploy \

@@ -4,4 +4,6 @@ PrimaryUserPoolId=$(aws cloudformation list-exports --query "Exports[?Name=='${s
 PrimaryUserPoolClientId=$(aws cloudformation list-exports --query "Exports[?Name=='${stack_name}:Cognito:PrimaryUserPoolClientId'].Value" --output text)
 HostedLoginDomain=$(aws cloudformation list-exports --query "Exports[?Name=='${stack_name}:Cognito:HostedLoginDomain'].Value" --output text)
 
-${AWS::StackName}:Cognito:HostedLoginDomain
+echo "PrimaryUserPoolId: ${PrimaryUserPoolId}"
+echo "PrimaryUserPoolClientId: ${PrimaryUserPoolClientId}"
+echo "HostedLoginDomain: ${HostedLoginDomain}"

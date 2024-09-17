@@ -16,19 +16,19 @@ Globals:
 Parameters:
   StackName:
     Type: String
-  Auth0ClientID:
+  PrimaryOIDCClientID:
     Type: String
-  Auth0ClientSecret:
+  PrimaryOIDClientSecret:
     Type: String
-  Auth0Issuer:
+  PrimaryOIDCIssuer:
     Type: String
-  Auth0AuthorizeEndpoint:
+  PrimaryOIDCAuthorizeEndpoint:
     Type: String
-  Auth0TokenEndpoint:
+  PrimaryOIDCTokenEndpoint:
     Type: String
-  Auth0UserInfoEndpoint:
+  PrimaryOIDCUserInfoEndpoint:
     Type: String
-  Auth0JWKSEndpoint:
+  PrimaryOIDCJWKSEndpoint:
     Type: String
   TokenMappingTableName:
     Type: String
@@ -52,18 +52,18 @@ Resources:
     Type: AWS::Cognito::UserPoolIdentityProvider
     Properties:
       UserPoolId: !Ref UserPool
-      ProviderName: "Auth0" # This is the name of the provider we will use in our app to sign in
+      ProviderName: "Primary" # This is the name of the provider we will use in our app to sign in
       ProviderType: "OIDC"
       ProviderDetails:
-        oidc_issuer: !Ref Auth0Issuer
+        oidc_issuer: !Ref PrimaryOIDCIssuer
         authorize_scopes: "openid profile email"
         attributes_request_method: "GET"
-        client_id: !Ref Auth0ClientID
-        client_secret: !Ref Auth0ClientSecret
-        attributes_url: !Ref Auth0UserInfoEndpoint
+        client_id: !Ref PrimaryOIDCClientID
+        client_secret: !Ref PrimaryOIDClientSecret
+        attributes_url: !Ref PrimaryOIDCUserInfoEndpoint
         authorize_url: !Sub https://${RestApiGateway}.execute-api.${AWS::Region}.amazonaws.com/prod/auth
         token_url: !Sub https://${RestApiGateway}.execute-api.${AWS::Region}.amazonaws.com/prod/token
-        jwks_uri: !Ref Auth0JWKSEndpoint
+        jwks_uri: !Ref PrimaryOIDCJWKSEndpoint
       AttributeMapping:
         username: "sub"
         email: "email"
@@ -91,7 +91,7 @@ Resources:
         - http://localhost:3000/
       SupportedIdentityProviders:
         - COGNITO
-        - Auth0
+        - !Ref UserPoolIdentityProvider
       UserPoolId: !Ref UserPool
 
   Auth:
@@ -104,7 +104,7 @@ Resources:
       Environment:
         Variables:
           proxy_callback_uri: !Sub https://${RestApiGateway}.execute-api.${AWS::Region}.amazonaws.com/prod/callback
-          idp_auth_uri: !Ref Auth0AuthorizeEndpoint
+          idp_auth_uri: !Ref PrimaryOIDCAuthorizeEndpoint
     Metadata:
       BuildMethod: esbuild
       guard:
@@ -186,11 +186,11 @@ Resources:
       Role: !GetAtt TokenResources.Outputs.LambdaRoleArn
       Environment:
         Variables:
-          idp_token_path: !Ref Auth0TokenEndpoint
+          idp_token_path: !Ref PrimaryOIDCTokenEndpoint
           ResponseUri: !Sub https://${RestApiGateway}.execute-api.${AWS::Region}.amazonaws.com/prod/callback
           TokenMappingTableName: !Ref TokenMappingTableName
           UserPoolIdentityProvider: !Ref UserPoolIdentityProvider
-          jwks_uri: !Ref Auth0JWKSEndpoint
+          jwks_uri: !Ref PrimaryOIDCJWKSEndpoint
     Metadata:
       BuildMethod: esbuild
       guard:
