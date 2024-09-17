@@ -61,8 +61,12 @@ Resources:
         client_id: !Ref PrimaryOIDCClientID
         client_secret: !Ref PrimaryOIDClientSecret
         attributes_url: !Ref PrimaryOIDCUserInfoEndpoint
-        authorize_url: !Sub https://${RestApiGateway}.execute-api.${AWS::Region}.amazonaws.com/prod/auth
-        token_url: !Sub https://${RestApiGateway}.execute-api.${AWS::Region}.amazonaws.com/prod/token
+        authorize_url: !Sub
+          - https://auth.${StackName}.${domain}/auth
+          - domain: !ImportValue eps-route53-resources:EPS-domain
+        token_url: !Sub
+          - https://auth.${StackName}.${domain}/token
+          - domain: !ImportValue eps-route53-resources:EPS-domain
         jwks_uri: !Ref PrimaryOIDCJWKSEndpoint
       AttributeMapping:
         username: "sub"
@@ -103,7 +107,9 @@ Resources:
       Role: !GetAtt AuthResources.Outputs.LambdaRoleArn
       Environment:
         Variables:
-          proxy_callback_uri: !Sub https://${RestApiGateway}.execute-api.${AWS::Region}.amazonaws.com/prod/callback
+          proxy_callback_uri: !Sub
+            - https://auth.${StackName}.${domain}/callback
+            - domain: !ImportValue eps-route53-resources:EPS-domain
           idp_auth_uri: !Ref PrimaryOIDCAuthorizeEndpoint
     Metadata:
       BuildMethod: esbuild
@@ -187,7 +193,9 @@ Resources:
       Environment:
         Variables:
           idp_token_path: !Ref PrimaryOIDCTokenEndpoint
-          ResponseUri: !Sub https://${RestApiGateway}.execute-api.${AWS::Region}.amazonaws.com/prod/callback
+          ResponseUri: !Sub
+            - https://auth.${StackName}.${domain}/callback
+            - domain: !ImportValue eps-route53-resources:EPS-domain
           TokenMappingTableName: !Ref TokenMappingTableName
           UserPoolIdentityProvider: !Ref UserPoolIdentityProvider
           jwks_uri: !Ref PrimaryOIDCJWKSEndpoint
@@ -234,6 +242,41 @@ Resources:
       EndpointConfiguration:
         Types:
           - REGIONAL
+
+  RestApiDomain:
+    Type: AWS::ApiGateway::DomainName
+    Properties:
+      DomainName: !Join
+        - .
+        - - "auth"
+          - !Ref StackName
+          - !ImportValue eps-route53-resources:EPS-domain
+      RegionalCertificateArn: !Ref GenerateCertificate
+      EndpointConfiguration:
+        Types:
+          - REGIONAL
+      SecurityPolicy: TLS_1_2
+
+  RestApiRecordSet:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      Name: !Join
+        - .
+        - - "auth"
+          - !Ref StackName
+          - !ImportValue eps-route53-resources:EPS-domain
+      Type: A
+      HostedZoneId: !ImportValue eps-route53-resources:EPS-ZoneID
+      AliasTarget:
+        DNSName: !GetAtt RestApiDomain.RegionalDomainName
+        HostedZoneId: !GetAtt RestApiDomain.RegionalHostedZoneId
+
+  RestApiDomainMapping:
+    Type: AWS::ApiGateway::BasePathMapping
+    Properties:
+      DomainName: !Ref RestApiDomain
+      RestApiId: !Ref RestApiGateway
+      Stage: !Ref RestApiGatewayStage
 
   RestApiGatewayResources:
     Type: AWS::Serverless::Application
@@ -333,6 +376,23 @@ Resources:
       AccessLogSetting:
         DestinationArn: !GetAtt RestApiGatewayResources.Outputs.ApiGwAccessLogsArn
         Format: '{ "requestTime": "$context.requestTime", "apiId": "$context.apiId", "accountId": "$context.accountId", "resourcePath": "$context.resourcePath", "stage": "$context.stage", "requestId": "$context.requestId", "extendedRequestId": "$context.extendedRequestId", "status": "$context.status", "httpMethod": "$context.httpMethod", "protocol": "$context.protocol", "path": "$context.path", "responseLatency": "$context.responseLatency", "responseLength": "$context.responseLength", "domainName": "$context.domainName", "identity": { "sourceIp": "$context.identity.sourceIp", "userAgent": "$context.identity.userAgent", "clientCert":{ "subjectDN": "$context.identity.clientCert.subjectDN", "issuerDN": "$context.identity.clientCert.issuerDN", "serialNumber": "$context.identity.clientCert.serialNumber", "validityNotBefore": "$context.identity.clientCert.validity.notBefore", "validityNotAfter": "$context.identity.clientCert.validity.notAfter" }}, "integration":{ "error": "$context.integration.error", "integrationStatus": "$context.integration.integrationStatus", "latency": "$context.integration.latency", "requestId": "$context.integration.requestId", "status": "$context.integration.status" }}'
+
+  GenerateCertificate:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      ValidationMethod: DNS
+      DomainName: !Join
+        - .
+        - - "auth"
+          - !Ref StackName
+          - !ImportValue eps-route53-resources:EPS-domain
+      DomainValidationOptions:
+        - DomainName: !Join
+            - .
+            - - "auth"
+              - !Ref StackName
+              - !ImportValue eps-route53-resources:EPS-domain
+          HostedZoneId: !ImportValue eps-route53-resources:EPS-ZoneID
 
 Outputs:
   UserPoolId:
