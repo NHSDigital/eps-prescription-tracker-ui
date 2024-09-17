@@ -44,7 +44,9 @@ Resources:
       AdminCreateUserConfig:
         AllowAdminCreateUserOnly: true
 
-  UserPoolRecordSet:
+  # This is needed for custom user pool domain
+  # It is just a dummy record that points to 127.0.0.1
+  UserPoolARecordSet:
     Type: AWS::Route53::RecordSet
     Properties:
       Name: !Join
@@ -57,12 +59,12 @@ Resources:
         - 127.0.0.1
       TTL: 900
 
+  # The certificate must be in us-east-1 so it is created in a different stack
   UserPoolDomain:
     Type: AWS::Cognito::UserPoolDomain
-    DependsOn: UserPoolRecordSet
+    DependsOn: UserPoolARecordSet
     Properties:
       UserPoolId: !Ref UserPool
-      #      Domain: !Ref StackName
       CustomDomainConfig:
         CertificateArn: !Ref UserPoolTLSCertificateArn
       Domain: !Join
@@ -71,6 +73,7 @@ Resources:
           - !Ref StackName
           - !ImportValue eps-route53-resources:EPS-domain
 
+  # This is an A record for cloudfront that maps id.<stack name>.<domain name> to our custom domain
   UserPoolDomainRecordSet:
     Type: AWS::Route53::RecordSet
     Properties:
