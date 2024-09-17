@@ -33,7 +33,7 @@ Resources:
         Auth0TokenEndpoint: !Ref Auth0TokenEndpoint
         Auth0UserInfoEndpoint: !Ref Auth0UserInfoEndpoint
         Auth0JWKSEndpoint: !Ref Auth0JWKSEndpoint
-        CIS2TokensTableName: !GetAtt Tables.Outputs.CIS2TokensTableName
+        TokenMappingTableName: !GetAtt Tables.Outputs.TokenMappingTableName
 
   Functions:
     Type: AWS::Serverless::Application
@@ -43,7 +43,7 @@ Resources:
         StackName: !Ref AWS::StackName
         VersionNumber: "foo"
         CommitId: "bar"
-        CIS2TokensTableName: !GetAtt Tables.Outputs.CIS2TokensTableName
+        TokenMappingTableName: !GetAtt Tables.Outputs.TokenMappingTableName
 
   Apis:
     Type: AWS::Serverless::Application
@@ -61,3 +61,20 @@ Resources:
       Location: tables/main.yaml
       Parameters:
         StackName: !Ref AWS::StackName
+
+Outputs:
+  PrimaryUserPoolId:
+    Description: ID of the created primary Cognito User Pool
+    Value: !GetAtt Cognito.Outputs.UserPoolId
+    Export:
+      Name: !Sub ${AWS::StackName}:Cognito:PrimaryUserPoolId
+  PrimaryUserPoolClientId:
+    Description: ID of the created primary Cognito User Pool client
+    Value: !GetAtt Cognito.Outputs.UserPoolClientId
+    Export:
+      Name: !Sub ${AWS::StackName}:Cognito:PrimaryUserPoolClientId
+  HostedLoginDomain:
+    Description: ID of the created primary Cognito User Pool client
+    Value: !GetAtt Cognito.Outputs.HostedLoginDomain
+    Export:
+      Name: !Sub ${AWS::StackName}:Cognito:HostedLoginDomain

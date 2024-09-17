@@ -30,7 +30,7 @@ Parameters:
     Type: String
   Auth0JWKSEndpoint:
     Type: String
-  CIS2TokensTableName:
+  TokenMappingTableName:
     Type: String
 
 Resources:
@@ -188,7 +188,9 @@ Resources:
         Variables:
           idp_token_path: !Ref Auth0TokenEndpoint
           ResponseUri: !Sub https://${RestApiGateway}.execute-api.${AWS::Region}.amazonaws.com/prod/callback
-          CIS2TokensTableName: !Ref CIS2TokensTableName
+          TokenMappingTableName: !Ref TokenMappingTableName
+          UserPoolIdentityProvider: !Ref UserPoolIdentityProvider
+          jwks_uri: !Ref Auth0JWKSEndpoint
     Metadata:
       BuildMethod: esbuild
       guard:
@@ -216,9 +218,9 @@ Resources:
         IncludeAdditionalPolicies: true
         AdditionalPolicies: !Join
           - ","
-          - - Fn::ImportValue: !Sub ${StackName}:tables:${CIS2TokensTableName}:TableWritePolicyArn
-            - Fn::ImportValue: !Sub ${StackName}:tables:${CIS2TokensTableName}:TableReadPolicyArn
-            - Fn::ImportValue: !Sub ${StackName}:tables:UseCIS2TokensKMSKeyPolicyArn
+          - - Fn::ImportValue: !Sub ${StackName}:tables:${TokenMappingTableName}:TableWritePolicyArn
+            - Fn::ImportValue: !Sub ${StackName}:tables:${TokenMappingTableName}:TableReadPolicyArn
+            - Fn::ImportValue: !Sub ${StackName}:tables:UseTokensMappingKMSKeyPolicyArn
         LogRetentionInDays: 30
         CloudWatchKMSKeyId: !ImportValue account-resources:CloudwatchLogsKmsKeyArn
         EnableSplunk: False
@@ -342,3 +344,6 @@ Outputs:
   UserPoolClientId:
     Description: ID of the created Cognito User Pool client
     Value: !Ref ClientUserPool
+  HostedLoginDomain:
+    Description: Hosted login domain
+    Value: !Ref UserPoolDomain

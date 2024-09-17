@@ -9,7 +9,7 @@ Parameters:
     Default: none
 
 Resources:
-  CIS2TokensKMSKey:
+  TokensMappingKMSKey:
     Type: AWS::KMS::Key
     Properties:
       EnableKeyRotation: true
@@ -36,13 +36,13 @@ Resources:
               ArnLike:
                 aws:PrincipalArn: !Sub "arn:aws:iam::${AWS::AccountId}:role/aws-reserved/sso.amazonaws.com/${AWS::Region}/AWSReservedSSO_ReadOnly*"
 
-  CIS2TokensKMSKeyAlias:
+  TokensMappingKMSKeyAlias:
     Type: AWS::KMS::Alias
     Properties:
-      AliasName: !Sub alias/${StackName}-CIS2TokensKMSKeyAlias
-      TargetKeyId: !Ref CIS2TokensKMSKey
+      AliasName: !Sub alias/${StackName}-TokensMappingKMSKeyAlias
+      TargetKeyId: !Ref TokensMappingKMSKey
 
-  UseCIS2TokensKMSKeyPolicy:
+  UseTokensMappingKMSKeyPolicy:
     Type: AWS::IAM::ManagedPolicy
     Properties:
       PolicyDocument:
@@ -55,12 +55,12 @@ Resources:
               - kms:Encrypt
               - kms:ReEncrypt*
               - kms:Decrypt
-            Resource: !GetAtt CIS2TokensKMSKey.Arn
+            Resource: !GetAtt TokensMappingKMSKey.Arn
 
-  CIS2TokensTable:
+  TokenMappingTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: !Sub ${StackName}-CIS2Tokens
+      TableName: !Sub ${StackName}-TokenMapping
       PointInTimeRecoverySpecification:
         PointInTimeRecoveryEnabled: true
       AttributeDefinitions:
@@ -71,33 +71,33 @@ Resources:
           KeyType: HASH
       BillingMode: PAY_PER_REQUEST
       SSESpecification:
-        KMSMasterKeyId: !Ref CIS2TokensKMSKey
+        KMSMasterKeyId: !Ref TokensMappingKMSKey
         SSEEnabled: true
         SSEType: KMS
       TimeToLiveSpecification:
         AttributeName: ExpiryTime
         Enabled: true
 
-  CIS2TokensResources:
+  TokenMappingResources:
     Type: AWS::Serverless::Application
     Properties:
       Location: dynamodb_resources.yaml
       Parameters:
         StackName: !Ref StackName
-        TableName: !Ref CIS2TokensTable
-        TableArn: !GetAtt CIS2TokensTable.Arn
+        TableName: !Ref TokenMappingTable
+        TableArn: !GetAtt TokenMappingTable.Arn
 
 Outputs:
-  CIS2TokensTableName:
-    Description: CIS2 Tokens table name
-    Value: !Ref CIS2TokensTable
+  TokenMappingTableName:
+    Description: TokenMapping table name
+    Value: !Ref TokenMappingTable
 
-  CIS2TokensTableArn:
-    Description: CIS2 tokens table arn
-    Value: !GetAtt CIS2TokensTable.Arn
+  TokenMappingTableArn:
+    Description: TokenMapping table arn
+    Value: !GetAtt TokenMappingTable.Arn
 
-  UseCIS2TokensKMSKeyPolicyArn:
+  UseTokensMappingKMSKeyPolicyArn:
     Description: Use kms key policy arn
-    Value: !GetAtt UseCIS2TokensKMSKeyPolicy.PolicyArn
+    Value: !GetAtt UseTokensMappingKMSKeyPolicy.PolicyArn
     Export:
-      Name: !Sub ${StackName}:tables:UseCIS2TokensKMSKeyPolicyArn
+      Name: !Sub ${StackName}:tables:UseTokensMappingKMSKeyPolicyArn

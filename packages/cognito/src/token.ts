@@ -6,8 +6,26 @@ import inputOutputLogger from "@middy/input-output-logger"
 import errorHandler from "@nhs/fhir-middy-error-handler"
 import axios, {AxiosResponseHeaders, RawAxiosResponseHeaders} from "axios"
 import {parse, stringify} from "querystring"
+import jwksClient from "jwks-rsa"
+import {
+  verify,
+  JwtHeader,
+  SigningKeyCallback,
+  JwtPayload
+} from "jsonwebtoken"
+import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
+import {DynamoDBDocumentClient, PutCommand} from "@aws-sdk/lib-dynamodb"
 
 const logger = new Logger({serviceName: "status"})
+const UserPoolIdentityProvider = process.env["UserPoolIdentityProvider"] as string
+const TokenMappingTableName = process.env["TokenMappingTableName"] as string
+
+const client = jwksClient({
+  jwksUri: process.env["jwks_uri"] as string
+})
+
+const dynamoClient = new DynamoDBClient()
+const documentClient = DynamoDBDocumentClient.from(dynamoClient)
 
 /* eslint-disable  max-len */
 
@@ -16,6 +34,24 @@ const logger = new Logger({serviceName: "status"})
  * adapted from https://github.com/aws-samples/cognito-external-idp-proxy/blob/main/lambda/token/token_flow.py
  *
  */
+
+function getKey(header: JwtHeader, callback: SigningKeyCallback) {
+  client.getSigningKey(header.kid, function(err, key) {
+    const signingKey = key?.getPublicKey()
+    callback(err, signingKey)
+  })
+}
+
+function verifyWrapper(jwt: string): Promise<JwtPayload> {
+  return new Promise((resolve, reject) => {
+    verify(jwt, getKey, function(err, decoded) {
+      if (err) {
+        reject(err)
+      }
+      resolve(decoded as JwtPayload)
+    })
+  })
+}
 
 const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   logger.appendKeys({
@@ -43,6 +79,28 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
   // TODO we should store the response so we can use the tokens returned by CIS2 in an apigee token exchange
   logger.info("response from external oidc", {data: response.data})
+
+  const accessToken = response.data.access_token
+  const idToken = response.data.id_token
+  const expiresIn = response.data.expires_in
+
+  // verify and decode idToken
+  const decodedIdToken = await verifyWrapper(idToken)
+  logger.info("decoded idToken", {decodedIdToken})
+
+  const username = `${UserPoolIdentityProvider}_${decodedIdToken.sub}`
+  const params = {
+    Item: {
+      "Username": username,
+      "accessToken": accessToken,
+      "idToken": idToken,
+      "expiresIn": expiresIn
+    },
+    TableName: TokenMappingTableName
+  }
+
+  logger.info("going to insert into dynamodb", {params})
+  await documentClient.send(new PutCommand(params))
 
   // return status code and body from request to downstream idp
   return {
