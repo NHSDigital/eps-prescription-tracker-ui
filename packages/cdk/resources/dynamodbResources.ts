@@ -5,15 +5,15 @@ export interface DynamodbResourcesProps {
   /**
    * @default 'none'
    */
-  readonly stackName?: string;
+  readonly stackName: string;
   /**
    * @default 'none'
    */
-  readonly tableName?: string;
+  readonly tableName: string;
   /**
    * @default 'none'
    */
-  readonly tableArn?: string;
+  readonly tableArn: string;
 }
 
 /**
@@ -38,15 +38,15 @@ export class DynamodbResources extends Construct {
    */
   public readonly tableWritePolicyId
 
-  public constructor(scope: Construct, id: string, props: DynamodbResourcesProps = {}) {
+  public constructor(scope: Construct, id: string, props: DynamodbResourcesProps) {
     super(scope, id)
 
     // Applying default props
     props = {
       ...props,
-      stackName: props.stackName ?? "none",
-      tableName: props.tableName ?? "none",
-      tableArn: props.tableArn ?? "none"
+      stackName: props.stackName,
+      tableName: props.tableName,
+      tableArn: props.tableArn
     }
 
     // Resources

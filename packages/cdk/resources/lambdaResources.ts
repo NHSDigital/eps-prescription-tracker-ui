@@ -10,11 +10,11 @@ export interface LambdaResourcesProps {
   /**
    * @default 'none'
    */
-  readonly lambdaName?: string;
+  readonly lambdaName: string;
   /**
    * @default 'none'
    */
-  readonly lambdaArn?: string;
+  readonly lambdaArn: string;
   /**
    * @default 'false'
    */
@@ -51,8 +51,8 @@ export class LambdaResources extends Construct {
     // Applying default props
     props = {
       ...props,
-      lambdaName: props.lambdaName ?? "none",
-      lambdaArn: props.lambdaArn ?? "none",
+      lambdaName: props.lambdaName,
+      lambdaArn: props.lambdaArn,
       additionalPolicies: props.additionalPolicies ?? []
     }
 

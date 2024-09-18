@@ -9,7 +9,7 @@ export interface DynamodbProps {
   /**
    * @default 'none'
    */
-  readonly stackName?: string;
+  readonly stackName: string;
   readonly account: string;
   readonly region: string;
 }
@@ -42,7 +42,7 @@ export class Dynamodb extends Construct {
     // Applying default props
     props = {
       ...props,
-      stackName: props.stackName ?? "none",
+      stackName: props.stackName,
       account: props.account,
       region: props.region
     }

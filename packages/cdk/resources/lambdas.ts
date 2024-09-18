@@ -1,19 +1,16 @@
 import * as cdk from "aws-cdk-lib"
 import * as nodeLambda from "aws-cdk-lib/aws-lambda-nodejs"
-import * as lambda from "aws-cdk-lib/aws-lambda"
 import * as iam from "aws-cdk-lib/aws-iam"
 
 import {LambdaResources} from "./lambdaResources"
 import {Construct} from "constructs"
-import * as path from "path"
-
-const baseDir = path.resolve(__dirname, "../../..")
+import {getDefaultLambdaOptions, getLambdaArn} from "./helpers"
 
 export interface FunctionsStackProps {
   /**
    * @default 'none'
    */
-  readonly stackName?: string;
+  readonly stackName: string;
   /**
    */
   readonly versionNumber: string;
@@ -51,7 +48,7 @@ export class Functions extends Construct {
     // Applying default props
     props = {
       ...props,
-      stackName: props.stackName ?? "none",
+      stackName: props.stackName,
       region: props.region,
       account: props.account
     }
@@ -60,7 +57,7 @@ export class Functions extends Construct {
     const statusResources = new LambdaResources(this, "StatusResources", {
       stackName: props.stackName!,
       lambdaName: `${props.stackName!}-status`,
-      lambdaArn: `arn:aws:lambda:${props.region}:${props.account}:function:${props.stackName!}-status`,
+      lambdaArn: getLambdaArn(props.region, props.account, `${props.stackName}-status`),
       additionalPolicies: [
         cdk.Fn.importValue("account-resources:LambdaAccessSecretsPolicy"),
         props.tokenMappingTableReadPolicyArn,
@@ -70,20 +67,14 @@ export class Functions extends Construct {
       logRetentionInDays: 30
     })
 
-    const status = new nodeLambda.NodejsFunction(this, "statusLambda", {
+    const statusOptions = getDefaultLambdaOptions({
       functionName: `${props.stackName!}-status`,
-      runtime: lambda.Runtime.NODEJS_20_X,
-      entry: path.join(baseDir, "packages/statusLambda/src/statusLambda.ts"),
+      packageBasePath: "packages/statusLambda",
+      entryPoint: "src/statusLambda.ts"
+    })
+    const status = new nodeLambda.NodejsFunction(this, "statusLambda", {
+      ...statusOptions,
       role: iam.Role.fromRoleArn(this, "statusResourcesRole", statusResources.lambdaRoleArn),
-      projectRoot: baseDir,
-      memorySize: 1024,
-      handler: "handler",
-      bundling: {
-        minify: true,
-        sourceMap: true,
-        tsconfig: path.join(baseDir, "packages/statusLambda/tsconfig.json"),
-        target: "es2020"
-      },
       environment: {
         "VERSION_NUMBER": props.versionNumber!,
         "COMMIT_ID": props.commitId!,

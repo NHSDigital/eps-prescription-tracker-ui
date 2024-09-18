@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import * as cdk from "aws-cdk-lib"
 
-import {Apis} from "./apis"
-import {Cognito} from "./cognito"
-import {Dynamodb} from "./dynamodb"
-import {Functions} from "./functions"
+import {Apis} from "../resources/apis"
+import {Cognito} from "../resources/cognito"
+import {Dynamodb} from "../resources/dynamodb"
+import {Functions} from "../resources/lambdas"
 
 /**
  * Clinical Prescription Tracker UI

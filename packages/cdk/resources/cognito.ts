@@ -5,13 +5,18 @@ import * as certificatemanager from "aws-cdk-lib/aws-certificatemanager"
 import * as cognito from "aws-cdk-lib/aws-cognito"
 import * as route53 from "aws-cdk-lib/aws-route53"
 import * as nodeLambda from "aws-cdk-lib/aws-lambda-nodejs"
-import * as lambda from "aws-cdk-lib/aws-lambda"
 import * as iam from "aws-cdk-lib/aws-iam"
 
 import {ApiResources} from "./apiResources"
 import {LambdaResources} from "./lambdaResources"
 import {Construct} from "constructs"
 import * as path from "path"
+import {
+  apiGwLogFormat,
+  getDefaultLambdaOptions,
+  getLambdaArn,
+  getLambdaInvokeURL
+} from "./helpers"
 
 const baseDir = path.resolve(__dirname, "../../..")
 export interface CognitoProps {
@@ -78,15 +83,18 @@ export class Cognito extends Construct {
 
     // Transforms
 
-    const environmentDomain = cdk.Fn.importValue("eps-route53-resources:EPS-domain")
-    const baseApiGwUrl = `https://auth.${props.stackName}.${environmentDomain}`
+    const environmentDomain = `${props.stackName}.${cdk.Fn.importValue("eps-route53-resources:EPS-domain")}`
+    const idDomain = `id.${environmentDomain}`
+    const authDomain = `auth.${environmentDomain}`
+    const baseApiGwUrl = `https://${authDomain}`
+    const baseIdGwUrl = `https://${idDomain}`
 
     // Resources
     const authResources = new LambdaResources(this, "AuthResources",
       {
         stackName: props.stackName!,
         lambdaName: `${props.stackName!}-auth`,
-        lambdaArn: `arn:aws:lambda:${props.region}:${props.account}:function:${props.stackName!}-auth`,
+        lambdaArn: getLambdaArn(props.region, props.account, `${props.stackName}-auth`),
         logRetentionInDays: 30
       }
     )
@@ -94,24 +102,16 @@ export class Cognito extends Construct {
     const callbackResources = new LambdaResources(this, "CallbackResources", {
       stackName: props.stackName!,
       lambdaName: `${props.stackName!}-callback`,
-      lambdaArn: `arn:aws:lambda:${props.region}:${props.account}:function:${props.stackName!}-callback`,
+      lambdaArn: getLambdaArn(props.region, props.account, `${props.stackName}-callback`),
       logRetentionInDays: 30
     })
 
     const generateCertificate = new certificatemanager.CfnCertificate(this, "GenerateCertificate", {
       validationMethod: "DNS",
-      domainName: [
-        "auth",
-        props.stackName!,
-        cdk.Fn.importValue("eps-route53-resources:EPS-domain")
-      ].join("."),
+      domainName: authDomain,
       domainValidationOptions: [
         {
-          domainName: [
-            "auth",
-            props.stackName!,
-            cdk.Fn.importValue("eps-route53-resources:EPS-domain")
-          ].join("."),
+          domainName: authDomain,
           hostedZoneId: cdk.Fn.importValue("eps-route53-resources:EPS-ZoneID")
         }
       ]
@@ -129,7 +129,7 @@ export class Cognito extends Construct {
     const tokenResources = new LambdaResources(this, "TokenResources", {
       stackName: props.stackName!,
       lambdaName: `${props.stackName!}-token`,
-      lambdaArn: `arn:aws:lambda:${props.region}:${props.account}:function:${props.stackName!}-token`,
+      lambdaArn: getLambdaArn(props.region, props.account, `${props.stackName}-token`),
       additionalPolicies: [
         props.tokenMappingTableWritePolicyArn,
         props.tokenMappingTableReadPolicyArn,
@@ -148,10 +148,7 @@ export class Cognito extends Construct {
     })
 
     const userPoolARecordSet = new route53.CfnRecordSet(this, "UserPoolARecordSet", {
-      name: [
-        props.stackName!,
-        cdk.Fn.importValue("eps-route53-resources:EPS-domain")
-      ].join("."),
+      name: environmentDomain,
       type: "A",
       hostedZoneId: cdk.Fn.importValue("eps-route53-resources:EPS-ZoneID"),
       resourceRecords: [
@@ -160,20 +157,15 @@ export class Cognito extends Construct {
       ttl: "900"
     })
 
-    const auth = new nodeLambda.NodejsFunction(this, "authLambda", {
+    const authOptions = getDefaultLambdaOptions({
       functionName: `${props.stackName!}-auth`,
-      runtime: lambda.Runtime.NODEJS_20_X,
-      entry: path.join(baseDir, "packages/cognito/src/auth.ts"),
+      packageBasePath: "packages/cognito",
+      entryPoint: "src/auth.ts"
+    })
+
+    const auth = new nodeLambda.NodejsFunction(this, "authLambda", {
+      ...authOptions,
       role: iam.Role.fromRoleArn(this, "authResourcesRole", authResources.lambdaRoleArn),
-      projectRoot: baseDir,
-      memorySize: 1024,
-      handler: "handler",
-      bundling: {
-        minify: true,
-        sourceMap: true,
-        tsconfig: path.join(baseDir, "packages/cognito/tsconfig.json"),
-        target: "es2020"
-      },
       environment: {
         "idp_auth_uri": props.primaryOidcAuthorizeEndpoint!,
         "proxy_callback_uri": `${baseApiGwUrl}/callback`
@@ -186,23 +178,18 @@ export class Cognito extends Construct {
       pathPart: "auth"
     })
 
-    const callback = new nodeLambda.NodejsFunction(this, "callbackLambda", {
+    const callbackOptions = getDefaultLambdaOptions({
       functionName: `${props.stackName!}-callback`,
-      runtime: lambda.Runtime.NODEJS_20_X,
-      entry: path.join(baseDir, "packages/cognito/src/callback.ts"),
+      packageBasePath: "packages/cognito",
+      entryPoint: "src/callback.ts"
+    })
+
+    const callback = new nodeLambda.NodejsFunction(this, "callbackLambda", {
+      ...callbackOptions,
       role: iam.Role.fromRoleArn(this, "callbackResourcesRole", callbackResources.lambdaRoleArn),
-      projectRoot: baseDir,
-      memorySize: 1024,
-      handler: "handler",
-      bundling: {
-        minify: true,
-        sourceMap: true,
-        tsconfig: path.join(baseDir, "packages/cognito/tsconfig.json"),
-        target: "es2020"
-      },
       environment: {
         "idp_auth_uri": props.primaryOidcAuthorizeEndpoint!,
-        "cognito_idp_response_uri": `https://id.${props.stackName}.${environmentDomain}/oauth2/idpresponse`
+        "cognito_idp_response_uri": `${baseIdGwUrl}/oauth2/idpresponse`
       }
     })
 
@@ -213,11 +200,7 @@ export class Cognito extends Construct {
     })
 
     const restApiDomain = new apigateway.CfnDomainName(this, "RestApiDomain", {
-      domainName: [
-        "auth",
-        props.stackName!,
-        cdk.Fn.importValue("eps-route53-resources:EPS-domain")
-      ].join("."),
+      domainName: authDomain,
       regionalCertificateArn: generateCertificate.ref,
       endpointConfiguration: {
         types: [
@@ -248,17 +231,9 @@ export class Cognito extends Construct {
       customDomainConfig: {
         certificateArn: props.userPoolTlsCertificateArn
       },
-      domain: [
-        "id",
-         props.stackName!,
-         cdk.Fn.importValue("eps-route53-resources:EPS-domain")
-      ].join(".")
+      domain: idDomain
     })
 
-    // const userPoolDomain = new cognito.CfnUserPoolDomain(this, "UserPoolDomain", {
-    //   userPoolId: userPool.ref,
-    //   domain: "id"
-    // })
     userPoolDomain.addDependency(userPoolARecordSet)
 
     const userPoolIdentityProvider = new cognito.CfnUserPoolIdentityProvider(this, "UserPoolIdentityProvider", {
@@ -295,7 +270,7 @@ export class Cognito extends Construct {
         type: "AWS_PROXY",
         credentials: restApiGatewayResources.apiGwRoleArn,
         integrationHttpMethod: "POST",
-        uri: `arn:aws:apigateway:${props.region}:lambda:path/2015-03-31/functions/${auth.functionArn}/invocations`
+        uri: getLambdaInvokeURL(props.region, auth.functionArn)
       }
     })
 
@@ -308,7 +283,7 @@ export class Cognito extends Construct {
         type: "AWS_PROXY",
         credentials: restApiGatewayResources.apiGwRoleArn,
         integrationHttpMethod: "POST",
-        uri: `arn:aws:apigateway:${props.region}:lambda:path/2015-03-31/functions/${callback.functionArn}/invocations`
+        uri: getLambdaInvokeURL(props.region, callback.functionArn)
       }
     })
 
@@ -339,11 +314,7 @@ export class Cognito extends Construct {
     clientUserPool.addDependency(userPoolIdentityProvider)
 
     const restApiRecordSet = new route53.CfnRecordSet(this, "RestApiRecordSet", {
-      name: [
-        "auth",
-        props.stackName!,
-        cdk.Fn.importValue("eps-route53-resources:EPS-domain")
-      ].join("."),
+      name: authDomain,
       type: "A",
       hostedZoneId: cdk.Fn.importValue("eps-route53-resources:EPS-ZoneID"),
       aliasTarget: {
@@ -352,20 +323,15 @@ export class Cognito extends Construct {
       }
     })
 
-    const token = new nodeLambda.NodejsFunction(this, "tokenLambda", {
+    const tokenOptions = getDefaultLambdaOptions({
       functionName: `${props.stackName!}-token`,
-      runtime: lambda.Runtime.NODEJS_20_X,
-      entry: path.join(baseDir, "packages/cognito/src/token.ts"),
+      packageBasePath: "packages/cognito",
+      entryPoint: "src/token.ts"
+    })
+
+    const token = new nodeLambda.NodejsFunction(this, "tokenLambda", {
+      ...tokenOptions,
       role: iam.Role.fromRoleArn(this, "tokenResourcesRole", tokenResources.lambdaRoleArn),
-      projectRoot: baseDir,
-      memorySize: 1024,
-      handler: "handler",
-      bundling: {
-        minify: true,
-        sourceMap: true,
-        tsconfig: path.join(baseDir, "packages/cognito/tsconfig.json"),
-        target: "es2020"
-      },
       environment: {
         "idp_token_path": props.primaryOidcTokenEndpoint!,
         TokenMappingTableName: props.tokenMappingTableName!,
@@ -376,11 +342,7 @@ export class Cognito extends Construct {
     })
 
     const userPoolDomainRecordSet = new route53.CfnRecordSet(this, "UserPoolDomainRecordSet", {
-      name: [
-        "id",
-        props.stackName!,
-        cdk.Fn.importValue("eps-route53-resources:EPS-domain")
-      ].join("."),
+      name: idDomain,
       type: "A",
       hostedZoneId: cdk.Fn.importValue("eps-route53-resources:EPS-ZoneID"),
       aliasTarget: {
@@ -399,7 +361,7 @@ export class Cognito extends Construct {
         type: "AWS_PROXY",
         credentials: restApiGatewayResources.apiGwRoleArn,
         integrationHttpMethod: "POST",
-        uri: `arn:aws:apigateway:${props.region}:lambda:path/2015-03-31/functions/${token.functionArn}/invocations`
+        uri: getLambdaInvokeURL(props.region, token.functionArn)
       }
     })
 
@@ -417,8 +379,7 @@ export class Cognito extends Construct {
       tracingEnabled: true,
       accessLogSetting: {
         destinationArn: restApiGatewayResources.apiGwAccessLogsArn,
-        // eslint-disable-next-line max-len, no-useless-escape
-        format: '{ \"requestTime\": \"$context.requestTime\", \"apiId\": \"$context.apiId\", \"accountId\": \"$context.accountId\", \"resourcePath\": \"$context.resourcePath\", \"stage\": \"$context.stage\", \"requestId\": \"$context.requestId\", \"extendedRequestId\": \"$context.extendedRequestId\", \"status\": \"$context.status\", \"httpMethod\": \"$context.httpMethod\", \"protocol\": \"$context.protocol\", \"path\": \"$context.path\", \"responseLatency\": \"$context.responseLatency\", \"responseLength\": \"$context.responseLength\", \"domainName\": \"$context.domainName\", \"identity\": { \"sourceIp\": \"$context.identity.sourceIp\", \"userAgent\": \"$context.identity.userAgent\", \"clientCert\":{ \"subjectDN\": \"$context.identity.clientCert.subjectDN\", \"issuerDN\": \"$context.identity.clientCert.issuerDN\", \"serialNumber\": \"$context.identity.clientCert.serialNumber\", \"validityNotBefore\": \"$context.identity.clientCert.validity.notBefore\", \"validityNotAfter\": \"$context.identity.clientCert.validity.notAfter\" }}, \"integration\":{ \"error\": \"$context.integration.error\", \"integrationStatus\": \"$context.integration.integrationStatus\", \"latency\": \"$context.integration.latency\", \"requestId\": \"$context.integration.requestId\", \"status\": \"$context.integration.status\" }}'
+        format: apiGwLogFormat
       }
     })
 

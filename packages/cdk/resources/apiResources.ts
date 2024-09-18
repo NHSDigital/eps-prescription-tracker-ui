@@ -17,9 +17,6 @@ export interface ApiResourcesProps {
    * @default 30
    */
   readonly logRetentionInDays?: number;
-  /**
-   * @default 'false'
-   */
 }
 
 /**
@@ -42,7 +39,7 @@ export class ApiResources extends Construct {
     // Applying default props
     props = {
       ...props,
-      additionalPolicies: props.additionalPolicies ?? ["none"],
+      additionalPolicies: props.additionalPolicies ?? [],
       apiName: props.apiName ?? "none",
       logRetentionInDays: props.logRetentionInDays ?? 30
     }

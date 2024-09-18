@@ -2,19 +2,20 @@ import * as apigateway from "aws-cdk-lib/aws-apigateway"
 
 import {ApiResources} from "./apiResources"
 import {Construct} from "constructs"
+import {apiGwLogFormat, getLambdaInvokeURL} from "./helpers"
 export interface ApisProps {
   /**
    * @default 'none'
    */
-  readonly stackName?: string;
+  readonly stackName: string;
   /**
    * @default 'none'
    */
-  readonly statusFunctionName?: string;
+  readonly statusFunctionName: string;
   /**
    * @default 'none'
    */
-  readonly statusFunctionArn?: string;
+  readonly statusFunctionArn: string;
   /**
    * @default 30
    */
@@ -40,9 +41,9 @@ export class Apis extends Construct {
     // Applying default props
     props = {
       ...props,
-      stackName: props.stackName ?? "none",
-      statusFunctionName: props.statusFunctionName ?? "none",
-      statusFunctionArn: props.statusFunctionArn ?? "none",
+      stackName: props.stackName,
+      statusFunctionName: props.statusFunctionName,
+      statusFunctionArn: props.statusFunctionArn,
       logRetentionInDays: props.logRetentionInDays ?? 30,
       region: props.region,
       executeStatusLambdaPolicyArn: props.executeStatusLambdaPolicyArn
@@ -94,8 +95,7 @@ export class Apis extends Construct {
         type: "AWS_PROXY",
         credentials: restApiGatewayResources.apiGwRoleArn,
         integrationHttpMethod: "POST",
-        // eslint-disable-next-line max-len
-        uri: `arn:aws:apigateway:${props.region}:lambda:path/2015-03-31/functions/${props.statusFunctionArn!}/invocations`
+        uri: getLambdaInvokeURL(props.region, props.statusFunctionArn)
       }
     })
 
@@ -112,8 +112,7 @@ export class Apis extends Construct {
       tracingEnabled: true,
       accessLogSetting: {
         destinationArn: restApiGatewayResources.apiGwAccessLogsArn,
-        // eslint-disable-next-line max-len, no-useless-escape
-        format: '{ \"requestTime\": \"$context.requestTime\", \"apiId\": \"$context.apiId\", \"accountId\": \"$context.accountId\", \"resourcePath\": \"$context.resourcePath\", \"stage\": \"$context.stage\", \"requestId\": \"$context.requestId\", \"extendedRequestId\": \"$context.extendedRequestId\", \"status\": \"$context.status\", \"httpMethod\": \"$context.httpMethod\", \"protocol\": \"$context.protocol\", \"path\": \"$context.path\", \"responseLatency\": \"$context.responseLatency\", \"responseLength\": \"$context.responseLength\", \"domainName\": \"$context.domainName\", \"identity\": { \"sourceIp\": \"$context.identity.sourceIp\", \"userAgent\": \"$context.identity.userAgent\", \"clientCert\":{ \"subjectDN\": \"$context.identity.clientCert.subjectDN\", \"issuerDN\": \"$context.identity.clientCert.issuerDN\", \"serialNumber\": \"$context.identity.clientCert.serialNumber\", \"validityNotBefore\": \"$context.identity.clientCert.validity.notBefore\", \"validityNotAfter\": \"$context.identity.clientCert.validity.notAfter\" }}, \"integration\":{ \"error\": \"$context.integration.error\", \"integrationStatus\": \"$context.integration.integrationStatus\", \"latency\": \"$context.integration.latency\", \"requestId\": \"$context.integration.requestId\", \"status\": \"$context.integration.status\" }}'
+        format: apiGwLogFormat
       }
     })
   }
