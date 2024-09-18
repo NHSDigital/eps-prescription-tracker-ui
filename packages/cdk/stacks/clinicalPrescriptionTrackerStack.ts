@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import * as cdk from "aws-cdk-lib"
 
 import {Apis} from "../resources/apis"
@@ -59,10 +58,14 @@ export class ClinicalPrescriptionTrackerStack extends cdk.Stack {
       description: "primaryOidcjwksEndpoint",
       type: "String"
     }).valueAsString
+
+    // parameters passed to other stack but needed here for full deployment to work
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const epsDomain = new cdk.CfnParameter(this, "epsDomain", {
       description: "epsDomain",
       type: "String"
     }).valueAsString
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const epsZoneId = new cdk.CfnParameter(this, "epsZoneId", {
       description: "epsZoneId",
       type: "String"
@@ -105,6 +108,7 @@ export class ClinicalPrescriptionTrackerStack extends cdk.Stack {
       useTokensMappingKMSKeyPolicyArn: tables.useTokensMappingKmsKeyPolicyArn
     })
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const apis = new Apis(this, "Apis", {
       stackName: this.stackName,
       statusFunctionName: functions.statusFunctionName,
