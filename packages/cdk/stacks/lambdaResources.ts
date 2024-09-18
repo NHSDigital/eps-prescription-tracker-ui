@@ -18,7 +18,6 @@ export interface LambdaResourcesProps {
   /**
    * @default 'false'
    */
-  readonly includeAdditionalPolicies?: boolean;
   /**
    * A list of additional policies to attach the lambdas role (comma delimited).
    * @default 'none'
@@ -54,12 +53,8 @@ export class LambdaResources extends Construct {
       ...props,
       lambdaName: props.lambdaName ?? "none",
       lambdaArn: props.lambdaArn ?? "none",
-      includeAdditionalPolicies: props.includeAdditionalPolicies ?? false,
       additionalPolicies: props.additionalPolicies ?? []
     }
-
-    // Conditions
-    const shouldIncludeAdditionalPolicies = true === props.includeAdditionalPolicies!
 
     // Resources
     const executeLambdaManagedPolicy = new iam.CfnManagedPolicy(this, "ExecuteLambdaManagedPolicy", {
@@ -119,17 +114,6 @@ export class LambdaResources extends Construct {
       destinationArn: cdk.Fn.importValue("lambda-resources:SplunkDeliveryStream")
     })
 
-    const managedPolicyArns: Array<string> = [
-      lambdaManagedPolicy.ref,
-      cdk.Fn.importValue("lambda-resources:LambdaInsightsLogGroupPolicy"),
-      cdk.Fn.importValue("account-resources:CloudwatchEncryptionKMSPolicyArn"),
-      cdk.Fn.importValue("account-resources:LambdaDecryptSecretsKMSPolicy")
-    ]
-
-    // eslint-disable-next-line max-len
-    if (shouldIncludeAdditionalPolicies && typeof props.additionalPolicies !== "undefined" && props.additionalPolicies?.length > 0 ) {
-      managedPolicyArns.concat(props.additionalPolicies)
-    }
     const lambdaRole = new iam.CfnRole(this, "LambdaRole", {
       assumeRolePolicyDocument: {
         Version: "2012-10-17",
@@ -145,7 +129,11 @@ export class LambdaResources extends Construct {
           }
         ]
       },
-      managedPolicyArns: managedPolicyArns
+      managedPolicyArns: [ lambdaManagedPolicy.ref,
+        cdk.Fn.importValue("lambda-resources:LambdaInsightsLogGroupPolicy"),
+        cdk.Fn.importValue("account-resources:CloudwatchEncryptionKMSPolicyArn"),
+        cdk.Fn.importValue("account-resources:LambdaDecryptSecretsKMSPolicy"),
+        ...(props.additionalPolicies ?? [])]
     })
 
     // Outputs

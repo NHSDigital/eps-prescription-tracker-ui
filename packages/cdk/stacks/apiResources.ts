@@ -5,7 +5,7 @@ import {Construct} from "constructs"
 
 export interface ApiResourcesProps {
   /**
-   * A list of additional policies to attach to the API gateway role (comma delimited).
+   * A list of additional policies to attach to the API gateway role
    * @default 'none'
    */
   readonly additionalPolicies?: Array<string>;
@@ -61,11 +61,6 @@ export class ApiResources extends Construct {
       }
     }
 
-    const managedPolicyArns: Array<string> = []
-
-    if (typeof props.additionalPolicies !== "undefined" && props.additionalPolicies?.length > 0 ) {
-      managedPolicyArns.concat(props.additionalPolicies)
-    }
     const apiGwRole = new iam.CfnRole(this, "ApiGwRole", {
       assumeRolePolicyDocument: {
         Version: "2012-10-17",
@@ -83,7 +78,7 @@ export class ApiResources extends Construct {
           }
         ]
       },
-      managedPolicyArns: managedPolicyArns
+      managedPolicyArns: [ ...(props.additionalPolicies ?? [])]
     })
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars

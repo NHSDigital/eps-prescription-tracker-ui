@@ -1,10 +1,13 @@
 import * as cdk from "aws-cdk-lib"
 import * as nodeLambda from "aws-cdk-lib/aws-lambda-nodejs"
 import * as lambda from "aws-cdk-lib/aws-lambda"
-import * as path from "path"
+import * as iam from "aws-cdk-lib/aws-iam"
 
 import {LambdaResources} from "./lambdaResources"
 import {Construct} from "constructs"
+import * as path from "path"
+
+const baseDir = path.resolve(__dirname, "../../..")
 
 export interface FunctionsStackProps {
   /**
@@ -58,7 +61,6 @@ export class Functions extends Construct {
       stackName: props.stackName!,
       lambdaName: `${props.stackName!}-status`,
       lambdaArn: `arn:aws:lambda:${props.region}:${props.account}:function:${props.stackName!}-status`,
-      includeAdditionalPolicies: true,
       additionalPolicies: [
         cdk.Fn.importValue("account-resources:LambdaAccessSecretsPolicy"),
         props.tokenMappingTableReadPolicyArn,
@@ -69,15 +71,17 @@ export class Functions extends Construct {
     })
 
     const status = new nodeLambda.NodejsFunction(this, "statusLambda", {
+      functionName: `${props.stackName!}-status`,
       runtime: lambda.Runtime.NODEJS_20_X,
-      entry: path.join(__dirname, "../../statusLambda/src/statusLambda.ts"),
-      projectRoot: path.join(__dirname, "../"),
+      entry: path.join(baseDir, "packages/statusLambda/src/statusLambda.ts"),
+      role: iam.Role.fromRoleArn(this, "statusResourcesRole", statusResources.lambdaRoleArn),
+      projectRoot: baseDir,
       memorySize: 1024,
-      handler: "statusLambda.handler",
+      handler: "handler",
       bundling: {
         minify: true,
         sourceMap: true,
-        tsconfig: "../statusLambda/tsconfig.json",
+        tsconfig: path.join(baseDir, "packages/statusLambda/tsconfig.json"),
         target: "es2020"
       },
       environment: {
@@ -89,17 +93,7 @@ export class Functions extends Construct {
 
     // Outputs
     this.statusFunctionName = status.functionName
-    new cdk.CfnOutput(this, "CfnOutputStatusFunctionName", {
-      key: "StatusFunctionName",
-      description: "The function name of the Status lambda",
-      value: this.statusFunctionName!.toString()
-    })
     this.statusFunctionArn = status.functionArn
-    new cdk.CfnOutput(this, "CfnOutputStatusFunctionArn", {
-      key: "StatusFunctionArn",
-      description: "The function ARN of the Status lambda",
-      value: this.statusFunctionArn!.toString()
-    })
     this.executeStatusLambdaPolicyArn = statusResources.executeLambdaPolicyArn
   }
 }

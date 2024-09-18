@@ -6,38 +6,15 @@ import {Cognito} from "./cognito"
 import {Dynamodb} from "./dynamodb"
 import {Functions} from "./functions"
 
-export interface MainTemplateStackProps extends cdk.StackProps {
-  /**
-   */
-  readonly primaryOidcClientId: string;
-  /**
-   */
-  readonly primaryOidClientSecret: string;
-  /**
-   */
-  readonly primaryOidcIssuer: string;
-  /**
-   */
-  readonly primaryOidcAuthorizeEndpoint: string;
-  /**
-   */
-  readonly primaryOidcTokenEndpoint: string;
-  /**
-   */
-  readonly primaryOidcUserInfoEndpoint: string;
-  /**
-   */
-  readonly primaryOidcjwksEndpoint: string;
-  /**
-   */
-  readonly userPoolTlsCertificateArn: string;
-}
-
 /**
  * Clinical Prescription Tracker UI
 
  */
-export class MainTemplateStack extends cdk.Stack {
+
+export interface ClinicalPrescriptionTrackerStackProps extends cdk.StackProps {
+  readonly userPoolTLSCertificateArn: string;
+}
+export class ClinicalPrescriptionTrackerStack extends cdk.Stack {
   /**
    * ID of the created primary Cognito User Pool
    */
@@ -51,11 +28,45 @@ export class MainTemplateStack extends cdk.Stack {
    */
   public readonly hostedLoginDomain
 
-  public constructor(scope: cdk.App, id: string, props: MainTemplateStackProps) {
+  public constructor(scope: cdk.App, id: string, props: ClinicalPrescriptionTrackerStackProps ) {
     super(scope, id, props)
 
-    // Transforms
-    this.addTransform("AWS::Serverless-2016-10-31")
+    const primaryOidcClientId = new cdk.CfnParameter(this, "primaryOidcClientId", {
+      description: "primaryOidcClientId",
+      type: "String"
+    }).valueAsString
+    const primaryOidClientSecret = new cdk.CfnParameter(this, "primaryOidClientSecret", {
+      description: "primaryOidClientSecret",
+      type: "String"
+    }).valueAsString
+    const primaryOidcIssuer = new cdk.CfnParameter(this, "primaryOidcIssuer", {
+      description: "primaryOidcIssuer",
+      type: "String"
+    }).valueAsString
+    const primaryOidcAuthorizeEndpoint = new cdk.CfnParameter(this, "primaryOidcAuthorizeEndpoint", {
+      description: "primaryOidcAuthorizeEndpoint",
+      type: "String"
+    }).valueAsString
+    const primaryOidcTokenEndpoint = new cdk.CfnParameter(this, "primaryOidcTokenEndpoint", {
+      description: "primaryOidcTokenEndpoint",
+      type: "String"
+    }).valueAsString
+    const primaryOidcUserInfoEndpoint = new cdk.CfnParameter(this, "primaryOidcUserInfoEndpoint", {
+      description: "primaryOidcUserInfoEndpoint",
+      type: "String"
+    }).valueAsString
+    const primaryOidcjwksEndpoint = new cdk.CfnParameter(this, "primaryOidcjwksEndpoint", {
+      description: "primaryOidcjwksEndpoint",
+      type: "String"
+    }).valueAsString
+    const epsDomain = new cdk.CfnParameter(this, "epsDomain", {
+      description: "epsDomain",
+      type: "String"
+    }).valueAsString
+    const epsZoneId = new cdk.CfnParameter(this, "epsZoneId", {
+      description: "epsZoneId",
+      type: "String"
+    }).valueAsString
 
     // Resources
     const tables = new Dynamodb(this, "Tables", {
@@ -66,15 +77,15 @@ export class MainTemplateStack extends cdk.Stack {
 
     const cognito = new Cognito(this, "Cognito", {
       stackName: this.stackName,
-      primaryOidcClientId: props.primaryOidcClientId!,
-      primaryOidClientSecret: props.primaryOidClientSecret!,
-      primaryOidcIssuer: props.primaryOidcIssuer!,
-      primaryOidcAuthorizeEndpoint: props.primaryOidcAuthorizeEndpoint!,
-      primaryOidcTokenEndpoint: props.primaryOidcTokenEndpoint!,
-      primaryOidcUserInfoEndpoint: props.primaryOidcUserInfoEndpoint!,
-      primaryOidcjwksEndpoint: props.primaryOidcjwksEndpoint!,
+      primaryOidcClientId: primaryOidcClientId!,
+      primaryOidClientSecret: primaryOidClientSecret!,
+      primaryOidcIssuer: primaryOidcIssuer!,
+      primaryOidcAuthorizeEndpoint: primaryOidcAuthorizeEndpoint!,
+      primaryOidcTokenEndpoint: primaryOidcTokenEndpoint!,
+      primaryOidcUserInfoEndpoint: primaryOidcUserInfoEndpoint!,
+      primaryOidcjwksEndpoint: primaryOidcjwksEndpoint!,
       tokenMappingTableName: tables.tokenMappingTableName,
-      userPoolTlsCertificateArn: props.userPoolTlsCertificateArn!,
+      userPoolTlsCertificateArn: props.userPoolTLSCertificateArn,
       region: this.region,
       account: this.account,
       tokenMappingTableWritePolicyArn: tables.tokenMappingTableWritePolicyArn,

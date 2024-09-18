@@ -18,7 +18,8 @@
         "packages/client",
         "packages/statusLambda",
         "packages/auth-demo",
-        "packages/cognito"
+        "packages/cognito",
+        "packages/cdk"
     ],
     "devDependencies": {
         "@aws-amplify/backend": "^1.2.1",

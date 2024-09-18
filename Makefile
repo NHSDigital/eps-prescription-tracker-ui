@@ -145,3 +145,17 @@ build-localsite:
 
 run-auth:
 	npm run start --workspace packages/auth-demo
+
+
+cdk-deploy: guard-AWS_DEFAULT_PROFILE guard-stack_name
+	cd packages/cdk && cdk deploy --all \
+		--context stackName=cdk-auth \
+		--parameters primaryOidcClientId=$$Auth0ClientID \
+		--parameters primaryOidClientSecret=$$Auth0ClientSecret \
+		--parameters primaryOidcIssuer=$$Auth0Issuer \
+		--parameters primaryOidcAuthorizeEndpoint=$$Auth0AuthorizeEndpoint \
+		--parameters primaryOidcTokenEndpoint=$$Auth0TokenEndpoint \
+		--parameters primaryOidcUserInfoEndpoint=$$Auth0UserInfoEndpoint \
+		--parameters primaryOidcjwksEndpoint=$$Auth0JWKSEndpoint \
+		--parameters epsDomain=$$epsDomain \
+		--parameters epsZoneId=$$epsZoneId 

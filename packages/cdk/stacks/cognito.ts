@@ -6,12 +6,14 @@ import * as cognito from "aws-cdk-lib/aws-cognito"
 import * as route53 from "aws-cdk-lib/aws-route53"
 import * as nodeLambda from "aws-cdk-lib/aws-lambda-nodejs"
 import * as lambda from "aws-cdk-lib/aws-lambda"
+import * as iam from "aws-cdk-lib/aws-iam"
 
 import {ApiResources} from "./apiResources"
 import {LambdaResources} from "./lambdaResources"
 import {Construct} from "constructs"
-import path = require("path");
+import * as path from "path"
 
+const baseDir = path.resolve(__dirname, "../../..")
 export interface CognitoProps {
   /**
    */
@@ -76,13 +78,15 @@ export class Cognito extends Construct {
 
     // Transforms
 
+    const environmentDomain = cdk.Fn.importValue("eps-route53-resources:EPS-domain")
+    const baseApiGwUrl = `https://auth.${props.stackName}.${environmentDomain}`
+
     // Resources
     const authResources = new LambdaResources(this, "AuthResources",
       {
         stackName: props.stackName!,
         lambdaName: `${props.stackName!}-auth`,
         lambdaArn: `arn:aws:lambda:${props.region}:${props.account}:function:${props.stackName!}-auth`,
-        includeAdditionalPolicies: false,
         logRetentionInDays: 30
       }
     )
@@ -91,7 +95,6 @@ export class Cognito extends Construct {
       stackName: props.stackName!,
       lambdaName: `${props.stackName!}-callback`,
       lambdaArn: `arn:aws:lambda:${props.region}:${props.account}:function:${props.stackName!}-callback`,
-      includeAdditionalPolicies: false,
       logRetentionInDays: 30
     })
 
@@ -127,7 +130,6 @@ export class Cognito extends Construct {
       stackName: props.stackName!,
       lambdaName: `${props.stackName!}-token`,
       lambdaArn: `arn:aws:lambda:${props.region}:${props.account}:function:${props.stackName!}-token`,
-      includeAdditionalPolicies: true,
       additionalPolicies: [
         props.tokenMappingTableWritePolicyArn,
         props.tokenMappingTableReadPolicyArn,
@@ -161,18 +163,20 @@ export class Cognito extends Construct {
     const auth = new nodeLambda.NodejsFunction(this, "authLambda", {
       functionName: `${props.stackName!}-auth`,
       runtime: lambda.Runtime.NODEJS_20_X,
-      entry: path.join(__dirname, "../../cognito/src/auth.ts"),
-      projectRoot: path.join(__dirname, "../"),
+      entry: path.join(baseDir, "packages/cognito/src/auth.ts"),
+      role: iam.Role.fromRoleArn(this, "authResourcesRole", authResources.lambdaRoleArn),
+      projectRoot: baseDir,
       memorySize: 1024,
-      handler: "auth.handler",
+      handler: "handler",
       bundling: {
         minify: true,
         sourceMap: true,
-        tsconfig: "../cognito/tsconfig.json",
+        tsconfig: path.join(baseDir, "packages/cognito/tsconfig.json"),
         target: "es2020"
       },
       environment: {
-        "idp_auth_uri": props.primaryOidcAuthorizeEndpoint!
+        "idp_auth_uri": props.primaryOidcAuthorizeEndpoint!,
+        "proxy_callback_uri": `${baseApiGwUrl}/callback`
       }
     })
 
@@ -185,18 +189,20 @@ export class Cognito extends Construct {
     const callback = new nodeLambda.NodejsFunction(this, "callbackLambda", {
       functionName: `${props.stackName!}-callback`,
       runtime: lambda.Runtime.NODEJS_20_X,
-      entry: path.join(__dirname, "../../cognito/src/callback.ts"),
-      projectRoot: path.join(__dirname, "../"),
+      entry: path.join(baseDir, "packages/cognito/src/callback.ts"),
+      role: iam.Role.fromRoleArn(this, "callbackResourcesRole", callbackResources.lambdaRoleArn),
+      projectRoot: baseDir,
       memorySize: 1024,
-      handler: "callback.handler",
+      handler: "handler",
       bundling: {
         minify: true,
         sourceMap: true,
-        tsconfig: "../cognito/tsconfig.json",
+        tsconfig: path.join(baseDir, "packages/cognito/tsconfig.json"),
         target: "es2020"
       },
       environment: {
-        "idp_auth_uri": props.primaryOidcAuthorizeEndpoint!
+        "idp_auth_uri": props.primaryOidcAuthorizeEndpoint!,
+        "cognito_idp_response_uri": `https://id.${props.stackName}.${environmentDomain}/oauth2/idpresponse`
       }
     })
 
@@ -237,22 +243,22 @@ export class Cognito extends Construct {
       pathPart: "token"
     })
 
-    // const userPoolDomain = new cognito.CfnUserPoolDomain(this, "UserPoolDomain", {
-    //   userPoolId: userPool.ref,
-    //   customDomainConfig: {
-    //     certificateArn: props.userPoolTlsCertificateArn!
-    //   },
-    //   domain: [
-    //     "id",
-    //     props.stackName!,
-    //     cdk.Fn.importValue("eps-route53-resources:EPS-domain")
-    //   ].join(".")
-    // })
-
     const userPoolDomain = new cognito.CfnUserPoolDomain(this, "UserPoolDomain", {
       userPoolId: userPool.ref,
-      domain: "id"
+      customDomainConfig: {
+        certificateArn: props.userPoolTlsCertificateArn
+      },
+      domain: [
+        "id",
+         props.stackName!,
+         cdk.Fn.importValue("eps-route53-resources:EPS-domain")
+      ].join(".")
     })
+
+    // const userPoolDomain = new cognito.CfnUserPoolDomain(this, "UserPoolDomain", {
+    //   userPoolId: userPool.ref,
+    //   domain: "id"
+    // })
     userPoolDomain.addDependency(userPoolARecordSet)
 
     const userPoolIdentityProvider = new cognito.CfnUserPoolIdentityProvider(this, "UserPoolIdentityProvider", {
@@ -266,7 +272,9 @@ export class Cognito extends Construct {
         "client_id": props.primaryOidcClientId!,
         "client_secret": props.primaryOidClientSecret!,
         "attributes_url": props.primaryOidcUserInfoEndpoint!,
-        "jwks_uri": props.primaryOidcjwksEndpoint!
+        "jwks_uri": props.primaryOidcjwksEndpoint!,
+        "authorize_url": `${baseApiGwUrl}/auth`,
+        "token_url": `${baseApiGwUrl}/token`
       },
       attributeMapping: {
         username: "sub",
@@ -347,21 +355,23 @@ export class Cognito extends Construct {
     const token = new nodeLambda.NodejsFunction(this, "tokenLambda", {
       functionName: `${props.stackName!}-token`,
       runtime: lambda.Runtime.NODEJS_20_X,
-      entry: path.join(__dirname, "../../cognito/src/token.ts"),
-      projectRoot: path.join(__dirname, "../"),
+      entry: path.join(baseDir, "packages/cognito/src/token.ts"),
+      role: iam.Role.fromRoleArn(this, "tokenResourcesRole", tokenResources.lambdaRoleArn),
+      projectRoot: baseDir,
       memorySize: 1024,
-      handler: "token.handler",
+      handler: "handler",
       bundling: {
         minify: true,
         sourceMap: true,
-        tsconfig: "../cognito/tsconfig.json",
+        tsconfig: path.join(baseDir, "packages/cognito/tsconfig.json"),
         target: "es2020"
       },
       environment: {
         "idp_token_path": props.primaryOidcTokenEndpoint!,
         TokenMappingTableName: props.tokenMappingTableName!,
         UserPoolIdentityProvider: userPoolIdentityProvider.ref,
-        "jwks_uri": props.primaryOidcjwksEndpoint!
+        "jwks_uri": props.primaryOidcjwksEndpoint!,
+        ResponseUri: `${baseApiGwUrl}/callback`
       }
     })
 
