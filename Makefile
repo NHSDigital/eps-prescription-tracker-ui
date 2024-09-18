@@ -117,6 +117,7 @@ clean:
 	rm -rf packages/client/coverage
 	rm -rf packages/server/coverage
 	rm -rf .aws-sam
+	rm -rf packages/cdk/cdk.out
 
 deep-clean: clean
 	rm -rf .venv
