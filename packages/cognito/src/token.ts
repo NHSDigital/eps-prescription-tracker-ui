@@ -64,9 +64,6 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   }
   const object_body = parse(body)
 
-  // change the redirect uri to be our callback lambda
-  object_body["redirect_uri"] = process.env["ResponseUri"] as string
-
   // TODO create a signed JWT and add it to the request
 
   const axiosInstance = axios.create()

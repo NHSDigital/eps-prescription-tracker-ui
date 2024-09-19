@@ -187,7 +187,7 @@ export class Cognito extends Construct {
         "client_secret": props.primaryOidClientSecret!,
         "attributes_url": props.primaryOidcUserInfoEndpoint!,
         "jwks_uri": props.primaryOidcjwksEndpoint!,
-        "authorize_url": `${baseApiGwUrl}/auth`,
+        "authorize_url": props.primaryOidcAuthorizeEndpoint,
         "token_url": `${baseApiGwUrl}/token`
       },
       attributeMapping: {
@@ -249,8 +249,7 @@ export class Cognito extends Construct {
         "idp_token_path": props.primaryOidcTokenEndpoint!,
         TokenMappingTableName: props.tokenMappingTableName!,
         UserPoolIdentityProvider: userPoolIdentityProvider.ref,
-        "jwks_uri": props.primaryOidcjwksEndpoint!,
-        ResponseUri: `${baseApiGwUrl}/callback`
+        "jwks_uri": props.primaryOidcjwksEndpoint!
       }
     })
 
