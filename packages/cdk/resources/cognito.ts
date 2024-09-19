@@ -89,23 +89,6 @@ export class Cognito extends Construct {
     const baseApiGwUrl = `https://${authDomain}`
     const baseIdGwUrl = `https://${idDomain}`
 
-    // Resources
-    const authResources = new LambdaResources(this, "AuthResources",
-      {
-        stackName: props.stackName!,
-        lambdaName: `${props.stackName!}-auth`,
-        lambdaArn: getLambdaArn(props.region, props.account, `${props.stackName}-auth`),
-        logRetentionInDays: 30
-      }
-    )
-
-    const callbackResources = new LambdaResources(this, "CallbackResources", {
-      stackName: props.stackName!,
-      lambdaName: `${props.stackName!}-callback`,
-      lambdaArn: getLambdaArn(props.region, props.account, `${props.stackName}-callback`),
-      logRetentionInDays: 30
-    })
-
     const generateCertificate = new certificatemanager.CfnCertificate(this, "GenerateCertificate", {
       validationMethod: "DNS",
       domainName: authDomain,
@@ -157,48 +140,6 @@ export class Cognito extends Construct {
       ttl: "900"
     })
 
-    const authOptions = getDefaultLambdaOptions({
-      functionName: `${props.stackName!}-auth`,
-      packageBasePath: "packages/cognito",
-      entryPoint: "src/auth.ts"
-    })
-
-    const auth = new nodeLambda.NodejsFunction(this, "authLambda", {
-      ...authOptions,
-      role: iam.Role.fromRoleArn(this, "authResourcesRole", authResources.lambdaRoleArn),
-      environment: {
-        "idp_auth_uri": props.primaryOidcAuthorizeEndpoint!,
-        "proxy_callback_uri": `${baseApiGwUrl}/callback`
-      }
-    })
-
-    const authApiGatewayResource = new apigateway.CfnResource(this, "AuthAPIGatewayResource", {
-      restApiId: restApiGateway.ref,
-      parentId: restApiGateway.attrRootResourceId,
-      pathPart: "auth"
-    })
-
-    const callbackOptions = getDefaultLambdaOptions({
-      functionName: `${props.stackName!}-callback`,
-      packageBasePath: "packages/cognito",
-      entryPoint: "src/callback.ts"
-    })
-
-    const callback = new nodeLambda.NodejsFunction(this, "callbackLambda", {
-      ...callbackOptions,
-      role: iam.Role.fromRoleArn(this, "callbackResourcesRole", callbackResources.lambdaRoleArn),
-      environment: {
-        "idp_auth_uri": props.primaryOidcAuthorizeEndpoint!,
-        "cognito_idp_response_uri": `${baseIdGwUrl}/oauth2/idpresponse`
-      }
-    })
-
-    const callbackApiGatewayResource = new apigateway.CfnResource(this, "CallbackAPIGatewayResource", {
-      restApiId: restApiGateway.ref,
-      parentId: restApiGateway.attrRootResourceId,
-      pathPart: "callback"
-    })
-
     const restApiDomain = new apigateway.CfnDomainName(this, "RestApiDomain", {
       domainName: authDomain,
       regionalCertificateArn: generateCertificate.ref,
@@ -212,9 +153,7 @@ export class Cognito extends Construct {
 
     const restApiGatewayResources = new ApiResources(this, "RestApiGatewayResources", {
       additionalPolicies: [
-        tokenResources.executeLambdaPolicyArn,
-        callbackResources.executeLambdaPolicyArn,
-        authResources.executeLambdaPolicyArn
+        tokenResources.executeLambdaPolicyArn
       ],
       apiName: `${props.stackName!}-apigw-cognito`,
       logRetentionInDays: 30
@@ -258,32 +197,6 @@ export class Cognito extends Construct {
         "phone_number": "phone_number",
         "phone_number_verified": "phone_number_verified",
         profile: "profile"
-      }
-    })
-
-    const authMethod = new apigateway.CfnMethod(this, "AuthMethod", {
-      restApiId: restApiGateway.ref,
-      resourceId: authApiGatewayResource.ref,
-      httpMethod: "GET",
-      authorizationType: "NONE",
-      integration: {
-        type: "AWS_PROXY",
-        credentials: restApiGatewayResources.apiGwRoleArn,
-        integrationHttpMethod: "POST",
-        uri: getLambdaInvokeURL(props.region, auth.functionArn)
-      }
-    })
-
-    const callbackMethod = new apigateway.CfnMethod(this, "CallbackMethod", {
-      restApiId: restApiGateway.ref,
-      resourceId: callbackApiGatewayResource.ref,
-      httpMethod: "GET",
-      authorizationType: "NONE",
-      integration: {
-        type: "AWS_PROXY",
-        credentials: restApiGatewayResources.apiGwRoleArn,
-        integrationHttpMethod: "POST",
-        uri: getLambdaInvokeURL(props.region, callback.functionArn)
       }
     })
 
@@ -368,8 +281,6 @@ export class Cognito extends Construct {
     const restApiGatewayDeploymentB = new apigateway.CfnDeployment(this, "RestApiGatewayDeploymentB", {
       restApiId: restApiGateway.ref
     })
-    restApiGatewayDeploymentB.addDependency(authMethod)
-    restApiGatewayDeploymentB.addDependency(callbackMethod)
     restApiGatewayDeploymentB.addDependency(tokenMethod)
 
     const restApiGatewayStage = new apigateway.CfnStage(this, "RestApiGatewayStage", {
