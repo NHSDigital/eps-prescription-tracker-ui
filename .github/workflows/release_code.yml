@@ -52,7 +52,7 @@ on:
         required: false
   
 jobs:
-  sam_release_code:
+  release_code:
     runs-on: ubuntu-latest
     environment: ${{ inputs.TARGET_ENVIRONMENT }}
     permissions:
@@ -81,32 +81,34 @@ jobs:
           DEV_CLOUD_FORMATION_EXECUTE_LAMBDA_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_EXECUTE_LAMBDA_ROLE }}
 
       - name: Configure AWS Credentials
+        id: connect-aws
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-region: eu-west-2
           role-to-assume: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}
-          role-session-name: github-actions
+          role-session-name: prescription-clinical-tracker-ui-deployment
+          output-credentials: true
 
-      - name: download build artifact
+      - name: docker_artifact download
         uses: actions/download-artifact@v4
         with:
-          name: ${{ inputs.BUILD_ARTIFACT }}
+          name: docker_artifact
           path: .
 
-      - name: release code
-        shell: bash
-        working-directory: .github/scripts
-        env:
-          artifact_bucket_prefix: clinical-tracker/${{ inputs.ARTIFACT_BUCKET_PREFIX }}
-          COMMIT_ID: ${{ inputs.COMMIT_ID }}
-          LOG_LEVEL: ${{ inputs.LOG_LEVEL }}
-          LOG_RETENTION_DAYS: ${{ inputs.LOG_RETENTION_DAYS }}
-          stack_name: ${{ inputs.STACK_NAME }}
-          TARGET_ENVIRONMENT: ${{ inputs.TARGET_ENVIRONMENT }}
-          template_file: template.yaml
-          VERSION_NUMBER: ${{ inputs.VERSION_NUMBER }}
+      - name: Extract clinical-prescription-tracker-ui docker image
+        id: extract-clinical-prescription-tracker-ui-image
         run: |
-          ./release_code.sh
+          docker load -i clinical-prescription-tracker-ui.img
+
+      - name: Run tests
+        run: |
+          docker run \
+          -e AWS_ACCESS_KEY_ID=${{ steps.connect-aws.outputs.aws-access-key-id }} \
+          -e AWS_SECRET_ACCESS_KEY=${{ steps.connect-aws.outputs.aws-secret-access-key }} \
+          -e AWS_SESSION_TOKEN=${{ steps.connect-aws.outputs.aws-session-token }} \
+          -e AWS_REGION="eu-west-2" \
+          clinical-prescription-tracker-ui
+        shell: bash
 
       - name: create_int_release_notes
         uses: ./.github/actions/update_confluence_jira

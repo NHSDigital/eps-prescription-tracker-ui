@@ -4,7 +4,7 @@ on:
   workflow_call:
 
 jobs:
-  sam_package_code:
+  package_code:
     runs-on: ubuntu-latest
     permissions:
       id-token: write
@@ -43,22 +43,17 @@ jobs:
           make install
 
       - shell: bash
-        name: package code
+        name: build docker image
         run: |
-          cp .tool-versions ~/
-          rm -rf .aws-sam
-          export PATH=$PATH:$PWD/node_modules/.bin
-          make sam-build
-          cp Makefile .aws-sam/build/
-          cp samconfig_package_and_deploy.toml .aws-sam/build/
+          docker build -t "clinical-prescription-tracker-ui" -f docker/Dockerfile .
+          docker save "clinical-prescription-tracker-ui" -o clinical-prescription-tracker-ui.img   
 
       - uses: actions/upload-artifact@v4
         name: upload build artifact
         with:
-          name: packaged_code
+          name: docker_artifact
           path: |
-            .aws-sam/build
-            packages/getSecretLayer/lib/get-secrets-layer.zip 
+            clinical-prescription-tracker-ui.img
 
 
           

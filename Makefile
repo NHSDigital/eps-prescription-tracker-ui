@@ -151,7 +151,20 @@ run-auth:
 
 cdk-deploy: guard-AWS_DEFAULT_PROFILE guard-stack_name
 	cd packages/cdk && cdk deploy --all \
-		--context stackName=cdk-auth \
+		--context stackName=cdk-auth-new \
+		--parameters primaryOidcClientId=$$Auth0ClientID \
+		--parameters primaryOidClientSecret=$$Auth0ClientSecret \
+		--parameters primaryOidcIssuer=$$Auth0Issuer \
+		--parameters primaryOidcAuthorizeEndpoint=$$Auth0AuthorizeEndpoint \
+		--parameters primaryOidcTokenEndpoint=$$Auth0TokenEndpoint \
+		--parameters primaryOidcUserInfoEndpoint=$$Auth0UserInfoEndpoint \
+		--parameters primaryOidcjwksEndpoint=$$Auth0JWKSEndpoint \
+		--parameters epsDomain=$$epsDomain \
+		--parameters epsZoneId=$$epsZoneId 
+
+cdk-synth: guard-AWS_DEFAULT_PROFILE guard-stack_name
+	cd packages/cdk && cdk synth --output=/home/cdkuser/templates --all \
+		--context stackName=cdk-auth-new \
 		--parameters primaryOidcClientId=$$Auth0ClientID \
 		--parameters primaryOidClientSecret=$$Auth0ClientSecret \
 		--parameters primaryOidcIssuer=$$Auth0Issuer \

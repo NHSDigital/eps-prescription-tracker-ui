@@ -55,11 +55,11 @@ jobs:
 
   package_code:
     needs: get_issue_number
-    uses: ./.github/workflows/sam_package_code.yml
+    uses: ./.github/workflows/package_code.yml
 
   release_code:
     needs: [get_issue_number, package_code, get_commit_id]
-    uses: ./.github/workflows/sam_release_code.yml
+    uses: ./.github/workflows/release_code.yml
     with:
       STACK_NAME: clinical-tracker-ui-pr-${{needs.get_issue_number.outputs.issue_number}}
       ARTIFACT_BUCKET_PREFIX: PR-${{needs.get_issue_number.outputs.issue_number}}
