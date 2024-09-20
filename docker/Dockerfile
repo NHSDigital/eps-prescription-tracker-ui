@@ -13,6 +13,7 @@ RUN apt-get update \
     python3 python3-pip python3-dev
 
 RUN useradd -ms /bin/bash cdkuser
+RUN chown -R cdkuser /home/cdkuser
 WORKDIR /home/cdkuser
 USER cdkuser
 # Install ASDF
@@ -33,17 +34,22 @@ RUN asdf plugin add shellcheck https://github.com/luizm/asdf-shellcheck.git; \
     asdf plugin add actionlint; \
     asdf plugin add ruby https://github.com/asdf-vm/asdf-ruby.git
 
-COPY .tool-versions /home/cdkuser/.tool-versions
-RUN asdf install
+COPY --chown=cdkuser .asdf /home/cdkuser/.asdf
+COPY --chown=cdkuser .tool-versions /home/cdkuser/.tool-versions
 
-COPY .asdf /home/cdkuser/.asdf
-COPY packages /home/cdkuser/packages
-COPY Makefile /home/cdkuser/
-COPY node_modules /home/cdkuser/node_modules
-COPY package.json /home/cdkuser/
-COPY package-lock.json /home/cdkuser/
-COPY tsconfig.defaults.json /home/cdkuser/
-COPY docker/entrypoint.sh /home/cdkuser/
-COPY docker/entrypoint.sh /home/cdkuser/
+RUN asdf install; \
+    asdf reshim python; \
+    asdf reshim poetry; \
+    asdf reshim nodejs; \
+    asdf direnv setup --shell bash --version 2.32.2;
+
+COPY --chown=cdkuser packages /home/cdkuser/packages
+COPY --chown=cdkuser Makefile /home/cdkuser/
+COPY --chown=cdkuser node_modules /home/cdkuser/node_modules
+COPY --chown=cdkuser package.json /home/cdkuser/
+COPY --chown=cdkuser package-lock.json /home/cdkuser/
+COPY --chown=cdkuser tsconfig.defaults.json /home/cdkuser/
+COPY --chown=cdkuser docker/entrypoint.sh /home/cdkuser/
+COPY --chown=cdkuser docker/entrypoint.sh /home/cdkuser/
 
 ENTRYPOINT ["/home/cdkuser/entrypoint.sh"]
