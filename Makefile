@@ -149,9 +149,9 @@ run-auth:
 	npm run start --workspace packages/auth-demo
 
 
-cdk-deploy: guard-AWS_DEFAULT_PROFILE guard-stack_name
+cdk-deploy: guard-stack_name
 	cd packages/cdk && cdk deploy --all \
-		--context stackName=cdk-auth-new \
+		--context stackName=$$stack_name \
 		--parameters primaryOidcClientId=$$Auth0ClientID \
 		--parameters primaryOidClientSecret=$$Auth0ClientSecret \
 		--parameters primaryOidcIssuer=$$Auth0Issuer \
