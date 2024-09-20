@@ -34,6 +34,7 @@ RUN asdf plugin add shellcheck https://github.com/luizm/asdf-shellcheck.git; \
     asdf plugin add actionlint; \
     asdf plugin add ruby https://github.com/asdf-vm/asdf-ruby.git
 
+# copy local asdf folder to make the build faster
 COPY --chown=cdkuser .asdf /home/cdkuser/.asdf
 COPY --chown=cdkuser .tool-versions /home/cdkuser/.tool-versions
 
@@ -43,6 +44,7 @@ RUN asdf install; \
     asdf reshim nodejs; \
     asdf direnv setup --shell bash --version 2.32.2;
 
+# copy files needed for deployment
 COPY --chown=cdkuser packages /home/cdkuser/packages
 COPY --chown=cdkuser Makefile /home/cdkuser/
 COPY --chown=cdkuser node_modules /home/cdkuser/node_modules

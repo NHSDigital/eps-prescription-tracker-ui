@@ -151,6 +151,8 @@ run-auth:
 
 cdk-deploy: guard-stack_name
 	cd packages/cdk && cdk deploy --all \
+		--ci true \
+		--require-approval never \
 		--context stackName=$$stack_name \
 		--parameters primaryOidcClientId=$$Auth0ClientID \
 		--parameters primaryOidClientSecret=$$Auth0ClientSecret \
