@@ -45,7 +45,7 @@ jobs:
       - shell: bash
         name: build docker image
         run: |
-          docker build -t "clinical-prescription-tracker-ui" -f docker/Dockerfile .
+          make build-deployment-image
           docker save "clinical-prescription-tracker-ui" | gzip >  clinical-prescription-tracker-ui.tar.gz
 
       - uses: actions/upload-artifact@v4

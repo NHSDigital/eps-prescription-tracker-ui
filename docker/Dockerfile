@@ -36,13 +36,14 @@ RUN asdf plugin add shellcheck https://github.com/luizm/asdf-shellcheck.git; \
 COPY .tool-versions /home/cdkuser/.tool-versions
 RUN asdf install
 
-
+COPY .asdf /home/cdkuser/.asdf
 COPY packages /home/cdkuser/packages
 COPY Makefile /home/cdkuser/
 COPY node_modules /home/cdkuser/node_modules
 COPY package.json /home/cdkuser/
 COPY package-lock.json /home/cdkuser/
 COPY tsconfig.defaults.json /home/cdkuser/
+COPY docker/entrypoint.sh /home/cdkuser/
 COPY docker/entrypoint.sh /home/cdkuser/
 
 ENTRYPOINT ["/home/cdkuser/entrypoint.sh"]

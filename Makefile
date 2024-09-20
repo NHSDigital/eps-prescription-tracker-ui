@@ -174,3 +174,8 @@ cdk-synth: guard-AWS_DEFAULT_PROFILE guard-stack_name
 		--parameters primaryOidcjwksEndpoint=$$Auth0JWKSEndpoint \
 		--parameters epsDomain=$$epsDomain \
 		--parameters epsZoneId=$$epsZoneId 
+
+build-deployment-image:
+	rm -rf .asdf
+	cp -r $$HOME/.asdf .
+	docker build -t "clinical-prescription-tracker-ui" -f docker/Dockerfile .
