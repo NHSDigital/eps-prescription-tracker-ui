@@ -50,6 +50,20 @@ on:
         required: false
       DEV_CLOUD_FORMATION_EXECUTE_LAMBDA_ROLE:
         required: false
+      Auth0ClientID:
+        required: false
+      Auth0ClientSecret:
+        required: false
+      Auth0Issuer:
+        required: false
+      Auth0AuthorizeEndpoint:
+        required: false
+      Auth0TokenEndpoint:
+        required: false
+      Auth0UserInfoEndpoint:
+        required: false
+      Auth0JWKSEndpoint:
+        required: false
   
 jobs:
   release_code:
@@ -108,6 +122,13 @@ jobs:
           -e AWS_SESSION_TOKEN=${{ steps.connect-aws.outputs.aws-session-token }} \
           -e AWS_REGION="eu-west-2" \
           -e stack_name="${{ inputs.STACK_NAME }}" \
+          -e Auth0ClientID="${{ secrets.Auth0ClientID}}" \
+          -e Auth0ClientSecret="${{ secrets.Auth0ClientSecret}}" \
+          -e Auth0Issuer="${{ secrets.Auth0Issuer}}" \
+          -e Auth0AuthorizeEndpoint="${{ secrets.Auth0AuthorizeEndpoint}}" \
+          -e Auth0TokenEndpoint="${{ secrets.Auth0TokenEndpoint}}" \
+          -e Auth0UserInfoEndpoint="${{ secrets.Auth0UserInfoEndpoint}}" \
+          -e Auth0JWKSEndpoint="${{ secrets.Auth0JWKSEndpoint}}" \
           clinical-prescription-tracker-ui
         shell: bash
 
