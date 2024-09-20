@@ -98,9 +98,9 @@ jobs:
       - name: Extract clinical-prescription-tracker-ui docker image
         id: extract-clinical-prescription-tracker-ui-image
         run: |
-          docker load -i clinical-prescription-tracker-ui.img
+          docker load < clinical-prescription-tracker-ui.tar.gz
 
-      - name: Run tests
+      - name: Deploy code
         run: |
           docker run \
           -e AWS_ACCESS_KEY_ID=${{ steps.connect-aws.outputs.aws-access-key-id }} \

@@ -46,14 +46,14 @@ jobs:
         name: build docker image
         run: |
           docker build -t "clinical-prescription-tracker-ui" -f docker/Dockerfile .
-          docker save "clinical-prescription-tracker-ui" -o clinical-prescription-tracker-ui.img   
+          docker save "clinical-prescription-tracker-ui" | gzip >  clinical-prescription-tracker-ui.tar.gz
 
       - uses: actions/upload-artifact@v4
         name: upload build artifact
         with:
           name: docker_artifact
           path: |
-            clinical-prescription-tracker-ui.img
+            clinical-prescription-tracker-ui.tar.gz
 
 
           
