@@ -10,7 +10,14 @@ RUN apt-get update \
     software-properties-common bash-completion python3-pip make libbz2-dev \
     libreadline-dev libsqlite3-dev wget llvm libncurses5-dev libncursesw5-dev \
     xz-utils tk-dev liblzma-dev libyaml-dev bats bats-support bats-assert bats-file \
-    python3 python3-pip python3-dev
+    python3 python3-pip python3-dev unzip
+
+# install aws stuff
+RUN wget -O /tmp/awscliv2.zip "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" && \
+    unzip /tmp/awscliv2.zip -d /tmp/aws-cli && \
+    /tmp/aws-cli/aws/install && \
+    rm tmp/awscliv2.zip && \
+    rm -rf /tmp/aws-cli
 
 RUN useradd -ms /bin/bash cdkuser
 RUN chown -R cdkuser /home/cdkuser
