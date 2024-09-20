@@ -51,6 +51,9 @@ jobs:
       - name: run unit tests
         run: make test
 
+      - name: run cdk synth
+        run: make cdk-synth
+  
       - name: Run cfn-guard
         run: make cfn-guard
 

@@ -164,19 +164,13 @@ cdk-deploy: guard-stack_name
 		--parameters epsDomain=$$epsDomain \
 		--parameters epsZoneId=$$epsZoneId 
 
-cdk-synth: guard-AWS_DEFAULT_PROFILE guard-stack_name
-	cd packages/cdk && cdk synth --output=/home/cdkuser/templates --all \
-		--context stackName=cdk-auth-new \
-		--parameters primaryOidcClientId=$$Auth0ClientID \
-		--parameters primaryOidClientSecret=$$Auth0ClientSecret \
-		--parameters primaryOidcIssuer=$$Auth0Issuer \
-		--parameters primaryOidcAuthorizeEndpoint=$$Auth0AuthorizeEndpoint \
-		--parameters primaryOidcTokenEndpoint=$$Auth0TokenEndpoint \
-		--parameters primaryOidcUserInfoEndpoint=$$Auth0UserInfoEndpoint \
-		--parameters primaryOidcjwksEndpoint=$$Auth0JWKSEndpoint \
-		--parameters epsDomain=$$epsDomain \
-		--parameters epsZoneId=$$epsZoneId 
-
+cdk-synth:
+	mkdir -p SAMtemplates/USCertificates
+	mkdir -p SAMtemplates/ClinicalPrescriptionTrackerStack
+	cd packages/cdk && cdk synth --output=../../SAMtemplates/USCertificates USCertificates \
+		--context stackName=USCertificates > ../../SAMtemplates/USCertificates.yaml
+	cd packages/cdk && cdk synth --output=../../SAMtemplates/ClinicalPrescriptionTrackerStack USCertificates \
+		--context stackName=ClinicalPrescriptionTrackerStack  > ../../SAMtemplates/ClinicalPrescriptionTrackerStack.yaml
 build-deployment-image:
 	rm -rf .asdf
 	cp -r $$HOME/.asdf .
