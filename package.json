@@ -22,8 +22,6 @@
         "packages/cdk"
     ],
     "devDependencies": {
-        "@aws-amplify/backend": "^1.2.1",
-        "@aws-amplify/backend-cli": "^1.2.5",
         "@semantic-release/changelog": "^6.0.3",
         "@semantic-release/release-notes-generator": "^14.0.1",
         "@types/jest": "^29.5.13",
@@ -44,6 +42,7 @@
         "typescript-eslint": "^8.6.0"
     },
     "dependencies": {
+        "@aws-amplify/backend": "^1.2.1",
         "conventional-changelog-eslint": "^6.0.0",
         "esbuild": "^0.23.1"
     }

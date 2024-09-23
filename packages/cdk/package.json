@@ -9,13 +9,16 @@
     "watch": "tsc -w",
     "test": "jest",
     "cdk": "cdk",
-    "lint": "eslint  --max-warnings 0 --fix --config ../../eslint.config.mjs ."
+    "lint": "eslint  --max-warnings 0 --fix --config ../../eslint.config.mjs .",
+    "synth": "cdk synth --context stackName=clinical-tracker-ui"
   },
   "devDependencies": {
     "aws-cdk": "2.157.0"
   },
   "dependencies": {
+    "@k-foss/ts-esnode": "^2.0.3",
     "aws-cdk-lib": "2.157.0",
+    "cdk-nag": "^2.28.195",
     "constructs": "^10.0.0",
     "source-map-support": "^0.5.21"
   }

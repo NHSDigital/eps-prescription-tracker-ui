@@ -1,6 +1,7 @@
 import * as cdk from "aws-cdk-lib"
 import * as nodeLambda from "aws-cdk-lib/aws-lambda-nodejs"
 import * as iam from "aws-cdk-lib/aws-iam"
+import {aws_lambda as lambda} from "aws-cdk-lib"
 
 import {LambdaResources} from "./lambdaResources"
 import {Construct} from "constructs"
@@ -81,6 +82,17 @@ export class Functions extends Construct {
         TokenMappingTableName: props.tokenMappingTableName!
       }
     })
+
+    const cfnStatus = status.node.defaultChild as lambda.CfnFunction
+    cfnStatus.cfnOptions.metadata = {
+      "guard": {
+        "SuppressedRules": [
+          "LAMBDA_DLQ_CHECK",
+          "LAMBDA_INSIDE_VPC",
+          "LAMBDA_CONCURRENCY_CHECK"
+        ]
+      }
+    }
 
     // Outputs
     this.statusFunctionName = status.functionName

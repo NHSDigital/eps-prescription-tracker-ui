@@ -6,6 +6,7 @@ import * as cognito from "aws-cdk-lib/aws-cognito"
 import * as route53 from "aws-cdk-lib/aws-route53"
 import * as nodeLambda from "aws-cdk-lib/aws-lambda-nodejs"
 import * as iam from "aws-cdk-lib/aws-iam"
+import {aws_lambda as lambda} from "aws-cdk-lib"
 
 import {ApiResources} from "./apiResources"
 import {LambdaResources} from "./lambdaResources"
@@ -17,6 +18,8 @@ import {
   getLambdaArn,
   getLambdaInvokeURL
 } from "./helpers"
+import {LambdaDataSource} from "aws-cdk-lib/aws-appsync"
+import {NagSuppressions} from "cdk-nag"
 
 const baseDir = path.resolve(__dirname, "../../..")
 export interface CognitoProps {
@@ -89,6 +92,8 @@ export class Cognito extends Construct {
     const baseApiGwUrl = `https://${authDomain}`
     const baseIdGwUrl = `https://${idDomain}`
 
+    // Creates new certificate for Hosted Zone with sub-domain
+
     const generateCertificate = new certificatemanager.CfnCertificate(this, "GenerateCertificate", {
       validationMethod: "DNS",
       domainName: authDomain,
@@ -108,6 +113,12 @@ export class Cognito extends Construct {
         ]
       }
     })
+    NagSuppressions.addResourceSuppressions(restApiGateway, [
+      {
+        id: "AwsSolutions-APIG2",
+        reason: "Suppress error for request validation"
+      }
+    ])
 
     const tokenResources = new LambdaResources(this, "TokenResources", {
       stackName: props.stackName!,
@@ -129,6 +140,20 @@ export class Cognito extends Construct {
         allowAdminCreateUserOnly: true
       }
     })
+    NagSuppressions.addResourceSuppressions(userPool, [
+      {
+        id: "AwsSolutions-COG1",
+        reason: "Suppress error for password policy as we don't use passwords"
+      },
+      {
+        id: "AwsSolutions-COG2",
+        reason: "Suppress warning for MFA policy as we don't use passwords"
+      },
+      {
+        id: "AwsSolutions-COG3",
+        reason: "Suppress error for advanced security features"
+      }
+    ])
 
     const userPoolARecordSet = new route53.CfnRecordSet(this, "UserPoolARecordSet", {
       name: environmentDomain,
@@ -253,6 +278,17 @@ export class Cognito extends Construct {
       }
     })
 
+    const cfnToken = token.node.defaultChild as lambda.CfnFunction
+    cfnToken.cfnOptions.metadata = {
+      "guard": {
+        "SuppressedRules": [
+          "LAMBDA_DLQ_CHECK",
+          "LAMBDA_INSIDE_VPC",
+          "LAMBDA_CONCURRENCY_CHECK"
+        ]
+      }
+    }
+
     const userPoolDomainRecordSet = new route53.CfnRecordSet(this, "UserPoolDomainRecordSet", {
       name: idDomain,
       type: "A",
@@ -276,6 +312,16 @@ export class Cognito extends Construct {
         uri: getLambdaInvokeURL(props.region, token.functionArn)
       }
     })
+    NagSuppressions.addResourceSuppressions(tokenMethod, [
+      {
+        id: "AwsSolutions-APIG4",
+        reason: "Suppress error for not implementing authorization as we don't need it"
+      },
+      {
+        id: "AwsSolutions-COG4",
+        reason: "Suppress error for not implementing cognito authorization as we don't need it"
+      }
+    ])
 
     const restApiGatewayDeploymentB = new apigateway.CfnDeployment(this, "RestApiGatewayDeploymentB", {
       restApiId: restApiGateway.ref
@@ -292,6 +338,16 @@ export class Cognito extends Construct {
         format: apiGwLogFormat
       }
     })
+    NagSuppressions.addResourceSuppressions(restApiGatewayStage, [
+      {
+        id: "AwsSolutions-APIG3",
+        reason: "Suppress warning for not implementing WAF"
+      },
+      {
+        id: "AwsSolutions-APIG6",
+        reason: "Suppress error for not implementing cloudwatch logging as we do have it enabled"
+      }
+    ])
 
     const restApiDomainMapping = new apigateway.CfnBasePathMapping(this, "RestApiDomainMapping", {
       domainName: restApiDomain.ref,

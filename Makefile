@@ -112,6 +112,7 @@ lint: lint-node lint-samtemplates lint-githubactions lint-githubaction-scripts
 test: compile
 	npm run test --workspace packages/client
 	npm run test --workspace packages/server
+	npm run test --workspace packages/cdk
 
 clean:
 	rm -rf packages/client/coverage
@@ -150,9 +151,11 @@ run-auth:
 
 
 cdk-deploy: guard-stack_name
-	cd packages/cdk && cdk deploy --all \
+	REQUIRE_APPROVAL="$${REQUIRE_APPROVAL:-any-change}" && \
+		cd packages/cdk && cdk deploy \
+		--all \
 		--ci true \
-		--require-approval never \
+		--require-approval $${REQUIRE_APPROVAL} \
 		--context stackName=$$stack_name \
 		--parameters primaryOidcClientId=$$Auth0ClientID \
 		--parameters primaryOidClientSecret=$$Auth0ClientSecret \
@@ -165,13 +168,9 @@ cdk-deploy: guard-stack_name
 		--parameters epsZoneId=$$epsZoneId 
 
 cdk-synth:
-	mkdir -p SAMtemplates/USCertificates
-	mkdir -p SAMtemplates/ClinicalPrescriptionTrackerStack
-	cd packages/cdk && cdk synth --output=../../SAMtemplates/USCertificates USCertificates \
-		--context stackName=USCertificates > ../../SAMtemplates/USCertificates.yaml
-	cd packages/cdk && cdk synth --output=../../SAMtemplates/ClinicalPrescriptionTrackerStack USCertificates \
-		--context stackName=ClinicalPrescriptionTrackerStack  > ../../SAMtemplates/ClinicalPrescriptionTrackerStack.yaml
-build-deployment-image:
+	npm run synth --workspace packages/cdk
+
+build-deployment-container-image:
 	rm -rf .asdf
 	cp -r $$HOME/.asdf .
 	docker build -t "clinical-prescription-tracker-ui" -f docker/Dockerfile .

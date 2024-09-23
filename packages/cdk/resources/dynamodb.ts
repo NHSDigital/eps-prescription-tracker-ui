@@ -86,7 +86,6 @@ export class Dynamodb extends Construct {
         ]
       }
     })
-
     const tokenMappingTable = new dynamodb.CfnTable(this, "TokenMappingTable", {
       tableName: `${props.stackName!}-TokenMapping`,
       pointInTimeRecoverySpecification: {
@@ -130,9 +129,10 @@ export class Dynamodb extends Construct {
             Effect: "Allow",
             Action: [
               "kms:DescribeKey",
-              "kms:GenerateDataKey*",
+              "kms:GenerateDataKey",
               "kms:Encrypt",
-              "kms:ReEncrypt*",
+              "kms:ReEncryptFrom",
+              "kms:ReEncryptTo",
               "kms:Decrypt"
             ],
             Resource: tokensMappingKmsKey.attrArn
@@ -140,7 +140,6 @@ export class Dynamodb extends Construct {
         ]
       }
     })
-
     const tokenMappingResources = new DynamodbResources(this, "TokenMappingResources", {
       stackName: props.stackName!,
       tableName: tokenMappingTable.ref,

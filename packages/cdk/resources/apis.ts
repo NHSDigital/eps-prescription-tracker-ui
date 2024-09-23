@@ -3,6 +3,7 @@ import * as apigateway from "aws-cdk-lib/aws-apigateway"
 import {ApiResources} from "./apiResources"
 import {Construct} from "constructs"
 import {apiGwLogFormat, getLambdaInvokeURL} from "./helpers"
+import {NagSuppressions} from "cdk-nag"
 export interface ApisProps {
   /**
    * @default 'none'
@@ -59,6 +60,13 @@ export class Apis extends Construct {
       }
     })
 
+    NagSuppressions.addResourceSuppressions(restApiGateway, [
+      {
+        id: "AwsSolutions-APIG2",
+        reason: "Suppress error for not implementing validation"
+      }
+    ])
+
     const restApiGatewayResources = new ApiResources(this, "RestApiGatewayResources",
       {
         additionalPolicies: [
@@ -104,7 +112,6 @@ export class Apis extends Construct {
     })
     restApiGatewayDeploymentA.addDependency(statusMethod)
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const restApiGatewayStage = new apigateway.CfnStage(this, "RestApiGatewayStage", {
       restApiId: restApiGateway.ref,
       stageName: "prod",
@@ -115,5 +122,17 @@ export class Apis extends Construct {
         format: apiGwLogFormat
       }
     })
+
+    NagSuppressions.addResourceSuppressions(restApiGatewayStage, [
+      {
+        id: "AwsSolutions-APIG3",
+        reason: "Suppress warning for not implementing WAF"
+      },
+      {
+        id: "AwsSolutions-APIG6",
+        reason: "Suppress error for not implementing cloudwatch logging as we do have it enabled"
+      }
+    ])
+
   }
 }
