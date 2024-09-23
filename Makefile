@@ -154,6 +154,8 @@ run-auth:
 
 cdk-deploy: guard-stack_name
 	REQUIRE_APPROVAL="$${REQUIRE_APPROVAL:-any-change}" && \
+	VERSION_NUMBER="$${VERSION_NUMBER:-undefined}" && \
+	COMMIT_ID="$${COMMIT_ID:-undefined}" && \
 		cd packages/cdk && cdk deploy \
 		--all \
 		--ci true \

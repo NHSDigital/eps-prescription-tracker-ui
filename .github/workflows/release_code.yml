@@ -129,6 +129,8 @@ jobs:
           -e Auth0TokenEndpoint="${{ secrets.Auth0TokenEndpoint}}" \
           -e Auth0UserInfoEndpoint="${{ secrets.Auth0UserInfoEndpoint}}" \
           -e Auth0JWKSEndpoint="${{ secrets.Auth0JWKSEndpoint}}" \
+          -e VERSION_NUMBER="${{ inputs.VERSION_NUMBER}}" \
+          -e COMMIT_ID="${{ inputs.COMMIT_ID}}" \
           clinical-prescription-tracker-ui
         shell: bash
 
