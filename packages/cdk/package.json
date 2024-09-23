@@ -13,12 +13,9 @@
     "synth": "cdk synth --context stackName=clinical-tracker-ui",
     "check-licenses": "license-checker --failOn GPL --failOn LGPL --start ../.."
   },
-  "devDependencies": {
-    "aws-cdk": "2.157.0"
-  },
+  "devDependencies": {},
   "dependencies": {
-    "@k-foss/ts-esnode": "^2.0.3",
-    "aws-cdk-lib": "2.157.0",
+    "aws-cdk-lib": "^2.159.1",
     "cdk-nag": "^2.28.195",
     "constructs": "^10.0.0",
     "source-map-support": "^0.5.21"
