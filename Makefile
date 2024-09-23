@@ -161,6 +161,8 @@ cdk-deploy: guard-stack_name
 		--ci true \
 		--require-approval $${REQUIRE_APPROVAL} \
 		--context stackName=$$stack_name \
+		--context VERSION_NUMBER=$$VERSION_NUMBER \
+		--context COMMIT_ID=$$COMMIT_ID \
 		--parameters primaryOidcClientId=$$Auth0ClientID \
 		--parameters primaryOidClientSecret=$$Auth0ClientSecret \
 		--parameters primaryOidcIssuer=$$Auth0Issuer \
