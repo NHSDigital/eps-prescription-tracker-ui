@@ -7,7 +7,7 @@
     "test": "jest",
     "cdk": "cdk",
     "lint": "eslint  --max-warnings 0 --fix --config ../../eslint.config.mjs .",
-    "synth": "cdk synth --context stackName=clinical-tracker-ui",
+    "synth": "cdk synth --context stackName=clinical-tracker-ui  --context VERSION_NUMBER=undefined --context COMMIT_ID=undefined",
     "check-licenses": "license-checker --failOn GPL --failOn LGPL --start ../.."
   },
   "dependencies": {
