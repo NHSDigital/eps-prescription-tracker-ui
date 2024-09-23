@@ -130,6 +130,8 @@ check-licenses-node:
 	npm run check-licenses
 	npm run check-licenses --workspace packages/client
 	npm run check-licenses --workspace packages/server
+	npm run check-licenses --workspace packages/cdk
+
 
 check-licenses-python:
 	scripts/check_python_licenses.sh

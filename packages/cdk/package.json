@@ -10,7 +10,8 @@
     "test": "jest",
     "cdk": "cdk",
     "lint": "eslint  --max-warnings 0 --fix --config ../../eslint.config.mjs .",
-    "synth": "cdk synth --context stackName=clinical-tracker-ui"
+    "synth": "cdk synth --context stackName=clinical-tracker-ui",
+    "check-licenses": "license-checker --failOn GPL --failOn LGPL --start ../.."
   },
   "devDependencies": {
     "aws-cdk": "2.157.0"
