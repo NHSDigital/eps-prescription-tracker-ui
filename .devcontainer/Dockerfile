@@ -47,8 +47,8 @@ RUN asdf plugin add python; \
     asdf plugin add ruby https://github.com/asdf-vm/asdf-ruby.git
 
 
-WORKDIR /workspaces/eps-prescription-status-update-api
-ADD .tool-versions /workspaces/eps-prescription-status-update-api/.tool-versions
+WORKDIR /workspaces/eps-prescription-tracker-ui
+ADD .tool-versions /workspaces/eps-prescription-tracker-ui/.tool-versions
 ADD .tool-versions /home/vscode/.tool-versions
 
 RUN asdf install; \
