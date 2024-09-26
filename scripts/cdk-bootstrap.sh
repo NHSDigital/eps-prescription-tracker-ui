@@ -21,7 +21,8 @@ ALL_POLICIES="${ALL_POLICIES},${GrantCloudFormationExecutionAccessPolicyD}"
 
 
 cdk bootstrap aws://${AWS_ACCOUNT_ID}/eu-west-2 \
+  --bootstrap-customer-key \
   --cloudformation-execution-policies "${ALL_POLICIES}" 
 
-cdk bootstrap aws://${AWS_ACCOUNT_ID}/us-east-1 \
-  --cloudformation-execution-policies "${ALL_POLICIES}" 
+#cdk bootstrap aws://${AWS_ACCOUNT_ID}/us-east-1 \
+#  --cloudformation-execution-policies "${ALL_POLICIES}" 
