@@ -156,7 +156,8 @@ cdk-deploy: guard-stack_name
 	REQUIRE_APPROVAL="$${REQUIRE_APPROVAL:-any-change}" && \
 	VERSION_NUMBER="$${VERSION_NUMBER:-undefined}" && \
 	COMMIT_ID="$${COMMIT_ID:-undefined}" && \
-		cd packages/cdk && cdk deploy \
+		cdk deploy \
+		--app "npx ts-node --prefer-ts-exts packages/cdk/bin/ClinicalPrescriptionTrackerApp.ts"
 		--all \
 		--ci true \
 		--require-approval $${REQUIRE_APPROVAL} \
@@ -174,7 +175,12 @@ cdk-deploy: guard-stack_name
 		--parameters epsZoneId=$$epsZoneId 
 
 cdk-synth:
-	npm run synth --workspace packages/cdk
+	cdk synth \
+		--app "npx ts-node --prefer-ts-exts packages/cdk/bin/ClinicalPrescriptionTrackerApp.ts" \
+		--context stackName=clinical-tracker-ui  \
+		--context VERSION_NUMBER=undefined \
+		--context COMMIT_ID=undefined 
+
 
 build-deployment-container-image:
 	rm -rf .asdf

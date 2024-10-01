@@ -30,3 +30,4 @@ test/
 packages/client/.next
 amplify_outputs.json
 .asdf
+cdk.out/
