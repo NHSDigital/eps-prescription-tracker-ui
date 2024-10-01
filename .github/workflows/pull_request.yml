@@ -18,7 +18,6 @@ jobs:
 
   get_issue_number:
     runs-on: ubuntu-latest
-    needs: quality_checks
     outputs:
       issue_number: ${{steps.get_issue_number.outputs.result}}
 
@@ -54,11 +53,10 @@ jobs:
           echo "commit_id=${{ github.sha }}" >> "$GITHUB_OUTPUT"
 
   package_code:
-    needs: get_issue_number
     uses: ./.github/workflows/cdk_package_code.yml
 
   release_code:
-    needs: [get_issue_number, package_code, get_commit_id]
+    needs: [get_issue_number, package_code, get_commit_id, quality_checks]
     uses: ./.github/workflows/cdk_release_code.yml
     with:
       STACK_NAME: cpt-ui-pr-${{needs.get_issue_number.outputs.issue_number}}

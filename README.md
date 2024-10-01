@@ -28,7 +28,6 @@ The contents of this repository are protected by Crown Copyright (C).
 It is recommended that you use visual studio code and a devcontainer as this will install all necessary components and correct versions of tools and languages.  
 See https://code.visualstudio.com/docs/devcontainers/containers for details on how to set this up on your host machine.  
 There is also a workspace file in .vscode that should be opened once you have started the devcontainer. The workspace file can also be opened outside of a devcontainer if you wish.  
-The project uses [SAM](https://aws.amazon.com/serverless/sam/) to develop and deploy the APIs and associated resources.
 
 All commits must be made using [signed commits](https://docs.github.com/en/authentication/managing-commit-signature-verification/signing-commits)
 
@@ -82,7 +81,7 @@ SSO registration scopes [sso:account:access]:
 This will then open a browser window and you should authenticate with your hscic credentials
 You should then select the development account and set default region to be eu-west-2.
 
-You will now be able to use AWS and SAM CLI commands to access the dev account. You can also use the AWS extension to view resources.
+You will now be able to use AWS and CDK CLI commands to access the dev account. You can also use the AWS extension to view resources.
 
 When the token expires, you may need to reauthorise using `make aws-login`
 
