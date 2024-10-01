@@ -84,7 +84,7 @@ delete_cname_records() {
 
       echo "CNAME record $i deleted"
       else
-        echo "not going to delete CNAME record $i as state is ${STATE} **"
+        echo "not going to delete CNAME record $i as state is ${STATE}"
       fi
   done
 }
