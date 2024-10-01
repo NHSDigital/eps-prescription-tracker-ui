@@ -50,20 +50,6 @@ on:
         required: false
       DEV_CLOUD_FORMATION_EXECUTE_LAMBDA_ROLE:
         required: false
-      Auth0ClientID:
-        required: false
-      Auth0ClientSecret:
-        required: false
-      Auth0Issuer:
-        required: false
-      Auth0AuthorizeEndpoint:
-        required: false
-      Auth0TokenEndpoint:
-        required: false
-      Auth0UserInfoEndpoint:
-        required: false
-      Auth0JWKSEndpoint:
-        required: false
   
 jobs:
   release_code:

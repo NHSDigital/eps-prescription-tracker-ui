@@ -69,10 +69,3 @@ jobs:
       LOG_RETENTION_DAYS: 30
     secrets:
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_DEPLOY_ROLE }}
-      Auth0ClientID: ${{ secrets.Auth0ClientID }}
-      Auth0ClientSecret: ${{ secrets.Auth0ClientSecret }}
-      Auth0Issuer: ${{ secrets.Auth0Issuer }}
-      Auth0AuthorizeEndpoint: ${{ secrets.Auth0AuthorizeEndpoint }}
-      Auth0TokenEndpoint: ${{ secrets.Auth0TokenEndpoint }}
-      Auth0UserInfoEndpoint: ${{ secrets.Auth0UserInfoEndpoint }}
-      Auth0JWKSEndpoint: ${{ secrets.Auth0JWKSEndpoint }}
