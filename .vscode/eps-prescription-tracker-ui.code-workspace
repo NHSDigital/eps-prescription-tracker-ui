@@ -41,7 +41,7 @@
         "devcontainer",
         "direnv",
         "eamodio",
-        "eps-prescription-status-update-api",
+        "eps-prescription-tracker-ui",
         "esbuild",
         "excelviewer",
         "fhir",
