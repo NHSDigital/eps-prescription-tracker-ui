@@ -70,12 +70,6 @@ aws-login:
 cfn-guard:
 	./scripts/run_cfn_guard.sh
 
-build-localsite:
-	npm run build --workspace packages/auth-demo
-
-run-auth:
-	npm run start --workspace packages/auth-demo
-
 cdk-deploy: guard-stack_name
 	REQUIRE_APPROVAL="$${REQUIRE_APPROVAL:-any-change}" && \
 	VERSION_NUMBER="$${VERSION_NUMBER:-undefined}" && \
