@@ -121,7 +121,6 @@ cdk-synth:
 
 cdk-diff:
 	npx cdk diff \
-		--verbose \
 		--app "npx ts-node --prefer-ts-exts packages/cdk/bin/ClinicalPrescriptionTrackerApp.ts" \
 		--context stackName=$$stack_name \
 		--context stackName=$$stack_name \
