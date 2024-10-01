@@ -139,7 +139,7 @@ jobs:
           -e stack_name="${{ inputs.STACK_NAME }}" \
           -e VERSION_NUMBER="${{ inputs.VERSION_NUMBER}}" \
           -e COMMIT_ID="${{ inputs.COMMIT_ID}}" \
-          -e SHOW_DIFF="true" \
+          -e SHOW_DIFF="false" \
           -e DEPLOY_CODE="true" \
           clinical-prescription-tracker-ui
         shell: bash
