@@ -30,46 +30,13 @@ export class ClinicalPrescriptionTrackerStack extends cdk.Stack {
   public constructor(scope: cdk.App, id: string, props: ClinicalPrescriptionTrackerStackProps ) {
     super(scope, id, props)
 
-    const primaryOidcClientId = new cdk.CfnParameter(this, "primaryOidcClientId", {
-      description: "primaryOidcClientId",
-      type: "String"
-    }).valueAsString
-    const primaryOidClientSecret = new cdk.CfnParameter(this, "primaryOidClientSecret", {
-      description: "primaryOidClientSecret",
-      type: "String"
-    }).valueAsString
-    const primaryOidcIssuer = new cdk.CfnParameter(this, "primaryOidcIssuer", {
-      description: "primaryOidcIssuer",
-      type: "String"
-    }).valueAsString
-    const primaryOidcAuthorizeEndpoint = new cdk.CfnParameter(this, "primaryOidcAuthorizeEndpoint", {
-      description: "primaryOidcAuthorizeEndpoint",
-      type: "String"
-    }).valueAsString
-    const primaryOidcTokenEndpoint = new cdk.CfnParameter(this, "primaryOidcTokenEndpoint", {
-      description: "primaryOidcTokenEndpoint",
-      type: "String"
-    }).valueAsString
-    const primaryOidcUserInfoEndpoint = new cdk.CfnParameter(this, "primaryOidcUserInfoEndpoint", {
-      description: "primaryOidcUserInfoEndpoint",
-      type: "String"
-    }).valueAsString
-    const primaryOidcjwksEndpoint = new cdk.CfnParameter(this, "primaryOidcjwksEndpoint", {
-      description: "primaryOidcjwksEndpoint",
-      type: "String"
-    }).valueAsString
-
-    // parameters passed to other stack but needed here for full deployment to work
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const epsDomain = new cdk.CfnParameter(this, "epsDomain", {
-      description: "epsDomain",
-      type: "String"
-    }).valueAsString
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const epsZoneId = new cdk.CfnParameter(this, "epsZoneId", {
-      description: "epsZoneId",
-      type: "String"
-    }).valueAsString
+    const primaryOidcClientId = this.node.tryGetContext("primaryOidcClientId")
+    const primaryOidClientSecret = this.node.tryGetContext("primaryOidClientSecret")
+    const primaryOidcIssuer = this.node.tryGetContext("primaryOidcIssuer")
+    const primaryOidcAuthorizeEndpoint = this.node.tryGetContext("primaryOidcAuthorizeEndpoint")
+    const primaryOidcTokenEndpoint = this.node.tryGetContext("primaryOidcTokenEndpoint")
+    const primaryOidcUserInfoEndpoint = this.node.tryGetContext("primaryOidcUserInfoEndpoint")
+    const primaryOidcjwksEndpoint = this.node.tryGetContext("primaryOidcjwksEndpoint")
 
     // Resources
     const tables = new Dynamodb(this, "Tables", {

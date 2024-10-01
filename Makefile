@@ -93,40 +93,49 @@ cdk-deploy: guard-stack_name
 		--context stackName=$$stack_name \
 		--context VERSION_NUMBER=$$VERSION_NUMBER \
 		--context COMMIT_ID=$$COMMIT_ID \
-		--parameters primaryOidcClientId=$$Auth0ClientID \
-		--parameters primaryOidClientSecret=$$Auth0ClientSecret \
-		--parameters primaryOidcIssuer=$$Auth0Issuer \
-		--parameters primaryOidcAuthorizeEndpoint=$$Auth0AuthorizeEndpoint \
-		--parameters primaryOidcTokenEndpoint=$$Auth0TokenEndpoint \
-		--parameters primaryOidcUserInfoEndpoint=$$Auth0UserInfoEndpoint \
-		--parameters primaryOidcjwksEndpoint=$$Auth0JWKSEndpoint \
-		--parameters epsDomain=$$epsDomain \
-		--parameters epsZoneId=$$epsZoneId 
+		--context primaryOidcClientId=$$Auth0ClientID \
+		--context primaryOidClientSecret=$$Auth0ClientSecret \
+		--context primaryOidcIssuer=$$Auth0Issuer \
+		--context primaryOidcAuthorizeEndpoint=$$Auth0AuthorizeEndpoint \
+		--context primaryOidcTokenEndpoint=$$Auth0TokenEndpoint \
+		--context primaryOidcUserInfoEndpoint=$$Auth0UserInfoEndpoint \
+		--context primaryOidcjwksEndpoint=$$Auth0JWKSEndpoint \
+		--context epsDomain=$$epsDomain \
+		--context epsZoneId=$$epsZoneId 
 
 cdk-synth:
 	npx cdk synth \
 		--app "npx ts-node --prefer-ts-exts packages/cdk/bin/ClinicalPrescriptionTrackerApp.ts" \
 		--context stackName=clinical-tracker-ui \
 		--context VERSION_NUMBER=undefined \
-		--context COMMIT_ID=undefined 
+		--context COMMIT_ID=undefined \
+		--context primaryOidcClientId=$$Auth0ClientID \
+		--context primaryOidClientSecret=$$Auth0ClientSecret \
+		--context primaryOidcIssuer=$$Auth0Issuer \
+		--context primaryOidcAuthorizeEndpoint=$$Auth0AuthorizeEndpoint \
+		--context primaryOidcTokenEndpoint=$$Auth0TokenEndpoint \
+		--context primaryOidcUserInfoEndpoint=$$Auth0UserInfoEndpoint \
+		--context primaryOidcjwksEndpoint=$$Auth0JWKSEndpoint \
+		--context epsDomain=$$epsDomain \
+		--context epsZoneId=$$epsZoneId 
 
 cdk-diff:
 	npx cdk diff \
-		-v \
+		--verbose \
 		--app "npx ts-node --prefer-ts-exts packages/cdk/bin/ClinicalPrescriptionTrackerApp.ts" \
 		--context stackName=$$stack_name \
 		--context stackName=$$stack_name \
 		--context VERSION_NUMBER=$$VERSION_NUMBER \
 		--context COMMIT_ID=$$COMMIT_ID \
-		--parameters primaryOidcClientId=$$Auth0ClientID \
-		--parameters primaryOidClientSecret=$$Auth0ClientSecret \
-		--parameters primaryOidcIssuer=$$Auth0Issuer \
-		--parameters primaryOidcAuthorizeEndpoint=$$Auth0AuthorizeEndpoint \
-		--parameters primaryOidcTokenEndpoint=$$Auth0TokenEndpoint \
-		--parameters primaryOidcUserInfoEndpoint=$$Auth0UserInfoEndpoint \
-		--parameters primaryOidcjwksEndpoint=$$Auth0JWKSEndpoint \
-		--parameters epsDomain=$$epsDomain \
-		--parameters epsZoneId=$$epsZoneId 
+		--context primaryOidcClientId=$$Auth0ClientID \
+		--context primaryOidClientSecret=$$Auth0ClientSecret \
+		--context primaryOidcIssuer=$$Auth0Issuer \
+		--context primaryOidcAuthorizeEndpoint=$$Auth0AuthorizeEndpoint \
+		--context primaryOidcTokenEndpoint=$$Auth0TokenEndpoint \
+		--context primaryOidcUserInfoEndpoint=$$Auth0UserInfoEndpoint \
+		--context primaryOidcjwksEndpoint=$$Auth0JWKSEndpoint \
+		--context epsDomain=$$epsDomain \
+		--context epsZoneId=$$epsZoneId 
 
 cdk-watch: guard-stack_name
 	REQUIRE_APPROVAL="$${REQUIRE_APPROVAL:-any-change}" && \
@@ -141,15 +150,15 @@ cdk-watch: guard-stack_name
 		--context stackName=$$stack_name \
 		--context VERSION_NUMBER=$$VERSION_NUMBER \
 		--context COMMIT_ID=$$COMMIT_ID \
-		--parameters primaryOidcClientId=$$Auth0ClientID \
-		--parameters primaryOidClientSecret=$$Auth0ClientSecret \
-		--parameters primaryOidcIssuer=$$Auth0Issuer \
-		--parameters primaryOidcAuthorizeEndpoint=$$Auth0AuthorizeEndpoint \
-		--parameters primaryOidcTokenEndpoint=$$Auth0TokenEndpoint \
-		--parameters primaryOidcUserInfoEndpoint=$$Auth0UserInfoEndpoint \
-		--parameters primaryOidcjwksEndpoint=$$Auth0JWKSEndpoint \
-		--parameters epsDomain=$$epsDomain \
-		--parameters epsZoneId=$$epsZoneId 
+		--context primaryOidcClientId=$$Auth0ClientID \
+		--context primaryOidClientSecret=$$Auth0ClientSecret \
+		--context primaryOidcIssuer=$$Auth0Issuer \
+		--context primaryOidcAuthorizeEndpoint=$$Auth0AuthorizeEndpoint \
+		--context primaryOidcTokenEndpoint=$$Auth0TokenEndpoint \
+		--context primaryOidcUserInfoEndpoint=$$Auth0UserInfoEndpoint \
+		--context primaryOidcjwksEndpoint=$$Auth0JWKSEndpoint \
+		--context epsDomain=$$epsDomain \
+		--context epsZoneId=$$epsZoneId 
 
 build-deployment-container-image:
 	rm -rf .asdf
