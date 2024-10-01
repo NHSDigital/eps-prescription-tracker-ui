@@ -32,6 +32,15 @@ repos:
         types_or: [ts, tsx, javascript, jsx, json]
         pass_filenames: false
 
+      - id: lint-cdk
+        name: Lint cdk
+        entry: npm
+        args: ["run", "--prefix=packages/cdk", "lint"]
+        language: system
+        files: ^packages\/cdk
+        types_or: [ts, tsx, javascript, jsx, json]
+        pass_filenames: false
+
       - id: lint-server
         name: Lint server
         entry: npm
@@ -47,14 +56,6 @@ repos:
         args: ["lint-cloudformation"]
         language: system
         files: ^cloudformation
-        pass_filenames: false
-
-      - id: lint-samtemplates
-        name: Lint sam templates
-        entry: make
-        args: ["lint-samtemplates"]
-        language: system
-        files: ^SAMtemplates
         pass_filenames: false
 
       - id: lint-githubactions
