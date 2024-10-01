@@ -17,7 +17,13 @@ CNAME_QUERY=cpt-ui-pr
 # this should be customised to delete cloudformation stacks and proxygen deployments if they are used
 main() {
   delete_cloudformation_stacks "eu-west-2"
+  echo
+  echo "***********************"
+  echo
   delete_cloudformation_stacks "us-east-1"
+  echo
+  echo "***********************"
+  echo
   delete_cname_records
 }
 
