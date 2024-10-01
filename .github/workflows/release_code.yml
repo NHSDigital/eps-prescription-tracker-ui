@@ -114,6 +114,28 @@ jobs:
         run: |
           docker load < clinical-prescription-tracker-ui.tar.gz
 
+      - name: Show diff
+        run: |
+          docker run \
+          -e AWS_ACCESS_KEY_ID=${{ steps.connect-aws.outputs.aws-access-key-id }} \
+          -e AWS_SECRET_ACCESS_KEY=${{ steps.connect-aws.outputs.aws-secret-access-key }} \
+          -e AWS_SESSION_TOKEN=${{ steps.connect-aws.outputs.aws-session-token }} \
+          -e AWS_REGION="eu-west-2" \
+          -e stack_name="${{ inputs.STACK_NAME }}" \
+          -e Auth0ClientID="${{ secrets.Auth0ClientID}}" \
+          -e Auth0ClientSecret="${{ secrets.Auth0ClientSecret}}" \
+          -e Auth0Issuer="${{ secrets.Auth0Issuer}}" \
+          -e Auth0AuthorizeEndpoint="${{ secrets.Auth0AuthorizeEndpoint}}" \
+          -e Auth0TokenEndpoint="${{ secrets.Auth0TokenEndpoint}}" \
+          -e Auth0UserInfoEndpoint="${{ secrets.Auth0UserInfoEndpoint}}" \
+          -e Auth0JWKSEndpoint="${{ secrets.Auth0JWKSEndpoint}}" \
+          -e VERSION_NUMBER="${{ inputs.VERSION_NUMBER}}" \
+          -e COMMIT_ID="${{ inputs.COMMIT_ID}}" \
+          -e SHOW_DIFF="true" \
+          -e DEPLOY_CODE="false" \
+          clinical-prescription-tracker-ui
+        shell: bash
+
       - name: Deploy code
         run: |
           docker run \
@@ -131,6 +153,8 @@ jobs:
           -e Auth0JWKSEndpoint="${{ secrets.Auth0JWKSEndpoint}}" \
           -e VERSION_NUMBER="${{ inputs.VERSION_NUMBER}}" \
           -e COMMIT_ID="${{ inputs.COMMIT_ID}}" \
+          -e SHOW_DIFF="true" \
+          -e DEPLOY_CODE="true" \
           clinical-prescription-tracker-ui
         shell: bash
 

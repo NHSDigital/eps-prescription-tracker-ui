@@ -7,5 +7,11 @@ epsDomain=$(aws cloudformation list-exports --output json | jq -r '.Exports[] | 
 export epsZoneId
 export epsDomain
 export REQUIRE_APPROVAL=never
-make cdk-diff
-make cdk-deploy
+if [ "${SHOW_DIFF}" = "true" ]
+then
+    make cdk-diff
+fi
+if [ "${RUN_DEPLOY}" = "true" ]
+then
+    make cdk-deploy
+fi
