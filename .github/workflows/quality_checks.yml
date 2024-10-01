@@ -54,6 +54,8 @@ jobs:
       - name: run cdk synth
         run: make cdk-synth
   
+      - name: run cfn-guard
+        run: make cfn-guard
       # - name: SonarCloud Scan
       #   uses: SonarSource/sonarcloud-github-action@master
       #   env:

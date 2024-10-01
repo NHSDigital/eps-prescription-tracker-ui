@@ -25,9 +25,71 @@ const USCertificates = new USCertificatesStack(app, "USCertificates", {
   stackName: stackName
 })
 
-new ClinicalPrescriptionTrackerStack(app, "ClinicalPrescriptionTrackerStack", {
+const ClinicalPrescriptionTracker = new ClinicalPrescriptionTrackerStack(app, "ClinicalPrescriptionTrackerStack", {
   crossRegionReferences: true,
   env: {region: "eu-west-2"},
   stackName: stackName,
   userPoolTLSCertificateArn: USCertificates.userPoolTlsCertificateArn
+})
+
+// do a synth to add cross region stuff
+app.synth()
+
+// add metadata to lambda
+const writerProvider = USCertificates.node.findChild("Custom::CrossRegionExportWriterCustomResourceProvider")
+const writerLambda = writerProvider.node.findChild("Handler") as cdk.CfnResource
+const writerRole = writerProvider.node.findChild("Role") as cdk.CfnResource
+writerLambda.cfnOptions.metadata = (
+  {
+    ...writerLambda.cfnOptions.metadata,
+    "guard": {
+      "SuppressedRules": [
+        "LAMBDA_DLQ_CHECK",
+        "LAMBDA_INSIDE_VPC",
+        "LAMBDA_CONCURRENCY_CHECK"
+      ]
+    }
+  }
+)
+writerRole.cfnOptions.metadata = (
+  {
+    ...writerLambda.cfnOptions.metadata,
+    "guard": {
+      "SuppressedRules": [
+        "IAM_NO_INLINE_POLICY_CHECK"
+      ]
+    }
+  }
+)
+
+// eslint-disable-next-line max-len
+const readerProvider = ClinicalPrescriptionTracker.node.findChild("Custom::CrossRegionExportReaderCustomResourceProvider") as cdk.CustomResourceProvider
+const readerLambda = readerProvider.node.findChild("Handler") as cdk.CfnResource
+const readerRole = readerProvider.node.findChild("Role") as cdk.CfnResource
+readerLambda.cfnOptions.metadata = (
+  {
+    ...readerLambda.cfnOptions.metadata,
+    "guard": {
+      "SuppressedRules": [
+        "LAMBDA_DLQ_CHECK",
+        "LAMBDA_INSIDE_VPC",
+        "LAMBDA_CONCURRENCY_CHECK"
+      ]
+    }
+  }
+)
+readerRole.cfnOptions.metadata = (
+  {
+    ...readerRole.cfnOptions.metadata,
+    "guard": {
+      "SuppressedRules": [
+        "IAM_NO_INLINE_POLICY_CHECK"
+      ]
+    }
+  }
+)
+
+// do a synth again with force to include the added metadata
+app.synth({
+  force: true
 })

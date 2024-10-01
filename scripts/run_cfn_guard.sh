@@ -14,13 +14,13 @@ mkdir -p cfn_guard_output
 declare -a rulesets=("ncsc" "ncsc-cafv3" "wa-Reliability-Pillar" "wa-Security-Pillar")
 for ruleset in "${rulesets[@]}"
     do
-    echo "Checking all templates in cloudformation folder with ruleest $ruleset"
+    echo "Checking all templates in cdk.out folder with ruleest $ruleset"
 
     ~/.guard/bin/cfn-guard validate \
-        --data cloudformation \
-            --rules "/tmp/ruleset/output/$ruleset.guard" \
+        --data cdk.out \
+        --rules "/tmp/ruleset/output/$ruleset.guard" \
         --show-summary fail \
-        > "cfn_guard_output/cloudformation_$ruleset.txt"
+        > "cfn_guard_output/cdk.out_$ruleset.txt"
 
 done
 

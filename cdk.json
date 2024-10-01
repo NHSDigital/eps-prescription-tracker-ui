@@ -1,18 +1,22 @@
 {
   "watch": {
     "include": [
-      "package/cdk/**"
+      "packages/**"
     ],
     "exclude": [
-      "README.md",
-      "cdk*.json",
+      "**/README.md",
+      "**/cdk*.json",
       "**/*.d.ts",
       "**/*.js",
-      "tsconfig.json",
-      "package*.json",
-      "yarn.lock",
-      "node_modules",
-      "test"
+      "**/tsconfig.json",
+      "**/package*.json",
+      "**/yarn.lock",
+      "**/node_modules",
+      "**/tests*",
+      "**/lib",
+      "**/coverage",
+      "**/jest.config.ts",
+      "**/jest.debug.config.ts"
     ]
   },
   "context": {

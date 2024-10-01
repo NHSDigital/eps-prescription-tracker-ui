@@ -6,7 +6,7 @@ This is the code for the Clinical Prescription Tracker UI.
 
 - `packages/client` Client side react front end for clinical prescription tracker UI
 - `packages/server/` Server side for clinical prescription tracker UI.
-- `SAMtemplates/` Contains the SAM templates used to define the stacks.
+- `packages/cdk/` Contains the cdk code used to define the stacks.
 - `scripts/` Utilities helpful to developers of this specification.
 - `.devcontainer` Contains a dockerfile and vscode devcontainer definition.
 - `.github` Contains github workflows that are used for building and deploying from pull requests and releases.
@@ -99,31 +99,14 @@ You will need the "Execute Analysis" permission for the project (NHSDigital_elec
 You can run the following command to deploy the code to AWS for testing
 
 ```
-make sam-sync
+make cdk-watch
 ```
 
-This will take a few minutes to deploy - you will see something like this when deployment finishes
-
-```
-......
-CloudFormation events from stack operations (refresh every 0.5 seconds)
----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-ResourceStatus                            ResourceType                              LogicalResourceId                         ResourceStatusReason
----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-.....
-CREATE_IN_PROGRESS                        AWS::ApiGatewayV2::ApiMapping             HttpApiGatewayApiMapping                  -
-CREATE_IN_PROGRESS                        AWS::ApiGatewayV2::ApiMapping             HttpApiGatewayApiMapping                  Resource creation Initiated
-CREATE_COMPLETE                           AWS::ApiGatewayV2::ApiMapping             HttpApiGatewayApiMapping                  -
-CREATE_COMPLETE                           AWS::CloudFormation::Stack                ab-1                                      -
----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-Stack creation succeeded. Sync infra completed.
-```
+This will take a few minutes to deploy - you will see a message saying deployment complete when it has finished.
 
 Note - the command will keep running and should not be stopped.
 
-Any code changes you make are automatically uploaded to AWS while `make sam-sync` is running allowing you to quickly test any changes you make
+Any code changes you make are automatically uploaded to AWS while `make cdk-watch` is running allowing you to quickly test any changes you make
 
 ### Pre-commit hooks
 
@@ -142,27 +125,14 @@ There are `make` commands that are run as part of the CI pipeline and help alias
 - `install-hooks` Installs git pre commit hooks
 - `install` Runs all install targets
 
-#### SAM targets
+#### CDK targets
 
 These are used to do common commands
 
-- `sam-build` Prepares the lambdas and SAM definition file to be used in subsequent steps.
-- `sam-run-local` Runs the API and lambdas locally.
-- `sam-sync` Sync the API and lambda to AWS. This keeps running and automatically uploads any changes to lambda code made locally. Needs AWS_DEFAULT_PROFILE and stack_name environment variables set.
-- `sam-sync-sandbox` Sync the API and lambda to AWS. This keeps running and automatically uploads any changes to lambda code made locally. Needs stack_name environment variables set, the path and file name where the AWS SAM template is located.
-- `sam-deploy` Deploys the compiled SAM template from sam-build to AWS. Needs AWS_DEFAULT_PROFILE and stack_name environment variables set.
-- `sam-delete` Deletes the deployed SAM cloud formation stack and associated resources. Needs AWS_DEFAULT_PROFILE and stack_name environment variables set.
-- `sam-list-endpoints` Lists endpoints created for the current stack. Needs AWS_DEFAULT_PROFILE and stack_name environment variables set.
-- `sam-list-resources` Lists resources created for the current stack. Needs AWS_DEFAULT_PROFILE and stack_name environment variables set.
-- `sam-list-outputs` Lists outputs from the current stack. Needs AWS_DEFAULT_PROFILE and stack_name environment variables set.
-- `sam-validate` Validates the main SAM template and the splunk firehose template.
-- `sam-validate-sandbox` Validates the sandbox SAM template and the splunk firehose template.
-- `sam-deploy-package` Deploys a package created by sam-build. Used in CI builds. Needs the following environment variables set.
-  - artifact_bucket - bucket where uploaded packaged files are
-  - artifact_bucket_prefix - prefix in bucket of where uploaded packaged files ore
-  - stack_name - name of stack to deploy
-  - template_file - name of template file created by sam-package
-  - cloud_formation_execution_role - ARN of role that cloud formation assumes when applying the changeset
+- `cdk-deploy` Builds and deploys the code to AWS
+- `cdk-synth` Converts the CDK code to cloudformation templates
+- `cdk-diff` Runs cdk diff comparing the deployed stack with local CDK code to see differences
+- `cdk-watch` Syncs the code and CDK templates to AWS. This keeps running and automatically uploads changes to AWS
 
 #### Clean and deep-clean targets
 
@@ -173,8 +143,6 @@ These are used to do common commands
 
 - `lint` Runs lint for all code
 - `lint-node` Runs lint for node code
-- `lint-cloudformation` Runs lint for cloudformation templates
-- `lint-samtemplates` Runs lint for SAM templates
 - `test` Runs unit tests for all code
 - `cfn-guard` runs cfn-guard for sam and cloudformation templates
 

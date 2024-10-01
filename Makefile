@@ -80,7 +80,6 @@ build-localsite:
 run-auth:
 	npm run start --workspace packages/auth-demo
 
-
 cdk-deploy: guard-stack_name
 	REQUIRE_APPROVAL="$${REQUIRE_APPROVAL:-any-change}" && \
 	VERSION_NUMBER="$${VERSION_NUMBER:-undefined}" && \
