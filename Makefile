@@ -86,7 +86,7 @@ cdk-deploy: guard-stack_name
 	VERSION_NUMBER="$${VERSION_NUMBER:-undefined}" && \
 	COMMIT_ID="$${COMMIT_ID:-undefined}" && \
 		npx cdk deploy \
-		--app "npx ts-node --prefer-ts-exts packages/cdk/bin/ClinicalPrescriptionTrackerApp.ts"
+		--app "npx ts-node --prefer-ts-exts packages/cdk/bin/ClinicalPrescriptionTrackerApp.ts" \
 		--all \
 		--ci true \
 		--require-approval $${REQUIRE_APPROVAL} \
@@ -123,7 +123,7 @@ cdk-watch: guard-stack_name
 	VERSION_NUMBER="$${VERSION_NUMBER:-undefined}" && \
 	COMMIT_ID="$${COMMIT_ID:-undefined}" && \
 		npx cdk deploy \
-		--app "npx ts-node --prefer-ts-exts packages/cdk/bin/ClinicalPrescriptionTrackerApp.ts"
+		--app "npx ts-node --prefer-ts-exts packages/cdk/bin/ClinicalPrescriptionTrackerApp.ts" \
 		--watch \
 		--all \
 		--ci true \
