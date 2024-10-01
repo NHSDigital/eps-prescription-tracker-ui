@@ -11,7 +11,7 @@ if [ "${SHOW_DIFF}" = "true" ]
 then
     make cdk-diff
 fi
-if [ "${RUN_DEPLOY}" = "true" ]
+if [ "${DEPLOY_CODE}" = "true" ]
 then
     make cdk-deploy
 fi
