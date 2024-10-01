@@ -45,7 +45,7 @@ delete_cloudformation_stacks() {
     STATE=$(echo "${RESPONSE}" | jq -r .state)
     if [ "$STATE" == "closed" ]; then
       echo "** going to delete stack $i as state is ${STATE} **"
-      aws cloudformation delete-stack --stack-name "${i}"
+      aws cloudformation delete-stack --region "$region" --stack-name "${i}"
       echo "** Sleeping for 60 seconds to avoid 429 on delete stack **"
       sleep 60
     else
