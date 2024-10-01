@@ -1,4 +1,4 @@
-name: sam release code
+name: cdk release code
 
 on:
   workflow_call:

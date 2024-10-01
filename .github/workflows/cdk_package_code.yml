@@ -1,4 +1,4 @@
-name: sam package code
+name: cdk package code
 
 on:
   workflow_call:
