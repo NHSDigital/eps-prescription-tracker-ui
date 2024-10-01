@@ -17,10 +17,6 @@ install-node:
 install-hooks: install-python
 	poetry run pre-commit install --install-hooks --overwrite
 
-sam-build: sam-validate compile
-	sam build --template-file SAMtemplates/main_template.yaml --region eu-west-2
-
-
 compile-node:
 	npx tsc --build tsconfig.build.json
 

@@ -59,6 +59,5 @@ COPY --chown=cdkuser package.json /home/cdkuser/
 COPY --chown=cdkuser package-lock.json /home/cdkuser/
 COPY --chown=cdkuser tsconfig.defaults.json /home/cdkuser/
 COPY --chown=cdkuser docker/entrypoint.sh /home/cdkuser/
-COPY --chown=cdkuser docker/entrypoint.sh /home/cdkuser/
 
 ENTRYPOINT ["/home/cdkuser/entrypoint.sh"]
