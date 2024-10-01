@@ -4,24 +4,13 @@ import * as apigateway from "aws-cdk-lib/aws-apigateway"
 import * as certificatemanager from "aws-cdk-lib/aws-certificatemanager"
 import * as cognito from "aws-cdk-lib/aws-cognito"
 import * as route53 from "aws-cdk-lib/aws-route53"
-import * as nodeLambda from "aws-cdk-lib/aws-lambda-nodejs"
-import * as iam from "aws-cdk-lib/aws-iam"
-import {aws_lambda as lambda} from "aws-cdk-lib"
 
-import {ApiResources} from "./apiResources"
-import {LambdaResources} from "./lambdaResources"
+import {ApiGwConstruct} from "./apiGWConstruct"
+import {LambdaConstruct} from "./lambdaConstruct"
 import {Construct} from "constructs"
-import * as path from "path"
-import {
-  apiGwLogFormat,
-  getDefaultLambdaOptions,
-  getLambdaArn,
-  getLambdaInvokeURL
-} from "./helpers"
-import {LambdaDataSource} from "aws-cdk-lib/aws-appsync"
+import {apiGwLogFormat, getLambdaArn, getLambdaInvokeURL} from "./helpers"
 import {NagSuppressions} from "cdk-nag"
 
-const baseDir = path.resolve(__dirname, "../../..")
 export interface CognitoProps {
   /**
    */
@@ -105,33 +94,6 @@ export class Cognito extends Construct {
       ]
     })
 
-    const restApiGateway = new apigateway.CfnRestApi(this, "RestApiGateway", {
-      name: `${props.stackName!}-apigw-cognito`,
-      endpointConfiguration: {
-        types: [
-          "REGIONAL"
-        ]
-      }
-    })
-    NagSuppressions.addResourceSuppressions(restApiGateway, [
-      {
-        id: "AwsSolutions-APIG2",
-        reason: "Suppress error for request validation"
-      }
-    ])
-
-    const tokenResources = new LambdaResources(this, "TokenResources", {
-      stackName: props.stackName!,
-      lambdaName: `${props.stackName!}-token`,
-      lambdaArn: getLambdaArn(props.region, props.account, `${props.stackName}-token`),
-      additionalPolicies: [
-        props.tokenMappingTableWritePolicyArn,
-        props.tokenMappingTableReadPolicyArn,
-        props.useTokensMappingKMSKeyPolicyArn
-      ],
-      logRetentionInDays: 30
-    })
-
     const userPool = new cognito.CfnUserPool(this, "UserPool", {
       usernameAttributes: [
         "email"
@@ -154,51 +116,6 @@ export class Cognito extends Construct {
         reason: "Suppress error for advanced security features"
       }
     ])
-
-    const userPoolARecordSet = new route53.CfnRecordSet(this, "UserPoolARecordSet", {
-      name: environmentDomain,
-      type: "A",
-      hostedZoneId: cdk.Fn.importValue("eps-route53-resources:EPS-ZoneID"),
-      resourceRecords: [
-        "127.0.0.1"
-      ],
-      ttl: "900"
-    })
-
-    const restApiDomain = new apigateway.CfnDomainName(this, "RestApiDomain", {
-      domainName: authDomain,
-      regionalCertificateArn: generateCertificate.ref,
-      endpointConfiguration: {
-        types: [
-          "REGIONAL"
-        ]
-      },
-      securityPolicy: "TLS_1_2"
-    })
-
-    const restApiGatewayResources = new ApiResources(this, "RestApiGatewayResources", {
-      additionalPolicies: [
-        tokenResources.executeLambdaPolicyArn
-      ],
-      apiName: `${props.stackName!}-apigw-cognito`,
-      logRetentionInDays: 30
-    })
-
-    const tokenApiGatewayResource = new apigateway.CfnResource(this, "TokenAPIGatewayResource", {
-      restApiId: restApiGateway.ref,
-      parentId: restApiGateway.attrRootResourceId,
-      pathPart: "token"
-    })
-
-    const userPoolDomain = new cognito.CfnUserPoolDomain(this, "UserPoolDomain", {
-      userPoolId: userPool.ref,
-      customDomainConfig: {
-        certificateArn: props.userPoolTlsCertificateArn
-      },
-      domain: idDomain
-    })
-
-    userPoolDomain.addDependency(userPoolARecordSet)
 
     const userPoolIdentityProvider = new cognito.CfnUserPoolIdentityProvider(this, "UserPoolIdentityProvider", {
       userPoolId: userPool.ref,
@@ -224,6 +141,75 @@ export class Cognito extends Construct {
         profile: "profile"
       }
     })
+
+    const token = new LambdaConstruct(this, "TokenResources", {
+      stackName: props.stackName!,
+      lambdaName: `${props.stackName!}-token`,
+      lambdaArn: getLambdaArn(props.region, props.account, `${props.stackName}-token`),
+      additionalPolicies: [
+        props.tokenMappingTableWritePolicyArn,
+        props.tokenMappingTableReadPolicyArn,
+        props.useTokensMappingKMSKeyPolicyArn
+      ],
+      logRetentionInDays: 30,
+      packageBasePath: "packages/cognito",
+      entryPoint: "src/token.ts",
+      lambdaEnvironmentVariables: {
+        "idp_token_path": props.primaryOidcTokenEndpoint!,
+        TokenMappingTableName: props.tokenMappingTableName!,
+        UserPoolIdentityProvider: userPoolIdentityProvider.ref,
+        "jwks_uri": props.primaryOidcjwksEndpoint!
+      }
+
+    })
+
+    const userPoolARecordSet = new route53.CfnRecordSet(this, "UserPoolARecordSet", {
+      name: environmentDomain,
+      type: "A",
+      hostedZoneId: cdk.Fn.importValue("eps-route53-resources:EPS-ZoneID"),
+      resourceRecords: [
+        "127.0.0.1"
+      ],
+      ttl: "900"
+    })
+
+    const restApiDomain = new apigateway.CfnDomainName(this, "RestApiDomain", {
+      domainName: authDomain,
+      regionalCertificateArn: generateCertificate.ref,
+      endpointConfiguration: {
+        types: [
+          "REGIONAL"
+        ]
+      },
+      securityPolicy: "TLS_1_2"
+    })
+
+    const restApiGateway = new ApiGwConstruct(this, "RestApiGatewayResources", {
+      additionalPolicies: [
+        token.executeLambdaPolicyArn
+      ],
+      apiName: `${props.stackName!}-apigw-cognito`,
+      logRetentionInDays: 30,
+      stackName: props.stackName,
+      apigwName: `${props.stackName!}-apigw-cognito`
+
+    })
+
+    const tokenApiGatewayResource = new apigateway.CfnResource(this, "TokenAPIGatewayResource", {
+      restApiId: restApiGateway.apiGwId,
+      parentId: restApiGateway.attrRootResourceId,
+      pathPart: "token"
+    })
+
+    const userPoolDomain = new cognito.CfnUserPoolDomain(this, "UserPoolDomain", {
+      userPoolId: userPool.ref,
+      customDomainConfig: {
+        certificateArn: props.userPoolTlsCertificateArn
+      },
+      domain: idDomain
+    })
+
+    userPoolDomain.addDependency(userPoolARecordSet)
 
     const clientUserPool = new cognito.CfnUserPoolClient(this, "ClientUserPool", {
       allowedOAuthFlowsUserPoolClient: true,
@@ -261,34 +247,6 @@ export class Cognito extends Construct {
       }
     })
 
-    const tokenOptions = getDefaultLambdaOptions({
-      functionName: `${props.stackName!}-token`,
-      packageBasePath: "packages/cognito",
-      entryPoint: "src/token.ts"
-    })
-
-    const token = new nodeLambda.NodejsFunction(this, "tokenLambda", {
-      ...tokenOptions,
-      role: iam.Role.fromRoleArn(this, "tokenResourcesRole", tokenResources.lambdaRoleArn),
-      environment: {
-        "idp_token_path": props.primaryOidcTokenEndpoint!,
-        TokenMappingTableName: props.tokenMappingTableName!,
-        UserPoolIdentityProvider: userPoolIdentityProvider.ref,
-        "jwks_uri": props.primaryOidcjwksEndpoint!
-      }
-    })
-
-    const cfnToken = token.node.defaultChild as lambda.CfnFunction
-    cfnToken.cfnOptions.metadata = {
-      "guard": {
-        "SuppressedRules": [
-          "LAMBDA_DLQ_CHECK",
-          "LAMBDA_INSIDE_VPC",
-          "LAMBDA_CONCURRENCY_CHECK"
-        ]
-      }
-    }
-
     const userPoolDomainRecordSet = new route53.CfnRecordSet(this, "UserPoolDomainRecordSet", {
       name: idDomain,
       type: "A",
@@ -301,15 +259,15 @@ export class Cognito extends Construct {
     })
 
     const tokenMethod = new apigateway.CfnMethod(this, "TokenMethod", {
-      restApiId: restApiGateway.ref,
+      restApiId: restApiGateway.apiGwId,
       resourceId: tokenApiGatewayResource.ref,
       httpMethod: "POST",
       authorizationType: "NONE",
       integration: {
         type: "AWS_PROXY",
-        credentials: restApiGatewayResources.apiGwRoleArn,
+        credentials: restApiGateway.apiGwRoleArn,
         integrationHttpMethod: "POST",
-        uri: getLambdaInvokeURL(props.region, token.functionArn)
+        uri: getLambdaInvokeURL(props.region, token.lambdaFunctionArn)
       }
     })
     NagSuppressions.addResourceSuppressions(tokenMethod, [
@@ -324,17 +282,17 @@ export class Cognito extends Construct {
     ])
 
     const restApiGatewayDeploymentB = new apigateway.CfnDeployment(this, "RestApiGatewayDeploymentB", {
-      restApiId: restApiGateway.ref
+      restApiId: restApiGateway.apiGwId
     })
     restApiGatewayDeploymentB.addDependency(tokenMethod)
 
     const restApiGatewayStage = new apigateway.CfnStage(this, "RestApiGatewayStage", {
-      restApiId: restApiGateway.ref,
+      restApiId: restApiGateway.apiGwId,
       stageName: "prod",
       deploymentId: restApiGatewayDeploymentB.ref,
       tracingEnabled: true,
       accessLogSetting: {
-        destinationArn: restApiGatewayResources.apiGwAccessLogsArn,
+        destinationArn: restApiGateway.apiGwAccessLogsArn,
         format: apiGwLogFormat
       }
     })
@@ -351,7 +309,7 @@ export class Cognito extends Construct {
 
     const restApiDomainMapping = new apigateway.CfnBasePathMapping(this, "RestApiDomainMapping", {
       domainName: restApiDomain.ref,
-      restApiId: restApiGateway.ref,
+      restApiId: restApiGateway.apiGwId,
       stage: restApiGatewayStage.ref
     })
 

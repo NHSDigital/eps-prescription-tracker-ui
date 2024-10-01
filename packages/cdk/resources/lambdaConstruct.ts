@@ -1,10 +1,13 @@
 import * as cdk from "aws-cdk-lib"
 import * as iam from "aws-cdk-lib/aws-iam"
 import * as logs from "aws-cdk-lib/aws-logs"
+import * as nodeLambda from "aws-cdk-lib/aws-lambda-nodejs"
+import {aws_lambda as lambda} from "aws-cdk-lib"
 import {NagSuppressions} from "cdk-nag"
 import {Construct} from "constructs"
+import {getDefaultLambdaOptions} from "./helpers"
 
-export interface LambdaResourcesProps {
+export interface LambdaConstructProps {
   /**
    */
   readonly stackName: string;
@@ -30,23 +33,21 @@ export interface LambdaResourcesProps {
   /**
    * @default 30
    */
+  readonly packageBasePath: string;
+  readonly entryPoint: string;
+  readonly lambdaEnvironmentVariables: { [key: string]: string; }
 }
 
 /**
  * Resources for a lambda
 
  */
-export class LambdaResources extends Construct {
-  /**
-   * LambdaRole ARN
-   */
-  public readonly lambdaRoleArn
-  /**
-   * Lambda execution policy arn
-   */
+export class LambdaConstruct extends Construct {
   public readonly executeLambdaPolicyArn
+  public readonly lambdaFunctionName
+  public readonly lambdaFunctionArn
 
-  public constructor(scope: Construct, id: string, props: LambdaResourcesProps) {
+  public constructor(scope: Construct, id: string, props: LambdaConstructProps) {
     super(scope, id)
 
     // Applying default props
@@ -143,8 +144,33 @@ export class LambdaResources extends Construct {
         ...(props.additionalPolicies ?? [])]
     })
 
+    const lambdaOptions = getDefaultLambdaOptions({
+      functionName: `${props.stackName}-${props.lambdaName}`,
+      packageBasePath: props.packageBasePath,
+      entryPoint: props.entryPoint
+    })
+
+    const lambda = new nodeLambda.NodejsFunction(this, "statusLambda", {
+      ...lambdaOptions,
+      role: iam.Role.fromRoleArn(this, "statusResourcesRole", lambdaRole.attrArn),
+      environment: props.lambdaEnvironmentVariables
+    })
+
+    const cfnStatus = lambda.node.defaultChild as lambda.CfnFunction
+    cfnStatus.cfnOptions.metadata = {
+      "guard": {
+        "SuppressedRules": [
+          "LAMBDA_DLQ_CHECK",
+          "LAMBDA_INSIDE_VPC",
+          "LAMBDA_CONCURRENCY_CHECK"
+        ]
+      }
+    }
+
     // Outputs
-    this.lambdaRoleArn = lambdaRole.attrArn
+    this.lambdaFunctionName = lambda.functionName
+    this.lambdaFunctionArn = lambda.functionArn
+
     this.executeLambdaPolicyArn = executeLambdaManagedPolicy.attrPolicyArn
   }
 }

@@ -1,6 +1,6 @@
 import * as apigateway from "aws-cdk-lib/aws-apigateway"
 
-import {ApiResources} from "./apiResources"
+import {ApiGwConstruct} from "./apiGWConstruct"
 import {Construct} from "constructs"
 import {apiGwLogFormat, getLambdaInvokeURL} from "./helpers"
 import {NagSuppressions} from "cdk-nag"
@@ -51,29 +51,15 @@ export class Apis extends Construct {
     }
 
     // Resources
-    const restApiGateway = new apigateway.CfnRestApi(this, "RestApiGateway", {
-      name: `${props.stackName!}-apigw`,
-      endpointConfiguration: {
-        types: [
-          "REGIONAL"
-        ]
-      }
-    })
-
-    NagSuppressions.addResourceSuppressions(restApiGateway, [
-      {
-        id: "AwsSolutions-APIG2",
-        reason: "Suppress error for not implementing validation"
-      }
-    ])
-
-    const restApiGatewayResources = new ApiResources(this, "RestApiGatewayResources",
+    const restApiGateway = new ApiGwConstruct(this, "RestApiGatewayResources",
       {
         additionalPolicies: [
           props.executeStatusLambdaPolicyArn
         ],
         apiName: `${props.stackName!}-apigw`,
-        logRetentionInDays: props.logRetentionInDays!
+        logRetentionInDays: props.logRetentionInDays!,
+        stackName: props.stackName,
+        apigwName: `${props.stackName!}-apigw`
       }
     )
 
@@ -84,41 +70,41 @@ export class Apis extends Construct {
       providerArns: [
         props.userPoolArn!
       ],
-      restApiId: restApiGateway.ref
+      restApiId: restApiGateway.apiGwId
     })
 
     const statusStatementResource = new apigateway.CfnResource(this, "StatusStatementResource", {
-      restApiId: restApiGateway.ref,
+      restApiId: restApiGateway.apiGwId,
       parentId: restApiGateway.attrRootResourceId,
       pathPart: "_status"
     })
 
     const statusMethod = new apigateway.CfnMethod(this, "StatusMethod", {
-      restApiId: restApiGateway.ref,
+      restApiId: restApiGateway.apiGwId,
       resourceId: statusStatementResource.ref,
       httpMethod: "GET",
       authorizationType: "COGNITO_USER_POOLS",
       authorizerId: authorizer.ref,
       integration: {
         type: "AWS_PROXY",
-        credentials: restApiGatewayResources.apiGwRoleArn,
+        credentials: restApiGateway.apiGwRoleArn,
         integrationHttpMethod: "POST",
         uri: getLambdaInvokeURL(props.region, props.statusFunctionArn)
       }
     })
 
     const restApiGatewayDeploymentA = new apigateway.CfnDeployment(this, "RestApiGatewayDeploymentA", {
-      restApiId: restApiGateway.ref
+      restApiId: restApiGateway.apiGwId
     })
     restApiGatewayDeploymentA.addDependency(statusMethod)
 
     const restApiGatewayStage = new apigateway.CfnStage(this, "RestApiGatewayStage", {
-      restApiId: restApiGateway.ref,
+      restApiId: restApiGateway.apiGwId,
       stageName: "prod",
       deploymentId: restApiGatewayDeploymentA.ref,
       tracingEnabled: true,
       accessLogSetting: {
-        destinationArn: restApiGatewayResources.apiGwAccessLogsArn,
+        destinationArn: restApiGateway.apiGwAccessLogsArn,
         format: apiGwLogFormat
       }
     })

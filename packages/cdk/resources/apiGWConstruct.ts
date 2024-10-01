@@ -1,9 +1,12 @@
 import * as cdk from "aws-cdk-lib"
 import * as iam from "aws-cdk-lib/aws-iam"
 import * as logs from "aws-cdk-lib/aws-logs"
-import {Construct} from "constructs"
+import * as apigateway from "aws-cdk-lib/aws-apigateway"
 
-export interface ApiResourcesProps {
+import {Construct} from "constructs"
+import {NagSuppressions} from "cdk-nag"
+
+export interface ApiGWConstructProps {
   /**
    * A list of additional policies to attach to the API gateway role
    * @default 'none'
@@ -17,13 +20,15 @@ export interface ApiResourcesProps {
    * @default 30
    */
   readonly logRetentionInDays?: number;
+  readonly stackName: string;
+  readonly apigwName: string;
 }
 
 /**
  * Resources for an API
 
  */
-export class ApiResources extends Construct {
+export class ApiGwConstruct extends Construct {
   /**
    * The API GW role ARN
    */
@@ -32,8 +37,10 @@ export class ApiResources extends Construct {
    * The API GW access logs ARN
    */
   public readonly apiGwAccessLogsArn
+  public readonly apiGwId
+  public readonly attrRootResourceId
 
-  public constructor(scope: Construct, id: string, props: ApiResourcesProps = {}) {
+  public constructor(scope: Construct, id: string, props: ApiGWConstructProps) {
     super(scope, id)
 
     // Applying default props
@@ -87,8 +94,26 @@ export class ApiResources extends Construct {
         destinationArn: cdk.Fn.importValue("lambda-resources:SplunkDeliveryStream")
       })
 
+    const restApiGateway = new apigateway.CfnRestApi(this, "RestApiGateway", {
+      name: props.apigwName,
+      endpointConfiguration: {
+        types: [
+          "REGIONAL"
+        ]
+      }
+    })
+
+    NagSuppressions.addResourceSuppressions(restApiGateway, [
+      {
+        id: "AwsSolutions-APIG2",
+        reason: "Suppress error for not implementing validation"
+      }
+    ])
+
     // Outputs
     this.apiGwRoleArn = apiGwRole.attrArn
     this.apiGwAccessLogsArn = apiGwAccessLogs.attrArn
+    this.apiGwId = restApiGateway.ref
+    this.attrRootResourceId = restApiGateway.attrRootResourceId
   }
 }
