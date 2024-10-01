@@ -55,6 +55,7 @@ delete_cloudformation_stacks() {
 }
 
 delete_cname_records() {
+  echo "checking CNAME records"
   HOSTED_ZONE_ID=$(aws route53 list-hosted-zones-by-name --dns-name dev.eps.national.nhs.uk. | jq -r ".HostedZones[0] | .Id")
   CNAME_RECORDS=$(aws route53 list-resource-record-sets --hosted-zone-id "${HOSTED_ZONE_ID}" \
     --query "ResourceRecordSets[?Type == 'CNAME' && (contains(Name, '${CNAME_QUERY}') )]" \
