@@ -112,12 +112,20 @@ cdk-synth:
 
 cdk-diff:
 	npx cdk diff \
-		-v \
 		--app "npx ts-node --prefer-ts-exts packages/cdk/bin/ClinicalPrescriptionTrackerApp.ts" \
 		--context stackName=$$stack_name \
 		--context stackName=$$stack_name \
 		--context VERSION_NUMBER=$$VERSION_NUMBER \
-		--context COMMIT_ID=$$COMMIT_ID
+		--context COMMIT_ID=$$COMMIT_ID \
+		--parameters primaryOidcClientId=$$Auth0ClientID \
+		--parameters primaryOidClientSecret=$$Auth0ClientSecret \
+		--parameters primaryOidcIssuer=$$Auth0Issuer \
+		--parameters primaryOidcAuthorizeEndpoint=$$Auth0AuthorizeEndpoint \
+		--parameters primaryOidcTokenEndpoint=$$Auth0TokenEndpoint \
+		--parameters primaryOidcUserInfoEndpoint=$$Auth0UserInfoEndpoint \
+		--parameters primaryOidcjwksEndpoint=$$Auth0JWKSEndpoint \
+		--parameters epsDomain=$$epsDomain \
+		--parameters epsZoneId=$$epsZoneId 
 
 cdk-watch: guard-stack_name
 	REQUIRE_APPROVAL="$${REQUIRE_APPROVAL:-any-change}" && \
