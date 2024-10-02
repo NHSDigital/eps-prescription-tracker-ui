@@ -1,10 +1,9 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
+
 import * as cdk from "aws-cdk-lib"
 import * as apigateway from "aws-cdk-lib/aws-apigateway"
 import * as certificatemanager from "aws-cdk-lib/aws-certificatemanager"
 import * as cognito from "aws-cdk-lib/aws-cognito"
 import * as route53 from "aws-cdk-lib/aws-route53"
-import * as route53Targets from "aws-cdk-lib/aws-route53-targets"
 import * as iam from "aws-cdk-lib/aws-iam"
 import * as dynamodb from "aws-cdk-lib/aws-dynamodb"
 
@@ -55,7 +54,9 @@ export class Cognito extends Construct {
     )
 
     // cognito stuff
-    const userPool = new cognito.UserPool(this, "UserPool", {})
+    const userPool = new cognito.UserPool(this, "UserPool", {
+      removalPolicy: cdk.RemovalPolicy.DESTROY
+    })
     NagSuppressions.addResourceSuppressions(userPool, [
       {
         id: "AwsSolutions-COG1",
@@ -75,26 +76,6 @@ export class Cognito extends Construct {
         domainPrefix: "eps-dev"
       }
     })
-
-    const userPoolWebClient = userPool.addClient("WebClient", {
-      supportedIdentityProviders: [
-        cognito.UserPoolClientIdentityProvider.custom("Primary")
-      ],
-      oAuth: {
-        flows: {
-          authorizationCodeGrant: true,
-          implicitCodeGrant: false
-        },
-        scopes: [
-          cognito.OAuthScope.OPENID,
-          cognito.OAuthScope.EMAIL,
-          cognito.OAuthScope.PHONE,
-          cognito.OAuthScope.PROFILE,
-          cognito.OAuthScope.COGNITO_ADMIN
-        ],
-        callbackUrls: ["http://localhost:3000/auth/"],
-        logoutUrls: ["http://localhost:3000/"]
-      }})
 
     const oidcEndpoints: cognito.OidcEndpoints = {
       authorization: props.primaryOidcAuthorizeEndpoint,
@@ -116,6 +97,26 @@ export class Cognito extends Construct {
       scopes: ["openid", "profile", "email"],
       endpoints: oidcEndpoints
     })
+
+    const userPoolWebClient = userPool.addClient("WebClient", {
+      supportedIdentityProviders: [
+        cognito.UserPoolClientIdentityProvider.custom(userPoolIdentityProvider.providerName)
+      ],
+      oAuth: {
+        flows: {
+          authorizationCodeGrant: true,
+          implicitCodeGrant: false
+        },
+        scopes: [
+          cognito.OAuthScope.OPENID,
+          cognito.OAuthScope.EMAIL,
+          cognito.OAuthScope.PHONE,
+          cognito.OAuthScope.PROFILE,
+          cognito.OAuthScope.COGNITO_ADMIN
+        ],
+        callbackUrls: ["http://localhost:3000/auth/"],
+        logoutUrls: ["http://localhost:3000/"]
+      }})
 
     // lambda for token endpoint
     const token = new LambdaConstruct(this, "TokenResources", {
