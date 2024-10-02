@@ -86,14 +86,13 @@ cdk-deploy: guard-stack_name
 cdk-synth:
 	npx cdk synth \
 		--app "npx ts-node --prefer-ts-exts packages/cdk/bin/ClinicalPrescriptionTrackerApp.ts" \
-		--context stackName=clinical-tracker-ui \
+		--context stackName=cpt-ui \
 		--context VERSION_NUMBER=undefined \
 		--context COMMIT_ID=undefined  
 
 cdk-diff:
 	npx cdk diff \
 		--app "npx ts-node --prefer-ts-exts packages/cdk/bin/ClinicalPrescriptionTrackerApp.ts" \
-		--context stackName=$$stack_name \
 		--context stackName=$$stack_name \
 		--context VERSION_NUMBER=$$VERSION_NUMBER \
 		--context COMMIT_ID=$$COMMIT_ID 
