@@ -32,7 +32,8 @@ export class ApiGwConstruct extends Construct {
     const apiGwAccessLogs = new logs.LogGroup(this, "ApiGwAccessLogs", {
       encryptionKey: cloudWatchLogsKmsKey,
       logGroupName: `/aws/apigateway/${props.apiName!}`,
-      retention: props.logRetentionInDays
+      retention: props.logRetentionInDays,
+      removalPolicy: cdk.RemovalPolicy.DESTROY
     })
 
     const cfnApiGwAccessLogs = apiGwAccessLogs.node.defaultChild as logs.CfnLogGroup

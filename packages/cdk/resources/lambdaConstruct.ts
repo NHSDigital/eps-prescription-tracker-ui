@@ -39,7 +39,8 @@ export class LambdaConstruct extends Construct {
     const lambdaLogGroup = new logs.LogGroup(this, "LambdaLogGroup", {
       encryptionKey: cloudWatchLogsKmsKey,
       logGroupName: `/aws/lambda/${props.lambdaName!}`,
-      retention: props.logRetentionInDays
+      retention: props.logRetentionInDays,
+      removalPolicy: cdk.RemovalPolicy.DESTROY
     })
 
     const cfnlambdaLogGroup = lambdaLogGroup.node.defaultChild as logs.CfnLogGroup
