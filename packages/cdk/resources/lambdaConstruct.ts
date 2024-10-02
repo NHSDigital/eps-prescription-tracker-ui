@@ -116,7 +116,8 @@ export class LambdaConstruct extends Construct {
     const lambda = new nodeLambda.NodejsFunction(this, "statusLambda", {
       ...lambdaOptions,
       role: iam.Role.fromRoleArn(this, "statusResourcesRole", lambdaRole.roleArn),
-      environment: props.lambdaEnvironmentVariables
+      environment: props.lambdaEnvironmentVariables,
+      logGroup: lambdaLogGroup
     })
 
     const cfnLambda = lambda.node.defaultChild as lambda.CfnFunction
