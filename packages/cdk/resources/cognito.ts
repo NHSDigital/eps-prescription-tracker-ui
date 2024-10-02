@@ -76,6 +76,26 @@ export class Cognito extends Construct {
       }
     })
 
+    const userPoolWebClient = userPool.addClient("WebClient", {
+      supportedIdentityProviders: [
+        cognito.UserPoolClientIdentityProvider.custom("Primary")
+      ],
+      oAuth: {
+        flows: {
+          authorizationCodeGrant: true,
+          implicitCodeGrant: false
+        },
+        scopes: [
+          cognito.OAuthScope.OPENID,
+          cognito.OAuthScope.EMAIL,
+          cognito.OAuthScope.PHONE,
+          cognito.OAuthScope.PROFILE,
+          cognito.OAuthScope.COGNITO_ADMIN
+        ],
+        callbackUrls: ["http://localhost:3000/auth/"],
+        logoutUrls: ["http://localhost:3000/"]
+      }})
+
     const oidcEndpoints: cognito.OidcEndpoints = {
       authorization: props.primaryOidcAuthorizeEndpoint,
       jwksUri: props.primaryOidcjwksEndpoint,
@@ -95,28 +115,6 @@ export class Cognito extends Construct {
       },
       scopes: ["openid", "profile", "email"],
       endpoints: oidcEndpoints
-    })
-
-    const userPoolWebClient = new cognito.UserPoolClient(this, "WebClient", {
-      userPool,
-      supportedIdentityProviders: [
-        cognito.UserPoolClientIdentityProvider.custom("Primary")
-      ],
-      oAuth: {
-        flows: {
-          authorizationCodeGrant: true,
-          implicitCodeGrant: false
-        },
-        scopes: [
-          cognito.OAuthScope.OPENID,
-          cognito.OAuthScope.EMAIL,
-          cognito.OAuthScope.PHONE,
-          cognito.OAuthScope.PROFILE,
-          cognito.OAuthScope.COGNITO_ADMIN
-        ],
-        callbackUrls: ["http://localhost:3000/auth/"],
-        logoutUrls: ["http://localhost:3000/"]
-      }
     })
 
     // lambda for token endpoint
