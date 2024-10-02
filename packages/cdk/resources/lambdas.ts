@@ -26,7 +26,7 @@ export class Functions extends Construct {
     const lambdaAccessSecretsPolicy = iam.ManagedPolicy.fromManagedPolicyArn(
       this,
       "lambdaAccessSecretsPolicy",
-      cdk.Fn.importValue("lambda-resources:LambdaAccessSecretsPolicy")
+      cdk.Fn.importValue("account-resources:LambdaAccessSecretsPolicy")
     )
 
     const status = new LambdaConstruct(this, "StatusResources", {
