@@ -100,6 +100,7 @@ export class Cognito extends Construct {
 
     const userPoolWebClient = userPool.addClient("WebClient", {
       supportedIdentityProviders: [
+        cognito.UserPoolClientIdentityProvider.COGNITO,
         cognito.UserPoolClientIdentityProvider.custom(userPoolIdentityProvider.providerName)
       ],
       oAuth: {

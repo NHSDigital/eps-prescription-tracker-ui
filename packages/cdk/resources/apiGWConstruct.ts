@@ -107,7 +107,6 @@ export class ApiGwConstruct extends Construct {
         }
       })
     }
-    apiGwAccessLogs.grantWrite(new iam.ServicePrincipal("apigateway.amazonaws.com"))
     NagSuppressions.addResourceSuppressions(restApiGateway, [
       {
         id: "AwsSolutions-APIG2",
