@@ -88,12 +88,12 @@ export class LambdaConstruct extends Construct {
     const cloudwatchEncryptionKMSPolicyArn = iam.ManagedPolicy.fromManagedPolicyArn(
       this,
       "cloudwatchEncryptionKMSPolicyArn",
-      cdk.Fn.importValue("lambda-resources:CloudwatchEncryptionKMSPolicyArn")
+      cdk.Fn.importValue("account-resources:CloudwatchEncryptionKMSPolicyArn")
     )
     const lambdaDecryptSecretsKMSPolicy = iam.ManagedPolicy.fromManagedPolicyArn(
       this,
       "lambdaDecryptSecretsKMSPolicy",
-      cdk.Fn.importValue("lambda-resources:LambdaDecryptSecretsKMSPolicy")
+      cdk.Fn.importValue("account-resources:LambdaDecryptSecretsKMSPolicy")
     )
     const lambdaRole = new iam.Role(this, "LambdaRole", {
       assumedBy: new iam.ServicePrincipal("lambda.amazonaws.com"),
