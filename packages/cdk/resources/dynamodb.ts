@@ -31,6 +31,17 @@ export class Dynamodb extends Construct {
       policy: new iam.PolicyDocument({
         statements: [
           new iam.PolicyStatement({
+            sid: "Enable IAM User Permissions",
+            effect: iam.Effect.ALLOW,
+            actions: [
+              "kms:*"
+            ],
+            principals: [
+              new iam.AccountRootPrincipal
+            ],
+            resources: ["*"]
+          }),
+          new iam.PolicyStatement({
             sid: "Enable read only decrypt",
             effect: iam.Effect.ALLOW,
             actions: [
