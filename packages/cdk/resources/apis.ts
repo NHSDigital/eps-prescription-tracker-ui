@@ -1,34 +1,17 @@
 import * as apigateway from "aws-cdk-lib/aws-apigateway"
+import * as iam from "aws-cdk-lib/aws-iam"
+import * as cognito from "aws-cdk-lib/aws-cognito"
+import * as lambda from "aws-cdk-lib/aws-lambda"
 
 import {ApiGwConstruct} from "./apiGWConstruct"
 import {Construct} from "constructs"
-import {apiGwLogFormat, getLambdaInvokeURL} from "./helpers"
-import {NagSuppressions} from "cdk-nag"
 export interface ApisProps {
-  /**
-   * @default 'none'
-   */
   readonly stackName: string;
-  /**
-   * @default 'none'
-   */
-  readonly statusFunctionName: string;
-  /**
-   * @default 'none'
-   */
-  readonly statusFunctionArn: string;
-  /**
-   * @default 30
-   */
+  readonly statusLambda: lambda.Function;
   readonly logRetentionInDays?: number;
-  /**
-   * @default 30
-   */
-  /**
-   */
-  readonly userPoolArn: string;
+  readonly userPool: cognito.UserPool;
   readonly region: string;
-  readonly executeStatusLambdaPolicyArn: string;
+  readonly executeStatusLambdaPolicy: iam.ManagedPolicy;
 }
 
 /**
@@ -39,22 +22,17 @@ export class Apis extends Construct {
   public constructor(scope: Construct, id: string, props: ApisProps) {
     super(scope, id)
 
-    // Applying default props
-    props = {
-      ...props,
-      stackName: props.stackName,
-      statusFunctionName: props.statusFunctionName,
-      statusFunctionArn: props.statusFunctionArn,
-      logRetentionInDays: props.logRetentionInDays ?? 30,
-      region: props.region,
-      executeStatusLambdaPolicyArn: props.executeStatusLambdaPolicyArn
-    }
-
     // Resources
+    const authorizer = new apigateway.CognitoUserPoolsAuthorizer(this, "Authorizer", {
+      authorizerName: "cognitoAuth",
+      cognitoUserPools: [props.userPool],
+      identitySource: "method.request.header.authorization"
+    })
+
     const restApiGateway = new ApiGwConstruct(this, "RestApiGatewayResources",
       {
         additionalPolicies: [
-          props.executeStatusLambdaPolicyArn
+          props.executeStatusLambdaPolicy
         ],
         apiName: `${props.stackName!}-apigw`,
         logRetentionInDays: props.logRetentionInDays!,
@@ -63,62 +41,10 @@ export class Apis extends Construct {
       }
     )
 
-    const authorizer = new apigateway.CfnAuthorizer(this, "Authorizer", {
-      name: "cognitoAuth",
-      type: "COGNITO_USER_POOLS",
-      identitySource: "method.request.header.authorization",
-      providerArns: [
-        props.userPoolArn!
-      ],
-      restApiId: restApiGateway.apiGwId
+    const statusResource = restApiGateway.apiGw.root.addResource("_status")
+    statusResource.addMethod("GET", new apigateway.LambdaIntegration(props.statusLambda), {
+      authorizationType: apigateway.AuthorizationType.COGNITO,
+      authorizer: authorizer
     })
-
-    const statusStatementResource = new apigateway.CfnResource(this, "StatusStatementResource", {
-      restApiId: restApiGateway.apiGwId,
-      parentId: restApiGateway.attrRootResourceId,
-      pathPart: "_status"
-    })
-
-    const statusMethod = new apigateway.CfnMethod(this, "StatusMethod", {
-      restApiId: restApiGateway.apiGwId,
-      resourceId: statusStatementResource.ref,
-      httpMethod: "GET",
-      authorizationType: "COGNITO_USER_POOLS",
-      authorizerId: authorizer.ref,
-      integration: {
-        type: "AWS_PROXY",
-        credentials: restApiGateway.apiGwRoleArn,
-        integrationHttpMethod: "POST",
-        uri: getLambdaInvokeURL(props.region, props.statusFunctionArn)
-      }
-    })
-
-    const restApiGatewayDeploymentA = new apigateway.CfnDeployment(this, "RestApiGatewayDeploymentA", {
-      restApiId: restApiGateway.apiGwId
-    })
-    restApiGatewayDeploymentA.addDependency(statusMethod)
-
-    const restApiGatewayStage = new apigateway.CfnStage(this, "RestApiGatewayStage", {
-      restApiId: restApiGateway.apiGwId,
-      stageName: "prod",
-      deploymentId: restApiGatewayDeploymentA.ref,
-      tracingEnabled: true,
-      accessLogSetting: {
-        destinationArn: restApiGateway.apiGwAccessLogsArn,
-        format: apiGwLogFormat
-      }
-    })
-
-    NagSuppressions.addResourceSuppressions(restApiGatewayStage, [
-      {
-        id: "AwsSolutions-APIG3",
-        reason: "Suppress warning for not implementing WAF"
-      },
-      {
-        id: "AwsSolutions-APIG6",
-        reason: "Suppress error for not implementing cloudwatch logging as we do have it enabled"
-      }
-    ])
-
   }
 }

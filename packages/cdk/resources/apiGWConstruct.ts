@@ -2,62 +2,41 @@ import * as cdk from "aws-cdk-lib"
 import * as iam from "aws-cdk-lib/aws-iam"
 import * as logs from "aws-cdk-lib/aws-logs"
 import * as apigateway from "aws-cdk-lib/aws-apigateway"
+import * as kms from "aws-cdk-lib/aws-kms"
 
 import {Construct} from "constructs"
 import {NagSuppressions} from "cdk-nag"
 
 export interface ApiGWConstructProps {
-  /**
-   * A list of additional policies to attach to the API gateway role
-   * @default 'none'
-   */
-  readonly additionalPolicies?: Array<string>;
-  /**
-   * @default 'none'
-   */
-  readonly apiName?: string;
-  /**
-   * @default 30
-   */
-  readonly logRetentionInDays?: number;
+  readonly additionalPolicies?: Array<iam.IManagedPolicy>;
+  readonly apiName: string;
+  readonly logRetentionInDays: number;
   readonly stackName: string;
   readonly apigwName: string;
 }
 
-/**
- * Resources for an API
-
- */
 export class ApiGwConstruct extends Construct {
-  /**
-   * The API GW role ARN
-   */
-  public readonly apiGwRoleArn
-  /**
-   * The API GW access logs ARN
-   */
-  public readonly apiGwAccessLogsArn
-  public readonly apiGwId
-  public readonly attrRootResourceId
+  public readonly apiGwRole: iam.Role
+  public readonly apiGwAccessLogs: logs.LogGroup
+  public readonly apiGw: apigateway.RestApi
 
   public constructor(scope: Construct, id: string, props: ApiGWConstructProps) {
     super(scope, id)
 
-    // Applying default props
-    props = {
-      ...props,
-      additionalPolicies: props.additionalPolicies ?? [],
-      apiName: props.apiName ?? "none",
-      logRetentionInDays: props.logRetentionInDays ?? 30
-    }
-
     // Resources
-    const apiGwAccessLogs = new logs.CfnLogGroup(this, "ApiGwAccessLogs", {
+    const cloudWatchLogsKmsKey = kms.Key.fromKeyArn(
+      this,
+      "cloudWatchLogsKmsKey",
+      cdk.Fn.importValue("account-resources:CloudwatchLogsKmsKeyArn")
+    )
+    const apiGwAccessLogs = new logs.LogGroup(this, "ApiGwAccessLogs", {
+      encryptionKey: cloudWatchLogsKmsKey,
       logGroupName: `/aws/apigateway/${props.apiName!}`,
-      retentionInDays: props.logRetentionInDays!,
-      kmsKeyId: cdk.Fn.importValue("account-resources:CloudwatchLogsKmsKeyArn")
+      retention: props.logRetentionInDays
     })
-    apiGwAccessLogs.cfnOptions.metadata = {
+
+    const cfnApiGwAccessLogs = apiGwAccessLogs.node.defaultChild as logs.CfnLogGroup
+    cfnApiGwAccessLogs.cfnOptions.metadata = {
       guard: {
         SuppressedRules: [
           "CW_LOGGROUP_RETENTION_PERIOD_CHECK"
@@ -65,55 +44,89 @@ export class ApiGwConstruct extends Construct {
       }
     }
 
-    const apiGwRole = new iam.CfnRole(this, "ApiGwRole", {
-      assumeRolePolicyDocument: {
-        Version: "2012-10-17",
-        Statement: [
-          {
-            Effect: "Allow",
-            Principal: {
-              Service: [
-                "apigateway.amazonaws.com"
-              ]
-            },
-            Action: [
-              "sts:AssumeRole"
-            ]
-          }
-        ]
-      },
-      managedPolicyArns: [ ...(props.additionalPolicies ?? [])]
+    const apiGwRole = new iam.Role(this, "ApiGwRole", {
+      assumedBy: new iam.ServicePrincipal("apigateway.amazonaws.com"),
+      managedPolicies: props.additionalPolicies ?? []
     })
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const apiGwAccessLogsSplunkSubscriptionFilter =
       new logs.CfnSubscriptionFilter(this, "ApiGwAccessLogsSplunkSubscriptionFilter", {
         roleArn: cdk.Fn.importValue("lambda-resources:SplunkSubscriptionFilterRole"),
-        logGroupName: apiGwAccessLogs.ref,
+        logGroupName: apiGwAccessLogs.logGroupName,
         filterPattern: "",
         destinationArn: cdk.Fn.importValue("lambda-resources:SplunkDeliveryStream")
       })
 
-    const restApiGateway = new apigateway.CfnRestApi(this, "RestApiGateway", {
-      name: props.apigwName,
+    const restApiGateway = new apigateway.RestApi(this, "RestApiGateway", {
+      restApiName: props.apigwName,
       endpointConfiguration: {
         types: [
-          "REGIONAL"
+          apigateway.EndpointType.REGIONAL
         ]
-      }
+      },
+      cloudWatchRole: false,
+      deploy: true
     })
 
+    const stage = restApiGateway.deploymentStage.node.defaultChild as apigateway.CfnStage
+    stage.accessLogSetting = {
+      destinationArn: apiGwAccessLogs.logGroupArn,
+      format: JSON.stringify({
+        requestTime: "$context.requestTime",
+        apiId: "$context.apiId",
+        accountId: "$context.accountId",
+        resourcePath: "$context.resourcePath",
+        stage: "$context.stage",
+        requestId: "$context.requestId",
+        extendedRequestId: "$context.extendedRequestId",
+        status: "$context.status",
+        httpMethod: "$context.httpMethod",
+        protocol: "$context.protocol",
+        path: "$context.path",
+        responseLatency: "$context.responseLatency",
+        responseLength: "$context.responseLength",
+        domainName: "$context.domainName",
+        identity: {
+          sourceIp: "$context.identity.sourceIp",
+          userAgent: "$context.identity.userAgent",
+          clientCert: {
+            subjectDN: "$context.identity.clientCert.subjectDN",
+            issuerDN: "$context.identity.clientCert.issuerDN",
+            serialNumber: "$context.identity.clientCert.serialNumber",
+            validityNotBefore: "$context.identity.clientCert.validity.notBefore",
+            validityNotAfter: "$context.identity.clientCert.validity.notAfter"
+          }},
+        integration: {
+          error: "$context.integration.error",
+          integrationStatus: "$context.integration.integrationStatus",
+          latency: "$context.integration.latency",
+          requestId: "$context.integration.requestId",
+          status: "$context.integration.status"
+        }
+      })
+    }
+    apiGwAccessLogs.grantWrite(new iam.ServicePrincipal("apigateway.amazonaws.com"))
     NagSuppressions.addResourceSuppressions(restApiGateway, [
       {
         id: "AwsSolutions-APIG2",
         reason: "Suppress error for not implementing validation"
       }
     ])
+    NagSuppressions.addResourceSuppressions(stage, [
+      {
+        id: "AwsSolutions-APIG3",
+        reason: "Suppress warning for not implementing WAF"
+      },
+      {
+        id: "AwsSolutions-APIG6",
+        reason: "Suppress error for not implementing cloudwatch logging as we do have it enabled"
+      }
+    ])
 
     // Outputs
-    this.apiGwRoleArn = apiGwRole.attrArn
-    this.apiGwAccessLogsArn = apiGwAccessLogs.attrArn
-    this.apiGwId = restApiGateway.ref
-    this.attrRootResourceId = restApiGateway.attrRootResourceId
+    this.apiGwRole = apiGwRole
+    this.apiGwAccessLogs = apiGwAccessLogs
+    this.apiGw = restApiGateway
   }
 }

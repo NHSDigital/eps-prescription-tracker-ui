@@ -1,66 +1,42 @@
 import * as cdk from "aws-cdk-lib"
+import * as iam from "aws-cdk-lib/aws-iam"
+import * as lambda from "aws-cdk-lib/aws-lambda"
+import * as dynamodb from "aws-cdk-lib/aws-dynamodb"
 
 import {LambdaConstruct} from "./lambdaConstruct"
 import {Construct} from "constructs"
-import {getLambdaArn} from "./helpers"
 
 export interface FunctionsStackProps {
-  /**
-   * @default 'none'
-   */
   readonly stackName: string;
-  /**
-   */
   readonly versionNumber: string;
-  /**
-   */
   readonly commitId: string;
-  /**
-   */
-  readonly tokenMappingTableName: string;
-  readonly region: string;
-  readonly account: string;
-  readonly tokenMappingTableWritePolicyArn: string;
-  readonly tokenMappingTableReadPolicyArn: string;
-  readonly useTokensMappingKMSKeyPolicyArn: string
+  readonly tokenMappingTable: dynamodb.TableV2;
+  readonly tokenMappingTableWritePolicy: iam.IManagedPolicy;
+  readonly tokenMappingTableReadPolicy: iam.IManagedPolicy;
+  readonly useTokensMappingKMSKeyPolicy: iam.IManagedPolicy
 }
-
-/**
- * PFP lambda functions and related resources
-
- */
 export class Functions extends Construct {
-  /**
-   * The function name of the Status lambda
-   */
-  public readonly statusFunctionName
-  /**
-   * The function ARN of the Status lambda
-   */
-  public readonly statusFunctionArn
-  public readonly executeStatusLambdaPolicyArn
+  public readonly statusLambda: lambda.Function
+  public readonly executeStatusLambdaPolicy: iam.ManagedPolicy
 
   public constructor(scope: Construct, id: string, props: FunctionsStackProps) {
     super(scope, id)
 
-    // Applying default props
-    props = {
-      ...props,
-      stackName: props.stackName,
-      region: props.region,
-      account: props.account
-    }
-
     // Resources
+    const lambdaAccessSecretsPolicy = iam.ManagedPolicy.fromManagedPolicyArn(
+      this,
+      "lambdaAccessSecretsPolicy",
+      cdk.Fn.importValue("lambda-resources:LambdaAccessSecretsPolicy")
+    )
+
     const status = new LambdaConstruct(this, "StatusResources", {
       stackName: props.stackName!,
       lambdaName: `${props.stackName!}-status`,
-      lambdaArn: getLambdaArn(props.region, props.account, `${props.stackName}-status`),
       additionalPolicies: [
-        cdk.Fn.importValue("account-resources:LambdaAccessSecretsPolicy"),
-        props.tokenMappingTableReadPolicyArn,
-        props.tokenMappingTableWritePolicyArn,
-        props.useTokensMappingKMSKeyPolicyArn
+        lambdaAccessSecretsPolicy,
+        props.tokenMappingTableReadPolicy,
+        props.tokenMappingTableWritePolicy,
+        props.useTokensMappingKMSKeyPolicy
       ],
       logRetentionInDays: 30,
       packageBasePath: "packages/statusLambda",
@@ -68,13 +44,12 @@ export class Functions extends Construct {
       lambdaEnvironmentVariables: {
         "VERSION_NUMBER": props.versionNumber!,
         "COMMIT_ID": props.commitId!,
-        TokenMappingTableName: props.tokenMappingTableName!
+        TokenMappingTableName: props.tokenMappingTable.tableName
       }
     })
 
     // Outputs
-    this.statusFunctionName = status.lambdaFunctionName
-    this.statusFunctionArn = status.lambdaFunctionArn
-    this.executeStatusLambdaPolicyArn = status.executeLambdaPolicyArn
+    this.statusLambda = status.lambda
+    this.executeStatusLambdaPolicy = status.executeLambdaManagedPolicy
   }
 }

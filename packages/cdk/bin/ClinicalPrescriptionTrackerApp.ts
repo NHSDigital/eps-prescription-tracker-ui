@@ -36,60 +36,45 @@ const ClinicalPrescriptionTracker = new ClinicalPrescriptionTrackerStack(app, "C
 app.synth()
 
 // add metadata to lambda
-const writerProvider = USCertificates.node.findChild("Custom::CrossRegionExportWriterCustomResourceProvider")
-const writerLambda = writerProvider.node.findChild("Handler") as cdk.CfnResource
-const writerRole = writerProvider.node.findChild("Role") as cdk.CfnResource
-writerLambda.cfnOptions.metadata = (
-  {
-    ...writerLambda.cfnOptions.metadata,
-    "guard": {
-      "SuppressedRules": [
-        "LAMBDA_DLQ_CHECK",
-        "LAMBDA_INSIDE_VPC",
-        "LAMBDA_CONCURRENCY_CHECK"
-      ]
-    }
-  }
-)
-writerRole.cfnOptions.metadata = (
-  {
-    ...writerLambda.cfnOptions.metadata,
-    "guard": {
-      "SuppressedRules": [
-        "IAM_NO_INLINE_POLICY_CHECK"
-      ]
-    }
-  }
-)
-
-// eslint-disable-next-line max-len
-const readerProvider = ClinicalPrescriptionTracker.node.findChild("Custom::CrossRegionExportReaderCustomResourceProvider") as cdk.CustomResourceProvider
-const readerLambda = readerProvider.node.findChild("Handler") as cdk.CfnResource
-const readerRole = readerProvider.node.findChild("Role") as cdk.CfnResource
-readerLambda.cfnOptions.metadata = (
-  {
-    ...readerLambda.cfnOptions.metadata,
-    "guard": {
-      "SuppressedRules": [
-        "LAMBDA_DLQ_CHECK",
-        "LAMBDA_INSIDE_VPC",
-        "LAMBDA_CONCURRENCY_CHECK"
-      ]
-    }
-  }
-)
-readerRole.cfnOptions.metadata = (
-  {
-    ...readerRole.cfnOptions.metadata,
-    "guard": {
-      "SuppressedRules": [
-        "IAM_NO_INLINE_POLICY_CHECK"
-      ]
-    }
-  }
-)
+addCfnGuardMetadata(USCertificates, "Custom::CrossRegionExportWriterCustomResourceProvider")
+addCfnGuardMetadata(ClinicalPrescriptionTracker, "Custom::CrossRegionExportReaderCustomResourceProvider")
 
 // do a synth again with force to include the added metadata
 app.synth({
   force: true
 })
+
+function addCfnGuardMetadata(stack: cdk.Stack, role: string) {
+  const writerProvider = stack.node.tryFindChild(role)
+  if (writerProvider === undefined) {
+    return
+  }
+  const writerLambda = writerProvider.node.tryFindChild("Handler") as cdk.CfnResource
+  const writerRole = writerProvider.node.tryFindChild("Role") as cdk.CfnResource
+  if (writerLambda !== undefined) {
+    writerLambda.cfnOptions.metadata = (
+      {
+        ...writerLambda.cfnOptions.metadata,
+        "guard": {
+          "SuppressedRules": [
+            "LAMBDA_DLQ_CHECK",
+            "LAMBDA_INSIDE_VPC",
+            "LAMBDA_CONCURRENCY_CHECK"
+          ]
+        }
+      }
+    )
+  }
+  if (writerRole !== undefined) {
+    writerRole.cfnOptions.metadata = (
+      {
+        ...writerLambda.cfnOptions.metadata,
+        "guard": {
+          "SuppressedRules": [
+            "IAM_NO_INLINE_POLICY_CHECK"
+          ]
+        }
+      }
+    )
+  }
+}
