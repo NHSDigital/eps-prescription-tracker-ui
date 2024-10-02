@@ -47,11 +47,10 @@ export class Cognito extends Construct {
     const baseApiGwUrl = `https://${authDomain}`
 
     // create a variable of type hosted zone pointing to our hosted zone
-    const hostedZone = route53.HostedZone.fromHostedZoneId(
-      this,
-      "Zone",
-      cdk.Fn.importValue("eps-route53-resources:EPS-ZoneID")
-    )
+    const hostedZone = route53.HostedZone.fromHostedZoneAttributes(this, "hosted-zone", {
+      hostedZoneId: cdk.Fn.importValue("eps-route53-resources:EPS-ZoneID"),
+      zoneName: cdk.Fn.importValue("eps-route53-resources:EPS-domain")
+    })
 
     // cognito stuff
     const userPool = new cognito.UserPool(this, "UserPool", {
@@ -152,20 +151,21 @@ export class Cognito extends Construct {
 
     })
 
-    const authCertificate = new certificatemanager.Certificate(
-      this,
-      "certificate",
-      {
-        domainName: authDomain,
-        validation: certificatemanager.CertificateValidation.fromDns(hostedZone)
-      }
-    )
+    const authCertificate = new certificatemanager.Certificate(this, "certificate", {
+      domainName: authDomain,
+      validation: certificatemanager.CertificateValidation.fromDns(hostedZone)
+    })
 
-    restApiGateway.apiGw.addDomainName("RestApiDomain", {
+    const authDomainResource = new apigateway.DomainName(this, "authApiDomain", {
       securityPolicy: apigateway.SecurityPolicy.TLS_1_2,
       domainName: authDomain,
       certificate: authCertificate,
       endpointType: apigateway.EndpointType.REGIONAL
+    })
+
+    new apigateway.BasePathMapping(this, "api-gw-base-path-mapping", {
+      domainName: authDomainResource,
+      restApi: restApiGateway.apiGw
     })
 
     const tokenResource = restApiGateway.apiGw.root.addResource("token")
@@ -181,18 +181,10 @@ export class Cognito extends Construct {
         reason: "Suppress error for not implementing cognito authorization as we don't need it"
       }
     ])
-    const dnsName = restApiGateway.apiGw.domainName
-    if(!dnsName) {
-      throw new Error("can not get domain")
-    }
-    new route53.CfnRecordSet(this, "RestApiRecordSet", {
-      name: authDomain,
-      type: "A",
-      hostedZoneId: cdk.Fn.importValue("eps-route53-resources:EPS-ZoneID"),
-      aliasTarget: {
-        dnsName: dnsName.domainName,
-        hostedZoneId: dnsName.domainNameAliasHostedZoneId
-      }
+    new route53.CnameRecord(this, "api-gw-custom-domain-cname-record", {
+      recordName: authDomain,
+      zone: hostedZone,
+      domainName: authDomainResource.domainNameAliasDomainName
     })
 
     // Outputs
