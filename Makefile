@@ -121,3 +121,15 @@ aws-login:
 
 cfn-guard:
 	./scripts/run_cfn_guard.sh
+
+react-dev:
+	npx next dev
+
+react-build:
+	npx next build
+
+react-start:
+	npx next start
+
+react-lint:
+	npx next lint
