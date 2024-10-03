@@ -44,6 +44,7 @@ clean:
 	rm -rf packages/client/coverage
 	rm -rf packages/server/coverage
 	rm -rf cdk.out
+	rm -rf cfn_guard_output
 
 deep-clean: clean
 	rm -rf .venv
