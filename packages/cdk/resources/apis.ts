@@ -42,7 +42,9 @@ export class Apis extends Construct {
     )
 
     const statusResource = restApiGateway.apiGw.root.addResource("_status")
-    statusResource.addMethod("GET", new apigateway.LambdaIntegration(props.statusLambda), {
+    statusResource.addMethod("GET", new apigateway.LambdaIntegration(props.statusLambda, {
+      credentialsRole: restApiGateway.apiGwRole
+    }), {
       authorizationType: apigateway.AuthorizationType.COGNITO,
       authorizer: authorizer
     })

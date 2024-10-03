@@ -169,7 +169,9 @@ export class Cognito extends Construct {
     })
 
     const tokenResource = restApiGateway.apiGw.root.addResource("token")
-    const tokenMethodResource = tokenResource.addMethod("POST", new apigateway.LambdaIntegration(token.lambda))
+    const tokenMethodResource = tokenResource.addMethod("POST", new apigateway.LambdaIntegration(token.lambda, {
+      credentialsRole: restApiGateway.apiGwRole
+    }))
 
     NagSuppressions.addResourceSuppressions(tokenMethodResource, [
       {
