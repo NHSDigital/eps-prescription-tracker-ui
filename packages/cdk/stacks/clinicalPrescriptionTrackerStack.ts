@@ -83,7 +83,7 @@ export class ClinicalPrescriptionTrackerStack extends cdk.Stack {
       executeStatusLambdaPolicy: functions.executeStatusLambdaPolicy
     })
 
-    nagSuppressions(this)
+    nagSuppressions(this, props.stackName)
 
     // Outputs
     this.primaryUserPoolId = cognito.userPool.userPoolId

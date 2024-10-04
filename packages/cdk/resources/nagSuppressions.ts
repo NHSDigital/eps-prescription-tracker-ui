@@ -1,7 +1,7 @@
 import * as cdk from "aws-cdk-lib"
 import {NagPackSuppression, NagSuppressions} from "cdk-nag"
 
-function nagSuppressions(stack: cdk.Stack) {
+function nagSuppressions(stack: cdk.Stack, deployedStackName: string | undefined) {
   // All cdk-nag suppressions should go in here with a reason so we have them in a central place
   // and we know why we have added them
 
@@ -94,7 +94,7 @@ function nagSuppressions(stack: cdk.Stack) {
       }
     ])
   safeAddNagSuppression(stack,
-    `/ClinicalPrescriptionTrackerStack/Cognito/TokenResources/Execute${stack.stackName}-tokenManagedPolicy/Resource`,
+    `/ClinicalPrescriptionTrackerStack/Cognito/TokenResources/Execute${deployedStackName}-tokenManagedPolicy/Resource`,
     [
       {
         id: "AwsSolutions-IAM5",
@@ -103,7 +103,7 @@ function nagSuppressions(stack: cdk.Stack) {
     ])
   safeAddNagSuppression(stack,
     // eslint-disable-next-line max-len
-    `/ClinicalPrescriptionTrackerStack/Functions/StatusResources/Execute${stack.stackName}-statusManagedPolicy/Resource`,
+    `/ClinicalPrescriptionTrackerStack/Functions/StatusResources/Execute${deployedStackName}-statusManagedPolicy/Resource`,
     [
       {
         id: "AwsSolutions-IAM5",
