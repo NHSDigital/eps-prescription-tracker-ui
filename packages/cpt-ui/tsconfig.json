@@ -1,5 +1,29 @@
 {
   "extends": "../../tsconfig.defaults.json",
   "references": [],
-  "include": ["src/**/*", "tests/**/*", "tests/**/*.json"]
+  "include": [
+    "src/**/*",
+    "tests/**/*",
+    "tests/**/*.json",
+    ".next/types/**/*.ts"
+  ],
+  "compilerOptions": {
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    "noEmit": true,
+    "module": "esnext",
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ]
+  },
+  "exclude": [
+    "node_modules"
+  ]
 }

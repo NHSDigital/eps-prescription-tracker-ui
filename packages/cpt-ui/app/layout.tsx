@@ -48,7 +48,7 @@ export default function RootLayout({
                 <Footer>
                     <Footer.List></Footer.List>
                     <Footer.Copyright>
-                        © Crown copyright
+                        Crown copyright
                     </Footer.Copyright>
                 </Footer>
             </body>

@@ -22,7 +22,7 @@ export default function Page() {
                             <Col width='two-thirds'>
                                 <InsetText className="nhsuk-u-margin-top-0">
                                     <p>
-                                        You are currently logged in at <span className='nhsuk-u-font-weight-bold tl-nhsuk-u-text-uppercase'>Greene's Pharmacy (ods:4ft)</span> with <strong>Health Professional Access Role</strong>.
+                                        You are currently logged in at <span className='nhsuk-u-font-weight-bold tl-nhsuk-u-text-uppercase'>Greenes Pharmacy (ods:4ft)</span> with <strong>Health Professional Access Role</strong>.
                                     </p>
                                 </InsetText>
                                 <Button>
