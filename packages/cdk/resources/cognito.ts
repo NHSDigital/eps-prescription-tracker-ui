@@ -90,13 +90,20 @@ export class Cognito extends Construct {
       issuerUrl: props.primaryOidcIssuer,
       userPool: userPool,
       attributeRequestMethod: cognito.OidcAttributeRequestMethod.GET,
-      attributeMapping: {
-        email: cognito.ProviderAttribute.other("sub")
-      },
       scopes: ["openid", "profile", "email"],
       endpoints: oidcEndpoints
     })
 
+    // eslint-disable-next-line max-len
+    const cfnUserPoolIdentityProvider = userPoolIdentityProvider.node.defaultChild as cognito.CfnUserPoolIdentityProvider
+    cfnUserPoolIdentityProvider.attributeMapping = {
+      username: "sub",
+      email: "email",
+      "email_verified": "email_verified",
+      "phone_number": "phone_number",
+      "phone_number_verified": "phone_number_verified",
+      profile: "profile"
+    }
     const userPoolWebClient = userPool.addClient("WebClient", {
       supportedIdentityProviders: [
         cognito.UserPoolClientIdentityProvider.COGNITO,
