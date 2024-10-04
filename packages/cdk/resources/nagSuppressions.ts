@@ -1,11 +1,11 @@
 import * as cdk from "aws-cdk-lib"
-import {NagSuppressions} from "cdk-nag"
+import {NagPackSuppression, NagSuppressions} from "cdk-nag"
 
 function nagSuppressions(stack: cdk.Stack) {
   // All cdk-nag suppressions should go in here with a reason so we have them in a central place
   // and we know why we have added them
 
-  NagSuppressions.addResourceSuppressionsByPath(
+  safeAddNagSuppression(
     stack,
     "/ClinicalPrescriptionTrackerStack/Cognito/RestApiGatewayResources/RestApiGateway/Resource", [
       {
@@ -13,7 +13,7 @@ function nagSuppressions(stack: cdk.Stack) {
         reason: "Suppress error for not implementing validation"
       }
     ])
-  NagSuppressions.addResourceSuppressionsByPath(stack,
+  safeAddNagSuppression(stack,
     "/ClinicalPrescriptionTrackerStack/Cognito/RestApiGatewayResources/RestApiGateway/DeploymentStage.prod/Resource",
     [
       {
@@ -25,7 +25,7 @@ function nagSuppressions(stack: cdk.Stack) {
         reason: "Suppress error for not implementing cloudwatch logging as we do have it enabled"
       }
     ])
-  NagSuppressions.addResourceSuppressionsByPath(
+  safeAddNagSuppression(
     stack,
     "/ClinicalPrescriptionTrackerStack/Apis/RestApiGatewayResources/RestApiGateway/Resource", [
       {
@@ -33,7 +33,7 @@ function nagSuppressions(stack: cdk.Stack) {
         reason: "Suppress error for not implementing validation"
       }
     ])
-  NagSuppressions.addResourceSuppressionsByPath(stack,
+  safeAddNagSuppression(stack,
     "/ClinicalPrescriptionTrackerStack/Apis/RestApiGatewayResources/RestApiGateway/DeploymentStage.prod/Resource",
     [
       {
@@ -46,7 +46,7 @@ function nagSuppressions(stack: cdk.Stack) {
       }
     ])
 
-  NagSuppressions.addResourceSuppressionsByPath(stack,
+  safeAddNagSuppression(stack,
     "/ClinicalPrescriptionTrackerStack/Cognito/UserPool/Resource",
     [
       {
@@ -63,7 +63,7 @@ function nagSuppressions(stack: cdk.Stack) {
       }
     ])
 
-  NagSuppressions.addResourceSuppressionsByPath(stack,
+  safeAddNagSuppression(stack,
     "/ClinicalPrescriptionTrackerStack/Cognito/RestApiGatewayResources/RestApiGateway/Default/token/POST/Resource",
     [
       {
@@ -76,7 +76,7 @@ function nagSuppressions(stack: cdk.Stack) {
       }
     ])
 
-  NagSuppressions.addResourceSuppressionsByPath(stack,
+  safeAddNagSuppression(stack,
     "/ClinicalPrescriptionTrackerStack/Tables/TokenMappingResources/TableReadManagedPolicy/Resource",
     [
       {
@@ -85,7 +85,7 @@ function nagSuppressions(stack: cdk.Stack) {
       }
     ])
 
-  NagSuppressions.addResourceSuppressionsByPath(stack,
+  safeAddNagSuppression(stack,
     "/ClinicalPrescriptionTrackerStack/Tables/TokenMappingResources/TableWriteManagedPolicy/Resource",
     [
       {
@@ -93,7 +93,7 @@ function nagSuppressions(stack: cdk.Stack) {
         reason: "Suppress error for wildcard writing indexes"
       }
     ])
-  NagSuppressions.addResourceSuppressionsByPath(stack,
+  safeAddNagSuppression(stack,
     "/ClinicalPrescriptionTrackerStack/Cognito/TokenResources/Executeclinical-tracker-ui-tokenManagedPolicy/Resource",
     [
       {
@@ -101,7 +101,7 @@ function nagSuppressions(stack: cdk.Stack) {
         reason: "Suppress error for wildcard on log stream"
       }
     ])
-  NagSuppressions.addResourceSuppressionsByPath(stack,
+  safeAddNagSuppression(stack,
     // eslint-disable-next-line max-len
     "/ClinicalPrescriptionTrackerStack/Functions/StatusResources/Executeclinical-tracker-ui-statusManagedPolicy/Resource",
     [
@@ -113,6 +113,15 @@ function nagSuppressions(stack: cdk.Stack) {
 
 }
 
+function safeAddNagSuppression(stack: cdk.Stack, path: string, suppressions: Array<NagPackSuppression>) {
+  try {
+    NagSuppressions.addResourceSuppressionsByPath( stack, path, suppressions)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch(_) {
+    console.log(`Could not find path ${path}`)
+  }
+
+}
 export {
   nagSuppressions
 }
