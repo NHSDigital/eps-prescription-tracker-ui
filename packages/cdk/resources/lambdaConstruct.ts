@@ -107,9 +107,9 @@ export class LambdaConstruct extends Construct {
       entryPoint: props.entryPoint
     })
 
-    const lambda = new nodeLambda.NodejsFunction(this, "statusLambda", {
+    const lambda = new nodeLambda.NodejsFunction(this, props.lambdaName, {
       ...lambdaOptions,
-      role: iam.Role.fromRoleArn(this, "statusResourcesRole", lambdaRole.roleArn),
+      role: lambdaRole,
       environment: props.lambdaEnvironmentVariables,
       logGroup: lambdaLogGroup
     })
