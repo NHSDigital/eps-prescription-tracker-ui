@@ -184,7 +184,7 @@ export class Cognito extends Construct {
       }
     ])
     new route53.CnameRecord(this, "api-gw-custom-domain-cname-record", {
-      recordName: authDomain,
+      recordName: `auth.$${props.stackName}`,
       zone: hostedZone,
       domainName: authDomainResource.domainNameAliasDomainName
     })
