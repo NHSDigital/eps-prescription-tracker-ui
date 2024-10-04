@@ -94,7 +94,7 @@ function nagSuppressions(stack: cdk.Stack) {
       }
     ])
   safeAddNagSuppression(stack,
-    "/ClinicalPrescriptionTrackerStack/Cognito/TokenResources/Executeclinical-tracker-ui-tokenManagedPolicy/Resource",
+    `/ClinicalPrescriptionTrackerStack/Cognito/TokenResources/Execute${stack.stackName}-tokenManagedPolicy/Resource`,
     [
       {
         id: "AwsSolutions-IAM5",
@@ -103,7 +103,7 @@ function nagSuppressions(stack: cdk.Stack) {
     ])
   safeAddNagSuppression(stack,
     // eslint-disable-next-line max-len
-    "/ClinicalPrescriptionTrackerStack/Functions/StatusResources/Executeclinical-tracker-ui-statusManagedPolicy/Resource",
+    `/ClinicalPrescriptionTrackerStack/Functions/StatusResources/Execute${stack.stackName}-statusManagedPolicy/Resource`,
     [
       {
         id: "AwsSolutions-IAM5",
