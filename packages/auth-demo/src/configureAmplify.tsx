@@ -6,9 +6,9 @@ import { ResourcesConfig } from "aws-amplify"
 // TODO
 // Need a way to get these at deploy time as they come from the cloudformation deployment
 
-const userPoolId = "eu-west-2_cwWILYjts" // This is the User Pool ID from AWS::Cognito::UserPool
-const userPoolClientId = "1v2u6e8vavkestrv7e30tvfblm" // This is the Client ID from AWS::Cognito::UserPoolClient
-const hostedLoginDomain = "eps-dev.auth.eu-west-2.amazoncognito.com" // This is the domain from AWS::Cognito::UserPoolDomain
+const userPoolId = "eu-west-2_61GeJTFTN" // This is the User Pool ID from AWS::Cognito::UserPool
+const userPoolClientId = "22ndqkf4gnlebjeem361tpk2ql" // This is the Client ID from AWS::Cognito::UserPoolClient
+const hostedLoginDomain = "cpt-ui-pr-42.auth.eu-west-2.amazoncognito.com" // This is the domain from AWS::Cognito::UserPoolDomain
 
 //const userPoolId = "eu-west-2_GlSIbaNTD" // This is the User Pool ID from AWS::Cognito::UserPool
 //const userPoolClientId = "2rv1rip193mnfhik70e9j85hkn" // This is the Client ID from AWS::Cognito::UserPoolClient
