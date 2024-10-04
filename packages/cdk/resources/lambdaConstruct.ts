@@ -3,8 +3,9 @@ import * as iam from "aws-cdk-lib/aws-iam"
 import * as logs from "aws-cdk-lib/aws-logs"
 import * as nodeLambda from "aws-cdk-lib/aws-lambda-nodejs"
 import * as kms from "aws-cdk-lib/aws-kms"
-import {aws_lambda as lambda} from "aws-cdk-lib"
+import * as lambda from "aws-cdk-lib/aws-lambda"
 import {Construct} from "constructs"
+
 import {getDefaultLambdaOptions} from "./helpers"
 
 export interface LambdaConstructProps {

@@ -2,9 +2,10 @@ import * as apigateway from "aws-cdk-lib/aws-apigateway"
 import * as iam from "aws-cdk-lib/aws-iam"
 import * as cognito from "aws-cdk-lib/aws-cognito"
 import * as lambda from "aws-cdk-lib/aws-lambda"
+import {Construct} from "constructs"
 
 import {ApiGwConstruct} from "./apiGWConstruct"
-import {Construct} from "constructs"
+
 export interface ApisProps {
   readonly stackName: string;
   readonly statusLambda: lambda.Function;

@@ -1,5 +1,4 @@
 import * as cdk from "aws-cdk-lib"
-
 import {NagSuppressions} from "cdk-nag"
 
 function nagSuppressions(stack: cdk.Stack) {

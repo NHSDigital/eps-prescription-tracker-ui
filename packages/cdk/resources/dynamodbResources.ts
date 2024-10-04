@@ -1,7 +1,7 @@
 import * as iam from "aws-cdk-lib/aws-iam"
 import * as dynamodb from "aws-cdk-lib/aws-dynamodb"
-
 import {Construct} from "constructs"
+
 export interface DynamodbResourcesProps {
   readonly stackName: string;
   readonly table: dynamodb.TableV2;

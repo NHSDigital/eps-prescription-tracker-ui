@@ -1,5 +1,5 @@
-import * as path from "path"
 import * as lambda from "aws-cdk-lib/aws-lambda"
+import * as path from "path"
 
 const baseDir = path.resolve(__dirname, "../../..")
 

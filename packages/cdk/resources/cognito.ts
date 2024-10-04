@@ -6,10 +6,10 @@ import * as cognito from "aws-cdk-lib/aws-cognito"
 import * as route53 from "aws-cdk-lib/aws-route53"
 import * as iam from "aws-cdk-lib/aws-iam"
 import * as dynamodb from "aws-cdk-lib/aws-dynamodb"
+import {Construct} from "constructs"
 
 import {ApiGwConstruct} from "./apiGWConstruct"
 import {LambdaConstruct} from "./lambdaConstruct"
-import {Construct} from "constructs"
 
 export interface CognitoProps {
   readonly stackName: string;

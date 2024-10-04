@@ -2,9 +2,9 @@ import * as cdk from "aws-cdk-lib"
 import * as dynamodb from "aws-cdk-lib/aws-dynamodb"
 import * as iam from "aws-cdk-lib/aws-iam"
 import * as kms from "aws-cdk-lib/aws-kms"
+import {Construct} from "constructs"
 
 import {DynamodbResources} from "./dynamodbResources"
-import {Construct} from "constructs"
 
 export interface DynamodbProps {
   readonly stackName: string;

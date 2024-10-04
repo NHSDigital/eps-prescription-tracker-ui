@@ -3,7 +3,6 @@ import * as iam from "aws-cdk-lib/aws-iam"
 import * as logs from "aws-cdk-lib/aws-logs"
 import * as apigateway from "aws-cdk-lib/aws-apigateway"
 import * as kms from "aws-cdk-lib/aws-kms"
-
 import {Construct} from "constructs"
 
 export interface ApiGWConstructProps {
