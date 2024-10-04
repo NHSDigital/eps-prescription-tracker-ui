@@ -4,6 +4,7 @@ import {Apis} from "../resources/apis"
 import {Cognito} from "../resources/cognito"
 import {Dynamodb} from "../resources/dynamodb"
 import {Functions} from "../resources/lambdas"
+import {nagSuppressions} from "../resources/nagSuppressions"
 
 /**
  * Clinical Prescription Tracker UI
@@ -81,6 +82,8 @@ export class ClinicalPrescriptionTrackerStack extends cdk.Stack {
       region: this.region,
       executeStatusLambdaPolicy: functions.executeStatusLambdaPolicy
     })
+
+    nagSuppressions(this)
 
     // Outputs
     this.primaryUserPoolId = cognito.userPool.userPoolId

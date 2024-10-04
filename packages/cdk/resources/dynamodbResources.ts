@@ -2,7 +2,6 @@ import * as iam from "aws-cdk-lib/aws-iam"
 import * as dynamodb from "aws-cdk-lib/aws-dynamodb"
 
 import {Construct} from "constructs"
-import {NagSuppressions} from "cdk-nag"
 export interface DynamodbResourcesProps {
   readonly stackName: string;
   readonly table: dynamodb.TableV2;
@@ -35,13 +34,6 @@ export class DynamodbResources extends Construct {
       ]
     })
 
-    NagSuppressions.addResourceSuppressions(tableReadManagedPolicy, [
-      {
-        id: "AwsSolutions-IAM5",
-        reason: "Suppress error for wildcard reading indexes"
-      }
-    ])
-
     const tableWriteManagedPolicy = new iam.ManagedPolicy(this, "TableWriteManagedPolicy", {
       statements: [
         new iam.PolicyStatement({
@@ -58,13 +50,6 @@ export class DynamodbResources extends Construct {
         })
       ]
     })
-
-    NagSuppressions.addResourceSuppressions(tableWriteManagedPolicy, [
-      {
-        id: "AwsSolutions-IAM5",
-        reason: "Suppress error for wildcard writing indexes"
-      }
-    ])
 
     // Outputs
     this.tableReadPolicy = tableReadManagedPolicy

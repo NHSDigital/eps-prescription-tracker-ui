@@ -5,7 +5,6 @@ import * as apigateway from "aws-cdk-lib/aws-apigateway"
 import * as kms from "aws-cdk-lib/aws-kms"
 
 import {Construct} from "constructs"
-import {NagSuppressions} from "cdk-nag"
 
 export interface ApiGWConstructProps {
   readonly additionalPolicies?: Array<iam.IManagedPolicy>;
@@ -107,23 +106,6 @@ export class ApiGwConstruct extends Construct {
         }
       })
     }
-    NagSuppressions.addResourceSuppressions(restApiGateway, [
-      {
-        id: "AwsSolutions-APIG2",
-        reason: "Suppress error for not implementing validation"
-      }
-    ])
-    NagSuppressions.addResourceSuppressions(stage, [
-      {
-        id: "AwsSolutions-APIG3",
-        reason: "Suppress warning for not implementing WAF"
-      },
-      {
-        id: "AwsSolutions-APIG6",
-        reason: "Suppress error for not implementing cloudwatch logging as we do have it enabled"
-      }
-    ])
-
     // Outputs
     this.apiGwRole = apiGwRole
     this.apiGwAccessLogs = apiGwAccessLogs

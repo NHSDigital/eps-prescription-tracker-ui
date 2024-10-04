@@ -4,7 +4,6 @@ import * as logs from "aws-cdk-lib/aws-logs"
 import * as nodeLambda from "aws-cdk-lib/aws-lambda-nodejs"
 import * as kms from "aws-cdk-lib/aws-kms"
 import {aws_lambda as lambda} from "aws-cdk-lib"
-import {NagSuppressions} from "cdk-nag"
 import {Construct} from "constructs"
 import {getDefaultLambdaOptions} from "./helpers"
 
@@ -65,12 +64,6 @@ export class LambdaConstruct extends Construct {
           ]
         })]
     })
-    NagSuppressions.addResourceSuppressions(lambdaManagedPolicy, [
-      {
-        id: "AwsSolutions-IAM5",
-        reason: "Suppress error for wildcard on log stream"
-      }
-    ])
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const lambdaSplunkSubscriptionFilter = new logs.CfnSubscriptionFilter(this, "LambdaSplunkSubscriptionFilter", {

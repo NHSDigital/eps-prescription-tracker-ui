@@ -10,7 +10,6 @@ import * as dynamodb from "aws-cdk-lib/aws-dynamodb"
 import {ApiGwConstruct} from "./apiGWConstruct"
 import {LambdaConstruct} from "./lambdaConstruct"
 import {Construct} from "constructs"
-import {NagSuppressions} from "cdk-nag"
 
 export interface CognitoProps {
   readonly stackName: string;
@@ -56,20 +55,6 @@ export class Cognito extends Construct {
     const userPool = new cognito.UserPool(this, "UserPool", {
       removalPolicy: cdk.RemovalPolicy.DESTROY
     })
-    NagSuppressions.addResourceSuppressions(userPool, [
-      {
-        id: "AwsSolutions-COG1",
-        reason: "Suppress error for password policy as we don't use passwords"
-      },
-      {
-        id: "AwsSolutions-COG2",
-        reason: "Suppress warning for MFA policy as we don't use passwords"
-      },
-      {
-        id: "AwsSolutions-COG3",
-        reason: "Suppress error for advanced security features"
-      }
-    ])
     const userPoolDomain = userPool.addDomain("default", {
       cognitoDomain: {
         domainPrefix: "eps-dev"
@@ -176,20 +161,10 @@ export class Cognito extends Construct {
     })
 
     const tokenResource = restApiGateway.apiGw.root.addResource("token")
-    const tokenMethodResource = tokenResource.addMethod("POST", new apigateway.LambdaIntegration(token.lambda, {
+    tokenResource.addMethod("POST", new apigateway.LambdaIntegration(token.lambda, {
       credentialsRole: restApiGateway.apiGwRole
     }))
 
-    NagSuppressions.addResourceSuppressions(tokenMethodResource, [
-      {
-        id: "AwsSolutions-APIG4",
-        reason: "Suppress error for not implementing authorization as we don't need it"
-      },
-      {
-        id: "AwsSolutions-COG4",
-        reason: "Suppress error for not implementing cognito authorization as we don't need it"
-      }
-    ])
     new route53.CnameRecord(this, "api-gw-custom-domain-cname-record", {
       recordName: `auth.${props.stackName}`,
       zone: hostedZone,
