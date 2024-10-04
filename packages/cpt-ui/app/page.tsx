@@ -1,11 +1,12 @@
 'use client'
 import React from "react";
 
-import { Container, Col, Row } from "nhsuk-react-components";
+import { Button, Card, Container, Col, InsetText, Row } from "nhsuk-react-components";
 export default function Page() {
     return (
         <main className="nhsuk-main-wrapper">
             <Container>
+
                 <Row>
                     <Col width="full">
                         <h1>Hello World</h1>
@@ -15,6 +16,46 @@ export default function Page() {
                         <p>Nullam ex eros, posuere ut hendrerit ut, scelerisque ut libero. Sed vulputate egestas lorem, in ultricies risus semper at. Praesent blandit elementum mi vitae laoreet. Nulla rutrum, mauris sed tincidunt blandit, velit sem finibus mauris, eu consequat orci tellus et ante. Aenean libero est, laoreet vitae ultrices id, auctor quis sapien. Donec auctor luctus leo, id aliquam turpis interdum et. Nullam semper sagittis commodo. In non arcu eu nisl malesuada convallis vel vitae ex. Nam sit amet imperdiet est. Vivamus nec finibus diam. Aliquam vulputate dapibus auctor. Vivamus eu pharetra felis. In sagittis elit et cursus pretium. Sed metus sem, tincidunt vel libero id, fermentum suscipit felis. Morbi blandit mi nec semper malesuada.</p>
                         <p>Etiam lobortis, dolor ac facilisis efficitur, metus leo posuere est, non pharetra orci velit non velit. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Ut finibus sagittis diam ac feugiat. Curabitur eget venenatis arcu. Ut commodo tempor sollicitudin. Nulla nec congue mauris. Sed cursus interdum arcu. Morbi lacinia lorem ut ante feugiat, eu cursus nisi ultricies.</p>
                     </Col>
+                </Row>
+                <Row>
+                    <Container role="contentinfo">
+                        <Row>
+                            <Col width="full">
+                                <h1 className='nhsuk-heading-xl '>
+                                    <span role="text">Select your role
+                                        <span className="nhsuk-caption-l nhsuk-caption--bottom">
+                                            <span className="nhsuk-u-visually-hidden"> - </span>
+                                            Select the role you wish to use to access the service.
+                                        </span></span></h1>
+                            </Col>
+                        </Row>
+                        <Row>
+                            <Col width='two-thirds'>
+                                <InsetText className="nhsuk-u-margin-top-0">
+                                    <p>
+                                        You are currently logged in at <span className='nhsuk-u-font-weight-bold tl-nhsuk-u-text-uppercase'>Greene's Pharmacy (ods:4ft)</span> with <strong>Health Professional Access Role</strong>.
+                                    </p>
+                                </InsetText>
+                                <Button>
+                                    Confirm and continue to find a prescription
+                                </Button>
+                                <p>Alternatively, you can choose a new role below.</p>
+
+                                <Card clickable className='tl-nhsuk-newComponent'>
+                                    <Card.Content>
+                                        <Card.Heading className="nhsuk-heading-m">
+                                            <Card.Link href="#">
+                                                Introduction to care and support
+                                            </Card.Link>
+                                        </Card.Heading>
+                                        <Card.Description>
+                                            A quick guide for people who have care and support needs and their carers
+                                        </Card.Description>
+                                    </Card.Content>
+                                </Card>
+                            </Col>
+                        </Row>
+                    </Container>
                 </Row>
             </Container>
         </main>

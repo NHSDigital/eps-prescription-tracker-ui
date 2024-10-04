@@ -88,7 +88,7 @@ lint-githubactions:
 lint-githubaction-scripts:
 	shellcheck .github/scripts/*.sh
 
-lint: lint-node lint-samtemplates lint-githubactions lint-githubaction-scripts
+lint: lint-node lint-samtemplates lint-githubactions lint-githubaction-scripts react-lint
 
 test: compile
 	npm run test --workspace packages/client
@@ -123,13 +123,13 @@ cfn-guard:
 	./scripts/run_cfn_guard.sh
 
 react-dev:
-	npx next dev
+	npm run dev --workspace packages/cpt-ui
 
 react-build:
-	npx next build
+	npm run build --workspace packages/cpt-ui
 
 react-start:
-	npx next start
+	npm run start --workspace packages/cpt-ui
 
 react-lint:
-	npx next lint
+	npm run lint --workspace packages/cpt-ui

@@ -19,7 +19,8 @@
     "license": "MIT",
     "workspaces": [
         "packages/server",
-        "packages/client"
+        "packages/client",
+        "packages/cpt-ui"
     ],
     "devDependencies": {
         "@semantic-release/changelog": "^6.0.3",

@@ -17,7 +17,7 @@ export default function RootLayout({
                     <Header.Container>
                         <Header.Logo href="/" />
                         <Header.ServiceName href="/">
-                            Hello World
+                            Clinical prescription tracking service
                         </Header.ServiceName>
 
 
