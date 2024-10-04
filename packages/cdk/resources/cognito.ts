@@ -57,7 +57,7 @@ export class Cognito extends Construct {
     })
     const userPoolDomain = userPool.addDomain("default", {
       cognitoDomain: {
-        domainPrefix: "eps-dev"
+        domainPrefix: props.stackName
       }
     })
 
