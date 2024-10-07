@@ -4,7 +4,11 @@
     "description": "![Build](https://github.com/NHSDigital/eps-prescription-tracker-ui/workflows/Build/badge.svg?branch=main)",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
-        "check-licenses": "node_modules/.bin/license-checker --failOn GPL --failOn LGPL"
+        "check-licenses": "node_modules/.bin/license-checker --failOn GPL --failOn LGPL",
+        "dev": "next dev",
+        "build": "next build",
+        "start": "next start",
+        "lint": "next lint"
     },
     "repository": {
         "type": "git",
@@ -15,12 +19,14 @@
     "license": "MIT",
     "workspaces": [
         "packages/server",
-        "packages/client"
+        "packages/client",
+        "packages/cpt-ui"
     ],
     "devDependencies": {
         "@semantic-release/changelog": "^6.0.3",
         "@semantic-release/release-notes-generator": "^14.0.1",
         "@types/jest": "^29.5.13",
+        "@types/react": "18.3.9",
         "@types/node": "^22.7.4",
         "@typescript-eslint/eslint-plugin": "^8.7.0",
         "@typescript-eslint/parser": "^8.8.0",
@@ -39,6 +45,10 @@
     },
     "dependencies": {
         "conventional-changelog-eslint": "^6.0.0",
+        "next": "^14.2.13",
+        "nhsuk-react-components": "^4.1.3",
+        "react": "^18.3.1",
+        "react-dom": "^18.3.1",
         "esbuild": "^0.24.0"
     }
 }

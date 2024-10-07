@@ -84,7 +84,10 @@ You should then select the development account and set default region to be eu-w
 
 You will now be able to use AWS and SAM CLI commands to access the dev account. You can also use the AWS extension to view resources.
 
-When the token expires, you may need to reauthorise using `make aws-login`
+When the token expires, you may need to reauthorise using `make aws-login` 
+
+###  React app
+React/Next.js code resides in app folder.  More details to be added as dev progresses, see make section for relevant commands
 
 ### CI Setup
 
@@ -193,6 +196,11 @@ These are used to do common commands
 
 - `aws-configure` Configures a connection to AWS
 - `aws-login` Reconnects to AWS from a previously configured connection
+
+#### React App
+- `react-dev` Starts app in dev mode on localhost
+- `react-build` Generates static files in .next folder
+- `react-start` Starts app in production mode using build-generated static files 
 
 ### Github folder
 
