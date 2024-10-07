@@ -4,14 +4,15 @@ import {App, Aspects, Tags} from "aws-cdk-lib"
 import {AwsSolutionsChecks} from "cdk-nag"
 import {CloudfrontStack} from "../stacks/CloudfrontStack"
 import {SharedResourcesStack} from "../stacks/SharedResourcesStack"
+import {RestApiBase} from "aws-cdk-lib/aws-apigateway"
 
 const app = new App()
 
 const stackName = app.node.tryGetContext("stackName")
 const version = app.node.tryGetContext("VERSION_NUMBER")
 const commit = app.node.tryGetContext("COMMIT_ID")
-const domainName = app.node.tryGetContext("epsDomain")
-const hostedZoneId = app.node.tryGetContext("epsZoneId")
+const logRetentionInDays = app.node.tryGetContext("LogRetentionInDays")
+const enableSplunk = app.node.tryGetContext("enableSplunk")
 
 Aspects.of(app).add(new AwsSolutionsChecks({verbose: true}))
 
@@ -23,17 +24,22 @@ const SharedResources = new SharedResourcesStack(app, "SharedResourcesStack", {
   env: {
     region: "eu-west-2"
   },
-  stackName: stackName,
-  version: version
+  stackName: `${stackName}-shared-resources`,
+  version: version,
+  logRetentionInDays: logRetentionInDays,
+  enableSplunk: enableSplunk
 })
 
 new CloudfrontStack(app, "CloudfrontStack", {
   env: {
     region: "us-east-1"
   },
-  stackName: stackName,
+  crossRegionReferences: true,
+  stackName: `${stackName}-shared-cloudfront`,
   version: version,
-  domainName: domainName,
-  hostedZoneId: hostedZoneId,
-  contentBucket: SharedResources.contentBucket
+  contentBucket: SharedResources.contentBucket,
+  contentBucketKmsKey: SharedResources.contentBucketKmsKey,
+  apiGateway: SharedResources.apiGateway as RestApiBase,
+  cognitoUserPoolDomain: SharedResources.cognitoUserPoolDomain,
+  cognitoRegion: SharedResources.region
 })
