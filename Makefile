@@ -33,7 +33,7 @@ lint-githubactions:
 lint-githubaction-scripts:
 	shellcheck .github/scripts/*.sh
 
-lint: lint-node lint-githubactions lint-githubaction-scripts
+lint: lint-node lint-githubactions lint-githubaction-scripts react-lint
 
 test: compile
 	npm run test --workspace packages/client
@@ -69,6 +69,18 @@ aws-login:
 
 cfn-guard:
 	./scripts/run_cfn_guard.sh
+
+react-dev:
+	npm run dev --workspace packages/cpt-ui
+
+react-build:
+	npm run build --workspace packages/cpt-ui
+
+react-start:
+	npm run start --workspace packages/cpt-ui
+
+react-lint:
+	npm run lint --workspace packages/cpt-ui
 
 cdk-deploy: guard-stack_name
 	REQUIRE_APPROVAL="$${REQUIRE_APPROVAL:-any-change}" && \

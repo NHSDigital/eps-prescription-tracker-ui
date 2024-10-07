@@ -1,8 +1,12 @@
 {
     "folders": [
       {
-        "name": "eps-prescription-status-tracker-ui",
-        "path": ".."
+      "name": "eps-prescription-tracker-ui-monorepo",
+      "path": ".."
+      },
+      {
+        "name": "packages/cpt-ui",
+        "path": "../packages/cpt-ui"
       },
       {
         "name": "packages/cdk",
@@ -19,7 +23,7 @@
     ],
     "settings": {
       "jest.disabledWorkspaceFolders": [
-        "eps-prescription-status-tracker-ui"
+        "eps-prescription-tracker-ui-monorepo"
       ],
       "files.exclude": {
         "packages/": true
@@ -41,7 +45,7 @@
         "devcontainer",
         "direnv",
         "eamodio",
-        "eps-prescription-tracker-ui",
+        "eps-prescription-status-update-api",
         "esbuild",
         "excelviewer",
         "fhir",
@@ -104,7 +108,7 @@
       "jest.nodeEnv": {
         "POWERTOOLS_DEV": true
       },
-      "typescript.tsdk": "eps-prescription-tracker-ui/node_modules/typescript/lib",
+      "typescript.tsdk": "eps-prescription-tracker-ui-monorepo/node_modules/typescript/lib",
       "eslint.useFlatConfig": true,
       "eslint.format.enable": true
     },
