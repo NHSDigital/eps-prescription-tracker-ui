@@ -13,16 +13,6 @@ RUN wget -O /tmp/awscliv2.zip "https://awscli.amazonaws.com/awscli-exe-linux-x86
     rm tmp/awscliv2.zip && \
     rm -rf /tmp/aws-cli
 
-#RUN export DEBIAN_FRONTEND=noninteractive \
-#    && apt-get -y install --no-install-recommends htop vim curl git build-essential \
-#    libffi-dev libssl-dev libxml2-dev libxslt1-dev libjpeg8-dev libbz2-dev \
-#    zlib1g-dev unixodbc unixodbc-dev libsecret-1-0 libsecret-1-dev libsqlite3-dev \
-#    apt-transport-https gnupg-agent \
-#    software-properties-common bash-completion python3-pip make libbz2-dev \
-#    libreadline-dev libsqlite3-dev llvm libncurses5-dev libncursesw5-dev \
- #   xz-utils tk-dev liblzma-dev libyaml-dev bats bats-support bats-assert bats-file \
- #   python3 python3-pip python3-dev
-
 RUN useradd -ms /bin/bash cdkuser
 RUN chown -R cdkuser /home/cdkuser
 WORKDIR /home/cdkuser
