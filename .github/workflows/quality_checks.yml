@@ -8,7 +8,7 @@ on:
 
 jobs:
   quality_checks:
-    uses: NHSDigital/eps-workflow-quality-checks/.github/workflows/quality-checks.yml@main
+    uses: NHSDigital/eps-workflow-quality-checks/.github/workflows/quality-checks.yml@v2
     with:
       node_version: '20'
     secrets:
