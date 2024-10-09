@@ -23,8 +23,6 @@ compile-node:
 compile: compile-node
 
 lint-node: compile-node
-	npm run lint --workspace packages/client
-	npm run lint --workspace packages/server
 	npm run lint --workspace packages/cdk
 
 lint-githubactions:
@@ -36,13 +34,9 @@ lint-githubaction-scripts:
 lint: lint-node lint-githubactions lint-githubaction-scripts react-lint
 
 test: compile
-	npm run test --workspace packages/client
-	npm run test --workspace packages/server
 	npm run test --workspace packages/cdk
 
 clean:
-	rm -rf packages/client/coverage
-	rm -rf packages/server/coverage
 	rm -rf cdk.out
 	rm -rf packages/cpt-ui/.next
 
@@ -54,9 +48,8 @@ check-licenses: check-licenses-node check-licenses-python
 
 check-licenses-node:
 	npm run check-licenses
-	npm run check-licenses --workspace packages/client
-	npm run check-licenses --workspace packages/server
 	npm run check-licenses --workspace packages/cdk
+	npm run check-licenses --workspace packages/cpt-ui
 
 
 check-licenses-python:

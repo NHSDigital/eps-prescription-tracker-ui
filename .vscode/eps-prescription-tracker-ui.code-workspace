@@ -11,14 +11,6 @@
       {
         "name": "packages/cdk",
         "path": "../packages/cdk"
-      },
-      {
-        "name": "packages/client",
-        "path": "../packages/client"
-      },
-      {
-        "name": "packages/server",
-        "path": "../packages/server"
       }
     ],
     "settings": {

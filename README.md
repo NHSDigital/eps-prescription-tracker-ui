@@ -4,8 +4,7 @@
 
 This is the code for the Clinical Prescription Tracker UI.
 
-- `packages/client` Client side react front end for clinical prescription tracker UI
-- `packages/server/` Server side for clinical prescription tracker UI.
+- `packages/cpt-ui` Client side react front end for clinical prescription tracker UI
 - `packages/cdk/` Contains the cdk code used to define the stacks.
 - `scripts/` Utilities helpful to developers of this specification.
 - `.devcontainer` Contains a dockerfile and vscode devcontainer definition.
