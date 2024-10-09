@@ -4,6 +4,8 @@
     "files": [],
     // Building this project will build all of the following:
     "references": [
+      {"path": "packages/cdk"},
+      {"path": "packages/cpt-ui"}
     ]
   }
   
