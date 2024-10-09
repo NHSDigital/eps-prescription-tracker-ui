@@ -3,14 +3,49 @@ FROM ubuntu:24.04
 RUN apt-get update \
     && export DEBIAN_FRONTEND=noninteractive \
     && apt-get -y upgrade \
-    && apt-get -y install --no-install-recommends htop vim curl git build-essential \
-    libffi-dev libssl-dev libxml2-dev libxslt1-dev libjpeg8-dev libbz2-dev \
-    zlib1g-dev unixodbc unixodbc-dev libsecret-1-0 libsecret-1-dev libsqlite3-dev \
-    jq apt-transport-https ca-certificates gnupg-agent \
-    software-properties-common bash-completion python3-pip make libbz2-dev \
-    libreadline-dev libsqlite3-dev wget llvm libncurses5-dev libncursesw5-dev \
-    xz-utils tk-dev liblzma-dev libyaml-dev bats bats-support bats-assert bats-file \
-    python3 python3-pip python3-dev unzip
+    && apt-get -y install --no-install-recommends \
+        apt-transport-https \
+        bash-completion \
+        bats \
+        bats-assert \
+        bats-file \
+        bats-support \
+        build-essential \
+        ca-certificates \
+        curl \
+        git \
+        gnupg-agent \
+        htop \
+        jq \
+        libbz2-dev \
+        libffi-dev \
+        libjpeg8-dev \
+        liblzma-dev \
+        libncurses5-dev \
+        libncursesw5-dev \
+        libreadline-dev \
+        libsecret-1-0 \
+        libsecret-1-dev \
+        libsqlite3-dev \
+        libssl-dev \
+        libxml2-dev \
+        libxslt1-dev \
+        libyaml-dev \
+        llvm \
+        make \
+        python3 \
+        python3-dev \
+        python3-pip \
+        software-properties-common \
+        tk-dev \
+        uninstall \
+        unixodbc \
+        unixodbc-dev \
+        unzip \
+        vim \
+        wget \
+        xz-utils \
+        zlib1g-dev
 
 # install aws stuff
 RUN wget -O /tmp/awscliv2.zip "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" && \
