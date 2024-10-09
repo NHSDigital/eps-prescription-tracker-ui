@@ -69,8 +69,7 @@ export class FunctionConstruct extends Construct {
         })]
     })
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const lambdaSplunkSubscriptionFilter = new logs.CfnSubscriptionFilter(this, "LambdaSplunkSubscriptionFilter", {
+    new logs.CfnSubscriptionFilter(this, "LambdaSplunkSubscriptionFilter", {
       roleArn: cdk.Fn.importValue("lambda-resources:SplunkSubscriptionFilterRole"),
       logGroupName: lambdaLogGroup.logGroupName,
       filterPattern: "",

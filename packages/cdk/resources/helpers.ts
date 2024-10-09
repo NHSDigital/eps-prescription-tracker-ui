@@ -13,13 +13,13 @@ function getLambdaInvokeURL(region: string, lambdaNArn: string) {
 function getLambdaArn(region: string, account: string, lambdaName: string) {
   return `arn:aws:lambda:${region}:${account}:function:${lambdaName}`
 }
-interface defaultLambdaOptionsParams {
+interface DefaultLambdaOptionsParams {
     readonly functionName: string;
     readonly packageBasePath: string;
     readonly entryPoint: string;
   }
 
-function getDefaultLambdaOptions(options: defaultLambdaOptionsParams): nodeLambda.NodejsFunctionProps {
+function getDefaultLambdaOptions(options: DefaultLambdaOptionsParams): nodeLambda.NodejsFunctionProps {
   const defaultOptions: nodeLambda.NodejsFunctionProps = {
     functionName: options.functionName,
     runtime: lambda.Runtime.NODEJS_20_X,
