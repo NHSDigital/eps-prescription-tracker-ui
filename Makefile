@@ -124,7 +124,6 @@ cdk-watch: guard-stack_name
 		--context VERSION_NUMBER=$$VERSION_NUMBER \
 		--context COMMIT_ID=$$COMMIT_ID
 
+
 build-deployment-container-image:
-	rm -rf .asdf
-	cp -r $$HOME/.asdf .
 	docker build -t "clinical-prescription-tracker-ui" -f docker/Dockerfile .
