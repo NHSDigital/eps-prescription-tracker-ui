@@ -18,9 +18,8 @@
     "author": "NHS Digital",
     "license": "MIT",
     "workspaces": [
-        "packages/server",
-        "packages/client",
-        "packages/cpt-ui"
+        "packages/cpt-ui",
+        "packages/cdk"
     ],
     "devDependencies": {
         "@semantic-release/changelog": "^6.0.3",

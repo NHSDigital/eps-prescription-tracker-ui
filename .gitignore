@@ -27,3 +27,7 @@ _site/
 .jekyll-metadata
 vendor
 cfn_guard_output/
+test/
+amplify_outputs.json
+.asdf
+cdk.out/
