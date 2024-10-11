@@ -78,6 +78,7 @@ compile: compile-node
 lint-node: compile-node
 	npm run lint --workspace packages/client
 	npm run lint --workspace packages/server
+	npm run lint --workspace packages/cloudfrontFunctions
 
 lint-samtemplates:
 	poetry run cfn-lint -I "SAMtemplates/**/*.y*ml" 2>&1 | awk '/Run scan/ { print } /^[EW][0-9]/ { print; getline; print }'
@@ -93,10 +94,12 @@ lint: lint-node lint-samtemplates lint-githubactions lint-githubaction-scripts
 test: compile
 	npm run test --workspace packages/client
 	npm run test --workspace packages/server
+	npm run test --workspace packages/cloudfrontFunctions
 
 clean:
 	rm -rf packages/client/coverage
 	rm -rf packages/server/coverage
+	rm -rf packages/server/cloudfrontFunctions
 	rm -rf .aws-sam
 
 deep-clean: clean
@@ -109,6 +112,7 @@ check-licenses-node:
 	npm run check-licenses
 	npm run check-licenses --workspace packages/client
 	npm run check-licenses --workspace packages/server
+	npm run check-licenses --workspace packages/cloudfrontFunctions
 
 check-licenses-python:
 	scripts/check_python_licenses.sh

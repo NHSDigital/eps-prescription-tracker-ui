@@ -32,6 +32,8 @@ import {RestApiBase} from "aws-cdk-lib/aws-apigateway"
 import {IUserPoolDomain} from "aws-cdk-lib/aws-cognito"
 
 import {contentBucketKmsKeyPolicy} from "../policies/kms/contentBucketKeyPolicy"
+import {readFileSync} from "fs"
+import {resolve} from "path"
 
 export interface CloudfrontStackProps extends StackProps {
   readonly env: Environment
@@ -111,35 +113,46 @@ export class CloudfrontStack extends Stack {
     })
 
     // Cloudfront Functions
-    const s3ContentUrlRewriteFunction = new Function(this, "s3ContentUrlRewriteFunction", {
-      code: FunctionCode.fromFile({
-        filePath: "../../cloudfrontFunctions/s3ContentUrlRewrite.js" // todo: write the function
-      }),
+    /* - Inject Key Value Store ID into code
+       - Remove export statement as not supported in Cloudfront functions */
+    const s3ContentUriRewriteFunctionCode = readFileSync(
+      resolve(import.meta.dirname, "../../cloudfrontFunctions/src/s3ContentUriRewrite.js"), "utf8").replace(
+      "KVS_ID_PLACEHOLDER", functionStore.keyValueStoreId).replace("export ", "")
+
+    const s3ContentUriRewriteFunction = new Function(this, "s3ContentUriRewriteFunction", {
+      code: FunctionCode.fromInline(s3ContentUriRewriteFunctionCode),
       runtime: FunctionRuntime.JS_2_0,
       keyValueStore: functionStore,
       autoPublish: true
     })
 
-    const s3404UrlRewriteFunction = new Function(this, "s3404UrlRewriteFunction", {
-      code: FunctionCode.fromFile({
-        filePath: "../../cloudfrontFunctions/s3404UrlRewrite.js" // todo: write the function
-      }),
+    /* - Remove export statement as not supported in Cloudfront functions */
+    const s3404UriRewriteFunctionCode = readFileSync(
+      resolve(import.meta.dirname, "../../cloudfrontFunctions/src/s3404UriRewrite.js"), "utf8").replace("export ", "")
+
+    const s3404UriRewriteFunction = new Function(this, "s3404UriRewriteFunction", {
+      code: FunctionCode.fromInline(s3404UriRewriteFunctionCode),
       runtime: FunctionRuntime.JS_2_0,
       autoPublish: true
     })
 
-    const s3404ModifyResponseFunction = new Function(this, "s3404ModifyResponseFunction", {
-      code: FunctionCode.fromFile({
-        filePath: "../../cloudfrontFunctions/s3404ModifyResponse.js" // todo: write the function
-      }),
+    /* - Remove export statement as not supported in Cloudfront functions*/
+    const s3404ModifyStatusCodeFunctionCode = readFileSync(
+      resolve(import.meta.dirname, "../../cloudfrontFunctions/src/s3404ModifyStatusCode.js"), "utf8")
+      .replace("export ", "")
+
+    const s3404ModifyStatusCodeFunction = new Function(this, "s3404ModifyStatusCodeFunction", {
+      code: FunctionCode.fromInline(s3404ModifyStatusCodeFunctionCode),
       runtime: FunctionRuntime.JS_2_0,
       autoPublish: true
     })
 
-    const s3JwksUrlRewriteFunction = new Function(this, "s3ContentUrlRewriteFunction", {
-      code: FunctionCode.fromFile({
-        filePath: "../../cloudfrontFunctions/s3JwksUrlRewrite.js" // todo: write the function
-      }),
+    /* - Remove export statement as not supported in Cloudfront functions*/
+    const s3JwksUriRewriteFunctionCode = readFileSync(
+      resolve(import.meta.dirname, "../../cloudfrontFunctions/src/s3JwksUriRewrite.js"), "utf8").replace("export ", "")
+
+    const s3JwksUriRewriteFunction = new Function(this, "s3JwksUriRewriteFunction", {
+      code: FunctionCode.fromInline(s3JwksUriRewriteFunctionCode),
       runtime: FunctionRuntime.JS_2_0,
       autoPublish: true
     })
@@ -162,11 +175,11 @@ export class CloudfrontStack extends Stack {
         viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
         functionAssociations:[
           {
-            function: s3404UrlRewriteFunction,
+            function: s3404UriRewriteFunction,
             eventType: FunctionEventType.VIEWER_REQUEST
           },
           {
-            function: s3404ModifyResponseFunction,
+            function: s3404ModifyStatusCodeFunction,
             eventType: FunctionEventType.VIEWER_RESPONSE
           }
         ]
@@ -178,7 +191,7 @@ export class CloudfrontStack extends Stack {
           viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
           functionAssociations: [
             {
-              function: s3ContentUrlRewriteFunction,
+              function: s3ContentUriRewriteFunction,
               eventType: FunctionEventType.VIEWER_REQUEST
             }
           ]
@@ -201,7 +214,7 @@ export class CloudfrontStack extends Stack {
           viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
           functionAssociations: [
             {
-              function: s3JwksUrlRewriteFunction,
+              function: s3JwksUriRewriteFunction,
               eventType: FunctionEventType.VIEWER_REQUEST
             }
           ]
@@ -214,6 +227,5 @@ export class CloudfrontStack extends Stack {
     // (This may need to only be added to the stack after initial deployment)
     const contentBucketKmsKey = (props.contentBucketKmsKey.node.defaultChild as CfnKey)
     contentBucketKmsKey.keyPolicy = contentBucketKmsKeyPolicy(cloudfrontDistribution.distributionId)
-
   }
 }

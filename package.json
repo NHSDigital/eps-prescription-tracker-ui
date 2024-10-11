@@ -16,7 +16,8 @@
     "workspaces": [
         "packages/server",
         "packages/client",
-        "packages/cdk"
+        "packages/cdk",
+        "packages/cloudfrontFunctions"
     ],
     "devDependencies": {
         "@semantic-release/changelog": "^6.0.3",
