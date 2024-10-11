@@ -50,33 +50,33 @@ describe("S3 Content URI Rewrite", () => {
     },
     {
       description: "Current version static file",
-      requestUri: "/site/file.etx",
-      expectedOriginUri: "/v1.0.0/file.etx"
+      requestUri: "/site/file.ext",
+      expectedOriginUri: "/v1.0.0/file.ext"
     },
     {
       description: "Current version nested static file",
-      requestUri: "/site/files/file.etx",
-      expectedOriginUri: "/v1.0.0/files/file.etx"
+      requestUri: "/site/files/file.ext",
+      expectedOriginUri: "/v1.0.0/files/file.ext"
     },
     {
       description: "Specified version static file",
-      requestUri: "/site/v0.9.9/file.etx",
-      expectedOriginUri: "/v0.9.9/file.etx"
+      requestUri: "/site/v0.9.9/file.ext",
+      expectedOriginUri: "/v0.9.9/file.ext"
     },
     {
       description: "Specified version nested static file",
-      requestUri: "/site/v0.9.9/files/file.etx",
-      expectedOriginUri: "/v0.9.9/files/file.etx"
+      requestUri: "/site/v0.9.9/files/file.ext",
+      expectedOriginUri: "/v0.9.9/files/file.ext"
     },
     {
       description: "Specified PR static file",
-      requestUri: "/site/pr-1234/file.etx",
-      expectedOriginUri: "/pr-1234/file.etx"
+      requestUri: "/site/pr-1234/file.ext",
+      expectedOriginUri: "/pr-1234/file.ext"
     },
     {
       description: "Specified PR nested static file",
-      requestUri: "/site/pr-1234/files/file.etx",
-      expectedOriginUri: "/pr-1234/files/file.etx"
+      requestUri: "/site/pr-1234/files/file.ext",
+      expectedOriginUri: "/pr-1234/files/file.ext"
     }
   ]
 
@@ -89,7 +89,6 @@ describe("S3 Content URI Rewrite", () => {
         }
       }
       const result: any = await handler(mockEvent)
-      console.log(result)
       expect(result.uri).toEqual(expectedOriginUri)
     })
   })

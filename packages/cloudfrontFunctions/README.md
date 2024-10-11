@@ -40,3 +40,10 @@ todo: sort these notes out
     is a SPA this also covers scenarios where the browser may request a route that only exists in the client,
     e.g site/page_1, because the user refreshed or bookmarked a page etc, by also retuning index.html in these
     scenarios we gracefully handle the call whilst passing back to the client to handle the page routing*/
+
+
+// Modifies the responses back from s3 for all calls that were previously not caught by configured origin path patterns (/site, /api, /auth etc).
+// These responses should return the static 404 file from the root of the content s3 bucket.
+// As these calls were previously rewritten to resolve to this file they will return from
+// s3 with a 200 response as the file exists and could be retrieved.
+// So this function intercepts these responses in order to modify the status code to the expected 404 code.

@@ -5,7 +5,7 @@ const get = () => {
   return "v1.0.0"
 }
 
-const test = {
+const cloudfront = {
   kvs: () => {
     return {
       get: get
@@ -13,4 +13,4 @@ const test = {
   }
 }
 
-export default test
+export default cloudfront
