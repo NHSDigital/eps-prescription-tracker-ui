@@ -14,21 +14,7 @@ export const handler = async (event) => {
 
   const versionMatches = uri.match(versionPattern)
   const prMatches = uri.match(prPattern)
-  console.log(versionMatches)
-  console.log(prMatches)
 
-  // let originUri
-  // if ((versionMatches && versionMatches.length === 1)) {
-  //   originUri = uri
-  // } else if (prMatches && prMatches.length === 1){
-  //   originUri = uri
-  // } else {
-  //   originUri = `/${currentVersion}/`
-  // }
-
-  // if (originUri.endsWith("/")) {
-  //   originUri += "index.html"
-  // }
   let version
   if (versionMatches && versionMatches.length === 1){
     version = versionMatches[0]
