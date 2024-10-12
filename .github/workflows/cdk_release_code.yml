@@ -129,6 +129,7 @@ jobs:
           -e AWS_REGION="eu-west-2" \
           -e SHOW_DIFF="true" \
           -e DEPLOY_CODE="false" \
+          -e CDK_APP_PATH="packages/cdk/bin/ClinicalPrescriptionTrackerApp.ts" \
           cdk-utils-build-repo:PR-1
         shell: bash
 
@@ -142,6 +143,7 @@ jobs:
           -e AWS_REGION="eu-west-2" \
           -e SHOW_DIFF="false" \
           -e DEPLOY_CODE="true" \
+          -e CDK_APP_PATH="packages/cdk/bin/ClinicalPrescriptionTrackerApp.ts" \
           cdk-utils-build-repo:PR-1
         shell: bash
 
