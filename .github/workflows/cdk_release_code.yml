@@ -94,7 +94,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: build_artifact
-          path: .
+          path: .build
 
       - name: Retrieve AWS Account ID
         id: retrieve-account-id
@@ -122,7 +122,7 @@ jobs:
       - name: Show diff
         run: |
           docker run \
-          -v "$(pwd)":/home/cdkuser/workspace/ \
+          -v "$(pwd)/.build":/home/cdkuser/workspace/ \
           -e AWS_ACCESS_KEY_ID=${{ steps.connect-aws.outputs.aws-access-key-id }} \
           -e AWS_SECRET_ACCESS_KEY=${{ steps.connect-aws.outputs.aws-secret-access-key }} \
           -e AWS_SESSION_TOKEN=${{ steps.connect-aws.outputs.aws-session-token }} \
@@ -136,7 +136,7 @@ jobs:
       - name: Deploy code
         run: |
           docker run \
-          -v "$(pwd)":/home/cdkuser/workspace/ \
+          -v "$(pwd)/.build":/home/cdkuser/workspace/ \
           -e AWS_ACCESS_KEY_ID=${{ steps.connect-aws.outputs.aws-access-key-id }} \
           -e AWS_SECRET_ACCESS_KEY=${{ steps.connect-aws.outputs.aws-secret-access-key }} \
           -e AWS_SESSION_TOKEN=${{ steps.connect-aws.outputs.aws-session-token }} \
