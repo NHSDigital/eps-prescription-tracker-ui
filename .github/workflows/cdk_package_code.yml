@@ -42,18 +42,30 @@ jobs:
         run: |
           make install
 
-      - shell: bash
-        name: build docker image
+      - name: fix cdk.json
         run: |
-          make build-deployment-container-image
-          docker save "clinical-prescription-tracker-ui" | gzip >  clinical-prescription-tracker-ui.tar.gz
+          jq \
+          --arg stackName "$stack_name" \
+          --arg VERSION_NUMBER "$VERSION_NUMBER" \
+          --arg COMMIT_ID "$COMMIT_ID" \
+          '.context += {
+            "stackName": $stackName, 
+            "VERSION_NUMBER": $VERSION_NUMBER, 
+            "COMMIT_ID": $COMMIT_ID}' \
+          cdk.json > cdk.new.json
+          mv cdk.new.json cdk.json
 
       - uses: actions/upload-artifact@v4
         name: upload build artifact
         with:
-          name: docker_artifact
+          name: build_artifact
           path: |
-            clinical-prescription-tracker-ui.tar.gz
+            packages
+            node_modules
+            package.json
+            package-lock.json
+            tsconfig.defaults.json
+            cdk.json
 
 
           

@@ -42,6 +42,8 @@ on:
     secrets:
       CLOUD_FORMATION_DEPLOY_ROLE:
         required: true
+      CDK_PULL_IMAGE_ROLE:
+        required: true
       DEV_CLOUD_FORMATION_CHECK_VERSION_ROLE:
         required: false
       INT_CLOUD_FORMATION_CHECK_VERSION_ROLE:
@@ -81,6 +83,33 @@ jobs:
           DEV_CLOUD_FORMATION_EXECUTE_LAMBDA_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_EXECUTE_LAMBDA_ROLE }}
 
       - name: Configure AWS Credentials
+        id: connect-aws-pull-image
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: eu-west-2
+          role-to-assume: ${{ secrets.CDK_PULL_IMAGE_ROLE }}
+          role-session-name: prescription-clinical-tracker-ui-pull-image
+
+      - name: docker_artifact download
+        uses: actions/download-artifact@v4
+        with:
+          name: build_artifact
+          path: .
+
+      - name: Retrieve AWS Account ID
+        id: retrieve-account-id
+        run: echo "ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)" >> "$GITHUB_ENV"
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        run: |
+          aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin ${{ env.ACCOUNT_ID }}.dkr.ecr.eu-west-2.amazonaws.com
+
+      - name: Pull cdk-utils-build from Amazon ECR
+        run: |
+          docker pull "${{ env.ACCOUNT_ID }}.dkr.ecr.eu-west-2.amazonaws.com/cdk-uitl-build-repo:PR-1"
+
+      - name: Configure AWS Credentials
         id: connect-aws
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -89,45 +118,30 @@ jobs:
           role-session-name: prescription-clinical-tracker-ui-deployment
           output-credentials: true
 
-      - name: docker_artifact download
-        uses: actions/download-artifact@v4
-        with:
-          name: docker_artifact
-          path: .
-
-      - name: Extract clinical-prescription-tracker-ui docker image
-        id: extract-clinical-prescription-tracker-ui-image
-        run: |
-          docker load < clinical-prescription-tracker-ui.tar.gz
-
       - name: Show diff
         run: |
           docker run \
+          -v "$(pwd)":/home/cdkuser/workspace/ \
           -e AWS_ACCESS_KEY_ID=${{ steps.connect-aws.outputs.aws-access-key-id }} \
           -e AWS_SECRET_ACCESS_KEY=${{ steps.connect-aws.outputs.aws-secret-access-key }} \
           -e AWS_SESSION_TOKEN=${{ steps.connect-aws.outputs.aws-session-token }} \
           -e AWS_REGION="eu-west-2" \
-          -e stack_name="${{ inputs.STACK_NAME }}" \
-          -e VERSION_NUMBER="${{ inputs.VERSION_NUMBER}}" \
-          -e COMMIT_ID="${{ inputs.COMMIT_ID}}" \
           -e SHOW_DIFF="true" \
           -e DEPLOY_CODE="false" \
-          clinical-prescription-tracker-ui
+          cdk-uitl-build-repo:PR-1
         shell: bash
 
       - name: Deploy code
         run: |
           docker run \
+          -v "$(pwd)":/home/cdkuser/workspace/ \
           -e AWS_ACCESS_KEY_ID=${{ steps.connect-aws.outputs.aws-access-key-id }} \
           -e AWS_SECRET_ACCESS_KEY=${{ steps.connect-aws.outputs.aws-secret-access-key }} \
           -e AWS_SESSION_TOKEN=${{ steps.connect-aws.outputs.aws-session-token }} \
           -e AWS_REGION="eu-west-2" \
-          -e stack_name="${{ inputs.STACK_NAME }}" \
-          -e VERSION_NUMBER="${{ inputs.VERSION_NUMBER}}" \
-          -e COMMIT_ID="${{ inputs.COMMIT_ID}}" \
           -e SHOW_DIFF="false" \
           -e DEPLOY_CODE="true" \
-          clinical-prescription-tracker-ui
+          cdk-uitl-build-repo:PR-1
         shell: bash
 
       - name: create_int_release_notes
