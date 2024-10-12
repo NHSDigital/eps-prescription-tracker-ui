@@ -88,8 +88,12 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
 
   package_code:
-    needs: tag_release
+    needs: [tag_release, get_commit_id]
     uses: ./.github/workflows/cdk_package_code.yml
+    with:
+      STACK_NAME: clinical-tracker-ui
+      VERSION_NUMBER: ${{needs.tag_release.outputs.version_tag}}
+      COMMIT_ID: ${{needs.get_commit_id.outputs.commit_id}}
 
   release_dev:
     needs: [tag_release, package_code, get_commit_id]

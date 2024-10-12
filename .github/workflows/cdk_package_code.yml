@@ -2,6 +2,17 @@ name: cdk package code
 
 on:
   workflow_call:
+    inputs:
+      VERSION_NUMBER:
+        required: true
+        type: string
+      COMMIT_ID:
+        required: true
+        type: string
+      STACK_NAME:
+        required: true
+        type: string
+
 
 jobs:
   package_code:
@@ -45,9 +56,9 @@ jobs:
       - name: fix cdk.json
         run: |
           jq \
-          --arg stackName "$stack_name" \
-          --arg VERSION_NUMBER "$VERSION_NUMBER" \
-          --arg COMMIT_ID "$COMMIT_ID" \
+          --arg stackName "${{ inputs.stack_name }}" \
+          --arg VERSION_NUMBER "${{ inputs.VERSION_NUMBER }}" \
+          --arg COMMIT_ID "${{ inputs.COMMIT_ID }}" \
           '.context += {
             "stackName": $stackName, 
             "VERSION_NUMBER": $VERSION_NUMBER, 
