@@ -128,7 +128,7 @@ jobs:
           -e AWS_REGION="eu-west-2" \
           -e SHOW_DIFF="true" \
           -e DEPLOY_CODE="false" \
-          cdk-uitl-build-repo:PR-1
+          cdk-utils-build-repo:PR-1
         shell: bash
 
       - name: Deploy code
@@ -141,7 +141,7 @@ jobs:
           -e AWS_REGION="eu-west-2" \
           -e SHOW_DIFF="false" \
           -e DEPLOY_CODE="true" \
-          cdk-uitl-build-repo:PR-1
+          cdk-utils-build-repo:PR-1
         shell: bash
 
       - name: create_int_release_notes
