@@ -108,6 +108,7 @@ jobs:
       - name: Pull cdk-utils-build from Amazon ECR
         run: |
           docker pull "${{ env.ACCOUNT_ID }}.dkr.ecr.eu-west-2.amazonaws.com/cdk-utils-build-repo:PR-1"
+          docker tag "${{ env.ACCOUNT_ID }}.dkr.ecr.eu-west-2.amazonaws.com/cdk-utils-build-repo:PR-1" cdk-utils-build-repo:PR-1
 
       - name: Configure AWS Credentials
         id: connect-aws
