@@ -94,7 +94,11 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: build_artifact
-          path: .build
+
+      - name: extract build_artifact
+        run: |
+          mkdir -p .build
+          tar -xvf artifact.tar -C .build
 
       - name: Retrieve AWS Account ID
         id: retrieve-account-id
