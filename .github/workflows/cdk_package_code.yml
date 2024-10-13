@@ -70,6 +70,7 @@ jobs:
         name: upload build artifact
         with:
           name: build_artifact
+          include-hidden-files: true
           path: |
             .tool-versions
             packages
