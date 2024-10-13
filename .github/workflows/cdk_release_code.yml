@@ -6,25 +6,10 @@ on:
       STACK_NAME:
         required: true
         type: string
-      ARTIFACT_BUCKET_PREFIX:
-        required: true
-        type: string
       TARGET_ENVIRONMENT:
         required: true
         type: string
-      BUILD_ARTIFACT:
-        required: true
-        type: string
       VERSION_NUMBER:
-        required: true
-        type: string
-      COMMIT_ID:
-        required: true
-        type: string
-      LOG_LEVEL:
-        required: true
-        type: string
-      LOG_RETENTION_DAYS:
         required: true
         type: string
       CREATE_INT_RELEASE_NOTES:

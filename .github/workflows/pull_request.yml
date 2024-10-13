@@ -65,13 +65,8 @@ jobs:
     uses: ./.github/workflows/cdk_release_code.yml
     with:
       STACK_NAME: cpt-ui-pr-${{needs.get_issue_number.outputs.issue_number}}
-      ARTIFACT_BUCKET_PREFIX: PR-${{needs.get_issue_number.outputs.issue_number}}
       TARGET_ENVIRONMENT: dev-pr
-      BUILD_ARTIFACT: packaged_code
       VERSION_NUMBER: PR-${{ needs.get_issue_number.outputs.issue_number }}
-      COMMIT_ID: ${{ needs.get_commit_id.outputs.commit_id }}
-      LOG_LEVEL: DEBUG
-      LOG_RETENTION_DAYS: 30
     secrets:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.DEV_CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_DEPLOY_ROLE }}
