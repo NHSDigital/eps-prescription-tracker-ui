@@ -98,7 +98,7 @@ jobs:
       - name: extract build_artifact
         run: |
           mkdir -p .build
-          tar -xvf artifact.tar -C .build
+          tar -xf artifact.tar -C .build
 
       - name: Retrieve AWS Account ID
         id: retrieve-account-id
