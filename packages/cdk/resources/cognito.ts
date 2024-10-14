@@ -109,6 +109,7 @@ export class Cognito extends Construct {
         token: `${baseApiGwUrl}/token`,
         userInfo: props.mockOidcUserInfoEndpoint
       }
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const mockPoolIdentityProvider = new cognito.UserPoolIdentityProviderOidc(this, "MockUserPoolIdentityProvider", {
         name: "Mock",
         clientId: props.mockOidcClientId,
@@ -120,9 +121,9 @@ export class Cognito extends Construct {
         endpoints: mockOidcEndpoints
       })
 
-      supportedIdentityProviders.push(
-        cognito.UserPoolClientIdentityProvider.custom(mockPoolIdentityProvider.providerName)
-      )
+      // supportedIdentityProviders.push(
+      //   cognito.UserPoolClientIdentityProvider.custom(mockPoolIdentityProvider.providerName)
+      // )
     }
 
     // eslint-disable-next-line max-len
