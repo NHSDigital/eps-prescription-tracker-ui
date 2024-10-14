@@ -37,8 +37,8 @@ new CloudfrontStack(app, "CloudfrontStack", {
   crossRegionReferences: true,
   stackName: `${stackName}-shared-cloudfront`,
   version: version,
-  contentBucket: SharedResources.contentBucket,
-  contentBucketKmsKey: SharedResources.contentBucketKmsKey,
+  staticContentBucket: SharedResources.staticContentBucket,
+  staticContentBucketKmsKey: SharedResources.staticContentBucketKmsKey,
   apiGateway: SharedResources.apiGateway as RestApiBase,
   cognitoUserPoolDomain: SharedResources.cognitoUserPoolDomain,
   cognitoRegion: SharedResources.region

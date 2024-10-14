@@ -14,18 +14,18 @@ interface CodeReplacement {
   valueToReplace: string
   replacementValue: string
 }
-
 type codeReplacements = Array<CodeReplacement>
 
-interface KeyValues {
+interface KeyValue {
   key: string
   value: string
 }
+type KeyValues = Array<KeyValue>
 
 export interface CloudfrontFunctionProps {
   readonly source: string
   readonly codeReplacements?: codeReplacements
-  readonly keyValues?: Array<KeyValues>
+  readonly keyValues?: KeyValues
 }
 
 export class CloudfrontFunction extends Construct {

@@ -21,22 +21,25 @@ import {
   SecurityPolicyProtocol,
   SSLMethod
 } from "aws-cdk-lib/aws-cloudfront"
-import {Bucket, IBucket} from "aws-cdk-lib/aws-s3"
-import {CfnKey, IKey} from "aws-cdk-lib/aws-kms"
+import {Bucket} from "aws-cdk-lib/aws-s3"
+import {CfnKey, Key} from "aws-cdk-lib/aws-kms"
 import {RestApiBase} from "aws-cdk-lib/aws-apigateway"
-import {IUserPoolDomain} from "aws-cdk-lib/aws-cognito"
+import {UserPoolDomain} from "aws-cdk-lib/aws-cognito"
 
-import {contentBucketKmsKeyPolicy} from "../policies/kms/contentBucketKeyPolicy"
+import {
+  AllowCloudfrontKmsKeyAccessPolicy,
+  contentBucketKmsKeyPolicy
+} from "../policies/kms/AllowCloudfrontKmsKeyAccessPolicy"
 import {CloudfrontFunction} from "../resources/Cloudfront/CloudfrontFunction"
 
 export interface CloudfrontStackProps extends StackProps {
   readonly env: Environment
   readonly stackName: string
   readonly version: string
-  readonly contentBucket: IBucket
-  contentBucketKmsKey: IKey
+  readonly staticContentBucket: Bucket
+  staticContentBucketKmsKey: Key
   readonly apiGateway: RestApiBase
-  readonly cognitoUserPoolDomain: IUserPoolDomain,
+  readonly cognitoUserPoolDomain: UserPoolDomain,
   readonly cognitoRegion: string
 }
 
@@ -63,8 +66,8 @@ export class CloudfrontStack extends Stack {
     })
 
     // Origins
-    const contentBucketOrigin = S3BucketOrigin.withOriginAccessControl(
-      props.contentBucket,
+    const staticContentBucketOrigin = S3BucketOrigin.withOriginAccessControl(
+      props.staticContentBucket,
       {
         originAccessLevels: [AccessLevel.READ]
       }
@@ -109,8 +112,8 @@ export class CloudfrontStack extends Stack {
       source: "../../cloudfrontFunctions/src/s3404ModifyStatusCode.js"
     })
 
-    const s3ContentUriRewriteFunction = new CloudfrontFunction(this, "S3ContentUriRewriteFunction", {
-      source: "../../cloudfrontFunctions/src/s3ContentUriRewrite.js",
+    const s3StaticContentUriRewriteFunction = new CloudfrontFunction(this, "S3StaticContentUriRewriteFunction", {
+      source: "../../cloudfrontFunctions/src/s3StaticContentUriRewrite.js",
       keyValues: [
         {
           key: "version",
@@ -162,7 +165,7 @@ export class CloudfrontStack extends Stack {
       logFilePrefix: "/cloudfront",
       logIncludesCookies: true, // may actually want to be false, don't know if it includes names of cookies or contents
       defaultBehavior: {
-        origin: contentBucketOrigin,
+        origin: staticContentBucketOrigin,
         allowedMethods: AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
         viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
         functionAssociations:[
@@ -178,12 +181,12 @@ export class CloudfrontStack extends Stack {
       },
       additionalBehaviors:{
         "/site/*": {
-          origin: contentBucketOrigin,
+          origin: staticContentBucketOrigin,
           allowedMethods: AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
           viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
           functionAssociations: [
             {
-              function: s3ContentUriRewriteFunction.function,
+              function: s3StaticContentUriRewriteFunction.function,
               eventType: FunctionEventType.VIEWER_REQUEST
             }
           ]
@@ -213,7 +216,7 @@ export class CloudfrontStack extends Stack {
           ]
         },
         "/jwks/": { // matches exactly <url>/jwks and will only serve the jwks json (vis cf function)
-          origin: contentBucketOrigin,
+          origin: staticContentBucketOrigin,
           allowedMethods: AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
           viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
           functionAssociations: [
@@ -229,7 +232,10 @@ export class CloudfrontStack extends Stack {
     // to match all Distribution IDs in order to avoid a circular dependency between the KMS key,Bucket, and
     // Distribution during the initial deployment. This updates the policy to restrict it to a specific distribution.
     // (This may need to only be added to the stack after initial deployment)
-    const contentBucketKmsKey = (props.contentBucketKmsKey.node.defaultChild as CfnKey)
-    contentBucketKmsKey.keyPolicy = contentBucketKmsKeyPolicy(cloudfrontDistribution.distributionId)
+    const contentBucketKmsKey = (props.staticContentBucketKmsKey.node.defaultChild as CfnKey)
+    contentBucketKmsKey.keyPolicy = new AllowCloudfrontKmsKeyAccessPolicy(
+      this, "StaticContentBucketAllowCloudfrontKmsKeyAccessPolicy", {
+        cloudfrontDistributionId: cloudfrontDistribution.distributionId
+      })
   }
 }
