@@ -117,7 +117,7 @@ jobs:
       COMMIT_ID: ${{needs.get_commit_id.outputs.commit_id}}
       CREATE_INT_RELEASE_NOTES: true
       CREATE_PROD_RELEASE_NOTES: true
-      useMockOidc: "true"
+      useMockOidc: true
     secrets:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.DEV_CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_DEPLOY_ROLE }}
