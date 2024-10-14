@@ -87,7 +87,7 @@ export class Cognito extends Construct {
       endpoints: oidcEndpoints
     })
 
-    const supportedIdentityProviders: Array<cognito.UserPoolClientIdentityProvider> = [
+    let supportedIdentityProviders: Array<cognito.UserPoolClientIdentityProvider> = [
       cognito.UserPoolClientIdentityProvider.COGNITO,
       cognito.UserPoolClientIdentityProvider.custom(userPoolIdentityProvider.providerName)
     ]
@@ -121,9 +121,11 @@ export class Cognito extends Construct {
         endpoints: mockOidcEndpoints
       })
 
-      supportedIdentityProviders.push(
+      supportedIdentityProviders = [
+        cognito.UserPoolClientIdentityProvider.COGNITO,
+        cognito.UserPoolClientIdentityProvider.custom(userPoolIdentityProvider.providerName),
         cognito.UserPoolClientIdentityProvider.custom(mockPoolIdentityProvider.providerName)
-      )
+      ]
     }
 
     // eslint-disable-next-line max-len
