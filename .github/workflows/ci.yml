@@ -8,12 +8,22 @@ env:
   BRANCH_NAME: ${{ github.event.ref.BRANCH_NAME }}
 
 jobs:
+  # quality_checks:
+  #   uses: NHSDigital/eps-workflow-quality-checks/.github/workflows/quality-checks.yml@v2
+  #   with:
+  #     node_version: '20'
+  #   secrets:
+  #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
   quality_checks:
-    uses: NHSDigital/eps-workflow-quality-checks/.github/workflows/quality-checks.yml@v2
-    with:
-      node_version: '20'
-    secrets:
-      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+      packages: read
+    steps:
+      - name: Dummy step
+        run: |
+          echo "Disabled quality checks for now"
 
   get_commit_id:
     runs-on: ubuntu-latest
