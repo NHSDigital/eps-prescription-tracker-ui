@@ -191,6 +191,7 @@ jobs:
             }' \
           .build/cdk.json > .build/cdk.new.json
           mv .build/cdk.new.json .build/cdk.json
+          cat .build/cdk.json
 
       - name: Show diff
         run: |
