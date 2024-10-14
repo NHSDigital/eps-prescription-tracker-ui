@@ -109,7 +109,7 @@ export class Cognito extends Construct {
         token: `${baseApiGwUrl}/token`,
         userInfo: props.mockOidcUserInfoEndpoint
       }
-      const mockPoolIdentityProvider = new cognito.UserPoolIdentityProviderOidc(this, "UserPoolIdentityProvider", {
+      const mockPoolIdentityProvider = new cognito.UserPoolIdentityProviderOidc(this, "MockUserPoolIdentityProvider", {
         name: "Primary",
         clientId: props.mockOidcClientId,
         clientSecret: props.mockOidClientSecret,
