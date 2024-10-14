@@ -9,11 +9,6 @@ import {HostedZone} from "aws-cdk-lib/aws-route53"
 import {Certificate, CertificateValidation} from "aws-cdk-lib/aws-certificatemanager"
 import {HttpOrigin, RestApiOrigin, S3BucketOrigin} from "aws-cdk-lib/aws-cloudfront-origins"
 import {
-  KeyValueStore,
-  ImportSource,
-  Function,
-  FunctionCode,
-  FunctionRuntime,
   Distribution,
   FunctionEventType,
   ViewerProtocolPolicy,
@@ -32,8 +27,7 @@ import {RestApiBase} from "aws-cdk-lib/aws-apigateway"
 import {IUserPoolDomain} from "aws-cdk-lib/aws-cognito"
 
 import {contentBucketKmsKeyPolicy} from "../policies/kms/contentBucketKeyPolicy"
-import {readFileSync} from "fs"
-import {resolve} from "path"
+import {CloudfrontFunction} from "../resources/Cloudfront/CloudfrontFunction"
 
 export interface CloudfrontStackProps extends StackProps {
   readonly env: Environment
@@ -100,61 +94,59 @@ export class CloudfrontStack extends Stack {
     // Cache Policies
     // todo - to follow in a later ticket
 
-    // Key Value Stores
-    const functionStore = new KeyValueStore(this, "functionStore", {
-      source: ImportSource.fromInline(JSON.stringify({
-        data: [
-          {
-            key: "version",
-            value: props.version
-          }
-        ]
-      }))
-    })
-
     // Cloudfront Functions
-    /* - Inject Key Value Store ID into code
-       - Remove export statement as not supported in Cloudfront functions */
-    const s3ContentUriRewriteFunctionCode = readFileSync(
-      resolve(import.meta.dirname, "../../cloudfrontFunctions/src/s3ContentUriRewrite.js"), "utf8").replace(
-      "KVS_ID_PLACEHOLDER", functionStore.keyValueStoreId).replace("export ", "")
-
-    const s3ContentUriRewriteFunction = new Function(this, "s3ContentUriRewriteFunction", {
-      code: FunctionCode.fromInline(s3ContentUriRewriteFunctionCode),
-      runtime: FunctionRuntime.JS_2_0,
-      keyValueStore: functionStore,
-      autoPublish: true
+    const s3404UriRewriteFunction = new CloudfrontFunction(this, "S3404UriRewriteFunction", {
+      source: "../../cloudfrontFunctions/src/genericS3FixedObjectUriRewrite.js",
+      keyValues: [
+        {
+          key: "object",
+          value: "404.html"
+        }
+      ]
     })
 
-    /* - Remove export statement as not supported in Cloudfront functions */
-    const s3404UriRewriteFunctionCode = readFileSync(
-      resolve(import.meta.dirname, "../../cloudfrontFunctions/src/s3404UriRewrite.js"), "utf8").replace("export ", "")
-
-    const s3404UriRewriteFunction = new Function(this, "s3404UriRewriteFunction", {
-      code: FunctionCode.fromInline(s3404UriRewriteFunctionCode),
-      runtime: FunctionRuntime.JS_2_0,
-      autoPublish: true
+    const s3404ModifyStatusCodeFunction = new CloudfrontFunction(this, "S3404ModifyStatusCodeFunction", {
+      source: "../../cloudfrontFunctions/src/s3404ModifyStatusCode.js"
     })
 
-    /* - Remove export statement as not supported in Cloudfront functions*/
-    const s3404ModifyStatusCodeFunctionCode = readFileSync(
-      resolve(import.meta.dirname, "../../cloudfrontFunctions/src/s3404ModifyStatusCode.js"), "utf8")
-      .replace("export ", "")
-
-    const s3404ModifyStatusCodeFunction = new Function(this, "s3404ModifyStatusCodeFunction", {
-      code: FunctionCode.fromInline(s3404ModifyStatusCodeFunctionCode),
-      runtime: FunctionRuntime.JS_2_0,
-      autoPublish: true
+    const s3ContentUriRewriteFunction = new CloudfrontFunction(this, "S3ContentUriRewriteFunction", {
+      source: "../../cloudfrontFunctions/src/s3ContentUriRewrite.js",
+      keyValues: [
+        {
+          key: "version",
+          value: props.version
+        }
+      ]
     })
 
-    /* - Remove export statement as not supported in Cloudfront functions*/
-    const s3JwksUriRewriteFunctionCode = readFileSync(
-      resolve(import.meta.dirname, "../../cloudfrontFunctions/src/s3JwksUriRewrite.js"), "utf8").replace("export ", "")
+    const apiGatewayStripPathFunction = new CloudfrontFunction(this, "ApiGatewayStripPathFunction", {
+      source: "../../cloudfrontFunctions/src/genericStripPathUriRewrite.js",
+      keyValues: [
+        {
+          key: "path",
+          value: "/api"
+        }
+      ]
+    })
 
-    const s3JwksUriRewriteFunction = new Function(this, "s3JwksUriRewriteFunction", {
-      code: FunctionCode.fromInline(s3JwksUriRewriteFunctionCode),
-      runtime: FunctionRuntime.JS_2_0,
-      autoPublish: true
+    const cognitoStripPathFunction = new CloudfrontFunction(this, "CognitoStripPathFunction", {
+      source: "../../cloudfrontFunctions/src/genericStripPathUriRewrite.js",
+      keyValues: [
+        {
+          key: "path",
+          value: "/auth"
+        }
+      ]
+    })
+
+    const s3JwksUriRewriteFunction = new CloudfrontFunction(this, "s3JwksUriRewriteFunction", {
+      source: "../../cloudfrontFunctions/src/genericS3FixedObjectUriRewrite.js",
+      keyValues: [
+        {
+          key: "object",
+          value: "jwks.json"
+        }
+      ]
     })
 
     // Distribution
@@ -175,11 +167,11 @@ export class CloudfrontStack extends Stack {
         viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
         functionAssociations:[
           {
-            function: s3404UriRewriteFunction,
+            function: s3404UriRewriteFunction.function,
             eventType: FunctionEventType.VIEWER_REQUEST
           },
           {
-            function: s3404ModifyStatusCodeFunction,
+            function: s3404ModifyStatusCodeFunction.function,
             eventType: FunctionEventType.VIEWER_RESPONSE
           }
         ]
@@ -191,7 +183,7 @@ export class CloudfrontStack extends Stack {
           viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
           functionAssociations: [
             {
-              function: s3ContentUriRewriteFunction,
+              function: s3ContentUriRewriteFunction.function,
               eventType: FunctionEventType.VIEWER_REQUEST
             }
           ]
@@ -200,13 +192,25 @@ export class CloudfrontStack extends Stack {
           origin: apiGatewayOrigin,
           allowedMethods: AllowedMethods.ALLOW_ALL,
           viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-          originRequestPolicy: apiGatewayRequestPolicy
+          originRequestPolicy: apiGatewayRequestPolicy,
+          functionAssociations: [
+            {
+              function: apiGatewayStripPathFunction.function,
+              eventType: FunctionEventType.VIEWER_REQUEST
+            }
+          ]
         },
         "/auth/*": {
           origin: cognitoOrigin,
           allowedMethods: AllowedMethods.ALLOW_ALL,
           viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-          originRequestPolicy: cognitoRequestPolicy
+          originRequestPolicy: cognitoRequestPolicy,
+          functionAssociations: [
+            {
+              function: cognitoStripPathFunction.function,
+              eventType: FunctionEventType.VIEWER_REQUEST
+            }
+          ]
         },
         "/jwks/": { // matches exactly <url>/jwks and will only serve the jwks json (vis cf function)
           origin: contentBucketOrigin,
@@ -214,7 +218,7 @@ export class CloudfrontStack extends Stack {
           viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
           functionAssociations: [
             {
-              function: s3JwksUriRewriteFunction,
+              function: s3JwksUriRewriteFunction.function,
               eventType: FunctionEventType.VIEWER_REQUEST
             }
           ]
