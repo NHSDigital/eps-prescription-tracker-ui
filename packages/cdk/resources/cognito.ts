@@ -171,7 +171,16 @@ export class Cognito extends Construct {
         UserPoolIdentityProvider: userPoolIdentityProvider.providerName,
         "jwks_uri": props.primaryOidcjwksEndpoint!
       }
+    })
 
+    const jwks = new LambdaConstruct(this, "JwksResources", {
+      stackName: props.stackName!,
+      lambdaName: `${props.stackName!}-jwks`,
+      additionalPolicies: [ ],
+      logRetentionInDays: 30,
+      packageBasePath: "packages/cognito",
+      entryPoint: "src/jwks.ts",
+      lambdaEnvironmentVariables: { }
     })
 
     // api gateway to sit in front of lambda
@@ -205,6 +214,11 @@ export class Cognito extends Construct {
 
     const tokenResource = restApiGateway.apiGw.root.addResource("token")
     tokenResource.addMethod("POST", new apigateway.LambdaIntegration(token.lambda, {
+      credentialsRole: restApiGateway.apiGwRole
+    }))
+
+    const jwksResource = restApiGateway.apiGw.root.addResource("jwks")
+    jwksResource.addMethod("POST", new apigateway.LambdaIntegration(jwks.lambda, {
       credentialsRole: restApiGateway.apiGwRole
     }))
 
