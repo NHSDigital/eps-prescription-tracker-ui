@@ -6,25 +6,13 @@ on:
       STACK_NAME:
         required: true
         type: string
-      ARTIFACT_BUCKET_PREFIX:
-        required: true
-        type: string
       TARGET_ENVIRONMENT:
-        required: true
-        type: string
-      BUILD_ARTIFACT:
         required: true
         type: string
       VERSION_NUMBER:
         required: true
         type: string
       COMMIT_ID:
-        required: true
-        type: string
-      LOG_LEVEL:
-        required: true
-        type: string
-      LOG_RETENTION_DAYS:
         required: true
         type: string
       CREATE_INT_RELEASE_NOTES:
@@ -41,6 +29,8 @@ on:
         default: false
     secrets:
       CLOUD_FORMATION_DEPLOY_ROLE:
+        required: true
+      CDK_PULL_IMAGE_ROLE:
         required: true
       DEV_CLOUD_FORMATION_CHECK_VERSION_ROLE:
         required: false
@@ -95,6 +85,38 @@ jobs:
           DEV_CLOUD_FORMATION_EXECUTE_LAMBDA_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_EXECUTE_LAMBDA_ROLE }}
 
       - name: Configure AWS Credentials
+        id: connect-aws-pull-image
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: eu-west-2
+          role-to-assume: ${{ secrets.CDK_PULL_IMAGE_ROLE }}
+          role-session-name: prescription-clinical-tracker-ui-pull-image
+
+      - name: build_artifact download
+        uses: actions/download-artifact@v4
+        with:
+          name: build_artifact
+
+      - name: extract build_artifact
+        run: |
+          mkdir -p .build
+          tar -xf artifact.tar -C .build
+
+      - name: Retrieve AWS Account ID
+        id: retrieve-account-id
+        run: echo "ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)" >> "$GITHUB_ENV"
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        run: |
+          aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin ${{ env.ACCOUNT_ID }}.dkr.ecr.eu-west-2.amazonaws.com
+
+      - name: Pull cdk-utils-build from Amazon ECR
+        run: |
+          docker pull "${{ env.ACCOUNT_ID }}.dkr.ecr.eu-west-2.amazonaws.com/cdk-utils-build-repo:PR-1"
+          docker tag "${{ env.ACCOUNT_ID }}.dkr.ecr.eu-west-2.amazonaws.com/cdk-utils-build-repo:PR-1" cdk-utils-build-repo:PR-1
+
+      - name: Configure AWS Credentials
         id: connect-aws
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -103,59 +125,60 @@ jobs:
           role-session-name: prescription-clinical-tracker-ui-deployment
           output-credentials: true
 
-      - name: docker_artifact download
-        uses: actions/download-artifact@v4
-        with:
-          name: docker_artifact
-          path: .
-
-      - name: Extract clinical-prescription-tracker-ui docker image
-        id: extract-clinical-prescription-tracker-ui-image
+      - name: fix cdk.json
         run: |
-          docker load < clinical-prescription-tracker-ui.tar.gz
+          jq \
+          --arg stackName "${{ inputs.stack_name }}" \
+          --arg VERSION_NUMBER "${{ inputs.VERSION_NUMBER }}" \
+          --arg COMMIT_ID "${{ inputs.COMMIT_ID }}" \
+          --arg Auth0ClientID "${{ secrets.Auth0ClientID }}" \
+          --arg Auth0ClientSecret "${{ secrets.Auth0ClientSecret }}" \
+          --arg Auth0Issuer "${{ secrets.Auth0Issuer }}" \
+          --arg Auth0AuthorizeEndpoint "${{ secrets.Auth0AuthorizeEndpoint }}" \
+          --arg Auth0TokenEndpoint "${{ secrets.Auth0TokenEndpoint }}" \
+          --arg Auth0UserInfoEndpoint "${{ secrets.Auth0UserInfoEndpoint }}" \
+          --arg Auth0JWKSEndpoint "${{ secrets.Auth0JWKSEndpoint }}" \
+          '.context += {
+            "stackName": $stackName, 
+            "VERSION_NUMBER": $VERSION_NUMBER, 
+            "COMMIT_ID": $COMMIT_ID,
+            "Auth0ClientID": $Auth0ClientID,
+            "Auth0ClientSecret": $Auth0ClientSecret,
+            "Auth0Issuer": $Auth0Issuer,
+            "Auth0AuthorizeEndpoint": $Auth0AuthorizeEndpoint,
+            "Auth0TokenEndpoint": $Auth0TokenEndpoint,
+            "Auth0UserInfoEndpoint": $Auth0UserInfoEndpoint,
+            "Auth0JWKSEndpoint": $Auth0JWKSEndpoint
+            }' \
+          cdk.json > cdk.new.json
+          mv cdk.new.json cdk.json
 
       - name: Show diff
         run: |
           docker run \
+          -v "$(pwd)/.build":/home/cdkuser/workspace/ \
           -e AWS_ACCESS_KEY_ID=${{ steps.connect-aws.outputs.aws-access-key-id }} \
           -e AWS_SECRET_ACCESS_KEY=${{ steps.connect-aws.outputs.aws-secret-access-key }} \
           -e AWS_SESSION_TOKEN=${{ steps.connect-aws.outputs.aws-session-token }} \
           -e AWS_REGION="eu-west-2" \
-          -e stack_name="${{ inputs.STACK_NAME }}" \
-          -e Auth0ClientID="${{ secrets.Auth0ClientID}}" \
-          -e Auth0ClientSecret="${{ secrets.Auth0ClientSecret}}" \
-          -e Auth0Issuer="${{ secrets.Auth0Issuer}}" \
-          -e Auth0AuthorizeEndpoint="${{ secrets.Auth0AuthorizeEndpoint}}" \
-          -e Auth0TokenEndpoint="${{ secrets.Auth0TokenEndpoint}}" \
-          -e Auth0UserInfoEndpoint="${{ secrets.Auth0UserInfoEndpoint}}" \
-          -e Auth0JWKSEndpoint="${{ secrets.Auth0JWKSEndpoint}}" \
-          -e VERSION_NUMBER="${{ inputs.VERSION_NUMBER}}" \
-          -e COMMIT_ID="${{ inputs.COMMIT_ID}}" \
           -e SHOW_DIFF="true" \
           -e DEPLOY_CODE="false" \
-          clinical-prescription-tracker-ui
+          -e CDK_APP_PATH="packages/cdk/bin/ClinicalPrescriptionTrackerApp.ts" \
+          cdk-utils-build-repo:PR-1
         shell: bash
 
       - name: Deploy code
         run: |
           docker run \
+          -v "$(pwd)/.build":/home/cdkuser/workspace/ \
           -e AWS_ACCESS_KEY_ID=${{ steps.connect-aws.outputs.aws-access-key-id }} \
           -e AWS_SECRET_ACCESS_KEY=${{ steps.connect-aws.outputs.aws-secret-access-key }} \
           -e AWS_SESSION_TOKEN=${{ steps.connect-aws.outputs.aws-session-token }} \
           -e AWS_REGION="eu-west-2" \
-          -e stack_name="${{ inputs.STACK_NAME }}" \
-          -e Auth0ClientID="${{ secrets.Auth0ClientID}}" \
-          -e Auth0ClientSecret="${{ secrets.Auth0ClientSecret}}" \
-          -e Auth0Issuer="${{ secrets.Auth0Issuer}}" \
-          -e Auth0AuthorizeEndpoint="${{ secrets.Auth0AuthorizeEndpoint}}" \
-          -e Auth0TokenEndpoint="${{ secrets.Auth0TokenEndpoint}}" \
-          -e Auth0UserInfoEndpoint="${{ secrets.Auth0UserInfoEndpoint}}" \
-          -e Auth0JWKSEndpoint="${{ secrets.Auth0JWKSEndpoint}}" \
-          -e VERSION_NUMBER="${{ inputs.VERSION_NUMBER}}" \
-          -e COMMIT_ID="${{ inputs.COMMIT_ID}}" \
           -e SHOW_DIFF="false" \
           -e DEPLOY_CODE="true" \
-          clinical-prescription-tracker-ui
+          -e CDK_APP_PATH="packages/cdk/bin/ClinicalPrescriptionTrackerApp.ts" \
+          cdk-utils-build-repo:PR-1
         shell: bash
 
       - name: create_int_release_notes

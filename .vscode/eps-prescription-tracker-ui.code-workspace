@@ -9,20 +9,12 @@
         "path": "../packages/cdk"
       },
       {
-        "name": "packages/client",
-        "path": "../packages/client"
-      },
-      {
         "name": "packages/cognito",
         "path": "../packages/cognito"
       },
       {
         "name": "packages/statusLambda",
         "path": "../packages/statusLambda"
-      },
-      {
-        "name": "packages/server",
-        "path": "../packages/server"
       },
       {
         "name": "packages/auth-demo",

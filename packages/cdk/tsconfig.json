@@ -26,6 +26,6 @@
     ]
   },
   "references": [],
-  "include": ["src/**/*", "tests/**/*"],
+  "include": ["resources/**/*", "stacks/**/*", "tests/**/*"],
   "exclude": ["node_modules", "cdk.out"]
 }

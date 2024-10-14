@@ -32,18 +32,19 @@ const ClinicalPrescriptionTracker = new ClinicalPrescriptionTrackerStack(app, "C
   userPoolTLSCertificateArn: USCertificates.userPoolTlsCertificateArn
 })
 
-// do a synth to add cross region stuff
+// run a synth to add cross region lambdas and roles
 app.synth()
 
-// add metadata to lambda
+// add metadata to lambda so they dont get flagged as failing cfn-guard
 addCfnGuardMetadata(USCertificates, "Custom::CrossRegionExportWriterCustomResourceProvider")
 addCfnGuardMetadata(ClinicalPrescriptionTracker, "Custom::CrossRegionExportReaderCustomResourceProvider")
 
-// do a synth again with force to include the added metadata
+// finally run synth again with force to include the added metadata
 app.synth({
   force: true
 })
 
+// function which adds metadata to ignore things which fail cfn-guard
 function addCfnGuardMetadata(stack: cdk.Stack, role: string) {
   const writerProvider = stack.node.tryFindChild(role)
   if (writerProvider === undefined) {

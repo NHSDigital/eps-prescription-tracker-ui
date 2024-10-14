@@ -23,15 +23,6 @@ repos:
 
   - repo: local
     hooks:
-      - id: lint-client
-        name: Lint client
-        entry: npm
-        args: ["run", "--prefix=packages/client", "lint"]
-        language: system
-        files: ^packages\/client
-        types_or: [ts, tsx, javascript, jsx, json]
-        pass_filenames: false
-
       - id: lint-cdk
         name: Lint cdk
         entry: npm
@@ -41,12 +32,12 @@ repos:
         types_or: [ts, tsx, javascript, jsx, json]
         pass_filenames: false
 
-      - id: lint-server
-        name: Lint server
+      - id: lint-cpt-ui
+        name: Lint cpt-ui
         entry: npm
-        args: ["run", "--prefix=packages/server", "lint"]
+        args: ["run", "--prefix=packages/cpt-ui", "lint"]
         language: system
-        files: ^packages\/server
+        files: ^packages\/cpt-ui
         types_or: [ts, tsx, javascript, jsx, json]
         pass_filenames: false
 
@@ -69,4 +60,4 @@ repos:
         pass_filenames: false
 
 fail_fast: true
-default_stages: [commit]
+default_stages: [pre-commit]
