@@ -111,7 +111,7 @@ jobs:
           role-session-name: prescription-clinical-tracker-ui-deployment
           output-credentials: true
   
-      - name: fix cdk.json
+      - name: fix cdk.json for deployment
         run: |
           jq \
           --arg stackName "${{ inputs.stack_name }}" \

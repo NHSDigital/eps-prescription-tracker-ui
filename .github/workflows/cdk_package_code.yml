@@ -53,19 +53,6 @@ jobs:
         run: |
           make install
 
-      - name: fix cdk.json
-        run: |
-          jq \
-          --arg stackName "${{ inputs.stack_name }}" \
-          --arg VERSION_NUMBER "${{ inputs.VERSION_NUMBER }}" \
-          --arg COMMIT_ID "${{ inputs.COMMIT_ID }}" \
-          '.context += {
-            "stackName": $stackName, 
-            "VERSION_NUMBER": $VERSION_NUMBER, 
-            "COMMIT_ID": $COMMIT_ID}' \
-          cdk.json > cdk.new.json
-          mv cdk.new.json cdk.json
-
       - name: 'Tar files'
         run: |
           tar -rf artifact.tar \
