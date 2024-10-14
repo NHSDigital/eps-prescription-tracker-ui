@@ -127,19 +127,8 @@ jobs:
   
       - name: fix cdk.json for deployment
         run: |
-          jq \
-          --arg stackName "${{ inputs.stack_name }}" \
-          --arg VERSION_NUMBER "${{ inputs.VERSION_NUMBER }}" \
-          --arg COMMIT_ID "${{ inputs.COMMIT_ID }}" \
-          '.context += {
-            "stackName": $stackName, 
-            "VERSION_NUMBER": $VERSION_NUMBER, 
-            "COMMIT_ID": $COMMIT_ID}' \
-          .build/cdk.json > .build/cdk.new.json
-          mv .build/cdk.new.json .build/cdk.json
-
-      - name: fix cdk.json
-        run: |
+          epsDomain=$(aws cloudformation list-exports --output json | jq -r '.Exports[] | select(.Name == "eps-route53-resources:EPS-domain") | .Value' )
+          epsZoneId=$(aws cloudformation list-exports --output json | jq -r '.Exports[] | select(.Name == "eps-route53-resources:EPS-ZoneID") | .Value' )
           jq \
           --arg stackName "${{ inputs.stack_name }}" \
           --arg VERSION_NUMBER "${{ inputs.VERSION_NUMBER }}" \
@@ -151,6 +140,8 @@ jobs:
           --arg Auth0TokenEndpoint "${{ secrets.Auth0TokenEndpoint }}" \
           --arg Auth0UserInfoEndpoint "${{ secrets.Auth0UserInfoEndpoint }}" \
           --arg Auth0JWKSEndpoint "${{ secrets.Auth0JWKSEndpoint }}" \
+          --arg epsDomain "${epsDomain}" \
+          --arg epsZoneId "${epsZoneId}" \
           '.context += {
             "stackName": $stackName, 
             "VERSION_NUMBER": $VERSION_NUMBER, 
@@ -161,7 +152,9 @@ jobs:
             "Auth0AuthorizeEndpoint": $Auth0AuthorizeEndpoint,
             "Auth0TokenEndpoint": $Auth0TokenEndpoint,
             "Auth0UserInfoEndpoint": $Auth0UserInfoEndpoint,
-            "Auth0JWKSEndpoint": $Auth0JWKSEndpoint
+            "Auth0JWKSEndpoint": $Auth0JWKSEndpoint,
+            "epsDomain": $epsDomain,
+            "epsZoneId": $epsZoneId
             }' \
           cdk.json > cdk.new.json
           mv cdk.new.json cdk.json
