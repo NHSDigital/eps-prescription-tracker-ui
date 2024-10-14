@@ -87,10 +87,12 @@ export class Cognito extends Construct {
       endpoints: oidcEndpoints
     })
 
-    let supportedIdentityProviders: Array<cognito.UserPoolClientIdentityProvider> = [
+    const supportedIdentityProviders: Array<cognito.UserPoolClientIdentityProvider> = [
       cognito.UserPoolClientIdentityProvider.COGNITO,
       cognito.UserPoolClientIdentityProvider.custom(userPoolIdentityProvider.providerName)
     ]
+
+    let mockPoolIdentityProvider!: cognito.UserPoolIdentityProviderOidc
 
     if (props.useMockOidc) {
       if (props.mockOidcAuthorizeEndpoint === undefined ||
@@ -110,7 +112,7 @@ export class Cognito extends Construct {
         userInfo: props.mockOidcUserInfoEndpoint
       }
 
-      const mockPoolIdentityProvider = new cognito.UserPoolIdentityProviderOidc(this, "MockUserPoolIdentityProvider", {
+      mockPoolIdentityProvider = new cognito.UserPoolIdentityProviderOidc(this, "MockUserPoolIdentityProvider", {
         name: "Mock",
         clientId: props.mockOidcClientId,
         clientSecret: props.mockOidClientSecret,
@@ -121,11 +123,9 @@ export class Cognito extends Construct {
         endpoints: mockOidcEndpoints
       })
 
-      supportedIdentityProviders = [
-        cognito.UserPoolClientIdentityProvider.COGNITO,
-        cognito.UserPoolClientIdentityProvider.custom(userPoolIdentityProvider.providerName),
+      supportedIdentityProviders.push(
         cognito.UserPoolClientIdentityProvider.custom(mockPoolIdentityProvider.providerName)
-      ]
+      )
     }
 
     // eslint-disable-next-line max-len
@@ -155,6 +155,11 @@ export class Cognito extends Construct {
         callbackUrls: ["http://localhost:3000/auth/"],
         logoutUrls: ["http://localhost:3000/"]
       }})
+
+    userPoolWebClient.node.addDependency(userPoolIdentityProvider)
+    if (props.useMockOidc) {
+      userPoolWebClient.node.addDependency(mockPoolIdentityProvider)
+    }
 
     // lambda for token endpoint
     const token = new LambdaConstruct(this, "TokenResources", {
