@@ -133,13 +133,13 @@ jobs:
           --arg stackName "${{ inputs.stack_name }}" \
           --arg VERSION_NUMBER "${{ inputs.VERSION_NUMBER }}" \
           --arg COMMIT_ID "${{ inputs.COMMIT_ID }}" \
-          --arg Auth0ClientID "${{ secrets.Auth0ClientID }}" \
-          --arg Auth0ClientSecret "${{ secrets.Auth0ClientSecret }}" \
-          --arg Auth0Issuer "${{ secrets.Auth0Issuer }}" \
-          --arg Auth0AuthorizeEndpoint "${{ secrets.Auth0AuthorizeEndpoint }}" \
-          --arg Auth0TokenEndpoint "${{ secrets.Auth0TokenEndpoint }}" \
-          --arg Auth0UserInfoEndpoint "${{ secrets.Auth0UserInfoEndpoint }}" \
-          --arg Auth0JWKSEndpoint "${{ secrets.Auth0JWKSEndpoint }}" \
+          --arg primaryOidcClientId "${{ secrets.Auth0ClientID }}" \
+          --arg primaryOidClientSecret "${{ secrets.Auth0ClientSecret }}" \
+          --arg primaryOidcIssuer "${{ secrets.Auth0Issuer }}" \
+          --arg primaryOidcAuthorizeEndpoint "${{ secrets.Auth0AuthorizeEndpoint }}" \
+          --arg primaryOidcTokenEndpoint "${{ secrets.Auth0TokenEndpoint }}" \
+          --arg primaryOidcUserInfoEndpoint "${{ secrets.Auth0UserInfoEndpoint }}" \
+          --arg primaryOidcjwksEndpoint "${{ secrets.Auth0JWKSEndpoint }}" \
           --arg epsDomain "${epsDomain}" \
           --arg epsZoneId "${epsZoneId}" \
           '.context += {
