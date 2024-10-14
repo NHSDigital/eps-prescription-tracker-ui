@@ -27,11 +27,15 @@
       {
         "name": "packages/auth-demo",
         "path": "../packages/auth-demo"
+      },
+      {
+        "name": "packages/cpt-ui",
+        "path": "../packages/cpt-ui"
       }
     ],
     "settings": {
       "jest.disabledWorkspaceFolders": [
-        "eps-prescription-status-tracker-ui"
+        "eps-prescription-tracker-ui-monorepo"
       ],
       "files.exclude": {
         "packages/": true
@@ -116,7 +120,7 @@
       "jest.nodeEnv": {
         "POWERTOOLS_DEV": true
       },
-      "typescript.tsdk": "eps-prescription-tracker-ui/node_modules/typescript/lib",
+      "typescript.tsdk": "eps-prescription-tracker-ui-monorepo/node_modules/typescript/lib",
       "eslint.useFlatConfig": true,
       "eslint.format.enable": true
     },

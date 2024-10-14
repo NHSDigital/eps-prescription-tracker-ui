@@ -33,7 +33,19 @@ lint-githubactions:
 lint-githubaction-scripts:
 	shellcheck .github/scripts/*.sh
 
-lint: lint-node lint-githubactions lint-githubaction-scripts
+lint: lint-node lint-samtemplates lint-githubactions lint-githubaction-scripts react-lint
+
+react-dev:
+	npm run dev --workspace packages/cpt-ui
+
+react-build:
+	npm run build --workspace packages/cpt-ui
+
+react-start:
+	npm run start --workspace packages/cpt-ui
+
+react-lint:
+	npm run lint --workspace packages/cpt-ui
 
 test: compile
 	npm run test --workspace packages/client
@@ -57,7 +69,6 @@ check-licenses-node:
 	npm run check-licenses --workspace packages/client
 	npm run check-licenses --workspace packages/server
 	npm run check-licenses --workspace packages/cdk
-
 
 check-licenses-python:
 	scripts/check_python_licenses.sh
