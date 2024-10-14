@@ -113,8 +113,8 @@ jobs:
 
       - name: Pull cdk-utils-build from Amazon ECR
         run: |
-          docker pull "${{ env.ACCOUNT_ID }}.dkr.ecr.eu-west-2.amazonaws.com/cdk-utils-build-repo:PR-1"
-          docker tag "${{ env.ACCOUNT_ID }}.dkr.ecr.eu-west-2.amazonaws.com/cdk-utils-build-repo:PR-1" cdk-utils-build-repo:PR-1
+          docker pull "${{ env.ACCOUNT_ID }}.dkr.ecr.eu-west-2.amazonaws.com/cdk-utils-build-repo:latest"
+          docker tag "${{ env.ACCOUNT_ID }}.dkr.ecr.eu-west-2.amazonaws.com/cdk-utils-build-repo:latest" cdk-utils-build-repo:latest
 
       - name: Configure AWS Credentials
         id: connect-aws
@@ -124,6 +124,19 @@ jobs:
           role-to-assume: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}
           role-session-name: prescription-clinical-tracker-ui-deployment
           output-credentials: true
+  
+      - name: fix cdk.json for deployment
+        run: |
+          jq \
+          --arg stackName "${{ inputs.stack_name }}" \
+          --arg VERSION_NUMBER "${{ inputs.VERSION_NUMBER }}" \
+          --arg COMMIT_ID "${{ inputs.COMMIT_ID }}" \
+          '.context += {
+            "stackName": $stackName, 
+            "VERSION_NUMBER": $VERSION_NUMBER, 
+            "COMMIT_ID": $COMMIT_ID}' \
+          cdk.json > cdk.new.json
+          mv cdk.new.json cdk.json
 
       - name: fix cdk.json
         run: |
@@ -164,7 +177,7 @@ jobs:
           -e SHOW_DIFF="true" \
           -e DEPLOY_CODE="false" \
           -e CDK_APP_PATH="packages/cdk/bin/ClinicalPrescriptionTrackerApp.ts" \
-          cdk-utils-build-repo:PR-1
+          cdk-utils-build-repo:latest
         shell: bash
 
       - name: Deploy code
@@ -178,7 +191,7 @@ jobs:
           -e SHOW_DIFF="false" \
           -e DEPLOY_CODE="true" \
           -e CDK_APP_PATH="packages/cdk/bin/ClinicalPrescriptionTrackerApp.ts" \
-          cdk-utils-build-repo:PR-1
+          cdk-utils-build-repo:latest
         shell: bash
 
       - name: create_int_release_notes
