@@ -17,17 +17,17 @@
         "nhsuk-react-components": "^4.1.2",
         "react": "^18",
         "react-dom": "^18",
-        "react-i18next": "^15.0.2",
-        "react-intl": "^6.7.2",
+        "react-i18next": "^15.0.3",
+        "react-intl": "^6.8.0",
         "sass": "^1.79.5"
     },
     "devDependencies": {
-        "@formatjs/cli": "^6.2.14",
+        "@formatjs/cli": "^6.2.15",
         "@next/eslint-plugin-next": "^14.2.15",
         "@types/node": "^22",
         "@types/react": "^18",
         "@types/react-dom": "^18",
-        "babel-plugin-formatjs": "^10.5.17",
+        "babel-plugin-formatjs": "^10.5.18",
         "eslint-config-next": "14.2.14"
     }
 }
