@@ -12,6 +12,9 @@ on:
       VERSION_NUMBER:
         required: true
         type: string
+      COMMIT_ID:
+        required: true
+        type: string
       CREATE_INT_RELEASE_NOTES:
         type: boolean
         default: false
@@ -107,6 +110,19 @@ jobs:
           role-to-assume: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}
           role-session-name: prescription-clinical-tracker-ui-deployment
           output-credentials: true
+  
+      - name: fix cdk.json
+        run: |
+          jq \
+          --arg stackName "${{ inputs.stack_name }}" \
+          --arg VERSION_NUMBER "${{ inputs.VERSION_NUMBER }}" \
+          --arg COMMIT_ID "${{ inputs.COMMIT_ID }}" \
+          '.context += {
+            "stackName": $stackName, 
+            "VERSION_NUMBER": $VERSION_NUMBER, 
+            "COMMIT_ID": $COMMIT_ID}' \
+          cdk.json > cdk.new.json
+          mv cdk.new.json cdk.json
 
       - name: Show diff
         run: |

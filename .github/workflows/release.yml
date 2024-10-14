@@ -123,6 +123,7 @@ jobs:
       STACK_NAME: cpt-ui
       TARGET_ENVIRONMENT: dev
       VERSION_NUMBER: ${{needs.tag_release.outputs.version_tag}}
+      COMMIT_ID: ${{needs.get_commit_id.outputs.commit_id}}
       CREATE_INT_RELEASE_NOTES: true
       CREATE_PROD_RELEASE_NOTES: true
     secrets:
@@ -140,6 +141,7 @@ jobs:
       STACK_NAME: cpt-ui
       TARGET_ENVIRONMENT: ref
       VERSION_NUMBER: ${{needs.tag_release.outputs.version_tag}}
+      COMMIT_ID: ${{needs.get_commit_id.outputs.commit_id}}
     secrets:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.DEV_CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.REF_CLOUD_FORMATION_DEPLOY_ROLE }}
@@ -151,6 +153,7 @@ jobs:
       STACK_NAME: cpt-ui
       TARGET_ENVIRONMENT: qa
       VERSION_NUMBER: ${{needs.tag_release.outputs.version_tag}}
+      COMMIT_ID: ${{needs.get_commit_id.outputs.commit_id}}
     secrets:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.DEV_CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.QA_CLOUD_FORMATION_DEPLOY_ROLE }}
@@ -162,6 +165,7 @@ jobs:
       STACK_NAME: cpt-ui
       TARGET_ENVIRONMENT: int
       VERSION_NUMBER: ${{needs.tag_release.outputs.version_tag}}
+      COMMIT_ID: ${{needs.get_commit_id.outputs.commit_id}}
       CREATE_INT_RELEASE_NOTES: true
       CREATE_INT_RC_RELEASE_NOTES: true
     secrets:
@@ -180,6 +184,7 @@ jobs:
   #     TARGET_ENVIRONMENT: prod
   #     BUILD_ARTIFACT: packaged_code
   #     VERSION_NUMBER: ${{needs.tag_release.outputs.version_tag}}
+  #     COMMIT_ID: ${{needs.get_commit_id.outputs.commit_id}}
   #     MARK_JIRA_RELEASED: true
   #     CREATE_PROD_RELEASE_NOTES: true
   #   secrets:
