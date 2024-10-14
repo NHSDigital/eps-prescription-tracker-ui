@@ -218,7 +218,7 @@ export class Cognito extends Construct {
     }))
 
     const jwksResource = restApiGateway.apiGw.root.addResource("jwks")
-    jwksResource.addMethod("POST", new apigateway.LambdaIntegration(jwks.lambda, {
+    jwksResource.addMethod("GET", new apigateway.LambdaIntegration(jwks.lambda, {
       credentialsRole: restApiGateway.apiGwRole
     }))
 

@@ -77,6 +77,19 @@ function nagSuppressions(stack: cdk.Stack, deployedStackName: string | undefined
     ])
 
   safeAddNagSuppression(stack,
+    "/ClinicalPrescriptionTrackerStack/Cognito/RestApiGatewayResources/RestApiGateway/Default/jwks/GET/Resource",
+    [
+      {
+        id: "AwsSolutions-APIG4",
+        reason: "Suppress error for not implementing authorization as we don't need it"
+      },
+      {
+        id: "AwsSolutions-COG4",
+        reason: "Suppress error for not implementing cognito authorization as we don't need it"
+      }
+    ])
+
+  safeAddNagSuppression(stack,
     "/ClinicalPrescriptionTrackerStack/Tables/TokenMappingResources/TableReadManagedPolicy/Resource",
     [
       {
@@ -104,6 +117,15 @@ function nagSuppressions(stack: cdk.Stack, deployedStackName: string | undefined
   safeAddNagSuppression(stack,
     // eslint-disable-next-line max-len
     `/ClinicalPrescriptionTrackerStack/Functions/StatusResources/Execute${deployedStackName}-statusManagedPolicy/Resource`,
+    [
+      {
+        id: "AwsSolutions-IAM5",
+        reason: "Suppress error for wildcard on log stream"
+      }
+    ])
+
+  safeAddNagSuppression(stack,
+    `/ClinicalPrescriptionTrackerStack/Cognito/JwksResources/Execute${deployedStackName}-jwksManagedPolicy/Resource`,
     [
       {
         id: "AwsSolutions-IAM5",
