@@ -121,8 +121,8 @@ jobs:
             "stackName": $stackName, 
             "VERSION_NUMBER": $VERSION_NUMBER, 
             "COMMIT_ID": $COMMIT_ID}' \
-          workspace/cdk.json > workspace/cdk.new.json
-          mv workspace/cdk.new.json workspace/cdk.json
+          .build/cdk.json > .build/cdk.new.json
+          mv .build/cdk.new.json .build/cdk.json
 
       - name: Show diff
         run: |
