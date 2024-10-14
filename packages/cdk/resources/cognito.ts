@@ -110,7 +110,7 @@ export class Cognito extends Construct {
         userInfo: props.mockOidcUserInfoEndpoint
       }
       const mockPoolIdentityProvider = new cognito.UserPoolIdentityProviderOidc(this, "MockUserPoolIdentityProvider", {
-        name: "Primary",
+        name: "Mock",
         clientId: props.mockOidcClientId,
         clientSecret: props.mockOidClientSecret,
         issuerUrl: props.mockOidcIssuer,
