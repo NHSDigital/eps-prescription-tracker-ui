@@ -99,8 +99,8 @@ jobs:
 
       - name: Pull cdk-utils-build from Amazon ECR
         run: |
-          docker pull "${{ env.ACCOUNT_ID }}.dkr.ecr.eu-west-2.amazonaws.com/cdk-utils-build-repo:PR-1"
-          docker tag "${{ env.ACCOUNT_ID }}.dkr.ecr.eu-west-2.amazonaws.com/cdk-utils-build-repo:PR-1" cdk-utils-build-repo:PR-1
+          docker pull "${{ env.ACCOUNT_ID }}.dkr.ecr.eu-west-2.amazonaws.com/cdk-utils-build-repo:latest"
+          docker tag "${{ env.ACCOUNT_ID }}.dkr.ecr.eu-west-2.amazonaws.com/cdk-utils-build-repo:latest" cdk-utils-build-repo:latest
 
       - name: Configure AWS Credentials
         id: connect-aws
@@ -135,7 +135,7 @@ jobs:
           -e SHOW_DIFF="true" \
           -e DEPLOY_CODE="false" \
           -e CDK_APP_PATH="packages/cdk/bin/ClinicalPrescriptionTrackerApp.ts" \
-          cdk-utils-build-repo:PR-1
+          cdk-utils-build-repo:latest
         shell: bash
 
       - name: Deploy code
@@ -149,7 +149,7 @@ jobs:
           -e SHOW_DIFF="false" \
           -e DEPLOY_CODE="true" \
           -e CDK_APP_PATH="packages/cdk/bin/ClinicalPrescriptionTrackerApp.ts" \
-          cdk-utils-build-repo:PR-1
+          cdk-utils-build-repo:latest
         shell: bash
 
       - name: create_int_release_notes
