@@ -9,7 +9,7 @@ import * as dynamodb from "aws-cdk-lib/aws-dynamodb"
 import {Construct} from "constructs"
 
 import {ApiGwConstruct} from "./apiGWConstruct"
-import {LambdaConstruct} from "./lambdaConstruct"
+import {FunctionConstruct} from "./functionConstruct"
 
 export interface CognitoProps {
   readonly stackName: string;
@@ -162,7 +162,7 @@ export class Cognito extends Construct {
     }
 
     // lambda for token endpoint
-    const token = new LambdaConstruct(this, "TokenResources", {
+    const token = new FunctionConstruct(this, "TokenResources", {
       stackName: props.stackName!,
       lambdaName: `${props.stackName!}-token`,
       additionalPolicies: [
@@ -181,7 +181,7 @@ export class Cognito extends Construct {
       }
     })
 
-    const jwks = new LambdaConstruct(this, "JwksResources", {
+    const jwks = new FunctionConstruct(this, "JwksResources", {
       stackName: props.stackName!,
       lambdaName: `${props.stackName!}-jwks`,
       additionalPolicies: [ ],

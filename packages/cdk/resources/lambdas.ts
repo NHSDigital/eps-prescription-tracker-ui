@@ -4,7 +4,7 @@ import * as lambda from "aws-cdk-lib/aws-lambda"
 import * as dynamodb from "aws-cdk-lib/aws-dynamodb"
 import {Construct} from "constructs"
 
-import {LambdaConstruct} from "./lambdaConstruct"
+import {FunctionConstruct} from "./functionConstruct"
 
 export interface FunctionsStackProps {
   readonly stackName: string;
@@ -29,7 +29,7 @@ export class Functions extends Construct {
       cdk.Fn.importValue("account-resources:LambdaAccessSecretsPolicy")
     )
 
-    const status = new LambdaConstruct(this, "StatusResources", {
+    const status = new FunctionConstruct(this, "StatusResources", {
       stackName: props.stackName!,
       lambdaName: `${props.stackName!}-status`,
       additionalPolicies: [
