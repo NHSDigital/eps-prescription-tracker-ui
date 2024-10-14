@@ -38,9 +38,9 @@ jobs:
         with:
           path: |
             ~/.asdf
-          key: ${{ runner.os }}-asdf-${{ env.BRANCH_NAME }}-${{ hashFiles('**/.tool-versions') }}
+          key: ${{ runner.os }}-asdf-${{ github.head_ref || github.ref_name }}-${{ hashFiles('**/.tool-versions') }}
           restore-keys: |
-            ${{ runner.os }}-asdf-${{ env.BRANCH_NAME }}
+            ${{ runner.os }}-asdf-${{ github.head_ref || github.ref_name }} 
 
       - name: Install asdf dependencies in .tool-versions
         uses: asdf-vm/actions/install@05e0d2ed97b598bfce82fd30daf324ae0c4570e6
