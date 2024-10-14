@@ -38,6 +38,7 @@ export class ClinicalPrescriptionTrackerStack extends cdk.Stack {
     const primaryOidcTokenEndpoint = this.node.tryGetContext("primaryOidcTokenEndpoint")
     const primaryOidcUserInfoEndpoint = this.node.tryGetContext("primaryOidcUserInfoEndpoint")
     const primaryOidcjwksEndpoint = this.node.tryGetContext("primaryOidcjwksEndpoint")
+    const useMockOidc = this.node.tryGetContext("useMockOidc")
 
     // Resources
     const tables = new Dynamodb(this, "Tables", {
@@ -55,6 +56,7 @@ export class ClinicalPrescriptionTrackerStack extends cdk.Stack {
       primaryOidcTokenEndpoint: primaryOidcTokenEndpoint!,
       primaryOidcUserInfoEndpoint: primaryOidcUserInfoEndpoint!,
       primaryOidcjwksEndpoint: primaryOidcjwksEndpoint!,
+      useMockOidc: useMockOidc,
       tokenMappingTable: tables.tokenMappingTable,
       userPoolTlsCertificateArn: props.userPoolTLSCertificateArn,
       region: this.region,

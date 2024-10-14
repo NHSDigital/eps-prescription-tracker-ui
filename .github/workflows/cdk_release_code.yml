@@ -27,6 +27,9 @@ on:
       MARK_JIRA_RELEASED:
         type: boolean
         default: false
+      useMockOidc:
+        type: boolean
+        default: false
     secrets:
       CLOUD_FORMATION_DEPLOY_ROLE:
         required: true
@@ -40,19 +43,33 @@ on:
         required: false
       DEV_CLOUD_FORMATION_EXECUTE_LAMBDA_ROLE:
         required: false
-      Auth0ClientID:
+      primaryOidcClientId:
         required: false
-      Auth0ClientSecret:
+      primaryOidClientSecret:
         required: false
-      Auth0Issuer:
+      primaryOidcIssuer:
         required: false
-      Auth0AuthorizeEndpoint:
+      primaryOidcAuthorizeEndpoint:
         required: false
-      Auth0TokenEndpoint:
+      primaryOidcTokenEndpoint:
         required: false
-      Auth0UserInfoEndpoint:
+      primaryOidcUserInfoEndpoint:
         required: false
-      Auth0JWKSEndpoint:
+      primaryOidcjwksEndpoint:
+        required: false
+      mockOidcClientId:
+        required: false
+      mockOidClientSecret:
+        required: false
+      mockOidcIssuer:
+        required: false
+      mockOidcAuthorizeEndpoint:
+        required: false
+      mockOidcTokenEndpoint:
+        required: false
+      mockOidcUserInfoEndpoint:
+        required: false
+      mockOidcjwksEndpoint:
         required: false
   
 jobs:
@@ -133,19 +150,28 @@ jobs:
           --arg stackName "${{ inputs.stack_name }}" \
           --arg VERSION_NUMBER "${{ inputs.VERSION_NUMBER }}" \
           --arg COMMIT_ID "${{ inputs.COMMIT_ID }}" \
-          --arg primaryOidcClientId "${{ secrets.Auth0ClientID }}" \
-          --arg primaryOidClientSecret "${{ secrets.Auth0ClientSecret }}" \
-          --arg primaryOidcIssuer "${{ secrets.Auth0Issuer }}" \
-          --arg primaryOidcAuthorizeEndpoint "${{ secrets.Auth0AuthorizeEndpoint }}" \
-          --arg primaryOidcTokenEndpoint "${{ secrets.Auth0TokenEndpoint }}" \
-          --arg primaryOidcUserInfoEndpoint "${{ secrets.Auth0UserInfoEndpoint }}" \
-          --arg primaryOidcjwksEndpoint "${{ secrets.Auth0JWKSEndpoint }}" \
+          --arg useMockOidc "${{ inputs.useMockOidc }}" \
+          --arg primaryOidcClientId "${{ secrets.primaryOidcClientId }}" \
+          --arg primaryOidClientSecret "${{ secrets.primaryOidClientSecret }}" \
+          --arg primaryOidcIssuer "${{ secrets.primaryOidcIssuer }}" \
+          --arg primaryOidcAuthorizeEndpoint "${{ secrets.primaryOidcAuthorizeEndpoint }}" \
+          --arg primaryOidcTokenEndpoint "${{ secrets.primaryOidcTokenEndpoint }}" \
+          --arg primaryOidcUserInfoEndpoint "${{ secrets.primaryOidcUserInfoEndpoint }}" \
+          --arg primaryOidcjwksEndpoint "${{ secrets.primaryOidcjwksEndpoint }}" \
+          --arg mockOidcClientId "${{ secrets.mockOidcClientId }}" \
+          --arg mockOidClientSecret "${{ secrets.mockOidClientSecret }}" \
+          --arg mockOidcIssuer "${{ secrets.mockOidcIssuer }}" \
+          --arg mockOidcAuthorizeEndpoint "${{ secrets.mockOidcAuthorizeEndpoint }}" \
+          --arg mockOidcTokenEndpoint "${{ secrets.mockOidcTokenEndpoint }}" \
+          --arg mockOidcUserInfoEndpoint "${{ secrets.mockOidcUserInfoEndpoint }}" \
+          --arg mockOidcjwksEndpoint "${{ secrets.mockOidcjwksEndpoint }}" \
           --arg epsDomain "${epsDomain}" \
           --arg epsZoneId "${epsZoneId}" \
           '.context += {
             "stackName": $stackName, 
             "VERSION_NUMBER": $VERSION_NUMBER, 
             "COMMIT_ID": $COMMIT_ID,
+            "useMockOidc": $useMockOidc,
             "primaryOidcClientId": $primaryOidcClientId,
             "primaryOidClientSecret": $primaryOidClientSecret,
             "primaryOidcIssuer": $primaryOidcIssuer,
@@ -153,6 +179,13 @@ jobs:
             "primaryOidcTokenEndpoint": $primaryOidcTokenEndpoint,
             "primaryOidcUserInfoEndpoint": $primaryOidcUserInfoEndpoint,
             "primaryOidcjwksEndpoint": $primaryOidcjwksEndpoint,
+            "mockOidcClientId": $mockOidcClientId,
+            "mockOidClientSecret": $mockOidClientSecret,
+            "mockOidcIssuer": $mockOidcIssuer,
+            "mockOidcAuthorizeEndpoint": $mockOidcAuthorizeEndpoint,
+            "mockOidcTokenEndpoint": $mockOidcTokenEndpoint,
+            "mockOidcUserInfoEndpoint": $mockOidcUserInfoEndpoint,
+            "mockOidcjwksEndpoint": $mockOidcjwksEndpoint,
             "epsDomain": $epsDomain,
             "epsZoneId": $epsZoneId
             }' \

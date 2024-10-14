@@ -20,6 +20,14 @@ export interface CognitoProps {
   readonly primaryOidcTokenEndpoint: string;
   readonly primaryOidcUserInfoEndpoint: string;
   readonly primaryOidcjwksEndpoint: string;
+  readonly useMockOidc: boolean
+  readonly mockOidcClientId?: string;
+  readonly mockOidClientSecret?: string;
+  readonly mockOidcIssuer?: string;
+  readonly mockOidcAuthorizeEndpoint?: string;
+  readonly mockOidcTokenEndpoint?: string;
+  readonly mockOidcUserInfoEndpoint?: string;
+  readonly mockOidcjwksEndpoint?: string;
   readonly tokenMappingTable: dynamodb.TableV2;
   readonly userPoolTlsCertificateArn: string;
   readonly region: string;
@@ -79,6 +87,44 @@ export class Cognito extends Construct {
       endpoints: oidcEndpoints
     })
 
+    const supportedIdentityProviders = [
+      cognito.UserPoolClientIdentityProvider.COGNITO,
+      cognito.UserPoolClientIdentityProvider.custom(userPoolIdentityProvider.providerName)
+    ]
+
+    if (props.useMockOidc) {
+      if (props.mockOidcAuthorizeEndpoint === undefined ||
+        props.mockOidcjwksEndpoint === undefined ||
+        props.mockOidcUserInfoEndpoint === undefined ||
+        props.mockOidcClientId === undefined ||
+        props.mockOidClientSecret === undefined ||
+        props.mockOidcIssuer === undefined
+      ) {
+        throw new Error("Attempt to use mock oidc but variables are not defined")
+      }
+
+      const mockOidcEndpoints: cognito.OidcEndpoints = {
+        authorization: props.mockOidcAuthorizeEndpoint,
+        jwksUri: props.mockOidcjwksEndpoint,
+        token: `${baseApiGwUrl}/token`,
+        userInfo: props.mockOidcUserInfoEndpoint
+      }
+      const mockPoolIdentityProvider = new cognito.UserPoolIdentityProviderOidc(this, "UserPoolIdentityProvider", {
+        name: "Primary",
+        clientId: props.mockOidcClientId,
+        clientSecret: props.mockOidClientSecret,
+        issuerUrl: props.mockOidcIssuer,
+        userPool: userPool,
+        attributeRequestMethod: cognito.OidcAttributeRequestMethod.GET,
+        scopes: ["openid", "profile", "email"],
+        endpoints: mockOidcEndpoints
+      })
+
+      supportedIdentityProviders.push(
+        cognito.UserPoolClientIdentityProvider.custom(mockPoolIdentityProvider.providerName)
+      )
+    }
+
     // eslint-disable-next-line max-len
     const cfnUserPoolIdentityProvider = userPoolIdentityProvider.node.defaultChild as cognito.CfnUserPoolIdentityProvider
     cfnUserPoolIdentityProvider.attributeMapping = {
@@ -90,10 +136,7 @@ export class Cognito extends Construct {
       profile: "profile"
     }
     const userPoolWebClient = userPool.addClient("WebClient", {
-      supportedIdentityProviders: [
-        cognito.UserPoolClientIdentityProvider.COGNITO,
-        cognito.UserPoolClientIdentityProvider.custom(userPoolIdentityProvider.providerName)
-      ],
+      supportedIdentityProviders: supportedIdentityProviders,
       oAuth: {
         flows: {
           authorizationCodeGrant: true,
