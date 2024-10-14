@@ -38,6 +38,15 @@ export class ClinicalPrescriptionTrackerStack extends cdk.Stack {
     const primaryOidcTokenEndpoint = this.node.tryGetContext("primaryOidcTokenEndpoint")
     const primaryOidcUserInfoEndpoint = this.node.tryGetContext("primaryOidcUserInfoEndpoint")
     const primaryOidcjwksEndpoint = this.node.tryGetContext("primaryOidcjwksEndpoint")
+
+    const mockOidcClientId = this.node.tryGetContext("mockOidcClientId")
+    const mockOidClientSecret = this.node.tryGetContext("mockOidClientSecret")
+    const mockOidcIssuer = this.node.tryGetContext("mockOidcIssuer")
+    const mockOidcAuthorizeEndpoint = this.node.tryGetContext("mockOidcAuthorizeEndpoint")
+    const mockOidcTokenEndpoint = this.node.tryGetContext("mockOidcTokenEndpoint")
+    const mockOidcUserInfoEndpoint = this.node.tryGetContext("mockOidcUserInfoEndpoint")
+    const mockOidcjwksEndpoint = this.node.tryGetContext("mockOidcjwksEndpoint")
+
     const useMockOidc = this.node.tryGetContext("useMockOidc")
 
     // Resources
@@ -56,6 +65,13 @@ export class ClinicalPrescriptionTrackerStack extends cdk.Stack {
       primaryOidcTokenEndpoint: primaryOidcTokenEndpoint!,
       primaryOidcUserInfoEndpoint: primaryOidcUserInfoEndpoint!,
       primaryOidcjwksEndpoint: primaryOidcjwksEndpoint!,
+      mockOidcClientId: mockOidcClientId!,
+      mockOidClientSecret: mockOidClientSecret!,
+      mockOidcIssuer: mockOidcIssuer!,
+      mockOidcAuthorizeEndpoint: mockOidcAuthorizeEndpoint!,
+      mockOidcTokenEndpoint: mockOidcTokenEndpoint!,
+      mockOidcUserInfoEndpoint: mockOidcUserInfoEndpoint!,
+      mockOidcjwksEndpoint: mockOidcjwksEndpoint!,
       useMockOidc: useMockOidc,
       tokenMappingTable: tables.tokenMappingTable,
       userPoolTlsCertificateArn: props.userPoolTLSCertificateArn,
