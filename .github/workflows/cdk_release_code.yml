@@ -156,8 +156,8 @@ jobs:
             "epsDomain": $epsDomain,
             "epsZoneId": $epsZoneId
             }' \
-          cdk.json > cdk.new.json
-          mv cdk.new.json cdk.json
+          .build/cdk.json > .build/cdk.new.json
+          mv .build/cdk.new.json .bulid/cdk.json
 
       - name: Show diff
         run: |
