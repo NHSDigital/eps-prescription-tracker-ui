@@ -20,6 +20,7 @@ import {DynamoDBDocumentClient, PutCommand} from "@aws-sdk/lib-dynamodb"
 const logger = new Logger({serviceName: "token"})
 const UserPoolIdentityProvider = process.env["UserPoolIdentityProvider"] as string
 const TokenMappingTableName = process.env["TokenMappingTableName"] as string
+const userInfoEndpoint = process.env["userInfoEndpoint"] as string
 
 const oidcJwksClient = jwksClient({
   jwksUri: process.env["oidcjwksEndpoint"] as string
@@ -74,20 +75,29 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
   logger.info("about to call downstream idp with rewritten body", {idpTokenPath, body: object_body})
 
-  const response = await axiosInstance.post(idpTokenPath,
+  const tokenResponse = await axiosInstance.post(idpTokenPath,
     stringify(object_body)
   )
 
   // TODO we should store the response so we can use the tokens returned by CIS2 in an apigee token exchange
-  logger.info("response from external oidc", {data: response.data})
+  logger.info("response from external oidc", {data: tokenResponse.data})
 
-  const accessToken = response.data.access_token
-  const idToken = response.data.id_token
-  const expiresIn = response.data.expires_in
+  const accessToken = tokenResponse.data.access_token
+  const idToken = tokenResponse.data.id_token
+  const expiresIn = tokenResponse.data.expires_in
 
   // verify and decode idToken
   const decodedIdToken = await verifyJWTWrapper(idToken)
   logger.info("decoded idToken", {decodedIdToken})
+
+  // call userinfo endpoint
+  const userInfoResponse = await axiosInstance.get(userInfoEndpoint,
+    {
+      headers: {
+        "Authorization": `Bearer ${accessToken}`
+      }}
+  )
+  logger.info("response from userinfo", {data: userInfoResponse.data})
 
   const username = `${UserPoolIdentityProvider}_${decodedIdToken.sub}`
   const params = {
@@ -95,7 +105,8 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
       "Username": username,
       "accessToken": accessToken,
       "idToken": idToken,
-      "expiresIn": expiresIn
+      "expiresIn": expiresIn,
+      "nhsid_nrbac_roles": userInfoResponse.data.nhsid_nrbac_roles
     },
     TableName: TokenMappingTableName
   }
@@ -105,9 +116,9 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
   // return status code and body from request to downstream idp
   return {
-    statusCode: response.status,
-    body: JSON.stringify(response.data),
-    headers: formatHeaders(response.headers)
+    statusCode: tokenResponse.status,
+    body: JSON.stringify(tokenResponse.data),
+    headers: formatHeaders(tokenResponse.headers)
   }
 }
 
