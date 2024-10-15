@@ -207,7 +207,8 @@ export class Cognito extends Construct {
           UserPoolIdentityProvider: userPoolIdentityProvider.providerName,
           oidcjwksEndpoint: props.mockOidcjwksEndpoint,
           jwtPrivateKeyArn: mockJwtPrivateKey.secretArn,
-          userInfoEndpoint: props.mockOidcUserInfoEndpoint
+          userInfoEndpoint: props.mockOidcUserInfoEndpoint,
+          useSignedJWT: "false"
         }
       })
 
@@ -279,7 +280,8 @@ export class Cognito extends Construct {
         UserPoolIdentityProvider: userPoolIdentityProvider.providerName,
         oidcjwksEndpoint: props.primaryOidcjwksEndpoint,
         jwtPrivateKeyArn: primaryJwtPrivateKey.secretArn,
-        userInfoEndpoint: props.primaryOidcUserInfoEndpoint
+        userInfoEndpoint: props.primaryOidcUserInfoEndpoint,
+        useSignedJWT: "true"
       }
     })
 

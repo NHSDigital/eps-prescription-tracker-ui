@@ -24,7 +24,8 @@
     "@nhs/fhir-middy-error-handler": "^2.1.0",
     "axios": "^1.7.7",
     "jsonwebtoken": "^9.0.2",
-    "jwks-rsa": "^3.1.0"
+    "jwks-rsa": "^3.1.0",
+    "uuid": "^10.0.0"
   },
   "devDependencies": {
     "axios-mock-adapter": "^2.0.0"
