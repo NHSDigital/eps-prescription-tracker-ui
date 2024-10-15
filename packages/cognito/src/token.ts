@@ -20,8 +20,8 @@ const logger = new Logger({serviceName: "status"})
 const UserPoolIdentityProvider = process.env["UserPoolIdentityProvider"] as string
 const TokenMappingTableName = process.env["TokenMappingTableName"] as string
 
-const client = jwksClient({
-  jwksUri: process.env["jwks_uri"] as string
+const oidcJwksClient = jwksClient({
+  jwksUri: process.env["oidcjwksEndpoint"] as string
 })
 
 const dynamoClient = new DynamoDBClient()
@@ -35,16 +35,16 @@ const documentClient = DynamoDBDocumentClient.from(dynamoClient)
  *
  */
 
-function getKey(header: JwtHeader, callback: SigningKeyCallback) {
-  client.getSigningKey(header.kid, function(err, key) {
+function getJWKSKey(header: JwtHeader, callback: SigningKeyCallback) {
+  oidcJwksClient.getSigningKey(header.kid, function(err, key) {
     const signingKey = key?.getPublicKey()
     callback(err, signingKey)
   })
 }
 
-function verifyWrapper(jwt: string): Promise<JwtPayload> {
+function verifyJWTWrapper(jwt: string): Promise<JwtPayload> {
   return new Promise((resolve, reject) => {
-    verify(jwt, getKey, function(err, decoded) {
+    verify(jwt, getJWKSKey, function(err, decoded) {
       if (err) {
         reject(err)
       }
@@ -57,7 +57,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   logger.appendKeys({
     "apigw-request-id": event.requestContext.requestId
   })
-  const idp_token_path = process.env["idp_token_path"] as string
+  const idpTokenPath = process.env["idpTokenPath"] as string
   const body = event.body
   if (body===null) {
     throw new Error("can not get body")
@@ -68,9 +68,9 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
   const axiosInstance = axios.create()
 
-  logger.info("about to call downstream idp with rewritten body", {idp_token_path, body: object_body})
+  logger.info("about to call downstream idp with rewritten body", {idpTokenPath, body: object_body})
 
-  const response = await axiosInstance.post(idp_token_path,
+  const response = await axiosInstance.post(idpTokenPath,
     stringify(object_body)
   )
 
@@ -82,7 +82,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   const expiresIn = response.data.expires_in
 
   // verify and decode idToken
-  const decodedIdToken = await verifyWrapper(idToken)
+  const decodedIdToken = await verifyJWTWrapper(idToken)
   logger.info("decoded idToken", {decodedIdToken})
 
   const username = `${UserPoolIdentityProvider}_${decodedIdToken.sub}`

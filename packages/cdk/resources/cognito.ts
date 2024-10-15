@@ -92,7 +92,9 @@ export class Cognito extends Construct {
       cognito.UserPoolClientIdentityProvider.custom(userPoolIdentityProvider.providerName)
     ]
 
+    // define some variables that we need for mocking
     let mockPoolIdentityProvider!: cognito.UserPoolIdentityProviderOidc
+    let mockToken: FunctionConstruct
 
     if (props.useMockOidc) {
       if (props.mockOidcAuthorizeEndpoint === undefined ||
@@ -100,7 +102,8 @@ export class Cognito extends Construct {
         props.mockOidcUserInfoEndpoint === undefined ||
         props.mockOidcClientId === undefined ||
         props.mockOidClientSecret === undefined ||
-        props.mockOidcIssuer === undefined
+        props.mockOidcIssuer === undefined ||
+        props.mockOidcTokenEndpoint === undefined
       ) {
         throw new Error("Attempt to use mock oidc but variables are not defined")
       }
@@ -108,7 +111,7 @@ export class Cognito extends Construct {
       const mockOidcEndpoints: cognito.OidcEndpoints = {
         authorization: props.mockOidcAuthorizeEndpoint,
         jwksUri: props.mockOidcjwksEndpoint,
-        token: `${baseApiGwUrl}/token`,
+        token: `${baseApiGwUrl}/mockToken`,
         userInfo: props.mockOidcUserInfoEndpoint
       }
 
@@ -126,6 +129,26 @@ export class Cognito extends Construct {
       supportedIdentityProviders.push(
         cognito.UserPoolClientIdentityProvider.custom(mockPoolIdentityProvider.providerName)
       )
+
+      // lambda for mock token endpoint
+      mockToken = new FunctionConstruct(this, "MockTokenResources", {
+        stackName: props.stackName!,
+        lambdaName: `${props.stackName!}-token`,
+        additionalPolicies: [
+          props.tokenMappingTableWritePolicy,
+          props.tokenMappingTableReadPolicy,
+          props.useTokensMappingKMSKeyPolicy
+        ],
+        logRetentionInDays: 30,
+        packageBasePath: "packages/cognito",
+        entryPoint: "src/token.ts",
+        lambdaEnvironmentVariables: {
+          idpTokenPath: props.mockOidcTokenEndpoint,
+          TokenMappingTableName: props.tokenMappingTable.tableName,
+          UserPoolIdentityProvider: userPoolIdentityProvider.providerName,
+          oidcjwksEndpoint: props.mockOidcjwksEndpoint
+        }
+      })
     }
 
     // eslint-disable-next-line max-len
@@ -156,11 +179,6 @@ export class Cognito extends Construct {
         logoutUrls: ["http://localhost:3000/"]
       }})
 
-    userPoolWebClient.node.addDependency(userPoolIdentityProvider)
-    if (props.useMockOidc) {
-      userPoolWebClient.node.addDependency(mockPoolIdentityProvider)
-    }
-
     // lambda for token endpoint
     const token = new FunctionConstruct(this, "TokenResources", {
       stackName: props.stackName!,
@@ -174,10 +192,10 @@ export class Cognito extends Construct {
       packageBasePath: "packages/cognito",
       entryPoint: "src/token.ts",
       lambdaEnvironmentVariables: {
-        "idp_token_path": props.primaryOidcTokenEndpoint,
+        idpTokenPath: props.primaryOidcTokenEndpoint,
         TokenMappingTableName: props.tokenMappingTable.tableName,
         UserPoolIdentityProvider: userPoolIdentityProvider.providerName,
-        "jwks_uri": props.primaryOidcjwksEndpoint!
+        oidcjwksEndpoint: props.primaryOidcjwksEndpoint
       }
     })
 
@@ -235,6 +253,17 @@ export class Cognito extends Construct {
       zone: hostedZone,
       domainName: authDomainResource.domainNameAliasDomainName
     })
+
+    // ensure dependencies are set correctly and mock token lambda created if needed
+    userPoolWebClient.node.addDependency(userPoolIdentityProvider)
+    if (props.useMockOidc) {
+      userPoolWebClient.node.addDependency(mockPoolIdentityProvider)
+      const mockTokenResource = restApiGateway.apiGw.root.addResource("mockToken")
+      mockTokenResource.addMethod("POST", new apigateway.LambdaIntegration(mockToken!.lambda, {
+        credentialsRole: restApiGateway.apiGwRole
+      }))
+
+    }
 
     // Outputs
     this.userPool = userPool
