@@ -85,7 +85,7 @@ export class Cognito extends Construct {
       issuerUrl: props.primaryOidcIssuer,
       userPool: userPool,
       attributeRequestMethod: cognito.OidcAttributeRequestMethod.GET,
-      scopes: ["openid", "profile", "email"],
+      scopes: ["openid", "profile", "email", "nhsperson", "nationalrbacaccess"],
       endpoints: oidcEndpoints
     })
 
@@ -162,7 +162,7 @@ export class Cognito extends Construct {
         issuerUrl: props.mockOidcIssuer,
         userPool: userPool,
         attributeRequestMethod: cognito.OidcAttributeRequestMethod.GET,
-        scopes: ["openid", "profile", "email"],
+        scopes: ["openid", "profile", "email", "nhsperson", "nationalrbacaccess"],
         endpoints: mockOidcEndpoints
       })
 
@@ -206,7 +206,8 @@ export class Cognito extends Construct {
           TokenMappingTableName: props.tokenMappingTable.tableName,
           UserPoolIdentityProvider: userPoolIdentityProvider.providerName,
           oidcjwksEndpoint: props.mockOidcjwksEndpoint,
-          jwtPrivateKeyArn: mockJwtPrivateKey.secretArn
+          jwtPrivateKeyArn: mockJwtPrivateKey.secretArn,
+          userInfoEndpoint: props.mockOidcUserInfoEndpoint
         }
       })
 
@@ -277,7 +278,8 @@ export class Cognito extends Construct {
         TokenMappingTableName: props.tokenMappingTable.tableName,
         UserPoolIdentityProvider: userPoolIdentityProvider.providerName,
         oidcjwksEndpoint: props.primaryOidcjwksEndpoint,
-        jwtPrivateKeyArn: primaryJwtPrivateKey.secretArn
+        jwtPrivateKeyArn: primaryJwtPrivateKey.secretArn,
+        userInfoEndpoint: props.primaryOidcUserInfoEndpoint
       }
     })
 
