@@ -173,7 +173,8 @@ export class Cognito extends Construct {
       // lambda for mock token endpoint
       const mockJwtPrivateKey = new secretsmanager.Secret(this, "MockJwtPrivateKey", {
         secretName: `${props.stackName!}-primaryJwtPrivateKey`,
-        secretStringValue: cdk.SecretValue.unsafePlainText("ChangeMe")
+        secretStringValue: cdk.SecretValue.unsafePlainText("ChangeMe"),
+        encryptionKey: jwtKmsKey
       })
       const useMockJwtPrivateKey = new iam.ManagedPolicy(this, "UseMockJwtPrivateKey", {
         statements: [
@@ -243,7 +244,8 @@ export class Cognito extends Construct {
 
     const primaryJwtPrivateKey = new secretsmanager.Secret(this, "PrimaryJwtPrivateKey", {
       secretName: `${props.stackName!}-primaryJwtPrivateKey`,
-      secretStringValue: cdk.SecretValue.unsafePlainText("ChangeMe")
+      secretStringValue: cdk.SecretValue.unsafePlainText("ChangeMe"),
+      encryptionKey: jwtKmsKey
     })
     const usePrimaryJwtPrivateKey = new iam.ManagedPolicy(this, "UsePrimaryJwtPrivateKey", {
       statements: [
