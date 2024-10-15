@@ -12,7 +12,10 @@ import {
   verify,
   JwtHeader,
   SigningKeyCallback,
-  JwtPayload
+  JwtPayload,
+  sign,
+  PrivateKey,
+  SignOptions
 } from "jsonwebtoken"
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
 import {DynamoDBDocumentClient, PutCommand} from "@aws-sdk/lib-dynamodb"
@@ -70,6 +73,24 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   const object_body = parse(body)
 
   // TODO create a signed JWT and add it to the request
+  const current_time = Math.floor(Date.now() / 1000)
+  const expiration_time = current_time + 300
+  const claims = {
+    "iss": object_body.client_id,
+    "sub": object_body.client_id,
+    "aud": idpTokenPath,
+    "iat": current_time,
+    "exp": expiration_time
+  }
+
+  const signOptions: SignOptions = {
+    algorithm: "RS256",
+    keyid: "my_kid"
+  }
+
+  logger.info("Claims", {claims})
+  const jwt_token = sign(claims, jwtPrivateKey as PrivateKey, signOptions)
+  logger.info("jwt_token", {jwt_token})
 
   const axiosInstance = axios.create()
 
@@ -79,7 +100,6 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     stringify(object_body)
   )
 
-  // TODO we should store the response so we can use the tokens returned by CIS2 in an apigee token exchange
   logger.info("response from external oidc", {data: tokenResponse.data})
 
   const accessToken = tokenResponse.data.access_token
