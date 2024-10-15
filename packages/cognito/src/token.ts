@@ -2,6 +2,7 @@ import {APIGatewayProxyEvent, APIGatewayProxyResult} from "aws-lambda"
 import {Logger} from "@aws-lambda-powertools/logger"
 import {injectLambdaContext} from "@aws-lambda-powertools/logger/middleware"
 import middy from "@middy/core"
+import {getSecret} from "@aws-lambda-powertools/parameters/secrets"
 import inputOutputLogger from "@middy/input-output-logger"
 import errorHandler from "@nhs/fhir-middy-error-handler"
 import axios, {AxiosResponseHeaders, RawAxiosResponseHeaders} from "axios"
@@ -16,7 +17,7 @@ import {
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
 import {DynamoDBDocumentClient, PutCommand} from "@aws-sdk/lib-dynamodb"
 
-const logger = new Logger({serviceName: "status"})
+const logger = new Logger({serviceName: "token"})
 const UserPoolIdentityProvider = process.env["UserPoolIdentityProvider"] as string
 const TokenMappingTableName = process.env["TokenMappingTableName"] as string
 
@@ -58,6 +59,9 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     "apigw-request-id": event.requestContext.requestId
   })
   const idpTokenPath = process.env["idpTokenPath"] as string
+  const jwtPrivateKeyArn = process.env["jwtPrivateKeyArn"] as string
+  const jwtPrivateKey = await getSecret(jwtPrivateKeyArn)
+  logger.info("retrieved secret key", {jwtPrivateKey})
   const body = event.body
   if (body===null) {
     throw new Error("can not get body")
