@@ -204,7 +204,7 @@ export class Cognito extends Construct {
         lambdaEnvironmentVariables: {
           idpTokenPath: props.mockOidcTokenEndpoint,
           TokenMappingTableName: props.tokenMappingTable.tableName,
-          UserPoolIdentityProvider: userPoolIdentityProvider.providerName,
+          UserPoolIdentityProvider: mockPoolIdentityProvider.providerName,
           oidcjwksEndpoint: props.mockOidcjwksEndpoint,
           jwtPrivateKeyArn: mockJwtPrivateKey.secretArn,
           userInfoEndpoint: props.mockOidcUserInfoEndpoint,
