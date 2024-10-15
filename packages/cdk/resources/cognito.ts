@@ -172,7 +172,7 @@ export class Cognito extends Construct {
 
       // lambda for mock token endpoint
       const mockJwtPrivateKey = new secretsmanager.Secret(this, "MockJwtPrivateKey", {
-        secretName: `${props.stackName!}-primaryJwtPrivateKey`,
+        secretName: `${props.stackName!}-mockJwtPrivateKey`,
         secretStringValue: cdk.SecretValue.unsafePlainText("ChangeMe"),
         encryptionKey: jwtKmsKey
       })
