@@ -105,7 +105,31 @@ cdk-deploy: guard-stack_name
 		--context epsDomain=$$epsDomain \
 		--context epsZoneId=$$epsZoneId 
 
-cdk-synth:
+cdk-synth-mock:
+	npx cdk synth \
+		--app "npx ts-node --prefer-ts-exts packages/cdk/bin/ClinicalPrescriptionTrackerApp.ts" \
+		--context stackName=cpt-ui \
+		--context VERSION_NUMBER=undefined \
+		--context COMMIT_ID=undefined \
+		--context primaryOidcClientId=$$Auth0ClientID \
+		--context primaryOidClientSecret=$$Auth0ClientSecret \
+		--context primaryOidcIssuer=$$Auth0Issuer \
+		--context primaryOidcAuthorizeEndpoint=$$Auth0AuthorizeEndpoint \
+		--context primaryOidcTokenEndpoint=$$Auth0TokenEndpoint \
+		--context primaryOidcUserInfoEndpoint=$$Auth0UserInfoEndpoint \
+		--context primaryOidcjwksEndpoint=$$Auth0JWKSEndpoint \
+		--context mockOidcClientId=$$Auth0ClientID \
+		--context mockOidClientSecret=$$Auth0ClientSecret \
+		--context mockOidcIssuer=$$Auth0Issuer \
+		--context mockOidcAuthorizeEndpoint=$$Auth0AuthorizeEndpoint \
+		--context mockOidcTokenEndpoint=$$Auth0TokenEndpoint \
+		--context mockOidcUserInfoEndpoint=$$Auth0UserInfoEndpoint \
+		--context mockOidcjwksEndpoint=$$Auth0JWKSEndpoint \
+		--context epsDomain=$$epsDomain \
+		--context epsZoneId=$$epsZoneId \
+		--context useMockOidc=true
+
+cdk-synth-no-mock:
 	npx cdk synth \
 		--app "npx ts-node --prefer-ts-exts packages/cdk/bin/ClinicalPrescriptionTrackerApp.ts" \
 		--context stackName=cpt-ui \
@@ -119,7 +143,9 @@ cdk-synth:
 		--context primaryOidcUserInfoEndpoint=$$Auth0UserInfoEndpoint \
 		--context primaryOidcjwksEndpoint=$$Auth0JWKSEndpoint \
 		--context epsDomain=$$epsDomain \
-		--context epsZoneId=$$epsZoneId 
+		--context epsZoneId=$$epsZoneId
+
+cdk-synth: cdk-synth-no-mock cdk-synth-mock
 
 cdk-diff:
 	npx cdk diff \

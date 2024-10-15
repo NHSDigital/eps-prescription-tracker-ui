@@ -133,7 +133,7 @@ export class Cognito extends Construct {
       // lambda for mock token endpoint
       mockToken = new FunctionConstruct(this, "MockTokenResources", {
         stackName: props.stackName!,
-        lambdaName: `${props.stackName!}-token`,
+        lambdaName: `${props.stackName!}-mockToken`,
         additionalPolicies: [
           props.tokenMappingTableWritePolicy,
           props.tokenMappingTableReadPolicy,
