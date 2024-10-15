@@ -209,11 +209,16 @@ export class Cognito extends Construct {
       lambdaEnvironmentVariables: { }
     })
 
+    const apiGatewayAdditionalPolicies: Array<iam.IManagedPolicy> = [
+      token.executeLambdaManagedPolicy
+    ]
+    if (props.useMockOidc) {
+      apiGatewayAdditionalPolicies.push(mockToken!.executeLambdaManagedPolicy)
+    }
+
     // api gateway to sit in front of lambda
     const restApiGateway = new ApiGwConstruct(this, "RestApiGatewayResources", {
-      additionalPolicies: [
-        token.executeLambdaManagedPolicy
-      ],
+      additionalPolicies: apiGatewayAdditionalPolicies,
       apiName: `${props.stackName!}-apigw-cognito`,
       logRetentionInDays: 30,
       stackName: props.stackName,
