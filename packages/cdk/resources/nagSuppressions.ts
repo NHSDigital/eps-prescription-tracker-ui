@@ -154,6 +154,23 @@ function nagSuppressions(stack: cdk.Stack, deployedStackName: string | undefined
       }
     ])
 
+  safeAddNagSuppression(stack,
+    "/ClinicalPrescriptionTrackerStack/Cognito/MockJwtPrivateKey/Resource",
+    [
+      {
+        id: "AwsSolutions-SMG4",
+        reason: "Suppress error for secret with no rotation"
+      }
+    ])
+  safeAddNagSuppression(stack,
+    "/ClinicalPrescriptionTrackerStack/Cognito/PrimaryJwtPrivateKey/Resource",
+    [
+      {
+        id: "AwsSolutions-SMG4",
+        reason: "Suppress error for secret with no rotation"
+      }
+    ])
+
 }
 
 function safeAddNagSuppression(stack: cdk.Stack, path: string, suppressions: Array<NagPackSuppression>) {
