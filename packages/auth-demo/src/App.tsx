@@ -65,9 +65,14 @@ function App() {
     <div className="App">
       <button onClick={() => signInWithRedirect({
         provider: {
+          custom: "Primary"  // This is the name of the AWS::Cognito::UserPoolIdentityProvider we are using to sign in
+        }
+         })}>Log in with primary cognito</button>
+      <button onClick={() => signInWithRedirect({
+        provider: {
           custom: "Mock"  // This is the name of the AWS::Cognito::UserPoolIdentityProvider we are using to sign in
         }
-         })}>Log in with cognito</button>
+         })}>Log in with mock cognito</button>
       <button onClick={() => signOut()}>Sign Out</button>
       <div>username: {user?.username}</div>
       <div>isSignedIn: {isSignedIn} </div>

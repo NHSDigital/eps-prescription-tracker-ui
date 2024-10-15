@@ -12,37 +12,37 @@ set_secrets() {
     gh secret set primaryOidcClientId \
         --repo NHSDigital/eps-prescription-tracker-ui \
         --app actions \
-        --body "$Auth0ClientID"
+        --body "$Cis2PTLClientID"
 
     gh secret set primaryOidClientSecret \
         --repo NHSDigital/eps-prescription-tracker-ui \
         --app actions \
-        --body "$Auth0ClientSecret"
+        --body "$Cis2PTLClientSecret"
 
     gh secret set primaryOidcIssuer \
         --repo NHSDigital/eps-prescription-tracker-ui \
         --app actions \
-        --body "$Auth0Issuer"
+        --body "$Cis2PTLIssuer"
 
     gh secret set primaryOidcAuthorizeEndpoint \
         --repo NHSDigital/eps-prescription-tracker-ui \
         --app actions \
-        --body "$Auth0AuthorizeEndpoint"
+        --body "$Cis2PTLAuthorizeEndpoint"
 
     gh secret set primaryOidcTokenEndpoint \
         --repo NHSDigital/eps-prescription-tracker-ui \
         --app actions \
-        --body "$Auth0TokenEndpoint"
+        --body "$Cis2PTLTokenEndpoint"
 
     gh secret set primaryOidcUserInfoEndpoint \
         --repo NHSDigital/eps-prescription-tracker-ui \
         --app actions \
-        --body "$Auth0UserInfoEndpoint"
+        --body "$Cis2PTLUserInfoEndpoint"
 
     gh secret set primaryOidcjwksEndpoint \
         --repo NHSDigital/eps-prescription-tracker-ui \
         --app actions \
-        --body "$Auth0JWKSEndpoint"
+        --body "$Cis2PTLJWKSEndpoint"
 
 
     # mock secrets
