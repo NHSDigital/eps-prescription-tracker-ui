@@ -31,7 +31,7 @@ lint-githubactions:
 lint-githubaction-scripts:
 	shellcheck .github/scripts/*.sh
 
-lint: lint-node lint-samtemplates lint-githubactions lint-githubaction-scripts react-lint
+lint: lint-node lint-githubactions lint-githubaction-scripts react-lint
 
 lint: lint-node lint-githubactions lint-githubaction-scripts react-lint
 

@@ -1,8 +1,8 @@
 {
     "folders": [
       {
-        "name": "eps-prescription-status-tracker-ui",
-        "path": ".."
+      "name": "eps-prescription-tracker-ui-monorepo",
+      "path": ".."
       },
       {
         "name": "packages/cdk",
@@ -23,6 +23,10 @@
       {
         "name": "packages/cpt-ui",
         "path": "../packages/cpt-ui"
+      },
+      {
+        "name": "packages/cdk",
+        "path": "../packages/cdk"
       }
     ],
     "settings": {

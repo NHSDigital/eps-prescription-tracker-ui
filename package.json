@@ -18,8 +18,6 @@
     "author": "NHS Digital",
     "license": "MIT",
     "workspaces": [
-        "packages/server",
-        "packages/client",
         "packages/cpt-ui",
         "packages/statusLambda",
         "packages/auth-demo",
