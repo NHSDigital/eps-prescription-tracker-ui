@@ -6,7 +6,8 @@
         "dev": "next dev",
         "build": "next build",
         "start": "next start",
-        "lint": "next lint"
+        "lint": "next lint",
+        "check-licenses": "license-checker --failOn GPL --failOn LGPL --start ../.."
     },
     "dependencies": {
         "i18next": "^23.16.0",
