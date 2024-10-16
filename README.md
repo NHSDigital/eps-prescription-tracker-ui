@@ -4,9 +4,8 @@
 
 This is the code for the Clinical Prescription Tracker UI.
 
-- `packages/client` Client side react front end for clinical prescription tracker UI
-- `packages/server/` Server side for clinical prescription tracker UI.
-- `SAMtemplates/` Contains the SAM templates used to define the stacks.
+- `packages/cpt-ui` Client side react front end for clinical prescription tracker UI
+- `packages/cdk/` Contains the cdk code used to define the stacks.
 - `scripts/` Utilities helpful to developers of this specification.
 - `.devcontainer` Contains a dockerfile and vscode devcontainer definition.
 - `.github` Contains github workflows that are used for building and deploying from pull requests and releases.
@@ -28,7 +27,6 @@ The contents of this repository are protected by Crown Copyright (C).
 It is recommended that you use visual studio code and a devcontainer as this will install all necessary components and correct versions of tools and languages.  
 See https://code.visualstudio.com/docs/devcontainers/containers for details on how to set this up on your host machine.  
 There is also a workspace file in .vscode that should be opened once you have started the devcontainer. The workspace file can also be opened outside of a devcontainer if you wish.  
-The project uses [SAM](https://aws.amazon.com/serverless/sam/) to develop and deploy the APIs and associated resources.
 
 All commits must be made using [signed commits](https://docs.github.com/en/authentication/managing-commit-signature-verification/signing-commits)
 
@@ -82,9 +80,12 @@ SSO registration scopes [sso:account:access]:
 This will then open a browser window and you should authenticate with your hscic credentials
 You should then select the development account and set default region to be eu-west-2.
 
-You will now be able to use AWS and SAM CLI commands to access the dev account. You can also use the AWS extension to view resources.
+You will now be able to use AWS and CDK CLI commands to access the dev account. You can also use the AWS extension to view resources.
 
-When the token expires, you may need to reauthorise using `make aws-login`
+When the token expires, you may need to reauthorise using `make aws-login` 
+
+###  React app
+React/Next.js code resides in app folder.  More details to be added as dev progresses, see make section for relevant commands
 
 ### CI Setup
 
@@ -99,31 +100,14 @@ You will need the "Execute Analysis" permission for the project (NHSDigital_elec
 You can run the following command to deploy the code to AWS for testing
 
 ```
-make sam-sync
+make cdk-watch
 ```
 
-This will take a few minutes to deploy - you will see something like this when deployment finishes
-
-```
-......
-CloudFormation events from stack operations (refresh every 0.5 seconds)
----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-ResourceStatus                            ResourceType                              LogicalResourceId                         ResourceStatusReason
----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-.....
-CREATE_IN_PROGRESS                        AWS::ApiGatewayV2::ApiMapping             HttpApiGatewayApiMapping                  -
-CREATE_IN_PROGRESS                        AWS::ApiGatewayV2::ApiMapping             HttpApiGatewayApiMapping                  Resource creation Initiated
-CREATE_COMPLETE                           AWS::ApiGatewayV2::ApiMapping             HttpApiGatewayApiMapping                  -
-CREATE_COMPLETE                           AWS::CloudFormation::Stack                ab-1                                      -
----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-Stack creation succeeded. Sync infra completed.
-```
+This will take a few minutes to deploy - you will see a message saying deployment complete when it has finished.
 
 Note - the command will keep running and should not be stopped.
 
-Any code changes you make are automatically uploaded to AWS while `make sam-sync` is running allowing you to quickly test any changes you make
+Any code changes you make are automatically uploaded to AWS while `make cdk-watch` is running allowing you to quickly test any changes you make
 
 ### Pre-commit hooks
 
@@ -142,27 +126,15 @@ There are `make` commands that are run as part of the CI pipeline and help alias
 - `install-hooks` Installs git pre commit hooks
 - `install` Runs all install targets
 
-#### SAM targets
+#### CDK targets
 
-These are used to do common commands
+These are used to do common commands related to cdk
 
-- `sam-build` Prepares the lambdas and SAM definition file to be used in subsequent steps.
-- `sam-run-local` Runs the API and lambdas locally.
-- `sam-sync` Sync the API and lambda to AWS. This keeps running and automatically uploads any changes to lambda code made locally. Needs AWS_DEFAULT_PROFILE and stack_name environment variables set.
-- `sam-sync-sandbox` Sync the API and lambda to AWS. This keeps running and automatically uploads any changes to lambda code made locally. Needs stack_name environment variables set, the path and file name where the AWS SAM template is located.
-- `sam-deploy` Deploys the compiled SAM template from sam-build to AWS. Needs AWS_DEFAULT_PROFILE and stack_name environment variables set.
-- `sam-delete` Deletes the deployed SAM cloud formation stack and associated resources. Needs AWS_DEFAULT_PROFILE and stack_name environment variables set.
-- `sam-list-endpoints` Lists endpoints created for the current stack. Needs AWS_DEFAULT_PROFILE and stack_name environment variables set.
-- `sam-list-resources` Lists resources created for the current stack. Needs AWS_DEFAULT_PROFILE and stack_name environment variables set.
-- `sam-list-outputs` Lists outputs from the current stack. Needs AWS_DEFAULT_PROFILE and stack_name environment variables set.
-- `sam-validate` Validates the main SAM template and the splunk firehose template.
-- `sam-validate-sandbox` Validates the sandbox SAM template and the splunk firehose template.
-- `sam-deploy-package` Deploys a package created by sam-build. Used in CI builds. Needs the following environment variables set.
-  - artifact_bucket - bucket where uploaded packaged files are
-  - artifact_bucket_prefix - prefix in bucket of where uploaded packaged files ore
-  - stack_name - name of stack to deploy
-  - template_file - name of template file created by sam-package
-  - cloud_formation_execution_role - ARN of role that cloud formation assumes when applying the changeset
+- `cdk-deploy` Builds and deploys the code to AWS
+- `cdk-synth` Converts the CDK code to cloudformation templates
+- `cdk-diff` Runs cdk diff comparing the deployed stack with local CDK code to see differences
+- `cdk-watch` Syncs the code and CDK templates to AWS. This keeps running and automatically uploads changes to AWS
+- `build-deployment-container-image` Creates a container with all code necessary to run cdk deploy
 
 #### Clean and deep-clean targets
 
@@ -173,10 +145,8 @@ These are used to do common commands
 
 - `lint` Runs lint for all code
 - `lint-node` Runs lint for node code
-- `lint-cloudformation` Runs lint for cloudformation templates
-- `lint-samtemplates` Runs lint for SAM templates
 - `test` Runs unit tests for all code
-- `cfn-guard` runs cfn-guard for sam and cloudformation templates
+- `cfn-guard` runs cfn-guard for cloudformation templates generated by cdk synth
 
 #### Compiling
 
@@ -194,11 +164,16 @@ These are used to do common commands
 - `aws-configure` Configures a connection to AWS
 - `aws-login` Reconnects to AWS from a previously configured connection
 
+#### React App
+- `react-dev` Starts app in dev mode on localhost
+- `react-build` Generates static files in .next folder
+- `react-start` Starts app in production mode using build-generated static files 
+
 ### Github folder
 
 This .github folder contains workflows and templates related to GitHub, along with actions and scripts pertaining to Jira.
 
-- `pull_request_template.yml` Template for pull requests.
+- `pull_request_template.md` Template for pull requests.
 - `dependabot.yml` Dependabot definition file.
 
 Actions are in the `.github/actions` folder:
@@ -214,16 +189,16 @@ Scripts are in the `.github/scripts` folder:
 - `delete_stacks.sh` Checks and deletes active CloudFormation stacks associated with closed pull requests.
 - `get_current_dev_tag.sh` Retrieves the current development tag and sets it as an environment variable.
 - `get_target_deployed_tag.sh` Retrieves the currently deployed tag and sets it as an environment variable.
-- `release_code.sh` Releases code by deploying it using AWS SAM after packaging it.
 
 Workflows are in the `.github/workflows` folder:
 
-- `combine-dependabot-prs.yml` Workflow for combining dependabot pull requests. Runs on demand.
+- `ci.yml` Workflow that runs on merges to main branch and releases to dev and qa environments.
 - `delete_old_cloudformation_stacks.yml` Workflow for deleting old cloud formation stacks. Runs daily.
 - `dependabot_auto_approve_and_merge.yml` Workflow to auto merge dependabot updates.
-- `pr-link.yaml` This workflow template links Pull Requests to Jira tickets and runs when a pull request is opened.
-- `pull_request.yml` Called when pull request is opened or updated. Calls sam_package_code and sam_release_code to build and deploy the code. Deploys to dev AWS account. The main stack deployed adopts the naming convention clinical-tracker-pr-<PULL_REQUEST_ID>, while the sandbox stack follows the pattern clinical-tracker-sandbox-pr-<PULL_REQUEST_ID>
+- `pr_title_check.yml` This workflow checks the pull request title has the correct format.
+- `pr-link.yml` This workflow template links Pull Requests to Jira tickets and runs when a pull request is opened.
+- `pull_request.yml` Called when pull request is opened or updated. Calls package_code and release_code to build and deploy the code. Deploys to dev AWS account. The main stack deployed adopts the naming convention cpt-ui-pr-<PULL_REQUEST_ID>
 - `quality_checks.yml` Runs check-licenses, lint, test and SonarCloud scan against the repo. Called from pull_request.yml and release.yml
-- `release.yml` Run when code is merged to main branch or a tag starting v is pushed. Calls sam_package_code and sam_release_code to build and deploy the code.
-- `sam_package_code.yml` Packages code and uploads to a github artifact for later deployment.
-- `sam_release_code.yml` Release code built by sam_package_code.yml to an environment.
+- `release.yml` Creates a new release tag and deploys to all environments
+- `cdk_package_code.yml` Packages code into a docker image and uploads to a github artifact for later deployment.
+- `cdk_release_code.yml` Release code built by cdk_package_code.yml to an environment.

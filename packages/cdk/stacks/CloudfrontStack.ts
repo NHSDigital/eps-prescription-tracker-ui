@@ -26,10 +26,7 @@ import {CfnKey, Key} from "aws-cdk-lib/aws-kms"
 import {RestApiBase} from "aws-cdk-lib/aws-apigateway"
 import {UserPoolDomain} from "aws-cdk-lib/aws-cognito"
 
-import {
-  AllowCloudfrontKmsKeyAccessPolicy,
-  contentBucketKmsKeyPolicy
-} from "../policies/kms/AllowCloudfrontKmsKeyAccessPolicy"
+import {AllowCloudfrontKmsKeyAccessPolicy} from "../policies/kms/AllowCloudfrontKmsKeyAccessPolicy"
 import {CloudfrontFunction} from "../resources/Cloudfront/CloudfrontFunction"
 
 export interface CloudfrontStackProps extends StackProps {
@@ -215,7 +212,7 @@ export class CloudfrontStack extends Stack {
             }
           ]
         },
-        "/jwks/": { // matches exactly <url>/jwks and will only serve the jwks json (vis cf function)
+        "/jwks/": { // matches exactly <url>/jwks and will only serve the jwks json (via cf function)
           origin: staticContentBucketOrigin,
           allowedMethods: AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
           viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,

@@ -23,38 +23,22 @@ repos:
 
   - repo: local
     hooks:
-      - id: lint-client
-        name: Lint client
+      - id: lint-cdk
+        name: Lint cdk
         entry: npm
-        args: ["run", "--prefix=packages/client", "lint"]
+        args: ["run", "--prefix=packages/cdk", "lint"]
         language: system
-        files: ^packages\/client
+        files: ^packages\/cdk
         types_or: [ts, tsx, javascript, jsx, json]
         pass_filenames: false
 
-      - id: lint-server
-        name: Lint server
+      - id: lint-cpt-ui
+        name: Lint cpt-ui
         entry: npm
-        args: ["run", "--prefix=packages/server", "lint"]
+        args: ["run", "--prefix=packages/cpt-ui", "lint"]
         language: system
-        files: ^packages\/server
+        files: ^packages\/cpt-ui
         types_or: [ts, tsx, javascript, jsx, json]
-        pass_filenames: false
-
-      - id: lint-cloudformation
-        name: Lint cloudformation
-        entry: make
-        args: ["lint-cloudformation"]
-        language: system
-        files: ^cloudformation
-        pass_filenames: false
-
-      - id: lint-samtemplates
-        name: Lint sam templates
-        entry: make
-        args: ["lint-samtemplates"]
-        language: system
-        files: ^SAMtemplates
         pass_filenames: false
 
       - id: lint-githubactions
@@ -76,4 +60,4 @@ repos:
         pass_filenames: false
 
 fail_fast: true
-default_stages: [commit]
+default_stages: [pre-commit]

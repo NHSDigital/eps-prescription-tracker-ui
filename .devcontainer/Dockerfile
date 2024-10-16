@@ -18,12 +18,6 @@ RUN wget -O /tmp/awscliv2.zip "https://awscli.amazonaws.com/awscli-exe-linux-x86
     rm tmp/awscliv2.zip && \
     rm -rf /tmp/aws-cli
 
-RUN wget -O /tmp/aws-sam-cli.zip https://github.com/aws/aws-sam-cli/releases/latest/download/aws-sam-cli-linux-x86_64.zip && \
-    unzip /tmp/aws-sam-cli.zip -d /tmp/aws-sam-cli && \
-    /tmp/aws-sam-cli/install && \
-    rm /tmp/aws-sam-cli.zip && \
-    rm -rf /tmp/aws-sam-cli
-
 USER vscode
 
 # Install ASDF
@@ -47,8 +41,8 @@ RUN asdf plugin add python; \
     asdf plugin add ruby https://github.com/asdf-vm/asdf-ruby.git
 
 
-WORKDIR /workspaces/eps-prescription-status-update-api
-ADD .tool-versions /workspaces/eps-prescription-status-update-api/.tool-versions
+WORKDIR /workspaces/eps-prescription-tracker-ui
+ADD .tool-versions /workspaces/eps-prescription-tracker-ui/.tool-versions
 ADD .tool-versions /home/vscode/.tool-versions
 
 RUN asdf install; \

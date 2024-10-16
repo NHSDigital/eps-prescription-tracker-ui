@@ -1,23 +1,21 @@
 {
-    "name": "apis",
-    "version": "0.1.0",
-    "bin": {
-      "apis": "bin/apis.js"
-    },
-    "scripts": {
-      "build": "tsc",
-      "watch": "tsc -w",
-      "test": "jest",
-      "cdk": "cdk",
-      "lint": "eslint  --max-warnings 0 --fix --config ../../eslint.config.mjs ."
-    },
-    "devDependencies": {
-      "aws-cdk": "2.157.0"
-    },
-    "dependencies": {
-      "aws-cdk-lib": "2.157.0",
-      "cdk-nag": "^2.28.195",
-      "constructs": "^10.0.0",
-      "source-map-support": "^0.5.21"
-    }
+  "name": "cdk",
+  "version": "0.1.0",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc -w",
+    "test": "jest",
+    "cdk": "cdk",
+    "lint": "eslint  --max-warnings 0 --fix --config ../../eslint.config.mjs .",
+    "check-licenses": "license-checker --failOn GPL --failOn LGPL --start ../.."
+  },
+  "dependencies": {
+    "aws-cdk-lib": "^2.159.1",
+    "cdk-nag": "^2.28.195",
+    "constructs": "^10.0.0",
+    "source-map-support": "^0.5.21"
+  },
+  "devDependencies": {
+    "aws-cdk": "^2.159.1"
+  }
 }
