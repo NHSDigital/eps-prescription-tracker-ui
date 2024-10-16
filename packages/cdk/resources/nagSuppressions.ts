@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 import * as cdk from "aws-cdk-lib"
 import {NagPackSuppression, NagSuppressions} from "cdk-nag"
 
@@ -7,14 +8,14 @@ function nagSuppressions(stack: cdk.Stack, deployedStackName: string | undefined
 
   safeAddNagSuppression(
     stack,
-    "/ClinicalPrescriptionTrackerStack/Cognito/RestApiGatewayResources/RestApiGateway/Resource", [
+    "/ClinicalPrescriptionTrackerStack/Cognito/CognitoFunctions/RestApiGatewayResources/RestApiGateway/Resource", [
       {
         id: "AwsSolutions-APIG2",
         reason: "Suppress error for not implementing validation"
       }
     ])
   safeAddNagSuppression(stack,
-    "/ClinicalPrescriptionTrackerStack/Cognito/RestApiGatewayResources/RestApiGateway/DeploymentStage.prod/Resource",
+    "/ClinicalPrescriptionTrackerStack/Cognito/CognitoFunctions/RestApiGatewayResources/RestApiGateway/DeploymentStage.prod/Resource",
     [
       {
         id: "AwsSolutions-APIG3",
@@ -64,7 +65,7 @@ function nagSuppressions(stack: cdk.Stack, deployedStackName: string | undefined
     ])
 
   safeAddNagSuppression(stack,
-    "/ClinicalPrescriptionTrackerStack/Cognito/RestApiGatewayResources/RestApiGateway/Default/token/POST/Resource",
+    "/ClinicalPrescriptionTrackerStack/Cognito/CognitoFunctions/RestApiGatewayResources/RestApiGateway/Default/token/POST/Resource",
     [
       {
         id: "AwsSolutions-APIG4",
@@ -77,7 +78,7 @@ function nagSuppressions(stack: cdk.Stack, deployedStackName: string | undefined
     ])
 
   safeAddNagSuppression(stack,
-    "/ClinicalPrescriptionTrackerStack/Cognito/RestApiGatewayResources/RestApiGateway/Default/mockToken/POST/Resource",
+    "/ClinicalPrescriptionTrackerStack/Cognito/CognitoFunctions/RestApiGatewayResources/RestApiGateway/Default/mockToken/POST/Resource",
     [
       {
         id: "AwsSolutions-APIG4",
@@ -90,7 +91,7 @@ function nagSuppressions(stack: cdk.Stack, deployedStackName: string | undefined
     ])
 
   safeAddNagSuppression(stack,
-    "/ClinicalPrescriptionTrackerStack/Cognito/RestApiGatewayResources/RestApiGateway/Default/jwks/GET/Resource",
+    "/ClinicalPrescriptionTrackerStack/Cognito/CognitoFunctions/RestApiGatewayResources/RestApiGateway/Default/jwks/GET/Resource",
     [
       {
         id: "AwsSolutions-APIG4",
@@ -120,7 +121,7 @@ function nagSuppressions(stack: cdk.Stack, deployedStackName: string | undefined
       }
     ])
   safeAddNagSuppression(stack,
-    `/ClinicalPrescriptionTrackerStack/Cognito/TokenResources/Execute${deployedStackName}-tokenManagedPolicy/Resource`,
+    `/ClinicalPrescriptionTrackerStack/Cognito/CognitoFunctions/TokenResources/Execute${deployedStackName}-tokenManagedPolicy/Resource`,
     [
       {
         id: "AwsSolutions-IAM5",
@@ -128,7 +129,7 @@ function nagSuppressions(stack: cdk.Stack, deployedStackName: string | undefined
       }
     ])
   safeAddNagSuppression(stack,
-    // eslint-disable-next-line max-len
+
     `/ClinicalPrescriptionTrackerStack/Functions/StatusResources/Execute${deployedStackName}-statusManagedPolicy/Resource`,
     [
       {
@@ -137,7 +138,7 @@ function nagSuppressions(stack: cdk.Stack, deployedStackName: string | undefined
       }
     ])
   safeAddNagSuppression(stack,
-    `/ClinicalPrescriptionTrackerStack/Cognito/JwksResources/Execute${deployedStackName}-jwksManagedPolicy/Resource`,
+    `/ClinicalPrescriptionTrackerStack/Cognito/CognitoFunctions/JwksResources/Execute${deployedStackName}-jwksManagedPolicy/Resource`,
     [
       {
         id: "AwsSolutions-IAM5",
@@ -145,8 +146,8 @@ function nagSuppressions(stack: cdk.Stack, deployedStackName: string | undefined
       }
     ])
   safeAddNagSuppression(stack,
-    // eslint-disable-next-line max-len
-    `/ClinicalPrescriptionTrackerStack/Cognito/MockTokenResources/Execute${deployedStackName}-mockTokenManagedPolicy/Resource`,
+
+    `/ClinicalPrescriptionTrackerStack/Cognito/CognitoFunctions/MockTokenResources/Execute${deployedStackName}-mockTokenManagedPolicy/Resource`,
     [
       {
         id: "AwsSolutions-IAM5",
@@ -155,7 +156,7 @@ function nagSuppressions(stack: cdk.Stack, deployedStackName: string | undefined
     ])
 
   safeAddNagSuppression(stack,
-    "/ClinicalPrescriptionTrackerStack/Cognito/MockJwtPrivateKey/Resource",
+    "/ClinicalPrescriptionTrackerStack/Cognito/CognitoFunctions/MockJwtPrivateKey/Resource",
     [
       {
         id: "AwsSolutions-SMG4",
@@ -163,7 +164,7 @@ function nagSuppressions(stack: cdk.Stack, deployedStackName: string | undefined
       }
     ])
   safeAddNagSuppression(stack,
-    "/ClinicalPrescriptionTrackerStack/Cognito/PrimaryJwtPrivateKey/Resource",
+    "/ClinicalPrescriptionTrackerStack/Cognito/CognitoFunctions/PrimaryJwtPrivateKey/Resource",
     [
       {
         id: "AwsSolutions-SMG4",
