@@ -5,7 +5,7 @@ import middy from "@middy/core"
 import {getSecret} from "@aws-lambda-powertools/parameters/secrets"
 import inputOutputLogger from "@middy/input-output-logger"
 import errorHandler from "@nhs/fhir-middy-error-handler"
-import axios, {AxiosResponseHeaders, RawAxiosResponseHeaders} from "axios"
+import axios from "axios"
 import {parse, ParsedUrlQuery, stringify} from "querystring"
 
 import {PrivateKey} from "jsonwebtoken"
@@ -38,7 +38,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   })
   const axiosInstance = axios.create()
   const jwtPrivateKey = await getSecret(jwtPrivateKeyArn)
-  logger.info("retrieved secret key", {jwtPrivateKey})
+
   const body = event.body
   if (body===null) {
     throw new Error("can not get body")
