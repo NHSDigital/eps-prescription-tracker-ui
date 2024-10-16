@@ -1,0 +1,33 @@
+{
+    "name": "cpt-ui",
+    "version": "0.1.0",
+    "private": true,
+    "scripts": {
+        "dev": "next dev",
+        "build": "next build",
+        "start": "next start",
+        "lint": "next lint",
+        "check-licenses": "license-checker --failOn GPL --failOn LGPL --start ../.."
+    },
+    "dependencies": {
+        "i18next": "^23.16.0",
+        "i18next-browser-languagedetector": "^8.0.0",
+        "i18next-http-backend": "^2.6.2",
+        "next": "14.2.15",
+        "nhsuk-react-components": "^4.1.2",
+        "react": "^18",
+        "react-dom": "^18",
+        "react-i18next": "^15.0.3",
+        "react-intl": "^6.8.0",
+        "sass": "^1.79.5"
+    },
+    "devDependencies": {
+        "@formatjs/cli": "^6.2.15",
+        "@next/eslint-plugin-next": "^14.2.15",
+        "@types/node": "^22",
+        "@types/react": "^18",
+        "@types/react-dom": "^18",
+        "babel-plugin-formatjs": "^10.5.18",
+        "eslint-config-next": "14.2.14"
+    }
+}
