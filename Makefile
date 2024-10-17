@@ -176,13 +176,20 @@ cdk-watch: guard-stack_name
 		--context stackName=$$stack_name \
 		--context VERSION_NUMBER=$$VERSION_NUMBER \
 		--context COMMIT_ID=$$COMMIT_ID \
-		--context primaryOidcClientId=$$Auth0ClientID \
-		--context primaryOidClientSecret=$$Auth0ClientSecret \
-		--context primaryOidcIssuer=$$Auth0Issuer \
-		--context primaryOidcAuthorizeEndpoint=$$Auth0AuthorizeEndpoint \
-		--context primaryOidcTokenEndpoint=$$Auth0TokenEndpoint \
+		--context primaryOidcClientId=$$Cis2PTLClientID \
+		--context primaryOidClientSecret=$$Cis2PTLClientSecret \
+		--context primaryOidcIssuer=$$Cis2PTLIssuer \
+		--context primaryOidcAuthorizeEndpoint=$$Cis2PTLAuthorizeEndpoint \
+		--context primaryOidcTokenEndpoint=$$Cis2PTLTokenEndpoint \
 		--context primaryOidcUserInfoEndpoint=$$Auth0UserInfoEndpoint \
-		--context primaryOidcjwksEndpoint=$$Auth0JWKSEndpoint \
+		--context primaryOidcjwksEndpoint=$$Cis2PTLUserInfoEndpoint \
+		--context mockClientID=$$mockClientID \
+		--context mockClientSecret=$$mockClientSecret \
+		--context mockIssuer=$$mockIssuer \
+		--context mockAuthorizeEndpoint=$$mockAuthorizeEndpoint \
+		--context mockTokenEndpoint=$$mockTokenEndpoint \
+		--context mockUserInfoEndpoint=$$mockUserInfoEndpoint \
+		--context mockJWKSEndpoint=$$mockJWKSEndpoint \
 		--context epsDomain=$$epsDomain \
 		--context epsZoneId=$$epsZoneId 
 
