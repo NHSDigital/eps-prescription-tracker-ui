@@ -23,6 +23,7 @@ const SharedResources = new SharedResourcesStack(app, "SharedResourcesStack", {
   env: {
     region: "eu-west-2"
   },
+  crossRegionReferences: true,
   stackName: `${stackName}-shared-resources`,
   version: version,
   logRetentionInDays: logRetentionInDays

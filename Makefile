@@ -80,7 +80,7 @@ react-start:
 react-lint:
 	npm run lint --workspace packages/cpt-ui
 
-cdk-deploy: guard-stack_name guard-cdk_app_name
+cdk-deploy: guard-stack_name guard-CDK_APP_NAME
 	REQUIRE_APPROVAL="$${REQUIRE_APPROVAL:-any-change}" && \
 	VERSION_NUMBER="$${VERSION_NUMBER:-undefined}" && \
 	COMMIT_ID="$${COMMIT_ID:-undefined}" && \
@@ -93,12 +93,23 @@ cdk-deploy: guard-stack_name guard-cdk_app_name
 		--context VERSION_NUMBER=$$VERSION_NUMBER \
 		--context COMMIT_ID=$$COMMIT_ID 
 
-cdk-synth: guard-cdk_app_name
+cdk-synth: cdk-synth-backend cdk-synth-shared-resources
+
+cdk-synth-shared-resources:
 	npx cdk synth \
-		--app "npx ts-node --prefer-ts-exts packages/cdk/bin/$$CDK_APP_NAME.ts" \
+		--app "npx ts-node --prefer-ts-exts packages/cdk/bin/SharedResourcesApp.ts" \
 		--context stackName=cpt-ui \
 		--context VERSION_NUMBER=undefined \
-		--context COMMIT_ID=undefined  
+		--context COMMIT_ID=undefined \
+		--context logRetentionInDays=30
+
+cdk-synth-backend:
+	npx cdk synth \
+		--app "npx ts-node --prefer-ts-exts packages/cdk/bin/BackendApp.ts" \
+		--context stackName=cpt-ui-backend \
+		--context VERSION_NUMBER=undefined \
+		--context COMMIT_ID=undefined \
+		--context logRetentionInDays=30
 
 cdk-diff: guard-cdk_app_name
 	npx cdk diff \

@@ -17,12 +17,13 @@ export interface AllowCloudfrontKmsKeyAccessPolicyProps {
 }
 
 export class AllowCloudfrontKmsKeyAccessPolicy extends Construct{
+  public readonly policyJson
   public constructor(scope: Construct, id: string, props: AllowCloudfrontKmsKeyAccessPolicyProps){
     super(scope, id)
 
     const accountRootPrincipal = new AccountRootPrincipal()
 
-    new PolicyDocument({
+    const policy = new PolicyDocument({
       statements: [
         new PolicyStatement({
           effect: Effect.ALLOW,
@@ -47,5 +48,6 @@ export class AllowCloudfrontKmsKeyAccessPolicy extends Construct{
         })
       ]
     })
+    this.policyJson = policy.toJSON()
   }
 }

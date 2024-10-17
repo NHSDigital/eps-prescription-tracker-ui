@@ -29,6 +29,14 @@ import {UserPoolDomain} from "aws-cdk-lib/aws-cognito"
 import {AllowCloudfrontKmsKeyAccessPolicy} from "../policies/kms/AllowCloudfrontKmsKeyAccessPolicy"
 import {CloudfrontFunction} from "../resources/Cloudfront/CloudfrontFunction"
 
+// For if cloudfront and s3 bucket are in different stacks:
+// import {
+//   AccountRootPrincipal,
+//   Effect,
+//   PolicyStatement,
+//   ServicePrincipal
+// } from "aws-cdk-lib/aws-iam"
+
 export interface CloudfrontStackProps extends StackProps {
   readonly env: Environment
   readonly stackName: string
@@ -67,6 +75,11 @@ export class CloudfrontStack extends Stack {
       validation: CertificateValidation.fromDns(hostedZone)
     })
 
+    // For if cloudfront and s3 bucket are in different stacks:
+    // const staticContentBucket = Bucket.fromBucketArn(
+    //   this, "staticContentBucket", Fn.importValue("cpt-ui-shared-resources:StaticContentBucket:Arn"))
+    // const staticContentBucketOrigin = S3BucketOrigin.withBucketDefaults(staticContentBucket)
+
     // Origins
     const staticContentBucketOrigin = S3BucketOrigin.withOriginAccessControl(
       props.staticContentBucket,
@@ -101,7 +114,7 @@ export class CloudfrontStack extends Stack {
 
     // Cloudfront Functions
     const s3404UriRewriteFunction = new CloudfrontFunction(this, "S3404UriRewriteFunction", {
-      source: "../../cloudfrontFunctions/src/genericS3FixedObjectUriRewrite.js",
+      sourceFileName: "genericS3FixedObjectUriRewrite.js",
       keyValues: [
         {
           key: "object",
@@ -111,11 +124,11 @@ export class CloudfrontStack extends Stack {
     })
 
     const s3404ModifyStatusCodeFunction = new CloudfrontFunction(this, "S3404ModifyStatusCodeFunction", {
-      source: "../../cloudfrontFunctions/src/s3404ModifyStatusCode.js"
+      sourceFileName: "s3404ModifyStatusCode.js"
     })
 
     const s3StaticContentUriRewriteFunction = new CloudfrontFunction(this, "S3StaticContentUriRewriteFunction", {
-      source: "../../cloudfrontFunctions/src/s3StaticContentUriRewrite.js",
+      sourceFileName: "s3StaticContentUriRewrite.js",
       keyValues: [
         {
           key: "version",
@@ -125,7 +138,7 @@ export class CloudfrontStack extends Stack {
     })
 
     const apiGatewayStripPathFunction = new CloudfrontFunction(this, "ApiGatewayStripPathFunction", {
-      source: "../../cloudfrontFunctions/src/genericStripPathUriRewrite.js",
+      sourceFileName: "genericStripPathUriRewrite.js",
       keyValues: [
         {
           key: "path",
@@ -135,7 +148,7 @@ export class CloudfrontStack extends Stack {
     })
 
     const cognitoStripPathFunction = new CloudfrontFunction(this, "CognitoStripPathFunction", {
-      source: "../../cloudfrontFunctions/src/genericStripPathUriRewrite.js",
+      sourceFileName: "genericStripPathUriRewrite.js",
       keyValues: [
         {
           key: "path",
@@ -145,7 +158,7 @@ export class CloudfrontStack extends Stack {
     })
 
     const s3JwksUriRewriteFunction = new CloudfrontFunction(this, "s3JwksUriRewriteFunction", {
-      source: "../../cloudfrontFunctions/src/genericS3FixedObjectUriRewrite.js",
+      sourceFileName: "genericS3FixedObjectUriRewrite.js",
       keyValues: [
         {
           key: "object",
@@ -230,6 +243,7 @@ export class CloudfrontStack extends Stack {
         }
       }
     })
+
     // When using an s3 origin with OAC and SSE, cdk will use a wildcard in the generated Key policy condition
     // to match all Distribution IDs in order to avoid a circular dependency between the KMS key,Bucket, and
     // Distribution during the initial deployment. This updates the policy to restrict it to a specific distribution.
@@ -238,6 +252,22 @@ export class CloudfrontStack extends Stack {
     contentBucketKmsKey.keyPolicy = new AllowCloudfrontKmsKeyAccessPolicy(
       this, "StaticContentBucketAllowCloudfrontKmsKeyAccessPolicy", {
         cloudfrontDistributionId: cloudfrontDistribution.distributionId
-      })
+      }).policyJson
+
+    /* eslint-disable */
+    // For if cloudfront and s3 bucket are in different stacks:
+    // const OACPolicy = new PolicyStatement({
+    //   effect: Effect.ALLOW,
+    //   principals: [new ServicePrincipal("cloudfront.amazonaws.com")],
+    //   actions: ["s3:GetObject"],
+    //   resources: [staticContentBucket.arnForObjects("*")],
+    //   conditions: {
+    //     StringEquals: {
+    //       "AWS:SourceArn": `arn:aws:cloudfront::${new AccountRootPrincipal().accountId}:distribution/${cloudfrontDistribution.distributionId}` /* eslint-disable-line max-len */
+    //     }
+    //   }
+    // })
+    // staticContentBucket.addToResourcePolicy(OACPolicy)
+    /* eslint-enable */
   }
 }

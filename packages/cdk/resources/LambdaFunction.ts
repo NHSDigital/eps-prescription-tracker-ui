@@ -24,13 +24,13 @@ import {getDefaultLambdaOptions} from "./LambdaFunction/helpers"
 const insightsLayerArn = "arn:aws:lambda:eu-west-2:580247275435:layer:LambdaInsightsExtension:53"
 
 export interface LambdaFunctionProps {
-  readonly stackName: string;
-  readonly lambdaName: string;
-  readonly additionalPolicies?: Array<IManagedPolicy>;
-  readonly logRetentionInDays: number;
-  readonly packageBasePath: string;
-  readonly entryPoint: string;
-  readonly lambdaEnvironmentVariables: { [key: string]: string; }
+  readonly stackName: string
+  readonly lambdaName: string
+  readonly additionalPolicies?: Array<IManagedPolicy>
+  readonly logRetentionInDays: number
+  readonly packageBasePath: string
+  readonly entryPoint: string
+  readonly lambdaEnvironmentVariables: { [key: string]: string }
 }
 
 /**

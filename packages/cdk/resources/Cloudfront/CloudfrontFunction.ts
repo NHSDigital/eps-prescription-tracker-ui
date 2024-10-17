@@ -23,7 +23,7 @@ interface KeyValue {
 type KeyValues = Array<KeyValue>
 
 export interface CloudfrontFunctionProps {
-  readonly source: string
+  readonly sourceFileName: string
   readonly codeReplacements?: codeReplacements
   readonly keyValues?: KeyValues
 }
@@ -55,7 +55,8 @@ export class CloudfrontFunction extends Construct {
         {valueToReplace: "KVS_ID_PLACEHOLDER", replacementValue: functionStore.keyValueStoreId}] : [],
       ...props.codeReplacements ?? []
     ]
-    const functionCode = readFileSync(resolve(__dirname, props.source), "utf8")
+    const functionCode = readFileSync(
+      resolve(__dirname, `../../../cloudfrontFunctions/src/${props.sourceFileName}`), "utf8")
     for (const codeReplacement of codeReplacements){
       functionCode.replace(codeReplacement.valueToReplace, codeReplacement.replacementValue)
     }
