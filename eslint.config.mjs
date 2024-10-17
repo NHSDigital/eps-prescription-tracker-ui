@@ -113,6 +113,16 @@ export default [
     ...commonConfig,
   },
   {
+    files: ["**/*.js",],
+
+    languageOptions: {
+      globals: {
+        ...globals.node,
+      },
+    },
+    ...commonConfig,
+  },
+  {
     files: ["**/tests/**/*.ts"],
 
     languageOptions: {
