@@ -24,8 +24,8 @@ export interface CognitoFunctionsProps {
   readonly mockOidcTokenEndpoint?: string;
   readonly mockOidcUserInfoEndpoint?: string;
   readonly mockOidcjwksEndpoint?: string;
-  readonly mockOidcClientId: string;
-  readonly mockOidcIssuer: string;
+  readonly mockOidcClientId?: string;
+  readonly mockOidcIssuer?: string;
   readonly tokenMappingTable: dynamodb.TableV2;
   readonly tokenMappingTableWritePolicy: iam.ManagedPolicy;
   readonly tokenMappingTableReadPolicy: iam.ManagedPolicy;
@@ -94,7 +94,9 @@ export class CognitoFunctions extends Construct {
     if (props.useMockOidc) {
       if (props.mockOidcjwksEndpoint === undefined ||
         props.mockOidcUserInfoEndpoint === undefined ||
-        props.mockOidcTokenEndpoint === undefined
+        props.mockOidcTokenEndpoint === undefined ||
+        props.mockOidcClientId === undefined ||
+        props.mockOidcIssuer === undefined
       ) {
         throw new Error("Attempt to use mock oidc but variables are not defined")
       }
