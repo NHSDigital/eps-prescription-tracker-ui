@@ -19,7 +19,7 @@
         "react-dom": "^18",
         "react-i18next": "^15.0.3",
         "react-intl": "^6.8.0",
-        "sass": "^1.79.5"
+        "sass": "^1.80.1"
     },
     "devDependencies": {
         "@formatjs/cli": "^6.2.15",
@@ -28,6 +28,6 @@
         "@types/react": "^18",
         "@types/react-dom": "^18",
         "babel-plugin-formatjs": "^10.5.18",
-        "eslint-config-next": "14.2.14"
+        "eslint-config-next": "14.2.15"
     }
 }
