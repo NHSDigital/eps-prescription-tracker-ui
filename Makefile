@@ -2,15 +2,15 @@ run-jekyll:
 	bundle exec jekyll serve
 
 sync-main:
-	git checkout first_pr .tool-versions
-	git checkout first_pr .pre-commit-config.yaml
-	git checkout first_pr .gitignore
-	git checkout first_pr .devcontainer
-	git checkout first_pr pyproject.toml
-	git checkout first_pr poetry.lock
-	git checkout first_pr poetry.lock
-	git checkout first_pr package.json
-	git checkout first_pr package-lock.json
+	git checkout main .tool-versions
+	git checkout main .pre-commit-config.yaml
+	git checkout main .gitignore
+	git checkout main .devcontainer
+	git checkout main pyproject.toml
+	git checkout main poetry.lock
+	git checkout main poetry.lock
+	git checkout main package.json
+	git checkout main package-lock.json
 
 # install targets
 install: install-python install-hooks install-node install-jekyll

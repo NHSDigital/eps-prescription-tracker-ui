@@ -5,6 +5,7 @@
 **/public/
 **/coverage/
 **/node_modules/
+**/.next/
 .#*
 __pycache__/
 .envrc
@@ -26,3 +27,7 @@ _site/
 .jekyll-metadata
 vendor
 cfn_guard_output/
+test/
+amplify_outputs.json
+.asdf
+cdk.out/
