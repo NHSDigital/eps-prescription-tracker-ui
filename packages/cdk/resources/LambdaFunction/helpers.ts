@@ -3,7 +3,7 @@ import {Architecture, Runtime} from "aws-cdk-lib/aws-lambda"
 import {NodejsFunctionProps} from "aws-cdk-lib/aws-lambda-nodejs"
 import {join, resolve} from "path"
 
-const baseDir = resolve(__dirname, "../../..")
+const baseDir = resolve(__dirname, "../../../..")
 
 function getLambdaInvokeURL(region: string, lambdaNArn: string) {
   return `arn:aws:apigateway:${region}:lambda:path/2015-03-31/functions/${lambdaNArn}/invocations`
