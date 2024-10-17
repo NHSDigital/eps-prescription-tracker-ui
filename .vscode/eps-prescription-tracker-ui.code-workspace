@@ -5,6 +5,22 @@
       "path": ".."
       },
       {
+        "name": "packages/cdk",
+        "path": "../packages/cdk"
+      },
+      {
+        "name": "packages/cognito",
+        "path": "../packages/cognito"
+      },
+      {
+        "name": "packages/statusLambda",
+        "path": "../packages/statusLambda"
+      },
+      {
+        "name": "packages/auth-demo",
+        "path": "../packages/auth-demo"
+      },
+      {
         "name": "packages/cpt-ui",
         "path": "../packages/cpt-ui"
       },
@@ -37,7 +53,7 @@
         "devcontainer",
         "direnv",
         "eamodio",
-        "eps-prescription-status-update-api",
+        "eps-prescription-tracker-ui",
         "esbuild",
         "excelviewer",
         "fhir",

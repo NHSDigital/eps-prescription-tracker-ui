@@ -19,7 +19,8 @@
         "version": "latest",
         "moby": "true",
         "installDockerBuildx": "true"
-      }
+      },
+      "ghcr.io/devcontainers/features/github-cli:1": {}
     },
     "customizations": {
       "vscode": {

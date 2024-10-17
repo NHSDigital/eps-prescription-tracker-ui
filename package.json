@@ -19,6 +19,9 @@
     "license": "MIT",
     "workspaces": [
         "packages/cpt-ui",
+        "packages/statusLambda",
+        "packages/auth-demo",
+        "packages/cognito",
         "packages/cdk"
     ],
     "devDependencies": {
@@ -43,6 +46,7 @@
         "typescript-eslint": "^8.9.0"
     },
     "dependencies": {
+        "@aws-amplify/backend": "^1.2.1",
         "conventional-changelog-eslint": "^6.0.0",
         "next": "^14.2.15",
         "nhsuk-react-components": "^4.1.3",

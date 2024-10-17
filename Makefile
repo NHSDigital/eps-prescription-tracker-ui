@@ -33,11 +33,14 @@ lint-githubaction-scripts:
 
 lint: lint-node lint-githubactions lint-githubaction-scripts react-lint
 
+lint: lint-node lint-githubactions lint-githubaction-scripts react-lint
+
 test: compile
 	npm run test --workspace packages/cdk
 
 clean:
 	rm -rf cdk.out
+	rm -rf cfn_guard_output
 	rm -rf packages/cpt-ui/.next
 
 deep-clean: clean
@@ -51,7 +54,6 @@ check-licenses-node:
 	npm run check-licenses --workspace packages/cdk
 	npm run check-licenses --workspace packages/cpt-ui
 
-
 check-licenses-python:
 	scripts/check_python_licenses.sh
 
@@ -64,6 +66,11 @@ aws-login:
 cfn-guard:
 	./scripts/run_cfn_guard.sh
 
+build-localsite:
+	npm run build --workspace packages/auth-demo
+
+run-auth:
+	npm run start --workspace packages/auth-demo
 react-dev:
 	npm run dev --workspace packages/cpt-ui
 
@@ -87,21 +94,74 @@ cdk-deploy: guard-stack_name
 		--require-approval $${REQUIRE_APPROVAL} \
 		--context stackName=$$stack_name \
 		--context VERSION_NUMBER=$$VERSION_NUMBER \
-		--context COMMIT_ID=$$COMMIT_ID 
+		--context COMMIT_ID=$$COMMIT_ID \
+		--context primaryOidcClientId=$$Auth0ClientID \
+		--context primaryOidClientSecret=$$Auth0ClientSecret \
+		--context primaryOidcIssuer=$$Auth0Issuer \
+		--context primaryOidcAuthorizeEndpoint=$$Auth0AuthorizeEndpoint \
+		--context primaryOidcTokenEndpoint=$$Auth0TokenEndpoint \
+		--context primaryOidcUserInfoEndpoint=$$Auth0UserInfoEndpoint \
+		--context primaryOidcjwksEndpoint=$$Auth0JWKSEndpoint \
+		--context epsDomain=$$epsDomain \
+		--context epsZoneId=$$epsZoneId 
 
-cdk-synth:
+cdk-synth-mock:
 	npx cdk synth \
 		--app "npx ts-node --prefer-ts-exts packages/cdk/bin/ClinicalPrescriptionTrackerApp.ts" \
 		--context stackName=cpt-ui \
 		--context VERSION_NUMBER=undefined \
-		--context COMMIT_ID=undefined  
+		--context COMMIT_ID=undefined \
+		--context primaryOidcClientId=$$Auth0ClientID \
+		--context primaryOidClientSecret=$$Auth0ClientSecret \
+		--context primaryOidcIssuer=$$Auth0Issuer \
+		--context primaryOidcAuthorizeEndpoint=$$Auth0AuthorizeEndpoint \
+		--context primaryOidcTokenEndpoint=$$Auth0TokenEndpoint \
+		--context primaryOidcUserInfoEndpoint=$$Auth0UserInfoEndpoint \
+		--context primaryOidcjwksEndpoint=$$Auth0JWKSEndpoint \
+		--context mockOidcClientId=$$Auth0ClientID \
+		--context mockOidClientSecret=$$Auth0ClientSecret \
+		--context mockOidcIssuer=$$Auth0Issuer \
+		--context mockOidcAuthorizeEndpoint=$$Auth0AuthorizeEndpoint \
+		--context mockOidcTokenEndpoint=$$Auth0TokenEndpoint \
+		--context mockOidcUserInfoEndpoint=$$Auth0UserInfoEndpoint \
+		--context mockOidcjwksEndpoint=$$Auth0JWKSEndpoint \
+		--context epsDomain=$$epsDomain \
+		--context epsZoneId=$$epsZoneId \
+		--context useMockOidc=true
+
+cdk-synth-no-mock:
+	npx cdk synth \
+		--app "npx ts-node --prefer-ts-exts packages/cdk/bin/ClinicalPrescriptionTrackerApp.ts" \
+		--context stackName=cpt-ui \
+		--context VERSION_NUMBER=undefined \
+		--context COMMIT_ID=undefined \
+		--context primaryOidcClientId=$$Auth0ClientID \
+		--context primaryOidClientSecret=$$Auth0ClientSecret \
+		--context primaryOidcIssuer=$$Auth0Issuer \
+		--context primaryOidcAuthorizeEndpoint=$$Auth0AuthorizeEndpoint \
+		--context primaryOidcTokenEndpoint=$$Auth0TokenEndpoint \
+		--context primaryOidcUserInfoEndpoint=$$Auth0UserInfoEndpoint \
+		--context primaryOidcjwksEndpoint=$$Auth0JWKSEndpoint \
+		--context epsDomain=$$epsDomain \
+		--context epsZoneId=$$epsZoneId
+
+cdk-synth: cdk-synth-no-mock cdk-synth-mock
 
 cdk-diff:
 	npx cdk diff \
 		--app "npx ts-node --prefer-ts-exts packages/cdk/bin/ClinicalPrescriptionTrackerApp.ts" \
 		--context stackName=$$stack_name \
 		--context VERSION_NUMBER=$$VERSION_NUMBER \
-		--context COMMIT_ID=$$COMMIT_ID 
+		--context COMMIT_ID=$$COMMIT_ID \
+		--context primaryOidcClientId=$$Auth0ClientID \
+		--context primaryOidClientSecret=$$Auth0ClientSecret \
+		--context primaryOidcIssuer=$$Auth0Issuer \
+		--context primaryOidcAuthorizeEndpoint=$$Auth0AuthorizeEndpoint \
+		--context primaryOidcTokenEndpoint=$$Auth0TokenEndpoint \
+		--context primaryOidcUserInfoEndpoint=$$Auth0UserInfoEndpoint \
+		--context primaryOidcjwksEndpoint=$$Auth0JWKSEndpoint \
+		--context epsDomain=$$epsDomain \
+		--context epsZoneId=$$epsZoneId 
 
 cdk-watch: guard-stack_name
 	REQUIRE_APPROVAL="$${REQUIRE_APPROVAL:-any-change}" && \
@@ -115,7 +175,23 @@ cdk-watch: guard-stack_name
 		--require-approval $${REQUIRE_APPROVAL} \
 		--context stackName=$$stack_name \
 		--context VERSION_NUMBER=$$VERSION_NUMBER \
-		--context COMMIT_ID=$$COMMIT_ID
+		--context COMMIT_ID=$$COMMIT_ID \
+		--context primaryOidcClientId=$$Cis2PTLClientID \
+		--context primaryOidClientSecret=$$Cis2PTLClientSecret \
+		--context primaryOidcIssuer=$$Cis2PTLIssuer \
+		--context primaryOidcAuthorizeEndpoint=$$Cis2PTLAuthorizeEndpoint \
+		--context primaryOidcTokenEndpoint=$$Cis2PTLTokenEndpoint \
+		--context primaryOidcUserInfoEndpoint=$$Auth0UserInfoEndpoint \
+		--context primaryOidcjwksEndpoint=$$Cis2PTLUserInfoEndpoint \
+		--context mockClientID=$$mockClientID \
+		--context mockClientSecret=$$mockClientSecret \
+		--context mockIssuer=$$mockIssuer \
+		--context mockAuthorizeEndpoint=$$mockAuthorizeEndpoint \
+		--context mockTokenEndpoint=$$mockTokenEndpoint \
+		--context mockUserInfoEndpoint=$$mockUserInfoEndpoint \
+		--context mockJWKSEndpoint=$$mockJWKSEndpoint \
+		--context epsDomain=$$epsDomain \
+		--context epsZoneId=$$epsZoneId 
 
 
 build-deployment-container-image:
