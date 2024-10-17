@@ -68,7 +68,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   const refreshToken = tokenResponse.data.refresh_token
 
   // verify and decode idToken
-  const decodedIdToken = await verifyJWTWrapper(idToken, oidcClientId, oidcIssuer)
+  const decodedIdToken = await verifyJWTWrapper(idToken, oidcIssuer, oidcClientId)
   logger.info("decoded idToken", {decodedIdToken})
 
   // call userinfo endpoint
