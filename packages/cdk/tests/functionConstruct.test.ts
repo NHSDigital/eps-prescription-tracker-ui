@@ -5,7 +5,7 @@ import * as iam from "aws-cdk-lib/aws-iam"
 import * as lambda from "aws-cdk-lib/aws-lambda"
 import {Stack} from "aws-cdk-lib"
 import {Template, Match} from "aws-cdk-lib/assertions"
-import {FunctionConstruct} from "../resources/functionConstruct"
+import {LambdaFunction} from "../resources/LambdaFunction"
 import {describe, test, beforeAll} from "@jest/globals"
 
 describe("functionConstruct works correctly", () => {
@@ -23,7 +23,7 @@ describe("functionConstruct works correctly", () => {
   beforeAll(() => {
     app = new cdk.App()
     stack = new cdk.Stack(app, "lambdaConstructStack")
-    const functionConstruct = new FunctionConstruct(stack, "dummyFunction", {
+    const functionConstruct = new LambdaFunction(stack, "dummyFunction", {
       stackName: "testStackName",
       lambdaName: "testLambda",
       additionalPolicies: [
@@ -142,7 +142,7 @@ describe("functionConstruct works correctly with environment variables", () => {
   beforeAll(() => {
     app = new cdk.App()
     stack = new cdk.Stack(app, "lambdaConstructStack")
-    new FunctionConstruct(stack, "dummyFunction", {
+    new LambdaFunction(stack, "dummyFunction", {
       stackName: "testStackName",
       lambdaName: "testLambda",
       additionalPolicies: [
@@ -185,7 +185,7 @@ describe("functionConstruct works correctly with additional policies", () => {
           resources: ["*"]
         })]
     })
-    new FunctionConstruct(stack, "dummyFunction", {
+    new LambdaFunction(stack, "dummyFunction", {
       stackName: "testStackName",
       lambdaName: "testLambda",
       additionalPolicies: [testPolicy],

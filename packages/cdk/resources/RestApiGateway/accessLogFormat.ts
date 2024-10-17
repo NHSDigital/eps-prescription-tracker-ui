@@ -1,5 +1,10 @@
 import {AccessLogFormat} from "aws-cdk-lib/aws-apigateway"
 
+/**
+ * API Gateway access log format
+
+ */
+
 export const accessLogFormat = () => {
   return AccessLogFormat.custom(JSON.stringify({
     requestTime: "$context.requestTime",

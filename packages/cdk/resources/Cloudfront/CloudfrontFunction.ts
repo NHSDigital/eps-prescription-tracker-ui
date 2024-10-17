@@ -28,6 +28,11 @@ export interface CloudfrontFunctionProps {
   readonly keyValues?: KeyValues
 }
 
+/**
+ * Cloudfront function with support for KVS and code replacement
+
+ */
+
 export class CloudfrontFunction extends Construct {
   public readonly function: Function
 
@@ -48,9 +53,9 @@ export class CloudfrontFunction extends Construct {
       {valueToReplace: "export", replacementValue: ""},
       ...functionStore ? [
         {valueToReplace: "KVS_ID_PLACEHOLDER", replacementValue: functionStore.keyValueStoreId}] : [],
-      ...props.codeReplacements ? props.codeReplacements : []
+      ...props.codeReplacements ?? []
     ]
-    const functionCode = readFileSync(resolve(import.meta.dirname, props.source), "utf8")
+    const functionCode = readFileSync(resolve(__dirname, props.source), "utf8")
     for (const codeReplacement of codeReplacements){
       functionCode.replace(codeReplacement.valueToReplace, codeReplacement.replacementValue)
     }

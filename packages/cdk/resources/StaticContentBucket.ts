@@ -10,6 +10,11 @@ import {
 } from "aws-cdk-lib/aws-s3"
 import {Construct} from "constructs"
 
+/**
+ * Resources for a static content S3 bucket
+
+ */
+
 export class StaticContentBucket extends Construct{
   public readonly bucket: Bucket
   public kmsKey: Key

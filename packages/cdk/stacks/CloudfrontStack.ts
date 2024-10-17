@@ -40,6 +40,11 @@ export interface CloudfrontStackProps extends StackProps {
   readonly cognitoRegion: string
 }
 
+/**
+ * Clinical Prescription Tracker UI Cloudfront
+
+ */
+
 export class CloudfrontStack extends Stack {
   public constructor(scope: App, id: string, props: CloudfrontStackProps) {
     super(scope, id, props)

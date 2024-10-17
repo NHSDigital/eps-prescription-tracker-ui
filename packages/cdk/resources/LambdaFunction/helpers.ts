@@ -1,10 +1,9 @@
 import {Duration} from "aws-cdk-lib"
-import * as lambda from "aws-cdk-lib/aws-lambda"
-import * as nodeLambda from "aws-cdk-lib/aws-lambda-nodejs"
+import {Architecture, Runtime} from "aws-cdk-lib/aws-lambda"
+import {NodejsFunctionProps} from "aws-cdk-lib/aws-lambda-nodejs"
+import {join, resolve} from "path"
 
-import * as path from "path"
-
-const baseDir = path.resolve(__dirname, "../../..")
+const baseDir = resolve(__dirname, "../../..")
 
 function getLambdaInvokeURL(region: string, lambdaNArn: string) {
   return `arn:aws:apigateway:${region}:lambda:path/2015-03-31/functions/${lambdaNArn}/invocations`
@@ -19,20 +18,20 @@ interface DefaultLambdaOptionsParams {
     readonly entryPoint: string;
   }
 
-function getDefaultLambdaOptions(options: DefaultLambdaOptionsParams): nodeLambda.NodejsFunctionProps {
-  const defaultOptions: nodeLambda.NodejsFunctionProps = {
+function getDefaultLambdaOptions(options: DefaultLambdaOptionsParams): NodejsFunctionProps {
+  const defaultOptions: NodejsFunctionProps = {
     functionName: options.functionName,
-    runtime: lambda.Runtime.NODEJS_20_X,
-    entry: path.join(baseDir, options.packageBasePath, options.entryPoint),
+    runtime: Runtime.NODEJS_20_X,
+    entry: join(baseDir, options.packageBasePath, options.entryPoint),
     projectRoot: baseDir,
     memorySize: 256,
     timeout: Duration.seconds(50),
-    architecture: lambda.Architecture.X86_64,
+    architecture: Architecture.X86_64,
     handler: "handler",
     bundling: {
       minify: true,
       sourceMap: true,
-      tsconfig: path.join(baseDir, options.packageBasePath, "tsconfig.json"),
+      tsconfig: join(baseDir, options.packageBasePath, "tsconfig.json"),
       target: "es2020"
     }
   }

@@ -15,8 +15,12 @@ export interface SharedResourcesStackProperties extends StackProps {
   readonly stackName: string
   readonly version: string
   readonly logRetentionInDays: number
-  readonly enableSplunk: boolean
 }
+
+/**
+ * Clinical Prescription Tracker UI Shared Resources
+
+ */
 
 export class SharedResourcesStack extends Stack {
   public readonly staticContentBucket: Bucket
@@ -33,8 +37,7 @@ export class SharedResourcesStack extends Stack {
     // API Gateway
     const apiGateway = new RestApiGateway(this, "ApiGateway", {
       stackName: props.stackName,
-      logRetentionInDays: props.logRetentionInDays,
-      enableSplunk: props.enableSplunk
+      logRetentionInDays: props.logRetentionInDays
     })
 
     // Outputs

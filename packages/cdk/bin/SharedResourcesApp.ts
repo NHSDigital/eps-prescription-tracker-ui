@@ -11,8 +11,7 @@ const app = new App()
 const stackName = app.node.tryGetContext("stackName")
 const version = app.node.tryGetContext("VERSION_NUMBER")
 const commit = app.node.tryGetContext("COMMIT_ID")
-const logRetentionInDays = app.node.tryGetContext("LogRetentionInDays")
-const enableSplunk = app.node.tryGetContext("enableSplunk")
+const logRetentionInDays = app.node.tryGetContext("logRetentionInDays")
 
 Aspects.of(app).add(new AwsSolutionsChecks({verbose: true}))
 
@@ -26,8 +25,7 @@ const SharedResources = new SharedResourcesStack(app, "SharedResourcesStack", {
   },
   stackName: `${stackName}-shared-resources`,
   version: version,
-  logRetentionInDays: logRetentionInDays,
-  enableSplunk: enableSplunk
+  logRetentionInDays: logRetentionInDays
 })
 
 new CloudfrontStack(app, "CloudfrontStack", {

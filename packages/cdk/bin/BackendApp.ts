@@ -1,8 +1,7 @@
 #!/usr/bin/env node
 import "source-map-support/register"
 import * as cdk from "aws-cdk-lib"
-import {ClinicalPrescriptionTrackerStack} from "../stacks/clinicalPrescriptionTrackerStack"
-import {USCertificatesStack} from "../stacks/USCertificatesStack"
+import {BackendStack} from "../stacks/BackendStack"
 import {Aspects, Tags} from "aws-cdk-lib"
 import {AwsSolutionsChecks} from "cdk-nag"
 
@@ -20,12 +19,7 @@ Tags.of(app).add("version", version)
 Tags.of(app).add("stackName", stackName)
 Tags.of(app).add("commit", commit)
 
-const USCertificates = new USCertificatesStack(app, "USCertificates", {
-  env: {region: "us-east-1"},
-  stackName: stackName
-})
-
-const ClinicalPrescriptionTracker = new ClinicalPrescriptionTrackerStack(app, "ClinicalPrescriptionTrackerStack", {
+const Backend = new BackendStack(app, "BackendStack", {
   env: {region: "eu-west-2"},
   stackName: stackName
 })
@@ -34,8 +28,7 @@ const ClinicalPrescriptionTracker = new ClinicalPrescriptionTrackerStack(app, "C
 app.synth()
 
 // add metadata to lambda so they dont get flagged as failing cfn-guard
-addCfnGuardMetadata(USCertificates, "Custom::CrossRegionExportWriterCustomResourceProvider")
-addCfnGuardMetadata(ClinicalPrescriptionTracker, "Custom::CrossRegionExportReaderCustomResourceProvider")
+addCfnGuardMetadata(Backend, "Custom::CrossRegionExportReaderCustomResourceProvider")
 
 // finally run synth again with force to include the added metadata
 app.synth({

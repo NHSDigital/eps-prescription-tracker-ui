@@ -1,4 +1,4 @@
-import {handler} from "../src/s3ContentUriRewrite"
+import {handler} from "../src/s3StaticContentUriRewrite"
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 describe("S3 Content URI Rewrite", () => {

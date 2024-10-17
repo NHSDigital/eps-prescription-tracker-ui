@@ -11,8 +11,12 @@ import {accessLogFormat} from "./RestApiGateway/accessLogFormat"
 export interface RestApiGatewayProps {
   stackName: string
   logRetentionInDays: number
-  enableSplunk: boolean
 }
+
+/**
+ * Resources for a Rest API Gateway
+
+ */
 
 export class RestApiGateway extends Construct {
   public readonly restApiGateway: RestApi
@@ -39,15 +43,13 @@ export class RestApiGateway extends Construct {
       removalPolicy: RemovalPolicy.DESTROY
     })
 
-    if (props.enableSplunk) {
-      new SubscriptionFilter(this, "ApiGatewayAccessLogsSplunkSubscriptionFilter", {
-        logGroup: apiGatewayAccessLogGroup,
-        filterPattern: FilterPattern.allTerms(),
-        destination: new KinesisDestination(splunkDeliveryStream, {
-          role: splunkSubscriptionFilterRole
-        })
+    new SubscriptionFilter(this, "ApiGatewayAccessLogsSplunkSubscriptionFilter", {
+      logGroup: apiGatewayAccessLogGroup,
+      filterPattern: FilterPattern.allTerms(),
+      destination: new KinesisDestination(splunkDeliveryStream, {
+        role: splunkSubscriptionFilterRole
       })
-    }
+    })
 
     const apiGateway = new RestApi(this, "ApiGateway", {
       restApiName: `${props.stackName}-apigw`,

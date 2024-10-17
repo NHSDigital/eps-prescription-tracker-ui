@@ -7,6 +7,11 @@ import {
 } from "aws-cdk-lib/aws-iam"
 import {Construct} from "constructs"
 
+/**
+ * Policy to restrict access to a single Cloudfront Distribution for S3 bucket KMS Keys
+
+ */
+
 export interface AllowCloudfrontKmsKeyAccessPolicyProps {
   cloudfrontDistributionId: string
 }

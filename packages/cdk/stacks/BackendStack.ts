@@ -1,11 +1,11 @@
 import * as cdk from "aws-cdk-lib"
 
 /**
- * Clinical Prescription Tracker UI
+ * Clinical Prescription Tracker UI Backend
 
  */
 
-export class ClinicalPrescriptionTrackerStack extends cdk.Stack {
+export class BackendStack extends cdk.Stack {
 
   public constructor(scope: cdk.App, id: string, props: cdk.StackProps ) {
     super(scope, id, props)
