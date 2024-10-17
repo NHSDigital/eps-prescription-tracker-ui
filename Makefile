@@ -80,12 +80,12 @@ react-start:
 react-lint:
 	npm run lint --workspace packages/cpt-ui
 
-cdk-deploy: guard-stack_name
+cdk-deploy: guard-stack_name guard-cdk_app_name
 	REQUIRE_APPROVAL="$${REQUIRE_APPROVAL:-any-change}" && \
 	VERSION_NUMBER="$${VERSION_NUMBER:-undefined}" && \
 	COMMIT_ID="$${COMMIT_ID:-undefined}" && \
 		npx cdk deploy \
-		--app "npx ts-node --prefer-ts-exts packages/cdk/bin/ClinicalPrescriptionTrackerApp.ts" \
+		--app "npx ts-node --prefer-ts-exts packages/cdk/bin/$$CDK_APP_NAME.ts" \
 		--all \
 		--ci true \
 		--require-approval $${REQUIRE_APPROVAL} \
@@ -93,26 +93,26 @@ cdk-deploy: guard-stack_name
 		--context VERSION_NUMBER=$$VERSION_NUMBER \
 		--context COMMIT_ID=$$COMMIT_ID 
 
-cdk-synth:
+cdk-synth: guard-cdk_app_name
 	npx cdk synth \
-		--app "npx ts-node --prefer-ts-exts packages/cdk/bin/ClinicalPrescriptionTrackerApp.ts" \
+		--app "npx ts-node --prefer-ts-exts packages/cdk/bin/$$CDK_APP_NAME.ts" \
 		--context stackName=cpt-ui \
 		--context VERSION_NUMBER=undefined \
 		--context COMMIT_ID=undefined  
 
-cdk-diff:
+cdk-diff: guard-cdk_app_name
 	npx cdk diff \
-		--app "npx ts-node --prefer-ts-exts packages/cdk/bin/ClinicalPrescriptionTrackerApp.ts" \
+		--app "npx ts-node --prefer-ts-exts packages/cdk/bin/$$CDK_APP_NAME.ts" \
 		--context stackName=$$stack_name \
 		--context VERSION_NUMBER=$$VERSION_NUMBER \
 		--context COMMIT_ID=$$COMMIT_ID 
 
-cdk-watch: guard-stack_name
+cdk-watch: guard-stack_name guard-cdk_app_name
 	REQUIRE_APPROVAL="$${REQUIRE_APPROVAL:-any-change}" && \
 	VERSION_NUMBER="$${VERSION_NUMBER:-undefined}" && \
 	COMMIT_ID="$${COMMIT_ID:-undefined}" && \
 		npx cdk deploy \
-		--app "npx ts-node --prefer-ts-exts packages/cdk/bin/ClinicalPrescriptionTrackerApp.ts" \
+		--app "npx ts-node --prefer-ts-exts packages/cdk/bin/$$CDK_APP_NAME.ts" \
 		--watch \
 		--all \
 		--ci true \
