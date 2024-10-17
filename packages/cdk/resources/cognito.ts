@@ -125,11 +125,14 @@ export class Cognito extends Construct {
     const cfnUserPoolIdentityProvider = primaryPoolIdentityProvider.node.defaultChild as cognito.CfnUserPoolIdentityProvider
     cfnUserPoolIdentityProvider.attributeMapping = {
       username: "sub",
-      email: "email",
-      "email_verified": "email_verified",
-      "phone_number": "phone_number",
-      "phone_number_verified": "phone_number_verified",
-      profile: "profile"
+      name: "name",
+      authentication_assurance_level: "authentication_assurance_level",
+      acr: "acr",
+      id_assurance_level: "id_assurance_level",
+      amr: "amr",
+      given_name: "given_name",
+      family_name: "family_name",
+      email: "email"
     }
     const userPoolWebClient = userPool.addClient("WebClient", {
       supportedIdentityProviders: supportedIdentityProviders,
