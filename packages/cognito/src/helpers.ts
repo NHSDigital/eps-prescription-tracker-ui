@@ -24,9 +24,14 @@ export function getJWKSKey(header: JwtHeader, callback: SigningKeyCallback) {
   })
 }
 
-export function verifyJWTWrapper(jwt: string): Promise<JwtPayload> {
+export function verifyJWTWrapper(jwt: string,
+  expectedIssuer: string,
+  expectedAudience: string): Promise<JwtPayload> {
   return new Promise((resolve, reject) => {
-    verify(jwt, getJWKSKey, function(err, decoded) {
+    verify(jwt, getJWKSKey, {
+      audience: expectedAudience,
+      issuer: expectedIssuer
+    }, function(err, decoded) {
       if (err) {
         reject(err)
       }

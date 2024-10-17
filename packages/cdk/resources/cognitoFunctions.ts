@@ -18,10 +18,14 @@ export interface CognitoFunctionsProps {
   readonly primaryOidcTokenEndpoint: string;
   readonly primaryOidcUserInfoEndpoint: string;
   readonly primaryOidcjwksEndpoint: string;
+  readonly primaryOidcClientId: string;
+  readonly primaryOidcIssuer: string;
   readonly useMockOidc: boolean
   readonly mockOidcTokenEndpoint?: string;
   readonly mockOidcUserInfoEndpoint?: string;
   readonly mockOidcjwksEndpoint?: string;
+  readonly mockOidcClientId: string;
+  readonly mockOidcIssuer: string;
   readonly tokenMappingTable: dynamodb.TableV2;
   readonly tokenMappingTableWritePolicy: iam.ManagedPolicy;
   readonly tokenMappingTableReadPolicy: iam.ManagedPolicy;
@@ -133,7 +137,9 @@ export class CognitoFunctions extends Construct {
           oidcjwksEndpoint: props.mockOidcjwksEndpoint,
           jwtPrivateKeyArn: mockJwtPrivateKey.secretArn,
           userInfoEndpoint: props.mockOidcUserInfoEndpoint,
-          useSignedJWT: "false"
+          useSignedJWT: "false",
+          oidcClientId: props.mockOidcClientId,
+          oidcIssuer: props.mockOidcIssuer
         }
       })
 
@@ -178,7 +184,9 @@ export class CognitoFunctions extends Construct {
         oidcjwksEndpoint: props.primaryOidcjwksEndpoint,
         jwtPrivateKeyArn: primaryJwtPrivateKey.secretArn,
         userInfoEndpoint: props.primaryOidcUserInfoEndpoint,
-        useSignedJWT: "true"
+        useSignedJWT: "true",
+        oidcClientId: props.primaryOidcClientId,
+        oidcIssuer: props.primaryOidcIssuer
       }
     })
 

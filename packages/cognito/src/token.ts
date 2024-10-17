@@ -20,6 +20,8 @@ const userInfoEndpoint = process.env["userInfoEndpoint"] as string
 const useSignedJWT = process.env["useSignedJWT"] as string
 const idpTokenPath = process.env["idpTokenPath"] as string
 const jwtPrivateKeyArn = process.env["jwtPrivateKeyArn"] as string
+const oidcClientId = process.env["oidcClientId"] as string
+const oidcIssuer = process.env["oidcIssuer"] as string
 
 const dynamoClient = new DynamoDBClient()
 const documentClient = DynamoDBDocumentClient.from(dynamoClient)
@@ -63,9 +65,10 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   const accessToken = tokenResponse.data.access_token
   const idToken = tokenResponse.data.id_token
   const expiresIn = tokenResponse.data.expires_in
+  const refreshToken = tokenResponse.data.refresh_token
 
   // verify and decode idToken
-  const decodedIdToken = await verifyJWTWrapper(idToken)
+  const decodedIdToken = await verifyJWTWrapper(idToken, oidcClientId, oidcIssuer)
   logger.info("decoded idToken", {decodedIdToken})
 
   // call userinfo endpoint
@@ -80,10 +83,11 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   const username = `${UserPoolIdentityProvider}_${decodedIdToken.sub}`
   const params = {
     Item: {
-      "Username": username,
+      "username": username,
       "accessToken": accessToken,
       "idToken": idToken,
       "expiresIn": expiresIn,
+      "refreshToken": refreshToken,
       "nhsid_nrbac_roles": userInfoResponse.data.nhsid_nrbac_roles
     },
     TableName: TokenMappingTableName
