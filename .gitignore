@@ -31,3 +31,4 @@ test/
 amplify_outputs.json
 .asdf
 cdk.out/
+.secrets

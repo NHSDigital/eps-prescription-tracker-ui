@@ -18,8 +18,11 @@
     "author": "NHS Digital",
     "license": "MIT",
     "workspaces": [
+        "packages/cloudfrontFunctions",
         "packages/cpt-ui",
-        "packages/cdk"
+        "packages/cdk",
+        "packages/statusLambda",
+        "packages/cognito"
     ],
     "devDependencies": {
         "@semantic-release/changelog": "^6.0.3",

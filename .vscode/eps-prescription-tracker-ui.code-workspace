@@ -11,6 +11,18 @@
       {
         "name": "packages/cdk",
         "path": "../packages/cdk"
+      },
+      {
+        "name": "packages/cloudfrontFunctions",
+        "path": "../packages/cloudfrontFunctions"
+      },
+      {
+        "name": "packages/statusLambda",
+        "path": "../packages/statusLambda"
+      },
+      {
+        "name": "packages/cognito",
+        "path": "../packages/cognito"
       }
     ],
     "settings": {
