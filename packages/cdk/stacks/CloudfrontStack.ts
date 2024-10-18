@@ -2,8 +2,7 @@ import {
   App,
   Environment,
   Stack,
-  StackProps,
-  Fn
+  StackProps
 } from "aws-cdk-lib"
 import {HostedZone} from "aws-cdk-lib/aws-route53"
 import {Certificate, CertificateValidation} from "aws-cdk-lib/aws-certificatemanager"
@@ -56,6 +55,7 @@ export class CloudfrontStack extends Stack {
     const epsHostedZoneId = this.node.tryGetContext("epsHostedZoneId")
     const staticBucketArn = this.node.tryGetContext("staticBucketARn")
     const staticContentBucketKmsKeyArn = this.node.tryGetContext("staticContentBucketKmsKeyArn")
+    const auditLoggingBucketImport = this.node.tryGetContext("auditLoggingBucket")
 
     const hostedZone = HostedZone.fromHostedZoneAttributes(this, "hostedZone", {
       hostedZoneId: epsHostedZoneId,
@@ -63,7 +63,7 @@ export class CloudfrontStack extends Stack {
     })
 
     const auditLoggingBucket = Bucket.fromBucketArn(
-      this, "AuditLoggingBucket", Fn.importValue("account-resources:AuditLoggingBucket"))
+      this, "AuditLoggingBucket", auditLoggingBucketImport)
 
     const staticContentBucket = Bucket.fromBucketArn(
       this, "staticContentBucket", staticBucketArn as string)

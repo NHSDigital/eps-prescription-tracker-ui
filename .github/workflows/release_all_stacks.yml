@@ -55,16 +55,19 @@ jobs:
         epsZoneId=$(aws cloudformation list-exports --output json | jq -r '.Exports[] | select(.Name == "eps-route53-resources:EPS-ZoneID") | .Value' )
         staticBucketARn=$(aws cloudformation list-exports --output json | jq -r '.Exports[] | select(.Name == "cpt-ui-shared-resources:StaticContentBucket:Arn") | .Value' )
         staticContentBucketKmsKeyArn=$(aws cloudformation list-exports --output json | jq -r '.Exports[] | select(.Name == "cpt-ui-shared-resources:staticContentBucketKmsKey:Arn") | .Value' )
+        auditLoggingBucket=$(aws cloudformation list-exports --output json | jq -r '.Exports[] | select(.Name == "account-resources:AuditLoggingBucket") | .Value' )
       JQ_VARIABLES: |
         --arg epsDomain "${epsDomain}" \
         --arg epsZoneId "${epsZoneId}" \
         --arg staticBucketARn "${staticBucketARn}" \
         --arg staticContentBucketKmsKeyArn "${staticContentBucketKmsKeyArn}" \
+        --arg auditLoggingBucket "${auditLoggingBucket}" \
       JQ_REPLACEMENTS: |
         "epsDomain": $epsDomain,
         "epsZoneId": $epsZoneId,
         "staticBucketARn": $staticBucketARn,
         "staticContentBucketKmsKeyArn": $staticContentBucketKmsKeyArn,
+        "auditLoggingBucket": $auditLoggingBucket,
     secrets:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}
