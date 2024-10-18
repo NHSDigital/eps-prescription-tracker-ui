@@ -104,7 +104,7 @@ jobs:
           --arg logRetentionInDays "${{ inputs.LOG_RETENTION_IN_DAYS }}" \
           ${{ inputs.JQ_VARIABLES }} \
           '.context += {
-            ${{ inputs.JQ_REPLACEMENTS }} \
+            ${{ inputs.JQ_REPLACEMENTS }}
             "stackName": $stackName, 
             "VERSION_NUMBER": $VERSION_NUMBER, 
             "COMMIT_ID": $COMMIT_ID,
