@@ -1,15 +1,11 @@
-import {
-  App,
-  Stack,
-  StackProps,
-  CfnOutput
-} from "aws-cdk-lib"
+import {App, Stack, StackProps} from "aws-cdk-lib"
 import {Key} from "aws-cdk-lib/aws-kms"
 import {Bucket} from "aws-cdk-lib/aws-s3"
 import {RestApi} from "aws-cdk-lib/aws-apigateway"
 import {UserPoolDomain} from "aws-cdk-lib/aws-cognito"
-import {RestApiGateway} from "../resources/RestApiGateway"
-import {StaticContentBucket} from "../resources/StaticContentBucket"
+import {Dynamodb} from "../resources/dynamodb"
+import {Cognito} from "../resources/cognito"
+import {nagSuppressions} from "../resources/nagSuppressions"
 
 export interface SharedResourcesStackProperties extends StackProps {
   readonly stackName: string
@@ -30,36 +26,61 @@ export class SharedResourcesStack extends Stack {
 
   public constructor(scope: App, id: string, props: SharedResourcesStackProperties) {
     super(scope, id, props)
+    const primaryOidcClientId = this.node.tryGetContext("primaryOidcClientId")
+    const primaryOidClientSecret = this.node.tryGetContext("primaryOidClientSecret")
+    const primaryOidcIssuer = this.node.tryGetContext("primaryOidcIssuer")
+    const primaryOidcAuthorizeEndpoint = this.node.tryGetContext("primaryOidcAuthorizeEndpoint")
+    const primaryOidcTokenEndpoint = this.node.tryGetContext("primaryOidcTokenEndpoint")
+    const primaryOidcUserInfoEndpoint = this.node.tryGetContext("primaryOidcUserInfoEndpoint")
+    const primaryOidcjwksEndpoint = this.node.tryGetContext("primaryOidcjwksEndpoint")
 
-    // S3 Static Content Bucket
-    const staticContentBucket = new StaticContentBucket(this, "StaticContentBucket")
+    const mockOidcClientId = this.node.tryGetContext("mockOidcClientId")
+    const mockOidClientSecret = this.node.tryGetContext("mockOidClientSecret")
+    const mockOidcIssuer = this.node.tryGetContext("mockOidcIssuer")
+    const mockOidcAuthorizeEndpoint = this.node.tryGetContext("mockOidcAuthorizeEndpoint")
+    const mockOidcTokenEndpoint = this.node.tryGetContext("mockOidcTokenEndpoint")
+    const mockOidcUserInfoEndpoint = this.node.tryGetContext("mockOidcUserInfoEndpoint")
+    const mockOidcjwksEndpoint = this.node.tryGetContext("mockOidcjwksEndpoint")
 
-    // API Gateway
-    const apiGateway = new RestApiGateway(this, "ApiGateway", {
-      stackName: props.stackName,
-      logRetentionInDays: props.logRetentionInDays
+    const useMockOidc = this.node.tryGetContext("useMockOidc")
+
+    const tables = new Dynamodb(this, "Tables", {
+      stackName: this.stackName,
+      account: this.account,
+      region: this.region
     })
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const cognito = new Cognito(this, "Cognito", {
+      stackName: this.stackName,
+      primaryOidcClientId: primaryOidcClientId!,
+      primaryOidClientSecret: primaryOidClientSecret!,
+      primaryOidcIssuer: primaryOidcIssuer!,
+      primaryOidcAuthorizeEndpoint: primaryOidcAuthorizeEndpoint!,
+      primaryOidcTokenEndpoint: primaryOidcTokenEndpoint!,
+      primaryOidcUserInfoEndpoint: primaryOidcUserInfoEndpoint!,
+      primaryOidcjwksEndpoint: primaryOidcjwksEndpoint!,
+      mockOidcClientId: mockOidcClientId!,
+      mockOidClientSecret: mockOidClientSecret!,
+      mockOidcIssuer: mockOidcIssuer!,
+      mockOidcAuthorizeEndpoint: mockOidcAuthorizeEndpoint!,
+      mockOidcTokenEndpoint: mockOidcTokenEndpoint!,
+      mockOidcUserInfoEndpoint: mockOidcUserInfoEndpoint!,
+      mockOidcjwksEndpoint: mockOidcjwksEndpoint!,
+      useMockOidc: useMockOidc,
+      tokenMappingTable: tables.tokenMappingTable,
+      //userPoolTlsCertificateArn: props.userPoolTLSCertificateArn,
+      region: this.region,
+      account: this.account,
+      tokenMappingTableWritePolicy: tables.tokenMappingTableWritePolicy,
+      tokenMappingTableReadPolicy: tables.tokenMappingTableReadPolicy,
+      useTokensMappingKMSKeyPolicy: tables.useTokensMappingKmsKeyPolicy
+    })
+    nagSuppressions(this, props.stackName)
 
     // Outputs
-    this.staticContentBucket = staticContentBucket.bucket
-    this.staticContentBucketKmsKey = staticContentBucket.kmsKey
-    this.apiGateway = apiGateway.restApiGateway
-    this.cognitoUserPoolDomain = {} as unknown as UserPoolDomain // placeholder
 
     // Exports
-    new CfnOutput(this, "StaticContentBucketArn", {
-      value: staticContentBucket.bucket.bucketArn,
-      exportName: `${props.stackName}:StaticContentBucket:Arn`
-    })
 
-    new CfnOutput(this, "ApiGatewayId", {
-      value: apiGateway.restApiGateway.restApiId,
-      exportName: `${props.stackName}:ApiGateway:Id`
-    })
-
-    new CfnOutput(this, "ApiGatewayRoleArn", {
-      value: apiGateway.restAPiGatewayRole.roleArn,
-      exportName: `${props.stackName}:ApiGateway:RoleArn`
-    })
   }
 }

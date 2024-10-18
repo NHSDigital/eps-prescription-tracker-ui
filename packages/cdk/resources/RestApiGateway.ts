@@ -1,6 +1,6 @@
 import {Fn, RemovalPolicy} from "aws-cdk-lib"
 import {EndpointType, LogGroupLogDestination, RestApi} from "aws-cdk-lib/aws-apigateway"
-import {Role, ServicePrincipal} from "aws-cdk-lib/aws-iam"
+import {Role, ServicePrincipal, IManagedPolicy} from "aws-cdk-lib/aws-iam"
 import {Stream} from "aws-cdk-lib/aws-kinesis"
 import {Key} from "aws-cdk-lib/aws-kms"
 import {FilterPattern, LogGroup, SubscriptionFilter} from "aws-cdk-lib/aws-logs"
@@ -9,8 +9,11 @@ import {Construct} from "constructs"
 import {accessLogFormat} from "./RestApiGateway/accessLogFormat"
 
 export interface RestApiGatewayProps {
-  stackName: string
-  logRetentionInDays: number
+  readonly additionalPolicies?: Array<IManagedPolicy>;
+  readonly apiName: string;
+  readonly logRetentionInDays: number;
+  readonly stackName: string;
+  readonly apigwName: string;
 }
 
 /**
@@ -52,7 +55,7 @@ export class RestApiGateway extends Construct {
     })
 
     const apiGateway = new RestApi(this, "ApiGateway", {
-      restApiName: `${props.stackName}-apigw`,
+      restApiName: props.apigwName,
       endpointConfiguration: {
         types: [EndpointType.REGIONAL]
       },
@@ -65,7 +68,7 @@ export class RestApiGateway extends Construct {
 
     const apiGatewayRole = new Role(this, "ApiGatewayRole", {
       assumedBy: new ServicePrincipal("apigateway.amazonaws.com"),
-      managedPolicies: []
+      managedPolicies: props.additionalPolicies ?? []
     })
 
     //Outputs
