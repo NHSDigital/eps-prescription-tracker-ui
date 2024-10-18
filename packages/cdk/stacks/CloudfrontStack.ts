@@ -74,7 +74,7 @@ export class CloudfrontStack extends Stack {
     )
     // Cert
     const cloudfrontCertificate = new Certificate(this, "CloudfrontCertificate", {
-      domainName: epsDomainName,
+      domainName: `cpt-ui.${epsDomainName}`,
       validation: CertificateValidation.fromDns(hostedZone)
     })
 
