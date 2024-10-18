@@ -96,7 +96,7 @@ export class CloudfrontStack extends Stack {
 
     // Cloudfront Functions
     const s3404UriRewriteFunction = new CloudfrontFunction(this, "S3404UriRewriteFunction", {
-      sourceFileName: "genericS3FixedObjectUriRewrite.js",
+      sourceFileName: "../../cloudfrontFunctions/src/genericS3FixedObjectUriRewrite.js",
       keyValues: [
         {
           key: "object",
@@ -106,11 +106,11 @@ export class CloudfrontStack extends Stack {
     })
 
     const s3404ModifyStatusCodeFunction = new CloudfrontFunction(this, "S3404ModifyStatusCodeFunction", {
-      sourceFileName: "s3404ModifyStatusCode.js"
+      sourceFileName: "../../cloudfrontFunctions/src/s3404ModifyStatusCode.js"
     })
 
     const s3StaticContentUriRewriteFunction = new CloudfrontFunction(this, "S3StaticContentUriRewriteFunction", {
-      sourceFileName: "s3StaticContentUriRewrite.js",
+      sourceFileName: "../../cloudfrontFunctions/src/s3StaticContentUriRewrite.js",
       keyValues: [
         {
           key: "version",
