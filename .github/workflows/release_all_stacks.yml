@@ -53,20 +53,20 @@ jobs:
       LOG_RETENTION_IN_DAYS: 30
       AWS_REGION: us-east-1
       GET_IMPORT_COMMANDS: |
-        epsDomain=$(aws cloudformation list-exports --region eu-west-2 --output json | jq -r '.Exports[] | select(.Name == "eps-route53-resources:EPS-domain") | .Value' )
-        epsZoneId=$(aws cloudformation list-exports --region eu-west-2 --output json | jq -r '.Exports[] | select(.Name == "eps-route53-resources:EPS-ZoneID") | .Value' )
+        epsDomainName=$(aws cloudformation list-exports --region eu-west-2 --output json | jq -r '.Exports[] | select(.Name == "eps-route53-resources:EPS-domain") | .Value' )
+        epsHostedZoneId=$(aws cloudformation list-exports --region eu-west-2 --output json | jq -r '.Exports[] | select(.Name == "eps-route53-resources:EPS-ZoneID") | .Value' )
         staticBucketARn=$(aws cloudformation list-exports --region eu-west-2 --output json | jq -r '.Exports[] | select(.Name == "cpt-ui-shared-resources:StaticContentBucket:Arn") | .Value' )
         staticContentBucketKmsKeyArn=$(aws cloudformation list-exports --region eu-west-2 --output json | jq -r '.Exports[] | select(.Name == "cpt-ui-shared-resources:staticContentBucketKmsKey:Arn") | .Value' )
         auditLoggingBucket=$(aws cloudformation list-exports --region eu-west-2 --output json | jq -r '.Exports[] | select(.Name == "account-resources:AuditLoggingBucket") | .Value' )
       JQ_VARIABLES: |
-        --arg epsDomain "${epsDomain}" \
-        --arg epsZoneId "${epsZoneId}" \
+        --arg epsDomainName "${epsDomainName}" \
+        --arg epsHostedZoneId "${epsHostedZoneId}" \
         --arg staticBucketARn "${staticBucketARn}" \
         --arg staticContentBucketKmsKeyArn "${staticContentBucketKmsKeyArn}" \
         --arg auditLoggingBucket "${auditLoggingBucket}" \
       JQ_REPLACEMENTS: |
-        "epsDomain": $epsDomain,
-        "epsZoneId": $epsZoneId,
+        "epsDomainName": $epsDomainName,
+        "epsHostedZoneId": $epsHostedZoneId,
         "staticBucketARn": $staticBucketARn,
         "staticContentBucketKmsKeyArn": $staticContentBucketKmsKeyArn,
         "auditLoggingBucket": $auditLoggingBucket,
