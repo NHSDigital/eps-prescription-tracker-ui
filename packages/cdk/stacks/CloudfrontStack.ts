@@ -7,27 +7,27 @@ import {
 } from "aws-cdk-lib"
 import {HostedZone} from "aws-cdk-lib/aws-route53"
 import {Certificate, CertificateValidation} from "aws-cdk-lib/aws-certificatemanager"
-import {HttpOrigin, RestApiOrigin, S3BucketOrigin} from "aws-cdk-lib/aws-cloudfront-origins"
+import {S3BucketOrigin} from "aws-cdk-lib/aws-cloudfront-origins"
 import {
   Distribution,
   FunctionEventType,
   ViewerProtocolPolicy,
   AllowedMethods,
   AccessLevel,
-  OriginRequestPolicy,
-  OriginRequestCookieBehavior,
-  OriginRequestHeaderBehavior,
   HttpVersion,
   SecurityPolicyProtocol,
   SSLMethod
 } from "aws-cdk-lib/aws-cloudfront"
 import {Bucket} from "aws-cdk-lib/aws-s3"
-import {CfnKey, Key} from "aws-cdk-lib/aws-kms"
-import {RestApiBase} from "aws-cdk-lib/aws-apigateway"
-import {UserPoolDomain} from "aws-cdk-lib/aws-cognito"
 
-import {AllowCloudfrontKmsKeyAccessPolicy} from "../policies/kms/AllowCloudfrontKmsKeyAccessPolicy"
 import {CloudfrontFunction} from "../resources/Cloudfront/CloudfrontFunction"
+import {
+  AccountRootPrincipal,
+  Effect,
+  PolicyStatement,
+  ServicePrincipal
+} from "aws-cdk-lib/aws-iam"
+import {Key} from "aws-cdk-lib/aws-kms"
 
 // For if cloudfront and s3 bucket are in different stacks:
 // import {
@@ -41,11 +41,8 @@ export interface CloudfrontStackProps extends StackProps {
   readonly env: Environment
   readonly stackName: string
   readonly version: string
-  readonly staticContentBucket: Bucket
-  staticContentBucketKmsKey: Key
-  readonly apiGateway: RestApiBase
-  readonly cognitoUserPoolDomain: UserPoolDomain,
-  readonly cognitoRegion: string
+  readonly staticBucketArn?: string
+  readonly staticContentBucketKmsKeyArn?: string
 }
 
 /**
@@ -56,6 +53,13 @@ export interface CloudfrontStackProps extends StackProps {
 export class CloudfrontStack extends Stack {
   public constructor(scope: App, id: string, props: CloudfrontStackProps) {
     super(scope, id, props)
+
+    props = {
+      ...props,
+      staticBucketArn: props.staticBucketArn ?? "arn:aws:s3:::ci-resources-artifactsbucket-8tfokumg8i3z",
+      // eslint-disable-next-line max-len
+      staticContentBucketKmsKeyArn: props.staticContentBucketKmsKeyArn ?? "arn:aws:kms:eu-west-2:591291862413:key/0020d899-dcd8-443e-a9e7-34f7cfa23abe"
+    }
 
     // Imports
     const epsHostedZoneId = Fn.importValue("eps-route53-resources:EPS-ZoneID")
@@ -69,6 +73,13 @@ export class CloudfrontStack extends Stack {
     const auditLoggingBucket = Bucket.fromBucketArn(
       this, "AuditLoggingBucket", Fn.importValue("account-resources:AuditLoggingBucket"))
 
+    const staticContentBucket = Bucket.fromBucketArn(
+      this, "staticContentBucket", props.staticBucketArn as string)
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const staticContentBucketKmsKey = Key.fromKeyArn(
+      this, "staticContentBucketKmsKey", props.staticContentBucketKmsKeyArn as string
+    )
     // Cert
     const cloudfrontCertificate = new Certificate(this, "CloudfrontCertificate", {
       domainName: epsDomainName,
@@ -82,32 +93,11 @@ export class CloudfrontStack extends Stack {
 
     // Origins
     const staticContentBucketOrigin = S3BucketOrigin.withOriginAccessControl(
-      props.staticContentBucket,
+      staticContentBucket,
       {
         originAccessLevels: [AccessLevel.READ]
       }
     )
-
-    const apiGatewayOrigin = new RestApiOrigin(props.apiGateway, {
-      customHeaders: {
-        "destination-apigw-id": props.apiGateway.restApiId // for later apigw waf stuff
-      }
-    })
-
-    const cognitoOrigin = new HttpOrigin(
-      `${props.cognitoUserPoolDomain.domainName}.auth.${props.cognitoRegion}.amazoncognito.com`)
-
-    // Origin Request Policies
-    // Allow all for now, may want to review these at a later stage
-    const apiGatewayRequestPolicy = new OriginRequestPolicy(this, "apiGatewayRequestPolicy", {
-      cookieBehavior: OriginRequestCookieBehavior.all(),
-      headerBehavior: OriginRequestHeaderBehavior.all()
-    })
-
-    const cognitoRequestPolicy = new OriginRequestPolicy(this, "cognitoRequestPolicy", {
-      cookieBehavior: OriginRequestCookieBehavior.all(),
-      headerBehavior: OriginRequestHeaderBehavior.all()
-    })
 
     // Cache Policies
     // todo - to follow in a later ticket
@@ -133,36 +123,6 @@ export class CloudfrontStack extends Stack {
         {
           key: "version",
           value: props.version
-        }
-      ]
-    })
-
-    const apiGatewayStripPathFunction = new CloudfrontFunction(this, "ApiGatewayStripPathFunction", {
-      sourceFileName: "genericStripPathUriRewrite.js",
-      keyValues: [
-        {
-          key: "path",
-          value: "/api"
-        }
-      ]
-    })
-
-    const cognitoStripPathFunction = new CloudfrontFunction(this, "CognitoStripPathFunction", {
-      sourceFileName: "genericStripPathUriRewrite.js",
-      keyValues: [
-        {
-          key: "path",
-          value: "/auth"
-        }
-      ]
-    })
-
-    const s3JwksUriRewriteFunction = new CloudfrontFunction(this, "s3JwksUriRewriteFunction", {
-      sourceFileName: "genericS3FixedObjectUriRewrite.js",
-      keyValues: [
-        {
-          key: "object",
-          value: "jwks.json"
         }
       ]
     })
@@ -205,41 +165,6 @@ export class CloudfrontStack extends Stack {
               eventType: FunctionEventType.VIEWER_REQUEST
             }
           ]
-        },
-        "/api/*": {
-          origin: apiGatewayOrigin,
-          allowedMethods: AllowedMethods.ALLOW_ALL,
-          viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-          originRequestPolicy: apiGatewayRequestPolicy,
-          functionAssociations: [
-            {
-              function: apiGatewayStripPathFunction.function,
-              eventType: FunctionEventType.VIEWER_REQUEST
-            }
-          ]
-        },
-        "/auth/*": {
-          origin: cognitoOrigin,
-          allowedMethods: AllowedMethods.ALLOW_ALL,
-          viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-          originRequestPolicy: cognitoRequestPolicy,
-          functionAssociations: [
-            {
-              function: cognitoStripPathFunction.function,
-              eventType: FunctionEventType.VIEWER_REQUEST
-            }
-          ]
-        },
-        "/jwks/": { // matches exactly <url>/jwks and will only serve the jwks json (via cf function)
-          origin: staticContentBucketOrigin,
-          allowedMethods: AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
-          viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-          functionAssociations: [
-            {
-              function: s3JwksUriRewriteFunction.function,
-              eventType: FunctionEventType.VIEWER_REQUEST
-            }
-          ]
         }
       }
     })
@@ -248,26 +173,26 @@ export class CloudfrontStack extends Stack {
     // to match all Distribution IDs in order to avoid a circular dependency between the KMS key,Bucket, and
     // Distribution during the initial deployment. This updates the policy to restrict it to a specific distribution.
     // (This may need to only be added to the stack after initial deployment)
-    const contentBucketKmsKey = (props.staticContentBucketKmsKey.node.defaultChild as CfnKey)
-    contentBucketKmsKey.keyPolicy = new AllowCloudfrontKmsKeyAccessPolicy(
-      this, "StaticContentBucketAllowCloudfrontKmsKeyAccessPolicy", {
-        cloudfrontDistributionId: cloudfrontDistribution.distributionId
-      }).policyJson
+    //const contentBucketKmsKey = (staticContentBucketKmsKey.node.defaultChild as CfnKey)
+    //contentBucketKmsKey.keyPolicy = new AllowCloudfrontKmsKeyAccessPolicy(
+    //  this, "StaticContentBucketAllowCloudfrontKmsKeyAccessPolicy", {
+    //    cloudfrontDistributionId: cloudfrontDistribution.distributionId
+    //  }).policyJson
 
     /* eslint-disable */
     // For if cloudfront and s3 bucket are in different stacks:
-    // const OACPolicy = new PolicyStatement({
-    //   effect: Effect.ALLOW,
-    //   principals: [new ServicePrincipal("cloudfront.amazonaws.com")],
-    //   actions: ["s3:GetObject"],
-    //   resources: [staticContentBucket.arnForObjects("*")],
-    //   conditions: {
-    //     StringEquals: {
-    //       "AWS:SourceArn": `arn:aws:cloudfront::${new AccountRootPrincipal().accountId}:distribution/${cloudfrontDistribution.distributionId}` /* eslint-disable-line max-len */
-    //     }
-    //   }
-    // })
-    // staticContentBucket.addToResourcePolicy(OACPolicy)
+    const OACPolicy = new PolicyStatement({
+       effect: Effect.ALLOW,
+       principals: [new ServicePrincipal("cloudfront.amazonaws.com")],
+       actions: ["s3:GetObject"],
+       resources: [staticContentBucket.arnForObjects("*")],
+       conditions: {
+         StringEquals: {
+           "AWS:SourceArn": `arn:aws:cloudfront::${new AccountRootPrincipal().accountId}:distribution/${cloudfrontDistribution.distributionId}`  
+         }
+       }
+     })
+    staticContentBucket.addToResourcePolicy(OACPolicy)
     /* eslint-enable */
   }
 }

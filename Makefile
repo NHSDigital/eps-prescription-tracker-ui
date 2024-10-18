@@ -95,9 +95,19 @@ cdk-deploy: guard-stack_name guard-CDK_APP_NAME
 
 cdk-synth: cdk-synth-backend cdk-synth-shared-resources
 
-cdk-synth-shared-resources:
+cdk-synth-shared-resources: cdk-synth-shared-resources-uk cdk-synth-shared-resources-us
+
+cdk-synth-shared-resources-uk:
 	npx cdk synth \
-		--app "npx ts-node --prefer-ts-exts packages/cdk/bin/SharedResourcesApp.ts" \
+		--app "npx ts-node --prefer-ts-exts packages/cdk/bin/SharedResourcesApp_uk.ts" \
+		--context stackName=cpt-ui \
+		--context VERSION_NUMBER=undefined \
+		--context COMMIT_ID=undefined \
+		--context logRetentionInDays=30
+
+cdk-synth-shared-resources-us:
+	npx cdk synth \
+		--app "npx ts-node --prefer-ts-exts packages/cdk/bin/SharedResourcesApp_us.ts" \
 		--context stackName=cpt-ui \
 		--context VERSION_NUMBER=undefined \
 		--context COMMIT_ID=undefined \

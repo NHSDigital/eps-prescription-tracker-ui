@@ -2,9 +2,7 @@
 import "source-map-support/register"
 import {App, Aspects, Tags} from "aws-cdk-lib"
 import {AwsSolutionsChecks} from "cdk-nag"
-import {CloudfrontStack} from "../stacks/CloudfrontStack"
 import {SharedResourcesStack} from "../stacks/SharedResourcesStack"
-import {RestApiBase} from "aws-cdk-lib/aws-apigateway"
 
 const app = new App()
 
@@ -19,7 +17,7 @@ Tags.of(app).add("version", version)
 Tags.of(app).add("stackName", stackName)
 Tags.of(app).add("commit", commit)
 
-const SharedResources = new SharedResourcesStack(app, "SharedResourcesStack", {
+new SharedResourcesStack(app, "SharedResourcesStack", {
   env: {
     region: "eu-west-2"
   },
@@ -27,18 +25,4 @@ const SharedResources = new SharedResourcesStack(app, "SharedResourcesStack", {
   stackName: `${stackName}-shared-resources`,
   version: version,
   logRetentionInDays: logRetentionInDays
-})
-
-new CloudfrontStack(app, "CloudfrontStack", {
-  env: {
-    region: "us-east-1"
-  },
-  crossRegionReferences: true,
-  stackName: `${stackName}-shared-cloudfront`,
-  version: version,
-  staticContentBucket: SharedResources.staticContentBucket,
-  staticContentBucketKmsKey: SharedResources.staticContentBucketKmsKey,
-  apiGateway: SharedResources.apiGateway as RestApiBase,
-  cognitoUserPoolDomain: SharedResources.cognitoUserPoolDomain,
-  cognitoRegion: SharedResources.region
 })
