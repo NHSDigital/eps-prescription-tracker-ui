@@ -27,6 +27,7 @@ import {
   ServicePrincipal
 } from "aws-cdk-lib/aws-iam"
 import {Key} from "aws-cdk-lib/aws-kms"
+import {nagSuppressions} from "../resources/nagSuppressions"
 
 // For if cloudfront and s3 bucket are in different stacks:
 // import {
@@ -189,5 +190,6 @@ export class CloudfrontStack extends Stack {
      })
     staticContentBucket.addToResourcePolicy(OACPolicy)
     /* eslint-enable */
+    nagSuppressions(this, props.stackName)
   }
 }

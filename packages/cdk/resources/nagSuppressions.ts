@@ -16,6 +16,14 @@ function nagSuppressions(stack: cdk.Stack, deployedStackName: string | undefined
         reason: "Suppress error for wildcard"
       }
     ])
+  safeAddNagSuppression(
+    stack,
+    "/CloudfrontStack/CloudfrontDistribution/Resource", [
+      {
+        id: "AwsSolutions-CFR3",
+        reason: "no logging for now"
+      }
+    ])
 
 }
 function safeAddNagSuppression(stack: cdk.Stack, path: string, suppressions: Array<NagPackSuppression>) {
