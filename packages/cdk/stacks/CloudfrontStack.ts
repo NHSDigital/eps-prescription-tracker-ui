@@ -121,7 +121,7 @@ export class CloudfrontStack extends Stack {
 
     // Distribution
     const cloudfrontDistribution = new Distribution(this, "CloudfrontDistribution", {
-      domainNames: [epsDomainName],
+      domainNames: [`cpt-ui.${epsDomainName}`],
       certificate: cloudfrontCertificate,
       httpVersion: HttpVersion.HTTP2_AND_3,
       minimumProtocolVersion: SecurityPolicyProtocol.TLS_V1_2_2018, // set to 2018 but we may want 2019 or 2021
