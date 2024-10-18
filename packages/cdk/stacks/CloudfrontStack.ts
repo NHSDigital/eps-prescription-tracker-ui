@@ -41,8 +41,6 @@ export interface CloudfrontStackProps extends StackProps {
   readonly env: Environment
   readonly stackName: string
   readonly version: string
-  readonly staticBucketArn?: string
-  readonly staticContentBucketKmsKeyArn?: string
 }
 
 /**
@@ -54,16 +52,10 @@ export class CloudfrontStack extends Stack {
   public constructor(scope: App, id: string, props: CloudfrontStackProps) {
     super(scope, id, props)
 
-    props = {
-      ...props,
-      staticBucketArn: props.staticBucketArn ?? "arn:aws:s3:::ci-resources-artifactsbucket-8tfokumg8i3z",
-      // eslint-disable-next-line max-len
-      staticContentBucketKmsKeyArn: props.staticContentBucketKmsKeyArn ?? "arn:aws:kms:eu-west-2:591291862413:key/0020d899-dcd8-443e-a9e7-34f7cfa23abe"
-    }
-
-    // Imports
-    const epsHostedZoneId = Fn.importValue("eps-route53-resources:EPS-ZoneID")
-    const epsDomainName = Fn.importValue("eps-route53-resources:EPS-domain")
+    const epsDomainName = this.node.tryGetContext("epsDomainName")
+    const epsHostedZoneId = this.node.tryGetContext("epsHostedZoneId")
+    const staticBucketArn = this.node.tryGetContext("staticBucketARn")
+    const staticContentBucketKmsKeyArn = this.node.tryGetContext("staticContentBucketKmsKeyArn")
 
     const hostedZone = HostedZone.fromHostedZoneAttributes(this, "hostedZone", {
       hostedZoneId: epsHostedZoneId,
@@ -74,11 +66,11 @@ export class CloudfrontStack extends Stack {
       this, "AuditLoggingBucket", Fn.importValue("account-resources:AuditLoggingBucket"))
 
     const staticContentBucket = Bucket.fromBucketArn(
-      this, "staticContentBucket", props.staticBucketArn as string)
+      this, "staticContentBucket", staticBucketArn as string)
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const staticContentBucketKmsKey = Key.fromKeyArn(
-      this, "staticContentBucketKmsKey", props.staticContentBucketKmsKeyArn as string
+      this, "staticContentBucketKmsKey", staticContentBucketKmsKeyArn as string
     )
     // Cert
     const cloudfrontCertificate = new Certificate(this, "CloudfrontCertificate", {

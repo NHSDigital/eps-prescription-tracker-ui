@@ -43,6 +43,10 @@ export class SharedResourcesStack extends Stack {
       value: staticContentBucket.bucket.bucketArn,
       exportName: `${props.stackName}:StaticContentBucket:Arn`
     })
+    new CfnOutput(this, "staticContentBucketKmsKey", {
+      value: staticContentBucket.kmsKey.keyArn,
+      exportName: `${props.stackName}:staticContentBucketKmsKey:Arn`
+    })
     nagSuppressions(this, props.stackName)
   }
 }

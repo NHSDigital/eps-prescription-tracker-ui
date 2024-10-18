@@ -20,7 +20,7 @@ on:
         type: boolean
 
 jobs:
-  release_shared_resources:
+  release_shared_resources_uk:
     if: ${{ inputs.DEPLOY_SHARED_RESOURCES == true }}
     uses: ./.github/workflows/cdk_release_code.yml
     with:
@@ -28,15 +28,44 @@ jobs:
       TARGET_ENVIRONMENT: ${{ inputs.TARGET_ENVIRONMENT }}
       VERSION_NUMBER: ${{ inputs.VERSION_NUMBER }}
       COMMIT_ID: ${{ inputs.COMMIT_ID }}
-      CDK_APP_NAME: SharedResourcesApp
+      CDK_APP_NAME: SharedResourcesApp_uk
       LOG_RETENTION_IN_DAYS: 30
+    secrets:
+      CDK_PULL_IMAGE_ROLE: ${{ secrets.DEV_CDK_PULL_IMAGE_ROLE }}
+      CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_DEPLOY_ROLE }}
+  
+  release_shared_resources_us:
+    if: ${{ inputs.DEPLOY_SHARED_RESOURCES == true }}
+    uses: ./.github/workflows/cdk_release_code.yml
+    with:
+      STACK_NAME: cpt-ui
+      TARGET_ENVIRONMENT: ${{ inputs.TARGET_ENVIRONMENT }}
+      VERSION_NUMBER: ${{ inputs.VERSION_NUMBER }}
+      COMMIT_ID: ${{ inputs.COMMIT_ID }}
+      CDK_APP_NAME: SharedResourcesApp_us
+      LOG_RETENTION_IN_DAYS: 30
+      GET_IMPORT_COMMANDS: |
+        epsDomain=$(aws cloudformation list-exports --output json | jq -r '.Exports[] | select(.Name == "eps-route53-resources:EPS-domain") | .Value' )
+        epsZoneId=$(aws cloudformation list-exports --output json | jq -r '.Exports[] | select(.Name == "eps-route53-resources:EPS-ZoneID") | .Value' )
+        staticBucketARn=$(aws cloudformation list-exports --output json | jq -r '.Exports[] | select(.Name == "cpt-ui-shared-resources:StaticContentBucket:Arn") | .Value' )
+        staticContentBucketKmsKeyArn=$(aws cloudformation list-exports --output json | jq -r '.Exports[] | select(.Name == "cpt-ui-shared-resources:staticContentBucketKmsKey:Arn") | .Value' )
+      JQ_VARIABLES: |
+        --arg epsDomain "${epsDomain}" \
+        --arg epsZoneId "${epsZoneId}" \
+        --arg staticBucketARn "${staticBucketARn}" \
+        --arg staticContentBucketKmsKeyArn "${staticContentBucketKmsKeyArn}" \
+      JQ_REPLACEMENTS: |
+        "epsDomain": $epsDomain,
+        "epsZoneId": $epsZoneId,
+        "staticBucketARn": $staticBucketARn,
+        "staticContentBucketKmsKeyArn": $staticContentBucketKmsKeyArn,
     secrets:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.DEV_CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_DEPLOY_ROLE }}
   
   release_backend:
     uses: ./.github/workflows/cdk_release_code.yml
-    needs: [release_shared_resources]
+    needs: [release_shared_resources_uk, release_shared_resources_us]
     if: ${{ always() && !failure() && !cancelled() }}
     with:
       STACK_NAME: ${{ inputs.BACKEND_STACK_NAME }}

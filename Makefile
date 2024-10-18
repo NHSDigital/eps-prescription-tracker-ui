@@ -100,26 +100,17 @@ cdk-synth-shared-resources: cdk-synth-shared-resources-uk cdk-synth-shared-resou
 cdk-synth-shared-resources-uk:
 	npx cdk synth \
 		--app "npx ts-node --prefer-ts-exts packages/cdk/bin/SharedResourcesApp_uk.ts" \
-		--context stackName=cpt-ui \
-		--context VERSION_NUMBER=undefined \
-		--context COMMIT_ID=undefined \
-		--context logRetentionInDays=30
+		--context stackName=cpt-ui
 
 cdk-synth-shared-resources-us:
 	npx cdk synth \
 		--app "npx ts-node --prefer-ts-exts packages/cdk/bin/SharedResourcesApp_us.ts" \
-		--context stackName=cpt-ui \
-		--context VERSION_NUMBER=undefined \
-		--context COMMIT_ID=undefined \
-		--context logRetentionInDays=30
+		--context stackName=cpt-ui 
 
 cdk-synth-backend:
 	npx cdk synth \
 		--app "npx ts-node --prefer-ts-exts packages/cdk/bin/BackendApp.ts" \
-		--context stackName=cpt-ui-backend \
-		--context VERSION_NUMBER=undefined \
-		--context COMMIT_ID=undefined \
-		--context logRetentionInDays=30
+		--context stackName=cpt-ui-backend
 
 cdk-diff: guard-cdk_app_name
 	npx cdk diff \
