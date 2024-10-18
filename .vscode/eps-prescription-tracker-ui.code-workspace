@@ -11,6 +11,10 @@
       {
         "name": "packages/cdk",
         "path": "../packages/cdk"
+      },
+      {
+        "name": "packages/cloudfrontFunctions",
+        "path": "../packages/cloudfrontFunctions"
       }
     ],
     "settings": {

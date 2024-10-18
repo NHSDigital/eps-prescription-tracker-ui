@@ -43,7 +43,9 @@ export class CloudfrontFunction extends Construct {
     let functionStore: IKeyValueStore | undefined = undefined
     if (props.keyValues){
       functionStore = new KeyValueStore(this, "FunctionsStore", {
-        source: ImportSource.fromInline(JSON.stringify(props.keyValues))
+        source: ImportSource.fromInline(JSON.stringify({
+          data: props.keyValues
+        }))
       })
     }
 
@@ -57,6 +59,9 @@ export class CloudfrontFunction extends Construct {
     ]
     const functionCode = readFileSync(
       resolve(__dirname, `../../../cloudfrontFunctions/src/${props.sourceFileName}`), "utf8")
+    if (functionCode === "") {
+      throw new Error("Function code is empty")
+    }
     for (const codeReplacement of codeReplacements){
       functionCode.replace(codeReplacement.valueToReplace, codeReplacement.replacementValue)
     }
