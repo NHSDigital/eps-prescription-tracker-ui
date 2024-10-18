@@ -30,6 +30,9 @@ on:
       JQ_REPLACEMENTS:
         required: false
         type: string
+      AWS_REGION:
+        required: true
+        type: string
     secrets:
       CLOUD_FORMATION_DEPLOY_ROLE:
         required: true
@@ -119,7 +122,7 @@ jobs:
           -e AWS_ACCESS_KEY_ID=${{ steps.connect-aws.outputs.aws-access-key-id }} \
           -e AWS_SECRET_ACCESS_KEY=${{ steps.connect-aws.outputs.aws-secret-access-key }} \
           -e AWS_SESSION_TOKEN=${{ steps.connect-aws.outputs.aws-session-token }} \
-          -e AWS_REGION="eu-west-2" \
+          -e AWS_REGION="${{ inputs.AWS_REGION }}" \
           -e SHOW_DIFF="true" \
           -e DEPLOY_CODE="false" \
           -e CDK_APP_PATH="packages/cdk/bin/${{ inputs.CDK_APP_NAME }}.ts" \
@@ -133,7 +136,7 @@ jobs:
           -e AWS_ACCESS_KEY_ID=${{ steps.connect-aws.outputs.aws-access-key-id }} \
           -e AWS_SECRET_ACCESS_KEY=${{ steps.connect-aws.outputs.aws-secret-access-key }} \
           -e AWS_SESSION_TOKEN=${{ steps.connect-aws.outputs.aws-session-token }} \
-          -e AWS_REGION="eu-west-2" \
+          -e AWS_REGION="${{ inputs.AWS_REGION }}" \
           -e SHOW_DIFF="false" \
           -e DEPLOY_CODE="true" \
           -e CDK_APP_PATH="packages/cdk/bin/${{ inputs.CDK_APP_NAME }}.ts" \
