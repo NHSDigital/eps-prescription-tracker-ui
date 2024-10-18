@@ -48,7 +48,7 @@ export class StaticContentBucket extends Construct{
       serverAccessLogsBucket: auditLoggingBucket,
       serverAccessLogsPrefix: "/static-content",
       removalPolicy: RemovalPolicy.DESTROY,
-      autoDeleteObjects: true // forces a deletion even if bucket is not empty
+      autoDeleteObjects: false // forces a deletion even if bucket is not empty
     })
 
     const cfnBucket = bucket.node.defaultChild as CfnBucket
