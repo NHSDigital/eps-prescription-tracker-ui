@@ -55,15 +55,15 @@ export class CloudfrontStack extends Stack {
     const epsHostedZoneId = this.node.tryGetContext("epsHostedZoneId")
     const staticBucketArn = this.node.tryGetContext("staticBucketARn")
     const staticContentBucketKmsKeyArn = this.node.tryGetContext("staticContentBucketKmsKeyArn")
-    const auditLoggingBucketImport = this.node.tryGetContext("auditLoggingBucket")
+    //const auditLoggingBucketImport = this.node.tryGetContext("auditLoggingBucket")
 
     const hostedZone = HostedZone.fromHostedZoneAttributes(this, "hostedZone", {
       hostedZoneId: epsHostedZoneId,
       zoneName: epsDomainName
     })
 
-    const auditLoggingBucket = Bucket.fromBucketArn(
-      this, "AuditLoggingBucket", auditLoggingBucketImport)
+    //const auditLoggingBucket = Bucket.fromBucketArn(
+    // this, "AuditLoggingBucket", auditLoggingBucketImport)
 
     const staticContentBucket = Bucket.fromBucketArn(
       this, "staticContentBucket", staticBucketArn as string)
@@ -130,10 +130,10 @@ export class CloudfrontStack extends Stack {
       minimumProtocolVersion: SecurityPolicyProtocol.TLS_V1_2_2018, // set to 2018 but we may want 2019 or 2021
       sslSupportMethod: SSLMethod.SNI,
       publishAdditionalMetrics: true,
-      enableLogging: true,
-      logBucket: auditLoggingBucket,
-      logFilePrefix: "/cloudfront",
-      logIncludesCookies: true, // may actually want to be false, don't know if it includes names of cookies or contents
+      enableLogging: false, // may want to enable this
+      //logBucket: auditLoggingBucket,
+      //logFilePrefix: "cloudfront",
+      //logIncludesCookies: true, may actually want to be false, don't know if it includes names of cookies or contents
       defaultBehavior: {
         origin: staticContentBucketOrigin,
         allowedMethods: AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
