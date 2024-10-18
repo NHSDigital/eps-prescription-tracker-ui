@@ -18,7 +18,11 @@ on:
       DEPLOY_SHARED_RESOURCES:
         required: true
         type: boolean
-
+    secrets:
+      CDK_PULL_IMAGE_ROLE:
+        required: true
+      CLOUD_FORMATION_DEPLOY_ROLE:
+        required: true
 jobs:
   release_shared_resources:
     if: ${{ inputs.DEPLOY_SHARED_RESOURCES == true }}
@@ -31,8 +35,8 @@ jobs:
       CDK_APP_NAME: SharedResourcesApp
       LOG_RETENTION_IN_DAYS: 30
     secrets:
-      CDK_PULL_IMAGE_ROLE: ${{ secrets.DEV_CDK_PULL_IMAGE_ROLE }}
-      CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_DEPLOY_ROLE }}
+      CDK_PULL_IMAGE_ROLE: ${{ secrets.CDK_PULL_IMAGE_ROLE }}
+      CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}
   
   release_backend:
     uses: ./.github/workflows/cdk_release_code.yml
@@ -46,5 +50,5 @@ jobs:
       CDK_APP_NAME: BackendApp
       LOG_RETENTION_IN_DAYS: 30
     secrets:
-      CDK_PULL_IMAGE_ROLE: ${{ secrets.DEV_CDK_PULL_IMAGE_ROLE }}
-      CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_DEPLOY_ROLE }}
+      CDK_PULL_IMAGE_ROLE: ${{ secrets.CDK_PULL_IMAGE_ROLE }}
+      CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}
