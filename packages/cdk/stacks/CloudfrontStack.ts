@@ -72,9 +72,12 @@ export class CloudfrontStack extends Stack {
     const staticContentBucketKmsKey = Key.fromKeyArn(
       this, "staticContentBucketKmsKey", staticContentBucketKmsKeyArn as string
     )
+
+    const targetDomainName = `cf.cpt-ui.${epsDomainName}`
     // Cert
+
     const cloudfrontCertificate = new Certificate(this, "CloudfrontCertificate", {
-      domainName: `cpt-ui.${epsDomainName}`,
+      domainName: targetDomainName,
       validation: CertificateValidation.fromDns(hostedZone)
     })
 
@@ -121,7 +124,7 @@ export class CloudfrontStack extends Stack {
 
     // Distribution
     const cloudfrontDistribution = new Distribution(this, "CloudfrontDistribution", {
-      domainNames: [`cpt-ui.${epsDomainName}`],
+      domainNames: [targetDomainName],
       certificate: cloudfrontCertificate,
       httpVersion: HttpVersion.HTTP2_AND_3,
       minimumProtocolVersion: SecurityPolicyProtocol.TLS_V1_2_2018, // set to 2018 but we may want 2019 or 2021
