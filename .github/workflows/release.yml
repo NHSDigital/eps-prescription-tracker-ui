@@ -118,79 +118,60 @@ jobs:
 
   release_dev:
     needs: [tag_release, package_code, get_commit_id]
-    uses: ./.github/workflows/cdk_release_code.yml
+    uses: ./.github/workflows/release_all_stacks.yml
     with:
-      STACK_NAME: cpt-ui
+      BACKEND_STACK_NAME: cpt-ui-backend
       TARGET_ENVIRONMENT: dev
       VERSION_NUMBER: ${{needs.tag_release.outputs.version_tag}}
       COMMIT_ID: ${{needs.get_commit_id.outputs.commit_id}}
+      DEPLOY_SHARED_RESOURCES: true
+  
+  create_release_notes:
+    needs: [tag_release, package_code, get_commit_id, release_dev]
+    uses: ./.github/workflows/create_release_notes.yml
+    with:
+      VERSION_NUMBER: ${{needs.tag_release.outputs.version_tag}}
       CREATE_INT_RELEASE_NOTES: true
+      CREATE_INT_RC_RELEASE_NOTES: false
       CREATE_PROD_RELEASE_NOTES: true
-    secrets:
-      CDK_PULL_IMAGE_ROLE: ${{ secrets.DEV_CDK_PULL_IMAGE_ROLE }}
-      CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_DEPLOY_ROLE }}
-      DEV_CLOUD_FORMATION_CHECK_VERSION_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_CHECK_VERSION_ROLE }}
-      INT_CLOUD_FORMATION_CHECK_VERSION_ROLE: ${{ secrets.INT_CLOUD_FORMATION_CHECK_VERSION_ROLE }}
-      PROD_CLOUD_FORMATION_CHECK_VERSION_ROLE: ${{ secrets.PROD_CLOUD_FORMATION_CHECK_VERSION_ROLE }}
-      DEV_CLOUD_FORMATION_EXECUTE_LAMBDA_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_EXECUTE_LAMBDA_ROLE }}
+      MARK_JIRA_RELEASED: false
 
   release_ref:
-    needs: [tag_release, release_dev, package_code, get_commit_id]
-    uses: ./.github/workflows/cdk_release_code.yml
+    needs: [tag_release, package_code, get_commit_id]
+    uses: ./.github/workflows/release_all_stacks.yml
     with:
-      STACK_NAME: cpt-ui
+      BACKEND_STACK_NAME: cpt-ui-backend
       TARGET_ENVIRONMENT: ref
       VERSION_NUMBER: ${{needs.tag_release.outputs.version_tag}}
       COMMIT_ID: ${{needs.get_commit_id.outputs.commit_id}}
-    secrets:
-      CDK_PULL_IMAGE_ROLE: ${{ secrets.DEV_CDK_PULL_IMAGE_ROLE }}
-      CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.REF_CLOUD_FORMATION_DEPLOY_ROLE }}
+      DEPLOY_SHARED_RESOURCES: true
 
   release_qa:
-    needs: [tag_release, release_dev, package_code, get_commit_id]
-    uses: ./.github/workflows/cdk_release_code.yml
+    needs: [tag_release, package_code, get_commit_id]
+    uses: ./.github/workflows/release_all_stacks.yml
     with:
-      STACK_NAME: cpt-ui
+      BACKEND_STACK_NAME: cpt-ui-backend
       TARGET_ENVIRONMENT: qa
       VERSION_NUMBER: ${{needs.tag_release.outputs.version_tag}}
       COMMIT_ID: ${{needs.get_commit_id.outputs.commit_id}}
-    secrets:
-      CDK_PULL_IMAGE_ROLE: ${{ secrets.DEV_CDK_PULL_IMAGE_ROLE }}
-      CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.QA_CLOUD_FORMATION_DEPLOY_ROLE }}
+      DEPLOY_SHARED_RESOURCES: true
 
   release_int:
-    needs: [tag_release, release_qa, package_code, get_commit_id]
-    uses: ./.github/workflows/cdk_release_code.yml
+    needs: [tag_release, package_code, get_commit_id]
+    uses: ./.github/workflows/release_all_stacks.yml
     with:
-      STACK_NAME: cpt-ui
+      BACKEND_STACK_NAME: cpt-ui-backend
       TARGET_ENVIRONMENT: int
       VERSION_NUMBER: ${{needs.tag_release.outputs.version_tag}}
       COMMIT_ID: ${{needs.get_commit_id.outputs.commit_id}}
-      CREATE_INT_RELEASE_NOTES: true
-      CREATE_INT_RC_RELEASE_NOTES: true
-    secrets:
-      CDK_PULL_IMAGE_ROLE: ${{ secrets.PROD_CDK_PULL_IMAGE_ROLE }}
-      CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.INT_CLOUD_FORMATION_DEPLOY_ROLE }}
-      DEV_CLOUD_FORMATION_CHECK_VERSION_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_CHECK_VERSION_ROLE }}
-      INT_CLOUD_FORMATION_CHECK_VERSION_ROLE: ${{ secrets.INT_CLOUD_FORMATION_CHECK_VERSION_ROLE }}
-      PROD_CLOUD_FORMATION_CHECK_VERSION_ROLE: ${{ secrets.PROD_CLOUD_FORMATION_CHECK_VERSION_ROLE }}
-      DEV_CLOUD_FORMATION_EXECUTE_LAMBDA_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_EXECUTE_LAMBDA_ROLE }}
+      DEPLOY_SHARED_RESOURCES: true
 
   # release_prod:
-  #   needs: [tag_release, release_int, package_code, get_commit_id]
-  #   uses: ./.github/workflows/cdk_release_code.yml
+  #   needs: [tag_release, package_code, get_commit_id]
+  #   uses: ./.github/workflows/release_all_stacks.yml
   #   with:
-  #     STACK_NAME: clinical-tracker-ui
+  #     BACKEND_STACK_NAME: cpt-ui-backend
   #     TARGET_ENVIRONMENT: prod
-  #     BUILD_ARTIFACT: packaged_code
   #     VERSION_NUMBER: ${{needs.tag_release.outputs.version_tag}}
   #     COMMIT_ID: ${{needs.get_commit_id.outputs.commit_id}}
-  #     MARK_JIRA_RELEASED: true
-  #     CREATE_PROD_RELEASE_NOTES: true
-  #   secrets:
-  #     CDK_PULL_IMAGE_ROLE: ${{ secrets.PROD_CDK_PULL_IMAGE_ROLE }}
-  #     CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.PROD_CLOUD_FORMATION_DEPLOY_ROLE }}
-  #     DEV_CLOUD_FORMATION_CHECK_VERSION_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_CHECK_VERSION_ROLE }}
-  #     INT_CLOUD_FORMATION_CHECK_VERSION_ROLE: ${{ secrets.INT_CLOUD_FORMATION_CHECK_VERSION_ROLE }}
-  #     PROD_CLOUD_FORMATION_CHECK_VERSION_ROLE: ${{ secrets.PROD_CLOUD_FORMATION_CHECK_VERSION_ROLE }}
-  #     DEV_CLOUD_FORMATION_EXECUTE_LAMBDA_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_EXECUTE_LAMBDA_ROLE }}
+  #     DEPLOY_SHARED_RESOURCES: true

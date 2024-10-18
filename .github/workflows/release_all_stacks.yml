@@ -1,0 +1,50 @@
+name: release all stacks
+
+on:
+  workflow_call:
+    inputs:
+      BACKEND_STACK_NAME:
+        required: true
+        type: string
+      TARGET_ENVIRONMENT:
+        required: true
+        type: string
+      VERSION_NUMBER:
+        required: true
+        type: string
+      COMMIT_ID:
+        required: true
+        type: string
+      DEPLOY_SHARED_RESOURCES:
+        required: true
+        type: boolean
+
+jobs:
+  release_shared_resources:
+    if: ${{ inputs.DEPLOY_SHARED_RESOURCES == true }}
+    uses: ./.github/workflows/cdk_release_code.yml
+    with:
+      STACK_NAME: cpt-ui
+      TARGET_ENVIRONMENT: ${{ inputs.TARGET_ENVIRONMENT }}
+      VERSION_NUMBER: ${{ inputs.VERSION_NUMBER }}
+      COMMIT_ID: ${{ inputs.COMMIT_ID }}
+      CDK_APP_NAME: SharedResourcesApp
+      LOG_RETENTION_IN_DAYS: 30
+    secrets:
+      CDK_PULL_IMAGE_ROLE: ${{ secrets.DEV_CDK_PULL_IMAGE_ROLE }}
+      CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_DEPLOY_ROLE }}
+  
+  release_backend:
+    uses: ./.github/workflows/cdk_release_code.yml
+    needs: [release_shared_resources]
+    if: ${{ always() && !failure() && !cancelled() }}
+    with:
+      STACK_NAME: ${{ inputs.BACKEND_STACK_NAME }}
+      TARGET_ENVIRONMENT: ${{ inputs.TARGET_ENVIRONMENT }}
+      VERSION_NUMBER: ${{ inputs.VERSION_NUMBER }}
+      COMMIT_ID: ${{ inputs.COMMIT_ID }}
+      CDK_APP_NAME: BackendApp
+      LOG_RETENTION_IN_DAYS: 30
+    secrets:
+      CDK_PULL_IMAGE_ROLE: ${{ secrets.DEV_CDK_PULL_IMAGE_ROLE }}
+      CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_DEPLOY_ROLE }}
