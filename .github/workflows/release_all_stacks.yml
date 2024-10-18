@@ -41,6 +41,7 @@ jobs:
   
   release_shared_resources_us:
     if: ${{ inputs.DEPLOY_SHARED_RESOURCES == true }}
+    needs: [release_shared_resources_uk]
     uses: ./.github/workflows/cdk_release_code.yml
     with:
       STACK_NAME: cpt-ui
