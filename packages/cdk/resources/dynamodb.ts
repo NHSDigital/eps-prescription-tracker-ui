@@ -65,7 +65,7 @@ export class Dynamodb extends Construct {
 
     const tokenMappingTable = new dynamodb.TableV2(this, "TokenMappingTable", {
       partitionKey: {
-        name: "Username",
+        name: "username",
         type: dynamodb.AttributeType.STRING
       },
       tableName: `${props.stackName!}-TokenMapping`,

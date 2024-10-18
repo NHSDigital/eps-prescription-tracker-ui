@@ -83,7 +83,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   const username = `${UserPoolIdentityProvider}_${decodedIdToken.sub}`
   const params = {
     Item: {
-      "Username": username,
+      "username": username,
       "accessToken": accessToken,
       "idToken": idToken,
       "expiresIn": expiresIn,
