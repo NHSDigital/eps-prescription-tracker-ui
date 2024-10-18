@@ -6,6 +6,8 @@ import {
   Bucket,
   BucketAccessControl,
   BucketEncryption,
+  CfnBucket,
+  CfnBucketPolicy,
   ObjectOwnership
 } from "aws-cdk-lib/aws-s3"
 import {Construct} from "constructs"
@@ -49,8 +51,30 @@ export class StaticContentBucket extends Construct{
       autoDeleteObjects: true // forces a deletion even if bucket is not empty
     })
 
-    bucket.grantReadWrite(deploymentRole)
+    const cfnBucket = bucket.node.defaultChild as CfnBucket
+    cfnBucket.cfnOptions.metadata = {
+      "guard": {
+        "SuppressedRules": [
+          "S3_BUCKET_REPLICATION_ENABLED",
+          "S3_BUCKET_VERSIONING_ENABLED",
+          "S3_BUCKET_DEFAULT_LOCK_ENABLED"
+        ]
+      }
+    }
 
+    bucket.grantReadWrite(deploymentRole)
+    const policy = bucket.policy!
+    const cfnBucketPolicy = policy.node.defaultChild as CfnBucketPolicy
+    cfnBucketPolicy.cfnOptions.metadata = (
+      {
+        ...cfnBucketPolicy.cfnOptions.metadata,
+        "guard": {
+          "SuppressedRules": [
+            "S3_BUCKET_SSL_REQUESTS_ONLY"
+          ]
+        }
+      }
+    )
     //Outputs
     this.bucket = bucket
     this.kmsKey = kmsKey

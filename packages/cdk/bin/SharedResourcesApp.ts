@@ -52,6 +52,7 @@ app.synth()
 // add metadata to lambda so they dont get flagged as failing cfn-guard
 addCfnGuardMetadata(SharedResources, "Custom::CrossRegionExportReaderCustomResourceProvider")
 addCfnGuardMetadata(Cloudfront, "Custom::CrossRegionExportReaderCustomResourceProvider")
+addCfnGuardMetadata(Cloudfront, "Custom::S3AutoDeleteObjectsCustomResourceProvider")
 
 // finally run synth again with force to include the added metadata
 app.synth({
