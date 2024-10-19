@@ -23,6 +23,12 @@ import {CloudfrontFunction} from "../resources/Cloudfront/CloudfrontFunction"
 import {Key} from "aws-cdk-lib/aws-kms"
 import {nagSuppressions} from "../resources/nagSuppressions"
 import {CloudfrontAuditBucket} from "../resources/Cloudfront/CloudfrontAuditBucket"
+import {
+  AccountRootPrincipal,
+  PolicyStatement,
+  Role,
+  ServicePrincipal
+} from "aws-cdk-lib/aws-iam"
 
 // For if cloudfront and s3 bucket are in different stacks:
 // import {
@@ -108,6 +114,21 @@ export class CloudfrontStack extends Stack {
 
     // auditBucket
     const cloudfrontAuditBucket = new CloudfrontAuditBucket(this, "cloudfrontAuditBucket")
+
+    cloudfrontAuditBucket.kmsKey.addToResourcePolicy(new PolicyStatement({
+      actions: ["kms:Decrypt", "kms:GenerateDataKey"],
+      resources: [cloudfrontAuditBucket.kmsKey.keyArn],
+      principals: [ new ServicePrincipal("delivery.logs.amazonaws.com")]
+    }))
+
+    const cdkDeploymentRole = Role.fromRoleArn(
+      this, "deploymentRole", `cdk-hnb659fds-cfn-exec-role-:${new AccountRootPrincipal().accountId}-us-east-1`)
+
+    cloudfrontAuditBucket.bucket.addToResourcePolicy(new PolicyStatement({
+      actions: ["s3:GetBucketAcl", "s3:PutBucketAcl"],
+      resources: [cloudfrontAuditBucket.kmsKey.keyArn],
+      principals: [cdkDeploymentRole]
+    }))
 
     // Distribution
     const cloudfrontDistribution = new Distribution(this, "CloudfrontDistribution", {
