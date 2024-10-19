@@ -37,7 +37,7 @@ export class SharedResourcesStack extends Stack {
     // S3 Static Content Bucket
     const staticContentBucket = new StaticContentBucket(this, "StaticContentBucket")
 
-    if (cloudfrontDistributionId !== undefined) {
+    if (cloudfrontDistributionId !== "") {
       staticContentBucket.bucket.addToResourcePolicy( new PolicyStatement({
         actions: ["s3:GetObject"],
         resources: [staticContentBucket.bucket.arnForObjects("*")],
