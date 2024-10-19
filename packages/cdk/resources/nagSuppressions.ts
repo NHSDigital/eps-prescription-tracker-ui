@@ -18,13 +18,12 @@ function nagSuppressions(stack: cdk.Stack, deployedStackName: string | undefined
     ])
   safeAddNagSuppression(
     stack,
-    "/CloudfrontStack/CloudfrontDistribution/Resource", [
+    "/CloudfrontStack/cloudfrontAuditBucket/Bucket/Resource", [
       {
-        id: "AwsSolutions-CFR3",
-        reason: "no logging for now"
+        id: "AwsSolutions-S1",
+        reason: "The S3 Bucket has server access logs disabled. This is fine as its the audit log bucket for cloudfront requests"
       }
     ])
-
 }
 function safeAddNagSuppression(stack: cdk.Stack, path: string, suppressions: Array<NagPackSuppression>) {
   try {

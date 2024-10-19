@@ -1,5 +1,6 @@
 import {
   App,
+  CfnOutput,
   Environment,
   Stack,
   StackProps
@@ -12,7 +13,6 @@ import {
   FunctionEventType,
   ViewerProtocolPolicy,
   AllowedMethods,
-  AccessLevel,
   HttpVersion,
   SecurityPolicyProtocol,
   SSLMethod
@@ -20,14 +20,9 @@ import {
 import {Bucket} from "aws-cdk-lib/aws-s3"
 
 import {CloudfrontFunction} from "../resources/Cloudfront/CloudfrontFunction"
-import {
-  AccountRootPrincipal,
-  Effect,
-  PolicyStatement,
-  ServicePrincipal
-} from "aws-cdk-lib/aws-iam"
 import {Key} from "aws-cdk-lib/aws-kms"
 import {nagSuppressions} from "../resources/nagSuppressions"
+import {CloudfrontAuditBucket} from "../resources/Cloudfront/CloudfrontAuditBucket"
 
 // For if cloudfront and s3 bucket are in different stacks:
 // import {
@@ -56,15 +51,11 @@ export class CloudfrontStack extends Stack {
     const epsHostedZoneId = this.node.tryGetContext("epsHostedZoneId")
     const staticBucketArn = this.node.tryGetContext("staticBucketARn")
     const staticContentBucketKmsKeyArn = this.node.tryGetContext("staticContentBucketKmsKeyArn")
-    //const auditLoggingBucketImport = this.node.tryGetContext("auditLoggingBucket")
 
     const hostedZone = HostedZone.fromHostedZoneAttributes(this, "hostedZone", {
       hostedZoneId: epsHostedZoneId,
       zoneName: epsDomainName
     })
-
-    //const auditLoggingBucket = Bucket.fromBucketArn(
-    // this, "AuditLoggingBucket", auditLoggingBucketImport)
 
     const staticContentBucket = Bucket.fromBucketArn(
       this, "staticContentBucket", staticBucketArn as string)
@@ -75,25 +66,17 @@ export class CloudfrontStack extends Stack {
     )
 
     const targetDomainName = `cf.cpt-ui.${epsDomainName}`
-    // Cert
 
+    // Cert
     const cloudfrontCertificate = new Certificate(this, "CloudfrontCertificate", {
       domainName: targetDomainName,
       validation: CertificateValidation.fromDns(hostedZone)
     })
 
     // For if cloudfront and s3 bucket are in different stacks:
-    // const staticContentBucket = Bucket.fromBucketArn(
-    //   this, "staticContentBucket", Fn.importValue("cpt-ui-shared-resources:StaticContentBucket:Arn"))
-    // const staticContentBucketOrigin = S3BucketOrigin.withBucketDefaults(staticContentBucket)
 
     // Origins
-    const staticContentBucketOrigin = S3BucketOrigin.withOriginAccessControl(
-      staticContentBucket,
-      {
-        originAccessLevels: [AccessLevel.READ]
-      }
-    )
+    const staticContentBucketOrigin = S3BucketOrigin.withBucketDefaults(staticContentBucket)
 
     // Cache Policies
     // todo - to follow in a later ticket
@@ -123,6 +106,9 @@ export class CloudfrontStack extends Stack {
       ]
     })
 
+    // auditBucket
+    const cloudfrontAuditBucket = new CloudfrontAuditBucket(this, "cloudfrontAuditBucket")
+
     // Distribution
     const cloudfrontDistribution = new Distribution(this, "CloudfrontDistribution", {
       domainNames: [targetDomainName],
@@ -131,10 +117,10 @@ export class CloudfrontStack extends Stack {
       minimumProtocolVersion: SecurityPolicyProtocol.TLS_V1_2_2018, // set to 2018 but we may want 2019 or 2021
       sslSupportMethod: SSLMethod.SNI,
       publishAdditionalMetrics: true,
-      enableLogging: false, // may want to enable this
-      //logBucket: auditLoggingBucket,
-      //logFilePrefix: "cloudfront",
-      //logIncludesCookies: true, may actually want to be false, don't know if it includes names of cookies or contents
+      enableLogging: true,
+      logBucket: cloudfrontAuditBucket.bucket,
+      logFilePrefix: "cloudfront",
+      logIncludesCookies: true, //may actually want to be false, don't know if it includes names of cookies or contents
       defaultBehavior: {
         origin: staticContentBucketOrigin,
         allowedMethods: AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
@@ -175,21 +161,12 @@ export class CloudfrontStack extends Stack {
     //    cloudfrontDistributionId: cloudfrontDistribution.distributionId
     //  }).policyJson
 
-    /* eslint-disable */
-    // For if cloudfront and s3 bucket are in different stacks:
-    const OACPolicy = new PolicyStatement({
-       effect: Effect.ALLOW,
-       principals: [new ServicePrincipal("cloudfront.amazonaws.com")],
-       actions: ["s3:GetObject"],
-       resources: [staticContentBucket.arnForObjects("*")],
-       conditions: {
-         StringEquals: {
-           "AWS:SourceArn": `arn:aws:cloudfront::${new AccountRootPrincipal().accountId}:distribution/${cloudfrontDistribution.distributionId}`  
-         }
-       }
-     })
-    staticContentBucket.addToResourcePolicy(OACPolicy)
-    /* eslint-enable */
     nagSuppressions(this, props.stackName)
+
+    new CfnOutput(this, "cloudfrontDistributionId", {
+      value: cloudfrontDistribution.distributionId,
+      exportName: `${props.stackName}:cloudfrontDistributionId:Id`
+    })
+
   }
 }

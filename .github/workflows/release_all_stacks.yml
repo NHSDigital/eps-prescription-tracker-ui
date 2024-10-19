@@ -36,6 +36,12 @@ jobs:
       CDK_APP_NAME: SharedResourcesApp_uk
       LOG_RETENTION_IN_DAYS: 30
       AWS_REGION: eu-west-2
+      GET_IMPORT_COMMANDS: |
+        cloudfrontDistributionId=$(aws cloudformation list-exports --region us-east-1 --output json | jq -r '.Exports[] | select(.Name == "cpt-ui-shared-cloudfront:cloudfrontDistributionId:Id") | .Value' )
+      JQ_VARIABLES: |
+        --arg cloudfrontDistributionId "${cloudfrontDistributionId}" \
+      JQ_REPLACEMENTS: |
+        "cloudfrontDistributionId": $cloudfrontDistributionId,
     secrets:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}
