@@ -48,7 +48,8 @@ export class CloudfrontAuditBucket extends Construct{
         "SuppressedRules": [
           "S3_BUCKET_REPLICATION_ENABLED",
           "S3_BUCKET_VERSIONING_ENABLED",
-          "S3_BUCKET_DEFAULT_LOCK_ENABLED"
+          "S3_BUCKET_DEFAULT_LOCK_ENABLED",
+          "S3_BUCKET_LOGGING_ENABLED"
         ]
       }
     }
