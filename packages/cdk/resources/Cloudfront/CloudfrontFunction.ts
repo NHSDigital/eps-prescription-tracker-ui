@@ -62,6 +62,7 @@ export class CloudfrontFunction extends Construct {
     if (functionCode === "") {
       throw new Error("Function code is empty")
     }
+    functionCode.replace("export {handler}", "")
     for (const codeReplacement of codeReplacements){
       functionCode.replace(codeReplacement.valueToReplace, codeReplacement.replacementValue)
     }
