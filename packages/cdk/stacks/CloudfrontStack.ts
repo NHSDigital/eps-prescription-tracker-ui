@@ -91,6 +91,7 @@ export class CloudfrontStack extends Stack {
     // Cloudfront Functions
     const s3404UriRewriteFunction = new CloudfrontFunction(this, "S3404UriRewriteFunction", {
       sourceFileName: "genericS3FixedObjectUriRewrite.js",
+      functionName: `${props.stackName}_S3_404_UriRewriteFunction`,
       keyValues: [
         {
           key: "object",
@@ -100,15 +101,28 @@ export class CloudfrontStack extends Stack {
     })
 
     const s3404ModifyStatusCodeFunction = new CloudfrontFunction(this, "S3404ModifyStatusCodeFunction", {
-      sourceFileName: "s3404ModifyStatusCode.js"
+      sourceFileName: "s3404ModifyStatusCode.js",
+      functionName: `${props.stackName}_S3_404_ModifyStatusCodeFunction`
     })
 
     const s3StaticContentUriRewriteFunction = new CloudfrontFunction(this, "S3StaticContentUriRewriteFunction", {
       sourceFileName: "s3StaticContentUriRewrite.js",
+      functionName: `${props.stackName}_S3_StaticContentUriRewriteFunction`,
       keyValues: [
         {
           key: "version",
           value: props.version
+        }
+      ]
+    })
+
+    const s3JwksUriRewriteFunction = new CloudfrontFunction(this, "s3JwksUriRewriteFunction", {
+      sourceFileName: "genericS3FixedObjectUriRewrite.js",
+      functionName: `${props.stackName}_S3_JWKS_sUriRewriteFunction`,
+      keyValues: [
+        {
+          key: "object",
+          value: "jwks.json"
         }
       ]
     })
@@ -168,6 +182,18 @@ export class CloudfrontStack extends Stack {
           functionAssociations: [
             {
               function: s3StaticContentUriRewriteFunction.function,
+              eventType: FunctionEventType.VIEWER_REQUEST
+            }
+          ]
+        },
+
+        "/jwks/": { // matches exactly <url>/jwks and will only serve the jwks json (via cf function)
+          origin: staticContentBucketOrigin,
+          allowedMethods: AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
+          viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+          functionAssociations: [
+            {
+              function: s3JwksUriRewriteFunction.function,
               eventType: FunctionEventType.VIEWER_REQUEST
             }
           ]

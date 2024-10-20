@@ -26,6 +26,7 @@ export interface CloudfrontFunctionProps {
   readonly sourceFileName: string
   readonly codeReplacements?: codeReplacements
   readonly keyValues?: KeyValues
+  readonly functionName: string
 }
 
 /**
@@ -71,7 +72,8 @@ export class CloudfrontFunction extends Construct {
       code: FunctionCode.fromInline(functionCode),
       runtime: FunctionRuntime.JS_2_0,
       keyValueStore: functionStore,
-      autoPublish: true
+      autoPublish: true,
+      functionName: props.functionName
     })
 
     // Outputs
