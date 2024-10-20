@@ -1,5 +1,10 @@
 import {Fn, RemovalPolicy} from "aws-cdk-lib"
-import {Role} from "aws-cdk-lib/aws-iam"
+import {
+  AccountRootPrincipal,
+  PolicyStatement,
+  Role,
+  ServicePrincipal
+} from "aws-cdk-lib/aws-iam"
 import {Key} from "aws-cdk-lib/aws-kms"
 import {
   BlockPublicAccess,
@@ -30,6 +35,7 @@ export class StaticContentBucket extends Construct{
 
     const deploymentRole = Role.fromRoleArn(
       this, "deploymentRole", Fn.importValue("ci-resources:CloudFormationDeployRole"))
+    const cloudfrontDistributionId = this.node.tryGetContext("cloudfrontDistributionId")
 
     // Resources
     const kmsKey = new Key(this, "KmsKey", {
@@ -63,6 +69,32 @@ export class StaticContentBucket extends Construct{
       }
     }
 
+    if (cloudfrontDistributionId !== "") {
+      bucket.addToResourcePolicy( new PolicyStatement({
+        actions: ["s3:GetObject"],
+        resources: [bucket.arnForObjects("*")],
+        principals: [ new ServicePrincipal("cloudfront.amazonaws.com")],
+        conditions: {
+          StringEquals: {
+            // eslint-disable-next-line max-len
+            "AWS:SourceArn": `arn:aws:cloudfront::${new AccountRootPrincipal().accountId}:distribution/${cloudfrontDistributionId}`
+          }
+        }
+      }))
+
+      // const kmsPolicy = kmsKey.addToResourcePolicy(new PolicyStatement({
+      //   actions: ["kms:Decrypt"],
+      //   resources: [kmsKey.keyArn],
+      //   principals: [ new ServicePrincipal("cloudfront.amazonaws.com")],
+      //   conditions: {
+      //     StringEquals: {
+      //        eslint-disable-next-line max-len
+      //       "AWS:SourceArn": `arn:aws:cloudfront::${new AccountRootPrincipal().accountId}:distribution/${cloudfrontDistributionId}`
+      //     }
+      //   }
+      // }))
+
+    }
     bucket.grantReadWrite(deploymentRole)
     const policy = bucket.policy!
     const cfnBucketPolicy = policy.node.defaultChild as CfnBucketPolicy
