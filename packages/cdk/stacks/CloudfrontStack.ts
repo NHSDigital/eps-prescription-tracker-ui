@@ -29,6 +29,7 @@ import {
   Role,
   ServicePrincipal
 } from "aws-cdk-lib/aws-iam"
+import {IDependable} from "constructs"
 
 // For if cloudfront and s3 bucket are in different stacks:
 // import {
@@ -172,7 +173,7 @@ export class CloudfrontStack extends Stack {
       }
     })
 
-    cloudfrontDistribution.node.addDependency(auditBucketACLPolicy)
+    cloudfrontDistribution.node.addDependency(auditBucketACLPolicy.policyDependable as IDependable)
     // When using an s3 origin with OAC and SSE, cdk will use a wildcard in the generated Key policy condition
     // to match all Distribution IDs in order to avoid a circular dependency between the KMS key,Bucket, and
     // Distribution during the initial deployment. This updates the policy to restrict it to a specific distribution.
