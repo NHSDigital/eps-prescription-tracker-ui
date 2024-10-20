@@ -57,14 +57,14 @@ export class CloudfrontFunction extends Construct {
         {valueToReplace: "KVS_ID_PLACEHOLDER", replacementValue: functionStore.keyValueStoreId}] : [],
       ...props.codeReplacements ?? []
     ]
-    const functionCode = readFileSync(
+    let functionCode = readFileSync(
       resolve(__dirname, `../../../cloudfrontFunctions/src/${props.sourceFileName}`), "utf8")
     if (functionCode === "") {
       throw new Error("Function code is empty")
     }
-    functionCode.replace("export {handler}", "")
+    functionCode = functionCode.replace("export {handler}", "")
     for (const codeReplacement of codeReplacements){
-      functionCode.replace(codeReplacement.valueToReplace, codeReplacement.replacementValue)
+      functionCode = functionCode.replace(codeReplacement.valueToReplace, codeReplacement.replacementValue)
     }
 
     const cloudfrontFunction = new Function(this, "Function", {
