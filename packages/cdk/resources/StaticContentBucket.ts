@@ -5,7 +5,7 @@ import {
   Role,
   ServicePrincipal
 } from "aws-cdk-lib/aws-iam"
-import {Key} from "aws-cdk-lib/aws-kms"
+import {CfnKey, Key} from "aws-cdk-lib/aws-kms"
 import {
   BlockPublicAccess,
   Bucket,
@@ -70,17 +70,47 @@ export class StaticContentBucket extends Construct{
     }
 
     if (cloudfrontDistributionId !== "") {
+      const accountId = new AccountRootPrincipal().accountId
       bucket.addToResourcePolicy( new PolicyStatement({
         actions: ["s3:GetObject"],
         resources: [bucket.arnForObjects("*")],
         principals: [ new ServicePrincipal("cloudfront.amazonaws.com")],
         conditions: {
           StringEquals: {
-            // eslint-disable-next-line max-len
-            "AWS:SourceArn": `arn:aws:cloudfront::${new AccountRootPrincipal().accountId}:distribution/${cloudfrontDistributionId}`
+
+            "AWS:SourceArn": `arn:aws:cloudfront::${accountId}:distribution/${cloudfrontDistributionId}`
           }
         }
       }))
+
+      const scopedDownKeyPolicy = {
+        "Version": "2012-10-17",
+        "Statement": [{
+          "Effect": "Allow",
+          "Principal": {
+            "AWS": `arn:aws:iam::${accountId}:root`
+          },
+          "Action": "kms:*",
+          "Resource": "*"
+        }, {
+          "Effect": "Allow",
+          "Principal": {
+            "Service": "cloudfront.amazonaws.com"
+          },
+          "Action": ["kms:Decrypt", "kms:Encrypt", "kms:GenerateDataKey*"
+          ],
+          "Resource": "*",
+          "Condition": {
+            "StringEquals": {
+              "AWS:SourceArn": `arn:aws:cloudfront::${accountId}:distribution/${cloudfrontDistributionId}`
+            }
+          }
+        }
+        ]
+      }
+
+      const cfnKey = kmsKey.node.defaultChild as CfnKey
+      cfnKey.keyPolicy = scopedDownKeyPolicy
 
       // const kmsPolicy = kmsKey.addToResourcePolicy(new PolicyStatement({
       //   actions: ["kms:Decrypt"],
