@@ -124,7 +124,7 @@ export class CloudfrontStack extends Stack {
     const cdkDeploymentRole = Role.fromRoleArn(
       this, "deploymentRole", `cdk-hnb659fds-cfn-exec-role-:${new AccountRootPrincipal().accountId}-us-east-1`)
 
-    cloudfrontAuditBucket.bucket.addToResourcePolicy(new PolicyStatement({
+    const auditBucketACLPolicy = cloudfrontAuditBucket.bucket.addToResourcePolicy(new PolicyStatement({
       actions: ["s3:GetBucketAcl", "s3:PutBucketAcl"],
       resources: [cloudfrontAuditBucket.bucket.bucketArn],
       principals: [cdkDeploymentRole]
@@ -172,6 +172,7 @@ export class CloudfrontStack extends Stack {
       }
     })
 
+    cloudfrontDistribution.node.addDependency(auditBucketACLPolicy)
     // When using an s3 origin with OAC and SSE, cdk will use a wildcard in the generated Key policy condition
     // to match all Distribution IDs in order to avoid a circular dependency between the KMS key,Bucket, and
     // Distribution during the initial deployment. This updates the policy to restrict it to a specific distribution.
