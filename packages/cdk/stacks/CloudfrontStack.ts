@@ -64,8 +64,11 @@ export class CloudfrontStack extends Stack {
       zoneName: epsDomainName
     })
 
-    const staticContentBucket = Bucket.fromBucketArn(
-      this, "staticContentBucket", staticBucketArn as string)
+    const staticContentBucket = Bucket.fromBucketAttributes(
+      this, "staticContentBucket", {
+        bucketArn: staticBucketArn as string,
+        region: "eu-west-2"
+      })
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const staticContentBucketKmsKey = Key.fromKeyArn(
