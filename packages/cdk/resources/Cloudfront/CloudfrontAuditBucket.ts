@@ -36,7 +36,7 @@ export class CloudfrontAuditBucket extends Construct{
       enforceSSL: true,
       blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
       accessControl: BucketAccessControl.PRIVATE,
-      objectOwnership: ObjectOwnership.BUCKET_OWNER_ENFORCED,
+      objectOwnership: ObjectOwnership.OBJECT_WRITER,
       removalPolicy: RemovalPolicy.DESTROY,
       autoDeleteObjects: false // forces a deletion even if bucket is not empty
     })

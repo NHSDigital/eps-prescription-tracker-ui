@@ -123,7 +123,7 @@ export class CloudfrontStack extends Stack {
     }))
 
     const cdkDeploymentRole = Role.fromRoleArn(
-      this, "deploymentRole", `cdk-hnb659fds-cfn-exec-role-:${new AccountRootPrincipal().accountId}-us-east-1`)
+      this, "deploymentRole", `cdk-hnb659fds-cfn-exec-role-${new AccountRootPrincipal().accountId}-us-east-1`)
 
     const auditBucketACLPolicy = cloudfrontAuditBucket.bucket.addToResourcePolicy(new PolicyStatement({
       actions: ["s3:GetBucketAcl", "s3:PutBucketAcl"],
