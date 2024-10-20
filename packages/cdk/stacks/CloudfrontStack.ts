@@ -117,7 +117,7 @@ export class CloudfrontStack extends Stack {
 
     cloudfrontAuditBucket.kmsKey.addToResourcePolicy(new PolicyStatement({
       actions: ["kms:Decrypt", "kms:GenerateDataKey"],
-      resources: [cloudfrontAuditBucket.kmsKey.keyArn],
+      resources: ["*"],
       principals: [ new ServicePrincipal("delivery.logs.amazonaws.com")]
     }))
 
@@ -126,7 +126,7 @@ export class CloudfrontStack extends Stack {
 
     cloudfrontAuditBucket.bucket.addToResourcePolicy(new PolicyStatement({
       actions: ["s3:GetBucketAcl", "s3:PutBucketAcl"],
-      resources: [cloudfrontAuditBucket.kmsKey.keyArn],
+      resources: [cloudfrontAuditBucket.bucket.bucketArn],
       principals: [cdkDeploymentRole]
     }))
 
