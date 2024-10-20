@@ -86,7 +86,7 @@ export class CloudfrontStack extends Stack {
     // For if cloudfront and s3 bucket are in different stacks:
 
     // Origins
-    const staticContentBucketOrigin = S3BucketOrigin.withBucketDefaults(staticContentBucket)
+    const staticContentBucketOrigin = S3BucketOrigin.withOriginAccessControl(staticContentBucket)
 
     // Cache Policies
     // todo - to follow in a later ticket
