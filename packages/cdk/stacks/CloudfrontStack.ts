@@ -122,8 +122,10 @@ export class CloudfrontStack extends Stack {
       principals: [ new ServicePrincipal("delivery.logs.amazonaws.com")]
     }))
 
+    const currentAccountID = new AccountRootPrincipal().accountId
     const cdkDeploymentRole = Role.fromRoleArn(
-      this, "deploymentRole", `cdk-hnb659fds-cfn-exec-role-${new AccountRootPrincipal().accountId}-us-east-1`)
+      this, "deploymentRole",
+      `arn:aws:iam::${currentAccountID}:role/cdk-hnb659fds-cfn-exec-role-${currentAccountID}-us-east-1`)
 
     const auditBucketACLPolicy = cloudfrontAuditBucket.bucket.addToResourcePolicy(new PolicyStatement({
       actions: ["s3:GetBucketAcl", "s3:PutBucketAcl"],
