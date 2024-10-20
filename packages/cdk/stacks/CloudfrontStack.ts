@@ -5,7 +5,7 @@ import {
   Stack,
   StackProps
 } from "aws-cdk-lib"
-import {HostedZone} from "aws-cdk-lib/aws-route53"
+import {CnameRecord, HostedZone} from "aws-cdk-lib/aws-route53"
 import {Certificate, CertificateValidation} from "aws-cdk-lib/aws-certificatemanager"
 import {S3BucketOrigin} from "aws-cdk-lib/aws-cloudfront-origins"
 import {
@@ -185,6 +185,12 @@ export class CloudfrontStack extends Stack {
     //  this, "StaticContentBucketAllowCloudfrontKmsKeyAccessPolicy", {
     //    cloudfrontDistributionId: cloudfrontDistribution.distributionId
     //  }).policyJson
+
+    new CnameRecord(this, `CnameCloudfront`, {
+      recordName: "cf.cpt-ui",
+      zone: hostedZone,
+      domainName: cloudfrontDistribution.distributionDomainName
+    })
 
     nagSuppressions(this, props.stackName)
 
