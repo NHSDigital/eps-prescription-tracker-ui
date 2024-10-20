@@ -6,7 +6,7 @@ const versionPattern = /v\d*\.\d*\.\d*/g
 const prPattern = /pr-\d*/g
 
 async function handler(event) {
-  const currentVersion = keyValueStore.get("version")
+  const currentVersion = await keyValueStore.get("version")
 
   const request = event.request
   const requestUri = request.uri
