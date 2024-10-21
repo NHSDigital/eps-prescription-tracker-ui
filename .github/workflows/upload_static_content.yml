@@ -22,7 +22,7 @@ on:
 jobs:
   release_code:
     runs-on: ubuntu-latest
-    name: "Upload static content"
+    name: "upload static content"
     environment: ${{ inputs.TARGET_ENVIRONMENT }}
     permissions:
       id-token: write
