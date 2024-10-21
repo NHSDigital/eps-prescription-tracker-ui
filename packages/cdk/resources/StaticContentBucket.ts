@@ -55,6 +55,7 @@ export class StaticContentBucket extends Construct{
       serverAccessLogsBucket: auditLoggingBucket,
       serverAccessLogsPrefix: "/static-content/",
       removalPolicy: RemovalPolicy.DESTROY,
+      versioned: true,
       autoDeleteObjects: false // forces a deletion even if bucket is not empty
     })
 

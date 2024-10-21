@@ -13,7 +13,7 @@ function nagSuppressions(stack: cdk.Stack, deployedStackName: string | undefined
     "/SharedResourcesStack/StaticContentBucket/deploymentRole/PolicySharedResourcesStackStaticContentBucketdeploymentRole5949E029/Resource", [
       {
         id: "AwsSolutions-IAM5",
-        reason: "Suppress error for wildcard"
+        reason: "Suppress error for wildcard in KMS policy. This applies only to the current KMS key so is safe"
       }
     ])
   safeAddNagSuppression(
