@@ -42,6 +42,7 @@ on:
 jobs:
   release_code:
     runs-on: ubuntu-latest
+    name: "release cdk code ${{ inputs.CDK_APP_NAME }}"
     environment: ${{ inputs.TARGET_ENVIRONMENT }}
     permissions:
       id-token: write
