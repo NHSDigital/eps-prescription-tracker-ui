@@ -6,6 +6,9 @@ on:
       BACKEND_STACK_NAME:
         required: true
         type: string
+      SHARED_RESOURCES_STACK_NAME:
+        required: true
+        type: string
       TARGET_ENVIRONMENT:
         required: true
         type: string
@@ -29,7 +32,7 @@ jobs:
     if: ${{ inputs.DEPLOY_SHARED_RESOURCES == true }}
     uses: ./.github/workflows/cdk_release_code.yml
     with:
-      STACK_NAME: cpt-ui
+      STACK_NAME: ${{ inputs.SHARED_RESOURCES_STACK_NAME }}
       TARGET_ENVIRONMENT: ${{ inputs.TARGET_ENVIRONMENT }}
       VERSION_NUMBER: ${{ inputs.VERSION_NUMBER }}
       COMMIT_ID: ${{ inputs.COMMIT_ID }}
@@ -51,7 +54,7 @@ jobs:
     needs: [release_shared_resources_uk]
     uses: ./.github/workflows/cdk_release_code.yml
     with:
-      STACK_NAME: cpt-ui
+      STACK_NAME: ${{ inputs.SHARED_RESOURCES_STACK_NAME }}
       TARGET_ENVIRONMENT: ${{ inputs.TARGET_ENVIRONMENT }}
       VERSION_NUMBER: ${{ inputs.VERSION_NUMBER }}
       COMMIT_ID: ${{ inputs.COMMIT_ID }}
@@ -104,6 +107,7 @@ jobs:
       TARGET_ENVIRONMENT: ${{ inputs.TARGET_ENVIRONMENT }}
       VERSION_NUMBER: ${{ inputs.VERSION_NUMBER }}
       COMMIT_ID: ${{ inputs.COMMIT_ID }}
+      SHARED_RESOURCES_STACK_NAME: ${{ inputs.SHARED_RESOURCES_STACK_NAME }}
     secrets:
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}
       

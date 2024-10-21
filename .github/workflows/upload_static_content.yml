@@ -12,6 +12,9 @@ on:
       COMMIT_ID:
         required: true
         type: string
+      SHARED_RESOURCES_STACK_NAME:
+        required: true
+        type: string
     secrets:
       CLOUD_FORMATION_DEPLOY_ROLE:
         required: true
@@ -57,3 +60,4 @@ jobs:
           .github/scripts/upload_static_content.sh
         env:
           ROOT_PATH: ./build
+          SHARED_RESOURCES_STACK_NAME: ${{ inputs.SHARED_RESOURCES_STACK_NAME }}

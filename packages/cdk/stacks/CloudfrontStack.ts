@@ -75,7 +75,7 @@ export class CloudfrontStack extends Stack {
       this, "staticContentBucketKmsKey", staticContentBucketKmsKeyArn as string
     )
 
-    const shortTargetDomainName = "web.cpt-ui"
+    const shortTargetDomainName = `web.${props.stackName}`
     const fullTargetDomainName = `${shortTargetDomainName}.${epsDomainName}`
 
     // Cert

@@ -100,6 +100,7 @@ jobs:
     uses: ./.github/workflows/release_all_stacks.yml
     with:
       BACKEND_STACK_NAME: cpt-ui-backend
+      SHARED_RESOURCES_STACK_NAME: cpt-ui
       TARGET_ENVIRONMENT: dev
       VERSION_NUMBER: ${{needs.tag_release.outputs.version_tag}}
       COMMIT_ID: ${{needs.get_commit_id.outputs.commit_id}}
@@ -123,6 +124,7 @@ jobs:
     uses: ./.github/workflows/release_all_stacks.yml
     with:
       BACKEND_STACK_NAME: cpt-ui-backend
+      SHARED_RESOURCES_STACK_NAME: cpt-ui
       TARGET_ENVIRONMENT: qa
       VERSION_NUMBER: ${{needs.tag_release.outputs.version_tag}}
       COMMIT_ID: ${{needs.get_commit_id.outputs.commit_id}}
