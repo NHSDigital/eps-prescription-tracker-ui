@@ -43,6 +43,10 @@ export class SharedResourcesStack extends Stack {
       value: staticContentBucket.bucket.bucketArn,
       exportName: `${props.stackName}:StaticContentBucket:Arn`
     })
+    new CfnOutput(this, "StaticContentBucketName", {
+      value: staticContentBucket.bucket.bucketName,
+      exportName: `${props.stackName}:StaticContentBucket:bucketName`
+    })
     new CfnOutput(this, "staticContentBucketKmsKey", {
       value: staticContentBucket.kmsKey.keyArn,
       exportName: `${props.stackName}:staticContentBucketKmsKey:Arn`

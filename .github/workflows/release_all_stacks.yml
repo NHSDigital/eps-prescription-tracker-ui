@@ -95,3 +95,15 @@ jobs:
     secrets:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}
+
+  upload_static_content:
+    uses: ./.github/workflows/upload_static_content.yml
+    needs: [release_backend]
+    if: ${{ always() && !failure() && !cancelled() }}
+    with:
+      TARGET_ENVIRONMENT: ${{ inputs.TARGET_ENVIRONMENT }}
+      VERSION_NUMBER: ${{ inputs.VERSION_NUMBER }}
+      COMMIT_ID: ${{ inputs.COMMIT_ID }}
+    secrets:
+      CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}
+      
