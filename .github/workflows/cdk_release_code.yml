@@ -145,23 +145,21 @@ jobs:
         shell: bash
 
       - name: Checkout gh-pages
-        if: ${{ !startsWith(inputs.STACK_NAME, 'cpt-ui-backend-pr-') }}
         uses: actions/checkout@v4
         with:
           ref: gh-pages
           path: gh-pages
 
       - name: update release tag in github pages
-        if: ${{ !startsWith(inputs.STACK_NAME, 'cpt-ui-backend-pr-') }}
         run: |
           cd gh-pages
           NOW=$(date +'%Y-%m-%dT%H:%M:%S')
-          echo "tag,release_datetime" > _data/${{ inputs.TARGET_ENVIRONMENT }}_latest.csv
-          echo "${{ inputs.VERSION_NUMBER }},${NOW}" >> _data/${{ inputs.TARGET_ENVIRONMENT }}_latest.csv
-          echo "${{ inputs.VERSION_NUMBER }},${NOW}" >> _data/${{ inputs.TARGET_ENVIRONMENT }}_deployments.csv
+          echo "tag,release_datetime" > _data/${{ inputs.TARGET_ENVIRONMENT }}_${{ inputs.STACK_NAME }}_latest.csv
+          echo "${{ inputs.VERSION_NUMBER }},${NOW}" >> _data/${{ inputs.TARGET_ENVIRONMENT }}_${{ inputs.STACK_NAME }}_latest.csv
+          echo "${{ inputs.VERSION_NUMBER }},${NOW}" >> _data/${{ inputs.TARGET_ENVIRONMENT }}_${{ inputs.STACK_NAME }}_deployments.csv
           git config user.name github-actions
           git config user.email github-actions@github.com
-          git add _data/${{ inputs.TARGET_ENVIRONMENT }}_latest.csv
-          git add _data/${{ inputs.TARGET_ENVIRONMENT }}_deployments.csv
+          git add _data/${{ inputs.TARGET_ENVIRONMENT }}_${{ inputs.STACK_NAME }}_latest.csv
+          git add _data/${{ inputs.TARGET_ENVIRONMENT }}_${{ inputs.STACK_NAME }}_deployments.csv
           git commit -m 'update releases for ${{ inputs.TARGET_ENVIRONMENT }}'
           parallel --retries 10 --delay 3 ::: "git pull --rebase && git push"
