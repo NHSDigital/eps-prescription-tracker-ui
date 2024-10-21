@@ -10,7 +10,7 @@
         "check-licenses": "license-checker --failOn GPL --failOn LGPL --start ../.."
     },
     "dependencies": {
-        "i18next": "^23.16.0",
+        "i18next": "^23.16.2",
         "i18next-browser-languagedetector": "^8.0.0",
         "i18next-http-backend": "^2.6.2",
         "next": "14.2.15",
@@ -19,7 +19,7 @@
         "react-dom": "^18",
         "react-i18next": "^15.0.3",
         "react-intl": "^6.8.0",
-        "sass": "^1.80.2"
+        "sass": "^1.80.3"
     },
     "devDependencies": {
         "@formatjs/cli": "^6.2.15",
