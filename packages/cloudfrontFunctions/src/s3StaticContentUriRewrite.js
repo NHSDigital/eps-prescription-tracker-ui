@@ -10,8 +10,9 @@ async function handler(event) {
 
   const request = event.request
   const requestUri = request.uri
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [ignore, uri] = requestUri.split("/site")
+
+  const splitUri = requestUri.split("/site")
+  const uri = splitUri[1]
 
   const versionMatches = uri.match(versionPattern)
   const prMatches = uri.match(prPattern)
