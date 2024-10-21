@@ -115,6 +115,8 @@ jobs:
             "logRetentionInDays": $logRetentionInDays}' \
           .build/cdk.json > .build/cdk.new.json
           mv .build/cdk.new.json .build/cdk.json
+        env:
+          STACK_NAME: ${{ inputs.STACK_NAME }}
 
       - name: Show diff
         run: |

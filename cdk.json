@@ -76,7 +76,7 @@
     "logRetentionInDays": 30,
     "epsDomainName": "eps.domain",
     "epsHostedZoneId": "Z00000000000000000000",
-    "staticBucketARn": "arn:aws:s3:::eps-bucket",
+    "staticBucketArn": "arn:aws:s3:::eps-bucket",
     "staticContentBucketKmsKeyArn": "arn:aws:kms:eu-west-2:0000000000000:key/00000000-0000-0000-0000-000000000000",
     "auditLoggingBucket": "arn:aws:s3:::eps-bucket",
     "cloudfrontDistributionId": "E0000000000000",

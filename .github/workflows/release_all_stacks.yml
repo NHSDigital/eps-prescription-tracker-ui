@@ -69,20 +69,20 @@ jobs:
       GET_IMPORT_COMMANDS: |
         epsDomainName=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='"eps-route53-resources:EPS-domain"'].Value" --output text)
         epsHostedZoneId=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='"eps-route53-resources:EPS-ZoneID"'].Value" --output text)
-        staticBucketARn=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='$STACK_NAME:StaticContentBucket:Arn'].Value" --output text)
+        staticBucketArn=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='$STACK_NAME:StaticContentBucket:Arn'].Value" --output text)
         staticContentBucketKmsKeyArn=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='$STACK_NAME:staticContentBucketKmsKey:Arn'].Value" --output text)
         auditLoggingBucket=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='"account-resources:AuditLoggingBucket"'].Value" --output text)
       JQ_VARIABLES: |
         --arg epsDomainName "${epsDomainName}" \
         --arg epsHostedZoneId "${epsHostedZoneId}" \
-        --arg staticBucketARn "${staticBucketARn}" \
+        --arg staticBucketArn "${staticBucketArn}" \
         --arg staticContentBucketKmsKeyArn "${staticContentBucketKmsKeyArn}" \
         --arg auditLoggingBucket "${auditLoggingBucket}" \
         --arg allowAutoDeleteObjects "${{ inputs.ALLOW_AUTO_DELETE_OBJECTS }}" \
       JQ_REPLACEMENTS: |
         "epsDomainName": $epsDomainName,
         "epsHostedZoneId": $epsHostedZoneId,
-        "staticBucketARn": $staticBucketARn,
+        "staticBucketArn": $staticBucketArn,
         "staticContentBucketKmsKeyArn": $staticContentBucketKmsKeyArn,
         "auditLoggingBucket": $auditLoggingBucket,
         "allowAutoDeleteObjects": $allowAutoDeleteObjects,

@@ -56,7 +56,7 @@ export class CloudfrontStack extends Stack {
 
     const epsDomainName = this.node.tryGetContext("epsDomainName")
     const epsHostedZoneId = this.node.tryGetContext("epsHostedZoneId")
-    const staticBucketArn = this.node.tryGetContext("staticBucketARn")
+    const staticBucketArn = this.node.tryGetContext("staticBucketArn")
     const staticContentBucketKmsKeyArn = this.node.tryGetContext("staticContentBucketKmsKeyArn")
 
     const hostedZone = HostedZone.fromHostedZoneAttributes(this, "hostedZone", {
