@@ -53,6 +53,10 @@ jobs:
         run: |
           make install
 
+      - name: build react app
+        run: |
+          make react-build
+  
       - name: 'Tar files'
         run: |
           tar -rf artifact.tar \

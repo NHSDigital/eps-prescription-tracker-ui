@@ -1,0 +1,18 @@
+{
+  "name": "cpt-cloudfront-functions",
+  "version": "1.0.0",
+  "description": "Clinical prescription tracker cloudfront functions",
+  "scripts": {
+    "unit": "POWERTOOLS_DEV=true NODE_OPTIONS=--experimental-vm-modules jest --no-cache --coverage",
+    "lint": "eslint  --max-warnings 0 --fix --config ../../eslint.config.mjs .",
+    "compile": "tsc",
+    "test": "npm run compile && npm run unit",
+    "check-licenses": "license-checker --failOn GPL --failOn LGPL --start ../.."
+  },
+  "type": "module",
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "cloudfront": "file:src/cloudfront"
+  }
+}

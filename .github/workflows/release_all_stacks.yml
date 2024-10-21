@@ -1,0 +1,124 @@
+name: release all stacks
+
+on:
+  workflow_call:
+    inputs:
+      BACKEND_STACK_NAME:
+        required: true
+        type: string
+      SHARED_RESOURCES_STACK_NAME:
+        required: true
+        type: string
+      TARGET_ENVIRONMENT:
+        required: true
+        type: string
+      VERSION_NUMBER:
+        required: true
+        type: string
+      COMMIT_ID:
+        required: true
+        type: string
+      DEPLOY_SHARED_RESOURCES:
+        required: true
+        type: boolean
+      ALLOW_AUTO_DELETE_OBJECTS:
+        required: true
+        type: boolean
+    secrets:
+      CLOUD_FORMATION_DEPLOY_ROLE:
+        required: true
+      CDK_PULL_IMAGE_ROLE:
+        required: true
+
+jobs:
+  release_shared_resources_uk:
+    name: "release shard stack UK"
+    if: ${{ inputs.DEPLOY_SHARED_RESOURCES == true }}
+    uses: ./.github/workflows/cdk_release_code.yml
+    with:
+      STACK_NAME: ${{ inputs.SHARED_RESOURCES_STACK_NAME }}
+      TARGET_ENVIRONMENT: ${{ inputs.TARGET_ENVIRONMENT }}
+      VERSION_NUMBER: ${{ inputs.VERSION_NUMBER }}
+      COMMIT_ID: ${{ inputs.COMMIT_ID }}
+      CDK_APP_NAME: SharedResourcesApp_uk
+      LOG_RETENTION_IN_DAYS: 30
+      AWS_REGION: eu-west-2
+      GET_IMPORT_COMMANDS: |
+        cloudfrontDistributionId=$(aws cloudformation list-exports --region us-east-1 --query "Exports[?Name=='$STACK_NAME:cloudfrontDistributionId:Id'].Value" --output text)
+      JQ_VARIABLES: |
+        --arg cloudfrontDistributionId "${cloudfrontDistributionId}" \
+        --arg allowAutoDeleteObjects "${{ inputs.ALLOW_AUTO_DELETE_OBJECTS }}" \
+      JQ_REPLACEMENTS: |
+        "cloudfrontDistributionId": $cloudfrontDistributionId,
+        "allowAutoDeleteObjects": $allowAutoDeleteObjects,
+    secrets:
+      CDK_PULL_IMAGE_ROLE: ${{ secrets.CDK_PULL_IMAGE_ROLE }}
+      CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}
+  
+  release_shared_resources_us:
+    name: "release shared stack US"
+    if: ${{ inputs.DEPLOY_SHARED_RESOURCES == true }}
+    needs: [release_shared_resources_uk]
+    uses: ./.github/workflows/cdk_release_code.yml
+    with:
+      STACK_NAME: ${{ inputs.SHARED_RESOURCES_STACK_NAME }}
+      TARGET_ENVIRONMENT: ${{ inputs.TARGET_ENVIRONMENT }}
+      VERSION_NUMBER: ${{ inputs.VERSION_NUMBER }}
+      COMMIT_ID: ${{ inputs.COMMIT_ID }}
+      CDK_APP_NAME: SharedResourcesApp_us
+      LOG_RETENTION_IN_DAYS: 30
+      AWS_REGION: us-east-1
+      GET_IMPORT_COMMANDS: |
+        epsDomainName=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='"eps-route53-resources:EPS-domain"'].Value" --output text)
+        epsHostedZoneId=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='"eps-route53-resources:EPS-ZoneID"'].Value" --output text)
+        staticBucketArn=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='$STACK_NAME:StaticContentBucket:Arn'].Value" --output text)
+        staticContentBucketKmsKeyArn=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='$STACK_NAME:staticContentBucketKmsKey:Arn'].Value" --output text)
+        auditLoggingBucket=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='"account-resources:AuditLoggingBucket"'].Value" --output text)
+      JQ_VARIABLES: |
+        --arg epsDomainName "${epsDomainName}" \
+        --arg epsHostedZoneId "${epsHostedZoneId}" \
+        --arg staticBucketArn "${staticBucketArn}" \
+        --arg staticContentBucketKmsKeyArn "${staticContentBucketKmsKeyArn}" \
+        --arg auditLoggingBucket "${auditLoggingBucket}" \
+        --arg allowAutoDeleteObjects "${{ inputs.ALLOW_AUTO_DELETE_OBJECTS }}" \
+      JQ_REPLACEMENTS: |
+        "epsDomainName": $epsDomainName,
+        "epsHostedZoneId": $epsHostedZoneId,
+        "staticBucketArn": $staticBucketArn,
+        "staticContentBucketKmsKeyArn": $staticContentBucketKmsKeyArn,
+        "auditLoggingBucket": $auditLoggingBucket,
+        "allowAutoDeleteObjects": $allowAutoDeleteObjects,
+    secrets:
+      CDK_PULL_IMAGE_ROLE: ${{ secrets.CDK_PULL_IMAGE_ROLE }}
+      CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}
+  
+  release_backend:
+    name: "release backend"
+    uses: ./.github/workflows/cdk_release_code.yml
+    needs: [release_shared_resources_uk, release_shared_resources_us]
+    if: ${{ always() && !failure() && !cancelled() }}
+    with:
+      STACK_NAME: ${{ inputs.BACKEND_STACK_NAME }}
+      TARGET_ENVIRONMENT: ${{ inputs.TARGET_ENVIRONMENT }}
+      VERSION_NUMBER: ${{ inputs.VERSION_NUMBER }}
+      COMMIT_ID: ${{ inputs.COMMIT_ID }}
+      CDK_APP_NAME: BackendApp
+      LOG_RETENTION_IN_DAYS: 30
+      AWS_REGION: eu-west-2
+    secrets:
+      CDK_PULL_IMAGE_ROLE: ${{ secrets.CDK_PULL_IMAGE_ROLE }}
+      CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}
+
+  upload_static_content:
+    name: "upload static content"
+    uses: ./.github/workflows/upload_static_content.yml
+    needs: [release_backend]
+    if: ${{ always() && !failure() && !cancelled() }}
+    with:
+      TARGET_ENVIRONMENT: ${{ inputs.TARGET_ENVIRONMENT }}
+      VERSION_NUMBER: ${{ inputs.VERSION_NUMBER }}
+      COMMIT_ID: ${{ inputs.COMMIT_ID }}
+      SHARED_RESOURCES_STACK_NAME: ${{ inputs.SHARED_RESOURCES_STACK_NAME }}
+    secrets:
+      CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}
+      

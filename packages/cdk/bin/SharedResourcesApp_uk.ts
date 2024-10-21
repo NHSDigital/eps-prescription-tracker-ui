@@ -1,41 +1,43 @@
 #!/usr/bin/env node
 import "source-map-support/register"
-import * as cdk from "aws-cdk-lib"
-import {ClinicalPrescriptionTrackerStack} from "../stacks/clinicalPrescriptionTrackerStack"
-import {USCertificatesStack} from "../stacks/USCertificatesStack"
-import {Aspects, Tags} from "aws-cdk-lib"
+import {
+  App,
+  Aspects,
+  CfnResource,
+  Stack,
+  Tags
+} from "aws-cdk-lib"
 import {AwsSolutionsChecks} from "cdk-nag"
+import {SharedResourcesStack} from "../stacks/SharedResourcesStack"
 
-const app = new cdk.App()
+const app = new App()
 
 const stackName = app.node.tryGetContext("stackName")
 const version = app.node.tryGetContext("VERSION_NUMBER")
 const commit = app.node.tryGetContext("COMMIT_ID")
+const logRetentionInDays = app.node.tryGetContext("logRetentionInDays")
 
-// add cdk-nag to everything
 Aspects.of(app).add(new AwsSolutionsChecks({verbose: true}))
 
-// add tags to everything
 Tags.of(app).add("version", version)
 Tags.of(app).add("stackName", stackName)
 Tags.of(app).add("commit", commit)
 
-const USCertificates = new USCertificatesStack(app, "USCertificates", {
-  env: {region: "us-east-1"},
-  stackName: stackName
-})
-
-const ClinicalPrescriptionTracker = new ClinicalPrescriptionTrackerStack(app, "ClinicalPrescriptionTrackerStack", {
-  env: {region: "eu-west-2"},
-  stackName: stackName
+const sharedResourcesStack = new SharedResourcesStack(app, "SharedResourcesStack", {
+  env: {
+    region: "eu-west-2"
+  },
+  crossRegionReferences: true,
+  stackName: stackName,
+  version: version,
+  logRetentionInDays: logRetentionInDays
 })
 
 // run a synth to add cross region lambdas and roles
 app.synth()
 
 // add metadata to lambda so they dont get flagged as failing cfn-guard
-addCfnGuardMetadata(USCertificates, "Custom::CrossRegionExportWriterCustomResourceProvider")
-addCfnGuardMetadata(ClinicalPrescriptionTracker, "Custom::CrossRegionExportReaderCustomResourceProvider")
+addCfnGuardMetadata(sharedResourcesStack, "Custom::S3AutoDeleteObjectsCustomResourceProvider")
 
 // finally run synth again with force to include the added metadata
 app.synth({
@@ -43,13 +45,13 @@ app.synth({
 })
 
 // function which adds metadata to ignore things which fail cfn-guard
-function addCfnGuardMetadata(stack: cdk.Stack, role: string) {
+function addCfnGuardMetadata(stack: Stack, role: string) {
   const writerProvider = stack.node.tryFindChild(role)
   if (writerProvider === undefined) {
     return
   }
-  const writerLambda = writerProvider.node.tryFindChild("Handler") as cdk.CfnResource
-  const writerRole = writerProvider.node.tryFindChild("Role") as cdk.CfnResource
+  const writerLambda = writerProvider.node.tryFindChild("Handler") as CfnResource
+  const writerRole = writerProvider.node.tryFindChild("Role") as CfnResource
   if (writerLambda !== undefined) {
     writerLambda.cfnOptions.metadata = (
       {

@@ -9,9 +9,7 @@ env:
 
 jobs:
   quality_checks:
-    uses: NHSDigital/eps-workflow-quality-checks/.github/workflows/quality-checks.yml@v2
-    with:
-      node_version: '20'
+    uses: NHSDigital/eps-workflow-quality-checks/.github/workflows/quality-checks.yml@main
     secrets:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
@@ -99,30 +97,40 @@ jobs:
 
   release_dev:
     needs: [tag_release, package_code, get_commit_id]
-    uses: ./.github/workflows/cdk_release_code.yml
+    uses: ./.github/workflows/release_all_stacks.yml
     with:
-      STACK_NAME: cpt-ui
+      BACKEND_STACK_NAME: cpt-ui-backend
+      SHARED_RESOURCES_STACK_NAME: cpt-ui
       TARGET_ENVIRONMENT: dev
       VERSION_NUMBER: ${{needs.tag_release.outputs.version_tag}}
       COMMIT_ID: ${{needs.get_commit_id.outputs.commit_id}}
-      CREATE_INT_RELEASE_NOTES: true
-      CREATE_PROD_RELEASE_NOTES: true
+      DEPLOY_SHARED_RESOURCES: true
+      ALLOW_AUTO_DELETE_OBJECTS: false
     secrets:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.DEV_CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_DEPLOY_ROLE }}
-      DEV_CLOUD_FORMATION_CHECK_VERSION_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_CHECK_VERSION_ROLE }}
-      INT_CLOUD_FORMATION_CHECK_VERSION_ROLE: ${{ secrets.INT_CLOUD_FORMATION_CHECK_VERSION_ROLE }}
-      PROD_CLOUD_FORMATION_CHECK_VERSION_ROLE: ${{ secrets.PROD_CLOUD_FORMATION_CHECK_VERSION_ROLE }}
-      DEV_CLOUD_FORMATION_EXECUTE_LAMBDA_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_EXECUTE_LAMBDA_ROLE }}
+
+  create_release_notes:
+    needs: [tag_release, package_code, get_commit_id, release_dev]
+    uses: ./.github/workflows/create_release_notes.yml
+    with:
+      VERSION_NUMBER: ${{needs.tag_release.outputs.version_tag}}
+      CREATE_INT_RELEASE_NOTES: true
+      CREATE_INT_RC_RELEASE_NOTES: false
+      CREATE_PROD_RELEASE_NOTES: true
+      MARK_JIRA_RELEASED: false
 
   release_qa:
     needs: [tag_release, release_dev, package_code, get_commit_id]
-    uses: ./.github/workflows/cdk_release_code.yml
+    uses: ./.github/workflows/release_all_stacks.yml
     with:
-      STACK_NAME: cpt-ui
+      BACKEND_STACK_NAME: cpt-ui-backend
+      SHARED_RESOURCES_STACK_NAME: cpt-ui
       TARGET_ENVIRONMENT: qa
       VERSION_NUMBER: ${{needs.tag_release.outputs.version_tag}}
       COMMIT_ID: ${{needs.get_commit_id.outputs.commit_id}}
+      DEPLOY_SHARED_RESOURCES: true
+      ALLOW_AUTO_DELETE_OBJECTS: false
     secrets:
-      CDK_PULL_IMAGE_ROLE: ${{ secrets.DEV_CDK_PULL_IMAGE_ROLE }}
+      CDK_PULL_IMAGE_ROLE: ${{ secrets.QA_CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.QA_CLOUD_FORMATION_DEPLOY_ROLE }}
