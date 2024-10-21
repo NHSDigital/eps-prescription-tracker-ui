@@ -45,6 +45,8 @@ jobs:
         run: |
           mkdir -p .build
           tar -xf artifact.tar -C .build
+          ROOT_PATH="$(pwd)/.build"
+          echo "ROOT_PATH=${ROOT_PATH}" >> "$GITHUB_ENV"
 
       - name: Configure AWS Credentials
         id: connect-aws
@@ -59,5 +61,5 @@ jobs:
         run: |
           .github/scripts/upload_static_content.sh
         env:
-          ROOT_PATH: ./build
+          ROOT_PATH: ${{ env.ROOT_PATH }}
           SHARED_RESOURCES_STACK_NAME: ${{ inputs.SHARED_RESOURCES_STACK_NAME }}
