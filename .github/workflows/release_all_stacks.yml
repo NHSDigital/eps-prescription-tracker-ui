@@ -32,6 +32,7 @@ on:
 
 jobs:
   release_shared_resources_uk:
+    name: "release shard stack UK"
     if: ${{ inputs.DEPLOY_SHARED_RESOURCES == true }}
     uses: ./.github/workflows/cdk_release_code.yml
     with:
@@ -55,6 +56,7 @@ jobs:
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}
   
   release_shared_resources_us:
+    name: "release shared stack US"
     if: ${{ inputs.DEPLOY_SHARED_RESOURCES == true }}
     needs: [release_shared_resources_uk]
     uses: ./.github/workflows/cdk_release_code.yml
@@ -91,6 +93,7 @@ jobs:
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}
   
   release_backend:
+    name: "release backend"
     uses: ./.github/workflows/cdk_release_code.yml
     needs: [release_shared_resources_uk, release_shared_resources_us]
     if: ${{ always() && !failure() && !cancelled() }}
@@ -107,6 +110,7 @@ jobs:
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}
 
   upload_static_content:
+    name: "upload static content"
     uses: ./.github/workflows/upload_static_content.yml
     needs: [release_backend]
     if: ${{ always() && !failure() && !cancelled() }}
