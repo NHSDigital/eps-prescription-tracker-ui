@@ -55,3 +55,5 @@ jobs:
       - name: upload fixed static content
         run: |
           .github/scripts/upload_static_content.sh
+        env:
+          ROOT_PATH: ./build
