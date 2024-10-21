@@ -77,12 +77,13 @@ export class StaticContentBucket extends Construct{
         principals: [ new ServicePrincipal("cloudfront.amazonaws.com")],
         conditions: {
           StringEquals: {
-
             "AWS:SourceArn": `arn:aws:cloudfront::${accountId}:distribution/${cloudfrontDistributionId}`
           }
         }
       }))
 
+      // we need to use an escape hatch on the kms key to avoid circular references
+      // see https://docs.aws.amazon.com/cdk/api/v2/python/aws_cdk.aws_cloudfront_origins/README.html#s3-bucket
       const scopedDownKeyPolicy = {
         "Version": "2012-10-17",
         "Statement": [{
@@ -111,19 +112,6 @@ export class StaticContentBucket extends Construct{
 
       const cfnKey = kmsKey.node.defaultChild as CfnKey
       cfnKey.keyPolicy = scopedDownKeyPolicy
-
-      // const kmsPolicy = kmsKey.addToResourcePolicy(new PolicyStatement({
-      //   actions: ["kms:Decrypt"],
-      //   resources: [kmsKey.keyArn],
-      //   principals: [ new ServicePrincipal("cloudfront.amazonaws.com")],
-      //   conditions: {
-      //     StringEquals: {
-      //        eslint-disable-next-line max-len
-      //       "AWS:SourceArn": `arn:aws:cloudfront::${new AccountRootPrincipal().accountId}:distribution/${cloudfrontDistributionId}`
-      //     }
-      //   }
-      // }))
-
     }
     bucket.grantReadWrite(deploymentRole)
     const policy = bucket.policy!
