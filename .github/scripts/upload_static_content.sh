@@ -25,6 +25,7 @@ fi
 
 echo "Uploading static content from ${ROOT_PATH} to s3://${staticBucketName}"
 aws s3 cp "${ROOT_PATH}/packages/staticContent/404.html" "s3://${staticBucketName}/404.html"
+aws s3 cp "${ROOT_PATH}/packages/staticContent/500.html" "s3://${staticBucketName}/500.html"
 aws s3 cp "${ROOT_PATH}/packages/staticContent/jwks/dev/jwks.json" "s3://${staticBucketName}/jwks.json"
 
 echo "Uploading static content for website from ${ROOT_PATH}/packages/cpt-ui/out/  to s3://${staticBucketName}"

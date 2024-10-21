@@ -1,6 +1,7 @@
 import {
   App,
   CfnOutput,
+  Duration,
   Environment,
   Stack,
   StackProps
@@ -131,6 +132,17 @@ export class CloudfrontStack extends Stack {
       ]
     })
 
+    const s3500UriRewriteFunction = new CloudfrontFunction(this, "s3500UriRewriteFunction", {
+      sourceFileName: "genericS3FixedObjectUriRewrite.js",
+      functionName: `${props.stackName}_S3_500_sUriRewriteFunction`,
+      keyValues: [
+        {
+          key: "object",
+          value: "500.html"
+        }
+      ]
+    })
+
     // auditBucket
     const cloudfrontAuditBucket = new CloudfrontAuditBucket(this, "cloudfrontAuditBucket", {stackName: props.stackName})
 
@@ -201,8 +213,35 @@ export class CloudfrontStack extends Stack {
               eventType: FunctionEventType.VIEWER_REQUEST
             }
           ]
+        },
+
+        "/500.html": { // matches exactly <url>/500.html and will only serve the 500.html page (via cf function)
+          origin: staticContentBucketOrigin,
+          allowedMethods: AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
+          viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+          functionAssociations: [
+            {
+              function: s3500UriRewriteFunction.function,
+              eventType: FunctionEventType.VIEWER_REQUEST
+            }
+          ]
         }
-      }
+
+      },
+      errorResponses: [
+        {
+          httpStatus: 500,
+          responseHttpStatus: 500,
+          responsePagePath: "/500.html",
+          ttl: Duration.seconds(10)
+        },
+        {
+          httpStatus: 404,
+          responseHttpStatus: 404,
+          responsePagePath: "/404.html",
+          ttl: Duration.seconds(10)
+        }
+      ]
     })
 
     cloudfrontDistribution.node.addDependency(auditBucketACLPolicy.policyDependable as IDependable)
