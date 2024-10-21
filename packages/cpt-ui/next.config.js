@@ -2,8 +2,8 @@
  * @type {import('next').NextConfig}
  */
 const nextConfig = {
-  output: "export",
-  basePath: "/site"
+  output: process.env.NEXT_OUTPUT_MODE || undefined,
+  basePath: process.env.BASE_PATH || ""
   // Optional: Change links `/me` -> `/me/` and emit `/me.html` -> `/me/index.html`
   // trailingSlash: true,
 
