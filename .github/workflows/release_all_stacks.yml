@@ -43,7 +43,7 @@ jobs:
       LOG_RETENTION_IN_DAYS: 30
       AWS_REGION: eu-west-2
       GET_IMPORT_COMMANDS: |
-        cloudfrontDistributionId=$(aws cloudformation list-exports --region us-east-1 --output json | jq -r '.Exports[] | select(.Name == "cpt-ui-shared-cloudfront:cloudfrontDistributionId:Id") | .Value' )
+        cloudfrontDistributionId=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='$STACK_NAME:cloudfrontDistributionId:Id'].Value" --output text)
       JQ_VARIABLES: |
         --arg cloudfrontDistributionId "${cloudfrontDistributionId}" \
         --arg allowAutoDeleteObjects "${{ inputs.ALLOW_AUTO_DELETE_OBJECTS }}" \
@@ -67,11 +67,11 @@ jobs:
       LOG_RETENTION_IN_DAYS: 30
       AWS_REGION: us-east-1
       GET_IMPORT_COMMANDS: |
-        epsDomainName=$(aws cloudformation list-exports --region eu-west-2 --output json | jq -r '.Exports[] | select(.Name == "eps-route53-resources:EPS-domain") | .Value' )
-        epsHostedZoneId=$(aws cloudformation list-exports --region eu-west-2 --output json | jq -r '.Exports[] | select(.Name == "eps-route53-resources:EPS-ZoneID") | .Value' )
-        staticBucketARn=$(aws cloudformation list-exports --region eu-west-2 --output json | jq -r '.Exports[] | select(.Name == "cpt-ui-shared-resources:StaticContentBucket:Arn") | .Value' )
-        staticContentBucketKmsKeyArn=$(aws cloudformation list-exports --region eu-west-2 --output json | jq -r '.Exports[] | select(.Name == "cpt-ui-shared-resources:staticContentBucketKmsKey:Arn") | .Value' )
-        auditLoggingBucket=$(aws cloudformation list-exports --region eu-west-2 --output json | jq -r '.Exports[] | select(.Name == "account-resources:AuditLoggingBucket") | .Value' )
+        epsDomainName=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='"eps-route53-resources:EPS-domain"'].Value" --output text)
+        epsHostedZoneId=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='"eps-route53-resources:EPS-ZoneID"'].Value" --output text)
+        staticBucketARn=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='$STACK_NAME:StaticContentBucket:Arn'].Value" --output text)
+        staticContentBucketKmsKeyArn=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='$STACK_NAME:staticContentBucketKmsKey:Arn'].Value" --output text)
+        auditLoggingBucket=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='"account-resources:AuditLoggingBucket"'].Value" --output text)
       JQ_VARIABLES: |
         --arg epsDomainName "${epsDomainName}" \
         --arg epsHostedZoneId "${epsHostedZoneId}" \
