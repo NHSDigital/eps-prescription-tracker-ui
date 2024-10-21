@@ -25,7 +25,8 @@ export class CloudfrontAuditBucket extends Construct{
 
     // Resources
     const kmsKey = new Key(this, "KmsKey", {
-      enableKeyRotation: true
+      enableKeyRotation: true,
+      removalPolicy: RemovalPolicy.DESTROY
     })
     kmsKey.addAlias("alias/CloudfrontAuditBucketKmsKey")
 
