@@ -11,6 +11,7 @@ sync-main:
 	git checkout main poetry.lock
 	git checkout main package.json
 	git checkout main package-lock.json
+	git checkout main .vscode
 
 # install targets
 install: install-python install-hooks install-node install-jekyll
