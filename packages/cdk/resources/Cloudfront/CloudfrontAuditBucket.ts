@@ -16,19 +16,24 @@ import {Construct} from "constructs"
 
  */
 
+export interface CloudfrontAuditBucketProps {
+  readonly stackName: string
+}
 export class CloudfrontAuditBucket extends Construct{
   public readonly bucket: Bucket
   public kmsKey: Key
 
-  public constructor(scope: Construct, id: string){
+  public constructor(scope: Construct, id: string, props: CloudfrontAuditBucketProps){
     super(scope, id)
+
+    const allowAutoDeleteObjects = this.node.tryGetContext("allowAutoDeleteObjects")
 
     // Resources
     const kmsKey = new Key(this, "KmsKey", {
       enableKeyRotation: true,
       removalPolicy: RemovalPolicy.DESTROY
     })
-    kmsKey.addAlias("alias/CloudfrontAuditBucketKmsKey")
+    kmsKey.addAlias(`alias/${props.stackName}_CloudfrontAuditBucketKmsKey`)
 
     const bucket = new Bucket(this, "Bucket", {
       encryption: BucketEncryption.KMS,
@@ -40,7 +45,7 @@ export class CloudfrontAuditBucket extends Construct{
       objectOwnership: ObjectOwnership.OBJECT_WRITER,
       removalPolicy: RemovalPolicy.DESTROY,
       versioned: true,
-      autoDeleteObjects: false // forces a deletion even if bucket is not empty
+      autoDeleteObjects: allowAutoDeleteObjects // forces a deletion even if bucket is not empty
     })
 
     const cfnBucket = bucket.node.defaultChild as CfnBucket

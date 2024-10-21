@@ -32,7 +32,7 @@ export class SharedResourcesStack extends Stack {
     super(scope, id, props)
 
     // S3 Static Content Bucket
-    const staticContentBucket = new StaticContentBucket(this, "StaticContentBucket")
+    const staticContentBucket = new StaticContentBucket(this, "StaticContentBucket", {stackName: props.stackName})
 
     // Outputs
     this.staticContentBucket = staticContentBucket.bucket

@@ -21,6 +21,9 @@ on:
       DEPLOY_SHARED_RESOURCES:
         required: true
         type: boolean
+      ALLOW_AUTO_DELETE_OBJECTS:
+        required: true
+        type: boolean
     secrets:
       CLOUD_FORMATION_DEPLOY_ROLE:
         required: true
@@ -43,8 +46,10 @@ jobs:
         cloudfrontDistributionId=$(aws cloudformation list-exports --region us-east-1 --output json | jq -r '.Exports[] | select(.Name == "cpt-ui-shared-cloudfront:cloudfrontDistributionId:Id") | .Value' )
       JQ_VARIABLES: |
         --arg cloudfrontDistributionId "${cloudfrontDistributionId}" \
+        --arg allowAutoDeleteObjects "${{ inputs.ALLOW_AUTO_DELETE_OBJECTS }}" \
       JQ_REPLACEMENTS: |
         "cloudfrontDistributionId": $cloudfrontDistributionId,
+        "allowAutoDeleteObjects": $allowAutoDeleteObjects,
     secrets:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}
@@ -73,12 +78,14 @@ jobs:
         --arg staticBucketARn "${staticBucketARn}" \
         --arg staticContentBucketKmsKeyArn "${staticContentBucketKmsKeyArn}" \
         --arg auditLoggingBucket "${auditLoggingBucket}" \
+        --arg allowAutoDeleteObjects "${{ inputs.ALLOW_AUTO_DELETE_OBJECTS }}" \
       JQ_REPLACEMENTS: |
         "epsDomainName": $epsDomainName,
         "epsHostedZoneId": $epsHostedZoneId,
         "staticBucketARn": $staticBucketARn,
         "staticContentBucketKmsKeyArn": $staticContentBucketKmsKeyArn,
         "auditLoggingBucket": $auditLoggingBucket,
+        "allowAutoDeleteObjects": $allowAutoDeleteObjects,
     secrets:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}

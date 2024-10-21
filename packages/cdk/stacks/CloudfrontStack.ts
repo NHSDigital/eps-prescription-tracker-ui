@@ -132,7 +132,7 @@ export class CloudfrontStack extends Stack {
     })
 
     // auditBucket
-    const cloudfrontAuditBucket = new CloudfrontAuditBucket(this, "cloudfrontAuditBucket")
+    const cloudfrontAuditBucket = new CloudfrontAuditBucket(this, "cloudfrontAuditBucket", {stackName: props.stackName})
 
     cloudfrontAuditBucket.kmsKey.addToResourcePolicy(new PolicyStatement({
       actions: ["kms:Decrypt", "kms:GenerateDataKey"],

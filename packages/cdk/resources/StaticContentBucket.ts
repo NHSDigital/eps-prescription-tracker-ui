@@ -22,11 +22,15 @@ import {Construct} from "constructs"
 
  */
 
+export interface StaticContentBucketProps {
+  readonly stackName: string
+}
+
 export class StaticContentBucket extends Construct{
   public readonly bucket: Bucket
   public kmsKey: Key
 
-  public constructor(scope: Construct, id: string){
+  public constructor(scope: Construct, id: string, props: StaticContentBucketProps){
     super(scope, id)
 
     // Imports
@@ -37,12 +41,14 @@ export class StaticContentBucket extends Construct{
       this, "deploymentRole", Fn.importValue("ci-resources:CloudFormationDeployRole"))
     const cloudfrontDistributionId = this.node.tryGetContext("cloudfrontDistributionId")
 
+    const allowAutoDeleteObjects = this.node.tryGetContext("allowAutoDeleteObjects")
+
     // Resources
     const kmsKey = new Key(this, "KmsKey", {
       enableKeyRotation: true,
       removalPolicy: RemovalPolicy.DESTROY
     })
-    kmsKey.addAlias("alias/StaticContentBucketKmsKey")
+    kmsKey.addAlias(`alias/${props.stackName}_StaticContentBucketKmsKey`)
 
     const bucket = new Bucket(this, "Bucket", {
       encryption: BucketEncryption.KMS,
@@ -56,7 +62,7 @@ export class StaticContentBucket extends Construct{
       serverAccessLogsPrefix: "/static-content/",
       removalPolicy: RemovalPolicy.DESTROY,
       versioned: true,
-      autoDeleteObjects: false // forces a deletion even if bucket is not empty
+      autoDeleteObjects: allowAutoDeleteObjects // forces a deletion even if bucket is not empty
     })
 
     const cfnBucket = bucket.node.defaultChild as CfnBucket
