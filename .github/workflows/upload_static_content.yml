@@ -50,7 +50,6 @@ jobs:
           aws-region: eu-west-2
           role-to-assume: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}
           role-session-name: prescription-clinical-tracker-ui-deployment
-          output-credentials: true
           unset-current-credentials: true
   
       - name: upload fixed static content
