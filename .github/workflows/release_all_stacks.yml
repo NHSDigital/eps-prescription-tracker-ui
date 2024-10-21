@@ -43,7 +43,7 @@ jobs:
       LOG_RETENTION_IN_DAYS: 30
       AWS_REGION: eu-west-2
       GET_IMPORT_COMMANDS: |
-        cloudfrontDistributionId=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='$STACK_NAME:cloudfrontDistributionId:Id'].Value" --output text)
+        cloudfrontDistributionId=$(aws cloudformation list-exports --region us-east-1 --query "Exports[?Name=='$STACK_NAME:cloudfrontDistributionId:Id'].Value" --output text)
       JQ_VARIABLES: |
         --arg cloudfrontDistributionId "${cloudfrontDistributionId}" \
         --arg allowAutoDeleteObjects "${{ inputs.ALLOW_AUTO_DELETE_OBJECTS }}" \
