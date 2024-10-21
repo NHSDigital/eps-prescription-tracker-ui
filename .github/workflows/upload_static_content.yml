@@ -64,3 +64,4 @@ jobs:
         env:
           ROOT_PATH: ${{ env.ROOT_PATH }}
           SHARED_RESOURCES_STACK_NAME: ${{ inputs.SHARED_RESOURCES_STACK_NAME }}
+          VERSION_NUMBER: ${{ inputs.VERSION_NUMBER }}
