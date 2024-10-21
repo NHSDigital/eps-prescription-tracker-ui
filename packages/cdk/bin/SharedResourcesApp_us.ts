@@ -26,7 +26,7 @@ const cloudfrontStack = new CloudfrontStack(app, "CloudfrontStack", {
   env: {
     region: "us-east-1"
   },
-  stackName: `${stackName}-shared-cloudfront`,
+  stackName: stackName,
   version: version
 })
 
