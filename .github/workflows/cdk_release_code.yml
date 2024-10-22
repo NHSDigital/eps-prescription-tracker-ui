@@ -113,7 +113,7 @@ jobs:
             "COMMIT_ID": $COMMIT_ID,
             "logRetentionInDays": $logRetentionInDays,
             "epsDomainName": $epsDomainName,
-            "epsHostedZoneId": $epsHostedZoneId},' \
+            "epsHostedZoneId": $epsHostedZoneId}' \
           .build/cdk.json > .build/cdk.new.json
           mv .build/cdk.new.json .build/cdk.json
 
