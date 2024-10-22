@@ -9,7 +9,7 @@ env:
 
 jobs:
   quality_checks:
-    uses: NHSDigital/eps-workflow-quality-checks/.github/workflows/quality-checks.yml@403b75575e8355a916630d078582825f1c6a913f
+    uses: NHSDigital/eps-workflow-quality-checks/.github/workflows/quality-checks.yml@main
     secrets:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
@@ -64,13 +64,12 @@ jobs:
     needs: [get_issue_number, package_code, get_commit_id, quality_checks]
     uses: ./.github/workflows/release_all_stacks.yml
     with:
-      BACKEND_STACK_NAME: cpt-ui-backend-pr-${{needs.get_issue_number.outputs.issue_number}}
-      SHARED_RESOURCES_STACK_NAME: cpt-ui-pr-${{needs.get_issue_number.outputs.issue_number}}
+      STATELESS_STACK_NAME: cpt-ui-backend-pr-${{needs.get_issue_number.outputs.issue_number}}
+      STATEFUL_STACK_NAME: cpt-ui-pr-${{needs.get_issue_number.outputs.issue_number}}
       TARGET_ENVIRONMENT: dev-pr
       VERSION_NUMBER: PR-${{ needs.get_issue_number.outputs.issue_number }}
       COMMIT_ID: ${{ needs.get_commit_id.outputs.commit_id }}
-      DEPLOY_SHARED_RESOURCES: true
+      LOG_RETENTION_IN_DAYS: 30
       ALLOW_AUTO_DELETE_OBJECTS: true
     secrets:
-      CDK_PULL_IMAGE_ROLE: ${{ secrets.DEV_CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_DEPLOY_ROLE }}

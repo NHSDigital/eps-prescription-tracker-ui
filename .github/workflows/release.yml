@@ -118,15 +118,14 @@ jobs:
     needs: [tag_release, package_code, get_commit_id]
     uses: ./.github/workflows/release_all_stacks.yml
     with:
-      BACKEND_STACK_NAME: cpt-ui-backend
-      SHARED_RESOURCES_STACK_NAME: cpt-ui
+      STATELESS_STACK_NAME: cpt-ui-backend
+      STATEFUL_STACK_NAME: cpt-ui
       TARGET_ENVIRONMENT: dev
       VERSION_NUMBER: ${{needs.tag_release.outputs.version_tag}}
       COMMIT_ID: ${{needs.get_commit_id.outputs.commit_id}}
-      DEPLOY_SHARED_RESOURCES: true
+      LOG_RETENTION_IN_DAYS: 30
       ALLOW_AUTO_DELETE_OBJECTS: false
     secrets:
-      CDK_PULL_IMAGE_ROLE: ${{ secrets.DEV_CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_DEPLOY_ROLE }}
 
   create_release_notes:
@@ -143,55 +142,52 @@ jobs:
     needs: [tag_release, package_code, get_commit_id]
     uses: ./.github/workflows/release_all_stacks.yml
     with:
-      BACKEND_STACK_NAME: cpt-ui-backend
-      SHARED_RESOURCES_STACK_NAME: cpt-ui
+      STATELESS_STACK_NAME: cpt-ui-backend
+      STATEFUL_STACK_NAME: cpt-ui
       TARGET_ENVIRONMENT: ref
       VERSION_NUMBER: ${{needs.tag_release.outputs.version_tag}}
       COMMIT_ID: ${{needs.get_commit_id.outputs.commit_id}}
-      DEPLOY_SHARED_RESOURCES: true
+      LOG_RETENTION_IN_DAYS: 30
       ALLOW_AUTO_DELETE_OBJECTS: false
     secrets:
-      CDK_PULL_IMAGE_ROLE: ${{ secrets.REF_CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.REF_CLOUD_FORMATION_DEPLOY_ROLE }}
 
   release_qa:
     needs: [tag_release, package_code, get_commit_id]
     uses: ./.github/workflows/release_all_stacks.yml
     with:
-      BACKEND_STACK_NAME: cpt-ui-backend
-      SHARED_RESOURCES_STACK_NAME: cpt-ui
+      STATELESS_STACK_NAME: cpt-ui-backend
+      STATEFUL_STACK_NAME: cpt-ui
       TARGET_ENVIRONMENT: qa
       VERSION_NUMBER: ${{needs.tag_release.outputs.version_tag}}
       COMMIT_ID: ${{needs.get_commit_id.outputs.commit_id}}
-      DEPLOY_SHARED_RESOURCES: true
+      LOG_RETENTION_IN_DAYS: 30
       ALLOW_AUTO_DELETE_OBJECTS: false
     secrets:
-      CDK_PULL_IMAGE_ROLE: ${{ secrets.QA_CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.QA_CLOUD_FORMATION_DEPLOY_ROLE }}
 
   release_int:
     needs: [tag_release, package_code, get_commit_id]
     uses: ./.github/workflows/release_all_stacks.yml
     with:
-      BACKEND_STACK_NAME: cpt-ui-backend
-      SHARED_RESOURCES_STACK_NAME: cpt-ui
+      STATELESS_STACK_NAME: cpt-ui-backend
+      STATEFUL_STACK_NAME: cpt-ui
       TARGET_ENVIRONMENT: int
       VERSION_NUMBER: ${{needs.tag_release.outputs.version_tag}}
       COMMIT_ID: ${{needs.get_commit_id.outputs.commit_id}}
-      DEPLOY_SHARED_RESOURCES: true
+      LOG_RETENTION_IN_DAYS: 30
       ALLOW_AUTO_DELETE_OBJECTS: false
     secrets:
-      CDK_PULL_IMAGE_ROLE: ${{ secrets.INT_CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.INT_CLOUD_FORMATION_DEPLOY_ROLE }}
 
   # release_prod:
   #   needs: [tag_release, package_code, get_commit_id]
   #   uses: ./.github/workflows/release_all_stacks.yml
   #   with:
-  #     BACKEND_STACK_NAME: cpt-ui-backend
-  #     SHARED_RESOURCES_STACK_NAME: cpt-ui
+  #     STATELESS_STACK_NAME: cpt-ui-backend
+  #     STATEFUL_STACK_NAME: cpt-ui
   #     TARGET_ENVIRONMENT: prod
   #     VERSION_NUMBER: ${{needs.tag_release.outputs.version_tag}}
   #     COMMIT_ID: ${{needs.get_commit_id.outputs.commit_id}}
-  #     DEPLOY_SHARED_RESOURCES: true
+  #     LOG_RETENTION_IN_DAYS: 30
   #     ALLOW_AUTO_DELETE_OBJECTS: false

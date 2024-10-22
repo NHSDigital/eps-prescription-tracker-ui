@@ -3,10 +3,10 @@ name: release all stacks
 on:
   workflow_call:
     inputs:
-      BACKEND_STACK_NAME:
+      STATELESS_STACK_NAME:
         required: true
         type: string
-      SHARED_RESOURCES_STACK_NAME:
+      STATEFUL_STACK_NAME:
         required: true
         type: string
       TARGET_ENVIRONMENT:
@@ -18,107 +18,87 @@ on:
       COMMIT_ID:
         required: true
         type: string
-      DEPLOY_SHARED_RESOURCES:
+      LOG_RETENTION_IN_DAYS:
         required: true
-        type: boolean
+        type: string
       ALLOW_AUTO_DELETE_OBJECTS:
         required: true
         type: boolean
     secrets:
       CLOUD_FORMATION_DEPLOY_ROLE:
         required: true
-      CDK_PULL_IMAGE_ROLE:
-        required: true
 
 jobs:
-  release_shared_resources_uk:
-    name: "release shard stack UK"
-    if: ${{ inputs.DEPLOY_SHARED_RESOURCES == true }}
-    uses: ./.github/workflows/cdk_release_code.yml
-    with:
-      STACK_NAME: ${{ inputs.SHARED_RESOURCES_STACK_NAME }}
-      TARGET_ENVIRONMENT: ${{ inputs.TARGET_ENVIRONMENT }}
-      VERSION_NUMBER: ${{ inputs.VERSION_NUMBER }}
-      COMMIT_ID: ${{ inputs.COMMIT_ID }}
-      CDK_APP_NAME: SharedResourcesApp_uk
-      LOG_RETENTION_IN_DAYS: 30
-      AWS_REGION: eu-west-2
-      GET_IMPORT_COMMANDS: |
-        cloudfrontDistributionId=$(aws cloudformation list-exports --region us-east-1 --query "Exports[?Name=='$STACK_NAME:cloudfrontDistributionId:Id'].Value" --output text)
-      JQ_VARIABLES: |
-        --arg cloudfrontDistributionId "${cloudfrontDistributionId}" \
-        --arg allowAutoDeleteObjects "${{ inputs.ALLOW_AUTO_DELETE_OBJECTS }}" \
-      JQ_REPLACEMENTS: |
-        "cloudfrontDistributionId": $cloudfrontDistributionId,
-        "allowAutoDeleteObjects": $allowAutoDeleteObjects,
-    secrets:
-      CDK_PULL_IMAGE_ROLE: ${{ secrets.CDK_PULL_IMAGE_ROLE }}
-      CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}
-  
-  release_shared_resources_us:
-    name: "release shared stack US"
-    if: ${{ inputs.DEPLOY_SHARED_RESOURCES == true }}
-    needs: [release_shared_resources_uk]
-    uses: ./.github/workflows/cdk_release_code.yml
-    with:
-      STACK_NAME: ${{ inputs.SHARED_RESOURCES_STACK_NAME }}
-      TARGET_ENVIRONMENT: ${{ inputs.TARGET_ENVIRONMENT }}
-      VERSION_NUMBER: ${{ inputs.VERSION_NUMBER }}
-      COMMIT_ID: ${{ inputs.COMMIT_ID }}
-      CDK_APP_NAME: SharedResourcesApp_us
-      LOG_RETENTION_IN_DAYS: 30
-      AWS_REGION: us-east-1
-      GET_IMPORT_COMMANDS: |
-        epsDomainName=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='"eps-route53-resources:EPS-domain"'].Value" --output text)
-        epsHostedZoneId=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='"eps-route53-resources:EPS-ZoneID"'].Value" --output text)
-        staticBucketArn=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='$STACK_NAME:StaticContentBucket:Arn'].Value" --output text)
-        staticContentBucketKmsKeyArn=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='$STACK_NAME:staticContentBucketKmsKey:Arn'].Value" --output text)
-        auditLoggingBucket=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='"account-resources:AuditLoggingBucket"'].Value" --output text)
-      JQ_VARIABLES: |
-        --arg epsDomainName "${epsDomainName}" \
-        --arg epsHostedZoneId "${epsHostedZoneId}" \
-        --arg staticBucketArn "${staticBucketArn}" \
-        --arg staticContentBucketKmsKeyArn "${staticContentBucketKmsKeyArn}" \
-        --arg auditLoggingBucket "${auditLoggingBucket}" \
-        --arg allowAutoDeleteObjects "${{ inputs.ALLOW_AUTO_DELETE_OBJECTS }}" \
-      JQ_REPLACEMENTS: |
-        "epsDomainName": $epsDomainName,
-        "epsHostedZoneId": $epsHostedZoneId,
-        "staticBucketArn": $staticBucketArn,
-        "staticContentBucketKmsKeyArn": $staticContentBucketKmsKeyArn,
-        "auditLoggingBucket": $auditLoggingBucket,
-        "allowAutoDeleteObjects": $allowAutoDeleteObjects,
-    secrets:
-      CDK_PULL_IMAGE_ROLE: ${{ secrets.CDK_PULL_IMAGE_ROLE }}
-      CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}
-  
-  release_backend:
-    name: "release backend"
-    uses: ./.github/workflows/cdk_release_code.yml
-    needs: [release_shared_resources_uk, release_shared_resources_us]
-    if: ${{ always() && !failure() && !cancelled() }}
-    with:
-      STACK_NAME: ${{ inputs.BACKEND_STACK_NAME }}
-      TARGET_ENVIRONMENT: ${{ inputs.TARGET_ENVIRONMENT }}
-      VERSION_NUMBER: ${{ inputs.VERSION_NUMBER }}
-      COMMIT_ID: ${{ inputs.COMMIT_ID }}
-      CDK_APP_NAME: BackendApp
-      LOG_RETENTION_IN_DAYS: 30
-      AWS_REGION: eu-west-2
-    secrets:
-      CDK_PULL_IMAGE_ROLE: ${{ secrets.CDK_PULL_IMAGE_ROLE }}
-      CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}
+  release_code:
+    runs-on: ubuntu-latest
+    name: "Release all stacks"
+    environment: ${{ inputs.TARGET_ENVIRONMENT }}
+    permissions:
+      id-token: write
+      contents: write
 
-  upload_static_content:
-    name: "upload static content"
-    uses: ./.github/workflows/upload_static_content.yml
-    needs: [release_backend]
-    if: ${{ always() && !failure() && !cancelled() }}
-    with:
-      TARGET_ENVIRONMENT: ${{ inputs.TARGET_ENVIRONMENT }}
-      VERSION_NUMBER: ${{ inputs.VERSION_NUMBER }}
-      COMMIT_ID: ${{ inputs.COMMIT_ID }}
-      SHARED_RESOURCES_STACK_NAME: ${{ inputs.SHARED_RESOURCES_STACK_NAME }}
-    secrets:
-      CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}
-      
+    steps:
+      - name: Checkout local github actions
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.BRANCH_NAME }}
+          fetch-depth: 0
+          sparse-checkout: |
+            .github
+
+      - name: build_artifact download
+        uses: actions/download-artifact@v4
+        with:
+          name: build_artifact
+
+      - name: extract build_artifact
+        run: |
+          mkdir -p .build
+          tar -xf artifact.tar -C .build
+          ROOT_PATH="$(pwd)/.build"
+          echo "ROOT_PATH=${ROOT_PATH}" >> "$GITHUB_ENV"
+
+      - name: Configure AWS Credentials
+        id: connect-aws
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: eu-west-2
+          role-to-assume: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}
+          role-session-name: prescription-clinical-tracker-ui-deployment
+          output-credentials: true
+          unset-current-credentials: true
+  
+      - name: run relase_all_stacks script
+        run: |
+          .github/scripts/release_all_stacks.sh
+        env:
+          ROOT_PATH: ${{ env.ROOT_PATH }}
+          STATEFUL_STACK_NAME: ${{ inputs.STATEFUL_STACK_NAME }}
+          STATELESS_STACK_NAME: ${{ inputs.STATELESS_STACK_NAME }}
+          VERSION_NUMBER: ${{ inputs.VERSION_NUMBER }}
+          COMMIT_ID: ${{ inputs.COMMIT_ID }}
+          LOG_RETENTION_IN_DAYS: ${{ inputs.LOG_RETENTION_IN_DAYS }}
+          ALLOW_AUTO_DELETE_OBJECTS: ${{ inputs.ALLOW_AUTO_DELETE_OBJECTS }}
+          STATEFUL_STACK_UK_CDK_APP_PATH: "packages/cdk/bin/SharedResourcesApp_uk.ts"
+          STATEFUL_STACK_US_CDK_APP_PATH: "packages/cdk/bin/SharedResourcesApp_us.ts"
+          STATELESS_STACK_CDK_APP_PATH: "packages/cdk/bin/BackendApp.ts"
+    
+      - name: Checkout gh-pages
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: gh-pages
+
+      - name: update release tag in github pages
+        run: |
+          cd gh-pages
+          NOW=$(date +'%Y-%m-%dT%H:%M:%S')
+          echo "tag,release_datetime" > _data/${{ inputs.TARGET_ENVIRONMENT }}_${{ inputs.STATEFUL_STACK_NAME }}_latest.csv
+          echo "${{ inputs.VERSION_NUMBER }},${NOW}" >> _data/${{ inputs.TARGET_ENVIRONMENT }}_${{ inputs.STATEFUL_STACK_NAME }}_latest.csv
+          echo "${{ inputs.VERSION_NUMBER }},${NOW}" >> _data/${{ inputs.TARGET_ENVIRONMENT }}_${{ inputs.STATEFUL_STACK_NAME }}_deployments.csv
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add _data/${{ inputs.TARGET_ENVIRONMENT }}_${{ inputs.STATEFUL_STACK_NAME }}_latest.csv
+          git add _data/${{ inputs.TARGET_ENVIRONMENT }}_${{ inputs.STATEFUL_STACK_NAME }}_deployments.csv
+          git commit -m 'update releases for ${{ inputs.TARGET_ENVIRONMENT }}'
+          parallel --retries 10 --delay 3 ::: "git pull --rebase && git push"
