@@ -101,7 +101,9 @@ cdk-synth-shared-resources:
 		--context stackName=cpt-ui \
 		--context VERSION_NUMBER=undefined \
 		--context COMMIT_ID=undefined \
-		--context logRetentionInDays=30
+		--context logRetentionInDays=30 \
+		--context epsDomainName=undefined \
+		--context epsHostedZoneId=undefined \
 
 cdk-synth-backend:
 	npx cdk synth \
