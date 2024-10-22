@@ -1,0 +1,114 @@
+name: release all stacks
+
+on:
+  workflow_call:
+    inputs:
+      STATELESS_STACK_NAME:
+        required: true
+        type: string
+      STATEFUL_STACK_NAME:
+        required: true
+        type: string
+      TARGET_ENVIRONMENT:
+        required: true
+        type: string
+      VERSION_NUMBER:
+        required: true
+        type: string
+      COMMIT_ID:
+        required: true
+        type: string
+      LOG_RETENTION_IN_DAYS:
+        required: true
+        type: string
+      ALLOW_AUTO_DELETE_OBJECTS:
+        required: true
+        type: boolean
+    secrets:
+      CLOUD_FORMATION_DEPLOY_ROLE:
+        required: true
+
+jobs:
+  release_code:
+    runs-on: ubuntu-latest
+    name: "Release all stacks"
+    environment: ${{ inputs.TARGET_ENVIRONMENT }}
+    permissions:
+      id-token: write
+      contents: write
+
+    steps:
+      - name: Checkout local github actions
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.BRANCH_NAME }}
+          fetch-depth: 0
+          sparse-checkout: |
+            .github
+
+      # using git commit sha for version of action to ensure we have stable version
+      - name: Install asdf
+        uses: asdf-vm/actions/setup@05e0d2ed97b598bfce82fd30daf324ae0c4570e6
+        with:
+          asdf_branch: v0.14.1
+
+      - name: build_artifact download
+        uses: actions/download-artifact@v4
+        with:
+          name: build_artifact
+
+      - name: extract build_artifact
+        run: |
+          mkdir -p .build
+          tar -xf artifact.tar -C .build
+          ROOT_PATH="$(pwd)/.build"
+          echo "ROOT_PATH=${ROOT_PATH}" >> "$GITHUB_ENV"
+          cd .build
+          sed -i -n '/nodejs/p' .tool-versions
+          asdf plugin add nodejs https://github.com/asdf-vm/asdf-nodejs.git
+          asdf install
+    
+      - name: Configure AWS Credentials
+        id: connect-aws
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: eu-west-2
+          role-to-assume: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}
+          role-session-name: prescription-clinical-tracker-ui-deployment
+          output-credentials: true
+          unset-current-credentials: true
+  
+      - name: run relase_all_stacks script
+        run: |
+          .github/scripts/release_all_stacks.sh
+        env:
+          ROOT_PATH: ${{ env.ROOT_PATH }}
+          STATEFUL_STACK_NAME: ${{ inputs.STATEFUL_STACK_NAME }}
+          STATELESS_STACK_NAME: ${{ inputs.STATELESS_STACK_NAME }}
+          VERSION_NUMBER: ${{ inputs.VERSION_NUMBER }}
+          COMMIT_ID: ${{ inputs.COMMIT_ID }}
+          LOG_RETENTION_IN_DAYS: ${{ inputs.LOG_RETENTION_IN_DAYS }}
+          ALLOW_AUTO_DELETE_OBJECTS: ${{ inputs.ALLOW_AUTO_DELETE_OBJECTS }}
+          STATEFUL_STACK_UK_CDK_APP_PATH: "packages/cdk/bin/SharedResourcesApp_uk.ts"
+          STATEFUL_STACK_US_CDK_APP_PATH: "packages/cdk/bin/SharedResourcesApp_us.ts"
+          STATELESS_STACK_CDK_APP_PATH: "packages/cdk/bin/BackendApp.ts"
+    
+      - name: Checkout gh-pages
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: gh-pages
+
+      - name: update release tag in github pages
+        run: |
+          cd gh-pages
+          NOW=$(date +'%Y-%m-%dT%H:%M:%S')
+          echo "tag,release_datetime" > _data/${{ inputs.TARGET_ENVIRONMENT }}_${{ inputs.STATEFUL_STACK_NAME }}_latest.csv
+          echo "${{ inputs.VERSION_NUMBER }},${NOW}" >> _data/${{ inputs.TARGET_ENVIRONMENT }}_${{ inputs.STATEFUL_STACK_NAME }}_latest.csv
+          echo "${{ inputs.VERSION_NUMBER }},${NOW}" >> _data/${{ inputs.TARGET_ENVIRONMENT }}_${{ inputs.STATEFUL_STACK_NAME }}_deployments.csv
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add _data/${{ inputs.TARGET_ENVIRONMENT }}_${{ inputs.STATEFUL_STACK_NAME }}_latest.csv
+          git add _data/${{ inputs.TARGET_ENVIRONMENT }}_${{ inputs.STATEFUL_STACK_NAME }}_deployments.csv
+          git commit -m 'update releases for ${{ inputs.TARGET_ENVIRONMENT }}'
+          parallel --retries 10 --delay 3 ::: "git pull --rebase && git push"

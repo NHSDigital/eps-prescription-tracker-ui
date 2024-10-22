@@ -11,11 +11,20 @@
       {
         "name": "packages/cdk",
         "path": "../packages/cdk"
+      },
+      {
+        "name": "packages/cloudfrontFunctions",
+        "path": "../packages/cloudfrontFunctions"
+      },
+      {
+        "name": "packages/staticContent",
+        "path": "../packages/staticContent"
       }
     ],
     "settings": {
       "jest.disabledWorkspaceFolders": [
-        "eps-prescription-tracker-ui-monorepo"
+        "eps-prescription-tracker-ui-monorepo",
+        "packages/staticContent"
       ],
       "files.exclude": {
         "packages/": true

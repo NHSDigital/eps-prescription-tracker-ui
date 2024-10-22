@@ -15,35 +15,34 @@ on:
       COMMIT_ID:
         required: true
         type: string
-      CREATE_INT_RELEASE_NOTES:
-        type: boolean
-        default: false
-      CREATE_INT_RC_RELEASE_NOTES:
-        type: boolean
-        default: false
-      CREATE_PROD_RELEASE_NOTES:
-        type: boolean
-        default: false
-      MARK_JIRA_RELEASED:
-        type: boolean
-        default: false
+      CDK_APP_NAME:
+        required: true
+        type: string
+      LOG_RETENTION_IN_DAYS:
+        required: true
+        type: string
+      GET_IMPORT_COMMANDS:
+        required: false
+        type: string
+      JQ_VARIABLES:
+        required: false
+        type: string
+      JQ_REPLACEMENTS:
+        required: false
+        type: string
+      AWS_REGION:
+        required: true
+        type: string
     secrets:
       CLOUD_FORMATION_DEPLOY_ROLE:
         required: true
       CDK_PULL_IMAGE_ROLE:
         required: true
-      DEV_CLOUD_FORMATION_CHECK_VERSION_ROLE:
-        required: false
-      INT_CLOUD_FORMATION_CHECK_VERSION_ROLE:
-        required: false
-      PROD_CLOUD_FORMATION_CHECK_VERSION_ROLE:
-        required: false
-      DEV_CLOUD_FORMATION_EXECUTE_LAMBDA_ROLE:
-        required: false
   
 jobs:
   release_code:
     runs-on: ubuntu-latest
+    name: "Deploy ${{ inputs.CDK_APP_NAME }}"
     environment: ${{ inputs.TARGET_ENVIRONMENT }}
     permissions:
       id-token: write
@@ -57,18 +56,6 @@ jobs:
           fetch-depth: 0
           sparse-checkout: |
             .github
-
-      - name: create_int_rc_release_notes
-        uses: ./.github/actions/update_confluence_jira
-        if: ${{ inputs.CREATE_INT_RC_RELEASE_NOTES == true }}
-        with:
-          TARGET_ENVIRONMENT: int
-          RELEASE_TAG: ${{ inputs.VERSION_NUMBER }}
-          CONFLUENCE_PAGE_ID: "899319592"
-          CREATE_RC_RELEASE_NOTES: true
-          DEV_CLOUD_FORMATION_CHECK_VERSION_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_CHECK_VERSION_ROLE }}
-          TARGET_CLOUD_FORMATION_CHECK_VERSION_ROLE: ${{ secrets.INT_CLOUD_FORMATION_CHECK_VERSION_ROLE }}
-          DEV_CLOUD_FORMATION_EXECUTE_LAMBDA_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_EXECUTE_LAMBDA_ROLE }}
 
       - name: Configure AWS Credentials
         id: connect-aws-pull-image
@@ -106,23 +93,31 @@ jobs:
         id: connect-aws
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-region: eu-west-2
+          aws-region: ${{ inputs.AWS_REGION }}
           role-to-assume: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}
           role-session-name: prescription-clinical-tracker-ui-deployment
           output-credentials: true
+          unset-current-credentials: true
   
       - name: fix cdk.json for deployment
         run: |
+          ${{ inputs.GET_IMPORT_COMMANDS }}
           jq \
-          --arg stackName "${{ inputs.stack_name }}" \
+          --arg stackName "${{ inputs.STACK_NAME }}" \
           --arg VERSION_NUMBER "${{ inputs.VERSION_NUMBER }}" \
           --arg COMMIT_ID "${{ inputs.COMMIT_ID }}" \
+          --arg logRetentionInDays "${{ inputs.LOG_RETENTION_IN_DAYS }}" \
+          ${{ inputs.JQ_VARIABLES }} \
           '.context += {
+            ${{ inputs.JQ_REPLACEMENTS }}
             "stackName": $stackName, 
             "VERSION_NUMBER": $VERSION_NUMBER, 
-            "COMMIT_ID": $COMMIT_ID}' \
+            "COMMIT_ID": $COMMIT_ID,
+            "logRetentionInDays": $logRetentionInDays}' \
           .build/cdk.json > .build/cdk.new.json
           mv .build/cdk.new.json .build/cdk.json
+        env:
+          STACK_NAME: ${{ inputs.STACK_NAME }}
 
       - name: Show diff
         run: |
@@ -131,10 +126,10 @@ jobs:
           -e AWS_ACCESS_KEY_ID=${{ steps.connect-aws.outputs.aws-access-key-id }} \
           -e AWS_SECRET_ACCESS_KEY=${{ steps.connect-aws.outputs.aws-secret-access-key }} \
           -e AWS_SESSION_TOKEN=${{ steps.connect-aws.outputs.aws-session-token }} \
-          -e AWS_REGION="eu-west-2" \
+          -e AWS_REGION="${{ inputs.AWS_REGION }}" \
           -e SHOW_DIFF="true" \
           -e DEPLOY_CODE="false" \
-          -e CDK_APP_PATH="packages/cdk/bin/ClinicalPrescriptionTrackerApp.ts" \
+          -e CDK_APP_PATH="packages/cdk/bin/${{ inputs.CDK_APP_NAME }}.ts" \
           cdk-utils-build-repo:latest
         shell: bash
 
@@ -145,60 +140,29 @@ jobs:
           -e AWS_ACCESS_KEY_ID=${{ steps.connect-aws.outputs.aws-access-key-id }} \
           -e AWS_SECRET_ACCESS_KEY=${{ steps.connect-aws.outputs.aws-secret-access-key }} \
           -e AWS_SESSION_TOKEN=${{ steps.connect-aws.outputs.aws-session-token }} \
-          -e AWS_REGION="eu-west-2" \
+          -e AWS_REGION="${{ inputs.AWS_REGION }}" \
           -e SHOW_DIFF="false" \
           -e DEPLOY_CODE="true" \
-          -e CDK_APP_PATH="packages/cdk/bin/ClinicalPrescriptionTrackerApp.ts" \
+          -e CDK_APP_PATH="packages/cdk/bin/${{ inputs.CDK_APP_NAME }}.ts" \
           cdk-utils-build-repo:latest
         shell: bash
 
-      - name: create_int_release_notes
-        uses: ./.github/actions/update_confluence_jira
-        if: ${{ inputs.CREATE_INT_RELEASE_NOTES == true && always() && !failure() && !cancelled() }}
-        with:
-          TARGET_ENVIRONMENT: int
-          CONFLUENCE_PAGE_ID: "899319595"
-          CREATE_RC_RELEASE_NOTES: false
-          DEV_CLOUD_FORMATION_CHECK_VERSION_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_CHECK_VERSION_ROLE }}
-          TARGET_CLOUD_FORMATION_CHECK_VERSION_ROLE: ${{ secrets.INT_CLOUD_FORMATION_CHECK_VERSION_ROLE }}
-          DEV_CLOUD_FORMATION_EXECUTE_LAMBDA_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_EXECUTE_LAMBDA_ROLE }}
-
-      - name: create_prod_release_notes
-        uses: ./.github/actions/update_confluence_jira
-        if: ${{ inputs.CREATE_PROD_RELEASE_NOTES == true && always() && !failure() && !cancelled() }}
-        with:
-          TARGET_ENVIRONMENT: prod
-          CONFLUENCE_PAGE_ID: "899319597"
-          CREATE_RC_RELEASE_NOTES: false
-          DEV_CLOUD_FORMATION_CHECK_VERSION_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_CHECK_VERSION_ROLE }}
-          TARGET_CLOUD_FORMATION_CHECK_VERSION_ROLE: ${{ secrets.PROD_CLOUD_FORMATION_CHECK_VERSION_ROLE }}
-          DEV_CLOUD_FORMATION_EXECUTE_LAMBDA_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_EXECUTE_LAMBDA_ROLE }}
-
-      - name: mark_released_in_jira
-        uses: ./.github/actions/mark_jira_released
-        if: ${{ inputs.MARK_JIRA_RELEASED == true && always() && !failure() && !cancelled() }}
-        with:
-          RELEASE_TAG: ${{ inputs.VERSION_NUMBER }}
-          DEV_CLOUD_FORMATION_EXECUTE_LAMBDA_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_EXECUTE_LAMBDA_ROLE }}
-
       - name: Checkout gh-pages
-        if: ${{ !startsWith(inputs.STACK_NAME, 'lambda-resources-pr-') }}
         uses: actions/checkout@v4
         with:
           ref: gh-pages
           path: gh-pages
 
       - name: update release tag in github pages
-        if: ${{ inputs.TARGET_ENVIRONMENT != 'dev-pr' }}
         run: |
           cd gh-pages
           NOW=$(date +'%Y-%m-%dT%H:%M:%S')
-          echo "tag,release_datetime" > _data/${{ inputs.TARGET_ENVIRONMENT }}_latest.csv
-          echo "${{ inputs.VERSION_NUMBER }},${NOW}" >> _data/${{ inputs.TARGET_ENVIRONMENT }}_latest.csv
-          echo "${{ inputs.VERSION_NUMBER }},${NOW}" >> _data/${{ inputs.TARGET_ENVIRONMENT }}_deployments.csv
+          echo "tag,release_datetime" > _data/${{ inputs.TARGET_ENVIRONMENT }}_${{ inputs.STACK_NAME }}_latest.csv
+          echo "${{ inputs.VERSION_NUMBER }},${NOW}" >> _data/${{ inputs.TARGET_ENVIRONMENT }}_${{ inputs.STACK_NAME }}_latest.csv
+          echo "${{ inputs.VERSION_NUMBER }},${NOW}" >> _data/${{ inputs.TARGET_ENVIRONMENT }}_${{ inputs.STACK_NAME }}_deployments.csv
           git config user.name github-actions
           git config user.email github-actions@github.com
-          git add _data/${{ inputs.TARGET_ENVIRONMENT }}_latest.csv
-          git add _data/${{ inputs.TARGET_ENVIRONMENT }}_deployments.csv
+          git add _data/${{ inputs.TARGET_ENVIRONMENT }}_${{ inputs.STACK_NAME }}_latest.csv
+          git add _data/${{ inputs.TARGET_ENVIRONMENT }}_${{ inputs.STACK_NAME }}_deployments.csv
           git commit -m 'update releases for ${{ inputs.TARGET_ENVIRONMENT }}'
           parallel --retries 10 --delay 3 ::: "git pull --rebase && git push"
