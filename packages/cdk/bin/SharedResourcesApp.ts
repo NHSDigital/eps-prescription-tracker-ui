@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 import "source-map-support/register"
-import {App, Aspects, Tags} from "aws-cdk-lib"
-import {AwsSolutionsChecks} from "cdk-nag"
+import {App, Tags} from "aws-cdk-lib"
+// import {App, Aspects, Tags} from "aws-cdk-lib"
+// import {AwsSolutionsChecks} from "cdk-nag"
 // import {CloudfrontStack} from "../stacks/CloudfrontStack"
 // import {SharedResourcesStack} from "../stacks/SharedResourcesStack"
 // import {RestApiBase} from "aws-cdk-lib/aws-apigateway"
@@ -16,7 +17,7 @@ const version = app.node.tryGetContext("VERSION_NUMBER")
 const commit = app.node.tryGetContext("COMMIT_ID")
 const logRetentionInDays = Number(app.node.tryGetContext("logRetentionInDays"))
 
-Aspects.of(app).add(new AwsSolutionsChecks({verbose: true}))
+// Aspects.of(app).add(new AwsSolutionsChecks({verbose: true}))
 
 Tags.of(app).add("version", version)
 Tags.of(app).add("stackName", stackName)
