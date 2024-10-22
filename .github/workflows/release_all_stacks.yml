@@ -46,6 +46,12 @@ jobs:
           sparse-checkout: |
             .github
 
+      # using git commit sha for version of action to ensure we have stable version
+      - name: Install asdf
+        uses: asdf-vm/actions/setup@05e0d2ed97b598bfce82fd30daf324ae0c4570e6
+        with:
+          asdf_branch: v0.14.1
+
       - name: build_artifact download
         uses: actions/download-artifact@v4
         with:
@@ -57,6 +63,9 @@ jobs:
           tar -xf artifact.tar -C .build
           ROOT_PATH="$(pwd)/.build"
           echo "ROOT_PATH=${ROOT_PATH}" >> "$GITHUB_ENV"
+          cd .build
+          sed -i -n '/nodejs/p' .tool-versions
+          asdf install
 
       - name: Configure AWS Credentials
         id: connect-aws
