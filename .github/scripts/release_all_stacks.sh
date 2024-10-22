@@ -106,7 +106,6 @@ deploy_stateful_stack_us() {
     "epsHostedZoneId": $epsHostedZoneId,
     "staticBucketArn": $staticBucketArn,
     "staticContentBucketKmsKeyArn": $staticContentBucketKmsKeyArn,
-    "auditLoggingBucket": $auditLoggingBucket,
     "allowAutoDeleteObjects": $allowAutoDeleteObjects,
     "stackName": $stackName, 
     "VERSION_NUMBER": $VERSION_NUMBER, 
