@@ -125,6 +125,9 @@ jobs:
       VERSION_NUMBER: ${{needs.tag_release.outputs.version_tag}}
       COMMIT_ID: ${{needs.get_commit_id.outputs.commit_id}}
       DEPLOY_SHARED_RESOURCES: true
+    secrets:
+      CDK_PULL_IMAGE_ROLE: ${{ secrets.DEV_CDK_PULL_IMAGE_ROLE }}
+      CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_DEPLOY_ROLE }}
   
   create_release_notes:
     needs: [tag_release, package_code, get_commit_id, release_dev]
@@ -145,6 +148,9 @@ jobs:
       VERSION_NUMBER: ${{needs.tag_release.outputs.version_tag}}
       COMMIT_ID: ${{needs.get_commit_id.outputs.commit_id}}
       DEPLOY_SHARED_RESOURCES: true
+    secrets:
+      CDK_PULL_IMAGE_ROLE: ${{ secrets.REF_CDK_PULL_IMAGE_ROLE }}
+      CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.REF_CLOUD_FORMATION_DEPLOY_ROLE }}
 
   release_qa:
     needs: [tag_release, package_code, get_commit_id]
@@ -155,6 +161,9 @@ jobs:
       VERSION_NUMBER: ${{needs.tag_release.outputs.version_tag}}
       COMMIT_ID: ${{needs.get_commit_id.outputs.commit_id}}
       DEPLOY_SHARED_RESOURCES: true
+    secrets:
+      CDK_PULL_IMAGE_ROLE: ${{ secrets.QA_CDK_PULL_IMAGE_ROLE }}
+      CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.QA_CLOUD_FORMATION_DEPLOY_ROLE }}
 
   release_int:
     needs: [tag_release, package_code, get_commit_id]
@@ -165,6 +174,9 @@ jobs:
       VERSION_NUMBER: ${{needs.tag_release.outputs.version_tag}}
       COMMIT_ID: ${{needs.get_commit_id.outputs.commit_id}}
       DEPLOY_SHARED_RESOURCES: true
+    secrets:
+      CDK_PULL_IMAGE_ROLE: ${{ secrets.INT_CDK_PULL_IMAGE_ROLE }}
+      CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.INT_CLOUD_FORMATION_DEPLOY_ROLE }}
 
   # release_prod:
   #   needs: [tag_release, package_code, get_commit_id]
@@ -175,3 +187,6 @@ jobs:
   #     VERSION_NUMBER: ${{needs.tag_release.outputs.version_tag}}
   #     COMMIT_ID: ${{needs.get_commit_id.outputs.commit_id}}
   #     DEPLOY_SHARED_RESOURCES: true
+  #   secrets:
+  #     CDK_PULL_IMAGE_ROLE: ${{ secrets.PROD_CDK_PULL_IMAGE_ROLE }}
+  #     CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.PROD_CLOUD_FORMATION_DEPLOY_ROLE }}

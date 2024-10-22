@@ -18,6 +18,11 @@ on:
       DEPLOY_SHARED_RESOURCES:
         required: true
         type: boolean
+    secrets:
+      CLOUD_FORMATION_DEPLOY_ROLE:
+        required: true
+      CDK_PULL_IMAGE_ROLE:
+        required: true
 
 jobs:
   release_shared_resources:
@@ -30,9 +35,18 @@ jobs:
       COMMIT_ID: ${{ inputs.COMMIT_ID }}
       CDK_APP_NAME: SharedResourcesApp
       LOG_RETENTION_IN_DAYS: 30
+      GET_IMPORT_COMMANDS: |
+        epsDomainName=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='"eps-route53-resources:EPS-domain"'].Value" --output text)
+        epsHostedZoneId=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='"eps-route53-resources:EPS-ZoneID"'].Value" --output text)
+      JQ_VARIABLES: |
+        --arg epsDomainName "${epsDomainName}" \
+        --arg epsHostedZoneId "${epsHostedZoneId}"
+      JQ_REPLACEMENTS: |
+        "epsDomainName": $epsDomainName,
+        "epsHostedZoneId": $epsHostedZoneId,
     secrets:
-      CDK_PULL_IMAGE_ROLE: ${{ secrets.DEV_CDK_PULL_IMAGE_ROLE }}
-      CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_DEPLOY_ROLE }}
+      CDK_PULL_IMAGE_ROLE: ${{ secrets.CDK_PULL_IMAGE_ROLE }}
+      CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}
   
   release_backend:
     uses: ./.github/workflows/cdk_release_code.yml
@@ -46,5 +60,5 @@ jobs:
       CDK_APP_NAME: BackendApp
       LOG_RETENTION_IN_DAYS: 30
     secrets:
-      CDK_PULL_IMAGE_ROLE: ${{ secrets.DEV_CDK_PULL_IMAGE_ROLE }}
-      CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_DEPLOY_ROLE }}
+      CDK_PULL_IMAGE_ROLE: ${{ secrets.CDK_PULL_IMAGE_ROLE }}
+      CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}

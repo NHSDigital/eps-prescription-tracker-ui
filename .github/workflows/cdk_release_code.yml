@@ -21,6 +21,15 @@ on:
       LOG_RETENTION_IN_DAYS:
         required: true
         type: string
+      GET_IMPORT_COMMANDS:
+        required: false
+        type: string
+      JQ_VARIABLES:
+        required: false
+        type: string
+      JQ_REPLACEMENTS:
+        required: false
+        type: string
     secrets:
       CLOUD_FORMATION_DEPLOY_ROLE:
         required: true
@@ -87,12 +96,15 @@ jobs:
   
       - name: fix cdk.json for deployment
         run: |
+          ${{ inputs.GET_IMPORT_COMMANDS }}
           jq \
           --arg stackName "${{ inputs.STACK_NAME }}" \
           --arg VERSION_NUMBER "${{ inputs.VERSION_NUMBER }}" \
           --arg COMMIT_ID "${{ inputs.COMMIT_ID }}" \
           --arg logRetentionInDays "${{ inputs.LOG_RETENTION_IN_DAYS }}" \
+          ${{ inputs.JQ_VARIABLES }} \
           '.context += {
+            ${{ inputs.JQ_REPLACEMENTS }}
             "stackName": $stackName, 
             "VERSION_NUMBER": $VERSION_NUMBER, 
             "COMMIT_ID": $COMMIT_ID,

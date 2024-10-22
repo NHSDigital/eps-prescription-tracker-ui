@@ -21,6 +21,8 @@ const stackName = app.node.tryGetContext("stackName")
 const version = app.node.tryGetContext("VERSION_NUMBER")
 const commit = app.node.tryGetContext("COMMIT_ID")
 const logRetentionInDays = Number(app.node.tryGetContext("logRetentionInDays"))
+const epsDomainName = app.node.tryGetContext("epsDomainName")
+const epsHostedZoneId = app.node.tryGetContext("epsHostedZoneId")
 
 // Aspects.of(app).add(new AwsSolutionsChecks({verbose: true}))
 
@@ -58,7 +60,9 @@ const certs = new CloudfrontStackjustUS(app, "Certs", {
   },
   crossRegionReferences: true,
   stackName: `${stackName}-shared-resources`,
-  version: version
+  version: version,
+  epsDomainName: epsDomainName,
+  epsHostedZoneId: epsHostedZoneId
 })
 
 const shared = new SharedResourcesStackwCF(app, "Shared", {
