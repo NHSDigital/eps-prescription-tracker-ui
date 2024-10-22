@@ -14,6 +14,7 @@ upload_static_content() {
 
     echo "ROOT_PATH        : ${ROOT_PATH}"
     echo "staticBucketName : ${staticBucketName}"
+    echo "**********************************************"
 
     echo "Uploading static pages"
     aws s3 cp "${ROOT_PATH}/packages/staticContent/404.html" "s3://${staticBucketName}/404.html"
@@ -36,6 +37,7 @@ deploy_stateful_stack_uk() {
     echo "cloudfrontDistributionId       : ${cloudfrontDistributionId}"
     echo "ALLOW_AUTO_DELETE_OBJECTS      : ${ALLOW_AUTO_DELETE_OBJECTS}"
     echo "STATEFUL_STACK_UK_CDK_APP_PATH : ${STATEFUL_STACK_UK_CDK_APP_PATH}"
+    echo "**********************************************"
 
     jq \
     --arg stackName "${STATEFUL_STACK_NAME}" \
@@ -87,6 +89,7 @@ deploy_stateful_stack_us() {
     echo "staticContentBucketKmsKeyArn   : ${staticContentBucketKmsKeyArn}"
     echo "ALLOW_AUTO_DELETE_OBJECTS      : ${ALLOW_AUTO_DELETE_OBJECTS}"
     echo "STATEFUL_STACK_US_CDK_APP_PATH : ${STATEFUL_STACK_US_CDK_APP_PATH}"
+    echo "**********************************************"
 
     jq \
     --arg stackName "${STATEFUL_STACK_NAME}" \
@@ -130,6 +133,7 @@ deploy_stateless_stack() {
     echo "VERSION_NUMBER               : ${VERSION_NUMBER}"
     echo "COMMIT_ID                    : ${COMMIT_ID}"
     echo "STATELESS_STACK_CDK_APP_PATH : ${STATELESS_STACK_CDK_APP_PATH}"
+    echo "**********************************************"
 
     jq \
     --arg stackName "${STATELESS_STACK_NAME}" \
@@ -137,6 +141,7 @@ deploy_stateless_stack() {
     --arg COMMIT_ID "${COMMIT_ID}" \
     --arg logRetentionInDays "${LOG_RETENTION_IN_DAYS}" \
     '.context += {
+    "stackName": $stackName, 
     "VERSION_NUMBER": $VERSION_NUMBER, 
     "COMMIT_ID": $COMMIT_ID,
     "logRetentionInDays": $logRetentionInDays}' \
