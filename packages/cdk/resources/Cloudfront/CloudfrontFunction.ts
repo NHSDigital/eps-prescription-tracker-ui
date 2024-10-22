@@ -55,10 +55,10 @@ export class CloudfrontFunction extends Construct {
         {valueToReplace: "KVS_ID_PLACEHOLDER", replacementValue: functionStore.keyValueStoreId}] : [],
       ...props.codeReplacements ?? []
     ]
-    const functionCode = readFileSync(
+    let functionCode = readFileSync(
       resolve(__dirname, `../../../cloudfrontFunctions/src/${props.sourceFileName}`), "utf8")
     for (const codeReplacement of codeReplacements){
-      functionCode.replace(codeReplacement.valueToReplace, codeReplacement.replacementValue)
+      functionCode = functionCode.replace(codeReplacement.valueToReplace, codeReplacement.replacementValue)
     }
 
     const cloudfrontFunction = new Function(this, "Function", {

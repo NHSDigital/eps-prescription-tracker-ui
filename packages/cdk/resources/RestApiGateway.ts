@@ -1,5 +1,10 @@
 import {Fn, RemovalPolicy} from "aws-cdk-lib"
-import {EndpointType, LogGroupLogDestination, RestApi} from "aws-cdk-lib/aws-apigateway"
+import {
+  EndpointType,
+  LogGroupLogDestination,
+  MockIntegration,
+  RestApi
+} from "aws-cdk-lib/aws-apigateway"
 import {Role, ServicePrincipal} from "aws-cdk-lib/aws-iam"
 import {Stream} from "aws-cdk-lib/aws-kinesis"
 import {Key} from "aws-cdk-lib/aws-kms"
@@ -67,6 +72,13 @@ export class RestApiGateway extends Construct {
       assumedBy: new ServicePrincipal("apigateway.amazonaws.com"),
       managedPolicies: []
     })
+
+    // placeholder
+    apiGateway.root.addMethod("ANY", new MockIntegration({
+      integrationResponses: [
+        {statusCode: "418"}
+      ]
+    }))
 
     //Outputs
     this.restApiGateway = apiGateway
