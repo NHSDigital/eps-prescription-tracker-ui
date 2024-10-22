@@ -35,15 +35,6 @@ jobs:
       COMMIT_ID: ${{ inputs.COMMIT_ID }}
       CDK_APP_NAME: SharedResourcesApp
       LOG_RETENTION_IN_DAYS: 30
-      GET_IMPORT_COMMANDS: |
-        epsDomainName=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='"eps-route53-resources:EPS-domain"'].Value" --output text)
-        epsHostedZoneId=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='"eps-route53-resources:EPS-ZoneID"'].Value" --output text)
-      JQ_VARIABLES: |
-        --arg epsDomainName "${epsDomainName}" \
-        --arg epsHostedZoneId "${epsHostedZoneId}"
-      JQ_REPLACEMENTS: |
-        "epsDomainName": $epsDomainName,
-        "epsHostedZoneId": $epsHostedZoneId,
     secrets:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}

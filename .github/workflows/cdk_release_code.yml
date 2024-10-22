@@ -96,19 +96,24 @@ jobs:
   
       - name: fix cdk.json for deployment
         run: |
-          ${{ inputs.GET_IMPORT_COMMANDS }}
+          # shellcheck disable=SC2140
+          epsDomainName=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='"eps-route53-resources:EPS-domain"'].Value" --output text)
+          # shellcheck disable=SC2140
+          epsHostedZoneId=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='"eps-route53-resources:EPS-ZoneID"'].Value" --output text)
           jq \
           --arg stackName "${{ inputs.STACK_NAME }}" \
           --arg VERSION_NUMBER "${{ inputs.VERSION_NUMBER }}" \
           --arg COMMIT_ID "${{ inputs.COMMIT_ID }}" \
           --arg logRetentionInDays "${{ inputs.LOG_RETENTION_IN_DAYS }}" \
-          ${{ inputs.JQ_VARIABLES }} \
+          --arg epsDomainName "${epsDomainName}" \
+          --arg epsHostedZoneId "${epsHostedZoneId}"\
           '.context += {
-            ${{ inputs.JQ_REPLACEMENTS }}
             "stackName": $stackName, 
             "VERSION_NUMBER": $VERSION_NUMBER, 
             "COMMIT_ID": $COMMIT_ID,
-            "logRetentionInDays": $logRetentionInDays}' \
+            "logRetentionInDays": $logRetentionInDays,
+            "epsDomainName": $epsDomainName,
+            "epsHostedZoneId": $epsHostedZoneId},' \
           .build/cdk.json > .build/cdk.new.json
           mv .build/cdk.new.json .build/cdk.json
 
