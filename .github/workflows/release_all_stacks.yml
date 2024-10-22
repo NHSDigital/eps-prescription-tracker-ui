@@ -65,14 +65,9 @@ jobs:
           echo "ROOT_PATH=${ROOT_PATH}" >> "$GITHUB_ENV"
           cd .build
           sed -i -n '/nodejs/p' .tool-versions
+          asdf plugin add nodejs https://github.com/asdf-vm/asdf-nodejs.git
           asdf install
-          cp .tool-versions ../
-  
-      - name: Install asdf dependencies in .tool-versions
-        uses: asdf-vm/actions/install@05e0d2ed97b598bfce82fd30daf324ae0c4570e6
-        with:
-          asdf_branch: v0.14.1
-
+    
       - name: Configure AWS Credentials
         id: connect-aws
         uses: aws-actions/configure-aws-credentials@v4
