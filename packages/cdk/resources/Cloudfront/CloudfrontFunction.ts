@@ -43,7 +43,7 @@ export class CloudfrontFunction extends Construct {
     let functionStore: IKeyValueStore | undefined = undefined
     if (props.keyValues){
       functionStore = new KeyValueStore(this, "FunctionsStore", {
-        source: ImportSource.fromInline(JSON.stringify(props.keyValues))
+        source: ImportSource.fromInline(JSON.stringify({data: props.keyValues}))
       })
     }
 
