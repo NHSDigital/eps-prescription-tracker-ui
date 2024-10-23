@@ -106,7 +106,7 @@ jobs:
           --arg COMMIT_ID "${{ inputs.COMMIT_ID }}" \
           --arg logRetentionInDays "${{ inputs.LOG_RETENTION_IN_DAYS }}" \
           --arg epsDomainName "${epsDomainName}" \
-          --arg epsHostedZoneId "${epsHostedZoneId}"\
+          --arg epsHostedZoneId "${epsHostedZoneId}" \
           '.context += {
             "stackName": $stackName, 
             "VERSION_NUMBER": $VERSION_NUMBER, 
