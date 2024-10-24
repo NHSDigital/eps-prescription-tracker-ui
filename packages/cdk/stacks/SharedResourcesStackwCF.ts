@@ -160,7 +160,7 @@ export class SharedResourcesStackwCF extends Stack {
       publishAdditionalMetrics: true,
       enableLogging: true,
       logBucket: auditLoggingBucket,
-      logFilePrefix: "/cloudfront",
+      logFilePrefix: "cloudfront",
       logIncludesCookies: true, // may actually want to be false, don't know if it includes names of cookies or contents
       defaultBehavior: {
         origin: staticContentBucketOrigin,
