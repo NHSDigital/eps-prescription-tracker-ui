@@ -59,8 +59,8 @@ export class SharedResourcesStackwCF extends Stack {
       logRetentionInDays: props.logRetentionInDays
     })
 
-    const auditLoggingBucket = Bucket.fromBucketArn(
-      this, "AuditLoggingBucket", Fn.importValue("account-resources:AuditLoggingBucket"))
+    const cloudfrontLoggingBucket = Bucket.fromBucketArn(
+      this, "CloudfrontLoggingBucket", Fn.importValue("account-resources:CloudfrontLoggingBucket"))
 
     const staticContentBucketOrigin = S3BucketOrigin.withOriginAccessControl(
       staticContentBucket.bucket,
@@ -159,8 +159,8 @@ export class SharedResourcesStackwCF extends Stack {
       sslSupportMethod: SSLMethod.SNI,
       publishAdditionalMetrics: true,
       enableLogging: true,
-      logBucket: auditLoggingBucket,
-      logFilePrefix: "cloudfront",
+      logBucket: cloudfrontLoggingBucket,
+      logFilePrefix: this.stackName,
       logIncludesCookies: true, // may actually want to be false, don't know if it includes names of cookies or contents
       defaultBehavior: {
         origin: staticContentBucketOrigin,
