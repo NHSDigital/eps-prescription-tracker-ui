@@ -24,7 +24,7 @@
     "devDependencies": {
         "@semantic-release/changelog": "^6.0.3",
         "@semantic-release/release-notes-generator": "^14.0.1",
-        "@types/jest": "^29.5.13",
+        "@types/jest": "^29.5.14",
         "@types/react": "18.3.12",
         "@types/node": "^22.7.9",
         "@typescript-eslint/eslint-plugin": "^8.9.0",
