@@ -10,7 +10,8 @@ export const handler = async (event) => {
 
   const request = event.request
   const requestUri = request.uri
-  const [, uri] = requestUri.split("/site")
+  const parts = requestUri.split("/site")
+  const uri = parts[1]
 
   const versionMatches = uri.match(versionPattern)
   const prMatches = uri.match(prPattern)

@@ -6,7 +6,7 @@ export const handler = async (event) => {
   const path = keyValueStore.get("path")
   const request = event.request
   const requestUri = request.uri
-  const [, uri] = requestUri.split(path)
-  request.uri = uri
+  const parts = requestUri.split(path)
+  request.uri = parts[1]
   return request
 }
