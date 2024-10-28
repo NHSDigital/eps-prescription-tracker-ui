@@ -12,13 +12,14 @@ import {Construct} from "constructs"
 
  */
 
-export interface AllowCloudfrontKmsKeyAccessPolicyProps {
+export interface PolicyProps {
   cloudfrontDistributionId: string
 }
 
 export class AllowCloudfrontKmsKeyAccessPolicy extends Construct{
   public readonly policyJson
-  public constructor(scope: Construct, id: string, props: AllowCloudfrontKmsKeyAccessPolicyProps){
+
+  public constructor(scope: Construct, id: string, props: PolicyProps){
     super(scope, id)
 
     const accountRootPrincipal = new AccountRootPrincipal()

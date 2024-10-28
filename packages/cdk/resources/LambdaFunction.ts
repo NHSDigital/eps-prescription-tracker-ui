@@ -24,10 +24,9 @@ import {getDefaultLambdaOptions} from "./LambdaFunction/helpers"
 const insightsLayerArn = "arn:aws:lambda:eu-west-2:580247275435:layer:LambdaInsightsExtension:53"
 
 export interface LambdaFunctionProps {
-  readonly stackName: string
+  readonly serviceName: string
   readonly lambdaName: string
   readonly additionalPolicies?: Array<IManagedPolicy>
-  readonly logRetentionInDays: number
   readonly packageBasePath: string
   readonly entryPoint: string
   readonly lambdaEnvironmentVariables: { [key: string]: string }
@@ -44,6 +43,10 @@ export class LambdaFunction extends Construct {
 
   public constructor(scope: Construct, id: string, props: LambdaFunctionProps) {
     super(scope, id)
+
+    // Context
+    /* context values passed as --context cli arguments are passed as strings so coerce them to expected types*/
+    const logRetentionInDays: number = Number(this.node.tryGetContext("logRetentionInDays"))
 
     // Imports
     const cloudWatchLogsKmsKey = Key.fromKeyArn(
@@ -71,7 +74,7 @@ export class LambdaFunction extends Construct {
     const lambdaLogGroup = new LogGroup(this, "LambdaLogGroup", {
       encryptionKey: cloudWatchLogsKmsKey,
       logGroupName: `/aws/lambda/${props.lambdaName!}`,
-      retention: props.logRetentionInDays,
+      retention: logRetentionInDays,
       removalPolicy: RemovalPolicy.DESTROY
     })
 
@@ -119,7 +122,7 @@ export class LambdaFunction extends Construct {
     })
 
     const lambdaOptions = getDefaultLambdaOptions({
-      functionName: `${props.stackName}-${props.lambdaName}`,
+      functionName: `${props.serviceName}-${props.lambdaName}`,
       packageBasePath: props.packageBasePath,
       entryPoint: props.entryPoint
     })
