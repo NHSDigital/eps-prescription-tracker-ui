@@ -21,6 +21,15 @@ on:
       MARK_JIRA_RELEASED:
         type: boolean
         default: false
+    secrets:
+      DEV_CLOUD_FORMATION_EXECUTE_LAMBDA_ROLE:
+        required: true
+      DEV_CLOUD_FORMATION_CHECK_VERSION_ROLE:
+        required: true
+      INT_CLOUD_FORMATION_CHECK_VERSION_ROLE:
+        required: true
+      PROD_CLOUD_FORMATION_CHECK_VERSION_ROLE:
+        required: true
 
 jobs:
   create_release_notes:
