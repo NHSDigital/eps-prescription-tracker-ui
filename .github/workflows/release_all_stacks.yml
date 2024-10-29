@@ -25,7 +25,7 @@ on:
         required: true
 
 jobs:
-  release_shared_resources:
+  release_stateful_resources:
     if: ${{ inputs.DEPLOY_SHARED_RESOURCES == true }}
     uses: ./.github/workflows/cdk_release_code.yml
     with:
@@ -33,22 +33,21 @@ jobs:
       TARGET_ENVIRONMENT: ${{ inputs.TARGET_ENVIRONMENT }}
       VERSION_NUMBER: ${{ inputs.VERSION_NUMBER }}
       COMMIT_ID: ${{ inputs.COMMIT_ID }}
-      CDK_APP_NAME: SharedResourcesApp
+      CDK_APP_NAME: StatefulResourcesApp
       LOG_RETENTION_IN_DAYS: 30
     secrets:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}
   
-  release_backend:
+  release_stateless_resources:
     uses: ./.github/workflows/cdk_release_code.yml
-    needs: [release_shared_resources]
-    if: ${{ always() && !failure() && !cancelled() }}
+    needs: [release_stateful_resources]
     with:
       SERVICE_NAME: ${{ inputs.SERVICE_NAME }}
       TARGET_ENVIRONMENT: ${{ inputs.TARGET_ENVIRONMENT }}
       VERSION_NUMBER: ${{ inputs.VERSION_NUMBER }}
       COMMIT_ID: ${{ inputs.COMMIT_ID }}
-      CDK_APP_NAME: BackendApp
+      CDK_APP_NAME: StatelessResourcesApp
       LOG_RETENTION_IN_DAYS: 30
     secrets:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.CDK_PULL_IMAGE_ROLE }}
