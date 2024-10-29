@@ -5,7 +5,7 @@ const keyValueStore = cf.kvs(kvsId)
 const versionPattern = /v\d*\.\d*\.\d*/g
 const prPattern = /pr-\d*/g
 
-export const handler = async (event) => {
+export async function handler(event) {
   const currentVersion = keyValueStore.get("version")
 
   const request = event.request
