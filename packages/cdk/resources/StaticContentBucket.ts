@@ -86,8 +86,8 @@ export class StaticContentBucket extends Construct{
     const cfnBucket = bucket.node.defaultChild as CfnBucket
     cfnBucket.cfnOptions.metadata = {
       ...cfnBucket.cfnOptions.metadata,
-      "guard": {
-        "SuppressedRules": [
+      guard: {
+        SuppressedRules: [
           "S3_BUCKET_REPLICATION_ENABLED",
           "S3_BUCKET_VERSIONING_ENABLED",
           "S3_BUCKET_DEFAULT_LOCK_ENABLED",
@@ -101,8 +101,8 @@ export class StaticContentBucket extends Construct{
     cfnBucketPolicy.cfnOptions.metadata = (
       {
         ...cfnBucketPolicy.cfnOptions.metadata,
-        "guard": {
-          "SuppressedRules": [
+        guard: {
+          SuppressedRules: [
             "S3_BUCKET_SSL_REQUESTS_ONLY"
           ]
         }

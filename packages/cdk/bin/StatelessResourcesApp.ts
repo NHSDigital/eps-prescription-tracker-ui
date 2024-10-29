@@ -15,7 +15,7 @@ const app = new App()
   - cloudfrontCertArn */
 
 const serviceName = app.node.tryGetContext("serviceName")
-const version = app.node.tryGetContext("version")
+const version = app.node.tryGetContext("VERSION_NUMBER")
 const commit = app.node.tryGetContext("COMMIT_ID")
 
 // add cdk-nag to everything

@@ -56,7 +56,6 @@ jobs:
     needs: [get_issue_number, get_commit_id, quality_checks]
     uses: ./.github/workflows/cdk_package_code.yml
     with:
-      STACK_NAME: cpt-ui-pr-${{needs.get_issue_number.outputs.issue_number}}
       VERSION_NUMBER: PR-${{ needs.get_issue_number.outputs.issue_number }}
       COMMIT_ID: ${{ needs.get_commit_id.outputs.commit_id }}
 
@@ -64,7 +63,7 @@ jobs:
     needs: [get_issue_number, package_code, get_commit_id, quality_checks]
     uses: ./.github/workflows/release_all_stacks.yml
     with:
-      BACKEND_STACK_NAME: cpt-ui-backend-pr-${{needs.get_issue_number.outputs.issue_number}}
+      SERVICE_NAME: cpt-ui-pr-${{needs.get_issue_number.outputs.issue_number}}
       TARGET_ENVIRONMENT: dev-pr
       VERSION_NUMBER: PR-${{ needs.get_issue_number.outputs.issue_number }}
       COMMIT_ID: ${{ needs.get_commit_id.outputs.commit_id }}

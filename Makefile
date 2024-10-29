@@ -80,7 +80,7 @@ react-start:
 react-lint:
 	npm run lint --workspace packages/cpt-ui
 
-cdk-deploy: guard-stack_name guard-CDK_APP_NAME
+cdk-deploy: guard-service_name guard-CDK_APP_NAME
 	REQUIRE_APPROVAL="$${REQUIRE_APPROVAL:-any-change}" && \
 	VERSION_NUMBER="$${VERSION_NUMBER:-undefined}" && \
 	COMMIT_ID="$${COMMIT_ID:-undefined}" && \
@@ -89,38 +89,42 @@ cdk-deploy: guard-stack_name guard-CDK_APP_NAME
 		--all \
 		--ci true \
 		--require-approval $${REQUIRE_APPROVAL} \
-		--context stackName=$$stack_name \
+		--context serviceName=$$service_name \
 		--context VERSION_NUMBER=$$VERSION_NUMBER \
 		--context COMMIT_ID=$$COMMIT_ID 
 
-cdk-synth: cdk-synth-backend cdk-synth-shared-resources
+cdk-synth: cdk-synth-stateful-resources cdk-synth-stateless-resources
 
-cdk-synth-shared-resources:
+cdk-synth-stateful-resources:
 	npx cdk synth \
-		--app "npx ts-node --prefer-ts-exts packages/cdk/bin/SharedResourcesApp.ts" \
-		--context stackName=cpt-ui \
+		--app "npx ts-node --prefer-ts-exts packages/cdk/bin/StatefulResourcesApp.ts" \
+		--context serviceName=cpt-ui \
+		--context VERSION_NUMBER=undefined \
+		--context COMMIT_ID=undefined \
+		--context allowAutoDeleteObjects=true \
+		--context cloudfrontDistributionId=undefined \
+		--context epsDomainName=undefined \
+		--context epsHostedZoneId=undefined
+
+cdk-synth-stateless-resources:
+	npx cdk synth \
+		--app "npx ts-node --prefer-ts-exts packages/cdk/bin/StatelessResourcesApp.ts" \
+		--context serviceName=cpt-ui \
 		--context VERSION_NUMBER=undefined \
 		--context COMMIT_ID=undefined \
 		--context logRetentionInDays=30 \
 		--context epsDomainName=undefined \
 		--context epsHostedZoneId=undefined \
-
-cdk-synth-backend:
-	npx cdk synth \
-		--app "npx ts-node --prefer-ts-exts packages/cdk/bin/BackendApp.ts" \
-		--context stackName=cpt-ui-backend \
-		--context VERSION_NUMBER=undefined \
-		--context COMMIT_ID=undefined \
-		--context logRetentionInDays=30
+		--context cloudfrontCertArn=arn:aws:acm:us-east-1:444455556666:certificate/certificate_ID
 
 cdk-diff: guard-cdk_app_name
 	npx cdk diff \
 		--app "npx ts-node --prefer-ts-exts packages/cdk/bin/$$CDK_APP_NAME.ts" \
-		--context stackName=$$stack_name \
+		--context serviceName=$$service_name \
 		--context VERSION_NUMBER=$$VERSION_NUMBER \
 		--context COMMIT_ID=$$COMMIT_ID 
 
-cdk-watch: guard-stack_name guard-cdk_app_name
+cdk-watch: guard-service_name guard-cdk_app_name
 	REQUIRE_APPROVAL="$${REQUIRE_APPROVAL:-any-change}" && \
 	VERSION_NUMBER="$${VERSION_NUMBER:-undefined}" && \
 	COMMIT_ID="$${COMMIT_ID:-undefined}" && \
@@ -130,7 +134,7 @@ cdk-watch: guard-stack_name guard-cdk_app_name
 		--all \
 		--ci true \
 		--require-approval $${REQUIRE_APPROVAL} \
-		--context stackName=$$stack_name \
+		--context serviceName=$$service_name \
 		--context VERSION_NUMBER=$$VERSION_NUMBER \
 		--context COMMIT_ID=$$COMMIT_ID
 

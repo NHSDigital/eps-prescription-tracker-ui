@@ -12,8 +12,8 @@ export const addCfnGuardMetadata = (stack: Stack, role: string) => {
     writerLambda.cfnOptions.metadata = (
       {
         ...writerLambda.cfnOptions.metadata,
-        "guard": {
-          "SuppressedRules": [
+        guard: {
+          SuppressedRules: [
             "LAMBDA_DLQ_CHECK",
             "LAMBDA_INSIDE_VPC",
             "LAMBDA_CONCURRENCY_CHECK"
@@ -26,8 +26,8 @@ export const addCfnGuardMetadata = (stack: Stack, role: string) => {
     writerRole.cfnOptions.metadata = (
       {
         ...writerLambda.cfnOptions.metadata,
-        "guard": {
-          "SuppressedRules": [
+        guard: {
+          SuppressedRules: [
             "IAM_NO_INLINE_POLICY_CHECK"
           ]
         }

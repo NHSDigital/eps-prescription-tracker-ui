@@ -3,7 +3,7 @@ name: cdk release code
 on:
   workflow_call:
     inputs:
-      STACK_NAME:
+      SERVICE_NAME:
         required: true
         type: string
       TARGET_ENVIRONMENT:
@@ -100,20 +100,30 @@ jobs:
           epsDomainName=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='"eps-route53-resources:EPS-domain"'].Value" --output text)
           # shellcheck disable=SC2140
           epsHostedZoneId=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='"eps-route53-resources:EPS-ZoneID"'].Value" --output text)
+          # shellcheck disable=SC2140
+          cloudfrontDistributionId=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='"${{ inputs.SERVICE_NAME }}:stateless-resources:cloudfrontDistribution:Id"'].Value" --output text)
+          # shellcheck disable=SC2140
+          cloudfrontCertArn=$(aws cloudformation list-exports --region us-east-1 --query "Exports[?Name=='"${{ inputs.SERVICE_NAME }}:us-certs:cloudfrontCertificate:Arn"'].Value" --output text)
           jq \
-          --arg stackName "${{ inputs.STACK_NAME }}" \
+          --arg serviceName "${{ inputs.SERVICE_NAME }}" \
           --arg VERSION_NUMBER "${{ inputs.VERSION_NUMBER }}" \
           --arg COMMIT_ID "${{ inputs.COMMIT_ID }}" \
           --arg logRetentionInDays "${{ inputs.LOG_RETENTION_IN_DAYS }}" \
           --arg epsDomainName "${epsDomainName}" \
           --arg epsHostedZoneId "${epsHostedZoneId}" \
+          --arg allowAutoDeleteObjects "true" \
+          --arg cloudfrontDistributionId "${cloudfrontDistributionId}" \
+          --arg cloudfrontCertArn "${cloudfrontCertArn}" \
           '.context += {
-            "stackName": $stackName, 
-            "VERSION_NUMBER": $VERSION_NUMBER, 
+            "serviceName": $serviceName,
+            "VERSION_NUMBER": $VERSION_NUMBER,
             "COMMIT_ID": $COMMIT_ID,
             "logRetentionInDays": $logRetentionInDays,
             "epsDomainName": $epsDomainName,
-            "epsHostedZoneId": $epsHostedZoneId}' \
+            "epsHostedZoneId": $epsHostedZoneId,
+            "allowAutoDeleteObjects": $allowAutoDeleteObjects,
+            "cloudfrontDistributionId": $cloudfrontDistributionId,
+            "cloudfrontCertArn": $cloudfrontCertArn}' \
           .build/cdk.json > .build/cdk.new.json
           mv .build/cdk.new.json .build/cdk.json
 
@@ -146,14 +156,14 @@ jobs:
         shell: bash
 
       - name: Checkout gh-pages
-        if: ${{ !startsWith(inputs.STACK_NAME, 'cpt-ui-backend-pr-') }}
+        if: ${{ !startsWith(inputs.SERVICE_NAME, 'cpt-ui-pr-') }}
         uses: actions/checkout@v4
         with:
           ref: gh-pages
           path: gh-pages
 
       - name: update release tag in github pages
-        if: ${{ !startsWith(inputs.STACK_NAME, 'cpt-ui-backend-pr-') }}
+        if: ${{ !startsWith(inputs.SERVICE_NAME, 'cpt-ui-pr-') }}
         run: |
           cd gh-pages
           NOW=$(date +'%Y-%m-%dT%H:%M:%S')

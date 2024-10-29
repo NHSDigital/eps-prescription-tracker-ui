@@ -3,7 +3,7 @@ name: release all stacks
 on:
   workflow_call:
     inputs:
-      BACKEND_STACK_NAME:
+      SERVICE_NAME:
         required: true
         type: string
       TARGET_ENVIRONMENT:
@@ -29,7 +29,7 @@ jobs:
     if: ${{ inputs.DEPLOY_SHARED_RESOURCES == true }}
     uses: ./.github/workflows/cdk_release_code.yml
     with:
-      STACK_NAME: cpt-ui
+      SERVICE_NAME: ${{ inputs.SERVICE_NAME }}
       TARGET_ENVIRONMENT: ${{ inputs.TARGET_ENVIRONMENT }}
       VERSION_NUMBER: ${{ inputs.VERSION_NUMBER }}
       COMMIT_ID: ${{ inputs.COMMIT_ID }}
@@ -44,7 +44,7 @@ jobs:
     needs: [release_shared_resources]
     if: ${{ always() && !failure() && !cancelled() }}
     with:
-      STACK_NAME: ${{ inputs.BACKEND_STACK_NAME }}
+      SERVICE_NAME: ${{ inputs.SERVICE_NAME }}
       TARGET_ENVIRONMENT: ${{ inputs.TARGET_ENVIRONMENT }}
       VERSION_NUMBER: ${{ inputs.VERSION_NUMBER }}
       COMMIT_ID: ${{ inputs.COMMIT_ID }}

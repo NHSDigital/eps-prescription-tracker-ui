@@ -139,8 +139,8 @@ export class LambdaFunction extends Construct {
 
     const cfnLambda = lambdaFunction.node.defaultChild as CfnFunction
     cfnLambda.cfnOptions.metadata = {
-      "guard": {
-        "SuppressedRules": [
+      guard: {
+        SuppressedRules: [
           "LAMBDA_DLQ_CHECK",
           "LAMBDA_INSIDE_VPC",
           "LAMBDA_CONCURRENCY_CHECK"

@@ -112,7 +112,6 @@ jobs:
     needs: [tag_release, get_commit_id]
     uses: ./.github/workflows/cdk_package_code.yml
     with:
-      STACK_NAME: cpt-ui
       VERSION_NUMBER: ${{needs.tag_release.outputs.version_tag}}
       COMMIT_ID: ${{needs.get_commit_id.outputs.commit_id}}
 
@@ -120,7 +119,7 @@ jobs:
     needs: [tag_release, package_code, get_commit_id]
     uses: ./.github/workflows/release_all_stacks.yml
     with:
-      BACKEND_STACK_NAME: cpt-ui-backend
+      SERVICE_NAME: cpt-ui
       TARGET_ENVIRONMENT: dev
       VERSION_NUMBER: ${{needs.tag_release.outputs.version_tag}}
       COMMIT_ID: ${{needs.get_commit_id.outputs.commit_id}}
@@ -143,7 +142,7 @@ jobs:
     needs: [tag_release, package_code, get_commit_id]
     uses: ./.github/workflows/release_all_stacks.yml
     with:
-      BACKEND_STACK_NAME: cpt-ui-backend
+      SERVICE_NAME: cpt-ui
       TARGET_ENVIRONMENT: ref
       VERSION_NUMBER: ${{needs.tag_release.outputs.version_tag}}
       COMMIT_ID: ${{needs.get_commit_id.outputs.commit_id}}
@@ -156,7 +155,7 @@ jobs:
     needs: [tag_release, package_code, get_commit_id]
     uses: ./.github/workflows/release_all_stacks.yml
     with:
-      BACKEND_STACK_NAME: cpt-ui-backend
+      SERVICE_NAME: cpt-ui
       TARGET_ENVIRONMENT: qa
       VERSION_NUMBER: ${{needs.tag_release.outputs.version_tag}}
       COMMIT_ID: ${{needs.get_commit_id.outputs.commit_id}}
@@ -169,7 +168,7 @@ jobs:
     needs: [tag_release, package_code, get_commit_id]
     uses: ./.github/workflows/release_all_stacks.yml
     with:
-      BACKEND_STACK_NAME: cpt-ui-backend
+      SERVICE_NAME: cpt-ui
       TARGET_ENVIRONMENT: int
       VERSION_NUMBER: ${{needs.tag_release.outputs.version_tag}}
       COMMIT_ID: ${{needs.get_commit_id.outputs.commit_id}}
@@ -182,7 +181,7 @@ jobs:
   #   needs: [tag_release, package_code, get_commit_id]
   #   uses: ./.github/workflows/release_all_stacks.yml
   #   with:
-  #     BACKEND_STACK_NAME: cpt-ui-backend
+  #     SERVICE_NAME: cpt-ui
   #     TARGET_ENVIRONMENT: prod
   #     VERSION_NUMBER: ${{needs.tag_release.outputs.version_tag}}
   #     COMMIT_ID: ${{needs.get_commit_id.outputs.commit_id}}

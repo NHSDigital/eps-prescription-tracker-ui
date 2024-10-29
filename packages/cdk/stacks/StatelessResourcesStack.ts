@@ -20,6 +20,7 @@ import {Bucket} from "aws-cdk-lib/aws-s3"
 import {RestApiGateway} from "../resources/RestApiGateway"
 import {CloudfrontFunction} from "../resources/Cloudfront/CloudfrontFunction"
 import {CloudfrontDistribution} from "../resources/CloudfrontDistribution"
+import {nagSuppressions} from "../nagSuppressions"
 
 export interface StatelessResourcesStackProps extends StackProps {
   readonly serviceName: string
@@ -192,5 +193,7 @@ export class StatelessResourcesStack extends Stack {
       value: cloudfrontDistribution.distribution.distributionId,
       exportName: `${props.serviceName}:${props.stackName}:cloudfrontDistribution:Id`
     })
+
+    nagSuppressions(this)
   }
 }

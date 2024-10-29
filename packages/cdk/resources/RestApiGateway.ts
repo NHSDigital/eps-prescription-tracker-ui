@@ -1,7 +1,9 @@
 import {Fn, RemovalPolicy} from "aws-cdk-lib"
 import {
+  CfnStage,
   EndpointType,
   LogGroupLogDestination,
+  MethodLoggingLevel,
   MockIntegration,
   RestApi
 } from "aws-cdk-lib/aws-apigateway"
@@ -68,7 +70,9 @@ export class RestApiGateway extends Construct {
       deploy: true,
       deployOptions: {
         accessLogDestination: new LogGroupLogDestination(apiGatewayAccessLogGroup),
-        accessLogFormat: accessLogFormat()
+        accessLogFormat: accessLogFormat(),
+        loggingLevel: MethodLoggingLevel.INFO,
+        metricsEnabled: true
       }
     })
 
@@ -83,6 +87,15 @@ export class RestApiGateway extends Construct {
         {statusCode: "418"}
       ]
     }))
+
+    const cfnStage = apiGateway.deploymentStage.node.defaultChild as CfnStage
+    cfnStage.cfnOptions.metadata = {
+      guard: {
+        SuppressedRules: [
+          "API_GW_CACHE_ENABLED_AND_ENCRYPTED"
+        ]
+      }
+    }
 
     // Outputs
     this.restApiGateway = apiGateway

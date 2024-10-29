@@ -6,6 +6,7 @@ import {
 } from "aws-cdk-lib"
 
 import {StaticContentBucket} from "../resources/StaticContentBucket"
+import {nagSuppressions} from "../nagSuppressions"
 
 export interface StatefulResourcesStackProps extends StackProps {
   readonly serviceName: string
@@ -47,5 +48,7 @@ export class StatefulResourcesStack extends Stack {
       value: staticContentBucket.bucket.bucketArn,
       exportName: `${props.serviceName}:${props.stackName}:StaticContentBucket:Arn`
     })
+
+    nagSuppressions(this)
   }
 }
