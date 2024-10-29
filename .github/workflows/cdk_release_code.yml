@@ -21,15 +21,6 @@ on:
       LOG_RETENTION_IN_DAYS:
         required: true
         type: string
-      GET_IMPORT_COMMANDS:
-        required: false
-        type: string
-      JQ_VARIABLES:
-        required: false
-        type: string
-      JQ_REPLACEMENTS:
-        required: false
-        type: string
     secrets:
       CLOUD_FORMATION_DEPLOY_ROLE:
         required: true
