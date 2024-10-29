@@ -117,14 +117,14 @@ cdk-synth-stateless-resources:
 		--context epsHostedZoneId=undefined \
 		--context cloudfrontCertArn=arn:aws:acm:us-east-1:444455556666:certificate/certificate_ID
 
-cdk-diff: guard-cdk_app_name
+cdk-diff: guard-CDK_APP_NAME
 	npx cdk diff \
 		--app "npx ts-node --prefer-ts-exts packages/cdk/bin/$$CDK_APP_NAME.ts" \
 		--context serviceName=$$service_name \
 		--context VERSION_NUMBER=$$VERSION_NUMBER \
 		--context COMMIT_ID=$$COMMIT_ID 
 
-cdk-watch: guard-service_name guard-cdk_app_name
+cdk-watch: guard-service_name guard-CDK_APP_NAME
 	REQUIRE_APPROVAL="$${REQUIRE_APPROVAL:-any-change}" && \
 	VERSION_NUMBER="$${VERSION_NUMBER:-undefined}" && \
 	COMMIT_ID="$${COMMIT_ID:-undefined}" && \
