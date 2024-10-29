@@ -41,6 +41,8 @@ test: compile
 clean:
 	rm -rf packages/cloudfrontFunctions/coverage
 	rm -rf packages/cloudfrontFunctions/lib
+	rm -rf packages/cdk/coverage
+	rm -rf packages/cdk/lib
 	rm -rf cdk.out
 	rm -rf packages/cpt-ui/.next
 
