@@ -99,6 +99,7 @@ jobs:
   update_github_pages:
     runs-on: ubuntu-latest
     environment: ${{ inputs.TARGET_ENVIRONMENT }}
+    needs: [release_stateful_resources, release_stateless_resources, rerelease_stateful_resources]
     permissions:
       id-token: write
       contents: write
