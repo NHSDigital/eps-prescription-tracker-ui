@@ -52,7 +52,7 @@ export class UsCertsStack extends Stack {
     // Exports
     new CfnOutput(this, "CloudfrontCertificateArn", {
       value: cloudfrontCertificate.certificateArn,
-      exportName: `${props.serviceName}:${props.stackName}:cloudfrontCertificate:Arn`
+      exportName: `${props.stackName}:cloudfrontCertificate:Arn`
     })
   }
 }

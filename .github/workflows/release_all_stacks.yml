@@ -44,7 +44,7 @@ jobs:
         id: get_cloudfront_distribution_id
         run: |
           # shellcheck disable=SC2140
-          cloudfrontDistributionId=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='"${{ inputs.SERVICE_NAME }}:stateless-resources:cloudfrontDistribution:Id"'].Value" --output text)
+          cloudfrontDistributionId=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='"${{ inputs.SERVICE_NAME }}-stateless-resources:cloudfrontDistribution:Id"'].Value" --output text)
           if [ -z "${cloudfrontDistributionId}" ]; then
             FIRST_DEPLOYMENT="true"
           else

@@ -92,9 +92,9 @@ jobs:
           # shellcheck disable=SC2140
           epsHostedZoneId=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='"eps-route53-resources:EPS-ZoneID"'].Value" --output text)
           # shellcheck disable=SC2140
-          cloudfrontDistributionId=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='"${{ inputs.SERVICE_NAME }}:stateless-resources:cloudfrontDistribution:Id"'].Value" --output text)
+          cloudfrontDistributionId=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='"${{ inputs.SERVICE_NAME }}-stateless-resources:cloudfrontDistribution:Id"'].Value" --output text)
           # shellcheck disable=SC2140
-          cloudfrontCertArn=$(aws cloudformation list-exports --region us-east-1 --query "Exports[?Name=='"${{ inputs.SERVICE_NAME }}:us-certs:cloudfrontCertificate:Arn"'].Value" --output text)
+          cloudfrontCertArn=$(aws cloudformation list-exports --region us-east-1 --query "Exports[?Name=='"${{ inputs.SERVICE_NAME }}-us-certs:cloudfrontCertificate:Arn"'].Value" --output text)
           jq \
           --arg serviceName "${{ inputs.SERVICE_NAME }}" \
           --arg VERSION_NUMBER "${{ inputs.VERSION_NUMBER }}" \

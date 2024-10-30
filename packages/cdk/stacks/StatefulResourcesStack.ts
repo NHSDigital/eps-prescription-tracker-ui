@@ -47,7 +47,7 @@ export class StatefulResourcesStack extends Stack {
     // Exports
     new CfnOutput(this, "StaticContentBucketArn", {
       value: staticContentBucket.bucket.bucketArn,
-      exportName: `${props.serviceName}:${props.stackName}:StaticContentBucket:Arn`
+      exportName: `${props.stackName}:StaticContentBucket:Arn`
     })
 
     nagSuppressions(this)

@@ -42,7 +42,7 @@ export class StatelessResourcesStack extends Stack {
 
     // Imports
     const staticContentBucket = Bucket.fromBucketArn(
-      this, "StaticContentBucket", Fn.importValue(`${props.serviceName}:stateful-resources:StaticContentBucket:Arn`))
+      this, "StaticContentBucket", Fn.importValue(`${props.serviceName}-stateful-resources:StaticContentBucket:Arn`))
 
     // Resources
     // - API Gateway
@@ -196,7 +196,7 @@ export class StatelessResourcesStack extends Stack {
     // Exports
     new CfnOutput(this, "CloudfrontDistributionId", {
       value: cloudfrontDistribution.distribution.distributionId,
-      exportName: `${props.serviceName}:${props.stackName}:cloudfrontDistribution:Id`
+      exportName: `${props.stackName}:cloudfrontDistribution:Id`
     })
 
     nagSuppressions(this)
