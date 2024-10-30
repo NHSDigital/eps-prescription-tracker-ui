@@ -31,7 +31,7 @@ export class StatefulResourcesStack extends Stack {
     // Resources
     // - Static Content Bucket
     const staticContentBucket = new StaticContentBucket(this, "StaticContentBucket", {
-      bucketName: `${props.serviceName}-StaticContentBucket-${this.account}`})
+      bucketName: `${props.serviceName}-staticcontentbucket-${this.account}`})
 
     /* Resources to add:
       - update policies (me)
