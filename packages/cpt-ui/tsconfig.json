@@ -21,7 +21,8 @@
       {
         "name": "next"
       }
-    ]
+    ],
+    "composite": false
   },
   "exclude": [
     "node_modules"
