@@ -31,6 +31,15 @@ jobs:
     outputs:
       FIRST_DEPLOYMENT: ${{ steps.get_cloudfront_distribution_id.outputs.FIRST_DEPLOYMENT }}
     steps:
+      - name: Configure AWS Credentials
+        id: connect-aws
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: eu-west-2
+          role-to-assume: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}
+          role-session-name: prescription-clinical-tracker-ui-check-deployment
+          output-credentials: true
+
       - name: get cloudfront distribution id
         id: get_cloudfront_distribution_id
         run: |
