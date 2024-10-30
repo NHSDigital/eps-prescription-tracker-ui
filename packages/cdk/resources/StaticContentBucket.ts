@@ -81,7 +81,7 @@ export class StaticContentBucket extends Construct{
       to match all Distribution IDs in order to avoid a circular dependency between the KMS key,Bucket, and
       Distribution during the initial deployment. This updates the policy to restrict it to a specific distribution.
       !! This can only be added after the distribution has been deployed !! */
-      const contentBucketKmsKey = (bucket.node.defaultChild as CfnKey)
+      const contentBucketKmsKey = (kmsKey.node.defaultChild as CfnKey)
       contentBucketKmsKey.keyPolicy = new AllowCloudfrontKmsKeyAccessPolicy(
         this, "StaticContentBucketAllowCloudfrontKmsKeyAccessPolicy", {
           cloudfrontDistributionId: cloudfrontDistributionId
