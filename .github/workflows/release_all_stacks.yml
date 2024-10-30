@@ -66,10 +66,21 @@ jobs:
     secrets:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}
-  
+
+  deploy_website_content:
+    uses: ./.github/workflows/deploy_website_content.yml
+    needs: [release_stateful_resources]
+    with:
+      SERVICE_NAME: ${{ inputs.SERVICE_NAME }}
+      TARGET_ENVIRONMENT: ${{ inputs.TARGET_ENVIRONMENT }}
+      VERSION_NUMBER: ${{ inputs.VERSION_NUMBER }}
+      COMMIT_ID: ${{ inputs.COMMIT_ID }}
+    secrets:
+      CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}
+
   release_stateless_resources:
     uses: ./.github/workflows/cdk_release_code.yml
-    needs: [release_stateful_resources]
+    needs: [deploy_website_content]
     with:
       SERVICE_NAME: ${{ inputs.SERVICE_NAME }}
       TARGET_ENVIRONMENT: ${{ inputs.TARGET_ENVIRONMENT }}
@@ -100,7 +111,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: ${{ inputs.TARGET_ENVIRONMENT }}
     if: ${{ always() && !failure() && !cancelled() }}
-    needs: [release_stateful_resources, release_stateless_resources, rerelease_stateful_resources]
+    needs: [release_stateful_resources, release_stateless_resources, rerelease_stateful_resources, deploy_website_content]
     permissions:
       id-token: write
       contents: write
