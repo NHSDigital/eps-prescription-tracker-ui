@@ -23,6 +23,7 @@ interface KeyValue {
 type KeyValues = Array<KeyValue>
 
 export interface CloudfrontFunctionProps {
+  readonly functionName: string
   readonly sourceFileName: string
   readonly codeReplacements?: codeReplacements
   readonly keyValues?: KeyValues
@@ -62,6 +63,7 @@ export class CloudfrontFunction extends Construct {
     }
 
     const cloudfrontFunction = new Function(this, "Function", {
+      functionName: props.functionName,
       code: FunctionCode.fromInline(functionCode),
       runtime: FunctionRuntime.JS_2_0,
       keyValueStore: functionStore,

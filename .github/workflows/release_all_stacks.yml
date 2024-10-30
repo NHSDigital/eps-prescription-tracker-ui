@@ -15,9 +15,6 @@ on:
       COMMIT_ID:
         required: true
         type: string
-      DEPLOY_SHARED_RESOURCES:
-        required: true
-        type: boolean
     secrets:
       CLOUD_FORMATION_DEPLOY_ROLE:
         required: true
@@ -25,8 +22,30 @@ on:
         required: true
 
 jobs:
+  check_first_deployment:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.TARGET_ENVIRONMENT }}
+    permissions:
+      id-token: write
+      contents: read
+    outputs:
+      FIRST_DEPLOYMENT: ${{ steps.get_cloudfront_distribution_id.outputs.FIRST_DEPLOYMENT }}
+    steps:
+      - name: get cloudfront distribution id
+        id: get_cloudfront_distribution_id
+        run: |
+          # shellcheck disable=SC2140
+          cloudfrontDistributionId=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='"${{ inputs.SERVICE_NAME }}:stateless-resources:cloudfrontDistribution:Id"'].Value" --output text)
+          if [ -z "${cloudfrontDistributionId}" ]; then
+            FIRST_DEPLOYMENT="true"
+          else
+            FIRST_DEPLOYMENT="false"
+          fi
+          echo "FIRST_DEPLOYMENT=$FIRST_DEPLOYMENT" >> "$GITHUB_OUTPUT"
+        shell: bash
+
+
   release_stateful_resources:
-    if: ${{ inputs.DEPLOY_SHARED_RESOURCES == true }}
     uses: ./.github/workflows/cdk_release_code.yml
     with:
       SERVICE_NAME: ${{ inputs.SERVICE_NAME }}
@@ -52,3 +71,47 @@ jobs:
     secrets:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}
+
+  rerelease_stateful_resources:
+    if: ${{ needs.check_first_deployment.outputs.FIRST_DEPLOYMENT == 'true' }}
+    uses: ./.github/workflows/cdk_release_code.yml
+    needs: [check_first_deployment, release_stateless_resources]
+    with:
+      SERVICE_NAME: ${{ inputs.SERVICE_NAME }}
+      TARGET_ENVIRONMENT: ${{ inputs.TARGET_ENVIRONMENT }}
+      VERSION_NUMBER: ${{ inputs.VERSION_NUMBER }}
+      COMMIT_ID: ${{ inputs.COMMIT_ID }}
+      CDK_APP_NAME: StatefulResourcesApp
+      LOG_RETENTION_IN_DAYS: 30
+    secrets:
+      CDK_PULL_IMAGE_ROLE: ${{ secrets.CDK_PULL_IMAGE_ROLE }}
+      CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}
+  
+  update_github_pages:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.TARGET_ENVIRONMENT }}
+    permissions:
+      id-token: write
+      contents: write
+    steps:
+      - name: Checkout gh-pages
+        if: ${{ !startsWith(inputs.SERVICE_NAME, 'cpt-ui-pr-') }}
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: gh-pages
+
+      - name: update release tag in github pages
+        if: ${{ !startsWith(inputs.SERVICE_NAME, 'cpt-ui-pr-') }}
+        run: |
+          cd gh-pages
+          NOW=$(date +'%Y-%m-%dT%H:%M:%S')
+          echo "tag,release_datetime" > _data/${{ inputs.TARGET_ENVIRONMENT }}_latest.csv
+          echo "${{ inputs.VERSION_NUMBER }},${NOW}" >> _data/${{ inputs.TARGET_ENVIRONMENT }}_latest.csv
+          echo "${{ inputs.VERSION_NUMBER }},${NOW}" >> _data/${{ inputs.TARGET_ENVIRONMENT }}_deployments.csv
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add _data/${{ inputs.TARGET_ENVIRONMENT }}_latest.csv
+          git add _data/${{ inputs.TARGET_ENVIRONMENT }}_deployments.csv
+          git commit -m 'update releases for ${{ inputs.TARGET_ENVIRONMENT }}'
+          parallel --retries 10 --delay 3 ::: "git pull --rebase && git push"

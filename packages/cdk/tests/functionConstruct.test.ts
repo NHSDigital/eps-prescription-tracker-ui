@@ -26,6 +26,7 @@ describe("functionConstruct works correctly", () => {
     stack = new Stack(app, "lambdaConstructStack")
     const functionConstruct = new LambdaFunction(stack, "dummyFunction", {
       serviceName: "testServiceName",
+      stackName:"testServiceName-testStack",
       lambdaName: "testLambda",
       additionalPolicies: [
       ],
@@ -108,7 +109,7 @@ describe("functionConstruct works correctly", () => {
     template.hasResourceProperties("AWS::Lambda::Function", {
       Handler: "index.handler",
       Runtime: "nodejs20.x",
-      FunctionName: "testServiceName-testLambda",
+      FunctionName: "testServiceName-testStack-testLambda",
       MemorySize: 256,
       Architectures: ["x86_64"],
       Timeout: 50,
@@ -144,6 +145,7 @@ describe("functionConstruct works correctly with environment variables", () => {
     stack = new Stack(app, "lambdaConstructStack")
     new LambdaFunction(stack, "dummyFunction", {
       serviceName: "testServiceName",
+      stackName:"testServiceName-testStack",
       lambdaName: "testLambda",
       additionalPolicies: [
       ],
@@ -158,7 +160,7 @@ describe("functionConstruct works correctly with environment variables", () => {
     template.hasResourceProperties("AWS::Lambda::Function", {
       Handler: "index.handler",
       Runtime: "nodejs20.x",
-      FunctionName: "testServiceName-testLambda",
+      FunctionName: "testServiceName-testStack-testLambda",
       Environment: {"Variables": {foo: "bar"}}
     })
   })
@@ -186,6 +188,7 @@ describe("functionConstruct works correctly with additional policies", () => {
     })
     new LambdaFunction(stack, "dummyFunction", {
       serviceName: "testServiceName",
+      stackName:"testServiceName-testStack",
       lambdaName: "testLambda",
       additionalPolicies: [testPolicy],
       packageBasePath: "packages/cdk",

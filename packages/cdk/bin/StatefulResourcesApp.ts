@@ -31,9 +31,9 @@ const UsCerts = new UsCertsStack(app, "UsCertsStack", {
   env: {
     region: "us-east-1"
   },
-  crossRegionReferences: true,
   serviceName: serviceName,
-  stackName: "us-certs",
+  crossRegionReferences: true,
+  stackName: `${serviceName}-us-certs`,
   version: version
 })
 
@@ -41,9 +41,8 @@ const StatefulResources = new StatefulResourcesStack(app, "StatefulStack", {
   env: {
     region: "eu-west-2"
   },
-  crossRegionReferences: true,
   serviceName: serviceName,
-  stackName: "stateful-resources",
+  stackName: `${serviceName}-stateful-resources`,
   version: version
 })
 
@@ -52,7 +51,6 @@ app.synth()
 
 // add metadata to lambda so they don't get flagged as failing cfn-guard
 addCfnGuardMetadata(UsCerts, "Custom::CrossRegionExportWriterCustomResourceProvider")
-addCfnGuardMetadata(StatefulResources, "Custom::CrossRegionExportReaderCustomResourceProvider")
 addCfnGuardMetadata(StatefulResources, "Custom::S3AutoDeleteObjectsCustomResourceProvider")
 
 // finally run synth again with force to include the added metadata

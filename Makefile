@@ -99,6 +99,7 @@ cdk-synth: cdk-synth-stateful-resources cdk-synth-stateless-resources
 
 cdk-synth-stateful-resources:
 	npx cdk synth \
+		-- quiet \
 		--app "npx ts-node --prefer-ts-exts packages/cdk/bin/StatefulResourcesApp.ts" \
 		--context serviceName=cpt-ui \
 		--context VERSION_NUMBER=undefined \
@@ -110,6 +111,7 @@ cdk-synth-stateful-resources:
 
 cdk-synth-stateless-resources:
 	npx cdk synth \
+		-- quiet \
 		--app "npx ts-node --prefer-ts-exts packages/cdk/bin/StatelessResourcesApp.ts" \
 		--context serviceName=cpt-ui \
 		--context VERSION_NUMBER=undefined \

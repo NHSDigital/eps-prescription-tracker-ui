@@ -15,6 +15,10 @@ import {Construct} from "constructs"
 import {AllowCloudfrontGetObjectPolicyStatement} from "../policies/s3/AllowCloudfrontGetObjectPolicyStatement"
 import {AllowCloudfrontKmsKeyAccessPolicy} from "../policies/kms/AllowCloudfrontKmsKeyAccessPolicy"
 
+export interface StaticContentBucketProps {
+  bucketName: string
+}
+
 /**
  * Resources for a static content S3 bucket
 
@@ -24,7 +28,7 @@ export class StaticContentBucket extends Construct{
   public readonly bucket: Bucket
   public kmsKey: Key
 
-  public constructor(scope: Construct, id: string){
+  public constructor(scope: Construct, id: string, props: StaticContentBucketProps){
     super(scope, id)
 
     // Context
@@ -47,6 +51,7 @@ export class StaticContentBucket extends Construct{
     kmsKey.addAlias("alias/StaticContentBucketKmsKey")
 
     const bucket = new Bucket(this, "Bucket", {
+      bucketName: props.bucketName,
       encryption: BucketEncryption.KMS,
       bucketKeyEnabled: true,
       encryptionKey: kmsKey,
