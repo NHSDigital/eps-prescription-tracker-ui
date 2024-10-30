@@ -62,5 +62,5 @@ jobs:
 
       - name: deploy website
         run: |
-          staticBucketName=$(aws cloudformation list-exports --query "Exports[?Name=='${{ inputs.SERVICE_NAME }}-stateful-resources:StaticContentBucket:bucketName'].Value" --output text)
+          staticBucketName=$(aws cloudformation list-exports --query "Exports[?Name=='${{ inputs.SERVICE_NAME }}-stateful-resources:StaticContentBucket:Name'].Value" --output text)
           aws s3 cp --recursive ".build/packages/cpt-ui/out/" "s3://${staticBucketName}/${VERSION_NUMBER}/"
