@@ -19,7 +19,8 @@ on:
       CLOUD_FORMATION_DEPLOY_ROLE:
         required: true
 jobs:
-  release_code:
+  deploy_website_content:
+    name: "deploy_website_content"
     runs-on: ubuntu-latest
     environment: ${{ inputs.TARGET_ENVIRONMENT }}
     permissions:
