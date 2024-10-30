@@ -80,7 +80,7 @@ export class StatelessResourcesStack extends Stack {
 
     // --- Functions
     const s3404UriRewriteFunction = new CloudfrontFunction(this, "S3404UriRewriteFunction", {
-      functionName: `${props.stackName}-S3404UriRewriteFunction`,
+      functionName: `${props.serviceName}-S3404UriRewriteFunction`,
       sourceFileName: "genericS3FixedObjectUriRewrite.js",
       keyValues: [
         {
@@ -91,12 +91,12 @@ export class StatelessResourcesStack extends Stack {
     })
 
     const s3404ModifyStatusCodeFunction = new CloudfrontFunction(this, "S3404ModifyStatusCodeFunction", {
-      functionName: `${props.stackName}-S3404ModifyStatusCodeFunction`,
+      functionName: `${props.serviceName}-S3404ModifyStatusCodeFunction`,
       sourceFileName: "s3404ModifyStatusCode.js"
     })
 
     const s3StaticContentUriRewriteFunction = new CloudfrontFunction(this, "S3StaticContentUriRewriteFunction", {
-      functionName: `${props.stackName}-S3StaticContentUriRewriteFunction`,
+      functionName: `${props.serviceName}-S3StaticContentUriRewriteFunction`,
       sourceFileName: "s3StaticContentUriRewrite.js",
       keyValues: [
         {
@@ -107,7 +107,7 @@ export class StatelessResourcesStack extends Stack {
     })
 
     const apiGatewayStripPathFunction = new CloudfrontFunction(this, "ApiGatewayStripPathFunction", {
-      functionName: `${props.stackName}-ApiGatewayStripPathFunction`,
+      functionName: `${props.serviceName}-ApiGatewayStripPathFunction`,
       sourceFileName: "genericStripPathUriRewrite.js",
       keyValues: [
         {
@@ -118,7 +118,7 @@ export class StatelessResourcesStack extends Stack {
     })
 
     const s3JwksUriRewriteFunction = new CloudfrontFunction(this, "s3JwksUriRewriteFunction", {
-      functionName: `${props.stackName}-s3JwksUriRewriteFunction`,
+      functionName: `${props.serviceName}-s3JwksUriRewriteFunction`,
       sourceFileName: "genericS3FixedObjectUriRewrite.js",
       keyValues: [
         {

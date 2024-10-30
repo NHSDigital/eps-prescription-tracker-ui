@@ -109,7 +109,7 @@ describe("functionConstruct works correctly", () => {
     template.hasResourceProperties("AWS::Lambda::Function", {
       Handler: "index.handler",
       Runtime: "nodejs20.x",
-      FunctionName: "testServiceName-testStack-testLambda",
+      FunctionName: "testServiceName-testLambda",
       MemorySize: 256,
       Architectures: ["x86_64"],
       Timeout: 50,
@@ -160,7 +160,7 @@ describe("functionConstruct works correctly with environment variables", () => {
     template.hasResourceProperties("AWS::Lambda::Function", {
       Handler: "index.handler",
       Runtime: "nodejs20.x",
-      FunctionName: "testServiceName-testStack-testLambda",
+      FunctionName: "testServiceName-testLambda",
       Environment: {"Variables": {foo: "bar"}}
     })
   })

@@ -48,7 +48,7 @@ export class RestApiGateway extends Construct {
 
     // Resources
     const apiGatewayAccessLogGroup = new LogGroup(this, "ApiGatewayAccessLogGroup", {
-      logGroupName: `/aws/apigateway/${props.stackName}-apigw`,
+      logGroupName: `/aws/apigateway/${props.serviceName}-apigw`,
       retention: logRetentionInDays,
       encryptionKey: cloudwatchKmsKey,
       removalPolicy: RemovalPolicy.DESTROY
@@ -63,7 +63,7 @@ export class RestApiGateway extends Construct {
     })
 
     const apiGateway = new RestApi(this, "ApiGateway", {
-      restApiName: `${props.serviceName}-${props.stackName}-apigw`,
+      restApiName: `${props.serviceName}-apigw`,
       endpointConfiguration: {
         types: [EndpointType.REGIONAL]
       },

@@ -123,7 +123,7 @@ export class LambdaFunction extends Construct {
     })
 
     const lambdaOptions = getDefaultLambdaOptions({
-      functionName: `${props.stackName}-${props.lambdaName}`,
+      functionName: `${props.serviceName}-${props.lambdaName}`,
       packageBasePath: props.packageBasePath,
       entryPoint: props.entryPoint
     })
