@@ -20,7 +20,7 @@ on:
         required: true
 jobs:
   deploy_website_content:
-    name: "deploy_website_content"
+    name: "deploy website content"
     runs-on: ubuntu-latest
     environment: ${{ inputs.TARGET_ENVIRONMENT }}
     permissions:

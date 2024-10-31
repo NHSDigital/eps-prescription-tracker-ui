@@ -59,8 +59,8 @@ const safeAddNagSuppression = (stack: Stack, path: string, suppressions: Array<N
   try {
     NagSuppressions.addResourceSuppressionsByPath(stack, path, suppressions)
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch(err){
     console.log(`Could not find path ${path}`)
-    console.log(err)
   }
 }

@@ -46,6 +46,7 @@ export class AllowCloudfrontKmsKeyAccessPolicy extends Construct{
       ]
     })
 
+    // if we have a cloudfrontDistributionId, then add correct policy
     if(props.cloudfrontDistributionId) {
       policy.addStatements(
         new PolicyStatement({
@@ -65,6 +66,8 @@ export class AllowCloudfrontKmsKeyAccessPolicy extends Construct{
         })
       )
     }
+
+    // return the policy
     this.policyJson = policy.toJSON()
   }
 }
