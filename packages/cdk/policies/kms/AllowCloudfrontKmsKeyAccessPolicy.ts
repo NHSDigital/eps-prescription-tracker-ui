@@ -42,7 +42,12 @@ export class AllowCloudfrontKmsKeyAccessPolicy extends Construct{
             "kms:GenerateDataKey*"
           ],
           resources:["*"]
-        }),
+        })
+      ]
+    })
+
+    if(props.cloudfrontDistributionId) {
+      policy.addStatements(
         new PolicyStatement({
           effect: Effect.ALLOW,
           principals: [new ServicePrincipal("cloudfront.amazonaws.com")],
@@ -58,8 +63,8 @@ export class AllowCloudfrontKmsKeyAccessPolicy extends Construct{
             }
           }
         })
-      ]
-    })
+      )
+    }
     this.policyJson = policy.toJSON()
   }
 }

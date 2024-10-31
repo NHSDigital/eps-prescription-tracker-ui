@@ -90,19 +90,17 @@ export class StaticContentBucket extends Construct{
 
     /*
      we also need to do the same for kms key
-     note this is overridden if we have a cloudfrontDistributionId
-     so the policy is also added in AllowCloudfrontKmsKeyAccessPolicy
+     but to avoid circular dependencies we need to use an escape hatch
+     this also does a conditional and if we have a cloudfrontDistributionId
+     then it adds the correct policy to allow access from cloudfront
     */
-    const kmsAllowDeployUsePolicyStatement = new PolicyStatement({
-      effect: Effect.ALLOW,
-      principals: [deploymentRole],
-      actions: [
-        "kms:Encrypt",
-        "kms:GenerateDataKey*"
-      ],
-      resources: [kmsKey.keyArn]
-    })
-    kmsKey.addToResourcePolicy(kmsAllowDeployUsePolicyStatement)
+
+    const contentBucketKmsKey = (kmsKey.node.defaultChild as CfnKey)
+    contentBucketKmsKey.keyPolicy = new AllowCloudfrontKmsKeyAccessPolicy(
+      this, "StaticContentBucketAllowCloudfrontKmsKeyAccessPolicy", {
+        cloudfrontDistributionId: cloudfrontDistributionId,
+        deploymentRole: deploymentRole
+      }).policyJson
 
     /* As you cannot modify imported policies, cdk cannot not update the s3 bucket with the correct permissions
     for OAC when the distribution and bucket are in different stacks
@@ -114,16 +112,6 @@ export class StaticContentBucket extends Construct{
           cloudfrontDistributionId: cloudfrontDistributionId
         }).policyStatement)
 
-      /* When using an s3 origin with OAC and SSE, cdk will use a wildcard in the generated Key policy condition
-      to match all Distribution IDs in order to avoid a circular dependency between the KMS key,Bucket, and
-      Distribution during the initial deployment. This updates the policy to restrict it to a specific distribution.
-      !! This can only be added after the distribution has been deployed !! */
-      const contentBucketKmsKey = (kmsKey.node.defaultChild as CfnKey)
-      contentBucketKmsKey.keyPolicy = new AllowCloudfrontKmsKeyAccessPolicy(
-        this, "StaticContentBucketAllowCloudfrontKmsKeyAccessPolicy", {
-          cloudfrontDistributionId: cloudfrontDistributionId,
-          deploymentRole: deploymentRole
-        }).policyJson
     }
 
     const cfnBucket = bucket.node.defaultChild as CfnBucket
