@@ -80,7 +80,7 @@ jobs:
 
   release_stateless_resources:
     uses: ./.github/workflows/cdk_release_code.yml
-    needs: [release_stateful_resources]
+    needs: [deploy_website_content]
     with:
       SERVICE_NAME: ${{ inputs.SERVICE_NAME }}
       TARGET_ENVIRONMENT: ${{ inputs.TARGET_ENVIRONMENT }}
