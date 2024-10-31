@@ -3,7 +3,8 @@ import {
   Stack,
   App,
   Fn,
-  CfnOutput
+  CfnOutput,
+  Duration
 } from "aws-cdk-lib"
 import {
   AccessLevel,
@@ -96,6 +97,17 @@ export class StatelessResourcesStack extends Stack {
       sourceFileName: "s3404ModifyStatusCode.js"
     })
 
+    const s3500UriRewriteFunction = new CloudfrontFunction(this, "S3404UriRewriteFunction", {
+      functionName: `${props.serviceName}-S3500UriRewriteFunction`,
+      sourceFileName: "genericS3FixedObjectUriRewrite.js",
+      keyValues: [
+        {
+          key: "object",
+          value: "500.html"
+        }
+      ]
+    })
+
     const s3StaticContentUriRewriteFunction = new CloudfrontFunction(this, "S3StaticContentUriRewriteFunction", {
       functionName: `${props.serviceName}-S3StaticContentUriRewriteFunction`,
       sourceFileName: "s3StaticContentUriRewrite.js",
@@ -182,8 +194,40 @@ export class StatelessResourcesStack extends Stack {
               eventType: FunctionEventType.VIEWER_REQUEST
             }
           ]
+        },
+
+        "/500.html": { // matches exactly <url>/500.html and will only serve the 500.html page (via cf function)
+          origin: staticContentBucketOrigin,
+          allowedMethods: AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
+          viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+          functionAssociations: [
+            {
+              function: s3500UriRewriteFunction.function,
+              eventType: FunctionEventType.VIEWER_REQUEST
+            }
+          ]
         }
-      }
+      },
+      errorResponses: [
+        {
+          httpStatus: 500,
+          responseHttpStatus: 500,
+          responsePagePath: "/500.html",
+          ttl: Duration.seconds(10)
+        },
+        {
+          httpStatus: 403,
+          responseHttpStatus: 500,
+          responsePagePath: "/500.html",
+          ttl: Duration.seconds(10)
+        },
+        {
+          httpStatus: 404,
+          responseHttpStatus: 404,
+          responsePagePath: "/404.html",
+          ttl: Duration.seconds(10)
+        }
+      ]
     })
 
     /* Resources to add:
