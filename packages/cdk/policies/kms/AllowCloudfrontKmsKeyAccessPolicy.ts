@@ -15,8 +15,7 @@ import {Construct} from "constructs"
 
 export interface PolicyProps {
   cloudfrontDistributionId: string
-  deploymentRole: IPrincipal,
-  existingPolicy: string
+  deploymentRole: IPrincipal
 }
 
 export class AllowCloudfrontKmsKeyAccessPolicy extends Construct{
@@ -27,25 +26,40 @@ export class AllowCloudfrontKmsKeyAccessPolicy extends Construct{
 
     const accountRootPrincipal = new AccountRootPrincipal()
 
-    const currentPolicy = PolicyDocument.fromJson(props.existingPolicy)
-    currentPolicy.addStatements(
-      new PolicyStatement({
-        effect: Effect.ALLOW,
-        principals: [new ServicePrincipal("cloudfront.amazonaws.com")],
-        actions: [
-          "kms:Decrypt",
-          "kms:Encrypt",
-          "kms:GenerateDataKey*"
-        ],
-        resources:["*"],
-        conditions: {
-          StringEquals: {
-            "AWS:SourceArn": `arn:aws:cloudfront::${accountRootPrincipal.accountId}:distribution/${props.cloudfrontDistributionId}` // eslint-disable-line max-len
+    const policy = new PolicyDocument({
+      statements: [
+        new PolicyStatement({
+          effect: Effect.ALLOW,
+          principals: [accountRootPrincipal],
+          actions: ["kms:*"],
+          resources: ["*"]
+        }),
+        new PolicyStatement({
+          effect: Effect.ALLOW,
+          principals: [props.deploymentRole],
+          actions: [
+            "kms:Encrypt",
+            "kms:GenerateDataKey*"
+          ],
+          resources:["*"]
+        }),
+        new PolicyStatement({
+          effect: Effect.ALLOW,
+          principals: [new ServicePrincipal("cloudfront.amazonaws.com")],
+          actions: [
+            "kms:Decrypt",
+            "kms:Encrypt",
+            "kms:GenerateDataKey*"
+          ],
+          resources:["*"],
+          conditions: {
+            StringEquals: {
+              "AWS:SourceArn": `arn:aws:cloudfront::${accountRootPrincipal.accountId}:distribution/${props.cloudfrontDistributionId}` // eslint-disable-line max-len
+            }
           }
-        }
-      })
-
-    )
-    this.policyJson = currentPolicy.toJSON()
+        })
+      ]
+    })
+    this.policyJson = policy.toJSON()
   }
 }

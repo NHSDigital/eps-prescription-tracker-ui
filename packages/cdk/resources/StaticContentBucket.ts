@@ -111,12 +111,10 @@ export class StaticContentBucket extends Construct{
       Distribution during the initial deployment. This updates the policy to restrict it to a specific distribution.
       !! This can only be added after the distribution has been deployed !! */
       const contentBucketKmsKey = (kmsKey.node.defaultChild as CfnKey)
-      const existingPolicy = contentBucketKmsKey.keyPolicy.toJSON()
       contentBucketKmsKey.keyPolicy = new AllowCloudfrontKmsKeyAccessPolicy(
         this, "StaticContentBucketAllowCloudfrontKmsKeyAccessPolicy", {
           cloudfrontDistributionId: cloudfrontDistributionId,
-          deploymentRole: deploymentRole,
-          existingPolicy: existingPolicy
+          deploymentRole: deploymentRole
         }).policyJson
     }
 
