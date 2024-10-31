@@ -65,6 +65,7 @@ export class StaticContentBucket extends Construct{
       autoDeleteObjects: allowAutoDeleteObjects // if true forces a deletion even if bucket is not empty
     })
 
+    // we need to add a policy to the bucket so that our deploy role can use the bucket
     const bucketAllowDeployUploadPolicyStatement = new PolicyStatement({
       effect: Effect.ALLOW,
       principals: [deploymentRole],
@@ -80,9 +81,18 @@ export class StaticContentBucket extends Construct{
         "s3:PutObjectTagging",
         "s3:PutObjectVersionTagging"
       ],
-      resources: [bucket.arnForObjects("*")]
+      resources: [
+        bucket.bucketArn,
+        bucket.arnForObjects("*")
+      ]
     })
+    bucket.addToResourcePolicy(bucketAllowDeployUploadPolicyStatement)
 
+    /*
+     we also need to do the same for kms key
+     note this is overridden if we have a cloudfrontDistributionId
+     so the policy is also added in AllowCloudfrontKmsKeyAccessPolicy
+    */
     const kmsAllowDeployUsePolicyStatement = new PolicyStatement({
       effect: Effect.ALLOW,
       principals: [deploymentRole],
@@ -92,8 +102,6 @@ export class StaticContentBucket extends Construct{
       ],
       resources: [kmsKey.keyArn]
     })
-
-    bucket.addToResourcePolicy(bucketAllowDeployUploadPolicyStatement)
     kmsKey.addToResourcePolicy(kmsAllowDeployUsePolicyStatement)
 
     /* As you cannot modify imported policies, cdk cannot not update the s3 bucket with the correct permissions
