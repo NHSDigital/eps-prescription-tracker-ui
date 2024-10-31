@@ -48,7 +48,7 @@ export class StaticContentBucket extends Construct{
       enableKeyRotation: true,
       removalPolicy: RemovalPolicy.DESTROY
     })
-    kmsKey.addAlias(`alias/${props.bucketName}_BucketKmsKey`)
+    kmsKey.addAlias(`alias/${props.bucketName}-KmsKey`)
 
     const bucket = new Bucket(this, "Bucket", {
       bucketName: props.bucketName,

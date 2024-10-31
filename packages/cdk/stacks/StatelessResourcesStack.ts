@@ -72,9 +72,9 @@ export class StatelessResourcesStack extends Stack {
     // --- Origin Request Policies
     /* Allow all for now, may want to review these at a later stage */
     const apiGatewayRequestPolicy = new OriginRequestPolicy(this, "apiGatewayRequestPolicy", {
+      originRequestPolicyName: `${props.serviceName}-ApiGatewayRequestPolicy`,
       cookieBehavior: OriginRequestCookieBehavior.all(),
-      headerBehavior: OriginRequestHeaderBehavior.all(),
-      originRequestPolicyName: `${props.stackName}-StatelessStackapiGatewayRequestPolicy`
+      headerBehavior: OriginRequestHeaderBehavior.all()
     })
 
     // --- Cache Policies
