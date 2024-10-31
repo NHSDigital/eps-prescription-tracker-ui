@@ -97,7 +97,7 @@ export class StatelessResourcesStack extends Stack {
       sourceFileName: "s3404ModifyStatusCode.js"
     })
 
-    const s3500UriRewriteFunction = new CloudfrontFunction(this, "S3404UriRewriteFunction", {
+    const s3500UriRewriteFunction = new CloudfrontFunction(this, "S3500UriRewriteFunction", {
       functionName: `${props.serviceName}-S3500UriRewriteFunction`,
       sourceFileName: "genericS3FixedObjectUriRewrite.js",
       keyValues: [
