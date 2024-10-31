@@ -66,6 +66,7 @@ export class StaticContentBucket extends Construct{
     })
 
     bucket.grantReadWrite(deploymentRole)
+    kmsKey.grantEncrypt(deploymentRole)
 
     /* As you cannot modify imported policies, cdk cannot not update the s3 bucket with the correct permissions
     for OAC when the distribution and bucket are in different stacks
