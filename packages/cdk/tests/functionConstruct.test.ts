@@ -1,17 +1,17 @@
 import "source-map-support/register"
-import * as cdk from "aws-cdk-lib"
-import * as logs from "aws-cdk-lib/aws-logs"
-import * as iam from "aws-cdk-lib/aws-iam"
-import * as lambda from "aws-cdk-lib/aws-lambda"
-import {Stack} from "aws-cdk-lib"
+import {App, assertions, Stack} from "aws-cdk-lib"
+import {ManagedPolicy, PolicyStatement, Role} from "aws-cdk-lib/aws-iam"
+import {LogGroup} from "aws-cdk-lib/aws-logs"
+import {Function} from "aws-cdk-lib/aws-lambda"
 import {Template, Match} from "aws-cdk-lib/assertions"
-import {FunctionConstruct} from "../resources/functionConstruct"
 import {describe, test, beforeAll} from "@jest/globals"
+
+import {LambdaFunction} from "../resources/LambdaFunction"
 
 describe("functionConstruct works correctly", () => {
   let stack: Stack
-  let app: cdk.App
-  let template: cdk.assertions.Template
+  let app: App
+  let template: assertions.Template
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let lambdaLogGroupResource: any
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -21,22 +21,23 @@ describe("functionConstruct works correctly", () => {
   // In this case we can use beforeAll() over beforeEach() since our tests
   // do not modify the state of the application
   beforeAll(() => {
-    app = new cdk.App()
-    stack = new cdk.Stack(app, "lambdaConstructStack")
-    const functionConstruct = new FunctionConstruct(stack, "dummyFunction", {
-      stackName: "testStackName",
+    app = new App()
+    app.node.setContext("logRetentionInDays", "30")
+    stack = new Stack(app, "lambdaConstructStack")
+    const functionConstruct = new LambdaFunction(stack, "dummyFunction", {
+      serviceName: "testServiceName",
+      stackName:"testServiceName-testStack",
       lambdaName: "testLambda",
       additionalPolicies: [
       ],
-      logRetentionInDays: 30,
       packageBasePath: "packages/cdk",
       entryPoint: "tests/src/dummyLambda.ts",
       lambdaEnvironmentVariables: {}
     })
     template = Template.fromStack(stack)
-    const lambdaLogGroup = functionConstruct.node.tryFindChild("LambdaLogGroup") as logs.LogGroup
-    const lambdaRole = functionConstruct.node.tryFindChild("LambdaRole") as iam.Role
-    const cfnLambda = functionConstruct.node.tryFindChild("testLambda") as lambda.Function
+    const lambdaLogGroup = functionConstruct.node.tryFindChild("LambdaLogGroup") as LogGroup
+    const lambdaRole = functionConstruct.node.tryFindChild("LambdaRole") as Role
+    const cfnLambda = functionConstruct.node.tryFindChild("testLambda") as Function
     lambdaRoleResource = stack.resolve(lambdaRole.roleName)
     lambdaLogGroupResource = stack.resolve(lambdaLogGroup.logGroupName)
     lambdaResource = stack.resolve(cfnLambda.functionName)
@@ -108,7 +109,7 @@ describe("functionConstruct works correctly", () => {
     template.hasResourceProperties("AWS::Lambda::Function", {
       Handler: "index.handler",
       Runtime: "nodejs20.x",
-      FunctionName: "testStackName-testLambda",
+      FunctionName: "testServiceName-testLambda",
       MemorySize: 256,
       Architectures: ["x86_64"],
       Timeout: 50,
@@ -137,17 +138,17 @@ describe("functionConstruct works correctly", () => {
 
 describe("functionConstruct works correctly with environment variables", () => {
   let stack: Stack
-  let app: cdk.App
-  let template: cdk.assertions.Template
+  let app: App
+  let template: assertions.Template
   beforeAll(() => {
-    app = new cdk.App()
-    stack = new cdk.Stack(app, "lambdaConstructStack")
-    new FunctionConstruct(stack, "dummyFunction", {
-      stackName: "testStackName",
+    app = new App()
+    stack = new Stack(app, "lambdaConstructStack")
+    new LambdaFunction(stack, "dummyFunction", {
+      serviceName: "testServiceName",
+      stackName:"testServiceName-testStack",
       lambdaName: "testLambda",
       additionalPolicies: [
       ],
-      logRetentionInDays: 30,
       packageBasePath: "packages/cdk",
       entryPoint: "tests/src/dummyLambda.ts",
       lambdaEnvironmentVariables: {foo: "bar"}
@@ -159,7 +160,7 @@ describe("functionConstruct works correctly with environment variables", () => {
     template.hasResourceProperties("AWS::Lambda::Function", {
       Handler: "index.handler",
       Runtime: "nodejs20.x",
-      FunctionName: "testStackName-testLambda",
+      FunctionName: "testServiceName-testLambda",
       Environment: {"Variables": {foo: "bar"}}
     })
   })
@@ -168,28 +169,28 @@ describe("functionConstruct works correctly with environment variables", () => {
 
 describe("functionConstruct works correctly with additional policies", () => {
   let stack: Stack
-  let app: cdk.App
-  let template: cdk.assertions.Template
+  let app: App
+  let template: assertions.Template
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let testPolicyResource: any
   beforeAll(() => {
-    app = new cdk.App()
-    stack = new cdk.Stack(app, "lambdaConstructStack")
-    const testPolicy = new iam.ManagedPolicy(stack, "testPolicy", {
+    app = new App()
+    stack = new Stack(app, "lambdaConstructStack")
+    const testPolicy = new ManagedPolicy(stack, "testPolicy", {
       description: "test policy",
       statements: [
-        new iam.PolicyStatement({
+        new PolicyStatement({
           actions: [
             "logs:CreateLogStream"
           ],
           resources: ["*"]
         })]
     })
-    new FunctionConstruct(stack, "dummyFunction", {
-      stackName: "testStackName",
+    new LambdaFunction(stack, "dummyFunction", {
+      serviceName: "testServiceName",
+      stackName:"testServiceName-testStack",
       lambdaName: "testLambda",
       additionalPolicies: [testPolicy],
-      logRetentionInDays: 30,
       packageBasePath: "packages/cdk",
       entryPoint: "tests/src/dummyLambda.ts",
       lambdaEnvironmentVariables: {}

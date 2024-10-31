@@ -9,9 +9,7 @@ env:
 
 jobs:
   quality_checks:
-    uses: NHSDigital/eps-workflow-quality-checks/.github/workflows/quality-checks.yml@v2
-    with:
-      node_version: '20'
+    uses: NHSDigital/eps-workflow-quality-checks/.github/workflows/quality-checks.yml@v3.0.0
     secrets:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
@@ -58,18 +56,18 @@ jobs:
     needs: [get_issue_number, get_commit_id, quality_checks]
     uses: ./.github/workflows/cdk_package_code.yml
     with:
-      STACK_NAME: cpt-ui-pr-${{needs.get_issue_number.outputs.issue_number}}
       VERSION_NUMBER: PR-${{ needs.get_issue_number.outputs.issue_number }}
       COMMIT_ID: ${{ needs.get_commit_id.outputs.commit_id }}
 
   release_code:
     needs: [get_issue_number, package_code, get_commit_id, quality_checks]
-    uses: ./.github/workflows/cdk_release_code.yml
+    uses: ./.github/workflows/release_all_stacks.yml
     with:
-      STACK_NAME: cpt-ui-pr-${{needs.get_issue_number.outputs.issue_number}}
+      SERVICE_NAME: cpt-ui-pr-${{needs.get_issue_number.outputs.issue_number}}
       TARGET_ENVIRONMENT: dev-pr
       VERSION_NUMBER: PR-${{ needs.get_issue_number.outputs.issue_number }}
       COMMIT_ID: ${{ needs.get_commit_id.outputs.commit_id }}
     secrets:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.DEV_CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_DEPLOY_ROLE }}
+    

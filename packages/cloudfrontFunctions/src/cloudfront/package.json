@@ -1,0 +1,9 @@
+{
+  "name": "cloudfront",
+  "version": "1.0.0",
+  "description": "This is a mock library to enable testing of cloudfront functions that use a key value store",
+  "scripts": {},
+  "type": "module",
+  "author": "",
+  "license": "MIT"
+}
