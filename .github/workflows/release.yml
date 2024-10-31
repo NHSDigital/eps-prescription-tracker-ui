@@ -8,7 +8,7 @@ env:
 
 jobs:
   quality_checks:
-    uses: NHSDigital/eps-workflow-quality-checks/.github/workflows/quality-checks.yml@v2
+    uses: NHSDigital/eps-workflow-quality-checks/.github/workflows/quality-checks.yml@v3.0.0
     with:
       node_version: '20'
     secrets:
