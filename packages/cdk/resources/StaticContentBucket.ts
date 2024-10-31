@@ -1,5 +1,5 @@
 import {Fn, RemovalPolicy} from "aws-cdk-lib"
-import {Role} from "aws-cdk-lib/aws-iam"
+import {Effect, PolicyStatement, Role} from "aws-cdk-lib/aws-iam"
 import {CfnKey, Key} from "aws-cdk-lib/aws-kms"
 import {
   BlockPublicAccess,
@@ -65,8 +65,36 @@ export class StaticContentBucket extends Construct{
       autoDeleteObjects: allowAutoDeleteObjects // if true forces a deletion even if bucket is not empty
     })
 
-    bucket.grantReadWrite(deploymentRole)
-    kmsKey.grantEncrypt(deploymentRole)
+    const bucketAllowDeployUploadPolicyStatement = new PolicyStatement({
+      effect: Effect.ALLOW,
+      principals: [deploymentRole],
+      actions: [
+        "s3:Abort*",
+        "s3:DeleteObject*",
+        "s3:GetBucket*",
+        "s3:GetObject*",
+        "s3:List*",
+        "s3:PutObject",
+        "s3:PutObjectLegalHold",
+        "s3:PutObjectRetention",
+        "s3:PutObjectTagging",
+        "s3:PutObjectVersionTagging"
+      ],
+      resources: [bucket.arnForObjects("*")]
+    })
+
+    const kmsAllowDeployUsePolicyStatement = new PolicyStatement({
+      effect: Effect.ALLOW,
+      principals: [deploymentRole],
+      actions: [
+        "kms:Encrypt",
+        "kms:GenerateDataKey*"
+      ],
+      resources: [kmsKey.keyArn]
+    })
+
+    bucket.addToResourcePolicy(bucketAllowDeployUploadPolicyStatement)
+    kmsKey.addToResourcePolicy(kmsAllowDeployUsePolicyStatement)
 
     /* As you cannot modify imported policies, cdk cannot not update the s3 bucket with the correct permissions
     for OAC when the distribution and bucket are in different stacks
@@ -83,9 +111,12 @@ export class StaticContentBucket extends Construct{
       Distribution during the initial deployment. This updates the policy to restrict it to a specific distribution.
       !! This can only be added after the distribution has been deployed !! */
       const contentBucketKmsKey = (kmsKey.node.defaultChild as CfnKey)
+      const existingPolicy = contentBucketKmsKey.keyPolicy.toJSON()
       contentBucketKmsKey.keyPolicy = new AllowCloudfrontKmsKeyAccessPolicy(
         this, "StaticContentBucketAllowCloudfrontKmsKeyAccessPolicy", {
-          cloudfrontDistributionId: cloudfrontDistributionId
+          cloudfrontDistributionId: cloudfrontDistributionId,
+          deploymentRole: deploymentRole,
+          existingPolicy: existingPolicy
         }).policyJson
     }
 
