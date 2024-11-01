@@ -14,6 +14,8 @@ import {
 } from "aws-cdk-lib/aws-cognito"
 import {Certificate} from "aws-cdk-lib/aws-certificatemanager"
 import {RemovalPolicy} from "aws-cdk-lib"
+import {ARecord, HostedZone, RecordTarget} from "aws-cdk-lib/aws-route53"
+import {UserPoolDomainTarget} from "aws-cdk-lib/aws-route53-targets"
 
 export interface CognitoProps {
   readonly primaryOidcClientId: string;
@@ -45,6 +47,15 @@ export class Cognito extends Construct {
   public constructor(scope: Construct, id: string, props: CognitoProps) {
     super(scope, id)
 
+    const epsDomainName: string = this.node.tryGetContext("epsDomainName")
+    const epsHostedZoneId: string = this.node.tryGetContext("epsHostedZoneId")
+
+    // Imports
+    const hostedZone = HostedZone.fromHostedZoneAttributes(this, "hostedZone", {
+      hostedZoneId: epsHostedZoneId,
+      zoneName: epsDomainName
+    })
+
     // set some constants for later use
     const baseApiGwUrl = `https://${props.cognitoDomain}`
 
@@ -52,12 +63,27 @@ export class Cognito extends Construct {
     const userPool = new UserPool(this, "UserPool", {
       removalPolicy: RemovalPolicy.DESTROY
     })
+
+    // we need an DNS A record for custom cognito domain to work
+    const cognitoARecord = new ARecord(this, "CognitoARecord", {
+      zone: hostedZone,
+      target: RecordTarget.fromIpAddresses("127.0.0.1"),
+      recordName: props.cloudfrontDomain
+    })
+
     const userPoolDomain = new UserPoolDomain(this, "UserPoolDomain", {
       userPool,
       customDomain: {
         domainName: props.cognitoDomain,
         certificate: props.cognitoCertificate
       }
+    })
+
+    userPoolDomain.node.addDependency(cognitoARecord)
+    new ARecord(this, "UserPoolCloudFrontAliasRecord", {
+      zone: hostedZone,
+      recordName: props.cognitoDomain,
+      target: RecordTarget.fromAlias(new UserPoolDomainTarget(userPoolDomain))
     })
 
     const oidcEndpoints: OidcEndpoints = {

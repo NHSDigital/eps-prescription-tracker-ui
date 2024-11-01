@@ -17,7 +17,28 @@ export const nagSuppressions = (stack: Stack) => {
           id: "AwsSolutions-COG1",
           reason: "Suppress error for not implementing password policy. We are using cognito in federated IdP mode so do not need it"
         }
+      ]
+    )
 
+    safeAddNagSuppression(
+      stack,
+      "/StatefulStack/Cognito/UserPoolDomain/CloudFrontDomainName/CustomResourcePolicy/Resource",
+      [
+        {
+          id: "AwsSolutions-IAM5",
+          reason: "Suppress error for wildcard permissions. This is an auto generated one for cognito domain"
+        }
+      ]
+    )
+
+    safeAddNagSuppression(
+      stack,
+      "/StatefulStack/AWS679f53fac002430cb0da5b7982bd2287/ServiceRole/Resource",
+      [
+        {
+          id: "AwsSolutions-IAM4",
+          reason: "Suppress error for using AWS managed policy. This is an auto generated one for cognito domain"
+        }
       ]
     )
 

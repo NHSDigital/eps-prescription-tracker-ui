@@ -54,9 +54,10 @@ const StatefulResources = new StatefulResourcesStack(app, "StatefulStack", {
 app.synth()
 
 // add metadata to lambda so they don't get flagged as failing cfn-guard
-addCfnGuardMetadata(UsCerts, "Custom::CrossRegionExportWriterCustomResourceProvider")
-addCfnGuardMetadata(StatefulResources, "Custom::S3AutoDeleteObjectsCustomResourceProvider")
-addCfnGuardMetadata(StatefulResources, "Custom::CrossRegionExportReaderCustomResourceProvider")
+addCfnGuardMetadata(UsCerts, "Custom::CrossRegionExportWriterCustomResourceProvider", "Handler")
+addCfnGuardMetadata(StatefulResources, "Custom::S3AutoDeleteObjectsCustomResourceProvider", "Handler")
+addCfnGuardMetadata(StatefulResources, "Custom::CrossRegionExportReaderCustomResourceProvider", "Handler")
+addCfnGuardMetadata(StatefulResources, "AWS679f53fac002430cb0da5b7982bd2287", "Resource")
 
 // finally run synth again with force to include the added metadata
 app.synth({
