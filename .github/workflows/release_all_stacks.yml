@@ -136,7 +136,7 @@ jobs:
             aws cloudfront-keyvaluestore put-key \
               --if-match="${ETag}" \
               --key=version \
-              --value="$newVersion "\
+              --value="$newVersion"\
               --kvs-arn "$keyValueStore"
             echo "Inserted new 'version' key with value $newVersion."
           fi
