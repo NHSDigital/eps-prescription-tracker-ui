@@ -35,7 +35,6 @@ export interface CognitoProps {
   readonly mockTokenEndpoint: string;
   readonly cognitoDomain: string
   readonly cognitoCertificate: Certificate
-  readonly cloudfrontDomain: string
 }
 
 /**
@@ -66,13 +65,6 @@ export class Cognito extends Construct {
       removalPolicy: RemovalPolicy.DESTROY
     })
 
-    // we need an DNS A record for custom cognito domain to work
-    const cognitoARecord = new ARecord(this, "CognitoARecord", {
-      zone: hostedZone,
-      target: RecordTarget.fromIpAddresses("127.0.0.1"),
-      recordName: props.cloudfrontDomain
-    })
-
     const userPoolDomain = new UserPoolDomain(this, "UserPoolDomain", {
       userPool,
       customDomain: {
@@ -81,7 +73,6 @@ export class Cognito extends Construct {
       }
     })
 
-    userPoolDomain.node.addDependency(cognitoARecord)
     new ARecord(this, "UserPoolCloudFrontAliasRecord", {
       zone: hostedZone,
       recordName: props.cognitoDomain,

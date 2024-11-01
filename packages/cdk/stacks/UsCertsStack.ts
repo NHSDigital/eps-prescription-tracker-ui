@@ -5,7 +5,7 @@ import {
   Stack,
   StackProps
 } from "aws-cdk-lib"
-import {HostedZone} from "aws-cdk-lib/aws-route53"
+import {ARecord, HostedZone, RecordTarget} from "aws-cdk-lib/aws-route53"
 import {Certificate, CertificateValidation} from "aws-cdk-lib/aws-certificatemanager"
 
 export interface UsCertsStackProps extends StackProps {
@@ -51,10 +51,17 @@ export class UsCertsStack extends Stack {
       - cognito cert
     */
 
-    const cognitoDomain = `auth.${props.serviceName}.${epsDomainName}`
+    const cognitoDomain = `auth.login.${props.serviceName}.${epsDomainName}`
     const cognitoCertificate = new Certificate(this, "CogniteCertificate", {
       domainName: cognitoDomain,
       validation: CertificateValidation.fromDns(hostedZone)
+    })
+
+    // we need an DNS A record for custom cognito domain to work
+    new ARecord(this, "CognitoARecord", {
+      zone: hostedZone,
+      target: RecordTarget.fromIpAddresses("127.0.0.1"),
+      recordName:  `login.${props.serviceName}.${epsDomainName}`
     })
 
     // Outputs

@@ -82,8 +82,7 @@ export class StatefulResourcesStack extends Stack {
       mockTokenEndpoint: mockTokenEndpoint,
       useMockOidc: useMockOidc,
       cognitoDomain: props.cognitoDomain,
-      cognitoCertificate: props.cognitoCertificate,
-      cloudfrontDomain: props.cloudfrontDomain
+      cognitoCertificate: props.cognitoCertificate
     })
 
     // Outputs
