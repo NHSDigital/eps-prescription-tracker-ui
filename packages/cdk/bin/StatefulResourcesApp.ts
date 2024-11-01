@@ -56,6 +56,7 @@ app.synth()
 // add metadata to lambda so they don't get flagged as failing cfn-guard
 addCfnGuardMetadata(UsCerts, "Custom::CrossRegionExportWriterCustomResourceProvider")
 addCfnGuardMetadata(StatefulResources, "Custom::S3AutoDeleteObjectsCustomResourceProvider")
+addCfnGuardMetadata(StatefulResources, "Custom::CrossRegionExportReaderCustomResourceProvider")
 
 // finally run synth again with force to include the added metadata
 app.synth({
