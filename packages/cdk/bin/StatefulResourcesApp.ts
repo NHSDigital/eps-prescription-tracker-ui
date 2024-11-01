@@ -43,7 +43,10 @@ const StatefulResources = new StatefulResourcesStack(app, "StatefulStack", {
   },
   serviceName: serviceName,
   stackName: `${serviceName}-stateful-resources`,
-  version: version
+  version: version,
+  cloudfrontDomain: UsCerts.cloudfrontDomain,
+  cognitoCertificate: UsCerts.cognitoCertificate,
+  cognitoDomain: UsCerts.cognitoDomain
 })
 
 // run a synth to add cross region lambdas and roles

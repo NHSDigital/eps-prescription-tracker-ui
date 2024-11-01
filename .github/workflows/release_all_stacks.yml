@@ -15,12 +15,42 @@ on:
       COMMIT_ID:
         required: true
         type: string
+      useMockOidc:
+        type: boolean
+        default: false
     secrets:
       CLOUD_FORMATION_DEPLOY_ROLE:
         required: true
       CDK_PULL_IMAGE_ROLE:
         required: true
-
+      primaryOidcClientId:
+        required: false
+      primaryOidClientSecret:
+        required: false
+      primaryOidcIssuer:
+        required: false
+      primaryOidcAuthorizeEndpoint:
+        required: false
+      primaryOidcTokenEndpoint:
+        required: false
+      primaryOidcUserInfoEndpoint:
+        required: false
+      primaryOidcjwksEndpoint:
+        required: false
+      mockOidcClientId:
+        required: false
+      mockOidClientSecret:
+        required: false
+      mockOidcIssuer:
+        required: false
+      mockOidcAuthorizeEndpoint:
+        required: false
+      mockOidcTokenEndpoint:
+        required: false
+      mockOidcUserInfoEndpoint:
+        required: false
+      mockOidcjwksEndpoint:
+        required: false
 jobs:
   check_first_deployment:
     runs-on: ubuntu-latest

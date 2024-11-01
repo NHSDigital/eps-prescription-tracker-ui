@@ -21,12 +21,42 @@ on:
       LOG_RETENTION_IN_DAYS:
         required: true
         type: string
+      useMockOidc:
+        type: boolean
+        default: false
     secrets:
       CLOUD_FORMATION_DEPLOY_ROLE:
         required: true
       CDK_PULL_IMAGE_ROLE:
         required: true
-  
+      primaryOidcClientId:
+        required: false
+      primaryOidClientSecret:
+        required: false
+      primaryOidcIssuer:
+        required: false
+      primaryOidcAuthorizeEndpoint:
+        required: false
+      primaryOidcTokenEndpoint:
+        required: false
+      primaryOidcUserInfoEndpoint:
+        required: false
+      primaryOidcjwksEndpoint:
+        required: false
+      mockOidcClientId:
+        required: false
+      mockOidClientSecret:
+        required: false
+      mockOidcIssuer:
+        required: false
+      mockOidcAuthorizeEndpoint:
+        required: false
+      mockOidcTokenEndpoint:
+        required: false
+      mockOidcUserInfoEndpoint:
+        required: false
+      mockOidcjwksEndpoint:
+        required: false 
 jobs:
   release_code:
     runs-on: ubuntu-latest
@@ -106,6 +136,21 @@ jobs:
           --arg allowAutoDeleteObjects "true" \
           --arg cloudfrontDistributionId "${cloudfrontDistributionId}" \
           --arg cloudfrontCertArn "${cloudfrontCertArn}" \
+          --arg useMockOidc "${{ inputs.useMockOidc }}" \
+          --arg primaryOidcClientId "${{ secrets.primaryOidcClientId }}" \
+          --arg primaryOidClientSecret "${{ secrets.primaryOidClientSecret }}" \
+          --arg primaryOidcIssuer "${{ secrets.primaryOidcIssuer }}" \
+          --arg primaryOidcAuthorizeEndpoint "${{ secrets.primaryOidcAuthorizeEndpoint }}" \
+          --arg primaryOidcTokenEndpoint "${{ secrets.primaryOidcTokenEndpoint }}" \
+          --arg primaryOidcUserInfoEndpoint "${{ secrets.primaryOidcUserInfoEndpoint }}" \
+          --arg primaryOidcjwksEndpoint "${{ secrets.primaryOidcjwksEndpoint }}" \
+          --arg mockOidcClientId "${{ secrets.mockOidcClientId }}" \
+          --arg mockOidClientSecret "${{ secrets.mockOidClientSecret }}" \
+          --arg mockOidcIssuer "${{ secrets.mockOidcIssuer }}" \
+          --arg mockOidcAuthorizeEndpoint "${{ secrets.mockOidcAuthorizeEndpoint }}" \
+          --arg mockOidcTokenEndpoint "${{ secrets.mockOidcTokenEndpoint }}" \
+          --arg mockOidcUserInfoEndpoint "${{ secrets.mockOidcUserInfoEndpoint }}" \
+          --arg mockOidcjwksEndpoint "${{ secrets.mockOidcjwksEndpoint }}" \
           '.context += {
             "serviceName": $serviceName,
             "VERSION_NUMBER": $VERSION_NUMBER,
@@ -115,7 +160,22 @@ jobs:
             "epsHostedZoneId": $epsHostedZoneId,
             "allowAutoDeleteObjects": $allowAutoDeleteObjects,
             "cloudfrontDistributionId": $cloudfrontDistributionId,
-            "cloudfrontCertArn": $cloudfrontCertArn}' \
+            "cloudfrontCertArn": $cloudfrontCertArn},
+            "useMockOidc": $useMockOidc,
+            "primaryOidcClientId": $primaryOidcClientId,
+            "primaryOidClientSecret": $primaryOidClientSecret,
+            "primaryOidcIssuer": $primaryOidcIssuer,
+            "primaryOidcAuthorizeEndpoint": $primaryOidcAuthorizeEndpoint,
+            "primaryOidcTokenEndpoint": $primaryOidcTokenEndpoint,
+            "primaryOidcUserInfoEndpoint": $primaryOidcUserInfoEndpoint,
+            "primaryOidcjwksEndpoint": $primaryOidcjwksEndpoint,
+            "mockOidcClientId": $mockOidcClientId,
+            "mockOidClientSecret": $mockOidClientSecret,
+            "mockOidcIssuer": $mockOidcIssuer,
+            "mockOidcAuthorizeEndpoint": $mockOidcAuthorizeEndpoint,
+            "mockOidcTokenEndpoint": $mockOidcTokenEndpoint,
+            "mockOidcUserInfoEndpoint": $mockOidcUserInfoEndpoint,
+            "mockOidcjwksEndpoint": $mockOidcjwksEndpoint' \
           .build/cdk.json > .build/cdk.new.json
           mv .build/cdk.new.json .build/cdk.json
 

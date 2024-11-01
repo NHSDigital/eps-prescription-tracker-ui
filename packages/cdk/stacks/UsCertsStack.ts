@@ -22,6 +22,9 @@ export interface UsCertsStackProps extends StackProps {
 
 export class UsCertsStack extends Stack {
   public readonly cloudfrontCert: Certificate
+  public readonly cloudfrontDomain: string
+  public readonly cognitoCertificate: Certificate
+  public readonly cognitoDomain: string
   public constructor(scope: App, id: string, props: UsCertsStackProps) {
     super(scope, id, props)
 
@@ -38,14 +41,21 @@ export class UsCertsStack extends Stack {
 
     // Resources
     // - Cloudfront Cert
+    const cloudfrontDomain = `${props.serviceName}.${epsDomainName}`
     const cloudfrontCertificate = new Certificate(this, "CloudfrontCertificate", {
-      domainName: `${props.serviceName}.${epsDomainName}`,
+      domainName: cloudfrontDomain,
       validation: CertificateValidation.fromDns(hostedZone)
     })
 
     /* Resources to add:
       - cognito cert
     */
+
+    const cognitoDomain = `auth.${props.serviceName}.${epsDomainName}`
+    const cognitoCertificate = new Certificate(this, "CloudfrontCertificate", {
+      domainName: cognitoDomain,
+      validation: CertificateValidation.fromDns(hostedZone)
+    })
 
     // Outputs
 
@@ -54,5 +64,8 @@ export class UsCertsStack extends Stack {
       value: cloudfrontCertificate.certificateArn,
       exportName: `${props.stackName}:cloudfrontCertificate:Arn`
     })
+    this.cloudfrontDomain = cloudfrontDomain
+    this.cognitoCertificate = cognitoCertificate
+    this.cognitoDomain = cognitoDomain
   }
 }
