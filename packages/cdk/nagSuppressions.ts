@@ -7,14 +7,20 @@ export const nagSuppressions = (stack: Stack) => {
   if(stack.artifactId === "StatefulStack"){
     safeAddNagSuppression(
       stack,
-      "/StatefulStack/StaticContentBucket/deploymentRole/PolicyStatefulStackStaticContentBucketdeploymentRoleACB59A57/Resource",
+      "/StatefulStack/Cognito/UserPool/Resource",
       [
         {
-          id: "AwsSolutions-IAM5",
-          reason: "Suppress error for wildcards in Bucket/KMS key policy. This applies only to the current Bucket/KMS key so is safe"
+          id: "AwsSolutions-COG3",
+          reason: "Suppress error for not implementing AdvancedSecurityMode on cognito. We do not need this"
+        },
+        {
+          id: "AwsSolutions-COG1",
+          reason: "Suppress error for not implementing password policy. We are using cognito in federated IdP mode so do not need it"
         }
+
       ]
     )
+
   }
 
   if(stack.artifactId === "StatelessStack"){
