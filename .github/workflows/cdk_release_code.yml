@@ -160,7 +160,7 @@ jobs:
             "epsHostedZoneId": $epsHostedZoneId,
             "allowAutoDeleteObjects": $allowAutoDeleteObjects,
             "cloudfrontDistributionId": $cloudfrontDistributionId,
-            "cloudfrontCertArn": $cloudfrontCertArn},
+            "cloudfrontCertArn": $cloudfrontCertArn,
             "useMockOidc": $useMockOidc,
             "primaryOidcClientId": $primaryOidcClientId,
             "primaryOidClientSecret": $primaryOidClientSecret,
@@ -175,7 +175,7 @@ jobs:
             "mockOidcAuthorizeEndpoint": $mockOidcAuthorizeEndpoint,
             "mockOidcTokenEndpoint": $mockOidcTokenEndpoint,
             "mockOidcUserInfoEndpoint": $mockOidcUserInfoEndpoint,
-            "mockOidcjwksEndpoint": $mockOidcjwksEndpoint' \
+            "mockOidcjwksEndpoint": $mockOidcjwksEndpoint}' \
           .build/cdk.json > .build/cdk.new.json
           mv .build/cdk.new.json .build/cdk.json
 
