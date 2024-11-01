@@ -52,7 +52,7 @@ export class UsCertsStack extends Stack {
     */
 
     const cognitoDomain = `auth.${props.serviceName}.${epsDomainName}`
-    const cognitoCertificate = new Certificate(this, "CloudfrontCertificate", {
+    const cognitoCertificate = new Certificate(this, "CogniteCertificate", {
       domainName: cognitoDomain,
       validation: CertificateValidation.fromDns(hostedZone)
     })
