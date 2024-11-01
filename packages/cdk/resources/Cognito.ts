@@ -14,7 +14,7 @@ import {
 } from "aws-cdk-lib/aws-cognito"
 import {Certificate} from "aws-cdk-lib/aws-certificatemanager"
 import {RemovalPolicy} from "aws-cdk-lib"
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+
 import {ARecord, HostedZone, RecordTarget} from "aws-cdk-lib/aws-route53"
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import {UserPoolDomainTarget} from "aws-cdk-lib/aws-route53-targets"
@@ -54,7 +54,7 @@ export class Cognito extends Construct {
     const epsHostedZoneId: string = this.node.tryGetContext("epsHostedZoneId")
 
     // Imports
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
     const hostedZone = HostedZone.fromHostedZoneAttributes(this, "hostedZone", {
       hostedZoneId: epsHostedZoneId,
       zoneName: epsDomainName
@@ -83,6 +83,18 @@ export class Cognito extends Construct {
       target: RecordTarget.fromAlias(new UserPoolDomainTarget(userPoolDomain))
     })
     */
+
+    new ARecord(this, "UserPoolDomainAliasRecord", {
+      recordName: props.cognitoDomain,
+      target: RecordTarget.fromAlias({
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        bind: _record => ({
+          hostedZoneId: "Z2FDTNDATAQYW2", // CloudFront Zone ID
+          dnsName: props.cognitoDomain
+        })
+      }),
+      zone: hostedZone
+    })
 
     const oidcEndpoints: OidcEndpoints = {
       authorization: props.primaryOidcAuthorizeEndpoint,
