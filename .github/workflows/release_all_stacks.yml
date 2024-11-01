@@ -92,9 +92,24 @@ jobs:
       COMMIT_ID: ${{ inputs.COMMIT_ID }}
       CDK_APP_NAME: StatefulResourcesApp
       LOG_RETENTION_IN_DAYS: 30
+      useMockOidc: ${{ inputs.useMockOidc }}
     secrets:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}
+      primaryOidcClientId: ${{ secrets.primaryOidcClientId }}
+      primaryOidClientSecret: ${{ secrets.primaryOidClientSecret }}
+      primaryOidcIssuer: ${{ secrets.primaryOidcIssuer }}
+      primaryOidcAuthorizeEndpoint: ${{ secrets.primaryOidcAuthorizeEndpoint }}
+      primaryOidcTokenEndpoint: ${{ secrets.primaryOidcTokenEndpoint }}
+      primaryOidcUserInfoEndpoint: ${{ secrets.primaryOidcUserInfoEndpoint }}
+      primaryOidcjwksEndpoint: ${{ secrets.primaryOidcjwksEndpoint }}
+      mockOidcClientId: ${{ secrets.mockOidcClientId }}
+      mockOidClientSecret: ${{ secrets.mockOidClientSecret }}
+      mockOidcIssuer: ${{ secrets.mockOidcIssuer }}
+      mockOidcAuthorizeEndpoint: ${{ secrets.mockOidcAuthorizeEndpoint }}
+      mockOidcTokenEndpoint: ${{ secrets.mockOidcTokenEndpoint }}
+      mockOidcUserInfoEndpoint: ${{ secrets.mockOidcUserInfoEndpoint }}
+      mockOidcjwksEndpoint: ${{ secrets.mockOidcjwksEndpoint }}
 
   deploy_website_content:
     uses: ./.github/workflows/deploy_website_content.yml
@@ -117,10 +132,25 @@ jobs:
       COMMIT_ID: ${{ inputs.COMMIT_ID }}
       CDK_APP_NAME: StatelessResourcesApp
       LOG_RETENTION_IN_DAYS: 30
+      useMockOidc: ${{ inputs.useMockOidc }}
     secrets:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}
-  
+      primaryOidcClientId: ${{ secrets.primaryOidcClientId }}
+      primaryOidClientSecret: ${{ secrets.primaryOidClientSecret }}
+      primaryOidcIssuer: ${{ secrets.primaryOidcIssuer }}
+      primaryOidcAuthorizeEndpoint: ${{ secrets.primaryOidcAuthorizeEndpoint }}
+      primaryOidcTokenEndpoint: ${{ secrets.primaryOidcTokenEndpoint }}
+      primaryOidcUserInfoEndpoint: ${{ secrets.primaryOidcUserInfoEndpoint }}
+      primaryOidcjwksEndpoint: ${{ secrets.primaryOidcjwksEndpoint }}
+      mockOidcClientId: ${{ secrets.mockOidcClientId }}
+      mockOidClientSecret: ${{ secrets.mockOidClientSecret }}
+      mockOidcIssuer: ${{ secrets.mockOidcIssuer }}
+      mockOidcAuthorizeEndpoint: ${{ secrets.mockOidcAuthorizeEndpoint }}
+      mockOidcTokenEndpoint: ${{ secrets.mockOidcTokenEndpoint }}
+      mockOidcUserInfoEndpoint: ${{ secrets.mockOidcUserInfoEndpoint }}
+      mockOidcjwksEndpoint: ${{ secrets.mockOidcjwksEndpoint }}
+
   update_cloudfront_kvs:
     runs-on: ubuntu-latest
     environment: ${{ inputs.TARGET_ENVIRONMENT }}
@@ -182,10 +212,25 @@ jobs:
       COMMIT_ID: ${{ inputs.COMMIT_ID }}
       CDK_APP_NAME: StatefulResourcesApp
       LOG_RETENTION_IN_DAYS: 30
+      useMockOidc: ${{ inputs.useMockOidc }}
     secrets:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}
-  
+      primaryOidcClientId: ${{ secrets.primaryOidcClientId }}
+      primaryOidClientSecret: ${{ secrets.primaryOidClientSecret }}
+      primaryOidcIssuer: ${{ secrets.primaryOidcIssuer }}
+      primaryOidcAuthorizeEndpoint: ${{ secrets.primaryOidcAuthorizeEndpoint }}
+      primaryOidcTokenEndpoint: ${{ secrets.primaryOidcTokenEndpoint }}
+      primaryOidcUserInfoEndpoint: ${{ secrets.primaryOidcUserInfoEndpoint }}
+      primaryOidcjwksEndpoint: ${{ secrets.primaryOidcjwksEndpoint }}
+      mockOidcClientId: ${{ secrets.mockOidcClientId }}
+      mockOidClientSecret: ${{ secrets.mockOidClientSecret }}
+      mockOidcIssuer: ${{ secrets.mockOidcIssuer }}
+      mockOidcAuthorizeEndpoint: ${{ secrets.mockOidcAuthorizeEndpoint }}
+      mockOidcTokenEndpoint: ${{ secrets.mockOidcTokenEndpoint }}
+      mockOidcUserInfoEndpoint: ${{ secrets.mockOidcUserInfoEndpoint }}
+      mockOidcjwksEndpoint: ${{ secrets.mockOidcjwksEndpoint }}
+
   update_github_pages:
     runs-on: ubuntu-latest
     environment: ${{ inputs.TARGET_ENVIRONMENT }}
