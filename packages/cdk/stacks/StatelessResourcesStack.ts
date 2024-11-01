@@ -99,18 +99,18 @@ export class StatelessResourcesStack extends Stack {
 
     const s3500UriRewriteFunction = new CloudfrontFunction(this, "S3500UriRewriteFunction", {
       functionName: `${props.serviceName}-S3500UriRewriteFunction`,
-      sourceFileName: "genericS3FixedObjectUriRewrite.js"
+      sourceFileName: "genericS3FixedObjectUriRewrite.js",
+      keyValues: [
+        {
+          key: "object",
+          value: "500.html"
+        }
+      ]
     })
 
     const s3StaticContentUriRewriteFunction = new CloudfrontFunction(this, "S3StaticContentUriRewriteFunction", {
       functionName: `${props.serviceName}-S3StaticContentUriRewriteFunction`,
-      sourceFileName: "s3StaticContentUriRewrite.js",
-      keyValues: [
-        {
-          key: "version",
-          value: props.version
-        }
-      ]
+      sourceFileName: "s3StaticContentUriRewrite.js"
     })
 
     const apiGatewayStripPathFunction = new CloudfrontFunction(this, "ApiGatewayStripPathFunction", {
