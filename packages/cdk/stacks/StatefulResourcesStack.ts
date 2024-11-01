@@ -36,6 +36,7 @@ export class StatefulResourcesStack extends Stack {
     const primaryOidcAuthorizeEndpoint = this.node.tryGetContext("primaryOidcAuthorizeEndpoint")
     const primaryOidcUserInfoEndpoint = this.node.tryGetContext("primaryOidcUserInfoEndpoint")
     const primaryOidcjwksEndpoint = this.node.tryGetContext("primaryOidcjwksEndpoint")
+    const primaryTokenEndpoint = this.node.tryGetContext("primaryTokenEndpoint")
 
     const mockOidcClientId = this.node.tryGetContext("mockOidcClientId")
     const mockOidClientSecret = this.node.tryGetContext("mockOidClientSecret")
@@ -43,6 +44,7 @@ export class StatefulResourcesStack extends Stack {
     const mockOidcAuthorizeEndpoint = this.node.tryGetContext("mockOidcAuthorizeEndpoint")
     const mockOidcUserInfoEndpoint = this.node.tryGetContext("mockOidcUserInfoEndpoint")
     const mockOidcjwksEndpoint = this.node.tryGetContext("mockOidcjwksEndpoint")
+    const mockTokenEndpoint = this.node.tryGetContext("mockTokenEndpoint")
 
     const useMockOidc = this.node.tryGetContext("useMockOidc")
 
@@ -65,17 +67,19 @@ export class StatefulResourcesStack extends Stack {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const cognito = new Cognito(this, "Cognito", {
       primaryOidcClientId: primaryOidcClientId!,
-      primaryOidClientSecret: primaryOidClientSecret!,
-      primaryOidcIssuer: primaryOidcIssuer!,
-      primaryOidcAuthorizeEndpoint: primaryOidcAuthorizeEndpoint!,
-      primaryOidcUserInfoEndpoint: primaryOidcUserInfoEndpoint!,
-      primaryOidcjwksEndpoint: primaryOidcjwksEndpoint!,
-      mockOidcClientId: mockOidcClientId!,
-      mockOidClientSecret: mockOidClientSecret!,
-      mockOidcIssuer: mockOidcIssuer!,
-      mockOidcAuthorizeEndpoint: mockOidcAuthorizeEndpoint!,
-      mockOidcUserInfoEndpoint: mockOidcUserInfoEndpoint!,
-      mockOidcjwksEndpoint: mockOidcjwksEndpoint!,
+      primaryOidClientSecret: primaryOidClientSecret,
+      primaryOidcIssuer: primaryOidcIssuer,
+      primaryOidcAuthorizeEndpoint: primaryOidcAuthorizeEndpoint,
+      primaryOidcUserInfoEndpoint: primaryOidcUserInfoEndpoint,
+      primaryOidcjwksEndpoint: primaryOidcjwksEndpoint,
+      primaryTokenEndpoint: primaryTokenEndpoint,
+      mockOidcClientId: mockOidcClientId,
+      mockOidClientSecret: mockOidClientSecret,
+      mockOidcIssuer: mockOidcIssuer,
+      mockOidcAuthorizeEndpoint: mockOidcAuthorizeEndpoint,
+      mockOidcUserInfoEndpoint: mockOidcUserInfoEndpoint,
+      mockOidcjwksEndpoint: mockOidcjwksEndpoint,
+      mockTokenEndpoint: mockTokenEndpoint,
       useMockOidc: useMockOidc,
       cognitoDomain: props.cognitoDomain,
       cognitoCertificate: props.cognitoCertificate,

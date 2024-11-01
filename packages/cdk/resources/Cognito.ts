@@ -24,6 +24,7 @@ export interface CognitoProps {
   readonly primaryOidcAuthorizeEndpoint: string;
   readonly primaryOidcUserInfoEndpoint: string;
   readonly primaryOidcjwksEndpoint: string;
+  readonly primaryTokenEndpoint: string;
   readonly useMockOidc: boolean
   readonly mockOidcClientId?: string;
   readonly mockOidClientSecret?: string;
@@ -31,6 +32,7 @@ export interface CognitoProps {
   readonly mockOidcAuthorizeEndpoint?: string;
   readonly mockOidcUserInfoEndpoint?: string;
   readonly mockOidcjwksEndpoint?: string;
+  readonly mockTokenEndpoint: string;
   readonly cognitoDomain: string
   readonly cognitoCertificate: Certificate
   readonly cloudfrontDomain: string
@@ -57,7 +59,7 @@ export class Cognito extends Construct {
     })
 
     // set some constants for later use
-    const baseApiGwUrl = `https://${props.cognitoDomain}`
+    //const baseApiGwUrl = `https://${props.cognitoDomain}`
 
     // cognito stuff
     const userPool = new UserPool(this, "UserPool", {
@@ -89,7 +91,8 @@ export class Cognito extends Construct {
     const oidcEndpoints: OidcEndpoints = {
       authorization: props.primaryOidcAuthorizeEndpoint,
       jwksUri: props.primaryOidcjwksEndpoint,
-      token: `https://${props.cloudfrontDomain}/api/token`,
+      //      token: `https://${props.cloudfrontDomain}/api/token`,
+      token: props.primaryTokenEndpoint,
       userInfo: props.primaryOidcUserInfoEndpoint
     }
 
@@ -127,7 +130,8 @@ export class Cognito extends Construct {
       const mockOidcEndpoints: OidcEndpoints = {
         authorization: props.mockOidcAuthorizeEndpoint,
         jwksUri: props.mockOidcjwksEndpoint,
-        token: `${baseApiGwUrl}/mockToken`,
+        //      token: `https://${props.cloudfrontDomain}/api/token`,
+        token: props.mockTokenEndpoint,
         userInfo: props.mockOidcUserInfoEndpoint
       }
 
