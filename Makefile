@@ -37,6 +37,7 @@ lint: lint-node lint-githubactions lint-githubaction-scripts react-lint
 test: compile
 	npm run test --workspace packages/cloudfrontFunctions
 	npm run test --workspace packages/cdk
+	npm run test --workspace packages/cpt-ui
 
 clean:
 	rm -rf packages/cloudfrontFunctions/coverage
