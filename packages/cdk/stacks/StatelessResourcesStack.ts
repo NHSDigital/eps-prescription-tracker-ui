@@ -99,13 +99,7 @@ export class StatelessResourcesStack extends Stack {
 
     const s3500UriRewriteFunction = new CloudfrontFunction(this, "S3500UriRewriteFunction", {
       functionName: `${props.serviceName}-S3500UriRewriteFunction`,
-      sourceFileName: "genericS3FixedObjectUriRewrite.js",
-      keyValues: [
-        {
-          key: "object",
-          value: "500.html"
-        }
-      ]
+      sourceFileName: "genericS3FixedObjectUriRewrite.js"
     })
 
     const s3StaticContentUriRewriteFunction = new CloudfrontFunction(this, "S3StaticContentUriRewriteFunction", {
@@ -242,6 +236,10 @@ export class StatelessResourcesStack extends Stack {
     new CfnOutput(this, "CloudfrontDistributionId", {
       value: cloudfrontDistribution.distribution.distributionId,
       exportName: `${props.stackName}:cloudfrontDistribution:Id`
+    })
+    new CfnOutput(this, "StaticRewriteKeyValueStoreArn", {
+      value: s3StaticContentUriRewriteFunction.functionStore?.keyValueStoreArn,
+      exportName: `${props.stackName}:StaticRewriteKeyValueStor:Arn`
     })
 
     nagSuppressions(this)
