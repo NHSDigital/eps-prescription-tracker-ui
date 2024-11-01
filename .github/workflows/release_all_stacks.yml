@@ -114,6 +114,8 @@ jobs:
         run: |
           # shellcheck disable=SC2140
           keyValueStore=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='"${{ inputs.SERVICE_NAME }}-stateless-resources:StaticRewriteKeyValueStor:Arn"'].Value" --output text)
+          # shellcheck disable=SC2140
+          cloudfrontDistributionId=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='"${{ inputs.SERVICE_NAME }}-stateless-resources:cloudfrontDistribution:Id"'].Value" --output text)
 
           newVersion="${{ inputs.VERSION_NUMBER }}"
 
@@ -140,6 +142,9 @@ jobs:
               --kvs-arn "$keyValueStore"
             echo "Inserted new 'version' key with value $newVersion."
           fi
+
+          # invalidate the cache
+          aws cloudfront create-invalidation --distribution-id "${cloudfrontDistributionId}" --paths '/*'
 
   rerelease_stateful_resources:
     if: ${{ needs.check_first_deployment.outputs.FIRST_DEPLOYMENT == 'true' }}
