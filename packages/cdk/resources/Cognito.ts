@@ -15,10 +15,6 @@ import {
 import {Certificate} from "aws-cdk-lib/aws-certificatemanager"
 import {RemovalPolicy} from "aws-cdk-lib"
 
-import {ARecord, HostedZone, RecordTarget} from "aws-cdk-lib/aws-route53"
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import {UserPoolDomainTarget} from "aws-cdk-lib/aws-route53-targets"
-
 export interface CognitoProps {
   readonly primaryOidcClientId: string;
   readonly primaryOidClientSecret: string;
@@ -50,15 +46,7 @@ export class Cognito extends Construct {
   public constructor(scope: Construct, id: string, props: CognitoProps) {
     super(scope, id)
 
-    const epsDomainName: string = this.node.tryGetContext("epsDomainName")
-    const epsHostedZoneId: string = this.node.tryGetContext("epsHostedZoneId")
-
     // Imports
-
-    const hostedZone = HostedZone.fromHostedZoneAttributes(this, "hostedZone", {
-      hostedZoneId: epsHostedZoneId,
-      zoneName: epsDomainName
-    })
 
     // set some constants for later use
     //const baseApiGwUrl = `https://${props.cognitoDomain}`
@@ -83,18 +71,6 @@ export class Cognito extends Construct {
       target: RecordTarget.fromAlias(new UserPoolDomainTarget(userPoolDomain))
     })
     */
-
-    new ARecord(this, "UserPoolDomainAliasRecord", {
-      recordName: props.cognitoDomain,
-      target: RecordTarget.fromAlias({
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        bind: _record => ({
-          hostedZoneId: "Z2FDTNDATAQYW2", // CloudFront Zone ID
-          dnsName: props.cognitoDomain
-        })
-      }),
-      zone: hostedZone
-    })
 
     const oidcEndpoints: OidcEndpoints = {
       authorization: props.primaryOidcAuthorizeEndpoint,
