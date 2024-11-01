@@ -14,6 +14,8 @@ import {
 } from "aws-cdk-lib/aws-cognito"
 import {Certificate} from "aws-cdk-lib/aws-certificatemanager"
 import {RemovalPolicy} from "aws-cdk-lib"
+import {ARecord, HostedZone, RecordTarget} from "aws-cdk-lib/aws-route53"
+import {UserPoolDomainTarget} from "aws-cdk-lib/aws-route53-targets"
 
 export interface CognitoProps {
   readonly primaryOidcClientId: string;
@@ -50,6 +52,14 @@ export class Cognito extends Construct {
 
     // set some constants for later use
     //const baseApiGwUrl = `https://${props.cognitoDomain}`
+    const epsDomainName: string = this.node.tryGetContext("epsDomainName")
+    const epsHostedZoneId: string = this.node.tryGetContext("epsHostedZoneId")
+
+    // Imports
+    const hostedZone = HostedZone.fromHostedZoneAttributes(this, "hostedZone", {
+      hostedZoneId: epsHostedZoneId,
+      zoneName: epsDomainName
+    })
 
     // cognito stuff
     const userPool = new UserPool(this, "UserPool", {
@@ -64,13 +74,11 @@ export class Cognito extends Construct {
       }
     })
 
-    /*
     new ARecord(this, "UserPoolCloudFrontAliasRecord", {
       zone: hostedZone,
-      recordName: props.cognitoDomain,
+      recordName: "auth.login",
       target: RecordTarget.fromAlias(new UserPoolDomainTarget(userPoolDomain))
     })
-    */
 
     const oidcEndpoints: OidcEndpoints = {
       authorization: props.primaryOidcAuthorizeEndpoint,

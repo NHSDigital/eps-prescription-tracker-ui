@@ -64,18 +64,6 @@ export class UsCertsStack extends Stack {
       recordName:  `login.${props.serviceName}.${epsDomainName}`
     })
 
-    new ARecord(this, "UserPoolDomainAliasRecord", {
-      recordName: cognitoDomain,
-      target: RecordTarget.fromAlias({
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        bind: _record => ({
-          hostedZoneId: "Z2FDTNDATAQYW2", // CloudFront Zone ID
-          dnsName: cognitoDomain
-        })
-      }),
-      zone: hostedZone
-    })
-
     // Outputs
 
     // Exports
