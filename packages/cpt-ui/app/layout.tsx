@@ -2,7 +2,8 @@
 import React from "react";
 
 import 'nhsuk-frontend/dist/nhsuk.css';
-import { Header, Footer } from 'nhsuk-react-components';
+import { Header } from 'nhsuk-react-components';
+import EpsFooter from '../components/EpsFooter'
 
 export default function RootLayout({
     children,
@@ -45,12 +46,7 @@ export default function RootLayout({
                 </Header>
 
                 {children}
-                <Footer>
-                    <Footer.List></Footer.List>
-                    <Footer.Copyright>
-                        Crown copyright
-                    </Footer.Copyright>
-                </Footer>
+                <EpsFooter />
             </body>
         </html>
     )
