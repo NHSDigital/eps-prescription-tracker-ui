@@ -29,7 +29,7 @@ jobs:
           script: |
             if (context.issue.number) {
               // Return issue number if present
-              return "new-" + context.issue.number;
+              return context.issue.number;
             } else {
               // Otherwise return issue number from commit
               return (
