@@ -63,7 +63,7 @@ export class Cognito extends Construct {
     const oidcEndpoints: OidcEndpoints = {
       authorization: props.primaryOidcAuthorizeEndpoint,
       jwksUri: props.primaryOidcjwksEndpoint,
-      token: `${props.cloudfrontDomain}/api/token`,
+      token: `https://${props.cloudfrontDomain}/api/token`,
       userInfo: props.primaryOidcUserInfoEndpoint
     }
 
