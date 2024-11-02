@@ -135,7 +135,7 @@ export class StatefulResourcesStack extends Stack {
     })
     new CfnOutput(this, "primaryPoolIdentityProviderName", {
       value: cognito.primaryPoolIdentityProvider.providerName,
-      exportName: `${props.stackName}:primaryPoolIdentityProvide:Name`
+      exportName: `${props.stackName}:primaryPoolIdentityProvider:Name`
     })
     if (useMockOidc) {
       new CfnOutput(this, "mockPoolIdentityProvider", {
