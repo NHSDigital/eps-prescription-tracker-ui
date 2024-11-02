@@ -143,6 +143,10 @@ export class StatefulResourcesStack extends Stack {
         exportName: `${props.stackName}:mockPoolIdentityProvider:Name`
       })
     }
+    new CfnOutput(this, "userPoolArn", {
+      value: cognito.userPool.userPoolArn,
+      exportName: `${props.stackName}:userPool:Arn`
+    })
 
     nagSuppressions(this)
   }

@@ -25,7 +25,13 @@ import {nagSuppressions} from "../nagSuppressions"
 import {TableV2} from "aws-cdk-lib/aws-dynamodb"
 import {ManagedPolicy} from "aws-cdk-lib/aws-iam"
 import {CognitoFunctions} from "../resources/CognitoFunctions"
-import {LambdaIntegration} from "aws-cdk-lib/aws-apigateway"
+import {
+  AuthorizationType,
+  CognitoUserPoolsAuthorizer,
+  LambdaIntegration,
+  MockIntegration
+} from "aws-cdk-lib/aws-apigateway"
+import {UserPool} from "aws-cdk-lib/aws-cognito"
 
 export interface StatelessResourcesStackProps extends StackProps {
   readonly serviceName: string
@@ -82,6 +88,8 @@ export class StatelessResourcesStack extends Stack {
     const primaryPoolIdentityProviderName = Fn.importValue(`${props.serviceName}-stateful-resources:primaryPoolIdentityProvider:Name`)
     // eslint-disable-next-line max-len
     const mockPoolIdentityProviderName = Fn.importValue(`${props.serviceName}-stateful-resources:mockPoolIdentityProvider:Name`)
+    const userPool = UserPool.fromUserPoolArn(
+      this, "userPool", Fn.importValue(`${props.serviceName}-stateful-resources:userPool:Arn`))
 
     // Resources
     // -- functions for cognito
@@ -114,8 +122,15 @@ export class StatelessResourcesStack extends Stack {
       logRetentionInDays: logRetentionInDays
     })
 
+    const authorizer = new CognitoUserPoolsAuthorizer(this, "Authorizer", {
+      authorizerName: "cognitoAuth",
+      cognitoUserPools: [userPool],
+      identitySource: "method.request.header.authorization"
+    })
+
     // --- Methods & Resources
 
+    // token endpoint
     for (var policy of cognitoFunctions.cognitoPolicies) {
       apiGateway.restAPiGatewayRole.addManagedPolicy(policy)
     }
@@ -123,13 +138,25 @@ export class StatelessResourcesStack extends Stack {
     tokenResource.addMethod("GET", new LambdaIntegration(cognitoFunctions.tokenLambda, {
       credentialsRole: apiGateway.restAPiGatewayRole
     }))
+
+    // mocktoken endpoint
     if (useMockOidc) {
       const mockTokenResource = apiGateway.restApiGateway.root.addResource("mocktoken")
       mockTokenResource.addMethod("GET", new LambdaIntegration(cognitoFunctions.mockTokenLambda, {
         credentialsRole: apiGateway.restAPiGatewayRole
       }))
-
     }
+
+    /* Dummy Method/Resource to test cognito auth */
+    const mockResource = apiGateway.restApiGateway.root.addResource("418")
+    mockResource.addMethod("GET", new MockIntegration({
+      integrationResponses: [
+        {statusCode: "418"}
+      ]
+    }), {
+      authorizationType: AuthorizationType.COGNITO,
+      authorizer: authorizer
+    })
 
     // - Cloudfront
     // --- Origins

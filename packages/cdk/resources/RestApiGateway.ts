@@ -4,7 +4,6 @@ import {
   EndpointType,
   LogGroupLogDestination,
   MethodLoggingLevel,
-  MockIntegration,
   RestApi
 } from "aws-cdk-lib/aws-apigateway"
 import {Role, ServicePrincipal} from "aws-cdk-lib/aws-iam"
@@ -80,13 +79,6 @@ export class RestApiGateway extends Construct {
       assumedBy: new ServicePrincipal("apigateway.amazonaws.com"),
       managedPolicies: []
     })
-
-    /* Dummy Method/Resource to allow a gateway to be deployed "empty" */
-    apiGateway.root.addMethod("ANY", new MockIntegration({
-      integrationResponses: [
-        {statusCode: "418"}
-      ]
-    }))
 
     const cfnStage = apiGateway.deploymentStage.node.defaultChild as CfnStage
     cfnStage.cfnOptions.metadata = {

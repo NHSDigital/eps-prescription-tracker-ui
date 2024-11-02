@@ -78,22 +78,6 @@ export const nagSuppressions = (stack: Stack) => {
       ]
     )
 
-    // !! Remove after auth has been implemented !!
-    safeAddNagSuppression(
-      stack,
-      "/StatelessStack/ApiGateway/ApiGateway/Default/ANY/Resource",
-      [
-        {
-          id: "AwsSolutions-APIG4",
-          reason: "Suppress error for not implementing authorization. Authorizer will be added after cognito is implemented"
-        },
-        {
-          id: "AwsSolutions-COG4",
-          reason: "Suppress error for not implementing a Cognito user pool authorizer. Authorizer will be added after cognito is implemented"
-        }
-      ]
-    )
-
     safeAddNagSuppression(
       stack,
       "/StatelessStack/ApiGateway/ApiGateway/Default/token/GET/Resource",
@@ -106,7 +90,21 @@ export const nagSuppressions = (stack: Stack) => {
           id: "AwsSolutions-COG4",
           reason: "Suppress error for not implementing a Cognito user pool authorizer. Token endpoint should not have an authorizer"
         }
+      ]
+    )
 
+    safeAddNagSuppression(
+      stack,
+      "/StatelessStack/ApiGateway/ApiGateway/Default/mocktoken/GET/Resource",
+      [
+        {
+          id: "AwsSolutions-APIG4",
+          reason: "Suppress error for not implementing authorization. Token endpoint should not have an authorizer"
+        },
+        {
+          id: "AwsSolutions-COG4",
+          reason: "Suppress error for not implementing a Cognito user pool authorizer. Token endpoint should not have an authorizer"
+        }
       ]
     )
 
