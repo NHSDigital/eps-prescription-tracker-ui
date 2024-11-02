@@ -14,9 +14,11 @@ export interface StatefulResourcesStackProps extends StackProps {
   readonly serviceName: string
   readonly stackName: string
   readonly version: string
-  readonly cloudfrontDomain: string
+  readonly shortCloudfrontDomain: string
+  readonly fullCloudfrontDomain: string
   readonly cognitoCertificate: Certificate
-  readonly cognitoDomain: string
+  readonly shortCognitoDomain: string
+  readonly fullCognitoDomain: string
 }
 
 /**
@@ -47,6 +49,9 @@ export class StatefulResourcesStack extends Stack {
     const mockTokenEndpoint = this.node.tryGetContext("mockTokenEndpoint")
 
     const useMockOidc = this.node.tryGetContext("useMockOidc")
+
+    const epsDomainName: string = this.node.tryGetContext("epsDomainName")
+    const epsHostedZoneId: string = this.node.tryGetContext("epsHostedZoneId")
 
     // Imports
 
@@ -81,8 +86,11 @@ export class StatefulResourcesStack extends Stack {
       mockOidcjwksEndpoint: mockOidcjwksEndpoint,
       mockTokenEndpoint: mockTokenEndpoint,
       useMockOidc: useMockOidc,
-      cognitoDomain: props.cognitoDomain,
-      cognitoCertificate: props.cognitoCertificate
+      shortCognitoDomain: props.shortCognitoDomain,
+      fullCognitoDomain: props.fullCognitoDomain,
+      cognitoCertificate: props.cognitoCertificate,
+      epsDomainName: epsDomainName,
+      epsHostedZoneId: epsHostedZoneId
     })
 
     // Outputs

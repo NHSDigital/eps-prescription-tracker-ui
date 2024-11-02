@@ -33,8 +33,11 @@ export interface CognitoProps {
   readonly mockOidcUserInfoEndpoint?: string;
   readonly mockOidcjwksEndpoint?: string;
   readonly mockTokenEndpoint: string;
-  readonly cognitoDomain: string
+  readonly shortCognitoDomain: string
+  readonly fullCognitoDomain: string
   readonly cognitoCertificate: Certificate
+  readonly epsDomainName: string
+  readonly epsHostedZoneId: string
 }
 
 /**
@@ -49,16 +52,9 @@ export class Cognito extends Construct {
     super(scope, id)
 
     // Imports
-
-    // set some constants for later use
-    //const baseApiGwUrl = `https://${props.cognitoDomain}`
-    const epsDomainName: string = this.node.tryGetContext("epsDomainName")
-    const epsHostedZoneId: string = this.node.tryGetContext("epsHostedZoneId")
-
-    // Imports
     const hostedZone = HostedZone.fromHostedZoneAttributes(this, "hostedZone", {
-      hostedZoneId: epsHostedZoneId,
-      zoneName: epsDomainName
+      hostedZoneId: props.epsHostedZoneId,
+      zoneName: props.epsDomainName
     })
 
     // cognito stuff
@@ -69,14 +65,14 @@ export class Cognito extends Construct {
     const userPoolDomain = new UserPoolDomain(this, "UserPoolDomain", {
       userPool,
       customDomain: {
-        domainName: props.cognitoDomain,
+        domainName: props.fullCognitoDomain,
         certificate: props.cognitoCertificate
       }
     })
 
     new ARecord(this, "UserPoolCloudFrontAliasRecord", {
       zone: hostedZone,
-      recordName: "auth.login",
+      recordName: props.shortCognitoDomain,
       target: RecordTarget.fromAlias(new UserPoolDomainTarget(userPoolDomain))
     })
 

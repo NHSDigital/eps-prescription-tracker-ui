@@ -22,9 +22,12 @@ export interface UsCertsStackProps extends StackProps {
 
 export class UsCertsStack extends Stack {
   public readonly cloudfrontCert: Certificate
-  public readonly cloudfrontDomain: string
+  public readonly shortCloudfrontDomain: string
+  public readonly fullCloudfrontDomain: string
   public readonly cognitoCertificate: Certificate
-  public readonly cognitoDomain: string
+  public readonly shortCognitoDomain: string
+  public readonly fullCognitoDomain: string
+
   public constructor(scope: App, id: string, props: UsCertsStackProps) {
     super(scope, id, props)
 
@@ -41,9 +44,10 @@ export class UsCertsStack extends Stack {
 
     // Resources
     // - Cloudfront Cert
-    const cloudfrontDomain = `${props.serviceName}.${epsDomainName}`
+    const shortCloudfrontDomain = props.serviceName
+    const fullCloudfrontDomain = `${shortCloudfrontDomain}.${epsDomainName}`
     const cloudfrontCertificate = new Certificate(this, "CloudfrontCertificate", {
-      domainName: cloudfrontDomain,
+      domainName: fullCloudfrontDomain,
       validation: CertificateValidation.fromDns(hostedZone)
     })
 
@@ -51,9 +55,10 @@ export class UsCertsStack extends Stack {
       - cognito cert
     */
 
-    const cognitoDomain = `auth.login.${props.serviceName}.${epsDomainName}`
+    const shortCognitoDomain = `auth.login.${props.serviceName}`
+    const fullCognitoDomain = `${shortCognitoDomain}.${epsDomainName}`
     const cognitoCertificate = new Certificate(this, "CogniteCertificate", {
-      domainName: cognitoDomain,
+      domainName: fullCognitoDomain,
       validation: CertificateValidation.fromDns(hostedZone)
     })
 
@@ -71,8 +76,10 @@ export class UsCertsStack extends Stack {
       value: cloudfrontCertificate.certificateArn,
       exportName: `${props.stackName}:cloudfrontCertificate:Arn`
     })
-    this.cloudfrontDomain = cloudfrontDomain
+    this.shortCloudfrontDomain = shortCloudfrontDomain
+    this.fullCloudfrontDomain = fullCloudfrontDomain
     this.cognitoCertificate = cognitoCertificate
-    this.cognitoDomain = cognitoDomain
+    this.shortCognitoDomain = shortCognitoDomain
+    this.fullCognitoDomain = fullCognitoDomain
   }
 }

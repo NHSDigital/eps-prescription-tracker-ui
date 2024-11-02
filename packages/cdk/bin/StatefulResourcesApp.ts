@@ -44,9 +44,11 @@ const StatefulResources = new StatefulResourcesStack(app, "StatefulStack", {
   serviceName: serviceName,
   stackName: `${serviceName}-stateful-resources`,
   version: version,
-  cloudfrontDomain: UsCerts.cloudfrontDomain,
+  shortCloudfrontDomain: UsCerts.shortCloudfrontDomain,
+  fullCloudfrontDomain: UsCerts.fullCloudfrontDomain,
   cognitoCertificate: UsCerts.cognitoCertificate,
-  cognitoDomain: UsCerts.cognitoDomain,
+  shortCognitoDomain: UsCerts.shortCognitoDomain,
+  fullCognitoDomain: UsCerts.fullCognitoDomain,
   crossRegionReferences: true
 })
 
