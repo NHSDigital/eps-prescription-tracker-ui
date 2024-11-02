@@ -1,4 +1,3 @@
-import {Fn} from "aws-cdk-lib"
 import {Certificate} from "aws-cdk-lib/aws-certificatemanager"
 import {
   BehaviorOptions,
@@ -9,7 +8,7 @@ import {
   SSLMethod
 } from "aws-cdk-lib/aws-cloudfront"
 import {CnameRecord, HostedZone} from "aws-cdk-lib/aws-route53"
-import {Bucket} from "aws-cdk-lib/aws-s3"
+import {IBucket} from "aws-cdk-lib/aws-s3"
 import {Construct} from "constructs"
 
 export interface CloudfrontDistributionProps {
@@ -23,6 +22,7 @@ export interface CloudfrontDistributionProps {
   cloudfrontCertArn: string
   shortCloudfrontDomain: string
   fullCloudfrontDomain: string
+  cloudfrontLoggingBucket: IBucket
 }
 
 /**
@@ -46,9 +46,6 @@ export class CloudfrontDistribution extends Construct {
 
     const cloudfrontCert = Certificate.fromCertificateArn(this, "CloudfrontCert", props.cloudfrontCertArn)
 
-    const cloudfrontLoggingBucket = Bucket.fromBucketArn(
-      this, "CloudfrontLoggingBucket", Fn.importValue("account-resources:CloudfrontLoggingBucket"))
-
     // Resources
     const cloudfrontDistribution = new Distribution(this, "CloudfrontDistribution", {
       domainNames: [props.fullCloudfrontDomain],
@@ -58,7 +55,7 @@ export class CloudfrontDistribution extends Construct {
       sslSupportMethod: SSLMethod.SNI,
       publishAdditionalMetrics: true,
       enableLogging: true,
-      logBucket: cloudfrontLoggingBucket,
+      logBucket: props.cloudfrontLoggingBucket,
       logFilePrefix: "cloudfront/",
       logIncludesCookies: true, // may actually want to be false, don't know if it includes names of cookies or contents
       defaultBehavior: props.defaultBehavior,

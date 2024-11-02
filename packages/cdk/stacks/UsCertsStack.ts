@@ -76,7 +76,7 @@ export class UsCertsStack extends Stack {
     })
     new CfnOutput(this, "shortCloudfrontDomain", {
       value: props.shortCloudfrontDomain,
-      exportName: `${props.shortCloudfrontDomain}:shortCloudfrontDomain:Name`
+      exportName: `${props.stackName}:shortCloudfrontDomain:Name`
     })
     new CfnOutput(this, "fullCloudfrontDomain", {
       value: fullCloudfrontDomain,

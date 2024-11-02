@@ -90,6 +90,8 @@ export class StatelessResourcesStack extends Stack {
     const mockPoolIdentityProviderName = Fn.importValue(`${props.serviceName}-stateful-resources:mockPoolIdentityProvider:Name`)
     const userPool = UserPool.fromUserPoolArn(
       this, "userPool", Fn.importValue(`${props.serviceName}-stateful-resources:userPool:Arn`))
+    const cloudfrontLoggingBucket = Bucket.fromBucketArn(
+      this, "CloudfrontLoggingBucket", Fn.importValue("account-resources:CloudfrontLoggingBucket"))
 
     // Resources
     // -- functions for cognito
@@ -248,6 +250,7 @@ export class StatelessResourcesStack extends Stack {
       cloudfrontCertArn: cloudfrontCertArn,
       shortCloudfrontDomain: shortCloudfrontDomain,
       fullCloudfrontDomain: fullCloudfrontDomain,
+      cloudfrontLoggingBucket: cloudfrontLoggingBucket,
       defaultBehavior: {
         origin: staticContentBucketOrigin,
         allowedMethods: AllowedMethods.ALLOW_GET_HEAD_OPTIONS,

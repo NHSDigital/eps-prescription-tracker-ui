@@ -72,6 +72,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   logger.info("decoded idToken", {decodedIdToken})
 
   // call userinfo endpoint
+  // this should go in trackerUserInfo lambda
   const userInfoResponse = await axiosInstance.get(userInfoEndpoint,
     {
       headers: {
