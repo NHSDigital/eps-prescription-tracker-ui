@@ -9,6 +9,7 @@ import {StaticContentBucket} from "../resources/StaticContentBucket"
 import {nagSuppressions} from "../nagSuppressions"
 import {Certificate} from "aws-cdk-lib/aws-certificatemanager"
 import {Cognito} from "../resources/Cognito"
+import {Dynamodb} from "../resources/Dynamodb"
 
 export interface StatefulResourcesStackProps extends StackProps {
   readonly serviceName: string
@@ -99,6 +100,13 @@ export class StatefulResourcesStack extends Stack {
       epsHostedZoneId: epsHostedZoneId
     })
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const dynamodb = new Dynamodb(this, "DynamoDB", {
+      stackName: props.stackName,
+      account: this.account,
+      region: this.region
+
+    })
     // Outputs
 
     // Exports

@@ -42,6 +42,28 @@ export const nagSuppressions = (stack: Stack) => {
       ]
     )
 
+    safeAddNagSuppression(
+      stack,
+      "/StatefulStack/DynamoDB/TokenMappingResources/TableReadManagedPolicy/Resource",
+      [
+        {
+          id: "AwsSolutions-IAM5",
+          reason: "Suppress error for wildcards in policy. This policy is to allow access to all indexes so needs a wildcard"
+        }
+      ]
+    )
+
+    safeAddNagSuppression(
+      stack,
+      "/StatefulStack/DynamoDB/TokenMappingResources/TableWriteManagedPolicy/Resource",
+      [
+        {
+          id: "AwsSolutions-IAM5",
+          reason: "Suppress error for wildcards in policy. This policy is to allow access to all indexes so needs a wildcard"
+        }
+      ]
+    )
+
   }
 
   if(stack.artifactId === "StatelessStack"){
