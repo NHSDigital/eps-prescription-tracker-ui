@@ -126,6 +126,8 @@ jobs:
           cloudfrontDistributionId=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='"${{ inputs.SERVICE_NAME }}-stateless-resources:cloudfrontDistribution:Id"'].Value" --output text)
           # shellcheck disable=SC2140
           cloudfrontCertArn=$(aws cloudformation list-exports --region us-east-1 --query "Exports[?Name=='"${{ inputs.SERVICE_NAME }}-us-certs:cloudfrontCertificate:Arn"'].Value" --output text)
+          # shellcheck disable=SC2140
+          shortCloudfrontDomain=$(aws cloudformation list-exports --region us-east-1 --query "Exports[?Name=='"${{ inputs.SERVICE_NAME }}-us-certs:shortCloudfrontDomain:Name"'].Value" --output text)
           jq \
           --arg serviceName "${{ inputs.SERVICE_NAME }}" \
           --arg VERSION_NUMBER "${{ inputs.VERSION_NUMBER }}" \
@@ -151,6 +153,7 @@ jobs:
           --arg mockOidcTokenEndpoint "${{ secrets.mockOidcTokenEndpoint }}" \
           --arg mockOidcUserInfoEndpoint "${{ secrets.mockOidcUserInfoEndpoint }}" \
           --arg mockOidcjwksEndpoint "${{ secrets.mockOidcjwksEndpoint }}" \
+          --arg shortCloudfrontDomain "${shortCloudfrontDomain}" \
           '.context += {
             "serviceName": $serviceName,
             "VERSION_NUMBER": $VERSION_NUMBER,
@@ -161,6 +164,7 @@ jobs:
             "allowAutoDeleteObjects": $allowAutoDeleteObjects,
             "cloudfrontDistributionId": $cloudfrontDistributionId,
             "cloudfrontCertArn": $cloudfrontCertArn,
+            "shortCloudfrontDomain": $shortCloudfrontDomain,
             "useMockOidc": $useMockOidc,
             "primaryOidcClientId": $primaryOidcClientId,
             "primaryOidClientSecret": $primaryOidClientSecret,

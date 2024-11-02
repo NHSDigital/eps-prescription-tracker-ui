@@ -36,6 +36,7 @@ export class CloudfrontDistribution extends Construct {
     const epsDomainName: string = this.node.tryGetContext("epsDomainName")
     const epsHostedZoneId: string = this.node.tryGetContext("epsHostedZoneId")
     const cloudfrontCertArn: string = this.node.tryGetContext("cloudfrontCertArn")
+    const shortCloudfrontDomain: string = this.node.tryGetContext("shortCloudfrontDomain")
 
     // Imports
     const hostedZone = HostedZone.fromHostedZoneAttributes(this, "hostedZone", {
@@ -66,7 +67,7 @@ export class CloudfrontDistribution extends Construct {
     })
 
     new CnameRecord(this, "CloudfrontCnameRecord", {
-      recordName: props.serviceName,
+      recordName: shortCloudfrontDomain,
       zone: hostedZone,
       domainName: cloudfrontDistribution.distributionDomainName
     })

@@ -76,6 +76,22 @@ export class UsCertsStack extends Stack {
       value: cloudfrontCertificate.certificateArn,
       exportName: `${props.stackName}:cloudfrontCertificate:Arn`
     })
+    new CfnOutput(this, "shortCloudfrontDomain", {
+      value: shortCloudfrontDomain,
+      exportName: `${props.stackName}:shortCloudfrontDomain:Name`
+    })
+    new CfnOutput(this, "fullCloudfrontDomain", {
+      value: fullCloudfrontDomain,
+      exportName: `${props.stackName}:fullCloudfrontDomain:Name`
+    })
+    new CfnOutput(this, "shortCognitoDomain", {
+      value: shortCognitoDomain,
+      exportName: `${props.stackName}:shortCognitoDomain:Name`
+    })
+    new CfnOutput(this, "fullCognitoDomain", {
+      value: fullCognitoDomain,
+      exportName: `${props.stackName}:fullCognitoDomain:Name`
+    })
     this.shortCloudfrontDomain = shortCloudfrontDomain
     this.fullCloudfrontDomain = fullCloudfrontDomain
     this.cognitoCertificate = cognitoCertificate
