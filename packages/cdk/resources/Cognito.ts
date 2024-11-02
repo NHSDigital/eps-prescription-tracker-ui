@@ -34,6 +34,7 @@ export interface CognitoProps {
   readonly mockOidcjwksEndpoint?: string;
   readonly mockTokenEndpoint: string;
   readonly shortCognitoDomain: string
+  readonly fullCloudfrontDomain: string
   readonly fullCognitoDomain: string
   readonly cognitoCertificate: Certificate
   readonly epsDomainName: string
@@ -79,8 +80,8 @@ export class Cognito extends Construct {
     const oidcEndpoints: OidcEndpoints = {
       authorization: props.primaryOidcAuthorizeEndpoint,
       jwksUri: props.primaryOidcjwksEndpoint,
-      //      token: `https://${props.cloudfrontDomain}/api/token`,
-      token: props.primaryTokenEndpoint,
+      token: `https://${props.fullCloudfrontDomain}/api/token`,
+      //token: props.primaryTokenEndpoint,
       userInfo: props.primaryOidcUserInfoEndpoint
     }
 
@@ -118,8 +119,8 @@ export class Cognito extends Construct {
       const mockOidcEndpoints: OidcEndpoints = {
         authorization: props.mockOidcAuthorizeEndpoint,
         jwksUri: props.mockOidcjwksEndpoint,
-        //      token: `https://${props.cloudfrontDomain}/api/token`,
-        token: props.mockTokenEndpoint,
+        token: `https://${props.fullCloudfrontDomain}/api/token`,
+        //token: props.mockTokenEndpoint,
         userInfo: props.mockOidcUserInfoEndpoint
       }
 
@@ -168,7 +169,7 @@ export class Cognito extends Construct {
           OAuthScope.PROFILE,
           OAuthScope.COGNITO_ADMIN
         ],
-        callbackUrls: ["http://localhost:3000/auth/"],
+        callbackUrls: ["http://localhost:3000/auth/", `https://${props.fullCloudfrontDomain}/site/`],
         logoutUrls: ["http://localhost:3000/"]
       }})
 

@@ -95,6 +95,7 @@ export class StatefulResourcesStack extends Stack {
       useMockOidc: useMockOidc,
       shortCognitoDomain: props.shortCognitoDomain,
       fullCognitoDomain: props.fullCognitoDomain,
+      fullCloudfrontDomain: props.fullCloudfrontDomain,
       cognitoCertificate: props.cognitoCertificate,
       epsDomainName: epsDomainName,
       epsHostedZoneId: epsHostedZoneId
