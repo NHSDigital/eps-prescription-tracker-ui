@@ -18,6 +18,11 @@ export interface CloudfrontDistributionProps {
   defaultBehavior: BehaviorOptions,
   additionalBehaviors: Record<string, BehaviorOptions>
   errorResponses: Array<ErrorResponse>
+  epsHostedZoneId: string
+  epsDomainName: string
+  cloudfrontCertArn: string
+  shortCloudfrontDomain: string
+  fullCloudfrontDomain: string
 }
 
 /**
@@ -33,25 +38,20 @@ export class CloudfrontDistribution extends Construct {
 
     // Context
     /* context values passed as --context cli arguments are passed as strings so coerce them to expected types*/
-    const epsDomainName: string = this.node.tryGetContext("epsDomainName")
-    const epsHostedZoneId: string = this.node.tryGetContext("epsHostedZoneId")
-    const cloudfrontCertArn: string = this.node.tryGetContext("cloudfrontCertArn")
-    const shortCloudfrontDomain: string = this.node.tryGetContext("shortCloudfrontDomain")
-
     // Imports
     const hostedZone = HostedZone.fromHostedZoneAttributes(this, "hostedZone", {
-      hostedZoneId: epsHostedZoneId,
-      zoneName: epsDomainName
+      hostedZoneId: props.epsHostedZoneId,
+      zoneName: props.epsDomainName
     })
 
-    const cloudfrontCert = Certificate.fromCertificateArn(this, "CloudfrontCert", cloudfrontCertArn)
+    const cloudfrontCert = Certificate.fromCertificateArn(this, "CloudfrontCert", props.cloudfrontCertArn)
 
     const cloudfrontLoggingBucket = Bucket.fromBucketArn(
       this, "CloudfrontLoggingBucket", Fn.importValue("account-resources:CloudfrontLoggingBucket"))
 
     // Resources
     const cloudfrontDistribution = new Distribution(this, "CloudfrontDistribution", {
-      domainNames: [`${props.serviceName}.${epsDomainName}`],
+      domainNames: [props.fullCloudfrontDomain],
       certificate: cloudfrontCert,
       httpVersion: HttpVersion.HTTP2_AND_3,
       minimumProtocolVersion: SecurityPolicyProtocol.TLS_V1_2_2018, // set to 2018 but we may want 2019 or 2021
@@ -67,7 +67,7 @@ export class CloudfrontDistribution extends Construct {
     })
 
     new CnameRecord(this, "CloudfrontCnameRecord", {
-      recordName: shortCloudfrontDomain,
+      recordName: props.shortCloudfrontDomain,
       zone: hostedZone,
       domainName: cloudfrontDistribution.distributionDomainName
     })

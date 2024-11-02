@@ -40,6 +40,11 @@ export class StatelessResourcesStack extends Stack {
 
     // Context
     /* context values passed as --context cli arguments are passed as strings so coerce them to expected types*/
+    const epsDomainName: string = this.node.tryGetContext("epsDomainName")
+    const epsHostedZoneId: string = this.node.tryGetContext("epsHostedZoneId")
+    const cloudfrontCertArn: string = this.node.tryGetContext("cloudfrontCertArn")
+    const shortCloudfrontDomain: string = this.node.tryGetContext("shortCloudfrontDomain")
+    const fullCloudfrontDomain: string = this.node.tryGetContext("fullCloudfrontDomain")
 
     // Imports
     const staticContentBucket = Bucket.fromBucketArn(
@@ -139,6 +144,11 @@ export class StatelessResourcesStack extends Stack {
     const cloudfrontDistribution = new CloudfrontDistribution(this, "CloudfrontDistribution", {
       serviceName: props.serviceName,
       stackName: props.stackName,
+      epsDomainName: epsDomainName,
+      epsHostedZoneId: epsHostedZoneId,
+      cloudfrontCertArn: cloudfrontCertArn,
+      shortCloudfrontDomain: shortCloudfrontDomain,
+      fullCloudfrontDomain: fullCloudfrontDomain,
       defaultBehavior: {
         origin: staticContentBucketOrigin,
         allowedMethods: AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
