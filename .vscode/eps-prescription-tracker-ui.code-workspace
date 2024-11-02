@@ -19,6 +19,10 @@
       {
         "name": "packages/staticContent",
         "path": "../packages/staticContent"
+      },
+      {
+        "name": "packages/cognito",
+        "path": "../packages/cognito"
       }
     ],
     "settings": {
