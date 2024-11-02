@@ -53,12 +53,18 @@ export class StatefulResourcesStack extends Stack {
     const epsDomainName: string = this.node.tryGetContext("epsDomainName")
     const epsHostedZoneId: string = this.node.tryGetContext("epsHostedZoneId")
 
+    const allowAutoDeleteObjects: boolean = this.node.tryGetContext("allowAutoDeleteObjects") === "true"
+    const cloudfrontDistributionId: string = this.node.tryGetContext("cloudfrontDistributionId")
+
     // Imports
 
     // Resources
     // - Static Content Bucket
     const staticContentBucket = new StaticContentBucket(this, "StaticContentBucket", {
-      bucketName: `${props.serviceName}-staticcontentbucket-${this.account}`})
+      bucketName: `${props.serviceName}-staticcontentbucket-${this.account}`,
+      allowAutoDeleteObjects: allowAutoDeleteObjects,
+      cloudfrontDistributionId: cloudfrontDistributionId
+    })
 
     /* Resources to add:
       - update policies (me)

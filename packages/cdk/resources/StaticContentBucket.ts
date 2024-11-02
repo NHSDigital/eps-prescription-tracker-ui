@@ -17,6 +17,8 @@ import {AllowCloudfrontKmsKeyAccessPolicy} from "../policies/kms/AllowCloudfront
 
 export interface StaticContentBucketProps {
   bucketName: string
+  allowAutoDeleteObjects: boolean
+  cloudfrontDistributionId: string
 }
 
 /**
@@ -33,8 +35,6 @@ export class StaticContentBucket extends Construct{
 
     // Context
     /* context values passed as --context cli arguments are passed as strings so coerce them to expected types*/
-    const allowAutoDeleteObjects: boolean = this.node.tryGetContext("allowAutoDeleteObjects") === "true"
-    const cloudfrontDistributionId: string = this.node.tryGetContext("cloudfrontDistributionId")
 
     // Imports
     const auditLoggingBucket = Bucket.fromBucketArn(
@@ -62,7 +62,7 @@ export class StaticContentBucket extends Construct{
       serverAccessLogsBucket: auditLoggingBucket,
       serverAccessLogsPrefix: "/static-content",
       removalPolicy: RemovalPolicy.DESTROY,
-      autoDeleteObjects: allowAutoDeleteObjects // if true forces a deletion even if bucket is not empty
+      autoDeleteObjects: props.allowAutoDeleteObjects // if true forces a deletion even if bucket is not empty
     })
 
     // we need to add a policy to the bucket so that our deploy role can use the bucket
@@ -98,18 +98,18 @@ export class StaticContentBucket extends Construct{
     const contentBucketKmsKey = (kmsKey.node.defaultChild as CfnKey)
     contentBucketKmsKey.keyPolicy = new AllowCloudfrontKmsKeyAccessPolicy(
       this, "StaticContentBucketAllowCloudfrontKmsKeyAccessPolicy", {
-        cloudfrontDistributionId: cloudfrontDistributionId,
+        cloudfrontDistributionId: props.cloudfrontDistributionId,
         deploymentRole: deploymentRole
       }).policyJson
 
     /* As you cannot modify imported policies, cdk cannot not update the s3 bucket with the correct permissions
     for OAC when the distribution and bucket are in different stacks
     !! This can only be added after the distribution has been deployed !! */
-    if (cloudfrontDistributionId){
+    if (props.cloudfrontDistributionId){
       bucket.addToResourcePolicy(new AllowCloudfrontGetObjectPolicyStatement(
         this, "StaticContentBucketAllowCloudfrontGetObjectPolicyStatement", {
           bucket: bucket,
-          cloudfrontDistributionId: cloudfrontDistributionId
+          cloudfrontDistributionId: props.cloudfrontDistributionId
         }).policyStatement)
 
     }

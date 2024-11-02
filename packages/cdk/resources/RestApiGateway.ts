@@ -17,7 +17,8 @@ import {accessLogFormat} from "./RestApiGateway/accessLogFormat"
 
 export interface RestApiGatewayProps {
   serviceName: string
-  stackName: string
+  stackName: string,
+  logRetentionInDays: number
 }
 
 /**
@@ -34,7 +35,6 @@ export class RestApiGateway extends Construct {
 
     // Context
     /* context values passed as --context cli arguments are passed as strings so coerce them to expected types*/
-    const logRetentionInDays: number = Number(this.node.tryGetContext("logRetentionInDays"))
 
     // Imports
     const cloudwatchKmsKey = Key.fromKeyArn(
@@ -49,7 +49,7 @@ export class RestApiGateway extends Construct {
     // Resources
     const apiGatewayAccessLogGroup = new LogGroup(this, "ApiGatewayAccessLogGroup", {
       logGroupName: `/aws/apigateway/${props.serviceName}-apigw`,
-      retention: logRetentionInDays,
+      retention: props.logRetentionInDays,
       encryptionKey: cloudwatchKmsKey,
       removalPolicy: RemovalPolicy.DESTROY
     })

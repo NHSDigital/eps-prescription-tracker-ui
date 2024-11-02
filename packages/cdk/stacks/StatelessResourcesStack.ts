@@ -45,6 +45,7 @@ export class StatelessResourcesStack extends Stack {
     const cloudfrontCertArn: string = this.node.tryGetContext("cloudfrontCertArn")
     const shortCloudfrontDomain: string = this.node.tryGetContext("shortCloudfrontDomain")
     const fullCloudfrontDomain: string = this.node.tryGetContext("fullCloudfrontDomain")
+    const logRetentionInDays: number = Number(this.node.tryGetContext("logRetentionInDays"))
 
     // Imports
     const staticContentBucket = Bucket.fromBucketArn(
@@ -54,7 +55,8 @@ export class StatelessResourcesStack extends Stack {
     // - API Gateway
     const apiGateway = new RestApiGateway(this, "ApiGateway", {
       serviceName: props.serviceName,
-      stackName: props.stackName
+      stackName: props.stackName,
+      logRetentionInDays: logRetentionInDays
     })
 
     // --- Methods & Resources

@@ -32,7 +32,8 @@ describe("functionConstruct works correctly", () => {
       ],
       packageBasePath: "packages/cdk",
       entryPoint: "tests/src/dummyLambda.ts",
-      lambdaEnvironmentVariables: {}
+      lambdaEnvironmentVariables: {},
+      logRetentionInDays: 30
     })
     template = Template.fromStack(stack)
     const lambdaLogGroup = functionConstruct.node.tryFindChild("LambdaLogGroup") as LogGroup
