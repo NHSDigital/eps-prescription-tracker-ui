@@ -129,6 +129,16 @@ export const nagSuppressions = (stack: Stack) => {
         }
       ]
     )
+    safeAddNagSuppression(
+      stack,
+      "/StatelessStack/CognitoFunctions/MockTokenResources/LambdaPutLogsManagedPolicy/Resource",
+      [
+        {
+          id: "AwsSolutions-IAM5",
+          reason: "Suppress error for not having wildcards in permissions. This is a fine as we need to have permissions on all log streams under path"
+        }
+      ]
+    )
 
   }
 }
