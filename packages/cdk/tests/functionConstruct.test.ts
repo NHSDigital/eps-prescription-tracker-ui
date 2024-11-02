@@ -152,7 +152,8 @@ describe("functionConstruct works correctly with environment variables", () => {
       ],
       packageBasePath: "packages/cdk",
       entryPoint: "tests/src/dummyLambda.ts",
-      lambdaEnvironmentVariables: {foo: "bar"}
+      lambdaEnvironmentVariables: {foo: "bar"},
+      logRetentionInDays: 30
     })
     template = Template.fromStack(stack)
   })
@@ -194,7 +195,8 @@ describe("functionConstruct works correctly with additional policies", () => {
       additionalPolicies: [testPolicy],
       packageBasePath: "packages/cdk",
       entryPoint: "tests/src/dummyLambda.ts",
-      lambdaEnvironmentVariables: {}
+      lambdaEnvironmentVariables: {},
+      logRetentionInDays: 30
     })
     template = Template.fromStack(stack)
     testPolicyResource = stack.resolve(testPolicy.managedPolicyArn)
