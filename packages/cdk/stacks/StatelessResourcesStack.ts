@@ -81,9 +81,9 @@ export class StatelessResourcesStack extends Stack {
     const tokenMappingTableWritePolicy = ManagedPolicy.fromManagedPolicyArn(
       // eslint-disable-next-line max-len
       this, "tokenMappingTableWritePolicy", Fn.importValue(`${props.serviceName}-stateful-resources:tokenMappingTableWritePolicy:Arn`))
-    const useTokensMappingKMSKeyPolicy = ManagedPolicy.fromManagedPolicyArn(
+    const useTokensMappingKmsKeyPolicy = ManagedPolicy.fromManagedPolicyArn(
       // eslint-disable-next-line max-len
-      this, "useTokensMappingKMSKeyPolicy", Fn.importValue(`${props.serviceName}-stateful-resources:useTokensMappingKMSKeyPolicy:Arn`))
+      this, "useTokensMappingKmsKeyPolicy", Fn.importValue(`${props.serviceName}-stateful-resources:useTokensMappingKmsKeyPolicy:Arn`))
     // eslint-disable-next-line max-len
     const primaryPoolIdentityProviderName = Fn.importValue(`${props.serviceName}-stateful-resources:primaryPoolIdentityProvider:Name`)
     // eslint-disable-next-line max-len
@@ -110,7 +110,7 @@ export class StatelessResourcesStack extends Stack {
       tokenMappingTable: tokenMappingTable,
       tokenMappingTableWritePolicy: tokenMappingTableWritePolicy,
       tokenMappingTableReadPolicy: tokenMappingTableReadPolicy,
-      useTokensMappingKMSKeyPolicy: useTokensMappingKMSKeyPolicy,
+      useTokensMappingKmsKeyPolicy: useTokensMappingKmsKeyPolicy,
       primaryPoolIdentityProviderName: primaryPoolIdentityProviderName,
       mockPoolIdentityProviderName: mockPoolIdentityProviderName
     })

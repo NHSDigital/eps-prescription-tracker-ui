@@ -33,7 +33,7 @@ export interface CognitoFunctionsProps {
   readonly tokenMappingTable: ITableV2;
   readonly tokenMappingTableWritePolicy: IManagedPolicy;
   readonly tokenMappingTableReadPolicy: IManagedPolicy;
-  readonly useTokensMappingKMSKeyPolicy: IManagedPolicy
+  readonly useTokensMappingKmsKeyPolicy: IManagedPolicy
   readonly primaryPoolIdentityProviderName: string
   readonly mockPoolIdentityProviderName: string
 }
@@ -126,7 +126,7 @@ export class CognitoFunctions extends Construct {
         additionalPolicies: [
           props.tokenMappingTableWritePolicy,
           props.tokenMappingTableReadPolicy,
-          props.useTokensMappingKMSKeyPolicy,
+          props.useTokensMappingKmsKeyPolicy,
           useJwtKmsKeyPolicy,
           useMockJwtPrivateKey
         ],
@@ -173,7 +173,7 @@ export class CognitoFunctions extends Construct {
       additionalPolicies: [
         props.tokenMappingTableWritePolicy,
         props.tokenMappingTableReadPolicy,
-        props.useTokensMappingKMSKeyPolicy,
+        props.useTokensMappingKmsKeyPolicy,
         useJwtKmsKeyPolicy,
         usePrimaryJwtPrivateKey
       ],
