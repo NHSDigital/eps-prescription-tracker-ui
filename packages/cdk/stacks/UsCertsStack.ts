@@ -13,6 +13,9 @@ export interface UsCertsStackProps extends StackProps {
   readonly serviceName: string
   readonly stackName: string
   readonly version: string
+  readonly shortCloudfrontDomain: string
+  readonly shortCognitoDomain: string
+  readonly parentCognitoDomain: string
 }
 
 /**
@@ -22,10 +25,8 @@ export interface UsCertsStackProps extends StackProps {
 
 export class UsCertsStack extends Stack {
   public readonly cloudfrontCert: Certificate
-  public readonly shortCloudfrontDomain: string
   public readonly fullCloudfrontDomain: string
   public readonly cognitoCertificate: Certificate
-  public readonly shortCognitoDomain: string
   public readonly fullCognitoDomain: string
 
   public constructor(scope: App, id: string, props: UsCertsStackProps) {
@@ -42,21 +43,18 @@ export class UsCertsStack extends Stack {
       zoneName: epsDomainName
     })
 
+    // calculate full domain names
+    const fullCloudfrontDomain = `${props.shortCloudfrontDomain}.${epsDomainName}`
+    const fullCognitoDomain = `${props.shortCognitoDomain}.${epsDomainName}`
+
     // Resources
     // - Cloudfront Cert
-    const shortCloudfrontDomain = props.serviceName
-    const fullCloudfrontDomain = `${shortCloudfrontDomain}.${epsDomainName}`
     const cloudfrontCertificate = new Certificate(this, "CloudfrontCertificate", {
       domainName: fullCloudfrontDomain,
       validation: CertificateValidation.fromDns(hostedZone)
     })
 
-    /* Resources to add:
-      - cognito cert
-    */
-
-    const shortCognitoDomain = `auth.login.${props.serviceName}`
-    const fullCognitoDomain = `${shortCognitoDomain}.${epsDomainName}`
+    // - cognito cert
     const cognitoCertificate = new Certificate(this, "CogniteCertificate", {
       domainName: fullCognitoDomain,
       validation: CertificateValidation.fromDns(hostedZone)
@@ -66,7 +64,7 @@ export class UsCertsStack extends Stack {
     new ARecord(this, "CognitoARecord", {
       zone: hostedZone,
       target: RecordTarget.fromIpAddresses("127.0.0.1"),
-      recordName:  `login.${props.serviceName}.${epsDomainName}`
+      recordName:  `${props.parentCognitoDomain}.${epsDomainName}`
     })
 
     // Outputs
@@ -77,25 +75,23 @@ export class UsCertsStack extends Stack {
       exportName: `${props.stackName}:cloudfrontCertificate:Arn`
     })
     new CfnOutput(this, "shortCloudfrontDomain", {
-      value: shortCloudfrontDomain,
-      exportName: `${props.stackName}:shortCloudfrontDomain:Name`
+      value: props.shortCloudfrontDomain,
+      exportName: `${props.shortCloudfrontDomain}:shortCloudfrontDomain:Name`
     })
     new CfnOutput(this, "fullCloudfrontDomain", {
       value: fullCloudfrontDomain,
       exportName: `${props.stackName}:fullCloudfrontDomain:Name`
     })
     new CfnOutput(this, "shortCognitoDomain", {
-      value: shortCognitoDomain,
+      value: props.shortCognitoDomain,
       exportName: `${props.stackName}:shortCognitoDomain:Name`
     })
     new CfnOutput(this, "fullCognitoDomain", {
       value: fullCognitoDomain,
       exportName: `${props.stackName}:fullCognitoDomain:Name`
     })
-    this.shortCloudfrontDomain = shortCloudfrontDomain
     this.fullCloudfrontDomain = fullCloudfrontDomain
     this.cognitoCertificate = cognitoCertificate
-    this.shortCognitoDomain = shortCognitoDomain
     this.fullCognitoDomain = fullCognitoDomain
   }
 }

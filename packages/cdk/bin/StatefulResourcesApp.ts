@@ -27,6 +27,12 @@ Tags.of(app).add("version", version)
 Tags.of(app).add("commit", commit)
 Tags.of(app).add("cdkApp", "StatefulApp")
 
+// define the host names we are going to use for everything
+const shortCloudfrontDomain = serviceName
+const parentCognitoDomain = `login.${serviceName}`
+// shortCognitoDomain must be a subdomain of parentCognitoDomain
+const shortCognitoDomain = `auth.${parentCognitoDomain}`
+
 const UsCerts = new UsCertsStack(app, "UsCertsStack", {
   env: {
     region: "us-east-1"
@@ -34,7 +40,10 @@ const UsCerts = new UsCertsStack(app, "UsCertsStack", {
   serviceName: serviceName,
   crossRegionReferences: true,
   stackName: `${serviceName}-us-certs`,
-  version: version
+  version: version,
+  shortCloudfrontDomain: shortCloudfrontDomain,
+  shortCognitoDomain: shortCognitoDomain,
+  parentCognitoDomain: parentCognitoDomain
 })
 
 const StatefulResources = new StatefulResourcesStack(app, "StatefulStack", {
@@ -44,10 +53,10 @@ const StatefulResources = new StatefulResourcesStack(app, "StatefulStack", {
   serviceName: serviceName,
   stackName: `${serviceName}-stateful-resources`,
   version: version,
-  shortCloudfrontDomain: UsCerts.shortCloudfrontDomain,
+  shortCloudfrontDomain: shortCloudfrontDomain,
   fullCloudfrontDomain: UsCerts.fullCloudfrontDomain,
   cognitoCertificate: UsCerts.cognitoCertificate,
-  shortCognitoDomain: UsCerts.shortCognitoDomain,
+  shortCognitoDomain: shortCognitoDomain,
   fullCognitoDomain: UsCerts.fullCognitoDomain,
   crossRegionReferences: true
 })

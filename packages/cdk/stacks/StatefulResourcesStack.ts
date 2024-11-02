@@ -76,7 +76,6 @@ export class StatefulResourcesStack extends Stack {
       - API GW for token lambda ??
     */
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const cognito = new Cognito(this, "Cognito", {
       primaryOidcClientId: primaryOidcClientId!,
       primaryOidClientSecret: primaryOidClientSecret,
@@ -101,7 +100,6 @@ export class StatefulResourcesStack extends Stack {
       epsHostedZoneId: epsHostedZoneId
     })
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const dynamodb = new Dynamodb(this, "DynamoDB", {
       stackName: props.stackName,
       account: this.account,
@@ -119,6 +117,32 @@ export class StatefulResourcesStack extends Stack {
       value: staticContentBucket.bucket.bucketName,
       exportName: `${props.stackName}:StaticContentBucket:Name`
     })
+    new CfnOutput(this, "tokenMappingTableArn", {
+      value: dynamodb.tokenMappingTable.tableArn,
+      exportName: `${props.stackName}:tokenMappingTable:Arn`
+    })
+    new CfnOutput(this, "tokenMappingTableReadPolicyArn", {
+      value: dynamodb.tokenMappingTableReadPolicy.managedPolicyArn,
+      exportName: `${props.stackName}:tokenMappingTableReadPolicy:Arn`
+    })
+    new CfnOutput(this, "tokenMappingTableWritePolicyArn", {
+      value: dynamodb.tokenMappingTableWritePolicy.managedPolicyArn,
+      exportName: `${props.stackName}:tokenMappingTableWritePolicy:Arn`
+    })
+    new CfnOutput(this, "useTokensMappingKmsKeyPolicyArn", {
+      value: dynamodb.useTokensMappingKmsKeyPolicy.managedPolicyArn,
+      exportName: `${props.stackName}:useTokensMappingKmsKeyPolicy:Arn`
+    })
+    new CfnOutput(this, "primaryPoolIdentityProviderName", {
+      value: cognito.primaryPoolIdentityProvider.providerName,
+      exportName: `${props.stackName}:primaryPoolIdentityProvide:Name`
+    })
+    if (useMockOidc) {
+      new CfnOutput(this, "mockPoolIdentityProvider", {
+        value: cognito.mockPoolIdentityProvider.providerName,
+        exportName: `${props.stackName}:mockPoolIdentityProvider:Name`
+      })
+    }
 
     nagSuppressions(this)
   }

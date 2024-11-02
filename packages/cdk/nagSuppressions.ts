@@ -86,21 +86,52 @@ export const nagSuppressions = (stack: Stack) => {
         {
           id: "AwsSolutions-APIG4",
           reason: "Suppress error for not implementing authorization. Authorizer will be added after cognito is implemented"
-        }
-      ]
-    )
-
-    // !! Remove after auth has been implemented !!
-    safeAddNagSuppression(
-      stack,
-      "/StatelessStack/ApiGateway/ApiGateway/Default/ANY/Resource",
-      [
+        },
         {
           id: "AwsSolutions-COG4",
           reason: "Suppress error for not implementing a Cognito user pool authorizer. Authorizer will be added after cognito is implemented"
         }
       ]
     )
+
+    safeAddNagSuppression(
+      stack,
+      "/StatelessStack/ApiGateway/ApiGateway/Default/token/GET/Resource",
+      [
+        {
+          id: "AwsSolutions-APIG4",
+          reason: "Suppress error for not implementing authorization. Token endpoint should not have an authorizer"
+        },
+        {
+          id: "AwsSolutions-COG4",
+          reason: "Suppress error for not implementing a Cognito user pool authorizer. Token endpoint should not have an authorizer"
+        }
+
+      ]
+    )
+
+    safeAddNagSuppression(
+      stack,
+      "/StatelessStack/CognitoFunctions/PrimaryJwtPrivateKey/Resource",
+      [
+        {
+          id: "AwsSolutions-SMG4",
+          reason: "Suppress error for not having automatic rotation. This is a false positive - it does have rotation enabled"
+        }
+      ]
+    )
+
+    safeAddNagSuppression(
+      stack,
+      "/StatelessStack/CognitoFunctions/TokenResources/LambdaPutLogsManagedPolicy/Resource",
+      [
+        {
+          id: "AwsSolutions-IAM5",
+          reason: "Suppress error for not having wildcards in permissions. This is a fine as we need to have permissions on all log streams under path"
+        }
+      ]
+    )
+
   }
 }
 

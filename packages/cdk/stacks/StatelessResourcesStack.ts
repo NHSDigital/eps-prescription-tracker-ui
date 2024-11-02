@@ -22,6 +22,10 @@ import {RestApiGateway} from "../resources/RestApiGateway"
 import {CloudfrontFunction} from "../resources/Cloudfront/CloudfrontFunction"
 import {CloudfrontDistribution} from "../resources/CloudfrontDistribution"
 import {nagSuppressions} from "../nagSuppressions"
+import {TableV2} from "aws-cdk-lib/aws-dynamodb"
+import {ManagedPolicy} from "aws-cdk-lib/aws-iam"
+import {CognitoFunctions} from "../resources/CognitoFunctions"
+import {LambdaIntegration} from "aws-cdk-lib/aws-apigateway"
 
 export interface StatelessResourcesStackProps extends StackProps {
   readonly serviceName: string
@@ -46,13 +50,64 @@ export class StatelessResourcesStack extends Stack {
     const shortCloudfrontDomain: string = this.node.tryGetContext("shortCloudfrontDomain")
     const fullCloudfrontDomain: string = this.node.tryGetContext("fullCloudfrontDomain")
     const logRetentionInDays: number = Number(this.node.tryGetContext("logRetentionInDays"))
+    const primaryOidcClientId = this.node.tryGetContext("primaryOidcClientId")
+    const primaryOidcTokenEndpoint = this.node.tryGetContext("primaryOidcTokenEndpoint")
+    const primaryOidcIssuer = this.node.tryGetContext("primaryOidcIssuer")
+    const primaryOidcUserInfoEndpoint = this.node.tryGetContext("primaryOidcUserInfoEndpoint")
+    const primaryOidcjwksEndpoint = this.node.tryGetContext("primaryOidcjwksEndpoint")
+
+    const mockOidcClientId = this.node.tryGetContext("mockOidcClientId")
+    const mockOidcTokenEndpoint = this.node.tryGetContext("mockOidcTokenEndpoint")
+    const mockOidcIssuer = this.node.tryGetContext("mockOidcIssuer")
+    const mockOidcUserInfoEndpoint = this.node.tryGetContext("mockOidcUserInfoEndpoint")
+    const mockOidcjwksEndpoint = this.node.tryGetContext("mockOidcjwksEndpoint")
+
+    const useMockOidc = this.node.tryGetContext("useMockOidc")
 
     // Imports
     const staticContentBucket = Bucket.fromBucketArn(
       this, "StaticContentBucket", Fn.importValue(`${props.serviceName}-stateful-resources:StaticContentBucket:Arn`))
+    const tokenMappingTable = TableV2.fromTableArn(
+      this, "tokenMappingTable", Fn.importValue(`${props.serviceName}-stateful-resources:tokenMappingTable:Arn`))
+    const tokenMappingTableReadPolicy = ManagedPolicy.fromManagedPolicyArn(
+      // eslint-disable-next-line max-len
+      this, "tokenMappingTableReadPolicy", Fn.importValue(`${props.serviceName}-stateful-resources:tokenMappingTableReadPolicy:Arn`))
+    const tokenMappingTableWritePolicy = ManagedPolicy.fromManagedPolicyArn(
+      // eslint-disable-next-line max-len
+      this, "tokenMappingTableWritePolicy", Fn.importValue(`${props.serviceName}-stateful-resources:tokenMappingTableWritePolicy:Arn`))
+    const useTokensMappingKMSKeyPolicy = ManagedPolicy.fromManagedPolicyArn(
+      // eslint-disable-next-line max-len
+      this, "useTokensMappingKMSKeyPolicy", Fn.importValue(`${props.serviceName}-stateful-resources:useTokensMappingKMSKeyPolicy:Arn`))
+    // eslint-disable-next-line max-len
+    const primaryPoolIdentityProviderName = Fn.importValue(`${props.serviceName}-stateful-resources:primaryPoolIdentityProvider:Name`)
+    // eslint-disable-next-line max-len
+    const mockPoolIdentityProviderName = Fn.importValue(`${props.serviceName}-stateful-resources:mockPoolIdentityProvider:Name`)
 
     // Resources
+    // -- functions for cognito
+    const cognitoFunctions = new CognitoFunctions(this, "CognitoFunctions", {
+      serviceName: props.serviceName,
+      stackName: props.stackName,
+      primaryOidcTokenEndpoint: primaryOidcTokenEndpoint,
+      primaryOidcUserInfoEndpoint: primaryOidcUserInfoEndpoint,
+      primaryOidcjwksEndpoint: primaryOidcjwksEndpoint,
+      primaryOidcClientId: primaryOidcClientId,
+      primaryOidcIssuer: primaryOidcIssuer,
+      useMockOidc: useMockOidc,
+      mockOidcTokenEndpoint: mockOidcTokenEndpoint,
+      mockOidcUserInfoEndpoint: mockOidcUserInfoEndpoint,
+      mockOidcjwksEndpoint: mockOidcjwksEndpoint,
+      mockOidcClientId: mockOidcClientId,
+      mockOidcIssuer: mockOidcIssuer,
+      tokenMappingTable: tokenMappingTable,
+      tokenMappingTableWritePolicy: tokenMappingTableWritePolicy,
+      tokenMappingTableReadPolicy: tokenMappingTableReadPolicy,
+      useTokensMappingKMSKeyPolicy: useTokensMappingKMSKeyPolicy,
+      primaryPoolIdentityProviderName: primaryPoolIdentityProviderName,
+      mockPoolIdentityProviderName: mockPoolIdentityProviderName
+    })
     // - API Gateway
+
     const apiGateway = new RestApiGateway(this, "ApiGateway", {
       serviceName: props.serviceName,
       stackName: props.stackName,
@@ -60,6 +115,21 @@ export class StatelessResourcesStack extends Stack {
     })
 
     // --- Methods & Resources
+
+    for (var policy of cognitoFunctions.cognitoPolicies) {
+      apiGateway.restAPiGatewayRole.addManagedPolicy(policy)
+    }
+    const tokenResource = apiGateway.restApiGateway.root.addResource("token")
+    tokenResource.addMethod("GET", new LambdaIntegration(cognitoFunctions.tokenLambda, {
+      credentialsRole: apiGateway.restAPiGatewayRole
+    }))
+    if (useMockOidc) {
+      const mockTokenResource = apiGateway.restApiGateway.root.addResource("mocktoken")
+      mockTokenResource.addMethod("GET", new LambdaIntegration(cognitoFunctions.mockTokenLambda, {
+        credentialsRole: apiGateway.restAPiGatewayRole
+      }))
+
+    }
 
     // - Cloudfront
     // --- Origins

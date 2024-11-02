@@ -48,6 +48,8 @@ export class Cognito extends Construct {
   public readonly userPool: UserPool
   public readonly userPoolClient: UserPoolClient
   public readonly userPoolDomain: UserPoolDomain
+  public readonly primaryPoolIdentityProvider: UserPoolIdentityProviderOidc
+  public readonly mockPoolIdentityProvider: UserPoolIdentityProviderOidc
 
   public constructor(scope: Construct, id: string, props: CognitoProps) {
     super(scope, id)
@@ -81,7 +83,6 @@ export class Cognito extends Construct {
       authorization: props.primaryOidcAuthorizeEndpoint,
       jwksUri: props.primaryOidcjwksEndpoint,
       token: `https://${props.fullCloudfrontDomain}/api/token`,
-      //token: props.primaryTokenEndpoint,
       userInfo: props.primaryOidcUserInfoEndpoint
     }
 
@@ -119,8 +120,7 @@ export class Cognito extends Construct {
       const mockOidcEndpoints: OidcEndpoints = {
         authorization: props.mockOidcAuthorizeEndpoint,
         jwksUri: props.mockOidcjwksEndpoint,
-        token: `https://${props.fullCloudfrontDomain}/api/token`,
-        //token: props.mockTokenEndpoint,
+        token: `https://${props.fullCloudfrontDomain}/api/mocktoken`,
         userInfo: props.mockOidcUserInfoEndpoint
       }
 
@@ -183,5 +183,7 @@ export class Cognito extends Construct {
     this.userPool = userPool
     this.userPoolClient = userPoolWebClient
     this.userPoolDomain = userPoolDomain
+    this.primaryPoolIdentityProvider = primaryPoolIdentityProvider
+    this.mockPoolIdentityProvider = mockPoolIdentityProvider!
   }
 }
