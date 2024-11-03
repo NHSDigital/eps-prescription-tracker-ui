@@ -1,41 +1,33 @@
 import {Logger} from "@aws-lambda-powertools/logger"
 import {AxiosResponseHeaders, RawAxiosResponseHeaders} from "axios"
-import {
-  verify,
-  JwtHeader,
-  SigningKeyCallback,
-  JwtPayload,
-  sign,
-  PrivateKey,
-  SignOptions
-} from "jsonwebtoken"
+import jwt from "jsonwebtoken"
 import jwksClient from "jwks-rsa"
 import {ParsedUrlQuery} from "querystring"
 import {v4 as uuidv4} from "uuid"
 
 const oidcJwksClient = jwksClient({
-  jwksUri: process.env["oidcjwksEndpoint"] as string
+  jwksUri: process.env["oidcjwksEndpoint"] as string || "https://dummyauth.com/.well-known/jwks.json"
 })
 
-export function getJWKSKey(header: JwtHeader, callback: SigningKeyCallback) {
+export function getJWKSKey(header: jwt.JwtHeader, callback: jwt.SigningKeyCallback) {
   oidcJwksClient.getSigningKey(header.kid, function(err, key) {
     const signingKey = key?.getPublicKey()
     callback(err, signingKey)
   })
 }
 
-export function verifyJWTWrapper(jwt: string,
+export function verifyJWTWrapper(jwtToVerify: string,
   expectedIssuer: string,
-  expectedAudience: string): Promise<JwtPayload> {
+  expectedAudience: string): Promise<jwt.JwtPayload> {
   return new Promise((resolve, reject) => {
-    verify(jwt, getJWKSKey, {
+    jwt.verify(jwtToVerify, getJWKSKey, {
       audience: expectedAudience,
       issuer: expectedIssuer
     }, function(err, decoded) {
       if (err) {
         reject(err)
       }
-      resolve(decoded as JwtPayload)
+      resolve(decoded as jwt.JwtPayload)
     })
   })
 }
@@ -44,7 +36,7 @@ export function rewriteBodyToAddSignedJWT(
   logger: Logger,
   objectBodyParameters: ParsedUrlQuery,
   idpTokenPath: string,
-  jwtPrivateKey: PrivateKey
+  jwtPrivateKey: jwt.PrivateKey
 ): ParsedUrlQuery {
   logger.info("Rewriting body to include signed jwt")
   const current_time = Math.floor(Date.now() / 1000)
@@ -58,13 +50,13 @@ export function rewriteBodyToAddSignedJWT(
     "jti": uuidv4()
   }
 
-  const signOptions: SignOptions = {
+  const signOptions: jwt.SignOptions = {
     algorithm: "RS512",
     keyid: "eps-cpt-ui-test"
   }
 
   logger.info("Claims", {claims})
-  const jwt_token = sign(claims, jwtPrivateKey, signOptions)
+  const jwt_token = jwt.sign(claims, jwtPrivateKey, signOptions)
   logger.info("jwt_token", {jwt_token})
   // rewrite the body to have jwt and remove secret
   objectBodyParameters.client_assertion_type = "urn:ietf:params:oauth:client-assertion-type:jwt-bearer"

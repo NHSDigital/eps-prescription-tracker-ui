@@ -38,6 +38,7 @@ test: compile
 	npm run test --workspace packages/cloudfrontFunctions
 	npm run test --workspace packages/cdk
 	npm run test --workspace packages/cpt-ui
+	npm run test --workspace packages/cognito
 
 clean:
 	rm -rf packages/cloudfrontFunctions/coverage

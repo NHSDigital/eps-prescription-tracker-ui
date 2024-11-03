@@ -16,7 +16,6 @@ import {formatHeaders, rewriteBodyToAddSignedJWT, verifyJWTWrapper} from "./help
 const logger = new Logger({serviceName: "token"})
 const UserPoolIdentityProvider = process.env["UserPoolIdentityProvider"] as string
 const TokenMappingTableName = process.env["TokenMappingTableName"] as string
-const userInfoEndpoint = process.env["userInfoEndpoint"] as string
 const useSignedJWT = process.env["useSignedJWT"] as string
 const idpTokenPath = process.env["idpTokenPath"] as string
 const jwtPrivateKeyArn = process.env["jwtPrivateKeyArn"] as string
@@ -71,16 +70,6 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   const decodedIdToken = await verifyJWTWrapper(idToken, oidcIssuer, oidcClientId)
   logger.info("decoded idToken", {decodedIdToken})
 
-  // call userinfo endpoint
-  // this should go in trackerUserInfo lambda
-  const userInfoResponse = await axiosInstance.get(userInfoEndpoint,
-    {
-      headers: {
-        "Authorization": `Bearer ${accessToken}`
-      }}
-  )
-  logger.info("response from userinfo", {data: userInfoResponse.data})
-
   const username = `${UserPoolIdentityProvider}_${decodedIdToken.sub}`
   const params = {
     Item: {
@@ -88,8 +77,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
       "accessToken": accessToken,
       "idToken": idToken,
       "expiresIn": expiresIn,
-      "refreshToken": refreshToken,
-      "nhsid_nrbac_roles": userInfoResponse.data.nhsid_nrbac_roles
+      "refreshToken": refreshToken
     },
     TableName: TokenMappingTableName
   }
