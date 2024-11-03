@@ -25,6 +25,7 @@ compile: compile-node
 lint-node: compile-node
 	npm run lint --workspace packages/cloudfrontFunctions
 	npm run lint --workspace packages/cdk
+	npm run lint --workspace packages/cognito
 
 lint-githubactions:
 	actionlint
