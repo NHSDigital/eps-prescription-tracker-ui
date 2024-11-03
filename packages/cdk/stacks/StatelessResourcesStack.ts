@@ -9,10 +9,12 @@ import {
 import {
   AccessLevel,
   AllowedMethods,
+  CachePolicy,
   FunctionEventType,
   OriginRequestCookieBehavior,
   OriginRequestHeaderBehavior,
   OriginRequestPolicy,
+  OriginRequestQueryStringBehavior,
   ViewerProtocolPolicy
 } from "aws-cdk-lib/aws-cloudfront"
 import {RestApiOrigin, S3BucketOrigin} from "aws-cdk-lib/aws-cloudfront-origins"
@@ -163,10 +165,26 @@ export class StatelessResourcesStack extends Stack {
     }
 
     /* Dummy Method/Resource to test cognito auth */
-    const mockResource = apiGateway.restApiGateway.root.addResource("418")
-    mockResource.addMethod("GET", new MockIntegration({
+    const mockTeapotResource = apiGateway.restApiGateway.root.addResource("418")
+    mockTeapotResource.addMethod("GET", new MockIntegration({
       integrationResponses: [
-        {statusCode: "418"}
+        {statusCode: "418",
+          responseTemplates: {
+            "application/html": "I am a teapot"
+          }
+        }
+      ]
+    })
+    )
+
+    const mockAuthResource = apiGateway.restApiGateway.root.addResource("401")
+    mockAuthResource.addMethod("GET", new MockIntegration({
+      integrationResponses: [
+        {statusCode: "401",
+          responseTemplates: {
+            "application/html": "This needs authorisation"
+          }
+        }
       ]
     }), {
       authorizationType: AuthorizationType.COGNITO,
@@ -193,7 +211,8 @@ export class StatelessResourcesStack extends Stack {
     const apiGatewayRequestPolicy = new OriginRequestPolicy(this, "apiGatewayRequestPolicy", {
       originRequestPolicyName: `${props.serviceName}-ApiGatewayRequestPolicy`,
       cookieBehavior: OriginRequestCookieBehavior.all(),
-      headerBehavior: OriginRequestHeaderBehavior.all()
+      headerBehavior: OriginRequestHeaderBehavior.denyList("host"),
+      queryStringBehavior: OriginRequestQueryStringBehavior.all()
     })
 
     // --- Cache Policies
@@ -232,7 +251,6 @@ export class StatelessResourcesStack extends Stack {
       sourceFileName: "s3StaticContentUriRewrite.js"
     })
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const apiGatewayStripPathFunction = new CloudfrontFunction(this, "ApiGatewayStripPathFunction", {
       functionName: `${props.serviceName}-ApiGatewayStripPathFunction`,
       sourceFileName: "genericStripPathUriRewrite.js",
@@ -296,15 +314,14 @@ export class StatelessResourcesStack extends Stack {
           origin: apiGatewayOrigin,
           allowedMethods: AllowedMethods.ALLOW_ALL,
           viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-          originRequestPolicy: apiGatewayRequestPolicy
-          /*
+          originRequestPolicy: apiGatewayRequestPolicy,
+          cachePolicy: CachePolicy.CACHING_DISABLED,
           functionAssociations: [
             {
               function: apiGatewayStripPathFunction.function,
               eventType: FunctionEventType.VIEWER_REQUEST
             }
           ]
-            */
         },
         "/jwks/": {/* matches exactly <url>/jwks and will only serve the jwks json (via cf function) */
           origin: staticContentBucketOrigin,
@@ -331,16 +348,8 @@ export class StatelessResourcesStack extends Stack {
         }
       },
       errorResponses: [
-        /*
         {
           httpStatus: 500,
-          responseHttpStatus: 500,
-          responsePagePath: "/500.html",
-          ttl: Duration.seconds(10)
-        },
-        */
-        {
-          httpStatus: 403,
           responseHttpStatus: 500,
           responsePagePath: "/500.html",
           ttl: Duration.seconds(10)
