@@ -31,8 +31,7 @@ import {
   AuthorizationType,
   CognitoUserPoolsAuthorizer,
   LambdaIntegration,
-  MockIntegration,
-  PassthroughBehavior
+  MockIntegration
 } from "aws-cdk-lib/aws-apigateway"
 import {UserPool} from "aws-cdk-lib/aws-cognito"
 import {Key} from "aws-cdk-lib/aws-kms"
@@ -167,38 +166,19 @@ export class StatelessResourcesStack extends Stack {
 
     /* Dummy Method/Resource to test cognito auth */
     const mockTeapotResource = apiGateway.restApiGateway.root.addResource("418")
-    const mockIntegration_418 = new MockIntegration({
-      passthroughBehavior: PassthroughBehavior.NEVER,
-      requestTemplates: {
-        "application/json": '{"statusCode": 418}'
-      },
-      integrationResponses: [{
-        statusCode: "418",
-        responseTemplates: {
-          "application/json": `{
-            "id": "teapot"
-            "message": "I am not a coffee pot"
-        }`}
-      }]
-    })
-    mockTeapotResource.addMethod("GET", mockIntegration_418)
+    mockTeapotResource.addMethod("GET", new MockIntegration({
+      integrationResponses: [
+        {statusCode: "418"}
+      ]
+    }))
 
     const mockAuthResource = apiGateway.restApiGateway.root.addResource("auth_test")
-    const mockIntegrationAuthTest = new MockIntegration({
-      passthroughBehavior: PassthroughBehavior.NEVER,
-      requestTemplates: {
-        "application/json": '{"statusCode": 200}'
-      },
-      integrationResponses: [{
-        statusCode: "200",
-        responseTemplates: {
-          "application/json": `{
-                "message": "this should have an authorization"
-            }`
-        }
-      }]
-    })
-    mockAuthResource.addMethod("GET", mockIntegrationAuthTest, {
+
+    mockAuthResource.addMethod("GET", new MockIntegration({
+      integrationResponses: [
+        {statusCode: "200"}
+      ]
+    }), {
       authorizationType: AuthorizationType.COGNITO,
       authorizer: authorizer
     })
