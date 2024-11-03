@@ -6,6 +6,8 @@ import {
 } from "@jest/globals"
 
 import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
+import createJWKSMock from "mock-jwks"
+import nock from "nock"
 import {handler} from "../src/token"
 
 // redefining readonly property of the performance object
@@ -26,29 +28,45 @@ const dummyContext = {
 }
 
 describe("test handler", () => {
+  const jwks = createJWKSMock("https://dummyauth.com/")
   beforeEach(() => {
     jest.resetModules()
     jest.clearAllMocks()
+    jwks.start()
   })
 
-  const testCases = [
-    {
-      description: "responds with error when body does not exist",
-      event: {},
-      mockReply: null,
-      expectedResponse:{
-        message: "A system error has occurred"
-      }
-    }
-  ]
+  afterEach(() => {
+    jwks.stop()
+  })
+  it("responds with error when body does not exist", async () => {
 
-  testCases.forEach(({description, event, mockReply, expectedResponse}) => {
-    it(description, async () => {
-      if (mockReply) {
-        jest.spyOn(DynamoDBDocumentClient.prototype, "send").mockResolvedValue(mockReply as never)
-      }
-      const response = await handler(event, dummyContext)
-      expect(response).toMatchObject(expectedResponse)
+    const response = await handler({}, dummyContext)
+    expect(response).toMatchObject({
+      message: "A system error has occurred"
     })
+  })
+
+  it("works", async () => {
+    const dynamoSpy = jest.spyOn(DynamoDBDocumentClient.prototype, "send").mockResolvedValue({} as never)
+
+    const token = jwks.token({
+      iss: "valid_iss",
+      aud: "valid_aud"
+    })
+    nock("https://dummytoken.com")
+      .post("/token")
+      .reply(200, {
+        id_token: token
+      })
+
+    const response = await handler({
+      body: {
+        foo: "bar"
+      }
+    }, dummyContext)
+    expect(response.body).toMatch(JSON.stringify({
+      id_token: token
+    }))
+    expect(dynamoSpy).toHaveBeenCalledTimes(1)
   })
 })
