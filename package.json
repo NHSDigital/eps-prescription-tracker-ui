@@ -21,7 +21,9 @@
         "packages/cloudfrontFunctions",
         "packages/cpt-ui",
         "packages/cdk",
-        "packages/cognito"
+        "packages/cognito",
+        "packages/common/middyErrorHandler",
+        "packages/common/testing"
     ],
     "devDependencies": {
         "@semantic-release/changelog": "^6.0.3",

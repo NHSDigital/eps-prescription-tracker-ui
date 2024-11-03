@@ -4,7 +4,7 @@ import {injectLambdaContext} from "@aws-lambda-powertools/logger/middleware"
 import middy from "@middy/core"
 import {getSecret} from "@aws-lambda-powertools/parameters/secrets"
 import inputOutputLogger from "@middy/input-output-logger"
-import errorHandler from "@nhs/fhir-middy-error-handler"
+import {MiddyErrorHandler} from "@PrescriptionStatusUpdate_common/middyErrorHandler"
 import axios from "axios"
 import {parse, ParsedUrlQuery, stringify} from "querystring"
 
@@ -25,6 +25,11 @@ const oidcIssuer = process.env["oidcIssuer"] as string
 const dynamoClient = new DynamoDBClient()
 const documentClient = DynamoDBDocumentClient.from(dynamoClient)
 
+const errorResponseBody = {
+  message: "A system error has occurred"
+}
+
+const middyErrorHandler = new MiddyErrorHandler(errorResponseBody)
 /* eslint-disable  max-len */
 
 /**
@@ -35,19 +40,19 @@ const documentClient = DynamoDBDocumentClient.from(dynamoClient)
 
 const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   logger.appendKeys({
-    "apigw-request-id": event.requestContext.requestId
+    "apigw-request-id": event.requestContext?.requestId
   })
   const axiosInstance = axios.create()
-  const jwtPrivateKey = await getSecret(jwtPrivateKeyArn)
 
   const body = event.body
-  if (body===null) {
+  if (body===undefined) {
     throw new Error("can not get body")
   }
-  const objectBodyParameters = parse(body)
+  const objectBodyParameters = parse(body as string)
   let rewrittenObjectBodyParameters: ParsedUrlQuery
 
   if (useSignedJWT === "true") {
+    const jwtPrivateKey = await getSecret(jwtPrivateKeyArn)
     rewrittenObjectBodyParameters = rewriteBodyToAddSignedJWT(logger, objectBodyParameters, idpTokenPath, jwtPrivateKey as PrivateKey)
   } else {
     rewrittenObjectBodyParameters = objectBodyParameters
@@ -102,4 +107,4 @@ export const handler = middy(lambdaHandler)
       }
     })
   )
-  .use(errorHandler({logger: logger}))
+  .use(middyErrorHandler.errorHandler({logger: logger}))

@@ -23,7 +23,16 @@
       {
         "name": "packages/cognito",
         "path": "../packages/cognito"
+      },
+      {
+        "name": "packages/common/middyErrorHandler",
+        "path": "../packages/common/middyErrorHandler"
       }
+      {
+        "name": "packages/common/testing",
+        "path": "../packages/common/testing"
+      }
+
     ],
     "settings": {
       "jest.disabledWorkspaceFolders": [

@@ -26,6 +26,8 @@ lint-node: compile-node
 	npm run lint --workspace packages/cloudfrontFunctions
 	npm run lint --workspace packages/cdk
 	npm run lint --workspace packages/cognito
+	npm run lint --workspace packages/common/testing
+	npm run lint --workspace packages/common/middyErrorHandler
 
 lint-githubactions:
 	actionlint
@@ -40,6 +42,7 @@ test: compile
 	npm run test --workspace packages/cdk
 	npm run test --workspace packages/cpt-ui
 	npm run test --workspace packages/cognito
+	npm run test --workspace packages/common/middyErrorHandler
 
 clean:
 	rm -rf packages/cloudfrontFunctions/coverage
