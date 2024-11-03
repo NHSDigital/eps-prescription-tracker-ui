@@ -80,7 +80,7 @@ export const nagSuppressions = (stack: Stack) => {
 
     safeAddNagSuppression(
       stack,
-      "/StatelessStack/ApiGateway/ApiGateway/Default/token/GET/Resource",
+      "/StatelessStack/ApiGateway/ApiGateway/Default/token/POST/Resource",
       [
         {
           id: "AwsSolutions-APIG4",
@@ -95,7 +95,7 @@ export const nagSuppressions = (stack: Stack) => {
 
     safeAddNagSuppression(
       stack,
-      "/StatelessStack/ApiGateway/ApiGateway/Default/mocktoken/GET/Resource",
+      "/StatelessStack/ApiGateway/ApiGateway/Default/mocktoken/POST/Resource",
       [
         {
           id: "AwsSolutions-APIG4",

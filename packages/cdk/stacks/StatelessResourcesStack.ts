@@ -167,49 +167,38 @@ export class StatelessResourcesStack extends Stack {
 
     /* Dummy Method/Resource to test cognito auth */
     const mockTeapotResource = apiGateway.restApiGateway.root.addResource("418")
-    mockTeapotResource.addMethod("GET", new MockIntegration({
+    const mockIntegration_418 = new MockIntegration({
       passthroughBehavior: PassthroughBehavior.NEVER,
       requestTemplates: {
-        "application/json": `{
-                "statusCode": 418
-              }
-            `
+        "application/json": '{"statusCode": 418}'
       },
-      integrationResponses: [
-        {
-          statusCode: "418",
-          responseTemplates: {
-            "application/json": `{
-                  "id": "teapot"
-                  "message": "I am not a coffee pot"
-              }`
-          }
-        }
-      ]
+      integrationResponses: [{
+        statusCode: "418",
+        responseTemplates: {
+          "application/json": `{
+            "id": "teapot"
+            "message": "I am not a coffee pot"
+        }`}
+      }]
     })
-    )
+    mockTeapotResource.addMethod("GET", mockIntegration_418)
 
-    const mockAuthResource = apiGateway.restApiGateway.root.addResource("401")
-    mockAuthResource.addMethod("GET", new MockIntegration({
+    const mockAuthResource = apiGateway.restApiGateway.root.addResource("auth_test")
+    const mockIntegrationAuthTest = new MockIntegration({
       passthroughBehavior: PassthroughBehavior.NEVER,
       requestTemplates: {
-        "application/json": `{
-                "statusCode": 401
-              }
-            `
+        "application/json": '{"statusCode": 200}'
       },
-      integrationResponses: [
-        {
-          statusCode: "401",
-          responseTemplates: {
-            "application/json": `{
-                  "message": "this should have an authorization"
-              }`
-          }
+      integrationResponses: [{
+        statusCode: "200",
+        responseTemplates: {
+          "application/json": `{
+                "message": "this should have an authorization"
+            }`
         }
-      ]
+      }]
     })
-    , {
+    mockAuthResource.addMethod("GET", mockIntegrationAuthTest, {
       authorizationType: AuthorizationType.COGNITO,
       authorizer: authorizer
     })
