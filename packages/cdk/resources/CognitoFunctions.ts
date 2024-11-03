@@ -73,6 +73,7 @@ export class CognitoFunctions extends Construct {
         ]
       })
     })
+    jwtKmsKey.addAlias(`alias/${props.stackName}-jwtKmsKey`)
     const useJwtKmsKeyPolicy = new ManagedPolicy(this, "UseJwtKmsKeyPolicy", {
       statements: [
         new PolicyStatement({

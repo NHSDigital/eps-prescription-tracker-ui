@@ -23,7 +23,7 @@ import {CloudfrontFunction} from "../resources/Cloudfront/CloudfrontFunction"
 import {CloudfrontDistribution} from "../resources/CloudfrontDistribution"
 import {nagSuppressions} from "../nagSuppressions"
 import {TableV2} from "aws-cdk-lib/aws-dynamodb"
-import {ManagedPolicy} from "aws-cdk-lib/aws-iam"
+import {ManagedPolicy, Role} from "aws-cdk-lib/aws-iam"
 import {CognitoFunctions} from "../resources/CognitoFunctions"
 import {
   AuthorizationType,
@@ -32,6 +32,8 @@ import {
   MockIntegration
 } from "aws-cdk-lib/aws-apigateway"
 import {UserPool} from "aws-cdk-lib/aws-cognito"
+import {Key} from "aws-cdk-lib/aws-kms"
+import {Stream} from "aws-cdk-lib/aws-kinesis"
 
 export interface StatelessResourcesStackProps extends StackProps {
   readonly serviceName: string
@@ -92,6 +94,14 @@ export class StatelessResourcesStack extends Stack {
       this, "userPool", Fn.importValue(`${props.serviceName}-stateful-resources:userPool:Arn`))
     const cloudfrontLoggingBucket = Bucket.fromBucketArn(
       this, "CloudfrontLoggingBucket", Fn.importValue("account-resources:CloudfrontLoggingBucket"))
+    const cloudwatchKmsKey = Key.fromKeyArn(
+      this, "cloudwatchKmsKey", Fn.importValue("account-resources:CloudwatchLogsKmsKeyArn"))
+
+    const splunkDeliveryStream = Stream.fromStreamArn(
+      this, "SplunkDeliveryStream", Fn.importValue("lambda-resources:SplunkDeliveryStream"))
+
+    const splunkSubscriptionFilterRole = Role.fromRoleArn(
+      this, "splunkSubscriptionFilterRole", Fn.importValue("lambda-resources:SplunkSubscriptionFilterRole"))
 
     // Resources
     // -- functions for cognito
@@ -121,7 +131,10 @@ export class StatelessResourcesStack extends Stack {
     const apiGateway = new RestApiGateway(this, "ApiGateway", {
       serviceName: props.serviceName,
       stackName: props.stackName,
-      logRetentionInDays: logRetentionInDays
+      logRetentionInDays: logRetentionInDays,
+      cloudwatchKmsKey: cloudwatchKmsKey,
+      splunkDeliveryStream: splunkDeliveryStream,
+      splunkSubscriptionFilterRole: splunkSubscriptionFilterRole
     })
 
     const authorizer = new CognitoUserPoolsAuthorizer(this, "Authorizer", {
@@ -219,6 +232,7 @@ export class StatelessResourcesStack extends Stack {
       sourceFileName: "s3StaticContentUriRewrite.js"
     })
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const apiGatewayStripPathFunction = new CloudfrontFunction(this, "ApiGatewayStripPathFunction", {
       functionName: `${props.serviceName}-ApiGatewayStripPathFunction`,
       sourceFileName: "genericStripPathUriRewrite.js",
@@ -282,13 +296,15 @@ export class StatelessResourcesStack extends Stack {
           origin: apiGatewayOrigin,
           allowedMethods: AllowedMethods.ALLOW_ALL,
           viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-          originRequestPolicy: apiGatewayRequestPolicy,
+          originRequestPolicy: apiGatewayRequestPolicy
+          /*
           functionAssociations: [
             {
               function: apiGatewayStripPathFunction.function,
               eventType: FunctionEventType.VIEWER_REQUEST
             }
           ]
+            */
         },
         "/jwks/": {/* matches exactly <url>/jwks and will only serve the jwks json (via cf function) */
           origin: staticContentBucketOrigin,
@@ -315,12 +331,14 @@ export class StatelessResourcesStack extends Stack {
         }
       },
       errorResponses: [
+        /*
         {
           httpStatus: 500,
           responseHttpStatus: 500,
           responsePagePath: "/500.html",
           ttl: Duration.seconds(10)
         },
+        */
         {
           httpStatus: 403,
           responseHttpStatus: 500,

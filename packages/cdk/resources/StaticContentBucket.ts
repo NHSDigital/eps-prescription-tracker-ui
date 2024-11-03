@@ -1,5 +1,5 @@
-import {Fn, RemovalPolicy} from "aws-cdk-lib"
-import {Effect, PolicyStatement, Role} from "aws-cdk-lib/aws-iam"
+import {RemovalPolicy} from "aws-cdk-lib"
+import {Effect, IRole, PolicyStatement} from "aws-cdk-lib/aws-iam"
 import {CfnKey, Key} from "aws-cdk-lib/aws-kms"
 import {
   BlockPublicAccess,
@@ -8,6 +8,7 @@ import {
   BucketEncryption,
   CfnBucket,
   CfnBucketPolicy,
+  IBucket,
   ObjectOwnership
 } from "aws-cdk-lib/aws-s3"
 import {Construct} from "constructs"
@@ -19,6 +20,8 @@ export interface StaticContentBucketProps {
   bucketName: string
   allowAutoDeleteObjects: boolean
   cloudfrontDistributionId: string
+  auditLoggingBucket: IBucket,
+  deploymentRole: IRole
 }
 
 /**
@@ -37,11 +40,6 @@ export class StaticContentBucket extends Construct{
     /* context values passed as --context cli arguments are passed as strings so coerce them to expected types*/
 
     // Imports
-    const auditLoggingBucket = Bucket.fromBucketArn(
-      this, "AuditLoggingBucket", Fn.importValue("account-resources:AuditLoggingBucket"))
-
-    const deploymentRole = Role.fromRoleArn(
-      this, "deploymentRole", Fn.importValue("ci-resources:CloudFormationDeployRole"))
 
     // Resources
     const kmsKey = new Key(this, "KmsKey", {
@@ -59,7 +57,7 @@ export class StaticContentBucket extends Construct{
       blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
       accessControl: BucketAccessControl.PRIVATE,
       objectOwnership: ObjectOwnership.BUCKET_OWNER_ENFORCED,
-      serverAccessLogsBucket: auditLoggingBucket,
+      serverAccessLogsBucket: props.auditLoggingBucket,
       serverAccessLogsPrefix: "/static-content",
       removalPolicy: RemovalPolicy.DESTROY,
       autoDeleteObjects: props.allowAutoDeleteObjects // if true forces a deletion even if bucket is not empty
@@ -68,7 +66,7 @@ export class StaticContentBucket extends Construct{
     // we need to add a policy to the bucket so that our deploy role can use the bucket
     const bucketAllowDeployUploadPolicyStatement = new PolicyStatement({
       effect: Effect.ALLOW,
-      principals: [deploymentRole],
+      principals: [props.deploymentRole],
       actions: [
         "s3:Abort*",
         "s3:DeleteObject*",
@@ -99,7 +97,7 @@ export class StaticContentBucket extends Construct{
     contentBucketKmsKey.keyPolicy = new AllowCloudfrontKmsKeyAccessPolicy(
       this, "StaticContentBucketAllowCloudfrontKmsKeyAccessPolicy", {
         cloudfrontDistributionId: props.cloudfrontDistributionId,
-        deploymentRole: deploymentRole
+        deploymentRole: props.deploymentRole
       }).policyJson
 
     /* As you cannot modify imported policies, cdk cannot not update the s3 bucket with the correct permissions

@@ -1,6 +1,7 @@
 import {
   App,
   CfnOutput,
+  Fn,
   Stack,
   StackProps
 } from "aws-cdk-lib"
@@ -10,6 +11,8 @@ import {nagSuppressions} from "../nagSuppressions"
 import {Certificate} from "aws-cdk-lib/aws-certificatemanager"
 import {Cognito} from "../resources/Cognito"
 import {Dynamodb} from "../resources/Dynamodb"
+import {Bucket} from "aws-cdk-lib/aws-s3"
+import {Role} from "aws-cdk-lib/aws-iam"
 
 export interface StatefulResourcesStackProps extends StackProps {
   readonly serviceName: string
@@ -58,13 +61,20 @@ export class StatefulResourcesStack extends Stack {
     const cloudfrontDistributionId: string = this.node.tryGetContext("cloudfrontDistributionId")
 
     // Imports
+    const auditLoggingBucket = Bucket.fromBucketArn(
+      this, "AuditLoggingBucket", Fn.importValue("account-resources:AuditLoggingBucket"))
+
+    const deploymentRole = Role.fromRoleArn(
+      this, "deploymentRole", Fn.importValue("ci-resources:CloudFormationDeployRole"))
 
     // Resources
     // - Static Content Bucket
     const staticContentBucket = new StaticContentBucket(this, "StaticContentBucket", {
       bucketName: `${props.serviceName}-staticcontentbucket-${this.account}`,
       allowAutoDeleteObjects: allowAutoDeleteObjects,
-      cloudfrontDistributionId: cloudfrontDistributionId
+      cloudfrontDistributionId: cloudfrontDistributionId,
+      auditLoggingBucket: auditLoggingBucket,
+      deploymentRole: deploymentRole
     })
 
     /* Resources to add:
