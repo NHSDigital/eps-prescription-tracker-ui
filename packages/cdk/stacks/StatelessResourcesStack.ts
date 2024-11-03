@@ -153,14 +153,14 @@ export class StatelessResourcesStack extends Stack {
       apiGateway.restAPiGatewayRole.addManagedPolicy(policy)
     }
     const tokenResource = apiGateway.restApiGateway.root.addResource("token")
-    tokenResource.addMethod("GET", new LambdaIntegration(cognitoFunctions.tokenLambda, {
+    tokenResource.addMethod("POST", new LambdaIntegration(cognitoFunctions.tokenLambda, {
       credentialsRole: apiGateway.restAPiGatewayRole
     }))
 
     // mocktoken endpoint
     if (useMockOidc) {
       const mockTokenResource = apiGateway.restApiGateway.root.addResource("mocktoken")
-      mockTokenResource.addMethod("GET", new LambdaIntegration(cognitoFunctions.mockTokenLambda, {
+      mockTokenResource.addMethod("POST", new LambdaIntegration(cognitoFunctions.mockTokenLambda, {
         credentialsRole: apiGateway.restAPiGatewayRole
       }))
     }
