@@ -1,5 +1,5 @@
 {
-  "name": "@PrescriptionStatusUpdate_common/middyErrorHandler",
+  "name": "@cpt-ui-common/middyErrorHandler",
   "version": "1.0.0",
   "description": "Common module for a partial middyErrorHandler",
   "author": "NHS Digital",
@@ -18,6 +18,6 @@
   },
   "devDependencies": {
     "@middy/core": "^5.5.1",
-    "@PrescriptionStatusUpdate_common/testing": "^1.0.0"
+    "@cpt-ui-common/testing": "^1.0.0"
   }
 }

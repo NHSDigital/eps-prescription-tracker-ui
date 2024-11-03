@@ -1,5 +1,5 @@
 {
-  "name": "@PrescriptionStatusUpdate_common/testing",
+  "name": "@cpt-ui-common/testing",
   "version": "1.0.0",
   "description": "Common resources for testing prescription status update",
   "author": "NHS Digital",

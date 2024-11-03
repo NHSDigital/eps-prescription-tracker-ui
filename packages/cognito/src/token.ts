@@ -4,7 +4,7 @@ import {injectLambdaContext} from "@aws-lambda-powertools/logger/middleware"
 import middy from "@middy/core"
 import {getSecret} from "@aws-lambda-powertools/parameters/secrets"
 import inputOutputLogger from "@middy/input-output-logger"
-import {MiddyErrorHandler} from "@PrescriptionStatusUpdate_common/middyErrorHandler"
+import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 import axios from "axios"
 import {parse, ParsedUrlQuery, stringify} from "querystring"
 
