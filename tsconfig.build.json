@@ -4,11 +4,11 @@
     "files": [],
     // Building this project will build all of the following:
     "references": [
+      {"path": "packages/common/testing"},
+      {"path": "packages/common/middyErrorHandler"},
       {"path": "packages/cdk"},
       {"path": "packages/cpt-ui"},
-      {"path": "packages/cognito"},
-      {"path": "packages/common/testing"},
-      {"path": "packages/common/middyErrorHandler"}
+      {"path": "packages/cognito"}
     ]
   }
   
