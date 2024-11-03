@@ -372,12 +372,6 @@ export class StatelessResourcesStack extends Stack {
       },
       errorResponses: [
         {
-          httpStatus: 500,
-          responseHttpStatus: 500,
-          responsePagePath: "/500.html",
-          ttl: Duration.seconds(10)
-        },
-        {
           httpStatus: 404,
           responseHttpStatus: 404,
           responsePagePath: "/404.html",
