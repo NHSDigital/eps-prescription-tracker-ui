@@ -74,7 +74,7 @@ jobs:
           export REACT_APP_redirectSignIn
           cd .build
           make auth_demo_build
-          
+
       - name: deploy website
         run: |
           staticBucketName=$(aws cloudformation list-exports --query "Exports[?Name=='${{ inputs.SERVICE_NAME }}-stateful-resources:StaticContentBucket:Name'].Value" --output text)
