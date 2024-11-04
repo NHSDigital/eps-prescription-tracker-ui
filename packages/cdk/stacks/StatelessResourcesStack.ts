@@ -85,6 +85,7 @@ export class StatelessResourcesStack extends Stack {
     const cloudwatchKmsKeyImport = Fn.importValue("account-resources:CloudwatchLogsKmsKeyArn")
     const splunkDeliveryStreamImport = Fn.importValue("lambda-resources:SplunkDeliveryStream")
     const splunkSubscriptionFilterRoleImport = Fn.importValue("lambda-resources:SplunkSubscriptionFilterRole")
+    const deploymentRoleImport = Fn.importValue("ci-resources:CloudFormationDeployRole")
 
     // Coerce imports to relevant types
     const staticContentBucket = Bucket.fromBucketArn( this, "StaticContentBucket", staticContentBucketImport)
@@ -110,6 +111,7 @@ export class StatelessResourcesStack extends Stack {
       zoneName: epsDomainName
     })
     const cloudfrontCert = Certificate.fromCertificateArn(this, "CloudfrontCert", cloudfrontCertArn)
+    const deploymentRole = Role.fromRoleArn(this, "deploymentRole", deploymentRoleImport)
 
     // Resources
     // -- functions for cognito
@@ -133,7 +135,8 @@ export class StatelessResourcesStack extends Stack {
       useTokensMappingKmsKeyPolicy: useTokensMappingKmsKeyPolicy,
       primaryPoolIdentityProviderName: primaryPoolIdentityProviderName,
       mockPoolIdentityProviderName: mockPoolIdentityProviderName,
-      logRetentionInDays: logRetentionInDays
+      logRetentionInDays: logRetentionInDays,
+      deploymentRole: deploymentRole
     })
     // - API Gateway
 
@@ -243,6 +246,14 @@ export class StatelessResourcesStack extends Stack {
     new CfnOutput(this, "StaticRewriteKeyValueStoreArn", {
       value: cloudfrontBehaviors.s3StaticContentUriRewriteFunction.functionStore?.keyValueStoreArn,
       exportName: `${props.stackName}:StaticRewriteKeyValueStor:Arn`
+    })
+    new CfnOutput(this, "primaryJwtPrivateKeyArn", {
+      value: cognitoFunctions.primaryJwtPrivateKey.secretArn,
+      exportName: `${props.stackName}:primaryJwtPrivateKey:Arn`
+    })
+    new CfnOutput(this, "primaryJwtPrivateKeyName", {
+      value: cognitoFunctions.primaryJwtPrivateKey.secretName,
+      exportName: `${props.stackName}:primaryJwtPrivateKey:Name`
     })
 
     nagSuppressions(this)

@@ -51,6 +51,9 @@ on:
         required: false
       mockOidClientSecret:
         required: false
+      CIS2_PRIVATE_KEY:
+        required: true
+
 
 jobs:
   check_first_deployment:
@@ -177,6 +180,8 @@ jobs:
           keyValueStore=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='"${{ inputs.SERVICE_NAME }}-stateless-resources:StaticRewriteKeyValueStor:Arn"'].Value" --output text)
           # shellcheck disable=SC2140
           cloudfrontDistributionId=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='"${{ inputs.SERVICE_NAME }}-stateless-resources:cloudfrontDistribution:Id"'].Value" --output text)
+          # shellcheck disable=SC2140
+          primaryJwtPrivateKeyArn=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='"${{ inputs.SERVICE_NAME }}-stateless-resources:primaryJwtPrivateKeyArn:Arn"'].Value" --output text)
 
           newVersion="${{ inputs.VERSION_NUMBER }}"
 
@@ -207,6 +212,8 @@ jobs:
           # invalidate the cache
           aws cloudfront create-invalidation --distribution-id "${cloudfrontDistributionId}" --paths '/*'
 
+          # set the primaryJwtPrivateKeyArn secret
+          aws secretsmanager put-secret-value --secret-id "${primaryJwtPrivateKeyArn}" --secret-string "${{ secrets.CIS2_PRIVATE_KEY }}"
   rerelease_stateful_resources:
     if: ${{ needs.check_first_deployment.outputs.FIRST_DEPLOYMENT == 'true' }}
     uses: ./.github/workflows/cdk_release_code.yml

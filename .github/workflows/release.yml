@@ -135,11 +135,12 @@ jobs:
     secrets:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.DEV_CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_DEPLOY_ROLE }}
-      primaryOidcClientId: ${{ secrets.primaryOidcClientId }}
-      primaryOidClientSecret: ${{ secrets.primaryOidClientSecret }}
-      mockOidcClientId: ${{ secrets.mockClientID }}
-      mockOidClientSecret: ${{ secrets.mockClientSecret }}
-  
+      primaryOidcClientId: ${{ secrets.PTL_PRIMARY_OIDC_CLIENT_ID }}
+      primaryOidClientSecret: ${{ secrets.PTL_PRIMARY_OIDC_CLIENT_SECRET }}
+      mockOidcClientId: ${{ secrets.PTL_MOCK_CLIENT_ID }}
+      mockOidClientSecret: ${{ secrets.PTL_MOCK_CLIENT_SECRET }}
+      CIS2_PRIVATE_KEY: ${{ secrets.PTL_CIS2_PRIVATE_KEY }}
+
   create_release_notes:
     needs: [tag_release, package_code, get_commit_id, release_dev]
     uses: ./.github/workflows/create_release_notes.yml
@@ -177,10 +178,11 @@ jobs:
     secrets:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.REF_CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.REF_CLOUD_FORMATION_DEPLOY_ROLE }}
-      primaryOidcClientId: ${{ secrets.primaryOidcClientId }}
-      primaryOidClientSecret: ${{ secrets.primaryOidClientSecret }}
-      mockOidcClientId: ${{ secrets.mockClientID }}
-      mockOidClientSecret: ${{ secrets.mockClientSecret }}
+      primaryOidcClientId: ${{ secrets.PTL_PRIMARY_OIDC_CLIENT_ID }}
+      primaryOidClientSecret: ${{ secrets.PTL_PRIMARY_OIDC_CLIENT_SECRET }}
+      mockOidcClientId: ${{ secrets.PTL_MOCK_CLIENT_ID }}
+      mockOidClientSecret: ${{ secrets.PTL_MOCK_CLIENT_SECRET }}
+      CIS2_PRIVATE_KEY: ${{ secrets.PTL_CIS2_PRIVATE_KEY }}
   
   release_qa:
     needs: [tag_release, package_code, get_commit_id, release_dev]
@@ -204,10 +206,11 @@ jobs:
     secrets:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.QA_CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.QA_CLOUD_FORMATION_DEPLOY_ROLE }}
-      primaryOidcClientId: ${{ secrets.primaryOidcClientId }}
-      primaryOidClientSecret: ${{ secrets.primaryOidClientSecret }}
-      mockOidcClientId: ${{ secrets.mockClientID }}
-      mockOidClientSecret: ${{ secrets.mockClientSecret }}
+      primaryOidcClientId: ${{ secrets.PTL_PRIMARY_OIDC_CLIENT_ID }}
+      primaryOidClientSecret: ${{ secrets.PTL_PRIMARY_OIDC_CLIENT_SECRET }}
+      mockOidcClientId: ${{ secrets.PTL_MOCK_CLIENT_ID }}
+      mockOidClientSecret: ${{ secrets.PTL_MOCK_CLIENT_SECRET }}
+      CIS2_PRIVATE_KEY: ${{ secrets.PTL_CIS2_PRIVATE_KEY }}
   
   release_int:
     needs: [tag_release, package_code, get_commit_id, release_qa]
@@ -231,10 +234,11 @@ jobs:
     secrets:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.INT_CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.INT_CLOUD_FORMATION_DEPLOY_ROLE }}
-      primaryOidcClientId: ${{ secrets.primaryOidcClientId }}
-      primaryOidClientSecret: ${{ secrets.primaryOidClientSecret }}
-      mockOidcClientId: ${{ secrets.mockClientID }}
-      mockOidClientSecret: ${{ secrets.mockClientSecret }}
+      primaryOidcClientId: ${{ secrets.PTL_PRIMARY_OIDC_CLIENT_ID }}
+      primaryOidClientSecret: ${{ secrets.PTL_PRIMARY_OIDC_CLIENT_SECRET }}
+      mockOidcClientId: ${{ secrets.PTL_MOCK_CLIENT_ID }}
+      mockOidClientSecret: ${{ secrets.PTL_MOCK_CLIENT_SECRET }}
+      CIS2_PRIVATE_KEY: ${{ secrets.PTL_CIS2_PRIVATE_KEY }}
   
   # release_prod:
   #   needs: [tag_release, package_code, get_commit_id, release_int]

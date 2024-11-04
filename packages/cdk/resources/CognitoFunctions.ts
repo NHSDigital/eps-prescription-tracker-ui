@@ -7,6 +7,7 @@ import {
   AccountRootPrincipal,
   Effect,
   IManagedPolicy,
+  IRole,
   ManagedPolicy,
   PolicyDocument,
   PolicyStatement
@@ -37,6 +38,7 @@ export interface CognitoFunctionsProps {
   readonly primaryPoolIdentityProviderName: string
   readonly mockPoolIdentityProviderName: string
   readonly logRetentionInDays: number,
+  readonly deploymentRole: IRole
 
 }
 
@@ -47,6 +49,7 @@ export class CognitoFunctions extends Construct {
   public cognitoPolicies: Array<IManagedPolicy>
   public tokenLambda: NodejsFunction
   public mockTokenLambda: NodejsFunction
+  public primaryJwtPrivateKey: Secret
 
   public constructor(scope: Construct, id: string, props: CognitoFunctionsProps) {
     super(scope, id)
@@ -72,6 +75,15 @@ export class CognitoFunctions extends Construct {
               new AccountRootPrincipal
             ],
             resources: ["*"]
+          }),
+          new PolicyStatement({
+            effect: Effect.ALLOW,
+            principals: [props.deploymentRole],
+            actions: [
+              "kms:Encrypt",
+              "kms:GenerateDataKey*"
+            ],
+            resources:["*"]
           })
         ]
       })
@@ -159,6 +171,15 @@ export class CognitoFunctions extends Construct {
       secretStringValue: SecretValue.unsafePlainText("ChangeMe"),
       encryptionKey: jwtKmsKey
     })
+    primaryJwtPrivateKey.addToResourcePolicy( new PolicyStatement({
+      effect: Effect.ALLOW,
+      principals: [props.deploymentRole],
+      actions: [
+        "secretsmanager:PutSecretValue"
+      ],
+      resources:["*"]
+    }))
+
     const getJWTPrivateKeySecret = new ManagedPolicy(this, "getJWTPrivateKeySecret", {
       statements: [
         new PolicyStatement({
@@ -210,6 +231,7 @@ export class CognitoFunctions extends Construct {
     // Outputs
     this.cognitoPolicies = cognitoPolicies
     this.tokenLambda = tokenLambda.lambda
+    this.primaryJwtPrivateKey = primaryJwtPrivateKey
 
   }
 }

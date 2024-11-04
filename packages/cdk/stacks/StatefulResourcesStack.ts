@@ -68,8 +68,7 @@ export class StatefulResourcesStack extends Stack {
     // Coerce imports to relevant types
     const auditLoggingBucket = Bucket.fromBucketArn(
       this, "AuditLoggingBucket", auditLoggingBucketImport)
-    const deploymentRole = Role.fromRoleArn(
-      this, "deploymentRole", deploymentRoleImport)
+    const deploymentRole = Role.fromRoleArn(this, "deploymentRole", deploymentRoleImport)
     const hostedZone = HostedZone.fromHostedZoneAttributes(this, "hostedZone", {
       hostedZoneId: epsHostedZoneId,
       zoneName: epsDomainName
