@@ -157,6 +157,14 @@ export class StatefulResourcesStack extends Stack {
       value: cognito.userPool.userPoolArn,
       exportName: `${props.stackName}:userPool:Arn`
     })
+    new CfnOutput(this, "userPoolId", {
+      value: cognito.userPool.userPoolId,
+      exportName: `${props.stackName}:userPool:Id`
+    })
+    new CfnOutput(this, "userPoolClientId", {
+      value: cognito.userPoolClient.userPoolClientId,
+      exportName: `${props.stackName}:userPoolClient:userPoolClientId`
+    })
 
     nagSuppressions(this)
   }

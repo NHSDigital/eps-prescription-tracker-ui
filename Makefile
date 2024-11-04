@@ -94,7 +94,7 @@ react-lint:
 	npm run lint --workspace packages/cpt-ui
 
 auth_demo_build:
-	export PUBLIC_URL="/site/auth_demo" && npm run build --workspace packages/auth_demo/
+	export PUBLIC_URL="/auth_demo" && npm run build --workspace packages/auth_demo/
 
 cdk-deploy: guard-service_name guard-CDK_APP_NAME
 	REQUIRE_APPROVAL="$${REQUIRE_APPROVAL:-any-change}" && \

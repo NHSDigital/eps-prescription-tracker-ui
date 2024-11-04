@@ -1,16 +1,10 @@
 import { ResourcesConfig } from "aws-amplify"
 
-
-// TODO
-// Need a way to get these at deploy time as they come from the cloudformation deployment
-
-const userPoolId = "eu-west-2_vyb9bV8aU" // This is the User Pool ID from AWS::Cognito::UserPool
-const userPoolClientId = "7ekh621ttv5vm42vn5c3gfqqfr" // This is the Client ID from AWS::Cognito::UserPoolClient
-const hostedLoginDomain = "cpt-ui-pr-42.auth.eu-west-2.amazoncognito.com" // This is the domain from AWS::Cognito::UserPoolDomain
-
-//const userPoolId = "eu-west-2_GlSIbaNTD" // This is the User Pool ID from AWS::Cognito::UserPool
-//const userPoolClientId = "2rv1rip193mnfhik70e9j85hkn" // This is the Client ID from AWS::Cognito::UserPoolClient
-//const hostedLoginDomain = "id.cpt-ui-pr-19.dev.eps.national.nhs.uk" // This is the domain from AWS::Cognito::UserPoolDomain
+const userPoolId = process.env["REACT_APP_userPoolId"] // This is the User Pool ID from AWS::Cognito::UserPool
+const userPoolClientId = process.env["REACT_APP_userPoolClientId"] // This is the Client ID from AWS::Cognito::UserPoolClient
+const hostedLoginDomain = process.env["REACT_APP_hostedLoginDomain"] // This is the domain from AWS::Cognito::UserPoolDomain
+const redirectSignIn = process.env["REACT_APP_redirectSignIn"]
+const redirectSignOut = process.env["REACT_APP_redirectSignIn"]
 
 export const authConfig: ResourcesConfig = {
     Auth: {
@@ -21,8 +15,8 @@ export const authConfig: ResourcesConfig = {
             oauth: {
               domain: hostedLoginDomain,
               scopes: ['openid','email','phone','profile','aws.cognito.signin.user.admin'],
-              redirectSignIn: ['http://localhost:3000/auth/'],
-              redirectSignOut: ['http://localhost:3000/'],
+              redirectSignIn: [redirectSignIn],
+              redirectSignOut: [redirectSignOut],
               responseType: 'code',
             },
             username: true,
