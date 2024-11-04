@@ -64,7 +64,14 @@ export class CloudfrontBehaviors extends Construct{
 
     const s3StaticContentUriRewriteFunction = new CloudfrontFunction(this, "S3StaticContentUriRewriteFunction", {
       functionName: `${props.serviceName}-S3StaticContentUriRewriteFunction`,
-      sourceFileName: "s3StaticContentUriRewrite.js"
+      sourceFileName: "s3StaticContentUriRewrite.js",
+      keyValues: [
+        {
+          key: "basePath",
+          value: "/site"
+        }
+      ]
+
     })
 
     const apiGatewayStripPathFunction = new CloudfrontFunction(this, "ApiGatewayStripPathFunction", {
@@ -97,6 +104,10 @@ export class CloudfrontBehaviors extends Construct{
         {
           key: "version",
           value: "auth_demo"
+        },
+        {
+          key: "basePath",
+          value: "/auth_demo"
         }
       ]
     })
