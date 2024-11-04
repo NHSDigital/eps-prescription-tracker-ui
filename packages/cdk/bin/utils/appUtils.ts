@@ -1,17 +1,17 @@
 import {Stack, CfnResource} from "aws-cdk-lib"
 
 // function which adds metadata to ignore things which fail cfn-guard
-export const addCfnGuardMetadata = (stack: Stack, role: string) => {
-  const writerProvider = stack.node.tryFindChild(role)
-  if (writerProvider === undefined) {
+export const addCfnGuardMetadata = (stack: Stack, path: string, childPath: string) => {
+  const provider = stack.node.tryFindChild(path)
+  if (provider === undefined) {
     return
   }
-  const writerLambda = writerProvider.node.tryFindChild("Handler") as CfnResource
-  const writerRole = writerProvider.node.tryFindChild("Role") as CfnResource
-  if (writerLambda !== undefined) {
-    writerLambda.cfnOptions.metadata = (
+  const lambda = provider.node.tryFindChild(childPath) as CfnResource
+  const role = provider.node.tryFindChild("Role") as CfnResource
+  if (lambda !== undefined) {
+    lambda.cfnOptions.metadata = (
       {
-        ...writerLambda.cfnOptions.metadata,
+        ...lambda.cfnOptions.metadata,
         guard: {
           SuppressedRules: [
             "LAMBDA_DLQ_CHECK",
@@ -22,10 +22,10 @@ export const addCfnGuardMetadata = (stack: Stack, role: string) => {
       }
     )
   }
-  if (writerRole !== undefined) {
-    writerRole.cfnOptions.metadata = (
+  if (role !== undefined) {
+    role.cfnOptions.metadata = (
       {
-        ...writerLambda.cfnOptions.metadata,
+        ...role.cfnOptions.metadata,
         guard: {
           SuppressedRules: [
             "IAM_NO_INLINE_POLICY_CHECK"

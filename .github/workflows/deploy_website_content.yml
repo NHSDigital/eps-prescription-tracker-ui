@@ -60,6 +60,21 @@ jobs:
           cd .build
           make react-build
 
+      - name: build auth_demo react app (temp step for testing)
+        run: |
+          REACT_APP_hostedLoginDomain=$(aws cloudformation list-exports --region us-east-1 --query "Exports[?Name=='${{ inputs.SERVICE_NAME }}-us-certs:fullCognitoDomain:Name'].Value" --output text)
+          REACT_APP_userPoolClientId=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${{ inputs.SERVICE_NAME }}-stateful-resources:userPoolClient:userPoolClientId'].Value" --output text)
+          REACT_APP_userPoolId=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${{ inputs.SERVICE_NAME }}-stateful-resources:userPool:Id'].Value" --output text)
+          fullCloudfrontDomain=$(aws cloudformation list-exports --region us-east-1 --query "Exports[?Name=='${{ inputs.SERVICE_NAME }}-us-certs:fullCloudfrontDomain:Name'].Value" --output text)
+          REACT_APP_redirectSignIn="https://${fullCloudfrontDomain}/auth_demo/"
+
+          export REACT_APP_hostedLoginDomain
+          export REACT_APP_userPoolClientId
+          export REACT_APP_userPoolId
+          export REACT_APP_redirectSignIn
+          cd .build
+          make auth_demo_build
+
       - name: deploy website
         run: |
           staticBucketName=$(aws cloudformation list-exports --query "Exports[?Name=='${{ inputs.SERVICE_NAME }}-stateful-resources:StaticContentBucket:Name'].Value" --output text)
@@ -67,3 +82,8 @@ jobs:
           aws s3 cp ".build/packages/staticContent/500.html" "s3://${staticBucketName}/500.html"
           aws s3 cp ".build/packages/staticContent/jwks/dev/jwks.json" "s3://${staticBucketName}/jwks.json"
           aws s3 cp --recursive ".build/packages/cpt-ui/out/" "s3://${staticBucketName}/${{ inputs.VERSION_NUMBER }}/"
+
+      - name: deploy auth_demo website (temp for testing)
+        run: |
+          staticBucketName=$(aws cloudformation list-exports --query "Exports[?Name=='${{ inputs.SERVICE_NAME }}-stateful-resources:StaticContentBucket:Name'].Value" --output text)
+          aws s3 cp --recursive ".build/packages/auth_demo/build/" "s3://${staticBucketName}/auth_demo/"

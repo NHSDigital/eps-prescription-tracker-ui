@@ -19,11 +19,31 @@
       {
         "name": "packages/staticContent",
         "path": "../packages/staticContent"
+      },
+      {
+        "name": "packages/cognito",
+        "path": "../packages/cognito"
+      },
+      {
+        "name": "packages/common/middyErrorHandler",
+        "path": "../packages/common/middyErrorHandler"
+      },
+      {
+        "name": "packages/common/testing",
+        "path": "../packages/common/testing"
       }
+      {
+        "name": "packages/auth_demo",
+        "path": "../packages/auth_demo"
+      }
+
     ],
     "settings": {
       "jest.disabledWorkspaceFolders": [
         "eps-prescription-tracker-ui-monorepo",
+        "packages/staticContent",
+        "packages/auth_demo",
+        "packages/common/testing",
         "packages/staticContent"
       ],
       "files.exclude": {

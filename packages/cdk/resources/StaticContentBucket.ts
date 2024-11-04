@@ -1,5 +1,5 @@
-import {Fn, RemovalPolicy} from "aws-cdk-lib"
-import {Effect, PolicyStatement, Role} from "aws-cdk-lib/aws-iam"
+import {RemovalPolicy} from "aws-cdk-lib"
+import {Effect, IRole, PolicyStatement} from "aws-cdk-lib/aws-iam"
 import {CfnKey, Key} from "aws-cdk-lib/aws-kms"
 import {
   BlockPublicAccess,
@@ -8,6 +8,7 @@ import {
   BucketEncryption,
   CfnBucket,
   CfnBucketPolicy,
+  IBucket,
   ObjectOwnership
 } from "aws-cdk-lib/aws-s3"
 import {Construct} from "constructs"
@@ -16,7 +17,11 @@ import {AllowCloudfrontGetObjectPolicyStatement} from "../policies/s3/AllowCloud
 import {AllowCloudfrontKmsKeyAccessPolicy} from "../policies/kms/AllowCloudfrontKmsKeyAccessPolicy"
 
 export interface StaticContentBucketProps {
-  bucketName: string
+  readonly bucketName: string
+  readonly allowAutoDeleteObjects: boolean
+  readonly cloudfrontDistributionId: string
+  readonly auditLoggingBucket: IBucket,
+  readonly deploymentRole: IRole
 }
 
 /**
@@ -26,22 +31,10 @@ export interface StaticContentBucketProps {
 
 export class StaticContentBucket extends Construct{
   public readonly bucket: Bucket
-  public kmsKey: Key
+  public readonly kmsKey: Key
 
   public constructor(scope: Construct, id: string, props: StaticContentBucketProps){
     super(scope, id)
-
-    // Context
-    /* context values passed as --context cli arguments are passed as strings so coerce them to expected types*/
-    const allowAutoDeleteObjects: boolean = this.node.tryGetContext("allowAutoDeleteObjects") === "true"
-    const cloudfrontDistributionId: string = this.node.tryGetContext("cloudfrontDistributionId")
-
-    // Imports
-    const auditLoggingBucket = Bucket.fromBucketArn(
-      this, "AuditLoggingBucket", Fn.importValue("account-resources:AuditLoggingBucket"))
-
-    const deploymentRole = Role.fromRoleArn(
-      this, "deploymentRole", Fn.importValue("ci-resources:CloudFormationDeployRole"))
 
     // Resources
     const kmsKey = new Key(this, "KmsKey", {
@@ -59,16 +52,16 @@ export class StaticContentBucket extends Construct{
       blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
       accessControl: BucketAccessControl.PRIVATE,
       objectOwnership: ObjectOwnership.BUCKET_OWNER_ENFORCED,
-      serverAccessLogsBucket: auditLoggingBucket,
+      serverAccessLogsBucket: props.auditLoggingBucket,
       serverAccessLogsPrefix: "/static-content",
       removalPolicy: RemovalPolicy.DESTROY,
-      autoDeleteObjects: allowAutoDeleteObjects // if true forces a deletion even if bucket is not empty
+      autoDeleteObjects: props.allowAutoDeleteObjects // if true forces a deletion even if bucket is not empty
     })
 
     // we need to add a policy to the bucket so that our deploy role can use the bucket
     const bucketAllowDeployUploadPolicyStatement = new PolicyStatement({
       effect: Effect.ALLOW,
-      principals: [deploymentRole],
+      principals: [props.deploymentRole],
       actions: [
         "s3:Abort*",
         "s3:DeleteObject*",
@@ -98,18 +91,18 @@ export class StaticContentBucket extends Construct{
     const contentBucketKmsKey = (kmsKey.node.defaultChild as CfnKey)
     contentBucketKmsKey.keyPolicy = new AllowCloudfrontKmsKeyAccessPolicy(
       this, "StaticContentBucketAllowCloudfrontKmsKeyAccessPolicy", {
-        cloudfrontDistributionId: cloudfrontDistributionId,
-        deploymentRole: deploymentRole
+        cloudfrontDistributionId: props.cloudfrontDistributionId,
+        deploymentRole: props.deploymentRole
       }).policyJson
 
     /* As you cannot modify imported policies, cdk cannot not update the s3 bucket with the correct permissions
     for OAC when the distribution and bucket are in different stacks
     !! This can only be added after the distribution has been deployed !! */
-    if (cloudfrontDistributionId){
+    if (props.cloudfrontDistributionId){
       bucket.addToResourcePolicy(new AllowCloudfrontGetObjectPolicyStatement(
         this, "StaticContentBucketAllowCloudfrontGetObjectPolicyStatement", {
           bucket: bucket,
-          cloudfrontDistributionId: cloudfrontDistributionId
+          cloudfrontDistributionId: props.cloudfrontDistributionId
         }).policyStatement)
 
     }
