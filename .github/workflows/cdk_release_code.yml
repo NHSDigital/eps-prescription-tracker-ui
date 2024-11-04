@@ -31,6 +31,7 @@ jobs:
   release_code:
     runs-on: ubuntu-latest
     environment: ${{ inputs.TARGET_ENVIRONMENT }}
+    name: deploy cdk app ${{ inputs.CDK_APP_NAME }}
     permissions:
       id-token: write
       contents: write
