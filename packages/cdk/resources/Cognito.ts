@@ -140,10 +140,6 @@ export class Cognito extends Construct {
     cfnUserPoolIdentityProvider.attributeMapping = {
       username: "sub",
       name: "name",
-      authentication_assurance_level: "authentication_assurance_level",
-      acr: "acr",
-      id_assurance_level: "id_assurance_level",
-      amr: "amr",
       given_name: "given_name",
       family_name: "family_name",
       email: "email"
