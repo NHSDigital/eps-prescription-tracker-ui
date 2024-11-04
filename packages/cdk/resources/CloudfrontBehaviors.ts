@@ -17,7 +17,6 @@ export interface CloudfrontBehaviorsProps {
   readonly apiGatewayOrigin: RestApiOrigin
   readonly apiGatewayRequestPolicy: OriginRequestPolicy
   readonly staticContentBucketOrigin: IOrigin
-
 }
 
 /**
@@ -25,10 +24,10 @@ export interface CloudfrontBehaviorsProps {
  */
 
 export class CloudfrontBehaviors extends Construct{
-  public additionalBehaviors: Record<string, BehaviorOptions>
-  public s3404UriRewriteFunction: CloudfrontFunction
-  public s3404ModifyStatusCodeFunction: CloudfrontFunction
-  public s3StaticContentUriRewriteFunction: CloudfrontFunction
+  public readonly additionalBehaviors: Record<string, BehaviorOptions>
+  public readonly s3404UriRewriteFunction: CloudfrontFunction
+  public readonly s3404ModifyStatusCodeFunction: CloudfrontFunction
+  public readonly s3StaticContentUriRewriteFunction: CloudfrontFunction
 
   public constructor(scope: Construct, id: string, props: CloudfrontBehaviorsProps){
     super(scope, id)

@@ -18,21 +18,21 @@ import {ARecord, IHostedZone, RecordTarget} from "aws-cdk-lib/aws-route53"
 import {UserPoolDomainTarget} from "aws-cdk-lib/aws-route53-targets"
 
 export interface CognitoProps {
-  readonly primaryOidcClientId: string;
-  readonly primaryOidClientSecret: string;
-  readonly primaryOidcIssuer: string;
-  readonly primaryOidcAuthorizeEndpoint: string;
-  readonly primaryOidcUserInfoEndpoint: string;
-  readonly primaryOidcjwksEndpoint: string;
-  readonly primaryTokenEndpoint: string;
+  readonly primaryOidcClientId: string
+  readonly primaryOidClientSecret: string
+  readonly primaryOidcIssuer: string
+  readonly primaryOidcAuthorizeEndpoint: string
+  readonly primaryOidcUserInfoEndpoint: string
+  readonly primaryOidcjwksEndpoint: string
+  readonly primaryTokenEndpoint: string
   readonly useMockOidc: boolean
-  readonly mockOidcClientId?: string;
-  readonly mockOidClientSecret?: string;
-  readonly mockOidcIssuer?: string;
-  readonly mockOidcAuthorizeEndpoint?: string;
-  readonly mockOidcUserInfoEndpoint?: string;
-  readonly mockOidcjwksEndpoint?: string;
-  readonly mockTokenEndpoint: string;
+  readonly mockOidcClientId?: string
+  readonly mockOidClientSecret?: string
+  readonly mockOidcIssuer?: string
+  readonly mockOidcAuthorizeEndpoint?: string
+  readonly mockOidcUserInfoEndpoint?: string
+  readonly mockOidcjwksEndpoint?: string
+  readonly mockTokenEndpoint: string
   readonly shortCognitoDomain: string
   readonly fullCloudfrontDomain: string
   readonly fullCognitoDomain: string

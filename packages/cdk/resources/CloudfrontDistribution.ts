@@ -12,16 +12,16 @@ import {IBucket} from "aws-cdk-lib/aws-s3"
 import {Construct} from "constructs"
 
 export interface CloudfrontDistributionProps {
-  serviceName: string
-  stackName: string
-  defaultBehavior: BehaviorOptions,
-  additionalBehaviors: Record<string, BehaviorOptions>
-  errorResponses: Array<ErrorResponse>
-  hostedZone: IHostedZone
-  shortCloudfrontDomain: string
-  fullCloudfrontDomain: string
-  cloudfrontLoggingBucket: IBucket
-  cloudfrontCert: ICertificate
+  readonly serviceName: string
+  readonly stackName: string
+  readonly defaultBehavior: BehaviorOptions,
+  readonly additionalBehaviors: Record<string, BehaviorOptions>
+  readonly errorResponses: Array<ErrorResponse>
+  readonly hostedZone: IHostedZone
+  readonly shortCloudfrontDomain: string
+  readonly fullCloudfrontDomain: string
+  readonly cloudfrontLoggingBucket: IBucket
+  readonly cloudfrontCert: ICertificate
 }
 
 /**

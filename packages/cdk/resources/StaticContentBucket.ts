@@ -17,11 +17,11 @@ import {AllowCloudfrontGetObjectPolicyStatement} from "../policies/s3/AllowCloud
 import {AllowCloudfrontKmsKeyAccessPolicy} from "../policies/kms/AllowCloudfrontKmsKeyAccessPolicy"
 
 export interface StaticContentBucketProps {
-  bucketName: string
-  allowAutoDeleteObjects: boolean
-  cloudfrontDistributionId: string
-  auditLoggingBucket: IBucket,
-  deploymentRole: IRole
+  readonly bucketName: string
+  readonly allowAutoDeleteObjects: boolean
+  readonly cloudfrontDistributionId: string
+  readonly auditLoggingBucket: IBucket,
+  readonly deploymentRole: IRole
 }
 
 /**
@@ -31,7 +31,7 @@ export interface StaticContentBucketProps {
 
 export class StaticContentBucket extends Construct{
   public readonly bucket: Bucket
-  public kmsKey: Key
+  public readonly kmsKey: Key
 
   public constructor(scope: Construct, id: string, props: StaticContentBucketProps){
     super(scope, id)

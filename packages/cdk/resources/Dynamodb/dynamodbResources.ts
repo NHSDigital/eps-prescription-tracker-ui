@@ -3,8 +3,8 @@ import {ManagedPolicy, PolicyStatement} from "aws-cdk-lib/aws-iam"
 import {TableV2} from "aws-cdk-lib/aws-dynamodb"
 
 export interface DynamodbResourcesProps {
-  readonly stackName: string;
-  readonly table: TableV2;
+  readonly stackName: string
+  readonly table: TableV2
 }
 
 export class DynamodbResources extends Construct {

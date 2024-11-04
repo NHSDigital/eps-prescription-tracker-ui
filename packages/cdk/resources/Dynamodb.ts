@@ -19,9 +19,9 @@ import {Key} from "aws-cdk-lib/aws-kms"
 import {Duration, RemovalPolicy} from "aws-cdk-lib"
 
 export interface DynamodbProps {
-  readonly stackName: string;
-  readonly account: string;
-  readonly region: string;
+  readonly stackName: string
+  readonly account: string
+  readonly region: string
 }
 
 export class Dynamodb extends Construct {

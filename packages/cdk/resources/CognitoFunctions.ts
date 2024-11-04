@@ -18,26 +18,26 @@ import {Secret} from "aws-cdk-lib/aws-secretsmanager"
 import {NodejsFunction} from "aws-cdk-lib/aws-lambda-nodejs"
 
 export interface CognitoFunctionsProps {
-  readonly serviceName: string;
-  readonly stackName: string;
-  readonly primaryOidcTokenEndpoint: string;
-  readonly primaryOidcUserInfoEndpoint: string;
-  readonly primaryOidcjwksEndpoint: string;
-  readonly primaryOidcClientId: string;
-  readonly primaryOidcIssuer: string;
+  readonly serviceName: string
+  readonly stackName: string
+  readonly primaryOidcTokenEndpoint: string
+  readonly primaryOidcUserInfoEndpoint: string
+  readonly primaryOidcjwksEndpoint: string
+  readonly primaryOidcClientId: string
+  readonly primaryOidcIssuer: string
   readonly useMockOidc: boolean
-  readonly mockOidcTokenEndpoint?: string;
-  readonly mockOidcUserInfoEndpoint?: string;
-  readonly mockOidcjwksEndpoint?: string;
-  readonly mockOidcClientId?: string;
-  readonly mockOidcIssuer?: string;
-  readonly tokenMappingTable: ITableV2;
-  readonly tokenMappingTableWritePolicy: IManagedPolicy;
-  readonly tokenMappingTableReadPolicy: IManagedPolicy;
+  readonly mockOidcTokenEndpoint?: string
+  readonly mockOidcUserInfoEndpoint?: string
+  readonly mockOidcjwksEndpoint?: string
+  readonly mockOidcClientId?: string
+  readonly mockOidcIssuer?: string
+  readonly tokenMappingTable: ITableV2
+  readonly tokenMappingTableWritePolicy: IManagedPolicy
+  readonly tokenMappingTableReadPolicy: IManagedPolicy
   readonly useTokensMappingKmsKeyPolicy: IManagedPolicy
   readonly primaryPoolIdentityProviderName: string
   readonly mockPoolIdentityProviderName: string
-  readonly logRetentionInDays: number,
+  readonly logRetentionInDays: number
   readonly deploymentRole: IRole
 
 }
@@ -46,10 +46,10 @@ export interface CognitoFunctionsProps {
  * Functions that are needed for cognitor
  */
 export class CognitoFunctions extends Construct {
-  public cognitoPolicies: Array<IManagedPolicy>
-  public tokenLambda: NodejsFunction
-  public mockTokenLambda: NodejsFunction
-  public primaryJwtPrivateKey: Secret
+  public readonly cognitoPolicies: Array<IManagedPolicy>
+  public readonly tokenLambda: NodejsFunction
+  public readonly mockTokenLambda: NodejsFunction
+  public readonly primaryJwtPrivateKey: Secret
 
   public constructor(scope: Construct, id: string, props: CognitoFunctionsProps) {
     super(scope, id)

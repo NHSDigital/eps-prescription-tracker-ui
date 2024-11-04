@@ -17,13 +17,13 @@ import {accessLogFormat} from "./RestApiGateway/accessLogFormat"
 import {IUserPool} from "aws-cdk-lib/aws-cognito"
 
 export interface RestApiGatewayProps {
-  serviceName: string
-  stackName: string,
-  logRetentionInDays: number,
-  cloudwatchKmsKey: IKey,
-  splunkDeliveryStream: IStream,
-  splunkSubscriptionFilterRole: IRole
-  userPool: IUserPool
+  readonly serviceName: string
+  readonly stackName: string
+  readonly logRetentionInDays: number
+  readonly cloudwatchKmsKey: IKey
+  readonly splunkDeliveryStream: IStream
+  readonly splunkSubscriptionFilterRole: IRole
+  readonly userPool: IUserPool
 }
 
 /**
