@@ -40,7 +40,7 @@ export interface StatelessResourcesStackProps extends StackProps {
 }
 
 /**
- * Clinical Prescription Tracker UI Stateful Resources
+ * Clinical Prescription Tracker UI Stateless Resources
 
  */
 
