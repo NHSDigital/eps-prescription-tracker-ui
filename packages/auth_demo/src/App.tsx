@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import logo from './logo.svg';
 import { Hub } from "aws-amplify/utils";
 import { signInWithRedirect, signOut, getCurrentUser, fetchAuthSession, JWT } from "aws-amplify/auth";
 import {Amplify} from "aws-amplify"
@@ -10,8 +9,8 @@ Amplify.configure(authConfig, {ssr: true})
 
 function App() {
   const [user, setUser] = useState(null);
-  const [error, setError] = useState(null);
-  const [customState, setCustomState] = useState(null);
+  const [, setError] = useState(null);
+  const [, setCustomState] = useState(null);
   const [isSignedIn, setIsSignedIn] = useState<boolean>(false)
   const [idToken, setIdToken] = useState<JWT>(null)
   const [accessToken, setAccessToken] = useState<JWT>(null)

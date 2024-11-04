@@ -1,5 +1,3 @@
-import {DeepPartialAmplifyGeneratedConfigs} from "@aws-amplify/plugin-types"
-import {ClientConfig} from "@aws-amplify/client-config"
 import { ResourcesConfig } from "aws-amplify"
 
 
