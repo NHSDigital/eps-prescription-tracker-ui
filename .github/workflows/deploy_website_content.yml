@@ -60,6 +60,11 @@ jobs:
           cd .build
           make react-build
 
+      - name: build auth_demo react app (temp step for testing)
+        run: |
+          cd .build
+          make auth_demo_build
+          
       - name: deploy website
         run: |
           staticBucketName=$(aws cloudformation list-exports --query "Exports[?Name=='${{ inputs.SERVICE_NAME }}-stateful-resources:StaticContentBucket:Name'].Value" --output text)
@@ -67,3 +72,8 @@ jobs:
           aws s3 cp ".build/packages/staticContent/500.html" "s3://${staticBucketName}/500.html"
           aws s3 cp ".build/packages/staticContent/jwks/dev/jwks.json" "s3://${staticBucketName}/jwks.json"
           aws s3 cp --recursive ".build/packages/cpt-ui/out/" "s3://${staticBucketName}/${{ inputs.VERSION_NUMBER }}/"
+
+      - name: deploy auth_demo website (temp for testing)
+        run: |
+          staticBucketName=$(aws cloudformation list-exports --query "Exports[?Name=='${{ inputs.SERVICE_NAME }}-stateful-resources:StaticContentBucket:Name'].Value" --output text)
+          aws s3 cp --recursive ".build/packages/auth_demo/build/" "s3://${staticBucketName}/auth_demo/"

@@ -9,7 +9,6 @@ import {
 import {
   AccessLevel,
   AllowedMethods,
-  CachePolicy,
   FunctionEventType,
   OriginRequestCookieBehavior,
   OriginRequestHeaderBehavior,
@@ -21,22 +20,16 @@ import {RestApiOrigin, S3BucketOrigin} from "aws-cdk-lib/aws-cloudfront-origins"
 import {Bucket} from "aws-cdk-lib/aws-s3"
 
 import {RestApiGateway} from "../resources/RestApiGateway"
-import {CloudfrontFunction} from "../resources/Cloudfront/CloudfrontFunction"
 import {CloudfrontDistribution} from "../resources/CloudfrontDistribution"
 import {nagSuppressions} from "../nagSuppressions"
 import {TableV2} from "aws-cdk-lib/aws-dynamodb"
 import {ManagedPolicy, Role} from "aws-cdk-lib/aws-iam"
 import {CognitoFunctions} from "../resources/CognitoFunctions"
-import {
-  AuthorizationType,
-  CognitoUserPoolsAuthorizer,
-  LambdaIntegration,
-  MockIntegration,
-  PassthroughBehavior
-} from "aws-cdk-lib/aws-apigateway"
 import {UserPool} from "aws-cdk-lib/aws-cognito"
 import {Key} from "aws-cdk-lib/aws-kms"
 import {Stream} from "aws-cdk-lib/aws-kinesis"
+import {RestApiGatewayMethods} from "../resources/RestApiGatewayMethods"
+import {CloudfrontBehaviors} from "../resources/CloudfrontBehaviors"
 
 export interface StatelessResourcesStackProps extends StackProps {
   readonly serviceName: string
@@ -137,87 +130,24 @@ export class StatelessResourcesStack extends Stack {
       logRetentionInDays: logRetentionInDays,
       cloudwatchKmsKey: cloudwatchKmsKey,
       splunkDeliveryStream: splunkDeliveryStream,
-      splunkSubscriptionFilterRole: splunkSubscriptionFilterRole
-    })
-
-    const authorizer = new CognitoUserPoolsAuthorizer(this, "Authorizer", {
-      authorizerName: "cognitoAuth",
-      cognitoUserPools: [userPool],
-      identitySource: "method.request.header.authorization"
+      splunkSubscriptionFilterRole: splunkSubscriptionFilterRole,
+      userPool: userPool
     })
 
     // --- Methods & Resources
+    new RestApiGatewayMethods(this, "RestApiGatewayMethods", {
+      extraPolices: [
+        ...cognitoFunctions.cognitoPolicies
+      ],
+      restAPiGatewayRole: apiGateway.restAPiGatewayRole,
+      restApiGateway: apiGateway.restApiGateway,
+      tokenLambda: cognitoFunctions.tokenLambda,
+      mockTokenLambda: cognitoFunctions.mockTokenLambda,
+      useMockOidc: useMockOidc,
+      authorizer: apiGateway.authorizer
+    })
 
     // token endpoint
-    for (var policy of cognitoFunctions.cognitoPolicies) {
-      apiGateway.restAPiGatewayRole.addManagedPolicy(policy)
-    }
-    const tokenResource = apiGateway.restApiGateway.root.addResource("token")
-    tokenResource.addMethod("POST", new LambdaIntegration(cognitoFunctions.tokenLambda, {
-      credentialsRole: apiGateway.restAPiGatewayRole
-    }))
-
-    // mocktoken endpoint
-    if (useMockOidc) {
-      const mockTokenResource = apiGateway.restApiGateway.root.addResource("mocktoken")
-      mockTokenResource.addMethod("POST", new LambdaIntegration(cognitoFunctions.mockTokenLambda, {
-        credentialsRole: apiGateway.restAPiGatewayRole
-      }))
-    }
-
-    /* Dummy Method/Resource to test cognito auth */
-
-    const mockNoAuth = new MockIntegration({
-      passthroughBehavior: PassthroughBehavior.WHEN_NO_TEMPLATES,
-      requestTemplates: {
-        "application/json": JSON.stringify({
-          statusCode: 200
-        })
-      },
-      integrationResponses: [
-        {
-          statusCode: "200",
-          responseTemplates: {
-            "application/json": JSON.stringify({
-              message: "This does not require auth"
-            })
-          }
-        }
-      ]
-    })
-    const mockTeapotResource = apiGateway.restApiGateway.root.addResource("mocknoauth")
-    mockTeapotResource.addMethod("GET", mockNoAuth, {
-      methodResponses: [
-        {statusCode: "200"}
-      ]
-    })
-
-    const mockWithAuth = new MockIntegration({
-      passthroughBehavior: PassthroughBehavior.WHEN_NO_TEMPLATES,
-      requestTemplates: {
-        "application/json": JSON.stringify({
-          statusCode: 200
-        })
-      },
-      integrationResponses: [
-        {
-          statusCode: "200",
-          responseTemplates: {
-            "application/json": JSON.stringify({
-              message: "This does require auth"
-            })
-          }
-        }
-      ]
-    })
-    const mockAuthResource = apiGateway.restApiGateway.root.addResource("mockwithauth")
-    mockAuthResource.addMethod("GET", mockWithAuth, {
-      methodResponses: [
-        {statusCode: "200"}
-      ],
-      authorizationType: AuthorizationType.COGNITO,
-      authorizer: authorizer
-    })
 
     // - Cloudfront
     // --- Origins
@@ -246,61 +176,15 @@ export class StatelessResourcesStack extends Stack {
     // --- Cache Policies
     /* todo - to follow in a later ticket */
 
+    const cloudfrontBehaviors = new CloudfrontBehaviors(this, "CloudfrontBehaviors", {
+      serviceName: props.serviceName,
+      stackName: props.stackName,
+      apiGatewayOrigin: apiGatewayOrigin,
+      apiGatewayRequestPolicy: apiGatewayRequestPolicy,
+      staticContentBucketOrigin: staticContentBucketOrigin
+    })
+
     // --- Functions
-    const s3404UriRewriteFunction = new CloudfrontFunction(this, "S3404UriRewriteFunction", {
-      functionName: `${props.serviceName}-S3404UriRewriteFunction`,
-      sourceFileName: "genericS3FixedObjectUriRewrite.js",
-      keyValues: [
-        {
-          key: "object",
-          value: "404.html"
-        }
-      ]
-    })
-
-    const s3404ModifyStatusCodeFunction = new CloudfrontFunction(this, "S3404ModifyStatusCodeFunction", {
-      functionName: `${props.serviceName}-S3404ModifyStatusCodeFunction`,
-      sourceFileName: "s3404ModifyStatusCode.js"
-    })
-
-    const s3500UriRewriteFunction = new CloudfrontFunction(this, "S3500UriRewriteFunction", {
-      functionName: `${props.serviceName}-S3500UriRewriteFunction`,
-      sourceFileName: "genericS3FixedObjectUriRewrite.js",
-      keyValues: [
-        {
-          key: "object",
-          value: "500.html"
-        }
-      ]
-    })
-
-    const s3StaticContentUriRewriteFunction = new CloudfrontFunction(this, "S3StaticContentUriRewriteFunction", {
-      functionName: `${props.serviceName}-S3StaticContentUriRewriteFunction`,
-      sourceFileName: "s3StaticContentUriRewrite.js"
-    })
-
-    const apiGatewayStripPathFunction = new CloudfrontFunction(this, "ApiGatewayStripPathFunction", {
-      functionName: `${props.serviceName}-ApiGatewayStripPathFunction`,
-      sourceFileName: "genericStripPathUriRewrite.js",
-      keyValues: [
-        {
-          key: "path",
-          value: "/api"
-        }
-      ]
-    })
-
-    const s3JwksUriRewriteFunction = new CloudfrontFunction(this, "s3JwksUriRewriteFunction", {
-      functionName: `${props.serviceName}-s3JwksUriRewriteFunction`,
-      sourceFileName: "genericS3FixedObjectUriRewrite.js",
-      keyValues: [
-        {
-          key: "object",
-          value: "jwks.json"
-        }
-      ]
-    })
-
     // --- Distribution
     const cloudfrontDistribution = new CloudfrontDistribution(this, "CloudfrontDistribution", {
       serviceName: props.serviceName,
@@ -317,64 +201,16 @@ export class StatelessResourcesStack extends Stack {
         viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
         functionAssociations:[
           {
-            function: s3404UriRewriteFunction.function,
+            function: cloudfrontBehaviors.s3404UriRewriteFunction.function,
             eventType: FunctionEventType.VIEWER_REQUEST
           },
           {
-            function: s3404ModifyStatusCodeFunction.function,
+            function: cloudfrontBehaviors.s3404ModifyStatusCodeFunction.function,
             eventType: FunctionEventType.VIEWER_RESPONSE
           }
         ]
       },
-      additionalBehaviors: {
-        "/site/*": {
-          origin: staticContentBucketOrigin,
-          allowedMethods: AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
-          viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-          functionAssociations: [
-            {
-              function: s3StaticContentUriRewriteFunction.function,
-              eventType: FunctionEventType.VIEWER_REQUEST
-            }
-          ]
-        },
-        "/api/*": {
-          origin: apiGatewayOrigin,
-          allowedMethods: AllowedMethods.ALLOW_ALL,
-          viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-          originRequestPolicy: apiGatewayRequestPolicy,
-          cachePolicy: CachePolicy.CACHING_DISABLED,
-          functionAssociations: [
-            {
-              function: apiGatewayStripPathFunction.function,
-              eventType: FunctionEventType.VIEWER_REQUEST
-            }
-          ]
-        },
-        "/jwks/": {/* matches exactly <url>/jwks and will only serve the jwks json (via cf function) */
-          origin: staticContentBucketOrigin,
-          allowedMethods: AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
-          viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-          functionAssociations: [
-            {
-              function: s3JwksUriRewriteFunction.function,
-              eventType: FunctionEventType.VIEWER_REQUEST
-            }
-          ]
-        },
-
-        "/500.html": { // matches exactly <url>/500.html and will only serve the 500.html page (via cf function)
-          origin: staticContentBucketOrigin,
-          allowedMethods: AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
-          viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-          functionAssociations: [
-            {
-              function: s3500UriRewriteFunction.function,
-              eventType: FunctionEventType.VIEWER_REQUEST
-            }
-          ]
-        }
-      },
+      additionalBehaviors: cloudfrontBehaviors.additionalBehaviors,
       errorResponses: [
         {
           httpStatus: 404,
@@ -385,12 +221,6 @@ export class StatelessResourcesStack extends Stack {
       ]
     })
 
-    /* Resources to add:
-      - api gateway resources
-      - lambdas
-      - state machines
-    */
-
     // Outputs
 
     // Exports
@@ -399,7 +229,7 @@ export class StatelessResourcesStack extends Stack {
       exportName: `${props.stackName}:cloudfrontDistribution:Id`
     })
     new CfnOutput(this, "StaticRewriteKeyValueStoreArn", {
-      value: s3StaticContentUriRewriteFunction.functionStore?.keyValueStoreArn,
+      value: cloudfrontBehaviors.s3StaticContentUriRewriteFunction.functionStore?.keyValueStoreArn,
       exportName: `${props.stackName}:StaticRewriteKeyValueStor:Arn`
     })
 

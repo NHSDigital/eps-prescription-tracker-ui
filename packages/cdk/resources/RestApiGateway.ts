@@ -1,6 +1,7 @@
 import {RemovalPolicy} from "aws-cdk-lib"
 import {
   CfnStage,
+  CognitoUserPoolsAuthorizer,
   EndpointType,
   LogGroupLogDestination,
   MethodLoggingLevel,
@@ -13,6 +14,7 @@ import {FilterPattern, LogGroup, SubscriptionFilter} from "aws-cdk-lib/aws-logs"
 import {KinesisDestination} from "aws-cdk-lib/aws-logs-destinations"
 import {Construct} from "constructs"
 import {accessLogFormat} from "./RestApiGateway/accessLogFormat"
+import {IUserPool} from "aws-cdk-lib/aws-cognito"
 
 export interface RestApiGatewayProps {
   serviceName: string
@@ -21,6 +23,7 @@ export interface RestApiGatewayProps {
   cloudwatchKmsKey: IKey,
   splunkDeliveryStream: IStream,
   splunkSubscriptionFilterRole: IRole
+  userPool: IUserPool
 }
 
 /**
@@ -31,6 +34,7 @@ export interface RestApiGatewayProps {
 export class RestApiGateway extends Construct {
   public readonly restApiGateway: RestApi
   public readonly restAPiGatewayRole: Role
+  public readonly authorizer: CognitoUserPoolsAuthorizer
 
   public constructor(scope: Construct, id: string, props: RestApiGatewayProps){
     super(scope, id)
@@ -75,6 +79,12 @@ export class RestApiGateway extends Construct {
       managedPolicies: []
     })
 
+    const authorizer = new CognitoUserPoolsAuthorizer(this, "Authorizer", {
+      authorizerName: "cognitoAuth",
+      cognitoUserPools: [props.userPool],
+      identitySource: "method.request.header.authorization"
+    })
+
     const cfnStage = apiGateway.deploymentStage.node.defaultChild as CfnStage
     cfnStage.cfnOptions.metadata = {
       guard: {
@@ -87,5 +97,6 @@ export class RestApiGateway extends Construct {
     // Outputs
     this.restApiGateway = apiGateway
     this.restAPiGatewayRole = apiGatewayRole
+    this.authorizer = authorizer
   }
 }
