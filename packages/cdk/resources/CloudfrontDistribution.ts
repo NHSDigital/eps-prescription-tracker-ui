@@ -3,6 +3,7 @@ import {Certificate} from "aws-cdk-lib/aws-certificatemanager"
 import {
   BehaviorOptions,
   Distribution,
+  ErrorResponse,
   HttpVersion,
   SecurityPolicyProtocol,
   SSLMethod
@@ -16,6 +17,7 @@ export interface CloudfrontDistributionProps {
   stackName: string
   defaultBehavior: BehaviorOptions,
   additionalBehaviors: Record<string, BehaviorOptions>
+  errorResponses: Array<ErrorResponse>
 }
 
 /**
@@ -59,7 +61,8 @@ export class CloudfrontDistribution extends Construct {
       logFilePrefix: "cloudfront/",
       logIncludesCookies: true, // may actually want to be false, don't know if it includes names of cookies or contents
       defaultBehavior: props.defaultBehavior,
-      additionalBehaviors: props.additionalBehaviors
+      additionalBehaviors: props.additionalBehaviors,
+      errorResponses: props.errorResponses
     })
 
     new CnameRecord(this, "CloudfrontCnameRecord", {
