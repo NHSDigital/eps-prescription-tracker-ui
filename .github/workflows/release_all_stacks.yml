@@ -18,6 +18,26 @@ on:
       useMockOidc:
         type: boolean
         default: false
+      primaryOidcIssuer:
+        type: string
+      primaryOidcAuthorizeEndpoint:
+        type: string
+      primaryOidcTokenEndpoint:
+        type: string
+      primaryOidcUserInfoEndpoint:
+        type: string
+      primaryOidcjwksEndpoint:
+        type: string
+      mockOidcIssuer:
+        type: string
+      mockOidcAuthorizeEndpoint:
+        type: string
+      mockOidcTokenEndpoint:
+        type: string
+      mockOidcUserInfoEndpoint:
+        type: string
+      mockOidcjwksEndpoint:
+        type: string
     secrets:
       CLOUD_FORMATION_DEPLOY_ROLE:
         required: true
@@ -27,30 +47,11 @@ on:
         required: false
       primaryOidClientSecret:
         required: false
-      primaryOidcIssuer:
-        required: false
-      primaryOidcAuthorizeEndpoint:
-        required: false
-      primaryOidcTokenEndpoint:
-        required: false
-      primaryOidcUserInfoEndpoint:
-        required: false
-      primaryOidcjwksEndpoint:
-        required: false
       mockOidcClientId:
         required: false
       mockOidClientSecret:
         required: false
-      mockOidcIssuer:
-        required: false
-      mockOidcAuthorizeEndpoint:
-        required: false
-      mockOidcTokenEndpoint:
-        required: false
-      mockOidcUserInfoEndpoint:
-        required: false
-      mockOidcjwksEndpoint:
-        required: false
+
 jobs:
   check_first_deployment:
     runs-on: ubuntu-latest
@@ -93,23 +94,23 @@ jobs:
       CDK_APP_NAME: StatefulResourcesApp
       LOG_RETENTION_IN_DAYS: 30
       useMockOidc: ${{ inputs.useMockOidc }}
+      primaryOidcIssuer: ${{ inputs.primaryOidcIssuer }}
+      primaryOidcAuthorizeEndpoint: ${{ inputs.primaryOidcAuthorizeEndpoint }}
+      primaryOidcTokenEndpoint: ${{ inputs.primaryOidcTokenEndpoint }}
+      primaryOidcUserInfoEndpoint: ${{ inputs.primaryOidcUserInfoEndpoint }}
+      primaryOidcjwksEndpoint: ${{ inputs.primaryOidcjwksEndpoint }}
+      mockOidcIssuer: ${{ inputs.mockOidcIssuer }}
+      mockOidcAuthorizeEndpoint: ${{ inputs.mockOidcAuthorizeEndpoint }}
+      mockOidcTokenEndpoint: ${{ inputs.mockOidcTokenEndpoint }}
+      mockOidcUserInfoEndpoint: ${{ inputs.mockOidcUserInfoEndpoint }}
+      mockOidcjwksEndpoint: ${{ inputs.mockOidcjwksEndpoint }}
     secrets:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}
       primaryOidcClientId: ${{ secrets.primaryOidcClientId }}
       primaryOidClientSecret: ${{ secrets.primaryOidClientSecret }}
-      primaryOidcIssuer: ${{ secrets.primaryOidcIssuer }}
-      primaryOidcAuthorizeEndpoint: ${{ secrets.primaryOidcAuthorizeEndpoint }}
-      primaryOidcTokenEndpoint: ${{ secrets.primaryOidcTokenEndpoint }}
-      primaryOidcUserInfoEndpoint: ${{ secrets.primaryOidcUserInfoEndpoint }}
-      primaryOidcjwksEndpoint: ${{ secrets.primaryOidcjwksEndpoint }}
       mockOidcClientId: ${{ secrets.mockOidcClientId }}
       mockOidClientSecret: ${{ secrets.mockOidClientSecret }}
-      mockOidcIssuer: ${{ secrets.mockOidcIssuer }}
-      mockOidcAuthorizeEndpoint: ${{ secrets.mockOidcAuthorizeEndpoint }}
-      mockOidcTokenEndpoint: ${{ secrets.mockOidcTokenEndpoint }}
-      mockOidcUserInfoEndpoint: ${{ secrets.mockOidcUserInfoEndpoint }}
-      mockOidcjwksEndpoint: ${{ secrets.mockOidcjwksEndpoint }}
 
   deploy_website_content:
     uses: ./.github/workflows/deploy_website_content.yml
@@ -133,23 +134,23 @@ jobs:
       CDK_APP_NAME: StatelessResourcesApp
       LOG_RETENTION_IN_DAYS: 30
       useMockOidc: ${{ inputs.useMockOidc }}
+      primaryOidcIssuer: ${{ inputs.primaryOidcIssuer }}
+      primaryOidcAuthorizeEndpoint: ${{ inputs.primaryOidcAuthorizeEndpoint }}
+      primaryOidcTokenEndpoint: ${{ inputs.primaryOidcTokenEndpoint }}
+      primaryOidcUserInfoEndpoint: ${{ inputs.primaryOidcUserInfoEndpoint }}
+      primaryOidcjwksEndpoint: ${{ inputs.primaryOidcjwksEndpoint }}
+      mockOidcIssuer: ${{ inputs.mockOidcIssuer }}
+      mockOidcAuthorizeEndpoint: ${{ inputs.mockOidcAuthorizeEndpoint }}
+      mockOidcTokenEndpoint: ${{ inputs.mockOidcTokenEndpoint }}
+      mockOidcUserInfoEndpoint: ${{ inputs.mockOidcUserInfoEndpoint }}
+      mockOidcjwksEndpoint: ${{ inputs.mockOidcjwksEndpoint }}
     secrets:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}
       primaryOidcClientId: ${{ secrets.primaryOidcClientId }}
       primaryOidClientSecret: ${{ secrets.primaryOidClientSecret }}
-      primaryOidcIssuer: ${{ secrets.primaryOidcIssuer }}
-      primaryOidcAuthorizeEndpoint: ${{ secrets.primaryOidcAuthorizeEndpoint }}
-      primaryOidcTokenEndpoint: ${{ secrets.primaryOidcTokenEndpoint }}
-      primaryOidcUserInfoEndpoint: ${{ secrets.primaryOidcUserInfoEndpoint }}
-      primaryOidcjwksEndpoint: ${{ secrets.primaryOidcjwksEndpoint }}
       mockOidcClientId: ${{ secrets.mockOidcClientId }}
       mockOidClientSecret: ${{ secrets.mockOidClientSecret }}
-      mockOidcIssuer: ${{ secrets.mockOidcIssuer }}
-      mockOidcAuthorizeEndpoint: ${{ secrets.mockOidcAuthorizeEndpoint }}
-      mockOidcTokenEndpoint: ${{ secrets.mockOidcTokenEndpoint }}
-      mockOidcUserInfoEndpoint: ${{ secrets.mockOidcUserInfoEndpoint }}
-      mockOidcjwksEndpoint: ${{ secrets.mockOidcjwksEndpoint }}
 
   update_cloudfront_kvs:
     runs-on: ubuntu-latest
@@ -218,23 +219,23 @@ jobs:
       CDK_APP_NAME: StatefulResourcesApp
       LOG_RETENTION_IN_DAYS: 30
       useMockOidc: ${{ inputs.useMockOidc }}
+      primaryOidcIssuer: ${{ inputs.primaryOidcIssuer }}
+      primaryOidcAuthorizeEndpoint: ${{ inputs.primaryOidcAuthorizeEndpoint }}
+      primaryOidcTokenEndpoint: ${{ inputs.primaryOidcTokenEndpoint }}
+      primaryOidcUserInfoEndpoint: ${{ inputs.primaryOidcUserInfoEndpoint }}
+      primaryOidcjwksEndpoint: ${{ inputs.primaryOidcjwksEndpoint }}
+      mockOidcIssuer: ${{ inputs.mockOidcIssuer }}
+      mockOidcAuthorizeEndpoint: ${{ inputs.mockOidcAuthorizeEndpoint }}
+      mockOidcTokenEndpoint: ${{ inputs.mockOidcTokenEndpoint }}
+      mockOidcUserInfoEndpoint: ${{ inputs.mockOidcUserInfoEndpoint }}
+      mockOidcjwksEndpoint: ${{ inputs.mockOidcjwksEndpoint }}
     secrets:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}
       primaryOidcClientId: ${{ secrets.primaryOidcClientId }}
       primaryOidClientSecret: ${{ secrets.primaryOidClientSecret }}
-      primaryOidcIssuer: ${{ secrets.primaryOidcIssuer }}
-      primaryOidcAuthorizeEndpoint: ${{ secrets.primaryOidcAuthorizeEndpoint }}
-      primaryOidcTokenEndpoint: ${{ secrets.primaryOidcTokenEndpoint }}
-      primaryOidcUserInfoEndpoint: ${{ secrets.primaryOidcUserInfoEndpoint }}
-      primaryOidcjwksEndpoint: ${{ secrets.primaryOidcjwksEndpoint }}
       mockOidcClientId: ${{ secrets.mockOidcClientId }}
       mockOidClientSecret: ${{ secrets.mockOidClientSecret }}
-      mockOidcIssuer: ${{ secrets.mockOidcIssuer }}
-      mockOidcAuthorizeEndpoint: ${{ secrets.mockOidcAuthorizeEndpoint }}
-      mockOidcTokenEndpoint: ${{ secrets.mockOidcTokenEndpoint }}
-      mockOidcUserInfoEndpoint: ${{ secrets.mockOidcUserInfoEndpoint }}
-      mockOidcjwksEndpoint: ${{ secrets.mockOidcjwksEndpoint }}
 
   update_github_pages:
     runs-on: ubuntu-latest

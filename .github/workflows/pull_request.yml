@@ -68,20 +68,20 @@ jobs:
       VERSION_NUMBER: PR-${{ needs.get_issue_number.outputs.issue_number }}
       COMMIT_ID: ${{ needs.get_commit_id.outputs.commit_id }}
       useMockOidc: true
+      primaryOidcIssuer: "https://am.nhsint.auth-ptl.cis2.spineservices.nhs.uk:443/openam/oauth2/realms/root/realms/NHSIdentity/realms/Healthcare"
+      primaryOidcAuthorizeEndpoint: "https://am.nhsint.auth-ptl.cis2.spineservices.nhs.uk:443/openam/oauth2/realms/root/realms/NHSIdentity/realms/Healthcare/authorize"
+      primaryOidcTokenEndpoint: "https://am.nhsint.auth-ptl.cis2.spineservices.nhs.uk:443/openam/oauth2/realms/root/realms/NHSIdentity/realms/Healthcare/access_token"
+      primaryOidcUserInfoEndpoint: "https://am.nhsint.auth-ptl.cis2.spineservices.nhs.uk:443/openam/oauth2/realms/root/realms/NHSIdentity/realms/Healthcare/userinfo"
+      primaryOidcjwksEndpoint: "https://am.nhsint.auth-ptl.cis2.spineservices.nhs.uk:443/openam/oauth2/realms/root/realms/NHSIdentity/realms/Healthcare/connect/jwk_uri"
+      mockOidcIssuer: "https://identity.ptl.api.platform.nhs.uk/realms/Cis2-mock-internal-dev"
+      mockOidcAuthorizeEndpoint: "https://identity.ptl.api.platform.nhs.uk/realms/Cis2-mock-internal-dev/protocol/openid-connect/auth"
+      mockOidcTokenEndpoint: "https://identity.ptl.api.platform.nhs.uk/realms/Cis2-mock-internal-dev/protocol/openid-connect/token"
+      mockOidcUserInfoEndpoint: "https://identity.ptl.api.platform.nhs.uk/realms/Cis2-mock-internal-dev/protocol/openid-connect/userinfo"
+      mockOidcjwksEndpoint: "https://identity.ptl.api.platform.nhs.uk/realms/Cis2-mock-internal-dev/protocol/openid-connect/certs"
     secrets:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.DEV_CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_DEPLOY_ROLE }}
       primaryOidcClientId: ${{ secrets.PRIMARYOIDCCLIENTID }}
       primaryOidClientSecret: ${{ secrets.PRIMARYOIDCLIENTSECRET }}
-      primaryOidcIssuer: ${{ secrets.PRIMARYOIDCISSUER }}
-      primaryOidcAuthorizeEndpoint: ${{ secrets.PRIMARYOIDCAUTHORIZEENDPOINT }}
-      primaryOidcTokenEndpoint: ${{ secrets.PRIMARYOIDCTOKENENDPOINT }}
-      primaryOidcUserInfoEndpoint: ${{ secrets.PRIMARYOIDCUSERINFOENDPOINT }}
-      primaryOidcjwksEndpoint: ${{ secrets.PRIMARYOIDCJWKSENDPOINT }}
       mockOidcClientId: ${{ secrets.MOCKCLIENTID }}
       mockOidClientSecret: ${{ secrets.MOCKCLIENTSECRET }}
-      mockOidcIssuer: ${{ secrets.MOCKISSUER }}
-      mockOidcAuthorizeEndpoint: ${{ secrets.MOCKAUTHORIZEENDPOINT }}
-      mockOidcTokenEndpoint: ${{ secrets.MOCKTOKENENDPOINT }}
-      mockOidcUserInfoEndpoint: ${{ secrets.MOCKUSERINFOENDPOINT }}
-      mockOidcjwksEndpoint: ${{ secrets.MOCKJWKSENDPOINT }}

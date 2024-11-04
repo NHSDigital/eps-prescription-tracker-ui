@@ -103,23 +103,23 @@ jobs:
       VERSION_NUMBER: ${{needs.tag_release.outputs.version_tag}}
       COMMIT_ID: ${{needs.get_commit_id.outputs.commit_id}}
       useMockOidc: true
+      primaryOidcIssuer: "https://am.nhsint.auth-ptl.cis2.spineservices.nhs.uk:443/openam/oauth2/realms/root/realms/NHSIdentity/realms/Healthcare"
+      primaryOidcAuthorizeEndpoint: "https://am.nhsint.auth-ptl.cis2.spineservices.nhs.uk:443/openam/oauth2/realms/root/realms/NHSIdentity/realms/Healthcare/authorize"
+      primaryOidcTokenEndpoint: "https://am.nhsint.auth-ptl.cis2.spineservices.nhs.uk:443/openam/oauth2/realms/root/realms/NHSIdentity/realms/Healthcare/access_token"
+      primaryOidcUserInfoEndpoint: "https://am.nhsint.auth-ptl.cis2.spineservices.nhs.uk:443/openam/oauth2/realms/root/realms/NHSIdentity/realms/Healthcare/userinfo"
+      primaryOidcjwksEndpoint: "https://am.nhsint.auth-ptl.cis2.spineservices.nhs.uk:443/openam/oauth2/realms/root/realms/NHSIdentity/realms/Healthcare/connect/jwk_uri"
+      mockOidcIssuer: "https://identity.ptl.api.platform.nhs.uk/realms/Cis2-mock-internal-dev"
+      mockOidcAuthorizeEndpoint: "https://identity.ptl.api.platform.nhs.uk/realms/Cis2-mock-internal-dev/protocol/openid-connect/auth"
+      mockOidcTokenEndpoint: "https://identity.ptl.api.platform.nhs.uk/realms/Cis2-mock-internal-dev/protocol/openid-connect/token"
+      mockOidcUserInfoEndpoint: "https://identity.ptl.api.platform.nhs.uk/realms/Cis2-mock-internal-dev/protocol/openid-connect/userinfo"
+      mockOidcjwksEndpoint: "https://identity.ptl.api.platform.nhs.uk/realms/Cis2-mock-internal-dev/protocol/openid-connect/certs"
     secrets:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.DEV_CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_DEPLOY_ROLE }}
       primaryOidcClientId: ${{ secrets.primaryOidcClientId }}
       primaryOidClientSecret: ${{ secrets.primaryOidClientSecret }}
-      primaryOidcIssuer: ${{ secrets.primaryOidcIssuer }}
-      primaryOidcAuthorizeEndpoint: ${{ secrets.primaryOidcAuthorizeEndpoint }}
-      primaryOidcTokenEndpoint: ${{ secrets.primaryOidcTokenEndpoint }}
-      primaryOidcUserInfoEndpoint: ${{ secrets.primaryOidcUserInfoEndpoint }}
-      primaryOidcjwksEndpoint: ${{ secrets.primaryOidcjwksEndpoint }}
       mockOidcClientId: ${{ secrets.mockClientID }}
       mockOidClientSecret: ${{ secrets.mockClientSecret }}
-      mockOidcIssuer: ${{ secrets.mockIssuer }}
-      mockOidcAuthorizeEndpoint: ${{ secrets.mockAuthorizeEndpoint }}
-      mockOidcTokenEndpoint: ${{ secrets.mockTokenEndpoint }}
-      mockOidcUserInfoEndpoint: ${{ secrets.mockUserInfoEndpoint }}
-      mockOidcjwksEndpoint: ${{ secrets.mockJWKSEndpoint }}
   
   create_release_notes:
     needs: [tag_release, package_code, get_commit_id, release_dev]
@@ -146,20 +146,20 @@ jobs:
       VERSION_NUMBER: ${{needs.tag_release.outputs.version_tag}}
       COMMIT_ID: ${{needs.get_commit_id.outputs.commit_id}}
       useMockOidc: true
+      primaryOidcIssuer: "https://am.nhsint.auth-ptl.cis2.spineservices.nhs.uk:443/openam/oauth2/realms/root/realms/NHSIdentity/realms/Healthcare"
+      primaryOidcAuthorizeEndpoint: "https://am.nhsint.auth-ptl.cis2.spineservices.nhs.uk:443/openam/oauth2/realms/root/realms/NHSIdentity/realms/Healthcare/authorize"
+      primaryOidcTokenEndpoint: "https://am.nhsint.auth-ptl.cis2.spineservices.nhs.uk:443/openam/oauth2/realms/root/realms/NHSIdentity/realms/Healthcare/access_token"
+      primaryOidcUserInfoEndpoint: "https://am.nhsint.auth-ptl.cis2.spineservices.nhs.uk:443/openam/oauth2/realms/root/realms/NHSIdentity/realms/Healthcare/userinfo"
+      primaryOidcjwksEndpoint: "https://am.nhsint.auth-ptl.cis2.spineservices.nhs.uk:443/openam/oauth2/realms/root/realms/NHSIdentity/realms/Healthcare/connect/jwk_uri"
+      mockOidcIssuer: "https://identity.ptl.api.platform.nhs.uk/realms/Cis2-mock-internal-dev"
+      mockOidcAuthorizeEndpoint: "https://identity.ptl.api.platform.nhs.uk/realms/Cis2-mock-internal-dev/protocol/openid-connect/auth"
+      mockOidcTokenEndpoint: "https://identity.ptl.api.platform.nhs.uk/realms/Cis2-mock-internal-dev/protocol/openid-connect/token"
+      mockOidcUserInfoEndpoint: "https://identity.ptl.api.platform.nhs.uk/realms/Cis2-mock-internal-dev/protocol/openid-connect/userinfo"
+      mockOidcjwksEndpoint: "https://identity.ptl.api.platform.nhs.uk/realms/Cis2-mock-internal-dev/protocol/openid-connect/certs"
     secrets:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.QA_CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.QA_CLOUD_FORMATION_DEPLOY_ROLE }}
       primaryOidcClientId: ${{ secrets.primaryOidcClientId }}
       primaryOidClientSecret: ${{ secrets.primaryOidClientSecret }}
-      primaryOidcIssuer: ${{ secrets.primaryOidcIssuer }}
-      primaryOidcAuthorizeEndpoint: ${{ secrets.primaryOidcAuthorizeEndpoint }}
-      primaryOidcTokenEndpoint: ${{ secrets.primaryOidcTokenEndpoint }}
-      primaryOidcUserInfoEndpoint: ${{ secrets.primaryOidcUserInfoEndpoint }}
-      primaryOidcjwksEndpoint: ${{ secrets.primaryOidcjwksEndpoint }}
       mockOidcClientId: ${{ secrets.mockClientID }}
       mockOidClientSecret: ${{ secrets.mockClientSecret }}
-      mockOidcIssuer: ${{ secrets.mockIssuer }}
-      mockOidcAuthorizeEndpoint: ${{ secrets.mockAuthorizeEndpoint }}
-      mockOidcTokenEndpoint: ${{ secrets.mockTokenEndpoint }}
-      mockOidcUserInfoEndpoint: ${{ secrets.mockUserInfoEndpoint }}
-      mockOidcjwksEndpoint: ${{ secrets.mockJWKSEndpoint }}

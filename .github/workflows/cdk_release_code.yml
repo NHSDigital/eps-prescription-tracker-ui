@@ -24,6 +24,26 @@ on:
       useMockOidc:
         type: boolean
         default: false
+      primaryOidcIssuer:
+        type: string
+      primaryOidcAuthorizeEndpoint:
+        type: string
+      primaryOidcTokenEndpoint:
+        type: string
+      primaryOidcUserInfoEndpoint:
+        type: string
+      primaryOidcjwksEndpoint:
+        type: string
+      mockOidcIssuer:
+        type: string
+      mockOidcAuthorizeEndpoint:
+        type: string
+      mockOidcTokenEndpoint:
+        type: string
+      mockOidcUserInfoEndpoint:
+        type: string
+      mockOidcjwksEndpoint:
+        type: string
     secrets:
       CLOUD_FORMATION_DEPLOY_ROLE:
         required: true
@@ -33,30 +53,10 @@ on:
         required: false
       primaryOidClientSecret:
         required: false
-      primaryOidcIssuer:
-        required: false
-      primaryOidcAuthorizeEndpoint:
-        required: false
-      primaryOidcTokenEndpoint:
-        required: false
-      primaryOidcUserInfoEndpoint:
-        required: false
-      primaryOidcjwksEndpoint:
-        required: false
       mockOidcClientId:
         required: false
       mockOidClientSecret:
         required: false
-      mockOidcIssuer:
-        required: false
-      mockOidcAuthorizeEndpoint:
-        required: false
-      mockOidcTokenEndpoint:
-        required: false
-      mockOidcUserInfoEndpoint:
-        required: false
-      mockOidcjwksEndpoint:
-        required: false 
 jobs:
   release_code:
     runs-on: ubuntu-latest
@@ -143,18 +143,18 @@ jobs:
           --arg useMockOidc "${{ inputs.useMockOidc }}" \
           --arg primaryOidcClientId "${{ secrets.primaryOidcClientId }}" \
           --arg primaryOidClientSecret "${{ secrets.primaryOidClientSecret }}" \
-          --arg primaryOidcIssuer "${{ secrets.primaryOidcIssuer }}" \
-          --arg primaryOidcAuthorizeEndpoint "${{ secrets.primaryOidcAuthorizeEndpoint }}" \
-          --arg primaryOidcTokenEndpoint "${{ secrets.primaryOidcTokenEndpoint }}" \
-          --arg primaryOidcUserInfoEndpoint "${{ secrets.primaryOidcUserInfoEndpoint }}" \
-          --arg primaryOidcjwksEndpoint "${{ secrets.primaryOidcjwksEndpoint }}" \
+          --arg primaryOidcIssuer "${{ inputs.primaryOidcIssuer }}" \
+          --arg primaryOidcAuthorizeEndpoint "${{ inputs.primaryOidcAuthorizeEndpoint }}" \
+          --arg primaryOidcTokenEndpoint "${{ inputs.primaryOidcTokenEndpoint }}" \
+          --arg primaryOidcUserInfoEndpoint "${{ inputs.primaryOidcUserInfoEndpoint }}" \
+          --arg primaryOidcjwksEndpoint "${{ inputs.primaryOidcjwksEndpoint }}" \
           --arg mockOidcClientId "${{ secrets.mockOidcClientId }}" \
           --arg mockOidClientSecret "${{ secrets.mockOidClientSecret }}" \
-          --arg mockOidcIssuer "${{ secrets.mockOidcIssuer }}" \
-          --arg mockOidcAuthorizeEndpoint "${{ secrets.mockOidcAuthorizeEndpoint }}" \
-          --arg mockOidcTokenEndpoint "${{ secrets.mockOidcTokenEndpoint }}" \
-          --arg mockOidcUserInfoEndpoint "${{ secrets.mockOidcUserInfoEndpoint }}" \
-          --arg mockOidcjwksEndpoint "${{ secrets.mockOidcjwksEndpoint }}" \
+          --arg mockOidcIssuer "${{ inputs.mockOidcIssuer }}" \
+          --arg mockOidcAuthorizeEndpoint "${{ inputs.mockOidcAuthorizeEndpoint }}" \
+          --arg mockOidcTokenEndpoint "${{ inputs.mockOidcTokenEndpoint }}" \
+          --arg mockOidcUserInfoEndpoint "${{ inputs.mockOidcUserInfoEndpoint }}" \
+          --arg mockOidcjwksEndpoint "${{ inputs.mockOidcjwksEndpoint }}" \
           --arg shortCloudfrontDomain "${shortCloudfrontDomain}" \
           --arg fullCloudfrontDomain "${fullCloudfrontDomain}" \
           '.context += {
