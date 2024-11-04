@@ -36,16 +36,20 @@ export interface CloudfrontFunctionProps {
 
 export class CloudfrontFunction extends Construct {
   public readonly function: Function
+  public readonly functionStore: IKeyValueStore
 
   public constructor(scope: Construct, id: string, props: CloudfrontFunctionProps){
     super(scope, id)
 
     // Resources
-    let functionStore: IKeyValueStore | undefined = undefined
+    let functionStore: IKeyValueStore
     if (props.keyValues){
       functionStore = new KeyValueStore(this, "FunctionsStore", {
         source: ImportSource.fromInline(JSON.stringify({data: props.keyValues}))
       })
+    } else {
+      functionStore = new KeyValueStore(this, "FunctionsStore")
+
     }
 
     /* Automatically include replacement of export statements as not supported by CF Functions,
@@ -72,5 +76,6 @@ export class CloudfrontFunction extends Construct {
 
     // Outputs
     this.function = cloudfrontFunction
+    this.functionStore = functionStore
   }
 }

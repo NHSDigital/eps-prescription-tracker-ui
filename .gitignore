@@ -31,3 +31,5 @@ test/
 amplify_outputs.json
 .asdf
 cdk.out/
+.secrets
+packages/cpt-ui/out

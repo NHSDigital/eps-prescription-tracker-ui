@@ -1,5 +1,5 @@
 import {Fn, RemovalPolicy} from "aws-cdk-lib"
-import {Role} from "aws-cdk-lib/aws-iam"
+import {Effect, PolicyStatement, Role} from "aws-cdk-lib/aws-iam"
 import {CfnKey, Key} from "aws-cdk-lib/aws-kms"
 import {
   BlockPublicAccess,
@@ -65,7 +65,42 @@ export class StaticContentBucket extends Construct{
       autoDeleteObjects: allowAutoDeleteObjects // if true forces a deletion even if bucket is not empty
     })
 
-    bucket.grantReadWrite(deploymentRole)
+    // we need to add a policy to the bucket so that our deploy role can use the bucket
+    const bucketAllowDeployUploadPolicyStatement = new PolicyStatement({
+      effect: Effect.ALLOW,
+      principals: [deploymentRole],
+      actions: [
+        "s3:Abort*",
+        "s3:DeleteObject*",
+        "s3:GetBucket*",
+        "s3:GetObject*",
+        "s3:List*",
+        "s3:PutObject",
+        "s3:PutObjectLegalHold",
+        "s3:PutObjectRetention",
+        "s3:PutObjectTagging",
+        "s3:PutObjectVersionTagging"
+      ],
+      resources: [
+        bucket.bucketArn,
+        bucket.arnForObjects("*")
+      ]
+    })
+    bucket.addToResourcePolicy(bucketAllowDeployUploadPolicyStatement)
+
+    /*
+     we also need to do the same for kms key
+     but to avoid circular dependencies we need to use an escape hatch
+     this also does a conditional and if we have a cloudfrontDistributionId
+     then it adds the correct policy to allow access from cloudfront
+    */
+
+    const contentBucketKmsKey = (kmsKey.node.defaultChild as CfnKey)
+    contentBucketKmsKey.keyPolicy = new AllowCloudfrontKmsKeyAccessPolicy(
+      this, "StaticContentBucketAllowCloudfrontKmsKeyAccessPolicy", {
+        cloudfrontDistributionId: cloudfrontDistributionId,
+        deploymentRole: deploymentRole
+      }).policyJson
 
     /* As you cannot modify imported policies, cdk cannot not update the s3 bucket with the correct permissions
     for OAC when the distribution and bucket are in different stacks
@@ -77,15 +112,6 @@ export class StaticContentBucket extends Construct{
           cloudfrontDistributionId: cloudfrontDistributionId
         }).policyStatement)
 
-      /* When using an s3 origin with OAC and SSE, cdk will use a wildcard in the generated Key policy condition
-      to match all Distribution IDs in order to avoid a circular dependency between the KMS key,Bucket, and
-      Distribution during the initial deployment. This updates the policy to restrict it to a specific distribution.
-      !! This can only be added after the distribution has been deployed !! */
-      const contentBucketKmsKey = (kmsKey.node.defaultChild as CfnKey)
-      contentBucketKmsKey.keyPolicy = new AllowCloudfrontKmsKeyAccessPolicy(
-        this, "StaticContentBucketAllowCloudfrontKmsKeyAccessPolicy", {
-          cloudfrontDistributionId: cloudfrontDistributionId
-        }).policyJson
     }
 
     const cfnBucket = bucket.node.defaultChild as CfnBucket

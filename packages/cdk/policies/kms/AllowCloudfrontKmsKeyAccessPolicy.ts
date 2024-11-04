@@ -1,6 +1,7 @@
 import {
   AccountRootPrincipal,
   Effect,
+  IPrincipal,
   PolicyDocument,
   PolicyStatement,
   ServicePrincipal
@@ -14,6 +15,7 @@ import {Construct} from "constructs"
 
 export interface PolicyProps {
   cloudfrontDistributionId: string
+  deploymentRole: IPrincipal
 }
 
 export class AllowCloudfrontKmsKeyAccessPolicy extends Construct{
@@ -34,6 +36,21 @@ export class AllowCloudfrontKmsKeyAccessPolicy extends Construct{
         }),
         new PolicyStatement({
           effect: Effect.ALLOW,
+          principals: [props.deploymentRole],
+          actions: [
+            "kms:Encrypt",
+            "kms:GenerateDataKey*"
+          ],
+          resources:["*"]
+        })
+      ]
+    })
+
+    // if we have a cloudfrontDistributionId, then add correct policy
+    if(props.cloudfrontDistributionId) {
+      policy.addStatements(
+        new PolicyStatement({
+          effect: Effect.ALLOW,
           principals: [new ServicePrincipal("cloudfront.amazonaws.com")],
           actions: [
             "kms:Decrypt",
@@ -47,8 +64,10 @@ export class AllowCloudfrontKmsKeyAccessPolicy extends Construct{
             }
           }
         })
-      ]
-    })
+      )
+    }
+
+    // return the policy
     this.policyJson = policy.toJSON()
   }
 }
