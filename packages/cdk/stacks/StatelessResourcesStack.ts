@@ -15,11 +15,14 @@ import {
   ViewerProtocolPolicy
 } from "aws-cdk-lib/aws-cloudfront"
 import {RestApiOrigin, S3BucketOrigin} from "aws-cdk-lib/aws-cloudfront-origins"
+import {LambdaIntegration} from "aws-cdk-lib/aws-apigateway"
 import {Bucket} from "aws-cdk-lib/aws-s3"
 
 import {RestApiGateway} from "../resources/RestApiGateway"
 import {CloudfrontFunction} from "../resources/Cloudfront/CloudfrontFunction"
 import {CloudfrontDistribution} from "../resources/CloudfrontDistribution"
+import {LambdaFunction} from "../resources/LambdaFunction"
+import {getDefaultLambdaOptions} from "../resources/LambdaFunction/helpers"
 import {nagSuppressions} from "../nagSuppressions"
 
 export interface StatelessResourcesStackProps extends StackProps {
@@ -29,12 +32,12 @@ export interface StatelessResourcesStackProps extends StackProps {
 }
 
 /**
- * Clinical Prescription Tracker UI Stateful Resources
+ * Clinical Prescription Tracker UI Stateless Resources
 
  */
 
 export class StatelessResourcesStack extends Stack {
-  public constructor(scope: App, id: string, props: StatelessResourcesStackProps){
+  public constructor(scope: App, id: string, props: StatelessResourcesStackProps) {
     super(scope, id, props)
 
     // Context
@@ -51,7 +54,30 @@ export class StatelessResourcesStack extends Stack {
       stackName: props.stackName
     })
 
-    // --- Methods & Resources
+    // --- Lambda for fetchPrescriptionData
+    const lambdaOptions = getDefaultLambdaOptions({
+      functionName: `${props.serviceName}-fetchPrescriptionData`,
+      packageBasePath: "packages/cdk/resources/LambdaFunction",
+      entryPoint: "fetchPrescriptionData.ts"
+    })
+
+    const fetchPrescriptionDataLambda = new LambdaFunction(this, "FetchPrescriptionDataLambda", {
+      ...lambdaOptions,
+      serviceName: props.serviceName,
+      stackName: props.stackName,
+      lambdaEnvironmentVariables: {
+        APIGEE_BASE_URL: process.env.APIGEE_BASE_URL || "https://internal-dev.api.service.nhs.uk",
+        TABLE_NAME: process.env.TABLE_NAME || "DefaultTableName"
+      }
+    })
+
+    // --- API Gateway Route for /api/prescription-search/{id}
+    const api = apiGateway.restApiGateway
+    const prescriptionSearchResource = api.root
+      .addResource("api")
+      .addResource("prescription-search")
+      .addResource("{id}")
+    prescriptionSearchResource.addMethod("GET", new LambdaIntegration(fetchPrescriptionDataLambda.lambda))
 
     // - Cloudfront
     // --- Origins
@@ -137,7 +163,7 @@ export class StatelessResourcesStack extends Stack {
         origin: staticContentBucketOrigin,
         allowedMethods: AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
         viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-        functionAssociations:[
+        functionAssociations: [
           {
             function: s3404UriRewriteFunction.function,
             eventType: FunctionEventType.VIEWER_REQUEST
