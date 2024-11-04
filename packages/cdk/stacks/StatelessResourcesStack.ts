@@ -31,7 +31,8 @@ import {
   AuthorizationType,
   CognitoUserPoolsAuthorizer,
   LambdaIntegration,
-  MockIntegration
+  MockIntegration,
+  PassthroughBehavior
 } from "aws-cdk-lib/aws-apigateway"
 import {UserPool} from "aws-cdk-lib/aws-cognito"
 import {Key} from "aws-cdk-lib/aws-kms"
@@ -165,20 +166,48 @@ export class StatelessResourcesStack extends Stack {
     }
 
     /* Dummy Method/Resource to test cognito auth */
-    const mockTeapotResource = apiGateway.restApiGateway.root.addResource("418")
-    mockTeapotResource.addMethod("GET", new MockIntegration({
-      integrationResponses: [
-        {statusCode: "418"}
-      ]
-    }))
 
-    const mockAuthResource = apiGateway.restApiGateway.root.addResource("auth_test")
-
-    mockAuthResource.addMethod("GET", new MockIntegration({
+    const mockNoAuth = new MockIntegration({
+      passthroughBehavior: PassthroughBehavior.WHEN_NO_TEMPLATES,
+      requestTemplates: {
+        "application/json": JSON.stringify({
+          statusCode: 200
+        })
+      },
       integrationResponses: [
-        {statusCode: "200"}
+        {
+          statusCode: "200",
+          responseTemplates: {
+            "application/json": JSON.stringify({
+              message: "This does not require auth"
+            })
+          }
+        }
       ]
-    }), {
+    })
+    const mockTeapotResource = apiGateway.restApiGateway.root.addResource("mocknoauth")
+    mockTeapotResource.addMethod("GET", mockNoAuth)
+
+    const mockWithAuth = new MockIntegration({
+      passthroughBehavior: PassthroughBehavior.WHEN_NO_TEMPLATES,
+      requestTemplates: {
+        "application/json": JSON.stringify({
+          statusCode: 200
+        })
+      },
+      integrationResponses: [
+        {
+          statusCode: "200",
+          responseTemplates: {
+            "application/json": JSON.stringify({
+              message: "This does require auth"
+            })
+          }
+        }
+      ]
+    })
+    const mockAuthResource = apiGateway.restApiGateway.root.addResource("mockwithauth")
+    mockAuthResource.addMethod("GET", mockWithAuth, {
       authorizationType: AuthorizationType.COGNITO,
       authorizer: authorizer
     })

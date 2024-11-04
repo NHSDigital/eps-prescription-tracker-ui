@@ -1,4 +1,4 @@
-/* eslint-disable no-undef */
+
 const mockContext = {
   callbackWaitsForEmptyEventLoop: true,
   functionVersion: "$LATEST",
@@ -12,7 +12,7 @@ const mockContext = {
   getRemainingTimeInMillis: () => 1234,
   done: () => console.log("Done!"),
   fail: () => console.log("Failed!"),
-  succeed: () => console.log("Succeeded!"),
-};
+  succeed: () => console.log("Succeeded!")
+}
 
-export { mockContext };
+export {mockContext}

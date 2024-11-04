@@ -47,6 +47,7 @@ describe("test handler", () => {
   })
 
   it("works", async () => {
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     const dynamoSpy = jest.spyOn(DynamoDBDocumentClient.prototype, "send").mockResolvedValue({} as never)
 
     const token = jwks.token({

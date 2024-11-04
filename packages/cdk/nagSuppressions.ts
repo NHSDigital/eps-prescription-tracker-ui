@@ -110,7 +110,7 @@ export const nagSuppressions = (stack: Stack) => {
 
     safeAddNagSuppression(
       stack,
-      "/StatelessStack/ApiGateway/ApiGateway/Default/418/GET/Resource",
+      "/StatelessStack/ApiGateway/ApiGateway/Default/mocknoauth/GET/Resource",
       [
         {
           id: "AwsSolutions-APIG4",
