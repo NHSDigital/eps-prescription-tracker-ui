@@ -162,7 +162,10 @@ export class Cognito extends Construct {
           OAuthScope.PROFILE,
           OAuthScope.COGNITO_ADMIN
         ],
-        callbackUrls: ["http://localhost:3000/auth/", `https://${props.fullCloudfrontDomain}/site/`],
+        callbackUrls: [
+          "http://localhost:3000/auth/",
+          `https://${props.fullCloudfrontDomain}/site/`,
+          `https://${props.fullCloudfrontDomain}/auth_demo/`],
         logoutUrls: ["http://localhost:3000/"]
       }})
 
