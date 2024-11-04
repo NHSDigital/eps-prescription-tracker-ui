@@ -186,7 +186,11 @@ export class StatelessResourcesStack extends Stack {
       ]
     })
     const mockTeapotResource = apiGateway.restApiGateway.root.addResource("mocknoauth")
-    mockTeapotResource.addMethod("GET", mockNoAuth)
+    mockTeapotResource.addMethod("GET", mockNoAuth, {
+      methodResponses: [
+        {statusCode: "200"}
+      ]
+    })
 
     const mockWithAuth = new MockIntegration({
       passthroughBehavior: PassthroughBehavior.WHEN_NO_TEMPLATES,
@@ -208,6 +212,9 @@ export class StatelessResourcesStack extends Stack {
     })
     const mockAuthResource = apiGateway.restApiGateway.root.addResource("mockwithauth")
     mockAuthResource.addMethod("GET", mockWithAuth, {
+      methodResponses: [
+        {statusCode: "200"}
+      ],
       authorizationType: AuthorizationType.COGNITO,
       authorizer: authorizer
     })
