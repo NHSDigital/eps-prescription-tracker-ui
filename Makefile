@@ -55,6 +55,7 @@ clean:
 	rm -rf packages/common/middyErrorHandler/lib
 	rm -rf cdk.out
 	rm -rf packages/cpt-ui/.next
+	rm -rf packages/auth_demo/build
 
 deep-clean: clean
 	rm -rf .venv
@@ -91,6 +92,9 @@ react-start:
 
 react-lint:
 	npm run lint --workspace packages/cpt-ui
+
+auth_demo_build:
+	export PUBLIC_URL="/site/auth_demo" && npm run build --workspace packages/auth_demo/
 
 cdk-deploy: guard-service_name guard-CDK_APP_NAME
 	REQUIRE_APPROVAL="$${REQUIRE_APPROVAL:-any-change}" && \
