@@ -54,21 +54,25 @@ export class StatelessResourcesStack extends Stack {
       stackName: props.stackName
     })
 
-    // --- Lambda for fetchPrescriptionData
+    // Define default Lambda options
     const lambdaOptions = getDefaultLambdaOptions({
       functionName: `${props.serviceName}-fetchPrescriptionData`,
       packageBasePath: "packages/cdk/resources/LambdaFunction",
       entryPoint: "fetchPrescriptionData.ts"
     })
 
+    // Lambda for fetchPrescriptionData
     const fetchPrescriptionDataLambda = new LambdaFunction(this, "FetchPrescriptionDataLambda", {
-      ...lambdaOptions,
+      lambdaName: "fetchPrescriptionData",
+      packageBasePath: "packages/cdk/resources/LambdaFunction",
+      entryPoint: "fetchPrescriptionData.ts",
       serviceName: props.serviceName,
       stackName: props.stackName,
       lambdaEnvironmentVariables: {
         APIGEE_BASE_URL: process.env.APIGEE_BASE_URL || "https://internal-dev.api.service.nhs.uk",
         TABLE_NAME: process.env.TABLE_NAME || "DefaultTableName"
-      }
+      },
+      ...lambdaOptions
     })
 
     // --- API Gateway Route for /api/prescription-search/{id}

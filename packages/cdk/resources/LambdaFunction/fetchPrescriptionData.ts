@@ -1,4 +1,4 @@
-import {APIGatewayProxyHandler} from "aws-lambda"
+import {APIGatewayProxyHandler, APIGatewayProxyEvent} from "aws-lambda"
 import axios from "axios"
 import {DynamoDB} from "aws-sdk"
 
@@ -58,7 +58,7 @@ async function generateNewToken(): Promise<string> {
  * @param event The API Gateway request event.
  * @returns {Promise<any>} The response from Apigee.
  */
-export const handler: APIGatewayProxyHandler = async (event) => {
+export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent) => {
   const prescriptionId = event.pathParameters?.id
 
   if (!prescriptionId) {
