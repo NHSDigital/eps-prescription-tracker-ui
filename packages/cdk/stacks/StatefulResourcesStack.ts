@@ -13,6 +13,7 @@ import {Cognito} from "../resources/Cognito"
 import {Dynamodb} from "../resources/Dynamodb"
 import {Bucket} from "aws-cdk-lib/aws-s3"
 import {Role} from "aws-cdk-lib/aws-iam"
+import {HostedZone} from "aws-cdk-lib/aws-route53"
 
 export interface StatefulResourcesStackProps extends StackProps {
   readonly serviceName: string
@@ -61,11 +62,18 @@ export class StatefulResourcesStack extends Stack {
     const cloudfrontDistributionId: string = this.node.tryGetContext("cloudfrontDistributionId")
 
     // Imports
-    const auditLoggingBucket = Bucket.fromBucketArn(
-      this, "AuditLoggingBucket", Fn.importValue("account-resources:AuditLoggingBucket"))
+    const auditLoggingBucketImport = Fn.importValue("account-resources:AuditLoggingBucket")
+    const deploymentRoleImport = Fn.importValue("ci-resources:CloudFormationDeployRole")
 
+    // Coerce imports to relevant types
+    const auditLoggingBucket = Bucket.fromBucketArn(
+      this, "AuditLoggingBucket", auditLoggingBucketImport)
     const deploymentRole = Role.fromRoleArn(
-      this, "deploymentRole", Fn.importValue("ci-resources:CloudFormationDeployRole"))
+      this, "deploymentRole", deploymentRoleImport)
+    const hostedZone = HostedZone.fromHostedZoneAttributes(this, "hostedZone", {
+      hostedZoneId: epsHostedZoneId,
+      zoneName: epsDomainName
+    })
 
     // Resources
     // - Static Content Bucket
@@ -76,15 +84,6 @@ export class StatefulResourcesStack extends Stack {
       auditLoggingBucket: auditLoggingBucket,
       deploymentRole: deploymentRole
     })
-
-    /* Resources to add:
-      - update policies (me)
-      - cognito
-      - user state dynamo table
-      - JWT secret
-      - token lambda
-      - API GW for token lambda ??
-    */
 
     const cognito = new Cognito(this, "Cognito", {
       primaryOidcClientId: primaryOidcClientId!,
@@ -106,8 +105,7 @@ export class StatefulResourcesStack extends Stack {
       fullCognitoDomain: props.fullCognitoDomain,
       fullCloudfrontDomain: props.fullCloudfrontDomain,
       cognitoCertificate: props.cognitoCertificate,
-      epsDomainName: epsDomainName,
-      epsHostedZoneId: epsHostedZoneId
+      hostedZone: hostedZone
     })
 
     const dynamodb = new Dynamodb(this, "DynamoDB", {

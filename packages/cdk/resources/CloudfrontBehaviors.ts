@@ -21,8 +21,7 @@ export interface CloudfrontBehaviorsProps {
 }
 
 /**
- * Resources for a static content S3 bucket
-
+ * Resources for a Cloudfront Behaviors and functions
  */
 
 export class CloudfrontBehaviors extends Construct{
@@ -33,11 +32,6 @@ export class CloudfrontBehaviors extends Construct{
 
   public constructor(scope: Construct, id: string, props: CloudfrontBehaviorsProps){
     super(scope, id)
-
-    // Context
-    /* context values passed as --context cli arguments are passed as strings so coerce them to expected types*/
-
-    // Imports
 
     // Resources
 

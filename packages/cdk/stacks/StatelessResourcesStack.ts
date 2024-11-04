@@ -30,6 +30,8 @@ import {Key} from "aws-cdk-lib/aws-kms"
 import {Stream} from "aws-cdk-lib/aws-kinesis"
 import {RestApiGatewayMethods} from "../resources/RestApiGatewayMethods"
 import {CloudfrontBehaviors} from "../resources/CloudfrontBehaviors"
+import {HostedZone} from "aws-cdk-lib/aws-route53"
+import {Certificate} from "aws-cdk-lib/aws-certificatemanager"
 
 export interface StatelessResourcesStackProps extends StackProps {
   readonly serviceName: string
@@ -69,35 +71,45 @@ export class StatelessResourcesStack extends Stack {
     const useMockOidc = this.node.tryGetContext("useMockOidc")
 
     // Imports
-    const staticContentBucket = Bucket.fromBucketArn(
-      this, "StaticContentBucket", Fn.importValue(`${props.serviceName}-stateful-resources:StaticContentBucket:Arn`))
-    const tokenMappingTable = TableV2.fromTableArn(
-      this, "tokenMappingTable", Fn.importValue(`${props.serviceName}-stateful-resources:tokenMappingTable:Arn`))
+    const baseImportPath = `${props.serviceName}-stateful-resources`
+
+    const staticContentBucketImport = Fn.importValue(`${baseImportPath}:StaticContentBucket:Arn`)
+    const tokenMappingTableImport = Fn.importValue(`${baseImportPath}:tokenMappingTable:Arn`)
+    const tokenMappingTableReadPolicyImport = Fn.importValue(`${baseImportPath}:tokenMappingTableReadPolicy:Arn`)
+    const tokenMappingTableWritePolicyImport = Fn.importValue(`${baseImportPath}:tokenMappingTableWritePolicy:Arn`)
+    const useTokensMappingKmsKeyPolicyImport = Fn.importValue(`${baseImportPath}:useTokensMappingKmsKeyPolicy:Arn`)
+    const primaryPoolIdentityProviderName = Fn.importValue(`${baseImportPath}:primaryPoolIdentityProvider:Name`)
+    const mockPoolIdentityProviderName = Fn.importValue(`${baseImportPath}:mockPoolIdentityProvider:Name`)
+    const userPoolImport = Fn.importValue(`${baseImportPath}:userPool:Arn`)
+    const cloudfrontLoggingBucketImport = Fn.importValue("account-resources:CloudfrontLoggingBucket")
+    const cloudwatchKmsKeyImport = Fn.importValue("account-resources:CloudwatchLogsKmsKeyArn")
+    const splunkDeliveryStreamImport = Fn.importValue("lambda-resources:SplunkDeliveryStream")
+    const splunkSubscriptionFilterRoleImport = Fn.importValue("lambda-resources:SplunkSubscriptionFilterRole")
+
+    // Coerce imports to relevant types
+    const staticContentBucket = Bucket.fromBucketArn( this, "StaticContentBucket", staticContentBucketImport)
+    const tokenMappingTable = TableV2.fromTableArn( this, "tokenMappingTable", tokenMappingTableImport)
     const tokenMappingTableReadPolicy = ManagedPolicy.fromManagedPolicyArn(
-      // eslint-disable-next-line max-len
-      this, "tokenMappingTableReadPolicy", Fn.importValue(`${props.serviceName}-stateful-resources:tokenMappingTableReadPolicy:Arn`))
+      this, "tokenMappingTableReadPolicy", tokenMappingTableReadPolicyImport)
     const tokenMappingTableWritePolicy = ManagedPolicy.fromManagedPolicyArn(
-      // eslint-disable-next-line max-len
-      this, "tokenMappingTableWritePolicy", Fn.importValue(`${props.serviceName}-stateful-resources:tokenMappingTableWritePolicy:Arn`))
+      this, "tokenMappingTableWritePolicy", tokenMappingTableWritePolicyImport)
     const useTokensMappingKmsKeyPolicy = ManagedPolicy.fromManagedPolicyArn(
-      // eslint-disable-next-line max-len
-      this, "useTokensMappingKmsKeyPolicy", Fn.importValue(`${props.serviceName}-stateful-resources:useTokensMappingKmsKeyPolicy:Arn`))
-    // eslint-disable-next-line max-len
-    const primaryPoolIdentityProviderName = Fn.importValue(`${props.serviceName}-stateful-resources:primaryPoolIdentityProvider:Name`)
-    // eslint-disable-next-line max-len
-    const mockPoolIdentityProviderName = Fn.importValue(`${props.serviceName}-stateful-resources:mockPoolIdentityProvider:Name`)
+      this, "useTokensMappingKmsKeyPolicy", useTokensMappingKmsKeyPolicyImport)
     const userPool = UserPool.fromUserPoolArn(
-      this, "userPool", Fn.importValue(`${props.serviceName}-stateful-resources:userPool:Arn`))
+      this, "userPool", userPoolImport)
     const cloudfrontLoggingBucket = Bucket.fromBucketArn(
-      this, "CloudfrontLoggingBucket", Fn.importValue("account-resources:CloudfrontLoggingBucket"))
+      this, "CloudfrontLoggingBucket", cloudfrontLoggingBucketImport)
     const cloudwatchKmsKey = Key.fromKeyArn(
-      this, "cloudwatchKmsKey", Fn.importValue("account-resources:CloudwatchLogsKmsKeyArn"))
-
+      this, "cloudwatchKmsKey", cloudwatchKmsKeyImport)
     const splunkDeliveryStream = Stream.fromStreamArn(
-      this, "SplunkDeliveryStream", Fn.importValue("lambda-resources:SplunkDeliveryStream"))
-
+      this, "SplunkDeliveryStream", splunkDeliveryStreamImport)
     const splunkSubscriptionFilterRole = Role.fromRoleArn(
-      this, "splunkSubscriptionFilterRole", Fn.importValue("lambda-resources:SplunkSubscriptionFilterRole"))
+      this, "splunkSubscriptionFilterRole", splunkSubscriptionFilterRoleImport )
+    const hostedZone = HostedZone.fromHostedZoneAttributes(this, "hostedZone", {
+      hostedZoneId: epsHostedZoneId,
+      zoneName: epsDomainName
+    })
+    const cloudfrontCert = Certificate.fromCertificateArn(this, "CloudfrontCert", cloudfrontCertArn)
 
     // Resources
     // -- functions for cognito
@@ -120,7 +132,8 @@ export class StatelessResourcesStack extends Stack {
       tokenMappingTableReadPolicy: tokenMappingTableReadPolicy,
       useTokensMappingKmsKeyPolicy: useTokensMappingKmsKeyPolicy,
       primaryPoolIdentityProviderName: primaryPoolIdentityProviderName,
-      mockPoolIdentityProviderName: mockPoolIdentityProviderName
+      mockPoolIdentityProviderName: mockPoolIdentityProviderName,
+      logRetentionInDays: logRetentionInDays
     })
     // - API Gateway
 
@@ -189,9 +202,8 @@ export class StatelessResourcesStack extends Stack {
     const cloudfrontDistribution = new CloudfrontDistribution(this, "CloudfrontDistribution", {
       serviceName: props.serviceName,
       stackName: props.stackName,
-      epsDomainName: epsDomainName,
-      epsHostedZoneId: epsHostedZoneId,
-      cloudfrontCertArn: cloudfrontCertArn,
+      hostedZone: hostedZone,
+      cloudfrontCert: cloudfrontCert,
       shortCloudfrontDomain: shortCloudfrontDomain,
       fullCloudfrontDomain: fullCloudfrontDomain,
       cloudfrontLoggingBucket: cloudfrontLoggingBucket,

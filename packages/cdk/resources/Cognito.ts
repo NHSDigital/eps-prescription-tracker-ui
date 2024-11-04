@@ -12,9 +12,9 @@ import {
   UserPoolDomain,
   UserPoolIdentityProviderOidc
 } from "aws-cdk-lib/aws-cognito"
-import {Certificate} from "aws-cdk-lib/aws-certificatemanager"
+import {ICertificate} from "aws-cdk-lib/aws-certificatemanager"
 import {RemovalPolicy} from "aws-cdk-lib"
-import {ARecord, HostedZone, RecordTarget} from "aws-cdk-lib/aws-route53"
+import {ARecord, IHostedZone, RecordTarget} from "aws-cdk-lib/aws-route53"
 import {UserPoolDomainTarget} from "aws-cdk-lib/aws-route53-targets"
 
 export interface CognitoProps {
@@ -36,9 +36,8 @@ export interface CognitoProps {
   readonly shortCognitoDomain: string
   readonly fullCloudfrontDomain: string
   readonly fullCognitoDomain: string
-  readonly cognitoCertificate: Certificate
-  readonly epsDomainName: string
-  readonly epsHostedZoneId: string
+  readonly cognitoCertificate: ICertificate
+  readonly hostedZone: IHostedZone
 }
 
 /**
@@ -54,13 +53,7 @@ export class Cognito extends Construct {
   public constructor(scope: Construct, id: string, props: CognitoProps) {
     super(scope, id)
 
-    // Imports
-    const hostedZone = HostedZone.fromHostedZoneAttributes(this, "hostedZone", {
-      hostedZoneId: props.epsHostedZoneId,
-      zoneName: props.epsDomainName
-    })
-
-    // cognito stuff
+    // Resources
     const userPool = new UserPool(this, "UserPool", {
       removalPolicy: RemovalPolicy.DESTROY
     })
@@ -74,7 +67,7 @@ export class Cognito extends Construct {
     })
 
     new ARecord(this, "UserPoolCloudFrontAliasRecord", {
-      zone: hostedZone,
+      zone: props.hostedZone,
       recordName: props.shortCognitoDomain,
       target: RecordTarget.fromAlias(new UserPoolDomainTarget(userPoolDomain))
     })
@@ -102,7 +95,7 @@ export class Cognito extends Construct {
       UserPoolClientIdentityProvider.custom(primaryPoolIdentityProvider.providerName)
     ]
 
-    // define some variables that we need for mocking
+    // define some variables that we need for mock authorization
     let mockPoolIdentityProvider!: UserPoolIdentityProviderOidc
 
     // set up things for mock login

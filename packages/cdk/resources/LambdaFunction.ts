@@ -47,6 +47,7 @@ export class LambdaFunction extends Construct {
     super(scope, id)
 
     // Imports
+    // These are imported here rather than at stack level as they are all imports from account-resources stacks
     const cloudWatchLogsKmsKey = Key.fromKeyArn(
       this, "cloudWatchLogsKmsKey", Fn.importValue("account-resources:CloudwatchLogsKmsKeyArn"))
 

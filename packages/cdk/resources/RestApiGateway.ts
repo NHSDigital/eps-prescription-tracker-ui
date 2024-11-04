@@ -39,11 +39,6 @@ export class RestApiGateway extends Construct {
   public constructor(scope: Construct, id: string, props: RestApiGatewayProps){
     super(scope, id)
 
-    // Context
-    /* context values passed as --context cli arguments are passed as strings so coerce them to expected types*/
-
-    // Imports
-
     // Resources
     const apiGatewayAccessLogGroup = new LogGroup(this, "ApiGatewayAccessLogGroup", {
       logGroupName: `/aws/apigateway/${props.serviceName}-apigw`,

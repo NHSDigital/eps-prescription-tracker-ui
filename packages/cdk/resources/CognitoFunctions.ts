@@ -36,10 +36,12 @@ export interface CognitoFunctionsProps {
   readonly useTokensMappingKmsKeyPolicy: IManagedPolicy
   readonly primaryPoolIdentityProviderName: string
   readonly mockPoolIdentityProviderName: string
+  readonly logRetentionInDays: number,
+
 }
 
 /**
- * AWS Cognito User Pool
+ * Functions that are needed for cognitor
  */
 export class CognitoFunctions extends Construct {
   public cognitoPolicies: Array<IManagedPolicy>
@@ -49,8 +51,9 @@ export class CognitoFunctions extends Construct {
   public constructor(scope: Construct, id: string, props: CognitoFunctionsProps) {
     super(scope, id)
 
-    // set some constants for later use
+    // Resources
 
+    // kms key used to encrypt the secret that stores the JWT private key
     const jwtKmsKey = new Key(this, "JwtKMSKey", {
       removalPolicy: RemovalPolicy.DESTROY,
       pendingWindow: Duration.days(7),
@@ -88,10 +91,10 @@ export class CognitoFunctions extends Construct {
       ]
     })
 
-    // define some variables that we need for mocking
+    // define some variables that we need if we are doing mock authorization
     let mockTokenLambda: LambdaFunction
 
-    // set up things for mock login
+    // set up things for mock authorization
     if (props.useMockOidc) {
       if (props.mockOidcjwksEndpoint === undefined ||
         props.mockOidcUserInfoEndpoint === undefined ||
@@ -102,13 +105,13 @@ export class CognitoFunctions extends Construct {
         throw new Error("Attempt to use mock oidc but variables are not defined")
       }
 
-      // lambda for mock token endpoint
+      // secret used by mock token lambda that holds the JWT private key
       const mockJwtPrivateKey = new Secret(this, "MockJwtPrivateKey", {
         secretName: `${props.stackName!}-mockJwtPrivateKey`,
         secretStringValue: SecretValue.unsafePlainText("ChangeMe"),
         encryptionKey: jwtKmsKey
       })
-      const useMockJwtPrivateKey = new ManagedPolicy(this, "UseMockJwtPrivateKey", {
+      const getMockJWTPrivateKeySecret = new ManagedPolicy(this, "getMockJWTPrivateKeySecret", {
         statements: [
           new PolicyStatement({
             actions: [
@@ -120,6 +123,8 @@ export class CognitoFunctions extends Construct {
           })
         ]
       })
+
+      // lambda for mock token endpoint
       mockTokenLambda = new LambdaFunction(this, "MockTokenResources", {
         serviceName: props.serviceName,
         stackName: props.stackName!,
@@ -129,9 +134,9 @@ export class CognitoFunctions extends Construct {
           props.tokenMappingTableReadPolicy,
           props.useTokensMappingKmsKeyPolicy,
           useJwtKmsKeyPolicy,
-          useMockJwtPrivateKey
+          getMockJWTPrivateKeySecret
         ],
-        logRetentionInDays: 30,
+        logRetentionInDays: props.logRetentionInDays,
         packageBasePath: "packages/cognito",
         entryPoint: "src/token.ts",
         lambdaEnvironmentVariables: {
@@ -148,14 +153,13 @@ export class CognitoFunctions extends Construct {
       })
     }
 
-    // lambda for token endpoint
-
+    // secret used by token lambda that holds the JWT private key
     const primaryJwtPrivateKey = new Secret(this, "PrimaryJwtPrivateKey", {
       secretName: `${props.stackName!}-primaryJwtPrivateKey`,
       secretStringValue: SecretValue.unsafePlainText("ChangeMe"),
       encryptionKey: jwtKmsKey
     })
-    const usePrimaryJwtPrivateKey = new ManagedPolicy(this, "UsePrimaryJwtPrivateKey", {
+    const getJWTPrivateKeySecret = new ManagedPolicy(this, "getJWTPrivateKeySecret", {
       statements: [
         new PolicyStatement({
           actions: [
@@ -176,9 +180,9 @@ export class CognitoFunctions extends Construct {
         props.tokenMappingTableReadPolicy,
         props.useTokensMappingKmsKeyPolicy,
         useJwtKmsKeyPolicy,
-        usePrimaryJwtPrivateKey
+        getJWTPrivateKeySecret
       ],
-      logRetentionInDays: 30,
+      logRetentionInDays: props.logRetentionInDays,
       packageBasePath: "packages/cognito",
       entryPoint: "src/token.ts",
       lambdaEnvironmentVariables: {

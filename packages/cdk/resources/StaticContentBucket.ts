@@ -36,11 +36,6 @@ export class StaticContentBucket extends Construct{
   public constructor(scope: Construct, id: string, props: StaticContentBucketProps){
     super(scope, id)
 
-    // Context
-    /* context values passed as --context cli arguments are passed as strings so coerce them to expected types*/
-
-    // Imports
-
     // Resources
     const kmsKey = new Key(this, "KmsKey", {
       enableKeyRotation: true,

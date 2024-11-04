@@ -34,6 +34,8 @@ export class Dynamodb extends Construct {
     super(scope, id)
 
     // Resources
+
+    // kms key for the table
     const tokensMappingKmsKey = new Key(this, "TokensMappingKMSKey", {
       removalPolicy: RemovalPolicy.DESTROY,
       pendingWindow: Duration.days(7),
@@ -75,6 +77,7 @@ export class Dynamodb extends Construct {
       })
     })
 
+    // the table
     const tokenMappingTable = new TableV2(this, "TokenMappingTable", {
       partitionKey: {
         name: "username",
@@ -89,6 +92,7 @@ export class Dynamodb extends Construct {
 
     })
 
+    // policy to use kms key
     const useTokensMappingKmsKeyPolicy = new ManagedPolicy(this, "UseTokensMappingKMSKeyPolicy", {
       statements: [
         new PolicyStatement({

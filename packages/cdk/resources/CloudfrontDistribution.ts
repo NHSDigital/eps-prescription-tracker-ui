@@ -1,4 +1,4 @@
-import {Certificate} from "aws-cdk-lib/aws-certificatemanager"
+import {ICertificate} from "aws-cdk-lib/aws-certificatemanager"
 import {
   BehaviorOptions,
   Distribution,
@@ -7,7 +7,7 @@ import {
   SecurityPolicyProtocol,
   SSLMethod
 } from "aws-cdk-lib/aws-cloudfront"
-import {CnameRecord, HostedZone} from "aws-cdk-lib/aws-route53"
+import {CnameRecord, IHostedZone} from "aws-cdk-lib/aws-route53"
 import {IBucket} from "aws-cdk-lib/aws-s3"
 import {Construct} from "constructs"
 
@@ -17,12 +17,11 @@ export interface CloudfrontDistributionProps {
   defaultBehavior: BehaviorOptions,
   additionalBehaviors: Record<string, BehaviorOptions>
   errorResponses: Array<ErrorResponse>
-  epsHostedZoneId: string
-  epsDomainName: string
-  cloudfrontCertArn: string
+  hostedZone: IHostedZone
   shortCloudfrontDomain: string
   fullCloudfrontDomain: string
   cloudfrontLoggingBucket: IBucket
+  cloudfrontCert: ICertificate
 }
 
 /**
@@ -36,20 +35,10 @@ export class CloudfrontDistribution extends Construct {
   public constructor(scope: Construct, id: string, props: CloudfrontDistributionProps){
     super(scope, id)
 
-    // Context
-    /* context values passed as --context cli arguments are passed as strings so coerce them to expected types*/
-    // Imports
-    const hostedZone = HostedZone.fromHostedZoneAttributes(this, "hostedZone", {
-      hostedZoneId: props.epsHostedZoneId,
-      zoneName: props.epsDomainName
-    })
-
-    const cloudfrontCert = Certificate.fromCertificateArn(this, "CloudfrontCert", props.cloudfrontCertArn)
-
     // Resources
     const cloudfrontDistribution = new Distribution(this, "CloudfrontDistribution", {
       domainNames: [props.fullCloudfrontDomain],
-      certificate: cloudfrontCert,
+      certificate: props.cloudfrontCert,
       httpVersion: HttpVersion.HTTP2_AND_3,
       minimumProtocolVersion: SecurityPolicyProtocol.TLS_V1_2_2018, // set to 2018 but we may want 2019 or 2021
       sslSupportMethod: SSLMethod.SNI,
@@ -65,7 +54,7 @@ export class CloudfrontDistribution extends Construct {
 
     new CnameRecord(this, "CloudfrontCnameRecord", {
       recordName: props.shortCloudfrontDomain,
-      zone: hostedZone,
+      zone: props.hostedZone,
       domainName: cloudfrontDistribution.distributionDomainName
     })
 
