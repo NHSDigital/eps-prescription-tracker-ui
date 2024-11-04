@@ -181,7 +181,7 @@ jobs:
           # shellcheck disable=SC2140
           cloudfrontDistributionId=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='"${{ inputs.SERVICE_NAME }}-stateless-resources:cloudfrontDistribution:Id"'].Value" --output text)
           # shellcheck disable=SC2140
-          primaryJwtPrivateKeyArn=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='"${{ inputs.SERVICE_NAME }}-stateless-resources:primaryJwtPrivateKeyArn:Arn"'].Value" --output text)
+          primaryJwtPrivateKeyArn=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='"${{ inputs.SERVICE_NAME }}-stateless-resources:primaryJwtPrivateKey:Arn"'].Value" --output text)
 
           newVersion="${{ inputs.VERSION_NUMBER }}"
 
