@@ -97,7 +97,7 @@ export class CloudfrontBehaviors extends Construct{
 
     // eslint-disable-next-line max-len
     const authDemoStaticContentUriRewriteFunction = new CloudfrontFunction(this, "authDemoStaticContentUriRewriteFunction", {
-      functionName: `${props.serviceName}-S3StaticContentUriRewriteFunction`,
+      functionName: `${props.serviceName}-authDemoStaticContentUriRewriteFunction`,
       sourceFileName: "s3StaticContentUriRewrite.js",
       keyValues: [
         {
