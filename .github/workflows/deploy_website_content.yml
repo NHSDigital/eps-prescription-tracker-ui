@@ -1,0 +1,69 @@
+name: deploy_website_content
+
+on:
+  workflow_call:
+    inputs:
+      SERVICE_NAME:
+        required: true
+        type: string
+      TARGET_ENVIRONMENT:
+        required: true
+        type: string
+      VERSION_NUMBER:
+        required: true
+        type: string
+      COMMIT_ID:
+        required: true
+        type: string
+    secrets:
+      CLOUD_FORMATION_DEPLOY_ROLE:
+        required: true
+jobs:
+  deploy_website_content:
+    name: "deploy website content"
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.TARGET_ENVIRONMENT }}
+    permissions:
+      id-token: write
+      contents: write
+
+    steps:
+      - name: Checkout local github actions
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.BRANCH_NAME }}
+          fetch-depth: 0
+          sparse-checkout: |
+            .github
+
+      - name: Configure AWS Credentials
+        id: connect-aws
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: eu-west-2
+          role-to-assume: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}
+          role-session-name: prescription-clinical-tracker-ui-deploy-website
+          output-credentials: true
+
+      - name: build_artifact download
+        uses: actions/download-artifact@v4
+        with:
+          name: build_artifact
+
+      - name: extract build_artifact
+        run: |
+          mkdir -p .build
+          tar -xf artifact.tar -C .build
+
+      - name: build react app
+        run: |
+          cd .build
+          make react-build
+
+      - name: deploy website
+        run: |
+          staticBucketName=$(aws cloudformation list-exports --query "Exports[?Name=='${{ inputs.SERVICE_NAME }}-stateful-resources:StaticContentBucket:Name'].Value" --output text)
+          aws s3 cp ".build/packages/staticContent/404.html" "s3://${staticBucketName}/404.html"
+          aws s3 cp ".build/packages/staticContent/500.html" "s3://${staticBucketName}/500.html"
+          aws s3 cp ".build/packages/staticContent/jwks/dev/jwks.json" "s3://${staticBucketName}/jwks.json"
+          aws s3 cp --recursive ".build/packages/cpt-ui/out/" "s3://${staticBucketName}/${{ inputs.VERSION_NUMBER }}/"
