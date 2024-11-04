@@ -75,10 +75,10 @@ react-dev:
 	npm run dev --workspace packages/cpt-ui
 
 react-build:
-	npm run build --workspace packages/cpt-ui
+	export NEXT_OUTPUT_MODE=export && export BASE_PATH=/site && npm run build --workspace packages/cpt-ui
 
 react-start:
-	npm run start --workspace packages/cpt-ui
+	unset NEXT_OUTPUT_MODE && npm run start --workspace packages/cpt-ui
 
 react-lint:
 	npm run lint --workspace packages/cpt-ui
