@@ -53,7 +53,6 @@ jobs:
           echo "FIRST_DEPLOYMENT=$FIRST_DEPLOYMENT" >> "$GITHUB_OUTPUT"
         shell: bash
 
-
   release_stateful_resources:
     uses: ./.github/workflows/cdk_release_code.yml
     with:
@@ -66,10 +65,21 @@ jobs:
     secrets:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}
-  
+
+  deploy_website_content:
+    uses: ./.github/workflows/deploy_website_content.yml
+    needs: [release_stateful_resources]
+    with:
+      SERVICE_NAME: ${{ inputs.SERVICE_NAME }}
+      TARGET_ENVIRONMENT: ${{ inputs.TARGET_ENVIRONMENT }}
+      VERSION_NUMBER: ${{ inputs.VERSION_NUMBER }}
+      COMMIT_ID: ${{ inputs.COMMIT_ID }}
+    secrets:
+      CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}
+
   release_stateless_resources:
     uses: ./.github/workflows/cdk_release_code.yml
-    needs: [release_stateful_resources]
+    needs: [deploy_website_content]
     with:
       SERVICE_NAME: ${{ inputs.SERVICE_NAME }}
       TARGET_ENVIRONMENT: ${{ inputs.TARGET_ENVIRONMENT }}
@@ -80,6 +90,61 @@ jobs:
     secrets:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}
+  
+  update_cloudfront_kvs:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.TARGET_ENVIRONMENT }}
+    needs: [release_stateless_resources]
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Configure AWS Credentials
+        id: connect-aws
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: eu-west-2
+          role-to-assume: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}
+          role-session-name: prescription-clinical-tracker-ui-deployment
+          output-credentials: true
+
+      - name: update cloudfront kvs
+        id: update_cloudfront_kvs
+        shell: bash
+        run: |
+          # shellcheck disable=SC2140
+          keyValueStore=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='"${{ inputs.SERVICE_NAME }}-stateless-resources:StaticRewriteKeyValueStor:Arn"'].Value" --output text)
+          # shellcheck disable=SC2140
+          cloudfrontDistributionId=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='"${{ inputs.SERVICE_NAME }}-stateless-resources:cloudfrontDistribution:Id"'].Value" --output text)
+
+          newVersion="${{ inputs.VERSION_NUMBER }}"
+
+          ETag=$(aws cloudfront-keyvaluestore describe-key-value-store \
+              --kvs-arn="$keyValueStore" \
+              --query ETag --output text)
+
+          existing_keys=$(aws cloudfront-keyvaluestore list-keys --kvs-arn "$keyValueStore" --query "Items[*].Key" --output text)
+
+          # Check if "version" key exists
+          if [[ "$existing_keys" == *"version"* ]]; then
+            # Update the existing "version" key
+            aws cloudfront-keyvaluestore update-keys \
+              --if-match="${ETag}" \
+              --kvs-arn "$keyValueStore" \
+              --puts Key=version,Value="$newVersion"
+            echo "Updated the 'version' key to $newVersion."
+          else
+            # Insert a new "version" key
+            aws cloudfront-keyvaluestore put-key \
+              --if-match="${ETag}" \
+              --key=version \
+              --value="$newVersion"\
+              --kvs-arn "$keyValueStore"
+            echo "Inserted new 'version' key with value $newVersion."
+          fi
+
+          # invalidate the cache
+          aws cloudfront create-invalidation --distribution-id "${cloudfrontDistributionId}" --paths '/*'
 
   rerelease_stateful_resources:
     if: ${{ needs.check_first_deployment.outputs.FIRST_DEPLOYMENT == 'true' }}
@@ -100,7 +165,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: ${{ inputs.TARGET_ENVIRONMENT }}
     if: ${{ always() && !failure() && !cancelled() }}
-    needs: [release_stateful_resources, release_stateless_resources, rerelease_stateful_resources]
+    needs: [release_stateful_resources, release_stateless_resources, rerelease_stateful_resources, deploy_website_content, update_cloudfront_kvs]
     permissions:
       id-token: write
       contents: write
