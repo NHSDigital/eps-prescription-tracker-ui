@@ -15,9 +15,9 @@ import {formatHeaders, rewriteBodyToAddSignedJWT, verifyJWTWrapper} from "./help
 
 const logger = new Logger({serviceName: "token"})
 const UserPoolIdentityProvider = process.env["UserPoolIdentityProvider"] as string
+const idpTokenPath = process.env["idpTokenPath"] as string
 const TokenMappingTableName = process.env["TokenMappingTableName"] as string
 const useSignedJWT = process.env["useSignedJWT"] as string
-const idpTokenPath = process.env["idpTokenPath"] as string || "https://dummytoken.com/token"
 const jwtPrivateKeyArn = process.env["jwtPrivateKeyArn"] as string
 const oidcClientId = process.env["oidcClientId"] as string
 const oidcIssuer = process.env["oidcIssuer"] as string
@@ -68,8 +68,6 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
   const accessToken = tokenResponse.data.access_token
   const idToken = tokenResponse.data.id_token
-  const expiresIn = tokenResponse.data.expires_in
-  const refreshToken = tokenResponse.data.refresh_token
 
   // verify and decode idToken
   const decodedIdToken = await verifyJWTWrapper(idToken, oidcIssuer, oidcClientId)
@@ -81,8 +79,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
       "username": username,
       "accessToken": accessToken,
       "idToken": idToken,
-      "expiresIn": expiresIn,
-      "refreshToken": refreshToken
+      "expiresIn": decodedIdToken.exp
     },
     TableName: TokenMappingTableName
   }

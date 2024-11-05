@@ -6,7 +6,7 @@ import {ParsedUrlQuery} from "querystring"
 import {v4 as uuidv4} from "uuid"
 
 const oidcJwksClient = jwksClient({
-  jwksUri: process.env["oidcjwksEndpoint"] as string || "https://dummyauth.com/.well-known/jwks.json"
+  jwksUri: process.env["oidcjwksEndpoint"] as string
 })
 
 export function getJWKSKey(header: jwt.JwtHeader, callback: jwt.SigningKeyCallback) {

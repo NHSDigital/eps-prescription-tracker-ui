@@ -2,7 +2,7 @@ import {formatHeaders, verifyJWTWrapper} from "../src/helpers"
 import createJWKSMock from "mock-jwks"
 import jwt from "jsonwebtoken"
 
-describe("Auth Test", () => {
+describe("verifyJWTWrapper tests", () => {
   const jwks = createJWKSMock("https://dummyauth.com/")
 
   beforeEach(() => {
@@ -72,7 +72,7 @@ describe("Auth Test", () => {
   })
 })
 
-describe("formatHeaders", () => {
+describe("formatHeaders tests", () => {
   it("should convert header values to strings", () => {
     const headers = {
       "content-type": "application/json",

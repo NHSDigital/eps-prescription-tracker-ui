@@ -43,7 +43,7 @@ export interface CognitoFunctionsProps {
 }
 
 /**
- * Functions that are needed for cognitor
+ * Functions and resources that are needed for cognito
  */
 export class CognitoFunctions extends Construct {
   public readonly cognitoPolicies: Array<IManagedPolicy>

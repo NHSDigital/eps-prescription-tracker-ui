@@ -10,7 +10,7 @@ sign.mockImplementation(() => "mocked-jwt-token")
 
 const {rewriteBodyToAddSignedJWT} = await import("../src/helpers")
 
-describe("rewriteBodyToAddSignedJWT", () => {
+describe("rewriteBodyToAddSignedJWT tests", () => {
   const logger = new Logger()
   const jwtPrivateKey = "mockPrivateKey"
   const objectBodyParameters: ParsedUrlQuery = {
