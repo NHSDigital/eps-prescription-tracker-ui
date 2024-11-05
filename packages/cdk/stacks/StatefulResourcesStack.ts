@@ -113,8 +113,8 @@ export class StatefulResourcesStack extends Stack {
       stackName: props.stackName,
       account: this.account,
       region: this.region
-
     })
+
     // Outputs
 
     // Exports
