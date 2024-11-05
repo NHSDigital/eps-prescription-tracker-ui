@@ -37,10 +37,22 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   })
   const axiosInstance = axios.create()
 
-  const body = event.body
-  if (body===undefined) {
-    throw new Error("can not get body")
+  const prescriptionId = event.pathParameters?.id
+  if (!prescriptionId) {
+    return {
+      statusCode: 400,
+      body: JSON.stringify({message: "Prescription ID missing"})
+    }
   }
+
+  const body = event.body
+  if (!body) {
+    return {
+      statusCode: 400,
+      body: JSON.stringify({message: "Request body missing"})
+    }
+  }
+
   const objectBodyParameters = parse(body as string)
   let rewrittenObjectBodyParameters: ParsedUrlQuery
 
@@ -54,9 +66,8 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
   logger.debug("about to call downstream idp with rewritten body", {idpTokenPath, body: rewrittenObjectBodyParameters})
 
-  const tokenResponse = await axiosInstance.post(idpTokenPath,
-    stringify(rewrittenObjectBodyParameters)
-  )
+  const apiUrl = `${idpTokenPath}/${prescriptionId}`
+  const tokenResponse = await axiosInstance.post(apiUrl, stringify(rewrittenObjectBodyParameters))
 
   logger.debug("response from external oidc", {data: tokenResponse.data})
 

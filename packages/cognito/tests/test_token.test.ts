@@ -40,15 +40,24 @@ describe("handler tests", () => {
   })
 
   it("responds with error when body does not exist", async () => {
+    const response = await handler({pathParameters: {id: "test-prescription-id"}, body: null}, dummyContext)
 
-    const response = await handler({}, dummyContext)
     expect(response).toMatchObject({
-      message: "A system error has occurred"
+      statusCode: 400,
+      body: JSON.stringify({message: "Request body missing"})
+    })
+  })
+
+  it("responds with error when prescriptionId is missing", async () => {
+    const response = await handler({pathParameters: {}, body: null}, dummyContext)
+
+    expect(response).toMatchObject({
+      statusCode: 400,
+      body: JSON.stringify({message: "Prescription ID missing"})
     })
   })
 
   it("inserts correct details into dynamo table", async () => {
-    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     const dynamoSpy = jest.spyOn(DynamoDBDocumentClient.prototype, "send").mockResolvedValue({} as never)
 
     const expiryDate = Date.now() + 1000
@@ -59,17 +68,20 @@ describe("handler tests", () => {
       exp: expiryDate
     })
     nock("https://dummytoken.com")
-      .post("/token")
+      .post("/token/test-prescription-id")
       .reply(200, {
         id_token: token,
         access_token: "access_token_reply"
       })
 
-    const response = await handler({
-      body: {
-        foo: "bar"
-      }
-    }, dummyContext)
+    const response = await handler(
+      {
+        pathParameters: {id: "test-prescription-id"},
+        body: "bar"
+      },
+      dummyContext
+    )
+
     expect(response.body).toMatch(JSON.stringify({
       id_token: token,
       access_token: "access_token_reply"
