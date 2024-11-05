@@ -31,7 +31,7 @@
       {
         "name": "packages/common/testing",
         "path": "../packages/common/testing"
-      }
+      },
       {
         "name": "packages/auth_demo",
         "path": "../packages/auth_demo"
