@@ -2,6 +2,11 @@ import {Construct} from "constructs"
 import {ManagedPolicy, PolicyStatement} from "aws-cdk-lib/aws-iam"
 import {TableV2} from "aws-cdk-lib/aws-dynamodb"
 
+/**
+ * Common resources for a dynamodb table
+
+ */
+
 export interface DynamodbResourcesProps {
   readonly stackName: string
   readonly table: TableV2

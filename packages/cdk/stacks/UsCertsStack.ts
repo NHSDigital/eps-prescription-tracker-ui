@@ -37,7 +37,7 @@ export class UsCertsStack extends Stack {
     const epsDomainName: string = this.node.tryGetContext("epsDomainName")
     const epsHostedZoneId: string = this.node.tryGetContext("epsHostedZoneId")
 
-    // Imports
+    // Coerce context and imports to relevant types
     const hostedZone = HostedZone.fromHostedZoneAttributes(this, "hostedZone", {
       hostedZoneId: epsHostedZoneId,
       zoneName: epsDomainName

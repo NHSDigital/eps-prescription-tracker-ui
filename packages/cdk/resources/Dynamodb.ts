@@ -24,6 +24,10 @@ export interface DynamodbProps {
   readonly region: string
 }
 
+/**
+ * Dynamodb table used for user state information
+ */
+
 export class Dynamodb extends Construct {
   public readonly tokenMappingTable: TableV2
   public readonly useTokensMappingKmsKeyPolicy: ManagedPolicy

@@ -121,7 +121,9 @@
         "vars",
         "venv",
         "versionable",
-        "whens"
+        "whens",
+        "jwks",
+        "oidcjwks"
       ],
       "cSpell.dictionaries": ["en-GB"],
       "cSpell.ignorePaths": ["package-lock.json", "node_modules", ".vscode"],

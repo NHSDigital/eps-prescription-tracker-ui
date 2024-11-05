@@ -36,6 +36,7 @@ export interface LambdaFunctionProps {
 
 /**
  * Resources for a nodejs lambda function
+ * This should be used when we want to create a lambda
 
  */
 

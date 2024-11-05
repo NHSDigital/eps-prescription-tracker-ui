@@ -11,6 +11,11 @@ import {
 } from "aws-cdk-lib/aws-cloudfront"
 import {RestApiOrigin} from "aws-cdk-lib/aws-cloudfront-origins"
 
+/**
+ * Resources for cloudfront behaviors
+
+ */
+
 export interface CloudfrontBehaviorsProps {
   readonly serviceName: string
   readonly stackName: string
@@ -21,6 +26,7 @@ export interface CloudfrontBehaviorsProps {
 
 /**
  * Resources for a Cloudfront Behaviors and functions
+ * Any rewrites for cloudfront requests should go here
  */
 
 export class CloudfrontBehaviors extends Construct{

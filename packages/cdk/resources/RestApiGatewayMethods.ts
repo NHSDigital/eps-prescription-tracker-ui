@@ -11,7 +11,7 @@ import {Construct} from "constructs"
 import {NodejsFunction} from "aws-cdk-lib/aws-lambda-nodejs"
 
 export interface RestApiGatewayMethodsProps {
-  readonly extraPolices: Array<IManagedPolicy>
+  readonly executePolices: Array<IManagedPolicy>
   readonly restAPiGatewayRole: IRole
   readonly restApiGateway: RestApi
   readonly tokenLambda: NodejsFunction
@@ -22,7 +22,8 @@ export interface RestApiGatewayMethodsProps {
 }
 
 /**
- * Resources for a static content S3 bucket
+ * Resources for a api gateway methods
+ * executePolicies should be policies that are needed to execute lambdas
 
  */
 
@@ -31,13 +32,8 @@ export class RestApiGatewayMethods extends Construct{
   public constructor(scope: Construct, id: string, props: RestApiGatewayMethodsProps){
     super(scope, id)
 
-    // Context
-    /* context values passed as --context cli arguments are passed as strings so coerce them to expected types*/
-
-    // Imports
-
     // Resources
-    for (var policy of props.extraPolices) {
+    for (var policy of props.executePolices) {
       props.restAPiGatewayRole.addManagedPolicy(policy)
     }
     const tokenResource = props.restApiGateway.root.addResource("token")
@@ -45,7 +41,7 @@ export class RestApiGatewayMethods extends Construct{
       credentialsRole: props.restAPiGatewayRole
     }))
 
-    // mocktoken endpoint
+    // mock token endpoint
     if (props.useMockOidc) {
       const mockTokenResource = props.restApiGateway.root.addResource("mocktoken")
       mockTokenResource.addMethod("POST", new LambdaIntegration(props.mockTokenLambda, {

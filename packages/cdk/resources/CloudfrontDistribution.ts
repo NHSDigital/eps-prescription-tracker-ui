@@ -11,6 +11,11 @@ import {CnameRecord, IHostedZone} from "aws-cdk-lib/aws-route53"
 import {IBucket} from "aws-cdk-lib/aws-s3"
 import {Construct} from "constructs"
 
+/**
+ * Cloudfront distribution and supporting resources
+
+ */
+
 export interface CloudfrontDistributionProps {
   readonly serviceName: string
   readonly stackName: string
