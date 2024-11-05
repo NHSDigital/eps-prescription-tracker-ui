@@ -14,7 +14,12 @@ import {
 } from "aws-cdk-lib/aws-cognito"
 import {ICertificate} from "aws-cdk-lib/aws-certificatemanager"
 import {RemovalPolicy} from "aws-cdk-lib"
-import {ARecord, IHostedZone, RecordTarget} from "aws-cdk-lib/aws-route53"
+import {
+  AaaaRecord,
+  ARecord,
+  IHostedZone,
+  RecordTarget
+} from "aws-cdk-lib/aws-route53"
 import {UserPoolDomainTarget} from "aws-cdk-lib/aws-route53-targets"
 
 export interface CognitoProps {
@@ -41,7 +46,7 @@ export interface CognitoProps {
 }
 
 /**
- * AWS Cognito User Pool
+ * AWS Cognito User Pool and supporting resources
  */
 export class Cognito extends Construct {
   public readonly userPool: UserPool
@@ -67,6 +72,12 @@ export class Cognito extends Construct {
     })
 
     new ARecord(this, "UserPoolCloudFrontAliasRecord", {
+      zone: props.hostedZone,
+      recordName: props.shortCognitoDomain,
+      target: RecordTarget.fromAlias(new UserPoolDomainTarget(userPoolDomain))
+    })
+
+    new AaaaRecord(this, "UserPoolCloudFrontAliasRecord", {
       zone: props.hostedZone,
       recordName: props.shortCognitoDomain,
       target: RecordTarget.fromAlias(new UserPoolDomainTarget(userPoolDomain))
