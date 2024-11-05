@@ -3,6 +3,11 @@ import {Architecture, Runtime} from "aws-cdk-lib/aws-lambda"
 import {NodejsFunctionProps} from "aws-cdk-lib/aws-lambda-nodejs"
 import {join, resolve} from "path"
 
+/**
+ * Common functions used when creating a lambda
+
+ */
+
 const baseDir = resolve(__dirname, "../../../..")
 
 function getLambdaInvokeURL(region: string, lambdaNArn: string) {

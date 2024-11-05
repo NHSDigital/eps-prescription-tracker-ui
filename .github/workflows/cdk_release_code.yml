@@ -21,12 +21,42 @@ on:
       LOG_RETENTION_IN_DAYS:
         required: true
         type: string
+      useMockOidc:
+        type: boolean
+        default: false
+      primaryOidcIssuer:
+        type: string
+      primaryOidcAuthorizeEndpoint:
+        type: string
+      primaryOidcTokenEndpoint:
+        type: string
+      primaryOidcUserInfoEndpoint:
+        type: string
+      primaryOidcjwksEndpoint:
+        type: string
+      mockOidcIssuer:
+        type: string
+      mockOidcAuthorizeEndpoint:
+        type: string
+      mockOidcTokenEndpoint:
+        type: string
+      mockOidcUserInfoEndpoint:
+        type: string
+      mockOidcjwksEndpoint:
+        type: string
     secrets:
       CLOUD_FORMATION_DEPLOY_ROLE:
         required: true
       CDK_PULL_IMAGE_ROLE:
         required: true
-  
+      primaryOidcClientId:
+        required: false
+      primaryOidClientSecret:
+        required: false
+      mockOidcClientId:
+        required: false
+      mockOidClientSecret:
+        required: false
 jobs:
   release_code:
     runs-on: ubuntu-latest
@@ -96,6 +126,10 @@ jobs:
           cloudfrontDistributionId=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='"${{ inputs.SERVICE_NAME }}-stateless-resources:cloudfrontDistribution:Id"'].Value" --output text)
           # shellcheck disable=SC2140
           cloudfrontCertArn=$(aws cloudformation list-exports --region us-east-1 --query "Exports[?Name=='"${{ inputs.SERVICE_NAME }}-us-certs:cloudfrontCertificate:Arn"'].Value" --output text)
+          # shellcheck disable=SC2140
+          shortCloudfrontDomain=$(aws cloudformation list-exports --region us-east-1 --query "Exports[?Name=='"${{ inputs.SERVICE_NAME }}-us-certs:shortCloudfrontDomain:Name"'].Value" --output text)
+          # shellcheck disable=SC2140
+          fullCloudfrontDomain=$(aws cloudformation list-exports --region us-east-1 --query "Exports[?Name=='"${{ inputs.SERVICE_NAME }}-us-certs:fullCloudfrontDomain:Name"'].Value" --output text)
           jq \
           --arg serviceName "${{ inputs.SERVICE_NAME }}" \
           --arg VERSION_NUMBER "${{ inputs.VERSION_NUMBER }}" \
@@ -106,6 +140,23 @@ jobs:
           --arg allowAutoDeleteObjects "true" \
           --arg cloudfrontDistributionId "${cloudfrontDistributionId}" \
           --arg cloudfrontCertArn "${cloudfrontCertArn}" \
+          --arg useMockOidc "${{ inputs.useMockOidc }}" \
+          --arg primaryOidcClientId "${{ secrets.primaryOidcClientId }}" \
+          --arg primaryOidClientSecret "${{ secrets.primaryOidClientSecret }}" \
+          --arg primaryOidcIssuer "${{ inputs.primaryOidcIssuer }}" \
+          --arg primaryOidcAuthorizeEndpoint "${{ inputs.primaryOidcAuthorizeEndpoint }}" \
+          --arg primaryOidcTokenEndpoint "${{ inputs.primaryOidcTokenEndpoint }}" \
+          --arg primaryOidcUserInfoEndpoint "${{ inputs.primaryOidcUserInfoEndpoint }}" \
+          --arg primaryOidcjwksEndpoint "${{ inputs.primaryOidcjwksEndpoint }}" \
+          --arg mockOidcClientId "${{ secrets.mockOidcClientId }}" \
+          --arg mockOidClientSecret "${{ secrets.mockOidClientSecret }}" \
+          --arg mockOidcIssuer "${{ inputs.mockOidcIssuer }}" \
+          --arg mockOidcAuthorizeEndpoint "${{ inputs.mockOidcAuthorizeEndpoint }}" \
+          --arg mockOidcTokenEndpoint "${{ inputs.mockOidcTokenEndpoint }}" \
+          --arg mockOidcUserInfoEndpoint "${{ inputs.mockOidcUserInfoEndpoint }}" \
+          --arg mockOidcjwksEndpoint "${{ inputs.mockOidcjwksEndpoint }}" \
+          --arg shortCloudfrontDomain "${shortCloudfrontDomain}" \
+          --arg fullCloudfrontDomain "${fullCloudfrontDomain}" \
           '.context += {
             "serviceName": $serviceName,
             "VERSION_NUMBER": $VERSION_NUMBER,
@@ -115,7 +166,24 @@ jobs:
             "epsHostedZoneId": $epsHostedZoneId,
             "allowAutoDeleteObjects": $allowAutoDeleteObjects,
             "cloudfrontDistributionId": $cloudfrontDistributionId,
-            "cloudfrontCertArn": $cloudfrontCertArn}' \
+            "cloudfrontCertArn": $cloudfrontCertArn,
+            "shortCloudfrontDomain": $shortCloudfrontDomain,
+            "fullCloudfrontDomain": $fullCloudfrontDomain,
+            "useMockOidc": $useMockOidc,
+            "primaryOidcClientId": $primaryOidcClientId,
+            "primaryOidClientSecret": $primaryOidClientSecret,
+            "primaryOidcIssuer": $primaryOidcIssuer,
+            "primaryOidcAuthorizeEndpoint": $primaryOidcAuthorizeEndpoint,
+            "primaryOidcTokenEndpoint": $primaryOidcTokenEndpoint,
+            "primaryOidcUserInfoEndpoint": $primaryOidcUserInfoEndpoint,
+            "primaryOidcjwksEndpoint": $primaryOidcjwksEndpoint,
+            "mockOidcClientId": $mockOidcClientId,
+            "mockOidClientSecret": $mockOidClientSecret,
+            "mockOidcIssuer": $mockOidcIssuer,
+            "mockOidcAuthorizeEndpoint": $mockOidcAuthorizeEndpoint,
+            "mockOidcTokenEndpoint": $mockOidcTokenEndpoint,
+            "mockOidcUserInfoEndpoint": $mockOidcUserInfoEndpoint,
+            "mockOidcjwksEndpoint": $mockOidcjwksEndpoint}' \
           .build/cdk.json > .build/cdk.new.json
           mv .build/cdk.new.json .build/cdk.json
 

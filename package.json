@@ -20,7 +20,11 @@
     "workspaces": [
         "packages/cloudfrontFunctions",
         "packages/cpt-ui",
-        "packages/cdk"
+        "packages/cdk",
+        "packages/cognito",
+        "packages/common/middyErrorHandler",
+        "packages/common/testing",
+        "packages/auth_demo"
     ],
     "devDependencies": {
         "@semantic-release/changelog": "^6.0.3",

@@ -2,7 +2,6 @@
 **/build/
 **/dist/
 **/newman/
-**/public/
 **/coverage/
 **/node_modules/
 **/.next/
@@ -33,3 +32,4 @@ amplify_outputs.json
 cdk.out/
 .secrets
 packages/cpt-ui/out
+packages/auth_demo/build/

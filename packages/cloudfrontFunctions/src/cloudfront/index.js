@@ -13,6 +13,9 @@ const get = (key) => {
   if (key === "object") {
     return "file.ext"
   }
+  if (key === "basePath") {
+    return "/site"
+  }
 }
 
 const cloudfront = {
