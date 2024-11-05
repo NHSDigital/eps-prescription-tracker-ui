@@ -1,33 +1,34 @@
 import {Logger} from "@aws-lambda-powertools/logger"
-import {AxiosResponseHeaders, RawAxiosResponseHeaders} from "axios"
-import jwt from "jsonwebtoken"
-import jwksClient from "jwks-rsa"
+import axios from "axios"
+import jwt, {JwtPayload, JwtHeader, SigningKeyCallback, SignOptions} from "jsonwebtoken"
+import jwksClient, {JwksClient} from "jwks-rsa"
 import {ParsedUrlQuery} from "querystring"
 import {v4 as uuidv4} from "uuid"
 
-const oidcJwksClient = jwksClient({
-  jwksUri: process.env["oidcjwksEndpoint"] as string || "https://dummyauth.com/.well-known/jwks.json"
+const oidcJwksClient: JwksClient = jwksClient({
+  jwksUri: process.env["oidcjwksEndpoint"] || "https://dummyauth.com/.well-known/jwks.json",
 })
 
-export function getJWKSKey(header: jwt.JwtHeader, callback: jwt.SigningKeyCallback) {
-  oidcJwksClient.getSigningKey(header.kid, function(err, key) {
-    const signingKey = key?.getPublicKey()
+export function getJWKSKey(header: JwtHeader, callback: SigningKeyCallback) {
+  oidcJwksClient.getSigningKey(header.kid, (err, key) => {
+    const signingKey = key?.getPublicKey() || ""
     callback(err, signingKey)
   })
 }
 
 export function verifyJWTWrapper(jwtToVerify: string,
   expectedIssuer: string,
-  expectedAudience: string): Promise<jwt.JwtPayload> {
+  expectedAudience: string): Promise<JwtPayload> {
   return new Promise((resolve, reject) => {
     jwt.verify(jwtToVerify, getJWKSKey, {
       audience: expectedAudience,
       issuer: expectedIssuer
-    }, function(err, decoded) {
+    }, (err, decoded) => {
       if (err) {
         reject(err)
+      } else {
+        resolve(decoded as JwtPayload)
       }
-      resolve(decoded as jwt.JwtPayload)
     })
   })
 }
@@ -50,7 +51,7 @@ export function rewriteBodyToAddSignedJWT(
     "jti": uuidv4()
   }
 
-  const signOptions: jwt.SignOptions = {
+  const signOptions: SignOptions = {
     algorithm: "RS512",
     keyid: "eps-cpt-ui-test"
   }
@@ -65,9 +66,8 @@ export function rewriteBodyToAddSignedJWT(
   return objectBodyParameters
 }
 
-// eslint-disable-next-line max-len
-export function formatHeaders(headers: AxiosResponseHeaders | Partial<RawAxiosResponseHeaders>): { [header: string]: string } {
-  const formattedHeaders: { [header: string]: string } = {}
+export function formatHeaders(headers: Record<string, unknown>): {[header: string]: string} {
+  const formattedHeaders: {[header: string]: string} = {}
 
   // Iterate through the Axios headers and ensure values are stringified
   for (const [key, value] of Object.entries(headers)) {

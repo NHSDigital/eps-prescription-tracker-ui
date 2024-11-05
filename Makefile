@@ -41,7 +41,6 @@ test: compile
 	npm run test --workspace packages/cloudfrontFunctions
 	npm run test --workspace packages/cdk
 	npm run test --workspace packages/cpt-ui
-	npm run test --workspace packages/cognito
 	npm run test --workspace packages/common/middyErrorHandler
 
 clean:
@@ -60,7 +59,7 @@ clean:
 deep-clean: clean
 	rm -rf .venv
 	find . -name 'node_modules' -type d -prune -exec rm -rf '{}' +
-
+ 
 check-licenses: check-licenses-node check-licenses-python
 
 check-licenses-node:

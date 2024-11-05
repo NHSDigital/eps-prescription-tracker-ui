@@ -13,6 +13,13 @@ import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
 import {DynamoDBDocumentClient, PutCommand} from "@aws-sdk/lib-dynamodb"
 import {formatHeaders, rewriteBodyToAddSignedJWT, verifyJWTWrapper} from "./helpers"
 
+interface TokenResponseData {
+  access_token: string
+  id_token: string
+  expires_in: number
+  refresh_token: string
+}
+
 const logger = new Logger({serviceName: "token"})
 const UserPoolIdentityProvider = process.env["UserPoolIdentityProvider"] as string
 const TokenMappingTableName = process.env["TokenMappingTableName"] as string
@@ -42,10 +49,10 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   logger.appendKeys({
     "apigw-request-id": event.requestContext?.requestId
   })
-  const axiosInstance = axios.create()
+  const axiosInstance = axios.create({})
 
   const body = event.body
-  if (body===undefined) {
+  if (body === undefined) {
     throw new Error("can not get body")
   }
   const objectBodyParameters = parse(body as string)
@@ -60,9 +67,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
   logger.info("about to call downstream idp with rewritten body", {idpTokenPath, body: rewrittenObjectBodyParameters})
 
-  const tokenResponse = await axiosInstance.post(idpTokenPath,
-    stringify(rewrittenObjectBodyParameters)
-  )
+  const tokenResponse = await axiosInstance.post<TokenResponseData>(idpTokenPath, stringify(rewrittenObjectBodyParameters))
 
   logger.info("response from external oidc", {data: tokenResponse.data})
 
