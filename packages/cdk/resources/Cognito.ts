@@ -14,7 +14,12 @@ import {
 } from "aws-cdk-lib/aws-cognito"
 import {ICertificate} from "aws-cdk-lib/aws-certificatemanager"
 import {RemovalPolicy} from "aws-cdk-lib"
-import {ARecord, IHostedZone, RecordTarget} from "aws-cdk-lib/aws-route53"
+import {
+  AaaaRecord,
+  ARecord,
+  IHostedZone,
+  RecordTarget
+} from "aws-cdk-lib/aws-route53"
 import {UserPoolDomainTarget} from "aws-cdk-lib/aws-route53-targets"
 
 export interface CognitoProps {
@@ -41,7 +46,7 @@ export interface CognitoProps {
 }
 
 /**
- * AWS Cognito User Pool
+ * AWS Cognito User Pool and supporting resources
  */
 export class Cognito extends Construct {
   public readonly userPool: UserPool
@@ -66,12 +71,20 @@ export class Cognito extends Construct {
       }
     })
 
-    new ARecord(this, "UserPoolCloudFrontAliasRecord", {
+    new ARecord(this, "UserPoolCloudFrontAliasIpv4Record", {
       zone: props.hostedZone,
       recordName: props.shortCognitoDomain,
       target: RecordTarget.fromAlias(new UserPoolDomainTarget(userPoolDomain))
     })
 
+    new AaaaRecord(this, "UserPoolCloudFrontAliasIpv6Record", {
+      zone: props.hostedZone,
+      recordName: props.shortCognitoDomain,
+      target: RecordTarget.fromAlias(new UserPoolDomainTarget(userPoolDomain))
+    })
+
+    // these are the endpoints that are added to user pool identity provider
+    // note we override the token endpoint to point back to our custom token
     const oidcEndpoints: OidcEndpoints = {
       authorization: props.primaryOidcAuthorizeEndpoint,
       jwksUri: props.primaryOidcjwksEndpoint,
@@ -79,8 +92,11 @@ export class Cognito extends Construct {
       userInfo: props.primaryOidcUserInfoEndpoint
     }
 
+    // eslint-disable-next-line max-len
+    // see https://digital.nhs.uk/services/care-identity-service/applications-and-services/cis2-authentication/guidance-for-developers/detailed-guidance/scopes-and-claims
+    // about claims that we need
     const primaryPoolIdentityProvider = new UserPoolIdentityProviderOidc(this, "UserPoolIdentityProvider", {
-      name: "Primary",
+      name: "Primary", // this name is used in the web client
       clientId: props.primaryOidcClientId,
       clientSecret: props.primaryOidClientSecret,
       issuerUrl: props.primaryOidcIssuer,
@@ -110,6 +126,8 @@ export class Cognito extends Construct {
         throw new Error("Attempt to use mock oidc but variables are not defined")
       }
 
+      // these are the endpoints that are added to user pool identity provider
+      // note we override the token endpoint to point back to our custom token
       const mockOidcEndpoints: OidcEndpoints = {
         authorization: props.mockOidcAuthorizeEndpoint,
         jwksUri: props.mockOidcjwksEndpoint,
@@ -134,7 +152,8 @@ export class Cognito extends Construct {
 
     }
 
-    // need to use an escape hatch as can not do this with L2 construct
+    // add attribute mappings to what we receive back to cognito user pool attributes
+    // need to use an escape hatch as can not do this with the L2 construct
 
     const cfnUserPoolIdentityProvider = primaryPoolIdentityProvider.node.defaultChild as CfnUserPoolIdentityProvider
     cfnUserPoolIdentityProvider.attributeMapping = {
@@ -144,6 +163,8 @@ export class Cognito extends Construct {
       family_name: "family_name",
       email: "email"
     }
+
+    // add the web client
     const userPoolWebClient = userPool.addClient("WebClient", {
       supportedIdentityProviders: supportedIdentityProviders,
       oAuth: {
@@ -161,11 +182,16 @@ export class Cognito extends Construct {
         callbackUrls: [
           "http://localhost:3000/auth/",
           `https://${props.fullCloudfrontDomain}/site/`,
-          `https://${props.fullCloudfrontDomain}/auth_demo/`],
-        logoutUrls: ["http://localhost:3000/"]
+          `https://${props.fullCloudfrontDomain}/auth_demo/`
+        ],
+        logoutUrls: [
+          "http://localhost:3000/",
+          `https://${props.fullCloudfrontDomain}/site/`,
+          `https://${props.fullCloudfrontDomain}/auth_demo/`
+        ]
       }})
 
-    // ensure dependencies are set correctly and mock token lambda added to api gateway if needed
+    // ensure dependencies are set correctly so items are created in the correct order
     userPoolWebClient.node.addDependency(primaryPoolIdentityProvider)
     if (props.useMockOidc) {
       userPoolWebClient.node.addDependency(mockPoolIdentityProvider)

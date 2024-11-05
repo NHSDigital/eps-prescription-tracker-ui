@@ -9,7 +9,7 @@ import {
 import {Construct} from "constructs"
 
 /**
- * Policy to restrict access to a single Cloudfront Distribution for S3 bucket KMS Keys
+ * Policy to restrict access to a single Cloudfront Distribution for KMS Keys
 
  */
 

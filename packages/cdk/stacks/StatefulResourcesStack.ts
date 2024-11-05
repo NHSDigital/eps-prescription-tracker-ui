@@ -65,7 +65,7 @@ export class StatefulResourcesStack extends Stack {
     const auditLoggingBucketImport = Fn.importValue("account-resources:AuditLoggingBucket")
     const deploymentRoleImport = Fn.importValue("ci-resources:CloudFormationDeployRole")
 
-    // Coerce imports to relevant types
+    // Coerce context and imports to relevant types
     const auditLoggingBucket = Bucket.fromBucketArn(
       this, "AuditLoggingBucket", auditLoggingBucketImport)
     const deploymentRole = Role.fromRoleArn(this, "deploymentRole", deploymentRoleImport)
@@ -84,6 +84,7 @@ export class StatefulResourcesStack extends Stack {
       deploymentRole: deploymentRole
     })
 
+    // - Cognito resources
     const cognito = new Cognito(this, "Cognito", {
       primaryOidcClientId: primaryOidcClientId!,
       primaryOidClientSecret: primaryOidClientSecret,
@@ -107,12 +108,13 @@ export class StatefulResourcesStack extends Stack {
       hostedZone: hostedZone
     })
 
+    // - Dynamodb table for user state
     const dynamodb = new Dynamodb(this, "DynamoDB", {
       stackName: props.stackName,
       account: this.account,
       region: this.region
-
     })
+
     // Outputs
 
     // Exports

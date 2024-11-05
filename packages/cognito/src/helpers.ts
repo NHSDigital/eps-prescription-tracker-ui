@@ -1,78 +1,50 @@
-import {Logger} from "@aws-lambda-powertools/logger"
-import axios from "axios"
-import jwt, {JwtPayload, JwtHeader, SigningKeyCallback, SignOptions} from "jsonwebtoken"
-import jwksClient, {JwksClient} from "jwks-rsa"
-import {ParsedUrlQuery} from "querystring"
-import {v4 as uuidv4} from "uuid"
+import {Duration} from "aws-cdk-lib"
+import {Architecture, Runtime} from "aws-cdk-lib/aws-lambda"
+import {NodejsFunctionProps} from "aws-cdk-lib/aws-lambda-nodejs"
+import {join, resolve} from "path"
 
-const oidcJwksClient: JwksClient = jwksClient({
-  jwksUri: process.env["oidcjwksEndpoint"] || "https://dummyauth.com/.well-known/jwks.json",
-})
+/**
+ * Common functions used when creating a lambda
 
-export function getJWKSKey(header: JwtHeader, callback: SigningKeyCallback) {
-  oidcJwksClient.getSigningKey(header.kid, (err, key) => {
-    const signingKey = key?.getPublicKey() || ""
-    callback(err, signingKey)
-  })
+ */
+
+const baseDir = resolve(__dirname, "../../../..")
+
+function getLambdaInvokeURL(region: string, lambdaNArn: string) {
+  return `arn:aws:apigateway:${region}:lambda:path/2015-03-31/functions/${lambdaNArn}/invocations`
 }
 
-export function verifyJWTWrapper(jwtToVerify: string,
-  expectedIssuer: string,
-  expectedAudience: string): Promise<JwtPayload> {
-  return new Promise((resolve, reject) => {
-    jwt.verify(jwtToVerify, getJWKSKey, {
-      audience: expectedAudience,
-      issuer: expectedIssuer
-    }, (err, decoded) => {
-      if (err) {
-        reject(err)
-      } else {
-        resolve(decoded as JwtPayload)
-      }
-    })
-  })
+function getLambdaArn(region: string, account: string, lambdaName: string) {
+  return `arn:aws:lambda:${region}:${account}:function:${lambdaName}`
+}
+interface DefaultLambdaOptionsParams {
+  readonly functionName: string
+  readonly packageBasePath: string
+  readonly entryPoint: string
 }
 
-export function rewriteBodyToAddSignedJWT(
-  logger: Logger,
-  objectBodyParameters: ParsedUrlQuery,
-  idpTokenPath: string,
-  jwtPrivateKey: jwt.PrivateKey
-): ParsedUrlQuery {
-  logger.info("Rewriting body to include signed jwt")
-  const current_time = Math.floor(Date.now() / 1000)
-  const expiration_time = current_time + 300
-  const claims = {
-    "iss": objectBodyParameters.client_id,
-    "sub": objectBodyParameters.client_id,
-    "aud": idpTokenPath,
-    "iat": current_time,
-    "exp": expiration_time,
-    "jti": uuidv4()
+function getDefaultLambdaOptions(options: DefaultLambdaOptionsParams): NodejsFunctionProps {
+  const defaultOptions: NodejsFunctionProps = {
+    functionName: options.functionName,
+    runtime: Runtime.NODEJS_20_X,
+    entry: join(baseDir, options.packageBasePath, options.entryPoint),
+    projectRoot: baseDir,
+    memorySize: 256,
+    timeout: Duration.seconds(50),
+    architecture: Architecture.X86_64,
+    handler: "handler",
+    bundling: {
+      minify: true,
+      sourceMap: true,
+      tsconfig: join(baseDir, options.packageBasePath, "tsconfig.json"),
+      target: "es2020"
+    }
   }
-
-  const signOptions: SignOptions = {
-    algorithm: "RS512",
-    keyid: "eps-cpt-ui-test"
-  }
-
-  logger.info("Claims", {claims})
-  const jwt_token = jwt.sign(claims, jwtPrivateKey, signOptions)
-  logger.info("jwt_token", {jwt_token})
-  // rewrite the body to have jwt and remove secret
-  objectBodyParameters.client_assertion_type = "urn:ietf:params:oauth:client-assertion-type:jwt-bearer"
-  objectBodyParameters.client_assertion = jwt_token
-  delete objectBodyParameters.client_secret
-  return objectBodyParameters
+  return defaultOptions
 }
 
-export function formatHeaders(headers: Record<string, unknown>): {[header: string]: string} {
-  const formattedHeaders: {[header: string]: string} = {}
-
-  // Iterate through the Axios headers and ensure values are stringified
-  for (const [key, value] of Object.entries(headers)) {
-    formattedHeaders[key] = String(value) // Ensure each value is converted to string
-  }
-
-  return formattedHeaders
+export {
+  getLambdaInvokeURL,
+  getDefaultLambdaOptions,
+  getLambdaArn
 }

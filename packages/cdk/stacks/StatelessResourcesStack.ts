@@ -87,7 +87,7 @@ export class StatelessResourcesStack extends Stack {
     const splunkSubscriptionFilterRoleImport = Fn.importValue("lambda-resources:SplunkSubscriptionFilterRole")
     const deploymentRoleImport = Fn.importValue("ci-resources:CloudFormationDeployRole")
 
-    // Coerce imports to relevant types
+    // Coerce context and imports to relevant types
     const staticContentBucket = Bucket.fromBucketArn(this, "StaticContentBucket", staticContentBucketImport)
     const tokenMappingTable = TableV2.fromTableArn(this, "tokenMappingTable", tokenMappingTableImport)
     const tokenMappingTableReadPolicy = ManagedPolicy.fromManagedPolicyArn(
@@ -138,8 +138,8 @@ export class StatelessResourcesStack extends Stack {
       logRetentionInDays: logRetentionInDays,
       deploymentRole: deploymentRole
     })
-    // - API Gateway
 
+    // - API Gateway
     const apiGateway = new RestApiGateway(this, "ApiGateway", {
       serviceName: props.serviceName,
       stackName: props.stackName,
@@ -152,7 +152,7 @@ export class StatelessResourcesStack extends Stack {
 
     // --- Methods & Resources
     new RestApiGatewayMethods(this, "RestApiGatewayMethods", {
-      extraPolices: [
+      executePolices: [
         ...cognitoFunctions.cognitoPolicies
       ],
       restAPiGatewayRole: apiGateway.restAPiGatewayRole,
@@ -163,10 +163,8 @@ export class StatelessResourcesStack extends Stack {
       authorizer: apiGateway.authorizer
     })
 
-    // token endpoint
-
     // - Cloudfront
-    // --- Origins
+    // --- Origins for bucket and api gateway
     const staticContentBucketOrigin = S3BucketOrigin.withOriginAccessControl(
       staticContentBucket,
       {
@@ -189,9 +187,7 @@ export class StatelessResourcesStack extends Stack {
       queryStringBehavior: OriginRequestQueryStringBehavior.all()
     })
 
-    // --- Cache Policies
-    /* todo - to follow in a later ticket */
-
+    // --- CloudfrontBehaviors
     const cloudfrontBehaviors = new CloudfrontBehaviors(this, "CloudfrontBehaviors", {
       serviceName: props.serviceName,
       stackName: props.stackName,
@@ -200,7 +196,6 @@ export class StatelessResourcesStack extends Stack {
       staticContentBucketOrigin: staticContentBucketOrigin
     })
 
-    // --- Functions
     // --- Distribution
     const cloudfrontDistribution = new CloudfrontDistribution(this, "CloudfrontDistribution", {
       serviceName: props.serviceName,

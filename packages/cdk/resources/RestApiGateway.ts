@@ -28,6 +28,8 @@ export interface RestApiGatewayProps {
 
 /**
  * Resources for a Rest API Gateway
+ * Note - methods are not defined here
+ * this just creates the api gateway and authorizer
 
  */
 
