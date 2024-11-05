@@ -119,7 +119,7 @@ export class CognitoFunctions extends Construct {
 
       // secret used by mock token lambda that holds the JWT private key
       const mockJwtPrivateKey = new Secret(this, "MockJwtPrivateKey", {
-        secretName: `${props.stackName!}-mockJwtPrivateKey`,
+        secretName: `${props.stackName}-mockJwtPrivateKey`,
         secretStringValue: SecretValue.unsafePlainText("ChangeMe"),
         encryptionKey: jwtKmsKey
       })
@@ -139,8 +139,8 @@ export class CognitoFunctions extends Construct {
       // lambda for mock token endpoint
       mockTokenLambda = new LambdaFunction(this, "MockTokenResources", {
         serviceName: props.serviceName,
-        stackName: props.stackName!,
-        lambdaName: `${props.stackName!}-mockToken`,
+        stackName: props.stackName,
+        lambdaName: `${props.stackName}-mockToken`,
         additionalPolicies: [
           props.tokenMappingTableWritePolicy,
           props.tokenMappingTableReadPolicy,
@@ -167,7 +167,7 @@ export class CognitoFunctions extends Construct {
 
     // secret used by token lambda that holds the JWT private key
     const primaryJwtPrivateKey = new Secret(this, "PrimaryJwtPrivateKey", {
-      secretName: `${props.stackName!}-primaryJwtPrivateKey`,
+      secretName: `${props.stackName}-primaryJwtPrivateKey`,
       secretStringValue: SecretValue.unsafePlainText("ChangeMe"),
       encryptionKey: jwtKmsKey
     })
@@ -194,8 +194,8 @@ export class CognitoFunctions extends Construct {
     })
     const tokenLambda = new LambdaFunction(this, "TokenResources", {
       serviceName: props.serviceName,
-      stackName: props.stackName!,
-      lambdaName: `${props.stackName!}-token`,
+      stackName: props.stackName,
+      lambdaName: `${props.stackName}-token`,
       additionalPolicies: [
         props.tokenMappingTableWritePolicy,
         props.tokenMappingTableReadPolicy,

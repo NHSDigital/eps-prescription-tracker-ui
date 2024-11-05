@@ -33,7 +33,7 @@ export class RestApiGatewayMethods extends Construct{
     super(scope, id)
 
     // Resources
-    for (var policy of props.executePolices) {
+    for (const policy of props.executePolices) {
       props.restAPiGatewayRole.addManagedPolicy(policy)
     }
     const tokenResource = props.restApiGateway.root.addResource("token")

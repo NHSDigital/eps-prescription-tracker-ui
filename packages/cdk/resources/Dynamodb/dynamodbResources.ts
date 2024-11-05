@@ -32,8 +32,8 @@ export class DynamodbResources extends Construct {
             "dynamodb:DescribeTable"
           ],
           resources: [
-            props.table.tableArn!,
-            `${props.table.tableArn!}/index/*`
+            props.table.tableArn,
+            `${props.table.tableArn}/index/*`
           ]
         })
       ]
@@ -49,8 +49,8 @@ export class DynamodbResources extends Construct {
             "dynamodb:DeleteItem"
           ],
           resources: [
-            props.table.tableArn!,
-            `${props.table.tableArn!}/index/*`
+            props.table.tableArn,
+            `${props.table.tableArn}/index/*`
           ]
         })
       ]

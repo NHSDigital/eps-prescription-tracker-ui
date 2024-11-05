@@ -77,7 +77,7 @@ export class Cognito extends Construct {
       target: RecordTarget.fromAlias(new UserPoolDomainTarget(userPoolDomain))
     })
 
-    new AaaaRecord(this, "UserPoolCloudFrontAliasRecord", {
+    new AaaaRecord(this, "UserPoolCloudFrontAliasIpv6Record", {
       zone: props.hostedZone,
       recordName: props.shortCognitoDomain,
       target: RecordTarget.fromAlias(new UserPoolDomainTarget(userPoolDomain))
