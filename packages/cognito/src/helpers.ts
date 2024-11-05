@@ -55,9 +55,9 @@ export function rewriteBodyToAddSignedJWT(
     keyid: "eps-cpt-ui-test"
   }
 
-  logger.info("Claims", {claims})
+  logger.debug("Claims", {claims})
   const jwt_token = jwt.sign(claims, jwtPrivateKey, signOptions)
-  logger.info("jwt_token", {jwt_token})
+  logger.debug("jwt_token", {jwt_token})
   // rewrite the body to have jwt and remove secret
   objectBodyParameters.client_assertion_type = "urn:ietf:params:oauth:client-assertion-type:jwt-bearer"
   objectBodyParameters.client_assertion = jwt_token

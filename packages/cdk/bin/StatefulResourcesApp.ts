@@ -29,9 +29,9 @@ Tags.of(app).add("cdkApp", "StatefulApp")
 
 // define the host names we are going to use for everything
 const shortCloudfrontDomain = serviceName
-const parentCognitoDomain = `login.${serviceName}`
+const parentCognitoDomain = `auth.${serviceName}`
 // shortCognitoDomain must be a subdomain of parentCognitoDomain
-const shortCognitoDomain = `auth.${parentCognitoDomain}`
+const shortCognitoDomain = `login.${parentCognitoDomain}`
 
 const UsCerts = new UsCertsStack(app, "UsCertsStack", {
   env: {

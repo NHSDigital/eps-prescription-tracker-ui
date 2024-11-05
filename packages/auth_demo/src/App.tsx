@@ -66,12 +66,12 @@ function App() {
         provider: {
           custom: "Primary"  // This is the name of the AWS::Cognito::UserPoolIdentityProvider we are using to sign in
         }
-         })}>Log in with primary cognito</button>
+         })}>Log in with PTL CIS2</button>
       <button onClick={() => signInWithRedirect({
         provider: {
           custom: "Mock"  // This is the name of the AWS::Cognito::UserPoolIdentityProvider we are using to sign in
         }
-         })}>Log in with mock cognito</button>
+         })}>Log in with mock CIS2</button>
       <button onClick={() => signOut()}>Sign Out</button>
       <div>username: {user?.username}</div>
       <div>isSignedIn: {isSignedIn} </div>

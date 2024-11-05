@@ -30,13 +30,6 @@ const errorResponseBody = {
 }
 
 const middyErrorHandler = new MiddyErrorHandler(errorResponseBody)
-/* eslint-disable  max-len */
-
-/**
- *
- * adapted from https://github.com/aws-samples/cognito-external-idp-proxy/blob/main/lambda/token/token_flow.py
- *
- */
 
 const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   logger.appendKeys({
@@ -53,25 +46,26 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
   if (useSignedJWT === "true") {
     const jwtPrivateKey = await getSecret(jwtPrivateKeyArn)
-    rewrittenObjectBodyParameters = rewriteBodyToAddSignedJWT(logger, objectBodyParameters, idpTokenPath, jwtPrivateKey as PrivateKey)
+    rewrittenObjectBodyParameters = rewriteBodyToAddSignedJWT(
+      logger, objectBodyParameters, idpTokenPath, jwtPrivateKey as PrivateKey)
   } else {
     rewrittenObjectBodyParameters = objectBodyParameters
   }
 
-  logger.info("about to call downstream idp with rewritten body", {idpTokenPath, body: rewrittenObjectBodyParameters})
+  logger.debug("about to call downstream idp with rewritten body", {idpTokenPath, body: rewrittenObjectBodyParameters})
 
   const tokenResponse = await axiosInstance.post(idpTokenPath,
     stringify(rewrittenObjectBodyParameters)
   )
 
-  logger.info("response from external oidc", {data: tokenResponse.data})
+  logger.debug("response from external oidc", {data: tokenResponse.data})
 
   const accessToken = tokenResponse.data.access_token
   const idToken = tokenResponse.data.id_token
 
   // verify and decode idToken
   const decodedIdToken = await verifyJWTWrapper(idToken, oidcIssuer, oidcClientId)
-  logger.info("decoded idToken", {decodedIdToken})
+  logger.debug("decoded idToken", {decodedIdToken})
 
   const username = `${UserPoolIdentityProvider}_${decodedIdToken.sub}`
   const params = {
@@ -84,7 +78,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     TableName: TokenMappingTableName
   }
 
-  logger.info("going to insert into dynamodb", {params})
+  logger.debug("going to insert into dynamodb", {params})
   await documentClient.send(new PutCommand(params))
 
   // return status code and body from request to downstream idp

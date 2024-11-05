@@ -161,8 +161,13 @@ export class Cognito extends Construct {
         callbackUrls: [
           "http://localhost:3000/auth/",
           `https://${props.fullCloudfrontDomain}/site/`,
-          `https://${props.fullCloudfrontDomain}/auth_demo/`],
-        logoutUrls: ["http://localhost:3000/"]
+          `https://${props.fullCloudfrontDomain}/auth_demo/`
+        ],
+        logoutUrls: [
+          "http://localhost:3000/",
+          `https://${props.fullCloudfrontDomain}/site/`,
+          `https://${props.fullCloudfrontDomain}/auth_demo/`
+        ]
       }})
 
     // ensure dependencies are set correctly and mock token lambda added to api gateway if needed
