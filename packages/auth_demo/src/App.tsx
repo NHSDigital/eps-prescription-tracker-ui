@@ -127,7 +127,6 @@ function App() {
       </div>
 
       {loading && <p>Loading...</p>}
-      {error && <p style={{color: 'red'}}>{error}</p>}
       {prescriptionData && (
         <div style={{marginTop: '20px'}}>
           <h3>Prescription Data:</h3>
