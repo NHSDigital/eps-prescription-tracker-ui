@@ -1,0 +1,55 @@
+// HEADER --------------------------------------------------------------- //
+.masthead {
+  border-bottom: 1px solid #93b9dd;
+
+  &-container {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  &-service {
+    flex-grow: 1;
+  }
+
+  .nhsuk-header__menu {
+    position: unset;
+    margin: 0;
+    float: none;
+    justify-self: flex-end;
+
+    &-toggle {
+      right: 0;
+    }
+  }
+}
+
+@media screen and (min-width: 990px) {
+  .masthead {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-left: 32px;
+    padding-right: 32px;
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+
+    &-container {
+      max-width: 960px;
+      flex-grow: 1;
+      margin: 0;
+    }
+
+    &-nav {
+      flex-grow: 0;
+      margin: 0;
+    }
+  }
+
+  .nhsuk-header__navigation-list {
+    align-items: flex-end;
+    border-top: 0;
+  }
+}
