@@ -26,6 +26,7 @@ lint-node: compile-node
 	npm run lint --workspace packages/cloudfrontFunctions
 	npm run lint --workspace packages/cdk
 	npm run lint --workspace packages/cognito
+	npm run lint --workspace packages/prescriptionSearchLambda
 	npm run lint --workspace packages/common/testing
 	npm run lint --workspace packages/common/middyErrorHandler
 
@@ -42,6 +43,7 @@ test: compile
 	npm run test --workspace packages/cdk
 	npm run test --workspace packages/cpt-ui
 	npm run test --workspace packages/cognito
+	npm run test --workspace packages/prescriptionSearchLambda
 	npm run test --workspace packages/common/middyErrorHandler
 
 clean:
@@ -51,6 +53,8 @@ clean:
 	rm -rf packages/cdk/lib
 	rm -rf packages/cognito/coverage
 	rm -rf packages/cognito/lib
+	rm -rf packages/prescriptionSearchLambda/coverage
+	rm -rf packages/prescriptionSearchLambda/lib
 	rm -rf packages/common/middyErrorHandler/coverage
 	rm -rf packages/common/middyErrorHandler/lib
 	rm -rf cdk.out
