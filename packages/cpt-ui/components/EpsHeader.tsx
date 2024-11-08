@@ -70,6 +70,9 @@ export default function EpsHeader() {
                         </li>
                     )
                 }
+                {/* <Header.NavItem>Your hospital visit</Header.NavItem>
+                <Header.NavItem>Wards and departments</Header.NavItem>
+                <Header.NavItem>Conditions and treatments</Header.NavItem> */}
                 {/* <Header.NavItem href="/social-care-and-support">
                     Care and support
                 </Header.NavItem>

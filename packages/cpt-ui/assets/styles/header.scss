@@ -1,10 +1,12 @@
 // HEADER --------------------------------------------------------------- //
 .masthead {
   border-bottom: 1px solid #93b9dd;
+  padding-left: 32px;
+  padding-right: 32px;
 
   &-container {
     margin: 0;
-    display: flex;
+    // display: flex;
     align-items: center;
     justify-content: space-between;
   }
@@ -13,7 +15,12 @@
     flex-grow: 1;
   }
 
-  .nhsuk-header__menu {
+  .nhsuk-header {
+    &__navigation-list {
+      margin:0;
+      border-top:1px solid rgba(255,255,255,.2)
+    }
+  &__menu {
     position: unset;
     margin: 0;
     float: none;
@@ -25,13 +32,12 @@
   }
 }
 
+}
 @media screen and (min-width: 990px) {
   .masthead {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding-left: 32px;
-    padding-right: 32px;
     align-items: center;
     display: flex;
     justify-content: space-between;
@@ -40,16 +46,21 @@
       max-width: 960px;
       flex-grow: 1;
       margin: 0;
+      display:flex;
     }
 
     &-nav {
       flex-grow: 0;
       margin: 0;
     }
+  .nhsuk-header {
+    &__navigation-list {
+      align-items: flex-end;
+      border-top: 0;
+      margin:0;
+      border: top 0;
+    }
+}
   }
 
-  .nhsuk-header__navigation-list {
-    align-items: flex-end;
-    border-top: 0;
-  }
 }
