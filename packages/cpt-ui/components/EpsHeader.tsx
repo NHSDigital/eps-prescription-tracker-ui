@@ -17,43 +17,11 @@ export default function EpsHeader() {
     const pathname = usePathname();
     console.log(router);    // Query parameters
     return (
-        // <Header transactional className="masthead">
-        //     <Header.Container className="masthead-container">
-        //         <Header.Logo href="/" />
-        //         <Header.ServiceName href="/">
-        //             {HEADER_SERVICE}
-        //         </Header.ServiceName>
-
-
-
-
-        //     </Header.Container>
-        //     <Header.Nav className="masthead-nav">
-        //         {pathname != '/' ? (
-        //             <li className="nhsuk-header__navigation-item">
-        //                 <Link className="nhsuk-header__navigation-link" href={HEADER_CHANGE_ROLE_TARGET}>{HEADER_CHANGE_ROLE_BUTTON}</Link>
-        //             </li>
-        //         ) :
-        //             (
-        //                 <li className="nhsuk-header__navigation-item">
-        //                     <Link className="nhsuk-header__navigation-link" href={HEADER_CONFIRM_ROLE_TARGET}>{HEADER_CONFIRM_ROLE_BUTTON}</Link>
-        //                 </li>
-        //             )
-        //         }
-        //         <Header.NavItem
-        //             home
-        //             href="/"
-        //         >
-        //             Home
-        //         </Header.NavItem>
-        //         <Header.NavDropdownMenu />
-        //     </Header.Nav>
-        // </Header >
-        <Header transactional className="masthead" id="eps-header">
+        <Header transactional className="masthead" id="eps-header" >
             <Header.Container className="masthead-container">
                 <Header.Logo href="/" />
 
-                <Header.ServiceName href="/">
+                <Header.ServiceName href="/" data-testid="eps_header_serviceName">
                     {HEADER_SERVICE}
                 </Header.ServiceName>
                 <Header.Content />
@@ -73,21 +41,6 @@ export default function EpsHeader() {
                 {/* <Header.NavItem>Your hospital visit</Header.NavItem>
                 <Header.NavItem>Wards and departments</Header.NavItem>
                 <Header.NavItem>Conditions and treatments</Header.NavItem> */}
-                {/* <Header.NavItem href="/social-care-and-support">
-                    Care and support
-                </Header.NavItem>
-                <Header.NavItem href="/news">
-                    Health news
-                </Header.NavItem>
-                <Header.NavItem href="/service-search">
-                    Services near you
-                </Header.NavItem>
-                <Header.NavItem
-                    home
-                    href="/"
-                >
-                    Home
-                </Header.NavItem> */}
                 <Header.NavDropdownMenu />
             </Header.Nav>
         </Header>
