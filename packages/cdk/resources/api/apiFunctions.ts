@@ -17,7 +17,7 @@ import {Key} from "aws-cdk-lib/aws-kms"
 import {Secret} from "aws-cdk-lib/aws-secretsmanager"
 import {NodejsFunction} from "aws-cdk-lib/aws-lambda-nodejs"
 
-export interface CognitoFunctionsProps {
+export interface ApiFunctionsProps {
   readonly serviceName: string
   readonly stackName: string
   readonly primaryOidcTokenEndpoint: string
@@ -43,15 +43,15 @@ export interface CognitoFunctionsProps {
 }
 
 /**
- * Functions and resources that are needed for cognito
+ * Functions and resources that are needed for API functions
  */
-export class CognitoFunctions extends Construct {
-  public readonly cognitoPolicies: Array<IManagedPolicy>
+export class ApiFunctions extends Construct {
+  public readonly apiFunctionsPolicies: Array<IManagedPolicy>
   public readonly prescriptionSearchLambda: NodejsFunction
   public readonly mockPrescriptionSearchLambda: NodejsFunction
   public readonly primaryJwtPrivateKey: Secret
 
-  public constructor(scope: Construct, id: string, props: CognitoFunctionsProps) {
+  public constructor(scope: Construct, id: string, props: ApiFunctionsProps) {
     super(scope, id)
 
     // Resources
@@ -192,7 +192,7 @@ export class CognitoFunctions extends Construct {
         })
       ]
     })
-    const prescriptionSearchLambda = new LambdaFunction(this, "prescriptionSearchLambda", {
+    const prescriptionSearchLambda = new LambdaFunction(this, "PrescriptionSearch", {
       serviceName: props.serviceName,
       stackName: props.stackName,
       lambdaName: `${props.stackName}-prescriptionSearchLambda`,
@@ -219,17 +219,17 @@ export class CognitoFunctions extends Construct {
       }
     })
 
-    // permissions for api gateway to execute lambdas
-    const cognitoPolicies: Array<IManagedPolicy> = [
+    // permissions for API Gateway to execute lambdas
+    const apiFunctionsPolicies: Array<IManagedPolicy> = [
       prescriptionSearchLambda.executeLambdaManagedPolicy
     ]
     if (props.useMockOidc) {
-      cognitoPolicies.push(mockPrescriptionSearchLambda!.executeLambdaManagedPolicy)
+      apiFunctionsPolicies.push(mockPrescriptionSearchLambda!.executeLambdaManagedPolicy)
       this.mockPrescriptionSearchLambda = mockPrescriptionSearchLambda!.lambda
     }
 
     // Outputs
-    this.cognitoPolicies = cognitoPolicies
+    this.apiFunctionsPolicies = apiFunctionsPolicies
     this.prescriptionSearchLambda = prescriptionSearchLambda.lambda
     this.primaryJwtPrivateKey = primaryJwtPrivateKey
 

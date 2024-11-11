@@ -16,9 +16,9 @@ export interface RestApiGatewayMethodsProps {
   readonly restApiGateway: RestApi
   readonly tokenLambda: NodejsFunction
   readonly mockTokenLambda: NodejsFunction
+  readonly prescriptionSearchLambda: NodejsFunction
   readonly useMockOidc: boolean
   readonly authorizer: CognitoUserPoolsAuthorizer
-
 }
 
 /**
@@ -27,9 +27,9 @@ export interface RestApiGatewayMethodsProps {
 
  */
 
-export class RestApiGatewayMethods extends Construct{
+export class RestApiGatewayMethods extends Construct {
 
-  public constructor(scope: Construct, id: string, props: RestApiGatewayMethodsProps){
+  public constructor(scope: Construct, id: string, props: RestApiGatewayMethodsProps) {
     super(scope, id)
 
     // Resources
@@ -48,6 +48,15 @@ export class RestApiGatewayMethods extends Construct{
         credentialsRole: props.restAPiGatewayRole
       }))
     }
+
+    // prescription-search endpoint
+    const prescriptionSearchLambdaResource = props.restApiGateway.root.addResource("prescription-search")
+    prescriptionSearchLambdaResource.addMethod("GET", new LambdaIntegration(props.prescriptionSearchLambda, {
+      credentialsRole: props.restAPiGatewayRole
+    }), {
+      authorizationType: AuthorizationType.COGNITO,
+      authorizer: props.authorizer
+    })
 
     /* Dummy Method/Resource to test cognito auth */
 
