@@ -140,7 +140,7 @@ export class ApiFunctions extends Construct {
       mockPrescriptionSearchLambda = new LambdaFunction(this, "MockPrescriptionSearch", {
         serviceName: props.serviceName,
         stackName: props.stackName,
-        lambdaName: `${props.stackName}-MockPrescriptionSearch`,
+        lambdaName: `${props.stackName}-mockSearch`,
         additionalPolicies: [
           props.tokenMappingTableWritePolicy,
           props.tokenMappingTableReadPolicy,
@@ -195,7 +195,7 @@ export class ApiFunctions extends Construct {
     const prescriptionSearchLambda = new LambdaFunction(this, "PrescriptionSearch", {
       serviceName: props.serviceName,
       stackName: props.stackName,
-      lambdaName: `${props.stackName}-prescriptionSearchLambda`,
+      lambdaName: `${props.stackName}-prescriptionSearch`,
       additionalPolicies: [
         props.tokenMappingTableWritePolicy,
         props.tokenMappingTableReadPolicy,
