@@ -4,7 +4,7 @@ import {Stack} from "aws-cdk-lib"
 import {NagPackSuppression, NagSuppressions} from "cdk-nag"
 
 export const nagSuppressions = (stack: Stack) => {
-  if(stack.artifactId === "StatefulStack"){
+  if (stack.artifactId === "StatefulStack") {
     safeAddNagSuppression(
       stack,
       "/StatefulStack/Cognito/UserPool/Resource",
@@ -66,7 +66,7 @@ export const nagSuppressions = (stack: Stack) => {
 
   }
 
-  if(stack.artifactId === "StatelessStack"){
+  if (stack.artifactId === "StatelessStack") {
     safeAddNagSuppression(
       stack,
       "/StatelessStack/ApiGateway/ApiGateway/Resource",
@@ -166,6 +166,27 @@ export const nagSuppressions = (stack: Stack) => {
       ]
     )
 
+    safeAddNagSuppression(
+      stack,
+      "/StatelessStack/ApiFunctions/PrescriptionSearch/LambdaPutLogsManagedPolicy/Resource",
+      [
+        {
+          id: "AwsSolutions-IAM5",
+          reason: "Suppress error for not having wildcards in permissions. This is a fine as we need to have permissions on all log streams under path"
+        }
+      ]
+    )
+
+    safeAddNagSuppression(
+      stack,
+      "/StatelessStack/ApiFunctions/PrimaryJwtPrivateKey/Resource",
+      [
+        {
+          id: "AwsSolutions-SMG4",
+          reason: "Suppress error for not having automatic rotation. This is a false positive - it does have rotation enabled"
+        }
+      ]
+    )
   }
 }
 
@@ -173,8 +194,8 @@ const safeAddNagSuppression = (stack: Stack, path: string, suppressions: Array<N
   try {
     NagSuppressions.addResourceSuppressionsByPath(stack, path, suppressions)
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  } catch(err){
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (err) {
     console.log(`Could not find path ${path}`)
   }
 }
