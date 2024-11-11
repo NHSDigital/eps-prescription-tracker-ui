@@ -17,6 +17,7 @@ import {Key} from "aws-cdk-lib/aws-kms"
 import {Secret} from "aws-cdk-lib/aws-secretsmanager"
 import {NodejsFunction} from "aws-cdk-lib/aws-lambda-nodejs"
 
+// Interface for properties needed to create API functions
 export interface ApiFunctionsProps {
   readonly serviceName: string
   readonly stackName: string
@@ -43,7 +44,7 @@ export interface ApiFunctionsProps {
 }
 
 /**
- * Functions and resources that are needed for API functions
+ * Class for creating functions and resources needed for API operations
  */
 export class ApiFunctions extends Construct {
   public readonly apiFunctionsPolicies: Array<IManagedPolicy>
@@ -56,7 +57,7 @@ export class ApiFunctions extends Construct {
 
     // Resources
 
-    // kms key used to encrypt the secret that stores the JWT private key
+    // KMS key used to encrypt the secret that stores the JWT private key
     const jwtKmsKey = new Key(this, "JwtKMSKey", {
       removalPolicy: RemovalPolicy.DESTROY,
       pendingWindow: Duration.days(7),
@@ -89,6 +90,8 @@ export class ApiFunctions extends Construct {
       })
     })
     jwtKmsKey.addAlias(`alias/${props.stackName}-jwtKmsKey`)
+
+    // Policy to allow decryption using the KMS key
     const useJwtKmsKeyPolicy = new ManagedPolicy(this, "UseJwtKmsKeyPolicy", {
       statements: [
         new PolicyStatement({
@@ -103,10 +106,10 @@ export class ApiFunctions extends Construct {
       ]
     })
 
-    // define some variables that we need if we are doing mock authorization
+    // Define some variables that we need if we are doing mock authorization
     let mockPrescriptionSearchLambda: LambdaFunction
 
-    // set up things for mock authorization
+    // Set up things for mock authorization
     if (props.useMockOidc) {
       if (props.mockOidcjwksEndpoint === undefined ||
         props.mockOidcUserInfoEndpoint === undefined ||
@@ -117,12 +120,14 @@ export class ApiFunctions extends Construct {
         throw new Error("Attempt to use mock oidc but variables are not defined")
       }
 
-      // secret used by mock prescription search lambda that holds the JWT private key
+      // Secret used by mock prescription search lambda that holds the JWT private key
       const mockJwtPrivateKey = new Secret(this, "MockJwtPrivateKey", {
         secretName: `${props.stackName}-mockJwtPrivateKey`,
         secretStringValue: SecretValue.unsafePlainText("ChangeMe"),
         encryptionKey: jwtKmsKey
       })
+
+      // Policy to allow access to the mock JWT private key
       const getMockJWTPrivateKeySecret = new ManagedPolicy(this, "getMockJWTPrivateKeySecret", {
         statements: [
           new PolicyStatement({
@@ -136,11 +141,11 @@ export class ApiFunctions extends Construct {
         ]
       })
 
-      // lambda for mock prescription search endpoint
+      // Lambda for mock prescription search endpoint
       mockPrescriptionSearchLambda = new LambdaFunction(this, "MockPrescriptionSearch", {
         serviceName: props.serviceName,
         stackName: props.stackName,
-        lambdaName: `${props.stackName}-mockSearch`,
+        lambdaName: `${props.stackName}-mockPrescSearch`,
         additionalPolicies: [
           props.tokenMappingTableWritePolicy,
           props.tokenMappingTableReadPolicy,
@@ -165,7 +170,7 @@ export class ApiFunctions extends Construct {
       })
     }
 
-    // secret used by prescription search lambda that holds the JWT private key
+    // Secret used by prescription search lambda that holds the JWT private key
     const primaryJwtPrivateKey = new Secret(this, "PrimaryJwtPrivateKey", {
       secretName: `${props.stackName}-primaryJwtPrivateKey`,
       secretStringValue: SecretValue.unsafePlainText("ChangeMe"),
@@ -180,6 +185,7 @@ export class ApiFunctions extends Construct {
       resources: ["*"]
     }))
 
+    // Policy to allow access to the primary JWT private key
     const getJWTPrivateKeySecret = new ManagedPolicy(this, "getJWTPrivateKeySecret", {
       statements: [
         new PolicyStatement({
@@ -192,10 +198,12 @@ export class ApiFunctions extends Construct {
         })
       ]
     })
+
+    // Lambda function for prescription search
     const prescriptionSearchLambda = new LambdaFunction(this, "PrescriptionSearch", {
       serviceName: props.serviceName,
       stackName: props.stackName,
-      lambdaName: `${props.stackName}-prescriptionSearch`,
+      lambdaName: `${props.stackName}-prescSearch`,
       additionalPolicies: [
         props.tokenMappingTableWritePolicy,
         props.tokenMappingTableReadPolicy,
@@ -219,7 +227,7 @@ export class ApiFunctions extends Construct {
       }
     })
 
-    // permissions for API Gateway to execute lambdas
+    // Permissions for API Gateway to execute lambdas
     const apiFunctionsPolicies: Array<IManagedPolicy> = [
       prescriptionSearchLambda.executeLambdaManagedPolicy
     ]
