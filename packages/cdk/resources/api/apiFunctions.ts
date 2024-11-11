@@ -1,7 +1,7 @@
 
 import {Construct} from "constructs"
 
-import {LambdaFunction} from "./LambdaFunction"
+import {LambdaFunction} from "../LambdaFunction"
 import {ITableV2} from "aws-cdk-lib/aws-dynamodb"
 import {
   AccountRootPrincipal,
@@ -47,8 +47,8 @@ export interface CognitoFunctionsProps {
  */
 export class CognitoFunctions extends Construct {
   public readonly cognitoPolicies: Array<IManagedPolicy>
-  public readonly tokenLambda: NodejsFunction
-  public readonly mockTokenLambda: NodejsFunction
+  public readonly prescriptionSearchLambda: NodejsFunction
+  public readonly mockPrescriptionSearchLambda: NodejsFunction
   public readonly primaryJwtPrivateKey: Secret
 
   public constructor(scope: Construct, id: string, props: CognitoFunctionsProps) {
@@ -83,7 +83,7 @@ export class CognitoFunctions extends Construct {
               "kms:Encrypt",
               "kms:GenerateDataKey*"
             ],
-            resources:["*"]
+            resources: ["*"]
           })
         ]
       })
@@ -104,7 +104,7 @@ export class CognitoFunctions extends Construct {
     })
 
     // define some variables that we need if we are doing mock authorization
-    let mockTokenLambda: LambdaFunction
+    let mockPrescriptionSearchLambda: LambdaFunction
 
     // set up things for mock authorization
     if (props.useMockOidc) {
@@ -117,7 +117,7 @@ export class CognitoFunctions extends Construct {
         throw new Error("Attempt to use mock oidc but variables are not defined")
       }
 
-      // secret used by mock token lambda that holds the JWT private key
+      // secret used by mock prescription search lambda that holds the JWT private key
       const mockJwtPrivateKey = new Secret(this, "MockJwtPrivateKey", {
         secretName: `${props.stackName}-mockJwtPrivateKey`,
         secretStringValue: SecretValue.unsafePlainText("ChangeMe"),
@@ -136,11 +136,11 @@ export class CognitoFunctions extends Construct {
         ]
       })
 
-      // lambda for mock token endpoint
-      mockTokenLambda = new LambdaFunction(this, "MockTokenResources", {
+      // lambda for mock prescription search endpoint
+      mockPrescriptionSearchLambda = new LambdaFunction(this, "MockPrescriptionSearch", {
         serviceName: props.serviceName,
         stackName: props.stackName,
-        lambdaName: `${props.stackName}-mockToken`,
+        lambdaName: `${props.stackName}-MockPrescriptionSearch`,
         additionalPolicies: [
           props.tokenMappingTableWritePolicy,
           props.tokenMappingTableReadPolicy,
@@ -149,8 +149,8 @@ export class CognitoFunctions extends Construct {
           getMockJWTPrivateKeySecret
         ],
         logRetentionInDays: props.logRetentionInDays,
-        packageBasePath: "packages/cognito",
-        entryPoint: "src/token.ts",
+        packageBasePath: "packages/prescriptionSearchLambda",
+        entryPoint: "src/handler.ts",
         lambdaEnvironmentVariables: {
           idpTokenPath: props.mockOidcTokenEndpoint,
           TokenMappingTableName: props.tokenMappingTable.tableName,
@@ -165,19 +165,19 @@ export class CognitoFunctions extends Construct {
       })
     }
 
-    // secret used by token lambda that holds the JWT private key
+    // secret used by prescription search lambda that holds the JWT private key
     const primaryJwtPrivateKey = new Secret(this, "PrimaryJwtPrivateKey", {
       secretName: `${props.stackName}-primaryJwtPrivateKey`,
       secretStringValue: SecretValue.unsafePlainText("ChangeMe"),
       encryptionKey: jwtKmsKey
     })
-    primaryJwtPrivateKey.addToResourcePolicy( new PolicyStatement({
+    primaryJwtPrivateKey.addToResourcePolicy(new PolicyStatement({
       effect: Effect.ALLOW,
       principals: [props.deploymentRole],
       actions: [
         "secretsmanager:PutSecretValue"
       ],
-      resources:["*"]
+      resources: ["*"]
     }))
 
     const getJWTPrivateKeySecret = new ManagedPolicy(this, "getJWTPrivateKeySecret", {
@@ -192,10 +192,10 @@ export class CognitoFunctions extends Construct {
         })
       ]
     })
-    const tokenLambda = new LambdaFunction(this, "TokenResources", {
+    const prescriptionSearchLambda = new LambdaFunction(this, "prescriptionSearchLambda", {
       serviceName: props.serviceName,
       stackName: props.stackName,
-      lambdaName: `${props.stackName}-token`,
+      lambdaName: `${props.stackName}-prescriptionSearchLambda`,
       additionalPolicies: [
         props.tokenMappingTableWritePolicy,
         props.tokenMappingTableReadPolicy,
@@ -204,8 +204,8 @@ export class CognitoFunctions extends Construct {
         getJWTPrivateKeySecret
       ],
       logRetentionInDays: props.logRetentionInDays,
-      packageBasePath: "packages/cognito",
-      entryPoint: "src/token.ts",
+      packageBasePath: "packages/prescriptionSearchLambda",
+      entryPoint: "src/handler.ts",
       lambdaEnvironmentVariables: {
         idpTokenPath: props.primaryOidcTokenEndpoint,
         TokenMappingTableName: props.tokenMappingTable.tableName,
@@ -221,16 +221,16 @@ export class CognitoFunctions extends Construct {
 
     // permissions for api gateway to execute lambdas
     const cognitoPolicies: Array<IManagedPolicy> = [
-      tokenLambda.executeLambdaManagedPolicy
+      prescriptionSearchLambda.executeLambdaManagedPolicy
     ]
     if (props.useMockOidc) {
-      cognitoPolicies.push(mockTokenLambda!.executeLambdaManagedPolicy)
-      this.mockTokenLambda = mockTokenLambda!.lambda
+      cognitoPolicies.push(mockPrescriptionSearchLambda!.executeLambdaManagedPolicy)
+      this.mockPrescriptionSearchLambda = mockPrescriptionSearchLambda!.lambda
     }
 
     // Outputs
     this.cognitoPolicies = cognitoPolicies
-    this.tokenLambda = tokenLambda.lambda
+    this.prescriptionSearchLambda = prescriptionSearchLambda.lambda
     this.primaryJwtPrivateKey = primaryJwtPrivateKey
 
   }

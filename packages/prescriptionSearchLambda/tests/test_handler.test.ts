@@ -8,7 +8,7 @@ import {
 import {DynamoDBDocumentClient, PutCommandInput} from "@aws-sdk/lib-dynamodb"
 import createJWKSMock from "mock-jwks"
 import nock from "nock"
-import {handler} from "../src/token"
+import {handler} from "../src/handler"
 
 // redefining readonly property of the performance object
 const dummyContext = {
