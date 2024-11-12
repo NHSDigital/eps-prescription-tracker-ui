@@ -122,7 +122,7 @@ export class ApiFunctions extends Construct {
 
       // Secret used by mock prescription search lambda that holds the JWT private key
       const mockJwtPrivateKey = new Secret(this, "MockJwtPrivateKey", {
-        secretName: `${props.stackName}-mockJwtPrivateKey`,
+        secretName: `${props.stackName}-mockJwtPrivateKeyPrescSearch`,
         secretStringValue: SecretValue.unsafePlainText("ChangeMe"),
         encryptionKey: jwtKmsKey
       })
