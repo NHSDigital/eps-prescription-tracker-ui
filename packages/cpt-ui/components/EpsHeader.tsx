@@ -38,9 +38,9 @@ export default function EpsHeader() {
                         </li>
                     )
                 }
-                {/* <Header.NavItem>Your hospital visit</Header.NavItem>
-                <Header.NavItem>Wards and departments</Header.NavItem>
-                <Header.NavItem>Conditions and treatments</Header.NavItem> */}
+                <Header.NavItem>Placeholder Link 1</Header.NavItem>
+                <Header.NavItem>Placeholder Link 2</Header.NavItem>
+                <Header.NavItem>Placeholder Link 3</Header.NavItem>
                 <Header.NavDropdownMenu />
             </Header.Nav>
         </Header>
