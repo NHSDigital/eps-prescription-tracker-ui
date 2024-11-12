@@ -61,8 +61,8 @@ export class ApiFunctions extends Construct {
     const jwtKmsKey = new Key(this, "JwtKMSKey", {
       removalPolicy: RemovalPolicy.DESTROY,
       pendingWindow: Duration.days(7),
-      alias: `${props.stackName}-JwtKMSKeyKMSKey`,
-      description: `${props.stackName}-JwtKMSKeyKMSKey`,
+      alias: `${props.stackName}-JwtKMSKeyKMSKeyPrescSearch`,
+      description: `${props.stackName}-JwtKMSKeyKMSKeyPrescSearch`,
       enableKeyRotation: true,
       policy: new PolicyDocument({
         statements: [
