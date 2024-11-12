@@ -23,6 +23,10 @@ import {CloudfrontFunction} from "../resources/Cloudfront/CloudfrontFunction"
 import {CloudfrontDistribution} from "../resources/CloudfrontDistribution"
 import {nagSuppressions} from "../nagSuppressions"
 
+// Lambda resources
+import {LambdaIntegration} from "aws-cdk-lib/aws-apigateway"
+import {TrackerUserInfo} from "../resources/TrackerUserInfo/TrackerUserInfo"
+
 export interface StatelessResourcesStackProps extends StackProps {
   readonly serviceName: string
   readonly stackName: string
@@ -223,6 +227,16 @@ export class StatelessResourcesStack extends Stack {
         }
       ]
     })
+
+    // --- Lambdas
+    const trackerUserInfo = new TrackerUserInfo(this, "TrackerUserInfo", {
+      serviceName: props.serviceName,
+      stackName: props.stackName
+    })
+    // Add /user resource to API Gateway
+    const userResource = apiGateway.restApiGateway.root.addResource("trackerUserInfo")
+    // Add GET method to /user resource
+    userResource.addMethod("GET", new LambdaIntegration(trackerUserInfo.lambdaFunction.lambda))
 
     /* Resources to add:
       - api gateway resources
