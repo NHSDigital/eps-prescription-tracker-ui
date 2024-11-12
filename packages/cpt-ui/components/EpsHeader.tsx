@@ -19,7 +19,7 @@ export default function EpsHeader() {
     return (
         <Header transactional className="masthead" id="eps-header" >
             <Header.Container className="masthead-container">
-                <Header.Logo href="/" />
+                <Header.Logo href="/" data-testid="eps_header_logoLink" />
 
                 <Header.ServiceName href="/" data-testid="eps_header_serviceName">
                     {HEADER_SERVICE}
@@ -29,12 +29,12 @@ export default function EpsHeader() {
             <Header.Nav className="masthead-nav">
                 {pathname != '/' ? (
                     <li className="nhsuk-header__navigation-item">
-                        <Link className="nhsuk-header__navigation-link" href={HEADER_CHANGE_ROLE_TARGET}>{HEADER_CHANGE_ROLE_BUTTON}</Link>
+                        <Link className="nhsuk-header__navigation-link" href={HEADER_CHANGE_ROLE_TARGET} data-testid="eps_header_changeRoleLink">{HEADER_CHANGE_ROLE_BUTTON}</Link>
                     </li>
                 ) :
                     (
                         <li className="nhsuk-header__navigation-item">
-                            <Link className="nhsuk-header__navigation-link" href={HEADER_CONFIRM_ROLE_TARGET}>{HEADER_CONFIRM_ROLE_BUTTON}</Link>
+                            <Link className="nhsuk-header__navigation-link" href={HEADER_CONFIRM_ROLE_TARGET} data-testid="eps_header_confirmRoleLink">{HEADER_CONFIRM_ROLE_BUTTON}</Link>
                         </li>
                     )
                 }
