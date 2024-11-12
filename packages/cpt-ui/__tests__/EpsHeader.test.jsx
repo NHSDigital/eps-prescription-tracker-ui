@@ -1,13 +1,11 @@
 import React from 'react';
 import "@testing-library/jest-dom";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import EpsHeader from "../components/EpsHeader";
 import {
   HEADER_SERVICE,
   HEADER_CONFIRM_ROLE_BUTTON,
-  HEADER_CONFIRM_ROLE_TARGET,
   HEADER_CHANGE_ROLE_BUTTON,
-  HEADER_CHANGE_ROLE_TARGET
 } from "../constants/ui-strings/HeaderStrings";
 
 // Mock useRouter:
