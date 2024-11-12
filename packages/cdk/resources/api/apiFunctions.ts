@@ -89,7 +89,7 @@ export class ApiFunctions extends Construct {
         ]
       })
     })
-    jwtKmsKey.addAlias(`alias/${props.stackName}-jwtKmsKey`)
+    jwtKmsKey.addAlias(`alias/${props.stackName}-jwtKmsKeyPrescSearch`)
 
     // Policy to allow decryption using the KMS key
     const useJwtKmsKeyPolicy = new ManagedPolicy(this, "UseJwtKmsKeyPolicy", {
@@ -172,7 +172,7 @@ export class ApiFunctions extends Construct {
 
     // Secret used by prescription search lambda that holds the JWT private key
     const primaryJwtPrivateKey = new Secret(this, "PrimaryJwtPrivateKey", {
-      secretName: `${props.stackName}-primaryJwtPrivateKey`,
+      secretName: `${props.stackName}-primaryJwtPrivateKeyPrescSearch`,
       secretStringValue: SecretValue.unsafePlainText("ChangeMe"),
       encryptionKey: jwtKmsKey
     })
