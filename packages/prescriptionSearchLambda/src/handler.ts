@@ -21,6 +21,8 @@ const useSignedJWT = process.env["useSignedJWT"] as string
 const jwtPrivateKeyArn = process.env["jwtPrivateKeyArn"] as string
 const oidcClientId = process.env["oidcClientId"] as string
 const oidcIssuer = process.env["oidcIssuer"] as string
+const apigeeEndpoint = "https://internal-dev.api.service.nhs.uk/clinical-prescription-tracker"
+const roleId = "555254242106"
 
 const dynamoClient = new DynamoDBClient()
 const documentClient = DynamoDBDocumentClient.from(dynamoClient)
@@ -81,11 +83,22 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   logger.debug("going to insert into dynamodb", {params})
   await documentClient.send(new PutCommand(params))
 
-  // return status code and body from request to downstream idp
+  // call Apigee with accessToken and PrescriptionID
+  const prescriptionID = objectBodyParameters["prescriptionID"] as string || "defaultID" // Default value to avoid errors
+
+  const apigeeResponse = await axiosInstance.get(`${apigeeEndpoint}/prescription-search/${prescriptionID}`, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "NHSD-Session-URID": roleId,
+    },
+  })
+
+  logger.debug("Response from Apigee", {data: apigeeResponse.data})
+
   return {
-    statusCode: tokenResponse.status,
-    body: JSON.stringify(tokenResponse.data),
-    headers: formatHeaders(tokenResponse.headers)
+    statusCode: 200,
+    body: JSON.stringify(apigeeResponse.data),
+    headers: formatHeaders(apigeeResponse.headers),
   }
 }
 

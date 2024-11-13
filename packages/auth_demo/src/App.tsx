@@ -79,7 +79,8 @@ function App() {
       const response = await axios.get(API_ENDPOINT, {
         params: {prescriptionId},
         headers: {
-          Authorization: `Bearer ${idToken?.getJwtToken()}`,
+          Authorization: `Bearer ${accessToken?.getJwtToken()}`,
+          'NHSD-Session-URID': '555254242106'
         },
       })
       setPrescriptionData(response.data)
