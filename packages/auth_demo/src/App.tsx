@@ -65,29 +65,11 @@ function App() {
     }
   }
 
-  const clearCognitoCookiesExcept = (accessToken) => {
-    // Split cookies into an array
-    const cookies = document.cookie.split("; ")
-
-    // Iterate over all cookies
-    cookies.forEach(cookie => {
-      const cookieName = cookie.split("=")[0].trim() // Extract the cookie name
-
-      // Clear the cookie if it starts with "CognitoIdentityServiceProvider" but does not contain the access token
-      if (cookieName.startsWith("CognitoIdentityServiceProvider") && !cookie.includes(accessToken)) {
-        document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`
-      }
-    })
-  }
-
   const fetchPrescriptionData = async () => {
     if (!prescriptionId) {
       setError('Please enter a Prescription ID.')
       return
     }
-
-    // Clear all cookies with 'CognitoIdentityServiceProvider' prefix except those containing the access token
-    clearCognitoCookiesExcept(accessToken)
 
     setLoading(true)
     setPrescriptionData(null)
