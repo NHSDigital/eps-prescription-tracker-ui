@@ -24,8 +24,10 @@ import {CloudfrontDistribution} from "../resources/CloudfrontDistribution"
 import {nagSuppressions} from "../nagSuppressions"
 
 // Lambda resources
-import {LambdaIntegration} from "aws-cdk-lib/aws-apigateway"
+import {AuthorizationType, CognitoUserPoolsAuthorizer, LambdaIntegration} from "aws-cdk-lib/aws-apigateway"
 import {TrackerUserInfo} from "../resources/TrackerUserInfo/TrackerUserInfo"
+import {CfnUserPool, UserPool} from "aws-cdk-lib/aws-cognito"
+import {CfnWebACL, CfnWebACLAssociation} from "aws-cdk-lib/aws-wafv2"
 
 export interface StatelessResourcesStackProps extends StackProps {
   readonly serviceName: string
@@ -54,6 +56,41 @@ export class StatelessResourcesStack extends Stack {
     const apiGateway = new RestApiGateway(this, "ApiGateway", {
       serviceName: props.serviceName,
       stackName: props.stackName
+    })
+
+    // Protect the gateway with WAFv2
+    const webAcl = new CfnWebACL(this, "WebACL", {
+      defaultAction: {allow: {}},
+      scope: "REGIONAL",
+      visibilityConfig: {
+        cloudWatchMetricsEnabled: true,
+        metricName: `${props.serviceName}-web-acl`,
+        sampledRequestsEnabled: true
+      },
+      rules: [
+        {
+          name: "AWS-AWSManagedRulesCommonRuleSet",
+          priority: 0,
+          statement: {
+            managedRuleGroupStatement: {
+              name: "AWSManagedRulesCommonRuleSet",
+              vendorName: "AWS"
+            }
+          },
+          overrideAction: {
+            none: {}
+          },
+          visibilityConfig: {
+            cloudWatchMetricsEnabled: true,
+            metricName: `${props.serviceName}-aws-managed-rules`,
+            sampledRequestsEnabled: true
+          }
+        }
+      ]
+    })
+    new CfnWebACLAssociation(this, "WebACLAssociation", {
+      resourceArn: apiGateway.restApiGateway.deploymentStage.stageArn,
+      webAclArn: webAcl.attrArn
     })
 
     // --- Methods & Resources
@@ -233,10 +270,43 @@ export class StatelessResourcesStack extends Stack {
       serviceName: props.serviceName,
       stackName: props.stackName
     })
-    // Add /user resource to API Gateway
-    const userResource = apiGateway.restApiGateway.root.addResource("trackerUserInfo")
-    // Add GET method to /user resource
-    userResource.addMethod("GET", new LambdaIntegration(trackerUserInfo.lambdaFunction.lambda))
+
+    // Add /trackerUserInfo resource to API Gateway
+    const trackerUserInfoResource = apiGateway.restApiGateway.root.addResource("trackerUserInfo")
+
+    // Authorisation control for the lambda (the american spelling causes pain)
+    // What user pool should this use??? As a temporary measure, I suppose I'll define one, but this needs to be removed
+    const userPool = new UserPool(this, "UserPool", {
+      userPoolName: `${props.serviceName}-user-pool`,
+      selfSignUpEnabled: false,
+      signInAliases: {username: true, email: true},
+      passwordPolicy: {
+        minLength: 8,
+        requireUppercase: true,
+        requireLowercase: true,
+        requireDigits: true,
+        requireSymbols: true
+      }
+      // AIAIK, this is also where we would require MFA, which cfn also nags about...
+    })
+
+    // Set advanced security mode to ENFORCED
+    const cfnUserPool = userPool.node.defaultChild as CfnUserPool
+    cfnUserPool.userPoolAddOns = {
+      advancedSecurityMode: "ENFORCED"
+    }
+
+    // Create the authoriSer
+    const authorizer = new CognitoUserPoolsAuthorizer(this, "CognitoAuthorizer", {
+      cognitoUserPools: [userPool],
+      authorizerName: `${props.serviceName}-authorizer`
+    })
+
+    // Add the resource to the lambda
+    trackerUserInfoResource.addMethod("GET", new LambdaIntegration(trackerUserInfo.lambdaFunction.lambda), {
+      authorizer: authorizer,
+      authorizationType: AuthorizationType.COGNITO
+    })
 
     /* Resources to add:
       - api gateway resources

@@ -29,6 +29,18 @@ export const nagSuppressions = (stack: Stack) => {
       ]
     )
 
+    // TODO: Is the appropriate? Needs elab
+    safeAddNagSuppression(
+      stack,
+      "/StatelessStack/TrackerUserInfo/TrackerUserInfoLambda/LambdaPutLogsManagedPolicy/Resource",
+      [
+        {
+          id: "AwsSolutions-IAM5",
+          reason: "Lambda requires wildcard permissions for log streams, so it can write logs."
+        }
+      ]
+    )
+
     // !! Remove after auth has been implemented !!
     safeAddNagSuppression(
       stack,

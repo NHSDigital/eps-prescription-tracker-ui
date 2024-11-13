@@ -20,6 +20,7 @@ import {Stream} from "aws-cdk-lib/aws-kinesis"
 import {Construct} from "constructs"
 
 import {getDefaultLambdaOptions} from "./LambdaFunction/helpers"
+import path from "path"
 
 const insightsLayerArn = "arn:aws:lambda:eu-west-2:580247275435:layer:LambdaInsightsExtension:53"
 
@@ -46,6 +47,7 @@ export interface LambdaFunctionProps {
 
   /**
    * The base path of the Lambda function code package.
+   * Relative to the root of the repository, e.g. "packages/cdk/resources/TrackerUserInfo"
    */
   readonly packageBasePath: string
 
@@ -176,7 +178,6 @@ export class LambdaFunction extends Construct {
       }
     )
 
-    // Create a Subscription Filter to send logs to the Splunk delivery stream via Kinesis
     new SubscriptionFilter(this, "LambdaLogsSplunkSubscriptionFilter", {
       logGroup: lambdaLogGroup,
       filterPattern: FilterPattern.allTerms(),
@@ -197,14 +198,17 @@ export class LambdaFunction extends Construct {
       ]
     })
 
-    // Get default Lambda options from a helper function
     const lambdaOptions = getDefaultLambdaOptions({
       functionName: `${props.serviceName}-${props.lambdaName}`,
       packageBasePath: props.packageBasePath,
       entryPoint: props.entryPoint
     })
 
-    // Create the Node.js Lambda function
+    // Include the tsconfig in the build
+    const bundlingOptions = {
+      tsconfig: path.resolve(__dirname, "../tsconfig.json")
+    }
+
     const lambdaFunction = new NodejsFunction(this, props.lambdaName, {
       ...lambdaOptions,
       role: lambdaRole,
@@ -212,7 +216,8 @@ export class LambdaFunction extends Construct {
       logGroup: lambdaLogGroup,
       layers: [
         insightsLambdaLayer
-      ]
+      ],
+      bundling: bundlingOptions
     })
 
     // Suppress specific AWS Config rules for the Lambda function

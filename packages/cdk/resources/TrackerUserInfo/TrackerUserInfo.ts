@@ -1,5 +1,4 @@
 import {Construct} from "constructs"
-import * as path from "path"
 import {LambdaFunction} from "../LambdaFunction"
 
 export interface TrackerUserInfoProps {
@@ -17,7 +16,7 @@ export class TrackerUserInfo extends Construct {
       serviceName: props.serviceName,
       stackName: props.stackName,
       lambdaName: "TrackerUserInfo",
-      packageBasePath: path.join(__dirname),
+      packageBasePath: "packages/cdk/resources/TrackerUserInfo",
       entryPoint: "handler.ts",
       lambdaEnvironmentVariables: {
         // Add any required environment variables here
