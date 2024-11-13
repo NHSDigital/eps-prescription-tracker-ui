@@ -1,5 +1,3 @@
-// resources/TrackerUserInfo/TrackerUserInfo.ts
-
 import {Construct} from "constructs"
 import * as path from "path"
 import {LambdaFunction} from "../LambdaFunction"
