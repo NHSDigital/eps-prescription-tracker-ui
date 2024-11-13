@@ -79,7 +79,7 @@ function App() {
       const response = await axios.get(API_ENDPOINT, {
         params: {prescriptionId},
         headers: {
-          Authorization: `Bearer ${accessToken?.getJwtToken()}`,
+          Authorization: `Bearer ${accessToken}`,
           'NHSD-Session-URID': '555254242106'
         },
       })
