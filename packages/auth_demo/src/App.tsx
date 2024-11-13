@@ -65,11 +65,24 @@ function App() {
     }
   }
 
+  const clearCognitoCookies = () => {
+    const cookies = document.cookie.split("; ")
+    cookies.forEach(cookie => {
+      if (cookie.startsWith("CognitoIdentityServiceProvider")) {
+        // Remove the cookie by setting its expiration date to the past
+        document.cookie = `${cookie.split("=")[0]}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`
+      }
+    })
+  }
+
   const fetchPrescriptionData = async () => {
     if (!prescriptionId) {
       setError('Please enter a Prescription ID.')
       return
     }
+
+    // Clear all cookies with 'CognitoIdentityServiceProvider' prefix before making the request
+    clearCognitoCookies()
 
     setLoading(true)
     setPrescriptionData(null)
