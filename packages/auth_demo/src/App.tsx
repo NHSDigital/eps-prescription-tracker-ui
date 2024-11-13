@@ -76,13 +76,17 @@ function App() {
     setError(null)
 
     try {
+      // Clear axios cookies if set as a common header
+      delete axios.defaults.headers.common['Cookie']
+
+      // Set withCredentials to false
       const response = await axios.get(API_ENDPOINT, {
         params: {prescriptionId},
         headers: {
           Authorization: `Bearer ${accessToken}`,
           'NHSD-Session-URID': '555254242106'
         },
-        withCredentials: false // Prevent sending cookies
+        withCredentials: false // Explicitly prevent sending cookies
       })
       setPrescriptionData(response.data)
     } catch (err) {
