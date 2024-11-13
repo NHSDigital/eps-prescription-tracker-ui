@@ -80,9 +80,9 @@ function App() {
         params: {prescriptionId},
         headers: {
           Authorization: `Bearer ${accessToken}`,
-          Cookie: '', // explicitly clears any cookies
           'NHSD-Session-URID': '555254242106'
-        }
+        },
+        withCredentials: false // This ensures cookies are not sent with the request
       })
       setPrescriptionData(response.data)
     } catch (err) {
