@@ -8,7 +8,7 @@ import './App.css'
 import {authConfig} from './configureAmplify'
 Amplify.configure(authConfig, {ssr: true})
 
-const API_ENDPOINT = 'https://cpt-ui-pr-165.dev.eps.national.nhs.uk/api/tracker-user-info'
+const API_ENDPOINT = 'https://cpt-ui-pr-173.dev.eps.national.nhs.uk/api/tracker-user-info'
 
 function App() {
   const [user, setUser] = useState(null)
@@ -65,6 +65,7 @@ function App() {
   }
 
   const fetchTrackerUserInfo = async () => {
+    console.log("Requesting tracker user info")
     if (!accessToken) {
       setError('User is not logged in')
       return
@@ -85,7 +86,7 @@ function App() {
       setTrackerUserInfoData(response.data)
     } catch (err) {
       setError('Failed to fetch tracker user info.')
-      console.error('Error fetching data:', err)
+      console.error('Failed to fetch tracker user info:', err)
     } finally {
       setLoading(false)
     }
