@@ -81,7 +81,7 @@ function App() {
           Authorization: `Bearer ${accessToken}`,
           'NHSD-Session-URID': '555254242106'
         },
-        withCredentials: false // This ensures cookies are not sent with the request
+        withCredentials: true // This ensures cookies are not sent with the request
       })
       setTrackerUserInfoData(response.data)
     } catch (err) {
