@@ -22,6 +22,7 @@
         "packages/cpt-ui",
         "packages/cdk",
         "packages/cognito",
+        "packages/prescriptionSearchLambda",
         "packages/common/middyErrorHandler",
         "packages/common/testing",
         "packages/auth_demo"

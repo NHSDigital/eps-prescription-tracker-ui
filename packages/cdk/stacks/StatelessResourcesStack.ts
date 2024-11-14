@@ -25,6 +25,7 @@ import {nagSuppressions} from "../nagSuppressions"
 import {TableV2} from "aws-cdk-lib/aws-dynamodb"
 import {ManagedPolicy, Role} from "aws-cdk-lib/aws-iam"
 import {CognitoFunctions} from "../resources/CognitoFunctions"
+import {ApiFunctions} from "../resources/api/apiFunctions"
 import {UserPool} from "aws-cdk-lib/aws-cognito"
 import {Key} from "aws-cdk-lib/aws-kms"
 import {Stream} from "aws-cdk-lib/aws-kinesis"
@@ -45,7 +46,7 @@ export interface StatelessResourcesStackProps extends StackProps {
  */
 
 export class StatelessResourcesStack extends Stack {
-  public constructor(scope: App, id: string, props: StatelessResourcesStackProps){
+  public constructor(scope: App, id: string, props: StatelessResourcesStackProps) {
     super(scope, id, props)
 
     // Context
@@ -88,8 +89,8 @@ export class StatelessResourcesStack extends Stack {
     const deploymentRoleImport = Fn.importValue("ci-resources:CloudFormationDeployRole")
 
     // Coerce context and imports to relevant types
-    const staticContentBucket = Bucket.fromBucketArn( this, "StaticContentBucket", staticContentBucketImport)
-    const tokenMappingTable = TableV2.fromTableArn( this, "tokenMappingTable", tokenMappingTableImport)
+    const staticContentBucket = Bucket.fromBucketArn(this, "StaticContentBucket", staticContentBucketImport)
+    const tokenMappingTable = TableV2.fromTableArn(this, "tokenMappingTable", tokenMappingTableImport)
     const tokenMappingTableReadPolicy = ManagedPolicy.fromManagedPolicyArn(
       this, "tokenMappingTableReadPolicy", tokenMappingTableReadPolicyImport)
     const tokenMappingTableWritePolicy = ManagedPolicy.fromManagedPolicyArn(
@@ -105,7 +106,7 @@ export class StatelessResourcesStack extends Stack {
     const splunkDeliveryStream = Stream.fromStreamArn(
       this, "SplunkDeliveryStream", splunkDeliveryStreamImport)
     const splunkSubscriptionFilterRole = Role.fromRoleArn(
-      this, "splunkSubscriptionFilterRole", splunkSubscriptionFilterRoleImport )
+      this, "splunkSubscriptionFilterRole", splunkSubscriptionFilterRoleImport)
     const hostedZone = HostedZone.fromHostedZoneAttributes(this, "hostedZone", {
       hostedZoneId: epsHostedZoneId,
       zoneName: epsDomainName
@@ -116,6 +117,31 @@ export class StatelessResourcesStack extends Stack {
     // Resources
     // -- functions for cognito
     const cognitoFunctions = new CognitoFunctions(this, "CognitoFunctions", {
+      serviceName: props.serviceName,
+      stackName: props.stackName,
+      primaryOidcTokenEndpoint: primaryOidcTokenEndpoint,
+      primaryOidcUserInfoEndpoint: primaryOidcUserInfoEndpoint,
+      primaryOidcjwksEndpoint: primaryOidcjwksEndpoint,
+      primaryOidcClientId: primaryOidcClientId,
+      primaryOidcIssuer: primaryOidcIssuer,
+      useMockOidc: useMockOidc,
+      mockOidcTokenEndpoint: mockOidcTokenEndpoint,
+      mockOidcUserInfoEndpoint: mockOidcUserInfoEndpoint,
+      mockOidcjwksEndpoint: mockOidcjwksEndpoint,
+      mockOidcClientId: mockOidcClientId,
+      mockOidcIssuer: mockOidcIssuer,
+      tokenMappingTable: tokenMappingTable,
+      tokenMappingTableWritePolicy: tokenMappingTableWritePolicy,
+      tokenMappingTableReadPolicy: tokenMappingTableReadPolicy,
+      useTokensMappingKmsKeyPolicy: useTokensMappingKmsKeyPolicy,
+      primaryPoolIdentityProviderName: primaryPoolIdentityProviderName,
+      mockPoolIdentityProviderName: mockPoolIdentityProviderName,
+      logRetentionInDays: logRetentionInDays,
+      deploymentRole: deploymentRole
+    })
+
+    // -- functions for API
+    const apiFunctions = new ApiFunctions(this, "ApiFunctions", {
       serviceName: props.serviceName,
       stackName: props.stackName,
       primaryOidcTokenEndpoint: primaryOidcTokenEndpoint,
@@ -153,12 +179,14 @@ export class StatelessResourcesStack extends Stack {
     // --- Methods & Resources
     new RestApiGatewayMethods(this, "RestApiGatewayMethods", {
       executePolices: [
-        ...cognitoFunctions.cognitoPolicies
+        ...cognitoFunctions.cognitoPolicies,
+        ...apiFunctions.apiFunctionsPolicies
       ],
       restAPiGatewayRole: apiGateway.restAPiGatewayRole,
       restApiGateway: apiGateway.restApiGateway,
       tokenLambda: cognitoFunctions.tokenLambda,
       mockTokenLambda: cognitoFunctions.mockTokenLambda,
+      prescriptionSearchLambda: apiFunctions.prescriptionSearchLambda,
       useMockOidc: useMockOidc,
       authorizer: apiGateway.authorizer
     })
@@ -209,7 +237,7 @@ export class StatelessResourcesStack extends Stack {
         origin: staticContentBucketOrigin,
         allowedMethods: AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
         viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-        functionAssociations:[
+        functionAssociations: [
           {
             function: cloudfrontBehaviors.s3404UriRewriteFunction.function,
             eventType: FunctionEventType.VIEWER_REQUEST
