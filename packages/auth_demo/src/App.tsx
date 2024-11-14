@@ -17,7 +17,7 @@ function App() {
   const [isSignedIn, setIsSignedIn] = useState<boolean>(false)
   const [idToken, setIdToken] = useState<JWT>(null)
   const [accessToken, setAccessToken] = useState<JWT>(null)
-  const [prescriptionData, setPrescriptionData] = useState<any>(null)
+  const [trackerUserInfoData, setTrackerUserInfoData] = useState<any>(null)
   const [loading, setLoading] = useState<boolean>(false)
 
   useEffect(() => {
@@ -64,28 +64,27 @@ function App() {
     }
   }
 
-  const fetchPrescriptionData = async () => {
-    if (!prescriptionId) {
-      setError('Please enter a Prescription ID.')
+  const fetchTrackerUserInfo = async () => {
+    if (!accessToken) {
+      setError('User is not logged in')
       return
     }
 
     setLoading(true)
-    setPrescriptionData(null)
     setError(null)
 
     try {
       const response = await axios.get(API_ENDPOINT, {
-        params: {prescriptionId},
+        params: {},
         headers: {
           Authorization: `Bearer ${accessToken}`,
           'NHSD-Session-URID': '555254242106'
         },
         withCredentials: false // This ensures cookies are not sent with the request
       })
-      setPrescriptionData(response.data)
+      setTrackerUserInfoData(response.data)
     } catch (err) {
-      setError('Failed to fetch prescription data.')
+      setError('Failed to fetch tracker user info.')
       console.error('Error fetching data:', err)
     } finally {
       setLoading(false)
@@ -112,7 +111,7 @@ function App() {
 
       <div style={{marginTop: '20px'}}>
         <button
-          onClick={fetchPrescriptionData}
+          onClick={fetchTrackerUserInfo}
           disabled={!isSignedIn}
         >
           Fetch User Information
@@ -120,10 +119,10 @@ function App() {
       </div>
 
       {loading && <p>Loading...</p>}
-      {prescriptionData && (
+      {trackerUserInfoData && (
         <div style={{marginTop: '20px'}}>
           <h3>Prescription Data:</h3>
-          <pre>{JSON.stringify(prescriptionData, null, 2)}</pre>
+          <pre>{JSON.stringify(trackerUserInfoData, null, 2)}</pre>
         </div>
       )}
     </div>
