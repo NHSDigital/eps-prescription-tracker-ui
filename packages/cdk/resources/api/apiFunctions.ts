@@ -139,7 +139,7 @@ export class ApiFunctions extends Construct {
 
     // Secret used by lambdas that holds the JWT private key
     const mockJwtPrivateKey = new Secret(this, "MockJwtPrivateKey", {
-      secretName: `${props.stackName}-mockJwtPrivateKeyPrescSearch`,
+      secretName: `${props.stackName}-mockJwtPrivateKeyAPILambdas`,
       secretStringValue: SecretValue.unsafePlainText("ChangeMe"),
       encryptionKey: jwtKmsKey
     })
@@ -255,7 +255,7 @@ export class ApiFunctions extends Construct {
       mockTrackerUserInfoLambda = new LambdaFunction(this, "MockTrackerUserInfoLambda", {
         serviceName: props.serviceName,
         stackName: props.stackName,
-        lambdaName: `${props.stackName}-mockTrackerUserInfo`,
+        lambdaName: `${props.stackName}-mockTrkUsrInfo`,
         additionalPolicies: [
           props.tokenMappingTableWritePolicy,
           props.tokenMappingTableReadPolicy,
