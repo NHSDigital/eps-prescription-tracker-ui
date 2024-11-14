@@ -11,7 +11,7 @@ import {parse, ParsedUrlQuery, stringify} from "querystring"
 import {PrivateKey} from "jsonwebtoken"
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
 import {DynamoDBDocumentClient, PutCommand} from "@aws-sdk/lib-dynamodb"
-import {formatHeaders, rewriteBodyToAddSignedJWT, verifyJWTWrapper} from "./helpers"
+import {rewriteBodyToAddSignedJWT, verifyJWTWrapper} from "./helpers"
 
 const logger = new Logger({serviceName: "token"})
 const UserPoolIdentityProvider = process.env["UserPoolIdentityProvider"] as string
@@ -21,8 +21,8 @@ const useSignedJWT = process.env["useSignedJWT"] as string
 const jwtPrivateKeyArn = process.env["jwtPrivateKeyArn"] as string
 const oidcClientId = process.env["oidcClientId"] as string
 const oidcIssuer = process.env["oidcIssuer"] as string
-const apigeeEndpoint = "https://internal-dev.api.service.nhs.uk/clinical-prescription-tracker"
-const roleId = "555254242106"
+// const apigeeEndpoint = "https://internal-dev.api.service.nhs.uk/clinical-prescription-tracker"
+// const roleId = "555254242106"
 
 const dynamoClient = new DynamoDBClient()
 const documentClient = DynamoDBDocumentClient.from(dynamoClient)
@@ -99,8 +99,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
   return {
     statusCode: 200,
-    body: JSON.stringify(apigeeResponse.data),
-    headers: formatHeaders(apigeeResponse.headers)
+    body: "OK"
   }
 }
 

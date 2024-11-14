@@ -84,13 +84,13 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   await documentClient.send(new PutCommand(params))
 
   // call Apigee with accessToken and PrescriptionID
-  const prescriptionID = objectBodyParameters["prescriptionID"] as string || "defaultID" // Default value to avoid errors
+  const prescriptionID = objectBodyParameters["prescriptionID"] as string || "defaultID"
 
   const apigeeResponse = await axiosInstance.get(`${apigeeEndpoint}/prescription-search/${prescriptionID}`, {
     headers: {
       Authorization: `Bearer ${idToken}`,
-      "NHSD-Session-URID": roleId,
-    },
+      "NHSD-Session-URID": roleId
+    }
   })
 
   logger.debug("Response from Apigee", {data: apigeeResponse.data})
@@ -98,7 +98,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   return {
     statusCode: 200,
     body: JSON.stringify(apigeeResponse.data),
-    headers: formatHeaders(apigeeResponse.headers),
+    headers: formatHeaders(apigeeResponse.headers)
   }
 }
 
