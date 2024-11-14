@@ -35,6 +35,10 @@
       {
         "name": "packages/auth_demo",
         "path": "../packages/auth_demo"
+      },
+      {
+        "name": "packages/trackerUserInfo",
+        "path": "../packages/trackerUserInfo"
       }
 
     ],

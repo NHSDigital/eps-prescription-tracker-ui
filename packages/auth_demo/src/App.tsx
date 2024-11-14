@@ -8,7 +8,7 @@ import './App.css'
 import {authConfig} from './configureAmplify'
 Amplify.configure(authConfig, {ssr: true})
 
-const API_ENDPOINT = 'https://cpt-ui-pr-150.dev.eps.national.nhs.uk/api/prescription-search'
+const API_ENDPOINT = 'https://cpt-ui-pr-165.dev.eps.national.nhs.uk/api/trackeruserinfo'
 
 function App() {
   const [user, setUser] = useState(null)
@@ -17,7 +17,6 @@ function App() {
   const [isSignedIn, setIsSignedIn] = useState<boolean>(false)
   const [idToken, setIdToken] = useState<JWT>(null)
   const [accessToken, setAccessToken] = useState<JWT>(null)
-  const [prescriptionId, setPrescriptionId] = useState<string>('')
   const [prescriptionData, setPrescriptionData] = useState<any>(null)
   const [loading, setLoading] = useState<boolean>(false)
 
@@ -110,19 +109,11 @@ function App() {
       <div>accessToken: {accessToken?.toString()}</div>
 
       <div style={{marginTop: '20px'}}>
-        <label htmlFor="prescriptionId">Prescription ID:</label>
-        <input
-          type="text"
-          id="prescriptionId"
-          value={prescriptionId}
-          onChange={(e) => setPrescriptionId(e.target.value)}
-          placeholder="Enter Prescription ID"
-        />
         <button
           onClick={fetchPrescriptionData}
-          disabled={!isSignedIn || !prescriptionId}
+          disabled={!isSignedIn}
         >
-          Fetch Prescription Data
+          Fetch User Information
         </button>
       </div>
 
