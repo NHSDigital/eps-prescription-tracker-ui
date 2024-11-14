@@ -168,22 +168,34 @@ export const nagSuppressions = (stack: Stack) => {
 
     safeAddNagSuppression(
       stack,
-      "/StatelessStack/ApiFunctions/PrescriptionSearch/LambdaPutLogsManagedPolicy/Resource",
+      "/StatelessStack/ApiFunctions/PrimaryJwtPrivateKey/Resource",
       [
         {
-          id: "AwsSolutions-IAM5",
-          reason: "Suppress error for not having wildcards in permissions. This is a fine as we need to have permissions on all log streams under path"
+          id: "AwsSolutions-SMG4",
+          reason: "Suppress error for not having automatic rotation. This is a false positive - it does have rotation enabled"
         }
       ]
     )
 
     safeAddNagSuppression(
       stack,
-      "/StatelessStack/ApiFunctions/PrimaryJwtPrivateKey/Resource",
+      "/StatelessStack/ApiFunctions/MockJwtPrivateKey/Resource",
       [
         {
           id: "AwsSolutions-SMG4",
           reason: "Suppress error for not having automatic rotation. This is a false positive - it does have rotation enabled"
+        }
+      ]
+    )
+
+    // Lambdas need to be able to log their stuff
+    safeAddNagSuppression(
+      stack,
+      "/StatelessStack/ApiFunctions/PrescriptionSearch/LambdaPutLogsManagedPolicy/Resource",
+      [
+        {
+          id: "AwsSolutions-IAM5",
+          reason: "Suppress error for not having wildcards in permissions. This is a fine as we need to have permissions on all log streams under path"
         }
       ]
     )
@@ -201,14 +213,26 @@ export const nagSuppressions = (stack: Stack) => {
 
     safeAddNagSuppression(
       stack,
-      "/StatelessStack/ApiFunctions/MockJwtPrivateKey/Resource",
+      "/StatelessStack/ApiFunctions/TrackerUserInfo/LambdaPutLogsManagedPolicy/Resource",
       [
         {
-          id: "AwsSolutions-SMG4",
-          reason: "Suppress error for not having automatic rotation. This is a false positive - it does have rotation enabled"
+          id: "AwsSolutions-IAM5",
+          reason: "Suppress error for not having wildcards in permissions. This is a fine as we need to have permissions on all log streams under path"
         }
       ]
     )
+
+    safeAddNagSuppression(
+      stack,
+      "/StatelessStack/ApiFunctions/MockTrackerUserInfoLambda/LambdaPutLogsManagedPolicy/Resource",
+      [
+        {
+          id: "AwsSolutions-IAM5",
+          reason: "Suppress error for not having wildcards in permissions. This is a fine as we need to have permissions on all log streams under path"
+        }
+      ]
+    )
+
   }
 }
 

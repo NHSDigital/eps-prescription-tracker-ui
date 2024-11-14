@@ -50,6 +50,8 @@ export class ApiFunctions extends Construct {
   public readonly apiFunctionsPolicies: Array<IManagedPolicy>
   public readonly prescriptionSearchLambda: NodejsFunction
   public readonly mockPrescriptionSearchLambda: NodejsFunction
+  public readonly trackerUserInfoLambda: NodejsFunction
+  public readonly mockTrackerUserInfoLambda: NodejsFunction
   public readonly primaryJwtPrivateKey: Secret
 
   public constructor(scope: Construct, id: string, props: ApiFunctionsProps) {
@@ -106,6 +108,60 @@ export class ApiFunctions extends Construct {
       ]
     })
 
+    // Secret used by prescription search lambda that holds the JWT private key
+    const primaryJwtPrivateKey = new Secret(this, "PrimaryJwtPrivateKey", {
+      secretName: `${props.stackName}-primaryJwtPrivateKeyPrescSearch`,
+      secretStringValue: SecretValue.unsafePlainText("ChangeMe"),
+      encryptionKey: jwtKmsKey
+    })
+    primaryJwtPrivateKey.addToResourcePolicy(new PolicyStatement({
+      effect: Effect.ALLOW,
+      principals: [props.deploymentRole],
+      actions: [
+        "secretsmanager:PutSecretValue"
+      ],
+      resources: ["*"]
+    }))
+
+    // Policy to allow access to the primary JWT private key
+    const getJWTPrivateKeySecret = new ManagedPolicy(this, "getJWTPrivateKeySecret", {
+      statements: [
+        new PolicyStatement({
+          actions: [
+            "secretsmanager:GetSecretValue"
+          ],
+          resources: [
+            primaryJwtPrivateKey.secretArn
+          ]
+        })
+      ]
+    })
+
+    // Secret used by lambdas that holds the JWT private key
+    const mockJwtPrivateKey = new Secret(this, "MockJwtPrivateKey", {
+      secretName: `${props.stackName}-mockJwtPrivateKeyPrescSearch`,
+      secretStringValue: SecretValue.unsafePlainText("ChangeMe"),
+      encryptionKey: jwtKmsKey
+    })
+
+    // Policy to allow access to the mock JWT private key
+    const getMockJWTPrivateKeySecret = new ManagedPolicy(this, "getMockJWTPrivateKeySecret", {
+      statements: [
+        new PolicyStatement({
+          actions: [
+            "secretsmanager:GetSecretValue"
+          ],
+          resources: [
+            mockJwtPrivateKey.secretArn
+          ]
+        })
+      ]
+    })
+
+    // ********************************************* //
+    // * Prescription Search Lambda                * //
+    // ********************************************* //
+
     // Define some variables that we need if we are doing mock authorization
     let mockPrescriptionSearchLambda: LambdaFunction
 
@@ -119,27 +175,6 @@ export class ApiFunctions extends Construct {
       ) {
         throw new Error("Attempt to use mock oidc but variables are not defined")
       }
-
-      // Secret used by mock prescription search lambda that holds the JWT private key
-      const mockJwtPrivateKey = new Secret(this, "MockJwtPrivateKey", {
-        secretName: `${props.stackName}-mockJwtPrivateKeyPrescSearch`,
-        secretStringValue: SecretValue.unsafePlainText("ChangeMe"),
-        encryptionKey: jwtKmsKey
-      })
-
-      // Policy to allow access to the mock JWT private key
-      const getMockJWTPrivateKeySecret = new ManagedPolicy(this, "getMockJWTPrivateKeySecret", {
-        statements: [
-          new PolicyStatement({
-            actions: [
-              "secretsmanager:GetSecretValue"
-            ],
-            resources: [
-              mockJwtPrivateKey.secretArn
-            ]
-          })
-        ]
-      })
 
       // Lambda for mock prescription search endpoint
       mockPrescriptionSearchLambda = new LambdaFunction(this, "MockPrescriptionSearch", {
@@ -170,35 +205,6 @@ export class ApiFunctions extends Construct {
       })
     }
 
-    // Secret used by prescription search lambda that holds the JWT private key
-    const primaryJwtPrivateKey = new Secret(this, "PrimaryJwtPrivateKey", {
-      secretName: `${props.stackName}-primaryJwtPrivateKeyPrescSearch`,
-      secretStringValue: SecretValue.unsafePlainText("ChangeMe"),
-      encryptionKey: jwtKmsKey
-    })
-    primaryJwtPrivateKey.addToResourcePolicy(new PolicyStatement({
-      effect: Effect.ALLOW,
-      principals: [props.deploymentRole],
-      actions: [
-        "secretsmanager:PutSecretValue"
-      ],
-      resources: ["*"]
-    }))
-
-    // Policy to allow access to the primary JWT private key
-    const getJWTPrivateKeySecret = new ManagedPolicy(this, "getJWTPrivateKeySecret", {
-      statements: [
-        new PolicyStatement({
-          actions: [
-            "secretsmanager:GetSecretValue"
-          ],
-          resources: [
-            primaryJwtPrivateKey.secretArn
-          ]
-        })
-      ]
-    })
-
     // Lambda function for prescription search
     const prescriptionSearchLambda = new LambdaFunction(this, "PrescriptionSearch", {
       serviceName: props.serviceName,
@@ -227,19 +233,106 @@ export class ApiFunctions extends Construct {
       }
     })
 
+    // ********************************************* //
+    // * Tracker User Info Lambda                  * //
+    // ********************************************* //
+
+    // Define some variables that we need if we are doing mock authorization
+    let mockTrackerUserInfoLambda: LambdaFunction
+
+    // Set up things for mock authorization
+    if (props.useMockOidc) {
+      if (props.mockOidcjwksEndpoint === undefined ||
+        props.mockOidcUserInfoEndpoint === undefined ||
+        props.mockOidcTokenEndpoint === undefined ||
+        props.mockOidcClientId === undefined ||
+        props.mockOidcIssuer === undefined
+      ) {
+        throw new Error("Attempt to use mock oidc but variables are not defined")
+      }
+
+      // Lambda for mock prescription search endpoint
+      mockTrackerUserInfoLambda = new LambdaFunction(this, "MockTrackerUserInfoLambda", {
+        serviceName: props.serviceName,
+        stackName: props.stackName,
+        lambdaName: `${props.stackName}-mockTrackerUserInfo`,
+        additionalPolicies: [
+          props.tokenMappingTableWritePolicy,
+          props.tokenMappingTableReadPolicy,
+          props.useTokensMappingKmsKeyPolicy,
+          useJwtKmsKeyPolicy,
+          getMockJWTPrivateKeySecret
+        ],
+        logRetentionInDays: props.logRetentionInDays,
+        packageBasePath: "packages/trackerUserInfo",
+        entryPoint: "src/handler.ts",
+        lambdaEnvironmentVariables: {
+          idpTokenPath: props.mockOidcTokenEndpoint,
+          TokenMappingTableName: props.tokenMappingTable.tableName,
+          UserPoolIdentityProvider: props.mockPoolIdentityProviderName,
+          oidcjwksEndpoint: props.mockOidcjwksEndpoint,
+          jwtPrivateKeyArn: mockJwtPrivateKey.secretArn,
+          userInfoEndpoint: props.mockOidcUserInfoEndpoint,
+          useSignedJWT: "false",
+          oidcClientId: props.mockOidcClientId,
+          oidcIssuer: props.mockOidcIssuer
+        }
+      })
+    }
+
+    // Lambda function for prescription search
+    const trackerUserInfoLambda = new LambdaFunction(this, "TrackerUserInfo", {
+      serviceName: props.serviceName,
+      stackName: props.stackName,
+      lambdaName: `${props.stackName}-trackerUserInfo`,
+      additionalPolicies: [
+        props.tokenMappingTableWritePolicy,
+        props.tokenMappingTableReadPolicy,
+        props.useTokensMappingKmsKeyPolicy,
+        useJwtKmsKeyPolicy,
+        getJWTPrivateKeySecret
+      ],
+      logRetentionInDays: props.logRetentionInDays,
+      packageBasePath: "packages/trackerUserInfo",
+      entryPoint: "src/handler.ts",
+      lambdaEnvironmentVariables: {
+        idpTokenPath: props.primaryOidcTokenEndpoint,
+        TokenMappingTableName: props.tokenMappingTable.tableName,
+        UserPoolIdentityProvider: props.primaryPoolIdentityProviderName,
+        oidcjwksEndpoint: props.primaryOidcjwksEndpoint,
+        jwtPrivateKeyArn: primaryJwtPrivateKey.secretArn,
+        userInfoEndpoint: props.primaryOidcUserInfoEndpoint,
+        useSignedJWT: "true",
+        oidcClientId: props.primaryOidcClientId,
+        oidcIssuer: props.primaryOidcIssuer
+      }
+    })
+
+    // ********************************************* //
+    // ********************************************* //
+
     // Permissions for API Gateway to execute lambdas
     const apiFunctionsPolicies: Array<IManagedPolicy> = [
-      prescriptionSearchLambda.executeLambdaManagedPolicy
+      prescriptionSearchLambda.executeLambdaManagedPolicy,
+      trackerUserInfoLambda.executeLambdaManagedPolicy
     ]
+
+    // Mock auth
     if (props.useMockOidc) {
       apiFunctionsPolicies.push(mockPrescriptionSearchLambda!.executeLambdaManagedPolicy)
+      apiFunctionsPolicies.push(mockTrackerUserInfoLambda!.executeLambdaManagedPolicy)
+
       this.mockPrescriptionSearchLambda = mockPrescriptionSearchLambda!.lambda
+      this.mockTrackerUserInfoLambda = mockTrackerUserInfoLambda!.lambda
     }
 
     // Outputs
     this.apiFunctionsPolicies = apiFunctionsPolicies
-    this.prescriptionSearchLambda = prescriptionSearchLambda.lambda
     this.primaryJwtPrivateKey = primaryJwtPrivateKey
+
+    // Lambdas
+    this.prescriptionSearchLambda = prescriptionSearchLambda.lambda
+    this.trackerUserInfoLambda = trackerUserInfoLambda.lambda
 
   }
 }

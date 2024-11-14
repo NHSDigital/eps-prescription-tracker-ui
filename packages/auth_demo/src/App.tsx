@@ -8,7 +8,7 @@ import './App.css'
 import {authConfig} from './configureAmplify'
 Amplify.configure(authConfig, {ssr: true})
 
-const API_ENDPOINT = 'https://cpt-ui-pr-165.dev.eps.national.nhs.uk/api/trackeruserinfo'
+const API_ENDPOINT = 'https://cpt-ui-pr-165.dev.eps.national.nhs.uk/api/tracker-user-info'
 
 function App() {
   const [user, setUser] = useState(null)

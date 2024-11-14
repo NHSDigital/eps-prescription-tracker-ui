@@ -99,7 +99,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
   return {
     statusCode: 200,
-    body: "OK"
+    body: "TRACKER USER INFO OK"
   }
 }
 
