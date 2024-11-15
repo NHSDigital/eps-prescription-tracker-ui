@@ -8,7 +8,7 @@ import './App.css'
 import {authConfig} from './configureAmplify'
 Amplify.configure(authConfig, {ssr: true})
 
-const API_ENDPOINT = 'https://cpt-ui-pr-173.dev.eps.national.nhs.uk/api/tracker-user-info'
+const API_ENDPOINT = '/api/tracker-user-info'
 
 function App() {
   const [user, setUser] = useState(null)
@@ -78,10 +78,10 @@ function App() {
       const response = await axios.get(API_ENDPOINT, {
         params: {},
         headers: {
-          Authorization: `Bearer ${accessToken}`,
+          Authorization: `Bearer ${idToken}`,
           'NHSD-Session-URID': '555254242106'
         },
-        withCredentials: true // This ensures cookies are not sent with the request
+        withCredentials: false
       })
       setTrackerUserInfoData(response.data)
     } catch (err) {

@@ -108,9 +108,9 @@ export class ApiFunctions extends Construct {
       ]
     })
 
-    // Secret used by prescription search lambda that holds the JWT private key
+    // Secret used by lambdas that holds the JWT private key
     const primaryJwtPrivateKey = new Secret(this, "PrimaryJwtPrivateKey", {
-      secretName: `${props.stackName}-primaryJwtPrivateKeyPrescSearch`,
+      secretName: `${props.stackName}-mockJwtPrivateKeyAPILambdas`,
       secretStringValue: SecretValue.unsafePlainText("ChangeMe"),
       encryptionKey: jwtKmsKey
     })
@@ -137,7 +137,7 @@ export class ApiFunctions extends Construct {
       ]
     })
 
-    // Secret used by lambdas that holds the JWT private key
+    // MOCK Secret used by lambdas that holds the JWT private key
     const mockJwtPrivateKey = new Secret(this, "MockJwtPrivateKey", {
       secretName: `${props.stackName}-mockJwtPrivateKeyAPILambdas`,
       secretStringValue: SecretValue.unsafePlainText("ChangeMe"),
