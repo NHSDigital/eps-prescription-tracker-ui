@@ -63,8 +63,8 @@ export class ApiFunctions extends Construct {
     const jwtKmsKey = new Key(this, "JwtKMSKey", {
       removalPolicy: RemovalPolicy.DESTROY,
       pendingWindow: Duration.days(7),
-      alias: `${props.stackName}-JwtKMSKeyKMSKeyPrescSearch`,
-      description: `${props.stackName}-JwtKMSKeyKMSKeyPrescSearch`,
+      alias: `${props.stackName}-JwtKMSKeyKMSKeyAPILambdas`,
+      description: `${props.stackName}-JwtKMSKeyKMSKeyAPILambdas`,
       enableKeyRotation: true,
       policy: new PolicyDocument({
         statements: [
@@ -91,7 +91,7 @@ export class ApiFunctions extends Construct {
         ]
       })
     })
-    jwtKmsKey.addAlias(`alias/${props.stackName}-jwtKmsKeyPrescSearch`)
+    jwtKmsKey.addAlias(`alias/${props.stackName}-jwtKmsKeyAPILambdas`)
 
     // Policy to allow decryption using the KMS key
     const useJwtKmsKeyPolicy = new ManagedPolicy(this, "UseJwtKmsKeyPolicy", {
@@ -110,7 +110,7 @@ export class ApiFunctions extends Construct {
 
     // Secret used by lambdas that holds the JWT private key
     const primaryJwtPrivateKey = new Secret(this, "PrimaryJwtPrivateKey", {
-      secretName: `${props.stackName}-mockJwtPrivateKeyAPILambdas`,
+      secretName: `${props.stackName}-primaryJwtPrivateKeyLambdas`,
       secretStringValue: SecretValue.unsafePlainText("ChangeMe"),
       encryptionKey: jwtKmsKey
     })
@@ -137,7 +137,7 @@ export class ApiFunctions extends Construct {
       ]
     })
 
-    // MOCK Secret used by lambdas that holds the JWT private key
+    // Secret used by lambdas that holds the JWT private key
     const mockJwtPrivateKey = new Secret(this, "MockJwtPrivateKey", {
       secretName: `${props.stackName}-mockJwtPrivateKeyAPILambdas`,
       secretStringValue: SecretValue.unsafePlainText("ChangeMe"),
