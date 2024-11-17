@@ -107,7 +107,6 @@ export class Cognito extends Construct {
     })
 
     const supportedIdentityProviders: Array<UserPoolClientIdentityProvider> = [
-      UserPoolClientIdentityProvider.COGNITO,
       UserPoolClientIdentityProvider.custom(primaryPoolIdentityProvider.providerName)
     ]
 
