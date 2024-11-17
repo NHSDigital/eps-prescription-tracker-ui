@@ -20,7 +20,7 @@
         "react-dom": "^18",
         "react-i18next": "^15.1.1",
         "react-intl": "^6.8.7",
-        "sass": "^1.80.7"
+        "sass": "^1.81.0"
     },
     "devDependencies": {
         "@formatjs/cli": "^6.3.8",
