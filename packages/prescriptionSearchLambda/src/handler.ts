@@ -83,7 +83,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   logger.debug("going to insert into dynamodb", {params})
   await documentClient.send(new PutCommand(params))
 
-  // call Apigee with accessToken and PrescriptionID
+  // call Apigee with idToken and PrescriptionID
   const prescriptionID = objectBodyParameters["prescriptionID"] as string || "defaultID" // Default value to avoid errors
 
   const apigeeResponse = await axiosInstance.get(`${apigeeEndpoint}/prescription-search/${prescriptionID}`, {

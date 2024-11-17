@@ -79,7 +79,7 @@ function App() {
       const response = await axios.get(API_ENDPOINT, {
         params: {prescriptionId},
         headers: {
-          Authorization: `Bearer ${accessToken}`,
+          Authorization: `Bearer ${idToken}`,
           'NHSD-Session-URID': '555254242106'
         },
         withCredentials: false // This ensures cookies are not sent with the request
