@@ -60,8 +60,8 @@ export class CognitoFunctions extends Construct {
     const jwtKmsKey = new Key(this, "JwtKMSKey", {
       removalPolicy: RemovalPolicy.DESTROY,
       pendingWindow: Duration.days(7),
-      alias: `${props.stackName}-JwtKMSKeyKMSKey`,
-      description: `${props.stackName}-JwtKMSKeyKMSKey`,
+      alias: `alias/${props.stackName}-jwtKmsKey`,
+      description: `${props.stackName}-jwtKmsKey`,
       enableKeyRotation: true,
       policy: new PolicyDocument({
         statements: [
@@ -88,7 +88,6 @@ export class CognitoFunctions extends Construct {
         ]
       })
     })
-    jwtKmsKey.addAlias(`alias/${props.stackName}-jwtKmsKey`)
     const useJwtKmsKeyPolicy = new ManagedPolicy(this, "UseJwtKmsKeyPolicy", {
       statements: [
         new PolicyStatement({
