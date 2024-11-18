@@ -8,7 +8,15 @@ import {
 import {DynamoDBDocumentClient, PutCommandInput} from "@aws-sdk/lib-dynamodb"
 import createJWKSMock from "mock-jwks"
 import nock from "nock"
-import {handler} from "../src/token"
+import {generateKeyPairSync} from "crypto"
+
+const {privateKey} = generateKeyPairSync("rsa", {
+  modulusLength: 2048
+})
+jest.unstable_mockModule("../src/privateKeyHelper", () => ({
+  getJwtPrivateKey: jest.fn().mockReturnValue(privateKey)
+}))
+const {handler} = await import("../src/token")
 
 // redefining readonly property of the performance object
 const dummyContext = {

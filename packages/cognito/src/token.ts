@@ -2,22 +2,21 @@ import {APIGatewayProxyEvent, APIGatewayProxyResult} from "aws-lambda"
 import {Logger} from "@aws-lambda-powertools/logger"
 import {injectLambdaContext} from "@aws-lambda-powertools/logger/middleware"
 import middy from "@middy/core"
-import {getSecret} from "@aws-lambda-powertools/parameters/secrets"
 import inputOutputLogger from "@middy/input-output-logger"
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 import axios from "axios"
-import {parse, ParsedUrlQuery, stringify} from "querystring"
+import {parse, stringify} from "querystring"
 
 import {PrivateKey} from "jsonwebtoken"
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
 import {DynamoDBDocumentClient, PutCommand} from "@aws-sdk/lib-dynamodb"
 import {formatHeaders, rewriteBodyToAddSignedJWT, verifyJWTWrapper} from "./helpers"
+import {getJwtPrivateKey} from "./privateKeyHelper"
 
 const logger = new Logger({serviceName: "token"})
 const UserPoolIdentityProvider = process.env["UserPoolIdentityProvider"] as string
 const idpTokenPath = process.env["idpTokenPath"] as string
 const TokenMappingTableName = process.env["TokenMappingTableName"] as string
-const useSignedJWT = process.env["useSignedJWT"] as string
 const jwtPrivateKeyArn = process.env["jwtPrivateKeyArn"] as string
 const oidcClientId = process.env["oidcClientId"] as string
 const oidcIssuer = process.env["oidcIssuer"] as string
@@ -42,15 +41,10 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     throw new Error("can not get body")
   }
   const objectBodyParameters = parse(body as string)
-  let rewrittenObjectBodyParameters: ParsedUrlQuery
 
-  if (useSignedJWT === "true") {
-    const jwtPrivateKey = await getSecret(jwtPrivateKeyArn)
-    rewrittenObjectBodyParameters = rewriteBodyToAddSignedJWT(
-      logger, objectBodyParameters, idpTokenPath, jwtPrivateKey as PrivateKey)
-  } else {
-    rewrittenObjectBodyParameters = objectBodyParameters
-  }
+  const jwtPrivateKey = await getJwtPrivateKey(jwtPrivateKeyArn)
+  const rewrittenObjectBodyParameters = rewriteBodyToAddSignedJWT(
+    logger, objectBodyParameters, idpTokenPath, jwtPrivateKey as PrivateKey)
 
   logger.debug("about to call downstream idp with rewritten body", {idpTokenPath, body: rewrittenObjectBodyParameters})
 
