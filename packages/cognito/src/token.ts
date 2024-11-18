@@ -71,9 +71,9 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   const params = {
     Item: {
       "username": username,
-      "accessToken": accessToken,
-      "idToken": idToken,
-      "expiresIn": decodedIdToken.exp
+      "CIS2_accessToken": accessToken,
+      "CIS2_idToken": idToken,
+      "CIS2_expiresIn": decodedIdToken.exp
     },
     TableName: TokenMappingTableName
   }
