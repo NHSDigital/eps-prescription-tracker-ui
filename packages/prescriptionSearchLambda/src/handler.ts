@@ -41,7 +41,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
   const body = event.body
   if (body === undefined) {
-    throw new Error("can not get body")
+    throw new Error("Request body is missing")
   }
   const objectBodyParameters = parse(body as string)
   let rewrittenObjectBodyParameters: ParsedUrlQuery
@@ -49,56 +49,85 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   if (useSignedJWT === "true") {
     const jwtPrivateKey = await getSecret(jwtPrivateKeyArn)
     rewrittenObjectBodyParameters = rewriteBodyToAddSignedJWT(
-      logger, objectBodyParameters, idpTokenPath, jwtPrivateKey as PrivateKey)
+      logger, objectBodyParameters, idpTokenPath, jwtPrivateKey as PrivateKey
+    )
   } else {
     rewrittenObjectBodyParameters = objectBodyParameters
   }
 
-  logger.debug("about to call downstream idp with rewritten body", {idpTokenPath, body: rewrittenObjectBodyParameters})
+  logger.debug("Calling downstream IDP with rewritten body", {idpTokenPath, body: rewrittenObjectBodyParameters})
 
-  const tokenResponse = await axiosInstance.post(idpTokenPath,
-    stringify(rewrittenObjectBodyParameters)
-  )
+  try {
+    const tokenResponse = await axiosInstance.post(idpTokenPath, stringify(rewrittenObjectBodyParameters))
+    logger.debug("Response from external OIDC", {data: tokenResponse.data})
 
-  logger.debug("response from external oidc", {data: tokenResponse.data})
+    const accessToken = tokenResponse.data.access_token
+    const idToken = tokenResponse.data.id_token
 
-  const accessToken = tokenResponse.data.access_token
-  const idToken = tokenResponse.data.id_token
+    // Ensure tokens exist before proceeding
+    if (!accessToken || !idToken) {
+      throw new Error("Failed to retrieve tokens from OIDC response")
+    }
 
-  // verify and decode idToken
-  const decodedIdToken = await verifyJWTWrapper(idToken, oidcIssuer, oidcClientId)
-  logger.debug("decoded idToken", {decodedIdToken})
+    // Verify and decode idToken
+    const decodedIdToken = await verifyJWTWrapper(idToken, oidcIssuer, oidcClientId)
+    logger.debug("Decoded idToken", {decodedIdToken})
 
-  const username = `${UserPoolIdentityProvider}_${decodedIdToken.sub}`
-  const params = {
-    Item: {
-      "username": username,
-      "accessToken": accessToken,
-      "idToken": idToken,
-      "expiresIn": decodedIdToken.exp
-    },
-    TableName: TokenMappingTableName
-  }
+    const username = `${UserPoolIdentityProvider}_${decodedIdToken.sub}`
+    const params = {
+      Item: {
+        username,
+        accessToken,
+        idToken,
+        expiresIn: decodedIdToken.exp,
+      },
+      TableName: TokenMappingTableName,
+    }
 
-  logger.debug("going to insert into dynamodb", {params})
-  await documentClient.send(new PutCommand(params))
+    logger.debug("Inserting into DynamoDB", {params})
+    await documentClient.send(new PutCommand(params))
 
-  // call Apigee with idToken and PrescriptionID
-  const prescriptionID = objectBodyParameters["prescriptionID"] as string || "defaultID" // Default value to avoid errors
+    // Extract prescriptionId and make the Apigee API call
+    const prescriptionId = objectBodyParameters["prescriptionId"] as string || "defaultId"
+    if (!prescriptionId || prescriptionId === "defaultId") {
+      logger.warn("Missing or invalid prescriptionId in request")
+      return {
+        statusCode: 400,
+        body: JSON.stringify({message: "Invalid prescriptionId provided"}),
+      }
+    }
 
-  const apigeeResponse = await axiosInstance.get(`${apigeeEndpoint}/prescription-search/${prescriptionID}`, {
-    headers: {
-      Authorization: `Bearer ${idToken}`,
-      "NHSD-Session-URID": roleId,
-    },
-  })
+    try {
+      const apigeeResponse = await axiosInstance.get(`${apigeeEndpoint}/prescription-search/${prescriptionId}`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "NHSD-Session-URID": roleId,
+        },
+      })
 
-  logger.debug("Response from Apigee", {data: apigeeResponse.data})
+      logger.debug("Response from Apigee", {data: apigeeResponse.data})
 
-  return {
-    statusCode: 200,
-    body: JSON.stringify(apigeeResponse.data),
-    headers: formatHeaders(apigeeResponse.headers),
+      return {
+        statusCode: 200,
+        body: JSON.stringify(apigeeResponse.data),
+        headers: formatHeaders(apigeeResponse.headers),
+      }
+    } catch (apigeeError) {
+      logger.error("Error calling Apigee API", {error: apigeeError.message})
+      return {
+        statusCode: apigeeError.response?.status || 500,
+        body: JSON.stringify({
+          message: "Failed to fetch data from Apigee API",
+          details: apigeeError.response?.data || "Unknown error",
+        }),
+      }
+    }
+  } catch (error) {
+    logger.error("Error occurred in Lambda handler", {error: error.message})
+    return {
+      statusCode: 500,
+      body: JSON.stringify({message: "Internal server error"}),
+    }
   }
 }
 
