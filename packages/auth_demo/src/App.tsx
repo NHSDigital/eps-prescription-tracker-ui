@@ -2,10 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { Hub } from "aws-amplify/utils";
 import { signInWithRedirect, signOut, getCurrentUser, fetchAuthSession, JWT } from "aws-amplify/auth";
 import {Amplify} from "aws-amplify"
+import axios from "axios"
 
 import './App.css';
 import { authConfig } from './configureAmplify';
 Amplify.configure(authConfig, {ssr: true})
+
+const trackerUserInfoEndpoint = "/api/tracker-user-info"
 
 function App() {
   const [user, setUser] = useState(null);
@@ -14,6 +17,8 @@ function App() {
   const [isSignedIn, setIsSignedIn] = useState<boolean>(false)
   const [idToken, setIdToken] = useState<JWT>(null)
   const [accessToken, setAccessToken] = useState<JWT>(null)
+  const [trackerUserInfoData, setTrackerUserInfoData] = useState<JWT>(null)
+  const [loading, setLoading] = useState<boolean>(false)
 
   useEffect(() => {
     const unsubscribe = Hub.listen("auth", ({ payload }) => {
@@ -59,6 +64,29 @@ function App() {
     }
   };
 
+  const fetchTrackerUserInfo = async () => {
+    setLoading(true)
+    setTrackerUserInfoData(null)
+    setError(null)
+
+    try {
+      const response = await axios.get(trackerUserInfoEndpoint, 
+        {
+          headers: {
+            Authorization: `Bearer ${idToken}`,
+          'NHSD-Session-URID': '555254242106'
+          },
+          withCredentials: false
+        }
+      )
+      setTrackerUserInfoData(response.data)
+    } catch (err) {
+      setError("Failed to fetch tracker user info")
+      console.error("error fetching tracker user info:", err)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
     <div className="App">
@@ -77,6 +105,23 @@ function App() {
       <div>isSignedIn: {isSignedIn} </div>
       <div>idToken: {idToken?.toString()}</div>
       <div>accessToken: {accessToken?.toString()}</div>
+    
+      <div style={{marginTop: '20px'}}>
+         <button
+          onClick={fetchTrackerUserInfo}
+          disabled={!isSignedIn}
+        >
+            Fetch Tracker User Info
+        </button>
+      </div>
+    
+      {loading && <p>Loading...</p>}
+      {trackerUserInfoData && (
+        <div style={{marginTop: '20px'}}>
+          <h3>Tracker User Info Data:</h3>
+          <pre>{JSON.stringify(trackerUserInfoData, null, 2)}</pre>
+        </div>
+      )}
     </div>
   );
 }
