@@ -167,7 +167,6 @@ export class CognitoFunctions extends Construct {
           oidcjwksEndpoint: props.mockOidcjwksEndpoint,
           jwtPrivateKeyArn: mockJwtPrivateKey.secretArn,
           userInfoEndpoint: props.mockOidcUserInfoEndpoint,
-          useSignedJWT: "true",
           oidcClientId: props.mockOidcClientId,
           oidcIssuer: props.mockOidcIssuer
         }
@@ -223,7 +222,6 @@ export class CognitoFunctions extends Construct {
         oidcjwksEndpoint: props.primaryOidcjwksEndpoint,
         jwtPrivateKeyArn: primaryJwtPrivateKey.secretArn,
         userInfoEndpoint: props.primaryOidcUserInfoEndpoint,
-        useSignedJWT: "true",
         oidcClientId: props.primaryOidcClientId,
         oidcIssuer: props.primaryOidcIssuer
       }
