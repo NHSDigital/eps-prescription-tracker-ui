@@ -5,7 +5,7 @@ import middy from "@middy/core"
 import {getSecret} from "@aws-lambda-powertools/parameters/secrets"
 import inputOutputLogger from "@middy/input-output-logger"
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
-import axios from "axios"
+import axios, {AxiosError} from "axios"
 import {parse, ParsedUrlQuery, stringify} from "querystring"
 
 import {PrivateKey} from "jsonwebtoken"
@@ -113,17 +113,32 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
         headers: formatHeaders(apigeeResponse.headers),
       }
     } catch (apigeeError) {
-      logger.error("Error calling Apigee API", {error: apigeeError.message})
-      return {
-        statusCode: apigeeError.response?.status || 500,
-        body: JSON.stringify({
-          message: "Failed to fetch data from Apigee API",
-          details: apigeeError.response?.data || "Unknown error",
-        }),
+      if (axios.isAxiosError(apigeeError)) {
+        logger.error("Error calling Apigee API", {error: apigeeError.message})
+        return {
+          statusCode: apigeeError.response?.status || 500,
+          body: JSON.stringify({
+            message: "Failed to fetch data from Apigee API",
+            details: apigeeError.response?.data || "Unknown error",
+          }),
+        }
+      } else {
+        logger.error("Unexpected error calling Apigee API", {error: String(apigeeError)})
+        return {
+          statusCode: 500,
+          body: JSON.stringify({
+            message: "Failed to fetch data from Apigee API",
+            details: "An unexpected error occurred",
+          }),
+        }
       }
     }
   } catch (error) {
-    logger.error("Error occurred in Lambda handler", {error: error.message})
+    if (error instanceof Error) {
+      logger.error("Error occurred in Lambda handler", {error: error.message})
+    } else {
+      logger.error("Unknown error occurred in Lambda handler", {error: String(error)})
+    }
     return {
       statusCode: 500,
       body: JSON.stringify({message: "Internal server error"}),
