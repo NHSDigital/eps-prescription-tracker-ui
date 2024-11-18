@@ -13,7 +13,7 @@ import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
 import {DynamoDBDocumentClient, PutCommand} from "@aws-sdk/lib-dynamodb"
 import {formatHeaders, rewriteBodyToAddSignedJWT, verifyJWTWrapper} from "./helpers"
 
-const logger = new Logger({serviceName: "token"})
+const logger = new Logger({serviceName: "prescriptionSearch"})
 const UserPoolIdentityProvider = process.env["UserPoolIdentityProvider"] as string
 const idpTokenPath = process.env["idpTokenPath"] as string
 const TokenMappingTableName = process.env["TokenMappingTableName"] as string
