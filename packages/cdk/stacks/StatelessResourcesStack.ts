@@ -250,15 +250,16 @@ export class StatelessResourcesStack extends Stack {
       value: cognitoFunctions.primaryJwtPrivateKey.secretName,
       exportName: `${props.stackName}:primaryJwtPrivateKey:Name`
     })
-    new CfnOutput(this, "mockJwtPrivateKeyArn", {
-      value: cognitoFunctions.mockJwtPrivateKey.secretArn,
-      exportName: `${props.stackName}:mockJwtPrivateKey:Arn`
-    })
-    new CfnOutput(this, "mockJwtPrivateKeyName", {
-      value: cognitoFunctions.mockJwtPrivateKey.secretName,
-      exportName: `${props.stackName}:mockJwtPrivateKey:Name`
-    })
-
+    if (useMockOidc) {
+      new CfnOutput(this, "mockJwtPrivateKeyArn", {
+        value: cognitoFunctions.mockJwtPrivateKey.secretArn,
+        exportName: `${props.stackName}:mockJwtPrivateKey:Arn`
+      })
+      new CfnOutput(this, "mockJwtPrivateKeyName", {
+        value: cognitoFunctions.mockJwtPrivateKey.secretName,
+        exportName: `${props.stackName}:mockJwtPrivateKey:Name`
+      })
+    }
     nagSuppressions(this)
   }
 }
