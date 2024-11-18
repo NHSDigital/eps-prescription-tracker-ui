@@ -44,6 +44,7 @@ export interface CognitoProps {
   readonly cognitoCertificate: ICertificate
   readonly hostedZone: IHostedZone
   readonly useLocalhostCallback: boolean
+  readonly useCustomCognitoDomain: boolean
 }
 
 /**
@@ -64,25 +65,35 @@ export class Cognito extends Construct {
       removalPolicy: RemovalPolicy.DESTROY
     })
 
-    const userPoolDomain = new UserPoolDomain(this, "UserPoolDomain", {
-      userPool,
-      customDomain: {
-        domainName: props.fullCognitoDomain,
-        certificate: props.cognitoCertificate
-      }
-    })
+    let userPoolDomain: UserPoolDomain
+    if (props.useCustomCognitoDomain) {
+      userPoolDomain = new UserPoolDomain(this, "UserPoolDomain", {
+        userPool,
+        customDomain: {
+          domainName: props.fullCognitoDomain,
+          certificate: props.cognitoCertificate
+        }
+      })
 
-    new ARecord(this, "UserPoolCloudFrontAliasIpv4Record", {
-      zone: props.hostedZone,
-      recordName: props.shortCognitoDomain,
-      target: RecordTarget.fromAlias(new UserPoolDomainTarget(userPoolDomain))
-    })
+      new ARecord(this, "UserPoolCloudFrontAliasIpv4Record", {
+        zone: props.hostedZone,
+        recordName: props.shortCognitoDomain,
+        target: RecordTarget.fromAlias(new UserPoolDomainTarget(userPoolDomain))
+      })
 
-    new AaaaRecord(this, "UserPoolCloudFrontAliasIpv6Record", {
-      zone: props.hostedZone,
-      recordName: props.shortCognitoDomain,
-      target: RecordTarget.fromAlias(new UserPoolDomainTarget(userPoolDomain))
-    })
+      new AaaaRecord(this, "UserPoolCloudFrontAliasIpv6Record", {
+        zone: props.hostedZone,
+        recordName: props.shortCognitoDomain,
+        target: RecordTarget.fromAlias(new UserPoolDomainTarget(userPoolDomain))
+      })
+    } else {
+      userPoolDomain = new UserPoolDomain(this, "UserPoolDomain", {
+        userPool,
+        cognitoDomain: {
+          domainPrefix: props.shortCognitoDomain
+        }
+      })
+    }
 
     // these are the endpoints that are added to user pool identity provider
     // note we override the token endpoint to point back to our custom token

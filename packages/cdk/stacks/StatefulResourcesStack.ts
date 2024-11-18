@@ -54,6 +54,7 @@ export class StatefulResourcesStack extends Stack {
     const mockTokenEndpoint = this.node.tryGetContext("mockTokenEndpoint")
 
     const useMockOidc = this.node.tryGetContext("useMockOidc")
+    const useCustomCognitoDomain = this.node.tryGetContext("useCustomCognitoDomain")
 
     const epsDomainName: string = this.node.tryGetContext("epsDomainName")
     const epsHostedZoneId: string = this.node.tryGetContext("epsHostedZoneId")
@@ -108,7 +109,8 @@ export class StatefulResourcesStack extends Stack {
       fullCloudfrontDomain: props.fullCloudfrontDomain,
       cognitoCertificate: props.cognitoCertificate,
       hostedZone: hostedZone,
-      useLocalhostCallback: useLocalhostCallback
+      useLocalhostCallback: useLocalhostCallback,
+      useCustomCognitoDomain: useCustomCognitoDomain
     })
 
     // - Dynamodb table for user state
