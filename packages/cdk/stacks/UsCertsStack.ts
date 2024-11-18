@@ -46,8 +46,12 @@ export class UsCertsStack extends Stack {
 
     // calculate full domain names
     const fullCloudfrontDomain = `${props.shortCloudfrontDomain}.${epsDomainName}`
-    const fullCognitoDomain = `${props.shortCognitoDomain}.${epsDomainName}`
-
+    let fullCognitoDomain
+    if (useCustomCognitoDomain) {
+      fullCognitoDomain = `${props.shortCognitoDomain}.${epsDomainName}`
+    } else {
+      fullCognitoDomain = `${props.shortCognitoDomain}.auth.eu-west-2.amazoncognito.com`
+    }
     // Resources
     // - Cloudfront Cert
     const cloudfrontCertificate = new Certificate(this, "CloudfrontCertificate", {
@@ -70,16 +74,6 @@ export class UsCertsStack extends Stack {
         recordName:  `${props.parentCognitoDomain}.${epsDomainName}`
       })
 
-      new CfnOutput(this, "shortCognitoDomain", {
-        value: props.shortCognitoDomain,
-        exportName: `${props.stackName}:shortCognitoDomain:Name`
-      })
-      new CfnOutput(this, "fullCognitoDomain", {
-        value: fullCognitoDomain,
-        exportName: `${props.stackName}:fullCognitoDomain:Name`
-      })
-
-      this.fullCognitoDomain = fullCognitoDomain
       this.cognitoCertificate = cognitoCertificate
     }
 
@@ -98,6 +92,17 @@ export class UsCertsStack extends Stack {
       value: fullCloudfrontDomain,
       exportName: `${props.stackName}:fullCloudfrontDomain:Name`
     })
+
+    new CfnOutput(this, "shortCognitoDomain", {
+      value: props.shortCognitoDomain,
+      exportName: `${props.stackName}:shortCognitoDomain:Name`
+    })
+    new CfnOutput(this, "fullCognitoDomain", {
+      value: fullCognitoDomain,
+      exportName: `${props.stackName}:fullCognitoDomain:Name`
+    })
+
     this.fullCloudfrontDomain = fullCloudfrontDomain
+    this.fullCognitoDomain = fullCognitoDomain
   }
 }
