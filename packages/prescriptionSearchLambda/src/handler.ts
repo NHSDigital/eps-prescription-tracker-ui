@@ -34,12 +34,20 @@ const errorResponseBody = {
 const middyErrorHandler = new MiddyErrorHandler(errorResponseBody)
 
 const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-  logger.appendKeys({
-    "apigw-request-id": event.requestContext?.requestId
-  })
+  logger.appendKeys({"apigw-request-id": event.requestContext?.requestId})
   logger.info("Lambda handler invoked", {event})
 
   const axiosInstance = axios.create()
+  const httpMethod = event.httpMethod
+
+  if (httpMethod === "GET") {
+    logger.info("Handling a GET request")
+    const prescriptionId = event.queryStringParameters?.prescriptionId || "defaultId"
+    return {
+      statusCode: 200,
+      body: JSON.stringify({message: `Handling GET with prescriptionId: ${prescriptionId}`}),
+    }
+  }
 
   const body = event.body
   if (body === undefined) {
