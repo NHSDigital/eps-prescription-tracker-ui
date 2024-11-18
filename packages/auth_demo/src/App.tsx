@@ -65,6 +65,16 @@ function App() {
     }
   }
 
+  const clearCookies = () => {
+    const cookies = document.cookie.split("; ")
+    for (let cookie of cookies) {
+      const eqPos = cookie.indexOf("=")
+      const name = eqPos > -1 ? cookie.substring(0, eqPos) : cookie
+      // Setting the cookie expiration date to the past to effectively delete it
+      document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;`
+    }
+  }
+
   const fetchPrescriptionData = async () => {
     if (!prescriptionId) {
       setError('Please enter a Prescription ID.')
@@ -75,6 +85,9 @@ function App() {
     setPrescriptionData(null)
     setError(null)
 
+    // Clear cookies before making the request
+    clearCookies()
+
     try {
       const response = await axios.get(API_ENDPOINT, {
         params: {prescriptionId},
@@ -82,7 +95,8 @@ function App() {
           Authorization: `Bearer ${idToken}`,
           'NHSD-Session-URID': '555254242106'
         },
-        withCredentials: false // This ensures cookies are not sent with the request
+        // Ensure cookies are not sent with the request
+        withCredentials: false
       })
       setPrescriptionData(response.data)
     } catch (err) {
