@@ -44,7 +44,7 @@ export const nagSuppressions = (stack: Stack) => {
 
     safeAddNagSuppression(
       stack,
-      "/StatefulStack/DynamoDB/TokenMappingResources/TableReadManagedPolicy/Resource",
+      "/StatefulStack/DynamoDB/TableReadManagedPolicy/Resource",
       [
         {
           id: "AwsSolutions-IAM5",
@@ -55,7 +55,7 @@ export const nagSuppressions = (stack: Stack) => {
 
     safeAddNagSuppression(
       stack,
-      "/StatefulStack/DynamoDB/TokenMappingResources/TableWriteManagedPolicy/Resource",
+      "/StatefulStack/DynamoDB/TableWriteManagedPolicy/Resource",
       [
         {
           id: "AwsSolutions-IAM5",

@@ -61,13 +61,10 @@ jobs:
             package-lock.json \
             tsconfig.defaults.json \
             Makefile \
-            cdk.json 
+            cdk.json
 
       - uses: actions/upload-artifact@v4
         name: upload build artifact
         with:
           name: build_artifact
           path: artifact.tar
-
-
-          

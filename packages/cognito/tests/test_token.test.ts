@@ -79,9 +79,9 @@ describe("handler tests", () => {
     expect(call.Item).toEqual(
       {
         "username": "DummyPoolIdentityProvider_foo",
-        "idToken": token,
-        "expiresIn": expiryDate,
-        "accessToken": "access_token_reply"
+        "CIS2_idToken": token,
+        "CIS2_expiresIn": expiryDate,
+        "CIS2_accessToken": "access_token_reply"
       }
     )
   })

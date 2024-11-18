@@ -50,6 +50,7 @@ export class CognitoFunctions extends Construct {
   public readonly tokenLambda: NodejsFunction
   public readonly mockTokenLambda: NodejsFunction
   public readonly primaryJwtPrivateKey: Secret
+  public readonly mockJwtPrivateKey: Secret
 
   public constructor(scope: Construct, id: string, props: CognitoFunctionsProps) {
     super(scope, id)
@@ -60,8 +61,8 @@ export class CognitoFunctions extends Construct {
     const jwtKmsKey = new Key(this, "JwtKMSKey", {
       removalPolicy: RemovalPolicy.DESTROY,
       pendingWindow: Duration.days(7),
-      alias: `${props.stackName}-JwtKMSKeyKMSKey`,
-      description: `${props.stackName}-JwtKMSKeyKMSKey`,
+      alias: `alias/${props.stackName}-jwtKmsKey`,
+      description: `${props.stackName}-jwtKmsKey`,
       enableKeyRotation: true,
       policy: new PolicyDocument({
         statements: [
@@ -88,7 +89,6 @@ export class CognitoFunctions extends Construct {
         ]
       })
     })
-    jwtKmsKey.addAlias(`alias/${props.stackName}-jwtKmsKey`)
     const useJwtKmsKeyPolicy = new ManagedPolicy(this, "UseJwtKmsKeyPolicy", {
       statements: [
         new PolicyStatement({
@@ -123,6 +123,15 @@ export class CognitoFunctions extends Construct {
         secretStringValue: SecretValue.unsafePlainText("ChangeMe"),
         encryptionKey: jwtKmsKey
       })
+      mockJwtPrivateKey.addToResourcePolicy( new PolicyStatement({
+        effect: Effect.ALLOW,
+        principals: [props.deploymentRole],
+        actions: [
+          "secretsmanager:PutSecretValue"
+        ],
+        resources:["*"]
+      }))
+
       const getMockJWTPrivateKeySecret = new ManagedPolicy(this, "getMockJWTPrivateKeySecret", {
         statements: [
           new PolicyStatement({
@@ -158,11 +167,12 @@ export class CognitoFunctions extends Construct {
           oidcjwksEndpoint: props.mockOidcjwksEndpoint,
           jwtPrivateKeyArn: mockJwtPrivateKey.secretArn,
           userInfoEndpoint: props.mockOidcUserInfoEndpoint,
-          useSignedJWT: "false",
+          useSignedJWT: "true",
           oidcClientId: props.mockOidcClientId,
           oidcIssuer: props.mockOidcIssuer
         }
       })
+      this.mockJwtPrivateKey = mockJwtPrivateKey
     }
 
     // secret used by token lambda that holds the JWT private key

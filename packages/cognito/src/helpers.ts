@@ -38,7 +38,7 @@ export function rewriteBodyToAddSignedJWT(
   idpTokenPath: string,
   jwtPrivateKey: jwt.PrivateKey
 ): ParsedUrlQuery {
-  logger.info("Rewriting body to include signed jwt")
+  logger.debug("Rewriting body to include signed jwt")
   const current_time = Math.floor(Date.now() / 1000)
   const expiration_time = current_time + 300
   const claims = {

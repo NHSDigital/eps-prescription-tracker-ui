@@ -61,6 +61,8 @@ export class StatefulResourcesStack extends Stack {
     const allowAutoDeleteObjects: boolean = this.node.tryGetContext("allowAutoDeleteObjects") === "true"
     const cloudfrontDistributionId: string = this.node.tryGetContext("cloudfrontDistributionId")
 
+    const useLocalhostCallback = this.node.tryGetContext("useLocalhostCallback")
+
     // Imports
     const auditLoggingBucketImport = Fn.importValue("account-resources:AuditLoggingBucket")
     const deploymentRoleImport = Fn.importValue("ci-resources:CloudFormationDeployRole")
@@ -105,7 +107,8 @@ export class StatefulResourcesStack extends Stack {
       fullCognitoDomain: props.fullCognitoDomain,
       fullCloudfrontDomain: props.fullCloudfrontDomain,
       cognitoCertificate: props.cognitoCertificate,
-      hostedZone: hostedZone
+      hostedZone: hostedZone,
+      useLocalhostCallback: useLocalhostCallback
     })
 
     // - Dynamodb table for user state
@@ -113,8 +116,8 @@ export class StatefulResourcesStack extends Stack {
       stackName: props.stackName,
       account: this.account,
       region: this.region
-
     })
+
     // Outputs
 
     // Exports
