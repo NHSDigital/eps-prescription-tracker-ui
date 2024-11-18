@@ -18,6 +18,7 @@ const app = new App()
 const serviceName = app.node.tryGetContext("serviceName")
 const version = app.node.tryGetContext("VERSION_NUMBER")
 const commit = app.node.tryGetContext("COMMIT_ID")
+const useCustomCognitoDomain = app.node.tryGetContext("useCustomCognitoDomain")
 
 // add cdk-nag to everything
 Aspects.of(app).add(new AwsSolutionsChecks({verbose: true}))
@@ -31,7 +32,13 @@ Tags.of(app).add("cdkApp", "StatefulApp")
 const shortCloudfrontDomain = serviceName
 const parentCognitoDomain = `auth.${serviceName}`
 // shortCognitoDomain must be a subdomain of parentCognitoDomain
-const shortCognitoDomain = `login.${parentCognitoDomain}`
+let shortCognitoDomain
+if (useCustomCognitoDomain) {
+  shortCognitoDomain = `login.${parentCognitoDomain}`
+} else {
+  shortCognitoDomain = serviceName
+
+}
 
 const UsCerts = new UsCertsStack(app, "UsCertsStack", {
   env: {
