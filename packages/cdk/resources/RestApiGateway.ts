@@ -78,8 +78,7 @@ export class RestApiGateway extends Construct {
 
     const authorizer = new CognitoUserPoolsAuthorizer(this, "Authorizer", {
       authorizerName: "cognitoAuth",
-      cognitoUserPools: [props.userPool],
-      identitySource: "method.request.header.authorization"
+      cognitoUserPools: [props.userPool]
     })
 
     const cfnStage = apiGateway.deploymentStage.node.defaultChild as CfnStage
