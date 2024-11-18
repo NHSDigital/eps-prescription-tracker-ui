@@ -16,6 +16,7 @@ export interface RestApiGatewayMethodsProps {
   readonly restApiGateway: RestApi
   readonly tokenLambda: NodejsFunction
   readonly mockTokenLambda: NodejsFunction
+  readonly trackerUserInfoLambda: NodejsFunction
   readonly useMockOidc: boolean
   readonly authorizer: CognitoUserPoolsAuthorizer
 
@@ -48,6 +49,15 @@ export class RestApiGatewayMethods extends Construct{
         credentialsRole: props.restAPiGatewayRole
       }))
     }
+
+    // tracker-user-info endpoint
+    const trackerUserInfoLambdaResource = props.restApiGateway.root.addResource("tracker-user-info")
+    trackerUserInfoLambdaResource.addMethod("GET", new LambdaIntegration(props.trackerUserInfoLambda, {
+      credentialsRole: props.restAPiGatewayRole
+    }), {
+      authorizationType: AuthorizationType.COGNITO,
+      authorizer: props.authorizer
+    })
 
     /* Dummy Method/Resource to test cognito auth */
 

@@ -25,6 +25,7 @@ import {nagSuppressions} from "../nagSuppressions"
 import {TableV2} from "aws-cdk-lib/aws-dynamodb"
 import {ManagedPolicy, Role} from "aws-cdk-lib/aws-iam"
 import {CognitoFunctions} from "../resources/CognitoFunctions"
+import {ApiFunctions} from "../resources/api/apiFunctions"
 import {UserPool} from "aws-cdk-lib/aws-cognito"
 import {Key} from "aws-cdk-lib/aws-kms"
 import {Stream} from "aws-cdk-lib/aws-kinesis"
@@ -139,6 +140,31 @@ export class StatelessResourcesStack extends Stack {
       deploymentRole: deploymentRole
     })
 
+    // -- functions for API
+    const apiFunctions = new ApiFunctions(this, "ApiFunctions", {
+      serviceName: props.serviceName,
+      stackName: props.stackName,
+      primaryOidcTokenEndpoint: primaryOidcTokenEndpoint,
+      primaryOidcUserInfoEndpoint: primaryOidcUserInfoEndpoint,
+      primaryOidcjwksEndpoint: primaryOidcjwksEndpoint,
+      primaryOidcClientId: primaryOidcClientId,
+      primaryOidcIssuer: primaryOidcIssuer,
+      useMockOidc: useMockOidc,
+      mockOidcTokenEndpoint: mockOidcTokenEndpoint,
+      mockOidcUserInfoEndpoint: mockOidcUserInfoEndpoint,
+      mockOidcjwksEndpoint: mockOidcjwksEndpoint,
+      mockOidcClientId: mockOidcClientId,
+      mockOidcIssuer: mockOidcIssuer,
+      tokenMappingTable: tokenMappingTable,
+      tokenMappingTableWritePolicy: tokenMappingTableWritePolicy,
+      tokenMappingTableReadPolicy: tokenMappingTableReadPolicy,
+      useTokensMappingKmsKeyPolicy: useTokensMappingKmsKeyPolicy,
+      primaryPoolIdentityProviderName: primaryPoolIdentityProviderName,
+      mockPoolIdentityProviderName: mockPoolIdentityProviderName,
+      logRetentionInDays: logRetentionInDays,
+      deploymentRole: deploymentRole
+    })
+
     // - API Gateway
     const apiGateway = new RestApiGateway(this, "ApiGateway", {
       serviceName: props.serviceName,
@@ -153,12 +179,14 @@ export class StatelessResourcesStack extends Stack {
     // --- Methods & Resources
     new RestApiGatewayMethods(this, "RestApiGatewayMethods", {
       executePolices: [
-        ...cognitoFunctions.cognitoPolicies
+        ...cognitoFunctions.cognitoPolicies,
+        ...apiFunctions.apiFunctionsPolicies
       ],
       restAPiGatewayRole: apiGateway.restAPiGatewayRole,
       restApiGateway: apiGateway.restApiGateway,
       tokenLambda: cognitoFunctions.tokenLambda,
       mockTokenLambda: cognitoFunctions.mockTokenLambda,
+      trackerUserInfoLambda: apiFunctions.trackerUserInfoLambda,
       useMockOidc: useMockOidc,
       authorizer: apiGateway.authorizer
     })
