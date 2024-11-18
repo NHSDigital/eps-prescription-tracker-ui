@@ -161,7 +161,7 @@ jobs:
           --arg mockOidcjwksEndpoint "${{ inputs.mockOidcjwksEndpoint }}" \
           --arg shortCloudfrontDomain "${shortCloudfrontDomain}" \
           --arg fullCloudfrontDomain "${fullCloudfrontDomain}" \
-          --arg useCustomCognitoDomain "${useCustomCognitoDomain}" \
+          --arg useCustomCognitoDomain "${{ inputs.useCustomCognitoDomain }}" \
           --arg useLocalhostCallback "${{ inputs.useLocalhostCallback }}" \
           '.context += {
             "serviceName": $serviceName,

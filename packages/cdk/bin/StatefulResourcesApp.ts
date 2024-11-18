@@ -37,7 +37,6 @@ if (useCustomCognitoDomain) {
   shortCognitoDomain = `login.${parentCognitoDomain}`
 } else {
   shortCognitoDomain = serviceName
-
 }
 
 const UsCerts = new UsCertsStack(app, "UsCertsStack", {
