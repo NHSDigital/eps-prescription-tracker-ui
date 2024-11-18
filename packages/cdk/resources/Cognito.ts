@@ -43,6 +43,7 @@ export interface CognitoProps {
   readonly fullCognitoDomain: string
   readonly cognitoCertificate: ICertificate
   readonly hostedZone: IHostedZone
+  readonly useLocalhostCallback: boolean
 }
 
 /**
@@ -107,7 +108,6 @@ export class Cognito extends Construct {
     })
 
     const supportedIdentityProviders: Array<UserPoolClientIdentityProvider> = [
-      UserPoolClientIdentityProvider.COGNITO,
       UserPoolClientIdentityProvider.custom(primaryPoolIdentityProvider.providerName)
     ]
 
@@ -164,6 +164,20 @@ export class Cognito extends Construct {
       email: "email"
     }
 
+    const callbackUrls = [
+      `https://${props.fullCloudfrontDomain}/site/`,
+      `https://${props.fullCloudfrontDomain}/auth_demo/`
+    ]
+
+    const logoutUrls = [
+      `https://${props.fullCloudfrontDomain}/site/`,
+      `https://${props.fullCloudfrontDomain}/auth_demo/`
+    ]
+
+    if (props.useLocalhostCallback) {
+      callbackUrls.push( "http://localhost:3000/auth/")
+      logoutUrls.push( "http://localhost:3000/")
+    }
     // add the web client
     const userPoolWebClient = userPool.addClient("WebClient", {
       supportedIdentityProviders: supportedIdentityProviders,
@@ -179,16 +193,8 @@ export class Cognito extends Construct {
           OAuthScope.PROFILE,
           OAuthScope.COGNITO_ADMIN
         ],
-        callbackUrls: [
-          "http://localhost:3000/auth/",
-          `https://${props.fullCloudfrontDomain}/site/`,
-          `https://${props.fullCloudfrontDomain}/auth_demo/`
-        ],
-        logoutUrls: [
-          "http://localhost:3000/",
-          `https://${props.fullCloudfrontDomain}/site/`,
-          `https://${props.fullCloudfrontDomain}/auth_demo/`
-        ]
+        callbackUrls: callbackUrls,
+        logoutUrls: logoutUrls
       }})
 
     // ensure dependencies are set correctly so items are created in the correct order

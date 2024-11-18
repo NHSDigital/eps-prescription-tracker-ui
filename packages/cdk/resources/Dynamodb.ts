@@ -1,6 +1,5 @@
 import {Construct} from "constructs"
 
-import {DynamodbResources} from "./Dynamodb/dynamodbResources"
 import {
   AttributeType,
   Billing,
@@ -115,15 +114,46 @@ export class Dynamodb extends Construct {
       ]
     })
 
-    const tokenMappingResources = new DynamodbResources(this, "TokenMappingResources", {
-      stackName: props.stackName,
-      table: tokenMappingTable
+    const tableReadManagedPolicy = new ManagedPolicy(this, "TableReadManagedPolicy", {
+      statements: [
+        new PolicyStatement({
+          actions: [
+            "dynamodb:GetItem",
+            "dynamodb:BatchGetItem",
+            "dynamodb:Scan",
+            "dynamodb:Query",
+            "dynamodb:ConditionCheckItem",
+            "dynamodb:DescribeTable"
+          ],
+          resources: [
+            tokenMappingTable.tableArn,
+            `${tokenMappingTable.tableArn}/index/*`
+          ]
+        })
+      ]
+    })
+
+    const tableWriteManagedPolicy = new ManagedPolicy(this, "TableWriteManagedPolicy", {
+      statements: [
+        new PolicyStatement({
+          actions: [
+            "dynamodb:PutItem",
+            "dynamodb:BatchWriteItem",
+            "dynamodb:UpdateItem",
+            "dynamodb:DeleteItem"
+          ],
+          resources: [
+            tokenMappingTable.tableArn,
+            `${tokenMappingTable.tableArn}/index/*`
+          ]
+        })
+      ]
     })
 
     // Outputs
     this.tokenMappingTable = tokenMappingTable
     this.useTokensMappingKmsKeyPolicy = useTokensMappingKmsKeyPolicy
-    this.tokenMappingTableWritePolicy = tokenMappingResources.tableWritePolicy
-    this.tokenMappingTableReadPolicy = tokenMappingResources.tableReadPolicy
+    this.tokenMappingTableWritePolicy = tableWriteManagedPolicy
+    this.tokenMappingTableReadPolicy = tableReadManagedPolicy
   }
 }
