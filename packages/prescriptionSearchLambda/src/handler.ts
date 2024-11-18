@@ -37,22 +37,36 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   logger.appendKeys({
     "apigw-request-id": event.requestContext?.requestId
   })
+  logger.info("Lambda handler invoked", {event})
+
   const axiosInstance = axios.create()
 
   const body = event.body
   if (body === undefined) {
+    logger.error("Request body is missing")
     throw new Error("Request body is missing")
   }
+
   const objectBodyParameters = parse(body as string)
+  logger.debug("Parsed request body parameters", {objectBodyParameters})
+
   let rewrittenObjectBodyParameters: ParsedUrlQuery
 
   if (useSignedJWT === "true") {
-    const jwtPrivateKey = await getSecret(jwtPrivateKeyArn)
-    rewrittenObjectBodyParameters = rewriteBodyToAddSignedJWT(
-      logger, objectBodyParameters, idpTokenPath, jwtPrivateKey as PrivateKey
-    )
+    try {
+      logger.info("Fetching JWT private key")
+      const jwtPrivateKey = await getSecret(jwtPrivateKeyArn)
+      rewrittenObjectBodyParameters = rewriteBodyToAddSignedJWT(
+        logger, objectBodyParameters, idpTokenPath, jwtPrivateKey as PrivateKey
+      )
+      logger.debug("Rewritten body with signed JWT", {rewrittenObjectBodyParameters})
+    } catch (error) {
+      logger.error("Error fetching or processing JWT private key", {error})
+      throw error
+    }
   } else {
     rewrittenObjectBodyParameters = objectBodyParameters
+    logger.info("JWT signing is not enabled, using original body parameters")
   }
 
   logger.debug("Calling downstream IDP with rewritten body", {idpTokenPath, body: rewrittenObjectBodyParameters})
@@ -66,10 +80,12 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
     // Ensure tokens exist before proceeding
     if (!accessToken || !idToken) {
+      logger.error("Failed to retrieve tokens from OIDC response")
       throw new Error("Failed to retrieve tokens from OIDC response")
     }
 
     // Verify and decode idToken
+    logger.info("Verifying and decoding ID token")
     const decodedIdToken = await verifyJWTWrapper(idToken, oidcIssuer, oidcClientId)
     logger.debug("Decoded idToken", {decodedIdToken})
 
@@ -98,6 +114,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     }
 
     try {
+      logger.info("Calling Apigee endpoint", {endpoint: `${apigeeEndpoint}/prescription-search/${prescriptionId}`})
       const apigeeResponse = await axiosInstance.get(`${apigeeEndpoint}/prescription-search/${prescriptionId}`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -114,7 +131,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
       }
     } catch (apigeeError) {
       if (axios.isAxiosError(apigeeError)) {
-        logger.error("Error calling Apigee API", {error: apigeeError.message})
+        logger.error("Error calling Apigee API", {error: apigeeError.message, response: apigeeError.response?.data})
         return {
           statusCode: apigeeError.response?.status || 500,
           body: JSON.stringify({
