@@ -186,7 +186,7 @@ jobs:
             "mockOidcAuthorizeEndpoint": $mockOidcAuthorizeEndpoint,
             "mockOidcTokenEndpoint": $mockOidcTokenEndpoint,
             "mockOidcUserInfoEndpoint": $mockOidcUserInfoEndpoint,
-            "mockOidcjwksEndpoint": $mockOidcjwksEndpoint},
+            "mockOidcjwksEndpoint": $mockOidcjwksEndpoint,
             "useLocalhostCallback": $useLocalhostCallback}' \
           .build/cdk.json > .build/cdk.new.json
           mv .build/cdk.new.json .build/cdk.json
