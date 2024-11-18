@@ -44,6 +44,8 @@ on:
         type: string
       mockOidcjwksEndpoint:
         type: string
+      useLocalhostCallback:
+        type: boolean
     secrets:
       CLOUD_FORMATION_DEPLOY_ROLE:
         required: true
@@ -157,6 +159,7 @@ jobs:
           --arg mockOidcjwksEndpoint "${{ inputs.mockOidcjwksEndpoint }}" \
           --arg shortCloudfrontDomain "${shortCloudfrontDomain}" \
           --arg fullCloudfrontDomain "${fullCloudfrontDomain}" \
+          --arg useLocalhostCallback "${{ inputs.useLocalhostCallback }}" \
           '.context += {
             "serviceName": $serviceName,
             "VERSION_NUMBER": $VERSION_NUMBER,
@@ -183,7 +186,8 @@ jobs:
             "mockOidcAuthorizeEndpoint": $mockOidcAuthorizeEndpoint,
             "mockOidcTokenEndpoint": $mockOidcTokenEndpoint,
             "mockOidcUserInfoEndpoint": $mockOidcUserInfoEndpoint,
-            "mockOidcjwksEndpoint": $mockOidcjwksEndpoint}' \
+            "mockOidcjwksEndpoint": $mockOidcjwksEndpoint},
+            "useLocalhostCallback": $useLocalhostCallback}' \
           .build/cdk.json > .build/cdk.new.json
           mv .build/cdk.new.json .build/cdk.json
 

@@ -38,6 +38,8 @@ on:
         type: string
       mockOidcjwksEndpoint:
         type: string
+      useLocalhostCallback:
+        type: boolean
     secrets:
       CLOUD_FORMATION_DEPLOY_ROLE:
         required: true
@@ -107,6 +109,7 @@ jobs:
       mockOidcTokenEndpoint: ${{ inputs.mockOidcTokenEndpoint }}
       mockOidcUserInfoEndpoint: ${{ inputs.mockOidcUserInfoEndpoint }}
       mockOidcjwksEndpoint: ${{ inputs.mockOidcjwksEndpoint }}
+      useLocalhostCallback: ${{ inputs.useLocalhostCallback }}
     secrets:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}
@@ -147,6 +150,7 @@ jobs:
       mockOidcTokenEndpoint: ${{ inputs.mockOidcTokenEndpoint }}
       mockOidcUserInfoEndpoint: ${{ inputs.mockOidcUserInfoEndpoint }}
       mockOidcjwksEndpoint: ${{ inputs.mockOidcjwksEndpoint }}
+      useLocalhostCallback: ${{ inputs.useLocalhostCallback }}
     secrets:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}
@@ -236,6 +240,7 @@ jobs:
       mockOidcTokenEndpoint: ${{ inputs.mockOidcTokenEndpoint }}
       mockOidcUserInfoEndpoint: ${{ inputs.mockOidcUserInfoEndpoint }}
       mockOidcjwksEndpoint: ${{ inputs.mockOidcjwksEndpoint }}
+      useLocalhostCallback: ${{ inputs.useLocalhostCallback }}
     secrets:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}
