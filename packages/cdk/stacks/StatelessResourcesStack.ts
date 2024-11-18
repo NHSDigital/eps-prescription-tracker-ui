@@ -13,15 +13,25 @@ import {
   OriginRequestCookieBehavior,
   OriginRequestHeaderBehavior,
   OriginRequestPolicy,
+  OriginRequestQueryStringBehavior,
   ViewerProtocolPolicy
 } from "aws-cdk-lib/aws-cloudfront"
 import {RestApiOrigin, S3BucketOrigin} from "aws-cdk-lib/aws-cloudfront-origins"
 import {Bucket} from "aws-cdk-lib/aws-s3"
 
 import {RestApiGateway} from "../resources/RestApiGateway"
-import {CloudfrontFunction} from "../resources/Cloudfront/CloudfrontFunction"
 import {CloudfrontDistribution} from "../resources/CloudfrontDistribution"
 import {nagSuppressions} from "../nagSuppressions"
+import {TableV2} from "aws-cdk-lib/aws-dynamodb"
+import {ManagedPolicy, Role} from "aws-cdk-lib/aws-iam"
+import {CognitoFunctions} from "../resources/CognitoFunctions"
+import {UserPool} from "aws-cdk-lib/aws-cognito"
+import {Key} from "aws-cdk-lib/aws-kms"
+import {Stream} from "aws-cdk-lib/aws-kinesis"
+import {RestApiGatewayMethods} from "../resources/RestApiGatewayMethods"
+import {CloudfrontBehaviors} from "../resources/CloudfrontBehaviors"
+import {HostedZone} from "aws-cdk-lib/aws-route53"
+import {Certificate} from "aws-cdk-lib/aws-certificatemanager"
 
 export interface StatelessResourcesStackProps extends StackProps {
   readonly serviceName: string
@@ -30,7 +40,7 @@ export interface StatelessResourcesStackProps extends StackProps {
 }
 
 /**
- * Clinical Prescription Tracker UI Stateful Resources
+ * Clinical Prescription Tracker UI Stateless Resources
 
  */
 
@@ -40,22 +50,121 @@ export class StatelessResourcesStack extends Stack {
 
     // Context
     /* context values passed as --context cli arguments are passed as strings so coerce them to expected types*/
+    const epsDomainName: string = this.node.tryGetContext("epsDomainName")
+    const epsHostedZoneId: string = this.node.tryGetContext("epsHostedZoneId")
+    const cloudfrontCertArn: string = this.node.tryGetContext("cloudfrontCertArn")
+    const shortCloudfrontDomain: string = this.node.tryGetContext("shortCloudfrontDomain")
+    const fullCloudfrontDomain: string = this.node.tryGetContext("fullCloudfrontDomain")
+    const logRetentionInDays: number = Number(this.node.tryGetContext("logRetentionInDays"))
+    const primaryOidcClientId = this.node.tryGetContext("primaryOidcClientId")
+    const primaryOidcTokenEndpoint = this.node.tryGetContext("primaryOidcTokenEndpoint")
+    const primaryOidcIssuer = this.node.tryGetContext("primaryOidcIssuer")
+    const primaryOidcUserInfoEndpoint = this.node.tryGetContext("primaryOidcUserInfoEndpoint")
+    const primaryOidcjwksEndpoint = this.node.tryGetContext("primaryOidcjwksEndpoint")
+
+    const mockOidcClientId = this.node.tryGetContext("mockOidcClientId")
+    const mockOidcTokenEndpoint = this.node.tryGetContext("mockOidcTokenEndpoint")
+    const mockOidcIssuer = this.node.tryGetContext("mockOidcIssuer")
+    const mockOidcUserInfoEndpoint = this.node.tryGetContext("mockOidcUserInfoEndpoint")
+    const mockOidcjwksEndpoint = this.node.tryGetContext("mockOidcjwksEndpoint")
+
+    const useMockOidc = this.node.tryGetContext("useMockOidc")
 
     // Imports
-    const staticContentBucket = Bucket.fromBucketArn(
-      this, "StaticContentBucket", Fn.importValue(`${props.serviceName}-stateful-resources:StaticContentBucket:Arn`))
+    const baseImportPath = `${props.serviceName}-stateful-resources`
+
+    const staticContentBucketImport = Fn.importValue(`${baseImportPath}:StaticContentBucket:Arn`)
+    const tokenMappingTableImport = Fn.importValue(`${baseImportPath}:tokenMappingTable:Arn`)
+    const tokenMappingTableReadPolicyImport = Fn.importValue(`${baseImportPath}:tokenMappingTableReadPolicy:Arn`)
+    const tokenMappingTableWritePolicyImport = Fn.importValue(`${baseImportPath}:tokenMappingTableWritePolicy:Arn`)
+    const useTokensMappingKmsKeyPolicyImport = Fn.importValue(`${baseImportPath}:useTokensMappingKmsKeyPolicy:Arn`)
+    const primaryPoolIdentityProviderName = Fn.importValue(`${baseImportPath}:primaryPoolIdentityProvider:Name`)
+    const mockPoolIdentityProviderName = Fn.importValue(`${baseImportPath}:mockPoolIdentityProvider:Name`)
+    const userPoolImport = Fn.importValue(`${baseImportPath}:userPool:Arn`)
+    const cloudfrontLoggingBucketImport = Fn.importValue("account-resources:CloudfrontLoggingBucket")
+    const cloudwatchKmsKeyImport = Fn.importValue("account-resources:CloudwatchLogsKmsKeyArn")
+    const splunkDeliveryStreamImport = Fn.importValue("lambda-resources:SplunkDeliveryStream")
+    const splunkSubscriptionFilterRoleImport = Fn.importValue("lambda-resources:SplunkSubscriptionFilterRole")
+    const deploymentRoleImport = Fn.importValue("ci-resources:CloudFormationDeployRole")
+
+    // Coerce context and imports to relevant types
+    const staticContentBucket = Bucket.fromBucketArn( this, "StaticContentBucket", staticContentBucketImport)
+    const tokenMappingTable = TableV2.fromTableArn( this, "tokenMappingTable", tokenMappingTableImport)
+    const tokenMappingTableReadPolicy = ManagedPolicy.fromManagedPolicyArn(
+      this, "tokenMappingTableReadPolicy", tokenMappingTableReadPolicyImport)
+    const tokenMappingTableWritePolicy = ManagedPolicy.fromManagedPolicyArn(
+      this, "tokenMappingTableWritePolicy", tokenMappingTableWritePolicyImport)
+    const useTokensMappingKmsKeyPolicy = ManagedPolicy.fromManagedPolicyArn(
+      this, "useTokensMappingKmsKeyPolicy", useTokensMappingKmsKeyPolicyImport)
+    const userPool = UserPool.fromUserPoolArn(
+      this, "userPool", userPoolImport)
+    const cloudfrontLoggingBucket = Bucket.fromBucketArn(
+      this, "CloudfrontLoggingBucket", cloudfrontLoggingBucketImport)
+    const cloudwatchKmsKey = Key.fromKeyArn(
+      this, "cloudwatchKmsKey", cloudwatchKmsKeyImport)
+    const splunkDeliveryStream = Stream.fromStreamArn(
+      this, "SplunkDeliveryStream", splunkDeliveryStreamImport)
+    const splunkSubscriptionFilterRole = Role.fromRoleArn(
+      this, "splunkSubscriptionFilterRole", splunkSubscriptionFilterRoleImport )
+    const hostedZone = HostedZone.fromHostedZoneAttributes(this, "hostedZone", {
+      hostedZoneId: epsHostedZoneId,
+      zoneName: epsDomainName
+    })
+    const cloudfrontCert = Certificate.fromCertificateArn(this, "CloudfrontCert", cloudfrontCertArn)
+    const deploymentRole = Role.fromRoleArn(this, "deploymentRole", deploymentRoleImport)
 
     // Resources
+    // -- functions for cognito
+    const cognitoFunctions = new CognitoFunctions(this, "CognitoFunctions", {
+      serviceName: props.serviceName,
+      stackName: props.stackName,
+      primaryOidcTokenEndpoint: primaryOidcTokenEndpoint,
+      primaryOidcUserInfoEndpoint: primaryOidcUserInfoEndpoint,
+      primaryOidcjwksEndpoint: primaryOidcjwksEndpoint,
+      primaryOidcClientId: primaryOidcClientId,
+      primaryOidcIssuer: primaryOidcIssuer,
+      useMockOidc: useMockOidc,
+      mockOidcTokenEndpoint: mockOidcTokenEndpoint,
+      mockOidcUserInfoEndpoint: mockOidcUserInfoEndpoint,
+      mockOidcjwksEndpoint: mockOidcjwksEndpoint,
+      mockOidcClientId: mockOidcClientId,
+      mockOidcIssuer: mockOidcIssuer,
+      tokenMappingTable: tokenMappingTable,
+      tokenMappingTableWritePolicy: tokenMappingTableWritePolicy,
+      tokenMappingTableReadPolicy: tokenMappingTableReadPolicy,
+      useTokensMappingKmsKeyPolicy: useTokensMappingKmsKeyPolicy,
+      primaryPoolIdentityProviderName: primaryPoolIdentityProviderName,
+      mockPoolIdentityProviderName: mockPoolIdentityProviderName,
+      logRetentionInDays: logRetentionInDays,
+      deploymentRole: deploymentRole
+    })
+
     // - API Gateway
     const apiGateway = new RestApiGateway(this, "ApiGateway", {
       serviceName: props.serviceName,
-      stackName: props.stackName
+      stackName: props.stackName,
+      logRetentionInDays: logRetentionInDays,
+      cloudwatchKmsKey: cloudwatchKmsKey,
+      splunkDeliveryStream: splunkDeliveryStream,
+      splunkSubscriptionFilterRole: splunkSubscriptionFilterRole,
+      userPool: userPool
     })
 
     // --- Methods & Resources
+    new RestApiGatewayMethods(this, "RestApiGatewayMethods", {
+      executePolices: [
+        ...cognitoFunctions.cognitoPolicies
+      ],
+      restAPiGatewayRole: apiGateway.restAPiGatewayRole,
+      restApiGateway: apiGateway.restApiGateway,
+      tokenLambda: cognitoFunctions.tokenLambda,
+      mockTokenLambda: cognitoFunctions.mockTokenLambda,
+      useMockOidc: useMockOidc,
+      authorizer: apiGateway.authorizer
+    })
 
     // - Cloudfront
-    // --- Origins
+    // --- Origins for bucket and api gateway
     const staticContentBucketOrigin = S3BucketOrigin.withOriginAccessControl(
       staticContentBucket,
       {
@@ -74,147 +183,45 @@ export class StatelessResourcesStack extends Stack {
     const apiGatewayRequestPolicy = new OriginRequestPolicy(this, "apiGatewayRequestPolicy", {
       originRequestPolicyName: `${props.serviceName}-ApiGatewayRequestPolicy`,
       cookieBehavior: OriginRequestCookieBehavior.all(),
-      headerBehavior: OriginRequestHeaderBehavior.all()
+      headerBehavior: OriginRequestHeaderBehavior.denyList("host"),
+      queryStringBehavior: OriginRequestQueryStringBehavior.all()
     })
 
-    // --- Cache Policies
-    /* todo - to follow in a later ticket */
-
-    // --- Functions
-    const s3404UriRewriteFunction = new CloudfrontFunction(this, "S3404UriRewriteFunction", {
-      functionName: `${props.serviceName}-S3404UriRewriteFunction`,
-      sourceFileName: "genericS3FixedObjectUriRewrite.js",
-      keyValues: [
-        {
-          key: "object",
-          value: "404.html"
-        }
-      ]
-    })
-
-    const s3404ModifyStatusCodeFunction = new CloudfrontFunction(this, "S3404ModifyStatusCodeFunction", {
-      functionName: `${props.serviceName}-S3404ModifyStatusCodeFunction`,
-      sourceFileName: "s3404ModifyStatusCode.js"
-    })
-
-    const s3500UriRewriteFunction = new CloudfrontFunction(this, "S3500UriRewriteFunction", {
-      functionName: `${props.serviceName}-S3500UriRewriteFunction`,
-      sourceFileName: "genericS3FixedObjectUriRewrite.js",
-      keyValues: [
-        {
-          key: "object",
-          value: "500.html"
-        }
-      ]
-    })
-
-    const s3StaticContentUriRewriteFunction = new CloudfrontFunction(this, "S3StaticContentUriRewriteFunction", {
-      functionName: `${props.serviceName}-S3StaticContentUriRewriteFunction`,
-      sourceFileName: "s3StaticContentUriRewrite.js"
-    })
-
-    const apiGatewayStripPathFunction = new CloudfrontFunction(this, "ApiGatewayStripPathFunction", {
-      functionName: `${props.serviceName}-ApiGatewayStripPathFunction`,
-      sourceFileName: "genericStripPathUriRewrite.js",
-      keyValues: [
-        {
-          key: "path",
-          value: "/api"
-        }
-      ]
-    })
-
-    const s3JwksUriRewriteFunction = new CloudfrontFunction(this, "s3JwksUriRewriteFunction", {
-      functionName: `${props.serviceName}-s3JwksUriRewriteFunction`,
-      sourceFileName: "genericS3FixedObjectUriRewrite.js",
-      keyValues: [
-        {
-          key: "object",
-          value: "jwks.json"
-        }
-      ]
+    // --- CloudfrontBehaviors
+    const cloudfrontBehaviors = new CloudfrontBehaviors(this, "CloudfrontBehaviors", {
+      serviceName: props.serviceName,
+      stackName: props.stackName,
+      apiGatewayOrigin: apiGatewayOrigin,
+      apiGatewayRequestPolicy: apiGatewayRequestPolicy,
+      staticContentBucketOrigin: staticContentBucketOrigin
     })
 
     // --- Distribution
     const cloudfrontDistribution = new CloudfrontDistribution(this, "CloudfrontDistribution", {
       serviceName: props.serviceName,
       stackName: props.stackName,
+      hostedZone: hostedZone,
+      cloudfrontCert: cloudfrontCert,
+      shortCloudfrontDomain: shortCloudfrontDomain,
+      fullCloudfrontDomain: fullCloudfrontDomain,
+      cloudfrontLoggingBucket: cloudfrontLoggingBucket,
       defaultBehavior: {
         origin: staticContentBucketOrigin,
         allowedMethods: AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
         viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
         functionAssociations:[
           {
-            function: s3404UriRewriteFunction.function,
+            function: cloudfrontBehaviors.s3404UriRewriteFunction.function,
             eventType: FunctionEventType.VIEWER_REQUEST
           },
           {
-            function: s3404ModifyStatusCodeFunction.function,
+            function: cloudfrontBehaviors.s3404ModifyStatusCodeFunction.function,
             eventType: FunctionEventType.VIEWER_RESPONSE
           }
         ]
       },
-      additionalBehaviors: {
-        "/site/*": {
-          origin: staticContentBucketOrigin,
-          allowedMethods: AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
-          viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-          functionAssociations: [
-            {
-              function: s3StaticContentUriRewriteFunction.function,
-              eventType: FunctionEventType.VIEWER_REQUEST
-            }
-          ]
-        },
-        "/api/*": {
-          origin: apiGatewayOrigin,
-          allowedMethods: AllowedMethods.ALLOW_ALL,
-          viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-          originRequestPolicy: apiGatewayRequestPolicy,
-          functionAssociations: [
-            {
-              function: apiGatewayStripPathFunction.function,
-              eventType: FunctionEventType.VIEWER_REQUEST
-            }
-          ]
-        },
-        "/jwks/": {/* matches exactly <url>/jwks and will only serve the jwks json (via cf function) */
-          origin: staticContentBucketOrigin,
-          allowedMethods: AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
-          viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-          functionAssociations: [
-            {
-              function: s3JwksUriRewriteFunction.function,
-              eventType: FunctionEventType.VIEWER_REQUEST
-            }
-          ]
-        },
-
-        "/500.html": { // matches exactly <url>/500.html and will only serve the 500.html page (via cf function)
-          origin: staticContentBucketOrigin,
-          allowedMethods: AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
-          viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-          functionAssociations: [
-            {
-              function: s3500UriRewriteFunction.function,
-              eventType: FunctionEventType.VIEWER_REQUEST
-            }
-          ]
-        }
-      },
+      additionalBehaviors: cloudfrontBehaviors.additionalBehaviors,
       errorResponses: [
-        {
-          httpStatus: 500,
-          responseHttpStatus: 500,
-          responsePagePath: "/500.html",
-          ttl: Duration.seconds(10)
-        },
-        {
-          httpStatus: 403,
-          responseHttpStatus: 500,
-          responsePagePath: "/500.html",
-          ttl: Duration.seconds(10)
-        },
         {
           httpStatus: 404,
           responseHttpStatus: 404,
@@ -224,12 +231,6 @@ export class StatelessResourcesStack extends Stack {
       ]
     })
 
-    /* Resources to add:
-      - api gateway resources
-      - lambdas
-      - state machines
-    */
-
     // Outputs
 
     // Exports
@@ -238,10 +239,27 @@ export class StatelessResourcesStack extends Stack {
       exportName: `${props.stackName}:cloudfrontDistribution:Id`
     })
     new CfnOutput(this, "StaticRewriteKeyValueStoreArn", {
-      value: s3StaticContentUriRewriteFunction.functionStore?.keyValueStoreArn,
+      value: cloudfrontBehaviors.s3StaticContentUriRewriteFunction.functionStore?.keyValueStoreArn,
       exportName: `${props.stackName}:StaticRewriteKeyValueStor:Arn`
     })
-
+    new CfnOutput(this, "primaryJwtPrivateKeyArn", {
+      value: cognitoFunctions.primaryJwtPrivateKey.secretArn,
+      exportName: `${props.stackName}:primaryJwtPrivateKey:Arn`
+    })
+    new CfnOutput(this, "primaryJwtPrivateKeyName", {
+      value: cognitoFunctions.primaryJwtPrivateKey.secretName,
+      exportName: `${props.stackName}:primaryJwtPrivateKey:Name`
+    })
+    if (useMockOidc) {
+      new CfnOutput(this, "mockJwtPrivateKeyArn", {
+        value: cognitoFunctions.mockJwtPrivateKey.secretArn,
+        exportName: `${props.stackName}:mockJwtPrivateKey:Arn`
+      })
+      new CfnOutput(this, "mockJwtPrivateKeyName", {
+        value: cognitoFunctions.mockJwtPrivateKey.secretName,
+        exportName: `${props.stackName}:mockJwtPrivateKey:Name`
+      })
+    }
     nagSuppressions(this)
   }
 }

@@ -25,6 +25,9 @@ compile: compile-node
 lint-node: compile-node
 	npm run lint --workspace packages/cloudfrontFunctions
 	npm run lint --workspace packages/cdk
+	npm run lint --workspace packages/cognito
+	npm run lint --workspace packages/common/testing
+	npm run lint --workspace packages/common/middyErrorHandler
 
 lint-githubactions:
 	actionlint
@@ -38,14 +41,21 @@ test: compile
 	npm run test --workspace packages/cloudfrontFunctions
 	npm run test --workspace packages/cdk
 	npm run test --workspace packages/cpt-ui
+	npm run test --workspace packages/cognito
+	npm run test --workspace packages/common/middyErrorHandler
 
 clean:
 	rm -rf packages/cloudfrontFunctions/coverage
 	rm -rf packages/cloudfrontFunctions/lib
 	rm -rf packages/cdk/coverage
 	rm -rf packages/cdk/lib
+	rm -rf packages/cognito/coverage
+	rm -rf packages/cognito/lib
+	rm -rf packages/common/middyErrorHandler/coverage
+	rm -rf packages/common/middyErrorHandler/lib
 	rm -rf cdk.out
 	rm -rf packages/cpt-ui/.next
+	rm -rf packages/auth_demo/build
 
 deep-clean: clean
 	rm -rf .venv
@@ -83,6 +93,9 @@ react-start:
 react-lint:
 	npm run lint --workspace packages/cpt-ui
 
+auth_demo_build:
+	export PUBLIC_URL="/auth_demo" && npm run build --workspace packages/auth_demo/
+
 cdk-deploy: guard-service_name guard-CDK_APP_NAME
 	REQUIRE_APPROVAL="$${REQUIRE_APPROVAL:-any-change}" && \
 	VERSION_NUMBER="$${VERSION_NUMBER:-undefined}" && \
@@ -96,9 +109,13 @@ cdk-deploy: guard-service_name guard-CDK_APP_NAME
 		--context VERSION_NUMBER=$$VERSION_NUMBER \
 		--context COMMIT_ID=$$COMMIT_ID 
 
-cdk-synth: cdk-synth-stateful-resources cdk-synth-stateless-resources
+cdk-synth: cdk-synth-no-mock cdk-synth-mock
 
-cdk-synth-stateful-resources:
+cdk-synth-no-mock: cdk-synth-stateful-resources-no-mock cdk-synth-stateless-resources-no-mock
+
+cdk-synth-mock: cdk-synth-stateful-resources-mock cdk-synth-stateless-resources-mock
+
+cdk-synth-stateful-resources-no-mock:
 	npx cdk synth \
 		--quiet \
 		--app "npx ts-node --prefer-ts-exts packages/cdk/bin/StatefulResourcesApp.ts" \
@@ -108,9 +125,9 @@ cdk-synth-stateful-resources:
 		--context allowAutoDeleteObjects=true \
 		--context cloudfrontDistributionId=undefined \
 		--context epsDomainName=undefined \
-		--context epsHostedZoneId=undefined
+		--context epsHostedZoneId=undefined 
 
-cdk-synth-stateless-resources:
+cdk-synth-stateless-resources-no-mock:
 	npx cdk synth \
 		--quiet \
 		--app "npx ts-node --prefer-ts-exts packages/cdk/bin/StatelessResourcesApp.ts" \
@@ -120,7 +137,66 @@ cdk-synth-stateless-resources:
 		--context logRetentionInDays=30 \
 		--context epsDomainName=undefined \
 		--context epsHostedZoneId=undefined \
-		--context cloudfrontCertArn=arn:aws:acm:us-east-1:444455556666:certificate/certificate_ID
+		--context cloudfrontCertArn=arn:aws:acm:us-east-1:444455556666:certificate/certificate_ID \
+
+cdk-synth-stateful-resources-mock:
+	npx cdk synth \
+		--quiet \
+		--app "npx ts-node --prefer-ts-exts packages/cdk/bin/StatefulResourcesApp.ts" \
+		--context serviceName=cpt-ui \
+		--context VERSION_NUMBER=undefined \
+		--context COMMIT_ID=undefined \
+		--context allowAutoDeleteObjects=true \
+		--context cloudfrontDistributionId=undefined \
+		--context epsDomainName=undefined \
+		--context epsHostedZoneId=undefined \
+		--context useMockOidc=true \
+		--context primaryOidcClientId=undefined\
+		--context primaryOidClientSecret=undefined \
+		--context primaryOidcIssuer=undefined \
+		--context primaryOidcAuthorizeEndpoint=undefined \
+		--context primaryOidcTokenEndpoint=undefined \
+		--context primaryOidcUserInfoEndpoint=undefined \
+		--context primaryOidcjwksEndpoint=undefined \
+		--context mockOidcClientId=undefined \
+		--context mockOidClientSecret=undefined \
+		--context mockOidcIssuer=undefined \
+		--context mockOidcAuthorizeEndpoint=undefined \
+		--context mockOidcTokenEndpoint=undefined \
+		--context mockOidcUserInfoEndpoint=undefined \
+		--context mockOidcjwksEndpoint=undefined \
+		--context shortCloudfrontDomain=undefined \
+		--context fullCloudfrontDomain=undefined
+
+
+cdk-synth-stateless-resources-mock:
+	npx cdk synth \
+		--quiet \
+		--app "npx ts-node --prefer-ts-exts packages/cdk/bin/StatelessResourcesApp.ts" \
+		--context serviceName=cpt-ui \
+		--context VERSION_NUMBER=undefined \
+		--context COMMIT_ID=undefined \
+		--context logRetentionInDays=30 \
+		--context epsDomainName=undefined \
+		--context epsHostedZoneId=undefined \
+		--context cloudfrontCertArn=arn:aws:acm:us-east-1:444455556666:certificate/certificate_ID \
+		--context useMockOidc=true \
+		--context primaryOidcClientId=undefined\
+		--context primaryOidClientSecret=undefined \
+		--context primaryOidcIssuer=undefined \
+		--context primaryOidcAuthorizeEndpoint=undefined \
+		--context primaryOidcTokenEndpoint=undefined \
+		--context primaryOidcUserInfoEndpoint=undefined \
+		--context primaryOidcjwksEndpoint=undefined \
+		--context mockOidcClientId=undefined \
+		--context mockOidClientSecret=undefined \
+		--context mockOidcIssuer=undefined \
+		--context mockOidcAuthorizeEndpoint=undefined \
+		--context mockOidcTokenEndpoint=undefined \
+		--context mockOidcUserInfoEndpoint=undefined \
+		--context mockOidcjwksEndpoint=undefined \
+		--context shortCloudfrontDomain=undefined \
+		--context fullCloudfrontDomain=undefined
 
 cdk-diff: guard-CDK_APP_NAME
 	npx cdk diff \

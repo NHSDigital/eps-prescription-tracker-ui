@@ -49,6 +49,7 @@ jobs:
       - name: make install
         run: |
           make install
+          make compile-node
 
       - name: 'Tar files'
         run: |
@@ -67,6 +68,3 @@ jobs:
         with:
           name: build_artifact
           path: artifact.tar
-
-
-          
