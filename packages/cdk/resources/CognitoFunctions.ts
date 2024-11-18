@@ -50,6 +50,7 @@ export class CognitoFunctions extends Construct {
   public readonly tokenLambda: NodejsFunction
   public readonly mockTokenLambda: NodejsFunction
   public readonly primaryJwtPrivateKey: Secret
+  public readonly mockJwtPrivateKey: Secret
 
   public constructor(scope: Construct, id: string, props: CognitoFunctionsProps) {
     super(scope, id)
@@ -162,6 +163,7 @@ export class CognitoFunctions extends Construct {
           oidcIssuer: props.mockOidcIssuer
         }
       })
+      this.mockJwtPrivateKey = mockJwtPrivateKey
     }
 
     // secret used by token lambda that holds the JWT private key
