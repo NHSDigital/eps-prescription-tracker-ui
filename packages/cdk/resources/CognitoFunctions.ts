@@ -123,6 +123,15 @@ export class CognitoFunctions extends Construct {
         secretStringValue: SecretValue.unsafePlainText("ChangeMe"),
         encryptionKey: jwtKmsKey
       })
+      mockJwtPrivateKey.addToResourcePolicy( new PolicyStatement({
+        effect: Effect.ALLOW,
+        principals: [props.deploymentRole],
+        actions: [
+          "secretsmanager:PutSecretValue"
+        ],
+        resources:["*"]
+      }))
+
       const getMockJWTPrivateKeySecret = new ManagedPolicy(this, "getMockJWTPrivateKeySecret", {
         statements: [
           new PolicyStatement({
