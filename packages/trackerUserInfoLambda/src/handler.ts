@@ -6,7 +6,7 @@ import inputOutputLogger from "@middy/input-output-logger"
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
 import {DynamoDBDocumentClient, PutCommand} from "@aws-sdk/lib-dynamodb"
-import {fetchAndVerifyCIS2Tokens} from "./cis2_token_helpers"
+import {fetchAndVerifyCIS2Tokens, fetchUserInfo} from "./cis2_token_helpers"
 
 const logger = new Logger({serviceName: "trackerUserInfo"})
 const UserPoolIdentityProvider = process.env["UserPoolIdentityProvider"] as string
@@ -16,8 +16,9 @@ const useSignedJWT = process.env["useSignedJWT"] as string
 const jwtPrivateKeyArn = process.env["jwtPrivateKeyArn"] as string
 const oidcClientId = process.env["oidcClientId"] as string
 const oidcIssuer = process.env["oidcIssuer"] as string
+const oidcUserInfoEndpoint = process.env["oidcUserInfoEndpoint"] as string
 
-const dynamoClient = new DynamoDBClient()
+const dynamoClient = new DynamoDBClient({})
 const documentClient = DynamoDBDocumentClient.from(dynamoClient)
 
 const errorResponseBody = {
@@ -71,9 +72,25 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     logger.debug("Inserting into DynamoDB", {params})
     await documentClient.send(new PutCommand(params))
 
+    // Make the UserInfo request here
+    logger.info("Making UserInfo request")
+    const userInfoResponse = await fetchUserInfo({
+      logger,
+      accessToken,
+      decodedIdToken,
+      oidcUserInfoEndpoint
+    })
+
+    logger.info("UserInfo response received", {userInfoResponse})
+
     return {
       statusCode: 200,
-      body: "OK"
+      body: JSON.stringify(
+        {
+          message: "UserInfo fetched successfully",
+          userInfo: userInfoResponse
+        }
+      )
     }
 
   } catch (error) {

@@ -2,7 +2,7 @@ import axios from "axios"
 import {Logger} from "@aws-lambda-powertools/logger"
 import {parse, ParsedUrlQuery, stringify} from "querystring"
 import {getSecret} from "@aws-lambda-powertools/parameters/secrets"
-import {PrivateKey} from "jsonwebtoken"
+import {JwtPayload, PrivateKey} from "jsonwebtoken"
 import {verifyJWTWrapper, rewriteBodyToAddSignedJWT} from "./helpers"
 
 const axiosInstance = axios.create()
@@ -82,5 +82,65 @@ export async function fetchAndVerifyCIS2Tokens(params: FetchAndVerifyTokensParam
       logger.error("Unknown error occurred while fetching or verifying tokens", {error: String(error)})
     }
     throw error
+  }
+}
+
+interface FetchUserInfoParams {
+  logger: Logger;
+  accessToken: string;
+  decodedIdToken: JwtPayload;
+  oidcUserInfoEndpoint: string;
+}
+
+export async function fetchUserInfo(params: FetchUserInfoParams) {
+  const {
+    logger,
+    accessToken,
+    decodedIdToken,
+    oidcUserInfoEndpoint
+  } = params
+
+  try {
+    logger.info("Sending UserInfo request", {oidcUserInfoEndpoint})
+
+    const userInfoResponse = await axiosInstance.get(oidcUserInfoEndpoint, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`
+      }
+    })
+
+    logger.debug("UserInfo response data", {data: userInfoResponse.data})
+
+    // Verify that the 'sub' claim matches the one in the ID Token
+    const userInfoSub = userInfoResponse.data.sub
+    const idTokenSub = decodedIdToken.sub
+
+    if (userInfoSub !== idTokenSub) {
+      logger.error("The 'sub' claim in UserInfo response does not match the 'sub' in ID Token", {
+        userInfoSub,
+        idTokenSub
+      })
+      throw new Error("The 'sub' claim does not match between UserInfo response and ID Token")
+    }
+
+    return userInfoResponse.data
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      logger.error("Axios error occurred while fetching UserInfo", {
+        error: error.message,
+        responseData: error.response?.data
+      })
+      throw new Error(`UserInfo request failed: ${error.message}`)
+    } else if (error instanceof Error) {
+      logger.error("Error occurred while fetching UserInfo", {
+        error: error.message
+      })
+      throw error
+    } else {
+      logger.error("Unknown error occurred while fetching UserInfo", {
+        error: String(error)
+      })
+      throw new Error("Unknown error occurred while fetching UserInfo")
+    }
   }
 }
