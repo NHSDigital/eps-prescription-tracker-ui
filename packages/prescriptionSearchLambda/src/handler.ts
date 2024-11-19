@@ -8,6 +8,8 @@ import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 import axios from "axios"
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
 import {DynamoDBDocumentClient, GetCommand, PutCommand} from "@aws-sdk/lib-dynamodb"
+import {rewriteBodyToAddSignedJWT, formatHeaders} from "./helpers"
+import {stringify} from "querystring" // Ensure stringify is imported here
 
 const logger = new Logger({serviceName: "prescriptionSearch"})
 const apigeeTokenEndpoint = "https://api.service.nhs.uk/oauth2/token"
@@ -20,7 +22,7 @@ const dynamoClient = new DynamoDBClient()
 const documentClient = DynamoDBDocumentClient.from(dynamoClient)
 
 const errorResponseBody = {
-  message: "A system error has occurred",
+  message: "A system error has occurred"
 }
 
 const middyErrorHandler = new MiddyErrorHandler(errorResponseBody)
@@ -36,7 +38,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   if (!username) {
     return {
       statusCode: 400,
-      body: JSON.stringify({message: "Missing or invalid username"}),
+      body: JSON.stringify({message: "Missing or invalid username"})
     }
   }
 
@@ -46,7 +48,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     const result = await documentClient.send(
       new GetCommand({
         TableName: TokenMappingTableName,
-        Key: {username},
+        Key: {username}
       })
     )
 
@@ -56,14 +58,14 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
       logger.error("CIS2 access token not found for user")
       return {
         statusCode: 404,
-        body: JSON.stringify({message: "CIS2 access token not found for user"}),
+        body: JSON.stringify({message: "CIS2 access token not found for user"})
       }
     }
   } catch (error) {
     logger.error("Error fetching data from DynamoDB", {error})
     return {
       statusCode: 500,
-      body: JSON.stringify({message: "Internal server error while accessing DynamoDB"}),
+      body: JSON.stringify({message: "Internal server error while accessing DynamoDB"})
     }
   }
 
@@ -73,19 +75,21 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     logger.info("Exchanging CIS2 access token for Apigee access token")
     const jwtPrivateKey = await getSecret(jwtPrivateKeyArn)
 
-    // Creating a signed JWT for client assertion (Assuming you have a helper function for this)
-    const clientAssertion = await createSignedJWT(jwtPrivateKey)
+    if (!jwtPrivateKey) {
+      throw new Error("JWT private key not found")
+    }
 
+    // Creating a signed JWT for client assertion using helper function
     const tokenExchangeData = {
       grant_type: "urn:ietf:params:oauth:grant-type:token-exchange",
       subject_token_type: "urn:ietf:params:oauth:token-type:id_token",
-      client_assertion_type: "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
       subject_token: cis2AccessToken,
-      client_assertion: clientAssertion,
+      client_id: process.env["CLIENT_ID"] // Assuming you have a client ID set in environment variables
     }
 
-    const tokenResponse = await axiosInstance.post(apigeeTokenEndpoint, stringify(tokenExchangeData), {
-      headers: {"Content-Type": "application/x-www-form-urlencoded"},
+    const rewrittenBody = rewriteBodyToAddSignedJWT(logger, tokenExchangeData, apigeeTokenEndpoint, jwtPrivateKey as string)
+    const tokenResponse = await axiosInstance.post(apigeeTokenEndpoint, stringify(rewrittenBody), {
+      headers: {"Content-Type": "application/x-www-form-urlencoded"}
     })
 
     apigeeAccessToken = tokenResponse.data.access_token
@@ -98,9 +102,9 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
       Item: {
         username,
         Apigee_accessToken: apigeeAccessToken,
-        Apigee_expiresIn: tokenResponse.data.expires_in,
+        Apigee_expiresIn: tokenResponse.data.expires_in
       },
-      TableName: TokenMappingTableName,
+      TableName: TokenMappingTableName
     }
 
     await documentClient.send(new PutCommand(updateParams))
@@ -108,7 +112,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     logger.error("Error during Apigee token exchange", {error})
     return {
       statusCode: 500,
-      body: JSON.stringify({message: "Error during Apigee token exchange", details: error}),
+      body: JSON.stringify({message: "Error during Apigee token exchange", details: error})
     }
   }
 
@@ -119,14 +123,14 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     const apigeeResponse = await axiosInstance.get(`${apigeePrescriptionsEndpoint}/prescription-search/${prescriptionId}`, {
       headers: {
         Authorization: `Bearer ${apigeeAccessToken}`,
-        "NHSD-Session-URID": roleId,
-      },
+        "NHSD-Session-URID": roleId
+      }
     })
 
     return {
       statusCode: 200,
       body: JSON.stringify(apigeeResponse.data),
-      headers: formatHeaders(apigeeResponse.headers),
+      headers: formatHeaders(apigeeResponse.headers)
     }
   } catch (apigeeError) {
     if (axios.isAxiosError(apigeeError)) {
@@ -135,8 +139,8 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
         statusCode: apigeeError.response?.status || 500,
         body: JSON.stringify({
           message: "Failed to fetch data from Apigee API",
-          details: apigeeError.response?.data || "Unknown error",
-        }),
+          details: apigeeError.response?.data || "Unknown error"
+        })
       }
     } else {
       logger.error("Unexpected error calling Apigee API", {error: String(apigeeError)})
@@ -144,8 +148,8 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
         statusCode: 500,
         body: JSON.stringify({
           message: "Failed to fetch data from Apigee API",
-          details: "An unexpected error occurred",
-        }),
+          details: "An unexpected error occurred"
+        })
       }
     }
   }
