@@ -2,16 +2,11 @@ import {APIGatewayProxyEvent, APIGatewayProxyResult} from "aws-lambda"
 import {Logger} from "@aws-lambda-powertools/logger"
 import {injectLambdaContext} from "@aws-lambda-powertools/logger/middleware"
 import middy from "@middy/core"
-import {getSecret} from "@aws-lambda-powertools/parameters/secrets"
 import inputOutputLogger from "@middy/input-output-logger"
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
-import axios from "axios"
-import {parse, ParsedUrlQuery, stringify} from "querystring"
-
-import {PrivateKey} from "jsonwebtoken"
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
 import {DynamoDBDocumentClient, PutCommand} from "@aws-sdk/lib-dynamodb"
-import {rewriteBodyToAddSignedJWT, verifyJWTWrapper} from "./helpers"
+import {fetchAndVerifyCIS2Tokens} from "./cis2_token_helpers"
 
 const logger = new Logger({serviceName: "trackerUserInfo"})
 const UserPoolIdentityProvider = process.env["UserPoolIdentityProvider"] as string
@@ -35,7 +30,6 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   logger.appendKeys({"apigw-request-id": event.requestContext?.requestId})
   logger.info("Lambda handler invoked", {event})
 
-  const axiosInstance = axios.create()
   const httpMethod = event.httpMethod
 
   if (httpMethod === "GET") {
@@ -47,52 +41,21 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   }
 
   const body = event.body
-  if (body === undefined) {
+  if (body === null) {
     logger.error("Request body is missing")
     throw new Error("Request body is missing")
   }
 
-  const objectBodyParameters = parse(body as string)
-  logger.debug("Parsed request body parameters", {objectBodyParameters})
-
-  let rewrittenObjectBodyParameters: ParsedUrlQuery
-
-  if (useSignedJWT === "true") {
-    try {
-      logger.info("Fetching JWT private key")
-      const jwtPrivateKey = await getSecret(jwtPrivateKeyArn)
-      rewrittenObjectBodyParameters = rewriteBodyToAddSignedJWT(
-        logger, objectBodyParameters, idpTokenPath, jwtPrivateKey as PrivateKey
-      )
-      logger.debug("Rewritten body with signed JWT", {rewrittenObjectBodyParameters})
-    } catch (error) {
-      logger.error("Error fetching or processing JWT private key", {error})
-      throw error
-    }
-  } else {
-    rewrittenObjectBodyParameters = objectBodyParameters
-    logger.info("JWT signing is not enabled, using original body parameters")
-  }
-
-  logger.debug("Calling downstream IDP with rewritten body", {idpTokenPath, body: rewrittenObjectBodyParameters})
-
   try {
-    const tokenResponse = await axiosInstance.post(idpTokenPath, stringify(rewrittenObjectBodyParameters))
-    logger.debug("Response from external OIDC", {data: tokenResponse.data})
-
-    const accessToken = tokenResponse.data.access_token
-    const idToken = tokenResponse.data.id_token
-
-    // Ensure tokens exist before proceeding
-    if (!accessToken || !idToken) {
-      logger.error("Failed to retrieve tokens from OIDC response")
-      throw new Error("Failed to retrieve tokens from OIDC response")
-    }
-
-    // Verify and decode idToken
-    logger.info("Verifying and decoding ID token")
-    const decodedIdToken = await verifyJWTWrapper(idToken, oidcIssuer, oidcClientId)
-    logger.debug("Decoded idToken", {decodedIdToken})
+    const {accessToken, idToken, decodedIdToken} = await fetchAndVerifyCIS2Tokens({
+      logger,
+      body,
+      useSignedJWT,
+      jwtPrivateKeyArn,
+      idpTokenPath,
+      oidcIssuer,
+      oidcClientId
+    })
 
     const username = `${UserPoolIdentityProvider}_${decodedIdToken.sub}`
     const params = {
