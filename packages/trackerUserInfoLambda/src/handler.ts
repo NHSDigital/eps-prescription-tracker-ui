@@ -41,7 +41,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   }
 
   const body = event.body
-  if (body === null) {
+  if (body === null || body === undefined) {
     logger.error("Request body is missing")
     throw new Error("Request body is missing")
   }
