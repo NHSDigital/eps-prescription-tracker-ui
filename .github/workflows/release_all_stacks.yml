@@ -40,6 +40,8 @@ on:
         type: string
       useLocalhostCallback:
         type: boolean
+      useCustomCognitoDomain:
+        type: boolean
     secrets:
       CLOUD_FORMATION_DEPLOY_ROLE:
         required: true
@@ -110,6 +112,7 @@ jobs:
       mockOidcUserInfoEndpoint: ${{ inputs.mockOidcUserInfoEndpoint }}
       mockOidcjwksEndpoint: ${{ inputs.mockOidcjwksEndpoint }}
       useLocalhostCallback: ${{ inputs.useLocalhostCallback }}
+      useCustomCognitoDomain: ${{ inputs.useCustomCognitoDomain }}
     secrets:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}
@@ -151,6 +154,7 @@ jobs:
       mockOidcUserInfoEndpoint: ${{ inputs.mockOidcUserInfoEndpoint }}
       mockOidcjwksEndpoint: ${{ inputs.mockOidcjwksEndpoint }}
       useLocalhostCallback: ${{ inputs.useLocalhostCallback }}
+      useCustomCognitoDomain: ${{ inputs.useCustomCognitoDomain }}
     secrets:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}
@@ -245,6 +249,7 @@ jobs:
       mockOidcUserInfoEndpoint: ${{ inputs.mockOidcUserInfoEndpoint }}
       mockOidcjwksEndpoint: ${{ inputs.mockOidcjwksEndpoint }}
       useLocalhostCallback: ${{ inputs.useLocalhostCallback }}
+      useCustomCognitoDomain: ${{ inputs.useCustomCognitoDomain }}
     secrets:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}

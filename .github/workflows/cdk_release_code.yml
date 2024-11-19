@@ -46,6 +46,8 @@ on:
         type: string
       useLocalhostCallback:
         type: boolean
+      useCustomCognitoDomain:
+        type: boolean
     secrets:
       CLOUD_FORMATION_DEPLOY_ROLE:
         required: true
@@ -139,7 +141,7 @@ jobs:
           --arg logRetentionInDays "${{ inputs.LOG_RETENTION_IN_DAYS }}" \
           --arg epsDomainName "${epsDomainName}" \
           --arg epsHostedZoneId "${epsHostedZoneId}" \
-          --arg allowAutoDeleteObjects "true" \
+          --argjson allowAutoDeleteObjects "true" \
           --arg cloudfrontDistributionId "${cloudfrontDistributionId}" \
           --arg cloudfrontCertArn "${cloudfrontCertArn}" \
           --arg useMockOidc "${{ inputs.useMockOidc }}" \
@@ -159,7 +161,8 @@ jobs:
           --arg mockOidcjwksEndpoint "${{ inputs.mockOidcjwksEndpoint }}" \
           --arg shortCloudfrontDomain "${shortCloudfrontDomain}" \
           --arg fullCloudfrontDomain "${fullCloudfrontDomain}" \
-          --arg useLocalhostCallback "${{ inputs.useLocalhostCallback }}" \
+          --argjson useCustomCognitoDomain "${{ inputs.useCustomCognitoDomain }}" \
+          --argjson useLocalhostCallback "${{ inputs.useLocalhostCallback }}" \
           '.context += {
             "serviceName": $serviceName,
             "VERSION_NUMBER": $VERSION_NUMBER,
@@ -187,6 +190,7 @@ jobs:
             "mockOidcTokenEndpoint": $mockOidcTokenEndpoint,
             "mockOidcUserInfoEndpoint": $mockOidcUserInfoEndpoint,
             "mockOidcjwksEndpoint": $mockOidcjwksEndpoint,
+            "useCustomCognitoDomain": $useCustomCognitoDomain,
             "useLocalhostCallback": $useLocalhostCallback}' \
           .build/cdk.json > .build/cdk.new.json
           mv .build/cdk.new.json .build/cdk.json
