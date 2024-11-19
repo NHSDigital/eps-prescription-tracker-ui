@@ -77,6 +77,11 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     logger.info("Exchanging CIS2 access token for Apigee access token")
     const jwtPrivateKey = await getSecret(jwtPrivateKeyArn)
 
+    // Check if the key is in the expected format
+    if (!jwtPrivateKey.includes("BEGIN PRIVATE KEY")) {
+      throw new Error("Invalid private key format. Ensure the key is PEM-encoded and suitable for RS512.")
+    }
+
     if (!jwtPrivateKey) {
       throw new Error("JWT private key not found")
     }
@@ -89,7 +94,12 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
       client_id: process.env["oidcClientId"]
     }
 
-    const rewrittenBody = rewriteBodyToAddSignedJWT(logger, tokenExchangeData, apigeeTokenEndpoint, jwtPrivateKey as string)
+    const rewrittenBody = rewriteBodyToAddSignedJWT(
+      logger,
+      tokenExchangeData,
+      apigeeTokenEndpoint,
+      jwtPrivateKey as string
+    )
     const tokenResponse = await axiosInstance.post(apigeeTokenEndpoint, stringify(rewrittenBody), {
       headers: {"Content-Type": "application/x-www-form-urlencoded"}
     })
@@ -141,13 +151,18 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   // Call Apigee with Apigee access token
   const prescriptionId = event.queryStringParameters?.prescriptionId || "defaultId"
   try {
-    logger.info("Calling Apigee endpoint", {endpoint: `${apigeePrescriptionsEndpoint}/prescription-search/${prescriptionId}`})
-    const apigeeResponse = await axiosInstance.get(`${apigeePrescriptionsEndpoint}/prescription-search/${prescriptionId}`, {
-      headers: {
-        Authorization: `Bearer ${apigeeAccessToken}`,
-        "NHSD-Session-URID": roleId
-      }
+    logger.info("Calling Apigee endpoint", {
+      endpoint: `${apigeePrescriptionsEndpoint}/prescription-search/${prescriptionId}`
     })
+    const apigeeResponse = await axiosInstance.get(
+      `${apigeePrescriptionsEndpoint}/prescription-search/${prescriptionId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${apigeeAccessToken}`,
+          "NHSD-Session-URID": roleId
+        }
+      }
+    )
 
     return {
       statusCode: 200,

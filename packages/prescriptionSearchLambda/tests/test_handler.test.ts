@@ -5,9 +5,9 @@ import {
   jest
 } from "@jest/globals"
 
-import {DynamoDBDocumentClient, PutCommandInput} from "@aws-sdk/lib-dynamodb"
+// import {DynamoDBDocumentClient, PutCommandInput} from "@aws-sdk/lib-dynamodb"
 import createJWKSMock from "mock-jwks"
-import nock from "nock"
+// import nock from "nock"
 import {handler} from "../src/handler"
 
 // redefining readonly property of the performance object
