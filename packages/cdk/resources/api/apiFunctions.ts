@@ -61,8 +61,8 @@ export class ApiFunctions extends Construct {
     const jwtKmsKey = new Key(this, "JwtKMSKey", {
       removalPolicy: RemovalPolicy.DESTROY,
       pendingWindow: Duration.days(7),
-      alias: `${props.stackName}-JwtKMSKeyKMSKeyPrescSearch`,
-      description: `${props.stackName}-JwtKMSKeyKMSKeyPrescSearch`,
+      alias: `alias/${props.stackName}-jwtKmsKeyPrescSearch`,
+      description: `${props.stackName}-jwtKmsKeyPrescSearch`,
       enableKeyRotation: true,
       policy: new PolicyDocument({
         statements: [
@@ -89,7 +89,6 @@ export class ApiFunctions extends Construct {
         ]
       })
     })
-    jwtKmsKey.addAlias(`alias/${props.stackName}-jwtKmsKeyPrescSearch`)
 
     // Policy to allow decryption using the KMS key
     const useJwtKmsKeyPolicy = new ManagedPolicy(this, "UseJwtKmsKeyPolicy", {
@@ -126,6 +125,14 @@ export class ApiFunctions extends Construct {
         secretStringValue: SecretValue.unsafePlainText("ChangeMe"),
         encryptionKey: jwtKmsKey
       })
+      mockJwtPrivateKey.addToResourcePolicy(new PolicyStatement({
+        effect: Effect.ALLOW,
+        principals: [props.deploymentRole],
+        actions: [
+          "secretsmanager:PutSecretValue"
+        ],
+        resources: ["*"]
+      }))
 
       // Policy to allow access to the mock JWT private key
       const getMockJWTPrivateKeySecret = new ManagedPolicy(this, "getMockJWTPrivateKeySecret", {
@@ -163,11 +170,12 @@ export class ApiFunctions extends Construct {
           oidcjwksEndpoint: props.mockOidcjwksEndpoint,
           jwtPrivateKeyArn: mockJwtPrivateKey.secretArn,
           userInfoEndpoint: props.mockOidcUserInfoEndpoint,
-          useSignedJWT: "false",
+          useSignedJWT: "true",
           oidcClientId: props.mockOidcClientId,
           oidcIssuer: props.mockOidcIssuer
         }
       })
+      this.mockJwtPrivateKey = mockJwtPrivateKey
     }
 
     // Secret used by prescription search lambda that holds the JWT private key
