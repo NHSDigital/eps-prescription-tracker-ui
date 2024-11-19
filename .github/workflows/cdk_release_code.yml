@@ -135,34 +135,34 @@ jobs:
           # shellcheck disable=SC2140
           fullCloudfrontDomain=$(aws cloudformation list-exports --region us-east-1 --query "Exports[?Name=='"${{ inputs.SERVICE_NAME }}-us-certs:fullCloudfrontDomain:Name"'].Value" --output text)
           jq \
-          --arg serviceName "${{ inputs.SERVICE_NAME }}" \
-          --arg VERSION_NUMBER "${{ inputs.VERSION_NUMBER }}" \
-          --arg COMMIT_ID "${{ inputs.COMMIT_ID }}" \
-          --arg logRetentionInDays "${{ inputs.LOG_RETENTION_IN_DAYS }}" \
-          --arg epsDomainName "${epsDomainName}" \
-          --arg epsHostedZoneId "${epsHostedZoneId}" \
-          --arg allowAutoDeleteObjects "true" \
-          --arg cloudfrontDistributionId "${cloudfrontDistributionId}" \
-          --arg cloudfrontCertArn "${cloudfrontCertArn}" \
-          --arg useMockOidc "${{ inputs.useMockOidc }}" \
-          --arg primaryOidcClientId "${{ secrets.primaryOidcClientId }}" \
-          --arg primaryOidClientSecret "${{ secrets.primaryOidClientSecret }}" \
-          --arg primaryOidcIssuer "${{ inputs.primaryOidcIssuer }}" \
-          --arg primaryOidcAuthorizeEndpoint "${{ inputs.primaryOidcAuthorizeEndpoint }}" \
-          --arg primaryOidcTokenEndpoint "${{ inputs.primaryOidcTokenEndpoint }}" \
-          --arg primaryOidcUserInfoEndpoint "${{ inputs.primaryOidcUserInfoEndpoint }}" \
-          --arg primaryOidcjwksEndpoint "${{ inputs.primaryOidcjwksEndpoint }}" \
-          --arg mockOidcClientId "${{ secrets.mockOidcClientId }}" \
-          --arg mockOidClientSecret "${{ secrets.mockOidClientSecret }}" \
-          --arg mockOidcIssuer "${{ inputs.mockOidcIssuer }}" \
-          --arg mockOidcAuthorizeEndpoint "${{ inputs.mockOidcAuthorizeEndpoint }}" \
-          --arg mockOidcTokenEndpoint "${{ inputs.mockOidcTokenEndpoint }}" \
-          --arg mockOidcUserInfoEndpoint "${{ inputs.mockOidcUserInfoEndpoint }}" \
-          --arg mockOidcjwksEndpoint "${{ inputs.mockOidcjwksEndpoint }}" \
-          --arg shortCloudfrontDomain "${shortCloudfrontDomain}" \
-          --arg fullCloudfrontDomain "${fullCloudfrontDomain}" \
-          --arg useCustomCognitoDomain "${{ inputs.useCustomCognitoDomain }}" \
-          --arg useLocalhostCallback "${{ inputs.useLocalhostCallback }}" \
+          --argjson serviceName "${{ inputs.SERVICE_NAME }}" \
+          --argjson VERSION_NUMBER "${{ inputs.VERSION_NUMBER }}" \
+          --argjson COMMIT_ID "${{ inputs.COMMIT_ID }}" \
+          --argjson logRetentionInDays "${{ inputs.LOG_RETENTION_IN_DAYS }}" \
+          --argjson epsDomainName "${epsDomainName}" \
+          --argjson epsHostedZoneId "${epsHostedZoneId}" \
+          --argjson allowAutoDeleteObjects "true" \
+          --argjson cloudfrontDistributionId "${cloudfrontDistributionId}" \
+          --argjson cloudfrontCertArn "${cloudfrontCertArn}" \
+          --argjson useMockOidc "${{ inputs.useMockOidc }}" \
+          --argjson primaryOidcClientId "${{ secrets.primaryOidcClientId }}" \
+          --argjson primaryOidClientSecret "${{ secrets.primaryOidClientSecret }}" \
+          --argjson primaryOidcIssuer "${{ inputs.primaryOidcIssuer }}" \
+          --argjson primaryOidcAuthorizeEndpoint "${{ inputs.primaryOidcAuthorizeEndpoint }}" \
+          --argjson primaryOidcTokenEndpoint "${{ inputs.primaryOidcTokenEndpoint }}" \
+          --argjson primaryOidcUserInfoEndpoint "${{ inputs.primaryOidcUserInfoEndpoint }}" \
+          --argjson primaryOidcjwksEndpoint "${{ inputs.primaryOidcjwksEndpoint }}" \
+          --argjson mockOidcClientId "${{ secrets.mockOidcClientId }}" \
+          --argjson mockOidClientSecret "${{ secrets.mockOidClientSecret }}" \
+          --argjson mockOidcIssuer "${{ inputs.mockOidcIssuer }}" \
+          --argjson mockOidcAuthorizeEndpoint "${{ inputs.mockOidcAuthorizeEndpoint }}" \
+          --argjson mockOidcTokenEndpoint "${{ inputs.mockOidcTokenEndpoint }}" \
+          --argjson mockOidcUserInfoEndpoint "${{ inputs.mockOidcUserInfoEndpoint }}" \
+          --argjson mockOidcjwksEndpoint "${{ inputs.mockOidcjwksEndpoint }}" \
+          --argjson shortCloudfrontDomain "${shortCloudfrontDomain}" \
+          --argjson fullCloudfrontDomain "${fullCloudfrontDomain}" \
+          --argjson useCustomCognitoDomain "${{ inputs.useCustomCognitoDomain }}" \
+          --argjson useLocalhostCallback "${{ inputs.useLocalhostCallback }}" \
           '.context += {
             "serviceName": $serviceName,
             "VERSION_NUMBER": $VERSION_NUMBER,
