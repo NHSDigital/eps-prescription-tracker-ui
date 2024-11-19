@@ -36,7 +36,7 @@ export class UsCertsStack extends Stack {
     /* context values passed as --context cli arguments are passed as strings so coerce them to expected types*/
     const epsDomainName: string = this.node.tryGetContext("epsDomainName")
     const epsHostedZoneId: string = this.node.tryGetContext("epsHostedZoneId")
-    const useCustomCognitoDomain = this.node.tryGetContext("useCustomCognitoDomain")
+    const useCustomCognitoDomain: boolean = this.node.tryGetContext("useCustomCognitoDomain")
 
     // Coerce context and imports to relevant types
     const hostedZone = HostedZone.fromHostedZoneAttributes(this, "hostedZone", {

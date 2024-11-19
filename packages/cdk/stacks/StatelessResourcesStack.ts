@@ -68,7 +68,7 @@ export class StatelessResourcesStack extends Stack {
     const mockOidcUserInfoEndpoint = this.node.tryGetContext("mockOidcUserInfoEndpoint")
     const mockOidcjwksEndpoint = this.node.tryGetContext("mockOidcjwksEndpoint")
 
-    const useMockOidc = this.node.tryGetContext("useMockOidc")
+    const useMockOidc: boolean = this.node.tryGetContext("useMockOidc")
 
     // Imports
     const baseImportPath = `${props.serviceName}-stateful-resources`
