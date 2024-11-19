@@ -77,13 +77,12 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     logger.info("Exchanging CIS2 access token for Apigee access token")
     const jwtPrivateKey = await getSecret(jwtPrivateKeyArn)
 
-    // Check if the key is in the expected format
-    if (!jwtPrivateKey.includes("BEGIN PRIVATE KEY")) {
-      throw new Error("Invalid private key format. Ensure the key is PEM-encoded and suitable for RS512.")
+    if (!jwtPrivateKey || typeof jwtPrivateKey !== "string") {
+      throw new Error("Invalid or missing JWT private key")
     }
 
-    if (!jwtPrivateKey) {
-      throw new Error("JWT private key not found")
+    if (!jwtPrivateKey.includes("BEGIN PRIVATE KEY")) {
+      throw new Error("Invalid private key format. Ensure the key is PEM-encoded and suitable for RS512.")
     }
 
     // Creating a signed JWT for client assertion using helper function
@@ -98,7 +97,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
       logger,
       tokenExchangeData,
       apigeeTokenEndpoint,
-      jwtPrivateKey as string
+      jwtPrivateKey
     )
     const tokenResponse = await axiosInstance.post(apigeeTokenEndpoint, stringify(rewrittenBody), {
       headers: {"Content-Type": "application/x-www-form-urlencoded"}
