@@ -8,7 +8,7 @@ env:
 
 jobs:
   quality_checks:
-    uses: NHSDigital/eps-workflow-quality-checks/.github/workflows/quality-checks.yml@v3.0.0
+    uses: NHSDigital/eps-workflow-quality-checks/.github/workflows/quality-checks.yml@v4.0.4
     secrets:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
@@ -133,6 +133,7 @@ jobs:
       mockOidcUserInfoEndpoint: "https://identity.ptl.api.platform.nhs.uk/realms/Cis2-mock-internal-dev/protocol/openid-connect/userinfo"
       mockOidcjwksEndpoint: "https://identity.ptl.api.platform.nhs.uk/realms/Cis2-mock-internal-dev/protocol/openid-connect/certs"
       useLocalhostCallback: true
+      useCustomCognitoDomain: true
     secrets:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.DEV_CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_DEPLOY_ROLE }}
@@ -177,6 +178,7 @@ jobs:
       mockOidcUserInfoEndpoint: "https://identity.ptl.api.platform.nhs.uk/realms/Cis2-mock-internal-dev/protocol/openid-connect/userinfo"
       mockOidcjwksEndpoint: "https://identity.ptl.api.platform.nhs.uk/realms/Cis2-mock-internal-dev/protocol/openid-connect/certs"
       useLocalhostCallback: false
+      useCustomCognitoDomain: true
     secrets:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.REF_CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.REF_CLOUD_FORMATION_DEPLOY_ROLE }}
@@ -206,6 +208,7 @@ jobs:
       mockOidcUserInfoEndpoint: "https://identity.ptl.api.platform.nhs.uk/realms/Cis2-mock-internal-dev/protocol/openid-connect/userinfo"
       mockOidcjwksEndpoint: "https://identity.ptl.api.platform.nhs.uk/realms/Cis2-mock-internal-dev/protocol/openid-connect/certs"
       useLocalhostCallback: false
+      useCustomCognitoDomain: true
     secrets:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.QA_CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.QA_CLOUD_FORMATION_DEPLOY_ROLE }}
@@ -235,6 +238,7 @@ jobs:
       mockOidcUserInfoEndpoint: "https://identity.ptl.api.platform.nhs.uk/realms/Cis2-mock-internal-dev/protocol/openid-connect/userinfo"
       mockOidcjwksEndpoint: "https://identity.ptl.api.platform.nhs.uk/realms/Cis2-mock-internal-dev/protocol/openid-connect/certs"
       useLocalhostCallback: false
+      useCustomCognitoDomain: true
     secrets:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.INT_CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.INT_CLOUD_FORMATION_DEPLOY_ROLE }}

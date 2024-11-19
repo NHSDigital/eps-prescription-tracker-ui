@@ -53,15 +53,16 @@ export class StatefulResourcesStack extends Stack {
     const mockOidcjwksEndpoint = this.node.tryGetContext("mockOidcjwksEndpoint")
     const mockTokenEndpoint = this.node.tryGetContext("mockTokenEndpoint")
 
-    const useMockOidc = this.node.tryGetContext("useMockOidc")
+    const useMockOidc: boolean = this.node.tryGetContext("useMockOidc")
+    const useCustomCognitoDomain: boolean = this.node.tryGetContext("useCustomCognitoDomain")
 
     const epsDomainName: string = this.node.tryGetContext("epsDomainName")
     const epsHostedZoneId: string = this.node.tryGetContext("epsHostedZoneId")
 
-    const allowAutoDeleteObjects: boolean = this.node.tryGetContext("allowAutoDeleteObjects") === "true"
+    const allowAutoDeleteObjects: boolean = this.node.tryGetContext("allowAutoDeleteObjects")
     const cloudfrontDistributionId: string = this.node.tryGetContext("cloudfrontDistributionId")
 
-    const useLocalhostCallback = this.node.tryGetContext("useLocalhostCallback")
+    const useLocalhostCallback: boolean = this.node.tryGetContext("useLocalhostCallback")
 
     // Imports
     const auditLoggingBucketImport = Fn.importValue("account-resources:AuditLoggingBucket")
@@ -108,7 +109,8 @@ export class StatefulResourcesStack extends Stack {
       fullCloudfrontDomain: props.fullCloudfrontDomain,
       cognitoCertificate: props.cognitoCertificate,
       hostedZone: hostedZone,
-      useLocalhostCallback: useLocalhostCallback
+      useLocalhostCallback: useLocalhostCallback,
+      useCustomCognitoDomain: useCustomCognitoDomain
     })
 
     // - Dynamodb table for user state
