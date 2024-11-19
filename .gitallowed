@@ -1,0 +1,23 @@
+token: ?"?\$\{\{\s*secrets\.GITHUB_TOKEN\s*\}\}"?
+github-token: ?"?\$\{\{\s*secrets\.GITHUB_TOKEN\s*\}\}"?
+token: ?"?\$\{\{\s*secrets\.DEPENDABOT_TOKEN\s*\}\}"?
+id-token: write
+accountId: "123456789012"
+token: `https:\/\/\${props\.fullCloudfrontDomain}\/api\/token`,
+token: `https:\/\/\${props\.fullCloudfrontDomain}\/api\/mocktoken`,
+target: RecordTarget.fromIpAddresses\("127.0.0.1"\),
+const token = jwks.token\({
+.SAMtemplates*
+.*\.gitallowed.*
+.test\/*
+.127\.0\.0\.1
+.token: newToken
+const token = await getToken()
+const token = new sam.CfnFunction\(this, 'Token', {
+const token = new nodeLambda.NodejsFunction\(this, "tokenLambda", {
+AWS_ACCOUNT_ID=591291862413
+const token = new .*\(this, "TokenResources", {
+token: props..*TokenEndpoint
+token: `\${baseApiGwUrl}\/.*[Tt]oken`
+token: `.*{props\.cloudfrontDomain}\/api\/token`
+packages\/auth_demo\/src\/App.tsx:150
