@@ -51,6 +51,7 @@ export class ApiFunctions extends Construct {
   public readonly prescriptionSearchLambda: NodejsFunction
   public readonly mockPrescriptionSearchLambda: NodejsFunction
   public readonly primaryJwtPrivateKey: Secret
+  public readonly mockJwtPrivateKey: Secret
 
   public constructor(scope: Construct, id: string, props: ApiFunctionsProps) {
     super(scope, id)
