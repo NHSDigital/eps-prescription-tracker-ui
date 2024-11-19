@@ -43,6 +43,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   }
 
   let cis2AccessToken
+  let existingData
   try {
     logger.info("Fetching CIS2 access token from DynamoDB")
     const result = await documentClient.send(
@@ -52,7 +53,8 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
       })
     )
 
-    if (result.Item && result.Item.CIS2_accessToken) {
+    if (result.Item) {
+      existingData = result.Item
       cis2AccessToken = result.Item.CIS2_accessToken
     } else {
       logger.error("CIS2 access token not found for user")
@@ -84,7 +86,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
       grant_type: "urn:ietf:params:oauth:grant-type:token-exchange",
       subject_token_type: "urn:ietf:params:oauth:token-type:id_token",
       subject_token: cis2AccessToken,
-      client_id: process.env["CLIENT_ID"] // Assuming you have a client ID set in environment variables
+      client_id: process.env["oidcClientId"]
     }
 
     const rewrittenBody = rewriteBodyToAddSignedJWT(logger, tokenExchangeData, apigeeTokenEndpoint, jwtPrivateKey as string)
@@ -97,22 +99,42 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
       throw new Error("Failed to obtain Apigee access token")
     }
 
-    // Store Apigee access token in DynamoDB
+    // Store Apigee access token alongside existing CIS2 tokens in DynamoDB
     const updateParams = {
       Item: {
-        username,
-        Apigee_accessToken: apigeeAccessToken,
-        Apigee_expiresIn: tokenResponse.data.expires_in
+        ...existingData, // Retain existing data
+        Apigee_accessToken: apigeeAccessToken, // New Apigee token data
+        Apigee_expiresIn: tokenResponse.data.expires_in // New expiration data for Apigee token
       },
       TableName: TokenMappingTableName
     }
 
     await documentClient.send(new PutCommand(updateParams))
   } catch (error) {
-    logger.error("Error during Apigee token exchange", {error})
-    return {
-      statusCode: 500,
-      body: JSON.stringify({message: "Error during Apigee token exchange", details: error})
+    if (axios.isAxiosError(error)) {
+      logger.error("Error during Apigee token exchange", {
+        error: error.message,
+        response: error.response?.data,
+        status: error.response?.status,
+        headers: error.response?.headers
+      })
+      return {
+        statusCode: 500,
+        body: JSON.stringify({
+          message: "Error during Apigee token exchange",
+          details: error.response?.data || error.message
+        })
+      }
+    } else {
+      // Handle non-Axios errors separately
+      logger.error("Unexpected error during Apigee token exchange", {error: String(error)})
+      return {
+        statusCode: 500,
+        body: JSON.stringify({
+          message: "Error during Apigee token exchange",
+          details: String(error)
+        })
+      }
     }
   }
 
