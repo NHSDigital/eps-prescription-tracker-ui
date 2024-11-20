@@ -72,7 +72,6 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     logger.debug("Inserting into DynamoDB", {params})
     await documentClient.send(new PutCommand(params))
 
-    // Make the UserInfo request here
     logger.info("Making UserInfo request")
     const userInfoResponse = await fetchUserInfo({
       logger,

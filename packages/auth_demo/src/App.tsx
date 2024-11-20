@@ -74,7 +74,7 @@ function App() {
         {
           headers: {
             Authorization: `Bearer ${idToken}`,
-          'NHSD-Session-URID': '555254242106'
+            'NHSD-Session-URID': '555254242106'
           },
           withCredentials: false
         }
