@@ -11,14 +11,14 @@ import {readFileSync} from "fs"
 import {resolve} from "path"
 
 interface CodeReplacement {
-  valueToReplace: string
-  replacementValue: string
+  readonly valueToReplace: string
+  readonly replacementValue: string
 }
 type codeReplacements = Array<CodeReplacement>
 
 interface KeyValue {
-  key: string
-  value: string
+  readonly key: string
+  readonly value: string
 }
 type KeyValues = Array<KeyValue>
 

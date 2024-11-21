@@ -31,10 +31,12 @@ export interface LambdaFunctionProps {
   readonly packageBasePath: string
   readonly entryPoint: string
   readonly lambdaEnvironmentVariables: { [key: string]: string }
+  readonly logRetentionInDays: number
 }
 
 /**
  * Resources for a nodejs lambda function
+ * This should be used when we want to create a lambda
 
  */
 
@@ -45,11 +47,8 @@ export class LambdaFunction extends Construct {
   public constructor(scope: Construct, id: string, props: LambdaFunctionProps) {
     super(scope, id)
 
-    // Context
-    /* context values passed as --context cli arguments are passed as strings so coerce them to expected types*/
-    const logRetentionInDays: number = Number(this.node.tryGetContext("logRetentionInDays"))
-
     // Imports
+    // These are imported here rather than at stack level as they are all imports from account-resources stacks
     const cloudWatchLogsKmsKey = Key.fromKeyArn(
       this, "cloudWatchLogsKmsKey", Fn.importValue("account-resources:CloudwatchLogsKmsKeyArn"))
 
@@ -75,7 +74,7 @@ export class LambdaFunction extends Construct {
     const lambdaLogGroup = new LogGroup(this, "LambdaLogGroup", {
       encryptionKey: cloudWatchLogsKmsKey,
       logGroupName: `/aws/lambda/${props.lambdaName!}`,
-      retention: logRetentionInDays,
+      retention: props.logRetentionInDays,
       removalPolicy: RemovalPolicy.DESTROY
     })
 

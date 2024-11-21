@@ -1,64 +1,59 @@
-import {Fn, RemovalPolicy} from "aws-cdk-lib"
+import {RemovalPolicy} from "aws-cdk-lib"
 import {
   CfnStage,
+  CognitoUserPoolsAuthorizer,
   EndpointType,
   LogGroupLogDestination,
   MethodLoggingLevel,
-  MockIntegration,
   RestApi
 } from "aws-cdk-lib/aws-apigateway"
-import {Role, ServicePrincipal} from "aws-cdk-lib/aws-iam"
-import {Stream} from "aws-cdk-lib/aws-kinesis"
-import {Key} from "aws-cdk-lib/aws-kms"
+import {IRole, Role, ServicePrincipal} from "aws-cdk-lib/aws-iam"
+import {IStream} from "aws-cdk-lib/aws-kinesis"
+import {IKey} from "aws-cdk-lib/aws-kms"
 import {FilterPattern, LogGroup, SubscriptionFilter} from "aws-cdk-lib/aws-logs"
 import {KinesisDestination} from "aws-cdk-lib/aws-logs-destinations"
 import {Construct} from "constructs"
 import {accessLogFormat} from "./RestApiGateway/accessLogFormat"
+import {IUserPool} from "aws-cdk-lib/aws-cognito"
 
 export interface RestApiGatewayProps {
-  serviceName: string
-  stackName: string
+  readonly serviceName: string
+  readonly stackName: string
+  readonly logRetentionInDays: number
+  readonly cloudwatchKmsKey: IKey
+  readonly splunkDeliveryStream: IStream
+  readonly splunkSubscriptionFilterRole: IRole
+  readonly userPool: IUserPool
 }
 
 /**
  * Resources for a Rest API Gateway
+ * Note - methods are not defined here
+ * this just creates the api gateway and authorizer
 
  */
 
 export class RestApiGateway extends Construct {
   public readonly restApiGateway: RestApi
   public readonly restAPiGatewayRole: Role
+  public readonly authorizer: CognitoUserPoolsAuthorizer
 
   public constructor(scope: Construct, id: string, props: RestApiGatewayProps){
     super(scope, id)
 
-    // Context
-    /* context values passed as --context cli arguments are passed as strings so coerce them to expected types*/
-    const logRetentionInDays: number = Number(this.node.tryGetContext("logRetentionInDays"))
-
-    // Imports
-    const cloudwatchKmsKey = Key.fromKeyArn(
-      this, "cloudwatchKmsKey", Fn.importValue("account-resources:CloudwatchLogsKmsKeyArn"))
-
-    const splunkDeliveryStream = Stream.fromStreamArn(
-      this, "SplunkDeliveryStream", Fn.importValue("lambda-resources:SplunkDeliveryStream"))
-
-    const splunkSubscriptionFilterRole = Role.fromRoleArn(
-      this, "splunkSubscriptionFilterRole", Fn.importValue("lambda-resources:SplunkSubscriptionFilterRole"))
-
     // Resources
     const apiGatewayAccessLogGroup = new LogGroup(this, "ApiGatewayAccessLogGroup", {
       logGroupName: `/aws/apigateway/${props.serviceName}-apigw`,
-      retention: logRetentionInDays,
-      encryptionKey: cloudwatchKmsKey,
+      retention: props.logRetentionInDays,
+      encryptionKey: props.cloudwatchKmsKey,
       removalPolicy: RemovalPolicy.DESTROY
     })
 
     new SubscriptionFilter(this, "ApiGatewayAccessLogsSplunkSubscriptionFilter", {
       logGroup: apiGatewayAccessLogGroup,
       filterPattern: FilterPattern.allTerms(),
-      destination: new KinesisDestination(splunkDeliveryStream, {
-        role: splunkSubscriptionFilterRole
+      destination: new KinesisDestination(props.splunkDeliveryStream, {
+        role: props.splunkSubscriptionFilterRole
       })
     })
 
@@ -81,12 +76,10 @@ export class RestApiGateway extends Construct {
       managedPolicies: []
     })
 
-    /* Dummy Method/Resource to allow a gateway to be deployed "empty" */
-    apiGateway.root.addMethod("ANY", new MockIntegration({
-      integrationResponses: [
-        {statusCode: "418"}
-      ]
-    }))
+    const authorizer = new CognitoUserPoolsAuthorizer(this, "Authorizer", {
+      authorizerName: "cognitoAuth",
+      cognitoUserPools: [props.userPool]
+    })
 
     const cfnStage = apiGateway.deploymentStage.node.defaultChild as CfnStage
     cfnStage.cfnOptions.metadata = {
@@ -100,5 +93,6 @@ export class RestApiGateway extends Construct {
     // Outputs
     this.restApiGateway = apiGateway
     this.restAPiGatewayRole = apiGatewayRole
+    this.authorizer = authorizer
   }
 }

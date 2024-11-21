@@ -7,10 +7,11 @@ const prPattern = /pr-\d*/g
 
 export async function handler(event) {
   const currentVersion = await keyValueStore.get("version")
+  const basePath = await keyValueStore.get("basePath")
 
   const request = event.request
   const requestUri = request.uri
-  const parts = requestUri.split("/site")
+  const parts = requestUri.split(basePath)
   const uri = parts[1]
 
   const versionMatches = uri.match(versionPattern)
