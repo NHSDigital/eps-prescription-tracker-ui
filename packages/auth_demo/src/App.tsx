@@ -64,10 +64,23 @@ function App() {
     }
   };
 
+  const clearCookies = () => {
+    const cookies = document.cookie.split("; ")
+    for (let cookie of cookies) {
+      const eqPos = cookie.indexOf("=")
+      const name = eqPos > -1 ? cookie.substring(0, eqPos) : cookie
+      // Setting the cookie expiration date to the past to effectively delete it
+      document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;`
+    }
+  }
+
   const fetchTrackerUserInfo = async () => {
     setLoading(true)
     setTrackerUserInfoData(null)
     setError(null)
+
+    // Clear cookies before making the request
+    clearCookies()
 
     try {
       const response = await axios.get(trackerUserInfoEndpoint, 
