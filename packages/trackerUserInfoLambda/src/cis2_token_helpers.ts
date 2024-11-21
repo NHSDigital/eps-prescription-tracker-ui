@@ -85,13 +85,25 @@ export const fetchUserInfo = async (accessToken: string, logger: Logger) => {
   if (!oidcUserInfoEndpoint) {
     throw new Error("OIDC UserInfo endpoint not set")
   }
-  logger.info("Fetching user info from OIDC UserInfo endpoint", {oidcUserInfoEndpoint})
+  logger.info("Fetching user info from OIDC UserInfo endpoint", {oidcUserInfoEndpoint, accessToken})
 
-  const response = await axios.get(oidcUserInfoEndpoint, {
-    headers: {
-      Authorization: `Bearer ${accessToken}`
-    }
-  })
+  // const response = await axios.get(oidcUserInfoEndpoint, {
+  //   headers: {
+  //     Authorization: `Bearer ${accessToken}`
+  //   }
+  // })
+  try {
+    const response = await axios.get(oidcUserInfoEndpoint, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`
+      }
+    })
+    logger.info("User info fetched successfully", {response})
 
-  return response.data
+    return response.data
+  } catch (error) {
+    logger.error("Error fetching user info", {error})
+    throw new Error("Error fetching user info")
+  }
+
 }
