@@ -15,7 +15,6 @@ import {
 import {Duration, RemovalPolicy, SecretValue} from "aws-cdk-lib"
 import {Key} from "aws-cdk-lib/aws-kms"
 import {Secret} from "aws-cdk-lib/aws-secretsmanager"
-import {NodejsFunction} from "aws-cdk-lib/aws-lambda-nodejs"
 
 // Interface for properties needed to create API functions
 export interface ApiFunctionsProps {
@@ -48,8 +47,8 @@ export interface ApiFunctionsProps {
  */
 export class ApiFunctions extends Construct {
   public readonly apiFunctionsPolicies: Array<IManagedPolicy>
-  public readonly trackerUserInfoLambda: NodejsFunction
-  public readonly mockTrackerUserInfoLambda: NodejsFunction
+  public readonly trackerUserInfoLambda: LambdaFunction
+  public readonly mockTrackerUserInfoLambda: LambdaFunction
   public readonly primaryJwtPrivateKey: Secret
 
   public constructor(scope: Construct, id: string, props: ApiFunctionsProps) {
@@ -237,9 +236,8 @@ export class ApiFunctions extends Construct {
 
     // Outputs
     this.apiFunctionsPolicies = apiFunctionsPolicies
-    this.trackerUserInfoLambda = trackerUserInfoLambda.lambda
+    this.trackerUserInfoLambda = trackerUserInfoLambda
+    this.mockTrackerUserInfoLambda = mockTrackerUserInfoLambda!
     this.primaryJwtPrivateKey = primaryJwtPrivateKey
-    this.mockTrackerUserInfoLambda = mockTrackerUserInfoLambda!.lambda
-
   }
 }

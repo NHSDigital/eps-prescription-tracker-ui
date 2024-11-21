@@ -9,6 +9,7 @@ import {
 } from "aws-cdk-lib/aws-apigateway"
 import {Construct} from "constructs"
 import {NodejsFunction} from "aws-cdk-lib/aws-lambda-nodejs"
+import {LambdaFunction} from "./LambdaFunction"
 
 export interface RestApiGatewayMethodsProps {
   readonly executePolices: Array<IManagedPolicy>
@@ -16,8 +17,8 @@ export interface RestApiGatewayMethodsProps {
   readonly restApiGateway: RestApi
   readonly tokenLambda: NodejsFunction
   readonly mockTokenLambda: NodejsFunction
-  readonly trackerUserInfoLambda: NodejsFunction
-  readonly mockTrackerUserInfoLambda: NodejsFunction
+  readonly trackerUserInfoLambda: LambdaFunction
+  readonly mockTrackerUserInfoLambda: LambdaFunction
   readonly useMockOidc: boolean
   readonly authorizer: CognitoUserPoolsAuthorizer
 
@@ -53,7 +54,7 @@ export class RestApiGatewayMethods extends Construct{
 
     // tracker-user-info endpoint
     const trackerUserInfoLambdaResource = props.restApiGateway.root.addResource("tracker-user-info")
-    trackerUserInfoLambdaResource.addMethod("GET", new LambdaIntegration(props.trackerUserInfoLambda, {
+    trackerUserInfoLambdaResource.addMethod("GET", new LambdaIntegration(props.trackerUserInfoLambda.lambda, {
       credentialsRole: props.restAPiGatewayRole
     }), {
       authorizationType: AuthorizationType.COGNITO,
@@ -61,13 +62,15 @@ export class RestApiGatewayMethods extends Construct{
     })
 
     // mock tracker-user-info endpoint
-    const mockTrackerUserInfoLambdaResource = props.restApiGateway.root.addResource("mock-tracker-user-info")
-    mockTrackerUserInfoLambdaResource.addMethod("GET", new LambdaIntegration(props.mockTrackerUserInfoLambda, {
-      credentialsRole: props.restAPiGatewayRole
-    }), {
-      authorizationType: AuthorizationType.COGNITO,
-      authorizer: props.authorizer
-    })
+    if (props.useMockOidc) {
+      const mockTrackerUserInfoLambdaResource = props.restApiGateway.root.addResource("mock-tracker-user-info")
+      mockTrackerUserInfoLambdaResource.addMethod("GET", new LambdaIntegration(props.mockTrackerUserInfoLambda.lambda, {
+        credentialsRole: props.restAPiGatewayRole
+      }), {
+        authorizationType: AuthorizationType.COGNITO,
+        authorizer: props.authorizer
+      })
+    }
 
     /* Dummy Method/Resource to test cognito auth */
 
