@@ -233,13 +233,13 @@ export class ApiFunctions extends Construct {
     ]
     if (props.useMockOidc) {
       apiFunctionsPolicies.push(mockTrackerUserInfoLambda!.executeLambdaManagedPolicy)
-      this.mockTrackerUserInfoLambda = mockTrackerUserInfoLambda!.lambda
     }
 
     // Outputs
     this.apiFunctionsPolicies = apiFunctionsPolicies
     this.trackerUserInfoLambda = trackerUserInfoLambda.lambda
     this.primaryJwtPrivateKey = primaryJwtPrivateKey
+    this.mockTrackerUserInfoLambda = mockTrackerUserInfoLambda!.lambda
 
   }
 }
