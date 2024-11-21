@@ -87,11 +87,6 @@ export const fetchUserInfo = async (accessToken: string, logger: Logger) => {
   }
   logger.info("Fetching user info from OIDC UserInfo endpoint", {oidcUserInfoEndpoint, accessToken})
 
-  // const response = await axios.get(oidcUserInfoEndpoint, {
-  //   headers: {
-  //     Authorization: `Bearer ${accessToken}`
-  //   }
-  // })
   try {
     const response = await axios.get(oidcUserInfoEndpoint, {
       headers: {
