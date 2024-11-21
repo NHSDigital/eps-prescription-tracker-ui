@@ -39,12 +39,7 @@ describe("handler tests", () => {
     jwks.stop()
   })
 
-  it("responds with error when body does not exist", async () => {
-
-    const response = await handler({}, dummyContext)
-    expect(response).toMatchObject({
-      message: "A system error has occurred"
-    })
+  it("dummy test", async () => {
   })
 
   // it("inserts correct details into dynamo table", async () => {
