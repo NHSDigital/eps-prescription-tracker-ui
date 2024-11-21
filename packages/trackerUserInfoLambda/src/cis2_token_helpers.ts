@@ -59,17 +59,18 @@ export const fetchAndVerifyCIS2Tokens = async (
     throw new Error("Internal server error while accessing DynamoDB")
   }
 
-  verifyIdToken(idToken)
+  verifyIdToken(idToken, logger)
 
   return {cis2AccessToken, cis2IdToken}
 }
 
 // TODO: Verify the token with CIS2
-const verifyIdToken = async (idToken: string) => {
+const verifyIdToken = async (idToken: string, logger: Logger) => {
   const oidcIssuer = process.env["oidcIssuer"]
   if (!oidcIssuer) {
     throw new Error("OIDC issuer not set")
   }
+  logger.info("Verifying ID token", {oidcIssuer})
 
   if (!idToken) {
     throw new Error("ID token not provided")
@@ -77,7 +78,10 @@ const verifyIdToken = async (idToken: string) => {
 }
 
 export const fetchUserInfo = async (accessToken: string, logger: Logger) => {
-  const oidcUserInfoEndpoint = process.env["oidcUserInfoEndpoint"]
+  // Fetch the appropriate OIDC UserInfo endpoint from the environment variables
+  const oidcUserInfoEndpoint = process.env["userInfoEndpoint"]
+  logger.info("Fetching user info from OIDC UserInfo endpoint", {oidcUserInfoEndpoint})
+
   if (!oidcUserInfoEndpoint) {
     throw new Error("OIDC UserInfo endpoint not set")
   }
