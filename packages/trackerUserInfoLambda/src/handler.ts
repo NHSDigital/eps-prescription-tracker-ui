@@ -31,16 +31,6 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   logger.appendKeys({"apigw-request-id": event.requestContext?.requestId})
   logger.info("Lambda handler invoked", {event})
 
-  const httpMethod = event.httpMethod
-
-  if (httpMethod === "GET") {
-    logger.info("Handling a GET request")
-    return {
-      statusCode: 200,
-      body: JSON.stringify({message: `Handling GET for Tracker User Info`})
-    }
-  }
-
   const body = event.body
   if (body === null || body === undefined) {
     logger.error("Request body is missing")
