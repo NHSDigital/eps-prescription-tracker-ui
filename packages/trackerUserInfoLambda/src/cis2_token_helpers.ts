@@ -3,10 +3,9 @@ import {APIGatewayProxyEvent} from "aws-lambda"
 import axios from "axios"
 import {DynamoDBDocumentClient, GetCommand} from "@aws-sdk/lib-dynamodb"
 import {
-  UserInfo,
   UserInfoResponse,
-  RoleInfo,
-  NRBACRole,
+  TrackerUserInfo,
+  RoleDetails,
   UserDetails
 } from "./cis2_token_types"
 
@@ -89,7 +88,7 @@ export const fetchUserInfo = async (
   accepted_access_codes: Array<string>,
   selectedRoleId: string | undefined,
   logger: Logger
-): Promise<UserInfoResponse> => {
+): Promise<TrackerUserInfo> => {
   // Fetch user info from the OIDC UserInfo endpoint
   // The access token is used to identify the user, and fetch their roles.
   // This populates three lists:
@@ -106,7 +105,7 @@ export const fetchUserInfo = async (
   }
 
   try {
-    const response = await axios.get<UserInfo>(oidcUserInfoEndpoint, {
+    const response = await axios.get<UserInfoResponse>(oidcUserInfoEndpoint, {
       headers: {
         Authorization: `Bearer ${accessToken}`
       }
@@ -114,29 +113,28 @@ export const fetchUserInfo = async (
     logger.info("User info fetched successfully", {data: response.data})
 
     // Extract the roles from the user info response
-    const data: UserInfo = response.data
+    const data: UserInfoResponse = response.data
 
     // These will be our outputs
-    const rolesWithAccess: Array<RoleInfo> = []
-    const rolesWithoutAccess: Array<RoleInfo> = []
-    let currentlySelectedRole: RoleInfo | undefined = undefined
+    const rolesWithAccess: Array<RoleDetails> = []
+    const rolesWithoutAccess: Array<RoleDetails> = []
+    let currentlySelectedRole: RoleDetails | undefined = undefined
 
     // Get roles from the user info response
     const roles = data.nhsid_nrbac_roles || []
 
-    roles.forEach((role: NRBACRole) => {
+    roles.forEach((role) => {
       logger.info("Processing role", {role})
       const activityCodes = role.activity_codes || []
 
       const hasAccess = activityCodes.some((code: string) => accepted_access_codes.includes(code))
       logger.info("Role CPT access?", {hasAccess})
 
-      const roleInfo: RoleInfo = {
+      const roleInfo: RoleDetails = {
         roleName: role.role_name,
         roleID: role.person_roleid,
-        ODS: role.org_code
-        // orgName: getOrgNameFromOrgCode(data, role.org_code, logger)
-
+        ODS: role.org_code,
+        orgName: getOrgNameFromOrgCode(data, role.org_code, logger)
       }
 
       // Ensure the role has at least one of the required fields
@@ -176,7 +174,7 @@ export const fetchUserInfo = async (
       middle_names: data.middle_names
     }
 
-    const result: UserInfoResponse = {
+    const result: TrackerUserInfo = {
       userName,
       rolesWithAccess,
       rolesWithoutAccess,
@@ -192,7 +190,7 @@ export const fetchUserInfo = async (
 }
 
 // Helper function to get organization name from org_code
-function getOrgNameFromOrgCode(data: UserInfo, orgCode: string, logger: Logger): string | undefined {
+function getOrgNameFromOrgCode(data: UserInfoResponse, orgCode: string, logger: Logger): string | undefined {
   logger.info("Getting org name from org code", {orgCode, data})
   const orgs = data.nhsid_user_orgs || []
   const org = orgs.find((o) => o.org_code === orgCode)

@@ -1,5 +1,5 @@
 // Types for outgoing data
-export type RoleInfo = {
+export type RoleDetails = {
   roleName?: string;
   roleID?: string;
   ODS?: string;
@@ -18,49 +18,55 @@ export type UserDetails = {
     middle_names?: string;
 }
 
-export type UserInfoResponse = {
-  rolesWithAccess: Array<RoleInfo>;
-  rolesWithoutAccess: Array<RoleInfo>;
-  currentlySelectedRole?: RoleInfo;
+export type TrackerUserInfo = {
+  rolesWithAccess: Array<RoleDetails>;
+  rolesWithoutAccess: Array<RoleDetails>;
+  currentlySelectedRole?: RoleDetails;
   userName: UserDetails;
 };
 
 //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-//
 
 // Types for the incoming data [FIXME: Possibly incomplete? Based on some example requests, not a full schema]
-export interface UserInfo {
+type AssuranceLevel = "0" | "1" | "2" | "3";
+
+export interface UserInfoResponse {
+  // Always included
   sub: string;
-  uid?: string;
-  nhsid_useruid?: string;
-  nhsid_nrbac_roles?: Array<NRBACRole>;
-  nhsid_user_orgs?: Array<UserOrg>;
-  nhsid_org_roles?: Array<OrgRole>;
-  nhsid_org_memberships?: Array<OrgMembership>;
-  given_name?: string;
-  family_name?: string;
-  name?: string;
-  display_name?: string;
-  email?: string;
+
+  // Claims from the "profile" scope
+  name: string;
+  family_name: string;
+  given_name: string;
+  uid: string;
+
+  // Claims from the "email" scope
+  email: string;
+
+  // Claims from the "nhsperson" scope
+  nhsid_useruid: string;
   title?: string;
+  idassurancelevel?: AssuranceLevel;
   initials?: string;
   middle_names?: string;
-  idassurancelevel?: string;
-  gdc_id?: string;
-  gmp_id?: string;
-  consultant_id?: string;
-  gmc_id?: string;
-  rcn_id?: string;
-  nmc_id?: string;
-  gphc_id?: string;
-  gdp_id?: string;
+  display_name?: string;
+
+  // Claims from the "nationalrbacaccess" scope
+  nhsid_nrbac_roles?: Array<NhsIdNRBACRole>;
+
+  // Claims from the "associatedorgs" scope
+  nhsid_user_orgs?: Array<NhsIdUserOrg>;
 }
 
-export interface NRBACRole {
+interface NhsIdNRBACRole {
+  // Required fields
   org_code: string;
   person_orgid: string;
   person_roleid: string;
   role_code: string;
   role_name: string;
+
+  // Optional fields
   activities?: Array<string>;
   activity_codes?: Array<string>;
   aow?: Array<string>;
@@ -69,23 +75,7 @@ export interface NRBACRole {
   workgroups_codes?: Array<string>;
 }
 
-export interface UserOrg {
-  person_orgid: string
-  person_roleid: string
-  org_code: string
-  role_name: string
-}
-
-export interface OrgRole {
-  person_orgid: string;
-  org_name: string;
+interface NhsIdUserOrg {
   org_code: string;
-  role_name: string;
-}
-
-export interface OrgMembership {
-  person_orgid: string;
   org_name: string;
-  org_code: string;
-  gnc?: string;
 }
