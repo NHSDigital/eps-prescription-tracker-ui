@@ -8,10 +8,21 @@ export type RoleInfo = {
   siteAddress?: string; // optional
 };
 
+export type UserDetails = {
+    given_name?: string;
+    family_name?: string;
+    name?: string;
+    display_name?: string;
+    title?: string;
+    initials?: string;
+    middle_names?: string;
+}
+
 export type UserInfoResponse = {
   rolesWithAccess: Array<RoleInfo>;
   rolesWithoutAccess: Array<RoleInfo>;
   currentlySelectedRole?: RoleInfo;
+  userName: UserDetails;
 };
 
 //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-//
@@ -45,28 +56,31 @@ export interface UserInfo {
 }
 
 export interface NRBACRole {
+  org_code: string;
   person_orgid: string;
   person_roleid: string;
-  org_code: string;
-  role_name: string;
   role_code: string;
+  role_name: string;
   activities?: Array<string>;
   activity_codes?: Array<string>;
-  workgroups?: Array<string>;
-  workgroups_codes?: Array<string>;
   aow?: Array<string>;
   aow_codes?: Array<string>;
+  workgroups?: Array<string>;
+  workgroups_codes?: Array<string>;
 }
 
 export interface UserOrg {
-  org_name: string;
-  org_code: string;
+  person_orgid: string
+  person_roleid: string
+  org_code: string
+  role_name: string
 }
 
 export interface OrgRole {
   person_orgid: string;
   org_name: string;
   org_code: string;
+  role_name: string;
 }
 
 export interface OrgMembership {

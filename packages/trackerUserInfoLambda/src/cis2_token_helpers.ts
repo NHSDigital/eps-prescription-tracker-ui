@@ -6,7 +6,8 @@ import {
   UserInfo,
   UserInfoResponse,
   RoleInfo,
-  NRBACRole
+  NRBACRole,
+  UserDetails
 } from "./cis2_token_types"
 
 export const fetchAndVerifyCIS2Tokens = async (
@@ -133,8 +134,9 @@ export const fetchUserInfo = async (
       const roleInfo: RoleInfo = {
         roleName: role.role_name,
         roleID: role.person_roleid,
-        ODS: role.org_code,
-        orgName: getOrgNameFromOrgCode(data, role.org_code, logger)
+        ODS: role.org_code
+        // orgName: getOrgNameFromOrgCode(data, role.org_code, logger)
+
       }
 
       // Ensure the role has at least one of the required fields
@@ -164,7 +166,18 @@ export const fetchUserInfo = async (
       }
     })
 
+    const userName: UserDetails = {
+      given_name: data.given_name,
+      family_name: data.family_name,
+      name: data.name,
+      display_name: data.display_name,
+      title: data.title,
+      initials: data.initials,
+      middle_names: data.middle_names
+    }
+
     const result: UserInfoResponse = {
+      userName,
       rolesWithAccess,
       rolesWithoutAccess,
       currentlySelectedRole
