@@ -9,13 +9,13 @@ export type RoleDetails = {
 };
 
 export type UserDetails = {
-    given_name?: string;
-    family_name?: string;
-    name?: string;
-    display_name?: string;
-    title?: string;
-    initials?: string;
-    middle_names?: string;
+  given_name?: string;
+  family_name?: string;
+  name?: string;
+  display_name?: string;
+  title?: string;
+  initials?: string;
+  middle_names?: string;
 }
 
 export type TrackerUserInfo = {

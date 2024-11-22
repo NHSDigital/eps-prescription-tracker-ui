@@ -2,12 +2,22 @@ import {Logger} from "@aws-lambda-powertools/logger"
 import {APIGatewayProxyEvent} from "aws-lambda"
 import axios from "axios"
 import {DynamoDBDocumentClient, GetCommand} from "@aws-sdk/lib-dynamodb"
+import jwt, {JwtPayload} from "jsonwebtoken"
+import jwksClient from "jwks-rsa"
 import {
   UserInfoResponse,
   TrackerUserInfo,
   RoleDetails,
   UserDetails
 } from "./cis2_token_types"
+import {LOGGER_KEY} from "@aws-lambda-powertools/commons"
+
+const VALID_ACR_VALUES: Array<string> = [
+  "AAL3_ANY",
+  "AAL2_OR_AAL3_ANY",
+  "AAL2_ANY",
+  "AAL1_USERPASS"
+]
 
 export const fetchAndVerifyCIS2Tokens = async (
   event: APIGatewayProxyEvent,
@@ -50,7 +60,7 @@ export const fetchAndVerifyCIS2Tokens = async (
         Key: {username}
       })
     )
-    logger.info("DynamoDB response", {result})
+    logger.debug("DynamoDB response", {result})
 
     if (result.Item) {
       existingData = result.Item
@@ -70,17 +80,144 @@ export const fetchAndVerifyCIS2Tokens = async (
   return {cis2AccessToken, cis2IdToken}
 }
 
-// TODO: Verify the token with CIS2
+// Helper function to get the signing key from the JWKS endpoint
+const getSigningKey = (client: jwksClient.JwksClient, kid: string): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    client.getSigningKey(kid, (err, key) => {
+      if (err) {
+        reject(err)
+      } else {
+        if (!key) {
+          reject(new Error("Key not found"))
+        }
+        const signingKey = key!.getPublicKey()
+        resolve(signingKey)
+      }
+    })
+  })
+}
+
 const verifyIdToken = async (idToken: string, logger: Logger) => {
   const oidcIssuer = process.env["oidcIssuer"]
   if (!oidcIssuer) {
     throw new Error("OIDC issuer not set")
   }
-  logger.info("Verifying ID token", {oidcIssuer})
+  const oidcClientId = process.env["oidcClientId"]
+  if (!oidcClientId) {
+    throw new Error("OIDC client ID not set")
+  }
+  const jwksUri = process.env["oidcjwksEndpoint"]
+  if (!jwksUri) {
+    throw new Error("JWKS URI not set")
+  }
+
+  logger.info("Verifying ID token", {oidcIssuer, oidcClientId, jwksUri})
 
   if (!idToken) {
     throw new Error("ID token not provided")
   }
+
+  // Create a JWKS client
+  const client = jwksClient({
+    jwksUri: `${jwksUri}`,
+    cache: true,
+    cacheMaxEntries: 5,
+    cacheMaxAge: 3600000 // 1 hour
+  })
+
+  // Decode the token header to get the kid
+  const decodedToken = jwt.decode(idToken, {complete: true})
+  if (!decodedToken || typeof decodedToken === "string") {
+    throw new Error("Invalid token")
+  }
+  const kid = decodedToken.header.kid
+
+  let signingKey
+  try {
+    if (!kid) {
+      throw new Error("Invalid token")
+    }
+    signingKey = await getSigningKey(client, kid)
+  } catch (err) {
+    logger.error("Error getting signing key", {err})
+    throw new Error("Error getting signing key")
+  }
+
+  // Verify the token
+  const options = {
+    issuer: oidcIssuer,
+    audience: oidcClientId,
+    clockTolerance: 5 // seconds
+  }
+
+  let verifiedToken: JwtPayload
+  try {
+    verifiedToken = jwt.verify(idToken, signingKey, options) as JwtPayload
+  } catch (err) {
+    logger.error("Error verifying token", {err})
+    throw new Error("Invalid ID token")
+  }
+
+  logger.info("ID token verified successfully", {verifiedToken})
+
+  // Manual Verification checks,
+  // c.f. https://tinyurl.com/2rz5xxup
+
+  // Check that token hasn't expired (verification step above should do this, but just in case)
+  const now = Math.floor(Date.now() / 1000)
+  if (verifiedToken.exp && verifiedToken.exp < now) {
+    throw new Error("ID token has expired")
+  }
+  logger.debug("Token has not expired", {exp: verifiedToken.exp})
+
+  // the iss claim MUST exactly match the issuer in the OIDC configuration
+  if (verifiedToken.iss !== oidcIssuer) {
+    throw new Error("Invalid issuer in ID token")
+  }
+  logger.debug("iss claim is valid", {iss: verifiedToken.iss})
+
+  // the aud MUST contain our relying party client_id value
+  // 'aud' can be a string or an array
+  const aud = verifiedToken.aud
+  const audArray = Array.isArray(aud) ? aud : [aud]
+  if (!audArray.includes(oidcClientId)) {
+    throw new Error("Invalid audience in ID token")
+  }
+  logger.debug("aud claim is valid", {aud})
+
+  // FIXME: un-completed checks!
+  // From what I can tell, we're not using a known nonce. If we do end up using one, we should check it here.
+
+  // The `acr` claim must be present and have a valid value
+  const acr = verifiedToken.acr
+  if (!acr) {
+    throw new Error("acr claim missing from ID token")
+  }
+  if (!VALID_ACR_VALUES.includes(acr)) {
+    throw new Error("Invalid acr value in ID token")
+  }
+  logger.debug("acr claim is valid", {acr})
+
+  // Check that the `auth_time` claim is present and that its value is not too far in the past
+  const auth_time = verifiedToken.auth_time
+  if (!auth_time) {
+    throw new Error("auth_time claim missing from ID token")
+  }
+  // If the current time is AFTER auth_time, the token needs to be refreshed. It's not expired yet, but it's too old.
+  if (now > auth_time) {
+    // This COULD trigger a key refresh, but that's explicitly not recommended for the userInfo endpoint.
+    // I'll leave that to future work, where it actually is necessary, and just throw an error here.
+    //
+    // From the docs:
+    //   It is anticipated that Relying Parties will only require access to the UserInfo Endpoint at the time of the
+    //   original End-User authentication. This should only happen once as part of a Relying Party authentication
+    //   journey and the Access Token can be used immediately, then discarded. In NHS CIS2 Authentication, there should
+    //   be no other need to retrieve the User Info after this point in time.
+    //   Therefore the use of the Refresh Token to obtain a new Access Token is not recommended.
+
+    throw new Error("ID token has expired")
+  }
+  logger.debug("auth_time claim is valid", {auth_time})
 }
 
 export const fetchUserInfo = async (
@@ -124,11 +261,11 @@ export const fetchUserInfo = async (
     const roles = data.nhsid_nrbac_roles || []
 
     roles.forEach((role) => {
-      logger.info("Processing role", {role})
+      logger.debug("Processing role", {role})
       const activityCodes = role.activity_codes || []
 
       const hasAccess = activityCodes.some((code: string) => accepted_access_codes.includes(code))
-      logger.info("Role CPT access?", {hasAccess})
+      logger.debug("Role CPT access?", {hasAccess})
 
       const roleInfo: RoleDetails = {
         roleName: role.role_name,
@@ -151,14 +288,14 @@ export const fetchUserInfo = async (
       }
 
       // Determine the currently selected role
-      logger.info("Checking if role is currently selected", {selectedRoleId, roleID: role.person_roleid, roleInfo})
+      logger.debug("Checking if role is currently selected", {selectedRoleId, roleID: role.person_roleid, roleInfo})
       if (selectedRoleId && role.person_roleid === selectedRoleId) {
-        logger.info("Role is currently selected", {roleID: role.person_roleid, roleInfo})
+        logger.debug("Role is currently selected", {roleID: role.person_roleid, roleInfo})
         if (hasAccess) {
-          logger.info("Role has access; setting as currently selected", {roleInfo})
+          logger.debug("Role has access; setting as currently selected", {roleInfo})
           currentlySelectedRole = roleInfo
         } else {
-          logger.info("Role does not have access; unsetting currently selected role", {roleInfo})
+          logger.debug("Role does not have access; unsetting currently selected role", {roleInfo})
           currentlySelectedRole = undefined
         }
       }
