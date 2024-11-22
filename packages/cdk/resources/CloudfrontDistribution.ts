@@ -50,7 +50,7 @@ export class CloudfrontDistribution extends Construct {
       publishAdditionalMetrics: true,
       enableLogging: true,
       logBucket: props.cloudfrontLoggingBucket,
-      logFilePrefix: "cloudfront/",
+      logFilePrefix: `${props.stackName}/`,
       logIncludesCookies: true, // may actually want to be false, don't know if it includes names of cookies or contents
       defaultBehavior: props.defaultBehavior,
       additionalBehaviors: props.additionalBehaviors,
