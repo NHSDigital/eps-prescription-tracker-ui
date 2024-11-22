@@ -10,7 +10,6 @@ import {
   RoleDetails,
   UserDetails
 } from "./cis2_token_types"
-import {LOGGER_KEY} from "@aws-lambda-powertools/commons"
 
 const VALID_ACR_VALUES: Array<string> = [
   "AAL3_ANY",
@@ -132,6 +131,7 @@ const verifyIdToken = async (idToken: string, logger: Logger) => {
   }
   const kid = decodedToken.header.kid
 
+  // Fetch the signing key from the JWKS endpoint
   let signingKey
   try {
     if (!kid) {
