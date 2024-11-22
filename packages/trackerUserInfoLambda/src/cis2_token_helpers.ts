@@ -2,6 +2,12 @@ import {Logger} from "@aws-lambda-powertools/logger"
 import {APIGatewayProxyEvent} from "aws-lambda"
 import axios from "axios"
 import {DynamoDBDocumentClient, GetCommand} from "@aws-sdk/lib-dynamodb"
+import {
+  UserInfo,
+  UserInfoResponse,
+  RoleInfo,
+  NRBACRole
+} from "./cis2_token_types"
 
 export const fetchAndVerifyCIS2Tokens = async (
   event: APIGatewayProxyEvent,
@@ -77,28 +83,106 @@ const verifyIdToken = async (idToken: string, logger: Logger) => {
   }
 }
 
-export const fetchUserInfo = async (accessToken: string, logger: Logger) => {
-  // Fetch the appropriate OIDC UserInfo endpoint from the environment variables
+export const fetchUserInfo = async (
+  accessToken: string,
+  accepted_access_codes: Array<string>,
+  selectedRoleId: string | undefined,
+  logger: Logger
+): Promise<UserInfoResponse> => {
+  // Fetch user info from the OIDC UserInfo endpoint
+  // The access token is used to identify the user, and fetch their roles.
+  // This populates three lists:
+  //  - rolesWithAccess: roles that have access to the CPT
+  //  - rolesWithoutAccess: roles that don't have access to the CPT
+  //  - [OPTIONAL] currentlySelectedRole: the role that is currently selected by the user
+  // Each list contains information on the roles, such as the role name, role ID, ODS code, and organization name.
+
   const oidcUserInfoEndpoint = process.env["userInfoEndpoint"]
   logger.info("Fetching user info from OIDC UserInfo endpoint", {oidcUserInfoEndpoint})
 
   if (!oidcUserInfoEndpoint) {
     throw new Error("OIDC UserInfo endpoint not set")
   }
-  logger.info("Fetching user info from OIDC UserInfo endpoint", {oidcUserInfoEndpoint, accessToken})
 
   try {
-    const response = await axios.get(oidcUserInfoEndpoint, {
+    const response = await axios.get<UserInfo>(oidcUserInfoEndpoint, {
       headers: {
         Authorization: `Bearer ${accessToken}`
       }
     })
-    logger.info("User info fetched successfully", {response})
+    logger.info("User info fetched successfully", {data: response.data})
 
-    return response.data
+    // Extract the roles from the user info response
+    const data: UserInfo = response.data
+
+    // These will be our outputs
+    const rolesWithAccess: Array<RoleInfo> = []
+    const rolesWithoutAccess: Array<RoleInfo> = []
+    let currentlySelectedRole: RoleInfo | undefined = undefined
+
+    // Get roles from the user info response
+    const roles = data.nhsid_nrbac_roles || []
+
+    roles.forEach((role: NRBACRole) => {
+      logger.info("Processing role", {role})
+      const activityCodes = role.activity_codes || []
+
+      const hasAccess = activityCodes.some((code: string) => accepted_access_codes.includes(code))
+      logger.info("Role CPT access?", {hasAccess})
+
+      const roleInfo: RoleInfo = {
+        roleName: role.role_name,
+        roleID: role.person_roleid,
+        ODS: role.org_code,
+        orgName: getOrgNameFromOrgCode(data, role.org_code, logger)
+      }
+
+      // Ensure the role has at least one of the required fields
+      if (!(roleInfo.roleName || roleInfo.roleID || roleInfo.ODS || roleInfo.orgName)) {
+        // Skip roles that don't meet the minimum field requirements
+        logger.warn("Role does not meet minimum field requirements", {roleInfo})
+        return
+      }
+
+      if (hasAccess) {
+        rolesWithAccess.push(roleInfo)
+      } else {
+        rolesWithoutAccess.push(roleInfo)
+      }
+
+      // Determine the currently selected role
+      logger.info("Checking if role is currently selected", {selectedRoleId, roleID: role.person_roleid, roleInfo})
+      if (selectedRoleId && role.person_roleid === selectedRoleId) {
+        logger.info("Role is currently selected", {roleID: role.person_roleid, roleInfo})
+        if (hasAccess) {
+          logger.info("Role has access; setting as currently selected", {roleInfo})
+          currentlySelectedRole = roleInfo
+        } else {
+          logger.info("Role does not have access; unsetting currently selected role", {roleInfo})
+          currentlySelectedRole = undefined
+        }
+      }
+    })
+
+    const result: UserInfoResponse = {
+      rolesWithAccess,
+      rolesWithoutAccess,
+      currentlySelectedRole
+    }
+
+    logger.info("Returning user info response", {result})
+    return result
   } catch (error) {
     logger.error("Error fetching user info", {error})
     throw new Error("Error fetching user info")
   }
+}
 
+// Helper function to get organization name from org_code
+function getOrgNameFromOrgCode(data: UserInfo, orgCode: string, logger: Logger): string | undefined {
+  logger.info("Getting org name from org code", {orgCode, data})
+  const orgs = data.nhsid_user_orgs || []
+  const org = orgs.find((o) => o.org_code === orgCode)
+  logger.info("Found org", {org})
+  return org ? org.org_name : undefined
 }

@@ -19,6 +19,8 @@ const errorResponseBody = {
 
 const middyErrorHandler = new MiddyErrorHandler(errorResponseBody)
 
+const CPT_ACCESS_ACTIVITY_CODES = ["B0570", "B0278"]
+
 const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   logger.appendKeys({"apigw-request-id": event.requestContext?.requestId})
   logger.info("Lambda handler invoked", {event})
@@ -29,7 +31,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     logger.info("CIS2 tokens fetched and verified", {cis2AccessToken, cis2IdToken})
 
     logger.info("Making UserInfo request")
-    const userInfoResponse = await fetchUserInfo(cis2AccessToken, logger)
+    const userInfoResponse = await fetchUserInfo(cis2AccessToken, CPT_ACCESS_ACTIVITY_CODES, undefined, logger)
 
     logger.info("UserInfo response received", {userInfoResponse})
 
