@@ -18,7 +18,7 @@
     "@aws-lambda-powertools/parameters": "^2.11.0",
     "@aws-sdk/client-dynamodb": "^3.651.1",
     "@aws-sdk/client-secrets-manager": "^3.696.0",
-    "@aws-sdk/lib-dynamodb": "^3.696.0",
+    "@aws-sdk/lib-dynamodb": "^3.698.0",
     "@cpt-ui-common/middyErrorHandler": "^1.0.0",
     "@middy/core": "^5.4.7",
     "@middy/input-output-logger": "^5.4.7",
