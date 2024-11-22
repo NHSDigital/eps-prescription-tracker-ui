@@ -15,11 +15,49 @@ on:
       COMMIT_ID:
         required: true
         type: string
+      useMockOidc:
+        type: boolean
+        default: false
+      primaryOidcIssuer:
+        type: string
+      primaryOidcAuthorizeEndpoint:
+        type: string
+      primaryOidcTokenEndpoint:
+        type: string
+      primaryOidcUserInfoEndpoint:
+        type: string
+      primaryOidcjwksEndpoint:
+        type: string
+      mockOidcIssuer:
+        type: string
+      mockOidcAuthorizeEndpoint:
+        type: string
+      mockOidcTokenEndpoint:
+        type: string
+      mockOidcUserInfoEndpoint:
+        type: string
+      mockOidcjwksEndpoint:
+        type: string
+      useLocalhostCallback:
+        type: boolean
+      useCustomCognitoDomain:
+        type: boolean
     secrets:
       CLOUD_FORMATION_DEPLOY_ROLE:
         required: true
       CDK_PULL_IMAGE_ROLE:
         required: true
+      primaryOidcClientId:
+        required: false
+      primaryOidClientSecret:
+        required: false
+      mockOidcClientId:
+        required: false
+      mockOidClientSecret:
+        required: false
+      CIS2_PRIVATE_KEY:
+        required: true
+
 
 jobs:
   check_first_deployment:
@@ -62,9 +100,26 @@ jobs:
       COMMIT_ID: ${{ inputs.COMMIT_ID }}
       CDK_APP_NAME: StatefulResourcesApp
       LOG_RETENTION_IN_DAYS: 30
+      useMockOidc: ${{ inputs.useMockOidc }}
+      primaryOidcIssuer: ${{ inputs.primaryOidcIssuer }}
+      primaryOidcAuthorizeEndpoint: ${{ inputs.primaryOidcAuthorizeEndpoint }}
+      primaryOidcTokenEndpoint: ${{ inputs.primaryOidcTokenEndpoint }}
+      primaryOidcUserInfoEndpoint: ${{ inputs.primaryOidcUserInfoEndpoint }}
+      primaryOidcjwksEndpoint: ${{ inputs.primaryOidcjwksEndpoint }}
+      mockOidcIssuer: ${{ inputs.mockOidcIssuer }}
+      mockOidcAuthorizeEndpoint: ${{ inputs.mockOidcAuthorizeEndpoint }}
+      mockOidcTokenEndpoint: ${{ inputs.mockOidcTokenEndpoint }}
+      mockOidcUserInfoEndpoint: ${{ inputs.mockOidcUserInfoEndpoint }}
+      mockOidcjwksEndpoint: ${{ inputs.mockOidcjwksEndpoint }}
+      useLocalhostCallback: ${{ inputs.useLocalhostCallback }}
+      useCustomCognitoDomain: ${{ inputs.useCustomCognitoDomain }}
     secrets:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}
+      primaryOidcClientId: ${{ secrets.primaryOidcClientId }}
+      primaryOidClientSecret: ${{ secrets.primaryOidClientSecret }}
+      mockOidcClientId: ${{ secrets.mockOidcClientId }}
+      mockOidClientSecret: ${{ secrets.mockOidClientSecret }}
 
   deploy_website_content:
     uses: ./.github/workflows/deploy_website_content.yml
@@ -87,10 +142,27 @@ jobs:
       COMMIT_ID: ${{ inputs.COMMIT_ID }}
       CDK_APP_NAME: StatelessResourcesApp
       LOG_RETENTION_IN_DAYS: 30
+      useMockOidc: ${{ inputs.useMockOidc }}
+      primaryOidcIssuer: ${{ inputs.primaryOidcIssuer }}
+      primaryOidcAuthorizeEndpoint: ${{ inputs.primaryOidcAuthorizeEndpoint }}
+      primaryOidcTokenEndpoint: ${{ inputs.primaryOidcTokenEndpoint }}
+      primaryOidcUserInfoEndpoint: ${{ inputs.primaryOidcUserInfoEndpoint }}
+      primaryOidcjwksEndpoint: ${{ inputs.primaryOidcjwksEndpoint }}
+      mockOidcIssuer: ${{ inputs.mockOidcIssuer }}
+      mockOidcAuthorizeEndpoint: ${{ inputs.mockOidcAuthorizeEndpoint }}
+      mockOidcTokenEndpoint: ${{ inputs.mockOidcTokenEndpoint }}
+      mockOidcUserInfoEndpoint: ${{ inputs.mockOidcUserInfoEndpoint }}
+      mockOidcjwksEndpoint: ${{ inputs.mockOidcjwksEndpoint }}
+      useLocalhostCallback: ${{ inputs.useLocalhostCallback }}
+      useCustomCognitoDomain: ${{ inputs.useCustomCognitoDomain }}
     secrets:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}
-  
+      primaryOidcClientId: ${{ secrets.primaryOidcClientId }}
+      primaryOidClientSecret: ${{ secrets.primaryOidClientSecret }}
+      mockOidcClientId: ${{ secrets.mockOidcClientId }}
+      mockOidClientSecret: ${{ secrets.mockOidClientSecret }}
+
   update_cloudfront_kvs:
     runs-on: ubuntu-latest
     environment: ${{ inputs.TARGET_ENVIRONMENT }}
@@ -116,6 +188,10 @@ jobs:
           keyValueStore=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='"${{ inputs.SERVICE_NAME }}-stateless-resources:StaticRewriteKeyValueStor:Arn"'].Value" --output text)
           # shellcheck disable=SC2140
           cloudfrontDistributionId=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='"${{ inputs.SERVICE_NAME }}-stateless-resources:cloudfrontDistribution:Id"'].Value" --output text)
+          # shellcheck disable=SC2140
+          primaryJwtPrivateKeyArn=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='"${{ inputs.SERVICE_NAME }}-stateless-resources:primaryJwtPrivateKey:Arn"'].Value" --output text)
+          # shellcheck disable=SC2140
+          mockJwtPrivateKeyArn=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='"${{ inputs.SERVICE_NAME }}-stateless-resources:mockJwtPrivateKey:Arn"'].Value" --output text)
 
           newVersion="${{ inputs.VERSION_NUMBER }}"
 
@@ -146,6 +222,10 @@ jobs:
           # invalidate the cache
           aws cloudfront create-invalidation --distribution-id "${cloudfrontDistributionId}" --paths '/*'
 
+          # set the primaryJwtPrivateKeyArn secret
+          aws secretsmanager put-secret-value --secret-id "${primaryJwtPrivateKeyArn}" --secret-string "${{ secrets.CIS2_PRIVATE_KEY }}"
+          # set the mockJwtPrivateKeyArn secret
+          aws secretsmanager put-secret-value --secret-id "${mockJwtPrivateKeyArn}" --secret-string "${{ secrets.CIS2_PRIVATE_KEY }}"
   rerelease_stateful_resources:
     if: ${{ needs.check_first_deployment.outputs.FIRST_DEPLOYMENT == 'true' }}
     uses: ./.github/workflows/cdk_release_code.yml
@@ -157,10 +237,27 @@ jobs:
       COMMIT_ID: ${{ inputs.COMMIT_ID }}
       CDK_APP_NAME: StatefulResourcesApp
       LOG_RETENTION_IN_DAYS: 30
+      useMockOidc: ${{ inputs.useMockOidc }}
+      primaryOidcIssuer: ${{ inputs.primaryOidcIssuer }}
+      primaryOidcAuthorizeEndpoint: ${{ inputs.primaryOidcAuthorizeEndpoint }}
+      primaryOidcTokenEndpoint: ${{ inputs.primaryOidcTokenEndpoint }}
+      primaryOidcUserInfoEndpoint: ${{ inputs.primaryOidcUserInfoEndpoint }}
+      primaryOidcjwksEndpoint: ${{ inputs.primaryOidcjwksEndpoint }}
+      mockOidcIssuer: ${{ inputs.mockOidcIssuer }}
+      mockOidcAuthorizeEndpoint: ${{ inputs.mockOidcAuthorizeEndpoint }}
+      mockOidcTokenEndpoint: ${{ inputs.mockOidcTokenEndpoint }}
+      mockOidcUserInfoEndpoint: ${{ inputs.mockOidcUserInfoEndpoint }}
+      mockOidcjwksEndpoint: ${{ inputs.mockOidcjwksEndpoint }}
+      useLocalhostCallback: ${{ inputs.useLocalhostCallback }}
+      useCustomCognitoDomain: ${{ inputs.useCustomCognitoDomain }}
     secrets:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}
-  
+      primaryOidcClientId: ${{ secrets.primaryOidcClientId }}
+      primaryOidClientSecret: ${{ secrets.primaryOidClientSecret }}
+      mockOidcClientId: ${{ secrets.mockOidcClientId }}
+      mockOidClientSecret: ${{ secrets.mockOidClientSecret }}
+
   update_github_pages:
     runs-on: ubuntu-latest
     environment: ${{ inputs.TARGET_ENVIRONMENT }}
