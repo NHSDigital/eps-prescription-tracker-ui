@@ -19,15 +19,15 @@ export type UserDetails = {
 }
 
 export type TrackerUserInfo = {
-  rolesWithAccess: Array<RoleDetails>;
-  rolesWithoutAccess: Array<RoleDetails>;
-  currentlySelectedRole?: RoleDetails;
-  userName: UserDetails;
+  user_details: UserDetails;
+  roles_with_access: Array<RoleDetails>;
+  roles_without_access: Array<RoleDetails>;
+  currently_selected_role?: RoleDetails;
 };
 
 //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-//
 
-// Types for the incoming data [FIXME: Possibly incomplete? Based on some example requests, not a full schema]
+// Types for the incoming data
 type AssuranceLevel = "0" | "1" | "2" | "3";
 
 export interface UserInfoResponse {

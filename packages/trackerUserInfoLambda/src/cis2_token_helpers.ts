@@ -164,7 +164,7 @@ export const fetchUserInfo = async (
       }
     })
 
-    const userName: UserDetails = {
+    const userDetails: UserDetails = {
       given_name: data.given_name,
       family_name: data.family_name,
       name: data.name,
@@ -175,10 +175,10 @@ export const fetchUserInfo = async (
     }
 
     const result: TrackerUserInfo = {
-      userName,
-      rolesWithAccess,
-      rolesWithoutAccess,
-      currentlySelectedRole
+      user_details: userDetails,
+      roles_with_access: rolesWithAccess,
+      roles_without_access: rolesWithoutAccess,
+      currently_selected_role: currentlySelectedRole
     }
 
     logger.info("Returning user info response", {result})
