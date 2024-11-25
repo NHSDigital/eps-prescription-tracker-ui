@@ -153,7 +153,7 @@ export class ApiFunctions extends Construct {
           getMockJWTPrivateKeySecret
         ],
         logRetentionInDays: props.logRetentionInDays,
-        packageBasePath: "packages/tracker-user-info-lambda",
+        packageBasePath: "packages/trackerUserInfoLambda",
         entryPoint: "src/handler.ts",
         lambdaEnvironmentVariables: {
           idpTokenPath: props.mockOidcTokenEndpoint,
@@ -211,7 +211,7 @@ export class ApiFunctions extends Construct {
         getJWTPrivateKeySecret
       ],
       logRetentionInDays: props.logRetentionInDays,
-      packageBasePath: "packages/tracker-user-info-lambda",
+      packageBasePath: "packages/trackerUserInfoLambda",
       entryPoint: "src/handler.ts",
       lambdaEnvironmentVariables: {
         idpTokenPath: props.primaryOidcTokenEndpoint,
