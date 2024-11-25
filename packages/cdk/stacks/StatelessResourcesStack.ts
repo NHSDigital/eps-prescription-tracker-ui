@@ -33,6 +33,8 @@ import {RestApiGatewayMethods} from "../resources/RestApiGatewayMethods"
 import {CloudfrontBehaviors} from "../resources/CloudfrontBehaviors"
 import {HostedZone} from "aws-cdk-lib/aws-route53"
 import {Certificate} from "aws-cdk-lib/aws-certificatemanager"
+import {SharedSecrets} from "../resources/SharedSecrets"
+import {NodejsFunction} from "aws-cdk-lib/aws-lambda-nodejs"
 
 export interface StatelessResourcesStackProps extends StackProps {
   readonly serviceName: string
@@ -115,6 +117,14 @@ export class StatelessResourcesStack extends Stack {
     const deploymentRole = Role.fromRoleArn(this, "deploymentRole", deploymentRoleImport)
 
     // Resources
+
+    // SharedSecrets
+    const sharedSecrets = new SharedSecrets(this, "SharedSecrets", {
+      stackName: props.stackName,
+      deploymentRole: deploymentRole,
+      useMockOidc: useMockOidc
+    })
+
     // -- functions for cognito
     const cognitoFunctions = new CognitoFunctions(this, "CognitoFunctions", {
       serviceName: props.serviceName,
@@ -137,7 +147,7 @@ export class StatelessResourcesStack extends Stack {
       primaryPoolIdentityProviderName: primaryPoolIdentityProviderName,
       mockPoolIdentityProviderName: mockPoolIdentityProviderName,
       logRetentionInDays: logRetentionInDays,
-      deploymentRole: deploymentRole
+      sharedSecrets: sharedSecrets
     })
 
     // -- functions for API
@@ -162,7 +172,7 @@ export class StatelessResourcesStack extends Stack {
       primaryPoolIdentityProviderName: primaryPoolIdentityProviderName,
       mockPoolIdentityProviderName: mockPoolIdentityProviderName,
       logRetentionInDays: logRetentionInDays,
-      deploymentRole: deploymentRole
+      sharedSecrets: sharedSecrets
     })
 
     // - API Gateway
@@ -185,7 +195,10 @@ export class StatelessResourcesStack extends Stack {
       restAPiGatewayRole: apiGateway.restAPiGatewayRole,
       restApiGateway: apiGateway.restApiGateway,
       tokenLambda: cognitoFunctions.tokenLambda,
-      mockTokenLambda: cognitoFunctions.mockTokenLambda,
+      mockTokenLambda: cognitoFunctions.mockTokenLambda || new NodejsFunction(this, "EmptyMockTokenLambda", {
+        entry: "src/empty.ts", // Point to a no-op lambda handler
+        handler: "handler"
+      }), // Ensure a fallback lambda
       prescriptionSearchLambda: apiFunctions.prescriptionSearchLambda,
       useMockOidc: useMockOidc,
       authorizer: apiGateway.authorizer
@@ -271,20 +284,20 @@ export class StatelessResourcesStack extends Stack {
       exportName: `${props.stackName}:StaticRewriteKeyValueStor:Arn`
     })
     new CfnOutput(this, "primaryJwtPrivateKeyArn", {
-      value: cognitoFunctions.primaryJwtPrivateKey.secretArn,
+      value: sharedSecrets.primaryJwtPrivateKey.secretArn,
       exportName: `${props.stackName}:primaryJwtPrivateKey:Arn`
     })
     new CfnOutput(this, "primaryJwtPrivateKeyName", {
-      value: cognitoFunctions.primaryJwtPrivateKey.secretName,
+      value: sharedSecrets.primaryJwtPrivateKey.secretName,
       exportName: `${props.stackName}:primaryJwtPrivateKey:Name`
     })
     if (useMockOidc) {
       new CfnOutput(this, "mockJwtPrivateKeyArn", {
-        value: cognitoFunctions.mockJwtPrivateKey.secretArn,
+        value: sharedSecrets.mockJwtPrivateKey?.secretArn || "undefined",
         exportName: `${props.stackName}:mockJwtPrivateKey:Arn`
       })
       new CfnOutput(this, "mockJwtPrivateKeyName", {
-        value: cognitoFunctions.mockJwtPrivateKey.secretName,
+        value: sharedSecrets.mockJwtPrivateKey?.secretName || "undefined",
         exportName: `${props.stackName}:mockJwtPrivateKey:Name`
       })
     }
