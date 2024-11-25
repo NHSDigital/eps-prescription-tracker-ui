@@ -42,6 +42,9 @@ on:
         type: boolean
       useCustomCognitoDomain:
         type: boolean
+      REGRESSION_TESTS_PEM:
+        type: string
+        default: false
     secrets:
       CLOUD_FORMATION_DEPLOY_ROLE:
         required: true
@@ -57,7 +60,8 @@ on:
         required: false
       CIS2_PRIVATE_KEY:
         required: true
-
+      REGRESSION_TESTS_PEM:
+        required: true
 
 jobs:
   check_first_deployment:
@@ -288,3 +292,13 @@ jobs:
           git add _data/${{ inputs.TARGET_ENVIRONMENT }}_deployments.csv
           git commit -m 'update releases for ${{ inputs.TARGET_ENVIRONMENT }}'
           parallel --retries 10 --delay 3 ::: "git pull --rebase && git push"
+
+  regression_tests:
+    name: Regression Tests
+    uses: ./.github/workflows/run_regression_tests.yml
+    needs: check_first_deployment
+    with:
+      ENVIRONMENT: ${{ inputs.TARGET_ENVIRONMENT }}
+      VERSION_NUMBER: ${{ inputs.VERSION_NUMBER }}
+    secrets:
+      REGRESSION_TESTS_PEM: ${{ secrets.REGRESSION_TESTS_PEM }}
