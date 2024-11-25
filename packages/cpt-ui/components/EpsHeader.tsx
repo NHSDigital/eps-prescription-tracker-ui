@@ -27,8 +27,8 @@ export default function EpsHeader() {
                 <Header.Content />
             </Header.Container>
             <Header.Nav className="masthead-nav">
-                <Header.NavItem>Search</Header.NavItem>
-                <Header.NavItem>Use old tracker</Header.NavItem>
+                <Header.NavItem>Placeholder 1</Header.NavItem>
+                <Header.NavItem>Placeholder 2</Header.NavItem>
                 {pathname != '/' ? (
                     <li className="nhsuk-header__navigation-item">
                         <Link className="nhsuk-header__navigation-link" href={HEADER_CHANGE_ROLE_TARGET} data-testid="eps_header_changeRoleLink">{HEADER_CHANGE_ROLE_BUTTON}</Link>
@@ -40,7 +40,7 @@ export default function EpsHeader() {
                         </li>
                     )
                 }
-                <Header.NavItem>Logout</Header.NavItem>
+                <Header.NavItem>Placeholder 3</Header.NavItem>
                 <Header.NavDropdownMenu dropdownText="Menu" />
             </Header.Nav>
         </Header>
