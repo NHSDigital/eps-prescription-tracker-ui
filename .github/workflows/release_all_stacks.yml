@@ -296,7 +296,8 @@ jobs:
   regression_tests:
     name: Regression Tests
     uses: ./.github/workflows/run_regression_tests.yml
-    needs: check_first_deployment
+    if: ${{ always() && !failure() && !cancelled() }}
+    needs: [release_stateful_resources, release_stateless_resources, rerelease_stateful_resources, deploy_website_content, update_cloudfront_kvs]
     with:
       ENVIRONMENT: ${{ inputs.TARGET_ENVIRONMENT }}
       VERSION_NUMBER: ${{ inputs.VERSION_NUMBER }}
