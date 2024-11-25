@@ -19,7 +19,7 @@ const VALID_ACR_VALUES: Array<string> = [
 ]
 
 // Helper function to get the signing key from the JWKS endpoint
-const getSigningKey = (client: jwksClient.JwksClient, kid: string): Promise<string> => {
+export const getSigningKey = (client: jwksClient.JwksClient, kid: string): Promise<string> => {
   return new Promise((resolve, reject) => {
     client.getSigningKey(kid, (err, key) => {
       if (err) {
@@ -111,7 +111,7 @@ export const fetchAndVerifyCIS2Tokens = async (
   )
 
   // Verify the ID token
-  await verifyIdToken(idToken, logger)
+  await verifyIdToken(cis2IdToken, logger)
 
   // And return the verified tokens
   return {cis2AccessToken, cis2IdToken}
