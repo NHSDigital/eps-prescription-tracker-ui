@@ -96,4 +96,4 @@ jobs:
     steps:
       - name: Report Deployed URL
         run: |
-          echo "Deployed URL: https://cpt-ui-pr-${{needs.get_issue_number.outputs.issue_number}}.dev-pr.ptl.api.platform.nhs.uk" >> "$GITHUB_OUTPUT"
+          echo "Deployed URL: https://cpt-ui-pr-${{ needs.get_issue_number.outputs.issue_number }}.dev.eps.national.nhs.uk" >> "$GITHUB_STEP_SUMMARY"

@@ -18,53 +18,44 @@ const VALID_ACR_VALUES: Array<string> = [
   "AAL1_USERPASS"
 ]
 
-export const fetchAndVerifyCIS2Tokens = async (
-  event: APIGatewayProxyEvent,
-  documentClient: DynamoDBDocumentClient,
-  logger: Logger
-) => {
-
-  logger.info("Fetching and verifying CIS2 tokens")
-
-  const TokenMappingTableName = process.env["TokenMappingTableName"]
-  if (!TokenMappingTableName) {
-    throw new Error("Token mapping table name not set")
-  }
-
-  // Extract tokens from request headers
+const getIdTokenFromEvent = (event: APIGatewayProxyEvent): string => {
   const authorizationHeader = event.headers["Authorization"] || event.headers["authorization"]
   if (!authorizationHeader) {
     throw new Error("Authorization header missing")
   }
+  return authorizationHeader.replace("Bearer ", "").trim()
+}
 
-  // Extract the idToken from the Authorization header
-  const idToken = authorizationHeader.replace("Bearer ", "").trim()
-
-  // Decode the idToken, which is a JWT. We need the `cognito:username` claim to fetch the user data from DynamoDB
+const getUsernameFromEvent = (event: APIGatewayProxyEvent): string => {
   const username = event.requestContext.authorizer?.claims["cognito:username"]
-  if (!username){
+  if (!username) {
     throw new Error("Unable to extract username from ID token")
   }
-  logger.info("Extracted username from ID token", {username})
+  return username
+}
 
-  // Fetch the relevant document from DynamoDB, containing the CIS2 tokens
-  let cis2AccessToken
-  let cis2IdToken
-  let existingData
+const fetchCIS2TokensFromDynamoDB = async (
+  username: string,
+  tokenMappingTableName: string,
+  documentClient: DynamoDBDocumentClient,
+  logger: Logger
+): Promise<{ cis2AccessToken: string; cis2IdToken: string }> => {
   try {
     logger.info("Fetching CIS2 access token from DynamoDB")
     const result = await documentClient.send(
       new GetCommand({
-        TableName: TokenMappingTableName,
+        TableName: tokenMappingTableName,
         Key: {username}
       })
     )
     logger.debug("DynamoDB response", {result})
 
     if (result.Item) {
-      existingData = result.Item
-      cis2AccessToken = existingData.CIS2_accessToken
-      cis2IdToken = existingData.CIS2_idToken
+      const existingData = result.Item
+      return {
+        cis2AccessToken: existingData.CIS2_accessToken,
+        cis2IdToken: existingData.CIS2_idToken
+      }
     } else {
       logger.error("CIS2 access token not found for user")
       throw new Error("CIS2 access token not found for user")
@@ -73,13 +64,8 @@ export const fetchAndVerifyCIS2Tokens = async (
     logger.error("Error fetching data from DynamoDB", {error})
     throw new Error("Internal server error while accessing DynamoDB")
   }
-
-  verifyIdToken(idToken, logger)
-
-  return {cis2AccessToken, cis2IdToken}
 }
 
-// Helper function to get the signing key from the JWKS endpoint
 const getSigningKey = (client: jwksClient.JwksClient, kid: string): Promise<string> => {
   return new Promise((resolve, reject) => {
     client.getSigningKey(kid, (err, key) => {
@@ -94,6 +80,40 @@ const getSigningKey = (client: jwksClient.JwksClient, kid: string): Promise<stri
       }
     })
   })
+}
+
+export const fetchAndVerifyCIS2Tokens = async (
+  event: APIGatewayProxyEvent,
+  documentClient: DynamoDBDocumentClient,
+  logger: Logger
+) => {
+  logger.info("Fetching and verifying CIS2 tokens")
+
+  const tokenMappingTableName = process.env["TokenMappingTableName"]
+  if (!tokenMappingTableName) {
+    throw new Error("Token mapping table name not set")
+  }
+
+  // Extract ID token
+  const idToken = getIdTokenFromEvent(event)
+
+  // Extract username
+  const username = getUsernameFromEvent(event)
+  logger.info("Extracted username from ID token", {username})
+
+  // Fetch CIS2 tokens from DynamoDB
+  const {cis2AccessToken, cis2IdToken} = await fetchCIS2TokensFromDynamoDB(
+    username,
+    tokenMappingTableName,
+    documentClient,
+    logger
+  )
+
+  // Verify the ID token
+  await verifyIdToken(idToken, logger)
+
+  // And return the verified tokens
+  return {cis2AccessToken, cis2IdToken}
 }
 
 const verifyIdToken = async (idToken: string, logger: Logger) => {

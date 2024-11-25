@@ -1,6 +1,5 @@
 import {describe, it, jest} from "@jest/globals"
 
-// import {DynamoDBDocumentClient, PutCommandInput} from "@aws-sdk/lib-dynamodb"
 import createJWKSMock from "mock-jwks"
 // import nock from "nock"
 // import {handler} from "../src/handler"
@@ -36,43 +35,4 @@ describe("handler tests", () => {
 
   it("dummy test", async () => {
   })
-
-  // it("inserts correct details into dynamo table", async () => {
-  //   // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-  //   const dynamoSpy = jest.spyOn(DynamoDBDocumentClient.prototype, "send").mockResolvedValue({} as never)
-
-  //   const expiryDate = Date.now() + 1000
-  //   const token = jwks.token({
-  //     iss: "valid_iss",
-  //     aud: "valid_aud",
-  //     sub: "foo",
-  //     exp: expiryDate
-  //   })
-  //   nock("https://dummytoken.com")
-  //     .post("/token")
-  //     .reply(200, {
-  //       id_token: token,
-  //       access_token: "access_token_reply"
-  //     })
-
-  //   const response = await handler({
-  //     body: {
-  //       foo: "bar"
-  //     }
-  //   }, dummyContext)
-  //   expect(response.body).toMatch(JSON.stringify({
-  //     id_token: token,
-  //     access_token: "access_token_reply"
-  //   }))
-  //   expect(dynamoSpy).toHaveBeenCalledTimes(1)
-  //   const call = dynamoSpy.mock.calls[0][0].input as PutCommandInput
-  //   expect(call.Item).toEqual(
-  //     {
-  //       "username": "DummyPoolIdentityProvider_foo",
-  //       "idToken": token,
-  //       "expiresIn": expiryDate,
-  //       "accessToken": "access_token_reply"
-  //     }
-  //   )
-  // })
 })
