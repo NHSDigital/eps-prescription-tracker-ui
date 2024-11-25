@@ -6,7 +6,7 @@ import inputOutputLogger from "@middy/input-output-logger"
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
 import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
-import {fetchAndVerifyCIS2Tokens, fetchUserInfo} from "./cis2_token_helpers"
+import {fetchAndVerifyCIS2Tokens, fetchUserInfo} from "./cis2TokenHelpers"
 
 const logger = new Logger({serviceName: "trackerUserInfo"})
 

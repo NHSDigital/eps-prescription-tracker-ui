@@ -9,7 +9,7 @@ import {
   TrackerUserInfo,
   RoleDetails,
   UserDetails
-} from "./cis2_token_types"
+} from "./cis2TokenTypes"
 
 const VALID_ACR_VALUES: Array<string> = [
   "AAL3_ANY",
@@ -18,7 +18,7 @@ const VALID_ACR_VALUES: Array<string> = [
   "AAL1_USERPASS"
 ]
 
-const getIdTokenFromEvent = (event: APIGatewayProxyEvent): string => {
+export const getIdTokenFromEvent = (event: APIGatewayProxyEvent): string => {
   const authorizationHeader = event.headers["Authorization"] || event.headers["authorization"]
   if (!authorizationHeader) {
     throw new Error("Authorization header missing")
@@ -26,7 +26,7 @@ const getIdTokenFromEvent = (event: APIGatewayProxyEvent): string => {
   return authorizationHeader.replace("Bearer ", "").trim()
 }
 
-const getUsernameFromEvent = (event: APIGatewayProxyEvent): string => {
+export const getUsernameFromEvent = (event: APIGatewayProxyEvent): string => {
   const username = event.requestContext.authorizer?.claims["cognito:username"]
   if (!username) {
     throw new Error("Unable to extract username from ID token")
@@ -34,7 +34,7 @@ const getUsernameFromEvent = (event: APIGatewayProxyEvent): string => {
   return username
 }
 
-const fetchCIS2TokensFromDynamoDB = async (
+export const fetchCIS2TokensFromDynamoDB = async (
   username: string,
   tokenMappingTableName: string,
   documentClient: DynamoDBDocumentClient,
@@ -66,7 +66,7 @@ const fetchCIS2TokensFromDynamoDB = async (
   }
 }
 
-const getSigningKey = (client: jwksClient.JwksClient, kid: string): Promise<string> => {
+export const getSigningKey = (client: jwksClient.JwksClient, kid: string): Promise<string> => {
   return new Promise((resolve, reject) => {
     client.getSigningKey(kid, (err, key) => {
       if (err) {
@@ -116,7 +116,7 @@ export const fetchAndVerifyCIS2Tokens = async (
   return {cis2AccessToken, cis2IdToken}
 }
 
-const verifyIdToken = async (idToken: string, logger: Logger) => {
+export const verifyIdToken = async (idToken: string, logger: Logger) => {
   const oidcIssuer = process.env["oidcIssuer"]
   if (!oidcIssuer) {
     throw new Error("OIDC issuer not set")

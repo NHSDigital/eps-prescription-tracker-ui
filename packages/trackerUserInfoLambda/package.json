@@ -1,5 +1,5 @@
 {
-  "name": "prescriptionSearchLambda",
+  "name": "tracker-user-info-lambda",
   "version": "1.0.0",
   "description": "Lambda for prescription search",
   "main": "statusLambda.js",
