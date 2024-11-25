@@ -221,19 +221,19 @@ const verifyIdToken = async (idToken: string, logger: Logger) => {
   logger.debug("auth_time claim is valid", {auth_time})
 }
 
+// Fetch user info from the OIDC UserInfo endpoint
+// The access token is used to identify the user, and fetch their roles.
+// This populates three lists:
+//  - rolesWithAccess: roles that have access to the CPT
+//  - rolesWithoutAccess: roles that don't have access to the CPT
+//  - [OPTIONAL] currentlySelectedRole: the role that is currently selected by the user
+// Each list contains information on the roles, such as the role name, role ID, ODS code, and organization name.
 export const fetchUserInfo = async (
   accessToken: string,
   accepted_access_codes: Array<string>,
   selectedRoleId: string | undefined,
   logger: Logger
 ): Promise<TrackerUserInfo> => {
-  // Fetch user info from the OIDC UserInfo endpoint
-  // The access token is used to identify the user, and fetch their roles.
-  // This populates three lists:
-  //  - rolesWithAccess: roles that have access to the CPT
-  //  - rolesWithoutAccess: roles that don't have access to the CPT
-  //  - [OPTIONAL] currentlySelectedRole: the role that is currently selected by the user
-  // Each list contains information on the roles, such as the role name, role ID, ODS code, and organization name.
 
   const oidcUserInfoEndpoint = process.env["userInfoEndpoint"]
   logger.info("Fetching user info from OIDC UserInfo endpoint", {oidcUserInfoEndpoint})

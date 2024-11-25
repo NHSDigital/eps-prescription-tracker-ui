@@ -88,3 +88,12 @@ jobs:
       mockOidcClientId: ${{ secrets.PTL_MOCK_CLIENT_ID }}
       mockOidClientSecret: ${{ secrets.PTL_MOCK_CLIENT_SECRET }}
       CIS2_PRIVATE_KEY: ${{ secrets.PTL_CIS2_PRIVATE_KEY }}
+
+      
+  report_deployed_url:
+    needs: [release_code, get_issue_number]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Report Deployed URL
+        run: |
+          echo "Deployed URL: https://cpt-ui-pr-${{needs.get_issue_number.outputs.issue_number}}.dev-pr.ptl.api.platform.nhs.uk" >> "$GITHUB_OUTPUT"
