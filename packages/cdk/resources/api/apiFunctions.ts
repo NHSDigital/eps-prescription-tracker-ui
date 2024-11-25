@@ -35,7 +35,7 @@ export interface ApiFunctionsProps {
 export class ApiFunctions extends Construct {
   public readonly apiFunctionsPolicies: Array<IManagedPolicy>
   public readonly prescriptionSearchLambda: NodejsFunction
-  public readonly mockPrescriptionSearchLambda?: NodejsFunction
+  public readonly mockPrescriptionSearchLambda: NodejsFunction
 
   public constructor(scope: Construct, id: string, props: ApiFunctionsProps) {
     super(scope, id)
@@ -101,7 +101,7 @@ export class ApiFunctions extends Construct {
           TokenMappingTableName: props.tokenMappingTable.tableName,
           UserPoolIdentityProvider: props.mockPoolIdentityProviderName,
           oidcjwksEndpoint: props.mockOidcjwksEndpoint,
-          jwtPrivateKeyArn: props.sharedSecrets.mockJwtPrivateKey?.secretArn || "",
+          jwtPrivateKeyArn: props.sharedSecrets.mockJwtPrivateKey.secretArn,
           userInfoEndpoint: props.mockOidcUserInfoEndpoint,
           useSignedJWT: "true",
           oidcClientId: props.mockOidcClientId,

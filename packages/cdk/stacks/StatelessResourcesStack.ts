@@ -24,6 +24,7 @@ import {CloudfrontDistribution} from "../resources/CloudfrontDistribution"
 import {nagSuppressions} from "../nagSuppressions"
 import {TableV2} from "aws-cdk-lib/aws-dynamodb"
 import {ManagedPolicy, Role} from "aws-cdk-lib/aws-iam"
+import {SharedSecrets} from "../resources/SharedSecrets"
 import {CognitoFunctions} from "../resources/CognitoFunctions"
 import {ApiFunctions} from "../resources/api/apiFunctions"
 import {UserPool} from "aws-cdk-lib/aws-cognito"
@@ -33,8 +34,6 @@ import {RestApiGatewayMethods} from "../resources/RestApiGatewayMethods"
 import {CloudfrontBehaviors} from "../resources/CloudfrontBehaviors"
 import {HostedZone} from "aws-cdk-lib/aws-route53"
 import {Certificate} from "aws-cdk-lib/aws-certificatemanager"
-import {SharedSecrets} from "../resources/SharedSecrets"
-import {NodejsFunction} from "aws-cdk-lib/aws-lambda-nodejs"
 
 export interface StatelessResourcesStackProps extends StackProps {
   readonly serviceName: string
@@ -195,10 +194,7 @@ export class StatelessResourcesStack extends Stack {
       restAPiGatewayRole: apiGateway.restAPiGatewayRole,
       restApiGateway: apiGateway.restApiGateway,
       tokenLambda: cognitoFunctions.tokenLambda,
-      mockTokenLambda: cognitoFunctions.mockTokenLambda || new NodejsFunction(this, "EmptyMockTokenLambda", {
-        entry: "src/empty.ts", // Point to a no-op lambda handler
-        handler: "handler"
-      }), // Ensure a fallback lambda
+      mockTokenLambda: cognitoFunctions.mockTokenLambda,
       prescriptionSearchLambda: apiFunctions.prescriptionSearchLambda,
       useMockOidc: useMockOidc,
       authorizer: apiGateway.authorizer
@@ -293,11 +289,11 @@ export class StatelessResourcesStack extends Stack {
     })
     if (useMockOidc) {
       new CfnOutput(this, "mockJwtPrivateKeyArn", {
-        value: sharedSecrets.mockJwtPrivateKey?.secretArn || "undefined",
+        value: sharedSecrets.mockJwtPrivateKey.secretArn,
         exportName: `${props.stackName}:mockJwtPrivateKey:Arn`
       })
       new CfnOutput(this, "mockJwtPrivateKeyName", {
-        value: sharedSecrets.mockJwtPrivateKey?.secretName || "undefined",
+        value: sharedSecrets.mockJwtPrivateKey.secretName,
         exportName: `${props.stackName}:mockJwtPrivateKey:Name`
       })
     }

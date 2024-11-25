@@ -20,7 +20,7 @@ export interface SharedSecretsProps {
 export class SharedSecrets extends Construct {
   public readonly jwtKmsKey: Key
   public readonly primaryJwtPrivateKey: Secret
-  public readonly mockJwtPrivateKey?: Secret
+  public readonly mockJwtPrivateKey: Secret
   public readonly useJwtKmsKeyPolicy: ManagedPolicy
 
   constructor(scope: Construct, id: string, props: SharedSecretsProps) {

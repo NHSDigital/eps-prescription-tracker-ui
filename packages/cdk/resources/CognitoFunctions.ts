@@ -36,7 +36,7 @@ export interface CognitoFunctionsProps {
 export class CognitoFunctions extends Construct {
   public readonly cognitoPolicies: Array<IManagedPolicy>
   public readonly tokenLambda: NodejsFunction
-  public readonly mockTokenLambda?: NodejsFunction
+  public readonly mockTokenLambda: NodejsFunction
   public readonly primaryJwtPrivateKey: Secret
 
   public constructor(scope: Construct, id: string, props: CognitoFunctionsProps) {
@@ -103,7 +103,7 @@ export class CognitoFunctions extends Construct {
           TokenMappingTableName: props.tokenMappingTable.tableName,
           UserPoolIdentityProvider: props.mockPoolIdentityProviderName,
           oidcjwksEndpoint: props.mockOidcjwksEndpoint,
-          jwtPrivateKeyArn: props.sharedSecrets.mockJwtPrivateKey?.secretArn || "",
+          jwtPrivateKeyArn: props.sharedSecrets.mockJwtPrivateKey.secretArn,
           userInfoEndpoint: props.mockOidcUserInfoEndpoint,
           useSignedJWT: "true",
           oidcClientId: props.mockOidcClientId,
