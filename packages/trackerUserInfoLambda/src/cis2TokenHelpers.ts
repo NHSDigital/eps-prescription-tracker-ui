@@ -35,14 +35,6 @@ export const getSigningKey = (client: jwksClient.JwksClient, kid: string): Promi
   })
 }
 
-export const getIdTokenFromEvent = (event: APIGatewayProxyEvent): string => {
-  const authorizationHeader = event.headers["Authorization"] || event.headers["authorization"]
-  if (!authorizationHeader) {
-    throw new Error("Authorization header missing")
-  }
-  return authorizationHeader.replace("Bearer ", "").trim()
-}
-
 export const getUsernameFromEvent = (event: APIGatewayProxyEvent): string => {
   const username = event.requestContext.authorizer?.claims["cognito:username"]
   if (!username) {
@@ -94,9 +86,6 @@ export const fetchAndVerifyCIS2Tokens = async (
   if (!tokenMappingTableName) {
     throw new Error("Token mapping table name not set")
   }
-
-  // Extract ID token
-  const idToken = getIdTokenFromEvent(event)
 
   // Extract username
   const username = getUsernameFromEvent(event)
