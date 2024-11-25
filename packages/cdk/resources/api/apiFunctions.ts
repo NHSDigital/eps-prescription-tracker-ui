@@ -4,6 +4,7 @@ import {ITableV2} from "aws-cdk-lib/aws-dynamodb"
 import {IManagedPolicy, ManagedPolicy, PolicyStatement} from "aws-cdk-lib/aws-iam"
 import {SharedSecrets} from "../SharedSecrets"
 
+// Interface for properties needed to create API functions
 export interface ApiFunctionsProps {
   readonly serviceName: string
   readonly stackName: string
@@ -28,10 +29,13 @@ export interface ApiFunctionsProps {
   readonly sharedSecrets: SharedSecrets
 }
 
+/**
+ * Class for creating functions and resources needed for API operations
+ */
 export class ApiFunctions extends Construct {
   public readonly apiFunctionsPolicies: Array<IManagedPolicy>
   public readonly prescriptionSearchLambda: NodejsFunction
-  public readonly mockPrescriptionSearchLambda?: NodejsFunction
+  public readonly mockPrescriptionSearchLambda: NodejsFunction
 
   public constructor(scope: Construct, id: string, props: ApiFunctionsProps) {
     super(scope, id)
@@ -120,6 +124,7 @@ export class ApiFunctions extends Construct {
       )
     }
 
+    // Outputs
     this.apiFunctionsPolicies = apiFunctionsPolicies
   }
 }
