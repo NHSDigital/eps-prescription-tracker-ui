@@ -5,6 +5,7 @@ import {
   AccountRootPrincipal,
   Effect,
   IRole,
+  ManagedPolicy,
   PolicyDocument,
   PolicyStatement
 } from "aws-cdk-lib/aws-iam"
@@ -20,7 +21,7 @@ export class SharedSecrets extends Construct {
   public readonly jwtKmsKey: Key
   public readonly primaryJwtPrivateKey: Secret
   public readonly mockJwtPrivateKey?: Secret
-  public readonly useJwtKmsKeyPolicy: PolicyStatement
+  public readonly useJwtKmsKeyPolicy: ManagedPolicy
 
   constructor(scope: Construct, id: string, props: SharedSecretsProps) {
     super(scope, id)
@@ -51,10 +52,15 @@ export class SharedSecrets extends Construct {
       })
     })
 
-    // Policy for using the KMS key
-    this.useJwtKmsKeyPolicy = new PolicyStatement({
-      actions: ["kms:DescribeKey", "kms:Decrypt"],
-      resources: [this.jwtKmsKey.keyArn]
+    // Create the ManagedPolicy for using the KMS key
+    this.useJwtKmsKeyPolicy = new ManagedPolicy(this, "UseJwtKmsKeyPolicy", {
+      description: "Policy to allow using the JWT KMS key",
+      statements: [
+        new PolicyStatement({
+          actions: ["kms:DescribeKey", "kms:Decrypt"],
+          resources: [this.jwtKmsKey.keyArn]
+        })
+      ]
     })
 
     // Create the primary JWT private key

@@ -1,10 +1,10 @@
 import {Construct} from "constructs"
-import {NodejsFunction} from "aws-cdk-lib/aws-lambda-nodejs"
+import {LambdaFunction} from "../LambdaFunction"
 import {ITableV2} from "aws-cdk-lib/aws-dynamodb"
-import {IManagedPolicy, ManagedPolicy, PolicyStatement} from "aws-cdk-lib/aws-iam"
+import {IManagedPolicy} from "aws-cdk-lib/aws-iam"
+import {NodejsFunction} from "aws-cdk-lib/aws-lambda-nodejs"
 import {SharedSecrets} from "../SharedSecrets"
 
-// Interface for properties needed to create API functions
 export interface ApiFunctionsProps {
   readonly serviceName: string
   readonly stackName: string
@@ -35,96 +35,86 @@ export interface ApiFunctionsProps {
 export class ApiFunctions extends Construct {
   public readonly apiFunctionsPolicies: Array<IManagedPolicy>
   public readonly prescriptionSearchLambda: NodejsFunction
-  public readonly mockPrescriptionSearchLambda: NodejsFunction
+  public readonly mockPrescriptionSearchLambda?: NodejsFunction
 
   public constructor(scope: Construct, id: string, props: ApiFunctionsProps) {
     super(scope, id)
 
-    const {sharedSecrets} = props
-
-    // Environment variables for the prescription search lambda
-    const prescriptionSearchEnvironment = {
-      idpTokenPath: props.primaryOidcTokenEndpoint,
-      TokenMappingTableName: props.tokenMappingTable.tableName,
-      UserPoolIdentityProvider: props.primaryPoolIdentityProviderName,
-      oidcjwksEndpoint: props.primaryOidcjwksEndpoint,
-      jwtPrivateKeyArn: sharedSecrets.primaryJwtPrivateKey.secretArn,
-      userInfoEndpoint: props.primaryOidcUserInfoEndpoint,
-      useSignedJWT: "true",
-      oidcClientId: props.primaryOidcClientId,
-      oidcIssuer: props.primaryOidcIssuer
-    }
-
-    // Create the prescription search lambda
-    const prescriptionSearchLambda = new NodejsFunction(this, "PrescriptionSearchLambda", {
-      entry: "src/prescriptionSearch.ts",
-      handler: "handler",
-      environment: prescriptionSearchEnvironment
+    // Prescription Search Lambda Function
+    const prescriptionSearchLambda = new LambdaFunction(this, "PrescriptionSearch", {
+      serviceName: props.serviceName,
+      stackName: props.stackName,
+      lambdaName: `${props.stackName}-prescSearch`,
+      additionalPolicies: [
+        props.tokenMappingTableWritePolicy,
+        props.tokenMappingTableReadPolicy,
+        props.useTokensMappingKmsKeyPolicy,
+        props.sharedSecrets.useJwtKmsKeyPolicy
+      ],
+      logRetentionInDays: props.logRetentionInDays,
+      packageBasePath: "packages/prescriptionSearchLambda",
+      entryPoint: "src/handler.ts",
+      lambdaEnvironmentVariables: {
+        idpTokenPath: props.primaryOidcTokenEndpoint,
+        TokenMappingTableName: props.tokenMappingTable.tableName,
+        UserPoolIdentityProvider: props.primaryPoolIdentityProviderName,
+        oidcjwksEndpoint: props.primaryOidcjwksEndpoint,
+        jwtPrivateKeyArn: props.sharedSecrets.primaryJwtPrivateKey.secretArn,
+        userInfoEndpoint: props.primaryOidcUserInfoEndpoint,
+        useSignedJWT: "true",
+        oidcClientId: props.primaryOidcClientId,
+        oidcIssuer: props.primaryOidcIssuer
+      }
     })
 
-    this.prescriptionSearchLambda = prescriptionSearchLambda
+    // Initialize policies for API functions
+    const apiFunctionsPolicies: Array<IManagedPolicy> = [prescriptionSearchLambda.executeLambdaManagedPolicy]
 
-    // Handle mock prescription search lambda if `useMockOidc` is enabled
+    // If mock OIDC is enabled, configure mock prescription search Lambda
+    let mockPrescriptionSearchLambda: LambdaFunction | undefined
     if (props.useMockOidc) {
       if (
         !props.mockOidcjwksEndpoint ||
-        !props.mockOidcUserInfoEndpoint ||
         !props.mockOidcTokenEndpoint ||
+        !props.mockOidcUserInfoEndpoint ||
         !props.mockOidcClientId ||
         !props.mockOidcIssuer
       ) {
-        throw new Error("Attempt to use mock OIDC but variables are not defined")
+        throw new Error("Missing mock OIDC configuration.")
       }
 
-      // Environment variables for the mock prescription search lambda
-      const mockPrescriptionSearchEnvironment = {
-        idpTokenPath: props.mockOidcTokenEndpoint,
-        TokenMappingTableName: props.tokenMappingTable.tableName,
-        UserPoolIdentityProvider: props.mockPoolIdentityProviderName,
-        oidcjwksEndpoint: props.mockOidcjwksEndpoint,
-        jwtPrivateKeyArn: sharedSecrets.mockJwtPrivateKey?.secretArn || "",
-        userInfoEndpoint: props.mockOidcUserInfoEndpoint,
-        useSignedJWT: "true",
-        oidcClientId: props.mockOidcClientId,
-        oidcIssuer: props.mockOidcIssuer
-      }
-
-      // Create the mock prescription search lambda
-      const mockPrescriptionSearchLambda = new NodejsFunction(this, "MockPrescriptionSearchLambda", {
-        entry: "src/mockPrescriptionSearch.ts",
-        handler: "handler",
-        environment: mockPrescriptionSearchEnvironment
+      mockPrescriptionSearchLambda = new LambdaFunction(this, "MockPrescriptionSearch", {
+        serviceName: props.serviceName,
+        stackName: props.stackName,
+        lambdaName: `${props.stackName}-mockPrescSearch`,
+        additionalPolicies: [
+          props.tokenMappingTableWritePolicy,
+          props.tokenMappingTableReadPolicy,
+          props.useTokensMappingKmsKeyPolicy,
+          props.sharedSecrets.useJwtKmsKeyPolicy
+        ],
+        logRetentionInDays: props.logRetentionInDays,
+        packageBasePath: "packages/prescriptionSearchLambda",
+        entryPoint: "src/handler.ts",
+        lambdaEnvironmentVariables: {
+          idpTokenPath: props.mockOidcTokenEndpoint,
+          TokenMappingTableName: props.tokenMappingTable.tableName,
+          UserPoolIdentityProvider: props.mockPoolIdentityProviderName,
+          oidcjwksEndpoint: props.mockOidcjwksEndpoint,
+          jwtPrivateKeyArn: props.sharedSecrets.mockJwtPrivateKey?.secretArn || "",
+          userInfoEndpoint: props.mockOidcUserInfoEndpoint,
+          useSignedJWT: "true",
+          oidcClientId: props.mockOidcClientId,
+          oidcIssuer: props.mockOidcIssuer
+        }
       })
 
-      this.mockPrescriptionSearchLambda = mockPrescriptionSearchLambda
-    }
-
-    // Define policies for the API functions
-    const apiFunctionsPolicies: Array<IManagedPolicy> = [
-      new ManagedPolicy(this, "PrescriptionSearchPolicy", {
-        statements: [
-          new PolicyStatement({
-            actions: ["secretsmanager:GetSecretValue"],
-            resources: [sharedSecrets.primaryJwtPrivateKey.secretArn]
-          })
-        ]
-      })
-    ]
-
-    if (props.useMockOidc && sharedSecrets.mockJwtPrivateKey) {
-      apiFunctionsPolicies.push(
-        new ManagedPolicy(this, "MockPrescriptionSearchPolicy", {
-          statements: [
-            new PolicyStatement({
-              actions: ["secretsmanager:GetSecretValue"],
-              resources: [sharedSecrets.mockJwtPrivateKey.secretArn]
-            })
-          ]
-        })
-      )
+      apiFunctionsPolicies.push(mockPrescriptionSearchLambda.executeLambdaManagedPolicy)
+      this.mockPrescriptionSearchLambda = mockPrescriptionSearchLambda.lambda
     }
 
     // Outputs
     this.apiFunctionsPolicies = apiFunctionsPolicies
+    this.prescriptionSearchLambda = prescriptionSearchLambda.lambda
   }
 }
