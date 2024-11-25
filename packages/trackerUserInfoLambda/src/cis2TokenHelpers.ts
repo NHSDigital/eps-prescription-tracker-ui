@@ -66,22 +66,6 @@ export const fetchCIS2TokensFromDynamoDB = async (
   }
 }
 
-export const getSigningKey = (client: jwksClient.JwksClient, kid: string): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    client.getSigningKey(kid, (err, key) => {
-      if (err) {
-        reject(err)
-      } else {
-        if (!key) {
-          reject(new Error("Key not found"))
-        }
-        const signingKey = key!.getPublicKey()
-        resolve(signingKey)
-      }
-    })
-  })
-}
-
 export const fetchAndVerifyCIS2Tokens = async (
   event: APIGatewayProxyEvent,
   documentClient: DynamoDBDocumentClient,
@@ -158,7 +142,16 @@ export const verifyIdToken = async (idToken: string, logger: Logger) => {
       throw new Error("Invalid token")
     }
     logger.info("Fetching signing key", {kid})
-    signingKey = await getSigningKey(client, kid)
+    client.getSigningKey(kid, (err, key) => {
+      if (!key) {
+        throw new Error("Key not found")
+      }
+      if (err) {
+        throw err
+      }
+
+      signingKey = key.getPublicKey()
+    })
   } catch (err) {
     logger.error("Error getting signing key", {err})
     throw new Error("Error getting signing key")
