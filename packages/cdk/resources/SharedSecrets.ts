@@ -26,7 +26,7 @@ export class SharedSecrets extends Construct {
   constructor(scope: Construct, id: string, props: SharedSecretsProps) {
     super(scope, id)
 
-    // Create the KMS key
+    // Create the KMS Key with rotation enabled
     this.jwtKmsKey = new Key(this, "JwtKmsKey", {
       removalPolicy: RemovalPolicy.DESTROY,
       pendingWindow: Duration.days(7),
@@ -70,7 +70,7 @@ export class SharedSecrets extends Construct {
       encryptionKey: this.jwtKmsKey
     })
 
-    // Add rotation to the primary secret
+    // Add rotation to the primary JWT private key
     this.primaryJwtPrivateKey.addRotationSchedule("PrimaryKeyRotation", {
       automaticallyAfter: Duration.days(30)
     })
@@ -83,7 +83,7 @@ export class SharedSecrets extends Construct {
         encryptionKey: this.jwtKmsKey
       })
 
-      // Add rotation to the mock secret
+      // Add rotation to the mock JWT private key
       this.mockJwtPrivateKey.addRotationSchedule("MockKeyRotation", {
         automaticallyAfter: Duration.days(30)
       })
