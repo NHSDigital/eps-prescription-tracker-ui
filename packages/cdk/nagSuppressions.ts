@@ -424,6 +424,61 @@ export const nagSuppressions = (stack: Stack) => {
       ]
     )
 
+    safeAddNagSuppression(
+      stack,
+      "/StatelessStack/SharedSecrets/MockJwtPrivateKey/Resource",
+      [
+        {
+          id: "AwsSolutions-SMG4",
+          reason: "Suppress error for not having automatic rotation. Rotation is managed separately or not required for this resource."
+        }
+      ]
+    )
+
+    safeAddNagSuppression(
+      stack,
+      "/StatelessStack/ApiGateway/ApiGateway/DeploymentStage.prod/Resource",
+      [
+        {
+          id: "AwsSolutions-APIG3",
+          reason: "Suppress error for not associating with WAFv2 Web ACL. WAF integration will be handled externally if necessary."
+        }
+      ]
+    )
+
+    safeAddNagSuppression(
+      stack,
+      "/StatelessStack/CloudfrontDistribution/CloudfrontDistribution/Origin1",
+      [
+        {
+          id: "AwsSolutions-CFR1",
+          reason: "Suppress error for Geo restrictions not being enabled. Geo restrictions are not required for this distribution."
+        }
+      ]
+    )
+
+    safeAddNagSuppression(
+      stack,
+      "/StatelessStack/CloudfrontDistribution/CloudfrontDistribution/Resource",
+      [
+        {
+          id: "AwsSolutions-CFR2",
+          reason: "Suppress error for WAF integration not being enabled. WAF integration will be handled externally if necessary."
+        }
+      ]
+    )
+
+    safeAddNagSuppression(
+      stack,
+      "/StatelessStack/CloudfrontDistribution/CloudfrontDistribution/Resource",
+      [
+        {
+          id: "@aws-cdk/aws-cloudfront-origins:updateImportedBucketPolicyOac",
+          reason: "Suppress error for not updating bucket policy on imported bucket. Bucket policy is managed manually as per the module README."
+        }
+      ]
+    )
+
   }
 }
 
