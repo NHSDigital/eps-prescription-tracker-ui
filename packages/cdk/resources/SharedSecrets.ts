@@ -1,15 +1,13 @@
 import {Construct} from "constructs"
-import {Alias, IKey, Key} from "aws-cdk-lib/aws-kms"
-import {Secret} from "aws-cdk-lib/aws-secretsmanager"
+import {Key, IKey} from "aws-cdk-lib/aws-kms"
+import {Secret, ISecret} from "aws-cdk-lib/aws-secretsmanager"
 import {
-  AccountRootPrincipal,
-  Effect,
-  IRole,
   ManagedPolicy,
-  PolicyDocument,
-  PolicyStatement
+  PolicyStatement,
+  Effect,
+  IRole
 } from "aws-cdk-lib/aws-iam"
-import {SecretValue, Duration, RemovalPolicy} from "aws-cdk-lib"
+import {SecretValue, RemovalPolicy} from "aws-cdk-lib"
 
 export interface SharedSecretsProps {
   readonly stackName: string
@@ -19,76 +17,60 @@ export interface SharedSecretsProps {
 
 export class SharedSecrets extends Construct {
   public readonly jwtKmsKey: IKey
-  public readonly primaryJwtPrivateKey: Secret
-  public readonly mockJwtPrivateKey: Secret
+  public readonly primaryJwtPrivateKey: ISecret
+  public readonly mockJwtPrivateKey: ISecret
   public readonly useJwtKmsKeyPolicy: ManagedPolicy
 
   constructor(scope: Construct, id: string, props: SharedSecretsProps) {
     super(scope, id)
 
-    // Attempt to find an existing KMS key by alias
-    const aliasName = `alias/${props.stackName}-jwtKmsKey`
-    let kmsKey: IKey
+    // Create KMS Key
+    this.jwtKmsKey = new Key(this, "JwtKmsKey", {
+      description: `${props.stackName}-jwtKmsKey`,
+      enableKeyRotation: true,
+      removalPolicy: RemovalPolicy.DESTROY
+    })
 
-    try {
-      // Try to import the existing alias and its key
-      const existingAlias = Alias.fromAliasName(this, "ExistingJwtKmsKeyAlias", aliasName)
-      kmsKey = Key.fromKeyArn(this, "ExistingJwtKmsKey", existingAlias.keyArn)
-    } catch {
-      // If the alias does not exist, create a new KMS key
-      kmsKey = new Key(this, "JwtKmsKey", {
-        alias: aliasName,
-        description: `${props.stackName}-jwtKmsKey`,
-        enableKeyRotation: true,
-        removalPolicy: RemovalPolicy.DESTROY,
-        pendingWindow: Duration.days(7),
-        policy: new PolicyDocument({
-          statements: [
-            new PolicyStatement({
-              sid: "EnableIAMUserPermissions",
-              effect: Effect.ALLOW,
-              actions: ["kms:*"],
-              principals: [new AccountRootPrincipal()],
-              resources: ["*"]
-            }),
-            new PolicyStatement({
-              effect: Effect.ALLOW,
-              principals: [props.deploymentRole],
-              actions: ["kms:Encrypt", "kms:GenerateDataKey*"],
-              resources: ["*"]
-            })
-          ]
-        })
-      })
-    }
-
-    this.jwtKmsKey = kmsKey
-
-    // Create ManagedPolicy for using the KMS key
+    // Policy for using KMS Key
     this.useJwtKmsKeyPolicy = new ManagedPolicy(this, "UseJwtKmsKeyPolicy", {
       description: "Policy to allow using the JWT KMS key",
       statements: [
         new PolicyStatement({
           actions: ["kms:DescribeKey", "kms:Decrypt"],
+          effect: Effect.ALLOW,
           resources: [this.jwtKmsKey.keyArn]
         })
       ]
     })
 
-    // Create the primary JWT private key
-    this.primaryJwtPrivateKey = new Secret(this, "PrimaryJwtPrivateKey", {
-      secretName: `${props.stackName}-primaryJwtPrivateKey`,
-      secretStringValue: SecretValue.unsafePlainText("ChangeMe"),
-      encryptionKey: this.jwtKmsKey
-    })
-
-    // Optionally create the mock JWT private key
-    if (props.useMockOidc) {
-      this.mockJwtPrivateKey = new Secret(this, "MockJwtPrivateKey", {
-        secretName: `${props.stackName}-mockJwtPrivateKey`,
-        secretStringValue: SecretValue.unsafePlainText("mock-secret"),
+    // Primary JWT Secret
+    const primarySecretName = `${props.stackName}-primaryJwtPrivateKey`
+    let primaryJwtSecret: ISecret
+    try {
+      primaryJwtSecret = Secret.fromSecretNameV2(this, "ExistingPrimaryJwtSecret", primarySecretName)
+    } catch {
+      primaryJwtSecret = new Secret(this, "PrimaryJwtPrivateKey", {
+        secretName: primarySecretName,
+        secretStringValue: SecretValue.unsafePlainText("ChangeMe"),
         encryptionKey: this.jwtKmsKey
       })
+    }
+    this.primaryJwtPrivateKey = primaryJwtSecret
+
+    // Mock JWT Secret (if needed)
+    if (props.useMockOidc) {
+      const mockSecretName = `${props.stackName}-mockJwtPrivateKey`
+      let mockJwtSecret: ISecret
+      try {
+        mockJwtSecret = Secret.fromSecretNameV2(this, "ExistingMockJwtSecret", mockSecretName)
+      } catch {
+        mockJwtSecret = new Secret(this, "MockJwtPrivateKey", {
+          secretName: mockSecretName,
+          secretStringValue: SecretValue.unsafePlainText("mock-secret"),
+          encryptionKey: this.jwtKmsKey
+        })
+      }
+      this.mockJwtPrivateKey = mockJwtSecret
     }
   }
 }
