@@ -70,12 +70,22 @@ export class SharedSecrets extends Construct {
       encryptionKey: this.jwtKmsKey
     })
 
+    // Add rotation to the primary secret
+    this.primaryJwtPrivateKey.addRotationSchedule("PrimaryKeyRotation", {
+      automaticallyAfter: Duration.days(30)
+    })
+
     // Optionally create the mock JWT private key
     if (props.useMockOidc) {
       this.mockJwtPrivateKey = new Secret(this, "MockJwtPrivateKey", {
         secretName: `${props.stackName}-mockJwtPrivateKey`,
         secretStringValue: SecretValue.unsafePlainText("mock-secret"),
         encryptionKey: this.jwtKmsKey
+      })
+
+      // Add rotation to the mock secret
+      this.mockJwtPrivateKey.addRotationSchedule("MockKeyRotation", {
+        automaticallyAfter: Duration.days(30)
       })
     }
   }
