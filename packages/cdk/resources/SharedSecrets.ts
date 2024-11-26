@@ -1,5 +1,5 @@
 import {Construct} from "constructs"
-import {Key} from "aws-cdk-lib/aws-kms"
+import {Key, IKey, Alias} from "aws-cdk-lib/aws-kms"
 import {Secret} from "aws-cdk-lib/aws-secretsmanager"
 import {
   AccountRootPrincipal,
@@ -18,7 +18,7 @@ export interface SharedSecretsProps {
 }
 
 export class SharedSecrets extends Construct {
-  public readonly jwtKmsKey: Key
+  public readonly jwtKmsKey: IKey
   public readonly primaryJwtPrivateKey: Secret
   public readonly mockJwtPrivateKey: Secret
   public readonly useJwtKmsKeyPolicy: ManagedPolicy
@@ -26,33 +26,41 @@ export class SharedSecrets extends Construct {
   constructor(scope: Construct, id: string, props: SharedSecretsProps) {
     super(scope, id)
 
-    // Create the KMS Key with rotation enabled
-    this.jwtKmsKey = new Key(this, "JwtKmsKey", {
-      removalPolicy: RemovalPolicy.DESTROY,
-      pendingWindow: Duration.days(7),
-      alias: `alias/${props.stackName}-jwtKmsKey`,
-      description: `${props.stackName}-jwtKmsKey`,
-      enableKeyRotation: true,
-      policy: new PolicyDocument({
-        statements: [
-          new PolicyStatement({
-            sid: "EnableIAMUserPermissions",
-            effect: Effect.ALLOW,
-            actions: ["kms:*"],
-            principals: [new AccountRootPrincipal()],
-            resources: ["*"]
-          }),
-          new PolicyStatement({
-            effect: Effect.ALLOW,
-            principals: [props.deploymentRole],
-            actions: ["kms:Encrypt", "kms:GenerateDataKey*"],
-            resources: ["*"]
-          })
-        ]
-      })
-    })
+    // Attempt to find an existing KMS key by alias
+    const existingAlias = Alias.fromAliasName(
+      this,
+      "ExistingJwtKmsKeyAlias",
+      `alias/${props.stackName}-jwtKmsKey`
+    )
 
-    // Create the ManagedPolicy for using the KMS key
+    this.jwtKmsKey = existingAlias.aliasTargetKey
+      ? existingAlias.aliasTargetKey // Use the existing key (IKey)
+      : new Key(this, "JwtKmsKey", {
+        alias: `alias/${props.stackName}-jwtKmsKey`,
+        description: `${props.stackName}-jwtKmsKey`,
+        enableKeyRotation: true,
+        removalPolicy: RemovalPolicy.DESTROY,
+        pendingWindow: Duration.days(7),
+        policy: new PolicyDocument({
+          statements: [
+            new PolicyStatement({
+              sid: "EnableIAMUserPermissions",
+              effect: Effect.ALLOW,
+              actions: ["kms:*"],
+              principals: [new AccountRootPrincipal()],
+              resources: ["*"]
+            }),
+            new PolicyStatement({
+              effect: Effect.ALLOW,
+              principals: [props.deploymentRole],
+              actions: ["kms:Encrypt", "kms:GenerateDataKey*"],
+              resources: ["*"]
+            })
+          ]
+        })
+      })
+
+    // Create ManagedPolicy for using the KMS key
     this.useJwtKmsKeyPolicy = new ManagedPolicy(this, "UseJwtKmsKeyPolicy", {
       description: "Policy to allow using the JWT KMS key",
       statements: [
