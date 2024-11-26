@@ -13,9 +13,17 @@ import {
 
 const VALID_ACR_VALUES: Array<string> = [
   "AAL3_ANY",
-  "AAL2_OR_AAL3_ANY",
-  "AAL2_ANY",
-  "AAL1_USERPASS"
+  // "AAL2_OR_AAL3_ANY",
+  // "AAL2_ANY",
+  // "AAL1_USERPASS",
+  // Additional AMR values that may be requested
+  "AAL3_IOS",
+  "AAL3_FIDO2",
+  "AAL3_N3_SMARTCARD",
+  "AAL3_CIS2_SMARTCARD",
+  "AAL3_SMARTCARD"
+  // "AAL2_TOTP",
+  // "AAL2_NHSMAIL"
 ]
 
 // Helper function to get the signing key from the JWKS endpoint
@@ -200,12 +208,24 @@ export const verifyIdToken = async (idToken: string, logger: Logger) => {
   // From what I can tell, we're not using a known nonce. If we do end up using one, we should check it here.
 
   // The `acr` claim must be present and have a valid value
-  const acr = verifiedToken.acr
+  let acr = verifiedToken.acr
   if (!acr) {
-    throw new Error("acr claim missing from ID token")
+    logger.info("No ACR claim from the token. Assuming AAL3_ANY")
+    acr = "AAL3_ANY"
   }
-  if (!VALID_ACR_VALUES.includes(acr)) {
-    throw new Error("Invalid acr value in ID token")
+
+  let valid_acr = false
+  // If it starts with "AAL3_", it's valid
+  if (acr.startsWith("AAL3_")) {
+    logger.info("ACR claim starts with AAL3_, so is valid", {acr})
+    valid_acr = true
+  }
+  if (VALID_ACR_VALUES.includes(acr)) {
+    logger.info("ACR claim is in the list of valid values", {acr})
+    valid_acr = true
+  }
+  if (!valid_acr) {
+    throw new Error("Invalid ACR claim in ID token")
   }
   logger.debug("acr claim is valid", {acr})
 
