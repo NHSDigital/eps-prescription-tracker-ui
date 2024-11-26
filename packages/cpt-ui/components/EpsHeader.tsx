@@ -27,8 +27,12 @@ export default function EpsHeader() {
                 <Header.Content />
             </Header.Container>
             <Header.Nav className="masthead-nav">
-                <Header.NavItem>Placeholder 1</Header.NavItem>
-                <Header.NavItem>Placeholder 2</Header.NavItem>
+                <li className="nhsuk-header__navigation-item">
+                    <Link className="nhsuk-header__navigation-link" href='/' data-testid="eps_header_placeholder1">Placeholder 1</Link>
+                </li>
+                <li className="nhsuk-header__navigation-item">
+                    <Link className="nhsuk-header__navigation-link" href='/' data-testid="eps_header_placeholder2">Placeholder 2</Link>
+                </li>
                 {pathname != '/' ? (
                     <li className="nhsuk-header__navigation-item">
                         <Link className="nhsuk-header__navigation-link" href={HEADER_CHANGE_ROLE_TARGET} data-testid="eps_header_changeRoleLink">{HEADER_CHANGE_ROLE_BUTTON}</Link>

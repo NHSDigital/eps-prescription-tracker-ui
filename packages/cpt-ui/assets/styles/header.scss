@@ -5,9 +5,7 @@
   padding-left:24px;
 }
 .nhsuk-navigation-container{
-  position: relative;
-  top: -65px;
-  width: calc(100% - 337px);
+  
   .nhsuk-header__navigation-list {
     display:flex;
     right: -353px;
@@ -15,6 +13,16 @@
   left: unset;
   justify-content:flex-end;
   margin:0 16px 0 16px;
+  gap:unset;
+  .nhsuk-header__navigation-link {
+    padding:12px 16px;
+  }
+  button.nhsuk-header__menu-toggle.nhsuk-header__navigation-link {
+    padding-right:30px;
+  }
+  .nhsuk-header__drop-down {
+    color:#005eb8;
+  }
   }
   .nhsuk-header__drop-down {
     top:65px;
@@ -31,6 +39,15 @@
 @media (min-width: 48.0625em) {
   .nhsuk-header__container {
       margin: 0;
+  }
+}
+
+@media (min-width: 40.0625em) {
+  .nhsuk-header__navigation-list {
+      border-top-width:0;
+  }
+  .nhsuk-header__navigation-link {
+    padding:12px 16px;
   }
 }
 
