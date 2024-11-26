@@ -1,5 +1,5 @@
 import {Construct} from "constructs"
-import {Key, IKey, Alias} from "aws-cdk-lib/aws-kms"
+import {Alias, IKey, Key} from "aws-cdk-lib/aws-kms"
 import {Secret} from "aws-cdk-lib/aws-secretsmanager"
 import {
   AccountRootPrincipal,
@@ -27,16 +27,17 @@ export class SharedSecrets extends Construct {
     super(scope, id)
 
     // Attempt to find an existing KMS key by alias
-    const existingAlias = Alias.fromAliasName(
-      this,
-      "ExistingJwtKmsKeyAlias",
-      `alias/${props.stackName}-jwtKmsKey`
-    )
+    const aliasName = `alias/${props.stackName}-jwtKmsKey`
+    let kmsKey: IKey
 
-    this.jwtKmsKey = existingAlias.aliasTargetKey
-      ? existingAlias.aliasTargetKey // Use the existing key (IKey)
-      : new Key(this, "JwtKmsKey", {
-        alias: `alias/${props.stackName}-jwtKmsKey`,
+    try {
+      // Try to import the existing alias and its key
+      const existingAlias = Alias.fromAliasName(this, "ExistingJwtKmsKeyAlias", aliasName)
+      kmsKey = Key.fromKeyArn(this, "ExistingJwtKmsKey", existingAlias.keyArn)
+    } catch {
+      // If the alias does not exist, create a new KMS key
+      kmsKey = new Key(this, "JwtKmsKey", {
+        alias: aliasName,
         description: `${props.stackName}-jwtKmsKey`,
         enableKeyRotation: true,
         removalPolicy: RemovalPolicy.DESTROY,
@@ -59,6 +60,9 @@ export class SharedSecrets extends Construct {
           ]
         })
       })
+    }
+
+    this.jwtKmsKey = kmsKey
 
     // Create ManagedPolicy for using the KMS key
     this.useJwtKmsKeyPolicy = new ManagedPolicy(this, "UseJwtKmsKeyPolicy", {
