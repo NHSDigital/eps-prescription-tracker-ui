@@ -290,6 +290,28 @@ export const nagSuppressions = (stack: Stack) => {
       ]
     )
 
+    safeAddNagSuppression(
+      stack,
+      "/StatelessStack/CognitoFunctions/TokenResources/cpt-ui-stateless-resources-token/Resource",
+      [
+        {
+          id: "AwsSolutions-L1",
+          reason: "The Lambda function is not using the latest runtime because it relies on a specific version for compatibility reasons. Updating the runtime is planned for a future release"
+        }
+      ]
+    )
+
+    safeAddNagSuppression(
+      stack,
+      "/StatelessStack/ApiFunctions/PrescriptionSearch/cpt-ui-stateless-resources-prescSearch/Resource",
+      [
+        {
+          id: "AwsSolutions-L1",
+          reason: "The Lambda function is not using the latest runtime because it relies on a specific version for compatibility reasons. Updating the runtime is planned for a future release"
+        }
+      ]
+    )
+
   }
 }
 
