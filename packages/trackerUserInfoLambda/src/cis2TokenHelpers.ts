@@ -229,26 +229,13 @@ export const verifyIdToken = async (idToken: string, logger: Logger) => {
   }
   logger.debug("acr claim is valid", {acr})
 
-  // Check that the `auth_time` claim is present and that its value is not too far in the past
-  const auth_time = verifiedToken.auth_time
-  if (!auth_time) {
-    throw new Error("auth_time claim missing from ID token")
-  }
-  // If the current time is AFTER auth_time, the token needs to be refreshed. It's not expired yet, but it's too old.
-  if (now > auth_time) {
-    // This COULD trigger a key refresh, but that's explicitly not recommended for the userInfo endpoint.
-    // I'll leave that to future work, where it actually is necessary, and just throw an error here.
-    //
-    // From the docs:
-    //   It is anticipated that Relying Parties will only require access to the UserInfo Endpoint at the time of the
-    //   original End-User authentication. This should only happen once as part of a Relying Party authentication
-    //   journey and the Access Token can be used immediately, then discarded. In NHS CIS2 Authentication, there should
-    //   be no other need to retrieve the User Info after this point in time.
-    //   Therefore the use of the Refresh Token to obtain a new Access Token is not recommended.
-
-    throw new Error("ID token has expired")
-  }
-  logger.debug("auth_time claim is valid", {auth_time})
+  // We don't check the auth_time claim here.
+  // From the docs:
+  //   It is anticipated that Relying Parties will only require access to the UserInfo Endpoint at the time of the
+  //   original End-User authentication. This should only happen once as part of a Relying Party authentication
+  //   journey and the Access Token can be used immediately, then discarded. In NHS CIS2 Authentication, there should
+  //   be no other need to retrieve the User Info after this point in time.
+  //   Therefore the use of the Refresh Token to obtain a new Access Token is not recommended.
 }
 
 // Fetch user info from the OIDC UserInfo endpoint
