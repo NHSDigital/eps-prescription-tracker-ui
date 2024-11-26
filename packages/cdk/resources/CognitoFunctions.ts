@@ -98,7 +98,7 @@ export class CognitoFunctions extends Construct {
         ],
         logRetentionInDays: props.logRetentionInDays,
         packageBasePath: "packages/cognito",
-        entryPoint: "src/mock-token.ts",
+        entryPoint: "src/token.ts",
         lambdaEnvironmentVariables: {
           idpTokenPath: props.mockOidcTokenEndpoint,
           TokenMappingTableName: props.tokenMappingTable.tableName,

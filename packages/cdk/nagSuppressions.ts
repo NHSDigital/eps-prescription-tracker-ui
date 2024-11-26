@@ -268,6 +268,162 @@ export const nagSuppressions = (stack: Stack) => {
       ]
     )
 
+    safeAddNagSuppression(
+      stack,
+      "/StatelessStack/SharedSecrets/PrimaryKeyRotationLambda/LambdaPutLogsManagedPolicy/Resource",
+      [
+        {
+          id: "AwsSolutions-IAM5",
+          reason:
+            "Suppress error for wildcard permissions. Necessary to allow permissions for all log streams under the path."
+        }
+      ]
+    )
+
+    safeAddNagSuppression(
+      stack,
+      "/StatelessStack/SharedSecrets/PrimaryKeyRotationLambda/LambdaRole/DefaultPolicy/Resource",
+      [
+        {
+          id: "AwsSolutions-IAM5",
+          reason:
+            "Suppress error for wildcard permissions. Necessary for dynamic access patterns in Lambda."
+        }
+      ]
+    )
+
+    safeAddNagSuppression(
+      stack,
+      "/StatelessStack/SharedSecrets/PrimaryKeyRotationLambda/cpt-ui-stateless-resources-rotation/Resource",
+      [
+        {
+          id: "AwsSolutions-L1",
+          reason:
+            "Suppress error for using a non-latest runtime. The runtime used is supported and will be upgraded in a future release."
+        }
+      ]
+    )
+
+    safeAddNagSuppression(
+      stack,
+      "/StatelessStack/SharedSecrets/MockKeyRotationLambda/LambdaPutLogsManagedPolicy/Resource",
+      [
+        {
+          id: "AwsSolutions-IAM5",
+          reason:
+            "Suppress error for wildcard permissions. Necessary to allow permissions for all log streams under the path."
+        }
+      ]
+    )
+
+    safeAddNagSuppression(
+      stack,
+      "/StatelessStack/SharedSecrets/MockKeyRotationLambda/LambdaRole/DefaultPolicy/Resource",
+      [
+        {
+          id: "AwsSolutions-IAM5",
+          reason:
+            "Suppress error for wildcard permissions. Necessary for dynamic access patterns in Lambda."
+        }
+      ]
+    )
+
+    safeAddNagSuppression(
+      stack,
+      "/StatelessStack/SharedSecrets/MockKeyRotationLambda/cpt-ui-stateless-resources-mRotation/Resource",
+      [
+        {
+          id: "AwsSolutions-L1",
+          reason:
+            "Suppress error for using a non-latest runtime. The runtime used is supported and will be upgraded in a future release."
+        }
+      ]
+    )
+
+    safeAddNagSuppression(
+      stack,
+      "/StatelessStack/CognitoFunctions/TokenResources/cpt-ui-stateless-resources-token/Resource",
+      [
+        {
+          id: "AwsSolutions-L1",
+          reason:
+            "Suppress error for using a non-latest runtime. The runtime used is supported and will be upgraded in a future release."
+        }
+      ]
+    )
+
+    safeAddNagSuppression(
+      stack,
+      "/StatelessStack/CognitoFunctions/MockTokenResources/cpt-ui-stateless-resources-mock-token/Resource",
+      [
+        {
+          id: "AwsSolutions-L1",
+          reason:
+            "Suppress error for using a non-latest runtime. The runtime used is supported and will be upgraded in a future release."
+        }
+      ]
+    )
+
+    safeAddNagSuppression(
+      stack,
+      "/StatelessStack/CognitoFunctions/PrimaryKeyRotationLambda/LambdaPutLogsManagedPolicy/Resource",
+      [
+        {
+          id: "AwsSolutions-IAM5",
+          reason:
+            "Suppress error for wildcard permissions. Necessary to allow permissions for all log streams under the path."
+        }
+      ]
+    )
+
+    safeAddNagSuppression(
+      stack,
+      "/StatelessStack/CognitoFunctions/PrimaryKeyRotationLambda/LambdaRole/DefaultPolicy/Resource",
+      [
+        {
+          id: "AwsSolutions-IAM5",
+          reason:
+            "Suppress error for wildcard permissions. Necessary for dynamic access patterns in Lambda."
+        }
+      ]
+    )
+
+    safeAddNagSuppression(
+      stack,
+      "/StatelessStack/CognitoFunctions/PrimaryKeyRotationLambda/cpt-ui-stateless-resources-primaryKeyRotation/Resource",
+      [
+        {
+          id: "AwsSolutions-L1",
+          reason:
+            "Suppress error for using a non-latest runtime. The runtime used is supported and will be upgraded in a future release."
+        }
+      ]
+    )
+
+    safeAddNagSuppression(
+      stack,
+      "/StatelessStack/ApiFunctions/PrescriptionSearch/cpt-ui-stateless-resources-prescSearch/Resource",
+      [
+        {
+          id: "AwsSolutions-L1",
+          reason:
+            "Suppress error for using a non-latest runtime. The runtime used is supported and will be upgraded in a future release."
+        }
+      ]
+    )
+
+    safeAddNagSuppression(
+      stack,
+      "/StatelessStack/ApiFunctions/MockPrescriptionSearch/cpt-ui-stateless-resources-mockPrescSearch/Resource",
+      [
+        {
+          id: "AwsSolutions-L1",
+          reason:
+            "Suppress error for using a non-latest runtime. The runtime used is supported and will be upgraded in a future release."
+        }
+      ]
+    )
+
   }
 }
 

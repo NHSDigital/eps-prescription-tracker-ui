@@ -10,6 +10,7 @@ import {
   PolicyStatement
 } from "aws-cdk-lib/aws-iam"
 import {SecretValue, Duration, RemovalPolicy} from "aws-cdk-lib"
+import {LambdaFunction} from "./LambdaFunction"
 
 export interface SharedSecretsProps {
   readonly stackName: string
@@ -70,8 +71,21 @@ export class SharedSecrets extends Construct {
       encryptionKey: this.jwtKmsKey
     })
 
-    // Add rotation to the primary JWT private key
-    this.primaryJwtPrivateKey.addRotationSchedule("PrimaryKeyRotation", {
+    // Add rotation for the primary key using a custom rotation Lambda
+    this.primaryJwtPrivateKey.addRotationSchedule("PrimaryKeyRotationSchedule", {
+      rotationLambda: new LambdaFunction(this, "PrimaryKeyRotationLambda", {
+        serviceName: props.stackName,
+        stackName: props.stackName,
+        lambdaName: `${props.stackName}-rotation`,
+        additionalPolicies: [this.useJwtKmsKeyPolicy],
+        logRetentionInDays: 30,
+        packageBasePath: "packages/cdk",
+        entryPoint: "resources/LambdaFunction/rotationHandler.ts",
+        lambdaEnvironmentVariables: {
+          SECRET_ID: this.primaryJwtPrivateKey.secretArn,
+          KMS_KEY_ARN: this.jwtKmsKey.keyArn
+        }
+      }).lambda,
       automaticallyAfter: Duration.days(30)
     })
 
@@ -83,8 +97,21 @@ export class SharedSecrets extends Construct {
         encryptionKey: this.jwtKmsKey
       })
 
-      // Add rotation to the mock JWT private key
-      this.mockJwtPrivateKey.addRotationSchedule("MockKeyRotation", {
+      // Add rotation for the mock key using a custom rotation Lambda
+      this.mockJwtPrivateKey.addRotationSchedule("MockKeyRotationSchedule", {
+        rotationLambda: new LambdaFunction(this, "MockKeyRotationLambda", {
+          serviceName: props.stackName,
+          stackName: props.stackName,
+          lambdaName: `${props.stackName}-mRotation`,
+          additionalPolicies: [this.useJwtKmsKeyPolicy],
+          logRetentionInDays: 30,
+          packageBasePath: "packages/cdk",
+          entryPoint: "resources/LambdaFunction/rotationHandler.ts",
+          lambdaEnvironmentVariables: {
+            SECRET_ID: this.mockJwtPrivateKey.secretArn,
+            KMS_KEY_ARN: this.jwtKmsKey.keyArn
+          }
+        }).lambda,
         automaticallyAfter: Duration.days(30)
       })
     }
