@@ -5,7 +5,6 @@ import {IManagedPolicy} from "aws-cdk-lib/aws-iam"
 import {Secret} from "aws-cdk-lib/aws-secretsmanager"
 import {NodejsFunction} from "aws-cdk-lib/aws-lambda-nodejs"
 import {SharedSecrets} from "./SharedSecrets"
-import {Duration} from "aws-cdk-lib"
 
 export interface CognitoFunctionsProps {
   readonly serviceName: string
@@ -115,24 +114,6 @@ export class CognitoFunctions extends Construct {
       cognitoPolicies.push(mockTokenLambda.executeLambdaManagedPolicy)
       this.mockTokenLambda = mockTokenLambda.lambda
     }
-
-    // Add rotation Lambda for primaryJwtPrivateKey
-    props.sharedSecrets.primaryJwtPrivateKey.addRotationSchedule("PrimaryKeyRotation", {
-      rotationLambda: new LambdaFunction(this, "PrimaryKeyRotationLambda", {
-        serviceName: props.serviceName,
-        stackName: props.stackName,
-        lambdaName: `${props.stackName}-primaryKeyRotation`,
-        additionalPolicies: [props.sharedSecrets.useJwtKmsKeyPolicy],
-        logRetentionInDays: props.logRetentionInDays,
-        packageBasePath: "packages/cdk/resources/LambdaFunction",
-        entryPoint: "rotationHandler.ts",
-        lambdaEnvironmentVariables: {
-          SECRET_ID: props.sharedSecrets.primaryJwtPrivateKey.secretArn,
-          KMS_KEY_ARN: props.sharedSecrets.jwtKmsKey.keyArn
-        }
-      }).lambda,
-      automaticallyAfter: Duration.days(30)
-    })
 
     // Outputs
     this.cognitoPolicies = cognitoPolicies
