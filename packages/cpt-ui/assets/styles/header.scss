@@ -33,6 +33,9 @@
     right: 0;
     left: auto;
     width: 100vw;
+    .nhsuk-header__navigation-link {
+      padding-left:0;
+    }
   }
 }
 

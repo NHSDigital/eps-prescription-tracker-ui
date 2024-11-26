@@ -44,7 +44,10 @@ export default function EpsHeader() {
                         </li>
                     )
                 }
-                <Header.NavItem>Placeholder 3</Header.NavItem>
+                <li className="nhsuk-header__navigation-item">
+                    <Link className="nhsuk-header__navigation-link" href='/' data-testid="eps_header_placeholder3">Placeholder 3</Link>
+                </li>
+                {/* <Header.NavItem>Placeholder 3</Header.NavItem> */}
                 <Header.NavDropdownMenu dropdownText="Menu" />
             </Header.Nav>
         </Header>
