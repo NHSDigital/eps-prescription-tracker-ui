@@ -2,6 +2,7 @@ import {Construct} from "constructs"
 import {LambdaFunction} from "../LambdaFunction"
 import {ITableV2} from "aws-cdk-lib/aws-dynamodb"
 import {IManagedPolicy} from "aws-cdk-lib/aws-iam"
+import {Runtime} from "aws-cdk-lib/aws-lambda"
 import {NodejsFunction} from "aws-cdk-lib/aws-lambda-nodejs"
 import {SharedSecrets} from "../SharedSecrets"
 
@@ -42,6 +43,7 @@ export class ApiFunctions extends Construct {
 
     // Prescription Search Lambda Function
     const prescriptionSearchLambda = new LambdaFunction(this, "PrescriptionSearch", {
+      runtime: Runtime.NODEJS_20_X,
       serviceName: props.serviceName,
       stackName: props.stackName,
       lambdaName: `${props.stackName}-prescSearch`,
@@ -84,6 +86,7 @@ export class ApiFunctions extends Construct {
       }
 
       mockPrescriptionSearchLambda = new LambdaFunction(this, "MockPrescriptionSearch", {
+        runtime: Runtime.NODEJS_20_X,
         serviceName: props.serviceName,
         stackName: props.stackName,
         lambdaName: `${props.stackName}-mockPrescSearch`,
