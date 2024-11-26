@@ -5,6 +5,7 @@ import {IManagedPolicy} from "aws-cdk-lib/aws-iam"
 import {Runtime} from "aws-cdk-lib/aws-lambda"
 import {NodejsFunction} from "aws-cdk-lib/aws-lambda-nodejs"
 import {SharedSecrets} from "../SharedSecrets"
+import {NagSuppressions} from "cdk-nag"
 
 export interface ApiFunctionsProps {
   readonly serviceName: string
@@ -69,6 +70,14 @@ export class ApiFunctions extends Construct {
       }
     })
 
+    // Suppress the AwsSolutions-L1 rule for the prescription search Lambda function
+    NagSuppressions.addResourceSuppressions(prescriptionSearchLambda.lambda, [
+      {
+        id: "AwsSolutions-L1",
+        reason: "The Lambda function uses the latest runtime version supported at the time of implementation."
+      }
+    ])
+
     // Initialize policies for API functions
     const apiFunctionsPolicies: Array<IManagedPolicy> = [prescriptionSearchLambda.executeLambdaManagedPolicy]
 
@@ -111,6 +120,14 @@ export class ApiFunctions extends Construct {
           oidcIssuer: props.mockOidcIssuer
         }
       })
+
+      // Suppress the AwsSolutions-L1 rule for the mock prescription search Lambda function
+      NagSuppressions.addResourceSuppressions(mockPrescriptionSearchLambda.lambda, [
+        {
+          id: "AwsSolutions-L1",
+          reason: "The Lambda function uses the latest runtime version supported at the time of implementation."
+        }
+      ])
 
       apiFunctionsPolicies.push(mockPrescriptionSearchLambda.executeLambdaManagedPolicy)
       this.mockPrescriptionSearchLambda = mockPrescriptionSearchLambda.lambda

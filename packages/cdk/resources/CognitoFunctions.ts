@@ -6,6 +6,7 @@ import {Secret} from "aws-cdk-lib/aws-secretsmanager"
 import {Runtime} from "aws-cdk-lib/aws-lambda"
 import {NodejsFunction} from "aws-cdk-lib/aws-lambda-nodejs"
 import {SharedSecrets} from "./SharedSecrets"
+import {NagSuppressions} from "cdk-nag"
 
 export interface CognitoFunctionsProps {
   readonly serviceName: string
@@ -71,6 +72,14 @@ export class CognitoFunctions extends Construct {
       }
     })
 
+    // Suppress the AwsSolutions-L1 rule for the token Lambda function
+    NagSuppressions.addResourceSuppressions(tokenLambda.lambda, [
+      {
+        id: "AwsSolutions-L1",
+        reason: "The Lambda function uses the latest runtime version supported at the time of implementation."
+      }
+    ])
+
     // Initialize policies
     const cognitoPolicies: Array<IManagedPolicy> = [tokenLambda.executeLambdaManagedPolicy]
 
@@ -113,6 +122,14 @@ export class CognitoFunctions extends Construct {
           oidcIssuer: props.mockOidcIssuer
         }
       })
+
+      // Suppress the AwsSolutions-L1 rule for the mock token Lambda function
+      NagSuppressions.addResourceSuppressions(mockTokenLambda.lambda, [
+        {
+          id: "AwsSolutions-L1",
+          reason: "The Lambda function uses the latest runtime version supported at the time of implementation."
+        }
+      ])
 
       cognitoPolicies.push(mockTokenLambda.executeLambdaManagedPolicy)
       this.mockTokenLambda = mockTokenLambda.lambda
