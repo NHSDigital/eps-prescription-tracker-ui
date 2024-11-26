@@ -45,32 +45,24 @@ export class SharedSecrets extends Construct {
 
     // Primary JWT Secret
     const primarySecretName = `${props.stackName}-primaryJwtPrivateKey`
-    let primaryJwtSecret: ISecret
-    try {
-      primaryJwtSecret = Secret.fromSecretNameV2(this, "ExistingPrimaryJwtSecret", primarySecretName)
-    } catch {
-      primaryJwtSecret = new Secret(this, "PrimaryJwtPrivateKey", {
+    this.primaryJwtPrivateKey =
+      Secret.fromSecretNameV2(this, "ExistingPrimaryJwtSecret", primarySecretName) ||
+      new Secret(this, "PrimaryJwtPrivateKey", {
         secretName: primarySecretName,
         secretStringValue: SecretValue.unsafePlainText("ChangeMe"),
         encryptionKey: this.jwtKmsKey
       })
-    }
-    this.primaryJwtPrivateKey = primaryJwtSecret
 
     // Mock JWT Secret (if needed)
     if (props.useMockOidc) {
       const mockSecretName = `${props.stackName}-mockJwtPrivateKey`
-      let mockJwtSecret: ISecret
-      try {
-        mockJwtSecret = Secret.fromSecretNameV2(this, "ExistingMockJwtSecret", mockSecretName)
-      } catch {
-        mockJwtSecret = new Secret(this, "MockJwtPrivateKey", {
+      this.mockJwtPrivateKey =
+        Secret.fromSecretNameV2(this, "ExistingMockJwtSecret", mockSecretName) ||
+        new Secret(this, "MockJwtPrivateKey", {
           secretName: mockSecretName,
           secretStringValue: SecretValue.unsafePlainText("mock-secret"),
           encryptionKey: this.jwtKmsKey
         })
-      }
-      this.mockJwtPrivateKey = mockJwtSecret
     }
   }
 }
