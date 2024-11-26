@@ -7,6 +7,7 @@ import {Template, Match} from "aws-cdk-lib/assertions"
 import {describe, test, beforeAll} from "@jest/globals"
 
 import {LambdaFunction} from "../resources/LambdaFunction"
+import {Runtime} from "aws-cdk-lib/aws-lambda"
 
 describe("functionConstruct works correctly", () => {
   let stack: Stack
@@ -22,12 +23,12 @@ describe("functionConstruct works correctly", () => {
   // do not modify the state of the application
   beforeAll(() => {
     app = new App()
-    app.node.setContext("logRetentionInDays", "30")
     stack = new Stack(app, "lambdaConstructStack")
     const functionConstruct = new LambdaFunction(stack, "dummyFunction", {
       serviceName: "testServiceName",
-      stackName:"testServiceName-testStack",
+      stackName: "testServiceName-testStack",
       lambdaName: "testLambda",
+      runtime: Runtime.NODEJS_20_X,
       additionalPolicies: [
       ],
       packageBasePath: "packages/cdk",
@@ -67,8 +68,8 @@ describe("functionConstruct works correctly", () => {
           Action: ["logs:CreateLogStream", "logs:PutLogEvents"],
           Effect: "Allow",
           Resource: [
-            {"Fn::GetAtt":[lambdaLogGroupResource.Ref, "Arn" ]},
-            {"Fn::Join":["", [{"Fn::GetAtt":[lambdaLogGroupResource.Ref, "Arn" ]}, ":log-stream:*"] ]}
+            {"Fn::GetAtt": [lambdaLogGroupResource.Ref, "Arn"]},
+            {"Fn::Join": ["", [{"Fn::GetAtt": [lambdaLogGroupResource.Ref, "Arn"]}, ":log-stream:*"]]}
           ]
         }]
       }
@@ -86,22 +87,22 @@ describe("functionConstruct works correctly", () => {
 
   test("it has the correct role", () => {
     template.hasResourceProperties("AWS::IAM::Role", {
-      "AssumeRolePolicyDocument":{
-        "Statement":[
+      "AssumeRolePolicyDocument": {
+        "Statement": [
           {
-            "Action":"sts:AssumeRole",
-            "Effect":"Allow",
-            "Principal":{
-              "Service":"lambda.amazonaws.com"
+            "Action": "sts:AssumeRole",
+            "Effect": "Allow",
+            "Principal": {
+              "Service": "lambda.amazonaws.com"
             }
           }
         ],
-        "Version":"2012-10-17"
+        "Version": "2012-10-17"
       },
-      "ManagedPolicyArns":Match.arrayWith([
-        {"Fn::ImportValue":"lambda-resources:LambdaInsightsLogGroupPolicy"},
-        {"Fn::ImportValue":"account-resources:CloudwatchEncryptionKMSPolicyArn"},
-        {"Fn::ImportValue":"account-resources:LambdaDecryptSecretsKMSPolicy"}
+      "ManagedPolicyArns": Match.arrayWith([
+        {"Fn::ImportValue": "lambda-resources:LambdaInsightsLogGroupPolicy"},
+        {"Fn::ImportValue": "account-resources:CloudwatchEncryptionKMSPolicyArn"},
+        {"Fn::ImportValue": "account-resources:LambdaDecryptSecretsKMSPolicy"}
       ])
     })
   })
@@ -114,11 +115,11 @@ describe("functionConstruct works correctly", () => {
       MemorySize: 256,
       Architectures: ["x86_64"],
       Timeout: 50,
-      LoggingConfig:{
-        "LogGroup":lambdaLogGroupResource
+      LoggingConfig: {
+        "LogGroup": lambdaLogGroupResource
       },
-      Layers: [ "arn:aws:lambda:eu-west-2:580247275435:layer:LambdaInsightsExtension:53" ],
-      Role:{"Fn::GetAtt":[lambdaRoleResource.Ref, "Arn" ]}
+      Layers: ["arn:aws:lambda:eu-west-2:580247275435:layer:LambdaInsightsExtension:53"],
+      Role: {"Fn::GetAtt": [lambdaRoleResource.Ref, "Arn"]}
     })
   })
 
@@ -130,7 +131,7 @@ describe("functionConstruct works correctly", () => {
         Statement: [{
           Action: "lambda:InvokeFunction",
           Effect: "Allow",
-          Resource: {"Fn::GetAtt":[lambdaResource.Ref, "Arn" ]}
+          Resource: {"Fn::GetAtt": [lambdaResource.Ref, "Arn"]}
         }]
       }
     })
@@ -146,10 +147,10 @@ describe("functionConstruct works correctly with environment variables", () => {
     stack = new Stack(app, "lambdaConstructStack")
     new LambdaFunction(stack, "dummyFunction", {
       serviceName: "testServiceName",
-      stackName:"testServiceName-testStack",
+      stackName: "testServiceName-testStack",
       lambdaName: "testLambda",
-      additionalPolicies: [
-      ],
+      runtime: Runtime.NODEJS_20_X,
+      additionalPolicies: [],
       packageBasePath: "packages/cdk",
       entryPoint: "tests/src/dummyLambda.ts",
       lambdaEnvironmentVariables: {foo: "bar"},
@@ -160,13 +161,11 @@ describe("functionConstruct works correctly with environment variables", () => {
 
   test("environment variables are added correctly", () => {
     template.hasResourceProperties("AWS::Lambda::Function", {
-      Handler: "index.handler",
       Runtime: "nodejs20.x",
       FunctionName: "testServiceName-testLambda",
-      Environment: {"Variables": {foo: "bar"}}
+      Environment: {Variables: {foo: "bar"}}
     })
   })
-
 })
 
 describe("functionConstruct works correctly with additional policies", () => {
@@ -190,8 +189,9 @@ describe("functionConstruct works correctly with additional policies", () => {
     })
     new LambdaFunction(stack, "dummyFunction", {
       serviceName: "testServiceName",
-      stackName:"testServiceName-testStack",
+      stackName: "testServiceName-testStack",
       lambdaName: "testLambda",
+      runtime: Runtime.NODEJS_20_X,
       additionalPolicies: [testPolicy],
       packageBasePath: "packages/cdk",
       entryPoint: "tests/src/dummyLambda.ts",
@@ -204,13 +204,12 @@ describe("functionConstruct works correctly with additional policies", () => {
 
   test("it has the correct policies in the role", () => {
     template.hasResourceProperties("AWS::IAM::Role", {
-      "ManagedPolicyArns":Match.arrayWith([
-        {"Fn::ImportValue":"lambda-resources:LambdaInsightsLogGroupPolicy"},
-        {"Fn::ImportValue":"account-resources:CloudwatchEncryptionKMSPolicyArn"},
-        {"Fn::ImportValue":"account-resources:LambdaDecryptSecretsKMSPolicy"},
+      "ManagedPolicyArns": Match.arrayWith([
+        {"Fn::ImportValue": "lambda-resources:LambdaInsightsLogGroupPolicy"},
+        {"Fn::ImportValue": "account-resources:CloudwatchEncryptionKMSPolicyArn"},
+        {"Fn::ImportValue": "account-resources:LambdaDecryptSecretsKMSPolicy"},
         {Ref: testPolicyResource.Ref}
       ])
     })
   })
-
 })
