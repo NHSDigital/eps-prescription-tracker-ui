@@ -1,0 +1,113 @@
+
+.nhsuk-header.masthead {
+.nhsuk-width-container.nhsuk-header__container.masthead-container {
+  min-width:100%;  
+  padding-left:24px;
+}
+.nhsuk-navigation-container{
+  
+  .nhsuk-header__navigation-list {
+    display:flex;
+    right: -353px;
+  position: absolute;
+  left: unset;
+  justify-content:flex-end;
+  margin:0 16px 0 16px;
+  gap:unset;
+  .nhsuk-header__navigation-link {
+    padding:12px 16px;
+  }
+  button.nhsuk-header__menu-toggle.nhsuk-header__navigation-link {
+    padding-right:30px;
+  }
+  .nhsuk-header__drop-down {
+    color:#005eb8;
+  }
+  }
+  .nhsuk-header__drop-down {
+    top:65px;
+    background-color: #ffffff;
+    border-bottom: 4px solid #f0f4f5;
+    overflow: hidden;
+    position: absolute;
+    right: 0;
+    left: auto;
+    width: 100vw;
+    .nhsuk-header__navigation-link {
+      padding-left:0;
+    }
+  }
+}
+
+@media (min-width: 48.0625em) {
+  .nhsuk-header__container {
+      margin: 0;
+  }
+}
+
+@media (min-width: 40.0625em) {
+  .nhsuk-header__navigation-list {
+      border-top-width:0;
+  }
+  .nhsuk-header__navigation-link {
+    padding:12px 16px;
+  }
+}
+
+@media (max-width: 990px) {
+  .nhsuk-header__container {
+      margin: 0;
+  }
+}
+
+.nhsuk-width-container.nhsuk-header__container.masthead-container {
+  width:460px;  
+  padding-left:24px;
+  max-width:100%;
+}
+.nhsuk-navigation-container{
+  position: relative;
+  top: -63px;
+  width: calc(100% - 440px);
+  right: -102px;
+}
+
+@media (max-width: 640px) {
+  
+  padding-bottom:68px;
+  .nhsuk-width-container.nhsuk-header__container.masthead-container {
+    padding-left:10px;
+  }
+  .nhsuk-navigation { 
+    min-width:100%;
+    max-width:100%;
+    width:100vw;
+  }
+  .nhsuk-header {
+    padding-bottom:68px;
+  }
+//   .nhsuk-navigation-container .nhsuk-header__navigation-list {
+// right: unset;
+// width: 100vw;
+// justify-content: flex-start;
+// left: -118px;
+// top: 64px;
+// padding-left: 16px;
+// }
+.nhsuk-navigation-container .nhsuk-header__navigation-list {
+  right: unset;
+  width: 100%;
+  justify-content: flex-start;
+  left: 0;
+  top: 64px;
+  padding-left: 0;
+  min-width:100vw;
+  margin-left:0;
+}
+
+.nhsuk-width-container.nhsuk-header__container.masthead-container, .nhsuk-navigation-container {  
+  min-width:100vw;
+  right:unset;
+}
+}
+}
