@@ -9,7 +9,7 @@ import './App.css'
 import {authConfig} from './configureAmplify'
 Amplify.configure(authConfig, {ssr: true})
 
-const API_ENDPOINT = 'https://cpt-ui-pr-150.dev.eps.national.nhs.uk/api/prescription-search'
+const API_ENDPOINT = '/api/prescription-search'
 
 function App() {
   const [user, setUser] = useState(null)
