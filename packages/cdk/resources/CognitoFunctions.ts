@@ -2,7 +2,7 @@ import {Construct} from "constructs"
 import {LambdaFunction} from "./LambdaFunction"
 import {ITableV2} from "aws-cdk-lib/aws-dynamodb"
 import {IManagedPolicy} from "aws-cdk-lib/aws-iam"
-import {ISecret} from "aws-cdk-lib/aws-secretsmanager"
+import {Secret} from "aws-cdk-lib/aws-secretsmanager"
 import {Runtime} from "aws-cdk-lib/aws-lambda"
 import {NodejsFunction} from "aws-cdk-lib/aws-lambda-nodejs"
 import {SharedSecrets} from "./SharedSecrets"
@@ -39,7 +39,7 @@ export class CognitoFunctions extends Construct {
   public readonly cognitoPolicies: Array<IManagedPolicy>
   public readonly tokenLambda: NodejsFunction
   public readonly mockTokenLambda: NodejsFunction
-  public readonly primaryJwtPrivateKey: ISecret
+  public readonly primaryJwtPrivateKey: Secret
 
   public constructor(scope: Construct, id: string, props: CognitoFunctionsProps) {
     super(scope, id)
