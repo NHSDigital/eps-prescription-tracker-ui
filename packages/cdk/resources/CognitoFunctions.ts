@@ -54,7 +54,8 @@ export class CognitoFunctions extends Construct {
         props.tokenMappingTableWritePolicy,
         props.tokenMappingTableReadPolicy,
         props.useTokensMappingKmsKeyPolicy,
-        props.sharedSecrets.useJwtKmsKeyPolicy
+        props.sharedSecrets.useJwtKmsKeyPolicy,
+        props.sharedSecrets.getPrimaryJwtPrivateKeyPolicy
       ],
       logRetentionInDays: props.logRetentionInDays,
       packageBasePath: "packages/cognito",
@@ -105,7 +106,8 @@ export class CognitoFunctions extends Construct {
           props.tokenMappingTableWritePolicy,
           props.tokenMappingTableReadPolicy,
           props.useTokensMappingKmsKeyPolicy,
-          props.sharedSecrets.useJwtKmsKeyPolicy
+          props.sharedSecrets.useJwtKmsKeyPolicy,
+          props.sharedSecrets.getMockJwtPrivateKeyPolicy
         ],
         logRetentionInDays: props.logRetentionInDays,
         packageBasePath: "packages/cognito",
