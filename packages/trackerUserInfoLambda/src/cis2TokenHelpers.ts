@@ -57,29 +57,32 @@ export const fetchCIS2TokensFromDynamoDB = async (
   documentClient: DynamoDBDocumentClient,
   logger: Logger
 ): Promise<{ cis2AccessToken: string; cis2IdToken: string }> => {
+  logger.info("Fetching CIS2 access token from DynamoDB")
+
+  let result
+
   try {
-    logger.info("Fetching CIS2 access token from DynamoDB")
-    const result = await documentClient.send(
+    result = await documentClient.send(
       new GetCommand({
         TableName: tokenMappingTableName,
-        Key: {username}
+        Key: { username },
       })
     )
-    logger.debug("DynamoDB response", {result})
-
-    if (result.Item) {
-      const existingData = result.Item
-      return {
-        cis2AccessToken: existingData.CIS2_accessToken,
-        cis2IdToken: existingData.CIS2_idToken
-      }
-    } else {
-      logger.error("CIS2 access token not found for user")
-      throw new Error("CIS2 access token not found for user")
-    }
+    logger.debug("DynamoDB response", { result })
   } catch (error) {
-    logger.error("Error fetching data from DynamoDB", {error})
+    logger.error("Error fetching data from DynamoDB", { error })
     throw new Error("Internal server error while accessing DynamoDB")
+  }
+
+  if (result.Item) {
+    const existingData = result.Item
+    return {
+      cis2AccessToken: existingData.CIS2_accessToken,
+      cis2IdToken: existingData.CIS2_idToken,
+    }
+  } else {
+    logger.error("CIS2 access token not found for user")
+    throw new Error("CIS2 access token not found for user")
   }
 }
 
@@ -148,6 +151,7 @@ export const verifyIdToken = async (idToken: string, logger: Logger) => {
     throw new Error("Invalid token")
   }
   const kid = decodedToken.header.kid
+  logger.info("Token KID", {kid})
 
   // Fetch the signing key from the JWKS endpoint
   let signingKey
@@ -161,6 +165,7 @@ export const verifyIdToken = async (idToken: string, logger: Logger) => {
     logger.error("Error getting signing key", {err})
     throw new Error("Error getting signing key")
   }
+  logger.info("Signing key fetched successfully")
 
   // Verify the token
   const options = {
@@ -176,7 +181,6 @@ export const verifyIdToken = async (idToken: string, logger: Logger) => {
     logger.error("Error verifying token", {err})
     throw new Error("Invalid ID token")
   }
-
   logger.info("ID token verified successfully", {verifiedToken})
 
   // Manual Verification checks,
@@ -187,13 +191,14 @@ export const verifyIdToken = async (idToken: string, logger: Logger) => {
   if (verifiedToken.exp && verifiedToken.exp < now) {
     throw new Error("ID token has expired")
   }
-  logger.debug("Token has not expired", {exp: verifiedToken.exp})
+  logger.info("Token has not expired", {exp: verifiedToken.exp})
 
   // the iss claim MUST exactly match the issuer in the OIDC configuration
   if (verifiedToken.iss !== oidcIssuer) {
+    logger.error("Invalid issuer in ID token", {verifiedToken})
     throw new Error("Invalid issuer in ID token")
   }
-  logger.debug("iss claim is valid", {iss: verifiedToken.iss})
+  logger.info("iss claim is valid", {iss: verifiedToken.iss})
 
   // the aud MUST contain our relying party client_id value
   // 'aud' can be a string or an array
@@ -202,7 +207,7 @@ export const verifyIdToken = async (idToken: string, logger: Logger) => {
   if (!audArray.includes(oidcClientId)) {
     throw new Error("Invalid audience in ID token")
   }
-  logger.debug("aud claim is valid", {aud})
+  logger.info("aud claim is valid", {aud})
 
   // FIXME: un-completed checks!
   // From what I can tell, we're not using a known nonce. If we do end up using one, we should check it here.
