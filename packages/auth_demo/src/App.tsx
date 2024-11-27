@@ -3,12 +3,13 @@ import {Hub} from "aws-amplify/utils"
 import {signInWithRedirect, signOut, getCurrentUser, fetchAuthSession, JWT} from "aws-amplify/auth"
 import {Amplify} from "aws-amplify"
 import axios from 'axios'
+import './interceptors'
 
 import './App.css'
 import {authConfig} from './configureAmplify'
 Amplify.configure(authConfig, {ssr: true})
 
-const API_ENDPOINT = 'https://cpt-ui-pr-150.dev.eps.national.nhs.uk/api/prescription-search'
+const API_ENDPOINT = '/api/prescription-search'
 
 function App() {
   const [user, setUser] = useState(null)
@@ -65,16 +66,6 @@ function App() {
     }
   }
 
-  const clearCookies = () => {
-    const cookies = document.cookie.split("; ")
-    for (let cookie of cookies) {
-      const eqPos = cookie.indexOf("=")
-      const name = eqPos > -1 ? cookie.substring(0, eqPos) : cookie
-      // Setting the cookie expiration date to the past to effectively delete it
-      document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;`
-    }
-  }
-
   const fetchPrescriptionData = async () => {
     if (!prescriptionId) {
       setError('Please enter a Prescription ID.')
@@ -85,18 +76,13 @@ function App() {
     setPrescriptionData(null)
     setError(null)
 
-    // Clear cookies before making the request
-    clearCookies()
-
     try {
       const response = await axios.get(API_ENDPOINT, {
         params: {prescriptionId},
         headers: {
           Authorization: `Bearer ${idToken}`,
           'NHSD-Session-URID': '555254242106'
-        },
-        // Ensure cookies are not sent with the request
-        withCredentials: false
+        }
       })
       setPrescriptionData(response.data)
     } catch (err) {
@@ -121,7 +107,7 @@ function App() {
       })}>Log in with mock CIS2</button>
       <button onClick={() => signOut()}>Sign Out</button>
       <div>username: {user?.username}</div>
-      <div>isSignedIn: {isSignedIn} </div>
+      <div>isSignedIn: {isSignedIn.toString()} </div>
       <div>idToken: {idToken?.toString()}</div>
       <div>accessToken: {accessToken?.toString()}</div>
 
