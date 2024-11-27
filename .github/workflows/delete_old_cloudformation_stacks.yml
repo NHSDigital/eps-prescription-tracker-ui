@@ -30,7 +30,7 @@ jobs:
         with:
           aws-region: eu-west-2
           role-to-assume: ${{ secrets.DEV_CLOUD_FORMATION_DEPLOY_ROLE }}
-          role-session-name: delete-old-cloudformation-stacks
+          role-session-name: prescription-clinical-tracker-ui-delete-old-cloudformation-stacks
 
       - name: delete stacks
         shell: bash
