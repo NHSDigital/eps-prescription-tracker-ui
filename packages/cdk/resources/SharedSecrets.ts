@@ -74,7 +74,17 @@ export class SharedSecrets extends Construct {
         encryptionKey: this.jwtKmsKey
       })
     }
-    this.primaryJwtPrivateKey = primaryJwtSecret
+    this.primaryJwtPrivateKey = primaryJwtSecret;
+
+    // Add policy for the primary secret
+    (this.primaryJwtPrivateKey as Secret).addToResourcePolicy(
+      new PolicyStatement({
+        effect: Effect.ALLOW,
+        principals: [props.deploymentRole],
+        actions: ["secretsmanager:PutSecretValue"],
+        resources: ["*"]
+      })
+    )
 
     // Mock JWT Secret (if needed)
     if (props.useMockOidc) {
@@ -89,7 +99,17 @@ export class SharedSecrets extends Construct {
           encryptionKey: this.jwtKmsKey
         })
       }
-      this.mockJwtPrivateKey = mockJwtSecret
+      this.mockJwtPrivateKey = mockJwtSecret;
+
+      // Add policy for the mock secret
+      (this.mockJwtPrivateKey as Secret).addToResourcePolicy(
+        new PolicyStatement({
+          effect: Effect.ALLOW,
+          principals: [props.deploymentRole],
+          actions: ["secretsmanager:PutSecretValue"],
+          resources: ["*"]
+        })
+      )
     }
   }
 }
