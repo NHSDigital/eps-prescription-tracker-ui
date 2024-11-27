@@ -5,7 +5,9 @@ import {
   ManagedPolicy,
   PolicyStatement,
   Effect,
-  IRole
+  IRole,
+  PolicyDocument,
+  AccountRootPrincipal
 } from "aws-cdk-lib/aws-iam"
 import {SecretValue, RemovalPolicy} from "aws-cdk-lib"
 
@@ -28,7 +30,24 @@ export class SharedSecrets extends Construct {
     this.jwtKmsKey = new Key(this, "JwtKmsKey", {
       description: `${props.stackName}-jwtKmsKey`,
       enableKeyRotation: true,
-      removalPolicy: RemovalPolicy.DESTROY
+      removalPolicy: RemovalPolicy.DESTROY,
+      policy: new PolicyDocument({
+        statements: [
+          new PolicyStatement({
+            sid: "EnableIAMUserPermissions",
+            effect: Effect.ALLOW,
+            actions: ["kms:*"],
+            principals: [new AccountRootPrincipal()],
+            resources: ["*"]
+          }),
+          new PolicyStatement({
+            effect: Effect.ALLOW,
+            principals: [props.deploymentRole],
+            actions: ["kms:Encrypt", "kms:GenerateDataKey*"],
+            resources: ["*"]
+          })
+        ]
+      })
     })
 
     // Policy for using KMS Key
