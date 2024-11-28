@@ -77,7 +77,7 @@ function App() {
 
     try {
       // Call /prescription-search endpoint
-      const prescriptionResponse = await axios.get("/api/prescription-search", {
+      const prescriptionResponse = await axios.get(API_ENDPOINT, {
         params: {prescriptionId},
         headers: {
           /**
@@ -102,9 +102,11 @@ function App() {
       // Update the frontend state with the fetched prescription data
       setPrescriptionData(prescriptionResponse.data)
     } catch (err) {
+      // Handle and log any errors during the API call
       setError("Failed to fetch prescription data.")
       console.error("Error fetching data:", err)
     } finally {
+      // Ensure the loading state is updated regardless of success or failure
       setLoading(false)
     }
   }
