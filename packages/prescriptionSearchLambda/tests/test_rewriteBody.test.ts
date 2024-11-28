@@ -28,6 +28,6 @@ describe("rewriteBodyToAddSignedJWT tests", () => {
       iss: "test-client-id",
       sub: "test-client-id",
       aud: idpTokenPath
-    }), jwtPrivateKey, {algorithm: "RS512", keyid: "eps-cpt-ui-test"})
+    }), jwtPrivateKey, {algorithm: "RS512", keyid: "eps-clinical-tracker"})
   })
 })

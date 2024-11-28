@@ -52,7 +52,7 @@ export function rewriteBodyToAddSignedJWT(
 
   const signOptions: jwt.SignOptions = {
     algorithm: "RS512",
-    keyid: "eps-cpt-ui-test"
+    keyid: "eps-clinical-tracker"
   }
 
   logger.debug("Claims", {claims})
@@ -66,8 +66,8 @@ export function rewriteBodyToAddSignedJWT(
 }
 
 // eslint-disable-next-line max-len
-export function formatHeaders(headers: AxiosResponseHeaders | Partial<RawAxiosResponseHeaders>): { [header: string]: string } {
-  const formattedHeaders: { [header: string]: string } = {}
+export function formatHeaders(headers: AxiosResponseHeaders | Partial<RawAxiosResponseHeaders>): {[header: string]: string} {
+  const formattedHeaders: {[header: string]: string} = {}
 
   // Iterate through the Axios headers and ensure values are stringified
   for (const [key, value] of Object.entries(headers)) {
