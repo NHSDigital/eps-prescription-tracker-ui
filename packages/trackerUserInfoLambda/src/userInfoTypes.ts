@@ -2,10 +2,10 @@
 export type RoleDetails = {
   roleName?: string;
   roleID?: string;
-  ODS?: string;
+  orgCode?: string;
   orgName?: string;
   siteName?: string;
-  siteAddress?: string; // optional
+  siteAddress?: string;
 };
 
 export type UserDetails = {

@@ -58,12 +58,12 @@ export const fetchUserInfo = async (
       const roleInfo: RoleDetails = {
         roleName: role.role_name,
         roleID: role.person_roleid,
-        ODS: role.org_code,
+        orgCode: role.org_code,
         orgName: getOrgNameFromOrgCode(data, role.org_code, logger)
       }
 
       // Ensure the role has at least one of the required fields
-      if (!(roleInfo.roleName || roleInfo.roleID || roleInfo.ODS || roleInfo.orgName)) {
+      if (!(roleInfo.roleName || roleInfo.roleID || roleInfo.orgCode || roleInfo.orgName)) {
         // Skip roles that don't meet the minimum field requirements
         logger.warn("Role does not meet minimum field requirements", {roleInfo})
         return
@@ -71,8 +71,10 @@ export const fetchUserInfo = async (
 
       if (hasAccess) {
         rolesWithAccess.push(roleInfo)
+        logger.debug("Role has access; adding to rolesWithAccess", {roleInfo})
       } else {
         rolesWithoutAccess.push(roleInfo)
+        logger.debug("Role does not have access; adding to rolesWithoutAccess", {roleInfo})
       }
 
       // Determine the currently selected role

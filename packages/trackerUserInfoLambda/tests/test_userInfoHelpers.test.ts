@@ -92,7 +92,7 @@ describe("fetchUserInfo", () => {
         {
           roleName: "Doctor",
           roleID: "role-id-1",
-          ODS: "ORG1",
+          orgCode: "ORG1",
           orgName: "Organization One"
         }
       ],
@@ -100,14 +100,14 @@ describe("fetchUserInfo", () => {
         {
           roleName: "Nurse",
           roleID: "role-id-2",
-          ODS: "ORG2",
+          orgCode: "ORG2",
           orgName: "Organization Two"
         }
       ],
       currently_selected_role: {
         roleName: "Doctor",
         roleID: "role-id-1",
-        ODS: "ORG1",
+        orgCode: "ORG1",
         orgName: "Organization One"
       }
     })
@@ -168,7 +168,7 @@ describe("fetchUserInfo", () => {
         {
           roleName: "Receptionist",
           roleID: "role-id-3",
-          ODS: "ORG3",
+          orgCode: "ORG3",
           orgName: "Organization Three"
         }
       ],
@@ -239,7 +239,7 @@ describe("updateDynamoTable", () => {
       {
         roleName: "Doctor",
         roleID: "123",
-        ODS: "ABC",
+        orgCode: "ABC",
         orgName: "Test Hospital",
         siteName: "Main",
         siteAddress: "123 Street"
@@ -249,7 +249,7 @@ describe("updateDynamoTable", () => {
       {
         roleName: "Nurse",
         roleID: "456",
-        ODS: "DEF",
+        orgCode: "DEF",
         orgName: "Test Clinic",
         siteName: "Branch",
         siteAddress: "456 Avenue"
@@ -258,7 +258,7 @@ describe("updateDynamoTable", () => {
     currently_selected_role: {
       roleName: "Doctor",
       roleID: "123",
-      ODS: "ABC",
+      orgCode: "ABC",
       orgName: "Test Hospital",
       siteName: "Main",
       siteAddress: "123 Street"
