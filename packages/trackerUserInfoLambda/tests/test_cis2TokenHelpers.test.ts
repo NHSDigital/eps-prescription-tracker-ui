@@ -7,14 +7,13 @@ import {
   fetchAndVerifyCIS2Tokens,
   verifyIdToken
 } from "../src/cis2TokenHelpers"
-import {UserInfoResponse} from "../src/userInfoTypes"
 
 import {APIGatewayProxyEvent} from "aws-lambda"
 import {Logger} from "@aws-lambda-powertools/logger"
-import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
 import jwksClient from "jwks-rsa"
 import jwt from "jsonwebtoken"
 import {createJWKSMock} from "mock-jwks"
+import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
 
 describe("getSigningKey", () => {

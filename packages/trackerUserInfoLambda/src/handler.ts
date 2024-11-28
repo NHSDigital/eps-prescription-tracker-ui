@@ -6,7 +6,9 @@ import inputOutputLogger from "@middy/input-output-logger"
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
 import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
-import {fetchAndVerifyCIS2Tokens, fetchUserInfo} from "./cis2TokenHelpers"
+
+import {fetchAndVerifyCIS2Tokens} from "./cis2TokenHelpers"
+import {fetchUserInfo} from "./userInfoHelpers"
 
 const logger = new Logger({serviceName: "trackerUserInfo"})
 
@@ -31,7 +33,12 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     logger.info("CIS2 tokens fetched and verified", {cis2AccessToken, cis2IdToken})
 
     logger.info("Making UserInfo request")
-    const userInfoResponse = await fetchUserInfo(cis2AccessToken, CPT_ACCESS_ACTIVITY_CODES, undefined, logger)
+    const userInfoResponse = await fetchUserInfo(
+      cis2AccessToken,
+      CPT_ACCESS_ACTIVITY_CODES,
+      undefined,
+      logger
+    )
 
     logger.info("UserInfo response received", {userInfoResponse})
 
