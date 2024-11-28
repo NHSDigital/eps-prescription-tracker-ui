@@ -9,7 +9,7 @@ import axios from "axios"
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
 import {DynamoDBDocumentClient, UpdateCommand} from "@aws-sdk/lib-dynamodb"
 import {rewriteBodyToAddSignedJWT, formatHeaders} from "./helpers"
-import {fetchAndVerifyCIS2Tokens} from "./cis2TokenHelpers"
+import {fetchCIS2Tokens} from "./cis2TokenHelpers"
 import {stringify} from "querystring"
 
 // Logger initialization
@@ -44,7 +44,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
   try {
     // Step 1: Fetch and verify CIS2 tokens using the `idToken` provided
-    const {cis2AccessToken, cis2IdToken} = await fetchAndVerifyCIS2Tokens(event, documentClient, logger)
+    const {cis2AccessToken, cis2IdToken} = await fetchCIS2Tokens(event, documentClient, logger)
     logger.info("Successfully fetched and verified CIS2 tokens", {cis2AccessToken, cis2IdToken})
 
     // Step 2: Exchange CIS2 access token for an Apigee access token

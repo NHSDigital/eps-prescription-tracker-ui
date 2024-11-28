@@ -1,23 +1,6 @@
 import {Logger} from "@aws-lambda-powertools/logger"
 import {APIGatewayProxyEvent} from "aws-lambda"
 import {DynamoDBDocumentClient, GetCommand} from "@aws-sdk/lib-dynamodb"
-import jwt, {JwtPayload} from "jsonwebtoken"
-import jwksClient from "jwks-rsa"
-
-const VALID_ACR_VALUES = ["AAL3_CIS2_SMARTCARD"]
-
-// Helper function to fetch the signing key from the JWKS endpoint
-export const getSigningKey = (client: jwksClient.JwksClient, kid: string): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    client.getSigningKey(kid, (err, key) => {
-      if (err || !key) {
-        reject(new Error(`Signing key retrieval failed: ${err?.message || "Key not found"}`))
-      } else {
-        resolve(key.getPublicKey())
-      }
-    })
-  })
-}
 
 // Extract the username from Cognito claims in the API Gateway event
 export const getUsernameFromEvent = (event: APIGatewayProxyEvent): string => {
@@ -56,8 +39,8 @@ export const fetchCIS2TokensFromDynamoDB = async (
   }
 }
 
-// Fetch and verify CIS2 tokens
-export const fetchAndVerifyCIS2Tokens = async (
+// Retrieve CIS2 tokens by extracting the username and fetching from DynamoDB
+export const fetchCIS2Tokens = async (
   event: APIGatewayProxyEvent,
   documentClient: DynamoDBDocumentClient,
   logger: Logger
@@ -68,39 +51,5 @@ export const fetchAndVerifyCIS2Tokens = async (
   }
 
   const username = getUsernameFromEvent(event)
-  const tokens = await fetchCIS2TokensFromDynamoDB(username, tokenMappingTableName, documentClient, logger)
-
-  await verifyIdToken(tokens.cis2IdToken, logger) // Verify ID token
-  return tokens
-}
-
-// Verify the ID token using JWKS
-export const verifyIdToken = async (idToken: string, logger: Logger): Promise<void> => {
-  const oidcIssuer = process.env["oidcIssuer"]
-  const oidcClientId = process.env["oidcClientId"]
-  const jwksUri = process.env["oidcjwksEndpoint"]
-
-  if (!oidcIssuer || !oidcClientId || !jwksUri) {
-    throw new Error("OIDC configuration is incomplete in environment variables.")
-  }
-
-  const client = jwksClient({jwksUri, cache: true, cacheMaxAge: 3600000}) // Cache for 1 hour
-  const decodedToken = jwt.decode(idToken, {complete: true}) as {header: {kid: string}} | null
-
-  if (!decodedToken || !decodedToken.header.kid) {
-    throw new Error("Token validation failed due to a missing or malformed header.")
-  }
-
-  const signingKey = await getSigningKey(client, decodedToken.header.kid)
-  const verifiedToken = jwt.verify(idToken, signingKey, {
-    issuer: oidcIssuer,
-    audience: oidcClientId,
-    clockTolerance: 5
-  }) as JwtPayload
-
-  if (!VALID_ACR_VALUES.includes(verifiedToken.acr || "")) {
-    throw new Error("Invalid ACR claim in ID token.")
-  }
-
-  logger.info("ID token successfully verified.")
+  return await fetchCIS2TokensFromDynamoDB(username, tokenMappingTableName, documentClient, logger)
 }
