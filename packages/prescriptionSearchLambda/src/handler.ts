@@ -7,8 +7,9 @@ import inputOutputLogger from "@middy/input-output-logger"
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 import axios, {AxiosError} from "axios"
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
-import {DynamoDBDocumentClient, GetCommand, UpdateCommand} from "@aws-sdk/lib-dynamodb"
+import {DynamoDBDocumentClient, UpdateCommand} from "@aws-sdk/lib-dynamodb"
 import {rewriteBodyToAddSignedJWT, formatHeaders} from "./helpers"
+import {fetchAndVerifyCIS2Tokens} from "./cis2TokenHelpers"
 import {stringify} from "querystring"
 
 // Logger initialization
@@ -39,128 +40,70 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   logger.info("Lambda handler invoked", {event})
 
   const axiosInstance = axios.create()
+  let apigeeAccessToken: string
 
-  // Step 1: Validate the Cognito `Authorization` header
-  const authorizationHeader = event.headers["Authorization"] || event.headers["authorization"]
-  if (!authorizationHeader || !authorizationHeader.startsWith("Bearer ")) {
-    logger.error("Missing or invalid Authorization header.")
-    return {
-      statusCode: 401,
-      body: JSON.stringify({message: "Unauthorized: Missing or invalid Authorization header."})
-    }
-  }
-
-  // Step 2: Extract the username from Cognito claims
-  const username = event.requestContext.authorizer?.claims["cognito:username"]
-  if (!username) {
-    logger.error("Username not found in Cognito claims.")
-    return {
-      statusCode: 400,
-      body: JSON.stringify({message: "Missing or invalid username in access token"})
-    }
-  }
-
-  let apigeeAccessToken
   try {
-    // Step 3: Retrieve token data from DynamoDB
-    logger.info("Fetching CIS2 access token and Apigee access token from DynamoDB")
-    const result = await documentClient.send(
-      new GetCommand({
+    // Step 1: Fetch and verify CIS2 tokens using the `idToken` provided
+    const {cis2AccessToken, cis2IdToken} = await fetchAndVerifyCIS2Tokens(event, documentClient, logger)
+    logger.info("Successfully fetched and verified CIS2 tokens", {cis2AccessToken, cis2IdToken})
+
+    // Step 2: Exchange CIS2 access token for an Apigee access token
+    logger.info("Exchanging CIS2 access token for Apigee access token")
+
+    // Fetch the private key for signing the client assertion
+    const jwtPrivateKey = await getSecret(jwtPrivateKeyArn)
+    if (!jwtPrivateKey || typeof jwtPrivateKey !== "string") {
+      throw new Error("Invalid or missing JWT private key")
+    }
+
+    // Construct the token exchange payload
+    const tokenExchangeData = {
+      grant_type: "urn:ietf:params:oauth:grant-type:token-exchange",
+      subject_token_type: "urn:ietf:params:oauth:token-type:id_token",
+      subject_token: cis2AccessToken,
+      client_id: process.env["oidcClientId"]
+    }
+
+    // Rewrite payload to include the signed JWT client assertion
+    const rewrittenBody = rewriteBodyToAddSignedJWT(logger, tokenExchangeData, apigeeTokenEndpoint, jwtPrivateKey)
+
+    // Make the token exchange request
+    const tokenResponse = await axiosInstance.post(apigeeTokenEndpoint, stringify(rewrittenBody), {
+      headers: {"Content-Type": "application/x-www-form-urlencoded"}
+    })
+
+    apigeeAccessToken = tokenResponse.data.access_token
+
+    // Step 3: Update DynamoDB with the new Apigee access token
+    const currentTime = Math.floor(Date.now() / 1000)
+    await documentClient.send(
+      new UpdateCommand({
         TableName: TokenMappingTableName,
-        Key: {username}
+        Key: {username: event.requestContext.authorizer?.claims["cognito:username"]},
+        UpdateExpression: "SET Apigee_accessToken = :apigeeAccessToken, Apigee_expiresIn = :apigeeExpiresIn",
+        ExpressionAttributeValues: {
+          ":apigeeAccessToken": apigeeAccessToken,
+          ":apigeeExpiresIn": currentTime + tokenResponse.data.expires_in
+        }
       })
     )
 
-    if (!result.Item) {
-      logger.error("User token data not found in DynamoDB")
-      return {
-        statusCode: 404,
-        body: JSON.stringify({message: "User token data not found"})
-      }
-    }
-
-    const {CIS2_accessToken, Apigee_accessToken, Apigee_expiresIn} = result.Item
-    const currentTime = Math.floor(Date.now() / 1000)
-
-    // Step 4: Check if the Apigee access token is still valid
-    if (Apigee_accessToken && Apigee_expiresIn > currentTime) {
-      logger.info("Using existing Apigee access token from DynamoDB")
-      apigeeAccessToken = Apigee_accessToken
-    } else {
-      // Step 5: Exchange CIS2 access token for a new Apigee access token
-      logger.info("Exchanging CIS2 access token for Apigee access token")
-
-      // Fetch the private key for signing the client assertion
-      const jwtPrivateKey = await getSecret(jwtPrivateKeyArn)
-      if (!jwtPrivateKey || typeof jwtPrivateKey !== "string") {
-        throw new Error("Invalid or missing JWT private key")
-      }
-
-      // Construct the token exchange payload
-      const tokenExchangeData = {
-        grant_type: "urn:ietf:params:oauth:grant-type:token-exchange",
-        subject_token_type: "urn:ietf:params:oauth:token-type:id_token",
-        subject_token: CIS2_accessToken,
-        client_id: process.env["oidcClientId"]
-      }
-
-      // Rewrite payload to include the signed JWT client assertion
-      const rewrittenBody = rewriteBodyToAddSignedJWT(
-        logger,
-        tokenExchangeData,
-        apigeeTokenEndpoint,
-        jwtPrivateKey
-      )
-
-      // Make the token exchange request
-      const tokenResponse = await axiosInstance.post(
-        apigeeTokenEndpoint,
-        stringify(rewrittenBody),
-        {headers: {"Content-Type": "application/x-www-form-urlencoded"}}
-      )
-
-      apigeeAccessToken = tokenResponse.data.access_token
-
-      // Step 6: Store the new Apigee access token in DynamoDB
-      await documentClient.send(
-        new UpdateCommand({
-          TableName: TokenMappingTableName,
-          Key: {username},
-          UpdateExpression:
-            "SET Apigee_accessToken = :apigeeAccessToken, Apigee_expiresIn = :apigeeExpiresIn",
-          ExpressionAttributeValues: {
-            ":apigeeAccessToken": apigeeAccessToken,
-            ":apigeeExpiresIn": currentTime + tokenResponse.data.expires_in
-          }
-        })
-      )
-
-      logger.info("Updated Apigee access token in DynamoDB")
-    }
+    logger.info("Apigee access token updated in DynamoDB")
   } catch (error) {
-    if (error instanceof Error) {
-      logger.error("Error during Apigee token exchange or DynamoDB operations", {error})
-      return {
-        statusCode: 500,
-        body: JSON.stringify({
-          message: "Error during Apigee token exchange",
-          details: error.message || "Unknown error"
-        })
-      }
-    }
-    logger.error("Unexpected non-error object thrown during token exchange", {error})
+    logger.error("Error during token exchange or DynamoDB operations", {error})
     return {
       statusCode: 500,
       body: JSON.stringify({
-        message: "Unexpected error",
-        details: "Unknown error occurred"
+        message: "Error during token operations",
+        details: error instanceof Error ? error.message : "Unknown error"
       })
     }
   }
 
-  // Step 7: Fetch prescription data from Apigee API
+  // Step 4: Fetch prescription data from the Apigee API
   const prescriptionId = event.queryStringParameters?.prescriptionId || "defaultId"
 
+  // Error handling for fetching prescription data
   try {
     logger.info("Calling Apigee API to fetch prescription data", {prescriptionId})
     const apigeeResponse = await axiosInstance.get(
@@ -178,27 +121,41 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
       body: JSON.stringify(apigeeResponse.data),
       headers: formatHeaders(apigeeResponse.headers)
     }
-  } catch (apigeeError) {
-    if (apigeeError instanceof AxiosError) {
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
       logger.error("Error fetching prescription data from Apigee", {
-        error: apigeeError.message,
-        response: apigeeError.response?.data
+        error: error.message,
+        response: error.response?.data
       })
+
       return {
-        statusCode: apigeeError.response?.status || 500,
+        statusCode: error.response?.status || 500,
         body: JSON.stringify({
           message: "Failed to fetch prescription data from Apigee API",
-          details: apigeeError.response?.data || "Unknown error"
+          details: error.response?.data || "Unknown error"
         })
       }
-    }
-    logger.error("Unexpected non-error object thrown during prescription fetch", {apigeeError})
-    return {
-      statusCode: 500,
-      body: JSON.stringify({
-        message: "Unexpected error",
-        details: "Unknown error occurred"
+    } else if (error instanceof Error) {
+      logger.error("General error fetching prescription data from Apigee", {
+        error: error.message
       })
+
+      return {
+        statusCode: 500,
+        body: JSON.stringify({
+          message: "Unexpected error",
+          details: error.message
+        })
+      }
+    } else {
+      logger.error("Unexpected non-error object thrown during prescription fetch", {error})
+      return {
+        statusCode: 500,
+        body: JSON.stringify({
+          message: "Unexpected error",
+          details: "Unknown error occurred"
+        })
+      }
     }
   }
 }

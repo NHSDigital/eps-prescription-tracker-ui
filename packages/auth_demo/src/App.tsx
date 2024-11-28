@@ -82,11 +82,11 @@ function App() {
         params: {prescriptionId},
         headers: {
           /**
-           * Provide the Cognito access token:
+           * Provide the Cognito id token:
            * - This token is issued by AWS Cognito and is used to authenticate the request.
            * - The backend uses this token to identify the user and securely manage CIS2/Apigee tokens.
            */
-          Authorization: `Bearer ${accessToken}`,
+          Authorization: `Bearer ${idToken}`,
           /**
            * Include the hardcoded role ID in the `NHSD-Session-URID` header:
            * - This is required for the CPT API to handle the request correctly.

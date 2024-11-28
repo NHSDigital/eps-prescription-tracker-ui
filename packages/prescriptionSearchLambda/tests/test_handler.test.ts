@@ -40,10 +40,16 @@ describe("handler tests", () => {
   })
 
   it("responds with error when body does not exist", async () => {
-
     const response = await handler({}, dummyContext)
+    const responseBody = JSON.parse(response.body)
+
     expect(response).toMatchObject({
-      message: "A system error has occurred"
+      statusCode: 500
+    })
+
+    expect(responseBody).toMatchObject({
+      message: "Error during token operations",
+      details: "Token mapping table name is not set in environment variables."
     })
   })
 
