@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react'
+import React, {useEffect, useState} from "react"
 import {Hub} from "aws-amplify/utils"
 import {signInWithRedirect, signOut, getCurrentUser, fetchAuthSession, JWT} from "aws-amplify/auth"
 import {Amplify} from "aws-amplify"
@@ -65,10 +65,9 @@ function App() {
       console.log("Not signed in")
     }
   }
-
   const fetchPrescriptionData = async () => {
     if (!prescriptionId) {
-      setError('Please enter a Prescription ID.')
+      setError("Please enter a Prescription ID.")
       return
     }
 
@@ -77,17 +76,34 @@ function App() {
     setError(null)
 
     try {
-      const response = await axios.get(API_ENDPOINT, {
+      // Call /prescription-search endpoint
+      const prescriptionResponse = await axios.get("/api/prescription-search", {
         params: {prescriptionId},
         headers: {
-          Authorization: `Bearer ${idToken}`,
-          'NHSD-Session-URID': '555254242106'
-        }
+          /**
+           * Provide the Cognito access token:
+           * The backend requires the Cognito access token in the `Authorization` header to authenticate the request.
+           * - This access token is issued to the logged-in user by AWS Cognito.
+           * - It is used by the backend to identify the user making the request.
+           * - The backend uses this token to retrieve the user's `CIS2_accessToken` from DynamoDB
+           *   and, if necessary, exchange it for an `Apigee_accessToken`.
+           * - The retrieved or exchanged token is then used to make the CPT API call.
+           */
+          Authorization: `Bearer ${accessToken}`,
+          /**
+           * Include the hardcoded role ID in the `NHSD-Session-URID` header:
+           * - The backend forwards this header to the CPT API, ensuring the request includes the correct role context.
+           * - This role ID is essential for the CPT API to process the request appropriately.
+           */
+          "NHSD-Session-URID": "555254242106"
+        },
       })
-      setPrescriptionData(response.data)
+
+      // Update the frontend state with the fetched prescription data
+      setPrescriptionData(prescriptionResponse.data)
     } catch (err) {
-      setError('Failed to fetch prescription data.')
-      console.error('Error fetching data:', err)
+      setError("Failed to fetch prescription data.")
+      console.error("Error fetching data:", err)
     } finally {
       setLoading(false)
     }
