@@ -148,17 +148,17 @@ export const verifyIdToken = async (idToken: string, logger: Logger) => {
   // Decode the token header to get the kid
   const decodedToken = jwt.decode(idToken, {complete: true})
   if (!decodedToken || typeof decodedToken === "string") {
-    throw new Error("Invalid token")
+    throw new Error("Invalid token - token is either undefined or a string")
   }
   const kid = decodedToken.header.kid
+  if (!kid) {
+    throw new Error("Invalid token - no KID present")
+  }
   logger.info("Token KID", {kid})
 
   // Fetch the signing key from the JWKS endpoint
   let signingKey
   try {
-    if (!kid) {
-      throw new Error("Invalid token")
-    }
     logger.info("Fetching signing key", {kid})
     signingKey = await getSigningKey(client, kid)
   } catch (err) {
@@ -179,7 +179,7 @@ export const verifyIdToken = async (idToken: string, logger: Logger) => {
     verifiedToken = jwt.verify(idToken, signingKey, options) as JwtPayload
   } catch (err) {
     logger.error("Error verifying token", {err})
-    throw new Error("Invalid ID token")
+    throw new Error("Invalid ID token - JWT verification failed")
   }
   logger.info("ID token verified successfully", {verifiedToken})
 
@@ -205,6 +205,7 @@ export const verifyIdToken = async (idToken: string, logger: Logger) => {
   const aud = verifiedToken.aud
   const audArray = Array.isArray(aud) ? aud : [aud]
   if (!audArray.includes(oidcClientId)) {
+    logger.info("Invalid audience in ID token", {aud})
     throw new Error("Invalid audience in ID token")
   }
   logger.info("aud claim is valid", {aud})
