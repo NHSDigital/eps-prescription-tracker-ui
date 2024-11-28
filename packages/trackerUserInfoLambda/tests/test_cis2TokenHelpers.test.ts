@@ -5,7 +5,8 @@ import {
   getUsernameFromEvent,
   fetchCIS2TokensFromDynamoDB,
   fetchAndVerifyCIS2Tokens,
-  verifyIdToken
+  verifyIdToken,
+  verifyAccessToken
 } from "../src/cis2TokenHelpers"
 
 import {APIGatewayProxyEvent} from "aws-lambda"
@@ -412,5 +413,160 @@ describe("verifyIdToken", () => {
 
     // Act and Assert
     await expect(verifyIdToken(token, logger)).rejects.toThrow("Invalid ACR claim in ID token")
+  })
+})
+
+describe("verifyAccessToken", () => {
+  const logger = new Logger()
+
+  const oidcClientId = process.env["oidcClientId"] as string
+  const oidcIssuer = process.env["oidcIssuer"]
+  const jwksEndpoint = process.env["oidcjwksEndpoint"] as string
+
+  let jwksMock: ReturnType<typeof createJWKSMock>
+  let stopJwksMock: () => void
+
+  beforeAll(() => {
+    jwksMock = createJWKSMock(jwksEndpoint)
+    stopJwksMock = jwksMock.start()
+  })
+
+  afterAll(() => {
+    stopJwksMock()
+  })
+
+  beforeEach(() => {
+    jest.restoreAllMocks()
+  })
+
+  it("should verify a valid access token", async () => {
+    // Arrange
+    const payload = {
+      iss: oidcIssuer,
+      aud: [oidcClientId],
+      exp: Math.floor(Date.now() / 1000) + 3600,
+      acr: "AAL3_ANY",
+      auth_time: Math.floor(Date.now() / 1000)
+    }
+
+    const token = jwksMock.token(payload)
+
+    jest.spyOn(jwt, "verify").mockImplementation(() => payload)
+
+    // Act and Assert
+    await expect(verifyAccessToken(token, logger)).resolves.toBeUndefined()
+  })
+
+  it("should throw an error when access token is not provided", async () => {
+    // Act and Assert
+    await expect(verifyAccessToken("", logger)).rejects.toThrow("Access token not provided")
+  })
+
+  it("should throw an error when access token cannot be decoded", async () => {
+    // Act and Assert
+    await expect(verifyAccessToken("invalid-token", logger)).rejects.toThrow("Invalid token")
+  })
+
+  it("should throw an error when access token header does not contain kid", async () => {
+    // Arrange
+    const payload = {
+      iss: oidcIssuer,
+      aud: [oidcClientId],
+      exp: Math.floor(Date.now() / 1000) + 3600,
+      acr: "AAL3_ANY",
+      auth_time: Math.floor(Date.now() / 1000)
+    }
+
+    const token = jwksMock.token(payload)
+
+    jest.spyOn(jwt, "decode").mockReturnValueOnce({header: {}})
+
+    // Act and Assert
+    await expect(verifyAccessToken(token, logger)).rejects.toThrow("Invalid token - no KID present")
+  })
+
+  it("should throw an error when jwt.verify fails", async () => {
+    // Arrange
+    const payload = {
+      iss: oidcIssuer,
+      aud: oidcClientId,
+      exp: Math.floor(Date.now() / 1000) + 3600,
+      acr: "AAL3_ANY",
+      auth_time: Math.floor(Date.now() / 1000)
+    }
+
+    const token = jwksMock.token(payload)
+
+    // Mock jwt.verify to throw an error
+    jest.spyOn(jwt, "verify").mockImplementation(() => {
+      throw new Error("Invalid signature")
+    })
+
+    // Act and Assert
+    await expect(verifyAccessToken(token, logger)).rejects.toThrow("Invalid access token")
+  })
+
+  it("should throw an error when access token is expired", async () => {
+    // Arrange
+    const payload = {
+      iss: oidcIssuer,
+      aud: oidcClientId,
+      exp: Math.floor(Date.now() / 1000) - 3600, // Expired token
+      acr: "AAL3_ANY",
+      auth_time: Math.floor(Date.now() / 1000) - 7200
+    }
+
+    const token = jwksMock.token(payload)
+
+    // Act and Assert
+    await expect(verifyAccessToken(token, logger)).rejects.toThrow("Invalid access token - JWT verification failed")
+  })
+
+  it("should throw an error when issuer does not match", async () => {
+    // Arrange
+    const payload = {
+      iss: "https://wrong-issuer.com",
+      aud: oidcClientId,
+      exp: Math.floor(Date.now() / 1000) + 3600,
+      acr: "AAL3_ANY",
+      auth_time: Math.floor(Date.now() / 1000)
+    }
+
+    const token = jwksMock.token(payload)
+
+    // Act and Assert
+    await expect(verifyAccessToken(token, logger)).rejects.toThrow("Invalid access token - JWT verification failed")
+  })
+
+  it("should throw an error when audience does not match", async () => {
+    // Arrange
+    const payload = {
+      iss: oidcIssuer,
+      aud: "wrong-client-id",
+      exp: Math.floor(Date.now() / 1000) + 3600,
+      acr: "AAL3_ANY",
+      auth_time: Math.floor(Date.now() / 1000)
+    }
+
+    const token = jwksMock.token(payload)
+
+    // Act and Assert
+    await expect(verifyAccessToken(token, logger)).rejects.toThrow("Invalid access token - JWT verification failed")
+  })
+
+  it("should throw an error when ACR claim is invalid", async () => {
+    // Arrange
+    const payload = {
+      iss: oidcIssuer,
+      aud: oidcClientId,
+      exp: Math.floor(Date.now() / 1000) + 3600,
+      acr: "INVALID_ACR",
+      auth_time: Math.floor(Date.now() / 1000)
+    }
+
+    const token = jwksMock.token(payload)
+
+    // Act and Assert
+    await expect(verifyAccessToken(token, logger)).rejects.toThrow("Invalid ACR claim in access token")
   })
 })

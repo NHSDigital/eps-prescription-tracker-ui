@@ -103,8 +103,9 @@ export const fetchAndVerifyCIS2Tokens = async (
     logger
   )
 
-  // Verify the ID token
+  // Verify the tokens
   await verifyIdToken(cis2IdToken, logger)
+  await verifyAccessToken(cis2AccessToken, logger)
 
   // And return the verified tokens
   return {cis2AccessToken, cis2IdToken}
@@ -160,7 +161,7 @@ export const verifyIdToken = async (idToken: string, logger: Logger) => {
   }
   logger.info("Signing key fetched successfully")
 
-  // Verify the token
+  // Verify the token signature
   const options = {
     issuer: oidcIssuer,
     audience: oidcClientId,
@@ -179,12 +180,7 @@ export const verifyIdToken = async (idToken: string, logger: Logger) => {
   // Manual Verification checks,
   // c.f. https://tinyurl.com/2rz5xxup
 
-  // Check that token hasn't expired (verification step above should do this, but just in case)
-  const now = Math.floor(Date.now() / 1000)
-  if (verifiedToken.exp && verifiedToken.exp < now) {
-    throw new Error("ID token has expired")
-  }
-  logger.info("Token has not expired", {exp: verifiedToken.exp})
+  // Check that token hasn't expired (verification step above should do this)
 
   // the iss claim MUST exactly match the issuer in the OIDC configuration
   // This is checked by the `jwt.verify` function
@@ -208,6 +204,118 @@ export const verifyIdToken = async (idToken: string, logger: Logger) => {
     logger.info("ACR claim starts with AAL3_, so is valid", {acr})
     valid_acr = true
   }
+  // These are manually flagged as ok
+  if (VALID_ACR_VALUES.includes(acr)) {
+    logger.info("ACR claim is in the list of valid values", {acr})
+    valid_acr = true
+  }
+  if (!valid_acr) {
+    throw new Error("Invalid ACR claim in ID token")
+  }
+  logger.debug("acr claim is valid", {acr})
+
+  // We don't check the auth_time claim here.
+  // From the docs:
+  //   It is anticipated that Relying Parties will only require access to the UserInfo Endpoint at the time of the
+  //   original End-User authentication. This should only happen once as part of a Relying Party authentication
+  //   journey and the Access Token can be used immediately, then discarded. In NHS CIS2 Authentication, there should
+  //   be no other need to retrieve the User Info after this point in time.
+  //   Therefore the use of the Refresh Token to obtain a new Access Token is not recommended.
+}
+
+export const verifyAccessToken = async (accessToken: string, logger: Logger) => {
+  const oidcIssuer = process.env["oidcIssuer"]
+  if (!oidcIssuer) {
+    throw new Error("OIDC issuer not set")
+  }
+  const oidcClientId = process.env["oidcClientId"]
+  if (!oidcClientId) {
+    throw new Error("OIDC client ID not set")
+  }
+  const jwksUri = process.env["oidcjwksEndpoint"]
+  if (!jwksUri) {
+    throw new Error("JWKS URI not set")
+  }
+
+  logger.info("Verifying access token", {oidcIssuer, oidcClientId})
+
+  if (!accessToken) {
+    throw new Error("Access token not provided")
+  }
+
+  // Create a JWKS client
+  const client = jwksClient({
+    jwksUri: `${jwksUri}`,
+    cache: true,
+    cacheMaxEntries: 5,
+    cacheMaxAge: 3600000 // 1 hour
+  })
+
+  // Decode the token header to get the kid
+  const decodedToken = jwt.decode(accessToken, {complete: true})
+  if (!decodedToken || typeof decodedToken === "string") {
+    throw new Error("Invalid token - token is either undefined or a string")
+  }
+  const kid = decodedToken.header.kid
+  if (!kid) {
+    throw new Error("Invalid token - no KID present")
+  }
+  logger.info("Token KID", {kid})
+
+  // Fetch the signing key from the JWKS endpoint
+  let signingKey
+  try {
+    logger.info("Fetching signing key", {kid})
+    signingKey = await getSigningKey(client, kid)
+  } catch (err) {
+    logger.error("Error getting signing key", {err})
+    throw new Error("Error getting signing key")
+  }
+  logger.info("Signing key fetched successfully")
+
+  const options = {
+    issuer: oidcIssuer,
+    audience: oidcClientId,
+    clockTolerance: 5 // seconds
+  }
+
+  let verifiedToken: JwtPayload
+  try {
+    verifiedToken = jwt.verify(accessToken, signingKey, options) as JwtPayload
+  } catch (err) {
+    logger.error("Error verifying token", {err})
+    throw new Error("Invalid access token - JWT verification failed")
+  }
+  logger.info("Access token verified successfully", {verifiedToken})
+
+  // Manual Verification checks,
+  // c.f. https://tinyurl.com/2rz5xxup
+
+  // Check that token hasn't expired (verification step above should do this)
+
+  // the iss claim MUST exactly match the issuer in the OIDC configuration
+  // This is checked by the `jwt.verify` function
+
+  // the aud MUST contain our relying party client_id value
+  // This is checked by the `jwt.verify` function
+
+  // Not-checked check!
+  // From what I can tell, we're not using a known nonce. If we do end up using one, we should check it here.
+
+  // The `acr` claim must be present and have a valid value
+  let acr = verifiedToken.acr
+  if (!acr) {
+    logger.info("No ACR claim from the token. Assuming AAL3_ANY")
+    acr = "AAL3_ANY"
+  }
+
+  let valid_acr = false
+  // If it starts with "AAL3_", it's valid
+  if (acr.startsWith("AAL3_")) {
+    logger.info("ACR claim starts with AAL3_, so is valid", {acr})
+    valid_acr = true
+  }
+  // These are manually flagged as ok
   if (VALID_ACR_VALUES.includes(acr)) {
     logger.info("ACR claim is in the list of valid values", {acr})
     valid_acr = true
