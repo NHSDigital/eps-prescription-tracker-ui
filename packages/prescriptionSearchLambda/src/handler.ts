@@ -43,9 +43,10 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   // Step 1: Retrieve username from Cognito claims
   const username = event.requestContext.authorizer?.claims["cognito:username"]
   if (!username) {
+    logger.error("Username not found in Cognito claims.")
     return {
       statusCode: 400,
-      body: JSON.stringify({message: "Missing or invalid username"}),
+      body: JSON.stringify({message: "Missing or invalid username in access token"})
     }
   }
 

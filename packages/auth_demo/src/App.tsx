@@ -65,6 +65,7 @@ function App() {
       console.log("Not signed in")
     }
   }
+
   const fetchPrescriptionData = async () => {
     if (!prescriptionId) {
       setError("Please enter a Prescription ID.")
@@ -82,21 +83,20 @@ function App() {
         headers: {
           /**
            * Provide the Cognito access token:
-           * The backend requires the Cognito access token in the `Authorization` header to authenticate the request.
-           * - This access token is issued to the logged-in user by AWS Cognito.
-           * - It is used by the backend to identify the user making the request.
-           * - The backend uses this token to retrieve the user's `CIS2_accessToken` from DynamoDB
-           *   and, if necessary, exchange it for an `Apigee_accessToken`.
-           * - The retrieved or exchanged token is then used to make the CPT API call.
+           * - This token is used to authenticate the request to the backend.
+           * - The backend uses this token to:
+           *   1. Identify the user via the `username` claim.
+           *   2. Retrieve the user's `CIS2_accessToken` from DynamoDB.
+           *   3. Exchange the `CIS2_accessToken` for an `Apigee_accessToken` if necessary.
+           *   4. Perform the CPT API call using the `Apigee_accessToken`.
            */
           Authorization: `Bearer ${accessToken}`,
           /**
            * Include the hardcoded role ID in the `NHSD-Session-URID` header:
-           * - The backend forwards this header to the CPT API, ensuring the request includes the correct role context.
-           * - This role ID is essential for the CPT API to process the request appropriately.
+           * - This is required for the CPT API to handle the request correctly.
            */
           "NHSD-Session-URID": "555254242106"
-        },
+        }
       })
 
       // Update the frontend state with the fetched prescription data
