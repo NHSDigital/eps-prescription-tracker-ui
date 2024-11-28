@@ -77,18 +77,14 @@ function App() {
     setError(null)
 
     try {
-      // Call /prescription-search endpoint
+      // Call the backend to fetch prescription data
       const prescriptionResponse = await axios.get(API_ENDPOINT, {
         params: {prescriptionId},
         headers: {
           /**
            * Provide the Cognito access token:
-           * - This token is used to authenticate the request to the backend.
-           * - The backend uses this token to:
-           *   1. Identify the user via the `username` claim.
-           *   2. Retrieve the user's `CIS2_accessToken` from DynamoDB.
-           *   3. Exchange the `CIS2_accessToken` for an `Apigee_accessToken` if necessary.
-           *   4. Perform the CPT API call using the `Apigee_accessToken`.
+           * - This token is issued by AWS Cognito and is used to authenticate the request.
+           * - The backend uses this token to identify the user and securely manage CIS2/Apigee tokens.
            */
           Authorization: `Bearer ${accessToken}`,
           /**

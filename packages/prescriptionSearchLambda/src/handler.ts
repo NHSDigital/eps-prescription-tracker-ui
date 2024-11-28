@@ -9,7 +9,7 @@ import axios, {AxiosError} from "axios"
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
 import {DynamoDBDocumentClient, GetCommand, UpdateCommand} from "@aws-sdk/lib-dynamodb"
 import {rewriteBodyToAddSignedJWT, formatHeaders} from "./helpers"
-import {stringify} from "querystring" // Ensure stringify is imported here
+import {stringify} from "querystring"
 
 // Logger initialization
 const logger = new Logger({serviceName: "prescriptionSearch"})
@@ -40,7 +40,17 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
   const axiosInstance = axios.create()
 
-  // Step 1: Retrieve username from Cognito claims
+  // Step 1: Validate the Cognito `Authorization` header
+  const authorizationHeader = event.headers["Authorization"] || event.headers["authorization"]
+  if (!authorizationHeader || !authorizationHeader.startsWith("Bearer ")) {
+    logger.error("Missing or invalid Authorization header.")
+    return {
+      statusCode: 401,
+      body: JSON.stringify({message: "Unauthorized: Missing or invalid Authorization header."})
+    }
+  }
+
+  // Step 2: Extract the username from Cognito claims
   const username = event.requestContext.authorizer?.claims["cognito:username"]
   if (!username) {
     logger.error("Username not found in Cognito claims.")
@@ -52,7 +62,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
   let apigeeAccessToken
   try {
-    // Step 2: Fetch user token data from DynamoDB
+    // Step 3: Retrieve token data from DynamoDB
     logger.info("Fetching CIS2 access token and Apigee access token from DynamoDB")
     const result = await documentClient.send(
       new GetCommand({
@@ -72,12 +82,12 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     const {CIS2_accessToken, Apigee_accessToken, Apigee_expiresIn} = result.Item
     const currentTime = Math.floor(Date.now() / 1000)
 
-    // Step 3: Check if Apigee access token is valid or expired
+    // Step 4: Check if the Apigee access token is still valid
     if (Apigee_accessToken && Apigee_expiresIn > currentTime) {
       logger.info("Using existing Apigee access token from DynamoDB")
       apigeeAccessToken = Apigee_accessToken
     } else {
-      // Step 4: Exchange CIS2 access token for an Apigee access token
+      // Step 5: Exchange CIS2 access token for a new Apigee access token
       logger.info("Exchanging CIS2 access token for Apigee access token")
 
       // Fetch the private key for signing the client assertion
@@ -111,7 +121,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
       apigeeAccessToken = tokenResponse.data.access_token
 
-      // Step 5: Store the new Apigee access token in DynamoDB
+      // Step 6: Store the new Apigee access token in DynamoDB
       await documentClient.send(
         new UpdateCommand({
           TableName: TokenMappingTableName,
@@ -148,7 +158,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     }
   }
 
-  // Step 6: Fetch prescription data from Apigee API
+  // Step 7: Fetch prescription data from Apigee API
   const prescriptionId = event.queryStringParameters?.prescriptionId || "defaultId"
 
   try {
