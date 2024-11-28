@@ -5,7 +5,7 @@ import middy from "@middy/core"
 import {getSecret} from "@aws-lambda-powertools/parameters/secrets"
 import inputOutputLogger from "@middy/input-output-logger"
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
-import axios from "axios"
+import axios, {AxiosError} from "axios"
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
 import {DynamoDBDocumentClient, GetCommand, UpdateCommand} from "@aws-sdk/lib-dynamodb"
 import {rewriteBodyToAddSignedJWT, formatHeaders} from "./helpers"
@@ -127,12 +127,22 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
       logger.info("Updated Apigee access token in DynamoDB")
     }
   } catch (error) {
-    logger.error("Error during Apigee token exchange or DynamoDB operations", {error})
+    if (error instanceof Error) {
+      logger.error("Error during Apigee token exchange or DynamoDB operations", {error})
+      return {
+        statusCode: 500,
+        body: JSON.stringify({
+          message: "Error during Apigee token exchange",
+          details: error.message || "Unknown error"
+        })
+      }
+    }
+    logger.error("Unexpected non-error object thrown during token exchange", {error})
     return {
       statusCode: 500,
       body: JSON.stringify({
-        message: "Error during Apigee token exchange",
-        details: error.message || "Unknown error"
+        message: "Unexpected error",
+        details: "Unknown error occurred"
       })
     }
   }
@@ -158,12 +168,25 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
       headers: formatHeaders(apigeeResponse.headers)
     }
   } catch (apigeeError) {
-    logger.error("Error fetching prescription data from Apigee", {apigeeError})
+    if (apigeeError instanceof AxiosError) {
+      logger.error("Error fetching prescription data from Apigee", {
+        error: apigeeError.message,
+        response: apigeeError.response?.data
+      })
+      return {
+        statusCode: apigeeError.response?.status || 500,
+        body: JSON.stringify({
+          message: "Failed to fetch prescription data from Apigee API",
+          details: apigeeError.response?.data || "Unknown error"
+        })
+      }
+    }
+    logger.error("Unexpected non-error object thrown during prescription fetch", {apigeeError})
     return {
-      statusCode: apigeeError.response?.status || 500,
+      statusCode: 500,
       body: JSON.stringify({
-        message: "Failed to fetch prescription data from Apigee API",
-        details: apigeeError.response?.data || "Unknown error"
+        message: "Unexpected error",
+        details: "Unknown error occurred"
       })
     }
   }
