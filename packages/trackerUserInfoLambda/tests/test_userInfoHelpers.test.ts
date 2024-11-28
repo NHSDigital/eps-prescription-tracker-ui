@@ -5,7 +5,7 @@ import {UserInfoResponse, TrackerUserInfo} from "../src/userInfoTypes"
 
 import {Logger} from "@aws-lambda-powertools/logger"
 import axios from "axios"
-import {DynamoDBDocumentClient, UpdateCommand, UpdateCommandOutput} from "@aws-sdk/lib-dynamodb"
+import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
 
 describe("fetchUserInfo", () => {
@@ -13,9 +13,6 @@ describe("fetchUserInfo", () => {
   const accessToken = "test-access-token"
   const acceptedAccessCodes = ["CPT_CODE"]
   const selectedRoleId = "role-id-1"
-
-  const dynamoDBClient = new DynamoDBClient({})
-  const documentClient = DynamoDBDocumentClient.from(dynamoDBClient)
 
   const originalTokenMappingTableName = process.env["TokenMappingTableName"]
   const originalUserInfoEndpoint = process.env["userInfoEndpoint"]

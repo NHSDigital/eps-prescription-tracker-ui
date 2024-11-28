@@ -123,7 +123,8 @@ function getOrgNameFromOrgCode(data: UserInfoResponse, orgCode: string, logger: 
   return org ? org.org_name : undefined
 }
 
-// Add the user currentlySelectedRole, rolesWithAccess and rolesWithoutAccess to the dynamoDB document, keyed by this user's username.
+// Add the user currentlySelectedRole, rolesWithAccess and rolesWithoutAccess to the dynamoDB document,
+// keyed by this user's username.
 export const updateDynamoTable = async (
   username: string,
   data: TrackerUserInfo,
@@ -143,6 +144,7 @@ export const updateDynamoTable = async (
         TableName: tokenMappingTableName,
         Key: {username},
         UpdateExpression:
+        // eslint-disable-next-line max-len
           "SET rolesWithAccess = :rolesWithAccess, rolesWithoutAccess = :rolesWithoutAccess, currentlySelectedRole = :currentlySelectedRole",
         ExpressionAttributeValues: {
           ":rolesWithAccess": data.roles_with_access,
