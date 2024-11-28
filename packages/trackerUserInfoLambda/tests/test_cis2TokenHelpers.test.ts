@@ -360,11 +360,8 @@ describe("verifyIdToken", () => {
 
     const token = jwksMock.token(payload)
 
-    // Mock the jwt.verify to return payload
-    jest.spyOn(jwt, "verify").mockImplementation(() => payload)
-
     // Act and Assert
-    await expect(verifyIdToken(token, logger)).rejects.toThrow("ID token has expired")
+    await expect(verifyIdToken(token, logger)).rejects.toThrow("Invalid ID token - JWT verification failed")
   })
 
   it("should throw an error when issuer does not match", async () => {

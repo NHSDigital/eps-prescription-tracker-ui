@@ -321,7 +321,7 @@ export const verifyAccessToken = async (accessToken: string, logger: Logger) => 
     valid_acr = true
   }
   if (!valid_acr) {
-    throw new Error("Invalid ACR claim in ID token")
+    throw new Error("Invalid ACR claim in access token")
   }
   logger.debug("acr claim is valid", {acr})
 

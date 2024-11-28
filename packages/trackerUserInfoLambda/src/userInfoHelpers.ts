@@ -56,14 +56,14 @@ export const fetchUserInfo = async (
       logger.debug("Role CPT access?", {hasAccess})
 
       const roleInfo: RoleDetails = {
-        roleName: role.role_name,
-        roleID: role.person_roleid,
-        orgCode: role.org_code,
-        orgName: getOrgNameFromOrgCode(data, role.org_code, logger)
+        role_name: role.role_name,
+        role_id: role.person_roleid,
+        org_code: role.org_code,
+        org_name: getOrgNameFromOrgCode(data, role.org_code, logger)
       }
 
       // Ensure the role has at least one of the required fields
-      if (!(roleInfo.roleName || roleInfo.roleID || roleInfo.orgCode || roleInfo.orgName)) {
+      if (!(roleInfo.role_name || roleInfo.role_id || roleInfo.org_code || roleInfo.org_name)) {
         // Skip roles that don't meet the minimum field requirements
         logger.warn("Role does not meet minimum field requirements", {roleInfo})
         return
@@ -78,9 +78,9 @@ export const fetchUserInfo = async (
       }
 
       // Determine the currently selected role
-      logger.debug("Checking if role is currently selected", {selectedRoleId, roleID: role.person_roleid, roleInfo})
+      logger.debug("Checking if role is currently selected", {selectedRoleId, role_id: role.person_roleid, roleInfo})
       if (selectedRoleId && role.person_roleid === selectedRoleId) {
-        logger.debug("Role is currently selected", {roleID: role.person_roleid, roleInfo})
+        logger.debug("Role is currently selected", {role_id: role.person_roleid, roleInfo})
         if (hasAccess) {
           logger.debug("Role has access; setting as currently selected", {roleInfo})
           currentlySelectedRole = roleInfo
@@ -117,10 +117,10 @@ export const fetchUserInfo = async (
 }
 
 // Helper function to get organization name from org_code
-function getOrgNameFromOrgCode(data: UserInfoResponse, orgCode: string, logger: Logger): string | undefined {
-  logger.info("Getting org name from org code", {orgCode, data})
+function getOrgNameFromOrgCode(data: UserInfoResponse, org_code: string, logger: Logger): string | undefined {
+  logger.info("Getting org name from org code", {org_code, data})
   const orgs = data.nhsid_user_orgs || []
-  const org = orgs.find((o) => o.org_code === orgCode)
+  const org = orgs.find((o) => o.org_code === org_code)
   logger.info("Found org", {org})
   return org ? org.org_name : undefined
 }

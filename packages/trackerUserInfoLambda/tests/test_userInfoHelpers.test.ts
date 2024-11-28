@@ -90,25 +90,25 @@ describe("fetchUserInfo", () => {
       },
       roles_with_access: [
         {
-          roleName: "Doctor",
-          roleID: "role-id-1",
-          orgCode: "ORG1",
-          orgName: "Organization One"
+          role_name: "Doctor",
+          role_id: "role-id-1",
+          org_code: "ORG1",
+          org_name: "Organization One"
         }
       ],
       roles_without_access: [
         {
-          roleName: "Nurse",
-          roleID: "role-id-2",
-          orgCode: "ORG2",
-          orgName: "Organization Two"
+          role_name: "Nurse",
+          role_id: "role-id-2",
+          org_code: "ORG2",
+          org_name: "Organization Two"
         }
       ],
       currently_selected_role: {
-        roleName: "Doctor",
-        roleID: "role-id-1",
-        orgCode: "ORG1",
-        orgName: "Organization One"
+        role_name: "Doctor",
+        role_id: "role-id-1",
+        org_code: "ORG1",
+        org_name: "Organization One"
       }
     })
   })
@@ -166,10 +166,10 @@ describe("fetchUserInfo", () => {
       roles_with_access: [],
       roles_without_access: [
         {
-          roleName: "Receptionist",
-          roleID: "role-id-3",
-          orgCode: "ORG3",
-          orgName: "Organization Three"
+          role_name: "Receptionist",
+          role_id: "role-id-3",
+          org_code: "ORG3",
+          org_name: "Organization Three"
         }
       ],
       currently_selected_role: undefined
@@ -237,31 +237,31 @@ describe("updateDynamoTable", () => {
     },
     roles_with_access: [
       {
-        roleName: "Doctor",
-        roleID: "123",
-        orgCode: "ABC",
-        orgName: "Test Hospital",
-        siteName: "Main",
-        siteAddress: "123 Street"
+        role_name: "Doctor",
+        role_id: "123",
+        org_code: "ABC",
+        org_name: "Test Hospital",
+        site_name: "Main",
+        site_address: "123 Street"
       }
     ],
     roles_without_access: [
       {
-        roleName: "Nurse",
-        roleID: "456",
-        orgCode: "DEF",
-        orgName: "Test Clinic",
-        siteName: "Branch",
-        siteAddress: "456 Avenue"
+        role_name: "Nurse",
+        role_id: "456",
+        org_code: "DEF",
+        org_name: "Test Clinic",
+        site_name: "Branch",
+        site_address: "456 Avenue"
       }
     ],
     currently_selected_role: {
-      roleName: "Doctor",
-      roleID: "123",
-      orgCode: "ABC",
-      orgName: "Test Hospital",
-      siteName: "Main",
-      siteAddress: "123 Street"
+      role_name: "Doctor",
+      role_id: "123",
+      org_code: "ABC",
+      org_name: "Test Hospital",
+      site_name: "Main",
+      site_address: "123 Street"
     }
   }
 
