@@ -21,13 +21,28 @@ describe("rewriteBodyToAddSignedJWT tests", () => {
 
   it("should add a signed JWT to the body parameters", () => {
     const result = rewriteBodyToAddSignedJWT(logger, objectBodyParameters, idpTokenPath, jwtPrivateKey)
+
+    // Validate the rewritten body parameters
     expect(result.client_assertion_type).toBe("urn:ietf:params:oauth:client-assertion-type:jwt-bearer")
     expect(result.client_assertion).toBe("mocked-jwt-token")
     expect(result.client_secret).toBeUndefined()
-    expect(sign).toHaveBeenCalledWith(expect.objectContaining({
-      iss: "test-client-id",
-      sub: "test-client-id",
-      aud: idpTokenPath
-    }), jwtPrivateKey, {algorithm: "RS512", keyid: "eps-clinical-tracker"})
+
+    // Validate that `sign` was called with the correct arguments
+    expect(sign).toHaveBeenCalledWith(
+      expect.objectContaining({
+        iss: "test-client-id",
+        sub: "test-client-id",
+        aud: idpTokenPath,
+      }),
+      jwtPrivateKey,
+      {
+        algorithm: "RS512",
+        header: {
+          alg: "RS512",
+          typ: "JWT",
+          kid: "eps-clinical-tracker",
+        },
+      }
+    )
   })
 })

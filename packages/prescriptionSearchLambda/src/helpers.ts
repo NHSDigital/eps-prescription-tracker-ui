@@ -55,6 +55,7 @@ export function rewriteBodyToAddSignedJWT(
   const signOptions: jwt.SignOptions = {
     algorithm: "RS512",
     header: {
+      alg: "RS512",
       typ: "JWT",
       kid: "eps-clinical-tracker"
     }
