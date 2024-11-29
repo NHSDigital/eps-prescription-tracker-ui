@@ -20,7 +20,7 @@ import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
 // Common test setup
 const logger = new Logger()
 const oidcClientId = process.env["oidcClientId"] as string
-const oidcIssuer = process.env["oidcIssuer"]
+const oidcIssuer = process.env["oidcIssuer"] as string
 const jwksEndpoint = process.env["oidcjwksEndpoint"] as string
 
 let jwksMock: ReturnType<typeof createJWKSMock>
@@ -39,7 +39,16 @@ beforeEach(() => {
   jest.restoreAllMocks()
 })
 
-function createPayload(overrides: Partial<any> = {}): any {
+interface TokenPayload {
+  iss: string;
+  aud: Array<string>;
+  exp: number;
+  acr: string;
+  auth_time: number;
+  [key: string]: unknown;
+}
+
+function createPayload(overrides: Partial<TokenPayload> = {}): TokenPayload {
   return {
     iss: oidcIssuer,
     aud: [oidcClientId],
