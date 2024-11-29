@@ -17,6 +17,43 @@ import {createJWKSMock} from "mock-jwks"
 import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
 
+// Common test setup
+const logger = new Logger()
+const oidcClientId = process.env["oidcClientId"] as string
+const oidcIssuer = process.env["oidcIssuer"]
+const jwksEndpoint = process.env["oidcjwksEndpoint"] as string
+
+let jwksMock: ReturnType<typeof createJWKSMock>
+let stopJwksMock: () => void
+
+beforeAll(() => {
+  jwksMock = createJWKSMock(jwksEndpoint)
+  stopJwksMock = jwksMock.start()
+})
+
+afterAll(() => {
+  stopJwksMock()
+})
+
+beforeEach(() => {
+  jest.restoreAllMocks()
+})
+
+function createPayload(overrides: Partial<any> = {}): any {
+  return {
+    iss: oidcIssuer,
+    aud: [oidcClientId],
+    exp: Math.floor(Date.now() / 1000) + 3600,
+    acr: "AAL3_ANY",
+    auth_time: Math.floor(Date.now() / 1000),
+    ...overrides
+  }
+}
+
+function createToken(payload: jwt.JwtPayload | undefined): string {
+  return jwksMock.token(payload)
+}
+
 describe("getSigningKey", () => {
   const jwksEndpoint = process.env["oidcjwksEndpoint"] as string
 
@@ -159,27 +196,8 @@ describe("fetchCIS2TokensFromDynamoDB", () => {
 })
 
 describe("fetchAndVerifyCIS2Tokens", () => {
-  const logger = new Logger()
   const dynamoDBClient = new DynamoDBClient({})
   const documentClient = DynamoDBDocumentClient.from(dynamoDBClient)
-
-  const jwksEndpoint = process.env["oidcjwksEndpoint"] as string
-
-  let jwksMock: ReturnType<typeof createJWKSMock>
-  let stopJwksMock: () => void
-
-  beforeAll(() => {
-    jwksMock = createJWKSMock(jwksEndpoint)
-    stopJwksMock = jwksMock.start()
-  })
-
-  afterAll(() => {
-    stopJwksMock()
-  })
-
-  beforeEach(() => {
-    jest.restoreAllMocks()
-  })
 
   const username = "test-username"
   const cis2IdToken: jwt.JwtPayload = {
@@ -259,295 +277,150 @@ describe("fetchAndVerifyCIS2Tokens", () => {
 })
 
 describe("verifyIdToken", () => {
-  const logger = new Logger()
-
-  const oidcClientId = process.env["oidcClientId"] as string
-  const oidcIssuer = process.env["oidcIssuer"]
-  const jwksEndpoint = process.env["oidcjwksEndpoint"] as string
-
-  let jwksMock: ReturnType<typeof createJWKSMock>
-  let stopJwksMock: () => void
-
-  beforeAll(() => {
-    jwksMock = createJWKSMock(jwksEndpoint)
-    stopJwksMock = jwksMock.start()
-  })
-
-  afterAll(() => {
-    stopJwksMock()
-  })
-
-  beforeEach(() => {
-    jest.restoreAllMocks()
-  })
-
   it("should verify a valid ID token", async () => {
-    // Arrange
-    const payload = {
-      iss: oidcIssuer,
-      aud: [oidcClientId],
-      exp: Math.floor(Date.now() / 1000) + 3600,
-      acr: "AAL3_ANY",
-      auth_time: Math.floor(Date.now() / 1000)
-    }
-
-    const token = jwksMock.token(payload)
+    const payload = createPayload()
+    const token = createToken(payload)
 
     jest.spyOn(jwt, "verify").mockImplementation(() => payload)
 
-    // Act and Assert
     await expect(verifyIdToken(token, logger)).resolves.toBeUndefined()
   })
 
   it("should throw an error when ID token is not provided", async () => {
-    // Act and Assert
     await expect(verifyIdToken("", logger)).rejects.toThrow("ID token not provided")
   })
 
   it("should throw an error when ID token cannot be decoded", async () => {
-    // Act and Assert
     await expect(verifyIdToken("invalid-token", logger)).rejects.toThrow("Invalid token")
   })
 
   it("should throw an error when ID token header does not contain kid", async () => {
-    // Arrange
-    const payload = {
-      iss: oidcIssuer,
-      aud: [oidcClientId],
-      exp: Math.floor(Date.now() / 1000) + 3600,
-      acr: "AAL3_ANY",
-      auth_time: Math.floor(Date.now() / 1000)
-    }
-
-    const token = jwksMock.token(payload)
+    const payload = createPayload()
+    const token = createToken(payload)
 
     jest.spyOn(jwt, "decode").mockReturnValueOnce({header: {}})
 
-    // Act and Assert
     await expect(verifyIdToken(token, logger)).rejects.toThrow("Invalid token - no KID present")
   })
 
   it("should throw an error when jwt.verify fails", async () => {
-    // Arrange
-    const payload = {
-      iss: oidcIssuer,
-      aud: oidcClientId,
-      exp: Math.floor(Date.now() / 1000) + 3600,
-      acr: "AAL3_ANY",
-      auth_time: Math.floor(Date.now() / 1000)
-    }
+    const payload = createPayload()
+    const token = createToken(payload)
 
-    const token = jwksMock.token(payload)
-
-    // Mock jwt.verify to throw an error
     jest.spyOn(jwt, "verify").mockImplementation(() => {
       throw new Error("Invalid signature")
     })
 
-    // Act and Assert
     await expect(verifyIdToken(token, logger)).rejects.toThrow("Invalid ID token")
   })
 
   it("should throw an error when ID token is expired", async () => {
-    // Arrange
-    const payload = {
-      iss: oidcIssuer,
-      aud: oidcClientId,
-      exp: Math.floor(Date.now() / 1000) - 3600, // Expired token
-      acr: "AAL3_ANY",
+    const payload = createPayload({
+      exp: Math.floor(Date.now() / 1000) - 3600,
       auth_time: Math.floor(Date.now() / 1000) - 7200
-    }
+    })
+    const token = createToken(payload)
 
-    const token = jwksMock.token(payload)
-
-    // Act and Assert
-    await expect(verifyIdToken(token, logger)).rejects.toThrow("Invalid ID token - JWT verification failed")
+    await expect(verifyIdToken(token, logger)).rejects.toThrow(
+      "Invalid ID token - JWT verification failed"
+    )
   })
 
   it("should throw an error when issuer does not match", async () => {
-    // Arrange
-    const payload = {
-      iss: "https://wrong-issuer.com",
-      aud: oidcClientId,
-      exp: Math.floor(Date.now() / 1000) + 3600,
-      acr: "AAL3_ANY",
-      auth_time: Math.floor(Date.now() / 1000)
-    }
+    const payload = createPayload({iss: "https://wrong-issuer.com"})
+    const token = createToken(payload)
 
-    const token = jwksMock.token(payload)
-
-    // Act and Assert
-    await expect(verifyIdToken(token, logger)).rejects.toThrow("Invalid ID token - JWT verification failed")
+    await expect(verifyIdToken(token, logger)).rejects.toThrow(
+      "Invalid ID token - JWT verification failed"
+    )
   })
 
   it("should throw an error when audience does not match", async () => {
-    // Arrange
-    const payload = {
-      iss: oidcIssuer,
-      aud: "wrong-client-id",
-      exp: Math.floor(Date.now() / 1000) + 3600,
-      acr: "AAL3_ANY",
-      auth_time: Math.floor(Date.now() / 1000)
-    }
+    const payload = createPayload({aud: ["wrong-client-id"]})
+    const token = createToken(payload)
 
-    const token = jwksMock.token(payload)
-
-    // Act and Assert
-    await expect(verifyIdToken(token, logger)).rejects.toThrow("Invalid ID token - JWT verification failed")
+    await expect(verifyIdToken(token, logger)).rejects.toThrow(
+      "Invalid ID token - JWT verification failed"
+    )
   })
 
   it("should throw an error when ACR claim is invalid", async () => {
-    // Arrange
-    const payload = {
-      iss: oidcIssuer,
-      aud: oidcClientId,
-      exp: Math.floor(Date.now() / 1000) + 3600,
-      acr: "INVALID_ACR",
-      auth_time: Math.floor(Date.now() / 1000)
-    }
+    const payload = createPayload({acr: "INVALID_ACR"})
+    const token = createToken(payload)
 
-    const token = jwksMock.token(payload)
-
-    // Act and Assert
-    await expect(verifyIdToken(token, logger)).rejects.toThrow("Invalid ACR claim in ID token")
+    await expect(verifyIdToken(token, logger)).rejects.toThrow(
+      "Invalid ACR claim in ID token"
+    )
   })
 })
 
 describe("verifyAccessToken", () => {
-  const logger = new Logger()
-
-  const oidcClientId = process.env["oidcClientId"] as string
-  const oidcIssuer = process.env["oidcIssuer"]
-  const jwksEndpoint = process.env["oidcjwksEndpoint"] as string
-
-  let jwksMock: ReturnType<typeof createJWKSMock>
-  let stopJwksMock: () => void
-
-  beforeAll(() => {
-    jwksMock = createJWKSMock(jwksEndpoint)
-    stopJwksMock = jwksMock.start()
-  })
-
-  afterAll(() => {
-    stopJwksMock()
-  })
-
-  beforeEach(() => {
-    jest.restoreAllMocks()
-  })
-
   it("should verify a valid access token", async () => {
-    // Arrange
-    const payload = {
-      iss: oidcIssuer,
-      aud: [oidcClientId],
-      exp: Math.floor(Date.now() / 1000) + 3600,
-      acr: "AAL3_ANY",
-      auth_time: Math.floor(Date.now() / 1000)
-    }
-
-    const token = jwksMock.token(payload)
+    const payload = createPayload()
+    const token = createToken(payload)
 
     jest.spyOn(jwt, "verify").mockImplementation(() => payload)
 
-    // Act and Assert
     await expect(verifyAccessToken(token, logger)).resolves.toBeUndefined()
   })
 
   it("should throw an error when access token is not provided", async () => {
-    // Act and Assert
     await expect(verifyAccessToken("", logger)).rejects.toThrow("Access token not provided")
   })
 
   it("should throw an error when access token cannot be decoded", async () => {
-    // Act and Assert
     await expect(verifyAccessToken("invalid-token", logger)).rejects.toThrow("Invalid token")
   })
 
   it("should throw an error when access token header does not contain kid", async () => {
-    // Arrange
-    const payload = {
-      iss: oidcIssuer,
-      aud: [oidcClientId],
-      exp: Math.floor(Date.now() / 1000) + 3600,
-      acr: "AAL3_ANY",
-      auth_time: Math.floor(Date.now() / 1000)
-    }
-
-    const token = jwksMock.token(payload)
+    const payload = createPayload()
+    const token = createToken(payload)
 
     jest.spyOn(jwt, "decode").mockReturnValueOnce({header: {}})
 
-    // Act and Assert
     await expect(verifyAccessToken(token, logger)).rejects.toThrow("Invalid token - no KID present")
   })
 
   it("should throw an error when jwt.verify fails", async () => {
-    // Arrange
-    const payload = {
-      iss: oidcIssuer,
-      aud: oidcClientId,
-      exp: Math.floor(Date.now() / 1000) + 3600,
-      acr: "AAL3_ANY",
-      auth_time: Math.floor(Date.now() / 1000)
-    }
+    const payload = createPayload()
+    const token = createToken(payload)
 
-    const token = jwksMock.token(payload)
-
-    // Mock jwt.verify to throw an error
     jest.spyOn(jwt, "verify").mockImplementation(() => {
       throw new Error("Invalid signature")
     })
 
-    // Act and Assert
-    await expect(verifyAccessToken(token, logger)).rejects.toThrow("Invalid Access token - JWT verification failed")
+    await expect(verifyAccessToken(token, logger)).rejects.toThrow(
+      "Invalid Access token - JWT verification failed"
+    )
   })
 
   it("should throw an error when access token is expired", async () => {
-    // Arrange
-    const payload = {
-      iss: oidcIssuer,
-      aud: oidcClientId,
-      exp: Math.floor(Date.now() / 1000) - 3600, // Expired token
-      acr: "AAL3_ANY",
+    const payload = createPayload({
+      exp: Math.floor(Date.now() / 1000) - 3600,
       auth_time: Math.floor(Date.now() / 1000) - 7200
-    }
+    })
+    const token = createToken(payload)
 
-    const token = jwksMock.token(payload)
-
-    // Act and Assert
-    await expect(verifyAccessToken(token, logger)).rejects.toThrow("Invalid Access token - JWT verification failed")
+    await expect(verifyAccessToken(token, logger)).rejects.toThrow(
+      "Invalid Access token - JWT verification failed"
+    )
   })
 
   it("should throw an error when issuer does not match", async () => {
-    // Arrange
-    const payload = {
-      iss: "https://wrong-issuer.com",
-      aud: oidcClientId,
-      exp: Math.floor(Date.now() / 1000) + 3600,
-      acr: "AAL3_ANY",
-      auth_time: Math.floor(Date.now() / 1000)
-    }
+    const payload = createPayload({iss: "https://wrong-issuer.com"})
+    const token = createToken(payload)
 
-    const token = jwksMock.token(payload)
-
-    // Act and Assert
-    await expect(verifyAccessToken(token, logger)).rejects.toThrow("Invalid Access token - JWT verification failed")
+    await expect(verifyAccessToken(token, logger)).rejects.toThrow(
+      "Invalid Access token - JWT verification failed"
+    )
   })
 
   it("should throw an error when ACR claim is invalid", async () => {
-    // Arrange
-    const payload = {
-      iss: oidcIssuer,
-      aud: oidcClientId,
-      exp: Math.floor(Date.now() / 1000) + 3600,
-      acr: "INVALID_ACR",
-      auth_time: Math.floor(Date.now() / 1000)
-    }
+    const payload = createPayload({acr: "INVALID_ACR"})
+    const token = createToken(payload)
 
-    const token = jwksMock.token(payload)
-
-    // Act and Assert
-    await expect(verifyAccessToken(token, logger)).rejects.toThrow("Invalid ACR claim in Access token")
+    await expect(verifyAccessToken(token, logger)).rejects.toThrow(
+      "Invalid ACR claim in Access token"
+    )
   })
 })
