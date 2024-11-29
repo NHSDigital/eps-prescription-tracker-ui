@@ -42,20 +42,12 @@ export const nagSuppressions = (stack: Stack) => {
       ]
     )
 
-    safeAddNagSuppression(
+    safeAddNagSuppressionGroup(
       stack,
-      "/StatefulStack/DynamoDB/TableReadManagedPolicy/Resource",
       [
-        {
-          id: "AwsSolutions-IAM5",
-          reason: "Suppress error for wildcards in policy. This policy is to allow access to all indexes so needs a wildcard"
-        }
-      ]
-    )
-
-    safeAddNagSuppression(
-      stack,
-      "/StatefulStack/DynamoDB/TableWriteManagedPolicy/Resource",
+        "/StatefulStack/DynamoDB/TableReadManagedPolicy/Resource",
+        "/StatefulStack/DynamoDB/TableWriteManagedPolicy/Resource"
+      ],
       [
         {
           id: "AwsSolutions-IAM5",
@@ -78,9 +70,13 @@ export const nagSuppressions = (stack: Stack) => {
       ]
     )
 
-    safeAddNagSuppression(
+    safeAddNagSuppressionGroup(
       stack,
-      "/StatelessStack/ApiGateway/ApiGateway/Default/token/POST/Resource",
+      [
+        "/StatelessStack/ApiGateway/ApiGateway/Default/token/POST/Resource",
+        "/StatelessStack/ApiGateway/ApiGateway/Default/mocktoken/POST/Resource",
+        "/StatelessStack/ApiGateway/ApiGateway/Default/mocknoauth/GET/Resource"
+      ],
       [
         {
           id: "AwsSolutions-APIG4",
@@ -93,39 +89,14 @@ export const nagSuppressions = (stack: Stack) => {
       ]
     )
 
-    safeAddNagSuppression(
+    safeAddNagSuppressionGroup(
       stack,
-      "/StatelessStack/ApiGateway/ApiGateway/Default/mocktoken/POST/Resource",
       [
-        {
-          id: "AwsSolutions-APIG4",
-          reason: "Suppress error for not implementing authorization. Token endpoint should not have an authorizer"
-        },
-        {
-          id: "AwsSolutions-COG4",
-          reason: "Suppress error for not implementing a Cognito user pool authorizer. Token endpoint should not have an authorizer"
-        }
-      ]
-    )
-
-    safeAddNagSuppression(
-      stack,
-      "/StatelessStack/ApiGateway/ApiGateway/Default/mocknoauth/GET/Resource",
-      [
-        {
-          id: "AwsSolutions-APIG4",
-          reason: "Suppress error for not implementing authorization. Token endpoint should not have an authorizer"
-        },
-        {
-          id: "AwsSolutions-COG4",
-          reason: "Suppress error for not implementing a Cognito user pool authorizer. Token endpoint should not have an authorizer"
-        }
-      ]
-    )
-
-    safeAddNagSuppression(
-      stack,
-      "/StatelessStack/CognitoFunctions/PrimaryJwtPrivateKey/Resource",
+        "/StatelessStack/CognitoFunctions/PrimaryJwtPrivateKey/Resource",
+        "/StatelessStack/CognitoFunctions/MockJwtPrivateKey/Resource",
+        "/StatelessStack/ApiFunctions/PrimaryJwtPrivateKey/Resource",
+        "/StatelessStack/ApiFunctions/MockJwtPrivateKey/Resource"
+      ],
       [
         {
           id: "AwsSolutions-SMG4",
@@ -134,9 +105,14 @@ export const nagSuppressions = (stack: Stack) => {
       ]
     )
 
-    safeAddNagSuppression(
+    safeAddNagSuppressionGroup(
       stack,
-      "/StatelessStack/CognitoFunctions/TokenResources/LambdaPutLogsManagedPolicy/Resource",
+      [
+        "/StatelessStack/ApiFunctions/TrackerUserInfo/LambdaPutLogsManagedPolicy/Resource",
+        "/StatelessStack/ApiFunctions/MockTrackerUserInfo/LambdaPutLogsManagedPolicy/Resource",
+        "/StatelessStack/CognitoFunctions/TokenResources/LambdaPutLogsManagedPolicy/Resource",
+        "/StatelessStack/CognitoFunctions/MockTokenResources/LambdaPutLogsManagedPolicy/Resource"
+      ],
       [
         {
           id: "AwsSolutions-IAM5",
@@ -144,72 +120,6 @@ export const nagSuppressions = (stack: Stack) => {
         }
       ]
     )
-    safeAddNagSuppression(
-      stack,
-      "/StatelessStack/CognitoFunctions/MockTokenResources/LambdaPutLogsManagedPolicy/Resource",
-      [
-        {
-          id: "AwsSolutions-IAM5",
-          reason: "Suppress error for not having wildcards in permissions. This is a fine as we need to have permissions on all log streams under path"
-        }
-      ]
-    )
-
-    safeAddNagSuppression(
-      stack,
-      "/StatelessStack/CognitoFunctions/MockJwtPrivateKey/Resource",
-      [
-        {
-          id: "AwsSolutions-SMG4",
-          reason: "Suppress error for not having automatic rotation. This is a false positive - it does have rotation enabled"
-        }
-      ]
-    )
-
-    safeAddNagSuppression(
-      stack,
-      "/StatelessStack/ApiFunctions/PrimaryJwtPrivateKey/Resource",
-      [
-        {
-          id: "AwsSolutions-SMG4",
-          reason: "Suppress error for not having automatic rotation. This is a false positive - it does have rotation enabled"
-        }
-      ]
-    )
-
-    safeAddNagSuppression(
-      stack,
-      "/StatelessStack/ApiFunctions/MockJwtPrivateKey/Resource",
-      [
-        {
-          id: "AwsSolutions-SMG4",
-          reason: "Suppress error for not having automatic rotation. This is a false positive - it does have rotation enabled"
-        }
-      ]
-    )
-
-    safeAddNagSuppression(
-      stack,
-      "/StatelessStack/ApiFunctions/TrackerUserInfo/LambdaPutLogsManagedPolicy/Resource",
-      [
-        {
-          id: "AwsSolutions-IAM5",
-          reason: "Suppress error for not having wildcards in permissions. This is a fine as we need to have permissions on all log streams under path"
-        }
-      ]
-    )
-
-    safeAddNagSuppression(
-      stack,
-      "/StatelessStack/ApiFunctions/MockTrackerUserInfo/LambdaPutLogsManagedPolicy/Resource",
-      [
-        {
-          id: "AwsSolutions-IAM5",
-          reason: "Suppress error for not having wildcards in permissions. This is a fine as we need to have permissions on all log streams under path"
-        }
-      ]
-    )
-
   }
 }
 
@@ -220,5 +130,12 @@ const safeAddNagSuppression = (stack: Stack, path: string, suppressions: Array<N
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch(err){
     console.log(`Could not find path ${path}`)
+  }
+}
+
+// Apply the same nag suppression to multiple resources
+const safeAddNagSuppressionGroup = (stack: Stack, path: Array<string>, suppressions: Array<NagPackSuppression>) => {
+  for (const p of path) {
+    safeAddNagSuppression(stack, p, suppressions)
   }
 }
