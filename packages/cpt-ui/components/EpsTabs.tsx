@@ -25,17 +25,6 @@ export default function EpsTabs() {
                     </Tabs.Contents>
                 )
             }
-            {/* <Tabs.Contents id="past-day">
-                <div>aaaaaaa</div>
-            </Tabs.Contents>
-
-            <Tabs.Contents id="past-week">
-                <div>Past week contents go here</div>
-            </Tabs.Contents>
-
-            <Tabs.Contents id="past-month">
-                <div>Past month contents go here</div>
-            </Tabs.Contents> */}
         </Tabs>
     )
 }

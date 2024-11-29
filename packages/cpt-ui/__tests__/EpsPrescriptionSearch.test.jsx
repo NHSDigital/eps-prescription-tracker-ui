@@ -1,7 +1,6 @@
 import React from 'react';
 import "@testing-library/jest-dom";
 import { fireEvent, render } from "@testing-library/react";
-import EpsTabs from "../components/EpsHeader";
 import { Tabs } from "nhsuk-react-components";
 import {
   PRESCRIPTION_SEARCH_TABS
@@ -74,29 +73,6 @@ describe('The tabs component', () => {
       secondTabLink?.parentElement?.classList.contains('nhsuk-tabs__list-item--selected'),
     ).toEqual(true);
   });
-
-  // describe('The tabs title', () => {
-  //   it.each`
-  //     headingLevel
-  //     ${undefined}
-  //     ${'H1'}
-  //     ${'H2'}
-  //     ${'H3'}
-  //     ${'H4'}
-  //   `(
-  //     'Renders the chosen heading level $headingLevel if specified',
-  //     ({ headingLevel }: { headingLevel: HeadingLevelType }) => {
-  //       const { container } = render(
-  //         <Tabs.Title headingLevel={headingLevel}>Test title</Tabs.Title>,
-  //       );
-
-  //       const title = container.querySelector('.nhsuk-tabs__title');
-
-  //       expect(title?.nodeName).toEqual(headingLevel ?? 'H2');
-  //     },
-  //   );
-  // });
-
   describe('The tab list', () => {
     it('Renders the expected children', () => {
       const { container } = render(
