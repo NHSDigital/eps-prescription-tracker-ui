@@ -21,7 +21,14 @@ describe("rewriteBodyToAddSignedJWT tests", () => {
   const apigeeToken = "dummyApigeeToken"
 
   it("should add a signed JWT to the body parameters", () => {
-    const result = rewriteBodyToAddSignedJWT(logger, objectBodyParameters, idpTokenPath, jwtPrivateKey, apigeeToken, "dummy_kid")
+    const result = rewriteBodyToAddSignedJWT(
+      logger,
+      objectBodyParameters,
+      idpTokenPath,
+      jwtPrivateKey,
+      apigeeToken,
+      "dummy_kid"
+    )
 
     // Validate the rewritten body parameters
     expect(result.client_assertion_type).toBe("urn:ietf:params:oauth:client-assertion-type:jwt-bearer")
