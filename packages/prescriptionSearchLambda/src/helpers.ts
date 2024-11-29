@@ -54,19 +54,21 @@ export function rewriteBodyToAddSignedJWT(
 
   const signOptions: jwt.SignOptions = {
     algorithm: "RS512",
-    keyid: "eps-clinical-tracker"
+    header: {
+      typ: "JWT",
+      kid: "eps-clinical-tracker"
+    }
   }
 
   logger.info("JWT claims prepared for signing", {claims})
   const jwt_token = jwt.sign(claims, jwtPrivateKey, signOptions)
-  logger.debug("jwt_token", {jwt_token})
+  logger.info("Generated JWT token", {jwt_token})
 
   // Rewrite the body to have jwt and remove secret
   objectBodyParameters.client_assertion_type = "urn:ietf:params:oauth:client-assertion-type:jwt-bearer"
   objectBodyParameters.client_assertion = jwt_token
   delete objectBodyParameters.client_secret
 
-  logger.info("Final rewritten body for token exchange", {objectBodyParameters})
   return objectBodyParameters
 }
 
