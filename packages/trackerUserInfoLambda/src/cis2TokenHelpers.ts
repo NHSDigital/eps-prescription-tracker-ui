@@ -275,7 +275,7 @@ export const verifyAccessToken = async (accessToken: string, logger: Logger) => 
 
   const options = {
     issuer: oidcIssuer,
-    audience: oidcClientId,
+    // audience: oidcClientId, // This is not required for access tokens
     clockTolerance: 5 // seconds
   }
 
