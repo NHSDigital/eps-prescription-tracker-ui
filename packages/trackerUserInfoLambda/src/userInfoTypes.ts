@@ -8,18 +8,7 @@ export type RoleDetails = {
   site_address?: string;
 };
 
-export type UserDetails = {
-  given_name?: string;
-  family_name?: string;
-  name?: string;
-  display_name?: string;
-  title?: string;
-  initials?: string;
-  middle_names?: string;
-}
-
 export type TrackerUserInfo = {
-  user_details: UserDetails;
   roles_with_access: Array<RoleDetails>;
   roles_without_access: Array<RoleDetails>;
   currently_selected_role?: RoleDetails;

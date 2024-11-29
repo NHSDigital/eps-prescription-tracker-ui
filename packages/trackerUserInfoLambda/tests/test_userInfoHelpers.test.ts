@@ -79,15 +79,6 @@ describe("fetchUserInfo", () => {
     )
 
     expect(result).toEqual({
-      user_details: {
-        given_name: "John",
-        family_name: "Doe",
-        name: "John Doe",
-        display_name: "J. Doe",
-        title: "Dr.",
-        initials: "JD",
-        middle_names: "William"
-      },
       roles_with_access: [
         {
           role_name: "Doctor",
@@ -154,15 +145,6 @@ describe("fetchUserInfo", () => {
     )
 
     expect(result).toEqual({
-      user_details: {
-        given_name: "Jane",
-        family_name: "Smith",
-        name: "Jane Smith",
-        display_name: "J. Smith",
-        title: "Ms.",
-        initials: "JS",
-        middle_names: "Marie"
-      },
       roles_with_access: [],
       roles_without_access: [
         {
@@ -226,15 +208,6 @@ describe("updateDynamoTable", () => {
 
   const username = "testUser"
   const data: TrackerUserInfo = {
-    user_details: {
-      given_name: "John",
-      family_name: "Doe",
-      name: "John Doe",
-      display_name: "jdoe",
-      title: "Mr.",
-      initials: "JD",
-      middle_names: "Edward"
-    },
     roles_with_access: [
       {
         role_name: "Doctor",

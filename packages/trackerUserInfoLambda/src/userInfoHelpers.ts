@@ -1,12 +1,7 @@
 import {Logger} from "@aws-lambda-powertools/logger"
 import axios from "axios"
 import {DynamoDBDocumentClient, UpdateCommand} from "@aws-sdk/lib-dynamodb"
-import {
-  UserInfoResponse,
-  TrackerUserInfo,
-  RoleDetails,
-  UserDetails
-} from "./userInfoTypes"
+import {UserInfoResponse, TrackerUserInfo, RoleDetails} from "./userInfoTypes"
 
 // Fetch user info from the OIDC UserInfo endpoint
 // The access token is used to identify the user, and fetch their roles.
@@ -91,18 +86,7 @@ export const fetchUserInfo = async (
       }
     })
 
-    const userDetails: UserDetails = {
-      given_name: data.given_name,
-      family_name: data.family_name,
-      name: data.name,
-      display_name: data.display_name,
-      title: data.title,
-      initials: data.initials,
-      middle_names: data.middle_names
-    }
-
     const result: TrackerUserInfo = {
-      user_details: userDetails,
       roles_with_access: rolesWithAccess,
       roles_without_access: rolesWithoutAccess,
       currently_selected_role: currentlySelectedRole
