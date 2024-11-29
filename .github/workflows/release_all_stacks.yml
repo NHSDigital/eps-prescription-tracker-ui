@@ -62,6 +62,8 @@ on:
         required: true
       REGRESSION_TESTS_PEM:
         required: true
+      APIGEE_API_KEY:
+        required: true
 
 jobs:
   check_first_deployment:
@@ -166,6 +168,8 @@ jobs:
       primaryOidClientSecret: ${{ secrets.primaryOidClientSecret }}
       mockOidcClientId: ${{ secrets.mockOidcClientId }}
       mockOidClientSecret: ${{ secrets.mockOidClientSecret }}
+      APIGEE_API_KEY: ${{ secrets.APIGEE_API_KEY }}
+
 
   update_cloudfront_kvs:
     runs-on: ubuntu-latest

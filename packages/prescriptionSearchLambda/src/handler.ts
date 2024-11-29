@@ -16,10 +16,11 @@ import {stringify} from "querystring"
 const logger = new Logger({serviceName: "prescriptionSearch"})
 
 // External endpoints and environment variables
-const apigeeTokenEndpoint = "https://api.service.nhs.uk/oauth2/token"
+const apigeeTokenEndpoint = "https://internal-dev.api.service.nhs.uk/oauth2/token"
 const apigeePrescriptionsEndpoint = "https://internal-dev.api.service.nhs.uk/clinical-prescription-tracker"
 const TokenMappingTableName = process.env["TokenMappingTableName"] as string
 const jwtPrivateKeyArn = process.env["jwtPrivateKeyArn"] as string
+const apigeeApiKey = process.env["apigeeApiKey"] as string
 const roleId = "555254242106"
 
 // DynamoDB client setup
@@ -68,7 +69,13 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
     // Rewrite payload to include the signed JWT client assertion
     logger.info("Generating signed JWT for Apigee token exchange payload")
-    const rewrittenBody = rewriteBodyToAddSignedJWT(logger, tokenExchangeData, apigeeTokenEndpoint, jwtPrivateKey)
+    const rewrittenBody = rewriteBodyToAddSignedJWT(
+      logger,
+      tokenExchangeData,
+      apigeeTokenEndpoint,
+      jwtPrivateKey,
+      apigeeApiKey
+    )
     logger.info("Rewritten body for Apigee token exchange", {rewrittenBody})
 
     try {

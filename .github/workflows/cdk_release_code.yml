@@ -61,6 +61,8 @@ on:
         required: false
       mockOidClientSecret:
         required: false
+      APIGEE_API_KEY:
+        required: false
 jobs:
   release_code:
     runs-on: ubuntu-latest
@@ -163,6 +165,7 @@ jobs:
           --arg fullCloudfrontDomain "${fullCloudfrontDomain}" \
           --argjson useCustomCognitoDomain "${{ inputs.useCustomCognitoDomain }}" \
           --argjson useLocalhostCallback "${{ inputs.useLocalhostCallback }}" \
+          --arg apigeeApiKey "${{ secrets.APIGEE_API_KEY }}" \
           '.context += {
             "serviceName": $serviceName,
             "VERSION_NUMBER": $VERSION_NUMBER,
@@ -191,7 +194,9 @@ jobs:
             "mockOidcUserInfoEndpoint": $mockOidcUserInfoEndpoint,
             "mockOidcjwksEndpoint": $mockOidcjwksEndpoint,
             "useCustomCognitoDomain": $useCustomCognitoDomain,
-            "useLocalhostCallback": $useLocalhostCallback}' \
+            "useLocalhostCallback": $useLocalhostCallback,
+            "apigeeApiKey": $apigeeApiKey
+            }' \
           .build/cdk.json > .build/cdk.new.json
           mv .build/cdk.new.json .build/cdk.json
 

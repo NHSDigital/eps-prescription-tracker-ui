@@ -36,7 +36,8 @@ export function rewriteBodyToAddSignedJWT(
   logger: Logger,
   objectBodyParameters: ParsedUrlQuery,
   idpTokenPath: string,
-  jwtPrivateKey: jwt.PrivateKey
+  jwtPrivateKey: jwt.PrivateKey,
+  apigeeApiKey: string
 ): ParsedUrlQuery {
   logger.info("Rewriting body to include signed JWT", {idpTokenPath})
 
@@ -44,8 +45,8 @@ export function rewriteBodyToAddSignedJWT(
   const expiration_time = current_time + 300
 
   const claims = {
-    iss: objectBodyParameters.client_id,
-    sub: objectBodyParameters.client_id,
+    iss: apigeeApiKey,
+    sub: apigeeApiKey,
     aud: idpTokenPath,
     iat: current_time,
     exp: expiration_time,
