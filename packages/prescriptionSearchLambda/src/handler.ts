@@ -17,7 +17,7 @@ const logger = new Logger({serviceName: "prescriptionSearch"})
 
 // External endpoints and environment variables
 const apigeeTokenEndpoint = "https://internal-dev.api.service.nhs.uk/oauth2/token"
-const apigeePrescriptionsEndpoint = "https://internal-dev.api.service.nhs.uk/clinical-prescription-tracker"
+const apigeePrescriptionsEndpoint = "https://internal-dev.api.service.nhs.uk/clinical-prescription-tracker-pr-680"
 const TokenMappingTableName = process.env["TokenMappingTableName"] as string
 const jwtPrivateKeyArn = process.env["jwtPrivateKeyArn"] as string
 const apigeeApiKey = process.env["apigeeApiKey"] as string
@@ -132,9 +132,11 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   // Error handling for fetching prescription data
   try {
     logger.info("Fetching prescription data from Apigee", {prescriptionId})
-    const apigeeResponse = await axiosInstance.get(
-      `${apigeePrescriptionsEndpoint}/prescription-search/${prescriptionId}`,
+    const apigeeResponse = await axiosInstance.get(apigeePrescriptionsEndpoint,
       {
+        params: {
+          prescriptionId: prescriptionId
+        },
         headers: {
           Authorization: `Bearer ${apigeeAccessToken}`,
           "NHSD-Session-URID": roleId
