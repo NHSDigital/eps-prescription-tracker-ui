@@ -82,59 +82,6 @@ export class ApiFunctions extends Construct {
     // Initialize policies for API functions
     const apiFunctionsPolicies: Array<IManagedPolicy> = [prescriptionSearchLambda.executeLambdaManagedPolicy]
 
-    // If mock OIDC is enabled, configure mock prescription search Lambda
-    let mockPrescriptionSearchLambda: LambdaFunction | undefined
-    if (props.useMockOidc) {
-      if (
-        !props.mockOidcjwksEndpoint ||
-        !props.mockOidcTokenEndpoint ||
-        !props.mockOidcUserInfoEndpoint ||
-        !props.mockOidcClientId ||
-        !props.mockOidcIssuer
-      ) {
-        throw new Error("Missing mock OIDC configuration.")
-      }
-
-      mockPrescriptionSearchLambda = new LambdaFunction(this, "MockPrescriptionSearch", {
-        runtime: Runtime.NODEJS_20_X,
-        serviceName: props.serviceName,
-        stackName: props.stackName,
-        lambdaName: `${props.stackName}-mockPrescSearch`,
-        additionalPolicies: [
-          props.tokenMappingTableWritePolicy,
-          props.tokenMappingTableReadPolicy,
-          props.useTokensMappingKmsKeyPolicy,
-          props.sharedSecrets.useJwtKmsKeyPolicy,
-          props.sharedSecrets.getMockJwtPrivateKeyPolicy
-        ],
-        logRetentionInDays: props.logRetentionInDays,
-        packageBasePath: "packages/prescriptionSearchLambda",
-        entryPoint: "src/handler.ts",
-        lambdaEnvironmentVariables: {
-          idpTokenPath: props.mockOidcTokenEndpoint,
-          TokenMappingTableName: props.tokenMappingTable.tableName,
-          UserPoolIdentityProvider: props.mockPoolIdentityProviderName,
-          oidcjwksEndpoint: props.mockOidcjwksEndpoint,
-          jwtPrivateKeyArn: props.sharedSecrets.mockJwtPrivateKey.secretArn,
-          userInfoEndpoint: props.mockOidcUserInfoEndpoint,
-          useSignedJWT: "true",
-          oidcClientId: props.mockOidcClientId,
-          oidcIssuer: props.mockOidcIssuer
-        }
-      })
-
-      // Suppress the AwsSolutions-L1 rule for the mock prescription search Lambda function
-      NagSuppressions.addResourceSuppressions(mockPrescriptionSearchLambda.lambda, [
-        {
-          id: "AwsSolutions-L1",
-          reason: "The Lambda function uses the latest runtime version supported at the time of implementation."
-        }
-      ])
-
-      apiFunctionsPolicies.push(mockPrescriptionSearchLambda.executeLambdaManagedPolicy)
-      this.mockPrescriptionSearchLambda = mockPrescriptionSearchLambda.lambda
-    }
-
     // Outputs
     this.apiFunctionsPolicies = apiFunctionsPolicies
     this.prescriptionSearchLambda = prescriptionSearchLambda.lambda
