@@ -500,7 +500,7 @@ describe("verifyAccessToken", () => {
     })
 
     // Act and Assert
-    await expect(verifyAccessToken(token, logger)).rejects.toThrow("Invalid access token")
+    await expect(verifyAccessToken(token, logger)).rejects.toThrow("Invalid Access token - JWT verification failed")
   })
 
   it("should throw an error when access token is expired", async () => {
@@ -516,7 +516,7 @@ describe("verifyAccessToken", () => {
     const token = jwksMock.token(payload)
 
     // Act and Assert
-    await expect(verifyAccessToken(token, logger)).rejects.toThrow("Invalid access token - JWT verification failed")
+    await expect(verifyAccessToken(token, logger)).rejects.toThrow("Invalid Access token - JWT verification failed")
   })
 
   it("should throw an error when issuer does not match", async () => {
@@ -532,23 +532,7 @@ describe("verifyAccessToken", () => {
     const token = jwksMock.token(payload)
 
     // Act and Assert
-    await expect(verifyAccessToken(token, logger)).rejects.toThrow("Invalid access token - JWT verification failed")
-  })
-
-  it("should throw an error when audience does not match", async () => {
-    // Arrange
-    const payload = {
-      iss: oidcIssuer,
-      aud: "wrong-client-id",
-      exp: Math.floor(Date.now() / 1000) + 3600,
-      acr: "AAL3_ANY",
-      auth_time: Math.floor(Date.now() / 1000)
-    }
-
-    const token = jwksMock.token(payload)
-
-    // Act and Assert
-    await expect(verifyAccessToken(token, logger)).rejects.toThrow("Invalid access token - JWT verification failed")
+    await expect(verifyAccessToken(token, logger)).rejects.toThrow("Invalid Access token - JWT verification failed")
   })
 
   it("should throw an error when ACR claim is invalid", async () => {
@@ -564,6 +548,6 @@ describe("verifyAccessToken", () => {
     const token = jwksMock.token(payload)
 
     // Act and Assert
-    await expect(verifyAccessToken(token, logger)).rejects.toThrow("Invalid ACR claim in access token")
+    await expect(verifyAccessToken(token, logger)).rejects.toThrow("Invalid ACR claim in Access token")
   })
 })

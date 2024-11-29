@@ -111,7 +111,15 @@ export const fetchAndVerifyCIS2Tokens = async (
   return {cis2AccessToken, cis2IdToken}
 }
 
-export const verifyIdToken = async (idToken: string, logger: Logger) => {
+export const verifyCIS2Token = async (
+  cis2Token: string,
+  logger: Logger,
+  tokenType: string,
+  options: {
+    validAcrValues: Array<string>,
+    checkAudience: boolean
+  }
+) => {
   const oidcIssuer = process.env["oidcIssuer"]
   if (!oidcIssuer) {
     throw new Error("OIDC issuer not set")
@@ -125,22 +133,22 @@ export const verifyIdToken = async (idToken: string, logger: Logger) => {
     throw new Error("JWKS URI not set")
   }
 
-  logger.info("Verifying ID token", {oidcIssuer, oidcClientId, jwksUri})
+  logger.info(`Verifying ${tokenType}`, {oidcIssuer, oidcClientId, jwksUri})
 
-  if (!idToken) {
-    throw new Error("ID token not provided")
+  if (!cis2Token) {
+    throw new Error(`${tokenType} not provided`)
   }
 
   // Create a JWKS client
   const client = jwksClient({
-    jwksUri: `${jwksUri}`,
+    jwksUri: jwksUri,
     cache: true,
     cacheMaxEntries: 5,
     cacheMaxAge: 3600000 // 1 hour
   })
 
   // Decode the token header to get the kid
-  const decodedToken = jwt.decode(idToken, {complete: true})
+  const decodedToken = jwt.decode(cis2Token, {complete: true})
   if (!decodedToken || typeof decodedToken === "string") {
     throw new Error("Invalid token - token is either undefined or a string")
   }
@@ -162,174 +170,66 @@ export const verifyIdToken = async (idToken: string, logger: Logger) => {
   logger.info("Signing key fetched successfully")
 
   // Verify the token signature
-  const options = {
+  const verifyOptions: jwt.VerifyOptions = {
     issuer: oidcIssuer,
-    audience: oidcClientId,
     clockTolerance: 5 // seconds
+  }
+  // ID tokens have an aud claim, access tokens don't
+  if (options.checkAudience) {
+    verifyOptions.audience = oidcClientId
   }
 
   let verifiedToken: JwtPayload
   try {
-    verifiedToken = jwt.verify(idToken, signingKey, options) as JwtPayload
+    verifiedToken = jwt.verify(cis2Token, signingKey, verifyOptions) as JwtPayload
   } catch (err) {
     logger.error("Error verifying token", {err})
-    throw new Error("Invalid ID token - JWT verification failed")
+    throw new Error(`Invalid ${tokenType} - JWT verification failed`)
   }
-  logger.info("ID token verified successfully", {verifiedToken})
+  logger.info(`${tokenType} verified successfully`, {verifiedToken})
 
-  // Manual Verification checks,
-  // c.f. https://tinyurl.com/2rz5xxup
-
-  // Check that token hasn't expired (verification step above should do this)
-
-  // the iss claim MUST exactly match the issuer in the OIDC configuration
-  // This is checked by the `jwt.verify` function
-
-  // the aud MUST contain our relying party client_id value
-  // This is checked by the `jwt.verify` function
-
-  // Not-checked check!
-  // From what I can tell, we're not using a known nonce. If we do end up using one, we should check it here.
-
-  // The `acr` claim must be present and have a valid value
+  // Manual Verification checks
   let acr = verifiedToken.acr
   if (!acr) {
     logger.info("No ACR claim from the token. Assuming AAL3_ANY")
     acr = "AAL3_ANY"
   }
 
-  let valid_acr = false
-  // If it starts with "AAL3_", it's valid
+  let validAcr = false
   if (acr.startsWith("AAL3_")) {
     logger.info("ACR claim starts with AAL3_, so is valid", {acr})
-    valid_acr = true
+    validAcr = true
   }
-  // These are manually flagged as ok
-  if (VALID_ACR_VALUES.includes(acr)) {
+  if (options.validAcrValues.includes(acr)) {
     logger.info("ACR claim is in the list of valid values", {acr})
-    valid_acr = true
+    validAcr = true
   }
-  if (!valid_acr) {
-    throw new Error("Invalid ACR claim in ID token")
+  if (!validAcr) {
+    throw new Error(`Invalid ACR claim in ${tokenType}`)
   }
-  logger.debug("acr claim is valid", {acr})
+  logger.debug("ACR claim is valid", {acr})
+}
 
-  // We don't check the auth_time claim here.
-  // From the docs:
-  //   It is anticipated that Relying Parties will only require access to the UserInfo Endpoint at the time of the
-  //   original End-User authentication. This should only happen once as part of a Relying Party authentication
-  //   journey and the Access Token can be used immediately, then discarded. In NHS CIS2 Authentication, there should
-  //   be no other need to retrieve the User Info after this point in time.
-  //   Therefore the use of the Refresh Token to obtain a new Access Token is not recommended.
+export const verifyIdToken = async (idToken: string, logger: Logger) => {
+  await verifyCIS2Token(
+    idToken,
+    logger,
+    "ID token",
+    {
+      validAcrValues: VALID_ACR_VALUES,
+      checkAudience: true
+    }
+  )
 }
 
 export const verifyAccessToken = async (accessToken: string, logger: Logger) => {
-  const oidcIssuer = process.env["oidcIssuer"]
-  if (!oidcIssuer) {
-    throw new Error("OIDC issuer not set")
-  }
-  const oidcClientId = process.env["oidcClientId"]
-  if (!oidcClientId) {
-    throw new Error("OIDC client ID not set")
-  }
-  const jwksUri = process.env["oidcjwksEndpoint"]
-  if (!jwksUri) {
-    throw new Error("JWKS URI not set")
-  }
-
-  logger.info("Verifying access token", {oidcIssuer, oidcClientId})
-
-  if (!accessToken) {
-    throw new Error("Access token not provided")
-  }
-
-  // Create a JWKS client
-  const client = jwksClient({
-    jwksUri: `${jwksUri}`,
-    cache: true,
-    cacheMaxEntries: 5,
-    cacheMaxAge: 3600000 // 1 hour
-  })
-
-  // Decode the token header to get the kid
-  const decodedToken = jwt.decode(accessToken, {complete: true})
-  if (!decodedToken || typeof decodedToken === "string") {
-    throw new Error("Invalid token - token is either undefined or a string")
-  }
-  const kid = decodedToken.header.kid
-  if (!kid) {
-    throw new Error("Invalid token - no KID present")
-  }
-  logger.info("Token KID", {kid})
-
-  // Fetch the signing key from the JWKS endpoint
-  let signingKey
-  try {
-    logger.info("Fetching signing key", {kid})
-    signingKey = await getSigningKey(client, kid)
-  } catch (err) {
-    logger.error("Error getting signing key", {err})
-    throw new Error("Error getting signing key")
-  }
-  logger.info("Signing key fetched successfully")
-
-  const options = {
-    issuer: oidcIssuer,
-    // audience: oidcClientId, // This is not required for access tokens
-    clockTolerance: 5 // seconds
-  }
-
-  let verifiedToken: JwtPayload
-  try {
-    verifiedToken = jwt.verify(accessToken, signingKey, options) as JwtPayload
-  } catch (err) {
-    logger.error("Error verifying token", {err})
-    throw new Error("Invalid access token - JWT verification failed")
-  }
-  logger.info("Access token verified successfully", {verifiedToken})
-
-  // Manual Verification checks,
-  // c.f. https://tinyurl.com/2rz5xxup
-
-  // Check that token hasn't expired (verification step above should do this)
-
-  // the iss claim MUST exactly match the issuer in the OIDC configuration
-  // This is checked by the `jwt.verify` function
-
-  // the aud MUST contain our relying party client_id value
-  // This is checked by the `jwt.verify` function
-
-  // Not-checked check!
-  // From what I can tell, we're not using a known nonce. If we do end up using one, we should check it here.
-
-  // The `acr` claim must be present and have a valid value
-  let acr = verifiedToken.acr
-  if (!acr) {
-    logger.info("No ACR claim from the token. Assuming AAL3_ANY")
-    acr = "AAL3_ANY"
-  }
-
-  let valid_acr = false
-  // If it starts with "AAL3_", it's valid
-  if (acr.startsWith("AAL3_")) {
-    logger.info("ACR claim starts with AAL3_, so is valid", {acr})
-    valid_acr = true
-  }
-  // These are manually flagged as ok
-  if (VALID_ACR_VALUES.includes(acr)) {
-    logger.info("ACR claim is in the list of valid values", {acr})
-    valid_acr = true
-  }
-  if (!valid_acr) {
-    throw new Error("Invalid ACR claim in access token")
-  }
-  logger.debug("acr claim is valid", {acr})
-
-  // We don't check the auth_time claim here.
-  // From the docs:
-  //   It is anticipated that Relying Parties will only require access to the UserInfo Endpoint at the time of the
-  //   original End-User authentication. This should only happen once as part of a Relying Party authentication
-  //   journey and the Access Token can be used immediately, then discarded. In NHS CIS2 Authentication, there should
-  //   be no other need to retrieve the User Info after this point in time.
-  //   Therefore the use of the Refresh Token to obtain a new Access Token is not recommended.
+  await verifyCIS2Token(
+    accessToken,
+    logger,
+    "Access token",
+    {
+      validAcrValues: VALID_ACR_VALUES,
+      checkAudience: false
+    }
+  )
 }
