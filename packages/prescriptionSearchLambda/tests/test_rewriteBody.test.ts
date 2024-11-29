@@ -41,7 +41,7 @@ describe("rewriteBodyToAddSignedJWT tests", () => {
         header: {
           alg: "RS512",
           typ: "JWT",
-          kid: "eps-clinical-tracker"
+          kid: "eps-cpt-ui-test"
         }
       }
     )
