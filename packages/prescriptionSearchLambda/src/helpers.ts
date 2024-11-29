@@ -38,16 +38,18 @@ export function rewriteBodyToAddSignedJWT(
   idpTokenPath: string,
   jwtPrivateKey: jwt.PrivateKey
 ): ParsedUrlQuery {
-  logger.info("Rewriting body to include signed jwt")
+  logger.info("Rewriting body to include signed JWT", {idpTokenPath})
+
   const current_time = Math.floor(Date.now() / 1000)
   const expiration_time = current_time + 300
+
   const claims = {
-    "iss": objectBodyParameters.client_id,
-    "sub": objectBodyParameters.client_id,
-    "aud": idpTokenPath,
-    "iat": current_time,
-    "exp": expiration_time,
-    "jti": uuidv4()
+    iss: objectBodyParameters.client_id,
+    sub: objectBodyParameters.client_id,
+    aud: idpTokenPath,
+    iat: current_time,
+    exp: expiration_time,
+    jti: uuidv4()
   }
 
   const signOptions: jwt.SignOptions = {
@@ -55,13 +57,16 @@ export function rewriteBodyToAddSignedJWT(
     keyid: "eps-clinical-tracker"
   }
 
-  logger.debug("Claims", {claims})
+  logger.info("JWT claims prepared for signing", {claims})
   const jwt_token = jwt.sign(claims, jwtPrivateKey, signOptions)
   logger.debug("jwt_token", {jwt_token})
-  // rewrite the body to have jwt and remove secret
+
+  // Rewrite the body to have jwt and remove secret
   objectBodyParameters.client_assertion_type = "urn:ietf:params:oauth:client-assertion-type:jwt-bearer"
   objectBodyParameters.client_assertion = jwt_token
   delete objectBodyParameters.client_secret
+
+  logger.info("Final rewritten body for token exchange", {objectBodyParameters})
   return objectBodyParameters
 }
 

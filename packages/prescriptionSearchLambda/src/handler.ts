@@ -44,15 +44,15 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
   try {
     // Step 1: Fetch CIS2 tokens
-    logger.info("Fetching CIS2 tokens from DynamoDB")
+    logger.info("Retrieving CIS2 tokens from DynamoDB based on the current request context")
     const {cis2AccessToken, cis2IdToken} = await fetchCIS2Tokens(event, documentClient, logger)
     logger.info("Successfully fetched CIS2 tokens", {cis2AccessToken, cis2IdToken})
 
     // Step 2: Exchange CIS2 access token for an Apigee access token
-    logger.info("Exchanging CIS2 access token for Apigee access token")
+    logger.info("Preparing to exchange CIS2 access token for Apigee access token")
 
     // Fetch the private key for signing the client assertion
-    logger.info("Fetching JWT private key for signing")
+    logger.info("Accessing JWT private key from Secrets Manager to create signed client assertion")
     const jwtPrivateKey = await getSecret(jwtPrivateKeyArn)
     if (!jwtPrivateKey || typeof jwtPrivateKey !== "string") {
       throw new Error("Invalid or missing JWT private key")
@@ -67,23 +67,26 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     }
 
     // Rewrite payload to include the signed JWT client assertion
-    logger.info("Rewriting payload for Apigee token exchange")
+    logger.info("Generating signed JWT for Apigee token exchange payload")
     const rewrittenBody = rewriteBodyToAddSignedJWT(logger, tokenExchangeData, apigeeTokenEndpoint, jwtPrivateKey)
-    logger.debug("Rewritten body for Apigee token exchange", {rewrittenBody})
+    logger.info("Rewritten body for Apigee token exchange", {rewrittenBody})
 
     try {
       logger.info("Sending request to Apigee token endpoint", {apigeeTokenEndpoint})
+
       // Make the token exchange request
       const tokenResponse = await axiosInstance.post(apigeeTokenEndpoint, stringify(rewrittenBody), {
         headers: {"Content-Type": "application/x-www-form-urlencoded"}
       })
 
       if (!tokenResponse.data || !tokenResponse.data.access_token) {
+        logger.error("Invalid response from Apigee token endpoint", {tokenResponse})
         throw new Error("Invalid response from Apigee token endpoint")
       }
 
       apigeeAccessToken = tokenResponse.data.access_token
-      logger.info("Successfully exchanged token", {apigeeAccessToken})
+
+      logger.info("Successfully exchanged token", {apigeeAccessToken, expiresIn: tokenResponse.data.expires_in})
 
       // Step 3: Update DynamoDB with new Apigee access token
       const currentTime = Math.floor(Date.now() / 1000)
@@ -130,26 +133,35 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
       }
     )
 
-    logger.info("Successfully fetched prescription data from Apigee", {prescriptionId})
-
+    logger.info("Successfully fetched prescription data from Apigee", {prescriptionId, data: apigeeResponse.data})
     return {
       statusCode: 200,
       body: JSON.stringify(apigeeResponse.data),
       headers: formatHeaders(apigeeResponse.headers)
     }
   } catch (error) {
-    logger.error("Error fetching prescription data from Apigee", {error})
+    logger.error("Error fetching prescription data from Apigee", {
+      prescriptionId,
+      error: axios.isAxiosError(error) ? error.response?.data : error
+    })
     return handleErrorResponse(error, "Failed to fetch prescription data from Apigee API")
   }
 }
 
 const handleAxiosError = (error: AxiosError, contextMessage: string) => {
   if (axios.isAxiosError(error)) {
+    const config: Partial<AxiosError["config"]> = error.config || {}
     logger.error(contextMessage, {
       message: error.message,
       status: error.response?.status,
-      data: error.response?.data,
-      config: error.config
+      responseData: error.response?.data,
+      responseHeaders: error.response?.headers,
+      requestConfig: {
+        url: config.url,
+        method: config.method,
+        headers: config.headers,
+        data: config.data
+      }
     })
   } else {
     logger.error("Unexpected error during Axios request", {error})
