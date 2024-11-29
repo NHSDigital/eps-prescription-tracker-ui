@@ -64,7 +64,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     const tokenExchangeData = {
       grant_type: "urn:ietf:params:oauth:grant-type:token-exchange",
       subject_token_type: "urn:ietf:params:oauth:token-type:id_token",
-      subject_token: cis2AccessToken,
+      subject_token: cis2IdToken,
       client_id: "clinical-prescription-tracker-client" //process.env["oidcClientId"]
     }
 
