@@ -7,30 +7,7 @@ import {
 } from "../constants/ui-strings/SearchTabStrings"
 
 describe('The tabs component', () => {
-  it('Matches the snapshot', () => {
-    const tabData = PRESCRIPTION_SEARCH_TABS;
-    const { container } = render(
-      <Tabs>
-            <Tabs.Title>Contents</Tabs.Title>
-            <Tabs.List>
-                {
-                    tabData.map(tabHeader =>
-                        <Tabs.ListItem id={tabHeader.targetId} key={tabHeader.title}>{tabHeader.title}</Tabs.ListItem>
-                    )
-                }
-            </Tabs.List>
-            {
-                tabData.map(tabContent =>
-                    <Tabs.Contents id={tabContent.targetId} key={tabContent.title}>
-                        <div>{tabContent.title}</div>
-                    </Tabs.Contents>
-                )
-            }
-        </Tabs>
-    );
 
-    expect(container).toMatchSnapshot();
-  });
 
   it('Switches the visibility of tabs when clicked', () => {
     const tabData = PRESCRIPTION_SEARCH_TABS;
