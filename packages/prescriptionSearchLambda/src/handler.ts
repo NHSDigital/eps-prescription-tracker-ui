@@ -21,6 +21,7 @@ const apigeePrescriptionsEndpoint = "https://internal-dev.api.service.nhs.uk/cli
 const TokenMappingTableName = process.env["TokenMappingTableName"] as string
 const jwtPrivateKeyArn = process.env["jwtPrivateKeyArn"] as string
 const apigeeApiKey = process.env["apigeeApiKey"] as string
+const jwtKid = process.env["jwtKid"] as string
 const roleId = "555254242106"
 
 // DynamoDB client setup
@@ -74,7 +75,8 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
       tokenExchangeData,
       apigeeTokenEndpoint,
       jwtPrivateKey,
-      apigeeApiKey
+      apigeeApiKey,
+      jwtKid
     )
     logger.info("Rewritten body for Apigee token exchange", {rewrittenBody})
 

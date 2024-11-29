@@ -48,6 +48,8 @@ on:
         type: boolean
       useCustomCognitoDomain:
         type: boolean
+      JWT_KID:
+        type: string
     secrets:
       CLOUD_FORMATION_DEPLOY_ROLE:
         required: true
@@ -166,6 +168,7 @@ jobs:
           --argjson useCustomCognitoDomain "${{ inputs.useCustomCognitoDomain }}" \
           --argjson useLocalhostCallback "${{ inputs.useLocalhostCallback }}" \
           --arg apigeeApiKey "${{ secrets.APIGEE_API_KEY }}" \
+          --arg jwtKid "${{ inputs.JWT_KID }}" \
           '.context += {
             "serviceName": $serviceName,
             "VERSION_NUMBER": $VERSION_NUMBER,
@@ -195,7 +198,8 @@ jobs:
             "mockOidcjwksEndpoint": $mockOidcjwksEndpoint,
             "useCustomCognitoDomain": $useCustomCognitoDomain,
             "useLocalhostCallback": $useLocalhostCallback,
-            "apigeeApiKey": $apigeeApiKey
+            "apigeeApiKey": $apigeeApiKey,
+            "jwtKid": $jwtKid
             }' \
           .build/cdk.json > .build/cdk.new.json
           mv .build/cdk.new.json .build/cdk.json

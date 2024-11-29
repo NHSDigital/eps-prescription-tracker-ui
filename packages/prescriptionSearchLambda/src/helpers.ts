@@ -37,7 +37,8 @@ export function rewriteBodyToAddSignedJWT(
   objectBodyParameters: ParsedUrlQuery,
   idpTokenPath: string,
   jwtPrivateKey: jwt.PrivateKey,
-  apigeeApiKey: string
+  apigeeApiKey: string,
+  jwtKid: string
 ): ParsedUrlQuery {
   logger.info("Rewriting body to include signed JWT", {idpTokenPath})
 
@@ -58,7 +59,7 @@ export function rewriteBodyToAddSignedJWT(
     header: {
       alg: "RS512",
       typ: "JWT",
-      kid: "eps-cpt-ui-test"
+      kid: jwtKid
     }
   }
 

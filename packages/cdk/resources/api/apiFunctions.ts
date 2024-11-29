@@ -30,6 +30,7 @@ export interface ApiFunctionsProps {
   readonly logRetentionInDays: number
   readonly sharedSecrets: SharedSecrets
   readonly apigeeApiKey: string
+  readonly jwtKid: string
 }
 
 /**
@@ -69,7 +70,8 @@ export class ApiFunctions extends Construct {
         useSignedJWT: "true",
         oidcClientId: props.primaryOidcClientId,
         oidcIssuer: props.primaryOidcIssuer,
-        apigeeApiKey: props.apigeeApiKey
+        apigeeApiKey: props.apigeeApiKey,
+        jwtKid: props.jwtKid
       }
     })
 

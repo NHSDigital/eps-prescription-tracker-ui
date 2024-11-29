@@ -42,9 +42,8 @@ on:
         type: boolean
       useCustomCognitoDomain:
         type: boolean
-      REGRESSION_TESTS_PEM:
+      JWT_KID:
         type: string
-        default: false
     secrets:
       CLOUD_FORMATION_DEPLOY_ROLE:
         required: true
@@ -119,6 +118,7 @@ jobs:
       mockOidcjwksEndpoint: ${{ inputs.mockOidcjwksEndpoint }}
       useLocalhostCallback: ${{ inputs.useLocalhostCallback }}
       useCustomCognitoDomain: ${{ inputs.useCustomCognitoDomain }}
+      JWT_KID: ${{ inputs.JWT_KID }}
     secrets:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}
@@ -161,6 +161,7 @@ jobs:
       mockOidcjwksEndpoint: ${{ inputs.mockOidcjwksEndpoint }}
       useLocalhostCallback: ${{ inputs.useLocalhostCallback }}
       useCustomCognitoDomain: ${{ inputs.useCustomCognitoDomain }}
+      JWT_KID: ${{ inputs.JWT_KID }}
     secrets:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}
@@ -258,6 +259,7 @@ jobs:
       mockOidcjwksEndpoint: ${{ inputs.mockOidcjwksEndpoint }}
       useLocalhostCallback: ${{ inputs.useLocalhostCallback }}
       useCustomCognitoDomain: ${{ inputs.useCustomCognitoDomain }}
+      JWT_KID: ${{ inputs.JWT_KID }}
     secrets:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}

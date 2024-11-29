@@ -30,6 +30,7 @@ export interface CognitoFunctionsProps {
   readonly mockPoolIdentityProviderName: string
   readonly logRetentionInDays: number
   readonly sharedSecrets: SharedSecrets
+  readonly jwtKid: string
 }
 
 /**
@@ -69,7 +70,8 @@ export class CognitoFunctions extends Construct {
         userInfoEndpoint: props.primaryOidcUserInfoEndpoint,
         useSignedJWT: "true",
         oidcClientId: props.primaryOidcClientId,
-        oidcIssuer: props.primaryOidcIssuer
+        oidcIssuer: props.primaryOidcIssuer,
+        jwtKid: props.jwtKid
       }
     })
 
@@ -121,7 +123,8 @@ export class CognitoFunctions extends Construct {
           userInfoEndpoint: props.mockOidcUserInfoEndpoint,
           useSignedJWT: "true",
           oidcClientId: props.mockOidcClientId,
-          oidcIssuer: props.mockOidcIssuer
+          oidcIssuer: props.mockOidcIssuer,
+          jwtKid: props.jwtKid
         }
       })
 

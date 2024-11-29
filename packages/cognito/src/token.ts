@@ -21,6 +21,7 @@ const useSignedJWT = process.env["useSignedJWT"] as string
 const jwtPrivateKeyArn = process.env["jwtPrivateKeyArn"] as string
 const oidcClientId = process.env["oidcClientId"] as string
 const oidcIssuer = process.env["oidcIssuer"] as string
+const jwtKid = process.env["jwtKid"] as string
 
 const dynamoClient = new DynamoDBClient()
 const documentClient = DynamoDBDocumentClient.from(dynamoClient)
@@ -47,7 +48,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   if (useSignedJWT === "true") {
     const jwtPrivateKey = await getSecret(jwtPrivateKeyArn)
     rewrittenObjectBodyParameters = rewriteBodyToAddSignedJWT(
-      logger, objectBodyParameters, idpTokenPath, jwtPrivateKey as PrivateKey)
+      logger, objectBodyParameters, idpTokenPath, jwtPrivateKey as PrivateKey, jwtKid)
   } else {
     rewrittenObjectBodyParameters = objectBodyParameters
   }

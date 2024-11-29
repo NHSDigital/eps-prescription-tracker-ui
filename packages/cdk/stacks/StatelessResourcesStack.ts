@@ -72,6 +72,7 @@ export class StatelessResourcesStack extends Stack {
 
     const useMockOidc: boolean = this.node.tryGetContext("useMockOidc")
     const apigeeApiKey = this.node.tryGetContext("apigeeApiKey")
+    const jwtKid: string = this.node.tryGetContext("jwtKid")
 
     // Imports
     const baseImportPath = `${props.serviceName}-stateful-resources`
@@ -147,7 +148,8 @@ export class StatelessResourcesStack extends Stack {
       primaryPoolIdentityProviderName: primaryPoolIdentityProviderName,
       mockPoolIdentityProviderName: mockPoolIdentityProviderName,
       logRetentionInDays: logRetentionInDays,
-      sharedSecrets: sharedSecrets
+      sharedSecrets: sharedSecrets,
+      jwtKid: jwtKid
     })
 
     // -- functions for API
@@ -173,7 +175,8 @@ export class StatelessResourcesStack extends Stack {
       mockPoolIdentityProviderName: mockPoolIdentityProviderName,
       logRetentionInDays: logRetentionInDays,
       sharedSecrets: sharedSecrets,
-      apigeeApiKey: apigeeApiKey
+      apigeeApiKey: apigeeApiKey,
+      jwtKid: jwtKid
     })
 
     // - API Gateway
