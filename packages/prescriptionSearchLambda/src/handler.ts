@@ -17,7 +17,7 @@ const logger = new Logger({serviceName: "prescriptionSearch"})
 
 // External endpoints and environment variables
 const apigeeTokenEndpoint = "https://internal-dev.api.service.nhs.uk/oauth2/token"
-const apigeePrescriptionsEndpoint = "https://internal-dev.api.service.nhs.uk/clinical-prescription-tracker-pr-680"
+const apigeePrescriptionsEndpoint = "https://internal-dev.api.service.nhs.uk/clinical-prescription-tracker-pr-680/"
 const TokenMappingTableName = process.env["TokenMappingTableName"] as string
 const jwtPrivateKeyArn = process.env["jwtPrivateKeyArn"] as string
 const apigeeApiKey = process.env["apigeeApiKey"] as string
