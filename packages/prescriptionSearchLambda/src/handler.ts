@@ -11,6 +11,7 @@ import {DynamoDBDocumentClient, UpdateCommand} from "@aws-sdk/lib-dynamodb"
 import {rewriteBodyToAddSignedJWT, formatHeaders} from "./helpers"
 import {fetchCIS2Tokens} from "./cis2TokenHelpers"
 import {stringify} from "querystring"
+import {v4 as uuidv4} from "uuid"
 
 // Logger initialization
 const logger = new Logger({serviceName: "prescriptionSearch"})
@@ -143,7 +144,8 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
           Authorization: `Bearer ${apigeeAccessToken}`,
           "nhsd-session-urid": roleId,
           "nhsd-organization-uuid": "A83008",
-          "nhsd-session-jobrole": "123456123456"
+          "nhsd-session-jobrole": "123456123456",
+          "x-request-id": uuidv4()
         }
       }
     )
