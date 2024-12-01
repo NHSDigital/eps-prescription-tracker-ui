@@ -132,6 +132,8 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   // Error handling for fetching prescription data
   try {
     logger.info("Fetching prescription data from Apigee", {prescriptionId})
+    // need to pass in role id, organization id and job role to apigee
+    // user id is retrieved in apigee from access token
     const apigeeResponse = await axiosInstance.get(apigeePrescriptionsEndpoint,
       {
         params: {
@@ -139,7 +141,9 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
         },
         headers: {
           Authorization: `Bearer ${apigeeAccessToken}`,
-          "NHSD-Session-URID": roleId
+          "nhsd-session-urid": roleId,
+          "nhsd-organization-uuid": "A83008",
+          "nhsd-session-jobrole": "123456123456"
         }
       }
     )
