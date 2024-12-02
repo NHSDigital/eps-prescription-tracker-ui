@@ -7,8 +7,8 @@ import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
 import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
 
-import {fetchAndVerifyCIS2Tokens} from "./cis2TokenHelpers"
-import {fetchUserInfo} from "./userInfoHelpers"
+import {fetchAndVerifyCIS2Tokens, getUsernameFromEvent} from "./cis2TokenHelpers"
+import {fetchUserInfo, updateDynamoTable} from "./userInfoHelpers"
 
 const logger = new Logger({serviceName: "trackerUserInfo"})
 
@@ -41,6 +41,10 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     )
 
     logger.info("UserInfo response received", {userInfoResponse})
+
+    const username = getUsernameFromEvent(event)
+    updateDynamoTable(username, userInfoResponse, documentClient, logger)
+    logger.info("Updated DynamoDB table with user info", {username})
 
     return {
       statusCode: 200,

@@ -3,7 +3,6 @@ on:
   pull_request:
     types: [opened]
 jobs:
-
     get_issue_number:
         runs-on: ubuntu-latest
         outputs:
