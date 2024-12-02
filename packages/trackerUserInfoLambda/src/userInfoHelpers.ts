@@ -123,7 +123,9 @@ export const updateDynamoTable = async (
   }
 
   logger.debug("Adding user roles to DynamoDB", {username, data})
+
   // Add the user roles to the DynamoDB table
+  const currentlySelectedRole: RoleDetails = data.currently_selected_role ? data.currently_selected_role : {}
   try {
     await documentClient.send(
       new UpdateCommand({
@@ -135,7 +137,7 @@ export const updateDynamoTable = async (
         ExpressionAttributeValues: {
           ":rolesWithAccess": data.roles_with_access,
           ":rolesWithoutAccess": data.roles_without_access,
-          ":currentlySelectedRole": data.currently_selected_role ? data.currently_selected_role : ""
+          ":currentlySelectedRole": currentlySelectedRole
         }
       })
     )
