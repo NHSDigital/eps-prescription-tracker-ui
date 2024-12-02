@@ -40,7 +40,7 @@ export function constructSignedJWTBody(
   apigeeApiKey: string,
   jwtKid: string
 ): ParsedUrlQuery {
-  logger.info("Rewriting body to include signed JWT", {idpTokenPath})
+  logger.info("Constructing new body to include signed JWT", {idpTokenPath})
 
   const current_time = Math.floor(Date.now() / 1000)
   const expiration_time = current_time + 300
