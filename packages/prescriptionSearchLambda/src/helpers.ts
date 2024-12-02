@@ -32,7 +32,7 @@ export function verifyJWTWrapper(jwtToVerify: string,
   })
 }
 
-export function rewriteBodyToAddSignedJWT(
+export function constructSignedJWTBody(
   logger: Logger,
   objectBodyParameters: ParsedUrlQuery,
   idpTokenPath: string,

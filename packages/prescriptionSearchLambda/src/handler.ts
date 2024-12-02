@@ -8,7 +8,7 @@ import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 import axios, {AxiosError} from "axios"
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
 import {DynamoDBDocumentClient, UpdateCommand} from "@aws-sdk/lib-dynamodb"
-import {rewriteBodyToAddSignedJWT, formatHeaders} from "./helpers"
+import {constructSignedJWTBody, formatHeaders} from "./helpers"
 import {fetchCIS2Tokens} from "./cis2TokenHelpers"
 import {stringify} from "querystring"
 import {v4 as uuidv4} from "uuid"
@@ -66,12 +66,12 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
       grant_type: "urn:ietf:params:oauth:grant-type:token-exchange",
       subject_token_type: "urn:ietf:params:oauth:token-type:id_token",
       subject_token: cis2IdToken,
-      client_id: "clinical-prescription-tracker-client" //process.env["oidcClientId"]
+      client_id: "clinical-prescription-tracker-client"
     }
 
-    // Rewrite payload to include the signed JWT client assertion
+    // Construct a new body with the signed JWT client assertion
     logger.info("Generating signed JWT for Apigee token exchange payload")
-    const rewrittenBody = rewriteBodyToAddSignedJWT(
+    const requestBody = constructSignedJWTBody(
       logger,
       tokenExchangeData,
       apigeeTokenEndpoint,
@@ -79,13 +79,13 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
       apigeeApiKey,
       jwtKid
     )
-    logger.info("Rewritten body for Apigee token exchange", {rewrittenBody})
+    logger.info("Constructed request body for Apigee token exchange", {requestBody})
 
     try {
       logger.info("Sending request to Apigee token endpoint", {apigeeTokenEndpoint})
 
       // Make the token exchange request
-      const tokenResponse = await axiosInstance.post(apigeeTokenEndpoint, stringify(rewrittenBody), {
+      const tokenResponse = await axiosInstance.post(apigeeTokenEndpoint, stringify(requestBody), {
         headers: {"Content-Type": "application/x-www-form-urlencoded"}
       })
 
