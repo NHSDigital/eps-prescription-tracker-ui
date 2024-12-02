@@ -135,7 +135,7 @@ export const updateDynamoTable = async (
         ExpressionAttributeValues: {
           ":rolesWithAccess": data.roles_with_access,
           ":rolesWithoutAccess": data.roles_without_access,
-          ":currentlySelectedRole": data.currently_selected_role
+          ":currentlySelectedRole": data.currently_selected_role ? data.currently_selected_role : ""
         }
       })
     )
