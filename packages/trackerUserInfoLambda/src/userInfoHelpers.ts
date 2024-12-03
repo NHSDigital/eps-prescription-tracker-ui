@@ -125,7 +125,18 @@ export const updateDynamoTable = async (
   logger.debug("Adding user roles to DynamoDB", {username, data})
 
   // Add the user roles to the DynamoDB table
+
+  // Dyanamo cannot allow undefined values. We need to scrub any undefined values from the data objects
   const currentlySelectedRole: RoleDetails = data.currently_selected_role ? data.currently_selected_role : {}
+  const rolesWithAccess: Array<RoleDetails> = data.roles_with_access ? data.roles_with_access : []
+  const rolesWithoutAccess: Array<RoleDetails> = data.roles_without_access ? data.roles_without_access : []
+
+  // Since RoleDetails has a bunch of possibly undefined fields, we need to scrub those out.
+  // Convert everything to strings, then convert back to a generic object.
+  const scrubbedCurrentlySelectedRole = JSON.parse(JSON.stringify(currentlySelectedRole))
+  const scrubbedRolesWithAccess = rolesWithAccess.map((role) => JSON.parse(JSON.stringify(role)))
+  const scrubbedRolesWithoutAccess = rolesWithoutAccess.map((role) => JSON.parse(JSON.stringify(role)))
+
   try {
     await documentClient.send(
       new UpdateCommand({
@@ -135,15 +146,15 @@ export const updateDynamoTable = async (
         // eslint-disable-next-line max-len
           "SET rolesWithAccess = :rolesWithAccess, rolesWithoutAccess = :rolesWithoutAccess, currentlySelectedRole = :currentlySelectedRole",
         ExpressionAttributeValues: {
-          ":rolesWithAccess": data.roles_with_access,
-          ":rolesWithoutAccess": data.roles_without_access,
-          ":currentlySelectedRole": currentlySelectedRole
+          ":rolesWithAccess": scrubbedRolesWithAccess,
+          ":rolesWithoutAccess": scrubbedRolesWithoutAccess,
+          ":currentlySelectedRole": scrubbedCurrentlySelectedRole
         }
       })
     )
     logger.info("User roles added to DynamoDB", {username})
   } catch (error) {
     logger.error("Error adding user roles to DynamoDB", {username, data, error})
-    throw new Error("Error adding user roles to DynamoDB")
+    throw error
   }
 }
