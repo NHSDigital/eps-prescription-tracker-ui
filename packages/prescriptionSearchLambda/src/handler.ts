@@ -5,11 +5,13 @@ import middy from "@middy/core"
 import {getSecret} from "@aws-lambda-powertools/parameters/secrets"
 import inputOutputLogger from "@middy/input-output-logger"
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
-import axios, {AxiosError} from "axios"
+import axios from "axios"
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
 import {DynamoDBDocumentClient, UpdateCommand} from "@aws-sdk/lib-dynamodb"
-import {constructSignedJWTBody, formatHeaders} from "./helpers"
+import {formatHeaders} from "./helpers"
+import {constructSignedJWTBody} from "./utils/tokenUtils"
 import {fetchCIS2Tokens} from "./cis2TokenHelpers"
+import {handleAxiosError, handleErrorResponse} from "./utils/errorUtils"
 import {stringify} from "querystring"
 import {v4 as uuidv4} from "uuid"
 
@@ -164,46 +166,6 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
       error: axios.isAxiosError(error) ? error.response?.data : error
     })
     return handleErrorResponse(error, "Failed to fetch prescription data from Apigee API")
-  }
-}
-
-const handleAxiosError = (error: AxiosError, contextMessage: string) => {
-  if (axios.isAxiosError(error)) {
-    const config: Partial<AxiosError["config"]> = error.config || {}
-    logger.error(contextMessage, {
-      message: error.message,
-      status: error.response?.status,
-      responseData: error.response?.data,
-      responseHeaders: error.response?.headers,
-      requestConfig: {
-        url: config.url,
-        method: config.method,
-        headers: config.headers,
-        data: config.data
-      }
-    })
-  } else {
-    logger.error("Unexpected error during Axios request", {error})
-  }
-}
-
-const handleErrorResponse = (error: unknown, defaultMessage: string): APIGatewayProxyResult => {
-  if (axios.isAxiosError(error)) {
-    return {
-      statusCode: error.response?.status || 500,
-      body: JSON.stringify({
-        message: defaultMessage,
-        details: error.response?.data || error.message
-      })
-    }
-  }
-
-  return {
-    statusCode: 500,
-    body: JSON.stringify({
-      message: defaultMessage,
-      details: error instanceof Error ? error.message : "Unknown error occurred"
-    })
   }
 }
 

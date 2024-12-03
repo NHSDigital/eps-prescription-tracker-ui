@@ -1,4 +1,5 @@
-import {formatHeaders, verifyJWTWrapper} from "../src/helpers"
+import {formatHeaders} from "../src/helpers"
+import {verifyJWTWrapper} from "../src/utils/tokenUtils"
 import createJWKSMock from "mock-jwks"
 import jwt from "jsonwebtoken"
 

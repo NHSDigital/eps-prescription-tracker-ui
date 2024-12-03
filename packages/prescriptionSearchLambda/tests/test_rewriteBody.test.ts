@@ -8,7 +8,7 @@ import {ParsedUrlQuery} from "querystring"
 const sign = jest.spyOn(jwt, "sign")
 sign.mockImplementation(() => "mocked-jwt-token")
 
-const {constructSignedJWTBody} = await import("../src/helpers")
+const {constructSignedJWTBody} = await import("../src/utils/tokenUtils")
 
 describe("constructSignedJWTBody tests", () => {
   const logger = new Logger()
