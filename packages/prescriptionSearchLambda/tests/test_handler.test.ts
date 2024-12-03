@@ -48,7 +48,7 @@ describe("handler tests", () => {
     })
 
     expect(responseBody).toMatchObject({
-      message: "Error during token operations",
+      message: "Failed to fetch prescription data from Apigee API",
       details: "Token mapping table name is not set in environment variables."
     })
   })

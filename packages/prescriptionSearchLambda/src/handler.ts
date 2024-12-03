@@ -7,12 +7,12 @@ import inputOutputLogger from "@middy/input-output-logger"
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 import axios from "axios"
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
-import {DynamoDBDocumentClient, UpdateCommand} from "@aws-sdk/lib-dynamodb"
-import {formatHeaders} from "./helpers"
+import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
+import {formatHeaders} from "./utils/headerUtils"
 import {constructSignedJWTBody} from "./utils/tokenUtils"
-import {fetchCIS2Tokens} from "./cis2TokenHelpers"
-import {handleAxiosError, handleErrorResponse} from "./utils/errorUtils"
-import {stringify} from "querystring"
+import {fetchCIS2Tokens} from "./utils/cis2TokenUtils"
+import {handleErrorResponse} from "./utils/errorUtils"
+import {exchangeTokenForApigeeAccessToken, updateApigeeAccessToken} from "./utils/apigeeUtils"
 import {v4 as uuidv4} from "uuid"
 
 // Logger initialization
@@ -45,7 +45,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   logger.info("Lambda handler invoked", {event})
 
   const axiosInstance = axios.create()
-  let apigeeAccessToken: string
+  let prescriptionId: string | undefined
 
   try {
     // Step 1: Fetch CIS2 tokens
@@ -53,10 +53,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     const {cis2AccessToken, cis2IdToken} = await fetchCIS2Tokens(event, documentClient, logger)
     logger.debug("Successfully fetched CIS2 tokens", {cis2AccessToken, cis2IdToken})
 
-    // Step 2: Exchange CIS2 access token for an Apigee access token
-    logger.info("Preparing to exchange CIS2 access token for Apigee access token")
-
-    // Fetch the private key for signing the client assertion
+    // Step 2: Fetch the private key for signing the client assertion
     logger.info("Accessing JWT private key from Secrets Manager to create signed client assertion")
     const jwtPrivateKey = await getSecret(jwtPrivateKeyArn)
     if (!jwtPrivateKey || typeof jwtPrivateKey !== "string") {
@@ -85,57 +82,27 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     )
     logger.debug("Constructed request body for Apigee token exchange", {requestBody})
 
-    try {
-      logger.debug("Sending request to Apigee token endpoint", {apigeeTokenEndpoint})
+    // Step 3: Exchange token with Apigee
+    const {accessToken: apigeeAccessToken, expiresIn} = await exchangeTokenForApigeeAccessToken(
+      axiosInstance,
+      apigeeTokenEndpoint,
+      requestBody,
+      logger
+    )
 
-      // Make the token exchange request
-      const tokenResponse = await axiosInstance.post(apigeeTokenEndpoint, stringify(requestBody), {
-        headers: {"Content-Type": "application/x-www-form-urlencoded"}
-      })
+    // Step 4: Update DynamoDB with the new Apigee access token
+    await updateApigeeAccessToken(
+      documentClient,
+      TokenMappingTableName,
+      event.requestContext.authorizer?.claims?.["cognito:username"] || "unknown",
+      apigeeAccessToken,
+      expiresIn,
+      logger
+    )
 
-      if (!tokenResponse.data || !tokenResponse.data.access_token) {
-        logger.error("Invalid response from Apigee token endpoint", {tokenResponse})
-        throw new Error("Invalid response from Apigee token endpoint")
-      }
+    // Step 5: Fetch prescription data from Apigee API
+    prescriptionId = event.queryStringParameters?.prescriptionId || "defaultId"
 
-      apigeeAccessToken = tokenResponse.data.access_token
-
-      logger.debug("Successfully exchanged token", {apigeeAccessToken, expiresIn: tokenResponse.data.expires_in})
-
-      // Step 3: Update DynamoDB with new Apigee access token
-      const currentTime = Math.floor(Date.now() / 1000)
-      logger.info("Updating DynamoDB with new Apigee access token", {apigeeAccessToken})
-      await documentClient.send(
-        new UpdateCommand({
-          TableName: TokenMappingTableName,
-          Key: {username: event.requestContext.authorizer?.claims?.["cognito:username"] || "unknown"},
-          UpdateExpression: "SET Apigee_accessToken = :apigeeAccessToken, Apigee_expiresIn = :apigeeExpiresIn",
-          ExpressionAttributeValues: {
-            ":apigeeAccessToken": apigeeAccessToken,
-            ":apigeeExpiresIn": currentTime + (tokenResponse.data.expires_in || 3600)
-          }
-        })
-      )
-
-      logger.info("Apigee access token successfully updated in DynamoDB")
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        handleAxiosError(error, "Token exchange failed")
-      } else {
-        logger.error("Unexpected non-Axios error during token exchange", {error})
-      }
-      throw new Error("Error during token exchange")
-    }
-  } catch (error) {
-    logger.error("Error during token exchange or DynamoDB operations", {error})
-    return handleErrorResponse(error, "Error during token operations")
-  }
-
-  // Step 4: Fetch prescription data from Apigee API
-  const prescriptionId = event.queryStringParameters?.prescriptionId || "defaultId"
-
-  // Error handling for fetching prescription data
-  try {
     logger.info("Fetching prescription data from Apigee", {prescriptionId})
     // need to pass in role id, organization id and job role to apigee
     // user id is retrieved in apigee from access token
@@ -154,7 +121,10 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
       }
     )
 
-    logger.info("Successfully fetched prescription data from Apigee", {prescriptionId, data: apigeeResponse.data})
+    logger.info("Successfully fetched prescription data from Apigee", {
+      prescriptionId,
+      data: apigeeResponse.data
+    })
     return {
       statusCode: 200,
       body: JSON.stringify(apigeeResponse.data),
