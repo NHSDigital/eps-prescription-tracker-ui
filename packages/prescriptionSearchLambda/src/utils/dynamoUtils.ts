@@ -20,7 +20,7 @@ export const updateApigeeAccessToken = async (
 ): Promise<void> => {
   const currentTime = Math.floor(Date.now() / 1000)
 
-  logger.info("Updating DynamoDB with new access token", {
+  logger.debug("Updating DynamoDB with new access token", {
     username,
     accessToken,
     expiresIn
