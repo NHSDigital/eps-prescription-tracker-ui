@@ -60,7 +60,7 @@ jobs:
       - name: Install Dependencies
         run: make install
 
-      - name: Set VERSION_TAG env var to be short git SHA and get next tag varsion
+      - name: Set VERSION_TAG env var to be short git SHA and get next tag version
         id: output_version_tag
         run: |
           VERSION_TAG=$(git rev-parse --short HEAD)
