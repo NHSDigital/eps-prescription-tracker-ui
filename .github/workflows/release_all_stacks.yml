@@ -46,6 +46,8 @@ on:
         type: string
       LOG_LEVEL:
         type: string
+      ROLE_ID:
+        type: string
     secrets:
       CLOUD_FORMATION_DEPLOY_ROLE:
         required: true
@@ -122,6 +124,7 @@ jobs:
       useLocalhostCallback: ${{ inputs.useLocalhostCallback }}
       useCustomCognitoDomain: ${{ inputs.useCustomCognitoDomain }}
       JWT_KID: ${{ inputs.JWT_KID }}
+      ROLE_ID: ${{ inputs.ROLE_ID }}
     secrets:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}
@@ -166,6 +169,7 @@ jobs:
       useLocalhostCallback: ${{ inputs.useLocalhostCallback }}
       useCustomCognitoDomain: ${{ inputs.useCustomCognitoDomain }}
       JWT_KID: ${{ inputs.JWT_KID }}
+      ROLE_ID: ${{ inputs.ROLE_ID }}
     secrets:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}

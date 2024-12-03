@@ -52,6 +52,8 @@ on:
         type: boolean
       JWT_KID:
         type: string
+      ROLE_ID:
+        type: string
     secrets:
       CLOUD_FORMATION_DEPLOY_ROLE:
         required: true
@@ -172,6 +174,7 @@ jobs:
           --argjson useLocalhostCallback "${{ inputs.useLocalhostCallback }}" \
           --arg apigeeApiKey "${{ secrets.APIGEE_API_KEY }}" \
           --arg jwtKid "${{ inputs.JWT_KID }}" \
+          --arg roleId "${{ inputs.ROLE_ID }}" \
           '.context += {
             "serviceName": $serviceName,
             "VERSION_NUMBER": $VERSION_NUMBER,
@@ -204,6 +207,7 @@ jobs:
             "useLocalhostCallback": $useLocalhostCallback,
             "apigeeApiKey": $apigeeApiKey,
             "jwtKid": $jwtKid
+            "roleId": $roleId
             }' \
           .build/cdk.json > .build/cdk.new.json
           mv .build/cdk.new.json .build/cdk.json

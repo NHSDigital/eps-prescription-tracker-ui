@@ -26,7 +26,7 @@ const TokenMappingTableName = process.env["TokenMappingTableName"] as string
 const jwtPrivateKeyArn = process.env["jwtPrivateKeyArn"] as string
 const apigeeApiKey = process.env["apigeeApiKey"] as string
 const jwtKid = process.env["jwtKid"] as string
-const roleId = "555254242106"
+const roleId = process.env["roleId"] as string
 
 // DynamoDB client setup
 const dynamoClient = new DynamoDBClient()

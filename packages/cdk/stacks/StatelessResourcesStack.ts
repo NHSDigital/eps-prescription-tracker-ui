@@ -74,6 +74,7 @@ export class StatelessResourcesStack extends Stack {
     const useMockOidc: boolean = this.node.tryGetContext("useMockOidc")
     const apigeeApiKey = this.node.tryGetContext("apigeeApiKey")
     const jwtKid: string = this.node.tryGetContext("jwtKid")
+    const roleId: string = this.node.tryGetContext("roleId")
 
     // Imports
     const baseImportPath = `${props.serviceName}-stateful-resources`
@@ -179,7 +180,8 @@ export class StatelessResourcesStack extends Stack {
       logLevel: logLevel,
       sharedSecrets: sharedSecrets,
       apigeeApiKey: apigeeApiKey,
-      jwtKid: jwtKid
+      jwtKid: jwtKid,
+      roleId: roleId
     })
 
     // - API Gateway

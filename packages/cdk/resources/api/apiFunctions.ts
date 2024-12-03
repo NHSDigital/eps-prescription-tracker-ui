@@ -32,6 +32,7 @@ export interface ApiFunctionsProps {
   readonly apigeeApiKey: string
   readonly jwtKid: string
   readonly logLevel: string
+  readonly roleId: string
 }
 
 /**
@@ -73,7 +74,8 @@ export class ApiFunctions extends Construct {
         oidcClientId: props.primaryOidcClientId,
         oidcIssuer: props.primaryOidcIssuer,
         apigeeApiKey: props.apigeeApiKey,
-        jwtKid: props.jwtKid
+        jwtKid: props.jwtKid,
+        roleId: props.roleId
       }
     })
 
