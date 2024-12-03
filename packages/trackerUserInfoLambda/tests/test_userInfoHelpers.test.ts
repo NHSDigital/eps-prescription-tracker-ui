@@ -259,7 +259,7 @@ describe("updateDynamoTable", () => {
 
   it("should handle DynamoDB update errors", async () => {
     // This is async
-    jest.spyOn(documentClient, "send").mockImplementation(() => Promise.reject(new Error("DynamoDB error")))
+    jest.spyOn(documentClient, "send").mockImplementation(() => Promise.reject(new Error("Error adding user roles to DynamoDB")))
 
     await expect(
       updateDynamoTable(username, data, documentClient, logger)
