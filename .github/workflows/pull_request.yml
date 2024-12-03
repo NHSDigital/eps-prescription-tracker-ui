@@ -88,3 +88,4 @@ jobs:
       mockOidcClientId: ${{ secrets.PTL_MOCK_CLIENT_ID }}
       mockOidClientSecret: ${{ secrets.PTL_MOCK_CLIENT_SECRET }}
       CIS2_PRIVATE_KEY: ${{ secrets.PTL_CIS2_PRIVATE_KEY }}
+      REGRESSION_TESTS_PEM: ${{ secrets.REGRESSION_TESTS_PEM }}
