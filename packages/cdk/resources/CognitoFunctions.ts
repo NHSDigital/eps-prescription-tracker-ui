@@ -29,6 +29,7 @@ export interface CognitoFunctionsProps {
   readonly primaryPoolIdentityProviderName: string
   readonly mockPoolIdentityProviderName: string
   readonly logRetentionInDays: number
+  readonly logLevel: string
   readonly sharedSecrets: SharedSecrets
   readonly jwtKid: string
 }
@@ -59,6 +60,7 @@ export class CognitoFunctions extends Construct {
         props.sharedSecrets.getPrimaryJwtPrivateKeyPolicy
       ],
       logRetentionInDays: props.logRetentionInDays,
+      logLevel: props.logLevel,
       packageBasePath: "packages/cognito",
       entryPoint: "src/token.ts",
       lambdaEnvironmentVariables: {
@@ -112,6 +114,7 @@ export class CognitoFunctions extends Construct {
           props.sharedSecrets.getMockJwtPrivateKeyPolicy
         ],
         logRetentionInDays: props.logRetentionInDays,
+        logLevel: props.logLevel,
         packageBasePath: "packages/cognito",
         entryPoint: "src/token.ts",
         lambdaEnvironmentVariables: {

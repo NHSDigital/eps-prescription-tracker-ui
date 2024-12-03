@@ -49,7 +49,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     // Step 1: Fetch CIS2 tokens
     logger.info("Retrieving CIS2 tokens from DynamoDB based on the current request context")
     const {cis2AccessToken, cis2IdToken} = await fetchCIS2Tokens(event, documentClient, logger)
-    logger.info("Successfully fetched CIS2 tokens", {cis2AccessToken, cis2IdToken})
+    logger.debug("Successfully fetched CIS2 tokens", {cis2AccessToken, cis2IdToken})
 
     // Step 2: Exchange CIS2 access token for an Apigee access token
     logger.info("Preparing to exchange CIS2 access token for Apigee access token")
@@ -60,6 +60,8 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     if (!jwtPrivateKey || typeof jwtPrivateKey !== "string") {
       throw new Error("Invalid or missing JWT private key")
     }
+
+    logger.debug("JWT private key retrieved successfully")
 
     // Construct the token exchange payload
     const tokenExchangeData = {
@@ -79,10 +81,10 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
       apigeeApiKey,
       jwtKid
     )
-    logger.info("Constructed request body for Apigee token exchange", {requestBody})
+    logger.debug("Constructed request body for Apigee token exchange", {requestBody})
 
     try {
-      logger.info("Sending request to Apigee token endpoint", {apigeeTokenEndpoint})
+      logger.debug("Sending request to Apigee token endpoint", {apigeeTokenEndpoint})
 
       // Make the token exchange request
       const tokenResponse = await axiosInstance.post(apigeeTokenEndpoint, stringify(requestBody), {
@@ -96,7 +98,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
       apigeeAccessToken = tokenResponse.data.access_token
 
-      logger.info("Successfully exchanged token", {apigeeAccessToken, expiresIn: tokenResponse.data.expires_in})
+      logger.debug("Successfully exchanged token", {apigeeAccessToken, expiresIn: tokenResponse.data.expires_in})
 
       // Step 3: Update DynamoDB with new Apigee access token
       const currentTime = Math.floor(Date.now() / 1000)

@@ -34,7 +34,8 @@ describe("functionConstruct works correctly", () => {
       packageBasePath: "packages/cdk",
       entryPoint: "tests/src/dummyLambda.ts",
       lambdaEnvironmentVariables: {},
-      logRetentionInDays: 30
+      logRetentionInDays: 30,
+      logLevel: "DEBUG"
     })
     template = Template.fromStack(stack)
     const lambdaLogGroup = functionConstruct.node.tryFindChild("LambdaLogGroup") as LogGroup
@@ -154,7 +155,8 @@ describe("functionConstruct works correctly with environment variables", () => {
       packageBasePath: "packages/cdk",
       entryPoint: "tests/src/dummyLambda.ts",
       lambdaEnvironmentVariables: {foo: "bar"},
-      logRetentionInDays: 30
+      logRetentionInDays: 30,
+      logLevel: "DEBUG"
     })
     template = Template.fromStack(stack)
   })
@@ -196,7 +198,8 @@ describe("functionConstruct works correctly with additional policies", () => {
       packageBasePath: "packages/cdk",
       entryPoint: "tests/src/dummyLambda.ts",
       lambdaEnvironmentVariables: {},
-      logRetentionInDays: 30
+      logRetentionInDays: 30,
+      logLevel: "DEBUG"
     })
     template = Template.fromStack(stack)
     testPolicyResource = stack.resolve(testPolicy.managedPolicyArn)

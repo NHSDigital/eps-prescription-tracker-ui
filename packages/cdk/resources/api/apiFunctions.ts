@@ -31,6 +31,7 @@ export interface ApiFunctionsProps {
   readonly sharedSecrets: SharedSecrets
   readonly apigeeApiKey: string
   readonly jwtKid: string
+  readonly logLevel: string
 }
 
 /**
@@ -58,6 +59,7 @@ export class ApiFunctions extends Construct {
         props.sharedSecrets.getPrimaryJwtPrivateKeyPolicy
       ],
       logRetentionInDays: props.logRetentionInDays,
+      logLevel: props.logLevel,
       packageBasePath: "packages/prescriptionSearchLambda",
       entryPoint: "src/handler.ts",
       lambdaEnvironmentVariables: {

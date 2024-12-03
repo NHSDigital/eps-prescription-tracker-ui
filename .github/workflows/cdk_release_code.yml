@@ -21,6 +21,8 @@ on:
       LOG_RETENTION_IN_DAYS:
         required: true
         type: string
+      LOG_LEVEL:
+        type: string
       useMockOidc:
         type: boolean
         default: false
@@ -143,6 +145,7 @@ jobs:
           --arg VERSION_NUMBER "${{ inputs.VERSION_NUMBER }}" \
           --arg COMMIT_ID "${{ inputs.COMMIT_ID }}" \
           --arg logRetentionInDays "${{ inputs.LOG_RETENTION_IN_DAYS }}" \
+          --arg logLevel "${{ inputs.LOG_LEVEL }}" \
           --arg epsDomainName "${epsDomainName}" \
           --arg epsHostedZoneId "${epsHostedZoneId}" \
           --argjson allowAutoDeleteObjects "true" \
@@ -174,6 +177,7 @@ jobs:
             "VERSION_NUMBER": $VERSION_NUMBER,
             "COMMIT_ID": $COMMIT_ID,
             "logRetentionInDays": $logRetentionInDays,
+            "logLevel": $logLevel,
             "epsDomainName": $epsDomainName,
             "epsHostedZoneId": $epsHostedZoneId,
             "allowAutoDeleteObjects": $allowAutoDeleteObjects,

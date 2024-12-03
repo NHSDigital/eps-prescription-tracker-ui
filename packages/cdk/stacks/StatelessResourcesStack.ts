@@ -58,6 +58,7 @@ export class StatelessResourcesStack extends Stack {
     const shortCloudfrontDomain: string = this.node.tryGetContext("shortCloudfrontDomain")
     const fullCloudfrontDomain: string = this.node.tryGetContext("fullCloudfrontDomain")
     const logRetentionInDays: number = Number(this.node.tryGetContext("logRetentionInDays"))
+    const logLevel: string = this.node.tryGetContext("logLevel")
     const primaryOidcClientId = this.node.tryGetContext("primaryOidcClientId")
     const primaryOidcTokenEndpoint = this.node.tryGetContext("primaryOidcTokenEndpoint")
     const primaryOidcIssuer = this.node.tryGetContext("primaryOidcIssuer")
@@ -148,6 +149,7 @@ export class StatelessResourcesStack extends Stack {
       primaryPoolIdentityProviderName: primaryPoolIdentityProviderName,
       mockPoolIdentityProviderName: mockPoolIdentityProviderName,
       logRetentionInDays: logRetentionInDays,
+      logLevel: logLevel,
       sharedSecrets: sharedSecrets,
       jwtKid: jwtKid
     })
@@ -174,6 +176,7 @@ export class StatelessResourcesStack extends Stack {
       primaryPoolIdentityProviderName: primaryPoolIdentityProviderName,
       mockPoolIdentityProviderName: mockPoolIdentityProviderName,
       logRetentionInDays: logRetentionInDays,
+      logLevel: logLevel,
       sharedSecrets: sharedSecrets,
       apigeeApiKey: apigeeApiKey,
       jwtKid: jwtKid
@@ -184,6 +187,7 @@ export class StatelessResourcesStack extends Stack {
       serviceName: props.serviceName,
       stackName: props.stackName,
       logRetentionInDays: logRetentionInDays,
+      logLevel: logLevel,
       cloudwatchKmsKey: cloudwatchKmsKey,
       splunkDeliveryStream: splunkDeliveryStream,
       splunkSubscriptionFilterRole: splunkSubscriptionFilterRole,

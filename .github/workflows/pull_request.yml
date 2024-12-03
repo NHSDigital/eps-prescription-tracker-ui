@@ -81,6 +81,7 @@ jobs:
       useLocalhostCallback: true
       useCustomCognitoDomain: false
       JWT_KID: "eps-cpt-ui-test"
+      LOG_LEVEL: "DEBUG"
     secrets:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.DEV_CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_DEPLOY_ROLE }}

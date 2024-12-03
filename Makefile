@@ -139,6 +139,7 @@ cdk-synth-stateless-resources-no-mock:
 		--context VERSION_NUMBER=undefined \
 		--context COMMIT_ID=undefined \
 		--context logRetentionInDays=30 \
+		--context LogLevel=debug \
 		--context epsDomainName=undefined \
 		--context epsHostedZoneId=undefined \
 		--context cloudfrontCertArn=arn:aws:acm:us-east-1:444455556666:certificate/certificate_ID \
@@ -181,6 +182,7 @@ cdk-synth-stateless-resources-mock:
 		--context VERSION_NUMBER=undefined \
 		--context COMMIT_ID=undefined \
 		--context logRetentionInDays=30 \
+		--context LogLevel=debug \
 		--context epsDomainName=undefined \
 		--context epsHostedZoneId=undefined \
 		--context cloudfrontCertArn=arn:aws:acm:us-east-1:444455556666:certificate/certificate_ID \

@@ -44,6 +44,8 @@ on:
         type: boolean
       JWT_KID:
         type: string
+      LOG_LEVEL:
+        type: string
     secrets:
       CLOUD_FORMATION_DEPLOY_ROLE:
         required: true
@@ -105,6 +107,7 @@ jobs:
       COMMIT_ID: ${{ inputs.COMMIT_ID }}
       CDK_APP_NAME: StatefulResourcesApp
       LOG_RETENTION_IN_DAYS: 30
+      LOG_LEVEL: ${{ inputs.LOG_LEVEL }}
       useMockOidc: ${{ inputs.useMockOidc }}
       primaryOidcIssuer: ${{ inputs.primaryOidcIssuer }}
       primaryOidcAuthorizeEndpoint: ${{ inputs.primaryOidcAuthorizeEndpoint }}
@@ -148,6 +151,7 @@ jobs:
       COMMIT_ID: ${{ inputs.COMMIT_ID }}
       CDK_APP_NAME: StatelessResourcesApp
       LOG_RETENTION_IN_DAYS: 30
+      LOG_LEVEL: ${{ inputs.LOG_LEVEL }}
       useMockOidc: ${{ inputs.useMockOidc }}
       primaryOidcIssuer: ${{ inputs.primaryOidcIssuer }}
       primaryOidcAuthorizeEndpoint: ${{ inputs.primaryOidcAuthorizeEndpoint }}
@@ -246,6 +250,7 @@ jobs:
       COMMIT_ID: ${{ inputs.COMMIT_ID }}
       CDK_APP_NAME: StatefulResourcesApp
       LOG_RETENTION_IN_DAYS: 30
+      LOG_LEVEL: ${{ inputs.LOG_LEVEL }}
       useMockOidc: ${{ inputs.useMockOidc }}
       primaryOidcIssuer: ${{ inputs.primaryOidcIssuer }}
       primaryOidcAuthorizeEndpoint: ${{ inputs.primaryOidcAuthorizeEndpoint }}

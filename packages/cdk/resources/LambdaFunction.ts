@@ -34,6 +34,7 @@ export interface LambdaFunctionProps {
   readonly entryPoint: string
   readonly lambdaEnvironmentVariables: {[key: string]: string}
   readonly logRetentionInDays: number
+  readonly logLevel: string
 }
 
 /**
@@ -128,6 +129,8 @@ export class LambdaFunction extends Construct {
       packageBasePath: props.packageBasePath,
       entryPoint: props.entryPoint
     })
+
+    props.lambdaEnvironmentVariables["LOG_LEVEL"] = props.logLevel
 
     const lambdaFunction = new NodejsFunction(this, props.lambdaName, {
       ...lambdaOptions,
