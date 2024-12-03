@@ -206,7 +206,7 @@ jobs:
             "useCustomCognitoDomain": $useCustomCognitoDomain,
             "useLocalhostCallback": $useLocalhostCallback,
             "apigeeApiKey": $apigeeApiKey,
-            "jwtKid": $jwtKid
+            "jwtKid": $jwtKid,
             "roleId": $roleId
             }' \
           .build/cdk.json > .build/cdk.new.json
