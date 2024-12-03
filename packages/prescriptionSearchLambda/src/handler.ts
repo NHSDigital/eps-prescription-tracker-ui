@@ -12,7 +12,8 @@ import {formatHeaders} from "./utils/headerUtils"
 import {constructSignedJWTBody} from "./utils/tokenUtils"
 import {fetchCIS2Tokens} from "./utils/cis2TokenUtils"
 import {handleErrorResponse} from "./utils/errorUtils"
-import {exchangeTokenForApigeeAccessToken, updateApigeeAccessToken} from "./utils/apigeeUtils"
+import {exchangeTokenForApigeeAccessToken} from "./utils/apigeeUtils"
+import {updateApigeeAccessToken} from "./utils/dynamoUtils"
 import {v4 as uuidv4} from "uuid"
 
 // Logger initialization

@@ -31,7 +31,7 @@ export const exchangeTokenForApigeeAccessToken = async (
       throw new Error("Invalid response from Apigee token endpoint")
     }
 
-    logger.info("Successfully exchanged token for Apigee access token", {
+    logger.debug("Successfully exchanged token for Apigee access token", {
       accessToken: response.data.access_token,
       expiresIn: response.data.expires_in
     })

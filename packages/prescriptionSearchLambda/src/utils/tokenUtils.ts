@@ -89,7 +89,7 @@ export function constructSignedJWTBody(
     }
   }
 
-  logger.info("JWT claims prepared for signing", {claims})
+  logger.debug("JWT claims prepared for signing", {claims})
   const jwt_token = jwt.sign(claims, jwtPrivateKey, signOptions)
   logger.info("Generated JWT token", {jwt_token})
 
