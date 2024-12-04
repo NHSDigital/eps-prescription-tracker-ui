@@ -2,9 +2,12 @@
 import React from 'react'
 import "../assets/styles/tabs.scss"
 import { Tabs } from "nhsuk-react-components";
+import PrescriptionIdSearch from "./prescriptionSearch/PrescriptionIdSearch"
+import NhsNumSearch from './prescriptionSearch/NhsNumSearch';
+import BasicDetailsSearch from './prescriptionSearch/BasicDetailsSearch';
 import {
     PRESCRIPTION_SEARCH_TABS
-} from "../constants/ui-strings/SearchTabStrings"
+} from "../constants/ui-strings/SearchTabStrings";
 
 export default function EpsTabs() {
     const tabData = PRESCRIPTION_SEARCH_TABS;
@@ -21,7 +24,14 @@ export default function EpsTabs() {
             {
                 tabData.map(tabContent =>
                     <Tabs.Contents id={tabContent.targetId} key={tabContent.title}>
-                        <div>{tabContent.title}</div>
+                        <div>
+                            {(tabContent.targetId === 'PrescriptionIdSearch' && <PrescriptionIdSearch />) ||
+                                (tabContent.targetId === 'NhsNumSearch' && <NhsNumSearch />) ||
+                                (tabContent.targetId === 'BasicDetailsSearch' && <BasicDetailsSearch />) ||
+                                <p>This Search not available</p>
+                            }
+                        </div>
+
                     </Tabs.Contents>
                 )
             }

@@ -2,38 +2,15 @@ import React from 'react';
 import "@testing-library/jest-dom";
 import { fireEvent, render } from "@testing-library/react";
 import { Tabs } from "nhsuk-react-components";
+import PrescriptionIdSearch from "../components/prescriptionSearch/PrescriptionIdSearch"
+import NhsNumSearch from '../components/prescriptionSearch/NhsNumSearch';
+import BasicDetailsSearch from '../components/prescriptionSearch/BasicDetailsSearch';
 import {
   PRESCRIPTION_SEARCH_TABS
 } from "../constants/ui-strings/SearchTabStrings"
 
 describe('The tabs component', () => {
 
-  it('Matches the snapshot', () => {
-    const { container } = render(
-      <Tabs>
-        <Tabs.Title>Contents</Tabs.Title>
-        <Tabs.List>
-          <Tabs.ListItem id="past-day">Past day</Tabs.ListItem>
-          <Tabs.ListItem id="past-week">Past week</Tabs.ListItem>
-          <Tabs.ListItem id="past-month">Past month</Tabs.ListItem>
-        </Tabs.List>
-
-        <Tabs.Contents id="past-day">
-          <div>Past day contents go here</div>
-        </Tabs.Contents>
-
-        <Tabs.Contents id="past-week">
-          <div>Past week contents go here</div>
-        </Tabs.Contents>
-
-        <Tabs.Contents id="past-month">
-          <div>Past month contents go here</div>
-        </Tabs.Contents>
-      </Tabs>,
-    );
-
-    expect(container).toMatchSnapshot();
-  });
   
   it('Switches the visibility of tabs when clicked', () => {
     const tabData = PRESCRIPTION_SEARCH_TABS;
@@ -50,14 +27,20 @@ describe('The tabs component', () => {
             {
                 tabData.map(tabContent =>
                     <Tabs.Contents id={tabContent.targetId} key={tabContent.title}>
-                        <div>{tabContent.title}</div>
+                        <div>
+                            {(tabContent.targetId === 'PrescriptionIdSearch' && <PrescriptionIdSearch />) ||
+                                (tabContent.targetId === 'NhsNumSearch' && <NhsNumSearch />) ||
+                                (tabContent.targetId === 'BasicDetailsSearch' && <BasicDetailsSearch />) ||
+                                <p>This Search not available</p>
+                            }
+                        </div>
                     </Tabs.Contents>
                 )
             }
         </Tabs>,
     );
 
-    const firstTabLink = container.querySelector('#tab_IdSearch');
+    const firstTabLink = container.querySelector('#tab_PrescriptionIdSearch');
     const secondTabLink = container.querySelector('#tab_NhsNumSearch');
 
     expect(

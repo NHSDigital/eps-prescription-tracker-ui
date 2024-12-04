@@ -9,7 +9,9 @@ import {
     HEADER_CONFIRM_ROLE_BUTTON,
     HEADER_CONFIRM_ROLE_TARGET,
     HEADER_CHANGE_ROLE_BUTTON,
-    HEADER_CHANGE_ROLE_TARGET
+    HEADER_CHANGE_ROLE_TARGET,
+    HEADER_PRESCRIPTION_SEARCH_BUTTON,
+    HEADER_PRESCRIPTION_SEARCH_TARGET
 } from "../constants/ui-strings/HeaderStrings"
 
 export default function EpsHeader() {
@@ -27,12 +29,6 @@ export default function EpsHeader() {
                 <Header.Content />
             </Header.Container>
             <Header.Nav className="masthead-nav">
-                <li className="nhsuk-header__navigation-item">
-                    <Link className="nhsuk-header__navigation-link" href='/' data-testid="eps_header_placeholder1">Placeholder 1</Link>
-                </li>
-                <li className="nhsuk-header__navigation-item">
-                    <Link className="nhsuk-header__navigation-link" href='/' data-testid="eps_header_placeholder2">Placeholder 2</Link>
-                </li>
                 {pathname != '/' ? (
                     <li className="nhsuk-header__navigation-item">
                         <Link className="nhsuk-header__navigation-link" href={HEADER_CHANGE_ROLE_TARGET} data-testid="eps_header_changeRoleLink">{HEADER_CHANGE_ROLE_BUTTON}</Link>
@@ -45,9 +41,8 @@ export default function EpsHeader() {
                     )
                 }
                 <li className="nhsuk-header__navigation-item">
-                    <Link className="nhsuk-header__navigation-link" href='/prescriptionsearch' data-testid="eps_header_prescriptionSearchLink">Find a prescription</Link>
+                    <Link className="nhsuk-header__navigation-link" href={HEADER_PRESCRIPTION_SEARCH_TARGET} data-testid="eps_header_prescriptionSearchLink">{HEADER_PRESCRIPTION_SEARCH_BUTTON}</Link>
                 </li>
-                {/* <Header.NavItem>Placeholder 3</Header.NavItem> */}
                 <Header.NavDropdownMenu dropdownText="Menu" />
             </Header.Nav>
         </Header>
