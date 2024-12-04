@@ -1,7 +1,7 @@
 import React, { createContext, useEffect, useState } from 'react';
 import { Amplify } from 'aws-amplify';
 import { Hub } from "aws-amplify/utils";
-import { signInWithRedirect, signOut, getCurrentUser, AuthUser, fetchAuthSession, JWT, SignInWithRedirectInput, SignOutInput } from 'aws-amplify/auth';
+import { signInWithRedirect, signOut, getCurrentUser, AuthUser, fetchAuthSession, JWT, SignInWithRedirectInput } from 'aws-amplify/auth';
 import { authConfig } from './configureAmplify';
 
 
@@ -19,9 +19,9 @@ interface AuthContextType {
   cognitoSignOut: () => Promise<void>;
 }
 
-export const AuthContext = createContext<AuthContextType | undefined>(undefined);
+export const AuthContext = createContext<AuthContextType | null>(null);
 
-export const AuthProvider = ({ children }) => {
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [error, setError] = useState<string | null>(null);
   const [user, setUser] = useState<AuthUser | null>(null);
   const [state, setCustomState] = useState<string | null>(null);
