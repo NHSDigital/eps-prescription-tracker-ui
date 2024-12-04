@@ -53,7 +53,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     console.log("Configuring Amplify");
     Amplify.configure(authConfig, { ssr: true });
-    console.log("Amplify configured");
+    console.log("Amplify configured", authConfig);
   }, []);
 
   const getUser = async () => {
