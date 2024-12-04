@@ -1,0 +1,7 @@
+process.env.idpTokenPath = "https://dummytoken.com/token"
+process.env.oidcjwksEndpoint = "https://dummyauth.com/.well-known/jwks.json"
+process.env.UserPoolIdentityProvider = "DummyPoolIdentityProvider"
+process.env.oidcClientId = "valid_aud"
+process.env.oidcIssuer = "valid_iss"
+process.env.TokenMappingTableName = "dummyTable"
+process.env.userInfoEndpoint = "https://dummyauth.com/userinfo"

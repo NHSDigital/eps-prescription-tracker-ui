@@ -114,7 +114,7 @@ export class Cognito extends Construct {
       issuerUrl: props.primaryOidcIssuer,
       userPool: userPool,
       attributeRequestMethod: OidcAttributeRequestMethod.GET,
-      scopes: ["openid", "profile", "email", "nhsperson", "nationalrbacaccess"],
+      scopes: ["openid", "profile", "email", "nhsperson", "nationalrbacaccess", "associatedorgs"],
       endpoints: oidcEndpoints
     })
 
@@ -153,7 +153,7 @@ export class Cognito extends Construct {
         issuerUrl: props.mockOidcIssuer,
         userPool: userPool,
         attributeRequestMethod: OidcAttributeRequestMethod.GET,
-        scopes: ["openid", "profile", "email", "nhsperson", "nationalrbacaccess"],
+        scopes: ["openid", "profile", "email", "nhsperson", "nationalrbacaccess", "associatedorgs"],
         endpoints: mockOidcEndpoints
       })
 
@@ -161,6 +161,16 @@ export class Cognito extends Construct {
         UserPoolClientIdentityProvider.custom(mockPoolIdentityProvider.providerName)
       )
 
+      // Add attribute mappings to what we receive back to cognito user pool attributes
+      // need to use an escape hatch as can not do this with the L2 construct
+      const cfnMockUserPoolIdentityProvider = mockPoolIdentityProvider.node.defaultChild as CfnUserPoolIdentityProvider
+      cfnMockUserPoolIdentityProvider.attributeMapping = {
+        username: "sub",
+        name: "name",
+        given_name: "given_name",
+        family_name: "family_name",
+        email: "email"
+      }
     }
 
     // add attribute mappings to what we receive back to cognito user pool attributes
