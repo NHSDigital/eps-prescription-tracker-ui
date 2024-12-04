@@ -6,6 +6,7 @@ import {
   ServicePrincipal
 } from "aws-cdk-lib/aws-iam"
 import {NodejsFunction} from "aws-cdk-lib/aws-lambda-nodejs"
+import {Runtime} from "aws-cdk-lib/aws-lambda"
 import {Fn, RemovalPolicy} from "aws-cdk-lib"
 import {Key} from "aws-cdk-lib/aws-kms"
 import {
@@ -27,11 +28,13 @@ export interface LambdaFunctionProps {
   readonly serviceName: string
   readonly stackName: string
   readonly lambdaName: string
+  readonly runtime: Runtime
   readonly additionalPolicies?: Array<IManagedPolicy>
   readonly packageBasePath: string
   readonly entryPoint: string
-  readonly lambdaEnvironmentVariables: { [key: string]: string }
+  readonly lambdaEnvironmentVariables: {[key: string]: string}
   readonly logRetentionInDays: number
+  readonly logLevel: string
 }
 
 /**
@@ -127,8 +130,11 @@ export class LambdaFunction extends Construct {
       entryPoint: props.entryPoint
     })
 
+    props.lambdaEnvironmentVariables["LOG_LEVEL"] = props.logLevel
+
     const lambdaFunction = new NodejsFunction(this, props.lambdaName, {
       ...lambdaOptions,
+      runtime: props.runtime,
       role: lambdaRole,
       environment: props.lambdaEnvironmentVariables,
       logGroup: lambdaLogGroup,

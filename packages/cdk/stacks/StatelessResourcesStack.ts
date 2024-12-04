@@ -24,7 +24,9 @@ import {CloudfrontDistribution} from "../resources/CloudfrontDistribution"
 import {nagSuppressions} from "../nagSuppressions"
 import {TableV2} from "aws-cdk-lib/aws-dynamodb"
 import {ManagedPolicy, Role} from "aws-cdk-lib/aws-iam"
+import {SharedSecrets} from "../resources/SharedSecrets"
 import {CognitoFunctions} from "../resources/CognitoFunctions"
+import {ApiFunctions} from "../resources/api/apiFunctions"
 import {UserPool} from "aws-cdk-lib/aws-cognito"
 import {Key} from "aws-cdk-lib/aws-kms"
 import {Stream} from "aws-cdk-lib/aws-kinesis"
@@ -45,7 +47,7 @@ export interface StatelessResourcesStackProps extends StackProps {
  */
 
 export class StatelessResourcesStack extends Stack {
-  public constructor(scope: App, id: string, props: StatelessResourcesStackProps){
+  public constructor(scope: App, id: string, props: StatelessResourcesStackProps) {
     super(scope, id, props)
 
     // Context
@@ -56,6 +58,7 @@ export class StatelessResourcesStack extends Stack {
     const shortCloudfrontDomain: string = this.node.tryGetContext("shortCloudfrontDomain")
     const fullCloudfrontDomain: string = this.node.tryGetContext("fullCloudfrontDomain")
     const logRetentionInDays: number = Number(this.node.tryGetContext("logRetentionInDays"))
+    const logLevel: string = this.node.tryGetContext("logLevel")
     const primaryOidcClientId = this.node.tryGetContext("primaryOidcClientId")
     const primaryOidcTokenEndpoint = this.node.tryGetContext("primaryOidcTokenEndpoint")
     const primaryOidcIssuer = this.node.tryGetContext("primaryOidcIssuer")
@@ -69,6 +72,11 @@ export class StatelessResourcesStack extends Stack {
     const mockOidcjwksEndpoint = this.node.tryGetContext("mockOidcjwksEndpoint")
 
     const useMockOidc: boolean = this.node.tryGetContext("useMockOidc")
+    const apigeeApiKey = this.node.tryGetContext("apigeeApiKey")
+    const apigeeTokenEndpoint = this.node.tryGetContext("apigeeTokenEndpoint")
+    const apigeePrescriptionsEndpoint = this.node.tryGetContext("apigeePrescriptionsEndpoint")
+    const jwtKid: string = this.node.tryGetContext("jwtKid")
+    const roleId: string = this.node.tryGetContext("roleId")
 
     // Imports
     const baseImportPath = `${props.serviceName}-stateful-resources`
@@ -88,8 +96,8 @@ export class StatelessResourcesStack extends Stack {
     const deploymentRoleImport = Fn.importValue("ci-resources:CloudFormationDeployRole")
 
     // Coerce context and imports to relevant types
-    const staticContentBucket = Bucket.fromBucketArn( this, "StaticContentBucket", staticContentBucketImport)
-    const tokenMappingTable = TableV2.fromTableArn( this, "tokenMappingTable", tokenMappingTableImport)
+    const staticContentBucket = Bucket.fromBucketArn(this, "StaticContentBucket", staticContentBucketImport)
+    const tokenMappingTable = TableV2.fromTableArn(this, "tokenMappingTable", tokenMappingTableImport)
     const tokenMappingTableReadPolicy = ManagedPolicy.fromManagedPolicyArn(
       this, "tokenMappingTableReadPolicy", tokenMappingTableReadPolicyImport)
     const tokenMappingTableWritePolicy = ManagedPolicy.fromManagedPolicyArn(
@@ -105,7 +113,7 @@ export class StatelessResourcesStack extends Stack {
     const splunkDeliveryStream = Stream.fromStreamArn(
       this, "SplunkDeliveryStream", splunkDeliveryStreamImport)
     const splunkSubscriptionFilterRole = Role.fromRoleArn(
-      this, "splunkSubscriptionFilterRole", splunkSubscriptionFilterRoleImport )
+      this, "splunkSubscriptionFilterRole", splunkSubscriptionFilterRoleImport)
     const hostedZone = HostedZone.fromHostedZoneAttributes(this, "hostedZone", {
       hostedZoneId: epsHostedZoneId,
       zoneName: epsDomainName
@@ -114,6 +122,14 @@ export class StatelessResourcesStack extends Stack {
     const deploymentRole = Role.fromRoleArn(this, "deploymentRole", deploymentRoleImport)
 
     // Resources
+
+    // SharedSecrets
+    const sharedSecrets = new SharedSecrets(this, "SharedSecrets", {
+      stackName: props.stackName,
+      deploymentRole: deploymentRole,
+      useMockOidc: useMockOidc
+    })
+
     // -- functions for cognito
     const cognitoFunctions = new CognitoFunctions(this, "CognitoFunctions", {
       serviceName: props.serviceName,
@@ -136,7 +152,40 @@ export class StatelessResourcesStack extends Stack {
       primaryPoolIdentityProviderName: primaryPoolIdentityProviderName,
       mockPoolIdentityProviderName: mockPoolIdentityProviderName,
       logRetentionInDays: logRetentionInDays,
-      deploymentRole: deploymentRole
+      logLevel: logLevel,
+      sharedSecrets: sharedSecrets,
+      jwtKid: jwtKid
+    })
+
+    // -- functions for API
+    const apiFunctions = new ApiFunctions(this, "ApiFunctions", {
+      serviceName: props.serviceName,
+      stackName: props.stackName,
+      primaryOidcTokenEndpoint: primaryOidcTokenEndpoint,
+      primaryOidcUserInfoEndpoint: primaryOidcUserInfoEndpoint,
+      primaryOidcjwksEndpoint: primaryOidcjwksEndpoint,
+      primaryOidcClientId: primaryOidcClientId,
+      primaryOidcIssuer: primaryOidcIssuer,
+      useMockOidc: useMockOidc,
+      mockOidcTokenEndpoint: mockOidcTokenEndpoint,
+      mockOidcUserInfoEndpoint: mockOidcUserInfoEndpoint,
+      mockOidcjwksEndpoint: mockOidcjwksEndpoint,
+      mockOidcClientId: mockOidcClientId,
+      mockOidcIssuer: mockOidcIssuer,
+      tokenMappingTable: tokenMappingTable,
+      tokenMappingTableWritePolicy: tokenMappingTableWritePolicy,
+      tokenMappingTableReadPolicy: tokenMappingTableReadPolicy,
+      useTokensMappingKmsKeyPolicy: useTokensMappingKmsKeyPolicy,
+      primaryPoolIdentityProviderName: primaryPoolIdentityProviderName,
+      mockPoolIdentityProviderName: mockPoolIdentityProviderName,
+      logRetentionInDays: logRetentionInDays,
+      logLevel: logLevel,
+      sharedSecrets: sharedSecrets,
+      apigeeTokenEndpoint: apigeeTokenEndpoint,
+      apigeePrescriptionsEndpoint: apigeePrescriptionsEndpoint,
+      apigeeApiKey: apigeeApiKey,
+      jwtKid: jwtKid,
+      roleId: roleId
     })
 
     // - API Gateway
@@ -144,6 +193,7 @@ export class StatelessResourcesStack extends Stack {
       serviceName: props.serviceName,
       stackName: props.stackName,
       logRetentionInDays: logRetentionInDays,
+      logLevel: logLevel,
       cloudwatchKmsKey: cloudwatchKmsKey,
       splunkDeliveryStream: splunkDeliveryStream,
       splunkSubscriptionFilterRole: splunkSubscriptionFilterRole,
@@ -153,12 +203,14 @@ export class StatelessResourcesStack extends Stack {
     // --- Methods & Resources
     new RestApiGatewayMethods(this, "RestApiGatewayMethods", {
       executePolices: [
-        ...cognitoFunctions.cognitoPolicies
+        ...cognitoFunctions.cognitoPolicies,
+        ...apiFunctions.apiFunctionsPolicies
       ],
       restAPiGatewayRole: apiGateway.restAPiGatewayRole,
       restApiGateway: apiGateway.restApiGateway,
       tokenLambda: cognitoFunctions.tokenLambda,
       mockTokenLambda: cognitoFunctions.mockTokenLambda,
+      prescriptionSearchLambda: apiFunctions.prescriptionSearchLambda,
       useMockOidc: useMockOidc,
       authorizer: apiGateway.authorizer
     })
@@ -209,7 +261,7 @@ export class StatelessResourcesStack extends Stack {
         origin: staticContentBucketOrigin,
         allowedMethods: AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
         viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-        functionAssociations:[
+        functionAssociations: [
           {
             function: cloudfrontBehaviors.s3404UriRewriteFunction.function,
             eventType: FunctionEventType.VIEWER_REQUEST
@@ -243,20 +295,20 @@ export class StatelessResourcesStack extends Stack {
       exportName: `${props.stackName}:StaticRewriteKeyValueStor:Arn`
     })
     new CfnOutput(this, "primaryJwtPrivateKeyArn", {
-      value: cognitoFunctions.primaryJwtPrivateKey.secretArn,
+      value: sharedSecrets.primaryJwtPrivateKey.secretArn,
       exportName: `${props.stackName}:primaryJwtPrivateKey:Arn`
     })
     new CfnOutput(this, "primaryJwtPrivateKeyName", {
-      value: cognitoFunctions.primaryJwtPrivateKey.secretName,
+      value: sharedSecrets.primaryJwtPrivateKey.secretName,
       exportName: `${props.stackName}:primaryJwtPrivateKey:Name`
     })
     if (useMockOidc) {
       new CfnOutput(this, "mockJwtPrivateKeyArn", {
-        value: cognitoFunctions.mockJwtPrivateKey.secretArn,
+        value: sharedSecrets.mockJwtPrivateKey.secretArn,
         exportName: `${props.stackName}:mockJwtPrivateKey:Arn`
       })
       new CfnOutput(this, "mockJwtPrivateKeyName", {
-        value: cognitoFunctions.mockJwtPrivateKey.secretName,
+        value: sharedSecrets.mockJwtPrivateKey.secretName,
         exportName: `${props.stackName}:mockJwtPrivateKey:Name`
       })
     }
