@@ -6,25 +6,17 @@ const hostedLoginDomain = process.env["REACT_APP_hostedLoginDomain"] // This is 
 const redirectSignIn = process.env["REACT_APP_redirectSignIn"]
 const redirectSignOut = process.env["REACT_APP_redirectSignIn"]
 
-if (!userPoolId ||!userPoolClientId ||!hostedLoginDomain ||!redirectSignIn ||!redirectSignOut) {
-    throw new Error(
-        // eslint-disable-next-line max-len
-        "Missing required environment variables. Make sure you have set REACT_APP_userPoolId, REACT_APP_userPoolClientId, REACT_APP_hostedLoginDomain, REACT_APP_redirectSignIn, and REACT_APP_redirectSignOut."
-    )
-}
-
-
 export const authConfig: ResourcesConfig = {
     Auth: {
         Cognito: {
-          userPoolClientId: userPoolClientId,
-          userPoolId: userPoolId,
+          userPoolClientId: userPoolClientId!,
+          userPoolId: userPoolId!,
           loginWith: { // Optional
             oauth: {
-              domain: hostedLoginDomain,
+              domain: hostedLoginDomain!,
               scopes: ['openid','email','phone','profile','aws.cognito.signin.user.admin'],
-              redirectSignIn: [redirectSignIn],
-              redirectSignOut: [redirectSignOut],
+              redirectSignIn: [redirectSignIn!],
+              redirectSignOut: [redirectSignOut!],
               responseType: 'code',
             },
             username: true,
