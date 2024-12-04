@@ -8,7 +8,7 @@ export default function Page() {
     const auth = React.useContext(AuthContext);
 
     const mockSignIn = () => {
-        auth?.signInWithRedirect({
+        auth?.cognitoSignIn({
             provider: {
                 custom: "Mock"
             }
@@ -16,7 +16,7 @@ export default function Page() {
     }
 
     const signIn = () => {
-        auth?.signInWithRedirect({
+        auth?.cognitoSignIn({
             provider: {
                 custom: "Primary"
             }
@@ -24,7 +24,7 @@ export default function Page() {
     }
 
     const signOut = () => {
-        auth?.signOut();
+        auth?.cognitoSignOut();
     }
 
     return (

@@ -4,6 +4,8 @@ import { Hub } from "aws-amplify/utils";
 import { signInWithRedirect, signOut, getCurrentUser, AuthUser, fetchAuthSession, JWT, SignInWithRedirectInput, SignOutInput } from 'aws-amplify/auth';
 import { authConfig } from './configureAmplify';
 
+
+
 Amplify.configure(authConfig, { ssr: true });
 
 interface AuthContextType {
@@ -13,8 +15,8 @@ interface AuthContextType {
   isSignedIn: boolean;
   idToken: JWT | null;
   accessToken: JWT | null;
-  signInWithRedirect: (input?: SignInWithRedirectInput) => Promise<void>;
-  signOut: (input?: SignOutInput) => Promise<void>;
+  cognitoSignIn: (input?: SignInWithRedirectInput) => Promise<void>;
+  cognitoSignOut: (input?: SignOutInput) => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -40,7 +42,8 @@ export const AuthProvider = ({ children }) => {
           setError("An error has occurred during the OAuth flow.");
           break;
         case "customOAuthState":
-          setCustomState(payload.data); // this is the customState provided on signInWithRedirect function
+          // this is the customState provided on signInWithRedirect function
+          setCustomState(payload.data);
           break;
       }
     });
@@ -98,9 +101,8 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-
   return (
-    <AuthContext.Provider value={{ error, user, state, isSignedIn, idToken, accessToken, signInWithRedirect, signOut }}>
+    <AuthContext.Provider value={{ error, user, state, isSignedIn, idToken, accessToken, cognitoSignIn: signInWithRedirect, cognitoSignOut: signOut }}>
       {children}
     </AuthContext.Provider>
   );
