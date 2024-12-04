@@ -2,10 +2,7 @@ import axios, {AxiosError} from "axios"
 import {APIGatewayProxyResult} from "aws-lambda"
 import {Logger} from "@aws-lambda-powertools/logger"
 
-// Logger initialization
-const logger = new Logger({serviceName: "prescriptionSearch"})
-
-export const handleAxiosError = (error: AxiosError, contextMessage: string) => {
+export const handleAxiosError = (error: AxiosError, contextMessage: string, logger: Logger) => {
   if (axios.isAxiosError(error)) {
     const config: Partial<AxiosError["config"]> = error.config || {}
     logger.error(contextMessage, {

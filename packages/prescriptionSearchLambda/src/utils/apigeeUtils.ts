@@ -42,7 +42,7 @@ export const exchangeTokenForApigeeAccessToken = async (
     }
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
-      handleAxiosError(error, "Failed to exchange token with Apigee")
+      handleAxiosError(error, "Failed to exchange token with Apigee", logger)
     } else {
       logger.error("Unexpected error during Apigee token exchange", {error})
     }
