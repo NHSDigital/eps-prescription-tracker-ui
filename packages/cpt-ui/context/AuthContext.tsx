@@ -5,9 +5,6 @@ import { signInWithRedirect, signOut, getCurrentUser, AuthUser, fetchAuthSession
 import { authConfig } from './configureAmplify';
 
 
-
-Amplify.configure(authConfig, { ssr: true });
-
 interface AuthContextType {
   error: string | null;
   user: AuthUser | null;
@@ -53,6 +50,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return unsubscribe;
   }, []);
 
+  useEffect(() => {
+    console.log("Configuring Amplify");
+    Amplify.configure(authConfig, { ssr: true });
+    console.log("Amplify configured");
+  }, []);
 
   const getUser = async () => {
     try {
