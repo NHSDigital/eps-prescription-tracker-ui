@@ -62,7 +62,7 @@ jobs:
           REACT_APP_userPoolClientId=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${{ inputs.SERVICE_NAME }}-stateful-resources:userPoolClient:userPoolClientId'].Value" --output text)
           REACT_APP_userPoolId=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${{ inputs.SERVICE_NAME }}-stateful-resources:userPool:Id'].Value" --output text)
           fullCloudfrontDomain=$(aws cloudformation list-exports --region us-east-1 --query "Exports[?Name=='${{ inputs.SERVICE_NAME }}-us-certs:fullCloudfrontDomain:Name'].Value" --output text)
-          REACT_APP_redirectSignIn="https://${fullCloudfrontDomain}/auth_demo/"
+          REACT_APP_redirectSignIn="https://${fullCloudfrontDomain}/site/"
           
           export REACT_APP_hostedLoginDomain
           export REACT_APP_userPoolClientId
@@ -78,11 +78,21 @@ jobs:
   
       - name: build react app
         run: |
+          export REACT_APP_hostedLoginDomain
+          export REACT_APP_userPoolClientId
+          export REACT_APP_userPoolId
+          export REACT_APP_redirectSignIn
+
           cd .build
           make react-build
 
       - name: build auth_demo react app (temp step for testing)
         run: |
+          export REACT_APP_hostedLoginDomain
+          export REACT_APP_userPoolClientId
+          export REACT_APP_userPoolId
+          export REACT_APP_redirectSignIn
+
           cd .build
           make auth_demo_build
 
