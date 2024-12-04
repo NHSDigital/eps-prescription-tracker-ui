@@ -22,28 +22,6 @@ export const nagSuppressions = (stack: Stack) => {
 
     safeAddNagSuppression(
       stack,
-      "/StatefulStack/Cognito/UserPoolDomain/CloudFrontDomainName/CustomResourcePolicy/Resource",
-      [
-        {
-          id: "AwsSolutions-IAM5",
-          reason: "Suppress error for wildcard permissions. This is an auto generated one for cognito domain"
-        }
-      ]
-    )
-
-    safeAddNagSuppression(
-      stack,
-      "/StatefulStack/AWS679f53fac002430cb0da5b7982bd2287/ServiceRole/Resource",
-      [
-        {
-          id: "AwsSolutions-IAM4",
-          reason: "Suppress error for using AWS managed policy. This is an auto generated one for cognito domain"
-        }
-      ]
-    )
-
-    safeAddNagSuppression(
-      stack,
       "/StatefulStack/DynamoDB/TableReadManagedPolicy/Resource",
       [
         {
@@ -125,17 +103,6 @@ export const nagSuppressions = (stack: Stack) => {
 
     safeAddNagSuppression(
       stack,
-      "/StatelessStack/CognitoFunctions/PrimaryJwtPrivateKey/Resource",
-      [
-        {
-          id: "AwsSolutions-SMG4",
-          reason: "Suppress error for not having automatic rotation. This is a false positive - it does have rotation enabled"
-        }
-      ]
-    )
-
-    safeAddNagSuppression(
-      stack,
       "/StatelessStack/CognitoFunctions/TokenResources/LambdaPutLogsManagedPolicy/Resource",
       [
         {
@@ -144,6 +111,7 @@ export const nagSuppressions = (stack: Stack) => {
         }
       ]
     )
+
     safeAddNagSuppression(
       stack,
       "/StatelessStack/CognitoFunctions/MockTokenResources/LambdaPutLogsManagedPolicy/Resource",
@@ -151,17 +119,6 @@ export const nagSuppressions = (stack: Stack) => {
         {
           id: "AwsSolutions-IAM5",
           reason: "Suppress error for not having wildcards in permissions. This is a fine as we need to have permissions on all log streams under path"
-        }
-      ]
-    )
-
-    safeAddNagSuppression(
-      stack,
-      "/StatelessStack/CognitoFunctions/MockJwtPrivateKey/Resource",
-      [
-        {
-          id: "AwsSolutions-SMG4",
-          reason: "Suppress error for not having automatic rotation. This is a false positive - it does have rotation enabled"
         }
       ]
     )
@@ -179,39 +136,6 @@ export const nagSuppressions = (stack: Stack) => {
 
     safeAddNagSuppression(
       stack,
-      "/StatelessStack/ApiFunctions/PrimaryJwtPrivateKey/Resource",
-      [
-        {
-          id: "AwsSolutions-SMG4",
-          reason: "Suppress error for not having automatic rotation. This is a false positive - it does have rotation enabled"
-        }
-      ]
-    )
-
-    safeAddNagSuppression(
-      stack,
-      "/StatelessStack/ApiFunctions/MockPrescriptionSearch/LambdaPutLogsManagedPolicy/Resource",
-      [
-        {
-          id: "AwsSolutions-IAM5",
-          reason: "Suppress error for not having wildcards in permissions. This is a fine as we need to have permissions on all log streams under path"
-        }
-      ]
-    )
-
-    safeAddNagSuppression(
-      stack,
-      "/StatelessStack/ApiFunctions/MockJwtPrivateKey/Resource",
-      [
-        {
-          id: "AwsSolutions-SMG4",
-          reason: "Suppress error for not having automatic rotation. This is a false positive - it does have rotation enabled"
-        }
-      ]
-    )
-
-    safeAddNagSuppression(
-      stack,
       "/StatelessStack/ApiGateway/ApiGateway/Default/mocknoauth/GET/Resource",
       [
         {
@@ -221,49 +145,6 @@ export const nagSuppressions = (stack: Stack) => {
         {
           id: "AwsSolutions-COG4",
           reason: "Suppress error for not implementing a Cognito user pool authorizer. Token endpoint should not have an authorizer"
-        }
-      ]
-    )
-
-    safeAddNagSuppression(
-      stack,
-      "/StatelessStack/CognitoFunctions/PrimaryJwtPrivateKey/Resource",
-      [
-        {
-          id: "AwsSolutions-SMG4",
-          reason: "Suppress error for not having automatic rotation. This is a false positive - it does have rotation enabled"
-        }
-      ]
-    )
-
-    safeAddNagSuppression(
-      stack,
-      "/StatelessStack/CognitoFunctions/TokenResources/LambdaPutLogsManagedPolicy/Resource",
-      [
-        {
-          id: "AwsSolutions-IAM5",
-          reason: "Suppress error for not having wildcards in permissions. This is a fine as we need to have permissions on all log streams under path"
-        }
-      ]
-    )
-    safeAddNagSuppression(
-      stack,
-      "/StatelessStack/CognitoFunctions/MockTokenResources/LambdaPutLogsManagedPolicy/Resource",
-      [
-        {
-          id: "AwsSolutions-IAM5",
-          reason: "Suppress error for not having wildcards in permissions. This is a fine as we need to have permissions on all log streams under path"
-        }
-      ]
-    )
-
-    safeAddNagSuppression(
-      stack,
-      "/StatelessStack/CognitoFunctions/MockJwtPrivateKey/Resource",
-      [
-        {
-          id: "AwsSolutions-SMG4",
-          reason: "Suppress error for not having automatic rotation. This is a false positive - it does have rotation enabled"
         }
       ]
     )
