@@ -16,7 +16,7 @@ interface AuthContextType {
   idToken: JWT | null;
   accessToken: JWT | null;
   cognitoSignIn: (input?: SignInWithRedirectInput) => Promise<void>;
-  cognitoSignOut: (input?: SignOutInput) => Promise<void>;
+  cognitoSignOut: () => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -102,7 +102,16 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ error, user, state, isSignedIn, idToken, accessToken, cognitoSignIn: signInWithRedirect, cognitoSignOut: signOut }}>
+    <AuthContext.Provider value={{ 
+        error, 
+        user, 
+        state, 
+        isSignedIn, 
+        idToken, 
+        accessToken, 
+        cognitoSignIn: signInWithRedirect, 
+        cognitoSignOut: signOut 
+      }}>
       {children}
     </AuthContext.Provider>
   );

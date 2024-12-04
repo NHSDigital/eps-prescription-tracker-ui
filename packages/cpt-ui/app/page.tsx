@@ -1,13 +1,14 @@
 'use client'
-import React from "react";
+import React, {useContext} from "react";
 
 import { Container, Col, Row, Button } from "nhsuk-react-components";
 import { AuthContext } from "../context/AuthContext";
 
 export default function Page() {
-    const auth = React.useContext(AuthContext);
+    const auth = useContext(AuthContext);
 
     const mockSignIn = () => {
+        console.log("Signing in (Mock)");
         auth?.cognitoSignIn({
             provider: {
                 custom: "Mock"
@@ -16,6 +17,7 @@ export default function Page() {
     }
 
     const signIn = () => {
+        console.log("Signing in (Primary)");
         auth?.cognitoSignIn({
             provider: {
                 custom: "Primary"
@@ -24,6 +26,7 @@ export default function Page() {
     }
 
     const signOut = () => {
+        console.log("Signing out");
         auth?.cognitoSignOut();
     }
 
@@ -40,9 +43,9 @@ export default function Page() {
     
                 <Row>
                     <Col width="full">
-                        <Button onClick={() => signIn}>Log in with PTL CIS2</Button>
-                        <Button onClick={() => mockSignIn}>Log in with mock CIS2</Button>
-                        <Button onClick={() => signOut}>Sign Out</Button>
+                        <Button onClick={signIn}>Log in with PTL CIS2</Button>
+                        <Button onClick={mockSignIn}>Log in with mock CIS2</Button>
+                        <Button onClick={signOut}>Sign Out</Button>
     
                         {auth && (
                             <>
