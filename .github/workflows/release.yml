@@ -134,9 +134,11 @@ jobs:
       mockOidcjwksEndpoint: "https://identity.ptl.api.platform.nhs.uk/realms/Cis2-mock-internal-dev/protocol/openid-connect/certs"
       useLocalhostCallback: true
       useCustomCognitoDomain: true
+      APIGEE_TOKEN_ENDPOINT: "https://internal-dev.api.service.nhs.uk/oauth2/token"
+      APIGEE_PRESCRIPTIONS_ENDPOINT: "https://internal-dev.api.service.nhs.uk/clinical-prescription-tracker/"
       JWT_KID: "eps-cpt-ui-test"
-      LOG_LEVEL: "DEBUG"
       ROLE_ID: "555254242106"
+      LOG_LEVEL: "DEBUG"
     secrets:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.DEV_CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_DEPLOY_ROLE }}
@@ -184,9 +186,11 @@ jobs:
       mockOidcjwksEndpoint: "https://identity.ptl.api.platform.nhs.uk/realms/Cis2-mock-internal-dev/protocol/openid-connect/certs"
       useLocalhostCallback: false
       useCustomCognitoDomain: true
+      APIGEE_TOKEN_ENDPOINT: "https://ref.api.service.nhs.uk/oauth2/token"
+      APIGEE_PRESCRIPTIONS_ENDPOINT: "https://ref.api.service.nhs.uk/clinical-prescription-tracker/"
       JWT_KID: "eps-cpt-ui-test"
-      LOG_LEVEL: "DEBUG"
       ROLE_ID: "555254242106"
+      LOG_LEVEL: "DEBUG"
     secrets:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.REF_CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.REF_CLOUD_FORMATION_DEPLOY_ROLE }}
@@ -219,9 +223,11 @@ jobs:
       mockOidcjwksEndpoint: "https://identity.ptl.api.platform.nhs.uk/realms/Cis2-mock-internal-dev/protocol/openid-connect/certs"
       useLocalhostCallback: false
       useCustomCognitoDomain: true
+      APIGEE_TOKEN_ENDPOINT: "https://internal-qa.api.service.nhs.uk/oauth2/token"
+      APIGEE_PRESCRIPTIONS_ENDPOINT: "https://internal-qa.api.service.nhs.uk/clinical-prescription-tracker/"
       JWT_KID: "eps-cpt-ui-test"
-      LOG_LEVEL: "DEBUG"
       ROLE_ID: "555254242106"
+      LOG_LEVEL: "DEBUG"
     secrets:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.QA_CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.QA_CLOUD_FORMATION_DEPLOY_ROLE }}
@@ -254,9 +260,11 @@ jobs:
       mockOidcjwksEndpoint: "https://identity.ptl.api.platform.nhs.uk/realms/Cis2-mock-internal-dev/protocol/openid-connect/certs"
       useLocalhostCallback: false
       useCustomCognitoDomain: true
+      APIGEE_TOKEN_ENDPOINT: "https://int.api.service.nhs.uk/oauth2/token"
+      APIGEE_PRESCRIPTIONS_ENDPOINT: "https://int.api.service.nhs.uk/clinical-prescription-tracker/"
       JWT_KID: "eps-cpt-ui-test"
-      LOG_LEVEL: "DEBUG"
       ROLE_ID: "555254242106"
+      LOG_LEVEL: "DEBUG"
     secrets:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.INT_CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.INT_CLOUD_FORMATION_DEPLOY_ROLE }}
@@ -276,8 +284,10 @@ jobs:
   #     TARGET_ENVIRONMENT: prod
   #     VERSION_NUMBER: ${{needs.tag_release.outputs.version_tag}}
   #     COMMIT_ID: ${{needs.get_commit_id.outputs.commit_id}}
-  #     LOG_LEVEL: "INFO"
+  #     APIGEE_TOKEN_ENDPOINT: "https://api.service.nhs.uk/oauth2/token"
+  #     APIGEE_PRESCRIPTIONS_ENDPOINT: "https://api.service.nhs.uk/clinical-prescription-tracker/"
   #     ROLE_ID: "555254242106"
+  #     LOG_LEVEL: "INFO"
   #   secrets:
   #     CDK_PULL_IMAGE_ROLE: ${{ secrets.PROD_CDK_PULL_IMAGE_ROLE }}
   #     CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.PROD_CLOUD_FORMATION_DEPLOY_ROLE }}

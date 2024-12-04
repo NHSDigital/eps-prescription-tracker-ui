@@ -42,9 +42,13 @@ on:
         type: boolean
       useCustomCognitoDomain:
         type: boolean
-      JWT_KID:
-        type: string
       LOG_LEVEL:
+          type: string
+      APIGEE_TOKEN_ENDPOINT:
+        type: string
+      APIGEE_PRESCRIPTIONS_ENDPOINT:
+        type: string
+      JWT_KID:
         type: string
       ROLE_ID:
         type: string
@@ -168,6 +172,8 @@ jobs:
       mockOidcjwksEndpoint: ${{ inputs.mockOidcjwksEndpoint }}
       useLocalhostCallback: ${{ inputs.useLocalhostCallback }}
       useCustomCognitoDomain: ${{ inputs.useCustomCognitoDomain }}
+      APIGEE_TOKEN_ENDPOINT: ${{ inputs.APIGEE_TOKEN_ENDPOINT }}
+      APIGEE_PRESCRIPTIONS_ENDPOINT: ${{ inputs.APIGEE_PRESCRIPTIONS_ENDPOINT }}
       JWT_KID: ${{ inputs.JWT_KID }}
       ROLE_ID: ${{ inputs.ROLE_ID }}
     secrets:

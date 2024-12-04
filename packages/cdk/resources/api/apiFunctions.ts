@@ -29,6 +29,8 @@ export interface ApiFunctionsProps {
   readonly mockPoolIdentityProviderName: string
   readonly logRetentionInDays: number
   readonly sharedSecrets: SharedSecrets
+  readonly apigeeTokenEndpoint: string
+  readonly apigeePrescriptionsEndpoint: string
   readonly apigeeApiKey: string
   readonly jwtKid: string
   readonly logLevel: string
@@ -73,6 +75,8 @@ export class ApiFunctions extends Construct {
         useSignedJWT: "true",
         oidcClientId: props.primaryOidcClientId,
         oidcIssuer: props.primaryOidcIssuer,
+        apigeeTokenEndpoint: props.apigeeTokenEndpoint,
+        apigeePrescriptionsEndpoint: props.apigeePrescriptionsEndpoint,
         apigeeApiKey: props.apigeeApiKey,
         jwtKid: props.jwtKid,
         roleId: props.roleId
