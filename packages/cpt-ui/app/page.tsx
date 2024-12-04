@@ -7,27 +7,27 @@ import { AuthContext } from "../context/AuthContext";
 export default function Page() {
     const auth = useContext(AuthContext);
 
-    const mockSignIn = () => {
-        console.log("Signing in (Mock)");
-        auth?.cognitoSignIn({
+    const mockSignIn = async () => {
+        console.log("Signing in (Mock)", auth);
+        await auth?.cognitoSignIn({
             provider: {
                 custom: "Mock"
             }
         });
     }
 
-    const signIn = () => {
-        console.log("Signing in (Primary)");
-        auth?.cognitoSignIn({
+    const signIn = async () => {
+        console.log("Signing in (Primary)", auth);
+        await auth?.cognitoSignIn({
             provider: {
                 custom: "Primary"
             }
         });
     }
 
-    const signOut = () => {
-        console.log("Signing out");
-        auth?.cognitoSignOut();
+    const signOut = async () => {
+        console.log("Signing out", auth);
+        await auth?.cognitoSignOut();
     }
 
     return (
