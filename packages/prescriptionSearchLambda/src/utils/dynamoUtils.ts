@@ -18,6 +18,7 @@ export const updateApigeeAccessToken = async (
   expiresIn: number,
   logger: Logger
 ): Promise<void> => {
+  // Ensure currentTime is calculated as a number
   const currentTime = Math.floor(Date.now() / 1000)
 
   logger.debug("Updating DynamoDB with new access token", {
@@ -27,6 +28,9 @@ export const updateApigeeAccessToken = async (
   })
 
   try {
+    // Ensure correct numeric addition of currentTime and expiresIn
+    const expiryTimestamp = currentTime + Number(expiresIn)
+
     await documentClient.send(
       new UpdateCommand({
         TableName: tableName,
@@ -34,7 +38,7 @@ export const updateApigeeAccessToken = async (
         UpdateExpression: "SET Apigee_accessToken = :apigeeAccessToken, Apigee_expiresIn = :apigeeExpiresIn",
         ExpressionAttributeValues: {
           ":apigeeAccessToken": accessToken,
-          ":apigeeExpiresIn": currentTime + expiresIn
+          ":apigeeExpiresIn": expiryTimestamp // Correctly added value
         }
       })
     )
