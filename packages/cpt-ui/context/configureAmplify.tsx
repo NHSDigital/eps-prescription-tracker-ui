@@ -14,7 +14,7 @@ if (
   !redirectSignIn ||
   !redirectSignOut
 ) {
-  throw new Error("Cognito authorization configuration environment variables not set.")
+  console.error("Cognito authorization configuration environment variables not set.")
 }
 
 

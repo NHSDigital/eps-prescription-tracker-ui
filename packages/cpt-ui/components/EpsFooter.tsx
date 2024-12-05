@@ -5,7 +5,7 @@ import { Footer } from "nhsuk-react-components";
 
 import {
     FOOTER_COPYRIGHT
-} from "../constants/ui-strings/FooterStrings"
+} from "@/constants/ui-strings/FooterStrings"
 
 export default function EpsFooter() {
     return (
