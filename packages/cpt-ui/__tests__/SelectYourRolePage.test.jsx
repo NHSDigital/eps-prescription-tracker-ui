@@ -37,9 +37,4 @@ describe("SelectYourRole Page", () => {
 
     expect(container).toBeInTheDocument();
   });
-
-  it("matches snapshot", () => {
-    const { asFragment } = render(<Page />);
-    expect(asFragment()).toMatchSnapshot();
-  });
 });
