@@ -2,6 +2,7 @@ import React from 'react';
 import "@testing-library/jest-dom";
 import { fireEvent, render } from "@testing-library/react";
 import { Tabs } from "nhsuk-react-components";
+import EpsTabs from '../components/EpsTabs';
 import PrescriptionIdSearch from "../components/prescriptionSearch/PrescriptionIdSearch"
 import NhsNumSearch from '../components/prescriptionSearch/NhsNumSearch';
 import BasicDetailsSearch from '../components/prescriptionSearch/BasicDetailsSearch';
@@ -14,30 +15,8 @@ describe('The tabs component', () => {
   
   it('Switches the visibility of tabs when clicked', () => {
     const tabData = PRESCRIPTION_SEARCH_TABS;
-    const { container } = render(
-      <Tabs>
-            <Tabs.Title>Contents</Tabs.Title>
-            <Tabs.List>
-                {
-                    tabData.map(tabHeader =>
-                        <Tabs.ListItem id={tabHeader.targetId} key={tabHeader.title}>{tabHeader.title}</Tabs.ListItem>
-                    )
-                }
-            </Tabs.List>
-            {
-                tabData.map(tabContent =>
-                    <Tabs.Contents id={tabContent.targetId} key={tabContent.title}>
-                        <div>
-                            {(tabContent.targetId === 'PrescriptionIdSearch' && <PrescriptionIdSearch />) ||
-                                (tabContent.targetId === 'NhsNumSearch' && <NhsNumSearch />) ||
-                                (tabContent.targetId === 'BasicDetailsSearch' && <BasicDetailsSearch />) ||
-                                <p>This Search not available</p>
-                            }
-                        </div>
-                    </Tabs.Contents>
-                )
-            }
-        </Tabs>,
+    const { container } = render(  
+      <EpsTabs/>
     );
 
     const firstTabLink = container.querySelector('#tab_PrescriptionIdSearch');
