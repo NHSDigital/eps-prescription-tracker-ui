@@ -1,10 +1,22 @@
 import { ResourcesConfig } from "aws-amplify"
 
-const userPoolId = process.env["REACT_APP_userPoolId"] // This is the User Pool ID from AWS::Cognito::UserPool
-const userPoolClientId = process.env["REACT_APP_userPoolClientId"] // This is the Client ID from AWS::Cognito::UserPoolClient
-const hostedLoginDomain = process.env["REACT_APP_hostedLoginDomain"] // This is the domain from AWS::Cognito::UserPoolDomain
-const redirectSignIn = process.env["REACT_APP_redirectSignIn"]
-const redirectSignOut = process.env["REACT_APP_redirectSignIn"]
+const userPoolId = process.env["NEXT_PUBLIC_userPoolId"] // This is the User Pool ID from AWS::Cognito::UserPool
+const userPoolClientId = process.env["NEXT_PUBLIC_userPoolClientId"] // This is the Client ID from AWS::Cognito::UserPoolClient
+const hostedLoginDomain = process.env["NEXT_PUBLIC_hostedLoginDomain"] // This is the domain from AWS::Cognito::UserPoolDomain
+const redirectSignIn = process.env["NEXT_PUBLIC_redirectSignIn"]
+const redirectSignOut = process.env["NEXT_PUBLIC_redirectSignIn"]
+
+
+if (
+  !userPoolId ||
+  !userPoolClientId ||
+  !hostedLoginDomain ||
+  !redirectSignIn ||
+  !redirectSignOut
+) {
+  throw new Error("Cognito authorization configuration environment variables not set.")
+}
+
 
 export const authConfig: ResourcesConfig = {
     Auth: {
