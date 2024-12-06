@@ -76,6 +76,7 @@ jobs:
           export NEXT_PUBLIC_userPoolClientId=${userPoolClientId}
           export NEXT_PUBLIC_userPoolId=${userPoolId}
           export NEXT_PUBLIC_redirectSignIn="https://${fullCloudfrontDomain}/site/"
+          export COMMIT_ID=${{ inputs.COMMIT_ID }}
 
           cd .build
           make react-build

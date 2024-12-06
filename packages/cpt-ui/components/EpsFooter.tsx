@@ -4,14 +4,22 @@ import React from 'react';
 import { Footer } from "nhsuk-react-components";
 
 import {
-    FOOTER_COPYRIGHT
+    FOOTER_COPYRIGHT,
+    COMMIT_ID
 } from "@/constants/ui-strings/FooterStrings"
 
 export default function EpsFooter() {
     return (
         <Footer id="eps_footer" className="eps_footer">
-            <Footer.List>
-            </Footer.List>
+            {COMMIT_ID ? (
+                <Footer.List>
+                    <small>
+                        {COMMIT_ID}
+                    </small>
+                </Footer.List>
+            ) : (
+                <div />
+            )}
             <Footer.Copyright data-testid="eps_footer-copyright">
                 <small>
                     {FOOTER_COPYRIGHT}
