@@ -6,18 +6,6 @@ const hostedLoginDomain = process.env["NEXT_PUBLIC_hostedLoginDomain"] // This i
 const redirectSignIn = process.env["NEXT_PUBLIC_redirectSignIn"]
 const redirectSignOut = process.env["NEXT_PUBLIC_redirectSignOut"]
 
-
-if (
-  !userPoolId ||
-  !userPoolClientId ||
-  !hostedLoginDomain ||
-  !redirectSignIn ||
-  !redirectSignOut
-) {
-  console.error("Cognito authorization configuration environment variables not set.")
-}
-
-
 export const authConfig: ResourcesConfig = {
     Auth: {
         Cognito: {
