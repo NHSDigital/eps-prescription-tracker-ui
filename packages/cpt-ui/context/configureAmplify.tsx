@@ -4,7 +4,7 @@ const userPoolId = process.env["NEXT_PUBLIC_userPoolId"] // This is the User Poo
 const userPoolClientId = process.env["NEXT_PUBLIC_userPoolClientId"] // This is the Client ID from AWS::Cognito::UserPoolClient
 const hostedLoginDomain = process.env["NEXT_PUBLIC_hostedLoginDomain"] // This is the domain from AWS::Cognito::UserPoolDomain
 const redirectSignIn = process.env["NEXT_PUBLIC_redirectSignIn"]
-const redirectSignOut = process.env["NEXT_PUBLIC_redirectSignIn"]
+const redirectSignOut = process.env["NEXT_PUBLIC_redirectSignOut"]
 
 
 if (

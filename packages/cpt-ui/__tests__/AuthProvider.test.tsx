@@ -132,92 +132,92 @@ describe('AuthProvider', () => {
     });
   });
 
-//   it('should handle Hub event signInWithRedirect and call getUser', async () => {
-//     // Initially no tokens
-//     (fetchAuthSession as jest.Mock).mockResolvedValueOnce({ tokens: {} });
+  it('should handle Hub event signInWithRedirect and call getUser', async () => {
+    // Initially no tokens
+    (fetchAuthSession as jest.Mock).mockResolvedValueOnce({ tokens: {} });
 
-//     const { rerender } = render(
-//       <AuthProvider>
-//         <TestConsumer />
-//       </AuthProvider>
-//     );
+    const { rerender } = render(
+      <AuthProvider>
+        <TestConsumer />
+      </AuthProvider>
+    );
 
-//     await waitFor(() => {
-//       expect(screen.getByTestId('isSignedIn').textContent).toBe('false');
-//     });
+    await waitFor(() => {
+      expect(screen.getByTestId('isSignedIn').textContent).toBe('false');
+    });
 
-//     // On signInWithRedirect event, simulate tokens
-//     const idTokenPayload = { exp: Math.floor(Date.now() / 1000) + 3600 }; 
-//     const accessTokenPayload = { exp: Math.floor(Date.now() / 1000) + 3600 };
+    // On signInWithRedirect event, simulate tokens
+    const idTokenPayload = { exp: Math.floor(Date.now() / 1000) + 3600 }; 
+    const accessTokenPayload = { exp: Math.floor(Date.now() / 1000) + 3600 };
 
-//     (fetchAuthSession as jest.Mock).mockResolvedValue({
-//       tokens: {
-//         idToken: {
-//           toString: () => `header.${btoa(JSON.stringify(idTokenPayload))}.signature`,
-//           payload: idTokenPayload
-//         },
-//         accessToken: {
-//           toString: () => `header.${btoa(JSON.stringify(accessTokenPayload))}.signature`,
-//           payload: accessTokenPayload
-//         }
-//       }
-//     });
-//     (getCurrentUser as jest.Mock).mockResolvedValue({ username: 'testuser' });
+    (fetchAuthSession as jest.Mock).mockResolvedValue({
+      tokens: {
+        idToken: {
+          toString: () => `header.${btoa(JSON.stringify(idTokenPayload))}.signature`,
+          payload: idTokenPayload
+        },
+        accessToken: {
+          toString: () => `header.${btoa(JSON.stringify(accessTokenPayload))}.signature`,
+          payload: accessTokenPayload
+        }
+      }
+    });
+    (getCurrentUser as jest.Mock).mockResolvedValue({ username: 'testuser' });
 
-//     // Trigger Hub event
-//     if (hubCallback) {
-//       hubCallback({ payload: { event: 'signInWithRedirect' } });
-//     }
+    // Trigger Hub event
+    if (hubCallback) {
+      hubCallback({ payload: { event: 'signInWithRedirect' } });
+    }
 
-//     rerender(
-//       <AuthProvider>
-//         <TestConsumer />
-//       </AuthProvider>
-//     );
+    rerender(
+      <AuthProvider>
+        <TestConsumer />
+      </AuthProvider>
+    );
 
-//     await waitFor(() => {
-//       expect(screen.getByTestId('isSignedIn').textContent).toBe('true');
-//       expect(screen.getByTestId('user').textContent).toBe('UserPresent');
-//     });
-//   });
+    await waitFor(() => {
+      expect(screen.getByTestId('isSignedIn').textContent).toBe('true');
+      expect(screen.getByTestId('user').textContent).toBe('UserPresent');
+    });
+  });
 
-//   it('should handle Hub event signInWithRedirect_failure', async () => {
-//     (fetchAuthSession as jest.Mock).mockResolvedValue({ tokens: {} });
+  it('should handle Hub event signInWithRedirect_failure', async () => {
+    (fetchAuthSession as jest.Mock).mockResolvedValue({ tokens: {} });
 
-//     render(
-//       <AuthProvider>
-//         <TestConsumer />
-//       </AuthProvider>
-//     );
+    render(
+      <AuthProvider>
+        <TestConsumer />
+      </AuthProvider>
+    );
 
-//     // Trigger Hub event
-//     if (hubCallback) {
-//       hubCallback({ payload: { event: 'signInWithRedirect_failure' } });
-//     }
+    // Trigger Hub event
+    if (hubCallback) {
+      hubCallback({ payload: { event: 'signInWithRedirect_failure' } });
+    }
 
-//     await waitFor(() => {
-//       expect(screen.getByTestId('error').textContent).toBe('An error has occurred during the OAuth flow.');
-//     });
-//   });
+    await waitFor(() => {
+      expect(screen.getByTestId('error').textContent).toBe('An error has occurred during the OAuth flow.');
+    });
+  });
 
-//   it('should handle customOAuthState event', async () => {
-//     (fetchAuthSession as jest.Mock).mockResolvedValue({ tokens: {} });
+  it('should handle customOAuthState event', async () => {
+    (fetchAuthSession as jest.Mock).mockResolvedValue({ tokens: {} });
 
-//     render(
-//       <AuthProvider>
-//         <TestConsumer />
-//       </AuthProvider>
-//     );
+    render(
+      <AuthProvider>
+        <TestConsumer />
+      </AuthProvider>
+    );
 
-//     // Trigger Hub event for customOAuthState
-//     if (hubCallback) {
-//       hubCallback({ payload: { event: 'customOAuthState', data: 'my-custom-state' } });
-//     }
+    // Trigger Hub event for customOAuthState
+    if (hubCallback) {
+      hubCallback({ payload: { event: 'customOAuthState', data: 'my-custom-state' } });
+    }
 
-//     await waitFor(() => {
-//       expect(screen.getByTestId('state').textContent).toBe('my-custom-state');
-//     });
-//   });
+    await waitFor(() => {
+      expect(screen.getByTestId('state').textContent).toBe('my-custom-state');
+    });
+  });
 
   it('should provide cognitoSignIn and cognitoSignOut functions', async () => {
     (fetchAuthSession as jest.Mock).mockResolvedValue({ tokens: {} });
