@@ -6,6 +6,7 @@ import {
   HEADER_SERVICE,
   HEADER_CONFIRM_ROLE_BUTTON,
   HEADER_CHANGE_ROLE_BUTTON,
+  HEADER_PRESCRIPTION_SEARCH_BUTTON
 } from "../constants/ui-strings/HeaderStrings";
 
 // Mock useRouter:
@@ -52,5 +53,12 @@ describe("EpsHeader", () => {
   });
   it("Check that change role link is not displayed ", () => {
     expect(screen.queryByTestId("eps_header_changeRoleLink")).toBeNull();
+  });
+  // prescription search link  
+
+  it("Displays correct label for prescription search link from HEADER_PRESCRIPTION_SEARCH_BUTTON data", () => {
+    expect(screen.getByTestId("eps_header_prescriptionSearchLink")).toHaveTextContent(
+      HEADER_PRESCRIPTION_SEARCH_BUTTON
+    );
   });
 });
