@@ -1,7 +1,7 @@
 'use client'
 import React from 'react'
 import Link from 'next/link';
-import "../assets/styles/header.scss"
+import "@/assets/styles/header.scss"
 import { useRouter, usePathname } from 'next/navigation';
 import { Header } from "nhsuk-react-components";
 import {
@@ -10,7 +10,7 @@ import {
     HEADER_CONFIRM_ROLE_TARGET,
     HEADER_CHANGE_ROLE_BUTTON,
     HEADER_CHANGE_ROLE_TARGET
-} from "../constants/ui-strings/HeaderStrings"
+} from "@/constants/ui-strings/HeaderStrings"
 
 export default function EpsHeader() {
     const router = useRouter()
