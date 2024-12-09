@@ -1,11 +1,15 @@
 'use client'
-import React, {useContext} from "react";
+import React, {useContext, useEffect} from "react";
 
 import { Container, Col, Row, Button } from "nhsuk-react-components";
 import { AuthContext } from "@/context/AuthContext";
 
 export default function AuthPage() {
     const auth = useContext(AuthContext);
+
+    useEffect(() => {
+        console.log(auth);
+    }, [auth])
 
     const mockSignIn = async () => {
         console.log("Signing in (Mock)", auth);
@@ -28,6 +32,7 @@ export default function AuthPage() {
     const signOut = async () => {
         console.log("Signing out", auth);
         await auth?.cognitoSignOut();
+        console.log("Signed out: ", auth);
     }
 
     return (
