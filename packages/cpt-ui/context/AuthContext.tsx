@@ -24,7 +24,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [accessToken, setAccessToken] = useState<JWT | null>(null);
 
   /**
-   * Helper to fetch the current user session and update state accordingly.
+   * Fetch and update the user session state.
    */
   const getUser = async () => {
     console.log("Fetching user session...");
@@ -37,15 +37,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         // Extract expiration times directly from the token payloads.
         const currentTime = Math.floor(Date.now() / 1000);
 
+        // Check expiration of the access token
         if (sessionAccessToken.payload?.exp && sessionAccessToken.payload.exp < currentTime) {
           console.warn("Access token is expired. Consider refreshing the token.");
           setIsSignedIn(false);
+          setUser(null);
+          setIdToken(null);
+          setAccessToken(null);
           return;
         }
 
+        // Check expiration of the ID token
         if (sessionIdToken.payload?.exp && sessionIdToken.payload.exp < currentTime) {
           console.warn("ID token is expired. Consider refreshing the token.");
           setIsSignedIn(false);
+          setUser(null);
+          setIdToken(null);
+          setAccessToken(null);
           return;
         }
 
@@ -59,6 +67,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       } else {
         console.warn("Missing access or ID token.");
         setIsSignedIn(false);
+        setUser(null);
+        setIdToken(null);
+        setAccessToken(null);
       }
     } catch (fetchError) {
       console.error("Error fetching user session:", fetchError);
@@ -71,56 +82,72 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   /**
-   * Listen to authentication events from Hub.
-   * On specific events, handle errors or reset error state.
+   * Set up Hub listener to react to auth events and refresh session state.
    */
   useEffect(() => {
     const unsubscribe = Hub.listen("auth", ({ payload }) => {
       console.log("Auth event payload:", payload);
       switch (payload.event) {
+        // On successful signIn or token refresh, get the latest user state
+        case "signedIn":
+          console.log("User %s logged in", payload.data.username);
+          setError(null);
+        case "tokenRefresh":
+          console.log("Refreshing token");
+        case "signInWithRedirect":
+          setError(null);
+          break;
+
+        case "tokenRefresh_failure":
         case "signInWithRedirect_failure":
           setError("An error has occurred during the OAuth flow.");
+          setIsSignedIn(false);
+          setUser(null);
+          setIdToken(null);
+          setAccessToken(null);
           break;
+
+        case "customOAuthState":
+          console.log("Custom auth state!", payload);
+          break;
+
+        case "signedOut":
+          console.log("User signing out");
+          break;
+
         default:
-          // For any other auth events, reset the error.
-          setError(null);
+          // Other auth events? The type-defined cases are already handled above.
+          break;
       }
     });
 
-    // Attempt to fetch user session on initial load.
-    getUser().then(() => {
-      console.log("User session fetched after Hub listener initialization.");
-    }).catch((err) => {
-      console.error("Failed to get user session after Hub listener:", err);
+    // Initial attempt to get user session when component mounts
+    getUser().catch((err) => {
+      console.error("Failed to get user session on mount:", err);
     });
 
     return () => {
-      // Unsubscribe from Hub events on component unmount.
       unsubscribe();
     };
   }, []);
 
   /**
-   * Reconfigure Amplify when authConfig changes or on initial render.
+   * Reconfigure Amplify on changes to authConfig, then update the user state.
    */
   useEffect(() => {
     console.log("Configuring Amplify with authConfig:", authConfig);
     Amplify.configure(authConfig, { ssr: true });
-    console.log("Amplify configured. Checking existing session...");
-
-    getUser().then(() => {
-      console.log("User session fetched after Amplify configuration.");
-    }).catch((err) => {
-      console.error("Failed to get user session after Amplify configuration:", err);
+    getUser().catch((err) => {
+      console.error("Failed to get user session after Amplify config:", err);
     });
   }, [authConfig]);
 
   /**
-   * Initiates Cognito sign out process and updates local state.
+   * Sign out process.
    */
   const cognitoSignOut = async () => {
     console.log("Signing out...");
-    // Immediately reset local state to represent a signed-out user.
+    // Immediately reset state to signed out.
     setUser(null);
     setAccessToken(null);
     setIdToken(null);
@@ -135,7 +162,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   /**
-   * Initiates the Cognito sign in with redirect flow.
+   * Sign in process (redirect).
    */
   const cognitoSignIn = async (input?: SignInWithRedirectInput) => {
     console.log("Initiating sign-in process...");
