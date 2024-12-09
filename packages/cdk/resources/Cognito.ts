@@ -189,7 +189,7 @@ export class Cognito extends Construct {
 
     if (props.useLocalhostCallback) {
       callbackUrls.push( "http://localhost:3000/auth/")
-      callbackUrls.push( "http://localhost:3000/site/auth_demo.html")
+      callbackUrls.push( "http://localhost:3000/auth_demo/")
       logoutUrls.push( "http://localhost:3000/")
     }
     // add the web client
