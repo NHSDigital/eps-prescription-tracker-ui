@@ -177,16 +177,19 @@ export class Cognito extends Construct {
 
     const callbackUrls = [
       `https://${props.fullCloudfrontDomain}/site/`,
+      `https://${props.fullCloudfrontDomain}/site/auth_demo.html`,
       `https://${props.fullCloudfrontDomain}/auth_demo/`
     ]
 
     const logoutUrls = [
       `https://${props.fullCloudfrontDomain}/site/`,
+      `https://${props.fullCloudfrontDomain}/site/auth_demo.html`,
       `https://${props.fullCloudfrontDomain}/auth_demo/`
     ]
 
     if (props.useLocalhostCallback) {
       callbackUrls.push( "http://localhost:3000/auth/")
+      callbackUrls.push( "http://localhost:3000/site/auth_demo.html")
       logoutUrls.push( "http://localhost:3000/")
     }
     // add the web client
