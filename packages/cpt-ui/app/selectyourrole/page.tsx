@@ -28,13 +28,15 @@ export default function Page() {
               </span>
             </h1>
             {/* Inset Text Section */}
-            <InsetText>
-              <span className="nhsuk-u-visually-hidden">{insetText.visuallyHidden}</span>
-              <p>{insetText.message}</p>
-            </InsetText>
-            {/* Confirm Button */}
-            <Button href={confirmButton.link}>{confirmButton.text}</Button>
-            <p>{alternativeMessage}</p>
+            <section role="contentinfo" aria-label="Login Information">
+              <InsetText>
+                <span className="nhsuk-u-visually-hidden">{insetText.visuallyHidden}</span>
+                <p>{insetText.message}</p>
+              </InsetText>
+              {/* Confirm Button */}
+              <Button href={confirmButton.link}>{confirmButton.text}</Button>
+              <p>{alternativeMessage}</p>
+            </section>
           </Col>
         </Row>
 
