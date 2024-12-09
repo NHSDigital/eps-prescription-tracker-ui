@@ -75,9 +75,6 @@ check-licenses-python:
 aws-configure:
 	aws configure sso --region eu-west-2
 
-aws-configure-us:
-	aws configure sso --region us-east-1
-
 aws-login:
 	aws sso login --sso-session sso-session
 
@@ -88,7 +85,7 @@ react-dev:
 	npm run dev --workspace packages/cpt-ui
 
 react-build:
-	NEXT_OUTPUT_MODE=export npm run build --workspace packages/cpt-ui
+	export NEXT_OUTPUT_MODE=export && export BASE_PATH=/site && npm run build --workspace packages/cpt-ui
 
 react-start:
 	unset NEXT_OUTPUT_MODE && npm run start --workspace packages/cpt-ui
