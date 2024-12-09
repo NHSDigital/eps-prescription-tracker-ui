@@ -1,0 +1,43 @@
+.eps-card {
+  margin-bottom: 1.5rem;
+  border: 1px solid #d8dde0;
+  border-radius: 4px;
+  padding: 1rem;
+  background-color: #ffffff;
+
+  &__content {
+      display: flex;
+      align-items: flex-start;
+  }
+
+  &__name {
+      color: #005eb8;
+      font-weight: bold;
+      text-decoration: none;
+
+      &:hover {
+          text-decoration: underline;
+      }
+  }
+
+  &__specialty {
+      margin-top: 0.5rem;
+      font-weight: normal;
+      color: #4c6272;
+  }
+
+  &__address {
+      text-align: right;
+      color: #4c6272;
+      margin-top: 0.5rem;
+
+      &-line {
+          display: block;
+      }
+  }
+
+  .nhsuk-grid-column-one-half {
+      padding-left: 1rem;
+      padding-right: 1rem;
+  }
+}
