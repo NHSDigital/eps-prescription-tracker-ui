@@ -55,23 +55,40 @@ jobs:
           mkdir -p .build
           tar -xf artifact.tar -C .build
 
+      - name: Set Environment Variables
+        id: setup-env
+        run: |
+          hostedLoginDomain=$(aws cloudformation list-exports --region us-east-1 --query "Exports[?Name=='${{ inputs.SERVICE_NAME }}-us-certs:fullCognitoDomain:Name'].Value" --output text)
+          userPoolClientId=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${{ inputs.SERVICE_NAME }}-stateful-resources:userPoolClient:userPoolClientId'].Value" --output text)
+          userPoolId=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${{ inputs.SERVICE_NAME }}-stateful-resources:userPool:Id'].Value" --output text)
+          fullCloudfrontDomain=$(aws cloudformation list-exports --region us-east-1 --query "Exports[?Name=='${{ inputs.SERVICE_NAME }}-us-certs:fullCloudfrontDomain:Name'].Value" --output text)
+
+          {
+            echo "hostedLoginDomain=${hostedLoginDomain}"
+            echo "userPoolClientId=${userPoolClientId}"
+            echo "userPoolId=${userPoolId}"
+            echo "fullCloudfrontDomain=${fullCloudfrontDomain}"
+          } >> "$GITHUB_ENV"
+  
       - name: build react app
         run: |
+          export NEXT_PUBLIC_hostedLoginDomain=${hostedLoginDomain}
+          export NEXT_PUBLIC_userPoolClientId=${userPoolClientId}
+          export NEXT_PUBLIC_userPoolId=${userPoolId}
+          export NEXT_PUBLIC_redirectSignIn="https://${fullCloudfrontDomain}/site/auth_demo.html"
+          export NEXT_PUBLIC_redirectSignOut="https://${fullCloudfrontDomain}/site/"
+          export NEXT_PUBLIC_COMMIT_ID=${{ inputs.COMMIT_ID }}
+
           cd .build
           make react-build
 
       - name: build auth_demo react app (temp step for testing)
         run: |
-          REACT_APP_hostedLoginDomain=$(aws cloudformation list-exports --region us-east-1 --query "Exports[?Name=='${{ inputs.SERVICE_NAME }}-us-certs:fullCognitoDomain:Name'].Value" --output text)
-          REACT_APP_userPoolClientId=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${{ inputs.SERVICE_NAME }}-stateful-resources:userPoolClient:userPoolClientId'].Value" --output text)
-          REACT_APP_userPoolId=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${{ inputs.SERVICE_NAME }}-stateful-resources:userPool:Id'].Value" --output text)
-          fullCloudfrontDomain=$(aws cloudformation list-exports --region us-east-1 --query "Exports[?Name=='${{ inputs.SERVICE_NAME }}-us-certs:fullCloudfrontDomain:Name'].Value" --output text)
-          REACT_APP_redirectSignIn="https://${fullCloudfrontDomain}/auth_demo/"
+          export REACT_APP_hostedLoginDomain=${hostedLoginDomain}
+          export REACT_APP_userPoolClientId=${userPoolClientId}
+          export REACT_APP_userPoolId=${userPoolId}
+          export REACT_APP_redirectSignIn="https://${fullCloudfrontDomain}/auth_demo/"
 
-          export REACT_APP_hostedLoginDomain
-          export REACT_APP_userPoolClientId
-          export REACT_APP_userPoolId
-          export REACT_APP_redirectSignIn
           cd .build
           make auth_demo_build
 
