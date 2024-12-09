@@ -9,7 +9,9 @@ import {
     HEADER_CONFIRM_ROLE_BUTTON,
     HEADER_CONFIRM_ROLE_TARGET,
     HEADER_CHANGE_ROLE_BUTTON,
-    HEADER_CHANGE_ROLE_TARGET
+    HEADER_CHANGE_ROLE_TARGET,
+    HEADER_SELECT_YOUR_ROLE_BUTTON,
+    HEADER_SELECT_YOUR_ROLE_TARGET
 } from "@/constants/ui-strings/HeaderStrings"
 
 export default function EpsHeader() {
@@ -44,6 +46,15 @@ export default function EpsHeader() {
                         </li>
                     )
                 }
+                {pathname === '/selectyourrole' ? (
+                    <li className="nhsuk-header__navigation-item">
+                        <Link className="nhsuk-header__navigation-link" href={HEADER_CONFIRM_ROLE_TARGET} data-testid="eps_header_confirmRoleLink">{HEADER_CONFIRM_ROLE_BUTTON}</Link>
+                    </li>
+                ) : (
+                    <li className="nhsuk-header__navigation-item">
+                        <Link className="nhsuk-header__navigation-link" href={HEADER_SELECT_YOUR_ROLE_TARGET} data-testid="eps_header_selectYourRoleLink">{HEADER_SELECT_YOUR_ROLE_BUTTON}</Link>
+                    </li>
+                )}
                 <li className="nhsuk-header__navigation-item">
                     <Link className="nhsuk-header__navigation-link" href='/' data-testid="eps_header_placeholder3">Placeholder 3</Link>
                 </li>
