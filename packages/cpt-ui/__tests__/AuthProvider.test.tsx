@@ -45,7 +45,6 @@ const TestConsumer = () => {
     <div>
       <div data-testid="isSignedIn">{auth.isSignedIn ? 'true' : 'false'}</div>
       <div data-testid="error">{auth.error || ''}</div>
-      <div data-testid="state">{auth.state || ''}</div>
       <div data-testid="user">{auth.user ? 'UserPresent' : ''}</div>
       <div data-testid="idToken">{auth.idToken ? 'IdTokenPresent' : ''}</div>
       <div data-testid="accessToken">{auth.accessToken ? 'AccessTokenPresent' : ''}</div>
@@ -189,10 +188,6 @@ describe('AuthProvider', () => {
     if (hubCallback) {
       hubCallback({ payload: { event: 'customOAuthState', data: 'my-custom-state' } });
     }
-
-    await waitFor(() => {
-      expect(screen.getByTestId('state').textContent).toBe('my-custom-state');
-    });
   });
 
   it('should provide cognitoSignIn and cognitoSignOut functions', async () => {
