@@ -31,7 +31,7 @@ export default function EpsHeader() {
                     <Link className="nhsuk-header__navigation-link" href='/' data-testid="eps_header_placeholder1">Placeholder 1</Link>
                 </li>
                 <li className="nhsuk-header__navigation-item">
-                    <Link className="nhsuk-header__navigation-link" href='/' data-testid="eps_header_placeholder2">Placeholder 2</Link>
+                    <Link className="nhsuk-header__navigation-link" href='/site/auth_demo/' data-testid="eps_header_placeholder2">Placeholder 2</Link>
                 </li>
                 {pathname != '/' ? (
                     <li className="nhsuk-header__navigation-item">
