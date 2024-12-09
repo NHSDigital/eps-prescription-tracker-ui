@@ -1,8 +1,8 @@
 {
   "name": "tracker-user-info-lambda",
   "version": "1.0.0",
-  "description": "Lambda for prescription search",
-  "main": "statusLambda.js",
+  "description": "Lambda to handle fetching information about the Clinical Prescription Tracker user",
+  "main": "handler.ts",
   "author": "NHS Digital",
   "license": "MIT",
   "scripts": {
