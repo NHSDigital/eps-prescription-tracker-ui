@@ -20,7 +20,7 @@ describe("rewriteBodyToAddSignedJWT tests", () => {
   const idpTokenPath = "https://example.com/oauth/token"
 
   it("should add a signed JWT to the body parameters", () => {
-    const result = rewriteBodyToAddSignedJWT(logger, objectBodyParameters, idpTokenPath, jwtPrivateKey)
+    const result = rewriteBodyToAddSignedJWT(logger, objectBodyParameters, idpTokenPath, jwtPrivateKey, "dummy_kid")
     expect(result.client_assertion_type).toBe("urn:ietf:params:oauth:client-assertion-type:jwt-bearer")
     expect(result.client_assertion).toBe("mocked-jwt-token")
     expect(result.client_secret).toBeUndefined()
@@ -28,6 +28,6 @@ describe("rewriteBodyToAddSignedJWT tests", () => {
       iss: "test-client-id",
       sub: "test-client-id",
       aud: idpTokenPath
-    }), jwtPrivateKey, {algorithm: "RS512", keyid: "eps-cpt-ui-test"})
+    }), jwtPrivateKey, {algorithm: "RS512", keyid: "dummy_kid"})
   })
 })

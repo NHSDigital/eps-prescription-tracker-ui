@@ -80,6 +80,11 @@ jobs:
       mockOidcjwksEndpoint: "https://identity.ptl.api.platform.nhs.uk/realms/Cis2-mock-internal-dev/protocol/openid-connect/certs"
       useLocalhostCallback: true
       useCustomCognitoDomain: false
+      APIGEE_TOKEN_ENDPOINT: "https://internal-dev.api.service.nhs.uk/oauth2/token"
+      APIGEE_PRESCRIPTIONS_ENDPOINT: "https://internal-dev.api.service.nhs.uk/clinical-prescription-tracker/"
+      JWT_KID: "eps-cpt-ui-test"
+      ROLE_ID: "555254242106"
+      LOG_LEVEL: "DEBUG"
     secrets:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.DEV_CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_DEPLOY_ROLE }}
@@ -89,6 +94,7 @@ jobs:
       mockOidClientSecret: ${{ secrets.PTL_MOCK_CLIENT_SECRET }}
       CIS2_PRIVATE_KEY: ${{ secrets.PTL_CIS2_PRIVATE_KEY }}
       REGRESSION_TESTS_PEM: ${{ secrets.REGRESSION_TESTS_PEM }}
+      APIGEE_API_KEY: ${{ secrets.APIGEE_API_KEY }}
       
   report_deployed_url:
     needs: [release_code, get_issue_number]

@@ -21,6 +21,8 @@ on:
       LOG_RETENTION_IN_DAYS:
         required: true
         type: string
+      LOG_LEVEL:
+        type: string
       useMockOidc:
         type: boolean
         default: false
@@ -48,6 +50,14 @@ on:
         type: boolean
       useCustomCognitoDomain:
         type: boolean
+      APIGEE_TOKEN_ENDPOINT:
+        type: string
+      APIGEE_PRESCRIPTIONS_ENDPOINT:
+        type: string
+      JWT_KID:
+        type: string
+      ROLE_ID:
+        type: string
     secrets:
       CLOUD_FORMATION_DEPLOY_ROLE:
         required: true
@@ -60,6 +70,8 @@ on:
       mockOidcClientId:
         required: false
       mockOidClientSecret:
+        required: false
+      APIGEE_API_KEY:
         required: false
 jobs:
   release_code:
@@ -139,6 +151,7 @@ jobs:
           --arg VERSION_NUMBER "${{ inputs.VERSION_NUMBER }}" \
           --arg COMMIT_ID "${{ inputs.COMMIT_ID }}" \
           --arg logRetentionInDays "${{ inputs.LOG_RETENTION_IN_DAYS }}" \
+          --arg logLevel "${{ inputs.LOG_LEVEL }}" \
           --arg epsDomainName "${epsDomainName}" \
           --arg epsHostedZoneId "${epsHostedZoneId}" \
           --argjson allowAutoDeleteObjects "true" \
@@ -163,11 +176,17 @@ jobs:
           --arg fullCloudfrontDomain "${fullCloudfrontDomain}" \
           --argjson useCustomCognitoDomain "${{ inputs.useCustomCognitoDomain }}" \
           --argjson useLocalhostCallback "${{ inputs.useLocalhostCallback }}" \
+          --arg apigeeTokenEndpoint "${{ inputs.APIGEE_TOKEN_ENDPOINT }}" \
+          --arg apigeePrescriptionsEndpoint "${{ inputs.APIGEE_PRESCRIPTIONS_ENDPOINT }}" \
+          --arg apigeeApiKey "${{ secrets.APIGEE_API_KEY }}" \
+          --arg jwtKid "${{ inputs.JWT_KID }}" \
+          --arg roleId "${{ inputs.ROLE_ID }}" \
           '.context += {
             "serviceName": $serviceName,
             "VERSION_NUMBER": $VERSION_NUMBER,
             "COMMIT_ID": $COMMIT_ID,
             "logRetentionInDays": $logRetentionInDays,
+            "logLevel": $logLevel,
             "epsDomainName": $epsDomainName,
             "epsHostedZoneId": $epsHostedZoneId,
             "allowAutoDeleteObjects": $allowAutoDeleteObjects,
@@ -191,7 +210,13 @@ jobs:
             "mockOidcUserInfoEndpoint": $mockOidcUserInfoEndpoint,
             "mockOidcjwksEndpoint": $mockOidcjwksEndpoint,
             "useCustomCognitoDomain": $useCustomCognitoDomain,
-            "useLocalhostCallback": $useLocalhostCallback}' \
+            "useLocalhostCallback": $useLocalhostCallback,
+            "apigeeTokenEndpoint": $apigeeTokenEndpoint,
+            "apigeePrescriptionsEndpoint": $apigeePrescriptionsEndpoint,
+            "apigeeApiKey": $apigeeApiKey,
+            "jwtKid": $jwtKid,
+            "roleId": $roleId
+            }' \
           .build/cdk.json > .build/cdk.new.json
           mv .build/cdk.new.json .build/cdk.json
 

@@ -9,7 +9,6 @@ import {
 } from "aws-cdk-lib/aws-apigateway"
 import {Construct} from "constructs"
 import {NodejsFunction} from "aws-cdk-lib/aws-lambda-nodejs"
-import {LambdaFunction} from "./LambdaFunction"
 
 export interface RestApiGatewayMethodsProps {
   readonly executePolices: Array<IManagedPolicy>
@@ -17,11 +16,11 @@ export interface RestApiGatewayMethodsProps {
   readonly restApiGateway: RestApi
   readonly tokenLambda: NodejsFunction
   readonly mockTokenLambda: NodejsFunction
-  readonly trackerUserInfoLambda: LambdaFunction
-  readonly mockTrackerUserInfoLambda: LambdaFunction
+  readonly prescriptionSearchLambda: NodejsFunction
+  readonly trackerUserInfoLambda: NodejsFunction
+  readonly mockTrackerUserInfoLambda: NodejsFunction
   readonly useMockOidc: boolean
   readonly authorizer: CognitoUserPoolsAuthorizer
-
 }
 
 /**
@@ -30,9 +29,9 @@ export interface RestApiGatewayMethodsProps {
 
  */
 
-export class RestApiGatewayMethods extends Construct{
+export class RestApiGatewayMethods extends Construct {
 
-  public constructor(scope: Construct, id: string, props: RestApiGatewayMethodsProps){
+  public constructor(scope: Construct, id: string, props: RestApiGatewayMethodsProps) {
     super(scope, id)
 
     // Resources
@@ -52,9 +51,18 @@ export class RestApiGatewayMethods extends Construct{
       }))
     }
 
+    // prescription-search endpoint
+    const prescriptionSearchLambdaResource = props.restApiGateway.root.addResource("prescription-search")
+    prescriptionSearchLambdaResource.addMethod("GET", new LambdaIntegration(props.prescriptionSearchLambda, {
+      credentialsRole: props.restAPiGatewayRole
+    }), {
+      authorizationType: AuthorizationType.COGNITO,
+      authorizer: props.authorizer
+    })
+
     // tracker-user-info endpoint
     const trackerUserInfoLambdaResource = props.restApiGateway.root.addResource("tracker-user-info")
-    trackerUserInfoLambdaResource.addMethod("GET", new LambdaIntegration(props.trackerUserInfoLambda.lambda, {
+    trackerUserInfoLambdaResource.addMethod("GET", new LambdaIntegration(props.trackerUserInfoLambda, {
       credentialsRole: props.restAPiGatewayRole
     }), {
       authorizationType: AuthorizationType.COGNITO,
@@ -64,7 +72,7 @@ export class RestApiGatewayMethods extends Construct{
     // mock tracker-user-info endpoint
     if (props.useMockOidc) {
       const mockTrackerUserInfoLambdaResource = props.restApiGateway.root.addResource("mock-tracker-user-info")
-      mockTrackerUserInfoLambdaResource.addMethod("GET", new LambdaIntegration(props.mockTrackerUserInfoLambda.lambda, {
+      mockTrackerUserInfoLambdaResource.addMethod("GET", new LambdaIntegration(props.mockTrackerUserInfoLambda, {
         credentialsRole: props.restAPiGatewayRole
       }), {
         authorizationType: AuthorizationType.COGNITO,

@@ -42,9 +42,16 @@ on:
         type: boolean
       useCustomCognitoDomain:
         type: boolean
-      REGRESSION_TESTS_PEM:
+      LOG_LEVEL:
+          type: string
+      APIGEE_TOKEN_ENDPOINT:
         type: string
-        default: false
+      APIGEE_PRESCRIPTIONS_ENDPOINT:
+        type: string
+      JWT_KID:
+        type: string
+      ROLE_ID:
+        type: string
     secrets:
       CLOUD_FORMATION_DEPLOY_ROLE:
         required: true
@@ -61,6 +68,8 @@ on:
       CIS2_PRIVATE_KEY:
         required: true
       REGRESSION_TESTS_PEM:
+        required: true
+      APIGEE_API_KEY:
         required: true
 
 jobs:
@@ -106,6 +115,7 @@ jobs:
       COMMIT_ID: ${{ inputs.COMMIT_ID }}
       CDK_APP_NAME: StatefulResourcesApp
       LOG_RETENTION_IN_DAYS: 30
+      LOG_LEVEL: ${{ inputs.LOG_LEVEL }}
       useMockOidc: ${{ inputs.useMockOidc }}
       primaryOidcIssuer: ${{ inputs.primaryOidcIssuer }}
       primaryOidcAuthorizeEndpoint: ${{ inputs.primaryOidcAuthorizeEndpoint }}
@@ -119,6 +129,8 @@ jobs:
       mockOidcjwksEndpoint: ${{ inputs.mockOidcjwksEndpoint }}
       useLocalhostCallback: ${{ inputs.useLocalhostCallback }}
       useCustomCognitoDomain: ${{ inputs.useCustomCognitoDomain }}
+      JWT_KID: ${{ inputs.JWT_KID }}
+      ROLE_ID: ${{ inputs.ROLE_ID }}
     secrets:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}
@@ -148,6 +160,7 @@ jobs:
       COMMIT_ID: ${{ inputs.COMMIT_ID }}
       CDK_APP_NAME: StatelessResourcesApp
       LOG_RETENTION_IN_DAYS: 30
+      LOG_LEVEL: ${{ inputs.LOG_LEVEL }}
       useMockOidc: ${{ inputs.useMockOidc }}
       primaryOidcIssuer: ${{ inputs.primaryOidcIssuer }}
       primaryOidcAuthorizeEndpoint: ${{ inputs.primaryOidcAuthorizeEndpoint }}
@@ -161,6 +174,10 @@ jobs:
       mockOidcjwksEndpoint: ${{ inputs.mockOidcjwksEndpoint }}
       useLocalhostCallback: ${{ inputs.useLocalhostCallback }}
       useCustomCognitoDomain: ${{ inputs.useCustomCognitoDomain }}
+      APIGEE_TOKEN_ENDPOINT: ${{ inputs.APIGEE_TOKEN_ENDPOINT }}
+      APIGEE_PRESCRIPTIONS_ENDPOINT: ${{ inputs.APIGEE_PRESCRIPTIONS_ENDPOINT }}
+      JWT_KID: ${{ inputs.JWT_KID }}
+      ROLE_ID: ${{ inputs.ROLE_ID }}
     secrets:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}
@@ -168,6 +185,8 @@ jobs:
       primaryOidClientSecret: ${{ secrets.primaryOidClientSecret }}
       mockOidcClientId: ${{ secrets.mockOidcClientId }}
       mockOidClientSecret: ${{ secrets.mockOidClientSecret }}
+      APIGEE_API_KEY: ${{ secrets.APIGEE_API_KEY }}
+
 
   update_cloudfront_kvs:
     runs-on: ubuntu-latest
@@ -243,6 +262,7 @@ jobs:
       COMMIT_ID: ${{ inputs.COMMIT_ID }}
       CDK_APP_NAME: StatefulResourcesApp
       LOG_RETENTION_IN_DAYS: 30
+      LOG_LEVEL: ${{ inputs.LOG_LEVEL }}
       useMockOidc: ${{ inputs.useMockOidc }}
       primaryOidcIssuer: ${{ inputs.primaryOidcIssuer }}
       primaryOidcAuthorizeEndpoint: ${{ inputs.primaryOidcAuthorizeEndpoint }}
@@ -256,6 +276,7 @@ jobs:
       mockOidcjwksEndpoint: ${{ inputs.mockOidcjwksEndpoint }}
       useLocalhostCallback: ${{ inputs.useLocalhostCallback }}
       useCustomCognitoDomain: ${{ inputs.useCustomCognitoDomain }}
+      JWT_KID: ${{ inputs.JWT_KID }}
     secrets:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}
