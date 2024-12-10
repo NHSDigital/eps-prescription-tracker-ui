@@ -194,8 +194,6 @@ function App() {
           </div>
       )}
 
-
-      {loading && <p>Loading...</p>}
       {trackerUserInfoData && (
         <div style={{ marginTop: '20px' }}>
           <h3>Tracker User Info Data:</h3>
