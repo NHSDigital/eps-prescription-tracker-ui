@@ -2,18 +2,18 @@
 which is only available in the functions execution environment */
 
 const get = (key) => {
-  if (key === "version"){
+  if (key === "VERSION_PLACEHOLDER"){
     return "v1.0.0"
   }
 
-  if (key === "path") {
+  if (key === "PATH_PLACEHOLDER") {
     return "/api"
   }
 
-  if (key === "object") {
+  if (key === "OBJECT_PLACEHOLDER") {
     return "file.ext"
   }
-  if (key === "basePath") {
+  if (key === "BASEPATH_PLACEHOLDER") {
     return "/site"
   }
 }
