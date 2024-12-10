@@ -5,7 +5,9 @@ import {
   BehaviorOptions,
   CachePolicy,
   FunctionEventType,
+  ImportSource,
   IOrigin,
+  KeyValueStore,
   OriginRequestPolicy,
   ViewerProtocolPolicy
 } from "aws-cdk-lib/aws-cloudfront"
@@ -34,35 +36,73 @@ export class CloudfrontBehaviors extends Construct{
   public readonly s3404UriRewriteFunction: CloudfrontFunction
   public readonly s3404ModifyStatusCodeFunction: CloudfrontFunction
   public readonly s3StaticContentUriRewriteFunction: CloudfrontFunction
+  public readonly keyValueStore: KeyValueStore
 
   public constructor(scope: Construct, id: string, props: CloudfrontBehaviorsProps){
     super(scope, id)
 
     // Resources
 
+    const keyValueStore = new KeyValueStore(this, "FunctionsStore", {
+      keyValueStoreName: `${props.serviceName}-KeyValueStore`,
+      source: ImportSource.fromInline(JSON.stringify({data: [
+        {
+          key: "404_rewrite",
+          value: "404.html"
+        },
+        {
+          key: "500_rewrite",
+          value: "500.html"
+        },
+        {
+          key: "site_basePath",
+          value: "/site"
+        },
+        {
+          key: "api_path",
+          value: "/api"
+        },
+        {
+          key: "jwks_rewrite",
+          value: "jwks.json"
+        },
+        {
+          key: "auth_demo_version",
+          value: "auth_demo"
+        },
+        {
+          key: "auth_demo_basePath",
+          value: "/auth_demo"
+        }
+      ]}))
+    })
+
     const s3404UriRewriteFunction = new CloudfrontFunction(this, "S3404UriRewriteFunction", {
       functionName: `${props.serviceName}-S3404UriRewriteFunction`,
       sourceFileName: "genericS3FixedObjectUriRewrite.js",
-      keyValues: [
+      keyValueStore: keyValueStore,
+      codeReplacements: [
         {
-          key: "object",
-          value: "404.html"
+          valueToReplace: "OBJECT_PLACEHOLDER",
+          replacementValue: "404_rewrite"
         }
       ]
     })
 
     const s3404ModifyStatusCodeFunction = new CloudfrontFunction(this, "S3404ModifyStatusCodeFunction", {
       functionName: `${props.serviceName}-S3404ModifyStatusCodeFunction`,
-      sourceFileName: "s3404ModifyStatusCode.js"
+      sourceFileName: "s3404ModifyStatusCode.js",
+      keyValueStore: keyValueStore
     })
 
     const s3500UriRewriteFunction = new CloudfrontFunction(this, "S3500UriRewriteFunction", {
       functionName: `${props.serviceName}-S3500UriRewriteFunction`,
       sourceFileName: "genericS3FixedObjectUriRewrite.js",
-      keyValues: [
+      keyValueStore: keyValueStore,
+      codeReplacements: [
         {
-          key: "object",
-          value: "500.html"
+          valueToReplace: "OBJECT_PLACEHOLDER",
+          replacementValue: "500_rewrite"
         }
       ]
     })
@@ -70,22 +110,27 @@ export class CloudfrontBehaviors extends Construct{
     const s3StaticContentUriRewriteFunction = new CloudfrontFunction(this, "S3StaticContentUriRewriteFunction", {
       functionName: `${props.serviceName}-S3StaticContentUriRewriteFunction`,
       sourceFileName: "s3StaticContentUriRewrite.js",
-      keyValues: [
+      keyValueStore: keyValueStore,
+      codeReplacements: [
         {
-          key: "basePath",
-          value: "/site"
+          valueToReplace: "BASEPATH_PLACEHOLDER",
+          replacementValue: "site_basePath"
+        },
+        {
+          valueToReplace: "VERSION_PLACEHOLDER",
+          replacementValue: "site_version"
         }
       ]
-
     })
 
     const apiGatewayStripPathFunction = new CloudfrontFunction(this, "ApiGatewayStripPathFunction", {
       functionName: `${props.serviceName}-ApiGatewayStripPathFunction`,
       sourceFileName: "genericStripPathUriRewrite.js",
-      keyValues: [
+      keyValueStore: keyValueStore,
+      codeReplacements: [
         {
-          key: "path",
-          value: "/api"
+          valueToReplace: "PATH_PLACEHOLDER",
+          replacementValue: "api_path"
         }
       ]
     })
@@ -93,10 +138,11 @@ export class CloudfrontBehaviors extends Construct{
     const s3JwksUriRewriteFunction = new CloudfrontFunction(this, "s3JwksUriRewriteFunction", {
       functionName: `${props.serviceName}-s3JwksUriRewriteFunction`,
       sourceFileName: "genericS3FixedObjectUriRewrite.js",
-      keyValues: [
+      keyValueStore: keyValueStore,
+      codeReplacements: [
         {
-          key: "object",
-          value: "jwks.json"
+          valueToReplace: "OBJECT_PLACEHOLDER",
+          replacementValue: "jwks_rewrite"
         }
       ]
     })
@@ -105,14 +151,15 @@ export class CloudfrontBehaviors extends Construct{
     const authDemoStaticContentUriRewriteFunction = new CloudfrontFunction(this, "authDemoStaticContentUriRewriteFunction", {
       functionName: `${props.serviceName}-authDemoStaticContentUriRewriteFunction`,
       sourceFileName: "s3StaticContentUriRewrite.js",
-      keyValues: [
+      keyValueStore: keyValueStore,
+      codeReplacements: [
         {
-          key: "version",
-          value: "auth_demo"
+          valueToReplace: "BASEPATH_PLACEHOLDER",
+          replacementValue: "auth_demo_basePath"
         },
         {
-          key: "basePath",
-          value: "/auth_demo"
+          valueToReplace: "VERSION_PLACEHOLDER",
+          replacementValue: "auth_demo_version"
         }
       ]
     })
@@ -183,5 +230,6 @@ export class CloudfrontBehaviors extends Construct{
     this.s3404UriRewriteFunction = s3404UriRewriteFunction
     this.s3404ModifyStatusCodeFunction = s3404ModifyStatusCodeFunction
     this.s3StaticContentUriRewriteFunction = s3StaticContentUriRewriteFunction
+    this.keyValueStore = keyValueStore
   }
 }
