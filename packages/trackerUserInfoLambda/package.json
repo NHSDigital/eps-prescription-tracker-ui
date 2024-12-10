@@ -23,7 +23,7 @@
     "@middy/core": "^5.4.7",
     "@middy/input-output-logger": "^5.4.7",
     "aws-lambda": "^1.0.7",
-    "axios": "^1.7.7",
+    "axios": "^1.7.9",
     "jsonwebtoken": "^9.0.2",
     "jwks-rsa": "^3.1.0",
     "uuid": "^11.0.2"
