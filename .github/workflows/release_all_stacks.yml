@@ -89,8 +89,10 @@ jobs:
           cloudfrontDistributionId=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='"${{ inputs.SERVICE_NAME }}-stateless-resources:cloudfrontDistribution:Id"'].Value" --output text)
           if [ -z "${cloudfrontDistributionId}" ]; then
             FIRST_DEPLOYMENT="true"
+            echo "This is the first deployment"
           else
             FIRST_DEPLOYMENT="false"
+            echo "This is not the first deployment"
           fi
           echo "FIRST_DEPLOYMENT=$FIRST_DEPLOYMENT" >> "$GITHUB_OUTPUT"
         shell: bash
