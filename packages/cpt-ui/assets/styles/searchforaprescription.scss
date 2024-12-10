@@ -1,0 +1,17 @@
+#searchforaprescription {
+    .nhsuk-grid-row {
+        margin-left:0;
+        margin-right:0;
+        .nhsuk-grid-column-full{
+            padding:0;
+        }
+    }
+}
+#search-for-a-prescription{
+    > .nhsuk-width-container.hero-container {
+       max-width: 100%;
+    }
+    .hero-wrapper {
+       min-width: 100%
+    }
+   }

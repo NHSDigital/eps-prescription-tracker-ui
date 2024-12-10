@@ -31,17 +31,17 @@ export default function EpsHeader() {
             <Header.Nav className="masthead-nav">
                 {pathname != '/' ? (
                     <li className="nhsuk-header__navigation-item">
-                        <Link className="nhsuk-header__navigation-link" href={HEADER_CHANGE_ROLE_TARGET} data-testid="eps_header_changeRoleLink">{HEADER_CHANGE_ROLE_BUTTON}</Link>
+                        <Link className="nhsuk-header__navigation-link" href={`/${HEADER_CHANGE_ROLE_TARGET}`} data-testid="eps_header_changeRoleLink">{HEADER_CHANGE_ROLE_BUTTON}</Link>
                     </li>
                 ) :
                     (
                         <li className="nhsuk-header__navigation-item">
-                            <Link className="nhsuk-header__navigation-link" href={HEADER_CONFIRM_ROLE_TARGET} data-testid="eps_header_confirmRoleLink">{HEADER_CONFIRM_ROLE_BUTTON}</Link>
+                            <Link className="nhsuk-header__navigation-link" href={`/${HEADER_CONFIRM_ROLE_TARGET}`} data-testid="eps_header_confirmRoleLink">{HEADER_CONFIRM_ROLE_BUTTON}</Link>
                         </li>
                     )
                 }
                 <li className="nhsuk-header__navigation-item">
-                    <Link className="nhsuk-header__navigation-link" href={HEADER_PRESCRIPTION_SEARCH_TARGET} data-testid="eps_header_prescriptionSearchLink">{HEADER_PRESCRIPTION_SEARCH_BUTTON}</Link>
+                    <Link className="nhsuk-header__navigation-link" href={`/${HEADER_PRESCRIPTION_SEARCH_TARGET}`} data-testid="eps_header_prescriptionSearchLink">{HEADER_PRESCRIPTION_SEARCH_BUTTON}</Link>
                 </li>
                 <Header.NavDropdownMenu dropdownText="Menu" />
             </Header.Nav>
