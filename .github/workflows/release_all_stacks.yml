@@ -89,8 +89,10 @@ jobs:
           cloudfrontDistributionId=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='"${{ inputs.SERVICE_NAME }}-stateless-resources:cloudfrontDistribution:Id"'].Value" --output text)
           if [ -z "${cloudfrontDistributionId}" ]; then
             FIRST_DEPLOYMENT="true"
+            echo "This is the first deployment"
           else
             FIRST_DEPLOYMENT="false"
+            echo "This is not the first deployment"
           fi
           echo "FIRST_DEPLOYMENT=$FIRST_DEPLOYMENT" >> "$GITHUB_OUTPUT"
         shell: bash
@@ -189,7 +191,7 @@ jobs:
         shell: bash
         run: |
           # shellcheck disable=SC2140
-          keyValueStore=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='"${{ inputs.SERVICE_NAME }}-stateless-resources:StaticRewriteKeyValueStor:Arn"'].Value" --output text)
+          keyValueStore=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='"${{ inputs.SERVICE_NAME }}-stateless-resources:KeyValueStore:Arn"'].Value" --output text)
           # shellcheck disable=SC2140
           cloudfrontDistributionId=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='"${{ inputs.SERVICE_NAME }}-stateless-resources:cloudfrontDistribution:Id"'].Value" --output text)
           # shellcheck disable=SC2140
@@ -203,24 +205,24 @@ jobs:
               --kvs-arn="$keyValueStore" \
               --query ETag --output text)
 
-          existing_keys=$(aws cloudfront-keyvaluestore list-keys --kvs-arn "$keyValueStore" --query "Items[*].Key" --output text)
+          existing_keys=$(aws cloudfront-keyvaluestore list-keys --kvs-arn "$keyValueStore" --query "Items[?Key=='site_version']" --output text)
 
           # Check if "version" key exists
-          if [[ "$existing_keys" == *"version"* ]]; then
+          if [[ -z "$existing_keys" ]]; then
+            # Insert a new "version" key
+            aws cloudfront-keyvaluestore put-key \
+              --if-match="${ETag}" \
+              --key=site_version \
+              --value="$newVersion"\
+              --kvs-arn "$keyValueStore"
+            echo "Inserted new 'site_version' key with value $newVersion."
+          else
             # Update the existing "version" key
             aws cloudfront-keyvaluestore update-keys \
               --if-match="${ETag}" \
               --kvs-arn "$keyValueStore" \
-              --puts Key=version,Value="$newVersion"
-            echo "Updated the 'version' key to $newVersion."
-          else
-            # Insert a new "version" key
-            aws cloudfront-keyvaluestore put-key \
-              --if-match="${ETag}" \
-              --key=version \
-              --value="$newVersion"\
-              --kvs-arn "$keyValueStore"
-            echo "Inserted new 'version' key with value $newVersion."
+              --puts Key=site_version,Value="$newVersion"
+            echo "Updated the 'site_version' key to $newVersion."
           fi
 
           # invalidate the cache

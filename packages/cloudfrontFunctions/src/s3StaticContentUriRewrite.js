@@ -6,8 +6,8 @@ const versionPattern = /v\d*\.\d*\.\d*/g
 const prPattern = /pr-\d*/g
 
 export async function handler(event) {
-  const currentVersion = await keyValueStore.get("version")
-  const basePath = await keyValueStore.get("basePath")
+  const currentVersion = await keyValueStore.get("VERSION_PLACEHOLDER")
+  const basePath = await keyValueStore.get("BASEPATH_PLACEHOLDER")
 
   const request = event.request
   const requestUri = request.uri
