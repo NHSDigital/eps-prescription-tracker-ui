@@ -3,7 +3,7 @@ const kvsId = "KVS_ID_PLACEHOLDER"
 const keyValueStore = cf.kvs(kvsId)
 
 export async function handler(event) {
-  const path = await keyValueStore.get("path")
+  const path = await keyValueStore.get("PATH_PLACEHOLDER")
   const request = event.request
   const requestUri = request.uri
   const parts = requestUri.split(path)
