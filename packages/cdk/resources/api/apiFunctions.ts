@@ -1,6 +1,4 @@
-
 import {Construct} from "constructs"
-
 import {LambdaFunction} from "../LambdaFunction"
 import {ITableV2} from "aws-cdk-lib/aws-dynamodb"
 import {
@@ -39,7 +37,6 @@ export interface ApiFunctionsProps {
   readonly mockPoolIdentityProviderName: string
   readonly logRetentionInDays: number
   readonly deploymentRole: IRole
-
 }
 
 /**
@@ -48,7 +45,6 @@ export interface ApiFunctionsProps {
 export class ApiFunctions extends Construct {
   public readonly apiFunctionsPolicies: Array<IManagedPolicy>
   public readonly trackerUserInfoLambda: LambdaFunction
-  public readonly mockTrackerUserInfoLambda: LambdaFunction
   public readonly primaryJwtPrivateKey: Secret
 
   public constructor(scope: Construct, id: string, props: ApiFunctionsProps) {
@@ -107,7 +103,7 @@ export class ApiFunctions extends Construct {
       ]
     })
 
-    // Secret used by lambdas that holds the JWT private key
+    // Real JWT Secret
     const primaryJwtPrivateKey = new Secret(this, "PrimaryJwtPrivateKey", {
       secretName: `${props.stackName}-primaryJwtPrivateKeyTrkUsrNfo`,
       secretStringValue: SecretValue.unsafePlainText("ChangeMe"),
@@ -136,9 +132,9 @@ export class ApiFunctions extends Construct {
       ]
     })
 
-    // Set up things for mock authorization
-    let getMockJWTPrivateKeySecret: ManagedPolicy | undefined = undefined
+    // Setup mock keys if needed
     let mockJwtPrivateKey: Secret | undefined = undefined
+    let getMockJWTPrivateKeySecret: ManagedPolicy | undefined = undefined
 
     if (props.useMockOidc) {
       if (
@@ -151,7 +147,6 @@ export class ApiFunctions extends Construct {
         throw new Error("Attempt to use mock oidc but variables are not defined")
       }
 
-      // Secret used by mock user info lambda that holds the JWT private key
       mockJwtPrivateKey = new Secret(this, "MockJwtPrivateKey", {
         secretName: `${props.stackName}-mockJwtPrivateKeyTrkUsrNfo`,
         secretStringValue: SecretValue.unsafePlainText("ChangeMe"),
@@ -173,123 +168,63 @@ export class ApiFunctions extends Construct {
       })
     }
 
-    // *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-* //
-    //           Lambda setups           //
-    // *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-* //
+    // Combine policies
+    const additionalPolicies = [
+      props.tokenMappingTableWritePolicy,
+      props.tokenMappingTableReadPolicy,
+      props.useTokensMappingKmsKeyPolicy,
+      useJwtKmsKeyPolicy,
+      getJWTPrivateKeySecret
+    ]
 
-    // CPT USER INFORMATION LAMBDA //
-
-    // Set up things for mock authorization
-    let mockTrackerUserInfoLambda: LambdaFunction
-    if (props.useMockOidc) {
-      // These checks are technically unnecessary, but they are here to prevent the linter from complaining
-      if (
-        props.mockOidcjwksEndpoint === undefined ||
-        props.mockOidcUserInfoEndpoint === undefined ||
-        props.mockOidcTokenEndpoint === undefined ||
-        props.mockOidcClientId === undefined ||
-        props.mockOidcIssuer === undefined ||
-        getMockJWTPrivateKeySecret === undefined ||
-        mockJwtPrivateKey === undefined
-      ) {
-        throw new Error("Attempt to use mock oidc but variables are not defined")
-      }
-
-      mockTrackerUserInfoLambda = new LambdaFunction(this, "MockTrackerUserInfo", {
-        serviceName: props.serviceName,
-        stackName: props.stackName,
-        lambdaName: `${props.stackName}-mockTrkUsrNfo`,
-        additionalPolicies: [
-          props.tokenMappingTableWritePolicy,
-          props.tokenMappingTableReadPolicy,
-          props.useTokensMappingKmsKeyPolicy,
-          useJwtKmsKeyPolicy,
-          getMockJWTPrivateKeySecret
-        ],
-        logRetentionInDays: props.logRetentionInDays,
-        packageBasePath: "packages/trackerUserInfoLambda",
-        entryPoint: "src/handler.ts",
-        lambdaEnvironmentVariables: {
-          idpTokenPath: props.mockOidcTokenEndpoint,
-          TokenMappingTableName: props.tokenMappingTable.tableName,
-          UserPoolIdentityProvider: props.mockPoolIdentityProviderName,
-          oidcjwksEndpoint: props.mockOidcjwksEndpoint,
-          jwtPrivateKeyArn: mockJwtPrivateKey.secretArn,
-          userInfoEndpoint: props.mockOidcUserInfoEndpoint,
-          useSignedJWT: "false",
-          oidcClientId: props.mockOidcClientId,
-          oidcIssuer: props.mockOidcIssuer
-        }
-      })
+    if (props.useMockOidc && getMockJWTPrivateKeySecret) {
+      additionalPolicies.push(getMockJWTPrivateKeySecret)
     }
 
-    // Proper lambda function for user info
+    // Environment variables
+    // We pass in both sets of endpoints and keys. The Lambda code determines at runtime which to use.
+    const lambdaEnv: { [key: string]: string } = {
+      TokenMappingTableName: props.tokenMappingTable.tableName,
+
+      // Real endpoints/credentials
+      REAL_IDP_TOKEN_PATH: props.primaryOidcTokenEndpoint,
+      REAL_USER_INFO_ENDPOINT: props.primaryOidcUserInfoEndpoint,
+      REAL_OIDCJWKS_ENDPOINT: props.primaryOidcjwksEndpoint,
+      REAL_JWT_PRIVATE_KEY_ARN: primaryJwtPrivateKey.secretArn,
+      REAL_USER_POOL_IDP: props.primaryPoolIdentityProviderName,
+      REAL_USE_SIGNED_JWT: "true",
+      REAL_OIDC_CLIENT_ID: props.primaryOidcClientId,
+      REAL_OIDC_ISSUER: props.primaryOidcIssuer,
+
+      // Indicate if mock mode is available
+      MOCK_MODE_ENABLED: props.useMockOidc.toString()
+    }
+
+    // If mock OIDC is enabled, add mock environment variables
+    if (props.useMockOidc && mockJwtPrivateKey) {
+      lambdaEnv["MOCK_IDP_TOKEN_PATH"] = props.mockOidcTokenEndpoint!
+      lambdaEnv["MOCK_USER_INFO_ENDPOINT"] = props.mockOidcUserInfoEndpoint!
+      lambdaEnv["MOCK_OIDCJWKS_ENDPOINT"] = props.mockOidcjwksEndpoint!
+      lambdaEnv["MOCK_JWT_PRIVATE_KEY_ARN"] = mockJwtPrivateKey.secretArn
+      lambdaEnv["MOCK_USER_POOL_IDP"] = props.mockPoolIdentityProviderName
+      lambdaEnv["MOCK_USE_SIGNED_JWT"] = "false"
+      lambdaEnv["MOCK_OIDC_CLIENT_ID"] = props.mockOidcClientId!
+      lambdaEnv["MOCK_OIDC_ISSUER"] = props.mockOidcIssuer!
+    }
+
+    // Single Lambda for both real and mock scenarios
     const trackerUserInfoLambda = new LambdaFunction(this, "TrackerUserInfo", {
       serviceName: props.serviceName,
       stackName: props.stackName,
-      lambdaName: `${props.stackName}-TrkUsrNfo`,
-      additionalPolicies: [
-        props.tokenMappingTableWritePolicy,
-        props.tokenMappingTableReadPolicy,
-        props.useTokensMappingKmsKeyPolicy,
-        useJwtKmsKeyPolicy,
-        getJWTPrivateKeySecret
-      ],
+      lambdaName: `${props.stackName}-TrkUsrNfoUnified`,
+      additionalPolicies: additionalPolicies,
       logRetentionInDays: props.logRetentionInDays,
       packageBasePath: "packages/trackerUserInfoLambda",
       entryPoint: "src/handler.ts",
-      lambdaEnvironmentVariables: {
-        idpTokenPath: props.primaryOidcTokenEndpoint,
-        TokenMappingTableName: props.tokenMappingTable.tableName,
-        UserPoolIdentityProvider: props.primaryPoolIdentityProviderName,
-        oidcjwksEndpoint: props.primaryOidcjwksEndpoint,
-        jwtPrivateKeyArn: primaryJwtPrivateKey.secretArn,
-        userInfoEndpoint: props.primaryOidcUserInfoEndpoint,
-        useSignedJWT: "true",
-        oidcClientId: props.primaryOidcClientId,
-        oidcIssuer: props.primaryOidcIssuer
-      }
+      lambdaEnvironmentVariables: lambdaEnv
     })
 
-    // PRESCRIPTION SEARCH LAMBDA //
-
-    // const prescriptionSearchLambda = new LambdaFunction(this, "PrescriptionSearch", {
-    //   runtime: Runtime.NODEJS_20_X,
-    //   serviceName: props.serviceName,
-    //   stackName: props.stackName,
-    //   lambdaName: `${props.stackName}-prescSearch`,
-    //   additionalPolicies: [
-    //     props.tokenMappingTableWritePolicy,
-    //     props.tokenMappingTableReadPolicy,
-    //     props.useTokensMappingKmsKeyPolicy,
-    //     props.sharedSecrets.useJwtKmsKeyPolicy,
-    //     props.sharedSecrets.getPrimaryJwtPrivateKeyPolicy
-    //   ],
-    //   logRetentionInDays: props.logRetentionInDays,
-    //   packageBasePath: "packages/prescriptionSearchLambda",
-    //   entryPoint: "src/handler.ts",
-    //   lambdaEnvironmentVariables: {
-    //     idpTokenPath: props.primaryOidcTokenEndpoint,
-    //     TokenMappingTableName: props.tokenMappingTable.tableName,
-    //     UserPoolIdentityProvider: props.primaryPoolIdentityProviderName,
-    //     oidcjwksEndpoint: props.primaryOidcjwksEndpoint,
-    //     jwtPrivateKeyArn: props.sharedSecrets.primaryJwtPrivateKey.secretArn,
-    //     userInfoEndpoint: props.primaryOidcUserInfoEndpoint,
-    //     useSignedJWT: "true",
-    //     oidcClientId: props.primaryOidcClientId,
-    //     oidcIssuer: props.primaryOidcIssuer,
-    //     apigeeApiKey: props.apigeeApiKey,
-    //     jwtKid: props.jwtKid
-    //   }
-    // })
-
-    // // Suppress the AwsSolutions-L1 rule for the prescription search Lambda function
-    // NagSuppressions.addResourceSuppressions(prescriptionSearchLambda.lambda, [
-    //   {
-    //     id: "AwsSolutions-L1",
-    //     reason: "The Lambda function uses the latest runtime version supported at the time of implementation."
-    //   }
-    // ])
+    // This one Lambda can handle both mock and real requests at runtime
 
     // *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-* //
     //            Permissions            //
@@ -300,9 +235,6 @@ export class ApiFunctions extends Construct {
       trackerUserInfoLambda.executeLambdaManagedPolicy
       // prescriptionSearchLambda.executeLambdaManagedPolicy
     ]
-    if (props.useMockOidc) {
-      apiFunctionsPolicies.push(mockTrackerUserInfoLambda!.executeLambdaManagedPolicy)
-    }
 
     // *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-* //
     //              Outputs              //
@@ -314,9 +246,5 @@ export class ApiFunctions extends Construct {
 
     // CPT user info lambda outputs
     this.trackerUserInfoLambda = trackerUserInfoLambda
-    this.mockTrackerUserInfoLambda = mockTrackerUserInfoLambda!
-
-    // // Prescription search lambda outputs
-    // this.prescriptionSearchLambda = prescriptionSearchLambda.lambda
   }
 }
