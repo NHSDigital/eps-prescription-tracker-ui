@@ -197,7 +197,7 @@ export class ApiFunctions extends Construct {
       REAL_OIDC_ISSUER: props.primaryOidcIssuer,
 
       // Indicate if mock mode is available
-      MOCK_MODE_ENABLED: props.useMockOidc.toString()
+      MOCK_MODE_ENABLED: props.useMockOidc ? "true" : "false"
     }
 
     // If mock OIDC is enabled, add mock environment variables
