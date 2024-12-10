@@ -269,7 +269,7 @@ export class StatelessResourcesStack extends Stack {
     })
     new CfnOutput(this, "KeyValueStoreArn", {
       value: cloudfrontBehaviors.keyValueStore.keyValueStoreArn,
-      exportName: `${props.stackName}:KeyValueStor:Arn`
+      exportName: `${props.stackName}:KeyValueStore:Arn`
     })
     new CfnOutput(this, "primaryJwtPrivateKeyArn", {
       value: cognitoFunctions.primaryJwtPrivateKey.secretArn,

@@ -191,7 +191,7 @@ jobs:
         shell: bash
         run: |
           # shellcheck disable=SC2140
-          keyValueStore=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='"${{ inputs.SERVICE_NAME }}-stateless-resources:KeyValueStor:Arn"'].Value" --output text)
+          keyValueStore=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='"${{ inputs.SERVICE_NAME }}-stateless-resources:KeyValueStore:Arn"'].Value" --output text)
           # shellcheck disable=SC2140
           cloudfrontDistributionId=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='"${{ inputs.SERVICE_NAME }}-stateless-resources:cloudfrontDistribution:Id"'].Value" --output text)
           # shellcheck disable=SC2140
