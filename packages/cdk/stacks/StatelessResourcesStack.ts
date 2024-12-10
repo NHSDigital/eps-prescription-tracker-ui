@@ -267,9 +267,9 @@ export class StatelessResourcesStack extends Stack {
       value: cloudfrontDistribution.distribution.distributionId,
       exportName: `${props.stackName}:cloudfrontDistribution:Id`
     })
-    new CfnOutput(this, "StaticRewriteKeyValueStoreArn", {
-      value: cloudfrontBehaviors.s3StaticContentUriRewriteFunction.functionStore?.keyValueStoreArn,
-      exportName: `${props.stackName}:StaticRewriteKeyValueStor:Arn`
+    new CfnOutput(this, "KeyValueStoreArn", {
+      value: cloudfrontBehaviors.keyValueStore.keyValueStoreArn,
+      exportName: `${props.stackName}:KeyValueStore:Arn`
     })
     new CfnOutput(this, "primaryJwtPrivateKeyArn", {
       value: cognitoFunctions.primaryJwtPrivateKey.secretArn,
