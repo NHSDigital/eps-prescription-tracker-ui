@@ -5,7 +5,9 @@
     "src/**/*",
     "tests/**/*",
     "tests/**/*.json",
-    ".next/types/**/*.ts"
+    ".next/types/**/*.ts",
+    "jest.config.ts",
+    "jest.debug.config.ts"
   ],
   "compilerOptions": {
     "lib": [

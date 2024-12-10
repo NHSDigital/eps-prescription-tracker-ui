@@ -6,7 +6,7 @@ const nextConfig = {
   basePath: process.env.BASE_PATH || ""
   // Optional: Change links `/me` -> `/me/` and emit `/me.html` -> `/me/index.html`
   // trailingSlash: true,
-
+  // hello1 sdfgfdgjddssssss
   // Optional: Prevent automatic `/me` -> `/me/`, instead preserve `href`
   // skipTrailingSlashRedirect: true,
 
