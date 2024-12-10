@@ -148,11 +148,11 @@ function App() {
       })}>Log in with mock CIS2</button>
       <button onClick={() => signOut()}>Sign Out</button>
       <div>username: {user?.username}</div>
-      <div>isSignedIn: {isSignedIn.toString()} </div>
+      <div>isSignedIn: {isSignedIn.toString()}</div>
       <div>idToken: {idToken?.toString()}</div>
       <div>accessToken: {accessToken?.toString()}</div>
-
-      <div style={{marginTop: '20px'}}>
+  
+      <div style={{ marginTop: '20px' }}>
         <label htmlFor="prescriptionId">Prescription ID:</label>
         <input
           type="text"
@@ -166,34 +166,29 @@ function App() {
           disabled={!isSignedIn || !prescriptionId}
         >
           Fetch Prescription Data
-          </button>
-        </div>
-
+        </button>
+      </div>
+  
       <div style={{ marginTop: '20px' }}>
-        <button
-          onClick={() => fetchTrackerUserInfo(false)}
-          disabled={!isSignedIn}
-        >
+        <button onClick={() => fetchTrackerUserInfo(false)} disabled={!isSignedIn}>
           Fetch Tracker User Info
         </button>
       </div>
       <div style={{ marginTop: '20px' }}>
-        <button
-          onClick={() => fetchTrackerUserInfo(true)}
-          disabled={!isSignedIn}
-        >
+        <button onClick={() => fetchTrackerUserInfo(true)} disabled={!isSignedIn}>
           Fetch Mock Tracker User Info
         </button>
       </div>
-
+  
       {loading && <p>Loading...</p>}
+  
       {prescriptionData && (
-        <div style={{marginTop: '20px'}}>
+        <div style={{ marginTop: '20px' }}>
           <h3>Prescription Data:</h3>
           <pre>{JSON.stringify(prescriptionData, null, 2)}</pre>
-          </div>
+        </div>
       )}
-
+  
       {trackerUserInfoData && (
         <div style={{ marginTop: '20px' }}>
           <h3>Tracker User Info Data:</h3>
