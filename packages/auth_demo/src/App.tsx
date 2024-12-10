@@ -1,13 +1,16 @@
-import React, {useEffect, useState} from "react"
-import {Hub} from "aws-amplify/utils"
-import {signInWithRedirect, signOut, getCurrentUser, fetchAuthSession, JWT} from "aws-amplify/auth"
-import {Amplify} from "aws-amplify"
-import axios from 'axios'
+import React, { useEffect, useState } from 'react'
+import { Hub } from "aws-amplify/utils"
+import { signInWithRedirect, signOut, getCurrentUser, fetchAuthSession, JWT } from "aws-amplify/auth"
+import { Amplify } from "aws-amplify"
+import axios from "axios"
 import './interceptors'
 
 import './App.css'
-import {authConfig} from './configureAmplify'
-Amplify.configure(authConfig, {ssr: true})
+import { authConfig } from './configureAmplify'
+Amplify.configure(authConfig, { ssr: true })
+
+const trackerUserInfoEndpoint = "/api/tracker-user-info"
+const mockTrackerUserInfoEndpoint = "/api/mock-tracker-user-info"
 
 const API_ENDPOINT = '/api/prescription-search'
 
@@ -20,6 +23,7 @@ function App() {
   const [accessToken, setAccessToken] = useState<JWT>(null)
   const [prescriptionId, setPrescriptionId] = useState<string>('')
   const [prescriptionData, setPrescriptionData] = useState<any>(null)
+  const [trackerUserInfoData, setTrackerUserInfoData] = useState<JWT>(null)
   const [loading, setLoading] = useState<boolean>(false)
 
   useEffect(() => {
@@ -49,6 +53,7 @@ function App() {
       const authSession = await fetchAuthSession({forceRefresh: true})
       const accessToken = authSession.tokens?.accessToken
       const idToken = authSession.tokens?.idToken
+
       if (accessToken && idToken) {
         console.log(idToken.payload)
         setAccessToken(accessToken)
@@ -107,6 +112,28 @@ function App() {
     }
   }
 
+  const fetchTrackerUserInfo = async (isMock: boolean) => {
+    setLoading(true)
+    setTrackerUserInfoData(null)
+    setError(null)
+
+    let endpoint = isMock ? mockTrackerUserInfoEndpoint : trackerUserInfoEndpoint
+    try {
+      const response = await axios.get(endpoint, {
+        headers: {
+          Authorization: `Bearer ${idToken}`,
+          'NHSD-Session-URID': '555254242106'
+        }
+      })
+      setTrackerUserInfoData(response.data)
+    } catch (err) {
+      setError("Failed to fetch tracker user info")
+      console.error("error fetching tracker user info:", err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <div className="App">
       <button onClick={() => signInWithRedirect({
@@ -139,6 +166,23 @@ function App() {
           disabled={!isSignedIn || !prescriptionId}
         >
           Fetch Prescription Data
+          </button>
+        </div>
+
+      <div style={{ marginTop: '20px' }}>
+        <button
+          onClick={() => fetchTrackerUserInfo(false)}
+          disabled={!isSignedIn}
+        >
+          Fetch Tracker User Info
+        </button>
+      </div>
+      <div style={{ marginTop: '20px' }}>
+        <button
+          onClick={() => fetchTrackerUserInfo(true)}
+          disabled={!isSignedIn}
+        >
+          Fetch Mock Tracker User Info
         </button>
       </div>
 
@@ -147,6 +191,15 @@ function App() {
         <div style={{marginTop: '20px'}}>
           <h3>Prescription Data:</h3>
           <pre>{JSON.stringify(prescriptionData, null, 2)}</pre>
+          </div>
+      )}
+
+
+      {loading && <p>Loading...</p>}
+      {trackerUserInfoData && (
+        <div style={{ marginTop: '20px' }}>
+          <h3>Tracker User Info Data:</h3>
+          <pre>{JSON.stringify(trackerUserInfoData, null, 2)}</pre>
         </div>
       )}
     </div>

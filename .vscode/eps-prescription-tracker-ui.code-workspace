@@ -39,6 +39,10 @@
       {
         "name": "packages/auth_demo",
         "path": "../packages/auth_demo"
+      },
+      {
+        "name": "packages/trackerUserInfoLambda",
+        "path": "../packages/trackerUserInfoLambda"
       }
 
     ],
@@ -111,6 +115,7 @@
         "reingested",
         "Reingestion",
         "rvest",
+        "selectyourrole",
         "serialisation",
         "shellcheck",
         "smartcard",
