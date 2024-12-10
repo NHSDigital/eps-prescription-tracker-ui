@@ -5,9 +5,17 @@
     "src/**/*",
     "tests/**/*",
     "tests/**/*.json",
-    ".next/types/**/*.ts"
+    ".next/types/**/*.ts",
+    "**/*.tsx"
   ],
   "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/context/*": ["context/*"],
+      "@/constants/*": ["constants/*"],
+      "@/assets/*": ["assets/*"],
+      "@/components/*": ["components/*"]
+    },
     "lib": [
       "dom",
       "dom.iterable",
