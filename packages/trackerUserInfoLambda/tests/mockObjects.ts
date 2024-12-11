@@ -61,7 +61,6 @@ export const mockAPIGatewayProxyEvent = {
   stageVariables: {}
 }
 
-
 export const mockContext = {
   callbackWaitsForEmptyEventLoop: true,
   functionVersion: "$LATEST",
