@@ -36,6 +36,8 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   // Determine whether this request should be treated as mock or real.
   const isMockRequest = MOCK_MODE_ENABLED === "true" && isMockToken
 
+  logger.info("Is this a mock request?", {isMockRequest})
+
   // set environment variables
   process.env.idpTokenPath = isMockRequest
     ? process.env.MOCK_IDP_TOKEN_PATH
@@ -87,7 +89,6 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     }
   } catch (error) {
     if (error instanceof Error) {
-      logger.error("Lambda failed!!! [DELETEME]")
       logger.error("Error occurred in Lambda handler", {error: error.message})
     } else {
       logger.error("Unknown error occurred in Lambda handler", {error: String(error)})
