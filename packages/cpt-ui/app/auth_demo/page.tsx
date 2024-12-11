@@ -50,9 +50,9 @@ export default function AuthPage() {
     
                 <Row>
                     <Col width="full">
-                        <Button style={{ margin: '8px' }} onClick={signIn}>Log in with PTL CIS2</Button>
-                        <Button style={{ margin: '8px' }} onClick={mockSignIn}>Log in with mock CIS2</Button>
-                        <Button style={{ margin: '8px' }} onClick={signOut}>Sign Out</Button>
+                        <Button id="primary-signin" style={{ margin: '8px' }} onClick={signIn}>Log in with PTL CIS2</Button>
+                        <Button id="mock-signin" style={{ margin: '8px' }} onClick={mockSignIn}>Log in with mock CIS2</Button>
+                        <Button id="signout" style={{ margin: '8px' }} onClick={signOut}>Sign Out</Button>
     
                         {auth && (
                             <>
