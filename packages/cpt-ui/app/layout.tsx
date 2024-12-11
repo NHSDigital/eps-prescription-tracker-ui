@@ -2,8 +2,9 @@
 import React from "react";
 
 import 'nhsuk-frontend/dist/nhsuk.css';
-import EpsHeader from '../components/EpsHeader'
-import EpsFooter from '../components/EpsFooter'
+import EpsHeader from '@/components/EpsHeader'
+import EpsFooter from '@/components/EpsFooter'
+import { AuthProvider } from '@/context/AuthContext'
 
 export default function RootLayout({
     children,
@@ -13,9 +14,11 @@ export default function RootLayout({
     return (
         <html lang="en">
             <body>
-                <EpsHeader />
-                {children}
-                <EpsFooter />
+                <AuthProvider>
+                    <EpsHeader />
+                    {children}
+                    <EpsFooter />
+                </AuthProvider>
             </body>
 
         </html>
