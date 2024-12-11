@@ -1,10 +1,23 @@
-'use client';
-
-import React from 'react';
+import React from "react";
 import { Card } from "nhsuk-react-components";
 import "../assets/styles/card.scss";
 
-export default function EpsCard({ name, odsCode, address, specialty, link }) {
+// Define props type
+interface EpsCardProps {
+    name: string;
+    odsCode: string;
+    address: string | null;
+    specialty: string;
+    link: string;
+}
+
+export default function EpsCard({
+    name,
+    odsCode,
+    address,
+    specialty,
+    link,
+}: EpsCardProps) {
     return (
         <Card className="eps-card nhsuk-card--clickable" clickable>
             <a href={link} className="nhsuk-card__link">
@@ -13,7 +26,9 @@ export default function EpsCard({ name, odsCode, address, specialty, link }) {
                         {/* Left Column: Name and Specialty */}
                         <div className="nhsuk-grid-column-one-half eps-card__left">
                             <Card.Heading>
-                                <span className="eps-card__name">{name} (ODS: {odsCode})</span>
+                                <span className="eps-card__name">
+                                    {name} (ODS: {odsCode})
+                                </span>
                             </Card.Heading>
                             <Card.Description className="eps-card__specialty">
                                 {specialty}
@@ -23,12 +38,17 @@ export default function EpsCard({ name, odsCode, address, specialty, link }) {
                         <div className="nhsuk-grid-column-one-half eps-card__right">
                             <Card.Description className="eps-card__address">
                                 {address ? (
-                                    address.split('\n').map((line, index) => (
-                                        <span key={index} className="eps-card__address-line">
-                                            {line}
-                                            <br />
-                                        </span>
-                                    ))
+                                    address.split("\n").map(
+                                        (line: string, index: number) => (
+                                            <span
+                                                key={index}
+                                                className="eps-card__address-line"
+                                            >
+                                                {line}
+                                                <br />
+                                            </span>
+                                        )
+                                    )
                                 ) : (
                                     <span>No address found</span>
                                 )}
