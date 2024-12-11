@@ -10,7 +10,6 @@ import { authConfig } from './configureAmplify'
 Amplify.configure(authConfig, { ssr: true })
 
 const trackerUserInfoEndpoint = "/api/tracker-user-info"
-const mockTrackerUserInfoEndpoint = "/api/mock-tracker-user-info"
 
 function App() {
   const [user, setUser] = useState(null)
