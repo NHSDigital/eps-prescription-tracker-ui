@@ -2,11 +2,11 @@
 import React, {useState, useEffect, useContext, useCallback } from "react"
 import { Container, Col, Row, Details, Table, ErrorSummary, Button, InsetText } from "nhsuk-react-components"
 import { AuthContext } from "@/context/AuthContext";
-import EpsCard from "../../components/EpsCard";
+import EpsCard from "@/components/EpsCard";
 import {
   ROLE_CARDS,
   SELECT_ROLE_PAGE_TEXT,
-} from "../../constants/ui-strings/CardStrings";
+} from "@/constants/ui-strings/CardStrings";
 
 export type RoleDetails = {
     role_name?: string;
@@ -157,7 +157,7 @@ export default function SelectYourRolePage() {
                                 </Col>
                             ))}
                         </Row>
-                        
+
                         {/* Roles without access Section */}
                         <Row>
                             <Details expander>
