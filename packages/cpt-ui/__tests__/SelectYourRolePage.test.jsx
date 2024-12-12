@@ -1,7 +1,6 @@
 import "@testing-library/jest-dom";
 import { render, screen } from "@testing-library/react";
-import Page from "../app/selectyourrole/page";
-import EpsHeader from "../components/EpsHeader";
+import SelectYourRolePage from "../app/selectyourrole/page";
 import React from "react";
 
 // Mock `next/navigation` globally
@@ -14,7 +13,7 @@ import { usePathname } from "next/navigation";
 
 describe("SelectYourRole Page", () => {
   it("renders a heading", () => {
-    render(<Page />);
+    render(<SelectYourRolePage />);
 
     const heading = screen.getByRole("heading", { level: 1 });
 
@@ -23,7 +22,7 @@ describe("SelectYourRole Page", () => {
   });
 
   it("renders the caption", () => {
-    render(<Page />);
+    render(<SelectYourRolePage />);
 
     const caption = screen.getByText(/Select the role you wish to use to access the service/i);
 
@@ -31,7 +30,7 @@ describe("SelectYourRole Page", () => {
   });
 
   it("renders the main container", () => {
-    render(<Page />);
+    render(<SelectYourRolePage />);
 
     const container = screen.getByRole("contentinfo");
 
