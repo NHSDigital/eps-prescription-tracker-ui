@@ -89,56 +89,62 @@ describe("Lambda Handler Tests", () => {
     expect(body).toHaveProperty("userInfo")
   })
 
-  // eslint-disable-next-line max-len
-  it("should use real environment variables when MOCK_MODE_ENABLED is false and username does not start with Mock_", async () => {
-    mockGetUsernameFromEvent.mockReturnValue("Primary_JohnDoe")
-    await handler(event, context)
-    expect(mockGetUsernameFromEvent).toHaveBeenCalled()
-    expect(process.env.idpTokenPath).toBe(process.env.REAL_IDP_TOKEN_PATH)
-    expect(process.env.userInfoEndpoint).toBe(process.env.REAL_USER_INFO_ENDPOINT)
-    expect(process.env.oidcjwksEndpoint).toBe(process.env.REAL_OIDCJWKS_ENDPOINT)
-    expect(process.env.jwtPrivateKeyArn).toBe(process.env.REAL_JWT_PRIVATE_KEY_ARN)
-    expect(process.env.userPoolIdp).toBe(process.env.REAL_USER_POOL_IDP)
-    expect(process.env.useSignedJWT).toBe(process.env.REAL_USE_SIGNED_JWT)
-    expect(process.env.oidcClientId).toBe(process.env.REAL_OIDC_CLIENT_ID)
-    expect(process.env.oidcIssuer).toBe(process.env.REAL_OIDC_ISSUER)
-  })
+  it(
+    "should use real environment variables when MOCK_MODE_ENABLED is false " +
+    "and username does not start with Mock_",
+    async () => {
+      mockGetUsernameFromEvent.mockReturnValue("Primary_JohnDoe")
+      await handler(event, context)
+      expect(mockGetUsernameFromEvent).toHaveBeenCalled()
+      expect(process.env.idpTokenPath).toBe(process.env.REAL_IDP_TOKEN_PATH)
+      expect(process.env.userInfoEndpoint).toBe(process.env.REAL_USER_INFO_ENDPOINT)
+      expect(process.env.oidcjwksEndpoint).toBe(process.env.REAL_OIDCJWKS_ENDPOINT)
+      expect(process.env.jwtPrivateKeyArn).toBe(process.env.REAL_JWT_PRIVATE_KEY_ARN)
+      expect(process.env.userPoolIdp).toBe(process.env.REAL_USER_POOL_IDP)
+      expect(process.env.useSignedJWT).toBe(process.env.REAL_USE_SIGNED_JWT)
+      expect(process.env.oidcClientId).toBe(process.env.REAL_OIDC_CLIENT_ID)
+      expect(process.env.oidcIssuer).toBe(process.env.REAL_OIDC_ISSUER)
+    })
 
-  // eslint-disable-next-line max-len
-  it("should use mock environment variables when MOCK_MODE_ENABLED is true and username starts with Mock_", async () => {
-    process.env.MOCK_MODE_ENABLED = "true"
-    process.env.MOCK_IDP_TOKEN_PATH = "/mock/idp/token"
-    process.env.MOCK_USER_INFO_ENDPOINT = "https://mock-userinfo.com"
-    process.env.MOCK_OIDCJWKS_ENDPOINT = "https://mock-jwks.com"
-    process.env.MOCK_JWT_PRIVATE_KEY_ARN = "arn:aws:ssm:region:account-id:parameter/mock-key"
-    process.env.MOCK_USER_POOL_IDP = "MockPoolIdentityProvider"
-    process.env.MOCK_USE_SIGNED_JWT = "false"
-    process.env.MOCK_OIDC_CLIENT_ID = "mock-client-id"
-    process.env.MOCK_OIDC_ISSUER = "https://mock-oidc-issuer.com"
+  it(
+    "should use mock environment variables when MOCK_MODE_ENABLED is true " +
+    "and username starts with Mock_",
+    async () => {
+      process.env.MOCK_MODE_ENABLED = "true"
+      process.env.MOCK_IDP_TOKEN_PATH = "/mock/idp/token"
+      process.env.MOCK_USER_INFO_ENDPOINT = "https://mock-userinfo.com"
+      process.env.MOCK_OIDCJWKS_ENDPOINT = "https://mock-jwks.com"
+      process.env.MOCK_JWT_PRIVATE_KEY_ARN = "arn:aws:ssm:region:account-id:parameter/mock-key"
+      process.env.MOCK_USER_POOL_IDP = "MockPoolIdentityProvider"
+      process.env.MOCK_USE_SIGNED_JWT = "false"
+      process.env.MOCK_OIDC_CLIENT_ID = "mock-client-id"
+      process.env.MOCK_OIDC_ISSUER = "https://mock-oidc-issuer.com"
 
-    mockGetUsernameFromEvent.mockReturnValue("Mock_JaneDoe")
+      mockGetUsernameFromEvent.mockReturnValue("Mock_JaneDoe")
 
-    await handler(event, context)
-    expect(process.env.idpTokenPath).toBe(process.env.MOCK_IDP_TOKEN_PATH)
-    expect(process.env.userInfoEndpoint).toBe(process.env.MOCK_USER_INFO_ENDPOINT)
-    expect(process.env.oidcjwksEndpoint).toBe(process.env.MOCK_OIDCJWKS_ENDPOINT)
-    expect(process.env.jwtPrivateKeyArn).toBe(process.env.MOCK_JWT_PRIVATE_KEY_ARN)
-    expect(process.env.userPoolIdp).toBe(process.env.MOCK_USER_POOL_IDP)
-    expect(process.env.useSignedJWT).toBe(process.env.MOCK_USE_SIGNED_JWT)
-    expect(process.env.oidcClientId).toBe(process.env.MOCK_OIDC_CLIENT_ID)
-    expect(process.env.oidcIssuer).toBe(process.env.MOCK_OIDC_ISSUER)
-  })
+      await handler(event, context)
+      expect(process.env.idpTokenPath).toBe(process.env.MOCK_IDP_TOKEN_PATH)
+      expect(process.env.userInfoEndpoint).toBe(process.env.MOCK_USER_INFO_ENDPOINT)
+      expect(process.env.oidcjwksEndpoint).toBe(process.env.MOCK_OIDCJWKS_ENDPOINT)
+      expect(process.env.jwtPrivateKeyArn).toBe(process.env.MOCK_JWT_PRIVATE_KEY_ARN)
+      expect(process.env.userPoolIdp).toBe(process.env.MOCK_USER_POOL_IDP)
+      expect(process.env.useSignedJWT).toBe(process.env.MOCK_USE_SIGNED_JWT)
+      expect(process.env.oidcClientId).toBe(process.env.MOCK_OIDC_CLIENT_ID)
+      expect(process.env.oidcIssuer).toBe(process.env.MOCK_OIDC_ISSUER)
+    })
 
-  // eslint-disable-next-line max-len
-  it("should default to real environment variables if MOCK_MODE_ENABLED is true but username does not start with Mock_", async () => {
-    process.env.MOCK_MODE_ENABLED = "true"
-    mockGetUsernameFromEvent.mockReturnValue("Primary_JohnDoe")
-    await handler(event, context)
-    // Should still use real because username doesn't start with Mock_
-    expect(process.env.idpTokenPath).toBe(process.env.REAL_IDP_TOKEN_PATH)
-    expect(process.env.userInfoEndpoint).toBe(process.env.REAL_USER_INFO_ENDPOINT)
-    expect(process.env.oidcjwksEndpoint).toBe(process.env.REAL_OIDCJWKS_ENDPOINT)
-  })
+  it(
+    "should default to real environment variables if MOCK_MODE_ENABLED is true " +
+    "but username does not start with Mock_",
+    async () => {
+      process.env.MOCK_MODE_ENABLED = "true"
+      mockGetUsernameFromEvent.mockReturnValue("Primary_JohnDoe")
+      await handler(event, context)
+      // Should still use real because username doesn't start with Mock_
+      expect(process.env.idpTokenPath).toBe(process.env.REAL_IDP_TOKEN_PATH)
+      expect(process.env.userInfoEndpoint).toBe(process.env.REAL_USER_INFO_ENDPOINT)
+      expect(process.env.oidcjwksEndpoint).toBe(process.env.REAL_OIDCJWKS_ENDPOINT)
+    })
 
   it("should return 500 and log error when fetchAndVerifyCIS2Tokens throws an error", async () => {
     const error = new Error("Token verification failed")
