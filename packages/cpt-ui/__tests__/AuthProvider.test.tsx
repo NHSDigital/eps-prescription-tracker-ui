@@ -219,6 +219,37 @@ describe('AuthProvider', () => {
       hubCallback({ payload: { event: 'customOAuthState', data: 'my-custom-state' } });
     }
   });
+  
+  it('should handle expired tokens by setting isSignedIn to false and clearing user state', async () => {
+    // Create expired token payloads
+    const expiredIdTokenPayload = { exp: Math.floor(Date.now() / 1000) - 3600 };
+    const expiredAccessTokenPayload = { exp: Math.floor(Date.now() / 1000) - 3600 };
+
+    const expiredTokens = {
+      tokens: {
+        idToken: {
+          toString: () => `header.${btoa(JSON.stringify(expiredIdTokenPayload))}.signature`,
+          payload: expiredIdTokenPayload
+        },
+        accessToken: {
+          toString: () => `header.${btoa(JSON.stringify(expiredAccessTokenPayload))}.signature`,
+          payload: expiredAccessTokenPayload
+        }
+      }
+    };
+
+    await renderWithProvider({
+      sessionMock: expiredTokens,
+      userMock: { username: 'testuser' }
+    });
+
+    await waitFor(() => {
+      expect(screen.getByTestId('isSignedIn').textContent).toBe('false');
+      expect(screen.getByTestId('user').textContent).toBe('');
+      expect(screen.getByTestId('idToken').textContent).toBe('');
+      expect(screen.getByTestId('accessToken').textContent).toBe('');
+    });
+  });
 
   it('should provide cognitoSignIn and cognitoSignOut functions', async () => {
     let contextValue: any;
