@@ -36,13 +36,12 @@ jest.unstable_mockModule("@/userInfoHelpers", () => {
   })
 
   const updateDynamoTable = mockUpdateDynamoTable.mockImplementation(() => {})
-  
+
   return {
     fetchUserInfo,
     updateDynamoTable
   }
 })
-
 
 const {handler} = await import("@/handler")
 import {mockContext, mockAPIGatewayProxyEvent} from "./mockObjects"
@@ -63,7 +62,7 @@ describe("Lambda Handler Tests", () => {
     process.env.REAL_USE_SIGNED_JWT = "true"
     process.env.REAL_OIDC_CLIENT_ID = "real-client-id"
     process.env.REAL_OIDC_ISSUER = "https://real-oidc-issuer.com"
-  
+
     process.env.MOCK_IDP_TOKEN_PATH = "/mock/idp/token"
     process.env.MOCK_USER_INFO_ENDPOINT = "https://mock-userinfo.com"
     process.env.MOCK_OIDCJWKS_ENDPOINT = "https://mock-jwks.com"
@@ -90,6 +89,7 @@ describe("Lambda Handler Tests", () => {
     expect(body).toHaveProperty("userInfo")
   })
 
+  // eslint-disable-next-line max-len
   it("should use real environment variables when MOCK_MODE_ENABLED is false and username does not start with Mock_", async () => {
     mockGetUsernameFromEvent.mockReturnValue("Primary_JohnDoe")
     await handler(event, context)
@@ -104,6 +104,7 @@ describe("Lambda Handler Tests", () => {
     expect(process.env.oidcIssuer).toBe(process.env.REAL_OIDC_ISSUER)
   })
 
+  // eslint-disable-next-line max-len
   it("should use mock environment variables when MOCK_MODE_ENABLED is true and username starts with Mock_", async () => {
     process.env.MOCK_MODE_ENABLED = "true"
     process.env.MOCK_IDP_TOKEN_PATH = "/mock/idp/token"
@@ -114,7 +115,7 @@ describe("Lambda Handler Tests", () => {
     process.env.MOCK_USE_SIGNED_JWT = "false"
     process.env.MOCK_OIDC_CLIENT_ID = "mock-client-id"
     process.env.MOCK_OIDC_ISSUER = "https://mock-oidc-issuer.com"
-    
+
     mockGetUsernameFromEvent.mockReturnValue("Mock_JaneDoe")
 
     await handler(event, context)
@@ -128,6 +129,7 @@ describe("Lambda Handler Tests", () => {
     expect(process.env.oidcIssuer).toBe(process.env.MOCK_OIDC_ISSUER)
   })
 
+  // eslint-disable-next-line max-len
   it("should default to real environment variables if MOCK_MODE_ENABLED is true but username does not start with Mock_", async () => {
     process.env.MOCK_MODE_ENABLED = "true"
     mockGetUsernameFromEvent.mockReturnValue("Primary_JohnDoe")
@@ -141,7 +143,7 @@ describe("Lambda Handler Tests", () => {
   it("should return 500 and log error when fetchAndVerifyCIS2Tokens throws an error", async () => {
     const error = new Error("Token verification failed")
     mockFetchAndVerifyCIS2Tokens.mockImplementation(async () => Promise.reject(error))
-    
+
     console.log("???????????????????????")
     const response = await handler(event, context)
     console.log("response")
@@ -165,7 +167,9 @@ describe("Lambda Handler Tests", () => {
 
   it("should return 500 and log error when updateDynamoTable throws an error", async () => {
     const error = new Error("Dynamo update failed")
-    mockUpdateDynamoTable.mockImplementation(() => { throw error })
+    mockUpdateDynamoTable.mockImplementation(() => {
+      throw error
+    })
 
     const response = await handler(event, context)
     expect(response.statusCode).toBe(500)
@@ -174,7 +178,9 @@ describe("Lambda Handler Tests", () => {
   })
 
   it("should handle unexpected error types gracefully", async () => {
-    mockUpdateDynamoTable.mockImplementation(() => { throw "Unexpected error string" })
+    mockUpdateDynamoTable.mockImplementation(() => {
+      throw "Unexpected error string"
+    })
 
     const response = await handler(event, context)
     expect(response.statusCode).toBe(500)
@@ -205,6 +211,11 @@ describe("Lambda Handler Tests", () => {
     })
 
     await handler(event, context)
-    expect(mockUpdateDynamoTable).toHaveBeenCalledWith(testUsername, userInfoMock, expect.any(Object), expect.any(Object))
+    expect(mockUpdateDynamoTable).toHaveBeenCalledWith(
+      testUsername,
+      userInfoMock,
+      expect.any(Object),
+      expect.any(Object)
+    )
   })
 })
