@@ -23,14 +23,12 @@ export type TrackerUserInfo = {
     currently_selected_role?: RoleDetails;
 };
 
-import {staticRoleData} from "./test_data";
-
 const trackerUserInfoEndpoint = "/api/tracker-user-info"
 
 export default function SelectYourRolePage() {
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string|null>(null)
-    const [trackerUserInfoData, setTrackerUserInfoData] = useState<TrackerUserInfo|null>(staticRoleData)
+    const [trackerUserInfoData, setTrackerUserInfoData] = useState<TrackerUserInfo|null>(null)
 
     const auth = useContext(AuthContext);
 
@@ -53,7 +51,7 @@ export default function SelectYourRolePage() {
                 }
             })
             const data = await response.json()
-            setTrackerUserInfoData(data)
+            setTrackerUserInfoData(data.userInfo)
         } catch (err) {
             setError("Failed to fetch CPT user info")
             console.error("error fetching tracker user info:", err)
@@ -105,7 +103,7 @@ export default function SelectYourRolePage() {
         );
     }
 
-    const { title, caption, insetText, confirmButton, alternativeMessage, organisation, role } =
+    const { title, caption, insetText, confirmButton, alternativeMessage, rolesWithoutAccess, organisation, role } =
         SELECT_ROLE_PAGE_TEXT;
 
     return (
@@ -162,7 +160,7 @@ export default function SelectYourRolePage() {
                         <Row>
                             <Details expander>
                                 <Details.Summary>
-                                    Roles without access
+                                    {rolesWithoutAccess}
                                 </Details.Summary>
                                 <Details.Text>
                                     <Table>
