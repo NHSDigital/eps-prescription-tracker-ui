@@ -4,6 +4,7 @@ import React from "react";
 import { Container, Col, Row, Tabs } from "nhsuk-react-components";
 
 export default function Page() {
+
     return (
 
         <main className="nhsuk-main-wrapper">
@@ -38,5 +39,5 @@ export default function Page() {
                 </Row>
             </Container>
         </main>
-    )
+    );
 }
