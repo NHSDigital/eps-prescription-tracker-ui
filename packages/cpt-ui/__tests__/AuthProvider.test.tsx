@@ -76,7 +76,7 @@ describe('AuthProvider', () => {
     userMock?: any | null; // userMock can be `null` or `any`
     TestComponent?: JSX.Element;
   };
-  
+
   const renderWithProvider = async ({
     sessionMock = { tokens: {} },
     userMock = null,
@@ -180,6 +180,36 @@ describe('AuthProvider', () => {
 
     await waitFor(() => {
       expect(screen.getByTestId('error').textContent).toBe('An error has occurred during the OAuth flow.');
+    });
+  });
+
+  it('should handle tokenRefresh event successfully', async () => {
+    await renderWithProvider({
+      sessionMock: createTokenMocks(),
+      userMock: { username: 'testuser' }
+    });
+
+    await waitFor(() => {
+      expect(screen.getByTestId('isSignedIn').textContent).toBe('true');
+      expect(screen.getByTestId('user').textContent).toBe('UserPresent');
+      expect(screen.getByTestId('idToken').textContent).toBe('IdTokenPresent');
+      expect(screen.getByTestId('accessToken').textContent).toBe('AccessTokenPresent');
+    });
+
+    // Now simulate a token refresh event
+    (fetchAuthSession as jest.Mock).mockResolvedValueOnce(createTokenMocks());
+    (getCurrentUser as jest.Mock).mockResolvedValue({ username: 'testuser' });
+
+    // Trigger the tokenRefresh Hub event
+    if (hubCallback) {
+      hubCallback({ payload: { event: 'tokenRefresh' } });
+    }
+
+    // After the tokenRefresh event, ensure no error and user remains signed in
+    await waitFor(() => {
+      expect(screen.getByTestId('error').textContent).toBe('');
+      expect(screen.getByTestId('isSignedIn').textContent).toBe('true');
+      expect(screen.getByTestId('user').textContent).toBe('UserPresent');
     });
   });
 
