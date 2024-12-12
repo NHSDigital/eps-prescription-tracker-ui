@@ -131,7 +131,7 @@ export default function SelectYourRolePage() {
                         <Row>
                             <Col width="full">
                                 {/* Inset Text Section */}
-                                <section role="contentinfo" aria-label="Login Information">
+                                <section aria-label="Login Information">
                                     <InsetText>
                                         <span className="nhsuk-u-visually-hidden">{insetText.visuallyHidden}</span>
                                         <p>{insetText.message}</p>
