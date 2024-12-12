@@ -18,7 +18,7 @@ function App() {
   const [isSignedIn, setIsSignedIn] = useState<boolean>(false)
   const [idToken, setIdToken] = useState<JWT>(null)
   const [accessToken, setAccessToken] = useState<JWT>(null)
-  const [trackerUserInfoData, setTrackerUserInfoData] = useState<JWT>(null)
+  const [trackerUserInfoData, setTrackerUserInfoData] = useState(null)
   const [loading, setLoading] = useState<boolean>(false)
 
   useEffect(() => {

@@ -92,13 +92,22 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         case "signedIn":
           console.log("User %s logged in", payload.data.username);
           setError(null);
+          break;
         case "tokenRefresh":
           console.log("Refreshing token");
+          setError(null);
+          break;
         case "signInWithRedirect":
           setError(null);
           break;
 
         case "tokenRefresh_failure":
+          setError("An error has occurred during the OAuth flow.");
+          setIsSignedIn(false);
+          setUser(null);
+          setIdToken(null);
+          setAccessToken(null);
+          break;
         case "signInWithRedirect_failure":
           setError("An error has occurred during the OAuth flow.");
           setIsSignedIn(false);
