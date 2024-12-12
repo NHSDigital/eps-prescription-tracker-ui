@@ -36,5 +36,7 @@ export const SELECT_ROLE_PAGE_TEXT = {
     text: "Confirm and continue to find a prescription",
     link: "tracker-presc-no"
   },
-  alternativeMessage: "Alternatively, you can choose a new role below."
+  alternativeMessage: "Alternatively, you can choose a new role below.",
+  organisation: "Organisation",
+  role: "Role"
 }

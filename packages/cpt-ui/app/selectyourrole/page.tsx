@@ -105,7 +105,7 @@ export default function SelectYourRolePage() {
         );
     }
 
-    const { title, caption, insetText, confirmButton, alternativeMessage } =
+    const { title, caption, insetText, confirmButton, alternativeMessage, organisation, role } =
         SELECT_ROLE_PAGE_TEXT;
 
     return (
@@ -168,8 +168,8 @@ export default function SelectYourRolePage() {
                                     <Table>
                                         <Table.Head>
                                             <Table.Row>
-                                                <Table.Cell>Organisation</Table.Cell>
-                                                <Table.Cell>Role</Table.Cell>
+                                                <Table.Cell>{organisation}</Table.Cell>
+                                                <Table.Cell>{role}</Table.Cell>
                                             </Table.Row>
                                         </Table.Head>
                                         <Table.Body>
