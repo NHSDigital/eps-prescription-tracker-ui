@@ -27,12 +27,49 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   logger.appendKeys({"apigw-request-id": event.requestContext?.requestId})
   logger.info("Lambda handler invoked", {event})
 
-  try {
-    // Fetch and verify CIS2 tokens
-    const {cis2AccessToken, cis2IdToken} = await fetchAndVerifyCIS2Tokens(event, documentClient, logger)
-    logger.info("CIS2 tokens fetched and verified", {cis2AccessToken, cis2IdToken})
+  const MOCK_MODE_ENABLED = process.env["MOCK_MODE_ENABLED"]
 
-    logger.info("Making UserInfo request")
+  // Mock usernames start with "Mock_", and real requests use usernames starting with "Primary_"
+  const username = getUsernameFromEvent(event)
+  const isMockToken = username.startsWith("Mock_")
+
+  // Determine whether this request should be treated as mock or real.
+  const isMockRequest = MOCK_MODE_ENABLED === "true" && isMockToken
+
+  logger.info("Is this a mock request?", {isMockRequest})
+
+  // set environment variables
+  process.env.idpTokenPath = isMockRequest
+    ? process.env.MOCK_IDP_TOKEN_PATH
+    : process.env.REAL_IDP_TOKEN_PATH
+
+  process.env.userInfoEndpoint = isMockRequest
+    ? process.env.MOCK_USER_INFO_ENDPOINT
+    : process.env.REAL_USER_INFO_ENDPOINT
+  process.env.oidcjwksEndpoint = isMockRequest
+    ? process.env.MOCK_OIDCJWKS_ENDPOINT
+    : process.env.REAL_OIDCJWKS_ENDPOINT
+
+  process.env.jwtPrivateKeyArn = isMockRequest
+    ? process.env.MOCK_JWT_PRIVATE_KEY_ARN
+    : process.env.REAL_JWT_PRIVATE_KEY_ARN
+  process.env.userPoolIdp = isMockRequest
+    ? process.env.MOCK_USER_POOL_IDP
+    : process.env.REAL_USER_POOL_IDP
+  process.env.useSignedJWT = isMockRequest
+    ? process.env.MOCK_USE_SIGNED_JWT
+    : process.env.REAL_USE_SIGNED_JWT
+  process.env.oidcClientId = isMockRequest
+    ? process.env.MOCK_OIDC_CLIENT_ID
+    : process.env.REAL_OIDC_CLIENT_ID
+  process.env.oidcIssuer = isMockRequest
+    ? process.env.MOCK_OIDC_ISSUER
+    : process.env.REAL_OIDC_ISSUER
+
+  try {
+    // eslint-disable-next-line
+    const {cis2AccessToken, cis2IdToken} = await fetchAndVerifyCIS2Tokens(event, documentClient, logger)
+
     const userInfoResponse = await fetchUserInfo(
       cis2AccessToken,
       CPT_ACCESS_ACTIVITY_CODES,
@@ -40,11 +77,8 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
       logger
     )
 
-    logger.info("UserInfo response received", {userInfoResponse})
-
     const username = getUsernameFromEvent(event)
     updateDynamoTable(username, userInfoResponse, documentClient, logger)
-    logger.info("Updated DynamoDB table with user info", {username})
 
     return {
       statusCode: 200,
@@ -59,6 +93,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     } else {
       logger.error("Unknown error occurred in Lambda handler", {error: String(error)})
     }
+    logger.info("trackerUserInfo success!")
     return {
       statusCode: 500,
       body: JSON.stringify({message: "Internal server error"})

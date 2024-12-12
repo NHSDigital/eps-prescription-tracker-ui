@@ -12,7 +12,7 @@ export default function EpsFooter() {
 
     useEffect(() => {
         console.log("Viewing site version of commit ID:", COMMIT_ID)
-    }, [COMMIT_ID])
+    }, [])
 
     return (
         <Footer id="eps_footer" className="eps_footer">
