@@ -4,59 +4,54 @@ import "../assets/styles/card.scss";
 
 // Define props type
 interface EpsCardProps {
-    name: string;
+    orgName: string;
     odsCode: string;
-    address: string | null;
-    specialty: string;
+    siteAddress: string | null;
+    roleName: string;
     link: string;
 }
 
 export default function EpsCard({
-    name,
+    orgName,
     odsCode,
-    address,
-    specialty,
+    siteAddress,
+    roleName,
     link,
 }: EpsCardProps) {
     return (
-        <Card className="eps-card nhsuk-card--clickable" clickable>
-            <a href={link} className="nhsuk-card__link">
+        <Card className="eps-card nhsuk-card--clickable eps-card__link" clickable>
                 <Card.Content>
                     <div className="nhsuk-grid-row eps-card__content">
-                        {/* Left Column: Name and Specialty */}
+                        {/* Left Column: org_name and role_name */}
                         <div className="nhsuk-grid-column-one-half eps-card__left">
                             <Card.Heading>
-                                <span className="eps-card__name">
-                                    {name} (ODS: {odsCode})
-                                </span>
+                                <a href={link} >
+                                    <span className="eps-card__orgName">
+                                        {orgName} (ODS: {odsCode})
+                                    </span>
+                                </a>
                             </Card.Heading>
-                            <Card.Description className="eps-card__specialty">
-                                {specialty}
+                            <Card.Description className="eps-card__roleName">
+                                {roleName}
                             </Card.Description>
                         </div>
                         {/* Right Column: Address */}
                         <div className="nhsuk-grid-column-one-half eps-card__right">
-                            <Card.Description className="eps-card__address">
-                                {address ? (
-                                    address.split("\n").map(
-                                        (line: string, index: number) => (
-                                            <span
-                                                key={index}
-                                                className="eps-card__address-line"
-                                            >
-                                                {line}
-                                                <br />
-                                            </span>
-                                        )
-                                    )
-                                ) : (
-                                    <span>No address found</span>
-                                )}
+                            <Card.Description className="eps-card__siteAddress">
+                                {siteAddress &&
+                                    siteAddress.split("\n").map((line: string, index: number) => (
+                                        <span
+                                            key={index}
+                                            className="eps-card__siteAddress-line"
+                                        >
+                                            {line}
+                                            <br />
+                                        </span>
+                                    ))}
                             </Card.Description>
                         </div>
                     </div>
                 </Card.Content>
-            </a>
         </Card>
     );
 }

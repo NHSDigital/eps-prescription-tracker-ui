@@ -3,10 +3,7 @@ import React, {useState, useEffect, useContext, useCallback } from "react"
 import { Container, Col, Row, Details, Table, ErrorSummary, Button, InsetText } from "nhsuk-react-components"
 import { AuthContext } from "@/context/AuthContext";
 import EpsCard from "@/components/EpsCard";
-import {
-  ROLE_CARDS,
-  SELECT_ROLE_PAGE_TEXT,
-} from "@/constants/ui-strings/CardStrings";
+import {SELECT_ROLE_PAGE_TEXT} from "@/constants/ui-strings/CardStrings";
 
 export type RoleDetails = {
     role_name?: string;
@@ -159,19 +156,22 @@ export default function SelectYourRolePage() {
 
                         {/* Roles with access Section */}
                         <Row>
-                            {ROLE_CARDS.map((role, index) => (
+                            {trackerUserInfoData?.roles_without_access?.map((role, index) => (
                                 <Col width="two-thirds" key={index}>
                                     <EpsCard
-                                        name={role.name}
-                                        odsCode={role.odsCode}
-                                        address={role.address}
-                                        specialty={role.specialty}
-                                        link={role.link}
+                                        orgName={role.org_name ? role.org_name : "No Org Name"}
+                                        odsCode={role.org_code ? role.org_code : "No ODS Code"} // Provide a default string
+                                        siteAddress={role.site_address ? role.site_address : "Address not found"}
+                                        roleName={
+                                            role.role_name 
+                                                ? String(role.role_name).split(":").pop()?.replace(/['"]+/g, "").trim() || "No Role Name"
+                                                : "No Role Name"
+                                        }
+                                        link="/selectrole"
                                     />
                                 </Col>
                             ))}
                         </Row>
-
                         {/* Roles without access Section */}
                         <Row>
                             <Details expander>
