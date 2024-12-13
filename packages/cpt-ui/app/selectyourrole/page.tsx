@@ -23,14 +23,12 @@ export type TrackerUserInfo = {
     currently_selected_role?: RoleDetails;
 };
 
-import {staticRoleData} from "./test_data";
-
 const trackerUserInfoEndpoint = "/api/tracker-user-info"
 
 export default function SelectYourRolePage() {
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string|null>(null)
-    const [trackerUserInfoData, setTrackerUserInfoData] = useState<TrackerUserInfo|null>(staticRoleData)
+    const [trackerUserInfoData, setTrackerUserInfoData] = useState<TrackerUserInfo|null>(null)
 
     const auth = useContext(AuthContext);
 
