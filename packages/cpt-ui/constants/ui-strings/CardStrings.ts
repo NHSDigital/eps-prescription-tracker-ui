@@ -37,7 +37,6 @@ export const SELECT_ROLE_PAGE_TEXT = {
     link: "tracker-presc-no"
   },
   alternativeMessage: "Alternatively, you can choose a new role below.",
-  rolesWithoutAccess: "Roles without access",
   organisation: "Organisation",
   role: "Role"
 }

@@ -50,7 +50,17 @@ export default function SelectYourRolePage() {
                     'NHSD-Session-URID': '555254242106'
                 }
             })
+            
+            if (response.status !== 200) {
+                throw new Error("Server did not return CPT user info")
+            }
+
             const data = await response.json()
+
+            if (!data.userInfo) {
+                throw new Error("Server response did not contain data")
+            }
+
             setTrackerUserInfoData(data.userInfo)
         } catch (err) {
             setError("Failed to fetch CPT user info")
@@ -63,6 +73,8 @@ export default function SelectYourRolePage() {
     useEffect(() => {
         if (auth?.isSignedIn) {
             fetchTrackerUserInfo()
+        } else {
+            setError("No login session found")
         }
     }, [auth?.isSignedIn, fetchTrackerUserInfo])
 
@@ -103,7 +115,7 @@ export default function SelectYourRolePage() {
         );
     }
 
-    const { title, caption, insetText, confirmButton, alternativeMessage, rolesWithoutAccess, organisation, role } =
+    const { title, caption, insetText, confirmButton, alternativeMessage, organisation, role } =
         SELECT_ROLE_PAGE_TEXT;
 
     return (
@@ -160,7 +172,7 @@ export default function SelectYourRolePage() {
                         <Row>
                             <Details expander>
                                 <Details.Summary>
-                                    {rolesWithoutAccess}
+                                    Roles without access
                                 </Details.Summary>
                                 <Details.Text>
                                     <Table>
