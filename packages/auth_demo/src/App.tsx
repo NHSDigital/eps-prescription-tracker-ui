@@ -10,7 +10,6 @@ import { authConfig } from './configureAmplify'
 Amplify.configure(authConfig, { ssr: true })
 
 const trackerUserInfoEndpoint = "/api/tracker-user-info"
-const mockTrackerUserInfoEndpoint = "/api/mock-tracker-user-info"
 
 function App() {
   const [user, setUser] = useState(null)
@@ -66,14 +65,13 @@ function App() {
     }
   }
 
-  const fetchTrackerUserInfo = async (isMock: boolean) => {
+  const fetchTrackerUserInfo = async () => {
     setLoading(true)
     setTrackerUserInfoData(null)
     setError(null)
 
-    let endpoint = isMock ? mockTrackerUserInfoEndpoint : trackerUserInfoEndpoint
     try {
-      const response = await axios.get(endpoint, {
+      const response = await axios.get(trackerUserInfoEndpoint, {
         headers: {
           Authorization: `Bearer ${idToken}`,
           'NHSD-Session-URID': '555254242106'
@@ -108,18 +106,10 @@ function App() {
 
       <div style={{ marginTop: '20px' }}>
         <button
-          onClick={() => fetchTrackerUserInfo(false)}
+          onClick={fetchTrackerUserInfo}
           disabled={!isSignedIn}
         >
           Fetch Tracker User Info
-        </button>
-      </div>
-      <div style={{ marginTop: '20px' }}>
-        <button
-          onClick={() => fetchTrackerUserInfo(true)}
-          disabled={!isSignedIn}
-        >
-          Fetch Mock Tracker User Info
         </button>
       </div>
 
