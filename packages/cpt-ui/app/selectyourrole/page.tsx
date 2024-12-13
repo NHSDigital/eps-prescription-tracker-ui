@@ -73,6 +73,8 @@ export default function SelectYourRolePage() {
     useEffect(() => {
         if (auth?.isSignedIn) {
             fetchTrackerUserInfo()
+        } else {
+            setError("No login session found")
         }
     }, [auth?.isSignedIn, fetchTrackerUserInfo])
 
