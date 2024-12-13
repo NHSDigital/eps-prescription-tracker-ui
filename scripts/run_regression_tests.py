@@ -12,7 +12,7 @@ import requests
 import time
 
 # This should be set to a known good version of regression test repo
-REGRESSION_TESTS_REPO_TAG = "main"
+REGRESSION_TESTS_REPO_TAG = "aea-4653-roles-without-access"
 
 GITHUB_API_URL = "https://api.github.com/repos/NHSDigital/electronic-prescription-service-api-regression-tests/actions"
 
