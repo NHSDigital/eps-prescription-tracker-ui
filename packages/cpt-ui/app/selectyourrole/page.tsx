@@ -71,6 +71,10 @@ export default function SelectYourRolePage() {
     }, [auth])
 
     useEffect(() => {
+        if (auth?.isSignedIn === undefined) {
+            return
+        }
+    
         if (auth?.isSignedIn) {
             fetchTrackerUserInfo()
         } else {
