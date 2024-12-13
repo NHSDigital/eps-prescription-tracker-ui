@@ -12,7 +12,7 @@ import requests
 import time
 
 # This should be set to a known good version of regression test repo
-REGRESSION_TESTS_REPO_TAG = "chore/AEA-4518-Set-up-the-Tab-and-Content-Area"
+REGRESSION_TESTS_REPO_TAG = "v2.0.9"
 
 GITHUB_API_URL = "https://api.github.com/repos/NHSDigital/electronic-prescription-service-api-regression-tests/actions"
 
