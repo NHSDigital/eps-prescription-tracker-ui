@@ -52,8 +52,18 @@ export default function SelectYourRolePage() {
                     'NHSD-Session-URID': '555254242106'
                 }
             })
+            
+            if (response.status !== 200) {
+                throw new Error("Server did not return CPT user info")
+            }
+
             const data = await response.json()
-            setTrackerUserInfoData(data)
+
+            if (!data.userInfo) {
+                throw new Error("Server response did not contain data")
+            }
+
+            setTrackerUserInfoData(data.userInfo)
         } catch (err) {
             setError("Failed to fetch CPT user info")
             console.error("error fetching tracker user info:", err)
