@@ -1,6 +1,6 @@
 'use client'
 import React, {useState, useEffect, useContext, useCallback } from "react"
-import { Container, Col, Row, Details, Table, ErrorSummary, Button, InsetText, Label } from "nhsuk-react-components"
+import { Container, Col, Row, Details, Table, ErrorSummary, Button, InsetText } from "nhsuk-react-components"
 import { AuthContext } from "@/context/AuthContext";
 import EpsCard from "@/components/EpsCard";
 import {SELECT_ROLE_PAGE_TEXT} from "@/constants/ui-strings/CardStrings";
@@ -125,23 +125,25 @@ export default function SelectYourRolePage() {
                 {/* Title Section */}
                 <Row>
                     <Col width="two-thirds">
-                            <Label size="xl">
-                                <span role="text">
-                                    {title}
-                                    <span className="nhsuk-caption-l nhsuk-caption--bottom">
-                                        <span className="nhsuk-u-visually-hidden"> - </span>
-                                        {caption}
-                                    </span></span></Label >
-                            {/* Inset Text Section */}
-                            <section aria-label="Login Information">
-                                <InsetText>
-                                    <span className="nhsuk-u-visually-hidden">{insetText.visuallyHidden}</span>
-                                    <p>{insetText.message}</p>
-                                </InsetText>
-                                {/* Confirm Button */}
-                                <Button href={confirmButton.link}>{confirmButton.text}</Button>
-                                <p>{alternativeMessage}</p>
-                            </section>
+                        <h1 className='nhsuk-heading-xl '>
+                            <span role="text">
+                                {title}
+                                <span className="nhsuk-caption-l nhsuk-caption--bottom">
+                                    <span className="nhsuk-u-visually-hidden"> - </span>
+                                    {caption}
+                                </span>
+                            </span>
+                        </h1 >
+                        {/* Inset Text Section */}
+                        <section aria-label="Login Information">
+                            <InsetText>
+                                <span className="nhsuk-u-visually-hidden">{insetText.visuallyHidden}</span>
+                                <p>{insetText.message}</p>
+                            </InsetText>
+                            {/* Confirm Button */}
+                            <Button href={confirmButton.link}>{confirmButton.text}</Button>
+                            <p>{alternativeMessage}</p>
+                        </section>
                     </Col>
 
                     {/* Roles with access Section */}
