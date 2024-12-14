@@ -12,7 +12,7 @@ import requests
 import time
 
 # This should be set to a known good version of regression test repo
-REGRESSION_TESTS_REPO_TAG = "main"
+REGRESSION_TESTS_REPO_TAG = "AEA-4465-call-ui-back-end-from-clinical-tracker-ui"
 
 GITHUB_API_URL = "https://api.github.com/repos/NHSDigital/electronic-prescription-service-api-regression-tests/actions"
 
