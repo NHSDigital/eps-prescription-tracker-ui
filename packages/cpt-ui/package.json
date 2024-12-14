@@ -13,7 +13,7 @@
     "dependencies": {
         "i18next": "^23.16.8",
         "i18next-browser-languagedetector": "^8.0.0",
-        "i18next-http-backend": "^2.6.2",
+        "i18next-http-backend": "^3.0.1",
         "next": "15.0.3",
         "nhsuk-react-components": "^5.0.0",
         "react": "^18",
@@ -28,7 +28,7 @@
         "@types/node": "^22",
         "@types/react": "^18",
         "@types/react-dom": "^18",
-        "babel-plugin-formatjs": "^10.5.26",
+        "babel-plugin-formatjs": "^10.5.29",
         "eslint-config-next": "15.0.3"
     }
 }
