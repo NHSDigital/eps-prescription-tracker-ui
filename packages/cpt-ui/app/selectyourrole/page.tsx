@@ -1,6 +1,6 @@
 'use client'
 import React, {useState, useEffect, useContext, useCallback } from "react"
-import { Container, Col, Row, Details, Table, ErrorSummary, Button, InsetText } from "nhsuk-react-components"
+import { Container, Col, Row, Details, Table, ErrorSummary, Button, InsetText, Label } from "nhsuk-react-components"
 import { AuthContext } from "@/context/AuthContext";
 import EpsCard from "@/components/EpsCard";
 import {SELECT_ROLE_PAGE_TEXT} from "@/constants/ui-strings/CardStrings";
@@ -82,7 +82,7 @@ export default function SelectYourRolePage() {
     // If the data is being fetched, replace the content with a spinner
     if (loading) {
         return (
-            <main className="nhsuk-main-wrapper">
+            <main id="main-content" className="nhsuk-main-wrapper">
                 <Container>
                     <Row>
                         <Col width="full">
@@ -97,7 +97,7 @@ export default function SelectYourRolePage() {
     // If the process encounters an error, replace the content with an error summary
     if (error) {
         return (
-            <main className="nhsuk-main-wrapper">
+            <main id="main-content" className="nhsuk-main-wrapper">
                 <Container>
                     <Row>
                         <ErrorSummary>
@@ -120,89 +120,79 @@ export default function SelectYourRolePage() {
         SELECT_ROLE_PAGE_TEXT;
 
     return (
-        <main className="nhsuk-main-wrapper">
-            <Container>
+        <main id="main-content" className="nhsuk-main-wrapper">
+            <Container role="contentinfo">
                 {/* Title Section */}
                 <Row>
-                    <Col width="full">
-                        <h1 className='nhsuk-heading-xl'>
-                            <span role="text">
-                                {title}
-                                <span className="nhsuk-caption-l nhsuk-caption--bottom">
-                                    <span className="nhsuk-u-visually-hidden"> - </span>
-                                    {caption}
-                                </span>
-                            </span>
-                        </h1>
+                    <Col width="two-thirds">
+                            <Label size="xl">
+                                <span role="text">
+                                    {title}
+                                    <span className="nhsuk-caption-l nhsuk-caption--bottom">
+                                        <span className="nhsuk-u-visually-hidden"> - </span>
+                                        {caption}
+                                    </span></span></Label >
+                            {/* Inset Text Section */}
+                            <section aria-label="Login Information">
+                                <InsetText>
+                                    <span className="nhsuk-u-visually-hidden">{insetText.visuallyHidden}</span>
+                                    <p>{insetText.message}</p>
+                                </InsetText>
+                                {/* Confirm Button */}
+                                <Button href={confirmButton.link}>{confirmButton.text}</Button>
+                                <p>{alternativeMessage}</p>
+                            </section>
                     </Col>
-                </Row>
 
-                <Row>
-                    <Container role="contentinfo">
-                        <Row>
-                            <Col width="full">
-                                {/* Inset Text Section */}
-                                <section aria-label="Login Information">
-                                    <InsetText>
-                                        <span className="nhsuk-u-visually-hidden">{insetText.visuallyHidden}</span>
-                                        <p>{insetText.message}</p>
-                                    </InsetText>
-                                    {/* Confirm Button */}
-                                    <Button href={confirmButton.link}>{confirmButton.text}</Button>
-                                    <p>{alternativeMessage}</p>
-                                </section>
-                            </Col>
-                        </Row>
+                    {/* Roles with access Section */}
+                    <Col width="two-thirds">
+                    <div className="section" >
+                        {trackerUserInfoData?.roles_without_access?.map((role, index) => (
+                                <EpsCard key={index}
+                                    orgName={role.org_name ? role.org_name : "No Org Name"}
+                                    odsCode={role.org_code ? role.org_code : "No ODS Code"}
+                                    siteAddress={role.site_address ? role.site_address : "Address not found"}
+                                    roleName={
+                                        role.role_name 
+                                            ? String(role.role_name).split(":").pop()?.replace(/['"]+/g, "").trim() || "No Role Name"
+                                            : "No Role Name"
+                                    }
+                                    link="site/selectrole"
+                                />
+                        ))}
+                    </div>
+                    </Col>
 
-                        {/* Roles with access Section */}
-                        <Row>
-                            {trackerUserInfoData?.roles_without_access?.map((role, index) => (
-                                <Col width="two-thirds" key={index}>
-                                    <EpsCard
-                                        orgName={role.org_name ? role.org_name : "No Org Name"}
-                                        odsCode={role.org_code ? role.org_code : "No ODS Code"} // Provide a default string
-                                        siteAddress={role.site_address ? role.site_address : "Address not found"}
-                                        roleName={
-                                            role.role_name 
-                                                ? String(role.role_name).split(":").pop()?.replace(/['"]+/g, "").trim() || "No Role Name"
-                                                : "No Role Name"
-                                        }
-                                        link="/selectrole"
-                                    />
-                                </Col>
-                            ))}
-                        </Row>
-                        {/* Roles without access Section */}
-                        <Row>
-                            <Details expander>
-                                <Details.Summary>
-                                    Roles without access
-                                </Details.Summary>
-                                <Details.Text>
-                                    <Table>
-                                        <Table.Head>
-                                            <Table.Row>
-                                                <Table.Cell>{organisation}</Table.Cell>
-                                                <Table.Cell>{role}</Table.Cell>
+                    {/* Roles without access Section */}
+                    <Col width="two-thirds">
+                        <Details expander>
+                            <Details.Summary>
+                                Roles without access
+                            </Details.Summary>
+                            <Details.Text>
+                                <Table>
+                                    <Table.Head>
+                                        <Table.Row>
+                                            <Table.Cell>{organisation}</Table.Cell>
+                                            <Table.Cell>{role}</Table.Cell>
+                                        </Table.Row>
+                                    </Table.Head>
+                                    <Table.Body>
+                                        {trackerUserInfoData?.roles_without_access?.map((role, index) => (
+                                            <Table.Row key={index}>
+                                                <Table.Cell>
+                                                    {role.org_name ? role.org_name : "NO ORG NAME"} (ODS: {role.org_code})
+                                                </Table.Cell>
+                                                <Table.Cell>
+                                                    {role.role_name}
+                                                </Table.Cell>
                                             </Table.Row>
-                                        </Table.Head>
-                                        <Table.Body>
-                                            {trackerUserInfoData?.roles_without_access?.map((role, index) => (
-                                                <Table.Row key={index}>
-                                                    <Table.Cell>
-                                                        {role.org_name ? role.org_name : "NO ORG NAME"} (ODS: {role.org_code})
-                                                    </Table.Cell>
-                                                    <Table.Cell>
-                                                        {role.role_name}
-                                                    </Table.Cell>
-                                                </Table.Row>
-                                            ))}
-                                        </Table.Body>
-                                    </Table>
-                                </Details.Text>
-                            </Details>
-                        </Row>
-                    </Container>
+                                        ))}
+                                    </Table.Body>
+                                </Table>
+                            </Details.Text>
+                        </Details>
+                    </Col>
                 </Row>
             </Container>
         </main>
