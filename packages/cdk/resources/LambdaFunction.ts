@@ -6,7 +6,7 @@ import {
   ServicePrincipal
 } from "aws-cdk-lib/aws-iam"
 import {NodejsFunction} from "aws-cdk-lib/aws-lambda-nodejs"
-import {Runtime} from "aws-cdk-lib/aws-lambda"
+import {CfnFunction, LayerVersion, Runtime} from "aws-cdk-lib/aws-lambda"
 import {Fn, RemovalPolicy} from "aws-cdk-lib"
 import {Key} from "aws-cdk-lib/aws-kms"
 import {
@@ -15,7 +15,6 @@ import {
   SubscriptionFilter,
   FilterPattern
 } from "aws-cdk-lib/aws-logs"
-import {CfnFunction, LayerVersion} from "aws-cdk-lib/aws-lambda"
 import {KinesisDestination} from "aws-cdk-lib/aws-logs-destinations"
 import {Stream} from "aws-cdk-lib/aws-kinesis"
 import {Construct} from "constructs"
