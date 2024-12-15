@@ -26,7 +26,7 @@ export const exchangeTokenForApigeeAccessToken = async (
       headers: {"Content-Type": "application/x-www-form-urlencoded"}
     })
 
-    if (!response.data || !response.data.access_token || !response.data.expires_in) {
+    if (!response.data?.access_token || !response.data?.expires_in) {
       logger.error("Invalid response from Apigee token endpoint", {response: response.data})
       throw new Error("Invalid response from Apigee token endpoint")
     }
@@ -80,7 +80,8 @@ export const updateApigeeAccessToken = async (
       new UpdateCommand({
         TableName: tableName,
         Key: {username},
-        UpdateExpression: "SET Apigee_accessToken = :apigeeAccessToken, Apigee_expiresIn = :apigeeExpiresIn",
+        UpdateExpression:
+          "SET Apigee_accessToken = :apigeeAccessToken, Apigee_expiresIn = :apigeeExpiresIn",
         ExpressionAttributeValues: {
           ":apigeeAccessToken": accessToken,
           ":apigeeExpiresIn": currentTime + expiresIn
