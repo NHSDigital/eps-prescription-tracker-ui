@@ -8,7 +8,11 @@ import {mockClient} from "aws-sdk-client-mock"
 const dynamoDbMock = mockClient(DynamoDBDocumentClient)
 
 describe("cis2TokenUtils", () => {
-  const mockLogger = {info: jest.fn(), error: jest.fn()} as unknown as Logger
+  const mockLogger = {
+    info: jest.fn(),
+    error: jest.fn(),
+    debug: jest.fn()
+  } as unknown as Logger
 
   beforeEach(() => {
     jest.clearAllMocks()
@@ -41,7 +45,7 @@ describe("cis2TokenUtils", () => {
       } as unknown as APIGatewayProxyEvent
 
       expect(() => getUsernameFromEvent(invalidEvent)).toThrow(
-        "Unable to extract username from Cognito claims."
+        "Unable to extract username from Cognito claims"
       )
     })
   })
@@ -63,31 +67,45 @@ describe("cis2TokenUtils", () => {
       )
 
       expect(result).toEqual({cis2AccessToken: "mockAccessToken", cis2IdToken: "mockIdToken"})
-      expect(mockLogger.info).toHaveBeenCalledWith(
-        "CIS2 tokens retrieved successfully from DynamoDB",
-        {username}
-      )
+      expect(mockLogger.info).toHaveBeenCalledWith("Fetching CIS2 tokens from DynamoDB", {
+        username
+      })
+      expect(mockLogger.debug).toHaveBeenCalledWith("DynamoDB response", expect.any(Object))
     })
 
     it("should throw an error if tokens are not found in DynamoDB", async () => {
       dynamoDbMock.on(GetCommand).resolves({})
 
       await expect(
-        fetchCIS2TokensFromDynamoDB(username, tableName, dynamoDbMock as unknown as DynamoDBDocumentClient, mockLogger)
-      ).rejects.toThrow("CIS2 tokens not found for user.")
+        fetchCIS2TokensFromDynamoDB(
+          username,
+          tableName,
+          dynamoDbMock as unknown as DynamoDBDocumentClient,
+          mockLogger
+        )
+      ).rejects.toThrow("Internal server error while accessing DynamoDB")
 
-      expect(mockLogger.error).toHaveBeenCalledWith(
-        "CIS2 tokens not found in DynamoDB",
-        {username}
-      )
+      expect(mockLogger.error).toHaveBeenCalledWith("CIS2 tokens not found in DynamoDB", {
+        username
+      })
     })
 
     it("should throw an error if DynamoDB call fails", async () => {
       dynamoDbMock.on(GetCommand).rejects(new Error("DynamoDB error"))
 
       await expect(
-        fetchCIS2TokensFromDynamoDB(username, tableName, dynamoDbMock as unknown as DynamoDBDocumentClient, mockLogger)
-      ).rejects.toThrow("DynamoDB error")
+        fetchCIS2TokensFromDynamoDB(
+          username,
+          tableName,
+          dynamoDbMock as unknown as DynamoDBDocumentClient,
+          mockLogger
+        )
+      ).rejects.toThrow("Internal server error while accessing DynamoDB")
+
+      expect(mockLogger.error).toHaveBeenCalledWith("Error fetching CIS2 tokens from DynamoDB", {
+        username,
+        error: expect.any(Error)
+      })
     })
   })
 
@@ -115,7 +133,11 @@ describe("cis2TokenUtils", () => {
         Item: {CIS2_accessToken: "mockAccessToken", CIS2_idToken: "mockIdToken"}
       })
 
-      const result = await fetchCIS2Tokens(mockEvent, dynamoDbMock as unknown as DynamoDBDocumentClient, mockLogger)
+      const result = await fetchCIS2Tokens(
+        mockEvent,
+        dynamoDbMock as unknown as DynamoDBDocumentClient,
+        mockLogger
+      )
 
       expect(result).toEqual({cis2AccessToken: "mockAccessToken", cis2IdToken: "mockIdToken"})
     })
@@ -129,7 +151,7 @@ describe("cis2TokenUtils", () => {
           dynamoDbMock as unknown as DynamoDBDocumentClient,
           mockLogger
         )
-      ).rejects.toThrow("Token mapping table name is not set in environment variables.")
+      ).rejects.toThrow("Token mapping table name is not set in environment variables")
     })
 
     it("should throw an error if username is missing in event", async () => {
@@ -147,7 +169,7 @@ describe("cis2TokenUtils", () => {
           dynamoDbMock as unknown as DynamoDBDocumentClient,
           mockLogger
         )
-      ).rejects.toThrow("Unable to extract username from Cognito claims.")
+      ).rejects.toThrow("Unable to extract username from Cognito claims")
     })
   })
 })

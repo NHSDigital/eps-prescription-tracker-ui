@@ -6,7 +6,7 @@ import {DynamoDBDocumentClient, GetCommand} from "@aws-sdk/lib-dynamodb"
 export const getUsernameFromEvent = (event: APIGatewayProxyEvent): string => {
   const username = event.requestContext.authorizer?.claims["cognito:username"]
   if (!username) {
-    throw new Error("Unable to extract username from Cognito claims.")
+    throw new Error("Unable to extract username from Cognito claims")
   }
   return username
 }
@@ -20,22 +20,28 @@ export const fetchCIS2TokensFromDynamoDB = async (
 ): Promise<{cis2AccessToken: string; cis2IdToken: string}> => {
   logger.info("Fetching CIS2 tokens from DynamoDB", {username})
 
-  const result = await documentClient.send(
-    new GetCommand({
-      TableName: tokenMappingTableName,
-      Key: {username}
-    })
-  )
+  try {
+    const result = await documentClient.send(
+      new GetCommand({
+        TableName: tokenMappingTableName,
+        Key: {username}
+      })
+    )
 
-  if (!result.Item) {
-    logger.error("CIS2 tokens not found in DynamoDB", {username})
-    throw new Error("CIS2 tokens not found for user.")
-  }
+    logger.debug("DynamoDB response", {result})
 
-  logger.info("CIS2 tokens retrieved successfully from DynamoDB", {username})
-  return {
-    cis2AccessToken: result.Item.CIS2_accessToken,
-    cis2IdToken: result.Item.CIS2_idToken
+    if (!result.Item) {
+      logger.error("CIS2 tokens not found in DynamoDB", {username})
+      throw new Error("CIS2 tokens not found for user")
+    }
+
+    return {
+      cis2AccessToken: result.Item.CIS2_accessToken,
+      cis2IdToken: result.Item.CIS2_idToken
+    }
+  } catch (error) {
+    logger.error("Error fetching CIS2 tokens from DynamoDB", {username, error})
+    throw new Error("Internal server error while accessing DynamoDB")
   }
 }
 
@@ -47,7 +53,7 @@ export const fetchCIS2Tokens = async (
 ): Promise<{cis2AccessToken: string; cis2IdToken: string}> => {
   const tokenMappingTableName = process.env["TokenMappingTableName"]
   if (!tokenMappingTableName) {
-    throw new Error("Token mapping table name is not set in environment variables.")
+    throw new Error("Token mapping table name is not set in environment variables")
   }
 
   const username = getUsernameFromEvent(event)
