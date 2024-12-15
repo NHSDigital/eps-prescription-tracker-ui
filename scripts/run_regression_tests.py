@@ -13,10 +13,18 @@ import time
 from requests.auth import HTTPBasicAuth
 
 # This should be set to a known good version of regression test repo
-REGRESSION_TESTS_REPO_TAG = "v2.0.6"
+REGRESSION_TESTS_REPO_TAG = "v2.0.8"
 
 GITHUB_API_URL = "https://api.github.com/repos/NHSDigital/electronic-prescription-service-api-regression-tests/actions"
 GITHUB_RUN_URL = "https://github.com/NHSDigital/electronic-prescription-service-api-regression-tests/actions/runs"
+
+ENVIRONMENT_NAMES = {
+    "dev": "INTERNAL-DEV",
+    "dev-pr": "INTERNAL-DEV",
+    "qa": "INTERNAL-QA",
+    "int": "INT",
+    "ref": "REF",
+}
 
 
 class BearerAuth(requests.auth.AuthBase):
@@ -52,7 +60,7 @@ def trigger_test_run(env, pr_label, product, auth_header):
         "inputs": {
             "id": run_id,
             "tags": "@regression",
-            "environment": env,
+            "environment": ENVIRONMENT_NAMES[arguments.env],
             "pull_request_id": pr_label,
             "product": product,
             "github_tag": REGRESSION_TESTS_REPO_TAG
