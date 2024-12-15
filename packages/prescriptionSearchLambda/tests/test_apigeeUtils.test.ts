@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/consistent-type-assertions */
 import {jest} from "@jest/globals"
 import {exchangeTokenForApigeeAccessToken, updateApigeeAccessToken} from "../src/utils/apigeeUtils"
 import axios from "axios"
@@ -31,7 +32,6 @@ describe("apigeeUtils", () => {
 
   describe("exchangeTokenForApigeeAccessToken", () => {
     it("should successfully exchange token with Apigee", async () => {
-      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
       mockAxiosPost.mockResolvedValueOnce({data: {access_token: "testToken", expires_in: 3600}} as never)
 
       const result = await exchangeTokenForApigeeAccessToken(
@@ -50,7 +50,6 @@ describe("apigeeUtils", () => {
     })
 
     it("should throw an error for invalid response from Apigee", async () => {
-      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
       mockAxiosPost.mockResolvedValueOnce({data: {}} as never)
       await expect(
         exchangeTokenForApigeeAccessToken(
@@ -88,7 +87,6 @@ describe("apigeeUtils", () => {
 
   describe("updateApigeeAccessToken", () => {
     it("should update DynamoDB successfully", async () => {
-      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
       mockDocumentClient.send.mockResolvedValueOnce({} as never)
 
       const mockTableName = "mockTable"
