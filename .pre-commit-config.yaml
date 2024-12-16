@@ -41,6 +41,24 @@ repos:
         types_or: [ts, tsx, javascript, jsx, json]
         pass_filenames: false
 
+      - id: lint-cognito
+        name: Lint cognito
+        entry: npm
+        args: ["run", "--prefix=packages/cognito", "lint"]
+        language: system
+        files: ^packages\/cognito
+        types_or: [ts, tsx, javascript, jsx, json]
+        pass_filenames: false
+
+      - id: lint-prescriptionSearchLambda
+        name: Lint prescriptionSearchLambda
+        entry: npm
+        args: ["run", "--prefix=packages/prescriptionSearchLambda", "lint"]
+        language: system
+        files: ^packages\/prescriptionSearchLambda
+        types_or: [ts, tsx, javascript, jsx, json]
+        pass_filenames: false
+
       - id: lint-githubactions
         name: Lint github actions
         entry: make

@@ -9,6 +9,7 @@ const app = new App()
   - version
   - commit
   - logRetentionInDays
+  - logLevel
   - epsDomainName
   - epsHostedZoneId
   - cloudfrontCertArn */
