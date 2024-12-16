@@ -165,7 +165,7 @@ export class CloudfrontBehaviors extends Construct{
     })
 
     const additionalBehaviors = {
-      "/site/*": {
+      "/site*": {
         origin: props.staticContentBucketOrigin,
         allowedMethods: AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
         viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
