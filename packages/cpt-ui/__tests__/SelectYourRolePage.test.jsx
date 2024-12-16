@@ -2,7 +2,7 @@ import React from "react";
 import "@testing-library/jest-dom";
 import { render, screen, waitFor } from "@testing-library/react";
 import SelectYourRolePage from "@/app/selectyourrole/page";
-import { AuthContext } from "@/context/AuthContext";
+import { AuthContext } from "@/context/AuthProvider";
 
 // Mock `next/navigation` globally
 jest.mock("next/navigation", () => ({
