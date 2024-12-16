@@ -1,13 +1,13 @@
 'use client'
 import React from 'react'
-import "../assets/styles/tabs.scss"
+import "@/assets/styles/tabs.scss"
 import { Tabs } from "nhsuk-react-components";
 import PrescriptionIdSearch from "./prescriptionSearch/PrescriptionIdSearch"
 import NhsNumSearch from './prescriptionSearch/NhsNumSearch';
 import BasicDetailsSearch from './prescriptionSearch/BasicDetailsSearch';
 import {
     PRESCRIPTION_SEARCH_TABS
-} from "../constants/ui-strings/SearchTabStrings";
+} from "@/constants/ui-strings/SearchTabStrings";
 
 export default function EpsTabs() {
     const tabData = PRESCRIPTION_SEARCH_TABS;

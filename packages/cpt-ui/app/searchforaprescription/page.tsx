@@ -2,9 +2,9 @@
 import React from "react";
 import { Col, Container, Hero, Row } from "nhsuk-react-components";
 //import "../../assets/styles/prescriptionSearch.scss"
-import "../../assets/styles/searchforaprescription.scss"
-import EpsTabs from "../../components/EpsTabs";
-import { HERO_TEXT } from "../../constants/ui-strings/SearchForAPrescriptionStrings"
+import "@/assets/styles/searchforaprescription.scss"
+import EpsTabs from "@/components/EpsTabs";
+import { HERO_TEXT } from "@/constants/ui-strings/SearchForAPrescriptionStrings"
 
 export default function Page() {
     return (
