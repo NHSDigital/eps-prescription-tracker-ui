@@ -36,7 +36,8 @@ export function rewriteBodyToAddSignedJWT(
   logger: Logger,
   objectBodyParameters: ParsedUrlQuery,
   idpTokenPath: string,
-  jwtPrivateKey: jwt.PrivateKey
+  jwtPrivateKey: jwt.PrivateKey,
+  jwtKid: string
 ): ParsedUrlQuery {
   logger.debug("Rewriting body to include signed jwt")
   const current_time = Math.floor(Date.now() / 1000)
@@ -52,7 +53,7 @@ export function rewriteBodyToAddSignedJWT(
 
   const signOptions: jwt.SignOptions = {
     algorithm: "RS512",
-    keyid: "eps-cpt-ui-test"
+    keyid: jwtKid
   }
 
   logger.debug("Claims", {claims})

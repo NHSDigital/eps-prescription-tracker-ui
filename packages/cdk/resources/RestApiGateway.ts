@@ -20,6 +20,7 @@ export interface RestApiGatewayProps {
   readonly serviceName: string
   readonly stackName: string
   readonly logRetentionInDays: number
+  readonly logLevel: string
   readonly cloudwatchKmsKey: IKey
   readonly splunkDeliveryStream: IStream
   readonly splunkSubscriptionFilterRole: IRole
@@ -38,7 +39,7 @@ export class RestApiGateway extends Construct {
   public readonly restAPiGatewayRole: Role
   public readonly authorizer: CognitoUserPoolsAuthorizer
 
-  public constructor(scope: Construct, id: string, props: RestApiGatewayProps){
+  public constructor(scope: Construct, id: string, props: RestApiGatewayProps) {
     super(scope, id)
 
     // Resources
@@ -78,7 +79,8 @@ export class RestApiGateway extends Construct {
 
     const authorizer = new CognitoUserPoolsAuthorizer(this, "Authorizer", {
       authorizerName: "cognitoAuth",
-      cognitoUserPools: [props.userPool]
+      cognitoUserPools: [props.userPool],
+      identitySource: "method.request.header.authorization"
     })
 
     const cfnStage = apiGateway.deploymentStage.node.defaultChild as CfnStage
