@@ -117,12 +117,14 @@ describe('AuthProvider', () => {
     });
   });
 
+  // Initialization and Configuration
   it('should configure Amplify on mount', async () => {
     // Verify Amplify.configure is called when the provider mounts
     await renderWithProvider();
     expect(Amplify.configure).toHaveBeenCalled();
   });
 
+  // Session Handling
   it('should set isSignedIn to false if no valid tokens are returned', async () => {
     // Render without valid tokens
     await renderWithProvider();
@@ -149,61 +151,144 @@ describe('AuthProvider', () => {
     });
   });
 
-  it('should handle Hub event signInWithRedirect', async () => {
-    // Mock session and user for a successful signInWithRedirect Hub event
-    const mockSession = createTokenMocks(); // Create valid mock tokens
-    const mockUser = { username: 'testuser' }; // Create a mock user object
+  it('should handle missing tokens during session fetch', async () => {
+    // Simulate a session fetch with missing tokens
+    const incompleteSession = { tokens: {} };
+
+    await renderWithProvider({ sessionMock: incompleteSession });
+
+    await waitFor(() => {
+      // Assert that the user is not signed in due to missing tokens
+      expect(screen.getByTestId('isSignedIn').textContent).toBe('false');
+      expect(screen.getByTestId('user').textContent).toBe('');
+    });
+  });
+
+  // Error Handling
+  it('should handle fetchAuthSession failure', async () => {
+    // Mock fetchAuthSession to throw an error
+    (fetchAuthSession as jest.Mock).mockRejectedValue(new Error('Session fetch failed'));
+
+    await renderWithProvider();
+
+    await waitFor(() => {
+      // Assert that the user is not signed in due to session fetch failure
+      expect(screen.getByTestId('isSignedIn').textContent).toBe('false');
+      expect(screen.getByTestId('user').textContent).toBe('');
+    });
+  });
+
+  it('should handle getCurrentUser failure gracefully', async () => {
+    // Mock getCurrentUser to throw an error
+    (getCurrentUser as jest.Mock).mockRejectedValue(new Error('User fetch failed'));
+
+    await renderWithProvider({
+      sessionMock: createTokenMocks(),
+    });
+
+    await waitFor(() => {
+      // Assert that valid tokens do not automatically result in user data due to user fetch failure
+      expect(screen.getByTestId('isSignedIn').textContent).toBe('true');
+      expect(screen.getByTestId('user').textContent).toBe('');
+    });
+  });
+
+  it('should log an error and reset state when fetching user session fails', async () => {
+    // Mock console.error to track calls
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
   
-    // Mock Amplify functions to return the mocked session and user
-    (fetchAuthSession as jest.Mock).mockResolvedValue(mockSession);
-    (getCurrentUser as jest.Mock).mockResolvedValue(mockUser);
+    // Mock fetchAuthSession to throw an error
+    const sessionError = new Error('Session fetch failed');
+    (fetchAuthSession as jest.Mock).mockRejectedValueOnce(sessionError);
   
-    // Render the AuthProvider with a TestConsumer to observe context changes
+    // Render the provider
+    await renderWithProvider();
+  
+    // Wait for the state to be reset
+    await waitFor(() => {
+      // Verify that the state is reset correctly
+      expect(screen.getByTestId('isSignedIn').textContent).toBe('false');
+      expect(screen.getByTestId('user').textContent).toBe('');
+    });
+  
+    // Verify that the error was logged
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      'Error fetching user session:',
+      sessionError
+    );
+  
+    // Restore the original console.error implementation
+    consoleErrorSpy.mockRestore();
+  });
+
+  it('should log an error if signOut fails', async () => {
+    // Mock console.error to track calls
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+  
+    // Mock signOut to throw an error
+    const signOutError = new Error('Sign out failed');
+    (signOut as jest.Mock).mockRejectedValue(signOutError);
+  
+    let contextValue: any;
+  
+    const TestComponent = () => {
+      contextValue = useContext(AuthContext);
+      return null;
+    };
+  
+    // Render the provider
     await act(async () => {
       render(
         <AuthProvider>
-          <TestConsumer />
+          <TestComponent />
         </AuthProvider>
       );
     });
   
-    // Ensure the Hub event listener (hubCallback) is initialized
-    if (!hubCallback) {
-      throw new Error('hubCallback is not initialized');
-    }
-  
-    // Simulate the Hub event "signInWithRedirect"
-    act(() => {
-      hubCallback!({ payload: { event: 'signInWithRedirect' } });
+    // Attempt to sign out and verify the logged error
+    await act(async () => {
+      await contextValue.cognitoSignOut();
     });
   
-    // Wait for the context state to update and verify changes
-    await waitFor(() => {
-      expect(screen.getByTestId('isSignedIn').textContent).toBe('true'); // User is signed in
-      expect(screen.getByTestId('user').textContent).toBe('UserPresent'); // User object is present
-    });
+    expect(consoleErrorSpy).toHaveBeenCalledWith('Failed to sign out:', signOutError); // Error logged
+  
+    // Restore the original console.error implementation
+    consoleErrorSpy.mockRestore();
   });
-  
-  it('should handle Hub event signInWithRedirect_failure', async () => {
-    // Render the AuthProvider with a TestConsumer to observe context changes
-    await renderWithProvider();
-  
-    // Ensure the Hub event listener (hubCallback) is initialized
-    if (!hubCallback) {
-      throw new Error('hubCallback is not initialized');
-    }
-  
-    // Simulate the Hub event "signInWithRedirect_failure"
-    act(() => {
-      hubCallback!({ payload: { event: 'signInWithRedirect_failure' } });
-    });
-  
-    // Wait for the context state to update and verify changes
+
+  // Token Handling
+  it('should log a warning and reset state when the ID token is expired', async () => {
+    // Mock console.warn to track calls
+    const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
+
+    // Create mock tokens with an expired ID token
+    const expiredIdToken = {
+      tokens: {
+        idToken: {
+          toString: () => `header.${btoa(JSON.stringify({ exp: Math.floor(Date.now() / 1000) - 3600 }))}.signature`,
+          payload: { exp: Math.floor(Date.now() / 1000) - 3600 },
+        },
+        accessToken: {
+          toString: () => `header.${btoa(JSON.stringify({ exp: Math.floor(Date.now() / 1000) + 3600 }))}.signature`,
+          payload: { exp: Math.floor(Date.now() / 1000) + 3600 },
+        },
+      },
+    };
+
+    // Render the provider with the expired ID token
+    await renderWithProvider({ sessionMock: expiredIdToken });
+
+    // Wait for the state to be reset and verify the warning
     await waitFor(() => {
-      expect(screen.getByTestId('error').textContent).toBe(
-        'An error has occurred during the OAuth flow.' // Error state is updated
-      );
+      expect(screen.getByTestId('isSignedIn').textContent).toBe('false'); // State reset
+      expect(screen.getByTestId('user').textContent).toBe('');
+      expect(consoleWarnSpy).toHaveBeenCalledWith(
+        'ID token is expired. Consider refreshing the token.'
+      ); // Warning logged
     });
+
+    // Restore the original console.warn implementation
+    consoleWarnSpy.mockRestore();
   });
 
   it('should handle expired tokens', async () => {
@@ -231,6 +316,87 @@ describe('AuthProvider', () => {
     });
   });
 
+  // Hub Events
+  it('should handle Hub event signInWithRedirect', async () => {
+    // Mock session and user for a successful signInWithRedirect Hub event
+    const mockSession = createTokenMocks(); // Create valid mock tokens
+    const mockUser = { username: 'testuser' }; // Create a mock user object
+  
+    // Mock Amplify functions to return the mocked session and user
+    (fetchAuthSession as jest.Mock).mockResolvedValue(mockSession);
+    (getCurrentUser as jest.Mock).mockResolvedValue(mockUser);
+  
+    // Render the AuthProvider with a TestConsumer to observe context changes
+    await act(async () => {
+      render(
+        <AuthProvider>
+          <TestConsumer />
+        </AuthProvider>
+      );
+    });
+  
+    // Ensure the Hub event listener (hubCallback) is initialized
+    if (!hubCallback) {
+      throw new Error('hubCallback is not initialized');
+    }
+  
+    // Simulate the Hub event "signInWithRedirect"
+    act(() => {
+      // Simulate a successful Hub event for signInWithRedirect
+      hubCallback!({ payload: { event: 'signInWithRedirect' } });
+    });
+  
+    // Wait for the context state to update and verify changes
+    await waitFor(() => {
+      // Assert that the user is signed in after the Hub event
+      expect(screen.getByTestId('isSignedIn').textContent).toBe('true'); // User is signed in
+      expect(screen.getByTestId('user').textContent).toBe('UserPresent'); // User object is present
+    });
+  });
+
+  it('should handle Hub event signInWithRedirect_failure', async () => {
+    // Render the AuthProvider with a TestConsumer to observe context changes
+    await renderWithProvider();
+  
+    // Ensure the Hub event listener (hubCallback) is initialized
+    if (!hubCallback) {
+      throw new Error('hubCallback is not initialized');
+    }
+  
+    // Simulate the Hub event "signInWithRedirect_failure"
+    act(() => {
+      hubCallback!({ payload: { event: 'signInWithRedirect_failure' } });
+    });
+  
+    // Wait for the context state to update and verify changes
+    await waitFor(() => {
+      // Assert that an error is set after the Hub event failure
+      expect(screen.getByTestId('error').textContent).toBe(
+        'An error has occurred during the OAuth flow.' // Error state is updated
+      );
+    });
+  });
+
+  it('should handle Hub event signedOut', async () => {
+    // Simulate a Hub event for user sign-out
+    await renderWithProvider();
+
+    if (!hubCallback) {
+      throw new Error('hubCallback is not initialized');
+    }
+
+    act(() => {
+      hubCallback!({ payload: { event: 'signedOut' } });
+    });
+
+    await waitFor(() => {
+      // Assert that the user is signed out and state is cleared
+      expect(screen.getByTestId('isSignedIn').textContent).toBe('false');
+      expect(screen.getByTestId('user').textContent).toBe('');
+    });
+  });
+
+  // Auth Functions
   it('should provide cognitoSignIn and cognitoSignOut functions', async () => {
     let contextValue: any;
 
