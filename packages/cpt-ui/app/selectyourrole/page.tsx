@@ -26,7 +26,7 @@ export type TrackerUserInfo = {
 const trackerUserInfoEndpoint = "/api/tracker-user-info"
 
 export default function SelectYourRolePage() {
-    const [loading, setLoading] = useState(false)
+    const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string|null>(null)
     const [trackerUserInfoData, setTrackerUserInfoData] = useState<TrackerUserInfo|null>(null)
 
@@ -115,7 +115,7 @@ export default function SelectYourRolePage() {
         );
     }
 
-    const { title, caption, insetText, confirmButton, alternativeMessage, organisation, role } =
+    const { title, caption, insetText, confirmButton, alternativeMessage, organisation, role, roles_without_access_table_title } =
         SELECT_ROLE_PAGE_TEXT;
 
     return (
@@ -172,7 +172,7 @@ export default function SelectYourRolePage() {
                         <Row>
                             <Details expander>
                                 <Details.Summary>
-                                    Roles without access
+                                    {roles_without_access_table_title}
                                 </Details.Summary>
                                 <Details.Text>
                                     <Table>
@@ -186,10 +186,10 @@ export default function SelectYourRolePage() {
                                             {trackerUserInfoData?.roles_without_access?.map((role, index) => (
                                                 <Table.Row key={index}>
                                                     <Table.Cell>
-                                                        {role.org_name ? role.org_name : "NO ORG NAME"} (ODS: {role.org_code})
+                                                        {role.org_name ? role.org_name : "No Org Name"} (ODS: {role.org_code})
                                                     </Table.Cell>
                                                     <Table.Cell>
-                                                        {role.role_name}
+                                                        {role.role_name?.replace(/"/g, '').split(':').pop()}
                                                     </Table.Cell>
                                                 </Table.Row>
                                             ))}
