@@ -1,7 +1,7 @@
 'use client'
 import React, {useState, useEffect, useContext, useCallback } from "react"
 import { Container, Col, Row, Details, Table, ErrorSummary, Button, InsetText } from "nhsuk-react-components"
-import { AuthContext } from "@/context/AuthContext";
+import { AuthContext } from "@/context/AuthProvider";
 import EpsCard from "@/components/EpsCard";
 import {SELECT_ROLE_PAGE_TEXT} from "@/constants/ui-strings/CardStrings";
 

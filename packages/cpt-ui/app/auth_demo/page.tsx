@@ -2,7 +2,7 @@
 import React, {useContext, useEffect} from "react";
 
 import { Container, Col, Row, Button } from "nhsuk-react-components";
-import { AuthContext } from "@/context/AuthContext";
+import { AuthContext } from "@/context/AuthProvider";
 
 export default function AuthPage() {
     const auth = useContext(AuthContext);
