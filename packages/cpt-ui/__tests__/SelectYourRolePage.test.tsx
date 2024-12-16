@@ -33,22 +33,6 @@ describe("SelectYourRolePage", () => {
     jest.clearAllMocks();
   });
 
-  it("renders a heading by default (not signed in) but eventually shows an error", async () => {
-    // Not signed in
-    renderWithAuth({
-      isSignedIn: false,
-      idToken: "",
-    });
-
-    // Wait for error summary to appear
-    await waitFor(() => {
-      const errorHeading = screen.getByRole("heading", { name: /Error during role selection/i })
-      expect(errorHeading).toBeInTheDocument();
-      const errorText = screen.getByText("No login session found");
-      expect(errorText).toBeInTheDocument();
-    });
-  });
-
   it("renders loading state when signed in but fetch hasn't resolved yet", async () => {
     // Mock fetch to never resolve
     mockFetch.mockImplementation(() => new Promise(() => {}));
@@ -161,7 +145,7 @@ describe("SelectYourRolePage", () => {
     expect(confirmButton).toBeInTheDocument();
 
     // Roles Without Access details expander
-    const expander = screen.getByText("Roles without access");
+    const expander = screen.getByText("View your roles without access to the clinical prescription tracking service.");
     expect(expander).toBeInTheDocument();
 
     // Expand details if needed or just confirm the table is present

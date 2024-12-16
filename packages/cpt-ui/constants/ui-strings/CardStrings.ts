@@ -38,5 +38,6 @@ export const SELECT_ROLE_PAGE_TEXT = {
   },
   alternativeMessage: "Alternatively, you can choose a new role below.",
   organisation: "Organisation",
-  role: "Role"
+  role: "Role",
+  roles_without_access_table_title: "View your roles without access to the clinical prescription tracking service."
 }
