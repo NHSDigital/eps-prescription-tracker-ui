@@ -7,7 +7,6 @@ import {Template, Match} from "aws-cdk-lib/assertions"
 import {describe, test, beforeAll} from "@jest/globals"
 
 import {LambdaFunction} from "../resources/LambdaFunction"
-import {Runtime} from "aws-cdk-lib/aws-lambda"
 
 describe("functionConstruct works correctly", () => {
   let stack: Stack
@@ -28,7 +27,6 @@ describe("functionConstruct works correctly", () => {
       serviceName: "testServiceName",
       stackName: "testServiceName-testStack",
       lambdaName: "testLambda",
-      runtime: Runtime.NODEJS_20_X,
       additionalPolicies: [
       ],
       packageBasePath: "packages/cdk",
@@ -111,7 +109,7 @@ describe("functionConstruct works correctly", () => {
   test("it has the correct lambda", () => {
     template.hasResourceProperties("AWS::Lambda::Function", {
       Handler: "index.handler",
-      Runtime: "nodejs20.x",
+      Runtime: "nodejs22.x",
       FunctionName: "testServiceName-testLambda",
       MemorySize: 256,
       Architectures: ["x86_64"],
@@ -150,7 +148,6 @@ describe("functionConstruct works correctly with environment variables", () => {
       serviceName: "testServiceName",
       stackName: "testServiceName-testStack",
       lambdaName: "testLambda",
-      runtime: Runtime.NODEJS_20_X,
       additionalPolicies: [],
       packageBasePath: "packages/cdk",
       entryPoint: "tests/src/dummyLambda.ts",
@@ -163,7 +160,7 @@ describe("functionConstruct works correctly with environment variables", () => {
 
   test("environment variables are added correctly", () => {
     template.hasResourceProperties("AWS::Lambda::Function", {
-      Runtime: "nodejs20.x",
+      Runtime: "nodejs22.x",
       FunctionName: "testServiceName-testLambda",
       Environment: {Variables: {foo: "bar"}}
     })
@@ -193,7 +190,6 @@ describe("functionConstruct works correctly with additional policies", () => {
       serviceName: "testServiceName",
       stackName: "testServiceName-testStack",
       lambdaName: "testLambda",
-      runtime: Runtime.NODEJS_20_X,
       additionalPolicies: [testPolicy],
       packageBasePath: "packages/cdk",
       entryPoint: "tests/src/dummyLambda.ts",
