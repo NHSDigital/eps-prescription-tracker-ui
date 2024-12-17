@@ -42,6 +42,17 @@ export const nagSuppressions = (stack: Stack) => {
       ]
     )
 
+    safeAddNagSuppression(
+      stack,
+      "/StatefulStack/AWS679f53fac002430cb0da5b7982bd2287/Resource",
+      [
+        {
+          id: "AwsSolutions-L1",
+          reason: "AWS supplied lambda does not use latest runtime"
+        }
+      ]
+    )
+
     safeAddNagSuppressionGroup(
       stack,
       [
