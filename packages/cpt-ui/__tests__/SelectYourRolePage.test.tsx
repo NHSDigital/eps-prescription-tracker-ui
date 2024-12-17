@@ -2,7 +2,7 @@ import "@testing-library/jest-dom";
 import { render, screen, waitFor } from "@testing-library/react";
 import SelectYourRolePage from "../app/selectyourrole/page";
 import React from "react";
-import { AuthContext } from "@/context/AuthContext";
+import { AuthContext } from "@/context/AuthProvider";
 
 // Mock `next/navigation` globally
 jest.mock("next/navigation", () => ({
@@ -150,7 +150,7 @@ describe("SelectYourRolePage", () => {
 
     // Expand details if needed or just confirm the table is present
     // For the table, look for the "Tech Org" text or the column values
-    const orgCell = await screen.findByText(/Tech Org \(ODS: ORG456\)/i);
+    const orgCell = await screen.findAllByText(/Tech Org \(ODS: ORG456\)/i);
     expect(orgCell).toBeInTheDocument();
 
     const roleCell = await screen.findByText("Technician");

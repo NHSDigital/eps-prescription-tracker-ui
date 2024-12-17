@@ -116,7 +116,7 @@ export default function SelectYourRolePage() {
         );
     }
 
-    const { title, caption, insetText, confirmButton, alternativeMessage, organisation, role } =
+    const { title, caption, insetText, confirmButton, alternativeMessage, organisation, role, roles_without_access_table_title } =
         SELECT_ROLE_PAGE_TEXT;
 
     return (
@@ -149,7 +149,7 @@ export default function SelectYourRolePage() {
                     {/* Roles with access Section */}
                     <Col width="two-thirds">
                     <div className="section" >
-                        {trackerUserInfoData?.roles_without_access?.map((role, index) => (
+                        {trackerUserInfoData?.roles_with_access?.map((role, index) => (
                                 <EpsCard key={index}
                                     orgName={role.org_name ? role.org_name : "No Org Name"}
                                     odsCode={role.org_code ? role.org_code : "No ODS Code"}
