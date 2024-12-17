@@ -124,6 +124,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
         case "signedOut":
           console.log("User signing out");
+          setIsSignedIn(false);
+          setUser(null);
+          setIdToken(null);
+          setAccessToken(null);
+          setError(null);
           break;
 
         default:

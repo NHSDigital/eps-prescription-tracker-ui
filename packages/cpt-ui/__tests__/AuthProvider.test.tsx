@@ -414,21 +414,26 @@ describe('AuthProvider', () => {
   });
 
   it('should handle Hub event signedOut', async () => {
-    // Simulate a Hub event for user sign-out
+    // Render the AuthProvider and capture the Hub callback
     await renderWithProvider();
-
+  
+    // Ensure the Hub event listener (hubCallback) is initialized
     if (!hubCallback) {
       throw new Error('hubCallback is not initialized');
     }
-
+  
+    // Simulate the 'signedOut' Hub event
     act(() => {
       hubCallback!({ payload: { event: 'signedOut' } });
     });
-
+  
+    // Verify that the context state is reset
     await waitFor(() => {
-      // Assert that the user is signed out and state is cleared
       expect(screen.getByTestId('isSignedIn').textContent).toBe('false');
       expect(screen.getByTestId('user').textContent).toBe('');
+      expect(screen.getByTestId('idToken').textContent).toBe('');
+      expect(screen.getByTestId('accessToken').textContent).toBe('');
+      expect(screen.getByTestId('error').textContent).toBe('');
     });
   });
 
