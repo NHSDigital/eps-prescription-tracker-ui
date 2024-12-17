@@ -94,6 +94,9 @@ export class CloudfrontBehaviors extends Construct{
       sourceFileName: "s3404ModifyStatusCode.js",
       keyValueStore: keyValueStore
     })
+    /* Add dependency on previous function to force them to build one by one to avoid aws limits
+    on how many can be created simultaneously */
+    s3404ModifyStatusCodeFunction.node.addDependency(s3404UriRewriteFunction)
 
     const s3500UriRewriteFunction = new CloudfrontFunction(this, "S3500UriRewriteFunction", {
       functionName: `${props.serviceName}-S3500UriRewriteFunction`,
@@ -106,6 +109,9 @@ export class CloudfrontBehaviors extends Construct{
         }
       ]
     })
+    /* Add dependency on previous function to force them to build one by one to avoid aws limits
+    on how many can be created simultaneously */
+    s3500UriRewriteFunction.node.addDependency(s3404ModifyStatusCodeFunction)
 
     const s3StaticContentUriRewriteFunction = new CloudfrontFunction(this, "S3StaticContentUriRewriteFunction", {
       functionName: `${props.serviceName}-S3StaticContentUriRewriteFunction`,
@@ -122,6 +128,9 @@ export class CloudfrontBehaviors extends Construct{
         }
       ]
     })
+    /* Add dependency on previous function to force them to build one by one to avoid aws limits
+    on how many can be created simultaneously */
+    s3StaticContentUriRewriteFunction.node.addDependency(s3500UriRewriteFunction)
 
     const apiGatewayStripPathFunction = new CloudfrontFunction(this, "ApiGatewayStripPathFunction", {
       functionName: `${props.serviceName}-ApiGatewayStripPathFunction`,
@@ -134,6 +143,9 @@ export class CloudfrontBehaviors extends Construct{
         }
       ]
     })
+    /* Add dependency on previous function to force them to build one by one to avoid aws limits
+    on how many can be created simultaneously */
+    apiGatewayStripPathFunction.node.addDependency(s3StaticContentUriRewriteFunction)
 
     const s3JwksUriRewriteFunction = new CloudfrontFunction(this, "s3JwksUriRewriteFunction", {
       functionName: `${props.serviceName}-s3JwksUriRewriteFunction`,
@@ -146,6 +158,9 @@ export class CloudfrontBehaviors extends Construct{
         }
       ]
     })
+    /* Add dependency on previous function to force them to build one by one to avoid aws limits
+    on how many can be created simultaneously */
+    s3JwksUriRewriteFunction.node.addDependency(apiGatewayStripPathFunction)
 
     // eslint-disable-next-line max-len
     const authDemoStaticContentUriRewriteFunction = new CloudfrontFunction(this, "authDemoStaticContentUriRewriteFunction", {
@@ -163,6 +178,9 @@ export class CloudfrontBehaviors extends Construct{
         }
       ]
     })
+    /* Add dependency on previous function to force them to build one by one to avoid aws limits
+    on how many can be created simultaneously */
+    authDemoStaticContentUriRewriteFunction.node.addDependency(s3JwksUriRewriteFunction)
 
     const additionalBehaviors = {
       "/site*": {
