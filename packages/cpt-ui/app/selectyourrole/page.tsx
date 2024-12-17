@@ -12,6 +12,7 @@ export type RoleDetails = {
     org_name?: string;
     site_name?: string;
     site_address?: string;
+    uuid?: string;
 };
 
 export type TrackerUserInfo = {
@@ -23,9 +24,9 @@ export type TrackerUserInfo = {
 const trackerUserInfoEndpoint = "/api/tracker-user-info"
 
 export default function SelectYourRolePage() {
-    const [loading, setLoading] = useState(false)
-    const [error, setError] = useState<string|null>(null)
-    const [trackerUserInfoData, setTrackerUserInfoData] = useState<TrackerUserInfo|null>(null)
+    const [loading, setLoading] = useState<boolean>(true)
+    const [error, setError] = useState<string | null>(null)
+    const [trackerUserInfoData, setTrackerUserInfoData] = useState<TrackerUserInfo | null>(null)
 
     const auth = useContext(AuthContext);
 
@@ -49,7 +50,7 @@ export default function SelectYourRolePage() {
             })
             
             if (response.status !== 200) {
-                throw new Error("Server did not return CPT user info")
+                throw new Error(`Server did not return CPT user info, response ${response.status}`)
             }
 
             const data = await response.json()
@@ -58,7 +59,29 @@ export default function SelectYourRolePage() {
                 throw new Error("Server response did not contain data")
             }
 
-            setTrackerUserInfoData(data.userInfo)
+            // When rendering, we need to give the role chunks `key` values
+            // They have to be unique, so give all roles a uuid to use there
+            const addUUIDToRoles = (roles: RoleDetails[] = []) => {
+                return roles.map((role, index) => ({
+                    ...role,
+                    uuid: `${role.role_id}_${index}`
+                }))
+            }
+
+            const rolesWithAccess = addUUIDToRoles(data.userInfo.roles_with_access)
+            const rolesWithoutAccess = addUUIDToRoles(data.userInfo.roles_without_access)
+            const currentlySelectedRole = data.userInfo.currently_selected_role ? {
+                ...data.userInfo.currently_selected_role,
+                uuid: `selected_role_0`
+            } : undefined
+      
+            const userInfoWithUUIDs: TrackerUserInfo = {
+                roles_with_access: rolesWithAccess,
+                roles_without_access: rolesWithoutAccess,
+                currently_selected_role: currentlySelectedRole
+            }
+      
+            setTrackerUserInfoData(userInfoWithUUIDs)
         } catch (err) {
             setError("Failed to fetch CPT user info")
             console.error("error fetching tracker user info:", err)
@@ -78,6 +101,15 @@ export default function SelectYourRolePage() {
             setError("No login session found")
         }
     }, [auth?.isSignedIn, fetchTrackerUserInfo])
+
+    useEffect(() => {
+        console.log("Auth error updated:", auth?.error)
+        // Have to do this to make `<string | null | undefined>` work with `<string | null>`
+        setError(auth?.error ?? null);
+        if (auth?.error) {
+            setLoading(false);
+        }
+    }, [auth?.error])
 
     // If the data is being fetched, replace the content with a spinner
     if (loading) {
@@ -149,8 +181,8 @@ export default function SelectYourRolePage() {
                     {/* Roles with access Section */}
                     <Col width="two-thirds">
                     <div className="section" >
-                        {trackerUserInfoData?.roles_with_access?.map((role, index) => (
-                                <EpsCard key={index}
+                        {trackerUserInfoData?.roles_with_access?.map((role) => (
+                                <EpsCard key={role.uuid}
                                     orgName={role.org_name ? role.org_name : "No Org Name"}
                                     odsCode={role.org_code ? role.org_code : "No ODS Code"}
                                     siteAddress={role.site_address ? role.site_address : "Address not found"}
@@ -180,8 +212,8 @@ export default function SelectYourRolePage() {
                                         </Table.Row>
                                     </Table.Head>
                                     <Table.Body>
-                                        {trackerUserInfoData?.roles_without_access?.map((role, index) => (
-                                            <Table.Row key={index}>
+                                        {trackerUserInfoData?.roles_without_access?.map((role) => (
+                                            <Table.Row key={role.uuid}>
                                                 <Table.Cell>
                                                     {role.org_name ? role.org_name : "No Org Name"} (ODS: {role.org_code})
                                                 </Table.Cell>

@@ -153,7 +153,7 @@ describe("SelectYourRolePage", () => {
   // Test case: Display an error summary when the user is not signed in
   it("renders error summary when not signed in", async () => {
     // Render the page with `isSignedIn` set to false
-    renderWithAuth({ isSignedIn: false });
+    renderWithAuth({ isSignedIn: false, error: "Missing access or ID token" });
 
     // Wait for the error message to appear
     await waitFor(() => {
@@ -161,9 +161,8 @@ describe("SelectYourRolePage", () => {
       const errorHeading = screen.getByRole("heading", { name: /Error during role selection/i });
       expect(errorHeading).toBeInTheDocument();
 
-      // Check for specific error text
-      const errorText = screen.getByText("No login session found");
-      expect(errorText).toBeInTheDocument();
+      const errorItem = screen.getByText("Missing access or ID token");
+      expect(errorItem).toBeInTheDocument();
     });
   });
 });

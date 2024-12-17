@@ -46,6 +46,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           setUser(null);
           setIdToken(null);
           setAccessToken(null);
+          setError("Cognito access token expired")
           return;
         }
 
@@ -56,6 +57,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           setUser(null);
           setIdToken(null);
           setAccessToken(null);
+          setError("Cognito ID token expired")
           return;
         }
 
@@ -66,12 +68,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
         const currentUser = await getCurrentUser();
         setUser(currentUser);
+        setError(null);
       } else {
         console.warn("Missing access or ID token.");
         setIsSignedIn(false);
         setUser(null);
         setIdToken(null);
         setAccessToken(null);
+        setError("Missing access or ID token")
       }
     } catch (fetchError) {
       console.error("Error fetching user session:", fetchError);
@@ -80,6 +84,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setAccessToken(null);
       setIdToken(null);
       setIsSignedIn(false);
+      setError(String(fetchError))
     }
   };
 
@@ -104,12 +109,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           break;
 
         case "tokenRefresh_failure":
-          setError("An error has occurred during the OAuth flow.");
-          setIsSignedIn(false);
-          setUser(null);
-          setIdToken(null);
-          setAccessToken(null);
-          break;
         case "signInWithRedirect_failure":
           setError("An error has occurred during the OAuth flow.");
           setIsSignedIn(false);
@@ -148,9 +147,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     console.log("Configuring Amplify with authConfig:", authConfig);
     Amplify.configure(authConfig, { ssr: true });
-    getUser().catch((err) => {
-      console.error("Failed to get user session after Amplify config:", err);
-    });
+    getUser();
   }, [authConfig]);
 
   /**
@@ -163,12 +160,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setAccessToken(null);
     setIdToken(null);
     setIsSignedIn(false);
+    setError(null)
 
     try {
       await signOut({ global: true });
       console.log("Signed out successfully!");
+      setError(null);
     } catch (err) {
       console.error("Failed to sign out:", err);
+      setError(String(err));
     }
   };
 
