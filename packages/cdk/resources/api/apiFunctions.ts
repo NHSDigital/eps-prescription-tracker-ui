@@ -3,7 +3,6 @@ import {LambdaFunction} from "../LambdaFunction"
 import {SharedSecrets} from "../SharedSecrets"
 import {ITableV2} from "aws-cdk-lib/aws-dynamodb"
 import {IManagedPolicy} from "aws-cdk-lib/aws-iam"
-import {Runtime} from "aws-cdk-lib/aws-lambda"
 import {NodejsFunction} from "aws-cdk-lib/aws-lambda-nodejs"
 import {Secret} from "aws-cdk-lib/aws-secretsmanager"
 import {NagSuppressions} from "cdk-nag"
@@ -100,7 +99,6 @@ export class ApiFunctions extends Construct {
 
     // Single Lambda for both real and mock scenarios
     const trackerUserInfoLambda = new LambdaFunction(this, "TrackerUserInfo", {
-      runtime: Runtime.NODEJS_20_X,
       serviceName: props.serviceName,
       stackName: props.stackName,
       lambdaName: `${props.stackName}-TrkUsrNfoUnified`,
@@ -117,7 +115,6 @@ export class ApiFunctions extends Construct {
 
     // Prescription Search Lambda Function
     const prescriptionSearchLambda = new LambdaFunction(this, "PrescriptionSearch", {
-      runtime: Runtime.NODEJS_20_X,
       serviceName: props.serviceName,
       stackName: props.stackName,
       lambdaName: `${props.stackName}-prescSearch`,

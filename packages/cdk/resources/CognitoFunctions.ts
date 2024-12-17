@@ -3,7 +3,6 @@ import {LambdaFunction} from "./LambdaFunction"
 import {ITableV2} from "aws-cdk-lib/aws-dynamodb"
 import {IManagedPolicy} from "aws-cdk-lib/aws-iam"
 import {Secret} from "aws-cdk-lib/aws-secretsmanager"
-import {Runtime} from "aws-cdk-lib/aws-lambda"
 import {NodejsFunction} from "aws-cdk-lib/aws-lambda-nodejs"
 import {SharedSecrets} from "./SharedSecrets"
 import {NagSuppressions} from "cdk-nag"
@@ -48,7 +47,6 @@ export class CognitoFunctions extends Construct {
 
     // Create the token Lambda function
     const tokenLambda = new LambdaFunction(this, "TokenResources", {
-      runtime: Runtime.NODEJS_20_X,
       serviceName: props.serviceName,
       stackName: props.stackName,
       lambdaName: `${props.stackName}-token`,
@@ -102,7 +100,6 @@ export class CognitoFunctions extends Construct {
       }
 
       mockTokenLambda = new LambdaFunction(this, "MockTokenResources", {
-        runtime: Runtime.NODEJS_20_X,
         serviceName: props.serviceName,
         stackName: props.stackName,
         lambdaName: `${props.stackName}-mock-token`,
