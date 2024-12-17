@@ -70,17 +70,22 @@ describe('AuthProvider', () => {
       },
       accessToken: {
         toString: () => `header.${btoa(JSON.stringify(accessTokenPayload))}.signature`,
-        payload: accessTokenPayload,
-      },
-    },
+        payload: accessTokenPayload
+      }
+    }
   });
 
-  // Helper function to render the provider and optionally inject mock session and user
+  type RenderWithProviderOptions = {
+    sessionMock?: { tokens: Record<string, unknown> };
+    userMock?: any | null; // userMock can be `null` or `any`
+    TestComponent?: JSX.Element;
+  };
+
   const renderWithProvider = async ({
     sessionMock = { tokens: {} },
     userMock = null as { username: string } | null, // Allow userMock to be null or an object with username
     TestComponent = <TestConsumer />,
-  } = {}) => {
+  }: RenderWithProviderOptions = {}) => {
     // Mock session and user fetch
     (fetchAuthSession as jest.Mock).mockResolvedValue(sessionMock);
     (getCurrentUser as jest.Mock).mockResolvedValue(userMock);
@@ -374,6 +379,37 @@ describe('AuthProvider', () => {
       expect(screen.getByTestId('error').textContent).toBe(
         'An error has occurred during the OAuth flow.' // Error state is updated
       );
+    });
+  });
+
+  it('should handle tokenRefresh event successfully', async () => {
+    await renderWithProvider({
+      sessionMock: createTokenMocks(),
+      userMock: { username: 'testuser' },
+    });
+
+    await waitFor(() => {
+      // Check that the signed-in state is true and user is present
+      expect(screen.getByTestId('isSignedIn').textContent).toBe('true');
+      expect(screen.getByTestId('user').textContent).toBe('UserPresent');
+      expect(screen.getByTestId('idToken').textContent).toBe('IdTokenPresent');
+      expect(screen.getByTestId('accessToken').textContent).toBe('AccessTokenPresent');
+    });
+
+    // Now simulate a token refresh event
+    (fetchAuthSession as jest.Mock).mockResolvedValueOnce(createTokenMocks());
+    (getCurrentUser as jest.Mock).mockResolvedValue({ username: 'testuser' });
+
+    // Trigger the tokenRefresh Hub event
+    if (hubCallback) {
+      hubCallback({ payload: { event: 'tokenRefresh' } });
+    }
+
+    // After the tokenRefresh event, ensure no error and user remains signed in
+    await waitFor(() => {
+      expect(screen.getByTestId('error').textContent).toBe('');
+      expect(screen.getByTestId('isSignedIn').textContent).toBe('true');
+      expect(screen.getByTestId('user').textContent).toBe('UserPresent');
     });
   });
 

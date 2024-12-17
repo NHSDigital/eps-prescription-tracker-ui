@@ -33,6 +33,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const sessionIdToken = authSession.tokens?.idToken;
       const sessionAccessToken = authSession.tokens?.accessToken;
 
+      console.log("Tokens: ", sessionIdToken, sessionAccessToken)
+
       if (sessionIdToken && sessionAccessToken) {
         // Extract expiration times directly from the token payloads.
         const currentTime = Math.floor(Date.now() / 1000);
@@ -128,11 +130,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           // Other auth events? The type-defined cases are already handled above.
           break;
       }
-    });
-
-    // Initial attempt to get user session when component mounts
-    getUser().catch((err) => {
-      console.error("Failed to get user session on mount:", err);
     });
 
     return () => {

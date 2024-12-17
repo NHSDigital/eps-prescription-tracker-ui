@@ -84,6 +84,50 @@ You will now be able to use AWS and CDK CLI commands to access the dev account. 
 
 When the token expires, you may need to reauthorise using `make aws-login` 
 
+### Local Environment Configuration
+
+To run the CPT UI locally (with mock auth and actual API usage), you can configure your `.envrc` file with a few variables. Below is an example configuration:
+
+```
+################
+# UPDATE THESE #
+################
+export SERVICE_NAME=cpt-ui-pr-123
+export NEXT_PUBLIC_userPoolClientId="1234567890deadbeef"
+export NEXT_PUBLIC_userPoolId="eu-west-2_deadbeef"
+export LOCAL_DEV=true
+
+# DON'T TOUCH!
+export API_DOMAIN_OVERRIDE=https://${SERVICE_NAME}.dev.eps.national.nhs.uk/
+
+export NEXT_PUBLIC_hostedLoginDomain=${SERVICE_NAME}.auth.eu-west-2.amazoncognito.com
+export NEXT_PUBLIC_redirectSignIn=http://localhost:3000/auth_demo/
+export NEXT_PUBLIC_redirectSignOut=http://localhost:3000/
+
+export NEXT_PUBLIC_COMMIT_ID="Local Development Server"
+
+export REACT_APP_hostedLoginDomain=$NEXT_PUBLIC_hostedLoginDomain
+export REACT_APP_userPoolClientId=$NEXT_PUBLIC_userPoolClientId
+export REACT_APP_userPoolId=$NEXT_PUBLIC_userPoolId
+export REACT_APP_redirectSignIn=$NEXT_PUBLIC_redirectSignIn
+export REACT_APP_redirectSignOut=$NEXT_PUBLIC_redirectSignOut
+```
+
+To enable mock auth for the local dev server, we only need the user pool details. To fetch these, you can use the following AWS CLI commands:
+
+```
+export SERVICE_NAME=cpt-ui-pr-<PR NUMBER>
+userPoolClientId=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${SERVICE_NAME}-stateful-resources:userPoolClient:userPoolClientId'].Value" --output text)
+userPoolId=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${SERVICE_NAME}-stateful-resources:userPool:Id'].Value" --output text)
+```
+
+For me, the aws terminal console installed in the dev container refuses to work. Another approach is to use the browser console, accessed by clicking the terminal icon next to the search bar on the AWS web dashboard.
+
+n.b. Ensure you've properly sourced these variables! Direnv can sometimes miss changes.
+```
+source .envrc
+```
+
 ###  React app
 React/Next.js code resides in app folder.  More details to be added as dev progresses, see make section for relevant commands
 

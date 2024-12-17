@@ -169,7 +169,7 @@ export default function SelectYourRolePage() {
                     <Col width="two-thirds">
                         <Details expander>
                             <Details.Summary>
-                                Roles without access
+                                {roles_without_access_table_title}
                             </Details.Summary>
                             <Details.Text>
                                 <Table>
@@ -183,10 +183,10 @@ export default function SelectYourRolePage() {
                                         {trackerUserInfoData?.roles_without_access?.map((role, index) => (
                                             <Table.Row key={index}>
                                                 <Table.Cell>
-                                                    {role.org_name ? role.org_name : "NO ORG NAME"} (ODS: {role.org_code})
+                                                    {role.org_name ? role.org_name : "No Org Name"} (ODS: {role.org_code})
                                                 </Table.Cell>
                                                 <Table.Cell>
-                                                    {role.role_name}
+                                                    {role.role_name?.replace(/"/g, '').split(':').pop()}
                                                 </Table.Cell>
                                             </Table.Row>
                                         ))}
