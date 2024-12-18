@@ -1,21 +1,11 @@
-
 import {Construct} from "constructs"
-
 import {LambdaFunction} from "./LambdaFunction"
 import {ITableV2} from "aws-cdk-lib/aws-dynamodb"
-import {
-  AccountRootPrincipal,
-  Effect,
-  IManagedPolicy,
-  IRole,
-  ManagedPolicy,
-  PolicyDocument,
-  PolicyStatement
-} from "aws-cdk-lib/aws-iam"
-import {Duration, RemovalPolicy, SecretValue} from "aws-cdk-lib"
-import {Key} from "aws-cdk-lib/aws-kms"
+import {IManagedPolicy} from "aws-cdk-lib/aws-iam"
 import {Secret} from "aws-cdk-lib/aws-secretsmanager"
 import {NodejsFunction} from "aws-cdk-lib/aws-lambda-nodejs"
+import {SharedSecrets} from "./SharedSecrets"
+import {NagSuppressions} from "cdk-nag"
 
 export interface CognitoFunctionsProps {
   readonly serviceName: string
@@ -38,169 +28,24 @@ export interface CognitoFunctionsProps {
   readonly primaryPoolIdentityProviderName: string
   readonly mockPoolIdentityProviderName: string
   readonly logRetentionInDays: number
-  readonly deploymentRole: IRole
-
+  readonly logLevel: string
+  readonly sharedSecrets: SharedSecrets
+  readonly jwtKid: string
 }
 
 /**
- * Functions and resources that are needed for cognito
+ * Functions and resources that are needed for Cognito
  */
 export class CognitoFunctions extends Construct {
   public readonly cognitoPolicies: Array<IManagedPolicy>
   public readonly tokenLambda: NodejsFunction
   public readonly mockTokenLambda: NodejsFunction
   public readonly primaryJwtPrivateKey: Secret
-  public readonly mockJwtPrivateKey: Secret
 
   public constructor(scope: Construct, id: string, props: CognitoFunctionsProps) {
     super(scope, id)
 
-    // Resources
-
-    // kms key used to encrypt the secret that stores the JWT private key
-    const jwtKmsKey = new Key(this, "JwtKMSKey", {
-      removalPolicy: RemovalPolicy.DESTROY,
-      pendingWindow: Duration.days(7),
-      alias: `alias/${props.stackName}-jwtKmsKey`,
-      description: `${props.stackName}-jwtKmsKey`,
-      enableKeyRotation: true,
-      policy: new PolicyDocument({
-        statements: [
-          new PolicyStatement({
-            sid: "Enable IAM User Permissions",
-            effect: Effect.ALLOW,
-            actions: [
-              "kms:*"
-            ],
-            principals: [
-              new AccountRootPrincipal
-            ],
-            resources: ["*"]
-          }),
-          new PolicyStatement({
-            effect: Effect.ALLOW,
-            principals: [props.deploymentRole],
-            actions: [
-              "kms:Encrypt",
-              "kms:GenerateDataKey*"
-            ],
-            resources:["*"]
-          })
-        ]
-      })
-    })
-    const useJwtKmsKeyPolicy = new ManagedPolicy(this, "UseJwtKmsKeyPolicy", {
-      statements: [
-        new PolicyStatement({
-          actions: [
-            "kms:DescribeKey",
-            "kms:Decrypt"
-          ],
-          resources: [
-            jwtKmsKey.keyArn
-          ]
-        })
-      ]
-    })
-
-    // define some variables that we need if we are doing mock authorization
-    let mockTokenLambda: LambdaFunction
-
-    // set up things for mock authorization
-    if (props.useMockOidc) {
-      if (props.mockOidcjwksEndpoint === undefined ||
-        props.mockOidcUserInfoEndpoint === undefined ||
-        props.mockOidcTokenEndpoint === undefined ||
-        props.mockOidcClientId === undefined ||
-        props.mockOidcIssuer === undefined
-      ) {
-        throw new Error("Attempt to use mock oidc but variables are not defined")
-      }
-
-      // secret used by mock token lambda that holds the JWT private key
-      const mockJwtPrivateKey = new Secret(this, "MockJwtPrivateKey", {
-        secretName: `${props.stackName}-mockJwtPrivateKey`,
-        secretStringValue: SecretValue.unsafePlainText("ChangeMe"),
-        encryptionKey: jwtKmsKey
-      })
-      mockJwtPrivateKey.addToResourcePolicy( new PolicyStatement({
-        effect: Effect.ALLOW,
-        principals: [props.deploymentRole],
-        actions: [
-          "secretsmanager:PutSecretValue"
-        ],
-        resources:["*"]
-      }))
-
-      const getMockJWTPrivateKeySecret = new ManagedPolicy(this, "getMockJWTPrivateKeySecret", {
-        statements: [
-          new PolicyStatement({
-            actions: [
-              "secretsmanager:GetSecretValue"
-            ],
-            resources: [
-              mockJwtPrivateKey.secretArn
-            ]
-          })
-        ]
-      })
-
-      // lambda for mock token endpoint
-      mockTokenLambda = new LambdaFunction(this, "MockTokenResources", {
-        serviceName: props.serviceName,
-        stackName: props.stackName,
-        lambdaName: `${props.stackName}-mockToken`,
-        additionalPolicies: [
-          props.tokenMappingTableWritePolicy,
-          props.tokenMappingTableReadPolicy,
-          props.useTokensMappingKmsKeyPolicy,
-          useJwtKmsKeyPolicy,
-          getMockJWTPrivateKeySecret
-        ],
-        logRetentionInDays: props.logRetentionInDays,
-        packageBasePath: "packages/cognito",
-        entryPoint: "src/token.ts",
-        lambdaEnvironmentVariables: {
-          idpTokenPath: props.mockOidcTokenEndpoint,
-          TokenMappingTableName: props.tokenMappingTable.tableName,
-          UserPoolIdentityProvider: props.mockPoolIdentityProviderName,
-          oidcjwksEndpoint: props.mockOidcjwksEndpoint,
-          jwtPrivateKeyArn: mockJwtPrivateKey.secretArn,
-          userInfoEndpoint: props.mockOidcUserInfoEndpoint,
-          oidcClientId: props.mockOidcClientId,
-          oidcIssuer: props.mockOidcIssuer
-        }
-      })
-      this.mockJwtPrivateKey = mockJwtPrivateKey
-    }
-
-    // secret used by token lambda that holds the JWT private key
-    const primaryJwtPrivateKey = new Secret(this, "PrimaryJwtPrivateKey", {
-      secretName: `${props.stackName}-primaryJwtPrivateKey`,
-      secretStringValue: SecretValue.unsafePlainText("ChangeMe"),
-      encryptionKey: jwtKmsKey
-    })
-    primaryJwtPrivateKey.addToResourcePolicy( new PolicyStatement({
-      effect: Effect.ALLOW,
-      principals: [props.deploymentRole],
-      actions: [
-        "secretsmanager:PutSecretValue"
-      ],
-      resources:["*"]
-    }))
-
-    const getJWTPrivateKeySecret = new ManagedPolicy(this, "getJWTPrivateKeySecret", {
-      statements: [
-        new PolicyStatement({
-          actions: [
-            "secretsmanager:GetSecretValue"
-          ],
-          resources: [
-            primaryJwtPrivateKey.secretArn
-          ]
-        })
-      ]
-    })
+    // Create the token Lambda function
     const tokenLambda = new LambdaFunction(this, "TokenResources", {
       serviceName: props.serviceName,
       stackName: props.stackName,
@@ -209,10 +54,11 @@ export class CognitoFunctions extends Construct {
         props.tokenMappingTableWritePolicy,
         props.tokenMappingTableReadPolicy,
         props.useTokensMappingKmsKeyPolicy,
-        useJwtKmsKeyPolicy,
-        getJWTPrivateKeySecret
+        props.sharedSecrets.useJwtKmsKeyPolicy,
+        props.sharedSecrets.getPrimaryJwtPrivateKeyPolicy
       ],
       logRetentionInDays: props.logRetentionInDays,
+      logLevel: props.logLevel,
       packageBasePath: "packages/cognito",
       entryPoint: "src/token.ts",
       lambdaEnvironmentVariables: {
@@ -220,26 +66,83 @@ export class CognitoFunctions extends Construct {
         TokenMappingTableName: props.tokenMappingTable.tableName,
         UserPoolIdentityProvider: props.primaryPoolIdentityProviderName,
         oidcjwksEndpoint: props.primaryOidcjwksEndpoint,
-        jwtPrivateKeyArn: primaryJwtPrivateKey.secretArn,
+        jwtPrivateKeyArn: props.sharedSecrets.primaryJwtPrivateKey.secretArn,
         userInfoEndpoint: props.primaryOidcUserInfoEndpoint,
+        useSignedJWT: "true",
         oidcClientId: props.primaryOidcClientId,
-        oidcIssuer: props.primaryOidcIssuer
+        oidcIssuer: props.primaryOidcIssuer,
+        jwtKid: props.jwtKid
       }
     })
 
-    // permissions for api gateway to execute lambdas
-    const cognitoPolicies: Array<IManagedPolicy> = [
-      tokenLambda.executeLambdaManagedPolicy
-    ]
+    // Suppress the AwsSolutions-L1 rule for the token Lambda function
+    NagSuppressions.addResourceSuppressions(tokenLambda.lambda, [
+      {
+        id: "AwsSolutions-L1",
+        reason: "The Lambda function uses the latest runtime version supported at the time of implementation."
+      }
+    ])
+
+    // Initialize policies
+    const cognitoPolicies: Array<IManagedPolicy> = [tokenLambda.executeLambdaManagedPolicy]
+
+    // If mock OIDC is enabled, configure mock token Lambda
+    let mockTokenLambda: LambdaFunction | undefined
     if (props.useMockOidc) {
-      cognitoPolicies.push(mockTokenLambda!.executeLambdaManagedPolicy)
-      this.mockTokenLambda = mockTokenLambda!.lambda
+      if (
+        !props.mockOidcjwksEndpoint ||
+        !props.mockOidcTokenEndpoint ||
+        !props.mockOidcUserInfoEndpoint ||
+        !props.mockOidcClientId ||
+        !props.mockOidcIssuer
+      ) {
+        throw new Error("Missing mock OIDC configuration.")
+      }
+
+      mockTokenLambda = new LambdaFunction(this, "MockTokenResources", {
+        serviceName: props.serviceName,
+        stackName: props.stackName,
+        lambdaName: `${props.stackName}-mock-token`,
+        additionalPolicies: [
+          props.tokenMappingTableWritePolicy,
+          props.tokenMappingTableReadPolicy,
+          props.useTokensMappingKmsKeyPolicy,
+          props.sharedSecrets.useJwtKmsKeyPolicy,
+          props.sharedSecrets.getMockJwtPrivateKeyPolicy
+        ],
+        logRetentionInDays: props.logRetentionInDays,
+        logLevel: props.logLevel,
+        packageBasePath: "packages/cognito",
+        entryPoint: "src/token.ts",
+        lambdaEnvironmentVariables: {
+          idpTokenPath: props.mockOidcTokenEndpoint,
+          TokenMappingTableName: props.tokenMappingTable.tableName,
+          UserPoolIdentityProvider: props.mockPoolIdentityProviderName,
+          oidcjwksEndpoint: props.mockOidcjwksEndpoint,
+          jwtPrivateKeyArn: props.sharedSecrets.mockJwtPrivateKey!.secretArn,
+          userInfoEndpoint: props.mockOidcUserInfoEndpoint,
+          useSignedJWT: "true",
+          oidcClientId: props.mockOidcClientId,
+          oidcIssuer: props.mockOidcIssuer,
+          jwtKid: props.jwtKid
+        }
+      })
+
+      // Suppress the AwsSolutions-L1 rule for the mock token Lambda function
+      NagSuppressions.addResourceSuppressions(mockTokenLambda.lambda, [
+        {
+          id: "AwsSolutions-L1",
+          reason: "The Lambda function uses the latest runtime version supported at the time of implementation."
+        }
+      ])
+
+      cognitoPolicies.push(mockTokenLambda.executeLambdaManagedPolicy)
+      this.mockTokenLambda = mockTokenLambda.lambda
     }
 
     // Outputs
     this.cognitoPolicies = cognitoPolicies
     this.tokenLambda = tokenLambda.lambda
-    this.primaryJwtPrivateKey = primaryJwtPrivateKey
-
+    this.primaryJwtPrivateKey = props.sharedSecrets.primaryJwtPrivateKey
   }
 }

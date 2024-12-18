@@ -26,7 +26,7 @@ interface DefaultLambdaOptionsParams {
 function getDefaultLambdaOptions(options: DefaultLambdaOptionsParams): NodejsFunctionProps {
   const defaultOptions: NodejsFunctionProps = {
     functionName: options.functionName,
-    runtime: Runtime.NODEJS_20_X,
+    runtime: Runtime.NODEJS_22_X,
     entry: join(baseDir, options.packageBasePath, options.entryPoint),
     projectRoot: baseDir,
     memorySize: 256,

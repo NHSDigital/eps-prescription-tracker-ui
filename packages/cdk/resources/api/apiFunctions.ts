@@ -1,18 +1,11 @@
 import {Construct} from "constructs"
 import {LambdaFunction} from "../LambdaFunction"
+import {SharedSecrets} from "../SharedSecrets"
 import {ITableV2} from "aws-cdk-lib/aws-dynamodb"
-import {
-  AccountRootPrincipal,
-  Effect,
-  IManagedPolicy,
-  IRole,
-  ManagedPolicy,
-  PolicyDocument,
-  PolicyStatement
-} from "aws-cdk-lib/aws-iam"
-import {Duration, RemovalPolicy, SecretValue} from "aws-cdk-lib"
-import {Key} from "aws-cdk-lib/aws-kms"
+import {IManagedPolicy} from "aws-cdk-lib/aws-iam"
+import {NodejsFunction} from "aws-cdk-lib/aws-lambda-nodejs"
 import {Secret} from "aws-cdk-lib/aws-secretsmanager"
+import {NagSuppressions} from "cdk-nag"
 
 // Interface for properties needed to create API functions
 export interface ApiFunctionsProps {
@@ -36,7 +29,13 @@ export interface ApiFunctionsProps {
   readonly primaryPoolIdentityProviderName: string
   readonly mockPoolIdentityProviderName: string
   readonly logRetentionInDays: number
-  readonly deploymentRole: IRole
+  readonly sharedSecrets: SharedSecrets
+  readonly apigeeTokenEndpoint: string
+  readonly apigeePrescriptionsEndpoint: string
+  readonly apigeeApiKey: string
+  readonly jwtKid: string
+  readonly logLevel: string
+  readonly roleId: string
 }
 
 /**
@@ -44,153 +43,39 @@ export interface ApiFunctionsProps {
  */
 export class ApiFunctions extends Construct {
   public readonly apiFunctionsPolicies: Array<IManagedPolicy>
-  public readonly trackerUserInfoLambda: LambdaFunction
+  public readonly prescriptionSearchLambda: NodejsFunction
+  public readonly trackerUserInfoLambda: NodejsFunction
   public readonly primaryJwtPrivateKey: Secret
 
   public constructor(scope: Construct, id: string, props: ApiFunctionsProps) {
     super(scope, id)
 
-    // *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-* //
-    //       Boilerplate Resources       //
-    // *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-* //
-
-    // KMS key used to encrypt the secret that stores the JWT private key
-    const jwtKmsKey = new Key(this, "JwtKMSKey", {
-      removalPolicy: RemovalPolicy.DESTROY,
-      pendingWindow: Duration.days(7),
-      alias: `${props.stackName}-JwtKMSKeyKMSKeyTrkUsrNfo`,
-      description: `${props.stackName}-JwtKMSKeyKMSKeyTrkUsrNfo`,
-      enableKeyRotation: true,
-      policy: new PolicyDocument({
-        statements: [
-          new PolicyStatement({
-            sid: "Enable IAM User Permissions",
-            effect: Effect.ALLOW,
-            actions: [
-              "kms:*"
-            ],
-            principals: [
-              new AccountRootPrincipal
-            ],
-            resources: ["*"]
-          }),
-          new PolicyStatement({
-            effect: Effect.ALLOW,
-            principals: [props.deploymentRole],
-            actions: [
-              "kms:Encrypt",
-              "kms:GenerateDataKey*"
-            ],
-            resources: ["*"]
-          })
-        ]
-      })
-    })
-    jwtKmsKey.addAlias(`alias/${props.stackName}-jwtKmsKeyLambdas`)
-
-    // Policy to allow decryption using the KMS key
-    const useJwtKmsKeyPolicy = new ManagedPolicy(this, "UseJwtKmsKeyPolicy", {
-      statements: [
-        new PolicyStatement({
-          actions: [
-            "kms:DescribeKey",
-            "kms:Decrypt"
-          ],
-          resources: [
-            jwtKmsKey.keyArn
-          ]
-        })
-      ]
-    })
-
-    // Real JWT Secret
-    const primaryJwtPrivateKey = new Secret(this, "PrimaryJwtPrivateKey", {
-      secretName: `${props.stackName}-primaryJwtPrivateKeyTrkUsrNfo`,
-      secretStringValue: SecretValue.unsafePlainText("ChangeMe"),
-      encryptionKey: jwtKmsKey
-    })
-    primaryJwtPrivateKey.addToResourcePolicy(new PolicyStatement({
-      effect: Effect.ALLOW,
-      principals: [props.deploymentRole],
-      actions: [
-        "secretsmanager:PutSecretValue"
-      ],
-      resources: ["*"]
-    }))
-
-    // Policy to allow access to the primary JWT private key
-    const getJWTPrivateKeySecret = new ManagedPolicy(this, "getJWTPrivateKeySecret", {
-      statements: [
-        new PolicyStatement({
-          actions: [
-            "secretsmanager:GetSecretValue"
-          ],
-          resources: [
-            primaryJwtPrivateKey.secretArn
-          ]
-        })
-      ]
-    })
-
-    // Setup mock keys if needed
-    let mockJwtPrivateKey: Secret | undefined = undefined
-    let getMockJWTPrivateKeySecret: ManagedPolicy | undefined = undefined
-
-    if (props.useMockOidc) {
-      if (
-        props.mockOidcjwksEndpoint === undefined ||
-        props.mockOidcUserInfoEndpoint === undefined ||
-        props.mockOidcTokenEndpoint === undefined ||
-        props.mockOidcClientId === undefined ||
-        props.mockOidcIssuer === undefined
-      ) {
-        throw new Error("Attempt to use mock oidc but variables are not defined")
-      }
-
-      mockJwtPrivateKey = new Secret(this, "MockJwtPrivateKey", {
-        secretName: `${props.stackName}-mockJwtPrivateKeyTrkUsrNfo`,
-        secretStringValue: SecretValue.unsafePlainText("ChangeMe"),
-        encryptionKey: jwtKmsKey
-      })
-
-      // Policy to allow access to the mock JWT private key
-      getMockJWTPrivateKeySecret = new ManagedPolicy(this, "getMockJWTPrivateKeySecret", {
-        statements: [
-          new PolicyStatement({
-            actions: [
-              "secretsmanager:GetSecretValue"
-            ],
-            resources: [
-              mockJwtPrivateKey.secretArn
-            ]
-          })
-        ]
-      })
-    }
+    // Permissions for API Gateway to execute lambdas
+    const apiFunctionsPolicies: Array<IManagedPolicy> = []
 
     // Combine policies
     const additionalPolicies = [
       props.tokenMappingTableWritePolicy,
       props.tokenMappingTableReadPolicy,
       props.useTokensMappingKmsKeyPolicy,
-      useJwtKmsKeyPolicy,
-      getJWTPrivateKeySecret
+      props.sharedSecrets.useJwtKmsKeyPolicy,
+      props.sharedSecrets.getPrimaryJwtPrivateKeyPolicy
     ]
 
-    if (props.useMockOidc && getMockJWTPrivateKeySecret) {
-      additionalPolicies.push(getMockJWTPrivateKeySecret)
+    if (props.useMockOidc && props.sharedSecrets.getMockJwtPrivateKeyPolicy) {
+      additionalPolicies.push(props.sharedSecrets.getMockJwtPrivateKeyPolicy)
     }
 
     // Environment variables
     // We pass in both sets of endpoints and keys. The Lambda code determines at runtime which to use.
-    const lambdaEnv: { [key: string]: string } = {
+    const lambdaEnv: {[key: string]: string} = {
       TokenMappingTableName: props.tokenMappingTable.tableName,
 
       // Real endpoints/credentials
       REAL_IDP_TOKEN_PATH: props.primaryOidcTokenEndpoint,
       REAL_USER_INFO_ENDPOINT: props.primaryOidcUserInfoEndpoint,
       REAL_OIDCJWKS_ENDPOINT: props.primaryOidcjwksEndpoint,
-      REAL_JWT_PRIVATE_KEY_ARN: primaryJwtPrivateKey.secretArn,
+      REAL_JWT_PRIVATE_KEY_ARN: props.sharedSecrets.primaryJwtPrivateKey.secretArn,
       REAL_USER_POOL_IDP: props.primaryPoolIdentityProviderName,
       REAL_USE_SIGNED_JWT: "true",
       REAL_OIDC_CLIENT_ID: props.primaryOidcClientId,
@@ -201,11 +86,11 @@ export class ApiFunctions extends Construct {
     }
 
     // If mock OIDC is enabled, add mock environment variables
-    if (props.useMockOidc && mockJwtPrivateKey) {
+    if (props.useMockOidc && props.sharedSecrets.mockJwtPrivateKey.secretArn) {
       lambdaEnv["MOCK_IDP_TOKEN_PATH"] = props.mockOidcTokenEndpoint!
       lambdaEnv["MOCK_USER_INFO_ENDPOINT"] = props.mockOidcUserInfoEndpoint!
       lambdaEnv["MOCK_OIDCJWKS_ENDPOINT"] = props.mockOidcjwksEndpoint!
-      lambdaEnv["MOCK_JWT_PRIVATE_KEY_ARN"] = mockJwtPrivateKey.secretArn
+      lambdaEnv["MOCK_JWT_PRIVATE_KEY_ARN"] = props.sharedSecrets.mockJwtPrivateKey.secretArn
       lambdaEnv["MOCK_USER_POOL_IDP"] = props.mockPoolIdentityProviderName
       lambdaEnv["MOCK_USE_SIGNED_JWT"] = "false"
       lambdaEnv["MOCK_OIDC_CLIENT_ID"] = props.mockOidcClientId!
@@ -219,32 +104,70 @@ export class ApiFunctions extends Construct {
       lambdaName: `${props.stackName}-TrkUsrNfoUnified`,
       additionalPolicies: additionalPolicies,
       logRetentionInDays: props.logRetentionInDays,
+      logLevel: props.logLevel,
       packageBasePath: "packages/trackerUserInfoLambda",
       entryPoint: "src/handler.ts",
       lambdaEnvironmentVariables: lambdaEnv
     })
 
-    // This one Lambda can handle both mock and real requests at runtime
+    // Add the policy to apiFunctionsPolicies
+    apiFunctionsPolicies.push(trackerUserInfoLambda.executeLambdaManagedPolicy)
 
-    // *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-* //
-    //            Permissions            //
-    // *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-* //
+    // Prescription Search Lambda Function
+    const prescriptionSearchLambda = new LambdaFunction(this, "PrescriptionSearch", {
+      serviceName: props.serviceName,
+      stackName: props.stackName,
+      lambdaName: `${props.stackName}-prescSearch`,
+      additionalPolicies: [
+        props.tokenMappingTableWritePolicy,
+        props.tokenMappingTableReadPolicy,
+        props.useTokensMappingKmsKeyPolicy,
+        props.sharedSecrets.useJwtKmsKeyPolicy,
+        props.sharedSecrets.getPrimaryJwtPrivateKeyPolicy
+      ],
+      logRetentionInDays: props.logRetentionInDays,
+      logLevel: props.logLevel,
+      packageBasePath: "packages/prescriptionSearchLambda",
+      entryPoint: "src/handler.ts",
+      lambdaEnvironmentVariables: {
+        idpTokenPath: props.primaryOidcTokenEndpoint,
+        TokenMappingTableName: props.tokenMappingTable.tableName,
+        UserPoolIdentityProvider: props.primaryPoolIdentityProviderName,
+        oidcjwksEndpoint: props.primaryOidcjwksEndpoint,
+        jwtPrivateKeyArn: props.sharedSecrets.primaryJwtPrivateKey.secretArn,
+        userInfoEndpoint: props.primaryOidcUserInfoEndpoint,
+        useSignedJWT: "true",
+        oidcClientId: props.primaryOidcClientId,
+        oidcIssuer: props.primaryOidcIssuer,
+        apigeeTokenEndpoint: props.apigeeTokenEndpoint,
+        apigeePrescriptionsEndpoint: props.apigeePrescriptionsEndpoint,
+        apigeeApiKey: props.apigeeApiKey,
+        jwtKid: props.jwtKid,
+        roleId: props.roleId
+      }
+    })
 
-    // Permissions for API Gateway to execute lambdas
-    const apiFunctionsPolicies: Array<IManagedPolicy> = [
-      trackerUserInfoLambda.executeLambdaManagedPolicy
-      // prescriptionSearchLambda.executeLambdaManagedPolicy
-    ]
+    // Add the policy to apiFunctionsPolicies
+    apiFunctionsPolicies.push(prescriptionSearchLambda.executeLambdaManagedPolicy)
 
-    // *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-* //
-    //              Outputs              //
-    // *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-* //
+    // const apiFunctionsPolicies: Array<IManagedPolicy> = [
+    //   trackerUserInfoLambda.executeLambdaManagedPolicy,
+    //   prescriptionSearchLambda.executeLambdaManagedPolicy
+    // ]
 
-    // Basic outputs
+    // Suppress the AwsSolutions-L1 rule for the prescription search Lambda function
+    NagSuppressions.addResourceSuppressions(prescriptionSearchLambda.lambda, [
+      {
+        id: "AwsSolutions-L1",
+        reason: "The Lambda function uses the latest runtime version supported at the time of implementation."
+      }
+    ])
+
+    // Outputs
     this.apiFunctionsPolicies = apiFunctionsPolicies
-    this.primaryJwtPrivateKey = primaryJwtPrivateKey
+    this.primaryJwtPrivateKey = props.sharedSecrets.primaryJwtPrivateKey
 
-    // CPT user info lambda outputs
-    this.trackerUserInfoLambda = trackerUserInfoLambda
+    this.prescriptionSearchLambda = prescriptionSearchLambda.lambda
+    this.trackerUserInfoLambda = trackerUserInfoLambda.lambda
   }
 }

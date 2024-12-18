@@ -17,24 +17,26 @@ export async function handler(event) {
   const versionMatches = uri.match(versionPattern)
   const prMatches = uri.match(prPattern)
 
+  let originUri
   let version
+  let remaining_uri
   if (versionMatches && versionMatches.length === 1){
     version = versionMatches[0]
+    remaining_uri = uri.split(versionMatches[0])[1]
   } else if (prMatches && prMatches.length === 1) {
     version = prMatches[0]
+    remaining_uri = uri.split(prMatches[0])[1]
   } else {
     version = currentVersion
+    remaining_uri = uri
   }
 
-  let originUri
-  if (uri.endsWith("/")) {
-    originUri = `/${version}/index.html`
+  if (!remaining_uri.startsWith("/") && remaining_uri !== "") {
+    originUri = "/404.html"
+  } else if (remaining_uri.includes(".")){
+    originUri = `/${version}${remaining_uri}`
   } else {
-    if (version === currentVersion) {
-      originUri = `/${version}${uri}`
-    } else {
-      originUri = uri
-    }
+    originUri = `/${version}/index.html`
   }
   request.uri = originUri
 

@@ -6,6 +6,7 @@ import {
   ServicePrincipal
 } from "aws-cdk-lib/aws-iam"
 import {NodejsFunction} from "aws-cdk-lib/aws-lambda-nodejs"
+import {CfnFunction, LayerVersion} from "aws-cdk-lib/aws-lambda"
 import {Fn, RemovalPolicy} from "aws-cdk-lib"
 import {Key} from "aws-cdk-lib/aws-kms"
 import {
@@ -14,7 +15,6 @@ import {
   SubscriptionFilter,
   FilterPattern
 } from "aws-cdk-lib/aws-logs"
-import {CfnFunction, LayerVersion} from "aws-cdk-lib/aws-lambda"
 import {KinesisDestination} from "aws-cdk-lib/aws-logs-destinations"
 import {Stream} from "aws-cdk-lib/aws-kinesis"
 import {Construct} from "constructs"
@@ -30,8 +30,9 @@ export interface LambdaFunctionProps {
   readonly additionalPolicies?: Array<IManagedPolicy>
   readonly packageBasePath: string
   readonly entryPoint: string
-  readonly lambdaEnvironmentVariables: { [key: string]: string }
+  readonly lambdaEnvironmentVariables: {[key: string]: string}
   readonly logRetentionInDays: number
+  readonly logLevel: string
 }
 
 /**
@@ -126,6 +127,8 @@ export class LambdaFunction extends Construct {
       packageBasePath: props.packageBasePath,
       entryPoint: props.entryPoint
     })
+
+    props.lambdaEnvironmentVariables["LOG_LEVEL"] = props.logLevel
 
     const lambdaFunction = new NodejsFunction(this, props.lambdaName, {
       ...lambdaOptions,
