@@ -119,6 +119,8 @@ To enable mock auth for the local dev server, we only need the user pool details
 export SERVICE_NAME=cpt-ui-pr-<PR NUMBER>
 userPoolClientId=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${SERVICE_NAME}-stateful-resources:userPoolClient:userPoolClientId'].Value" --output text)
 userPoolId=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${SERVICE_NAME}-stateful-resources:userPool:Id'].Value" --output text)
+echo $userPoolClientId
+echo $userPoolId
 ```
 
 For me, the aws terminal console installed in the dev container refuses to work. Another approach is to use the browser console, accessed by clicking the terminal icon next to the search bar on the AWS web dashboard.

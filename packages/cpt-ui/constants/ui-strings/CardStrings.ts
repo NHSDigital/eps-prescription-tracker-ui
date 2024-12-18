@@ -4,10 +4,10 @@ export const SELECT_YOUR_ROLE_PAGE_TEXT = {
   insetText: {
     visuallyHidden: "Information: ",
     message:
-      "You are currently logged in at GREENE'S PHARMACY (ODS: FG419) with Health Professional Access Role."
+      "You are currently logged in at <b>GREENE'S PHARMACY (ODS: FG419)</b> with <b>Health Professional Access Role</b>."
   },
   confirmButton: {
-    text: "Confirm and continue to find a prescription",
+    text: "Continue to find a prescription",
     link: "tracker-presc-no"
   },
   alternativeMessage: "Alternatively, you can choose a new role below.",

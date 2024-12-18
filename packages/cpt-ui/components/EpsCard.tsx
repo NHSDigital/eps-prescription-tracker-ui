@@ -26,7 +26,9 @@ export default function EpsCard({
                     <Col width='one-half'>
                         <Card.Link href={link} >
                             <Card.Heading className="nhsuk-heading-s">
-                                {orgName} (ODS: {odsCode})
+                                {orgName}
+                                <br />
+                                (ODS: {odsCode})
                             </Card.Heading>
                         </Card.Link>
                         <Card.Description className="eps-card__roleName">
