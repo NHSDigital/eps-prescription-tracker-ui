@@ -191,7 +191,7 @@ export default function SelectYourRolePage() {
                                             ? String(role.role_name).split(":").pop()?.replace(/['"]+/g, "").trim() || "No Role Name"
                                             : "No Role Name"
                                     }
-                                    link="selectrole"
+                                    link="yourselectedrole"
                                 />
                         ))}
                     </div>
