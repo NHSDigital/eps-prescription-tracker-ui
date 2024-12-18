@@ -1,4 +1,4 @@
-export const SELECT_ROLE_PAGE_TEXT = {
+export const SELECT_YOUR_ROLE_PAGE_TEXT = {
   title: "Select your role",
   caption: "Select the role you wish to use to access the service.",
   insetText: {

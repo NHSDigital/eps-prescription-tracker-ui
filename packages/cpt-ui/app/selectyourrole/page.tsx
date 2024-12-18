@@ -3,7 +3,7 @@ import React, {useState, useEffect, useContext, useCallback } from "react"
 import { Container, Col, Row, Details, Table, ErrorSummary, Button, InsetText } from "nhsuk-react-components"
 import { AuthContext } from "@/context/AuthProvider";
 import EpsCard from "@/components/EpsCard";
-import {SELECT_ROLE_PAGE_TEXT} from "@/constants/ui-strings/CardStrings";
+import {SELECT_YOUR_ROLE_PAGE_TEXT} from "@/constants/ui-strings/CardStrings";
 
 export type RoleDetails = {
     role_name?: string;
@@ -149,7 +149,7 @@ export default function SelectYourRolePage() {
     }
 
     const { title, caption, insetText, confirmButton, alternativeMessage, organisation, role, roles_without_access_table_title } =
-        SELECT_ROLE_PAGE_TEXT;
+        SELECT_YOUR_ROLE_PAGE_TEXT;
 
     return (
         <main id="main-content" className="nhsuk-main-wrapper">
@@ -191,7 +191,7 @@ export default function SelectYourRolePage() {
                                             ? String(role.role_name).split(":").pop()?.replace(/['"]+/g, "").trim() || "No Role Name"
                                             : "No Role Name"
                                     }
-                                    link="site/selectrole"
+                                    link="selectrole"
                                 />
                         ))}
                     </div>
