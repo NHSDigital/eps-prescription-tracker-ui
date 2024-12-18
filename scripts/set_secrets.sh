@@ -22,7 +22,7 @@ set_repository_secret() {
     echo "secret_value: ${secret_value}"
     read -r -p "Press Enter to set secret or ctrl+c to exit"
     gh secret set "${secret_name}" \
-        --repo HSDigital/eps-prescription-tracker-ui \
+        --repo NHSDigital/eps-prescription-tracker-ui \
         --app "${app}" \
         --body "${secret_value}"
 }
