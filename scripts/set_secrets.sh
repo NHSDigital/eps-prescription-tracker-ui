@@ -7,76 +7,26 @@ check_gh_logged_in() {
     fi
 }
 
-set_secrets() {
-    gh secret set PTL_PRIMARY_OIDC_CLIENT_ID \
-        --repo NHSDigital/eps-prescription-tracker-ui \
-        --app actions \
-        --body "${Cis2PTLClientID}"
-
-    gh secret set PTL_PRIMARY_OIDC_CLIENT_SECRET \
-        --repo NHSDigital/eps-prescription-tracker-ui \
-        --app actions \
-        --body "$Cis2PTLClientSecret"
-
-    gh secret set PTL_CIS2_PRIVATE_KEY \
-        --repo NHSDigital/eps-prescription-tracker-ui \
-        --app actions \
-        --body "$private_key"
-
-    gh secret set PTL_PRIMARY_OIDC_CLIENT_ID \
-        --repo NHSDigital/eps-prescription-tracker-ui \
-        --app dependabot \
-        --body "${Cis2PTLClientID}"
-
-    gh secret set PTL_PRIMARY_OIDC_CLIENT_SECRET \
-        --repo NHSDigital/eps-prescription-tracker-ui \
-        --app dependabot \
-        --body "$Cis2PTLClientSecret"
-
-    gh secret set PTL_CIS2_PRIVATE_KEY \
-        --repo NHSDigital/eps-prescription-tracker-ui \
-        --app dependabot \
-        --body "$private_key"
-
-    # mock secrets
-
-    gh secret set PTL_MOCK_CLIENT_ID \
-        --repo NHSDigital/eps-prescription-tracker-ui \
-        --app actions \
-        --body "$mockClientID"
-
-    gh secret set PTL_MOCK_CLIENT_SECRET \
-        --repo NHSDigital/eps-prescription-tracker-ui \
-        --app actions \
-        --body "$mockClientSecret"
-
-    gh secret set PTL_MOCK_CLIENT_ID \
-        --repo NHSDigital/eps-prescription-tracker-ui \
-        --app dependabot \
-        --body "$mockClientID"
-
-    gh secret set PTL_MOCK_CLIENT_SECRET \
-        --repo NHSDigital/eps-prescription-tracker-ui \
-        --app dependabot \
-        --body "$mockClientSecret"
+set_repository_secret() {
+    secret_name=$1
+    secret_value=$2
+    app=$3
+    if [ -z "${secret_value}" ]; then
+        echo "value passed for secret ${secret_name} is unset or set to the empty string. Not setting"
+        return 0
+    fi
+    echo
+    echo "*****************************************"
+    echo
+    echo "setting value for ${secret_name}"
+    echo "secret_value: ${secret_value}"
+    read -r -p "Press Enter to set secret or ctrl+c to exit"
+    gh secret set "${secret_name}" \
+        --repo HSDigital/eps-prescription-tracker-ui \
+        --app "${app}" \
+        --body "${secret_value}"
 }
 
-if [ -z "${Cis2PTLClientID}" ]; then
-    echo "Cis2PTLClientID is unset or set to the empty string"
-    exit 1
-fi
-if [ -z "${Cis2PTLClientSecret}" ]; then
-    echo "Cis2PTLClientSecret is unset or set to the empty string"
-    exit 1
-fi
-if [ -z "${mockClientID}" ]; then
-    echo "mockClientID is unset or set to the empty string"
-    exit 1
-fi
-if [ -z "${mockClientSecret}" ]; then
-    echo "mockClientSecret is unset or set to the empty string"
-    exit 1
-fi
 
 private_key=$(cat .secrets/eps-cpt-ui-test.pem)
 if [ -z "${private_key}" ]; then
@@ -85,3 +35,21 @@ if [ -z "${private_key}" ]; then
 fi
 check_gh_logged_in
 set_secrets
+
+set_repository_secret PTL_PRIMARY_OIDC_CLIENT_ID "${PTL_PRIMARY_OIDC_CLIENT_ID}" "actions"
+set_repository_secret PTL_PRIMARY_OIDC_CLIENT_SECRET "${PTL_PRIMARY_OIDC_CLIENT_SECRET}" "actions"
+set_repository_secret PTL_CIS2_PRIVATE_KEY "${private_key}" "actions"
+set_repository_secret PTL_PRIMARY_OIDC_CLIENT_ID "${PTL_PRIMARY_OIDC_CLIENT_ID}" "dependabot"
+set_repository_secret PTL_PRIMARY_OIDC_CLIENT_SECRET "${PTL_PRIMARY_OIDC_CLIENT_SECRET}" "dependabot"
+set_repository_secret PTL_CIS2_PRIVATE_KEY "${private_key}" "actions"
+
+set_repository_secret PTL_MOCK_CLIENT_ID "${PTL_MOCK_CLIENT_ID}" "actions"
+set_repository_secret PTL_MOCK_CLIENT_SECRET "${PTL_MOCK_CLIENT_SECRET}" "actions"
+set_repository_secret PTL_MOCK_CLIENT_ID "${PTL_MOCK_CLIENT_ID}" "dependabot"
+set_repository_secret PTL_MOCK_CLIENT_SECRET "${PTL_MOCK_CLIENT_SECRET}" "dependabot"
+
+set_repository_secret APIGEE_DEV_API_KEY "${APIGEE_DEV_API_KEY}" "actions"
+set_repository_secret APIGEE_DEV_API_KEY "${APIGEE_DEV_API_KEY}" "dependabot"
+set_repository_secret APIGEE_REF_API_KEY "${APIGEE_REF_API_KEY}" "actions"
+set_repository_secret APIGEE_QA_API_KEY "${APIGEE_QA_API_KEY}" "actions"
+set_repository_secret APIGEE_INT_API_KEY "${APIGEE_INT_API_KEY}" "actions"
