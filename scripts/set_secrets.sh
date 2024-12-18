@@ -28,6 +28,8 @@ set_repository_secret() {
 }
 
 
+# this is a locally generated private key
+# the public part of this keypair should be put in packages/staticContent/jwks/jwks.json
 private_key=$(cat .secrets/eps-cpt-ui-test.pem)
 if [ -z "${private_key}" ]; then
     echo "private_key is unset or set to the empty string"
@@ -36,18 +38,26 @@ fi
 check_gh_logged_in
 set_secrets
 
+# these are from cis2 client set up
 set_repository_secret PTL_PRIMARY_OIDC_CLIENT_ID "${PTL_PRIMARY_OIDC_CLIENT_ID}" "actions"
 set_repository_secret PTL_PRIMARY_OIDC_CLIENT_SECRET "${PTL_PRIMARY_OIDC_CLIENT_SECRET}" "actions"
-set_repository_secret PTL_CIS2_PRIVATE_KEY "${private_key}" "actions"
-set_repository_secret PTL_PRIMARY_OIDC_CLIENT_ID "${PTL_PRIMARY_OIDC_CLIENT_ID}" "dependabot"
-set_repository_secret PTL_PRIMARY_OIDC_CLIENT_SECRET "${PTL_PRIMARY_OIDC_CLIENT_SECRET}" "dependabot"
+
+# this is a locally generated private key
+# the public part of this keypair should be put in packages/staticContent/jwks/jwks.json
 set_repository_secret PTL_CIS2_PRIVATE_KEY "${private_key}" "actions"
 
+# need to set these for dependabot as well
+set_repository_secret PTL_PRIMARY_OIDC_CLIENT_ID "${PTL_PRIMARY_OIDC_CLIENT_ID}" "dependabot"
+set_repository_secret PTL_PRIMARY_OIDC_CLIENT_SECRET "${PTL_PRIMARY_OIDC_CLIENT_SECRET}" "dependabot"
+set_repository_secret PTL_CIS2_PRIVATE_KEY "${private_key}" "dependabot"
+
+# these are from the keycloak setup of the mock client
 set_repository_secret PTL_MOCK_CLIENT_ID "${PTL_MOCK_CLIENT_ID}" "actions"
 set_repository_secret PTL_MOCK_CLIENT_SECRET "${PTL_MOCK_CLIENT_SECRET}" "actions"
 set_repository_secret PTL_MOCK_CLIENT_ID "${PTL_MOCK_CLIENT_ID}" "dependabot"
 set_repository_secret PTL_MOCK_CLIENT_SECRET "${PTL_MOCK_CLIENT_SECRET}" "dependabot"
 
+# these are from the apigee client set up
 set_repository_secret APIGEE_DEV_API_KEY "${APIGEE_DEV_API_KEY}" "actions"
 set_repository_secret APIGEE_DEV_API_KEY "${APIGEE_DEV_API_KEY}" "dependabot"
 set_repository_secret APIGEE_REF_API_KEY "${APIGEE_REF_API_KEY}" "actions"
