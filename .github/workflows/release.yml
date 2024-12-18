@@ -148,7 +148,7 @@ jobs:
       mockOidClientSecret: ${{ secrets.PTL_MOCK_CLIENT_SECRET }}
       CIS2_PRIVATE_KEY: ${{ secrets.PTL_CIS2_PRIVATE_KEY }}
       REGRESSION_TESTS_PEM: ${{ secrets.REGRESSION_TESTS_PEM }}
-      APIGEE_API_KEY: ${{ secrets.APIGEE_API_KEY }}
+      APIGEE_API_KEY: ${{ secrets.APIGEE_DEV_API_KEY }}
 
   create_release_notes:
     needs: [tag_release, package_code, get_commit_id, release_dev]
@@ -200,7 +200,7 @@ jobs:
       mockOidClientSecret: ${{ secrets.PTL_MOCK_CLIENT_SECRET }}
       CIS2_PRIVATE_KEY: ${{ secrets.PTL_CIS2_PRIVATE_KEY }}
       REGRESSION_TESTS_PEM: ${{ secrets.REGRESSION_TESTS_PEM }}
-      APIGEE_API_KEY: ${{ secrets.APIGEE_API_KEY }}
+      APIGEE_API_KEY: ${{ secrets.APIGEE_REF_API_KEY }}
 
   release_qa:
     needs: [tag_release, package_code, get_commit_id, release_dev]
@@ -237,7 +237,7 @@ jobs:
       mockOidClientSecret: ${{ secrets.PTL_MOCK_CLIENT_SECRET }}
       CIS2_PRIVATE_KEY: ${{ secrets.PTL_CIS2_PRIVATE_KEY }}
       REGRESSION_TESTS_PEM: ${{ secrets.REGRESSION_TESTS_PEM }}
-      APIGEE_API_KEY: ${{ secrets.APIGEE_API_KEY }}
+      APIGEE_API_KEY: ${{ secrets.APIGEE_QA_API_KEY }}
   
   release_int:
     needs: [tag_release, package_code, get_commit_id, release_qa]
@@ -274,7 +274,7 @@ jobs:
       mockOidClientSecret: ${{ secrets.PTL_MOCK_CLIENT_SECRET }}
       CIS2_PRIVATE_KEY: ${{ secrets.PTL_CIS2_PRIVATE_KEY }}
       REGRESSION_TESTS_PEM: ${{ secrets.REGRESSION_TESTS_PEM }}
-      APIGEE_API_KEY: ${{ secrets.APIGEE_API_KEY }}
+      APIGEE_API_KEY: ${{ secrets.APIGEE_INT_API_KEY }}
 
   # release_prod:
   #   needs: [tag_release, package_code, get_commit_id, release_int]
