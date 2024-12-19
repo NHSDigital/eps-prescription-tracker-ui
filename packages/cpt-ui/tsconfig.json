@@ -12,6 +12,7 @@
     "baseUrl": ".",
     "paths": {
       "@/context/*": ["context/*"],
+      "@/app/*": ["app/*"],
       "@/constants/*": ["constants/*"],
       "@/assets/*": ["assets/*"],
       "@/components/*": ["components/*"]

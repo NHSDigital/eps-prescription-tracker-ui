@@ -1,8 +1,17 @@
 import React, { createContext, useEffect, useState } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
 import { Amplify } from 'aws-amplify';
 import { Hub } from "aws-amplify/utils";
-import { signInWithRedirect, signOut, getCurrentUser, AuthUser, fetchAuthSession, JWT, SignInWithRedirectInput } from 'aws-amplify/auth';
-import { authConfig } from './configureAmplify';
+import { 
+  signInWithRedirect, 
+  signOut, 
+  getCurrentUser, 
+  AuthUser, 
+  fetchAuthSession, 
+  JWT, 
+  SignInWithRedirectInput 
+} from 'aws-amplify/auth';
+import { authConfig } from '@/context/configureAmplify';
 
 interface AuthContextType {
   error: string | null;
@@ -23,15 +32,48 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [idToken, setIdToken] = useState<JWT | null>(null);
   const [accessToken, setAccessToken] = useState<JWT | null>(null);
 
-  /**
+  const router = useRouter();
+  const pathname = usePathname();
+
+  const env = String(process.env["NEXT_PUBLIC_ENV"]);
+  const mockAuthAllowed = [
+    // "prod",
+    "dev",
+    "qa",
+    "int",
+    "ref"
+  ];
+
+  /* 
+    * The user is not logged in. Try and log them in.
+  */
+  const redirectToLogin = () => {
+    if (window.location.pathname !== '/login') {
+      console.log("Redirect now");
+      if (env in mockAuthAllowed) {
+        router.push("/login");
+      } else {
+        // Just send them off to CIS2
+        cognitoSignIn({
+          provider: {
+              custom: "Primary"
+          }
+      })
+      }
+    }
+  };
+
+  /*
    * Fetch and update the user session state.
-   */
+  */
   const getUser = async () => {
     console.log("Fetching user session...");
     try {
       const authSession = await fetchAuthSession({ forceRefresh: true });
       const sessionIdToken = authSession.tokens?.idToken;
       const sessionAccessToken = authSession.tokens?.accessToken;
+
+      console.log("Tokens: ", sessionIdToken, sessionAccessToken)
 
       if (sessionIdToken && sessionAccessToken) {
         // Extract expiration times directly from the token payloads.
@@ -44,6 +86,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           setUser(null);
           setIdToken(null);
           setAccessToken(null);
+          setError("Cognito access token expired");
+          redirectToLogin();
           return;
         }
 
@@ -54,6 +98,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           setUser(null);
           setIdToken(null);
           setAccessToken(null);
+          setError("Cognito ID token expired");
+          redirectToLogin();
           return;
         }
 
@@ -64,12 +110,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
         const currentUser = await getCurrentUser();
         setUser(currentUser);
+        setError(null);
       } else {
         console.warn("Missing access or ID token.");
         setIsSignedIn(false);
         setUser(null);
         setIdToken(null);
         setAccessToken(null);
+        setError("Missing access or ID token");
+        // Redirect if not signed in
+        redirectToLogin();
       }
     } catch (fetchError) {
       console.error("Error fetching user session:", fetchError);
@@ -78,22 +128,33 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setAccessToken(null);
       setIdToken(null);
       setIsSignedIn(false);
+      setError(String(fetchError));
+      // Redirect if not signed in
+      redirectToLogin();
     }
   };
+
+  type HubListenOptions = {
+    payload: any
+  }
 
   /**
    * Set up Hub listener to react to auth events and refresh session state.
    */
   useEffect(() => {
-    const unsubscribe = Hub.listen("auth", ({ payload }) => {
+    const unsubscribe = Hub.listen("auth", (opts: HubListenOptions) => {
+      const payload = opts.payload;
       console.log("Auth event payload:", payload);
       switch (payload.event) {
         // On successful signIn or token refresh, get the latest user state
         case "signedIn":
           console.log("User %s logged in", payload.data.username);
           setError(null);
+          break;
         case "tokenRefresh":
           console.log("Refreshing token");
+          setError(null);
+          break;
         case "signInWithRedirect":
           setError(null);
           break;
@@ -113,17 +174,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
         case "signedOut":
           console.log("User signing out");
+          setIsSignedIn(false);
+          setUser(null);
+          setIdToken(null);
+          setAccessToken(null);
+          setError(null);
+          redirectToLogin();
           break;
 
         default:
           // Other auth events? The type-defined cases are already handled above.
           break;
       }
-    });
-
-    // Initial attempt to get user session when component mounts
-    getUser().catch((err) => {
-      console.error("Failed to get user session on mount:", err);
     });
 
     return () => {
@@ -137,10 +199,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     console.log("Configuring Amplify with authConfig:", authConfig);
     Amplify.configure(authConfig, { ssr: true });
-    getUser().catch((err) => {
-      console.error("Failed to get user session after Amplify config:", err);
-    });
+    getUser();
   }, [authConfig]);
+
+
+  // This runs whenever the user navigates to a new page. 
+  // Refreshes the token, or redirects to login if we have expired.
+  useEffect(() => {
+    console.log("New page, refreshing token", pathname);
+    getUser();
+  }, [pathname])
+
 
   /**
    * Sign out process.
@@ -152,12 +221,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setAccessToken(null);
     setIdToken(null);
     setIsSignedIn(false);
+    setError(null);
 
     try {
       await signOut({ global: true });
       console.log("Signed out successfully!");
+      setError(null);
+      // As soon as we sign out, redirect to the login page
+      redirectToLogin();
     } catch (err) {
       console.error("Failed to sign out:", err);
+      setError(String(err));
     }
   };
 
