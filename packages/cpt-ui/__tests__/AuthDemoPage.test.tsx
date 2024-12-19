@@ -74,7 +74,7 @@ const MockAuthProvider = ({ children }) => {
 
 // Since we've referenced AuthContext in the mock provider, we need to re-import it here
 // after the mock is set up.
-import { AuthContext } from "../context/AuthContext";
+import { AuthContext } from "../context/AuthProvider";
 import AuthPage from "../app/auth_demo/page";
 
 describe("AuthPage", () => {
