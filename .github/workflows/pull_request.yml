@@ -90,8 +90,8 @@ jobs:
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_DEPLOY_ROLE }}
       primaryOidcClientId: ${{ secrets.PTL_PRIMARY_OIDC_CLIENT_ID }}
       primaryOidClientSecret: ${{ secrets.PTL_PRIMARY_OIDC_CLIENT_SECRET }}
-      mockOidcClientId: ${{ secrets.PTL_MOCK_CLIENT_ID }}
-      mockOidClientSecret: ${{ secrets.PTL_MOCK_CLIENT_SECRET }}
+      mockOidcClientId: ${{ secrets.QA_MOCK_CLIENT_ID }}
+      mockOidClientSecret: ${{ secrets.QA_MOCK_CLIENT_SECRET }}
       CIS2_PRIVATE_KEY: ${{ secrets.PTL_CIS2_PRIVATE_KEY }}
       REGRESSION_TESTS_PEM: ${{ secrets.REGRESSION_TESTS_PEM }}
       APIGEE_API_KEY: ${{ secrets.APIGEE_DEV_API_KEY }}
