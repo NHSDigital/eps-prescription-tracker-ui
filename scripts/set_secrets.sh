@@ -46,6 +46,7 @@ set_repository_secret PTL_PRIMARY_OIDC_CLIENT_SECRET "${PTL_PRIMARY_OIDC_CLIENT_
 # the public part of this keypair should be put in packages/staticContent/jwks/jwks.json
 set_repository_secret PTL_CIS2_PRIVATE_KEY "${private_key}" "actions"
 
+
 # need to set these for dependabot as well
 set_repository_secret PTL_PRIMARY_OIDC_CLIENT_ID "${PTL_PRIMARY_OIDC_CLIENT_ID}" "dependabot"
 set_repository_secret PTL_PRIMARY_OIDC_CLIENT_SECRET "${PTL_PRIMARY_OIDC_CLIENT_SECRET}" "dependabot"
