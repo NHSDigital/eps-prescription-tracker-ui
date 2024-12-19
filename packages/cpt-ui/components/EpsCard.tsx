@@ -1,6 +1,6 @@
 import React from "react";
 import { Card, Col, Row } from "nhsuk-react-components";
-import "../assets/styles/card.scss";
+import "@/assets/styles/card.scss";
 
 interface EpsCardProps {
     orgName: string;
