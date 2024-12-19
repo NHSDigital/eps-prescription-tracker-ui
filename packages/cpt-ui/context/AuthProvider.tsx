@@ -44,13 +44,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     "ref"
   ];
 
+  useEffect(() => {
+    console.log(`Deployed to the ${env} environment`);
+  }, [env])
+
   /* 
     * The user is not logged in. Try and log them in.
   */
   const redirectToLogin = () => {
     if (window.location.pathname !== '/login') {
-      console.log("Redirect now");
-      if (env in mockAuthAllowed) {
+      console.log("Redirecting the user to login.");
+      if (error) {
+        console.log(error);
+      }
+      if (!(env in mockAuthAllowed)) {
         router.push("/login");
       } else {
         // Just send them off to CIS2
