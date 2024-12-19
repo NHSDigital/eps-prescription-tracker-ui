@@ -11,7 +11,7 @@ import {
   JWT, 
   SignInWithRedirectInput 
 } from 'aws-amplify/auth';
-import { authConfig } from './configureAmplify';
+import { authConfig } from '@/context/configureAmplify';
 
 interface AuthContextType {
   error: string | null;
@@ -35,10 +35,31 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
   const pathname = usePathname();
 
+  const env = String(process.env["NEXT_PUBLIC_ENV"]);
+  const mockAuthAllowed = [
+    // "prod",
+    "dev",
+    "qa",
+    "int",
+    "ref"
+  ];
+
+  /* 
+    * The user is not logged in. Try and log them in.
+  */
   const redirectToLogin = () => {
-    if (window.location.pathname !== '/auth_demo') {
+    if (window.location.pathname !== '/login') {
       console.log("Redirect now");
-      router.push('/auth_demo')
+      if (env in mockAuthAllowed) {
+        router.push("/login");
+      } else {
+        // Just send them off to CIS2
+        cognitoSignIn({
+          provider: {
+              custom: "Primary"
+          }
+      })
+      }
     }
   };
 

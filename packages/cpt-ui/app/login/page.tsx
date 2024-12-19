@@ -41,10 +41,9 @@ export default function AuthPage() {
 
                 <Row>
                     <Col width="full">
-                        <h1>Authorisation demonstration</h1>
-                        <p>Since this is not actually set to be integrated into anything yet, I&apos;ve made this little page to show how login/logout works.</p>
-                        <p>Note that this is the COGNITO login, and displays the relevant information.</p>
-                        <p>The auth context carries around the logic and authorisation state, but takes no actions (yet) without explicit calls. It could be updated to monitor login status, and poll to check for serverside token retractions.</p>
+                        <h1>Login dev page</h1>
+                        <p>Here, you can choose how to authorise with the app. Note that we do not have PTL login for PR deployments</p>
+                        <p>Note that this is the COGNITO login, and displays the relevant information. The backend handles CIS2 and APIGEE tokens.</p>
                     </Col>
                 </Row>
     
