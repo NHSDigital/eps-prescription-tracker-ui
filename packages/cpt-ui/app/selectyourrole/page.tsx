@@ -159,7 +159,7 @@ export default function SelectYourRolePage() {
                     <Col width="two-thirds">
                         <h1 className='nhsuk-heading-xl'>
                             <span role="text" data-testid="eps_header_selectYourRole">
-                                <span class="nhsuk-title">{title}</span>
+                                <span className="nhsuk-title">{title}</span>
                                 <span className="nhsuk-caption-l nhsuk-caption--bottom">
                                     <span className="nhsuk-u-visually-hidden"> - </span>
                                     {caption}
