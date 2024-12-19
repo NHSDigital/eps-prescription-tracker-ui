@@ -11,8 +11,11 @@ import {
     HEADER_CHANGE_ROLE_BUTTON,
     HEADER_CHANGE_ROLE_TARGET,
     HEADER_SELECT_YOUR_ROLE_BUTTON,
-    HEADER_SELECT_YOUR_ROLE_TARGET
+    HEADER_SELECT_YOUR_ROLE_TARGET,
+    HEADER_PRESCRIPTION_SEARCH_BUTTON,
+    HEADER_PRESCRIPTION_SEARCH_TARGET
 } from "@/constants/ui-strings/HeaderStrings"
+
 
 export default function EpsHeader() {
     const router = useRouter()
@@ -29,20 +32,15 @@ export default function EpsHeader() {
                 <Header.Content />
             </Header.Container>
             <Header.Nav className="masthead-nav">
-                <li className="nhsuk-header__navigation-item">
-                    <Link className="nhsuk-header__navigation-link" href='/' data-testid="eps_header_placeholder1">Placeholder 1</Link>
-                </li>
-                <li className="nhsuk-header__navigation-item">
-                    <Link className="nhsuk-header__navigation-link" href='/auth_demo/' data-testid="eps_header_placeholder2">Placeholder 2</Link>
-                </li>
+
                 {pathname != '/' ? (
                     <li className="nhsuk-header__navigation-item">
-                        <Link className="nhsuk-header__navigation-link" href={HEADER_CHANGE_ROLE_TARGET} data-testid="eps_header_changeRoleLink">{HEADER_CHANGE_ROLE_BUTTON}</Link>
+                        <Link className="nhsuk-header__navigation-link" href={`/${HEADER_CHANGE_ROLE_TARGET}`} data-testid="eps_header_changeRoleLink">{HEADER_CHANGE_ROLE_BUTTON}</Link>
                     </li>
                 ) :
                     (
                         <li className="nhsuk-header__navigation-item">
-                            <Link className="nhsuk-header__navigation-link" href={HEADER_CONFIRM_ROLE_TARGET} data-testid="eps_header_confirmRoleLink">{HEADER_CONFIRM_ROLE_BUTTON}</Link>
+                            <Link className="nhsuk-header__navigation-link" href={`/${HEADER_CONFIRM_ROLE_TARGET}`} data-testid="eps_header_confirmRoleLink">{HEADER_CONFIRM_ROLE_BUTTON}</Link>
                         </li>
                     )
                 }
@@ -56,9 +54,8 @@ export default function EpsHeader() {
                     </li>
                 )}
                 <li className="nhsuk-header__navigation-item">
-                    <Link className="nhsuk-header__navigation-link" href='/' data-testid="eps_header_placeholder3">Placeholder 3</Link>
+                    <Link className="nhsuk-header__navigation-link" href={`/${HEADER_PRESCRIPTION_SEARCH_TARGET}`} data-testid="eps_header_prescriptionSearchLink">{HEADER_PRESCRIPTION_SEARCH_BUTTON}</Link>
                 </li>
-                {/* <Header.NavItem>Placeholder 3</Header.NavItem> */}
                 <Header.NavDropdownMenu dropdownText="Menu" />
             </Header.Nav>
         </Header>
