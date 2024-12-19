@@ -78,6 +78,16 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     )
 
     const username = getUsernameFromEvent(event)
+    // FIXME: This function call is slow, and blocks the response to the user.
+    // This should be broken out to another lambda, and called via the SQS queue
+    // Something like
+    // const sqs = new SQSClient({});
+    // await sqs.send(new SendMessageCommand({
+    //   QueueUrl: process.env.UPDATE_QUEUE_URL,
+    //   MessageBody: JSON.stringify({ username, userInfoResponse })
+    // }));
+    // Note: I've not thought this through completely yet - I don't know if the missing tokens
+    // in Dynamo will cause issues. Hence the note, rather than the implementation.
     updateDynamoTable(username, userInfoResponse, documentClient, logger)
 
     return {
