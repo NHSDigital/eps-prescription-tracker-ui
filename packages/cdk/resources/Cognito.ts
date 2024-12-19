@@ -190,6 +190,7 @@ export class Cognito extends Construct {
       // FIXME: This is temporary, until we get routing fixed
       `https://${props.fullCloudfrontDomain}/site/login.html`,
       `https://${props.fullCloudfrontDomain}/login/`,
+      `https://${props.fullCloudfrontDomain}/selectyourrole/`,
       `https://${props.fullCloudfrontDomain}/oauth2/idpresponse`
     ]
 
@@ -202,6 +203,7 @@ export class Cognito extends Construct {
     if (props.useLocalhostCallback) {
       callbackUrls.push( "http://localhost:3000/auth/")
       callbackUrls.push( "http://localhost:3000/login/")
+      callbackUrls.push( "http://localhost:3000/selectyourrole/")
       logoutUrls.push( "http://localhost:3000/")
     }
     // add the web client
