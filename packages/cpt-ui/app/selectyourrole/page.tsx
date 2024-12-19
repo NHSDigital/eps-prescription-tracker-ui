@@ -159,13 +159,13 @@ export default function SelectYourRolePage() {
                     <Col width="two-thirds">
                         <h1 className='nhsuk-heading-xl'>
                             <span role="text" data-testid="eps_header_selectYourRole">
-                                {title}
+                                <span class="nhsuk-title">{title}</span>
                                 <span className="nhsuk-caption-l nhsuk-caption--bottom">
                                     <span className="nhsuk-u-visually-hidden"> - </span>
                                     {caption}
                                 </span>
                             </span>
-                        </h1 >
+                        </h1>
                         {/* Inset Text Section */}
                         <section aria-label="Login Information">
                             <InsetText>
@@ -180,8 +180,8 @@ export default function SelectYourRolePage() {
 
                     {/* Roles with access Section */}
                     <Col width="two-thirds">
-                    <div className="section" >
-                        {trackerUserInfoData?.roles_with_access?.map((role) => (
+                        <div className="section" >
+                            {trackerUserInfoData?.roles_with_access?.map((role) => (
                                 <EpsCard key={role.uuid}
                                     orgName={role.org_name ? role.org_name : "No Org Name"}
                                     odsCode={role.org_code ? role.org_code : "No ODS Code"}
@@ -193,8 +193,8 @@ export default function SelectYourRolePage() {
                                     }
                                     link="yourselectedrole"
                                 />
-                        ))}
-                    </div>
+                            ))}
+                        </div>
                     </Col>
 
                     {/* Roles without access Section */}
