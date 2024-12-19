@@ -35,6 +35,15 @@ jest.mock('aws-amplify/utils', () => ({
   },
 }));
 
+jest.mock('next/navigation', () => ({
+  useRouter: jest.fn(() => ({
+    push: jest.fn(),
+    replace: jest.fn(),
+    prefetch: jest.fn(),
+  })),
+  usePathname: jest.fn(() => '/test-path'),
+}));
+
 // A helper component to consume the AuthContext and expose its values for testing
 const TestConsumer = () => {
   const auth = useContext(AuthContext); // Access the AuthContext
