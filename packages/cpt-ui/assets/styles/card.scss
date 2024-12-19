@@ -1,0 +1,58 @@
+.eps-card {
+  margin-bottom: 1.5rem;
+  border: 1px solid #d8dde0;
+  border-radius: 4px;
+  padding: 1rem;
+  background-color: #ffffff;
+
+  &__content {
+      display: flex;
+      align-items: flex-start;
+  }
+
+  &__orgName {
+      color: #005eb8;
+      font-size: 19px;
+      font-weight: 600;
+      text-decoration: none;
+
+      &:hover {
+          text-decoration: underline;
+      }
+  }
+
+  &__roleName {
+      margin-top: 0.5rem;
+      margin-bottom: 24px;
+      font-weight: normal;
+      font-size: 16px;
+      line-height: 1.5;
+      color: #4c6272;
+  }
+
+  &__siteAddress {
+      text-align: left;
+      color: #4c6272;
+      margin-top: 0.5rem;
+      font-size: 1rem;
+      line-height: 1.5;
+      &-line {
+          display: block;
+      }
+  }
+
+  &__link {
+    background-color: #ffffff;
+    border: 1px solid transparent;
+    box-shadow: 0 4px 0 0 #d8dde0;
+    display: block;
+    height: 100%;
+    position: relative;
+    text-decoration: none;
+}
+
+  .nhsuk-grid-column-two-thirds {
+      padding-left: 1rem;
+      padding-right: 1rem;
+  }
+}
