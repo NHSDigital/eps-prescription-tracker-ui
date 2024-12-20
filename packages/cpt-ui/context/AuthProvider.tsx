@@ -33,6 +33,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const sessionIdToken = authSession.tokens?.idToken;
       const sessionAccessToken = authSession.tokens?.accessToken;
 
+      console.log("Tokens: ", sessionIdToken, sessionAccessToken)
+
       if (sessionIdToken && sessionAccessToken) {
         // Extract expiration times directly from the token payloads.
         const currentTime = Math.floor(Date.now() / 1000);
@@ -44,6 +46,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           setUser(null);
           setIdToken(null);
           setAccessToken(null);
+          setError("Cognito access token expired")
           return;
         }
 
@@ -54,6 +57,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           setUser(null);
           setIdToken(null);
           setAccessToken(null);
+          setError("Cognito ID token expired")
           return;
         }
 
@@ -64,12 +68,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
         const currentUser = await getCurrentUser();
         setUser(currentUser);
+        setError(null);
       } else {
         console.warn("Missing access or ID token.");
         setIsSignedIn(false);
         setUser(null);
         setIdToken(null);
         setAccessToken(null);
+        setError("Missing access or ID token")
       }
     } catch (fetchError) {
       console.error("Error fetching user session:", fetchError);
@@ -78,6 +84,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setAccessToken(null);
       setIdToken(null);
       setIsSignedIn(false);
+      setError(String(fetchError))
     }
   };
 
@@ -92,8 +99,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         case "signedIn":
           console.log("User %s logged in", payload.data.username);
           setError(null);
+          break;
         case "tokenRefresh":
           console.log("Refreshing token");
+          setError(null);
+          break;
         case "signInWithRedirect":
           setError(null);
           break;
@@ -113,17 +123,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
         case "signedOut":
           console.log("User signing out");
+          setIsSignedIn(false);
+          setUser(null);
+          setIdToken(null);
+          setAccessToken(null);
+          setError(null);
           break;
 
         default:
           // Other auth events? The type-defined cases are already handled above.
           break;
       }
-    });
-
-    // Initial attempt to get user session when component mounts
-    getUser().catch((err) => {
-      console.error("Failed to get user session on mount:", err);
     });
 
     return () => {
@@ -137,9 +147,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     console.log("Configuring Amplify with authConfig:", authConfig);
     Amplify.configure(authConfig, { ssr: true });
-    getUser().catch((err) => {
-      console.error("Failed to get user session after Amplify config:", err);
-    });
+    getUser();
   }, [authConfig]);
 
   /**
@@ -152,12 +160,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setAccessToken(null);
     setIdToken(null);
     setIsSignedIn(false);
+    setError(null)
 
     try {
       await signOut({ global: true });
       console.log("Signed out successfully!");
+      setError(null);
     } catch (err) {
       console.error("Failed to sign out:", err);
+      setError(String(err));
     }
   };
 

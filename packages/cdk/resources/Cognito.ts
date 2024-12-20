@@ -187,8 +187,10 @@ export class Cognito extends Construct {
 
     const callbackUrls = [
       `https://${props.fullCloudfrontDomain}/site/`,
+      // FIXME: This is temporary, until we get routing fixed
       `https://${props.fullCloudfrontDomain}/site/auth_demo.html`,
-      `https://${props.fullCloudfrontDomain}/auth_demo/`
+      `https://${props.fullCloudfrontDomain}/auth_demo/`,
+      `https://${props.fullCloudfrontDomain}/oauth2/idpresponse`
     ]
 
     const logoutUrls = [

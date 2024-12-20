@@ -3,15 +3,23 @@
  */
 const nextConfig = {
   output: process.env.NEXT_OUTPUT_MODE || undefined,
-  basePath: process.env.BASE_PATH || ""
-  // Optional: Change links `/me` -> `/me/` and emit `/me.html` -> `/me/index.html`
-  // trailingSlash: true,
+  basePath: process.env.BASE_PATH || "",
 
-  // Optional: Prevent automatic `/me` -> `/me/`, instead preserve `href`
-  // skipTrailingSlashRedirect: true,
+  // If we're using a local development server, we want to be able
+  // to call out to an actual API for testing.
+  // This rewrites all requests to the /api/ path.
+  async rewrites() {
+    if (process.env.LOCAL_DEV) {
+      return [
+        {
+          source: "/api/:path*",
+          destination: `${process.env.API_DOMAIN_OVERRIDE}/api/:path*`
+        }
+      ]
+    }
 
-  // Optional: Change the output directory `out` -> `dist`
-  // distDir: 'dist',
+    return []
+  }
 }
 
 module.exports = nextConfig
