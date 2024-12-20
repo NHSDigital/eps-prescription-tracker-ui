@@ -140,7 +140,7 @@ describe("SelectYourRolePage", () => {
     expect(caption).toBeInTheDocument();
 
     // Verify the "Roles without access" section
-    const expander = screen.getByText(/Roles without access/i);
+    const expander = screen.getByText(/View your roles without access to the clinical prescription tracking service./i);
     expect(expander).toBeInTheDocument();
 
     // Check for the table data in "Roles without access"
