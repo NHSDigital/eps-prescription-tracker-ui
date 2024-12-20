@@ -20,5 +20,5 @@ export const SELECT_YOUR_ROLE_PAGE_TEXT = {
   noRoleName: "No role name",
   noAddress: "Address not found",
   errorDuringRoleSelection: "Error during role selection",
-  loadingMessage: "Loading..."
+  loadingMessage: "fadsfshtrey54rwtrfgdsa43ew..."
 }
