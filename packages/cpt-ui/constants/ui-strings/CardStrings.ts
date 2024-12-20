@@ -15,5 +15,10 @@ export const SELECT_YOUR_ROLE_PAGE_TEXT = {
   role: "Role",
   roles_without_access_table_title: "View your roles without access to the clinical prescription tracking service.",
   noOrgName: "NO ORG NAME",
-  rolesWithoutAccessHeader: "Your roles without access"
+  rolesWithoutAccessHeader: "Your roles without access",
+  noODSCode: "No ODS code",
+  noRoleName: "No role name",
+  noAddress: "No address",
+  errorDuringRoleSelection: "Error during role selection",
+  loadingMessage: "Loading..."
 }

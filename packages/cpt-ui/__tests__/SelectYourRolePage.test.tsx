@@ -4,6 +4,8 @@ import React from "react";
 import SelectYourRolePage from "@/app/selectyourrole/page";
 import { AuthContext } from "@/context/AuthProvider";
 
+//TODO: Mock the card strings, so we have known text for the tests
+
 // Mock `next/navigation` to prevent errors during component rendering in test
 jest.mock("next/navigation", () => ({
   usePathname: jest.fn(),
@@ -41,7 +43,6 @@ describe("SelectYourRolePage", () => {
     jest.clearAllMocks();
   });
 
-  // Test case: Display "Loading..." state when fetch is pending
   it("renders loading state when signed in but fetch hasn't resolved yet", async () => {
     // Mock fetch to hang indefinitely, simulating a pending request
     mockFetch.mockImplementation(() => new Promise(() => {}));
@@ -54,7 +55,6 @@ describe("SelectYourRolePage", () => {
     expect(loadingText).toBeInTheDocument();
   });
 
-  // Test case: Display an error summary when fetch fails with a non-200 response
   it("renders error summary if fetch returns non-200 status", async () => {
     // Mock fetch to return a 500 status code (server error)
     mockFetch.mockResolvedValue({ status: 500 });
@@ -74,7 +74,6 @@ describe("SelectYourRolePage", () => {
     });
   });
 
-  // Test case: Display an error summary when fetch succeeds but `userInfo` is missing
   it("renders error summary if fetch returns 200 but no userInfo is present", async () => {
     // Mock fetch to return 200 OK but with an empty JSON body
     mockFetch.mockResolvedValue({
@@ -97,7 +96,6 @@ describe("SelectYourRolePage", () => {
     });
   });
 
-  // Test case: Display the page content when valid user data (`userInfo`) is returned
   it("renders the page content when valid userInfo is returned", async () => {
     // Mock user data to simulate valid API response
     const mockUserInfo = {
@@ -150,7 +148,6 @@ describe("SelectYourRolePage", () => {
     expect(tableRole).toBeInTheDocument();
   });
 
-  // Test case: Display an error summary when the user is not signed in
   it("renders error summary when not signed in", async () => {
     // Render the page with `isSignedIn` set to false
     renderWithAuth({ isSignedIn: false, error: "Missing access or ID token" });

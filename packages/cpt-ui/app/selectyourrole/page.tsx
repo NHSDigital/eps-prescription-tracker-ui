@@ -2,7 +2,7 @@
 import React, {useState, useEffect, useContext, useCallback } from "react"
 import { Container, Col, Row, Details, Table, ErrorSummary, Button, InsetText } from "nhsuk-react-components"
 import { AuthContext } from "@/context/AuthProvider";
-import EpsCard from "@/components/EpsCard";
+import EpsCard, { EpsCardProps } from "@/components/EpsCard";
 import {SELECT_YOUR_ROLE_PAGE_TEXT} from "@/constants/ui-strings/CardStrings";
 
 export type RoleDetails = {
@@ -21,19 +21,51 @@ export type TrackerUserInfo = {
     currently_selected_role?: RoleDetails;
 };
 
+// Extends the EpsCardProps to include a unique identifier
+export type RolesWithAccessProps = EpsCardProps & {
+    uuid: string;
+}
+
+export type RolesWithoutAccessProps = {
+    uuid: string;
+    orgName: string;
+    odsCode: string;
+    roleName: string;
+}
+
 const trackerUserInfoEndpoint = "/api/tracker-user-info"
+
+const { 
+    title,
+    caption,
+    insetText,
+    confirmButton,
+    alternativeMessage,
+    organisation,
+    role,
+    roles_without_access_table_title,
+    noOrgName,
+    rolesWithoutAccessHeader,
+    noODSCode,
+    noRoleName,
+    noAddress,
+    errorDuringRoleSelection,
+    loadingMessage
+} = SELECT_YOUR_ROLE_PAGE_TEXT;
 
 export default function SelectYourRolePage() {
     const [loading, setLoading] = useState<boolean>(true)
     const [error, setError] = useState<string | null>(null)
-    const [trackerUserInfoData, setTrackerUserInfoData] = useState<TrackerUserInfo | null>(null)
+    const [rolesWithAccess, setRolesWithAccess] = useState<RolesWithAccessProps[]>([])
+    const [rolesWithoutAccess, setRolesWithoutAccess] = useState<RolesWithoutAccessProps[]>([])
 
     const auth = useContext(AuthContext);
 
     const fetchTrackerUserInfo = useCallback(async () => {
         setLoading(true)
-        setTrackerUserInfoData(null)
         setError(null)
+        setRolesWithAccess([])
+        setRolesWithoutAccess([])
 
         if (!auth?.isSignedIn || !auth) {
             setLoading(false)
@@ -59,29 +91,37 @@ export default function SelectYourRolePage() {
                 throw new Error("Server response did not contain data")
             }
 
-            // When rendering, we need to give the role chunks `key` values
-            // They have to be unique, so give all roles a uuid to use there
-            const addUUIDToRoles = (roles: RoleDetails[] = []) => {
-                return roles.map((role, index) => ({
-                    ...role,
-                    uuid: `${role.role_id}_${index}`
-                }))
-            }
+            const userInfo: TrackerUserInfo = data.userInfo;
 
-            const rolesWithAccess = addUUIDToRoles(data.userInfo.roles_with_access)
-            const rolesWithoutAccess = addUUIDToRoles(data.userInfo.roles_without_access)
-            const currentlySelectedRole = data.userInfo.currently_selected_role ? {
-                ...data.userInfo.currently_selected_role,
-                uuid: `selected_role_0`
-            } : undefined
-      
-            const userInfoWithUUIDs: TrackerUserInfo = {
-                roles_with_access: rolesWithAccess,
-                roles_without_access: rolesWithoutAccess,
-                currently_selected_role: currentlySelectedRole
-            }
-      
-            setTrackerUserInfoData(userInfoWithUUIDs)
+            const rolesWithAccess = userInfo.roles_with_access
+            const rolesWithoutAccess = userInfo.roles_without_access
+            // Unused for now
+            // const currentlySelectedRole = userInfo.currently_selected_role ? {
+            //     ...userInfo.currently_selected_role,
+            //     uuid: `selected_role_0`
+            // } : undefined
+
+            // Populate the EPS card props
+            setRolesWithAccess(
+                rolesWithAccess.map((role: RoleDetails, index: number) => ({
+                    uuid: `{role_with_access_${index}}`,
+                    orgName: role.org_name ? role.org_name : noOrgName,
+                    odsCode: role.org_code ? role.org_code : noODSCode,
+                    siteAddress: role.site_address ? role.site_address : noAddress,
+                    roleName: role.role_name ? role.role_name : noRoleName,
+                    link: "yourselectedrole"
+                }))
+            )
+
+            setRolesWithoutAccess(
+                rolesWithoutAccess.map((role: RoleDetails, index: number) => ({
+                    uuid: `{role_without_access_${index}}`,
+                    roleName: role.role_name ? role.role_name : noRoleName,
+                    orgName: role.org_name ? role.org_name : noOrgName,
+                    odsCode: role.org_code ? role.org_code : noODSCode
+                }))
+            )
+
         } catch (err) {
             setError("Failed to fetch CPT user info")
             console.error("error fetching tracker user info:", err)
@@ -118,7 +158,7 @@ export default function SelectYourRolePage() {
                 <Container>
                     <Row>
                         <Col width="full">
-                            <p>Loading...</p>
+                            {loadingMessage}
                         </Col>
                     </Row>
                 </Container>
@@ -134,7 +174,7 @@ export default function SelectYourRolePage() {
                     <Row>
                         <ErrorSummary>
                             <ErrorSummary.Title>
-                                <p>Error during role selection</p>
+                                {errorDuringRoleSelection}
                             </ErrorSummary.Title>
                             <ErrorSummary.List>
                                 <ErrorSummary.Item href="PLACEHOLDER/contact/us">
@@ -147,9 +187,6 @@ export default function SelectYourRolePage() {
             </main>
         );
     }
-
-    const { title, caption, insetText, confirmButton, alternativeMessage, organisation, role, roles_without_access_table_title, noOrgName, rolesWithoutAccessHeader } =
-        SELECT_YOUR_ROLE_PAGE_TEXT;
 
     return (
         <main id="main-content" className="nhsuk-main-wrapper">
@@ -181,18 +218,8 @@ export default function SelectYourRolePage() {
                     {/* Roles with access Section */}
                     <Col width="two-thirds">
                         <div className="section" >
-                            {trackerUserInfoData?.roles_with_access?.map((role) => (
-                                <EpsCard key={role.uuid}
-                                    orgName={role.org_name ? role.org_name : noOrgName}
-                                    odsCode={role.org_code ? role.org_code : "No ODS Code"}
-                                    siteAddress={role.site_address ? role.site_address : "Address not found"}
-                                    roleName={
-                                        role.role_name 
-                                            ? String(role.role_name).split(":").pop()?.replace(/['"]+/g, "").trim() || "No Role Name"
-                                            : "No Role Name"
-                                    }
-                                    link="yourselectedrole"
-                                />
+                            {rolesWithAccess.map((role: RolesWithAccessProps) => (
+                                <EpsCard {...role} key={role.uuid} />
                             ))}
                         </div>
                     </Col>
@@ -213,13 +240,13 @@ export default function SelectYourRolePage() {
                                         </Table.Row>
                                     </Table.Head>
                                     <Table.Body>
-                                        {trackerUserInfoData?.roles_without_access?.map((role) => (
+                                        {rolesWithoutAccess.map((role: RolesWithoutAccessProps) => (
                                             <Table.Row key={role.uuid}>
                                                 <Table.Cell>
-                                                    {role.org_name ? role.org_name : "No Org Name"} (ODS: {role.org_code})
+                                                    {role.orgName} (ODS: {role.odsCode})
                                                 </Table.Cell>
                                                 <Table.Cell>
-                                                    {role.role_name?.replace(/"/g, '').split(':').pop()}
+                                                    {role.roleName}
                                                 </Table.Cell>
                                             </Table.Row>
                                         ))}

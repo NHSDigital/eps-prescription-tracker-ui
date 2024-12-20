@@ -2,7 +2,7 @@ import React from "react";
 import { Card, Col, Row } from "nhsuk-react-components";
 import "@/assets/styles/card.scss";
 
-interface EpsCardProps {
+export interface EpsCardProps {
     orgName: string;
     odsCode: string;
     siteAddress: string | null;
