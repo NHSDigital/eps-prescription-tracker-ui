@@ -4,7 +4,32 @@ import React from "react";
 import SelectYourRolePage from "@/app/selectyourrole/page";
 import { AuthContext } from "@/context/AuthProvider";
 
-//TODO: Mock the card strings, so we have known text for the tests
+// Mock the card strings, so we have known text for the tests
+const SELECT_YOUR_ROLE_PAGE_TEXT = {
+  title: "Select your role",
+  caption: "Select the role you wish to use to access the service.",
+  insetText: {
+    visuallyHidden: "Information: ",
+    message:
+      "You are currently logged in at GREENE'S PHARMACY (ODS: FG419) with Health Professional Access Role.",
+  },
+  confirmButton: {
+    text: "Continue to find a prescription",
+    link: "tracker-presc-no",
+  },
+  alternativeMessage: "Alternatively, you can choose a new role below.",
+  organisation: "Organisation",
+  role: "Role",
+  roles_without_access_table_title:
+    "View your roles without access to the clinical prescription tracking service.",
+  noOrgName: "NO ORG NAME",
+  rolesWithoutAccessHeader: "Your roles without access",
+  noODSCode: "No ODS code",
+  noRoleName: "No role name",
+  noAddress: "No address",
+  errorDuringRoleSelection: "Error during role selection",
+  loadingMessage: "Loading...",
+};
 
 // Mock `next/navigation` to prevent errors during component rendering in test
 jest.mock("next/navigation", () => ({
@@ -41,6 +66,10 @@ describe("SelectYourRolePage", () => {
   // Clear all mock calls before each test to avoid state leaks
   beforeEach(() => {
     jest.clearAllMocks();
+    
+    jest.mock("@/constants/ui-strings/CardStrings", () => ({
+      SELECT_YOUR_ROLE_PAGE_TEXT,
+    }));
   });
 
   it("renders loading state when signed in but fetch hasn't resolved yet", async () => {
@@ -50,8 +79,8 @@ describe("SelectYourRolePage", () => {
     // Render the page with user signed in
     renderWithAuth({ isSignedIn: true, idToken: "mock-id-token" });
 
-    // Verify that the "Loading..." text appears
-    const loadingText = screen.getByText(/loading.../i);
+    // Verify that the loading text appears
+    const loadingText = screen.getByText(SELECT_YOUR_ROLE_PAGE_TEXT.loadingMessage);
     expect(loadingText).toBeInTheDocument();
   });
 
@@ -65,7 +94,9 @@ describe("SelectYourRolePage", () => {
     // Wait for the error message to appear
     await waitFor(() => {
       // Check for error summary heading
-      const errorHeading = screen.getByRole("heading", { name: /Error during role selection/i });
+      const errorHeading = screen.getByRole("heading", {
+        name: SELECT_YOUR_ROLE_PAGE_TEXT.errorDuringRoleSelection,
+      });
       expect(errorHeading).toBeInTheDocument();
 
       // Check for specific error text
@@ -87,7 +118,9 @@ describe("SelectYourRolePage", () => {
     // Wait for the error message to appear
     await waitFor(() => {
       // Check for error summary heading
-      const errorHeading = screen.getByRole("heading", { name: /Error during role selection/i });
+      const errorHeading = screen.getByRole("heading", {
+        name: SELECT_YOUR_ROLE_PAGE_TEXT.errorDuringRoleSelection,
+      });
       expect(errorHeading).toBeInTheDocument();
 
       // Check for specific error text
@@ -130,15 +163,16 @@ describe("SelectYourRolePage", () => {
     await waitFor(() => {
       // Check for the page heading
       const heading = screen.getByRole("heading", { level: 1 });
-      expect(heading).toHaveTextContent("Select your role");
+      expect(heading).toHaveTextContent(SELECT_YOUR_ROLE_PAGE_TEXT.title);
     });
 
     // Verify the page caption
-    const caption = screen.getByText(/Select the role you wish to use to access the service/i);
+    const caption = screen.getByText(SELECT_YOUR_ROLE_PAGE_TEXT.caption);
     expect(caption).toBeInTheDocument();
 
-    // Verify the "Roles without access" section
-    const expander = screen.getByText(/View your roles without access to the clinical prescription tracking service./i);
+    // Verify the "Roles without access" section (expander)
+    const expanderText = SELECT_YOUR_ROLE_PAGE_TEXT.roles_without_access_table_title;
+    const expander = screen.getByText(expanderText);
     expect(expander).toBeInTheDocument();
 
     // Check for the table data in "Roles without access"
@@ -155,7 +189,9 @@ describe("SelectYourRolePage", () => {
     // Wait for the error message to appear
     await waitFor(() => {
       // Check for error summary heading
-      const errorHeading = screen.getByRole("heading", { name: /Error during role selection/i });
+      const errorHeading = screen.getByRole("heading", {
+        name: SELECT_YOUR_ROLE_PAGE_TEXT.errorDuringRoleSelection,
+      });
       expect(errorHeading).toBeInTheDocument();
 
       const errorItem = screen.getByText("Missing access or ID token");
