@@ -18,7 +18,7 @@ export const SELECT_YOUR_ROLE_PAGE_TEXT = {
   rolesWithoutAccessHeader: "Your roles without access",
   noODSCode: "No ODS code",
   noRoleName: "No role name",
-  noAddress: "No address",
+  noAddress: "Address not found",
   errorDuringRoleSelection: "Error during role selection",
   loadingMessage: "Loading..."
 }
