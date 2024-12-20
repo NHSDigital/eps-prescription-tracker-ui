@@ -58,9 +58,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         console.log(error);
       }
       if (!(env in mockAuthAllowed)) {
+        console.log("Pushing to dev login page");
         router.push("/login");
       } else {
         // Just send them off to CIS2
+        console.log("Direct to Primary login");
         cognitoSignIn({
           provider: {
               custom: "Primary"
