@@ -7,6 +7,7 @@ import {
   HEADER_CONFIRM_ROLE_BUTTON,
   HEADER_CHANGE_ROLE_BUTTON,
   HEADER_SELECT_YOUR_ROLE_BUTTON,
+  HEADER_PRESCRIPTION_SEARCH_BUTTON
 } from "../constants/ui-strings/HeaderStrings";
 
 // Mock useRouter and usePathname:
