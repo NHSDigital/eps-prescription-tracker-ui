@@ -1,24 +1,11 @@
 .eps-card {
   margin-bottom: 1.5rem;
-  border: 1px solid #d8dde0;
-  border-radius: 4px;
-  padding: 1rem;
-  background-color: #ffffff;
+  padding: 0rem;
 
   &__content {
       display: flex;
+      padding: 0rem;
       align-items: flex-start;
-  }
-
-  &__orgName {
-      color: #005eb8;
-      font-size: 19px;
-      font-weight: 600;
-      text-decoration: none;
-
-      &:hover {
-          text-decoration: underline;
-      }
   }
 
   &__roleName {

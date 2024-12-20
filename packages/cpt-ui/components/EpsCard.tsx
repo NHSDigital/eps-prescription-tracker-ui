@@ -18,7 +18,7 @@ export default function EpsCard({
     link,
 }: EpsCardProps) {
     return (
-        <Card clickable>
+        <Card clickable className="eps-card">
             <Card.Content>
                 <Row className="nhsuk-grid-row eps-card__content">
 
