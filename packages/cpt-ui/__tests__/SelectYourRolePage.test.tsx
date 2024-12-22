@@ -53,13 +53,13 @@ global.fetch = mockFetch;
 
 // Default mock values for the `AuthContext` to simulate authentication state
 const defaultAuthContext = {
-  error: null, // No errors by default
-  user: null, // User is initially null (not logged in)
-  isSignedIn: false, // Default state is "not signed in"
-  idToken: null, // No ID token available
-  accessToken: null, // No access token available
-  cognitoSignIn: jest.fn(), // Mock Cognito sign-in function
-  cognitoSignOut: jest.fn(), // Mock Cognito sign-out function
+  error: null,
+  user: null,
+  isSignedIn: false,
+  idToken: null,
+  accessToken: null,
+  cognitoSignIn: jest.fn(),
+  cognitoSignOut: jest.fn(),
 };
 
 // Utility function to render the component with custom AuthContext overrides
