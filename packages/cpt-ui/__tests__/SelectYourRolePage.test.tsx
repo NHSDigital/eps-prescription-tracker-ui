@@ -11,6 +11,10 @@ jest.mock("@/constants/ui-strings/CardStrings", () => {
   const SELECT_YOUR_ROLE_PAGE_TEXT = {
     title: "Select your role",
     caption: "Select the role you wish to use to access the service.",
+    titleNoAccess: "No access to the clinical prescription tracking service",
+    captionNoAccess:
+      "None of the roles on your Smartcard or other authenticators allow you to access the clinical prescription tracking service. " +
+      "Contact your Registration Authority representative to obtain the correct code.",
     insetText: {
       visuallyHidden: "Information: ",
       message:
@@ -201,5 +205,94 @@ describe("SelectYourRolePage", () => {
       const errorItem = screen.getByText("Missing access or ID token");
       expect(errorItem).toBeInTheDocument();
     });
+  });
+
+  it("renders no access title and caption when no roles with access are available", async () => {
+    // Mock user data with no roles with access
+    const mockUserInfo = {
+      roles_with_access: [], // No roles with access
+      roles_without_access: [
+        {
+          role_name: "Technician",
+          org_name: "Tech Org",
+          org_code: "ORG456",
+          site_address: "2 Fake Street",
+        },
+      ],
+    };
+  
+    // Mock fetch to return 200 OK with valid userInfo
+    mockFetch.mockResolvedValue({
+      status: 200,
+      json: async () => ({ userInfo: mockUserInfo }),
+    });
+  
+    // Render the page with user signed in
+    renderWithAuth({ isSignedIn: true, idToken: "mock-id-token" });
+  
+    // Wait for the main content to load
+    await waitFor(() => {
+      // Check for the no-access title
+      const heading = screen.getByRole("heading", { level: 1 });
+      expect(heading).toHaveTextContent(SELECT_YOUR_ROLE_PAGE_TEXT.titleNoAccess);
+  
+      // Check for the no-access caption
+      const caption = screen.getByText(SELECT_YOUR_ROLE_PAGE_TEXT.captionNoAccess);
+      expect(caption).toBeInTheDocument();
+    });
+  
+    // Verify the "Roles with access" section is not rendered
+    const rolesWithAccessSection = screen.queryByText(SELECT_YOUR_ROLE_PAGE_TEXT.caption);
+    expect(rolesWithAccessSection).not.toBeInTheDocument();
+  
+    // Verify the "Roles without access" section is rendered
+    const expanderText = SELECT_YOUR_ROLE_PAGE_TEXT.roles_without_access_table_title;
+    const expander = screen.getByText(expanderText);
+    expect(expander).toBeInTheDocument();
+  
+    // Check for the table data in "Roles without access"
+    const tableOrg = screen.getByText(/Tech Org \(ODS: ORG456\)/i);
+    expect(tableOrg).toBeInTheDocument();
+    const tableRole = screen.getByText("Technician");
+    expect(tableRole).toBeInTheDocument();
+  });
+
+  it("does not render inset text section when no roles with access", async () => {
+    // Mock user data with no roles with access
+    const mockUserInfo = {
+      roles_with_access: [], // No roles with access
+      roles_without_access: [
+        {
+          role_name: "Technician",
+          org_name: "Tech Org",
+          org_code: "ORG456",
+          site_address: "2 Fake Street",
+        },
+      ],
+    };
+  
+    // Mock fetch to return 200 OK with valid userInfo
+    mockFetch.mockResolvedValue({
+      status: 200,
+      json: async () => ({ userInfo: mockUserInfo }),
+    });
+  
+    // Render the page with user signed in
+    renderWithAuth({ isSignedIn: true, idToken: "mock-id-token" });
+  
+    // Wait for the "Roles without access" header to appear, indicating loading is complete
+    await waitFor(() => {
+      const rolesWithoutAccessHeader = screen.getByText(SELECT_YOUR_ROLE_PAGE_TEXT.rolesWithoutAccessHeader);
+      expect(rolesWithoutAccessHeader).toBeInTheDocument();
+    });
+  
+    // Verify the inset text is not rendered
+    const insetText = screen.queryByText(SELECT_YOUR_ROLE_PAGE_TEXT.insetText.message);
+    expect(insetText).not.toBeInTheDocument();
+  
+    // Verify the "Roles without access" section is rendered
+    const expanderText = SELECT_YOUR_ROLE_PAGE_TEXT.roles_without_access_table_title;
+    const expander = screen.getByText(expanderText);
+    expect(expander).toBeInTheDocument();
   });
 });

@@ -207,9 +207,8 @@ export default function SelectYourRolePage() {
                                 </span>
                             </span>
                         </h1>
-                        {noAccess && (
-                            <p>{captionNoAccess}</p>
-                        )}
+                        {/* Caption Section for No Access */}
+                        {noAccess && (<p>{captionNoAccess}</p>)}
                         {/* Inset Text Section */}
                         {!noAccess && (
                             <section aria-label="Login Information">
