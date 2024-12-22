@@ -38,6 +38,8 @@ const trackerUserInfoEndpoint = "/api/tracker-user-info"
 const { 
     title,
     caption,
+    titleNoAccess,
+    captionNoAccess,
     insetText,
     confirmButton,
     alternativeMessage,
@@ -188,6 +190,8 @@ export default function SelectYourRolePage() {
         );
     }
 
+    const noAccess = rolesWithAccess.length === 0;
+
     return (
         <main id="main-content" className="nhsuk-main-wrapper">
             <Container role="contentinfo">
@@ -196,37 +200,44 @@ export default function SelectYourRolePage() {
                     <Col width="two-thirds">
                         <h1 className='nhsuk-heading-xl'>
                             <span role="text" data-testid="eps_header_selectYourRole">
-                                <span className="nhsuk-title">{title}</span>
+                                <span className="nhsuk-title">{noAccess ? titleNoAccess : title}</span>
                                 <span className="nhsuk-caption-l nhsuk-caption--bottom">
                                     <span className="nhsuk-u-visually-hidden"> - </span>
-                                    {caption}
+                                    {!noAccess && caption}
                                 </span>
                             </span>
                         </h1>
+                        {noAccess && (
+                            <p>{captionNoAccess}</p>
+                        )}
                         {/* Inset Text Section */}
-                        <section aria-label="Login Information">
-                            <InsetText>
-                                <span className="nhsuk-u-visually-hidden">{insetText.visuallyHidden}</span>
-                                <p>{insetText.message}</p>
-                            </InsetText>
-                            {/* Confirm Button */}
-                            <Button href={confirmButton.link}>{confirmButton.text}</Button>
-                            <p>{alternativeMessage}</p>
-                        </section>
+                        {!noAccess && (
+                            <section aria-label="Login Information">
+                                <InsetText>
+                                    <span className="nhsuk-u-visually-hidden">{insetText.visuallyHidden}</span>
+                                    <p>{insetText.message}</p>
+                                </InsetText>
+                                {/* Confirm Button */}
+                                <Button href={confirmButton.link}>{confirmButton.text}</Button>
+                                <p>{alternativeMessage}</p>
+                            </section>
+                        )}
                     </Col>
 
                     {/* Roles with access Section */}
-                    <Col width="two-thirds">
-                        <div className="section" >
-                            {rolesWithAccess.map((role: RolesWithAccessProps) => (
-                                <EpsCard {...role} key={role.uuid} />
-                            ))}
-                        </div>
-                    </Col>
+                    {!noAccess && (
+                        <Col width="two-thirds">
+                            <div className="section" >
+                                {rolesWithAccess.map((role: RolesWithAccessProps) => (
+                                    <EpsCard {...role} key={role.uuid} />
+                                ))}
+                            </div>
+                        </Col>
+                    )}
 
                     {/* Roles without access Section */}
                     <Col width="two-thirds">
-                        <h2>{rolesWithoutAccessHeader}</h2>
+                        <h3>{rolesWithoutAccessHeader}</h3>
                         <Details expander>
                             <Details.Summary>
                                 {roles_without_access_table_title}
