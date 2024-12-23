@@ -2,7 +2,7 @@ import React from "react";
 import { Card, Col, Row } from "nhsuk-react-components";
 import "@/assets/styles/card.scss";
 
-interface EpsCardProps {
+export interface EpsCardProps {
     orgName: string;
     odsCode: string;
     siteAddress: string | null;
@@ -18,7 +18,7 @@ export default function EpsCard({
     link,
 }: EpsCardProps) {
     return (
-        <Card clickable>
+        <Card clickable className="eps-card">
             <Card.Content>
                 <Row className="nhsuk-grid-row eps-card__content">
 

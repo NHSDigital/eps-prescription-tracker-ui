@@ -3,6 +3,12 @@ import axios from "axios"
 import {DynamoDBDocumentClient, UpdateCommand} from "@aws-sdk/lib-dynamodb"
 import {UserInfoResponse, TrackerUserInfo, RoleDetails} from "./userInfoTypes"
 
+// Role names come in formatted like `"category":"subcategory":"roleName"`.
+// Takes only the last one, and strips out the quotes.
+export const removeRoleCategories = (roleName: string) => {
+  return roleName.replace(/"/g, "").split(":").pop()
+}
+
 // Fetch user info from the OIDC UserInfo endpoint
 // The access token is used to identify the user, and fetch their roles.
 // This populates three lists:
@@ -51,7 +57,7 @@ export const fetchUserInfo = async (
       logger.debug("Role CPT access?", {hasAccess})
 
       const roleInfo: RoleDetails = {
-        role_name: role.role_name,
+        role_name: removeRoleCategories(role.role_name),
         role_id: role.person_roleid,
         org_code: role.org_code,
         org_name: getOrgNameFromOrgCode(data, role.org_code, logger)
