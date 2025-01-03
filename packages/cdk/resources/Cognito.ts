@@ -194,7 +194,7 @@ export class Cognito extends Construct {
     ]
 
     const logoutUrls = [
-      `https://${props.fullCloudfrontDomain}/site/`,
+      `https://${props.fullCloudfrontDomain}/site/logout`,
       `https://${props.fullCloudfrontDomain}/site/auth_demo.html`,
       `https://${props.fullCloudfrontDomain}/auth_demo/`
     ]
@@ -202,7 +202,7 @@ export class Cognito extends Construct {
     if (props.useLocalhostCallback) {
       callbackUrls.push( "http://localhost:3000/auth/")
       callbackUrls.push( "http://localhost:3000/auth_demo/")
-      logoutUrls.push( "http://localhost:3000/")
+      logoutUrls.push( "http://localhost:3000/logout/")
     }
     // add the web client
     const userPoolWebClient = userPool.addClient("WebClient", {

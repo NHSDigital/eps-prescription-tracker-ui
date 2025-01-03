@@ -69,7 +69,7 @@ export default function SelectYourRolePage() {
 
         if (!auth?.isSignedIn || !auth) {
             setLoading(false)
-            setError("Not signed in")
+            setError(null)
             return;
         }
 
@@ -137,8 +137,6 @@ export default function SelectYourRolePage() {
     
         if (auth?.isSignedIn) {
             fetchTrackerUserInfo()
-        } else {
-            setError("No login session found")
         }
     }, [auth?.isSignedIn, fetchTrackerUserInfo])
 

@@ -156,6 +156,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const cognitoSignOut = async () => {
     console.log("Signing out...");
 
+    // TODO: Also sign out of the CPT API, so it can delete the token?
+
     try {
       await signOut({ global: true });
       console.log("Signed out successfully!");
