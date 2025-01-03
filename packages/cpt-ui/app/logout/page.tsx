@@ -32,7 +32,7 @@ export default function LogoutPage() {
                     <>
                         <h1>Logout successful</h1>
                         <div>You are now logged out of the service. To continue using the application, you must log in again.</div>
-                        <Button href="/auth_demo/" className="nhsuk-u-margin-top-5">
+                        <Button href="/auth_demo" className="nhsuk-u-margin-top-5">
                             Log in
                         </Button>
                     </>
