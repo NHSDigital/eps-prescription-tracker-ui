@@ -36,9 +36,9 @@ export function EpsLogoutModal({ isOpen, onClose, onConfirm }: EpsLogoutModalPro
   if (!isOpen) return null;
   
   return (
-    <div className="modalOverlay" onClick={handleBackdropClick}>
-      <div className="modalContent" role="dialog" aria-modal="true">
-        <button className="closeButton" onClick={onClose} aria-label="Close modal">
+    <div className="EpsLogoutModalOverlay" onClick={handleBackdropClick}>
+      <div className="EpsLogoutModalContent" role="dialog" aria-modal="true">
+        <button className="EpsLogoutModalCloseButton" onClick={onClose} aria-label="Close modal">
           ×
         </button>
         
@@ -46,16 +46,16 @@ export function EpsLogoutModal({ isOpen, onClose, onConfirm }: EpsLogoutModalPro
         <p>{EpsLogoutModalStrings.caption}</p>
         
         {/* TODO: style appropriately */}
-        <div className="buttonGroup">
+        <div className="EpsLogoutModalButtonGroup">
           <Button 
-            className="nhsuk-button eps-logout-modal-button" 
+            className="nhsuk-button EpsLogoutModalButton" 
             onClick={onConfirm}
           >
             {EpsLogoutModalStrings.confirmButtonText}
           </Button>
           
           <Button 
-            className="nhsuk-button nhsuk-button--secondary eps-logout-modal-button" 
+            className="nhsuk-button nhsuk-button--secondary EpsLogoutModalButton" 
             onClick={onClose}
           >
             {EpsLogoutModalStrings.cancelButtonText}
