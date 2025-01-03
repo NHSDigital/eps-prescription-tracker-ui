@@ -25,12 +25,18 @@ export function EpsLogoutModal({ isOpen, onClose, onConfirm }: EpsLogoutModalPro
   }, [onClose]);
   
   // Close if user clicks outside the modal content
-  const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
+  const handleBackdropClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) {
       onClose();
     }
   };
   
+  // Close if user activates on the background
+  const handleBackdropActivate = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" || e.key === " ") {
+      onClose();
+    }
+  };
 
   // If the modal isn’t open, don’t render anything
   if (!isOpen) return null;
@@ -41,6 +47,7 @@ export function EpsLogoutModal({ isOpen, onClose, onConfirm }: EpsLogoutModalPro
       onClick={handleBackdropClick}
       role="button"
       tabIndex={0}
+      onKeyDown={handleBackdropActivate}
     >
       <div className="EpsLogoutModalContent" role="dialog" aria-modal="true">
         <button className="EpsLogoutModalCloseButton" onClick={onClose} aria-label="Close modal">
