@@ -23,18 +23,18 @@ export function EpsLogoutModal({ isOpen, onClose, onConfirm }: EpsLogoutModalPro
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [onClose]);
-
-  // If the modal isn’t open, don’t render anything
-  if (!isOpen) return null;
-
+  
   // Close if user clicks outside the modal content
   const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) {
       onClose();
     }
   };
+  
 
-
+  // If the modal isn’t open, don’t render anything
+  if (!isOpen) return null;
+  
   return (
     <div className="modalOverlay" onClick={handleBackdropClick}>
       <div className="modalContent" role="dialog" aria-modal="true">

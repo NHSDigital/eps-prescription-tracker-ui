@@ -1,6 +1,8 @@
 'use client'
 import React, { useContext, useEffect } from "react";
-import { Container, Button } from "nhsuk-react-components";
+import { Container } from "nhsuk-react-components";
+import Link from "next/link";
+
 import { AuthContext } from "@/context/AuthProvider";
 
 export default function LogoutPage() {
@@ -32,9 +34,13 @@ export default function LogoutPage() {
                     <>
                         <h1>Logout successful</h1>
                         <div>You are now logged out of the service. To continue using the application, you must log in again.</div>
-                        <Button href="/auth_demo" className="nhsuk-u-margin-top-5">
+                        <Link 
+                            // TODO: This needs to be updated in line with PR #278
+                            href="/auth_demo" 
+                            className="nhsuk-button nhsuk-button--primary nhsuk-u-margin-top-5 nhsuk-u-margin-bottom-5"
+                        >
                             Log in
-                        </Button>
+                        </Link>
                     </>
                 )}
             </Container>
