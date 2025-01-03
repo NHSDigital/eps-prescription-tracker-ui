@@ -155,17 +155,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
    */
   const cognitoSignOut = async () => {
     console.log("Signing out...");
-    // Immediately reset state to signed out.
-    setUser(null);
-    setAccessToken(null);
-    setIdToken(null);
-    setIsSignedIn(false);
-    setError(null)
 
     try {
       await signOut({ global: true });
       console.log("Signed out successfully!");
-      setError(null);
+  
+      // Immediately reset state to signed out.
+      setUser(null);
+      setAccessToken(null);
+      setIdToken(null);
+      setIsSignedIn(false);
+      setError(null)    
     } catch (err) {
       console.error("Failed to sign out:", err);
       setError(String(err));

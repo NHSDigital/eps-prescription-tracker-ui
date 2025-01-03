@@ -1,0 +1,19 @@
+{
+  "name": "logoutlambda",
+  "version": "1.0.0",
+  "description": "Handles serverside token revokation for cpt-ui",
+  "main": "index.js",
+  "author": "NHS Digital",
+  "license": "MIT",
+  "scripts": {
+    "unit": "POWERTOOLS_DEV=true NODE_OPTIONS=--experimental-vm-modules jest --no-cache --coverage",
+    "lint": "eslint  --max-warnings 0 --fix --config ../../eslint.config.mjs .",
+    "compile": "tsc",
+    "test": "npm run compile && npm run unit",
+    "check-licenses": "license-checker --failOn GPL --failOn LGPL --start ../.."
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.3",
+    "typescript": "^5.7.2"
+  }
+}
