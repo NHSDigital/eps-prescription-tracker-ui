@@ -43,6 +43,10 @@
       {
         "name": "packages/trackerUserInfoLambda",
         "path": "../packages/trackerUserInfoLambda"
+      },
+      {
+        "name": "packages/logoutLambda",
+        "path": "../packages/logoutLambda"
       }
 
     ],

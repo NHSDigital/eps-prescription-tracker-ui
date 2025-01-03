@@ -186,23 +186,23 @@ export class Cognito extends Construct {
     }
 
     const callbackUrls = [
-      `https://${props.fullCloudfrontDomain}/site/`,
+      `https://${props.fullCloudfrontDomain}/site`,
+      `https://${props.fullCloudfrontDomain}/site/selectyourrole`,
       // FIXME: This is temporary, until we get routing fixed
-      `https://${props.fullCloudfrontDomain}/site/auth_demo.html`,
-      `https://${props.fullCloudfrontDomain}/auth_demo/`,
+      `https://${props.fullCloudfrontDomain}/site/selectyourrole.html`,
+      `https://${props.fullCloudfrontDomain}/auth_demo`,
       `https://${props.fullCloudfrontDomain}/oauth2/idpresponse`
     ]
 
     const logoutUrls = [
-      `https://${props.fullCloudfrontDomain}/site/`,
-      `https://${props.fullCloudfrontDomain}/site/auth_demo.html`,
-      `https://${props.fullCloudfrontDomain}/auth_demo/`
+      `https://${props.fullCloudfrontDomain}/site/logout`,
+      `https://${props.fullCloudfrontDomain}/site/logout.html`,
+      `https://${props.fullCloudfrontDomain}/auth_demo`
     ]
 
     if (props.useLocalhostCallback) {
-      callbackUrls.push( "http://localhost:3000/auth/")
-      callbackUrls.push( "http://localhost:3000/auth_demo/")
-      logoutUrls.push( "http://localhost:3000/")
+      callbackUrls.push("http://localhost:3000/site/selectyourrole/")
+      logoutUrls.push("http://localhost:3000/site/logout/")
     }
     // add the web client
     const userPoolWebClient = userPool.addClient("WebClient", {

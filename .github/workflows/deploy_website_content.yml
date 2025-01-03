@@ -76,7 +76,7 @@ jobs:
           export NEXT_PUBLIC_userPoolClientId=${userPoolClientId}
           export NEXT_PUBLIC_userPoolId=${userPoolId}
           export NEXT_PUBLIC_redirectSignIn="https://${fullCloudfrontDomain}/site/auth_demo.html"
-          export NEXT_PUBLIC_redirectSignOut="https://${fullCloudfrontDomain}/site/"
+          export NEXT_PUBLIC_redirectSignOut="https://${fullCloudfrontDomain}/site/logout.html"
           export NEXT_PUBLIC_COMMIT_ID=${{ inputs.COMMIT_ID }}
 
           cd .build
