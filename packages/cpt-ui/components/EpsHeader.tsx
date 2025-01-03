@@ -119,17 +119,6 @@ export default function EpsHeader() {
             </li>
           )}
           
-          <li className="nhsuk-header__navigation-item">
-              <Link
-                className="nhsuk-header__navigation-link"
-                href="/logout"
-                data-testid="eps_header_logout"
-                onClick={handleLogoutClick}
-              >
-                Log out
-              </Link>
-            </li>
-          
           <Header.NavDropdownMenu dropdownText="Menu" />
         </Header.Nav>
       </Header>

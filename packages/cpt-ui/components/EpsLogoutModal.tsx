@@ -36,7 +36,12 @@ export function EpsLogoutModal({ isOpen, onClose, onConfirm }: EpsLogoutModalPro
   if (!isOpen) return null;
   
   return (
-    <div className="EpsLogoutModalOverlay" onClick={handleBackdropClick}>
+    <div
+      className="EpsLogoutModalOverlay" 
+      onClick={handleBackdropClick}
+      role="button"
+      tabIndex={0}
+    >
       <div className="EpsLogoutModalContent" role="dialog" aria-modal="true">
         <button className="EpsLogoutModalCloseButton" onClick={onClose} aria-label="Close modal">
           ×
