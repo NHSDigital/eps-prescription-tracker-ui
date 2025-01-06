@@ -292,7 +292,13 @@ describe("verifyIdToken", () => {
 
     jest.spyOn(jwt, "verify").mockImplementation(() => payload)
 
-    await expect(verifyIdToken(token, logger)).resolves.toBeUndefined()
+    await expect(verifyIdToken(token, logger)).resolves.toMatchObject(expect.objectContaining(
+      {
+        "acr": "AAL3_ANY",
+        "aud": ["valid_aud"],
+        "iss": "valid_iss"
+      }
+    ))
   })
 
   it("should throw an error when ID token is not provided", async () => {

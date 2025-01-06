@@ -11,7 +11,8 @@ import {parse, ParsedUrlQuery, stringify} from "querystring"
 import {PrivateKey} from "jsonwebtoken"
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
 import {DynamoDBDocumentClient, PutCommand} from "@aws-sdk/lib-dynamodb"
-import {formatHeaders, rewriteBodyToAddSignedJWT, verifyJWTWrapper} from "./helpers"
+import {formatHeaders, rewriteBodyToAddSignedJWT} from "./helpers"
+import {verifyIdToken} from "@cpt-ui-common/authFunctions"
 
 const logger = new Logger({serviceName: "token"})
 const UserPoolIdentityProvider = process.env["UserPoolIdentityProvider"] as string
@@ -19,8 +20,6 @@ const idpTokenPath = process.env["idpTokenPath"] as string
 const TokenMappingTableName = process.env["TokenMappingTableName"] as string
 const useSignedJWT = process.env["useSignedJWT"] as string
 const jwtPrivateKeyArn = process.env["jwtPrivateKeyArn"] as string
-const oidcClientId = process.env["oidcClientId"] as string
-const oidcIssuer = process.env["oidcIssuer"] as string
 const jwtKid = process.env["jwtKid"] as string
 
 const dynamoClient = new DynamoDBClient()
@@ -65,7 +64,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   const idToken = tokenResponse.data.id_token
 
   // verify and decode idToken
-  const decodedIdToken = await verifyJWTWrapper(idToken, oidcIssuer, oidcClientId)
+  const decodedIdToken = await verifyIdToken(idToken, logger)
   logger.debug("decoded idToken", {decodedIdToken})
 
   const username = `${UserPoolIdentityProvider}_${decodedIdToken.sub}`

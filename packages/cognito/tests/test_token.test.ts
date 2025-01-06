@@ -8,7 +8,6 @@ import {
 import {DynamoDBDocumentClient, PutCommandInput} from "@aws-sdk/lib-dynamodb"
 import createJWKSMock from "mock-jwks"
 import nock from "nock"
-import {handler} from "../src/token"
 
 // redefining readonly property of the performance object
 const dummyContext = {
@@ -26,6 +25,22 @@ const dummyContext = {
   fail: () => console.log("Failed!"),
   succeed: () => console.log("Succeeded!")
 }
+
+const mockVerifyIdToken = jest.fn()
+
+jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
+  const verifyIdToken = mockVerifyIdToken.mockImplementation(async () => {
+    return {
+      sub: "foo",
+      exp: 100
+    }
+  })
+  return {
+    verifyIdToken
+  }
+})
+
+const {handler} = await import("../src/token")
 
 describe("handler tests", () => {
   const jwks = createJWKSMock("https://dummyauth.com/")
@@ -80,7 +95,7 @@ describe("handler tests", () => {
       {
         "username": "DummyPoolIdentityProvider_foo",
         "CIS2_idToken": token,
-        "CIS2_expiresIn": expiryDate,
+        "CIS2_expiresIn": 100,
         "CIS2_accessToken": "access_token_reply"
       }
     )

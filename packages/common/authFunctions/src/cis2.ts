@@ -20,6 +20,16 @@ const VALID_ACR_VALUES: Array<string> = [
   // "AAL2_NHSMAIL"
 ]
 
+// Create a JWKS client
+// this is outside functions so it can be re-used
+const jwksUri = process.env["oidcjwksEndpoint"]
+const client = jwksClient({
+  jwksUri: jwksUri,
+  cache: true,
+  cacheMaxEntries: 5,
+  cacheMaxAge: 3600000 // 1 hour
+})
+
 // Helper function to get the signing key from the JWKS endpoint
 export const getSigningKey = (client: jwksClient.JwksClient, kid: string): Promise<string> => {
   return new Promise((resolve, reject) => {
@@ -112,7 +122,7 @@ export const verifyCIS2Token = async (
         validAcrValues: Array<string>,
         checkAudience: boolean
       }
-) => {
+): Promise<jwt.JwtPayload> => {
   const oidcIssuer = process.env["oidcIssuer"]
   if (!oidcIssuer) {
     throw new Error("OIDC issuer not set")
@@ -131,14 +141,6 @@ export const verifyCIS2Token = async (
   if (!cis2Token) {
     throw new Error(`${tokenType} not provided`)
   }
-
-  // Create a JWKS client
-  const client = jwksClient({
-    jwksUri: jwksUri,
-    cache: true,
-    cacheMaxEntries: 5,
-    cacheMaxAge: 3600000 // 1 hour
-  })
 
   // Decode the token header to get the kid
   const decodedToken = jwt.decode(cis2Token, {complete: true})
@@ -201,10 +203,12 @@ export const verifyCIS2Token = async (
     throw new Error(`Invalid ACR claim in ${tokenType}`)
   }
   logger.debug("ACR claim is valid", {acr})
+
+  return verifiedToken
 }
 
-export const verifyIdToken = async (idToken: string, logger: Logger) => {
-  await verifyCIS2Token(
+export const verifyIdToken = async (idToken: string, logger: Logger) : Promise<jwt.JwtPayload> => {
+  return await verifyCIS2Token(
     idToken,
     logger,
     "ID token",

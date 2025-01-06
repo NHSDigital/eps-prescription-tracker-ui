@@ -18,9 +18,9 @@ install-hooks: install-python
 	poetry run pre-commit install --install-hooks --overwrite
 
 compile-node:
-	npx tsc --build tsconfig.build.json
 	npm run compile --workspace packages/common/middyErrorHandler
 	npm run compile --workspace packages/common/authFunctions
+	npx tsc --build tsconfig.build.json
 
 compile: compile-node
 
