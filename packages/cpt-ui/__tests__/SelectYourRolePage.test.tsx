@@ -223,16 +223,24 @@ describe("SelectYourRolePage", () => {
         json: async () => ({ userInfo: mockUserInfo }),
     });
 
-    // Mock `window.location.href` to track redirection
-    delete window.location;
-    window.location = { href: "" };
+    // Mock `window.location.href` using Object.defineProperty
+    const mockHref = jest.fn();
+    Object.defineProperty(window, "location", {
+        value: { href: "" },
+        writable: true,
+    });
+
+    // Replace href setter
+    Object.defineProperty(window.location, "href", {
+        set: mockHref,
+    });
 
     // Render the page with user signed in
     renderWithAuth({ isSignedIn: true, idToken: "mock-id-token" });
 
     // Wait for redirection to happen
     await waitFor(() => {
-        expect(window.location.href).toBe("/searchforaprescription");
+        expect(mockHref).toHaveBeenCalledWith("/searchforaprescription");
     });
   });
 });
