@@ -9,12 +9,15 @@ import axios from "axios"
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
 import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
 import {formatHeaders} from "./utils/headerUtils"
-import {constructSignedJWTBody} from "./utils/tokenUtils"
 import {handleErrorResponse} from "./utils/errorUtils"
-import {exchangeTokenForApigeeAccessToken} from "./utils/apigeeUtils"
-import {updateApigeeAccessToken} from "./utils/dynamoUtils"
 import {v4 as uuidv4} from "uuid"
-import {getUsernameFromEvent, fetchAndVerifyCIS2Tokens} from "@cpt-ui-common/authFunctions"
+import {
+  getUsernameFromEvent,
+  fetchAndVerifyCIS2Tokens,
+  constructSignedJWTBody,
+  exchangeTokenForApigeeAccessToken,
+  updateApigeeAccessToken
+} from "@cpt-ui-common/authFunctions"
 
 // Logger initialization
 const logger = new Logger({serviceName: "prescriptionSearch"})
@@ -77,23 +80,15 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
     logger.debug("JWT private key retrieved successfully")
 
-    // Construct the token exchange payload
-    const tokenExchangeData = {
-      grant_type: "urn:ietf:params:oauth:grant-type:token-exchange",
-      subject_token_type: "urn:ietf:params:oauth:token-type:id_token",
-      subject_token: cis2IdToken,
-      client_id: "clinical-prescription-tracker-client"
-    }
-
     // Construct a new body with the signed JWT client assertion
     logger.info("Generating signed JWT for Apigee token exchange payload")
     const requestBody = constructSignedJWTBody(
       logger,
-      tokenExchangeData,
       apigeeTokenEndpoint,
       jwtPrivateKey,
       apigeeApiKey,
-      jwtKid
+      jwtKid,
+      cis2IdToken
     )
     logger.debug("Constructed request body for Apigee token exchange", {requestBody})
 

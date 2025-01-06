@@ -4,7 +4,7 @@ import {jest} from "@jest/globals"
 const mockFetchAndVerifyCIS2Tokens = jest.fn()
 const mockGetUsernameFromEvent = jest.fn()
 
-jest.unstable_mockModule("@/cis2TokenHelpers", () => {
+jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
   const fetchAndVerifyCIS2Tokens = mockFetchAndVerifyCIS2Tokens.mockImplementation(async () => {
     return {
       cis2IdToken: "idToken",

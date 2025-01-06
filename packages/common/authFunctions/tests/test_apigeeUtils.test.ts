@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/consistent-type-assertions */
 import {jest} from "@jest/globals"
-import {exchangeTokenForApigeeAccessToken, updateApigeeAccessToken} from "../src/utils/apigeeUtils"
+import {exchangeTokenForApigeeAccessToken, updateApigeeAccessToken} from "../src/apigee"
 import axios from "axios"
 import {DynamoDBDocumentClient, UpdateCommand} from "@aws-sdk/lib-dynamodb"
 import {Logger} from "@aws-lambda-powertools/logger"

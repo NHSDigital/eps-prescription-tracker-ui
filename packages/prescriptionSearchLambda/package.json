@@ -2,7 +2,7 @@
   "name": "prescriptionSearchLambda",
   "version": "1.0.0",
   "description": "Lambda for prescription search",
-  "main": "statusLambda.js",
+  "main": "handler.ts",
   "author": "NHS Digital",
   "license": "MIT",
   "scripts": {

@@ -4,11 +4,56 @@ import {
   it,
   jest
 } from "@jest/globals"
+import {generateKeyPairSync} from "crypto"
 
-// import {DynamoDBDocumentClient, PutCommandInput} from "@aws-sdk/lib-dynamodb"
 import createJWKSMock from "mock-jwks"
-// import nock from "nock"
-import {handler} from "../src/handler"
+
+const mockFetchAndVerifyCIS2Tokens = jest.fn()
+const mockGetUsernameFromEvent = jest.fn()
+const mockGetSecret = jest.fn()
+
+const {
+  privateKey
+} = generateKeyPairSync("rsa", {
+  modulusLength: 4096,
+  publicKeyEncoding: {
+    type: "spki",
+    format: "pem"
+  },
+  privateKeyEncoding: {
+    type: "pkcs8",
+    format: "pem"
+  }
+})
+jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
+  const fetchAndVerifyCIS2Tokens = mockFetchAndVerifyCIS2Tokens.mockImplementation(async () => {
+    return {
+      cis2IdToken: "idToken",
+      cis2AccessToken: "accessToken"
+    }
+  })
+
+  const getUsernameFromEvent = mockGetUsernameFromEvent.mockImplementation(() => {
+    return "Mock_JoeBloggs"
+  })
+
+  return {
+    fetchAndVerifyCIS2Tokens,
+    getUsernameFromEvent
+  }
+})
+
+jest.unstable_mockModule("@aws-lambda-powertools/parameters/secrets", () => {
+  const getSecret = mockGetSecret.mockImplementation(async () => {
+    return privateKey
+  })
+
+  return {
+    getSecret
+  }
+})
+
+const {handler} = await import("../src/handler")
 
 // redefining readonly property of the performance object
 const dummyContext = {
