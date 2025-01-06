@@ -4,8 +4,35 @@ import React, {useContext, useEffect} from "react";
 import { Container, Col, Row, Button } from "nhsuk-react-components";
 import { AuthContext } from "@/context/AuthProvider";
 
+const MOCK_AUTH_ALLOWED = [
+    "dev",
+    "int",
+    "qa",
+    // "ref",
+    // "prod"
+]
+
 export default function AuthPage() {
+    const [allowMockAuth, setAllowMockAuth] = React.useState(false);
     const auth = useContext(AuthContext);
+
+    // On page load
+    useEffect(() => {
+        console.log("AuthPage loaded. What environment are we in?", process.env.NEXT_PUBLIC_TARGET_ENVIRONMENT)
+
+        // Use secure login by default
+        const env: string = process.env.NEXT_PUBLIC_TARGET_ENVIRONMENT || "prod";
+
+        if (MOCK_AUTH_ALLOWED.includes(env)) {
+            console.log("Mock auth allowed in this environment");
+            setAllowMockAuth(true);
+        } else {
+            console.log("Sign in with PTL auth");
+            setAllowMockAuth(false);
+            signIn();
+        }
+
+    }, [auth]);
 
     useEffect(() => {
         console.log(auth);
@@ -33,6 +60,21 @@ export default function AuthPage() {
         console.log("Signing out", auth);
         await auth?.cognitoSignOut();
         console.log("Signed out: ", auth);
+    }
+
+    // TODO: This should show a spinner
+    if (!allowMockAuth) {
+        return (
+        <main className="nhsuk-main-wrapper">
+            <Container>
+                <Row>
+                    <Col width="full">
+                        <h1>Redirecting to CIS2 login page...</h1>
+                    </Col>
+                </Row>
+            </Container>
+        </main>
+        )
     }
 
     return (
