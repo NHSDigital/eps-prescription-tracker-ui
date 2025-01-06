@@ -41,7 +41,6 @@ export default function LogoutPage() {
                         <h1>Logout successful</h1>
                         <div>You are now logged out of the service. To continue using the application, you must log in again.</div>
                         <Link 
-                            // TODO: This needs to be updated in line with PR #278
                             href="/login" 
                             className="nhsuk-button nhsuk-button--primary nhsuk-u-margin-top-5 nhsuk-u-margin-bottom-5"
                         >
