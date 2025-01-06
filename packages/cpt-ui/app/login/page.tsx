@@ -16,28 +16,6 @@ export default function AuthPage() {
     const [allowMockAuth, setAllowMockAuth] = React.useState(false);
     const auth = useContext(AuthContext);
 
-    // On page load
-    useEffect(() => {
-        console.log("AuthPage loaded. What environment are we in?", process.env.NEXT_PUBLIC_TARGET_ENVIRONMENT)
-
-        // Use secure login by default
-        const env: string = process.env.NEXT_PUBLIC_TARGET_ENVIRONMENT || "prod";
-
-        if (MOCK_AUTH_ALLOWED.includes(env)) {
-            console.log("Mock auth allowed in this environment");
-            setAllowMockAuth(true);
-        } else {
-            console.log("Sign in with PTL auth");
-            setAllowMockAuth(false);
-            signIn();
-        }
-
-    }, [auth]);
-
-    useEffect(() => {
-        console.log(auth);
-    }, [auth])
-
     const mockSignIn = async () => {
         console.log("Signing in (Mock)", auth);
         await auth?.cognitoSignIn({
@@ -61,6 +39,28 @@ export default function AuthPage() {
         await auth?.cognitoSignOut();
         console.log("Signed out: ", auth);
     }
+
+    // On page load
+    useEffect(() => {
+        console.log("AuthPage loaded. What environment are we in?", process.env.NEXT_PUBLIC_TARGET_ENVIRONMENT)
+
+        // Use secure login by default
+        const env: string = process.env.NEXT_PUBLIC_TARGET_ENVIRONMENT || "prod";
+
+        if (MOCK_AUTH_ALLOWED.includes(env)) {
+            console.log("Mock auth allowed in this environment");
+            setAllowMockAuth(true);
+        } else {
+            console.log("Sign in with PTL auth");
+            setAllowMockAuth(false);
+            signIn();
+        }
+
+    }, [auth, signIn]);
+
+    useEffect(() => {
+        console.log(auth);
+    }, [auth])
 
     // TODO: This should show a spinner
     if (!allowMockAuth) {
