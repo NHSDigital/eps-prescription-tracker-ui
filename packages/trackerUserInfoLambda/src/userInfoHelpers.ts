@@ -40,6 +40,8 @@ export const fetchUserInfo = async (
     const rolesWithoutAccess: Array<RoleDetails> = []
     let currentlySelectedRole: RoleDetails | undefined = undefined
 
+    console.log(rolesWithAccess, "****")
+
     // Get roles from the user info response
     const roles = data.nhsid_nrbac_roles || []
 
