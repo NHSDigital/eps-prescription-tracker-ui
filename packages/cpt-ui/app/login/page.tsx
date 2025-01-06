@@ -17,7 +17,7 @@ export default function AuthPage() {
     const auth = useContext(AuthContext);
 
     // Use secure login by default
-    const env: string = process.env.NEXT_PUBLIC_TARGET_ENVIRONMENT || "prod";
+    const target_environment: string = process.env.NEXT_PUBLIC_TARGET_ENVIRONMENT || "prod";
     
     const mockSignIn = async () => {
         console.log("Signing in (Mock)", auth);
@@ -47,21 +47,21 @@ export default function AuthPage() {
     useEffect(() => {
         console.log("AuthPage loaded. What environment are we in?", process.env.NEXT_PUBLIC_TARGET_ENVIRONMENT)
 
-        if (MOCK_AUTH_ALLOWED.includes(env)) {
+        if (MOCK_AUTH_ALLOWED.includes(target_environment)) {
             console.log("Mock auth is allowed in this environment");
         } else {
             console.log("User must sign in with Primary auth");
             signIn();
         }
 
-    }, [auth, signIn]);
+    }, [auth, signIn, target_environment]);
 
     useEffect(() => {
         console.log(auth);
     }, [auth])
 
     // TODO: This should show a spinner
-    if (!MOCK_AUTH_ALLOWED.includes(env)) {
+    if (!MOCK_AUTH_ALLOWED.includes(target_environment)) {
         return (
         <main className="nhsuk-main-wrapper">
             <Container>

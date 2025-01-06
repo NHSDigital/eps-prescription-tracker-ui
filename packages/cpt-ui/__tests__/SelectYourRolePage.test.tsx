@@ -69,6 +69,7 @@ const renderWithAuth = (authOverrides = {}) => {
 };
 
 import { SELECT_YOUR_ROLE_PAGE_TEXT } from "@/constants/ui-strings/CardStrings";
+import { EpsSpinnerStrings } from "../constants/ui-strings/EpsSpinnerStrings";
 
 describe("SelectYourRolePage", () => {
   // Clear all mock calls before each test to avoid state leaks
@@ -84,7 +85,7 @@ describe("SelectYourRolePage", () => {
     renderWithAuth({ isSignedIn: true, idToken: "mock-id-token" });
 
     // Verify that the loading text appears
-    const loadingText = screen.getByText(SELECT_YOUR_ROLE_PAGE_TEXT.loadingMessage);
+    const loadingText = screen.getByText(EpsSpinnerStrings.loading);
     expect(loadingText).toBeInTheDocument();
   });
 
