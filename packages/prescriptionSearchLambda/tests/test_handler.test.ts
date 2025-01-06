@@ -5,11 +5,15 @@ import {
   jest
 } from "@jest/globals"
 import {generateKeyPairSync} from "crypto"
+import nock from "nock"
 
 import createJWKSMock from "mock-jwks"
 
 const mockFetchAndVerifyCIS2Tokens = jest.fn()
 const mockGetUsernameFromEvent = jest.fn()
+const mockConstructSignedJWTBody = jest.fn()
+const mockExchangeTokenForApigeeAccessToken = jest.fn()
+const mockUpdateApigeeAccessToken = jest.fn()
 const mockGetSecret = jest.fn()
 
 const {
@@ -37,9 +41,28 @@ jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
     return "Mock_JoeBloggs"
   })
 
+  const constructSignedJWTBody = mockConstructSignedJWTBody.mockImplementation(() => {
+    return {
+      client_assertion: "foo"
+    }
+  })
+
+  const exchangeTokenForApigeeAccessToken = mockExchangeTokenForApigeeAccessToken.mockImplementation(async () => {
+    return {
+      accessToken: "foo",
+      expiresIn: 100
+    }
+
+  })
+
+  const updateApigeeAccessToken = mockUpdateApigeeAccessToken.mockImplementation(() => {})
+
   return {
     fetchAndVerifyCIS2Tokens,
-    getUsernameFromEvent
+    getUsernameFromEvent,
+    constructSignedJWTBody,
+    exchangeTokenForApigeeAccessToken,
+    updateApigeeAccessToken
   }
 })
 
@@ -85,16 +108,30 @@ describe("handler tests", () => {
   })
 
   it("responds with error when body does not exist", async () => {
-    const response = await handler({}, dummyContext)
+    nock("https://dummyapigee")
+      .get("/prescriptions")
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      .query(_actualQueryObject => {
+        // do some compare with the actual Query Object
+        // return true for matched
+        // return false for not matched
+        return true
+      })
+      .reply(200, {
+        prescription: "123"
+      })
+
+    const response = await handler({
+      requestContext: {}
+    }, dummyContext)
     const responseBody = JSON.parse(response.body)
 
     expect(response).toMatchObject({
-      statusCode: 500
+      statusCode: 200
     })
 
     expect(responseBody).toMatchObject({
-      message: "Failed to fetch prescription data from Apigee API",
-      details: "Token mapping table name is not set in environment variables"
+      prescription: "123"
     })
   })
 })
