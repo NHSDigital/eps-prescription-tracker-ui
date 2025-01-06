@@ -131,6 +131,7 @@
         "venv",
         "versionable",
         "whens",
+        "yourselectedrole",
         "jwks",
         "oidcjwks"
       ],
