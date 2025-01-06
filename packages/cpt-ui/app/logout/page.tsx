@@ -13,6 +13,10 @@ export default function LogoutPage() {
     useEffect(() => {
         const signOut = async () => {
             console.log("Signing out", auth);
+
+            // DELETEME: [DEV] Wait 3 seconds
+            await new Promise((resolve) => setTimeout(resolve, 3000));
+
             await auth?.cognitoSignOut();
             console.log("Signed out: ", auth);
         }
@@ -28,8 +32,10 @@ export default function LogoutPage() {
         <main id="main-content" className="nhsuk-main-wrapper">
             <Container role="contentinfo">
                 {auth?.isSignedIn ? (
-                    <h1>Logging out</h1>
-                    // FIXME: Spinner here
+                    <>
+                        <h1>Logging out</h1>
+                        <div>Spinny Spinner...</div>
+                    </>
                 ) : ( 
                     <>
                         <h1>Logout successful</h1>

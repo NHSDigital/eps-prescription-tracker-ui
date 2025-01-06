@@ -3,7 +3,7 @@ import React, { useContext, useState } from "react";
 import Link from "next/link";
 import "@/assets/styles/header.scss";
 import { useRouter, usePathname } from "next/navigation";
-import { Header, Button } from "nhsuk-react-components";
+import { Header } from "nhsuk-react-components";
 import {
   HEADER_SERVICE,
   HEADER_CONFIRM_ROLE_BUTTON,
@@ -108,14 +108,14 @@ export default function EpsHeader() {
           {/* FIXME: Only shows the Log out link if the user is signed in, but introduces a lag on page reload. Acceptable? */}
           {auth?.isSignedIn && (
             <li className="nhsuk-header__navigation-item">
-              <Button
+              <Link
                 className="nhsuk-header__navigation-link"
                 href="/logout"
                 data-testid="eps_header_logout"
                 onClick={handleLogoutClick}
               >
                 Log out
-              </Button>
+              </Link>
             </li>
           )}
           
