@@ -19,6 +19,8 @@ install-hooks: install-python
 
 compile-node:
 	npx tsc --build tsconfig.build.json
+	npm run compile --workspace packages/common/middyErrorHandler
+	npm run compile --workspace packages/common/authFunctions
 
 compile: compile-node
 
