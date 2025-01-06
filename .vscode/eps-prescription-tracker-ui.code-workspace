@@ -37,6 +37,10 @@
         "path": "../packages/common/testing"
       },
       {
+        "name": "packages/common/authFunctions",
+        "path": "../packages/common/authFunctions"
+      },
+      {
         "name": "packages/auth_demo",
         "path": "../packages/auth_demo"
       },

@@ -50,7 +50,9 @@ on:
         type: boolean
       useCustomCognitoDomain:
         type: boolean
-      APIGEE_TOKEN_ENDPOINT:
+      APIGEE_CIS2_TOKEN_ENDPOINT:
+        type: string
+      APIGEE_MOCK_TOKEN_ENDPOINT:
         type: string
       APIGEE_PRESCRIPTIONS_ENDPOINT:
         type: string
@@ -176,7 +178,8 @@ jobs:
           --arg fullCloudfrontDomain "${fullCloudfrontDomain}" \
           --argjson useCustomCognitoDomain "${{ inputs.useCustomCognitoDomain }}" \
           --argjson useLocalhostCallback "${{ inputs.useLocalhostCallback }}" \
-          --arg apigeeTokenEndpoint "${{ inputs.APIGEE_TOKEN_ENDPOINT }}" \
+          --arg apigeeCIS2TokenEndpoint "${{ inputs.APIGEE_CIS2_TOKEN_ENDPOINT }}" \
+          --arg apigeeMockTokenEndpoint "${{ inputs.APIGEE_MOCK_TOKEN_ENDPOINT }}" \
           --arg apigeePrescriptionsEndpoint "${{ inputs.APIGEE_PRESCRIPTIONS_ENDPOINT }}" \
           --arg apigeeApiKey "${{ secrets.APIGEE_API_KEY }}" \
           --arg jwtKid "${{ inputs.JWT_KID }}" \
@@ -211,7 +214,8 @@ jobs:
             "mockOidcjwksEndpoint": $mockOidcjwksEndpoint,
             "useCustomCognitoDomain": $useCustomCognitoDomain,
             "useLocalhostCallback": $useLocalhostCallback,
-            "apigeeTokenEndpoint": $apigeeTokenEndpoint,
+            "apigeeCIS2TokenEndpoint": $apigeeCIS2TokenEndpoint,
+            "apigeeMockTokenEndpoint": $apigeeMockTokenEndpoint,
             "apigeePrescriptionsEndpoint": $apigeePrescriptionsEndpoint,
             "apigeeApiKey": $apigeeApiKey,
             "jwtKid": $jwtKid,

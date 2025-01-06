@@ -1,6 +1,6 @@
-import {Logger} from "@aws-lambda-powertools/logger"
 import {APIGatewayProxyEvent} from "aws-lambda"
 import {DynamoDBDocumentClient, GetCommand} from "@aws-sdk/lib-dynamodb"
+import {Logger} from "@aws-lambda-powertools/logger"
 import jwt, {JwtPayload} from "jsonwebtoken"
 import jwksClient from "jwks-rsa"
 
@@ -19,6 +19,14 @@ const VALID_ACR_VALUES: Array<string> = [
   // "AAL2_NHSMAIL"
 ]
 
+export const getUsernameFromEvent = (event: APIGatewayProxyEvent): string => {
+  const username = event.requestContext.authorizer?.claims["cognito:username"]
+  if (!username) {
+    throw new Error("Unable to extract username from ID token")
+  }
+  return username
+}
+
 // Helper function to get the signing key from the JWKS endpoint
 export const getSigningKey = (client: jwksClient.JwksClient, kid: string): Promise<string> => {
   return new Promise((resolve, reject) => {
@@ -34,14 +42,6 @@ export const getSigningKey = (client: jwksClient.JwksClient, kid: string): Promi
       }
     })
   })
-}
-
-export const getUsernameFromEvent = (event: APIGatewayProxyEvent): string => {
-  const username = event.requestContext.authorizer?.claims["cognito:username"]
-  if (!username) {
-    throw new Error("Unable to extract username from ID token")
-  }
-  return username
 }
 
 export const fetchCIS2TokensFromDynamoDB = async (
@@ -116,9 +116,9 @@ export const verifyCIS2Token = async (
   logger: Logger,
   tokenType: string,
   options: {
-    validAcrValues: Array<string>,
-    checkAudience: boolean
-  }
+      validAcrValues: Array<string>,
+      checkAudience: boolean
+    }
 ) => {
   const oidcIssuer = process.env["oidcIssuer"]
   if (!oidcIssuer) {

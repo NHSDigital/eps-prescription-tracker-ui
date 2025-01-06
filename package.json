@@ -25,6 +25,7 @@
         "packages/prescriptionSearchLambda",
         "packages/common/middyErrorHandler",
         "packages/common/testing",
+        "packages/common/authFunctions",
         "packages/auth_demo",
         "packages/trackerUserInfoLambda"
     ],

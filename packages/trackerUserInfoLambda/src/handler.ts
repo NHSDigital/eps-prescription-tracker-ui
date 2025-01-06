@@ -7,8 +7,8 @@ import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
 import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
 
-import {fetchAndVerifyCIS2Tokens, getUsernameFromEvent} from "./cis2TokenHelpers"
 import {fetchUserInfo, updateDynamoTable} from "./userInfoHelpers"
+import {getUsernameFromEvent, fetchAndVerifyCIS2Tokens} from "@cpt-ui-common/authFunctions"
 
 const logger = new Logger({serviceName: "trackerUserInfo"})
 

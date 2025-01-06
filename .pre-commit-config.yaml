@@ -59,6 +59,24 @@ repos:
         types_or: [ts, tsx, javascript, jsx, json]
         pass_filenames: false
 
+      - id: lint-trackerUserInfoLambda
+        name: Lint trackerUserInfoLambda
+        entry: npm
+        args: ["run", "--prefix=packages/trackerUserInfoLambda", "lint"]
+        language: system
+        files: ^packages\/trackerUserInfoLambda
+        types_or: [ts, tsx, javascript, jsx, json]
+        pass_filenames: false
+
+      - id: lint-authFunctions
+        name: Lint authFunctions
+        entry: npm
+        args: ["run", "--prefix=packages/common/authFunctions", "lint"]
+        language: system
+        files: ^packages\/common\/authFunctions
+        types_or: [ts, tsx, javascript, jsx, json]
+        pass_filenames: false
+
       - id: lint-githubactions
         name: Lint github actions
         entry: make

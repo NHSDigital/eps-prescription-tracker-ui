@@ -10,23 +10,25 @@ import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
 import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
 import {formatHeaders} from "./utils/headerUtils"
 import {constructSignedJWTBody} from "./utils/tokenUtils"
-import {fetchCIS2Tokens} from "./utils/cis2TokenUtils"
 import {handleErrorResponse} from "./utils/errorUtils"
 import {exchangeTokenForApigeeAccessToken} from "./utils/apigeeUtils"
 import {updateApigeeAccessToken} from "./utils/dynamoUtils"
 import {v4 as uuidv4} from "uuid"
+import {getUsernameFromEvent, fetchAndVerifyCIS2Tokens} from "@cpt-ui-common/authFunctions"
 
 // Logger initialization
 const logger = new Logger({serviceName: "prescriptionSearch"})
 
 // External endpoints and environment variables
-const apigeeTokenEndpoint = process.env["apigeeTokenEndpoint"] as string
+const apigeeCIS2TokenEndpoint = process.env["apigeeCIS2TokenEndpoint"] as string
+const apigeeMockTokenEndpoint = process.env["apigeeMockTokenEndpoint"] as string
 const apigeePrescriptionsEndpoint = process.env["apigeePrescriptionsEndpoint"] as string
 const TokenMappingTableName = process.env["TokenMappingTableName"] as string
 const jwtPrivateKeyArn = process.env["jwtPrivateKeyArn"] as string
 const apigeeApiKey = process.env["apigeeApiKey"] as string
 const jwtKid = process.env["jwtKid"] as string
 const roleId = process.env["roleId"] as string
+const MOCK_MODE_ENABLED = process.env["MOCK_MODE_ENABLED"]
 
 // DynamoDB client setup
 const dynamoClient = new DynamoDBClient()
@@ -49,9 +51,21 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   let prescriptionId: string | undefined
 
   try {
+    // Mock usernames start with "Mock_", and real requests use usernames starting with "Primary_"
+    const username = getUsernameFromEvent(event)
+    const isMockToken = username.startsWith("Mock_")
+    // Determine whether this request should be treated as mock or real.
+    const isMockRequest = MOCK_MODE_ENABLED === "true" && isMockToken
+
+    const apigeeTokenEndpoint = isMockRequest
+      ? apigeeMockTokenEndpoint
+      : apigeeCIS2TokenEndpoint
+
+    logger.info("Is this a mock request?", {isMockRequest})
+
     // Step 1: Fetch CIS2 tokens
     logger.info("Retrieving CIS2 tokens from DynamoDB based on the current request context")
-    const {cis2AccessToken, cis2IdToken} = await fetchCIS2Tokens(event, documentClient, logger)
+    const {cis2AccessToken, cis2IdToken} = await fetchAndVerifyCIS2Tokens(event, documentClient, logger)
     logger.debug("Successfully fetched CIS2 tokens", {cis2AccessToken, cis2IdToken})
 
     // Step 2: Fetch the private key for signing the client assertion

@@ -1,0 +1,25 @@
+{
+  "name": "@cpt-ui-common/authFunctions",
+  "version": "1.0.0",
+  "description": "Common resources for auth functions",
+  "author": "NHS Digital",
+  "license": "MIT",
+  "main": "src/index.ts",
+  "scripts": {
+    "unit": "POWERTOOLS_DEV=true NODE_OPTIONS=--experimental-vm-modules jest --no-cache --coverage",
+    "lint": "eslint  --max-warnings 0 --fix --config ../../../eslint.config.mjs .",
+    "compile": "tsc",
+    "test": "npm run compile && npm run unit",
+    "check-licenses": "license-checker --failOn GPL --failOn LGPL --start ../.."
+  },
+  "devDependencies": {
+    "mock-jwks": "^3.2.2"
+  },
+  "dependencies": {
+    "@aws-lambda-powertools/logger": "^2.12.0",
+    "@aws-sdk/lib-dynamodb": "^3.721.0",
+    "aws-lambda": "^1.0.7",
+    "jsonwebtoken": "^9.0.2",
+    "jwks-rsa": "^3.1.0"
+  }
+}

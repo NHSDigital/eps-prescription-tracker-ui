@@ -7,7 +7,7 @@ import {
   fetchAndVerifyCIS2Tokens,
   verifyIdToken,
   verifyAccessToken
-} from "../src/cis2TokenHelpers"
+} from "../src/index"
 
 import {APIGatewayProxyEvent} from "aws-lambda"
 import {Logger} from "@aws-lambda-powertools/logger"

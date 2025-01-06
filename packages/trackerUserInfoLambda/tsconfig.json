@@ -7,6 +7,6 @@
       {"@/*": ["./src/*"]}
     
   },
-  "include": ["src/**/*", "tests/**/*"],
+  "include": ["src/**/*", "tests/**/*", "../common/authFunctions/tests/test_cis2TokenHelpers.test.ts"],
   "exclude": ["node_modules"]
 }

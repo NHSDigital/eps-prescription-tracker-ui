@@ -134,7 +134,8 @@ jobs:
       mockOidcjwksEndpoint: "https://identity.ptl.api.platform.nhs.uk/realms/Cis2-mock-internal-dev/protocol/openid-connect/certs"
       useLocalhostCallback: true
       useCustomCognitoDomain: true
-      APIGEE_TOKEN_ENDPOINT: "https://internal-dev.api.service.nhs.uk/oauth2/token"
+      APIGEE_CIS2_TOKEN_ENDPOINT: "https://internal-dev.api.service.nhs.uk/oauth2/token"
+      APIGEE_MOCK_TOKEN_ENDPOINT: "https://internal-dev.api.service.nhs.uk/oauth2-mock/token"
       APIGEE_PRESCRIPTIONS_ENDPOINT: "https://internal-dev.api.service.nhs.uk/clinical-prescription-tracker/"
       JWT_KID: "eps-cpt-ui-test"
       ROLE_ID: "555254242106"
@@ -186,7 +187,8 @@ jobs:
       mockOidcjwksEndpoint: "https://identity.ptl.api.platform.nhs.uk/realms/Cis2-mock-internal-dev/protocol/openid-connect/certs"
       useLocalhostCallback: false
       useCustomCognitoDomain: true
-      APIGEE_TOKEN_ENDPOINT: "https://ref.api.service.nhs.uk/oauth2/token"
+      APIGEE_CIS2_TOKEN_ENDPOINT: "https://ref.api.service.nhs.uk/oauth2/token"
+      APIGEE_MOCK_TOKEN_ENDPOINT: "https://ref.api.service.nhs.uk/oauth2-mock/token"
       APIGEE_PRESCRIPTIONS_ENDPOINT: "https://ref.api.service.nhs.uk/clinical-prescription-tracker/"
       JWT_KID: "eps-cpt-ui-test"
       ROLE_ID: "555254242106"
@@ -223,7 +225,8 @@ jobs:
       mockOidcjwksEndpoint: "https://identity.ptl.api.platform.nhs.uk/realms/Cis2-mock-internal-dev/protocol/openid-connect/certs"
       useLocalhostCallback: false
       useCustomCognitoDomain: true
-      APIGEE_TOKEN_ENDPOINT: "https://internal-qa.api.service.nhs.uk/oauth2/token"
+      APIGEE_CIS2_TOKEN_ENDPOINT: "https://internal-qa.api.service.nhs.uk/oauth2/token"
+      APIGEE_MOCK_TOKEN_ENDPOINT: "https://internal-qa.api.service.nhs.uk/oauth2-mock/token"
       APIGEE_PRESCRIPTIONS_ENDPOINT: "https://internal-qa.api.service.nhs.uk/clinical-prescription-tracker/"
       JWT_KID: "eps-cpt-ui-test"
       ROLE_ID: "555254242106"
@@ -260,7 +263,8 @@ jobs:
       mockOidcjwksEndpoint: "https://identity.ptl.api.platform.nhs.uk/realms/Cis2-mock-internal-dev/protocol/openid-connect/certs"
       useLocalhostCallback: false
       useCustomCognitoDomain: true
-      APIGEE_TOKEN_ENDPOINT: "https://int.api.service.nhs.uk/oauth2/token"
+      APIGEE_CIS2_TOKEN_ENDPOINT: "https://int.api.service.nhs.uk/oauth2/token"
+      APIGEE_MOCK_TOKEN_ENDPOINT: "UNUSED"
       APIGEE_PRESCRIPTIONS_ENDPOINT: "https://int.api.service.nhs.uk/clinical-prescription-tracker/"
       JWT_KID: "eps-cpt-ui-test"
       ROLE_ID: "555254242106"
