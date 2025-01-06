@@ -22,9 +22,17 @@ const VALID_ACR_VALUES: Array<string> = [
 
 // Create a JWKS client
 // this is outside functions so it can be re-used
-const jwksUri = process.env["oidcjwksEndpoint"]
-const client = jwksClient({
-  jwksUri: jwksUri,
+const cis2JwksUri = process.env["REAL_OIDCJWKS_ENDPOINT"]
+const cis2JwksClient = jwksClient({
+  jwksUri: cis2JwksUri,
+  cache: true,
+  cacheMaxEntries: 5,
+  cacheMaxAge: 3600000 // 1 hour
+})
+
+const mockJwksUri = process.env["MOCK_OIDCJWKS_ENDPOINT"]
+const mockJwksClient = jwksClient({
+  jwksUri: mockJwksUri,
   cache: true,
   cacheMaxEntries: 5,
   cacheMaxAge: 3600000 // 1 hour
@@ -121,17 +129,18 @@ export const verifyCIS2Token = async (
   options: {
         validAcrValues: Array<string>,
         checkAudience: boolean
-      }
+      },
+  useMock: boolean
 ): Promise<jwt.JwtPayload> => {
-  const oidcIssuer = process.env["oidcIssuer"]
+  const oidcIssuer = useMock ? process.env["MOCK_OIDC_ISSUER"] : process.env["REAL_OIDC_ISSUER"]
   if (!oidcIssuer) {
     throw new Error("OIDC issuer not set")
   }
-  const oidcClientId = process.env["oidcClientId"]
+  const oidcClientId = useMock ? process.env["MOCK_OIDC_CLIENT_ID"] : process.env["REAL_OIDC_CLIENT_ID"]
   if (!oidcClientId) {
     throw new Error("OIDC client ID not set")
   }
-  const jwksUri = process.env["oidcjwksEndpoint"]
+  const jwksUri = useMock ? process.env["MOCK_OIDCJWKS_ENDPOINT"] : process.env["REAL_OIDCJWKS_ENDPOINT"]
   if (!jwksUri) {
     throw new Error("JWKS URI not set")
   }
@@ -157,7 +166,7 @@ export const verifyCIS2Token = async (
   let signingKey
   try {
     logger.info("Fetching signing key", {kid})
-    signingKey = await getSigningKey(client, kid)
+    signingKey = await getSigningKey(useMock ? mockJwksClient: cis2JwksClient, kid)
   } catch (err) {
     logger.error("Error getting signing key", {err})
     throw new Error("Error getting signing key")
