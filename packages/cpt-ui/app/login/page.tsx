@@ -1,8 +1,9 @@
 'use client'
-import React, {useContext, useEffect} from "react";
+import React, { useContext, useEffect, useCallback } from "react";
 
 import { Container, Col, Row, Button } from "nhsuk-react-components";
 import { AuthContext } from "@/context/AuthProvider";
+import EpsSpinner from "@/components/EpsSpinner";
 
 const MOCK_AUTH_ALLOWED = [
     "dev",
@@ -13,9 +14,11 @@ const MOCK_AUTH_ALLOWED = [
 ]
 
 export default function AuthPage() {
-    const [allowMockAuth, setAllowMockAuth] = React.useState(false);
     const auth = useContext(AuthContext);
 
+    // Use secure login by default
+    const env: string = process.env.NEXT_PUBLIC_TARGET_ENVIRONMENT || "prod";
+    
     const mockSignIn = async () => {
         console.log("Signing in (Mock)", auth);
         await auth?.cognitoSignIn({
@@ -25,14 +28,14 @@ export default function AuthPage() {
         });
     }
 
-    const signIn = async () => {
+    const signIn = useCallback(async () => {
         console.log("Signing in (Primary)", auth);
         await auth?.cognitoSignIn({
             provider: {
                 custom: "Primary"
             }
         });
-    }
+    }, [auth]);
 
     const signOut = async () => {
         console.log("Signing out", auth);
@@ -44,15 +47,10 @@ export default function AuthPage() {
     useEffect(() => {
         console.log("AuthPage loaded. What environment are we in?", process.env.NEXT_PUBLIC_TARGET_ENVIRONMENT)
 
-        // Use secure login by default
-        const env: string = process.env.NEXT_PUBLIC_TARGET_ENVIRONMENT || "prod";
-
         if (MOCK_AUTH_ALLOWED.includes(env)) {
-            console.log("Mock auth allowed in this environment");
-            setAllowMockAuth(true);
+            console.log("Mock auth is allowed in this environment");
         } else {
-            console.log("Sign in with PTL auth");
-            setAllowMockAuth(false);
+            console.log("User must sign in with Primary auth");
             signIn();
         }
 
@@ -63,13 +61,14 @@ export default function AuthPage() {
     }, [auth])
 
     // TODO: This should show a spinner
-    if (!allowMockAuth) {
+    if (!MOCK_AUTH_ALLOWED.includes(env)) {
         return (
         <main className="nhsuk-main-wrapper">
             <Container>
                 <Row>
                     <Col width="full">
                         <h1>Redirecting to CIS2 login page...</h1>
+                        <EpsSpinner />
                     </Col>
                 </Row>
             </Container>

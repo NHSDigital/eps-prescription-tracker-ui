@@ -1,8 +1,12 @@
 'use client'
 import React, {useState, useEffect, useContext, useCallback } from "react"
 import { Container, Col, Row, Details, Table, ErrorSummary, Button, InsetText } from "nhsuk-react-components"
+
 import { AuthContext } from "@/context/AuthProvider";
+
 import EpsCard, { EpsCardProps } from "@/components/EpsCard";
+import EpsSpinner from "@/components/EpsSpinner";
+
 import {SELECT_YOUR_ROLE_PAGE_TEXT} from "@/constants/ui-strings/CardStrings";
 
 export type RoleDetails = {
@@ -49,8 +53,7 @@ const {
     noODSCode,
     noRoleName,
     noAddress,
-    errorDuringRoleSelection,
-    loadingMessage
+    errorDuringRoleSelection
 } = SELECT_YOUR_ROLE_PAGE_TEXT;
 
 export default function SelectYourRolePage() {
@@ -156,7 +159,7 @@ export default function SelectYourRolePage() {
                 <Container>
                     <Row>
                         <Col width="full">
-                            {loadingMessage}
+                            <EpsSpinner />
                         </Col>
                     </Row>
                 </Container>

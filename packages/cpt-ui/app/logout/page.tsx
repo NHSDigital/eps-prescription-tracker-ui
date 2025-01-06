@@ -1,9 +1,10 @@
 'use client'
 import React, { useContext, useEffect } from "react";
-import { Container } from "nhsuk-react-components";
+import { Container } from "nhsuk-react-components"
 import Link from "next/link";
 
 import { AuthContext } from "@/context/AuthProvider";
+import EpsSpinner from "@/components/EpsSpinner";
 
 export default function LogoutPage() {
 
@@ -34,9 +35,9 @@ export default function LogoutPage() {
                 {auth?.isSignedIn ? (
                     <>
                         <h1>Logging out</h1>
-                        <div>Spinny Spinner...</div>
+                            <EpsSpinner />
                     </>
-                ) : ( 
+                ) : (
                     <>
                         <h1>Logout successful</h1>
                         <div>You are now logged out of the service. To continue using the application, you must log in again.</div>

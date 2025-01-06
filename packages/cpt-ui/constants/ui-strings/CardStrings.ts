@@ -19,6 +19,5 @@ export const SELECT_YOUR_ROLE_PAGE_TEXT = {
   noODSCode: "No ODS code",
   noRoleName: "No role name",
   noAddress: "Address not found",
-  errorDuringRoleSelection: "Error during role selection",
-  loadingMessage: "Loading..."
+  errorDuringRoleSelection: "Error during role selection"
 }
