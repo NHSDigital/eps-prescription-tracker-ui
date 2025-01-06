@@ -42,7 +42,7 @@ export default function LogoutPage() {
                         <div>You are now logged out of the service. To continue using the application, you must log in again.</div>
                         <Link 
                             // TODO: This needs to be updated in line with PR #278
-                            href="/auth_demo" 
+                            href="/login" 
                             className="nhsuk-button nhsuk-button--primary nhsuk-u-margin-top-5 nhsuk-u-margin-bottom-5"
                         >
                             Log in

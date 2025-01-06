@@ -55,7 +55,7 @@ export default function EpsHeader() {
           </li>
 
           <li className="nhsuk-header__navigation-item">
-            <Link className="nhsuk-header__navigation-link" href="/auth_demo/" data-testid="eps_header_placeholder2">
+            <Link className="nhsuk-header__navigation-link" href="/login/" data-testid="eps_header_placeholder2">
               Placeholder 2
             </Link>
           </li>
