@@ -202,4 +202,37 @@ describe("SelectYourRolePage", () => {
       expect(errorItem).toBeInTheDocument();
     });
   });
+
+  it("redirects to /searchforaprescription when there is one role with access and no roles without access", async () => {
+    // Mock user data to simulate API response
+    const mockUserInfo = {
+        roles_with_access: [
+            {
+                role_name: "Pharmacist",
+                org_name: "Test Pharmacy Org",
+                org_code: "ORG123",
+                site_address: "1 Fake Street",
+            },
+        ],
+        roles_without_access: [],
+    };
+
+    // Mock fetch to return 200 OK with the mocked userInfo
+    mockFetch.mockResolvedValue({
+        status: 200,
+        json: async () => ({ userInfo: mockUserInfo }),
+    });
+
+    // Mock `window.location.href` to track redirection
+    delete window.location;
+    window.location = { href: "" };
+
+    // Render the page with user signed in
+    renderWithAuth({ isSignedIn: true, idToken: "mock-id-token" });
+
+    // Wait for redirection to happen
+    await waitFor(() => {
+        expect(window.location.href).toBe("/searchforaprescription");
+    });
+  });
 });

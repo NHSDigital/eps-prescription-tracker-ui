@@ -69,8 +69,8 @@ export default function SelectYourRolePage() {
         setRolesWithoutAccess([])
 
         if (!auth?.isSignedIn || !auth) {
-            setError("Not signed in")
             setLoading(false)
+            setError("Not signed in")
             return
         }
 
@@ -145,10 +145,17 @@ export default function SelectYourRolePage() {
 
         if (auth?.isSignedIn) {
             fetchTrackerUserInfo()
-        } else {
-            setError(null)
         }
     }, [auth?.isSignedIn, fetchTrackerUserInfo])
+
+    useEffect(() => {
+        console.log("Auth error updated:", auth?.error)
+        // Have to do this to make `<string | null | undefined>` work with `<string | null>`
+        setError(auth?.error ?? null);
+        if (auth?.error) {
+            setLoading(false);
+        }
+    }, [auth?.error])
 
     // Skip rendering if redirecting
     if (redirecting) {
