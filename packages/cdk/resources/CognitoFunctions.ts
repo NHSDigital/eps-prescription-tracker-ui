@@ -63,13 +63,12 @@ export class CognitoFunctions extends Construct {
       entryPoint: "src/token.ts",
       lambdaEnvironmentVariables: {
         TokenMappingTableName: props.tokenMappingTable.tableName,
-        REAL_IDP_TOKEN_PATH: props.primaryOidcTokenEndpoint,
-        REAL_USER_POOL_IDP: props.primaryPoolIdentityProviderName,
-        REAL_OIDCJWKS_ENDPOINT: props.primaryOidcjwksEndpoint,
+        CIS2_IDP_TOKEN_PATH: props.primaryOidcTokenEndpoint,
+        CIS2_USER_POOL_IDP: props.primaryPoolIdentityProviderName,
+        CIS2_OIDCJWKS_ENDPOINT: props.primaryOidcjwksEndpoint,
         jwtPrivateKeyArn: props.sharedSecrets.primaryJwtPrivateKey.secretArn,
-        useSignedJWT: "true",
-        REAL_OIDC_CLIENT_ID: props.primaryOidcClientId,
-        REAL_OIDC_ISSUER: props.primaryOidcIssuer,
+        CIS2_OIDC_CLIENT_ID: props.primaryOidcClientId,
+        CIS2_OIDC_ISSUER: props.primaryOidcIssuer,
         jwtKid: props.jwtKid,
         useMock: "false"
       }
@@ -120,7 +119,6 @@ export class CognitoFunctions extends Construct {
           MOCK_USER_POOL_IDP: props.mockPoolIdentityProviderName,
           MOCK_OIDCJWKS_ENDPOINT: props.mockOidcjwksEndpoint,
           jwtPrivateKeyArn: props.sharedSecrets.mockJwtPrivateKey!.secretArn,
-          useSignedJWT: "true",
           MOCK_OIDC_CLIENT_ID: props.mockOidcClientId,
           MOCK_OIDC_ISSUER: props.mockOidcIssuer,
           jwtKid: props.jwtKid,

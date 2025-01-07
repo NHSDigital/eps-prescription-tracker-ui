@@ -1,26 +1,54 @@
 import {APIGatewayProxyEvent, APIGatewayProxyResult} from "aws-lambda"
 import {Logger} from "@aws-lambda-powertools/logger"
 import {injectLambdaContext} from "@aws-lambda-powertools/logger/middleware"
-import middy from "@middy/core"
 import {getSecret} from "@aws-lambda-powertools/parameters/secrets"
+import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
+import {DynamoDBDocumentClient, PutCommand} from "@aws-sdk/lib-dynamodb"
+
+import middy from "@middy/core"
 import inputOutputLogger from "@middy/input-output-logger"
-import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 import axios from "axios"
 import {parse, ParsedUrlQuery, stringify} from "querystring"
 
 import {PrivateKey} from "jsonwebtoken"
-import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
-import {DynamoDBDocumentClient, PutCommand} from "@aws-sdk/lib-dynamodb"
 import jwksClient from "jwks-rsa"
 
-import {formatHeaders, rewriteBodyToAddSignedJWT} from "./helpers"
 import {verifyIdToken, OidcConfig} from "@cpt-ui-common/authFunctions"
+import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
+
+import {formatHeaders, rewriteBodyToAddSignedJWT} from "./helpers"
+
+/*
+This is the lambda code that is used to intercept calls to token endpoint as part of the cognito login flow
+It expects the following environment variables to be set
+
+TokenMappingTableName
+jwtPrivateKeyArn
+jwtKid
+useMock
+
+For CIS2 calls, the following must be set
+CIS2_OIDC_ISSUER
+CIS2_OIDC_CLIENT_ID
+CIS2_OIDCJWKS_ENDPOINT
+CIS2_USER_INFO_ENDPOINT
+CIS2_USER_POOL_IDP
+CIS2_IDP_TOKEN_PATH
+
+For mock calls, the following must be set
+MOCK_OIDC_ISSUER
+MOCK_OIDC_CLIENT_ID
+MOCK_OIDCJWKS_ENDPOINT
+MOCK_USER_INFO_ENDPOINT
+MOCK_USER_POOL_IDP
+MOCK_IDP_TOKEN_PATH
+*/
 
 const logger = new Logger({serviceName: "token"})
 const useMock: boolean = process.env["useMock"] === "true"
 // Create a JWKS client for cis2 and mock
 // this is outside functions so it can be re-used
-const cis2JwksUri = process.env["REAL_OIDCJWKS_ENDPOINT"] as string
+const cis2JwksUri = process.env["CIS2_OIDCJWKS_ENDPOINT"] as string
 const cis2JwksClient = jwksClient({
   jwksUri: cis2JwksUri,
   cache: true,
@@ -29,11 +57,11 @@ const cis2JwksClient = jwksClient({
 })
 
 const cis2OidcConfig: OidcConfig = {
-  oidcIssuer: process.env["REAL_OIDC_ISSUER"] ?? "",
-  oidcClientID: process.env["REAL_OIDC_CLIENT_ID"] ?? "",
-  oidcJwksEndpoint: process.env["REAL_OIDCJWKS_ENDPOINT"] ?? "",
-  oidcUserInfoEndpoint: process.env["REAL_USER_INFO_ENDPOINT"] ?? "",
-  userPoolIdp: process.env["REAL_USER_POOL_IDP"] ?? "",
+  oidcIssuer: process.env["CIS2_OIDC_ISSUER"] ?? "",
+  oidcClientID: process.env["CIS2_OIDC_CLIENT_ID"] ?? "",
+  oidcJwksEndpoint: process.env["CIS2_OIDCJWKS_ENDPOINT"] ?? "",
+  oidcUserInfoEndpoint: process.env["CIS2_USER_INFO_ENDPOINT"] ?? "",
+  userPoolIdp: process.env["CIS2_USER_POOL_IDP"] ?? "",
   jwksClient: cis2JwksClient,
   tokenMappingTableName: process.env["TokenMappingTableName"] ?? ""
 }
@@ -62,7 +90,7 @@ const jwtKid = process.env["jwtKid"] as string
 
 const idpTokenPath = useMock ?
   process.env["MOCK_IDP_TOKEN_PATH"] as string :
-  process.env["REAL_IDP_TOKEN_PATH"] as string
+  process.env["CIS2_IDP_TOKEN_PATH"] as string
 
 const dynamoClient = new DynamoDBClient()
 const documentClient = DynamoDBDocumentClient.from(dynamoClient)

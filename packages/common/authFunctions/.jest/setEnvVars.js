@@ -1,11 +1,11 @@
 process.env.TokenMappingTableName = "dummyTable"
 
-process.env.REAL_IDP_TOKEN_PATH = "https://dummytoken.com/token"
-process.env.REAL_OIDCJWKS_ENDPOINT = "https://dummyauth.com/.well-known/jwks.json"
-process.env.REAL_USER_POOL_IDP = "DummyPoolIdentityProvider"
-process.env.REAL_OIDC_CLIENT_ID = "valid_aud"
-process.env.REAL_OIDC_ISSUER = "valid_iss"
-process.env.REAL_USER_INFO_ENDPOINT = "https://dummyauth.com/userinfo"
+process.env.CIS2_IDP_TOKEN_PATH = "https://dummytoken.com/token"
+process.env.CIS2_OIDCJWKS_ENDPOINT = "https://dummyauth.com/.well-known/jwks.json"
+process.env.CIS2_USER_POOL_IDP = "DummyPoolIdentityProvider"
+process.env.CIS2_OIDC_CLIENT_ID = "valid_aud"
+process.env.CIS2_OIDC_ISSUER = "valid_iss"
+process.env.CIS2_USER_INFO_ENDPOINT = "https://dummyauth.com/userinfo"
 
 process.env.MOCK_IDP_TOKEN_PATH = "https://dummytoken.com/token"
 process.env.MOCK_OIDCJWKS_ENDPOINT = "https://dummyauth.com/.well-known/jwks.json"
