@@ -1,41 +1,42 @@
 'use client'
-import React, {useState, useEffect, useContext, useCallback } from "react"
-import { Container, Col, Row, Details, Table, ErrorSummary, Button, InsetText } from "nhsuk-react-components"
-import { AuthContext } from "@/context/AuthProvider";
-import EpsCard, { EpsCardProps } from "@/components/EpsCard";
-import {SELECT_YOUR_ROLE_PAGE_TEXT} from "@/constants/ui-strings/CardStrings";
+import React, {useState, useEffect, useContext, useCallback} from "react"
+import {Container, Col, Row, Details, Table, ErrorSummary, Button, InsetText} from "nhsuk-react-components"
+import {AuthContext} from "@/context/AuthProvider"
+import {useAccess} from '@/context/AccessProvider'
+import EpsCard, {EpsCardProps} from "@/components/EpsCard"
+import {SELECT_YOUR_ROLE_PAGE_TEXT} from "@/constants/ui-strings/CardStrings"
 
 export type RoleDetails = {
-    role_name?: string;
-    role_id?: string;
-    org_code?: string;
-    org_name?: string;
-    site_name?: string;
-    site_address?: string;
-    uuid?: string;
-};
+    role_name?: string
+    role_id?: string
+    org_code?: string
+    org_name?: string
+    site_name?: string
+    site_address?: string
+    uuid?: string
+}
 
 export type TrackerUserInfo = {
-    roles_with_access: Array<RoleDetails>;
-    roles_without_access: Array<RoleDetails>;
-    currently_selected_role?: RoleDetails;
-};
+    roles_with_access: Array<RoleDetails>
+    roles_without_access: Array<RoleDetails>
+    currently_selected_role?: RoleDetails
+}
 
 // Extends the EpsCardProps to include a unique identifier
 export type RolesWithAccessProps = EpsCardProps & {
-    uuid: string;
+    uuid: string
 }
 
 export type RolesWithoutAccessProps = {
-    uuid: string;
-    orgName: string;
-    odsCode: string;
-    roleName: string;
+    uuid: string
+    orgName: string
+    odsCode: string
+    roleName: string
 }
 
 const trackerUserInfoEndpoint = "/api/tracker-user-info"
 
-const { 
+const {
     title,
     caption,
     titleNoAccess,
@@ -53,15 +54,16 @@ const {
     noAddress,
     errorDuringRoleSelection,
     loadingMessage
-} = SELECT_YOUR_ROLE_PAGE_TEXT;
+} = SELECT_YOUR_ROLE_PAGE_TEXT
 
 export default function SelectYourRolePage() {
+    const {setNoAccess} = useAccess()
     const [loading, setLoading] = useState<boolean>(true)
     const [error, setError] = useState<string | null>(null)
     const [rolesWithAccess, setRolesWithAccess] = useState<RolesWithAccessProps[]>([])
     const [rolesWithoutAccess, setRolesWithoutAccess] = useState<RolesWithoutAccessProps[]>([])
 
-    const auth = useContext(AuthContext);
+    const auth = useContext(AuthContext)
 
     const fetchTrackerUserInfo = useCallback(async () => {
         setLoading(true)
@@ -72,7 +74,7 @@ export default function SelectYourRolePage() {
         if (!auth?.isSignedIn || !auth) {
             setLoading(false)
             setError("Not signed in")
-            return;
+            return
         }
 
         try {
@@ -82,7 +84,7 @@ export default function SelectYourRolePage() {
                     'NHSD-Session-URID': '555254242106'
                 }
             })
-            
+
             if (response.status !== 200) {
                 throw new Error(`Server did not return CPT user info, response ${response.status}`)
             }
@@ -93,7 +95,7 @@ export default function SelectYourRolePage() {
                 throw new Error("Server response did not contain data")
             }
 
-            const userInfo: TrackerUserInfo = data.userInfo;
+            const userInfo: TrackerUserInfo = data.userInfo
 
             const rolesWithAccess = userInfo.roles_with_access
             const rolesWithoutAccess = userInfo.roles_without_access
@@ -124,19 +126,21 @@ export default function SelectYourRolePage() {
                 }))
             )
 
+            setNoAccess(rolesWithAccess.length === 0)
+
         } catch (err) {
             setError("Failed to fetch CPT user info")
             console.error("error fetching tracker user info:", err)
         } finally {
             setLoading(false)
         }
-    }, [auth])
+    }, [auth, setNoAccess])
 
     useEffect(() => {
         if (auth?.isSignedIn === undefined) {
             return
         }
-    
+
         if (auth?.isSignedIn) {
             fetchTrackerUserInfo()
         } else {
@@ -147,9 +151,9 @@ export default function SelectYourRolePage() {
     useEffect(() => {
         console.log("Auth error updated:", auth?.error)
         // Have to do this to make `<string | null | undefined>` work with `<string | null>`
-        setError(auth?.error ?? null);
+        setError(auth?.error ?? null)
         if (auth?.error) {
-            setLoading(false);
+            setLoading(false)
         }
     }, [auth?.error])
 
@@ -165,7 +169,7 @@ export default function SelectYourRolePage() {
                     </Row>
                 </Container>
             </main>
-        );
+        )
     }
 
     // If the process encounters an error, replace the content with an error summary
@@ -187,10 +191,10 @@ export default function SelectYourRolePage() {
                     </Row>
                 </Container>
             </main>
-        );
+        )
     }
 
-    const noAccess = rolesWithAccess.length === 0;
+    const noAccess = rolesWithAccess.length === 0
 
     return (
         <main id="main-content" className="nhsuk-main-wrapper">
@@ -268,5 +272,5 @@ export default function SelectYourRolePage() {
                 </Row>
             </Container>
         </main>
-    );
+    )
 }
