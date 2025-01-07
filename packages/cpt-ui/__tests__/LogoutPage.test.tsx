@@ -88,85 +88,79 @@ import { AuthContext } from "@/context/AuthProvider";
 import LogoutPage from "@/app/logout/page";
 
 describe("LogoutPage", () => {
-    // Use fake timers to control the setTimeout in LogoutPage
-    beforeAll(() => {
-      jest.useFakeTimers();
-    });
-  
-    afterAll(() => {
-      jest.useRealTimers();
-    });
-  
-    afterEach(() => {
-      jest.restoreAllMocks();
-      jest.clearAllMocks();
-    });
-  
-    it("renders 'Logout successful' immediately if the user is not signed in", () => {
-      render(
-        <MockAuthProvider defaultIsSignedIn={false}>
-          <LogoutPage />
-        </MockAuthProvider>
-      );
-  
-      // The user is not signed in, so we expect to see "Logout successful".
-      expect(screen.getByText(/Logout successful/i)).toBeInTheDocument();
-      expect(
-        screen.getByText(
-          /You are now logged out of the service. To continue using the application, you must log in again/i
-        )
-      ).toBeInTheDocument();
-  
-      // We also expect to see the "Log in" link or button
-      expect(screen.getByRole("link", { name: /log in/i })).toBeInTheDocument();
-  
-      // Because user is not signed in, we do NOT expect signOut to have been called
-      expect(mockCognitoSignOut).not.toHaveBeenCalled();
-    });
-  
-    it("shows a spinner and calls signOut when the user is signed in", async () => {
-      render(
-        <MockAuthProvider defaultIsSignedIn={true}>
-          <LogoutPage />
-        </MockAuthProvider>
-      );
-  
-      // Because the user is signed in, we expect "Logging out" and spinner
-      expect(screen.getByText(/Logging out/i)).toBeInTheDocument();
-  
-      // The spinner is also expected to be in the document
-      // (assuming EpsSpinner might not have a particular role, but let's see if there's text or alt)
-      // If your EpsSpinner has a testable role/label, update the query accordingly
-      expect(screen.getByRole("progressbar")).toBeInTheDocument();
-  
-      // signOut is delayed by 3s. Fast forward the timers so the logout can complete.
-      jest.advanceTimersByTime(3000);
-  
-      // Wait for re-render after signOut
-      await waitFor(() => {
-        expect(mockCognitoSignOut).toHaveBeenCalledTimes(1);
-      });
-  
-      // After signOut, the user is no longer signed in, so we should see "Logout successful"
-      expect(screen.getByText(/Logout successful/i)).toBeInTheDocument();
-      expect(
-        screen.getByText(
-          /You are now logged out of the service. To continue using the application, you must log in again/i
-        )
-      ).toBeInTheDocument();
-    });
-  
-    it("does not call signOut if user is signed in, but we haven't advanced timers yet", () => {
-      render(
-        <MockAuthProvider defaultIsSignedIn={true}>
-          <LogoutPage />
-        </MockAuthProvider>
-      );
-  
-      // On initial render, user is signed in
-      // The call is triggered, but only after the 3s setTimeout.
-      // We haven't advanced timers, so the signOut shouldn't have completed yet.
-      expect(screen.getByText(/Logging out/i)).toBeInTheDocument();
-      expect(mockCognitoSignOut).not.toHaveBeenCalled();
-    });
+  // Use fake timers to control the setTimeout in LogoutPage
+  beforeAll(() => {
+    jest.useFakeTimers();
   });
+
+  afterAll(() => {
+    jest.useRealTimers();
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+    jest.clearAllMocks();
+  });
+
+  it("renders 'Logout successful' immediately if the user is not signed in", () => {
+    render(
+      <MockAuthProvider defaultIsSignedIn={false}>
+        <LogoutPage />
+      </MockAuthProvider>
+    );
+
+    // The user is not signed in, so we expect to see "Logout successful".
+    expect(screen.getByText(/Logout successful/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        /You are now logged out of the service. To continue using the application, you must log in again/i
+      )
+    ).toBeInTheDocument();
+
+    // We also expect to see the "Log in" link or button
+    expect(screen.getByRole("link", { name: /log in/i })).toBeInTheDocument();
+
+    // Because user is not signed in, we do NOT expect signOut to have been called
+    expect(mockCognitoSignOut).not.toHaveBeenCalled();
+  });
+
+  it("shows a spinner and calls signOut when the user is signed in", async () => {
+    render(
+      <MockAuthProvider defaultIsSignedIn={true}>
+        <LogoutPage />
+      </MockAuthProvider>
+    );
+
+    // Because the user is signed in, we expect "Logging out" and spinner
+    expect(screen.getByText(/Logging out/i)).toBeInTheDocument();
+    expect(screen.getByRole("progressbar")).toBeInTheDocument();
+    // signOut is delayed by 3s (for now). Fast forward the timers so the logout can complete.
+    jest.advanceTimersByTime(3000);
+    // Wait for re-render after signOut
+    await waitFor(() => {
+      expect(mockCognitoSignOut).toHaveBeenCalledTimes(1);
+    });
+
+    // After signOut, the user is no longer signed in, so we should see "Logout successful"
+    expect(screen.getByText(/Logout successful/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        /You are now logged out of the service. To continue using the application, you must log in again/i
+      )
+    ).toBeInTheDocument();
+  });
+
+  it("does not call signOut if user is signed in, but we haven't advanced timers yet", () => {
+    render(
+      <MockAuthProvider defaultIsSignedIn={true}>
+        <LogoutPage />
+      </MockAuthProvider>
+    );
+
+    // On initial render, user is signed in
+    // The call is triggered, but only after the 3s setTimeout.
+    // We haven't advanced timers, so the signOut shouldn't have completed yet.
+    expect(screen.getByText(/Logging out/i)).toBeInTheDocument();
+    expect(mockCognitoSignOut).not.toHaveBeenCalled();
+    });
+});
