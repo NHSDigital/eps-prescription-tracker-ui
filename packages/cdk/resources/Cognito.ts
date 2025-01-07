@@ -109,7 +109,7 @@ export class Cognito extends Construct {
       name: "Primary", // this name is used in the web client
       clientId: props.primaryOidcClientId,
       // secret not needed for usage but needed for cdk
-      clientSecret: "",
+      clientSecret: "dummy_value",
       issuerUrl: props.primaryOidcIssuer,
       userPool: userPool,
       attributeRequestMethod: OidcAttributeRequestMethod.GET,
@@ -148,7 +148,7 @@ export class Cognito extends Construct {
         name: "Mock",
         clientId: props.mockOidcClientId,
         // secret not needed for usage but needed for cdk
-        clientSecret: "",
+        clientSecret: "dummy_value",
         issuerUrl: props.mockOidcIssuer,
         userPool: userPool,
         attributeRequestMethod: OidcAttributeRequestMethod.GET,
