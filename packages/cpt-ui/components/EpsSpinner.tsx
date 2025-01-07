@@ -17,6 +17,8 @@ function Spinner({
   const offset = circumference * (1 - fraction);
 
   return (
+    // FIXME: In theory, this should be a <progress>, but doing that makes the spinner come out all funky.
+    // Someone better with CSS should fix that, since it would be better for accessibility.
     <div 
       style={{
         display: 'flex',

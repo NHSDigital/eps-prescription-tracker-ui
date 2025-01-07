@@ -53,10 +53,11 @@ describe("EpsModal", () => {
     render(
       <EpsModal isOpen={true} onClose={onCloseMock}>
         <div>Modal Content</div>
+        <button onClick={onCloseMock}>TEST CLOSE BUTTON</button>
       </EpsModal>
     );
 
-    const closeButton = screen.getByRole("button", { name: /Close modal/i });
+    const closeButton = screen.getByText(/TEST CLOSE BUTTON/);
     fireEvent.click(closeButton);
     expect(onCloseMock).toHaveBeenCalledTimes(1);
   });

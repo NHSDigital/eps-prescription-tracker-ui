@@ -4,9 +4,9 @@ import React, { useEffect } from "react";
 import "@/assets/styles/EpsModal.scss";
 
 interface EpsModalProps {
-  children: React.ReactNode;
-  isOpen: boolean;
-  onClose: () => void;
+  readonly children: React.ReactNode;
+  readonly isOpen: boolean;
+  readonly onClose: () => void;
 }
 
 export function EpsModal({ children, isOpen, onClose }: EpsModalProps) {
@@ -40,17 +40,19 @@ export function EpsModal({ children, isOpen, onClose }: EpsModalProps) {
   if (!isOpen) return null;
   
   return (
+    // This should be a button for accessibility, but we can't have buttons be descendants of buttons,
+    // and the modal children will have buttons in it.
+    // (making this a button does actually work, so this might be a FIXME to solve the hydration error)
     <div
-    className="eps-modal-overlay" 
-    onClick={handleBackdropClick}
-    role="button"
-    tabIndex={0}
-    onKeyDown={handleBackdropActivate}
-    data-testid="eps-modal-overlay"
+      role="button"
+      className="eps-modal-overlay" 
+      onClick={handleBackdropClick}
+      tabIndex={0}
+      onKeyDown={handleBackdropActivate}
+      data-testid="eps-modal-overlay"
     >
-        <div 
+        <dialog 
           className="eps-modal-content" 
-          role="dialog" 
           aria-modal="true"
           data-testid="eps-modal-content"
         >
@@ -60,7 +62,7 @@ export function EpsModal({ children, isOpen, onClose }: EpsModalProps) {
         
             {children}
 
-        </div>
+        </dialog>
     </div>
   )
 }

@@ -83,6 +83,10 @@ export default function EpsHeader() {
             </li>
           )}
 
+          {/* 
+            FIXME: Only the selectyourrole and changerole links get put in the 
+            collapsible menu when on mobile
+          */}
           {pathname === "/selectyourrole" ? (
             <li className="nhsuk-header__navigation-item">
               <Link

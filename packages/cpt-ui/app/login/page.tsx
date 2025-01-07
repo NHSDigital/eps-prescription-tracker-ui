@@ -62,7 +62,6 @@ export default function AuthPage() {
         console.log(auth);
     }, [auth])
 
-    // TODO: This should show a spinner
     if (!MOCK_AUTH_ALLOWED.includes(target_environment)) {
         return (
         <main className="nhsuk-main-wrapper">

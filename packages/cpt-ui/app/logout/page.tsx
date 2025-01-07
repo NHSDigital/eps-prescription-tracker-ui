@@ -15,7 +15,7 @@ export default function LogoutPage() {
         const signOut = async () => {
             console.log("Signing out", auth);
 
-            // DELETEME: [DEV] Wait 3 seconds
+            // FIXME: [DEV] Wait 3 seconds
             await new Promise((resolve) => setTimeout(resolve, 3000));
 
             await auth?.cognitoSignOut();
@@ -29,9 +29,10 @@ export default function LogoutPage() {
         }
     }, [auth]);
 
+    // TODO: Move strings to a constants file
     return (
         <main id="main-content" className="nhsuk-main-wrapper">
-            <Container role="contentinfo">
+            <Container>
                 {auth?.isSignedIn ? (
                     <>
                         <h1>Logging out</h1>
