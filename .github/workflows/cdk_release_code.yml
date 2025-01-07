@@ -67,11 +67,7 @@ on:
         required: true
       primaryOidcClientId:
         required: false
-      primaryOidClientSecret:
-        required: false
       mockOidcClientId:
-        required: false
-      mockOidClientSecret:
         required: false
       APIGEE_API_KEY:
         required: false
@@ -161,14 +157,12 @@ jobs:
           --arg cloudfrontCertArn "${cloudfrontCertArn}" \
           --arg useMockOidc "${{ inputs.useMockOidc }}" \
           --arg primaryOidcClientId "${{ secrets.primaryOidcClientId }}" \
-          --arg primaryOidClientSecret "${{ secrets.primaryOidClientSecret }}" \
           --arg primaryOidcIssuer "${{ inputs.primaryOidcIssuer }}" \
           --arg primaryOidcAuthorizeEndpoint "${{ inputs.primaryOidcAuthorizeEndpoint }}" \
           --arg primaryOidcTokenEndpoint "${{ inputs.primaryOidcTokenEndpoint }}" \
           --arg primaryOidcUserInfoEndpoint "${{ inputs.primaryOidcUserInfoEndpoint }}" \
           --arg primaryOidcjwksEndpoint "${{ inputs.primaryOidcjwksEndpoint }}" \
           --arg mockOidcClientId "${{ secrets.mockOidcClientId }}" \
-          --arg mockOidClientSecret "${{ secrets.mockOidClientSecret }}" \
           --arg mockOidcIssuer "${{ inputs.mockOidcIssuer }}" \
           --arg mockOidcAuthorizeEndpoint "${{ inputs.mockOidcAuthorizeEndpoint }}" \
           --arg mockOidcTokenEndpoint "${{ inputs.mockOidcTokenEndpoint }}" \
@@ -199,14 +193,12 @@ jobs:
             "fullCloudfrontDomain": $fullCloudfrontDomain,
             "useMockOidc": $useMockOidc,
             "primaryOidcClientId": $primaryOidcClientId,
-            "primaryOidClientSecret": $primaryOidClientSecret,
             "primaryOidcIssuer": $primaryOidcIssuer,
             "primaryOidcAuthorizeEndpoint": $primaryOidcAuthorizeEndpoint,
             "primaryOidcTokenEndpoint": $primaryOidcTokenEndpoint,
             "primaryOidcUserInfoEndpoint": $primaryOidcUserInfoEndpoint,
             "primaryOidcjwksEndpoint": $primaryOidcjwksEndpoint,
             "mockOidcClientId": $mockOidcClientId,
-            "mockOidClientSecret": $mockOidClientSecret,
             "mockOidcIssuer": $mockOidcIssuer,
             "mockOidcAuthorizeEndpoint": $mockOidcAuthorizeEndpoint,
             "mockOidcTokenEndpoint": $mockOidcTokenEndpoint,

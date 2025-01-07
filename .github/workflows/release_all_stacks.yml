@@ -61,11 +61,7 @@ on:
         required: true
       primaryOidcClientId:
         required: false
-      primaryOidClientSecret:
-        required: false
       mockOidcClientId:
-        required: false
-      mockOidClientSecret:
         required: false
       CIS2_PRIVATE_KEY:
         required: true
@@ -137,9 +133,7 @@ jobs:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}
       primaryOidcClientId: ${{ secrets.primaryOidcClientId }}
-      primaryOidClientSecret: ${{ secrets.primaryOidClientSecret }}
       mockOidcClientId: ${{ secrets.mockOidcClientId }}
-      mockOidClientSecret: ${{ secrets.mockOidClientSecret }}
 
   deploy_website_content:
     uses: ./.github/workflows/deploy_website_content.yml
@@ -185,9 +179,7 @@ jobs:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}
       primaryOidcClientId: ${{ secrets.primaryOidcClientId }}
-      primaryOidClientSecret: ${{ secrets.primaryOidClientSecret }}
       mockOidcClientId: ${{ secrets.mockOidcClientId }}
-      mockOidClientSecret: ${{ secrets.mockOidClientSecret }}
       APIGEE_API_KEY: ${{ secrets.APIGEE_API_KEY }}
 
 
@@ -284,9 +276,7 @@ jobs:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}
       primaryOidcClientId: ${{ secrets.primaryOidcClientId }}
-      primaryOidClientSecret: ${{ secrets.primaryOidClientSecret }}
       mockOidcClientId: ${{ secrets.mockOidcClientId }}
-      mockOidClientSecret: ${{ secrets.mockOidClientSecret }}
 
   update_github_pages:
     runs-on: ubuntu-latest
