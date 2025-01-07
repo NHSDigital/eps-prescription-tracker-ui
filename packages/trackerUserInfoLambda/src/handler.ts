@@ -93,48 +93,40 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   const isMockToken = username.startsWith("Mock_")
 
   // Determine whether this request should be treated as mock or real.
+  if (isMockToken && MOCK_MODE_ENABLED !== "true") {
+    throw new Error("Trying to use a mock user when mock mode is disabled")
+  }
+
   const isMockRequest = MOCK_MODE_ENABLED === "true" && isMockToken
 
   logger.info("Is this a mock request?", {isMockRequest})
 
-  try {
-    // eslint-disable-next-line
-    const {cis2AccessToken, cis2IdToken} = await fetchAndVerifyCIS2Tokens(
-      event,
-      documentClient,
-      logger,
-      isMockRequest ? mockOidcConfig : cis2OidcConfig
-    )
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const {cis2AccessToken, cis2IdToken} = await fetchAndVerifyCIS2Tokens(
+    event,
+    documentClient,
+    logger,
+    isMockRequest ? mockOidcConfig : cis2OidcConfig
+  )
 
-    const userInfoResponse = await fetchUserInfo(
-      cis2AccessToken,
-      CPT_ACCESS_ACTIVITY_CODES,
-      undefined,
-      logger,
-      isMockRequest ? mockOidcConfig : cis2OidcConfig
-    )
+  const userInfoResponse = await fetchUserInfo(
+    cis2AccessToken,
+    CPT_ACCESS_ACTIVITY_CODES,
+    undefined,
+    logger,
+    isMockRequest ? mockOidcConfig : cis2OidcConfig
+  )
 
-    updateDynamoTable(username, userInfoResponse, documentClient, logger, tokenMappingTableName)
+  updateDynamoTable(username, userInfoResponse, documentClient, logger, tokenMappingTableName)
 
-    return {
-      statusCode: 200,
-      body: JSON.stringify({
-        message: "UserInfo fetched successfully",
-        userInfo: userInfoResponse
-      })
-    }
-  } catch (error) {
-    if (error instanceof Error) {
-      logger.error("Error occurred in Lambda handler", {error: error.message})
-    } else {
-      logger.error("Unknown error occurred in Lambda handler", {error: String(error)})
-    }
-    logger.info("trackerUserInfo success!")
-    return {
-      statusCode: 500,
-      body: JSON.stringify({message: "Internal server error"})
-    }
+  return {
+    statusCode: 200,
+    body: JSON.stringify({
+      message: "UserInfo fetched successfully",
+      userInfo: userInfoResponse
+    })
   }
+
 }
 
 export const handler = middy(lambdaHandler)

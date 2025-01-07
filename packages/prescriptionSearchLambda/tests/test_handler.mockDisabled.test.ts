@@ -8,6 +8,7 @@ import {generateKeyPairSync} from "crypto"
 import nock from "nock"
 
 import createJWKSMock from "mock-jwks"
+import {Logger} from "@aws-lambda-powertools/logger"
 
 const apigeeHost = process.env.apigeeHost ?? ""
 const apigeeCIS2TokenEndpoint = process.env.apigeeCIS2TokenEndpoint
@@ -172,25 +173,23 @@ describe("handler tests with cis2 auth", () => {
     )
   })
 
-  it("returns error when it is a mock user", async () => {
+  it("throw error when it is a mock user", async () => {
     mockGetUsernameFromEvent.mockImplementation(() => {
       return "Mock_JoeBloggs"
     })
+    const loggerSpy = jest.spyOn(Logger.prototype, "error")
 
     const response = await handler({
       requestContext: {}
     }, dummyContext)
 
-    const responseBody = JSON.parse(response.body)
-
     expect(response).toMatchObject({
-      statusCode: 500
+      message: "A system error has occurred"
     })
-
-    expect(responseBody).toMatchObject({
-      "details": "Trying to use a mock user when mock mode is disabled",
-      "message": "Failed to fetch prescription data from Apigee API"
-    })
+    expect(loggerSpy).toHaveBeenCalledWith(
+      expect.any(Object),
+      "Error: Trying to use a mock user when mock mode is disabled"
+    )
   })
 
   it("calls cis2 apigee token endpoint when it is a cis2 user", async () => {

@@ -10,7 +10,6 @@ import axios from "axios"
 import {v4 as uuidv4} from "uuid"
 import jwksClient from "jwks-rsa"
 import {formatHeaders} from "./utils/headerUtils"
-import {handleErrorResponse} from "./utils/errorUtils"
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 import {
   getUsernameFromEvent,
@@ -121,109 +120,102 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   const axiosInstance = axios.create()
   let prescriptionId: string | undefined
 
-  try {
-    // Mock usernames start with "Mock_", and real requests use usernames starting with "Primary_"
-    const username = getUsernameFromEvent(event)
-    const isMockToken = username.startsWith("Mock_")
-    // Determine whether this request should be treated as mock or real.
+  // Mock usernames start with "Mock_", and real requests use usernames starting with "Primary_"
+  const username = getUsernameFromEvent(event)
+  const isMockToken = username.startsWith("Mock_")
+  // Determine whether this request should be treated as mock or real.
 
-    if (isMockToken && MOCK_MODE_ENABLED !== "true") {
-      throw new Error("Trying to use a mock user when mock mode is disabled")
-    }
-    const isMockRequest = MOCK_MODE_ENABLED === "true" && isMockToken
-
-    const apigeeTokenEndpoint = isMockRequest
-      ? apigeeMockTokenEndpoint
-      : apigeeCIS2TokenEndpoint
-
-    logger.info("Is this a mock request?", {isMockRequest})
-
-    // Step 1: Fetch CIS2 tokens
-    logger.info("Retrieving CIS2 tokens from DynamoDB based on the current request context")
-    const {cis2AccessToken, cis2IdToken} = await fetchAndVerifyCIS2Tokens(
-      event,
-      documentClient,
-      logger,
-      isMockRequest ? mockOidcConfig : cis2OidcConfig
-    )
-    logger.debug("Successfully fetched CIS2 tokens", {cis2AccessToken, cis2IdToken})
-
-    // Step 2: Fetch the private key for signing the client assertion
-    logger.info("Accessing JWT private key from Secrets Manager to create signed client assertion")
-    const jwtPrivateKey = await getSecret(jwtPrivateKeyArn)
-    if (!jwtPrivateKey || typeof jwtPrivateKey !== "string") {
-      throw new Error("Invalid or missing JWT private key")
-    }
-
-    logger.debug("JWT private key retrieved successfully")
-
-    // Construct a new body with the signed JWT client assertion
-    logger.info("Generating signed JWT for Apigee token exchange payload")
-    const requestBody = constructSignedJWTBody(
-      logger,
-      apigeeTokenEndpoint,
-      jwtPrivateKey,
-      apigeeApiKey,
-      jwtKid,
-      cis2IdToken
-    )
-    logger.debug("Constructed request body for Apigee token exchange", {requestBody})
-
-    // Step 3: Exchange token with Apigee
-    const {accessToken: apigeeAccessToken, expiresIn} = await exchangeTokenForApigeeAccessToken(
-      axiosInstance,
-      apigeeTokenEndpoint,
-      requestBody,
-      logger
-    )
-
-    // Step 4: Update DynamoDB with the new Apigee access token
-    await updateApigeeAccessToken(
-      documentClient,
-      TokenMappingTableName,
-      event.requestContext.authorizer?.claims?.["cognito:username"] || "unknown",
-      apigeeAccessToken,
-      expiresIn,
-      logger
-    )
-
-    // Step 5: Fetch prescription data from Apigee API
-    prescriptionId = event.queryStringParameters?.prescriptionId || "defaultId"
-
-    logger.info("Fetching prescription data from Apigee", {prescriptionId})
-    // need to pass in role id, organization id and job role to apigee
-    // user id is retrieved in apigee from access token
-    const apigeeResponse = await axiosInstance.get(apigeePrescriptionsEndpoint,
-      {
-        params: {
-          prescriptionId: prescriptionId
-        },
-        headers: {
-          Authorization: `Bearer ${apigeeAccessToken}`,
-          "nhsd-session-urid": roleId,
-          "nhsd-organization-uuid": "A83008",
-          "nhsd-session-jobrole": "123456123456",
-          "x-request-id": uuidv4()
-        }
-      }
-    )
-
-    logger.info("Successfully fetched prescription data from Apigee", {
-      prescriptionId,
-      data: apigeeResponse.data
-    })
-    return {
-      statusCode: 200,
-      body: JSON.stringify(apigeeResponse.data),
-      headers: formatHeaders(apigeeResponse.headers)
-    }
-  } catch (error) {
-    logger.error("Error fetching prescription data from Apigee", {
-      prescriptionId,
-      error: axios.isAxiosError(error) ? error.response?.data : error
-    })
-    return handleErrorResponse(error, "Failed to fetch prescription data from Apigee API")
+  if (isMockToken && MOCK_MODE_ENABLED !== "true") {
+    throw new Error("Trying to use a mock user when mock mode is disabled")
   }
+  const isMockRequest = MOCK_MODE_ENABLED === "true" && isMockToken
+
+  const apigeeTokenEndpoint = isMockRequest
+    ? apigeeMockTokenEndpoint
+    : apigeeCIS2TokenEndpoint
+
+  logger.info("Is this a mock request?", {isMockRequest})
+
+  // Step 1: Fetch CIS2 tokens
+  logger.info("Retrieving CIS2 tokens from DynamoDB based on the current request context")
+  const {cis2AccessToken, cis2IdToken} = await fetchAndVerifyCIS2Tokens(
+    event,
+    documentClient,
+    logger,
+    isMockRequest ? mockOidcConfig : cis2OidcConfig
+  )
+  logger.debug("Successfully fetched CIS2 tokens", {cis2AccessToken, cis2IdToken})
+
+  // Step 2: Fetch the private key for signing the client assertion
+  logger.info("Accessing JWT private key from Secrets Manager to create signed client assertion")
+  const jwtPrivateKey = await getSecret(jwtPrivateKeyArn)
+  if (!jwtPrivateKey || typeof jwtPrivateKey !== "string") {
+    throw new Error("Invalid or missing JWT private key")
+  }
+
+  logger.debug("JWT private key retrieved successfully")
+
+  // Construct a new body with the signed JWT client assertion
+  logger.info("Generating signed JWT for Apigee token exchange payload")
+  const requestBody = constructSignedJWTBody(
+    logger,
+    apigeeTokenEndpoint,
+    jwtPrivateKey,
+    apigeeApiKey,
+    jwtKid,
+    cis2IdToken
+  )
+  logger.debug("Constructed request body for Apigee token exchange", {requestBody})
+
+  // Step 3: Exchange token with Apigee
+  const {accessToken: apigeeAccessToken, expiresIn} = await exchangeTokenForApigeeAccessToken(
+    axiosInstance,
+    apigeeTokenEndpoint,
+    requestBody,
+    logger
+  )
+
+  // Step 4: Update DynamoDB with the new Apigee access token
+  await updateApigeeAccessToken(
+    documentClient,
+    TokenMappingTableName,
+    event.requestContext.authorizer?.claims?.["cognito:username"] || "unknown",
+    apigeeAccessToken,
+    expiresIn,
+    logger
+  )
+
+  // Step 5: Fetch prescription data from Apigee API
+  prescriptionId = event.queryStringParameters?.prescriptionId || "defaultId"
+
+  logger.info("Fetching prescription data from Apigee", {prescriptionId})
+  // need to pass in role id, organization id and job role to apigee
+  // user id is retrieved in apigee from access token
+  const apigeeResponse = await axiosInstance.get(apigeePrescriptionsEndpoint,
+    {
+      params: {
+        prescriptionId: prescriptionId
+      },
+      headers: {
+        Authorization: `Bearer ${apigeeAccessToken}`,
+        "nhsd-session-urid": roleId,
+        "nhsd-organization-uuid": "A83008",
+        "nhsd-session-jobrole": "123456123456",
+        "x-request-id": uuidv4()
+      }
+    }
+  )
+
+  logger.info("Successfully fetched prescription data from Apigee", {
+    prescriptionId,
+    data: apigeeResponse.data
+  })
+  return {
+    statusCode: 200,
+    body: JSON.stringify(apigeeResponse.data),
+    headers: formatHeaders(apigeeResponse.headers)
+  }
+
 }
 
 // Export the Lambda function with middleware applied
