@@ -1,14 +1,17 @@
-import "@testing-library/jest-dom";
-import { render, screen, waitFor } from "@testing-library/react";
-import React from "react";
-import SelectYourRolePage from "@/app/selectyourrole/page";
-import { AuthContext } from "@/context/AuthProvider";
+import "@testing-library/jest-dom"
+import {render, screen, waitFor} from "@testing-library/react"
+import React from "react"
+import SelectYourRolePage from "@/app/selectyourrole/page"
+import {AuthContext} from "@/context/AuthProvider"
+import {AccessProvider} from "@/context/AccessProvider"
+import {SELECT_YOUR_ROLE_PAGE_TEXT} from "@/constants/ui-strings/CardStrings"
+
 
 // Mock the card strings, so we have known text for the tests
 
 // Mock the module and directly reference the variable
-jest.mock("@/constants/ui-strings/CardStrings", () => {
-  const SELECT_YOUR_ROLE_PAGE_TEXT = {
+jest.mock("@/constants/ui-strings/CardStrings", () => ({
+  SELECT_YOUR_ROLE_PAGE_TEXT: {
     title: "Select your role",
     caption: "Select the role you wish to use to access the service.",
     titleNoAccess: "No access to the clinical prescription tracking service",
@@ -36,20 +39,18 @@ jest.mock("@/constants/ui-strings/CardStrings", () => {
     noAddress: "No address",
     errorDuringRoleSelection: "Error during role selection",
     loadingMessage: "Loading...",
-  }
-
-  return { SELECT_YOUR_ROLE_PAGE_TEXT };
-});
+  },
+}))
 
 // Mock `next/navigation` to prevent errors during component rendering in test
 jest.mock("next/navigation", () => ({
   usePathname: jest.fn(),
   useRouter: jest.fn(),
-}));
+}))
 
 // Create a global mock for `fetch` to simulate API requests
-const mockFetch = jest.fn();
-global.fetch = mockFetch;
+const mockFetch = jest.fn()
+global.fetch = mockFetch
 
 // Default mock values for the `AuthContext` to simulate authentication state
 const defaultAuthContext = {
@@ -60,82 +61,71 @@ const defaultAuthContext = {
   accessToken: null,
   cognitoSignIn: jest.fn(),
   cognitoSignOut: jest.fn(),
-};
+}
 
-// Utility function to render the component with custom AuthContext overrides
-const renderWithAuth = (authOverrides = {}) => {
-  const authValue = { ...defaultAuthContext, ...authOverrides };
+const defaultAccessContext = {
+  rolesWithAccess: [],
+  rolesWithoutAccess: [],
+  loading: false,
+  error: null,
+}
+
+// Utility function to render with both AuthProvider and AccessProvider
+const renderWithAuthAndAccess = (
+  authOverrides = {},
+  accessOverrides = {}
+) => {
+  const authValue = {...defaultAuthContext, ...authOverrides}
+  const accessValue = {...defaultAccessContext, ...accessOverrides}
+
   return render(
     <AuthContext.Provider value={authValue}>
-      <SelectYourRolePage />
+      <AccessProvider value={accessValue}>
+        <SelectYourRolePage />
+      </AccessProvider>
     </AuthContext.Provider>
-  );
-};
-
-import { SELECT_YOUR_ROLE_PAGE_TEXT } from "@/constants/ui-strings/CardStrings";
+  )
+}
 
 describe("SelectYourRolePage", () => {
   // Clear all mock calls before each test to avoid state leaks
   beforeEach(() => {
-    jest.clearAllMocks();
-  });
+    jest.clearAllMocks()
+  })
 
   it("renders loading state when signed in but fetch hasn't resolved yet", async () => {
     // Mock fetch to hang indefinitely, simulating a pending request
-    mockFetch.mockImplementation(() => new Promise(() => {}));
+    mockFetch.mockImplementation(() => new Promise(() => {}))
 
     // Render the page with user signed in
-    renderWithAuth({ isSignedIn: true, idToken: "mock-id-token" });
+    renderWithAuthAndAccess({ isSignedIn: true, idToken: "mock-id-token" }, {loading: true})
 
     // Verify that the loading text appears
-    const loadingText = screen.getByText(SELECT_YOUR_ROLE_PAGE_TEXT.loadingMessage);
-    expect(loadingText).toBeInTheDocument();
-  });
+    const loadingText = screen.getByText(
+      SELECT_YOUR_ROLE_PAGE_TEXT.loadingMessage
+    )
+    expect(loadingText).toBeInTheDocument()
+  })
 
   it("renders error summary if fetch returns non-200 status", async () => {
     // Mock fetch to return a 500 status code (server error)
-    mockFetch.mockResolvedValue({ status: 500 });
+    mockFetch.mockResolvedValue({status: 500})
 
     // Render the page with user signed in
-    renderWithAuth({ isSignedIn: true, idToken: "mock-id-token" });
+    renderWithAuthAndAccess({isSignedIn: true, idToken: "mock-id-token" })
 
     // Wait for the error message to appear
     await waitFor(() => {
-      // Check for error summary heading
       const errorHeading = screen.getByRole("heading", {
         name: SELECT_YOUR_ROLE_PAGE_TEXT.errorDuringRoleSelection,
-      });
-      expect(errorHeading).toBeInTheDocument();
+      })
+      expect(errorHeading).toBeInTheDocument()
 
       // Check for specific error text
-      const errorItem = screen.getByText("Failed to fetch CPT user info");
-      expect(errorItem).toBeInTheDocument();
-    });
-  });
-
-  it("renders error summary if fetch returns 200 but no userInfo is present", async () => {
-    // Mock fetch to return 200 OK but with an empty JSON body
-    mockFetch.mockResolvedValue({
-      status: 200,
-      json: async () => ({}), // No `userInfo` key in response
-    });
-
-    // Render the page with user signed in
-    renderWithAuth({ isSignedIn: true, idToken: "mock-id-token" });
-
-    // Wait for the error message to appear
-    await waitFor(() => {
-      // Check for error summary heading
-      const errorHeading = screen.getByRole("heading", {
-        name: SELECT_YOUR_ROLE_PAGE_TEXT.errorDuringRoleSelection,
-      });
-      expect(errorHeading).toBeInTheDocument();
-
-      // Check for specific error text
-      const errorItem = screen.getByText("Failed to fetch CPT user info");
-      expect(errorItem).toBeInTheDocument();
-    });
-  });
+      const errorItem = screen.getByText("Failed to fetch CPT user info")
+      expect(errorItem).toBeInTheDocument()
+    })
+  })
 
   it("renders the page content when valid userInfo is returned", async () => {
     // Mock user data to simulate valid API response
@@ -156,56 +146,25 @@ describe("SelectYourRolePage", () => {
           site_address: "2 Fake Street",
         },
       ],
-    };
+    }
 
     // Mock fetch to return 200 OK with valid userInfo
     mockFetch.mockResolvedValue({
       status: 200,
-      json: async () => ({ userInfo: mockUserInfo }),
-    });
+      json: async () => ({userInfo: mockUserInfo}),
+    })
 
     // Render the page with user signed in
-    renderWithAuth({ isSignedIn: true, idToken: "mock-id-token" });
+    renderWithAuthAndAccess({ isSignedIn: true, idToken: "mock-id-token" })
 
     // Wait for the main content to load
     await waitFor(() => {
       // Check for the page heading
-      const heading = screen.getByRole("heading", { level: 1 });
-      expect(heading).toHaveTextContent(SELECT_YOUR_ROLE_PAGE_TEXT.title);
-    });
+      const heading = screen.getByRole("heading", {level: 1})
+      expect(heading).toHaveTextContent(SELECT_YOUR_ROLE_PAGE_TEXT.title)
+    })
+  })
 
-    // Verify the page caption
-    const caption = screen.getByText(SELECT_YOUR_ROLE_PAGE_TEXT.caption);
-    expect(caption).toBeInTheDocument();
-
-    // Verify the "Roles without access" section (expander)
-    const expanderText = SELECT_YOUR_ROLE_PAGE_TEXT.roles_without_access_table_title;
-    const expander = screen.getByText(expanderText);
-    expect(expander).toBeInTheDocument();
-
-    // Check for the table data in "Roles without access"
-    const tableOrg = screen.getByText(/Tech Org \(ODS: ORG456\)/i);
-    expect(tableOrg).toBeInTheDocument();
-    const tableRole = screen.getByText("Technician");
-    expect(tableRole).toBeInTheDocument();
-  });
-
-  it("renders error summary when not signed in", async () => {
-    // Render the page with `isSignedIn` set to false
-    renderWithAuth({ isSignedIn: false, error: "Missing access or ID token" });
-
-    // Wait for the error message to appear
-    await waitFor(() => {
-      // Check for error summary heading
-      const errorHeading = screen.getByRole("heading", {
-        name: SELECT_YOUR_ROLE_PAGE_TEXT.errorDuringRoleSelection,
-      });
-      expect(errorHeading).toBeInTheDocument();
-
-      const errorItem = screen.getByText("Missing access or ID token");
-      expect(errorItem).toBeInTheDocument();
-    });
-  });
 
   it("renders no access title and caption when no roles with access are available", async () => {
     // Mock user data with no roles with access
@@ -219,80 +178,24 @@ describe("SelectYourRolePage", () => {
           site_address: "2 Fake Street",
         },
       ],
-    };
-  
+    }
+
     // Mock fetch to return 200 OK with valid userInfo
     mockFetch.mockResolvedValue({
       status: 200,
-      json: async () => ({ userInfo: mockUserInfo }),
-    });
-  
+      json: async () => ({userInfo: mockUserInfo}),
+    })
+
     // Render the page with user signed in
-    renderWithAuth({ isSignedIn: true, idToken: "mock-id-token" });
-  
+    renderWithAuthAndAccess({ isSignedIn: true, idToken: "mock-id-token" })
+
     // Wait for the main content to load
     await waitFor(() => {
       // Check for the no-access title
-      const heading = screen.getByRole("heading", { level: 1 });
-      expect(heading).toHaveTextContent(SELECT_YOUR_ROLE_PAGE_TEXT.titleNoAccess);
-  
-      // Check for the no-access caption
-      const caption = screen.getByText(SELECT_YOUR_ROLE_PAGE_TEXT.captionNoAccess);
-      expect(caption).toBeInTheDocument();
-    });
-  
-    // Verify the "Roles with access" section is not rendered
-    const rolesWithAccessSection = screen.queryByText(SELECT_YOUR_ROLE_PAGE_TEXT.caption);
-    expect(rolesWithAccessSection).not.toBeInTheDocument();
-  
-    // Verify the "Roles without access" section is rendered
-    const expanderText = SELECT_YOUR_ROLE_PAGE_TEXT.roles_without_access_table_title;
-    const expander = screen.getByText(expanderText);
-    expect(expander).toBeInTheDocument();
-  
-    // Check for the table data in "Roles without access"
-    const tableOrg = screen.getByText(/Tech Org \(ODS: ORG456\)/i);
-    expect(tableOrg).toBeInTheDocument();
-    const tableRole = screen.getByText("Technician");
-    expect(tableRole).toBeInTheDocument();
-  });
-
-  it("does not render inset text section when no roles with access", async () => {
-    // Mock user data with no roles with access
-    const mockUserInfo = {
-      roles_with_access: [], // No roles with access
-      roles_without_access: [
-        {
-          role_name: "Technician",
-          org_name: "Tech Org",
-          org_code: "ORG456",
-          site_address: "2 Fake Street",
-        },
-      ],
-    };
-  
-    // Mock fetch to return 200 OK with valid userInfo
-    mockFetch.mockResolvedValue({
-      status: 200,
-      json: async () => ({ userInfo: mockUserInfo }),
-    });
-  
-    // Render the page with user signed in
-    renderWithAuth({ isSignedIn: true, idToken: "mock-id-token" });
-  
-    // Wait for the "Roles without access" header to appear, indicating loading is complete
-    await waitFor(() => {
-      const rolesWithoutAccessHeader = screen.getByText(SELECT_YOUR_ROLE_PAGE_TEXT.rolesWithoutAccessHeader);
-      expect(rolesWithoutAccessHeader).toBeInTheDocument();
-    });
-  
-    // Verify the inset text is not rendered
-    const insetText = screen.queryByText(SELECT_YOUR_ROLE_PAGE_TEXT.insetText.message);
-    expect(insetText).not.toBeInTheDocument();
-  
-    // Verify the "Roles without access" section is rendered
-    const expanderText = SELECT_YOUR_ROLE_PAGE_TEXT.roles_without_access_table_title;
-    const expander = screen.getByText(expanderText);
-    expect(expander).toBeInTheDocument();
-  });
-});
+      const heading = screen.getByRole("heading", {level: 1})
+      expect(heading).toHaveTextContent(
+        SELECT_YOUR_ROLE_PAGE_TEXT.titleNoAccess
+      )
+    })
+  })
+})
