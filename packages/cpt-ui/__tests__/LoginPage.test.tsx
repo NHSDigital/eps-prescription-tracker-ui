@@ -5,7 +5,7 @@ import userEvent from "@testing-library/user-event";
 import React, { useState } from "react";
 
 // Mock the configureAmplify module
-jest.mock("../context/configureAmplify", () => ({
+jest.mock("@/context/configureAmplify", () => ({
   __esModule: true,
   authConfig: {
     Auth: {
@@ -74,8 +74,8 @@ const MockAuthProvider = ({ children }) => {
 
 // Since we've referenced AuthContext in the mock provider, we need to re-import it here
 // after the mock is set up.
-import { AuthContext } from "../context/AuthProvider";
-import AuthPage from "../app/login/page";
+import { AuthContext } from "@/context/AuthProvider";
+import AuthPage from "@/app/login/page";
 
 describe("AuthPage", () => {
   beforeEach(() => {

@@ -17,11 +17,14 @@ function Spinner({
   const offset = circumference * (1 - fraction);
 
   return (
-    <div style={{
+    <div 
+      style={{
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center'
-      }}>
+      }}
+      role='progressbar'
+      >
       <div
         className="spinner-container"
         style={{

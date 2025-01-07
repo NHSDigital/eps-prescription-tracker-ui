@@ -35,7 +35,7 @@ export default function LogoutPage() {
                 {auth?.isSignedIn ? (
                     <>
                         <h1>Logging out</h1>
-                            <EpsSpinner />
+                        <EpsSpinner />
                     </>
                 ) : (
                     <>
