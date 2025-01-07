@@ -22,77 +22,77 @@ function Spinner({
         alignItems: 'center',
         justifyContent: 'center'
       }}>
-    <div
-      className="spinner-container"
-      style={{
-        // Ensures the container is exactly the size of the spinner
-        width: radius * 2,
-        height: radius * 2,
-        position: 'relative',
-        display: 'inline-block',
-      }}
-    >
-      <svg
-        width={radius * 2}
-        height={radius * 2}
-        viewBox={`0 0 ${radius * 2} ${radius * 2}`}
+      <div
+        className="spinner-container"
         style={{
-          // Do NOT animate the entire SVG (so text remains static)
-          overflow: 'visible',
+          // Ensures the container is exactly the size of the spinner
+          width: radius * 2,
+          height: radius * 2,
+          position: 'relative',
+          display: 'inline-block',
         }}
       >
-        {/* Grey base circle (non-spinning) */}
-        <circle
-          cx={radius}
-          cy={radius}
-          r={radius - thickness / 2}
-          fill="none"
-          stroke="#ccc"
-          strokeWidth={thickness}
-        />
-
-        {/* Spinning arc group */}
-        <g
+        <svg
+          width={radius * 2}
+          height={radius * 2}
+          viewBox={`0 0 ${radius * 2} ${radius * 2}`}
           style={{
-            transformOrigin: '50% 50%',
-            animation: `spin ${speed}s linear infinite`
+            // Do NOT animate the entire SVG (so text remains static)
+            overflow: 'visible',
           }}
         >
+          {/* Grey base circle (non-spinning) */}
           <circle
             cx={radius}
             cy={radius}
             r={radius - thickness / 2}
             fill="none"
-            stroke="green"
+            stroke="#ccc"
             strokeWidth={thickness}
-            strokeDasharray={circumference}
-            strokeDashoffset={offset}
           />
-        </g>
 
-        {/* "Loading..." text in the center */}
-        <text
-          x="50%"
-          y="50%"
-          textAnchor="middle"
-          dominantBaseline="central"
-          fontSize="1.5rem"
-        >
-          {EpsSpinnerStrings.loading}
-        </text>
-      </svg>
+          {/* Spinning arc group */}
+          <g
+            style={{
+              transformOrigin: '50% 50%',
+              animation: `spin ${speed}s linear infinite`
+            }}
+          >
+            <circle
+              cx={radius}
+              cy={radius}
+              r={radius - thickness / 2}
+              fill="none"
+              stroke="green"
+              strokeWidth={thickness}
+              strokeDasharray={circumference}
+              strokeDashoffset={offset}
+            />
+          </g>
 
-      {/* Inline keyframes for the spin animation */}
-      <style>
-        {`
-          @keyframes spin {
-            100% {
-              transform: rotate(360deg);
+          {/* "Loading..." text in the center */}
+          <text
+            x="50%"
+            y="50%"
+            textAnchor="middle"
+            dominantBaseline="central"
+            fontSize="1.5rem"
+          >
+            {EpsSpinnerStrings.loading}
+          </text>
+        </svg>
+
+        {/* Inline keyframes for the spin animation */}
+        <style>
+          {`
+            @keyframes spin {
+              100% {
+                transform: rotate(360deg);
+              }
             }
-          }
-        `}
-      </style>
-    </div>
+          `}
+        </style>
+      </div>
     </div>
   );
 }
