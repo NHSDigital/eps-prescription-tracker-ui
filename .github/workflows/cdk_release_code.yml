@@ -155,7 +155,7 @@ jobs:
           --argjson allowAutoDeleteObjects "true" \
           --arg cloudfrontDistributionId "${cloudfrontDistributionId}" \
           --arg cloudfrontCertArn "${cloudfrontCertArn}" \
-          --arg useMockOidc "${{ inputs.useMockOidc }}" \
+          --argjson useMockOidc "${{ inputs.useMockOidc }}" \
           --arg primaryOidcClientId "${{ secrets.primaryOidcClientId }}" \
           --arg primaryOidcIssuer "${{ inputs.primaryOidcIssuer }}" \
           --arg primaryOidcAuthorizeEndpoint "${{ inputs.primaryOidcAuthorizeEndpoint }}" \
