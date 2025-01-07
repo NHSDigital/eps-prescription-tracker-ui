@@ -7,6 +7,7 @@ import EpsSpinner from "@/components/EpsSpinner";
 
 const MOCK_AUTH_ALLOWED = [
     "dev",
+    "dev-pr",
     "int",
     "qa",
     // "ref",
