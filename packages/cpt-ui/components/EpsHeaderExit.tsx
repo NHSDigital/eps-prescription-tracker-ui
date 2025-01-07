@@ -1,19 +1,15 @@
 'use client'
 import React from 'react'
+import Link from 'next/link'
 import "@/assets/styles/header.scss"
 import {Header} from 'nhsuk-react-components'
-import {HEADER_SERVICE, HEADER_EXIT_BUTTON} from '@/constants/ui-strings/HeaderStrings'
+import {
+  HEADER_SERVICE,
+  HEADER_EXIT_BUTTON,
+  HEADER_EXIT_TARGET
+} from '@/constants/ui-strings/HeaderStrings'
 
 export default function EpsHeaderExit() {
-  const handleExitClick = (e: React.MouseEvent) => {
-    e.preventDefault() // Prevent default anchor behavior
-    if (window.close) {
-      window.close()
-    } else {
-      alert('Unable to close the tab. Please close it manually.')
-    }
-  }
-
   return (
     <Header transactional className="masthead" id="eps-header">
       <Header.Container className="masthead-container">
@@ -25,14 +21,7 @@ export default function EpsHeaderExit() {
       </Header.Container>
       <Header.Nav className="masthead-nav">
         <li className="nhsuk-header__navigation-item">
-          <a
-            href="#"
-            className="nhsuk-header__navigation-link"
-            onClick={handleExitClick}
-            data-testid="eps_header_exitLink"
-          >
-            {HEADER_EXIT_BUTTON}
-          </a>
+          <Link className="nhsuk-header__navigation-link" href={HEADER_EXIT_TARGET} data-testid="eps_header_selectYourRoleExit">{HEADER_EXIT_BUTTON}</Link>
         </li>
       </Header.Nav>
     </Header>
