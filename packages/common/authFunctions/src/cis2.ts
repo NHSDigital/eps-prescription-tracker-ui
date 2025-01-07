@@ -20,24 +20,6 @@ const VALID_ACR_VALUES: Array<string> = [
   // "AAL2_NHSMAIL"
 ]
 
-// Create a JWKS client
-// this is outside functions so it can be re-used
-const cis2JwksUri = process.env["REAL_OIDCJWKS_ENDPOINT"]
-const cis2JwksClient = jwksClient({
-  jwksUri: cis2JwksUri,
-  cache: true,
-  cacheMaxEntries: 5,
-  cacheMaxAge: 3600000 // 1 hour
-})
-
-const mockJwksUri = process.env["MOCK_OIDCJWKS_ENDPOINT"]
-const mockJwksClient = jwksClient({
-  jwksUri: mockJwksUri,
-  cache: true,
-  cacheMaxEntries: 5,
-  cacheMaxAge: 3600000 // 1 hour
-})
-
 // Helper function to get the signing key from the JWKS endpoint
 export const getSigningKey = (client: jwksClient.JwksClient, kid: string): Promise<string> => {
   return new Promise((resolve, reject) => {
@@ -94,12 +76,11 @@ export const fetchAndVerifyCIS2Tokens = async (
   event: APIGatewayProxyEvent,
   documentClient: DynamoDBDocumentClient,
   logger: Logger,
-  useMock: boolean
+  oidcConfig: OidcConfig
 ) => {
   logger.info("Fetching and verifying CIS2 tokens")
 
-  const tokenMappingTableName = process.env["TokenMappingTableName"]
-  if (!tokenMappingTableName) {
+  if (oidcConfig.tokenMappingTableName === "") {
     throw new Error("Token mapping table name not set")
   }
 
@@ -110,17 +91,27 @@ export const fetchAndVerifyCIS2Tokens = async (
   // Fetch CIS2 tokens from DynamoDB
   const {cis2AccessToken, cis2IdToken} = await fetchCIS2TokensFromDynamoDB(
     username,
-    tokenMappingTableName,
+    oidcConfig.tokenMappingTableName,
     documentClient,
     logger
   )
 
   // Verify the tokens
-  await verifyIdToken(cis2IdToken, logger, useMock)
-  await verifyAccessToken(cis2AccessToken, logger, useMock)
+  await verifyIdToken(cis2IdToken, logger, oidcConfig)
+  await verifyAccessToken(cis2AccessToken, logger, oidcConfig)
 
   // And return the verified tokens
   return {cis2AccessToken, cis2IdToken}
+}
+
+export interface OidcConfig {
+  oidcIssuer: string
+  oidcClientID: string
+  oidcJwksEndpoint: string
+  oidcUserInfoEndpoint: string
+  userPoolIdp: string
+  jwksClient: jwksClient.JwksClient,
+  tokenMappingTableName: string
 }
 
 export const verifyCIS2Token = async (
@@ -131,22 +122,19 @@ export const verifyCIS2Token = async (
         validAcrValues: Array<string>,
         checkAudience: boolean
       },
-  useMock: boolean
+  oidcConfig: OidcConfig
 ): Promise<jwt.JwtPayload> => {
-  const oidcIssuer = useMock ? process.env["MOCK_OIDC_ISSUER"] : process.env["REAL_OIDC_ISSUER"]
-  if (!oidcIssuer) {
+  if (oidcConfig.oidcIssuer === "") {
     throw new Error("OIDC issuer not set")
   }
-  const oidcClientId = useMock ? process.env["MOCK_OIDC_CLIENT_ID"] : process.env["REAL_OIDC_CLIENT_ID"]
-  if (!oidcClientId) {
+  if (oidcConfig.oidcClientID === "") {
     throw new Error("OIDC client ID not set")
   }
-  const jwksUri = useMock ? process.env["MOCK_OIDCJWKS_ENDPOINT"] : process.env["REAL_OIDCJWKS_ENDPOINT"]
-  if (!jwksUri) {
+  if (oidcConfig.oidcJwksEndpoint === "") {
     throw new Error("JWKS URI not set")
   }
 
-  logger.info(`Verifying ${tokenType}`, {oidcIssuer, oidcClientId, jwksUri})
+  logger.info(`Verifying ${tokenType}`, {oidcConfig})
 
   if (!cis2Token) {
     throw new Error(`${tokenType} not provided`)
@@ -167,7 +155,7 @@ export const verifyCIS2Token = async (
   let signingKey
   try {
     logger.info("Fetching signing key", {kid})
-    signingKey = await getSigningKey(useMock ? mockJwksClient: cis2JwksClient, kid)
+    signingKey = await getSigningKey(oidcConfig.jwksClient, kid)
   } catch (err) {
     logger.error("Error getting signing key", {err})
     throw new Error("Error getting signing key")
@@ -176,12 +164,12 @@ export const verifyCIS2Token = async (
 
   // Verify the token signature
   const verifyOptions: jwt.VerifyOptions = {
-    issuer: oidcIssuer,
+    issuer: oidcConfig.oidcIssuer,
     clockTolerance: 5 // seconds
   }
   // ID tokens have an aud claim, access tokens don't
   if (options.checkAudience) {
-    verifyOptions.audience = oidcClientId
+    verifyOptions.audience = oidcConfig.oidcClientID
   }
 
   let verifiedToken: JwtPayload
@@ -217,7 +205,11 @@ export const verifyCIS2Token = async (
   return verifiedToken
 }
 
-export const verifyIdToken = async (idToken: string, logger: Logger, useMock: boolean) : Promise<jwt.JwtPayload> => {
+export const verifyIdToken = async (
+  idToken: string,
+  logger: Logger,
+  oidcConfig: OidcConfig
+) : Promise<jwt.JwtPayload> => {
   return await verifyCIS2Token(
     idToken,
     logger,
@@ -226,11 +218,11 @@ export const verifyIdToken = async (idToken: string, logger: Logger, useMock: bo
       validAcrValues: VALID_ACR_VALUES,
       checkAudience: true
     },
-    useMock
+    oidcConfig
   )
 }
 
-export const verifyAccessToken = async (accessToken: string, logger: Logger, useMock: boolean) => {
+export const verifyAccessToken = async (accessToken: string, logger: Logger, oidcConfig: OidcConfig) => {
   await verifyCIS2Token(
     accessToken,
     logger,
@@ -239,6 +231,6 @@ export const verifyAccessToken = async (accessToken: string, logger: Logger, use
       validAcrValues: VALID_ACR_VALUES,
       checkAudience: false
     },
-    useMock
+    oidcConfig
   )
 }

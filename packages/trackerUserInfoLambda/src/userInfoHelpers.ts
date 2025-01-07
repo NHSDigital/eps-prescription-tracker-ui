@@ -2,6 +2,7 @@ import {Logger} from "@aws-lambda-powertools/logger"
 import axios from "axios"
 import {DynamoDBDocumentClient, UpdateCommand} from "@aws-sdk/lib-dynamodb"
 import {UserInfoResponse, TrackerUserInfo, RoleDetails} from "./userInfoTypes"
+import {OidcConfig} from "@cpt-ui-common/authFunctions"
 
 // Role names come in formatted like `"category":"subcategory":"roleName"`.
 // Takes only the last one, and strips out the quotes.
@@ -20,18 +21,18 @@ export const fetchUserInfo = async (
   cis2AccessToken: string,
   accepted_access_codes: Array<string>,
   selectedRoleId: string | undefined,
-  logger: Logger
+  logger: Logger,
+  oidcConfig: OidcConfig
 ): Promise<TrackerUserInfo> => {
 
-  const oidcUserInfoEndpoint = process.env["userInfoEndpoint"]
-  logger.info("Fetching user info from OIDC UserInfo endpoint", {oidcUserInfoEndpoint})
+  logger.info("Fetching user info from OIDC UserInfo endpoint", {oidcConfig})
 
-  if (!oidcUserInfoEndpoint) {
+  if (!oidcConfig.oidcUserInfoEndpoint) {
     throw new Error("OIDC UserInfo endpoint not set")
   }
 
   try {
-    const response = await axios.get<UserInfoResponse>(oidcUserInfoEndpoint, {
+    const response = await axios.get<UserInfoResponse>(oidcConfig.oidcUserInfoEndpoint, {
       headers: {
         Authorization: `Bearer ${cis2AccessToken}`
       }
@@ -121,10 +122,10 @@ export const updateDynamoTable = async (
   username: string,
   data: TrackerUserInfo,
   documentClient: DynamoDBDocumentClient,
-  logger: Logger
+  logger: Logger,
+  tokenMappingTableName: string
 ) => {
-  const tokenMappingTableName = process.env["TokenMappingTableName"]
-  if (!tokenMappingTableName) {
+  if (tokenMappingTableName === "") {
     throw new Error("Token mapping table name not set")
   }
 

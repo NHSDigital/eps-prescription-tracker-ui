@@ -11,12 +11,14 @@ import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
 import {formatHeaders} from "./utils/headerUtils"
 import {handleErrorResponse} from "./utils/errorUtils"
 import {v4 as uuidv4} from "uuid"
+import jwksClient from "jwks-rsa"
 import {
   getUsernameFromEvent,
   fetchAndVerifyCIS2Tokens,
   constructSignedJWTBody,
   exchangeTokenForApigeeAccessToken,
-  updateApigeeAccessToken
+  updateApigeeAccessToken,
+  OidcConfig
 } from "@cpt-ui-common/authFunctions"
 
 // Logger initialization
@@ -36,6 +38,44 @@ const MOCK_MODE_ENABLED = process.env["MOCK_MODE_ENABLED"]
 // DynamoDB client setup
 const dynamoClient = new DynamoDBClient()
 const documentClient = DynamoDBDocumentClient.from(dynamoClient)
+
+// Create a JWKS client for cis2 and mock
+// this is outside functions so it can be re-used
+const cis2JwksUri = process.env["REAL_OIDCJWKS_ENDPOINT"] as string
+const cis2JwksClient = jwksClient({
+  jwksUri: cis2JwksUri,
+  cache: true,
+  cacheMaxEntries: 5,
+  cacheMaxAge: 3600000 // 1 hour
+})
+
+const cis2OidcConfig: OidcConfig = {
+  oidcIssuer: process.env["REAL_OIDC_ISSUER"] ?? "",
+  oidcClientID: process.env["REAL_OIDC_CLIENT_ID"] ?? "",
+  oidcJwksEndpoint: process.env["REAL_OIDCJWKS_ENDPOINT"] ?? "",
+  oidcUserInfoEndpoint: process.env["REAL_USER_INFO_ENDPOINT"] ?? "",
+  userPoolIdp: process.env["REAL_USER_POOL_IDP"] ?? "",
+  jwksClient: cis2JwksClient,
+  tokenMappingTableName: process.env["TokenMappingTableName"] ?? ""
+}
+
+const mockJwksUri = process.env["MOCK_OIDCJWKS_ENDPOINT"] as string
+const mockJwksClient = jwksClient({
+  jwksUri: mockJwksUri,
+  cache: true,
+  cacheMaxEntries: 5,
+  cacheMaxAge: 3600000 // 1 hour
+})
+
+const mockOidcConfig: OidcConfig = {
+  oidcIssuer: process.env["MOCK_OIDC_ISSUER"] ?? "",
+  oidcClientID: process.env["MOCK_OIDC_CLIENT_ID"] ?? "",
+  oidcJwksEndpoint: process.env["MOCK_OIDCJWKS_ENDPOINT"] ?? "",
+  oidcUserInfoEndpoint: process.env["MOCK_USER_INFO_ENDPOINT"] ?? "",
+  userPoolIdp: process.env["MOCK_USER_POOL_IDP"] ?? "",
+  jwksClient: mockJwksClient,
+  tokenMappingTableName: process.env["TokenMappingTableName"] ?? ""
+}
 
 // Error response template
 const errorResponseBody = {
@@ -68,7 +108,12 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
     // Step 1: Fetch CIS2 tokens
     logger.info("Retrieving CIS2 tokens from DynamoDB based on the current request context")
-    const {cis2AccessToken, cis2IdToken} = await fetchAndVerifyCIS2Tokens(event, documentClient, logger, isMockRequest)
+    const {cis2AccessToken, cis2IdToken} = await fetchAndVerifyCIS2Tokens(
+      event,
+      documentClient,
+      logger,
+      isMockRequest ? mockOidcConfig : cis2OidcConfig
+    )
     logger.debug("Successfully fetched CIS2 tokens", {cis2AccessToken, cis2IdToken})
 
     // Step 2: Fetch the private key for signing the client assertion

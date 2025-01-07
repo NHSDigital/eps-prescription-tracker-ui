@@ -8,6 +8,7 @@ import {
 import {DynamoDBDocumentClient, PutCommandInput} from "@aws-sdk/lib-dynamodb"
 import createJWKSMock from "mock-jwks"
 import nock from "nock"
+import {generateKeyPairSync} from "crypto"
 
 // redefining readonly property of the performance object
 const dummyContext = {
@@ -27,7 +28,21 @@ const dummyContext = {
 }
 
 const mockVerifyIdToken = jest.fn()
+const mockGetSecret = jest.fn()
 
+const {
+  privateKey
+} = generateKeyPairSync("rsa", {
+  modulusLength: 4096,
+  publicKeyEncoding: {
+    type: "spki",
+    format: "pem"
+  },
+  privateKeyEncoding: {
+    type: "pkcs8",
+    format: "pem"
+  }
+})
 jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
   const verifyIdToken = mockVerifyIdToken.mockImplementation(async () => {
     return {
@@ -37,6 +52,16 @@ jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
   })
   return {
     verifyIdToken
+  }
+})
+
+jest.unstable_mockModule("@aws-lambda-powertools/parameters/secrets", () => {
+  const getSecret = mockGetSecret.mockImplementation(async () => {
+    return privateKey
+  })
+
+  return {
+    getSecret
   }
 })
 

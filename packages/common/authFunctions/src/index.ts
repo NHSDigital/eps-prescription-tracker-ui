@@ -5,7 +5,8 @@ import {
   fetchCIS2TokensFromDynamoDB,
   fetchAndVerifyCIS2Tokens,
   verifyIdToken,
-  verifyAccessToken
+  verifyAccessToken,
+  OidcConfig
 } from "./cis2"
 
 import {constructSignedJWTBody, exchangeTokenForApigeeAccessToken, updateApigeeAccessToken} from "./apigee"
@@ -19,5 +20,6 @@ export {
   verifyAccessToken,
   constructSignedJWTBody,
   exchangeTokenForApigeeAccessToken,
-  updateApigeeAccessToken
+  updateApigeeAccessToken,
+  OidcConfig
 }

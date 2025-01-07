@@ -11,23 +11,58 @@ import {parse, ParsedUrlQuery, stringify} from "querystring"
 import {PrivateKey} from "jsonwebtoken"
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
 import {DynamoDBDocumentClient, PutCommand} from "@aws-sdk/lib-dynamodb"
+import jwksClient from "jwks-rsa"
+
 import {formatHeaders, rewriteBodyToAddSignedJWT} from "./helpers"
-import {verifyIdToken} from "@cpt-ui-common/authFunctions"
+import {verifyIdToken, OidcConfig} from "@cpt-ui-common/authFunctions"
 
 const logger = new Logger({serviceName: "token"})
 const useMock: boolean = process.env["useMock"] === "true"
-const UserPoolIdentityProvider = useMock ?
-  process.env["MOCK_USER_POOL_IDP"] as string :
-  process.env["REAL_USER_POOL_IDP"] as string
+// Create a JWKS client for cis2 and mock
+// this is outside functions so it can be re-used
+const cis2JwksUri = process.env["REAL_OIDCJWKS_ENDPOINT"] as string
+const cis2JwksClient = jwksClient({
+  jwksUri: cis2JwksUri,
+  cache: true,
+  cacheMaxEntries: 5,
+  cacheMaxAge: 3600000 // 1 hour
+})
+
+const cis2OidcConfig: OidcConfig = {
+  oidcIssuer: process.env["REAL_OIDC_ISSUER"] ?? "",
+  oidcClientID: process.env["REAL_OIDC_CLIENT_ID"] ?? "",
+  oidcJwksEndpoint: process.env["REAL_OIDCJWKS_ENDPOINT"] ?? "",
+  oidcUserInfoEndpoint: process.env["REAL_USER_INFO_ENDPOINT"] ?? "",
+  userPoolIdp: process.env["REAL_USER_POOL_IDP"] ?? "",
+  jwksClient: cis2JwksClient,
+  tokenMappingTableName: process.env["TokenMappingTableName"] ?? ""
+}
+
+const mockJwksUri = process.env["MOCK_OIDCJWKS_ENDPOINT"] as string
+const mockJwksClient = jwksClient({
+  jwksUri: mockJwksUri,
+  cache: true,
+  cacheMaxEntries: 5,
+  cacheMaxAge: 3600000 // 1 hour
+})
+
+const mockOidcConfig: OidcConfig = {
+  oidcIssuer: process.env["MOCK_OIDC_ISSUER"] ?? "",
+  oidcClientID: process.env["MOCK_OIDC_CLIENT_ID"] ?? "",
+  oidcJwksEndpoint: process.env["MOCK_OIDCJWKS_ENDPOINT"] ?? "",
+  oidcUserInfoEndpoint: process.env["MOCK_USER_INFO_ENDPOINT"] ?? "",
+  userPoolIdp: process.env["MOCK_USER_POOL_IDP"] ?? "",
+  jwksClient: mockJwksClient,
+  tokenMappingTableName: process.env["TokenMappingTableName"] ?? ""
+}
+
+const TokenMappingTableName = process.env["TokenMappingTableName"] as string
+const jwtPrivateKeyArn = process.env["jwtPrivateKeyArn"] as string
+const jwtKid = process.env["jwtKid"] as string
 
 const idpTokenPath = useMock ?
   process.env["MOCK_IDP_TOKEN_PATH"] as string :
   process.env["REAL_IDP_TOKEN_PATH"] as string
-
-const TokenMappingTableName = process.env["TokenMappingTableName"] as string
-const useSignedJWT = process.env["useSignedJWT"] as string
-const jwtPrivateKeyArn = process.env["jwtPrivateKeyArn"] as string
-const jwtKid = process.env["jwtKid"] as string
 
 const dynamoClient = new DynamoDBClient()
 const documentClient = DynamoDBDocumentClient.from(dynamoClient)
@@ -51,13 +86,9 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   const objectBodyParameters = parse(body as string)
   let rewrittenObjectBodyParameters: ParsedUrlQuery
 
-  if (useSignedJWT === "true") {
-    const jwtPrivateKey = await getSecret(jwtPrivateKeyArn)
-    rewrittenObjectBodyParameters = rewriteBodyToAddSignedJWT(
-      logger, objectBodyParameters, idpTokenPath, jwtPrivateKey as PrivateKey, jwtKid)
-  } else {
-    rewrittenObjectBodyParameters = objectBodyParameters
-  }
+  const jwtPrivateKey = await getSecret(jwtPrivateKeyArn)
+  rewrittenObjectBodyParameters = rewriteBodyToAddSignedJWT(
+    logger, objectBodyParameters, idpTokenPath, jwtPrivateKey as PrivateKey, jwtKid)
 
   logger.debug("about to call downstream idp with rewritten body", {idpTokenPath, body: rewrittenObjectBodyParameters})
 
@@ -71,10 +102,12 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   const idToken = tokenResponse.data.id_token
 
   // verify and decode idToken
-  const decodedIdToken = await verifyIdToken(idToken, logger, useMock)
+  const decodedIdToken = await verifyIdToken(idToken, logger, useMock ? mockOidcConfig : cis2OidcConfig)
   logger.debug("decoded idToken", {decodedIdToken})
 
-  const username = `${UserPoolIdentityProvider}_${decodedIdToken.sub}`
+  const username = useMock ?
+    `${mockOidcConfig.userPoolIdp}_${decodedIdToken.sub}` :
+    `${cis2OidcConfig.userPoolIdp}_${decodedIdToken.sub}`
   const params = {
     Item: {
       "username": username,
