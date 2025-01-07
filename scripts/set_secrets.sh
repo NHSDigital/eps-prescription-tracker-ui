@@ -36,11 +36,12 @@ if [ -z "${private_key}" ]; then
     exit 1
 fi
 check_gh_logged_in
-set_secrets
 
 # these are from cis2 client set up
-set_repository_secret PTL_PRIMARY_OIDC_CLIENT_ID "${PTL_PRIMARY_OIDC_CLIENT_ID}" "actions"
-set_repository_secret PTL_PRIMARY_OIDC_CLIENT_SECRET "${PTL_PRIMARY_OIDC_CLIENT_SECRET}" "actions"
+set_repository_secret DEV_CIS2_OIDC_CLIENT_ID "${DEV_CIS2_OIDC_CLIENT_ID}" "actions"
+set_repository_secret REF_CIS2_OIDC_CLIENT_ID "${REF_CIS2_OIDC_CLIENT_ID}" "actions"
+set_repository_secret QA_CIS2_OIDC_CLIENT_ID "${QA_CIS2_OIDC_CLIENT_ID}" "actions"
+set_repository_secret INT_CIS2_OIDC_CLIENT_ID "${INT_CIS2_OIDC_CLIENT_ID}" "actions"
 
 # this is a locally generated private key
 # the public part of this keypair should be put in packages/staticContent/jwks/jwks.json
@@ -48,24 +49,15 @@ set_repository_secret PTL_CIS2_PRIVATE_KEY "${private_key}" "actions"
 
 
 # need to set these for dependabot as well
-set_repository_secret PTL_PRIMARY_OIDC_CLIENT_ID "${PTL_PRIMARY_OIDC_CLIENT_ID}" "dependabot"
-set_repository_secret PTL_PRIMARY_OIDC_CLIENT_SECRET "${PTL_PRIMARY_OIDC_CLIENT_SECRET}" "dependabot"
+set_repository_secret DEV_CIS2_OIDC_CLIENT_ID "${DEV_CIS2_OIDC_CLIENT_ID}" "dependabot"
 set_repository_secret PTL_CIS2_PRIVATE_KEY "${private_key}" "dependabot"
 
 # these are from the keycloak setup of the mock client
-set_repository_secret PTL_MOCK_CLIENT_ID "${PTL_MOCK_CLIENT_ID}" "actions"
-set_repository_secret PTL_MOCK_CLIENT_SECRET "${PTL_MOCK_CLIENT_SECRET}" "actions"
-set_repository_secret PTL_MOCK_CLIENT_ID "${PTL_MOCK_CLIENT_ID}" "dependabot"
-set_repository_secret PTL_MOCK_CLIENT_SECRET "${PTL_MOCK_CLIENT_SECRET}" "dependabot"
-
-
 set_repository_secret DEV_MOCK_CLIENT_ID "${DEV_MOCK_CLIENT_ID}" "actions"
-set_repository_secret DEV_MOCK_CLIENT_SECRET "${DEV_MOCK_CLIENT_SECRET}" "actions"
 set_repository_secret DEV_MOCK_CLIENT_ID "${DEV_MOCK_CLIENT_ID}" "dependabot"
-set_repository_secret DEV_MOCK_CLIENT_SECRET "${DEV_MOCK_CLIENT_SECRET}" "dependabot"
 
 set_repository_secret QA_MOCK_CLIENT_ID "${QA_MOCK_CLIENT_ID}" "actions"
-set_repository_secret QA_MOCK_CLIENT_SECRET "${QA_MOCK_CLIENT_SECRET}" "actions"
+set_repository_secret REF_MOCK_CLIENT_ID "${REF_MOCK_CLIENT_ID}" "actions"
 
 # these are from the apigee client set up
 set_repository_secret APIGEE_DEV_API_KEY "${APIGEE_DEV_API_KEY}" "actions"
