@@ -93,7 +93,8 @@ export const fetchCIS2TokensFromDynamoDB = async (
 export const fetchAndVerifyCIS2Tokens = async (
   event: APIGatewayProxyEvent,
   documentClient: DynamoDBDocumentClient,
-  logger: Logger
+  logger: Logger,
+  useMock: boolean
 ) => {
   logger.info("Fetching and verifying CIS2 tokens")
 
@@ -115,8 +116,8 @@ export const fetchAndVerifyCIS2Tokens = async (
   )
 
   // Verify the tokens
-  await verifyIdToken(cis2IdToken, logger)
-  await verifyAccessToken(cis2AccessToken, logger)
+  await verifyIdToken(cis2IdToken, logger, useMock)
+  await verifyAccessToken(cis2AccessToken, logger, useMock)
 
   // And return the verified tokens
   return {cis2AccessToken, cis2IdToken}
@@ -216,7 +217,7 @@ export const verifyCIS2Token = async (
   return verifiedToken
 }
 
-export const verifyIdToken = async (idToken: string, logger: Logger) : Promise<jwt.JwtPayload> => {
+export const verifyIdToken = async (idToken: string, logger: Logger, useMock: boolean) : Promise<jwt.JwtPayload> => {
   return await verifyCIS2Token(
     idToken,
     logger,
@@ -224,11 +225,12 @@ export const verifyIdToken = async (idToken: string, logger: Logger) : Promise<j
     {
       validAcrValues: VALID_ACR_VALUES,
       checkAudience: true
-    }
+    },
+    useMock
   )
 }
 
-export const verifyAccessToken = async (accessToken: string, logger: Logger) => {
+export const verifyAccessToken = async (accessToken: string, logger: Logger, useMock: boolean) => {
   await verifyCIS2Token(
     accessToken,
     logger,
@@ -236,6 +238,7 @@ export const verifyAccessToken = async (accessToken: string, logger: Logger) => 
     {
       validAcrValues: VALID_ACR_VALUES,
       checkAudience: false
-    }
+    },
+    useMock
   )
 }

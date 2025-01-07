@@ -68,7 +68,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
     // Step 1: Fetch CIS2 tokens
     logger.info("Retrieving CIS2 tokens from DynamoDB based on the current request context")
-    const {cis2AccessToken, cis2IdToken} = await fetchAndVerifyCIS2Tokens(event, documentClient, logger)
+    const {cis2AccessToken, cis2IdToken} = await fetchAndVerifyCIS2Tokens(event, documentClient, logger, isMockRequest)
     logger.debug("Successfully fetched CIS2 tokens", {cis2AccessToken, cis2IdToken})
 
     // Step 2: Fetch the private key for signing the client assertion

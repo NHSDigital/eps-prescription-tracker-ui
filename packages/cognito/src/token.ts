@@ -15,8 +15,15 @@ import {formatHeaders, rewriteBodyToAddSignedJWT} from "./helpers"
 import {verifyIdToken} from "@cpt-ui-common/authFunctions"
 
 const logger = new Logger({serviceName: "token"})
-const UserPoolIdentityProvider = process.env["UserPoolIdentityProvider"] as string
-const idpTokenPath = process.env["idpTokenPath"] as string
+const useMock: boolean = process.env["useMock"] === "true"
+const UserPoolIdentityProvider = useMock ?
+  process.env["MOCK_USER_POOL_IDP"] as string :
+  process.env["REAL_USER_POOL_IDP"] as string
+
+const idpTokenPath = useMock ?
+  process.env["MOCK_IDP_TOKEN_PATH"] as string :
+  process.env["REAL_IDP_TOKEN_PATH"] as string
+
 const TokenMappingTableName = process.env["TokenMappingTableName"] as string
 const useSignedJWT = process.env["useSignedJWT"] as string
 const jwtPrivateKeyArn = process.env["jwtPrivateKeyArn"] as string
@@ -64,7 +71,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   const idToken = tokenResponse.data.id_token
 
   // verify and decode idToken
-  const decodedIdToken = await verifyIdToken(idToken, logger)
+  const decodedIdToken = await verifyIdToken(idToken, logger, useMock)
   logger.debug("decoded idToken", {decodedIdToken})
 
   const username = `${UserPoolIdentityProvider}_${decodedIdToken.sub}`

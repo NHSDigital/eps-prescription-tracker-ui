@@ -19,9 +19,9 @@ import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
 
 // Common test setup
 const logger = new Logger()
-const oidcClientId = process.env["oidcClientId"] as string
-const oidcIssuer = process.env["oidcIssuer"] as string
-const jwksEndpoint = process.env["oidcjwksEndpoint"] as string
+const oidcClientId = process.env["REAL_OIDC_CLIENT_ID"] as string
+const oidcIssuer = process.env["REAL_OIDC_ISSUER"] as string
+const jwksEndpoint = process.env["REAL_OIDCJWKS_ENDPOINT"] as string
 
 let jwksMock: ReturnType<typeof createJWKSMock>
 let stopJwksMock: () => void
@@ -64,7 +64,7 @@ function createToken(payload: jwt.JwtPayload | undefined): string {
 }
 
 describe("getSigningKey", () => {
-  const jwksEndpoint = process.env["oidcjwksEndpoint"] as string
+  const jwksEndpoint = process.env["REAL_OIDCJWKS_ENDPOINT"] as string
 
   let jwksMock: ReturnType<typeof createJWKSMock>
   let stopJwksMock: () => void
@@ -210,8 +210,8 @@ describe("fetchAndVerifyCIS2Tokens", () => {
 
   const username = "test-username"
   const cis2IdToken: jwt.JwtPayload = {
-    iss: process.env["oidcIssuer"],
-    aud: process.env["oidcClientId"],
+    iss: process.env["REAL_OIDC_ISSUER"],
+    aud: process.env["REAL_OIDC_CLIENT_ID"],
     exp: Math.floor(Date.now() / 1000) + 3600,
     acr: "AAL3_ANY",
     auth_time: Math.floor(Date.now() / 1000)
@@ -259,7 +259,7 @@ describe("fetchAndVerifyCIS2Tokens", () => {
     jest.spyOn(jwt, "verify").mockImplementation(() => cis2IdToken)
 
     await expect(
-      fetchAndVerifyCIS2Tokens(event, documentClient, logger)
+      fetchAndVerifyCIS2Tokens(event, documentClient, logger, false)
     ).resolves.toEqual({
       cis2AccessToken,
       cis2IdToken
@@ -280,7 +280,7 @@ describe("fetchAndVerifyCIS2Tokens", () => {
     } as unknown as APIGatewayProxyEvent
 
     await expect(
-      fetchAndVerifyCIS2Tokens(event, documentClient, logger)
+      fetchAndVerifyCIS2Tokens(event, documentClient, logger, false)
     ).rejects.toThrow("Token mapping table name not set")
   })
 })
@@ -292,7 +292,7 @@ describe("verifyIdToken", () => {
 
     jest.spyOn(jwt, "verify").mockImplementation(() => payload)
 
-    await expect(verifyIdToken(token, logger)).resolves.toMatchObject(expect.objectContaining(
+    await expect(verifyIdToken(token, logger, false)).resolves.toMatchObject(expect.objectContaining(
       {
         "acr": "AAL3_ANY",
         "aud": ["valid_aud"],
@@ -302,11 +302,11 @@ describe("verifyIdToken", () => {
   })
 
   it("should throw an error when ID token is not provided", async () => {
-    await expect(verifyIdToken("", logger)).rejects.toThrow("ID token not provided")
+    await expect(verifyIdToken("", logger, false)).rejects.toThrow("ID token not provided")
   })
 
   it("should throw an error when ID token cannot be decoded", async () => {
-    await expect(verifyIdToken("invalid-token", logger)).rejects.toThrow("Invalid token")
+    await expect(verifyIdToken("invalid-token", logger, false)).rejects.toThrow("Invalid token")
   })
 
   it("should throw an error when ID token header does not contain kid", async () => {
@@ -315,7 +315,7 @@ describe("verifyIdToken", () => {
 
     jest.spyOn(jwt, "decode").mockReturnValueOnce({header: {}})
 
-    await expect(verifyIdToken(token, logger)).rejects.toThrow("Invalid token - no KID present")
+    await expect(verifyIdToken(token, logger, false)).rejects.toThrow("Invalid token - no KID present")
   })
 
   it("should throw an error when jwt.verify fails", async () => {
@@ -326,7 +326,7 @@ describe("verifyIdToken", () => {
       throw new Error("Invalid signature")
     })
 
-    await expect(verifyIdToken(token, logger)).rejects.toThrow("Invalid ID token")
+    await expect(verifyIdToken(token, logger, false)).rejects.toThrow("Invalid ID token")
   })
 
   it("should throw an error when ID token is expired", async () => {
@@ -336,7 +336,7 @@ describe("verifyIdToken", () => {
     })
     const token = createToken(payload)
 
-    await expect(verifyIdToken(token, logger)).rejects.toThrow(
+    await expect(verifyIdToken(token, logger, false)).rejects.toThrow(
       "Invalid ID token - JWT verification failed"
     )
   })
@@ -345,7 +345,7 @@ describe("verifyIdToken", () => {
     const payload = createPayload({iss: "https://wrong-issuer.com"})
     const token = createToken(payload)
 
-    await expect(verifyIdToken(token, logger)).rejects.toThrow(
+    await expect(verifyIdToken(token, logger, false)).rejects.toThrow(
       "Invalid ID token - JWT verification failed"
     )
   })
@@ -354,7 +354,7 @@ describe("verifyIdToken", () => {
     const payload = createPayload({aud: ["wrong-client-id"]})
     const token = createToken(payload)
 
-    await expect(verifyIdToken(token, logger)).rejects.toThrow(
+    await expect(verifyIdToken(token, logger, false)).rejects.toThrow(
       "Invalid ID token - JWT verification failed"
     )
   })
@@ -363,7 +363,7 @@ describe("verifyIdToken", () => {
     const payload = createPayload({acr: "INVALID_ACR"})
     const token = createToken(payload)
 
-    await expect(verifyIdToken(token, logger)).rejects.toThrow(
+    await expect(verifyIdToken(token, logger, false)).rejects.toThrow(
       "Invalid ACR claim in ID token"
     )
   })
@@ -376,15 +376,15 @@ describe("verifyAccessToken", () => {
 
     jest.spyOn(jwt, "verify").mockImplementation(() => payload)
 
-    await expect(verifyAccessToken(token, logger)).resolves.toBeUndefined()
+    await expect(verifyAccessToken(token, logger, false)).resolves.toBeUndefined()
   })
 
   it("should throw an error when access token is not provided", async () => {
-    await expect(verifyAccessToken("", logger)).rejects.toThrow("Access token not provided")
+    await expect(verifyAccessToken("", logger, false)).rejects.toThrow("Access token not provided")
   })
 
   it("should throw an error when access token cannot be decoded", async () => {
-    await expect(verifyAccessToken("invalid-token", logger)).rejects.toThrow("Invalid token")
+    await expect(verifyAccessToken("invalid-token", logger, false)).rejects.toThrow("Invalid token")
   })
 
   it("should throw an error when access token header does not contain kid", async () => {
@@ -393,7 +393,7 @@ describe("verifyAccessToken", () => {
 
     jest.spyOn(jwt, "decode").mockReturnValueOnce({header: {}})
 
-    await expect(verifyAccessToken(token, logger)).rejects.toThrow("Invalid token - no KID present")
+    await expect(verifyAccessToken(token, logger, false)).rejects.toThrow("Invalid token - no KID present")
   })
 
   it("should throw an error when jwt.verify fails", async () => {
@@ -404,7 +404,7 @@ describe("verifyAccessToken", () => {
       throw new Error("Invalid signature")
     })
 
-    await expect(verifyAccessToken(token, logger)).rejects.toThrow(
+    await expect(verifyAccessToken(token, logger, false)).rejects.toThrow(
       "Invalid Access token - JWT verification failed"
     )
   })
@@ -416,7 +416,7 @@ describe("verifyAccessToken", () => {
     })
     const token = createToken(payload)
 
-    await expect(verifyAccessToken(token, logger)).rejects.toThrow(
+    await expect(verifyAccessToken(token, logger, false)).rejects.toThrow(
       "Invalid Access token - JWT verification failed"
     )
   })
@@ -425,7 +425,7 @@ describe("verifyAccessToken", () => {
     const payload = createPayload({iss: "https://wrong-issuer.com"})
     const token = createToken(payload)
 
-    await expect(verifyAccessToken(token, logger)).rejects.toThrow(
+    await expect(verifyAccessToken(token, logger, false)).rejects.toThrow(
       "Invalid Access token - JWT verification failed"
     )
   })
@@ -434,7 +434,7 @@ describe("verifyAccessToken", () => {
     const payload = createPayload({acr: "INVALID_ACR"})
     const token = createToken(payload)
 
-    await expect(verifyAccessToken(token, logger)).rejects.toThrow(
+    await expect(verifyAccessToken(token, logger, false)).rejects.toThrow(
       "Invalid ACR claim in Access token"
     )
   })
