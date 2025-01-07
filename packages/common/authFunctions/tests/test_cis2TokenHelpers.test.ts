@@ -6,7 +6,6 @@ import {
   fetchCIS2TokensFromDynamoDB,
   fetchAndVerifyCIS2Tokens,
   verifyIdToken,
-  verifyAccessToken,
   OidcConfig
 } from "../src/index"
 
@@ -396,96 +395,6 @@ describe("verifyIdToken", () => {
 
     await expect(verifyIdToken(token, logger, oidcConfig)).rejects.toThrow(
       "Invalid ACR claim in ID token"
-    )
-  })
-})
-
-describe("verifyAccessToken", () => {
-  const oidcIssuer = "valid_iss"
-  const oidcClientId = "valid_aud"
-  const client = jwksClient({
-    jwksUri: `${jwksEndpoint}`,
-    cache: true,
-    cacheMaxEntries: 5,
-    cacheMaxAge: 3600000 // 1 hour
-  })
-
-  const oidcConfig: OidcConfig = {
-    oidcIssuer: oidcIssuer,
-    oidcClientID: oidcClientId,
-    oidcJwksEndpoint: "https://dummyauth.com/.well-known/jwks.json",
-    oidcUserInfoEndpoint:  "https://dummyauth.com/userinfo",
-    userPoolIdp: "DummyPoolIdentityProvider",
-    tokenMappingTableName: "dummyTable",
-    jwksClient: client
-  }
-
-  it("should verify a valid access token", async () => {
-    const payload = createPayload()
-    const token = createToken(payload)
-
-    jest.spyOn(jwt, "verify").mockImplementation(() => payload)
-
-    await expect(verifyAccessToken(token, logger, oidcConfig)).resolves.toBeUndefined()
-  })
-
-  it("should throw an error when access token is not provided", async () => {
-    await expect(verifyAccessToken("", logger, oidcConfig)).rejects.toThrow("Access token not provided")
-  })
-
-  it("should throw an error when access token cannot be decoded", async () => {
-    await expect(verifyAccessToken("invalid-token", logger, oidcConfig)).rejects.toThrow("Invalid token")
-  })
-
-  it("should throw an error when access token header does not contain kid", async () => {
-    const payload = createPayload()
-    const token = createToken(payload)
-
-    jest.spyOn(jwt, "decode").mockReturnValueOnce({header: {}})
-
-    await expect(verifyAccessToken(token, logger, oidcConfig)).rejects.toThrow("Invalid token - no KID present")
-  })
-
-  it("should throw an error when jwt.verify fails", async () => {
-    const payload = createPayload()
-    const token = createToken(payload)
-
-    jest.spyOn(jwt, "verify").mockImplementation(() => {
-      throw new Error("Invalid signature")
-    })
-
-    await expect(verifyAccessToken(token, logger, oidcConfig)).rejects.toThrow(
-      "Invalid Access token - JWT verification failed"
-    )
-  })
-
-  it("should throw an error when access token is expired", async () => {
-    const payload = createPayload({
-      exp: Math.floor(Date.now() / 1000) - 3600,
-      auth_time: Math.floor(Date.now() / 1000) - 7200
-    })
-    const token = createToken(payload)
-
-    await expect(verifyAccessToken(token, logger, oidcConfig)).rejects.toThrow(
-      "Invalid Access token - JWT verification failed"
-    )
-  })
-
-  it("should throw an error when issuer does not match", async () => {
-    const payload = createPayload({iss: "https://wrong-issuer.com"})
-    const token = createToken(payload)
-
-    await expect(verifyAccessToken(token, logger, oidcConfig)).rejects.toThrow(
-      "Invalid Access token - JWT verification failed"
-    )
-  })
-
-  it("should throw an error when ACR claim is invalid", async () => {
-    const payload = createPayload({acr: "INVALID_ACR"})
-    const token = createToken(payload)
-
-    await expect(verifyAccessToken(token, logger, oidcConfig)).rejects.toThrow(
-      "Invalid ACR claim in Access token"
     )
   })
 })

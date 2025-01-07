@@ -27,6 +27,22 @@ const dummyContext = {
   succeed: () => console.log("Succeeded!")
 }
 
+//const CIS2_OIDC_ISSUER = process.env.CIS2_OIDC_ISSUER
+//const CIS2_OIDC_CLIENT_ID = process.env.CIS2_OIDC_CLIENT_ID
+//const CIS2_OIDC_HOST = process.env.CIS2_OIDC_HOST ?? ""
+//const CIS2_OIDCJWKS_ENDPOINT = process.env.CIS2_OIDCJWKS_ENDPOINT
+//const CIS2_USER_INFO_ENDPOINT = process.env.CIS2_USER_INFO_ENDPOINT
+//const CIS2_USER_POOL_IDP = process.env.CIS2_USER_POOL_IDP
+//const CIS2_IDP_TOKEN_PATH = process.env.CIS2_IDP_TOKEN_PATH ?? ""
+
+const MOCK_OIDC_ISSUER = process.env.MOCK_OIDC_ISSUER
+const MOCK_OIDC_CLIENT_ID = process.env.MOCK_OIDC_CLIENT_ID
+const MOCK_OIDC_HOST = process.env.MOCK_OIDC_HOST ?? ""
+//const MOCK_OIDCJWKS_ENDPOINT = process.env.MOCK_OIDCJWKS_ENDPOINT
+//const MOCK_USER_INFO_ENDPOINT = process.env.MOCK_USER_INFO_ENDPOINT
+const MOCK_USER_POOL_IDP = process.env.MOCK_USER_POOL_IDP
+//const MOCK_IDP_TOKEN_PATH = process.env.MOCK_IDP_TOKEN_PATH
+
 const mockVerifyIdToken = jest.fn()
 const mockGetSecret = jest.fn()
 
@@ -65,9 +81,10 @@ jest.unstable_mockModule("@aws-lambda-powertools/parameters/secrets", () => {
   }
 })
 
+process.env.useMock = "true"
 const {handler} = await import("../src/token")
 
-describe("handler tests", () => {
+describe("handler tests with mock", () => {
   const jwks = createJWKSMock("https://dummyauth.com/")
   beforeEach(() => {
     jest.resetModules()
@@ -79,26 +96,18 @@ describe("handler tests", () => {
     jwks.stop()
   })
 
-  it("responds with error when body does not exist", async () => {
-
-    const response = await handler({}, dummyContext)
-    expect(response).toMatchObject({
-      message: "A system error has occurred"
-    })
-  })
-
   it("inserts correct details into dynamo table", async () => {
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     const dynamoSpy = jest.spyOn(DynamoDBDocumentClient.prototype, "send").mockResolvedValue({} as never)
 
     const expiryDate = Date.now() + 1000
     const token = jwks.token({
-      iss: "valid_iss",
-      aud: "valid_aud",
+      iss: MOCK_OIDC_ISSUER,
+      aud: MOCK_OIDC_CLIENT_ID,
       sub: "foo",
       exp: expiryDate
     })
-    nock("https://dummytoken.com")
+    nock(MOCK_OIDC_HOST)
       .post("/token")
       .reply(200, {
         id_token: token,
@@ -118,7 +127,7 @@ describe("handler tests", () => {
     const call = dynamoSpy.mock.calls[0][0].input as PutCommandInput
     expect(call.Item).toEqual(
       {
-        "username": "DummyPoolIdentityProvider_foo",
+        "username": `${MOCK_USER_POOL_IDP}_foo`,
         "CIS2_idToken": token,
         "CIS2_expiresIn": 100,
         "CIS2_accessToken": "access_token_reply"

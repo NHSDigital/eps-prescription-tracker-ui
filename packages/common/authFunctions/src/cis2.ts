@@ -43,7 +43,7 @@ export const fetchCIS2TokensFromDynamoDB = async (
   documentClient: DynamoDBDocumentClient,
   logger: Logger
 ): Promise<{ cis2AccessToken: string; cis2IdToken: string }> => {
-  logger.info("Fetching CIS2 access token from DynamoDB")
+  logger.info("Fetching CIS2 tokens from DynamoDB")
 
   let result
 
@@ -96,9 +96,8 @@ export const fetchAndVerifyCIS2Tokens = async (
     logger
   )
 
-  // Verify the tokens
+  // Verify the id token, access token from cis2 is not a JWT
   await verifyIdToken(cis2IdToken, logger, oidcConfig)
-  await verifyAccessToken(cis2AccessToken, logger, oidcConfig)
 
   // And return the verified tokens
   return {cis2AccessToken, cis2IdToken}
@@ -217,19 +216,6 @@ export const verifyIdToken = async (
     {
       validAcrValues: VALID_ACR_VALUES,
       checkAudience: true
-    },
-    oidcConfig
-  )
-}
-
-export const verifyAccessToken = async (accessToken: string, logger: Logger, oidcConfig: OidcConfig) => {
-  await verifyCIS2Token(
-    accessToken,
-    logger,
-    "Access token",
-    {
-      validAcrValues: VALID_ACR_VALUES,
-      checkAudience: false
     },
     oidcConfig
   )

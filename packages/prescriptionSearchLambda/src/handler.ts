@@ -126,6 +126,10 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     const username = getUsernameFromEvent(event)
     const isMockToken = username.startsWith("Mock_")
     // Determine whether this request should be treated as mock or real.
+
+    if (isMockToken && MOCK_MODE_ENABLED !== "true") {
+      throw new Error("Trying to use a mock user when mock mode is disabled")
+    }
     const isMockRequest = MOCK_MODE_ENABLED === "true" && isMockToken
 
     const apigeeTokenEndpoint = isMockRequest

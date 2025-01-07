@@ -5,7 +5,6 @@ import {
   fetchCIS2TokensFromDynamoDB,
   fetchAndVerifyCIS2Tokens,
   verifyIdToken,
-  verifyAccessToken,
   OidcConfig
 } from "./cis2"
 
@@ -17,7 +16,6 @@ export {
   fetchCIS2TokensFromDynamoDB,
   fetchAndVerifyCIS2Tokens,
   verifyIdToken,
-  verifyAccessToken,
   constructSignedJWTBody,
   exchangeTokenForApigeeAccessToken,
   updateApigeeAccessToken,
