@@ -46,8 +46,14 @@ export function EpsModal({ children, isOpen, onClose }: EpsModalProps) {
     role="button"
     tabIndex={0}
     onKeyDown={handleBackdropActivate}
+    data-testid="eps-modal-overlay"
     >
-        <div className="eps-modal-content" role="dialog" aria-modal="true">
+        <div 
+          className="eps-modal-content" 
+          role="dialog" 
+          aria-modal="true"
+          data-testid="eps-modal-content"
+        >
         <button className="eps-modal-close-button" onClick={onClose} aria-label="Close modal">
             ×
         </button>
