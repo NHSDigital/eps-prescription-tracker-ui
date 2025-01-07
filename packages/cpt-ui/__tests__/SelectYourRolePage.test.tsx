@@ -80,7 +80,7 @@ const renderWithAuthAndAccess = (
 
   return render(
     <AuthContext.Provider value={authValue}>
-      <AccessProvider value={accessValue}>
+      <AccessProvider>
         <SelectYourRolePage />
       </AccessProvider>
     </AuthContext.Provider>
