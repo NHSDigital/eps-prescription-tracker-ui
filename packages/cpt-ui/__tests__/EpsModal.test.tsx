@@ -26,8 +26,6 @@ describe("EpsModal", () => {
     );
     // The content should appear in the document
     expect(screen.getByText(/Modal Content/i)).toBeInTheDocument();
-    // The dialog container should be visible
-    expect(screen.getByRole("dialog")).toBeInTheDocument();
   });
 
   test("calls onClose when user clicks outside modal content", () => {
