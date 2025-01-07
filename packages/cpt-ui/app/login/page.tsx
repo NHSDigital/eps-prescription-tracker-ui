@@ -35,6 +35,7 @@ export default function AuthPage() {
                 custom: "Primary"
             }
         });
+        console.log("Signed in: ", auth);
     }, [auth]);
 
     const signOut = async () => {
@@ -43,18 +44,18 @@ export default function AuthPage() {
         console.log("Signed out: ", auth);
     }
 
-    // On page load
     useEffect(() => {
-        console.log("AuthPage loaded. What environment are we in?", process.env.NEXT_PUBLIC_TARGET_ENVIRONMENT)
-
-        if (MOCK_AUTH_ALLOWED.includes(target_environment)) {
-            console.log("Mock auth is allowed in this environment");
-        } else {
-            console.log("User must sign in with Primary auth");
-            signIn();
+        console.log(
+          "Login page loaded. What environment are we in?",
+          target_environment
+        );
+      
+        // Only call signIn() if user is *not* in a mock environment AND *not* signed in yet.
+        if (!MOCK_AUTH_ALLOWED.includes(target_environment) && !auth?.isSignedIn) {
+          console.log("User must sign in with Primary auth");
+          signIn();
         }
-
-    }, [auth, signIn, target_environment]);
+      }, [auth?.isSignedIn, signIn, target_environment]);
 
     useEffect(() => {
         console.log(auth);
