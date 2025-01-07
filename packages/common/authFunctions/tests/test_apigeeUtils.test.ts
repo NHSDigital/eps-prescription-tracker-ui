@@ -36,14 +36,14 @@ describe("apigeeUtils", () => {
 
       const result = await exchangeTokenForApigeeAccessToken(
         axios,
-        "http://mock-endpoint",
+        "https://mock-endpoint",
         {param: "test"},
         mockLogger as Logger
       )
 
       expect(result).toEqual({accessToken: "testToken", expiresIn: 3600})
       expect(mockAxiosPost).toHaveBeenCalledWith(
-        "http://mock-endpoint",
+        "https://mock-endpoint",
         expect.any(String), // Request body as URL-encoded string
         {headers: {"Content-Type": "application/x-www-form-urlencoded"}}
       )
@@ -54,7 +54,7 @@ describe("apigeeUtils", () => {
       await expect(
         exchangeTokenForApigeeAccessToken(
           axios,
-          "http://mock-endpoint",
+          "https://mock-endpoint",
           {param: "test"},
           mockLogger as Logger
         )
@@ -72,7 +72,7 @@ describe("apigeeUtils", () => {
       await expect(
         exchangeTokenForApigeeAccessToken(
           axios,
-          "http://mock-endpoint",
+          "https://mock-endpoint",
           {param: "test"},
           mockLogger as Logger
         )
