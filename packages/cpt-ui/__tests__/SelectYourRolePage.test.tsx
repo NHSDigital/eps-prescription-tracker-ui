@@ -240,7 +240,7 @@ describe("SelectYourRolePage", () => {
 
     // Wait for redirection to happen
     await waitFor(() => {
-        expect(mockHref).toHaveBeenCalledWith("searchforaprescription");
+        expect(mockHref).toHaveBeenCalledWith("searchforaprescription.html");
     });
   });
 });
