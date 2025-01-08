@@ -27,9 +27,20 @@ set_repository_secret() {
         --body "${secret_value}"
 }
 
+set_repository_private_key_secret() {
+    secret_name=$1
+    private_key_file_name=$2
+    github_app=$3
 
-# this is a locally generated private key
-# the public part of this keypair should be put in packages/staticContent/jwks/jwks.json
+    private_key=$(cat "${private_key_file_name}")
+    if [ -z "${private_key}" ]; then
+        echo "private_key is unset or set to the empty string"
+        exit 1
+    fi
+
+    set_repository_secret "${secret_name}" "${private_key}" "${github_app}"
+}
+
 private_key=$(cat .secrets/eps-cpt-ui-test.pem)
 if [ -z "${private_key}" ]; then
     echo "private_key is unset or set to the empty string"
@@ -43,14 +54,16 @@ set_repository_secret REF_CIS2_OIDC_CLIENT_ID "${REF_CIS2_OIDC_CLIENT_ID}" "acti
 set_repository_secret QA_CIS2_OIDC_CLIENT_ID "${QA_CIS2_OIDC_CLIENT_ID}" "actions"
 set_repository_secret INT_CIS2_OIDC_CLIENT_ID "${INT_CIS2_OIDC_CLIENT_ID}" "actions"
 
-# this is a locally generated private key
-# the public part of this keypair should be put in packages/staticContent/jwks/jwks.json
-set_repository_secret PTL_CIS2_PRIVATE_KEY "${private_key}" "actions"
+# these are locally generated private keys
+# the public part of this keypair should be put in packages/staticContent/jwks/{env}/jwks.json
+set_repository_private_key_secret DEV_JWT_PRIVATE_KEY ".secrets/eps-cpt-ui-dev.pem" "actions"
+set_repository_private_key_secret REF_JWT_PRIVATE_KEY ".secrets/eps-cpt-ui-ref.pem" "actions"
+set_repository_private_key_secret QA_JWT_PRIVATE_KEY ".secrets/eps-cpt-ui-qa.pem" "actions"
+set_repository_private_key_secret INT_JWT_PRIVATE_KEY ".secrets/eps-cpt-ui-int.pem" "actions"
 
-
-# need to set these for dependabot as well
+# need to set these for dependabot as well for dev
 set_repository_secret DEV_CIS2_OIDC_CLIENT_ID "${DEV_CIS2_OIDC_CLIENT_ID}" "dependabot"
-set_repository_secret PTL_CIS2_PRIVATE_KEY "${private_key}" "dependabot"
+set_repository_private_key_secret DEV_JWT_PRIVATE_KEY ".secrets/eps-cpt-ui-dev.pem" "dependabot"
 
 # these are from the keycloak setup of the mock client
 set_repository_secret DEV_MOCK_CLIENT_ID "${DEV_MOCK_CLIENT_ID}" "actions"

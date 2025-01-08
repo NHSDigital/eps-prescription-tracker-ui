@@ -126,7 +126,7 @@ jobs:
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_DEPLOY_ROLE }}
       primaryOidcClientId: ${{ secrets.DEV_CIS2_OIDC_CLIENT_ID }}
       mockOidcClientId: ${{ secrets.DEV_MOCK_CLIENT_ID }}
-      CIS2_PRIVATE_KEY: ${{ secrets.PTL_CIS2_PRIVATE_KEY }}
+      CIS2_PRIVATE_KEY: ${{ secrets.DEV_JWT_PRIVATE_KEY }}
       REGRESSION_TESTS_PEM: ${{ secrets.REGRESSION_TESTS_PEM }}
       APIGEE_API_KEY: ${{ secrets.APIGEE_DEV_API_KEY }}
   
@@ -178,6 +178,6 @@ jobs:
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.QA_CLOUD_FORMATION_DEPLOY_ROLE }}
       primaryOidcClientId: ${{ secrets.QA_CIS2_OIDC_CLIENT_ID }}
       mockOidcClientId: ${{ secrets.QA_MOCK_CLIENT_ID }}
-      CIS2_PRIVATE_KEY: ${{ secrets.PTL_CIS2_PRIVATE_KEY }}
+      CIS2_PRIVATE_KEY: ${{ secrets.QA_JWT_PRIVATE_KEY }}
       REGRESSION_TESTS_PEM: ${{ secrets.REGRESSION_TESTS_PEM }}
       APIGEE_API_KEY: ${{ secrets.APIGEE_QA_API_KEY }}
