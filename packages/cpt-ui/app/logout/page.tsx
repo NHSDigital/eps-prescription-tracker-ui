@@ -5,6 +5,7 @@ import Link from "next/link";
 
 import { AuthContext } from "@/context/AuthProvider";
 import EpsSpinner from "@/components/EpsSpinner";
+import { EpsLogoutStrings } from "@/constants/ui-strings/EpsLogoutPageStrings";
 
 export default function LogoutPage() {
 
@@ -32,16 +33,16 @@ export default function LogoutPage() {
             <Container>
                 {auth?.isSignedIn ? (
                     <>
-                        <h1>Logging out</h1>
+                        <h1>{EpsLogoutStrings.loading}</h1>
                         <EpsSpinner />
                     </>
                 ) : (
                     <>
-                        <h1>Logout successful</h1>
-                        <div>You are now logged out of the service. To continue using the service, you must log in again.</div>
+                        <h1>{EpsLogoutStrings.title}</h1>
+                        <div>{EpsLogoutStrings.body}</div>
                         <p />
                         <Link href="/login">
-                            Log in
+                            {EpsLogoutStrings.login_link}
                         </Link>
                     </>
                 )}

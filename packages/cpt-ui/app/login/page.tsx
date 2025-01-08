@@ -4,6 +4,7 @@ import React, { useContext, useEffect, useCallback } from "react";
 import { Container, Col, Row, Button } from "nhsuk-react-components";
 import { AuthContext } from "@/context/AuthProvider";
 import EpsSpinner from "@/components/EpsSpinner";
+import { EpsLoginPageStrings } from "@/constants/ui-strings/EpsLoginPageStrings";
 
 const MOCK_AUTH_ALLOWED = [
     "dev",
@@ -68,7 +69,7 @@ export default function AuthPage() {
             <Container>
                 <Row>
                     <Col width="full">
-                        <h1>Redirecting to CIS2 login page...</h1>
+                        <h1>{EpsLoginPageStrings.redirecting_msg}</h1>
                         <EpsSpinner />
                     </Col>
                 </Row>
@@ -77,6 +78,7 @@ export default function AuthPage() {
         )
     }
 
+    // This is a dev page, so no need to bother with language support
     return (
         <main className="nhsuk-main-wrapper">
             <Container>
