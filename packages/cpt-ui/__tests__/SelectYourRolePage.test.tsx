@@ -203,7 +203,7 @@ describe("SelectYourRolePage", () => {
     });
   });
 
-  it("redirects to /searchforaprescription when there is one role with access and no roles without access", async () => {
+  it("redirects to searchforaprescription when there is one role with access and no roles without access", async () => {
     // Mock user data to simulate API response
     const mockUserInfo = {
         roles_with_access: [
@@ -240,7 +240,7 @@ describe("SelectYourRolePage", () => {
 
     // Wait for redirection to happen
     await waitFor(() => {
-        expect(mockHref).toHaveBeenCalledWith("/searchforaprescription");
+        expect(mockHref).toHaveBeenCalledWith("searchforaprescription");
     });
   });
 });
