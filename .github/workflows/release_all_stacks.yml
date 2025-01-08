@@ -243,9 +243,17 @@ jobs:
           aws cloudfront create-invalidation --distribution-id "${cloudfrontDistributionId}" --paths '/*'
 
           # set the primaryJwtPrivateKeyArn secret
-          aws secretsmanager put-secret-value --secret-id "${primaryJwtPrivateKeyArn}" --secret-string "${{ secrets.CIS2_PRIVATE_KEY }}"
+          if [ -z "${primaryJwtPrivateKeyArn}" ]; then
+            echo "primaryJwtPrivateKeyArn is unset or set to the empty string"
+          else
+            aws secretsmanager put-secret-value --secret-id "${primaryJwtPrivateKeyArn}" --secret-string "${{ secrets.CIS2_PRIVATE_KEY }}"
+          fi
           # set the mockJwtPrivateKeyArn secret
-          aws secretsmanager put-secret-value --secret-id "${mockJwtPrivateKeyArn}" --secret-string "${{ secrets.CIS2_PRIVATE_KEY }}"
+          if [ -z "${mockJwtPrivateKeyArn}" ]; then
+            echo "mockJwtPrivateKeyArn is unset or set to the empty string"
+          else
+            aws secretsmanager put-secret-value --secret-id "${mockJwtPrivateKeyArn}" --secret-string "${{ secrets.CIS2_PRIVATE_KEY }}"
+          fi
   rerelease_stateful_resources:
     if: ${{ needs.check_first_deployment.outputs.FIRST_DEPLOYMENT == 'true' }}
     uses: ./.github/workflows/cdk_release_code.yml
