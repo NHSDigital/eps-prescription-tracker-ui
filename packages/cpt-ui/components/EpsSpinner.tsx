@@ -10,10 +10,10 @@ function Spinner({
   fraction = 0.2, // The fraction of the hoop that is green
   speed = 1       // The speed (in seconds) for one full rotation
 }) {
-  const circumference = 2 * Math.PI * radius;
   
   // The portion that should appear green is defined by "fraction"
   // If fraction = 0.25, then 25% of the hoop is green and 75% is grey
+  const circumference = 2 * Math.PI * radius;
   const offset = circumference * (1 - fraction);
 
   return (
@@ -44,6 +44,7 @@ function Spinner({
           style={{
             // Do NOT animate the entire SVG (so text remains static)
             overflow: 'visible',
+            rotate: "-90deg"
           }}
         >
           {/* Grey base circle (non-spinning) */}
@@ -60,7 +61,7 @@ function Spinner({
           <g
             style={{
               transformOrigin: '50% 50%',
-              animation: `spin ${speed}s linear infinite`
+              animation: `spin ${speed}s ease-in-out infinite`
             }}
           >
             <circle
@@ -82,6 +83,10 @@ function Spinner({
             textAnchor="middle"
             dominantBaseline="central"
             fontSize="1.5rem"
+            style={{
+              transformOrigin: '50% 50%',
+              rotate: "90deg"
+            }}
           >
             {EpsSpinnerStrings.loading}
           </text>

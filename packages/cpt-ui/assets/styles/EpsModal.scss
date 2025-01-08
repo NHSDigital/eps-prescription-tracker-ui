@@ -25,22 +25,27 @@
 }
 
 .eps-modal-button {
-  width: 40%;
+  width: 35%;
 }
 
 .eps-modal-close-button {
   position: absolute;
-  top: 1rem;
+  top: 0rem;
   right: 1rem;
-  font-size: 1.5rem;
   background: transparent;
   border-radius: 4px;
-  cursor: pointer; // TODO: Does this want to be a normal cursor Or a pointer?
+  border: 0px;
+  font-size: 3rem;
+  cursor: pointer;
+}
+
+.eps-modal-close-button:hover {
+  color: red;
 }
 
 .eps-modal-button-group {
   display: flex;
-  justify-content: center;
-  gap: 20%;
+  justify-content: left;
+  gap: 5%;
   margin-top: 2rem;
 }

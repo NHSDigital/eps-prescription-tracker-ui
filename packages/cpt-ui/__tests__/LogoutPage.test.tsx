@@ -33,53 +33,57 @@ const mockCognitoSignIn = jest.fn();
 const mockCognitoSignOut = jest.fn();
 
 interface MockAuthProviderProps {
-    children: React.ReactNode;
-    defaultIsSignedIn?: boolean;
-    defaultUser?: { username: string } | null;
-  }
-  
-  const MockAuthProvider: React.FC<MockAuthProviderProps> = ({
-    children,
-    defaultIsSignedIn = true,
-    defaultUser = { username: "mockUser" },
-  }) => {
-    // State to simulate auth changes
-    const [authState, setAuthState] = useState({
-      isSignedIn: defaultIsSignedIn,
-      user: defaultUser,
-      error: null as string | null,
-      idToken: defaultIsSignedIn ? "mockIdToken" : null,
-      accessToken: defaultIsSignedIn ? "mockAccessToken" : null,
-      cognitoSignIn: async (options: { provider: { custom: any } }) => {
-        mockCognitoSignIn(options);
-        // Simulate a sign-in update
-        setAuthState((prev) => ({
-          ...prev,
-          isSignedIn: true,
-          user: { username: options?.provider?.custom || "mockUser" },
-          error: null,
-          idToken: "mockIdToken",
-          accessToken: "mockAccessToken",
-        }));
-      },
-      cognitoSignOut: async () => {
-        mockCognitoSignOut();
-        // Simulate a sign-out update
-        setAuthState((prev) => ({
-          ...prev,
-          isSignedIn: false,
-          user: null,
-          error: null,
-          idToken: null,
-          accessToken: null,
-        }));
-      },
-    });
-  
-    return (
-      <AuthContext.Provider value={authState}>{children}</AuthContext.Provider>
-    );
-  };
+  children: React.ReactNode;
+  defaultIsSignedIn?: boolean;
+  defaultUser?: { username: string } | null;
+}
+
+const MockAuthProvider: React.FC<MockAuthProviderProps> = ({
+  children,
+  defaultIsSignedIn = true,
+  defaultUser = { username: "mockUser" },
+}) => {
+  // State to simulate auth changes
+  const [authState, setAuthState] = useState({
+    isSignedIn: defaultIsSignedIn,
+    user: defaultUser,
+    error: null as string | null,
+    idToken: defaultIsSignedIn ? "mockIdToken" : null,
+    accessToken: defaultIsSignedIn ? "mockAccessToken" : null,
+    cognitoSignIn: async (options: { provider: { custom: any } }) => {
+      await new Promise((resolve) => setTimeout(resolve, 3000));
+
+      mockCognitoSignIn(options);
+      // Simulate a sign-in update
+      setAuthState((prev) => ({
+        ...prev,
+        isSignedIn: true,
+        user: { username: options?.provider?.custom || "mockUser" },
+        error: null,
+        idToken: "mockIdToken",
+        accessToken: "mockAccessToken",
+      }));
+    },
+    cognitoSignOut: async () => {
+      await new Promise((resolve) => setTimeout(resolve, 3000));
+
+      mockCognitoSignOut();
+      // Simulate a sign-out update
+      setAuthState((prev) => ({
+        ...prev,
+        isSignedIn: false,
+        user: null,
+        error: null,
+        idToken: null,
+        accessToken: null,
+      }));
+    },
+  });
+
+  return (
+    <AuthContext.Provider value={authState}>{children}</AuthContext.Provider>
+  );
+};
   
 // Since we've referenced AuthContext in the mock provider, we need to re-import it here
 // after the mock is set up.
@@ -112,7 +116,7 @@ describe("LogoutPage", () => {
     expect(screen.getByText(/Logout successful/i)).toBeInTheDocument();
     expect(
       screen.getByText(
-        /You are now logged out of the service. To continue using the application, you must log in again/i
+        /You are now logged out of the service. To continue using the service, you must log in again/i
       )
     ).toBeInTheDocument();
 
@@ -144,7 +148,7 @@ describe("LogoutPage", () => {
     expect(screen.getByText(/Logout successful/i)).toBeInTheDocument();
     expect(
       screen.getByText(
-        /You are now logged out of the service. To continue using the application, you must log in again/i
+        /You are now logged out of the service. To continue using the service, you must log in again/i
       )
     ).toBeInTheDocument();
   });

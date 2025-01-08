@@ -15,9 +15,6 @@ export default function LogoutPage() {
         const signOut = async () => {
             console.log("Signing out", auth);
 
-            // FIXME: [DEV] Wait 3 seconds
-            await new Promise((resolve) => setTimeout(resolve, 3000));
-
             await auth?.cognitoSignOut();
             console.log("Signed out: ", auth);
         }
@@ -41,11 +38,9 @@ export default function LogoutPage() {
                 ) : (
                     <>
                         <h1>Logout successful</h1>
-                        <div>You are now logged out of the service. To continue using the application, you must log in again.</div>
-                        <Link 
-                            href="/login" 
-                            className="nhsuk-button nhsuk-button--primary nhsuk-u-margin-top-5 nhsuk-u-margin-bottom-5"
-                        >
+                        <div>You are now logged out of the service. To continue using the service, you must log in again.</div>
+                        <p />
+                        <Link href="/login">
                             Log in
                         </Link>
                     </>

@@ -83,10 +83,7 @@ export default function EpsHeader() {
             </li>
           )}
 
-          {/* 
-            FIXME: Only the selectyourrole and changerole links get put in the 
-            collapsible menu when on mobile
-          */}
+          {/* FIXME: Only the selectyourrole and changerole links get put in the collapsible menu when on mobile */}
           {pathname === "/selectyourrole" ? (
             <li className="nhsuk-header__navigation-item">
               <Link
@@ -109,7 +106,7 @@ export default function EpsHeader() {
             </li>
           )}
 
-          {/* FIXME: Only shows the Log out link if the user is signed in, but introduces a lag on page reload. Acceptable? */}
+          {/* FIXME: Only shows the Log out link if the user is signed in, but introduces a lag on page reload. */}
           {auth?.isSignedIn && (
             <li className="nhsuk-header__navigation-item">
               <Link

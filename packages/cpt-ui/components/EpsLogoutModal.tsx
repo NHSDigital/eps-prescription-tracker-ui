@@ -17,20 +17,24 @@ export function EpsLogoutModal({ isOpen, onClose, onConfirm }: EpsLogoutModalPro
     <EpsModal isOpen={isOpen} onClose={onClose}>
       <Container>
 
-        <h2>{EpsLogoutModalStrings.title}</h2>
+        <h2
+          style={{
+            paddingTop: "1rem"
+          }}
+        >
+          {EpsLogoutModalStrings.title}</h2>
         <p>{EpsLogoutModalStrings.caption}</p>
         
-        {/* TODO: style appropriately */}
         <div className="eps-modal-button-group">
           <Button 
             className="nhsuk-button eps-modal-button" 
             onClick={onConfirm}
-            >
+          >
             {EpsLogoutModalStrings.confirmButtonText}
           </Button>
           
           <Button 
-            className="nhsuk-button nhsuk-button--reverse eps-modal-button" 
+            className="nhsuk-button nhsuk-button--secondary eps-modal-button" 
             onClick={onClose}
             >
             {EpsLogoutModalStrings.cancelButtonText}
