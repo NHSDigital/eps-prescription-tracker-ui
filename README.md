@@ -101,7 +101,7 @@ export LOCAL_DEV=true
 export API_DOMAIN_OVERRIDE=https://${SERVICE_NAME}.dev.eps.national.nhs.uk/
 
 export NEXT_PUBLIC_hostedLoginDomain=${SERVICE_NAME}.auth.eu-west-2.amazoncognito.com
-export NEXT_PUBLIC_redirectSignIn=http://localhost:3000/auth_demo/
+export NEXT_PUBLIC_redirectSignIn=http://localhost:3000/selectyourrole/
 export NEXT_PUBLIC_redirectSignOut=http://localhost:3000/
 
 export NEXT_PUBLIC_COMMIT_ID="Local Development Server"
