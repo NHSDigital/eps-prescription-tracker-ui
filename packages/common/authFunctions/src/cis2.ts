@@ -20,7 +20,13 @@ const VALID_ACR_VALUES: Array<string> = [
   // "AAL2_NHSMAIL"
 ]
 
-// Helper function to get the signing key from the JWKS endpoint
+/**
+ * Helper function to get the signing key from the JWKS endpoint
+ * @param client - a jwks client
+ * @param kid - a KID (key identifier) to get
+ * @returns a promise with the public key
+ * @throws if key not found on jwks url
+*/
 export const getSigningKey = (client: jwksClient.JwksClient, kid: string): Promise<string> => {
   return new Promise((resolve, reject) => {
     client.getSigningKey(kid, (err, key) => {
@@ -37,6 +43,15 @@ export const getSigningKey = (client: jwksClient.JwksClient, kid: string): Promi
   })
 }
 
+/**
+ * Helper function to fetch the cis2 tokens from dynamodb
+ * It also verifies the id token
+ * @param username - the username to get the tokens for
+ * @param tokenMappingTableName - the token mapping table name
+ * @param documentClient - a dynamodb document client
+ * @param logger - Logger instance for logging
+ * @returns cis2 access and id tokens
+ */
 export const fetchCIS2TokensFromDynamoDB = async (
   username: string,
   tokenMappingTableName: string,
@@ -103,6 +118,9 @@ export const fetchAndVerifyCIS2Tokens = async (
   return {cis2AccessToken, cis2IdToken}
 }
 
+/**
+ * Interface for passing around oidc config
+ */
 export interface OidcConfig {
   oidcIssuer: string
   oidcClientID: string
@@ -113,6 +131,16 @@ export interface OidcConfig {
   tokenMappingTableName: string
 }
 
+/**
+ * Helper function for verifying a cis2 token
+ * @param cis2Token - the token to verify
+ * @param logger - Logger instance for logging
+ * @param tokenType - the type of token to check
+ * @param options - options for verification
+ * @param oidcConfig - the oidc config to use for verifying
+ * @returns the decoded token
+ * @throws if token fails verification
+ */
 export const verifyCIS2Token = async (
   cis2Token: string,
   logger: Logger,
@@ -204,6 +232,13 @@ export const verifyCIS2Token = async (
   return verifiedToken
 }
 
+/**
+ * Heleper function verify a CIS2 id token
+ * @param idToken - the id token to verify
+ * @param logger - Logger instance for logging
+ * @param oidcConfig - the oidc config to use for verifying
+ * @returns the decoded id token
+ */
 export const verifyIdToken = async (
   idToken: string,
   logger: Logger,
