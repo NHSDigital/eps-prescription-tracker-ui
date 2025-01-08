@@ -6,8 +6,11 @@ import {OidcConfig} from "@cpt-ui-common/authFunctions"
 
 // Role names come in formatted like `"category":"subcategory":"roleName"`.
 // Takes only the last one, and strips out the quotes.
-export const removeRoleCategories = (roleName: string) => {
-  const chunk = roleName.split(":").pop() as string
+export const removeRoleCategories = (roleString: string | undefined) => {
+  if (!roleString) {
+    return undefined
+  }
+  const chunk = roleString.split(":").pop() as string
   return chunk.replace(/"/g, "")
 }
 
