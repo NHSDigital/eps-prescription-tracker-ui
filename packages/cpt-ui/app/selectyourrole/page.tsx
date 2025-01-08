@@ -138,7 +138,7 @@ export default function SelectYourRolePage() {
         } finally {
             setLoading(false)
         }
-    }, [auth])
+    }, [auth, router])
 
     useEffect(() => {
         if (auth?.isSignedIn === undefined) {
