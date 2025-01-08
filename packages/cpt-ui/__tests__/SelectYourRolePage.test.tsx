@@ -38,6 +38,14 @@ jest.mock("@/constants/ui-strings/CardStrings", () => {
   return {SELECT_YOUR_ROLE_PAGE_TEXT}
 })
 
+// Define mockJWT
+const mockJWT = {
+  token: 'mock-token',
+  payload: {
+    exp: Math.floor(Date.now() / 1000) + 3600, // Expires in 1 hour
+  },
+}
+
 // Mock `next/navigation` to prevent errors during component rendering in test
 jest.mock("next/navigation", () => ({
   usePathname: jest.fn(),
@@ -204,49 +212,64 @@ describe("SelectYourRolePage", () => {
     })
   })
 
-  // it("redirects to searchforaprescription when there is one role with access and no roles without access", async () => {
-  //   // Mock user data to simulate API response
-  //   const mockUserInfo = {
-  //     roles_with_access: [
-  //       {
-  //         role_name: 'Pharmacist',
-  //         org_name: 'Test Pharmacy Org',
-  //         org_code: 'ORG123',
-  //         site_address: '1 Fake Street',
-  //       },
-  //     ],
-  //     roles_without_access: [],
-  //   }
+  it("redirects to searchforaprescription when there is one role with access and no roles without access", async () => {
+    const mockUserInfo = {
+      roles_with_access: [
+        {
+          role_name: "Pharmacist",
+          org_name: "Test Pharmacy Org",
+          org_code: "ORG123",
+          site_address: "1 Fake Street",
+        },
+      ],
+      roles_without_access: [],
+    }
 
-  //   // Mock fetch to return 200 OK with the mocked userInfo
-  //   global.fetch = jest.fn(() =>
-  //     Promise.resolve({
-  //       status: 200,
-  //       json: () => Promise.resolve({userInfo: mockUserInfo}),
-  //     })
-  //   )
+    // Mock fetch response
+    global.fetch = jest.fn(() =>
+      Promise.resolve({
+        ok: true,
+        status: 200,
+        statusText: "OK",
+        headers: new Headers(),
+        redirected: false,
+        type: "basic",
+        url: "",
+        clone: jest.fn(),
+        body: null,
+        bodyUsed: false,
+        text: jest.fn(),
+        json: jest.fn(() => Promise.resolve({userInfo: mockUserInfo})), // Simulate JSON body
+      })
+    ) as jest.Mock
 
-  //   // Mock useRouter's push function
-  //   const mockPush = jest.fn();
-  //   (useRouter as jest.Mock).mockReturnValue({
-  //     push: mockPush,
-  //   })
+    // Mock useRouter's push function
+    const mockPush = jest.fn();
+    (useRouter as jest.Mock).mockReturnValue({
+      push: mockPush,
+    })
 
-  //   // Render the page with user signed in
-  //   const mockAuthContext = {
-  //     isSignedIn: true,
-  //     idToken: 'mock-id-token',
-  //   }
+    // Mock AuthContext
+    const mockAuthContext = {
+      isSignedIn: true,
+      idToken: mockJWT,
+      accessToken: mockJWT,
+      error: null,
+      user: null,
+      cognitoSignIn: jest.fn(),
+      cognitoSignOut: jest.fn(),
+    }
 
-  //   render(
-  //     <AuthContext.Provider value={mockAuthContext}>
-  //       <SelectYourRolePage />
-  //     </AuthContext.Provider>
-  //   )
+    // Render the component
+    render(
+      <AuthContext.Provider value={mockAuthContext}>
+        <SelectYourRolePage />
+      </AuthContext.Provider>
+    )
 
-  //   // Wait for redirection to happen
-  //   await waitFor(() => {
-  //     expect(mockPush).toHaveBeenCalledWith('/searchforaprescription')
-  //   })
-  // })
+    // Wait for redirection
+    await waitFor(() => {
+      expect(mockPush).toHaveBeenCalledWith("/searchforaprescription")
+    })
+  })
 })
