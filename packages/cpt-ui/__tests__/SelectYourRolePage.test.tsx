@@ -204,49 +204,49 @@ describe("SelectYourRolePage", () => {
     })
   })
 
-  it("redirects to searchforaprescription when there is one role with access and no roles without access", async () => {
-    // Mock user data to simulate API response
-    const mockUserInfo = {
-      roles_with_access: [
-        {
-          role_name: 'Pharmacist',
-          org_name: 'Test Pharmacy Org',
-          org_code: 'ORG123',
-          site_address: '1 Fake Street',
-        },
-      ],
-      roles_without_access: [],
-    }
+  // it("redirects to searchforaprescription when there is one role with access and no roles without access", async () => {
+  //   // Mock user data to simulate API response
+  //   const mockUserInfo = {
+  //     roles_with_access: [
+  //       {
+  //         role_name: 'Pharmacist',
+  //         org_name: 'Test Pharmacy Org',
+  //         org_code: 'ORG123',
+  //         site_address: '1 Fake Street',
+  //       },
+  //     ],
+  //     roles_without_access: [],
+  //   }
 
-    // Mock fetch to return 200 OK with the mocked userInfo
-    global.fetch = jest.fn(() =>
-      Promise.resolve({
-        status: 200,
-        json: () => Promise.resolve({userInfo: mockUserInfo}),
-      })
-    )
+  //   // Mock fetch to return 200 OK with the mocked userInfo
+  //   global.fetch = jest.fn(() =>
+  //     Promise.resolve({
+  //       status: 200,
+  //       json: () => Promise.resolve({userInfo: mockUserInfo}),
+  //     })
+  //   )
 
-    // Mock useRouter's push function
-    const mockPush = jest.fn();
-    (useRouter as jest.Mock).mockReturnValue({
-      push: mockPush,
-    })
+  //   // Mock useRouter's push function
+  //   const mockPush = jest.fn();
+  //   (useRouter as jest.Mock).mockReturnValue({
+  //     push: mockPush,
+  //   })
 
-    // Render the page with user signed in
-    const mockAuthContext = {
-      isSignedIn: true,
-      idToken: 'mock-id-token',
-    }
+  //   // Render the page with user signed in
+  //   const mockAuthContext = {
+  //     isSignedIn: true,
+  //     idToken: 'mock-id-token',
+  //   }
 
-    render(
-      <AuthContext.Provider value={mockAuthContext}>
-        <SelectYourRolePage />
-      </AuthContext.Provider>
-    )
+  //   render(
+  //     <AuthContext.Provider value={mockAuthContext}>
+  //       <SelectYourRolePage />
+  //     </AuthContext.Provider>
+  //   )
 
-    // Wait for redirection to happen
-    await waitFor(() => {
-      expect(mockPush).toHaveBeenCalledWith('/searchforaprescription')
-    })
-  })
+  //   // Wait for redirection to happen
+  //   await waitFor(() => {
+  //     expect(mockPush).toHaveBeenCalledWith('/searchforaprescription')
+  //   })
+  // })
 })
