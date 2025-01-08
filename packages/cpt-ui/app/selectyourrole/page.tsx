@@ -1,5 +1,6 @@
 'use client'
 import React, {useState, useEffect, useContext, useCallback} from "react"
+import {useRouter} from 'next/navigation'
 import {Container, Col, Row, Details, Table, ErrorSummary, Button, InsetText} from "nhsuk-react-components"
 import {AuthContext} from "@/context/AuthProvider"
 import EpsCard, {EpsCardProps} from "@/components/EpsCard"
@@ -60,6 +61,7 @@ export default function SelectYourRolePage() {
     const [rolesWithAccess, setRolesWithAccess] = useState<RolesWithAccessProps[]>([])
     const [rolesWithoutAccess, setRolesWithoutAccess] = useState<RolesWithoutAccessProps[]>([])
 
+    const router = useRouter()
     const auth = useContext(AuthContext)
 
     const fetchTrackerUserInfo = useCallback(async () => {
@@ -126,7 +128,7 @@ export default function SelectYourRolePage() {
             // Redirect if conditions are met
             if (rolesWithAccess.length === 1 && rolesWithoutAccess.length === 0) {
                 setRedirecting(true)
-                window.location.href = "searchforaprescription.html"
+                router.push("/searchforaprescription")
                 return
             }
 
@@ -151,9 +153,9 @@ export default function SelectYourRolePage() {
     useEffect(() => {
         console.log("Auth error updated:", auth?.error)
         // Have to do this to make `<string | null | undefined>` work with `<string | null>`
-        setError(auth?.error ?? null);
+        setError(auth?.error ?? null)
         if (auth?.error) {
-            setLoading(false);
+            setLoading(false)
         }
     }, [auth?.error])
 
