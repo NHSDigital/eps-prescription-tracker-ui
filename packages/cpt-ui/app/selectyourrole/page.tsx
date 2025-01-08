@@ -126,7 +126,7 @@ export default function SelectYourRolePage() {
             // Redirect if conditions are met
             if (rolesWithAccess.length === 1 && rolesWithoutAccess.length === 0) {
                 setRedirecting(true)
-                window.location.href = "/searchforaprescription"
+                window.location.href = "searchforaprescription"
                 return
             }
 
