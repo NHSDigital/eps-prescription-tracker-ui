@@ -40,4 +40,4 @@ jobs:
                 uses: unsplash/comment-on-pr@master
                 with:
                     msg: |
-                        Deployed URL: https://cpt-ui-pr-${{ needs.get_issue_number.outputs.issue_number }}.dev.eps.national.nhs.uk
+                        Deployed URL: https://cpt-ui-pr-${{ needs.get_issue_number.outputs.issue_number }}.dev.eps.national.nhs.uk/site
