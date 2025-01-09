@@ -201,8 +201,17 @@ export class Cognito extends Construct {
     ]
 
     if (props.useLocalhostCallback) {
-      callbackUrls.push("http://localhost:3000/site/selectyourrole/")
+      // Local, without base path set
+      callbackUrls.push("http://localhost:3000/selectyourrole/")
+      logoutUrls.push("http://localhost:3000/logout/")
+      // Local, with base path set to /site
       logoutUrls.push("http://localhost:3000/site/logout/")
+      callbackUrls.push("http://localhost:3000/site/selectyourrole/")
+      // Auth demo stuff
+      callbackUrls.push("http://localhost:3000/auth/")
+      callbackUrls.push("http://localhost:3000/auth_demo/")
+      // Root path, just in case
+      logoutUrls.push("http://localhost:3000/")
     }
     // add the web client
     const userPoolWebClient = userPool.addClient("WebClient", {
@@ -221,7 +230,8 @@ export class Cognito extends Construct {
         ],
         callbackUrls: callbackUrls,
         logoutUrls: logoutUrls
-      }})
+      }
+    })
 
     // ensure dependencies are set correctly so items are created in the correct order
     userPoolWebClient.node.addDependency(primaryPoolIdentityProvider)
