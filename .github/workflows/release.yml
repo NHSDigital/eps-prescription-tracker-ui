@@ -137,7 +137,7 @@ jobs:
       APIGEE_CIS2_TOKEN_ENDPOINT: "https://internal-dev.api.service.nhs.uk/oauth2/token"
       APIGEE_MOCK_TOKEN_ENDPOINT: "https://internal-dev.api.service.nhs.uk/oauth2-mock/token"
       APIGEE_PRESCRIPTIONS_ENDPOINT: "https://internal-dev.api.service.nhs.uk/clinical-prescription-tracker/"
-      JWT_KID: "eps-cpt-ui-test"
+      JWT_KID: "eps-cpt-ui-dev"
       ROLE_ID: "555254242106"
       LOG_LEVEL: "DEBUG"
     secrets:
@@ -188,7 +188,7 @@ jobs:
       APIGEE_CIS2_TOKEN_ENDPOINT: "https://ref.api.service.nhs.uk/oauth2/token"
       APIGEE_MOCK_TOKEN_ENDPOINT: "https://ref.api.service.nhs.uk/oauth2-mock/token"
       APIGEE_PRESCRIPTIONS_ENDPOINT: "https://ref.api.service.nhs.uk/clinical-prescription-tracker/"
-      JWT_KID: "eps-cpt-ui-test"
+      JWT_KID: "eps-cpt-ui-ref"
       ROLE_ID: "555254242106"
       LOG_LEVEL: "DEBUG"
     secrets:
@@ -224,7 +224,7 @@ jobs:
       APIGEE_CIS2_TOKEN_ENDPOINT: "https://internal-qa.api.service.nhs.uk/oauth2-int/token"
       APIGEE_MOCK_TOKEN_ENDPOINT: "https://internal-qa.api.service.nhs.uk/oauth2-mock/token"
       APIGEE_PRESCRIPTIONS_ENDPOINT: "https://internal-qa.api.service.nhs.uk/clinical-prescription-tracker/"
-      JWT_KID: "eps-cpt-ui-test"
+      JWT_KID: "eps-cpt-ui-qa"
       ROLE_ID: "555254242106"
       LOG_LEVEL: "DEBUG"
     secrets:
@@ -255,7 +255,7 @@ jobs:
       APIGEE_CIS2_TOKEN_ENDPOINT: "https://int.api.service.nhs.uk/oauth2/token"
       APIGEE_MOCK_TOKEN_ENDPOINT: "UNUSED"
       APIGEE_PRESCRIPTIONS_ENDPOINT: "https://int.api.service.nhs.uk/clinical-prescription-tracker/"
-      JWT_KID: "eps-cpt-ui-test"
+      JWT_KID: "eps-cpt-ui-int"
       ROLE_ID: "555254242106"
       LOG_LEVEL: "DEBUG"
     secrets:

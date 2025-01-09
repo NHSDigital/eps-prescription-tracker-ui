@@ -84,6 +84,8 @@ jobs:
       APIGEE_MOCK_TOKEN_ENDPOINT: "https://internal-dev.api.service.nhs.uk/oauth2-mock/token"
       APIGEE_PRESCRIPTIONS_ENDPOINT: "https://internal-dev.api.service.nhs.uk/clinical-prescription-tracker/"
       JWT_KID: "eps-cpt-ui-test"
+      # this needs uncommenting and above line deleted once it is merged
+      # JWT_KID: "eps-cpt-ui-dev"
       ROLE_ID: "555254242106"
       LOG_LEVEL: "DEBUG"
     secrets:
