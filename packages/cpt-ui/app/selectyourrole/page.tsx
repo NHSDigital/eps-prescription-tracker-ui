@@ -1,5 +1,6 @@
 'use client'
 import React, {useState, useEffect, useContext, useCallback} from "react"
+import {useRouter} from 'next/navigation'
 import {Container, Col, Row, Details, Table, ErrorSummary, Button, InsetText} from "nhsuk-react-components"
 import {AuthContext} from "@/context/AuthProvider"
 import {useAccess} from '@/context/AccessProvider'
@@ -60,9 +61,11 @@ export default function SelectYourRolePage() {
     const {setNoAccess} = useAccess()
     const [loading, setLoading] = useState<boolean>(true)
     const [error, setError] = useState<string | null>(null)
+    const [redirecting, setRedirecting] = useState<boolean>(false)
     const [rolesWithAccess, setRolesWithAccess] = useState<RolesWithAccessProps[]>([])
     const [rolesWithoutAccess, setRolesWithoutAccess] = useState<RolesWithoutAccessProps[]>([])
 
+    const router = useRouter()
     const auth = useContext(AuthContext)
 
     const fetchTrackerUserInfo = useCallback(async () => {
@@ -128,13 +131,21 @@ export default function SelectYourRolePage() {
 
             setNoAccess(rolesWithAccess.length === 0)
 
+            // Redirect if conditions are met
+            if (rolesWithAccess.length === 1 && rolesWithoutAccess.length === 0) {
+                setRedirecting(true)
+                router.push("/searchforaprescription")
+                return
+            }
+
         } catch (err) {
             setError("Failed to fetch CPT user info")
             console.error("error fetching tracker user info:", err)
         } finally {
             setLoading(false)
         }
-    }, [auth, setNoAccess])
+
+    }, [auth, router, setNoAccess])
 
     useEffect(() => {
         if (auth?.isSignedIn === undefined) {
@@ -143,8 +154,6 @@ export default function SelectYourRolePage() {
 
         if (auth?.isSignedIn) {
             fetchTrackerUserInfo()
-        } else {
-            setError("No login session found")
         }
     }, [auth?.isSignedIn, fetchTrackerUserInfo])
 
@@ -156,6 +165,11 @@ export default function SelectYourRolePage() {
             setLoading(false)
         }
     }, [auth?.error])
+
+    // Skip rendering if redirecting
+    if (redirecting) {
+        return null
+    }
 
     // If the data is being fetched, replace the content with a spinner
     if (loading) {
@@ -195,6 +209,9 @@ export default function SelectYourRolePage() {
     }
 
     const noAccess = rolesWithAccess.length === 0
+    
+    console.log("Title for no access:", SELECT_YOUR_ROLE_PAGE_TEXT.titleNoAccess);
+    console.log("No Access State:", noAccess);
 
     return (
         <main id="main-content" className="nhsuk-main-wrapper">
@@ -202,7 +219,7 @@ export default function SelectYourRolePage() {
                 {/* Title Section */}
                 <Row>
                     <Col width="two-thirds">
-                        <h1 className='nhsuk-heading-xl'>
+                        <h1 className="nhsuk-heading-xl">
                             <span role="text" data-testid="eps_header_selectYourRole">
                                 <span className="nhsuk-title">{noAccess ? titleNoAccess : title}</span>
                                 <span className="nhsuk-caption-l nhsuk-caption--bottom">
