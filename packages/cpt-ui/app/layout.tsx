@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react"
 import 'nhsuk-frontend/dist/nhsuk.css';
 import EpsHeader from '@/components/EpsHeader'
 import EpsFooter from '@/components/EpsFooter'
-import { AuthProvider } from '@/context/AuthContext'
+import { AuthProvider } from '@/context/AuthProvider'
 
 export default function RootLayout({
     children,

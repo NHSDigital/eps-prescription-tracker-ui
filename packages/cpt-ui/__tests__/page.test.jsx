@@ -28,7 +28,7 @@ jest.mock("../context/configureAmplify", () => ({
 }));
 
 // Mock the AuthContext with a valid value
-jest.mock("../context/AuthContext", () => {
+jest.mock("../context/AuthProvider", () => {
   const mockAuthContext = {
     signInWithRedirect: jest.fn(),
     signOut: jest.fn(),
