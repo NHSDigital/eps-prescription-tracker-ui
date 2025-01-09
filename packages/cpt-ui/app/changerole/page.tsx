@@ -8,7 +8,7 @@ import {AuthContext} from "@/context/AuthProvider"
 import EpsCard, {EpsCardProps} from "@/components/EpsCard"
 import EpsSpinner from "@/components/EpsSpinner";
 
-import {SELECT_YOUR_ROLE_PAGE_TEXT} from "@/constants/ui-strings/CardStrings"
+import {CHANGE_YOUR_ROLE_PAGE_TEXT} from "@/constants/ui-strings/ChangeRolePageStrings"
 
 import { RoleDetails, TrackerUserInfo } from "@/types/TrackerUserInfoTypes"
 
@@ -41,7 +41,7 @@ const {
     noRoleName,
     noAddress,
     errorDuringRoleSelection
-} = SELECT_YOUR_ROLE_PAGE_TEXT;
+} = CHANGE_YOUR_ROLE_PAGE_TEXT;
 
 export default function SelectYourRolePage() {
     const [loading, setLoading] = useState<boolean>(true)
