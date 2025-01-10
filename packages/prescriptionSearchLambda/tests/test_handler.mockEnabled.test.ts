@@ -6,8 +6,10 @@ import {
 } from "@jest/globals"
 import {generateKeyPairSync} from "crypto"
 import nock from "nock"
+import jwksClient from "jwks-rsa"
 
 import createJWKSMock from "mock-jwks"
+import {OidcConfig} from "@cpt-ui-common/authFunctions"
 
 const apigeeHost = process.env.apigeeHost ?? ""
 const apigeeCIS2TokenEndpoint = process.env.apigeeCIS2TokenEndpoint
@@ -39,6 +41,7 @@ const mockConstructSignedJWTBody = jest.fn()
 const mockExchangeTokenForApigeeAccessToken = jest.fn()
 const mockUpdateApigeeAccessToken = jest.fn()
 const mockGetSecret = jest.fn()
+const mockInitializeOidcConfig = jest.fn()
 
 const {
   privateKey
@@ -81,12 +84,55 @@ jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
 
   const updateApigeeAccessToken = mockUpdateApigeeAccessToken.mockImplementation(() => {})
 
+  const initializeOidcConfig = mockInitializeOidcConfig.mockImplementation( () => {
+    // Create a JWKS client for cis2 and mock
+  // this is outside functions so it can be re-used
+    const cis2JwksUri = process.env["CIS2_OIDCJWKS_ENDPOINT"] as string
+    const cis2JwksClient = jwksClient({
+      jwksUri: cis2JwksUri,
+      cache: true,
+      cacheMaxEntries: 5,
+      cacheMaxAge: 3600000 // 1 hour
+    })
+
+    const cis2OidcConfig: OidcConfig = {
+      oidcIssuer: process.env["CIS2_OIDC_ISSUER"] ?? "",
+      oidcClientID: process.env["CIS2_OIDC_CLIENT_ID"] ?? "",
+      oidcJwksEndpoint: process.env["CIS2_OIDCJWKS_ENDPOINT"] ?? "",
+      oidcUserInfoEndpoint: process.env["CIS2_USER_INFO_ENDPOINT"] ?? "",
+      userPoolIdp: process.env["CIS2_USER_POOL_IDP"] ?? "",
+      jwksClient: cis2JwksClient,
+      tokenMappingTableName: process.env["TokenMappingTableName"] ?? ""
+    }
+
+    const mockJwksUri = process.env["MOCK_OIDCJWKS_ENDPOINT"] as string
+    const mockJwksClient = jwksClient({
+      jwksUri: mockJwksUri,
+      cache: true,
+      cacheMaxEntries: 5,
+      cacheMaxAge: 3600000 // 1 hour
+    })
+
+    const mockOidcConfig: OidcConfig = {
+      oidcIssuer: process.env["MOCK_OIDC_ISSUER"] ?? "",
+      oidcClientID: process.env["MOCK_OIDC_CLIENT_ID"] ?? "",
+      oidcJwksEndpoint: process.env["MOCK_OIDCJWKS_ENDPOINT"] ?? "",
+      oidcUserInfoEndpoint: process.env["MOCK_USER_INFO_ENDPOINT"] ?? "",
+      userPoolIdp: process.env["MOCK_USER_POOL_IDP"] ?? "",
+      jwksClient: mockJwksClient,
+      tokenMappingTableName: process.env["TokenMappingTableName"] ?? ""
+    }
+
+    return {cis2OidcConfig, mockOidcConfig}
+  })
+
   return {
     fetchAndVerifyCIS2Tokens,
     getUsernameFromEvent,
     constructSignedJWTBody,
     exchangeTokenForApigeeAccessToken,
-    updateApigeeAccessToken
+    updateApigeeAccessToken,
+    initializeOidcConfig
   }
 })
 
