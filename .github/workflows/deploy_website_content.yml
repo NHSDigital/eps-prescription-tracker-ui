@@ -21,7 +21,7 @@ on:
 jobs:
   deploy_website_content:
     name: "deploy website content"
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     environment: ${{ inputs.TARGET_ENVIRONMENT }}
     permissions:
       id-token: write

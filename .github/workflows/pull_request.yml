@@ -9,7 +9,7 @@ env:
 
 jobs:
   quality_checks:
-    uses: NHSDigital/eps-workflow-quality-checks/.github/workflows/quality-checks.yml@v4.0.4
+    uses: NHSDigital/eps-workflow-quality-checks/.github/workflows/quality-checks.yml@v4.0.5
     secrets:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
@@ -17,7 +17,7 @@ jobs:
     uses: ./.github/workflows/pr_title_check.yml
 
   get_issue_number:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     outputs:
       issue_number: ${{steps.get_issue_number.outputs.result}}
 
@@ -43,7 +43,7 @@ jobs:
           result-encoding: string
 
   get_commit_id:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     outputs:
       commit_id: ${{ steps.commit_id.outputs.commit_id }}
     steps:
@@ -101,7 +101,7 @@ jobs:
       
   report_deployed_url:
     needs: [release_code, get_issue_number]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Report Deployed URL
         run: |
