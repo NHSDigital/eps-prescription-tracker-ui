@@ -1,5 +1,7 @@
 
 import {getUsernameFromEvent} from "./event"
+import {initializeOidcConfig} from "./initialization"
+
 import {
   getSigningKey,
   fetchCIS2TokensFromDynamoDB,
@@ -19,5 +21,6 @@ export {
   constructSignedJWTBody,
   exchangeTokenForApigeeAccessToken,
   updateApigeeAccessToken,
-  OidcConfig
+  OidcConfig,
+  initializeOidcConfig
 }

@@ -8,7 +8,6 @@ import middy from "@middy/core"
 import inputOutputLogger from "@middy/input-output-logger"
 import axios from "axios"
 import {v4 as uuidv4} from "uuid"
-import jwksClient from "jwks-rsa"
 import {formatHeaders} from "./utils/headerUtils"
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 import {
@@ -17,7 +16,7 @@ import {
   constructSignedJWTBody,
   exchangeTokenForApigeeAccessToken,
   updateApigeeAccessToken,
-  OidcConfig
+  initializeOidcConfig
 } from "@cpt-ui-common/authFunctions"
 
 /*
@@ -66,43 +65,9 @@ const MOCK_MODE_ENABLED = process.env["MOCK_MODE_ENABLED"]
 const dynamoClient = new DynamoDBClient()
 const documentClient = DynamoDBDocumentClient.from(dynamoClient)
 
-// Create a JWKS client for cis2 and mock
-// this is outside functions so it can be re-used
-const cis2JwksUri = process.env["CIS2_OIDCJWKS_ENDPOINT"] as string
-const cis2JwksClient = jwksClient({
-  jwksUri: cis2JwksUri,
-  cache: true,
-  cacheMaxEntries: 5,
-  cacheMaxAge: 3600000 // 1 hour
-})
-
-const cis2OidcConfig: OidcConfig = {
-  oidcIssuer: process.env["CIS2_OIDC_ISSUER"] ?? "",
-  oidcClientID: process.env["CIS2_OIDC_CLIENT_ID"] ?? "",
-  oidcJwksEndpoint: process.env["CIS2_OIDCJWKS_ENDPOINT"] ?? "",
-  oidcUserInfoEndpoint: process.env["CIS2_USER_INFO_ENDPOINT"] ?? "",
-  userPoolIdp: process.env["CIS2_USER_POOL_IDP"] ?? "",
-  jwksClient: cis2JwksClient,
-  tokenMappingTableName: process.env["TokenMappingTableName"] ?? ""
-}
-
-const mockJwksUri = process.env["MOCK_OIDCJWKS_ENDPOINT"] as string
-const mockJwksClient = jwksClient({
-  jwksUri: mockJwksUri,
-  cache: true,
-  cacheMaxEntries: 5,
-  cacheMaxAge: 3600000 // 1 hour
-})
-
-const mockOidcConfig: OidcConfig = {
-  oidcIssuer: process.env["MOCK_OIDC_ISSUER"] ?? "",
-  oidcClientID: process.env["MOCK_OIDC_CLIENT_ID"] ?? "",
-  oidcJwksEndpoint: process.env["MOCK_OIDCJWKS_ENDPOINT"] ?? "",
-  oidcUserInfoEndpoint: process.env["MOCK_USER_INFO_ENDPOINT"] ?? "",
-  userPoolIdp: process.env["MOCK_USER_POOL_IDP"] ?? "",
-  jwksClient: mockJwksClient,
-  tokenMappingTableName: process.env["TokenMappingTableName"] ?? ""
-}
+// Create a config for cis2 and mock
+// this is outside functions so it can be re-used and caching works
+const {mockOidcConfig, cis2OidcConfig} = initializeOidcConfig()
 
 // Error response template
 const errorResponseBody = {
