@@ -98,11 +98,12 @@ export NEXT_PUBLIC_userPoolId="eu-west-2_deadbeef"
 export LOCAL_DEV=true
 
 # DON'T TOUCH!
-export BASE_PATH="/site"
-export API_DOMAIN_OVERRIDE=https://${SERVICE_NAME}.dev.eps.national.nhs.uk/
+export NEXT_PUBLIC_TARGET_ENVIRONMENT=dev                                       # enables mock auth
+export BASE_PATH="/site"                                                        # Hosts the site at `localhost:3000/site`
+export API_DOMAIN_OVERRIDE=https://${SERVICE_NAME}.dev.eps.national.nhs.uk/     # Proxies the actual deployed backend for this PR
 
 export NEXT_PUBLIC_hostedLoginDomain=${SERVICE_NAME}.auth.eu-west-2.amazoncognito.com
-export NEXT_PUBLIC_redirectSignIn=http://localhost:3000/site/login
+export NEXT_PUBLIC_redirectSignIn=http://localhost:3000/site/selectyourrole
 export NEXT_PUBLIC_redirectSignOut=http://localhost:3000/site/logout
 
 export NEXT_PUBLIC_COMMIT_ID="Local Development Server"
