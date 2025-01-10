@@ -5,7 +5,7 @@ import userEvent from "@testing-library/user-event";
 import React, { useState } from "react";
 
 // Mock the configureAmplify module
-jest.mock("../context/configureAmplify", () => ({
+jest.mock("@/context/configureAmplify", () => ({
   __esModule: true,
   authConfig: {
     Auth: {
@@ -74,10 +74,14 @@ const MockAuthProvider = ({ children }) => {
 
 // Since we've referenced AuthContext in the mock provider, we need to re-import it here
 // after the mock is set up.
-import { AuthContext } from "../context/AuthProvider";
-import AuthPage from "../app/auth_demo/page";
+import { AuthContext } from "@/context/AuthProvider";
+import AuthPage from "@/app/login/page";
 
 describe("AuthPage", () => {
+  beforeEach(() => {
+    process.env.NEXT_PUBLIC_TARGET_ENVIRONMENT = "dev";
+  });
+
   it("renders the page and the main buttons", () => {
     const { container } = render(
       <MockAuthProvider>
@@ -178,5 +182,18 @@ describe("AuthPage", () => {
     expect(
       screen.getByText((content) => content.includes('"isSignedIn": false'))
     ).toBeInTheDocument();
+  });
+
+  it("shows a spinner when not in a mock auth environment", () => {
+    process.env.NEXT_PUBLIC_TARGET_ENVIRONMENT = "prod";
+
+    render(
+      <MockAuthProvider>
+        <AuthPage />
+      </MockAuthProvider>
+    );
+
+    const spinner = screen.getByRole("heading", { name: /Redirecting to CIS2 login page.../i });
+    expect(spinner).toBeInTheDocument();
   });
 });
