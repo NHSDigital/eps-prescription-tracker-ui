@@ -1,6 +1,11 @@
+/* eslint-disable max-len */
 export const SELECT_YOUR_ROLE_PAGE_TEXT = {
   title: "Select your role",
   caption: "Select the role you wish to use to access the service.",
+  titleNoAccess: "No access to the clinical prescription tracking service",
+  captionNoAccess:
+    "None of the roles on your Smartcard or other authenticators allow you to access the clinical prescription tracking service. " +
+    "Contact your Registration Authority representative to obtain the correct code.",
   insetText: {
     visuallyHidden: "Information: ",
     message:

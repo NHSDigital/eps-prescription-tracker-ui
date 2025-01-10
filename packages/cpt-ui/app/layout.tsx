@@ -1,10 +1,11 @@
 'use client'
-import React from "react";
+import React from 'react'
 
-import 'nhsuk-frontend/dist/nhsuk.css';
-import EpsHeader from '@/components/EpsHeader'
+import 'nhsuk-frontend/dist/nhsuk.css'
+import EpsHeaderLayout from '@/components/EpsHeaderLayout'
 import EpsFooter from '@/components/EpsFooter'
-import { AuthProvider } from '@/context/AuthProvider'
+import {AuthProvider} from '@/context/AuthProvider'
+import {AccessProvider} from '@/context/AccessProvider'
 
 export default function RootLayout({
     children,
@@ -15,12 +16,13 @@ export default function RootLayout({
         <html lang="en">
             <body>
                 <AuthProvider>
-                    <EpsHeader />
-                    {children}
-                    <EpsFooter />
+                    <AccessProvider>
+                        <EpsHeaderLayout />
+                        {children}
+                        <EpsFooter />
+                    </AccessProvider>
                 </AuthProvider>
             </body>
-
         </html>
     )
 }
