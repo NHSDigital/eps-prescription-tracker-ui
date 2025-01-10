@@ -2,6 +2,7 @@ import {App, Aspects, Tags} from "aws-cdk-lib"
 import {AwsSolutionsChecks} from "cdk-nag"
 
 import {StatelessResourcesStack} from "../stacks/StatelessResourcesStack"
+import {NextStack} from "../stacks/NextStack"
 
 const app = new App()
 /*Required Context:
@@ -33,4 +34,10 @@ new StatelessResourcesStack(app, "StatelessStack", {
   serviceName: serviceName,
   stackName: `${serviceName}-stateless-resources`,
   version: version
+})
+
+new NextStack(app, "NextStack", {
+  env: {
+    region: "eu-west-2"
+  }
 })
