@@ -58,6 +58,9 @@ export default function SelectYourRolePage() {
     const [error, setError] = useState<string | null>(null)
     const [rolesWithAccess, setRolesWithAccess] = useState<RolesWithAccessProps[]>([])
     const [rolesWithoutAccess, setRolesWithoutAccess] = useState<RolesWithoutAccessProps[]>([])
+    // const [currentlySelectedRole]
+
+    console.log(rolesWithAccess, rolesWithoutAccess, 'roleswithacc ***')
 
     const auth = useContext(AuthContext);
 
@@ -92,9 +95,10 @@ export default function SelectYourRolePage() {
             }
 
             const userInfo: TrackerUserInfo = data.userInfo;
-
+            console.log(userInfo, 'userinfo here ############')
             const rolesWithAccess = userInfo.roles_with_access
             const rolesWithoutAccess = userInfo.roles_without_access
+            console.log(rolesWithAccess, rolesWithoutAccess, userInfo, 'here')
             // Unused for now
             // const currentlySelectedRole = userInfo.currently_selected_role ? {
             //     ...userInfo.currently_selected_role,
@@ -112,7 +116,6 @@ export default function SelectYourRolePage() {
                     link: "yourselectedrole"
                 }))
             )
-
             setRolesWithoutAccess(
                 rolesWithoutAccess.map((role: RoleDetails, index: number) => ({
                     uuid: `{role_without_access_${index}}`,
@@ -205,6 +208,8 @@ export default function SelectYourRolePage() {
                         </h1>
                         {/* Inset Text Section */}
                         <section aria-label="Login Information">
+                            
+                            {console.log(insetText, '***')}
                             <InsetText>
                                 <span className="nhsuk-u-visually-hidden">{insetText.visuallyHidden}</span>
                                 <p>{insetText.message}</p>

@@ -13,6 +13,7 @@ export default function AuthPage() {
 
     const mockSignIn = async () => {
         console.log("Signing in (Mock)", auth);
+        console.log('hello')
         await auth?.cognitoSignIn({
             provider: {
                 custom: "Mock"

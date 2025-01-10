@@ -13,7 +13,8 @@ const nextConfig = {
       return [
         {
           source: "/api/:path*",
-          destination: `${process.env.API_DOMAIN_OVERRIDE}/api/:path*`
+          destination: `${process.env.API_DOMAIN_OVERRIDE}/api/:path*`,
+          basePath: false
         }
       ]
     }

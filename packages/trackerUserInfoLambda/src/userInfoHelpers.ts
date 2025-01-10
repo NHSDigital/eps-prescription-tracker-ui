@@ -41,10 +41,13 @@ export const fetchUserInfo = async (
     // Extract the roles from the user info response
     const data: UserInfoResponse = response.data
 
+    console.log(response.data, "response.data")
+
     // These will be our outputs
     const rolesWithAccess: Array<RoleDetails> = []
     const rolesWithoutAccess: Array<RoleDetails> = []
     let currentlySelectedRole: RoleDetails | undefined = undefined
+    // const currentlySelectedRole: Array<RoleDetails> = []
 
     // Get roles from the user info response
     const roles = data.nhsid_nrbac_roles || []
@@ -62,6 +65,9 @@ export const fetchUserInfo = async (
         org_code: role.org_code,
         org_name: getOrgNameFromOrgCode(data, role.org_code, logger)
       }
+
+      console.log(roleInfo, "xxx")
+      console.log("hello")
 
       // Ensure the role has at least one of the required fields
       if (!(roleInfo.role_name || roleInfo.role_id || roleInfo.org_code || roleInfo.org_name)) {
@@ -133,6 +139,7 @@ export const updateDynamoTable = async (
   // Add the user roles to the DynamoDB table
 
   // Dyanamo cannot allow undefined values. We need to scrub any undefined values from the data objects
+  console.log(data.currently_selected_role, "%%%%%%%%")
   const currentlySelectedRole: RoleDetails = data.currently_selected_role ? data.currently_selected_role : {}
   const rolesWithAccess: Array<RoleDetails> = data.roles_with_access ? data.roles_with_access : []
   const rolesWithoutAccess: Array<RoleDetails> = data.roles_without_access ? data.roles_without_access : []
