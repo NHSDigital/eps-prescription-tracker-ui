@@ -5,7 +5,6 @@ import React from "react"
 import SelectYourRolePage from "@/app/selectyourrole/page"
 import {AccessProvider} from "@/context/AccessProvider"
 import {AuthContext} from "@/context/AuthProvider"
-import {SELECT_YOUR_ROLE_PAGE_TEXT} from "@/constants/ui-strings/CardStrings"
 
 // Mock the module and directly reference the variable
 jest.mock("@/constants/ui-strings/CardStrings", () => {
@@ -95,6 +94,9 @@ const renderWithAuthAndAccess = (
   )
 }
 
+import { SELECT_YOUR_ROLE_PAGE_TEXT } from "@/constants/ui-strings/CardStrings";
+import { EpsSpinnerStrings } from "../constants/ui-strings/EpsSpinnerStrings";
+
 describe("SelectYourRolePage", () => {
   // Clear all mock calls before each test to avoid state leaks
   beforeEach(() => {
@@ -109,11 +111,9 @@ describe("SelectYourRolePage", () => {
     renderWithAuthAndAccess({isSignedIn: true, idToken: "mock-id-token"}, {loading: true})
 
     // Verify that the loading text appears
-    const loadingText = screen.getByText(
-      SELECT_YOUR_ROLE_PAGE_TEXT.loadingMessage
-    )
-    expect(loadingText).toBeInTheDocument()
-  })
+    const loadingText = screen.getByText(EpsSpinnerStrings.loading);
+    expect(loadingText).toBeInTheDocument();
+  });
 
   it("renders error summary if fetch returns non-200 status", async () => {
     // Mock fetch to return a 500 status code (server error)

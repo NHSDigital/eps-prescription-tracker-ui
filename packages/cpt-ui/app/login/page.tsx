@@ -1,16 +1,26 @@
 'use client'
-import React, {useContext, useEffect} from "react";
+import React, { useContext, useEffect, useCallback } from "react";
 
 import { Container, Col, Row, Button } from "nhsuk-react-components";
 import { AuthContext } from "@/context/AuthProvider";
+import EpsSpinner from "@/components/EpsSpinner";
+import { EpsLoginPageStrings } from "@/constants/ui-strings/EpsLoginPageStrings";
+
+const MOCK_AUTH_ALLOWED = [
+    "dev",
+    "dev-pr",
+    "int",
+    "qa",
+    // "ref",
+    // "prod"
+]
 
 export default function AuthPage() {
     const auth = useContext(AuthContext);
 
-    useEffect(() => {
-        console.log(auth);
-    }, [auth])
-
+    // Use secure login by default
+    const target_environment: string = process.env.NEXT_PUBLIC_TARGET_ENVIRONMENT || "prod";
+    
     const mockSignIn = async () => {
         console.log("Signing in (Mock)", auth);
         await auth?.cognitoSignIn({
@@ -20,14 +30,15 @@ export default function AuthPage() {
         });
     }
 
-    const signIn = async () => {
+    const signIn = useCallback(async () => {
         console.log("Signing in (Primary)", auth);
         await auth?.cognitoSignIn({
             provider: {
                 custom: "Primary"
             }
         });
-    }
+        console.log("Signed in: ", auth);
+    }, [auth]);
 
     const signOut = async () => {
         console.log("Signing out", auth);
@@ -35,6 +46,39 @@ export default function AuthPage() {
         console.log("Signed out: ", auth);
     }
 
+    useEffect(() => {
+        console.log(
+          "Login page loaded. What environment are we in?",
+          target_environment
+        );
+      
+        // Only call signIn() if user is *not* in a mock environment AND *not* signed in yet.
+        if (!MOCK_AUTH_ALLOWED.includes(target_environment) && !auth?.isSignedIn) {
+          console.log("User must sign in with Primary auth");
+          signIn();
+        }
+      }, [auth?.isSignedIn, signIn, target_environment]);
+
+    useEffect(() => {
+        console.log(auth);
+    }, [auth])
+
+    if (!MOCK_AUTH_ALLOWED.includes(target_environment)) {
+        return (
+        <main className="nhsuk-main-wrapper">
+            <Container>
+                <Row>
+                    <Col width="full">
+                        <h1>{EpsLoginPageStrings.redirecting_msg}</h1>
+                        <EpsSpinner />
+                    </Col>
+                </Row>
+            </Container>
+        </main>
+        )
+    }
+
+    // This is a dev page, so no need to bother with language support
     return (
         <main className="nhsuk-main-wrapper">
             <Container>
