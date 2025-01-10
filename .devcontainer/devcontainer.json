@@ -14,6 +14,9 @@
       "source=${env:HOME}${env:USERPROFILE}/.gnupg,target=/home/vscode/.gnupg,type=bind",
       "source=${env:HOME}${env:USERPROFILE}/.npmrc,target=/home/vscode/.npmrc,type=bind"
     ],
+    "runArgs": [
+      "--network=host"
+    ],
     "remoteEnv": { "LOCAL_WORKSPACE_FOLDER": "${localWorkspaceFolder}" },
     "postAttachCommand": "docker build -f https://raw.githubusercontent.com/NHSDigital/eps-workflow-quality-checks/refs/tags/v4.0.4/dockerfiles/nhsd-git-secrets.dockerfile -t git-secrets . && poetry run pre-commit install --install-hooks -f",
     "features": {
@@ -27,24 +30,25 @@
     "customizations": {
       "vscode": {
         "extensions": [
-          "AmazonWebServices.aws-toolkit-vscode",
-          "redhat.vscode-yaml",
-          "ms-python.python",
-          "ms-python.flake8",
-          "eamodio.gitlens",
-          "github.vscode-pull-request-github",
-          "orta.vscode-jest",
-          "42crunch.vscode-openapi",
-          "mermade.openapi-lint",
-          "christian-kohler.npm-intellisense",
-          "dbaeumer.vscode-eslint",
-          "lfm.vscode-makefile-term",
-          "GrapeCity.gc-excelviewer",
-          "redhat.vscode-xml",
-          "streetsidesoftware.code-spell-checker",
-          "timonwong.shellcheck",
-          "mkhl.direnv",
-          "github.vscode-github-actions"
+            "AmazonWebServices.aws-toolkit-vscode",
+            "redhat.vscode-yaml",
+            "ms-python.python",
+            "ms-python.flake8",
+            "eamodio.gitlens",
+            "github.vscode-pull-request-github",
+            "orta.vscode-jest",
+            "42crunch.vscode-openapi",
+            "mermade.openapi-lint",
+            "christian-kohler.npm-intellisense",
+            "dbaeumer.vscode-eslint",
+            "lfm.vscode-makefile-term",
+            "GrapeCity.gc-excelviewer",
+            "redhat.vscode-xml",
+            "streetsidesoftware.code-spell-checker",
+            "timonwong.shellcheck",
+            "mkhl.direnv",
+            "github.vscode-github-actions",
+            "Gruntfuggly.todo-tree"
         ],
         "settings": {
           "python.defaultInterpreterPath": "/workspaces/eps-prescription-tracker-ui/.venv/bin/python",

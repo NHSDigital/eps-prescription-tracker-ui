@@ -185,24 +185,31 @@ export class Cognito extends Construct {
     }
 
     const callbackUrls = [
-      `https://${props.fullCloudfrontDomain}/site/`,
+      `https://${props.fullCloudfrontDomain}/site/selectyourrole`,
       // FIXME: This is temporary, until we get routing fixed
       `https://${props.fullCloudfrontDomain}/site/selectyourrole.html`,
-      `https://${props.fullCloudfrontDomain}/auth_demo/`,
-      `https://${props.fullCloudfrontDomain}/site/selectyourrole/`,
+      // TODO: This is for the proof-of-concept login page, and can probably be deleted soon.
+      `https://${props.fullCloudfrontDomain}/auth_demo`,
       `https://${props.fullCloudfrontDomain}/oauth2/idpresponse`
     ]
 
     const logoutUrls = [
-      `https://${props.fullCloudfrontDomain}/site/`,
-      `https://${props.fullCloudfrontDomain}/site/auth_demo.html`,
-      `https://${props.fullCloudfrontDomain}/auth_demo/`
+      `https://${props.fullCloudfrontDomain}/site/logout`,
+      `https://${props.fullCloudfrontDomain}/site/logout.html`,
+      `https://${props.fullCloudfrontDomain}/auth_demo`
     ]
 
     if (props.useLocalhostCallback) {
+      // Local, without base path set
+      callbackUrls.push("http://localhost:3000/selectyourrole/")
+      logoutUrls.push("http://localhost:3000/logout/")
+      // Local, with base path set to /site
+      logoutUrls.push("http://localhost:3000/site/logout/")
+      callbackUrls.push("http://localhost:3000/site/selectyourrole/")
+      // Auth demo stuff
       callbackUrls.push("http://localhost:3000/auth/")
       callbackUrls.push("http://localhost:3000/auth_demo/")
-      callbackUrls.push("http://localhost:3000/selectyourrole/")
+      // Root path, just in case
       logoutUrls.push("http://localhost:3000/")
     }
     // add the web client

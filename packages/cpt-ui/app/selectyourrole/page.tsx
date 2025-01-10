@@ -2,9 +2,13 @@
 import React, {useState, useEffect, useContext, useCallback} from "react"
 import {useRouter} from 'next/navigation'
 import {Container, Col, Row, Details, Table, ErrorSummary, Button, InsetText} from "nhsuk-react-components"
+
 import {AuthContext} from "@/context/AuthProvider"
 import {useAccess} from '@/context/AccessProvider'
+
 import EpsCard, {EpsCardProps} from "@/components/EpsCard"
+import EpsSpinner from "@/components/EpsSpinner";
+
 import {SELECT_YOUR_ROLE_PAGE_TEXT} from "@/constants/ui-strings/CardStrings"
 
 export type RoleDetails = {
@@ -53,9 +57,8 @@ const {
     noODSCode,
     noRoleName,
     noAddress,
-    errorDuringRoleSelection,
-    loadingMessage
-} = SELECT_YOUR_ROLE_PAGE_TEXT
+    errorDuringRoleSelection
+} = SELECT_YOUR_ROLE_PAGE_TEXT;
 
 export default function SelectYourRolePage() {
     const {setNoAccess} = useAccess()
@@ -76,8 +79,8 @@ export default function SelectYourRolePage() {
 
         if (!auth?.isSignedIn || !auth) {
             setLoading(false)
-            setError("Not signed in")
-            return
+            setError(null)
+            return;
         }
 
         try {
@@ -178,7 +181,7 @@ export default function SelectYourRolePage() {
                 <Container>
                     <Row>
                         <Col width="full">
-                            {loadingMessage}
+                            <EpsSpinner />
                         </Col>
                     </Row>
                 </Container>
