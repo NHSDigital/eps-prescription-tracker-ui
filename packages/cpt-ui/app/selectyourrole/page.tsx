@@ -7,7 +7,7 @@ import {AuthContext} from "@/context/AuthProvider"
 import {useAccess} from '@/context/AccessProvider'
 
 import EpsCard, {EpsCardProps} from "@/components/EpsCard"
-import EpsSpinner from "@/components/EpsSpinner";
+import EpsSpinner from "@/components/EpsSpinner"
 
 import {SELECT_YOUR_ROLE_PAGE_TEXT} from "@/constants/ui-strings/CardStrings"
 
@@ -58,7 +58,7 @@ const {
     noRoleName,
     noAddress,
     errorDuringRoleSelection
-} = SELECT_YOUR_ROLE_PAGE_TEXT;
+} = SELECT_YOUR_ROLE_PAGE_TEXT
 
 export default function SelectYourRolePage() {
     const {setNoAccess} = useAccess()
@@ -67,6 +67,7 @@ export default function SelectYourRolePage() {
     const [redirecting, setRedirecting] = useState<boolean>(false)
     const [rolesWithAccess, setRolesWithAccess] = useState<RolesWithAccessProps[]>([])
     const [rolesWithoutAccess, setRolesWithoutAccess] = useState<RolesWithoutAccessProps[]>([])
+    const [selectedRole, setCurrentlySelectedRole] = useState<RoleDetails | undefined>(undefined)
 
     const router = useRouter()
     const auth = useContext(AuthContext)
@@ -76,11 +77,12 @@ export default function SelectYourRolePage() {
         setError(null)
         setRolesWithAccess([])
         setRolesWithoutAccess([])
+        setCurrentlySelectedRole(undefined)
 
         if (!auth?.isSignedIn || !auth) {
             setLoading(false)
             setError(null)
-            return;
+            return
         }
 
         try {
@@ -105,11 +107,10 @@ export default function SelectYourRolePage() {
 
             const rolesWithAccess = userInfo.roles_with_access
             const rolesWithoutAccess = userInfo.roles_without_access
-            // Unused for now
-            // const currentlySelectedRole = userInfo.currently_selected_role ? {
-            //     ...userInfo.currently_selected_role,
-            //     uuid: `selected_role_0`
-            // } : undefined
+            const currentlySelectedRole = userInfo.currently_selected_role ? {
+                ...userInfo.currently_selected_role,
+                uuid: `selected_role_0`
+            } : undefined
 
             // Populate the EPS card props
             setRolesWithAccess(
@@ -132,6 +133,7 @@ export default function SelectYourRolePage() {
                 }))
             )
 
+            setCurrentlySelectedRole(currentlySelectedRole)
             setNoAccess(rolesWithAccess.length === 0)
 
             // Redirect if conditions are met
@@ -212,9 +214,12 @@ export default function SelectYourRolePage() {
     }
 
     const noAccess = rolesWithAccess.length === 0
-    
-    console.log("Title for no access:", SELECT_YOUR_ROLE_PAGE_TEXT.titleNoAccess);
-    console.log("No Access State:", noAccess);
+    const insetTextMessage = selectedRole
+        ? `You are currently logged in at ${selectedRole.org_name} (ODS: ${selectedRole.org_code}) with ${selectedRole.role_name}.`
+        : ""
+
+    console.log("Title for no access:", SELECT_YOUR_ROLE_PAGE_TEXT.titleNoAccess)
+    console.log("No Access State:", noAccess)
 
     return (
         <main id="main-content" className="nhsuk-main-wrapper">
@@ -238,7 +243,7 @@ export default function SelectYourRolePage() {
                             <section aria-label="Login Information">
                                 <InsetText>
                                     <span className="nhsuk-u-visually-hidden">{insetText.visuallyHidden}</span>
-                                    <p>{insetText.message}</p>
+                                    <p>{insetTextMessage}</p>
                                 </InsetText>
                                 {/* Confirm Button */}
                                 <Button href={confirmButton.link}>{confirmButton.text}</Button>
