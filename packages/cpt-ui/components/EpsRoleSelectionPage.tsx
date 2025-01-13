@@ -292,10 +292,10 @@ export default function RoleSelectionPage({ contentText }: RoleSelectionPageProp
                                     <Table.Body>
                                         {rolesWithoutAccess.map((roleItem) => (
                                             <Table.Row key={roleItem.uuid}>
-                                                <Table.Cell>
+                                                <Table.Cell data-testid="change-role-name-cell">
                                                     {roleItem.orgName} (ODS: {roleItem.odsCode})
                                                 </Table.Cell>
-                                                <Table.Cell>
+                                                <Table.Cell data-testid="change-role-role-cell">
                                                     {roleItem.roleName}
                                                 </Table.Cell>
                                             </Table.Row>
