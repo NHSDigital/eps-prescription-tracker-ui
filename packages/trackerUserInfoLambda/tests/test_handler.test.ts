@@ -195,7 +195,8 @@ describe("Lambda Handler Tests", () => {
   })
 
   it("should call updateDynamoTable with the correct parameters", async () => {
-    const testUsername = "Primary_Tester"
+    // const testUsername = "Primary_Tester"
+    const testUsername = "Mock_555043304334"
     mockGetUsernameFromEvent.mockReturnValue(testUsername)
     const userInfoMock = {
       roles_with_access: ["roleX"],
