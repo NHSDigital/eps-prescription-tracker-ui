@@ -1,6 +1,6 @@
 'use client'
 import React, {useState, useEffect, useContext, useCallback} from "react"
-import {Container, Col, Row, ErrorSummary, InsetText} from "nhsuk-react-components"
+import {Container, Col, Row, Details, Table, ErrorSummary, InsetText} from "nhsuk-react-components"
 
 import {AuthContext} from "@/context/AuthProvider"
 import {useAccess} from '@/context/AccessProvider'
@@ -23,12 +23,20 @@ export type RoleDetails = {
 
 export type TrackerUserInfo = {
   roles_with_access: Array<RoleDetails>
+  roles_without_access: Array<RoleDetails>
   currently_selected_role?: RoleDetails
 }
 
 // Extends the EpsCardProps to include a unique identifier
 export type RolesWithAccessProps = EpsCardProps & {
   uuid: string
+}
+
+export type RolesWithoutAccessProps = {
+  uuid: string
+  orgName: string
+  odsCode: string
+  roleName: string
 }
 
 const trackerUserInfoEndpoint = "/api/tracker-user-info"
@@ -45,7 +53,11 @@ const {
 
 const {
   loginInfoText,
+  organisation,
+  role,
+  roles_without_access_table_title,
   noOrgName,
+  rolesWithoutAccessHeader,
   noODSCode,
   noRoleName,
   noAddress,
@@ -57,6 +69,7 @@ export default function ChangeYourRolePage() {
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
   const [rolesWithAccess, setRolesWithAccess] = useState<RolesWithAccessProps[]>([])
+  const [rolesWithoutAccess, setRolesWithoutAccess] = useState<RolesWithoutAccessProps[]>([])
   const [currentlySelectedRole, setCurrentlySelectedRole] = useState<RoleDetails | undefined>(undefined)
 
   const auth = useContext(AuthContext)
@@ -94,6 +107,7 @@ export default function ChangeYourRolePage() {
       const userInfo: TrackerUserInfo = data.userInfo
 
       const rolesWithAccess = userInfo.roles_with_access
+      const rolesWithoutAccess = userInfo.roles_without_access
       const currentlySelectedRole = userInfo.currently_selected_role ? {
         ...userInfo.currently_selected_role,
         uuid: `selected_role_0`
@@ -108,6 +122,15 @@ export default function ChangeYourRolePage() {
           siteAddress: role.site_address ? role.site_address : noAddress,
           roleName: role.role_name ? role.role_name : noRoleName,
           link: "roles-confirm?roleType=" + encodeURIComponent(role.role_name || "")
+        }))
+      )
+
+      setRolesWithoutAccess(
+        rolesWithoutAccess.map((role: RoleDetails, index: number) => ({
+          uuid: `{role_without_access_${index}}`,
+          roleName: role.role_name ? role.role_name : noRoleName,
+          orgName: role.org_name ? role.org_name : noOrgName,
+          odsCode: role.org_code ? role.org_code : noODSCode
         }))
       )
 
@@ -207,10 +230,44 @@ export default function ChangeYourRolePage() {
           {/* Roles with access Section */}
           <Col width="full">
             <h2 className="allowed-role-title">{rolesWithAccessTitle}</h2>
-            {rolesWithAccess.map((role: RolesWithAccessProps) => (
-              <EpsCard {...role} key={role.uuid} />
-            ))}
+            <div className="section" >
+              {rolesWithAccess.map((role: RolesWithAccessProps) => (
+                <EpsCard {...role} key={role.uuid} />
+              ))}
+            </div>
             <p className="rows-displayed-count"><b>{showingRolesText(rolesWithAccess.length)}</b></p>
+          </Col>
+
+          {/* Roles without access Section */}
+          <Col width="two-thirds">
+            <h3>{rolesWithoutAccessHeader}</h3>
+            <Details expander>
+              <Details.Summary>
+                {roles_without_access_table_title}
+              </Details.Summary>
+              <Details.Text>
+                <Table>
+                  <Table.Head>
+                    <Table.Row>
+                      <Table.Cell>{organisation}</Table.Cell>
+                      <Table.Cell>{role}</Table.Cell>
+                    </Table.Row>
+                  </Table.Head>
+                  <Table.Body>
+                    {rolesWithoutAccess.map((role: RolesWithoutAccessProps) => (
+                      <Table.Row key={role.uuid}>
+                        <Table.Cell>
+                          {role.orgName} (ODS: {role.odsCode})
+                        </Table.Cell>
+                        <Table.Cell>
+                          {role.roleName}
+                        </Table.Cell>
+                      </Table.Row>
+                    ))}
+                  </Table.Body>
+                </Table>
+              </Details.Text>
+            </Details>
           </Col>
         </Row>
       </Container>
