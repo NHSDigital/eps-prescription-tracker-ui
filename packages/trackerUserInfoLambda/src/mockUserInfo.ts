@@ -56,7 +56,7 @@ export const mockUserInfo = (): TrackerUserInfo => {
   const currentlySelectedRole: RoleDetails = {
     role_name: "Health Professional Access Role",
     role_id: "555043304334",
-    org_code: "ODS: FG419",
+    org_code: "FG419",
     org_name: "GREENE'S PHARMACY"
   }
 

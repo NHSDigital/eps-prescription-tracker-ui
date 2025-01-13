@@ -5,10 +5,13 @@ import React from "react"
 import SelectYourRolePage from "@/app/selectyourrole/page"
 import {AccessProvider} from "@/context/AccessProvider"
 import {AuthContext} from "@/context/AuthProvider"
+import {SelectYourRolePageStrings} from "@/constants/ui-strings/SelectYourRolePageStrings"
+import {EpsSpinnerStrings} from "@/constants/ui-strings/EpsSpinnerStrings"
+
 
 // Mock the module and directly reference the variable
-jest.mock("@/constants/ui-strings/CardStrings", () => {
-  const SELECT_YOUR_ROLE_PAGE_TEXT = {
+jest.mock("@/constants/ui-strings/SelectYourRolePageStrings", () => {
+  const SelectYourRolePageStrings = {
     title: "Select your role",
     caption: "Select the role you wish to use to access the service.",
     titleNoAccess: "No access to the clinical prescription tracking service",
@@ -38,7 +41,7 @@ jest.mock("@/constants/ui-strings/CardStrings", () => {
     loadingMessage: "Loading...",
   }
 
-  return {SELECT_YOUR_ROLE_PAGE_TEXT}
+  return {SelectYourRolePageStrings}
 })
 
 // Define mockJWT
@@ -94,9 +97,6 @@ const renderWithAuthAndAccess = (
   )
 }
 
-import { SELECT_YOUR_ROLE_PAGE_TEXT } from "@/constants/ui-strings/CardStrings";
-import { EpsSpinnerStrings } from "../constants/ui-strings/EpsSpinnerStrings";
-
 describe("SelectYourRolePage", () => {
   // Clear all mock calls before each test to avoid state leaks
   beforeEach(() => {
@@ -111,9 +111,9 @@ describe("SelectYourRolePage", () => {
     renderWithAuthAndAccess({isSignedIn: true, idToken: "mock-id-token"}, {loading: true})
 
     // Verify that the loading text appears
-    const loadingText = screen.getByText(EpsSpinnerStrings.loading);
-    expect(loadingText).toBeInTheDocument();
-  });
+    const loadingText = screen.getByText(EpsSpinnerStrings.loading)
+    expect(loadingText).toBeInTheDocument()
+  })
 
   it("renders error summary if fetch returns non-200 status", async () => {
     // Mock fetch to return a 500 status code (server error)
@@ -125,7 +125,7 @@ describe("SelectYourRolePage", () => {
     // Wait for the error message to appear
     await waitFor(() => {
       const errorHeading = screen.getByRole("heading", {
-        name: SELECT_YOUR_ROLE_PAGE_TEXT.errorDuringRoleSelection,
+        name: SelectYourRolePageStrings.errorDuringRoleSelection,
       })
       expect(errorHeading).toBeInTheDocument()
 
@@ -149,7 +149,7 @@ describe("SelectYourRolePage", () => {
     await waitFor(() => {
       // Check for error summary heading
       const errorHeading = screen.getByRole("heading", {
-        name: SELECT_YOUR_ROLE_PAGE_TEXT.errorDuringRoleSelection,
+        name: SelectYourRolePageStrings.errorDuringRoleSelection,
       })
       expect(errorHeading).toBeInTheDocument()
 
@@ -193,7 +193,7 @@ describe("SelectYourRolePage", () => {
     await waitFor(() => {
       // Check for the page heading
       const heading = screen.getByRole("heading", {level: 1})
-      expect(heading).toHaveTextContent(SELECT_YOUR_ROLE_PAGE_TEXT.title)
+      expect(heading).toHaveTextContent(SelectYourRolePageStrings.title)
     })
   })
 
@@ -225,7 +225,7 @@ describe("SelectYourRolePage", () => {
       // Check for the no-access title
       const heading = screen.getByRole("heading", {level: 1})
       expect(heading).toHaveTextContent(
-        SELECT_YOUR_ROLE_PAGE_TEXT.titleNoAccess
+        SelectYourRolePageStrings.titleNoAccess
       )
     })
   })

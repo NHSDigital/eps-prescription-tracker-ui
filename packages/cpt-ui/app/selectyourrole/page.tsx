@@ -9,7 +9,7 @@ import {useAccess} from '@/context/AccessProvider'
 import EpsCard, {EpsCardProps} from "@/components/EpsCard"
 import EpsSpinner from "@/components/EpsSpinner"
 
-import {SELECT_YOUR_ROLE_PAGE_TEXT} from "@/constants/ui-strings/CardStrings"
+import {SelectYourRolePageStrings} from "@/constants/ui-strings/SelectYourRolePageStrings"
 
 export type RoleDetails = {
     role_name?: string
@@ -58,7 +58,7 @@ const {
     noRoleName,
     noAddress,
     errorDuringRoleSelection
-} = SELECT_YOUR_ROLE_PAGE_TEXT
+} = SelectYourRolePageStrings
 
 export default function SelectYourRolePage() {
     const {setNoAccess} = useAccess()
@@ -67,7 +67,7 @@ export default function SelectYourRolePage() {
     const [redirecting, setRedirecting] = useState<boolean>(false)
     const [rolesWithAccess, setRolesWithAccess] = useState<RolesWithAccessProps[]>([])
     const [rolesWithoutAccess, setRolesWithoutAccess] = useState<RolesWithoutAccessProps[]>([])
-    const [selectedRole, setCurrentlySelectedRole] = useState<RoleDetails | undefined>(undefined)
+    const [currentlySelectedRole, setCurrentlySelectedRole] = useState<RoleDetails | undefined>(undefined)
 
     const router = useRouter()
     const auth = useContext(AuthContext)
@@ -214,11 +214,11 @@ export default function SelectYourRolePage() {
     }
 
     const noAccess = rolesWithAccess.length === 0
-    const insetTextMessage = selectedRole
-        ? `You are currently logged in at ${selectedRole.org_name} (ODS: ${selectedRole.org_code}) with ${selectedRole.role_name}.`
+    const insetTextMessage = currentlySelectedRole
+        ? insetText.message(currentlySelectedRole.org_name || noOrgName, currentlySelectedRole.org_code || noODSCode, currentlySelectedRole.role_name || noRoleName)
         : ""
 
-    console.log("Title for no access:", SELECT_YOUR_ROLE_PAGE_TEXT.titleNoAccess)
+    console.log("Title for no access:", SelectYourRolePageStrings.titleNoAccess)
     console.log("No Access State:", noAccess)
 
     return (
