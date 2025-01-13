@@ -2,6 +2,7 @@ import {Logger} from "@aws-lambda-powertools/logger"
 import axios from "axios"
 import {DynamoDBDocumentClient, UpdateCommand} from "@aws-sdk/lib-dynamodb"
 import {UserInfoResponse, TrackerUserInfo, RoleDetails} from "./userInfoTypes"
+import {mockUserInfo} from "./mockUserInfo"
 
 // Role names come in formatted like `"category":"subcategory":"roleName"`.
 // Takes only the last one, and strips out the quotes.
@@ -22,6 +23,11 @@ export const fetchUserInfo = async (
   selectedRoleId: string | undefined,
   logger: Logger
 ): Promise<TrackerUserInfo> => {
+  // Mock user info for testing AEA-4645
+  if (process.env.MOCK_MODE_ENABLED === "true") {
+    logger.info("Returning mock user info")
+    return mockUserInfo()
+  }
 
   const oidcUserInfoEndpoint = process.env["userInfoEndpoint"]
   logger.info("Fetching user info from OIDC UserInfo endpoint", {oidcUserInfoEndpoint})
@@ -149,7 +155,7 @@ export const updateDynamoTable = async (
         TableName: tokenMappingTableName,
         Key: {username},
         UpdateExpression:
-        // eslint-disable-next-line max-len
+          // eslint-disable-next-line max-len
           "SET rolesWithAccess = :rolesWithAccess, rolesWithoutAccess = :rolesWithoutAccess, currentlySelectedRole = :currentlySelectedRole",
         ExpressionAttributeValues: {
           ":rolesWithAccess": scrubbedRolesWithAccess,

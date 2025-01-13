@@ -9,7 +9,6 @@ import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
 
 import {fetchAndVerifyCIS2Tokens, getUsernameFromEvent} from "./cis2TokenHelpers"
 import {fetchUserInfo, updateDynamoTable} from "./userInfoHelpers"
-import {mockUserInfo} from "./mockUserInfo"
 
 const logger = new Logger({serviceName: "trackerUserInfo"})
 
@@ -71,29 +70,16 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     // eslint-disable-next-line
     const {cis2AccessToken, cis2IdToken} = await fetchAndVerifyCIS2Tokens(event, documentClient, logger)
 
-    // Mock user info for testing AEA-4645
-    let userInfoResponse
-    const username = getUsernameFromEvent(event)
-
-    if (username === "555043304334") {
-      userInfoResponse = mockUserInfo()
-    } else {
-      userInfoResponse = await fetchUserInfo(
-        cis2AccessToken,
-        CPT_ACCESS_ACTIVITY_CODES,
-        undefined,
-        logger
-      )
-    }
-
-    // const userInfoResponse = await fetchUserInfo(
-    //   cis2AccessToken,
-    //   CPT_ACCESS_ACTIVITY_CODES,
-    //   undefined,
-    //   logger
-    // )
+    const userInfoResponse = await fetchUserInfo(
+      cis2AccessToken,
+      CPT_ACCESS_ACTIVITY_CODES,
+      undefined,
+      logger
+    )
 
     // const username = getUsernameFromEvent(event)
+    // Mock user name for testing AEA-4645
+    const username = "Mock_555043304334"
     updateDynamoTable(username, userInfoResponse, documentClient, logger)
 
     return {
