@@ -117,12 +117,19 @@ export default function RoleSelectionPage({ contentText }: RoleSelectionPageProp
             }
 
             const userInfo: TrackerUserInfo = data.userInfo
+            
             const rolesWithAccess = userInfo.roles_with_access
             const rolesWithoutAccess = userInfo.roles_without_access
+            // Unused for now
+            // const currentlySelectedRole = userInfo.currently_selected_role ? {
+            //     ...userInfo.currently_selected_role,
+            //     uuid: `selected_role_0`
+            // } : undefined
 
+            // Populate the EPS card props
             setRolesWithAccess(
                 rolesWithAccess.map((role: RoleDetails, index: number) => ({
-                    uuid: `role_with_access_${index}`,
+                    uuid: `{role_with_access_${index}}`,
                     orgName: role.org_name ? role.org_name : noOrgName,
                     odsCode: role.org_code ? role.org_code : noODSCode,
                     siteAddress: role.site_address ? role.site_address : noAddress,
@@ -133,7 +140,7 @@ export default function RoleSelectionPage({ contentText }: RoleSelectionPageProp
 
             setRolesWithoutAccess(
                 rolesWithoutAccess.map((role: RoleDetails, index: number) => ({
-                    uuid: `role_without_access_${index}`,
+                    uuid: `{role_without_access_${index}}`,
                     roleName: role.role_name ? role.role_name : noRoleName,
                     orgName: role.org_name ? role.org_name : noOrgName,
                     odsCode: role.org_code ? role.org_code : noODSCode
@@ -150,6 +157,7 @@ export default function RoleSelectionPage({ contentText }: RoleSelectionPageProp
                 router.push("/searchforaprescription")
                 return
             }
+
         } catch (err) {
             setError("Failed to fetch CPT user info")
             console.error("error fetching tracker user info:", err)
@@ -178,18 +186,20 @@ export default function RoleSelectionPage({ contentText }: RoleSelectionPageProp
     }, [auth?.isSignedIn, fetchTrackerUserInfo])
 
     useEffect(() => {
-        // Update error state if auth context has an error
+        console.log("Auth error updated:", auth?.error)
+        // Have to do this to make `<string | null | undefined>` work with `<string | null>`
         setError(auth?.error ?? null)
         if (auth?.error) {
             setLoading(false)
         }
     }, [auth?.error])
 
+    // Skip rendering if redirecting
     if (redirecting) {
-        // Avoid rendering content if we’re about to redirect
         return null
     }
 
+    // If the data is being fetched, replace the content with a spinner
     if (loading) {
         return (
             <main id="main-content" className="nhsuk-main-wrapper">
@@ -204,6 +214,7 @@ export default function RoleSelectionPage({ contentText }: RoleSelectionPageProp
         )
     }
 
+    // If the process encounters an error, replace the content with an error summary
     if (error) {
         return (
             <main id="main-content" className="nhsuk-main-wrapper">
@@ -226,10 +237,14 @@ export default function RoleSelectionPage({ contentText }: RoleSelectionPageProp
     }
 
     const noAccess = rolesWithAccess.length === 0
+    
+    console.log("Title for no access:", contentText.titleNoAccess);
+    console.log("No Access State:", noAccess);
 
     return (
         <main id="main-content" className="nhsuk-main-wrapper">
             <Container role="contentinfo">
+                {/* Title Section */}
                 <Row>
                     <Col width="two-thirds">
                         <h1 className="nhsuk-heading-xl">
@@ -243,10 +258,9 @@ export default function RoleSelectionPage({ contentText }: RoleSelectionPageProp
                                 </span>
                             </span>
                         </h1>
-                        
-                        {noAccess && <p>{captionNoAccess}</p>}
-
-                        {/* Inset Text + Confirm Button (Only if user has access) */}
+                        {/* Caption Section for No Access */}
+                        {noAccess && (<p>{captionNoAccess}</p>)}
+                        {/* Inset Text Section */}
                         {!noAccess && (
                             <section aria-label="Login Information">
                                 <InsetText>
@@ -255,6 +269,7 @@ export default function RoleSelectionPage({ contentText }: RoleSelectionPageProp
                                     </span>
                                     <p>{insetText.message}</p>
                                 </InsetText>
+                                {/* Confirm Button */}
                                 <Button href={confirmButton.link}>
                                     {confirmButton.text}
                                 </Button>
@@ -263,10 +278,10 @@ export default function RoleSelectionPage({ contentText }: RoleSelectionPageProp
                         )}
                     </Col>
 
-                    {/* Roles With Access Section */}
+                    {/* Roles with access Section */}
                     {!noAccess && (
                         <Col width="two-thirds">
-                            <div className="section">
+                            <div className="section" >
                                 {rolesWithAccess.map((role: RolesWithAccessProps) => (
                                     <EpsCard {...role} key={role.uuid} />
                                 ))}
@@ -274,7 +289,7 @@ export default function RoleSelectionPage({ contentText }: RoleSelectionPageProp
                         </Col>
                     )}
 
-                    {/* Roles Without Access Section */}
+                    {/* Roles without access Section */}
                     <Col width="two-thirds">
                         <h3>{rolesWithoutAccessHeader}</h3>
                         <Details expander>
@@ -290,7 +305,7 @@ export default function RoleSelectionPage({ contentText }: RoleSelectionPageProp
                                         </Table.Row>
                                     </Table.Head>
                                     <Table.Body>
-                                        {rolesWithoutAccess.map((roleItem) => (
+                                        {rolesWithoutAccess.map((roleItem: RolesWithoutAccessProps) => (
                                             <Table.Row key={roleItem.uuid}>
                                                 <Table.Cell data-testid="change-role-name-cell">
                                                     {roleItem.orgName} (ODS: {roleItem.odsCode})
