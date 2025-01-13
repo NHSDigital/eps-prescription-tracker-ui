@@ -4,6 +4,7 @@ import {useRouter} from 'next/navigation'
 import React from "react"
 
 import {AuthContext} from "@/context/AuthProvider"
+import { AccessProvider } from "@/context/AccessProvider"
 
 import ChangeRolePage from "@/app/changerole/page"
 
@@ -74,7 +75,9 @@ const renderWithAuth = (authOverrides = {}) => {
   const authValue = {...defaultAuthContext, ...authOverrides}
   return render(
     <AuthContext.Provider value={authValue}>
-      <ChangeRolePage />
+      <AccessProvider>
+        <ChangeRolePage />
+      </AccessProvider>
     </AuthContext.Provider>
   )
 }
@@ -266,7 +269,9 @@ describe("ChangeRolePage", () => {
     // Render the component
     render(
       <AuthContext.Provider value={mockAuthContext}>
-        <ChangeRolePage />
+        <AccessProvider>
+          <ChangeRolePage />
+        </AccessProvider>
       </AuthContext.Provider>
     )
 
