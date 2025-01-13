@@ -8,7 +8,7 @@ export class NextStack extends Stack {
 
     new NextjsGlobalFunctions(this, "nextjs", {
       healthCheckPath: "/api/health",
-      buildContext: resolve(__dirname, "../.."),
+      buildContext: resolve(__dirname, "../../.."),
       relativePathToWorkspace: "./packages/cpt-ui"
     })
   }
