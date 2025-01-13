@@ -214,7 +214,7 @@ export default function SelectYourRolePage() {
     }
 
     const noAccess = rolesWithAccess.length === 0
-    const insetTextMessage = currentlySelectedRole
+    const loginInfoMessage = currentlySelectedRole
         ? loginInfoText.message(currentlySelectedRole.org_name || noOrgName, currentlySelectedRole.org_code || noODSCode, currentlySelectedRole.role_name || noRoleName)
         : ""
 
@@ -243,7 +243,7 @@ export default function SelectYourRolePage() {
                             <section aria-label="Login Information">
                                 <InsetText>
                                     <span className="nhsuk-u-visually-hidden">{loginInfoText.visuallyHidden}</span>
-                                    <p>{insetTextMessage}</p>
+                                    <p dangerouslySetInnerHTML={{__html: loginInfoMessage}}></p>
                                 </InsetText>
                                 {/* Confirm Button */}
                                 <Button href={confirmButton.link}>{confirmButton.text}</Button>

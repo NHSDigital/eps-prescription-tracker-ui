@@ -8,7 +8,7 @@ export const SelectYourRolePageStrings = {
   loginInfoText: {
     visuallyHidden: "Information: ",
     message: (orgName: string, odsCode: string, roleName: string) =>
-      `You are currently logged in at ${orgName} (ODS: ${odsCode}) with ${roleName}.`
+      `You are currently logged in at <b>${orgName} (${odsCode})</b> with <b>${roleName}</b>.`
   },
   confirmButton: {
     text: "Continue to find a prescription",
@@ -23,7 +23,7 @@ export const SelectYourRolePageStrings = {
   rolesWithoutAccessHeader: "Your roles without access",
   noODSCode: "No ODS code",
   noRoleName: "No role name",
-  noAddress: "No address",
+  noAddress: "Address not found",
   errorDuringRoleSelection: "Error during role selection",
   loadingMessage: "Loading..."
 }
