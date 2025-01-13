@@ -211,7 +211,7 @@ export default function ChangeYourRolePage() {
       <Container role="contentinfo">
         {/* Title Section */}
         <Row>
-          <Col width="full">
+          <Col width="two-thirds">
             <h1 className="select-role-header nhsuk-heading-xl">
               {title}
               <span className="nhsuk-caption-xl nhsuk-caption--bottom">
@@ -228,7 +228,7 @@ export default function ChangeYourRolePage() {
           </Col>
 
           {/* Roles with access Section */}
-          <Col width="full">
+          <Col width="two-thirds">
             <h2 className="allowed-role-title">{rolesWithAccessTitle}</h2>
             <div className="section" >
               {rolesWithAccess.map((role: RolesWithAccessProps) => (
