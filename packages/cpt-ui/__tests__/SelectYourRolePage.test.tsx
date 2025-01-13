@@ -18,7 +18,7 @@ jest.mock("@/constants/ui-strings/SelectYourRolePageStrings", () => {
     captionNoAccess:
       "None of the roles on your Smartcard or other authenticators allow you to access the clinical prescription tracking service. " +
       "Contact your Registration Authority representative to obtain the correct code.",
-    insetText: {
+    loginInfoText: {
       visuallyHidden: "Information: ",
       message:
         "You are currently logged in at GREENE'S PHARMACY (ODS: FG419) with Health Professional Access Role.",

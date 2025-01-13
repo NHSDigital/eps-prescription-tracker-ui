@@ -46,7 +46,7 @@ const {
     caption,
     titleNoAccess,
     captionNoAccess,
-    insetText,
+    loginInfoText,
     confirmButton,
     alternativeMessage,
     organisation,
@@ -215,7 +215,7 @@ export default function SelectYourRolePage() {
 
     const noAccess = rolesWithAccess.length === 0
     const insetTextMessage = currentlySelectedRole
-        ? insetText.message(currentlySelectedRole.org_name || noOrgName, currentlySelectedRole.org_code || noODSCode, currentlySelectedRole.role_name || noRoleName)
+        ? loginInfoText.message(currentlySelectedRole.org_name || noOrgName, currentlySelectedRole.org_code || noODSCode, currentlySelectedRole.role_name || noRoleName)
         : ""
 
     console.log("Title for no access:", SelectYourRolePageStrings.titleNoAccess)
@@ -242,7 +242,7 @@ export default function SelectYourRolePage() {
                         {!noAccess && (
                             <section aria-label="Login Information">
                                 <InsetText>
-                                    <span className="nhsuk-u-visually-hidden">{insetText.visuallyHidden}</span>
+                                    <span className="nhsuk-u-visually-hidden">{loginInfoText.visuallyHidden}</span>
                                     <p>{insetTextMessage}</p>
                                 </InsetText>
                                 {/* Confirm Button */}

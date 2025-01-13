@@ -5,7 +5,7 @@ export const SelectYourRolePageStrings = {
   captionNoAccess:
     "None of the roles on your Smartcard or other authenticators allow you to access the clinical prescription " +
     "tracking service. Contact your Registration Authority representative to obtain the correct code.",
-  insetText: {
+  loginInfoText: {
     visuallyHidden: "Information: ",
     message: (orgName: string, odsCode: string, roleName: string) =>
       `You are currently logged in at ${orgName} (ODS: ${odsCode}) with ${roleName}.`
