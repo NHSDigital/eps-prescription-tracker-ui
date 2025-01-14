@@ -104,10 +104,9 @@ export default function EpsHeader() {
 
           {/* FIXME: Show the Confirm Role page header link only if we have a selected role */}
           {
-            true
             // pathname !== "/selectyourrole"
             // && pathname !== "/changerole"
-            // && auth?.isSignedIn
+            auth?.isSignedIn
             // && selectedRole !== ""
             && (
               <li className="nhsuk-header__navigation-item">
