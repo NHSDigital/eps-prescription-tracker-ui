@@ -42,6 +42,7 @@ export default function EpsHeader() {
     setShouldShowSelectRole(
       pathname !== "/selectyourrole" &&
       pathname !== "/changerole" &&
+      pathname !== "/logout" &&
       isSignedIn &&
       accessContext.selectedRole === ""
     );
@@ -50,6 +51,7 @@ export default function EpsHeader() {
     setShouldShowChangeRole(
       pathname !== "/selectyourrole" &&
       pathname !== "/changerole" &&
+      pathname !== "/logout" &&
       isSignedIn &&
       !accessContext.singleAccess
     );
