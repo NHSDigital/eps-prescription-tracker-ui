@@ -1,6 +1,6 @@
 import React, {createContext, useContext, useState, ReactNode} from 'react'
 
-type AccessContextType = {
+export type AccessContextType = {
   noAccess: boolean
   setNoAccess: (value: boolean) => void
   singleAccess: boolean

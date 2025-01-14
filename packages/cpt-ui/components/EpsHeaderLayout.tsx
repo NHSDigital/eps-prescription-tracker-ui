@@ -6,12 +6,12 @@ import EpsHeader from '@/components/EpsHeader'
 import EpsHeaderExit from '@/components/EpsHeaderExit'
 
 export default function EpsHeaderLayout() {
-    const {noAccess} = useAccess()
+    const accessContext = useAccess()
     const pathname = usePathname()
 
-    if (pathname === '/selectyourrole' && noAccess) {
+    if (pathname === '/selectyourrole' && accessContext.noAccess) {
         return <EpsHeaderExit />
     }
 
-    return <EpsHeader />
+    return <EpsHeader accessContext={accessContext} />
 }
