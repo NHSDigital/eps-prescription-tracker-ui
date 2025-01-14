@@ -101,7 +101,7 @@ describe("fetchUserInfo", () => {
       roles_with_access: [
         {
           role_name: "Doctor",
-          role_code: "role-id-1",
+          role_id: "role-id-1",
           org_code: "ORG1",
           org_name: "Organization One"
         }
@@ -109,14 +109,14 @@ describe("fetchUserInfo", () => {
       roles_without_access: [
         {
           role_name: "Nurse",
-          role_code: "role-id-2",
+          role_id: "role-id-2",
           org_code: "ORG2",
           org_name: "Organization Two"
         }
       ],
       currently_selected_role: {
         role_name: "Doctor",
-        role_code: "role-id-1",
+        role_id: "role-id-1",
         org_code: "ORG1",
         org_name: "Organization One"
       }
@@ -169,7 +169,7 @@ describe("fetchUserInfo", () => {
       roles_without_access: [
         {
           role_name: "Receptionist",
-          role_code: "role-id-3",
+          role_id: "role-id-3",
           org_code: "ORG3",
           org_name: "Organization Three"
         }
@@ -229,7 +229,7 @@ describe("updateDynamoTable", () => {
     roles_with_access: [
       {
         role_name: "Doctor",
-        role_code: "123",
+        role_id: "123",
         org_code: "ABC",
         org_name: "Test Hospital",
         site_name: "Main",
@@ -239,7 +239,7 @@ describe("updateDynamoTable", () => {
     roles_without_access: [
       {
         role_name: "Nurse",
-        role_code: "456",
+        role_id: "456",
         org_code: "DEF",
         org_name: "Test Clinic",
         site_name: "Branch",
@@ -248,7 +248,7 @@ describe("updateDynamoTable", () => {
     ],
     currently_selected_role: {
       role_name: "Doctor",
-      role_code: "123",
+      role_id: "123",
       org_code: "ABC",
       org_name: "Test Hospital",
       site_name: "Main",

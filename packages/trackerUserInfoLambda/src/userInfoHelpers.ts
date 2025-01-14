@@ -63,13 +63,13 @@ export const fetchUserInfo = async (
 
       const roleInfo: RoleDetails = {
         role_name: removeRoleCategories(role.role_name),
-        role_code: role.person_roleid,
+        role_id: role.person_roleid,
         org_code: role.org_code,
         org_name: getOrgNameFromOrgCode(data, role.org_code, logger)
       }
 
       // Ensure the role has at least one of the required fields
-      if (!(roleInfo.role_name || roleInfo.role_code || roleInfo.org_code || roleInfo.org_name)) {
+      if (!(roleInfo.role_name || roleInfo.role_id || roleInfo.org_code || roleInfo.org_name)) {
         // Skip roles that don't meet the minimum field requirements
         logger.warn("Role does not meet minimum field requirements", {roleInfo})
         return

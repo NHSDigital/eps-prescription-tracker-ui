@@ -13,7 +13,7 @@ import {SELECT_YOUR_ROLE_PAGE_TEXT} from "@/constants/ui-strings/CardStrings"
 
 export type RoleDetails = {
     role_name?: string;
-    role_code?: string;
+    role_id?: string;
     org_code?: string;
     org_name?: string;
     site_name?: string;
