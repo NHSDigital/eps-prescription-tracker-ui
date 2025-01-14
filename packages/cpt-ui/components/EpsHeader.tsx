@@ -17,14 +17,15 @@ import {
 } from "@/constants/ui-strings/HeaderStrings";
 
 import { AuthContext } from "@/context/AuthProvider";
-import { AccessContextType } from '@/context/AccessProvider';
+import { useAccess } from '@/context/AccessProvider';
 
 import { EpsLogoutModal } from "@/components/EpsLogoutModal";
 
-export default function EpsHeader({ accessContext }: { accessContext: AccessContextType }) {
+export default function EpsHeader() {
   const router = useRouter();
   const pathname = usePathname();
   const auth = useContext(AuthContext);
+  const accessContext = useAccess();
 
   // Individual states to control link visibility:
   const [shouldShowSelectRole, setShouldShowSelectRole] = useState(false);
@@ -35,10 +36,6 @@ export default function EpsHeader({ accessContext }: { accessContext: AccessCont
 
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
-  useEffect(() => {
-    console.warn("Access Context: ", accessContext);
-  }, [accessContext]);
-
   // Move all conditional logic into one place
   // TODO: Verify behaviour
   useEffect(() => {
@@ -48,7 +45,8 @@ export default function EpsHeader({ accessContext }: { accessContext: AccessCont
     setShouldShowSelectRole(
       pathname !== "/selectyourrole" &&
       pathname !== "/changerole" &&
-      isSignedIn
+      isSignedIn &&
+      accessContext.selectedRole === ""
     );
 
     // Show "Change role" link (if not single access)

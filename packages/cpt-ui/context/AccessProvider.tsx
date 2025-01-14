@@ -1,4 +1,6 @@
-import React, {createContext, useContext, useState, ReactNode} from 'react'
+import React, {createContext, useContext, ReactNode} from 'react'
+
+import { useLocalStorageState } from '@/helpers/useLocalStorageState'
 
 export type AccessContextType = {
   noAccess: boolean
@@ -13,9 +15,9 @@ export type AccessContextType = {
 const AccessContext = createContext<AccessContextType | undefined>(undefined)
 
 export const AccessProvider = ({children}: {children: ReactNode}) => {
-  const [noAccess, setNoAccess] = useState(false)
-  const [singleAccess, setSingleAccess] = useState(false)
-  const [selectedRole, setSelectedRole] = useState("")
+  const [noAccess, setNoAccess] = useLocalStorageState<boolean>('noAccess', 'access', false);
+  const [singleAccess, setSingleAccess] = useLocalStorageState<boolean>('singleAccess', 'access', false);
+  const [selectedRole, setSelectedRole] = useLocalStorageState<string>('selectedRole', 'access', '');
 
   const clear = () => {
     console.warn("Clearing access context.")
