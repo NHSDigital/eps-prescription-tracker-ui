@@ -24,7 +24,7 @@
     },
     "devDependencies": {
         "@formatjs/cli": "^6.3.11",
-        "@next/eslint-plugin-next": "^15.1.2",
+        "@next/eslint-plugin-next": "^15.1.4",
         "@types/node": "^22",
         "@types/react": "^18",
         "@types/react-dom": "^18",
