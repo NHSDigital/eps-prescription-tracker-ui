@@ -30,7 +30,8 @@ export interface ApiFunctionsProps {
   readonly mockPoolIdentityProviderName: string
   readonly logRetentionInDays: number
   readonly sharedSecrets: SharedSecrets
-  readonly apigeeTokenEndpoint: string
+  readonly apigeeCIS2TokenEndpoint: string
+  readonly apigeeMockTokenEndpoint: string
   readonly apigeePrescriptionsEndpoint: string
   readonly apigeeApiKey: string
   readonly jwtKid: string
@@ -68,18 +69,15 @@ export class ApiFunctions extends Construct {
 
     // Environment variables
     // We pass in both sets of endpoints and keys. The Lambda code determines at runtime which to use.
-    const lambdaEnv: {[key: string]: string} = {
+    const commonLambdaEnv: {[key: string]: string} = {
       TokenMappingTableName: props.tokenMappingTable.tableName,
 
       // Real endpoints/credentials
-      REAL_IDP_TOKEN_PATH: props.primaryOidcTokenEndpoint,
-      REAL_USER_INFO_ENDPOINT: props.primaryOidcUserInfoEndpoint,
-      REAL_OIDCJWKS_ENDPOINT: props.primaryOidcjwksEndpoint,
-      REAL_JWT_PRIVATE_KEY_ARN: props.sharedSecrets.primaryJwtPrivateKey.secretArn,
-      REAL_USER_POOL_IDP: props.primaryPoolIdentityProviderName,
-      REAL_USE_SIGNED_JWT: "true",
-      REAL_OIDC_CLIENT_ID: props.primaryOidcClientId,
-      REAL_OIDC_ISSUER: props.primaryOidcIssuer,
+      CIS2_USER_INFO_ENDPOINT: props.primaryOidcUserInfoEndpoint,
+      CIS2_OIDCJWKS_ENDPOINT: props.primaryOidcjwksEndpoint,
+      CIS2_USER_POOL_IDP: props.primaryPoolIdentityProviderName,
+      CIS2_OIDC_CLIENT_ID: props.primaryOidcClientId,
+      CIS2_OIDC_ISSUER: props.primaryOidcIssuer,
 
       // Indicate if mock mode is available
       MOCK_MODE_ENABLED: props.useMockOidc ? "true" : "false"
@@ -87,14 +85,11 @@ export class ApiFunctions extends Construct {
 
     // If mock OIDC is enabled, add mock environment variables
     if (props.useMockOidc && props.sharedSecrets.mockJwtPrivateKey.secretArn) {
-      lambdaEnv["MOCK_IDP_TOKEN_PATH"] = props.mockOidcTokenEndpoint!
-      lambdaEnv["MOCK_USER_INFO_ENDPOINT"] = props.mockOidcUserInfoEndpoint!
-      lambdaEnv["MOCK_OIDCJWKS_ENDPOINT"] = props.mockOidcjwksEndpoint!
-      lambdaEnv["MOCK_JWT_PRIVATE_KEY_ARN"] = props.sharedSecrets.mockJwtPrivateKey.secretArn
-      lambdaEnv["MOCK_USER_POOL_IDP"] = props.mockPoolIdentityProviderName
-      lambdaEnv["MOCK_USE_SIGNED_JWT"] = "false"
-      lambdaEnv["MOCK_OIDC_CLIENT_ID"] = props.mockOidcClientId!
-      lambdaEnv["MOCK_OIDC_ISSUER"] = props.mockOidcIssuer!
+      commonLambdaEnv["MOCK_USER_INFO_ENDPOINT"] = props.mockOidcUserInfoEndpoint!
+      commonLambdaEnv["MOCK_OIDCJWKS_ENDPOINT"] = props.mockOidcjwksEndpoint!
+      commonLambdaEnv["MOCK_USER_POOL_IDP"] = props.mockPoolIdentityProviderName
+      commonLambdaEnv["MOCK_OIDC_CLIENT_ID"] = props.mockOidcClientId!
+      commonLambdaEnv["MOCK_OIDC_ISSUER"] = props.mockOidcIssuer!
     }
 
     // Single Lambda for both real and mock scenarios
@@ -107,7 +102,7 @@ export class ApiFunctions extends Construct {
       logLevel: props.logLevel,
       packageBasePath: "packages/trackerUserInfoLambda",
       entryPoint: "src/handler.ts",
-      lambdaEnvironmentVariables: lambdaEnv
+      lambdaEnvironmentVariables: commonLambdaEnv
     })
 
     // Add the policy to apiFunctionsPolicies
@@ -130,16 +125,10 @@ export class ApiFunctions extends Construct {
       packageBasePath: "packages/prescriptionSearchLambda",
       entryPoint: "src/handler.ts",
       lambdaEnvironmentVariables: {
-        idpTokenPath: props.primaryOidcTokenEndpoint,
-        TokenMappingTableName: props.tokenMappingTable.tableName,
-        UserPoolIdentityProvider: props.primaryPoolIdentityProviderName,
-        oidcjwksEndpoint: props.primaryOidcjwksEndpoint,
+        ...commonLambdaEnv,
         jwtPrivateKeyArn: props.sharedSecrets.primaryJwtPrivateKey.secretArn,
-        userInfoEndpoint: props.primaryOidcUserInfoEndpoint,
-        useSignedJWT: "true",
-        oidcClientId: props.primaryOidcClientId,
-        oidcIssuer: props.primaryOidcIssuer,
-        apigeeTokenEndpoint: props.apigeeTokenEndpoint,
+        apigeeCIS2TokenEndpoint: props.apigeeCIS2TokenEndpoint,
+        apigeeMockTokenEndpoint: props.apigeeMockTokenEndpoint,
         apigeePrescriptionsEndpoint: props.apigeePrescriptionsEndpoint,
         apigeeApiKey: props.apigeeApiKey,
         jwtKid: props.jwtKid,

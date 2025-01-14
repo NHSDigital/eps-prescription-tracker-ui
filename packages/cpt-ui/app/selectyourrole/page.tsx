@@ -12,14 +12,14 @@ import EpsSpinner from "@/components/EpsSpinner";
 import {SELECT_YOUR_ROLE_PAGE_TEXT} from "@/constants/ui-strings/CardStrings"
 
 export type RoleDetails = {
-    role_name?: string
-    role_id?: string
-    org_code?: string
-    org_name?: string
-    site_name?: string
-    site_address?: string
-    uuid?: string
-}
+    role_name?: string;
+    role_id?: string;
+    org_code?: string;
+    org_name?: string;
+    site_name?: string;
+    site_address?: string;
+    uuid?: string;
+};
 
 export type TrackerUserInfo = {
     roles_with_access: Array<RoleDetails>

@@ -2,32 +2,27 @@ import {jest} from "@jest/globals"
 
 import jwt from "jsonwebtoken"
 import {Logger} from "@aws-lambda-powertools/logger"
-import {ParsedUrlQuery} from "querystring"
 
 // mock jwt.sign before importing constructSignedJWTBody
 const sign = jest.spyOn(jwt, "sign")
 sign.mockImplementation(() => "mocked-jwt-token")
 
-const {constructSignedJWTBody} = await import("../src/utils/tokenUtils")
+const {constructSignedJWTBody} = await import("../src/apigee")
 
 describe("constructSignedJWTBody tests", () => {
   const logger = new Logger()
   const jwtPrivateKey = "mockPrivateKey"
-  const objectBodyParameters: ParsedUrlQuery = {
-    client_id: "test-client-id",
-    client_secret: "test-secret"
-  }
   const idpTokenPath = "https://example.com/oauth/token"
   const apigeeToken = "dummyApigeeToken"
 
   it("should add a signed JWT to the body parameters", () => {
     const result = constructSignedJWTBody(
       logger,
-      objectBodyParameters,
       idpTokenPath,
       jwtPrivateKey,
       apigeeToken,
-      "dummy_kid"
+      "dummy_kid",
+      "dummy_cis2IdToken"
     )
 
     // Validate the rewritten body parameters

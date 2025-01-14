@@ -2,7 +2,7 @@
   "name": "prescriptionSearchLambda",
   "version": "1.0.0",
   "description": "Lambda for prescription search",
-  "main": "statusLambda.js",
+  "main": "handler.ts",
   "author": "NHS Digital",
   "license": "MIT",
   "scripts": {
@@ -19,6 +19,7 @@
     "@aws-sdk/client-dynamodb": "^3.721.0",
     "@aws-sdk/client-secrets-manager": "^3.721.0",
     "@aws-sdk/lib-dynamodb": "^3.721.0",
+    "@cpt-ui-common/authFunctions": "^1.0.0",
     "@cpt-ui-common/middyErrorHandler": "^1.0.0",
     "@middy/core": "^6.0.0",
     "@middy/input-output-logger": "^6.0.0",

@@ -18,6 +18,8 @@ install-hooks: install-python
 	poetry run pre-commit install --install-hooks --overwrite
 
 compile-node:
+	npm run compile --workspace packages/common/middyErrorHandler
+	npm run compile --workspace packages/common/authFunctions
 	npx tsc --build tsconfig.build.json
 
 compile: compile-node
@@ -30,6 +32,7 @@ lint-node: compile-node
 	npm run lint --workspace packages/common/testing
 	npm run lint --workspace packages/common/middyErrorHandler
 	npm run lint --workspace packages/trackerUserInfoLambda
+	npm run lint --workspace packages/common/authFunctions
 
 lint-githubactions:
 	actionlint
@@ -47,6 +50,7 @@ test: compile
 	npm run test --workspace packages/prescriptionSearchLambda
 	npm run test --workspace packages/common/middyErrorHandler
 	npm run test --workspace packages/trackerUserInfoLambda
+	npm run test --workspace packages/common/authFunctions
 
 clean:
 	rm -rf packages/cloudfrontFunctions/coverage
@@ -64,6 +68,8 @@ clean:
 	rm -rf packages/auth_demo/build
 	rm -rf packages/trackerUserInfoLambda/coverage
 	rm -rf packages/trackerUserInfoLambda/lib
+	rm -rf packages/common/authFunctions/coverage
+	rm -rf packages/common/authFunctions/lib
 
 deep-clean: clean
 	rm -rf .venv
@@ -76,6 +82,10 @@ check-licenses-node:
 	npm run check-licenses --workspace packages/cloudfrontFunctions
 	npm run check-licenses --workspace packages/cdk
 	npm run check-licenses --workspace packages/cpt-ui
+	npm run check-licenses --workspace packages/common/authFunctions
+	npm run check-licenses --workspace packages/cognito
+	npm run check-licenses --workspace packages/prescriptionSearchLambda
+	npm run check-licenses --workspace packages/trackerUserInfoLambda
 
 check-licenses-python:
 	scripts/check_python_licenses.sh
@@ -160,15 +170,13 @@ cdk-synth-stateful-resources-mock:
 		--context epsDomainName=undefined \
 		--context epsHostedZoneId=undefined \
 		--context useMockOidc=true \
-		--context primaryOidcClientId=undefined\
-		--context primaryOidClientSecret=undefined \
+		--context primaryOidcClientId=undefined \
 		--context primaryOidcIssuer=undefined \
 		--context primaryOidcAuthorizeEndpoint=undefined \
 		--context primaryOidcTokenEndpoint=undefined \
 		--context primaryOidcUserInfoEndpoint=undefined \
 		--context primaryOidcjwksEndpoint=undefined \
 		--context mockOidcClientId=undefined \
-		--context mockOidClientSecret=undefined \
 		--context mockOidcIssuer=undefined \
 		--context mockOidcAuthorizeEndpoint=undefined \
 		--context mockOidcTokenEndpoint=undefined \
@@ -191,15 +199,13 @@ cdk-synth-stateless-resources-mock:
 		--context epsHostedZoneId=undefined \
 		--context cloudfrontCertArn=arn:aws:acm:us-east-1:444455556666:certificate/certificate_ID \
 		--context useMockOidc=true \
-		--context primaryOidcClientId=undefined\
-		--context primaryOidClientSecret=undefined \
+		--context primaryOidcClientId=undefined \
 		--context primaryOidcIssuer=undefined \
 		--context primaryOidcAuthorizeEndpoint=undefined \
 		--context primaryOidcTokenEndpoint=undefined \
 		--context primaryOidcUserInfoEndpoint=undefined \
 		--context primaryOidcjwksEndpoint=undefined \
 		--context mockOidcClientId=undefined \
-		--context mockOidClientSecret=undefined \
 		--context mockOidcIssuer=undefined \
 		--context mockOidcAuthorizeEndpoint=undefined \
 		--context mockOidcTokenEndpoint=undefined \
