@@ -63,7 +63,7 @@ export const fetchUserInfo = async (
 
       const roleInfo: RoleDetails = {
         role_name: removeRoleCategories(role.role_name),
-        role_code: removeRoleCategories(role.role_code),
+        role_code: role.person_roleid,
         org_code: role.org_code,
         org_name: getOrgNameFromOrgCode(data, role.org_code, logger)
       }

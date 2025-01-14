@@ -101,7 +101,7 @@ describe("fetchUserInfo", () => {
       roles_with_access: [
         {
           role_name: "Doctor",
-          role_code: "role-code-1",
+          role_code: "role-id-1",
           org_code: "ORG1",
           org_name: "Organization One"
         }
@@ -109,14 +109,14 @@ describe("fetchUserInfo", () => {
       roles_without_access: [
         {
           role_name: "Nurse",
-          role_code: "role-code-2",
+          role_code: "role-id-2",
           org_code: "ORG2",
           org_name: "Organization Two"
         }
       ],
       currently_selected_role: {
         role_name: "Doctor",
-        role_code: "role-code-1",
+        role_code: "role-id-1",
         org_code: "ORG1",
         org_name: "Organization One"
       }
@@ -169,7 +169,7 @@ describe("fetchUserInfo", () => {
       roles_without_access: [
         {
           role_name: "Receptionist",
-          role_code: "role-code-3",
+          role_code: "role-id-3",
           org_code: "ORG3",
           org_name: "Organization Three"
         }
