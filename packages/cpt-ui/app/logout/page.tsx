@@ -28,7 +28,7 @@ export default function LogoutPage() {
         } else {
             console.log("Cannot sign out - not signed in");
         }
-    }, [auth]);
+    }, [auth, clear]);
 
     // TODO: Move strings to a constants file
     return (

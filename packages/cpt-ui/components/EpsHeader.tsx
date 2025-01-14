@@ -8,8 +8,6 @@ import {
   HEADER_SERVICE,
   HEADER_EXIT_BUTTON,
   HEADER_EXIT_TARGET,
-  HEADER_CONFIRM_ROLE_BUTTON,
-  HEADER_CONFIRM_ROLE_TARGET,
   HEADER_CHANGE_ROLE_BUTTON,
   HEADER_CHANGE_ROLE_TARGET,
   HEADER_SELECT_YOUR_ROLE_TARGET,
@@ -30,7 +28,6 @@ export default function EpsHeader() {
   // Individual states to control link visibility:
   const [shouldShowSelectRole, setShouldShowSelectRole] = useState(false);
   const [shouldShowChangeRole, setShouldShowChangeRole] = useState(false);
-  const [shouldShowConfirmRole, setShouldShowConfirmRole] = useState(false);
   const [shouldShowLogoutLink, setShouldShowLogoutLink] = useState(false);
   const [shouldShowExitButton, setShouldShowExitButton] = useState(false);
 
@@ -55,14 +52,6 @@ export default function EpsHeader() {
       pathname !== "/changerole" &&
       isSignedIn &&
       !accessContext.singleAccess
-    );
-
-    // Show "Confirm role" link (if a role has been selected)
-    setShouldShowConfirmRole(
-      pathname !== "/selectyourrole" &&
-      pathname !== "/changerole" &&
-      isSignedIn &&
-      accessContext.selectedRole !== ""
     );
 
     // Show the "Logout" link only if the user is signed in
@@ -130,19 +119,6 @@ export default function EpsHeader() {
                 data-testid="eps_header_changeRoleLink"
               >
                 {HEADER_CHANGE_ROLE_BUTTON}
-              </Link>
-            </li>
-          )}
-
-          {/* Confirm role */}
-          {shouldShowConfirmRole && (
-            <li className="nhsuk-header__navigation-item">
-              <Link
-                className="nhsuk-header__navigation-link"
-                href={HEADER_CONFIRM_ROLE_TARGET}
-                data-testid="eps_header_confirmRoleLink"
-              >
-                {HEADER_CONFIRM_ROLE_BUTTON}
               </Link>
             </li>
           )}
