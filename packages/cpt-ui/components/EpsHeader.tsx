@@ -103,12 +103,12 @@ export default function EpsHeader() {
           }
 
           {/* FIXME: Show the Confirm Role page header link only if we have a selected role */}
-          {
-            // pathname !== "/selectyourrole"
-            // && pathname !== "/changerole"
+          {/* {
+            pathname !== "/selectyourrole"
+            && pathname !== "/changerole"
             auth?.isSignedIn
-            // && selectedRole !== ""
-            && (
+            && selectedRole !== ""
+            && ( */}
               <li className="nhsuk-header__navigation-item">
                 <Link
                   className="nhsuk-header__navigation-link"
@@ -118,8 +118,8 @@ export default function EpsHeader() {
                   {HEADER_CONFIRM_ROLE_BUTTON}
                 </Link>
               </li>
-            )
-          }
+            {/* )
+          } */}
 
           {/* FIXME: Only shows the Log out link if the user is signed in, but introduces a lag on page reload. */}
           {auth?.isSignedIn && (
