@@ -237,9 +237,6 @@ export default function RoleSelectionPage({ contentText }: RoleSelectionPageProp
     }
 
     const noAccess = rolesWithAccess.length === 0
-    
-    console.log("Title for no access:", contentText.titleNoAccess);
-    console.log("No Access State:", noAccess);
 
     return (
         <main id="main-content" className="nhsuk-main-wrapper">
