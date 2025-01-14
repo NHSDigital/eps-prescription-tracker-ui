@@ -1,9 +1,11 @@
 'use client'
-import React, { useState, useEffect } from "react"
-import 'nhsuk-frontend/dist/nhsuk.css';
-import EpsHeader from '@/components/EpsHeader'
+import React, { useState, useEffect } from 'react'
+
+import 'nhsuk-frontend/dist/nhsuk.css'
+import EpsHeaderLayout from '@/components/EpsHeaderLayout'
 import EpsFooter from '@/components/EpsFooter'
 import { AuthProvider } from '@/context/AuthProvider'
+import { AccessProvider } from '@/context/AccessProvider'
 
 export default function RootLayout({
     children,
@@ -14,14 +16,16 @@ export default function RootLayout({
     useEffect(() => setMounted(true), [])
 
     return (
-      <html lang="en">
-             <body className={mounted ? "js-enabled" : "no-js"}>
+        <html lang="en">
+            <body className={mounted ? "js-enabled" : "no-js"}>
                 <AuthProvider>
-                    <EpsHeader />
-                    {children}
-                    <EpsFooter />
+                    <AccessProvider>
+                        <EpsHeaderLayout />
+                        {children}
+                        <EpsFooter />
+                    </AccessProvider>
                 </AuthProvider>
             </body>
-            </html>
+        </html>
     )
 }
