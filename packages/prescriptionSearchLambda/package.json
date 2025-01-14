@@ -29,7 +29,7 @@
     "uuid": "^11.0.2"
   },
   "devDependencies": {
-    "@types/aws-lambda": "^8.10.145",
+    "@types/aws-lambda": "^8.10.147",
     "axios-mock-adapter": "^2.0.0",
     "mock-jwks": "^3.2.2",
     "nock": "^13.5.5"
