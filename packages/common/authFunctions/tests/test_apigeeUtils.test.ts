@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/consistent-type-assertions */
 import {jest} from "@jest/globals"
-import {exchangeTokenForApigeeAccessToken, updateApigeeAccessToken} from "../src/utils/apigeeUtils"
+import {exchangeTokenForApigeeAccessToken, updateApigeeAccessToken} from "../src/apigee"
 import axios from "axios"
 import {DynamoDBDocumentClient, UpdateCommand} from "@aws-sdk/lib-dynamodb"
 import {Logger} from "@aws-lambda-powertools/logger"
@@ -36,14 +36,14 @@ describe("apigeeUtils", () => {
 
       const result = await exchangeTokenForApigeeAccessToken(
         axios,
-        "http://mock-endpoint",
+        "https://mock-endpoint",
         {param: "test"},
         mockLogger as Logger
       )
 
       expect(result).toEqual({accessToken: "testToken", expiresIn: 3600})
       expect(mockAxiosPost).toHaveBeenCalledWith(
-        "http://mock-endpoint",
+        "https://mock-endpoint",
         expect.any(String), // Request body as URL-encoded string
         {headers: {"Content-Type": "application/x-www-form-urlencoded"}}
       )
@@ -54,7 +54,7 @@ describe("apigeeUtils", () => {
       await expect(
         exchangeTokenForApigeeAccessToken(
           axios,
-          "http://mock-endpoint",
+          "https://mock-endpoint",
           {param: "test"},
           mockLogger as Logger
         )
@@ -72,7 +72,7 @@ describe("apigeeUtils", () => {
       await expect(
         exchangeTokenForApigeeAccessToken(
           axios,
-          "http://mock-endpoint",
+          "https://mock-endpoint",
           {param: "test"},
           mockLogger as Logger
         )
