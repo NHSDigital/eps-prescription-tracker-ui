@@ -38,7 +38,6 @@ export class StatefulResourcesStack extends Stack {
     // Context
     /* context values passed as --context cli arguments are passed as strings so coerce them to expected types*/
     const primaryOidcClientId = this.node.tryGetContext("primaryOidcClientId")
-    const primaryOidClientSecret = this.node.tryGetContext("primaryOidClientSecret")
     const primaryOidcIssuer = this.node.tryGetContext("primaryOidcIssuer")
     const primaryOidcAuthorizeEndpoint = this.node.tryGetContext("primaryOidcAuthorizeEndpoint")
     const primaryOidcUserInfoEndpoint = this.node.tryGetContext("primaryOidcUserInfoEndpoint")
@@ -46,7 +45,6 @@ export class StatefulResourcesStack extends Stack {
     const primaryTokenEndpoint = this.node.tryGetContext("primaryTokenEndpoint")
 
     const mockOidcClientId = this.node.tryGetContext("mockOidcClientId")
-    const mockOidClientSecret = this.node.tryGetContext("mockOidClientSecret")
     const mockOidcIssuer = this.node.tryGetContext("mockOidcIssuer")
     const mockOidcAuthorizeEndpoint = this.node.tryGetContext("mockOidcAuthorizeEndpoint")
     const mockOidcUserInfoEndpoint = this.node.tryGetContext("mockOidcUserInfoEndpoint")
@@ -90,14 +88,12 @@ export class StatefulResourcesStack extends Stack {
     // - Cognito resources
     const cognito = new Cognito(this, "Cognito", {
       primaryOidcClientId: primaryOidcClientId!,
-      primaryOidClientSecret: primaryOidClientSecret,
       primaryOidcIssuer: primaryOidcIssuer,
       primaryOidcAuthorizeEndpoint: primaryOidcAuthorizeEndpoint,
       primaryOidcUserInfoEndpoint: primaryOidcUserInfoEndpoint,
       primaryOidcjwksEndpoint: primaryOidcjwksEndpoint,
       primaryTokenEndpoint: primaryTokenEndpoint,
       mockOidcClientId: mockOidcClientId,
-      mockOidClientSecret: mockOidClientSecret,
       mockOidcIssuer: mockOidcIssuer,
       mockOidcAuthorizeEndpoint: mockOidcAuthorizeEndpoint,
       mockOidcUserInfoEndpoint: mockOidcUserInfoEndpoint,

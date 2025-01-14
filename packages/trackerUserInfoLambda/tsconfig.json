@@ -8,5 +8,13 @@
     
   },
   "include": ["src/**/*", "tests/**/*"],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules"],
+  "references": [
+    {
+      "path": "../common/authFunctions"
+    },
+    {
+      "path": "../common/middyErrorHandler"
+    }
+  ]
 }

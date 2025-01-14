@@ -7,6 +7,12 @@ import {Logger} from "@aws-lambda-powertools/logger"
 import axios from "axios"
 import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
+import {OidcConfig} from "@cpt-ui-common/authFunctions"
+import jwksClient from "jwks-rsa"
+
+const oidcClientId = "valid_aud"
+const oidcIssuer = "valid_iss"
+const jwksEndpoint = "https://dummyauth.com/.well-known/jwks.json"
 
 describe("fetchUserInfo", () => {
   const logger = new Logger()
@@ -14,13 +20,25 @@ describe("fetchUserInfo", () => {
   const acceptedAccessCodes = ["CPT_CODE"]
   const selectedRoleId = "role-id-1"
 
-  const originalTokenMappingTableName = process.env["TokenMappingTableName"]
-  const originalUserInfoEndpoint = process.env["userInfoEndpoint"]
+  const client = jwksClient({
+    jwksUri: `${jwksEndpoint}`,
+    cache: true,
+    cacheMaxEntries: 5,
+    cacheMaxAge: 3600000 // 1 hour
+  })
+
+  const oidcConfig: OidcConfig = {
+    oidcIssuer: oidcIssuer,
+    oidcClientID: oidcClientId,
+    oidcJwksEndpoint: "https://dummyauth.com/.well-known/jwks.json",
+    oidcUserInfoEndpoint:  "https://dummyauth.com/userinfo",
+    userPoolIdp: "DummyPoolIdentityProvider",
+    tokenMappingTableName: "dummyTable",
+    jwksClient: client
+  }
 
   beforeEach(() => {
     jest.restoreAllMocks()
-    process.env["TokenMappingTableName"] = originalTokenMappingTableName
-    process.env["userInfoEndpoint"] = originalUserInfoEndpoint
   })
 
   afterEach(() => {
@@ -75,7 +93,8 @@ describe("fetchUserInfo", () => {
       accessToken,
       acceptedAccessCodes,
       selectedRoleId,
-      logger
+      logger,
+      oidcConfig
     )
 
     expect(result).toEqual({
@@ -141,7 +160,8 @@ describe("fetchUserInfo", () => {
       accessToken,
       acceptedAccessCodes,
       undefined,
-      logger
+      logger,
+      oidcConfig
     )
 
     expect(result).toEqual({
@@ -159,14 +179,18 @@ describe("fetchUserInfo", () => {
   })
 
   it("should throw an error if userInfoEndpoint is not set", async () => {
-    delete process.env["userInfoEndpoint"]
+    const clonedOidcConfig = {
+      ...oidcConfig
+    }
+    clonedOidcConfig.oidcUserInfoEndpoint = ""
 
     await expect(
       fetchUserInfo(
         accessToken,
         acceptedAccessCodes,
         selectedRoleId,
-        logger
+        logger,
+        clonedOidcConfig
       )
     ).rejects.toThrow("OIDC UserInfo endpoint not set")
   })
@@ -179,7 +203,8 @@ describe("fetchUserInfo", () => {
         accessToken,
         acceptedAccessCodes,
         selectedRoleId,
-        logger
+        logger,
+        oidcConfig
       )
     ).rejects.toThrow("Error fetching user info")
   })
@@ -192,18 +217,11 @@ describe("updateDynamoTable", () => {
   const dynamoDBClient = new DynamoDBClient({})
   const documentClient = DynamoDBDocumentClient.from(dynamoDBClient)
 
-  const originalEnv = process.env
-
   beforeEach(() => {
     jest.restoreAllMocks()
-    process.env = {...originalEnv}
 
     // Mock the documentClient send method
     jest.spyOn(documentClient, "send").mockImplementation(() => Promise.resolve({}))
-  })
-
-  afterAll(() => {
-    process.env = originalEnv
   })
 
   const username = "testUser"
@@ -241,17 +259,15 @@ describe("updateDynamoTable", () => {
   it("should update DynamoDB with user roles successfully", async () => {
 
     // Expect not to run into an error
-    await updateDynamoTable(username, data, documentClient, logger)
+    await updateDynamoTable(username, data, documentClient, logger, "dummyTable")
 
     // Expect successful call to DynamoDB
     expect(documentClient.send).toHaveBeenCalled()
   })
 
   it("should throw an error when TokenMappingTableName is not set", async () => {
-    delete process.env.TokenMappingTableName
-
     await expect(
-      updateDynamoTable(username, data, documentClient, logger)
+      updateDynamoTable(username, data, documentClient, logger, "")
     ).rejects.toThrow("Token mapping table name not set")
 
     expect(documentClient.send).not.toHaveBeenCalled()
@@ -264,7 +280,7 @@ describe("updateDynamoTable", () => {
     )
 
     await expect(
-      updateDynamoTable(username, data, documentClient, logger)
+      updateDynamoTable(username, data, documentClient, logger, "dummyTable")
     ).rejects.toThrow("Error adding user roles to DynamoDB")
   })
 })
