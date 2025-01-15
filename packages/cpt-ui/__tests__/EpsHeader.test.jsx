@@ -94,7 +94,7 @@ describe("EpsHeader", () => {
     });
 
     it("does NOT display an 'Exit' button by default", () => {
-      expect(screen.queryByTestId("eps_header_selectYourRoleExit")).toBeNull();
+      expect(screen.queryByTestId("eps_header_exit")).toBeNull();
     });
   });
 

@@ -44,16 +44,18 @@ export default function EpsHeader() {
       pathname !== "/changerole" &&
       pathname !== "/logout" &&
       isSignedIn &&
+      !accessContext.singleAccess &&
       accessContext.selectedRole === ""
     );
-
+    
     // Show "Change role" link (if not single access)
     setShouldShowChangeRole(
       pathname !== "/selectyourrole" &&
       pathname !== "/changerole" &&
       pathname !== "/logout" &&
       isSignedIn &&
-      !accessContext.singleAccess
+      !accessContext.singleAccess &&
+      accessContext.selectedRole !== ""
     );
 
     // Show the "Logout" link only if the user is signed in
@@ -145,7 +147,7 @@ export default function EpsHeader() {
               <Link
                 className="nhsuk-header__navigation-link"
                 href={HEADER_EXIT_TARGET}
-                data-testid="eps_header_selectYourRoleExit"
+                data-testid="eps_header_exit"
               >
                 {HEADER_EXIT_BUTTON}
               </Link>
