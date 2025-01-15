@@ -74,7 +74,7 @@ on:
 
 jobs:
   check_first_deployment:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     environment: ${{ inputs.TARGET_ENVIRONMENT }}
     permissions:
       id-token: write
@@ -189,7 +189,7 @@ jobs:
 
 
   update_cloudfront_kvs:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     environment: ${{ inputs.TARGET_ENVIRONMENT }}
     needs: [release_stateless_resources]
     permissions:
@@ -286,7 +286,7 @@ jobs:
       mockOidClientSecret: ${{ secrets.mockOidClientSecret }}
 
   update_github_pages:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     environment: ${{ inputs.TARGET_ENVIRONMENT }}
     if: ${{ always() && !failure() && !cancelled() }}
     needs: [release_stateful_resources, release_stateless_resources, rerelease_stateful_resources, deploy_website_content, update_cloudfront_kvs]

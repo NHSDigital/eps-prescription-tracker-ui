@@ -33,7 +33,7 @@ on:
 
 jobs:
   create_release_notes:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     environment: ${{ inputs.TARGET_ENVIRONMENT }}
     permissions:
       id-token: write

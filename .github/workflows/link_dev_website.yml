@@ -4,7 +4,7 @@ on:
     types: [opened]
 jobs:
     get_issue_number:
-        runs-on: ubuntu-latest
+        runs-on: ubuntu-22.04
         outputs:
           issue_number: ${{steps.get_issue_number.outputs.result}}
     
@@ -31,7 +31,7 @@ jobs:
     
     link-dev-website:
         needs: [get_issue_number]
-        runs-on: ubuntu-latest
+        runs-on: ubuntu-22.04
         continue-on-error: true
         steps:
               - name: Link Dev Website
