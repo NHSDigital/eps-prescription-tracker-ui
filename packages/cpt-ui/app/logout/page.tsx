@@ -1,31 +1,34 @@
 'use client'
-import React, { useContext, useEffect } from "react";
-import { Container } from "nhsuk-react-components"
-import Link from "next/link";
+import React, {useContext, useEffect} from "react"
+import {Container} from "nhsuk-react-components"
+import Link from "next/link"
 
-import { AuthContext } from "@/context/AuthProvider";
-import EpsSpinner from "@/components/EpsSpinner";
-import { EpsLogoutStrings } from "@/constants/ui-strings/EpsLogoutPageStrings";
+import {AuthContext} from "@/context/AuthProvider"
+import {useAccess} from "@/context/AccessProvider"
+import EpsSpinner from "@/components/EpsSpinner"
+import {EpsLogoutStrings} from "@/constants/ui-strings/EpsLogoutPageStrings"
 
 export default function LogoutPage() {
 
-    const auth = useContext(AuthContext);
+    const auth = useContext(AuthContext)
+    const {clear} = useAccess()
 
     // Log out on page load
     useEffect(() => {
         const signOut = async () => {
-            console.log("Signing out", auth);
+            console.log("Signing out", auth)
 
-            await auth?.cognitoSignOut();
-            console.log("Signed out: ", auth);
+            await auth?.cognitoSignOut()
+            console.log("Signed out: ", auth)
         }
 
         if (auth?.isSignedIn) {
-            signOut();
+            signOut()
+            clear()
         } else {
-            console.log("Cannot sign out - not signed in");
+            console.log("Cannot sign out - not signed in")
         }
-    }, [auth]);
+    }, [auth, clear])
 
     // TODO: Move strings to a constants file
     return (
@@ -48,5 +51,5 @@ export default function LogoutPage() {
                 )}
             </Container>
         </main>
-    );
+    )
 }

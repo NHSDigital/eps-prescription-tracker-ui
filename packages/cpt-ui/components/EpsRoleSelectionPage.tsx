@@ -6,26 +6,10 @@ import {Container, Col, Row, Details, Table, ErrorSummary, Button, InsetText} fr
 import {AuthContext} from "@/context/AuthProvider"
 import {useAccess} from '@/context/AccessProvider'
 
-import EpsCard, {EpsCardProps} from "@/components/EpsCard"
-import EpsSpinner from "@/components/EpsSpinner"
+import EpsCard, { EpsCardProps } from "@/components/EpsCard"
+import EpsSpinner from "@/components/EpsSpinner";
 
-import {SelectYourRolePageStrings} from "@/constants/ui-strings/SelectYourRolePageStrings"
-
-export type RoleDetails = {
-    role_name?: string
-    role_id?: string
-    org_code?: string
-    org_name?: string
-    site_name?: string
-    site_address?: string
-    uuid?: string
-}
-
-export type TrackerUserInfo = {
-    roles_with_access: Array<RoleDetails>
-    roles_without_access: Array<RoleDetails>
-    currently_selected_role?: RoleDetails
-}
+import { RoleDetails, TrackerUserInfo } from "@/types/TrackerUserInfoTypes"
 
 // Extends the EpsCardProps to include a unique identifier
 export type RolesWithAccessProps = EpsCardProps & {
@@ -41,33 +25,61 @@ export type RolesWithoutAccessProps = {
 
 const trackerUserInfoEndpoint = "/api/tracker-user-info"
 
-const {
-    title,
-    caption,
-    titleNoAccess,
-    captionNoAccess,
-    loginInfoText,
-    confirmButton,
-    alternativeMessage,
-    organisation,
-    role,
-    roles_without_access_table_title,
-    noOrgName,
-    rolesWithoutAccessHeader,
-    noODSCode,
-    noRoleName,
-    noAddress,
-    errorDuringRoleSelection
-} = SelectYourRolePageStrings
+interface RoleSelectionPageProps {
+    // contentText is where we pass in all the strings used on this page
+    contentText: {
+        title: string
+        caption: string
+        titleNoAccess: string
+        captionNoAccess: string
+        insetText: {
+            visuallyHidden: string
+            message: string
+        }
+        confirmButton: {
+            link: string
+            text: string
+        }
+        alternativeMessage: string
+        organisation: string
+        role: string
+        roles_without_access_table_title: string
+        noOrgName: string
+        rolesWithoutAccessHeader: string
+        noODSCode: string
+        noRoleName: string
+        noAddress: string
+        errorDuringRoleSelection: string
+    }
+}
 
-export default function SelectYourRolePage() {
-    const {setNoAccess} = useAccess()
+export default function RoleSelectionPage({ contentText }: RoleSelectionPageProps) {
+    // Destructure strings from the contentText prop
+    const {
+        title,
+        caption,
+        titleNoAccess,
+        captionNoAccess,
+        insetText,
+        confirmButton,
+        alternativeMessage,
+        organisation,
+        role,
+        roles_without_access_table_title,
+        noOrgName,
+        rolesWithoutAccessHeader,
+        noODSCode,
+        noRoleName,
+        noAddress,
+        errorDuringRoleSelection
+    } = contentText
+
+    const { setNoAccess, setSingleAccess } = useAccess()
     const [loading, setLoading] = useState<boolean>(true)
     const [error, setError] = useState<string | null>(null)
     const [redirecting, setRedirecting] = useState<boolean>(false)
     const [rolesWithAccess, setRolesWithAccess] = useState<RolesWithAccessProps[]>([])
     const [rolesWithoutAccess, setRolesWithoutAccess] = useState<RolesWithoutAccessProps[]>([])
-    const [currentlySelectedRole, setCurrentlySelectedRole] = useState<RoleDetails | undefined>(undefined)
 
     const router = useRouter()
     const auth = useContext(AuthContext)
@@ -77,7 +89,6 @@ export default function SelectYourRolePage() {
         setError(null)
         setRolesWithAccess([])
         setRolesWithoutAccess([])
-        setCurrentlySelectedRole(undefined)
 
         if (!auth?.isSignedIn || !auth) {
             setLoading(false)
@@ -94,7 +105,9 @@ export default function SelectYourRolePage() {
             })
 
             if (response.status !== 200) {
-                throw new Error(`Server did not return CPT user info, response ${response.status}`)
+                throw new Error(
+                    `Server did not return CPT user info, response ${response.status}`
+                )
             }
 
             const data = await response.json()
@@ -104,13 +117,14 @@ export default function SelectYourRolePage() {
             }
 
             const userInfo: TrackerUserInfo = data.userInfo
-
+            
             const rolesWithAccess = userInfo.roles_with_access
             const rolesWithoutAccess = userInfo.roles_without_access
-            const currentlySelectedRole = userInfo.currently_selected_role ? {
-                ...userInfo.currently_selected_role,
-                uuid: `selected_role_0`
-            } : undefined
+            // Unused for now
+            // const currentlySelectedRole = userInfo.currently_selected_role ? {
+            //     ...userInfo.currently_selected_role,
+            //     uuid: `selected_role_0`
+            // } : undefined
 
             // Populate the EPS card props
             setRolesWithAccess(
@@ -120,7 +134,7 @@ export default function SelectYourRolePage() {
                     odsCode: role.org_code ? role.org_code : noODSCode,
                     siteAddress: role.site_address ? role.site_address : noAddress,
                     roleName: role.role_name ? role.role_name : noRoleName,
-                    link: "yourselectedrole"
+                    link: "/yourselectedrole"
                 }))
             )
 
@@ -133,10 +147,11 @@ export default function SelectYourRolePage() {
                 }))
             )
 
-            setCurrentlySelectedRole(currentlySelectedRole)
             setNoAccess(rolesWithAccess.length === 0)
+            setSingleAccess(rolesWithAccess.length === 1)
 
-            // Redirect if conditions are met
+            // If the user has exactly one accessible role and zero roles without access,
+            // redirect them immediately
             if (rolesWithAccess.length === 1 && rolesWithoutAccess.length === 0) {
                 setRedirecting(true)
                 router.push("/searchforaprescription")
@@ -149,8 +164,16 @@ export default function SelectYourRolePage() {
         } finally {
             setLoading(false)
         }
-
-    }, [auth, router, setNoAccess])
+    }, [
+        auth,
+        router,
+        setNoAccess,
+        setSingleAccess,
+        noOrgName,
+        noODSCode,
+        noAddress,
+        noRoleName
+    ])
 
     useEffect(() => {
         if (auth?.isSignedIn === undefined) {
@@ -214,12 +237,6 @@ export default function SelectYourRolePage() {
     }
 
     const noAccess = rolesWithAccess.length === 0
-    const loginInfoMessage = currentlySelectedRole
-        ? loginInfoText.message(currentlySelectedRole.org_name || noOrgName, currentlySelectedRole.org_code || noODSCode, currentlySelectedRole.role_name || noRoleName)
-        : ""
-
-    console.log("Title for no access:", SelectYourRolePageStrings.titleNoAccess)
-    console.log("No Access State:", noAccess)
 
     return (
         <main id="main-content" className="nhsuk-main-wrapper">
@@ -229,7 +246,9 @@ export default function SelectYourRolePage() {
                     <Col width="two-thirds">
                         <h1 className="nhsuk-heading-xl">
                             <span role="text" data-testid="eps_header_selectYourRole">
-                                <span className="nhsuk-title">{noAccess ? titleNoAccess : title}</span>
+                                <span className="nhsuk-title">
+                                    {noAccess ? titleNoAccess : title}
+                                </span>
                                 <span className="nhsuk-caption-l nhsuk-caption--bottom">
                                     <span className="nhsuk-u-visually-hidden"> - </span>
                                     {!noAccess && caption}
@@ -242,11 +261,15 @@ export default function SelectYourRolePage() {
                         {!noAccess && (
                             <section aria-label="Login Information">
                                 <InsetText>
-                                    <span className="nhsuk-u-visually-hidden">{loginInfoText.visuallyHidden}</span>
-                                    <p dangerouslySetInnerHTML={{__html: loginInfoMessage}}></p>
+                                    <span className="nhsuk-u-visually-hidden">
+                                        {insetText.visuallyHidden}
+                                    </span>
+                                    <p>{insetText.message}</p>
                                 </InsetText>
                                 {/* Confirm Button */}
-                                <Button href={confirmButton.link}>{confirmButton.text}</Button>
+                                <Button href={confirmButton.link}>
+                                    {confirmButton.text}
+                                </Button>
                                 <p>{alternativeMessage}</p>
                             </section>
                         )}
@@ -279,13 +302,13 @@ export default function SelectYourRolePage() {
                                         </Table.Row>
                                     </Table.Head>
                                     <Table.Body>
-                                        {rolesWithoutAccess.map((role: RolesWithoutAccessProps) => (
-                                            <Table.Row key={role.uuid}>
-                                                <Table.Cell>
-                                                    {role.orgName} (ODS: {role.odsCode})
+                                        {rolesWithoutAccess.map((roleItem: RolesWithoutAccessProps) => (
+                                            <Table.Row key={roleItem.uuid}>
+                                                <Table.Cell data-testid="change-role-name-cell">
+                                                    {roleItem.orgName} (ODS: {roleItem.odsCode})
                                                 </Table.Cell>
-                                                <Table.Cell>
-                                                    {role.roleName}
+                                                <Table.Cell data-testid="change-role-role-cell">
+                                                    {roleItem.roleName}
                                                 </Table.Cell>
                                             </Table.Row>
                                         ))}
@@ -299,15 +322,3 @@ export default function SelectYourRolePage() {
         </main>
     )
 }
-
-// import React from "react"
-
-// import {SELECT_YOUR_ROLE_PAGE_TEXT} from "@/constants/ui-strings/CardStrings"
-// import RoleSelectionPage from "@/components/EpsRoleSelectionPage"
-
-
-// export default function SelectYourRolePage() {
-//     return (
-//         <RoleSelectionPage contentText={SELECT_YOUR_ROLE_PAGE_TEXT} />
-//     )
-// }
