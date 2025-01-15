@@ -47,7 +47,7 @@ export interface UserInfoResponse {
   nhsid_user_orgs?: Array<NhsIdUserOrg>
 
   // Claims from the "selectedrole" scope
-  selected_roleid?: Array<NhsIdNRBACRole>
+  selected_roleid?: string
 }
 
 interface NhsIdNRBACRole {

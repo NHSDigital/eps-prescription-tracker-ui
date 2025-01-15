@@ -107,7 +107,8 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
       "username": username,
       "CIS2_accessToken": accessToken,
       "CIS2_idToken": idToken,
-      "CIS2_expiresIn": decodedIdToken.exp
+      "CIS2_expiresIn": decodedIdToken.exp,
+      "selected_roleid": decodedIdToken.selected_roleid
     },
     TableName: TokenMappingTableName
   }

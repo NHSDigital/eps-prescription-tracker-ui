@@ -3,6 +3,7 @@ import axios from "axios"
 import {DynamoDBDocumentClient, UpdateCommand} from "@aws-sdk/lib-dynamodb"
 import {UserInfoResponse, TrackerUserInfo, RoleDetails} from "./userInfoTypes"
 import {OidcConfig} from "@cpt-ui-common/authFunctions"
+import {verifyIdToken, initializeOidcConfig} from "@cpt-ui-common/authFunctions"
 
 // Role names come in formatted like `"category":"subcategory":"roleName"`.
 // Takes only the last one, and strips out the quotes.
@@ -22,9 +23,10 @@ export const removeRoleCategories = (roleString: string | undefined) => {
 //  - [OPTIONAL] currentlySelectedRole: the role that is currently selected by the user
 // Each list contains information on the roles, such as the role name, role ID, ODS code, and organization name.
 export const fetchUserInfo = async (
+  cis2IdToken: string,
   cis2AccessToken: string,
   accepted_access_codes: Array<string>,
-  selectedRoleId: string | undefined,
+  // selectedRoleId: string | undefined,
   logger: Logger,
   oidcConfig: OidcConfig
 ): Promise<TrackerUserInfo> => {
@@ -59,7 +61,7 @@ export const fetchUserInfo = async (
     // Get roles from the user info response
     const roles = data.nhsid_nrbac_roles || []
 
-    roles.forEach((role) => {
+    roles.forEach(async (role) => {
       logger.debug("Processing role", {role})
       const activityCodes = role.activity_codes || []
 
@@ -87,6 +89,15 @@ export const fetchUserInfo = async (
         rolesWithoutAccess.push(roleInfo)
         logger.debug("Role does not have access; adding to rolesWithoutAccess", {roleInfo})
       }
+
+      const useMock: boolean = process.env["useMock"] === "true"
+      const {mockOidcConfig, cis2OidcConfig} = initializeOidcConfig()
+
+      const decodedIdToken = await verifyIdToken(cis2IdToken, logger, useMock ? mockOidcConfig : cis2OidcConfig)
+      logger.debug("Decoded Id token", {decodedIdToken: decodedIdToken})
+
+      const selectedRoleId = decodedIdToken.selected_roleid
+      logger.debug("Selected role", {selected_roleid: selectedRoleId})
 
       // Determine the currently selected role
       logger.debug("Checking if role is currently selected", {selectedRoleId, role_id: role.person_roleid, roleInfo})
