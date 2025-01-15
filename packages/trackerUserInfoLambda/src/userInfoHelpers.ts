@@ -30,12 +30,6 @@ export const fetchUserInfo = async (
   logger: Logger,
   oidcConfig: OidcConfig
 ): Promise<TrackerUserInfo> => {
-  // Mock user info for testing AEA-4645
-  // if (process.env.MOCK_MODE_ENABLED === "true") {
-  //   logger.info("Returning mock user info")
-  //   return mockUserInfo()
-  // }
-
   logger.info("Fetching user info from OIDC UserInfo endpoint", {oidcConfig})
 
   if (!oidcConfig.oidcUserInfoEndpoint) {
@@ -62,12 +56,21 @@ export const fetchUserInfo = async (
     // Get roles from the user info response
     const roles = data.nhsid_nrbac_roles || []
 
-    roles.forEach(async (role) => {
-      logger.debug("Processing role", {role})
-      const activityCodes = role.activity_codes || []
+    // --- Token Handling Logic ---
+    const useMock: boolean = process.env["useMock"] === "true"
+    const {mockOidcConfig, cis2OidcConfig} = initializeOidcConfig()
 
+    const decodedIdToken = await verifyIdToken(cis2IdToken, logger, useMock ? mockOidcConfig : cis2OidcConfig)
+    logger.debug("Decoded Id token", {decodedIdToken: decodedIdToken})
+
+    const selectedRoleId = decodedIdToken.selected_roleid
+    logger.debug("Selected role", {selected_roleid: selectedRoleId})
+
+    // Loop through roles to determine which ones have access and set the currently selected role
+    for (const role of roles) {
+      const activityCodes = role.activity_codes || []
       const hasAccess = activityCodes.some((code: string) => accepted_access_codes.includes(code))
-      logger.debug("Role CPT access?", {hasAccess})
+      // logger.debug("Role CPT access?", {hasAccess})
 
       const roleInfo: RoleDetails = {
         role_name: removeRoleCategories(role.role_name),
@@ -76,16 +79,20 @@ export const fetchUserInfo = async (
         org_name: getOrgNameFromOrgCode(data, role.org_code, logger)
       }
 
-      const useMock: boolean = process.env["useMock"] === "true"
-      const {mockOidcConfig, cis2OidcConfig} = initializeOidcConfig()
+      if (!(roleInfo.role_name || roleInfo.role_id || roleInfo.org_code || roleInfo.org_name)) {
+        logger.warn("Role does not meet minimum field requirements", {roleInfo})
+        continue
+      }
 
-      const decodedIdToken = await verifyIdToken(cis2IdToken, logger, useMock ? mockOidcConfig : cis2OidcConfig)
-      logger.debug("Decoded Id token in the userInfoHelper", {decodedIdToken: decodedIdToken})
+      if (hasAccess) {
+        rolesWithAccess.push(roleInfo)
+        logger.debug("Role has access; adding to rolesWithAccess", {roleInfo})
+      } else {
+        rolesWithoutAccess.push(roleInfo)
+        logger.debug("Role does not have access; adding to rolesWithoutAccess", {roleInfo})
+      }
 
-      const selectedRoleId = decodedIdToken.selected_roleid
-      logger.debug("Selected role in the userInfoHelper", {selected_roleid: selectedRoleId})
-
-      // Determine the currently selected role
+      // --- Check if the role is currently selected ---
       logger.debug("Checking if role is currently selected", {selectedRoleId, role_id: role.person_roleid, roleInfo})
       if (selectedRoleId && role.person_roleid === selectedRoleId) {
         logger.debug("Role is currently selected", {role_id: role.person_roleid, roleInfo})
@@ -97,22 +104,7 @@ export const fetchUserInfo = async (
           currentlySelectedRole = undefined
         }
       }
-
-      // Ensure the role has at least one of the required fields
-      if (!(roleInfo.role_name || roleInfo.role_id || roleInfo.org_code || roleInfo.org_name)) {
-        // Skip roles that don't meet the minimum field requirements
-        logger.warn("Role does not meet minimum field requirements", {roleInfo})
-        return
-      }
-
-      if (hasAccess) {
-        rolesWithAccess.push(roleInfo)
-        logger.debug("Role has access; adding to rolesWithAccess", {roleInfo})
-      } else {
-        rolesWithoutAccess.push(roleInfo)
-        logger.debug("Role does not have access; adding to rolesWithoutAccess", {roleInfo})
-      }
-    })
+    }
 
     const result: TrackerUserInfo = {
       roles_with_access: rolesWithAccess,
@@ -130,7 +122,8 @@ export const fetchUserInfo = async (
 
 // Helper function to get organization name from org_code
 function getOrgNameFromOrgCode(data: UserInfoResponse, org_code: string, logger: Logger): string | undefined {
-  logger.info("Getting org name from org code", {org_code, data})
+  // logger.info("Getting org name from org code", {org_code, data})
+  logger.info("Getting org name from org code", {org_code})
   const orgs = data.nhsid_user_orgs || []
   const org = orgs.find((o) => o.org_code === org_code)
   logger.info("Found org", {org})
