@@ -17,6 +17,7 @@ export default function RootLayout({
 
     return (
         <html lang="en">
+            <title>EPS Home</title>
             <body className={mounted ? "js-enabled" : "no-js"}>
                 <AuthProvider>
                     <AccessProvider>

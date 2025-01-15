@@ -1,36 +1,8 @@
 import {Logger} from "@aws-lambda-powertools/logger"
 import {AxiosResponseHeaders, RawAxiosResponseHeaders} from "axios"
 import jwt from "jsonwebtoken"
-import jwksClient from "jwks-rsa"
 import {ParsedUrlQuery} from "querystring"
 import {v4 as uuidv4} from "uuid"
-
-const oidcJwksClient = jwksClient({
-  jwksUri: process.env["oidcjwksEndpoint"] as string
-})
-
-export function getJWKSKey(header: jwt.JwtHeader, callback: jwt.SigningKeyCallback) {
-  oidcJwksClient.getSigningKey(header.kid, function(err, key) {
-    const signingKey = key?.getPublicKey()
-    callback(err, signingKey)
-  })
-}
-
-export function verifyJWTWrapper(jwtToVerify: string,
-  expectedIssuer: string,
-  expectedAudience: string): Promise<jwt.JwtPayload> {
-  return new Promise((resolve, reject) => {
-    jwt.verify(jwtToVerify, getJWKSKey, {
-      audience: expectedAudience,
-      issuer: expectedIssuer
-    }, function(err, decoded) {
-      if (err) {
-        reject(err)
-      }
-      resolve(decoded as jwt.JwtPayload)
-    })
-  })
-}
 
 export function rewriteBodyToAddSignedJWT(
   logger: Logger,

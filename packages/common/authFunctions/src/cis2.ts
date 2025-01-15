@@ -1,8 +1,9 @@
-import {Logger} from "@aws-lambda-powertools/logger"
 import {APIGatewayProxyEvent} from "aws-lambda"
 import {DynamoDBDocumentClient, GetCommand} from "@aws-sdk/lib-dynamodb"
+import {Logger} from "@aws-lambda-powertools/logger"
 import jwt, {JwtPayload} from "jsonwebtoken"
 import jwksClient from "jwks-rsa"
+import {getUsernameFromEvent} from "./event"
 
 const VALID_ACR_VALUES: Array<string> = [
   "AAL3_ANY",
@@ -19,7 +20,13 @@ const VALID_ACR_VALUES: Array<string> = [
   // "AAL2_NHSMAIL"
 ]
 
-// Helper function to get the signing key from the JWKS endpoint
+/**
+ * Helper function to get the signing key from the JWKS endpoint
+ * @param client - a jwks client
+ * @param kid - a KID (key identifier) to get
+ * @returns a promise with the public key
+ * @throws if key not found on jwks url
+*/
 export const getSigningKey = (client: jwksClient.JwksClient, kid: string): Promise<string> => {
   return new Promise((resolve, reject) => {
     client.getSigningKey(kid, (err, key) => {
@@ -36,21 +43,22 @@ export const getSigningKey = (client: jwksClient.JwksClient, kid: string): Promi
   })
 }
 
-export const getUsernameFromEvent = (event: APIGatewayProxyEvent): string => {
-  const username = event.requestContext.authorizer?.claims["cognito:username"]
-  if (!username) {
-    throw new Error("Unable to extract username from ID token")
-  }
-  return username
-}
-
+/**
+ * Helper function to fetch the cis2 tokens from dynamodb
+ * It also verifies the id token
+ * @param username - the username to get the tokens for
+ * @param tokenMappingTableName - the token mapping table name
+ * @param documentClient - a dynamodb document client
+ * @param logger - Logger instance for logging
+ * @returns cis2 access and id tokens
+ */
 export const fetchCIS2TokensFromDynamoDB = async (
   username: string,
   tokenMappingTableName: string,
   documentClient: DynamoDBDocumentClient,
   logger: Logger
 ): Promise<{ cis2AccessToken: string; cis2IdToken: string }> => {
-  logger.info("Fetching CIS2 access token from DynamoDB")
+  logger.info("Fetching CIS2 tokens from DynamoDB")
 
   let result
 
@@ -82,12 +90,12 @@ export const fetchCIS2TokensFromDynamoDB = async (
 export const fetchAndVerifyCIS2Tokens = async (
   event: APIGatewayProxyEvent,
   documentClient: DynamoDBDocumentClient,
-  logger: Logger
+  logger: Logger,
+  oidcConfig: OidcConfig
 ) => {
   logger.info("Fetching and verifying CIS2 tokens")
 
-  const tokenMappingTableName = process.env["TokenMappingTableName"]
-  if (!tokenMappingTableName) {
+  if (oidcConfig.tokenMappingTableName === "") {
     throw new Error("Token mapping table name not set")
   }
 
@@ -98,54 +106,66 @@ export const fetchAndVerifyCIS2Tokens = async (
   // Fetch CIS2 tokens from DynamoDB
   const {cis2AccessToken, cis2IdToken} = await fetchCIS2TokensFromDynamoDB(
     username,
-    tokenMappingTableName,
+    oidcConfig.tokenMappingTableName,
     documentClient,
     logger
   )
 
-  // Verify the tokens
-  await verifyIdToken(cis2IdToken, logger)
-  await verifyAccessToken(cis2AccessToken, logger)
+  // Verify the id token, access token from cis2 is not a JWT
+  await verifyIdToken(cis2IdToken, logger, oidcConfig)
 
   // And return the verified tokens
   return {cis2AccessToken, cis2IdToken}
 }
 
+/**
+ * Interface for passing around oidc config
+ */
+export interface OidcConfig {
+  oidcIssuer: string
+  oidcClientID: string
+  oidcJwksEndpoint: string
+  oidcUserInfoEndpoint: string
+  userPoolIdp: string
+  jwksClient: jwksClient.JwksClient,
+  tokenMappingTableName: string
+}
+
+/**
+ * Helper function for verifying a cis2 token
+ * @param cis2Token - the token to verify
+ * @param logger - Logger instance for logging
+ * @param tokenType - the type of token to check
+ * @param options - options for verification
+ * @param oidcConfig - the oidc config to use for verifying
+ * @returns the decoded token
+ * @throws if token fails verification
+ */
 export const verifyCIS2Token = async (
   cis2Token: string,
   logger: Logger,
   tokenType: string,
   options: {
-    validAcrValues: Array<string>,
-    checkAudience: boolean
-  }
-) => {
-  const oidcIssuer = process.env["oidcIssuer"]
-  if (!oidcIssuer) {
+        validAcrValues: Array<string>,
+        checkAudience: boolean
+      },
+  oidcConfig: OidcConfig
+): Promise<jwt.JwtPayload> => {
+  if (oidcConfig.oidcIssuer === "") {
     throw new Error("OIDC issuer not set")
   }
-  const oidcClientId = process.env["oidcClientId"]
-  if (!oidcClientId) {
+  if (oidcConfig.oidcClientID === "") {
     throw new Error("OIDC client ID not set")
   }
-  const jwksUri = process.env["oidcjwksEndpoint"]
-  if (!jwksUri) {
+  if (oidcConfig.oidcJwksEndpoint === "") {
     throw new Error("JWKS URI not set")
   }
 
-  logger.info(`Verifying ${tokenType}`, {oidcIssuer, oidcClientId, jwksUri})
+  logger.info(`Verifying ${tokenType}`, {oidcConfig})
 
   if (!cis2Token) {
     throw new Error(`${tokenType} not provided`)
   }
-
-  // Create a JWKS client
-  const client = jwksClient({
-    jwksUri: jwksUri,
-    cache: true,
-    cacheMaxEntries: 5,
-    cacheMaxAge: 3600000 // 1 hour
-  })
 
   // Decode the token header to get the kid
   const decodedToken = jwt.decode(cis2Token, {complete: true})
@@ -162,7 +182,7 @@ export const verifyCIS2Token = async (
   let signingKey
   try {
     logger.info("Fetching signing key", {kid})
-    signingKey = await getSigningKey(client, kid)
+    signingKey = await getSigningKey(oidcConfig.jwksClient, kid)
   } catch (err) {
     logger.error("Error getting signing key", {err})
     throw new Error("Error getting signing key")
@@ -171,12 +191,12 @@ export const verifyCIS2Token = async (
 
   // Verify the token signature
   const verifyOptions: jwt.VerifyOptions = {
-    issuer: oidcIssuer,
+    issuer: oidcConfig.oidcIssuer,
     clockTolerance: 5 // seconds
   }
   // ID tokens have an aud claim, access tokens don't
   if (options.checkAudience) {
-    verifyOptions.audience = oidcClientId
+    verifyOptions.audience = oidcConfig.oidcClientID
   }
 
   let verifiedToken: JwtPayload
@@ -208,28 +228,30 @@ export const verifyCIS2Token = async (
     throw new Error(`Invalid ACR claim in ${tokenType}`)
   }
   logger.debug("ACR claim is valid", {acr})
+
+  return verifiedToken
 }
 
-export const verifyIdToken = async (idToken: string, logger: Logger) => {
-  await verifyCIS2Token(
+/**
+ * Heleper function verify a CIS2 id token
+ * @param idToken - the id token to verify
+ * @param logger - Logger instance for logging
+ * @param oidcConfig - the oidc config to use for verifying
+ * @returns the decoded id token
+ */
+export const verifyIdToken = async (
+  idToken: string,
+  logger: Logger,
+  oidcConfig: OidcConfig
+) : Promise<jwt.JwtPayload> => {
+  return await verifyCIS2Token(
     idToken,
     logger,
     "ID token",
     {
       validAcrValues: VALID_ACR_VALUES,
       checkAudience: true
-    }
-  )
-}
-
-export const verifyAccessToken = async (accessToken: string, logger: Logger) => {
-  await verifyCIS2Token(
-    accessToken,
-    logger,
-    "Access token",
-    {
-      validAcrValues: VALID_ACR_VALUES,
-      checkAudience: false
-    }
+    },
+    oidcConfig
   )
 }

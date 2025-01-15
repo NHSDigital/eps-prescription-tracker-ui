@@ -37,6 +37,10 @@
         "path": "../packages/common/testing"
       },
       {
+        "name": "packages/common/authFunctions",
+        "path": "../packages/common/authFunctions"
+      },
+      {
         "name": "packages/auth_demo",
         "path": "../packages/auth_demo"
       },
@@ -65,6 +69,7 @@
         "Canonicaliser",
         "canonicalization",
         "Canonicalized",
+        "changerole",
         "Codeable",
         "codeinline",
         "codesystem",
@@ -85,6 +90,7 @@
         "Helpdesk",
         "homecare",
         "HSCN",
+        "jwks",
         "kohler",
         "liter",
         "mermade",
@@ -97,6 +103,7 @@
         "nhslogin",
         "NOSONAR",
         "OIDC",
+        "oidcjwks",
         "openapi",
         "orta",
         "Orthoptist",
@@ -131,9 +138,7 @@
         "venv",
         "versionable",
         "whens",
-        "yourselectedrole",
-        "jwks",
-        "oidcjwks"
+        "yourselectedrole"
       ],
       "cSpell.dictionaries": ["en-GB"],
       "cSpell.ignorePaths": ["package-lock.json", "node_modules", ".vscode"],

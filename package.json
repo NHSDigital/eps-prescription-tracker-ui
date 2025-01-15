@@ -25,6 +25,7 @@
         "packages/prescriptionSearchLambda",
         "packages/common/middyErrorHandler",
         "packages/common/testing",
+        "packages/common/authFunctions",
         "packages/auth_demo",
         "packages/trackerUserInfoLambda"
     ],
@@ -37,8 +38,8 @@
         "@types/jest": "^29.5.14",
         "@types/node": "^22.10.5",
         "@types/react": "18.3.12",
-        "@typescript-eslint/eslint-plugin": "^8.19.0",
-        "@typescript-eslint/parser": "^8.18.2",
+        "@typescript-eslint/eslint-plugin": "^8.20.0",
+        "@typescript-eslint/parser": "^8.20.0",
         "aws-sdk-client-mock": "^4.1.0",
         "eslint": "^9.16.0",
         "eslint-config-prettier": "^9.1.0",

@@ -1,27 +1,62 @@
 import {APIGatewayProxyEvent, APIGatewayProxyResult} from "aws-lambda"
 import {Logger} from "@aws-lambda-powertools/logger"
 import {injectLambdaContext} from "@aws-lambda-powertools/logger/middleware"
-import middy from "@middy/core"
 import {getSecret} from "@aws-lambda-powertools/parameters/secrets"
+import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
+import {DynamoDBDocumentClient, PutCommand} from "@aws-sdk/lib-dynamodb"
+
+import middy from "@middy/core"
 import inputOutputLogger from "@middy/input-output-logger"
-import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 import axios from "axios"
 import {parse, ParsedUrlQuery, stringify} from "querystring"
 
 import {PrivateKey} from "jsonwebtoken"
-import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
-import {DynamoDBDocumentClient, PutCommand} from "@aws-sdk/lib-dynamodb"
-import {formatHeaders, rewriteBodyToAddSignedJWT, verifyJWTWrapper} from "./helpers"
+
+import {verifyIdToken, initializeOidcConfig} from "@cpt-ui-common/authFunctions"
+import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
+
+import {formatHeaders, rewriteBodyToAddSignedJWT} from "./helpers"
+
+/*
+This is the lambda code that is used to intercept calls to token endpoint as part of the cognito login flow
+It expects the following environment variables to be set
+
+TokenMappingTableName
+jwtPrivateKeyArn
+jwtKid
+useMock
+
+For CIS2 calls, the following must be set
+CIS2_OIDC_ISSUER
+CIS2_OIDC_CLIENT_ID
+CIS2_OIDCJWKS_ENDPOINT
+CIS2_USER_INFO_ENDPOINT
+CIS2_USER_POOL_IDP
+CIS2_IDP_TOKEN_PATH
+
+For mock calls, the following must be set
+MOCK_OIDC_ISSUER
+MOCK_OIDC_CLIENT_ID
+MOCK_OIDCJWKS_ENDPOINT
+MOCK_USER_INFO_ENDPOINT
+MOCK_USER_POOL_IDP
+MOCK_IDP_TOKEN_PATH
+*/
 
 const logger = new Logger({serviceName: "token"})
-const UserPoolIdentityProvider = process.env["UserPoolIdentityProvider"] as string
-const idpTokenPath = process.env["idpTokenPath"] as string
+const useMock: boolean = process.env["useMock"] === "true"
+
+// Create a config for cis2 and mock
+// this is outside functions so it can be re-used and caching works
+const {mockOidcConfig, cis2OidcConfig} = initializeOidcConfig()
+
 const TokenMappingTableName = process.env["TokenMappingTableName"] as string
-const useSignedJWT = process.env["useSignedJWT"] as string
 const jwtPrivateKeyArn = process.env["jwtPrivateKeyArn"] as string
-const oidcClientId = process.env["oidcClientId"] as string
-const oidcIssuer = process.env["oidcIssuer"] as string
 const jwtKid = process.env["jwtKid"] as string
+
+const idpTokenPath = useMock ?
+  process.env["MOCK_IDP_TOKEN_PATH"] as string :
+  process.env["CIS2_IDP_TOKEN_PATH"] as string
 
 const dynamoClient = new DynamoDBClient()
 const documentClient = DynamoDBDocumentClient.from(dynamoClient)
@@ -45,13 +80,9 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   const objectBodyParameters = parse(body as string)
   let rewrittenObjectBodyParameters: ParsedUrlQuery
 
-  if (useSignedJWT === "true") {
-    const jwtPrivateKey = await getSecret(jwtPrivateKeyArn)
-    rewrittenObjectBodyParameters = rewriteBodyToAddSignedJWT(
-      logger, objectBodyParameters, idpTokenPath, jwtPrivateKey as PrivateKey, jwtKid)
-  } else {
-    rewrittenObjectBodyParameters = objectBodyParameters
-  }
+  const jwtPrivateKey = await getSecret(jwtPrivateKeyArn)
+  rewrittenObjectBodyParameters = rewriteBodyToAddSignedJWT(
+    logger, objectBodyParameters, idpTokenPath, jwtPrivateKey as PrivateKey, jwtKid)
 
   logger.debug("about to call downstream idp with rewritten body", {idpTokenPath, body: rewrittenObjectBodyParameters})
 
@@ -65,10 +96,12 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   const idToken = tokenResponse.data.id_token
 
   // verify and decode idToken
-  const decodedIdToken = await verifyJWTWrapper(idToken, oidcIssuer, oidcClientId)
+  const decodedIdToken = await verifyIdToken(idToken, logger, useMock ? mockOidcConfig : cis2OidcConfig)
   logger.debug("decoded idToken", {decodedIdToken})
 
-  const username = `${UserPoolIdentityProvider}_${decodedIdToken.sub}`
+  const username = useMock ?
+    `${mockOidcConfig.userPoolIdp}_${decodedIdToken.sub}` :
+    `${cis2OidcConfig.userPoolIdp}_${decodedIdToken.sub}`
   const params = {
     Item: {
       "username": username,

@@ -168,7 +168,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setAccessToken(null);
       setIdToken(null);
       setIsSignedIn(false);
-      setError(null)    
+      setError(null);
     } catch (err) {
       console.error("Failed to sign out:", err);
       setError(String(err));

@@ -24,7 +24,6 @@ import {UserPoolDomainTarget} from "aws-cdk-lib/aws-route53-targets"
 
 export interface CognitoProps {
   readonly primaryOidcClientId: string
-  readonly primaryOidClientSecret: string
   readonly primaryOidcIssuer: string
   readonly primaryOidcAuthorizeEndpoint: string
   readonly primaryOidcUserInfoEndpoint: string
@@ -32,7 +31,6 @@ export interface CognitoProps {
   readonly primaryTokenEndpoint: string
   readonly useMockOidc: boolean
   readonly mockOidcClientId?: string
-  readonly mockOidClientSecret?: string
   readonly mockOidcIssuer?: string
   readonly mockOidcAuthorizeEndpoint?: string
   readonly mockOidcUserInfoEndpoint?: string
@@ -110,7 +108,8 @@ export class Cognito extends Construct {
     const primaryPoolIdentityProvider = new UserPoolIdentityProviderOidc(this, "UserPoolIdentityProvider", {
       name: "Primary", // this name is used in the web client
       clientId: props.primaryOidcClientId,
-      clientSecret: props.primaryOidClientSecret,
+      // secret not needed for usage but needed for cdk
+      clientSecret: "dummy_value",
       issuerUrl: props.primaryOidcIssuer,
       userPool: userPool,
       attributeRequestMethod: OidcAttributeRequestMethod.GET,
@@ -131,7 +130,6 @@ export class Cognito extends Construct {
         props.mockOidcjwksEndpoint === undefined ||
         props.mockOidcUserInfoEndpoint === undefined ||
         props.mockOidcClientId === undefined ||
-        props.mockOidClientSecret === undefined ||
         props.mockOidcIssuer === undefined
       ) {
         throw new Error("Attempt to use mock oidc but variables are not defined")
@@ -149,7 +147,8 @@ export class Cognito extends Construct {
       mockPoolIdentityProvider = new UserPoolIdentityProviderOidc(this, "MockUserPoolIdentityProvider", {
         name: "Mock",
         clientId: props.mockOidcClientId,
-        clientSecret: props.mockOidClientSecret,
+        // secret not needed for usage but needed for cdk
+        clientSecret: "dummy_value",
         issuerUrl: props.mockOidcIssuer,
         userPool: userPool,
         attributeRequestMethod: OidcAttributeRequestMethod.GET,
@@ -190,14 +189,14 @@ export class Cognito extends Construct {
       // FIXME: This is temporary, until we get routing fixed
       `https://${props.fullCloudfrontDomain}/site/selectyourrole.html`,
       // TODO: This is for the proof-of-concept login page, and can probably be deleted soon.
-      `https://${props.fullCloudfrontDomain}/auth_demo`,
+      `https://${props.fullCloudfrontDomain}/auth_demo/`,
       `https://${props.fullCloudfrontDomain}/oauth2/idpresponse`
     ]
 
     const logoutUrls = [
       `https://${props.fullCloudfrontDomain}/site/logout`,
       `https://${props.fullCloudfrontDomain}/site/logout.html`,
-      `https://${props.fullCloudfrontDomain}/auth_demo`
+      `https://${props.fullCloudfrontDomain}/auth_demo/`
     ]
 
     if (props.useLocalhostCallback) {

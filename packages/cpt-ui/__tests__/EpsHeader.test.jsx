@@ -1,14 +1,16 @@
 import React from 'react';
 import "@testing-library/jest-dom";
 import { render, screen } from "@testing-library/react";
-import EpsHeader from "../components/EpsHeader";
+import EpsHeader from "@/components/EpsHeader";
 import {
   HEADER_SERVICE,
   HEADER_CONFIRM_ROLE_BUTTON,
   HEADER_CHANGE_ROLE_BUTTON,
   HEADER_SELECT_YOUR_ROLE_BUTTON,
   HEADER_PRESCRIPTION_SEARCH_BUTTON
-} from "../constants/ui-strings/HeaderStrings";
+} from "@/constants/ui-strings/HeaderStrings";
+
+import { AccessProvider } from "@/context/AccessProvider";
 
 // Mock useRouter and usePathname:
 jest.mock("next/navigation", () => ({
@@ -26,7 +28,11 @@ describe("EpsHeader", () => {
   describe("General Header Tests", () => {
     beforeEach(() => {
       usePathname.mockReturnValue("/"); // Default route for tests
-      render(<EpsHeader />);
+      render(
+        <AccessProvider>
+          <EpsHeader />
+        </AccessProvider>
+      );
     });
 
     it("Successfully renders a header component, evidenced by role of 'banner'", () => {
@@ -67,9 +73,14 @@ describe("EpsHeader", () => {
   });
 
   describe("Select Your Role Functionality", () => {
+    // FIXME: This test needs to be updated when the behaviour is clarified
     it("Displays 'Select Your Role' link when not on /selectyourrole", () => {
       usePathname.mockReturnValue("/some-other-route");
-      render(<EpsHeader />);
+      render(
+        <AccessProvider>
+          <EpsHeader />
+        </AccessProvider>
+      );
 
       const selectYourRoleLink = screen.getByTestId("eps_header_selectYourRoleLink");
       expect(selectYourRoleLink).toBeInTheDocument();
@@ -78,7 +89,11 @@ describe("EpsHeader", () => {
 
     it("Does not display 'Select Your Role' link when on /selectyourrole", () => {
       usePathname.mockReturnValue("/selectyourrole");
-      render(<EpsHeader />);
+      render(
+        <AccessProvider>
+          <EpsHeader />
+        </AccessProvider>
+      );
 
       const selectYourRoleLink = screen.queryByTestId("eps_header_selectYourRoleLink");
       expect(selectYourRoleLink).toBeNull();
@@ -90,7 +105,11 @@ describe("EpsHeader", () => {
 
     it("Displays 'Confirm Role' link when on /selectyourrole", () => {
       usePathname.mockReturnValue("/selectyourrole");
-      render(<EpsHeader />);
+      render(
+        <AccessProvider>
+          <EpsHeader />
+        </AccessProvider>
+      );
 
       const confirmRoleLink = screen.getByTestId("eps_header_confirmRoleLink");
       expect(confirmRoleLink).toBeInTheDocument();
