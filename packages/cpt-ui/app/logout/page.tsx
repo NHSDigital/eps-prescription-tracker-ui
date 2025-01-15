@@ -4,12 +4,14 @@ import { Container } from "nhsuk-react-components"
 import Link from "next/link";
 
 import { AuthContext } from "@/context/AuthProvider";
+import { useAccess } from "@/context/AccessProvider"
 import EpsSpinner from "@/components/EpsSpinner";
 import { EpsLogoutStrings } from "@/constants/ui-strings/EpsLogoutPageStrings";
 
 export default function LogoutPage() {
 
     const auth = useContext(AuthContext);
+    const {clear} = useAccess();
 
     // Log out on page load
     useEffect(() => {
@@ -22,6 +24,7 @@ export default function LogoutPage() {
 
         if (auth?.isSignedIn) {
             signOut();
+            clear();
         } else {
             console.log("Cannot sign out - not signed in");
         }

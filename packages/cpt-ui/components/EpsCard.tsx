@@ -1,6 +1,11 @@
+'use-client'
 import React from "react";
 import { Card, Col, Row } from "nhsuk-react-components";
+
 import "@/assets/styles/card.scss";
+
+import {useAccess} from '@/context/AccessProvider'
+import { useRouter } from "next/navigation";
 
 export interface EpsCardProps {
     orgName: string;
@@ -17,6 +22,19 @@ export default function EpsCard({
     roleName,
     link,
 }: EpsCardProps) {
+    const router = useRouter();
+    const { setSelectedRole } = useAccess();
+    
+    const handleSetSelectedRole = async (e: React.MouseEvent) => {
+        e.preventDefault();
+        
+        // TODO: Needs to be implemented properly.
+        console.warn("SETTING SELECTED ROLE TO A PLACEHOLDER VALUE");
+        setSelectedRole("PLACEHOLDER");
+        
+        router.push(link);
+    }
+    
     return (
         <Card clickable className="eps-card">
             <Card.Content>
@@ -24,7 +42,10 @@ export default function EpsCard({
 
                     {/* Left Column: org_name and role_name */}
                     <Col width='one-half'>
-                        <Card.Link href={link} >
+                        <Card.Link 
+                        href={link} 
+                        onClick={handleSetSelectedRole}
+                    >
                             <Card.Heading className="nhsuk-heading-s">
                                 {orgName}
                                 <br />
