@@ -113,7 +113,7 @@ export class Cognito extends Construct {
       issuerUrl: props.primaryOidcIssuer,
       userPool: userPool,
       attributeRequestMethod: OidcAttributeRequestMethod.GET,
-      scopes: ["openid", "profile", "email", "nhsperson", "nationalrbacaccess", "associatedorgs", "selectedrole"],
+      scopes: ["openid", "profile", "email", "nhsperson", "nationalrbacaccess", "associatedorgs"],
       endpoints: oidcEndpoints
     })
 
