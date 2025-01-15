@@ -48,7 +48,8 @@ export const fetchUserInfo = async (
         Authorization: `Bearer ${cis2AccessToken}`
       }
     })
-    logger.info("User info fetched successfully", {data: response.data})
+    // logger.info("User info fetched successfully", {data: response.data})
+    logger.info("User info fetched successfully")
 
     // Extract the roles from the user info response
     const data: UserInfoResponse = response.data
@@ -75,6 +76,28 @@ export const fetchUserInfo = async (
         org_name: getOrgNameFromOrgCode(data, role.org_code, logger)
       }
 
+      const useMock: boolean = process.env["useMock"] === "true"
+      const {mockOidcConfig, cis2OidcConfig} = initializeOidcConfig()
+
+      const decodedIdToken = await verifyIdToken(cis2IdToken, logger, useMock ? mockOidcConfig : cis2OidcConfig)
+      logger.debug("Decoded Id token in the userInfoHelper", {decodedIdToken: decodedIdToken})
+
+      const selectedRoleId = decodedIdToken.selected_roleid
+      logger.debug("Selected role in the userInfoHelper", {selected_roleid: selectedRoleId})
+
+      // Determine the currently selected role
+      logger.debug("Checking if role is currently selected", {selectedRoleId, role_id: role.person_roleid, roleInfo})
+      if (selectedRoleId && role.person_roleid === selectedRoleId) {
+        logger.debug("Role is currently selected", {role_id: role.person_roleid, roleInfo})
+        if (hasAccess) {
+          logger.debug("Role has access; setting as currently selected", {roleInfo})
+          currentlySelectedRole = roleInfo
+        } else {
+          logger.debug("Role does not have access; unsetting currently selected role", {roleInfo})
+          currentlySelectedRole = undefined
+        }
+      }
+
       // Ensure the role has at least one of the required fields
       if (!(roleInfo.role_name || roleInfo.role_id || roleInfo.org_code || roleInfo.org_name)) {
         // Skip roles that don't meet the minimum field requirements
@@ -88,28 +111,6 @@ export const fetchUserInfo = async (
       } else {
         rolesWithoutAccess.push(roleInfo)
         logger.debug("Role does not have access; adding to rolesWithoutAccess", {roleInfo})
-      }
-
-      const useMock: boolean = process.env["useMock"] === "true"
-      const {mockOidcConfig, cis2OidcConfig} = initializeOidcConfig()
-
-      const decodedIdToken = await verifyIdToken(cis2IdToken, logger, useMock ? mockOidcConfig : cis2OidcConfig)
-      logger.debug("Decoded Id token", {decodedIdToken: decodedIdToken})
-
-      const selectedRoleId = decodedIdToken.selected_roleid
-      logger.debug("Selected role", {selected_roleid: selectedRoleId})
-
-      // Determine the currently selected role
-      logger.debug("Checking if role is currently selected", {selectedRoleId, role_id: role.person_roleid, roleInfo})
-      if (selectedRoleId && role.person_roleid === selectedRoleId) {
-        logger.debug("Role is currently selected", {role_id: role.person_roleid, roleInfo})
-        if (hasAccess) {
-          logger.debug("Role has access; setting as currently selected", {roleInfo})
-          currentlySelectedRole = roleInfo
-        } else {
-          logger.debug("Role does not have access; unsetting currently selected role", {roleInfo})
-          currentlySelectedRole = undefined
-        }
       }
     })
 
