@@ -44,7 +44,9 @@ on:
         type: boolean
       LOG_LEVEL:
           type: string
-      APIGEE_TOKEN_ENDPOINT:
+      APIGEE_CIS2_TOKEN_ENDPOINT:
+        type: string
+      APIGEE_MOCK_TOKEN_ENDPOINT:
         type: string
       APIGEE_PRESCRIPTIONS_ENDPOINT:
         type: string
@@ -59,11 +61,7 @@ on:
         required: true
       primaryOidcClientId:
         required: false
-      primaryOidClientSecret:
-        required: false
       mockOidcClientId:
-        required: false
-      mockOidClientSecret:
         required: false
       CIS2_PRIVATE_KEY:
         required: true
@@ -135,9 +133,7 @@ jobs:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}
       primaryOidcClientId: ${{ secrets.primaryOidcClientId }}
-      primaryOidClientSecret: ${{ secrets.primaryOidClientSecret }}
       mockOidcClientId: ${{ secrets.mockOidcClientId }}
-      mockOidClientSecret: ${{ secrets.mockOidClientSecret }}
 
   deploy_website_content:
     uses: ./.github/workflows/deploy_website_content.yml
@@ -174,7 +170,8 @@ jobs:
       mockOidcjwksEndpoint: ${{ inputs.mockOidcjwksEndpoint }}
       useLocalhostCallback: ${{ inputs.useLocalhostCallback }}
       useCustomCognitoDomain: ${{ inputs.useCustomCognitoDomain }}
-      APIGEE_TOKEN_ENDPOINT: ${{ inputs.APIGEE_TOKEN_ENDPOINT }}
+      APIGEE_CIS2_TOKEN_ENDPOINT: ${{ inputs.APIGEE_CIS2_TOKEN_ENDPOINT }}
+      APIGEE_MOCK_TOKEN_ENDPOINT: ${{ inputs.APIGEE_MOCK_TOKEN_ENDPOINT }}
       APIGEE_PRESCRIPTIONS_ENDPOINT: ${{ inputs.APIGEE_PRESCRIPTIONS_ENDPOINT }}
       JWT_KID: ${{ inputs.JWT_KID }}
       ROLE_ID: ${{ inputs.ROLE_ID }}
@@ -182,9 +179,7 @@ jobs:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}
       primaryOidcClientId: ${{ secrets.primaryOidcClientId }}
-      primaryOidClientSecret: ${{ secrets.primaryOidClientSecret }}
       mockOidcClientId: ${{ secrets.mockOidcClientId }}
-      mockOidClientSecret: ${{ secrets.mockOidClientSecret }}
       APIGEE_API_KEY: ${{ secrets.APIGEE_API_KEY }}
 
 
@@ -248,9 +243,17 @@ jobs:
           aws cloudfront create-invalidation --distribution-id "${cloudfrontDistributionId}" --paths '/*'
 
           # set the primaryJwtPrivateKeyArn secret
-          aws secretsmanager put-secret-value --secret-id "${primaryJwtPrivateKeyArn}" --secret-string "${{ secrets.CIS2_PRIVATE_KEY }}"
+          if [ -z "${primaryJwtPrivateKeyArn}" ]; then
+            echo "primaryJwtPrivateKeyArn is unset or set to the empty string"
+          else
+            aws secretsmanager put-secret-value --secret-id "${primaryJwtPrivateKeyArn}" --secret-string "${{ secrets.CIS2_PRIVATE_KEY }}"
+          fi
           # set the mockJwtPrivateKeyArn secret
-          aws secretsmanager put-secret-value --secret-id "${mockJwtPrivateKeyArn}" --secret-string "${{ secrets.CIS2_PRIVATE_KEY }}"
+          if [ -z "${mockJwtPrivateKeyArn}" ]; then
+            echo "mockJwtPrivateKeyArn is unset or set to the empty string"
+          else
+            aws secretsmanager put-secret-value --secret-id "${mockJwtPrivateKeyArn}" --secret-string "${{ secrets.CIS2_PRIVATE_KEY }}"
+          fi
   rerelease_stateful_resources:
     if: ${{ needs.check_first_deployment.outputs.FIRST_DEPLOYMENT == 'true' }}
     uses: ./.github/workflows/cdk_release_code.yml
@@ -281,9 +284,7 @@ jobs:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}
       primaryOidcClientId: ${{ secrets.primaryOidcClientId }}
-      primaryOidClientSecret: ${{ secrets.primaryOidClientSecret }}
       mockOidcClientId: ${{ secrets.mockOidcClientId }}
-      mockOidClientSecret: ${{ secrets.mockOidClientSecret }}
 
   update_github_pages:
     runs-on: ubuntu-22.04

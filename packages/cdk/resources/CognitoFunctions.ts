@@ -62,16 +62,15 @@ export class CognitoFunctions extends Construct {
       packageBasePath: "packages/cognito",
       entryPoint: "src/token.ts",
       lambdaEnvironmentVariables: {
-        idpTokenPath: props.primaryOidcTokenEndpoint,
         TokenMappingTableName: props.tokenMappingTable.tableName,
-        UserPoolIdentityProvider: props.primaryPoolIdentityProviderName,
-        oidcjwksEndpoint: props.primaryOidcjwksEndpoint,
+        CIS2_IDP_TOKEN_PATH: props.primaryOidcTokenEndpoint,
+        CIS2_USER_POOL_IDP: props.primaryPoolIdentityProviderName,
+        CIS2_OIDCJWKS_ENDPOINT: props.primaryOidcjwksEndpoint,
         jwtPrivateKeyArn: props.sharedSecrets.primaryJwtPrivateKey.secretArn,
-        userInfoEndpoint: props.primaryOidcUserInfoEndpoint,
-        useSignedJWT: "true",
-        oidcClientId: props.primaryOidcClientId,
-        oidcIssuer: props.primaryOidcIssuer,
-        jwtKid: props.jwtKid
+        CIS2_OIDC_CLIENT_ID: props.primaryOidcClientId,
+        CIS2_OIDC_ISSUER: props.primaryOidcIssuer,
+        jwtKid: props.jwtKid,
+        useMock: "false"
       }
     })
 
@@ -115,16 +114,15 @@ export class CognitoFunctions extends Construct {
         packageBasePath: "packages/cognito",
         entryPoint: "src/token.ts",
         lambdaEnvironmentVariables: {
-          idpTokenPath: props.mockOidcTokenEndpoint,
           TokenMappingTableName: props.tokenMappingTable.tableName,
-          UserPoolIdentityProvider: props.mockPoolIdentityProviderName,
-          oidcjwksEndpoint: props.mockOidcjwksEndpoint,
+          MOCK_IDP_TOKEN_PATH: props.mockOidcTokenEndpoint,
+          MOCK_USER_POOL_IDP: props.mockPoolIdentityProviderName,
+          MOCK_OIDCJWKS_ENDPOINT: props.mockOidcjwksEndpoint,
           jwtPrivateKeyArn: props.sharedSecrets.mockJwtPrivateKey!.secretArn,
-          userInfoEndpoint: props.mockOidcUserInfoEndpoint,
-          useSignedJWT: "true",
-          oidcClientId: props.mockOidcClientId,
-          oidcIssuer: props.mockOidcIssuer,
-          jwtKid: props.jwtKid
+          MOCK_OIDC_CLIENT_ID: props.mockOidcClientId,
+          MOCK_OIDC_ISSUER: props.mockOidcIssuer,
+          jwtKid: props.jwtKid,
+          useMock: "true"
         }
       })
 
