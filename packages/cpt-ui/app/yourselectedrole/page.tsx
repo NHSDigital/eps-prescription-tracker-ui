@@ -1,22 +1,46 @@
 'use client'
-import React from "react"
+import React, { useEffect, useState } from "react"
 
 import { Container, Col, Row, Button, Table } from "nhsuk-react-components";
 import Link from "next/link";
 import { useRouter } from "next/navigation"
 
+import { YOUR_SELECTED_ROLE_STRINGS } from "@/constants/ui-strings/YourSelectedRoleStrings"
+import { useAccess } from "@/context/AccessProvider";
+
 export default function YourSelectedRolePage() {
     const router = useRouter()
+    const { selectedRole } = useAccess()
 
-    const roleName = "Health professional access role"
-    const orgName = "COHEN'S CHEMIST"
-    const odsCode = "FV519"
+    const [roleName, setRoleName] = useState<string | undefined>(undefined)
+    const [orgName, setOrgName] = useState<string | undefined>(undefined)
+    const [odsCode, setOdsCode] = useState<string | undefined>(undefined)
+
+    useEffect(() => {
+        if (!selectedRole) {
+            return
+        }
+
+        setRoleName(selectedRole.role_name)
+        setOrgName(selectedRole.org_name)
+        setOdsCode(selectedRole.org_code)
+    }, [selectedRole])
 
     const handleRedirect = async (e: React.MouseEvent | React.KeyboardEvent) => {
         // Naked href don't respect the router, so this overrides that
         e.preventDefault();
         router.push("/searchforaprescription")
     }
+
+    const {
+        heading,
+        subheading,
+        tableTitle,
+        roleLabel,
+        orgLabel,
+        changeLinkText,
+        confirmButtonText
+    } = YOUR_SELECTED_ROLE_STRINGS
 
     return (
         <main className="nhsuk-main-wrapper">
@@ -26,11 +50,11 @@ export default function YourSelectedRolePage() {
                         <h1 className="nhsuk-heading-xl">
                             <span role="text" data-testid="eps_header_selectYourRole">
                                 <span className="nhsuk-title">
-                                    Your selected role
+                                    {heading}
                                 </span>
                                 <span className="nhsuk-caption-l nhsuk-caption--bottom">
                                     <span className="nhsuk-u-visually-hidden"> - </span>
-                                    The following role is now active
+                                    {subheading}
                                 </span>
                             </span>
                         </h1>
@@ -38,12 +62,12 @@ export default function YourSelectedRolePage() {
 
                     {/* Roles without access Section */}
                     <Col width="two-thirds">
-                        <h2>Current role details</h2>
+                        <h2>{tableTitle}</h2>
                         <Table>
                             <Table.Body>
                                 <Table.Row key="role-row">
                                     <Table.Cell data-testid="role-label">
-                                        <b>Role</b>
+                                        <b>{roleLabel}</b>
                                     </Table.Cell>
                                     <Table.Cell data-testid="role-text">
                                         {roleName}
@@ -53,13 +77,13 @@ export default function YourSelectedRolePage() {
                                             href="/changerole"
                                             passHref={true}
                                         >
-                                            Change
+                                            {changeLinkText}
                                         </Link>
                                     </Table.Cell>
                                 </Table.Row>
                                 <Table.Row key="org-row">
                                     <Table.Cell data-testid="org-label">
-                                        <b>Organisation</b>
+                                        <b>{orgLabel}</b>
                                     </Table.Cell>
                                     <Table.Cell data-testid="org-text">
                                         {orgName} (ODS: {odsCode})
@@ -69,7 +93,7 @@ export default function YourSelectedRolePage() {
                                             href="/changerole"
                                             passHref={true}
                                         >
-                                            Change
+                                            {changeLinkText}
                                         </Link>
                                     </Table.Cell>
                                 </Table.Row>
@@ -81,7 +105,7 @@ export default function YourSelectedRolePage() {
                 <Row>
                     <Col width="two-thirds">
                         <Button onClick={handleRedirect}>
-                            Confirm and continue to find a prescription
+                            {confirmButtonText}
                         </Button>
                     </Col>
                 </Row>

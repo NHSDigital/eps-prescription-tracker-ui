@@ -1,18 +1,20 @@
 'use client'
-import React, {useState, useEffect, useContext, useCallback} from "react"
-import {useRouter} from 'next/navigation'
-import {Container, Col, Row, Details, Table, ErrorSummary, Button, InsetText} from "nhsuk-react-components"
+import React, { useState, useEffect, useContext, useCallback } from "react"
+import { useRouter } from 'next/navigation'
+import { Container, Col, Row, Details, Table, ErrorSummary, Button, InsetText } from "nhsuk-react-components"
 
-import {AuthContext} from "@/context/AuthProvider"
-import {useAccess} from '@/context/AccessProvider'
+import { AuthContext } from "@/context/AuthProvider"
+import { useAccess } from '@/context/AccessProvider'
 
-import EpsCard, { EpsCardProps } from "@/components/EpsCard"
+import EpsCard from "@/components/EpsCard"
 import EpsSpinner from "@/components/EpsSpinner";
 
 import { RoleDetails, TrackerUserInfo } from "@/types/TrackerUserInfoTypes"
 
-// Extends the EpsCardProps to include a unique identifier
-export type RolesWithAccessProps = EpsCardProps & {
+// This is passed to the EPS card component.
+export type RolesWithAccessProps = {
+    role: RoleDetails
+    link: string
     uuid: string
 }
 
@@ -70,7 +72,6 @@ export default function RoleSelectionPage({ contentText }: RoleSelectionPageProp
         rolesWithoutAccessHeader,
         noODSCode,
         noRoleName,
-        noAddress,
         errorDuringRoleSelection
     } = contentText
 
@@ -117,7 +118,7 @@ export default function RoleSelectionPage({ contentText }: RoleSelectionPageProp
             }
 
             const userInfo: TrackerUserInfo = data.userInfo
-            
+
             const rolesWithAccess = userInfo.roles_with_access
             const rolesWithoutAccess = userInfo.roles_without_access
             // Unused for now
@@ -129,12 +130,9 @@ export default function RoleSelectionPage({ contentText }: RoleSelectionPageProp
             // Populate the EPS card props
             setRolesWithAccess(
                 rolesWithAccess.map((role: RoleDetails, index: number) => ({
+                    role,
+                    link: "/yourselectedrole",
                     uuid: `{role_with_access_${index}}`,
-                    orgName: role.org_name ? role.org_name : noOrgName,
-                    odsCode: role.org_code ? role.org_code : noODSCode,
-                    siteAddress: role.site_address ? role.site_address : noAddress,
-                    roleName: role.role_name ? role.role_name : noRoleName,
-                    link: "/yourselectedrole"
                 }))
             )
 
@@ -171,7 +169,6 @@ export default function RoleSelectionPage({ contentText }: RoleSelectionPageProp
         setSingleAccess,
         noOrgName,
         noODSCode,
-        noAddress,
         noRoleName
     ])
 

@@ -11,7 +11,7 @@ import { EpsLogoutStrings } from "@/constants/ui-strings/EpsLogoutPageStrings";
 export default function LogoutPage() {
 
     const auth = useContext(AuthContext);
-    const {clear} = useAccess();
+    const { clear } = useAccess();
 
     // Log out on page load
     useEffect(() => {
@@ -28,7 +28,7 @@ export default function LogoutPage() {
         } else {
             console.log("Cannot sign out - not signed in");
         }
-    }, [auth]);
+    }, [auth, clear]);
 
     // TODO: Move strings to a constants file
     return (

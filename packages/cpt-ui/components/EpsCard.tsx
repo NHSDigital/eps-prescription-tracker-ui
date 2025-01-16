@@ -4,64 +4,66 @@ import { Card, Col, Row } from "nhsuk-react-components";
 
 import "@/assets/styles/card.scss";
 
-import {useAccess} from '@/context/AccessProvider'
+import { useAccess } from '@/context/AccessProvider'
 import { useRouter } from "next/navigation";
+import { RoleDetails } from "@/types/TrackerUserInfoTypes";
+
+import { EPS_CARD_STRINGS } from "@/constants/ui-strings/CardStrings";
 
 export interface EpsCardProps {
-    orgName: string;
-    odsCode: string;
-    siteAddress: string | null;
-    roleName: string;
+    role: RoleDetails
     link: string;
 }
 
 export default function EpsCard({
-    orgName,
-    odsCode,
-    siteAddress,
-    roleName,
-    link,
+    role,
+    link
 }: EpsCardProps) {
     const router = useRouter();
     const { setSelectedRole } = useAccess();
-    
+
     const handleSetSelectedRole = async (e: React.MouseEvent) => {
         e.preventDefault();
-        
-        // TODO: Needs to be implemented properly.
-        console.warn("SETTING SELECTED ROLE TO A PLACEHOLDER VALUE");
-        setSelectedRole("PLACEHOLDER");
-        
+
+        setSelectedRole(role);
+        // FIXME: This needs to also make the necessary PUT /selectrole request to the backend
+
         router.push(link);
     }
-    
+
+    const {
+        noODSCode,
+        noOrgName,
+        noRoleName,
+        noAddress
+    } = EPS_CARD_STRINGS
+
     return (
         <Card clickable className="eps-card">
             <Card.Content>
                 <Row className="nhsuk-grid-row eps-card__content">
 
-                    {/* Left Column: org_name and role_name */}
                     <Col width='one-half'>
-                        <Card.Link 
-                        href={link} 
-                        onClick={handleSetSelectedRole}
-                    >
+                        <Card.Link
+                            href={link}
+                            onClick={handleSetSelectedRole}
+                        >
                             <Card.Heading className="nhsuk-heading-s">
-                                {orgName}
+                                {role.org_name || noOrgName}
                                 <br />
-                                (ODS: {odsCode})
+                                (ODS: {role.org_code || noODSCode})
                             </Card.Heading>
                         </Card.Link>
                         <Card.Description className="eps-card__roleName">
-                            {roleName}
+                            {role.role_name || noRoleName}
                         </Card.Description>
                     </Col>
 
-                    {/* Right Column: siteAddress */}
                     <Col width='one-half'>
                         <Card.Description className="eps-card__siteAddress">
-                            {siteAddress &&
-                                siteAddress.split("\n").map((line: string, index: number) => (
+                            {(role.site_address || noAddress)
+                                .split("\n")
+                                .map((line: string, index: number) => (
                                     <span
                                         key={index}
                                         className="eps-card__siteAddress-line"
