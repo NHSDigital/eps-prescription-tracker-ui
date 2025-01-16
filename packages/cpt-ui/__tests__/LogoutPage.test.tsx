@@ -3,6 +3,8 @@ import "@testing-library/jest-dom";
 import { render, screen, waitFor } from "@testing-library/react";
 import React, { useState } from "react";
 
+import { AccessProvider } from "@/context/AccessProvider";
+
 // Mock the configureAmplify module
 jest.mock("@/context/configureAmplify", () => ({
   __esModule: true,
@@ -108,7 +110,9 @@ describe("LogoutPage", () => {
   it("renders 'Logout successful' immediately if the user is not signed in", () => {
     render(
       <MockAuthProvider defaultIsSignedIn={false}>
-        <LogoutPage />
+        <AccessProvider>
+          <LogoutPage />
+        </AccessProvider>
       </MockAuthProvider>
     );
 
@@ -130,7 +134,9 @@ describe("LogoutPage", () => {
   it("shows a spinner and calls signOut when the user is signed in", async () => {
     render(
       <MockAuthProvider defaultIsSignedIn={true}>
-        <LogoutPage />
+        <AccessProvider>
+          <LogoutPage />
+        </AccessProvider>
       </MockAuthProvider>
     );
 
@@ -156,7 +162,9 @@ describe("LogoutPage", () => {
   it("does not call signOut if user is signed in, but we haven't advanced timers yet", () => {
     render(
       <MockAuthProvider defaultIsSignedIn={true}>
-        <LogoutPage />
+        <AccessProvider>
+          <LogoutPage />
+        </AccessProvider>
       </MockAuthProvider>
     );
 

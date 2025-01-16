@@ -189,14 +189,14 @@ export class Cognito extends Construct {
       // FIXME: This is temporary, until we get routing fixed
       `https://${props.fullCloudfrontDomain}/site/selectyourrole.html`,
       // TODO: This is for the proof-of-concept login page, and can probably be deleted soon.
-      `https://${props.fullCloudfrontDomain}/auth_demo`,
+      `https://${props.fullCloudfrontDomain}/auth_demo/`,
       `https://${props.fullCloudfrontDomain}/oauth2/idpresponse`
     ]
 
     const logoutUrls = [
       `https://${props.fullCloudfrontDomain}/site/logout`,
       `https://${props.fullCloudfrontDomain}/site/logout.html`,
-      `https://${props.fullCloudfrontDomain}/auth_demo`
+      `https://${props.fullCloudfrontDomain}/auth_demo/`
     ]
 
     if (props.useLocalhostCallback) {

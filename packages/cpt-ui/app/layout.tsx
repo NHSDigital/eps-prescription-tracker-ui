@@ -14,6 +14,7 @@ export default function RootLayout({
 }) {
     return (
         <html lang="en">
+            <title>EPS Home</title>
             <body>
                 <AuthProvider>
                     <AccessProvider>
