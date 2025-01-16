@@ -1,17 +1,17 @@
 import "@testing-library/jest-dom"
-import {render, screen, waitFor} from "@testing-library/react"
-import {useRouter} from 'next/navigation'
+import { render, screen, waitFor } from "@testing-library/react"
+import { useRouter } from 'next/navigation'
 import React from "react"
 import SelectYourRolePage from "@/app/selectyourrole/page"
-import {AccessProvider} from "@/context/AccessProvider"
-import {AuthContext} from "@/context/AuthProvider"
-import {SelectYourRolePageStrings} from "@/constants/ui-strings/SelectYourRolePageStrings"
-import {EpsSpinnerStrings} from "@/constants/ui-strings/EpsSpinnerStrings"
+import { AccessProvider } from "@/context/AccessProvider"
+import { AuthContext } from "@/context/AuthProvider"
+import { SELECT_YOUR_ROLE_PAGE_TEXT } from "@/constants/ui-strings/SelectYourRolePageStrings"
+import { EpsSpinnerStrings } from "@/constants/ui-strings/EpsSpinnerStrings"
 
 
 // Mock the module and directly reference the variable
 jest.mock("@/constants/ui-strings/SelectYourRolePageStrings", () => {
-  const SelectYourRolePageStrings = {
+  const SELECT_YOUR_ROLE_PAGE_TEXT = {
     title: "Select your role",
     caption: "Select the role you wish to use to access the service.",
     titleNoAccess: "No access to the clinical prescription tracking service",
@@ -41,7 +41,7 @@ jest.mock("@/constants/ui-strings/SelectYourRolePageStrings", () => {
     loadingMessage: "Loading...",
   }
 
-  return {SelectYourRolePageStrings}
+  return { SELECT_YOUR_ROLE_PAGE_TEXT }
 })
 
 // Define mockJWT
@@ -85,8 +85,8 @@ const renderWithAuthAndAccess = (
   authOverrides = {},
   accessOverrides = {}
 ) => {
-  const authValue = {...defaultAuthContext, ...authOverrides}
-  const accessValue = {...defaultAccessContext, ...accessOverrides}
+  const authValue = { ...defaultAuthContext, ...authOverrides }
+  const accessValue = { ...defaultAccessContext, ...accessOverrides }
 
   return render(
     <AuthContext.Provider value={authValue}>
@@ -105,10 +105,10 @@ describe("SelectYourRolePage", () => {
 
   it("renders loading state when signed in but fetch hasn't resolved yet", async () => {
     // Mock fetch to hang indefinitely, simulating a pending request
-    mockFetch.mockImplementation(() => new Promise(() => {}))
+    mockFetch.mockImplementation(() => new Promise(() => { }))
 
     // Render the page with user signed in
-    renderWithAuthAndAccess({isSignedIn: true, idToken: "mock-id-token"}, {loading: true})
+    renderWithAuthAndAccess({ isSignedIn: true, idToken: "mock-id-token" }, { loading: true })
 
     // Verify that the loading text appears
     const loadingText = screen.getByText(EpsSpinnerStrings.loading)
@@ -117,15 +117,15 @@ describe("SelectYourRolePage", () => {
 
   it("renders error summary if fetch returns non-200 status", async () => {
     // Mock fetch to return a 500 status code (server error)
-    mockFetch.mockResolvedValue({status: 500})
+    mockFetch.mockResolvedValue({ status: 500 })
 
     // Render the page with user signed in
-    renderWithAuthAndAccess({isSignedIn: true, idToken: "mock-id-token"})
+    renderWithAuthAndAccess({ isSignedIn: true, idToken: "mock-id-token" })
 
     // Wait for the error message to appear
     await waitFor(() => {
       const errorHeading = screen.getByRole("heading", {
-        name: SelectYourRolePageStrings.errorDuringRoleSelection,
+        name: SELECT_YOUR_ROLE_PAGE_TEXT.errorDuringRoleSelection,
       })
       expect(errorHeading).toBeInTheDocument()
 
@@ -143,13 +143,13 @@ describe("SelectYourRolePage", () => {
     })
 
     // Render the page with user signed in
-    renderWithAuthAndAccess({isSignedIn: true, idToken: "mock-id-token"})
+    renderWithAuthAndAccess({ isSignedIn: true, idToken: "mock-id-token" })
 
     // Wait for the error message to appear
     await waitFor(() => {
       // Check for error summary heading
       const errorHeading = screen.getByRole("heading", {
-        name: SelectYourRolePageStrings.errorDuringRoleSelection,
+        name: SELECT_YOUR_ROLE_PAGE_TEXT.errorDuringRoleSelection,
       })
       expect(errorHeading).toBeInTheDocument()
 
@@ -183,17 +183,17 @@ describe("SelectYourRolePage", () => {
     // Mock fetch to return 200 OK with valid userInfo
     mockFetch.mockResolvedValue({
       status: 200,
-      json: async () => ({userInfo: mockUserInfo}),
+      json: async () => ({ userInfo: mockUserInfo }),
     })
 
     // Render the page with user signed in
-    renderWithAuthAndAccess({isSignedIn: true, idToken: "mock-id-token"})
+    renderWithAuthAndAccess({ isSignedIn: true, idToken: "mock-id-token" })
 
     // Wait for the main content to load
     await waitFor(() => {
       // Check for the page heading
-      const heading = screen.getByRole("heading", {level: 1})
-      expect(heading).toHaveTextContent(SelectYourRolePageStrings.title)
+      const heading = screen.getByRole("heading", { level: 1 })
+      expect(heading).toHaveTextContent(SELECT_YOUR_ROLE_PAGE_TEXT.title)
     })
   })
 
@@ -214,18 +214,18 @@ describe("SelectYourRolePage", () => {
     // Mock fetch to return 200 OK with valid userInfo
     mockFetch.mockResolvedValue({
       status: 200,
-      json: async () => ({userInfo: mockUserInfo}),
+      json: async () => ({ userInfo: mockUserInfo }),
     })
 
     // Render the page with user signed in
-    renderWithAuthAndAccess({isSignedIn: true, idToken: "mock-id-token"})
+    renderWithAuthAndAccess({ isSignedIn: true, idToken: "mock-id-token" })
 
     // Wait for the main content to load
     await waitFor(() => {
       // Check for the no-access title
-      const heading = screen.getByRole("heading", {level: 1})
+      const heading = screen.getByRole("heading", { level: 1 })
       expect(heading).toHaveTextContent(
-        SelectYourRolePageStrings.titleNoAccess
+        SELECT_YOUR_ROLE_PAGE_TEXT.titleNoAccess
       )
     })
   })
@@ -245,7 +245,7 @@ describe("SelectYourRolePage", () => {
 
     mockFetch.mockResolvedValue({
       status: 200,
-      json: async () => ({userInfo: mockUserInfo}),
+      json: async () => ({ userInfo: mockUserInfo }),
     })
 
     const mockPush = jest.fn();
@@ -253,7 +253,7 @@ describe("SelectYourRolePage", () => {
       push: mockPush,
     })
 
-    renderWithAuthAndAccess({isSignedIn: true, idToken: "mock-id-token"})
+    renderWithAuthAndAccess({ isSignedIn: true, idToken: "mock-id-token" })
 
     await waitFor(() => {
       expect(mockPush).toHaveBeenCalledWith("/searchforaprescription")

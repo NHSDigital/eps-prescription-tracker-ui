@@ -1,4 +1,4 @@
-export const SelectYourRolePageStrings = {
+export const SELECT_YOUR_ROLE_PAGE_TEXT = {
   title: "Select your role",
   caption: "Select the role you wish to use to access the service.",
   titleNoAccess: "No access to the clinical prescription tracking service",

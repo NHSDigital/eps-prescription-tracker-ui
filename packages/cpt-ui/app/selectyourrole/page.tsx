@@ -1,15 +1,3 @@
-// 'use client'
-// import React from "react"
-
-// import {SELECT_YOUR_ROLE_PAGE_TEXT} from "@/constants/ui-strings/CardStrings"
-// import RoleSelectionPage from "@/components/EpsRoleSelectionPage"
-
-
-// export default function SelectYourRolePage() {
-//     return (
-//         <RoleSelectionPage contentText={SELECT_YOUR_ROLE_PAGE_TEXT} />
-//     )
-// }
 'use client'
 import React, { useState, useEffect, useContext, useCallback } from "react"
 import { useRouter } from 'next/navigation'
@@ -21,7 +9,7 @@ import { useAccess } from '@/context/AccessProvider'
 import EpsCard, { EpsCardProps } from "@/components/EpsCard"
 import EpsSpinner from "@/components/EpsSpinner"
 
-import { SelectYourRolePageStrings } from "@/constants/ui-strings/SelectYourRolePageStrings"
+import { SELECT_YOUR_ROLE_PAGE_TEXT } from "@/constants/ui-strings/SelectYourRolePageStrings"
 
 export type RoleDetails = {
     role_name?: string
@@ -71,7 +59,7 @@ const {
     noRoleName,
     noAddress,
     errorDuringRoleSelection
-} = SelectYourRolePageStrings
+} = SELECT_YOUR_ROLE_PAGE_TEXT
 
 export default function SelectYourRolePage() {
     const { setNoAccess } = useAccess()
@@ -232,7 +220,7 @@ export default function SelectYourRolePage() {
         ? loginInfoText.message(currentlySelectedRole.org_name || noOrgName, currentlySelectedRole.org_code || noODSCode, currentlySelectedRole.role_name || noRoleName)
         : ""
 
-    console.log("Title for no access:", SelectYourRolePageStrings.titleNoAccess)
+    console.log("Title for no access:", SELECT_YOUR_ROLE_PAGE_TEXT.titleNoAccess)
     console.log("No Access State:", noAccess)
 
     return (
