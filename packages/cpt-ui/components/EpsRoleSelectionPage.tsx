@@ -1,10 +1,10 @@
 'use client'
-import React, {useState, useEffect, useContext} from "react"
-import {useRouter} from 'next/navigation'
-import {Container, Col, Row, Details, Table, ErrorSummary, Button, InsetText} from "nhsuk-react-components"
+import React, { useState, useEffect, useContext } from "react"
+import { useRouter } from 'next/navigation'
+import { Container, Col, Row, Details, Table, ErrorSummary, Button, InsetText } from "nhsuk-react-components"
 
-import {AuthContext} from "@/context/AuthProvider"
-import {useAccess} from '@/context/AccessProvider'
+import { AuthContext } from "@/context/AuthProvider"
+import { useAccess } from '@/context/AccessProvider'
 
 import EpsCard, { EpsCardProps } from "@/components/EpsCard"
 import EpsSpinner from "@/components/EpsSpinner";
@@ -89,13 +89,20 @@ export default function RoleSelectionPage({ contentText }: RoleSelectionPageProp
         setError(null);
         setRolesWithAccess([]);
         setRolesWithoutAccess([]);
-    
-        if (!auth?.isSignedIn || !auth) {
+
+        if (!auth?.isSignedIn || !auth?.idToken) {
             setLoading(false);
             setError(null);
             return;
         }
-    
+        // Now that we know there is an id token, check that it has a toString property.
+        // For some reason, it doesn't have this immediately, it gets added after a brief pause.
+        if (!auth?.idToken.hasOwnProperty('toString')) {
+            setLoading(false);
+            setError(null);
+            return;
+        }
+
         fetch(trackerUserInfoEndpoint, {
             headers: {
                 Authorization: `Bearer ${auth?.idToken}`,
@@ -124,7 +131,7 @@ export default function RoleSelectionPage({ contentText }: RoleSelectionPageProp
                 //     ...userInfo.currently_selected_role,
                 //     uuid: `selected_role_0`
                 // } : undefined
-    
+
                 setRolesWithAccess(
                     rolesWithAccess.map((role: RoleDetails, index: number) => ({
                         uuid: `{role_with_access_${index}}`,
@@ -135,7 +142,7 @@ export default function RoleSelectionPage({ contentText }: RoleSelectionPageProp
                         link: "/yourselectedrole",
                     }))
                 );
-    
+
                 setRolesWithoutAccess(
                     rolesWithoutAccess.map((role: RoleDetails, index: number) => ({
                         uuid: `{role_without_access_${index}}`,
@@ -144,10 +151,10 @@ export default function RoleSelectionPage({ contentText }: RoleSelectionPageProp
                         odsCode: role.org_code || noODSCode,
                     }))
                 );
-    
+
                 setNoAccess(rolesWithAccess.length === 0);
                 setSingleAccess(rolesWithAccess.length === 1);
-    
+
                 // If the user has exactly one accessible role and zero roles without access,
                 // redirect them immediately
                 if (rolesWithAccess.length === 1 && rolesWithoutAccess.length === 0) {
@@ -173,7 +180,7 @@ export default function RoleSelectionPage({ contentText }: RoleSelectionPageProp
         noAddress,
         noRoleName,
     ]);
-    
+
 
     useEffect(() => {
         console.log("Auth error updated:", auth?.error)
