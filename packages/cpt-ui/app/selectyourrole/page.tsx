@@ -1,15 +1,15 @@
 'use client'
-import React, {useState, useEffect, useContext, useCallback} from "react"
-import {useRouter} from 'next/navigation'
-import {Container, Col, Row, Details, Table, ErrorSummary, Button, InsetText} from "nhsuk-react-components"
+import React, { useState, useEffect, useContext, useCallback } from "react"
+import { useRouter } from 'next/navigation'
+import { Container, Col, Row, Details, Table, ErrorSummary, Button, InsetText } from "nhsuk-react-components"
 
-import {AuthContext} from "@/context/AuthProvider"
-import {useAccess} from '@/context/AccessProvider'
+import { AuthContext } from "@/context/AuthProvider"
+import { useAccess } from '@/context/AccessProvider'
 
-import EpsCard, {EpsCardProps} from "@/components/EpsCard"
+import EpsCard, { EpsCardProps } from "@/components/EpsCard"
 import EpsSpinner from "@/components/EpsSpinner"
 
-import {SelectYourRolePageStrings} from "@/constants/ui-strings/SelectYourRolePageStrings"
+import { SelectYourRolePageStrings } from "@/constants/ui-strings/SelectYourRolePageStrings"
 
 export type RoleDetails = {
     role_name?: string
@@ -46,6 +46,7 @@ const {
     caption,
     titleNoAccess,
     captionNoAccess,
+    captionNoRoles,
     loginInfoText,
     confirmButton,
     alternativeMessage,
@@ -61,7 +62,7 @@ const {
 } = SelectYourRolePageStrings
 
 export default function SelectYourRolePage() {
-    const {setNoAccess} = useAccess()
+    const { setNoAccess } = useAccess()
     const [loading, setLoading] = useState<boolean>(true)
     const [error, setError] = useState<string | null>(null)
     const [redirecting, setRedirecting] = useState<boolean>(false)
@@ -214,6 +215,7 @@ export default function SelectYourRolePage() {
     }
 
     const noAccess = rolesWithAccess.length === 0
+    const noRoles = rolesWithAccess.length && rolesWithoutAccess.length === 0
     const loginInfoMessage = currentlySelectedRole
         ? loginInfoText.message(currentlySelectedRole.org_name || noOrgName, currentlySelectedRole.org_code || noODSCode, currentlySelectedRole.role_name || noRoleName)
         : ""
@@ -239,11 +241,12 @@ export default function SelectYourRolePage() {
                         {/* Caption Section for No Access */}
                         {noAccess && (<p>{captionNoAccess}</p>)}
                         {/* Inset Text Section */}
-                        {!noAccess && (
+                        {!noRoles && (<p> {captionNoRoles}</p>)}
+                        {!noAccess && !noRoles && (
                             <section aria-label="Login Information">
                                 <InsetText>
                                     <span className="nhsuk-u-visually-hidden">{loginInfoText.visuallyHidden}</span>
-                                    <p dangerouslySetInnerHTML={{__html: loginInfoMessage}}></p>
+                                    <p dangerouslySetInnerHTML={{ __html: loginInfoMessage }}></p>
                                 </InsetText>
                                 {/* Confirm Button */}
                                 <Button href={confirmButton.link}>{confirmButton.text}</Button>
@@ -253,7 +256,7 @@ export default function SelectYourRolePage() {
                     </Col>
 
                     {/* Roles with access Section */}
-                    {!noAccess && (
+                    {!noAccess && rolesWithAccess && (
                         <Col width="two-thirds">
                             <div className="section" >
                                 {rolesWithAccess.map((role: RolesWithAccessProps) => (
@@ -264,36 +267,38 @@ export default function SelectYourRolePage() {
                     )}
 
                     {/* Roles without access Section */}
-                    <Col width="two-thirds">
-                        <h3>{rolesWithoutAccessHeader}</h3>
-                        <Details expander>
-                            <Details.Summary>
-                                {roles_without_access_table_title}
-                            </Details.Summary>
-                            <Details.Text>
-                                <Table>
-                                    <Table.Head>
-                                        <Table.Row>
-                                            <Table.Cell>{organisation}</Table.Cell>
-                                            <Table.Cell>{role}</Table.Cell>
-                                        </Table.Row>
-                                    </Table.Head>
-                                    <Table.Body>
-                                        {rolesWithoutAccess.map((role: RolesWithoutAccessProps) => (
-                                            <Table.Row key={role.uuid}>
-                                                <Table.Cell>
-                                                    {role.orgName} (ODS: {role.odsCode})
-                                                </Table.Cell>
-                                                <Table.Cell>
-                                                    {role.roleName}
-                                                </Table.Cell>
+                    {rolesWithoutAccess && (
+                        <Col width="two-thirds">
+                            <h3>{rolesWithoutAccessHeader}</h3>
+                            <Details expander>
+                                <Details.Summary>
+                                    {roles_without_access_table_title}
+                                </Details.Summary>
+                                <Details.Text>
+                                    <Table>
+                                        <Table.Head>
+                                            <Table.Row>
+                                                <Table.Cell>{organisation}</Table.Cell>
+                                                <Table.Cell>{role}</Table.Cell>
                                             </Table.Row>
-                                        ))}
-                                    </Table.Body>
-                                </Table>
-                            </Details.Text>
-                        </Details>
-                    </Col>
+                                        </Table.Head>
+                                        <Table.Body>
+                                            {rolesWithoutAccess.map((role: RolesWithoutAccessProps) => (
+                                                <Table.Row key={role.uuid}>
+                                                    <Table.Cell>
+                                                        {role.orgName} (ODS: {role.odsCode})
+                                                    </Table.Cell>
+                                                    <Table.Cell>
+                                                        {role.roleName}
+                                                    </Table.Cell>
+                                                </Table.Row>
+                                            ))}
+                                        </Table.Body>
+                                    </Table>
+                                </Details.Text>
+                            </Details>
+                        </Col>
+                    )}
                 </Row>
             </Container>
         </main>
