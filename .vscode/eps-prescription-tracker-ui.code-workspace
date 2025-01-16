@@ -47,6 +47,10 @@
       {
         "name": "packages/trackerUserInfoLambda",
         "path": "../packages/trackerUserInfoLambda"
+      },
+      {
+        "name": "packages/selectedRole",
+        "path": "../packages/selectedRole"
       }
     ],
     "settings": {
@@ -149,7 +153,10 @@
       "typescript.tsdk": "eps-prescription-tracker-ui-monorepo/node_modules/typescript/lib",
       "eslint.useFlatConfig": true,
       "eslint.format.enable": true,
-      "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+      "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+      "[typescriptreact]": {
+        "editor.defaultFormatter": "vscode.typescript-language-features"
+      }
     },
     "extensions": {
       "recommendations": [
