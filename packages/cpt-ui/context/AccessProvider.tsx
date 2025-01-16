@@ -18,7 +18,7 @@ export type AccessContextType = {
   clear: () => void
 }
 
-const AccessContext = createContext<AccessContextType | undefined>(undefined)
+export const AccessContext = createContext<AccessContextType | undefined>(undefined)
 
 export const AccessProvider = ({ children }: { children: ReactNode }) => {
   const [noAccess, setNoAccess] = useLocalStorageState<boolean>('noAccess', 'access', false);

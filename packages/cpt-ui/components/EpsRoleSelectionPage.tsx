@@ -74,7 +74,7 @@ export default function RoleSelectionPage({ contentText }: RoleSelectionPageProp
         errorDuringRoleSelection
     } = contentText
 
-    const { setNoAccess, setSingleAccess } = useAccess()
+    const { noAccess, setNoAccess, setSingleAccess } = useAccess()
     const [loading, setLoading] = useState<boolean>(true)
     const [error, setError] = useState<string | null>(null)
     const [redirecting, setRedirecting] = useState<boolean>(false)
@@ -232,8 +232,6 @@ export default function RoleSelectionPage({ contentText }: RoleSelectionPageProp
             </main>
         )
     }
-
-    const noAccess = rolesWithAccess.length === 0
 
     return (
         <main id="main-content" className="nhsuk-main-wrapper">
