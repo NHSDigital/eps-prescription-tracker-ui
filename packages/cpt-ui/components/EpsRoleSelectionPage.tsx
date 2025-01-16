@@ -1,5 +1,5 @@
 'use client'
-import React, {useState, useEffect, useContext, useCallback} from "react"
+import React, {useState, useEffect, useContext} from "react"
 import {useRouter} from 'next/navigation'
 import {Container, Col, Row, Details, Table, ErrorSummary, Button, InsetText} from "nhsuk-react-components"
 
@@ -84,86 +84,85 @@ export default function RoleSelectionPage({ contentText }: RoleSelectionPageProp
     const router = useRouter()
     const auth = useContext(AuthContext)
 
-    const fetchTrackerUserInfo = useCallback(async () => {
-        setLoading(true)
-        setError(null)
-        setRolesWithAccess([])
-        setRolesWithoutAccess([])
-
+    useEffect(() => {
+        setLoading(true);
+        setError(null);
+        setRolesWithAccess([]);
+        setRolesWithoutAccess([]);
+    
         if (!auth?.isSignedIn || !auth) {
-            setLoading(false)
-            setError(null)
-            return
+            setLoading(false);
+            setError(null);
+            return;
         }
+    
+        fetch(trackerUserInfoEndpoint, {
+            headers: {
+                Authorization: `Bearer ${auth?.idToken}`,
+                'NHSD-Session-URID': '555254242106',
+            },
+        })
+            .then((response) => {
+                if (response.status !== 200) {
+                    throw new Error(
+                        `Server did not return CPT user info, response ${response.status}`
+                    );
+                }
+                return response.json();
+            })
+            .then((data) => {
+                if (!data.userInfo) {
+                    throw new Error("Server response did not contain data");
+                }
 
-        try {
-            const response = await fetch(trackerUserInfoEndpoint, {
-                headers: {
-                    Authorization: `Bearer ${auth?.idToken}`,
-                    'NHSD-Session-URID': '555254242106'
+                const userInfo: TrackerUserInfo = data.userInfo;
+
+                const rolesWithAccess = userInfo.roles_with_access;
+                const rolesWithoutAccess = userInfo.roles_without_access;
+                // Unused for now
+                // const currentlySelectedRole = userInfo.currently_selected_role ? {
+                //     ...userInfo.currently_selected_role,
+                //     uuid: `selected_role_0`
+                // } : undefined
+    
+                setRolesWithAccess(
+                    rolesWithAccess.map((role: RoleDetails, index: number) => ({
+                        uuid: `{role_with_access_${index}}`,
+                        orgName: role.org_name || noOrgName,
+                        odsCode: role.org_code || noODSCode,
+                        siteAddress: role.site_address || noAddress,
+                        roleName: role.role_name || noRoleName,
+                        link: "/yourselectedrole",
+                    }))
+                );
+    
+                setRolesWithoutAccess(
+                    rolesWithoutAccess.map((role: RoleDetails, index: number) => ({
+                        uuid: `{role_without_access_${index}}`,
+                        roleName: role.role_name || noRoleName,
+                        orgName: role.org_name || noOrgName,
+                        odsCode: role.org_code || noODSCode,
+                    }))
+                );
+    
+                setNoAccess(rolesWithAccess.length === 0);
+                setSingleAccess(rolesWithAccess.length === 1);
+    
+                // If the user has exactly one accessible role and zero roles without access,
+                // redirect them immediately
+                if (rolesWithAccess.length === 1 && rolesWithoutAccess.length === 0) {
+                    setRedirecting(true);
+                    router.push("/searchforaprescription");
+                    return;
                 }
             })
-
-            if (response.status !== 200) {
-                throw new Error(
-                    `Server did not return CPT user info, response ${response.status}`
-                )
-            }
-
-            const data = await response.json()
-
-            if (!data.userInfo) {
-                throw new Error("Server response did not contain data")
-            }
-
-            const userInfo: TrackerUserInfo = data.userInfo
-            
-            const rolesWithAccess = userInfo.roles_with_access
-            const rolesWithoutAccess = userInfo.roles_without_access
-            // Unused for now
-            // const currentlySelectedRole = userInfo.currently_selected_role ? {
-            //     ...userInfo.currently_selected_role,
-            //     uuid: `selected_role_0`
-            // } : undefined
-
-            // Populate the EPS card props
-            setRolesWithAccess(
-                rolesWithAccess.map((role: RoleDetails, index: number) => ({
-                    uuid: `{role_with_access_${index}}`,
-                    orgName: role.org_name ? role.org_name : noOrgName,
-                    odsCode: role.org_code ? role.org_code : noODSCode,
-                    siteAddress: role.site_address ? role.site_address : noAddress,
-                    roleName: role.role_name ? role.role_name : noRoleName,
-                    link: "/yourselectedrole"
-                }))
-            )
-
-            setRolesWithoutAccess(
-                rolesWithoutAccess.map((role: RoleDetails, index: number) => ({
-                    uuid: `{role_without_access_${index}}`,
-                    roleName: role.role_name ? role.role_name : noRoleName,
-                    orgName: role.org_name ? role.org_name : noOrgName,
-                    odsCode: role.org_code ? role.org_code : noODSCode
-                }))
-            )
-
-            setNoAccess(rolesWithAccess.length === 0)
-            setSingleAccess(rolesWithAccess.length === 1)
-
-            // If the user has exactly one accessible role and zero roles without access,
-            // redirect them immediately
-            if (rolesWithAccess.length === 1 && rolesWithoutAccess.length === 0) {
-                setRedirecting(true)
-                router.push("/searchforaprescription")
-                return
-            }
-
-        } catch (err) {
-            setError("Failed to fetch CPT user info")
-            console.error("error fetching tracker user info:", err)
-        } finally {
-            setLoading(false)
-        }
+            .catch((err) => {
+                setError("Failed to fetch CPT user info");
+                console.error("Error fetching tracker user info:", err);
+            })
+            .finally(() => {
+                setLoading(false);
+            });
     }, [
         auth,
         router,
@@ -172,18 +171,9 @@ export default function RoleSelectionPage({ contentText }: RoleSelectionPageProp
         noOrgName,
         noODSCode,
         noAddress,
-        noRoleName
-    ])
-
-    useEffect(() => {
-        if (auth?.isSignedIn === undefined) {
-            return
-        }
-
-        if (auth?.isSignedIn) {
-            fetchTrackerUserInfo()
-        }
-    }, [auth?.isSignedIn, fetchTrackerUserInfo])
+        noRoleName,
+    ]);
+    
 
     useEffect(() => {
         console.log("Auth error updated:", auth?.error)
