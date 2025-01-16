@@ -1,5 +1,5 @@
 "use client"
-import React, { createContext, useContext, ReactNode, useEffect } from 'react'
+import React, { createContext, useContext, ReactNode, useEffect, useState } from 'react'
 
 import { useLocalStorageState } from '@/helpers/useLocalStorageState'
 import { AuthContext } from './AuthProvider'
@@ -24,6 +24,7 @@ export const AccessProvider = ({ children }: { children: ReactNode }) => {
   const [noAccess, setNoAccess] = useLocalStorageState<boolean>('noAccess', 'access', false);
   const [singleAccess, setSingleAccess] = useLocalStorageState<boolean>('singleAccess', 'access', false);
   const [selectedRole, setSelectedRole] = useLocalStorageState<string>('selectedRole', 'access', '');
+  const [usingLocal, setUsingLocal] = useState(true);
 
   const auth = useContext(AuthContext);
 
@@ -89,6 +90,11 @@ export const AccessProvider = ({ children }: { children: ReactNode }) => {
       }
     };
 
+    if (!usingLocal) {
+      return;
+    }
+
+    console.log("Access context detected a page load, and we are using local storage fallback. Updating from backend...")
 
     if (!auth?.isSignedIn || !auth?.idToken) {
       return;
@@ -100,7 +106,8 @@ export const AccessProvider = ({ children }: { children: ReactNode }) => {
     }
 
     updateAccessVariables();
-  }, []); // Empty dependency array to run ONLY on mount (i.e. on initial page load)
+    setUsingLocal(false)
+  }, [auth?.idToken]); // run ONLY ONCE on mount (i.e. on initial page load)
 
 
   return (
