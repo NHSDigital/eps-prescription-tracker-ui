@@ -3,7 +3,7 @@ import axios from "axios"
 import {DynamoDBDocumentClient, UpdateCommand} from "@aws-sdk/lib-dynamodb"
 import {UserInfoResponse, TrackerUserInfo, RoleDetails} from "./userInfoTypes"
 import {OidcConfig} from "@cpt-ui-common/authFunctions"
-import {verifyIdToken, initializeOidcConfig} from "@cpt-ui-common/authFunctions"
+// import {verifyIdToken, initializeOidcConfig} from "@cpt-ui-common/authFunctions"
 
 // Role names come in formatted like `"category":"subcategory":"roleName"`.
 // Takes only the last one, and strips out the quotes.
@@ -37,13 +37,17 @@ export const fetchUserInfo = async (
   }
 
   // Token handling logic
-  const useMock: boolean = process.env["useMock"] === "true"
-  const {mockOidcConfig, cis2OidcConfig} = initializeOidcConfig()
+  // const useMock: boolean = process.env["useMock"] === "true"
+  // const {mockOidcConfig, cis2OidcConfig} = initializeOidcConfig()
 
-  const decodedIdToken = await verifyIdToken(cis2IdToken, logger, useMock ? mockOidcConfig : cis2OidcConfig)
-  logger.debug("Decoded Id token", {decodedIdToken})
+  // const decodedIdToken = await verifyIdToken(cis2IdToken, logger, useMock ? mockOidcConfig : cis2OidcConfig)
+  // logger.debug("Decoded Id token", {decodedIdToken})
 
-  const selectedRoleId = decodedIdToken.selected_roleid
+  // const selectedRoleId = decodedIdToken.selected_roleid
+  // logger.debug("Selected role", {selected_roleid: selectedRoleId})
+
+  // Mock selectedRoleId
+  const selectedRoleId = "555075124100"
   logger.debug("Selected role", {selected_roleid: selectedRoleId})
 
   try {
