@@ -6,10 +6,10 @@ import {Container, Col, Row, Details, Table, ErrorSummary, Button, InsetText} fr
 import {AuthContext} from "@/context/AuthProvider"
 import {useAccess} from '@/context/AccessProvider'
 
-import EpsCard, { EpsCardProps } from "@/components/EpsCard"
-import EpsSpinner from "@/components/EpsSpinner";
+import EpsCard, {EpsCardProps} from "@/components/EpsCard"
+import EpsSpinner from "@/components/EpsSpinner"
 
-import { RoleDetails, TrackerUserInfo } from "@/types/TrackerUserInfoTypes"
+import {RoleDetails, TrackerUserInfo} from "@/types/TrackerUserInfoTypes"
 
 // Extends the EpsCardProps to include a unique identifier
 export type RolesWithAccessProps = EpsCardProps & {
@@ -53,7 +53,7 @@ interface RoleSelectionPageProps {
     }
 }
 
-export default function RoleSelectionPage({ contentText }: RoleSelectionPageProps) {
+export default function RoleSelectionPage({contentText}: RoleSelectionPageProps) {
     // Destructure strings from the contentText prop
     const {
         title,
@@ -74,21 +74,34 @@ export default function RoleSelectionPage({ contentText }: RoleSelectionPageProp
         errorDuringRoleSelection
     } = contentText
 
-    const { setNoAccess, setSingleAccess } = useAccess()
+    const {setNoAccess, setSingleAccess} = useAccess()
     const [loading, setLoading] = useState<boolean>(true)
     const [error, setError] = useState<string | null>(null)
     const [redirecting, setRedirecting] = useState<boolean>(false)
     const [rolesWithAccess, setRolesWithAccess] = useState<RolesWithAccessProps[]>([])
     const [rolesWithoutAccess, setRolesWithoutAccess] = useState<RolesWithoutAccessProps[]>([])
+    const [currentlySelectedRole, setCurrentlySelectedRole] = useState<RoleDetails | undefined>(undefined)
 
     const router = useRouter()
     const auth = useContext(AuthContext)
+
+    // Fallback mock data for loginInfoMessage
+    const mockData = {
+        role_id: '555022200111',
+        org_code: 'A11111',
+        role_name: 'Test Practitioner'
+    }
+
+    const loginInfoMessage = currentlySelectedRole
+        ? JSON.stringify(currentlySelectedRole, null, 2)
+        : JSON.stringify(mockData, null, 2)
 
     const fetchTrackerUserInfo = useCallback(async () => {
         setLoading(true)
         setError(null)
         setRolesWithAccess([])
         setRolesWithoutAccess([])
+        setCurrentlySelectedRole(undefined)
 
         if (!auth?.isSignedIn || !auth) {
             setLoading(false)
@@ -120,11 +133,10 @@ export default function RoleSelectionPage({ contentText }: RoleSelectionPageProp
             
             const rolesWithAccess = userInfo.roles_with_access
             const rolesWithoutAccess = userInfo.roles_without_access
-            // Unused for now
-            // const currentlySelectedRole = userInfo.currently_selected_role ? {
-            //     ...userInfo.currently_selected_role,
-            //     uuid: `selected_role_0`
-            // } : undefined
+            const currentlySelectedRole = userInfo.currently_selected_role ? {
+                ...userInfo.currently_selected_role,
+                uuid: `selected_role_0`
+            } : undefined
 
             // Populate the EPS card props
             setRolesWithAccess(
@@ -147,6 +159,7 @@ export default function RoleSelectionPage({ contentText }: RoleSelectionPageProp
                 }))
             )
 
+            setCurrentlySelectedRole(currentlySelectedRole)
             setNoAccess(rolesWithAccess.length === 0)
             setSingleAccess(rolesWithAccess.length === 1)
 
@@ -264,7 +277,7 @@ export default function RoleSelectionPage({ contentText }: RoleSelectionPageProp
                                     <span className="nhsuk-u-visually-hidden">
                                         {insetText.visuallyHidden}
                                     </span>
-                                    <p>{insetText.message}</p>
+                                    <p>{loginInfoMessage}</p>
                                 </InsetText>
                                 {/* Confirm Button */}
                                 <Button href={confirmButton.link}>
