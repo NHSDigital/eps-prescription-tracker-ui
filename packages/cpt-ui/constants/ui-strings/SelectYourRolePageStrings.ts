@@ -3,10 +3,10 @@ export const SelectYourRolePageStrings = {
   caption: "Select the role you wish to use to access the service.",
   titleNoAccess: "No access to the clinical prescription tracking service",
   captionNoAccess:
-      "None of the roles on your Smartcard or other authenticators allow you to access the clinical prescription " +
-      "tracking service. Contact your Registration Authority representative to obtain the correct code.",
+    "None of the roles on your Smartcard or other authenticators allow you to access the clinical prescription " +
+    "tracking service. Contact your Registration Authority representative to obtain the correct code.",
   captionNoRoles:
-      "You are currently logged in with no role selected and no roles available",
+    "You are currently logged in with no role selected and no roles available",
   loginInfoText: {
     visuallyHidden: "Information: ",
     message: (orgName: string, odsCode: string, roleName: string) =>

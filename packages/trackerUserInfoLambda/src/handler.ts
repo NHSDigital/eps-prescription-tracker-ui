@@ -84,12 +84,40 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
   updateDynamoTable(username, userInfoResponse, documentClient, logger, tokenMappingTableName)
 
-  return {
-    statusCode: 200,
-    body: JSON.stringify({
-      message: "UserInfo fetched successfully",
-      userInfo: userInfoResponse
-    })
+  try {
+    // eslint-disable-next-line
+    const {cis2AccessToken, cis2IdToken} = await fetchAndVerifyCIS2Tokens(event, documentClient, logger)
+
+    const userInfoResponse = await fetchUserInfo(
+      cis2AccessToken,
+      CPT_ACCESS_ACTIVITY_CODES,
+      undefined,
+      logger
+    )
+
+    // const username = getUsernameFromEvent(event)
+    // Mock user name for testing AEA-4645
+    const username = "Mock_555043304334"
+    updateDynamoTable(username, userInfoResponse, documentClient, logger)
+
+    return {
+      statusCode: 200,
+      body: JSON.stringify({
+        message: "UserInfo fetched successfully",
+        userInfo: userInfoResponse
+      })
+    }
+  } catch (error) {
+    if (error instanceof Error) {
+      logger.error("Error occurred in Lambda handler", {error: error.message})
+    } else {
+      logger.error("Unknown error occurred in Lambda handler", {error: String(error)})
+    }
+    logger.info("trackerUserInfo success!")
+    return {
+      statusCode: 500,
+      body: JSON.stringify({message: "Internal server error"})
+    }
   }
 
 }
