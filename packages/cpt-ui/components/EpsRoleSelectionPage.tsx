@@ -91,14 +91,12 @@ export default function RoleSelectionPage({ contentText }: RoleSelectionPageProp
         setRolesWithoutAccess([]);
 
         if (!auth?.isSignedIn || !auth?.idToken) {
-            setLoading(false);
             setError(null);
             return;
         }
         // Now that we know there is an id token, check that it has a toString property.
         // For some reason, it doesn't have this immediately, it gets added after a brief pause.
         if (!auth?.idToken.hasOwnProperty('toString')) {
-            setLoading(false);
             setError(null);
             return;
         }
@@ -132,6 +130,9 @@ export default function RoleSelectionPage({ contentText }: RoleSelectionPageProp
                 //     uuid: `selected_role_0`
                 // } : undefined
 
+                setNoAccess(rolesWithAccess.length === 0);
+                setSingleAccess(rolesWithAccess.length === 1);
+
                 setRolesWithAccess(
                     rolesWithAccess.map((role: RoleDetails, index: number) => ({
                         uuid: `{role_with_access_${index}}`,
@@ -151,9 +152,6 @@ export default function RoleSelectionPage({ contentText }: RoleSelectionPageProp
                         odsCode: role.org_code || noODSCode,
                     }))
                 );
-
-                setNoAccess(rolesWithAccess.length === 0);
-                setSingleAccess(rolesWithAccess.length === 1);
 
                 // If the user has exactly one accessible role and zero roles without access,
                 // redirect them immediately
@@ -191,26 +189,6 @@ export default function RoleSelectionPage({ contentText }: RoleSelectionPageProp
         }
     }, [auth?.error])
 
-    // Skip rendering if redirecting
-    if (redirecting) {
-        return null
-    }
-
-    // If the data is being fetched, replace the content with a spinner
-    if (loading) {
-        return (
-            <main id="main-content" className="nhsuk-main-wrapper">
-                <Container>
-                    <Row>
-                        <Col width="full">
-                            <EpsSpinner />
-                        </Col>
-                    </Row>
-                </Container>
-            </main>
-        )
-    }
-
     // If the process encounters an error, replace the content with an error summary
     if (error) {
         return (
@@ -227,6 +205,21 @@ export default function RoleSelectionPage({ contentText }: RoleSelectionPageProp
                                 </ErrorSummary.Item>
                             </ErrorSummary.List>
                         </ErrorSummary>
+                    </Row>
+                </Container>
+            </main>
+        )
+    }
+
+    // If the data is being fetched, replace the content with a spinner
+    if (loading || redirecting) {
+        return (
+            <main id="main-content" className="nhsuk-main-wrapper">
+                <Container>
+                    <Row>
+                        <Col width="full">
+                            <EpsSpinner />
+                        </Col>
                     </Row>
                 </Container>
             </main>
