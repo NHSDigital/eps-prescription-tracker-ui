@@ -127,7 +127,7 @@ export const fetchUserInfo = async (
 
 // Helper function to get organization name from org_code
 function getOrgNameFromOrgCode(data: UserInfoResponse, org_code: string, logger: Logger): string | undefined {
-  logger.info("Getting org name from org code", {org_code, data})
+  logger.info("Getting org name from org code", {org_code})
   const orgs = data.nhsid_user_orgs || []
   const org = orgs.find((o) => o.org_code === org_code)
   logger.info("Found org", {org})
