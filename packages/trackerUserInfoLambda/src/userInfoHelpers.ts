@@ -49,7 +49,7 @@ export const fetchUserInfo = async (
         Authorization: `Bearer ${cis2AccessToken}`
       }
     })
-    logger.info("User info fetched successfully", {data: response.data})
+    logger.info("User info fetched successfully")
 
     // Extract the roles from the user info response
     const data: UserInfoResponse = response.data
