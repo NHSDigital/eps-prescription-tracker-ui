@@ -92,15 +92,9 @@ export const fetchUserInfo = async (
       }
 
       // Determine the currently selected role
-      logger.debug("Checking if role is currently selected", {
-        selectedRoleId,
-        role_id: role.person_roleid,
-        person_orgid: role.person_orgid,
-        roleInfo
-      })
-      if (selectedRoleId && role.person_orgid === selectedRoleId) {
-        logger.debug("Role is currently selected", {selectedRoleId, roleInfo})
-
+      logger.debug("Checking if role is currently selected", {selectedRoleId, role_id: role.person_roleid, roleInfo})
+      if (selectedRoleId && role.person_roleid === selectedRoleId) {
+        logger.debug("Role is currently selected", {role_id: role.person_roleid, roleInfo})
         if (hasAccess) {
           logger.debug("Role has access; setting as currently selected", {roleInfo})
           currentlySelectedRole = roleInfo
