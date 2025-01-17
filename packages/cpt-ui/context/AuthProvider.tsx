@@ -4,6 +4,8 @@ import { Hub } from "aws-amplify/utils";
 import { signInWithRedirect, signOut, getCurrentUser, AuthUser, fetchAuthSession, JWT, SignInWithRedirectInput } from 'aws-amplify/auth';
 import { authConfig } from './configureAmplify';
 
+import { useLocalStorageState } from '@/helpers/useLocalStorageState';
+
 interface AuthContextType {
   error: string | null;
   user: AuthUser | null;
@@ -18,10 +20,10 @@ export const AuthContext = createContext<AuthContextType | null>(null);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [error, setError] = useState<string | null>(null);
-  const [user, setUser] = useState<AuthUser | null>(null);
-  const [isSignedIn, setIsSignedIn] = useState(false);
-  const [idToken, setIdToken] = useState<JWT | null>(null);
-  const [accessToken, setAccessToken] = useState<JWT | null>(null);
+  const [user, setUser] = useLocalStorageState<AuthUser | null>('user', 'auth', null);
+  const [isSignedIn, setIsSignedIn] = useLocalStorageState<boolean>('isSignedIn', 'auth', false);
+  const [idToken, setIdToken] = useLocalStorageState<JWT | null>('idToken', 'auth', null);
+  const [accessToken, setAccessToken] = useLocalStorageState<JWT | null>('accessToken', 'auth', null);
 
   /**
    * Fetch and update the user session state.
