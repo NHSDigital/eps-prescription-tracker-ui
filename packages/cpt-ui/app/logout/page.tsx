@@ -30,7 +30,6 @@ export default function LogoutPage() {
         }
     }, [auth, clear]);
 
-    // TODO: Move strings to a constants file
     return (
         <main id="main-content" className="nhsuk-main-wrapper">
             <Container>
