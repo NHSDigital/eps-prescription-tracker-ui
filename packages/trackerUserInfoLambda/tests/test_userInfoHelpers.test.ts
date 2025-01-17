@@ -1,33 +1,43 @@
 import {jest} from "@jest/globals"
 
-import {fetchUserInfo, updateDynamoTable} from "../src/userInfoHelpers"
+import {OidcConfig} from "@cpt-ui-common/authFunctions"
 import {UserInfoResponse, TrackerUserInfo} from "../src/userInfoTypes"
 
 import {Logger} from "@aws-lambda-powertools/logger"
 import axios from "axios"
 import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
-import {OidcConfig} from "@cpt-ui-common/authFunctions"
 import jwksClient from "jwks-rsa"
 
 const oidcClientId = "valid_aud"
 const oidcIssuer = "valid_iss"
 const jwksEndpoint = "https://dummyauth.com/.well-known/jwks.json"
 
+const mockVerifyIdToken = jest.fn()
+
 // We need a dummy verification to pass so we can decode out the selected role ID
-jest.mock("@cpt-ui-common/authFunctions", () => ({
-  __esModule: true,
-  // This will need to be made to return the decoded ID token, which should be like:
-  // { selected_roleid: "foo" }
-  verifyIdToken: jest.fn()
-}))
+jest.unstable_mockModule("@cpt-ui-common/authFunctions", async () => {
+  const verifyIdToken = mockVerifyIdToken.mockImplementation(async () => {
+    return {
+      selected_roleid: "role-id-1"
+    }
+  })
+
+  return {
+    __esModule: true,
+    // This will need to be made to return the decoded ID token, which should be like:
+    // { selected_roleid: "foo" }
+    verifyIdToken: verifyIdToken
+  }
+})
+
+const {fetchUserInfo, updateDynamoTable} = await import("../src/userInfoHelpers")
 
 describe("fetchUserInfo", () => {
   const logger = new Logger()
   const accessToken = "test-access-token"
   const idToken = "test-id-token"
   const acceptedAccessCodes = ["CPT_CODE"]
-  const selectedRoleId = "role-id-1"
 
   const client = jwksClient({
     jwksUri: `${jwksEndpoint}`,
@@ -98,8 +108,11 @@ describe("fetchUserInfo", () => {
 
     jest.spyOn(axios, "get").mockResolvedValue({data: userInfoResponse})
 
-    // const {verifyIdToken} = require("@cpt-ui-common/authFunctions")
-    // verifyIdToken.mockResolvedValueOnce("role-id-2")
+    mockVerifyIdToken.mockImplementation(async () => {
+      return {
+        selected_roleid: "role-id-1"
+      }
+    })
 
     const result = await fetchUserInfo(
       accessToken,
@@ -170,8 +183,8 @@ describe("fetchUserInfo", () => {
 
     const result = await fetchUserInfo(
       accessToken,
+      idToken,
       acceptedAccessCodes,
-      undefined,
       logger,
       oidcConfig
     )
@@ -199,8 +212,8 @@ describe("fetchUserInfo", () => {
     await expect(
       fetchUserInfo(
         accessToken,
+        idToken,
         acceptedAccessCodes,
-        selectedRoleId,
         logger,
         clonedOidcConfig
       )
@@ -213,8 +226,8 @@ describe("fetchUserInfo", () => {
     await expect(
       fetchUserInfo(
         accessToken,
+        idToken,
         acceptedAccessCodes,
-        selectedRoleId,
         logger,
         oidcConfig
       )
