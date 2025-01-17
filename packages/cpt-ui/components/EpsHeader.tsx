@@ -34,7 +34,6 @@ export default function EpsHeader() {
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   // Move all conditional logic into one place
-  // TODO: Verify behaviour
   useEffect(() => {
     const isSignedIn = auth?.isSignedIn as boolean
 
