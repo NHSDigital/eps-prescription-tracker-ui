@@ -75,7 +75,7 @@ export default function RoleSelectionPage({ contentText }: RoleSelectionPageProp
         errorDuringRoleSelection
     } = contentText
 
-    const { setNoAccess, setSingleAccess } = useAccess()
+    const { setNoAccess, setSingleAccess, setSelectedRole } = useAccess()
     const [loading, setLoading] = useState<boolean>(true)
     const [error, setError] = useState<string | null>(null)
     const [redirecting, setRedirecting] = useState<boolean>(false)
@@ -152,6 +152,8 @@ export default function RoleSelectionPage({ contentText }: RoleSelectionPageProp
             // redirect them immediately
             if (rolesWithAccess.length === 1 && rolesWithoutAccess.length === 0) {
                 setRedirecting(true)
+
+                setSelectedRole(rolesWithAccess[0])
                 router.push("/searchforaprescription")
                 return
             }
