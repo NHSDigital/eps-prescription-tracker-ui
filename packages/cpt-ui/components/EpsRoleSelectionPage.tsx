@@ -85,16 +85,12 @@ export default function RoleSelectionPage({contentText}: RoleSelectionPageProps)
     const router = useRouter()
     const auth = useContext(AuthContext)
 
-    // Fallback mock data for loginInfoMessage
-    const mockData = {
-        role_id: '555022200111',
-        org_code: 'A11111',
-        role_name: 'Test Practitioner'
-    }
-
     const loginInfoMessage = currentlySelectedRole
-        ? JSON.stringify(currentlySelectedRole, null, 2)
-        : JSON.stringify(mockData, null, 2)
+        ? `You are currently logged in at ${currentlySelectedRole.org_name || noOrgName
+        } (ODS: ${currentlySelectedRole.org_code || noODSCode
+        }) with ${currentlySelectedRole.role_name || noRoleName
+        }.`
+        : ""
 
     const fetchTrackerUserInfo = useCallback(async () => {
         setLoading(true)
@@ -130,7 +126,7 @@ export default function RoleSelectionPage({contentText}: RoleSelectionPageProps)
             }
 
             const userInfo: TrackerUserInfo = data.userInfo
-            
+
             const rolesWithAccess = userInfo.roles_with_access
             const rolesWithoutAccess = userInfo.roles_without_access
             const currentlySelectedRole = userInfo.currently_selected_role ? {
@@ -271,13 +267,13 @@ export default function RoleSelectionPage({contentText}: RoleSelectionPageProps)
                         {/* Caption Section for No Access */}
                         {noAccess && (<p>{captionNoAccess}</p>)}
                         {/* Inset Text Section */}
-                        {!noAccess && (
+                        {currentlySelectedRole && (
                             <section aria-label="Login Information">
                                 <InsetText>
                                     <span className="nhsuk-u-visually-hidden">
                                         {insetText.visuallyHidden}
                                     </span>
-                                    <p>{loginInfoMessage}</p>
+                                    <p dangerouslySetInnerHTML={{__html: loginInfoMessage}}></p>
                                 </InsetText>
                                 {/* Confirm Button */}
                                 <Button href={confirmButton.link}>
