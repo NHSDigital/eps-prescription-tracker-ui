@@ -37,7 +37,14 @@ jest.mock("@/constants/ui-strings/CardStrings", () => {
     loadingMessage: "Loading...",
   }
 
-  return { SELECT_YOUR_ROLE_PAGE_TEXT }
+  const EPS_CARD_STRINGS = {
+    noOrgName: "NO ORG NAME",
+    noODSCode: "No ODS code",
+    noRoleName: "No role name",
+    noAddress: "Address not found"
+  }
+
+  return { SELECT_YOUR_ROLE_PAGE_TEXT, EPS_CARD_STRINGS }
 })
 
 // Mock `next/navigation` to prevent errors during component rendering in test
@@ -56,7 +63,12 @@ jest.mock("@/context/AccessProvider", () => {
   var mockContextValue = {
     noAccess: false,
     singleAccess: false,
-    selectedRole: "PLACEHOLDER",
+    selectedRole: {
+      role_name: "Role Name",
+      role_id: "role-id",
+      org_code: "deadbeef",
+      org_name: "org name"
+    },
     setNoAccess: jest.fn(),
     setSingleAccess: jest.fn(),
     setSelectedRole: jest.fn(),
