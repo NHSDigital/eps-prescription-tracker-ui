@@ -39,9 +39,9 @@ jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
     return "Primary_JoeBloggs"
   })
 
-  const initializeOidcConfig = mockInitializeOidcConfig.mockImplementation( () => {
+  const initializeOidcConfig = mockInitializeOidcConfig.mockImplementation(() => {
     // Create a JWKS client for cis2 and mock
-  // this is outside functions so it can be re-used
+    // this is outside functions so it can be re-used
     const cis2JwksUri = process.env["CIS2_OIDCJWKS_ENDPOINT"] as string
     const cis2JwksClient = jwksClient({
       jwksUri: cis2JwksUri,
@@ -154,8 +154,8 @@ describe("Lambda Handler Tests with mock disabled", () => {
 
       expect(mockFetchUserInfo).toHaveBeenCalledWith(
         expect.any(String),
+        expect.any(String),
         expect.any(Object),
-        undefined,
         expect.any(Object),
         expect.objectContaining({
           oidcIssuer: CIS2_OIDC_ISSUER,
