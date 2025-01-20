@@ -10,7 +10,7 @@ import {getUsernameFromEvent, fetchAndVerifyCIS2Tokens, initializeOidcConfig} fr
 import {fetchUserInfo, updateDynamoTable} from "./selectedRoleHelpers"
 
 /*
-This is the lambda code to get user info
+This is the lambda code to update the roleId in the DynamoDB table
 It expects the following environment variables to be set
 
 CIS2_OIDC_ISSUER
@@ -29,7 +29,7 @@ MOCK_OIDCJWKS_ENDPOINT
 MOCK_USER_INFO_ENDPOINT
 MOCK_USER_POOL_IDP
 */
-const logger = new Logger({serviceName: "trackerUserInfo"})
+const logger = new Logger({serviceName: "selectedRole"})
 
 const dynamoClient = new DynamoDBClient({})
 const documentClient = DynamoDBDocumentClient.from(dynamoClient)
