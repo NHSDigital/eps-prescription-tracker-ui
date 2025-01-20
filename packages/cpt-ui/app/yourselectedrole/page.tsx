@@ -12,18 +12,22 @@ export default function YourSelectedRolePage() {
     const router = useRouter()
     const { selectedRole } = useAccess()
 
-    const [roleName, setRoleName] = useState<string | undefined>(undefined)
-    const [orgName, setOrgName] = useState<string | undefined>(undefined)
-    const [odsCode, setOdsCode] = useState<string | undefined>(undefined)
+    const [roleName, setRoleName] = useState<string>(YOUR_SELECTED_ROLE_STRINGS.noRoleName)
+    const [orgName, setOrgName] = useState<string>(YOUR_SELECTED_ROLE_STRINGS.noOrgName)
+    const [odsCode, setOdsCode] = useState<string>(YOUR_SELECTED_ROLE_STRINGS.noODSCode)
 
     useEffect(() => {
         if (!selectedRole) {
+            // Set fallback values if selectedRole is undefined
+            setRoleName(YOUR_SELECTED_ROLE_STRINGS.noRoleName);
+            setOrgName(YOUR_SELECTED_ROLE_STRINGS.noOrgName);
+            setOdsCode(YOUR_SELECTED_ROLE_STRINGS.noODSCode);
             return
         }
 
-        setRoleName(selectedRole.role_name)
-        setOrgName(selectedRole.org_name)
-        setOdsCode(selectedRole.org_code)
+        setRoleName(selectedRole.role_name || YOUR_SELECTED_ROLE_STRINGS.noRoleName)
+        setOrgName(selectedRole.org_name || YOUR_SELECTED_ROLE_STRINGS.noOrgName)
+        setOdsCode(selectedRole.org_code || YOUR_SELECTED_ROLE_STRINGS.noODSCode)
     }, [selectedRole])
 
     const handleRedirect = async (e: React.MouseEvent | React.KeyboardEvent) => {

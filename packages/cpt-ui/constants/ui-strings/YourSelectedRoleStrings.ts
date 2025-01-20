@@ -5,5 +5,8 @@ export const YOUR_SELECTED_ROLE_STRINGS = {
   roleLabel:"Role",
   orgLabel: "Organisation",
   changeLinkText: "Change",
-  confirmButtonText: "Confirm and continue to find a prescription"
+  confirmButtonText: "Confirm and continue to find a prescription",
+  noODSCode: "NO ODS CODE",
+  noRoleName: "NO ROLE NAME",
+  noOrgName: "NO ORG NAME"
 }
