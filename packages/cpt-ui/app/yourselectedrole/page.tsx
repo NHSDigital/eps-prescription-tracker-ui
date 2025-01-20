@@ -48,7 +48,7 @@ export default function YourSelectedRolePage() {
                 <Row>
                     <Col width="full">
                         <h1 className="nhsuk-heading-xl">
-                            <span role="text" data-testid="eps_header_selectYourRole">
+                            <span role="text" data-testid="eps_header_yourSelectedRole">
                                 <span className="nhsuk-title">
                                     {heading}
                                 </span>
@@ -72,7 +72,7 @@ export default function YourSelectedRolePage() {
                                     <Table.Cell data-testid="role-text">
                                         {roleName}
                                     </Table.Cell>
-                                    <Table.Cell data-testid="change-role-cell">
+                                    <Table.Cell data-testid="role-change-role-cell">
                                         <Link
                                             href="/changerole"
                                             passHref={true}
@@ -88,7 +88,7 @@ export default function YourSelectedRolePage() {
                                     <Table.Cell data-testid="org-text">
                                         {orgName} (ODS: {odsCode})
                                     </Table.Cell>
-                                    <Table.Cell data-testid="change-role-cell">
+                                    <Table.Cell data-testid="org-change-role-cell">
                                         <Link
                                             href="/changerole"
                                             passHref={true}
@@ -104,7 +104,10 @@ export default function YourSelectedRolePage() {
 
                 <Row>
                     <Col width="two-thirds">
-                        <Button onClick={handleRedirect}>
+                        <Button
+                            onClick={handleRedirect}
+                            data-testid="confirm-and-continue"
+                        >
                             {confirmButtonText}
                         </Button>
                     </Col>
