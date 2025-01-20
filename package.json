@@ -27,7 +27,8 @@
         "packages/common/testing",
         "packages/common/authFunctions",
         "packages/auth_demo",
-        "packages/trackerUserInfoLambda"
+        "packages/trackerUserInfoLambda",
+        "packages/selectedRoleLambda"
     ],
     "devDependencies": {
         "@semantic-release/changelog": "^6.0.3",
