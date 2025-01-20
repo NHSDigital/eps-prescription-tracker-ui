@@ -5,8 +5,6 @@ import React from "react"
 
 import { AuthContext } from "@/context/AuthProvider"
 
-import ChangeRolePage from "@/app/changerole/page"
-
 // Mock the card strings, so we have known text for the tests
 jest.mock("@/constants/ui-strings/CardStrings", () => {
   const CHANGE_YOUR_ROLE_PAGE_TEXT = {
@@ -35,7 +33,16 @@ jest.mock("@/constants/ui-strings/CardStrings", () => {
     loadingMessage: "Loading...",
   }
 
-  return { CHANGE_YOUR_ROLE_PAGE_TEXT }
+
+  const EPS_CARD_STRINGS = {
+    noOrgName: "NO ORG NAME",
+    noODSCode: "No ODS code",
+    noRoleName: "No role name",
+    noAddress: "Address not found"
+  }
+
+
+  return { CHANGE_YOUR_ROLE_PAGE_TEXT, EPS_CARD_STRINGS }
 })
 
 // Mock `next/navigation` to prevent errors during component rendering in test
@@ -54,7 +61,15 @@ jest.mock("@/context/AccessProvider", () => {
   const mockContextValue = {
     noAccess: false,
     singleAccess: false,
-    selectedRole: "PLACEHOLDER",
+    selectedRole: {
+      role_name: "role_name",
+      role_id: "role_id",
+      org_code: "org_code",
+      org_name: "org_name",
+      site_name: "site_name",
+      site_address: "site_address",
+      uuid: "uuid",
+    },
     setNoAccess: jest.fn(),
     setSingleAccess: jest.fn(),
     setSelectedRole: jest.fn(),
@@ -80,6 +95,8 @@ const defaultAuthContext = {
   cognitoSignIn: jest.fn(), // Mock Cognito sign-in function
   cognitoSignOut: jest.fn(), // Mock Cognito sign-out function
 }
+
+import ChangeRolePage from "@/app/changerole/page"
 
 // Utility function to render the component with custom AuthContext overrides
 const renderWithAuth = (authOverrides = {}, accessOverrides = {}) => {

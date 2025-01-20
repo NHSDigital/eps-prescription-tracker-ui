@@ -37,7 +37,14 @@ jest.mock("@/constants/ui-strings/CardStrings", () => {
     loadingMessage: "Loading...",
   }
 
-  return { SELECT_YOUR_ROLE_PAGE_TEXT }
+  const EPS_CARD_STRINGS = {
+    noOrgName: "NO ORG NAME",
+    noODSCode: "No ODS code",
+    noRoleName: "No role name",
+    noAddress: "Address not found"
+  }
+
+  return { SELECT_YOUR_ROLE_PAGE_TEXT, EPS_CARD_STRINGS }
 })
 
 // Mock `next/navigation` to prevent errors during component rendering in test
