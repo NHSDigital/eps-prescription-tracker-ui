@@ -6,13 +6,15 @@ import { Container, Col, Row, Details, Table, ErrorSummary, Button, InsetText } 
 import { AuthContext } from "@/context/AuthProvider"
 import { useAccess } from '@/context/AccessProvider'
 
-import EpsCard, { EpsCardProps } from "@/components/EpsCard"
+import EpsCard from "@/components/EpsCard"
 import EpsSpinner from "@/components/EpsSpinner";
 
 import { RoleDetails, TrackerUserInfo } from "@/types/TrackerUserInfoTypes"
 
-// Extends the EpsCardProps to include a unique identifier
-export type RolesWithAccessProps = EpsCardProps & {
+// This is passed to the EPS card component.
+export type RolesWithAccessProps = {
+    role: RoleDetails
+    link: string
     uuid: string
 }
 
@@ -70,11 +72,10 @@ export default function RoleSelectionPage({ contentText }: RoleSelectionPageProp
         rolesWithoutAccessHeader,
         noODSCode,
         noRoleName,
-        noAddress,
         errorDuringRoleSelection
     } = contentText
 
-    const { noAccess, setNoAccess, setSingleAccess } = useAccess()
+    const { noAccess, setNoAccess, setSingleAccess, setSelectedRole } = useAccess()
     const [loading, setLoading] = useState<boolean>(true)
     const [error, setError] = useState<string | null>(null)
     const [redirecting, setRedirecting] = useState<boolean>(false)
@@ -120,29 +121,24 @@ export default function RoleSelectionPage({ contentText }: RoleSelectionPageProp
                     throw new Error("Server response did not contain data");
                 }
 
-                const userInfo: TrackerUserInfo = data.userInfo;
+                const userInfo: TrackerUserInfo = data.userInfo
 
-                const rolesWithAccess = userInfo.roles_with_access;
-                const rolesWithoutAccess = userInfo.roles_without_access;
+                const rolesWithAccess = userInfo.roles_with_access
+                const rolesWithoutAccess = userInfo.roles_without_access
                 // Unused for now
                 // const currentlySelectedRole = userInfo.currently_selected_role ? {
                 //     ...userInfo.currently_selected_role,
                 //     uuid: `selected_role_0`
                 // } : undefined
 
-                setNoAccess(rolesWithAccess.length === 0);
-                setSingleAccess(rolesWithAccess.length === 1);
-
+                // Populate the EPS card props
                 setRolesWithAccess(
                     rolesWithAccess.map((role: RoleDetails, index: number) => ({
-                        uuid: `{role_with_access_${index}}`,
-                        orgName: role.org_name || noOrgName,
-                        odsCode: role.org_code || noODSCode,
-                        siteAddress: role.site_address || noAddress,
-                        roleName: role.role_name || noRoleName,
+                        role,
                         link: "/yourselectedrole",
+                        uuid: `{role_with_access_${index}}`,
                     }))
-                );
+                )
 
                 setRolesWithoutAccess(
                     rolesWithoutAccess.map((role: RoleDetails, index: number) => ({
@@ -151,12 +147,13 @@ export default function RoleSelectionPage({ contentText }: RoleSelectionPageProp
                         orgName: role.org_name || noOrgName,
                         odsCode: role.org_code || noODSCode,
                     }))
-                );
+                )
 
                 // If the user has exactly one accessible role and zero roles without access,
                 // redirect them immediately
                 if (rolesWithAccess.length === 1 && rolesWithoutAccess.length === 0) {
                     setRedirecting(true);
+                    setSelectedRole(rolesWithAccess[0]);
                     router.push("/searchforaprescription");
                     return;
                 }
@@ -173,12 +170,11 @@ export default function RoleSelectionPage({ contentText }: RoleSelectionPageProp
         router,
         setNoAccess,
         setSingleAccess,
+        setSelectedRole,
         noOrgName,
         noODSCode,
-        noAddress,
-        noRoleName,
-    ]);
-
+        noRoleName
+    ])
 
     useEffect(() => {
         console.log("Auth error updated:", auth?.error)

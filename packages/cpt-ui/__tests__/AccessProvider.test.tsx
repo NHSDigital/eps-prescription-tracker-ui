@@ -14,7 +14,7 @@ function TestConsumer() {
         <div>
             <div data-testid="noAccess">{noAccess ? "true" : "false"}</div>
             <div data-testid="singleAccess">{singleAccess ? "true" : "false"}</div>
-            <div data-testid="selectedRole">{selectedRole || "(none)"}</div>
+            <div data-testid="selectedRole">{selectedRole ? selectedRole?.role_id : "(none)"}</div>
             <button data-testid="clear-button" onClick={clear}>
                 Clear
             </button>
@@ -48,6 +48,7 @@ describe("AccessProvider", () => {
     }
 
     beforeEach(() => {
+        jest.restoreAllMocks()
         jest.clearAllMocks()
         // Reset local storage between tests so each test starts fresh
         localStorage.clear()
