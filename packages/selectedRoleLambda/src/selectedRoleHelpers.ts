@@ -2,7 +2,7 @@ import {Logger} from "@aws-lambda-powertools/logger"
 import axios from "axios"
 import {DynamoDBDocumentClient, UpdateCommand} from "@aws-sdk/lib-dynamodb"
 import {UserInfoResponse, TrackerUserInfo, RoleDetails} from "./selectedRoleTypes"
-import {OidcConfig} from "@cpt-ui-common/authFunctions"
+import {OidcConfig, verifyIdToken} from "@cpt-ui-common/authFunctions"
 
 // Role names come in formatted like `"category":"subcategory":"roleName"`.
 // Takes only the last one, and strips out the quotes.
@@ -23,13 +23,21 @@ export const removeRoleCategories = (roleString: string | undefined) => {
 // Each list contains information on the roles, such as the role name, role ID, ODS code, and organization name.
 export const fetchUserInfo = async (
   cis2AccessToken: string,
+  cis2IdToken: string,
   accepted_access_codes: Array<string>,
-  selectedRoleId: string | undefined,
   logger: Logger,
   oidcConfig: OidcConfig
 ): Promise<TrackerUserInfo> => {
 
   logger.info("Fetching user info from OIDC UserInfo endpoint", {oidcConfig})
+
+  // Verify and decode cis2IdToken
+  const decodedIdToken = await verifyIdToken(cis2IdToken, logger, oidcConfig)
+  logger.debug("Decoded cis2IdToken", {decodedIdToken})
+
+  // Extract the selected_roleid from the decoded cis2IdToken
+  const selectedRoleId = decodedIdToken?.selected_roleid
+  logger.info("Selected role ID extracted from cis2IdToken", {selectedRoleId})
 
   if (!oidcConfig.oidcUserInfoEndpoint) {
     throw new Error("OIDC UserInfo endpoint not set")
@@ -41,7 +49,7 @@ export const fetchUserInfo = async (
         Authorization: `Bearer ${cis2AccessToken}`
       }
     })
-    logger.info("User info fetched successfully", {data: response.data})
+    logger.info("User info fetched successfully")
 
     // Extract the roles from the user info response
     const data: UserInfoResponse = response.data
@@ -113,7 +121,7 @@ export const fetchUserInfo = async (
 
 // Helper function to get organization name from org_code
 function getOrgNameFromOrgCode(data: UserInfoResponse, org_code: string, logger: Logger): string | undefined {
-  logger.info("Getting org name from org code", {org_code, data})
+  logger.info("Getting org name from org code", {org_code})
   const orgs = data.nhsid_user_orgs || []
   const org = orgs.find((o) => o.org_code === org_code)
   logger.info("Found org", {org})
@@ -154,7 +162,7 @@ export const updateDynamoTable = async (
         TableName: tokenMappingTableName,
         Key: {username},
         UpdateExpression:
-        // eslint-disable-next-line max-len
+          // eslint-disable-next-line max-len
           "SET rolesWithAccess = :rolesWithAccess, rolesWithoutAccess = :rolesWithoutAccess, currentlySelectedRole = :currentlySelectedRole",
         ExpressionAttributeValues: {
           ":rolesWithAccess": scrubbedRolesWithAccess,

@@ -66,7 +66,6 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
   logger.info("Is this a mock request?", {isMockRequest})
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const {cis2AccessToken, cis2IdToken} = await fetchAndVerifyCIS2Tokens(
     event,
     documentClient,
@@ -75,9 +74,9 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   )
 
   const userInfoResponse = await fetchUserInfo(
+    cis2IdToken,
     cis2AccessToken,
     CPT_ACCESS_ACTIVITY_CODES,
-    undefined,
     logger,
     isMockRequest ? mockOidcConfig : cis2OidcConfig
   )
