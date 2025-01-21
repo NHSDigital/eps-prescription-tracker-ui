@@ -1,0 +1,54 @@
+.nhsuk-tabs {
+    margin-top:0;
+    > h2 {
+padding:1rem 2rem
+    }
+    .nhsuk-tabs__list{
+        padding: 0.5rem calc(50% - 480px) 0;
+        background-color: #ffffff;
+        
+
+    }
+    .nhsuk-tabs__panel {        
+        padding: 3rem calc(50% - 480px);
+        background-color:#f0f4f5;
+    }
+   .nhsuk-tabs__list-item {
+    background-color:#ffffff;    
+    padding:calc(1rem + -3px) calc(2rem + 1px) 1rem;
+   
+   .nhsuk-tabs__tab {
+    font-size: 1.0625rem;
+    color: #4c6272;
+    text-decoration:none;
+    &:hover {
+        color:#005eb8 !important;
+        text-decoration:underline;
+    }
+   }
+   &--selected{
+    background-color: #f0f4f5;
+    border-top: 1px solid #C8CBCC;
+    border-left: 1px solid #C8CBCC;
+    border-right: 1px solid #C8CBCC;
+    margin-bottom: -1px !important;
+    border-bottom: 4px solid #f0f4f5;
+    padding:1rem 2rem;
+    .nhsuk-tabs__tab {
+        color:#005eb8 !important
+    }
+   }
+}
+
+//target non-tabbed version of layout
+.nhsuk-tabs__list-item:not([role="presentation"]){
+   margin: 0 6px;
+    border-width: 0;
+    padding-left: 40px;
+    background:#ffffff;
+}
+.nhsuk-tabs__panel:not([role="tabpanel"]){
+    padding:1rem;
+    margin-bottom:0;
+}
+}
