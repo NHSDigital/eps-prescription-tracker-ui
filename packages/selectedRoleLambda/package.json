@@ -1,5 +1,5 @@
 {
-  "name": "select-role-lambda",
+  "name": "selected-role-lambda",
   "version": "1.0.0",
   "description": "Lambda to handle selectedRole endpoint",
   "main": "handler.ts",
