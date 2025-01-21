@@ -6,37 +6,16 @@ import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
 import middy from "@middy/core"
 import inputOutputLogger from "@middy/input-output-logger"
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
-import {getUsernameFromEvent, fetchAndVerifyCIS2Tokens, initializeOidcConfig} from "@cpt-ui-common/authFunctions"
-import {fetchUserInfo, updateDynamoTable} from "./userInfoHelpers"
+import {getUsernameFromEvent} from "@cpt-ui-common/authFunctions"
+import {updateDynamoTable} from "./selectedRoleHelpers"
 
 /*
-This is the lambda code to get user info
-It expects the following environment variables to be set
-
-CIS2_OIDC_ISSUER
-CIS2_OIDC_CLIENT_ID
-CIS2_OIDCJWKS_ENDPOINT
-CIS2_USER_INFO_ENDPOINT
-CIS2_USER_POOL_IDP
-
-TokenMappingTableName
-MOCK_MODE_ENABLED
-
-For mock calls, the following must be set
-MOCK_OIDC_ISSUER
-MOCK_OIDC_CLIENT_ID
-MOCK_OIDCJWKS_ENDPOINT
-MOCK_USER_INFO_ENDPOINT
-MOCK_USER_POOL_IDP
+This is the lambda code to update the roleId in the DynamoDB table
 */
-const logger = new Logger({serviceName: "trackerUserInfo"})
+const logger = new Logger({serviceName: "selectedRole"})
 
 const dynamoClient = new DynamoDBClient({})
 const documentClient = DynamoDBDocumentClient.from(dynamoClient)
-
-// Create a config for cis2 and mock
-// this is outside functions so it can be re-used and caching works
-const {mockOidcConfig, cis2OidcConfig} = initializeOidcConfig()
 
 const MOCK_MODE_ENABLED = process.env["MOCK_MODE_ENABLED"]
 const tokenMappingTableName = process.env["TokenMappingTableName"] ?? ""
@@ -46,8 +25,6 @@ const errorResponseBody = {
 }
 
 const middyErrorHandler = new MiddyErrorHandler(errorResponseBody)
-
-const CPT_ACCESS_ACTIVITY_CODES = ["B0570", "B0278"]
 
 const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   logger.appendKeys({"apigw-request-id": event.requestContext?.requestId})
@@ -66,28 +43,36 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
   logger.info("Is this a mock request?", {isMockRequest})
 
-  const {cis2AccessToken, cis2IdToken} = await fetchAndVerifyCIS2Tokens(
-    event,
-    documentClient,
-    logger,
-    isMockRequest ? mockOidcConfig : cis2OidcConfig
-  )
+  // Ensure the request body is not null
+  if (!event.body) {
+    logger.error("Request body is missing")
+    return {
+      statusCode: 400,
+      body: JSON.stringify({message: "Request body is required"})
+    }
+  }
 
-  const userInfoResponse = await fetchUserInfo(
-    cis2AccessToken,
-    cis2IdToken,
-    CPT_ACCESS_ACTIVITY_CODES,
-    logger,
-    isMockRequest ? mockOidcConfig : cis2OidcConfig
-  )
+  // Parse the request body
+  let userInfoSelectedRole
+  try {
+    userInfoSelectedRole = JSON.parse(event.body)
+  } catch (error) {
+    logger.error("Failed to parse request body", {error})
+    return {
+      statusCode: 400,
+      body: JSON.stringify({message: "Invalid JSON format in request body"})
+    }
+  }
 
-  updateDynamoTable(username, userInfoResponse, documentClient, logger, tokenMappingTableName)
+  logger.info("Updating role in DynamoDB", {userInfoSelectedRole})
+
+  updateDynamoTable(username, userInfoSelectedRole, documentClient, logger, tokenMappingTableName)
 
   return {
     statusCode: 200,
     body: JSON.stringify({
       message: "UserInfo fetched successfully",
-      userInfo: userInfoResponse
+      userInfo: userInfoSelectedRole
     })
   }
 

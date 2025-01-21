@@ -47,6 +47,10 @@
       {
         "name": "packages/trackerUserInfoLambda",
         "path": "../packages/trackerUserInfoLambda"
+      },
+      {
+        "name": "packages/selectedRoleLambda",
+        "path": "../packages/selectedRoleLambda"
       }
     ],
     "settings": {
