@@ -1,9 +1,7 @@
-import {APIGatewayProxyEvent} from "aws-lambda"
 import {DynamoDBDocumentClient, GetCommand} from "@aws-sdk/lib-dynamodb"
 import {Logger} from "@aws-lambda-powertools/logger"
 import jwt, {JwtPayload} from "jsonwebtoken"
 import jwksClient from "jwks-rsa"
-import {getUsernameFromEvent} from "./event"
 
 const VALID_ACR_VALUES: Array<string> = [
   "AAL3_ANY",
@@ -88,7 +86,7 @@ export const fetchCIS2TokensFromDynamoDB = async (
 }
 
 export const fetchAndVerifyCIS2Tokens = async (
-  event: APIGatewayProxyEvent,
+  username: string,
   documentClient: DynamoDBDocumentClient,
   logger: Logger,
   oidcConfig: OidcConfig
@@ -98,10 +96,6 @@ export const fetchAndVerifyCIS2Tokens = async (
   if (oidcConfig.tokenMappingTableName === "") {
     throw new Error("Token mapping table name not set")
   }
-
-  // Extract username
-  const username = getUsernameFromEvent(event)
-  logger.info("Extracted username from ID token", {username})
 
   // Fetch CIS2 tokens from DynamoDB
   const {cis2AccessToken, cis2IdToken} = await fetchCIS2TokensFromDynamoDB(
