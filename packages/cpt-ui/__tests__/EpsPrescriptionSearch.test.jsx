@@ -2,13 +2,13 @@ import React from 'react';
 import "@testing-library/jest-dom";
 import { fireEvent, render } from "@testing-library/react";
 import { Tabs } from "nhsuk-react-components";
-import EpsTabs from '../components/EpsTabs';
-import PrescriptionIdSearch from "../components/prescriptionSearch/PrescriptionIdSearch"
-import NhsNumSearch from '../components/prescriptionSearch/NhsNumSearch';
-import BasicDetailsSearch from '../components/prescriptionSearch/BasicDetailsSearch';
+import EpsTabs from '@/components/EpsTabs';
+import PrescriptionIdSearch from "@/components/prescriptionSearch/PrescriptionIdSearch"
+import NhsNumSearch from '@/components/prescriptionSearch/NhsNumSearch';
+import BasicDetailsSearch from '@/components/prescriptionSearch/BasicDetailsSearch';
 import {
   PRESCRIPTION_SEARCH_TABS
-} from "../constants/ui-strings/SearchTabStrings"
+} from "@/constants/ui-strings/SearchTabStrings"
 
 describe('The tabs component', () => {
 
