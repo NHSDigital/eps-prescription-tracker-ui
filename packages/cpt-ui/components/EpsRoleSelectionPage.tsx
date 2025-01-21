@@ -262,7 +262,7 @@ export default function RoleSelectionPage({ contentText }: RoleSelectionPageProp
                         </h1>
                         {/* Caption Section for No Access */}
                         {noAccess && (<p>{captionNoAccess}</p>)}
-                        {/* Inset Text Section */}
+                        {/* Pre selected role section */}
                         {currentlySelectedRole && (
                             <section aria-label="Login Information">
                                 <InsetText
