@@ -43,7 +43,26 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
   logger.info("Is this a mock request?", {isMockRequest})
 
-  const userInfoSelectedRole = JSON.parse(event.body)
+  // Ensure the request body is not null
+  if (!event.body) {
+    logger.error("Request body is missing")
+    return {
+      statusCode: 400,
+      body: JSON.stringify({message: "Request body is required"})
+    }
+  }
+
+  // Parse the request body
+  let userInfoSelectedRole
+  try {
+    userInfoSelectedRole = JSON.parse(event.body)
+  } catch (error) {
+    logger.error("Failed to parse request body", {error})
+    return {
+      statusCode: 400,
+      body: JSON.stringify({message: "Invalid JSON format in request body"})
+    }
+  }
 
   logger.info("Updating role in DynamoDB", {userInfoSelectedRole})
 
