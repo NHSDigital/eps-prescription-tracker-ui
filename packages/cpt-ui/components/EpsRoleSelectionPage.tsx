@@ -1,15 +1,15 @@
 'use client'
-import React, {useState, useEffect, useContext, useCallback} from "react"
-import {useRouter} from 'next/navigation'
-import {Container, Col, Row, Details, Table, ErrorSummary, Button, InsetText} from "nhsuk-react-components"
+import React, { useState, useEffect, useContext, useCallback } from "react"
+import { useRouter } from 'next/navigation'
+import { Container, Col, Row, Details, Table, ErrorSummary, Button, InsetText } from "nhsuk-react-components"
 
-import {AuthContext} from "@/context/AuthProvider"
-import {useAccess} from '@/context/AccessProvider'
+import { AuthContext } from "@/context/AuthProvider"
+import { useAccess } from '@/context/AccessProvider'
 
-import EpsCard, {EpsCardProps} from "@/components/EpsCard"
+import EpsCard, { EpsCardProps } from "@/components/EpsCard"
 import EpsSpinner from "@/components/EpsSpinner"
 
-import {RoleDetails, TrackerUserInfo} from "@/types/TrackerUserInfoTypes"
+import { RoleDetails, TrackerUserInfo } from "@/types/TrackerUserInfoTypes"
 
 // Extends the EpsCardProps to include a unique identifier
 export type RolesWithAccessProps = EpsCardProps & {
@@ -53,7 +53,7 @@ interface RoleSelectionPageProps {
     }
 }
 
-export default function RoleSelectionPage({contentText}: RoleSelectionPageProps) {
+export default function RoleSelectionPage({ contentText }: RoleSelectionPageProps) {
     // Destructure strings from the contentText prop
     const {
         title,
@@ -74,7 +74,7 @@ export default function RoleSelectionPage({contentText}: RoleSelectionPageProps)
         errorDuringRoleSelection
     } = contentText
 
-    const {setNoAccess, setSingleAccess} = useAccess()
+    const { setNoAccess, setSingleAccess } = useAccess()
     const [loading, setLoading] = useState<boolean>(true)
     const [error, setError] = useState<string | null>(null)
     const [redirecting, setRedirecting] = useState<boolean>(false)
@@ -266,14 +266,14 @@ export default function RoleSelectionPage({contentText}: RoleSelectionPageProps)
                         </h1>
                         {/* Caption Section for No Access */}
                         {noAccess && (<p>{captionNoAccess}</p>)}
-                        {/* Inset Text Section */}
+                        {/* Pre selected role section */}
                         {currentlySelectedRole && (
                             <section aria-label="Login Information">
-                                <InsetText>
+                                <InsetText data-testid="eps_select_your_role_pre_role_selected_information">
                                     <span className="nhsuk-u-visually-hidden">
                                         {insetText.visuallyHidden}
                                     </span>
-                                    <p dangerouslySetInnerHTML={{__html: loginInfoMessage}}></p>
+                                    <p dangerouslySetInnerHTML={{ __html: loginInfoMessage }}></p>
                                 </InsetText>
                                 {/* Confirm Button */}
                                 <Button href={confirmButton.link}>
