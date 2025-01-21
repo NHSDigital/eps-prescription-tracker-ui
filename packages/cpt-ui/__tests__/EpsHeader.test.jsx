@@ -3,10 +3,6 @@ import "@testing-library/jest-dom";
 import { render, screen } from "@testing-library/react";
 import { usePathname } from "next/navigation";
 import EpsHeader from "@/components/EpsHeader";
-import {
-  HEADER_SERVICE,
-  HEADER_SELECT_YOUR_ROLE_BUTTON,
-} from "@/constants/ui-strings/HeaderStrings";
 
 // Mocks
 jest.mock("next/navigation", () => ({
