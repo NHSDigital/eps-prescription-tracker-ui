@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react'
 
 import 'nhsuk-frontend/dist/nhsuk.css'
-import EpsHeaderLayout from '@/components/EpsHeaderLayout'
+import EpsHeader from '@/components/EpsHeader'
 import EpsFooter from '@/components/EpsFooter'
 import { AuthProvider } from '@/context/AuthProvider'
 import { AccessProvider } from '@/context/AccessProvider'
@@ -21,8 +21,8 @@ export default function RootLayout({
             <body className={mounted ? "js-enabled" : "no-js"}>
                 <AuthProvider>
                     <AccessProvider>
-                        <EpsHeaderLayout />
-                        {children}
+                        <EpsHeader />
+                            {children}
                         <EpsFooter />
                     </AccessProvider>
                 </AuthProvider>
