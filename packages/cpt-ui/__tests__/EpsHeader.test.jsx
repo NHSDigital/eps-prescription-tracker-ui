@@ -6,8 +6,7 @@ import {
   HEADER_SERVICE,
   HEADER_CONFIRM_ROLE_BUTTON,
   HEADER_CHANGE_ROLE_BUTTON,
-  HEADER_SELECT_YOUR_ROLE_BUTTON,
-  HEADER_PRESCRIPTION_SEARCH_BUTTON
+  HEADER_SELECT_YOUR_ROLE_BUTTON
 } from "@/constants/ui-strings/HeaderStrings";
 
 import { AccessProvider } from "@/context/AccessProvider";
