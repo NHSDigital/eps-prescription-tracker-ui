@@ -174,8 +174,8 @@ describe("Lambda Handler Tests with mock enabled", () => {
 
       expect(mockFetchUserInfo).toHaveBeenCalledWith(
         expect.any(String),
+        expect.any(String),
         expect.any(Object),
-        undefined,
         expect.any(Object),
         expect.objectContaining({
           oidcIssuer: CIS2_OIDC_ISSUER,
@@ -209,8 +209,8 @@ describe("Lambda Handler Tests with mock enabled", () => {
 
       expect(mockFetchUserInfo).toHaveBeenCalledWith(
         expect.any(String),
+        expect.any(String),
         expect.any(Object),
-        undefined,
         expect.any(Object),
         expect.objectContaining({
           oidcIssuer: MOCK_OIDC_ISSUER,

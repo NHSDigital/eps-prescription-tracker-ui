@@ -45,6 +45,9 @@ export interface UserInfoResponse {
 
   // Claims from the "associatedorgs" scope
   nhsid_user_orgs?: Array<NhsIdUserOrg>;
+
+  // Claims from the "selectedrole" scope
+  selected_roleid?: string;
 }
 
 interface NhsIdNRBACRole {
