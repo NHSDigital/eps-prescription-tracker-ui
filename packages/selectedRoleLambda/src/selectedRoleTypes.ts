@@ -7,10 +7,3 @@ export type RoleDetails = {
   site_name?: string
   site_address?: string
 }
-
-export type SelectedRole = {
-  roles_with_access: Array<RoleDetails>
-  roles_without_access: Array<RoleDetails>
-  currently_selected_role?: RoleDetails
-  selected_roleid?: string
-}
