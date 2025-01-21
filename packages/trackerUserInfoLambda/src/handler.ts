@@ -68,7 +68,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   let start = Date.now()
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const {cis2AccessToken, cis2IdToken} = await fetchAndVerifyCIS2Tokens(
-    username,
+    event,
     documentClient,
     logger,
     isMockRequest ? mockOidcConfig : cis2OidcConfig
