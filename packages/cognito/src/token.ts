@@ -71,7 +71,9 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   logger.appendKeys({
     "apigw-request-id": event.requestContext?.requestId
   })
+  let start = Date.now()
   const axiosInstance = axios.create()
+  logger.info(`Creating the axios instance took ${Date.now() - start}ms`)
 
   const body = event.body
   if (body === undefined) {
@@ -80,7 +82,9 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   const objectBodyParameters = parse(body as string)
   let rewrittenObjectBodyParameters: ParsedUrlQuery
 
+  start = Date.now()
   const jwtPrivateKey = await getSecret(jwtPrivateKeyArn)
+  logger.info(`Getting the secret took ${Date.now() - start}ms`)
   rewrittenObjectBodyParameters = rewriteBodyToAddSignedJWT(
     logger, objectBodyParameters, idpTokenPath, jwtPrivateKey as PrivateKey, jwtKid)
 
