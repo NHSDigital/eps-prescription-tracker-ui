@@ -51,7 +51,6 @@ const CPT_ACCESS_ACTIVITY_CODES = ["B0570", "B0278"]
 
 const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   logger.appendKeys({"apigw-request-id": event.requestContext?.requestId})
-  logger.info("Lambda handler invoked", {event})
 
   // Mock usernames start with "Mock_", and real requests use usernames starting with "Primary_"
   const username = getUsernameFromEvent(event)
@@ -66,6 +65,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
   logger.info("Is this a mock request?", {isMockRequest})
 
+  let start = Date.now()
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const {cis2AccessToken, cis2IdToken} = await fetchAndVerifyCIS2Tokens(
     event,
@@ -73,7 +73,9 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     logger,
     isMockRequest ? mockOidcConfig : cis2OidcConfig
   )
+  logger.info(`Fetch and verify CIS2 tokens took: ${Date.now() - start}`)
 
+  start = Date.now()
   const userInfoResponse = await fetchUserInfo(
     cis2AccessToken,
     CPT_ACCESS_ACTIVITY_CODES,
@@ -81,8 +83,11 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     logger,
     isMockRequest ? mockOidcConfig : cis2OidcConfig
   )
+  logger.info(`fetch user info took: ${Date.now() - start}`)
 
+  start = Date.now()
   updateDynamoTable(username, userInfoResponse, documentClient, logger, tokenMappingTableName)
+  logger.info(`Update dynamo table took: ${Date.now() - start}`)
 
   return {
     statusCode: 200,

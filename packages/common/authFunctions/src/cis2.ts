@@ -180,6 +180,7 @@ export const verifyCIS2Token = async (
 
   // Fetch the signing key from the JWKS endpoint
   let signingKey
+  let start = Date.now()
   try {
     logger.info("Fetching signing key", {kid})
     signingKey = await getSigningKey(oidcConfig.jwksClient, kid)
@@ -187,7 +188,7 @@ export const verifyCIS2Token = async (
     logger.error("Error getting signing key", {err})
     throw new Error("Error getting signing key")
   }
-  logger.info("Signing key fetched successfully")
+  logger.info(`Signing key fetched successfully. Took ${Date.now() - start}ms`)
 
   // Verify the token signature
   const verifyOptions: jwt.VerifyOptions = {
