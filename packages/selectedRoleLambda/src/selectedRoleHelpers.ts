@@ -34,31 +34,36 @@ export const updateDynamoTable = async (
 
   const selectedRoleId: string = data.role_id ?? ""
 
+  // Remove undefined values to prevent errors in DynamoDB update
+  const scrubbedCurrentlySelectedRole = JSON.parse(
+    JSON.stringify(currentlySelectedRole)
+  )
+
   logger.info("Prepared data for DynamoDB update", {
-    currentlySelectedRole,
+    currentlySelectedRole: scrubbedCurrentlySelectedRole,
     selectedRoleId
   })
 
   try {
-    const updateCommand = new UpdateCommand({
-      TableName: tokenMappingTableName,
-      Key: {username},
-      UpdateExpression: "SET currentlySelectedRole = :currentlySelectedRole, selectedRoleId = :selectedRoleId",
-      ExpressionAttributeValues: {
-        ":currentlySelectedRole": currentlySelectedRole,
-        ":selectedRoleId": selectedRoleId
-      },
-      ReturnValues: "ALL_NEW"
+    await documentClient.send(
+      new UpdateCommand({
+        TableName: tokenMappingTableName,
+        Key: {username},
+        UpdateExpression:
+          "SET currentlySelectedRole = :currentlySelectedRole, selectedRoleId = :selectedRoleId",
+        ExpressionAttributeValues: {
+          ":currentlySelectedRole": scrubbedCurrentlySelectedRole,
+          ":selectedRoleId": selectedRoleId
+        },
+        ReturnValues: "ALL_NEW"
+      })
+    )
+
+    logger.info("DynamoDB update successful", {
+      username,
+      selectedRoleId
     })
-
-    logger.debug("Executing DynamoDB update command", {updateCommand})
-
-    const response = await documentClient.send(updateCommand)
-
-    logger.info("DynamoDB update successful", {response})
-
   } catch (error) {
-    // Type assertion to Error type
     if (error instanceof Error) {
       logger.error("Error updating user's selected role in DynamoDB", {
         username,
