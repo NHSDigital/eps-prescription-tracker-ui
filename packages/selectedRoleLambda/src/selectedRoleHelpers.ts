@@ -21,16 +21,12 @@ export const updateDynamoTable = async (
     receivedData: data
   })
 
-  // Construct the currentlySelectedRole object from the provided data, excluding empty values
-  const currentlySelectedRole: RoleDetails = Object.fromEntries(
-    Object.entries({
-      role_id: data.role_id ?? "",
-      org_name: data.org_name ?? "",
-      org_code: data.org_code ?? "",
-      role_name: data.role_name ?? ""
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    }).filter(([_, value]) => value !== "") // Remove keys with empty string values
-  )
+  // Construct the currentlySelectedRole object from the provided data
+  const currentlySelectedRole = {
+    role_id: data.role_id ?? "",
+    org_code: data.org_code ?? "",
+    role_name: data.role_name ?? ""
+  }
 
   const selectedRoleId: string = data.role_id ?? ""
 
@@ -50,18 +46,23 @@ export const updateDynamoTable = async (
         TableName: tokenMappingTableName,
         Key: {username},
         UpdateExpression:
-          "SET currentlySelectedRole = :currentlySelectedRole, selectedRoleId = :selectedRoleId",
+          "SET currentlySelectedRole.role_id = :role_id, " +
+          "currentlySelectedRole.org_code = :org_code, " +
+          "currentlySelectedRole.role_name = :role_name, " +
+          "selectedRoleId = :selectedRoleId",
         ExpressionAttributeValues: {
-          ":currentlySelectedRole": scrubbedCurrentlySelectedRole,
+          ":role_id": scrubbedCurrentlySelectedRole.role_id,
+          ":org_code": scrubbedCurrentlySelectedRole.org_code,
+          ":role_name": scrubbedCurrentlySelectedRole.role_name,
           ":selectedRoleId": selectedRoleId
         },
-        ReturnValues: "ALL_NEW"
+        ReturnValues: "UPDATED_NEW" // Returns only the attributes that were updated in the response
       })
     )
 
     logger.info("DynamoDB update successful", {
       username,
-      selectedRoleId
+      updatedRole: scrubbedCurrentlySelectedRole
     })
   } catch (error) {
     if (error instanceof Error) {
