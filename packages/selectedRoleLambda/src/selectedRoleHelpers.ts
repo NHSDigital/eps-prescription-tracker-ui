@@ -10,7 +10,7 @@ export const updateDynamoTable = async (
   logger: Logger,
   tokenMappingTableName: string
 ) => {
-  if (tokenMappingTableName === "") {
+  if (!tokenMappingTableName) {
     logger.error("Token mapping table name not set")
     throw new Error("Token mapping table name not set")
   }
@@ -21,21 +21,21 @@ export const updateDynamoTable = async (
     receivedData: data
   })
 
-  // Construct the currentlySelectedRole object from the provided data
-  const currentlySelectedRole: RoleDetails = {
-    role_id: data.role_id ?? "",
-    org_name: data.org_name ?? "",
-    org_code: data.org_code ?? "",
-    role_name: data.role_name ?? ""
-  }
+  // Construct the currentlySelectedRole object from the provided data, excluding empty values
+  const currentlySelectedRole: RoleDetails = Object.fromEntries(
+    Object.entries({
+      role_id: data.role_id ?? "",
+      org_name: data.org_name ?? "",
+      org_code: data.org_code ?? "",
+      role_name: data.role_name ?? ""
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    }).filter(([_, value]) => value !== "") // Remove keys with empty string values
+  )
 
   const selectedRoleId: string = data.role_id ?? ""
 
-  // Remove any undefined properties from the object before updating
-  const scrubbedCurrentlySelectedRole = JSON.parse(JSON.stringify(currentlySelectedRole))
-
   logger.info("Prepared data for DynamoDB update", {
-    currentlySelectedRole: scrubbedCurrentlySelectedRole,
+    currentlySelectedRole,
     selectedRoleId
   })
 
@@ -45,7 +45,7 @@ export const updateDynamoTable = async (
       Key: {username},
       UpdateExpression: "SET currentlySelectedRole = :currentlySelectedRole, selectedRoleId = :selectedRoleId",
       ExpressionAttributeValues: {
-        ":currentlySelectedRole": scrubbedCurrentlySelectedRole,
+        ":currentlySelectedRole": currentlySelectedRole,
         ":selectedRoleId": selectedRoleId
       },
       ReturnValues: "ALL_NEW"
@@ -58,7 +58,19 @@ export const updateDynamoTable = async (
     logger.info("DynamoDB update successful", {response})
 
   } catch (error) {
-    logger.error("Error updating user's selected role in DynamoDB", {username, error})
+    // Type assertion to Error type
+    if (error instanceof Error) {
+      logger.error("Error updating user's selected role in DynamoDB", {
+        username,
+        errorMessage: error.message,
+        errorStack: error.stack
+      })
+    } else {
+      logger.error("Unknown error type while updating user's selected role", {
+        username,
+        error
+      })
+    }
     throw error
   }
 }
