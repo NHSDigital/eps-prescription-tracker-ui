@@ -1,7 +1,12 @@
 import {Logger} from "@aws-lambda-powertools/logger"
 import axios from "axios"
 import {DynamoDBDocumentClient, UpdateCommand} from "@aws-sdk/lib-dynamodb"
-import {UserInfoResponse, TrackerUserInfo, RoleDetails} from "./userInfoTypes"
+import {
+  UserInfoResponse,
+  TrackerUserInfo,
+  RoleDetails,
+  UserDetails
+} from "./userInfoTypes"
 import {OidcConfig} from "@cpt-ui-common/authFunctions"
 
 // Role names come in formatted like `"category":"subcategory":"roleName"`.
@@ -50,6 +55,11 @@ export const fetchUserInfo = async (
     const rolesWithAccess: Array<RoleDetails> = []
     const rolesWithoutAccess: Array<RoleDetails> = []
     let currentlySelectedRole: RoleDetails | undefined = undefined
+
+    const userDetails: UserDetails = {
+      family_name: data.family_name,
+      given_name: data.given_name
+    }
 
     // Get roles from the user info response
     const roles = data.nhsid_nrbac_roles || []
@@ -100,7 +110,8 @@ export const fetchUserInfo = async (
     const result: TrackerUserInfo = {
       roles_with_access: rolesWithAccess,
       roles_without_access: rolesWithoutAccess,
-      currently_selected_role: currentlySelectedRole
+      currently_selected_role: currentlySelectedRole,
+      user_details: userDetails
     }
 
     logger.info("Returning user info response", {result})
