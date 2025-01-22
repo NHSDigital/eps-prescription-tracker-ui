@@ -58,11 +58,7 @@ export const updateDynamoTable = async (
     logger.info("DynamoDB update successful", {response})
 
   } catch (error) {
-    logger.error("Error updating user's selected role in DynamoDB", {
-      username,
-      errorMessage: error.message,
-      errorStack: error.stack
-    })
+    logger.error("Error updating user's selected role in DynamoDB", {username, error})
     throw error
   }
 }
