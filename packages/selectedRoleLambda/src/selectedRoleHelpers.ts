@@ -1,6 +1,6 @@
 import {Logger} from "@aws-lambda-powertools/logger"
 import {DynamoDBDocumentClient, UpdateCommand} from "@aws-sdk/lib-dynamodb"
-import {RoleDetails, TrackerUserInfo} from "@/types/TrackerUserInfoTypes"
+import {RoleDetails, TrackerUserInfo} from "./selectedRoleTypes"
 
 // Mock data for rolesWithAccess and rolesWithoutAccess
 const rolesWithAccess: Array<RoleDetails> = [
