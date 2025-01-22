@@ -43,7 +43,6 @@ export default function YourSelectedRolePage() {
             // Define currentlySelectedRole before sending the request
             const currentlySelectedRole: RoleDetails = {
                 role_id: selectedRole?.role_id || "",
-                org_name: selectedRole?.org_name || "",
                 org_code: selectedRole?.org_code || "",
                 role_name: selectedRole?.role_name || ""
             }
