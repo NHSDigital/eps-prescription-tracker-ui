@@ -119,6 +119,10 @@ describe("fetchUserInfo", () => {
         role_id: "role-id-1",
         org_code: "ORG1",
         org_name: "Organization One"
+      },
+      user_details: {
+        family_name: "Doe",
+        given_name: "John"
       }
     })
   })
@@ -174,7 +178,11 @@ describe("fetchUserInfo", () => {
           org_name: "Organization Three"
         }
       ],
-      currently_selected_role: undefined
+      currently_selected_role: undefined,
+      user_details: {
+        family_name: "Smith",
+        given_name: "Jane"
+      }
     })
   })
 
@@ -253,6 +261,10 @@ describe("updateDynamoTable", () => {
       org_name: "Test Hospital",
       site_name: "Main",
       site_address: "123 Street"
+    },
+    user_details: {
+      family_name: "FAMILY",
+      given_name: "GIVEN"
     }
   }
 

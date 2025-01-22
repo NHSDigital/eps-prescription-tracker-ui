@@ -42,11 +42,10 @@ export default function RBACBanner() {
             {/* TODO: Is there a proper nhsuk component??? */}
             <div
                 className="nhsuk-banner"
-                style={{ position: "relative" }}
             >
                 {/* TODO: What options are there for the role? */}
                 <Row>
-                    <p style={{ paddingLeft: "60px" }}>
+                    <p style={{ paddingLeft: "60px", margin: "8px" }}>
                         CONFIDENTIAL: PERSONAL PATIENT DATA accessed by {lastName}, {firstName} - {roleName} - {orgName} (ODS: {odsCode})
                     </p>
                 </Row>
