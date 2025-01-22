@@ -75,23 +75,32 @@ export default function RoleSelectionPage({ contentText }: RoleSelectionPageProp
         errorDuringRoleSelection
     } = contentText
 
-    const { noAccess, setNoAccess, setSingleAccess, setSelectedRole } = useAccess()
+    const { noAccess, setNoAccess, setSingleAccess, setSelectedRole: setCurrentlySelectedRole, selectedRole: currentlySelectedRole } = useAccess()
+    const [loginInfoMessage, setLoginInfoMessage] = useState<string | null>(null);
     const [loading, setLoading] = useState<boolean>(true)
     const [error, setError] = useState<string | null>(null)
     const [redirecting, setRedirecting] = useState<boolean>(false)
     const [rolesWithAccess, setRolesWithAccess] = useState<RolesWithAccessProps[]>([])
     const [rolesWithoutAccess, setRolesWithoutAccess] = useState<RolesWithoutAccessProps[]>([])
-    const [currentlySelectedRole, setCurrentlySelectedRole] = useState<RoleDetails | undefined>(undefined)
 
     const router = useRouter()
     const auth = useContext(AuthContext)
 
-    const loginInfoMessage = currentlySelectedRole
-        ? `You are currently logged in at ${currentlySelectedRole.org_name || noOrgName
-        } (ODS: ${currentlySelectedRole.org_code || noODSCode
-        }) with ${currentlySelectedRole.role_name || noRoleName
-        }.`
-        : ""
+
+    useEffect(() => {
+        // Only set the login message if its not already set and currentlySelectedRole is available. 
+        // This ensures its not blank and that it waits until currentlySelectedRole is populated.
+        // Also means that currentlySelectedRole doesnt display a new selectedRole if a card is clicked and users with a slower connection see this before a redirect
+        if (!loginInfoMessage && currentlySelectedRole) {
+            setLoginInfoMessage(
+                `You are currently logged in at ${currentlySelectedRole.org_name || "No Org Name"
+                } (ODS: ${currentlySelectedRole.org_code || "No ODS Code"
+                }) with ${currentlySelectedRole.role_name || "No Role Name"
+                }.`
+            );
+        }
+    }, [currentlySelectedRole, loginInfoMessage]);
+
 
     const fetchTrackerUserInfo = useCallback(async () => {
         setLoading(true)
@@ -176,7 +185,7 @@ export default function RoleSelectionPage({ contentText }: RoleSelectionPageProp
         router,
         setNoAccess,
         setSingleAccess,
-        setSelectedRole,
+        setCurrentlySelectedRole,
         noOrgName,
         noODSCode,
         noRoleName
@@ -201,13 +210,8 @@ export default function RoleSelectionPage({ contentText }: RoleSelectionPageProp
         }
     }, [auth?.error])
 
-    // Skip rendering if redirecting
-    if (redirecting) {
-        return null
-    }
-
-    // If the data is being fetched, replace the content with a spinner
-    if (loading) {
+    // If the data is being fetched or the user is being diverted, replace the content with a spinner
+    if (loading || redirecting) {
         return (
             <main id="main-content" className="nhsuk-main-wrapper">
                 <Container>
@@ -271,7 +275,9 @@ export default function RoleSelectionPage({ contentText }: RoleSelectionPageProp
                                     <span className="nhsuk-u-visually-hidden">
                                         {insetText.visuallyHidden}
                                     </span>
-                                    <p dangerouslySetInnerHTML={{ __html: loginInfoMessage }}></p>
+                                    {loginInfoMessage && (
+                                        <p dangerouslySetInnerHTML={{ __html: loginInfoMessage }}></p>
+                                    )}
                                 </InsetText>
                                 {/* Confirm Button */}
                                 <Button href={confirmButton.link}>
