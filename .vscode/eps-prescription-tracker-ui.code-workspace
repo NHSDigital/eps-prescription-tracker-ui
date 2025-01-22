@@ -1,8 +1,8 @@
 {
     "folders": [
       {
-      "name": "eps-prescription-tracker-ui-monorepo",
-      "path": ".."
+        "name": "eps-prescription-tracker-ui-monorepo",
+        "path": ".."
       },
       {
         "name": "packages/cpt-ui",
