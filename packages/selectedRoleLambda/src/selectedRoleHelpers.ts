@@ -1,6 +1,6 @@
 import {Logger} from "@aws-lambda-powertools/logger"
 import {DynamoDBDocumentClient, UpdateCommand} from "@aws-sdk/lib-dynamodb"
-import {RoleDetails} from "./selectedRoleTypes"
+import {RoleDetails, TrackerUserInfo} from "@/types/TrackerUserInfoTypes"
 
 // Mock data for rolesWithAccess and rolesWithoutAccess
 const rolesWithAccess: Array<RoleDetails> = [
@@ -37,7 +37,7 @@ const rolesWithoutAccess: Array<RoleDetails> = [
 // Add the user currentlySelectedRole to the DynamoDB document, keyed by this user's username.
 export const updateDynamoTable = async (
   username: string,
-  data: RoleDetails,
+  data: TrackerUserInfo,
   documentClient: DynamoDBDocumentClient,
   logger: Logger,
   tokenMappingTableName: string
@@ -63,21 +63,18 @@ export const updateDynamoTable = async (
     receivedData: data
   })
 
-  // Construct the currentlySelectedRole object from the provided data, excluding empty values
-  const currentlySelectedRole: RoleDetails = Object.fromEntries(
-    Object.entries({
-      role_id: data.role_id ?? "",
-      org_code: data.org_code ?? "",
-      role_name: data.role_name ?? "",
-      org_name: data.org_name ?? ""
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    }).filter(([_, value]) => value !== "") // Remove keys with empty string values
-  )
+  // Dyanamo cannot allow undefined values. We need to scrub any undefined values from the data objects
+  const currentlySelectedRole: RoleDetails = data.currently_selected_role ? data.currently_selected_role : {}
 
-  const selectedRoleId: string = data.role_id ?? ""
+  // Ensure selectedRoleId is never undefined by providing a fallback value
+  const selectedRoleId: string = currentlySelectedRole.role_id || "UNSPECIFIED_ROLE_ID"
+
+  // Since RoleDetails has a bunch of possibly undefined fields, we need to scrub those out.
+  // Convert everything to strings, then convert back to a generic object.
+  const scrubbedCurrentlySelectedRole = JSON.parse(JSON.stringify(currentlySelectedRole))
 
   logger.info("Prepared data for DynamoDB update", {
-    currentlySelectedRole,
+    currentlySelectedRole: scrubbedCurrentlySelectedRole,
     selectedRoleId
   })
 
@@ -93,7 +90,7 @@ export const updateDynamoTable = async (
       ExpressionAttributeValues: {
         ":rolesWithAccess": rolesWithAccess,
         ":rolesWithoutAccess": rolesWithoutAccess,
-        ":currentlySelectedRole": currentlySelectedRole,
+        ":currentlySelectedRole": scrubbedCurrentlySelectedRole,
         ":selectedRoleId": selectedRoleId
       }
     })
@@ -110,7 +107,7 @@ export const updateDynamoTable = async (
         ExpressionAttributeValues: {
           ":rolesWithAccess": rolesWithAccess,
           ":rolesWithoutAccess": rolesWithoutAccess,
-          ":currentlySelectedRole": currentlySelectedRole,
+          ":currentlySelectedRole": scrubbedCurrentlySelectedRole,
           ":selectedRoleId": selectedRoleId
         },
         ReturnValues: "UPDATED_NEW"
@@ -119,7 +116,7 @@ export const updateDynamoTable = async (
 
     logger.info("DynamoDB update successful", {
       username,
-      updatedRole: currentlySelectedRole,
+      updatedRole: scrubbedCurrentlySelectedRole,
       selectedRoleId: selectedRoleId
     })
   } catch (error) {

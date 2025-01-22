@@ -161,6 +161,7 @@ export default function RoleSelectionPage({contentText}: RoleSelectionPageProps)
             // redirect them immediately
             if (rolesWithAccess.length === 1 && rolesWithoutAccess.length === 0) {
                 setRedirecting(true)
+                setSelectedRole(rolesWithAccess[0])
                 router.push("/searchforaprescription")
                 return
             }

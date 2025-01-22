@@ -1,59 +1,34 @@
-'use client'
-import React, {useContext} from "react"
+'use-client'
+import React from "react"
 import {Card, Col, Row} from "nhsuk-react-components"
+
 import "@/assets/styles/card.scss"
 
-import {AuthContext} from "@/context/AuthProvider"
 import {useAccess} from '@/context/AccessProvider'
 import {useRouter} from "next/navigation"
 import {RoleDetails} from "@/types/TrackerUserInfoTypes"
 
 import {EPS_CARD_STRINGS} from "@/constants/ui-strings/CardStrings"
 
-const selectedRoleEndpoint = "/api/selected-role"
-
 export interface EpsCardProps {
     role: RoleDetails
     link: string
 }
 
-export default function EpsCard({role, link}: EpsCardProps) {
+export default function EpsCard({
+    role,
+    link
+}: EpsCardProps) {
     const router = useRouter()
-    const auth = useContext(AuthContext)
     const {setSelectedRole} = useAccess()
 
     const handleSetSelectedRole = async (e: React.MouseEvent) => {
         e.preventDefault()
 
-        try {
-            // Update selected role in the backend via the selectedRoleLambda endpoint
-            const response = await fetch(selectedRoleEndpoint, {
-                method: 'PUT',
-                headers: {
-                    Authorization: `Bearer ${auth?.idToken}`,
-                    'NHSD-Session-URID': '555254242106',
-                },
-                body: JSON.stringify({
-                    role_id: role.role_id,
-                    org_name: role.org_name,
-                    org_code: role.org_code,
-                    role_name: role.role_name
-                }),
-            })
+        setSelectedRole(role)
+        // FIXME: This needs to also make the necessary PUT /selectrole request to the backend
 
-            if (!response.ok) {
-                throw new Error('Failed to update the selected role')
-            }
-
-            // Update frontend state with selected role
-            setSelectedRole(role)
-
-            // Redirect to the appropriate page
-            router.push(link)
-        } catch (error) {
-            console.error('Error selecting role:', error)
-            alert("There was an issue selecting your role. Please try again.")
-        }
+        router.push(link)
     }
 
     const {
