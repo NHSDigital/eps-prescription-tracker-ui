@@ -55,7 +55,7 @@ export default function EpsCard({role, link}: EpsCardProps) {
             setSelectedRole(currentlySelectedRole)
 
             // Redirect to the appropriate page
-            router.push("/searchforaprescription")
+            router.push(link)
         } catch (error) {
             console.error('Error selecting role:', error)
             alert("There was an issue selecting your role. Please try again.")
