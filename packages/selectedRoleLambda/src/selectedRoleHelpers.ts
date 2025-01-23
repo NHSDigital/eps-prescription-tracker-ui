@@ -2,39 +2,7 @@ import {Logger} from "@aws-lambda-powertools/logger"
 import {DynamoDBDocumentClient, UpdateCommand} from "@aws-sdk/lib-dynamodb"
 import {RoleDetails, TrackerUserInfo} from "./selectedRoleTypes"
 
-// Mock data for rolesWithAccess and rolesWithoutAccess
-const rolesWithAccess: Array<RoleDetails> = [
-  {
-    role_name: "General Medical Practitioner",
-    role_id: "555043301111",
-    org_code: "C82024"
-  },
-  {
-    role_name: "General Medical Practitioner",
-    role_id: "555043302222",
-    org_code: "P92602"
-  }
-]
-
-const rolesWithoutAccess: Array<RoleDetails> = [
-  {
-    role_name: "General Medical Practitioner",
-    role_id: "555043303333",
-    org_code: "A81060"
-  },
-  {
-    role_name: "Consultant",
-    role_id: "555043304444",
-    org_code: "A20063"
-  },
-  {
-    role_name: "General Medical Practitioner",
-    role_id: "555043305555",
-    org_code: "A21292"
-  }
-]
-
-// Add the user currentlySelectedRole to the DynamoDB document, keyed by this user's username.
+// Update the user currentlySelectedRole and selectedRoleId in the DynamoDB table
 export const updateDynamoTable = async (
   username: string,
   data: TrackerUserInfo,
@@ -63,7 +31,7 @@ export const updateDynamoTable = async (
     receivedData: data
   })
 
-  // Dyanamo cannot allow undefined values. We need to scrub any undefined values from the data objects
+  // DyanamoDB cannot allow undefined values. We need to scrub any undefined values from the data objects
   const currentlySelectedRole: RoleDetails = data.currently_selected_role ? data.currently_selected_role : {}
 
   // Ensure selectedRoleId is never undefined by providing a fallback value
@@ -79,46 +47,23 @@ export const updateDynamoTable = async (
   })
 
   try {
-    logger.info("Preparing to send update command to DynamoDB", {
+    const updateCommand = new UpdateCommand({
       TableName: tokenMappingTableName,
       Key: {username},
-      UpdateExpression:
-        "SET rolesWithAccess = :rolesWithAccess, " +
-        "rolesWithoutAccess = :rolesWithoutAccess, " +
-        "currentlySelectedRole = :currentlySelectedRole, " +
-        "selectedRoleId = :selectedRoleId",
+      UpdateExpression: "SET currentlySelectedRole = :currentlySelectedRole, selectedRoleId = :selectedRoleId",
       ExpressionAttributeValues: {
-        ":rolesWithAccess": rolesWithAccess,
-        ":rolesWithoutAccess": rolesWithoutAccess,
         ":currentlySelectedRole": scrubbedCurrentlySelectedRole,
         ":selectedRoleId": selectedRoleId
-      }
+      },
+      ReturnValues: "ALL_NEW"
     })
 
-    await documentClient.send(
-      new UpdateCommand({
-        TableName: tokenMappingTableName,
-        Key: {username},
-        UpdateExpression:
-          "SET rolesWithAccess = :rolesWithAccess, " +
-          "rolesWithoutAccess = :rolesWithoutAccess, " +
-          "currentlySelectedRole = :currentlySelectedRole, " +
-          "selectedRoleId = :selectedRoleId",
-        ExpressionAttributeValues: {
-          ":rolesWithAccess": rolesWithAccess,
-          ":rolesWithoutAccess": rolesWithoutAccess,
-          ":currentlySelectedRole": scrubbedCurrentlySelectedRole,
-          ":selectedRoleId": selectedRoleId
-        },
-        ReturnValues: "UPDATED_NEW"
-      })
-    )
+    logger.debug("Executing DynamoDB update command", {updateCommand})
 
-    logger.info("DynamoDB update successful", {
-      username,
-      updatedRole: scrubbedCurrentlySelectedRole,
-      selectedRoleId: selectedRoleId
-    })
+    const response = await documentClient.send(updateCommand)
+
+    logger.info("DynamoDB update successful", {response})
+
   } catch (error) {
     if (error instanceof Error) {
       logger.error("Error updating user's selected role in DynamoDB", {
