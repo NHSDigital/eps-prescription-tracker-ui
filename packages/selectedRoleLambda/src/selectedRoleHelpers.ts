@@ -2,7 +2,14 @@ import {Logger} from "@aws-lambda-powertools/logger"
 import {DynamoDBDocumentClient, UpdateCommand} from "@aws-sdk/lib-dynamodb"
 import {RoleDetails, TrackerUserInfo} from "./selectedRoleTypes"
 
-// Update the user currentlySelectedRole and selectedRoleId in the DynamoDB table
+/**
+ * Update the user currentlySelectedRole and selectedRoleId in the DynamoDB table.
+ * @param username - The username of the user.
+ * @param data - The TrackerUserInfo object containing user role information.
+ * @param documentClient - The DynamoDBDocumentClient instance.
+ * @param logger - The Logger instance for logging.
+ * @param tokenMappingTableName - The name of the DynamoDB table.
+ */
 export const updateDynamoTable = async (
   username: string,
   data: TrackerUserInfo,
@@ -10,19 +17,10 @@ export const updateDynamoTable = async (
   logger: Logger,
   tokenMappingTableName: string
 ) => {
+  // Check if the token mapping table name is provided
   if (!tokenMappingTableName) {
     logger.error("Token mapping table name not set")
     throw new Error("Token mapping table name not set")
-  }
-
-  if (tokenMappingTableName !== "cpt-ui-pr-334-stateful-resources-TokenMapping") {
-    logger.error("Incorrect token mapping table name", {tokenMappingTableName})
-    throw new Error("Incorrect token mapping table name")
-  }
-
-  if (username !== "Mock_555043304334") {
-    logger.error("Incorrect username", {username})
-    throw new Error("Incorrect username")
   }
 
   logger.debug("Starting DynamoDB update process", {
@@ -47,6 +45,7 @@ export const updateDynamoTable = async (
   })
 
   try {
+    // Create the update command for DynamoDB
     const updateCommand = new UpdateCommand({
       TableName: tokenMappingTableName,
       Key: {username},
@@ -60,6 +59,7 @@ export const updateDynamoTable = async (
 
     logger.debug("Executing DynamoDB update command", {updateCommand})
 
+    // Send the update command to DynamoDB
     const response = await documentClient.send(updateCommand)
 
     logger.info("DynamoDB update successful", {response})
