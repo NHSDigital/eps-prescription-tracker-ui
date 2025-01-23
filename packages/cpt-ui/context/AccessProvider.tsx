@@ -35,6 +35,7 @@ export const AccessProvider = ({ children }: { children: ReactNode }) => {
     setNoAccess(false);
     setSingleAccess(false);
     setSelectedRole(undefined);
+    setUserDetails(undefined);
   }
 
 
