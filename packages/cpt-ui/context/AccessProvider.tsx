@@ -42,7 +42,7 @@ export const AccessProvider = ({ children }: { children: ReactNode }) => {
   type FetchRolesResult = {
     rolesWithAccessCount: number;
     currentlySelectedRole: RoleDetails | undefined;
-    userDetails: UserDetails
+    userDetails: UserDetails;
   };
 
   const fetchRolesWithAccessAndSelectedRole = async (): Promise<FetchRolesResult> => {
@@ -68,7 +68,7 @@ export const AccessProvider = ({ children }: { children: ReactNode }) => {
         const userInfo: TrackerUserInfo = data.userInfo;
         const rolesWithAccessCount = userInfo.roles_with_access.length;
         const currentlySelectedRole = userInfo.currently_selected_role;
-        const userDetails = userInfo.user_details
+        const userDetails = userInfo.user_details;
 
         return { rolesWithAccessCount, currentlySelectedRole, userDetails };
       });
