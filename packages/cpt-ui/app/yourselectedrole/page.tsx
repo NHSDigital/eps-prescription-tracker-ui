@@ -1,21 +1,16 @@
 'use client'
-import React, {useEffect, useContext, useState} from "react"
+import React, {useEffect, useState} from "react"
 
 import {Container, Col, Row, Button, Table} from "nhsuk-react-components"
 import Link from "next/link"
 import {useRouter} from "next/navigation"
 
 import {YOUR_SELECTED_ROLE_STRINGS} from "@/constants/ui-strings/YourSelectedRoleStrings"
-import {AuthContext} from "@/context/AuthProvider"
 import {useAccess} from "@/context/AccessProvider"
-import {RoleDetails} from "@/types/TrackerUserInfoTypes"
-
-const selectedRoleEndpoint = "/api/selected-role"
 
 export default function YourSelectedRolePage() {
     const router = useRouter()
-    const auth = useContext(AuthContext)
-    const {selectedRole, setSelectedRole} = useAccess()
+    const {selectedRole} = useAccess()
 
     const [roleName, setRoleName] = useState<string>(YOUR_SELECTED_ROLE_STRINGS.noRoleName)
     const [orgName, setOrgName] = useState<string>(YOUR_SELECTED_ROLE_STRINGS.noOrgName)
@@ -38,41 +33,7 @@ export default function YourSelectedRolePage() {
     const handleRedirect = async (e: React.MouseEvent | React.KeyboardEvent) => {
         // Naked href don't respect the router, so this overrides that
         e.preventDefault()
-
-        try {
-            // Define currentlySelectedRole before sending the request
-            const currentlySelectedRole: RoleDetails = {
-                role_id: selectedRole?.role_id || "",
-                org_code: selectedRole?.org_code || "",
-                role_name: selectedRole?.role_name || ""
-            }
-
-            // Update selected role in the backend via the selectedRoleLambda endpoint
-            const response = await fetch(selectedRoleEndpoint, {
-                method: 'PUT',
-                headers: {
-                    Authorization: `Bearer ${auth?.idToken}`,
-                    'Content-Type': 'application/json',
-                    'NHSD-Session-URID': '555254242106',
-                },
-                body: JSON.stringify({
-                    currently_selected_role: currentlySelectedRole
-                }),
-            })
-
-            if (!response.ok) {
-                throw new Error('Failed to update the selected role')
-            }
-
-            // Update frontend state with selected role
-            setSelectedRole(currentlySelectedRole)
-
-            // Redirect to the appropriate page
-            router.push("/searchforaprescription")
-        } catch (error) {
-            console.error('Error selecting role:', error)
-            alert("There was an issue selecting your role. Please try again.")
-        }
+        router.push("/searchforaprescription")
     }
 
     const {
@@ -116,7 +77,10 @@ export default function YourSelectedRolePage() {
                                         {roleName}
                                     </Table.Cell>
                                     <Table.Cell data-testid="role-change-role-cell">
-                                        <Link href="/changerole" passHref={true}>
+                                        <Link
+                                            href="/changerole"
+                                            passHref={true}
+                                        >
                                             {changeLinkText}
                                         </Link>
                                     </Table.Cell>
@@ -129,7 +93,10 @@ export default function YourSelectedRolePage() {
                                         {orgName} (ODS: {odsCode})
                                     </Table.Cell>
                                     <Table.Cell data-testid="org-change-role-cell">
-                                        <Link href="/changerole" passHref={true}>
+                                        <Link
+                                            href="/changerole"
+                                            passHref={true}
+                                        >
                                             {changeLinkText}
                                         </Link>
                                     </Table.Cell>
@@ -141,7 +108,10 @@ export default function YourSelectedRolePage() {
 
                 <Row>
                     <Col width="two-thirds">
-                        <Button onClick={handleRedirect} data-testid="confirm-and-continue">
+                        <Button
+                            onClick={handleRedirect}
+                            data-testid="confirm-and-continue"
+                        >
                             {confirmButtonText}
                         </Button>
                     </Col>
