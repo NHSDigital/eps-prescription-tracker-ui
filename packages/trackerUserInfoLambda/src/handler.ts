@@ -81,7 +81,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     isMockRequest ? mockOidcConfig : cis2OidcConfig
   )
 
-  updateDynamoTable(username, userInfoResponse, documentClient, logger, tokenMappingTableName)
+  await updateDynamoTable(username, userInfoResponse, documentClient, logger, tokenMappingTableName)
 
   return {
     statusCode: 200,

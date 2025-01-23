@@ -54,7 +54,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
   logger.info("Updating role in DynamoDB", {userInfoSelectedRole})
 
-  updateDynamoTable(username, userInfoSelectedRole, documentClient, logger, tokenMappingTableName)
+  await updateDynamoTable(username, userInfoSelectedRole, documentClient, logger, tokenMappingTableName)
 
   return {
     statusCode: 200,
