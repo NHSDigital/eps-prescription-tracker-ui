@@ -1,5 +1,5 @@
 'use client'
-import React, { useState, useEffect, useContext } from "react"
+import React, { useState, useEffect, useContext, useCallback } from "react"
 import { useRouter } from 'next/navigation'
 import { Container, Col, Row, Details, Table, ErrorSummary, Button, InsetText } from "nhsuk-react-components"
 
@@ -75,7 +75,8 @@ export default function RoleSelectionPage({ contentText }: RoleSelectionPageProp
         errorDuringRoleSelection
     } = contentText
 
-    const { noAccess, setNoAccess, setSingleAccess, setSelectedRole } = useAccess()
+    const { noAccess, setNoAccess, setSingleAccess, setSelectedRole: setCurrentlySelectedRole, selectedRole: currentlySelectedRole } = useAccess()
+    const [loginInfoMessage, setLoginInfoMessage] = useState<string | null>(null);
     const [loading, setLoading] = useState<boolean>(true)
     const [error, setError] = useState<string | null>(null)
     const [redirecting, setRedirecting] = useState<boolean>(false)
@@ -85,96 +86,120 @@ export default function RoleSelectionPage({ contentText }: RoleSelectionPageProp
     const router = useRouter()
     const auth = useContext(AuthContext)
 
+
     useEffect(() => {
-        setLoading(true);
-        setError(null);
-        setRolesWithAccess([]);
-        setRolesWithoutAccess([]);
-
-        if (!auth?.isSignedIn || !auth?.idToken) {
-            setError(null);
-            return;
+        // Only set the login message if its not already set and currentlySelectedRole is available. 
+        // This ensures its not blank and that it waits until currentlySelectedRole is populated.
+        // Also means that currentlySelectedRole doesnt display a new selectedRole if a card is clicked and users with a slower connection see this before a redirect
+        if (!loginInfoMessage && currentlySelectedRole) {
+            setLoginInfoMessage(
+                `You are currently logged in at ${currentlySelectedRole.org_name || "No Org Name"
+                } (ODS: ${currentlySelectedRole.org_code || "No ODS Code"
+                }) with ${currentlySelectedRole.role_name || "No Role Name"
+                }.`
+            );
         }
-        // Now that we know there is an id token, check that it has a toString property.
-        // For some reason, it doesn't have this immediately, it gets added after a brief pause.
-        if (!auth?.idToken.hasOwnProperty('toString')) {
-            setError(null);
-            return;
+    }, [currentlySelectedRole, loginInfoMessage]);
+
+
+    const fetchTrackerUserInfo = useCallback(async () => {
+        setLoading(true)
+        setError(null)
+        setRolesWithAccess([])
+        setRolesWithoutAccess([])
+        setCurrentlySelectedRole(undefined)
+
+        if (!auth?.isSignedIn || !auth) {
+            setLoading(false)
+            setError(null)
+            return
         }
 
-        fetch(trackerUserInfoEndpoint, {
-            headers: {
-                Authorization: `Bearer ${auth?.idToken}`,
-                'NHSD-Session-URID': '555254242106',
-            },
-        })
-            .then((response) => {
-                if (response.status !== 200) {
-                    throw new Error(
-                        `Server did not return CPT user info, response ${response.status}`
-                    );
+        try {
+            const response = await fetch(trackerUserInfoEndpoint, {
+                headers: {
+                    Authorization: `Bearer ${auth?.idToken}`,
+                    'NHSD-Session-URID': '555254242106'
                 }
-                return response.json();
             })
-            .then((data) => {
-                if (!data.userInfo) {
-                    throw new Error("Server response did not contain data");
-                }
 
-                const userInfo: TrackerUserInfo = data.userInfo
-
-                const rolesWithAccess = userInfo.roles_with_access
-                const rolesWithoutAccess = userInfo.roles_without_access
-                // Unused for now
-                // const currentlySelectedRole = userInfo.currently_selected_role ? {
-                //     ...userInfo.currently_selected_role,
-                //     uuid: `selected_role_0`
-                // } : undefined
-
-                // Populate the EPS card props
-                setRolesWithAccess(
-                    rolesWithAccess.map((role: RoleDetails, index: number) => ({
-                        role,
-                        link: "/yourselectedrole",
-                        uuid: `{role_with_access_${index}}`,
-                    }))
+            if (response.status !== 200) {
+                throw new Error(
+                    `Server did not return CPT user info, response ${response.status}`
                 )
+            }
 
-                setRolesWithoutAccess(
-                    rolesWithoutAccess.map((role: RoleDetails, index: number) => ({
-                        uuid: `{role_without_access_${index}}`,
-                        roleName: role.role_name || noRoleName,
-                        orgName: role.org_name || noOrgName,
-                        odsCode: role.org_code || noODSCode,
-                    }))
-                )
+            const data = await response.json()
 
-                // If the user has exactly one accessible role and zero roles without access,
-                // redirect them immediately
-                if (rolesWithAccess.length === 1 && rolesWithoutAccess.length === 0) {
-                    setRedirecting(true);
-                    setSelectedRole(rolesWithAccess[0]);
-                    router.push("/searchforaprescription");
-                    return;
-                }
-            })
-            .catch((err) => {
-                setError("Failed to fetch CPT user info");
-                console.error("Error fetching tracker user info:", err);
-            })
-            .finally(() => {
-                setLoading(false);
-            });
+            if (!data.userInfo) {
+                throw new Error("Server response did not contain data")
+            }
+
+            const userInfo: TrackerUserInfo = data.userInfo
+
+            const rolesWithAccess = userInfo.roles_with_access
+            const rolesWithoutAccess = userInfo.roles_without_access
+            const currentlySelectedRole = userInfo.currently_selected_role ? {
+                ...userInfo.currently_selected_role,
+                uuid: `selected_role_0`
+            } : undefined
+
+            // Populate the EPS card props
+            setRolesWithAccess(
+                rolesWithAccess.map((role: RoleDetails, index: number) => ({
+                    uuid: `{role_with_access_${index}}`,
+                    role,
+                    link: "/yourselectedrole"
+                }))
+            )
+
+            setRolesWithoutAccess(
+                rolesWithoutAccess.map((role: RoleDetails, index: number) => ({
+                    uuid: `{role_without_access_${index}}`,
+                    roleName: role.role_name ? role.role_name : noRoleName,
+                    orgName: role.org_name ? role.org_name : noOrgName,
+                    odsCode: role.org_code ? role.org_code : noODSCode
+                }))
+            )
+
+            setCurrentlySelectedRole(currentlySelectedRole)
+            setNoAccess(rolesWithAccess.length === 0)
+            setSingleAccess(rolesWithAccess.length === 1)
+
+            // If the user has exactly one accessible role and zero roles without access,
+            // redirect them immediately
+            if (rolesWithAccess.length === 1 && rolesWithoutAccess.length === 0) {
+                setRedirecting(true)
+                router.push("/searchforaprescription")
+                return
+            }
+
+        } catch (err) {
+            setError("Failed to fetch CPT user info")
+            console.error("error fetching tracker user info:", err)
+        } finally {
+            setLoading(false)
+        }
     }, [
         auth,
         router,
         setNoAccess,
         setSingleAccess,
-        setSelectedRole,
+        setCurrentlySelectedRole,
         noOrgName,
         noODSCode,
         noRoleName
     ])
+
+    useEffect(() => {
+        if (auth?.isSignedIn === undefined) {
+            return
+        }
+
+        if (auth?.isSignedIn) {
+            fetchTrackerUserInfo()
+        }
+    }, [auth?.isSignedIn, fetchTrackerUserInfo])
 
     useEffect(() => {
         console.log("Auth error updated:", auth?.error)
@@ -184,6 +209,21 @@ export default function RoleSelectionPage({ contentText }: RoleSelectionPageProp
             setLoading(false)
         }
     }, [auth?.error])
+
+    // If the data is being fetched or the user is being diverted, replace the content with a spinner
+    if (loading || redirecting) {
+        return (
+            <main id="main-content" className="nhsuk-main-wrapper">
+                <Container>
+                    <Row>
+                        <Col width="full">
+                            <EpsSpinner />
+                        </Col>
+                    </Row>
+                </Container>
+            </main>
+        )
+    }
 
     // If the process encounters an error, replace the content with an error summary
     if (error) {
@@ -201,21 +241,6 @@ export default function RoleSelectionPage({ contentText }: RoleSelectionPageProp
                                 </ErrorSummary.Item>
                             </ErrorSummary.List>
                         </ErrorSummary>
-                    </Row>
-                </Container>
-            </main>
-        )
-    }
-
-    // If the data is being fetched, replace the content with a spinner
-    if (loading || redirecting) {
-        return (
-            <main id="main-content" className="nhsuk-main-wrapper">
-                <Container>
-                    <Row>
-                        <Col width="full">
-                            <EpsSpinner />
-                        </Col>
                     </Row>
                 </Container>
             </main>
@@ -241,14 +266,18 @@ export default function RoleSelectionPage({ contentText }: RoleSelectionPageProp
                         </h1>
                         {/* Caption Section for No Access */}
                         {noAccess && (<p>{captionNoAccess}</p>)}
-                        {/* Inset Text Section */}
-                        {!noAccess && (
+                        {/* Pre selected role section */}
+                        {currentlySelectedRole && (
                             <section aria-label="Login Information">
-                                <InsetText>
+                                <InsetText
+                                    data-testid="eps_select_your_role_pre_role_selected"
+                                >
                                     <span className="nhsuk-u-visually-hidden">
                                         {insetText.visuallyHidden}
                                     </span>
-                                    <p>{insetText.message}</p>
+                                    {loginInfoMessage && (
+                                        <p dangerouslySetInnerHTML={{ __html: loginInfoMessage }}></p>
+                                    )}
                                 </InsetText>
                                 {/* Confirm Button */}
                                 <Button href={confirmButton.link}>
