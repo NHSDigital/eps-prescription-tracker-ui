@@ -65,7 +65,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     }
   }
 
-  logger.info("Updating role in DynamoDB", {userInfoSelectedRole})
+  logger.info("Updating selected role data in DynamoDB", {userInfoSelectedRole})
 
   // Call helper function to update the selected role in the database
   await updateDynamoTable(username, userInfoSelectedRole, documentClient, logger, tokenMappingTableName)
@@ -73,7 +73,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   return {
     statusCode: 200,
     body: JSON.stringify({
-      message: "UserInfo fetched successfully",
+      message: "Selected role data has been updated successfully",
       userInfo: userInfoSelectedRole
     })
   }
