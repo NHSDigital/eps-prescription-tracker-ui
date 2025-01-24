@@ -40,8 +40,7 @@ export default function EpsCard({role, link}: EpsCardProps) {
                 headers: {
                     Authorization: `Bearer ${auth?.idToken}`,
                     'Content-Type': 'application/json',
-                    'NHSD-Session-URID': '555254242106',
-                    'Role-ID': role.role_id || ""
+                    'NHSD-Session-URID': '555254242106'
                 },
                 body: JSON.stringify({
                     currently_selected_role: currentlySelectedRole
