@@ -5,6 +5,8 @@ import { AuthContext } from './AuthProvider'
 
 import { RoleDetails, TrackerUserInfo } from '@/types/TrackerUserInfoTypes'
 
+import http from "@/helpers/axios"
+
 const trackerUserInfoEndpoint = "/api/tracker-user-info"
 
 export type AccessContextType = {
@@ -41,7 +43,7 @@ export const AccessProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const fetchRolesWithAccessAndSelectedRole = async (): Promise<FetchRolesResult> => {
-    return fetch(trackerUserInfoEndpoint, {
+    return http.get(trackerUserInfoEndpoint, {
       headers: {
         Authorization: `Bearer ${auth?.idToken}`,
         'NHSD-Session-URID': '555254242106',
@@ -53,7 +55,7 @@ export const AccessProvider = ({ children }: { children: ReactNode }) => {
             `Server did not return CPT user info, response ${response.status}`
           );
         }
-        return response.json();
+        return response.data;
       })
       .then((data) => {
         if (!data.userInfo) {

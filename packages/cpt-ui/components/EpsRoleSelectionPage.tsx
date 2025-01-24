@@ -11,6 +11,8 @@ import EpsSpinner from "@/components/EpsSpinner";
 
 import { RoleDetails, TrackerUserInfo } from "@/types/TrackerUserInfoTypes"
 
+import http from "@/helpers/axios"
+
 // This is passed to the EPS card component.
 export type RolesWithAccessProps = {
     role: RoleDetails
@@ -75,7 +77,7 @@ export default function RoleSelectionPage({ contentText }: RoleSelectionPageProp
         errorDuringRoleSelection
     } = contentText
 
-    const { noAccess, setNoAccess, setSingleAccess, setSelectedRole: setCurrentlySelectedRole, selectedRole: currentlySelectedRole } = useAccess()
+    const { noAccess, setNoAccess, setSingleAccess, setSelectedRole, selectedRole } = useAccess()
     const [loginInfoMessage, setLoginInfoMessage] = useState<string | null>(null);
     const [loading, setLoading] = useState<boolean>(true)
     const [error, setError] = useState<string | null>(null)
@@ -88,40 +90,43 @@ export default function RoleSelectionPage({ contentText }: RoleSelectionPageProp
 
 
     useEffect(() => {
-        // Only set the login message if its not already set and currentlySelectedRole is available. 
-        // This ensures its not blank and that it waits until currentlySelectedRole is populated.
-        // Also means that currentlySelectedRole doesnt display a new selectedRole if a card is clicked and users with a slower connection see this before a redirect
-        if (!loginInfoMessage && currentlySelectedRole) {
+        // Only set the login message if its not already set and selectedRole is available. 
+        // This ensures its not blank and that it waits until selectedRole is populated.
+        // Also means that selectedRole doesnt display a new selectedRole if a card is clicked and users with a slower connection see this before a redirect
+        if (!loginInfoMessage && selectedRole) {
             setLoginInfoMessage(
-                `You are currently logged in at ${currentlySelectedRole.org_name || "No Org Name"
-                } (ODS: ${currentlySelectedRole.org_code || "No ODS Code"
-                }) with ${currentlySelectedRole.role_name || "No Role Name"
+                `You are currently logged in at ${selectedRole.org_name || "No Org Name"
+                } (ODS: ${selectedRole.org_code || "No ODS Code"
+                }) with ${selectedRole.role_name || "No Role Name"
                 }.`
             );
         }
-    }, [currentlySelectedRole, loginInfoMessage]);
+    }, [selectedRole, loginInfoMessage]);
 
-
+    // TODO: This should be moved to the access provider, and the state passed in c.f. selectedRole
+    // Instead, this should be a useEffect that triggers when rolesWithAccess, rolesWithoutAccess, or selectedRole changes.
     const fetchTrackerUserInfo = useCallback(async () => {
-        setLoading(true)
-        setError(null)
-        setRolesWithAccess([])
-        setRolesWithoutAccess([])
-        setCurrentlySelectedRole(undefined)
-
-        if (!auth?.isSignedIn || !auth) {
-            setLoading(false)
-            setError(null)
+        if (!auth?.isSignedIn || !auth || !auth.idToken) {
             return
         }
 
+        // On DOM load, for some reason the toString property is missing, which causes the 
+        // Bearer token to be "Bearer [object Object]". 
+        // Don't bother making bum requests.
+        if (!auth.idToken.hasOwnProperty("toString")) {
+            return
+        }
+
+        setLoading(true)
+        setError(null)
+
         try {
-            const response = await fetch(trackerUserInfoEndpoint, {
+            const response = await http.get(trackerUserInfoEndpoint, {
                 headers: {
-                    Authorization: `Bearer ${auth?.idToken}`,
-                    'NHSD-Session-URID': '555254242106'
-                }
-            })
+                    Authorization: `Bearer ${auth.idToken}`,
+                    'NHSD-Session-URID': '555254242106',
+                },
+            });
 
             if (response.status !== 200) {
                 throw new Error(
@@ -129,7 +134,7 @@ export default function RoleSelectionPage({ contentText }: RoleSelectionPageProp
                 )
             }
 
-            const data = await response.json()
+            const data = await response.data
 
             if (!data.userInfo) {
                 throw new Error("Server response did not contain data")
@@ -139,7 +144,7 @@ export default function RoleSelectionPage({ contentText }: RoleSelectionPageProp
 
             const rolesWithAccess = userInfo.roles_with_access
             const rolesWithoutAccess = userInfo.roles_without_access
-            const currentlySelectedRole = userInfo.currently_selected_role ? {
+            const selectedRole = userInfo.currently_selected_role ? {
                 ...userInfo.currently_selected_role,
                 uuid: `selected_role_0`
             } : undefined
@@ -162,7 +167,7 @@ export default function RoleSelectionPage({ contentText }: RoleSelectionPageProp
                 }))
             )
 
-            setCurrentlySelectedRole(currentlySelectedRole)
+            setSelectedRole(selectedRole)
             setNoAccess(rolesWithAccess.length === 0)
             setSingleAccess(rolesWithAccess.length === 1)
 
@@ -185,17 +190,13 @@ export default function RoleSelectionPage({ contentText }: RoleSelectionPageProp
         router,
         setNoAccess,
         setSingleAccess,
-        setCurrentlySelectedRole,
+        setSelectedRole,
         noOrgName,
         noODSCode,
         noRoleName
     ])
 
     useEffect(() => {
-        if (auth?.isSignedIn === undefined) {
-            return
-        }
-
         if (auth?.isSignedIn) {
             fetchTrackerUserInfo()
         }
@@ -267,7 +268,7 @@ export default function RoleSelectionPage({ contentText }: RoleSelectionPageProp
                         {/* Caption Section for No Access */}
                         {noAccess && (<p>{captionNoAccess}</p>)}
                         {/* Pre selected role section */}
-                        {currentlySelectedRole && (
+                        {selectedRole && (
                             <section aria-label="Login Information">
                                 <InsetText
                                     data-testid="eps_select_your_role_pre_role_selected"

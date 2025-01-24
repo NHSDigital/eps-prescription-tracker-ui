@@ -5,6 +5,7 @@ import { signInWithRedirect, signOut, getCurrentUser, AuthUser, fetchAuthSession
 import { authConfig } from './configureAmplify';
 
 import { useLocalStorageState } from '@/helpers/useLocalStorageState';
+import { useRouter } from 'next/navigation';
 
 interface AuthContextType {
   error: string | null;
@@ -25,6 +26,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [idToken, setIdToken] = useLocalStorageState<JWT | null>('idToken', 'auth', null);
   const [accessToken, setAccessToken] = useLocalStorageState<JWT | null>('accessToken', 'auth', null);
 
+  const router = useRouter()
+
   /**
    * Fetch and update the user session state.
    */
@@ -36,6 +39,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const sessionAccessToken = authSession.tokens?.accessToken;
 
       console.log("Tokens: ", sessionIdToken, sessionAccessToken)
+
+      if (!sessionIdToken || !sessionAccessToken) {
+        router.push("/login")
+      }
 
       if (sessionIdToken && sessionAccessToken) {
         // Extract expiration times directly from the token payloads.
@@ -164,7 +171,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       await signOut({ global: true });
       console.log("Signed out successfully!");
-  
+
       // Immediately reset state to signed out.
       setUser(null);
       setAccessToken(null);
