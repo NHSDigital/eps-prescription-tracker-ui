@@ -1,12 +1,16 @@
 import axios from "axios"
 import {v4 as uuidv4} from "uuid"
+import {InternalAxiosRequestConfig} from "axios"
+
+interface ExtendedAxiosRequestConfig extends InternalAxiosRequestConfig {
+    __retryCount?: number;
+  }
 
 const http = axios.create()
 
 // REQUEST INTERCEPTOR
 http.interceptors.request.use(
-  (config) => {
-    // 1) Add a unique `X-request-id` header
+  (config: ExtendedAxiosRequestConfig) => {
     config.headers["X-request-id"] = uuidv4()
 
     // Make sure we have a retry counter in config so we can track how many times we've retried

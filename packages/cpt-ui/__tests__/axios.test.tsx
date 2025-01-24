@@ -20,7 +20,9 @@ describe('HTTP Axios Instance', () => {
 
     it('adds X-request-id header with a UUID on every request', async () => {
         mock.onGet('/test').reply((config) => {
-            expect(config.headers['X-request-id']).toBe('test-uuid');
+            // 'config.headers' is possibly 'undefined'.
+            // Cannot invoke an object which is possibly 'undefined'.ts(2722)
+            expect(config.headers?.['X-request-id']).toBe('test-uuid');
             return [200, { success: true }];
         });
 
