@@ -174,58 +174,58 @@ describe("ChangeRolePage", () => {
     })
   })
 
-  // it("renders the page content when valid userInfo is returned", async () => {
-  //   // Mock user data to simulate valid API response
-  //   const mockUserInfo = {
-  //     roles_with_access: [
-  //       {
-  //         role_name: "Pharmacist",
-  //         org_name: "Test Pharmacy Org",
-  //         org_code: "ORG123",
-  //         site_address: "1 Fake Street",
-  //       },
-  //     ],
-  //     roles_without_access: [
-  //       {
-  //         role_name: "Technician",
-  //         org_name: "Tech Org",
-  //         org_code: "ORG456",
-  //         site_address: "2 Fake Street",
-  //       },
-  //     ],
-  //   }
+  it("renders the page content when valid userInfo is returned", async () => {
+    // Mock user data to simulate valid API response
+    const mockUserInfo = {
+      roles_with_access: [
+        {
+          role_name: "Pharmacist",
+          org_name: "Test Pharmacy Org",
+          org_code: "ORG123",
+          site_address: "1 Fake Street",
+        },
+      ],
+      roles_without_access: [
+        {
+          role_name: "Technician",
+          org_name: "Tech Org",
+          org_code: "ORG456",
+          site_address: "2 Fake Street",
+        },
+      ],
+    }
 
-  //   // Mock fetch to return 200 OK with valid userInfo
-  //   mockFetch.mockResolvedValue({
-  //     status: 200,
-  //     json: async () => ({ userInfo: mockUserInfo }),
-  //   })
+    // Mock fetch to return 200 OK with valid userInfo
+    mockFetch.mockResolvedValue({
+      status: 200,
+      json: async () => ({userInfo: mockUserInfo}),
+    })
 
-  //   // Render the page with user signed in
-  //   renderWithAuth({ isSignedIn: true, idToken: { toString: jest.fn().mockReturnValue("mock-id-token") } })
+    // Render the page with user signed in
+    renderWithAuth({isSignedIn: true, idToken: {toString: jest.fn().mockReturnValue("mock-id-token")}})
 
-  //   // Wait for the main content to load
-  //   await waitFor(() => {
-  //     // Check for the page heading
-  //     const heading = screen.getByRole("heading", { level: 1 })
-  //     expect(heading).toHaveTextContent(CHANGE_YOUR_ROLE_PAGE_TEXT.title)
-  //   })
+    // Wait for the main content to load
+    await waitFor(() => {
+      // Check for the page heading
+      const heading = screen.getByRole("heading", {level: 1})
+      expect(heading).toHaveTextContent(CHANGE_YOUR_ROLE_PAGE_TEXT.title)
+    })
 
-  //   // Verify the page caption
-  //   const caption = screen.getByText(CHANGE_YOUR_ROLE_PAGE_TEXT.caption)
-  //   expect(caption).toBeInTheDocument()
+    // Verify the page caption
+    const caption = screen.getByText(CHANGE_YOUR_ROLE_PAGE_TEXT.caption)
+    expect(caption).toBeInTheDocument()
 
-  //   // Verify the "Roles without access" section (expander)
-  //   const expanderText = CHANGE_YOUR_ROLE_PAGE_TEXT.roles_without_access_table_title
-  //   const expander = screen.getByText(expanderText)
-  //   expect(expander).toBeInTheDocument()
+    // Verify the "Roles without access" section (expander)
+    const expanderText = CHANGE_YOUR_ROLE_PAGE_TEXT.roles_without_access_table_title
+    const expander = screen.getByText(expanderText)
+    expect(expander).toBeInTheDocument()
 
-  //   // Check for the table data in "Roles without access"
-  //   const tableOrg = screen.getByText(/Tech Org \(ODS: ORG456\)/i)
-  //   expect(tableOrg).toBeInTheDocument()
-  //   const tableRole = screen.getByText("Technician")
-  //   expect(tableRole).toBeInTheDocument()
-  // })
+    // Check for the table data in "Roles without access"
+    const tableOrg = screen.getByText(/Tech Org \(ODS: ORG456\)/i)
+    expect(tableOrg).toBeInTheDocument()
+    const tableRole = screen.getByText("Technician")
+    expect(tableRole).toBeInTheDocument()
+  })
 
   it("renders error summary when not signed in", async () => {
     // Render the page with `isSignedIn` set to false
@@ -244,40 +244,40 @@ describe("ChangeRolePage", () => {
     })
   })
 
-  // it("redirects to searchforaprescription when there is one role with access and no roles without access", async () => {
-  //   const mockUserInfo = {
-  //     roles_with_access: [
-  //       {
-  //         role_name: "Pharmacist",
-  //         org_name: "Test Pharmacy Org",
-  //         org_code: "ORG123",
-  //         site_address: "1 Fake Street",
-  //       },
-  //     ],
-  //     roles_without_access: [],
-  //   }
+  it("redirects to searchforaprescription when there is one role with access and no roles without access", async () => {
+    const mockUserInfo = {
+      roles_with_access: [
+        {
+          role_name: "Pharmacist",
+          org_name: "Test Pharmacy Org",
+          org_code: "ORG123",
+          site_address: "1 Fake Street",
+        },
+      ],
+      roles_without_access: [],
+    }
 
-  //   // Mock fetch to return 200 OK with valid userInfo
-  //   mockFetch.mockResolvedValue({
-  //     status: 200,
-  //     json: async () => ({userInfo: mockUserInfo}),
-  //   })
+    // Mock fetch to return 200 OK with valid userInfo
+    mockFetch.mockResolvedValue({
+      status: 200,
+      json: async () => ({userInfo: mockUserInfo}),
+    })
 
-  //   // Render the page with user signed in
-  //   renderWithAuth({isSignedIn: true, idToken: {toString: jest.fn().mockReturnValue("mock-id-token")}})
+    // Render the page with user signed in
+    renderWithAuth({isSignedIn: true, idToken: {toString: jest.fn().mockReturnValue("mock-id-token")}})
 
-  //   // Mock useRouter's push function
-  //   const mockPush = jest.fn();
-  //   (useRouter as jest.Mock).mockReturnValue({
-  //     push: mockPush,
-  //   })
+    // Mock useRouter's push function
+    const mockPush = jest.fn();
+    (useRouter as jest.Mock).mockReturnValue({
+      push: mockPush,
+    })
 
-  //   // Render the page with user signed in
-  //   renderWithAuth({isSignedIn: true, idToken: {toString: jest.fn().mockReturnValue("mock-id-token")}})
+    // Render the page with user signed in
+    renderWithAuth({isSignedIn: true, idToken: {toString: jest.fn().mockReturnValue("mock-id-token")}})
 
-  //   // Wait for redirection
-  //   await waitFor(() => {
-  //     expect(mockPush).toHaveBeenCalledWith("/searchforaprescription")
-  //   })
-  // })
+    // Wait for redirection
+    await waitFor(() => {
+      expect(mockPush).toHaveBeenCalledWith("/searchforaprescription")
+    })
+  })
 })
