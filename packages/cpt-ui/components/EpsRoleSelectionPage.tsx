@@ -139,10 +139,14 @@ export default function RoleSelectionPage({contentText}: RoleSelectionPageProps)
 
             const rolesWithAccess = userInfo.roles_with_access
             const rolesWithoutAccess = userInfo.roles_without_access
-            const currentlySelectedRole = userInfo.currently_selected_role ? {
-                ...userInfo.currently_selected_role,
-                uuid: `selected_role_0`
-            } : undefined
+
+            // Check if the Role-ID header exists
+            if (!response.headers.get('Role-ID')) {
+                setCurrentlySelectedRole(userInfo.currently_selected_role ? {
+                    ...userInfo.currently_selected_role,
+                    uuid: `selected_role_0`
+                } : undefined)
+            }
 
             // Populate the EPS card props
             setRolesWithAccess(
