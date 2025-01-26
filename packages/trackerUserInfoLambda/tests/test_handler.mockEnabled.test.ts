@@ -91,6 +91,7 @@ jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
 // Mocked functions from userInfoHelpers
 const mockFetchUserInfo = jest.fn()
 const mockUpdateDynamoTable = jest.fn()
+const mockFetchDynamoTable = jest.fn()
 
 jest.unstable_mockModule("@/userInfoHelpers", () => {
   const fetchUserInfo = mockFetchUserInfo.mockImplementation(() => {
@@ -103,9 +104,12 @@ jest.unstable_mockModule("@/userInfoHelpers", () => {
 
   const updateDynamoTable = mockUpdateDynamoTable.mockImplementation(() => {})
 
+  const fetchDynamoTable = mockFetchDynamoTable.mockImplementation(() => {})
+
   return {
     fetchUserInfo,
-    updateDynamoTable
+    updateDynamoTable,
+    fetchDynamoTable
   }
 })
 

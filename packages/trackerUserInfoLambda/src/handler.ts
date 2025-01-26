@@ -7,7 +7,7 @@ import middy from "@middy/core"
 import inputOutputLogger from "@middy/input-output-logger"
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 import {getUsernameFromEvent, fetchAndVerifyCIS2Tokens, initializeOidcConfig} from "@cpt-ui-common/authFunctions"
-import {fetchUserInfo, updateDynamoTable} from "./userInfoHelpers"
+import {fetchUserInfo, updateDynamoTable, fetchDynamoTable} from "./userInfoHelpers"
 
 /*
 This is the lambda code to get user info
@@ -66,6 +66,21 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
   logger.info("Is this a mock request?", {isMockRequest})
 
+  // Try to fetch user info from DynamoDB
+  const cachedUserInfo = await fetchDynamoTable(username, documentClient, logger, tokenMappingTableName)
+
+  if (cachedUserInfo) {
+    logger.info("Returning cached user info from DynamoDB")
+    return {
+      statusCode: 200,
+      body: JSON.stringify({
+        message: "UserInfo fetched successfully from cache",
+        userInfo: cachedUserInfo
+      })
+    }
+  }
+
+  // If no cached data found, proceed to fetch user info from the OIDC UserInfo endpoint
   const {cis2AccessToken, cis2IdToken} = await fetchAndVerifyCIS2Tokens(
     event,
     documentClient,
@@ -81,6 +96,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     isMockRequest ? mockOidcConfig : cis2OidcConfig
   )
 
+  // Store the new data in DynamoDB
   await updateDynamoTable(username, userInfoResponse, documentClient, logger, tokenMappingTableName)
 
   return {
@@ -90,7 +106,6 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
       userInfo: userInfoResponse
     })
   }
-
 }
 
 export const handler = middy(lambdaHandler)

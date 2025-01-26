@@ -1,6 +1,6 @@
 import {Logger} from "@aws-lambda-powertools/logger"
 import axios from "axios"
-import {DynamoDBDocumentClient, UpdateCommand} from "@aws-sdk/lib-dynamodb"
+import {DynamoDBDocumentClient, GetCommand, UpdateCommand} from "@aws-sdk/lib-dynamodb"
 import {UserInfoResponse, TrackerUserInfo, RoleDetails} from "./userInfoTypes"
 import {OidcConfig, verifyIdToken} from "@cpt-ui-common/authFunctions"
 
@@ -175,5 +175,35 @@ export const updateDynamoTable = async (
   } catch (error) {
     logger.error("Error adding user roles to DynamoDB", {username, data, error})
     throw error
+  }
+}
+
+// Fetch user info from DynamoDB
+export const fetchDynamoTable = async (
+  username: string,
+  documentClient: DynamoDBDocumentClient,
+  logger: Logger,
+  tokenMappingTableName: string
+): Promise<TrackerUserInfo | null> => {
+  logger.info("Fetching user info from DynamoDB", {username})
+
+  try {
+    const response = await documentClient.send(
+      new GetCommand({
+        TableName: tokenMappingTableName,
+        Key: {username}
+      })
+    )
+
+    if (!response.Item) {
+      logger.warn("No user info found in DynamoDB", {username})
+      return null
+    }
+
+    logger.info("User info successfully retrieved from DynamoDB", {data: response.Item})
+    return response.Item as TrackerUserInfo
+  } catch (error) {
+    logger.error("Error fetching user info from DynamoDB", {error})
+    throw new Error("Failed to retrieve user info from cache")
   }
 }
