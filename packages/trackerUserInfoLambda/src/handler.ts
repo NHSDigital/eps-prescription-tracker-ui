@@ -69,8 +69,10 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   // Try to fetch user info from DynamoDB
   const cachedUserInfo = await fetchDynamoTable(username, documentClient, logger, tokenMappingTableName)
 
-  if (cachedUserInfo) {
-    logger.info("Returning cached user info from DynamoDB")
+  // Check if cached data exists and has rolesWithAccess attribute
+  if (cachedUserInfo && "rolesWithAccess" in cachedUserInfo) {
+    logger.info("Returning cached user info from DynamoDB", {cachedUserInfo})
+
     return {
       statusCode: 200,
       body: JSON.stringify({
@@ -79,6 +81,8 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
       })
     }
   }
+
+  logger.info("No valid cached user info found. Fetching from OIDC UserInfo endpoint...")
 
   // If no cached data found, proceed to fetch user info from the OIDC UserInfo endpoint
   const {cis2AccessToken, cis2IdToken} = await fetchAndVerifyCIS2Tokens(
