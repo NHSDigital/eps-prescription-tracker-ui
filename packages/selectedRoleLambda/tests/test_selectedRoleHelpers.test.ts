@@ -2,8 +2,8 @@ import {jest} from "@jest/globals"
 import {Logger} from "@aws-lambda-powertools/logger"
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
 import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
-import {updateDynamoTable} from "../src/selectedRoleHelpers"
-import {TrackerUserInfo} from "../src/selectedRoleTypes"
+import {updateDynamoTable} from "@/selectedRoleHelpers"
+import {TrackerUserInfo} from "@/selectedRoleTypes"
 
 // Mock Logger
 const logger = new Logger()
