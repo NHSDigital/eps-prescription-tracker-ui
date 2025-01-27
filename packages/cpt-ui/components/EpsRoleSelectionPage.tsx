@@ -130,13 +130,12 @@ export default function RoleSelectionPage({contentText}: RoleSelectionPageProps)
 
             const userInfo: TrackerUserInfo = data.userInfo
 
-            // Use optional chaining to prevent runtime errors
-            const rolesWithAccess = userInfo.rolesWithAccess || userInfo.roles_with_access || []
-            const rolesWithoutAccess = userInfo.rolesWithoutAccess || userInfo.roles_without_access || []
+            const rolesWithAccess = userInfo.roles_with_access || []
+            const rolesWithoutAccess = userInfo.roles_without_access || []
 
-            const selectedRole = userInfo?.currentlySelectedRole || userInfo?.currently_selected_role
+            const selectedRole = userInfo?.currently_selected_role
                 ? {
-                    ...userInfo?.currentlySelectedRole || userInfo?.currently_selected_role,
+                    ...userInfo?.currently_selected_role,
                     uuid: `selected_role_0`
                 }
                 : undefined

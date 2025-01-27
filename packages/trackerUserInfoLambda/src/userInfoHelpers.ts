@@ -200,8 +200,15 @@ export const fetchDynamoTable = async (
       return null
     }
 
-    logger.info("User info successfully retrieved from DynamoDB", {data: response.Item})
-    return response.Item as TrackerUserInfo
+    // Ensure correct keys are returned
+    const mappedUserInfo: TrackerUserInfo = {
+      roles_with_access: response.Item.rolesWithAccess || [],
+      roles_without_access: response.Item.rolesWithoutAccess || [],
+      currently_selected_role: response.Item.currentlySelectedRole || undefined
+    }
+
+    logger.info("User info successfully retrieved from DynamoDB", {data: mappedUserInfo})
+    return mappedUserInfo
   } catch (error) {
     logger.error("Error fetching user info from DynamoDB", {error})
     throw new Error("Failed to retrieve user info from cache")
