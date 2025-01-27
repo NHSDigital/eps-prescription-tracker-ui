@@ -69,8 +69,8 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   // Try to fetch user info from DynamoDB
   const cachedUserInfo = await fetchDynamoTable(username, documentClient, logger, tokenMappingTableName)
 
-  // Check if cached data exists and has rolesWithAccess attribute
-  if (cachedUserInfo && "rolesWithAccess" in cachedUserInfo) {
+  // Check if cached data exists and has roles_with_access attribute
+  if (cachedUserInfo && "roles_with_access" in cachedUserInfo) {
     logger.info("Returning cached user info from DynamoDB", {cachedUserInfo})
 
     return {
