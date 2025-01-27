@@ -1,7 +1,7 @@
-'use client';
-import React from 'react';
+'use client'
+import React from 'react'
 
-import { EpsSpinnerStrings } from '@/constants/ui-strings/EpsSpinnerStrings';
+import {EpsSpinnerStrings} from '@/constants/ui-strings/EpsSpinnerStrings'
 
 
 function Spinner({
@@ -10,23 +10,23 @@ function Spinner({
   fraction = 0.2, // The fraction of the hoop that is green
   speed = 1       // The speed (in seconds) for one full rotation
 }) {
-  
+
   // The portion that should appear green is defined by "fraction"
   // If fraction = 0.25, then 25% of the hoop is green and 75% is grey
-  const circumference = 2 * Math.PI * radius;
-  const offset = circumference * (1 - fraction);
+  const circumference = 2 * Math.PI * radius
+  const offset = circumference * (1 - fraction)
 
   return (
     // FIXME: In theory, this should be a <progress>, but doing that makes the spinner come out all funky.
     // Someone better with CSS should fix that, since it would be better for accessibility.
-    <div 
+    <div
       style={{
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center'
       }}
       role='progressbar'
-      >
+    >
       <div
         className="spinner-container"
         style={{
@@ -104,7 +104,7 @@ function Spinner({
         </style>
       </div>
     </div>
-  );
+  )
 }
 
-export default Spinner;
+export default Spinner
