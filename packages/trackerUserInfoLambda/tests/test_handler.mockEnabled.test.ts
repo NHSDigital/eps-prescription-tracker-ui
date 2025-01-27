@@ -1,6 +1,7 @@
 import {jest} from "@jest/globals"
 import jwksClient from "jwks-rsa"
 import {OidcConfig} from "@cpt-ui-common/authFunctions"
+import {TrackerUserInfo} from "@/userInfoTypes"
 
 const TokenMappingTableName = process.env.TokenMappingTableName
 
@@ -104,7 +105,13 @@ jest.unstable_mockModule("@/userInfoHelpers", () => {
 
   const updateDynamoTable = mockUpdateDynamoTable.mockImplementation(() => {})
 
-  const fetchDynamoTable = mockFetchDynamoTable.mockImplementation(() => {})
+  const fetchDynamoTable = mockFetchDynamoTable.mockImplementation(() => {
+    return {
+      roles_with_access: [],
+      roles_without_access: [],
+      currently_selected_role: {}
+    }
+  })
 
   return {
     fetchUserInfo,
@@ -322,5 +329,90 @@ describe("Lambda Handler Tests with mock enabled", () => {
       expect.any(Object),
       "dummyTable"
     )
+  })
+
+  it("should return user info if roles_with_access is not empty", async () => {
+    const testUsername = "Primary_Tester"
+    mockGetUsernameFromEvent.mockReturnValue(testUsername)
+
+    const userInfoMock: TrackerUserInfo = {
+      roles_with_access: [{role_name: "Doctor", role_id: "123", org_code: "ORG123", org_name: "Test Org"}],
+      roles_without_access: [],
+      currently_selected_role: {role_name: "Doctor", role_id: "123", org_code: "ORG123", org_name: "Test Org"}
+    }
+
+    // Fix by explicitly casting to the expected return type
+    mockFetchDynamoTable.mockResolvedValue(userInfoMock as never)
+
+    const response = await handler(event, context)
+
+    expect(mockFetchDynamoTable).toHaveBeenCalledWith(
+      testUsername,
+      expect.any(Object), // documentClient instance
+      expect.any(Object), // logger instance
+      expect.any(String) // tokenMappingTableName
+    )
+
+    expect(response.statusCode).toBe(200)
+    expect(response.body).toContain("UserInfo fetched successfully from cache")
+
+    const responseBody = JSON.parse(response.body)
+    expect(responseBody.userInfo).toEqual(userInfoMock)
+  })
+
+  it("should return user info if roles_without_access is not empty", async () => {
+    const testUsername = "Primary_Tester"
+    mockGetUsernameFromEvent.mockReturnValue(testUsername)
+
+    const userInfoMock: TrackerUserInfo = {
+      roles_with_access: [],
+      roles_without_access: [{role_name: "Nurse", role_id: "456", org_code: "ORG456", org_name: "Test Hospital"}],
+      currently_selected_role: undefined
+    }
+
+    mockFetchDynamoTable.mockResolvedValue(userInfoMock as never)
+
+    const response = await handler(event, context)
+
+    expect(mockFetchDynamoTable).toHaveBeenCalledWith(
+      testUsername,
+      expect.any(Object),
+      expect.any(Object),
+      expect.any(String)
+    )
+
+    expect(response.statusCode).toBe(200)
+    expect(response.body).toContain("UserInfo fetched successfully from cache")
+
+    const responseBody = JSON.parse(response.body)
+    expect(responseBody.userInfo).toEqual(userInfoMock)
+  })
+
+  it("should return cached user info even if currently_selected_role is undefined", async () => {
+    const testUsername = "Primary_Tester"
+    mockGetUsernameFromEvent.mockReturnValue(testUsername)
+
+    const userInfoMock: TrackerUserInfo = {
+      roles_with_access: [{role_name: "Doctor", role_id: "123", org_code: "ORG123", org_name: "Test Org"}],
+      roles_without_access: [],
+      currently_selected_role: undefined
+    }
+
+    mockFetchDynamoTable.mockResolvedValue(userInfoMock as never)
+
+    const response = await handler(event, context)
+
+    expect(mockFetchDynamoTable).toHaveBeenCalledWith(
+      testUsername,
+      expect.any(Object),
+      expect.any(Object),
+      expect.any(String)
+    )
+
+    expect(response.statusCode).toBe(200)
+    expect(response.body).toContain("UserInfo fetched successfully from cache")
+
+    const responseBody = JSON.parse(response.body)
+    expect(responseBody.userInfo).toEqual(userInfoMock)
   })
 })
