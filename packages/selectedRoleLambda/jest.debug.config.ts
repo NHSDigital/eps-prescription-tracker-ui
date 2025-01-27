@@ -1,9 +1,11 @@
-import config from "./jest.config"
+import defaultConfig from "../../jest.default.config"
 import type {JestConfigWithTsJest} from "ts-jest"
 
-const debugConfig: JestConfigWithTsJest = {
-  ...config,
-  "preset": "ts-jest"
+const jestConfig: JestConfigWithTsJest = {
+  ...defaultConfig,
+  "rootDir": "./",
+  setupFiles: ["<rootDir>/.jest/setEnvVars.js"],
+  moduleNameMapper: {"@/(.*)$": ["<rootDir>/src/$1"]}
 }
 
-export default debugConfig
+export default jestConfig
