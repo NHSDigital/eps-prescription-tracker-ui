@@ -301,7 +301,7 @@ describe("Lambda Handler Tests with mock enabled", () => {
   })
 
   it("should call updateDynamoTable with the correct parameters", async () => {
-    const testUsername = "Primary_Tester"
+    const testUsername = "Mock_JaneDoe"
     mockGetUsernameFromEvent.mockReturnValue(testUsername)
     const userInfoMock = {
       roles_with_access: ["roleX"],
@@ -332,7 +332,7 @@ describe("Lambda Handler Tests with mock enabled", () => {
   })
 
   it("should return user info if roles_with_access is not empty", async () => {
-    const testUsername = "Primary_Tester"
+    const testUsername = "Mock_JaneDoe"
     mockGetUsernameFromEvent.mockReturnValue(testUsername)
 
     const userInfoMock: TrackerUserInfo = {
@@ -361,7 +361,7 @@ describe("Lambda Handler Tests with mock enabled", () => {
   })
 
   it("should return user info if roles_without_access is not empty", async () => {
-    const testUsername = "Primary_Tester"
+    const testUsername = "Mock_JaneDoe"
     mockGetUsernameFromEvent.mockReturnValue(testUsername)
 
     const userInfoMock: TrackerUserInfo = {
@@ -389,7 +389,7 @@ describe("Lambda Handler Tests with mock enabled", () => {
   })
 
   it("should return cached user info even if currently_selected_role is undefined", async () => {
-    const testUsername = "Primary_Tester"
+    const testUsername = "Mock_JaneDoe"
     mockGetUsernameFromEvent.mockReturnValue(testUsername)
 
     const userInfoMock: TrackerUserInfo = {
