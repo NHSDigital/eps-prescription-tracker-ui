@@ -17,7 +17,9 @@ jest.mock("@/constants/ui-strings/CardStrings", () => {
 })
 
 jest.mock("next/navigation", () => ({
-  useRouter: jest.fn()
+  useRouter: jest.fn(() => ({
+    push: jest.fn() as jest.Mock
+  }))
 }))
 
 const mockFetch = jest.fn()
@@ -42,7 +44,7 @@ jest.mock("@/context/AccessProvider", () => {
     __esModule: true,
     AccessContext: MockAccessContext,
     useAccess,
-    __setMockContextValue: (newValue) => {
+    __setMockContextValue: (newValue: Partial<typeof mockContextValue>) => {
       mockContextValue = {...mockContextValue, ...newValue}
     }
   }
@@ -54,7 +56,10 @@ const defaultAuthContext = {
   error: null,
   user: null,
   isSignedIn: true,
-  idToken: {toString: jest.fn().mockReturnValue("mock-id-token")},
+  idToken: {
+    toString: jest.fn().mockReturnValue("mock-id-token"),
+    payload: {}
+  },
   accessToken: null,
   cognitoSignIn: jest.fn(),
   cognitoSignOut: jest.fn()
@@ -111,8 +116,9 @@ describe("EpsRoleSelectionPage", () => {
   })
 
   it("redirects when a single role is available", async () => {
-    const mockPush = jest.fn()
-    useRouter.mockReturnValue({push: mockPush})
+    (useRouter as jest.Mock).mockReturnValue({
+      push: jest.fn()
+    })
 
     const mockUserInfo = {
       roles_with_access: [{
@@ -132,7 +138,7 @@ describe("EpsRoleSelectionPage", () => {
     renderWithAuth()
 
     await waitFor(() => {
-      expect(mockPush).toHaveBeenCalledWith("/searchforaprescription")
+      expect(useRouter().push).toHaveBeenCalledWith("/searchforaprescription")
     })
   })
 })
