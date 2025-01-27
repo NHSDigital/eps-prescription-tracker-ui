@@ -5,7 +5,7 @@ import {UserInfoResponse, TrackerUserInfo} from "../src/userInfoTypes"
 
 import {Logger} from "@aws-lambda-powertools/logger"
 import axios from "axios"
-import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
+import {DynamoDBDocumentClient, GetCommand} from "@aws-sdk/lib-dynamodb"
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
 import jwksClient from "jwks-rsa"
 
@@ -31,7 +31,7 @@ jest.unstable_mockModule("@cpt-ui-common/authFunctions", async () => {
   }
 })
 
-const {fetchUserInfo, updateDynamoTable} = await import("../src/userInfoHelpers")
+const {fetchUserInfo, updateDynamoTable, fetchDynamoTable} = await import("../src/userInfoHelpers")
 
 describe("fetchUserInfo", () => {
   const logger = new Logger()
@@ -307,5 +307,32 @@ describe("updateDynamoTable", () => {
     await expect(
       updateDynamoTable(username, data, documentClient, logger, "dummyTable")
     ).rejects.toThrow("Error adding user roles to DynamoDB")
+  })
+})
+
+describe("fetchDynamoTable", () => {
+  const logger = new Logger()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const mockSend = jest.fn() as jest.MockedFunction<(command: GetCommand) => Promise<{Item?: any}>>
+
+  const documentClient = {
+    send: mockSend
+  } as unknown as DynamoDBDocumentClient
+
+  const username = "testUser"
+  const tokenMappingTableName = "dummyTable"
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
+  it("should throw an error when DynamoDB retrieval fails", async () => {
+    mockSend.mockRejectedValue(new Error("DynamoDB error"))
+
+    await expect(fetchDynamoTable(username, documentClient, logger, tokenMappingTableName)).rejects.toThrow(
+      "Failed to retrieve user info from cache"
+    )
+
+    expect(mockSend).toHaveBeenCalled()
   })
 })
