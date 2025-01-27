@@ -1,12 +1,15 @@
 import {jest} from "@jest/globals"
 
+// Mock environment variables
+process.env.MOCK_MODE_ENABLED = "false"
+
 // Mocked functions
 const mockGetUsernameFromEvent = jest.fn()
 const mockUpdateDynamoTable = jest.fn()
 
 jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
   return {
-    getUsernameFromEvent: mockGetUsernameFromEvent.mockImplementation(() => "Mock_JoeBloggs")
+    getUsernameFromEvent: mockGetUsernameFromEvent.mockImplementation(() => "Primary_JoeBloggs")
   }
 })
 
@@ -19,7 +22,7 @@ jest.unstable_mockModule("@/selectedRoleHelpers", () => {
 const {handler} = await import("@/handler")
 import {mockContext, mockAPIGatewayProxyEvent} from "./mockObjects"
 
-describe("Lambda Handler Tests with mock enabled", () => {
+describe("Lambda Handler Tests with mock disabled", () => {
   let event = {...mockAPIGatewayProxyEvent, body: JSON.stringify({role_id: "123", org_code: "XYZ"})}
   let context = {...mockContext}
 
@@ -27,12 +30,12 @@ describe("Lambda Handler Tests with mock enabled", () => {
     jest.clearAllMocks()
   })
 
-  it("should return a successful response with mock username", async () => {
+  it("should return a successful response when called normally", async () => {
     const response = await handler(event, context)
 
     expect(mockGetUsernameFromEvent).toHaveBeenCalled()
     expect(mockUpdateDynamoTable).toHaveBeenCalledWith(
-      "Mock_JoeBloggs",
+      "Primary_JoeBloggs",
       {role_id: "123", org_code: "XYZ"},
       expect.any(Object),
       expect.any(Object),
