@@ -287,4 +287,38 @@ describe("SelectYourRolePage", () => {
       expect(mockPush).toHaveBeenCalledWith("/searchforaprescription")
     })
   })
+
+  it("renders loading state when waiting for API response", async () => {
+    mockFetch.mockImplementation(() => new Promise(() => {}))
+    renderWithAuth()
+    expect(screen.getByText("Loading...")).toBeInTheDocument()
+  })
+
+  it("redirects when a single role is available", async () => {
+    (useRouter as jest.Mock).mockReturnValue({
+      push: jest.fn()
+    })
+
+    const mockUserInfo = {
+      roles_with_access: [{
+        role_name: "Pharmacist",
+        org_name: "Test Pharmacy",
+        org_code: "ORG123",
+        site_address: "123 Test St"
+      }],
+      roles_without_access: []
+    }
+
+    mockFetch.mockResolvedValue({
+      status: 200,
+      json: async () => ({userInfo: mockUserInfo})
+    })
+
+    __setMockContextValue({noAccess: true})
+    renderWithAuth({isSignedIn: true, idToken: {toString: jest.fn().mockReturnValue("mock-id-token")}})
+
+    await waitFor(() => {
+      expect(useRouter().push).toHaveBeenCalledWith("/searchforaprescription")
+    })
+  })
 })
