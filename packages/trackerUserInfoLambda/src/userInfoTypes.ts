@@ -8,10 +8,13 @@ export type RoleDetails = {
   site_address?: string;
 };
 
+export type UserDetails = Pick<UserInfoResponse, "family_name" | "given_name">
+
 export type TrackerUserInfo = {
   roles_with_access: Array<RoleDetails>;
   roles_without_access: Array<RoleDetails>;
   currently_selected_role?: RoleDetails;
+  user_details: UserDetails;
 };
 
 //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-//
