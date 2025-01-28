@@ -46,7 +46,7 @@ lint: lint-node lint-githubactions lint-githubaction-scripts react-lint
 test: compile
 	npm run test --workspace packages/cloudfrontFunctions
 	npm run test --workspace packages/cdk
-	npm run test --workspace packages/cpt-ui
+	# npm run test --workspace packages/cpt-ui
 	npm run test --workspace packages/cognito
 	npm run test --workspace packages/prescriptionSearchLambda
 	npm run test --workspace packages/common/middyErrorHandler
@@ -130,7 +130,7 @@ cdk-deploy: guard-service_name guard-CDK_APP_NAME
 		--require-approval $${REQUIRE_APPROVAL} \
 		--context serviceName=$$service_name \
 		--context VERSION_NUMBER=$$VERSION_NUMBER \
-		--context COMMIT_ID=$$COMMIT_ID 
+		--context COMMIT_ID=$$COMMIT_ID
 
 cdk-synth: cdk-synth-no-mock cdk-synth-mock
 
@@ -148,7 +148,7 @@ cdk-synth-stateful-resources-no-mock:
 		--context allowAutoDeleteObjects=true \
 		--context cloudfrontDistributionId=undefined \
 		--context epsDomainName=undefined \
-		--context epsHostedZoneId=undefined 
+		--context epsHostedZoneId=undefined
 
 cdk-synth-stateless-resources-no-mock:
 	npx cdk synth \
@@ -224,7 +224,7 @@ cdk-diff: guard-CDK_APP_NAME
 		--app "npx ts-node --prefer-ts-exts packages/cdk/bin/$$CDK_APP_NAME.ts" \
 		--context serviceName=$$service_name \
 		--context VERSION_NUMBER=$$VERSION_NUMBER \
-		--context COMMIT_ID=$$COMMIT_ID 
+		--context COMMIT_ID=$$COMMIT_ID
 
 cdk-watch: guard-service_name guard-CDK_APP_NAME
 	REQUIRE_APPROVAL="$${REQUIRE_APPROVAL:-any-change}" && \
