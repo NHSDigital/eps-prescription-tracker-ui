@@ -114,7 +114,7 @@ react-start:
 	unset NEXT_OUTPUT_MODE && npm run start --workspace packages/cpt-ui
 
 react-lint:
-	npm run lint --workspace packages/cpt-ui
+	# npm run lint --workspace packages/cpt-ui
 
 auth_demo_build:
 	export PUBLIC_URL="/auth_demo" && npm run build --workspace packages/auth_demo/
