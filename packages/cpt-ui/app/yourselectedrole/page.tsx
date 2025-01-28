@@ -1,16 +1,16 @@
 'use client'
-import React, { useEffect, useState } from "react"
+import React, {useEffect, useState} from "react"
 
-import { Container, Col, Row, Button, Table } from "nhsuk-react-components";
-import Link from "next/link";
-import { useRouter } from "next/navigation"
+import {Container, Col, Row, Button, Table} from "nhsuk-react-components"
+import Link from "next/link"
+import {useRouter} from "next/navigation"
 
-import { YOUR_SELECTED_ROLE_STRINGS } from "@/constants/ui-strings/YourSelectedRoleStrings"
-import { useAccess } from "@/context/AccessProvider";
+import {YOUR_SELECTED_ROLE_STRINGS} from "@/constants/ui-strings/YourSelectedRoleStrings"
+import {useAccess} from "@/context/AccessProvider"
 
 export default function YourSelectedRolePage() {
     const router = useRouter()
-    const { selectedRole } = useAccess()
+    const {selectedRole} = useAccess()
 
     const [roleName, setRoleName] = useState<string>(YOUR_SELECTED_ROLE_STRINGS.noRoleName)
     const [orgName, setOrgName] = useState<string>(YOUR_SELECTED_ROLE_STRINGS.noOrgName)
@@ -19,9 +19,9 @@ export default function YourSelectedRolePage() {
     useEffect(() => {
         if (!selectedRole) {
             // Set fallback values if selectedRole is undefined
-            setRoleName(YOUR_SELECTED_ROLE_STRINGS.noRoleName);
-            setOrgName(YOUR_SELECTED_ROLE_STRINGS.noOrgName);
-            setOdsCode(YOUR_SELECTED_ROLE_STRINGS.noODSCode);
+            setRoleName(YOUR_SELECTED_ROLE_STRINGS.noRoleName)
+            setOrgName(YOUR_SELECTED_ROLE_STRINGS.noOrgName)
+            setOdsCode(YOUR_SELECTED_ROLE_STRINGS.noODSCode)
             return
         }
 
@@ -32,7 +32,7 @@ export default function YourSelectedRolePage() {
 
     const handleRedirect = async (e: React.MouseEvent | React.KeyboardEvent) => {
         // Naked href don't respect the router, so this overrides that
-        e.preventDefault();
+        e.preventDefault()
         router.push("/searchforaprescription")
     }
 
@@ -118,5 +118,5 @@ export default function YourSelectedRolePage() {
                 </Row>
             </Container>
         </main>
-    );
+    )
 }

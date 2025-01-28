@@ -1,6 +1,6 @@
 import {Logger} from "@aws-lambda-powertools/logger"
 import axios from "axios"
-import {DynamoDBDocumentClient, UpdateCommand} from "@aws-sdk/lib-dynamodb"
+import {DynamoDBDocumentClient, GetCommand, UpdateCommand} from "@aws-sdk/lib-dynamodb"
 import {
   UserInfoResponse,
   TrackerUserInfo,
@@ -186,5 +186,45 @@ export const updateDynamoTable = async (
   } catch (error) {
     logger.error("Error adding user roles to DynamoDB", {username, data, error})
     throw error
+  }
+}
+
+// Fetch user info from DynamoDB
+export const fetchDynamoTable = async (
+  username: string,
+  documentClient: DynamoDBDocumentClient,
+  logger: Logger,
+  tokenMappingTableName: string
+): Promise<TrackerUserInfo | null> => {
+  logger.info("Fetching user info from DynamoDB", {username})
+
+  try {
+    const response = await documentClient.send(
+      new GetCommand({
+        TableName: tokenMappingTableName,
+        Key: {username}
+      })
+    )
+
+    if (!response.Item) {
+      logger.warn("No user info found in DynamoDB", {username})
+      return null
+    }
+
+    // Ensure correct keys are returned
+    const mappedUserInfo: TrackerUserInfo = {
+      roles_with_access: response.Item.rolesWithAccess || [],
+      roles_without_access: response.Item.rolesWithoutAccess || [],
+      currently_selected_role: response.Item.currentlySelectedRole || undefined,
+      user_details: response.Item.userDetails || {family_name: "", given_name: ""} // Default empty user details
+    }
+
+    logger.info("User info successfully retrieved from DynamoDB", {
+      data: mappedUserInfo
+    })
+    return mappedUserInfo
+  } catch (error) {
+    logger.error("Error fetching user info from DynamoDB", {error})
+    throw new Error("Failed to retrieve user info from cache")
   }
 }

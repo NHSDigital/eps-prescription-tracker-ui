@@ -7,7 +7,7 @@ import middy from "@middy/core"
 import inputOutputLogger from "@middy/input-output-logger"
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 import {getUsernameFromEvent, fetchAndVerifyCIS2Tokens, initializeOidcConfig} from "@cpt-ui-common/authFunctions"
-import {fetchUserInfo, updateDynamoTable} from "./userInfoHelpers"
+import {fetchUserInfo, updateDynamoTable, fetchDynamoTable} from "./userInfoHelpers"
 
 /*
 This is the lambda code to get user info
@@ -66,6 +66,28 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
   logger.info("Is this a mock request?", {isMockRequest})
 
+  // Try to fetch user info from DynamoDB
+  const cachedUserInfo = await fetchDynamoTable(username, documentClient, logger, tokenMappingTableName)
+
+  // Check if cached data exists and has valid role information
+  if (
+    cachedUserInfo &&
+    (cachedUserInfo.roles_with_access.length > 0 || cachedUserInfo.roles_without_access.length > 0)
+  ) {
+    logger.info("Returning cached user info from DynamoDB", {cachedUserInfo})
+
+    return {
+      statusCode: 200,
+      body: JSON.stringify({
+        message: "UserInfo fetched successfully from cache",
+        userInfo: cachedUserInfo
+      })
+    }
+  }
+
+  logger.info("No valid cached user info found. Fetching from OIDC UserInfo endpoint...")
+
+  // If no cached data found, proceed to fetch user info from the OIDC UserInfo endpoint
   const {cis2AccessToken, cis2IdToken} = await fetchAndVerifyCIS2Tokens(
     event,
     documentClient,
@@ -81,7 +103,8 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     isMockRequest ? mockOidcConfig : cis2OidcConfig
   )
 
-  updateDynamoTable(username, userInfoResponse, documentClient, logger, tokenMappingTableName)
+  // Store the new data in DynamoDB
+  await updateDynamoTable(username, userInfoResponse, documentClient, logger, tokenMappingTableName)
 
   return {
     statusCode: 200,
@@ -90,7 +113,6 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
       userInfo: userInfoResponse
     })
   }
-
 }
 
 export const handler = middy(lambdaHandler)

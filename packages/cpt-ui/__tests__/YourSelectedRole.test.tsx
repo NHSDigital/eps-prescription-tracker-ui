@@ -1,10 +1,10 @@
 import "@testing-library/jest-dom"
-import { render, screen, fireEvent } from "@testing-library/react"
-import { useRouter } from "next/navigation"
+import {render, screen, fireEvent} from "@testing-library/react"
+import {useRouter} from "next/navigation"
 import React from "react"
 import YourSelectedRolePage from "@/app/yourselectedrole/page"
-import { JWT } from "aws-amplify/auth"
-import { AuthContext } from "@/context/AuthProvider"
+import {JWT} from "aws-amplify/auth"
+import {AuthContext} from "@/context/AuthProvider"
 
 // Mock the module and directly reference the variable
 jest.mock("@/constants/ui-strings/YourSelectedRoleStrings", () => {
@@ -21,10 +21,10 @@ jest.mock("@/constants/ui-strings/YourSelectedRoleStrings", () => {
         noOrgName: "NO ORG NAME"
     }
 
-    return { YOUR_SELECTED_ROLE_STRINGS }
+    return {YOUR_SELECTED_ROLE_STRINGS}
 })
 
-const { YOUR_SELECTED_ROLE_STRINGS } = require("@/constants/ui-strings/YourSelectedRoleStrings")
+const {YOUR_SELECTED_ROLE_STRINGS} = require("@/constants/ui-strings/YourSelectedRoleStrings")
 
 // Mock `next/navigation`
 jest.mock("next/navigation", () => ({
@@ -63,7 +63,7 @@ jest.mock("@/context/AccessProvider", () => {
     const useAccess = () => React.useContext(MockAccessContext)
 
     const __setMockContextValue = (newValue: any) => {
-        mockContextValue = { ...mockContextValue, ...newValue }
+        mockContextValue = {...mockContextValue, ...newValue}
         // Reassign the context’s defaultValue so subsequent consumers get new values
         MockAccessContext._currentValue = mockContextValue
         MockAccessContext._currentValue2 = mockContextValue
@@ -76,7 +76,7 @@ jest.mock("@/context/AccessProvider", () => {
         __setMockContextValue
     }
 })
-const { __setMockContextValue } = require("@/context/AccessProvider")
+const {__setMockContextValue} = require("@/context/AccessProvider")
 
 // Default mock values for the `AuthContext` to simulate authentication state
 const defaultAuthContext = {
@@ -93,7 +93,7 @@ const defaultAuthContext = {
 }
 
 export const renderWithAuth = (authOverrides = {}) => {
-    const authValue = { ...defaultAuthContext, ...authOverrides }
+    const authValue = {...defaultAuthContext, ...authOverrides}
 
     return render(
         <AuthContext.Provider value={authValue}>
@@ -119,11 +119,15 @@ describe("YourSelectedRolePage", () => {
             ; (useRouter as jest.Mock).mockReturnValue({
                 push: mockRouterPush,
             })
+        mockFetch.mockResolvedValueOnce({
+            ok: true,
+            json: async () => ({message: "Success"})
+        })
     })
 
     it("renders the heading and subheading correctly", () => {
         renderWithAuth()
-        const heading = screen.getByRole("heading", { level: 1, name: /Your selected role/i })
+        const heading = screen.getByRole("heading", {level: 1, name: /Your selected role/i})
         const subheading = screen.getByText(/The following role is now active/i)
 
         expect(heading).toBeInTheDocument()
@@ -144,7 +148,7 @@ describe("YourSelectedRolePage", () => {
     it("has valid Change links for role and organization", () => {
         renderWithAuth()
 
-        const changeLinks = screen.getAllByRole("link", { name: /Change/i })
+        const changeLinks = screen.getAllByRole("link", {name: /Change/i})
         expect(changeLinks).toHaveLength(2) // one for role, one for org
 
         changeLinks.forEach(link => {
@@ -152,10 +156,10 @@ describe("YourSelectedRolePage", () => {
         })
     })
 
-    it("navigates to /searchforaprescription when the confirm button is clicked", () => {
+    it("navigates to /searchforaprescription when the confirm button is clicked", async () => {
         renderWithAuth()
         const button = screen.getByTestId("confirm-and-continue")
-        fireEvent.click(button)
+        await fireEvent.click(button)
         expect(mockRouterPush).toHaveBeenCalledWith("/searchforaprescription")
     })
 

@@ -1,15 +1,15 @@
 'use client'
-import React, { useState, useEffect, useContext, useCallback } from "react"
-import { useRouter } from 'next/navigation'
-import { Container, Col, Row, Details, Table, ErrorSummary, Button, InsetText } from "nhsuk-react-components"
+import React, {useState, useEffect, useContext, useCallback} from "react"
+import {useRouter} from 'next/navigation'
+import {Container, Col, Row, Details, Table, ErrorSummary, Button, InsetText} from "nhsuk-react-components"
 
-import { AuthContext } from "@/context/AuthProvider"
-import { useAccess } from '@/context/AccessProvider'
+import {AuthContext} from "@/context/AuthProvider"
+import {useAccess} from '@/context/AccessProvider'
 
 import EpsCard from "@/components/EpsCard"
-import EpsSpinner from "@/components/EpsSpinner";
+import EpsSpinner from "@/components/EpsSpinner"
 
-import { RoleDetails, TrackerUserInfo } from "@/types/TrackerUserInfoTypes"
+import {RoleDetails, TrackerUserInfo} from "@/types/TrackerUserInfoTypes"
 
 // This is passed to the EPS card component.
 export type RolesWithAccessProps = {
@@ -55,7 +55,7 @@ interface RoleSelectionPageProps {
     }
 }
 
-export default function RoleSelectionPage({ contentText }: RoleSelectionPageProps) {
+export default function RoleSelectionPage({contentText}: RoleSelectionPageProps) {
     // Destructure strings from the contentText prop
     const {
         title,
@@ -75,8 +75,8 @@ export default function RoleSelectionPage({ contentText }: RoleSelectionPageProp
         errorDuringRoleSelection
     } = contentText
 
-    const { noAccess, setNoAccess, setSingleAccess, setSelectedRole: setCurrentlySelectedRole, selectedRole: currentlySelectedRole } = useAccess()
-    const [loginInfoMessage, setLoginInfoMessage] = useState<string | null>(null);
+    const {noAccess, setNoAccess, setSingleAccess, selectedRole, setSelectedRole} = useAccess()
+    const [loginInfoMessage, setLoginInfoMessage] = useState<string | null>(null)
     const [loading, setLoading] = useState<boolean>(true)
     const [error, setError] = useState<string | null>(null)
     const [redirecting, setRedirecting] = useState<boolean>(false)
@@ -86,28 +86,23 @@ export default function RoleSelectionPage({ contentText }: RoleSelectionPageProp
     const router = useRouter()
     const auth = useContext(AuthContext)
 
-
     useEffect(() => {
-        // Only set the login message if its not already set and currentlySelectedRole is available. 
-        // This ensures its not blank and that it waits until currentlySelectedRole is populated.
-        // Also means that currentlySelectedRole doesnt display a new selectedRole if a card is clicked and users with a slower connection see this before a redirect
-        if (!loginInfoMessage && currentlySelectedRole) {
+        if (!loginInfoMessage && selectedRole) {
             setLoginInfoMessage(
-                `You are currently logged in at ${currentlySelectedRole.org_name || "No Org Name"
-                } (ODS: ${currentlySelectedRole.org_code || "No ODS Code"
-                }) with ${currentlySelectedRole.role_name || "No Role Name"
+                `You are currently logged in at ${selectedRole.org_name || noOrgName
+                } (ODS: ${selectedRole.org_code || noODSCode
+                }) with ${selectedRole.role_name || noRoleName
                 }.`
-            );
+            )
         }
-    }, [currentlySelectedRole, loginInfoMessage]);
-
+    }, [selectedRole, loginInfoMessage, noOrgName, noODSCode, noRoleName])
 
     const fetchTrackerUserInfo = useCallback(async () => {
         setLoading(true)
         setError(null)
         setRolesWithAccess([])
         setRolesWithoutAccess([])
-        setCurrentlySelectedRole(undefined)
+        setSelectedRole(undefined)
 
         if (!auth?.isSignedIn || !auth) {
             setLoading(false)
@@ -124,9 +119,7 @@ export default function RoleSelectionPage({ contentText }: RoleSelectionPageProp
             })
 
             if (response.status !== 200) {
-                throw new Error(
-                    `Server did not return CPT user info, response ${response.status}`
-                )
+                throw new Error(`Server did not return CPT user info, response ${response.status}`)
             }
 
             const data = await response.json()
@@ -137,12 +130,15 @@ export default function RoleSelectionPage({ contentText }: RoleSelectionPageProp
 
             const userInfo: TrackerUserInfo = data.userInfo
 
-            const rolesWithAccess = userInfo.roles_with_access
-            const rolesWithoutAccess = userInfo.roles_without_access
-            const currentlySelectedRole = userInfo.currently_selected_role ? {
-                ...userInfo.currently_selected_role,
-                uuid: `selected_role_0`
-            } : undefined
+            const rolesWithAccess = userInfo.roles_with_access || []
+            const rolesWithoutAccess = userInfo.roles_without_access || []
+
+            const selectedRole = userInfo?.currently_selected_role
+                ? {
+                    ...userInfo?.currently_selected_role,
+                    uuid: `selected_role_0`
+                }
+                : undefined
 
             // Populate the EPS card props
             setRolesWithAccess(
@@ -162,7 +158,7 @@ export default function RoleSelectionPage({ contentText }: RoleSelectionPageProp
                 }))
             )
 
-            setCurrentlySelectedRole(currentlySelectedRole)
+            setSelectedRole(selectedRole)
             setNoAccess(rolesWithAccess.length === 0)
             setSingleAccess(rolesWithAccess.length === 1)
 
@@ -170,13 +166,14 @@ export default function RoleSelectionPage({ contentText }: RoleSelectionPageProp
             // redirect them immediately
             if (rolesWithAccess.length === 1 && rolesWithoutAccess.length === 0) {
                 setRedirecting(true)
+                setSelectedRole(rolesWithAccess[0])
                 router.push("/searchforaprescription")
                 return
             }
 
         } catch (err) {
             setError("Failed to fetch CPT user info")
-            console.error("error fetching tracker user info:", err)
+            console.error("Error fetching tracker user info:", err)
         } finally {
             setLoading(false)
         }
@@ -185,7 +182,7 @@ export default function RoleSelectionPage({ contentText }: RoleSelectionPageProp
         router,
         setNoAccess,
         setSingleAccess,
-        setCurrentlySelectedRole,
+        setSelectedRole,
         noOrgName,
         noODSCode,
         noRoleName
@@ -209,6 +206,8 @@ export default function RoleSelectionPage({ contentText }: RoleSelectionPageProp
             setLoading(false)
         }
     }, [auth?.error])
+
+
 
     // If the data is being fetched or the user is being diverted, replace the content with a spinner
     if (loading || redirecting) {
@@ -267,7 +266,7 @@ export default function RoleSelectionPage({ contentText }: RoleSelectionPageProp
                         {/* Caption Section for No Access */}
                         {noAccess && (<p>{captionNoAccess}</p>)}
                         {/* Pre selected role section */}
-                        {currentlySelectedRole && (
+                        {selectedRole && (
                             <section aria-label="Login Information">
                                 <InsetText
                                     data-testid="eps_select_your_role_pre_role_selected"
@@ -276,7 +275,7 @@ export default function RoleSelectionPage({ contentText }: RoleSelectionPageProp
                                         {insetText.visuallyHidden}
                                     </span>
                                     {loginInfoMessage && (
-                                        <p dangerouslySetInnerHTML={{ __html: loginInfoMessage }}></p>
+                                        <p dangerouslySetInnerHTML={{__html: loginInfoMessage}}></p>
                                     )}
                                 </InsetText>
                                 {/* Confirm Button */}
