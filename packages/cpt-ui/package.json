@@ -8,7 +8,8 @@
     "build": "tsc && vite build",
     "lint": "eslint . --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
-    "test": "NODE_NO_WARNINGS=1 jest --no-cache --coverage"
+    "test": "NODE_NO_WARNINGS=1 jest --no-cache --coverage",
+    "check-licenses": "license-checker --failOn GPL --failOn LGPL --start ../.."
   },
   "dependencies": {
     "aws-amplify": "^6.0.0",
