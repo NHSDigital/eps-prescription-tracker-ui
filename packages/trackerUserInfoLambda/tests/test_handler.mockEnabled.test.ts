@@ -336,9 +336,17 @@ describe("Lambda Handler Tests with mock enabled", () => {
     mockGetUsernameFromEvent.mockReturnValue(testUsername)
 
     const userInfoMock: TrackerUserInfo = {
-      roles_with_access: [{role_name: "Doctor", role_id: "123", org_code: "ORG123", org_name: "Test Org"}],
+      roles_with_access: [
+        {role_name: "Doctor", role_id: "123", org_code: "ABC", org_name: "Test Hospital"}
+      ],
       roles_without_access: [],
-      currently_selected_role: {role_name: "Doctor", role_id: "123", org_code: "ORG123", org_name: "Test Org"}
+      currently_selected_role: {
+        role_name: "Doctor",
+        role_id: "123",
+        org_code: "ABC",
+        org_name: "Test Hospital"
+      },
+      user_details: {family_name: "Doe", given_name: "John"}
     }
 
     // Fix by explicitly casting to the expected return type
@@ -365,9 +373,17 @@ describe("Lambda Handler Tests with mock enabled", () => {
     mockGetUsernameFromEvent.mockReturnValue(testUsername)
 
     const userInfoMock: TrackerUserInfo = {
-      roles_with_access: [],
-      roles_without_access: [{role_name: "Nurse", role_id: "456", org_code: "ORG456", org_name: "Test Hospital"}],
-      currently_selected_role: undefined
+      roles_with_access: [
+        {role_name: "Doctor", role_id: "123", org_code: "ABC", org_name: "Test Hospital"}
+      ],
+      roles_without_access: [],
+      currently_selected_role: {
+        role_name: "Doctor",
+        role_id: "123",
+        org_code: "ABC",
+        org_name: "Test Hospital"
+      },
+      user_details: {family_name: "Doe", given_name: "John"}
     }
 
     mockFetchDynamoTable.mockResolvedValue(userInfoMock as never)
@@ -393,9 +409,17 @@ describe("Lambda Handler Tests with mock enabled", () => {
     mockGetUsernameFromEvent.mockReturnValue(testUsername)
 
     const userInfoMock: TrackerUserInfo = {
-      roles_with_access: [{role_name: "Doctor", role_id: "123", org_code: "ORG123", org_name: "Test Org"}],
+      roles_with_access: [
+        {role_name: "Doctor", role_id: "123", org_code: "ABC", org_name: "Test Hospital"}
+      ],
       roles_without_access: [],
-      currently_selected_role: undefined
+      currently_selected_role: {
+        role_name: "Doctor",
+        role_id: "123",
+        org_code: "ABC",
+        org_name: "Test Hospital"
+      },
+      user_details: {family_name: "Doe", given_name: "John"}
     }
 
     mockFetchDynamoTable.mockResolvedValue(userInfoMock as never)

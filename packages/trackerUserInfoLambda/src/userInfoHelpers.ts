@@ -1,7 +1,12 @@
 import {Logger} from "@aws-lambda-powertools/logger"
 import axios from "axios"
 import {DynamoDBDocumentClient, GetCommand, UpdateCommand} from "@aws-sdk/lib-dynamodb"
-import {UserInfoResponse, TrackerUserInfo, RoleDetails} from "./userInfoTypes"
+import {
+  UserInfoResponse,
+  TrackerUserInfo,
+  RoleDetails,
+  UserDetails
+} from "./userInfoTypes"
 import {OidcConfig, verifyIdToken} from "@cpt-ui-common/authFunctions"
 
 // Role names come in formatted like `"category":"subcategory":"roleName"`.
@@ -59,6 +64,11 @@ export const fetchUserInfo = async (
     const rolesWithoutAccess: Array<RoleDetails> = []
     let currentlySelectedRole: RoleDetails | undefined = undefined
 
+    const userDetails: UserDetails = {
+      family_name: data.family_name,
+      given_name: data.given_name
+    }
+
     // Get roles from the user info response
     const roles = data.nhsid_nrbac_roles || []
 
@@ -108,7 +118,8 @@ export const fetchUserInfo = async (
     const result: TrackerUserInfo = {
       roles_with_access: rolesWithAccess,
       roles_without_access: rolesWithoutAccess,
-      currently_selected_role: currentlySelectedRole
+      currently_selected_role: currentlySelectedRole,
+      user_details: userDetails
     }
 
     logger.info("Returning user info response", {result})
@@ -204,10 +215,13 @@ export const fetchDynamoTable = async (
     const mappedUserInfo: TrackerUserInfo = {
       roles_with_access: response.Item.rolesWithAccess || [],
       roles_without_access: response.Item.rolesWithoutAccess || [],
-      currently_selected_role: response.Item.currentlySelectedRole || undefined
+      currently_selected_role: response.Item.currentlySelectedRole || undefined,
+      user_details: response.Item.userDetails || {family_name: "", given_name: ""} // Default empty user details
     }
 
-    logger.info("User info successfully retrieved from DynamoDB", {data: mappedUserInfo})
+    logger.info("User info successfully retrieved from DynamoDB", {
+      data: mappedUserInfo
+    })
     return mappedUserInfo
   } catch (error) {
     logger.error("Error fetching user info from DynamoDB", {error})

@@ -49,6 +49,11 @@ jest.mock("@/context/AccessProvider", () => {
             org_code: "deadbeef",
             org_name: "org name"
         },
+        userDetails: {
+            given_name: "Jane",
+            family_name: "Doe"
+        },
+        setUserDetails: jest.fn(),
         setNoAccess: jest.fn(),
         setSingleAccess: jest.fn(),
         setSelectedRole: jest.fn(),

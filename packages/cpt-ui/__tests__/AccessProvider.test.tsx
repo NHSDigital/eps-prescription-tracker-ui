@@ -81,6 +81,10 @@ describe("AccessProvider", () => {
                 role_id: "ROLE123",
                 role_name: "Pharmacist",
             },
+            user_details: {
+                family_name: "FAMILY",
+                given_name: "GIVEN"
+            }
         }
 
         mockFetch.mockResolvedValueOnce({
@@ -103,6 +107,10 @@ describe("AccessProvider", () => {
         const mockUserInfo: TrackerUserInfo = {
             roles_with_access: [],
             roles_without_access: [],
+            user_details: {
+                family_name: "FAMILY",
+                given_name: "GIVEN"
+            }
         }
 
         mockFetch.mockResolvedValueOnce({
@@ -127,6 +135,10 @@ describe("AccessProvider", () => {
                 { role_id: "ROLE2" },
             ],
             roles_without_access: [],
+            user_details: {
+                family_name: "FAMILY",
+                given_name: "GIVEN"
+            }
         }
 
         mockFetch.mockResolvedValueOnce({
@@ -176,6 +188,10 @@ describe("AccessProvider", () => {
                 role_id: "ROLE_SINGLE",
                 role_name: "SingleRole",
             },
+            user_details: {
+                family_name: "FAMILY",
+                given_name: "GIVEN"
+            }
         }
 
         mockFetch.mockResolvedValueOnce({
