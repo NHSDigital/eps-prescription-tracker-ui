@@ -1,36 +1,32 @@
 {
   "extends": "../../tsconfig.defaults.json",
-  "references": [],
-  "include": [
-    "src/**/*",
-    "tests/**/*",
-    "tests/**/*.json",
-    ".next/types/**/*.ts",
-    "**/*.tsx"
-  ],
   "compilerOptions": {
     "baseUrl": ".",
+    "jsx": "react-jsx",
+    "esModuleInterop": true,
+    "moduleResolution": "bundler",
+    "target": "ESNext",
+    "module": "ESNext",
+    "types": ["jest", "node", "@testing-library/jest-dom", "vite/client"],
+    "allowJs": true,
     "paths": {
-      "@/*": ["*"],
+      "@/*": ["src/*"]
     },
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
+    "lib": ["DOM", "DOM.Iterable", "ESNext"],
+    "strict": true,
+    "noImplicitAny": false,
     "noEmit": true,
-    "module": "esnext",
     "isolatedModules": true,
-    "jsx": "preserve",
-    "plugins": [
-      {
-        "name": "next"
-      }
-    ],
     "composite": false
   },
-  "exclude": [
-    "node_modules",
-    ".next"
-  ]
+  "include": [
+    "src/**/*",
+    "__tests__/**/*",
+    "**/*.tsx",
+    "jest.config.ts",
+    "jest.setup.ts",
+    "vite.config.ts",
+    "vite-env.d.ts"
+  ],
+  "exclude": ["node_modules"]
 }

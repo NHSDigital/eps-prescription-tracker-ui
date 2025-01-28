@@ -1,0 +1,7 @@
+@use "nhsuk-frontend/dist/nhsuk" as nhsuk;
+
+// Import your other styles using @use
+@use "./EpsModal";
+@use "./card";
+@use "./footer";
+@use "./header";

@@ -1,11 +1,11 @@
 import {ResourcesConfig} from "aws-amplify"
 
-const userPoolId = process.env["NEXT_PUBLIC_userPoolId"] // This is the User Pool ID from AWS::Cognito::UserPool
-const userPoolClientId = process.env["NEXT_PUBLIC_userPoolClientId"] // This is the Client ID from AWS::Cognito::UserPoolClient
-const hostedLoginDomain = process.env["NEXT_PUBLIC_hostedLoginDomain"] // This is the domain from AWS::Cognito::UserPoolDomain
-const redirectSignIn = process.env["NEXT_PUBLIC_redirectSignIn"]
+const userPoolId = import.meta.env.NEXT_PUBLIC_userPoolId; // This is the User Pool ID from AWS::Cognito::UserPool
+const userPoolClientId = import.meta.env.NEXT_PUBLIC_userPoolClientId; // This is the Client ID from AWS::Cognito::UserPoolClient
+const hostedLoginDomain = import.meta.env.NEXT_PUBLIC_hostedLoginDomain; // This is the domain from AWS::Cognito::UserPoolDomain
+const redirectSignIn = import.meta.env.NEXT_PUBLIC_redirectSignIn;
 // CAUTION!!! Note that this MUST be different to the sign-in redirect path!!
-const redirectSignOut = process.env["NEXT_PUBLIC_redirectSignOut"]
+const redirectSignOut = import.meta.env.NEXT_PUBLIC_redirectSignOut;
 
 export const authConfig: ResourcesConfig = {
   Auth: {
