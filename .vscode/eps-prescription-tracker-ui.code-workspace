@@ -1,8 +1,8 @@
 {
     "folders": [
       {
-      "name": "eps-prescription-tracker-ui-monorepo",
-      "path": ".."
+        "name": "eps-prescription-tracker-ui-monorepo",
+        "path": ".."
       },
       {
         "name": "packages/cpt-ui",
@@ -47,6 +47,10 @@
       {
         "name": "packages/trackerUserInfoLambda",
         "path": "../packages/trackerUserInfoLambda"
+      },
+      {
+        "name": "packages/selectedRoleLambda",
+        "path": "../packages/selectedRoleLambda"
       }
     ],
     "settings": {

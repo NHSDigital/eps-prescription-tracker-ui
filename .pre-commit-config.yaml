@@ -68,6 +68,15 @@ repos:
         types_or: [ts, tsx, javascript, jsx, json]
         pass_filenames: false
 
+      - id: lint-selectedRoleLambda
+        name: Lint selectedRoleLambda
+        entry: npm
+        args: ["run", "--prefix=packages/selectedRoleLambda", "lint"]
+        language: system
+        files: ^packages\/selectedRoleLambda
+        types_or: [ts, tsx, javascript, jsx, json]
+        pass_filenames: false
+
       - id: lint-authFunctions
         name: Lint authFunctions
         entry: npm

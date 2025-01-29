@@ -5,7 +5,7 @@ import {UserInfoResponse, TrackerUserInfo} from "../src/userInfoTypes"
 
 import {Logger} from "@aws-lambda-powertools/logger"
 import axios from "axios"
-import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
+import {DynamoDBDocumentClient, GetCommand} from "@aws-sdk/lib-dynamodb"
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
 import jwksClient from "jwks-rsa"
 
@@ -31,7 +31,7 @@ jest.unstable_mockModule("@cpt-ui-common/authFunctions", async () => {
   }
 })
 
-const {fetchUserInfo, updateDynamoTable} = await import("../src/userInfoHelpers")
+const {fetchUserInfo, updateDynamoTable, fetchDynamoTable} = await import("../src/userInfoHelpers")
 
 describe("fetchUserInfo", () => {
   const logger = new Logger()
@@ -50,7 +50,7 @@ describe("fetchUserInfo", () => {
     oidcIssuer: oidcIssuer,
     oidcClientID: oidcClientId,
     oidcJwksEndpoint: "https://dummyauth.com/.well-known/jwks.json",
-    oidcUserInfoEndpoint:  "https://dummyauth.com/userinfo",
+    oidcUserInfoEndpoint: "https://dummyauth.com/userinfo",
     userPoolIdp: "DummyPoolIdentityProvider",
     tokenMappingTableName: "dummyTable",
     jwksClient: client
@@ -144,6 +144,10 @@ describe("fetchUserInfo", () => {
         role_id: "role-id-1",
         org_code: "ORG1",
         org_name: "Organization One"
+      },
+      user_details: {
+        family_name: "Doe",
+        given_name: "John"
       }
     })
   })
@@ -199,7 +203,11 @@ describe("fetchUserInfo", () => {
           org_name: "Organization Three"
         }
       ],
-      currently_selected_role: undefined
+      currently_selected_role: undefined,
+      user_details: {
+        family_name: "Smith",
+        given_name: "Jane"
+      }
     })
   })
 
@@ -278,6 +286,10 @@ describe("updateDynamoTable", () => {
       org_name: "Test Hospital",
       site_name: "Main",
       site_address: "123 Street"
+    },
+    user_details: {
+      family_name: "FAMILY",
+      given_name: "GIVEN"
     }
   }
 
@@ -307,5 +319,58 @@ describe("updateDynamoTable", () => {
     await expect(
       updateDynamoTable(username, data, documentClient, logger, "dummyTable")
     ).rejects.toThrow("Error adding user roles to DynamoDB")
+  })
+})
+
+describe("fetchDynamoTable", () => {
+  const logger = new Logger()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const mockSend = jest.fn() as jest.MockedFunction<(command: GetCommand) => Promise<{Item?: any}>>
+
+  const documentClient = {
+    send: mockSend
+  } as unknown as DynamoDBDocumentClient
+
+  const username = "testUser"
+  const tokenMappingTableName = "dummyTable"
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
+  it("should throw an error when DynamoDB retrieval fails", async () => {
+    mockSend.mockRejectedValue(new Error("DynamoDB error"))
+
+    await expect(fetchDynamoTable(username, documentClient, logger, tokenMappingTableName)).rejects.toThrow(
+      "Failed to retrieve user info from cache"
+    )
+
+    expect(mockSend).toHaveBeenCalled()
+  })
+
+  it("should handle case when some attributes are missing in DynamoDB response", async () => {
+    const mockResponse = {
+      Item: {
+        rolesWithAccess: [
+          {role_name: "Doctor", role_id: "123", org_code: "ABC", org_name: "Test Hospital"}
+        ],
+        rolesWithoutAccess: [],
+        currentlySelectedRole: undefined,
+        userDetails: {family_name: "Doe", given_name: "John"}
+      }
+    }
+
+    mockSend.mockResolvedValueOnce(mockResponse as never)
+
+    const result = await fetchDynamoTable(username, documentClient, logger, tokenMappingTableName)
+
+    expect(result).toEqual({
+      roles_with_access: [
+        {role_name: "Doctor", role_id: "123", org_code: "ABC", org_name: "Test Hospital"}
+      ],
+      roles_without_access: [],
+      currently_selected_role: undefined,
+      user_details: {family_name: "Doe", given_name: "John"}
+    })
   })
 })

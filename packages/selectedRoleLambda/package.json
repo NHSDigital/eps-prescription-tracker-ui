@@ -1,8 +1,8 @@
 {
-  "name": "cognitoLambdas",
+  "name": "selected-role-lambda",
   "version": "1.0.0",
-  "description": "Lambda for cognito",
-  "main": "statusLambda.js",
+  "description": "Lambda to handle selectedRole endpoint",
+  "main": "handler.ts",
   "author": "NHS Digital",
   "license": "MIT",
   "scripts": {
@@ -14,17 +14,17 @@
   },
   "dependencies": {
     "@aws-lambda-powertools/commons": "^2.12.0",
-    "@aws-lambda-powertools/logger": "^2.13.0",
-    "@aws-lambda-powertools/parameters": "^2.13.0",
+    "@aws-lambda-powertools/logger": "^2.12.0",
+    "@aws-lambda-powertools/parameters": "^2.12.0",
     "@aws-sdk/client-dynamodb": "^3.734.0",
-    "@aws-sdk/client-secrets-manager": "^3.730.0",
+    "@aws-sdk/client-secrets-manager": "^3.726.1",
     "@aws-sdk/lib-dynamodb": "^3.734.0",
     "@cpt-ui-common/authFunctions": "^1.0.0",
     "@cpt-ui-common/middyErrorHandler": "^1.0.0",
     "@middy/core": "^6.0.0",
     "@middy/input-output-logger": "^6.0.0",
     "aws-lambda": "^1.0.7",
-    "axios": "^1.7.8",
+    "axios": "^1.7.7",
     "jsonwebtoken": "^9.0.2",
     "jwks-rsa": "^3.1.0",
     "uuid": "^11.0.5"
