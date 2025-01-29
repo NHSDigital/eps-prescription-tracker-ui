@@ -92,6 +92,14 @@ describe("fetchUserInfo", () => {
           activity_codes: ["OTHER_CODE"],
           person_orgid: "org-id-2",
           role_code: "role-code-2"
+        },
+        {
+          role_name: "Doctor",
+          person_roleid: "role-id-3",
+          org_code: "ORG3",
+          activity_codes: ["CPT_CODE"],
+          person_orgid: "org-id-3",
+          role_code: "role-code-3"
         }
       ],
       nhsid_user_orgs: [
@@ -102,6 +110,10 @@ describe("fetchUserInfo", () => {
         {
           org_code: "ORG2",
           org_name: "Organization Two"
+        },
+        {
+          org_code: "ORG3",
+          org_name: "Organization Three"
         }
       ]
     }
@@ -126,9 +138,9 @@ describe("fetchUserInfo", () => {
       roles_with_access: [
         {
           role_name: "Doctor",
-          role_id: "role-id-1",
-          org_code: "ORG1",
-          org_name: "Organization One"
+          role_id: "role-id-3",
+          org_code: "ORG3",
+          org_name: "Organization Three"
         }
       ],
       roles_without_access: [
