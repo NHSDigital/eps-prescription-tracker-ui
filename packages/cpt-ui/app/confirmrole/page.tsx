@@ -1,7 +1,7 @@
 'use client'
-import React from "react";
+import React from "react"
 
-import { Button, Card, Container, Col, InsetText, Row } from "nhsuk-react-components";
+import {Button, Card, Container, Col, InsetText, Row} from "nhsuk-react-components"
 export default function Page() {
     return (
         <main className="nhsuk-main-wrapper">
@@ -26,7 +26,7 @@ export default function Page() {
                                     </p>
                                 </InsetText>
                                 <Button>
-                                    Confirm and continue to find a prescription
+                                    Continue to find a prescription
                                 </Button>
                                 <p>Alternatively, you can choose a new role below.</p>
 
