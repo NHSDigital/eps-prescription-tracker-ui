@@ -4,6 +4,8 @@ import {RoleDetails, TrackerUserInfo} from "./selectedRoleTypes"
 
 /**
  * Update the user currentlySelectedRole and selectedRoleId in the DynamoDB table.
+ * Removes the selected role from rolesWithAccess.
+ *
  * @param username - The username of the user.
  * @param data - The TrackerUserInfo object containing user role information.
  * @param documentClient - The DynamoDBDocumentClient instance.
@@ -29,19 +31,24 @@ export const updateDynamoTable = async (
     receivedData: data
   })
 
-  // DyanamoDB cannot allow undefined values. We need to scrub any undefined values from the data objects
+  // Extract currently selected role
   const currentlySelectedRole: RoleDetails = data.currently_selected_role ? data.currently_selected_role : {}
 
   // Ensure selectedRoleId is never undefined by providing a fallback value
   const selectedRoleId: string = currentlySelectedRole.role_id || "UNSPECIFIED_ROLE_ID"
 
+  // Remove the selected role from rolesWithAccess
+  const updatedRolesWithAccess = data.roles_with_access.filter(role => role.role_id !== selectedRoleId)
+
   // Since RoleDetails has a bunch of possibly undefined fields, we need to scrub those out.
   // Convert everything to strings, then convert back to a generic object.
   const scrubbedCurrentlySelectedRole = JSON.parse(JSON.stringify(currentlySelectedRole))
+  const scrubbedRolesWithAccess = updatedRolesWithAccess.map(role => JSON.parse(JSON.stringify(role)))
 
   logger.info("Prepared data for DynamoDB update", {
     currentlySelectedRole: scrubbedCurrentlySelectedRole,
-    selectedRoleId
+    selectedRoleId,
+    updatedRolesWithAccess: scrubbedRolesWithAccess
   })
 
   try {
@@ -49,10 +56,15 @@ export const updateDynamoTable = async (
     const updateCommand = new UpdateCommand({
       TableName: tokenMappingTableName,
       Key: {username},
-      UpdateExpression: "SET currentlySelectedRole = :currentlySelectedRole, selectedRoleId = :selectedRoleId",
+      UpdateExpression: `
+        SET currentlySelectedRole = :currentlySelectedRole,
+            selectedRoleId = :selectedRoleId,
+            rolesWithAccess = :rolesWithAccess
+      `,
       ExpressionAttributeValues: {
         ":currentlySelectedRole": scrubbedCurrentlySelectedRole,
-        ":selectedRoleId": selectedRoleId
+        ":selectedRoleId": selectedRoleId,
+        ":rolesWithAccess": scrubbedRolesWithAccess
       },
       ReturnValues: "ALL_NEW"
     })
