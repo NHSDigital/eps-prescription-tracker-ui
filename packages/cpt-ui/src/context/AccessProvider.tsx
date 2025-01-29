@@ -9,7 +9,7 @@ import React, {
 import { useLocalStorageState } from "@/helpers/useLocalStorageState";
 import { AuthContext } from "./AuthProvider";
 
-import { RoleDetails, TrackerUserInfo } from "@/types/TrackerUserInfoTypes";
+import { RoleDetails, TrackerUserInfo, UserDetails } from "@/types/TrackerUserInfoTypes";
 
 import { API_ENDPOINTS } from "@/config/environment";
 
@@ -20,8 +20,10 @@ export type AccessContextType = {
   setNoAccess: (value: boolean) => void;
   singleAccess: boolean;
   setSingleAccess: (value: boolean) => void;
-  selectedRole: string;
-  setSelectedRole: (value: RoleDetails) => void;
+  selectedRole: RoleDetails | undefined;
+  setSelectedRole: (value: RoleDetails | undefined) => void;
+  userDetails: UserDetails | undefined;
+  setUserDetails: (value: UserDetails | undefined) => void;
   clear: () => void;
 };
 
@@ -40,11 +42,12 @@ export const AccessProvider = ({ children }: { children: ReactNode }) => {
     "access",
     false,
   );
-  const [selectedRole, setSelectedRole] = useLocalStorageState<string>(
-    "selectedRole",
-    "access",
-    "",
-  );
+  const [selectedRole, setSelectedRole] = useLocalStorageState<
+    RoleDetails | undefined
+  >("selectedRole", "access", undefined);
+  const [userDetails, setUserDetails] = useLocalStorageState<
+    UserDetails | undefined
+  >("userDetails", "access", undefined);
   const [usingLocal, setUsingLocal] = useState(true);
 
   const auth = useContext(AuthContext);
@@ -53,12 +56,14 @@ export const AccessProvider = ({ children }: { children: ReactNode }) => {
     console.warn("Clearing access context.");
     setNoAccess(false);
     setSingleAccess(false);
-    setSelectedRole("");
+    setSelectedRole(undefined);
+    setUserDetails(undefined);
   };
 
   type FetchRolesResult = {
     rolesWithAccessCount: number;
     currentlySelectedRole: RoleDetails | undefined;
+    userDetails: UserDetails;
   };
 
   const fetchRolesWithAccessAndSelectedRole =
@@ -84,14 +89,10 @@ export const AccessProvider = ({ children }: { children: ReactNode }) => {
 
           const userInfo: TrackerUserInfo = data.userInfo;
           const rolesWithAccessCount = userInfo.roles_with_access.length;
-          const currentlySelectedRole = userInfo.currently_selected_role
-            ? {
-                ...userInfo.currently_selected_role,
-                uuid: "selected_role_0",
-              }
-            : undefined;
+          const currentlySelectedRole = userInfo.currently_selected_role;
+          const userDetails = userInfo.user_details;
 
-          return { rolesWithAccessCount, currentlySelectedRole };
+          return { rolesWithAccessCount, currentlySelectedRole, userDetails };
         });
     };
 
@@ -100,11 +101,10 @@ export const AccessProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const updateAccessVariables = async () => {
       try {
-        const { rolesWithAccessCount, currentlySelectedRole } =
+        const { rolesWithAccessCount, currentlySelectedRole, userDetails } =
           await fetchRolesWithAccessAndSelectedRole();
-
-        const selectedRole = currentlySelectedRole?.role_id || ""; // Provide a fallback value if undefined
-        setSelectedRole(selectedRole);
+        setSelectedRole(currentlySelectedRole);
+        setUserDetails(userDetails);
 
         setNoAccess(rolesWithAccessCount === 0);
         setSingleAccess(rolesWithAccessCount === 1);
@@ -146,6 +146,8 @@ export const AccessProvider = ({ children }: { children: ReactNode }) => {
         setSingleAccess,
         selectedRole,
         setSelectedRole,
+        userDetails,
+        setUserDetails,
         clear,
       }}
     >

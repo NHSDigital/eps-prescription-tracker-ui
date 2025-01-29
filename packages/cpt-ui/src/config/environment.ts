@@ -23,7 +23,8 @@ export const APP_CONFIG = {
 
 // API Endpoints
 export const API_ENDPOINTS = {
-  TRACKER_USER_INFO: "/api/tracker-user-info"
+  TRACKER_USER_INFO: "/api/tracker-user-info",
+  SELECTED_ROLE: "/api/selected-role"
 } as const
 
 // Mock Auth Configuration

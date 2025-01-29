@@ -1,11 +1,12 @@
-import React from "react"
-import {render, screen, waitFor} from "@testing-library/react"
-import "@testing-library/jest-dom"
+import React from "react";
+import { render, screen, waitFor } from "@testing-library/react";
+import "@testing-library/jest-dom";
+import { BrowserRouter } from "react-router-dom";
 
-import {TrackerUserInfo} from "@/types/TrackerUserInfoTypes"
+import { TrackerUserInfo } from "@/types/TrackerUserInfoTypes";
 
-import {AccessProvider, useAccess} from "@/context/AccessProvider"
-import {AuthContext} from "@/context/AuthProvider"
+import { AccessProvider, useAccess } from "@/context/AccessProvider";
+import { AuthContext } from "@/context/AuthProvider";
 
 import axios from "@/helpers/axios"
 jest.mock('@/helpers/axios')
@@ -14,51 +15,55 @@ jest.mock('@/helpers/axios')
 const mockedAxios = axios as jest.Mocked<typeof axios>
 
 function TestConsumer() {
-    const {noAccess, singleAccess, selectedRole, clear} = useAccess()
+  const { noAccess, singleAccess, selectedRole, clear } = useAccess();
 
-    return (
-        <div>
-            <div data-testid="noAccess">{noAccess ? "true" : "false"}</div>
-            <div data-testid="singleAccess">{singleAccess ? "true" : "false"}</div>
-            <div data-testid="selectedRole">{selectedRole ? selectedRole?.role_id : "(none)"}</div>
-            <button data-testid="clear-button" onClick={clear}>
-                Clear
-            </button>
-        </div>
-    )
+  return (
+    <div>
+      <div data-testid="noAccess">{noAccess ? "true" : "false"}</div>
+      <div data-testid="singleAccess">{singleAccess ? "true" : "false"}</div>
+      <div data-testid="selectedRole">
+        {selectedRole ? selectedRole?.role_id : "(none)"}
+      </div>
+      <button data-testid="clear-button" onClick={clear}>
+        Clear
+      </button>
+    </div>
+  );
 }
 
 describe("AccessProvider", () => {
-    const defaultAuthContext = {
-        error: null,
-        user: null,
-        isSignedIn: false,
-        idToken: null,
-        accessToken: null,
-        cognitoSignIn: jest.fn(),
-        cognitoSignOut: jest.fn(),
-    }
+  const defaultAuthContext = {
+    error: null,
+    user: null,
+    isSignedIn: false,
+    idToken: null,
+    accessToken: null,
+    cognitoSignIn: jest.fn(),
+    cognitoSignOut: jest.fn(),
+  };
 
-    const renderWithContext = (authOverrides = {}) => {
-        const authValue = {...defaultAuthContext, ...authOverrides}
-        return render(
-            <AuthContext.Provider value={authValue}>
-                <AccessProvider>
-                    <TestConsumer />
-                </AccessProvider>
-            </AuthContext.Provider>
-        )
-    }
+  const renderWithContext = (authOverrides = {}) => {
+    const authValue = { ...defaultAuthContext, ...authOverrides };
+    return render(
+      <BrowserRouter>
+        <AuthContext.Provider value={authValue}>
+          <AccessProvider>
+            <TestConsumer />
+          </AccessProvider>
+        </AuthContext.Provider>
+      </BrowserRouter>,
+    );
+  };
 
-    beforeEach(() => {
-        jest.restoreAllMocks()
-        jest.clearAllMocks()
-        // Reset local storage between tests so each test starts fresh
-        localStorage.clear()
-    })
+  beforeEach(() => {
+    jest.restoreAllMocks();
+    jest.clearAllMocks();
+    // Reset local storage between tests so each test starts fresh
+    localStorage.clear();
+  });
 
-    it("does not fetch roles when user is not signed in", () => {
-        renderWithContext({isSignedIn: false, idToken: null})
+  it("does not fetch roles when user is not signed in", () => {
+    renderWithContext({ isSignedIn: false, idToken: null });
 
         // Expect that axios.get is never called.
         expect(mockedAxios.get).not.toHaveBeenCalled()
@@ -97,7 +102,10 @@ describe("AccessProvider", () => {
             data: {userInfo: mockUserInfo},
         })
 
-        renderWithContext({isSignedIn: true, idToken: {toString: jest.fn().mockReturnValue("mock-id-token")}})
+    renderWithContext({
+      isSignedIn: true,
+      idToken: { toString: jest.fn().mockReturnValue("mock-id-token") },
+    });
 
         await waitFor(() => {
             expect(mockedAxios.get).toHaveBeenCalledTimes(1)
@@ -212,23 +220,28 @@ describe("AccessProvider", () => {
             data: {userInfo: mockUserInfo},
         })
 
-        renderWithContext({isSignedIn: true, idToken: {toString: jest.fn().mockReturnValue("mock-id-token")}})
+    renderWithContext({
+      isSignedIn: true,
+      idToken: { toString: jest.fn().mockReturnValue("mock-id-token") },
+    });
 
-        // Confirm everything is updated
-        await waitFor(() => {
-            expect(screen.getByTestId("noAccess")).toHaveTextContent("false")
-            expect(screen.getByTestId("singleAccess")).toHaveTextContent("true")
-            expect(screen.getByTestId("selectedRole")).toHaveTextContent("ROLE_SINGLE")
-        })
+    // Confirm everything is updated
+    await waitFor(() => {
+      expect(screen.getByTestId("noAccess")).toHaveTextContent("false");
+      expect(screen.getByTestId("singleAccess")).toHaveTextContent("true");
+      expect(screen.getByTestId("selectedRole")).toHaveTextContent(
+        "ROLE_SINGLE",
+      );
+    });
 
-        // Click the "clear" button, which calls the `clear` function on the AccessContext
-        screen.getByTestId("clear-button").click()
+    // Click the "clear" button, which calls the `clear` function on the AccessContext
+    screen.getByTestId("clear-button").click();
 
-        // Expect defaults again
-        await waitFor(() => {
-            expect(screen.getByTestId("noAccess")).toHaveTextContent("false")
-            expect(screen.getByTestId("selectedRole")).toHaveTextContent("(none)")
-            expect(screen.getByTestId("singleAccess")).toHaveTextContent("false")
-        })
-    })
-})
+    // Expect defaults again
+    await waitFor(() => {
+      expect(screen.getByTestId("noAccess")).toHaveTextContent("false");
+      expect(screen.getByTestId("selectedRole")).toHaveTextContent("(none)");
+      expect(screen.getByTestId("singleAccess")).toHaveTextContent("false");
+    });
+  });
+});

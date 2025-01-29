@@ -2,6 +2,7 @@
 import "@testing-library/jest-dom";
 import { render, screen, waitFor } from "@testing-library/react";
 import React, { useState } from "react";
+import { BrowserRouter } from "react-router-dom";
 
 import { AccessProvider } from "@/context/AccessProvider";
 
@@ -16,7 +17,13 @@ jest.mock("@/context/configureAmplify", () => ({
         loginWith: {
           oauth: {
             domain: "mockHostedLoginDomain",
-            scopes: ["openid", "email", "phone", "profile", "aws.cognito.signin.user.admin"],
+            scopes: [
+              "openid",
+              "email",
+              "phone",
+              "profile",
+              "aws.cognito.signin.user.admin",
+            ],
             redirectSignIn: ["mockRedirectSignIn"],
             redirectSignOut: ["mockRedirectSignOut"],
             responseType: "code",
@@ -83,14 +90,16 @@ const MockAuthProvider: React.FC<MockAuthProviderProps> = ({
   });
 
   return (
-    <AuthContext.Provider value={authState}>{children}</AuthContext.Provider>
+    <BrowserRouter>
+      <AuthContext.Provider value={authState}>{children}</AuthContext.Provider>
+    </BrowserRouter>
   );
 };
-  
+
 // Since we've referenced AuthContext in the mock provider, we need to re-import it here
 // after the mock is set up.
 import { AuthContext } from "@/context/AuthProvider";
-import LogoutPage from "@/app/logout/page";
+import LogoutPage from "@/pages/LogoutPage";
 
 describe("LogoutPage", () => {
   // Use fake timers to control the setTimeout in LogoutPage
@@ -113,15 +122,15 @@ describe("LogoutPage", () => {
         <AccessProvider>
           <LogoutPage />
         </AccessProvider>
-      </MockAuthProvider>
+      </MockAuthProvider>,
     );
 
     // The user is not signed in, so we expect to see "Logout successful".
     expect(screen.getByText(/Logout successful/i)).toBeInTheDocument();
     expect(
       screen.getByText(
-        /You are now logged out of the service. To continue using the service, you must log in again/i
-      )
+        /You are now logged out of the service. To continue using the service, you must log in again/i,
+      ),
     ).toBeInTheDocument();
 
     // We also expect to see the "Log in" link or button
@@ -137,7 +146,7 @@ describe("LogoutPage", () => {
         <AccessProvider>
           <LogoutPage />
         </AccessProvider>
-      </MockAuthProvider>
+      </MockAuthProvider>,
     );
 
     // Because the user is signed in, we expect "Logging out" and spinner
@@ -154,8 +163,8 @@ describe("LogoutPage", () => {
     expect(screen.getByText(/Logout successful/i)).toBeInTheDocument();
     expect(
       screen.getByText(
-        /You are now logged out of the service. To continue using the service, you must log in again/i
-      )
+        /You are now logged out of the service. To continue using the service, you must log in again/i,
+      ),
     ).toBeInTheDocument();
   });
 
@@ -165,7 +174,7 @@ describe("LogoutPage", () => {
         <AccessProvider>
           <LogoutPage />
         </AccessProvider>
-      </MockAuthProvider>
+      </MockAuthProvider>,
     );
 
     // On initial render, user is signed in
@@ -173,5 +182,5 @@ describe("LogoutPage", () => {
     // We haven't advanced timers, so the signOut shouldn't have completed yet.
     expect(screen.getByText(/Logging out/i)).toBeInTheDocument();
     expect(mockCognitoSignOut).not.toHaveBeenCalled();
-    });
+  });
 });

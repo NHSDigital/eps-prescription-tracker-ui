@@ -40,5 +40,6 @@
         "allowTernary": true
       }
     ]
-  }
+  },
+  "ignores": ["dist/**/*"]
 }

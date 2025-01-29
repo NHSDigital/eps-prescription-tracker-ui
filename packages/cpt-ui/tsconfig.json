@@ -2,6 +2,10 @@
   "extends": "../../tsconfig.defaults.json",
   "compilerOptions": {
     "baseUrl": ".",
+    "paths": {
+      "@": ["src"],
+      "@/*": ["src/*"]
+    },
     "jsx": "react-jsx",
     "esModuleInterop": true,
     "moduleResolution": "bundler",
@@ -9,9 +13,6 @@
     "module": "ESNext",
     "types": ["jest", "node", "@testing-library/jest-dom", "vite/client"],
     "allowJs": true,
-    "paths": {
-      "@/*": ["src/*"]
-    },
     "lib": ["DOM", "DOM.Iterable", "ESNext"],
     "strict": true,
     "noImplicitAny": false,

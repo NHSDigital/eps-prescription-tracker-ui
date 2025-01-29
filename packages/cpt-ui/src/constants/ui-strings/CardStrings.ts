@@ -12,7 +12,7 @@ export const SELECT_YOUR_ROLE_PAGE_TEXT = {
       "You are currently logged in at GREENE'S PHARMACY (ODS: FG419) with Health Professional Access Role."
   },
   confirmButton: {
-    text: "Continue to find a prescription",
+    text: "Confirm and continue to find a prescription",
     link: "tracker-presc-no"
   },
   alternativeMessage: "Alternatively, you can choose a new role below.",
@@ -25,4 +25,11 @@ export const SELECT_YOUR_ROLE_PAGE_TEXT = {
   noRoleName: "No role name",
   noAddress: "Address not found",
   errorDuringRoleSelection: "Error during role selection"
+}
+
+export const EPS_CARD_STRINGS = {
+  noOrgName: "NO ORG NAME",
+  noODSCode: "No ODS code",
+  noRoleName: "No role name",
+  noAddress: "Address not found"
 }

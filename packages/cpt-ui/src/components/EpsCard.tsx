@@ -1,62 +1,91 @@
-import React from "react";
+import React, { useContext } from "react";
 import { Card, Col, Row } from "nhsuk-react-components";
 
-// import "@/assets/styles/card.scss";
-
+import { AuthContext } from "@/context/AuthProvider";
 import { useAccess } from "@/context/AccessProvider";
 import { useNavigate } from "react-router-dom";
+import { RoleDetails } from "@/types/TrackerUserInfoTypes";
+
+import { EPS_CARD_STRINGS } from "@/constants/ui-strings/CardStrings";
+
+import { API_ENDPOINTS } from "@/config/environment";
+
+const selectedRoleEndpoint = API_ENDPOINTS.SELECTED_ROLE;
 
 export interface EpsCardProps {
-  orgName: string;
-  odsCode: string;
-  siteAddress: string | null;
-  roleName: string;
+  role: RoleDetails;
   link: string;
 }
 
-export default function EpsCard({
-  orgName,
-  odsCode,
-  siteAddress,
-  roleName,
-  link,
-}: EpsCardProps) {
+export default function EpsCard({ role, link }: EpsCardProps) {
   const navigate = useNavigate();
+  const auth = useContext(AuthContext);
   const { setSelectedRole } = useAccess();
 
   const handleSetSelectedRole = async (e: React.MouseEvent) => {
     e.preventDefault();
 
-    // TODO: Needs to be implemented properly.
-    console.warn("SETTING SELECTED ROLE TO A PLACEHOLDER VALUE");
-    setSelectedRole("PLACEHOLDER");
+    try {
+      // Define currentlySelectedRole before sending the request
+      const currentlySelectedRole: RoleDetails = {
+        role_id: role.role_id || "",
+        org_name: role.org_name || "",
+        org_code: role.org_code || "",
+        role_name: role.role_name || "",
+      };
 
-    navigate(link);
+      // Update selected role in the backend via the selectedRoleLambda endpoint
+      const response = await fetch(selectedRoleEndpoint, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${auth?.idToken}`,
+          "Content-Type": "application/json",
+          "NHSD-Session-URID": "555254242106",
+        },
+        body: JSON.stringify({
+          currently_selected_role: currentlySelectedRole,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update the selected role");
+      }
+
+      // Update frontend state with selected role
+      setSelectedRole(currentlySelectedRole);
+
+      // Redirect to the appropriate page
+      navigate(link);
+    } catch (error) {
+      console.error("Error selecting role:", error);
+      alert("There was an issue selecting your role. Please try again.");
+    }
   };
+
+  const { noODSCode, noOrgName, noRoleName, noAddress } = EPS_CARD_STRINGS;
 
   return (
     <Card clickable className="eps-card">
       <Card.Content>
         <Row className="nhsuk-grid-row eps-card__content">
-          {/* Left Column: org_name and role_name */}
           <Col width="one-half">
             <Card.Link href={link} onClick={handleSetSelectedRole}>
               <Card.Heading className="nhsuk-heading-s">
-                {orgName}
+                {role.org_name || noOrgName}
                 <br />
-                (ODS: {odsCode})
+                (ODS: {role.org_code || noODSCode})
               </Card.Heading>
             </Card.Link>
             <Card.Description className="eps-card__roleName">
-              {roleName}
+              {role.role_name || noRoleName}
             </Card.Description>
           </Col>
 
-          {/* Right Column: siteAddress */}
           <Col width="one-half">
             <Card.Description className="eps-card__siteAddress">
-              {siteAddress &&
-                siteAddress.split("\n").map((line: string, index: number) => (
+              {(role.site_address || noAddress)
+                .split("\n")
+                .map((line: string, index: number) => (
                   <span key={index} className="eps-card__siteAddress-line">
                     {line}
                     <br />

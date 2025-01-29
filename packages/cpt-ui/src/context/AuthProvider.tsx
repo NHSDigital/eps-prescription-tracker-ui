@@ -1,10 +1,18 @@
-import React, { createContext, useEffect, useState } from 'react';
-import { Amplify } from 'aws-amplify';
+import React, { createContext, useEffect, useState } from "react";
+import { Amplify } from "aws-amplify";
 import { Hub } from "aws-amplify/utils";
-import { signInWithRedirect, signOut, getCurrentUser, AuthUser, fetchAuthSession, JWT, SignInWithRedirectInput } from 'aws-amplify/auth';
-import { authConfig } from './configureAmplify';
+import {
+  signInWithRedirect,
+  signOut,
+  getCurrentUser,
+  AuthUser,
+  fetchAuthSession,
+  JWT,
+  SignInWithRedirectInput,
+} from "aws-amplify/auth";
+import { authConfig } from "./configureAmplify";
 
-import { useLocalStorageState } from '@/helpers/useLocalStorageState';
+import { useLocalStorageState } from "@/helpers/useLocalStorageState";
 
 interface AuthContextType {
   error: string | null;
@@ -20,10 +28,26 @@ export const AuthContext = createContext<AuthContextType | null>(null);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [error, setError] = useState<string | null>(null);
-  const [user, setUser] = useLocalStorageState<AuthUser | null>('user', 'auth', null);
-  const [isSignedIn, setIsSignedIn] = useLocalStorageState<boolean>('isSignedIn', 'auth', false);
-  const [idToken, setIdToken] = useLocalStorageState<JWT | null>('idToken', 'auth', null);
-  const [accessToken, setAccessToken] = useLocalStorageState<JWT | null>('accessToken', 'auth', null);
+  const [user, setUser] = useLocalStorageState<AuthUser | null>(
+    "user",
+    "auth",
+    null,
+  );
+  const [isSignedIn, setIsSignedIn] = useLocalStorageState<boolean>(
+    "isSignedIn",
+    "auth",
+    false,
+  );
+  const [idToken, setIdToken] = useLocalStorageState<JWT | null>(
+    "idToken",
+    "auth",
+    null,
+  );
+  const [accessToken, setAccessToken] = useLocalStorageState<JWT | null>(
+    "accessToken",
+    "auth",
+    null,
+  );
 
   /**
    * Fetch and update the user session state.
@@ -35,31 +59,39 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const sessionIdToken = authSession.tokens?.idToken;
       const sessionAccessToken = authSession.tokens?.accessToken;
 
-      console.log("Tokens: ", sessionIdToken, sessionAccessToken)
+      console.log("Tokens: ", sessionIdToken, sessionAccessToken);
 
       if (sessionIdToken && sessionAccessToken) {
         // Extract expiration times directly from the token payloads.
         const currentTime = Math.floor(Date.now() / 1000);
 
         // Check expiration of the access token
-        if (sessionAccessToken.payload?.exp && sessionAccessToken.payload.exp < currentTime) {
-          console.warn("Access token is expired. Consider refreshing the token.");
+        if (
+          sessionAccessToken.payload?.exp &&
+          sessionAccessToken.payload.exp < currentTime
+        ) {
+          console.warn(
+            "Access token is expired. Consider refreshing the token.",
+          );
           setIsSignedIn(false);
           setUser(null);
           setIdToken(null);
           setAccessToken(null);
-          setError("Cognito access token expired")
+          setError("Cognito access token expired");
           return;
         }
 
         // Check expiration of the ID token
-        if (sessionIdToken.payload?.exp && sessionIdToken.payload.exp < currentTime) {
+        if (
+          sessionIdToken.payload?.exp &&
+          sessionIdToken.payload.exp < currentTime
+        ) {
           console.warn("ID token is expired. Consider refreshing the token.");
           setIsSignedIn(false);
           setUser(null);
           setIdToken(null);
           setAccessToken(null);
-          setError("Cognito ID token expired")
+          setError("Cognito ID token expired");
           return;
         }
 
@@ -77,7 +109,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setUser(null);
         setIdToken(null);
         setAccessToken(null);
-        setError("Missing access or ID token")
+        setError("Missing access or ID token");
       }
     } catch (fetchError) {
       console.error("Error fetching user session:", fetchError);
@@ -86,7 +118,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setAccessToken(null);
       setIdToken(null);
       setIsSignedIn(false);
-      setError(String(fetchError))
+      setError(String(fetchError));
     }
   };
 
@@ -164,7 +196,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       await signOut({ global: true });
       console.log("Signed out successfully!");
-  
+
       // Immediately reset state to signed out.
       setUser(null);
       setAccessToken(null);
@@ -186,15 +218,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{
-      error,
-      user,
-      isSignedIn,
-      idToken,
-      accessToken,
-      cognitoSignIn,
-      cognitoSignOut,
-    }}>
+    <AuthContext.Provider
+      value={{
+        error,
+        user,
+        isSignedIn,
+        idToken,
+        accessToken,
+        cognitoSignIn,
+        cognitoSignOut,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

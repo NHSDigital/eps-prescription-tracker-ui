@@ -1,5 +1,4 @@
-"use client";
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Container,
@@ -88,8 +87,14 @@ export default function RoleSelectionPage({
     errorDuringRoleSelection,
   } = contentText;
 
-  const { noAccess, setNoAccess, setSingleAccess, setSelectedRole } =
-    useAccess();
+  const {
+    noAccess,
+    setNoAccess,
+    setSingleAccess,
+    selectedRole,
+    setSelectedRole,
+  } = useAccess();
+  const [loginInfoMessage, setLoginInfoMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [redirecting, setRedirecting] = useState<boolean>(false);
@@ -104,85 +109,98 @@ export default function RoleSelectionPage({
   const auth = useContext(AuthContext);
 
   useEffect(() => {
+    if (!loginInfoMessage && selectedRole) {
+      setLoginInfoMessage(
+        `You are currently logged in at ${
+          selectedRole.org_name || noOrgName
+        } (ODS: ${selectedRole.org_code || noODSCode}) with ${
+          selectedRole.role_name || noRoleName
+        }.`,
+      );
+    }
+  }, [selectedRole, loginInfoMessage, noOrgName, noODSCode, noRoleName]);
+
+  const fetchTrackerUserInfo = useCallback(async () => {
     setLoading(true);
     setError(null);
     setRolesWithAccess([]);
     setRolesWithoutAccess([]);
+    setSelectedRole(undefined);
 
-    if (!auth?.isSignedIn || !auth?.idToken) {
-      setError(null);
-      return;
-    }
-    // Now that we know there is an id token, check that it has a toString property.
-    // For some reason, it doesn't have this immediately, it gets added after a brief pause.
-    if (!auth?.idToken.hasOwnProperty("toString")) {
+    if (!auth?.isSignedIn || !auth) {
+      setLoading(false);
       setError(null);
       return;
     }
 
-    fetch(trackerUserInfoEndpoint, {
-      headers: {
-        Authorization: `Bearer ${auth?.idToken}`,
-        "NHSD-Session-URID": "555254242106",
-      },
-    })
-      .then((response) => {
-        if (response.status !== 200) {
-          throw new Error(
-            `Server did not return CPT user info, response ${response.status}`,
-          );
-        }
-        return response.json();
-      })
-      .then((data) => {
-        if (!data.userInfo) {
-          throw new Error("Server response did not contain data");
-        }
-
-        const userInfo: TrackerUserInfo = data.userInfo;
-
-        const rolesWithAccess = userInfo.roles_with_access;
-        const rolesWithoutAccess = userInfo.roles_without_access;
-        // Unused for now
-        // const currentlySelectedRole = userInfo.currently_selected_role ? {
-        //     ...userInfo.currently_selected_role,
-        //     uuid: `selected_role_0`
-        // } : undefined
-
-        // Populate the EPS card props
-        setRolesWithAccess(
-          rolesWithAccess.map((role: RoleDetails, index: number) => ({
-            role,
-            link: "/yourselectedrole",
-            uuid: `{role_with_access_${index}}`,
-          })),
-        );
-
-        setRolesWithoutAccess(
-          rolesWithoutAccess.map((role: RoleDetails, index: number) => ({
-            uuid: `{role_without_access_${index}}`,
-            roleName: role.role_name || noRoleName,
-            orgName: role.org_name || noOrgName,
-            odsCode: role.org_code || noODSCode,
-          })),
-        );
-
-        // If the user has exactly one accessible role and zero roles without access,
-        // redirect them immediately
-        if (rolesWithAccess.length === 1 && rolesWithoutAccess.length === 0) {
-          setRedirecting(true);
-          setSelectedRole(rolesWithAccess[0]);
-          navigate("/searchforaprescription");
-          return;
-        }
-      })
-      .catch((err) => {
-        setError("Failed to fetch CPT user info");
-        console.error("Error fetching tracker user info:", err);
-      })
-      .finally(() => {
-        setLoading(false);
+    try {
+      const response = await fetch(trackerUserInfoEndpoint, {
+        headers: {
+          Authorization: `Bearer ${auth?.idToken}`,
+          "NHSD-Session-URID": "555254242106",
+        },
       });
+
+      if (response.status !== 200) {
+        throw new Error(
+          `Server did not return CPT user info, response ${response.status}`,
+        );
+      }
+
+      const data = await response.json();
+
+      if (!data.userInfo) {
+        throw new Error("Server response did not contain data");
+      }
+
+      const userInfo: TrackerUserInfo = data.userInfo;
+
+      const rolesWithAccess = userInfo.roles_with_access || [];
+      const rolesWithoutAccess = userInfo.roles_without_access || [];
+
+      const selectedRole = userInfo?.currently_selected_role
+        ? {
+            ...userInfo?.currently_selected_role,
+            uuid: `selected_role_0`,
+          }
+        : undefined;
+
+      // Populate the EPS card props
+      setRolesWithAccess(
+        rolesWithAccess.map((role: RoleDetails, index: number) => ({
+          uuid: `{role_with_access_${index}}`,
+          role,
+          link: "/yourselectedrole",
+        })),
+      );
+
+      setRolesWithoutAccess(
+        rolesWithoutAccess.map((role: RoleDetails, index: number) => ({
+          uuid: `{role_without_access_${index}}`,
+          roleName: role.role_name ? role.role_name : noRoleName,
+          orgName: role.org_name ? role.org_name : noOrgName,
+          odsCode: role.org_code ? role.org_code : noODSCode,
+        })),
+      );
+
+      setSelectedRole(selectedRole);
+      setNoAccess(rolesWithAccess.length === 0);
+      setSingleAccess(rolesWithAccess.length === 1);
+
+      // If the user has exactly one accessible role and zero roles without access,
+      // redirect them immediately
+      if (rolesWithAccess.length === 1 && rolesWithoutAccess.length === 0) {
+        setRedirecting(true);
+        setSelectedRole(rolesWithAccess[0]);
+        navigate("/searchforaprescription");
+        return;
+      }
+    } catch (err) {
+      setError("Failed to fetch CPT user info");
+      console.error("Error fetching tracker user info:", err);
+    } finally {
+      setLoading(false);
+    }
   }, [
     auth,
     navigate,
@@ -195,6 +213,16 @@ export default function RoleSelectionPage({
   ]);
 
   useEffect(() => {
+    if (auth?.isSignedIn === undefined) {
+      return;
+    }
+
+    if (auth?.isSignedIn) {
+      fetchTrackerUserInfo();
+    }
+  }, [auth?.isSignedIn, fetchTrackerUserInfo]);
+
+  useEffect(() => {
     console.log("Auth error updated:", auth?.error);
     // Have to do this to make `<string | null | undefined>` work with `<string | null>`
     setError(auth?.error ?? null);
@@ -202,6 +230,21 @@ export default function RoleSelectionPage({
       setLoading(false);
     }
   }, [auth?.error]);
+
+  // If the data is being fetched or the user is being diverted, replace the content with a spinner
+  if (loading || redirecting) {
+    return (
+      <main id="main-content" className="nhsuk-main-wrapper">
+        <Container>
+          <Row>
+            <Col width="full">
+              <EpsSpinner />
+            </Col>
+          </Row>
+        </Container>
+      </main>
+    );
+  }
 
   // If the process encounters an error, replace the content with an error summary
   if (error) {
@@ -219,21 +262,6 @@ export default function RoleSelectionPage({
                 </ErrorSummary.Item>
               </ErrorSummary.List>
             </ErrorSummary>
-          </Row>
-        </Container>
-      </main>
-    );
-  }
-
-  // If the data is being fetched, replace the content with a spinner
-  if (loading || redirecting) {
-    return (
-      <main id="main-content" className="nhsuk-main-wrapper">
-        <Container>
-          <Row>
-            <Col width="full">
-              <EpsSpinner />
-            </Col>
           </Row>
         </Container>
       </main>
@@ -259,14 +287,18 @@ export default function RoleSelectionPage({
             </h1>
             {/* Caption Section for No Access */}
             {noAccess && <p>{captionNoAccess}</p>}
-            {/* Inset Text Section */}
-            {!noAccess && (
+            {/* Pre selected role section */}
+            {selectedRole && (
               <section aria-label="Login Information">
-                <InsetText>
+                <InsetText data-testid="eps_select_your_role_pre_role_selected">
                   <span className="nhsuk-u-visually-hidden">
                     {insetText.visuallyHidden}
                   </span>
-                  <p>{insetText.message}</p>
+                  {loginInfoMessage && (
+                    <p
+                      dangerouslySetInnerHTML={{ __html: loginInfoMessage }}
+                    ></p>
+                  )}
                 </InsetText>
                 {/* Confirm Button */}
                 <Button href={confirmButton.link}>{confirmButton.text}</Button>
@@ -280,14 +312,7 @@ export default function RoleSelectionPage({
             <Col width="two-thirds">
               <div className="section">
                 {rolesWithAccess.map((role: RolesWithAccessProps) => (
-                  <EpsCard
-                    key={role.uuid}
-                    orgName={role.role.org_name || noOrgName}
-                    odsCode={role.role.org_code || noODSCode}
-                    siteAddress={role.role.site_address || null}
-                    roleName={role.role.role_name || noRoleName}
-                    link={role.link}
-                  />
+                  <EpsCard {...role} key={role.uuid} />
                 ))}
               </div>
             </Col>

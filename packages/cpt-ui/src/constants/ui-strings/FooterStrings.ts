@@ -1,3 +1,2 @@
-import {APP_CONFIG} from "@/config/environment"
 export const FOOTER_COPYRIGHT = "© NHS England"
-export const COMMIT_ID = APP_CONFIG.COMMIT_ID
+export const COMMIT_ID = import.meta.env.NEXT_PUBLIC_COMMIT_ID
