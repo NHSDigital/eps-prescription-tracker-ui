@@ -72,10 +72,19 @@ export const fetchUserInfo = async (
     // Get roles from the user info response
     const roles = data.nhsid_nrbac_roles || []
 
+    /**
+     * Processes user roles to determine their access level and selection status.
+     *
+     * - If a role has access (`hasAccess`), it is added to `rolesWithAccess`.
+     * - If a role does not have access, it is added to `rolesWithoutAccess`.
+     * - If a role has access and matches the `selectedRoleId`, it is set as `currentlySelectedRole`.
+     *
+    */
     roles.forEach((role) => {
       logger.debug("Processing role", {role})
-      const activityCodes = role.activity_codes || []
 
+      // Extract activity codes and check if any match the accepted access codes
+      const activityCodes = role.activity_codes || []
       const hasAccess = activityCodes.some((code: string) => accepted_access_codes.includes(code))
       logger.debug("Role CPT access?", {hasAccess})
 
@@ -86,7 +95,7 @@ export const fetchUserInfo = async (
         org_name: getOrgNameFromOrgCode(data, role.org_code, logger)
       }
 
-      // Ensure the role has at least one of the required fields
+      // Ensure the role has at least one of the required fields to be processed
       if (!(roleInfo.role_name || roleInfo.role_id || roleInfo.org_code || roleInfo.org_name)) {
         // Skip roles that don't meet the minimum field requirements
         logger.warn("Role does not meet minimum field requirements", {roleInfo})
@@ -94,24 +103,18 @@ export const fetchUserInfo = async (
       }
 
       if (hasAccess) {
+        // If the role has access and matches the selectedRoleId, set it as currently selected
+        if (selectedRoleId && role.person_roleid === selectedRoleId) {
+          logger.debug("Role has access and matches selectedRoleId; setting as currently selected", {roleInfo})
+          currentlySelectedRole = roleInfo
+        }
+        // Add the role to rolesWithAccess array
         rolesWithAccess.push(roleInfo)
         logger.debug("Role has access; adding to rolesWithAccess", {roleInfo})
       } else {
+        // If role lacks access, add it to rolesWithoutAccess array
         rolesWithoutAccess.push(roleInfo)
         logger.debug("Role does not have access; adding to rolesWithoutAccess", {roleInfo})
-      }
-
-      // Determine the currently selected role
-      logger.debug("Checking if role is currently selected", {selectedRoleId, role_id: role.person_roleid, roleInfo})
-      if (selectedRoleId && role.person_roleid === selectedRoleId) {
-        logger.debug("Role is currently selected", {role_id: role.person_roleid, roleInfo})
-        if (hasAccess) {
-          logger.debug("Role has access; setting as currently selected", {roleInfo})
-          currentlySelectedRole = roleInfo
-        } else {
-          logger.debug("Role does not have access; unsetting currently selected role", {roleInfo})
-          currentlySelectedRole = undefined
-        }
       }
     })
 
