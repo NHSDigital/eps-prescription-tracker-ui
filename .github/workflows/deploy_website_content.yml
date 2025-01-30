@@ -99,7 +99,7 @@ jobs:
           aws s3 cp ".build/packages/staticContent/404.html" "s3://${staticBucketName}/404.html"
           aws s3 cp ".build/packages/staticContent/500.html" "s3://${staticBucketName}/500.html"
           aws s3 cp ".build/packages/staticContent/jwks/${{ inputs.TARGET_ENVIRONMENT }}/jwks.json" "s3://${staticBucketName}/jwks.json"
-          aws s3 cp --recursive ".build/packages/cpt-ui/out/" "s3://${staticBucketName}/${{ inputs.VERSION_NUMBER }}/"
+          aws s3 cp --recursive ".build/packages/cpt-ui/dist/" "s3://${staticBucketName}/${{ inputs.VERSION_NUMBER }}/"
 
       - name: deploy auth_demo website (temp for testing)
         run: |
