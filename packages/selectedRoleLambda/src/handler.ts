@@ -7,7 +7,7 @@ import middy from "@middy/core"
 import inputOutputLogger from "@middy/input-output-logger"
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 import {getUsernameFromEvent} from "@cpt-ui-common/authFunctions"
-import {updateDynamoTable} from "./selectedRoleHelpers"
+import {updateDynamoTable, fetchDynamoRolesWithAccess} from "./selectedRoleHelpers"
 
 /*
  * Lambda function for updating the selected role in the DynamoDB table.
@@ -65,19 +65,33 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     }
   }
 
+  logger.info("Fetching existing roles_with_access from DynamoDB...")
+  const rolesWithAccess = await fetchDynamoRolesWithAccess(username, documentClient, logger, tokenMappingTableName)
+
+  if (!rolesWithAccess.length) {
+    logger.warn("No roles_with_access found for user", {username})
+  }
+
+  // Merge the selected role with existing user info before updating
+  const updatedUserInfo = {
+    currently_selected_role: userInfoSelectedRole.currently_selected_role,
+    roles_with_access: rolesWithAccess.filter(
+      (role) => role.role_id !== userInfoSelectedRole.currently_selected_role?.role_id
+    )
+  }
+
   logger.info("Updating selected role data in DynamoDB", {userInfoSelectedRole})
 
   // Call helper function to update the selected role in the database
-  await updateDynamoTable(username, userInfoSelectedRole, documentClient, logger, tokenMappingTableName)
+  await updateDynamoTable(username, updatedUserInfo, documentClient, logger, tokenMappingTableName)
 
   return {
     statusCode: 200,
     body: JSON.stringify({
       message: "Selected role data has been updated successfully",
-      userInfo: userInfoSelectedRole
+      userInfo: updatedUserInfo
     })
   }
-
 }
 
 export const handler = middy(lambdaHandler)

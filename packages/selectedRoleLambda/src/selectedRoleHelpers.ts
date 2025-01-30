@@ -1,5 +1,5 @@
 import {Logger} from "@aws-lambda-powertools/logger"
-import {DynamoDBDocumentClient, UpdateCommand} from "@aws-sdk/lib-dynamodb"
+import {DynamoDBDocumentClient, GetCommand, UpdateCommand} from "@aws-sdk/lib-dynamodb"
 import {RoleDetails, TrackerUserInfo} from "./selectedRoleTypes"
 
 /**
@@ -96,5 +96,38 @@ export const updateDynamoTable = async (
       })
     }
     throw error
+  }
+}
+
+/**
+ * Fetch user roles with access from DynamoDB table
+ */
+export const fetchDynamoRolesWithAccess = async (
+  username: string,
+  documentClient: DynamoDBDocumentClient,
+  logger: Logger,
+  tokenMappingTableName: string
+): Promise<Array<RoleDetails>> => {
+  logger.info("Fetching only roles_with_access from DynamoDB", {username})
+
+  try {
+    const response = await documentClient.send(
+      new GetCommand({
+        TableName: tokenMappingTableName,
+        Key: {username},
+        ProjectionExpression: "rolesWithAccess"
+      })
+    )
+
+    if (!response.Item || !response.Item.rolesWithAccess) {
+      logger.warn("No roles_with_access found in DynamoDB", {username})
+      return []
+    }
+
+    logger.info("Successfully retrieved roles_with_access", {roles_with_access: response.Item.rolesWithAccess})
+    return response.Item.rolesWithAccess
+  } catch (error) {
+    logger.error("Error fetching roles_with_access from DynamoDB", {username, error})
+    throw new Error("Failed to retrieve roles_with_access from cache")
   }
 }
