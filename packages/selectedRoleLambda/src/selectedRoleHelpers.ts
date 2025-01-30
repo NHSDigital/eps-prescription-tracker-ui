@@ -1,11 +1,9 @@
 import {Logger} from "@aws-lambda-powertools/logger"
-import {DynamoDBDocumentClient, GetCommand, UpdateCommand} from "@aws-sdk/lib-dynamodb"
+import {DynamoDBDocumentClient, UpdateCommand} from "@aws-sdk/lib-dynamodb"
 import {RoleDetails, TrackerUserInfo} from "./selectedRoleTypes"
 
 /**
  * Update the user currentlySelectedRole and selectedRoleId in the DynamoDB table.
- * Removes the selected role from rolesWithAccess.
- *
  * @param username - The username of the user.
  * @param data - The TrackerUserInfo object containing user role information.
  * @param documentClient - The DynamoDBDocumentClient instance.
@@ -31,30 +29,19 @@ export const updateDynamoTable = async (
     receivedData: data
   })
 
-  // Extract currently selected role
-  const currentlySelectedRole: RoleDetails = data.currently_selected_role || {}
+  // DyanamoDB cannot allow undefined values. We need to scrub any undefined values from the data objects
+  const currentlySelectedRole: RoleDetails = data.currently_selected_role ? data.currently_selected_role : {}
 
   // Ensure selectedRoleId is never undefined by providing a fallback value
   const selectedRoleId: string = currentlySelectedRole.role_id || "UNSPECIFIED_ROLE_ID"
 
-  // Ensure roles_with_access is defined before calling filter()
-  if (!Array.isArray(data.roles_with_access)) {
-    logger.error("roles_with_access is missing or invalid", {username, receivedRolesWithAccess: data.roles_with_access})
-    throw new Error("roles_with_access is undefined or not an array")
-  }
-
-  // Remove the selected role from rolesWithAccess
-  const updatedRolesWithAccess = data.roles_with_access.filter(role => role.role_id !== selectedRoleId)
-
   // Since RoleDetails has a bunch of possibly undefined fields, we need to scrub those out.
   // Convert everything to strings, then convert back to a generic object.
   const scrubbedCurrentlySelectedRole = JSON.parse(JSON.stringify(currentlySelectedRole))
-  const scrubbedRolesWithAccess = updatedRolesWithAccess.map(role => JSON.parse(JSON.stringify(role)))
 
   logger.info("Prepared data for DynamoDB update", {
     currentlySelectedRole: scrubbedCurrentlySelectedRole,
-    selectedRoleId,
-    updatedRolesWithAccess: scrubbedRolesWithAccess
+    selectedRoleId
   })
 
   try {
@@ -62,15 +49,10 @@ export const updateDynamoTable = async (
     const updateCommand = new UpdateCommand({
       TableName: tokenMappingTableName,
       Key: {username},
-      UpdateExpression: `
-        SET currentlySelectedRole = :currentlySelectedRole,
-            selectedRoleId = :selectedRoleId,
-            rolesWithAccess = :rolesWithAccess
-      `,
+      UpdateExpression: "SET currentlySelectedRole = :currentlySelectedRole, selectedRoleId = :selectedRoleId",
       ExpressionAttributeValues: {
         ":currentlySelectedRole": scrubbedCurrentlySelectedRole,
-        ":selectedRoleId": selectedRoleId,
-        ":rolesWithAccess": scrubbedRolesWithAccess
+        ":selectedRoleId": selectedRoleId
       },
       ReturnValues: "ALL_NEW"
     })
@@ -96,38 +78,5 @@ export const updateDynamoTable = async (
       })
     }
     throw error
-  }
-}
-
-/**
- * Fetch user roles with access from DynamoDB table
- */
-export const fetchDynamoRolesWithAccess = async (
-  username: string,
-  documentClient: DynamoDBDocumentClient,
-  logger: Logger,
-  tokenMappingTableName: string
-): Promise<Array<RoleDetails>> => {
-  logger.info("Fetching only roles_with_access from DynamoDB", {username})
-
-  try {
-    const response = await documentClient.send(
-      new GetCommand({
-        TableName: tokenMappingTableName,
-        Key: {username},
-        ProjectionExpression: "rolesWithAccess"
-      })
-    )
-
-    if (!response.Item || !response.Item.rolesWithAccess) {
-      logger.warn("No roles_with_access found in DynamoDB", {username})
-      return []
-    }
-
-    logger.info("Successfully retrieved roles_with_access", {roles_with_access: response.Item.rolesWithAccess})
-    return response.Item.rolesWithAccess
-  } catch (error) {
-    logger.error("Error fetching roles_with_access from DynamoDB", {username, error})
-    throw new Error("Failed to retrieve roles_with_access from cache")
   }
 }
