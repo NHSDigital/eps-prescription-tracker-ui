@@ -6,8 +6,10 @@ const mockUpdateDynamoTable = jest.fn()
 const mockFetchDynamoRolesWithAccess = jest.fn()
 
 jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
+  const getUsernameFromEvent = mockGetUsernameFromEvent.mockImplementation(() => "Mock_JoeBloggs")
+
   return {
-    getUsernameFromEvent: mockGetUsernameFromEvent.mockImplementation(() => "Mock_JoeBloggs")
+    getUsernameFromEvent
   }
 })
 
@@ -58,7 +60,7 @@ describe("Lambda Handler Tests", () => {
     expect(body).toHaveProperty("userInfo")
   })
 
-  it("should call updateDynamoTable with the correct parameters", async () => {
+  it("should call updateDynamoTable and remove the the selected role from roles_with_access", async () => {
     const testUsername = "Mock_JoeBloggs"
     mockGetUsernameFromEvent.mockReturnValue(testUsername)
     mockUpdateDynamoTable.mockImplementation(() => {
