@@ -3,6 +3,7 @@ import {jest} from "@jest/globals"
 // Mocked functions
 const mockGetUsernameFromEvent = jest.fn()
 const mockUpdateDynamoTable = jest.fn()
+const mockFetchDynamoRolesWithAccess = jest.fn()
 
 jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
   return {
@@ -12,7 +13,16 @@ jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
 
 jest.unstable_mockModule("@/selectedRoleHelpers", () => {
   return {
-    updateDynamoTable: mockUpdateDynamoTable.mockImplementation(() => Promise.resolve())
+    updateDynamoTable: mockUpdateDynamoTable.mockImplementation(() => Promise.resolve()),
+    fetchDynamoRolesWithAccess: mockFetchDynamoRolesWithAccess.mockImplementation(() =>
+      Promise.resolve({
+        roles_with_access: [
+          {role_id: "123", org_code: "XYZ", role_name: "MockRole_1"},
+          {role_id: "456", org_code: "ABC", role_name: "MockRole_2"}
+        ],
+        currently_selected_role: undefined // Initially no role is selected
+      })
+    )
   }
 })
 
@@ -33,7 +43,21 @@ describe("Lambda Handler Tests with mock enabled", () => {
     expect(mockGetUsernameFromEvent).toHaveBeenCalled()
     expect(mockUpdateDynamoTable).toHaveBeenCalledWith(
       "Mock_JoeBloggs",
-      {role_id: "123", org_code: "XYZ"},
+      {
+        currently_selected_role: {
+          role_id: "123",
+          org_code: "XYZ",
+          role_name: "MockRole_1"
+        }, // selected role is moved
+        roles_with_access: [
+          {
+            role_id: "456",
+            org_code: "ABC",
+            role_name: "MockRole_2"
+          }
+
+        ]
+      },
       expect.any(Object),
       expect.any(Object),
       expect.any(String)
@@ -42,7 +66,20 @@ describe("Lambda Handler Tests with mock enabled", () => {
       statusCode: 200,
       body: JSON.stringify({
         message: "Selected role data has been updated successfully",
-        userInfo: JSON.parse(event.body)
+        userInfo: {
+          currently_selected_role: {
+            role_id: "123",
+            org_code: "XYZ",
+            role_name: "MockRole_1"
+          },
+          roles_with_access: [
+            {
+              role_id: "456",
+              org_code: "ABC",
+              role_name: "MockRole_2"
+            }
+          ]
+        }
       })
     })
   })

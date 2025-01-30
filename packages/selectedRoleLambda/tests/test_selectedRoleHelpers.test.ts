@@ -3,7 +3,7 @@ import {Logger} from "@aws-lambda-powertools/logger"
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
 import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
 import {updateDynamoTable} from "@/selectedRoleHelpers"
-import {TrackerUserInfo} from "@/selectedRoleTypes"
+import {SelectedRole} from "@/selectedRoleTypes"
 
 // Mock Logger
 const logger = new Logger()
@@ -18,7 +18,7 @@ jest.spyOn(dynamoDBClient, "send").mockImplementation(() => Promise.resolve({}))
 const username = "testUser"
 const tokenMappingTableName = "dummyTable"
 
-const mockRoleData: TrackerUserInfo = {
+const mockRoleData: SelectedRole = {
   roles_with_access: [
     {
       role_name: "Doctor",
@@ -27,7 +27,6 @@ const mockRoleData: TrackerUserInfo = {
       org_name: "Test Hospital"
     }
   ],
-  roles_without_access: [],
   currently_selected_role: {
     role_name: "Doctor",
     role_id: "123",

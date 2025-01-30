@@ -7,7 +7,7 @@ import middy from "@middy/core"
 import inputOutputLogger from "@middy/input-output-logger"
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 import {getUsernameFromEvent} from "@cpt-ui-common/authFunctions"
-import {updateDynamoTable} from "./selectedRoleHelpers"
+import {updateDynamoTable, fetchDynamoRolesWithAccess} from "./selectedRoleHelpers"
 
 /*
  * Lambda function for updating the selected role in the DynamoDB table.
@@ -65,16 +65,40 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     }
   }
 
+  logger.info("Fetching existing roles_with_access from DynamoDB...")
+  const cachedRolesWithAccess = await fetchDynamoRolesWithAccess(
+    username, documentClient, logger, tokenMappingTableName
+  )
+
+  // Extract roles_with_access from the response safely
+  const rolesWithAccess = cachedRolesWithAccess?.roles_with_access || []
+
+  if (rolesWithAccess.length === 0) {
+    logger.warn("No roles_with_access found for user", {username})
+  }
+
+  // Find the selected role and remove it from roles_with_access
+  const selectedRole = rolesWithAccess.find(
+    (role) => role.role_id === userInfoSelectedRole.role_id
+  )
+
+  const updatedUserInfo = {
+    currently_selected_role: selectedRole || userInfoSelectedRole, // Move selected role
+    roles_with_access: rolesWithAccess.filter(
+      (role) => role.role_id !== userInfoSelectedRole.role_id // Remove from access
+    )
+  }
+
   logger.info("Updating selected role data in DynamoDB", {userInfoSelectedRole})
 
   // Call helper function to update the selected role in the database
-  await updateDynamoTable(username, userInfoSelectedRole, documentClient, logger, tokenMappingTableName)
+  await updateDynamoTable(username, updatedUserInfo, documentClient, logger, tokenMappingTableName)
 
   return {
     statusCode: 200,
     body: JSON.stringify({
       message: "Selected role data has been updated successfully",
-      userInfo: userInfoSelectedRole
+      userInfo: updatedUserInfo
     })
   }
 

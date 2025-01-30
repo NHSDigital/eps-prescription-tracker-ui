@@ -1,18 +1,18 @@
 import {Logger} from "@aws-lambda-powertools/logger"
-import {DynamoDBDocumentClient, UpdateCommand} from "@aws-sdk/lib-dynamodb"
-import {RoleDetails, TrackerUserInfo} from "./selectedRoleTypes"
+import {DynamoDBDocumentClient, GetCommand, UpdateCommand} from "@aws-sdk/lib-dynamodb"
+import {RoleDetails, SelectedRole} from "./selectedRoleTypes"
 
 /**
  * Update the user currentlySelectedRole and selectedRoleId in the DynamoDB table.
  * @param username - The username of the user.
- * @param data - The TrackerUserInfo object containing user role information.
+ * @param data - The SelectedRole object containing user role information.
  * @param documentClient - The DynamoDBDocumentClient instance.
  * @param logger - The Logger instance for logging.
  * @param tokenMappingTableName - The name of the DynamoDB table.
  */
 export const updateDynamoTable = async (
   username: string,
-  data: TrackerUserInfo,
+  data: SelectedRole,
   documentClient: DynamoDBDocumentClient,
   logger: Logger,
   tokenMappingTableName: string
@@ -78,5 +78,41 @@ export const updateDynamoTable = async (
       })
     }
     throw error
+  }
+}
+
+// Fetch roles with access from DynamoDB
+export const fetchDynamoRolesWithAccess = async (
+  username: string,
+  documentClient: DynamoDBDocumentClient,
+  logger: Logger,
+  tokenMappingTableName: string
+): Promise<SelectedRole> => {
+  logger.info("Fetching user info from DynamoDB", {username})
+
+  try {
+    const response = await documentClient.send(
+      new GetCommand({
+        TableName: tokenMappingTableName,
+        Key: {username}
+      })
+    )
+
+    if (!response.Item) {
+      logger.warn("No user info found in DynamoDB", {username})
+      return {roles_with_access: []}
+    }
+
+    // Ensure correct keys are returned
+    const mappedUserInfo: SelectedRole = {
+      roles_with_access: response.Item.rolesWithAccess || [],
+      currently_selected_role: response.Item.currentlySelectedRole || undefined
+    }
+
+    logger.info("User info successfully retrieved from DynamoDB", {data: mappedUserInfo})
+    return mappedUserInfo
+  } catch (error) {
+    logger.error("Error fetching user info from DynamoDB", {error})
+    throw new Error("Failed to retrieve user info from cache")
   }
 }
