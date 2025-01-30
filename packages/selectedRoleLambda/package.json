@@ -1,5 +1,5 @@
 {
-  "name": "selected-role-lambda",
+  "name": "selectedRoleLambda",
   "version": "1.0.0",
   "description": "Lambda function handling user role selection in the Clinical Prescription Tracking Service",
   "main": "handler.ts",
