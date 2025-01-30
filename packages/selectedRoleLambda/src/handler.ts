@@ -101,7 +101,6 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
       userInfo: updatedUserInfo
     })
   }
-
 }
 
 export const handler = middy(lambdaHandler)
