@@ -5,14 +5,14 @@ import {RoleDetails, SelectedRole} from "./selectedRoleTypes"
 /**
  * Update the user currentlySelectedRole and selectedRoleId in the DynamoDB table.
  * @param username - The username of the user.
- * @param data - The SelectedRole object containing user role information.
+ * @param updatedUserInfo - The SelectedRole object containing user role information.
  * @param documentClient - The DynamoDBDocumentClient instance.
  * @param logger - The Logger instance for logging.
  * @param tokenMappingTableName - The name of the DynamoDB table.
  */
 export const updateDynamoTable = async (
   username: string,
-  data: SelectedRole,
+  updatedUserInfo: SelectedRole,
   documentClient: DynamoDBDocumentClient,
   logger: Logger,
   tokenMappingTableName: string
@@ -26,14 +26,15 @@ export const updateDynamoTable = async (
   logger.debug("Starting DynamoDB update process", {
     username,
     table: tokenMappingTableName,
-    receivedData: data
+    receivedData: updatedUserInfo
   })
 
-  // DyanamoDB cannot allow undefined values. We need to scrub any undefined values from the data objects
-  const currentlySelectedRole: RoleDetails = data.currently_selected_role ? data.currently_selected_role : {}
+  // DyanamoDB cannot allow undefined values. We need to scrub any undefined values from the updatedUserInfo objects
+  const currentlySelectedRole: RoleDetails = updatedUserInfo.currentlySelectedRole
+    ? updatedUserInfo.currentlySelectedRole
+    : {}
 
-  // Ensure selectedRoleId is never undefined by providing a fallback value
-  const selectedRoleId: string = currentlySelectedRole.role_id || "UNSPECIFIED_ROLE_ID"
+  const selectedRoleId: string = updatedUserInfo.selectedRoleId || ""
 
   // Since RoleDetails has a bunch of possibly undefined fields, we need to scrub those out.
   // Convert everything to strings, then convert back to a generic object.
@@ -100,13 +101,12 @@ export const fetchDynamoRolesWithAccess = async (
 
     if (!response.Item) {
       logger.warn("No user info found in DynamoDB", {username})
-      return {roles_with_access: []}
+      return {rolesWithAccess: []}
     }
 
-    // Ensure correct keys are returned
     const mappedUserInfo: SelectedRole = {
-      roles_with_access: response.Item.rolesWithAccess || [],
-      currently_selected_role: response.Item.currentlySelectedRole || undefined
+      rolesWithAccess: response.Item.rolesWithAccess || [],
+      currentlySelectedRole: response.Item.currentlySelectedRole || undefined
     }
 
     logger.info("User info successfully retrieved from DynamoDB", {data: mappedUserInfo})

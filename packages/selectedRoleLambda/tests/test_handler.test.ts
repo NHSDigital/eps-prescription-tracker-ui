@@ -16,11 +16,11 @@ jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
 jest.unstable_mockModule("@/selectedRoleHelpers", () => {
   const fetchDynamoRolesWithAccess = mockFetchDynamoRolesWithAccess.mockImplementation(() => {
     return {
-      roles_with_access: [
+      rolesWithAccess: [
         {role_id: "123", org_code: "XYZ", role_name: "MockRole_1"},
         {role_id: "456", org_code: "ABC", role_name: "MockRole_2"}
       ],
-      currently_selected_role: undefined // Initially no role is selected
+      currentlySelectedRole: undefined // Initially no role is selected
     }
   })
 
@@ -40,11 +40,8 @@ describe("Lambda Handler Tests", () => {
   let event = {...mockAPIGatewayProxyEvent, body: JSON.stringify({role_id: "123", org_code: "XYZ"})}
   let context = {...mockContext}
 
-  beforeEach(() => {
-    mockGetUsernameFromEvent.mockImplementation(() => {
-      return "Mock_JoeBloggs"
-    })
-    mockUpdateDynamoTable.mockImplementation(() => {})
+  beforeAll(() => {
+    jest.clearAllMocks()
   })
 
   it("should return a successful response when called", async () => {
@@ -60,57 +57,59 @@ describe("Lambda Handler Tests", () => {
     expect(body).toHaveProperty("userInfo")
   })
 
-  it("should call updateDynamoTable and remove the the selected role from roles_with_access", async () => {
-    const testUsername = "Mock_JoeBloggs"
-    mockGetUsernameFromEvent.mockReturnValue(testUsername)
-    mockUpdateDynamoTable.mockImplementation(() => {
-      return true
-    })
-
-    const response = await handler(event, context)
-
-    expect(mockGetUsernameFromEvent).toHaveBeenCalled()
-    expect(mockUpdateDynamoTable).toHaveBeenCalledWith(
-      testUsername,
-      {
-        currently_selected_role: {
+  it(
+    "should call updateDynamoTable and move the selected role from rolesWithAccess to currentlySelectedRole",
+    async () => {
+      const testUsername = "Mock_JoeBloggs"
+      const updatedUserInfo = {
+        // The selected role has been moved from roles_with_access to currently_selected_role
+        currentlySelectedRole: {
           role_id: "123",
           org_code: "XYZ",
           role_name: "MockRole_1"
-        }, // selected role is moved
-        roles_with_access: [
+        },
+        rolesWithAccess: [
           {
             role_id: "456",
             org_code: "ABC",
             role_name: "MockRole_2"
           }
-        ]
-      },
-      expect.any(Object),
-      expect.any(Object),
-      expect.any(String)
-    )
-    expect(response).toEqual({
-      statusCode: 200,
-      body: JSON.stringify({
-        message: "Selected role data has been updated successfully",
-        userInfo: {
-          currently_selected_role: {
-            role_id: "123",
-            org_code: "XYZ",
-            role_name: "MockRole_1"
-          },
-          roles_with_access: [
-            {
-              role_id: "456",
-              org_code: "ABC",
-              role_name: "MockRole_2"
-            }
-          ]
-        }
+        ],
+        selectedRoleId: "123"
+      }
+
+      const response = await handler(event, context)
+
+      expect(mockGetUsernameFromEvent).toHaveBeenCalled()
+      expect(mockUpdateDynamoTable).toHaveBeenCalledWith(
+        testUsername,
+        updatedUserInfo,
+        expect.any(Object),
+        expect.any(Object),
+        expect.any(String)
+      )
+      expect(response).toEqual({
+        statusCode: 200,
+        body: JSON.stringify({
+          message: "Selected role data has been updated successfully",
+          userInfo: {
+            currentlySelectedRole: {
+              role_id: "123",
+              org_code: "XYZ",
+              role_name: "MockRole_1"
+            },
+            rolesWithAccess: [
+              {
+                role_id: "456",
+                org_code: "ABC",
+                role_name: "MockRole_2"
+              }
+            ],
+            selectedRoleId: "123"
+          }
+        })
       })
     })
-  })
 
   it("should return 500 and log error when updateDynamoTable throws an error", async () => {
     const error = new Error("Dynamo update failed")

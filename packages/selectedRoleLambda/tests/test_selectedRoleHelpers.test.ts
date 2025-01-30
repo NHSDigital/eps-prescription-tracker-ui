@@ -19,7 +19,7 @@ const username = "testUser"
 const tokenMappingTableName = "dummyTable"
 
 const mockRoleData: SelectedRole = {
-  roles_with_access: [
+  rolesWithAccess: [
     {
       role_name: "Doctor",
       role_id: "123",
@@ -27,7 +27,7 @@ const mockRoleData: SelectedRole = {
       org_name: "Test Hospital"
     }
   ],
-  currently_selected_role: {
+  currentlySelectedRole: {
     role_name: "Doctor",
     role_id: "123",
     org_code: "ABC",

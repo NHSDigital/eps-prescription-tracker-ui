@@ -9,6 +9,7 @@ export type RoleDetails = {
 }
 
 export type SelectedRole = {
-  roles_with_access: Array<RoleDetails>
-  currently_selected_role?: RoleDetails
+  rolesWithAccess: Array<RoleDetails>
+  currentlySelectedRole?: RoleDetails
+  selectedRoleId?: string
 }

@@ -70,26 +70,29 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     username, documentClient, logger, tokenMappingTableName
   )
 
+  logger.info("Roles with access and currently selected role fetched from DynamoDB", {cachedRolesWithAccess})
+
   // Extract roles_with_access from the response safely
-  const rolesWithAccess = cachedRolesWithAccess?.roles_with_access || []
+  const rolesWithAccess = cachedRolesWithAccess?.rolesWithAccess || []
 
-  if (rolesWithAccess.length === 0) {
-    logger.warn("No roles_with_access found for user", {username})
-  }
-
-  // Find the selected role and remove it from roles_with_access
+  // Find the role selected during event in the roles_with_access array
   const selectedRole = rolesWithAccess.find(
     (role) => role.role_id === userInfoSelectedRole.role_id
   )
 
+  logger.info("The selected role to be moved from rolesWithAccess to currentlySelectedRole in DynamoDB", {selectedRole})
+
   const updatedUserInfo = {
-    currently_selected_role: selectedRole || userInfoSelectedRole, // Move selected role
-    roles_with_access: rolesWithAccess.filter(
-      (role) => role.role_id !== userInfoSelectedRole.role_id // Remove from access
-    )
+    // Set the currently selected role to the selected role
+    currentlySelectedRole: selectedRole,
+    // Remove the selected role from the roles_with_access array
+    rolesWithAccess: rolesWithAccess.filter(
+      (role) => role.role_id !== userInfoSelectedRole.role_id
+    ),
+    selectedRoleId: selectedRole?.role_id
   }
 
-  logger.info("Updating selected role data in DynamoDB", {userInfoSelectedRole})
+  logger.info("Updating selected role data in DynamoDB", {updatedUserInfo})
 
   // Call helper function to update the selected role in the database
   await updateDynamoTable(username, updatedUserInfo, documentClient, logger, tokenMappingTableName)
