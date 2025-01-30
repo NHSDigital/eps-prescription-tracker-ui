@@ -32,10 +32,16 @@ export const updateDynamoTable = async (
   })
 
   // Extract currently selected role
-  const currentlySelectedRole: RoleDetails = data.currently_selected_role ? data.currently_selected_role : {}
+  const currentlySelectedRole: RoleDetails = data.currently_selected_role || {}
 
   // Ensure selectedRoleId is never undefined by providing a fallback value
   const selectedRoleId: string = currentlySelectedRole.role_id || "UNSPECIFIED_ROLE_ID"
+
+  // Ensure roles_with_access is defined before calling filter()
+  if (!Array.isArray(data.roles_with_access)) {
+    logger.error("roles_with_access is missing or invalid", {username, receivedRolesWithAccess: data.roles_with_access})
+    throw new Error("roles_with_access is undefined or not an array")
+  }
 
   // Remove the selected role from rolesWithAccess
   const updatedRolesWithAccess = data.roles_with_access.filter(role => role.role_id !== selectedRoleId)
