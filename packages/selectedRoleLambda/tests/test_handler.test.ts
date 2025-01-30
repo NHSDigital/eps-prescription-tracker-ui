@@ -37,7 +37,16 @@ import {mockContext, mockAPIGatewayProxyEvent} from "./mockObjects"
 import {Logger} from "@aws-lambda-powertools/logger"
 
 describe("Lambda Handler Tests", () => {
-  let event = {...mockAPIGatewayProxyEvent, body: JSON.stringify({role_id: "123", org_code: "XYZ"})}
+  let event = {
+    ...mockAPIGatewayProxyEvent,
+    body: JSON.stringify({
+      currently_selected_role: {
+        role_id: "123",
+        org_code: "XYZ",
+        role_name: "MockRole_1"
+      }
+    })
+  }
   let context = {...mockContext}
 
   beforeAll(() => {

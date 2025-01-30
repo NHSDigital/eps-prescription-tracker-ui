@@ -105,11 +105,10 @@ export const fetchDynamoRolesWithAccess = async (
     }
 
     const mappedUserInfo: SelectedRole = {
-      rolesWithAccess: response.Item.rolesWithAccess || [],
-      currentlySelectedRole: response.Item.currentlySelectedRole || undefined
+      rolesWithAccess: response.Item.rolesWithAccess || []
     }
 
-    logger.info("User info successfully retrieved from DynamoDB", {data: mappedUserInfo})
+    logger.info("Roles with access successfully retrieved from DynamoDB", {data: mappedUserInfo})
     return mappedUserInfo
   } catch (error) {
     logger.error("Error fetching user info from DynamoDB", {error})
