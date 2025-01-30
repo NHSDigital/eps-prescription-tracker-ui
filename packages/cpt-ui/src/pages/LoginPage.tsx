@@ -7,11 +7,14 @@ import { EpsLoginPageStrings } from "@/constants/ui-strings/EpsLoginPageStrings"
 import {
   ENV_CONFIG,
   MOCK_AUTH_ALLOWED_ENVIRONMENTS,
+  type Environment,
+  type MockAuthEnvironment,
 } from "@/config/environment";
 
 export default function LoginPage() {
   const auth = useContext(AuthContext);
-  const target_environment: string = ENV_CONFIG.TARGET_ENVIRONMENT || "prod";
+  const target_environment: string =
+    ENV_CONFIG.TARGET_ENVIRONMENT as Environment;
 
   const mockSignIn = async () => {
     console.log("Signing in (Mock)", auth);
@@ -45,7 +48,9 @@ export default function LoginPage() {
     );
 
     if (
-      !MOCK_AUTH_ALLOWED_ENVIRONMENTS.includes(target_environment) &&
+      !MOCK_AUTH_ALLOWED_ENVIRONMENTS.includes(
+        target_environment as MockAuthEnvironment,
+      ) &&
       !auth?.isSignedIn
     ) {
       console.log("User must sign in with Primary auth");
@@ -53,7 +58,11 @@ export default function LoginPage() {
     }
   }, [auth?.isSignedIn, signIn, target_environment]);
 
-  if (!MOCK_AUTH_ALLOWED_ENVIRONMENTS.includes(target_environment)) {
+  if (
+    !MOCK_AUTH_ALLOWED_ENVIRONMENTS.includes(
+      target_environment as MockAuthEnvironment,
+    )
+  ) {
     return (
       <main className="nhsuk-main-wrapper">
         <Container>

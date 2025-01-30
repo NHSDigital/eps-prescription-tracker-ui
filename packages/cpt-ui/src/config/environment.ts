@@ -9,7 +9,7 @@ export const AUTH_CONFIG = {
 
 // Environment Configuration
 export const ENV_CONFIG = {
-  TARGET_ENVIRONMENT: import.meta.env.VITE_TARGET_ENVIRONMENT,
+  TARGET_ENVIRONMENT: import.meta.env.VITE_TARGET_ENVIRONMENT || "prod",
   API_DOMAIN_OVERRIDE: import.meta.env.VITE_API_DOMAIN_OVERRIDE,
   BASE_PATH: import.meta.env.BASE_PATH || "site",
   LOCAL_DEV: import.meta.env.VITE_LOCAL_DEV === "true"
@@ -27,16 +27,14 @@ export const API_ENDPOINTS = {
   SELECTED_ROLE: "/api/selected-role"
 } as const
 
-// Mock Auth Configuration
-export const MOCK_AUTH_ALLOWED_ENVIRONMENTS = [
-  "dev",
-  "dev-pr",
-  "int",
-  "qa"
-] as const
-
 // Type for environment
-export type Environment = "dev" | "dev-pr" | "int" | "qa" | "prod" | "test";
+export type MockAuthEnvironment = "dev" | "dev-pr" | "int" | "qa";
+
+export type Environment = MockAuthEnvironment | "prod" | "test";
+
+// Mock Auth Configuration
+export const MOCK_AUTH_ALLOWED_ENVIRONMENTS: ReadonlyArray<MockAuthEnvironment> =
+  ["dev", "dev-pr", "int", "qa"] as const
 
 // Validation helper
 const validateEnvironment = (env: string): env is Environment => {

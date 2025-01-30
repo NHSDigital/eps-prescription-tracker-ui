@@ -41,5 +41,5 @@
       }
     ]
   },
-  "ignores": ["dist/**/*"]
+  "ignores": ["dist"]
 }

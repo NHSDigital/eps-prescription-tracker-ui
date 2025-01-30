@@ -1,10 +1,13 @@
 import "@testing-library/jest-dom";
-import { render, screen, fireEvent } from "@testing-library/react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { render, screen } from "@testing-library/react";
+import { useLocation } from "react-router-dom";
 import React from "react";
 import EpsHeader from "@/components/EpsHeader";
-import { AuthContext } from "@/context/AuthProvider";
-import { AccessContext } from "@/context/AccessProvider";
+import { AuthContext, type AuthContextType } from "@/context/AuthProvider";
+import {
+  AccessContext,
+  type AccessContextType,
+} from "@/context/AccessProvider";
 
 // Mock the strings module
 jest.mock("@/constants/ui-strings/HeaderStrings", () => ({
@@ -42,7 +45,7 @@ jest.mock("react-router-dom", () => ({
 }));
 
 // Default context values
-const defaultAuthContext = {
+const defaultAuthContext: AuthContextType = {
   error: null,
   user: null,
   isSignedIn: false,
@@ -52,10 +55,10 @@ const defaultAuthContext = {
   cognitoSignOut: jest.fn(),
 };
 
-const defaultAccessContext = {
+const defaultAccessContext: AccessContextType = {
   noAccess: false,
   singleAccess: false,
-  selectedRole: "",
+  selectedRole: undefined,
   userDetails: undefined,
   setUserDetails: jest.fn(),
   setNoAccess: jest.fn(),
@@ -156,7 +159,7 @@ describe("EpsHeader", () => {
         "/other-route",
         { isSignedIn: true },
         {
-          selectedRole: "",
+          selectedRole: null,
           singleAccess: false,
           noAccess: false,
         },

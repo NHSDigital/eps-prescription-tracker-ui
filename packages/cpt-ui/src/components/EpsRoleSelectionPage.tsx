@@ -14,7 +14,7 @@ import {
 import { AuthContext } from "@/context/AuthProvider";
 import { useAccess } from "@/context/AccessProvider";
 
-import EpsCard, { EpsCardProps } from "@/components/EpsCard";
+import EpsCard from "@/components/EpsCard";
 import EpsSpinner from "@/components/EpsSpinner";
 
 import { RoleDetails, TrackerUserInfo } from "@/types/TrackerUserInfoTypes";

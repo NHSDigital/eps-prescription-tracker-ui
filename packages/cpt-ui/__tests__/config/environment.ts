@@ -22,6 +22,6 @@ export const API_ENDPOINTS = {
   TRACKER_USER_INFO: "/api/tracker-user-info"
 }
 
-export const MOCK_AUTH_ALLOWED_ENVIRONMENTS = ["dev", "dev-pr", "int", "qa"]
+export const MOCK_AUTH_ALLOWED_ENVIRONMENTS = ["dev", "dev-pr", "int", "qa", "test"]
 
 export type Environment = "dev" | "dev-pr" | "int" | "qa" | "prod" | "test";

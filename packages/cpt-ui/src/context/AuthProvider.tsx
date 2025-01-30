@@ -13,8 +13,7 @@ import {
 import { authConfig } from "./configureAmplify";
 
 import { useLocalStorageState } from "@/helpers/useLocalStorageState";
-
-interface AuthContextType {
+export interface AuthContextType {
   error: string | null;
   user: AuthUser | null;
   isSignedIn: boolean;

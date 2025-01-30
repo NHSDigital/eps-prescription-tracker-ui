@@ -45,7 +45,7 @@ export default function EpsHeader() {
         curPathname !== "/logout" &&
         isSignedIn &&
         !accessContext.singleAccess &&
-        accessContext.selectedRole === "",
+        accessContext.selectedRole === null,
     );
 
     // Show "Change role" link (if not single access)
@@ -55,7 +55,7 @@ export default function EpsHeader() {
         curPathname !== "/logout" &&
         isSignedIn &&
         !accessContext.singleAccess &&
-        accessContext.selectedRole !== "",
+        accessContext.selectedRole !== null,
     );
 
     // Show the "Logout" link only if the user is signed in
@@ -106,7 +106,6 @@ export default function EpsHeader() {
               <Link
                 className="nhsuk-header__navigation-link"
                 to={HEADER_SELECT_YOUR_ROLE_TARGET}
-                // passHref={true}
                 data-testid="eps_header_selectYourRoleLink"
               >
                 {HEADER_SELECT_YOUR_ROLE_BUTTON}
@@ -120,7 +119,6 @@ export default function EpsHeader() {
               <Link
                 className="nhsuk-header__navigation-link"
                 to={HEADER_CHANGE_ROLE_TARGET}
-                // passHref={true}
                 data-testid="eps_header_changeRoleLink"
               >
                 {HEADER_CHANGE_ROLE_BUTTON}
@@ -134,7 +132,6 @@ export default function EpsHeader() {
               <Link
                 className="nhsuk-header__navigation-link"
                 to="/logout"
-                // passHref={true}
                 data-testid="eps_header_logout"
                 onClick={handleLogoutClick}
               >
@@ -149,7 +146,6 @@ export default function EpsHeader() {
               <Link
                 className="nhsuk-header__navigation-link"
                 to={HEADER_EXIT_TARGET}
-                // passHref={true}
                 data-testid="eps_header_exit"
               >
                 {HEADER_EXIT_BUTTON}

@@ -79,7 +79,7 @@ export default function YourSelectedRolePage() {
                   </Table.Cell>
                   <Table.Cell data-testid="role-text">{roleName}</Table.Cell>
                   <Table.Cell data-testid="role-change-role-cell">
-                    <Link to="/changerole" passHref={true}>
+                    <Link to="/changerole">
                       {changeLinkText}
                     </Link>
                   </Table.Cell>
@@ -92,7 +92,7 @@ export default function YourSelectedRolePage() {
                     {orgName} (ODS: {odsCode})
                   </Table.Cell>
                   <Table.Cell data-testid="org-change-role-cell">
-                    <Link to="/changerole" passHref={true}>
+                    <Link to="/changerole">
                       {changeLinkText}
                     </Link>
                   </Table.Cell>

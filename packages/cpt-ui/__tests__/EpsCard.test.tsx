@@ -4,6 +4,7 @@ import { BrowserRouter } from "react-router-dom";
 import EpsCard from "@/components/EpsCard";
 import { AuthContext } from "@/context/AuthProvider";
 import { AccessContext } from "@/context/AccessProvider";
+import { JWT } from "aws-amplify/auth";
 
 // Mock the auth configuration
 jest.mock("@/context/configureAmplify", () => ({
@@ -54,8 +55,10 @@ jest.mock("@/constants/ui-strings/CardStrings", () => ({
 }));
 
 jest.mock("@/config/environment", () => ({
-  API_ENDPOINTS: { TRACKER_USER_INFO: "/mock-endpoint" },
-  selectedRoleEndpoint: "/mock-endpoint/selected-role",
+  API_ENDPOINTS: {
+    TRACKER_USER_INFO: "/mock-endpoint",
+    SELECTED_ROLE: "/mock-endpoint",
+  },
 }));
 
 const mockRole = {
@@ -69,6 +72,17 @@ const mockRole = {
 const mockLink = "/role-detail";
 
 // Default context values
+const mockJWT = {
+  toString: () => "mock-token",
+  payload: {
+    sub: "mock-sub",
+    aud: "mock-audience",
+    iss: "mock-issuer",
+    token_use: "id",
+  },
+} satisfies JWT;
+
+// Update default auth context with proper JWT
 const defaultAuthContext = {
   error: null,
   user: null,
@@ -85,6 +99,7 @@ const defaultAccessContext = {
   singleAccess: false,
   selectedRole: null,
   userDetails: undefined,
+  setUserDetails: jest.fn(),
   setNoAccess: jest.fn(),
   setSingleAccess: jest.fn(),
   clear: jest.fn(),
@@ -92,11 +107,17 @@ const defaultAccessContext = {
 
 const renderWithProviders = (
   props: { role: any; link: string },
-  authOverrides = {},
-  accessOverrides = {},
+  authOverrides: Partial<React.ContextType<typeof AuthContext>> = {},
+  accessOverrides: Partial<React.ContextType<typeof AccessContext>> = {},
 ) => {
-  const authValue = { ...defaultAuthContext, ...authOverrides };
-  const accessValue = { ...defaultAccessContext, ...accessOverrides };
+  const authValue = {
+    ...defaultAuthContext,
+    ...authOverrides,
+  } as React.ContextType<typeof AuthContext>;
+  const accessValue = {
+    ...defaultAccessContext,
+    ...accessOverrides,
+  } as React.ContextType<typeof AccessContext>;
 
   return render(
     <AuthContext.Provider value={authValue}>
@@ -158,26 +179,23 @@ describe("EpsCard Component", () => {
     const cardLink = screen.getByRole("link", { name: /test organization/i });
     await fireEvent.click(cardLink);
 
-    // Update the expect to match exactly what we expect
-    expect(global.fetch).toHaveBeenCalledWith(
-      "/mock-endpoint/selected-role", // Use the exact endpoint
-      {
-        method: "PUT",
-        headers: {
-          Authorization: "Bearer mock-token",
-          "Content-Type": "application/json",
-          "NHSD-Session-URID": "555254242106",
-        },
-        body: JSON.stringify({
-          currently_selected_role: {
-            role_id: "123",
-            org_name: "Test Organization",
-            org_code: "XYZ123",
-            role_name: "Pharmacist",
-          },
-        }),
+    // Update to match the mocked endpoint
+    expect(global.fetch).toHaveBeenCalledWith("/mock-endpoint", {
+      method: "PUT",
+      headers: {
+        Authorization: "Bearer mock-token",
+        "Content-Type": "application/json",
+        "NHSD-Session-URID": "555254242106",
       },
-    );
+      body: JSON.stringify({
+        currently_selected_role: {
+          role_id: "123",
+          org_name: "Test Organization",
+          org_code: "XYZ123",
+          role_name: "Pharmacist",
+        },
+      }),
+    });
 
     expect(mockSetSelectedRole).toHaveBeenCalledWith(
       expect.objectContaining({
