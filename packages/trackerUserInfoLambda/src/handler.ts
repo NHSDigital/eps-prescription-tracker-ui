@@ -66,7 +66,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
   logger.info("Is this a mock request?", {isMockRequest})
 
-  // Try to fetch user info from DynamoDB
+  // Fetch user info from DynamoDB
   const cachedUserInfo = await fetchDynamoTable(username, documentClient, logger, tokenMappingTableName)
 
   // Check if cached data exists and has valid role information
