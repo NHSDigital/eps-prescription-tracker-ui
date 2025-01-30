@@ -160,7 +160,7 @@ export const updateDynamoTable = async (
 
   // Add the user roles to the DynamoDB table
 
-  // Dyanamo cannot allow undefined values. We need to scrub any undefined values from the data objects
+  // Dynamo cannot allow undefined values. We need to scrub any undefined values from the data objects
   const currentlySelectedRole: RoleDetails = data.currently_selected_role ? data.currently_selected_role : {}
   const rolesWithAccess: Array<RoleDetails> = data.roles_with_access ? data.roles_with_access : []
   const rolesWithoutAccess: Array<RoleDetails> = data.roles_without_access ? data.roles_without_access : []
