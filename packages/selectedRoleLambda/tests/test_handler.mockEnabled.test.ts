@@ -12,17 +12,23 @@ jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
 })
 
 jest.unstable_mockModule("@/selectedRoleHelpers", () => {
+  const updateDynamoTable = mockUpdateDynamoTable.mockImplementation(() =>
+    Promise.resolve()
+  )
+
+  const fetchDynamoRolesWithAccess = mockFetchDynamoRolesWithAccess.mockImplementation(() =>
+    Promise.resolve({
+      roles_with_access: [
+        {role_id: "123", org_code: "XYZ", role_name: "MockRole_1"},
+        {role_id: "456", org_code: "ABC", role_name: "MockRole_2"}
+      ],
+      currently_selected_role: undefined // Initially no role is selected
+    })
+  )
+
   return {
-    updateDynamoTable: mockUpdateDynamoTable.mockImplementation(() => Promise.resolve()),
-    fetchDynamoRolesWithAccess: mockFetchDynamoRolesWithAccess.mockImplementation(() =>
-      Promise.resolve({
-        roles_with_access: [
-          {role_id: "123", org_code: "XYZ", role_name: "MockRole_1"},
-          {role_id: "456", org_code: "ABC", role_name: "MockRole_2"}
-        ],
-        currently_selected_role: undefined // Initially no role is selected
-      })
-    )
+    updateDynamoTable,
+    fetchDynamoRolesWithAccess
   }
 })
 
@@ -55,7 +61,6 @@ describe("Lambda Handler Tests with mock enabled", () => {
             org_code: "ABC",
             role_name: "MockRole_2"
           }
-
         ]
       },
       expect.any(Object),
