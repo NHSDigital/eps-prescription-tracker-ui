@@ -46,7 +46,7 @@ lint: lint-node lint-githubactions lint-githubaction-scripts react-lint
 test: compile
 	npm run test --workspace packages/cloudfrontFunctions
 	npm run test --workspace packages/cdk
-	# npm run test --workspace packages/cpt-ui
+	npm run test --workspace packages/cpt-ui
 	npm run test --workspace packages/cognito
 	npm run test --workspace packages/prescriptionSearchLambda
 	npm run test --workspace packages/common/middyErrorHandler
@@ -114,7 +114,7 @@ react-start:
 	unset NEXT_OUTPUT_MODE && npm run start --workspace packages/cpt-ui
 
 react-lint:
-	# npm run lint --workspace packages/cpt-ui
+	npm run lint --workspace packages/cpt-ui
 
 auth_demo_build:
 	export PUBLIC_URL="/auth_demo" && npm run build --workspace packages/auth_demo/
