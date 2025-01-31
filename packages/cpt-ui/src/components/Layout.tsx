@@ -1,12 +1,14 @@
 import { Outlet } from "react-router-dom";
-import EpsHeader from "./EpsHeader";
-import EpsFooter from "./EpsFooter";
+import EpsHeader from "@/components/EpsHeader";
+import RBACBanner from "@/components/RBACBanner";
+import EpsFooter from "@/components/EpsFooter";
 
 export default function Layout() {
   return (
     <>
       <EpsHeader />
       <Outlet />
+      <RBACBanner />
       <EpsFooter />
     </>
   );

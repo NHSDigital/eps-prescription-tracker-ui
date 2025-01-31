@@ -45,7 +45,7 @@ export default function EpsHeader() {
         curPathname !== "/logout" &&
         isSignedIn &&
         !accessContext.singleAccess &&
-        accessContext.selectedRole === null,
+        !accessContext.selectedRole,
     );
 
     // Show "Change role" link (if not single access)
