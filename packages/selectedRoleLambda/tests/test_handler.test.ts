@@ -1,9 +1,7 @@
 import {jest} from "@jest/globals"
 
-// Mocked functions
+// Mocked functions from authFunctions
 const mockGetUsernameFromEvent = jest.fn()
-const mockUpdateDynamoTable = jest.fn()
-const mockFetchDynamoRolesWithAccess = jest.fn()
 
 jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
   const getUsernameFromEvent = mockGetUsernameFromEvent.mockImplementation(() => "Mock_JoeBloggs")
@@ -12,6 +10,10 @@ jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
     getUsernameFromEvent
   }
 })
+
+// Mocked functions from selectedRoleHelpers
+const mockFetchDynamoRolesWithAccess = jest.fn()
+const mockUpdateDynamoTable = jest.fn()
 
 jest.unstable_mockModule("@/selectedRoleHelpers", () => {
   const fetchDynamoRolesWithAccess = mockFetchDynamoRolesWithAccess.mockImplementation(() => {
