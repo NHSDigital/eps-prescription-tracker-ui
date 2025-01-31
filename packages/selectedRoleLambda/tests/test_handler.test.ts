@@ -73,7 +73,7 @@ describe("Lambda Handler Tests", () => {
     async () => {
       const testUsername = "Mock_JoeBloggs"
       const updatedUserInfo = {
-        // The selected role has been moved from roles_with_access to currently_selected_role
+        // The selected role has been moved from rolesWithAccess to currentlySelectedRole
         currentlySelectedRole: {
           role_id: "123",
           org_code: "XYZ",
