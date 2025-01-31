@@ -115,7 +115,7 @@ export default function RoleSelectionPage({
           selectedRole.org_name || noOrgName
         } (ODS: ${selectedRole.org_code || noODSCode}) with ${
           selectedRole.role_name || noRoleName
-        }.`,
+        }.`
       );
     }
   }, [selectedRole, loginInfoMessage, noOrgName, noODSCode, noRoleName]);
@@ -143,7 +143,7 @@ export default function RoleSelectionPage({
 
       if (response.status !== 200) {
         throw new Error(
-          `Server did not return CPT user info, response ${response.status}`,
+          `Server did not return CPT user info, response ${response.status}`
         );
       }
 
@@ -171,7 +171,7 @@ export default function RoleSelectionPage({
           uuid: `{role_with_access_${index}}`,
           role,
           link: "/yourselectedrole",
-        })),
+        }))
       );
 
       setRolesWithoutAccess(
@@ -180,11 +180,11 @@ export default function RoleSelectionPage({
           roleName: role.role_name ? role.role_name : noRoleName,
           orgName: role.org_name ? role.org_name : noOrgName,
           odsCode: role.org_code ? role.org_code : noODSCode,
-        })),
+        }))
       );
 
       setSelectedRole(selectedRole);
-      setNoAccess(rolesWithAccess.length === 0);
+      setNoAccess(rolesWithAccess.length === 0 && selectedRole === undefined);
       setSingleAccess(rolesWithAccess.length === 1);
 
       // If the user has exactly one accessible role and zero roles without access,
@@ -288,7 +288,7 @@ export default function RoleSelectionPage({
             {/* Caption Section for No Access */}
             {noAccess && <p>{captionNoAccess}</p>}
             {/* Pre selected role section */}
-            {selectedRole && (
+            {selectedRole !== undefined && (
               <section aria-label="Login Information">
                 <InsetText data-testid="eps_select_your_role_pre_role_selected">
                   <span className="nhsuk-u-visually-hidden">
@@ -302,7 +302,7 @@ export default function RoleSelectionPage({
                 </InsetText>
                 {/* Confirm Button */}
                 <Button href={confirmButton.link}>{confirmButton.text}</Button>
-                <p>{alternativeMessage}</p>
+                {rolesWithAccess.length > 0 && <p>{alternativeMessage}</p>}
               </section>
             )}
           </Col>
@@ -344,7 +344,7 @@ export default function RoleSelectionPage({
                             {roleItem.roleName}
                           </Table.Cell>
                         </Table.Row>
-                      ),
+                      )
                     )}
                   </Table.Body>
                 </Table>

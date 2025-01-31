@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 
 import { Container, Col, Row, Button, Table } from "nhsuk-react-components";
-import { useNavigate,Link } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 import { YOUR_SELECTED_ROLE_STRINGS } from "@/constants/ui-strings/YourSelectedRoleStrings";
 import { useAccess } from "@/context/AccessProvider";
@@ -11,13 +11,13 @@ export default function YourSelectedRolePage() {
   const { selectedRole } = useAccess();
 
   const [roleName, setRoleName] = useState<string>(
-    YOUR_SELECTED_ROLE_STRINGS.noRoleName,
+    YOUR_SELECTED_ROLE_STRINGS.noRoleName
   );
   const [orgName, setOrgName] = useState<string>(
-    YOUR_SELECTED_ROLE_STRINGS.noOrgName,
+    YOUR_SELECTED_ROLE_STRINGS.noOrgName
   );
   const [odsCode, setOdsCode] = useState<string>(
-    YOUR_SELECTED_ROLE_STRINGS.noODSCode,
+    YOUR_SELECTED_ROLE_STRINGS.noODSCode
   );
 
   useEffect(() => {
@@ -30,7 +30,7 @@ export default function YourSelectedRolePage() {
     }
 
     setRoleName(
-      selectedRole.role_name || YOUR_SELECTED_ROLE_STRINGS.noRoleName,
+      selectedRole.role_name || YOUR_SELECTED_ROLE_STRINGS.noRoleName
     );
     setOrgName(selectedRole.org_name || YOUR_SELECTED_ROLE_STRINGS.noOrgName);
     setOdsCode(selectedRole.org_code || YOUR_SELECTED_ROLE_STRINGS.noODSCode);
@@ -58,7 +58,7 @@ export default function YourSelectedRolePage() {
         <Row>
           <Col width="full">
             <h1 className="nhsuk-heading-xl">
-              <span role="text" data-testid="eps_header_yourSelectedRole">
+              <span role="text" data-testid="eps_yourSelectedRole_page">
                 <span className="nhsuk-title">{heading}</span>
                 <span className="nhsuk-caption-l nhsuk-caption--bottom">
                   <span className="nhsuk-u-visually-hidden"> - </span>
@@ -79,9 +79,7 @@ export default function YourSelectedRolePage() {
                   </Table.Cell>
                   <Table.Cell data-testid="role-text">{roleName}</Table.Cell>
                   <Table.Cell data-testid="role-change-role-cell">
-                    <Link to="/changerole">
-                      {changeLinkText}
-                    </Link>
+                    <Link to="/changerole">{changeLinkText}</Link>
                   </Table.Cell>
                 </Table.Row>
                 <Table.Row key="org-row">
@@ -92,9 +90,7 @@ export default function YourSelectedRolePage() {
                     {orgName} (ODS: {odsCode})
                   </Table.Cell>
                   <Table.Cell data-testid="org-change-role-cell">
-                    <Link to="/changerole">
-                      {changeLinkText}
-                    </Link>
+                    <Link to="/changerole">{changeLinkText}</Link>
                   </Table.Cell>
                 </Table.Row>
               </Table.Body>

@@ -38,7 +38,7 @@ export default function ConfirmRolePage() {
                     with <strong>Health Professional Access Role</strong>.
                   </p>
                 </InsetText>
-                <Button>Confirm and continue to find a prescription</Button>
+                <Button>Continue to find a prescription</Button>
                 <p>Alternatively, you can choose a new role below.</p>
 
                 <Card clickable className="tl-nhsuk-newComponent">
