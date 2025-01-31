@@ -26,16 +26,13 @@ const documentClient = DynamoDBDocumentClient.from(dynamoClient)
 const tokenMappingTableName = process.env["TokenMappingTableName"] ?? ""
 
 // Default error response body for internal system errors
-const errorResponseBody = {
-  message: "A system error has occurred"
-}
+const errorResponseBody = {message: "A system error has occurred"}
 
 // Custom error handler for handling unexpected errors in the Lambda function
 const middyErrorHandler = new MiddyErrorHandler(errorResponseBody)
 
 /**
- * The main handler function for processing API Gateway events.
- * Handles parsing, validation, and updates the selected role in the DynamoDB table.
+ * Lambda function handler for updating a user's selected role.
  */
 const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   logger.appendKeys({"apigw-request-id": event.requestContext?.requestId})
@@ -65,9 +62,9 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     }
   }
 
-  logger.info("The user role information parsed from the request body", {userInfoSelectedRole})
+  logger.info("Parsed user role information from request body", {userInfoSelectedRole})
 
-  logger.info("Fetching existing roles_with_access from DynamoDB...")
+  logger.info("Fetching existing rolesWithAccess from DynamoDB...")
   const cachedRolesWithAccess = await fetchDynamoRolesWithAccess(
     username, documentClient, logger, tokenMappingTableName
   )
