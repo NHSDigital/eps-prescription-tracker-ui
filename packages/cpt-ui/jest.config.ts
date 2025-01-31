@@ -6,8 +6,7 @@ const jestConfig: JestConfigWithTsJest = {
   testEnvironment: "jsdom",
   moduleNameMapper: {
     "^@/(.*)$": "<rootDir>/src/$1",
-    "\\.(css|less|scss|sass)$": "identity-obj-proxy",
-    "@/config/environment": "<rootDir>/__tests__/config/environment.ts"
+    "\\.(css|less|scss|sass)$": "identity-obj-proxy"
   },
   transform: {
     "^.+\\.(t|j)sx?$": [

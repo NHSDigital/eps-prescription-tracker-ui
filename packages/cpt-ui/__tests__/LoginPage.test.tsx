@@ -10,6 +10,28 @@ import LoginPage from "@/pages/LoginPage";
 const mockCognitoSignIn = jest.fn();
 const mockCognitoSignOut = jest.fn();
 
+// Set up environment mock before any imports
+jest.mock("@/config/environment", () => ({
+  ENV_CONFIG: {
+    TARGET_ENVIRONMENT: "dev",
+    API_DOMAIN_OVERRIDE: "",
+    BASE_PATH: "site",
+    LOCAL_DEV: false,
+  },
+  AUTH_CONFIG: {
+    USER_POOL_ID: "mock-pool-id",
+    USER_POOL_CLIENT_ID: "mock-client-id",
+    HOSTED_LOGIN_DOMAIN: "mock-domain",
+    REDIRECT_SIGN_IN: "mock-signin",
+    REDIRECT_SIGN_OUT: "mock-signout",
+  },
+  MOCK_AUTH_ALLOWED_ENVIRONMENTS: ["dev", "dev-pr", "int", "qa"],
+  API_ENDPOINTS: {
+    TRACKER_USER_INFO: "/api/tracker-user-info",
+    SELECTED_ROLE: "/api/selected-role",
+  },
+}));
+
 // Mock the configureAmplify module
 jest.mock("@/context/configureAmplify", () => ({
   __esModule: true,
@@ -53,11 +75,7 @@ const defaultAuthState: AuthContextType = {
 
 const MockAuthProvider = ({ children, initialState = defaultAuthState }) => {
   const [authState, setAuthState] = useState<AuthContextType>({
-    isSignedIn: false,
-    user: null,
-    error: null,
-    idToken: null,
-    accessToken: null,
+    ...initialState,
     cognitoSignIn: async (input?: SignInWithRedirectInput) => {
       mockCognitoSignIn(input);
       // Simulate a sign-in update
@@ -92,13 +110,16 @@ const MockAuthProvider = ({ children, initialState = defaultAuthState }) => {
   );
 };
 
-// Default environment mock
-jest.mock("@/config/environment", () => ({
-  ENV_CONFIG: {
-    TARGET_ENVIRONMENT: "test",
-  },
-  MOCK_AUTH_ALLOWED_ENVIRONMENTS: ["test", "local"],
-}));
+const renderWithProviders = (
+  component: React.ReactElement,
+  initialState = defaultAuthState,
+) => {
+  return render(
+    <MockAuthProvider initialState={initialState}>
+      <BrowserRouter>{component}</BrowserRouter>
+    </MockAuthProvider>,
+  );
+};
 
 describe("LoginPage", () => {
   beforeEach(() => {
@@ -106,13 +127,7 @@ describe("LoginPage", () => {
   });
 
   it("renders the page and the main buttons", () => {
-    const { container } = render(
-      <MockAuthProvider>
-        <BrowserRouter>
-          <LoginPage />
-        </BrowserRouter>
-      </MockAuthProvider>,
-    );
+    const { container } = renderWithProviders(<LoginPage />);
 
     const heading = screen.getByRole("heading", { level: 1 });
     expect(heading).toBeInTheDocument();
@@ -127,18 +142,11 @@ describe("LoginPage", () => {
   });
 
   it("calls cognitoSignIn with 'Primary' when the primary login button is clicked", async () => {
-    render(
-      <MockAuthProvider>
-        <BrowserRouter>
-          <LoginPage />
-        </BrowserRouter>
-      </MockAuthProvider>,
-    );
+    renderWithProviders(<LoginPage />);
 
     const primaryLogin = screen.getByRole("button", {
       name: /Log in with PTL CIS2/i,
     });
-
     await userEvent.click(primaryLogin);
 
     await waitFor(() => {
@@ -149,18 +157,11 @@ describe("LoginPage", () => {
   });
 
   it("calls cognitoSignIn with 'Mock' when the mock login button is clicked", async () => {
-    render(
-      <MockAuthProvider>
-        <BrowserRouter>
-          <LoginPage />
-        </BrowserRouter>
-      </MockAuthProvider>,
-    );
+    renderWithProviders(<LoginPage />);
 
     const mockLogin = screen.getByRole("button", {
       name: /Log in with mock CIS2/i,
     });
-
     await userEvent.click(mockLogin);
 
     await waitFor(() => {
@@ -171,21 +172,13 @@ describe("LoginPage", () => {
   });
 
   it("calls cognitoSignOut when the sign out button is clicked", async () => {
-    render(
-      <MockAuthProvider
-        initialState={{
-          ...defaultAuthState,
-          isSignedIn: true,
-          user: { username: "testUser" } as AuthUser,
-          idToken: "mockIdToken" as unknown as JWT,
-          accessToken: "mockAccessToken" as unknown as JWT,
-        }}
-      >
-        <BrowserRouter>
-          <LoginPage />
-        </BrowserRouter>
-      </MockAuthProvider>,
-    );
+    renderWithProviders(<LoginPage />, {
+      ...defaultAuthState,
+      isSignedIn: true,
+      user: { username: "testUser" } as AuthUser,
+      idToken: { toString: () => "mockIdToken" } as JWT,
+      accessToken: { toString: () => "mockAccessToken" } as JWT,
+    });
 
     const signOutBtn = screen.getByRole("button", { name: /Sign Out/i });
     await userEvent.click(signOutBtn);
@@ -195,27 +188,18 @@ describe("LoginPage", () => {
     });
   });
 
-  // TODO: Fix this test
-  it.skip("shows a spinner when not in a mock auth environment", async () => {
-    // Mock environment specifically for this test
-    jest.resetModules();
-    jest.mock("@/config/environment", () => ({
-      ENV_CONFIG: {
-        TARGET_ENVIRONMENT: "prod",
-      },
-      MOCK_AUTH_ALLOWED_ENVIRONMENTS: ["test", "local"],
-    }));
+  it("shows a spinner when not in a mock auth environment", async () => {
+    // Get the mocked module
+    const envModule = jest.requireMock("@/config/environment");
 
-    // Re-import LoginPage after mocking
-    const { default: FreshLoginPage } = require("@/pages/LoginPage");
+    // Modify the environment config temporarily
+    envModule.ENV_CONFIG = {
+      ...envModule.ENV_CONFIG,
+      TARGET_ENVIRONMENT: "prod",
+    };
 
-    const { container } = render(
-      <MockAuthProvider>
-        <BrowserRouter>
-          <FreshLoginPage />
-        </BrowserRouter>
-      </MockAuthProvider>,
-    );
+    // Render the component with our providers
+    const { container } = renderWithProviders(<LoginPage />);
 
     await waitFor(() => {
       expect(
