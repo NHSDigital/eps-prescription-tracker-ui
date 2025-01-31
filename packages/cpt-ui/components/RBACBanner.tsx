@@ -1,16 +1,16 @@
-"use client";
-import React, { useEffect, useState } from "react";
+"use client"
+import React, {useEffect, useState} from "react"
 
-import { Row } from "nhsuk-react-components";
+import {Row} from "nhsuk-react-components"
 
 import "@/assets/styles/rbacBanner.scss"
-import { RBAC_BANNER_STRINGS } from "@/constants/ui-strings/RBACBannerStrings";
-import { useAccess } from "@/context/AccessProvider";
+import {RBAC_BANNER_STRINGS} from "@/constants/ui-strings/RBACBannerStrings"
+import {useAccess} from "@/context/AccessProvider"
 
 export default function RBACBanner() {
     const [bannerText, setBannerText] = useState<string>("")
 
-    const { selectedRole, userDetails } = useAccess();
+    const {selectedRole, userDetails} = useAccess()
 
     useEffect(() => {
         let orgName
@@ -23,9 +23,18 @@ export default function RBACBanner() {
             }
         }
 
+        // Ensure last name is uppercase and first name is capitalized
+        const lastName = userDetails?.family_name
+            ? userDetails.family_name.toUpperCase()
+            : RBAC_BANNER_STRINGS.NO_FAMILY_NAME
+
+        const firstName = userDetails?.given_name
+            ? userDetails.given_name.charAt(0).toUpperCase() + userDetails.given_name.slice(1).toLowerCase()
+            : RBAC_BANNER_STRINGS.NO_GIVEN_NAME
+
         setBannerText(RBAC_BANNER_STRINGS.CONFIDENTIAL_DATA
-            .replace("{lastName}", userDetails?.family_name ?? RBAC_BANNER_STRINGS.NO_FAMILY_NAME)
-            .replace("{firstName}", userDetails?.given_name ?? RBAC_BANNER_STRINGS.NO_GIVEN_NAME)
+            .replace("{lastName}", lastName)
+            .replace("{firstName}", firstName)
             .replace("{roleName}", selectedRole?.role_name ?? RBAC_BANNER_STRINGS.NO_ROLE_NAME)
             .replace("{orgName}", orgName ?? RBAC_BANNER_STRINGS.NO_ORG_NAME)
             .replace("{odsCode}", selectedRole?.org_code ?? RBAC_BANNER_STRINGS.NO_ODS_CODE)
@@ -50,7 +59,7 @@ export default function RBACBanner() {
             >
                 <Row>
                     <p
-                        style={{ paddingLeft: "60px", margin: "8px" }}
+                        style={{paddingLeft: "60px", margin: "8px"}}
                         data-testid="rbac-banner-text"
                     >
                         {bannerText}
@@ -58,5 +67,5 @@ export default function RBACBanner() {
                 </Row>
             </div>
         </>
-    );
+    )
 }

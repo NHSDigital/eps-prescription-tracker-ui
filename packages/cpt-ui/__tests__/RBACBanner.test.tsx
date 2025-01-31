@@ -1,8 +1,8 @@
 import "@testing-library/jest-dom"
-import { render, screen } from "@testing-library/react"
-import { useRouter } from "next/navigation"
+import {render, screen} from "@testing-library/react"
+import {useRouter} from "next/navigation"
 import React from "react"
-import { JWT } from "aws-amplify/auth"
+import {JWT} from "aws-amplify/auth"
 
 import RBACBanner from "@/components/RBACBanner"
 
@@ -19,10 +19,10 @@ jest.mock("@/constants/ui-strings/RBACBannerStrings", () => {
         LOCUM_NAME: "Locum pharmacy"
     }
 
-    return { RBAC_BANNER_STRINGS }
+    return {RBAC_BANNER_STRINGS}
 })
 
-const { RBAC_BANNER_STRINGS } = require("@/constants/ui-strings/RBACBannerStrings")
+const {RBAC_BANNER_STRINGS} = require("@/constants/ui-strings/RBACBannerStrings")
 
 // Mock `next/navigation`
 jest.mock("next/navigation", () => ({
@@ -46,8 +46,8 @@ jest.mock("@/context/AccessProvider", () => {
             org_name: "org name"
         },
         userDetails: {
-            given_name: "Jane",
-            family_name: "Doe"
+            given_name: "JaNe",
+            family_name: "DoE"
         },
         setUserDetails: jest.fn(),
         setSelectedRole: jest.fn(),
@@ -57,7 +57,7 @@ jest.mock("@/context/AccessProvider", () => {
     const useAccess = () => React.useContext(MockAccessContext)
 
     const __setMockContextValue = (newValue: any) => {
-        mockContextValue = { ...mockContextValue, ...newValue }
+        mockContextValue = {...mockContextValue, ...newValue}
         // Reassign the context’s defaultValue so subsequent consumers get new values
         MockAccessContext._currentValue = mockContextValue
         MockAccessContext._currentValue2 = mockContextValue
@@ -70,7 +70,7 @@ jest.mock("@/context/AccessProvider", () => {
         __setMockContextValue
     }
 })
-const { __setMockContextValue } = require("@/context/AccessProvider")
+const {__setMockContextValue} = require("@/context/AccessProvider")
 
 // Mock an AuthContext
 const AuthContext = React.createContext<any>(null)
@@ -90,7 +90,7 @@ const defaultAuthContext = {
 }
 
 export const renderWithAuth = (authOverrides = {}) => {
-    const authValue = { ...defaultAuthContext, ...authOverrides }
+    const authValue = {...defaultAuthContext, ...authOverrides}
 
     return render(
         <AuthContext.Provider value={authValue}>
@@ -112,8 +112,8 @@ describe("RBACBanner", () => {
                 org_name: "org name"
             },
             userDetails: {
-                family_name: "Doe",
-                given_name: "Jane"
+                family_name: "DoE",
+                given_name: "JanE"
             }
         })
 
@@ -145,7 +145,7 @@ describe("RBACBanner", () => {
         expect(bannerText).toBeInTheDocument()
 
         // Check that placeholders are properly replaced
-        const expectedText = `CONFIDENTIAL: PERSONAL PATIENT DATA accessed by Doe, Jane - Role Name - org name (ODS: deadbeef)`
+        const expectedText = `CONFIDENTIAL: PERSONAL PATIENT DATA accessed by DOE, Jane - Role Name - org name (ODS: deadbeef)`
         expect(bannerText).toHaveTextContent(expectedText)
     })
 
@@ -165,7 +165,7 @@ describe("RBACBanner", () => {
         const bannerText = screen.getByTestId("rbac-banner-text")
         // Locum pharmacy name should appear
         expect(bannerText).toHaveTextContent(
-            `CONFIDENTIAL: PERSONAL PATIENT DATA accessed by Doe, Jane - Role Name - Locum pharmacy (ODS: FFFFF)`
+            `CONFIDENTIAL: PERSONAL PATIENT DATA accessed by DOE, Jane - Role Name - Locum pharmacy (ODS: FFFFF)`
         )
     })
 
@@ -198,7 +198,7 @@ describe("RBACBanner", () => {
         const bannerText = screen.getByTestId("rbac-banner-text")
         // Notice fallback values: NO_ROLE_NAME, NO_ORG_NAME, NO_ODS_CODE
         expect(bannerText).toHaveTextContent(
-            `CONFIDENTIAL: PERSONAL PATIENT DATA accessed by Doe, Jane - NO_ROLE_NAME - NO_ORG_NAME (ODS: NO_ODS_CODE)`
+            `CONFIDENTIAL: PERSONAL PATIENT DATA accessed by DOE, Jane - NO_ROLE_NAME - NO_ORG_NAME (ODS: NO_ODS_CODE)`
         )
     })
 
