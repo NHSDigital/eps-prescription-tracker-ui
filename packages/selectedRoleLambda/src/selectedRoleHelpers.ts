@@ -73,13 +73,14 @@ export const updateDynamoTable = async (
         errorMessage: error.message,
         errorStack: error.stack
       })
+      throw error // Ensure the function actually throws the error
     } else {
       logger.error("Unknown error type while updating user's selected role", {
         username,
-        error
+        error: JSON.stringify(error) // Ensure the error is stringified
       })
+      throw new Error("Unexpected error occurred while updating user's selected role")
     }
-    throw error
   }
 }
 

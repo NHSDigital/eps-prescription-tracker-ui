@@ -8,6 +8,7 @@ import {SelectedRole} from "@/selectedRoleTypes"
 // Mock Logger
 const logger = new Logger()
 jest.spyOn(logger, "info")
+jest.spyOn(logger, "warn")
 jest.spyOn(logger, "error")
 
 // Properly initializing the DynamoDB client
@@ -43,11 +44,39 @@ describe("updateDynamoTable", () => {
 
   it("should update DynamoDB with user selected role successfully", async () => {
     await updateDynamoTable(username, mockRoleData, dynamoDBClient, logger, tokenMappingTableName)
+
     expect(dynamoDBClient.send).toHaveBeenCalledWith(expect.any(UpdateCommand))
     expect(logger.info).toHaveBeenCalledWith(
       expect.stringContaining("DynamoDB update successful"),
       expect.any(Object)
     )
+  })
+
+  it("should ensure no undefined values are stored in DynamoDB", async () => {
+    const incompleteRoleData: SelectedRole = {
+      // Ensuring an empty array instead of undefined
+      rolesWithAccess: undefined as unknown as [],
+      // Ensuring an empty object instead of undefined
+      currentlySelectedRole: undefined as unknown as Record<string, never>,
+      // Ensuring an empty string instead of undefined
+      selectedRoleId: undefined as unknown as string
+    }
+
+    // Call the function with incomplete role data
+    await updateDynamoTable(username, incompleteRoleData, dynamoDBClient, logger, tokenMappingTableName)
+
+    // Verify that the logger captured the correct transformation of data
+    expect(logger.info).toHaveBeenCalledWith(
+      expect.stringContaining("Prepared role data for DynamoDB update"),
+      expect.objectContaining({
+        currentlySelectedRole: {}, // Should be set to an empty object
+        rolesWithAccess: [], // Should be set to an empty array
+        selectedRoleId: "" // Should be set to an empty string
+      })
+    )
+
+    // Verify that the function actually sent the update command to DynamoDB
+    expect(dynamoDBClient.send).toHaveBeenCalled()
   })
 
   it("should throw an error when tokenMappingTableName is not set", async () => {
@@ -71,6 +100,23 @@ describe("updateDynamoTable", () => {
         username,
         errorMessage: "DynamoDB update failed",
         errorStack: expect.any(String)
+      })
+    )
+  })
+
+  it("should handle unknown errors gracefully", async () => {
+    const unexpectedError = {customMessage: "Unexpected error"} // Simulating a non-Error object
+    jest.spyOn(dynamoDBClient, "send").mockRejectedValueOnce(unexpectedError as never)
+
+    await expect(
+      updateDynamoTable(username, mockRoleData, dynamoDBClient, logger, tokenMappingTableName)
+    ).rejects.toThrow("Unexpected error occurred while updating user's selected role") // Expect our new custom error
+
+    expect(logger.error).toHaveBeenCalledWith(
+      "Unknown error type while updating user's selected role",
+      expect.objectContaining({
+        username,
+        error: JSON.stringify(unexpectedError)
       })
     )
   })
