@@ -79,6 +79,9 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   const currentSelectedRole = cachedRolesWithAccess.currentlySelectedRole
   const newSelectedRole = rolesWithAccess.find(role => role.role_id === userSelectedRoleId) // Keep it if not found
 
+  logger.info("Current selected role", {currentSelectedRole})
+  logger.info("New selected role", {newSelectedRole})
+
   // Create updated role lists
   const updatedRolesWithAccess = [
     // If a currentlySelectedRole exists, make sure it is added back before removing the new selection
@@ -89,6 +92,16 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     // Remove the role that is being selected from rolesWithAccess
     ...rolesWithAccess.filter(role => role.role_id !== userSelectedRoleId)
   ]
+
+  logger.info("Updated roles with access", {updatedRolesWithAccess})
+
+  const updatedRolesWithAccessTest = [
+    ...(currentSelectedRole && Object.keys(currentSelectedRole).length > 0
+      ? [currentSelectedRole] // Only add if it's not an empty object
+      : [])
+  ]
+
+  logger.info("Updated roles with access test", {updatedRolesWithAccessTest})
 
   const updatedUserInfo = {
     currentlySelectedRole: newSelectedRole, // Assign new selected role
