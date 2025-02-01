@@ -133,7 +133,7 @@ describe("Lambda Handler Tests with mock disabled", () => {
     expect(response).toHaveProperty("body")
 
     const body = JSON.parse(response.body)
-    expect(body).toHaveProperty("message", "UserInfo fetched successfully")
+    expect(body).toHaveProperty("message", "UserInfo fetched successfully from the OIDC endpoint")
     expect(body).toHaveProperty("userInfo")
   })
 
