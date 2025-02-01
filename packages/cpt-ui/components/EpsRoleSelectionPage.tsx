@@ -133,12 +133,20 @@ export default function RoleSelectionPage({contentText}: RoleSelectionPageProps)
             const rolesWithAccess = userInfo.roles_with_access || []
             const rolesWithoutAccess = userInfo.roles_without_access || []
 
-            const selectedRole = userInfo?.currently_selected_role
-                ? {
-                    ...userInfo?.currently_selected_role,
-                    uuid: `selected_role_0`
-                }
-                : undefined
+            // Check if the user info object and currently_selected_role exist
+            const selectedRole =
+                userInfo?.currently_selected_role && Object.keys(userInfo.currently_selected_role).length > 0
+                    ? {
+                        // If currently_selected_role is not empty, spread its properties
+                        ...userInfo.currently_selected_role,
+                        // Add uuid only if the selected role is not an empty object
+                        uuid: `selected_role_0`
+                    }
+                    // If currently_selected_role is an empty object `{}`, set selectedRole to undefined
+                    : undefined
+
+            console.log("Selected role:", selectedRole)
+            setSelectedRole(selectedRole)
 
             // Populate the EPS card props
             setRolesWithAccess(
@@ -158,7 +166,6 @@ export default function RoleSelectionPage({contentText}: RoleSelectionPageProps)
                 }))
             )
 
-            setSelectedRole(selectedRole)
             setNoAccess(rolesWithAccess.length === 0)
             setSingleAccess(rolesWithAccess.length === 1)
 
