@@ -81,15 +81,18 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
   // Create updated role lists
   const updatedRolesWithAccess = [
-    ...rolesWithAccess.filter(role => role.role_id !== userSelectedRoleId), // Remove the newly selected role
-    ...(currentSelectedRole ? [currentSelectedRole] : []) // Add previous selected role back to rolesWithAccess
+    // If a currentlySelectedRole exists, make sure it is added back before removing the new selection
+    ...(currentSelectedRole && Object.keys(currentSelectedRole).length > 0
+      ? [currentSelectedRole] // Only add if it's not an empty object
+      : []),
+
+    // Remove the role that is being selected from rolesWithAccess
+    ...rolesWithAccess.filter(role => role.role_id !== userSelectedRoleId)
   ]
 
   const updatedUserInfo = {
-    // Set the currently selected role to the new selected role
-    currentlySelectedRole: newSelectedRole,
-    // Remove the selected role from the roles_with_access array
-    rolesWithAccess: updatedRolesWithAccess,
+    currentlySelectedRole: newSelectedRole, // Assign new selected role
+    rolesWithAccess: updatedRolesWithAccess, // Ensure old role is moved back to list
     selectedRoleId: userSelectedRoleId
   }
 

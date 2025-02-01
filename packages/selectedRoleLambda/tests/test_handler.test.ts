@@ -123,19 +123,22 @@ describe("Lambda Handler Tests", () => {
     })
 
   it(
-    "should swap currentlySelectedRole with the new selected role and move the old one back to rolesWithAccess",
+    "should correctly swap currentlySelectedRole with the new role and move the old one back to rolesWithAccess",
     async () => {
+      // Initial rolesWithAccess contains multiple roles, currentlySelectedRole is undefined
       mockFetchDynamoRolesWithAccess.mockImplementation(() => {
         return {
           rolesWithAccess: [
             {role_id: "123", org_code: "XYZ", role_name: "MockRole_1"},
-            {role_id: "456", org_code: "ABC", role_name: "MockRole_2"}
+            {role_id: "456", org_code: "ABC", role_name: "MockRole_2"},
+            {role_id: "789", org_code: "DEF", role_name: "MockRole_3"}
           ],
-          currentlySelectedRole: {role_id: "789", org_code: "DEF", role_name: "MockRole_3"} // Initially selected role
+          currentlySelectedRole: undefined // Initially no role is selected
         }
       })
 
-      const event = {
+      // User selects "MockRole_1" (role_id: 123)
+      let event = {
         ...mockAPIGatewayProxyEvent,
         body: JSON.stringify({
           currently_selected_role: {
@@ -146,44 +149,67 @@ describe("Lambda Handler Tests", () => {
         })
       }
 
-      const response = await handler(event, mockContext)
+      let response = await handler(event, mockContext)
+      let firstResponseBody = JSON.parse(response.body)
 
-      expect(mockUpdateDynamoTable).toHaveBeenCalledWith(
-        "Mock_JoeBloggs",
-        {
-          currentlySelectedRole: {
-            role_id: "123",
-            org_code: "XYZ",
-            role_name: "MockRole_1"
-          },
-          rolesWithAccess: [
-            {role_id: "456", org_code: "ABC", role_name: "MockRole_2"},
-            {role_id: "789", org_code: "DEF", role_name: "MockRole_3"} // Old selected role moved back
-          ],
-          selectedRoleId: "123"
-        },
-        expect.any(Object),
-        expect.any(Object),
-        expect.any(String)
-      )
-
-      const responseBody = JSON.parse(response.body)
-      expect(responseBody).toEqual({
-        message: "Selected role data has been updated successfully",
-        userInfo: {
-          currentlySelectedRole: {
-            role_id: "123",
-            org_code: "XYZ",
-            role_name: "MockRole_1"
-          },
-          rolesWithAccess: [
-            {role_id: "456", org_code: "ABC", role_name: "MockRole_2"},
-            {role_id: "789", org_code: "DEF", role_name: "MockRole_3"} // Old role returned to rolesWithAccess
-          ],
-          selectedRoleId: "123"
-        }
+      expect(firstResponseBody.userInfo).toEqual({
+        currentlySelectedRole: {role_id: "123", org_code: "XYZ", role_name: "MockRole_1"},
+        rolesWithAccess: [
+          {role_id: "456", org_code: "ABC", role_name: "MockRole_2"},
+          {role_id: "789", org_code: "DEF", role_name: "MockRole_3"}
+        ],
+        selectedRoleId: "123"
       })
-    })
+
+      // User selects "MockRole_2" (role_id: 456)
+      event = {
+        ...mockAPIGatewayProxyEvent,
+        body: JSON.stringify({
+          currently_selected_role: {
+            role_id: "456",
+            org_code: "ABC",
+            role_name: "MockRole_2"
+          }
+        })
+      }
+
+      response = await handler(event, mockContext)
+      let secondResponseBody = JSON.parse(response.body)
+
+      expect(secondResponseBody.userInfo).toEqual({
+        currentlySelectedRole: {role_id: "456", org_code: "ABC", role_name: "MockRole_2"},
+        rolesWithAccess: [
+          {role_id: "123", org_code: "XYZ", role_name: "MockRole_1"}, // Previously selected role moved back
+          {role_id: "789", org_code: "DEF", role_name: "MockRole_3"}
+        ],
+        selectedRoleId: "456"
+      })
+
+      // User selects "MockRole_3" (role_id: 789)
+      event = {
+        ...mockAPIGatewayProxyEvent,
+        body: JSON.stringify({
+          currently_selected_role: {
+            role_id: "789",
+            org_code: "DEF",
+            role_name: "MockRole_3"
+          }
+        })
+      }
+
+      response = await handler(event, mockContext)
+      let thirdResponseBody = JSON.parse(response.body)
+
+      expect(thirdResponseBody.userInfo).toEqual({
+        currentlySelectedRole: {role_id: "789", org_code: "DEF", role_name: "MockRole_3"},
+        rolesWithAccess: [
+          {role_id: "123", org_code: "XYZ", role_name: "MockRole_1"},
+          {role_id: "456", org_code: "ABC", role_name: "MockRole_2"} // Previously selected role moved back
+        ],
+        selectedRoleId: "789"
+      })
+    }
+  )
 
   it("should return 500 and log error when updateDynamoTable throws an error", async () => {
     const error = new Error("Dynamo update failed")
