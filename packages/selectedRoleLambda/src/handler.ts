@@ -75,22 +75,25 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
   logger.info("User-selected role ID", {role_id: userSelectedRoleId})
 
-  // Find the role selected during event in the rolesWithAccess array
-  const selectedRole = rolesWithAccess.find(
-    (role) => role.role_id === userSelectedRoleId
-  ) || userInfoSelectedRole.currently_selected_role // Keep it if not found
+  // Extract current `currentlySelectedRole` and new `selectedRole`
+  const currentSelectedRole = cachedRolesWithAccess.currentlySelectedRole
+  const newSelectedRole = rolesWithAccess.find(role => role.role_id === userSelectedRoleId) // Keep it if not found
 
-  logger.info("The selected role to be moved from rolesWithAccess to currentlySelectedRole in DynamoDB", {selectedRole})
+  // Create updated role lists
+  const updatedRolesWithAccess = [
+    ...rolesWithAccess.filter(role => role.role_id !== userSelectedRoleId), // Remove the newly selected role
+    ...(currentSelectedRole ? [currentSelectedRole] : []) // Add previous selected role back to rolesWithAccess
+  ]
 
   const updatedUserInfo = {
-    // Set the currently selected role to the selected role
-    currentlySelectedRole: selectedRole,
+    // Set the currently selected role to the new selected role
+    currentlySelectedRole: newSelectedRole,
     // Remove the selected role from the roles_with_access array
-    rolesWithAccess: rolesWithAccess.filter(
-      (role) => role.role_id !== userSelectedRoleId
-    ),
+    rolesWithAccess: updatedRolesWithAccess,
     selectedRoleId: userSelectedRoleId
   }
+
+  logger.info("Updating DynamoDB with new selected role", {updatedUserInfo})
 
   // Call helper function to update the selected role in the database
   await updateDynamoTable(username, updatedUserInfo, documentClient, logger, tokenMappingTableName)
