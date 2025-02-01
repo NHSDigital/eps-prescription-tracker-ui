@@ -125,9 +125,9 @@ describe("updateDynamoTable", () => {
 describe("fetchDynamoRolesWithAccess", () => {
   beforeEach(() => {
     jest.clearAllMocks()
-    jest.spyOn(logger, "info").mockImplementation(() => {}) // Mock logger.info
-    jest.spyOn(logger, "warn").mockImplementation(() => {}) // Mock logger.warn
-    jest.spyOn(logger, "error").mockImplementation(() => {}) // Mock logger.error
+    jest.spyOn(logger, "info").mockImplementation(() => {})
+    jest.spyOn(logger, "warn").mockImplementation(() => {})
+    jest.spyOn(logger, "error").mockImplementation(() => {})
   })
 
   it("should successfully fetch roles with access from DynamoDB", async () => {
