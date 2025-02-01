@@ -9,8 +9,12 @@ import {
 } from "./userInfoTypes"
 import {OidcConfig, verifyIdToken} from "@cpt-ui-common/authFunctions"
 
-// Role names come in formatted like `"category":"subcategory":"roleName"`.
-// Takes only the last one, and strips out the quotes.
+/**
+ * **Extracts role name from a structured string.**
+ *
+ * Role names may be formatted as `"category":"subcategory":"roleName"`.
+ * This function extracts only the final part (`roleName`) and removes quotes.
+ */
 export const removeRoleCategories = (roleString: string | undefined) => {
   if (!roleString) {
     return undefined
@@ -19,13 +23,16 @@ export const removeRoleCategories = (roleString: string | undefined) => {
   return chunk.replace(/"/g, "")
 }
 
-// Fetch user info from the OIDC UserInfo endpoint
-// The access token is used to identify the user, and fetch their roles.
-// This populates three lists:
-//  - rolesWithAccess: roles that have access to the CPT
-//  - rolesWithoutAccess: roles that don't have access to the CPT
-//  - [OPTIONAL] currentlySelectedRole: the role that is currently selected by the user
-// Each list contains information on the roles, such as the role name, role ID, ODS code, and organization name.
+/**
+ * **Fetches user information from the OIDC UserInfo endpoint.**
+ *
+ * - Uses the provided access token to retrieve user roles and details.
+ * - Organizes roles into three categories:
+ *    - `rolesWithAccess`: Roles that have CPT access.
+ *    - `rolesWithoutAccess`: Roles that do not have CPT access.
+ *    - `currentlySelectedRole`: The user's currently selected role, if applicable.
+ * - Extracts basic user details (`family_name` and `given_name`).
+ */
 export const fetchUserInfo = async (
   cis2AccessToken: string,
   cis2IdToken: string,
@@ -64,6 +71,7 @@ export const fetchUserInfo = async (
     const rolesWithoutAccess: Array<RoleDetails> = []
     let currentlySelectedRole: RoleDetails | undefined = undefined
 
+    // Extract user details
     const userDetails: UserDetails = {
       family_name: data.family_name,
       given_name: data.given_name
@@ -134,7 +142,9 @@ export const fetchUserInfo = async (
   }
 }
 
-// Helper function to get organization name from org_code
+/**
+ * **Fetches the organization name for a given organization code.**
+ */
 function getOrgNameFromOrgCode(data: UserInfoResponse, org_code: string, logger: Logger): string | undefined {
   logger.info("Getting org name from org code", {org_code})
   const orgs = data.nhsid_user_orgs || []
@@ -143,8 +153,12 @@ function getOrgNameFromOrgCode(data: UserInfoResponse, org_code: string, logger:
   return org ? org.org_name : undefined
 }
 
-// Add the user currentlySelectedRole, rolesWithAccess and rolesWithoutAccess to the dynamoDB document,
-// keyed by this user's username.
+/**
+ * **Updates the user information in DynamoDB.**
+ *
+ * - Stores `currentlySelectedRole`, `rolesWithAccess`, `rolesWithoutAccess`, and `userDetails`.
+ * - Ensures no undefined values are stored in DynamoDB.
+ */
 export const updateDynamoTable = async (
   username: string,
   data: TrackerUserInfo,
@@ -158,31 +172,35 @@ export const updateDynamoTable = async (
 
   logger.debug("Adding user roles to DynamoDB", {username, data})
 
-  // Add the user roles to the DynamoDB table
-
   // Dynamo cannot allow undefined values. We need to scrub any undefined values from the data objects
   const currentlySelectedRole: RoleDetails = data.currently_selected_role ? data.currently_selected_role : {}
   const rolesWithAccess: Array<RoleDetails> = data.roles_with_access ? data.roles_with_access : []
   const rolesWithoutAccess: Array<RoleDetails> = data.roles_without_access ? data.roles_without_access : []
+  const userDetails: UserDetails = data.user_details || {family_name: "", given_name: ""}
 
   // Since RoleDetails has a bunch of possibly undefined fields, we need to scrub those out.
   // Convert everything to strings, then convert back to a generic object.
   const scrubbedCurrentlySelectedRole = JSON.parse(JSON.stringify(currentlySelectedRole))
   const scrubbedRolesWithAccess = rolesWithAccess.map((role) => JSON.parse(JSON.stringify(role)))
   const scrubbedRolesWithoutAccess = rolesWithoutAccess.map((role) => JSON.parse(JSON.stringify(role)))
+  const scrubbedUserDetails = JSON.parse(JSON.stringify(userDetails))
 
   try {
     await documentClient.send(
       new UpdateCommand({
         TableName: tokenMappingTableName,
         Key: {username},
-        UpdateExpression:
-          // eslint-disable-next-line max-len
-          "SET rolesWithAccess = :rolesWithAccess, rolesWithoutAccess = :rolesWithoutAccess, currentlySelectedRole = :currentlySelectedRole",
+        UpdateExpression: `
+          SET rolesWithAccess = :rolesWithAccess,
+              rolesWithoutAccess = :rolesWithoutAccess,
+              currentlySelectedRole = :currentlySelectedRole,
+              userDetails = :userDetails
+        `,
         ExpressionAttributeValues: {
           ":rolesWithAccess": scrubbedRolesWithAccess,
           ":rolesWithoutAccess": scrubbedRolesWithoutAccess,
-          ":currentlySelectedRole": scrubbedCurrentlySelectedRole
+          ":currentlySelectedRole": scrubbedCurrentlySelectedRole,
+          ":userDetails": scrubbedUserDetails
         }
       })
     )
@@ -193,7 +211,12 @@ export const updateDynamoTable = async (
   }
 }
 
-// Fetch user info from DynamoDB
+/**
+ * **Fetches user information from DynamoDB.**
+ *
+ * - Retrieves `rolesWithAccess`, `rolesWithoutAccess`, `currentlySelectedRole`, and `userDetails`.
+ * - Returns default values for missing attributes.
+ */
 export const fetchDynamoTable = async (
   username: string,
   documentClient: DynamoDBDocumentClient,
@@ -220,12 +243,10 @@ export const fetchDynamoTable = async (
       roles_with_access: response.Item.rolesWithAccess || [],
       roles_without_access: response.Item.rolesWithoutAccess || [],
       currently_selected_role: response.Item.currentlySelectedRole || undefined,
-      user_details: response.Item.userDetails || {family_name: "", given_name: ""} // Default empty user details
+      user_details: response.Item.userDetails || {family_name: "", given_name: ""}
     }
 
-    logger.info("User info successfully retrieved from DynamoDB", {
-      data: mappedUserInfo
-    })
+    logger.info("User info successfully retrieved from DynamoDB", {data: mappedUserInfo})
     return mappedUserInfo
   } catch (error) {
     logger.error("Error fetching user info from DynamoDB", {error})

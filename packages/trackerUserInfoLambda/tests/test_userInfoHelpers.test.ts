@@ -350,6 +350,34 @@ describe("fetchDynamoTable", () => {
     jest.clearAllMocks()
   })
 
+  it("should fetch user roles and user details from DynamoDB", async () => {
+    const mockResponse = {
+      Item: {
+        rolesWithAccess: [
+          {role_name: "Doctor", role_id: "123", org_code: "ABC", org_name: "Test Hospital"}
+        ],
+        rolesWithoutAccess: [],
+        currentlySelectedRole: undefined,
+        userDetails: {family_name: "Doe", given_name: "John"}
+      }
+    }
+
+    mockSend.mockResolvedValueOnce(mockResponse as never)
+
+    const result = await fetchDynamoTable(username, documentClient, logger, tokenMappingTableName)
+
+    expect(result).toEqual({
+      roles_with_access: [
+        {role_name: "Doctor", role_id: "123", org_code: "ABC", org_name: "Test Hospital"}
+      ],
+      roles_without_access: [],
+      currently_selected_role: undefined,
+      user_details: {family_name: "Doe", given_name: "John"}
+    })
+
+    expect(mockSend).toHaveBeenCalled()
+  })
+
   it("should throw an error when DynamoDB retrieval fails", async () => {
     mockSend.mockRejectedValue(new Error("DynamoDB error"))
 
@@ -384,5 +412,29 @@ describe("fetchDynamoTable", () => {
       currently_selected_role: undefined,
       user_details: {family_name: "Doe", given_name: "John"}
     })
+  })
+
+  it("should return default user details if missing in DynamoDB", async () => {
+    const mockResponse = {
+      Item: {
+        rolesWithAccess: [],
+        rolesWithoutAccess: [],
+        currentlySelectedRole: undefined
+        // userDetails is missing
+      }
+    }
+
+    mockSend.mockResolvedValueOnce(mockResponse as never)
+
+    const result = await fetchDynamoTable(username, documentClient, logger, tokenMappingTableName)
+
+    expect(result).toEqual({
+      roles_with_access: [],
+      roles_without_access: [],
+      currently_selected_role: undefined,
+      user_details: {family_name: "", given_name: ""}
+    })
+
+    expect(mockSend).toHaveBeenCalled()
   })
 })
