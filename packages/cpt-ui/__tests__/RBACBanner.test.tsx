@@ -202,6 +202,24 @@ describe("RBACBanner", () => {
         )
     })
 
+    it("should fallback to NO_ORG_NAME if org_name is missing", () => {
+        __setMockContextValue({
+            selectedRole: {
+                role_name: "Role Name",
+                role_id: "role-id",
+                org_code: "deadbeef"
+                // org_name is missing
+            }
+        })
+
+        renderWithAuth()
+
+        const bannerText = screen.getByTestId("rbac-banner-text")
+        expect(bannerText).toHaveTextContent(
+            `CONFIDENTIAL: PERSONAL PATIENT DATA accessed by DOE, Jane - Role Name - NO_ORG_NAME (ODS: deadbeef)`
+        )
+    })
+
     // Example "dummy" test (remove or replace with real coverage as needed)
     it("Dummy test", () => {
         console.log("dummy test - no assertions")
