@@ -7,7 +7,7 @@ import middy from "@middy/core"
 import inputOutputLogger from "@middy/input-output-logger"
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 import {getUsernameFromEvent} from "@cpt-ui-common/authFunctions"
-import {updateDynamoTable, fetchDynamoRolesWithAccess} from "./selectedRoleHelpers"
+import {updateDynamoTable, fetchUserRolesFromDynamoDB} from "./selectedRoleHelpers"
 
 /*
  * Lambda function for updating the selected role in the DynamoDB table.
@@ -62,56 +62,97 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     }
   }
 
-  logger.info("Parsed user role information from request body", {userInfoSelectedRole})
+  logger.info("Received role selection request", {
+    username,
+    selectedRoleFromRequest: userInfoSelectedRole.currently_selected_role ?? "No role provided"
+  })
 
-  logger.info("Fetching existing rolesWithAccess from DynamoDB...")
-  const cachedRolesWithAccess = await fetchDynamoRolesWithAccess(
+  // Fetch current roles and selected role from DynamoDB
+  logger.info("Fetching user roles from DynamoDB", {
+    username,
+    tableName: tokenMappingTableName
+  })
+
+  const cachedRolesWithAccess = await fetchUserRolesFromDynamoDB(
     username, documentClient, logger, tokenMappingTableName
   )
 
-  // Extract rolesWithAccess from the DynamoDB response safely
+  // Extract rolesWithAccess and currentlySelectedRole from the DynamoDB response
   const rolesWithAccess = cachedRolesWithAccess?.rolesWithAccess || []
+  const currentSelectedRole = cachedRolesWithAccess?.currentlySelectedRole // Could be undefined
+
+  // Identify the new selected role from request
   const userSelectedRoleId = userInfoSelectedRole.currently_selected_role?.role_id
+  const newSelectedRole = rolesWithAccess.find(role => role.role_id === userSelectedRoleId)
 
-  logger.info("User-selected role ID", {role_id: userSelectedRoleId})
+  // Log extracted role details
+  logger.info("Extracted role data", {
+    username,
+    rolesWithAccessCount: rolesWithAccess.length,
+    rolesWithAccess: rolesWithAccess.map(role => ({
+      role_id: role.role_id,
+      role_name: role.role_name,
+      org_code: role.org_code
+    })),
+    previousSelectedRole: currentSelectedRole
+      ? {
+        role_id: currentSelectedRole.role_id,
+        role_name: currentSelectedRole.role_name,
+        org_code: currentSelectedRole.org_code
+      }
+      : "No previous role selected",
+    newSelectedRole: newSelectedRole
+      ? {
+        role_id: newSelectedRole.role_id,
+        role_name: newSelectedRole.role_name,
+        org_code: newSelectedRole.org_code
+      }
+      : "Role not found in rolesWithAccess"
+  })
 
-  // Extract current `currentlySelectedRole` and new `selectedRole`
-  const currentSelectedRole = cachedRolesWithAccess.currentlySelectedRole
-  const newSelectedRole = rolesWithAccess.find(role => role.role_id === userSelectedRoleId) // Keep it if not found
-
-  logger.info("Current selected role", {currentSelectedRole})
-  logger.info("New selected role", {newSelectedRole})
-
-  // Create updated role lists
+  // Construct updated roles list
   const updatedRolesWithAccess = [
-    // If a currentlySelectedRole exists, make sure it is added back before removing the new selection
-    ...(currentSelectedRole && Object.keys(currentSelectedRole).length > 0
-      ? [currentSelectedRole] // Only add if it's not an empty object
-      : []),
-
-    // Remove the role that is being selected from rolesWithAccess
-    ...rolesWithAccess.filter(role => role.role_id !== userSelectedRoleId)
+    ...rolesWithAccess.filter(role => role.role_id !== userSelectedRoleId), // Remove the new selected role
+    ...(currentSelectedRole ? [currentSelectedRole] : []) // Move old selected role back into rolesWithAccess
   ]
 
-  logger.info("Updated roles with access", {updatedRolesWithAccess})
+  logger.info("Updated roles list before database update", {
+    username,
+    newSelectedRole: newSelectedRole
+      ? {
+        role_id: newSelectedRole.role_id,
+        role_name: newSelectedRole.role_name,
+        org_code: newSelectedRole.org_code
+      }
+      : "No role selected",
+    returningRoleToAccessList: currentSelectedRole
+      ? {
+        role_id: currentSelectedRole.role_id,
+        role_name: currentSelectedRole.role_name,
+        org_code: currentSelectedRole.org_code
+      }
+      : "No previous role to return",
+    updatedRolesWithAccessCount: updatedRolesWithAccess.length,
+    updatedRolesWithAccess: updatedRolesWithAccess.map(role => ({
+      role_id: role.role_id,
+      role_name: role.role_name,
+      org_code: role.org_code
+    }))
+  })
 
-  const updatedRolesWithAccessTest = [
-    ...(currentSelectedRole && Object.keys(currentSelectedRole).length > 0
-      ? [currentSelectedRole] // Only add if it's not an empty object
-      : [])
-  ]
-
-  logger.info("Updated roles with access test", {updatedRolesWithAccessTest})
-
+  // Prepare the updated user info to be stored in DynamoDB
   const updatedUserInfo = {
-    currentlySelectedRole: newSelectedRole, // Assign new selected role
-    rolesWithAccess: updatedRolesWithAccess, // Ensure old role is moved back to list
+    currentlySelectedRole: newSelectedRole || {}, // If no role is found, store empty object
+    rolesWithAccess: updatedRolesWithAccess,
     selectedRoleId: userSelectedRoleId
   }
 
-  logger.info("Updating DynamoDB with new selected role", {updatedUserInfo})
+  logger.info("Updating user role in DynamoDB", {
+    username,
+    updatedUserInfo
+  })
 
-  // Call helper function to update the selected role in the database
+  // Persist changes to DynamoDB
   await updateDynamoTable(username, updatedUserInfo, documentClient, logger, tokenMappingTableName)
 
   return {

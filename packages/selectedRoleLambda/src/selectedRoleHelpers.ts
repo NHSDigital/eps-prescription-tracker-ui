@@ -85,11 +85,13 @@ export const updateDynamoTable = async (
 }
 
 /**
- * **Fetches roles with access from DynamoDB**
+ * **Fetches user roles from DynamoDB**
  *
- * - Retrieves available roles for a user from the database.
+ * - Retrieves `rolesWithAccess` (available roles for the user).
+ * - Retrieves `currentlySelectedRole` (the role currently chosen by the user).
+ * - Ensures both fields are always returned, even if no data exists.
  */
-export const fetchDynamoRolesWithAccess = async (
+export const fetchUserRolesFromDynamoDB = async (
   username: string,
   documentClient: DynamoDBDocumentClient,
   logger: Logger,
@@ -109,14 +111,18 @@ export const fetchDynamoRolesWithAccess = async (
     // Handle case where no user data is found
     if (!response.Item) {
       logger.warn("No user info found in DynamoDB", {username})
-      return {rolesWithAccess: []} // Return empty role list
+      return {rolesWithAccess: [], currentlySelectedRole: undefined} // Ensure both fields are always returned
     }
 
+    // Extract rolesWithAccess and currentlySelectedRole safely
     const retrievedRolesWithAccess: SelectedRole = {
-      rolesWithAccess: response.Item.rolesWithAccess || []
+      rolesWithAccess: response.Item.rolesWithAccess || [],
+      currentlySelectedRole: response.Item.currentlySelectedRole || undefined // Retrieve currentlySelectedRole
     }
 
-    logger.info("Roles with access successfully retrieved from DynamoDB", {data: retrievedRolesWithAccess})
+    logger.info("Roles and selected role successfully retrieved from DynamoDB", {
+      data: retrievedRolesWithAccess
+    })
     return retrievedRolesWithAccess
   } catch (error) {
     logger.error("Error fetching user info from DynamoDB", {error})

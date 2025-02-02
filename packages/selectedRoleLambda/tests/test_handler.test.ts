@@ -12,11 +12,11 @@ jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
 })
 
 // Mocked functions from selectedRoleHelpers
-const mockFetchDynamoRolesWithAccess = jest.fn()
+const mockFetchUserRolesFromDynamoDB = jest.fn()
 const mockUpdateDynamoTable = jest.fn()
 
 jest.unstable_mockModule("@/selectedRoleHelpers", () => {
-  const fetchDynamoRolesWithAccess = mockFetchDynamoRolesWithAccess.mockImplementation(() => {
+  const fetchUserRolesFromDynamoDB = mockFetchUserRolesFromDynamoDB.mockImplementation(() => {
     return {
       rolesWithAccess: [
         {role_id: "123", org_code: "XYZ", role_name: "MockRole_1"},
@@ -29,7 +29,7 @@ jest.unstable_mockModule("@/selectedRoleHelpers", () => {
   const updateDynamoTable = mockUpdateDynamoTable.mockImplementation(() => {})
 
   return {
-    fetchDynamoRolesWithAccess,
+    fetchUserRolesFromDynamoDB,
     updateDynamoTable
   }
 })
@@ -123,10 +123,10 @@ describe("Lambda Handler Tests", () => {
     })
 
   it(
-    "should correctly swap currentlySelectedRole with the new role and move the old one back to rolesWithAccess",
+    "should swap currentlySelectedRole with the new selected role and move the old one back to rolesWithAccess",
     async () => {
       // Initial rolesWithAccess contains multiple roles, currentlySelectedRole is undefined
-      mockFetchDynamoRolesWithAccess.mockImplementation(() => {
+      mockFetchUserRolesFromDynamoDB.mockImplementation(() => {
         return {
           rolesWithAccess: [
             {role_id: "123", org_code: "XYZ", role_name: "MockRole_1"},
@@ -210,6 +210,91 @@ describe("Lambda Handler Tests", () => {
       })
     }
   )
+
+  it(
+    "should swap initially selected role with the new selected role and move the old one back to rolesWithAccess",
+    async () => {
+      // Initial database state with a previously selected role
+      mockFetchUserRolesFromDynamoDB.mockImplementation(() => {
+        return {
+          rolesWithAccess: [
+            {role_id: "123", org_code: "XYZ", role_name: "MockRole_1"},
+            {role_id: "456", org_code: "ABC", role_name: "MockRole_2"},
+            {role_id: "789", org_code: "DEF", role_name: "MockRole_3"}
+          ],
+          currentlySelectedRole: {role_id: "555", org_code: "GHI", role_name: "MockRole_4"} // Initially selected role
+        }
+      })
+
+      // First role selection: Change to "MockRole_1"
+      const firstEvent = {
+        ...mockAPIGatewayProxyEvent,
+        body: JSON.stringify({
+          currently_selected_role: {
+            role_id: "123",
+            org_code: "XYZ",
+            role_name: "MockRole_1"
+          }
+        })
+      }
+
+      const firstResponse = await handler(firstEvent, mockContext)
+      const firstResponseBody = JSON.parse(firstResponse.body)
+
+      expect(mockUpdateDynamoTable).toHaveBeenCalledWith(
+        "Mock_JoeBloggs",
+        {
+          currentlySelectedRole: {
+            role_id: "123",
+            org_code: "XYZ",
+            role_name: "MockRole_1"
+          },
+          rolesWithAccess: [
+            {role_id: "456", org_code: "ABC", role_name: "MockRole_2"},
+            {role_id: "789", org_code: "DEF", role_name: "MockRole_3"},
+            {role_id: "555", org_code: "GHI", role_name: "MockRole_4"} // Old role moved back
+          ],
+          selectedRoleId: "123"
+        },
+        expect.any(Object),
+        expect.any(Object),
+        expect.any(String)
+      )
+
+      // Now simulate switching to another role
+      mockFetchUserRolesFromDynamoDB.mockImplementation(() => firstResponseBody.userInfo)
+
+      const secondEvent = {
+        ...mockAPIGatewayProxyEvent,
+        body: JSON.stringify({
+          currently_selected_role: {
+            role_id: "789",
+            org_code: "DEF",
+            role_name: "MockRole_3"
+          }
+        })
+      }
+
+      const secondResponse = await handler(secondEvent, mockContext)
+      const secondResponseBody = JSON.parse(secondResponse.body)
+
+      expect(secondResponseBody).toEqual({
+        message: "Selected role data has been updated successfully",
+        userInfo: {
+          currentlySelectedRole: {
+            role_id: "789",
+            org_code: "DEF",
+            role_name: "MockRole_3"
+          },
+          rolesWithAccess: [
+            {role_id: "456", org_code: "ABC", role_name: "MockRole_2"},
+            {role_id: "555", org_code: "GHI", role_name: "MockRole_4"},
+            {role_id: "123", org_code: "XYZ", role_name: "MockRole_1"} // Previously selected role moved back
+          ],
+          selectedRoleId: "789"
+        }
+      })
+    })
 
   it("should return 500 and log error when updateDynamoTable throws an error", async () => {
     const error = new Error("Dynamo update failed")

@@ -2,7 +2,7 @@ import {jest} from "@jest/globals"
 import {Logger} from "@aws-lambda-powertools/logger"
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
 import {DynamoDBDocumentClient, GetCommand, UpdateCommand} from "@aws-sdk/lib-dynamodb"
-import {updateDynamoTable, fetchDynamoRolesWithAccess} from "@/selectedRoleHelpers"
+import {updateDynamoTable, fetchUserRolesFromDynamoDB} from "@/selectedRoleHelpers"
 import {SelectedRole} from "@/selectedRoleTypes"
 
 // Mock Logger
@@ -122,7 +122,7 @@ describe("updateDynamoTable", () => {
   })
 })
 
-describe("fetchDynamoRolesWithAccess", () => {
+describe("fetchUserRolesFromDynamoDB", () => {
   beforeEach(() => {
     jest.clearAllMocks()
     jest.spyOn(logger, "info").mockImplementation(() => {})
@@ -143,11 +143,11 @@ describe("fetchDynamoRolesWithAccess", () => {
 
     jest.spyOn(dynamoDBClient, "send").mockResolvedValueOnce(mockDynamoResponse as never)
 
-    const result = await fetchDynamoRolesWithAccess(username, dynamoDBClient, logger, tokenMappingTableName)
+    const result = await fetchUserRolesFromDynamoDB(username, dynamoDBClient, logger, tokenMappingTableName)
 
     expect(dynamoDBClient.send).toHaveBeenCalledWith(expect.any(GetCommand))
     expect(logger.info).toHaveBeenCalledWith(
-      "Roles with access successfully retrieved from DynamoDB",
+      "Roles and selected role successfully retrieved from DynamoDB",
       expect.objectContaining({data: expect.any(Object)})
     )
 
@@ -160,7 +160,7 @@ describe("fetchDynamoRolesWithAccess", () => {
     const mockEmptyResponse: {Item: undefined} = {Item: undefined}
     jest.spyOn(dynamoDBClient, "send").mockResolvedValueOnce(mockEmptyResponse as never)
 
-    const result = await fetchDynamoRolesWithAccess(username, dynamoDBClient, logger, tokenMappingTableName)
+    const result = await fetchUserRolesFromDynamoDB(username, dynamoDBClient, logger, tokenMappingTableName)
 
     expect(logger.warn).toHaveBeenCalledWith("No user info found in DynamoDB", {username})
     expect(result).toEqual({rolesWithAccess: []})
@@ -170,7 +170,7 @@ describe("fetchDynamoRolesWithAccess", () => {
     jest.spyOn(dynamoDBClient, "send").mockRejectedValueOnce(new Error("DynamoDB fetch error") as never)
 
     await expect(
-      fetchDynamoRolesWithAccess(username, dynamoDBClient, logger, tokenMappingTableName)
+      fetchUserRolesFromDynamoDB(username, dynamoDBClient, logger, tokenMappingTableName)
     ).rejects.toThrow("Failed to retrieve user info from cache")
 
     expect(logger.error).toHaveBeenCalledWith(
