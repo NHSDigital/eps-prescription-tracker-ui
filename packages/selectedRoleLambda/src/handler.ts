@@ -9,7 +9,7 @@ import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 import {getUsernameFromEvent} from "@cpt-ui-common/authFunctions"
 import {updateDynamoTable, fetchUserRolesFromDynamoDB} from "./selectedRoleHelpers"
 
-/*
+/**
  * Lambda function for updating the selected role in the DynamoDB table.
  * This function handles incoming API Gateway requests, extracts the username,
  * parses the request body, and updates the user's role in the database.
@@ -43,7 +43,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
   // Validate the presence of request body
   if (!event.body) {
-    logger.error("Request body is missing")
+    logger.warn("Request body is missing", {username})
     return {
       statusCode: 400,
       body: JSON.stringify({message: "Request body is required"})
@@ -74,7 +74,10 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   })
 
   const cachedRolesWithAccess = await fetchUserRolesFromDynamoDB(
-    username, documentClient, logger, tokenMappingTableName
+    username,
+    documentClient,
+    logger,
+    tokenMappingTableName
   )
 
   // Extract rolesWithAccess and currentlySelectedRole from the DynamoDB response
@@ -113,7 +116,11 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   // Construct updated roles list
   const updatedRolesWithAccess = [
     ...rolesWithAccess.filter(role => role.role_id !== userSelectedRoleId), // Remove the new selected role
-    ...(currentSelectedRole ? [currentSelectedRole] : []) // Move old selected role back into rolesWithAccess
+
+    // Move the previously selected role back into rolesWithAccess, but only if it was set
+    ...(currentSelectedRole && Object.keys(currentSelectedRole).length > 0
+      ? [currentSelectedRole]
+      : [])
   ]
 
   logger.info("Updated roles list before database update", {
@@ -142,7 +149,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
   // Prepare the updated user info to be stored in DynamoDB
   const updatedUserInfo = {
-    currentlySelectedRole: newSelectedRole || {}, // If no role is found, store empty object
+    currentlySelectedRole: newSelectedRole || undefined, // If no role is found, store `undefined`
     rolesWithAccess: updatedRolesWithAccess,
     selectedRoleId: userSelectedRoleId
   }
