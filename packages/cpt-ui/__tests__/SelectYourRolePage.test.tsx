@@ -21,7 +21,7 @@ jest.mock("@/constants/ui-strings/CardStrings", () => {
     },
     confirmButton: {
       text: "Continue to find a prescription",
-      link: "tracker-presc-no",
+      link: "searchforaprescription",
     },
     alternativeMessage: "Alternatively, you can choose a new role below.",
     organisation: "Organisation",

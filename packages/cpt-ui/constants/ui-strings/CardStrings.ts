@@ -13,7 +13,7 @@ export const SELECT_YOUR_ROLE_PAGE_TEXT = {
   },
   confirmButton: {
     text: "Continue to find a prescription",
-    link: "tracker-presc-no"
+    link: "searchforaprescription"
   },
   alternativeMessage: "Alternatively, you can choose a new role below.",
   organisation: "Organisation",
