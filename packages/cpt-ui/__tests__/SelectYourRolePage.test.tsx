@@ -321,4 +321,25 @@ describe("SelectYourRolePage", () => {
       expect(useRouter().push).toHaveBeenCalledWith("/searchforaprescription")
     })
   })
+
+  it("does not fetch user roles if user is not signed in", async () => {
+    const mockFetch = jest.fn()
+    global.fetch = mockFetch
+
+    renderWithAuth({isSignedIn: false}) // Simulating a user who is not signed in
+
+    expect(mockFetch).not.toHaveBeenCalled()
+  })
+
+  it("displays an error when the API request fails", async () => {
+    mockFetch.mockRejectedValue(new Error("Failed to fetch user roles"))
+
+    renderWithAuth({isSignedIn: true, idToken: {toString: jest.fn().mockReturnValue("mock-id-token")}})
+
+    await waitFor(() => {
+      const errorSummary = screen.getByRole("heading", {name: "Error during role selection"})
+      expect(errorSummary).toBeInTheDocument()
+      expect(screen.getByText("Failed to fetch CPT user info")).toBeInTheDocument()
+    })
+  })
 })
