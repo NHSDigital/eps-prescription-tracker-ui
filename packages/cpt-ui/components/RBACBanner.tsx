@@ -14,7 +14,6 @@ export default function RBACBanner() {
     useEffect(() => {
         if (!selectedRole || !userDetails) {
             console.log("No selected role or user details - hiding RBAC banner.")
-            setBannerText("")
             return
         }
 
@@ -55,7 +54,7 @@ export default function RBACBanner() {
     * The component should render only after a role is selected.
     * This check must come after the effect logic to prevent hydration errors in SSR.
     */
-    if (!selectedRole || !userDetails || !bannerText) {
+    if (!selectedRole) {
         return null
     }
 
