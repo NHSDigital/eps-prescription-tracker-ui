@@ -66,7 +66,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
   logger.info("Is this a mock request?", {isMockRequest})
 
-  // Try to fetch user info from DynamoDB
+  // Fetch user info from DynamoDB
   const cachedUserInfo = await fetchDynamoTable(username, documentClient, logger, tokenMappingTableName)
 
   // Check if cached data exists and has valid role information
@@ -79,7 +79,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     return {
       statusCode: 200,
       body: JSON.stringify({
-        message: "UserInfo fetched successfully from cache",
+        message: "UserInfo fetched successfully from DynamoDB",
         userInfo: cachedUserInfo
       })
     }
@@ -109,7 +109,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   return {
     statusCode: 200,
     body: JSON.stringify({
-      message: "UserInfo fetched successfully",
+      message: "UserInfo fetched successfully from the OIDC endpoint",
       userInfo: userInfoResponse
     })
   }

@@ -15,7 +15,7 @@ jest.mock("@/constants/ui-strings/YourSelectedRoleStrings", () => {
         roleLabel: "Role",
         orgLabel: "Organisation",
         changeLinkText: "Change",
-        confirmButtonText: "Confirm and continue to find a prescription",
+        confirmButtonText: "Continue to find a prescription",
         noODSCode: "NO ODS CODE",
         noRoleName: "NO ROLE NAME",
         noOrgName: "NO ORG NAME"

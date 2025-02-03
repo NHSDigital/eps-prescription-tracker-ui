@@ -8,8 +8,8 @@ export type RoleDetails = {
   uuid?: string
 }
 
-export type TrackerUserInfo = {
-  roles_with_access: Array<RoleDetails>
-  roles_without_access: Array<RoleDetails>
-  currently_selected_role?: RoleDetails
+export type SelectedRole = {
+  rolesWithAccess: Array<RoleDetails>
+  currentlySelectedRole?: RoleDetails
+  selectedRoleId?: string
 }

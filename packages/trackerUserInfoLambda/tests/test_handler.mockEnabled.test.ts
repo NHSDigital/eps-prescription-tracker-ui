@@ -160,7 +160,7 @@ describe("Lambda Handler Tests with mock enabled", () => {
     expect(response).toHaveProperty("body")
 
     const body = JSON.parse(response.body)
-    expect(body).toHaveProperty("message", "UserInfo fetched successfully")
+    expect(body).toHaveProperty("message", "UserInfo fetched successfully from the OIDC endpoint")
     expect(body).toHaveProperty("userInfo")
   })
 
@@ -362,7 +362,7 @@ describe("Lambda Handler Tests with mock enabled", () => {
     )
 
     expect(response.statusCode).toBe(200)
-    expect(response.body).toContain("UserInfo fetched successfully from cache")
+    expect(response.body).toContain("UserInfo fetched successfully from DynamoDB")
 
     const responseBody = JSON.parse(response.body)
     expect(responseBody.userInfo).toEqual(userInfoMock)
@@ -398,7 +398,7 @@ describe("Lambda Handler Tests with mock enabled", () => {
     )
 
     expect(response.statusCode).toBe(200)
-    expect(response.body).toContain("UserInfo fetched successfully from cache")
+    expect(response.body).toContain("UserInfo fetched successfully from DynamoDB")
 
     const responseBody = JSON.parse(response.body)
     expect(responseBody.userInfo).toEqual(userInfoMock)
@@ -434,7 +434,7 @@ describe("Lambda Handler Tests with mock enabled", () => {
     )
 
     expect(response.statusCode).toBe(200)
-    expect(response.body).toContain("UserInfo fetched successfully from cache")
+    expect(response.body).toContain("UserInfo fetched successfully from DynamoDB")
 
     const responseBody = JSON.parse(response.body)
     expect(responseBody.userInfo).toEqual(userInfoMock)
