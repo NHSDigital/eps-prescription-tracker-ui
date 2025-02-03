@@ -7,6 +7,8 @@ import { TrackerUserInfo } from "@/types/TrackerUserInfoTypes"
 import { AccessProvider, useAccess } from "@/context/AccessProvider"
 import { AuthContext } from "@/context/AuthProvider"
 
+jest.mock('@/helpers/axios');
+
 function TestConsumer() {
     const { noAccess, singleAccess, selectedRole, clear } = useAccess()
 

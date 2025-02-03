@@ -8,6 +8,8 @@ import { signInWithRedirect, signOut, getCurrentUser, fetchAuthSession } from 'a
 
 import { AuthContext, AuthProvider } from "@/context/AuthProvider";
 
+jest.mock('@/helpers/axios');
+
 // Mock environment variables to mimic the real environment
 process.env.NEXT_PUBLIC_userPoolId = 'testUserPoolId';
 process.env.NEXT_PUBLIC_userPoolClientId = 'testUserPoolClientId';
@@ -118,7 +120,7 @@ describe('AuthProvider', () => {
       if (channel === 'auth') {
         hubCallback = callback; // Store the Hub callback
       }
-      return () => {}; // Mock unsubscribe function
+      return () => { }; // Mock unsubscribe function
     });
   });
 
@@ -201,27 +203,27 @@ describe('AuthProvider', () => {
   it('should log an error and reset state when fetching user session fails', async () => {
     // Mock console.error to track calls
     const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
-  
+
     // Mock fetchAuthSession to throw an error
     const sessionError = new Error('Session fetch failed');
     (fetchAuthSession as jest.Mock).mockRejectedValueOnce(sessionError);
-  
+
     // Render the provider
     await renderWithProvider();
-  
+
     // Wait for the state to be reset
     await waitFor(() => {
       // Verify that the state is reset correctly
       expect(screen.getByTestId('isSignedIn').textContent).toBe('false');
       expect(screen.getByTestId('user').textContent).toBe('');
     });
-  
+
     // Verify that the error was logged
     expect(consoleErrorSpy).toHaveBeenCalledWith(
       'Error fetching user session:',
       sessionError
     );
-  
+
     // Restore the original console.error implementation
     consoleErrorSpy.mockRestore();
   });
@@ -229,18 +231,18 @@ describe('AuthProvider', () => {
   it('should log an error if signOut fails', async () => {
     // Mock console.error to track calls
     const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
-  
+
     // Mock signOut to throw an error
     const signOutError = new Error('Sign out failed');
     (signOut as jest.Mock).mockRejectedValue(signOutError);
-  
+
     let contextValue: any;
-  
+
     const TestComponent = () => {
       contextValue = useContext(AuthContext);
       return null;
     };
-  
+
     // Render the provider
     await act(async () => {
       render(
@@ -249,14 +251,14 @@ describe('AuthProvider', () => {
         </AuthProvider>
       );
     });
-  
+
     // Attempt to sign out and verify the logged error
     await act(async () => {
       await contextValue.cognitoSignOut();
     });
-  
+
     expect(consoleErrorSpy).toHaveBeenCalledWith('Failed to sign out:', signOutError); // Error logged
-  
+
     // Restore the original console.error implementation
     consoleErrorSpy.mockRestore();
   });
@@ -326,11 +328,11 @@ describe('AuthProvider', () => {
     // Mock session and user for a successful signInWithRedirect Hub event
     const mockSession = createTokenMocks(); // Create valid mock tokens
     const mockUser = { username: 'testuser' }; // Create a mock user object
-  
+
     // Mock Amplify functions to return the mocked session and user
     (fetchAuthSession as jest.Mock).mockResolvedValue(mockSession);
     (getCurrentUser as jest.Mock).mockResolvedValue(mockUser);
-  
+
     // Render the AuthProvider with a TestConsumer to observe context changes
     await act(async () => {
       render(
@@ -339,18 +341,18 @@ describe('AuthProvider', () => {
         </AuthProvider>
       );
     });
-  
+
     // Ensure the Hub event listener (hubCallback) is initialized
     if (!hubCallback) {
       throw new Error('hubCallback is not initialized');
     }
-  
+
     // Simulate the Hub event "signInWithRedirect"
     act(() => {
       // Simulate a successful Hub event for signInWithRedirect
       hubCallback!({ payload: { event: 'signInWithRedirect' } });
     });
-  
+
     // Wait for the context state to update and verify changes
     await waitFor(() => {
       // Assert that the user is signed in after the Hub event
@@ -362,17 +364,17 @@ describe('AuthProvider', () => {
   it('should handle Hub event signInWithRedirect_failure', async () => {
     // Render the AuthProvider with a TestConsumer to observe context changes
     await renderWithProvider();
-  
+
     // Ensure the Hub event listener (hubCallback) is initialized
     if (!hubCallback) {
       throw new Error('hubCallback is not initialized');
     }
-  
+
     // Simulate the Hub event "signInWithRedirect_failure"
     act(() => {
       hubCallback!({ payload: { event: 'signInWithRedirect_failure' } });
     });
-  
+
     // Wait for the context state to update and verify changes
     await waitFor(() => {
       // Assert that an error is set after the Hub event failure
@@ -416,17 +418,17 @@ describe('AuthProvider', () => {
   it('should handle Hub event signedOut', async () => {
     // Render the AuthProvider and capture the Hub callback
     await renderWithProvider();
-  
+
     // Ensure the Hub event listener (hubCallback) is initialized
     if (!hubCallback) {
       throw new Error('hubCallback is not initialized');
     }
-  
+
     // Simulate the 'signedOut' Hub event
     act(() => {
       hubCallback!({ payload: { event: 'signedOut' } });
     });
-  
+
     // Verify that the context state is reset
     await waitFor(() => {
       expect(screen.getByTestId('isSignedIn').textContent).toBe('false');

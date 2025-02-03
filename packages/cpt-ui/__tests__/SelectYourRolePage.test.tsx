@@ -5,6 +5,11 @@ import React from "react"
 import SelectYourRolePage from "@/app/selectyourrole/page"
 import { AuthContext } from "@/context/AuthProvider"
 
+import axios from "axios";
+import MockAdapter from "axios-mock-adapter";
+
+jest.mock('@/helpers/axios');
+
 // Mock the module and directly reference the variable
 jest.mock("@/constants/ui-strings/CardStrings", () => {
   const SELECT_YOUR_ROLE_PAGE_TEXT = {
@@ -119,8 +124,15 @@ import { SELECT_YOUR_ROLE_PAGE_TEXT } from "@/constants/ui-strings/CardStrings";
 import { EpsSpinnerStrings } from "../constants/ui-strings/EpsSpinnerStrings";
 
 describe("SelectYourRolePage", () => {
+  let mockAxios: MockAdapter;
+
+  beforeAll(() => {
+    mockAxios = new MockAdapter(axios);
+  });
+
   // Clear all mock calls before each test to avoid state leaks
   beforeEach(() => {
+    mockAxios.reset();
     jest.clearAllMocks()
     __setMockContextValue({
       noAccess: false,
@@ -129,7 +141,7 @@ describe("SelectYourRolePage", () => {
 
   it("renders loading state when signed in but fetch hasn't resolved yet", async () => {
     // Mock fetch to hang indefinitely, simulating a pending request
-    mockFetch.mockImplementation(() => new Promise(() => { }))
+    mockAxios.onGet("/api/tracker-user-info").timeout();
 
     // Render the page with user signed in
     renderWithAuth({
@@ -144,7 +156,7 @@ describe("SelectYourRolePage", () => {
 
   it("renders error summary if fetch returns non-200 status", async () => {
     // Mock fetch to return a 500 status code (server error)
-    mockFetch.mockResolvedValue({ status: 500 })
+    mockAxios.onGet("/api/tracker-user-info").reply(500);
 
     // Render the page with user signed in
     renderWithAuth({ isSignedIn: true, idToken: { toString: jest.fn().mockReturnValue("mock-id-token") } })
@@ -164,10 +176,7 @@ describe("SelectYourRolePage", () => {
 
   it("renders error summary if fetch returns 200 but no userInfo is present", async () => {
     // Mock fetch to return 200 OK but with an empty JSON body
-    mockFetch.mockResolvedValue({
-      status: 200,
-      json: async () => ({}), // No `userInfo` key in response
-    })
+    mockAxios.onGet("/api/tracker-user-info").reply(200, {});
 
     // Render the page with user signed in
     renderWithAuth({ isSignedIn: true, idToken: { toString: jest.fn().mockReturnValue("mock-id-token") } })
@@ -208,10 +217,7 @@ describe("SelectYourRolePage", () => {
     }
 
     // Mock fetch to return 200 OK with valid userInfo
-    mockFetch.mockResolvedValue({
-      status: 200,
-      json: async () => ({ userInfo: mockUserInfo }),
-    })
+    mockAxios.onGet("/api/tracker-user-info").reply(200, { userInfo: mockUserInfo });
 
     // Render the page with user signed in
     renderWithAuth({ isSignedIn: true, idToken: { toString: jest.fn().mockReturnValue("mock-id-token") } })

@@ -5,6 +5,8 @@ import React from "react"
 
 import { AuthContext } from "@/context/AuthProvider"
 
+jest.mock('@/helpers/axios')
+
 // Mock the card strings, so we have known text for the tests
 jest.mock("@/constants/ui-strings/CardStrings", () => {
   const CHANGE_YOUR_ROLE_PAGE_TEXT = {
