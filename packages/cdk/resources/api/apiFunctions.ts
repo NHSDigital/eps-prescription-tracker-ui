@@ -46,6 +46,7 @@ export class ApiFunctions extends Construct {
   public readonly apiFunctionsPolicies: Array<IManagedPolicy>
   public readonly prescriptionSearchLambda: NodejsFunction
   public readonly trackerUserInfoLambda: NodejsFunction
+  public readonly selectedRoleLambda: NodejsFunction
   public readonly primaryJwtPrivateKey: Secret
 
   public constructor(scope: Construct, id: string, props: ApiFunctionsProps) {
@@ -108,6 +109,22 @@ export class ApiFunctions extends Construct {
     // Add the policy to apiFunctionsPolicies
     apiFunctionsPolicies.push(trackerUserInfoLambda.executeLambdaManagedPolicy)
 
+    // Selected Role Lambda Function
+    const selectedRoleLambda = new LambdaFunction(this, "SelectedRole", {
+      serviceName: props.serviceName,
+      stackName: props.stackName,
+      lambdaName: `${props.stackName}-selectedRole`,
+      additionalPolicies: additionalPolicies,
+      logRetentionInDays: props.logRetentionInDays,
+      logLevel: props.logLevel,
+      packageBasePath: "packages/selectedRoleLambda",
+      entryPoint: "src/handler.ts",
+      lambdaEnvironmentVariables: commonLambdaEnv
+    })
+
+    // Add the policy to apiFunctionsPolicies
+    apiFunctionsPolicies.push(selectedRoleLambda.executeLambdaManagedPolicy)
+
     // Prescription Search Lambda Function
     const prescriptionSearchLambda = new LambdaFunction(this, "PrescriptionSearch", {
       serviceName: props.serviceName,
@@ -158,5 +175,6 @@ export class ApiFunctions extends Construct {
 
     this.prescriptionSearchLambda = prescriptionSearchLambda.lambda
     this.trackerUserInfoLambda = trackerUserInfoLambda.lambda
+    this.selectedRoleLambda = selectedRoleLambda.lambda
   }
 }

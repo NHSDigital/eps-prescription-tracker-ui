@@ -39,9 +39,9 @@ jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
     return "Primary_JoeBloggs"
   })
 
-  const initializeOidcConfig = mockInitializeOidcConfig.mockImplementation( () => {
+  const initializeOidcConfig = mockInitializeOidcConfig.mockImplementation(() => {
     // Create a JWKS client for cis2 and mock
-  // this is outside functions so it can be re-used
+    // this is outside functions so it can be re-used
     const cis2JwksUri = process.env["CIS2_OIDCJWKS_ENDPOINT"] as string
     const cis2JwksClient = jwksClient({
       jwksUri: cis2JwksUri,
@@ -91,6 +91,7 @@ jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
 // Mocked functions from userInfoHelpers
 const mockFetchUserInfo = jest.fn()
 const mockUpdateDynamoTable = jest.fn()
+const mockFetchDynamoTable = jest.fn()
 
 jest.unstable_mockModule("@/userInfoHelpers", () => {
   const fetchUserInfo = mockFetchUserInfo.mockImplementation(() => {
@@ -103,9 +104,12 @@ jest.unstable_mockModule("@/userInfoHelpers", () => {
 
   const updateDynamoTable = mockUpdateDynamoTable.mockImplementation(() => {})
 
+  const fetchDynamoTable = mockFetchDynamoTable.mockImplementation(() => {})
+
   return {
     fetchUserInfo,
-    updateDynamoTable
+    updateDynamoTable,
+    fetchDynamoTable
   }
 })
 
@@ -129,7 +133,7 @@ describe("Lambda Handler Tests with mock disabled", () => {
     expect(response).toHaveProperty("body")
 
     const body = JSON.parse(response.body)
-    expect(body).toHaveProperty("message", "UserInfo fetched successfully")
+    expect(body).toHaveProperty("message", "UserInfo fetched successfully from the OIDC endpoint")
     expect(body).toHaveProperty("userInfo")
   })
 

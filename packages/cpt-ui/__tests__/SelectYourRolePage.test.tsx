@@ -25,8 +25,8 @@ jest.mock("@/constants/ui-strings/CardStrings", () => {
         "You are currently logged in at GREENE'S PHARMACY (ODS: FG419) with Health Professional Access Role.",
     },
     confirmButton: {
-      text: "Confirm and continue to find a prescription",
-      link: "tracker-presc-no",
+      text: "Continue to find a prescription",
+      link: "searchforaprescription",
     },
     alternativeMessage: "Alternatively, you can choose a new role below.",
     organisation: "Organisation",
@@ -97,7 +97,7 @@ jest.mock("@/context/AccessProvider", () => {
   }
 })
 // import the setter
-const { __setMockContextValue } = require("@/context/AccessProvider");
+const { __setMockContextValue } = require("@/context/AccessProvider")
 
 // Default mock values for the `AuthContext` to simulate authentication state
 const defaultAuthContext = {
@@ -120,8 +120,8 @@ export const renderWithAuth = (authOverrides = {}) => {
   )
 }
 
-import { SELECT_YOUR_ROLE_PAGE_TEXT } from "@/constants/ui-strings/CardStrings";
-import { EpsSpinnerStrings } from "../constants/ui-strings/EpsSpinnerStrings";
+import { SELECT_YOUR_ROLE_PAGE_TEXT } from "@/constants/ui-strings/CardStrings"
+import { EpsSpinnerStrings } from "../constants/ui-strings/EpsSpinnerStrings"
 
 describe("SelectYourRolePage", () => {
   let mockAxios: MockAdapter;
@@ -136,12 +136,12 @@ describe("SelectYourRolePage", () => {
     jest.clearAllMocks()
     __setMockContextValue({
       noAccess: false,
-    });
+    })
   })
 
   it("renders loading state when signed in but fetch hasn't resolved yet", async () => {
     // Mock fetch to hang indefinitely, simulating a pending request
-    mockAxios.onGet("/api/tracker-user-info").timeout();
+    mockFetch.mockImplementation(() => new Promise(() => { }))
 
     // Render the page with user signed in
     renderWithAuth({
@@ -150,13 +150,13 @@ describe("SelectYourRolePage", () => {
     })
 
     // Verify that the loading text appears
-    const loadingText = screen.getByText(EpsSpinnerStrings.loading);
-    expect(loadingText).toBeInTheDocument();
-  });
+    const loadingText = screen.getByText(EpsSpinnerStrings.loading)
+    expect(loadingText).toBeInTheDocument()
+  })
 
   it("renders error summary if fetch returns non-200 status", async () => {
     // Mock fetch to return a 500 status code (server error)
-    mockAxios.onGet("/api/tracker-user-info").reply(500);
+    mockFetch.mockResolvedValue({ status: 500 })
 
     // Render the page with user signed in
     renderWithAuth({ isSignedIn: true, idToken: { toString: jest.fn().mockReturnValue("mock-id-token") } })
@@ -217,7 +217,10 @@ describe("SelectYourRolePage", () => {
     }
 
     // Mock fetch to return 200 OK with valid userInfo
-    mockAxios.onGet("/api/tracker-user-info").reply(200, { userInfo: mockUserInfo });
+    mockFetch.mockResolvedValue({
+      status: 200,
+      json: async () => ({ userInfo: mockUserInfo }),
+    })
 
     // Render the page with user signed in
     renderWithAuth({ isSignedIn: true, idToken: { toString: jest.fn().mockReturnValue("mock-id-token") } })
@@ -291,6 +294,61 @@ describe("SelectYourRolePage", () => {
 
     await waitFor(() => {
       expect(mockPush).toHaveBeenCalledWith("/searchforaprescription")
+    })
+  })
+
+  it("renders loading state when waiting for API response", async () => {
+    mockFetch.mockImplementation(() => new Promise(() => { }))
+    renderWithAuth()
+    expect(screen.getByText("Loading...")).toBeInTheDocument()
+  })
+
+  it("redirects when a single role is available", async () => {
+    (useRouter as jest.Mock).mockReturnValue({
+      push: jest.fn()
+    })
+
+    const mockUserInfo = {
+      roles_with_access: [{
+        role_name: "Pharmacist",
+        org_name: "Test Pharmacy",
+        org_code: "ORG123",
+        site_address: "123 Test St"
+      }],
+      roles_without_access: []
+    }
+
+    mockFetch.mockResolvedValue({
+      status: 200,
+      json: async () => ({ userInfo: mockUserInfo })
+    })
+
+    __setMockContextValue({ noAccess: true })
+    renderWithAuth({ isSignedIn: true, idToken: { toString: jest.fn().mockReturnValue("mock-id-token") } })
+
+    await waitFor(() => {
+      expect(useRouter().push).toHaveBeenCalledWith("/searchforaprescription")
+    })
+  })
+
+  it("does not fetch user roles if user is not signed in", async () => {
+    const mockFetch = jest.fn()
+    global.fetch = mockFetch
+
+    renderWithAuth({ isSignedIn: false }) // Simulating a user who is not signed in
+
+    expect(mockFetch).not.toHaveBeenCalled()
+  })
+
+  it("displays an error when the API request fails", async () => {
+    mockFetch.mockRejectedValue(new Error("Failed to fetch user roles"))
+
+    renderWithAuth({ isSignedIn: true, idToken: { toString: jest.fn().mockReturnValue("mock-id-token") } })
+
+    await waitFor(() => {
+      const errorSummary = screen.getByRole("heading", { name: "Error during role selection" })
+      expect(errorSummary).toBeInTheDocument()
+      expect(screen.getByText("Failed to fetch CPT user info")).toBeInTheDocument()
     })
   })
 })

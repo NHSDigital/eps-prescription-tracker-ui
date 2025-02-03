@@ -214,6 +214,7 @@ export class StatelessResourcesStack extends Stack {
       mockTokenLambda: cognitoFunctions.mockTokenLambda,
       prescriptionSearchLambda: apiFunctions.prescriptionSearchLambda,
       trackerUserInfoLambda: apiFunctions.trackerUserInfoLambda,
+      selectedRoleLambda: apiFunctions.selectedRoleLambda,
       useMockOidc: useMockOidc,
       authorizer: apiGateway.authorizer
     })

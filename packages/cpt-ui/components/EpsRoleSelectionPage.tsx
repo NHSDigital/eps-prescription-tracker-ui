@@ -7,7 +7,7 @@ import { AuthContext } from "@/context/AuthProvider"
 import { useAccess } from '@/context/AccessProvider'
 
 import EpsCard from "@/components/EpsCard"
-import EpsSpinner from "@/components/EpsSpinner";
+import EpsSpinner from "@/components/EpsSpinner"
 
 import { RoleDetails, TrackerUserInfo } from "@/types/TrackerUserInfoTypes"
 
@@ -77,8 +77,8 @@ export default function RoleSelectionPage({ contentText }: RoleSelectionPageProp
         errorDuringRoleSelection
     } = contentText
 
-    const { noAccess, setNoAccess, setSingleAccess, setSelectedRole, selectedRole } = useAccess()
-    const [loginInfoMessage, setLoginInfoMessage] = useState<string | null>(null);
+    const { noAccess, setNoAccess, setSingleAccess, selectedRole, setSelectedRole } = useAccess()
+    const [loginInfoMessage, setLoginInfoMessage] = useState<string | null>(null)
     const [loading, setLoading] = useState<boolean>(true)
     const [error, setError] = useState<string | null>(null)
     const [redirecting, setRedirecting] = useState<boolean>(false)
@@ -88,20 +88,16 @@ export default function RoleSelectionPage({ contentText }: RoleSelectionPageProp
     const router = useRouter()
     const auth = useContext(AuthContext)
 
-
     useEffect(() => {
-        // Only set the login message if its not already set and selectedRole is available. 
-        // This ensures its not blank and that it waits until selectedRole is populated.
-        // Also means that selectedRole doesnt display a new selectedRole if a card is clicked and users with a slower connection see this before a redirect
         if (!loginInfoMessage && selectedRole) {
             setLoginInfoMessage(
-                `You are currently logged in at ${selectedRole.org_name || "No Org Name"
-                } (ODS: ${selectedRole.org_code || "No ODS Code"
-                }) with ${selectedRole.role_name || "No Role Name"
+                `You are currently logged in at ${selectedRole.org_name || noOrgName
+                } (ODS: ${selectedRole.org_code || noODSCode
+                }) with ${selectedRole.role_name || noRoleName
                 }.`
-            );
+            )
         }
-    }, [selectedRole, loginInfoMessage]);
+    }, [selectedRole, loginInfoMessage, noOrgName, noODSCode, noRoleName])
 
     // TODO: This should be moved to the access provider, and the state passed in c.f. selectedRole
     // Instead, this should be a useEffect that triggers when rolesWithAccess, rolesWithoutAccess, or selectedRole changes.
@@ -129,9 +125,7 @@ export default function RoleSelectionPage({ contentText }: RoleSelectionPageProp
             });
 
             if (response.status !== 200) {
-                throw new Error(
-                    `Server did not return CPT user info, response ${response.status}`
-                )
+                throw new Error(`Server did not return CPT user info, response ${response.status}`)
             }
 
             const data = await response.data
@@ -142,12 +136,23 @@ export default function RoleSelectionPage({ contentText }: RoleSelectionPageProp
 
             const userInfo: TrackerUserInfo = data.userInfo
 
-            const rolesWithAccess = userInfo.roles_with_access
-            const rolesWithoutAccess = userInfo.roles_without_access
-            const selectedRole = userInfo.currently_selected_role ? {
-                ...userInfo.currently_selected_role,
-                uuid: `selected_role_0`
-            } : undefined
+            const rolesWithAccess = userInfo.roles_with_access || []
+            const rolesWithoutAccess = userInfo.roles_without_access || []
+
+            // Check if the user info object and currently_selected_role exist
+            const selectedRole =
+                userInfo?.currently_selected_role && Object.keys(userInfo.currently_selected_role).length > 0
+                    ? {
+                        // If currently_selected_role is not empty, spread its properties
+                        ...userInfo.currently_selected_role,
+                        // Add uuid only if the selected role is not an empty object
+                        uuid: `selected_role_0`
+                    }
+                    // If currently_selected_role is an empty object `{}`, set selectedRole to undefined
+                    : undefined
+
+            console.log("Selected role:", selectedRole)
+            setSelectedRole(selectedRole)
 
             // Populate the EPS card props
             setRolesWithAccess(
@@ -175,13 +180,14 @@ export default function RoleSelectionPage({ contentText }: RoleSelectionPageProp
             // redirect them immediately
             if (rolesWithAccess.length === 1 && rolesWithoutAccess.length === 0) {
                 setRedirecting(true)
+                setSelectedRole(rolesWithAccess[0])
                 router.push("/searchforaprescription")
                 return
             }
 
         } catch (err) {
             setError("Failed to fetch CPT user info")
-            console.error("error fetching tracker user info:", err)
+            console.error("Error fetching tracker user info:", err)
         } finally {
             setLoading(false)
         }
@@ -210,6 +216,8 @@ export default function RoleSelectionPage({ contentText }: RoleSelectionPageProp
             setLoading(false)
         }
     }, [auth?.error])
+
+
 
     // If the data is being fetched or the user is being diverted, replace the content with a spinner
     if (loading || redirecting) {

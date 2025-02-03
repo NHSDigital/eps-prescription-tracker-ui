@@ -1,11 +1,20 @@
 import {Logger} from "@aws-lambda-powertools/logger"
 import axios from "axios"
-import {DynamoDBDocumentClient, UpdateCommand} from "@aws-sdk/lib-dynamodb"
-import {UserInfoResponse, TrackerUserInfo, RoleDetails} from "./userInfoTypes"
+import {DynamoDBDocumentClient, GetCommand, UpdateCommand} from "@aws-sdk/lib-dynamodb"
+import {
+  UserInfoResponse,
+  TrackerUserInfo,
+  RoleDetails,
+  UserDetails
+} from "./userInfoTypes"
 import {OidcConfig, verifyIdToken} from "@cpt-ui-common/authFunctions"
 
-// Role names come in formatted like `"category":"subcategory":"roleName"`.
-// Takes only the last one, and strips out the quotes.
+/**
+ * **Extracts role name from a structured string.**
+ *
+ * Role names may be formatted as `"category":"subcategory":"roleName"`.
+ * This function extracts only the final part (`roleName`) and removes quotes.
+ */
 export const removeRoleCategories = (roleString: string | undefined) => {
   if (!roleString) {
     return undefined
@@ -14,13 +23,16 @@ export const removeRoleCategories = (roleString: string | undefined) => {
   return chunk.replace(/"/g, "")
 }
 
-// Fetch user info from the OIDC UserInfo endpoint
-// The access token is used to identify the user, and fetch their roles.
-// This populates three lists:
-//  - rolesWithAccess: roles that have access to the CPT
-//  - rolesWithoutAccess: roles that don't have access to the CPT
-//  - [OPTIONAL] currentlySelectedRole: the role that is currently selected by the user
-// Each list contains information on the roles, such as the role name, role ID, ODS code, and organization name.
+/**
+ * **Fetches user information from the OIDC UserInfo endpoint.**
+ *
+ * - Uses the provided access token to retrieve user roles and details.
+ * - Organizes roles into three categories:
+ *    - `rolesWithAccess`: Roles that have CPT access.
+ *    - `rolesWithoutAccess`: Roles that do not have CPT access.
+ *    - `currentlySelectedRole`: The user's currently selected role, if applicable.
+ * - Extracts basic user details (`family_name` and `given_name`).
+ */
 export const fetchUserInfo = async (
   cis2AccessToken: string,
   cis2IdToken: string,
@@ -59,12 +71,28 @@ export const fetchUserInfo = async (
     const rolesWithoutAccess: Array<RoleDetails> = []
     let currentlySelectedRole: RoleDetails | undefined = undefined
 
+    // Extract user details
+    const userDetails: UserDetails = {
+      family_name: data.family_name,
+      given_name: data.given_name
+    }
+
     // Get roles from the user info response
     const roles = data.nhsid_nrbac_roles || []
 
+    /**
+     * Processes user roles to determine their access level and selection status.
+     *
+     * - If a role has access (`hasAccess`), it is added to `rolesWithAccess`.
+     * - If a role does not have access, it is added to `rolesWithoutAccess`.
+     * - If a role has access and matches the `selectedRoleId`, it is set as `currentlySelectedRole`.
+     *
+    */
     roles.forEach((role) => {
-      const activityCodes = role.activity_codes || []
+      logger.debug("Processing role", {role})
 
+      // Extract activity codes and check if any match the accepted access codes
+      const activityCodes = role.activity_codes || []
       const hasAccess = activityCodes.some((code: string) => accepted_access_codes.includes(code))
 
       const roleInfo: RoleDetails = {
@@ -74,7 +102,7 @@ export const fetchUserInfo = async (
         org_name: getOrgNameFromOrgCode(data, role.org_code)
       }
 
-      // Ensure the role has at least one of the required fields
+      // Ensure the role has at least one of the required fields to be processed
       if (!(roleInfo.role_name || roleInfo.role_id || roleInfo.org_code || roleInfo.org_name)) {
         // Skip roles that don't meet the minimum field requirements
         logger.warn("Role does not meet minimum field requirements", {roleInfo})
@@ -82,28 +110,27 @@ export const fetchUserInfo = async (
       }
 
       if (hasAccess) {
-        rolesWithAccess.push(roleInfo)
-      } else {
-        rolesWithoutAccess.push(roleInfo)
-      }
-
-      // Determine the currently selected role
-      logger.debug("Checking if role is currently selected", {selectedRoleId, role_id: role.person_roleid, roleInfo})
-      if (selectedRoleId && role.person_roleid === selectedRoleId) {
-        logger.debug("Role is currently selected", {role_id: role.person_roleid, roleInfo})
-        if (hasAccess) {
+        if (selectedRoleId && role.person_roleid === selectedRoleId) {
+          // If the role has access and matches the selectedRoleId, set it as currently selected
+          logger.debug("Role has access and matches selectedRoleId; setting as currently selected", {roleInfo})
           currentlySelectedRole = roleInfo
         } else {
-          logger.debug("Role does not have access; unsetting currently selected role", {roleInfo})
-          currentlySelectedRole = undefined
+          // Add the role to rolesWithAccess array only if it is NOT the selectedRoleId
+          rolesWithAccess.push(roleInfo)
+          logger.debug("Role has access; adding to rolesWithAccess", {roleInfo})
         }
+      } else {
+        // If role lacks access, add it to rolesWithoutAccess array
+        rolesWithoutAccess.push(roleInfo)
+        logger.debug("Role does not have access; adding to rolesWithoutAccess", {roleInfo})
       }
     })
 
     const result: TrackerUserInfo = {
       roles_with_access: rolesWithAccess,
       roles_without_access: rolesWithoutAccess,
-      currently_selected_role: currentlySelectedRole
+      currently_selected_role: currentlySelectedRole,
+      user_details: userDetails
     }
 
     logger.info("Returning user info response", {result})
@@ -121,8 +148,12 @@ function getOrgNameFromOrgCode(data: UserInfoResponse, org_code: string): string
   return org ? org.org_name : undefined
 }
 
-// Add the user currentlySelectedRole, rolesWithAccess and rolesWithoutAccess to the dynamoDB document,
-// keyed by this user's username.
+/**
+ * **Updates the user information in DynamoDB.**
+ *
+ * - Stores `currentlySelectedRole`, `rolesWithAccess`, `rolesWithoutAccess`, and `userDetails`.
+ * - Ensures no undefined values are stored in DynamoDB.
+ */
 export const updateDynamoTable = async (
   username: string,
   data: TrackerUserInfo,
@@ -136,31 +167,35 @@ export const updateDynamoTable = async (
 
   logger.debug("Adding user roles to DynamoDB", {username, data})
 
-  // Add the user roles to the DynamoDB table
-
-  // Dyanamo cannot allow undefined values. We need to scrub any undefined values from the data objects
+  // Dynamo cannot allow undefined values. We need to scrub any undefined values from the data objects
   const currentlySelectedRole: RoleDetails = data.currently_selected_role ? data.currently_selected_role : {}
   const rolesWithAccess: Array<RoleDetails> = data.roles_with_access ? data.roles_with_access : []
   const rolesWithoutAccess: Array<RoleDetails> = data.roles_without_access ? data.roles_without_access : []
+  const userDetails: UserDetails = data.user_details || {family_name: "", given_name: ""}
 
   // Since RoleDetails has a bunch of possibly undefined fields, we need to scrub those out.
   // Convert everything to strings, then convert back to a generic object.
   const scrubbedCurrentlySelectedRole = JSON.parse(JSON.stringify(currentlySelectedRole))
   const scrubbedRolesWithAccess = rolesWithAccess.map((role) => JSON.parse(JSON.stringify(role)))
   const scrubbedRolesWithoutAccess = rolesWithoutAccess.map((role) => JSON.parse(JSON.stringify(role)))
+  const scrubbedUserDetails = JSON.parse(JSON.stringify(userDetails))
 
   try {
     await documentClient.send(
       new UpdateCommand({
         TableName: tokenMappingTableName,
         Key: {username},
-        UpdateExpression:
-          // eslint-disable-next-line max-len
-          "SET rolesWithAccess = :rolesWithAccess, rolesWithoutAccess = :rolesWithoutAccess, currentlySelectedRole = :currentlySelectedRole",
+        UpdateExpression: `
+          SET rolesWithAccess = :rolesWithAccess,
+              rolesWithoutAccess = :rolesWithoutAccess,
+              currentlySelectedRole = :currentlySelectedRole,
+              userDetails = :userDetails
+        `,
         ExpressionAttributeValues: {
           ":rolesWithAccess": scrubbedRolesWithAccess,
           ":rolesWithoutAccess": scrubbedRolesWithoutAccess,
-          ":currentlySelectedRole": scrubbedCurrentlySelectedRole
+          ":currentlySelectedRole": scrubbedCurrentlySelectedRole,
+          ":userDetails": scrubbedUserDetails
         }
       })
     )
@@ -168,5 +203,48 @@ export const updateDynamoTable = async (
   } catch (error) {
     logger.error("Error adding user roles to DynamoDB", {username, data, error})
     throw error
+  }
+}
+
+/**
+ * **Fetches user information from DynamoDB.**
+ *
+ * - Retrieves `rolesWithAccess`, `rolesWithoutAccess`, `currentlySelectedRole`, and `userDetails`.
+ * - Returns default values for missing attributes.
+ */
+export const fetchDynamoTable = async (
+  username: string,
+  documentClient: DynamoDBDocumentClient,
+  logger: Logger,
+  tokenMappingTableName: string
+): Promise<TrackerUserInfo | null> => {
+  logger.info("Fetching user info from DynamoDB", {username})
+
+  try {
+    const response = await documentClient.send(
+      new GetCommand({
+        TableName: tokenMappingTableName,
+        Key: {username}
+      })
+    )
+
+    if (!response.Item) {
+      logger.warn("No user info found in DynamoDB", {username})
+      return null
+    }
+
+    // Ensure correct keys are returned
+    const mappedUserInfo: TrackerUserInfo = {
+      roles_with_access: response.Item.rolesWithAccess || [],
+      roles_without_access: response.Item.rolesWithoutAccess || [],
+      currently_selected_role: response.Item.currentlySelectedRole || undefined,
+      user_details: response.Item.userDetails || {family_name: "", given_name: ""}
+    }
+
+    logger.info("User info successfully retrieved from DynamoDB", {data: mappedUserInfo})
+    return mappedUserInfo
+  } catch (error) {
+    logger.error("Error fetching user info from DynamoDB", {error})
+    throw new Error("Failed to retrieve user info from cache")
   }
 }

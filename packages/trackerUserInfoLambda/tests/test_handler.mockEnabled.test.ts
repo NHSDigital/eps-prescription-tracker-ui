@@ -1,6 +1,7 @@
 import {jest} from "@jest/globals"
 import jwksClient from "jwks-rsa"
 import {OidcConfig} from "@cpt-ui-common/authFunctions"
+import {TrackerUserInfo} from "@/userInfoTypes"
 
 const TokenMappingTableName = process.env.TokenMappingTableName
 
@@ -39,9 +40,9 @@ jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
     return "Mock_JoeBloggs"
   })
 
-  const initializeOidcConfig = mockInitializeOidcConfig.mockImplementation( () => {
+  const initializeOidcConfig = mockInitializeOidcConfig.mockImplementation(() => {
     // Create a JWKS client for cis2 and mock
-  // this is outside functions so it can be re-used
+    // this is outside functions so it can be re-used
     const cis2JwksUri = process.env["CIS2_OIDCJWKS_ENDPOINT"] as string
     const cis2JwksClient = jwksClient({
       jwksUri: cis2JwksUri,
@@ -91,6 +92,7 @@ jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
 // Mocked functions from userInfoHelpers
 const mockFetchUserInfo = jest.fn()
 const mockUpdateDynamoTable = jest.fn()
+const mockFetchDynamoTable = jest.fn()
 
 jest.unstable_mockModule("@/userInfoHelpers", () => {
   const fetchUserInfo = mockFetchUserInfo.mockImplementation(() => {
@@ -103,9 +105,18 @@ jest.unstable_mockModule("@/userInfoHelpers", () => {
 
   const updateDynamoTable = mockUpdateDynamoTable.mockImplementation(() => {})
 
+  const fetchDynamoTable = mockFetchDynamoTable.mockImplementation(() => {
+    return {
+      roles_with_access: [],
+      roles_without_access: [],
+      currently_selected_role: {}
+    }
+  })
+
   return {
     fetchUserInfo,
-    updateDynamoTable
+    updateDynamoTable,
+    fetchDynamoTable
   }
 })
 
@@ -149,7 +160,7 @@ describe("Lambda Handler Tests with mock enabled", () => {
     expect(response).toHaveProperty("body")
 
     const body = JSON.parse(response.body)
-    expect(body).toHaveProperty("message", "UserInfo fetched successfully")
+    expect(body).toHaveProperty("message", "UserInfo fetched successfully from the OIDC endpoint")
     expect(body).toHaveProperty("userInfo")
   })
 
@@ -290,7 +301,7 @@ describe("Lambda Handler Tests with mock enabled", () => {
   })
 
   it("should call updateDynamoTable with the correct parameters", async () => {
-    const testUsername = "Primary_Tester"
+    const testUsername = "Mock_JaneDoe"
     mockGetUsernameFromEvent.mockReturnValue(testUsername)
     const userInfoMock = {
       roles_with_access: ["roleX"],
@@ -318,5 +329,114 @@ describe("Lambda Handler Tests with mock enabled", () => {
       expect.any(Object),
       "dummyTable"
     )
+  })
+
+  it("should return user info if roles_with_access is not empty", async () => {
+    const testUsername = "Mock_JaneDoe"
+    mockGetUsernameFromEvent.mockReturnValue(testUsername)
+
+    const userInfoMock: TrackerUserInfo = {
+      roles_with_access: [
+        {role_name: "Doctor", role_id: "123", org_code: "ABC", org_name: "Test Hospital"}
+      ],
+      roles_without_access: [],
+      currently_selected_role: {
+        role_name: "Doctor",
+        role_id: "123",
+        org_code: "ABC",
+        org_name: "Test Hospital"
+      },
+      user_details: {family_name: "Doe", given_name: "John"}
+    }
+
+    // Fix by explicitly casting to the expected return type
+    mockFetchDynamoTable.mockResolvedValue(userInfoMock as never)
+
+    const response = await handler(event, context)
+
+    expect(mockFetchDynamoTable).toHaveBeenCalledWith(
+      testUsername,
+      expect.any(Object), // documentClient instance
+      expect.any(Object), // logger instance
+      expect.any(String) // tokenMappingTableName
+    )
+
+    expect(response.statusCode).toBe(200)
+    expect(response.body).toContain("UserInfo fetched successfully from DynamoDB")
+
+    const responseBody = JSON.parse(response.body)
+    expect(responseBody.userInfo).toEqual(userInfoMock)
+  })
+
+  it("should return user info if roles_without_access is not empty", async () => {
+    const testUsername = "Mock_JaneDoe"
+    mockGetUsernameFromEvent.mockReturnValue(testUsername)
+
+    const userInfoMock: TrackerUserInfo = {
+      roles_with_access: [
+        {role_name: "Doctor", role_id: "123", org_code: "ABC", org_name: "Test Hospital"}
+      ],
+      roles_without_access: [],
+      currently_selected_role: {
+        role_name: "Doctor",
+        role_id: "123",
+        org_code: "ABC",
+        org_name: "Test Hospital"
+      },
+      user_details: {family_name: "Doe", given_name: "John"}
+    }
+
+    mockFetchDynamoTable.mockResolvedValue(userInfoMock as never)
+
+    const response = await handler(event, context)
+
+    expect(mockFetchDynamoTable).toHaveBeenCalledWith(
+      testUsername,
+      expect.any(Object),
+      expect.any(Object),
+      expect.any(String)
+    )
+
+    expect(response.statusCode).toBe(200)
+    expect(response.body).toContain("UserInfo fetched successfully from DynamoDB")
+
+    const responseBody = JSON.parse(response.body)
+    expect(responseBody.userInfo).toEqual(userInfoMock)
+  })
+
+  it("should return cached user info even if currently_selected_role is undefined", async () => {
+    const testUsername = "Mock_JaneDoe"
+    mockGetUsernameFromEvent.mockReturnValue(testUsername)
+
+    const userInfoMock: TrackerUserInfo = {
+      roles_with_access: [
+        {role_name: "Doctor", role_id: "123", org_code: "ABC", org_name: "Test Hospital"}
+      ],
+      roles_without_access: [],
+      currently_selected_role: {
+        role_name: "Doctor",
+        role_id: "123",
+        org_code: "ABC",
+        org_name: "Test Hospital"
+      },
+      user_details: {family_name: "Doe", given_name: "John"}
+    }
+
+    mockFetchDynamoTable.mockResolvedValue(userInfoMock as never)
+
+    const response = await handler(event, context)
+
+    expect(mockFetchDynamoTable).toHaveBeenCalledWith(
+      testUsername,
+      expect.any(Object),
+      expect.any(Object),
+      expect.any(String)
+    )
+
+    expect(response.statusCode).toBe(200)
+    expect(response.body).toContain("UserInfo fetched successfully from DynamoDB")
+
+    const responseBody = JSON.parse(response.body)
+    expect(responseBody.userInfo).toEqual(userInfoMock)
   })
 })

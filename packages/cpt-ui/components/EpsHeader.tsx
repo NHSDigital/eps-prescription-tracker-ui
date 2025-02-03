@@ -1,9 +1,9 @@
 "use client"
-import React, { useContext, useEffect, useState } from "react";
-import Link from "next/link";
-import "@/assets/styles/header.scss";
-import { useRouter, usePathname } from "next/navigation";
-import { Header } from "nhsuk-react-components";
+import React, {useContext, useEffect, useState} from "react"
+import Link from "next/link"
+import "@/assets/styles/header.scss"
+import {useRouter, usePathname} from "next/navigation"
+import {Header} from "nhsuk-react-components"
 import {
   HEADER_SERVICE,
   HEADER_EXIT_BUTTON,
@@ -12,26 +12,26 @@ import {
   HEADER_CHANGE_ROLE_TARGET,
   HEADER_SELECT_YOUR_ROLE_TARGET,
   HEADER_SELECT_YOUR_ROLE_BUTTON
-} from "@/constants/ui-strings/HeaderStrings";
+} from "@/constants/ui-strings/HeaderStrings"
 
-import { AuthContext } from "@/context/AuthProvider";
-import { useAccess } from '@/context/AccessProvider';
+import {AuthContext} from "@/context/AuthProvider"
+import {useAccess} from '@/context/AccessProvider'
 
-import { EpsLogoutModal } from "@/components/EpsLogoutModal";
+import {EpsLogoutModal} from "@/components/EpsLogoutModal"
 
 export default function EpsHeader() {
-  const router = useRouter();
-  const pathname = usePathname();
-  const auth = useContext(AuthContext);
-  const accessContext = useAccess();
+  const router = useRouter()
+  const pathname = usePathname()
+  const auth = useContext(AuthContext)
+  const accessContext = useAccess()
 
   // Individual states to control link visibility:
-  const [shouldShowSelectRole, setShouldShowSelectRole] = useState(false);
-  const [shouldShowChangeRole, setShouldShowChangeRole] = useState(false);
-  const [shouldShowLogoutLink, setShouldShowLogoutLink] = useState(false);
-  const [shouldShowExitButton, setShouldShowExitButton] = useState(false);
+  const [shouldShowSelectRole, setShouldShowSelectRole] = useState(false)
+  const [shouldShowChangeRole, setShouldShowChangeRole] = useState(false)
+  const [shouldShowLogoutLink, setShouldShowLogoutLink] = useState(false)
+  const [shouldShowExitButton, setShouldShowExitButton] = useState(false)
 
-  const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false)
 
   // Move all conditional logic into one place
   useEffect(() => {
@@ -48,7 +48,7 @@ export default function EpsHeader() {
       isSignedIn &&
       !accessContext.singleAccess &&
       !accessContext.selectedRole
-    );
+    )
 
     // Show "Change role" link (if not single access)
     setShouldShowChangeRole(
@@ -58,33 +58,33 @@ export default function EpsHeader() {
       isSignedIn &&
       !accessContext.singleAccess &&
       accessContext.selectedRole !== null
-    );
+    )
 
     // Show the "Logout" link only if the user is signed in
-    setShouldShowLogoutLink(Boolean(auth?.isSignedIn));
+    setShouldShowLogoutLink(Boolean(auth?.isSignedIn))
 
     // Show the "Exit" button under these conditions
     setShouldShowExitButton(
       (curPathname === "/logout" && !auth?.isSignedIn) ||
       (curPathname === "/selectyourrole" && accessContext.noAccess)
-    );
-  }, [pathname, auth, accessContext]);
+    )
+  }, [pathname, auth, accessContext])
 
   const redirectToLogin = async (e: React.MouseEvent | React.KeyboardEvent) => {
     // Naked href don't respect the router, so this overrides that
-    e.preventDefault();
-    router.push("/login");
-  };
+    e.preventDefault()
+    router.push("/login")
+  }
 
   const handleLogoutClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    e.preventDefault();
-    setShowLogoutModal(true);
-  };
+    e.preventDefault()
+    setShowLogoutModal(true)
+  }
 
   const handleConfirmLogout = async () => {
-    setShowLogoutModal(false);
-    router.push("/logout");
-  };
+    setShowLogoutModal(false)
+    router.push("/logout")
+  }
 
   return (
     <>
@@ -170,5 +170,5 @@ export default function EpsHeader() {
         onConfirm={handleConfirmLogout}
       />
     </>
-  );
+  )
 }
