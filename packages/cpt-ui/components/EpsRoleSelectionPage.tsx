@@ -257,7 +257,7 @@ export default function RoleSelectionPage({ contentText }: RoleSelectionPageProp
     }
 
     return (
-        <main id="main-content" className="nhsuk-main-wrapper">
+        <main id="main-content" className="nhsuk-main-wrapper" data-testid="eps_roleSelectionComponent">
             <Container role="contentinfo">
                 {/* Title Section */}
                 <Row>
