@@ -8,7 +8,11 @@ import { signInWithRedirect, signOut, getCurrentUser, fetchAuthSession } from 'a
 
 import { AuthContext, AuthProvider } from "@/context/AuthProvider";
 
-jest.mock('@/helpers/axios');
+import axios from "@/helpers/axios"
+jest.mock('@/helpers/axios')
+
+// Tell TypeScript that axios is a mocked version.
+const mockedAxios = axios as jest.Mocked<typeof axios>
 
 // Mock environment variables to mimic the real environment
 process.env.NEXT_PUBLIC_userPoolId = 'testUserPoolId';
@@ -35,6 +39,15 @@ jest.mock('aws-amplify/utils', () => ({
   Hub: {
     listen: jest.fn(), // Mock Amplify Hub for event listening
   },
+}));
+
+// Mock useRouter:
+jest.mock("next/navigation", () => ({
+  useRouter() {
+    return {
+      prefetch: () => null
+    };
+  }
 }));
 
 // A helper component to consume the AuthContext and expose its values for testing
