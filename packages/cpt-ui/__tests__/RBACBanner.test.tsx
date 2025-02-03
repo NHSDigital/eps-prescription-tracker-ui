@@ -113,7 +113,7 @@ describe("RBACBanner", () => {
             },
             userDetails: {
                 family_name: "DoE",
-                given_name: "JanE"
+                given_name: "Jane"
             }
         })
 

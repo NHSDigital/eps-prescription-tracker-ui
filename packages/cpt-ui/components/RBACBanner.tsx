@@ -32,17 +32,14 @@ export default function RBACBanner() {
             ? RBAC_BANNER_STRINGS.LOCUM_NAME
             : selectedRole.org_name || RBAC_BANNER_STRINGS.NO_ORG_NAME
 
-        // Format the last name in uppercase, and capitalize the first letter of the first name
+        // Format the last name in uppercase
         const lastName = userDetails.family_name?.toUpperCase() || RBAC_BANNER_STRINGS.NO_FAMILY_NAME
-        const firstName = userDetails.given_name
-            ? userDetails.given_name.charAt(0).toUpperCase() + userDetails.given_name.slice(1).toLowerCase()
-            : RBAC_BANNER_STRINGS.NO_GIVEN_NAME
 
         // Construct the final banner text using template replacement
         setBannerText(
             RBAC_BANNER_STRINGS.CONFIDENTIAL_DATA
                 .replace("{lastName}", lastName)
-                .replace("{firstName}", firstName)
+                .replace("{firstName}", userDetails.given_name || RBAC_BANNER_STRINGS.NO_GIVEN_NAME)
                 .replace("{roleName}", selectedRole.role_name || RBAC_BANNER_STRINGS.NO_ROLE_NAME)
                 .replace("{orgName}", orgName)
                 .replace("{odsCode}", selectedRole.org_code || RBAC_BANNER_STRINGS.NO_ODS_CODE)
