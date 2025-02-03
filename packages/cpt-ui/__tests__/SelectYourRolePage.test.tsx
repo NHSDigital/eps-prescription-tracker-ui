@@ -20,8 +20,8 @@ jest.mock("@/constants/ui-strings/CardStrings", () => {
         "You are currently logged in at GREENE'S PHARMACY (ODS: FG419) with Health Professional Access Role.",
     },
     confirmButton: {
-      text: "Confirm and continue to find a prescription",
-      link: "tracker-presc-no",
+      text: "Continue to find a prescription",
+      link: "searchforaprescription",
     },
     alternativeMessage: "Alternatively, you can choose a new role below.",
     organisation: "Organisation",
@@ -319,6 +319,27 @@ describe("SelectYourRolePage", () => {
 
     await waitFor(() => {
       expect(useRouter().push).toHaveBeenCalledWith("/searchforaprescription")
+    })
+  })
+
+  it("does not fetch user roles if user is not signed in", async () => {
+    const mockFetch = jest.fn()
+    global.fetch = mockFetch
+
+    renderWithAuth({isSignedIn: false}) // Simulating a user who is not signed in
+
+    expect(mockFetch).not.toHaveBeenCalled()
+  })
+
+  it("displays an error when the API request fails", async () => {
+    mockFetch.mockRejectedValue(new Error("Failed to fetch user roles"))
+
+    renderWithAuth({isSignedIn: true, idToken: {toString: jest.fn().mockReturnValue("mock-id-token")}})
+
+    await waitFor(() => {
+      const errorSummary = screen.getByRole("heading", {name: "Error during role selection"})
+      expect(errorSummary).toBeInTheDocument()
+      expect(screen.getByText("Failed to fetch CPT user info")).toBeInTheDocument()
     })
   })
 })

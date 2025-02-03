@@ -31,11 +31,17 @@ export const AccessProvider = ({children}: {children: ReactNode}) => {
   const auth = useContext(AuthContext)
 
   const clear = () => {
-    console.warn("Clearing access context.")
+    console.log("Clearing access context and local storage...")
     setNoAccess(false)
     setSingleAccess(false)
     setSelectedRole(undefined)
     setUserDetails(undefined)
+
+    // Clear from localStorage to ensure RBAC Banner is removed
+    localStorage.removeItem("access")
+    localStorage.removeItem("selectedRole")
+    localStorage.removeItem("userDetails")
+    console.log("Local storage cleared.")
   }
 
 

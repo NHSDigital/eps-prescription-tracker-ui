@@ -12,8 +12,8 @@ export const SELECT_YOUR_ROLE_PAGE_TEXT = {
       "You are currently logged in at GREENE'S PHARMACY (ODS: FG419) with Health Professional Access Role."
   },
   confirmButton: {
-    text: "Confirm and continue to find a prescription",
-    link: "tracker-presc-no"
+    text: "Continue to find a prescription",
+    link: "searchforaprescription"
   },
   alternativeMessage: "Alternatively, you can choose a new role below.",
   organisation: "Organisation",
