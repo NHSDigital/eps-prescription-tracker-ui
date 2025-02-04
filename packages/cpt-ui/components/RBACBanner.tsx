@@ -1,21 +1,23 @@
 "use client"
-import React, {useEffect, useState} from "react"
+import React, { useEffect, useState } from "react"
 
-import {Row} from "nhsuk-react-components"
+import { Row } from "nhsuk-react-components"
 
 import "@/assets/styles/rbacBanner.scss"
-import {RBAC_BANNER_STRINGS} from "@/constants/ui-strings/RBACBannerStrings"
-import {useAccess} from "@/context/AccessProvider"
+import { RBAC_BANNER_STRINGS } from "@/constants/ui-strings/RBACBannerStrings"
+import { useAccess } from "@/context/AccessProvider"
 
 export default function RBACBanner() {
     const [bannerText, setBannerText] = useState<string>("")
-    const {selectedRole, userDetails} = useAccess()
+    const { selectedRole, userDetails } = useAccess()
 
     useEffect(() => {
         if (!selectedRole || !userDetails) {
             console.log("No selected role or user details - hiding RBAC banner.")
+            setBannerText("")
             return
         }
+        console.log("Selected role is present, setting text: ", selectedRole)
 
         /**
          * The RBAC (Role-Based Access Control) User Profile Banner follows these patterns:
@@ -58,7 +60,7 @@ export default function RBACBanner() {
     return (
         <div className="nhsuk-banner" data-testid="rbac-banner-div">
             <Row>
-                <p style={{paddingLeft: "60px", margin: "8px"}} data-testid="rbac-banner-text">
+                <p style={{ paddingLeft: "60px", margin: "8px" }} data-testid="rbac-banner-text">
                     {bannerText}
                 </p>
             </Row>

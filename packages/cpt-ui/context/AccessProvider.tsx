@@ -75,8 +75,14 @@ export const AccessProvider = ({ children }: { children: ReactNode }) => {
 
         const userInfo: TrackerUserInfo = data.userInfo
         const rolesWithAccessCount = userInfo.roles_with_access.length
-        const currentlySelectedRole = userInfo.currently_selected_role
         const userDetails = userInfo.user_details
+
+        let currentlySelectedRole = userInfo.currently_selected_role
+        // The current role may be either undefined, or an empty object. If it's empty, set it undefined.
+        if (!currentlySelectedRole || Object.keys(currentlySelectedRole).length === 0) {
+          currentlySelectedRole = undefined;
+        }
+
 
         return { rolesWithAccessCount, currentlySelectedRole, userDetails }
       })
