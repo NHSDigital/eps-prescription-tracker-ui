@@ -35,12 +35,16 @@ jest.mock('aws-amplify/utils', () => ({
   },
 }));
 
-// Mock useRouter:
+// Mock useRouter and usePathName:
+const usePathnameMock = jest.fn()
 jest.mock("next/navigation", () => ({
   useRouter() {
     return {
       prefetch: () => null
     };
+  },
+  usePathname() {
+    return "/";
   }
 }));
 
