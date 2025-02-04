@@ -6,6 +6,7 @@ import { authConfig } from './configureAmplify'
 
 import { useLocalStorageState } from '@/helpers/useLocalStorageState';
 import { useRouter, usePathname } from 'next/navigation';
+import path from 'path'
 
 interface AuthContextType {
   error: string | null
@@ -42,7 +43,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       console.log("Tokens: ", sessionIdToken, sessionAccessToken)
 
       if (!sessionIdToken || !sessionAccessToken) {
-        if (pathname !== "/logout")
+        const curpath = pathname.replace(".html", "")
+        if (curpath !== "/logout")
           router.push("/login")
       }
 
