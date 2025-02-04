@@ -29,7 +29,7 @@ export default function EpsHeader() {
   const [shouldShowSelectRole, setShouldShowSelectRole] = useState(false)
   const [shouldShowChangeRole, setShouldShowChangeRole] = useState(false)
   const [shouldShowLogoutLink, setShouldShowLogoutLink] = useState(false)
-  const [shouldShowExitButton, setShouldShowExitButton] = useState(true)
+  const [shouldShowExitButton, setShouldShowExitButton] = useState(false)
 
   const [showLogoutModal, setShowLogoutModal] = useState(false)
 
@@ -63,12 +63,11 @@ export default function EpsHeader() {
     // Show the "Logout" link only if the user is signed in
     setShouldShowLogoutLink(Boolean(auth?.isSignedIn))
 
-    // Always show the exit button
-    setShouldShowExitButton(true)
-    // setShouldShowExitButton(
-    //   (curPathname === "/logout" && !auth?.isSignedIn) ||
-    //   (curPathname === "/selectyourrole" && accessContext.noAccess)
-    // )
+    // Show the "Exit" button under these conditions
+    setShouldShowExitButton(
+      (curPathname === "/logout" && !auth?.isSignedIn) ||
+      (curPathname === "/selectyourrole" && accessContext.noAccess)
+    )
   }, [pathname, auth, accessContext])
 
   const redirectToLogin = async (e: React.MouseEvent | React.KeyboardEvent) => {
