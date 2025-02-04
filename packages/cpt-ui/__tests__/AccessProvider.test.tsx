@@ -1,14 +1,14 @@
 import React from "react"
-import { render, screen, waitFor } from "@testing-library/react"
+import {render, screen, waitFor} from "@testing-library/react"
 import "@testing-library/jest-dom"
 
-import { TrackerUserInfo } from "@/types/TrackerUserInfoTypes"
+import {TrackerUserInfo} from "@/types/TrackerUserInfoTypes"
 
-import { AccessProvider, useAccess } from "@/context/AccessProvider"
-import { AuthContext } from "@/context/AuthProvider"
+import {AccessProvider, useAccess} from "@/context/AccessProvider"
+import {AuthContext} from "@/context/AuthProvider"
 
 function TestConsumer() {
-    const { noAccess, singleAccess, selectedRole, clear } = useAccess()
+    const {noAccess, singleAccess, selectedRole, clear} = useAccess()
 
     return (
         <div>
@@ -37,7 +37,7 @@ describe("AccessProvider", () => {
     }
 
     const renderWithContext = (authOverrides = {}) => {
-        const authValue = { ...defaultAuthContext, ...authOverrides }
+        const authValue = {...defaultAuthContext, ...authOverrides}
         return render(
             <AuthContext.Provider value={authValue}>
                 <AccessProvider>
@@ -55,7 +55,7 @@ describe("AccessProvider", () => {
     })
 
     it("does not fetch roles when user is not signed in", () => {
-        renderWithContext({ isSignedIn: false, idToken: null })
+        renderWithContext({isSignedIn: false, idToken: null})
 
         expect(mockFetch).not.toHaveBeenCalled()
 
@@ -89,10 +89,10 @@ describe("AccessProvider", () => {
 
         mockFetch.mockResolvedValueOnce({
             status: 200,
-            json: async () => ({ userInfo: mockUserInfo }),
+            json: async () => ({userInfo: mockUserInfo}),
         })
 
-        renderWithContext({ isSignedIn: true, idToken: { toString: jest.fn().mockReturnValue("mock-id-token") } })
+        renderWithContext({isSignedIn: true, idToken: {toString: jest.fn().mockReturnValue("mock-id-token")}})
 
         // Wait for state updates triggered by fetch
         await waitFor(() => {
@@ -103,22 +103,23 @@ describe("AccessProvider", () => {
         })
     })
 
-    it("sets noAccess = true if roles_with_access is empty", async () => {
+    it("sets noAccess = true if roles_with_access is empty and currently_selected_role is undefined", async () => {
         const mockUserInfo: TrackerUserInfo = {
             roles_with_access: [],
             roles_without_access: [],
             user_details: {
                 family_name: "FAMILY",
                 given_name: "GIVEN"
-            }
+            },
+            currently_selected_role: undefined
         }
 
         mockFetch.mockResolvedValueOnce({
             status: 200,
-            json: async () => ({ userInfo: mockUserInfo }),
+            json: async () => ({userInfo: mockUserInfo}),
         })
 
-        renderWithContext({ isSignedIn: true, idToken: { toString: jest.fn().mockReturnValue("mock-id-token") } })
+        renderWithContext({isSignedIn: true, idToken: {toString: jest.fn().mockReturnValue("mock-id-token")}})
 
         await waitFor(() => {
             expect(mockFetch).toHaveBeenCalledTimes(1)
@@ -128,11 +129,40 @@ describe("AccessProvider", () => {
         })
     })
 
+    it("sets noAccess = false if roles_with_access is empty but currently_selected_role exists", async () => {
+        const mockUserInfo: TrackerUserInfo = {
+            roles_with_access: [], // No roles with access
+            roles_without_access: [],
+            currently_selected_role: { // Selected role is present
+                role_id: "ROLE123",
+                role_name: "Pharmacist",
+                org_name: "Test Pharmacy",
+            },
+            user_details: {
+                family_name: "FAMILY",
+                given_name: "GIVEN",
+            },
+        }
+
+        mockFetch.mockResolvedValueOnce({
+            status: 200,
+            json: async () => ({userInfo: mockUserInfo}),
+        })
+
+        renderWithContext({isSignedIn: true, idToken: {toString: jest.fn().mockReturnValue("mock-id-token")}})
+
+        await waitFor(() => {
+            expect(mockFetch).toHaveBeenCalledTimes(1)
+            expect(screen.getByTestId("noAccess")).toHaveTextContent("false") // ✅ Expected fix
+            expect(screen.getByTestId("selectedRole")).toHaveTextContent("ROLE123")
+        })
+    })
+
     it("sets noAccess = false and singleAccess = false if multiple roles exist", async () => {
         const mockUserInfo: TrackerUserInfo = {
             roles_with_access: [
-                { role_id: "ROLE1" },
-                { role_id: "ROLE2" },
+                {role_id: "ROLE1"},
+                {role_id: "ROLE2"},
             ],
             roles_without_access: [],
             user_details: {
@@ -143,10 +173,10 @@ describe("AccessProvider", () => {
 
         mockFetch.mockResolvedValueOnce({
             status: 200,
-            json: async () => ({ userInfo: mockUserInfo }),
+            json: async () => ({userInfo: mockUserInfo}),
         })
 
-        renderWithContext({ isSignedIn: true, idToken: { toString: jest.fn().mockReturnValue("mock-id-token") } })
+        renderWithContext({isSignedIn: true, idToken: {toString: jest.fn().mockReturnValue("mock-id-token")}})
 
         await waitFor(() => {
             expect(mockFetch).toHaveBeenCalledTimes(1)
@@ -163,7 +193,7 @@ describe("AccessProvider", () => {
             json: async () => ({}),
         })
 
-        renderWithContext({ isSignedIn: true, idToken: { toString: jest.fn().mockReturnValue("mock-id-token") } })
+        renderWithContext({isSignedIn: true, idToken: {toString: jest.fn().mockReturnValue("mock-id-token")}})
 
         // The provider will log an error but should skip updates
         await waitFor(() => {
@@ -196,10 +226,10 @@ describe("AccessProvider", () => {
 
         mockFetch.mockResolvedValueOnce({
             status: 200,
-            json: async () => ({ userInfo: mockUserInfo }),
+            json: async () => ({userInfo: mockUserInfo}),
         })
 
-        renderWithContext({ isSignedIn: true, idToken: { toString: jest.fn().mockReturnValue("mock-id-token") } })
+        renderWithContext({isSignedIn: true, idToken: {toString: jest.fn().mockReturnValue("mock-id-token")}})
 
         // Confirm everything is updated
         await waitFor(() => {

@@ -166,7 +166,7 @@ export default function RoleSelectionPage({contentText}: RoleSelectionPageProps)
                 }))
             )
 
-            setNoAccess(rolesWithAccess.length === 0)
+            setNoAccess(rolesWithAccess.length === 0 && selectedRole === undefined)
             setSingleAccess(rolesWithAccess.length === 1)
 
             // If the user has exactly one accessible role and zero roles without access,
@@ -273,7 +273,7 @@ export default function RoleSelectionPage({contentText}: RoleSelectionPageProps)
                         {/* Caption Section for No Access */}
                         {noAccess && (<p>{captionNoAccess}</p>)}
                         {/* Pre selected role section */}
-                        {selectedRole && (
+                        {selectedRole !== undefined && (
                             <section aria-label="Login Information">
                                 <InsetText
                                     data-testid="eps_select_your_role_pre_role_selected"
@@ -289,7 +289,9 @@ export default function RoleSelectionPage({contentText}: RoleSelectionPageProps)
                                 <Button href={confirmButton.link}>
                                     {confirmButton.text}
                                 </Button>
-                                <p>{alternativeMessage}</p>
+                                {rolesWithAccess.length > 0 && (
+                                    <p>{alternativeMessage}</p>
+                                )}
                             </section>
                         )}
                     </Col>

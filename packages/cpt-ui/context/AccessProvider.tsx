@@ -89,7 +89,7 @@ export const AccessProvider = ({children}: {children: ReactNode}) => {
         setSelectedRole(currentlySelectedRole)
         setUserDetails(userDetails)
 
-        setNoAccess(rolesWithAccessCount === 0)
+        setNoAccess(rolesWithAccessCount === 0 && currentlySelectedRole === undefined)
         setSingleAccess(rolesWithAccessCount === 1)
       } catch (error) {
         console.error("Access provider failed to fetch roles with access:", error)

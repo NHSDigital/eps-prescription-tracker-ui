@@ -224,7 +224,7 @@ describe("SelectYourRolePage", () => {
     })
   })
 
-  it("renders no access title and caption when no roles with access are available", async () => {
+  it("renders no access title and caption when no roles with access are available and there is no selected role", async () => {
     // Mock user data with no roles with access
     const mockUserInfo = {
       roles_with_access: [], // No roles with access
@@ -236,6 +236,7 @@ describe("SelectYourRolePage", () => {
           site_address: "2 Fake Street",
         },
       ],
+      currently_selected_role: undefined // No selected role
     }
 
     // Mock fetch to return 200 OK with valid userInfo
@@ -255,6 +256,67 @@ describe("SelectYourRolePage", () => {
       expect(heading).toHaveTextContent(
         SELECT_YOUR_ROLE_PAGE_TEXT.titleNoAccess
       )
+    })
+  })
+
+  it("renders alternative message when the role with access exist", async () => {
+    const mockUserInfo = {
+      roles_with_access: [
+        {role_name: "Pharmacist", org_name: "Test Org", org_code: "ORG123", site_address: "1 Fake Street"},
+      ],
+      roles_without_access: [
+        {
+          role_name: "Technician",
+          org_name: "Tech Org",
+          org_code: "ORG456",
+          site_address: "2 Fake Street",
+        },
+      ],
+      currently_selected_role: undefined
+    }
+
+    // Mock fetch to return 200 OK with valid userInfo
+    mockFetch.mockResolvedValue({
+      status: 200,
+      json: async () => ({userInfo: mockUserInfo}),
+    })
+
+    // Render the page with user signed in
+    __setMockContextValue({noAccess: true})
+    renderWithAuth({isSignedIn: true, idToken: {toString: jest.fn().mockReturnValue("mock-id-token")}})
+
+    // Wait for the main content to load
+    await waitFor(() => {
+      const heading = screen.getByRole("heading", {level: 1})
+      expect(screen.getByText(SELECT_YOUR_ROLE_PAGE_TEXT.alternativeMessage)).toBeInTheDocument()
+    })
+  })
+
+  it("does not render alternative message when there is no roles with access", async () => {
+    const mockUserInfo = {
+      roles_with_access: [], // No roles with access
+      roles_without_access: [
+        {
+          role_name: "Technician",
+          org_name: "Tech Org",
+          org_code: "ORG456",
+          site_address: "2 Fake Street",
+        },
+      ],
+      currently_selected_role: undefined
+    }
+
+    mockFetch.mockResolvedValue({
+      status: 200,
+      json: async () => ({userInfo: mockUserInfo}),
+    })
+
+    __setMockContextValue({noAccess: true})
+
+    renderWithAuth({isSignedIn: true, idToken: {toString: jest.fn().mockReturnValue("mock-id-token")}})
+
+    await waitFor(() => {
+      expect(screen.queryByText(SELECT_YOUR_ROLE_PAGE_TEXT.alternativeMessage)).toBeNull()
     })
   })
 
