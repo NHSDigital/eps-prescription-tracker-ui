@@ -40,6 +40,8 @@ export default function EpsHeader() {
     // FIXME: Strips off the .html for broken SPA redirects
     const curPathname = pathname.replace(".html", "")
 
+    console.log("Access context: ", accessContext);
+
     // Show "Select your role" link
     setShouldShowSelectRole(
       curPathname !== "/selectyourrole" &&
@@ -57,7 +59,7 @@ export default function EpsHeader() {
       curPathname !== "/logout" &&
       isSignedIn &&
       !accessContext.singleAccess &&
-      accessContext.selectedRole !== null
+      accessContext.selectedRole !== undefined
     )
 
     // Show the "Logout" link only if the user is signed in
