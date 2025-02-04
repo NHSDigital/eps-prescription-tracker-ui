@@ -1,9 +1,9 @@
 "use client"
-import React, {useContext, useEffect, useState} from "react"
+import React, { useContext, useEffect, useState } from "react"
 import Link from "next/link"
 import "@/assets/styles/header.scss"
-import {useRouter, usePathname} from "next/navigation"
-import {Header} from "nhsuk-react-components"
+import { useRouter, usePathname } from "next/navigation"
+import { Header } from "nhsuk-react-components"
 import {
   HEADER_SERVICE,
   HEADER_EXIT_BUTTON,
@@ -14,10 +14,10 @@ import {
   HEADER_SELECT_YOUR_ROLE_BUTTON
 } from "@/constants/ui-strings/HeaderStrings"
 
-import {AuthContext} from "@/context/AuthProvider"
-import {useAccess} from '@/context/AccessProvider'
+import { AuthContext } from "@/context/AuthProvider"
+import { useAccess } from '@/context/AccessProvider'
 
-import {EpsLogoutModal} from "@/components/EpsLogoutModal"
+import { EpsLogoutModal } from "@/components/EpsLogoutModal"
 
 export default function EpsHeader() {
   const router = useRouter()
@@ -29,7 +29,7 @@ export default function EpsHeader() {
   const [shouldShowSelectRole, setShouldShowSelectRole] = useState(false)
   const [shouldShowChangeRole, setShouldShowChangeRole] = useState(false)
   const [shouldShowLogoutLink, setShouldShowLogoutLink] = useState(false)
-  const [shouldShowExitButton, setShouldShowExitButton] = useState(false)
+  const [shouldShowExitButton, setShouldShowExitButton] = useState(true)
 
   const [showLogoutModal, setShowLogoutModal] = useState(false)
 
@@ -63,11 +63,12 @@ export default function EpsHeader() {
     // Show the "Logout" link only if the user is signed in
     setShouldShowLogoutLink(Boolean(auth?.isSignedIn))
 
-    // Show the "Exit" button under these conditions
-    setShouldShowExitButton(
-      (curPathname === "/logout" && !auth?.isSignedIn) ||
-      (curPathname === "/selectyourrole" && accessContext.noAccess)
-    )
+    // Always show the exit button
+    setShouldShowExitButton(true)
+    // setShouldShowExitButton(
+    //   (curPathname === "/logout" && !auth?.isSignedIn) ||
+    //   (curPathname === "/selectyourrole" && accessContext.noAccess)
+    // )
   }, [pathname, auth, accessContext])
 
   const redirectToLogin = async (e: React.MouseEvent | React.KeyboardEvent) => {

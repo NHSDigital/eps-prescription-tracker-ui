@@ -172,7 +172,6 @@ export default function RoleSelectionPage({ contentText }: RoleSelectionPageProp
                 }))
             )
 
-            setSelectedRole(selectedRole)
             setNoAccess(rolesWithAccess.length === 0)
             setSingleAccess(rolesWithAccess.length === 1)
 
@@ -216,8 +215,6 @@ export default function RoleSelectionPage({ contentText }: RoleSelectionPageProp
             setLoading(false)
         }
     }, [auth?.error])
-
-
 
     // If the data is being fetched or the user is being diverted, replace the content with a spinner
     if (loading || redirecting) {
