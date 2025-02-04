@@ -8,10 +8,10 @@ env:
   BRANCH_NAME: ${{ github.event.ref.BRANCH_NAME }}
 
 jobs:
-  # quality_checks:
-  #   uses: NHSDigital/eps-workflow-quality-checks/.github/workflows/quality-checks.yml@v4.0.5
-  #   secrets:
-  #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+  quality_checks:
+    uses: NHSDigital/eps-workflow-quality-checks/.github/workflows/quality-checks.yml@v4.0.5
+    secrets:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
   get_commit_id:
     runs-on: ubuntu-22.04
@@ -24,7 +24,7 @@ jobs:
           echo "commit_id=${{ github.sha }}" >> "$GITHUB_OUTPUT"
 
   tag_release:
-    # needs: quality_checks
+    needs: quality_checks
     runs-on: ubuntu-22.04
     outputs:
       version_tag: ${{ steps.output_version_tag.outputs.VERSION_TAG }}
