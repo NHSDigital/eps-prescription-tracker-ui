@@ -5,7 +5,7 @@ import { signInWithRedirect, signOut, getCurrentUser, AuthUser, fetchAuthSession
 import { authConfig } from './configureAmplify'
 
 import { useLocalStorageState } from '@/helpers/useLocalStorageState';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 
 interface AuthContextType {
   error: string | null
@@ -27,6 +27,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [accessToken, setAccessToken] = useLocalStorageState<JWT | null>('accessToken', 'auth', null)
 
   const router = useRouter()
+  const pathname = usePathname()
 
   /**
    * Fetch and update the user session state.
@@ -41,7 +42,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       console.log("Tokens: ", sessionIdToken, sessionAccessToken)
 
       if (!sessionIdToken || !sessionAccessToken) {
-        router.push("/login")
+        if (pathname !== "/logout")
+          router.push("/login")
       }
 
       if (sessionIdToken && sessionAccessToken) {
