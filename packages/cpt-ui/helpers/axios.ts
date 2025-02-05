@@ -1,6 +1,5 @@
-import axios from "axios"
+import axios, {InternalAxiosRequestConfig} from "axios"
 import {v4 as uuidv4} from "uuid"
-import {InternalAxiosRequestConfig} from "axios"
 
 interface ExtendedAxiosRequestConfig extends InternalAxiosRequestConfig {
     __retryCount?: number;
@@ -21,7 +20,7 @@ http.interceptors.request.use(
     return config
   },
   (error) => {
-    return Promise.reject(error)
+    return Promise.reject(Error(error))
   }
 )
 
@@ -48,7 +47,7 @@ http.interceptors.response.use(
     }
 
     // If status isn't 401 or we've already retried 3 times, reject
-    return Promise.reject(error)
+    return Promise.reject(Error(error))
   }
 )
 
