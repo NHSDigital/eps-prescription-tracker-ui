@@ -213,7 +213,10 @@ export default function RoleSelectionPage({contentText}: RoleSelectionPageProps)
         }
     }, [auth?.error])
 
-
+    console.log("noAccess:", noAccess)
+    console.log("NO_ACCESS", selectedRole === undefined && rolesWithAccess.length === 0)
+    console.log("selectedRole", selectedRole)
+    console.log("rolesWithAccess", rolesWithAccess)
 
     // If the data is being fetched or the user is being diverted, replace the content with a spinner
     if (loading || redirecting) {
@@ -253,7 +256,7 @@ export default function RoleSelectionPage({contentText}: RoleSelectionPageProps)
     }
 
     return (
-        <main id="main-content" className="nhsuk-main-wrapper">
+        <main id="main-content" className="nhsuk-main-wrapper" data-testid="eps_roleSelectionComponent">
             <Container role="contentinfo">
                 {/* Title Section */}
                 <Row>
