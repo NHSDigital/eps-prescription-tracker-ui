@@ -1,14 +1,14 @@
 'use client'
-import React, {useContext} from "react"
-import {Card, Col, Row} from "nhsuk-react-components"
+import React, { useContext } from "react"
+import { Card, Col, Row } from "nhsuk-react-components"
 import "@/assets/styles/card.scss"
 
-import {AuthContext} from "@/context/AuthProvider"
-import {useAccess} from '@/context/AccessProvider'
-import {useRouter} from "next/navigation"
-import {RoleDetails} from "@/types/TrackerUserInfoTypes"
+import { AuthContext } from "@/context/AuthProvider"
+import { useAccess } from '@/context/AccessProvider'
+import { useRouter } from "next/navigation"
+import { RoleDetails } from "@/types/TrackerUserInfoTypes"
 
-import {EPS_CARD_STRINGS} from "@/constants/ui-strings/CardStrings"
+import { EPS_CARD_STRINGS } from "@/constants/ui-strings/CardStrings"
 
 const selectedRoleEndpoint = "/api/selected-role"
 
@@ -17,10 +17,10 @@ export interface EpsCardProps {
     link: string
 }
 
-export default function EpsCard({role, link}: EpsCardProps) {
+export default function EpsCard({ role, link }: EpsCardProps) {
     const router = useRouter()
     const auth = useContext(AuthContext)
-    const {setSelectedRole} = useAccess()
+    const { setSelectedRole } = useAccess()
 
     const handleSetSelectedRole = async (e: React.MouseEvent) => {
         e.preventDefault()

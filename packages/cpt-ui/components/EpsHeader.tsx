@@ -1,9 +1,9 @@
 "use client"
-import React, {useContext, useEffect, useState} from "react"
+import React, { useContext, useEffect, useState } from "react"
 import Link from "next/link"
 import "@/assets/styles/header.scss"
-import {useRouter, usePathname} from "next/navigation"
-import {Header} from "nhsuk-react-components"
+import { useRouter, usePathname } from "next/navigation"
+import { Header } from "nhsuk-react-components"
 import {
   HEADER_SERVICE,
   HEADER_EXIT_BUTTON,
@@ -14,10 +14,10 @@ import {
   HEADER_SELECT_YOUR_ROLE_BUTTON
 } from "@/constants/ui-strings/HeaderStrings"
 
-import {AuthContext} from "@/context/AuthProvider"
-import {useAccess} from '@/context/AccessProvider'
+import { AuthContext } from "@/context/AuthProvider"
+import { useAccess } from '@/context/AccessProvider'
 
-import {EpsLogoutModal} from "@/components/EpsLogoutModal"
+import { EpsLogoutModal } from "@/components/EpsLogoutModal"
 
 export default function EpsHeader() {
   const router = useRouter()
@@ -40,6 +40,8 @@ export default function EpsHeader() {
     // FIXME: Strips off the .html for broken SPA redirects
     const curPathname = pathname.replace(".html", "")
 
+    console.log("Access context: ", accessContext);
+
     // Show "Select your role" link
     setShouldShowSelectRole(
       curPathname !== "/selectyourrole" &&
@@ -57,7 +59,7 @@ export default function EpsHeader() {
       curPathname !== "/logout" &&
       isSignedIn &&
       !accessContext.singleAccess &&
-      accessContext.selectedRole !== null
+      accessContext.selectedRole !== undefined
     )
 
     // Show the "Logout" link only if the user is signed in

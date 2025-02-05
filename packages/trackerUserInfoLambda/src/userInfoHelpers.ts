@@ -94,13 +94,12 @@ export const fetchUserInfo = async (
       // Extract activity codes and check if any match the accepted access codes
       const activityCodes = role.activity_codes || []
       const hasAccess = activityCodes.some((code: string) => accepted_access_codes.includes(code))
-      logger.debug("Role CPT access?", {hasAccess})
 
       const roleInfo: RoleDetails = {
         role_name: removeRoleCategories(role.role_name),
         role_id: role.person_roleid,
         org_code: role.org_code,
-        org_name: getOrgNameFromOrgCode(data, role.org_code, logger)
+        org_name: getOrgNameFromOrgCode(data, role.org_code)
       }
 
       // Ensure the role has at least one of the required fields to be processed
@@ -142,14 +141,10 @@ export const fetchUserInfo = async (
   }
 }
 
-/**
- * **Fetches the organization name for a given organization code.**
- */
-function getOrgNameFromOrgCode(data: UserInfoResponse, org_code: string, logger: Logger): string | undefined {
-  logger.info("Getting org name from org code", {org_code})
+// Helper function to get organization name from org_code
+function getOrgNameFromOrgCode(data: UserInfoResponse, org_code: string): string | undefined {
   const orgs = data.nhsid_user_orgs || []
   const org = orgs.find((o) => o.org_code === org_code)
-  logger.info("Found org", {org})
   return org ? org.org_name : undefined
 }
 
