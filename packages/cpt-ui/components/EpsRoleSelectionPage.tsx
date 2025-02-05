@@ -145,7 +145,6 @@ export default function RoleSelectionPage({contentText}: RoleSelectionPageProps)
                     // If currently_selected_role is an empty object `{}`, set selectedRole to undefined
                     : undefined
 
-            console.log("Selected role:", selectedRole)
             setSelectedRole(selectedRole)
 
             // Populate the EPS card props
