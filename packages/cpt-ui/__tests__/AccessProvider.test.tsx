@@ -7,6 +7,12 @@ import { TrackerUserInfo } from "@/types/TrackerUserInfoTypes"
 import { AccessProvider, useAccess } from "@/context/AccessProvider"
 import { AuthContext } from "@/context/AuthProvider"
 
+import axios from "@/helpers/axios"
+jest.mock('@/helpers/axios')
+
+// Tell TypeScript that axios is a mocked version.
+const mockedAxios = axios as jest.Mocked<typeof axios>
+
 function TestConsumer() {
     const { noAccess, singleAccess, selectedRole, clear } = useAccess()
 
@@ -21,9 +27,6 @@ function TestConsumer() {
         </div>
     )
 }
-
-const mockFetch = jest.fn()
-global.fetch = mockFetch as unknown as typeof fetch
 
 describe("AccessProvider", () => {
     const defaultAuthContext = {
@@ -57,9 +60,10 @@ describe("AccessProvider", () => {
     it("does not fetch roles when user is not signed in", () => {
         renderWithContext({ isSignedIn: false, idToken: null })
 
-        expect(mockFetch).not.toHaveBeenCalled()
+        // Expect that axios.get is never called.
+        expect(mockedAxios.get).not.toHaveBeenCalled()
 
-        // Default values:
+        // Verify default context values.
         expect(screen.getByTestId("noAccess")).toHaveTextContent("false")
         expect(screen.getByTestId("singleAccess")).toHaveTextContent("false")
         expect(screen.getByTestId("selectedRole")).toHaveTextContent("(none)")
@@ -83,20 +87,20 @@ describe("AccessProvider", () => {
             },
             user_details: {
                 family_name: "FAMILY",
-                given_name: "GIVEN"
-            }
+                given_name: "GIVEN",
+            },
         }
 
-        mockFetch.mockResolvedValueOnce({
+        // When axios.get is called, return a resolved promise with the expected response.
+        mockedAxios.get.mockResolvedValueOnce({
             status: 200,
-            json: async () => ({ userInfo: mockUserInfo }),
+            data: { userInfo: mockUserInfo },
         })
 
         renderWithContext({ isSignedIn: true, idToken: { toString: jest.fn().mockReturnValue("mock-id-token") } })
 
-        // Wait for state updates triggered by fetch
         await waitFor(() => {
-            expect(mockFetch).toHaveBeenCalledTimes(1)
+            expect(mockedAxios.get).toHaveBeenCalledTimes(1)
             expect(screen.getByTestId("noAccess")).toHaveTextContent("false")
             expect(screen.getByTestId("singleAccess")).toHaveTextContent("true")
             expect(screen.getByTestId("selectedRole")).toHaveTextContent("ROLE123")
@@ -109,19 +113,22 @@ describe("AccessProvider", () => {
             roles_without_access: [],
             user_details: {
                 family_name: "FAMILY",
-                given_name: "GIVEN"
-            }
+                given_name: "GIVEN",
+            },
         }
 
-        mockFetch.mockResolvedValueOnce({
+        mockedAxios.get.mockResolvedValueOnce({
             status: 200,
-            json: async () => ({ userInfo: mockUserInfo }),
+            data: { userInfo: mockUserInfo },
         })
 
-        renderWithContext({ isSignedIn: true, idToken: { toString: jest.fn().mockReturnValue("mock-id-token") } })
+        renderWithContext({
+            isSignedIn: true,
+            idToken: { toString: jest.fn().mockReturnValue("mock-id-token") },
+        })
 
         await waitFor(() => {
-            expect(mockFetch).toHaveBeenCalledTimes(1)
+            expect(mockedAxios.get).toHaveBeenCalledTimes(1)
             expect(screen.getByTestId("noAccess")).toHaveTextContent("true")
             expect(screen.getByTestId("singleAccess")).toHaveTextContent("false")
             expect(screen.getByTestId("selectedRole")).toHaveTextContent("(none)")
@@ -129,27 +136,31 @@ describe("AccessProvider", () => {
     })
 
     it("sets noAccess = false and singleAccess = false if multiple roles exist", async () => {
+        // Using a type cast to "any" for simplicity if your TrackerUserInfo type requires more fields.
         const mockUserInfo: TrackerUserInfo = {
             roles_with_access: [
-                { role_id: "ROLE1" },
-                { role_id: "ROLE2" },
+                { role_id: "ROLE1" } as any,
+                { role_id: "ROLE2" } as any,
             ],
             roles_without_access: [],
             user_details: {
                 family_name: "FAMILY",
-                given_name: "GIVEN"
-            }
+                given_name: "GIVEN",
+            },
         }
 
-        mockFetch.mockResolvedValueOnce({
+        mockedAxios.get.mockResolvedValueOnce({
             status: 200,
-            json: async () => ({ userInfo: mockUserInfo }),
+            data: { userInfo: mockUserInfo },
         })
 
-        renderWithContext({ isSignedIn: true, idToken: { toString: jest.fn().mockReturnValue("mock-id-token") } })
+        renderWithContext({
+            isSignedIn: true,
+            idToken: { toString: jest.fn().mockReturnValue("mock-id-token") },
+        })
 
         await waitFor(() => {
-            expect(mockFetch).toHaveBeenCalledTimes(1)
+            expect(mockedAxios.get).toHaveBeenCalledTimes(1)
             expect(screen.getByTestId("noAccess")).toHaveTextContent("false")
             expect(screen.getByTestId("singleAccess")).toHaveTextContent("false")
             expect(screen.getByTestId("selectedRole")).toHaveTextContent("(none)")
@@ -157,17 +168,19 @@ describe("AccessProvider", () => {
     })
 
     it("does not update state if fetch returns a non-200 status", async () => {
-        // Force fetch to return 500 error
-        mockFetch.mockResolvedValueOnce({
+        // Simulate an error response from the API.
+        mockedAxios.get.mockResolvedValueOnce({
             status: 500,
-            json: async () => ({}),
+            data: {},
         })
 
-        renderWithContext({ isSignedIn: true, idToken: { toString: jest.fn().mockReturnValue("mock-id-token") } })
+        renderWithContext({
+            isSignedIn: true,
+            idToken: { toString: jest.fn().mockReturnValue("mock-id-token") },
+        })
 
-        // The provider will log an error but should skip updates
         await waitFor(() => {
-            expect(mockFetch).toHaveBeenCalledTimes(1)
+            expect(mockedAxios.get).toHaveBeenCalledTimes(1)
             expect(screen.getByTestId("noAccess")).toHaveTextContent("false")
             expect(screen.getByTestId("singleAccess")).toHaveTextContent("false")
             expect(screen.getByTestId("selectedRole")).toHaveTextContent("(none)")
@@ -190,13 +203,13 @@ describe("AccessProvider", () => {
             },
             user_details: {
                 family_name: "FAMILY",
-                given_name: "GIVEN"
-            }
+                given_name: "GIVEN",
+            },
         }
 
-        mockFetch.mockResolvedValueOnce({
+        mockedAxios.get.mockResolvedValueOnce({
             status: 200,
-            json: async () => ({ userInfo: mockUserInfo }),
+            data: { userInfo: mockUserInfo },
         })
 
         renderWithContext({ isSignedIn: true, idToken: { toString: jest.fn().mockReturnValue("mock-id-token") } })

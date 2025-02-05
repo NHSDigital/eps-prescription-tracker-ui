@@ -1,9 +1,11 @@
-import React, {createContext, useContext, useState, useEffect, ReactNode} from 'react'
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 
-import {useLocalStorageState} from '@/helpers/useLocalStorageState'
-import {AuthContext} from './AuthProvider'
+import { useLocalStorageState } from '@/helpers/useLocalStorageState'
+import { AuthContext } from './AuthProvider'
 
-import {RoleDetails, TrackerUserInfo, UserDetails} from '@/types/TrackerUserInfoTypes'
+import { RoleDetails, TrackerUserInfo, UserDetails } from '@/types/TrackerUserInfoTypes'
+
+import http from "@/helpers/axios"
 
 const trackerUserInfoEndpoint = "/api/tracker-user-info"
 
@@ -21,7 +23,7 @@ export type AccessContextType = {
 
 export const AccessContext = createContext<AccessContextType | undefined>(undefined)
 
-export const AccessProvider = ({children}: {children: ReactNode}) => {
+export const AccessProvider = ({ children }: { children: ReactNode }) => {
   const [noAccess, setNoAccess] = useLocalStorageState<boolean>('noAccess', 'access', false)
   const [singleAccess, setSingleAccess] = useLocalStorageState<boolean>('singleAccess', 'access', false)
   const [selectedRole, setSelectedRole] = useLocalStorageState<RoleDetails | undefined>('selectedRole', 'access', undefined)
@@ -52,7 +54,7 @@ export const AccessProvider = ({children}: {children: ReactNode}) => {
   }
 
   const fetchRolesWithAccessAndSelectedRole = async (): Promise<FetchRolesResult> => {
-    return fetch(trackerUserInfoEndpoint, {
+    return http.get(trackerUserInfoEndpoint, {
       headers: {
         Authorization: `Bearer ${auth?.idToken}`,
         'NHSD-Session-URID': '555254242106',
@@ -64,7 +66,7 @@ export const AccessProvider = ({children}: {children: ReactNode}) => {
             `Server did not return CPT user info, response ${response.status}`
           )
         }
-        return response.json()
+        return response.data;
       })
       .then((data) => {
         if (!data.userInfo) {
@@ -73,10 +75,16 @@ export const AccessProvider = ({children}: {children: ReactNode}) => {
 
         const userInfo: TrackerUserInfo = data.userInfo
         const rolesWithAccessCount = userInfo.roles_with_access.length
-        const currentlySelectedRole = userInfo.currently_selected_role
         const userDetails = userInfo.user_details
 
-        return {rolesWithAccessCount, currentlySelectedRole, userDetails}
+        let currentlySelectedRole = userInfo.currently_selected_role
+        // The current role may be either undefined, or an empty object. If it's empty, set it undefined.
+        if (!currentlySelectedRole || Object.keys(currentlySelectedRole).length === 0) {
+          currentlySelectedRole = undefined;
+        }
+
+
+        return { rolesWithAccessCount, currentlySelectedRole, userDetails }
       })
   }
 
@@ -85,7 +93,7 @@ export const AccessProvider = ({children}: {children: ReactNode}) => {
   useEffect(() => {
     const updateAccessVariables = async () => {
       try {
-        const {rolesWithAccessCount, currentlySelectedRole, userDetails} = await fetchRolesWithAccessAndSelectedRole()
+        const { rolesWithAccessCount, currentlySelectedRole, userDetails } = await fetchRolesWithAccessAndSelectedRole()
         setSelectedRole(currentlySelectedRole)
         setUserDetails(userDetails)
 
@@ -117,7 +125,7 @@ export const AccessProvider = ({children}: {children: ReactNode}) => {
 
 
   return (
-    <AccessContext.Provider value={{noAccess, setNoAccess, singleAccess, setSingleAccess, selectedRole, setSelectedRole, userDetails, setUserDetails, clear}}>
+    <AccessContext.Provider value={{ noAccess, setNoAccess, singleAccess, setSingleAccess, selectedRole, setSelectedRole, userDetails, setUserDetails, clear }}>
       {children}
     </AccessContext.Provider>
   )
