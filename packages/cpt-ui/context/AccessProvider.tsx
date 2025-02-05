@@ -5,6 +5,8 @@ import {AuthContext} from './AuthProvider'
 
 import {RoleDetails, TrackerUserInfo, UserDetails} from '@/types/TrackerUserInfoTypes'
 
+import http from "@/helpers/axios"
+
 const trackerUserInfoEndpoint = "/api/tracker-user-info"
 
 export type AccessContextType = {
@@ -52,7 +54,7 @@ export const AccessProvider = ({children}: {children: ReactNode}) => {
   }
 
   const fetchRolesWithAccessAndSelectedRole = async (): Promise<FetchRolesResult> => {
-    return fetch(trackerUserInfoEndpoint, {
+    return http.get(trackerUserInfoEndpoint, {
       headers: {
         Authorization: `Bearer ${auth?.idToken}`,
         'NHSD-Session-URID': '555254242106',
@@ -64,7 +66,7 @@ export const AccessProvider = ({children}: {children: ReactNode}) => {
             `Server did not return CPT user info, response ${response.status}`
           )
         }
-        return response.json()
+        return response.data
       })
       .then((data) => {
         if (!data.userInfo) {
@@ -73,8 +75,14 @@ export const AccessProvider = ({children}: {children: ReactNode}) => {
 
         const userInfo: TrackerUserInfo = data.userInfo
         const rolesWithAccessCount = userInfo.roles_with_access.length
-        const currentlySelectedRole = userInfo.currently_selected_role
         const userDetails = userInfo.user_details
+
+        let currentlySelectedRole = userInfo.currently_selected_role
+        // The current role may be either undefined, or an empty object. If it's empty, set it undefined.
+        if (!currentlySelectedRole || Object.keys(currentlySelectedRole).length === 0) {
+          currentlySelectedRole = undefined
+        }
+
 
         return {rolesWithAccessCount, currentlySelectedRole, userDetails}
       })
@@ -89,7 +97,7 @@ export const AccessProvider = ({children}: {children: ReactNode}) => {
         setSelectedRole(currentlySelectedRole)
         setUserDetails(userDetails)
 
-        setNoAccess(rolesWithAccessCount === 0 && currentlySelectedRole === undefined)
+        setNoAccess(rolesWithAccessCount === 0)
         setSingleAccess(rolesWithAccessCount === 1)
       } catch (error) {
         console.error("Access provider failed to fetch roles with access:", error)

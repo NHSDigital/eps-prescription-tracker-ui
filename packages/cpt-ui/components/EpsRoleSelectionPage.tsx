@@ -11,6 +11,8 @@ import EpsSpinner from "@/components/EpsSpinner"
 
 import {RoleDetails, TrackerUserInfo} from "@/types/TrackerUserInfoTypes"
 
+import http from "@/helpers/axios"
+
 // This is passed to the EPS card component.
 export type RolesWithAccessProps = {
     role: RoleDetails
@@ -97,32 +99,36 @@ export default function RoleSelectionPage({contentText}: RoleSelectionPageProps)
         }
     }, [selectedRole, loginInfoMessage, noOrgName, noODSCode, noRoleName])
 
+    // TODO: This should be moved to the access provider, and the state passed in c.f. selectedRole
+    // Instead, this should be a useEffect that triggers when rolesWithAccess, rolesWithoutAccess, or selectedRole changes.
     const fetchTrackerUserInfo = useCallback(async () => {
-        setLoading(true)
-        setError(null)
-        setRolesWithAccess([])
-        setRolesWithoutAccess([])
-        setSelectedRole(undefined)
-
-        if (!auth?.isSignedIn || !auth) {
-            setLoading(false)
-            setError(null)
+        if (!auth?.isSignedIn || !auth || !auth.idToken) {
             return
         }
 
+        // On DOM load, for some reason the toString property is missing, which causes the 
+        // Bearer token to be "Bearer [object Object]". 
+        // Don't bother making bum requests.
+        if (!auth.idToken.hasOwnProperty("toString")) {
+            return
+        }
+
+        setLoading(true)
+        setError(null)
+
         try {
-            const response = await fetch(trackerUserInfoEndpoint, {
+            const response = await http.get(trackerUserInfoEndpoint, {
                 headers: {
-                    Authorization: `Bearer ${auth?.idToken}`,
-                    'NHSD-Session-URID': '555254242106'
-                }
+                    Authorization: `Bearer ${auth.idToken}`,
+                    'NHSD-Session-URID': '555254242106',
+                },
             })
 
             if (response.status !== 200) {
                 throw new Error(`Server did not return CPT user info, response ${response.status}`)
             }
 
-            const data = await response.json()
+            const data = await response.data
 
             if (!data.userInfo) {
                 throw new Error("Server response did not contain data")
@@ -195,10 +201,6 @@ export default function RoleSelectionPage({contentText}: RoleSelectionPageProps)
     ])
 
     useEffect(() => {
-        if (auth?.isSignedIn === undefined) {
-            return
-        }
-
         if (auth?.isSignedIn) {
             fetchTrackerUserInfo()
         }
@@ -212,7 +214,6 @@ export default function RoleSelectionPage({contentText}: RoleSelectionPageProps)
             setLoading(false)
         }
     }, [auth?.error])
-
 
     // If the data is being fetched or the user is being diverted, replace the content with a spinner
     if (loading || redirecting) {

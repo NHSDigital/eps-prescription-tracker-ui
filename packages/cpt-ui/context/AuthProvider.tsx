@@ -1,10 +1,12 @@
-import React, {createContext, useEffect, useState} from 'react'
-import {Amplify} from 'aws-amplify'
-import {Hub} from "aws-amplify/utils"
-import {signInWithRedirect, signOut, getCurrentUser, AuthUser, fetchAuthSession, JWT, SignInWithRedirectInput} from 'aws-amplify/auth'
-import {authConfig} from './configureAmplify'
+import React, { createContext, useEffect, useState } from 'react'
+import { Amplify } from 'aws-amplify'
+import { Hub } from "aws-amplify/utils"
+import { signInWithRedirect, signOut, getCurrentUser, AuthUser, fetchAuthSession, JWT, SignInWithRedirectInput } from 'aws-amplify/auth'
+import { authConfig } from './configureAmplify'
 
-import {useLocalStorageState} from '@/helpers/useLocalStorageState'
+import { useLocalStorageState } from '@/helpers/useLocalStorageState';
+import { useRouter, usePathname } from 'next/navigation';
+import path from 'path'
 
 interface AuthContextType {
   error: string | null
@@ -18,12 +20,15 @@ interface AuthContextType {
 
 export const AuthContext = createContext<AuthContextType | null>(null)
 
-export const AuthProvider = ({children}: {children: React.ReactNode}) => {
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [error, setError] = useState<string | null>(null)
   const [user, setUser] = useLocalStorageState<AuthUser | null>('user', 'auth', null)
   const [isSignedIn, setIsSignedIn] = useLocalStorageState<boolean>('isSignedIn', 'auth', false)
   const [idToken, setIdToken] = useLocalStorageState<JWT | null>('idToken', 'auth', null)
   const [accessToken, setAccessToken] = useLocalStorageState<JWT | null>('accessToken', 'auth', null)
+
+  const router = useRouter()
+  const pathname = usePathname()
 
   /**
    * Fetch and update the user session state.
@@ -31,11 +36,18 @@ export const AuthProvider = ({children}: {children: React.ReactNode}) => {
   const getUser = async () => {
     console.log("Fetching user session...")
     try {
-      const authSession = await fetchAuthSession({forceRefresh: true})
+      const authSession = await fetchAuthSession({ forceRefresh: true })
       const sessionIdToken = authSession.tokens?.idToken
       const sessionAccessToken = authSession.tokens?.accessToken
 
       console.log("Tokens: ", sessionIdToken, sessionAccessToken)
+
+      if (!sessionIdToken || !sessionAccessToken) {
+        // FIXME: Remove this once we have fixed the SPA
+        const curpath = pathname.replace(".html", "")
+        if (curpath !== "/logout")
+          router.push("/login")
+      }
 
       if (sessionIdToken && sessionAccessToken) {
         // Extract expiration times directly from the token payloads.
@@ -94,7 +106,7 @@ export const AuthProvider = ({children}: {children: React.ReactNode}) => {
    * Set up Hub listener to react to auth events and refresh session state.
    */
   useEffect(() => {
-    const unsubscribe = Hub.listen("auth", ({payload}) => {
+    const unsubscribe = Hub.listen("auth", ({ payload }) => {
       console.log("Auth event payload:", payload)
       switch (payload.event) {
         // On successful signIn or token refresh, get the latest user state
@@ -148,7 +160,7 @@ export const AuthProvider = ({children}: {children: React.ReactNode}) => {
    */
   useEffect(() => {
     console.log("Configuring Amplify with authConfig:", authConfig)
-    Amplify.configure(authConfig, {ssr: true})
+    Amplify.configure(authConfig, { ssr: true })
     getUser()
   }, [authConfig])
 
@@ -162,8 +174,8 @@ export const AuthProvider = ({children}: {children: React.ReactNode}) => {
     // This is blocked until we have a central Dynamo interaction lambda
 
     try {
-      await signOut({global: true})
-      console.log("Signed out successfully!")
+      await signOut({ global: true });
+      console.log("Signed out successfully!");
 
       // Immediately reset state to signed out.
       setUser(null)
