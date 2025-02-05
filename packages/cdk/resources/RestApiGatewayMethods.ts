@@ -16,6 +16,7 @@ export interface RestApiGatewayMethodsProps {
   readonly restApiGateway: RestApi
   readonly tokenLambda: NodejsFunction
   readonly mockTokenLambda: NodejsFunction
+  readonly pingLambda: NodejsFunction
   readonly prescriptionSearchLambda: NodejsFunction
   readonly trackerUserInfoLambda: NodejsFunction
   readonly selectedRoleLambda: NodejsFunction
@@ -40,6 +41,12 @@ export class RestApiGatewayMethods extends Construct {
     }
     const tokenResource = props.restApiGateway.root.addResource("token")
     tokenResource.addMethod("POST", new LambdaIntegration(props.tokenLambda, {
+      credentialsRole: props.restAPiGatewayRole
+    }))
+
+    // Add ping endpoint **without authorization**
+    const pingResource = props.restApiGateway.root.addResource("ping")
+    pingResource.addMethod("GET", new LambdaIntegration(props.pingLambda, {
       credentialsRole: props.restAPiGatewayRole
     }))
 

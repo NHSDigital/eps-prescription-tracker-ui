@@ -215,6 +215,7 @@ export class StatelessResourcesStack extends Stack {
       prescriptionSearchLambda: apiFunctions.prescriptionSearchLambda,
       trackerUserInfoLambda: apiFunctions.trackerUserInfoLambda,
       selectedRoleLambda: apiFunctions.selectedRoleLambda,
+      pingLambda: apiFunctions.pingLambda,
       useMockOidc: useMockOidc,
       authorizer: apiGateway.authorizer
     })

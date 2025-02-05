@@ -25,24 +25,8 @@
         "path": "../packages/cognito"
       },
       {
-        "name": "packages/prescriptionSearchLambda",
-        "path": "../packages/prescriptionSearchLambda"
-      },
-      {
-        "name": "packages/common/middyErrorHandler",
-        "path": "../packages/common/middyErrorHandler"
-      },
-      {
-        "name": "packages/common/testing",
-        "path": "../packages/common/testing"
-      },
-      {
-        "name": "packages/common/authFunctions",
-        "path": "../packages/common/authFunctions"
-      },
-      {
-        "name": "packages/auth_demo",
-        "path": "../packages/auth_demo"
+        "name": "packages/pingLambda",
+        "path": "../packages/pingLambda"
       },
       {
         "name": "packages/trackerUserInfoLambda",
@@ -51,7 +35,27 @@
       {
         "name": "packages/selectedRoleLambda",
         "path": "../packages/selectedRoleLambda"
-      }
+      },
+      {
+        "name": "packages/prescriptionSearchLambda",
+        "path": "../packages/prescriptionSearchLambda"
+      },
+      {
+        "name": "packages/common/middyErrorHandler",
+        "path": "../packages/common/middyErrorHandler"
+      },
+      {
+        "name": "packages/common/authFunctions",
+        "path": "../packages/common/authFunctions"
+      },
+      {
+        "name": "packages/common/testing",
+        "path": "../packages/common/testing"
+      },
+      {
+        "name": "packages/auth_demo",
+        "path": "../packages/auth_demo"
+      },
     ],
     "settings": {
       "jest.disabledWorkspaceFolders": [

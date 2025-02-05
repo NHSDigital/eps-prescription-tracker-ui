@@ -1,0 +1,24 @@
+{
+  "name": "ping-lambda",
+  "version": "1.0.0",
+  "description": "Healthcheck. Responds to pings, with pongs.",
+  "main": "handler.ts",
+  "author": "NHS Digital",
+  "license": "MIT",
+  "scripts": {
+    "unit": "POWERTOOLS_DEV=true NODE_OPTIONS=--experimental-vm-modules jest --no-cache --coverage",
+    "lint": "eslint  --max-warnings 0 --fix --config ../../eslint.config.mjs .",
+    "compile": "tsc",
+    "test": "npm run compile && npm run unit",
+    "check-licenses": "license-checker --failOn GPL --failOn LGPL --start ../.."
+  },
+  "dependencies": {
+    "@aws-lambda-powertools/logger": "^2.13.1",
+    "@cpt-ui-common/middyErrorHandler": "^1.0.0",
+    "@cpt-ui-common/testing": "^1.0.0",
+    "@middy/core": "^6.0.0",
+    "@middy/input-output-logger": "^6.0.0",
+    "aws-lambda": "^1.0.7"
+  },
+  "devDependencies": {}
+}

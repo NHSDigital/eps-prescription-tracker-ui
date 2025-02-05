@@ -191,6 +191,37 @@ export const nagSuppressions = (stack: Stack) => {
       ]
     )
 
+    // Ping Lambda
+    safeAddNagSuppression(
+      stack,
+      "/StatelessStack/ApiFunctions/Ping/LambdaPutLogsManagedPolicy/Resource",
+      [
+        {
+          id: "AwsSolutions-IAM5",
+          reason:
+            "Lambda logging policies need wildcard permissions to allow for dynamic log streams. This is acceptable for this lambda."
+        }
+      ]
+    )
+
+    // Ping Lambda
+    safeAddNagSuppression(
+      stack,
+      "/StatelessStack/ApiGateway/ApiGateway/Default/ping/GET/Resource",
+      [
+        {
+          id: "AwsSolutions-APIG4",
+          reason:
+            "The ping endpoint is intentionally open (public) and does not require authorization."
+        },
+        {
+          id: "AwsSolutions-COG4",
+          reason:
+            "The ping endpoint is intentionally open (public) and does not use a Cognito user pool authorizer."
+        }
+      ]
+    )
+
   }
 }
 
