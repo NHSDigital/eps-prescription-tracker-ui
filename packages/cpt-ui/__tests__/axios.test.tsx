@@ -1,5 +1,5 @@
 // __tests__/axios.test.tsx
-import http from '@/helpers/axios';
+import http from '../helpers/axios';
 import MockAdapter from 'axios-mock-adapter';
 
 jest.mock('uuid', () => ({
