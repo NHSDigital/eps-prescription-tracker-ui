@@ -1,11 +1,11 @@
 import React from "react"
-import { render, screen, waitFor } from "@testing-library/react"
+import {render, screen, waitFor} from "@testing-library/react"
 import "@testing-library/jest-dom"
 
-import { TrackerUserInfo } from "@/types/TrackerUserInfoTypes"
+import {TrackerUserInfo} from "@/types/TrackerUserInfoTypes"
 
-import { AccessProvider, useAccess } from "@/context/AccessProvider"
-import { AuthContext } from "@/context/AuthProvider"
+import {AccessProvider, useAccess} from "@/context/AccessProvider"
+import {AuthContext} from "@/context/AuthProvider"
 
 import axios from "@/helpers/axios"
 jest.mock('@/helpers/axios')
@@ -14,7 +14,7 @@ jest.mock('@/helpers/axios')
 const mockedAxios = axios as jest.Mocked<typeof axios>
 
 function TestConsumer() {
-    const { noAccess, singleAccess, selectedRole, clear } = useAccess()
+    const {noAccess, singleAccess, selectedRole, clear} = useAccess()
 
     return (
         <div>
@@ -40,7 +40,7 @@ describe("AccessProvider", () => {
     }
 
     const renderWithContext = (authOverrides = {}) => {
-        const authValue = { ...defaultAuthContext, ...authOverrides }
+        const authValue = {...defaultAuthContext, ...authOverrides}
         return render(
             <AuthContext.Provider value={authValue}>
                 <AccessProvider>
@@ -58,7 +58,7 @@ describe("AccessProvider", () => {
     })
 
     it("does not fetch roles when user is not signed in", () => {
-        renderWithContext({ isSignedIn: false, idToken: null })
+        renderWithContext({isSignedIn: false, idToken: null})
 
         // Expect that axios.get is never called.
         expect(mockedAxios.get).not.toHaveBeenCalled()
@@ -94,10 +94,10 @@ describe("AccessProvider", () => {
         // When axios.get is called, return a resolved promise with the expected response.
         mockedAxios.get.mockResolvedValueOnce({
             status: 200,
-            data: { userInfo: mockUserInfo },
+            data: {userInfo: mockUserInfo},
         })
 
-        renderWithContext({ isSignedIn: true, idToken: { toString: jest.fn().mockReturnValue("mock-id-token") } })
+        renderWithContext({isSignedIn: true, idToken: {toString: jest.fn().mockReturnValue("mock-id-token")}})
 
         await waitFor(() => {
             expect(mockedAxios.get).toHaveBeenCalledTimes(1)
@@ -119,12 +119,12 @@ describe("AccessProvider", () => {
 
         mockedAxios.get.mockResolvedValueOnce({
             status: 200,
-            data: { userInfo: mockUserInfo },
+            data: {userInfo: mockUserInfo},
         })
 
         renderWithContext({
             isSignedIn: true,
-            idToken: { toString: jest.fn().mockReturnValue("mock-id-token") },
+            idToken: {toString: jest.fn().mockReturnValue("mock-id-token")},
         })
 
         await waitFor(() => {
@@ -139,8 +139,8 @@ describe("AccessProvider", () => {
         // Using a type cast to "any" for simplicity if your TrackerUserInfo type requires more fields.
         const mockUserInfo: TrackerUserInfo = {
             roles_with_access: [
-                { role_id: "ROLE1" } as any,
-                { role_id: "ROLE2" } as any,
+                {role_id: "ROLE1"} as any,
+                {role_id: "ROLE2"} as any,
             ],
             roles_without_access: [],
             user_details: {
@@ -151,12 +151,12 @@ describe("AccessProvider", () => {
 
         mockedAxios.get.mockResolvedValueOnce({
             status: 200,
-            data: { userInfo: mockUserInfo },
+            data: {userInfo: mockUserInfo},
         })
 
         renderWithContext({
             isSignedIn: true,
-            idToken: { toString: jest.fn().mockReturnValue("mock-id-token") },
+            idToken: {toString: jest.fn().mockReturnValue("mock-id-token")},
         })
 
         await waitFor(() => {
@@ -176,7 +176,7 @@ describe("AccessProvider", () => {
 
         renderWithContext({
             isSignedIn: true,
-            idToken: { toString: jest.fn().mockReturnValue("mock-id-token") },
+            idToken: {toString: jest.fn().mockReturnValue("mock-id-token")},
         })
 
         await waitFor(() => {
@@ -209,10 +209,10 @@ describe("AccessProvider", () => {
 
         mockedAxios.get.mockResolvedValueOnce({
             status: 200,
-            data: { userInfo: mockUserInfo },
+            data: {userInfo: mockUserInfo},
         })
 
-        renderWithContext({ isSignedIn: true, idToken: { toString: jest.fn().mockReturnValue("mock-id-token") } })
+        renderWithContext({isSignedIn: true, idToken: {toString: jest.fn().mockReturnValue("mock-id-token")}})
 
         // Confirm everything is updated
         await waitFor(() => {
