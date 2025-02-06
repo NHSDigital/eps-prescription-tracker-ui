@@ -1,15 +1,15 @@
 'use client'
-import React, { useState, useEffect, useContext, useCallback } from "react"
-import { useRouter } from 'next/navigation'
-import { Container, Col, Row, Details, Table, ErrorSummary, Button, InsetText } from "nhsuk-react-components"
+import React, {useState, useEffect, useContext, useCallback} from "react"
+import {useRouter} from 'next/navigation'
+import {Container, Col, Row, Details, Table, ErrorSummary, Button, InsetText} from "nhsuk-react-components"
 
-import { AuthContext } from "@/context/AuthProvider"
-import { useAccess } from '@/context/AccessProvider'
+import {AuthContext} from "@/context/AuthProvider"
+import {useAccess} from '@/context/AccessProvider'
 
 import EpsCard from "@/components/EpsCard"
 import EpsSpinner from "@/components/EpsSpinner"
 
-import { RoleDetails, TrackerUserInfo } from "@/types/TrackerUserInfoTypes"
+import {RoleDetails, TrackerUserInfo} from "@/types/TrackerUserInfoTypes"
 
 import http from "@/helpers/axios"
 
@@ -57,7 +57,7 @@ interface RoleSelectionPageProps {
     }
 }
 
-export default function RoleSelectionPage({ contentText }: RoleSelectionPageProps) {
+export default function RoleSelectionPage({contentText}: RoleSelectionPageProps) {
     // Destructure strings from the contentText prop
     const {
         title,
@@ -77,7 +77,7 @@ export default function RoleSelectionPage({ contentText }: RoleSelectionPageProp
         errorDuringRoleSelection
     } = contentText
 
-    const { noAccess, setNoAccess, setSingleAccess, selectedRole, setSelectedRole } = useAccess()
+    const {noAccess, setNoAccess, setSingleAccess, selectedRole, setSelectedRole} = useAccess()
     const [loginInfoMessage, setLoginInfoMessage] = useState<string | null>(null)
     const [loading, setLoading] = useState<boolean>(true)
     const [error, setError] = useState<string | null>(null)
@@ -122,7 +122,7 @@ export default function RoleSelectionPage({ contentText }: RoleSelectionPageProp
                     Authorization: `Bearer ${auth.idToken}`,
                     'NHSD-Session-URID': '555254242106',
                 },
-            });
+            })
 
             if (response.status !== 200) {
                 throw new Error(`Server did not return CPT user info, response ${response.status}`)
@@ -151,7 +151,6 @@ export default function RoleSelectionPage({ contentText }: RoleSelectionPageProp
                     // If currently_selected_role is an empty object `{}`, set selectedRole to undefined
                     : undefined
 
-            console.log("Selected role:", selectedRole)
             setSelectedRole(selectedRole)
 
             // Populate the EPS card props
@@ -172,7 +171,7 @@ export default function RoleSelectionPage({ contentText }: RoleSelectionPageProp
                 }))
             )
 
-            setNoAccess(rolesWithAccess.length === 0)
+            setNoAccess(rolesWithAccess.length === 0 && selectedRole === undefined)
             setSingleAccess(rolesWithAccess.length === 1)
 
             // If the user has exactly one accessible role and zero roles without access,
@@ -273,7 +272,7 @@ export default function RoleSelectionPage({ contentText }: RoleSelectionPageProp
                         {/* Caption Section for No Access */}
                         {noAccess && (<p>{captionNoAccess}</p>)}
                         {/* Pre selected role section */}
-                        {selectedRole && (
+                        {selectedRole !== undefined && (
                             <section aria-label="Login Information">
                                 <InsetText
                                     data-testid="eps_select_your_role_pre_role_selected"
@@ -282,14 +281,16 @@ export default function RoleSelectionPage({ contentText }: RoleSelectionPageProp
                                         {insetText.visuallyHidden}
                                     </span>
                                     {loginInfoMessage && (
-                                        <p dangerouslySetInnerHTML={{ __html: loginInfoMessage }}></p>
+                                        <p dangerouslySetInnerHTML={{__html: loginInfoMessage}}></p>
                                     )}
                                 </InsetText>
                                 {/* Confirm Button */}
                                 <Button href={confirmButton.link}>
                                     {confirmButton.text}
                                 </Button>
-                                <p>{alternativeMessage}</p>
+                                {rolesWithAccess.length > 0 && (
+                                    <p>{alternativeMessage}</p>
+                                )}
                             </section>
                         )}
                     </Col>
