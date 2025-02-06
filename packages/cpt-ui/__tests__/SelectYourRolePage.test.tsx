@@ -1,7 +1,7 @@
 import "@testing-library/jest-dom";
 import { render, screen, waitFor } from "@testing-library/react";
 import React from "react";
-import SelectYourRolePage from "@/app/selectyourrole/page";
+import SelectYourRolePage from "@/pages/SelectYourRolePage";
 import { AuthContext } from "@/context/AuthProvider";
 import { useNavigate } from "react-router-dom";
 
@@ -121,12 +121,12 @@ export const renderWithAuth = (authOverrides = {}) => {
   return render(
     <AuthContext.Provider value={authValue}>
       <SelectYourRolePage />
-    </AuthContext.Provider>
+    </AuthContext.Provider>,
   );
 };
 
 import { SELECT_YOUR_ROLE_PAGE_TEXT } from "@/constants/ui-strings/CardStrings";
-import { EpsSpinnerStrings } from "../constants/ui-strings/EpsSpinnerStrings";
+import { EpsSpinnerStrings } from "@/constants/ui-strings/EpsSpinnerStrings";
 
 const mockUserInfo = {
   roles_with_access: [
@@ -160,9 +160,9 @@ describe("SelectYourRolePage", () => {
 
   it("renders loading state when signed in but API call hasn't resolved yet", async () => {
     // Simulate a pending API call
-    mockedAxios.get.mockImplementation(() => new Promise(() => {}));
+    mockedAxios.get.mockImplementation(() => new Promise(() => { }));
 
-    __setMockContextValue({loading: true})
+    __setMockContextValue({ loading: true })
 
     renderWithAuth({
       isSignedIn: true,
@@ -293,14 +293,14 @@ describe("SelectYourRolePage", () => {
       // Check for the no-access title
       const heading = screen.getByRole("heading", { level: 1 });
       expect(heading).toHaveTextContent(
-        SELECT_YOUR_ROLE_PAGE_TEXT.titleNoAccess
+        SELECT_YOUR_ROLE_PAGE_TEXT.titleNoAccess,
       );
     });
   });
 
   it("redirects to searchforaprescription when there is one role with access and no roles without access", async () => {
     const mockPush = jest.fn();
-    (useRouter as jest.Mock).mockReturnValue({push: mockPush})
+    (useRouter as jest.Mock).mockReturnValue({ push: mockPush })
 
     __setMockContextValue({
       loading: false,
@@ -323,7 +323,7 @@ describe("SelectYourRolePage", () => {
 
     renderWithAuth({
       isSignedIn: true,
-      idToken: {toString: jest.fn().mockReturnValue("mock-id-token")},
+      idToken: { toString: jest.fn().mockReturnValue("mock-id-token") },
     })
 
     await waitFor(() => {
@@ -332,7 +332,7 @@ describe("SelectYourRolePage", () => {
   });
 
   it("renders loading state when waiting for API response", async () => {
-    mockedAxios.get.mockImplementation(() => new Promise(() => {}));
+    mockedAxios.get.mockImplementation(() => new Promise(() => { }));
     renderWithAuth();
     expect(screen.getByText("Loading...")).toBeInTheDocument();
   });
@@ -362,10 +362,10 @@ describe("SelectYourRolePage", () => {
       data: { userInfo: mockUserInfo },
     });
 
-    __setMockContextValue({noAccess: true})
+    __setMockContextValue({ noAccess: true })
     renderWithAuth({
       isSignedIn: true,
-      idToken: {toString: jest.fn().mockReturnValue("mock-id-token")},
+      idToken: { toString: jest.fn().mockReturnValue("mock-id-token") },
     })
 
     await waitFor(() => {
@@ -394,7 +394,7 @@ describe("SelectYourRolePage", () => {
     // Render with auth
     renderWithAuth({
       isSignedIn: true,
-      idToken: {toString: jest.fn().mockReturnValue("mock-id-token")},
+      idToken: { toString: jest.fn().mockReturnValue("mock-id-token") },
     })
 
     // Wait for the error summary to appear and loading to finish

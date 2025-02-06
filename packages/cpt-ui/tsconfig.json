@@ -1,33 +1,30 @@
 {
   "extends": "../../tsconfig.defaults.json",
+  "references": [],
+  "include": [
+    "src/**/*",
+    "tests/**/*",
+    "tests/**/*.json",
+    ".next/types/**/*.ts",
+    "**/*.tsx",
+    "helpers/axios.ts"
+  ],
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@": ["src"],
       "@/*": ["src/*"]
     },
-    "jsx": "react-jsx",
-    "esModuleInterop": true,
-    "moduleResolution": "bundler",
-    "target": "ESNext",
-    "module": "ESNext",
-    "types": ["jest", "node", "@testing-library/jest-dom", "vite/client"],
-    "allowJs": true,
-    "lib": ["DOM", "DOM.Iterable", "ESNext"],
-    "strict": true,
-    "noImplicitAny": false,
+    "lib": ["dom", "dom.iterable", "esnext"],
     "noEmit": true,
+    "module": "esnext",
     "isolatedModules": true,
+    "jsx": "preserve",
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
     "composite": false
   },
-  "include": [
-    "src/**/*",
-    "__tests__/**/*",
-    "**/*.tsx",
-    "jest.config.ts",
-    "jest.setup.ts",
-    "vite.config.ts",
-    "vite-env.d.ts"
-  ],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", ".next"]
 }

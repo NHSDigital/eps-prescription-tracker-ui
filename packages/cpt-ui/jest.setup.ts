@@ -15,7 +15,7 @@ Object.defineProperty(window, "matchMedia", {
 })
 
 // Mock the environment module
-jest.mock("@/config/environment", () => ({
+jest.mock("@/constants/environment", () => ({
   AUTH_CONFIG: {
     USER_POOL_ID: "test-pool-id",
     USER_POOL_CLIENT_ID: "test-client-id",

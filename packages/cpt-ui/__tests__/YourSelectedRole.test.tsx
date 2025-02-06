@@ -7,21 +7,6 @@ import { JWT } from "aws-amplify/auth";
 import { AuthContext } from "@/context/AuthProvider";
 import { AccessContext } from "@/context/AccessProvider";
 
-// Mock the module and directly reference the variable
-jest.mock("@/constants/ui-strings/YourSelectedRoleStrings", () => {
-    const YOUR_SELECTED_ROLE_STRINGS = {
-        heading: "Your selected role",
-        subheading: "The following role is now active.",
-        tableTitle: "Current role Details",
-        roleLabel: "Role",
-        orgLabel: "Organisation",
-        changeLinkText: "Change",
-        confirmButtonText: "Continue to find a prescription",
-        noODSCode: "NO ODS CODE",
-        noRoleName: "NO ROLE NAME",
-        noOrgName: "NO ORG NAME"
-    }
-
 const {
   YOUR_SELECTED_ROLE_STRINGS,
 } = require("@/constants/ui-strings/YourSelectedRoleStrings");

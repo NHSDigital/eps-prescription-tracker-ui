@@ -19,7 +19,8 @@ import EpsSpinner from "@/components/EpsSpinner";
 
 import { RoleDetails, TrackerUserInfo } from "@/types/TrackerUserInfoTypes";
 
-import { API_ENDPOINTS } from "@/config/environment";
+import { API_ENDPOINTS } from "@/constants/environment";
+import http from "@/helpers/axios";
 
 // This is passed to the EPS card component.
 export type RolesWithAccessProps = {
@@ -120,23 +121,27 @@ export default function RoleSelectionPage({
     }
   }, [selectedRole, loginInfoMessage, noOrgName, noODSCode, noRoleName]);
 
+  // TODO: This should be moved to the access provider, and the state passed in c.f. selectedRole
+  // Instead, this should be a useEffect that triggers when rolesWithAccess, rolesWithoutAccess, or selectedRole changes.
   const fetchTrackerUserInfo = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    setRolesWithAccess([]);
-    setRolesWithoutAccess([]);
-    setSelectedRole(undefined);
-
-    if (!auth?.isSignedIn || !auth) {
-      setLoading(false);
-      setError(null);
+    if (!auth?.isSignedIn || !auth || !auth.idToken) {
       return;
     }
 
+    // On DOM load, for some reason the toString property is missing, which causes the
+    // Bearer token to be "Bearer [object Object]".
+    // Don't bother making bum requests.
+    if (!auth.idToken.hasOwnProperty("toString")) {
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
     try {
-      const response = await fetch(trackerUserInfoEndpoint, {
+      const response = await http.get(trackerUserInfoEndpoint, {
         headers: {
-          Authorization: `Bearer ${auth?.idToken}`,
+          Authorization: `Bearer ${auth.idToken}`,
           "NHSD-Session-URID": "555254242106",
         },
       });
@@ -147,7 +152,7 @@ export default function RoleSelectionPage({
         );
       }
 
-      const data = await response.json();
+      const data = await response.data;
 
       if (!data.userInfo) {
         throw new Error("Server response did not contain data");
@@ -158,12 +163,21 @@ export default function RoleSelectionPage({
       const rolesWithAccess = userInfo.roles_with_access || [];
       const rolesWithoutAccess = userInfo.roles_without_access || [];
 
-      const selectedRole = userInfo?.currently_selected_role
-        ? {
-            ...userInfo?.currently_selected_role,
-            uuid: `selected_role_0`,
-          }
-        : undefined;
+      // Check if the user info object and currently_selected_role exist
+      const selectedRole =
+        userInfo?.currently_selected_role &&
+        Object.keys(userInfo.currently_selected_role).length > 0
+          ? {
+              // If currently_selected_role is not empty, spread its properties
+              ...userInfo.currently_selected_role,
+              // Add uuid only if the selected role is not an empty object
+              uuid: `selected_role_0`,
+            }
+          : // If currently_selected_role is an empty object `{}`, set selectedRole to undefined
+            undefined;
+
+      console.log("Selected role:", selectedRole);
+      setSelectedRole(selectedRole);
 
       // Populate the EPS card props
       setRolesWithAccess(
@@ -213,10 +227,6 @@ export default function RoleSelectionPage({
   ]);
 
   useEffect(() => {
-    if (auth?.isSignedIn === undefined) {
-      return;
-    }
-
     if (auth?.isSignedIn) {
       fetchTrackerUserInfo();
     }
@@ -269,7 +279,11 @@ export default function RoleSelectionPage({
   }
 
   return (
-    <main id="main-content" className="nhsuk-main-wrapper">
+    <main
+      id="main-content"
+      className="nhsuk-main-wrapper"
+      data-testid="eps_roleSelectionComponent"
+    >
       <Container role="contentinfo">
         {/* Title Section */}
         <Row>

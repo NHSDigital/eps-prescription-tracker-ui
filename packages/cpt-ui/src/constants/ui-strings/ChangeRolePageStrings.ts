@@ -8,11 +8,11 @@ export const CHANGE_YOUR_ROLE_PAGE_TEXT = {
   insetText: {
     visuallyHidden: "Information: ",
     message:
-      "You are currently logged in at GREENE'S PHARMACY (ODS: FG419) with Health Professional Access Role.",
+      "You are currently logged in at GREENE'S PHARMACY (ODS: FG419) with Health Professional Access Role."
   },
   confirmButton: {
     text: "Continue to find a prescription",
-    link: "tracker-presc-no",
+    link: "searchforaprescription"
   },
   alternativeMessage: "Alternatively, you can choose a new role below.",
   organisation: "Organisation",
@@ -24,5 +24,5 @@ export const CHANGE_YOUR_ROLE_PAGE_TEXT = {
   noODSCode: "No ODS code",
   noRoleName: "No role name",
   noAddress: "Address not found",
-  errorDuringRoleSelection: "Error during role selection",
-};
+  errorDuringRoleSelection: "Error during role selection"
+}

@@ -9,7 +9,7 @@ import {
   MOCK_AUTH_ALLOWED_ENVIRONMENTS,
   type Environment,
   type MockAuthEnvironment,
-} from "@/config/environment";
+} from "@/constants/environment";
 
 export default function LoginPage() {
   const auth = useContext(AuthContext);
@@ -44,12 +44,12 @@ export default function LoginPage() {
   useEffect(() => {
     console.log(
       "Login page loaded. What environment are we in?",
-      target_environment,
+      target_environment
     );
 
     if (
       !MOCK_AUTH_ALLOWED_ENVIRONMENTS.includes(
-        target_environment as MockAuthEnvironment,
+        target_environment as MockAuthEnvironment
       ) &&
       !auth?.isSignedIn
     ) {
@@ -60,7 +60,7 @@ export default function LoginPage() {
 
   if (
     !MOCK_AUTH_ALLOWED_ENVIRONMENTS.includes(
-      target_environment as MockAuthEnvironment,
+      target_environment as MockAuthEnvironment
     )
   ) {
     return (

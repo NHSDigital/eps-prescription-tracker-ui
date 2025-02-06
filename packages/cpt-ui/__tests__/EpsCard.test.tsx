@@ -54,7 +54,7 @@ jest.mock("@/constants/ui-strings/CardStrings", () => ({
   },
 }));
 
-jest.mock("@/config/environment", () => ({
+jest.mock("@/constants/environment", () => ({
   API_ENDPOINTS: {
     TRACKER_USER_INFO: "/mock-endpoint",
     SELECTED_ROLE: "/mock-endpoint",

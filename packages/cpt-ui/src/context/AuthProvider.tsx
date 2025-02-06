@@ -13,6 +13,8 @@ import {
 import { authConfig } from "./configureAmplify";
 
 import { useLocalStorageState } from "@/helpers/useLocalStorageState";
+import { useNavigate, useLocation } from "react-router-dom";
+
 export interface AuthContextType {
   error: string | null;
   user: AuthUser | null;
@@ -48,6 +50,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     null,
   );
 
+  const navigate = useNavigate();
+  const location = useLocation();
+
   /**
    * Fetch and update the user session state.
    */
@@ -59,6 +64,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const sessionAccessToken = authSession.tokens?.accessToken;
 
       console.log("Tokens: ", sessionIdToken, sessionAccessToken);
+
+      if (!sessionIdToken || !sessionAccessToken) {
+        // FIXME: Remove this once we have fixed the SPA
+        const curpath = location.pathname.replace(".html", "");
+        if (curpath !== "/logout") navigate("/login");
+      }
 
       if (sessionIdToken && sessionAccessToken) {
         // Extract expiration times directly from the token payloads.

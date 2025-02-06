@@ -1,5 +1,5 @@
 import { ResourcesConfig } from "aws-amplify";
-import { AUTH_CONFIG } from "@/config/environment";
+import { AUTH_CONFIG } from "@/constants/environment";
 
 export const authConfig: ResourcesConfig = {
   Auth: {

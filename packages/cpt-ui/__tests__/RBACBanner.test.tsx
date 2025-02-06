@@ -4,31 +4,10 @@ import React from "react";
 import { JWT } from "aws-amplify/auth";
 
 import RBACBanner from "@/components/RBACBanner";
-import { useLocation, useNavigate } from "react-router-dom";
-
-// Mock the module and directly reference the variable
-jest.mock("@/constants/ui-strings/RBACBannerStrings", () => {
-  const RBAC_BANNER_STRINGS = {
-    CONFIDENTIAL_DATA:
-      "CONFIDENTIAL: PERSONAL PATIENT DATA accessed by {lastName}, {firstName} - {roleName} - {orgName} (ODS: {odsCode})",
-    NO_GIVEN_NAME: "NO_GIVEN_NAME",
-    NO_FAMILY_NAME: "NO_FAMILY_NAME",
-    NO_ROLE_NAME: "NO_ROLE_NAME",
-    NO_ORG_NAME: "NO_ORG_NAME",
-    NO_ODS_CODE: "NO_ODS_CODE",
-    LOCUM_NAME: "Locum pharmacy",
-  };
-
-  return { RBAC_BANNER_STRINGS };
-});
 
 const {
   RBAC_BANNER_STRINGS,
 } = require("@/constants/ui-strings/RBACBannerStrings");
-
-// Create a global mock for `fetch` to simulate API requests
-const mockFetch = jest.fn();
-global.fetch = mockFetch;
 
 // Mock AccessProvider
 jest.mock("@/context/AccessProvider", () => {
@@ -91,7 +70,7 @@ export const renderWithAuth = (authOverrides = {}) => {
   return render(
     <AuthContext.Provider value={authValue}>
       <RBACBanner />
-    </AuthContext.Provider>
+    </AuthContext.Provider>,
   );
 };
 
@@ -106,32 +85,10 @@ describe("RBACBanner", () => {
         org_name: "org name",
       },
       userDetails: {
-        family_name: "Doe",
+        family_name: "DOE",
         given_name: "Jane",
       },
     });
-  });
-
-  beforeEach(() => {
-    jest.clearAllMocks();
-    __setMockContextValue({
-      selectedRole: {
-        role_name: "Role Name",
-        role_id: "role-id",
-        org_code: "deadbeef",
-        org_name: "org name",
-      },
-      userDetails: {
-        family_name: "DoE",
-        given_name: "Jane",
-      },
-    });
-
-    renderWithAuth();
-
-    // We expect no banner to appear
-    expect(screen.queryByTestId("rbac-banner-div")).toBeNull();
-    expect(screen.queryByTestId("rbac-banner-text")).toBeNull();
   });
 
   it("should render with the correct text when selectedRole and userDetails are set", () => {
@@ -144,12 +101,11 @@ describe("RBACBanner", () => {
     expect(bannerText).toBeInTheDocument();
 
     // Check that placeholders are properly replaced
-    const expectedText = `CONFIDENTIAL: PERSONAL PATIENT DATA accessed by Doe, Jane - Role Name - org name (ODS: deadbeef)`;
+    const expectedText = `CONFIDENTIAL: PERSONAL PATIENT DATA accessed by DOE, Jane - Role Name - org name (ODS: deadbeef)`;
     expect(bannerText).toHaveTextContent(expectedText);
   });
 
   it("should use LOCUM_NAME if org_code is FFFFF", () => {
-    // Set the org_code to FFFFF to test locum-specific text
     __setMockContextValue({
       selectedRole: {
         role_name: "Role Name",
@@ -157,30 +113,38 @@ describe("RBACBanner", () => {
         org_code: "FFFFF", // locum scenario
         org_name: "ignored org name", // This should be overridden
       },
+      userDetails: {
+        family_name: "DOE",
+        given_name: "Jane",
+      },
     });
 
-    // Check that placeholders are properly replaced
-    const expectedText = `CONFIDENTIAL: PERSONAL PATIENT DATA accessed by DOE, Jane - Role Name - org name (ODS: deadbeef)`;
-    expect(bannerText).toHaveTextContent(expectedText);
-  });
+    renderWithAuth();
 
-  const bannerText = screen.getByTestId("rbac-banner-text");
-  // Locum pharmacy name should appear
-  expect(bannerText).toHaveTextContent(
-    `CONFIDENTIAL: PERSONAL PATIENT DATA accessed by Doe, Jane - Role Name - Locum pharmacy (ODS: FFFFF)`
-  );
+    const bannerText = screen.getByTestId("rbac-banner-text");
+    expect(bannerText).toHaveTextContent(
+      `CONFIDENTIAL: PERSONAL PATIENT DATA accessed by DOE, Jane - Role Name - Locum pharmacy (ODS: FFFFF)`,
+    );
+  });
 
   it("should handle missing userDetails fields", () => {
     __setMockContextValue({
+      selectedRole: {
+        role_name: "Role Name",
+        role_id: "role-id",
+        org_code: "deadbeef",
+        org_name: "org name",
+      },
       userDetails: {
         // No family_name or given_name
       },
     });
 
+    renderWithAuth();
+
     const bannerText = screen.getByTestId("rbac-banner-text");
-    // Locum pharmacy name should appear
     expect(bannerText).toHaveTextContent(
-      `CONFIDENTIAL: PERSONAL PATIENT DATA accessed by DOE, Jane - Role Name - Locum pharmacy (ODS: FFFFF)`
+      `CONFIDENTIAL: PERSONAL PATIENT DATA accessed by NO_FAMILY_NAME, NO_GIVEN_NAME - Role Name - org name (ODS: deadbeef)`,
     );
   });
 
@@ -190,14 +154,17 @@ describe("RBACBanner", () => {
         // role_name, ODS code, and org_name are missing
         role_id: "role-id",
       },
+      userDetails: {
+        family_name: "DOE",
+        given_name: "Jane",
+      },
     });
 
     renderWithAuth();
 
     const bannerText = screen.getByTestId("rbac-banner-text");
-    // Notice fallback values: NO_ROLE_NAME, NO_ORG_NAME, NO_ODS_CODE
     expect(bannerText).toHaveTextContent(
-      `CONFIDENTIAL: PERSONAL PATIENT DATA accessed by Doe, Jane - NO_ROLE_NAME - NO_ORG_NAME (ODS: NO_ODS_CODE)`
+      `CONFIDENTIAL: PERSONAL PATIENT DATA accessed by DOE, Jane - NO_ROLE_NAME - NO_ORG_NAME (ODS: NO_ODS_CODE)`,
     );
   });
 
@@ -209,13 +176,17 @@ describe("RBACBanner", () => {
         org_code: "deadbeef",
         // org_name is missing
       },
+      userDetails: {
+        family_name: "DOE",
+        given_name: "Jane",
+      },
     });
 
     renderWithAuth();
 
     const bannerText = screen.getByTestId("rbac-banner-text");
     expect(bannerText).toHaveTextContent(
-      `CONFIDENTIAL: PERSONAL PATIENT DATA accessed by DOE, Jane - Role Name - NO_ORG_NAME (ODS: deadbeef)`
+      `CONFIDENTIAL: PERSONAL PATIENT DATA accessed by DOE, Jane - Role Name - NO_ORG_NAME (ODS: deadbeef)`,
     );
   });
 

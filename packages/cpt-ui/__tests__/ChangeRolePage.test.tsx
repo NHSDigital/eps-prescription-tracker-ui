@@ -1,6 +1,6 @@
 import "@testing-library/jest-dom";
 import { render, screen, waitFor } from "@testing-library/react";
-import { useRouter } from "next/navigation";
+import { useNavigate } from "react-router-dom";
 import React from "react";
 
 import { AuthContext } from "@/context/AuthProvider";
@@ -107,11 +107,11 @@ const renderWithAuth = (authOverrides = {}, accessOverrides = {}) => {
     <AuthContext.Provider value={authValue}>
       <ChangeRolePage />
     </AuthContext.Provider>,
-  )
-}
+  );
+};
 
-import { CHANGE_YOUR_ROLE_PAGE_TEXT } from "@/constants/ui-strings/ChangeRolePageStrings"
-import { EpsSpinnerStrings } from "../constants/ui-strings/EpsSpinnerStrings"
+import { CHANGE_YOUR_ROLE_PAGE_TEXT } from "@/constants/ui-strings/ChangeRolePageStrings";
+import { EpsSpinnerStrings } from "@/constants/ui-strings/EpsSpinnerStrings";
 
 describe("ChangeRolePage", () => {
   beforeEach(() => {
@@ -245,9 +245,6 @@ describe("ChangeRolePage", () => {
   })
 
   it("redirects to searchforaprescription when there is one role with access and no roles without access", async () => {
-    const pushMock = jest.fn();
-    (useRouter as jest.Mock).mockReturnValue({ push: pushMock })
-
     __setMockAccessValue({
       loading: false,
       rolesWithAccess: [
@@ -261,6 +258,9 @@ describe("ChangeRolePage", () => {
       singleAccess: true,
     })
 
+    const mockNavigate = jest.fn();
+    (useNavigate as jest.Mock).mockReturnValue(mockNavigate);
+
     // Render the page with user signed in
     renderWithAuth({
       isSignedIn: true,
@@ -269,9 +269,9 @@ describe("ChangeRolePage", () => {
 
     // Wait for redirection
     await waitFor(() => {
-      expect(pushMock).toHaveBeenCalledWith("/searchforaprescription")
-    })
-  })
+      expect(mockNavigate).toHaveBeenCalledWith("/searchforaprescription");
+    });
+  });
 
   it("renders loading state when waiting for API response", async () => {
     __setMockAccessValue({
@@ -283,10 +283,8 @@ describe("ChangeRolePage", () => {
   })
 
   it("redirects when a single role is available", async () => {
-    const pushMock = jest.fn();
-    (useRouter as jest.Mock).mockReturnValue({
-      push: pushMock,
-    })
+    const mockNavigate = jest.fn();
+    (useNavigate as jest.Mock).mockReturnValue(mockNavigate);
 
     __setMockAccessValue({
       loading: false,
@@ -307,7 +305,7 @@ describe("ChangeRolePage", () => {
     })
 
     await waitFor(() => {
-      expect(pushMock).toHaveBeenCalledWith("/searchforaprescription");
+      expect(mockNavigate).toHaveBeenCalledWith("/searchforaprescription");
     });
   });
 

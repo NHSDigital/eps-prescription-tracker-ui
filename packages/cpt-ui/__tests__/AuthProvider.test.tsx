@@ -42,16 +42,16 @@ jest.mock("aws-amplify/utils", () => ({
 }));
 
 // Mock useRouter and usePathName:
-const usePathnameMock = jest.fn()
+const usePathnameMock = jest.fn();
 jest.mock("next/navigation", () => ({
   useRouter() {
     return {
-      prefetch: () => null
+      prefetch: () => null,
     };
   },
   usePathname() {
     return "/";
-  }
+  },
 }));
 
 // A helper component to consume the AuthContext and expose its values for testing
@@ -106,7 +106,7 @@ describe("AuthProvider", () => {
 
   const renderWithProvider = async ({
     sessionMock = { tokens: {} },
-    userMock = null as { username: string } | null, // Allow userMock to be null or an object with username
+    userMock = null,
     TestComponent = <TestConsumer />,
   }: RenderWithProviderOptions = {}) => {
     (fetchAuthSession as jest.Mock).mockResolvedValue(sessionMock);
@@ -138,7 +138,7 @@ describe("AuthProvider", () => {
       if (channel === "auth") {
         hubCallback = callback; // Store the Hub callback
       }
-      return () => { }; // Mock unsubscribe function
+      return () => {}; // Mock unsubscribe function
     });
   });
 
@@ -226,7 +226,7 @@ describe("AuthProvider", () => {
 
   it("should log an error and reset state when fetching user session fails", async () => {
     // Mock console.error to track calls
-    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+    const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation();
 
     // Mock fetchAuthSession to throw an error
     const sessionError = new Error("Session fetch failed");
@@ -253,37 +253,34 @@ describe("AuthProvider", () => {
   });
 
   it("should log an error if signOut fails", async () => {
-    // Mock console.error to track calls
-    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
-
-    // Mock signOut to throw an error
+    const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation();
     const signOutError = new Error("Sign out failed");
     (signOut as jest.Mock).mockRejectedValue(signOutError);
 
     let contextValue: any;
-
     const TestComponent = () => {
       contextValue = useContext(AuthContext);
       return null;
     };
 
-    // Render the provider
     await act(async () => {
       render(
-        <AuthProvider>
-          <TestComponent />
-        </AuthProvider>,
+        <BrowserRouter>
+          <AuthProvider>
+            <TestComponent />
+          </AuthProvider>
+        </BrowserRouter>,
       );
     });
 
-    // Attempt to sign out and verify the logged error
     await act(async () => {
       await contextValue.cognitoSignOut();
     });
 
-    expect(consoleErrorSpy).toHaveBeenCalledWith('Failed to sign out:', signOutError); // Error logged
-
-    // Restore the original console.error implementation
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      "Failed to sign out:",
+      signOutError,
+    );
     consoleErrorSpy.mockRestore();
   });
 
@@ -353,20 +350,19 @@ describe("AuthProvider", () => {
 
   // Hub Events
   it("should handle Hub event signInWithRedirect", async () => {
-    // Mock session and user for a successful signInWithRedirect Hub event
-    const mockSession = createTokenMocks(); // Create valid mock tokens
-    const mockUser = { username: 'testuser' }; // Create a mock user object
+    const mockSession = createTokenMocks();
+    const mockUser = { username: "testuser" };
 
-    // Mock Amplify functions to return the mocked session and user
     (fetchAuthSession as jest.Mock).mockResolvedValue(mockSession);
     (getCurrentUser as jest.Mock).mockResolvedValue(mockUser);
 
-    // Render the AuthProvider with a TestConsumer to observe context changes
     await act(async () => {
       render(
-        <AuthProvider>
-          <TestConsumer />
-        </AuthProvider>,
+        <BrowserRouter>
+          <AuthProvider>
+            <TestConsumer />
+          </AuthProvider>
+        </BrowserRouter>,
       );
     });
 
@@ -381,11 +377,9 @@ describe("AuthProvider", () => {
       hubCallback!({ payload: { event: "signInWithRedirect" } });
     });
 
-    // Wait for the context state to update and verify changes
     await waitFor(() => {
-      // Assert that the user is signed in after the Hub event
-      expect(screen.getByTestId("isSignedIn").textContent).toBe("true"); // User is signed in
-      expect(screen.getByTestId("user").textContent).toBe("UserPresent"); // User object is present
+      expect(screen.getByTestId("isSignedIn").textContent).toBe("true");
+      expect(screen.getByTestId("user").textContent).toBe("UserPresent");
     });
   });
 
@@ -472,8 +466,6 @@ describe("AuthProvider", () => {
   // Auth Functions
   it("should provide cognitoSignIn and cognitoSignOut functions", async () => {
     let contextValue: any;
-
-    // Create a test consumer to access the context
     const TestComponent = () => {
       contextValue = useContext(AuthContext);
       return null;
@@ -481,19 +473,19 @@ describe("AuthProvider", () => {
 
     await act(async () => {
       render(
-        <AuthProvider>
-          <TestComponent />
-        </AuthProvider>,
+        <BrowserRouter>
+          <AuthProvider>
+            <TestComponent />
+          </AuthProvider>
+        </BrowserRouter>,
       );
     });
 
-    // Verify that cognitoSignIn calls signInWithRedirect
     await act(async () => {
       await contextValue.cognitoSignIn();
     });
     expect(signInWithRedirect).toHaveBeenCalled();
 
-    // Verify that cognitoSignOut calls signOut
     await act(async () => {
       await contextValue.cognitoSignOut();
     });

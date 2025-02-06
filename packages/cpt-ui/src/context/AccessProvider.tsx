@@ -1,17 +1,22 @@
 import React, {
   createContext,
   useContext,
-  ReactNode,
-  useEffect,
   useState,
+  useEffect,
+  ReactNode,
 } from "react";
 
 import { useLocalStorageState } from "@/helpers/useLocalStorageState";
 import { AuthContext } from "./AuthProvider";
 
-import { RoleDetails, TrackerUserInfo, UserDetails } from "@/types/TrackerUserInfoTypes";
+import {
+  RoleDetails,
+  TrackerUserInfo,
+  UserDetails,
+} from "@/types/TrackerUserInfoTypes";
 
-import { API_ENDPOINTS } from "@/config/environment";
+import { API_ENDPOINTS } from "@/constants/environment";
+import http from "@/helpers/axios";
 
 const trackerUserInfoEndpoint = API_ENDPOINTS.TRACKER_USER_INFO;
 
@@ -28,19 +33,19 @@ export type AccessContextType = {
 };
 
 export const AccessContext = createContext<AccessContextType | undefined>(
-  undefined,
+  undefined
 );
 
 export const AccessProvider = ({ children }: { children: ReactNode }) => {
   const [noAccess, setNoAccess] = useLocalStorageState<boolean>(
     "noAccess",
     "access",
-    false,
+    false
   );
   const [singleAccess, setSingleAccess] = useLocalStorageState<boolean>(
     "singleAccess",
     "access",
-    false,
+    false
   );
   const [selectedRole, setSelectedRole] = useLocalStorageState<
     RoleDetails | undefined
@@ -53,11 +58,17 @@ export const AccessProvider = ({ children }: { children: ReactNode }) => {
   const auth = useContext(AuthContext);
 
   const clear = () => {
-    console.warn("Clearing access context.");
+    console.log("Clearing access context and local storage...");
     setNoAccess(false);
     setSingleAccess(false);
     setSelectedRole(undefined);
     setUserDetails(undefined);
+
+    // Clear from localStorage to ensure RBAC Banner is removed
+    localStorage.removeItem("access");
+    localStorage.removeItem("selectedRole");
+    localStorage.removeItem("userDetails");
+    console.log("Local storage cleared.");
   };
 
   type FetchRolesResult = {
@@ -68,19 +79,20 @@ export const AccessProvider = ({ children }: { children: ReactNode }) => {
 
   const fetchRolesWithAccessAndSelectedRole =
     async (): Promise<FetchRolesResult> => {
-      return fetch(trackerUserInfoEndpoint, {
-        headers: {
-          Authorization: `Bearer ${auth?.idToken}`,
-          "NHSD-Session-URID": "555254242106",
-        },
-      })
+      return http
+        .get(trackerUserInfoEndpoint, {
+          headers: {
+            Authorization: `Bearer ${auth?.idToken}`,
+            "NHSD-Session-URID": "555254242106",
+          },
+        })
         .then((response) => {
           if (response.status !== 200) {
             throw new Error(
-              `Server did not return CPT user info, response ${response.status}`,
+              `Server did not return CPT user info, response ${response.status}`
             );
           }
-          return response.json();
+          return response.data;
         })
         .then((data) => {
           if (!data.userInfo) {
@@ -89,8 +101,16 @@ export const AccessProvider = ({ children }: { children: ReactNode }) => {
 
           const userInfo: TrackerUserInfo = data.userInfo;
           const rolesWithAccessCount = userInfo.roles_with_access.length;
-          const currentlySelectedRole = userInfo.currently_selected_role;
           const userDetails = userInfo.user_details;
+
+          let currentlySelectedRole = userInfo.currently_selected_role;
+          // The current role may be either undefined, or an empty object. If it's empty, set it undefined.
+          if (
+            !currentlySelectedRole ||
+            Object.keys(currentlySelectedRole).length === 0
+          ) {
+            currentlySelectedRole = undefined;
+          }
 
           return { rolesWithAccessCount, currentlySelectedRole, userDetails };
         });
@@ -111,7 +131,7 @@ export const AccessProvider = ({ children }: { children: ReactNode }) => {
       } catch (error) {
         console.error(
           "Access provider failed to fetch roles with access:",
-          error,
+          error
         );
       }
     };
@@ -121,7 +141,7 @@ export const AccessProvider = ({ children }: { children: ReactNode }) => {
     }
 
     console.log(
-      "Access context detected a page load, and we are using local storage fallback. Updating from backend...",
+      "Access context detected a page load, and we are using local storage fallback. Updating from backend..."
     );
 
     if (!auth?.isSignedIn || !auth?.idToken) {

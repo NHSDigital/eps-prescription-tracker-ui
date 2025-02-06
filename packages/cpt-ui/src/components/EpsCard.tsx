@@ -8,7 +8,7 @@ import { RoleDetails } from "@/types/TrackerUserInfoTypes";
 
 import { EPS_CARD_STRINGS } from "@/constants/ui-strings/CardStrings";
 
-import { API_ENDPOINTS } from "@/config/environment";
+import { API_ENDPOINTS } from "@/constants/environment";
 
 const selectedRoleEndpoint = API_ENDPOINTS.SELECTED_ROLE;
 

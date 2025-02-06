@@ -11,7 +11,7 @@ const mockCognitoSignIn = jest.fn();
 const mockCognitoSignOut = jest.fn();
 
 // Set up environment mock before any imports
-jest.mock("@/config/environment", () => ({
+jest.mock("@/constants/environment", () => ({
   ENV_CONFIG: {
     TARGET_ENVIRONMENT: "dev",
     API_DOMAIN_OVERRIDE: "",
@@ -190,7 +190,7 @@ describe("LoginPage", () => {
 
   it("shows a spinner when not in a mock auth environment", async () => {
     // Get the mocked module
-    const envModule = jest.requireMock("@/config/environment");
+    const envModule = jest.requireMock("@/constants/environment");
 
     // Modify the environment config temporarily
     envModule.ENV_CONFIG = {
