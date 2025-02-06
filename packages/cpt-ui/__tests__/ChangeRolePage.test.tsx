@@ -113,7 +113,7 @@ const renderWithAuth = (authOverrides = {}, accessOverrides = {}) => {
   return render(
     <AuthContext.Provider value={authValue}>
       <ChangeRolePage />
-    </AuthContext.Provider>
+    </AuthContext.Provider>,
   );
 };
 
@@ -127,41 +127,20 @@ describe("ChangeRolePage", () => {
   });
 
   it("renders loading state when signed in but API call hasn't resolved yet", async () => {
-    // Simulate a pending API call by not resolving the promise.
-    mockedAxios.get.mockImplementation(() => new Promise(() => {}));
+    __setMockAccessValue({ loading: true });
 
     // Render the page with user signed in
     renderWithAuth({
       isSignedIn: true,
       idToken: { toString: jest.fn().mockReturnValue("mock-id-token") },
     });
-    // it("renders loading state when signed in but fetch hasn't resolved yet", async () => {
-    //   // Mock fetch to hang indefinitely, simulating a pending request
-    //   mockFetch.mockImplementation(() => new Promise(() => {}));
-
-    //   // Render the page with user signed in
-    //   __setMockAccessValue({ loading: true });
-    //   renderWithAuth({
-    //     isSignedIn: true,
-    //     idToken: { toString: jest.fn().mockReturnValue("mock-id-token") },
-    //   });
-
-    //   // Verify that the loading text appears
-    //   const loadingText = screen.getByText(EpsSpinnerStrings.loading);
-    //   expect(loadingText).toBeInTheDocument();
   });
 
   it("renders error summary if API call returns non-200 status", async () => {
-    // Simulate a server error response.
-    mockedAxios.get.mockResolvedValue({
-      status: 500,
-      data: {},
+    __setMockAccessValue({
+      error: "Failed to fetch CPT user info",
+      loading: false,
     });
-
-    // __setMockAccessValue({
-    //   error: "Failed to fetch CPT user info",
-    //   loading: false,
-    // });
 
     // Render the page with user signed in
     renderWithAuth({
@@ -184,26 +163,17 @@ describe("ChangeRolePage", () => {
   });
 
   it("renders error summary if API call returns 200 but no userInfo is present", async () => {
-    // Simulate a successful HTTP response with empty data (no userInfo key).
-    mockedAxios.get.mockResolvedValue({
-      status: 200,
-      data: {},
-    });
-
     __setMockAccessValue({
       loading: false,
-      error: "Server response did not contain data",
+      error: "Failed to fetch CPT user info",
     });
 
-    // Render the page with user signed in
     renderWithAuth({
       isSignedIn: true,
       idToken: { toString: jest.fn().mockReturnValue("mock-id-token") },
     });
 
-    // Wait for the error message to appear
     await waitFor(() => {
-      // Check for error summary heading
       const errorHeading = screen.getByRole("heading", {
         name: CHANGE_YOUR_ROLE_PAGE_TEXT.errorDuringRoleSelection,
       });
@@ -215,23 +185,6 @@ describe("ChangeRolePage", () => {
   });
 
   it("renders the page content when valid userInfo is returned", async () => {
-    // Prepare valid user data.
-    // const mockUserInfo = {
-    //   roles_with_access: [
-    //     {
-    //       role_name: "Pharmacist",
-    //       org_name: "Test Pharmacy Org",
-    //       org_code: "ORG123",
-    //     },
-    //   ],
-    //   rolesWithoutAccess: [
-    //     {
-    //       role_name: "Technician",
-    //       org_code: "ORG456",
-    //     },
-    //   ],
-    // });
-
     __setMockAccessValue({
       loading: false,
       rolesWithAccess: [
@@ -250,12 +203,6 @@ describe("ChangeRolePage", () => {
       ],
     });
 
-    // Simulate a successful API call with valid userInfo.
-    mockedAxios.get.mockResolvedValue({
-      status: 200,
-      data: { userInfo: mockUserInfo },
-    });
-
     // Render the page with user signed in
     renderWithAuth({
       isSignedIn: true,
@@ -271,14 +218,14 @@ describe("ChangeRolePage", () => {
 
     // Verify the page caption
     expect(
-      screen.getByText(CHANGE_YOUR_ROLE_PAGE_TEXT.caption)
+      screen.getByText(CHANGE_YOUR_ROLE_PAGE_TEXT.caption),
     ).toBeInTheDocument();
 
     // Verify the "Roles without access" section
     expect(
       screen.getByText(
-        CHANGE_YOUR_ROLE_PAGE_TEXT.roles_without_access_table_title
-      )
+        CHANGE_YOUR_ROLE_PAGE_TEXT.roles_without_access_table_title,
+      ),
     ).toBeInTheDocument();
 
     // Check for the table data using test IDs
@@ -305,8 +252,8 @@ describe("ChangeRolePage", () => {
   });
 
   it("redirects to searchforaprescription when there is one role with access and no roles without access", async () => {
-    const mockPush = jest.fn();
-    (useRouter as jest.Mock).mockReturnValue({ push: mockPush });
+    const pushMock = jest.fn();
+    (useRouter as jest.Mock).mockReturnValue({ push: pushMock });
 
     __setMockAccessValue({
       loading: false,
@@ -321,18 +268,6 @@ describe("ChangeRolePage", () => {
       singleAccess: true,
     });
 
-    // Simulate a successful API call with valid userInfo.
-    mockedAxios.get.mockResolvedValue({
-      status: 200,
-      data: { userInfo: mockUserInfo },
-    });
-
-    // Mock useRouter's push function
-    const mockPush = jest.fn();
-    (useRouter as jest.Mock).mockReturnValue({
-      push: mockPush,
-    });
-
     // Render the page with user signed in
     renderWithAuth({
       isSignedIn: true,
@@ -341,7 +276,7 @@ describe("ChangeRolePage", () => {
 
     // Wait for redirection
     await waitFor(() => {
-      expect(mockPush).toHaveBeenCalledWith("/searchforaprescription");
+      expect(pushMock).toHaveBeenCalledWith("/searchforaprescription");
     });
   });
 
@@ -373,11 +308,6 @@ describe("ChangeRolePage", () => {
       singleAccess: true,
     });
 
-    mockedAxios.get.mockResolvedValue({
-      status: 200,
-      data: { userInfo: mockUserInfo },
-    });
-
     renderWithAuth({
       isSignedIn: true,
       idToken: { toString: jest.fn().mockReturnValue("mock-id-token") },
@@ -394,7 +324,12 @@ describe("ChangeRolePage", () => {
   });
 
   it("displays an error when the API request fails", async () => {
-    mockedAxios.get.mockRejectedValue(new Error("Failed to fetch user roles"));
+    __setMockAccessValue({
+      loading: false,
+      error: "Failed to fetch CPT user info",
+      rolesWithAccess: [],
+      rolesWithoutAccess: [],
+    });
 
     renderWithAuth({
       isSignedIn: true,
@@ -402,13 +337,13 @@ describe("ChangeRolePage", () => {
     });
 
     await waitFor(() => {
-      const errorSummary = screen.getByRole("heading", {
-        name: "Error during role selection",
+      const errorHeading = screen.getByRole("heading", {
+        name: CHANGE_YOUR_ROLE_PAGE_TEXT.errorDuringRoleSelection,
       });
-      expect(errorSummary).toBeInTheDocument();
-      expect(
-        screen.getByText("Failed to fetch CPT user info")
-      ).toBeInTheDocument();
+      expect(errorHeading).toBeInTheDocument();
+
+      const errorMessage = screen.getByText("Failed to fetch CPT user info");
+      expect(errorMessage).toBeInTheDocument();
     });
   });
 });
