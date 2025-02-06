@@ -21,7 +21,7 @@
         "react-dom": "^18",
         "react-i18next": "^15.4.0",
         "react-intl": "^7.0.1",
-        "sass": "^1.83.4",
+        "sass": "^1.84.0",
         "uuid": "^11.0.5"
     },
     "devDependencies": {
