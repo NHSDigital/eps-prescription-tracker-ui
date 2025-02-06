@@ -102,7 +102,7 @@ export default function RoleSelectionPage({
   const rolesWithoutAccess = rawRolesWithoutAccess.map((role, index) => ({
     uuid: `role_without_access_${index}`,
     roleName: role.role_name || noRoleName,
-    orgName: role.org_code || noOrgName,
+    orgName: role.org_name || noOrgName,
     odsCode: role.org_code || noODSCode,
   }));
 
@@ -147,7 +147,11 @@ export default function RoleSelectionPage({
   // Show error if present
   if (error) {
     return (
-      <main id="main-content" className="nhsuk-main-wrapper">
+      <main
+        id="main-content"
+        className="nhsuk-main-wrapper"
+        data-testid="eps_roleSelectionComponent"
+      >
         <Container>
           <Row>
             <ErrorSummary>
@@ -167,7 +171,11 @@ export default function RoleSelectionPage({
   }
 
   return (
-    <main id="main-content" className="nhsuk-main-wrapper">
+    <main
+      id="main-content"
+      className="nhsuk-main-wrapper"
+      data-testid="eps_roleSelectionComponent"
+    >
       <Container role="contentinfo">
         <Row>
           <Col width="two-thirds">
@@ -185,26 +193,22 @@ export default function RoleSelectionPage({
 
             {noAccess && <p>{captionNoAccess}</p>}
 
-            {selectedRole &&
-              Object.keys(selectedRole).length > 0 &&
-              selectedRole.org_name && (
-                <section aria-label="Login Information">
-                  <InsetText data-testid="eps_select_your_role_pre_role_selected">
-                    <span className="nhsuk-u-visually-hidden">
-                      {insetText.visuallyHidden}
-                    </span>
-                    {loginInfoMessage && (
-                      <p
-                        dangerouslySetInnerHTML={{ __html: loginInfoMessage }}
-                      ></p>
-                    )}
-                  </InsetText>
-                  <Button href={confirmButton.link}>
-                    {confirmButton.text}
-                  </Button>
-                  <p>{alternativeMessage}</p>
-                </section>
-              )}
+            {selectedRole && (
+              <section aria-label="Login Information">
+                <InsetText data-testid="eps_select_your_role_pre_role_selected">
+                  <span className="nhsuk-u-visually-hidden">
+                    {insetText.visuallyHidden}
+                  </span>
+                  {loginInfoMessage && (
+                    <p
+                      dangerouslySetInnerHTML={{ __html: loginInfoMessage }}
+                    ></p>
+                  )}
+                </InsetText>
+                <Button href={confirmButton.link}>{confirmButton.text}</Button>
+                <p>{alternativeMessage}</p>
+              </section>
+            )}
           </Col>
 
           {!noAccess && rolesWithAccess.length > 0 && (

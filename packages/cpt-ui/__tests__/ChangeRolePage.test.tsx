@@ -244,6 +244,7 @@ describe("ChangeRolePage", () => {
       rolesWithoutAccess: [
         {
           role_name: "Technician",
+          org_name: "Test Pharmacy Org",
           org_code: "ORG456",
         },
       ],
@@ -282,7 +283,7 @@ describe("ChangeRolePage", () => {
 
     // Check for the table data using test IDs
     const nameCell = screen.getByTestId("change-role-name-cell");
-    expect(nameCell).toHaveTextContent(`ORG456 (ODS: ORG456)`);
+    expect(nameCell).toHaveTextContent(`Test Pharmacy Org (ODS: ORG456)`);
 
     const roleCell = screen.getByTestId("change-role-role-cell");
     expect(roleCell).toHaveTextContent("Technician");
