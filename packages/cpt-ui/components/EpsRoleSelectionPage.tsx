@@ -1,15 +1,15 @@
 'use client'
-import React, {useState, useEffect, useContext, useCallback} from "react"
-import {useRouter} from 'next/navigation'
-import {Container, Col, Row, Details, Table, ErrorSummary, Button, InsetText} from "nhsuk-react-components"
+import React, { useState, useEffect, useContext, useCallback } from "react"
+import { useRouter } from 'next/navigation'
+import { Container, Col, Row, Details, Table, ErrorSummary, Button, InsetText } from "nhsuk-react-components"
 
-import {AuthContext} from "@/context/AuthProvider"
-import {useAccess} from '@/context/AccessProvider'
+import { AuthContext } from "@/context/AuthProvider"
+import { useAccess } from '@/context/AccessProvider'
 
 import EpsCard from "@/components/EpsCard"
 import EpsSpinner from "@/components/EpsSpinner"
 
-import {RoleDetails, TrackerUserInfo} from "@/types/TrackerUserInfoTypes"
+import { RoleDetails, TrackerUserInfo } from "@/types/TrackerUserInfoTypes"
 
 import http from "@/helpers/axios"
 
@@ -57,7 +57,7 @@ interface RoleSelectionPageProps {
     }
 }
 
-export default function RoleSelectionPage({contentText}: RoleSelectionPageProps) {
+export default function RoleSelectionPage({ contentText }: RoleSelectionPageProps) {
     // Destructure strings from the contentText prop
     const {
         title,
@@ -77,7 +77,7 @@ export default function RoleSelectionPage({contentText}: RoleSelectionPageProps)
         errorDuringRoleSelection
     } = contentText
 
-    const {noAccess, setNoAccess, setSingleAccess, selectedRole, setSelectedRole} = useAccess()
+    const { noAccess, setNoAccess, setSingleAccess, selectedRole, setSelectedRole } = useAccess()
     const [loginInfoMessage, setLoginInfoMessage] = useState<string | null>(null)
     const [loading, setLoading] = useState<boolean>(true)
     const [error, setError] = useState<string | null>(null)
@@ -215,6 +215,12 @@ export default function RoleSelectionPage({contentText}: RoleSelectionPageProps)
         }
     }, [auth?.error])
 
+    const handleSearchForPrescriptionRedirect = async (e: React.MouseEvent | React.KeyboardEvent) => {
+        // Naked href don't respect the router, so this overrides that
+        e.preventDefault()
+        router.push("/searchforaprescription")
+    }
+
     // If the data is being fetched or the user is being diverted, replace the content with a spinner
     if (loading || redirecting) {
         return (
@@ -281,11 +287,11 @@ export default function RoleSelectionPage({contentText}: RoleSelectionPageProps)
                                         {insetText.visuallyHidden}
                                     </span>
                                     {loginInfoMessage && (
-                                        <p dangerouslySetInnerHTML={{__html: loginInfoMessage}}></p>
+                                        <p dangerouslySetInnerHTML={{ __html: loginInfoMessage }}></p>
                                     )}
                                 </InsetText>
                                 {/* Confirm Button */}
-                                <Button href={confirmButton.link}>
+                                <Button href={confirmButton.link} onClick={handleSearchForPrescriptionRedirect}>
                                     {confirmButton.text}
                                 </Button>
                                 {rolesWithAccess.length > 0 && (

@@ -1,5 +1,5 @@
 'use client'
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 
 import 'nhsuk-frontend/dist/nhsuk.css'
 
@@ -15,10 +15,13 @@ export default function RootLayout({
 }: {
     children: React.ReactNode
 }) {
+    const [mounted, setMounted] = useState(false)
+    useEffect(() => setMounted(true), [])
+
     return (
         <html lang="en">
             <title>EPS Home</title>
-            <body>
+            <body className={mounted ? "js-enabled" : "no-js"}>
                 <AuthProvider>
                     <AccessProvider>
                         <EpsHeader />

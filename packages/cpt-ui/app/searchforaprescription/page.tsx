@@ -1,20 +1,32 @@
 'use client'
-
-import React from 'react'
-import {Container, Row, Col} from 'nhsuk-react-components'
+import React from "react";
+import { Col, Container, Hero, Row } from "nhsuk-react-components";
+import "@/assets/styles/searchforaprescription.scss"
+import EpsTabs from "@/components/EpsTabs";
+import { HERO_TEXT } from "@/constants/ui-strings/SearchForAPrescriptionStrings"
 
 export default function SearchForAPrescriptionPage() {
     return (
-        <main id="main-content" className="nhsuk-main-wrapper">
-            <Container>
+        <>
+            <title>Search for a prescription</title>
+            <main id="search-for-a-prescription" data-testid="search-for-a-prescription">
+                <Container className="hero-container">
+                    <Row>
+                        <Col width="full">
+                            <Hero className="nhsuk-hero-wrapper" data-testid="hero-banner">
+                                <Hero.Heading className="heroHeading" id="hero-heading" data-testid="hero-heading">
+                                    {HERO_TEXT}
+                                </Hero.Heading>
+                            </Hero>
+                        </Col>
+                    </Row>
+                </Container>
                 <Row>
                     <Col width="full">
-                        <h1 className="nhsuk-heading-xl" data-testid="search_prescription_heading">
-                            Search for a prescription
-                        </h1>
+                        <EpsTabs />
                     </Col>
                 </Row>
-            </Container>
-        </main>
+            </main>
+        </>
     )
 }
