@@ -3,14 +3,10 @@ import React, { useState, useEffect, } from "react"
 import { useRouter } from 'next/navigation'
 import { Container, Col, Row, Details, Table, ErrorSummary, Button, InsetText } from "nhsuk-react-components"
 
-import { useAccess } from '@/context/AccessProvider'
-
-import EpsCard from "@/components/EpsCard"
-import EpsSpinner from "@/components/EpsSpinner"
-
-import { RoleDetails } from "@/types/TrackerUserInfoTypes"
-
-import http from "@/helpers/axios"
+import { useAccess } from "@/context/AccessProvider";
+import EpsCard from "@/components/EpsCard";
+import EpsSpinner from "@/components/EpsSpinner";
+import { RoleDetails } from "@/types/TrackerUserInfoTypes";
 
 // This is passed to the EPS card component.
 export type RolesWithAccessProps = {
