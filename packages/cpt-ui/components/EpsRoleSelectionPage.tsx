@@ -207,7 +207,7 @@ export default function RoleSelectionPage({
             )}
           </Col>
 
-          {!noAccess && rolesWithAccess.length > 0 && (
+          {!noAccess && (
             <Col width="two-thirds">
               <div className="section">
                 {rolesWithAccess.map((role: RolesWithAccessProps) => (
