@@ -3,50 +3,50 @@ import React, { useState, useEffect, } from "react"
 import { useRouter } from 'next/navigation'
 import { Container, Col, Row, Details, Table, ErrorSummary, Button, InsetText } from "nhsuk-react-components"
 
-import { useAccess } from "@/context/AccessProvider";
-import EpsCard from "@/components/EpsCard";
-import EpsSpinner from "@/components/EpsSpinner";
-import { RoleDetails } from "@/types/TrackerUserInfoTypes";
+import { useAccess } from "@/context/AccessProvider"
+import EpsCard from "@/components/EpsCard"
+import EpsSpinner from "@/components/EpsSpinner"
+import { RoleDetails } from "@/types/TrackerUserInfoTypes"
 
 // This is passed to the EPS card component.
 export type RolesWithAccessProps = {
-  role: RoleDetails;
-  link: string;
-  uuid: string;
-};
+  role: RoleDetails
+  link: string
+  uuid: string
+}
 
 export type RolesWithoutAccessProps = {
-  uuid: string;
-  orgName: string;
-  odsCode: string;
-  roleName: string;
-};
+  uuid: string
+  orgName: string
+  odsCode: string
+  roleName: string
+}
 
 interface RoleSelectionPageProps {
   contentText: {
-    title: string;
-    caption: string;
-    titleNoAccess: string;
-    captionNoAccess: string;
+    title: string
+    caption: string
+    titleNoAccess: string
+    captionNoAccess: string
     insetText: {
-      visuallyHidden: string;
-      message: string;
-    };
+      visuallyHidden: string
+      message: string
+    }
     confirmButton: {
-      link: string;
-      text: string;
-    };
-    alternativeMessage: string;
-    organisation: string;
-    role: string;
-    roles_without_access_table_title: string;
-    noOrgName: string;
-    rolesWithoutAccessHeader: string;
-    noODSCode: string;
-    noRoleName: string;
-    noAddress: string;
-    errorDuringRoleSelection: string;
-  };
+      link: string
+      text: string
+    }
+    alternativeMessage: string
+    organisation: string
+    role: string
+    roles_without_access_table_title: string
+    noOrgName: string
+    rolesWithoutAccessHeader: string
+    noODSCode: string
+    noRoleName: string
+    noAddress: string
+    errorDuringRoleSelection: string
+  }
 }
 
 export default function RoleSelectionPage({
@@ -68,7 +68,7 @@ export default function RoleSelectionPage({
     noODSCode,
     noRoleName,
     errorDuringRoleSelection,
-  } = contentText;
+  } = contentText
 
   const {
     noAccess,
@@ -77,11 +77,11 @@ export default function RoleSelectionPage({
     rolesWithoutAccess: rawRolesWithoutAccess = [],
     loading,
     error,
-  } = useAccess();
+  } = useAccess()
 
-  const [loginInfoMessage, setLoginInfoMessage] = useState<string | null>(null);
-  const [redirecting, setRedirecting] = useState<boolean>(false);
-  const router = useRouter();
+  const [loginInfoMessage, setLoginInfoMessage] = useState<string | null>(null)
+  const [redirecting, setRedirecting] = useState<boolean>(false)
+  const router = useRouter()
 
   // Transform roles data for display
   const rolesWithAccess = rawRolesWithAccess.map((role, index) => ({
@@ -93,22 +93,22 @@ export default function RoleSelectionPage({
       role_id: role.role_id,
     },
     link: "/yourselectedrole",
-  }));
+  }))
 
   const rolesWithoutAccess = rawRolesWithoutAccess.map((role, index) => ({
     uuid: `role_without_access_${index}`,
     roleName: role.role_name || noRoleName,
     orgName: role.org_name || noOrgName,
     odsCode: role.org_code || noODSCode,
-  }));
+  }))
 
   // Handle auto-redirect for single role
   useEffect(() => {
     if (rawRolesWithAccess.length === 1 && rawRolesWithoutAccess.length === 0) {
-      setRedirecting(true);
-      router.push("/searchforaprescription");
+      setRedirecting(true)
+      router.push("/searchforaprescription")
     }
-  }, [rawRolesWithAccess, rawRolesWithoutAccess, router]);
+  }, [rawRolesWithAccess, rawRolesWithoutAccess, router])
 
   // Set login message when selected role is available
   useEffect(() => {
@@ -119,11 +119,11 @@ export default function RoleSelectionPage({
     ) {
       setLoginInfoMessage(
         `You are currently logged in at ${selectedRole.org_name} (ODS: ${selectedRole.org_code}) with ${selectedRole.role_name}.`
-      );
+      )
     } else {
-      setLoginInfoMessage(null);
+      setLoginInfoMessage(null)
     }
-  }, [selectedRole]);
+  }, [selectedRole])
 
   // Show spinner while loading or redirecting
   if (loading || redirecting) {
@@ -137,7 +137,7 @@ export default function RoleSelectionPage({
           </Row>
         </Container>
       </main>
-    );
+    )
   }
 
   // Show error if present
@@ -163,7 +163,7 @@ export default function RoleSelectionPage({
           </Row>
         </Container>
       </main>
-    );
+    )
   }
 
   return (
@@ -252,5 +252,5 @@ export default function RoleSelectionPage({
         </Row>
       </Container>
     </main>
-  );
+  )
 }
