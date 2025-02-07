@@ -7,7 +7,9 @@
     "tests/**/*.json",
     ".next/types/**/*.ts",
     "**/*.tsx",
-    "helpers/axios.ts"
+    "vite-env.d.ts",
+    "jest.config.ts",
+    "jest.setup.ts"
   ],
   "compilerOptions": {
     "baseUrl": ".",

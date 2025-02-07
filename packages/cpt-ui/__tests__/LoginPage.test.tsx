@@ -73,7 +73,13 @@ const defaultAuthState: AuthContextType = {
   cognitoSignOut: mockCognitoSignOut,
 };
 
-const MockAuthProvider = ({ children, initialState = defaultAuthState }) => {
+const MockAuthProvider = ({
+  children,
+  initialState = defaultAuthState,
+}: {
+  children: React.ReactNode;
+  initialState?: AuthContextType;
+}) => {
   const [authState, setAuthState] = useState<AuthContextType>({
     ...initialState,
     cognitoSignIn: async (input?: SignInWithRedirectInput) => {
