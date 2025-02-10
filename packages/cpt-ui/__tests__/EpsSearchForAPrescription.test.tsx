@@ -6,8 +6,7 @@ import React from "react";
 import SearchForAPrescription from "@/pages/SearchForAPrescription";
 import { HERO_TEXT } from "@/constants/ui-strings/SearchForAPrescriptionStrings";
 import { AuthContext } from "@/context/AuthProvider";
-import { AccessContext } from "@/context/AccessProvider";
-import { AccessContextType } from "@/types/AccessTypes";
+import { AccessContext, AccessContextType } from "@/context/AccessProvider";
 
 // Default mock values for contexts
 const defaultAuthContext = {

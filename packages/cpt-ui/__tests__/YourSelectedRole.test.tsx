@@ -5,7 +5,7 @@ import React from "react";
 import YourSelectedRolePage from "@/pages/YourSelectedRolePage";
 import { JWT } from "aws-amplify/auth";
 import { AuthContext } from "@/context/AuthProvider";
-import { AccessContext } from "@/context/AccessProvider";
+import { AccessContext, AccessContextType } from "@/context/AccessProvider";
 
 const {
   YOUR_SELECTED_ROLE_STRINGS,
@@ -34,7 +34,7 @@ const defaultAuthContext = {
   cognitoSignOut: jest.fn(),
 };
 
-const defaultAccessContext = {
+const defaultAccessContext: AccessContextType = {
   noAccess: false,
   singleAccess: false,
   selectedRole: {
@@ -52,6 +52,10 @@ const defaultAccessContext = {
   setSingleAccess: jest.fn(),
   setSelectedRole: jest.fn(),
   clear: jest.fn(),
+  rolesWithAccess: [],
+  rolesWithoutAccess: [],
+  loading: false,
+  error: null
 };
 
 const renderWithProviders = (authOverrides = {}, accessOverrides = {}) => {

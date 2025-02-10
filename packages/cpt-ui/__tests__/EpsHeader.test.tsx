@@ -65,6 +65,10 @@ const defaultAccessContext: AccessContextType = {
   setSingleAccess: jest.fn(),
   setSelectedRole: jest.fn(),
   clear: jest.fn(),
+  rolesWithAccess: [],
+  rolesWithoutAccess: [],
+  loading: false,
+  error: null
 };
 
 const renderWithProviders = (
