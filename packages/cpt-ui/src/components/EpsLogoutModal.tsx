@@ -12,7 +12,7 @@ interface EpsLogoutModalProps {
 }
 
 export function EpsLogoutModal({ isOpen, onClose, onConfirm }: EpsLogoutModalProps) {
-  
+
   return (
     <EpsModal isOpen={isOpen} onClose={onClose}>
       <Container>
@@ -24,19 +24,19 @@ export function EpsLogoutModal({ isOpen, onClose, onConfirm }: EpsLogoutModalPro
         >
           {EpsLogoutModalStrings.title}</h2>
         <p>{EpsLogoutModalStrings.caption}</p>
-        
+
         <div className="eps-modal-button-group">
-          <Button 
-            className="nhsuk-button eps-modal-button" 
+          <Button
+            className="nhsuk-button eps-modal-button"
             onClick={onConfirm}
           >
             {EpsLogoutModalStrings.confirmButtonText}
           </Button>
-          
-          <Button 
-            className="nhsuk-button nhsuk-button--secondary eps-modal-button" 
+
+          <Button
+            className="nhsuk-button nhsuk-button--secondary eps-modal-button"
             onClick={onClose}
-            >
+          >
             {EpsLogoutModalStrings.cancelButtonText}
           </Button>
         </div>

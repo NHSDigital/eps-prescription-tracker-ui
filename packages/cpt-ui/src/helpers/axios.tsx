@@ -1,9 +1,9 @@
-import axios, {InternalAxiosRequestConfig} from "axios"
-import {v4 as uuidv4} from "uuid"
+import axios, { InternalAxiosRequestConfig } from "axios"
+import { v4 as uuidv4 } from "uuid"
 
 interface ExtendedAxiosRequestConfig extends InternalAxiosRequestConfig {
-    __retryCount?: number;
-  }
+  __retryCount?: number;
+}
 
 const http = axios.create()
 
@@ -32,7 +32,7 @@ http.interceptors.response.use(
   },
   async (error) => {
     // Destructure for readability
-    const {config, response} = error
+    const { config, response } = error
 
     // If we have a response and it’s a 401, attempt retries
     if (response && response.status !== 200) {

@@ -291,16 +291,16 @@ describe("SelectYourRolePage", () => {
     // Wait for the main content to load
     await waitFor(() => {
       // Check for the no-access title
-      const heading = screen.getByRole("heading", { level: 1 });
+      const heading = screen.getByRole("heading", { level: 1 })
       expect(heading).toHaveTextContent(
         SELECT_YOUR_ROLE_PAGE_TEXT.titleNoAccess,
-      );
-    });
-  });
+      )
+    })
+  })
 
   it("redirects to searchforaprescription when there is one role with access and no roles without access", async () => {
-    const mockPush = jest.fn();
-    (useRouter as jest.Mock).mockReturnValue({ push: mockPush })
+    const mockNavigate = jest.fn();
+    (useNavigate as jest.Mock).mockReturnValue(mockNavigate);
 
     __setMockContextValue({
       loading: false,
@@ -316,11 +316,6 @@ describe("SelectYourRolePage", () => {
       rolesWithoutAccess: [],
     })
 
-    mockedAxios.get.mockResolvedValue({
-      status: 200,
-      data: { userInfo: mockUserInfo },
-    });
-
     renderWithAuth({
       isSignedIn: true,
       idToken: { toString: jest.fn().mockReturnValue("mock-id-token") },
@@ -328,20 +323,24 @@ describe("SelectYourRolePage", () => {
 
     await waitFor(() => {
       expect(mockNavigate).toHaveBeenCalledWith("/searchforaprescription");
-    });
-  });
+    })
+  })
 
   it("renders loading state when waiting for API response", async () => {
-    mockedAxios.get.mockImplementation(() => new Promise(() => { }));
+    __setMockContextValue({
+      loading: true,
+    });
+
+    mockedAxios.get.mockImplementation(() => new Promise(() => { }))
     renderWithAuth();
-    expect(screen.getByText("Loading...")).toBeInTheDocument();
+
+    expect(screen.getByText("Loading...")).toBeInTheDocument()
   });
 
   it("redirects when a single role is available", async () => {
-    const pushMock = jest.fn();
-    (useRouter as jest.Mock).mockReturnValue({
-      push: pushMock,
-    })
+    const mockNavigate = jest.fn();
+    (useNavigate as jest.Mock).mockReturnValue(mockNavigate);
+
 
     __setMockContextValue({
       loading: false,

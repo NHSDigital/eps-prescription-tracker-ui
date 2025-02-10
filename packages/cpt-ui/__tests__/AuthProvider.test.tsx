@@ -138,7 +138,7 @@ describe("AuthProvider", () => {
       if (channel === "auth") {
         hubCallback = callback; // Store the Hub callback
       }
-      return () => {}; // Mock unsubscribe function
+      return () => { }; // Mock unsubscribe function
     });
   });
 

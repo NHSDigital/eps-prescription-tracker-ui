@@ -41,21 +41,21 @@ export default function EpsHeader() {
     // Show "Select your role" link
     setShouldShowSelectRole(
       curPathname !== "/selectyourrole" &&
-        curPathname !== "/changerole" &&
-        curPathname !== "/logout" &&
-        isSignedIn &&
-        !accessContext.singleAccess &&
-        !accessContext.selectedRole
+      curPathname !== "/changerole" &&
+      curPathname !== "/logout" &&
+      isSignedIn &&
+      !accessContext.singleAccess &&
+      !accessContext.selectedRole
     );
 
     // Show "Change role" link (if not single access)
     setShouldShowChangeRole(
       curPathname !== "/selectyourrole" &&
-        curPathname !== "/changerole" &&
-        curPathname !== "/logout" &&
-        isSignedIn &&
-        !accessContext.singleAccess &&
-        !accessContext.selectedRole
+      curPathname !== "/changerole" &&
+      curPathname !== "/logout" &&
+      isSignedIn &&
+      !accessContext.singleAccess &&
+      !accessContext.selectedRole
     );
 
     // Show the "Logout" link only if the user is signed in
@@ -64,7 +64,7 @@ export default function EpsHeader() {
     // Show the "Exit" button under these conditions
     setShouldShowExitButton(
       (curPathname === "/logout" && !auth?.isSignedIn) ||
-        (curPathname === "/selectyourrole" && accessContext.noAccess)
+      (curPathname === "/selectyourrole" && accessContext.noAccess)
     );
   }, [location, auth, accessContext]);
 

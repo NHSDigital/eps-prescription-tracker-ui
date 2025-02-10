@@ -1,8 +1,7 @@
 'use client'
 import React from "react";
 import { Col, Container, Hero, Row } from "nhsuk-react-components";
-import "@/assets/styles/searchforaprescription.scss"
-import EpsTabs from "@/components/EpsTabs";
+import EpsTabs from "@/components/EpsCard";
 import { HERO_TEXT } from "@/constants/ui-strings/SearchForAPrescriptionStrings"
 
 export default function SearchForAPrescriptionPage() {
@@ -23,7 +22,15 @@ export default function SearchForAPrescriptionPage() {
                 </Container>
                 <Row>
                     <Col width="full">
-                        <EpsTabs />
+                        <EpsTabs role={{
+                            role_name: undefined,
+                            role_id: undefined,
+                            org_code: undefined,
+                            org_name: undefined,
+                            site_name: undefined,
+                            site_address: undefined,
+                            uuid: undefined
+                        }} link={""} />
                     </Col>
                 </Row>
             </main>
