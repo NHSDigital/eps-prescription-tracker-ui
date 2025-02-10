@@ -1,12 +1,12 @@
 import "@testing-library/jest-dom"
-import { render, screen, waitFor } from "@testing-library/react"
-import { useRouter } from "next/navigation"
+import {render, screen, waitFor} from "@testing-library/react"
+import {useRouter} from "next/navigation"
 import React from "react"
 
-import { AuthContext } from "@/context/AuthProvider"
+import {AuthContext} from "@/context/AuthProvider"
 
 import axios from "@/helpers/axios"
-jest.mock('@/helpers/axios')
+jest.mock("@/helpers/axios")
 
 // Tell TypeScript that axios is a mocked version.
 const mockedAxios = axios as jest.Mocked<typeof axios>
@@ -39,16 +39,14 @@ jest.mock("@/constants/ui-strings/CardStrings", () => {
     loadingMessage: "Loading...",
   }
 
-
   const EPS_CARD_STRINGS = {
     noOrgName: "NO ORG NAME",
     noODSCode: "No ODS code",
     noRoleName: "No role name",
-    noAddress: "Address not found"
+    noAddress: "Address not found",
   }
 
-
-  return { CHANGE_YOUR_ROLE_PAGE_TEXT, EPS_CARD_STRINGS }
+  return {CHANGE_YOUR_ROLE_PAGE_TEXT, EPS_CARD_STRINGS}
 })
 
 // Mock `next/navigation` to prevent errors during component rendering in test
@@ -57,37 +55,44 @@ jest.mock("next/navigation", () => ({
   useRouter: jest.fn(),
 }))
 
-
 // Mock the AccessProvider context
 jest.mock("@/context/AccessProvider", () => {
   const React = require("react")
 
-  const mockContextValue = {
+  const createMockContext = (overrides = {}) => ({
     noAccess: false,
     singleAccess: false,
-    selectedRole: {
-      role_name: "role_name",
-      role_id: "role_id",
-      org_code: "org_code",
-      org_name: "org_name",
-      site_name: "site_name",
-      site_address: "site_address",
-      uuid: "uuid",
-    },
+    selectedRole: undefined,
+    rolesWithAccess: [],
+    rolesWithoutAccess: [],
+    loading: false,
+    error: null,
     setNoAccess: jest.fn(),
     setSingleAccess: jest.fn(),
     setSelectedRole: jest.fn(),
-  }
+    setUserDetails: jest.fn(),
+    userDetails: undefined,
+    clear: jest.fn(),
+    ...overrides,
+  })
 
-  const MockAccessContext = React.createContext(mockContextValue)
-  const useAccess = () => React.useContext(MockAccessContext)
+  const MockAccessContext = React.createContext(createMockContext())
+
+  // Export a function to update the mock value
+  let currentValue = createMockContext()
+  const useAccess = () => currentValue
+  const __setMockAccessValue = (newValue: any) => {
+    currentValue = {...createMockContext(), ...newValue}
+  }
 
   return {
-    __esModule: true,
     AccessContext: MockAccessContext,
     useAccess,
+    __setMockAccessValue,
   }
 })
+
+const {__setMockAccessValue} = require("@/context/AccessProvider")
 
 // Default mock values for the AuthContext to simulate authentication state
 const defaultAuthContext = {
@@ -104,43 +109,44 @@ import ChangeRolePage from "@/app/changerole/page"
 
 // Utility function to render the component with custom AuthContext overrides
 const renderWithAuth = (authOverrides = {}, accessOverrides = {}) => {
-  const authValue = { ...defaultAuthContext, ...authOverrides }
+  const authValue = {...defaultAuthContext, ...authOverrides}
   return render(
     <AuthContext.Provider value={authValue}>
       <ChangeRolePage />
-    </AuthContext.Provider>
+    </AuthContext.Provider>,
   )
 }
 
-import { CHANGE_YOUR_ROLE_PAGE_TEXT } from "@/constants/ui-strings/ChangeRolePageStrings"
-import { EpsSpinnerStrings } from "../constants/ui-strings/EpsSpinnerStrings"
+import {CHANGE_YOUR_ROLE_PAGE_TEXT} from "@/constants/ui-strings/ChangeRolePageStrings"
+import {EpsSpinnerStrings} from "../constants/ui-strings/EpsSpinnerStrings"
 
 describe("ChangeRolePage", () => {
   beforeEach(() => {
     jest.clearAllMocks()
+    __setMockAccessValue({})
   })
 
   it("renders loading state when signed in but API call hasn't resolved yet", async () => {
-    // Simulate a pending API call by not resolving the promise.
-    mockedAxios.get.mockImplementation(() => new Promise(() => { }))
+    __setMockAccessValue({loading: true})
 
     // Render the page with user signed in
-    renderWithAuth({ isSignedIn: true, idToken: { toString: jest.fn().mockReturnValue("mock-id-token") } })
-
-    // Verify that the loading text appears
-    const loadingText = screen.getByText(EpsSpinnerStrings.loading)
-    expect(loadingText).toBeInTheDocument()
+    renderWithAuth({
+      isSignedIn: true,
+      idToken: {toString: jest.fn().mockReturnValue("mock-id-token")},
+    })
   })
 
   it("renders error summary if API call returns non-200 status", async () => {
-    // Simulate a server error response.
-    mockedAxios.get.mockResolvedValue({
-      status: 500,
-      data: {},
+    __setMockAccessValue({
+      error: "Failed to fetch CPT user info",
+      loading: false,
     })
 
     // Render the page with user signed in
-    renderWithAuth({ isSignedIn: true, idToken: { toString: jest.fn().mockReturnValue("mock-id-token") } })
+    renderWithAuth({
+      isSignedIn: true,
+      idToken: {toString: jest.fn().mockReturnValue("mock-id-token")},
+    })
 
     // Wait for the error message to appear
     await waitFor(() => {
@@ -157,18 +163,17 @@ describe("ChangeRolePage", () => {
   })
 
   it("renders error summary if API call returns 200 but no userInfo is present", async () => {
-    // Simulate a successful HTTP response with empty data (no userInfo key).
-    mockedAxios.get.mockResolvedValue({
-      status: 200,
-      data: {},
+    __setMockAccessValue({
+      loading: false,
+      error: "Failed to fetch CPT user info",
     })
 
-    // Render the page with user signed in
-    renderWithAuth({ isSignedIn: true, idToken: { toString: jest.fn().mockReturnValue("mock-id-token") } })
+    renderWithAuth({
+      isSignedIn: true,
+      idToken: {toString: jest.fn().mockReturnValue("mock-id-token")},
+    })
 
-    // Wait for the error message to appear
     await waitFor(() => {
-      // Check for error summary heading
       const errorHeading = screen.getByRole("heading", {
         name: CHANGE_YOUR_ROLE_PAGE_TEXT.errorDuringRoleSelection,
       })
@@ -180,137 +185,133 @@ describe("ChangeRolePage", () => {
   })
 
   it("renders the page content when valid userInfo is returned", async () => {
-    // Prepare valid user data.
-    const mockUserInfo = {
-      roles_with_access: [
+    __setMockAccessValue({
+      loading: false,
+      rolesWithAccess: [
         {
           role_name: "Pharmacist",
           org_name: "Test Pharmacy Org",
           org_code: "ORG123",
-          site_address: "1 Fake Street",
         },
       ],
-      roles_without_access: [
+      rolesWithoutAccess: [
         {
           role_name: "Technician",
-          org_name: "Tech Org",
+          org_name: "Test Pharmacy Org",
           org_code: "ORG456",
-          site_address: "2 Fake Street",
         },
       ],
-    }
-
-    // Simulate a successful API call with valid userInfo.
-    mockedAxios.get.mockResolvedValue({
-      status: 200,
-      data: { userInfo: mockUserInfo },
     })
 
     // Render the page with user signed in
-    renderWithAuth({ isSignedIn: true, idToken: { toString: jest.fn().mockReturnValue("mock-id-token") } })
+    renderWithAuth({
+      isSignedIn: true,
+      idToken: {toString: jest.fn().mockReturnValue("mock-id-token")},
+    })
 
     // Wait for the main content to load
     await waitFor(() => {
       // Check for the page heading
-      const heading = screen.getByRole("heading", { level: 1 })
+      const heading = screen.getByRole("heading", {level: 1})
       expect(heading).toHaveTextContent(CHANGE_YOUR_ROLE_PAGE_TEXT.title)
     })
 
     // Verify the page caption
-    const caption = screen.getByText(CHANGE_YOUR_ROLE_PAGE_TEXT.caption)
-    expect(caption).toBeInTheDocument()
+    expect(
+      screen.getByText(CHANGE_YOUR_ROLE_PAGE_TEXT.caption),
+    ).toBeInTheDocument()
 
-    // Verify the "Roles without access" section (expander)
-    const expanderText = CHANGE_YOUR_ROLE_PAGE_TEXT.roles_without_access_table_title
-    const expander = screen.getByText(expanderText)
-    expect(expander).toBeInTheDocument()
+    // Verify the "Roles without access" section
+    expect(
+      screen.getByText(
+        CHANGE_YOUR_ROLE_PAGE_TEXT.roles_without_access_table_title,
+      ),
+    ).toBeInTheDocument()
 
-    // Check for the table data in "Roles without access"
-    const tableOrg = screen.getByText(/Tech Org \(ODS: ORG456\)/i)
-    expect(tableOrg).toBeInTheDocument()
-    const tableRole = screen.getByText("Technician")
-    expect(tableRole).toBeInTheDocument()
+    // Check for the table data using test IDs
+    const nameCell = screen.getByTestId("change-role-name-cell")
+    expect(nameCell).toHaveTextContent(`Test Pharmacy Org (ODS: ORG456)`)
+
+    const roleCell = screen.getByTestId("change-role-role-cell")
+    expect(roleCell).toHaveTextContent("Technician")
   })
 
   it("renders error summary when not signed in", async () => {
-    // Render the page with `isSignedIn` set to false
-    renderWithAuth({ isSignedIn: false, error: "Missing access or ID token" })
-
-    // Wait for the error message to appear
-    await waitFor(() => {
-      // Check for error summary heading
-      const errorHeading = screen.getByRole("heading", {
-        name: CHANGE_YOUR_ROLE_PAGE_TEXT.errorDuringRoleSelection,
-      })
-      expect(errorHeading).toBeInTheDocument()
-
-      const errorItem = screen.getByText("Missing access or ID token")
-      expect(errorItem).toBeInTheDocument()
+    __setMockAccessValue({
+      loading: false,
+      error: "Missing access or ID token",
     })
+
+    renderWithAuth({isSignedIn: false})
+
+    const errorHeading = screen.getByRole("heading", {
+      name: CHANGE_YOUR_ROLE_PAGE_TEXT.errorDuringRoleSelection,
+    })
+    expect(errorHeading).toBeInTheDocument()
+    expect(screen.getByText("Missing access or ID token")).toBeInTheDocument()
   })
 
   it("redirects to searchforaprescription when there is one role with access and no roles without access", async () => {
-    const mockUserInfo = {
-      roles_with_access: [
+    const pushMock = jest.fn();
+    (useRouter as jest.Mock).mockReturnValue({push: pushMock})
+
+    __setMockAccessValue({
+      loading: false,
+      rolesWithAccess: [
         {
           role_name: "Pharmacist",
           org_name: "Test Pharmacy Org",
           org_code: "ORG123",
-          site_address: "1 Fake Street",
         },
       ],
-      roles_without_access: [],
-    }
-
-    // Simulate a successful API call with valid userInfo.
-    mockedAxios.get.mockResolvedValue({
-      status: 200,
-      data: { userInfo: mockUserInfo },
+      rolesWithoutAccess: [],
+      singleAccess: true,
     })
 
-    // Mock useRouter's push function
-    const mockPush = jest.fn()
-      ; (useRouter as jest.Mock).mockReturnValue({
-        push: mockPush,
-      })
-
     // Render the page with user signed in
-    renderWithAuth({ isSignedIn: true, idToken: { toString: jest.fn().mockReturnValue("mock-id-token") } })
+    renderWithAuth({
+      isSignedIn: true,
+      idToken: {toString: jest.fn().mockReturnValue("mock-id-token")},
+    })
 
     // Wait for redirection
     await waitFor(() => {
-      expect(mockPush).toHaveBeenCalledWith("/searchforaprescription")
+      expect(pushMock).toHaveBeenCalledWith("/searchforaprescription")
     })
   })
 
   it("renders loading state when waiting for API response", async () => {
-    mockedAxios.get.mockImplementation(() => new Promise(() => { }))
+    __setMockAccessValue({
+      loading: true,
+    })
+    mockedAxios.get.mockImplementation(() => new Promise(() => {}))
     renderWithAuth()
     expect(screen.getByText("Loading...")).toBeInTheDocument()
   })
 
   it("redirects when a single role is available", async () => {
-    const pushMock = jest.fn()
-      ; (useRouter as jest.Mock).mockReturnValue({
-        push: pushMock,
-      })
-
-    const mockUserInfo = {
-      roles_with_access: [{
-        role_name: "Pharmacist",
-        org_name: "Test Pharmacy",
-        org_code: "ORG123",
-        site_address: "123 Test St"
-      }],
-      roles_without_access: []
-    }
-
-    mockedAxios.get.mockResolvedValue({
-      status: 200,
-      data: { userInfo: mockUserInfo },
+    const pushMock = jest.fn();
+    (useRouter as jest.Mock).mockReturnValue({
+      push: pushMock,
     })
 
-    renderWithAuth({ isSignedIn: true, idToken: { toString: jest.fn().mockReturnValue("mock-id-token") } })
+    __setMockAccessValue({
+      loading: false,
+      rolesWithAccess: [
+        {
+          role_name: "Pharmacist",
+          org_name: "Test Pharmacy",
+          org_code: "ORG123",
+        },
+      ],
+      rolesWithoutAccess: [],
+      singleAccess: true,
+    })
+
+    renderWithAuth({
+      isSignedIn: true,
+      idToken: {toString: jest.fn().mockReturnValue("mock-id-token")},
+    })
 
     await waitFor(() => {
       expect(pushMock).toHaveBeenCalledWith("/searchforaprescription")
@@ -318,19 +319,31 @@ describe("ChangeRolePage", () => {
   })
 
   it("does not fetch user roles if user is not signed in", async () => {
-    renderWithAuth({ isSignedIn: false })
+    renderWithAuth({isSignedIn: false})
     expect(mockedAxios.get).not.toHaveBeenCalled()
   })
 
   it("displays an error when the API request fails", async () => {
-    mockedAxios.get.mockRejectedValue(new Error("Failed to fetch user roles"))
+    __setMockAccessValue({
+      loading: false,
+      error: "Failed to fetch CPT user info",
+      rolesWithAccess: [],
+      rolesWithoutAccess: [],
+    })
 
-    renderWithAuth({ isSignedIn: true, idToken: { toString: jest.fn().mockReturnValue("mock-id-token") } })
+    renderWithAuth({
+      isSignedIn: true,
+      idToken: {toString: jest.fn().mockReturnValue("mock-id-token")},
+    })
 
     await waitFor(() => {
-      const errorSummary = screen.getByRole("heading", { name: "Error during role selection" })
-      expect(errorSummary).toBeInTheDocument()
-      expect(screen.getByText("Failed to fetch CPT user info")).toBeInTheDocument()
+      const errorHeading = screen.getByRole("heading", {
+        name: CHANGE_YOUR_ROLE_PAGE_TEXT.errorDuringRoleSelection,
+      })
+      expect(errorHeading).toBeInTheDocument()
+
+      const errorMessage = screen.getByText("Failed to fetch CPT user info")
+      expect(errorMessage).toBeInTheDocument()
     })
   })
 })

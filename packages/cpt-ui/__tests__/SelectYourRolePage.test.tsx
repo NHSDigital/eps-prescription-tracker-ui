@@ -72,9 +72,17 @@ jest.mock("@/context/AccessProvider", () => {
       org_code: "deadbeef",
       org_name: "org name",
     },
+    // selectedRole: undefined,
+    rolesWithAccess: [],
+    rolesWithoutAccess: [],
+    loading: false,
+    error: null,
     setNoAccess: jest.fn(),
     setSingleAccess: jest.fn(),
     setSelectedRole: jest.fn(),
+    setUserDetails: jest.fn(),
+    userDetails: undefined,
+    clear: jest.fn(),
   }
 
   const MockAccessContext = React.createContext(mockContextValue)
@@ -88,7 +96,6 @@ jest.mock("@/context/AccessProvider", () => {
   }
 
   return {
-    __esModule: true,
     AccessContext: MockAccessContext,
     useAccess,
     __setMockContextValue,
@@ -121,6 +128,27 @@ export const renderWithAuth = (authOverrides = {}) => {
 import {SELECT_YOUR_ROLE_PAGE_TEXT} from "@/constants/ui-strings/CardStrings"
 import {EpsSpinnerStrings} from "../constants/ui-strings/EpsSpinnerStrings"
 
+const mockUserInfo = {
+  roles_with_access: [
+    {
+      role_name: "Pharmacist",
+      org_name: "Test Pharmacy Org",
+      org_code: "ORG123",
+      site_address: "1 Fake Street",
+    },
+  ],
+  roles_without_access: [
+    {
+      role_name: "Technician",
+      org_name: "Tech Org",
+      org_code: "ORG456",
+      site_address: "2 Fake Street",
+    },
+  ],
+}
+
+
+
 describe("SelectYourRolePage", () => {
   // Clear all mock calls before each test to avoid state leaks
   beforeEach(() => {
@@ -134,6 +162,8 @@ describe("SelectYourRolePage", () => {
     // Simulate a pending API call
     mockedAxios.get.mockImplementation(() => new Promise(() => {}))
 
+    __setMockContextValue({loading: true})
+
     renderWithAuth({
       isSignedIn: true,
       idToken: {toString: jest.fn().mockReturnValue("mock-id-token")},
@@ -146,9 +176,9 @@ describe("SelectYourRolePage", () => {
 
   it("renders error summary if API call returns non-200 status", async () => {
     // Simulate a server error response
-    mockedAxios.get.mockResolvedValue({
-      status: 500,
-      data: {},
+    __setMockContextValue({
+      loading: false,
+      error: "Failed to fetch CPT user info",
     })
 
     renderWithAuth({
@@ -169,10 +199,9 @@ describe("SelectYourRolePage", () => {
   })
 
   it("renders error summary if API call returns 200 but no userInfo is present", async () => {
-    // Mock 200 OK but with empty data
-    mockedAxios.get.mockResolvedValue({
-      status: 200,
-      data: {},
+    __setMockContextValue({
+      loading: false,
+      error: "Failed to fetch CPT user info",
     })
 
     renderWithAuth({
@@ -192,25 +221,24 @@ describe("SelectYourRolePage", () => {
   })
 
   it("renders the page content when valid userInfo is returned", async () => {
-    // Mock user data to simulate valid API response
-    const mockUserInfo = {
-      roles_with_access: [
+    __setMockContextValue({
+      loading: false,
+      error: null, // Important to clear any error state
+      rolesWithAccess: [
         {
           role_name: "Pharmacist",
           org_name: "Test Pharmacy Org",
           org_code: "ORG123",
-          site_address: "1 Fake Street",
         },
       ],
-      roles_without_access: [
+      rolesWithoutAccess: [
         {
           role_name: "Technician",
           org_name: "Tech Org",
           org_code: "ORG456",
-          site_address: "2 Fake Street",
         },
       ],
-    }
+    })
 
     // Mock 200 OK with valid userInfo
     mockedAxios.get.mockResolvedValue({
@@ -233,17 +261,19 @@ describe("SelectYourRolePage", () => {
 
   it("renders no access title and caption when no roles with access are available", async () => {
     // Mock user data with no roles with access
-    const mockUserInfo = {
-      roles_with_access: [], // No roles with access
-      roles_without_access: [
+    __setMockContextValue({
+      loading: false,
+      error: null,
+      noAccess: true,
+      rolesWithAccess: [],
+      rolesWithoutAccess: [
         {
           role_name: "Technician",
           org_name: "Tech Org",
           org_code: "ORG456",
-          site_address: "2 Fake Street",
         },
       ],
-    }
+    }) // Added missing closing brace and semicolon here
 
     // Mock fetch to return 200 OK with valid userInfo
     mockedAxios.get.mockResolvedValue({
@@ -269,29 +299,32 @@ describe("SelectYourRolePage", () => {
   })
 
   it("redirects to searchforaprescription when there is one role with access and no roles without access", async () => {
-    const mockUserInfo = {
-      roles_with_access: [
+    const mockPush = jest.fn();
+    (useRouter as jest.Mock).mockReturnValue({push: mockPush})
+
+    __setMockContextValue({
+      loading: false,
+      error: null,
+      singleAccess: true,
+      rolesWithAccess: [
         {
           role_name: "Pharmacist",
           org_name: "Test Pharmacy Org",
           org_code: "ORG123",
-          site_address: "1 Fake Street",
         },
       ],
-      roles_without_access: [],
-    }
+      rolesWithoutAccess: [],
+    })
 
     mockedAxios.get.mockResolvedValue({
       status: 200,
       data: {userInfo: mockUserInfo},
     })
 
-    const mockPush = jest.fn();
-    (useRouter as jest.Mock).mockReturnValue({
-      push: mockPush,
+    renderWithAuth({
+      isSignedIn: true,
+      idToken: {toString: jest.fn().mockReturnValue("mock-id-token")},
     })
-
-    renderWithAuth({isSignedIn: true, idToken: {toString: jest.fn().mockReturnValue("mock-id-token")}})
 
     await waitFor(() => {
       expect(mockPush).toHaveBeenCalledWith("/searchforaprescription")
@@ -305,20 +338,24 @@ describe("SelectYourRolePage", () => {
   })
 
   it("redirects when a single role is available", async () => {
-    const pushMock = jest.fn()
-      ; (useRouter as jest.Mock).mockReturnValue({
-        push: pushMock,
-      })
+    const pushMock = jest.fn();
+    (useRouter as jest.Mock).mockReturnValue({
+      push: pushMock,
+    })
 
-    const mockUserInfo = {
-      roles_with_access: [{
-        role_name: "Pharmacist",
-        org_name: "Test Pharmacy",
-        org_code: "ORG123",
-        site_address: "123 Test St"
-      }],
-      roles_without_access: []
-    }
+    __setMockContextValue({
+      loading: false,
+      error: null,
+      singleAccess: true,
+      rolesWithAccess: [
+        {
+          role_name: "Pharmacist",
+          org_name: "Test Pharmacy",
+          org_code: "ORG123",
+        },
+      ],
+      rolesWithoutAccess: [],
+    })
 
     mockedAxios.get.mockResolvedValue({
       status: 200,
@@ -326,7 +363,10 @@ describe("SelectYourRolePage", () => {
     })
 
     __setMockContextValue({noAccess: true})
-    renderWithAuth({isSignedIn: true, idToken: {toString: jest.fn().mockReturnValue("mock-id-token")}})
+    renderWithAuth({
+      isSignedIn: true,
+      idToken: {toString: jest.fn().mockReturnValue("mock-id-token")},
+    })
 
     await waitFor(() => {
       expect(pushMock).toHaveBeenCalledWith("/searchforaprescription")
@@ -341,12 +381,31 @@ describe("SelectYourRolePage", () => {
   it("displays an error when the API request fails", async () => {
     mockedAxios.get.mockRejectedValue(new Error("Failed to fetch user roles"))
 
-    renderWithAuth({isSignedIn: true, idToken: {toString: jest.fn().mockReturnValue("mock-id-token")}})
+    __setMockContextValue({
+      loading: false, // Make sure loading is false
+      error: "Failed to fetch CPT user info",
+      rolesWithAccess: [],
+      rolesWithoutAccess: [],
+      noAccess: false,
+      singleAccess: false,
+      selectedRole: undefined,
+    })
 
+    // Render with auth
+    renderWithAuth({
+      isSignedIn: true,
+      idToken: {toString: jest.fn().mockReturnValue("mock-id-token")},
+    })
+
+    // Wait for the error summary to appear and loading to finish
     await waitFor(() => {
-      const errorSummary = screen.getByRole("heading", {name: "Error during role selection"})
+      const errorSummary = screen.getByRole("heading", {
+        name: "Error during role selection",
+      })
       expect(errorSummary).toBeInTheDocument()
-      expect(screen.getByText("Failed to fetch CPT user info")).toBeInTheDocument()
+      expect(
+        screen.getByText("Failed to fetch CPT user info")
+      ).toBeInTheDocument()
     })
   })
 })
