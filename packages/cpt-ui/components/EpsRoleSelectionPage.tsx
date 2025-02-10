@@ -84,16 +84,18 @@ export default function RoleSelectionPage({
   const router = useRouter()
 
   // Transform roles data for display
-  const rolesWithAccess = rawRolesWithAccess.map((role, index) => ({
-    uuid: `role_with_access_${index}`,
-    role: {
-      org_name: role.org_code,
-      org_code: role.org_code,
-      role_name: role.role_name,
-      role_id: role.role_id,
-    },
-    link: "/yourselectedrole",
-  }))
+  const rolesWithAccess = !noAccess
+    ? rawRolesWithAccess.map((role, index) => ({
+      uuid: `role_with_access_${index}`,
+      role: {
+        org_name: role.org_code,
+        org_code: role.org_code,
+        role_name: role.role_name,
+        role_id: role.role_id,
+      },
+      link: "/yourselectedrole",
+    }))
+    : [];
 
   const rolesWithoutAccess = rawRolesWithoutAccess.map((role, index) => ({
     uuid: `role_without_access_${index}`,
@@ -207,7 +209,7 @@ export default function RoleSelectionPage({
             )}
           </Col>
 
-          {!noAccess && (
+          {!noAccess && rolesWithAccess.length > 0 && (
             <Col width="two-thirds">
               <div className="section">
                 {rolesWithAccess.map((role: RolesWithAccessProps) => (

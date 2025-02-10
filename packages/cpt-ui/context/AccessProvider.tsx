@@ -6,8 +6,8 @@ import React, {
   ReactNode,
 } from "react"
 
-import {useLocalStorageState} from "@/helpers/useLocalStorageState"
-import {AuthContext} from "./AuthProvider"
+import { useLocalStorageState } from "@/helpers/useLocalStorageState"
+import { AuthContext } from "./AuthProvider"
 
 import {
   RoleDetails,
@@ -39,7 +39,7 @@ export const AccessContext = createContext<AccessContextType | undefined>(
   undefined
 )
 
-export const AccessProvider = ({children}: {children: ReactNode}) => {
+export const AccessProvider = ({ children }: { children: ReactNode }) => {
   const [noAccess, setNoAccess] = useLocalStorageState<boolean>(
     "noAccess",
     "access",
