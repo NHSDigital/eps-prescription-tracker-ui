@@ -3,7 +3,7 @@ import { render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import React from "react";
 
-import SearchForAPrescription from "@/pages/SearchForAPrescription";
+import SearchForAPrescription from "@/pages/SearchPrescriptionPage";
 import { HERO_TEXT } from "@/constants/ui-strings/SearchForAPrescriptionStrings";
 import { AuthContext } from "@/context/AuthProvider";
 import { AccessContext, AccessContextType } from "@/context/AccessProvider";
@@ -53,6 +53,13 @@ const renderWithProviders = (
     </MemoryRouter>
   );
 };
+
+jest.mock("@/components/EpsTabs", () => {
+  return {
+    __esModule: true,
+    default: () => <div data-testid="eps-tabs">Mocked EpsTabs</div>,
+  };
+});
 
 describe("SearchForAPrescription", () => {
   it("renders the hero banner", () => {

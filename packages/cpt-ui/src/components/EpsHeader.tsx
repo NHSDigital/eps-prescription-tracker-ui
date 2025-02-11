@@ -55,7 +55,7 @@ export default function EpsHeader() {
       curPathname !== "/logout" &&
       isSignedIn &&
       !accessContext.singleAccess &&
-      !accessContext.selectedRole
+      accessContext.selectedRole !== undefined
     );
 
     // Show the "Logout" link only if the user is signed in
