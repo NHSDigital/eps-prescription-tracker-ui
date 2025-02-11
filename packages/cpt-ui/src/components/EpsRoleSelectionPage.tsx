@@ -113,18 +113,14 @@ export default function RoleSelectionPage({
 
   // Set login message when selected role is available
   useEffect(() => {
-    if (
-      selectedRole?.org_name &&
-      selectedRole?.org_code &&
-      selectedRole?.role_name
-    ) {
+    if (loading) return
+
+    if (!loginInfoMessage && selectedRole) {
       setLoginInfoMessage(
-        `You are currently logged in at ${selectedRole.org_name} (ODS: ${selectedRole.org_code}) with ${selectedRole.role_name}.`
-      )
-    } else {
-      setLoginInfoMessage(null)
+        `You are currently logged in at ${selectedRole.org_name || noOrgName} (ODS: ${selectedRole.org_code || noODSCode}) with ${selectedRole.role_name || noRoleName}.`
+      );
     }
-  }, [selectedRole])
+  }, [selectedRole, loginInfoMessage, noOrgName, noODSCode, noRoleName, loading]);
 
   // Show spinner while loading or redirecting
   if (loading || redirecting) {
