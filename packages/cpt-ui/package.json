@@ -31,7 +31,7 @@
         "@types/react": "^18",
         "@types/react-dom": "^18",
         "axios-mock-adapter": "^2.1.0",
-        "babel-plugin-formatjs": "^10.5.29",
+        "babel-plugin-formatjs": "^10.5.35",
         "eslint-config-next": "15.1.6"
     }
 }
