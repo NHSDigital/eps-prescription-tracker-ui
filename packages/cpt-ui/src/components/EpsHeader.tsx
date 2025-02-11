@@ -1,5 +1,4 @@
 import React, { useContext, useEffect, useState } from "react";
-// import "@/styles/header.scss";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Header } from "nhsuk-react-components";
 import {
@@ -9,34 +8,34 @@ import {
   HEADER_CHANGE_ROLE_BUTTON,
   HEADER_CHANGE_ROLE_TARGET,
   HEADER_SELECT_YOUR_ROLE_TARGET,
-  HEADER_SELECT_YOUR_ROLE_BUTTON,
-} from "@/constants/ui-strings/HeaderStrings";
+  HEADER_SELECT_YOUR_ROLE_BUTTON
+} from "@/constants/ui-strings/HeaderStrings"
 
-import { AuthContext } from "@/context/AuthProvider";
-import { useAccess } from "@/context/AccessProvider";
+import { AuthContext } from "@/context/AuthProvider"
+import { useAccess } from '@/context/AccessProvider'
 
-import { EpsLogoutModal } from "@/components/EpsLogoutModal";
+import { EpsLogoutModal } from "@/components/EpsLogoutModal"
 
 export default function EpsHeader() {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const auth = useContext(AuthContext);
-  const accessContext = useAccess();
+  const navigate = useNavigate()
+  const location = useLocation()
+  const auth = useContext(AuthContext)
+  const accessContext = useAccess()
 
   // Individual states to control link visibility:
-  const [shouldShowSelectRole, setShouldShowSelectRole] = useState(false);
-  const [shouldShowChangeRole, setShouldShowChangeRole] = useState(false);
-  const [shouldShowLogoutLink, setShouldShowLogoutLink] = useState(false);
-  const [shouldShowExitButton, setShouldShowExitButton] = useState(false);
+  const [shouldShowSelectRole, setShouldShowSelectRole] = useState(false)
+  const [shouldShowChangeRole, setShouldShowChangeRole] = useState(false)
+  const [shouldShowLogoutLink, setShouldShowLogoutLink] = useState(false)
+  const [shouldShowExitButton, setShouldShowExitButton] = useState(false)
 
-  const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false)
 
   // Move all conditional logic into one place
   useEffect(() => {
-    const isSignedIn = auth?.isSignedIn as boolean;
+    const isSignedIn = auth?.isSignedIn as boolean
 
     // FIXME: Strips off the .html for broken SPA redirects
-    const curPathname = location.pathname.replace(".html", "");
+    const curPathname = location.pathname.replace(".html", "")
 
     // Show "Select your role" link
     setShouldShowSelectRole(
@@ -46,7 +45,7 @@ export default function EpsHeader() {
       isSignedIn &&
       !accessContext.singleAccess &&
       !accessContext.selectedRole
-    );
+    )
 
     // Show "Change role" link (if not single access)
     setShouldShowChangeRole(
@@ -56,32 +55,33 @@ export default function EpsHeader() {
       isSignedIn &&
       !accessContext.singleAccess &&
       accessContext.selectedRole !== undefined
-    );
+    )
 
     // Show the "Logout" link only if the user is signed in
-    setShouldShowLogoutLink(Boolean(auth?.isSignedIn));
+    setShouldShowLogoutLink(Boolean(auth?.isSignedIn))
 
     // Show the "Exit" button under these conditions
     setShouldShowExitButton(
       (curPathname === "/logout" && !auth?.isSignedIn) ||
       (curPathname === "/selectyourrole" && accessContext.noAccess)
-    );
-  }, [location, auth, accessContext]);
+    )
+  }, [location, auth, accessContext])
 
   const redirectToLogin = async (e: React.MouseEvent | React.KeyboardEvent) => {
-    e.preventDefault();
-    navigate("/login");
-  };
+    // Naked href don't respect the router, so this overrides that
+    e.preventDefault()
+    navigate("/login")
+  }
 
   const handleLogoutClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    e.preventDefault();
-    setShowLogoutModal(true);
-  };
+    e.preventDefault()
+    setShowLogoutModal(true)
+  }
 
   const handleConfirmLogout = async () => {
-    setShowLogoutModal(false);
-    navigate("/logout");
-  };
+    setShowLogoutModal(false)
+    navigate("/logout")
+  }
 
   return (
     <>
@@ -163,5 +163,5 @@ export default function EpsHeader() {
         onConfirm={handleConfirmLogout}
       />
     </>
-  );
+  )
 }

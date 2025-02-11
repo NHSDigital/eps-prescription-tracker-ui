@@ -15,9 +15,11 @@ import {
   UserDetails,
 } from "@/types/TrackerUserInfoTypes"
 
+import { API_ENDPOINTS } from "@/constants/environment"
+
 import http from "@/helpers/axios"
 
-const trackerUserInfoEndpoint = "/api/tracker-user-info"
+const trackerUserInfoEndpoint = API_ENDPOINTS.TRACKER_USER_INFO
 
 export type AccessContextType = {
   noAccess: boolean

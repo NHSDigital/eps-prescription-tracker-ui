@@ -1,4 +1,3 @@
-'use client'
 import React from "react";
 import { Col, Container, Hero, Row } from "nhsuk-react-components";
 import EpsTabs from "@/components/EpsTabs";

@@ -41,19 +41,6 @@ jest.mock("aws-amplify/utils", () => ({
   },
 }));
 
-// Mock useRouter and usePathName:
-const usePathnameMock = jest.fn();
-jest.mock("next/navigation", () => ({
-  useRouter() {
-    return {
-      prefetch: () => null,
-    };
-  },
-  usePathname() {
-    return "/";
-  },
-}));
-
 // A helper component to consume the AuthContext and expose its values for testing
 const TestConsumer = () => {
   const auth = useContext(AuthContext); // Access the AuthContext

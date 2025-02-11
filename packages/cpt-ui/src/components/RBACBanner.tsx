@@ -1,21 +1,21 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react"
 
-import { Row } from "nhsuk-react-components";
+import { Row } from "nhsuk-react-components"
 
-import { RBAC_BANNER_STRINGS } from "@/constants/ui-strings/RBACBannerStrings";
-import { useAccess } from "@/context/AccessProvider";
+import { RBAC_BANNER_STRINGS } from "@/constants/ui-strings/RBACBannerStrings"
+import { useAccess } from "@/context/AccessProvider"
 
 export default function RBACBanner() {
-  const [bannerText, setBannerText] = useState<string>("");
-  const { selectedRole, userDetails } = useAccess();
+  const [bannerText, setBannerText] = useState<string>("")
+  const { selectedRole, userDetails } = useAccess()
 
   useEffect(() => {
     if (!selectedRole || !userDetails) {
-      console.log("No selected role or user details - hiding RBAC banner.");
-      setBannerText("");
-      return;
+      console.log("No selected role or user details - hiding RBAC banner.")
+      setBannerText("")
+      return
     }
-    console.log("Selected role is present, setting text: ", selectedRole);
+    console.log("Selected role is present, setting text: ", selectedRole)
 
     /**
      * The RBAC (Role-Based Access Control) User Profile Banner follows these patterns:
@@ -28,54 +28,40 @@ export default function RBACBanner() {
      */
 
     // Determine the organization name (use "Locum pharmacy" for locum users)
-    const orgName =
-      selectedRole.org_code === "FFFFF"
-        ? RBAC_BANNER_STRINGS.LOCUM_NAME
-        : selectedRole.org_name || RBAC_BANNER_STRINGS.NO_ORG_NAME;
+    const orgName = selectedRole.org_code === "FFFFF"
+      ? RBAC_BANNER_STRINGS.LOCUM_NAME
+      : selectedRole.org_name || RBAC_BANNER_STRINGS.NO_ORG_NAME
 
     // Format the last name in uppercase
-    const lastName =
-      userDetails.family_name?.toUpperCase() ||
-      RBAC_BANNER_STRINGS.NO_FAMILY_NAME;
+    const lastName = userDetails.family_name?.toUpperCase() || RBAC_BANNER_STRINGS.NO_FAMILY_NAME
 
     // Construct the final banner text using template replacement
     setBannerText(
-      RBAC_BANNER_STRINGS.CONFIDENTIAL_DATA.replace("{lastName}", lastName)
-        .replace(
-          "{firstName}",
-          userDetails.given_name || RBAC_BANNER_STRINGS.NO_GIVEN_NAME
-        )
-        .replace(
-          "{roleName}",
-          selectedRole.role_name || RBAC_BANNER_STRINGS.NO_ROLE_NAME
-        )
+      RBAC_BANNER_STRINGS.CONFIDENTIAL_DATA
+        .replace("{lastName}", lastName)
+        .replace("{firstName}", userDetails.given_name || RBAC_BANNER_STRINGS.NO_GIVEN_NAME)
+        .replace("{roleName}", selectedRole.role_name || RBAC_BANNER_STRINGS.NO_ROLE_NAME)
         .replace("{orgName}", orgName)
-        .replace(
-          "{odsCode}",
-          selectedRole.org_code || RBAC_BANNER_STRINGS.NO_ODS_CODE
-        )
-    );
-  }, [selectedRole, userDetails]);
+        .replace("{odsCode}", selectedRole.org_code || RBAC_BANNER_STRINGS.NO_ODS_CODE)
+    )
+  }, [selectedRole, userDetails])
 
   /**
-   * Hide the banner if the user session is missing or incomplete.
-   * The component should render only after a role is selected.
-   * This check must come after the effect logic to prevent hydration errors in SSR.
-   */
+  * Hide the banner if the user session is missing or incomplete.
+  * The component should render only after a role is selected.
+  * This check must come after the effect logic to prevent hydration errors in SSR.
+  */
   if (!selectedRole) {
-    return null;
+    return null
   }
 
   return (
     <div className="nhsuk-banner" data-testid="rbac-banner-div">
       <Row>
-        <p
-          style={{ paddingLeft: "60px", margin: "8px" }}
-          data-testid="rbac-banner-text"
-        >
+        <p style={{ paddingLeft: "60px", margin: "8px" }} data-testid="rbac-banner-text">
           {bannerText}
         </p>
       </Row>
     </div>
-  );
+  )
 }

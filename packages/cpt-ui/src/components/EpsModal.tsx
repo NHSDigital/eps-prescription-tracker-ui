@@ -1,11 +1,9 @@
-import React, { useEffect } from "react";
-
-// import "@/assets/styles/EpsModal.scss";
+import React, { useEffect } from "react"
 
 interface EpsModalProps {
-  readonly children: React.ReactNode;
-  readonly isOpen: boolean;
-  readonly onClose: () => void;
+  readonly children: React.ReactNode
+  readonly isOpen: boolean
+  readonly onClose: () => void
 }
 
 export function EpsModal({ children, isOpen, onClose }: EpsModalProps) {
@@ -13,30 +11,30 @@ export function EpsModal({ children, isOpen, onClose }: EpsModalProps) {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
-        onClose();
+        onClose()
       }
-    };
+    }
 
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [onClose]);
+    window.addEventListener("keydown", handleKeyDown)
+    return () => window.removeEventListener("keydown", handleKeyDown)
+  }, [onClose])
 
   // Close if user clicks outside the modal content
   const handleBackdropClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) {
-      onClose();
+      onClose()
     }
-  };
+  }
 
   // Close if user activates on the background
   const handleBackdropActivate = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" || e.key === " ") {
-      onClose();
+      onClose()
     }
-  };
+  }
 
   // If the modal isn’t open, don’t render anything
-  if (!isOpen) return null;
+  if (!isOpen) return null
 
   return (
     // This should be a button for accessibility, but we can't have buttons be descendants of buttons,
@@ -55,16 +53,13 @@ export function EpsModal({ children, isOpen, onClose }: EpsModalProps) {
         aria-modal="true"
         data-testid="eps-modal-content"
       >
-        <button
-          className="eps-modal-close-button"
-          onClick={onClose}
-          aria-label="Close modal"
-        >
+        <button className="eps-modal-close-button" onClick={onClose} aria-label="Close modal">
           ×
         </button>
 
         {children}
+
       </dialog>
     </div>
-  );
+  )
 }

@@ -1,46 +1,38 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react"
 
-import { Container, Col, Row, Button, Table } from "nhsuk-react-components";
-import { useNavigate, Link } from "react-router-dom";
+import { Container, Col, Row, Button, Table } from "nhsuk-react-components"
+import { useNavigate, Link } from "react-router-dom"
 
-import { YOUR_SELECTED_ROLE_STRINGS } from "@/constants/ui-strings/YourSelectedRoleStrings";
-import { useAccess } from "@/context/AccessProvider";
+import { YOUR_SELECTED_ROLE_STRINGS } from "@/constants/ui-strings/YourSelectedRoleStrings"
+import { useAccess } from "@/context/AccessProvider"
 
 export default function YourSelectedRolePage() {
-  const navigate = useNavigate();
-  const { selectedRole } = useAccess();
+  const navigate = useNavigate()
+  const { selectedRole } = useAccess()
 
-  const [roleName, setRoleName] = useState<string>(
-    YOUR_SELECTED_ROLE_STRINGS.noRoleName
-  );
-  const [orgName, setOrgName] = useState<string>(
-    YOUR_SELECTED_ROLE_STRINGS.noOrgName
-  );
-  const [odsCode, setOdsCode] = useState<string>(
-    YOUR_SELECTED_ROLE_STRINGS.noODSCode
-  );
+  const [roleName, setRoleName] = useState<string>(YOUR_SELECTED_ROLE_STRINGS.noRoleName)
+  const [orgName, setOrgName] = useState<string>(YOUR_SELECTED_ROLE_STRINGS.noOrgName)
+  const [odsCode, setOdsCode] = useState<string>(YOUR_SELECTED_ROLE_STRINGS.noODSCode)
 
   useEffect(() => {
     if (!selectedRole) {
       // Set fallback values if selectedRole is undefined
-      setRoleName(YOUR_SELECTED_ROLE_STRINGS.noRoleName);
-      setOrgName(YOUR_SELECTED_ROLE_STRINGS.noOrgName);
-      setOdsCode(YOUR_SELECTED_ROLE_STRINGS.noODSCode);
-      return;
+      setRoleName(YOUR_SELECTED_ROLE_STRINGS.noRoleName)
+      setOrgName(YOUR_SELECTED_ROLE_STRINGS.noOrgName)
+      setOdsCode(YOUR_SELECTED_ROLE_STRINGS.noODSCode)
+      return
     }
 
-    setRoleName(
-      selectedRole.role_name || YOUR_SELECTED_ROLE_STRINGS.noRoleName
-    );
-    setOrgName(selectedRole.org_name || YOUR_SELECTED_ROLE_STRINGS.noOrgName);
-    setOdsCode(selectedRole.org_code || YOUR_SELECTED_ROLE_STRINGS.noODSCode);
-  }, [selectedRole]);
+    setRoleName(selectedRole.role_name || YOUR_SELECTED_ROLE_STRINGS.noRoleName)
+    setOrgName(selectedRole.org_name || YOUR_SELECTED_ROLE_STRINGS.noOrgName)
+    setOdsCode(selectedRole.org_code || YOUR_SELECTED_ROLE_STRINGS.noODSCode)
+  }, [selectedRole])
 
   const handleRedirect = async (e: React.MouseEvent | React.KeyboardEvent) => {
     // Naked href don't respect the router, so this overrides that
-    e.preventDefault();
-    navigate("/searchforaprescription");
-  };
+    e.preventDefault()
+    navigate("/searchforaprescription")
+  }
 
   const {
     heading,
@@ -49,8 +41,8 @@ export default function YourSelectedRolePage() {
     roleLabel,
     orgLabel,
     changeLinkText,
-    confirmButtonText,
-  } = YOUR_SELECTED_ROLE_STRINGS;
+    confirmButtonText
+  } = YOUR_SELECTED_ROLE_STRINGS
 
   return (
     <main className="nhsuk-main-wrapper">
@@ -59,7 +51,9 @@ export default function YourSelectedRolePage() {
           <Col width="full">
             <h1 className="nhsuk-heading-xl">
               <span role="text" data-testid="eps_yourSelectedRole_page">
-                <span className="nhsuk-title">{heading}</span>
+                <span className="nhsuk-title">
+                  {heading}
+                </span>
                 <span className="nhsuk-caption-l nhsuk-caption--bottom">
                   <span className="nhsuk-u-visually-hidden"> - </span>
                   {subheading}
@@ -77,9 +71,15 @@ export default function YourSelectedRolePage() {
                   <Table.Cell data-testid="role-label">
                     <b>{roleLabel}</b>
                   </Table.Cell>
-                  <Table.Cell data-testid="role-text">{roleName}</Table.Cell>
+                  <Table.Cell data-testid="role-text">
+                    {roleName}
+                  </Table.Cell>
                   <Table.Cell data-testid="role-change-role-cell">
-                    <Link to="/changerole">{changeLinkText}</Link>
+                    <Link
+                      to="/changerole"
+                    >
+                      {changeLinkText}
+                    </Link>
                   </Table.Cell>
                 </Table.Row>
                 <Table.Row key="org-row">
@@ -90,7 +90,11 @@ export default function YourSelectedRolePage() {
                     {orgName} (ODS: {odsCode})
                   </Table.Cell>
                   <Table.Cell data-testid="org-change-role-cell">
-                    <Link to="/changerole">{changeLinkText}</Link>
+                    <Link
+                      to="/changerole"
+                    >
+                      {changeLinkText}
+                    </Link>
                   </Table.Cell>
                 </Table.Row>
               </Table.Body>
@@ -100,12 +104,15 @@ export default function YourSelectedRolePage() {
 
         <Row>
           <Col width="two-thirds">
-            <Button onClick={handleRedirect} data-testid="confirm-and-continue">
+            <Button
+              onClick={handleRedirect}
+              data-testid="confirm-and-continue"
+            >
               {confirmButtonText}
             </Button>
           </Col>
         </Row>
       </Container>
     </main>
-  );
+  )
 }

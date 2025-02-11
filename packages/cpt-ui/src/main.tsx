@@ -7,6 +7,8 @@ import { ENV_CONFIG } from "@/constants/environment";
 
 const basePath = ENV_CONFIG.BASE_PATH || "site";
 
+document.body.className = document.body.className.replace('no-js', 'js-enabled');
+
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <BrowserRouter basename={basePath}>

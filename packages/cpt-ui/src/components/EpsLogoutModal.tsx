@@ -1,14 +1,13 @@
-"use client";
-import React from "react";
+import React from "react"
 import { Button, Container } from "nhsuk-react-components"
 
-import { EpsModal } from "@/components/EpsModal";
-import { EpsLogoutModalStrings } from "@/constants/ui-strings/EpsLogoutModalStrings";
+import { EpsModal } from "@/components/EpsModal"
+import { EpsLogoutModalStrings } from "@/constants/ui-strings/EpsLogoutModalStrings"
 
 interface EpsLogoutModalProps {
-  readonly isOpen: boolean;
-  readonly onClose: () => void;
-  readonly onConfirm: () => void;
+  readonly isOpen: boolean
+  readonly onClose: () => void
+  readonly onConfirm: () => void
 }
 
 export function EpsLogoutModal({ isOpen, onClose, onConfirm }: EpsLogoutModalProps) {
@@ -42,5 +41,5 @@ export function EpsLogoutModal({ isOpen, onClose, onConfirm }: EpsLogoutModalPro
         </div>
       </Container>
     </EpsModal>
-  );
+  )
 }
