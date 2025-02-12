@@ -158,8 +158,7 @@ export const AccessProvider = ({ children }: { children: ReactNode }) => {
 
     if (
       !auth?.isSignedIn ||
-      !auth?.idToken ||
-      !auth.idToken.hasOwnProperty("toString")
+      !auth?.idToken
     ) {
       return
     }
