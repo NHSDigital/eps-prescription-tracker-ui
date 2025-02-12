@@ -84,14 +84,9 @@ export default function RoleSelectionPage({
 
   // Transform roles data for display
   const rolesWithAccess = !noAccess
-    ? rawRolesWithAccess.map((role, index) => ({
+    ? rawRolesWithAccess.map((role: RoleDetails, index) => ({
       uuid: `role_with_access_${index}`,
-      role: {
-        org_name: role.org_code,
-        org_code: role.org_code,
-        role_name: role.role_name,
-        role_id: role.role_id,
-      },
+      role,
       link: "/yourselectedrole",
     }))
     : [];
