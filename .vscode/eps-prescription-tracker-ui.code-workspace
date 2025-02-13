@@ -29,6 +29,10 @@
         "path": "../packages/prescriptionSearchLambda"
       },
       {
+        "name": "packages/prescriptionDetailsLambda",
+        "path": "../packages/prescriptionDetailsLambda"
+      },
+      {
         "name": "packages/common/middyErrorHandler",
         "path": "../packages/common/middyErrorHandler"
       },
@@ -159,7 +163,8 @@
       },
       "[javascriptreact]": {
         "editor.defaultFormatter": "vscode.typescript-language-features"
-      }
+      },
+      "editor.formatOnSave": true
     },
     "extensions": {
       "recommendations": [
