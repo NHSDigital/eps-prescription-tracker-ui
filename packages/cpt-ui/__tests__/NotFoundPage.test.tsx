@@ -1,28 +1,24 @@
-import React from 'react'
-import { render, screen } from '@testing-library/react'
 import '@testing-library/jest-dom'
-import PageNotFound from '@/app/notfound/page'
+import { render, screen } from '@testing-library/react'
 
-// Mock next/link to render a simple <a> tag
-jest.mock('next/link', () => {
-    return ({ href, children }) => <a href={href}>{children}</a>;
-})
+import React from 'react'
+import NotFoundPage from '@/pages/NotFoundPage'
 
-describe('PageNotFound', () => {
+describe('NotFoundPage', () => {
     it('renders the main element with the correct id', () => {
-        render(<PageNotFound />)
+        render(<NotFoundPage />)
         const mainElement = screen.getByRole('main')
         expect(mainElement).toHaveAttribute('id', 'main-content')
     })
 
     it('renders the heading "Page not found"', () => {
-        render(<PageNotFound />)
+        render(<NotFoundPage />)
         const heading = screen.getByRole('heading', { name: /page not found/i })
         expect(heading).toBeInTheDocument()
     })
 
     it('renders the instruction paragraphs', () => {
-        render(<PageNotFound />)
+        render(<NotFoundPage />)
         expect(
             screen.getByText(/if you typed the web address, check it was correct/i)
         ).toBeInTheDocument()
@@ -32,8 +28,8 @@ describe('PageNotFound', () => {
     })
 
     it('renders a link to search for a prescription with the correct href', () => {
-        render(<PageNotFound />)
+        render(<NotFoundPage />)
         const link = screen.getByRole('link', { name: /search for a prescription/i })
-        expect(link).toHaveAttribute('href', '/searchforaprescription')
+        expect(link).toHaveAttribute('href', '/site/searchforaprescription')
     })
 })
