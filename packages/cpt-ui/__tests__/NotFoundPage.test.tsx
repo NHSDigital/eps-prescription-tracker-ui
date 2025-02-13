@@ -1,35 +1,45 @@
-import '@testing-library/jest-dom'
-import { render, screen } from '@testing-library/react'
-
 import React from 'react'
+import { render, screen } from '@testing-library/react'
+import { MemoryRouter } from 'react-router-dom'
 import NotFoundPage from '@/pages/NotFoundPage'
+import { NOT_FOUND_PAGE_STRINGS } from '@/constants/ui-strings/NotFoundPage'
 
 describe('NotFoundPage', () => {
-    it('renders the main element with the correct id', () => {
-        render(<NotFoundPage />)
+    beforeEach(() => {
+        render(
+            <MemoryRouter>
+                <NotFoundPage />
+            </MemoryRouter>
+        )
+    })
+
+    it('renders the main container with the correct id and class', () => {
+        // The <main> element has an implicit role of "main"
         const mainElement = screen.getByRole('main')
+        expect(mainElement).toBeInTheDocument()
         expect(mainElement).toHaveAttribute('id', 'main-content')
+        expect(mainElement).toHaveClass('nhsuk-main-wrapper')
     })
 
-    it('renders the heading "Page not found"', () => {
-        render(<NotFoundPage />)
-        const heading = screen.getByRole('heading', { name: /page not found/i })
-        expect(heading).toBeInTheDocument()
+    it('renders the header text', () => {
+        const header = screen.getByRole('heading', { level: 1 })
+        expect(header).toBeInTheDocument()
+        expect(header).toHaveTextContent(NOT_FOUND_PAGE_STRINGS.headerText)
     })
 
-    it('renders the instruction paragraphs', () => {
-        render(<NotFoundPage />)
-        expect(
-            screen.getByText(/if you typed the web address, check it was correct/i)
-        ).toBeInTheDocument()
-        expect(
-            screen.getByText(/if you pasted the web address, check you copied the entire address/i)
-        ).toBeInTheDocument()
+    it('renders the body paragraphs', () => {
+        expect(screen.getByTestId("eps-404-body1"))
+        expect(screen.getByTestId("eps-404-body2"))
+
+        // Check that the paragraph containing both bodyText3 and the link is rendered.
+        expect(screen.getByTestId("eps-404-body3"))
     })
 
-    it('renders a link to search for a prescription with the correct href', () => {
-        render(<NotFoundPage />)
-        const link = screen.getByRole('link', { name: /search for a prescription/i })
-        expect(link).toHaveAttribute('href', '/site/searchforaprescription')
+    it('renders a link with the correct text and URL', () => {
+        const link = screen.getByRole('link', {
+            name: NOT_FOUND_PAGE_STRINGS.bodyText3LinkText,
+        })
+        expect(link).toBeInTheDocument()
+        expect(link).toHaveAttribute('href', '/searchforaprescription')
     })
 })

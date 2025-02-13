@@ -23,10 +23,10 @@ export default function NotFoundPage() {
     return (
         <main id="main-content" className="nhsuk-main-wrapper">
             <Container>
-                <h1>{headerText}</h1>
-                <p>{body1}</p>
-                <p>{body2}</p>
-                <p>{body3}<Link to="/searchforaprescription">{body3Link}</Link></p>
+                <h1 data-testid="eps-404-header">{headerText}</h1>
+                <p data-testid="eps-404-body1">{body1}</p>
+                <p data-testid="eps-404-body2">{body2}</p>
+                <p data-testid="eps-404-body3">{body3}<Link to="/searchforaprescription">{body3Link}</Link></p>
             </Container>
         </main>
     )
