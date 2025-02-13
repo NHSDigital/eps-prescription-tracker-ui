@@ -31,5 +31,5 @@ amplify_outputs.json
 .asdf
 cdk.out/
 .secrets
-packages/cpt-ui/out
+packages/cpt-ui/dist
 packages/auth_demo/build/

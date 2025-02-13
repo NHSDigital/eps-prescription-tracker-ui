@@ -108,10 +108,10 @@ react-dev:
 	npm run dev --workspace packages/cpt-ui
 
 react-build:
-	export NEXT_OUTPUT_MODE=export && export BASE_PATH=/site && npm run build --workspace packages/cpt-ui
+	export BASE_PATH=/site && npm run build --workspace packages/cpt-ui
 
 react-start:
-	unset NEXT_OUTPUT_MODE && npm run start --workspace packages/cpt-ui
+	 npm run start --workspace packages/cpt-ui
 
 react-lint:
 	npm run lint --workspace packages/cpt-ui
@@ -130,7 +130,7 @@ cdk-deploy: guard-service_name guard-CDK_APP_NAME
 		--require-approval $${REQUIRE_APPROVAL} \
 		--context serviceName=$$service_name \
 		--context VERSION_NUMBER=$$VERSION_NUMBER \
-		--context COMMIT_ID=$$COMMIT_ID 
+		--context COMMIT_ID=$$COMMIT_ID
 
 cdk-synth: cdk-synth-no-mock cdk-synth-mock
 
@@ -148,7 +148,7 @@ cdk-synth-stateful-resources-no-mock:
 		--context allowAutoDeleteObjects=true \
 		--context cloudfrontDistributionId=undefined \
 		--context epsDomainName=undefined \
-		--context epsHostedZoneId=undefined 
+		--context epsHostedZoneId=undefined
 
 cdk-synth-stateless-resources-no-mock:
 	npx cdk synth \
@@ -224,7 +224,7 @@ cdk-diff: guard-CDK_APP_NAME
 		--app "npx ts-node --prefer-ts-exts packages/cdk/bin/$$CDK_APP_NAME.ts" \
 		--context serviceName=$$service_name \
 		--context VERSION_NUMBER=$$VERSION_NUMBER \
-		--context COMMIT_ID=$$COMMIT_ID 
+		--context COMMIT_ID=$$COMMIT_ID
 
 cdk-watch: guard-service_name guard-CDK_APP_NAME
 	REQUIRE_APPROVAL="$${REQUIRE_APPROVAL:-any-change}" && \

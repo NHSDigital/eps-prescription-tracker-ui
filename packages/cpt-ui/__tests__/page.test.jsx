@@ -3,7 +3,7 @@ import { render, screen } from "@testing-library/react";
 import React from "react";
 
 // Mock the configureAmplify module
-jest.mock("../context/configureAmplify", () => ({
+jest.mock("@/context/configureAmplify", () => ({
   __esModule: true,
   authConfig: {
     Auth: {
@@ -28,7 +28,7 @@ jest.mock("../context/configureAmplify", () => ({
 }));
 
 // Mock the AuthContext with a valid value
-jest.mock("../context/AuthProvider", () => {
+jest.mock("@/context/AuthProvider", () => {
   const mockAuthContext = {
     signInWithRedirect: jest.fn(),
     signOut: jest.fn(),
@@ -40,7 +40,7 @@ jest.mock("../context/AuthProvider", () => {
   };
 });
 
-import Page from "../app/page";
+import Page from "@/pages/HomePage";
 
 describe("Page", () => {
   it("renders a heading", () => {
