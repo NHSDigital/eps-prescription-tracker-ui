@@ -45,8 +45,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (!sessionIdToken || !sessionAccessToken) {
         // FIXME: Remove this once we have fixed the SPA
         const curpath = pathname.replace(".html", "")
-        if (curpath !== "/logout")
+
+        const noRedirectPaths = [
+          "/login",
+          "/logout",
+          "/notfound"
+        ]
+
+        if (!noRedirectPaths.includes(curpath)) {
           router.push("/login")
+        }
       }
 
       if (sessionIdToken && sessionAccessToken) {
