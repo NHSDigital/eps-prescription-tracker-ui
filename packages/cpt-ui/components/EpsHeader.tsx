@@ -40,9 +40,6 @@ export default function EpsHeader() {
     // FIXME: Strips off the .html for broken SPA redirects
     const curPathname = pathname.replace(".html", "")
 
-    console.log("Access context: ", accessContext);
-    console.log("Auth context: ", auth);
-
     // Show "Select your role" link
     setShouldShowSelectRole(
       curPathname !== "/selectyourrole" &&
