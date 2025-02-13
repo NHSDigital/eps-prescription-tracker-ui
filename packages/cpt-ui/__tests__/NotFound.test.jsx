@@ -2,12 +2,13 @@ import React from "react";
 import "@testing-library/jest-dom";
 import { render, screen } from "@testing-library/react";
 import PageNotFound from "@/app/notfound/page";
+
 import { AuthContext } from "@/context/AuthProvider";
 
-// Create a mock provider for the auth context
-function MockAuthProvider(
-    { isSignedIn, children }: { isSignedIn: boolean; children: React.ReactNode }
-) {
+function MockAuthProvider({
+    isSignedIn,
+    children
+}) {
     return (
         <AuthContext.Provider value={{ isSignedIn }}>
             {children}
