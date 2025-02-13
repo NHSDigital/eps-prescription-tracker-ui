@@ -24,9 +24,9 @@ The contents of this repository are protected by Crown Copyright (C).
 
 ## Development
 
-It is recommended that you use visual studio code and a devcontainer as this will install all necessary components and correct versions of tools and languages.  
-See https://code.visualstudio.com/docs/devcontainers/containers for details on how to set this up on your host machine.  
-There is also a workspace file in .vscode that should be opened once you have started the devcontainer. The workspace file can also be opened outside of a devcontainer if you wish.  
+It is recommended that you use visual studio code and a devcontainer as this will install all necessary components and correct versions of tools and languages.
+See https://code.visualstudio.com/docs/devcontainers/containers for details on how to set this up on your host machine.
+There is also a workspace file in .vscode that should be opened once you have started the devcontainer. The workspace file can also be opened outside of a devcontainer if you wish.
 
 All commits must be made using [signed commits](https://docs.github.com/en/authentication/managing-commit-signature-verification/signing-commits)
 
@@ -82,7 +82,7 @@ You should then select the development account and set default region to be eu-w
 
 You will now be able to use AWS and CDK CLI commands to access the dev account. You can also use the AWS extension to view resources.
 
-When the token expires, you may need to reauthorise using `make aws-login` 
+When the token expires, you may need to reauthorise using `make aws-login`
 
 ### Local Environment Configuration
 
@@ -93,26 +93,26 @@ To run the CPT UI locally (with mock auth and actual API usage), you can configu
 # UPDATE THESE #
 ################
 export SERVICE_NAME=cpt-ui-pr-123
-export NEXT_PUBLIC_userPoolClientId="1234567890deadbeef"
-export NEXT_PUBLIC_userPoolId="eu-west-2_deadbeef"
+export VITE_userPoolClientId="1234567890deadbeef"
+export VITE_userPoolId="eu-west-2_deadbeef"
 export LOCAL_DEV=true
 
 # DON'T TOUCH!
-export NEXT_PUBLIC_TARGET_ENVIRONMENT=dev                                       # enables mock auth
+export VITE_TARGET_ENVIRONMENT=dev                                       # enables mock auth
 export BASE_PATH="/site"                                                        # Hosts the site at `localhost:3000/site`
 export API_DOMAIN_OVERRIDE=https://${SERVICE_NAME}.dev.eps.national.nhs.uk/     # Proxies the actual deployed backend for this PR
 
-export NEXT_PUBLIC_hostedLoginDomain=${SERVICE_NAME}.auth.eu-west-2.amazoncognito.com
-export NEXT_PUBLIC_redirectSignIn=http://localhost:3000/site/selectyourrole
-export NEXT_PUBLIC_redirectSignOut=http://localhost:3000/site/logout
+export VITE_hostedLoginDomain=${SERVICE_NAME}.auth.eu-west-2.amazoncognito.com
+export VITE_redirectSignIn=http://localhost:3000/site/selectyourrole
+export VITE_redirectSignOut=http://localhost:3000/site/logout
 
-export NEXT_PUBLIC_COMMIT_ID="Local Development Server"
+export VITE_COMMIT_ID="Local Development Server"
 
-export REACT_APP_hostedLoginDomain=$NEXT_PUBLIC_hostedLoginDomain
-export REACT_APP_userPoolClientId=$NEXT_PUBLIC_userPoolClientId
-export REACT_APP_userPoolId=$NEXT_PUBLIC_userPoolId
-export REACT_APP_redirectSignIn=$NEXT_PUBLIC_redirectSignIn
-export REACT_APP_redirectSignOut=$NEXT_PUBLIC_redirectSignOut
+export REACT_APP_hostedLoginDomain=$VITE_hostedLoginDomain
+export REACT_APP_userPoolClientId=$VITE_userPoolClientId
+export REACT_APP_userPoolId=$VITE_userPoolId
+export REACT_APP_redirectSignIn=$VITE_redirectSignIn
+export REACT_APP_redirectSignOut=$VITE_redirectSignOut
 ```
 
 To enable mock auth for the local dev server, we only need the user pool details. To fetch these, you can use the following AWS CLI commands:
@@ -216,7 +216,7 @@ These are used to do common commands related to cdk
 #### React App
 - `react-dev` Starts app in dev mode on localhost
 - `react-build` Generates static files in .next folder
-- `react-start` Starts app in production mode using build-generated static files 
+- `react-start` Starts app in production mode using build-generated static files
 
 ### Github folder
 
