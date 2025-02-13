@@ -14,7 +14,7 @@ export default function SearchForAPrescriptionPage() {
     e.preventDefault()
 
     const prescriptionId = "C0C757-A83008-C2D93O"
-    const url = `${prescriptionDetailsEndpoint}?prescriptionId=${prescriptionId}`
+    const url = `${prescriptionDetailsEndpoint}/${prescriptionId}`
 
     try {
       const response = await fetch(url, {
