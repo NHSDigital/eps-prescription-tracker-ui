@@ -29,7 +29,6 @@ export default function EpsHeader() {
   const [shouldShowSelectRole, setShouldShowSelectRole] = useState(false)
   const [shouldShowChangeRole, setShouldShowChangeRole] = useState(false)
   const [shouldShowLogoutLink, setShouldShowLogoutLink] = useState(false)
-  const [shouldShowLoginLink, setShouldShowLoginLink] = useState(false)
   const [shouldShowExitButton, setShouldShowExitButton] = useState(false)
 
   const [showLogoutModal, setShowLogoutModal] = useState(false)
@@ -73,21 +72,10 @@ export default function EpsHeader() {
       (curPathname === "/selectyourrole" && accessContext.noAccess) ||
       (curPathname === "/notfound")
     )
-
-    setShouldShowLoginLink(
-      // Show the login button only if we are on the notfound page, and not logged in
-      curPathname === "/notfound" &&
-      !auth?.isSignedIn
-    )
   }, [pathname, auth, accessContext])
 
   const redirectToLogin = async (e: React.MouseEvent | React.KeyboardEvent) => {
     // Naked href don't respect the router, so this overrides that
-    e.preventDefault()
-    router.push("/login")
-  }
-
-  const handleLoginClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault()
     router.push("/login")
   }
@@ -158,21 +146,6 @@ export default function EpsHeader() {
                 onClick={handleLogoutClick}
               >
                 Log out
-              </Link>
-            </li>
-          )}
-
-          {/* Log in */}
-          {shouldShowLoginLink && (
-            <li className="nhsuk-header__navigation-item">
-              <Link
-                className="nhsuk-header__navigation-link"
-                href="/login"
-                passHref={true}
-                data-testid="eps_header_login"
-                onClick={handleLoginClick}
-              >
-                Log in
               </Link>
             </li>
           )}

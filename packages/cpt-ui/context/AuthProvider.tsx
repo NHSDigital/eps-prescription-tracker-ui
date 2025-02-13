@@ -48,8 +48,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
         const noRedirectPaths = [
           "/login",
-          "/logout",
-          "/notfound"
+          "/logout"
         ]
 
         if (!noRedirectPaths.includes(curpath)) {

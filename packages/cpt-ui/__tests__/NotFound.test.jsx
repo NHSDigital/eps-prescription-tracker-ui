@@ -1,82 +1,39 @@
-import React from "react";
-import "@testing-library/jest-dom";
-import { render, screen } from "@testing-library/react";
-import PageNotFound from "@/app/notfound/page";
+import React from 'react'
+import { render, screen } from '@testing-library/react'
+import '@testing-library/jest-dom'
+import PageNotFound from '@/app/notfound/page'
 
-import { AuthContext } from "@/context/AuthProvider";
+// Mock next/link to render a simple <a> tag
+jest.mock('next/link', () => {
+    return ({ href, children }) => <a href={href}>{children}</a>;
+})
 
-function MockAuthProvider({
-    isSignedIn,
-    children
-}) {
-    return (
-        <AuthContext.Provider value={{ isSignedIn }}>
-            {children}
-        </AuthContext.Provider>
-    );
-}
+describe('PageNotFound', () => {
+    it('renders the main element with the correct id', () => {
+        render(<PageNotFound />)
+        const mainElement = screen.getByRole('main')
+        expect(mainElement).toHaveAttribute('id', 'main-content')
+    })
 
-describe("PageNotFound", () => {
-    describe("when user is NOT signed in", () => {
-        beforeEach(() => {
-            render(
-                <MockAuthProvider isSignedIn={false}>
-                    <PageNotFound />
-                </MockAuthProvider>
-            );
-        });
+    it('renders the heading "Page not found"', () => {
+        render(<PageNotFound />)
+        const heading = screen.getByRole('heading', { name: /page not found/i })
+        expect(heading).toBeInTheDocument()
+    })
 
-        it("renders the main element with the correct id and class", () => {
-            const mainElement = screen.getByRole("main");
-            expect(mainElement).toHaveAttribute("id", "main-content");
-            expect(mainElement).toHaveClass("nhsuk-main-wrapper");
-        });
+    it('renders the instruction paragraphs', () => {
+        render(<PageNotFound />)
+        expect(
+            screen.getByText(/if you typed the web address, check it was correct/i)
+        ).toBeInTheDocument()
+        expect(
+            screen.getByText(/if you pasted the web address, check you copied the entire address/i)
+        ).toBeInTheDocument()
+    })
 
-        it("displays the 'Page not found' heading", () => {
-            expect(
-                screen.getByRole("heading", { name: "Page not found" })
-            ).toBeInTheDocument();
-        });
-
-        it("displays the instructions to check the web address", () => {
-            expect(
-                screen.getByText("If you typed the web address, check it was correct.")
-            ).toBeInTheDocument();
-            expect(
-                screen.getByText(
-                    "If you pasted the web address, check you copied the entire address"
-                )
-            ).toBeInTheDocument();
-        });
-
-        it("does NOT display the 'search for a prescription' link", () => {
-            expect(
-                screen.queryByRole("link", { name: /search for a prescription/i })
-            ).toBeNull();
-        });
-    });
-
-    describe("when user IS signed in", () => {
-        beforeEach(() => {
-            render(
-                <MockAuthProvider isSignedIn={true}>
-                    <PageNotFound />
-                </MockAuthProvider>
-            );
-        });
-
-        it("displays the 'Page not found' heading", () => {
-            expect(
-                screen.getByRole("heading", { name: "Page not found" })
-            ).toBeInTheDocument();
-        });
-
-        it("displays the 'search for a prescription' link", () => {
-            const searchLink = screen.getByRole("link", {
-                name: /search for a prescription/i,
-            });
-            expect(searchLink).toBeInTheDocument();
-            expect(searchLink).toHaveAttribute("href", "/searchforaprescription");
-        });
-    });
-});
+    it('renders a link to search for a prescription with the correct href', () => {
+        render(<PageNotFound />)
+        const link = screen.getByRole('link', { name: /search for a prescription/i })
+        expect(link).toHaveAttribute('href', '/searchforaprescription')
+    })
+})
