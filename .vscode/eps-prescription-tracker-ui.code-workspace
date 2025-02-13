@@ -51,6 +51,10 @@
       {
         "name": "packages/selectedRoleLambda",
         "path": "../packages/selectedRoleLambda"
+      },
+      {
+        "name": "packages/prescriptionDetailsLambda",
+        "path": "../packages/prescriptionDetailsLambda"
       }
     ],
     "settings": {
