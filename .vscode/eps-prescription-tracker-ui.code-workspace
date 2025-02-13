@@ -29,6 +29,10 @@
         "path": "../packages/prescriptionSearchLambda"
       },
       {
+        "name": "packages/prescriptionDetailsLambda",
+        "path": "../packages/prescriptionDetailsLambda"
+      },
+      {
         "name": "packages/common/middyErrorHandler",
         "path": "../packages/common/middyErrorHandler"
       },
@@ -51,10 +55,6 @@
       {
         "name": "packages/selectedRoleLambda",
         "path": "../packages/selectedRoleLambda"
-      },
-      {
-        "name": "packages/prescriptionDetailsLambda",
-        "path": "../packages/prescriptionDetailsLambda"
       }
     ],
     "settings": {
