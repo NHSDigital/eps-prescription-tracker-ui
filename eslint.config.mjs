@@ -96,7 +96,12 @@ const commonConfig = {
 
 export default [
   {
-    ignores: ["**/lib/*", "**/coverage/*", "**/cdk.out/**"],
+    ignores: [
+      "**/lib/*",
+      "**/coverage/*",
+      "**/cdk.out/**",
+      "**/.next/**"
+    ],
   },
   {
     rules: eslintJsPlugin.configs.recommended.rules,
