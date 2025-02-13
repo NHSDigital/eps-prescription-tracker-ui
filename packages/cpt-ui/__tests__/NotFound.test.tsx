@@ -5,7 +5,9 @@ import PageNotFound from "@/app/notfound/page";
 import { AuthContext } from "@/context/AuthProvider";
 
 // Create a mock provider for the auth context
-function MockAuthProvider({ isSignedIn, children }) {
+function MockAuthProvider(
+    { isSignedIn, children }: { isSignedIn: boolean; children: React.ReactNode }
+) {
     return (
         <AuthContext.Provider value={{ isSignedIn }}>
             {children}
