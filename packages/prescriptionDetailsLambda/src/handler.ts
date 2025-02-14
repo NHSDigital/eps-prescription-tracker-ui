@@ -142,23 +142,40 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   // user id is retrieved in apigee from access token
   const requestHeaders = {
     Authorization: `Bearer ${apigeeAccessToken}`,
+    "nhsd-session-urid": "123456123456",
     "nhsd-organization-uuid": "A83008",
-    "nhsd-session-urid": roleId,
-    "nhsd-identity-uuid": "123456123456",
     "nhsd-session-jobrole": "123456123456",
     "x-request-id": uuidv4()
   }
 
   logger.info("Making request to Apigee", {
-    url: requestUrl,
+    requestUrl: requestUrl,
+    pathParameters: prescriptionId,
     headers: requestHeaders
   })
 
   // Fetch the prescription data from Apigee
   const apigeeResponse = await axiosInstance.get(requestUrl, {
-    params: {}, // Assuming no query params are needed
+    pathParameters: prescriptionId,
     headers: requestHeaders
   })
+
+  // // need to pass in role id, organization id and job role to apigee
+  // // user id is retrieved in apigee from access token
+  // const apigeeResponse = await axiosInstance.get(apigeePrescriptionsEndpoint,
+  //   {
+  //     pathParameters: {
+  //       prescriptionId: prescriptionId
+  //     },
+  //     headers: {
+  //       Authorization: `Bearer ${apigeeAccessToken}`,
+  //       "nhsd-session-urid": roleId,
+  //       "nhsd-organization-uuid": "A83008",
+  //       "nhsd-session-jobrole": "123456123456",
+  //       "x-request-id": uuidv4()
+  //     }
+  //   }
+  // )
 
   logger.info("Successfully fetched prescription data from Apigee", {
     prescriptionId,
