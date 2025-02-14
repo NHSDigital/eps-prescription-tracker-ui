@@ -134,7 +134,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     }
   }
 
-  logger.info("Fetching prescription data from Apigee", {prescriptionId})
+  logger.info("Fetching prescription details from Apigee", {prescriptionId})
 
   // Construct the request URL with prescriptionId
   const requestUrl = `${apigeePrescriptionsEndpoint}RequestGroup/${prescriptionId}`
@@ -160,7 +160,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     headers: requestHeaders
   })
 
-  logger.info("Successfully fetched prescription data from Apigee", {
+  logger.info("Successfully fetched prescription details from Apigee", {
     prescriptionId,
     data: apigeeResponse.data
   })
@@ -168,7 +168,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   return {
     statusCode: 200,
     body: JSON.stringify({
-      message: `Prescription details retrieved successfully`,
+      message: `Prescription details fetched successfully`,
       prescriptionDetails: apigeeResponse.data
     })
   }
