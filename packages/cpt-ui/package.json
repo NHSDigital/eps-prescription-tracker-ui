@@ -15,7 +15,7 @@
     "aws-amplify": "^6.0.0",
     "axios": "^1.7.9",
     "i18next": "^24.2.1",
-    "i18next-browser-languagedetector": "^8.0.0",
+    "i18next-browser-languagedetector": "^8.0.3",
     "nhsuk-frontend": "^8.0.2",
     "i18next-http-backend": "^3.0.2",
     "nhsuk-react-components": "^5.0.0",
