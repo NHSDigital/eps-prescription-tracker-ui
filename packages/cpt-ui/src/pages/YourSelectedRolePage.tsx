@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react"
 
-import { Container, Col, Row, Button, Table } from "nhsuk-react-components"
+import { Container, Col, Row, Table } from "nhsuk-react-components"
 import { useNavigate, Link } from "react-router-dom"
 
 import { YOUR_SELECTED_ROLE_STRINGS } from "@/constants/ui-strings/YourSelectedRoleStrings"
 import { useAccess } from "@/context/AccessProvider"
+import { Button } from "@/components/ReactRouterButton"
 
 export default function YourSelectedRolePage() {
   const navigate = useNavigate()
@@ -27,12 +28,6 @@ export default function YourSelectedRolePage() {
     setOrgName(selectedRole.org_name || YOUR_SELECTED_ROLE_STRINGS.noOrgName)
     setOdsCode(selectedRole.org_code || YOUR_SELECTED_ROLE_STRINGS.noODSCode)
   }, [selectedRole])
-
-  const handleRedirect = async (e: React.MouseEvent | React.KeyboardEvent) => {
-    // Naked href don't respect the router, so this overrides that
-    e.preventDefault()
-    navigate("/searchforaprescription")
-  }
 
   const {
     heading,
@@ -105,7 +100,7 @@ export default function YourSelectedRolePage() {
         <Row>
           <Col width="two-thirds">
             <Button
-              onClick={handleRedirect}
+              to="/searchforaprescription"
               data-testid="confirm-and-continue"
             >
               {confirmButtonText}

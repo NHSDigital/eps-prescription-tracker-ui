@@ -1,11 +1,12 @@
 import React, { useState, useEffect, } from "react"
 import { useNavigate } from "react-router-dom"
-import { Container, Col, Row, Details, Table, ErrorSummary, Button, InsetText } from "nhsuk-react-components"
+import { Container, Col, Row, Details, Table, ErrorSummary, InsetText } from "nhsuk-react-components"
 
 import { useAccess } from "@/context/AccessProvider"
 import EpsCard from "@/components/EpsCard"
 import EpsSpinner from "@/components/EpsSpinner"
 import { RoleDetails } from "@/types/TrackerUserInfoTypes"
+import { Button } from "./ReactRouterButton"
 
 // This is passed to the EPS card component.
 export type RolesWithAccessProps = {
@@ -193,7 +194,12 @@ export default function RoleSelectionPage({
                     ></p>
                   )}
                 </InsetText>
-                <Button href={confirmButton.link}>{confirmButton.text}</Button>
+                <Button
+                  to={confirmButton.link}
+                  data-testid="confirm-and-continue"
+                >
+                  {confirmButton.text}
+                </Button>
                 <p>{alternativeMessage}</p>
               </section>
             )}

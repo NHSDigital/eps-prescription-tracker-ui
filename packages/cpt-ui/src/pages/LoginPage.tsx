@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useCallback } from "react";
-import { Container, Col, Row, Button } from "nhsuk-react-components";
+import { Container, Col, Row } from "nhsuk-react-components";
 import { AuthContext } from "@/context/AuthProvider";
 import EpsSpinner from "@/components/EpsSpinner";
 import { EpsLoginPageStrings } from "@/constants/ui-strings/EpsLoginPageStrings";
@@ -10,6 +10,7 @@ import {
   type Environment,
   type MockAuthEnvironment,
 } from "@/constants/environment";
+import { Button } from "@/components/ReactRouterButton";
 
 export default function LoginPage() {
   const auth = useContext(AuthContext);

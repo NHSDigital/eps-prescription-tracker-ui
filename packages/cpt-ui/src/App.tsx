@@ -8,7 +8,6 @@ import LoginPage from "@/pages/LoginPage";
 import LogoutPage from "@/pages/LogoutPage";
 import SelectYourRolePage from "@/pages/SelectYourRolePage";
 import ChangeRolePage from "@/pages/ChangeRolePage";
-import ConfirmRolePage from "@/pages/ConfirmRolePage";
 import SearchPrescriptionPage from "@/pages/SearchPrescriptionPage";
 import YourSelectedRolePage from "@/pages/YourSelectedRolePage";
 import NotFoundPage from "@/pages/NotFoundPage";
@@ -27,7 +26,6 @@ export default function App() {
             <Route path="selectyourrole" element={<SelectYourRolePage />} />
             <Route path="yourselectedrole" element={<YourSelectedRolePage />} />
             <Route path="changerole" element={<ChangeRolePage />} />
-            <Route path="confirmrole" element={<ConfirmRolePage />} />
             <Route
               path="searchforaprescription"
               element={<SearchPrescriptionPage />}
