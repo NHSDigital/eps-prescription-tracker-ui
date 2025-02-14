@@ -134,7 +134,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     }
   }
 
-  logger.info("Fetching prescription data from Apigee", {prescriptionId})
+  logger.info("Fetching prescription data from Apigee", {prescriptionId, roleId})
 
   const requestUrl = apigeePrescriptionsEndpoint + "RequestGroup/" + prescriptionId
 
