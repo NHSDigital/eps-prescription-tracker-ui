@@ -123,9 +123,11 @@ function App() {
     setError(null)
 
     try {
+      // Construct the request URL with prescriptionId
+      const requestUrl = `${prescriptionDetailsEndpoint}/${prescriptionId}`
+
       // Call the backend to retrieve prescription details
-      const prescriptionResponse = await axios.get(prescriptionDetailsEndpoint, {
-        params: {prescriptionId},
+      const prescriptionResponse = await axios.get(requestUrl, {
         headers: {
           /**
            * Provide the Cognito id token:
