@@ -34,14 +34,11 @@ export default function EpsHeader() {
   useEffect(() => {
     const isSignedIn = auth?.isSignedIn as boolean
 
-    // FIXME: Strips off the .html for broken SPA redirects
-    const curPathname = location.pathname.replace(".html", "")
-
     // Show "Select your role" link
     setShouldShowSelectRole(
-      curPathname !== "/selectyourrole" &&
-      curPathname !== "/changerole" &&
-      curPathname !== "/logout" &&
+      location.pathname !== "/selectyourrole" &&
+      location.pathname !== "/changerole" &&
+      location.pathname !== "/logout" &&
       isSignedIn &&
       !accessContext.singleAccess &&
       !accessContext.selectedRole
@@ -49,9 +46,9 @@ export default function EpsHeader() {
 
     // Show "Change role" link (if not single access)
     setShouldShowChangeRole(
-      curPathname !== "/selectyourrole" &&
-      curPathname !== "/changerole" &&
-      curPathname !== "/logout" &&
+      location.pathname !== "/selectyourrole" &&
+      location.pathname !== "/changerole" &&
+      location.pathname !== "/logout" &&
       isSignedIn &&
       !accessContext.singleAccess &&
       accessContext.selectedRole !== undefined
@@ -62,8 +59,9 @@ export default function EpsHeader() {
 
     // Show the "Exit" button under these conditions
     setShouldShowExitButton(
-      (curPathname === "/logout" && !auth?.isSignedIn) ||
-      (curPathname === "/selectyourrole" && accessContext.noAccess)
+      (location.pathname === "/logout" && !auth?.isSignedIn) ||
+      (location.pathname === "/selectyourrole" && accessContext.noAccess) ||
+      (location.pathname === "/notfound")
     )
   }, [location, auth, accessContext])
 
