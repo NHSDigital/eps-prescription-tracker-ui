@@ -1,6 +1,6 @@
 import React, { useContext, useEffect } from "react";
 import { Container } from "nhsuk-react-components";
-import Link from "next/link";
+import { Link } from "react-router-dom"
 
 import { AuthContext } from "@/context/AuthProvider";
 import { useAccess } from "@/context/AccessProvider";
@@ -38,7 +38,7 @@ export default function LogoutPage() {
           <>
             <h1>{EpsLogoutStrings.title}</h1>
             <p>{EpsLogoutStrings.body}</p>
-            <Link href="/login">{EpsLogoutStrings.login_link}</Link>
+            <Link to="/login">{EpsLogoutStrings.login_link}</Link>
           </>
         ) : (
           <>
