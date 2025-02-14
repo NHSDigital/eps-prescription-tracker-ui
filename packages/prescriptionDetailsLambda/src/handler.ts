@@ -1,10 +1,20 @@
 import {APIGatewayProxyHandler} from "aws-lambda"
 import {Logger} from "@aws-lambda-powertools/logger"
+import {injectLambdaContext} from "@aws-lambda-powertools/logger/middleware"
+import middy from "@middy/core"
+import inputOutputLogger from "@middy/input-output-logger"
+import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 
 // Logger initialization
 const logger = new Logger({serviceName: "prescriptionDetails"})
 
-export const handler: APIGatewayProxyHandler = async (event) => {
+// Error response template
+const errorResponseBody = {message: "A system error has occurred"}
+
+// Middleware error handler
+const middyErrorHandler = new MiddyErrorHandler(errorResponseBody)
+
+export const lambdaHandler: APIGatewayProxyHandler = async (event) => {
   logger.info("Lambda handler invoked", {event})
 
   // Extract prescriptionId from pathParameters
@@ -32,3 +42,15 @@ export const handler: APIGatewayProxyHandler = async (event) => {
     })
   }
 }
+
+// Export the Lambda function with middleware applied
+export const handler = middy(lambdaHandler)
+  .use(injectLambdaContext(logger, {clearState: true}))
+  .use(
+    inputOutputLogger({
+      logger: (request) => {
+        logger.info(request)
+      }
+    })
+  )
+  .use(middyErrorHandler.errorHandler({logger}))
