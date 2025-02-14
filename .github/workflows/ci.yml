@@ -117,7 +117,7 @@ jobs:
       useCustomCognitoDomain: true
       APIGEE_CIS2_TOKEN_ENDPOINT: "https://internal-dev.api.service.nhs.uk/oauth2/token"
       APIGEE_MOCK_TOKEN_ENDPOINT: "https://internal-dev.api.service.nhs.uk/oauth2-mock/token"
-      APIGEE_PRESCRIPTIONS_ENDPOINT: "https://internal-dev.api.service.nhs.uk/clinical-prescription-tracker/"
+      APIGEE_PRESCRIPTIONS_ENDPOINT: "https://internal-dev.api.service.nhs.uk/clinical-prescription-tracker-pr-809/"
       JWT_KID: "eps-cpt-ui-dev"
       ROLE_ID: "555254242106"
       LOG_LEVEL: "DEBUG"
