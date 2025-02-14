@@ -7,6 +7,7 @@ import inputOutputLogger from "@middy/input-output-logger"
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 import axios from "axios"
 import {v4 as uuidv4} from "uuid"
+import {formatHeaders} from "./utils/headerUtils"
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
 import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
 import {
@@ -167,10 +168,8 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
   return {
     statusCode: 200,
-    body: JSON.stringify({
-      message: `Prescription details fetched successfully`,
-      prescriptionDetails: apigeeResponse.data
-    })
+    body: JSON.stringify(apigeeResponse.data),
+    headers: formatHeaders(apigeeResponse.headers)
   }
 }
 
