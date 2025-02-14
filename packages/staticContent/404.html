@@ -2,36 +2,60 @@
 <html lang="en">
 
 <head>
-    <title>404</title>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/404.css" data-precedence="next_static/css/app/layout.css">
+    <title>EPS 404</title>
+    <link rel="icon" href="/site/favicon.ico" type="image/x-icon" sizes="192x192">
 </head>
 
-<body>
-    <p>
-        In a world of scripts and meds galore,
-    </p>
-    <p>
-        A patient waits, but what's in store?
-    </p>
-    <p>
-        The page they seek, a cure to score,
-    </p>
-    <p>
-        Returns instead: Error 404.
-    </p>
-
-    <p></p>
-    <p>
-        "Prescription lost?" they start to fret,
-    </p>
-    <p>
-        In cyberspace, it's not quite set.
-    </p>
-    <p>
-        A remedy gone, a healing door-
-    </p>
-    <p>
-        Elusive as that 404.
-    </p>
+<body class="js-enabled">
+    <header class="nhsuk-header nhsuk-header__transactional masthead" role="banner" id="eps-header">
+        <div class="nhsuk-width-container nhsuk-header__container masthead-container">
+            <div class="nhsuk-header__logo nhsuk-header__transactional--logo"><a class="nhsuk-header__link"
+                    aria-label="NHS homepage" href="/site" data-testid="eps_header_logoLink"><svg class="nhsuk-logo"
+                        xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 16" height="40" width="100"
+                        aria-labelledby="nhsuk-logo_title">
+                        <title id="nhsuk-logo_title">NHS Logo</title>
+                        <path class="nhsuk-logo__background" d="M0 0h40v16H0z" fill="#005eb8"></path>
+                        <path class="nhsuk-logo__text" fill="#fff"
+                            d="M3.9 1.5h4.4l2.6 9h.1l1.8-9h3.3l-2.8 13H9l-2.7-9h-.1l-1.8 9H1.1M17.3 1.5h3.6l-1 4.9h4L25 1.5h3.5l-2.7 13h-3.5l1.1-5.6h-4.1l-1.2 5.6h-3.4M37.7 4.4c-.7-.3-1.6-.6-2.9-.6-1.4 0-2.5.2-2.5 1.3 0 1.8 5.1 1.2 5.1 5.1 0 3.6-3.3 4.5-6.4 4.5-1.3 0-2.9-.3-4-.7l.8-2.7c.7.4 2.1.7 3.2.7s2.8-.2 2.8-1.5c0-2.1-5.1-1.3-5.1-5 0-3.4 2.9-4.4 5.8-4.4 1.6 0 3.1.2 4 .6">
+                        </path>
+                    </svg></a></div>
+            <div class="nhsuk-header__transactional-service-name"><a
+                    class="nhsuk-header__transactional-service-name--link" href="/site/login"
+                    data-testid="eps_header_serviceName">Clinical prescription tracking service</a></div>
+            <div class="nhsuk-header__content"></div>
+        </div>
+        <div class="nhsuk-navigation-container">
+            <nav class="nhsuk-navigation masthead-nav" id="header-navigation" role="navigation">
+                <ul class="nhsuk-header__navigation-list nhsuk-header__navigation-list--left-aligned">
+                    <li class="nhsuk-header__navigation-item"><a class="nhsuk-header__navigation-link"
+                            data-testid="eps_header_exit" href="/site">Exit</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+    <main id="main-content" class="nhsuk-main-wrapper">
+        <div class="nhsuk-width-container">
+            <h1 data-testid="eps-404-header">Page not found</h1>
+            <p data-testid="eps-404-body1">If you typed the web address, check it was correct.</p>
+            <p data-testid="eps-404-body2">If you pasted the web address, check you copied the entire address.</p>
+            <p data-testid="eps-404-body3" \>
+        </div>
+    </main>
+    <footer role="contentinfo" id="eps_footer">
+        <div class="nhsuk-footer-container eps_footer">
+            <div class="nhsuk-width-container">
+                <h2 class="nhsuk-u-visually-hidden">Support links</h2>
+                <div class="nhsuk-footer">
+                    <p class="nhsuk-footer__copyright" data-testid="eps_footer-copyright"><small>© NHS England</small>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
 </body>
 
 </html>
