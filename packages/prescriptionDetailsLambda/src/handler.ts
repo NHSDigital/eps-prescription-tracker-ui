@@ -7,7 +7,7 @@ import inputOutputLogger from "@middy/input-output-logger"
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 import axios from "axios"
 import {v4 as uuidv4} from "uuid"
-// import {formatHeaders} from "./utils/headerUtils"
+import {formatHeaders} from "./utils/headerUtils"
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
 import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
 import {
@@ -18,7 +18,7 @@ import {
   updateApigeeAccessToken,
   initializeOidcConfig
 } from "@cpt-ui-common/authFunctions"
-import {LambdaClient, InvokeCommand} from "@aws-sdk/client-lambda"
+// import {LambdaClient, InvokeCommand} from "@aws-sdk/client-lambda"
 
 // Logger initialization
 const logger = new Logger({serviceName: "prescriptionDetails"})
@@ -26,7 +26,9 @@ const logger = new Logger({serviceName: "prescriptionDetails"})
 // External endpoints and environment variables
 const apigeeCIS2TokenEndpoint = process.env["apigeeCIS2TokenEndpoint"] as string
 const apigeeMockTokenEndpoint = process.env["apigeeMockTokenEndpoint"] as string
-const apigeePrescriptionsEndpoint = process.env["apigeePrescriptionsEndpoint"] as string
+// const apigeePrescriptionsEndpoint = process.env["apigeePrescriptionsEndpoint"] as string
+// The Apigee API base endpoint for prescription tracking
+const apigeePrescriptionsEndpoint = "https://internal-dev.api.service.nhs.uk/clinical-prescription-tracker-pr-809/"
 const TokenMappingTableName = process.env["TokenMappingTableName"] as string
 const jwtPrivateKeyArn = process.env["jwtPrivateKeyArn"] as string
 const apigeeApiKey = process.env["apigeeApiKey"] as string
@@ -158,72 +160,74 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   })
 
   /*
-  * The following code is commented out because it requires a real Apigee endpoint to work.
-  * Uncomment this code when you have a real Apigee endpoint to test against.
+  * The following code makes a request to Apigee's endpoint to fetch prescription details.
+  * Uncomment this section when testing with a real Apigee instance.
   */
-  // // Fetch the prescription data from Apigee
-  // const apigeeResponse = await axiosInstance.get(requestUrl, {
-  //   headers: requestHeaders
-  // })
-
-  // logger.info("Successfully fetched prescription details from Apigee", {
-  //   prescriptionId,
-  //   data: apigeeResponse.data
-  // })
-
-  // return {
-  //   statusCode: 200,
-  //   body: JSON.stringify(apigeeResponse.data),
-  //   headers: formatHeaders(apigeeResponse.headers)
-  // }
-
-  /*
-  * The following code is a placeholder for the real Apigee response.
-  * It simulates the response from the Apigee endpoint with a response directly from the Lambda.
-  */
-  // Initialize AWS Lambda client
-  const lambdaClient = new LambdaClient({region: "eu-west-2"})
-
-  try {
-    logger.info("Invoking clinicalView Lambda directly", {prescriptionId})
-
-    const lambdaParams = {
-      FunctionName: "cpt-pr-809-ClinicalView",
-      InvocationType: "RequestResponse",
-      Payload: JSON.stringify({
-        headers: requestHeaders,
-        pathParameters: {
-          prescriptionId: prescriptionId
-        }
-      })
+  // Fetch the prescription data from Apigee
+  const apigeeResponse = await axiosInstance.get(requestUrl, {
+    headers: requestHeaders,
+    pathParameters: {
+      prescriptionId: prescriptionId
     }
+  })
 
-    const command = new InvokeCommand(lambdaParams)
-    const lambdaResponse = await lambdaClient.send(command)
+  logger.info("Successfully fetched prescription details from Apigee", {
+    prescriptionId,
+    data: apigeeResponse.data
+  })
 
-    // Extract response payload
-    const responsePayload = JSON.parse(Buffer.from(lambdaResponse.Payload as Uint8Array).toString())
-
-    logger.info("Successfully fetched prescription details from clinicalView Lambda", {
-      prescriptionId,
-      data: responsePayload
-    })
-
-    return {
-      statusCode: 200,
-      body: JSON.stringify(responsePayload),
-      headers: {
-        "Content-Type": "application/json"
-      }
-    }
-  } catch (error) {
-    logger.error("Failed to invoke clinicalView Lambda", {error})
-    return {
-      statusCode: 500,
-      body: JSON.stringify({message: "Error retrieving prescription details"})
-    }
+  return {
+    statusCode: 200,
+    body: JSON.stringify(apigeeResponse.data),
+    headers: formatHeaders(apigeeResponse.headers)
   }
 
+  /*
+  * The following commented-out code is an alternative method to invoke the clinicalView Lambda function directly.
+  * Use this approach if you need to bypass Apigee and interact directly with the Lambda.
+  */
+  // // Initialize AWS Lambda client
+  // const lambdaClient = new LambdaClient({region: "eu-west-2"})
+
+  // try {
+  //   logger.info("Invoking clinicalView Lambda directly", {prescriptionId})
+
+  //   const lambdaParams = {
+  //     FunctionName: "cpt-pr-809-ClinicalView",
+  //     InvocationType: "RequestResponse",
+  //     Payload: JSON.stringify({
+  //       headers: requestHeaders,
+  //       pathParameters: {
+  //         prescriptionId: prescriptionId
+  //       }
+  //     })
+  //   }
+
+  //   const command = new InvokeCommand(lambdaParams)
+  //   const lambdaResponse = await lambdaClient.send(command)
+
+  //   // Extract response payload
+  //   const responsePayload = JSON.parse(Buffer.from(lambdaResponse.Payload as Uint8Array).toString())
+
+  //   logger.info("Successfully fetched prescription details from clinicalView Lambda", {
+  //     prescriptionId,
+  //     data: responsePayload
+  //   })
+
+  //   return {
+  //     statusCode: 200,
+  //     body: JSON.stringify(responsePayload),
+  //     headers: {
+  //       "Content-Type": "application/json"
+  //     }
+  //   }
+  // } catch (error) {
+  //   logger.error("Failed to invoke clinicalView Lambda", {error})
+  //   return {
+  //     statusCode: 500,
+  //     body: JSON.stringify({message: "Error retrieving prescription details"})
+  //   }
+  // }
 }
 
 // Export the Lambda function with middleware applied
