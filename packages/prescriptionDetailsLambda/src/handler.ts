@@ -7,7 +7,7 @@ import inputOutputLogger from "@middy/input-output-logger"
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 import axios from "axios"
 import {v4 as uuidv4} from "uuid"
-import {formatHeaders} from "./utils/headerUtils"
+// import {formatHeaders} from "./utils/headerUtils"
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
 import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
 import {
@@ -18,6 +18,7 @@ import {
   updateApigeeAccessToken,
   initializeOidcConfig
 } from "@cpt-ui-common/authFunctions"
+import {LambdaClient, InvokeCommand} from "@aws-sdk/client-lambda"
 
 // Logger initialization
 const logger = new Logger({serviceName: "prescriptionDetails"})
@@ -155,21 +156,71 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     headers: requestHeaders
   })
 
-  // Fetch the prescription data from Apigee
-  const apigeeResponse = await axiosInstance.get(requestUrl, {
-    headers: requestHeaders
-  })
+  /*
+  * The following code is commented out because it requires a real Apigee endpoint to work.
+  * Uncomment this code when you have a real Apigee endpoint to test against.
+  */
+  // // Fetch the prescription data from Apigee
+  // const apigeeResponse = await axiosInstance.get(requestUrl, {
+  //   headers: requestHeaders
+  // })
 
-  logger.info("Successfully fetched prescription details from Apigee", {
-    prescriptionId,
-    data: apigeeResponse.data
-  })
+  // logger.info("Successfully fetched prescription details from Apigee", {
+  //   prescriptionId,
+  //   data: apigeeResponse.data
+  // })
 
-  return {
-    statusCode: 200,
-    body: JSON.stringify(apigeeResponse.data),
-    headers: formatHeaders(apigeeResponse.headers)
+  // return {
+  //   statusCode: 200,
+  //   body: JSON.stringify(apigeeResponse.data),
+  //   headers: formatHeaders(apigeeResponse.headers)
+  // }
+
+  /*
+  * The following code is a placeholder for the real Apigee response.
+  * It simulates the response from the Apigee endpoint with a response directly from the Lambda.
+  */
+  // Initialize AWS Lambda client
+  const lambdaClient = new LambdaClient({region: "eu-west-2"})
+
+  try {
+    logger.info("Invoking clinicalView Lambda directly", {prescriptionId})
+
+    const lambdaParams = {
+      FunctionName: "cpt-pr-809-ClinicalView",
+      InvocationType: "RequestResponse",
+      Payload: JSON.stringify({
+        prescriptionId,
+        headers: requestHeaders
+      })
+    }
+
+    const command = new InvokeCommand(lambdaParams)
+    const lambdaResponse = await lambdaClient.send(command)
+
+    // Extract response payload
+    const responsePayload = JSON.parse(Buffer.from(lambdaResponse.Payload as Uint8Array).toString())
+
+    logger.info("Successfully fetched prescription details from clinicalView Lambda", {
+      prescriptionId,
+      data: responsePayload
+    })
+
+    return {
+      statusCode: 200,
+      body: JSON.stringify(responsePayload),
+      headers: {
+        "Content-Type": "application/json"
+      }
+    }
+  } catch (error) {
+    logger.error("Failed to invoke clinicalView Lambda", {error})
+    return {
+      statusCode: 500,
+      body: JSON.stringify({message: "Error retrieving prescription details"})
+    }
   }
+
 }
 
 // Export the Lambda function with middleware applied
