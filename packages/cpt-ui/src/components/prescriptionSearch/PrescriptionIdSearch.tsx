@@ -3,6 +3,30 @@ import {Container, Row, Col, Label, HintText, TextInput, Button, Form} from "nhs
 import {AuthContext} from "@/context/AuthProvider"
 import {PRESCRIPTION_ID_SEARCH_STRINGS} from "@/constants/ui-strings/SearchForAPrescriptionStrings"
 
+// Define the structure of a prescription entry
+interface PrescriptionEntry {
+    resource: {
+        resourceType: string
+        intent?: string
+        status?: string
+        groupIdentifier?: {
+            system: string
+            value: string
+        }
+        identifier?: {system: string; value: string}[]
+        code?: {
+            coding: {system: string; code: string; display: string}[]
+        }
+    }
+}
+
+// Define the structure of the entire search result
+interface PrescriptionResponse {
+    resourceType: string
+    type: string
+    entry: PrescriptionEntry[]
+}
+
 // API endpoint for fetching prescription details
 const prescriptionDetailsEndpoint = "/api/prescription-details"
 
@@ -10,10 +34,10 @@ export default function PrescriptionIdSearch() {
     const auth = useContext(AuthContext)
 
     // State variables for managing input, API response, errors, and loading state
-    const [prescriptionId, setPrescriptionId] = useState("") // Stores user input
-    const [searchResult, setSearchResult] = useState(null) // Stores fetched prescription details
-    const [error, setError] = useState("") // Stores any error messages
-    const [loading, setLoading] = useState(false) // Tracks loading state
+    const [prescriptionId, setPrescriptionId] = useState<string>("")
+    const [searchResult, setSearchResult] = useState<PrescriptionResponse | null>(null)
+    const [error, setError] = useState<string>("")
+    const [loading, setLoading] = useState<boolean>(false)
 
     /**
      * Handles input change for the prescription ID field.
