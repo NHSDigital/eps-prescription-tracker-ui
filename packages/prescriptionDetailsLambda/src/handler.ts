@@ -190,8 +190,10 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
       FunctionName: "cpt-pr-809-ClinicalView",
       InvocationType: "RequestResponse",
       Payload: JSON.stringify({
-        prescriptionId,
-        headers: requestHeaders
+        headers: requestHeaders,
+        pathParameters: {
+          prescriptionId: prescriptionId
+        }
       })
     }
 
