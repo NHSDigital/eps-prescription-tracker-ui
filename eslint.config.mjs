@@ -100,7 +100,10 @@ export default [
       "**/lib/*",
       "**/coverage/*",
       "**/cdk.out/**",
-      "**/.next/**"
+      "**/dist/**",
+      "**/node_modules/**",
+      "**/.next/**",
+      "**/.tsconfig.tsbuildinfo/**"
     ],
   },
   {
