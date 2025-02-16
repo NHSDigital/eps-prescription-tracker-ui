@@ -147,6 +147,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     Authorization: `Bearer ${apigeeAccessToken}`,
     "nhsd-session-urid": roleId,
     "nhsd-organization-uuid": "A83008",
+    "nhsd-identity-uuid": "123456123456",
     "nhsd-session-jobrole": "123456123456",
     "x-request-id": uuidv4()
   }
