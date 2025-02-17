@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "description": "Client for interacting with NHS Digital's Directory of Healthcare Services (DoHS) API",
   "main": "lib/src/doHSClient.js",
-  "types": "lib/src/doHSClient.d.ts",
+  "types": "src/doHSClient.ts", 
+  "type": "module",
   "author": "NHS Digital",
   "license": "MIT",
   "scripts": {
