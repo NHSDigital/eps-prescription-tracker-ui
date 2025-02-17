@@ -98,14 +98,14 @@ export class SharedSecrets extends Construct {
       ]
     })
 
-    // ✅ **Create the DoHS API Key Secret**
+    // Create the DoHS API Key Secret
     this.doHSApiKeySecret = new Secret(this, "DoHSApiKey", {
       secretName: `${props.stackName}-doHSApiKey`,
       secretStringValue: SecretValue.unsafePlainText("ChangeMe"),
       encryptionKey: this.jwtKmsKey
     })
 
-    // ✅ **Grant permission to deployment role to update DoHS API Key secret**
+    // Grant permission to deployment role to update DoHS API Key secret
     this.doHSApiKeySecret.addToResourcePolicy(
       new PolicyStatement({
         effect: Effect.ALLOW,
@@ -115,7 +115,7 @@ export class SharedSecrets extends Construct {
       })
     )
 
-    // ✅ **Create a managed policy to allow retrieving the DoHS API Key secret**
+    // Create a managed policy to allow retrieving the DoHS API Key secret
     this.getDoHSApiKeyPolicy = new ManagedPolicy(this, "GetDoHSApiKeyPolicy", {
       statements: [
         new PolicyStatement({
