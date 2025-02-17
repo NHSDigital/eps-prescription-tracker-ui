@@ -23,9 +23,11 @@ export class SharedSecrets extends Construct {
   public readonly jwtKmsKey: IKey
   public readonly primaryJwtPrivateKey: Secret
   public readonly mockJwtPrivateKey: Secret
+  public readonly doHSApiKeySecret: Secret
   public readonly useJwtKmsKeyPolicy: ManagedPolicy
   public readonly getPrimaryJwtPrivateKeyPolicy: ManagedPolicy
   public readonly getMockJwtPrivateKeyPolicy: ManagedPolicy
+  public readonly getDoHSApiKeyPolicy: ManagedPolicy
 
   constructor(scope: Construct, id: string, props: SharedSecretsProps) {
     super(scope, id)
@@ -96,6 +98,33 @@ export class SharedSecrets extends Construct {
       ]
     })
 
+    // ✅ **Create the DoHS API Key Secret**
+    this.doHSApiKeySecret = new Secret(this, "DoHSApiKey", {
+      secretName: `${props.stackName}-doHSApiKey`,
+      secretStringValue: SecretValue.unsafePlainText("ChangeMe"),
+      encryptionKey: this.jwtKmsKey
+    })
+
+    // ✅ **Grant permission to deployment role to update DoHS API Key secret**
+    this.doHSApiKeySecret.addToResourcePolicy(
+      new PolicyStatement({
+        effect: Effect.ALLOW,
+        principals: [props.deploymentRole],
+        actions: ["secretsmanager:PutSecretValue"],
+        resources: ["*"]
+      })
+    )
+
+    // ✅ **Create a managed policy to allow retrieving the DoHS API Key secret**
+    this.getDoHSApiKeyPolicy = new ManagedPolicy(this, "GetDoHSApiKeyPolicy", {
+      statements: [
+        new PolicyStatement({
+          actions: ["secretsmanager:GetSecretValue"],
+          resources: [this.doHSApiKeySecret.secretArn]
+        })
+      ]
+    })
+
     // Conditionally create mock JWT private key secret and its policies
     if (props.useMockOidc) {
       this.mockJwtPrivateKey = new Secret(this, "MockJwtPrivateKey", {
@@ -123,7 +152,6 @@ export class SharedSecrets extends Construct {
           })
         ]
       })
-
     }
   }
 }
