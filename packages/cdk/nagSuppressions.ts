@@ -115,6 +115,17 @@ export const nagSuppressions = (stack: Stack) => {
       ]
     )
 
+    safeAddNagSuppression(
+      stack,
+      "/StatelessStack/ApiFunctions/CIS2SignOut/LambdaPutLogsManagedPolicy/Resource",
+      [
+        {
+          id: "AwsSolutions-IAM5",
+          reason: "Suppress error for wildcard permissions. This suppression is necessary as the Lambda log group requires access to all log streams."
+        }
+      ]
+    )
+
     safeAddNagSuppressionGroup(
       stack,
       [
