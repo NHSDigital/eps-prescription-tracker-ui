@@ -18,10 +18,14 @@ import {
   updateApigeeAccessToken,
   initializeOidcConfig
 } from "@cpt-ui-common/authFunctions"
+import {doHSClient} from "@cpt-ui-common/doHSClient"
 // import {LambdaClient, InvokeCommand} from "@aws-sdk/client-lambda"
 
 // Logger initialization
 const logger = new Logger({serviceName: "prescriptionDetails"})
+
+// Call the doHSClient function to confirm import
+doHSClient()
 
 // External endpoints and environment variables
 const apigeeCIS2TokenEndpoint = process.env["apigeeCIS2TokenEndpoint"] as string

@@ -20,6 +20,7 @@ install-hooks: install-python
 compile-node:
 	npm run compile --workspace packages/common/middyErrorHandler
 	npm run compile --workspace packages/common/authFunctions
+	npm run compile --workspace packages/common/doHSClient
 	npx tsc --build tsconfig.build.json
 
 compile: compile-node
@@ -35,6 +36,7 @@ lint-node: compile-node
 	npm run lint --workspace packages/trackerUserInfoLambda
 	npm run lint --workspace packages/selectedRoleLambda
 	npm run lint --workspace packages/common/authFunctions
+	npm run lint --workspace packages/common/doHSClient
 
 lint-githubactions:
 	actionlint
@@ -77,6 +79,8 @@ clean:
 	rm -rf packages/selectedRoleLambda/lib
 	rm -rf packages/common/authFunctions/coverage
 	rm -rf packages/common/authFunctions/lib
+	rm -rf packages/common/doHSClient/coverage
+	rm -rf packages/common/doHSClient/lib
 
 deep-clean: clean
 	rm -rf .venv
@@ -90,6 +94,7 @@ check-licenses-node:
 	npm run check-licenses --workspace packages/cdk
 	npm run check-licenses --workspace packages/cpt-ui
 	npm run check-licenses --workspace packages/common/authFunctions
+	npm run check-licenses --workspace packages/common/doHSClient
 	npm run check-licenses --workspace packages/cognito
 	npm run check-licenses --workspace packages/prescriptionSearchLambda
 	npm run check-licenses --workspace packages/prescriptionDetailsLambda

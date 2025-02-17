@@ -1,0 +1,24 @@
+{
+  "name": "@cpt-ui-common/doHSClient",
+  "version": "1.0.0",
+  "description": "Client for interacting with NHS Digital's Directory of Healthcare Services (DoHS) API",
+  "main": "lib/src/index.js",
+  "type": "module",
+  "author": "NHS Digital",
+  "license": "MIT",
+  "scripts": {
+    "unit": "POWERTOOLS_DEV=true NODE_OPTIONS=--experimental-vm-modules jest --no-cache --coverage",
+    "lint": "eslint  --max-warnings 0 --fix --config ../../../eslint.config.mjs .",
+    "compile": "tsc",
+    "test": "npm run compile && npm run unit",
+    "check-licenses": "license-checker --failOn GPL --failOn LGPL --start ../.."
+  },
+  "dependencies": {
+    "@aws-lambda-powertools/logger": "^2.14.0",
+    "axios": "^1.7.8",
+    "axios-retry": "^4.5.0"
+  },
+  "devDependencies": {
+    "axios-mock-adapter": "^2.1.0"
+  }
+}
