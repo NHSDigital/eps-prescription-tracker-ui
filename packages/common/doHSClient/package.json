@@ -2,8 +2,8 @@
   "name": "@cpt-ui-common/doHSClient",
   "version": "1.0.0",
   "description": "Client for interacting with NHS Digital's Directory of Healthcare Services (DoHS) API",
-  "main": "lib/src/index.js",
-  "type": "module",
+  "main": "lib/src/doHSClient.js",
+  "types": "lib/src/doHSClient.d.ts",
   "author": "NHS Digital",
   "license": "MIT",
   "scripts": {
