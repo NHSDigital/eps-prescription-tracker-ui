@@ -24,9 +24,6 @@ import {doHSClient} from "@cpt-ui-common/doHSClient"
 // Logger initialization
 const logger = new Logger({serviceName: "prescriptionDetails"})
 
-// Call the doHSClient function to confirm import
-doHSClient()
-
 // External endpoints and environment variables
 const apigeeCIS2TokenEndpoint = process.env["apigeeCIS2TokenEndpoint"] as string
 const apigeeMockTokenEndpoint = process.env["apigeeMockTokenEndpoint"] as string
@@ -58,6 +55,9 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   // Attach request ID for tracing
   logger.appendKeys({"apigw-request-id": event.requestContext?.requestId})
   logger.info("Lambda handler invoked", {event})
+
+  // Call the doHSClient function to confirm import
+  doHSClient()
 
   // Extract prescriptionId from pathParameters
   const axiosInstance = axios.create()
