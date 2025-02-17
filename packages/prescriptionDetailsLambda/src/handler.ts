@@ -56,9 +56,6 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   logger.appendKeys({"apigw-request-id": event.requestContext?.requestId})
   logger.info("Lambda handler invoked", {event})
 
-  // Call the doHSClient function to confirm import
-  doHSClient()
-
   // Extract prescriptionId from pathParameters
   const axiosInstance = axios.create()
 
@@ -180,9 +177,29 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     data: apigeeResponse.data
   })
 
+  let extractedODSCode = "V017953" // Default ODS Code (fallback)
+
+  // Extract the ODS Code from the Apigee response
+  if (apigeeResponse.data?.someFieldContainingODS) {
+    extractedODSCode = apigeeResponse.data.someFieldContainingODS
+  }
+
+  // Step 6: Fetch DoHS API Data using the extracted ODS Code
+  let doHSData
+  try {
+    doHSData = await doHSClient(extractedODSCode)
+    logger.info("Successfully fetched DoHS API data", {doHSData})
+  } catch (error) {
+    logger.error("Failed to fetch DoHS API data", {error})
+    doHSData = {error: "Failed to fetch DoHS API data"}
+  }
+
   return {
     statusCode: 200,
-    body: JSON.stringify(apigeeResponse.data),
+    body: JSON.stringify({
+      prescriptionDetails: apigeeResponse.data,
+      doHSData: doHSData
+    }),
     headers: formatHeaders(apigeeResponse.headers)
   }
 
