@@ -1,36 +1,13 @@
-import {getSecret} from "@aws-lambda-powertools/parameters/secrets"
 import {Logger} from "@aws-lambda-powertools/logger"
 import axios from "axios"
 
 // Initialize a logger for DoHS Client
 const logger = new Logger({serviceName: "doHSClient"})
 
-// Read the DoHS API Key ARN from Lambda environment variables
-const doHSApiKeyArn = process.env["doHSApiKeyArn"] as string
+// Read the DoHS API Key directly from environment variables
+const doHSApiKey = process.env["doHSApiKey"] as string
 
-// Function to fetch the DoHS API Key from AWS Secrets Manager
-export const getDoHSApiKey = async (): Promise<string> => {
-  if (!doHSApiKeyArn) {
-    throw new Error("DoHSApiKey environment variable is not set")
-  }
-
-  logger.info("Fetching DoHS API Key from AWS Secrets Manager...")
-
-  try {
-    const doHSApiKey = await getSecret(doHSApiKeyArn)
-    if (!doHSApiKey || typeof doHSApiKey !== "string") {
-      throw new Error("Invalid or missing DoHS API Key")
-    }
-
-    logger.info("Successfully fetched DoHS API Key.")
-    return doHSApiKey
-  } catch (error) {
-    logger.error("Failed to fetch DoHS API Key from Secrets Manager", {error})
-    throw new Error("Error retrieving DoHS API Key")
-  }
-}
-
-// Function to make a request to the DoHS API using the secret key
+// Function to make a request to the DoHS API
 export const doHSClient = async (odsCode: string) => {
   logger.info("Calling DoHS API...", {odsCode})
 
@@ -38,10 +15,11 @@ export const doHSClient = async (odsCode: string) => {
     throw new Error("ODS Code is required for DoHS API request")
   }
 
-  try {
-    // Fetch API Key from AWS Secrets Manager
-    const doHSApiKey = await getDoHSApiKey()
+  if (!doHSApiKey) {
+    throw new Error("DoHS API Key environment variable is not set")
+  }
 
+  try {
     // Construct the request URL
     const requestUrl = `https://internal-dev.api.service.nhs.uk/service-search-api/?api-version=3` +
       `&$filter=true&searchFields=ODSCode&search=${odsCode}`
@@ -49,7 +27,7 @@ export const doHSClient = async (odsCode: string) => {
     // Make API request
     const response = await axios.get(requestUrl, {
       headers: {
-        "apikey": doHSApiKey // Use the retrieved API key
+        "apikey": doHSApiKey // Use the API key from environment variables
       }
     })
 
