@@ -17,13 +17,13 @@ export const getDoHSApiKey = async (): Promise<string> => {
   logger.info("Fetching DoHS API Key from AWS Secrets Manager...")
 
   try {
-    const apiKey = await getSecret(doHSApiKeyArn)
-    if (!apiKey || typeof apiKey !== "string") {
+    const doHSApiKey = await getSecret(doHSApiKeyArn)
+    if (!doHSApiKey || typeof doHSApiKey !== "string") {
       throw new Error("Invalid or missing DoHS API Key")
     }
 
     logger.info("Successfully fetched DoHS API Key.")
-    return apiKey
+    return doHSApiKey
   } catch (error) {
     logger.error("Failed to fetch DoHS API Key from Secrets Manager", {error})
     throw new Error("Error retrieving DoHS API Key")
@@ -40,16 +40,16 @@ export const doHSClient = async (odsCode: string) => {
 
   try {
     // Fetch API Key from AWS Secrets Manager
-    const apiKey = await getDoHSApiKey()
+    const doHSApiKey = await getDoHSApiKey()
 
     // Construct the request URL
     const requestUrl = `https://internal-dev.api.service.nhs.uk/service-search-api/?api-version=3` +
-      `&searchFields=ODSCode&search=${odsCode}`
+      `&$filter=true&searchFields=ODSCode&search=${odsCode}`
 
     // Make API request
     const response = await axios.get(requestUrl, {
       headers: {
-        "apikey": apiKey // Use the retrieved API key
+        "Subscription-Key": doHSApiKey // Use the retrieved API key
       }
     })
 
