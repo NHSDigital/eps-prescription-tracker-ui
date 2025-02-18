@@ -177,7 +177,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     data: apigeeResponse.data
   })
 
-  let extractedODSCode = "V017953" // Default ODS Code (fallback)
+  let extractedODSCode = "Y02494" // Default ODS Code (fallback)
 
   // Extract the ODS Code from the Apigee response
   if (apigeeResponse.data?.someFieldContainingODS) {
