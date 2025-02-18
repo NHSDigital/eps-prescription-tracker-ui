@@ -4,8 +4,13 @@ import { Hub } from "aws-amplify/utils"
 import { signInWithRedirect, signOut, getCurrentUser, AuthUser, fetchAuthSession, JWT, SignInWithRedirectInput } from 'aws-amplify/auth'
 import { authConfig } from './configureAmplify'
 
+import { API_ENDPOINTS } from "@/constants/environment"
 import { useLocalStorageState } from '@/helpers/useLocalStorageState';
 import { useNavigate, useLocation } from 'react-router-dom'
+
+import http from "@/helpers/axios"
+
+const CIS2SignOutEndpoint = API_ENDPOINTS.CIS2_SIGNOUT_ENDPOINT
 
 export interface AuthContextType {
   error: string | null
@@ -177,6 +182,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     // This is blocked until we have a central Dynamo interaction lambda
 
     try {
+      await http.get(CIS2SignOutEndpoint, {
+        headers: {
+          Authorization: `Bearer ${idToken}`,
+          "NHSD-Session-URID": "555254242106",
+        },
+      })
+
       await signOut({ global: true });
       console.log("Signed out successfully!");
 
