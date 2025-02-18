@@ -20,7 +20,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Layout />}>
             <Route path='*' element={<NotFoundPage />} />
-            <Route index element={<HomePage />} />
+            <Route index element={<NotFoundPage />} />
             <Route path="login" element={<LoginPage />} />
             <Route path="logout" element={<LogoutPage />} />
             <Route path="selectyourrole" element={<SelectYourRolePage />} />
