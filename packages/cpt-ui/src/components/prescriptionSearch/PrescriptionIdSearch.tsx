@@ -17,14 +17,24 @@ interface PrescriptionEntry {
         code?: {
             coding: {system: string; code: string; display: string}[]
         }
+        author?: {
+            reference?: string
+            identifier?: {
+                system: string
+                value: string
+            }
+        }
     }
 }
 
-// Define the structure of the entire search result
+// Define the structure of the full API response
 interface PrescriptionResponse {
-    resourceType: string
-    type: string
-    entry: PrescriptionEntry[]
+    prescriptionDetails: {
+        resourceType: string
+        type: string
+        entry: PrescriptionEntry[]
+    }
+    doHSData?: any // Optional, since it may be missing
 }
 
 // API endpoint for fetching prescription details
@@ -101,7 +111,8 @@ export default function PrescriptionIdSearch() {
     useEffect(() => {
         if (searchResult) {
             console.log("Search result updated:", searchResult)
-            console.log("Prescription ID:", searchResult?.entry?.[0]?.resource?.groupIdentifier?.value)
+            console.log("Prescription ID:", searchResult?.prescriptionDetails?.entry?.[0]?.resource?.groupIdentifier?.value)
+            console.log("ODS Code:", searchResult?.prescriptionDetails?.entry?.[0]?.resource?.author?.identifier?.value)
         }
     }, [searchResult])
 
@@ -153,11 +164,11 @@ export default function PrescriptionIdSearch() {
                             <div className="nhsuk-panel__body">
                                 <p className="nhsuk-u-margin-bottom-0">
                                     <strong>Prescription ID:</strong>{" "}
-                                    {searchResult.prescriptionDetails.entry?.[0]?.resource?.groupIdentifier?.value || "N/A"}
+                                    {searchResult?.prescriptionDetails?.entry?.[0]?.resource?.groupIdentifier?.value || "N/A"}
                                 </p>
                                 <p className="nhsuk-u-margin-bottom-0">
                                     <strong>ODS Code:</strong>{" "}
-                                    {searchResult.prescriptionDetails.entry?.[0]?.resource?.author?.identifier?.value || "N/A"}
+                                    {searchResult?.prescriptionDetails?.entry?.[0]?.resource?.author?.identifier?.value || "N/A"}
                                 </p>
                                 {/* Formatted JSON display */}
                                 <pre
