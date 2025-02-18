@@ -98,28 +98,13 @@ export class ApiFunctions extends Construct {
     const CIS2SignOutLambda = new LambdaFunction(this, "CIS2SignOut", {
       serviceName: props.serviceName,
       stackName: props.stackName,
-      lambdaName: `${props.stackName}-prescSearch`,
-      additionalPolicies: [
-        props.tokenMappingTableWritePolicy,
-        props.tokenMappingTableReadPolicy,
-        props.useTokensMappingKmsKeyPolicy,
-        props.sharedSecrets.useJwtKmsKeyPolicy,
-        props.sharedSecrets.getPrimaryJwtPrivateKeyPolicy
-      ],
+      lambdaName: `${props.stackName}-CIS2SignOut`,
+      additionalPolicies: additionalPolicies,
       logRetentionInDays: props.logRetentionInDays,
       logLevel: props.logLevel,
       packageBasePath: "packages/CIS2SignOutLambda",
       entryPoint: "src/handler.ts",
-      lambdaEnvironmentVariables: {
-        ...commonLambdaEnv,
-        jwtPrivateKeyArn: props.sharedSecrets.primaryJwtPrivateKey.secretArn,
-        apigeeCIS2TokenEndpoint: props.apigeeCIS2TokenEndpoint,
-        apigeeMockTokenEndpoint: props.apigeeMockTokenEndpoint,
-        apigeePrescriptionsEndpoint: props.apigeePrescriptionsEndpoint,
-        apigeeApiKey: props.apigeeApiKey,
-        jwtKid: props.jwtKid,
-        roleId: props.roleId
-      }
+      lambdaEnvironmentVariables: commonLambdaEnv
     })
 
     // Add the policy to apiFunctionsPolicies
