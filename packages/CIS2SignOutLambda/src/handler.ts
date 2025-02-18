@@ -32,6 +32,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
   // Determine whether this request should be treated as mock or real.
   if (isMockToken && MOCK_MODE_ENABLED !== "true") {
+    logger.error("Trying to use a mock user when mock mode is disabled")
     throw new Error("Trying to use a mock user when mock mode is disabled")
   }
 
@@ -42,12 +43,8 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   const response = await documentClient.send(docDelete)
 
   if (response.$metadata.httpStatusCode !== 200) {
-    return {
-      statusCode: response.$metadata.httpStatusCode || 500,
-      body: JSON.stringify({
-        message: "CIS2 logout failed"
-      })
-    }
+    logger.error("Failed to delete tokens from dynamoDB", response)
+    throw new Error("Failed to delete tokens from dynamoDB")
   }
 
   return {
