@@ -6,7 +6,7 @@ import axios from "axios"
 const logger = new Logger({serviceName: "doHSClient"})
 
 // Read the DoHS API Key ARN from Lambda environment variables
-const doHSApiKeyArn = process.env["DoHSApiKey"] as string
+const doHSApiKeyArn = process.env["doHSApiKeyArn"] as string
 
 // Function to fetch the DoHS API Key from AWS Secrets Manager
 export const getDoHSApiKey = async (): Promise<string> => {
