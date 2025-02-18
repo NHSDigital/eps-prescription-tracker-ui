@@ -23,7 +23,7 @@ export class SharedSecrets extends Construct {
   public readonly jwtKmsKey: IKey
   public readonly primaryJwtPrivateKey: Secret
   public readonly mockJwtPrivateKey: Secret
-  public readonly doHSApiKeySecret: Secret
+  public readonly doHSApiKey: Secret
   public readonly useJwtKmsKeyPolicy: ManagedPolicy
   public readonly getPrimaryJwtPrivateKeyPolicy: ManagedPolicy
   public readonly getMockJwtPrivateKeyPolicy: ManagedPolicy
@@ -99,14 +99,14 @@ export class SharedSecrets extends Construct {
     })
 
     // Create the DoHS API Key Secret
-    this.doHSApiKeySecret = new Secret(this, "DoHSApiKey", {
+    this.doHSApiKey = new Secret(this, "DoHSApiKey", {
       secretName: `${props.stackName}-doHSApiKey`,
       secretStringValue: SecretValue.unsafePlainText("ChangeMe"),
       encryptionKey: this.jwtKmsKey
     })
 
     // Grant permission to deployment role to update DoHS API Key secret
-    this.doHSApiKeySecret.addToResourcePolicy(
+    this.doHSApiKey.addToResourcePolicy(
       new PolicyStatement({
         effect: Effect.ALLOW,
         principals: [props.deploymentRole],
@@ -120,7 +120,7 @@ export class SharedSecrets extends Construct {
       statements: [
         new PolicyStatement({
           actions: ["secretsmanager:GetSecretValue"],
-          resources: [this.doHSApiKeySecret.secretArn]
+          resources: [this.doHSApiKey.secretArn]
         })
       ]
     })

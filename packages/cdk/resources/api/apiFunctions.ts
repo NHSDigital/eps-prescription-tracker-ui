@@ -49,7 +49,7 @@ export class ApiFunctions extends Construct {
   public readonly trackerUserInfoLambda: NodejsFunction
   public readonly selectedRoleLambda: NodejsFunction
   public readonly primaryJwtPrivateKey: Secret
-  public readonly doHSApiKeySecret: Secret
+  public readonly doHSApiKey: Secret
 
   public constructor(scope: Construct, id: string, props: ApiFunctionsProps) {
     super(scope, id)
@@ -191,7 +191,7 @@ export class ApiFunctions extends Construct {
       lambdaEnvironmentVariables: {
         ...commonLambdaEnv,
         jwtPrivateKeyArn: props.sharedSecrets.primaryJwtPrivateKey.secretArn,
-        doHSApiKeyArn: props.sharedSecrets.doHSApiKeySecret.secretArn,
+        doHSApiKeyArn: props.sharedSecrets.doHSApiKey.secretArn,
         apigeeCIS2TokenEndpoint: props.apigeeCIS2TokenEndpoint,
         apigeeMockTokenEndpoint: props.apigeeMockTokenEndpoint,
         apigeePrescriptionsEndpoint: props.apigeePrescriptionsEndpoint,
@@ -207,7 +207,7 @@ export class ApiFunctions extends Construct {
     // Outputs
     this.apiFunctionsPolicies = apiFunctionsPolicies
     this.primaryJwtPrivateKey = props.sharedSecrets.primaryJwtPrivateKey
-    this.doHSApiKeySecret = props.sharedSecrets.doHSApiKeySecret
+    this.doHSApiKey = props.sharedSecrets.doHSApiKey
 
     this.prescriptionSearchLambda = prescriptionSearchLambda.lambda
     this.prescriptionDetailsLambda = prescriptionDetailsLambda.lambda
