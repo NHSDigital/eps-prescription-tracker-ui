@@ -49,7 +49,7 @@ export const doHSClient = async (odsCode: string) => {
     // Make API request
     const response = await axios.get(requestUrl, {
       headers: {
-        "Subscription-Key": doHSApiKey // Use the retrieved API key
+        "apikey": doHSApiKey // Use the retrieved API key
       }
     })
 
