@@ -151,9 +151,13 @@ export default function PrescriptionIdSearch() {
                                 Prescription Details
                             </h2>
                             <div className="nhsuk-panel__body">
-                                <p>
+                                <p className="nhsuk-u-margin-bottom-0">
                                     <strong>Prescription ID:</strong>{" "}
-                                    {searchResult.entry?.[0]?.resource?.groupIdentifier?.value || "N/A"}
+                                    {searchResult.prescriptionDetails.entry?.[0]?.resource?.groupIdentifier?.value || "N/A"}
+                                </p>
+                                <p className="nhsuk-u-margin-bottom-0">
+                                    <strong>ODS Code:</strong>{" "}
+                                    {searchResult.prescriptionDetails.entry?.[0]?.resource?.author?.identifier?.value || "N/A"}
                                 </p>
                                 {/* Formatted JSON display */}
                                 <pre

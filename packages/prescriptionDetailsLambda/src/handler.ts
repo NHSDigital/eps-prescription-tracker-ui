@@ -162,7 +162,6 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
   /*
   * The following code makes a request to Apigee's endpoint to fetch prescription details.
-  * Uncomment this section when testing with a real Apigee instance.
   */
   // Fetch the prescription data from Apigee
   const apigeeResponse = await axiosInstance.get(requestUrl, {
@@ -177,21 +176,25 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     data: apigeeResponse.data
   })
 
-  let extractedODSCode = "Y02494" // Default ODS Code (fallback)
-
-  // Extract the ODS Code from the Apigee response
-  if (apigeeResponse.data?.someFieldContainingODS) {
-    extractedODSCode = apigeeResponse.data.someFieldContainingODS
+  // Step 6: Extract ODS Code (if available)
+  let extractedODSCode: string | null = null
+  if (apigeeResponse.data?.entry?.[0]?.resource?.author?.identifier?.value) {
+    extractedODSCode = apigeeResponse.data.entry[0].resource.author.identifier.value
+    logger.info("Extracted ODS Code", {extractedODSCode})
+  } else {
+    logger.warn("No ODS Code found in Apigee response. Skipping DoHS API request.")
   }
 
-  // Step 6: Fetch DoHS API Data using the extracted ODS Code
-  let doHSData
-  try {
-    doHSData = await doHSClient(extractedODSCode)
-    logger.info("Successfully fetched DoHS API data", {doHSData})
-  } catch (error) {
-    logger.error("Failed to fetch DoHS API data", {error})
-    doHSData = {error: "Failed to fetch DoHS API data"}
+  // Step 7: Fetch DoHS API Data (Only if ODS Code exists)
+  let doHSData = {}
+  if (extractedODSCode) {
+    try {
+      doHSData = await doHSClient(extractedODSCode)
+      logger.info("Successfully fetched DoHS API data", {doHSData})
+    } catch (error) {
+      logger.error("Failed to fetch DoHS API data", {error})
+      doHSData = {error: "Failed to fetch DoHS API data"}
+    }
   }
 
   return {
@@ -254,11 +257,5 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 // Export the Lambda function with middleware applied
 export const handler = middy(lambdaHandler)
   .use(injectLambdaContext(logger, {clearState: true}))
-  .use(
-    inputOutputLogger({
-      logger: (request) => {
-        logger.info(request)
-      }
-    })
-  )
+  .use(inputOutputLogger({logger: (request) => logger.info(request)}))
   .use(middyErrorHandler.errorHandler({logger}))
