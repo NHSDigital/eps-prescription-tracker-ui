@@ -7,7 +7,6 @@ import middy from "@middy/core"
 import inputOutputLogger from "@middy/input-output-logger"
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 import {getUsernameFromEvent} from "@cpt-ui-common/authFunctions"
-import {resolveNaptr} from "dns"
 
 const logger = new Logger({serviceName: "trackerUserInfo"})
 

@@ -33,8 +33,8 @@ lint-node: compile-node
 	npm run lint --workspace packages/common/middyErrorHandler
 	npm run lint --workspace packages/trackerUserInfoLambda
 	npm run lint --workspace packages/selectedRoleLambda
+	npm run lint --workspace packages/CIS2SignOutLambda
 	npm run lint --workspace packages/common/authFunctions
-	npm run lint --workspace packages/common/CIS2SignOutLambda
 
 lint-githubactions:
 	actionlint
@@ -53,8 +53,8 @@ test: compile
 	npm run test --workspace packages/common/middyErrorHandler
 	npm run test --workspace packages/trackerUserInfoLambda
 	npm run test --workspace packages/selectedRoleLambda
+	npm run test --workspace packages/CIS2SignOutLambda
 	npm run test --workspace packages/common/authFunctions
-	npm run test --workspace packages/common/CIS2SignOutLambda
 
 clean:
 	rm -rf packages/cloudfrontFunctions/coverage
@@ -76,8 +76,8 @@ clean:
 	rm -rf packages/selectedRoleLambda/lib
 	rm -rf packages/common/authFunctions/coverage
 	rm -rf packages/common/authFunctions/lib
-	rm -rf packages/common/CIS2SignOutLambda/coverage
-	rm -rf packages/common/CIS2SignOutLambda/lib
+	rm -rf packages/CIS2SignOutLambda/coverage
+	rm -rf packages/CIS2SignOutLambda/lib
 
 deep-clean: clean
 	rm -rf .venv
