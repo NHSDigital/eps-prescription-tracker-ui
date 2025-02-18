@@ -41,6 +41,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     Key: {username}
   })
   const response = await documentClient.send(docDelete)
+  logger.info("Attempted to delete record for this user. Dynamo response:", {response, username})
 
   if (response.$metadata.httpStatusCode !== 200) {
     logger.error("Failed to delete tokens from dynamoDB", response)
