@@ -5,7 +5,7 @@ import axios from "axios"
 const logger = new Logger({serviceName: "doHSClient"})
 
 // Read the DoHS API Key directly from environment variables
-const doHSApiKey = process.env["doHSApiKey"] as string
+const apigeeApiKey = process.env["apigeeApiKey"] as string
 
 // Function to make a request to the DoHS API
 export const doHSClient = async (odsCode: string) => {
@@ -15,7 +15,7 @@ export const doHSClient = async (odsCode: string) => {
     throw new Error("ODS Code is required for DoHS API request")
   }
 
-  if (!doHSApiKey) {
+  if (!apigeeApiKey) {
     throw new Error("DoHS API Key environment variable is not set")
   }
 
@@ -27,7 +27,7 @@ export const doHSClient = async (odsCode: string) => {
     // Make API request
     const response = await axios.get(requestUrl, {
       headers: {
-        "apikey": doHSApiKey // Use the API key from environment variables
+        "apikey": apigeeApiKey
       }
     })
 
