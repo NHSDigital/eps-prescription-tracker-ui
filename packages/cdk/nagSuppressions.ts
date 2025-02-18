@@ -202,17 +202,6 @@ export const nagSuppressions = (stack: Stack) => {
       ]
     )
 
-    safeAddNagSuppression(
-      stack,
-      "/StatelessStack/SharedSecrets/DoHSApiKey/Resource",
-      [
-        {
-          id: "AwsSolutions-SMG4",
-          reason: "Suppress error for not having automatic rotation. This is a false positive - it does have rotation enabled"
-        }
-      ]
-    )
-
   }
 }
 
