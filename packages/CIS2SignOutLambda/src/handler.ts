@@ -8,7 +8,7 @@ import inputOutputLogger from "@middy/input-output-logger"
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 import {getUsernameFromEvent} from "@cpt-ui-common/authFunctions"
 
-const logger = new Logger({serviceName: "trackerUserInfo"})
+const logger = new Logger({serviceName: "CIS2SignOut"})
 
 const dynamoClient = new DynamoDBClient({})
 const documentClient = DynamoDBDocumentClient.from(dynamoClient)
