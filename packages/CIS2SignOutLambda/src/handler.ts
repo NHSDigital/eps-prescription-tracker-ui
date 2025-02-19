@@ -6,7 +6,8 @@ import {DynamoDBDocumentClient, DeleteCommand} from "@aws-sdk/lib-dynamodb"
 import middy from "@middy/core"
 import inputOutputLogger from "@middy/input-output-logger"
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
-import {getUsernameFromEvent} from "@cpt-ui-common/authFunctions"
+import {getUsernameFromEvent, fetchAndVerifyCIS2Tokens, initializeOidcConfig} from "@cpt-ui-common/authFunctions"
+import axios from "axios"
 
 const logger = new Logger({serviceName: "CIS2SignOut"})
 
@@ -16,9 +17,11 @@ const documentClient = DynamoDBDocumentClient.from(dynamoClient)
 const MOCK_MODE_ENABLED = process.env["MOCK_MODE_ENABLED"]
 const tokenMappingTableName = process.env["TokenMappingTableName"] ?? ""
 
-const errorResponseBody = {
-  message: "A system error has occurred"
-}
+// Create a config for cis2 and mock
+// this is outside functions so it can be re-used and caching works
+const {mockOidcConfig, cis2OidcConfig} = initializeOidcConfig()
+
+const errorResponseBody = {message: "A system error has occurred"}
 
 const middyErrorHandler = new MiddyErrorHandler(errorResponseBody)
 
@@ -30,11 +33,37 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   const username = getUsernameFromEvent(event)
   const isMockToken = username.startsWith("Mock_")
 
+  const isMockRequest = MOCK_MODE_ENABLED === "true" && isMockToken
+
   // Determine whether this request should be treated as mock or real.
-  if (isMockToken && MOCK_MODE_ENABLED !== "true") {
+  if (isMockRequest) {
     logger.error("Trying to use a mock user when mock mode is disabled")
     throw new Error("Trying to use a mock user when mock mode is disabled")
   }
+
+  const {cis2AccessToken, cis2IdToken} = await fetchAndVerifyCIS2Tokens(
+    event,
+    documentClient,
+    logger,
+    isMockRequest ? mockOidcConfig : cis2OidcConfig
+  )
+
+  // Make a GET request, with the CIS2 tokens, to the end session endpoint
+  // eslint-disable-next-line max-len
+  const end_session_endpoint = "https://am.nhsdev.auth-ptl.cis2.spineservices.nhs.uk:443/openam/oauth2/realms/root/realms/oidc/connect/endSession"
+  const axiosInstance = axios.create()
+  const logout_response = axiosInstance.get(
+    end_session_endpoint,
+    {
+      headers: {
+        Authorization: `Bearer ${cis2AccessToken}`
+      },
+      params: {
+        id_token_hint: cis2IdToken
+      }
+    }
+  )
+  logger.info("Made the end session request. Response given in this log event.", {logout_response})
 
   const docDelete = new DeleteCommand({
     TableName: tokenMappingTableName,
