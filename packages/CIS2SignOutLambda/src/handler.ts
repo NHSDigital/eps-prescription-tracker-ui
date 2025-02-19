@@ -49,21 +49,30 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   )
 
   // Make a GET request, with the CIS2 tokens, to the end session endpoint
+  // This is what I think it should be, since it's what is reported by the well-known endpoint
+  // corresponding to the CIS2 API we use for dev:
   // eslint-disable-next-line max-len
-  const end_session_endpoint = "https://am.nhsint.auth-ptl.cis2.spineservices.nhs.uk:443/openam/oauth2/realms/root/realms/NHSIdentity/realms/Healthcare/connect/endSession"
-  const axiosInstance = axios.create()
-  const logout_response = await axiosInstance.get(
-    end_session_endpoint,
-    {
-      headers: {
-        Authorization: `Bearer ${cis2AccessToken}`
-      },
-      params: {
-        id_token_hint: cis2IdToken
+  // https://am.nhsint.auth-ptl.cis2.spineservices.nhs.uk/openam/oauth2/realms/root/realms/NHSIdentity/realms/Healthcare/.well-known/openid-configuration
+
+  try {
+    // eslint-disable-next-line max-len
+    const end_session_endpoint = "https://am.nhsint.auth-ptl.cis2.spineservices.nhs.uk:443/openam/oauth2/realms/root/realms/NHSIdentity/realms/Healthcare/connect/endSession"
+    const axiosInstance = axios.create()
+    const logout_response = await axiosInstance.get(
+      end_session_endpoint,
+      {
+        headers: {
+          Authorization: `Bearer ${cis2AccessToken}`
+        },
+        params: {
+          id_token_hint: cis2IdToken
+        }
       }
-    }
-  )
-  logger.info("Made the end session request. Response given in this log event.", {logout_response})
+    )
+    logger.info("Made the end session request. Response given in this log event.", {logout_response})
+  } catch (error) {
+    logger.error("Failed to make axios request", {error})
+  }
 
   const docDelete = new DeleteCommand({
     TableName: tokenMappingTableName,
