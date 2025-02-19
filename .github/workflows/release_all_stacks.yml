@@ -137,7 +137,7 @@ jobs:
 
   deploy_website_content:
     uses: ./.github/workflows/deploy_website_content.yml
-    needs: [release_stateful_resources]
+    # needs: [release_stateful_resources]
     with:
       SERVICE_NAME: ${{ inputs.SERVICE_NAME }}
       TARGET_ENVIRONMENT: ${{ inputs.TARGET_ENVIRONMENT }}
@@ -148,7 +148,7 @@ jobs:
 
   release_stateless_resources:
     uses: ./.github/workflows/cdk_release_code.yml
-    needs: [deploy_website_content]
+    # needs: [deploy_website_content]
     with:
       SERVICE_NAME: ${{ inputs.SERVICE_NAME }}
       TARGET_ENVIRONMENT: ${{ inputs.TARGET_ENVIRONMENT }}
@@ -257,7 +257,7 @@ jobs:
   rerelease_stateful_resources:
     if: ${{ needs.check_first_deployment.outputs.FIRST_DEPLOYMENT == 'true' }}
     uses: ./.github/workflows/cdk_release_code.yml
-    needs: [check_first_deployment, release_stateless_resources]
+    needs: [check_first_deployment]
     with:
       SERVICE_NAME: ${{ inputs.SERVICE_NAME }}
       TARGET_ENVIRONMENT: ${{ inputs.TARGET_ENVIRONMENT }}
