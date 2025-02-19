@@ -50,7 +50,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
   // Make a GET request, with the CIS2 tokens, to the end session endpoint
   // eslint-disable-next-line max-len
-  const end_session_endpoint = "https://am.nhsdev.auth-ptl.cis2.spineservices.nhs.uk:443/openam/oauth2/realms/root/realms/oidc/connect/endSession"
+  const end_session_endpoint = "https://am.nhsint.auth-ptl.cis2.spineservices.nhs.uk:443/openam/oauth2/realms/root/realms/NHSIdentity/realms/Healthcare/connect/endSession"
   const axiosInstance = axios.create()
   const logout_response = await axiosInstance.get(
     end_session_endpoint,
