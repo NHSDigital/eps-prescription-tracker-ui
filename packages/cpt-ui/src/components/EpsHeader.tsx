@@ -65,6 +65,12 @@ export default function EpsHeader() {
     )
   }, [location, auth, accessContext])
 
+  const redirectToLogin = async (e: React.MouseEvent | React.KeyboardEvent) => {
+    // Naked href don't respect the router, so this overrides that
+    e.preventDefault()
+    navigate("/login")
+  }
+
   const handleLogoutClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault()
     setShowLogoutModal(true)
@@ -79,8 +85,13 @@ export default function EpsHeader() {
     <>
       <Header transactional className="masthead" id="eps-header">
         <Header.Container className="masthead-container">
-          <Header.Logo data-testid="eps_header_logoLink" />
-          <Header.ServiceName data-testid="eps_header_serviceName" >
+          <Header.Logo href="/" data-testid="eps_header_logoLink" />
+
+          <Header.ServiceName
+            href="/login"
+            onClick={redirectToLogin}
+            data-testid="eps_header_serviceName"
+          >
             {HEADER_SERVICE}
           </Header.ServiceName>
           <Header.Content />
