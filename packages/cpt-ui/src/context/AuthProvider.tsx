@@ -182,15 +182,28 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     // This is blocked until we have a central Dynamo interaction lambda
 
     try {
-      await http.get(CIS2SignOutEndpoint, {
-        headers: {
-          Authorization: `Bearer ${idToken}`,
-          "NHSD-Session-URID": "555254242106",
-        },
-      })
+      const signOutPromise = signOut({ global: true })
+        .then(() => {
+          console.log("Frontend Cognito signout OK!")
+        }).catch((err) => {
+          console.log("Failed to sign out of cognito", err)
+          throw err
+        })
+      const httpPromise = http
+        .get(CIS2SignOutEndpoint, {
+          headers: {
+            Authorization: `Bearer ${idToken}`,
+            "NHSD-Session-URID": "555254242106",
+          },
+        })
+        .then(() => {
+          console.log("Backend CIS2 signout OK")
+        })
+        .catch((err) => {
+          console.warn("Backend CIS2 sign-out API call failed", err)
+        })
 
-      await signOut({ global: true });
-      console.log("Signed out successfully!");
+      await Promise.all([signOutPromise, httpPromise])
 
       // Immediately reset state to signed out.
       setUser(null)
