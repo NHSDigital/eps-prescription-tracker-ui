@@ -33,13 +33,13 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   const username = getUsernameFromEvent(event)
   const isMockToken = username.startsWith("Mock_")
 
-  const isMockRequest = MOCK_MODE_ENABLED === "true" && isMockToken
-
   // Determine whether this request should be treated as mock or real.
-  if (isMockRequest) {
+  if (isMockToken && MOCK_MODE_ENABLED !== "true") {
     logger.error("Trying to use a mock user when mock mode is disabled")
     throw new Error("Trying to use a mock user when mock mode is disabled")
   }
+
+  const isMockRequest = MOCK_MODE_ENABLED === "true" && isMockToken
 
   const {cis2AccessToken, cis2IdToken} = await fetchAndVerifyCIS2Tokens(
     event,
