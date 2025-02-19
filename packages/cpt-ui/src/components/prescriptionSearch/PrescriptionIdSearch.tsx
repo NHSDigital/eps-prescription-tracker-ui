@@ -117,79 +117,82 @@ export default function PrescriptionIdSearch() {
     }, [searchResult])
 
     return (
-        <Container className="nhsuk-width-container-fluid patient-search-form-container">
-            <Row>
-                <Col width="one-half">
-                    <Form onSubmit={handlePrescriptionDetails}>
-                        <div className="patient-search-form__field-group">
-                            <Label id="presc-id-label">
-                                <h2 className="nhsuk-heading-m nhsuk-u-margin-bottom-1 no-outline">
-                                    {PRESCRIPTION_ID_SEARCH_STRINGS.labelText}
-                                </h2>
-                            </Label>
-                            <HintText id="presc-id-hint">
-                                {PRESCRIPTION_ID_SEARCH_STRINGS.hintText}
-                            </HintText>
-                            <TextInput
-                                id="presc-id-input"
-                                name="prescriptionId"
-                                aria-labelledby="presc-id-label"
-                                aria-describedby="presc-id-hint"
-                                value={prescriptionId}
-                                maxLength={20}
-                                width="20"
-                                onChange={handleInputChange}
-                                autoComplete="off"
-                            />
-                        </div>
-                        {error && <p className="nhsuk-error-message">{error}</p>}
-                        <Button type="submit" id="presc-id-submit">
-                            {loading ? "Searching..." : PRESCRIPTION_ID_SEARCH_STRINGS.buttonText}
-                        </Button>
-                    </Form>
-                </Col>
-            </Row>
-
-            {/* Display Loading State */}
-            {loading && <p>Loading...</p>}
-
-            {/* Display Prescription Details in Full Width */}
-            {searchResult && (
+        <>
+            <h1>Prescription ID Search</h1>
+            <Container className="nhsuk-width-container-fluid patient-search-form-container">
                 <Row>
-                    <Col width="full">
-                        <div className="nhsuk-panel nhsuk-panel--confirmation nhsuk-u-width-full">
-                            <h2 className="nhsuk-heading-m nhsuk-u-margin-bottom-1 no-outline">
-                                Prescription Details
-                            </h2>
-                            <div className="nhsuk-panel__body">
-                                <p className="nhsuk-u-margin-bottom-0">
-                                    <strong>Prescription ID:</strong>{" "}
-                                    {searchResult?.prescriptionDetails?.entry?.[0]?.resource?.groupIdentifier?.value || "N/A"}
-                                </p>
-                                <p className="nhsuk-u-margin-bottom-0">
-                                    <strong>ODS Code:</strong>{" "}
-                                    {searchResult?.prescriptionDetails?.entry?.[0]?.resource?.author?.identifier?.value || "N/A"}
-                                </p>
-                                {/* Formatted JSON display */}
-                                <pre
-                                    className="nhsuk-panel__body"
-                                    style={{
-                                        background: "#f3f3f3",
-                                        padding: "15px",
-                                        borderRadius: "5px",
-                                        overflowX: "auto",
-                                        // maxHeight: "800px",
-                                        whiteSpace: "pre-wrap",
-                                        wordBreak: "break-word"
-                                    }}
-                                >
-                                    {JSON.stringify(searchResult, null, 2)}
-                                </pre>
+                    <Col width="one-half">
+                        <Form onSubmit={handlePrescriptionDetails}>
+                            <div className="patient-search-form__field-group">
+                                <Label id="presc-id-label">
+                                    <h2 className="nhsuk-heading-m nhsuk-u-margin-bottom-1 no-outline">
+                                        {PRESCRIPTION_ID_SEARCH_STRINGS.labelText}
+                                    </h2>
+                                </Label>
+                                <HintText id="presc-id-hint">
+                                    {PRESCRIPTION_ID_SEARCH_STRINGS.hintText}
+                                </HintText>
+                                <TextInput
+                                    id="presc-id-input"
+                                    name="prescriptionId"
+                                    aria-labelledby="presc-id-label"
+                                    aria-describedby="presc-id-hint"
+                                    value={prescriptionId}
+                                    maxLength={20}
+                                    width="20"
+                                    onChange={handleInputChange}
+                                    autoComplete="off"
+                                />
                             </div>
-                        </div>
+                            {error && <p className="nhsuk-error-message">{error}</p>}
+                            <Button type="submit" id="presc-id-submit">
+                                {loading ? "Searching..." : PRESCRIPTION_ID_SEARCH_STRINGS.buttonText}
+                            </Button>
+                        </Form>
                     </Col>
                 </Row>
-            )}
-        </Container>
+
+                {/* Display Loading State */}
+                {loading && <p>Loading...</p>}
+
+                {/* Display Prescription Details in Full Width */}
+                {searchResult && (
+                    <Row>
+                        <Col width="full">
+                            <div className="nhsuk-panel nhsuk-panel--confirmation nhsuk-u-width-full">
+                                <h2 className="nhsuk-heading-m nhsuk-u-margin-bottom-1 no-outline">
+                                    Prescription Details
+                                </h2>
+                                <div className="nhsuk-panel__body">
+                                    <p className="nhsuk-u-margin-bottom-0">
+                                        <strong>Prescription ID:</strong>{" "}
+                                        {searchResult?.prescriptionDetails?.entry?.[0]?.resource?.groupIdentifier?.value || "N/A"}
+                                    </p>
+                                    <p className="nhsuk-u-margin-bottom-0">
+                                        <strong>ODS Code:</strong>{" "}
+                                        {searchResult?.prescriptionDetails?.entry?.[0]?.resource?.author?.identifier?.value || "N/A"}
+                                    </p>
+                                    {/* Formatted JSON display */}
+                                    <pre
+                                        className="nhsuk-panel__body"
+                                        style={{
+                                            background: "#f3f3f3",
+                                            padding: "15px",
+                                            borderRadius: "5px",
+                                            overflowX: "auto",
+                                            // maxHeight: "800px",
+                                            whiteSpace: "pre-wrap",
+                                            wordBreak: "break-word"
+                                        }}
+                                    >
+                                        {JSON.stringify(searchResult, null, 2)}
+                                    </pre>
+                                </div>
+                            </div>
+                        </Col>
+                    </Row>
+                )}
+            </Container>
+        </>
     )
 }
