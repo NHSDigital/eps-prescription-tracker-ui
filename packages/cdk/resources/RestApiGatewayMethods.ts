@@ -54,7 +54,7 @@ export class RestApiGatewayMethods extends Construct {
 
     // prescription-search endpoint
     const CIS2SignOutLambdaResource = props.restApiGateway.root.addResource("cis2-signout")
-    CIS2SignOutLambdaResource.addMethod("GET", new LambdaIntegration(props.prescriptionSearchLambda, {
+    CIS2SignOutLambdaResource.addMethod("GET", new LambdaIntegration(props.CIS2SignOutLambda, {
       credentialsRole: props.restAPiGatewayRole
     }), {
       authorizationType: AuthorizationType.COGNITO,
