@@ -1,5 +1,6 @@
 import {Logger} from "@aws-lambda-powertools/logger"
 import axios from "axios"
+import {handleAxiosError} from "./errorUtils"
 
 // Initialize a logger for DoHS Client
 const logger = new Logger({serviceName: "doHSClient"})
@@ -33,8 +34,10 @@ export const doHSClient = async (odsCode: string) => {
 
     logger.info("Successfully fetched data from DoHS API", {data: response.data})
     return response.data
+
   } catch (error) {
-    logger.error("Failed to fetch data from DoHS API", {error})
+    // Use handleAxiosError to redact secrets
+    handleAxiosError(error, "Failed to fetch data from DoHS API", logger)
     throw new Error("Error fetching DoHS API data")
   }
 }
