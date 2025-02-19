@@ -177,10 +177,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
    */
   const cognitoSignOut = async () => {
     console.log("Signing out...")
-
-    // TODO: Also sign out of the CPT API, so it can delete the token
-    // This is blocked until we have a central Dynamo interaction lambda
-
     try {
       const signOutPromise = signOut({ global: true })
         .then(() => {
