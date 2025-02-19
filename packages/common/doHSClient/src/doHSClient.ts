@@ -27,7 +27,7 @@ export const doHSClient = async (odsCode: string) => {
     // Make API request
     const response = await axios.get(requestUrl, {
       headers: {
-        "apikey": apigeeApiKey
+        "apikey": "123456789"
       }
     })
 
