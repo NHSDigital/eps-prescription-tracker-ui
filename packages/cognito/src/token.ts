@@ -85,7 +85,8 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     logger, objectBodyParameters, idpTokenPath, jwtPrivateKey as PrivateKey, jwtKid)
 
   // We add this to the CIS2 login request, c.f. https://nhsd-jira.digital.nhs.uk/browse/AEA-5051
-  rewrittenObjectBodyParameters.prompt = "login"
+  const url = new URL(idpTokenPath)
+  url.searchParams.append("prompt", "login")
 
   logger.debug("about to call downstream idp with rewritten body", {idpTokenPath, body: rewrittenObjectBodyParameters})
 
