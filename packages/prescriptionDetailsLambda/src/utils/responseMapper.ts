@@ -18,13 +18,13 @@ export const mergePrescriptionDetails = (
 
   // Extract patient details
   const patientDetails = {
-    nhsNumber: patientEntry?.resource?.identifier?.value || "Not found",
+    nhsNumber: patientEntry?.resource?.identifier?.find(id => id.value)?.value || "Not found",
     gender: patientEntry?.resource?.gender || "Not found",
     birthDate: patientEntry?.resource?.birthDate || "Not found",
-    prefix: patientEntry?.resource?.name?.prefix || "Not found",
-    suffix: patientEntry?.resource?.name?.suffix || "Not found",
-    given: patientEntry?.resource?.name?.given || "Not found",
-    family: patientEntry?.resource?.name?.family || "Not found",
+    prefix: patientEntry?.resource?.name?.[0]?.prefix?.join(" ") || "Not found",
+    suffix: patientEntry?.resource?.name?.[0]?.suffix?.join(" ") || "Not found",
+    given: patientEntry?.resource?.name?.[0]?.given?.join(" ") || "Not found",
+    family: patientEntry?.resource?.name?.[0]?.family || "Not found",
     address: "Not found"
   }
 
