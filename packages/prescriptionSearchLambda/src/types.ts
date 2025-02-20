@@ -65,8 +65,6 @@ export interface PrescriptionSummary {
   prescriptionTreatmentType: TreatmentType;
   prescriptionPendingCancellation: boolean;
   itemsPendingCancellation: number;
-  prescribedFrom: "England" | "Wales" | "Unknown";
-  nhsNumber: string;
 }
 
 export interface SearchResponse {

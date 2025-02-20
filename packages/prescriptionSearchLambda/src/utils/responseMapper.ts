@@ -59,22 +59,6 @@ export const findExtensionValue = (
 }
 
 /**
- * Determines prescription source based on ID format
- * @param prescriptionId Prescription ID to analyze
- * @returns Source location of the prescription
- */
-export const determinePrescriptionSource = (prescriptionId: string): "England" | "Wales" | "Unknown" => {
-  const firstTwoDigits = prescriptionId.substring(0, 2)
-  if (firstTwoDigits.startsWith("01") || firstTwoDigits.startsWith("1")) {
-    return "England"
-  }
-  if (firstTwoDigits.startsWith("02") || firstTwoDigits.startsWith("2")) {
-    return "Wales"
-  }
-  return "Unknown"
-}
-
-/**
    * Maps FHIR Bundle to PrescriptionSummary objects
    */
 export const mapResponseToPrescriptionSummary = (
@@ -95,14 +79,14 @@ export const mapResponseToPrescriptionSummary = (
       const statusExtension = findExtensionValue(
         resource.extension,
         "https://fhir.nhs.uk/StructureDefinition/Extension-DM-PrescriptionStatusHistory"
-      )
+      ) as string
 
       // Get cancellation status from extensions
       const prescriptionPendingCancellation = findExtensionValue(
         resource.extension,
         // TODO: Update with correct URL once confirmed
         "pendingCancellation"
-      ) ?? false
+      ) as boolean ?? false
 
       const itemsPendingCancellation = findExtensionValue(
         resource.action?.[0]?.extension,
@@ -128,7 +112,6 @@ export const mapResponseToPrescriptionSummary = (
         prescriptionTreatmentType,
         prescriptionPendingCancellation,
         itemsPendingCancellation,
-        prescribedFrom: determinePrescriptionSource(resource.identifier?.[0]?.value || ""),
         nhsNumber
       }
     }) || []
