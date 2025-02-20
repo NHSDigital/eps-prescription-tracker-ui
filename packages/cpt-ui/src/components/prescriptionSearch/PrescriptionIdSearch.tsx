@@ -3,69 +3,62 @@ import {Container, Row, Col, Label, HintText, TextInput, Button, Form} from "nhs
 import {AuthContext} from "@/context/AuthProvider"
 import {PRESCRIPTION_ID_SEARCH_STRINGS} from "@/constants/ui-strings/SearchForAPrescriptionStrings"
 
-// Define the structure of a prescription entry
-interface PrescriptionEntry {
-    resource: {
-        resourceType: string
-        intent?: string
-        status?: string
-        groupIdentifier?: {
-            system: string
-            value: string
+// Interface defining the structure of the merged response
+interface MergedResponse {
+    prescriptionID: string
+    patientDetails: {
+        gender: string
+        dateOfBirth: string
+        address: string
+    }
+    prescribedItems: Array<{
+        itemDetails: {
+            medicationName: string
+            quantity: string
+            dosageInstructions: string
         }
-        identifier?: {system: string; value: string}[]
-        code?: {
-            coding: {system: string; code: string; display: string}[]
+    }>
+    dispensedItems: Array<{
+        itemDetails: {
+            medicationName: string
+            quantity: string
+            dosageInstructions: string
         }
-        author?: {
-            reference?: string
-            identifier?: {
-                system: string
-                value: string
-            }
+    }>
+    prescriberOrganisation: {
+        organisationSummaryObjective: {
+            name: string
+            odsCode: string
+            address: string
+            telephone: string
         }
     }
+    json: string
 }
 
-// Define the structure of the full API response
-interface PrescriptionResponse {
-    prescriptionDetails: {
-        resourceType: string
-        type: string
-        entry: PrescriptionEntry[]
-    }
-    doHSData?: any // Optional, since it may be missing
-}
-
-// API endpoint for fetching prescription details
+// API endpoint for prescription details
 const prescriptionDetailsEndpoint = "/api/prescription-details"
 
 export default function PrescriptionIdSearch() {
     const auth = useContext(AuthContext)
 
-    // State variables for managing input, API response, errors, and loading state
+    // State variables
     const [prescriptionId, setPrescriptionId] = useState<string>("")
-    const [searchResult, setSearchResult] = useState<PrescriptionResponse | null>(null)
+    const [searchResult, setSearchResult] = useState<MergedResponse | null>(null)
     const [error, setError] = useState<string>("")
     const [loading, setLoading] = useState<boolean>(false)
 
-    /**
-     * Handles input change for the prescription ID field.
-     * Updates the prescriptionId state with user input.
-     */
+    // Handle input change
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setPrescriptionId(e.target.value)
     }
 
-    /**
-     * Handles form submission to search for a prescription.
-     * Fetches prescription details from the API and updates the UI accordingly.
-     */
+    // Handle form submission
     const handlePrescriptionDetails = async (e: React.FormEvent) => {
         e.preventDefault()
-        setSearchResult(null) // Clear previous search results
-        setError("") // Reset error state
-        setLoading(true) // Start loading indicator
+        setSearchResult(null)
+        setError("")
+        setLoading(true)
 
         if (!prescriptionId) {
             setError("Please enter a valid prescription ID.")
@@ -90,10 +83,8 @@ export default function PrescriptionIdSearch() {
             }
 
             const data = await response.json()
-            console.log("Response:", data)
-
-            setSearchResult(data) // Store successful response
-            setError("") // Clear error state
+            setSearchResult({...data, json: JSON.stringify(data, null, 2)})
+            setError("")
 
         } catch (error) {
             console.error("Error retrieving prescription details:", error)
@@ -103,18 +94,6 @@ export default function PrescriptionIdSearch() {
             setLoading(false) // Ensure loading state is cleared
         }
     }
-
-    /**
-     * useEffect hook to log and safely access searchResult after it updates.
-     * This ensures that the component responds correctly to new data.
-     */
-    useEffect(() => {
-        if (searchResult) {
-            console.log("Search result updated:", searchResult)
-            console.log("Prescription ID:", searchResult?.prescriptionDetails?.entry?.[0]?.resource?.groupIdentifier?.value)
-            console.log("ODS Code:", searchResult?.prescriptionDetails?.entry?.[0]?.resource?.author?.identifier?.value)
-        }
-    }, [searchResult])
 
     return (
         <>
@@ -132,11 +111,11 @@ export default function PrescriptionIdSearch() {
                                 <HintText id="presc-id-hint">
                                     {PRESCRIPTION_ID_SEARCH_STRINGS.hintText}
                                 </HintText>
+                                {/* Input field for prescription ID */}
+                                <Label>Prescription ID</Label>
                                 <TextInput
                                     id="presc-id-input"
                                     name="prescriptionId"
-                                    aria-labelledby="presc-id-label"
-                                    aria-describedby="presc-id-hint"
                                     value={prescriptionId}
                                     maxLength={20}
                                     width="20"
@@ -145,49 +124,47 @@ export default function PrescriptionIdSearch() {
                                 />
                             </div>
                             {error && <p className="nhsuk-error-message">{error}</p>}
-                            <Button type="submit" id="presc-id-submit">
-                                {loading ? "Searching..." : PRESCRIPTION_ID_SEARCH_STRINGS.buttonText}
-                            </Button>
+                            <Button type="submit">{loading ? "Searching..." : "Search"}</Button>
                         </Form>
                     </Col>
                 </Row>
 
-                {/* Display Loading State */}
+                {/* Loading message */}
                 {loading && <p>Loading...</p>}
 
-                {/* Display Prescription Details in Full Width */}
+                {/* Display search results */}
                 {searchResult && (
                     <Row>
                         <Col width="full">
-                            <div className="nhsuk-panel nhsuk-panel--confirmation nhsuk-u-width-full">
-                                <h2 className="nhsuk-heading-m nhsuk-u-margin-bottom-1 no-outline">
-                                    Prescription Details
-                                </h2>
-                                <div className="nhsuk-panel__body">
-                                    <p className="nhsuk-u-margin-bottom-0">
-                                        <strong>Prescription ID:</strong>{" "}
-                                        {searchResult?.prescriptionDetails?.entry?.[0]?.resource?.groupIdentifier?.value || "N/A"}
-                                    </p>
-                                    <p className="nhsuk-u-margin-bottom-0">
-                                        <strong>ODS Code:</strong>{" "}
-                                        {searchResult?.prescriptionDetails?.entry?.[0]?.resource?.author?.identifier?.value || "N/A"}
-                                    </p>
-                                    {/* Formatted JSON display */}
-                                    <pre
-                                        className="nhsuk-panel__body"
-                                        style={{
-                                            background: "#f3f3f3",
-                                            padding: "15px",
-                                            borderRadius: "5px",
-                                            overflowX: "auto",
-                                            // maxHeight: "800px",
-                                            whiteSpace: "pre-wrap",
-                                            wordBreak: "break-word"
-                                        }}
-                                    >
-                                        {JSON.stringify(searchResult, null, 2)}
-                                    </pre>
-                                </div>
+                            <div className="nhsuk-panel">
+                                <h2>Prescription Details</h2>
+                                <p><strong>Prescription ID:</strong> {searchResult.prescriptionID}</p>
+                                <h3>Patient Details</h3>
+                                <p>Gender: {searchResult.patientDetails.gender}</p>
+                                <p>Date of Birth: {searchResult.patientDetails.dateOfBirth}</p>
+                                <p>Address: {searchResult.patientDetails.address}</p>
+
+                                <h3>Prescribed Items</h3>
+                                {searchResult.prescribedItems.map((item, index) => (
+                                    <p key={index}>{item.itemDetails.medicationName} - {item.itemDetails.quantity}</p>
+                                ))}
+
+                                <h3>Dispensed Items</h3>
+                                {searchResult.dispensedItems.map((item, index) => (
+                                    <p key={index}>{item.itemDetails.medicationName} - {item.itemDetails.quantity}</p>
+                                ))}
+
+                                <h3>Prescriber Organisation</h3>
+                                <p>{searchResult.prescriberOrganisation.organisationSummaryObjective.name}</p>
+                                <p>ODS Code: {searchResult.prescriberOrganisation.organisationSummaryObjective.odsCode}</p>
+                                <p>Address: {searchResult.prescriberOrganisation.organisationSummaryObjective.address}</p>
+                                <p>Telephone: {searchResult.prescriberOrganisation.organisationSummaryObjective.telephone}</p>
+
+                                {/* JSON Response Display */}
+                                <h3>JSON Response</h3>
+                                <pre style={{background: "#f3f3f3", padding: "15px", borderRadius: "5px", overflowX: "auto"}}>
+                                    {searchResult.json}
+                                </pre>
                             </div>
                         </Col>
                     </Row>

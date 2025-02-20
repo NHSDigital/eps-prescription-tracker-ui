@@ -196,6 +196,11 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   }
 
   // Step 8: Merge Responses
+  logger.info("Merging prescription details fetched from Apigee with data from DoHS", {
+    prescriptionDetails: apigeeResponse.data,
+    doHSData
+  })
+
   const mergedResponse = mergePrescriptionDetails(apigeeResponse.data, doHSData)
 
   return {

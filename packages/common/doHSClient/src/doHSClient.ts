@@ -20,11 +20,11 @@ export const doHSClient = async (odsCode: string) => {
     throw new Error("DoHS API Key environment variable is not set")
   }
 
-  try {
-    // Construct the request URL
-    const requestUrl = `https://internal-dev.api.service.nhs.uk/service-search-api/?api-version=3` +
-      `&$filter=true&searchFields=ODSCode&search=${odsCode}`
+  // Construct the request URL
+  const requestUrl = `https://internal-dev.api.service.nhs.uk/service-search-api/?api-version=3` +
+    `&$filter=true&searchFields=ODSCode&search=${odsCode}`
 
+  try {
     // Define Axios request configuration
     const config: AxiosRequestConfig = {
       headers: {
@@ -35,13 +35,17 @@ export const doHSClient = async (odsCode: string) => {
     // Make API request
     const response = await axios.get(requestUrl, config)
 
-    logger.info("Successfully fetched data from DoHS API", {data: response.data})
+    logger.info("Successfully fetched DoHS API response in client", {data: response.data})
     return response.data
 
   } catch (error) {
     // Use handleAxiosError to redact secrets
     if (error instanceof AxiosError) {
-      handleAxiosError(error, "Failed to fetch data from DoHS API", logger)
+      const errorMessage = `Failed to fetch data for ODS Code: ${odsCode}. ` +
+        `Request URL: ${requestUrl}. ` +
+        `Status: ${error?.response?.status}, ` +
+        `Message: ${error?.message}`
+      handleAxiosError(error, errorMessage, logger)
     } else {
       logger.error("Unexpected error", {error})
     }
