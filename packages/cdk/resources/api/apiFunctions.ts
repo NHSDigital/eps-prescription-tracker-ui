@@ -114,7 +114,7 @@ export class ApiFunctions extends Construct {
     const trackerUserInfoLambda = new LambdaFunction(this, "TrackerUserInfo", {
       serviceName: props.serviceName,
       stackName: props.stackName,
-      lambdaName: `${props.stackName}-TrkUsrNfoUnified`,
+      lambdaName: `${props.stackName}-TrkUsrInfo`,
       additionalPolicies: additionalPolicies,
       logRetentionInDays: props.logRetentionInDays,
       logLevel: props.logLevel,
