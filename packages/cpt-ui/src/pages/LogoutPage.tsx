@@ -23,7 +23,12 @@ export default function LogoutPage() {
       console.log("Signed out and cleared session data");
     };
 
-    signOut();
+    if (auth?.isSignedIn) {
+      signOut();
+    } else {
+      console.log("Cannot sign out - not signed in");
+      clear(); // Clear data even if not signed in
+    }
   }, [auth, clear]);
 
   return (
