@@ -19,11 +19,22 @@ export interface Extension {
   extension?: Array<Extension>
 }
 
+export interface Name {
+  prefix?: Array<string>
+  suffix?: Array<string>
+  given?: Array<string>
+  family?: string
+}
+
 // Resource type for prescription details
 export interface Resource {
   resourceType: string
   intent?: string
   status?: string
+  identifier?: Array<Identifier>,
+  name?: Array<Name>,
+  gender?: string,
+  birthDate?: string,
   medicationCodeableConcept?: {
     coding: Array<Coding>
   }
@@ -100,7 +111,7 @@ export interface DoHSData {
 export interface MergedResponse {
   patientDetails: {
     gender: string
-    dateOfBirth: string
+    birthDate: string
     address: string
   }
   prescriptionID: string
