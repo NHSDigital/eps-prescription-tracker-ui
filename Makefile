@@ -52,6 +52,7 @@ test: compile
 	npm run test --workspace packages/cpt-ui
 	npm run test --workspace packages/cognito
 	npm run test --workspace packages/prescriptionSearchLambda
+	npm run test --workspace packages/prescriptionDetailsLambda
 	npm run test --workspace packages/common/middyErrorHandler
 	npm run test --workspace packages/trackerUserInfoLambda
 	npm run test --workspace packages/selectedRoleLambda

@@ -8,6 +8,7 @@ import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 import axios from "axios"
 import {v4 as uuidv4} from "uuid"
 import {formatHeaders} from "./utils/headerUtils"
+import {mergePrescriptionDetails} from "./utils/responseMapper"
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
 import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
 import {
@@ -125,7 +126,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   )
 
   // Step 5: Fetch prescription data from Apigee API
-  const prescriptionId: string = event.pathParameters?.prescriptionId
+  const prescriptionId: string = event.pathParameters?.prescriptionId ?? "unknown"
 
   if (!prescriptionId) {
     logger.warn("No prescription ID provided in request", {event})
@@ -165,10 +166,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   */
   // Fetch the prescription data from Apigee
   const apigeeResponse = await axiosInstance.get(requestUrl, {
-    headers: requestHeaders,
-    pathParameters: {
-      prescriptionId: prescriptionId
-    }
+    headers: requestHeaders
   })
 
   logger.info("Successfully fetched prescription details from Apigee", {
@@ -197,61 +195,14 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     }
   }
 
+  // Step 8: Merge Responses
+  const mergedResponse = mergePrescriptionDetails(apigeeResponse.data, doHSData)
+
   return {
     statusCode: 200,
-    body: JSON.stringify({
-      prescriptionDetails: apigeeResponse.data,
-      doHSData: doHSData
-    }),
+    body: JSON.stringify(mergedResponse),
     headers: formatHeaders(apigeeResponse.headers)
   }
-
-  /*
-  * The following commented-out code is an alternative method to invoke the clinicalView Lambda function directly.
-  * Use this approach if you need to bypass Apigee and interact directly with the Lambda.
-  */
-  // // Initialize AWS Lambda client
-  // const lambdaClient = new LambdaClient({region: "eu-west-2"})
-
-  // try {
-  //   logger.info("Invoking clinicalView Lambda directly", {prescriptionId})
-
-  //   const lambdaParams = {
-  //     FunctionName: "cpt-pr-809-ClinicalView",
-  //     InvocationType: "RequestResponse",
-  //     Payload: JSON.stringify({
-  //       headers: requestHeaders,
-  //       pathParameters: {
-  //         prescriptionId: prescriptionId
-  //       }
-  //     })
-  //   }
-
-  //   const command = new InvokeCommand(lambdaParams)
-  //   const lambdaResponse = await lambdaClient.send(command)
-
-  //   // Extract response payload
-  //   const responsePayload = JSON.parse(Buffer.from(lambdaResponse.Payload as Uint8Array).toString())
-
-  //   logger.info("Successfully fetched prescription details from clinicalView Lambda", {
-  //     prescriptionId,
-  //     data: responsePayload
-  //   })
-
-  //   return {
-  //     statusCode: 200,
-  //     body: JSON.stringify(responsePayload),
-  //     headers: {
-  //       "Content-Type": "application/json"
-  //     }
-  //   }
-  // } catch (error) {
-  //   logger.error("Failed to invoke clinicalView Lambda", {error})
-  //   return {
-  //     statusCode: 500,
-  //     body: JSON.stringify({message: "Error retrieving prescription details"})
-  //   }
-  // }
 }
 
 // Export the Lambda function with middleware applied
