@@ -2,7 +2,7 @@
   "name": "sign-out-lambda",
   "version": "1.0.0",
   "description": "Lambda to handle extra backend actions to sign out a user",
-  "main": "handler.ts",
+  "main": "src/handler.ts",
   "author": "NHS Digital",
   "license": "MIT",
   "scripts": {
