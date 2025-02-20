@@ -85,8 +85,13 @@ export default function EpsHeader() {
     <>
       <Header transactional className="masthead" id="eps-header">
         <Header.Container className="masthead-container">
-          <Header.Logo />
-          <Header.ServiceName>
+          <Header.Logo href="/" data-testid="eps_header_logoLink" />
+
+          <Header.ServiceName
+            href="/login"
+            onClick={redirectToLogin}
+            data-testid="eps_header_serviceName"
+          >
             {HEADER_SERVICE}
           </Header.ServiceName>
           <Header.Content />
