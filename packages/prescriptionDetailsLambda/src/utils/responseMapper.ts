@@ -11,14 +11,20 @@ export const mergePrescriptionDetails = (
   if (!prescriptionDetails) return {message: "Prescription details not found"}
 
   // Extract prescription root
+  const patientEntry = prescriptionDetails.entry.find(entry => entry.resource?.resourceType === "Patient")
   const prescriptionEntry = prescriptionDetails.entry.find(entry => entry.resource?.resourceType === "RequestGroup")
   const medicationEntries = prescriptionDetails.entry.filter(entry => entry.resource?.resourceType === "MedicationRequest")
   const taskEntry = prescriptionDetails.entry.find(entry => entry.resource?.resourceType === "Task")
 
-  // Extract patient details (placeholders)
+  // Extract patient details
   const patientDetails = {
-    gender: "Not found",
-    dateOfBirth: "Not found",
+    nhsNumber: patientEntry?.resource?.identifier?.value || "Not found",
+    gender: patientEntry?.resource?.gender || "Not found",
+    birthDate: patientEntry?.resource?.birthDate || "Not found",
+    prefix: patientEntry?.resource?.name?.prefix || "Not found",
+    suffix: patientEntry?.resource?.name?.suffix || "Not found",
+    given: patientEntry?.resource?.name?.given || "Not found",
+    family: patientEntry?.resource?.name?.family || "Not found",
     address: "Not found"
   }
 

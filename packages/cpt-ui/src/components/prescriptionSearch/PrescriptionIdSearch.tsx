@@ -141,7 +141,7 @@ export default function PrescriptionIdSearch() {
                                 <p><strong>Prescription ID:</strong> {searchResult.prescriptionID}</p>
                                 <h3>Patient Details</h3>
                                 <p>Gender: {searchResult.patientDetails.gender}</p>
-                                <p>Date of Birth: {searchResult.patientDetails.dateOfBirth}</p>
+                                <p>Date of Birth: {searchResult.patientDetails.birthDate}</p>
                                 <p>Address: {searchResult.patientDetails.address}</p>
 
                                 <h3>Prescribed Items</h3>
