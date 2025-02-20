@@ -8,7 +8,7 @@ interface MergedResponse {
     prescriptionID: string
     patientDetails: {
         gender: string
-        dateOfBirth: string
+        birthDate: string
         address: string
     }
     prescribedItems: Array<{
