@@ -7,12 +7,14 @@ import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 import middy from "@middy/core"
 import inputOutputLogger from "@middy/input-output-logger"
 
-const logger = new Logger({serviceName: "token"})
+const logger = new Logger({serviceName: "authorize"})
 
 const errorResponseBody = {
   message: "A system error has occurred"
 }
 const middyErrorHandler = new MiddyErrorHandler(errorResponseBody)
+
+const loginAddress = process.env["CIS2_IDP_TOKEN_PATH"] as string
 
 const lambdaHandler = async (event: APIGatewayProxyEvent) => {
   logger.appendKeys({
@@ -31,7 +33,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent) => {
   })
 
   // Construct the final Cognito hosted login URL.
-  const loginUrl = `${loginEndpoint}?${params.toString()}`
+  const loginUrl = `${loginAddress}?${params.toString()}`
 
   // Return an HTTP 302 redirect response.
   return {

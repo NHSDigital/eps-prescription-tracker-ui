@@ -122,7 +122,9 @@ export const nagSuppressions = (stack: Stack) => {
         "/StatelessStack/ApiFunctions/MockTrackerUserInfo/LambdaPutLogsManagedPolicy/Resource",
         "/StatelessStack/ApiFunctions/SelectedRole/LambdaPutLogsManagedPolicy/Resource",
         "/StatelessStack/CognitoFunctions/TokenResources/LambdaPutLogsManagedPolicy/Resource",
-        "/StatelessStack/CognitoFunctions/MockTokenResources/LambdaPutLogsManagedPolicy/Resource"
+        "/StatelessStack/CognitoFunctions/MockTokenResources/LambdaPutLogsManagedPolicy/Resource",
+        "/StatelessStack/CognitoFunctions/AuthorizeLambdaResources/LambdaPutLogsManagedPolicy/Resource",
+        "/StatelessStack/CognitoFunctions/MockAuthorizeLambdaResources/LambdaPutLogsManagedPolicy/Resource"
       ],
       [
         {
