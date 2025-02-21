@@ -38,12 +38,29 @@ export interface CognitoFunctionsProps {
  */
 export class CognitoFunctions extends Construct {
   public readonly cognitoPolicies: Array<IManagedPolicy>
+  public readonly authorizeLambda: NodejsFunction
+  public readonly mockAuthorizeLambda: NodejsFunction
   public readonly tokenLambda: NodejsFunction
   public readonly mockTokenLambda: NodejsFunction
   public readonly primaryJwtPrivateKey: Secret
 
   public constructor(scope: Construct, id: string, props: CognitoFunctionsProps) {
     super(scope, id)
+
+    // Create the login redirection `authorize` function
+    const authorizeLambda = new LambdaFunction(this, "AuthorizeLambdaResources", {
+      serviceName: props.serviceName,
+      stackName: props.stackName,
+      lambdaName: `${props.stackName}-authorize`,
+      additionalPolicies: [],
+      logRetentionInDays: props.logRetentionInDays,
+      logLevel: props.logLevel,
+      packageBasePath: "packages/proxyLoginLambda",
+      entryPoint: "src/index.ts",
+      lambdaEnvironmentVariables: {
+        CIS2_IDP_TOKEN_PATH: props.primaryOidcTokenEndpoint
+      }
+    })
 
     // Create the token Lambda function
     const tokenLambda = new LambdaFunction(this, "TokenResources", {
@@ -83,10 +100,14 @@ export class CognitoFunctions extends Construct {
     ])
 
     // Initialize policies
-    const cognitoPolicies: Array<IManagedPolicy> = [tokenLambda.executeLambdaManagedPolicy]
+    const cognitoPolicies: Array<IManagedPolicy> = [
+      tokenLambda.executeLambdaManagedPolicy,
+      authorizeLambda.executeLambdaManagedPolicy
+    ]
 
     // If mock OIDC is enabled, configure mock token Lambda
     let mockTokenLambda: LambdaFunction | undefined
+    let mockAuthorizeLambda: LambdaFunction | undefined
     if (props.useMockOidc) {
       if (
         !props.mockOidcjwksEndpoint ||
@@ -97,6 +118,21 @@ export class CognitoFunctions extends Construct {
       ) {
         throw new Error("Missing mock OIDC configuration.")
       }
+
+      // Create the mock login redirection `authorize` function
+      mockAuthorizeLambda = new LambdaFunction(this, "MockAuthorizeLambdaResources", {
+        serviceName: props.serviceName,
+        stackName: props.stackName,
+        lambdaName: `${props.stackName}-mock-authorize`,
+        additionalPolicies: [],
+        logRetentionInDays: props.logRetentionInDays,
+        logLevel: props.logLevel,
+        packageBasePath: "packages/proxyLoginLambda",
+        entryPoint: "src/index.ts",
+        lambdaEnvironmentVariables: {
+          CIS2_IDP_TOKEN_PATH: props.mockOidcTokenEndpoint
+        }
+      })
 
       mockTokenLambda = new LambdaFunction(this, "MockTokenResources", {
         serviceName: props.serviceName,
@@ -135,12 +171,15 @@ export class CognitoFunctions extends Construct {
       ])
 
       cognitoPolicies.push(mockTokenLambda.executeLambdaManagedPolicy)
+      cognitoPolicies.push(mockAuthorizeLambda.executeLambdaManagedPolicy)
       this.mockTokenLambda = mockTokenLambda.lambda
+      this.mockAuthorizeLambda = mockAuthorizeLambda.lambda
     }
 
     // Outputs
     this.cognitoPolicies = cognitoPolicies
     this.tokenLambda = tokenLambda.lambda
+    this.authorizeLambda = authorizeLambda.lambda
     this.primaryJwtPrivateKey = props.sharedSecrets.primaryJwtPrivateKey
   }
 }

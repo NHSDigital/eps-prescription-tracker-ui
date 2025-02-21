@@ -25,6 +25,10 @@
         "path": "../packages/cognito"
       },
       {
+        "name": "packages/proxyLoginLambda",
+        "path": "../packages/proxyLoginLambda"
+      },
+      {
         "name": "packages/prescriptionSearchLambda",
         "path": "../packages/prescriptionSearchLambda"
       },
