@@ -22,14 +22,14 @@
         "packages/cpt-ui",
         "packages/cdk",
         "packages/cognito",
-        "packages/proxyLoginLambda",
         "packages/prescriptionSearchLambda",
         "packages/common/middyErrorHandler",
         "packages/common/testing",
         "packages/common/authFunctions",
         "packages/auth_demo",
         "packages/trackerUserInfoLambda",
-        "packages/selectedRoleLambda"
+        "packages/selectedRoleLambda",
+        "packages/proxyLoginLambda"
     ],
     "devDependencies": {
         "@semantic-release/changelog": "^6.0.3",
