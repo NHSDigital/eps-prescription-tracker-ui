@@ -135,6 +135,7 @@ export class StatelessResourcesStack extends Stack {
     const cognitoFunctions = new CognitoFunctions(this, "CognitoFunctions", {
       serviceName: props.serviceName,
       stackName: props.stackName,
+      fullCloudfrontDomain: fullCloudfrontDomain,
       primaryOidcTokenEndpoint: primaryOidcTokenEndpoint,
       primaryOidcUserInfoEndpoint: primaryOidcUserInfoEndpoint,
       primaryOidcjwksEndpoint: primaryOidcjwksEndpoint,
@@ -210,6 +211,10 @@ export class StatelessResourcesStack extends Stack {
       ],
       restAPiGatewayRole: apiGateway.restAPiGatewayRole,
       restApiGateway: apiGateway.restApiGateway,
+      authorizeLambda: cognitoFunctions.authorizeLambda,
+      mockAuthorizeLambda: cognitoFunctions.mockAuthorizeLambda,
+      idpResponseLambda: cognitoFunctions.idpResponseLambda,
+      mockIdpResponseLambda: cognitoFunctions.mockIdpResponseLambda,
       tokenLambda: cognitoFunctions.tokenLambda,
       mockTokenLambda: cognitoFunctions.mockTokenLambda,
       prescriptionSearchLambda: apiFunctions.prescriptionSearchLambda,
