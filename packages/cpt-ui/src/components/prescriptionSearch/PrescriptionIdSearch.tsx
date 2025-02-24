@@ -7,6 +7,7 @@ import {MergedResponse as MergedResponseBackend} from "../../../../prescriptionD
 interface MergedResponse extends MergedResponseBackend {
     json: string
 }
+
 // API endpoint for prescription details
 const prescriptionDetailsEndpoint = "/api/prescription-details"
 
@@ -111,30 +112,117 @@ export default function PrescriptionIdSearch() {
                         <Col width="full">
                             <div className="nhsuk-panel">
                                 <h2>Prescription Details</h2>
-                                <p><strong>Prescription ID:</strong> {searchResult?.requestGroupData?.prescriptionId}</p>
-                                {/* <h3>Patient Details</h3>
-                                <p>Gender: {searchResult.patientDetails.gender}</p>
-                                <p>Date of Birth: {searchResult.patientDetails.birthDate}</p>
-                                <p>Address: {searchResult.patientDetails.address}</p>
+                                <p><strong>Prescription ID:</strong> {searchResult?.prescriptionID}</p>
 
+                                {/* Patient Details */}
+                                <h3>Patient Details</h3>
+                                <p><strong>Gender:</strong> {searchResult?.patientDetails?.gender}</p>
+                                <p><strong>Date of Birth:</strong> {searchResult?.patientDetails?.dateOfBirth}</p>
+                                <p><strong>Address:</strong> {searchResult?.patientDetails?.address}</p>
+
+                                {/* Prescription Summary */}
+                                <h3>Prescription Summary</h3>
+                                <p><strong>Type Code:</strong> {searchResult?.typeCode}</p>
+                                <p><strong>Status Code:</strong> {searchResult?.statusCode}</p>
+                                <p><strong>Issue Date:</strong> {searchResult?.issueDate}</p>
+                                <p><strong>Instance Number:</strong> {searchResult?.instanceNumber}</p>
+                                <p><strong>Max Repeats:</strong> {searchResult?.maxRepeats}</p>
+                                <p><strong>Days Supply:</strong> {searchResult?.daysSupply}</p>
+                                <p><strong>Pending Cancellation:</strong> {searchResult?.prescriptionPendingCancellation ? "Yes" : "No"}</p>
+
+                                {/* Prescribed Items */}
                                 <h3>Prescribed Items</h3>
                                 {searchResult.prescribedItems.map((item, index) => (
-                                    <p key={index}>{item.itemDetails.medicationName} - {item.itemDetails.quantity}</p>
+                                    <div key={index} style={{marginBottom: "10px"}}>
+                                        <p><strong>Medication Name:</strong> {item.itemDetails.medicationName}</p>
+                                        <p><strong>Quantity:</strong> {item.itemDetails.quantity}</p>
+                                        <p><strong>Dosage Instructions:</strong> {item.itemDetails.dosageInstructions}</p>
+                                        <p><strong>EPS Status Code:</strong> {item.itemDetails.epsStatusCode}</p>
+                                        <p><strong>Pending Cancellation:</strong> {item.itemDetails.itemPendingCancellation ? "Yes" : "No"}</p>
+                                        {item.itemDetails.cancellationReason && (
+                                            <p><strong>Cancellation Reason:</strong> {item.itemDetails.cancellationReason}</p>
+                                        )}
+                                    </div>
                                 ))}
 
+                                {/* Dispensed Items */}
                                 <h3>Dispensed Items</h3>
                                 {searchResult.dispensedItems.map((item, index) => (
-                                    <p key={index}>{item.itemDetails.medicationName} - {item.itemDetails.quantity}</p>
+                                    <div key={index} style={{marginBottom: "10px"}}>
+                                        <p><strong>Medication Name:</strong> {item.itemDetails.medicationName}</p>
+                                        <p><strong>Quantity:</strong> {item.itemDetails.quantity}</p>
+                                        <p><strong>Dosage Instructions:</strong> {item.itemDetails.dosageInstructions}</p>
+                                        <p><strong>EPS Status Code:</strong> {item.itemDetails.epsStatusCode}</p>
+                                        <p><strong>Pending Cancellation:</strong> {item.itemDetails.itemPendingCancellation ? "Yes" : "No"}</p>
+                                        {item.itemDetails.cancellationReason && (
+                                            <p><strong>Cancellation Reason:</strong> {item.itemDetails.cancellationReason}</p>
+                                        )}
+                                        {item.itemDetails.notDispensedReason && (
+                                            <p><strong>Not Dispensed Reason:</strong> {item.itemDetails.notDispensedReason}</p>
+                                        )}
+                                        {item.itemDetails.initiallyPrescribed && (
+                                            <div style={{marginLeft: "20px"}}>
+                                                <p><strong>Initially Prescribed:</strong></p>
+                                                <p><strong>Medication Name:</strong> {item.itemDetails.initiallyPrescribed.medicationName}</p>
+                                                <p><strong>Quantity:</strong> {item.itemDetails.initiallyPrescribed.quantity}</p>
+                                                <p><strong>Dosage Instruction:</strong> {item.itemDetails.initiallyPrescribed.dosageInstruction}</p>
+                                            </div>
+                                        )}
+                                    </div>
                                 ))}
 
+                                {/* Message History */}
+                                <h3>Message History</h3>
+                                {searchResult.messageHistory.map((message, index) => (
+                                    <div key={index} style={{marginBottom: "10px"}}>
+                                        <p><strong>Message Code:</strong> {message.messageCode}</p>
+                                        <p><strong>Sent DateTime:</strong> {message.sentDateTime}</p>
+                                        <p><strong>Organisation Name:</strong> {message.organisationName}</p>
+                                        <p><strong>Organisation ODS:</strong> {message.organisationODS}</p>
+                                        <p><strong>New Status Code:</strong> {message.newStatusCode}</p>
+                                        {message.dispenseNotification && message.dispenseNotification.map((notification, idx) => (
+                                            <div key={idx} style={{marginLeft: "20px"}}>
+                                                <p><strong>ID:</strong> {notification.ID}</p>
+                                                <p><strong>Medication Name:</strong> {notification.medicationName}</p>
+                                                <p><strong>Quantity:</strong> {notification.quantity}</p>
+                                                <p><strong>Dosage Instruction:</strong> {notification.dosageInstruction}</p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ))}
+
+                                {/* Prescriber Organisation */}
                                 <h3>Prescriber Organisation</h3>
-                                <p>{searchResult.prescriberOrganisation.organisationSummaryObjective.name}</p>
-                                <p>ODS Code: {searchResult.prescriberOrganisation.organisationSummaryObjective.odsCode}</p>
-                                <p>Address: {searchResult.prescriberOrganisation.organisationSummaryObjective.address}</p>
-                                <p>Telephone: {searchResult.prescriberOrganisation.organisationSummaryObjective.telephone}</p> */}
+                                <p><strong>Name:</strong> {searchResult.prescriberOrganisation.organisationSummaryObjective.name}</p>
+                                <p><strong>ODS Code:</strong> {searchResult.prescriberOrganisation.organisationSummaryObjective.odsCode}</p>
+                                <p><strong>Address:</strong> {searchResult.prescriberOrganisation.organisationSummaryObjective.address}</p>
+                                <p><strong>Telephone:</strong> {searchResult.prescriberOrganisation.organisationSummaryObjective.telephone}</p>
+                                <p><strong>Prescribed From:</strong> {searchResult.prescriberOrganisation.organisationSummaryObjective.prescribedFrom}</p>
+
+                                {/* Nominated Dispenser */}
+                                {searchResult.nominatedDispenser && (
+                                    <>
+                                        <h3>Nominated Dispenser</h3>
+                                        <p><strong>Name:</strong> {searchResult.nominatedDispenser.organisationSummaryObjective.name}</p>
+                                        <p><strong>ODS Code:</strong> {searchResult.nominatedDispenser.organisationSummaryObjective.odsCode}</p>
+                                        <p><strong>Address:</strong> {searchResult.nominatedDispenser.organisationSummaryObjective.address}</p>
+                                        <p><strong>Telephone:</strong> {searchResult.nominatedDispenser.organisationSummaryObjective.telephone}</p>
+                                    </>
+                                )}
+
+                                {/* Current Dispenser */}
+                                {searchResult.currentDispenser && (
+                                    <>
+                                        <h3>Current Dispenser</h3>
+                                        <p><strong>Name:</strong> {searchResult.currentDispenser.organisationSummaryObjective.name}</p>
+                                        <p><strong>ODS Code:</strong> {searchResult.currentDispenser.organisationSummaryObjective.odsCode}</p>
+                                        <p><strong>Address:</strong> {searchResult.currentDispenser.organisationSummaryObjective.address}</p>
+                                        <p><strong>Telephone:</strong> {searchResult.currentDispenser.organisationSummaryObjective.telephone}</p>
+                                    </>
+                                )}
 
                                 {/* JSON Response Display */}
-                                <h3>JSON Response</h3>
+                                <h3>Full JSON Response</h3>
                                 <pre style={{background: "#f3f3f3", padding: "15px", borderRadius: "5px", overflowX: "auto"}}>
                                     {searchResult.json}
                                 </pre>
