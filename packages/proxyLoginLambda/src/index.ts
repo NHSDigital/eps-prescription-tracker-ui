@@ -6,6 +6,7 @@ import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 
 import middy from "@middy/core"
 import inputOutputLogger from "@middy/input-output-logger"
+import {json} from "stream/consumers"
 
 const logger = new Logger({serviceName: "authorize"})
 
@@ -29,19 +30,20 @@ const lambdaHandler = async (event: APIGatewayProxyEvent) => {
   }
 
   // Build the query parameters including the extra login=prompt parameter.
-  const params = new URLSearchParams({
-    prompt: "login"
-  })
+  const params = event["queryStringParameters"] || {}
+  params["prompt"] = "login"
 
-  // Construct the final Cognito hosted login URL.
+  // Set the redirection URL header
   const loginUrl = `${loginAddress}?${params.toString()}`
+  const headers = event["headers"]
+  headers["Location"] = loginUrl
 
   // Return an HTTP 302 redirect response.
   return {
     statusCode: 302,
-    headers: {
-      Location: loginUrl
-    }
+    // FIXME: I dont think we need this, but leaving it to remind me later. Check: does the login event carry a body?
+    // body: json.dumps({}),
+    headers
   }
 }
 
