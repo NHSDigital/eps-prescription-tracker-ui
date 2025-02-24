@@ -165,7 +165,7 @@ export default function PrescriptionIdSearch() {
                                                 <p><strong>Initially Prescribed:</strong></p>
                                                 <p><strong>Medication Name:</strong> {item.itemDetails.initiallyPrescribed.medicationName}</p>
                                                 <p><strong>Quantity:</strong> {item.itemDetails.initiallyPrescribed.quantity}</p>
-                                                <p><strong>Dosage Instruction:</strong> {item.itemDetails.initiallyPrescribed.dosageInstruction}</p>
+                                                <p><strong>Dosage Instructions:</strong> {item.itemDetails.initiallyPrescribed.dosageInstructions}</p>
                                             </div>
                                         )}
                                     </div>
