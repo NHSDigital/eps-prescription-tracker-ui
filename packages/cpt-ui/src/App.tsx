@@ -3,7 +3,6 @@ import { AuthProvider } from "@/context/AuthProvider";
 import { AccessProvider } from "@/context/AccessProvider";
 import Layout from "@/Layout";
 
-import HomePage from "@/pages/HomePage";
 import LoginPage from "@/pages/LoginPage";
 import LogoutPage from "@/pages/LogoutPage";
 import SelectYourRolePage from "@/pages/SelectYourRolePage";
@@ -19,8 +18,8 @@ export default function App() {
       <AccessProvider>
         <Routes>
           <Route path="/" element={<Layout />}>
+            <Route index element={<NotFoundPage />} />
             <Route path='*' element={<NotFoundPage />} />
-            <Route index element={<HomePage />} />
             <Route path="login" element={<LoginPage />} />
             <Route path="logout" element={<LogoutPage />} />
             <Route path="selectyourrole" element={<SelectYourRolePage />} />
