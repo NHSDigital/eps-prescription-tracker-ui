@@ -176,9 +176,11 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
   // Step 6: Extract ODS Code (if available)
   let extractedODSCode: string | null = null
-  if (apigeeResponse.data?.entry?.[0]?.resource?.author?.identifier?.value) {
-    extractedODSCode = apigeeResponse.data.entry[0].resource.author.identifier.value
-    logger.info("Extracted ODS Code", {extractedODSCode})
+
+  // Check if the ODS Code exists in the 'author' field of 'RequestGroup'
+  if (apigeeResponse.data?.resourceType === "RequestGroup" && apigeeResponse.data?.author?.identifier?.value) {
+    extractedODSCode = apigeeResponse.data.author.identifier.value
+    logger.info("Extracted ODS Code from RequestGroup", {extractedODSCode})
   } else {
     logger.warn("No ODS Code found in Apigee response. Skipping DoHS API request.")
   }
