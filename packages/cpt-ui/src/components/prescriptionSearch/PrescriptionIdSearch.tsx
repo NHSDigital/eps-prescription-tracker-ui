@@ -2,40 +2,11 @@ import React, {useContext, useState, useEffect} from "react"
 import {Container, Row, Col, Label, HintText, TextInput, Button, Form} from "nhsuk-react-components"
 import {AuthContext} from "@/context/AuthProvider"
 import {PRESCRIPTION_ID_SEARCH_STRINGS} from "@/constants/ui-strings/SearchForAPrescriptionStrings"
+import {MergedResponse as MergedResponseBackend} from "../../../../prescriptionDetailsLambda/src/utils/types"
 
-// Interface defining the structure of the merged response
-interface MergedResponse {
-    prescriptionID: string
-    patientDetails: {
-        gender: string
-        birthDate: string
-        address: string
-    }
-    prescribedItems: Array<{
-        itemDetails: {
-            medicationName: string
-            quantity: string
-            dosageInstructions: string
-        }
-    }>
-    dispensedItems: Array<{
-        itemDetails: {
-            medicationName: string
-            quantity: string
-            dosageInstructions: string
-        }
-    }>
-    prescriberOrganisation: {
-        organisationSummaryObjective: {
-            name: string
-            odsCode: string
-            address: string
-            telephone: string
-        }
-    }
+interface MergedResponse extends MergedResponseBackend {
     json: string
 }
-
 // API endpoint for prescription details
 const prescriptionDetailsEndpoint = "/api/prescription-details"
 
@@ -85,6 +56,8 @@ export default function PrescriptionIdSearch() {
             const data = await response.json()
             setSearchResult({...data, json: JSON.stringify(data, null, 2)})
             setError("")
+
+            console.log("data:", {data})
 
         } catch (error) {
             console.error("Error retrieving prescription details:", error)
@@ -138,8 +111,8 @@ export default function PrescriptionIdSearch() {
                         <Col width="full">
                             <div className="nhsuk-panel">
                                 <h2>Prescription Details</h2>
-                                <p><strong>Prescription ID:</strong> {searchResult.prescriptionID}</p>
-                                <h3>Patient Details</h3>
+                                <p><strong>Prescription ID:</strong> {searchResult?.requestGroupData?.prescriptionId}</p>
+                                {/* <h3>Patient Details</h3>
                                 <p>Gender: {searchResult.patientDetails.gender}</p>
                                 <p>Date of Birth: {searchResult.patientDetails.birthDate}</p>
                                 <p>Address: {searchResult.patientDetails.address}</p>
@@ -158,7 +131,7 @@ export default function PrescriptionIdSearch() {
                                 <p>{searchResult.prescriberOrganisation.organisationSummaryObjective.name}</p>
                                 <p>ODS Code: {searchResult.prescriberOrganisation.organisationSummaryObjective.odsCode}</p>
                                 <p>Address: {searchResult.prescriberOrganisation.organisationSummaryObjective.address}</p>
-                                <p>Telephone: {searchResult.prescriberOrganisation.organisationSummaryObjective.telephone}</p>
+                                <p>Telephone: {searchResult.prescriberOrganisation.organisationSummaryObjective.telephone}</p> */}
 
                                 {/* JSON Response Display */}
                                 <h3>JSON Response</h3>

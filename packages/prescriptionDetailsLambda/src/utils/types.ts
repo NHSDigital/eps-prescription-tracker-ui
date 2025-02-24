@@ -147,7 +147,11 @@ export interface DoHSData {
 
 // Type for merged response
 export interface MergedResponse {
-  requestGroupDetails?: string
+  requestGroupData?: {
+    prescriptionId: string
+    odsCode: string
+    authoredOn: string
+  }
   // patientDetails?: {
   //   nhsNumber: string
   //   gender: string
