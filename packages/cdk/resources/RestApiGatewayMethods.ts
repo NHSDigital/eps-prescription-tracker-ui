@@ -14,6 +14,8 @@ export interface RestApiGatewayMethodsProps {
   readonly executePolices: Array<IManagedPolicy>
   readonly restAPiGatewayRole: IRole
   readonly restApiGateway: RestApi
+  readonly authorizeLambda: NodejsFunction
+  readonly mockAuthorizeLambda: NodejsFunction
   readonly tokenLambda: NodejsFunction
   readonly mockTokenLambda: NodejsFunction
   readonly prescriptionSearchLambda: NodejsFunction
@@ -38,6 +40,19 @@ export class RestApiGatewayMethods extends Construct {
     for (const policy of props.executePolices) {
       props.restAPiGatewayRole.addManagedPolicy(policy)
     }
+
+    // Authorize redirection endpoint
+    const authorizeResource = props.restApiGateway.root.addResource("authorize")
+    authorizeResource.addMethod("GET", new LambdaIntegration(props.authorizeLambda, {
+      credentialsRole: props.restAPiGatewayRole
+    }))
+
+    // Mock authorize redirection endpoint
+    const mockAuthorizeResource = props.restApiGateway.root.addResource("mockauthorize")
+    mockAuthorizeResource.addMethod("GET", new LambdaIntegration(props.mockAuthorizeLambda, {
+      credentialsRole: props.restAPiGatewayRole
+    }))
+
     const tokenResource = props.restApiGateway.root.addResource("token")
     tokenResource.addMethod("POST", new LambdaIntegration(props.tokenLambda, {
       credentialsRole: props.restAPiGatewayRole
