@@ -29,6 +29,10 @@
         "path": "../packages/proxyLoginLambda"
       },
       {
+        "name": "packages/proxyIdpResponseLambda",
+        "path": "../packages/proxyIdpResponseLambda"
+      },
+      {
         "name": "packages/prescriptionSearchLambda",
         "path": "../packages/prescriptionSearchLambda"
       },

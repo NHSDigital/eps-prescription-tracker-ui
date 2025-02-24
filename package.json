@@ -29,7 +29,8 @@
         "packages/auth_demo",
         "packages/trackerUserInfoLambda",
         "packages/selectedRoleLambda",
-        "packages/proxyLoginLambda"
+        "packages/proxyLoginLambda",
+        "packages/proxyIdpResponseLambda"
     ],
     "devDependencies": {
         "@semantic-release/changelog": "^6.0.3",

@@ -40,6 +40,8 @@ export class CognitoFunctions extends Construct {
   public readonly cognitoPolicies: Array<IManagedPolicy>
   public readonly authorizeLambda: NodejsFunction
   public readonly mockAuthorizeLambda: NodejsFunction
+  public readonly idpResponseLambda: NodejsFunction
+  public readonly mockIdpResponseLambda: NodejsFunction
   public readonly tokenLambda: NodejsFunction
   public readonly mockTokenLambda: NodejsFunction
   public readonly primaryJwtPrivateKey: Secret
@@ -60,6 +62,19 @@ export class CognitoFunctions extends Construct {
       lambdaEnvironmentVariables: {
         CIS2_IDP_TOKEN_PATH: props.primaryOidcTokenEndpoint
       }
+    })
+
+    // This proxy handles the return journey from the IdP login initiated by the authorize lambda
+    const IdpResponseLambda = new LambdaFunction(this, "IDPResponseLambdaResources", {
+      serviceName: props.serviceName,
+      stackName: props.stackName,
+      lambdaName: `${props.stackName}-idp-response`,
+      additionalPolicies: [],
+      logRetentionInDays: props.logRetentionInDays,
+      logLevel: props.logLevel,
+      packageBasePath: "packages/proxyIdpResponseLambda",
+      entryPoint: "src/index.ts",
+      lambdaEnvironmentVariables: {}
     })
 
     // Create the token Lambda function
@@ -102,12 +117,14 @@ export class CognitoFunctions extends Construct {
     // Initialize policies
     const cognitoPolicies: Array<IManagedPolicy> = [
       tokenLambda.executeLambdaManagedPolicy,
-      authorizeLambda.executeLambdaManagedPolicy
+      authorizeLambda.executeLambdaManagedPolicy,
+      IdpResponseLambda.executeLambdaManagedPolicy
     ]
 
     // If mock OIDC is enabled, configure mock token Lambda
     let mockTokenLambda: LambdaFunction | undefined
     let mockAuthorizeLambda: LambdaFunction | undefined
+    let mockIdpResponseLambda: LambdaFunction | undefined
     if (props.useMockOidc) {
       if (
         !props.mockOidcjwksEndpoint ||
@@ -132,6 +149,19 @@ export class CognitoFunctions extends Construct {
         lambdaEnvironmentVariables: {
           CIS2_IDP_TOKEN_PATH: props.mockOidcTokenEndpoint
         }
+      })
+
+      // Create the mock login return lambda function
+      mockIdpResponseLambda = new LambdaFunction(this, "MockIDPResponseLambdaResources", {
+        serviceName: props.serviceName,
+        stackName: props.stackName,
+        lambdaName: `${props.stackName}-mock-idp-response`,
+        additionalPolicies: [],
+        logRetentionInDays: props.logRetentionInDays,
+        logLevel: props.logLevel,
+        packageBasePath: "packages/proxyIdpResponseLambda",
+        entryPoint: "src/index.ts",
+        lambdaEnvironmentVariables: {}
       })
 
       mockTokenLambda = new LambdaFunction(this, "MockTokenResources", {
@@ -172,14 +202,17 @@ export class CognitoFunctions extends Construct {
 
       cognitoPolicies.push(mockTokenLambda.executeLambdaManagedPolicy)
       cognitoPolicies.push(mockAuthorizeLambda.executeLambdaManagedPolicy)
+      cognitoPolicies.push(mockIdpResponseLambda.executeLambdaManagedPolicy)
       this.mockTokenLambda = mockTokenLambda.lambda
       this.mockAuthorizeLambda = mockAuthorizeLambda.lambda
+      this.mockIdpResponseLambda = mockIdpResponseLambda.lambda
     }
 
     // Outputs
     this.cognitoPolicies = cognitoPolicies
-    this.tokenLambda = tokenLambda.lambda
     this.authorizeLambda = authorizeLambda.lambda
+    this.idpResponseLambda = IdpResponseLambda.lambda
+    this.tokenLambda = tokenLambda.lambda
     this.primaryJwtPrivateKey = props.sharedSecrets.primaryJwtPrivateKey
   }
 }

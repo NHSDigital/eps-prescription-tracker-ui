@@ -86,6 +86,8 @@ export const nagSuppressions = (stack: Stack) => {
       [
         "/StatelessStack/ApiGateway/ApiGateway/Default/authorize/GET/Resource",
         "/StatelessStack/ApiGateway/ApiGateway/Default/mockauthorize/GET/Resource",
+        "/StatelessStack/ApiGateway/ApiGateway/Default/callback/GET/Resource",
+        "/StatelessStack/ApiGateway/ApiGateway/Default/mockcallback/GET/Resource",
         "/StatelessStack/ApiGateway/ApiGateway/Default/token/POST/Resource",
         "/StatelessStack/ApiGateway/ApiGateway/Default/mocktoken/POST/Resource",
         "/StatelessStack/ApiGateway/ApiGateway/Default/mocknoauth/GET/Resource"
@@ -126,7 +128,9 @@ export const nagSuppressions = (stack: Stack) => {
         "/StatelessStack/CognitoFunctions/TokenResources/LambdaPutLogsManagedPolicy/Resource",
         "/StatelessStack/CognitoFunctions/MockTokenResources/LambdaPutLogsManagedPolicy/Resource",
         "/StatelessStack/CognitoFunctions/AuthorizeLambdaResources/LambdaPutLogsManagedPolicy/Resource",
-        "/StatelessStack/CognitoFunctions/MockAuthorizeLambdaResources/LambdaPutLogsManagedPolicy/Resource"
+        "/StatelessStack/CognitoFunctions/MockAuthorizeLambdaResources/LambdaPutLogsManagedPolicy/Resource",
+        "/StatelessStack/CognitoFunctions/IDPResponseLambdaResources/LambdaPutLogsManagedPolicy/Resource",
+        "/StatelessStack/CognitoFunctions/MockIDPResponseLambdaResources/LambdaPutLogsManagedPolicy/Resource"
       ],
       [
         {

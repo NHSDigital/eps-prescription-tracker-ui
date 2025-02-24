@@ -45,25 +45,17 @@ const lambdaHandler = async (event: APIGatewayProxyEvent) => {
   // Build the query parameters including the extra login=prompt parameter.
   const queryStringParameters = event.queryStringParameters || {}
   queryStringParameters["prompt"] = "login"
-  // Same treatment for the multi value query strings
-  const multiValueQueryStringParameters = event.multiValueQueryStringParameters || {}
-  multiValueQueryStringParameters["prompt"] = ["login"]
+  // queryStringParameters["redirect_uri"] = `https://${props.fullCloudfrontDomain}/api/callback`
+
+  // TODO: We may also need to create a new client_id here, re-generate the state, and cache it for the return journey.
 
   // Set the redirection URL header
   const loginUrl = `${loginAddress}?${toQueryString(queryStringParameters)}`
-  const headers = event["headers"]
-  headers["Location"] = loginUrl
-
-  logger.info("Headers and parameters:", {headers, queryStringParameters})
 
   // Return an HTTP 302 redirect response.
   const redirect = {
-    // TODO: Is this necessary to pass in these extra things? Or can we get away with a minimal response
-    // ...event,
-    // queryStringParameters,
-    // multiValueQueryStringParameters,
     statusCode: 302,
-    headers
+    headers: {Location: loginUrl}
   }
   logger.info("Redirect response", {redirect})
   return redirect
