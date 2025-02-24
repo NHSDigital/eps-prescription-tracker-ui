@@ -6,7 +6,6 @@ import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 
 import middy from "@middy/core"
 import inputOutputLogger from "@middy/input-output-logger"
-import {json} from "stream/consumers"
 
 const logger = new Logger({serviceName: "authorize"})
 
@@ -38,13 +37,18 @@ const lambdaHandler = async (event: APIGatewayProxyEvent) => {
   const headers = event["headers"]
   headers["Location"] = loginUrl
 
+  logger.info("Headers and parameters:", {headers, params})
+
   // Return an HTTP 302 redirect response.
-  return {
+  const redirect = {
+    ...event, // TODO: Is this necessary, slash does it work? Or will this not behave how I think...
     statusCode: 302,
     // FIXME: I dont think we need this, but leaving it to remind me later. Check: does the login event carry a body?
     // body: json.dumps({}),
     headers
   }
+  logger.info("Redirect response", {redirect})
+  return redirect
 }
 
 export const handler = middy(lambdaHandler)
