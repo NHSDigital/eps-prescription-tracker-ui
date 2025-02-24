@@ -25,6 +25,10 @@
         "path": "../packages/cognito"
       },
       {
+        "name": "packages/CIS2SignOutLambda",
+        "path": "../packages/CIS2SignOutLambda"
+      },
+      {
         "name": "packages/prescriptionSearchLambda",
         "path": "../packages/prescriptionSearchLambda"
       },

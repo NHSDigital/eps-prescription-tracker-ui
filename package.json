@@ -28,6 +28,7 @@
         "packages/common/authFunctions",
         "packages/auth_demo",
         "packages/trackerUserInfoLambda",
+        "packages/CIS2SignOutLambda",
         "packages/selectedRoleLambda"
     ],
     "devDependencies": {

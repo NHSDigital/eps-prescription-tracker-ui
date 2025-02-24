@@ -212,6 +212,7 @@ export class StatelessResourcesStack extends Stack {
       restApiGateway: apiGateway.restApiGateway,
       tokenLambda: cognitoFunctions.tokenLambda,
       mockTokenLambda: cognitoFunctions.mockTokenLambda,
+      CIS2SignOutLambda: apiFunctions.CIS2SignOutLambda,
       prescriptionSearchLambda: apiFunctions.prescriptionSearchLambda,
       trackerUserInfoLambda: apiFunctions.trackerUserInfoLambda,
       selectedRoleLambda: apiFunctions.selectedRoleLambda,
