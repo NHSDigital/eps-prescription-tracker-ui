@@ -17,20 +17,17 @@ const middyErrorHandler = new MiddyErrorHandler(errorResponseBody)
 const loginAddress = process.env["CIS2_IDP_TOKEN_PATH"] as string
 
 function toQueryString(params: APIGatewayProxyEventQueryStringParameters): string {
-  if (!params || Object.keys(params).length === 0) {
-    return ""
-  }
-
+  // Returns the stringified parameters. Does NOT include the leading `?`
   const searchParams = new URLSearchParams()
 
-  for (const key in params) {
-    const value = params[key]
+  Object.entries(params).forEach(([key, value]) => {
     if (value !== undefined) {
       searchParams.append(key, value)
     }
-  }
+  })
 
-  return `?${searchParams.toString()}`
+  const queryString = searchParams.toString()
+  return queryString ? `${queryString}` : ""
 }
 
 const lambdaHandler = async (event: APIGatewayProxyEvent) => {
