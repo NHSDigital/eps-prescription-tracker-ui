@@ -58,11 +58,12 @@ const lambdaHandler = async (event: APIGatewayProxyEvent) => {
 
   // Return an HTTP 302 redirect response.
   const redirect = {
-    ...event, // TODO: Is this necessary, slash does it work? Or will this not behave how I think...
+    // TODO: Is this necessary to pass in these extra things? Or can we get away with a minimal response
+    // ...event,
+    // queryStringParameters,
+    // multiValueQueryStringParameters,
     statusCode: 302,
-    headers,
-    queryStringParameters,
-    multiValueQueryStringParameters
+    headers
   }
   logger.info("Redirect response", {redirect})
   return redirect
