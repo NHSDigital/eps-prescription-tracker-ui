@@ -89,8 +89,8 @@ export interface DoHSData {
 
 /**
  * The MergedResponse interface represents the consolidated information
- * from prescription details and DoHS data. It is used to structure the
- * combined output of various data sources into a single, comprehensive
+ * from the Spine response and DoHS data. It is used to structure
+ * the combined output of various data sources into a single, comprehensive
  * response format for easier consumption in the application.
  */
 export interface MergedResponse {
