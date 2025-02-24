@@ -1,5 +1,5 @@
 import {Logger} from "@aws-lambda-powertools/logger"
-import {APIGatewayProxyEvent} from "aws-lambda"
+import {APIGatewayProxyEvent, APIGatewayProxyEventQueryStringParameters} from "aws-lambda"
 import {injectLambdaContext} from "@aws-lambda-powertools/logger/middleware"
 
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
@@ -16,6 +16,23 @@ const middyErrorHandler = new MiddyErrorHandler(errorResponseBody)
 
 const loginAddress = process.env["CIS2_IDP_TOKEN_PATH"] as string
 
+function toQueryString(params: APIGatewayProxyEventQueryStringParameters): string {
+  if (!params || Object.keys(params).length === 0) {
+    return ""
+  }
+
+  const searchParams = new URLSearchParams()
+
+  for (const key in params) {
+    const value = params[key]
+    if (value !== undefined) {
+      searchParams.append(key, value)
+    }
+  }
+
+  return `?${searchParams.toString()}`
+}
+
 const lambdaHandler = async (event: APIGatewayProxyEvent) => {
   logger.appendKeys({
     "apigw-request-id": event.requestContext?.requestId
@@ -29,23 +46,26 @@ const lambdaHandler = async (event: APIGatewayProxyEvent) => {
   }
 
   // Build the query parameters including the extra login=prompt parameter.
-  const params = event["queryStringParameters"] || {}
-  params["prompt"] = "login"
+  const queryStringParameters = event.queryStringParameters || {}
+  queryStringParameters["prompt"] = "login"
+  // Same treatment for the multi value query strings
+  const multiValueQueryStringParameters = event.multiValueQueryStringParameters || {}
+  multiValueQueryStringParameters["prompt"] = ["login"]
 
   // Set the redirection URL header
-  const loginUrl = `${loginAddress}?${params.toString()}`
+  const loginUrl = `${loginAddress}?${toQueryString(queryStringParameters)}`
   const headers = event["headers"]
   headers["Location"] = loginUrl
 
-  logger.info("Headers and parameters:", {headers, params})
+  logger.info("Headers and parameters:", {headers, queryStringParameters})
 
   // Return an HTTP 302 redirect response.
   const redirect = {
     ...event, // TODO: Is this necessary, slash does it work? Or will this not behave how I think...
     statusCode: 302,
-    // FIXME: I dont think we need this, but leaving it to remind me later. Check: does the login event carry a body?
-    // body: json.dumps({}),
-    headers
+    headers,
+    queryStringParameters,
+    multiValueQueryStringParameters
   }
   logger.info("Redirect response", {redirect})
   return redirect
