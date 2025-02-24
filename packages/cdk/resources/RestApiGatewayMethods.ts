@@ -48,10 +48,12 @@ export class RestApiGatewayMethods extends Construct {
     }))
 
     // Mock authorize redirection endpoint
-    const mockAuthorizeResource = props.restApiGateway.root.addResource("mockauthorize")
-    mockAuthorizeResource.addMethod("GET", new LambdaIntegration(props.mockAuthorizeLambda, {
-      credentialsRole: props.restAPiGatewayRole
-    }))
+    if (props.useMockOidc) {
+      const mockAuthorizeResource = props.restApiGateway.root.addResource("mockauthorize")
+      mockAuthorizeResource.addMethod("GET", new LambdaIntegration(props.mockAuthorizeLambda, {
+        credentialsRole: props.restAPiGatewayRole
+      }))
+    }
 
     const tokenResource = props.restApiGateway.root.addResource("token")
     tokenResource.addMethod("POST", new LambdaIntegration(props.tokenLambda, {

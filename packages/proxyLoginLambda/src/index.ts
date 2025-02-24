@@ -22,6 +22,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent) => {
   })
   logger.info("Event payload:", {event})
 
+  // This is set to mock for the mock lambda, and set to CIS2 for the prod lambda
   const loginEndpoint = process.env["CIS2_IDP_TOKEN_PATH"]
   if (!loginEndpoint) {
     throw new Error("Upstream login endpoint environment variable not set")
