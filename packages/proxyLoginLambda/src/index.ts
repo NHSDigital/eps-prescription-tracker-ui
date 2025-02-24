@@ -41,11 +41,15 @@ const lambdaHandler = async (event: APIGatewayProxyEvent) => {
   if (!loginEndpoint) {
     throw new Error("Upstream login endpoint environment variable not set")
   }
+  const callbackUri = process.env["CIS2_IDP_CALLBACK_PATH"]
+  if (!callbackUri) {
+    throw new Error("Downstream login callback URI environment variable not set")
+  }
 
   // Build the query parameters including the extra login=prompt parameter.
   const queryStringParameters = event.queryStringParameters || {}
   queryStringParameters["prompt"] = "login"
-  // queryStringParameters["redirect_uri"] = `https://${props.fullCloudfrontDomain}/api/callback`
+  queryStringParameters["redirect_uri"] = `https://${callbackUri}/api/callback`
 
   // TODO: We may also need to create a new client_id here, re-generate the state, and cache it for the return journey.
 

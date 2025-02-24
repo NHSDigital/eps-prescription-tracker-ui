@@ -10,6 +10,7 @@ import {NagSuppressions} from "cdk-nag"
 export interface CognitoFunctionsProps {
   readonly serviceName: string
   readonly stackName: string
+  readonly fullCloudfrontDomain: string
   readonly primaryOidcTokenEndpoint: string
   readonly primaryOidcUserInfoEndpoint: string
   readonly primaryOidcjwksEndpoint: string
@@ -60,7 +61,8 @@ export class CognitoFunctions extends Construct {
       packageBasePath: "packages/proxyLoginLambda",
       entryPoint: "src/index.ts",
       lambdaEnvironmentVariables: {
-        CIS2_IDP_TOKEN_PATH: props.primaryOidcTokenEndpoint
+        CIS2_IDP_TOKEN_PATH: props.primaryOidcTokenEndpoint,
+        CIS2_IDP_CALLBACK_PATH: props.fullCloudfrontDomain
       }
     })
 
