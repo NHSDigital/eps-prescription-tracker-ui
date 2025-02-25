@@ -9,13 +9,7 @@ import {NodejsFunction} from "aws-cdk-lib/aws-lambda-nodejs"
 import {CfnFunction, LayerVersion} from "aws-cdk-lib/aws-lambda"
 import {Fn, RemovalPolicy} from "aws-cdk-lib"
 import {Key} from "aws-cdk-lib/aws-kms"
-import {
-  LogGroup,
-  CfnLogGroup,
-  SubscriptionFilter,
-  FilterPattern
-} from "aws-cdk-lib/aws-logs"
-import {KinesisDestination} from "aws-cdk-lib/aws-logs-destinations"
+import {LogGroup, CfnLogGroup, CfnSubscriptionFilter} from "aws-cdk-lib/aws-logs"
 import {Stream} from "aws-cdk-lib/aws-kinesis"
 import {Construct} from "constructs"
 
@@ -103,12 +97,11 @@ export class LambdaFunction extends Construct {
         })]
     })
 
-    new SubscriptionFilter(this, "LambdaLogsSplunkSubscriptionFilter", {
-      logGroup: lambdaLogGroup,
-      filterPattern: FilterPattern.allTerms(),
-      destination: new KinesisDestination(splunkDeliveryStream, {
-        role: splunkSubscriptionFilterRole
-      })
+    new CfnSubscriptionFilter(this, "CoordinatorSplunkSubscriptionFilter", {
+      destinationArn: splunkDeliveryStream.streamArn,
+      filterPattern: "",
+      logGroupName: lambdaLogGroup.logGroupName,
+      roleArn: splunkSubscriptionFilterRole.roleArn
     })
 
     const lambdaRole = new Role(this, "LambdaRole", {
