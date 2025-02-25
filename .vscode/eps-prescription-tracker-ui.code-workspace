@@ -156,6 +156,15 @@
       "editor.defaultFormatter": "dbaeumer.vscode-eslint",
       "[typescriptreact]": {
         "editor.defaultFormatter": "vscode.typescript-language-features"
+      },
+      "[javascriptreact]": {
+        "editor.defaultFormatter": "vscode.typescript-language-features"
+      },
+      "[html]": {
+        "editor.defaultFormatter": "vscode.html-language-features"
+      },
+      "[css]": {
+        "editor.defaultFormatter": "vscode.css-language-features"
       }
     },
     "extensions": {

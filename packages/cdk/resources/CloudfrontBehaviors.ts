@@ -240,6 +240,12 @@ export class CloudfrontBehaviors extends Construct{
             eventType: FunctionEventType.VIEWER_REQUEST
           }
         ]
+      },
+
+      "/404.css": {
+        origin: props.staticContentBucketOrigin,
+        allowedMethods: AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
+        viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS
       }
     }
 

@@ -6,18 +6,17 @@
     "tests/**/*",
     "tests/**/*.json",
     ".next/types/**/*.ts",
-    "**/*.tsx"
+    "**/*.tsx",
+    "vite-env.d.ts",
+    "jest.config.ts",
+    "jest.setup.ts"
   ],
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@/*": ["*"],
+      "@/*": ["src/*"]
     },
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
+    "lib": ["dom", "dom.iterable", "esnext"],
     "noEmit": true,
     "module": "esnext",
     "isolatedModules": true,
@@ -29,8 +28,5 @@
     ],
     "composite": false
   },
-  "exclude": [
-    "node_modules",
-    ".next"
-  ]
+  "exclude": ["node_modules", ".next"]
 }

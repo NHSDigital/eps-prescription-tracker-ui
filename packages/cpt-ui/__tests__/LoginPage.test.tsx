@@ -1,8 +1,36 @@
-// @ts-nocheck
 import "@testing-library/jest-dom";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import React, { useState } from "react";
+import { BrowserRouter } from "react-router-dom";
+import { AuthContext, type AuthContextType } from "@/context/AuthProvider";
+import type { SignInWithRedirectInput, AuthUser, JWT } from "@aws-amplify/auth";
+import LoginPage from "@/pages/LoginPage";
+
+const mockCognitoSignIn = jest.fn();
+const mockCognitoSignOut = jest.fn();
+
+// Set up environment mock before any imports
+jest.mock("@/constants/environment", () => ({
+  ENV_CONFIG: {
+    TARGET_ENVIRONMENT: "dev",
+    API_DOMAIN_OVERRIDE: "",
+    BASE_PATH: "site",
+    LOCAL_DEV: false,
+  },
+  AUTH_CONFIG: {
+    USER_POOL_ID: "mock-pool-id",
+    USER_POOL_CLIENT_ID: "mock-client-id",
+    HOSTED_LOGIN_DOMAIN: "mock-domain",
+    REDIRECT_SIGN_IN: "mock-signin",
+    REDIRECT_SIGN_OUT: "mock-signout",
+  },
+  MOCK_AUTH_ALLOWED_ENVIRONMENTS: ["dev", "dev-pr", "int", "qa"],
+  API_ENDPOINTS: {
+    TRACKER_USER_INFO: "/api/tracker-user-info",
+    SELECTED_ROLE: "/api/selected-role",
+  },
+}));
 
 // Mock the configureAmplify module
 jest.mock("@/context/configureAmplify", () => ({
@@ -15,7 +43,13 @@ jest.mock("@/context/configureAmplify", () => ({
         loginWith: {
           oauth: {
             domain: "mockHostedLoginDomain",
-            scopes: ["openid", "email", "phone", "profile", "aws.cognito.signin.user.admin"],
+            scopes: [
+              "openid",
+              "email",
+              "phone",
+              "profile",
+              "aws.cognito.signin.user.admin",
+            ],
             redirectSignIn: ["mockRedirectSignIn"],
             redirectSignOut: ["mockRedirectSignOut"],
             responseType: "code",
@@ -29,33 +63,43 @@ jest.mock("@/context/configureAmplify", () => ({
   },
 }));
 
-// Create a mock AuthContext provider that allows us to control the state
-const mockCognitoSignIn = jest.fn();
-const mockCognitoSignOut = jest.fn();
+const defaultAuthState: AuthContextType = {
+  isSignedIn: false,
+  user: null,
+  error: null,
+  idToken: null,
+  accessToken: null,
+  cognitoSignIn: mockCognitoSignIn,
+  cognitoSignOut: mockCognitoSignOut,
+};
 
-const MockAuthProvider = ({ children }) => {
-  // State to simulate auth changes
-  const [authState, setAuthState] = useState({
-    isSignedIn: false,
-    user: null,
-    error: null,
-    idToken: null,
-    accessToken: null,
-    cognitoSignIn: async (options: { provider: { custom: any; }; }) => {
-      mockCognitoSignIn(options);
+const MockAuthProvider = ({
+  children,
+  initialState = defaultAuthState,
+}: {
+  children: React.ReactNode;
+  initialState?: AuthContextType;
+}) => {
+  const [authState, setAuthState] = useState<AuthContextType>({
+    ...initialState,
+    cognitoSignIn: async (input?: SignInWithRedirectInput) => {
+      mockCognitoSignIn(input);
       // Simulate a sign-in update
       setAuthState((prev) => ({
         ...prev,
         isSignedIn: true,
-        user: { username: options?.provider?.custom || "mockUser" },
+        user: {
+          username:
+            (input?.provider as { custom: string })?.custom || "mockUser",
+          userId: "mock-user-id",
+        } as AuthUser,
         error: null,
-        idToken: "mockIdToken",
-        accessToken: "mockAccessToken",
+        idToken: { toString: () => "mockIdToken" } as JWT,
+        accessToken: { toString: () => "mockAccessToken" } as JWT,
       }));
     },
     cognitoSignOut: async () => {
       mockCognitoSignOut();
-      // Simulate a sign-out update
       setAuthState((prev) => ({
         ...prev,
         isSignedIn: false,
@@ -72,22 +116,24 @@ const MockAuthProvider = ({ children }) => {
   );
 };
 
-// Since we've referenced AuthContext in the mock provider, we need to re-import it here
-// after the mock is set up.
-import { AuthContext } from "@/context/AuthProvider";
-import AuthPage from "@/app/login/page";
+const renderWithProviders = (
+  component: React.ReactElement,
+  initialState = defaultAuthState,
+) => {
+  return render(
+    <MockAuthProvider initialState={initialState}>
+      <BrowserRouter>{component}</BrowserRouter>
+    </MockAuthProvider>,
+  );
+};
 
-describe("AuthPage", () => {
+describe("LoginPage", () => {
   beforeEach(() => {
-    process.env.NEXT_PUBLIC_TARGET_ENVIRONMENT = "dev";
+    jest.clearAllMocks();
   });
 
   it("renders the page and the main buttons", () => {
-    const { container } = render(
-      <MockAuthProvider>
-        <AuthPage />
-      </MockAuthProvider>
-    );
+    const { container } = renderWithProviders(<LoginPage />);
 
     const heading = screen.getByRole("heading", { level: 1 });
     expect(heading).toBeInTheDocument();
@@ -102,14 +148,11 @@ describe("AuthPage", () => {
   });
 
   it("calls cognitoSignIn with 'Primary' when the primary login button is clicked", async () => {
-    render(
-      <MockAuthProvider>
-        <AuthPage />
-      </MockAuthProvider>
-    );
+    renderWithProviders(<LoginPage />);
 
-    const primaryLogin = screen.getByRole("button", { name: /Log in with PTL CIS2/i });
-
+    const primaryLogin = screen.getByRole("button", {
+      name: /Log in with PTL CIS2/i,
+    });
     await userEvent.click(primaryLogin);
 
     await waitFor(() => {
@@ -117,25 +160,14 @@ describe("AuthPage", () => {
         provider: { custom: "Primary" },
       });
     });
-
-    // After sign-in, check if the user details are displayed
-    expect(screen.getByText(/username: Primary/i)).toBeInTheDocument();
-    expect(
-      screen.getByText((content) => content.includes('"isSignedIn": true'))
-    ).toBeInTheDocument();
-    expect(screen.getByText(/idToken: mockIdToken/i)).toBeInTheDocument();
-    expect(screen.getByText(/accessToken: mockAccessToken/i)).toBeInTheDocument();
   });
 
   it("calls cognitoSignIn with 'Mock' when the mock login button is clicked", async () => {
-    render(
-      <MockAuthProvider>
-        <AuthPage />
-      </MockAuthProvider>
-    );
+    renderWithProviders(<LoginPage />);
 
-    const mockLogin = screen.getByRole("button", { name: /Log in with mock CIS2/i });
-
+    const mockLogin = screen.getByRole("button", {
+      name: /Log in with mock CIS2/i,
+    });
     await userEvent.click(mockLogin);
 
     await waitFor(() => {
@@ -143,32 +175,15 @@ describe("AuthPage", () => {
         provider: { custom: "Mock" },
       });
     });
-
-    // After sign-in with Mock, check if the username displayed is "Mock"
-    expect(screen.getByText(/username: Mock/i)).toBeInTheDocument();
-    expect(
-      screen.getByText((content) => content.includes('"isSignedIn": true'))
-    ).toBeInTheDocument();
-    expect(screen.getByText(/idToken: mockIdToken/i)).toBeInTheDocument();
-    expect(screen.getByText(/accessToken: mockAccessToken/i)).toBeInTheDocument();
   });
 
   it("calls cognitoSignOut when the sign out button is clicked", async () => {
-    render(
-      <MockAuthProvider>
-        <AuthPage />
-      </MockAuthProvider>
-    );
-
-    // First sign in to have a user state
-    const primaryLogin = screen.getByRole("button", { name: /Log in with PTL CIS2/i });
-    await userEvent.click(primaryLogin);
-
-    await waitFor(() => {
-      expect(mockCognitoSignIn).toHaveBeenCalled();
-      expect(
-        screen.getByText((content) => content.includes('"isSignedIn": true'))
-      ).toBeInTheDocument();
+    renderWithProviders(<LoginPage />, {
+      ...defaultAuthState,
+      isSignedIn: true,
+      user: { username: "testUser" } as AuthUser,
+      idToken: { toString: () => "mockIdToken" } as JWT,
+      accessToken: { toString: () => "mockAccessToken" } as JWT,
     });
 
     const signOutBtn = screen.getByRole("button", { name: /Sign Out/i });
@@ -177,23 +192,28 @@ describe("AuthPage", () => {
     await waitFor(() => {
       expect(mockCognitoSignOut).toHaveBeenCalled();
     });
-
-    // After sign-out, the user should be null, tokens cleared, and isSignedIn false
-    expect(
-      screen.getByText((content) => content.includes('"isSignedIn": false'))
-    ).toBeInTheDocument();
   });
 
-  it("shows a spinner when not in a mock auth environment", () => {
-    process.env.NEXT_PUBLIC_TARGET_ENVIRONMENT = "prod";
+  it("shows a spinner when not in a mock auth environment", async () => {
+    // Get the mocked module
+    const envModule = jest.requireMock("@/constants/environment");
 
-    render(
-      <MockAuthProvider>
-        <AuthPage />
-      </MockAuthProvider>
-    );
+    // Modify the environment config temporarily
+    envModule.ENV_CONFIG = {
+      ...envModule.ENV_CONFIG,
+      TARGET_ENVIRONMENT: "prod",
+    };
 
-    const spinner = screen.getByRole("heading", { name: /Redirecting to CIS2 login page.../i });
-    expect(spinner).toBeInTheDocument();
+    // Render the component with our providers
+    const { container } = renderWithProviders(<LoginPage />);
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(/Redirecting to CIS2 login page/i),
+      ).toBeInTheDocument();
+    });
+
+    const spinnerContainer = container.querySelector(".spinner-container");
+    expect(spinnerContainer).toBeInTheDocument();
   });
 });
