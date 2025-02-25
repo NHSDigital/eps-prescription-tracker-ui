@@ -198,7 +198,7 @@ export class Dynamodb extends Construct {
     // State Mapping Table
     const stateMappingTable = new TableV2(this, "StateMappingTable", {
       partitionKey: {
-        name: "username",
+        name: "State",
         type: AttributeType.STRING
       },
       tableName: `${props.stackName}-StateMapping`,
