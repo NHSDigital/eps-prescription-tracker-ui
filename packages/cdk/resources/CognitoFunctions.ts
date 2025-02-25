@@ -13,12 +13,14 @@ export interface CognitoFunctionsProps {
   readonly fullCloudfrontDomain: string
   readonly userPoolClientId: string
   readonly primaryOidcTokenEndpoint: string
+  readonly primaryOidcAuthorizeEndpoint: string
   readonly primaryOidcUserInfoEndpoint: string
   readonly primaryOidcjwksEndpoint: string
   readonly primaryOidcClientId: string
   readonly primaryOidcIssuer: string
   readonly useMockOidc: boolean
   readonly mockOidcTokenEndpoint?: string
+  readonly mockOidcAuthorizeEndpoint?: string
   readonly mockOidcUserInfoEndpoint?: string
   readonly mockOidcjwksEndpoint?: string
   readonly mockOidcClientId?: string
@@ -73,7 +75,7 @@ export class CognitoFunctions extends Construct {
         StateMappingTableName: props.stateMappingTable.tableName,
         CIS2_OIDC_CLIENT_ID: props.primaryOidcClientId,
         FULL_CLOUDFRONT_DOMAIN: props.fullCloudfrontDomain,
-        CIS2_IDP_TOKEN_PATH: props.primaryOidcTokenEndpoint
+        CIS2_IDP_TOKEN_PATH: props.primaryOidcAuthorizeEndpoint
       }
     })
 
@@ -151,6 +153,7 @@ export class CognitoFunctions extends Construct {
       if (
         !props.mockOidcjwksEndpoint ||
         !props.mockOidcTokenEndpoint ||
+        !props.mockOidcAuthorizeEndpoint ||
         !props.mockOidcUserInfoEndpoint ||
         !props.mockOidcClientId ||
         !props.mockOidcIssuer
@@ -176,7 +179,7 @@ export class CognitoFunctions extends Construct {
           StateMappingTableName: props.stateMappingTable.tableName,
           CIS2_OIDC_CLIENT_ID: props.mockOidcClientId,
           FULL_CLOUDFRONT_DOMAIN: props.fullCloudfrontDomain,
-          CIS2_IDP_TOKEN_PATH: props.mockOidcTokenEndpoint
+          CIS2_IDP_TOKEN_PATH: props.mockOidcAuthorizeEndpoint
         }
       })
 

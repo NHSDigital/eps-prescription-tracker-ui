@@ -61,12 +61,14 @@ export class StatelessResourcesStack extends Stack {
     const logLevel: string = this.node.tryGetContext("logLevel")
     const primaryOidcClientId = this.node.tryGetContext("primaryOidcClientId")
     const primaryOidcTokenEndpoint = this.node.tryGetContext("primaryOidcTokenEndpoint")
+    const primaryOidcAuthorizeEndpoint = this.node.tryGetContext("primaryOidcAuthorizeEndpoint")
     const primaryOidcIssuer = this.node.tryGetContext("primaryOidcIssuer")
     const primaryOidcUserInfoEndpoint = this.node.tryGetContext("primaryOidcUserInfoEndpoint")
     const primaryOidcjwksEndpoint = this.node.tryGetContext("primaryOidcjwksEndpoint")
 
     const mockOidcClientId = this.node.tryGetContext("mockOidcClientId")
     const mockOidcTokenEndpoint = this.node.tryGetContext("mockOidcTokenEndpoint")
+    const mockOidcAuthorizeEndpoint = this.node.tryGetContext("mockOidcAuthorizeEndpoint")
     const mockOidcIssuer = this.node.tryGetContext("mockOidcIssuer")
     const mockOidcUserInfoEndpoint = this.node.tryGetContext("mockOidcUserInfoEndpoint")
     const mockOidcjwksEndpoint = this.node.tryGetContext("mockOidcjwksEndpoint")
@@ -163,12 +165,14 @@ export class StatelessResourcesStack extends Stack {
       fullCloudfrontDomain: fullCloudfrontDomain,
       userPoolClientId: userPoolClientId,
       primaryOidcTokenEndpoint: primaryOidcTokenEndpoint,
+      primaryOidcAuthorizeEndpoint: primaryOidcAuthorizeEndpoint,
       primaryOidcUserInfoEndpoint: primaryOidcUserInfoEndpoint,
       primaryOidcjwksEndpoint: primaryOidcjwksEndpoint,
       primaryOidcClientId: primaryOidcClientId,
       primaryOidcIssuer: primaryOidcIssuer,
       useMockOidc: useMockOidc,
       mockOidcTokenEndpoint: mockOidcTokenEndpoint,
+      mockOidcAuthorizeEndpoint: mockOidcAuthorizeEndpoint,
       mockOidcUserInfoEndpoint: mockOidcUserInfoEndpoint,
       mockOidcjwksEndpoint: mockOidcjwksEndpoint,
       mockOidcClientId: mockOidcClientId,
