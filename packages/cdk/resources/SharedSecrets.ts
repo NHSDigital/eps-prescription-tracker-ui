@@ -76,7 +76,7 @@ export class SharedSecrets extends Construct {
         new PolicyStatement({
           effect: Effect.ALLOW,
           actions: ["secretsmanager:GetRandomPassword"],
-          resources: ["/StatelessStack/SharedSecrets/GetRandomPasswordPolicy/Resource"]
+          resources: ["*"]
         })
       ]
     })

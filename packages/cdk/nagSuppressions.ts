@@ -83,6 +83,17 @@ export const nagSuppressions = (stack: Stack) => {
       ]
     )
 
+    safeAddNagSuppression(
+      stack,
+      "/StatelessStack/SharedSecrets/GetRandomPasswordPolicy/Resource",
+      [
+        {
+          id: "AwsSolutions-IAM5",
+          reason: "Suppress error for having a wildcard in the GetRandomPasswordPolicy. Cant apply this to the specific ARN"
+        }
+      ]
+    )
+
     safeAddNagSuppressionGroup(
       stack,
       [
