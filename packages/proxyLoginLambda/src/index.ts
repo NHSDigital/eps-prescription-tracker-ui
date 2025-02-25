@@ -1,5 +1,5 @@
 import {Logger} from "@aws-lambda-powertools/logger"
-import {APIGatewayProxyEvent, APIGatewayProxyEventQueryStringParameters} from "aws-lambda"
+import {APIGatewayProxyEvent} from "aws-lambda"
 import {injectLambdaContext} from "@aws-lambda-powertools/logger/middleware"
 
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"

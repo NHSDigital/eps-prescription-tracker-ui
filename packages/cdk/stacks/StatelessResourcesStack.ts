@@ -87,6 +87,11 @@ export class StatelessResourcesStack extends Stack {
     const tokenMappingTableReadPolicyImport = Fn.importValue(`${baseImportPath}:tokenMappingTableReadPolicy:Arn`)
     const tokenMappingTableWritePolicyImport = Fn.importValue(`${baseImportPath}:tokenMappingTableWritePolicy:Arn`)
     const useTokensMappingKmsKeyPolicyImport = Fn.importValue(`${baseImportPath}:useTokensMappingKmsKeyPolicy:Arn`)
+    const stateMappingTableImport = Fn.importValue(`${baseImportPath}:stateMappingTable:Arn`)
+    const stateMappingTableReadPolicyImport = Fn.importValue(`${baseImportPath}:stateMappingTableReadPolicy:Arn`)
+    const stateMappingTableWritePolicyImport = Fn.importValue(`${baseImportPath}:stateMappingTableWritePolicy:Arn`)
+    const useStateMappingKmsKeyPolicyImport = Fn.importValue(`${baseImportPath}:useStateMappingKmsKeyPolicy:Arn`)
+
     const primaryPoolIdentityProviderName = Fn.importValue(`${baseImportPath}:primaryPoolIdentityProvider:Name`)
     const mockPoolIdentityProviderName = Fn.importValue(`${baseImportPath}:mockPoolIdentityProvider:Name`)
     const userPoolImport = Fn.importValue(`${baseImportPath}:userPool:Arn`)
@@ -98,6 +103,7 @@ export class StatelessResourcesStack extends Stack {
 
     // Coerce context and imports to relevant types
     const staticContentBucket = Bucket.fromBucketArn(this, "StaticContentBucket", staticContentBucketImport)
+
     const tokenMappingTable = TableV2.fromTableArn(this, "tokenMappingTable", tokenMappingTableImport)
     const tokenMappingTableReadPolicy = ManagedPolicy.fromManagedPolicyArn(
       this, "tokenMappingTableReadPolicy", tokenMappingTableReadPolicyImport)
@@ -105,8 +111,18 @@ export class StatelessResourcesStack extends Stack {
       this, "tokenMappingTableWritePolicy", tokenMappingTableWritePolicyImport)
     const useTokensMappingKmsKeyPolicy = ManagedPolicy.fromManagedPolicyArn(
       this, "useTokensMappingKmsKeyPolicy", useTokensMappingKmsKeyPolicyImport)
+
+    const stateMappingTable = TableV2.fromTableArn(this, "stateMappingTable", stateMappingTableImport)
+    const stateMappingTableReadPolicy = ManagedPolicy.fromManagedPolicyArn(
+      this, "stateMappingTableReadPolicy", stateMappingTableReadPolicyImport)
+    const stateMappingTableWritePolicy = ManagedPolicy.fromManagedPolicyArn(
+      this, "stateMappingTableWritePolicy", stateMappingTableWritePolicyImport)
+    const useStateMappingKmsKeyPolicy = ManagedPolicy.fromManagedPolicyArn(
+      this, "useStateMappingKmsKeyPolicy", useStateMappingKmsKeyPolicyImport)
+
     const userPool = UserPool.fromUserPoolArn(
       this, "userPool", userPoolImport)
+
     const cloudfrontLoggingBucket = Bucket.fromBucketArn(
       this, "CloudfrontLoggingBucket", cloudfrontLoggingBucketImport)
     const cloudwatchKmsKey = Key.fromKeyArn(
@@ -115,6 +131,7 @@ export class StatelessResourcesStack extends Stack {
       this, "SplunkDeliveryStream", splunkDeliveryStreamImport)
     const splunkSubscriptionFilterRole = Role.fromRoleArn(
       this, "splunkSubscriptionFilterRole", splunkSubscriptionFilterRoleImport)
+
     const hostedZone = HostedZone.fromHostedZoneAttributes(this, "hostedZone", {
       hostedZoneId: epsHostedZoneId,
       zoneName: epsDomainName
@@ -151,6 +168,10 @@ export class StatelessResourcesStack extends Stack {
       tokenMappingTableWritePolicy: tokenMappingTableWritePolicy,
       tokenMappingTableReadPolicy: tokenMappingTableReadPolicy,
       useTokensMappingKmsKeyPolicy: useTokensMappingKmsKeyPolicy,
+      stateMappingTable: stateMappingTable,
+      stateMappingTableWritePolicy: stateMappingTableWritePolicy,
+      stateMappingTableReadPolicy: stateMappingTableReadPolicy,
+      useStateMappingKmsKeyPolicy: useStateMappingKmsKeyPolicy,
       primaryPoolIdentityProviderName: primaryPoolIdentityProviderName,
       mockPoolIdentityProviderName: mockPoolIdentityProviderName,
       logRetentionInDays: logRetentionInDays,
