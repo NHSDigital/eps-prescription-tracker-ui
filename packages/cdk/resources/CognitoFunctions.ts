@@ -65,7 +65,8 @@ export class CognitoFunctions extends Construct {
       additionalPolicies: [
         props.stateMappingTableWritePolicy,
         props.stateMappingTableReadPolicy,
-        props.useStateMappingKmsKeyPolicy
+        props.useStateMappingKmsKeyPolicy,
+        props.sharedSecrets.getRandomPasswordPolicy
       ],
       logRetentionInDays: props.logRetentionInDays,
       logLevel: props.logLevel,
@@ -169,7 +170,8 @@ export class CognitoFunctions extends Construct {
         additionalPolicies: [
           props.stateMappingTableWritePolicy,
           props.stateMappingTableReadPolicy,
-          props.useStateMappingKmsKeyPolicy
+          props.useStateMappingKmsKeyPolicy,
+          props.sharedSecrets.getRandomPasswordPolicy
         ],
         logRetentionInDays: props.logRetentionInDays,
         logLevel: props.logLevel,
