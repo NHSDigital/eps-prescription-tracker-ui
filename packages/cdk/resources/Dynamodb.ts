@@ -33,9 +33,9 @@ export class Dynamodb extends Construct {
   public readonly tokenMappingTableReadPolicy: ManagedPolicy
   //
   public readonly stateMappingTable: TableV2
+  public readonly useStateMappingKmsKeyPolicy: ManagedPolicy
   public readonly stateMappingTableWritePolicy: ManagedPolicy
   public readonly stateMappingTableReadPolicy: ManagedPolicy
-  public readonly useStateMappingKmsKeyPolicy: ManagedPolicy
 
   public constructor(scope: Construct, id: string, props: DynamodbProps) {
     super(scope, id)
