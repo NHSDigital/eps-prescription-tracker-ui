@@ -128,6 +128,7 @@ export class StatefulResourcesStack extends Stack {
       exportName: `${props.stackName}:StaticContentBucket:Name`
     })
 
+    // Token mapping table
     new CfnOutput(this, "tokenMappingTableArn", {
       value: dynamodb.tokenMappingTable.tableArn,
       exportName: `${props.stackName}:tokenMappingTable:Arn`
@@ -145,6 +146,7 @@ export class StatefulResourcesStack extends Stack {
       exportName: `${props.stackName}:useTokensMappingKmsKeyPolicy:Arn`
     })
 
+    // State mapping table
     new CfnOutput(this, "stateMappingTableArn", {
       value: dynamodb.stateMappingTable.tableArn,
       exportName: `${props.stackName}:stateMappingTable:Arn`
@@ -162,6 +164,7 @@ export class StatefulResourcesStack extends Stack {
       exportName: `${props.stackName}:useStatesMappingKmsKeyPolicy:Arn`
     })
 
+    // User pool stuff
     new CfnOutput(this, "primaryPoolIdentityProviderName", {
       value: cognito.primaryPoolIdentityProvider.providerName,
       exportName: `${props.stackName}:primaryPoolIdentityProvider:Name`

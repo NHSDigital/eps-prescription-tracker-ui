@@ -94,6 +94,7 @@ export class CognitoFunctions extends Construct {
       lambdaEnvironmentVariables: {
         StateMappingTableName: props.stateMappingTable.tableName,
         COGNITO_CLIENT_ID: props.userPoolClientId,
+        // FIXME: Change this to be a prop or not needed!
         COGNITO_IDP_RESPONSE_URI: `https://${props.stackName}/site/`
       }
     })
@@ -196,6 +197,7 @@ export class CognitoFunctions extends Construct {
         lambdaEnvironmentVariables: {
           StateMappingTableName: props.stateMappingTable.tableName,
           COGNITO_CLIENT_ID: props.userPoolClientId,
+          // FIXME: Change this to be a prop or not needed!
           COGNITO_IDP_RESPONSE_URI: `https://${props.stackName}/site/`
         }
       })

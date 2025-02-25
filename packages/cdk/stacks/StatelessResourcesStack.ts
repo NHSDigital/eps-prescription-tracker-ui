@@ -95,6 +95,7 @@ export class StatelessResourcesStack extends Stack {
     const primaryPoolIdentityProviderName = Fn.importValue(`${baseImportPath}:primaryPoolIdentityProvider:Name`)
     const mockPoolIdentityProviderName = Fn.importValue(`${baseImportPath}:mockPoolIdentityProvider:Name`)
     const userPoolImport = Fn.importValue(`${baseImportPath}:userPool:Arn`)
+    const userPoolClientId = Fn.importValue(`${baseImportPath}:userPoolClient:userPoolClientId`)
     const cloudfrontLoggingBucketImport = Fn.importValue("account-resources:CloudfrontLoggingBucket")
     const cloudwatchKmsKeyImport = Fn.importValue("account-resources:CloudwatchLogsKmsKeyArn")
     const splunkDeliveryStreamImport = Fn.importValue("lambda-resources:SplunkDeliveryStream")
@@ -122,9 +123,6 @@ export class StatelessResourcesStack extends Stack {
 
     const userPool = UserPool.fromUserPoolArn(
       this, "userPool", userPoolImport)
-    const userPoolClientId = Fn.importValue(
-      `${baseImportPath}:userPoolClient:userPoolClientId`
-    )
 
     const cloudfrontLoggingBucket = Bucket.fromBucketArn(
       this, "CloudfrontLoggingBucket", cloudfrontLoggingBucketImport)
