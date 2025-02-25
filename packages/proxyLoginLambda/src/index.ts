@@ -2,10 +2,17 @@ import {Logger} from "@aws-lambda-powertools/logger"
 import {APIGatewayProxyEvent, APIGatewayProxyEventQueryStringParameters} from "aws-lambda"
 import {injectLambdaContext} from "@aws-lambda-powertools/logger/middleware"
 
+import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
+import {DynamoDBDocumentClient, PutCommand} from "@aws-sdk/lib-dynamodb"
+
+import {GetRandomPasswordCommand, SecretsManagerClient} from "@aws-sdk/client-secrets-manager"
+
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 
 import middy from "@middy/core"
 import inputOutputLogger from "@middy/input-output-logger"
+
+import {createHash} from "crypto"
 
 const logger = new Logger({serviceName: "authorize"})
 
@@ -14,21 +21,15 @@ const errorResponseBody = {
 }
 const middyErrorHandler = new MiddyErrorHandler(errorResponseBody)
 
-const loginAddress = process.env["CIS2_IDP_TOKEN_PATH"] as string
+const loginEndpoint = process.env["CIS2_IDP_TOKEN_PATH"] as string
+const stackName = process.env["FULL_CLOUDFRONT_DOMAIN"] as string
+const tableName = process.env["StateMappingTableName"] as string
+const oidcClientId = process.env["CIS2_OIDC_CLIENT_ID"] as string
 
-function toQueryString(params: APIGatewayProxyEventQueryStringParameters): string {
-  // Returns the stringified parameters. Does NOT include the leading `?`
-  const searchParams = new URLSearchParams()
+const dynamoClient = new DynamoDBClient()
+const documentClient = DynamoDBDocumentClient.from(dynamoClient)
 
-  Object.entries(params).forEach(([key, value]) => {
-    if (value !== undefined) {
-      searchParams.append(key, value)
-    }
-  })
-
-  const queryString = searchParams.toString()
-  return queryString ? `${queryString}` : ""
-}
+const secretsManagerClient = new SecretsManagerClient()
 
 const lambdaHandler = async (event: APIGatewayProxyEvent) => {
   logger.appendKeys({
@@ -37,29 +38,72 @@ const lambdaHandler = async (event: APIGatewayProxyEvent) => {
   logger.info("Event payload:", {event})
 
   // This is set to mock for the mock lambda, and set to CIS2 for the prod lambda
-  const loginEndpoint = process.env["CIS2_IDP_TOKEN_PATH"]
   if (!loginEndpoint) {
     throw new Error("Upstream login endpoint environment variable not set")
   }
-  const callbackUri = process.env["CIS2_IDP_CALLBACK_PATH"]
-  if (!callbackUri) {
-    throw new Error("Downstream login callback URI environment variable not set")
+  // Check we're set up properly.
+  if (!stackName) {
+    throw new Error("Cloudfront domain environment variable not set")
+  }
+  if (!tableName) {
+    throw new Error("State mapping table name environment variable not set")
+  }
+  if (!oidcClientId) {
+    throw new Error("OIDC client ID environment variable not set")
   }
 
-  // Build the query parameters including the extra login=prompt parameter.
+  // Original query parameters.
   const queryStringParameters = event.queryStringParameters || {}
-  queryStringParameters["prompt"] = "login"
-  queryStringParameters["redirect_uri"] = `https://${callbackUri}/api/callback`
 
-  // TODO: We may also need to create a new client_id here, re-generate the state, and cache it for the return journey.
+  const randIdCommand = new GetRandomPasswordCommand({
+    PasswordLength: 64,
+    ExcludePunctuation: true,
+    IncludeSpace: false
+  })
+  const randId = await secretsManagerClient.send(randIdCommand)
+  const codeVerifier = randId.RandomPassword
+
+  if (!codeVerifier) {
+    throw new Error("Failed to generate the code verifier")
+  }
+
+  // grab the old state's hash for dynamo
+  const hashedState = createHash("sha256").update(queryStringParameters.state as string).digest("hex")
+
+  // Limit the login window to 5 minutes
+  const stateTtl = Math.floor(Date.now() / 1000) + 300
+
+  await documentClient.send(
+    new PutCommand({
+      Item: {
+        State: hashedState,
+        CodeVerifier: codeVerifier,
+        CognitoState: queryStringParameters.state,
+        Ttl: stateTtl
+      },
+      TableName: tableName
+    })
+  )
 
   // Set the redirection URL header
-  const loginUrl = `${loginAddress}?${toQueryString(queryStringParameters)}`
+  const callbackUri = `${stackName}/api/callback`
+
+  // These are the parameters we pass back in the redirection response
+  const responseParameters = {
+    response_type: queryStringParameters.response_type as string,
+    scope: queryStringParameters.scope as string,
+    client_id: oidcClientId,
+    state: hashedState,
+    redirect_uri: callbackUri,
+    prompt: "login"
+  }
+
+  const redirectPath = `${loginEndpoint}?${new URLSearchParams(responseParameters)}`
 
   // Return an HTTP 302 redirect response.
   const redirect = {
     statusCode: 302,
-    headers: {Location: loginUrl}
+    headers: {Location: redirectPath}
   }
   logger.info("Redirect response", {redirect})
   return redirect
