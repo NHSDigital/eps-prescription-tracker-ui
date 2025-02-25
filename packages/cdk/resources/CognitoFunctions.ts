@@ -157,7 +157,7 @@ export class CognitoFunctions extends Construct {
       mockIdpResponseLambda = new LambdaFunction(this, "MockIDPResponseLambdaResources", {
         serviceName: props.serviceName,
         stackName: props.stackName,
-        lambdaName: `${props.stackName}-mock-idp-response`,
+        lambdaName: `${props.stackName}-mock-idp-resp`,
         additionalPolicies: [],
         logRetentionInDays: props.logRetentionInDays,
         logLevel: props.logLevel,
