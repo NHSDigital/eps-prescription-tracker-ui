@@ -26,6 +26,10 @@ export interface CognitoFunctionsProps {
   readonly tokenMappingTableWritePolicy: IManagedPolicy
   readonly tokenMappingTableReadPolicy: IManagedPolicy
   readonly useTokensMappingKmsKeyPolicy: IManagedPolicy
+  readonly stateMappingTable: ITableV2
+  readonly stateMappingTableWritePolicy: IManagedPolicy
+  readonly stateMappingTableReadPolicy: IManagedPolicy
+  readonly useStateMappingKmsKeyPolicy: IManagedPolicy
   readonly primaryPoolIdentityProviderName: string
   readonly mockPoolIdentityProviderName: string
   readonly logRetentionInDays: number
@@ -55,14 +59,20 @@ export class CognitoFunctions extends Construct {
       serviceName: props.serviceName,
       stackName: props.stackName,
       lambdaName: `${props.stackName}-authorize`,
-      additionalPolicies: [],
+      additionalPolicies: [
+        props.stateMappingTableWritePolicy,
+        props.stateMappingTableReadPolicy,
+        props.useStateMappingKmsKeyPolicy
+      ],
       logRetentionInDays: props.logRetentionInDays,
       logLevel: props.logLevel,
       packageBasePath: "packages/proxyLoginLambda",
       entryPoint: "src/index.ts",
       lambdaEnvironmentVariables: {
-        CIS2_IDP_TOKEN_PATH: props.primaryOidcTokenEndpoint,
-        CIS2_IDP_CALLBACK_PATH: props.fullCloudfrontDomain
+        StateMappingTableName: props.stateMappingTable.tableName,
+        CIS2_OIDC_CLIENT_ID: props.primaryOidcClientId,
+        FULL_CLOUDFRONT_DOMAIN: props.fullCloudfrontDomain,
+        CIS2_IDP_TOKEN_PATH: props.primaryOidcTokenEndpoint
       }
     })
 
@@ -71,12 +81,18 @@ export class CognitoFunctions extends Construct {
       serviceName: props.serviceName,
       stackName: props.stackName,
       lambdaName: `${props.stackName}-idp-response`,
-      additionalPolicies: [],
+      additionalPolicies: [
+        props.stateMappingTableWritePolicy,
+        props.stateMappingTableReadPolicy,
+        props.useStateMappingKmsKeyPolicy
+      ],
       logRetentionInDays: props.logRetentionInDays,
       logLevel: props.logLevel,
       packageBasePath: "packages/proxyIdpResponseLambda",
       entryPoint: "src/index.ts",
-      lambdaEnvironmentVariables: {}
+      lambdaEnvironmentVariables: {
+        StateMappingTableName: props.stateMappingTable.tableName
+      }
     })
 
     // Create the token Lambda function
@@ -143,12 +159,19 @@ export class CognitoFunctions extends Construct {
         serviceName: props.serviceName,
         stackName: props.stackName,
         lambdaName: `${props.stackName}-mock-authorize`,
-        additionalPolicies: [],
+        additionalPolicies: [
+          props.stateMappingTableWritePolicy,
+          props.stateMappingTableReadPolicy,
+          props.useStateMappingKmsKeyPolicy
+        ],
         logRetentionInDays: props.logRetentionInDays,
         logLevel: props.logLevel,
         packageBasePath: "packages/proxyLoginLambda",
         entryPoint: "src/index.ts",
         lambdaEnvironmentVariables: {
+          StateMappingTableName: props.stateMappingTable.tableName,
+          CIS2_OIDC_CLIENT_ID: props.mockOidcClientId,
+          FULL_CLOUDFRONT_DOMAIN: props.fullCloudfrontDomain,
           CIS2_IDP_TOKEN_PATH: props.mockOidcTokenEndpoint
         }
       })
@@ -158,12 +181,18 @@ export class CognitoFunctions extends Construct {
         serviceName: props.serviceName,
         stackName: props.stackName,
         lambdaName: `${props.stackName}-mock-idp-resp`,
-        additionalPolicies: [],
+        additionalPolicies: [
+          props.stateMappingTableWritePolicy,
+          props.stateMappingTableReadPolicy,
+          props.useStateMappingKmsKeyPolicy
+        ],
         logRetentionInDays: props.logRetentionInDays,
         logLevel: props.logLevel,
         packageBasePath: "packages/proxyIdpResponseLambda",
         entryPoint: "src/index.ts",
-        lambdaEnvironmentVariables: {}
+        lambdaEnvironmentVariables: {
+          StateMappingTableName: props.stateMappingTable.tableName
+        }
       })
 
       mockTokenLambda = new LambdaFunction(this, "MockTokenResources", {
