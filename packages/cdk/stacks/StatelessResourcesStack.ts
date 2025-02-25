@@ -123,7 +123,7 @@ export class StatelessResourcesStack extends Stack {
     const userPool = UserPool.fromUserPoolArn(
       this, "userPool", userPoolImport)
     const userPoolClientId = Fn.importValue(
-      `${props.stackName}:userPoolClient:userPoolClientId`
+      `${baseImportPath}:userPoolClient:userPoolClientId`
     )
 
     const cloudfrontLoggingBucket = Bucket.fromBucketArn(
