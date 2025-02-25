@@ -83,19 +83,26 @@ export class StatelessResourcesStack extends Stack {
     const baseImportPath = `${props.serviceName}-stateful-resources`
 
     const staticContentBucketImport = Fn.importValue(`${baseImportPath}:StaticContentBucket:Arn`)
+
+    // CIS2 tokens and user info table
     const tokenMappingTableImport = Fn.importValue(`${baseImportPath}:tokenMappingTable:Arn`)
     const tokenMappingTableReadPolicyImport = Fn.importValue(`${baseImportPath}:tokenMappingTableReadPolicy:Arn`)
     const tokenMappingTableWritePolicyImport = Fn.importValue(`${baseImportPath}:tokenMappingTableWritePolicy:Arn`)
     const useTokensMappingKmsKeyPolicyImport = Fn.importValue(`${baseImportPath}:useTokensMappingKmsKeyPolicy:Arn`)
+
+    // Login proxy state cache
     const stateMappingTableImport = Fn.importValue(`${baseImportPath}:stateMappingTable:Arn`)
     const stateMappingTableReadPolicyImport = Fn.importValue(`${baseImportPath}:stateMappingTableReadPolicy:Arn`)
     const stateMappingTableWritePolicyImport = Fn.importValue(`${baseImportPath}:stateMappingTableWritePolicy:Arn`)
     const useStateMappingKmsKeyPolicyImport = Fn.importValue(`${baseImportPath}:useStateMappingKmsKeyPolicy:Arn`)
 
+    // User pool
     const primaryPoolIdentityProviderName = Fn.importValue(`${baseImportPath}:primaryPoolIdentityProvider:Name`)
     const mockPoolIdentityProviderName = Fn.importValue(`${baseImportPath}:mockPoolIdentityProvider:Name`)
     const userPoolImport = Fn.importValue(`${baseImportPath}:userPool:Arn`)
     const userPoolClientId = Fn.importValue(`${baseImportPath}:userPoolClient:userPoolClientId`)
+
+    // Logging
     const cloudfrontLoggingBucketImport = Fn.importValue("account-resources:CloudfrontLoggingBucket")
     const cloudwatchKmsKeyImport = Fn.importValue("account-resources:CloudwatchLogsKmsKeyArn")
     const splunkDeliveryStreamImport = Fn.importValue("lambda-resources:SplunkDeliveryStream")

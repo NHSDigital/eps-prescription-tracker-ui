@@ -159,9 +159,9 @@ export class StatefulResourcesStack extends Stack {
       value: dynamodb.stateMappingTableWritePolicy.managedPolicyArn,
       exportName: `${props.stackName}:stateMappingTableWritePolicy:Arn`
     })
-    new CfnOutput(this, "useStatesMappingKmsKeyPolicyArn", {
+    new CfnOutput(this, "useStateMappingKmsKeyPolicyArn", {
       value: dynamodb.useStateMappingKmsKeyPolicy.managedPolicyArn,
-      exportName: `${props.stackName}:useStatesMappingKmsKeyPolicy:Arn`
+      exportName: `${props.stackName}:useStateMappingKmsKeyPolicy:Arn`
     })
 
     // User pool stuff
