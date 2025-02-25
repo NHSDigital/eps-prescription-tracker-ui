@@ -10,8 +10,7 @@ import {
 import {IRole, Role, ServicePrincipal} from "aws-cdk-lib/aws-iam"
 import {IStream} from "aws-cdk-lib/aws-kinesis"
 import {IKey} from "aws-cdk-lib/aws-kms"
-import {FilterPattern, LogGroup, SubscriptionFilter} from "aws-cdk-lib/aws-logs"
-import {KinesisDestination} from "aws-cdk-lib/aws-logs-destinations"
+import {CfnSubscriptionFilter, LogGroup} from "aws-cdk-lib/aws-logs"
 import {Construct} from "constructs"
 import {accessLogFormat} from "./RestApiGateway/accessLogFormat"
 import {IUserPool} from "aws-cdk-lib/aws-cognito"
@@ -50,12 +49,11 @@ export class RestApiGateway extends Construct {
       removalPolicy: RemovalPolicy.DESTROY
     })
 
-    new SubscriptionFilter(this, "ApiGatewayAccessLogsSplunkSubscriptionFilter", {
-      logGroup: apiGatewayAccessLogGroup,
-      filterPattern: FilterPattern.allTerms(),
-      destination: new KinesisDestination(props.splunkDeliveryStream, {
-        role: props.splunkSubscriptionFilterRole
-      })
+    new CfnSubscriptionFilter(this, "CoordinatorSplunkSubscriptionFilter", {
+      destinationArn: props.splunkDeliveryStream.streamArn,
+      filterPattern: "",
+      logGroupName: apiGatewayAccessLogGroup.logGroupName,
+      roleArn: props.splunkSubscriptionFilterRole.roleArn
     })
 
     const apiGateway = new RestApi(this, "ApiGateway", {
