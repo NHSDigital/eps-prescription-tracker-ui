@@ -122,6 +122,9 @@ export class StatelessResourcesStack extends Stack {
 
     const userPool = UserPool.fromUserPoolArn(
       this, "userPool", userPoolImport)
+    const userPoolClientId = Fn.importValue(
+      `${props.stackName}:userPoolClient:userPoolClientId`
+    )
 
     const cloudfrontLoggingBucket = Bucket.fromBucketArn(
       this, "CloudfrontLoggingBucket", cloudfrontLoggingBucketImport)
@@ -153,6 +156,7 @@ export class StatelessResourcesStack extends Stack {
       serviceName: props.serviceName,
       stackName: props.stackName,
       fullCloudfrontDomain: fullCloudfrontDomain,
+      userPoolClientId: userPoolClientId,
       primaryOidcTokenEndpoint: primaryOidcTokenEndpoint,
       primaryOidcUserInfoEndpoint: primaryOidcUserInfoEndpoint,
       primaryOidcjwksEndpoint: primaryOidcjwksEndpoint,

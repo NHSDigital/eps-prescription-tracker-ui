@@ -55,6 +55,10 @@ const lambdaHandler = async (event: APIGatewayProxyEvent) => {
   // Original query parameters.
   const queryStringParameters = event.queryStringParameters || {}
 
+  if (queryStringParameters.client_id !== oidcClientId) {
+    throw new Error("Mismatch in OIDC client ID")
+  }
+
   const randIdCommand = new GetRandomPasswordCommand({
     PasswordLength: 64,
     ExcludePunctuation: true,
@@ -73,6 +77,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent) => {
   // Limit the login window to 5 minutes
   const stateTtl = Math.floor(Date.now() / 1000) + 300
 
+  // This data will be retrieved by the `state` value
   await documentClient.send(
     new PutCommand({
       Item: {

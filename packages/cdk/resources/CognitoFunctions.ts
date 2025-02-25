@@ -11,6 +11,7 @@ export interface CognitoFunctionsProps {
   readonly serviceName: string
   readonly stackName: string
   readonly fullCloudfrontDomain: string
+  readonly userPoolClientId: string
   readonly primaryOidcTokenEndpoint: string
   readonly primaryOidcUserInfoEndpoint: string
   readonly primaryOidcjwksEndpoint: string
@@ -91,7 +92,9 @@ export class CognitoFunctions extends Construct {
       packageBasePath: "packages/proxyIdpResponseLambda",
       entryPoint: "src/index.ts",
       lambdaEnvironmentVariables: {
-        StateMappingTableName: props.stateMappingTable.tableName
+        StateMappingTableName: props.stateMappingTable.tableName,
+        COGNITO_CLIENT_ID: props.userPoolClientId,
+        COGNITO_IDP_RESPONSE_URI: `https://${props.stackName}/site/`
       }
     })
 
@@ -191,7 +194,9 @@ export class CognitoFunctions extends Construct {
         packageBasePath: "packages/proxyIdpResponseLambda",
         entryPoint: "src/index.ts",
         lambdaEnvironmentVariables: {
-          StateMappingTableName: props.stateMappingTable.tableName
+          StateMappingTableName: props.stateMappingTable.tableName,
+          COGNITO_CLIENT_ID: props.userPoolClientId,
+          COGNITO_IDP_RESPONSE_URI: `https://${props.stackName}/site/`
         }
       })
 
