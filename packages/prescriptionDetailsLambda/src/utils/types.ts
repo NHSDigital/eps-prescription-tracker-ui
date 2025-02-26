@@ -94,9 +94,24 @@ export interface DoHSData {
  */
 export interface MergedResponse {
   patientDetails: {
+    identifier: string
+    name: {
+      prefix?: string
+      given: string
+      family: string
+      suffix?: string
+    }
     gender: string
-    dateOfBirth: string
-    address: string
+    birthDate: string
+    address: {
+      text: string
+      line: string
+      city: string
+      district: string
+      postalCode: string
+      type: string
+      use: string
+    }
   }
   prescriptionID: string
   typeCode: string

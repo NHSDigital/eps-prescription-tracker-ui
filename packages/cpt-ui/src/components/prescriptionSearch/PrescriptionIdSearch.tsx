@@ -125,7 +125,11 @@ export default function PrescriptionIdSearch() {
                                 </p>
                                 <p><strong>Gender:</strong> {searchResult?.patientDetails?.gender}</p>
                                 <p><strong>Date of Birth:</strong> {searchResult?.patientDetails?.birthDate}</p>
-                                <p><strong>Address:</strong> {searchResult?.patientDetails?.address?.text}</p>
+
+                                {/* Address Details */}
+                                <h3>Address Details</h3>
+                                <p><strong>Full Address:</strong> {searchResult?.patientDetails?.address?.text}</p>
+                                <p><strong>Street:</strong> {searchResult?.patientDetails?.address?.line}</p>
                                 <p><strong>City:</strong> {searchResult?.patientDetails?.address?.city}</p>
                                 <p><strong>District:</strong> {searchResult?.patientDetails?.address?.district}</p>
                                 <p><strong>Postal Code:</strong> {searchResult?.patientDetails?.address?.postalCode}</p>

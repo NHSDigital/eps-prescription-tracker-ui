@@ -32,38 +32,33 @@ export const mergePrescriptionDetails = (
   const patientDetails = patientDataBundle.length > 0 ? {
     identifier: patientDataBundle[0]?.identifier?.[0]?.value || "Not found",
     name: {
-      prefix: patientDataBundle[0]?.name?.[0]?.prefix?.[0] || "Not found",
+      prefix: patientDataBundle[0]?.name?.[0]?.prefix?.[0] || "",
       given: patientDataBundle[0]?.name?.[0]?.given?.join(" ") || "Not found",
       family: patientDataBundle[0]?.name?.[0]?.family || "Not found",
-      suffix: patientDataBundle[0]?.name?.[0]?.suffix?.[0] || "Not found"
+      suffix: patientDataBundle[0]?.name?.[0]?.suffix?.[0] || ""
     },
-    gender: patientDataBundle[0]?.gender || "Not found",
-    birthDate: patientDataBundle[0]?.birthDate || "Not found",
+    gender: patientDataBundle[0]?.gender ?? "Not found",
+    birthDate: patientDataBundle[0]?.birthDate ?? "Not found",
     address: {
-      line: patientDataBundle[0]?.address?.[0]?.line?.join(", ") || "Not found",
-      city: patientDataBundle[0]?.address?.[0]?.city || "Not found",
-      district: patientDataBundle[0]?.address?.[0]?.district || "Not found",
-      postalCode: patientDataBundle[0]?.address?.[0]?.postalCode || "Not found",
-      text: patientDataBundle[0]?.address?.[0]?.text || "Not found",
-      type: patientDataBundle[0]?.address?.[0]?.type || "Not found",
-      use: patientDataBundle[0]?.address?.[0]?.use || "Not found"
+      text: patientDataBundle[0]?.address?.[0]?.text ?? "Not found",
+      line: patientDataBundle[0]?.address?.[0]?.line?.join(", ") ?? "Not found",
+      city: patientDataBundle[0]?.address?.[0]?.city ?? "Not found",
+      district: patientDataBundle[0]?.address?.[0]?.district ?? "Not found",
+      postalCode: patientDataBundle[0]?.address?.[0]?.postalCode ?? "Not found",
+      type: patientDataBundle[0]?.address?.[0]?.type ?? "Not found",
+      use: patientDataBundle[0]?.address?.[0]?.use ?? "Not found"
     }
   } : {
     identifier: "Not found",
-    name: {
-      prefix: "Not found",
-      given: "Not found",
-      family: "Not found",
-      suffix: "Not found"
-    },
+    name: {prefix: "", given: "Not found", family: "Not found", suffix: ""},
     gender: "Not found",
     birthDate: "Not found",
     address: {
+      text: "Not found",
       line: "Not found",
       city: "Not found",
       district: "Not found",
       postalCode: "Not found",
-      text: "Not found",
       type: "Not found",
       use: "Not found"
     }
