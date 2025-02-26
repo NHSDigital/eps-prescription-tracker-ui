@@ -118,7 +118,7 @@ describe("Prescriptions Lookup Service Tests", () => {
 
       // Verify the API call
       expect(mockGet).toHaveBeenCalledWith(
-        `${mockEndpoint}/RequestGroup?prescriptionId=${mockPrescriptionId}`,
+        `${mockEndpoint}/clinical-prescription-tracker-pr-808/RequestGroup?prescriptionId=${mockPrescriptionId}`,
         expect.objectContaining({
           headers: expect.objectContaining({
             Authorization: `Bearer ${mockAccessToken}`,
@@ -195,7 +195,7 @@ describe("Prescriptions Lookup Service Tests", () => {
 
       // Verify the API call
       expect(mockGet).toHaveBeenCalledWith(
-        `${mockEndpoint}/RequestGroup?nhsNumber=${mockNhsNumber}`,
+        `${mockEndpoint}/clinical-prescription-tracker-pr-808/RequestGroup?nhsNumber=${mockNhsNumber}`,
         expect.objectContaining({
           headers: expect.objectContaining({
             Authorization: `Bearer ${mockAccessToken}`,

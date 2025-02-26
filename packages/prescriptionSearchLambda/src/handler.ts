@@ -29,7 +29,7 @@ It expects the following environment variables to be set
 
 apigeeCIS2TokenEndpoint
 apigeeMockTokenEndpoint
-apigeePrescriptionsEndpoint
+apigeeUrl
 TokenMappingTableName
 jwtPrivateKeyArn
 apigeeApiKey
@@ -57,7 +57,8 @@ const logger = new Logger({serviceName: "prescriptionSearch"})
 // External endpoints and environment variables
 const apigeeCIS2TokenEndpoint = process.env["apigeeCIS2TokenEndpoint"] as string
 const apigeeMockTokenEndpoint = process.env["apigeeMockTokenEndpoint"] as string
-const apigeePrescriptionsEndpoint = process.env["apigeePrescriptionsEndpoint"] as string
+// const apigeeUrl = process.env["apigeeUrl"] as string
+const apigeeUrl = "https://internal-dev.api.service.nhs.uk/"
 const TokenMappingTableName = process.env["TokenMappingTableName"] as string
 const jwtPrivateKeyArn = process.env["jwtPrivateKeyArn"] as string
 const apigeeApiKey = process.env["apigeeApiKey"] as string
@@ -164,7 +165,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
       const patientDetails = await getPdsPatientDetails(
         axiosInstance,
         logger,
-        apigeePrescriptionsEndpoint,
+        apigeeUrl,
         searchParams.nhsNumber,
         apigeeAccessToken,
         roleId
@@ -180,7 +181,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
         const prescriptions = await getPrescriptions(
           axiosInstance,
           logger,
-          apigeePrescriptionsEndpoint,
+          apigeeUrl,
           {nhsNumber: patientDetails.supersededBy},
           apigeeAccessToken,
           roleId
@@ -192,7 +193,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
         const prescriptions = await getPrescriptions(
           axiosInstance,
           logger,
-          apigeePrescriptionsEndpoint,
+          apigeeUrl,
           {nhsNumber: searchParams.nhsNumber},
           apigeeAccessToken,
           roleId
@@ -205,7 +206,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
       const prescriptions = await getPrescriptions(
         axiosInstance,
         logger,
-        apigeePrescriptionsEndpoint,
+        apigeeUrl,
         {prescriptionId: searchParams.prescriptionId!},
         apigeeAccessToken,
         roleId
@@ -219,7 +220,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
       const patientDetails = await getPdsPatientDetails(
         axiosInstance,
         logger,
-        apigeePrescriptionsEndpoint,
+        apigeeUrl,
         prescriptions[0].nhsNumber!.toString(),
         apigeeAccessToken,
         roleId
