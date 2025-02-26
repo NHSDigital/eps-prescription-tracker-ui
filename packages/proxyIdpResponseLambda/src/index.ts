@@ -70,7 +70,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent) => {
   }
 
   // Construct the redirect URI by appending the response parameters.
-  const redirectUri = `${cognitoIdpResponseUri}?${new URLSearchParams(responseParams).toString()}`
+  const redirectUri = `https://${cognitoIdpResponseUri}?${new URLSearchParams(responseParams).toString()}`
 
   logger.info("Redirecting to Cognito", {redirectUri})
 
