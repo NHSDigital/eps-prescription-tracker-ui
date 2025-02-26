@@ -72,7 +72,7 @@ jobs:
 
       - name: build react app
         run: |
-          export VITE_hostedLoginDomain="https://${fullCloudfrontDomain}/api/authorize"
+          export VITE_hostedLoginDomain=${fullCloudfrontDomain}
           export VITE_userPoolClientId=${userPoolClientId}
           export VITE_userPoolId=${userPoolId}
           export VITE_redirectSignIn="https://${fullCloudfrontDomain}/site/selectyourrole"
