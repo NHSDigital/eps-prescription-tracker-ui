@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route } from "react-router";
 import { AuthProvider } from "@/context/AuthProvider";
 import { AccessProvider } from "@/context/AccessProvider";
 import Layout from "@/Layout";

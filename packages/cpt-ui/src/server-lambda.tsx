@@ -4,16 +4,18 @@ import { StaticRouter } from 'react-router';
 import App from './App';
 
 export const handler: LambdaFunctionURLHandler = async (event) => {
-    const {prelude} = await prerenderToNodeStream(
-        <App />,
+    const { prelude } = await prerenderToNodeStream(
+        <StaticRouter location={`${event.rawPath}?${event.rawQueryString}`} basename="/site">
+            <App />
+        </StaticRouter>,
         {
-            bootstrapScripts: ['/main.js']
+            bootstrapScripts: ['/hydrate.js']
         }
     );
     const body = await new Promise<string>((resolve, reject) => {
         let data = '';
         prelude.on('data', chunk => {
-          data += chunk;
+            data += chunk;
         });
         prelude.on('end', () => resolve(data));
         prelude.on('error', reject);

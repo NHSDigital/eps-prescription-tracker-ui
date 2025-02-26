@@ -1,4 +1,4 @@
-import { Outlet } from "react-router-dom";
+import { Outlet } from "react-router";
 import EpsHeader from "@/components/EpsHeader";
 import RBACBanner from "@/components/RBACBanner";
 import EpsFooter from "@/components/EpsFooter";
