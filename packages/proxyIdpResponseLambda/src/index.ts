@@ -15,10 +15,12 @@ const errorResponseBody = {
 const middyErrorHandler = new MiddyErrorHandler(errorResponseBody)
 
 // Environment variables
+// Retrieve the original state from this table
 const tableName = process.env["StateMappingTableName"] as string
 
-// TODO: GET THESE
+// The cognito client ID must be re-added.
 const cognitoClientId = process.env["COGNITO_CLIENT_ID"] as string
+// And this is where to send the client with their login event (i.e. back to the app)
 const cloudfrontDomain = process.env["FULL_CLOUDFRONT_DOMAIN"] as string
 
 const dynamoClient = new DynamoDBClient()

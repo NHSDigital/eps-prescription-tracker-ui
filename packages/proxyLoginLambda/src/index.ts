@@ -14,12 +14,13 @@ import inputOutputLogger from "@middy/input-output-logger"
 
 import {createHash} from "crypto"
 
-// This is the OIDC /authorize endpoint, which we will redirect to
+// This is the OIDC /authorize endpoint, which we will redirect to after adding the query parameter
 const oidcAuthorizeEndpoint = process.env["CIS2_IDP_AUTHORIZE_PATH"] as string
 const oidcClientId = process.env["CIS2_OIDC_CLIENT_ID"] as string
 // The stack name is needed to figure out the return address for the login event, so
 // we can intercept it after the CIS2 login
 const cloudfrontDomain = process.env["FULL_CLOUDFRONT_DOMAIN"] as string
+// And since we need to store the original state for the return journey, this table will be used. for that
 const tableName = process.env["StateMappingTableName"] as string
 
 const logger = new Logger({serviceName: "authorize"})
