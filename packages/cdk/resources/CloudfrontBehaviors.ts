@@ -23,8 +23,6 @@ export interface CloudfrontBehaviorsProps {
   readonly stackName: string
   readonly apiGatewayOrigin: RestApiOrigin
   readonly apiGatewayRequestPolicy: OriginRequestPolicy
-  readonly oauth2GatewayOrigin: RestApiOrigin
-  readonly oauth2GatewayRequestPolicy: OriginRequestPolicy
   readonly staticContentBucketOrigin: IOrigin
 }
 
@@ -63,10 +61,6 @@ export class CloudfrontBehaviors extends Construct{
         {
           key: "api_path",
           value: "/api"
-        },
-        {
-          key: "oauth2_proxyPath",
-          value: "/oauth2"
         },
         {
           key: "jwks_rewrite",
@@ -153,21 +147,6 @@ export class CloudfrontBehaviors extends Construct{
     on how many can be created simultaneously */
     apiGatewayStripPathFunction.node.addDependency(s3StaticContentUriRewriteFunction)
 
-    const oauth2GatewayStripPathFunction = new CloudfrontFunction(this, "Oauth2GatewayStripPathFunction", {
-      functionName: `${props.serviceName}-Oauth2GatewayStripPathFunction`,
-      sourceFileName: "genericStripPathUriRewrite.js",
-      keyValueStore: keyValueStore,
-      codeReplacements: [
-        {
-          valueToReplace: "PATH_PLACEHOLDER",
-          replacementValue: "oauth2_proxyPath"
-        }
-      ]
-    })
-    /* Add dependency on previous function to force them to build one by one to avoid aws limits
-    on how many can be created simultaneously */
-    oauth2GatewayStripPathFunction.node.addDependency(s3StaticContentUriRewriteFunction)
-
     const s3JwksUriRewriteFunction = new CloudfrontFunction(this, "s3JwksUriRewriteFunction", {
       functionName: `${props.serviceName}-s3JwksUriRewriteFunction`,
       sourceFileName: "genericS3FixedObjectUriRewrite.js",
@@ -229,17 +208,11 @@ export class CloudfrontBehaviors extends Construct{
         ]
       },
       "/oauth2/*": {
-        origin: props.oauth2GatewayOrigin,
+        origin: props.apiGatewayOrigin,
         allowedMethods: AllowedMethods.ALLOW_ALL,
         viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-        originRequestPolicy: props.oauth2GatewayRequestPolicy,
-        cachePolicy: CachePolicy.CACHING_DISABLED,
-        functionAssociations: [
-          {
-            function: oauth2GatewayStripPathFunction.function,
-            eventType: FunctionEventType.VIEWER_REQUEST
-          }
-        ]
+        originRequestPolicy: props.apiGatewayRequestPolicy,
+        cachePolicy: CachePolicy.CACHING_DISABLED
       },
       "/jwks/": {/* matches exactly <url>/jwks and will only serve the jwks json (via cf function) */
         origin: props.staticContentBucketOrigin,
