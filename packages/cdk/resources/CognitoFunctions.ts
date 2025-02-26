@@ -81,7 +81,7 @@ export class CognitoFunctions extends Construct {
     })
 
     // This proxy handles the return journey from the IdP login initiated by the authorize lambda
-    const IdpResponseLambda = new LambdaFunction(this, "IDPResponseLambdaResources", {
+    const idpResponseLambda = new LambdaFunction(this, "IDPResponseLambdaResources", {
       serviceName: props.serviceName,
       stackName: props.stackName,
       lambdaName: `${props.stackName}-idp-response`,
@@ -143,7 +143,7 @@ export class CognitoFunctions extends Construct {
     const cognitoPolicies: Array<IManagedPolicy> = [
       tokenLambda.executeLambdaManagedPolicy,
       authorizeLambda.executeLambdaManagedPolicy,
-      IdpResponseLambda.executeLambdaManagedPolicy
+      idpResponseLambda.executeLambdaManagedPolicy
     ]
 
     // If mock OIDC is enabled, configure mock token Lambda
@@ -254,7 +254,7 @@ export class CognitoFunctions extends Construct {
     // Outputs
     this.cognitoPolicies = cognitoPolicies
     this.authorizeLambda = authorizeLambda.lambda
-    this.idpResponseLambda = IdpResponseLambda.lambda
+    this.idpResponseLambda = idpResponseLambda.lambda
     this.tokenLambda = tokenLambda.lambda
     this.primaryJwtPrivateKey = props.sharedSecrets.primaryJwtPrivateKey
   }

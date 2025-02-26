@@ -15,7 +15,7 @@ import inputOutputLogger from "@middy/input-output-logger"
 import {createHash} from "crypto"
 
 // This is the OIDC /authorize endpoint, which we will redirect to
-const loginEndpoint = process.env["CIS2_IDP_AUTHORIZE_PATH"] as string
+const oidcAuthorizeEndpoint = process.env["CIS2_IDP_AUTHORIZE_PATH"] as string
 const oidcClientId = process.env["CIS2_OIDC_CLIENT_ID"] as string
 // The stack name is needed to figure out the return address for the login event, so
 // we can intercept it after the CIS2 login
@@ -41,7 +41,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent) => {
   logger.info("Event payload:", {event})
 
   // This is set to mock for the mock lambda, and set to CIS2 for the prod lambda
-  if (!loginEndpoint) {
+  if (!oidcAuthorizeEndpoint) {
     throw new Error("Upstream login endpoint environment variable not set")
   }
   // Check we're set up properly.
@@ -94,7 +94,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent) => {
   )
 
   // Set the redirection URL header
-  const callbackUri = `${stackName}/api/callback`
+  const callbackUri = `https://${stackName}/api/callback`
 
   // These are the parameters we pass back in the redirection response
   const responseParameters = {
@@ -106,7 +106,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent) => {
     prompt: "login"
   }
 
-  const redirectPath = `${loginEndpoint}?${new URLSearchParams(responseParameters)}`
+  const redirectPath = `${oidcAuthorizeEndpoint}?${new URLSearchParams(responseParameters)}`
 
   // Return an HTTP 302 redirect response.
   const redirect = {

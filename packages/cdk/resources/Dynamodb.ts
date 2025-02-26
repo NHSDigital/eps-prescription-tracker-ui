@@ -151,8 +151,6 @@ export class Dynamodb extends Construct {
       ]
     })
 
-    // --- Add the state mapping table ---
-
     // KMS key for state mapping table
     const stateMappingKmsKey = new Key(this, "StateMappingKMSKey", {
       removalPolicy: RemovalPolicy.DESTROY,
