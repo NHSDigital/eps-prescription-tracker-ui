@@ -23,6 +23,8 @@ export interface CloudfrontBehaviorsProps {
   readonly stackName: string
   readonly apiGatewayOrigin: RestApiOrigin
   readonly apiGatewayRequestPolicy: OriginRequestPolicy
+  readonly oauth2GatewayOrigin: RestApiOrigin
+  readonly oauth2GatewayRequestPolicy: OriginRequestPolicy
   readonly staticContentBucketOrigin: IOrigin
 }
 
@@ -227,7 +229,7 @@ export class CloudfrontBehaviors extends Construct{
         ]
       },
       "/oauth2/*": {
-        origin: props.apiGatewayOrigin,
+        origin: props.oauth2GatewayOrigin,
         allowedMethods: AllowedMethods.ALLOW_ALL,
         viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
         originRequestPolicy: props.apiGatewayRequestPolicy,

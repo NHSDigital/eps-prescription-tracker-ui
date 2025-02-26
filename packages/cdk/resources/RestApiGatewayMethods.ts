@@ -14,6 +14,8 @@ export interface RestApiGatewayMethodsProps {
   readonly executePolices: Array<IManagedPolicy>
   readonly restAPiGatewayRole: IRole
   readonly restApiGateway: RestApi
+  readonly oauth2APiGatewayRole: IRole
+  readonly oauth2ApiGateway: RestApi
   readonly authorizeLambda: NodejsFunction
   readonly mockAuthorizeLambda: NodejsFunction
   readonly idpResponseLambda: NodejsFunction
@@ -43,32 +45,29 @@ export class RestApiGatewayMethods extends Construct {
       props.restAPiGatewayRole.addManagedPolicy(policy)
     }
 
-    // Add a resource for the oauth2 paths (authorize and callback proxy endpoints)
-    const oauth2Resource = props.restApiGateway.root.addResource("oauth2")
-
     // Authorize redirection endpoint
-    const authorizeResource = oauth2Resource.addResource("authorize")
+    const authorizeResource = props.oauth2ApiGateway.root.addResource("authorize")
     authorizeResource.addMethod("GET", new LambdaIntegration(props.authorizeLambda, {
       credentialsRole: props.restAPiGatewayRole
     }))
 
     // Mock authorize redirection endpoint
     if (props.useMockOidc) {
-      const mockAuthorizeResource = oauth2Resource.addResource("mockauthorize")
+      const mockAuthorizeResource = props.oauth2ApiGateway.root.addResource("mockauthorize")
       mockAuthorizeResource.addMethod("GET", new LambdaIntegration(props.mockAuthorizeLambda, {
         credentialsRole: props.restAPiGatewayRole
       }))
     }
 
     // Return journey login callback.
-    const idpResponseResource = oauth2Resource.addResource("callback")
+    const idpResponseResource = props.oauth2ApiGateway.root.addResource("callback")
     idpResponseResource.addMethod("GET", new LambdaIntegration(props.idpResponseLambda, {
       credentialsRole: props.restAPiGatewayRole
     }))
 
     // Mock Return journey login callback
     if (props.useMockOidc) {
-      const mockIdpResponseResource = oauth2Resource.addResource("mockcallback")
+      const mockIdpResponseResource = props.oauth2ApiGateway.root.addResource("mockcallback")
       mockIdpResponseResource.addMethod("GET", new LambdaIntegration(props.mockIdpResponseLambda, {
         credentialsRole: props.restAPiGatewayRole
       }))
