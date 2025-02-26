@@ -1,4 +1,5 @@
-import {SearchParams} from "../types"
+import {PatientDetails, SearchParams} from "../types"
+import {PDSError} from "./errors"
 
 export class ValidationError extends Error {
   constructor(message: string) {
@@ -84,4 +85,34 @@ function isValidPrescriptionId(prescriptionId: string): boolean {
   const PRESCRIPTION_ID_REGEX = /^\d{1,2}[A-Za-z0-9-]{1,48}$/
 
   return PRESCRIPTION_ID_REGEX.test(prescriptionId)
+}
+
+export const validatePatientDetails = (details: PatientDetails): void => {
+  const requiredFields = [
+    {field: "nhsNumber", value: details.nhsNumber},
+    {field: "given", value: details.given},
+    {field: "family", value: details.family}
+  ]
+
+  const missingFields = requiredFields
+    .filter(({value}) => !value)
+    .map(({field}) => field)
+
+  if (missingFields.length > 0) {
+    throw new PDSError(
+      `Incomplete patient information. Missing required fields: ${missingFields.join(", ")}`,
+      "INCOMPLETE_DATA"
+    )
+  }
+
+  // Explicitly check that optional fields are null when not present
+  if (!details.gender && details.gender !== null) {
+    throw new PDSError("Gender must be explicitly null when not present")
+  }
+  if (!details.dateOfBirth && details.dateOfBirth !== null) {
+    throw new PDSError("Date of birth must be explicitly null when not present")
+  }
+  if (!details.address && details.address !== null) {
+    throw new PDSError("Address must be explicitly null when not present")
+  }
 }
