@@ -19,7 +19,7 @@ const tableName = process.env["StateMappingTableName"] as string
 
 // TODO: GET THESE
 const cognitoClientId = process.env["COGNITO_CLIENT_ID"] as string
-const cognitoIdpResponseUri = process.env["COGNITO_IDP_RESPONSE_URI"] as string
+const cloudfrontDomain = process.env["FULL_CLOUDFRONT_DOMAIN"] as string
 
 const dynamoClient = new DynamoDBClient()
 const documentClient = DynamoDBDocumentClient.from(dynamoClient)
@@ -70,7 +70,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent) => {
   }
 
   // Construct the redirect URI by appending the response parameters.
-  const redirectUri = `https://${cognitoIdpResponseUri}?${new URLSearchParams(responseParams).toString()}`
+  const redirectUri = `https://${cloudfrontDomain}?${new URLSearchParams(responseParams).toString()}`
 
   logger.info("Redirecting to Cognito", {redirectUri})
 

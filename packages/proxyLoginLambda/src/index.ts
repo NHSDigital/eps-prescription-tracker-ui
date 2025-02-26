@@ -19,7 +19,7 @@ const oidcAuthorizeEndpoint = process.env["CIS2_IDP_AUTHORIZE_PATH"] as string
 const oidcClientId = process.env["CIS2_OIDC_CLIENT_ID"] as string
 // The stack name is needed to figure out the return address for the login event, so
 // we can intercept it after the CIS2 login
-const stackName = process.env["FULL_CLOUDFRONT_DOMAIN"] as string
+const cloudfrontDomain = process.env["FULL_CLOUDFRONT_DOMAIN"] as string
 const tableName = process.env["StateMappingTableName"] as string
 
 const logger = new Logger({serviceName: "authorize"})
@@ -45,7 +45,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent) => {
     throw new Error("Upstream login endpoint environment variable not set")
   }
   // Check we're set up properly.
-  if (!stackName) {
+  if (!cloudfrontDomain) {
     throw new Error("Cloudfront domain environment variable not set")
   }
   if (!tableName) {
@@ -94,7 +94,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent) => {
   )
 
   // Set the redirection URL header
-  const callbackUri = `https://${stackName}/api/callback`
+  const callbackUri = `https://${cloudfrontDomain}/api/callback`
 
   // These are the parameters we pass back in the redirection response
   const responseParameters = {
