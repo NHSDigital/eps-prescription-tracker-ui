@@ -63,6 +63,10 @@ export class CloudfrontBehaviors extends Construct{
           value: "/api"
         },
         {
+          key: "oauth2_path",
+          value: "/oauth2"
+        },
+        {
           key: "jwks_rewrite",
           value: "jwks.json"
         },
@@ -147,6 +151,18 @@ export class CloudfrontBehaviors extends Construct{
     on how many can be created simultaneously */
     apiGatewayStripPathFunction.node.addDependency(s3StaticContentUriRewriteFunction)
 
+    const oauth2StripPathFunction = new CloudfrontFunction(this, "Oauth2StripPathFunction", {
+      functionName: `${props.serviceName}-Oauth2StripPathFunction`,
+      sourceFileName: "genericStripPathUriRewrite.js",
+      keyValueStore: keyValueStore,
+      codeReplacements: [
+        {
+          valueToReplace: "PATH_PLACEHOLDER",
+          replacementValue: "oauth2_path"
+        }
+      ]
+    })
+
     const s3JwksUriRewriteFunction = new CloudfrontFunction(this, "s3JwksUriRewriteFunction", {
       functionName: `${props.serviceName}-s3JwksUriRewriteFunction`,
       sourceFileName: "genericS3FixedObjectUriRewrite.js",
@@ -212,7 +228,13 @@ export class CloudfrontBehaviors extends Construct{
         allowedMethods: AllowedMethods.ALLOW_ALL,
         viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
         originRequestPolicy: props.apiGatewayRequestPolicy,
-        cachePolicy: CachePolicy.CACHING_DISABLED
+        cachePolicy: CachePolicy.CACHING_DISABLED,
+        functionAssociations: [
+          {
+            function: oauth2StripPathFunction.function,
+            eventType: FunctionEventType.VIEWER_REQUEST
+          }
+        ]
       },
       "/jwks/": {/* matches exactly <url>/jwks and will only serve the jwks json (via cf function) */
         origin: props.staticContentBucketOrigin,

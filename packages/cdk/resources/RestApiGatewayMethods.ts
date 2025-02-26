@@ -43,31 +43,33 @@ export class RestApiGatewayMethods extends Construct {
       props.restAPiGatewayRole.addManagedPolicy(policy)
     }
 
-    // FIXME: These need to be hosted under /oauth2/* NOT /api/*
-    // Needs to be fixed.
+    // These need to be hosted under /oauth2/* NOT /api/*
+    // FIXME
+    const oauth2Resource = props.restApiGateway.root.addResource("oauth2")
+
     // Authorize redirection endpoint
-    const authorizeResource = props.restApiGateway.root.addResource("authorize")
+    const authorizeResource = oauth2Resource.addResource("authorize")
     authorizeResource.addMethod("GET", new LambdaIntegration(props.authorizeLambda, {
       credentialsRole: props.restAPiGatewayRole
     }))
 
     // Mock authorize redirection endpoint
     if (props.useMockOidc) {
-      const mockAuthorizeResource = props.restApiGateway.root.addResource("mockauthorize")
+      const mockAuthorizeResource = oauth2Resource.addResource("mockauthorize")
       mockAuthorizeResource.addMethod("GET", new LambdaIntegration(props.mockAuthorizeLambda, {
         credentialsRole: props.restAPiGatewayRole
       }))
     }
 
     // Return journey login callback.
-    const idpResponseResource = props.restApiGateway.root.addResource("callback")
+    const idpResponseResource = oauth2Resource.addResource("callback")
     idpResponseResource.addMethod("GET", new LambdaIntegration(props.idpResponseLambda, {
       credentialsRole: props.restAPiGatewayRole
     }))
 
     // Mock Return journey login callback
     if (props.useMockOidc) {
-      const mockIdpResponseResource = props.restApiGateway.root.addResource("mockcallback")
+      const mockIdpResponseResource = oauth2Resource.addResource("mockcallback")
       mockIdpResponseResource.addMethod("GET", new LambdaIntegration(props.mockIdpResponseLambda, {
         credentialsRole: props.restAPiGatewayRole
       }))
