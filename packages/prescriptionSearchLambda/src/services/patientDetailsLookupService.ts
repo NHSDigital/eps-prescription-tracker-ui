@@ -19,7 +19,7 @@ export const getPdsPatientDetails = async (
 
   try {
     const response = await axiosInstance.get(
-      `${pdsEndpoint}/Patient/${nhsNumber}`,
+      `${pdsEndpoint}/personal-demographics/FHIR/R4/Patient-pr-1108/${nhsNumber}`,
       {
         headers: {
           Accept: "application/fhir+json",

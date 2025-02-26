@@ -83,7 +83,7 @@ describe("Patient Details Lookup Service Tests", () => {
     })
 
     expect(mockGet).toHaveBeenCalledWith(
-      `${mockEndpoint}/Patient/${mockNhsNumber}`,
+      `${mockEndpoint}/personal-demographics/FHIR/R4/Patient-pr-1108/${mockNhsNumber}`,
       expect.objectContaining({
         headers: expect.objectContaining({
           Authorization: `Bearer ${mockAccessToken}`,
