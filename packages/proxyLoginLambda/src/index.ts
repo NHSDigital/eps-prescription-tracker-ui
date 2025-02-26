@@ -14,17 +14,20 @@ import inputOutputLogger from "@middy/input-output-logger"
 
 import {createHash} from "crypto"
 
+// This is the OIDC /authorize endpoint, which we will redirect to
+const loginEndpoint = process.env["CIS2_IDP_AUTHORIZE_PATH"] as string
+const oidcClientId = process.env["CIS2_OIDC_CLIENT_ID"] as string
+// The stack name is needed to figure out the return address for the login event, so
+// we can intercept it after the CIS2 login
+const stackName = process.env["FULL_CLOUDFRONT_DOMAIN"] as string
+const tableName = process.env["StateMappingTableName"] as string
+
 const logger = new Logger({serviceName: "authorize"})
 
 const errorResponseBody = {
   message: "A system error has occurred"
 }
 const middyErrorHandler = new MiddyErrorHandler(errorResponseBody)
-
-const loginEndpoint = process.env["CIS2_IDP_TOKEN_PATH"] as string
-const stackName = process.env["FULL_CLOUDFRONT_DOMAIN"] as string
-const tableName = process.env["StateMappingTableName"] as string
-const oidcClientId = process.env["CIS2_OIDC_CLIENT_ID"] as string
 
 const dynamoClient = new DynamoDBClient()
 const documentClient = DynamoDBDocumentClient.from(dynamoClient)

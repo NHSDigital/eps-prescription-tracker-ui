@@ -76,7 +76,7 @@ export class CognitoFunctions extends Construct {
         StateMappingTableName: props.stateMappingTable.tableName,
         CIS2_OIDC_CLIENT_ID: props.primaryOidcClientId,
         FULL_CLOUDFRONT_DOMAIN: props.fullCloudfrontDomain,
-        CIS2_IDP_TOKEN_PATH: props.primaryOidcAuthorizeEndpoint
+        CIS2_IDP_AUTHORIZE_PATH: props.primaryOidcAuthorizeEndpoint
       }
     })
 
@@ -181,7 +181,7 @@ export class CognitoFunctions extends Construct {
           StateMappingTableName: props.stateMappingTable.tableName,
           CIS2_OIDC_CLIENT_ID: props.mockOidcClientId,
           FULL_CLOUDFRONT_DOMAIN: props.fullCloudfrontDomain,
-          CIS2_IDP_TOKEN_PATH: props.mockOidcAuthorizeEndpoint
+          CIS2_IDP_AUTHORIZE_PATH: props.mockOidcAuthorizeEndpoint
         }
       })
 
