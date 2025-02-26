@@ -136,7 +136,6 @@ export default function PrescriptionIdSearch() {
                                 <p><strong>Address Type:</strong> {searchResult?.patientDetails?.address?.type}</p>
                                 <p><strong>Address Use:</strong> {searchResult?.patientDetails?.address?.use}</p>
 
-
                                 {/* Prescription Summary */}
                                 <h3>Prescription Summary</h3>
                                 <p><strong>Type Code:</strong> {searchResult?.typeCode}</p>
