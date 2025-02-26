@@ -26,18 +26,6 @@ describe("Validation Utils Tests", () => {
       expect(() => validateSearchParams(params)).toThrow(ValidationError)
       expect(() => validateSearchParams(params)).toThrow("Cannot search by both prescriptionId and nhsNumber")
     })
-
-    it.skip("should throw error for invalid NHS number format", () => {
-      const params = {nhsNumber: "123456"} // Too short
-      expect(() => validateSearchParams(params)).toThrow(ValidationError)
-      expect(() => validateSearchParams(params)).toThrow("Invalid NHS number format")
-    })
-
-    it.skip("should throw error for invalid prescription ID format", () => {
-      const params = {prescriptionId: "8B45A9-A83008"} // No numeric prefix
-      expect(() => validateSearchParams(params)).toThrow(ValidationError)
-      expect(() => validateSearchParams(params)).toThrow("Invalid prescription ID format")
-    })
   })
 
   describe("validatePatientDetails", () => {
