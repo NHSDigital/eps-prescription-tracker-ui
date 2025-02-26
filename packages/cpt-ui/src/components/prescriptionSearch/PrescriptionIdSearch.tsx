@@ -116,9 +116,22 @@ export default function PrescriptionIdSearch() {
 
                                 {/* Patient Details */}
                                 <h3>Patient Details</h3>
+                                <p><strong>Identifier (NHS Number):</strong> {searchResult?.patientDetails?.identifier}</p>
+                                <p><strong>Name:</strong>
+                                    {searchResult?.patientDetails?.name?.prefix ? ` ${searchResult?.patientDetails?.name?.prefix}` : ""}
+                                    {searchResult?.patientDetails?.name?.given ? ` ${searchResult?.patientDetails?.name?.given}` : ""}
+                                    {searchResult?.patientDetails?.name?.family ? ` ${searchResult?.patientDetails?.name?.family}` : ""}
+                                    {searchResult?.patientDetails?.name?.suffix ? ` ${searchResult?.patientDetails?.name?.suffix}` : ""}
+                                </p>
                                 <p><strong>Gender:</strong> {searchResult?.patientDetails?.gender}</p>
-                                <p><strong>Date of Birth:</strong> {searchResult?.patientDetails?.dateOfBirth}</p>
-                                <p><strong>Address:</strong> {searchResult?.patientDetails?.address}</p>
+                                <p><strong>Date of Birth:</strong> {searchResult?.patientDetails?.birthDate}</p>
+                                <p><strong>Address:</strong> {searchResult?.patientDetails?.address?.text}</p>
+                                <p><strong>City:</strong> {searchResult?.patientDetails?.address?.city}</p>
+                                <p><strong>District:</strong> {searchResult?.patientDetails?.address?.district}</p>
+                                <p><strong>Postal Code:</strong> {searchResult?.patientDetails?.address?.postalCode}</p>
+                                <p><strong>Address Type:</strong> {searchResult?.patientDetails?.address?.type}</p>
+                                <p><strong>Address Use:</strong> {searchResult?.patientDetails?.address?.use}</p>
+
 
                                 {/* Prescription Summary */}
                                 <h3>Prescription Summary</h3>
