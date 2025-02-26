@@ -73,10 +73,10 @@ export class CognitoFunctions extends Construct {
       packageBasePath: "packages/proxyLoginLambda",
       entryPoint: "src/index.ts",
       lambdaEnvironmentVariables: {
-        StateMappingTableName: props.stateMappingTable.tableName,
+        CIS2_IDP_AUTHORIZE_PATH: props.primaryOidcAuthorizeEndpoint,
         CIS2_OIDC_CLIENT_ID: props.primaryOidcClientId,
         FULL_CLOUDFRONT_DOMAIN: props.fullCloudfrontDomain,
-        CIS2_IDP_AUTHORIZE_PATH: props.primaryOidcAuthorizeEndpoint
+        StateMappingTableName: props.stateMappingTable.tableName
       }
     })
 
@@ -178,10 +178,10 @@ export class CognitoFunctions extends Construct {
         packageBasePath: "packages/proxyLoginLambda",
         entryPoint: "src/index.ts",
         lambdaEnvironmentVariables: {
-          StateMappingTableName: props.stateMappingTable.tableName,
+          CIS2_IDP_AUTHORIZE_PATH: props.mockOidcAuthorizeEndpoint,
           CIS2_OIDC_CLIENT_ID: props.mockOidcClientId,
           FULL_CLOUDFRONT_DOMAIN: props.fullCloudfrontDomain,
-          CIS2_IDP_AUTHORIZE_PATH: props.mockOidcAuthorizeEndpoint
+          StateMappingTableName: props.stateMappingTable.tableName
         }
       })
 
