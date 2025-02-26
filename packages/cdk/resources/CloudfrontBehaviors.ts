@@ -232,11 +232,11 @@ export class CloudfrontBehaviors extends Construct{
         origin: props.oauth2GatewayOrigin,
         allowedMethods: AllowedMethods.ALLOW_ALL,
         viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-        originRequestPolicy: props.apiGatewayRequestPolicy,
+        originRequestPolicy: props.oauth2GatewayRequestPolicy,
         cachePolicy: CachePolicy.CACHING_DISABLED,
         functionAssociations: [
           {
-            function: apiGatewayStripPathFunction.function,
+            function: oauth2GatewayStripPathFunction.function,
             eventType: FunctionEventType.VIEWER_REQUEST
           }
         ]
