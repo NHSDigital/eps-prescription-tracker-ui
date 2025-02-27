@@ -112,7 +112,9 @@ const lambdaHandler = async (event: APIGatewayProxyEvent) => {
   // Return an HTTP 302 redirect response.
   const redirect = {
     statusCode: 302,
-    headers: {Location: redirectPath}
+    headers: {Location: redirectPath},
+    isBase64Encoded: false,
+    body: JSON.stringify({})
   }
   logger.info("Redirect response", {redirect})
   return redirect

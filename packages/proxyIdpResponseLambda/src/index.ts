@@ -78,10 +78,11 @@ const lambdaHandler = async (event: APIGatewayProxyEvent) => {
 
   return {
     statusCode: 302,
-    body: JSON.stringify({}),
     headers: {
       Location: redirectUri
-    }
+    },
+    isBase64Encoded: false,
+    body: JSON.stringify({})
   }
 }
 
