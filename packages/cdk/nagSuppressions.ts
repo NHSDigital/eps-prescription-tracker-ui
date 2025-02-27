@@ -97,10 +97,10 @@ export const nagSuppressions = (stack: Stack) => {
     safeAddNagSuppressionGroup(
       stack,
       [
-        "/StatelessStack/ApiGateway/ApiGateway/oauth2/Default/authorize/GET/Resource",
-        "/StatelessStack/ApiGateway/ApiGateway/oauth2/Default/mockauthorize/GET/Resource",
-        "/StatelessStack/ApiGateway/ApiGateway/oauth2/Default/callback/GET/Resource",
-        "/StatelessStack/ApiGateway/ApiGateway/oauth2/Default/mockcallback/GET/Resource",
+        "/StatelessStack/ApiGateway/ApiGateway/Default/authorize/GET/Resource",
+        "/StatelessStack/ApiGateway/ApiGateway/Default/mockauthorize/GET/Resource",
+        "/StatelessStack/ApiGateway/ApiGateway/Default/callback/GET/Resource",
+        "/StatelessStack/ApiGateway/ApiGateway/Default/mockcallback/GET/Resource",
         "/StatelessStack/ApiGateway/ApiGateway/Default/token/POST/Resource",
         "/StatelessStack/ApiGateway/ApiGateway/Default/mocktoken/POST/Resource",
         "/StatelessStack/ApiGateway/ApiGateway/Default/mocknoauth/GET/Resource"
