@@ -38,9 +38,11 @@ export const getPrescriptions = async (
         headers: {
           Accept: "application/fhir+json",
           Authorization: `Bearer ${apigeeAccessToken}`,
-          "NHSD-Session-URID": roleId,
-          "NHSD-Organization-UUID": "A83008",
-          "X-Request-ID": uuidv4()
+          "nhsd-session-urid": roleId,
+          "x-request-id": uuidv4(),
+          //TODO: investigate what the jobrole should be. It is currently hardcoded
+          "nhsd-session-jobrole": "123456123456",
+          "nhsd-end-user-organisation-ods": "A83008"
         }
       }
     )
