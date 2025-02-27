@@ -12,7 +12,7 @@
     "check-licenses": "license-checker --failOn GPL --failOn LGPL --start ../.."
   },
   "dependencies": {
-    "aws-amplify": "^6.13.1",
+    "aws-amplify": "^6.13.2",
     "axios": "^1.8.1",
     "i18next": "^24.2.1",
     "i18next-browser-languagedetector": "^8.0.4",
