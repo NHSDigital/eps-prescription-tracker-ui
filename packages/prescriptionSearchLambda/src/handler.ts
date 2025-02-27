@@ -29,6 +29,8 @@ It expects the following environment variables to be set
 
 apigeeCIS2TokenEndpoint
 apigeeMockTokenEndpoint
+apigeePrescriptionsEndpoint
+apigeePersonalDemographicsEndpoint
 apigeeUrl
 TokenMappingTableName
 jwtPrivateKeyArn
@@ -57,8 +59,9 @@ const logger = new Logger({serviceName: "prescriptionSearch"})
 // External endpoints and environment variables
 const apigeeCIS2TokenEndpoint = process.env["apigeeCIS2TokenEndpoint"] as string
 const apigeeMockTokenEndpoint = process.env["apigeeMockTokenEndpoint"] as string
-// const apigeeUrl = process.env["apigeeUrl"] as string
-const apigeeUrl = "https://internal-dev.api.service.nhs.uk/"
+// const apigeePrescriptionsEndpoint = process.env["apigeePrescriptionsEndpoint"] as string
+// const apigeePersonalDemographicsEndpoint = process.env["apigeePersonalDemographicsEndpoint"] as string
+const apigeeUrl = "https://internal-dev.api.service.nhs.uk"
 const TokenMappingTableName = process.env["TokenMappingTableName"] as string
 const jwtPrivateKeyArn = process.env["jwtPrivateKeyArn"] as string
 const apigeeApiKey = process.env["apigeeApiKey"] as string
@@ -83,7 +86,14 @@ const errorResponseBody = {
 const middyErrorHandler = new MiddyErrorHandler(errorResponseBody)
 
 const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-  logger.appendKeys({"apigw-request-id": event.requestContext?.requestId})
+  logger.appendKeys({
+    // "x-correlation-id": event.headers?.["x-correlation-id"],
+    "apigw-request-id": event.requestContext?.requestId
+  })
+  // "nhsd-correlation-id": event.headers?.["nhsd-correlation-id"], concatenation of all ids
+  // "nhsd-request-id": event.headers?.["nhsd-request-id"],
+  // "x-correlation-id": event.headers?.["x-correlation-id"], (UI)
+  // "apigw-request-id": event.requestContext.requestId Backend
   logger.info("Lambda handler invoked", {event})
 
   const searchStartTime = Date.now()
