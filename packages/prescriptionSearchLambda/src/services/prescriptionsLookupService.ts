@@ -42,7 +42,7 @@ export const getPrescriptions = async (
           "x-request-id": uuidv4(),
           //TODO: investigate what the jobrole should be. It is currently hardcoded
           "nhsd-session-jobrole": "123456123456",
-          "nhsd-end-user-organisation-ods": "A83008"
+          "nhsd-organization-uuid": "A83008"
         }
       }
     )
