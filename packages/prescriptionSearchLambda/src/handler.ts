@@ -181,6 +181,10 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
         roleId
       )
 
+      logger.debug("patientDetails", {
+        body: patientDetails
+      })
+
       // Check if NHS Number has been superseded
       if (patientDetails.supersededBy) {
         logger.info("Using superseded NHS Number for prescription search", {
@@ -197,6 +201,11 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
           roleId
         )
 
+        logger.debug("Prescriptions", {
+          total: prescriptions.length,
+          body: prescriptions
+        })
+
         searchResponse = mapSearchResponse(patientDetails, prescriptions)
       } else {
         // Normal flow - use original NHS Number
@@ -208,6 +217,11 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
           apigeeAccessToken,
           roleId
         )
+
+        logger.debug("Prescriptions", {
+          total: prescriptions.length,
+          body: prescriptions
+        })
 
         searchResponse = mapSearchResponse(patientDetails, prescriptions)
       }
@@ -227,6 +241,11 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
         throw new PrescriptionError("Prescription not found")
       }
 
+      logger.debug("Prescriptions", {
+        total: prescriptions.length,
+        body: prescriptions
+      })
+
       const patientDetails = await getPdsPatientDetails(
         axiosInstance,
         logger,
@@ -235,6 +254,10 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
         apigeeAccessToken,
         roleId
       )
+
+      logger.debug("patientDetails", {
+        body: patientDetails
+      })
 
       searchResponse = mapSearchResponse(patientDetails, prescriptions)
     }

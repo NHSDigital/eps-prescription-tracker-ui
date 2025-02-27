@@ -41,7 +41,7 @@ export const getPrescriptions = async (
           "nhsd-session-urid": roleId,
           "x-request-id": uuidv4(),
           //TODO: investigate what the jobrole should be. It is currently hardcoded
-          "nhsd-session-jobrole": "123456123456",
+          "nhsd-session-jobrole": roleId,
           "nhsd-organization-uuid": "A83008"
         }
       }

@@ -29,7 +29,7 @@ export const getPdsPatientDetails = async (
           //TODO: we need to pass this from the ui request.
           "x-correlation-id": uuidv4(),
           //TODO: investigate what the jobrole should be. It is currently hardcoded
-          "nhsd-session-jobrole": "123456123456",
+          // "nhsd-session-jobrole": "123456123456",
           "nhsd-end-user-organisation-ods": "A83008"
         }
       }
