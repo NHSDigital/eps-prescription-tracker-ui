@@ -87,7 +87,7 @@ describe("Patient Details Lookup Service Tests", () => {
       expect.objectContaining({
         headers: expect.objectContaining({
           Authorization: `Bearer ${mockAccessToken}`,
-          "NHSD-Session-URID": mockRoleId
+          "nhsd-session-urid": mockRoleId
         })
       })
     )
