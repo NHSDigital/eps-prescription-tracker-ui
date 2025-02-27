@@ -72,9 +72,12 @@ export const nagSuppressions = (stack: Stack) => {
   }
 
   if (stack.artifactId === "StatelessStack") {
-    safeAddNagSuppression(
+    safeAddNagSuppressionGroup(
       stack,
-      "/StatelessStack/ApiGateway/ApiGateway/Resource",
+      [
+        "/StatelessStack/ApiGateway/ApiGateway/Resource",
+        "/StatelessStack/ApiGateway/Oauth2Gateway/Resource"
+      ],
       [
         {
           id: "AwsSolutions-APIG2",
@@ -97,10 +100,10 @@ export const nagSuppressions = (stack: Stack) => {
     safeAddNagSuppressionGroup(
       stack,
       [
-        "/StatelessStack/ApiGateway/ApiGateway/Default/authorize/GET/Resource",
-        "/StatelessStack/ApiGateway/ApiGateway/Default/mockauthorize/GET/Resource",
-        "/StatelessStack/ApiGateway/ApiGateway/Default/callback/GET/Resource",
-        "/StatelessStack/ApiGateway/ApiGateway/Default/mockcallback/GET/Resource",
+        "/StatelessStack/ApiGateway/Oauth2Gateway/Default/authorize/GET/Resource",
+        "/StatelessStack/ApiGateway/Oauth2Gateway/Default/mockauthorize/GET/Resource",
+        "/StatelessStack/ApiGateway/Oauth2Gateway/Default/callback/GET/Resource",
+        "/StatelessStack/ApiGateway/Oauth2Gateway/Default/mockcallback/GET/Resource",
         "/StatelessStack/ApiGateway/ApiGateway/Default/token/POST/Resource",
         "/StatelessStack/ApiGateway/ApiGateway/Default/mocktoken/POST/Resource",
         "/StatelessStack/ApiGateway/ApiGateway/Default/mocknoauth/GET/Resource"

@@ -36,6 +36,8 @@ export interface RestApiGatewayProps {
 export class RestApiGateway extends Construct {
   public readonly restApiGateway: RestApi
   public readonly restAPiGatewayRole: Role
+  public readonly oauth2ApiGateway: RestApi
+  public readonly oauth2APiGatewayRole: Role
   public readonly authorizer: CognitoUserPoolsAuthorizer
 
   public constructor(scope: Construct, id: string, props: RestApiGatewayProps) {
@@ -56,7 +58,6 @@ export class RestApiGateway extends Construct {
       roleArn: props.splunkSubscriptionFilterRole.roleArn
     })
 
-    // API resources, /api/...
     const apiGateway = new RestApi(this, "ApiGateway", {
       restApiName: `${props.serviceName}-apigw`,
       endpointConfiguration: {
@@ -76,14 +77,39 @@ export class RestApiGateway extends Construct {
       managedPolicies: []
     })
 
-    //
+    // OAuth2 resources
+    const oauth2GatewayAccessLogGroup = new LogGroup(this, "Oauth2GatewayAccessLogGroup", {
+      logGroupName: `/aws/apigateway/${props.serviceName}-oauth2-apigw`,
+      retention: props.logRetentionInDays,
+      encryptionKey: props.cloudwatchKmsKey,
+      removalPolicy: RemovalPolicy.DESTROY
+    })
+
+    const oauth2Gateway = new RestApi(this, "Oauth2Gateway", {
+      restApiName: `${props.serviceName}-oauth2-apigw`,
+      endpointConfiguration: {
+        types: [EndpointType.REGIONAL]
+      },
+      deploy: true,
+      deployOptions: {
+        accessLogDestination: new LogGroupLogDestination(oauth2GatewayAccessLogGroup),
+        accessLogFormat: accessLogFormat(),
+        loggingLevel: MethodLoggingLevel.INFO,
+        metricsEnabled: true
+      }
+    })
+
+    const oauth2GatewayRole = new Role(this, "Oauth2GatewayRole", {
+      assumedBy: new ServicePrincipal("apigateway.amazonaws.com"),
+      managedPolicies: []
+    })
+
     const authorizer = new CognitoUserPoolsAuthorizer(this, "Authorizer", {
       authorizerName: "cognitoAuth",
       cognitoUserPools: [props.userPool],
       identitySource: "method.request.header.authorization"
     })
 
-    // Rule suppressions
     const cfnStage = apiGateway.deploymentStage.node.defaultChild as CfnStage
     cfnStage.cfnOptions.metadata = {
       guard: {
@@ -96,6 +122,8 @@ export class RestApiGateway extends Construct {
     // Outputs
     this.restApiGateway = apiGateway
     this.restAPiGatewayRole = apiGatewayRole
+    this.oauth2ApiGateway = oauth2Gateway
+    this.oauth2APiGatewayRole = oauth2GatewayRole
     this.authorizer = authorizer
   }
 }

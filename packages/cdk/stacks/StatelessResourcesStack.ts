@@ -245,6 +245,8 @@ export class StatelessResourcesStack extends Stack {
       ],
       restAPiGatewayRole: apiGateway.restAPiGatewayRole,
       restApiGateway: apiGateway.restApiGateway,
+      oauth2APiGatewayRole: apiGateway.oauth2APiGatewayRole,
+      oauth2ApiGateway: apiGateway.oauth2ApiGateway,
       authorizeLambda: cognitoFunctions.authorizeLambda,
       mockAuthorizeLambda: cognitoFunctions.mockAuthorizeLambda,
       idpResponseLambda: cognitoFunctions.idpResponseLambda,
@@ -273,10 +275,23 @@ export class StatelessResourcesStack extends Stack {
       }
     })
 
+    const oauth2GatewayOrigin = new RestApiOrigin(apiGateway.oauth2ApiGateway, {
+      customHeaders: {
+        "destination-oauth2-apigw-id": apiGateway.oauth2ApiGateway.restApiId // for later apigw waf stuff
+      }
+    })
+
     // --- Origin Request Policies
     /* Allow all for now, may want to review these at a later stage */
     const apiGatewayRequestPolicy = new OriginRequestPolicy(this, "apiGatewayRequestPolicy", {
       originRequestPolicyName: `${props.serviceName}-ApiGatewayRequestPolicy`,
+      cookieBehavior: OriginRequestCookieBehavior.all(),
+      headerBehavior: OriginRequestHeaderBehavior.denyList("host"),
+      queryStringBehavior: OriginRequestQueryStringBehavior.all()
+    })
+
+    const oauth2GatewayRequestPolicy = new OriginRequestPolicy(this, "oauth2GatewayRequestPolicy", {
+      originRequestPolicyName: `${props.serviceName}-Oauth2GatewayRequestPolicy`,
       cookieBehavior: OriginRequestCookieBehavior.all(),
       headerBehavior: OriginRequestHeaderBehavior.denyList("host"),
       queryStringBehavior: OriginRequestQueryStringBehavior.all()
@@ -288,6 +303,8 @@ export class StatelessResourcesStack extends Stack {
       stackName: props.stackName,
       apiGatewayOrigin: apiGatewayOrigin,
       apiGatewayRequestPolicy: apiGatewayRequestPolicy,
+      oauth2GatewayOrigin: oauth2GatewayOrigin,
+      oauth2GatewayRequestPolicy: oauth2GatewayRequestPolicy,
       staticContentBucketOrigin: staticContentBucketOrigin
     })
 
