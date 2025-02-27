@@ -19,16 +19,18 @@ export const getPdsPatientDetails = async (
 
   try {
     const response = await axiosInstance.get(
-      `${pdsEndpoint}/personal-demographics/FHIR/R4/Patient-pr-1108/${nhsNumber}`,
+      `${pdsEndpoint}/personal-demographics/FHIR/R4/Patient/${nhsNumber}`,
       {
         headers: {
           Accept: "application/fhir+json",
           Authorization: `Bearer ${apigeeAccessToken}`,
           "nhsd-session-urid": roleId,
           "x-request-id": uuidv4(),
+          //TODO: we need to pass this from the ui request.
+          "x-correlation-id": uuidv4(),
           //TODO: investigate what the jobrole should be. It is currently hardcoded
           "nhsd-session-jobrole": "123456123456",
-          "nhsd-organization-uuid": "A83008"
+          "nhsd-end-user-organisation-ods": "A83008"
         }
       }
     )
