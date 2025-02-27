@@ -124,7 +124,7 @@ describe("Prescriptions Lookup Service Tests", () => {
         expect.objectContaining({
           headers: expect.objectContaining({
             Authorization: `Bearer ${mockAccessToken}`,
-            "NHSD-Session-URID": mockRoleId
+            "nhsd-session-urid": mockRoleId
           })
         })
       )
@@ -203,7 +203,7 @@ describe("Prescriptions Lookup Service Tests", () => {
         expect.objectContaining({
           headers: expect.objectContaining({
             Authorization: `Bearer ${mockAccessToken}`,
-            "NHSD-Session-URID": mockRoleId
+            "nhsd-session-urid": mockRoleId
           })
         })
       )
