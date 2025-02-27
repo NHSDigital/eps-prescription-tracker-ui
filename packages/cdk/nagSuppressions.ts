@@ -76,7 +76,7 @@ export const nagSuppressions = (stack: Stack) => {
       stack,
       [
         "/StatelessStack/ApiGateway/ApiGateway/Resource",
-        "/StatelessStack/ApiGateway/Oauth2Gateway/Resource"
+        "/StatelessStack/OAuth2Gateway/ApiGateway/Resource"
       ],
       [
         {
@@ -100,10 +100,10 @@ export const nagSuppressions = (stack: Stack) => {
     safeAddNagSuppressionGroup(
       stack,
       [
-        "/StatelessStack/ApiGateway/Oauth2Gateway/Default/authorize/GET/Resource",
-        "/StatelessStack/ApiGateway/Oauth2Gateway/Default/mockauthorize/GET/Resource",
-        "/StatelessStack/ApiGateway/Oauth2Gateway/Default/callback/GET/Resource",
-        "/StatelessStack/ApiGateway/Oauth2Gateway/Default/mockcallback/GET/Resource",
+        "/StatelessStack/OAuth2Gateway/ApiGateway/Default/authorize/GET/Resource",
+        "/StatelessStack/OAuth2Gateway/ApiGateway/Default/mockauthorize/GET/Resource",
+        "/StatelessStack/OAuth2Gateway/ApiGateway/Default/callback/GET/Resource",
+        "/StatelessStack/OAuth2Gateway/ApiGateway/Default/mockcallback/GET/Resource",
         "/StatelessStack/ApiGateway/ApiGateway/Default/token/POST/Resource",
         "/StatelessStack/ApiGateway/ApiGateway/Default/mocktoken/POST/Resource",
         "/StatelessStack/ApiGateway/ApiGateway/Default/mocknoauth/GET/Resource"
@@ -143,10 +143,10 @@ export const nagSuppressions = (stack: Stack) => {
         "/StatelessStack/ApiFunctions/SelectedRole/LambdaPutLogsManagedPolicy/Resource",
         "/StatelessStack/CognitoFunctions/TokenResources/LambdaPutLogsManagedPolicy/Resource",
         "/StatelessStack/CognitoFunctions/MockTokenResources/LambdaPutLogsManagedPolicy/Resource",
-        "/StatelessStack/CognitoFunctions/AuthorizeLambdaResources/LambdaPutLogsManagedPolicy/Resource",
-        "/StatelessStack/CognitoFunctions/MockAuthorizeLambdaResources/LambdaPutLogsManagedPolicy/Resource",
-        "/StatelessStack/CognitoFunctions/IDPResponseLambdaResources/LambdaPutLogsManagedPolicy/Resource",
-        "/StatelessStack/CognitoFunctions/MockIDPResponseLambdaResources/LambdaPutLogsManagedPolicy/Resource"
+        "/StatelessStack/OAuth2Functions/AuthorizeLambdaResources/LambdaPutLogsManagedPolicy/Resource",
+        "/StatelessStack/OAuth2Functions/IDPResponseLambdaResources/LambdaPutLogsManagedPolicy/Resource",
+        "/StatelessStack/OAuth2Functions/MockAuthorizeLambdaResources/LambdaPutLogsManagedPolicy/Resource",
+        "/StatelessStack/OAuth2Functions/MockIDPResponseLambdaResources/LambdaPutLogsManagedPolicy/Resource"
       ],
       [
         {

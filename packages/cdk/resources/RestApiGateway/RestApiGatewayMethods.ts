@@ -14,19 +14,13 @@ export interface RestApiGatewayMethodsProps {
   readonly executePolices: Array<IManagedPolicy>
   readonly restAPiGatewayRole: IRole
   readonly restApiGateway: RestApi
-  readonly oauth2APiGatewayRole: IRole
-  readonly oauth2ApiGateway: RestApi
-  readonly authorizeLambda: NodejsFunction
-  readonly mockAuthorizeLambda: NodejsFunction
-  readonly idpResponseLambda: NodejsFunction
-  readonly mockIdpResponseLambda: NodejsFunction
   readonly tokenLambda: NodejsFunction
   readonly mockTokenLambda: NodejsFunction
   readonly prescriptionSearchLambda: NodejsFunction
   readonly trackerUserInfoLambda: NodejsFunction
   readonly selectedRoleLambda: NodejsFunction
   readonly useMockOidc: boolean
-  readonly authorizer: CognitoUserPoolsAuthorizer
+  readonly authorizer?: CognitoUserPoolsAuthorizer
 }
 
 /**
@@ -40,37 +34,13 @@ export class RestApiGatewayMethods extends Construct {
   public constructor(scope: Construct, id: string, props: RestApiGatewayMethodsProps) {
     super(scope, id)
 
+    if (!props.authorizer) {
+      throw new Error("Missing authorizer prop")
+    }
+
     // Resources
     for (const policy of props.executePolices) {
       props.restAPiGatewayRole.addManagedPolicy(policy)
-    }
-
-    // Authorize redirection endpoint
-    const authorizeResource = props.oauth2ApiGateway.root.addResource("authorize")
-    authorizeResource.addMethod("GET", new LambdaIntegration(props.authorizeLambda, {
-      credentialsRole: props.restAPiGatewayRole
-    }))
-
-    // Mock authorize redirection endpoint
-    if (props.useMockOidc) {
-      const mockAuthorizeResource = props.oauth2ApiGateway.root.addResource("mockauthorize")
-      mockAuthorizeResource.addMethod("GET", new LambdaIntegration(props.mockAuthorizeLambda, {
-        credentialsRole: props.restAPiGatewayRole
-      }))
-    }
-
-    // Return journey login callback.
-    const idpResponseResource = props.oauth2ApiGateway.root.addResource("callback")
-    idpResponseResource.addMethod("GET", new LambdaIntegration(props.idpResponseLambda, {
-      credentialsRole: props.restAPiGatewayRole
-    }))
-
-    // Mock Return journey login callback
-    if (props.useMockOidc) {
-      const mockIdpResponseResource = props.oauth2ApiGateway.root.addResource("mockcallback")
-      mockIdpResponseResource.addMethod("GET", new LambdaIntegration(props.mockIdpResponseLambda, {
-        credentialsRole: props.restAPiGatewayRole
-      }))
     }
 
     const tokenResource = props.restApiGateway.root.addResource("token")

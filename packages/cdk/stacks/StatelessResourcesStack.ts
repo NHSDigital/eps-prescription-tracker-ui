@@ -26,11 +26,13 @@ import {TableV2} from "aws-cdk-lib/aws-dynamodb"
 import {ManagedPolicy, Role} from "aws-cdk-lib/aws-iam"
 import {SharedSecrets} from "../resources/SharedSecrets"
 import {CognitoFunctions} from "../resources/CognitoFunctions"
+import {OAuth2Functions} from "../resources/api/oauth2Functions"
 import {ApiFunctions} from "../resources/api/apiFunctions"
 import {UserPool} from "aws-cdk-lib/aws-cognito"
 import {Key} from "aws-cdk-lib/aws-kms"
 import {Stream} from "aws-cdk-lib/aws-kinesis"
-import {RestApiGatewayMethods} from "../resources/RestApiGatewayMethods"
+import {RestApiGatewayMethods} from "../resources/RestApiGateway/RestApiGatewayMethods"
+import {OAuth2ApiGatewayMethods} from "../resources/RestApiGateway/OAuth2ApiGatewayMethods"
 import {CloudfrontBehaviors} from "../resources/CloudfrontBehaviors"
 import {HostedZone} from "aws-cdk-lib/aws-route53"
 import {Certificate} from "aws-cdk-lib/aws-certificatemanager"
@@ -162,8 +164,6 @@ export class StatelessResourcesStack extends Stack {
     const cognitoFunctions = new CognitoFunctions(this, "CognitoFunctions", {
       serviceName: props.serviceName,
       stackName: props.stackName,
-      fullCloudfrontDomain: fullCloudfrontDomain,
-      userPoolClientId: userPoolClientId,
       primaryOidcTokenEndpoint: primaryOidcTokenEndpoint,
       primaryOidcAuthorizeEndpoint: primaryOidcAuthorizeEndpoint,
       primaryOidcUserInfoEndpoint: primaryOidcUserInfoEndpoint,
@@ -181,16 +181,33 @@ export class StatelessResourcesStack extends Stack {
       tokenMappingTableWritePolicy: tokenMappingTableWritePolicy,
       tokenMappingTableReadPolicy: tokenMappingTableReadPolicy,
       useTokensMappingKmsKeyPolicy: useTokensMappingKmsKeyPolicy,
-      stateMappingTable: stateMappingTable,
-      stateMappingTableWritePolicy: stateMappingTableWritePolicy,
-      stateMappingTableReadPolicy: stateMappingTableReadPolicy,
-      useStateMappingKmsKeyPolicy: useStateMappingKmsKeyPolicy,
       primaryPoolIdentityProviderName: primaryPoolIdentityProviderName,
       mockPoolIdentityProviderName: mockPoolIdentityProviderName,
       logRetentionInDays: logRetentionInDays,
       logLevel: logLevel,
       sharedSecrets: sharedSecrets,
       jwtKid: jwtKid
+    })
+
+    // Functions for the login OAuth2 proxy lambdas
+    const oauth2Functions = new OAuth2Functions(this, "OAuth2Functions", {
+      serviceName: props.serviceName,
+      stackName: props.stackName,
+      fullCloudfrontDomain,
+      userPoolClientId,
+      primaryOidcAuthorizeEndpoint,
+      primaryOidcClientId,
+      useMockOidc,
+      mockOidcAuthorizeEndpoint,
+      mockOidcClientId,
+      stateMappingTable,
+      stateMappingTableWritePolicy,
+      stateMappingTableReadPolicy,
+      useStateMappingKmsKeyPolicy,
+      logRetentionInDays,
+      logLevel,
+      sharedSecrets,
+      jwtKid
     })
 
     // -- functions for API
@@ -225,7 +242,7 @@ export class StatelessResourcesStack extends Stack {
       roleId: roleId
     })
 
-    // - API Gateway
+    // - CPT backend API Gateway
     const apiGateway = new RestApiGateway(this, "ApiGateway", {
       serviceName: props.serviceName,
       stackName: props.stackName,
@@ -237,20 +254,24 @@ export class StatelessResourcesStack extends Stack {
       userPool: userPool
     })
 
+    const oauth2Gateway = new RestApiGateway(this, "OAuth2Gateway", {
+      serviceName: props.serviceName,
+      stackName: props.stackName,
+      logRetentionInDays: logRetentionInDays,
+      logLevel: logLevel,
+      cloudwatchKmsKey: cloudwatchKmsKey,
+      splunkDeliveryStream: splunkDeliveryStream,
+      splunkSubscriptionFilterRole: splunkSubscriptionFilterRole
+    })
+
     // --- Methods & Resources
     new RestApiGatewayMethods(this, "RestApiGatewayMethods", {
       executePolices: [
         ...cognitoFunctions.cognitoPolicies,
         ...apiFunctions.apiFunctionsPolicies
       ],
-      restAPiGatewayRole: apiGateway.restAPiGatewayRole,
-      restApiGateway: apiGateway.restApiGateway,
-      oauth2APiGatewayRole: apiGateway.oauth2APiGatewayRole,
-      oauth2ApiGateway: apiGateway.oauth2ApiGateway,
-      authorizeLambda: cognitoFunctions.authorizeLambda,
-      mockAuthorizeLambda: cognitoFunctions.mockAuthorizeLambda,
-      idpResponseLambda: cognitoFunctions.idpResponseLambda,
-      mockIdpResponseLambda: cognitoFunctions.mockIdpResponseLambda,
+      restAPiGatewayRole: apiGateway.apiGatewayRole,
+      restApiGateway: apiGateway.apiGateway,
       tokenLambda: cognitoFunctions.tokenLambda,
       mockTokenLambda: cognitoFunctions.mockTokenLambda,
       prescriptionSearchLambda: apiFunctions.prescriptionSearchLambda,
@@ -258,6 +279,19 @@ export class StatelessResourcesStack extends Stack {
       selectedRoleLambda: apiFunctions.selectedRoleLambda,
       useMockOidc: useMockOidc,
       authorizer: apiGateway.authorizer
+    })
+
+    new OAuth2ApiGatewayMethods(this, "OAuth2ApiGatewayMethods", {
+      executePolices: [
+        ...oauth2Functions.oAuth2Policies
+      ],
+      oauth2APiGatewayRole: oauth2Gateway.apiGatewayRole,
+      oauth2ApiGateway: oauth2Gateway.apiGateway,
+      authorizeLambda: oauth2Functions.authorizeLambda,
+      mockAuthorizeLambda: oauth2Functions.mockAuthorizeLambda,
+      idpResponseLambda: oauth2Functions.idpResponseLambda,
+      mockIdpResponseLambda: oauth2Functions.mockIdpResponseLambda,
+      useMockOidc: useMockOidc
     })
 
     // - Cloudfront
@@ -269,15 +303,15 @@ export class StatelessResourcesStack extends Stack {
       }
     )
 
-    const apiGatewayOrigin = new RestApiOrigin(apiGateway.restApiGateway, {
+    const apiGatewayOrigin = new RestApiOrigin(apiGateway.apiGateway, {
       customHeaders: {
-        "destination-apigw-id": apiGateway.restApiGateway.restApiId // for later apigw waf stuff
+        "destination-api-apigw-id": apiGateway.apiGateway.restApiId // for later apigw waf stuff
       }
     })
 
-    const oauth2GatewayOrigin = new RestApiOrigin(apiGateway.oauth2ApiGateway, {
+    const oauth2GatewayOrigin = new RestApiOrigin(oauth2Gateway.apiGateway, {
       customHeaders: {
-        "destination-oauth2-apigw-id": apiGateway.oauth2ApiGateway.restApiId // for later apigw waf stuff
+        "destination-oauth2-apigw-id": oauth2Gateway.apiGateway.restApiId // for later apigw waf stuff
       }
     })
 
@@ -290,8 +324,8 @@ export class StatelessResourcesStack extends Stack {
       queryStringBehavior: OriginRequestQueryStringBehavior.all()
     })
 
-    const oauth2GatewayRequestPolicy = new OriginRequestPolicy(this, "oauth2GatewayRequestPolicy", {
-      originRequestPolicyName: `${props.serviceName}-Oauth2GatewayRequestPolicy`,
+    const oauth2GatewayRequestPolicy = new OriginRequestPolicy(this, "OAuth2GatewayRequestPolicy", {
+      originRequestPolicyName: `${props.serviceName}-OAuth2GatewayRequestPolicy`,
       cookieBehavior: OriginRequestCookieBehavior.all(),
       headerBehavior: OriginRequestHeaderBehavior.denyList("host"),
       queryStringBehavior: OriginRequestQueryStringBehavior.all()
