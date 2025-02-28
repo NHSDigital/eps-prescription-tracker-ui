@@ -72,9 +72,9 @@ function App() {
   }
 
   const fetchPrescriptionData = async ({ nhsNumber, prescriptionId }: { nhsNumber?: number, prescriptionId?: string }) => {
-    if (!prescriptionId || !nhsNumber) {
-      setError("Please provide either a Prescription ID or an NHS Number.")
-      return
+    if (!prescriptionId && !nhsNumber) {
+      setError("Please provide either a Prescription ID or an NHS Number.");
+      return;
     }
 
     setLoading(true)
