@@ -36,27 +36,11 @@ export class OAuth2ApiGatewayMethods extends Construct {
       credentialsRole: props.oauth2APiGatewayRole
     }))
 
-    // Mock authorize redirection endpoint
-    if (props.useMockOidc) {
-      const mockAuthorizeResource = props.oauth2ApiGateway.root.addResource("mockauthorize")
-      mockAuthorizeResource.addMethod("GET", new LambdaIntegration(props.mockAuthorizeLambda, {
-        credentialsRole: props.oauth2APiGatewayRole
-      }))
-    }
-
     // Return journey login callback.
     const idpResponseResource = props.oauth2ApiGateway.root.addResource("callback")
     idpResponseResource.addMethod("GET", new LambdaIntegration(props.idpResponseLambda, {
       credentialsRole: props.oauth2APiGatewayRole
     }))
-
-    // Mock Return journey login callback
-    if (props.useMockOidc) {
-      const mockIdpResponseResource = props.oauth2ApiGateway.root.addResource("mockcallback")
-      mockIdpResponseResource.addMethod("GET", new LambdaIntegration(props.mockIdpResponseLambda, {
-        credentialsRole: props.oauth2APiGatewayRole
-      }))
-    }
 
     // Ping endpoint
     const pingResponseResource = props.oauth2ApiGateway.root.addResource("ping")

@@ -16,7 +16,14 @@ import {createHash} from "crypto"
 
 // This is the OIDC /authorize endpoint, which we will redirect to after adding the query parameter
 const oidcAuthorizeEndpoint = process.env["CIS2_IDP_AUTHORIZE_PATH"] as string
+const mockAuthorizeEndpoint = process.env["MOCK_IDP_AUTHORIZE_PATH"] as string
+
+// Since we have to use the same lambda for mock and primary, we need both client IDs.
+// We switch between them based on the header.
 const oidcClientId = process.env["CIS2_OIDC_CLIENT_ID"] as string
+const mockClientId = process.env["MOCK_OIDC_CLIENT_ID"] as string
+const useMock = process.env["useMock"] as string
+
 // The stack name is needed to figure out the return address for the login event, so
 // we can intercept it after the CIS2 login
 const cloudfrontDomain = process.env["FULL_CLOUDFRONT_DOMAIN"] as string
@@ -55,11 +62,34 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   if (!oidcClientId) {
     throw new Error("OIDC client ID environment variable not set")
   }
+  if (!mockClientId) {
+    throw new Error("Mock OIDC client ID environment variable not set")
+  }
 
   // Original query parameters.
   const queryStringParameters = event.queryStringParameters || {}
 
-  if (queryStringParameters.client_id !== oidcClientId) {
+  let clientId
+  let authorizeEndpoint
+  switch (queryStringParameters.identity_provider) {
+    case "Mock": {
+      if (useMock.toLowerCase() !== "true") {
+        throw new Error("Mock is not enabled, but was requested.")
+      }
+      clientId = mockClientId
+      authorizeEndpoint = mockAuthorizeEndpoint
+      break;
+    } 
+    case "Primary": {
+      clientId = oidcClientId
+      authorizeEndpoint = oidcAuthorizeEndpoint
+      break;
+    }
+    default:
+      throw new Error("Unrecognized identity provider")
+  }
+  
+  if (queryStringParameters.client_id !== clientId) {
     throw new Error("Mismatch in OIDC client ID")
   }
 
@@ -101,7 +131,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   const responseParameters = {
     response_type: queryStringParameters.response_type as string,
     scope: queryStringParameters.scope as string,
-    client_id: oidcClientId,
+    client_id: clientId,
     state: hashedState,
     redirect_uri: callbackUri,
     prompt: "login"
