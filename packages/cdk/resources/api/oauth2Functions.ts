@@ -64,8 +64,7 @@ export class OAuth2Functions extends Construct {
       lambdaEnvironmentVariables: {
         useMock,
         CIS2_IDP_AUTHORIZE_PATH: props.primaryOidcAuthorizeEndpoint,
-        CIS2_OIDC_CLIENT_ID: props.primaryOidcClientId,
-        MOCK_OIDC_CLIENT_ID: props.mockOidcClientId,
+        COGNITO_CLIENT_ID: props.userPoolClientId,
         FULL_CLOUDFRONT_DOMAIN: props.fullCloudfrontDomain,
         StateMappingTableName: props.stateMappingTable.tableName
       }
