@@ -171,7 +171,6 @@ export class StatelessResourcesStack extends Stack {
       primaryOidcIssuer: primaryOidcIssuer,
       useMockOidc: useMockOidc,
       mockOidcTokenEndpoint: mockOidcTokenEndpoint,
-      mockOidcAuthorizeEndpoint: mockOidcAuthorizeEndpoint,
       mockOidcUserInfoEndpoint: mockOidcUserInfoEndpoint,
       mockOidcjwksEndpoint: mockOidcjwksEndpoint,
       mockOidcClientId: mockOidcClientId,
