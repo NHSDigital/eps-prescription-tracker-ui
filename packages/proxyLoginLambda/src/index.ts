@@ -109,6 +109,9 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   if (!codeVerifier) {
     throw new Error("Failed to generate the code verifier")
   }
+  
+  // FIXME: This seems to need to be updated
+  queryStringParameters.scope = "openid+profile+email+nhsperson+nationalrbacaccess+associatedorgs"
 
   // grab the old state's hash for dynamo
   const hashedState = createHash("sha256").update(queryStringParameters.state as string).digest("hex")
@@ -135,9 +138,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   // These are the parameters we pass back in the redirection response
   const responseParameters = {
     response_type: queryStringParameters.response_type as string,
-    // FIXME: The incoming query parameter is &scope=openid+email+phone+profile+aws.cognito.signin.user.admin
-    // Where does this normally get altered to the below value?
-    scope: "openid+profile+email+nhsperson+nationalrbacaccess+associatedorgs",
+    scope: queryStringParameters.scope as string,
     client_id: clientId,
     state: hashedState,
     redirect_uri: callbackUri,
