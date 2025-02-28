@@ -135,7 +135,9 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   // These are the parameters we pass back in the redirection response
   const responseParameters = {
     response_type: queryStringParameters.response_type as string,
-    scope: queryStringParameters.scope as string,
+    // FIXME: The incoming query parameter is &scope=openid+email+phone+profile+aws.cognito.signin.user.admin
+    // Where does this normally get altered to the below value?
+    scope: "openid+profile+email+nhsperson+nationalrbacaccess+associatedorgs",
     client_id: clientId,
     state: queryStringParameters.state as string,
     redirect_uri: callbackUri,
