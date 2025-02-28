@@ -11,14 +11,12 @@ export interface CognitoFunctionsProps {
   readonly serviceName: string
   readonly stackName: string
   readonly primaryOidcTokenEndpoint: string
-  readonly primaryOidcAuthorizeEndpoint: string
   readonly primaryOidcUserInfoEndpoint: string
   readonly primaryOidcjwksEndpoint: string
   readonly primaryOidcClientId: string
   readonly primaryOidcIssuer: string
   readonly useMockOidc: boolean
   readonly mockOidcTokenEndpoint?: string
-  readonly mockOidcAuthorizeEndpoint?: string
   readonly mockOidcUserInfoEndpoint?: string
   readonly mockOidcjwksEndpoint?: string
   readonly mockOidcClientId?: string
