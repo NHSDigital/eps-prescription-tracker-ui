@@ -110,7 +110,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   }
 
   // grab the old state's hash for dynamo
-  const hashedState = createHash("sha256").update(queryStringParameters.state as string).digest("hex")
+  // const hashedState = createHash("sha256").update(queryStringParameters.state as string).digest("hex")
 
   // Limit the login window to 5 minutes
   const stateTtl = Math.floor(Date.now() / 1000) + 300
@@ -119,7 +119,8 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   await documentClient.send(
     new PutCommand({
       Item: {
-        State: hashedState,
+        // FIXME: Should be hashed state?
+        State: queryStringParameters.state as string,
         CodeVerifier: codeVerifier,
         CognitoState: queryStringParameters.state,
         Ttl: stateTtl
@@ -136,7 +137,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     response_type: queryStringParameters.response_type as string,
     scope: queryStringParameters.scope as string,
     client_id: clientId,
-    state: hashedState,
+    state: queryStringParameters.state as string,
     redirect_uri: callbackUri,
     prompt: "login"
   }
