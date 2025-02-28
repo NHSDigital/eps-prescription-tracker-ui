@@ -165,7 +165,6 @@ export class StatelessResourcesStack extends Stack {
       serviceName: props.serviceName,
       stackName: props.stackName,
       primaryOidcTokenEndpoint: primaryOidcTokenEndpoint,
-      primaryOidcAuthorizeEndpoint: primaryOidcAuthorizeEndpoint,
       primaryOidcUserInfoEndpoint: primaryOidcUserInfoEndpoint,
       primaryOidcjwksEndpoint: primaryOidcjwksEndpoint,
       primaryOidcClientId: primaryOidcClientId,
