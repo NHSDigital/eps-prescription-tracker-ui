@@ -11,13 +11,13 @@ export interface OAuth2ApiGatewayMethodsProps {
   readonly mockAuthorizeLambda: NodejsFunction
   readonly idpResponseLambda: NodejsFunction
   readonly mockIdpResponseLambda: NodejsFunction
+  readonly pingResponseLambda: NodejsFunction
   readonly useMockOidc: boolean
 }
 
 /**
  * Resources for a api gateway methods
  * executePolicies should be policies that are needed to execute lambdas
-
  */
 
 export class OAuth2ApiGatewayMethods extends Construct {
@@ -57,6 +57,12 @@ export class OAuth2ApiGatewayMethods extends Construct {
         credentialsRole: props.oauth2APiGatewayRole
       }))
     }
+
+    // Ping endpoint
+    const pingResponseResource = props.oauth2ApiGateway.root.addResource("ping")
+    pingResponseResource.addMethod("GET", new LambdaIntegration(props.pingResponseLambda, {
+      credentialsRole: props.oauth2APiGatewayRole
+    }))
 
     //Outputs
   }

@@ -30,7 +30,9 @@ export interface RestApiGatewayProps {
  * Resources for a Rest API Gateway
  * Note - methods are not defined here
  * this just creates the api gateway and authorizer
-
+ *
+ * The gateway may have a userPool supplied, in which case it will create an
+ * authorizer that gets exposed on the construct
  */
 
 export class RestApiGateway extends Construct {
@@ -76,6 +78,9 @@ export class RestApiGateway extends Construct {
       managedPolicies: []
     })
 
+    // An authorizer is only relevant for endpoints that need access control.
+    // If the userPool is not passed, we know that these endpoints don't care about
+    // access control, and can leave the authorizer undefined.
     let authorizer
     if (props.userPool) {
       authorizer = new CognitoUserPoolsAuthorizer(this, "Authorizer", {

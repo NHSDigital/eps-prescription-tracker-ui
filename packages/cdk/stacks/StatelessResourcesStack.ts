@@ -242,7 +242,7 @@ export class StatelessResourcesStack extends Stack {
       roleId: roleId
     })
 
-    // - CPT backend API Gateway
+    // - CPT backend API Gateway (/api/*)
     const apiGateway = new RestApiGateway(this, "ApiGateway", {
       serviceName: props.serviceName,
       stackName: props.stackName,
@@ -254,6 +254,7 @@ export class StatelessResourcesStack extends Stack {
       userPool: userPool
     })
 
+    // OAuth2 endpoints get their own API Gateway (/oauth2/*)
     const oauth2Gateway = new RestApiGateway(this, "OAuth2Gateway", {
       serviceName: props.serviceName,
       stackName: props.stackName,
@@ -283,6 +284,7 @@ export class StatelessResourcesStack extends Stack {
 
     new OAuth2ApiGatewayMethods(this, "OAuth2ApiGatewayMethods", {
       executePolices: [
+        ...cognitoFunctions.cognitoPolicies,
         ...oauth2Functions.oAuth2Policies
       ],
       oauth2APiGatewayRole: oauth2Gateway.apiGatewayRole,
@@ -291,6 +293,7 @@ export class StatelessResourcesStack extends Stack {
       mockAuthorizeLambda: oauth2Functions.mockAuthorizeLambda,
       idpResponseLambda: oauth2Functions.idpResponseLambda,
       mockIdpResponseLambda: oauth2Functions.mockIdpResponseLambda,
+      pingResponseLambda: oauth2Functions.pingResponseLambda,
       useMockOidc: useMockOidc
     })
 

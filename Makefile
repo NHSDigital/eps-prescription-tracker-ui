@@ -28,6 +28,7 @@ lint-node: compile-node
 	npm run lint --workspace packages/cloudfrontFunctions
 	npm run lint --workspace packages/cdk
 	npm run lint --workspace packages/cognito
+	npm run lint --workspace packages/pingLambda
 	npm run lint --workspace packages/proxyLoginLambda
 	npm run lint --workspace packages/proxyIdpResponseLambda
 	npm run lint --workspace packages/prescriptionSearchLambda
@@ -50,6 +51,7 @@ test: compile
 	npm run test --workspace packages/cdk
 	npm run test --workspace packages/cpt-ui
 	npm run test --workspace packages/cognito
+	npm run test --workspace packages/pingLambda
 	npm run test --workspace packages/proxyLoginLambda
 	npm run test --workspace packages/proxyIdpResponseLambda
 	npm run test --workspace packages/prescriptionSearchLambda
@@ -78,6 +80,8 @@ clean:
 	rm -rf packages/auth_demo/build
 	rm -rf packages/trackerUserInfoLambda/coverage
 	rm -rf packages/trackerUserInfoLambda/lib
+	rm -rf packages/pingLambda/coverage
+	rm -rf packages/pingLambda/lib
 	rm -rf packages/selectedRoleLambda/coverage
 	rm -rf packages/selectedRoleLambda/lib
 	rm -rf packages/common/authFunctions/coverage
@@ -96,6 +100,7 @@ check-licenses-node:
 	npm run check-licenses --workspace packages/cpt-ui
 	npm run check-licenses --workspace packages/common/authFunctions
 	npm run check-licenses --workspace packages/cognito
+	npm run check-licenses --workspace packages/pingLambda
 	npm run check-licenses --workspace packages/proxyLoginLambda
 	npm run check-licenses --workspace packages/proxyIdpResponseLambda
 	npm run check-licenses --workspace packages/prescriptionSearchLambda

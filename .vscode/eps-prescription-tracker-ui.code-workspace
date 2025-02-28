@@ -45,6 +45,10 @@
         "path": "../packages/common/testing"
       },
       {
+        "name": "packages/pingLambda",
+        "path": "../packages/pingLambda"
+      },
+      {
         "name": "packages/common/authFunctions",
         "path": "../packages/common/authFunctions"
       },

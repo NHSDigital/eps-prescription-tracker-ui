@@ -34,6 +34,7 @@ export class OAuth2Functions extends Construct {
   public readonly mockAuthorizeLambda: NodejsFunction
   public readonly idpResponseLambda: NodejsFunction
   public readonly mockIdpResponseLambda: NodejsFunction
+  public readonly pingResponseLambda: NodejsFunction
 
   public constructor(scope: Construct, id: string, props: OAuth2FunctionsProps) {
     super(scope, id)
@@ -82,10 +83,24 @@ export class OAuth2Functions extends Construct {
       }
     })
 
+    // Healthcheck endpoint
+    const pingResponseLambda = new LambdaFunction(this, "OAuth2PingLambdaResources", {
+      serviceName: props.serviceName,
+      stackName: props.stackName,
+      lambdaName: `${props.stackName}-ping`,
+      additionalPolicies: [],
+      logRetentionInDays: props.logRetentionInDays,
+      logLevel: props.logLevel,
+      packageBasePath: "packages/pingLambda",
+      entryPoint: "src/handler.ts",
+      lambdaEnvironmentVariables: {}
+    })
+
     // Initialize policies
     const oauth2Policies: Array<IManagedPolicy> = [
       authorizeLambda.executeLambdaManagedPolicy,
-      idpResponseLambda.executeLambdaManagedPolicy
+      idpResponseLambda.executeLambdaManagedPolicy,
+      pingResponseLambda.executeLambdaManagedPolicy
     ]
 
     // If mock OIDC is enabled, configure mock token Lambda
@@ -152,5 +167,6 @@ export class OAuth2Functions extends Construct {
     this.oAuth2Policies = oauth2Policies
     this.authorizeLambda = authorizeLambda.lambda
     this.idpResponseLambda = idpResponseLambda.lambda
+    this.pingResponseLambda = pingResponseLambda.lambda
   }
 }

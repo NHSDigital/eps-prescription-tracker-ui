@@ -100,6 +100,7 @@ export const nagSuppressions = (stack: Stack) => {
     safeAddNagSuppressionGroup(
       stack,
       [
+        "/StatelessStack/OAuth2Gateway/ApiGateway/Default/ping/GET/Resource",
         "/StatelessStack/OAuth2Gateway/ApiGateway/Default/authorize/GET/Resource",
         "/StatelessStack/OAuth2Gateway/ApiGateway/Default/mockauthorize/GET/Resource",
         "/StatelessStack/OAuth2Gateway/ApiGateway/Default/callback/GET/Resource",
@@ -138,6 +139,7 @@ export const nagSuppressions = (stack: Stack) => {
     safeAddNagSuppressionGroup(
       stack,
       [
+        "/StatelessStack/OAuth2Functions/OAuth2PingLambdaResources/LambdaPutLogsManagedPolicy/Resource",
         "/StatelessStack/ApiFunctions/TrackerUserInfo/LambdaPutLogsManagedPolicy/Resource",
         "/StatelessStack/ApiFunctions/MockTrackerUserInfo/LambdaPutLogsManagedPolicy/Resource",
         "/StatelessStack/ApiFunctions/SelectedRole/LambdaPutLogsManagedPolicy/Resource",

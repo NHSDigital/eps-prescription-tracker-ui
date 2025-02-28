@@ -1,5 +1,5 @@
 import {Logger} from "@aws-lambda-powertools/logger"
-import {APIGatewayProxyEvent} from "aws-lambda"
+import {APIGatewayProxyEvent, APIGatewayProxyResult} from "aws-lambda"
 import {injectLambdaContext} from "@aws-lambda-powertools/logger/middleware"
 
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
@@ -35,7 +35,7 @@ const documentClient = DynamoDBDocumentClient.from(dynamoClient)
 
 const secretsManagerClient = new SecretsManagerClient()
 
-const lambdaHandler = async (event: APIGatewayProxyEvent) => {
+const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   logger.appendKeys({
     "apigw-request-id": event.requestContext?.requestId
   })
