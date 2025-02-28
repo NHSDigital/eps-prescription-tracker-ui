@@ -78,11 +78,13 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
       }
       clientId = mockClientId
       authorizeEndpoint = mockAuthorizeEndpoint
+      logger.info("Using mock auth.", {clientId, authorizeEndpoint})
       break;
     } 
     case "Primary": {
       clientId = oidcClientId
       authorizeEndpoint = oidcAuthorizeEndpoint
+      logger.info("Using primary auth.", {clientId, authorizeEndpoint})
       break;
     }
     default:
@@ -90,7 +92,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   }
   
   if (queryStringParameters.client_id !== clientId) {
-    throw new Error("Mismatch in OIDC client ID")
+    throw new Error(`Mismatch in OIDC client ID. Payload: ${queryStringParameters.client_id} | Expected: ${clientId}`)
   }
 
   const randIdCommand = new GetRandomPasswordCommand({
