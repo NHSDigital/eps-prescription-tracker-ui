@@ -139,7 +139,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     // Where does this normally get altered to the below value?
     scope: "openid+profile+email+nhsperson+nationalrbacaccess+associatedorgs",
     client_id: clientId,
-    state: queryStringParameters.state as string,
+    state: hashedState,
     redirect_uri: callbackUri,
     prompt: "login"
   }
