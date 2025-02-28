@@ -92,6 +92,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     default:
       throw new Error("Unrecognized identity provider")
   }
+  logger.info("Authorize endpoint", {authorizeEndpoint})
   
   if (queryStringParameters.client_id !== userPoolClientId) {
     throw new Error(`Mismatch in OIDC client ID. Payload: ${queryStringParameters.client_id} | Expected: ${userPoolClientId}`)
@@ -110,7 +111,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   }
 
   // grab the old state's hash for dynamo
-  // const hashedState = createHash("sha256").update(queryStringParameters.state as string).digest("hex")
+  const hashedState = createHash("sha256").update(queryStringParameters.state as string).digest("hex")
 
   // Limit the login window to 5 minutes
   const stateTtl = Math.floor(Date.now() / 1000) + 300
@@ -119,8 +120,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   await documentClient.send(
     new PutCommand({
       Item: {
-        // FIXME: Should be hashed state?
-        State: queryStringParameters.state as string,
+        State: hashedState,
         CodeVerifier: codeVerifier,
         CognitoState: queryStringParameters.state,
         Ttl: stateTtl
