@@ -142,7 +142,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     prompt: "login"
   }
 
-  const redirectPath = `${oidcAuthorizeEndpoint}?${new URLSearchParams(responseParameters)}`
+  const redirectPath = `${authorizeEndpoint}?${new URLSearchParams(responseParameters)}`
 
   // Return an HTTP 302 redirect response.
   const redirect = {
