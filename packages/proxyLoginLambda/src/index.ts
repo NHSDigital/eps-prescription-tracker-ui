@@ -17,12 +17,14 @@ import {createHash} from "crypto"
 // This is the OIDC /authorize endpoint, which we will redirect to after adding the query parameter
 const oidcAuthorizeEndpoint = process.env["CIS2_IDP_AUTHORIZE_PATH"] as string
 const mockAuthorizeEndpoint = process.env["MOCK_IDP_AUTHORIZE_PATH"] as string
-// Since we have to use the same lambda for mock and primary,
-// We switch between them based on the parameter.
+
+// Since we have to use the same lambda for mock and primary, we need both client IDs.
+// We switch between them based on the header.
+const oidcClientId = process.env["CIS2_OIDC_CLIENT_ID"] as string
+const mockClientId = process.env["MOCK_OIDC_CLIENT_ID"] as string
 const useMock = process.env["useMock"] as string
 
-// Cognito user pool client ID
-const clientId = process.env["COGNITO_CLIENT_ID"] as string
+const userPoolClientId = process.env["COGNITO_CLIENT_ID"] as string
 
 // The stack name is needed to figure out the return address for the login event, so
 // we can intercept it after the CIS2 login
@@ -59,34 +61,40 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   if (!tableName) {
     throw new Error("State mapping table name environment variable not set")
   }
-  if (!clientId) {
+  if (!oidcClientId) {
     throw new Error("OIDC client ID environment variable not set")
+  }
+  if (!mockClientId) {
+    throw new Error("Mock OIDC client ID environment variable not set")
   }
 
   // Original query parameters.
   const queryStringParameters = event.queryStringParameters || {}
 
+  let clientId
   let authorizeEndpoint
   switch (queryStringParameters.identity_provider) {
     case "Mock": {
       if (useMock.toLowerCase() !== "true") {
         throw new Error("Mock is not enabled, but was requested.")
       }
+      clientId = mockClientId
       authorizeEndpoint = mockAuthorizeEndpoint
-      logger.info("Using mock auth.", {authorizeEndpoint})
+      logger.info("Using mock auth.", {clientId, authorizeEndpoint})
       break;
     } 
     case "Primary": {
+      clientId = oidcClientId
       authorizeEndpoint = oidcAuthorizeEndpoint
-      logger.info("Using primary auth.", {authorizeEndpoint})
+      logger.info("Using primary auth.", {clientId, authorizeEndpoint})
       break;
     }
     default:
       throw new Error("Unrecognized identity provider")
   }
   
-  if (queryStringParameters.client_id !== clientId) {
-    throw new Error(`Mismatch in OIDC client ID. Payload: ${queryStringParameters.client_id} | Expected: ${clientId}`)
+  if (queryStringParameters.client_id !== userPoolClientId) {
+    throw new Error(`Mismatch in OIDC client ID. Payload: ${queryStringParameters.client_id} | Expected: ${userPoolClientId}`)
   }
 
   const randIdCommand = new GetRandomPasswordCommand({
