@@ -13,7 +13,7 @@ import time
 from requests.auth import HTTPBasicAuth
 
 # This should be set to a known good version of regression test repo
-REGRESSION_TESTS_REPO_TAG = "v2.12.2"
+REGRESSION_TESTS_REPO_TAG = "broken-test"
 
 GITHUB_API_URL = "https://api.github.com/repos/NHSDigital/electronic-prescription-service-api-regression-tests/actions"
 GITHUB_RUN_URL = "https://github.com/NHSDigital/electronic-prescription-service-api-regression-tests/actions/runs"
@@ -225,6 +225,7 @@ if __name__ == "__main__":
     if job_status != "success":
         if arguments.pr_label:
             pr_label = arguments.pr_label.lower()
+        if "pr-" in pr_label:
             env = f"PULL-REQUEST/{pr_label}"
         else:
             env = arguments.env.upper()
