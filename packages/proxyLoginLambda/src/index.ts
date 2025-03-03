@@ -95,7 +95,10 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   logger.info("Authorize endpoint", {authorizeEndpoint})
 
   if (queryStringParameters.client_id !== userPoolClientId) {
-    throw new Error(`Mismatch in OIDC client ID. Payload: ${queryStringParameters.client_id} | Expected: ${userPoolClientId}`)
+    throw new Error(
+      `Mismatch in OIDC client ID. Payload: ` +
+      `${queryStringParameters.client_id} | Expected: ${userPoolClientId}`
+    )
   }
 
   const randIdCommand = new GetRandomPasswordCommand({
