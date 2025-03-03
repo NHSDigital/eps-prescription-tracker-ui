@@ -208,7 +208,7 @@ jobs:
             "mockOidcUserInfoEndpoint": $mockOidcUserInfoEndpoint,
             "mockOidcjwksEndpoint": $mockOidcjwksEndpoint,
             "useCustomCognitoDomain": $useCustomCognitoDomain,
-            "fullCognitoDomain": $fullCognitoDomain
+            "fullCognitoDomain": $fullCognitoDomain,
             "useLocalhostCallback": $useLocalhostCallback,
             "apigeeCIS2TokenEndpoint": $apigeeCIS2TokenEndpoint,
             "apigeeMockTokenEndpoint": $apigeeMockTokenEndpoint,
