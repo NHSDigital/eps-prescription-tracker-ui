@@ -223,8 +223,9 @@ if __name__ == "__main__":
     workflow_id = find_workflow(auth_header)
     job_status = check_job(auth_header)
     if job_status != "success":
-        if arguments.pr_label and "pr-" in arguments.pr_label:
+        if arguments.pr_label:
             pr_label = arguments.pr_label.lower()
+        if "pr-" in pr_label:
             env = f"PULL-REQUEST/{pr_label}"
         else:
             env = arguments.env.upper()
