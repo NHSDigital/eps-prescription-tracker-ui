@@ -32,6 +32,9 @@ const cloudfrontDomain = process.env["FULL_CLOUDFRONT_DOMAIN"] as string
 // And since we need to store the original state for the return journey, this table will be used. for that
 const tableName = process.env["StateMappingTableName"] as string
 
+// The forwarded request will have these scopes. The incoming one will have different scopes
+const scope = "openid profile email nhsperson nationalrbacaccess associatedorgs"
+
 const logger = new Logger({serviceName: "authorize"})
 
 const errorResponseBody = {
@@ -121,9 +124,6 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     throw new Error("Failed to generate the code verifier")
   }
 
-  // FIXME: This seems to need to be updated
-  queryStringParameters.scope = "openid profile email nhsperson nationalrbacaccess associatedorgs"
-
   // grab the old state's hash for dynamo
   const hashedState = createHash("sha256").update(queryStringParameters.state as string).digest("hex")
 
@@ -152,7 +152,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   // These are the parameters we pass back in the redirection response
   const responseParameters = {
     response_type: queryStringParameters.response_type as string,
-    scope: queryStringParameters.scope as string,
+    scope: scope,
     client_id: clientId,
     state: hashedState,
     redirect_uri: callbackUri,
