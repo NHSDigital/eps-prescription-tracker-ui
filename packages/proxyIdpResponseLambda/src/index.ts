@@ -22,6 +22,9 @@ const tableName = process.env["StateMappingTableName"] as string
 const cognitoClientId = process.env["COGNITO_CLIENT_ID"] as string
 // And this is where to send the client with their login event (i.e. back to the app)
 const fullCognitoDomain = process.env["COGNITO_DOMAIN"] as string
+// This needs to be set
+const primaryOidcIssuer = process.env["PRIMARY_OIDC_ISSUER"] as string
+const mockOidcIssuer = process.env["MOCK_OIDC_ISSUER"] as string
 
 const dynamoClient = new DynamoDBClient()
 const documentClient = DynamoDBDocumentClient.from(dynamoClient)
@@ -31,6 +34,7 @@ type StateItem = {
   CodeVerifier: string;
   CognitoState: string;
   Ttl: number;
+  UseMock: boolean;
 };
 
 const lambdaHandler = async (event: APIGatewayProxyEvent) => {
@@ -66,7 +70,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent) => {
   // Build the response parameters to be sent back in the redirect.
   const responseParams = {
     code: queryParams.code,
-    iss: queryParams.iss as string,
+    iss: stateItem.UseMock ? mockOidcIssuer : primaryOidcIssuer,
     state: stateItem.CognitoState,
     client_id: cognitoClientId
   }

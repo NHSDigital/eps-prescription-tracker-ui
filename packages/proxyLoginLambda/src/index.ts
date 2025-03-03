@@ -42,6 +42,14 @@ const middyErrorHandler = new MiddyErrorHandler(errorResponseBody)
 const dynamoClient = new DynamoDBClient()
 const documentClient = DynamoDBDocumentClient.from(dynamoClient)
 
+type StateItem = {
+  State: string;
+  CodeVerifier: string;
+  CognitoState: string;
+  Ttl: number;
+  UseMock: boolean;
+};
+
 const secretsManagerClient = new SecretsManagerClient()
 
 const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
@@ -123,14 +131,17 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   const stateTtl = Math.floor(Date.now() / 1000) + 300
 
   // This data will be retrieved by the `state` value
+  const Item: StateItem = {
+    State: hashedState,
+    CodeVerifier: codeVerifier,
+    CognitoState: queryStringParameters.state as string,
+    Ttl: stateTtl,
+    UseMock: useMock === "true"
+  }
+
   await documentClient.send(
     new PutCommand({
-      Item: {
-        State: hashedState,
-        CodeVerifier: codeVerifier,
-        CognitoState: queryStringParameters.state,
-        Ttl: stateTtl
-      },
+      Item,
       TableName: tableName
     })
   )
