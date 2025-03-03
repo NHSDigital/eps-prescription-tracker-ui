@@ -9,6 +9,7 @@ export interface OAuth2FunctionsProps {
   readonly serviceName: string
   readonly stackName: string
   readonly fullCloudfrontDomain: string
+  readonly fullCognitoDomain: string
   readonly userPoolClientId: string
   readonly primaryOidcAuthorizeEndpoint: string
   readonly primaryOidcClientId: string
@@ -93,7 +94,7 @@ export class OAuth2Functions extends Construct {
       lambdaEnvironmentVariables: {
         StateMappingTableName: props.stateMappingTable.tableName,
         COGNITO_CLIENT_ID: props.userPoolClientId,
-        FULL_CLOUDFRONT_DOMAIN: props.fullCloudfrontDomain
+        COGNITO_DOMAIN: props.fullCognitoDomain
       }
     })
 

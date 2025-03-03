@@ -59,6 +59,7 @@ export class StatelessResourcesStack extends Stack {
     const cloudfrontCertArn: string = this.node.tryGetContext("cloudfrontCertArn")
     const shortCloudfrontDomain: string = this.node.tryGetContext("shortCloudfrontDomain")
     const fullCloudfrontDomain: string = this.node.tryGetContext("fullCloudfrontDomain")
+    const fullCognitoDomain: string = this.node.tryGetContext("fullCognitoDomain")
     const logRetentionInDays: number = Number(this.node.tryGetContext("logRetentionInDays"))
     const logLevel: string = this.node.tryGetContext("logLevel")
     const primaryOidcClientId = this.node.tryGetContext("primaryOidcClientId")
@@ -192,6 +193,7 @@ export class StatelessResourcesStack extends Stack {
       serviceName: props.serviceName,
       stackName: props.stackName,
       fullCloudfrontDomain,
+      fullCognitoDomain,
       userPoolClientId,
       primaryOidcAuthorizeEndpoint,
       primaryOidcClientId,
