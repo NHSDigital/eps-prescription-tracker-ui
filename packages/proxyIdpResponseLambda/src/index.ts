@@ -67,10 +67,12 @@ const lambdaHandler = async (event: APIGatewayProxyEvent) => {
 
   const stateItem = stateResult.Item as StateItem
 
+  const iss = stateItem.UseMock ? mockOidcIssuer : primaryOidcIssuer
+
   // Build the response parameters to be sent back in the redirect.
   const responseParams = {
     code: queryParams.code,
-    iss: stateItem.UseMock ? mockOidcIssuer : primaryOidcIssuer,
+    iss: iss,
     state: stateItem.CognitoState,
     client_id: cognitoClientId
   }

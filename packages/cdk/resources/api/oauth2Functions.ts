@@ -11,11 +11,13 @@ export interface OAuth2FunctionsProps {
   readonly fullCloudfrontDomain: string
   readonly fullCognitoDomain: string
   readonly userPoolClientId: string
+  readonly primaryOidcIssuer: string
   readonly primaryOidcAuthorizeEndpoint: string
   readonly primaryOidcClientId: string
   readonly useMockOidc: boolean
+  readonly mockOidcIssuer?: string
   readonly mockOidcAuthorizeEndpoint?: string
-  readonly mockOidcClientId: string
+  readonly mockOidcClientId?: string
   readonly stateMappingTable: ITableV2
   readonly stateMappingTableWritePolicy: IManagedPolicy
   readonly stateMappingTableReadPolicy: IManagedPolicy
@@ -42,12 +44,18 @@ export class OAuth2Functions extends Construct {
 
     let useMock
     let mockOidcAuthorizeEndpoint
+    let mockOidcIssuer
+    let mockOidcClientId
     if (props.useMockOidc) {
       useMock = "true"
+      mockOidcIssuer = props.mockOidcIssuer as string
       mockOidcAuthorizeEndpoint = props.mockOidcAuthorizeEndpoint as string
+      mockOidcClientId = props.mockOidcClientId as string
     } else {
       useMock = "false"
       mockOidcAuthorizeEndpoint = ""
+      mockOidcIssuer = ""
+      mockOidcClientId = ""
     }
 
     // Create the login redirection `authorize` function
@@ -70,7 +78,7 @@ export class OAuth2Functions extends Construct {
         CIS2_IDP_AUTHORIZE_PATH: props.primaryOidcAuthorizeEndpoint,
         CIS2_OIDC_CLIENT_ID: props.primaryOidcClientId,
         MOCK_IDP_AUTHORIZE_PATH: mockOidcAuthorizeEndpoint,
-        MOCK_OIDC_CLIENT_ID: props.mockOidcClientId,
+        MOCK_OIDC_CLIENT_ID: mockOidcClientId,
         COGNITO_CLIENT_ID: props.userPoolClientId,
         FULL_CLOUDFRONT_DOMAIN: props.fullCloudfrontDomain,
         StateMappingTableName: props.stateMappingTable.tableName
@@ -94,7 +102,9 @@ export class OAuth2Functions extends Construct {
       lambdaEnvironmentVariables: {
         StateMappingTableName: props.stateMappingTable.tableName,
         COGNITO_CLIENT_ID: props.userPoolClientId,
-        COGNITO_DOMAIN: props.fullCognitoDomain
+        COGNITO_DOMAIN: props.fullCognitoDomain,
+        MOCK_OIDC_ISSUER: mockOidcIssuer,
+        PRIMARY_OIDC_ISSUER: props.primaryOidcIssuer
       }
     })
 
