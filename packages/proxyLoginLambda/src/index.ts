@@ -81,19 +81,19 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
       clientId = mockClientId
       authorizeEndpoint = mockAuthorizeEndpoint
       logger.info("Using mock auth.", {clientId, authorizeEndpoint})
-      break;
-    } 
+      break
+    }
     case "Primary": {
       clientId = oidcClientId
       authorizeEndpoint = oidcAuthorizeEndpoint
       logger.info("Using primary auth.", {clientId, authorizeEndpoint})
-      break;
+      break
     }
     default:
       throw new Error("Unrecognized identity provider")
   }
   logger.info("Authorize endpoint", {authorizeEndpoint})
-  
+
   if (queryStringParameters.client_id !== userPoolClientId) {
     throw new Error(`Mismatch in OIDC client ID. Payload: ${queryStringParameters.client_id} | Expected: ${userPoolClientId}`)
   }
@@ -109,9 +109,9 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   if (!codeVerifier) {
     throw new Error("Failed to generate the code verifier")
   }
-  
+
   // FIXME: This seems to need to be updated
-  queryStringParameters.scope = "openid+profile+email+nhsperson+nationalrbacaccess+associatedorgs"
+  queryStringParameters.scope = "openid profile email nhsperson nationalrbacaccess associatedorgs"
 
   // grab the old state's hash for dynamo
   const hashedState = createHash("sha256").update(queryStringParameters.state as string).digest("hex")
