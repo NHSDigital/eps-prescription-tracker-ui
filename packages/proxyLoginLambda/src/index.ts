@@ -133,7 +133,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   )
 
   // Set the redirection URL header
-  const callbackUri = `https://${cloudfrontDomain}/api/callback`
+  const callbackUri = `https://${cloudfrontDomain}/oauth2/callback`
 
   // These are the parameters we pass back in the redirection response
   const responseParameters = {
