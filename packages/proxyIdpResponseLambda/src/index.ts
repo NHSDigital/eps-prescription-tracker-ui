@@ -43,37 +43,36 @@ const lambdaHandler = async (event: APIGatewayProxyEvent) => {
   })
   logger.info("Event payload:", {event})
 
-  const queryParams = event.queryStringParameters || {}
+  // Incoming CIS2 response parameters
+  const cis2QueryParams = event.queryStringParameters || {}
+  logger.info("Incoming query parameters", {cis2QueryParams})
 
   // If either of these are missing, something's gone wrong.
-  if (!queryParams.state || !queryParams.code) {
+  if (!cis2QueryParams.state || !cis2QueryParams.code) {
     throw new Error("code or state parameter missing from request")
   }
 
-  // Log the lookup action in DynamoDB.
-  logger.info("Incoming query parameters", {queryParams})
-
-  // Query DynamoDB for the state mapping.
-  const stateResult = await documentClient.send(
+  // Fetch the original cognito state data
+  const cognitoState = await documentClient.send(
     new GetCommand({
       TableName: tableName,
-      Key: {State: queryParams.state}
+      Key: {State: cis2QueryParams.state}
     })
   )
 
-  if (!stateResult.Item) {
+  if (!cognitoState.Item) {
     throw new Error("State not found in DynamoDB")
   }
 
-  const stateItem = stateResult.Item as StateItem
+  const cognitoStateItem = cognitoState.Item as StateItem
 
-  const iss = stateItem.UseMock ? mockOidcIssuer : primaryOidcIssuer
+  const iss = cognitoStateItem.UseMock ? mockOidcIssuer : primaryOidcIssuer
 
   // Build the response parameters to be sent back in the redirect.
   const responseParams = {
-    code: queryParams.code,
+    code: cis2QueryParams.code,
     iss: iss,
-    state: stateItem.CognitoState,
+    state: cognitoStateItem.CognitoState,
     client_id: cognitoClientId
   }
 

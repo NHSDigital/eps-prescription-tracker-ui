@@ -58,16 +58,24 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   })
   logger.info("Event payload:", {event})
 
-  // This is set to mock for the mock lambda, and set to CIS2 for the prod lambda
+  // Check we're set up properly.
+  if (!useMock) {
+    throw new Error("useMock not defined!")
+  }
   if (!oidcAuthorizeEndpoint) {
     throw new Error("Upstream login endpoint environment variable not set")
   }
-  // Check we're set up properly.
+  if (!mockAuthorizeEndpoint) {
+    throw new Error("Mock OIDC authorization endpoint environment variable not set")
+  }
   if (!cloudfrontDomain) {
     throw new Error("Cloudfront domain environment variable not set")
   }
   if (!tableName) {
     throw new Error("State mapping table name environment variable not set")
+  }
+  if (!userPoolClientId) {
+    throw new Error("Cognito user pool client ID environment variable not set")
   }
   if (!oidcClientId) {
     throw new Error("OIDC client ID environment variable not set")
@@ -79,6 +87,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   // Original query parameters.
   const queryStringParameters = event.queryStringParameters || {}
 
+  // Decide if we're using mock of primary authentication. set variables accordingly.
   let clientId
   let authorizeEndpoint
   switch (queryStringParameters.identity_provider) {
@@ -100,7 +109,6 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     default:
       throw new Error("Unrecognized identity provider")
   }
-  logger.info("Authorize endpoint", {authorizeEndpoint})
 
   if (queryStringParameters.client_id !== userPoolClientId) {
     throw new Error(
@@ -109,6 +117,26 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     )
   }
 
+  // ********************************* //
+  // UPDATE THE PARAMETERS FOR CIS2
+  // ********************************* //
+
+  // Alter the scope FROM the cognito scopes, TO the CIS2 scopes
+  queryStringParameters.scope = "openid profile email nhsperson nationalrbacaccess associatedorgs"
+
+  // grab the old state's hash for dynamo
+  const cis2State = createHash("sha256").update(queryStringParameters.state as string).digest("hex")
+
+  // Limit the login window to 5 minutes
+  const stateTtl = Math.floor(Date.now() / 1000) + 300
+
+  // Set the redirection URL header, to return to our proxy callback
+  const callbackUri = `https://${cloudfrontDomain}/oauth2/callback`
+
+  // Generate CodeVerifier
+  // TODO: This may not be necessary for us. Example code makes it, but docs don't seem to apply
+  // to our use case
+  // https://docs.aws.amazon.com/cognito/latest/developerguide/using-pkce-in-authorization-code.html
   const randIdCommand = new GetRandomPasswordCommand({
     PasswordLength: 64,
     ExcludePunctuation: true,
@@ -121,18 +149,13 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     throw new Error("Failed to generate the code verifier")
   }
 
-  // FIXME: This seems to need to be updated
-  queryStringParameters.scope = "openid profile email nhsperson nationalrbacaccess associatedorgs"
-
-  // grab the old state's hash for dynamo
-  const hashedState = createHash("sha256").update(queryStringParameters.state as string).digest("hex")
-
-  // Limit the login window to 5 minutes
-  const stateTtl = Math.floor(Date.now() / 1000) + 300
+  // ********************************* //
+  // CACHE INCOMING COGNITO DATA
+  // ********************************* //
 
   // This data will be retrieved by the `state` value
   const Item: StateItem = {
-    State: hashedState,
+    State: cis2State,
     CodeVerifier: codeVerifier,
     CognitoState: queryStringParameters.state as string,
     Ttl: stateTtl,
@@ -146,30 +169,30 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     })
   )
 
-  // Set the redirection URL header
-  const callbackUri = `https://${cloudfrontDomain}/oauth2/callback`
+  // ********************************* //
+  // REDIRECT TO CIS2
+  // ********************************* //
 
-  // These are the parameters we pass back in the redirection response
+  // These are the parameters we pass back in the redirection response to CIS2
   const responseParameters = {
     response_type: queryStringParameters.response_type as string,
     scope: queryStringParameters.scope as string,
     client_id: clientId,
-    state: hashedState,
+    state: cis2State,
     redirect_uri: callbackUri,
     prompt: "login"
   }
 
+  // This is the CIS2 URL we are pointing the client towards
   const redirectPath = `${authorizeEndpoint}?${new URLSearchParams(responseParameters)}`
 
   // Return an HTTP 302 redirect response.
-  const redirect = {
+  return {
     statusCode: 302,
     headers: {Location: redirectPath},
     isBase64Encoded: false,
     body: JSON.stringify({})
   }
-  logger.info("Redirect response", {redirect})
-  return redirect
 }
 
 export const handler = middy(lambdaHandler)
