@@ -26,7 +26,7 @@ export const getPrescriptions = async (
   const searchParam = prescriptionId ? `prescriptionId=${prescriptionId}` : `nhsNumber=${nhsNumber}`
   //TODO: fix this path before merge
   // const endpoint = `${prescriptionsEndpoint}/clinical-prescription-tracker-pr-808/RequestGroup?${searchParam}`
-  const endpoint = `${prescriptionsEndpoint}/clinical-prescription-tracker-pr-808?${searchParam}`
+  const endpoint = `${prescriptionsEndpoint}/clinical-prescription-tracker-pr-808/RequestGroup?${searchParam}`
   const logContext = prescriptionId ? {prescriptionId} : {nhsNumber}
 
   logger.info("Fetching prescriptions", logContext)
@@ -56,6 +56,7 @@ export const getPrescriptions = async (
     }
 
     const bundle = response.data as Bundle<FhirResource>
+    logger.info("Raws response bundle", {bundle})
     const prescriptions = mapResponseToPrescriptionSummary(bundle)
 
     if (prescriptionId && (!prescriptions || prescriptions.length === 0)) {
