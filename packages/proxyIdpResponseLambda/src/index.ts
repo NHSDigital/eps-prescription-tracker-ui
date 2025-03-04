@@ -73,7 +73,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent) => {
   const responseParams = {
     code: cis2QueryParams.code,
     iss: iss,
-    state: cognitoStateItem.CognitoState,
+    state: cognitoStateItem.State,
     client_id: cognitoClientId
   }
 
