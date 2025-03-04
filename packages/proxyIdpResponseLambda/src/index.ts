@@ -59,6 +59,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent) => {
       Key: {State: cis2QueryParams.state}
     })
   )
+  // TODO: Delete the old state before proceeding
 
   if (!cognitoState.Item) {
     throw new Error("State not found in DynamoDB")

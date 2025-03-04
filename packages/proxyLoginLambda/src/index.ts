@@ -122,7 +122,11 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   // ********************************* //
 
   // Alter the scope FROM the cognito scopes, TO the CIS2 scopes
-  queryStringParameters.scope = "openid profile email nhsperson nationalrbacaccess associatedorgs"
+  // FIXME: there may be an issue with mismatching scopes
+  // openid email phone profile aws.cognito.signin.user.admin
+  // This SHOULD be
+  // openid profile email nhsperson nationalrbacaccess associatedorgs
+  queryStringParameters.scope = "openid"
 
   // grab the old state's hash for dynamo
   const cis2State = createHash("sha256").update(queryStringParameters.state as string).digest("hex")
