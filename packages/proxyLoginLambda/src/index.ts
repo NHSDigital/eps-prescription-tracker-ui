@@ -126,7 +126,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   // openid email phone profile aws.cognito.signin.user.admin
   // This SHOULD be
   // openid profile email nhsperson nationalrbacaccess associatedorgs
-  queryStringParameters.scope = "openid"
+  queryStringParameters.scope = "openid profile email nhsperson nationalrbacaccess associatedorgs"
 
   // grab the old state's hash for dynamo
   const cis2State = createHash("sha256").update(queryStringParameters.state as string).digest("hex")
