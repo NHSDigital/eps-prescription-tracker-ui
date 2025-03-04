@@ -82,7 +82,7 @@ jobs:
       useCustomCognitoDomain: false
       APIGEE_CIS2_TOKEN_ENDPOINT: "https://internal-dev.api.service.nhs.uk/oauth2/token"
       APIGEE_MOCK_TOKEN_ENDPOINT: "https://internal-dev.api.service.nhs.uk/oauth2-mock/token"
-      APIGEE_PRESCRIPTIONS_ENDPOINT: "https://internal-dev.api.service.nhs.uk/clinical-prescription-tracker/"
+      APIGEE_PRESCRIPTIONS_ENDPOINT: "https://internal-dev.api.service.nhs.uk/clinical-prescription-tracker-pr-808/"
       JWT_KID: "eps-cpt-ui-test"
       # this needs uncommenting and above line deleted once it is merged
       # JWT_KID: "eps-cpt-ui-dev"
