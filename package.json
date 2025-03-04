@@ -26,9 +26,12 @@
         "packages/common/middyErrorHandler",
         "packages/common/testing",
         "packages/common/authFunctions",
+        "packages/pingLambda",
         "packages/auth_demo",
         "packages/trackerUserInfoLambda",
-        "packages/selectedRoleLambda"
+        "packages/selectedRoleLambda",
+        "packages/proxyLoginLambda",
+        "packages/proxyIdpResponseLambda"
     ],
     "devDependencies": {
         "@semantic-release/changelog": "^6.0.3",
