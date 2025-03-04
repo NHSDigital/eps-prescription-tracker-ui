@@ -44,6 +44,7 @@ export interface ApiFunctionsProps {
  */
 export class ApiFunctions extends Construct {
   public readonly apiFunctionsPolicies: Array<IManagedPolicy>
+  public readonly CIS2SignOutLambda: NodejsFunction
   public readonly prescriptionSearchLambda: NodejsFunction
   public readonly trackerUserInfoLambda: NodejsFunction
   public readonly selectedRoleLambda: NodejsFunction
@@ -93,11 +94,27 @@ export class ApiFunctions extends Construct {
       commonLambdaEnv["MOCK_OIDC_ISSUER"] = props.mockOidcIssuer!
     }
 
+    // Prescription Search Lambda Function
+    const CIS2SignOutLambda = new LambdaFunction(this, "CIS2SignOut", {
+      serviceName: props.serviceName,
+      stackName: props.stackName,
+      lambdaName: `${props.stackName}-CIS2SignOut`,
+      additionalPolicies: additionalPolicies,
+      logRetentionInDays: props.logRetentionInDays,
+      logLevel: props.logLevel,
+      packageBasePath: "packages/CIS2SignOutLambda",
+      entryPoint: "src/handler.ts",
+      lambdaEnvironmentVariables: commonLambdaEnv
+    })
+
+    // Add the policy to apiFunctionsPolicies
+    apiFunctionsPolicies.push(CIS2SignOutLambda.executeLambdaManagedPolicy)
+
     // Single Lambda for both real and mock scenarios
     const trackerUserInfoLambda = new LambdaFunction(this, "TrackerUserInfo", {
       serviceName: props.serviceName,
       stackName: props.stackName,
-      lambdaName: `${props.stackName}-TrkUsrNfoUnified`,
+      lambdaName: `${props.stackName}-TrkUsrInfo`,
       additionalPolicies: additionalPolicies,
       logRetentionInDays: props.logRetentionInDays,
       logLevel: props.logLevel,
@@ -173,6 +190,7 @@ export class ApiFunctions extends Construct {
     this.apiFunctionsPolicies = apiFunctionsPolicies
     this.primaryJwtPrivateKey = props.sharedSecrets.primaryJwtPrivateKey
 
+    this.CIS2SignOutLambda = CIS2SignOutLambda.lambda
     this.prescriptionSearchLambda = prescriptionSearchLambda.lambda
     this.trackerUserInfoLambda = trackerUserInfoLambda.lambda
     this.selectedRoleLambda = selectedRoleLambda.lambda
