@@ -20,7 +20,7 @@ const tableName = process.env["StateMappingTableName"] as string
 
 // The cognito client ID must be re-added.
 const cognitoClientId = process.env["COGNITO_CLIENT_ID"] as string
-// And this is where to send the client with their login event (i.e. back to the app)
+// And this is where to send the client with their login event
 const fullCognitoDomain = process.env["COGNITO_DOMAIN"] as string
 // This needs to be set
 const primaryOidcIssuer = process.env["PRIMARY_OIDC_ISSUER"] as string
