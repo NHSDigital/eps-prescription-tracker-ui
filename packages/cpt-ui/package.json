@@ -12,7 +12,7 @@
     "check-licenses": "license-checker --failOn GPL --failOn LGPL --start ../.."
   },
   "dependencies": {
-    "aws-amplify": "^6.13.2",
+    "aws-amplify": "^6.13.3",
     "axios": "^1.8.1",
     "i18next": "^24.2.1",
     "i18next-browser-languagedetector": "^8.0.4",
@@ -28,7 +28,7 @@
     "react-router-dom": "^6.22.3"
   },
   "devDependencies": {
-    "@swc/core": "^1.11.6",
+    "@swc/core": "^1.11.7",
     "@swc/jest": "^0.2.37",
     "@testing-library/jest-dom": "^6.6.2",
     "@testing-library/react": "^16.2.0",
