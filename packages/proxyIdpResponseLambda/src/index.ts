@@ -43,8 +43,8 @@ const lambdaHandler = async (event: APIGatewayProxyEvent) => {
   logger.info("Incoming query parameters", {cis2QueryParams})
 
   // If either of these are missing, something's gone wrong.
-  if (!cis2QueryParams.state || !cis2QueryParams.code) {
-    throw new Error("code or state parameter missing from request")
+  if (!cis2QueryParams.state || !cis2QueryParams.code || !cis2QueryParams.session_state) {
+    throw new Error("code, session_state, or state parameter missing from request")
   }
 
   // Fetch the original cognito state data
@@ -75,7 +75,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent) => {
   // Construct the redirect URI by appending the response parameters.
   // https://login.auth.cpt-ui.dev.eps.national.nhs.uk/oauth2/idpresponse?${params}
   const redirectUri = (
-    `https://${fullCognitoDomain}/oauth2/idpresponse` +
+    `https://${fullCognitoDomain}/oauth2/callback` +
     `?${new URLSearchParams(responseParams).toString()}`
   )
 
