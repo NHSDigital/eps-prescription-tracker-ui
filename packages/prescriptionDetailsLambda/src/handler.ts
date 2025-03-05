@@ -20,8 +20,7 @@ import {
   initializeOidcConfig
 } from "@cpt-ui-common/authFunctions"
 import {doHSClient} from "@cpt-ui-common/doHSClient"
-// import {LambdaClient, InvokeCommand} from "@aws-sdk/client-lambda"
-
+import {FhirParticipant, FhirAction} from "../../prescriptionDetailsLambda/src/utils/types"
 // Logger initialization
 const logger = new Logger({serviceName: "prescriptionDetails"})
 
@@ -174,22 +173,31 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     data: apigeeResponse.data
   })
 
-  // Step 6: Extract ODS Code (if available)
-  let extractedODSCode: string | null = null
+  // Step 6: Extract ODS codes
+  const prescribingOrganization = apigeeResponse.data?.author?.identifier?.value || null
 
-  // Check if the ODS Code exists in the 'author' field of 'RequestGroup'
-  if (apigeeResponse.data?.resourceType === "RequestGroup" && apigeeResponse.data?.author?.identifier?.value) {
-    extractedODSCode = apigeeResponse.data.author.identifier.value
-    logger.info("Extracted ODS Code from RequestGroup", {extractedODSCode})
-  } else {
-    logger.warn("No ODS Code found in Apigee response. Skipping DoHS API request.")
-  }
+  const nominatedPerformer = apigeeResponse.data?.action
+    ?.find((action: FhirAction) =>
+      action.participant?.some((participant: FhirParticipant) =>
+        participant.identifier?.system === "https://fhir.nhs.uk/Id/ods-organization-code"
+      )
+    )?.participant?.[0]?.identifier?.value || null
 
-  // Step 7: Fetch DoHS API Data (Only if ODS Code exists)
+  const dispensingOrganization = apigeeResponse.data?.action
+    ?.find((action: FhirAction) =>
+      action.participant?.some((participant: FhirParticipant) =>
+        participant.identifier?.system === "https://fhir.nhs.uk/Id/ods-organization-code"
+      )
+    )?.participant?.[0]?.identifier?.value || null
+
+  // Step 7: Build ODS Code List
+  const odsCodes = {prescribingOrganization, nominatedPerformer, dispensingOrganization}
+
+  // Fetch DoHS API Data
   let doHSData = {}
-  if (extractedODSCode) {
+  if (Object.values(odsCodes).some(Boolean)) {
     try {
-      doHSData = await doHSClient(extractedODSCode)
+      doHSData = await doHSClient(odsCodes)
       logger.info("Successfully fetched DoHS API data", {doHSData})
     } catch (error) {
       logger.error("Failed to fetch DoHS API data", {error})

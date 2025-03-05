@@ -16,7 +16,7 @@ export const mergePrescriptionDetails = (
   // Extract RequestGroup data
   const prescriptionID = prescriptionDetails?.identifier?.[0]?.value || "Not found"
   const typeCode = prescriptionDetails?.extension?.find(ext => ext.url === "https://fhir.nhs.uk/StructureDefinition/Extension-DM-PrescriptionType")?.valueCoding?.code || "Not found"
-  const statusCode = prescriptionDetails?.extension?.find(ext => ext.url === "https://fhir.nhs.uk/StructureDefinition/Extension-DM-PrescriptionStatusHistory")?.extension?.[0]?.valueCoding?.code || "Not found"
+  const statusCode = prescriptionDetails?.intent || "Not found"
   const issueDate = prescriptionDetails?.authoredOn || "Not found"
   const instanceNumber = prescriptionDetails?.extension?.find(ext => ext.url === "https://fhir.nhs.uk/StructureDefinition/Extension-EPS-RepeatInformation")?.extension?.find(ext => ext.url === "numberOfRepeatsIssued")?.valueInteger || "Not found"
   const maxRepeats = prescriptionDetails?.extension?.find(ext => ext.url === "https://fhir.nhs.uk/StructureDefinition/Extension-EPS-RepeatInformation")?.extension?.find(ext => ext.url === "numberOfRepeatsAllowed")?.valueInteger || "Not found"
@@ -104,8 +104,8 @@ export const mergePrescriptionDetails = (
   const messageHistory = ((prescriptionDetails?.action?.[0]?.action as Array<RequestGroupAction>) || []).map(action => ({
     messageCode: action?.code?.[0]?.coding?.[0]?.code || "Not found",
     sentDateTime: action?.timingDateTime || "Not found",
-    organisationName: doHSData?.value?.[0]?.OrganisationName || "Not found",
-    organisationODS: doHSData?.value?.[0]?.ODSCode || "Not found",
+    organisationName: doHSData?.nominatedPerformer?.OrganisationName || "Not found",
+    organisationODS: doHSData?.nominatedPerformer?.ODSCode || "Not found",
     newStatusCode: action?.code?.[0]?.coding?.[0]?.display || "Not found",
     dispenseNotification: (action?.action || []).map(dispense => ({
       ID: dispense?.resource?.reference || "Not found",
@@ -118,32 +118,32 @@ export const mergePrescriptionDetails = (
   // Extract prescriber organisation
   const prescriberOrganisation = {
     organisationSummaryObjective: {
-      name: doHSData?.value?.[0]?.OrganisationName || "Not found",
-      odsCode: doHSData?.value?.[0]?.ODSCode || "Not found",
-      address: `${doHSData?.value?.[0]?.Address1 || ""} ${doHSData?.value?.[0]?.City || ""} ${doHSData?.value?.[0]?.Postcode || ""}`.trim() || "Not found",
-      telephone: doHSData?.value?.[0]?.Contacts?.find(c => c.ContactMethodType === "Telephone")?.ContactValue || "Not found",
+      name: doHSData?.prescribingOrganization?.OrganisationName || "Not found",
+      odsCode: doHSData?.prescribingOrganization?.ODSCode || "Not found",
+      address: `${doHSData?.prescribingOrganization?.Address1 || ""} ${doHSData?.prescribingOrganization?.City || ""} ${doHSData?.prescribingOrganization?.Postcode || ""}`.trim() || "Not found",
+      telephone: doHSData?.prescribingOrganization?.Contacts?.find(c => c.ContactMethodType === "Telephone")?.ContactValue || "Not found",
       prescribedFrom: typeCode.startsWith("01") || typeCode.startsWith("1") ? "England" :
         typeCode.startsWith("02") || typeCode.startsWith("2") ? "Wales" : "Unknown"
     }
   }
 
   // Extract nominated dispenser
-  const nominatedDispenser = doHSData?.value?.[0] ? {
+  const nominatedDispenser = doHSData?.nominatedPerformer ? {
     organisationSummaryObjective: {
-      name: doHSData.value[0]?.OrganisationName || "Not found",
-      odsCode: doHSData.value[0]?.ODSCode || "Not found",
-      address: `${doHSData.value[0]?.Address1 || ""} ${doHSData.value[0]?.City || ""} ${doHSData.value[0]?.Postcode || ""}`.trim() || "Not found",
-      telephone: doHSData.value[0]?.Contacts?.find(c => c.ContactMethodType === "Telephone")?.ContactValue || "Not found"
+      name: doHSData.nominatedPerformer.OrganisationName || "Not found",
+      odsCode: doHSData.nominatedPerformer.ODSCode || "Not found",
+      address: `${doHSData.nominatedPerformer.Address1 || ""} ${doHSData.nominatedPerformer.City || ""} ${doHSData.nominatedPerformer.Postcode || ""}`.trim() || "Not found",
+      telephone: doHSData.nominatedPerformer.Contacts?.find(c => c.ContactMethodType === "Telephone")?.ContactValue || "Not found"
     }
   } : undefined
 
   // Extract current dispenser
-  const currentDispenser = doHSData?.value?.[0] ? {
+  const currentDispenser = doHSData?.dispensingOrganization ? {
     organisationSummaryObjective: {
-      name: doHSData.value[0]?.OrganisationName || "Not found",
-      odsCode: doHSData.value[0]?.ODSCode || "Not found",
-      address: `${doHSData.value[0]?.Address1 || ""} ${doHSData.value[0]?.City || ""} ${doHSData.value[0]?.Postcode || ""}`.trim() || "Not found",
-      telephone: doHSData.value[0]?.Contacts?.find(c => c.ContactMethodType === "Telephone")?.ContactValue || "Not found"
+      name: doHSData.dispensingOrganization.OrganisationName || "Not found",
+      odsCode: doHSData.dispensingOrganization.ODSCode || "Not found",
+      address: `${doHSData.dispensingOrganization.Address1 || ""} ${doHSData.dispensingOrganization.City || ""} ${doHSData.dispensingOrganization.Postcode || ""}`.trim() || "Not found",
+      telephone: doHSData.dispensingOrganization.Contacts?.find(c => c.ContactMethodType === "Telephone")?.ContactValue || "Not found"
     }
   } : undefined
 

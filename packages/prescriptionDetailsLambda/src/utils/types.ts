@@ -6,6 +6,19 @@ import {
   Extension
 } from "fhir/r4"
 
+// Resource type for FHIR request group
+export interface FhirAction {
+  participant?: Array<FhirParticipant>
+}
+
+// Extend FhirParticipant to support nested extensions
+export interface FhirParticipant {
+  identifier?: {
+    system?: string
+    value?: string
+  }
+}
+
 // Extend FhirExtension to support nested extensions
 export interface ExtensionWithNested extends Extension {
   extension?: Array<{
