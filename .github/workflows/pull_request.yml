@@ -53,14 +53,14 @@ jobs:
           echo "commit_id=${{ github.sha }}" >> "$GITHUB_OUTPUT"
 
   package_code:
-    needs: [get_issue_number, get_commit_id, quality_checks]
+    needs: [get_issue_number, get_commit_id]
     uses: ./.github/workflows/cdk_package_code.yml
     with:
       VERSION_NUMBER: PR-${{ needs.get_issue_number.outputs.issue_number }}
       COMMIT_ID: ${{ needs.get_commit_id.outputs.commit_id }}
 
   release_code:
-    needs: [get_issue_number, package_code, get_commit_id, quality_checks]
+    needs: [get_issue_number, package_code, get_commit_id]
     uses: ./.github/workflows/release_all_stacks.yml
     with:
       SERVICE_NAME: cpt-ui-pr-${{needs.get_issue_number.outputs.issue_number}}

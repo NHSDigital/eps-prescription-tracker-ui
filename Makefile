@@ -33,6 +33,7 @@ lint-node: compile-node
 	npm run lint --workspace packages/common/middyErrorHandler
 	npm run lint --workspace packages/trackerUserInfoLambda
 	npm run lint --workspace packages/selectedRoleLambda
+	npm run lint --workspace packages/CIS2SignOutLambda
 	npm run lint --workspace packages/common/authFunctions
 
 lint-githubactions:
@@ -52,6 +53,7 @@ test: compile
 	npm run test --workspace packages/common/middyErrorHandler
 	npm run test --workspace packages/trackerUserInfoLambda
 	npm run test --workspace packages/selectedRoleLambda
+	npm run test --workspace packages/CIS2SignOutLambda
 	npm run test --workspace packages/common/authFunctions
 
 clean:
@@ -74,6 +76,8 @@ clean:
 	rm -rf packages/selectedRoleLambda/lib
 	rm -rf packages/common/authFunctions/coverage
 	rm -rf packages/common/authFunctions/lib
+	rm -rf packages/CIS2SignOutLambda/coverage
+	rm -rf packages/CIS2SignOutLambda/lib
 
 deep-clean: clean
 	rm -rf .venv
@@ -91,6 +95,7 @@ check-licenses-node:
 	npm run check-licenses --workspace packages/prescriptionSearchLambda
 	npm run check-licenses --workspace packages/trackerUserInfoLambda
 	npm run check-licenses --workspace packages/selectedRoleLambda
+	npm run check-licenses --workspace packages/CIS2SignOutLambda
 
 check-licenses-python:
 	scripts/check_python_licenses.sh
