@@ -96,7 +96,9 @@ export interface DoHSValue {
 
 // Root type for DoHS response
 export interface DoHSData {
-  value?: Array<DoHSValue>
+  prescribingOrganization?: DoHSValue | null
+  nominatedPerformer?: DoHSValue | null
+  dispensingOrganization?: DoHSValue | null
 }
 
 /**
