@@ -6,6 +6,7 @@ import {
   RequestGroupAction
 } from "fhir/r4"
 import {DoHSData, MergedResponse, Resource} from "./types"
+import {mapIntentToPrescriptionTreatmentType} from "./fhirMappers"
 
 export const mergePrescriptionDetails = (
   prescriptionDetails: RequestGroup | null,
@@ -16,7 +17,7 @@ export const mergePrescriptionDetails = (
   // Extract RequestGroup data
   const prescriptionID = prescriptionDetails?.identifier?.[0]?.value || "Not found"
   const typeCode = prescriptionDetails?.extension?.find(ext => ext.url === "https://fhir.nhs.uk/StructureDefinition/Extension-DM-PrescriptionType")?.valueCoding?.code || "Not found"
-  const statusCode = prescriptionDetails?.intent || "Not found"
+  const statusCode = mapIntentToPrescriptionTreatmentType(prescriptionDetails?.intent || "order")
   const issueDate = prescriptionDetails?.authoredOn || "Not found"
   const instanceNumber = prescriptionDetails?.extension?.find(ext => ext.url === "https://fhir.nhs.uk/StructureDefinition/Extension-EPS-RepeatInformation")?.extension?.find(ext => ext.url === "numberOfRepeatsIssued")?.valueInteger || "Not found"
   const maxRepeats = prescriptionDetails?.extension?.find(ext => ext.url === "https://fhir.nhs.uk/StructureDefinition/Extension-EPS-RepeatInformation")?.extension?.find(ext => ext.url === "numberOfRepeatsAllowed")?.valueInteger || "Not found"

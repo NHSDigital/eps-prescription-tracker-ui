@@ -101,6 +101,9 @@ export interface DoHSData {
   dispensingOrganization?: DoHSValue | null
 }
 
+// Defines the allowed prescription intent values based on FHIR standards.
+export type PrescriptionIntent = "order" | "instance-order" | "reflex-order"
+
 /**
  * The MergedResponse interface represents the consolidated information
  * from the Spine response and DoHS data. It is used to structure
