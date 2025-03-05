@@ -60,7 +60,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   // REDIRECT TO CIS2
   // ********************************* //
 
-  const redirectUri = `https://${cloudfrontDomain}/oauth2/idpresponse`
+  const redirectUri = `https://${cloudfrontDomain}/oauth2/callback`
 
   // minimal alteration of params
   const responseParameters = {
