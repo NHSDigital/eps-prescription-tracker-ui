@@ -2,7 +2,7 @@ import {Logger} from "@aws-lambda-powertools/logger"
 import {APIGatewayProxyEvent} from "aws-lambda"
 import {injectLambdaContext} from "@aws-lambda-powertools/logger/middleware"
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
-import {DynamoDBDocumentClient, GetCommand} from "@aws-sdk/lib-dynamodb"
+import {DynamoDBDocumentClient, GetCommand, DeleteCommand} from "@aws-sdk/lib-dynamodb"
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 import middy from "@middy/core"
 import inputOutputLogger from "@middy/input-output-logger"
@@ -18,13 +18,8 @@ const middyErrorHandler = new MiddyErrorHandler(errorResponseBody)
 // Retrieve the original state from this table
 const tableName = process.env["StateMappingTableName"] as string
 
-// The cognito client ID must be re-added.
-const cognitoClientId = process.env["COGNITO_CLIENT_ID"] as string
 // And this is where to send the client with their login event
 const fullCognitoDomain = process.env["COGNITO_DOMAIN"] as string
-// This needs to be set
-const primaryOidcIssuer = process.env["PRIMARY_OIDC_ISSUER"] as string
-const mockOidcIssuer = process.env["MOCK_OIDC_ISSUER"] as string
 
 const dynamoClient = new DynamoDBClient()
 const documentClient = DynamoDBDocumentClient.from(dynamoClient)
@@ -59,7 +54,11 @@ const lambdaHandler = async (event: APIGatewayProxyEvent) => {
       Key: {State: cis2QueryParams.state}
     })
   )
-  // TODO: Delete the old state before proceeding
+  // Delete the old state before proceeding
+  await documentClient.send(new DeleteCommand({
+    TableName: tableName,
+    Key: {State: cis2QueryParams.state}
+  }))
 
   if (!cognitoState.Item) {
     throw new Error("State not found in DynamoDB")
@@ -67,14 +66,10 @@ const lambdaHandler = async (event: APIGatewayProxyEvent) => {
 
   const cognitoStateItem = cognitoState.Item as StateItem
 
-  const iss = cognitoStateItem.UseMock ? mockOidcIssuer : primaryOidcIssuer
-
-  // Build the response parameters to be sent back in the redirect.
   const responseParams = {
-    code: cis2QueryParams.code,
-    iss: iss,
     state: cognitoStateItem.CognitoState,
-    client_id: cognitoClientId
+    session_state: cis2QueryParams.session_state as string,
+    code: cis2QueryParams.code
   }
 
   // Construct the redirect URI by appending the response parameters.

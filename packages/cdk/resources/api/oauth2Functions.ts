@@ -78,7 +78,6 @@ export class OAuth2Functions extends Construct {
         OIDC_CLIENT_ID: props.primaryOidcClientId,
         COGNITO_CLIENT_ID: props.userPoolClientId,
         FULL_CLOUDFRONT_DOMAIN: props.fullCloudfrontDomain,
-        COGNITO_DOMAIN: props.fullCognitoDomain,
         StateMappingTableName: props.stateMappingTable.tableName
       }
     })
@@ -148,7 +147,6 @@ export class OAuth2Functions extends Construct {
           OIDC_CLIENT_ID: mockOidcClientId,
           COGNITO_CLIENT_ID: props.userPoolClientId,
           FULL_CLOUDFRONT_DOMAIN: props.fullCloudfrontDomain,
-          COGNITO_DOMAIN: props.fullCognitoDomain,
           StateMappingTableName: props.stateMappingTable.tableName
         }
       })

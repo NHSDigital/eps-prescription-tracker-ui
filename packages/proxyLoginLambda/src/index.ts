@@ -27,7 +27,6 @@ const userPoolClientId = process.env["COGNITO_CLIENT_ID"] as string
 // The stack name is needed to figure out the return address for the login event, so
 // we can intercept it after the CIS2 login
 const cloudfrontDomain = process.env["FULL_CLOUDFRONT_DOMAIN"] as string
-const fullCognitoDomain = process.env["COGNITO_DOMAIN"] as string
 // And since we need to store the original state for the return journey, this table will be used. for that
 const tableName = process.env["StateMappingTableName"] as string
 
@@ -102,7 +101,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   const stateTtl = Math.floor(Date.now() / 1000) + 300
 
   // Set the redirection URL header, to return to our proxy callback
-  const callbackUri = `https://${fullCognitoDomain}/oauth2/idpresponse`
+  const callbackUri = `https://${cloudfrontDomain}/oauth2/idpresponse`
 
   // Generate CodeVerifier
   // TODO: This may not be necessary for us. Example code makes it, but docs don't seem to apply
