@@ -102,9 +102,8 @@ export const nagSuppressions = (stack: Stack) => {
       [
         "/StatelessStack/OAuth2Gateway/ApiGateway/Default/ping/GET/Resource",
         "/StatelessStack/OAuth2Gateway/ApiGateway/Default/authorize/GET/Resource",
-        "/StatelessStack/OAuth2Gateway/ApiGateway/Default/mockauthorize/GET/Resource",
+        "/StatelessStack/OAuth2Gateway/ApiGateway/Default/mock-authorize/GET/Resource",
         "/StatelessStack/OAuth2Gateway/ApiGateway/Default/callback/GET/Resource",
-        "/StatelessStack/OAuth2Gateway/ApiGateway/Default/mockcallback/GET/Resource",
         "/StatelessStack/ApiGateway/ApiGateway/Default/token/POST/Resource",
         "/StatelessStack/ApiGateway/ApiGateway/Default/mocktoken/POST/Resource",
         "/StatelessStack/ApiGateway/ApiGateway/Default/mocknoauth/GET/Resource"

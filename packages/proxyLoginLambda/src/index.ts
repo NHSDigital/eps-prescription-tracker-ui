@@ -15,13 +15,11 @@ import inputOutputLogger from "@middy/input-output-logger"
 import {createHash} from "crypto"
 
 // This is the OIDC /authorize endpoint, which we will redirect to after adding the query parameter
-const oidcAuthorizeEndpoint = process.env["CIS2_IDP_AUTHORIZE_PATH"] as string
-const mockAuthorizeEndpoint = process.env["MOCK_IDP_AUTHORIZE_PATH"] as string
+const authorizeEndpoint = process.env["IDP_AUTHORIZE_PATH"] as string
 
 // Since we have to use the same lambda for mock and primary, we need both client IDs.
 // We switch between them based on the header.
-const oidcClientId = process.env["CIS2_OIDC_CLIENT_ID"] as string
-const mockClientId = process.env["MOCK_OIDC_CLIENT_ID"] as string
+const oidcClientId = process.env["OIDC_CLIENT_ID"] as string
 const useMock = process.env["useMock"] as string
 
 const userPoolClientId = process.env["COGNITO_CLIENT_ID"] as string
@@ -62,12 +60,6 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   if (!useMock) {
     throw new Error("useMock not defined!")
   }
-  if (!oidcAuthorizeEndpoint) {
-    throw new Error("Upstream login endpoint environment variable not set")
-  }
-  if (!mockAuthorizeEndpoint) {
-    throw new Error("Mock OIDC authorization endpoint environment variable not set")
-  }
   if (!cloudfrontDomain) {
     throw new Error("Cloudfront domain environment variable not set")
   }
@@ -80,35 +72,9 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   if (!oidcClientId) {
     throw new Error("OIDC client ID environment variable not set")
   }
-  if (!mockClientId) {
-    throw new Error("Mock OIDC client ID environment variable not set")
-  }
 
   // Original query parameters.
   const queryStringParameters = event.queryStringParameters || {}
-
-  // Decide if we're using mock of primary authentication. set variables accordingly.
-  let clientId
-  let authorizeEndpoint
-  switch (queryStringParameters.identity_provider) {
-    case "Mock": {
-      if (useMock.toLowerCase() !== "true") {
-        throw new Error("Mock is not enabled, but was requested.")
-      }
-      clientId = mockClientId
-      authorizeEndpoint = mockAuthorizeEndpoint
-      logger.info("Using mock auth.", {clientId, authorizeEndpoint})
-      break
-    }
-    case "Primary": {
-      clientId = oidcClientId
-      authorizeEndpoint = oidcAuthorizeEndpoint
-      logger.info("Using primary auth.", {clientId, authorizeEndpoint})
-      break
-    }
-    default:
-      throw new Error("Unrecognized identity provider")
-  }
 
   if (queryStringParameters.client_id !== userPoolClientId) {
     throw new Error(
@@ -181,7 +147,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   const responseParameters = {
     response_type: queryStringParameters.response_type as string,
     scope: queryStringParameters.scope as string,
-    client_id: clientId,
+    client_id: queryStringParameters.clientId as string,
     state: cis2State,
     redirect_uri: callbackUri,
     prompt: "login"

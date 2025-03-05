@@ -294,7 +294,6 @@ export class StatelessResourcesStack extends Stack {
       authorizeLambda: oauth2Functions.authorizeLambda,
       mockAuthorizeLambda: oauth2Functions.mockAuthorizeLambda,
       idpResponseLambda: oauth2Functions.idpResponseLambda,
-      mockIdpResponseLambda: oauth2Functions.mockIdpResponseLambda,
       pingResponseLambda: oauth2Functions.pingResponseLambda,
       useMockOidc: useMockOidc
     })

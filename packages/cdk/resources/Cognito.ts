@@ -138,7 +138,7 @@ export class Cognito extends Construct {
       // these are the endpoints that are added to user pool identity provider
       // note we override the token endpoint to point back to our custom token
       const mockOidcEndpoints: OidcEndpoints = {
-        authorization: `https://${props.fullCloudfrontDomain}/oauth2/authorize`,
+        authorization: `https://${props.fullCloudfrontDomain}/oauth2/mock-authorize`,
         jwksUri: props.mockOidcjwksEndpoint,
         token: `https://${props.fullCloudfrontDomain}/api/mocktoken`,
         userInfo: props.mockOidcUserInfoEndpoint

@@ -10,7 +10,6 @@ export interface OAuth2ApiGatewayMethodsProps {
   readonly authorizeLambda: NodejsFunction
   readonly mockAuthorizeLambda: NodejsFunction
   readonly idpResponseLambda: NodejsFunction
-  readonly mockIdpResponseLambda: NodejsFunction
   readonly pingResponseLambda: NodejsFunction
   readonly useMockOidc: boolean
 }
@@ -35,6 +34,14 @@ export class OAuth2ApiGatewayMethods extends Construct {
     authorizeResource.addMethod("GET", new LambdaIntegration(props.authorizeLambda, {
       credentialsRole: props.oauth2APiGatewayRole
     }))
+
+    // MOCK Authorize redirection endpoint
+    if (props.useMockOidc) {
+      const mockAuthorizeResource = props.oauth2ApiGateway.root.addResource("mock-authorize")
+      mockAuthorizeResource.addMethod("GET", new LambdaIntegration(props.mockAuthorizeLambda, {
+        credentialsRole: props.oauth2APiGatewayRole
+      }))
+    }
 
     // Return journey login callback.
     const idpResponseResource = props.oauth2ApiGateway.root.addResource("callback")
