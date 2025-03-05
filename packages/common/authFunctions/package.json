@@ -13,7 +13,7 @@
     "check-licenses": "license-checker --failOn GPL --failOn LGPL --start ../.."
   },
   "devDependencies": {
-    "mock-jwks": "^3.2.2"
+    "mock-jwks": "^3.3.4"
   },
   "dependencies": {
     "@aws-lambda-powertools/logger": "^2.15.0",
