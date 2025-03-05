@@ -101,7 +101,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   const stateTtl = Math.floor(Date.now() / 1000) + 300
 
   // Set the redirection URL header, to return to our proxy callback
-  const callbackUri = `https://${cloudfrontDomain}/oauth2/idpresponse`
+  const callbackUri = `https://${cloudfrontDomain}/oauth2/callback`
 
   // Generate CodeVerifier
   // TODO: This may not be necessary for us. Example code makes it, but docs don't seem to apply

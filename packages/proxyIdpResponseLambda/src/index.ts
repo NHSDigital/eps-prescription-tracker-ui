@@ -75,7 +75,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent) => {
   // Construct the redirect URI by appending the response parameters.
   // https://login.auth.cpt-ui.dev.eps.national.nhs.uk/oauth2/idpresponse?${params}
   const redirectUri = (
-    `https://${fullCognitoDomain}/oauth2/callback` +
+    `https://${fullCognitoDomain}/oauth2/idpresponse` +
     `?${new URLSearchParams(responseParams).toString()}`
   )
 
