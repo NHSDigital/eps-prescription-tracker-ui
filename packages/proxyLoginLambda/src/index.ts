@@ -19,7 +19,7 @@ const authorizeEndpoint = process.env["IDP_AUTHORIZE_PATH"] as string
 
 // Since we have to use the same lambda for mock and primary, we need both client IDs.
 // We switch between them based on the header.
-const oidcClientId = process.env["OIDC_CLIENT_ID"] as string
+const cis2ClientId = process.env["OIDC_CLIENT_ID"] as string
 const useMock = process.env["useMock"] as string
 
 const userPoolClientId = process.env["COGNITO_CLIENT_ID"] as string
@@ -69,14 +69,14 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   if (!userPoolClientId) {
     throw new Error("Cognito user pool client ID environment variable not set")
   }
-  if (!oidcClientId) {
+  if (!cis2ClientId) {
     throw new Error("OIDC client ID environment variable not set")
   }
 
   // Original query parameters.
   const queryStringParameters = event.queryStringParameters || {}
 
-  if (queryStringParameters.client_id !== userPoolClientId) {
+  if (queryStringParameters.client_id !== cis2ClientId) {
     throw new Error(
       `Mismatch in OIDC client ID. Payload: ` +
       `${queryStringParameters.client_id} | Expected: ${userPoolClientId}`
@@ -147,7 +147,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   const responseParameters = {
     response_type: queryStringParameters.response_type as string,
     scope: queryStringParameters.scope as string,
-    client_id: queryStringParameters.clientId as string,
+    client_id: cis2ClientId,
     state: cis2State,
     redirect_uri: callbackUri,
     prompt: "login"
