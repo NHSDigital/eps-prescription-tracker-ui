@@ -21,6 +21,8 @@ import {
 } from "@cpt-ui-common/authFunctions"
 import {doHSClient} from "@cpt-ui-common/doHSClient"
 import {FhirParticipant, FhirAction} from "../../prescriptionDetailsLambda/src/utils/types"
+import {DoHSData, DoHSValue} from "./utils/types"
+
 // Logger initialization
 const logger = new Logger({serviceName: "prescriptionDetails"})
 
@@ -193,15 +195,61 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   // Step 7: Build ODS Code List
   const odsCodes = {prescribingOrganization, nominatedPerformer, dispensingOrganization}
 
-  // Fetch DoHS API Data
-  let doHSData = {}
+  logger.info("Extracted ODS codes from Apigee", {odsCodes})
+
+  // Initialize DoHS Data structure
+  let doHSData: DoHSData = {
+    prescribingOrganization: null,
+    nominatedPerformer: null,
+    dispensingOrganization: null
+  }
+
   if (Object.values(odsCodes).some(Boolean)) {
     try {
-      doHSData = await doHSClient(odsCodes)
-      logger.info("Successfully fetched DoHS API data", {doHSData})
+      // Fetch DoHS Data
+      const rawDoHSData = await doHSClient(odsCodes) as {value?: Array<DoHSValue>}
+      logger.info("Successfully fetched DoHS API data", {rawDoHSData})
+
+      // Validate response structure
+      if (!Array.isArray(rawDoHSData.value) || rawDoHSData.value.length === 0) {
+        logger.warn("No organization data found in DoHS response", {rawDoHSData})
+      }
+
+      // Map DoHS response to expected structure
+      doHSData.prescribingOrganization = rawDoHSData?.value?.find(
+        (org: DoHSValue) => org.ODSCode === prescribingOrganization
+      ) || null
+
+      doHSData.nominatedPerformer = rawDoHSData?.value?.find(
+        (org: DoHSValue) => org.ODSCode === nominatedPerformer
+      ) || null
+
+      doHSData.dispensingOrganization = rawDoHSData?.value?.find(
+        (org: DoHSValue) => org.ODSCode === dispensingOrganization
+      ) || null
+
+      // Log mapped organizations with full details
+      logger.info("Mapped DoHS organizations", {
+        prescribingOrganization: doHSData.prescribingOrganization
+          ? doHSData.prescribingOrganization.OrganisationName
+          : "Not Found",
+        nominatedPerformer: doHSData.nominatedPerformer
+          ? doHSData.nominatedPerformer.OrganisationName
+          : "Not Found",
+        dispensingOrganization: doHSData.dispensingOrganization
+          ? doHSData.dispensingOrganization.OrganisationName
+          : "Not Found"
+      })
+
     } catch (error) {
       logger.error("Failed to fetch DoHS API data", {error})
-      doHSData = {error: "Failed to fetch DoHS API data"}
+
+      // Ensure doHSData stays consistent in case of an error
+      doHSData = {
+        prescribingOrganization: null,
+        nominatedPerformer: null,
+        dispensingOrganization: null
+      }
     }
   }
 
