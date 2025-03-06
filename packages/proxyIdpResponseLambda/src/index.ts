@@ -29,6 +29,7 @@ type StateItem = {
   CognitoState: string;
   Ttl: number;
   UseMock: boolean;
+  CodeVerifier: string;
 };
 
 const lambdaHandler = async (event: APIGatewayProxyEvent) => {

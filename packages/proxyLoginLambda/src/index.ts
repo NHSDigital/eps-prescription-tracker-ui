@@ -10,13 +10,12 @@ import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 import middy from "@middy/core"
 import inputOutputLogger from "@middy/input-output-logger"
 
-import {createHash} from "crypto"
+import {randomBytes, createHash} from "crypto"
 
 // This is the OIDC /authorize endpoint, which we will redirect to after adding the query parameter
 const authorizeEndpoint = process.env["IDP_AUTHORIZE_PATH"] as string
 
 // Since we have to use the same lambda for mock and primary, we need both client IDs.
-// We switch between them based on the header.
 const cis2ClientId = process.env["OIDC_CLIENT_ID"] as string
 const useMock = process.env["useMock"] as string
 
@@ -43,7 +42,22 @@ type StateItem = {
   CognitoState: string;
   Ttl: number;
   UseMock: boolean;
+  CodeVerifier: string;
 };
+
+// Helper function to base64 URL encode a buffer
+function base64URLEncode(buffer: Buffer): string {
+  return buffer
+    .toString("base64")
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "")
+}
+
+// Generate a random code verifier (hex string, 64 characters from 32 bytes)
+function generateCodeVerifier(bytes: number = 32): string {
+  return randomBytes(bytes).toString("hex")
+}
 
 const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   logger.appendKeys({
@@ -70,13 +84,22 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
   // Original query parameters.
   const queryStringParameters = event.queryStringParameters || {}
+  const originalState = queryStringParameters.state as string
 
   // ********************************* //
   // UPDATE THE PARAMETERS FOR CIS2
   // ********************************* //
 
-  // grab the old state's hash for dynamo
-  const cis2State = createHash("sha256").update(queryStringParameters.state as string).digest("hex")
+  // Compute a hash of the original state to use as the key.
+  const cis2State = createHash("sha256").update(originalState).digest("hex")
+
+  // ---- PKCE Addition ----
+  // Generate the code verifier.
+  const codeVerifier = generateCodeVerifier()
+  // Compute the SHA‑256 digest and base64url–encode it to produce the code challenge.
+  const sha256Digest = createHash("sha256").update(codeVerifier).digest()
+  const codeChallenge = base64URLEncode(sha256Digest)
+  // -----------------------
 
   // Limit the login window to 5 minutes
   const stateTtl = Math.floor(Date.now() / 1000) + 300
@@ -88,9 +111,10 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   // This data will be retrieved by the `state` value
   const Item: StateItem = {
     State: cis2State,
-    CognitoState: queryStringParameters.state as string,
+    CognitoState: originalState,
     Ttl: stateTtl,
-    UseMock: useMock === "true"
+    UseMock: useMock === "true",
+    CodeVerifier: codeVerifier
   }
 
   await documentClient.send(
@@ -106,11 +130,14 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
   const redirectUri = `https://${cloudfrontDomain}/oauth2/callback`
 
-  // minimal alteration of params
+  // Update the parameters by replacing the state with its hash, setting the redirect URI,
+  // and adding the PKCE parameters.
   const responseParameters = {
     ...queryStringParameters,
     state: cis2State,
-    "redirect_uri": redirectUri
+    redirect_uri: redirectUri,
+    code_challenge: codeChallenge,
+    code_challenge_method: "S256"
   }
 
   // This is the CIS2 URL we are pointing the client towards
