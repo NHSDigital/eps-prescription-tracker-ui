@@ -1,6 +1,8 @@
 import {Logger} from "@aws-lambda-powertools/logger"
 import {APIGatewayProxyEvent} from "aws-lambda"
 import {injectLambdaContext} from "@aws-lambda-powertools/logger/middleware"
+import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
+import {DynamoDBDocumentClient, GetCommand, DeleteCommand} from "@aws-sdk/lib-dynamodb"
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 import middy from "@middy/core"
 import inputOutputLogger from "@middy/input-output-logger"
@@ -12,8 +14,22 @@ const errorResponseBody = {
 }
 const middyErrorHandler = new MiddyErrorHandler(errorResponseBody)
 
+// Environment variables
+// Retrieve the original state from this table
+const tableName = process.env["StateMappingTableName"] as string
+
 // And this is where to send the client with their login event
 const fullCognitoDomain = process.env["COGNITO_DOMAIN"] as string
+
+const dynamoClient = new DynamoDBClient()
+const documentClient = DynamoDBDocumentClient.from(dynamoClient)
+
+type StateItem = {
+  State: string;
+  CognitoState: string;
+  Ttl: number;
+  UseMock: boolean;
+};
 
 const lambdaHandler = async (event: APIGatewayProxyEvent) => {
   logger.appendKeys({
@@ -27,14 +43,32 @@ const lambdaHandler = async (event: APIGatewayProxyEvent) => {
 
   // If either of these are missing, something's gone wrong.
   if (!cis2QueryParams.state || !cis2QueryParams.code || !cis2QueryParams.session_state) {
-    throw new Error(`code, session_state, or state parameter missing from request: ${cis2QueryParams}`)
+    throw new Error("code, session_state, or state parameter missing from request")
   }
 
-  // Build the response parameters to be sent back in the redirect.
+  // Fetch the original cognito state data
+  const cognitoState = await documentClient.send(
+    new GetCommand({
+      TableName: tableName,
+      Key: {State: cis2QueryParams.state}
+    })
+  )
+  // Delete the old state before proceeding
+  await documentClient.send(new DeleteCommand({
+    TableName: tableName,
+    Key: {State: cis2QueryParams.state}
+  }))
+
+  if (!cognitoState.Item) {
+    throw new Error("State not found in DynamoDB")
+  }
+
+  const cognitoStateItem = cognitoState.Item as StateItem
+
   const responseParams = {
-    code: cis2QueryParams.code,
-    state: cis2QueryParams.state,
-    session_state: cis2QueryParams.session_state
+    state: cognitoStateItem.CognitoState,
+    session_state: cis2QueryParams.session_state as string,
+    code: cis2QueryParams.code
   }
 
   // Construct the redirect URI by appending the response parameters. Goes back to cognito.
