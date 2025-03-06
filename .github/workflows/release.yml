@@ -258,7 +258,7 @@ jobs:
       JWT_KID: "eps-cpt-ui-int"
       ROLE_ID: "555254242106"
       LOG_LEVEL: "DEBUG"
-      SKIP_REGRESSION_TESTS: true
+      RUN_REGRESSION_TESTS: false
     secrets:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.INT_CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.INT_CLOUD_FORMATION_DEPLOY_ROLE }}
