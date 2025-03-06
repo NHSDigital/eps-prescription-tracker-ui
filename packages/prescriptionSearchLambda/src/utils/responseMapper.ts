@@ -129,7 +129,7 @@ export const mapPdsResponseToPatientDetails = (pdsData: PDSResponse): PatientDet
     address: pdsData.address?.[0] ? {
       line1: pdsData.address[0].line?.[0],
       line2: pdsData.address[0].line?.[1],
-      city: pdsData.address[0].city,
+      city: pdsData.address[0].line?.[3],
       postcode: pdsData.address[0].postalCode
     } : null
   }
