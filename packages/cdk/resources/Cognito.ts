@@ -188,7 +188,7 @@ export class Cognito extends Construct {
       `https://${props.fullCloudfrontDomain}/site/selectyourrole`,
       // TODO: This is for the proof-of-concept login page, and can probably be deleted soon.
       `https://${props.fullCloudfrontDomain}/auth_demo/`,
-      `https://${props.fullCloudfrontDomain}/oauth2/idpresponse`
+      `https://${props.fullCloudfrontDomain}/oauth2/callback`
     ]
 
     const logoutUrls = [
