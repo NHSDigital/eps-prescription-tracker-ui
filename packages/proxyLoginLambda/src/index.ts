@@ -2,10 +2,15 @@ import {Logger} from "@aws-lambda-powertools/logger"
 import {APIGatewayProxyEvent, APIGatewayProxyResult} from "aws-lambda"
 import {injectLambdaContext} from "@aws-lambda-powertools/logger/middleware"
 
+import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
+import {DynamoDBDocumentClient, PutCommand} from "@aws-sdk/lib-dynamodb"
+
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 
 import middy from "@middy/core"
 import inputOutputLogger from "@middy/input-output-logger"
+
+import {createHash} from "crypto"
 
 // This is the OIDC /authorize endpoint, which we will redirect to after adding the query parameter
 const authorizeEndpoint = process.env["IDP_AUTHORIZE_PATH"] as string
@@ -29,6 +34,16 @@ const errorResponseBody = {
   message: "A system error has occurred"
 }
 const middyErrorHandler = new MiddyErrorHandler(errorResponseBody)
+
+const dynamoClient = new DynamoDBClient()
+const documentClient = DynamoDBDocumentClient.from(dynamoClient)
+
+type StateItem = {
+  State: string;
+  CognitoState: string;
+  Ttl: number;
+  UseMock: boolean;
+};
 
 const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   logger.appendKeys({
@@ -55,6 +70,35 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
   // Original query parameters.
   const queryStringParameters = event.queryStringParameters || {}
+
+  // ********************************* //
+  // UPDATE THE PARAMETERS FOR CIS2
+  // ********************************* //
+
+  // grab the old state's hash for dynamo
+  const cis2State = createHash("sha256").update(queryStringParameters.state as string).digest("hex")
+
+  // Limit the login window to 5 minutes
+  const stateTtl = Math.floor(Date.now() / 1000) + 300
+
+  // ********************************* //
+  // CACHE INCOMING COGNITO DATA
+  // ********************************* //
+
+  // This data will be retrieved by the `state` value
+  const Item: StateItem = {
+    State: cis2State,
+    CognitoState: queryStringParameters.state as string,
+    Ttl: stateTtl,
+    UseMock: useMock === "true"
+  }
+
+  await documentClient.send(
+    new PutCommand({
+      Item,
+      TableName: tableName
+    })
+  )
 
   // ********************************* //
   // REDIRECT TO CIS2
