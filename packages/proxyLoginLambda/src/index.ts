@@ -109,6 +109,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   // minimal alteration of params
   const responseParameters = {
     ...queryStringParameters,
+    state: cis2State,
     "redirect_uri": redirectUri
   }
 
