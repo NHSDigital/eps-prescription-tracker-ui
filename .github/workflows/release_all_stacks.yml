@@ -18,6 +18,9 @@ on:
       useMockOidc:
         type: boolean
         default: false
+      RUN_REGRESSION_TESTS:
+        type: boolean
+        default: true
       primaryOidcIssuer:
         type: string
       primaryOidcAuthorizeEndpoint:
@@ -320,7 +323,7 @@ jobs:
   regression_tests:
     name: Regression Tests
     uses: ./.github/workflows/run_regression_tests.yml
-    if: ${{ always() && !failure() && !cancelled() }}
+    if: ${{ always() && !failure() && !cancelled() && inputs.RUN_REGRESSION_TESTS == true }}
     needs: [release_stateful_resources, release_stateless_resources, rerelease_stateful_resources, deploy_website_content, update_cloudfront_kvs]
     with:
       ENVIRONMENT: ${{ inputs.TARGET_ENVIRONMENT }}
