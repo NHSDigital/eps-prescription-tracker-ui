@@ -230,7 +230,19 @@ describe("Response Mapper Tests", () => {
       // Updated to match actual implementation
       expect(result).toEqual({
         patient: mockPatientDetails,
-        currentPrescriptions: [],
+        currentPrescriptions: [
+          {
+            "issueDate": "20250204000000",
+            "issueNumber": undefined,
+            "itemsPendingCancellation": false,
+            "maxRepeats": undefined,
+            "nhsNumber": 0,
+            "prescriptionId": "335C70-A83008-84058A",
+            "prescriptionPendingCancellation": false,
+            "prescriptionTreatmentType": "0001",
+            "statusCode": "0001"
+          }
+        ],
         futurePrescriptions: [],
         pastPrescriptions: []
       })

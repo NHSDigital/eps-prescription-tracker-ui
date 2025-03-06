@@ -39,22 +39,75 @@ export interface PatientDetails {
   supersededBy?: string;
 }
 
-export enum PrescriptionStatus {
-  ACTIVE = "active",
-  CLAIMED = "claimed",
-  CANCELLED = "cancelled",
-  EXPIRED = "expired",
+export enum PrescriptionStatusCategories {
+  CURRENT = "active",
+  PAST = "past",
   FUTURE = "future",
 }
 
+export enum PrescriptionStatus {
+  AWAITING_RELEASE_READY = "0000",
+  TO_BE_DISPENSED = "0001",
+  WITH_DISPENSER = "0002",
+  WITH_DISPENSER_ACTIVE = "0003",
+  EXPIRED = "0004",
+  CANCELLED = "0005",
+  DISPENSED = "0006",
+  NOT_DISPENSED = "0007",
+  CLAIMED = "0008",
+  NO_CLAIMED = "0009",
+  REPEAT_DISPENSE_FUTURE_INSTANCE = "9000",
+  FUTURE_DATED_PRESCRIPTION = "9001",
+  PENDING_CANCELLATION = "9005"
+}
+
+export const STATUS_CATEGORY_MAP: Record<PrescriptionStatus, PrescriptionStatusCategories> = {
+  [PrescriptionStatus.AWAITING_RELEASE_READY]: PrescriptionStatusCategories.CURRENT,
+  [PrescriptionStatus.TO_BE_DISPENSED]: PrescriptionStatusCategories.CURRENT,
+  [PrescriptionStatus.WITH_DISPENSER]: PrescriptionStatusCategories.CURRENT,
+  [PrescriptionStatus.WITH_DISPENSER_ACTIVE]: PrescriptionStatusCategories.CURRENT,
+  [PrescriptionStatus.EXPIRED]: PrescriptionStatusCategories.PAST,
+  [PrescriptionStatus.CANCELLED]: PrescriptionStatusCategories.PAST,
+  [PrescriptionStatus.DISPENSED]: PrescriptionStatusCategories.PAST,
+  [PrescriptionStatus.NOT_DISPENSED]: PrescriptionStatusCategories.PAST,
+  [PrescriptionStatus.CLAIMED]: PrescriptionStatusCategories.PAST,
+  [PrescriptionStatus.NO_CLAIMED]: PrescriptionStatusCategories.PAST,
+  [PrescriptionStatus.REPEAT_DISPENSE_FUTURE_INSTANCE]: PrescriptionStatusCategories.FUTURE,
+  [PrescriptionStatus.FUTURE_DATED_PRESCRIPTION]: PrescriptionStatusCategories.FUTURE,
+  [PrescriptionStatus.PENDING_CANCELLATION]: PrescriptionStatusCategories.FUTURE
+}
+
+export const PRESCRIPTION_DISPLAY_LOOKUP: Record<PrescriptionStatus, string> = {
+  [PrescriptionStatus.AWAITING_RELEASE_READY]: "Awaiting Release Ready",
+  [PrescriptionStatus.TO_BE_DISPENSED]: "To Be Dispensed",
+  [PrescriptionStatus.WITH_DISPENSER]: "With Dispenser",
+  [PrescriptionStatus.WITH_DISPENSER_ACTIVE]: "With Dispenser - Active",
+  [PrescriptionStatus.EXPIRED]: "Expired",
+  [PrescriptionStatus.CANCELLED]: "Cancelled",
+  [PrescriptionStatus.DISPENSED]: "Dispensed",
+  [PrescriptionStatus.NOT_DISPENSED]: "Not Dispensed",
+  [PrescriptionStatus.CLAIMED]: "Claimed",
+  [PrescriptionStatus.NO_CLAIMED]: "No-Claimed",
+  [PrescriptionStatus.REPEAT_DISPENSE_FUTURE_INSTANCE]: "Repeat Dispense future instance",
+  [PrescriptionStatus.FUTURE_DATED_PRESCRIPTION]: "Prescription future instance",
+  [PrescriptionStatus.PENDING_CANCELLATION]: "Cancelled future instance"
+}
+
 export const statusCodeMap: Record<string, string> = {
-  "0001": "To be Dispensed",
-  "0002": "With Dispenser",
-  "0003": "With Dispenser - Active",
-  "0004": PrescriptionStatus.EXPIRED,
-  "0005": PrescriptionStatus.CANCELLED,
-  "0006": PrescriptionStatus.CLAIMED,
-  "0007": "Not Dispensed"
+  [PrescriptionStatus.TO_BE_DISPENSED]: PRESCRIPTION_DISPLAY_LOOKUP[PrescriptionStatus.TO_BE_DISPENSED],
+  [PrescriptionStatus.WITH_DISPENSER]: PRESCRIPTION_DISPLAY_LOOKUP[PrescriptionStatus.WITH_DISPENSER],
+  [PrescriptionStatus.WITH_DISPENSER_ACTIVE]: PRESCRIPTION_DISPLAY_LOOKUP[PrescriptionStatus.WITH_DISPENSER_ACTIVE],
+  [PrescriptionStatus.EXPIRED]: PRESCRIPTION_DISPLAY_LOOKUP[PrescriptionStatus.EXPIRED],
+  [PrescriptionStatus.CANCELLED]: PRESCRIPTION_DISPLAY_LOOKUP[PrescriptionStatus.CANCELLED],
+  [PrescriptionStatus.DISPENSED]: PRESCRIPTION_DISPLAY_LOOKUP[PrescriptionStatus.DISPENSED],
+  [PrescriptionStatus.NOT_DISPENSED]: PRESCRIPTION_DISPLAY_LOOKUP[PrescriptionStatus.NOT_DISPENSED],
+  [PrescriptionStatus.CLAIMED]: PRESCRIPTION_DISPLAY_LOOKUP[PrescriptionStatus.CLAIMED],
+  [PrescriptionStatus.NO_CLAIMED]: PRESCRIPTION_DISPLAY_LOOKUP[PrescriptionStatus.NO_CLAIMED],
+  [PrescriptionStatus.REPEAT_DISPENSE_FUTURE_INSTANCE]:
+  PRESCRIPTION_DISPLAY_LOOKUP[PrescriptionStatus.REPEAT_DISPENSE_FUTURE_INSTANCE],
+  [PrescriptionStatus.FUTURE_DATED_PRESCRIPTION]:
+  PRESCRIPTION_DISPLAY_LOOKUP[PrescriptionStatus.FUTURE_DATED_PRESCRIPTION],
+  [PrescriptionStatus.PENDING_CANCELLATION]: PRESCRIPTION_DISPLAY_LOOKUP[PrescriptionStatus.PENDING_CANCELLATION]
 }
 
 export enum TreatmentType {

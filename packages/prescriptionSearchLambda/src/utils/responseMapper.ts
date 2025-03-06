@@ -3,10 +3,11 @@ import {
   PatientDetails,
   TreatmentType,
   PDSResponse,
-  statusCodeMap,
   IntentMap,
   PrescriptionStatus,
-  PrescriptionAPIResponse
+  PrescriptionAPIResponse,
+  PrescriptionStatusCategories,
+  STATUS_CATEGORY_MAP
 } from "../types"
 import {
   Bundle,
@@ -91,12 +92,13 @@ export const mapSearchResponse = (
 
   return {
     patient: finalPatientDetails,
-    currentPrescriptions: prescriptions.filter(p => statusCodeMap[p.statusCode] === PrescriptionStatus.ACTIVE),
-    futurePrescriptions: prescriptions.filter(p => statusCodeMap[p.statusCode] === PrescriptionStatus.FUTURE),
+    currentPrescriptions: prescriptions.filter(p =>
+      STATUS_CATEGORY_MAP[p.statusCode as PrescriptionStatus] === PrescriptionStatusCategories.CURRENT),
+    futurePrescriptions: prescriptions.filter(p =>
+      STATUS_CATEGORY_MAP[p.statusCode as PrescriptionStatus] === PrescriptionStatusCategories.FUTURE),
     pastPrescriptions: prescriptions.filter(p => {
-      const mappedStatus = statusCodeMap[p.statusCode]
-      return mappedStatus === PrescriptionStatus.CLAIMED ||
-               mappedStatus === PrescriptionStatus.EXPIRED
+      const category = STATUS_CATEGORY_MAP[p.statusCode as PrescriptionStatus]
+      return category === PrescriptionStatusCategories.PAST
     })
   }
 }

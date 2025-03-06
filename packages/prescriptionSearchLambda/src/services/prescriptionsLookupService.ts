@@ -25,7 +25,7 @@ export const getPrescriptions = async (
   const {prescriptionId, nhsNumber} = query
   const searchParam = prescriptionId ? `prescriptionId=${prescriptionId}` : `nhsNumber=${nhsNumber}`
   //TODO: fix this path before merge
-  // const endpoint = `${prescriptionsEndpoint}/clinical-prescription-tracker-pr-808/RequestGroup?${searchParam}`
+  // const endpoint = `${prescriptionsEndpoint}/clinical-prescription-tracker/RequestGroup?${searchParam}`
   const endpoint = `${prescriptionsEndpoint}/clinical-prescription-tracker-pr-808/RequestGroup?${searchParam}`
   const logContext = prescriptionId ? {prescriptionId} : {nhsNumber}
 
@@ -40,7 +40,6 @@ export const getPrescriptions = async (
           Authorization: `Bearer ${apigeeAccessToken}`,
           "nhsd-session-urid": roleId,
           "x-request-id": uuidv4(),
-          //TODO: investigate what the jobrole should be. It is currently hardcoded
           "nhsd-session-jobrole": roleId,
           "nhsd-organization-uuid": "A83008"
         }
