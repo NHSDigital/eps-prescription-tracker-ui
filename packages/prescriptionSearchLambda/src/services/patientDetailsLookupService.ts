@@ -24,13 +24,13 @@ export const getPdsPatientDetails = async (
         headers: {
           Accept: "application/fhir+json",
           Authorization: `Bearer ${apigeeAccessToken}`,
+          "nhsd-end-user-organisation-ods": "A83008",
           "nhsd-session-urid": roleId,
           "x-request-id": uuidv4(),
           //TODO: we need to pass this from the ui request.
-          "x-correlation-id": uuidv4(),
+          "x-correlation-id": uuidv4()
           //TODO: investigate what the jobrole should be. It is currently hardcoded
           // "nhsd-session-jobrole": "123456123456",
-          "nhsd-end-user-organisation-ods": "A83008"
         }
       }
     )
@@ -40,9 +40,30 @@ export const getPdsPatientDetails = async (
       nhsNumber
     })
 
+    // Log the response for debugging
+    if (response.status !== 200) {
+      logger.warn("PDS response not OK", {
+        status: response.status,
+        statusText: response.statusText,
+        nhsNumber
+      })
+    }
+
     if (!response.data) {
+      logger.error("PDS response data is empty", {nhsNumber})
       throw new PDSError("Patient not found", "NOT_FOUND")
     }
+
+    // Log the data structure to help debug mapping issues
+    logger.debug("PDS response data structure", {
+      resourceType: response.data.resourceType,
+      id: response.data.id,
+      hasIdentifier: !!response.data.identifier,
+      hasMeta: !!response.data.meta,
+      hasName: !!response.data.name && Array.isArray(response.data.name),
+      nameCount: response.data.name?.length,
+      hasSecurity: !!response.data.meta?.security
+    })
 
     // Check specifically for S flag first
     if (response.data.meta?.security?.some((s: { code: string }) => s.code === "S")) {
@@ -74,7 +95,12 @@ export const getPdsPatientDetails = async (
     try {
       validatePatientDetails(patientDetails)
       return patientDetails
-    } catch {
+    } catch (validationError) {
+      logger.error("Patient data validation failed", {
+        error: validationError,
+        patientDetails: JSON.stringify(patientDetails),
+        nhsNumber
+      })
       throw new PDSError("Incomplete patient data", "INCOMPLETE_DATA")
     }
 
