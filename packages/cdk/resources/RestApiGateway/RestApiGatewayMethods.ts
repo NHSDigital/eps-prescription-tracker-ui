@@ -20,7 +20,7 @@ export interface RestApiGatewayMethodsProps {
   readonly trackerUserInfoLambda: NodejsFunction
   readonly selectedRoleLambda: NodejsFunction
   readonly useMockOidc: boolean
-  readonly authorizer: CognitoUserPoolsAuthorizer
+  readonly authorizer?: CognitoUserPoolsAuthorizer
 }
 
 /**
@@ -34,10 +34,15 @@ export class RestApiGatewayMethods extends Construct {
   public constructor(scope: Construct, id: string, props: RestApiGatewayMethodsProps) {
     super(scope, id)
 
+    if (!props.authorizer) {
+      throw new Error("Missing authorizer prop")
+    }
+
     // Resources
     for (const policy of props.executePolices) {
       props.restAPiGatewayRole.addManagedPolicy(policy)
     }
+
     const tokenResource = props.restApiGateway.root.addResource("token")
     tokenResource.addMethod("POST", new LambdaIntegration(props.tokenLambda, {
       credentialsRole: props.restAPiGatewayRole

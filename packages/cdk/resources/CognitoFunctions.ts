@@ -83,7 +83,9 @@ export class CognitoFunctions extends Construct {
     ])
 
     // Initialize policies
-    const cognitoPolicies: Array<IManagedPolicy> = [tokenLambda.executeLambdaManagedPolicy]
+    const cognitoPolicies: Array<IManagedPolicy> = [
+      tokenLambda.executeLambdaManagedPolicy
+    ]
 
     // If mock OIDC is enabled, configure mock token Lambda
     let mockTokenLambda: LambdaFunction | undefined

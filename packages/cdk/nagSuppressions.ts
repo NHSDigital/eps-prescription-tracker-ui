@@ -57,7 +57,9 @@ export const nagSuppressions = (stack: Stack) => {
       stack,
       [
         "/StatefulStack/DynamoDB/TableReadManagedPolicy/Resource",
-        "/StatefulStack/DynamoDB/TableWriteManagedPolicy/Resource"
+        "/StatefulStack/DynamoDB/TableWriteManagedPolicy/Resource",
+        "/StatefulStack/DynamoDB/StateTableReadManagedPolicy/Resource",
+        "/StatefulStack/DynamoDB/StateTableWriteManagedPolicy/Resource"
       ],
       [
         {
@@ -70,9 +72,12 @@ export const nagSuppressions = (stack: Stack) => {
   }
 
   if (stack.artifactId === "StatelessStack") {
-    safeAddNagSuppression(
+    safeAddNagSuppressionGroup(
       stack,
-      "/StatelessStack/ApiGateway/ApiGateway/Resource",
+      [
+        "/StatelessStack/ApiGateway/ApiGateway/Resource",
+        "/StatelessStack/OAuth2Gateway/ApiGateway/Resource"
+      ],
       [
         {
           id: "AwsSolutions-APIG2",
@@ -81,9 +86,24 @@ export const nagSuppressions = (stack: Stack) => {
       ]
     )
 
+    safeAddNagSuppression(
+      stack,
+      "/StatelessStack/SharedSecrets/GetRandomPasswordPolicy/Resource",
+      [
+        {
+          id: "AwsSolutions-IAM5",
+          reason: "Suppress error for having a wildcard in the GetRandomPasswordPolicy. Cant apply this to the specific ARN"
+        }
+      ]
+    )
+
     safeAddNagSuppressionGroup(
       stack,
       [
+        "/StatelessStack/OAuth2Gateway/ApiGateway/Default/ping/GET/Resource",
+        "/StatelessStack/OAuth2Gateway/ApiGateway/Default/authorize/GET/Resource",
+        "/StatelessStack/OAuth2Gateway/ApiGateway/Default/mock-authorize/GET/Resource",
+        "/StatelessStack/OAuth2Gateway/ApiGateway/Default/callback/GET/Resource",
         "/StatelessStack/ApiGateway/ApiGateway/Default/token/POST/Resource",
         "/StatelessStack/ApiGateway/ApiGateway/Default/mocktoken/POST/Resource",
         "/StatelessStack/ApiGateway/ApiGateway/Default/mocknoauth/GET/Resource"
@@ -118,11 +138,16 @@ export const nagSuppressions = (stack: Stack) => {
     safeAddNagSuppressionGroup(
       stack,
       [
+        "/StatelessStack/OAuth2Functions/OAuth2PingLambdaResources/LambdaPutLogsManagedPolicy/Resource",
         "/StatelessStack/ApiFunctions/TrackerUserInfo/LambdaPutLogsManagedPolicy/Resource",
         "/StatelessStack/ApiFunctions/MockTrackerUserInfo/LambdaPutLogsManagedPolicy/Resource",
         "/StatelessStack/ApiFunctions/SelectedRole/LambdaPutLogsManagedPolicy/Resource",
         "/StatelessStack/CognitoFunctions/TokenResources/LambdaPutLogsManagedPolicy/Resource",
-        "/StatelessStack/CognitoFunctions/MockTokenResources/LambdaPutLogsManagedPolicy/Resource"
+        "/StatelessStack/CognitoFunctions/MockTokenResources/LambdaPutLogsManagedPolicy/Resource",
+        "/StatelessStack/OAuth2Functions/AuthorizeLambdaResources/LambdaPutLogsManagedPolicy/Resource",
+        "/StatelessStack/OAuth2Functions/IDPResponseLambdaResources/LambdaPutLogsManagedPolicy/Resource",
+        "/StatelessStack/OAuth2Functions/MockAuthorizeLambdaResources/LambdaPutLogsManagedPolicy/Resource",
+        "/StatelessStack/OAuth2Functions/MockIDPResponseLambdaResources/LambdaPutLogsManagedPolicy/Resource"
       ],
       [
         {

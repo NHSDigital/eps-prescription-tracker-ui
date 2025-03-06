@@ -28,6 +28,9 @@ lint-node: compile-node
 	npm run lint --workspace packages/cloudfrontFunctions
 	npm run lint --workspace packages/cdk
 	npm run lint --workspace packages/cognito
+	npm run lint --workspace packages/pingLambda
+	npm run lint --workspace packages/proxyLoginLambda
+	npm run lint --workspace packages/proxyIdpResponseLambda
 	npm run lint --workspace packages/prescriptionSearchLambda
 	npm run lint --workspace packages/common/testing
 	npm run lint --workspace packages/common/middyErrorHandler
@@ -48,6 +51,9 @@ test: compile
 	npm run test --workspace packages/cdk
 	npm run test --workspace packages/cpt-ui
 	npm run test --workspace packages/cognito
+	npm run test --workspace packages/pingLambda
+	npm run test --workspace packages/proxyLoginLambda
+	npm run test --workspace packages/proxyIdpResponseLambda
 	npm run test --workspace packages/prescriptionSearchLambda
 	npm run test --workspace packages/common/middyErrorHandler
 	npm run test --workspace packages/trackerUserInfoLambda
@@ -61,6 +67,10 @@ clean:
 	rm -rf packages/cdk/lib
 	rm -rf packages/cognito/coverage
 	rm -rf packages/cognito/lib
+	rm -rf packages/proxyLoginLambda/coverage
+	rm -rf packages/proxyLoginLambda/lib
+	rm -rf packages/proxyIdpResponseLambda/coverage
+	rm -rf packages/proxyIdpResponseLambda/lib
 	rm -rf packages/prescriptionSearchLambda/coverage
 	rm -rf packages/prescriptionSearchLambda/lib
 	rm -rf packages/common/middyErrorHandler/coverage
@@ -70,6 +80,8 @@ clean:
 	rm -rf packages/auth_demo/build
 	rm -rf packages/trackerUserInfoLambda/coverage
 	rm -rf packages/trackerUserInfoLambda/lib
+	rm -rf packages/pingLambda/coverage
+	rm -rf packages/pingLambda/lib
 	rm -rf packages/selectedRoleLambda/coverage
 	rm -rf packages/selectedRoleLambda/lib
 	rm -rf packages/common/authFunctions/coverage
@@ -88,6 +100,9 @@ check-licenses-node:
 	npm run check-licenses --workspace packages/cpt-ui
 	npm run check-licenses --workspace packages/common/authFunctions
 	npm run check-licenses --workspace packages/cognito
+	npm run check-licenses --workspace packages/pingLambda
+	npm run check-licenses --workspace packages/proxyLoginLambda
+	npm run check-licenses --workspace packages/proxyIdpResponseLambda
 	npm run check-licenses --workspace packages/prescriptionSearchLambda
 	npm run check-licenses --workspace packages/trackerUserInfoLambda
 	npm run check-licenses --workspace packages/selectedRoleLambda
@@ -187,6 +202,7 @@ cdk-synth-stateful-resources-mock:
 		--context mockOidcTokenEndpoint=undefined \
 		--context mockOidcUserInfoEndpoint=undefined \
 		--context mockOidcjwksEndpoint=undefined \
+		--context fullCognitoDomain=undefined \
 		--context shortCloudfrontDomain=undefined \
 		--context fullCloudfrontDomain=undefined
 
@@ -216,6 +232,7 @@ cdk-synth-stateless-resources-mock:
 		--context mockOidcTokenEndpoint=undefined \
 		--context mockOidcUserInfoEndpoint=undefined \
 		--context mockOidcjwksEndpoint=undefined \
+		--context fullCognitoDomain=undefined \
 		--context shortCloudfrontDomain=undefined \
 		--context fullCloudfrontDomain=undefined
 
