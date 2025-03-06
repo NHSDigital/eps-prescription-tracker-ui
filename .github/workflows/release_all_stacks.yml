@@ -20,6 +20,7 @@ on:
         default: false
       SKIP_REGRESSION_TESTS:
         type: boolean
+        default: false
       primaryOidcIssuer:
         type: string
       primaryOidcAuthorizeEndpoint:
