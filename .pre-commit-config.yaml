@@ -68,6 +68,15 @@ repos:
         types_or: [ts, tsx, javascript, jsx, json]
         pass_filenames: false
 
+      - id: lint-CIS2SignOutLambda
+        name: Lint CIS2SignOutLambda
+        entry: npm
+        args: ["run", "--prefix=packages/CIS2SignOutLambda", "lint"]
+        language: system
+        files: ^packages\/CIS2SignOutLambda
+        types_or: [ts, tsx, javascript, jsx, json]
+        pass_filenames: false
+
       - id: lint-selectedRoleLambda
         name: Lint selectedRoleLambda
         entry: npm
