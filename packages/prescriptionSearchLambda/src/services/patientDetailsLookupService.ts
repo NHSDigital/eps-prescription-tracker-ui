@@ -17,40 +17,22 @@ export const getPdsPatientDetails = async (
   const startTime = Date.now()
   logger.info("Fetching patient details from PDS", {nhsNumber})
 
-  logger.info("roleId, pdsEndpoint", {roleId, pdsEndpoint})
-
   try {
-    // TODO: uncomment this block before merge and remove the sandbox block
-    // const response = await axiosInstance.get(
-    //   `${pdsEndpoint}/personal-demographics/FHIR/R4/Patient/${nhsNumber}`,
-    //   {
-    //     headers: {
-    //       Accept: "application/fhir+json",
-    //       Authorization: `Bearer ${apigeeAccessToken}`,
-    //       "nhsd-end-user-organisation-ods": "A83008",
-    //       "nhsd-session-urid": roleId,
-    //       "x-request-id": uuidv4(),
-    //       //TODO: we need to pass this from the ui request.
-    //       "x-correlation-id": uuidv4()
-    //       //TODO: investigate what the jobrole should be. It is currently hardcoded
-    //       // "nhsd-session-jobrole": "123456123456",
-    //     }
-    //   }
-    // )
-
     const response = await axiosInstance.get(
-      `https://sandbox.api.service.nhs.uk/personal-demographics/FHIR/R4/Patient/${nhsNumber}`,
+      // `${pdsEndpoint}/personal-demographics/FHIR/R4/Patient/${nhsNumber}`,
+      `${pdsEndpoint}/Patient/${nhsNumber}`,
       {
         headers: {
           Accept: "application/fhir+json",
           Authorization: `Bearer ${apigeeAccessToken}`,
-          "nhsd-end-user-organisation-ods": "Y12345",
-          "nhsd-session-urid": "555254240100",
-          "x-request-id": uuidv4(),
-          //TODO: we need to pass this from the ui request.
-          "x-correlation-id": uuidv4()
-          //TODO: investigate what the jobrole should be. It is currently hardcoded
-          // "nhsd-session-jobrole": "123456123456",
+          "NHSD-End-User-Organisation-ODS": "A83008",
+          // TODO: nhsd-session-urid will currently fail with the current roleId, we need to investigate what would be
+          // the correct value to pass from each environment as its not the same as it is for eps by the looks of it
+          // that being said this functionality was validated against the sandbox pds environment and
+          // nhs number 9000000009
+          "NHSD-Session-URID": roleId,
+          "X-Request-ID": uuidv4(),
+          "X-Correlation-ID": uuidv4()
         }
       }
     )

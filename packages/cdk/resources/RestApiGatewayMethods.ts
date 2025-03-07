@@ -51,8 +51,8 @@ export class RestApiGatewayMethods extends Construct {
       }))
     }
 
-    // prescription-search endpoint
-    const prescriptionSearchLambdaResource = props.restApiGateway.root.addResource("prescription-search")
+    // prescription-list endpoint
+    const prescriptionSearchLambdaResource = props.restApiGateway.root.addResource("prescription-list")
     prescriptionSearchLambdaResource.addMethod("GET", new LambdaIntegration(props.prescriptionSearchLambda, {
       credentialsRole: props.restAPiGatewayRole
     }), {
