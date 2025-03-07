@@ -11,8 +11,10 @@ import {mapIntentToPrescriptionTreatmentType} from "./fhirMappers"
 export const mergePrescriptionDetails = (
   prescriptionDetails: RequestGroup | null,
   doHSData: DoHSData = {}
-): MergedResponse | {message: string} => {
-  if (!prescriptionDetails) return {message: "Prescription details not found"}
+): MergedResponse => {
+  if (!prescriptionDetails) {
+    throw new Error("Prescription details not found")
+  }
 
   // Extract RequestGroup data
   const prescriptionID = prescriptionDetails?.identifier?.[0]?.value || "Not found"

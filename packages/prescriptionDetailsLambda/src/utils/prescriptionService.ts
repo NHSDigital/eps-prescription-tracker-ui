@@ -165,7 +165,14 @@ export async function processPrescriptionRequest(
     doHSData
   })
 
-  const mergedResponse = mergePrescriptionDetails(apigeeResponse.data, doHSData)
+  let mergedResponse
+
+  try {
+    mergedResponse = mergePrescriptionDetails(apigeeResponse.data, doHSData)
+  } catch {
+    logger.warn("Prescription details not found")
+    mergedResponse = {message: "Prescription details not found"}
+  }
 
   return {
     statusCode: 200,
