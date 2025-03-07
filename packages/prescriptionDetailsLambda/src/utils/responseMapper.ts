@@ -31,6 +31,8 @@ export const mergePrescriptionDetails = (
     (contained) => contained.resourceType === "Patient"
   ) as Array<Resource>) || []
 
+  console.log(patientDataBundle)
+
   // Extract Full Patient Details
   const patientDetails = patientDataBundle.length > 0 ? {
     identifier: patientDataBundle[0]?.identifier?.[0]?.value || "Not found",
