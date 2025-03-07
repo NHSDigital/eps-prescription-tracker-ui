@@ -11,6 +11,9 @@
       "path": "../common/authFunctions"
     },
     {
+      "path": "../common/doHSClient"
+    },
+    {
       "path": "../common/middyErrorHandler"
     }
   ]

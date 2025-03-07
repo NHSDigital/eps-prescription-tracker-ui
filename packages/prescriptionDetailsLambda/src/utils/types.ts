@@ -11,12 +11,26 @@ export interface FhirAction {
   participant?: Array<FhirParticipant>
 }
 
+export interface FhirIdentifier {
+  system?: string;
+  value?: string;
+}
+
 // Extend FhirParticipant to support nested extensions
 export interface FhirParticipant {
   identifier?: {
     system?: string
     value?: string
   }
+}
+
+// Minimal type for the apigee response data format
+export interface ApigeeDataResponse {
+  author?: {
+    identifier?: FhirIdentifier;
+  };
+  action?: Array<FhirAction>;
+  // there might be other elements, but they're not necessary for us
 }
 
 // Extend FhirExtension to support nested extensions

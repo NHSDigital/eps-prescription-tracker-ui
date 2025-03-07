@@ -1,16 +1,15 @@
 import {APIGatewayProxyEvent, APIGatewayProxyResult} from "aws-lambda"
+
 import {getSecret} from "@aws-lambda-powertools/parameters/secrets"
 import {Logger} from "@aws-lambda-powertools/logger"
 import {injectLambdaContext} from "@aws-lambda-powertools/logger/middleware"
+
 import middy from "@middy/core"
 import inputOutputLogger from "@middy/input-output-logger"
-import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
-import axios from "axios"
-import {v4 as uuidv4} from "uuid"
-import {formatHeaders} from "./utils/headerUtils"
-import {mergePrescriptionDetails} from "./utils/responseMapper"
+
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
 import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
+
 import {
   getUsernameFromEvent,
   fetchAndVerifyCIS2Tokens,
@@ -19,9 +18,9 @@ import {
   updateApigeeAccessToken,
   initializeOidcConfig
 } from "@cpt-ui-common/authFunctions"
-import {doHSClient} from "@cpt-ui-common/doHSClient"
-import {FhirParticipant, FhirAction} from "../../prescriptionDetailsLambda/src/utils/types"
-import {DoHSData, DoHSValue} from "./utils/types"
+import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
+
+import {processPrescriptionRequest} from "./utils/prescriptionService"
 
 // Logger initialization
 const logger = new Logger({serviceName: "prescriptionDetails"})
@@ -29,14 +28,19 @@ const logger = new Logger({serviceName: "prescriptionDetails"})
 // External endpoints and environment variables
 const apigeeCIS2TokenEndpoint = process.env["apigeeCIS2TokenEndpoint"] as string
 const apigeeMockTokenEndpoint = process.env["apigeeMockTokenEndpoint"] as string
-// const apigeePrescriptionsEndpoint = process.env["apigeePrescriptionsEndpoint"] as string
+// FIXME: Get from environment
 // The Apigee API base endpoint for prescription tracking
+// const apigeePrescriptionsEndpoint = process.env["apigeePrescriptionsEndpoint"] as string
 const apigeePrescriptionsEndpoint = "https://internal-dev.api.service.nhs.uk/clinical-prescription-tracker-pr-809/"
+
 const TokenMappingTableName = process.env["TokenMappingTableName"] as string
+
 const jwtPrivateKeyArn = process.env["jwtPrivateKeyArn"] as string
-const apigeeApiKey = process.env["apigeeApiKey"] as string
 const jwtKid = process.env["jwtKid"] as string
+
+const apigeeApiKey = process.env["apigeeApiKey"] as string
 const roleId = process.env["roleId"] as string
+
 const MOCK_MODE_ENABLED = process.env["MOCK_MODE_ENABLED"]
 
 // DynamoDB client setup
@@ -58,8 +62,9 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   logger.appendKeys({"apigw-request-id": event.requestContext?.requestId})
   logger.info("Lambda handler invoked", {event})
 
-  // Extract prescriptionId from pathParameters
-  const axiosInstance = axios.create()
+  // ****************************************
+  // SETUP
+  // ****************************************
 
   // Mock usernames start with "Mock_", and real requests use usernames starting with "Primary_"
   const username = getUsernameFromEvent(event)
@@ -77,27 +82,27 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
   logger.info("Is this a mock request?", {isMockRequest})
 
-  // Step 1: Fetch CIS2 tokens
-  logger.info("Retrieving CIS2 tokens from DynamoDB based on the current request context")
+  // Fetch the private key for signing the client assertion
+  const jwtPrivateKey = await getSecret(jwtPrivateKeyArn)
+  if (!jwtPrivateKey || typeof jwtPrivateKey !== "string") {
+    throw new Error("Invalid or missing JWT private key")
+  }
+  logger.info("JWT private key retrieved successfully")
+
+  // ****************************************
+  // TOKEN FAFF
+  // ****************************************
+
+  // Fetch CIS2 tokens
   const {cis2AccessToken, cis2IdToken} = await fetchAndVerifyCIS2Tokens(
     event,
     documentClient,
     logger,
     isMockRequest ? mockOidcConfig : cis2OidcConfig
   )
-  logger.debug("Successfully fetched CIS2 tokens", {cis2AccessToken, cis2IdToken})
-
-  // Step 2: Fetch the private key for signing the client assertion
-  logger.info("Accessing JWT private key from Secrets Manager to create signed client assertion")
-  const jwtPrivateKey = await getSecret(jwtPrivateKeyArn)
-  if (!jwtPrivateKey || typeof jwtPrivateKey !== "string") {
-    throw new Error("Invalid or missing JWT private key")
-  }
-
-  logger.debug("JWT private key retrieved successfully")
+  logger.info("Successfully fetched CIS2 tokens", {cis2AccessToken, cis2IdToken})
 
   // Construct a new body with the signed JWT client assertion
-  logger.info("Generating signed JWT for Apigee token exchange payload")
   const requestBody = constructSignedJWTBody(
     logger,
     apigeeTokenEndpoint,
@@ -106,17 +111,16 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     jwtKid,
     cis2IdToken
   )
-  logger.debug("Constructed request body for Apigee token exchange", {requestBody})
+  logger.info("Constructed request body for Apigee token exchange", {requestBody})
 
-  // Step 3: Exchange token with Apigee
+  // Exchange token with Apigee
   const {accessToken: apigeeAccessToken, expiresIn} = await exchangeTokenForApigeeAccessToken(
-    axiosInstance,
     apigeeTokenEndpoint,
     requestBody,
     logger
   )
 
-  // Step 4: Update DynamoDB with the new Apigee access token
+  // Update DynamoDB with the new Apigee access token
   await updateApigeeAccessToken(
     documentClient,
     TokenMappingTableName,
@@ -126,146 +130,18 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     logger
   )
 
-  // Step 5: Fetch prescription data from Apigee API
-  const prescriptionId: string = event.pathParameters?.prescriptionId ?? "unknown"
+  // ****************************************
+  // PROCESS REQUEST
+  // ****************************************
 
-  if (!prescriptionId) {
-    logger.warn("No prescription ID provided in request", {event})
-    return {
-      statusCode: 400,
-      body: JSON.stringify({
-        message: "Missing prescription ID in request",
-        prescriptionId: null
-      })
-    }
-  }
-
-  logger.info("Fetching prescription details from Apigee", {prescriptionId})
-
-  // Construct the request URL with prescriptionId
-  const requestUrl = `${apigeePrescriptionsEndpoint}RequestGroup/${prescriptionId}`
-
-  // Headers for the request to Apigee
-  // need to pass in role id, organization id and job role to apigee
-  // user id is retrieved in apigee from access token
-  const requestHeaders = {
-    Authorization: `Bearer ${apigeeAccessToken}`,
-    "nhsd-session-urid": roleId,
-    "nhsd-organization-uuid": "A83008",
-    "nhsd-identity-uuid": "123456123456",
-    "nhsd-session-jobrole": "123456123456",
-    "x-request-id": uuidv4()
-  }
-
-  logger.info("Making request to Apigee", {
-    requestUrl: requestUrl,
-    headers: requestHeaders
-  })
-
-  /*
-  * The following code makes a request to Apigee's endpoint to fetch prescription details.
-  */
-  // Fetch the prescription data from Apigee
-  const apigeeResponse = await axiosInstance.get(requestUrl, {
-    headers: requestHeaders
-  })
-
-  logger.info("Successfully fetched prescription details from Apigee", {
-    prescriptionId,
-    data: apigeeResponse.data
-  })
-
-  // Step 6: Extract ODS codes
-  const prescribingOrganization = apigeeResponse.data?.author?.identifier?.value || null
-
-  const nominatedPerformer = apigeeResponse.data?.action
-    ?.find((action: FhirAction) =>
-      action.participant?.some((participant: FhirParticipant) =>
-        participant.identifier?.system === "https://fhir.nhs.uk/Id/ods-organization-code"
-      )
-    )?.participant?.[0]?.identifier?.value || null
-
-  const dispensingOrganization = apigeeResponse.data?.action
-    ?.find((action: FhirAction) =>
-      action.participant?.some((participant: FhirParticipant) =>
-        participant.identifier?.system === "https://fhir.nhs.uk/Id/ods-organization-code"
-      )
-    )?.participant?.[0]?.identifier?.value || null
-
-  // Step 7: Build ODS Code List
-  const odsCodes = {prescribingOrganization, nominatedPerformer, dispensingOrganization}
-
-  logger.info("Extracted ODS codes from Apigee", {odsCodes})
-
-  // Initialize DoHS Data structure
-  let doHSData: DoHSData = {
-    prescribingOrganization: null,
-    nominatedPerformer: null,
-    dispensingOrganization: null
-  }
-
-  if (Object.values(odsCodes).some(Boolean)) {
-    try {
-      // Fetch DoHS Data
-      const rawDoHSData = await doHSClient(odsCodes) as {value?: Array<DoHSValue>}
-      logger.info("Successfully fetched DoHS API data", {rawDoHSData})
-
-      // Validate response structure
-      if (!Array.isArray(rawDoHSData.value) || rawDoHSData.value.length === 0) {
-        logger.warn("No organization data found in DoHS response", {rawDoHSData})
-      }
-
-      // Map DoHS response to expected structure
-      doHSData.prescribingOrganization = rawDoHSData?.value?.find(
-        (org: DoHSValue) => org.ODSCode === prescribingOrganization
-      ) || null
-
-      doHSData.nominatedPerformer = rawDoHSData?.value?.find(
-        (org: DoHSValue) => org.ODSCode === nominatedPerformer
-      ) || null
-
-      doHSData.dispensingOrganization = rawDoHSData?.value?.find(
-        (org: DoHSValue) => org.ODSCode === dispensingOrganization
-      ) || null
-
-      // Log mapped organizations with full details
-      logger.info("Mapped DoHS organizations", {
-        prescribingOrganization: doHSData.prescribingOrganization
-          ? doHSData.prescribingOrganization.OrganisationName
-          : "Not Found",
-        nominatedPerformer: doHSData.nominatedPerformer
-          ? doHSData.nominatedPerformer.OrganisationName
-          : "Not Found",
-        dispensingOrganization: doHSData.dispensingOrganization
-          ? doHSData.dispensingOrganization.OrganisationName
-          : "Not Found"
-      })
-
-    } catch (error) {
-      logger.error("Failed to fetch DoHS API data", {error})
-
-      // Ensure doHSData stays consistent in case of an error
-      doHSData = {
-        prescribingOrganization: null,
-        nominatedPerformer: null,
-        dispensingOrganization: null
-      }
-    }
-  }
-
-  // Step 8: Merge Responses
-  logger.info("Merging prescription details fetched from Apigee with data from DoHS", {
-    prescriptionDetails: apigeeResponse.data,
-    doHSData
-  })
-
-  const mergedResponse = mergePrescriptionDetails(apigeeResponse.data, doHSData)
-
-  return {
-    statusCode: 200,
-    body: JSON.stringify(mergedResponse),
-    headers: formatHeaders(apigeeResponse.headers)
-  }
+  // Pass the gathered data in to the processor for the request
+  return await processPrescriptionRequest(
+    event,
+    apigeePrescriptionsEndpoint,
+    apigeeAccessToken,
+    roleId,
+    logger
+  )
 }
 
 // Export the Lambda function with middleware applied

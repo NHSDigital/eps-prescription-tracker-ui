@@ -82,7 +82,6 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   logger.appendKeys({"apigw-request-id": event.requestContext?.requestId})
   logger.info("Lambda handler invoked", {event})
 
-  const axiosInstance = axios.create()
   let prescriptionId: string | undefined
 
   // Mock usernames start with "Mock_", and real requests use usernames starting with "Primary_"
@@ -134,7 +133,6 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
   // Step 3: Exchange token with Apigee
   const {accessToken: apigeeAccessToken, expiresIn} = await exchangeTokenForApigeeAccessToken(
-    axiosInstance,
     apigeeTokenEndpoint,
     requestBody,
     logger
@@ -156,7 +154,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   logger.info("Fetching prescription data from Apigee", {prescriptionId})
   // need to pass in role id, organization id and job role to apigee
   // user id is retrieved in apigee from access token
-  const apigeeResponse = await axiosInstance.get(apigeePrescriptionsEndpoint,
+  const apigeeResponse = await axios.get(apigeePrescriptionsEndpoint,
     {
       params: {
         prescriptionId: prescriptionId

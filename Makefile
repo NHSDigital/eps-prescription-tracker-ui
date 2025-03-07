@@ -57,6 +57,7 @@ test: compile
 	npm run test --workspace packages/trackerUserInfoLambda
 	npm run test --workspace packages/selectedRoleLambda
 	npm run test --workspace packages/common/authFunctions
+	npm run test --workspace packages/common/doHSClient
 
 clean:
 	rm -rf packages/cloudfrontFunctions/coverage
