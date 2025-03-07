@@ -3,7 +3,7 @@ import type {JestConfigWithTsJest} from "ts-jest"
 
 const jestConfig: JestConfigWithTsJest = {
   ...defaultConfig,
-  "rootDir": "../../packages/prescriptionDetailsLambda",
+  "rootDir": ".",
   setupFiles: ["<rootDir>/.jest/setEnvVars.js"]
 }
 
