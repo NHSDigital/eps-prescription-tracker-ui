@@ -11,7 +11,7 @@ Amplify.configure(authConfig, { ssr: true })
 
 const trackerUserInfoEndpoint = "/api/tracker-user-info"
 
-const API_ENDPOINT = '/api/prescription-search'
+const API_ENDPOINT = '/api/prescription-list'
 
 function App() {
   const [user, setUser] = useState(null)

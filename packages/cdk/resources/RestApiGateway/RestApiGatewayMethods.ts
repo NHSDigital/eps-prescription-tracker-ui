@@ -39,7 +39,7 @@ export class RestApiGatewayMethods extends Construct {
       props.restAPiGatewayRole.addManagedPolicy(policy)
     }
 
-    // prescription-search endpoint
+    // cis2-signout endpoint
     const CIS2SignOutLambdaResource = props.restApiGateway.root.addResource("cis2-signout")
     CIS2SignOutLambdaResource.addMethod("GET", new LambdaIntegration(props.CIS2SignOutLambda, {
       credentialsRole: props.restAPiGatewayRole
@@ -48,8 +48,8 @@ export class RestApiGatewayMethods extends Construct {
       authorizer: props.authorizer
     })
 
-    // prescription-search endpoint
-    const prescriptionSearchLambdaResource = props.restApiGateway.root.addResource("prescription-search")
+    // prescription-list endpoint
+    const prescriptionSearchLambdaResource = props.restApiGateway.root.addResource("prescription-list")
     prescriptionSearchLambdaResource.addMethod("GET", new LambdaIntegration(props.prescriptionSearchLambda, {
       credentialsRole: props.restAPiGatewayRole
     }), {

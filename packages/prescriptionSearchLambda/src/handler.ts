@@ -31,7 +31,6 @@ apigeeCIS2TokenEndpoint
 apigeeMockTokenEndpoint
 apigeePrescriptionsEndpoint
 apigeePersonalDemographicsEndpoint
-apigeeUrl
 TokenMappingTableName
 jwtPrivateKeyArn
 apigeeApiKey
@@ -54,14 +53,13 @@ MOCK_USER_POOL_IDP
 */
 
 // Logger initialization
-const logger = new Logger({serviceName: "prescriptionSearch"})
+const logger = new Logger({serviceName: "prescriptionList"})
 
 // External endpoints and environment variables
 const apigeeCIS2TokenEndpoint = process.env["apigeeCIS2TokenEndpoint"] as string
 const apigeeMockTokenEndpoint = process.env["apigeeMockTokenEndpoint"] as string
-// const apigeePrescriptionsEndpoint = process.env["apigeePrescriptionsEndpoint"] as string
-// const apigeePersonalDemographicsEndpoint = process.env["apigeePersonalDemographicsEndpoint"] as string
-const apigeeUrl = "https://internal-dev.api.service.nhs.uk"
+const apigeePrescriptionsEndpoint = process.env["apigeePrescriptionsEndpoint"] as string
+const apigeePersonalDemographicsEndpoint = process.env["apigeePersonalDemographicsEndpoint"] as string
 const TokenMappingTableName = process.env["TokenMappingTableName"] as string
 const jwtPrivateKeyArn = process.env["jwtPrivateKeyArn"] as string
 const apigeeApiKey = process.env["apigeeApiKey"] as string
@@ -85,15 +83,17 @@ const errorResponseBody = {
 // Middleware error handler
 const middyErrorHandler = new MiddyErrorHandler(errorResponseBody)
 
+// TODO: elab session, currently we are unable to make requests to the personal demographics endpoint,
+// the reason, we think is job role we are assigning is not passing on the correct context to CIS2
+// we need to investigate what would be the correct value to pass from each environment as its
+// not the same as it is for eps by the looks of it OR what would be
+
 const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   logger.appendKeys({
     // "x-correlation-id": event.headers?.["x-correlation-id"],
     "apigw-request-id": event.requestContext?.requestId
   })
-  // "nhsd-correlation-id": event.headers?.["nhsd-correlation-id"], concatenation of all ids
-  // "nhsd-request-id": event.headers?.["nhsd-request-id"],
-  // "x-correlation-id": event.headers?.["x-correlation-id"], (UI)
-  // "apigw-request-id": event.requestContext.requestId Backend
+
   logger.info("Lambda handler invoked", {event})
 
   const searchStartTime = Date.now()
@@ -175,7 +175,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
       const patientDetails = await getPdsPatientDetails(
         axiosInstance,
         logger,
-        apigeeUrl,
+        apigeePersonalDemographicsEndpoint,
         searchParams.nhsNumber,
         apigeeAccessToken,
         roleId
@@ -195,7 +195,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
         const prescriptions = await getPrescriptions(
           axiosInstance,
           logger,
-          apigeeUrl,
+          apigeePrescriptionsEndpoint,
           {nhsNumber: patientDetails.supersededBy},
           apigeeAccessToken,
           roleId
@@ -212,7 +212,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
         const prescriptions = await getPrescriptions(
           axiosInstance,
           logger,
-          apigeeUrl,
+          apigeePrescriptionsEndpoint,
           {nhsNumber: searchParams.nhsNumber},
           apigeeAccessToken,
           roleId
@@ -230,7 +230,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
       const prescriptions = await getPrescriptions(
         axiosInstance,
         logger,
-        apigeeUrl,
+        apigeePrescriptionsEndpoint,
         {prescriptionId: searchParams.prescriptionId!},
         apigeeAccessToken,
         roleId
@@ -249,7 +249,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
       const patientDetails = await getPdsPatientDetails(
         axiosInstance,
         logger,
-        apigeeUrl,
+        apigeePersonalDemographicsEndpoint,
         prescriptions[0].nhsNumber!.toString(),
         apigeeAccessToken,
         roleId
