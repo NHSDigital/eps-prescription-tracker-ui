@@ -41,8 +41,6 @@ const jwtKid = process.env["jwtKid"] as string
 const apigeeApiKey = process.env["apigeeApiKey"] as string
 const roleId = process.env["roleId"] as string
 
-const MOCK_MODE_ENABLED = process.env["MOCK_MODE_ENABLED"]
-
 // DynamoDB client setup
 const dynamoClient = new DynamoDBClient()
 const documentClient = DynamoDBDocumentClient.from(dynamoClient)
@@ -61,6 +59,8 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   // Attach request ID for tracing
   logger.appendKeys({"apigw-request-id": event.requestContext?.requestId})
   logger.info("Lambda handler invoked", {event})
+
+  const MOCK_MODE_ENABLED = process.env["MOCK_MODE_ENABLED"]
 
   // ****************************************
   // SETUP

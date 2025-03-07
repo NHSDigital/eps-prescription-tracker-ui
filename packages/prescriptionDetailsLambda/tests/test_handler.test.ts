@@ -166,6 +166,7 @@ describe("Lambda Handler Tests", () => {
     // Reset mocks before each test.
     jest.restoreAllMocks()
     jest.clearAllMocks()
+    process.env.MOCK_MODE_ENABLED = "true"
   })
 
   it("Handler returns 200 if all the components return successes", async () => {
@@ -176,5 +177,31 @@ describe("Lambda Handler Tests", () => {
 
     const parsedBody = JSON.parse(response.body)
     expect(parsedBody).toStrictEqual(mockMergedResponse)
+  })
+
+  it("Throws error when using a mock user but MOCK_MODE_ENABLED is not 'true'", async () => {
+    // Disable mock mode
+    process.env.MOCK_MODE_ENABLED = "false"
+
+    // getUsernameFromEvent already returns a username starting with "Mock_"
+    const response = await handler(event, context)
+
+    expect(response).toStrictEqual({message: "A system error has occurred"})
+  })
+
+  it("Throws error when JWT private key is missing or invalid", async () => {
+    // Simulate getSecret returning a null or invalid value.
+    mockGetSecret.mockImplementationOnce(async () => null)
+    const response = await handler(event, context)
+
+    expect(response).toStrictEqual({message: "A system error has occurred"})
+  })
+
+  it("Returns system error response if processPrescriptionRequest throws an error", async () => {
+    // Simulate an error in the prescription service.
+    mockProcessPrescriptionRequest.mockRejectedValueOnce(new Error("Test error"))
+    const response = await handler(event, context)
+
+    expect(response).toStrictEqual({message: "A system error has occurred"})
   })
 })
