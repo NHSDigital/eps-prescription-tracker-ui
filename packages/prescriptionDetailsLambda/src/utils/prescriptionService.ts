@@ -1,10 +1,14 @@
 import axios from "axios"
 import {v4 as uuidv4} from "uuid"
+
 import {APIGatewayProxyEvent, APIGatewayProxyResult} from "aws-lambda"
 import {Logger} from "@aws-lambda-powertools/logger"
+
 import {doHSClient} from "@cpt-ui-common/doHSClient"
+
 import {mergePrescriptionDetails} from "./responseMapper"
 import {formatHeaders} from "./headerUtils"
+
 import {
   ApigeeDataResponse,
   FhirAction,
@@ -17,10 +21,11 @@ import {
  * Build the headers needed for the Apigee request.
  */
 export function buildApigeeHeaders(apigeeAccessToken: string, roleId: string): Record<string, string> {
+  // TODO: should these be pulled from the environment?
   return {
     Authorization: `Bearer ${apigeeAccessToken}`,
     "nhsd-session-urid": roleId,
-    "nhsd-organization-uuid": "A83008", // FIXME: should these be pulled from the environment?
+    "nhsd-organization-uuid": "A83008",
     "nhsd-identity-uuid": "123456123456",
     "nhsd-session-jobrole": "123456123456",
     "x-request-id": uuidv4()

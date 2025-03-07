@@ -1,20 +1,20 @@
 {
   "extends": "../../tsconfig.defaults.json",
   "compilerOptions": {
-    "rootDir": ".",
-    "outDir": "lib"
+    "rootDir": "../../",
+    "outDir": "lib",
+    "baseUrl": ".",
+    "paths": {
+      "@cpt-ui-common/doHSClient": ["../common/doHSClient/lib"],
+      "@cpt-ui-common/authFunctions": ["../common/authFunctions/lib"],
+      "@cpt-ui-common/middyErrorHandler": ["../common/middyErrorHandler/lib"]
+    }
   },
   "include": ["src/**/*", "tests/**/*"],
   "exclude": ["node_modules"],
   "references": [
-    {
-      "path": "../common/authFunctions"
-    },
-    {
-      "path": "../common/doHSClient"
-    },
-    {
-      "path": "../common/middyErrorHandler"
-    }
+    { "path": "../common/authFunctions" },
+    { "path": "../common/doHSClient" },
+    { "path": "../common/middyErrorHandler" }
   ]
 }
