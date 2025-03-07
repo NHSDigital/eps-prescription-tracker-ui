@@ -20,6 +20,7 @@ install-hooks: install-python
 compile-node:
 	npm run compile --workspace packages/common/middyErrorHandler
 	npm run compile --workspace packages/common/authFunctions
+	npm run compile --workspace packages/common/doHSClient
 	npx tsc --build tsconfig.build.json
 
 compile: compile-node
@@ -29,11 +30,13 @@ lint-node: compile-node
 	npm run lint --workspace packages/cdk
 	npm run lint --workspace packages/cognito
 	npm run lint --workspace packages/prescriptionSearchLambda
+	npm run lint --workspace packages/prescriptionDetailsLambda
 	npm run lint --workspace packages/common/testing
 	npm run lint --workspace packages/common/middyErrorHandler
 	npm run lint --workspace packages/trackerUserInfoLambda
 	npm run lint --workspace packages/selectedRoleLambda
 	npm run lint --workspace packages/common/authFunctions
+	npm run lint --workspace packages/common/doHSClient
 
 lint-githubactions:
 	actionlint
@@ -49,10 +52,12 @@ test: compile
 	npm run test --workspace packages/cpt-ui
 	npm run test --workspace packages/cognito
 	npm run test --workspace packages/prescriptionSearchLambda
+	npm run test --workspace packages/prescriptionDetailsLambda
 	npm run test --workspace packages/common/middyErrorHandler
 	npm run test --workspace packages/trackerUserInfoLambda
 	npm run test --workspace packages/selectedRoleLambda
 	npm run test --workspace packages/common/authFunctions
+	npm run test --workspace packages/common/doHSClient
 
 clean:
 	rm -rf packages/cloudfrontFunctions/coverage
@@ -63,6 +68,8 @@ clean:
 	rm -rf packages/cognito/lib
 	rm -rf packages/prescriptionSearchLambda/coverage
 	rm -rf packages/prescriptionSearchLambda/lib
+	rm -rf packages/prescriptionDetailsLambda/coverage
+	rm -rf packages/prescriptionDetailsLambda/lib
 	rm -rf packages/common/middyErrorHandler/coverage
 	rm -rf packages/common/middyErrorHandler/lib
 	rm -rf cdk.out
@@ -74,6 +81,8 @@ clean:
 	rm -rf packages/selectedRoleLambda/lib
 	rm -rf packages/common/authFunctions/coverage
 	rm -rf packages/common/authFunctions/lib
+	rm -rf packages/common/doHSClient/coverage
+	rm -rf packages/common/doHSClient/lib
 
 deep-clean: clean
 	rm -rf .venv
@@ -87,8 +96,10 @@ check-licenses-node:
 	npm run check-licenses --workspace packages/cdk
 	npm run check-licenses --workspace packages/cpt-ui
 	npm run check-licenses --workspace packages/common/authFunctions
+	npm run check-licenses --workspace packages/common/doHSClient
 	npm run check-licenses --workspace packages/cognito
 	npm run check-licenses --workspace packages/prescriptionSearchLambda
+	npm run check-licenses --workspace packages/prescriptionDetailsLambda
 	npm run check-licenses --workspace packages/trackerUserInfoLambda
 	npm run check-licenses --workspace packages/selectedRoleLambda
 

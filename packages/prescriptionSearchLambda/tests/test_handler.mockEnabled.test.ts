@@ -228,7 +228,6 @@ describe("handler tests with cis2 auth", () => {
     }, dummyContext)
 
     expect(mockExchangeTokenForApigeeAccessToken).toBeCalledWith(
-      expect.any(Function),
       apigeeMockTokenEndpoint,
       expect.any(Object),
       expect.any(Object)
@@ -245,7 +244,6 @@ describe("handler tests with cis2 auth", () => {
     }, dummyContext)
 
     expect(mockExchangeTokenForApigeeAccessToken).toBeCalledWith(
-      expect.any(Function),
       apigeeCIS2TokenEndpoint,
       expect.any(Object),
       expect.any(Object)
