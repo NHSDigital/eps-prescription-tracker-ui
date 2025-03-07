@@ -11,7 +11,7 @@ Amplify.configure(authConfig, { ssr: true })
 
 const trackerUserInfoEndpoint = "/api/tracker-user-info"
 
-const API_ENDPOINT = '/api/prescription-search'
+const API_ENDPOINT = '/api/prescription-list'
 
 function App() {
   const [user, setUser] = useState(null)
@@ -21,12 +21,13 @@ function App() {
   const [idToken, setIdToken] = useState<JWT>(null)
   const [accessToken, setAccessToken] = useState<JWT>(null)
   const [prescriptionId, setPrescriptionId] = useState<string>('')
+  const [nhsNumber, setNhsNumber] = useState<number>(0)
   const [prescriptionData, setPrescriptionData] = useState<any>(null)
   const [trackerUserInfoData, setTrackerUserInfoData] = useState<JWT>(null)
   const [loading, setLoading] = useState<boolean>(false)
 
   useEffect(() => {
-    const unsubscribe = Hub.listen("auth", ({payload}) => {
+    const unsubscribe = Hub.listen("auth", ({ payload }) => {
       console.log("in auth listen")
       console.log(payload)
       switch (payload.event) {
@@ -49,7 +50,7 @@ function App() {
 
   const getUser = async () => {
     try {
-      const authSession = await fetchAuthSession({forceRefresh: true})
+      const authSession = await fetchAuthSession({ forceRefresh: true })
       const accessToken = authSession.tokens?.accessToken
       const idToken = authSession.tokens?.idToken
 
@@ -70,10 +71,10 @@ function App() {
     }
   }
 
-  const fetchPrescriptionData = async () => {
-    if (!prescriptionId) {
-      setError("Please enter a Prescription ID.")
-      return
+  const fetchPrescriptionData = async ({ nhsNumber, prescriptionId }: { nhsNumber?: number, prescriptionId?: string }) => {
+    if (!prescriptionId && !nhsNumber) {
+      setError("Please provide either a Prescription ID or an NHS Number.");
+      return;
     }
 
     setLoading(true)
@@ -83,7 +84,9 @@ function App() {
     try {
       // Call the backend to fetch prescription data
       const prescriptionResponse = await axios.get(API_ENDPOINT, {
-        params: {prescriptionId},
+        params: {
+          prescriptionId, nhsNumber
+        },
         headers: {
           /**
            * Provide the Cognito id token:
@@ -149,7 +152,7 @@ function App() {
       <div>isSignedIn: {isSignedIn.toString()}</div>
       <div>idToken: {idToken?.toString()}</div>
       <div>accessToken: {accessToken?.toString()}</div>
-  
+
       <div style={{ marginTop: '20px' }}>
         <label htmlFor="prescriptionId">Prescription ID:</label>
         <input
@@ -160,27 +163,44 @@ function App() {
           placeholder="Enter Prescription ID"
         />
         <button
-          onClick={fetchPrescriptionData}
+          onClick={() => fetchPrescriptionData({ prescriptionId })}
           disabled={!isSignedIn || !prescriptionId}
         >
           Fetch Prescription Data
         </button>
       </div>
-  
+
+      <div style={{ marginTop: '20px' }}>
+        <label htmlFor="nhsNumber">NHS Number:</label>
+        <input
+          type="number"
+          id="nhsNumber"
+          value={nhsNumber}
+          onChange={(e) => setNhsNumber(Number(e.target.value))}
+          placeholder="Enter Prescription ID"
+        />
+        <button
+          onClick={() => fetchPrescriptionData({ nhsNumber })}
+          disabled={!isSignedIn || !nhsNumber}
+        >
+          Fetch Prescription Data
+        </button>
+      </div>
+
       <div style={{ marginTop: '20px' }}>
         <button onClick={() => fetchTrackerUserInfo(false)} disabled={!isSignedIn}>
           Fetch Tracker User Info
         </button>
       </div>
       {loading && <p>Loading...</p>}
-  
+
       {prescriptionData && (
         <div style={{ marginTop: '20px' }}>
           <h3>Prescription Data:</h3>
           <pre>{JSON.stringify(prescriptionData, null, 2)}</pre>
         </div>
       )}
-  
+
       {trackerUserInfoData && (
         <div style={{ marginTop: '20px' }}>
           <h3>Tracker User Info Data:</h3>

@@ -16,7 +16,7 @@ export interface RestApiGatewayMethodsProps {
   readonly restApiGateway: RestApi
   readonly tokenLambda: NodejsFunction
   readonly mockTokenLambda: NodejsFunction
-  readonly prescriptionSearchLambda: NodejsFunction
+  readonly prescriptionListLambda: NodejsFunction
   readonly trackerUserInfoLambda: NodejsFunction
   readonly selectedRoleLambda: NodejsFunction
   readonly useMockOidc: boolean
@@ -51,9 +51,9 @@ export class RestApiGatewayMethods extends Construct {
       }))
     }
 
-    // prescription-search endpoint
-    const prescriptionSearchLambdaResource = props.restApiGateway.root.addResource("prescription-search")
-    prescriptionSearchLambdaResource.addMethod("GET", new LambdaIntegration(props.prescriptionSearchLambda, {
+    // prescription-list endpoint
+    const prescriptionListLambdaResource = props.restApiGateway.root.addResource("prescription-list")
+    prescriptionListLambdaResource.addMethod("GET", new LambdaIntegration(props.prescriptionListLambda, {
       credentialsRole: props.restAPiGatewayRole
     }), {
       authorizationType: AuthorizationType.COGNITO,

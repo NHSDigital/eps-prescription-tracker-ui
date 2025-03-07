@@ -7,8 +7,10 @@ import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
 import middy from "@middy/core"
 import inputOutputLogger from "@middy/input-output-logger"
 import axios from "axios"
-import {v4 as uuidv4} from "uuid"
 import {formatHeaders} from "./utils/headerUtils"
+import {validateSearchParams} from "./utils/validation"
+import {getPdsPatientDetails} from "./services/patientDetailsLookupService"
+import {getPrescriptions, PrescriptionError} from "./services/prescriptionsLookupService"
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 import {
   getUsernameFromEvent,
@@ -18,6 +20,8 @@ import {
   updateApigeeAccessToken,
   initializeOidcConfig
 } from "@cpt-ui-common/authFunctions"
+import {SearchResponse, SearchParams} from "./types"
+import {mapSearchResponse} from "./utils/responseMapper"
 
 /*
 This is the lambda code to search for a prescription
@@ -26,6 +30,7 @@ It expects the following environment variables to be set
 apigeeCIS2TokenEndpoint
 apigeeMockTokenEndpoint
 apigeePrescriptionsEndpoint
+apigeePersonalDemographicsEndpoint
 TokenMappingTableName
 jwtPrivateKeyArn
 apigeeApiKey
@@ -48,12 +53,13 @@ MOCK_USER_POOL_IDP
 */
 
 // Logger initialization
-const logger = new Logger({serviceName: "prescriptionSearch"})
+const logger = new Logger({serviceName: "prescriptionList"})
 
 // External endpoints and environment variables
 const apigeeCIS2TokenEndpoint = process.env["apigeeCIS2TokenEndpoint"] as string
 const apigeeMockTokenEndpoint = process.env["apigeeMockTokenEndpoint"] as string
 const apigeePrescriptionsEndpoint = process.env["apigeePrescriptionsEndpoint"] as string
+const apigeePersonalDemographicsEndpoint = process.env["apigeePersonalDemographicsEndpoint"] as string
 const TokenMappingTableName = process.env["TokenMappingTableName"] as string
 const jwtPrivateKeyArn = process.env["jwtPrivateKeyArn"] as string
 const apigeeApiKey = process.env["apigeeApiKey"] as string
@@ -77,110 +83,215 @@ const errorResponseBody = {
 // Middleware error handler
 const middyErrorHandler = new MiddyErrorHandler(errorResponseBody)
 
+// TODO: elab session, currently we are unable to make requests to the personal demographics endpoint,
+// the reason, we think is job role we are assigning is not passing on the correct context to CIS2
+// we need to investigate what would be the correct value to pass from each environment as its
+// not the same as it is for eps by the looks of it OR what would be
+
 const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-  // Attach request ID for tracing
-  logger.appendKeys({"apigw-request-id": event.requestContext?.requestId})
+  logger.appendKeys({
+    // "x-correlation-id": event.headers?.["x-correlation-id"],
+    "apigw-request-id": event.requestContext?.requestId
+  })
+
   logger.info("Lambda handler invoked", {event})
 
+  const searchStartTime = Date.now()
   const axiosInstance = axios.create()
-  let prescriptionId: string | undefined
 
-  // Mock usernames start with "Mock_", and real requests use usernames starting with "Primary_"
-  const username = getUsernameFromEvent(event)
-  const isMockToken = username.startsWith("Mock_")
-  // Determine whether this request should be treated as mock or real.
+  try {
+    // Extract and validate search parameters
+    const searchParams: SearchParams = {
+      prescriptionId: event.queryStringParameters?.prescriptionId,
+      nhsNumber: event.queryStringParameters?.nhsNumber
+    }
 
-  if (isMockToken && MOCK_MODE_ENABLED !== "true") {
-    throw new Error("Trying to use a mock user when mock mode is disabled")
-  }
-  const isMockRequest = MOCK_MODE_ENABLED === "true" && isMockToken
+    validateSearchParams(searchParams)
 
-  const apigeeTokenEndpoint = isMockRequest
-    ? apigeeMockTokenEndpoint
-    : apigeeCIS2TokenEndpoint
+    // Handle mock/real request logic
+    const username = getUsernameFromEvent(event)
+    const isMockToken = username.startsWith("Mock_")
 
-  logger.info("Is this a mock request?", {isMockRequest})
+    if (isMockToken && MOCK_MODE_ENABLED !== "true") {
+      throw new Error("Trying to use a mock user when mock mode is disabled")
+    }
 
-  // Step 1: Fetch CIS2 tokens
-  logger.info("Retrieving CIS2 tokens from DynamoDB based on the current request context")
-  const {cis2AccessToken, cis2IdToken} = await fetchAndVerifyCIS2Tokens(
-    event,
-    documentClient,
-    logger,
-    isMockRequest ? mockOidcConfig : cis2OidcConfig
-  )
-  logger.debug("Successfully fetched CIS2 tokens", {cis2AccessToken, cis2IdToken})
+    const isMockRequest = MOCK_MODE_ENABLED === "true" && isMockToken
+    const apigeeTokenEndpoint = isMockRequest ? apigeeMockTokenEndpoint : apigeeCIS2TokenEndpoint
 
-  // Step 2: Fetch the private key for signing the client assertion
-  logger.info("Accessing JWT private key from Secrets Manager to create signed client assertion")
-  const jwtPrivateKey = await getSecret(jwtPrivateKeyArn)
-  if (!jwtPrivateKey || typeof jwtPrivateKey !== "string") {
-    throw new Error("Invalid or missing JWT private key")
-  }
+    // Authentication flow
+    const {cis2AccessToken, cis2IdToken} = await fetchAndVerifyCIS2Tokens(
+      event,
+      documentClient,
+      logger,
+      isMockRequest ? mockOidcConfig : cis2OidcConfig
+    )
+    logger.debug("Successfully fetched CIS2 tokens", {cis2AccessToken, cis2IdToken})
 
-  logger.debug("JWT private key retrieved successfully")
+    // Step 2: Fetch the private key for signing the client assertion
+    logger.info("Accessing JWT private key from Secrets Manager to create signed client assertion")
+    const jwtPrivateKey = await getSecret(jwtPrivateKeyArn)
+    if (!jwtPrivateKey || typeof jwtPrivateKey !== "string") {
+      throw new Error("Invalid or missing JWT private key")
+    }
 
-  // Construct a new body with the signed JWT client assertion
-  logger.info("Generating signed JWT for Apigee token exchange payload")
-  const requestBody = constructSignedJWTBody(
-    logger,
-    apigeeTokenEndpoint,
-    jwtPrivateKey,
-    apigeeApiKey,
-    jwtKid,
-    cis2IdToken
-  )
-  logger.debug("Constructed request body for Apigee token exchange", {requestBody})
+    logger.debug("JWT private key retrieved successfully")
 
-  // Step 3: Exchange token with Apigee
-  const {accessToken: apigeeAccessToken, expiresIn} = await exchangeTokenForApigeeAccessToken(
-    axiosInstance,
-    apigeeTokenEndpoint,
-    requestBody,
-    logger
-  )
+    // Construct a new body with the signed JWT client assertion
+    logger.info("Generating signed JWT for Apigee token exchange payload")
+    const requestBody = constructSignedJWTBody(
+      logger,
+      apigeeTokenEndpoint,
+      jwtPrivateKey,
+      apigeeApiKey,
+      jwtKid,
+      cis2IdToken
+    )
+    logger.debug("Constructed request body for Apigee token exchange", {requestBody})
 
-  // Step 4: Update DynamoDB with the new Apigee access token
-  await updateApigeeAccessToken(
-    documentClient,
-    TokenMappingTableName,
-    event.requestContext.authorizer?.claims?.["cognito:username"] || "unknown",
-    apigeeAccessToken,
-    expiresIn,
-    logger
-  )
+    // Step 3: Exchange token with Apigee
+    const {accessToken: apigeeAccessToken, expiresIn} = await exchangeTokenForApigeeAccessToken(
+      axiosInstance,
+      apigeeTokenEndpoint,
+      requestBody,
+      logger
+    )
 
-  // Step 5: Fetch prescription data from Apigee API
-  prescriptionId = event.queryStringParameters?.prescriptionId || "defaultId"
+    // Step 4: Update DynamoDB with the new Apigee access token
+    await updateApigeeAccessToken(
+      documentClient,
+      TokenMappingTableName,
+      event.requestContext.authorizer?.claims?.["cognito:username"] || "unknown",
+      apigeeAccessToken,
+      expiresIn,
+      logger
+    )
 
-  logger.info("Fetching prescription data from Apigee", {prescriptionId})
-  // need to pass in role id, organization id and job role to apigee
-  // user id is retrieved in apigee from access token
-  const apigeeResponse = await axiosInstance.get(apigeePrescriptionsEndpoint,
-    {
-      params: {
-        prescriptionId: prescriptionId
-      },
-      headers: {
-        Authorization: `Bearer ${apigeeAccessToken}`,
-        "nhsd-session-urid": roleId,
-        "nhsd-organization-uuid": "A83008",
-        "nhsd-session-jobrole": "123456123456",
-        "x-request-id": uuidv4()
+    // Search logic
+    let searchResponse: SearchResponse
+
+    if (searchParams.nhsNumber) {
+      // NHS Number search flow
+      const patientDetails = await getPdsPatientDetails(
+        axiosInstance,
+        logger,
+        apigeePersonalDemographicsEndpoint,
+        searchParams.nhsNumber,
+        apigeeAccessToken,
+        roleId
+      )
+
+      logger.debug("patientDetails", {
+        body: patientDetails
+      })
+
+      // Check if NHS Number has been superseded
+      if (patientDetails.supersededBy) {
+        logger.info("Using superseded NHS Number for prescription search", {
+          originalNhsNumber: searchParams.nhsNumber,
+          newNhsNumber: patientDetails.supersededBy
+        })
+        // Use the superseded NHS Number for prescription search
+        const prescriptions = await getPrescriptions(
+          axiosInstance,
+          logger,
+          apigeePrescriptionsEndpoint,
+          {nhsNumber: patientDetails.supersededBy},
+          apigeeAccessToken,
+          roleId
+        )
+
+        logger.debug("Prescriptions", {
+          total: prescriptions.length,
+          body: prescriptions
+        })
+
+        searchResponse = mapSearchResponse(patientDetails, prescriptions)
+      } else {
+        // Normal flow - use original NHS Number
+        const prescriptions = await getPrescriptions(
+          axiosInstance,
+          logger,
+          apigeePrescriptionsEndpoint,
+          {nhsNumber: searchParams.nhsNumber},
+          apigeeAccessToken,
+          roleId
+        )
+
+        logger.debug("Prescriptions", {
+          total: prescriptions.length,
+          body: prescriptions
+        })
+
+        searchResponse = mapSearchResponse(patientDetails, prescriptions)
+      }
+    } else {
+      // Prescription ID search flow
+      const prescriptions = await getPrescriptions(
+        axiosInstance,
+        logger,
+        apigeePrescriptionsEndpoint,
+        {prescriptionId: searchParams.prescriptionId!},
+        apigeeAccessToken,
+        roleId
+      )
+
+      // Get patient details using NHS Number from first prescription
+      if (prescriptions.length === 0) {
+        throw new PrescriptionError("Prescription not found")
+      }
+
+      logger.debug("Prescriptions", {
+        total: prescriptions.length,
+        body: prescriptions
+      })
+
+      const patientDetails = await getPdsPatientDetails(
+        axiosInstance,
+        logger,
+        apigeePersonalDemographicsEndpoint,
+        prescriptions[0].nhsNumber!.toString(),
+        apigeeAccessToken,
+        roleId
+      )
+
+      logger.debug("patientDetails", {
+        body: patientDetails
+      })
+
+      searchResponse = mapSearchResponse(patientDetails, prescriptions)
+    }
+
+    logger.info("Search completed", {
+      timeMs: Date.now() - searchStartTime,
+      resultCount: (
+        searchResponse.currentPrescriptions.length +
+        searchResponse.futurePrescriptions.length +
+        searchResponse.pastPrescriptions.length
+      )
+    })
+
+    return {
+      statusCode: 200,
+      body: JSON.stringify(searchResponse),
+      headers: formatHeaders({"Content-Type": "application/json"})
+    }
+  } catch (error) {
+    logger.error("Search failed", {
+      error,
+      timeMs: Date.now() - searchStartTime
+    })
+
+    if (error instanceof PrescriptionError && error.message === "Prescription not found") {
+      return {
+        statusCode: 404,
+        body: JSON.stringify({message: "Prescription not found"}),
+        headers: formatHeaders({"Content-Type": "application/json"})
       }
     }
-  )
 
-  logger.info("Successfully fetched prescription data from Apigee", {
-    prescriptionId,
-    data: apigeeResponse.data
-  })
-  return {
-    statusCode: 200,
-    body: JSON.stringify(apigeeResponse.data),
-    headers: formatHeaders(apigeeResponse.headers)
+    throw error
   }
-
 }
 
 // Export the Lambda function with middleware applied
