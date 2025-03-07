@@ -168,7 +168,13 @@ describe("Lambda Handler Tests", () => {
     jest.clearAllMocks()
   })
 
-  it("DUMMY TEST", async () => {
-    console.error("DUMMY TEST")
+  it("Handler returns 200 if all the components return successes", async () => {
+    const response = await handler(event, context)
+
+    expect(response).toBeDefined()
+    expect(response.statusCode).toBe(200)
+
+    const parsedBody = JSON.parse(response.body)
+    expect(parsedBody).toStrictEqual(mockMergedResponse)
   })
 })
