@@ -2,17 +2,16 @@ import {jest} from "@jest/globals"
 
 // Mock the uuid module to return a fixed value for test predictability.
 jest.unstable_mockModule("uuid", () => ({
-  uuidv4: jest.fn(() => "test-uuid")
+  v4: jest.fn(() => "test-uuid")
 }))
 
+// Define the interface explicitly
 interface doHSResponse {
-  value: [
-    {
-      ODSCode: string
-    }
-  ];
+  value: Array<{ODSCode: string}>
 }
+
 const mockDoHSClient = jest.fn<() => Promise<doHSResponse>>()
+
 jest.unstable_mockModule("@cpt-ui-common/doHSClient", () => {
   const doHSClient = mockDoHSClient.mockResolvedValue({
     value: [
@@ -27,6 +26,7 @@ jest.unstable_mockModule("@cpt-ui-common/doHSClient", () => {
   }
 })
 
+// Import after mocking
 const {buildApigeeHeaders} = await import("../src/utils/prescriptionService")
 
 describe("buildApigeeHeaders", () => {
