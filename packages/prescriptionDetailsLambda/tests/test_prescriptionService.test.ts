@@ -26,7 +26,6 @@ jest.unstable_mockModule("@cpt-ui-common/doHSClient", () => {
   }
 })
 
-// Import after mocking
 const {buildApigeeHeaders} = await import("../src/utils/prescriptionService")
 
 describe("buildApigeeHeaders", () => {
