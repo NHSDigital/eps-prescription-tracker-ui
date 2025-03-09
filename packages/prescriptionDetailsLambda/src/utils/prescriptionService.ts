@@ -38,7 +38,7 @@ export function buildApigeeHeaders(apigeeAccessToken: string, roleId: string): R
 export function extractOdsCodes(apigeeData: ApigeeDataResponse, logger: Logger): {
   prescribingOrganization: string | undefined
   nominatedPerformer: string | undefined
-  dispensingOrganizations: Array<string> | undefined // Fix: Change DispensingOrganization[] to string[]
+  dispensingOrganizations: Array<string> | undefined
 } {
   const prescribingOrganization = apigeeData?.author?.identifier?.value || undefined
 
@@ -86,44 +86,58 @@ export async function getDoHSData(
 
   if (Object.values(odsCodes).some(Boolean)) {
     try {
-      const rawDoHSData = (await doHSClient(odsCodes)) as {value?: Array<DoHSValue>}
+      const rawDoHSData = (await doHSClient(odsCodes)) as {
+        prescribingOrganization?: DoHSValue
+        nominatedPerformer?: DoHSValue
+        dispensingOrganizations?: Array<DoHSValue>
+      }
+
       logger.info("Successfully fetched DoHS API data", {rawDoHSData})
 
-      if (!Array.isArray(rawDoHSData.value) || rawDoHSData.value.length === 0) {
+      if (!rawDoHSData?.prescribingOrganization &&
+        !rawDoHSData?.nominatedPerformer &&
+        !rawDoHSData?.dispensingOrganizations?.length) {
         logger.warn("No organization data found in DoHS response", {rawDoHSData})
       }
 
       // Assign prescribing organization
-      doHSData.prescribingOrganization = rawDoHSData?.value?.find(
-        (org: DoHSValue) => org.ODSCode === odsCodes.prescribingOrganization
-      ) || null
+      doHSData.prescribingOrganization =
+        rawDoHSData?.prescribingOrganization?.ODSCode?.toUpperCase() === odsCodes.prescribingOrganization?.toUpperCase()
+          ? rawDoHSData.prescribingOrganization
+          : null
 
       // Assign nominated performer
-      doHSData.nominatedPerformer = rawDoHSData?.value?.find(
-        (org: DoHSValue) => org.ODSCode === odsCodes.nominatedPerformer
-      ) || null
+      doHSData.nominatedPerformer =
+        rawDoHSData?.nominatedPerformer?.ODSCode?.toUpperCase() === odsCodes.nominatedPerformer?.toUpperCase()
+          ? rawDoHSData.nominatedPerformer
+          : null
 
       // Assign multiple dispensing organizations
-      doHSData.dispensingOrganizations = rawDoHSData?.value?.filter(
-        (org: DoHSValue) => odsCodes.dispensingOrganizations?.includes(org.ODSCode)
-      ) || []
+      doHSData.dispensingOrganizations =
+        rawDoHSData?.dispensingOrganizations?.filter(org =>
+          odsCodes.dispensingOrganizations?.some(ods => ods.toUpperCase() === org.ODSCode?.toUpperCase())
+        ) || []
 
-      // Log the results
+      // Logging Variables
       const prescribingOrganization = doHSData.prescribingOrganization
         ? doHSData.prescribingOrganization.OrganisationName
         : "Not Found"
+
       const nominatedPerformer = doHSData.nominatedPerformer
         ? doHSData.nominatedPerformer.OrganisationName
         : "Not Found"
+
       const dispensingOrganizations = doHSData.dispensingOrganizations.length
         ? doHSData.dispensingOrganizations.map(org => org.OrganisationName)
         : "Not Found"
 
+      // Log results
       logger.info("Mapped DoHS organizations", {
         prescribingOrganization,
         nominatedPerformer,
         dispensingOrganizations
       })
+
     } catch (error) {
       logger.error("Failed to fetch DoHS API data", {error})
       doHSData = {
