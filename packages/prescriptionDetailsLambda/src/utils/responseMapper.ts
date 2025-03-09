@@ -142,15 +142,17 @@ export const mergePrescriptionDetails = (
     }
   } : undefined
 
-  // Extract current dispenser
-  const currentDispenser = doHSData?.dispensingOrganization ? {
-    organisationSummaryObjective: {
-      name: doHSData.dispensingOrganization.OrganisationName || "Not found",
-      odsCode: doHSData.dispensingOrganization.ODSCode || "Not found",
-      address: `${doHSData.dispensingOrganization.Address1 || ""} ${doHSData.dispensingOrganization.City || ""} ${doHSData.dispensingOrganization.Postcode || ""}`.trim() || "Not found",
-      telephone: doHSData.dispensingOrganization.Contacts?.find(c => c.ContactMethodType === "Telephone")?.ContactValue || "Not found"
-    }
-  } : undefined
+  // Extract current dispensers (handling multiple dispensing organizations)
+  const currentDispenser = Array.isArray(doHSData?.dispensingOrganizations)
+    ? doHSData.dispensingOrganizations.map(org => ({
+      organisationSummaryObjective: {
+        name: org?.OrganisationName || "Not found",
+        odsCode: org?.ODSCode || "Not found",
+        address: `${org?.Address1 || ""} ${org?.City || ""} ${org?.Postcode || ""}`.trim() || "Not found",
+        telephone: org?.Contacts?.find(c => c.ContactMethodType === "Telephone")?.ContactValue || "Not found"
+      }
+    }))
+    : []
 
   // Final merged JSON
   return {

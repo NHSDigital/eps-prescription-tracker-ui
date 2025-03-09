@@ -232,7 +232,7 @@ export const mockDoHSValue: DoHSValue = {
 export const mockDoHSData: DoHSData = {
   prescribingOrganization: mockDoHSValue,
   nominatedPerformer: mockDoHSValue,
-  dispensingOrganization: mockDoHSValue
+  dispensingOrganizations: [mockDoHSValue]
 }
 
 export const mockPrescriptionIntent: PrescriptionIntent = "order"
@@ -329,12 +329,22 @@ export const mockMergedResponse: MergedResponse = {
       telephone: "098-765-4321"
     }
   },
-  currentDispenser: {
-    organisationSummaryObjective: {
-      name: "NHS Current Dispenser",
-      odsCode: "ODS789",
-      address: "101 Pharmacy Ave, TestCity",
-      telephone: "111-222-3333"
+  currentDispenser: [
+    {
+      organisationSummaryObjective: {
+        name: "NHS Current Dispenser One",
+        odsCode: "ODS789",
+        address: "101 Pharmacy Ave, TestCity",
+        telephone: "111-222-3333"
+      }
+    },
+    {
+      organisationSummaryObjective: {
+        name: "NHS Current Dispenser Two",
+        odsCode: "ODS912",
+        address: "202 Pharmacy Ave, TestCity",
+        telephone: "999-222-3333"
+      }
     }
-  }
+  ]
 }

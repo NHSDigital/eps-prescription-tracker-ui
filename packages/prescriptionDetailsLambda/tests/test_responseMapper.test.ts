@@ -138,21 +138,38 @@ describe("mergePrescriptionDetails", () => {
           }
         ]
       },
-      dispensingOrganization: {
-        OrganisationName: "Dispensing Org",
-        ODSCode: "ODS789",
-        Address1: "3 Dispense Rd",
-        City: "Dispense City",
-        Postcode: "PC789",
-        Contacts: [
-          {
-            ContactMethodType: "Telephone",
-            ContactValue: "1112223333",
-            ContactAvailabilityType: "9-5",
-            ContactType: "home"
-          }
-        ]
-      }
+      dispensingOrganizations: [
+        {
+          OrganisationName: "Dispensing Org One",
+          ODSCode: "ODS789",
+          Address1: "3 Dispense Rd",
+          City: "Dispense City",
+          Postcode: "PC789",
+          Contacts: [
+            {
+              ContactMethodType: "Telephone",
+              ContactValue: "1112223333",
+              ContactAvailabilityType: "9-5",
+              ContactType: "home"
+            }
+          ]
+        },
+        {
+          OrganisationName: "Dispensing Org Two",
+          ODSCode: "ODS912",
+          Address1: "4 Dispense Rd",
+          City: "Dispense City",
+          Postcode: "PC912",
+          Contacts: [
+            {
+              ContactMethodType: "Telephone",
+              ContactValue: "9992223333",
+              ContactAvailabilityType: "9-5",
+              ContactType: "home"
+            }
+          ]
+        }
+      ]
     }
 
     const result = mergePrescriptionDetails(prescriptionDetails, doHSData)
@@ -246,14 +263,22 @@ describe("mergePrescriptionDetails", () => {
     })
 
     // Check current dispenser
-    expect(result.currentDispenser).toEqual({
+    expect(result.currentDispenser).toEqual([{
       organisationSummaryObjective: {
-        name: "Dispensing Org",
+        name: "Dispensing Org One",
         odsCode: "ODS789",
         address: "3 Dispense Rd Dispense City PC789",
         telephone: "1112223333"
       }
-    })
+    },
+    {
+      organisationSummaryObjective: {
+        name: "Dispensing Org Two",
+        odsCode: "ODS912",
+        address: "4 Dispense Rd Dispense City PC912",
+        telephone: "9992223333"
+      }
+    }])
   })
 
   it('should default patient details to "Not found" when no patient is contained', () => {
@@ -405,6 +430,7 @@ describe("mergePrescriptionDetails", () => {
         {
           action: [
             {
+              title: "Dispense notification successful",
               code: [{coding: [{code: "MSG002", display: "Dispatched"}]}],
               timingDateTime: "2022-02-03T00:00:00Z",
               action: [
@@ -413,6 +439,27 @@ describe("mergePrescriptionDetails", () => {
                 },
                 {
                   resource: {reference: "Dispense/456"}
+                }
+              ]
+            },
+            {
+              title: "Dispense notification successful",
+              timingDateTime: "2025-02-21T11:42:06.000Z",
+              participant: [
+                {
+                  identifier: {
+                    system: "https://fhir.nhs.uk/Id/ods-organization-code",
+                    value: "FA565"
+                  }
+                }
+              ],
+              code: [{coding: [{code: "0006", display: "Dispensed"}]}],
+              action: [
+                {
+                  resource: {reference: "Dispense/789"}
+                },
+                {
+                  resource: {reference: "Dispense/012"}
                 }
               ]
             }
@@ -441,7 +488,7 @@ describe("mergePrescriptionDetails", () => {
 
     const result = mergePrescriptionDetails(prescriptionDetails, doHSData)
 
-    expect(result.messageHistory).toHaveLength(1)
+    expect(result.messageHistory).toHaveLength(2)
     expect(result.messageHistory[0]).toEqual({
       messageCode: "MSG002",
       sentDateTime: "2022-02-03T00:00:00Z",
@@ -491,7 +538,7 @@ describe("mergePrescriptionDetails", () => {
           }
         ]
       }
-      // nominatedPerformer and dispensingOrganization are missing
+      // nominatedPerformer and dispensingOrganizations are missing
     }
 
     const result = mergePrescriptionDetails(prescriptionDetails, partialDoHSData)
@@ -506,7 +553,7 @@ describe("mergePrescriptionDetails", () => {
       }
     })
     expect(result.nominatedDispenser).toBeUndefined()
-    expect(result.currentDispenser).toBeUndefined()
+    expect(result.currentDispenser).toEqual([])
   })
 
   it("should correctly process multiple MedicationRequest and MedicationDispense resources", () => {

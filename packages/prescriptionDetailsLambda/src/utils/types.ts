@@ -8,12 +8,27 @@ import {
 
 // Resource type for FHIR request group
 export interface FhirAction {
-  participant?: Array<FhirParticipant>
+  title?: string // Title of the action (e.g., "Dispense notification successful")
+  timingDateTime?: string // Optional timing field
+  timingTiming?: {
+    event?: Array<string>
+    repeat?: {
+      frequency?: number
+      period?: number
+      periodUnit?: string
+    }
+  }
+  participant?: Array<FhirParticipant> // List of participants (e.g., dispensing organizations)
+  code?: Array<{
+    coding?: Array<Coding>
+  }>
+  action?: Array<FhirAction> // Recursive reference for nested actions
+  resource?: {reference?: string} // Single resource reference
 }
 
 export interface FhirIdentifier {
-  system?: string;
-  value?: string;
+  system?: string
+  value?: string
 }
 
 // Extend FhirParticipant to support nested extensions
@@ -27,9 +42,9 @@ export interface FhirParticipant {
 // Minimal type for the apigee response data format
 export interface ApigeeDataResponse {
   author?: {
-    identifier?: FhirIdentifier;
-  };
-  action?: Array<FhirAction>;
+    identifier?: FhirIdentifier
+  }
+  action?: Array<FhirAction>
   // there might be other elements, but they're not necessary for us
 }
 
@@ -112,7 +127,7 @@ export interface DoHSValue {
 export interface DoHSData {
   prescribingOrganization?: DoHSValue | null
   nominatedPerformer?: DoHSValue | null
-  dispensingOrganization?: DoHSValue | null
+  dispensingOrganizations?: Array<DoHSValue>
 }
 
 // Defines the allowed prescription intent values based on FHIR standards.
@@ -211,12 +226,12 @@ export interface MergedResponse {
       telephone: string
     }
   }
-  currentDispenser?: {
+  currentDispenser?: Array<{
     organisationSummaryObjective: {
       name: string
       odsCode: string
       address: string
       telephone: string
     }
-  }
+  }>
 }

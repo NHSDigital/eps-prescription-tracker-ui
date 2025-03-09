@@ -28,23 +28,27 @@ describe("doHSClient", () => {
   it("returns mapped data on successful axios request", async () => {
     const odsCodes = {
       prescribingOrganization: "ABC",
-      nominatedPerformer: "DEF"
+      nominatedPerformer: "DEF",
+      dispensingOrganizations: ["XYZ", "PQR"]
     }
+
     // Simulate an API response that returns data for only one of the ODS codes.
     const responseData = {
       value: [{ODSCode: "ABC"}]
     }
+
     mockedAxios.get.mockResolvedValueOnce({data: responseData})
 
     const result = await doHSClient(odsCodes)
 
     expect(result).toEqual({
       prescribingOrganization: {ODSCode: "ABC"},
-      nominatedPerformer: null
+      nominatedPerformer: null,
+      dispensingOrganizations: [] // Expect an empty array if no matching dispensing organizations are found
     })
 
     // Verify that axios.get was called with a URL containing the correct filter.
-    const odsFilter = "ODSCode eq 'ABC' or ODSCode eq 'DEF'"
+    const odsFilter = "ODSCode eq 'ABC' or ODSCode eq 'DEF' or ODSCode eq 'XYZ' or ODSCode eq 'PQR'"
     expect(mockedAxios.get).toHaveBeenCalledWith(
       expect.stringContaining(`$filter=${odsFilter}`),
       {headers: {apikey: validApiKey}}

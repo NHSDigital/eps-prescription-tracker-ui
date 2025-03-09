@@ -36,9 +36,9 @@ export function buildApigeeHeaders(apigeeAccessToken: string, roleId: string): R
  * Extract ODS codes from the Apigee response.
  */
 export function extractOdsCodes(apigeeData: ApigeeDataResponse, logger: Logger): {
-  prescribingOrganization: string | undefined;
-  nominatedPerformer: string | undefined;
-  dispensingOrganization: string | undefined;
+  prescribingOrganization: string | undefined
+  nominatedPerformer: string | undefined
+  dispensingOrganizations: Array<string> | undefined // Fix: Change DispensingOrganization[] to string[]
 } {
   const prescribingOrganization = apigeeData?.author?.identifier?.value || undefined
 
@@ -49,19 +49,21 @@ export function extractOdsCodes(apigeeData: ApigeeDataResponse, logger: Logger):
       )
     )?.participant?.[0]?.identifier?.value || undefined
 
-  const dispensingOrganization = apigeeData?.action
-    ?.find((action: FhirAction) =>
-      action.participant?.some((participant: FhirParticipant) =>
-        participant.identifier?.system === "https://fhir.nhs.uk/Id/ods-organization-code"
-      )
-    )?.participant?.[0]?.identifier?.value || undefined
+  // Extract dispensing organizations' ODS codes
+  const dispensingOrganizations: Array<string> = apigeeData?.action
+    ?.flatMap((action: FhirAction) => action.action || []) // Flatten nested actions
+    ?.filter((nestedAction) =>
+      nestedAction.title === "Dispense notification successful" // Only select dispensing events
+    )
+    ?.map((dispenseAction: FhirAction) => dispenseAction.participant?.[0]?.identifier?.value || "")
+    ?.filter(odsCode => odsCode) || [] // Remove empty values
 
-  logger.info("Extracted ODS codes from Apigee", {prescribingOrganization, nominatedPerformer, dispensingOrganization})
+  logger.info("Extracted ODS codes from Apigee", {prescribingOrganization, nominatedPerformer, dispensingOrganizations})
 
   return {
     prescribingOrganization,
     nominatedPerformer,
-    dispensingOrganization
+    dispensingOrganizations: dispensingOrganizations.length ? dispensingOrganizations : undefined
   }
 }
 
@@ -70,61 +72,64 @@ export function extractOdsCodes(apigeeData: ApigeeDataResponse, logger: Logger):
  */
 export async function getDoHSData(
   odsCodes: {
-    prescribingOrganization: string | undefined;
-    nominatedPerformer: string | undefined;
-    dispensingOrganization: string | undefined
+    prescribingOrganization: string | undefined
+    nominatedPerformer: string | undefined
+    dispensingOrganizations: Array<string> | undefined
   },
   logger: Logger
 ): Promise<DoHSData> {
   let doHSData: DoHSData = {
     prescribingOrganization: null,
     nominatedPerformer: null,
-    dispensingOrganization: null
+    dispensingOrganizations: []
   }
 
   if (Object.values(odsCodes).some(Boolean)) {
     try {
-      const rawDoHSData = (await doHSClient(odsCodes)) as { value?: Array<DoHSValue> }
+      const rawDoHSData = (await doHSClient(odsCodes)) as {value?: Array<DoHSValue>}
       logger.info("Successfully fetched DoHS API data", {rawDoHSData})
 
       if (!Array.isArray(rawDoHSData.value) || rawDoHSData.value.length === 0) {
         logger.warn("No organization data found in DoHS response", {rawDoHSData})
       }
 
+      // Assign prescribing organization
       doHSData.prescribingOrganization = rawDoHSData?.value?.find(
         (org: DoHSValue) => org.ODSCode === odsCodes.prescribingOrganization
       ) || null
 
+      // Assign nominated performer
       doHSData.nominatedPerformer = rawDoHSData?.value?.find(
         (org: DoHSValue) => org.ODSCode === odsCodes.nominatedPerformer
       ) || null
 
-      doHSData.dispensingOrganization = rawDoHSData?.value?.find(
-        (org: DoHSValue) => org.ODSCode === odsCodes.dispensingOrganization
-      ) || null
+      // Assign multiple dispensing organizations
+      doHSData.dispensingOrganizations = rawDoHSData?.value?.filter(
+        (org: DoHSValue) => odsCodes.dispensingOrganizations?.includes(org.ODSCode)
+      ) || []
 
       // Log the results
-      const prescribingOrganization = doHSData.prescribingOrganization ?
-        doHSData.prescribingOrganization.OrganisationName :
-        "Not Found"
-      const nominatedPerformer = doHSData.nominatedPerformer ?
-        doHSData.nominatedPerformer.OrganisationName :
-        "Not Found"
-      const dispensingOrganization = doHSData.dispensingOrganization ?
-        doHSData.dispensingOrganization.OrganisationName :
-        "Not Found"
+      const prescribingOrganization = doHSData.prescribingOrganization
+        ? doHSData.prescribingOrganization.OrganisationName
+        : "Not Found"
+      const nominatedPerformer = doHSData.nominatedPerformer
+        ? doHSData.nominatedPerformer.OrganisationName
+        : "Not Found"
+      const dispensingOrganizations = doHSData.dispensingOrganizations.length
+        ? doHSData.dispensingOrganizations.map(org => org.OrganisationName)
+        : "Not Found"
 
       logger.info("Mapped DoHS organizations", {
         prescribingOrganization,
         nominatedPerformer,
-        dispensingOrganization
+        dispensingOrganizations
       })
     } catch (error) {
       logger.error("Failed to fetch DoHS API data", {error})
       doHSData = {
         prescribingOrganization: null,
         nominatedPerformer: null,
-        dispensingOrganization: null
+        dispensingOrganizations: []
       }
     }
   }
