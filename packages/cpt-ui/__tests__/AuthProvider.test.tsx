@@ -134,7 +134,8 @@ describe("AuthProvider", () => {
       return () => { }; // Mock unsubscribe function
     });
 
-
+    // This mocks the backend CIS2 logout call, which just deletes the 
+    // tokens from the Dynamo table.
     mockedAxios.get.mockResolvedValue({
       status: 200
     });

@@ -84,12 +84,6 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   rewrittenObjectBodyParameters = rewriteBodyToAddSignedJWT(
     logger, objectBodyParameters, idpTokenPath, jwtPrivateKey as PrivateKey, jwtKid)
 
-  // We add this to the CIS2 login request, c.f. https://nhsd-jira.digital.nhs.uk/browse/AEA-5051
-  const url = new URL(idpTokenPath)
-  url.searchParams.append("prompt", "login")
-  // The above didn't fix the bug - try a body parameter?
-  rewrittenObjectBodyParameters.prompt = "login"
-
   logger.debug("about to call downstream idp with rewritten body", {idpTokenPath, body: rewrittenObjectBodyParameters})
 
   const tokenResponse = await axiosInstance.post(idpTokenPath,
