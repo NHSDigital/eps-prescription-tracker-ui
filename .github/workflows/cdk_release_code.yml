@@ -56,6 +56,8 @@ on:
         type: string
       APIGEE_PRESCRIPTIONS_ENDPOINT:
         type: string
+      APIGEE_PDS_ENDPOINT:
+        type: string
       JWT_KID:
         type: string
       ROLE_ID:
@@ -178,7 +180,7 @@ jobs:
           --arg apigeeCIS2TokenEndpoint "${{ inputs.APIGEE_CIS2_TOKEN_ENDPOINT }}" \
           --arg apigeeMockTokenEndpoint "${{ inputs.APIGEE_MOCK_TOKEN_ENDPOINT }}" \
           --arg apigeePrescriptionsEndpoint "${{ inputs.APIGEE_PRESCRIPTIONS_ENDPOINT }}" \
-          --arg apigeePersonalDemographicsEndpoint "${{ inputs.APIGEE_PRESCRIPTIONS_ENDPOINT }}" \
+          --arg apigeePersonalDemographicsEndpoint "${{ inputs.APIGEE_PDS_ENDPOINT }}" \
           --arg apigeeApiKey "${{ secrets.APIGEE_API_KEY }}" \
           --arg jwtKid "${{ inputs.JWT_KID }}" \
           --arg roleId "${{ inputs.ROLE_ID }}" \
