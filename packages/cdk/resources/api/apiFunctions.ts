@@ -144,7 +144,7 @@ export class ApiFunctions extends Construct {
     apiFunctionsPolicies.push(selectedRoleLambda.executeLambdaManagedPolicy)
 
     // Prescription Search Lambda Function
-    const prescriptionListLambda = new LambdaFunction(this, "PrescriptionSearch", {
+    const prescriptionListLambda = new LambdaFunction(this, "PrescriptionList", {
       serviceName: props.serviceName,
       stackName: props.stackName,
       lambdaName: `${props.stackName}-prescList`,
@@ -157,7 +157,7 @@ export class ApiFunctions extends Construct {
       ],
       logRetentionInDays: props.logRetentionInDays,
       logLevel: props.logLevel,
-      packageBasePath: "packages/prescriptionSearchLambda",
+      packageBasePath: "packages/prescriptionListLambda",
       entryPoint: "src/handler.ts",
       lambdaEnvironmentVariables: {
         ...commonLambdaEnv,

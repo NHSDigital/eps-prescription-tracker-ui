@@ -28,7 +28,7 @@ lint-node: compile-node
 	npm run lint --workspace packages/cloudfrontFunctions
 	npm run lint --workspace packages/cdk
 	npm run lint --workspace packages/cognito
-	npm run lint --workspace packages/prescriptionSearchLambda
+	npm run lint --workspace packages/prescriptionListLambda
 	npm run lint --workspace packages/common/testing
 	npm run lint --workspace packages/common/middyErrorHandler
 	npm run lint --workspace packages/trackerUserInfoLambda
@@ -49,7 +49,7 @@ test: compile
 	npm run test --workspace packages/cdk
 	npm run test --workspace packages/cpt-ui
 	npm run test --workspace packages/cognito
-	npm run test --workspace packages/prescriptionSearchLambda
+	npm run test --workspace packages/prescriptionListLambda
 	npm run test --workspace packages/common/middyErrorHandler
 	npm run test --workspace packages/trackerUserInfoLambda
 	npm run test --workspace packages/selectedRoleLambda
@@ -63,8 +63,8 @@ clean:
 	rm -rf packages/cdk/lib
 	rm -rf packages/cognito/coverage
 	rm -rf packages/cognito/lib
-	rm -rf packages/prescriptionSearchLambda/coverage
-	rm -rf packages/prescriptionSearchLambda/lib
+	rm -rf packages/prescriptionListLambda/coverage
+	rm -rf packages/prescriptionListLambda/lib
 	rm -rf packages/common/middyErrorHandler/coverage
 	rm -rf packages/common/middyErrorHandler/lib
 	rm -rf cdk.out
@@ -92,7 +92,7 @@ check-licenses-node:
 	npm run check-licenses --workspace packages/cpt-ui
 	npm run check-licenses --workspace packages/common/authFunctions
 	npm run check-licenses --workspace packages/cognito
-	npm run check-licenses --workspace packages/prescriptionSearchLambda
+	npm run check-licenses --workspace packages/prescriptionListLambda
 	npm run check-licenses --workspace packages/trackerUserInfoLambda
 	npm run check-licenses --workspace packages/selectedRoleLambda
 	npm run check-licenses --workspace packages/CIS2SignOutLambda

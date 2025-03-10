@@ -29,8 +29,8 @@
         "path": "../packages/CIS2SignOutLambda"
       },
       {
-        "name": "packages/prescriptionSearchLambda",
-        "path": "../packages/prescriptionSearchLambda"
+        "name": "packages/prescriptionListLambda",
+        "path": "../packages/prescriptionListLambda"
       },
       {
         "name": "packages/common/middyErrorHandler",

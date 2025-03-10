@@ -1,5 +1,5 @@
 {
-  "name": "prescriptionSearchLambda",
+  "name": "prescriptionListLambda",
   "version": "1.0.0",
   "description": "Lambda for prescription search",
   "main": "handler.ts",
