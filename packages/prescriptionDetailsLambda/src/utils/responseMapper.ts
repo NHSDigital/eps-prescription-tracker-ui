@@ -113,7 +113,7 @@ export const mergePrescriptionDetails = (
     organisationODS: doHSData?.nominatedPerformer?.ODSCode || "Not found",
     newStatusCode: action?.code?.[0]?.coding?.[0]?.display || "Not found",
     dispenseNotification: (action?.action || []).map(dispense => ({
-      ID: dispense?.resource?.reference || "Not found",
+      ID: dispense?.resource?.reference?.replace(/^#/, "") || "Not found", // Remove "#" from ID
       medicationName: "Not found",
       quantity: "Not found",
       dosageInstruction: "Not found"
