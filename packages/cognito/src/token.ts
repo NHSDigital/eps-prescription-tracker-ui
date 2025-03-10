@@ -58,6 +58,8 @@ const idpTokenPath = useMock ?
   process.env["MOCK_IDP_TOKEN_PATH"] as string :
   process.env["CIS2_IDP_TOKEN_PATH"] as string
 
+const cloudfrontDomain = process.env["FULL_CLOUDFRONT_DOMAIN"] as string
+
 const dynamoClient = new DynamoDBClient()
 const documentClient = DynamoDBDocumentClient.from(dynamoClient)
 
@@ -83,6 +85,9 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   const jwtPrivateKey = await getSecret(jwtPrivateKeyArn)
   rewrittenObjectBodyParameters = rewriteBodyToAddSignedJWT(
     logger, objectBodyParameters, idpTokenPath, jwtPrivateKey as PrivateKey, jwtKid)
+
+  // Set the redirect back to our proxy lambda
+  rewrittenObjectBodyParameters["redirect_uri"] = `https://${cloudfrontDomain}/oauth2/callback`
 
   logger.debug("about to call downstream idp with rewritten body", {idpTokenPath, body: rewrittenObjectBodyParameters})
 
