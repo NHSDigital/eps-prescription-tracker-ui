@@ -10,6 +10,7 @@ import {NagSuppressions} from "cdk-nag"
 export interface CognitoFunctionsProps {
   readonly serviceName: string
   readonly stackName: string
+  readonly cloudfrontDomain: string
   readonly primaryOidcTokenEndpoint: string
   readonly primaryOidcUserInfoEndpoint: string
   readonly primaryOidcjwksEndpoint: string
@@ -69,6 +70,7 @@ export class CognitoFunctions extends Construct {
         jwtPrivateKeyArn: props.sharedSecrets.primaryJwtPrivateKey.secretArn,
         CIS2_OIDC_CLIENT_ID: props.primaryOidcClientId,
         CIS2_OIDC_ISSUER: props.primaryOidcIssuer,
+        FULL_CLOUDFRONT_DOMAIN: props.cloudfrontDomain,
         jwtKid: props.jwtKid,
         useMock: "false"
       }
@@ -123,6 +125,7 @@ export class CognitoFunctions extends Construct {
           jwtPrivateKeyArn: props.sharedSecrets.mockJwtPrivateKey!.secretArn,
           MOCK_OIDC_CLIENT_ID: props.mockOidcClientId,
           MOCK_OIDC_ISSUER: props.mockOidcIssuer,
+          FULL_CLOUDFRONT_DOMAIN: props.cloudfrontDomain,
           jwtKid: props.jwtKid,
           useMock: "true"
         }
