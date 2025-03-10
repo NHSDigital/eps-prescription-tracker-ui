@@ -2,11 +2,9 @@
   "name": "@cpt-ui-common/doHSClient",
   "version": "1.0.0",
   "description": "Client for interacting with NHS Digital's Directory of Healthcare Services (DoHS) API",
-  "main": "lib/src/doHSClient.js",
-  "types": "src/doHSClient.ts", 
-  "type": "module",
   "author": "NHS Digital",
   "license": "MIT",
+  "main": "lib/src/doHSClient.js",
   "scripts": {
     "unit": "POWERTOOLS_DEV=true NODE_OPTIONS=--experimental-vm-modules jest --no-cache --coverage",
     "lint": "eslint  --max-warnings 0 --fix --config ../../../eslint.config.mjs .",
