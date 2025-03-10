@@ -83,14 +83,8 @@ const errorResponseBody = {
 // Middleware error handler
 const middyErrorHandler = new MiddyErrorHandler(errorResponseBody)
 
-// TODO: elab session, currently we are unable to make requests to the personal demographics endpoint,
-// the reason, we think is job role we are assigning is not passing on the correct context to CIS2
-// we need to investigate what would be the correct value to pass from each environment as its
-// not the same as it is for eps by the looks of it OR what would be
-
 const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   logger.appendKeys({
-    // "x-correlation-id": event.headers?.["x-correlation-id"],
     "apigw-request-id": event.requestContext?.requestId
   })
 

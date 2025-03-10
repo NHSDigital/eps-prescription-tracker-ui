@@ -40,6 +40,7 @@ export const getPrescriptions = async (
           "nhsd-session-urid": roleId,
           "x-request-id": uuidv4(),
           "nhsd-session-jobrole": roleId,
+          "nhsd-identity-uuid": roleId,
           "nhsd-organization-uuid": "A83008"
         }
       }

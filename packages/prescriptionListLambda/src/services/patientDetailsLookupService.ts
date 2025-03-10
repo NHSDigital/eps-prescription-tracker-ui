@@ -19,17 +19,12 @@ export const getPdsPatientDetails = async (
 
   try {
     const response = await axiosInstance.get(
-      // `${pdsEndpoint}/personal-demographics/FHIR/R4/Patient/${nhsNumber}`,
       `${pdsEndpoint}/Patient/${nhsNumber}`,
       {
         headers: {
           Accept: "application/fhir+json",
           Authorization: `Bearer ${apigeeAccessToken}`,
           "NHSD-End-User-Organisation-ODS": "A83008",
-          // TODO: nhsd-session-urid will currently fail with the current roleId, we need to investigate what would be
-          // the correct value to pass from each environment as its not the same as it is for eps by the looks of it
-          // that being said this functionality was validated against the sandbox pds environment and
-          // nhs number 9000000009
           "NHSD-Session-URID": roleId,
           "X-Request-ID": uuidv4(),
           "X-Correlation-ID": uuidv4()
