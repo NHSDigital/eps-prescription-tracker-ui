@@ -15,7 +15,7 @@ import {PrivateKey} from "jsonwebtoken"
 import {verifyIdToken, initializeOidcConfig} from "@cpt-ui-common/authFunctions"
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 
-import {formatHeaders, rewriteBodyToAddSignedJWT} from "./helpers"
+import {formatHeaders, rewriteRequestBody} from "./helpers"
 
 /*
 This is the lambda code that is used to intercept calls to token endpoint as part of the cognito login flow
@@ -59,6 +59,8 @@ const idpTokenPath = useMock ?
   process.env["CIS2_IDP_TOKEN_PATH"] as string
 
 const cloudfrontDomain = process.env["FULL_CLOUDFRONT_DOMAIN"] as string
+// Set the redirect back to our proxy lambda
+const idpCallbackPath = `https://${cloudfrontDomain}/oauth2/callback`
 
 const dynamoClient = new DynamoDBClient()
 const documentClient = DynamoDBDocumentClient.from(dynamoClient)
@@ -83,11 +85,14 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   let rewrittenObjectBodyParameters: ParsedUrlQuery
 
   const jwtPrivateKey = await getSecret(jwtPrivateKeyArn)
-  rewrittenObjectBodyParameters = rewriteBodyToAddSignedJWT(
-    logger, objectBodyParameters, idpTokenPath, jwtPrivateKey as PrivateKey, jwtKid)
-
-  // Set the redirect back to our proxy lambda
-  rewrittenObjectBodyParameters["redirect_uri"] = `https://${cloudfrontDomain}/oauth2/callback`
+  rewrittenObjectBodyParameters = rewriteRequestBody(
+    logger,
+    objectBodyParameters,
+    idpTokenPath,
+    idpCallbackPath,
+    jwtPrivateKey as PrivateKey,
+    jwtKid
+  )
 
   logger.debug("about to call downstream idp with rewritten body", {idpTokenPath, body: rewrittenObjectBodyParameters})
 
