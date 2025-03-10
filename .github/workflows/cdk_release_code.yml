@@ -178,6 +178,7 @@ jobs:
           --arg apigeeCIS2TokenEndpoint "${{ inputs.APIGEE_CIS2_TOKEN_ENDPOINT }}" \
           --arg apigeeMockTokenEndpoint "${{ inputs.APIGEE_MOCK_TOKEN_ENDPOINT }}" \
           --arg apigeePrescriptionsEndpoint "${{ inputs.APIGEE_PRESCRIPTIONS_ENDPOINT }}" \
+          --arg apigeePersonalDemographicsEndpoint "${{ inputs.APIGEE_PRESCRIPTIONS_ENDPOINT }}" \
           --arg apigeeApiKey "${{ secrets.APIGEE_API_KEY }}" \
           --arg jwtKid "${{ inputs.JWT_KID }}" \
           --arg roleId "${{ inputs.ROLE_ID }}" \
@@ -213,6 +214,7 @@ jobs:
             "apigeeCIS2TokenEndpoint": $apigeeCIS2TokenEndpoint,
             "apigeeMockTokenEndpoint": $apigeeMockTokenEndpoint,
             "apigeePrescriptionsEndpoint": $apigeePrescriptionsEndpoint,
+            "apigeePersonalDemographicsEndpoint": $apigeePersonalDemographicsEndpoint,
             "apigeeApiKey": $apigeeApiKey,
             "jwtKid": $jwtKid,
             "roleId": $roleId

@@ -22,7 +22,7 @@ jest.mock("axios", () => ({
 
 describe("Prescriptions Lookup Service Tests", () => {
   const mockLogger = new Logger({serviceName: "test"})
-  const mockEndpoint = "http://test-endpoint"
+  const mockEndpoint = "http://test-endpoint/clinical-prescription-tracker"
   const mockAccessToken = "test-token"
   const mockRoleId = "test-role"
 
@@ -118,7 +118,7 @@ describe("Prescriptions Lookup Service Tests", () => {
 
       // Verify the API call
       expect(mockGet).toHaveBeenCalledWith(
-        `${mockEndpoint}/clinical-prescription-tracker-pr-808/RequestGroup?prescriptionId=${mockPrescriptionId}`,
+        `${mockEndpoint}/RequestGroup?prescriptionId=${mockPrescriptionId}`,
         expect.objectContaining({
           headers: expect.objectContaining({
             Authorization: `Bearer ${mockAccessToken}`,
@@ -195,7 +195,7 @@ describe("Prescriptions Lookup Service Tests", () => {
 
       // Verify the API call
       expect(mockGet).toHaveBeenCalledWith(
-        `${mockEndpoint}/clinical-prescription-tracker-pr-808/RequestGroup?nhsNumber=${mockNhsNumber}`,
+        `${mockEndpoint}/RequestGroup?nhsNumber=${mockNhsNumber}`,
         expect.objectContaining({
           headers: expect.objectContaining({
             Authorization: `Bearer ${mockAccessToken}`,

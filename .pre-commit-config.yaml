@@ -50,12 +50,12 @@ repos:
         types_or: [ts, tsx, javascript, jsx, json]
         pass_filenames: false
 
-      - id: lint-prescriptionSearchLambda
-        name: Lint prescriptionSearchLambda
+      - id: lint-prescriptionListLambda
+        name: Lint prescriptionListLambda
         entry: npm
-        args: ["run", "--prefix=packages/prescriptionSearchLambda", "lint"]
+        args: ["run", "--prefix=packages/prescriptionListLambda", "lint"]
         language: system
-        files: ^packages\/prescriptionSearchLambda
+        files: ^packages\/prescriptionListLambda
         types_or: [ts, tsx, javascript, jsx, json]
         pass_filenames: false
 

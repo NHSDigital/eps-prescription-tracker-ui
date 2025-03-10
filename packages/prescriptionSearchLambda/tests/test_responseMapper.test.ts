@@ -76,39 +76,10 @@ describe("Response Mapper Tests", () => {
     gender: "male",
     birthDate: "1990-01-01",
     address: [{
-      line: ["123 Test Street", "Apt 4B"],
-      city: "London",
+      line: ["123 Test Street", "Apt 4B", "", "London"],
       postalCode: "SW1A 1AA"
     }]
   }
-
-  // const mockBundleWithPatient: Bundle = {
-  //   resourceType: "Bundle",
-  //   type: "searchset",
-  //   entry: [
-  //     {
-  //       fullUrl: "urn:uuid:PATIENT-123-567-890",
-  //       search: {
-  //         mode: "include"
-  //       },
-  //       resource: {
-  //         resourceType: "Patient",
-  //         identifier: [{
-  //           system: "https://fhir.nhs.uk/Id/nhs-number",
-  //           value: "9876543210"
-  //         }],
-  //         name: [{
-  //           prefix: ["Dr"],
-  //           suffix: ["PhD"],
-  //           given: ["Jane"],
-  //           family: "Smith"
-  //         }]
-  //       }
-  //     } satisfies BundleEntry<Patient>,
-  //     // Include the existing RequestGroup entry
-  //     mockBundle.entry![0]
-  //   ]
-  // }
 
   describe("mapPdsResponseToPatientDetails", () => {
     it("should correctly map PDS response to PatientDetails", () => {
