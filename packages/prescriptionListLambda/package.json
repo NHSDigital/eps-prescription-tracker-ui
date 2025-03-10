@@ -1,7 +1,7 @@
 {
   "name": "prescriptionListLambda",
   "version": "1.0.0",
-  "description": "Lambda for prescription search",
+  "description": "Lambda for listing prescriptions by NHS number or Prescription ID",
   "main": "handler.ts",
   "author": "NHS Digital",
   "license": "MIT",

@@ -143,7 +143,7 @@ export class ApiFunctions extends Construct {
     // Add the policy to apiFunctionsPolicies
     apiFunctionsPolicies.push(selectedRoleLambda.executeLambdaManagedPolicy)
 
-    // Prescription Search Lambda Function
+    // Prescription List Lambda Function
     const prescriptionListLambda = new LambdaFunction(this, "PrescriptionList", {
       serviceName: props.serviceName,
       stackName: props.stackName,
@@ -180,7 +180,7 @@ export class ApiFunctions extends Construct {
     //   prescriptionListLambda.executeLambdaManagedPolicy
     // ]
 
-    // Suppress the AwsSolutions-L1 rule for the prescription search Lambda function
+    // Suppress the AwsSolutions-L1 rule for the prescription list Lambda function
     NagSuppressions.addResourceSuppressions(prescriptionListLambda.lambda, [
       {
         id: "AwsSolutions-L1",

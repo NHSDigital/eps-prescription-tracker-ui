@@ -165,7 +165,7 @@ export const nagSuppressions = (stack: Stack) => {
 
     safeAddNagSuppression(
       stack,
-      "/StatelessStack/ApiFunctions/PrescriptionSearch/LambdaPutLogsManagedPolicy/Resource",
+      "/StatelessStack/ApiFunctions/PrescriptionList/LambdaPutLogsManagedPolicy/Resource",
       [
         {
           id: "AwsSolutions-IAM5",
