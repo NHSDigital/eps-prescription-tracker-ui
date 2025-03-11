@@ -26,7 +26,6 @@ export class SharedSecrets extends Construct {
   public readonly useJwtKmsKeyPolicy: ManagedPolicy
   public readonly getPrimaryJwtPrivateKeyPolicy: ManagedPolicy
   public readonly getMockJwtPrivateKeyPolicy: ManagedPolicy
-  public readonly getRandomPasswordPolicy: ManagedPolicy
 
   constructor(scope: Construct, id: string, props: SharedSecretsProps) {
     super(scope, id)
@@ -66,17 +65,6 @@ export class SharedSecrets extends Construct {
           actions: ["kms:DescribeKey", "kms:Decrypt"],
           effect: Effect.ALLOW,
           resources: [this.jwtKmsKey.keyArn]
-        })
-      ]
-    })
-
-    this.getRandomPasswordPolicy = new ManagedPolicy(this, "GetRandomPasswordPolicy", {
-      description: "Policy to allow the login proxy lambdas to generate their random data",
-      statements: [
-        new PolicyStatement({
-          effect: Effect.ALLOW,
-          actions: ["secretsmanager:GetRandomPassword"],
-          resources: ["*"]
         })
       ]
     })

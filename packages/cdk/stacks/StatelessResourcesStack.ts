@@ -209,7 +209,6 @@ export class StatelessResourcesStack extends Stack {
       useStateMappingKmsKeyPolicy,
       logRetentionInDays,
       logLevel,
-      sharedSecrets,
       jwtKid
     })
 

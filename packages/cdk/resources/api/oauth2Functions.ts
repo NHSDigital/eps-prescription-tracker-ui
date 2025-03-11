@@ -3,7 +3,6 @@ import {LambdaFunction} from "../LambdaFunction"
 import {ITableV2} from "aws-cdk-lib/aws-dynamodb"
 import {IManagedPolicy} from "aws-cdk-lib/aws-iam"
 import {NodejsFunction} from "aws-cdk-lib/aws-lambda-nodejs"
-import {SharedSecrets} from "../SharedSecrets"
 
 export interface OAuth2FunctionsProps {
   readonly serviceName: string
@@ -24,7 +23,6 @@ export interface OAuth2FunctionsProps {
   readonly useStateMappingKmsKeyPolicy: IManagedPolicy
   readonly logRetentionInDays: number
   readonly logLevel: string
-  readonly sharedSecrets: SharedSecrets
   readonly jwtKid: string
 }
 
@@ -65,8 +63,7 @@ export class OAuth2Functions extends Construct {
       additionalPolicies: [
         props.stateMappingTableWritePolicy,
         props.stateMappingTableReadPolicy,
-        props.useStateMappingKmsKeyPolicy,
-        props.sharedSecrets.getRandomPasswordPolicy
+        props.useStateMappingKmsKeyPolicy
       ],
       logRetentionInDays: props.logRetentionInDays,
       logLevel: props.logLevel,
@@ -134,8 +131,7 @@ export class OAuth2Functions extends Construct {
         additionalPolicies: [
           props.stateMappingTableWritePolicy,
           props.stateMappingTableReadPolicy,
-          props.useStateMappingKmsKeyPolicy,
-          props.sharedSecrets.getRandomPasswordPolicy
+          props.useStateMappingKmsKeyPolicy
         ],
         logRetentionInDays: props.logRetentionInDays,
         logLevel: props.logLevel,

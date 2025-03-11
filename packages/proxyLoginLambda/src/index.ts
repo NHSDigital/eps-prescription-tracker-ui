@@ -5,8 +5,6 @@ import {injectLambdaContext} from "@aws-lambda-powertools/logger/middleware"
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
 import {DynamoDBDocumentClient, PutCommand} from "@aws-sdk/lib-dynamodb"
 
-import {GetRandomPasswordCommand, SecretsManagerClient} from "@aws-sdk/client-secrets-manager"
-
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 
 import middy from "@middy/core"
@@ -42,13 +40,10 @@ const documentClient = DynamoDBDocumentClient.from(dynamoClient)
 
 type StateItem = {
   State: string;
-  CodeVerifier: string;
   CognitoState: string;
   Ttl: number;
   UseMock: boolean;
 };
-
-const secretsManagerClient = new SecretsManagerClient()
 
 const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   logger.appendKeys({
@@ -103,22 +98,6 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   // Set the redirection URL header, to return to our proxy callback
   const callbackUri = `https://${cloudfrontDomain}/oauth2/callback`
 
-  // Generate CodeVerifier
-  // TODO: This may not be necessary for us. Example code makes it, but docs don't seem to apply
-  // to our use case
-  // https://docs.aws.amazon.com/cognito/latest/developerguide/using-pkce-in-authorization-code.html
-  const randIdCommand = new GetRandomPasswordCommand({
-    PasswordLength: 64,
-    ExcludePunctuation: true,
-    IncludeSpace: false
-  })
-  const randId = await secretsManagerClient.send(randIdCommand)
-  const codeVerifier = randId.RandomPassword
-
-  if (!codeVerifier) {
-    throw new Error("Failed to generate the code verifier")
-  }
-
   // ********************************* //
   // CACHE INCOMING COGNITO DATA
   // ********************************* //
@@ -126,7 +105,6 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   // This data will be retrieved by the `state` value
   const Item: StateItem = {
     State: cis2State,
-    CodeVerifier: codeVerifier,
     CognitoState: queryStringParameters.state as string,
     Ttl: stateTtl,
     UseMock: useMock === "true"
