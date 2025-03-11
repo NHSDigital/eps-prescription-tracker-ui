@@ -284,7 +284,8 @@ export class StatelessResourcesStack extends Stack {
       authorizer: apiGateway.authorizer
     })
 
-    new OAuth2ApiGatewayMethods(this, "OAuth2ApiGatewayMethods", {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const oauth2Methods = new OAuth2ApiGatewayMethods(this, "OAuth2ApiGatewayMethods", {
       executePolices: [
         ...cognitoFunctions.cognitoPolicies,
         ...oauth2Functions.oAuth2Policies
