@@ -167,7 +167,7 @@ export class Dynamodb extends Construct {
               "kms:*"
             ],
             principals: [
-              new AccountRootPrincipal
+              new AccountRootPrincipal //NOSONAR: Access is controlled via ARN condition.
             ],
             resources: ["*"]
           }),
