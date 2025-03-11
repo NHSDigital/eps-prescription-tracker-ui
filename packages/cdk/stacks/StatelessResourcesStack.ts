@@ -201,7 +201,8 @@ export class StatelessResourcesStack extends Stack {
 
       logRetentionInDays,
       logLevel,
-      jwtKid
+      jwtKid,
+      apigeeApiKey
     })
 
     // -- functions for API

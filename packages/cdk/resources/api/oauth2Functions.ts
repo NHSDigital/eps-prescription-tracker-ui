@@ -47,6 +47,7 @@ export interface OAuth2FunctionsProps {
   readonly logRetentionInDays: number
   readonly logLevel: string
   readonly jwtKid: string
+  readonly apigeeApiKey: string
 }
 
 /**
@@ -130,7 +131,8 @@ export class OAuth2Functions extends Construct {
         OIDC_CLIENT_ID: props.primaryOidcClientId,
         COGNITO_CLIENT_ID: props.userPoolClientId,
         FULL_CLOUDFRONT_DOMAIN: props.fullCloudfrontDomain,
-        StateMappingTableName: props.stateMappingTable.tableName
+        StateMappingTableName: props.stateMappingTable.tableName,
+        APIGEE_API_KEY: props.apigeeApiKey
       }
     })
 
@@ -196,7 +198,8 @@ export class OAuth2Functions extends Construct {
           OIDC_CLIENT_ID: mockOidcClientId,
           COGNITO_CLIENT_ID: props.userPoolClientId,
           FULL_CLOUDFRONT_DOMAIN: props.fullCloudfrontDomain,
-          StateMappingTableName: props.stateMappingTable.tableName
+          StateMappingTableName: props.stateMappingTable.tableName,
+          APIGEE_API_KEY: props.apigeeApiKey
         }
       })
 

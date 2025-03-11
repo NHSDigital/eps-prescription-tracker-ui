@@ -11,6 +11,7 @@ import middy from "@middy/core"
 import inputOutputLogger from "@middy/input-output-logger"
 
 import {createHash} from "crypto"
+import {redirect} from "next/dist/server/api-utils"
 
 // Environment variables
 const authorizeEndpoint = process.env["IDP_AUTHORIZE_PATH"] as string
@@ -19,6 +20,7 @@ const useMock = process.env["useMock"] as string
 const userPoolClientId = process.env["COGNITO_CLIENT_ID"] as string
 const cloudfrontDomain = process.env["FULL_CLOUDFRONT_DOMAIN"] as string
 const tableName = process.env["StateMappingTableName"] as string
+const apigeeApiKey = process.env["APIGEE_API_KEY"] as string
 
 const logger = new Logger({serviceName: "authorize"})
 const errorResponseBody = {message: "A system error has occurred"}
@@ -89,17 +91,27 @@ const lambdaHandler = async (
   )
 
   // Build the redirect parameters for CIS2
-  const responseParameters = {
-    response_type: queryParams.response_type as string,
-    scope: queryParams.scope as string,
-    client_id: cis2ClientId,
-    state: cis2State,
-    redirect_uri: callbackUri,
-    prompt: "login"
-  }
+  // const responseParameters = {
+  //   response_type: queryParams.response_type as string,
+  //   scope: queryParams.scope as string,
+  //   client_id: cis2ClientId,
+  //   state: cis2State,
+  //   redirect_uri: callbackUri,
+  //   prompt: "login"
+  // }
 
   // This is the CIS2 URL we are pointing the client towards
-  const redirectPath = `${authorizeEndpoint}?${new URLSearchParams(responseParameters)}`
+  //const redirectPath = `${authorizeEndpoint}?${new URLSearchParams(responseParameters)}`
+
+  // need to set the redirect path to apigee
+  const responseParameters = {
+    client_id: apigeeApiKey,
+    redirect_uri: callbackUri,
+    response_type: "code",
+    state: cis2State
+  }
+  // eslint-disable-next-line max-len
+  const redirectPath = `https://internal-dev.api.service.nhs.uk/oauth2-mock/authorize?${new URLSearchParams(responseParameters)}`
 
   return {
     statusCode: 302,
