@@ -5,6 +5,8 @@ id-token: write
 accountId: "123456789012"
 token: `https:\/\/\${props\.fullCloudfrontDomain}\/oauth2\/token`,
 token: `https:\/\/\${props\.fullCloudfrontDomain}\/oauth2\/mocktoken`,
+token: `https:\/\/\${props\.fullCloudfrontDomain}\/api\/token`,
+token: `https:\/\/\${props\.fullCloudfrontDomain}\/api\/mocktoken`,
 target: RecordTarget.fromIpAddresses\("127.0.0.1"\),
 const token = jwks.token\({
 .SAMtemplates*
