@@ -11,8 +11,7 @@ export interface OAuth2ApiGatewayMethodsProps {
   readonly mockTokenLambda: NodejsFunction
   readonly authorizeLambda: NodejsFunction
   readonly mockAuthorizeLambda: NodejsFunction
-  readonly idpResponseLambda: NodejsFunction
-  readonly pingResponseLambda: NodejsFunction
+  readonly callbackLambda: NodejsFunction
   readonly useMockOidc: boolean
 }
 
@@ -59,14 +58,8 @@ export class OAuth2ApiGatewayMethods extends Construct {
     }
 
     // Return journey login callback.
-    const idpResponseResource = props.oauth2ApiGateway.root.addResource("callback")
-    idpResponseResource.addMethod("GET", new LambdaIntegration(props.idpResponseLambda, {
-      credentialsRole: props.oauth2APiGatewayRole
-    }))
-
-    // Ping endpoint
-    const pingResponseResource = props.oauth2ApiGateway.root.addResource("ping")
-    pingResponseResource.addMethod("GET", new LambdaIntegration(props.pingResponseLambda, {
+    const callbackResource = props.oauth2ApiGateway.root.addResource("callback")
+    callbackResource.addMethod("GET", new LambdaIntegration(props.callbackLambda, {
       credentialsRole: props.oauth2APiGatewayRole
     }))
 

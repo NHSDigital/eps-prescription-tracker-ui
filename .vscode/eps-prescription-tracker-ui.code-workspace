@@ -25,14 +25,6 @@
         "path": "../packages/cognito"
       },
       {
-        "name": "packages/proxyLoginLambda",
-        "path": "../packages/proxyLoginLambda"
-      },
-      {
-        "name": "packages/proxyIdpResponseLambda",
-        "path": "../packages/proxyIdpResponseLambda"
-      },
-      {
         "name": "packages/prescriptionSearchLambda",
         "path": "../packages/prescriptionSearchLambda"
       },
@@ -43,10 +35,6 @@
       {
         "name": "packages/common/testing",
         "path": "../packages/common/testing"
-      },
-      {
-        "name": "packages/pingLambda",
-        "path": "../packages/pingLambda"
       },
       {
         "name": "packages/common/authFunctions",

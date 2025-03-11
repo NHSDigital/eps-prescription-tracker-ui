@@ -25,7 +25,6 @@ import {nagSuppressions} from "../nagSuppressions"
 import {TableV2} from "aws-cdk-lib/aws-dynamodb"
 import {ManagedPolicy, Role} from "aws-cdk-lib/aws-iam"
 import {SharedSecrets} from "../resources/SharedSecrets"
-import {CognitoFunctions} from "../resources/CognitoFunctions"
 import {OAuth2Functions} from "../resources/api/oauth2Functions"
 import {ApiFunctions} from "../resources/api/apiFunctions"
 import {UserPool} from "aws-cdk-lib/aws-cognito"
@@ -161,52 +160,45 @@ export class StatelessResourcesStack extends Stack {
       useMockOidc: useMockOidc
     })
 
-    // -- functions for cognito
-    const cognitoFunctions = new CognitoFunctions(this, "CognitoFunctions", {
-      serviceName: props.serviceName,
-      stackName: props.stackName,
-      cloudfrontDomain: fullCloudfrontDomain,
-      primaryOidcTokenEndpoint: primaryOidcTokenEndpoint,
-      primaryOidcUserInfoEndpoint: primaryOidcUserInfoEndpoint,
-      primaryOidcjwksEndpoint: primaryOidcjwksEndpoint,
-      primaryOidcClientId: primaryOidcClientId,
-      primaryOidcIssuer: primaryOidcIssuer,
-      useMockOidc: useMockOidc,
-      mockOidcTokenEndpoint: mockOidcTokenEndpoint,
-      mockOidcUserInfoEndpoint: mockOidcUserInfoEndpoint,
-      mockOidcjwksEndpoint: mockOidcjwksEndpoint,
-      mockOidcClientId: mockOidcClientId,
-      mockOidcIssuer: mockOidcIssuer,
-      tokenMappingTable: tokenMappingTable,
-      tokenMappingTableWritePolicy: tokenMappingTableWritePolicy,
-      tokenMappingTableReadPolicy: tokenMappingTableReadPolicy,
-      useTokensMappingKmsKeyPolicy: useTokensMappingKmsKeyPolicy,
-      primaryPoolIdentityProviderName: primaryPoolIdentityProviderName,
-      mockPoolIdentityProviderName: mockPoolIdentityProviderName,
-      logRetentionInDays: logRetentionInDays,
-      logLevel: logLevel,
-      sharedSecrets: sharedSecrets,
-      jwtKid: jwtKid
-    })
-
     // Functions for the login OAuth2 proxy lambdas
     const oauth2Functions = new OAuth2Functions(this, "OAuth2Functions", {
       serviceName: props.serviceName,
       stackName: props.stackName,
-      fullCloudfrontDomain,
       fullCognitoDomain,
+
+      fullCloudfrontDomain,
       userPoolClientId,
+      primaryPoolIdentityProviderName,
+      mockPoolIdentityProviderName,
+
+      primaryOidcTokenEndpoint,
+      primaryOidcUserInfoEndpoint,
+      primaryOidcjwksEndpoint,
+      primaryOidcClientId,
       primaryOidcIssuer,
       primaryOidcAuthorizeEndpoint,
-      primaryOidcClientId,
+
       useMockOidc,
+
+      mockOidcTokenEndpoint,
+      mockOidcUserInfoEndpoint,
+      mockOidcjwksEndpoint,
+      mockOidcClientId,
       mockOidcIssuer,
       mockOidcAuthorizeEndpoint,
-      mockOidcClientId,
+
+      tokenMappingTable,
+      tokenMappingTableWritePolicy,
+      tokenMappingTableReadPolicy,
+      useTokensMappingKmsKeyPolicy,
+
       stateMappingTable,
       stateMappingTableWritePolicy,
       stateMappingTableReadPolicy,
       useStateMappingKmsKeyPolicy,
+
+      sharedSecrets,
+
       logRetentionInDays,
       logLevel,
       jwtKid
@@ -271,7 +263,6 @@ export class StatelessResourcesStack extends Stack {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const apiMethods = new RestApiGatewayMethods(this, "RestApiGatewayMethods", {
       executePolices: [
-        ...cognitoFunctions.cognitoPolicies,
         ...apiFunctions.apiFunctionsPolicies
       ],
       restAPiGatewayRole: apiGateway.apiGatewayRole,
@@ -285,17 +276,15 @@ export class StatelessResourcesStack extends Stack {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const oauth2Methods = new OAuth2ApiGatewayMethods(this, "OAuth2ApiGatewayMethods", {
       executePolices: [
-        ...cognitoFunctions.cognitoPolicies,
         ...oauth2Functions.oAuth2Policies
       ],
-      tokenLambda: cognitoFunctions.tokenLambda,
-      mockTokenLambda: cognitoFunctions.mockTokenLambda,
       oauth2APiGatewayRole: oauth2Gateway.apiGatewayRole,
       oauth2ApiGateway: oauth2Gateway.apiGateway,
+      tokenLambda: oauth2Functions.tokenLambda,
+      mockTokenLambda: oauth2Functions.mockTokenLambda,
       authorizeLambda: oauth2Functions.authorizeLambda,
       mockAuthorizeLambda: oauth2Functions.mockAuthorizeLambda,
-      idpResponseLambda: oauth2Functions.idpResponseLambda,
-      pingResponseLambda: oauth2Functions.pingResponseLambda,
+      callbackLambda: oauth2Functions.callbackLambda,
       useMockOidc: useMockOidc
     })
 

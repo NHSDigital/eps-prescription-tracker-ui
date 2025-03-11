@@ -100,7 +100,6 @@ export const nagSuppressions = (stack: Stack) => {
     safeAddNagSuppressionGroup(
       stack,
       [
-        "/StatelessStack/OAuth2Gateway/ApiGateway/Default/ping/GET/Resource",
         "/StatelessStack/OAuth2Gateway/ApiGateway/Default/authorize/GET/Resource",
         "/StatelessStack/OAuth2Gateway/ApiGateway/Default/mock-authorize/GET/Resource",
         "/StatelessStack/OAuth2Gateway/ApiGateway/Default/callback/GET/Resource",
@@ -122,14 +121,13 @@ export const nagSuppressions = (stack: Stack) => {
     safeAddNagSuppressionGroup(
       stack,
       [
-        "/StatelessStack/OAuth2Functions/OAuth2PingLambdaResources/LambdaPutLogsManagedPolicy/Resource",
         "/StatelessStack/ApiFunctions/TrackerUserInfo/LambdaPutLogsManagedPolicy/Resource",
         "/StatelessStack/ApiFunctions/MockTrackerUserInfo/LambdaPutLogsManagedPolicy/Resource",
         "/StatelessStack/ApiFunctions/SelectedRole/LambdaPutLogsManagedPolicy/Resource",
-        "/StatelessStack/CognitoFunctions/TokenResources/LambdaPutLogsManagedPolicy/Resource",
-        "/StatelessStack/CognitoFunctions/MockTokenResources/LambdaPutLogsManagedPolicy/Resource",
+        "/StatelessStack/OAuth2Functions/TokenResources/LambdaPutLogsManagedPolicy/Resource",
+        "/StatelessStack/OAuth2Functions/MockTokenResources/LambdaPutLogsManagedPolicy/Resource",
         "/StatelessStack/OAuth2Functions/AuthorizeLambdaResources/LambdaPutLogsManagedPolicy/Resource",
-        "/StatelessStack/OAuth2Functions/IDPResponseLambdaResources/LambdaPutLogsManagedPolicy/Resource",
+        "/StatelessStack/OAuth2Functions/CallbackLambdaResources/LambdaPutLogsManagedPolicy/Resource",
         "/StatelessStack/OAuth2Functions/MockAuthorizeLambdaResources/LambdaPutLogsManagedPolicy/Resource",
         "/StatelessStack/OAuth2Functions/MockIDPResponseLambdaResources/LambdaPutLogsManagedPolicy/Resource"
       ],
@@ -143,7 +141,7 @@ export const nagSuppressions = (stack: Stack) => {
 
     safeAddNagSuppression(
       stack,
-      "/StatelessStack/CognitoFunctions/MockTokenResources/LambdaPutLogsManagedPolicy/Resource",
+      "/StatelessStack/OAuth2Functions/MockTokenResources/LambdaPutLogsManagedPolicy/Resource",
       [
         {
           id: "AwsSolutions-IAM5",

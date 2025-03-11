@@ -24,7 +24,7 @@ jest.unstable_mockModule("@aws-sdk/lib-dynamodb", () => {
 
 // Import the handler after setting env variables and mocks.
 import {mockAPIGatewayProxyEvent, mockContext} from "./mockObjects"
-const {handler} = await import("../src/index")
+const {handler} = await import("../src/callback")
 
 describe("IDP Response Lambda Handler", () => {
   beforeEach(() => {
