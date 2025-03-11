@@ -268,7 +268,8 @@ export class StatelessResourcesStack extends Stack {
     })
 
     // --- Methods & Resources
-    new RestApiGatewayMethods(this, "RestApiGatewayMethods", {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const apiMethods = new RestApiGatewayMethods(this, "RestApiGatewayMethods", {
       executePolices: [
         ...cognitoFunctions.cognitoPolicies,
         ...apiFunctions.apiFunctionsPolicies
@@ -278,7 +279,6 @@ export class StatelessResourcesStack extends Stack {
       prescriptionSearchLambda: apiFunctions.prescriptionSearchLambda,
       trackerUserInfoLambda: apiFunctions.trackerUserInfoLambda,
       selectedRoleLambda: apiFunctions.selectedRoleLambda,
-      useMockOidc: useMockOidc,
       authorizer: apiGateway.authorizer
     })
 

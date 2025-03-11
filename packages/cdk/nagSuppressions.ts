@@ -105,24 +105,8 @@ export const nagSuppressions = (stack: Stack) => {
         "/StatelessStack/OAuth2Gateway/ApiGateway/Default/mock-authorize/GET/Resource",
         "/StatelessStack/OAuth2Gateway/ApiGateway/Default/callback/GET/Resource",
         "/StatelessStack/OAuth2Gateway/ApiGateway/Default/token/POST/Resource",
-        "/StatelessStack/OAuth2Gateway/ApiGateway/Default/mocktoken/POST/Resource",
-        "/StatelessStack/ApiGateway/ApiGateway/Default/mocknoauth/GET/Resource"
+        "/StatelessStack/OAuth2Gateway/ApiGateway/Default/mocktoken/POST/Resource"
       ],
-      [
-        {
-          id: "AwsSolutions-APIG4",
-          reason: "Suppress error for not implementing authorization. Token endpoint should not have an authorizer"
-        },
-        {
-          id: "AwsSolutions-COG4",
-          reason: "Suppress error for not implementing a Cognito user pool authorizer. Token endpoint should not have an authorizer"
-        }
-      ]
-    )
-
-    safeAddNagSuppression(
-      stack,
-      "/StatelessStack/ApiGateway/ApiGateway/Default/mocknoauth/GET/Resource",
       [
         {
           id: "AwsSolutions-APIG4",
@@ -175,21 +159,6 @@ export const nagSuppressions = (stack: Stack) => {
         {
           id: "AwsSolutions-IAM5",
           reason: "Suppress error for not having wildcards in permissions. This is a fine as we need to have permissions on all log streams under path"
-        }
-      ]
-    )
-
-    safeAddNagSuppression(
-      stack,
-      "/StatelessStack/ApiGateway/ApiGateway/Default/mocknoauth/GET/Resource",
-      [
-        {
-          id: "AwsSolutions-APIG4",
-          reason: "Suppress error for not implementing authorization. Token endpoint should not have an authorizer"
-        },
-        {
-          id: "AwsSolutions-COG4",
-          reason: "Suppress error for not implementing a Cognito user pool authorizer. Token endpoint should not have an authorizer"
         }
       ]
     )

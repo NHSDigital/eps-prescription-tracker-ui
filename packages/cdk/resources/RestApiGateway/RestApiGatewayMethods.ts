@@ -3,8 +3,6 @@ import {
   AuthorizationType,
   CognitoUserPoolsAuthorizer,
   LambdaIntegration,
-  MockIntegration,
-  PassthroughBehavior,
   RestApi
 } from "aws-cdk-lib/aws-apigateway"
 import {Construct} from "constructs"
@@ -17,7 +15,6 @@ export interface RestApiGatewayMethodsProps {
   readonly prescriptionSearchLambda: NodejsFunction
   readonly trackerUserInfoLambda: NodejsFunction
   readonly selectedRoleLambda: NodejsFunction
-  readonly useMockOidc: boolean
   readonly authorizer?: CognitoUserPoolsAuthorizer
 }
 
@@ -64,60 +61,6 @@ export class RestApiGatewayMethods extends Construct {
     selectedRoleLambdaResource.addMethod("PUT", new LambdaIntegration(props.selectedRoleLambda, {
       credentialsRole: props.restAPiGatewayRole
     }), {
-      authorizationType: AuthorizationType.COGNITO,
-      authorizer: props.authorizer
-    })
-
-    /* Dummy Method/Resource to test cognito auth */
-
-    const mockNoAuth = new MockIntegration({
-      passthroughBehavior: PassthroughBehavior.WHEN_NO_TEMPLATES,
-      requestTemplates: {
-        "application/json": JSON.stringify({
-          statusCode: 200
-        })
-      },
-      integrationResponses: [
-        {
-          statusCode: "200",
-          responseTemplates: {
-            "application/json": JSON.stringify({
-              message: "This does not require auth"
-            })
-          }
-        }
-      ]
-    })
-    const mockTeapotResource = props.restApiGateway.root.addResource("mocknoauth")
-    mockTeapotResource.addMethod("GET", mockNoAuth, {
-      methodResponses: [
-        {statusCode: "200"}
-      ]
-    })
-
-    const mockWithAuth = new MockIntegration({
-      passthroughBehavior: PassthroughBehavior.WHEN_NO_TEMPLATES,
-      requestTemplates: {
-        "application/json": JSON.stringify({
-          statusCode: 200
-        })
-      },
-      integrationResponses: [
-        {
-          statusCode: "200",
-          responseTemplates: {
-            "application/json": JSON.stringify({
-              message: "This does require auth"
-            })
-          }
-        }
-      ]
-    })
-    const mockAuthResource = props.restApiGateway.root.addResource("mockwithauth")
-    mockAuthResource.addMethod("GET", mockWithAuth, {
-      methodResponses: [
-        {statusCode: "200"}
-      ],
       authorizationType: AuthorizationType.COGNITO,
       authorizer: props.authorizer
     })
