@@ -7,6 +7,8 @@ export interface OAuth2ApiGatewayMethodsProps {
   readonly executePolices: Array<IManagedPolicy>
   readonly oauth2APiGatewayRole: IRole
   readonly oauth2ApiGateway: RestApi
+  readonly tokenLambda: NodejsFunction
+  readonly mockTokenLambda: NodejsFunction
   readonly authorizeLambda: NodejsFunction
   readonly mockAuthorizeLambda: NodejsFunction
   readonly idpResponseLambda: NodejsFunction
@@ -27,6 +29,19 @@ export class OAuth2ApiGatewayMethods extends Construct {
     // Resources
     for (const policy of props.executePolices) {
       props.oauth2APiGatewayRole.addManagedPolicy(policy)
+    }
+
+    const tokenResource = props.oauth2ApiGateway.root.addResource("token")
+    tokenResource.addMethod("POST", new LambdaIntegration(props.tokenLambda, {
+      credentialsRole: props.oauth2APiGatewayRole
+    }))
+
+    // mock token endpoint
+    if (props.useMockOidc) {
+      const mockTokenResource = props.oauth2ApiGateway.root.addResource("mocktoken")
+      mockTokenResource.addMethod("POST", new LambdaIntegration(props.mockTokenLambda, {
+        credentialsRole: props.oauth2APiGatewayRole
+      }))
     }
 
     // Authorize redirection endpoint

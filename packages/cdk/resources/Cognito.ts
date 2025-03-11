@@ -98,7 +98,7 @@ export class Cognito extends Construct {
     const oidcEndpoints: OidcEndpoints = {
       authorization: `https://${props.fullCloudfrontDomain}/oauth2/authorize`,
       jwksUri: props.primaryOidcjwksEndpoint,
-      token: `https://${props.fullCloudfrontDomain}/api/token`,
+      token: `https://${props.fullCloudfrontDomain}/oauth2/token`,
       userInfo: props.primaryOidcUserInfoEndpoint
     }
 
@@ -140,7 +140,7 @@ export class Cognito extends Construct {
       const mockOidcEndpoints: OidcEndpoints = {
         authorization: `https://${props.fullCloudfrontDomain}/oauth2/mock-authorize`,
         jwksUri: props.mockOidcjwksEndpoint,
-        token: `https://${props.fullCloudfrontDomain}/api/mocktoken`,
+        token: `https://${props.fullCloudfrontDomain}/oauth2/mocktoken`,
         userInfo: props.mockOidcUserInfoEndpoint
       }
 

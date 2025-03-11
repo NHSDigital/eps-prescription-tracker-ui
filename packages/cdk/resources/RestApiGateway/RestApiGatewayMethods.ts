@@ -14,8 +14,6 @@ export interface RestApiGatewayMethodsProps {
   readonly executePolices: Array<IManagedPolicy>
   readonly restAPiGatewayRole: IRole
   readonly restApiGateway: RestApi
-  readonly tokenLambda: NodejsFunction
-  readonly mockTokenLambda: NodejsFunction
   readonly prescriptionSearchLambda: NodejsFunction
   readonly trackerUserInfoLambda: NodejsFunction
   readonly selectedRoleLambda: NodejsFunction
@@ -41,19 +39,6 @@ export class RestApiGatewayMethods extends Construct {
     // Resources
     for (const policy of props.executePolices) {
       props.restAPiGatewayRole.addManagedPolicy(policy)
-    }
-
-    const tokenResource = props.restApiGateway.root.addResource("token")
-    tokenResource.addMethod("POST", new LambdaIntegration(props.tokenLambda, {
-      credentialsRole: props.restAPiGatewayRole
-    }))
-
-    // mock token endpoint
-    if (props.useMockOidc) {
-      const mockTokenResource = props.restApiGateway.root.addResource("mocktoken")
-      mockTokenResource.addMethod("POST", new LambdaIntegration(props.mockTokenLambda, {
-        credentialsRole: props.restAPiGatewayRole
-      }))
     }
 
     // prescription-search endpoint

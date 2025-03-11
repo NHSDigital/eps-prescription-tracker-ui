@@ -275,8 +275,6 @@ export class StatelessResourcesStack extends Stack {
       ],
       restAPiGatewayRole: apiGateway.apiGatewayRole,
       restApiGateway: apiGateway.apiGateway,
-      tokenLambda: cognitoFunctions.tokenLambda,
-      mockTokenLambda: cognitoFunctions.mockTokenLambda,
       prescriptionSearchLambda: apiFunctions.prescriptionSearchLambda,
       trackerUserInfoLambda: apiFunctions.trackerUserInfoLambda,
       selectedRoleLambda: apiFunctions.selectedRoleLambda,
@@ -290,6 +288,8 @@ export class StatelessResourcesStack extends Stack {
         ...cognitoFunctions.cognitoPolicies,
         ...oauth2Functions.oAuth2Policies
       ],
+      tokenLambda: cognitoFunctions.tokenLambda,
+      mockTokenLambda: cognitoFunctions.mockTokenLambda,
       oauth2APiGatewayRole: oauth2Gateway.apiGatewayRole,
       oauth2ApiGateway: oauth2Gateway.apiGateway,
       authorizeLambda: oauth2Functions.authorizeLambda,
