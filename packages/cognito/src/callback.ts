@@ -2,10 +2,16 @@ import {Logger} from "@aws-lambda-powertools/logger"
 import {APIGatewayProxyEvent, APIGatewayProxyResult} from "aws-lambda"
 import {injectLambdaContext} from "@aws-lambda-powertools/logger/middleware"
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
-import {DynamoDBDocumentClient, GetCommand, DeleteCommand} from "@aws-sdk/lib-dynamodb"
+import {
+  DynamoDBDocumentClient,
+  GetCommand,
+  DeleteCommand,
+  PutCommand
+} from "@aws-sdk/lib-dynamodb"
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 import middy from "@middy/core"
 import inputOutputLogger from "@middy/input-output-logger"
+import {createHash} from "crypto"
 
 import {StateItem} from "./types"
 
@@ -26,22 +32,30 @@ const middyErrorHandler = new MiddyErrorHandler(errorResponseBody)
 
 // Environment variables
 const stateMappingTableName = process.env["StateMappingTableName"] as string
+const SessionStateMappingTableName = process.env["SessionStateMappingTableName"] as string
 const fullCognitoDomain = process.env["COGNITO_DOMAIN"] as string
+const useMock: boolean = process.env["useMock"] === "true"
 
 const dynamoClient = new DynamoDBClient()
 const documentClient = DynamoDBDocumentClient.from(dynamoClient)
+
+type SessionStateItem = {
+  SessionState: string;
+  ApigeeCode: string;
+  ExpiryTime: number
+};
 
 const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   logger.appendKeys({"apigw-request-id": event.requestContext?.requestId})
 
   // Destructure and validate required query parameters
   const {state, code, session_state} = event.queryStringParameters || {}
-  if (!state || !code || !session_state) {
+  if (!state || !code) {
     logger.error(
-      "Missing required query parameters: state, code, or session_state",
+      "Missing required query parameters: state, code",
       {state, code, session_state}
     )
-    throw new Error("Missing required query parameters: state, code, or session_state")
+    throw new Error("Missing required query parameters: state, code")
   }
   logger.info("Incoming query parameters", {state, code, session_state})
 
@@ -68,10 +82,68 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
   const cognitoStateItem = getResult.Item as StateItem
 
+  if (useMock) {
+    // we need to generate a session state param and store it along with code returned
+    // as that will be used in the token lambda
+    // Generate the hashed state value
+    const sessionState = createHash("sha256").update(state).digest("hex")
+
+    const sessionStateExpiryTime = Math.floor(Date.now() / 1000) + 300
+
+    const item: SessionStateItem = {
+      SessionState: sessionState,
+      ApigeeCode: code,
+      ExpiryTime: sessionStateExpiryTime
+    }
+
+    await documentClient.send(
+      new PutCommand({
+        TableName: SessionStateMappingTableName,
+        Item: item
+      })
+    )
+
+    // Build response parameters for redirection
+    const responseParams = {
+      state: cognitoStateItem.CognitoState,
+      session_state: sessionState,
+      code
+    }
+
+    const redirectUri = `https://${fullCognitoDomain}/oauth2/idpresponse` +
+    `?${new URLSearchParams(responseParams).toString()}`
+
+    logger.info("Redirecting to Cognito", {redirectUri})
+
+    return {
+      statusCode: 302,
+      headers: {Location: redirectUri},
+      isBase64Encoded: false,
+      body: JSON.stringify({})
+    }
+
+  }
+
+  if (!session_state) {
+    logger.error(
+      "Missing required session_state",
+      {state, code, session_state}
+    )
+    throw new Error("Missing required query parameters: session_state")
+  }
+
+  // Always delete the old state
+  await documentClient.send(
+    new DeleteCommand({
+      TableName: stateMappingTableName,
+      Key: {State: state}
+    })
+  )
+
   // Build response parameters for redirection
   const responseParams = {
     state: cognitoStateItem.CognitoState,
-    session_state,
+    session_state: session_state,
     code
   }
 
