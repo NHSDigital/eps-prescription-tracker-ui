@@ -4,13 +4,13 @@ import jwt from "jsonwebtoken"
 import {Logger} from "@aws-lambda-powertools/logger"
 import {ParsedUrlQuery} from "querystring"
 
-// mock jwt.sign before importing rewriteBodyToAddSignedJWT
+// mock jwt.sign before importing rewriteRequestBody
 const sign = jest.spyOn(jwt, "sign")
 sign.mockImplementation(() => "mocked-jwt-token")
 
-const {rewriteBodyToAddSignedJWT} = await import("../src/helpers")
+const {rewriteRequestBody} = await import("../src/helpers")
 
-describe("rewriteBodyToAddSignedJWT tests", () => {
+describe("rewriteRequestBody tests", () => {
   const logger = new Logger()
   const jwtPrivateKey = "mockPrivateKey"
   const objectBodyParameters: ParsedUrlQuery = {
@@ -18,9 +18,19 @@ describe("rewriteBodyToAddSignedJWT tests", () => {
     client_secret: "test-secret"
   }
   const idpTokenPath = "https://example.com/oauth/token"
+  const idpCallbackPath = "https://example.com/oauth/idpresponse"
 
   it("should add a signed JWT to the body parameters", () => {
-    const result = rewriteBodyToAddSignedJWT(logger, objectBodyParameters, idpTokenPath, jwtPrivateKey, "dummy_kid")
+    const result = rewriteRequestBody(logger,
+      objectBodyParameters,
+      idpTokenPath,
+      idpCallbackPath,
+      jwtPrivateKey,
+      "dummy_kid"
+    )
+
+    console.log(result)
+
     expect(result.client_assertion_type).toBe("urn:ietf:params:oauth:client-assertion-type:jwt-bearer")
     expect(result.client_assertion).toBe("mocked-jwt-token")
     expect(result.client_secret).toBeUndefined()
@@ -29,5 +39,7 @@ describe("rewriteBodyToAddSignedJWT tests", () => {
       sub: "test-client-id",
       aud: idpTokenPath
     }), jwtPrivateKey, {algorithm: "RS512", keyid: "dummy_kid"})
+
+    expect(result.redirect_uri).toBe(idpCallbackPath)
   })
 })

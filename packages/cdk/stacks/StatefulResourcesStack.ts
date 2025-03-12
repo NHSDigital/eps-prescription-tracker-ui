@@ -127,6 +127,8 @@ export class StatefulResourcesStack extends Stack {
       value: staticContentBucket.bucket.bucketName,
       exportName: `${props.stackName}:StaticContentBucket:Name`
     })
+
+    // Token mapping table
     new CfnOutput(this, "tokenMappingTableArn", {
       value: dynamodb.tokenMappingTable.tableArn,
       exportName: `${props.stackName}:tokenMappingTable:Arn`
@@ -143,6 +145,26 @@ export class StatefulResourcesStack extends Stack {
       value: dynamodb.useTokensMappingKmsKeyPolicy.managedPolicyArn,
       exportName: `${props.stackName}:useTokensMappingKmsKeyPolicy:Arn`
     })
+
+    // State mapping table
+    new CfnOutput(this, "stateMappingTableArn", {
+      value: dynamodb.stateMappingTable.tableArn,
+      exportName: `${props.stackName}:stateMappingTable:Arn`
+    })
+    new CfnOutput(this, "stateMappingTableReadPolicyArn", {
+      value: dynamodb.stateMappingTableReadPolicy.managedPolicyArn,
+      exportName: `${props.stackName}:stateMappingTableReadPolicy:Arn`
+    })
+    new CfnOutput(this, "stateMappingTableWritePolicyArn", {
+      value: dynamodb.stateMappingTableWritePolicy.managedPolicyArn,
+      exportName: `${props.stackName}:stateMappingTableWritePolicy:Arn`
+    })
+    new CfnOutput(this, "useStateMappingKmsKeyPolicyArn", {
+      value: dynamodb.useStateMappingKmsKeyPolicy.managedPolicyArn,
+      exportName: `${props.stackName}:useStateMappingKmsKeyPolicy:Arn`
+    })
+
+    // User pool stuff
     new CfnOutput(this, "primaryPoolIdentityProviderName", {
       value: cognito.primaryPoolIdentityProvider.providerName,
       exportName: `${props.stackName}:primaryPoolIdentityProvider:Name`

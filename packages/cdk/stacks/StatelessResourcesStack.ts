@@ -25,12 +25,13 @@ import {nagSuppressions} from "../nagSuppressions"
 import {TableV2} from "aws-cdk-lib/aws-dynamodb"
 import {ManagedPolicy, Role} from "aws-cdk-lib/aws-iam"
 import {SharedSecrets} from "../resources/SharedSecrets"
-import {CognitoFunctions} from "../resources/CognitoFunctions"
+import {OAuth2Functions} from "../resources/api/oauth2Functions"
 import {ApiFunctions} from "../resources/api/apiFunctions"
 import {UserPool} from "aws-cdk-lib/aws-cognito"
 import {Key} from "aws-cdk-lib/aws-kms"
 import {Stream} from "aws-cdk-lib/aws-kinesis"
-import {RestApiGatewayMethods} from "../resources/RestApiGatewayMethods"
+import {RestApiGatewayMethods} from "../resources/RestApiGateway/RestApiGatewayMethods"
+import {OAuth2ApiGatewayMethods} from "../resources/RestApiGateway/OAuth2ApiGatewayMethods"
 import {CloudfrontBehaviors} from "../resources/CloudfrontBehaviors"
 import {HostedZone} from "aws-cdk-lib/aws-route53"
 import {Certificate} from "aws-cdk-lib/aws-certificatemanager"
@@ -57,16 +58,19 @@ export class StatelessResourcesStack extends Stack {
     const cloudfrontCertArn: string = this.node.tryGetContext("cloudfrontCertArn")
     const shortCloudfrontDomain: string = this.node.tryGetContext("shortCloudfrontDomain")
     const fullCloudfrontDomain: string = this.node.tryGetContext("fullCloudfrontDomain")
+    const fullCognitoDomain: string = this.node.tryGetContext("fullCognitoDomain")
     const logRetentionInDays: number = Number(this.node.tryGetContext("logRetentionInDays"))
     const logLevel: string = this.node.tryGetContext("logLevel")
     const primaryOidcClientId = this.node.tryGetContext("primaryOidcClientId")
     const primaryOidcTokenEndpoint = this.node.tryGetContext("primaryOidcTokenEndpoint")
+    const primaryOidcAuthorizeEndpoint = this.node.tryGetContext("primaryOidcAuthorizeEndpoint")
     const primaryOidcIssuer = this.node.tryGetContext("primaryOidcIssuer")
     const primaryOidcUserInfoEndpoint = this.node.tryGetContext("primaryOidcUserInfoEndpoint")
     const primaryOidcjwksEndpoint = this.node.tryGetContext("primaryOidcjwksEndpoint")
 
     const mockOidcClientId = this.node.tryGetContext("mockOidcClientId")
     const mockOidcTokenEndpoint = this.node.tryGetContext("mockOidcTokenEndpoint")
+    const mockOidcAuthorizeEndpoint = this.node.tryGetContext("mockOidcAuthorizeEndpoint")
     const mockOidcIssuer = this.node.tryGetContext("mockOidcIssuer")
     const mockOidcUserInfoEndpoint = this.node.tryGetContext("mockOidcUserInfoEndpoint")
     const mockOidcjwksEndpoint = this.node.tryGetContext("mockOidcjwksEndpoint")
@@ -83,13 +87,26 @@ export class StatelessResourcesStack extends Stack {
     const baseImportPath = `${props.serviceName}-stateful-resources`
 
     const staticContentBucketImport = Fn.importValue(`${baseImportPath}:StaticContentBucket:Arn`)
+
+    // CIS2 tokens and user info table
     const tokenMappingTableImport = Fn.importValue(`${baseImportPath}:tokenMappingTable:Arn`)
     const tokenMappingTableReadPolicyImport = Fn.importValue(`${baseImportPath}:tokenMappingTableReadPolicy:Arn`)
     const tokenMappingTableWritePolicyImport = Fn.importValue(`${baseImportPath}:tokenMappingTableWritePolicy:Arn`)
     const useTokensMappingKmsKeyPolicyImport = Fn.importValue(`${baseImportPath}:useTokensMappingKmsKeyPolicy:Arn`)
+
+    // Login proxy state cache
+    const stateMappingTableImport = Fn.importValue(`${baseImportPath}:stateMappingTable:Arn`)
+    const stateMappingTableReadPolicyImport = Fn.importValue(`${baseImportPath}:stateMappingTableReadPolicy:Arn`)
+    const stateMappingTableWritePolicyImport = Fn.importValue(`${baseImportPath}:stateMappingTableWritePolicy:Arn`)
+    const useStateMappingKmsKeyPolicyImport = Fn.importValue(`${baseImportPath}:useStateMappingKmsKeyPolicy:Arn`)
+
+    // User pool
     const primaryPoolIdentityProviderName = Fn.importValue(`${baseImportPath}:primaryPoolIdentityProvider:Name`)
     const mockPoolIdentityProviderName = Fn.importValue(`${baseImportPath}:mockPoolIdentityProvider:Name`)
     const userPoolImport = Fn.importValue(`${baseImportPath}:userPool:Arn`)
+    const userPoolClientId = Fn.importValue(`${baseImportPath}:userPoolClient:userPoolClientId`)
+
+    // Logging
     const cloudfrontLoggingBucketImport = Fn.importValue("account-resources:CloudfrontLoggingBucket")
     const cloudwatchKmsKeyImport = Fn.importValue("account-resources:CloudwatchLogsKmsKeyArn")
     const splunkDeliveryStreamImport = Fn.importValue("lambda-resources:SplunkDeliveryStream")
@@ -98,6 +115,7 @@ export class StatelessResourcesStack extends Stack {
 
     // Coerce context and imports to relevant types
     const staticContentBucket = Bucket.fromBucketArn(this, "StaticContentBucket", staticContentBucketImport)
+
     const tokenMappingTable = TableV2.fromTableArn(this, "tokenMappingTable", tokenMappingTableImport)
     const tokenMappingTableReadPolicy = ManagedPolicy.fromManagedPolicyArn(
       this, "tokenMappingTableReadPolicy", tokenMappingTableReadPolicyImport)
@@ -105,8 +123,18 @@ export class StatelessResourcesStack extends Stack {
       this, "tokenMappingTableWritePolicy", tokenMappingTableWritePolicyImport)
     const useTokensMappingKmsKeyPolicy = ManagedPolicy.fromManagedPolicyArn(
       this, "useTokensMappingKmsKeyPolicy", useTokensMappingKmsKeyPolicyImport)
+
+    const stateMappingTable = TableV2.fromTableArn(this, "stateMappingTable", stateMappingTableImport)
+    const stateMappingTableReadPolicy = ManagedPolicy.fromManagedPolicyArn(
+      this, "stateMappingTableReadPolicy", stateMappingTableReadPolicyImport)
+    const stateMappingTableWritePolicy = ManagedPolicy.fromManagedPolicyArn(
+      this, "stateMappingTableWritePolicy", stateMappingTableWritePolicyImport)
+    const useStateMappingKmsKeyPolicy = ManagedPolicy.fromManagedPolicyArn(
+      this, "useStateMappingKmsKeyPolicy", useStateMappingKmsKeyPolicyImport)
+
     const userPool = UserPool.fromUserPoolArn(
       this, "userPool", userPoolImport)
+
     const cloudfrontLoggingBucket = Bucket.fromBucketArn(
       this, "CloudfrontLoggingBucket", cloudfrontLoggingBucketImport)
     const cloudwatchKmsKey = Key.fromKeyArn(
@@ -115,6 +143,7 @@ export class StatelessResourcesStack extends Stack {
       this, "SplunkDeliveryStream", splunkDeliveryStreamImport)
     const splunkSubscriptionFilterRole = Role.fromRoleArn(
       this, "splunkSubscriptionFilterRole", splunkSubscriptionFilterRoleImport)
+
     const hostedZone = HostedZone.fromHostedZoneAttributes(this, "hostedZone", {
       hostedZoneId: epsHostedZoneId,
       zoneName: epsDomainName
@@ -131,31 +160,48 @@ export class StatelessResourcesStack extends Stack {
       useMockOidc: useMockOidc
     })
 
-    // -- functions for cognito
-    const cognitoFunctions = new CognitoFunctions(this, "CognitoFunctions", {
+    // Functions for the login OAuth2 proxy lambdas
+    const oauth2Functions = new OAuth2Functions(this, "OAuth2Functions", {
       serviceName: props.serviceName,
       stackName: props.stackName,
-      primaryOidcTokenEndpoint: primaryOidcTokenEndpoint,
-      primaryOidcUserInfoEndpoint: primaryOidcUserInfoEndpoint,
-      primaryOidcjwksEndpoint: primaryOidcjwksEndpoint,
-      primaryOidcClientId: primaryOidcClientId,
-      primaryOidcIssuer: primaryOidcIssuer,
-      useMockOidc: useMockOidc,
-      mockOidcTokenEndpoint: mockOidcTokenEndpoint,
-      mockOidcUserInfoEndpoint: mockOidcUserInfoEndpoint,
-      mockOidcjwksEndpoint: mockOidcjwksEndpoint,
-      mockOidcClientId: mockOidcClientId,
-      mockOidcIssuer: mockOidcIssuer,
-      tokenMappingTable: tokenMappingTable,
-      tokenMappingTableWritePolicy: tokenMappingTableWritePolicy,
-      tokenMappingTableReadPolicy: tokenMappingTableReadPolicy,
-      useTokensMappingKmsKeyPolicy: useTokensMappingKmsKeyPolicy,
-      primaryPoolIdentityProviderName: primaryPoolIdentityProviderName,
-      mockPoolIdentityProviderName: mockPoolIdentityProviderName,
-      logRetentionInDays: logRetentionInDays,
-      logLevel: logLevel,
-      sharedSecrets: sharedSecrets,
-      jwtKid: jwtKid
+      fullCognitoDomain,
+
+      fullCloudfrontDomain,
+      userPoolClientId,
+      primaryPoolIdentityProviderName,
+      mockPoolIdentityProviderName,
+
+      primaryOidcTokenEndpoint,
+      primaryOidcUserInfoEndpoint,
+      primaryOidcjwksEndpoint,
+      primaryOidcClientId,
+      primaryOidcIssuer,
+      primaryOidcAuthorizeEndpoint,
+
+      useMockOidc,
+
+      mockOidcTokenEndpoint,
+      mockOidcUserInfoEndpoint,
+      mockOidcjwksEndpoint,
+      mockOidcClientId,
+      mockOidcIssuer,
+      mockOidcAuthorizeEndpoint,
+
+      tokenMappingTable,
+      tokenMappingTableWritePolicy,
+      tokenMappingTableReadPolicy,
+      useTokensMappingKmsKeyPolicy,
+
+      stateMappingTable,
+      stateMappingTableWritePolicy,
+      stateMappingTableReadPolicy,
+      useStateMappingKmsKeyPolicy,
+
+      sharedSecrets,
+
+      logRetentionInDays,
+      logLevel,
+      jwtKid
     })
 
     // -- functions for API
@@ -190,7 +236,7 @@ export class StatelessResourcesStack extends Stack {
       roleId: roleId
     })
 
-    // - API Gateway
+    // - CPT backend API Gateway (/api/*)
     const apiGateway = new RestApiGateway(this, "ApiGateway", {
       serviceName: props.serviceName,
       stackName: props.stackName,
@@ -202,21 +248,44 @@ export class StatelessResourcesStack extends Stack {
       userPool: userPool
     })
 
+    // OAuth2 endpoints get their own API Gateway (/oauth2/*)
+    const oauth2Gateway = new RestApiGateway(this, "OAuth2Gateway", {
+      serviceName: props.serviceName,
+      stackName: props.stackName,
+      logRetentionInDays: logRetentionInDays,
+      logLevel: logLevel,
+      cloudwatchKmsKey: cloudwatchKmsKey,
+      splunkDeliveryStream: splunkDeliveryStream,
+      splunkSubscriptionFilterRole: splunkSubscriptionFilterRole
+    })
+
     // --- Methods & Resources
-    new RestApiGatewayMethods(this, "RestApiGatewayMethods", {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const apiMethods = new RestApiGatewayMethods(this, "RestApiGatewayMethods", {
       executePolices: [
-        ...cognitoFunctions.cognitoPolicies,
         ...apiFunctions.apiFunctionsPolicies
       ],
-      restAPiGatewayRole: apiGateway.restAPiGatewayRole,
-      restApiGateway: apiGateway.restApiGateway,
-      tokenLambda: cognitoFunctions.tokenLambda,
-      mockTokenLambda: cognitoFunctions.mockTokenLambda,
+      restAPiGatewayRole: apiGateway.apiGatewayRole,
+      restApiGateway: apiGateway.apiGateway,
       prescriptionSearchLambda: apiFunctions.prescriptionSearchLambda,
       trackerUserInfoLambda: apiFunctions.trackerUserInfoLambda,
       selectedRoleLambda: apiFunctions.selectedRoleLambda,
-      useMockOidc: useMockOidc,
       authorizer: apiGateway.authorizer
+    })
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const oauth2Methods = new OAuth2ApiGatewayMethods(this, "OAuth2ApiGatewayMethods", {
+      executePolices: [
+        ...oauth2Functions.oAuth2Policies
+      ],
+      oauth2APiGatewayRole: oauth2Gateway.apiGatewayRole,
+      oauth2ApiGateway: oauth2Gateway.apiGateway,
+      tokenLambda: oauth2Functions.tokenLambda,
+      mockTokenLambda: oauth2Functions.mockTokenLambda,
+      authorizeLambda: oauth2Functions.authorizeLambda,
+      mockAuthorizeLambda: oauth2Functions.mockAuthorizeLambda,
+      callbackLambda: oauth2Functions.callbackLambda,
+      useMockOidc: useMockOidc
     })
 
     // - Cloudfront
@@ -228,9 +297,15 @@ export class StatelessResourcesStack extends Stack {
       }
     )
 
-    const apiGatewayOrigin = new RestApiOrigin(apiGateway.restApiGateway, {
+    const apiGatewayOrigin = new RestApiOrigin(apiGateway.apiGateway, {
       customHeaders: {
-        "destination-apigw-id": apiGateway.restApiGateway.restApiId // for later apigw waf stuff
+        "destination-api-apigw-id": apiGateway.apiGateway.restApiId // for later apigw waf stuff
+      }
+    })
+
+    const oauth2GatewayOrigin = new RestApiOrigin(oauth2Gateway.apiGateway, {
+      customHeaders: {
+        "destination-oauth2-apigw-id": oauth2Gateway.apiGateway.restApiId // for later apigw waf stuff
       }
     })
 
@@ -243,12 +318,21 @@ export class StatelessResourcesStack extends Stack {
       queryStringBehavior: OriginRequestQueryStringBehavior.all()
     })
 
+    const oauth2GatewayRequestPolicy = new OriginRequestPolicy(this, "OAuth2GatewayRequestPolicy", {
+      originRequestPolicyName: `${props.serviceName}-OAuth2GatewayRequestPolicy`,
+      cookieBehavior: OriginRequestCookieBehavior.all(),
+      headerBehavior: OriginRequestHeaderBehavior.denyList("host"),
+      queryStringBehavior: OriginRequestQueryStringBehavior.all()
+    })
+
     // --- CloudfrontBehaviors
     const cloudfrontBehaviors = new CloudfrontBehaviors(this, "CloudfrontBehaviors", {
       serviceName: props.serviceName,
       stackName: props.stackName,
       apiGatewayOrigin: apiGatewayOrigin,
       apiGatewayRequestPolicy: apiGatewayRequestPolicy,
+      oauth2GatewayOrigin: oauth2GatewayOrigin,
+      oauth2GatewayRequestPolicy: oauth2GatewayRequestPolicy,
       staticContentBucketOrigin: staticContentBucketOrigin
     })
 

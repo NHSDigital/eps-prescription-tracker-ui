@@ -23,27 +23,30 @@ export interface RestApiGatewayProps {
   readonly cloudwatchKmsKey: IKey
   readonly splunkDeliveryStream: IStream
   readonly splunkSubscriptionFilterRole: IRole
-  readonly userPool: IUserPool
+  readonly userPool?: IUserPool
 }
 
 /**
  * Resources for a Rest API Gateway
  * Note - methods are not defined here
  * this just creates the api gateway and authorizer
-
+ *
+ * The gateway may have a userPool supplied, in which case it will create an
+ * authorizer that gets exposed on the construct
  */
 
 export class RestApiGateway extends Construct {
-  public readonly restApiGateway: RestApi
-  public readonly restAPiGatewayRole: Role
-  public readonly authorizer: CognitoUserPoolsAuthorizer
+  public readonly apiGateway: RestApi
+  public readonly apiGatewayRole: Role
+  public readonly authorizer?: CognitoUserPoolsAuthorizer
+  oauth2ApiGateway: RestApi
 
   public constructor(scope: Construct, id: string, props: RestApiGatewayProps) {
     super(scope, id)
 
     // Resources
     const apiGatewayAccessLogGroup = new LogGroup(this, "ApiGatewayAccessLogGroup", {
-      logGroupName: `/aws/apigateway/${props.serviceName}-apigw`,
+      logGroupName: `/aws/apigateway/${props.serviceName}-apigw-${id}`,
       retention: props.logRetentionInDays,
       encryptionKey: props.cloudwatchKmsKey,
       removalPolicy: RemovalPolicy.DESTROY
@@ -57,7 +60,7 @@ export class RestApiGateway extends Construct {
     })
 
     const apiGateway = new RestApi(this, "ApiGateway", {
-      restApiName: `${props.serviceName}-apigw`,
+      restApiName: `${props.serviceName}-apigw-${id}`,
       endpointConfiguration: {
         types: [EndpointType.REGIONAL]
       },
@@ -75,11 +78,17 @@ export class RestApiGateway extends Construct {
       managedPolicies: []
     })
 
-    const authorizer = new CognitoUserPoolsAuthorizer(this, "Authorizer", {
-      authorizerName: "cognitoAuth",
-      cognitoUserPools: [props.userPool],
-      identitySource: "method.request.header.authorization"
-    })
+    // An authorizer is only relevant for endpoints that need access control.
+    // If the userPool is not passed, we know that these endpoints don't care about
+    // access control, and can leave the authorizer undefined.
+    let authorizer
+    if (props.userPool) {
+      authorizer = new CognitoUserPoolsAuthorizer(this, "Authorizer", {
+        authorizerName: "cognitoAuth",
+        cognitoUserPools: [props.userPool],
+        identitySource: "method.request.header.authorization"
+      })
+    }
 
     const cfnStage = apiGateway.deploymentStage.node.defaultChild as CfnStage
     cfnStage.cfnOptions.metadata = {
@@ -91,8 +100,8 @@ export class RestApiGateway extends Construct {
     }
 
     // Outputs
-    this.restApiGateway = apiGateway
-    this.restAPiGatewayRole = apiGatewayRole
+    this.apiGateway = apiGateway
+    this.apiGatewayRole = apiGatewayRole
     this.authorizer = authorizer
   }
 }

@@ -187,6 +187,7 @@ cdk-synth-stateful-resources-mock:
 		--context mockOidcTokenEndpoint=undefined \
 		--context mockOidcUserInfoEndpoint=undefined \
 		--context mockOidcjwksEndpoint=undefined \
+		--context fullCognitoDomain=undefined \
 		--context shortCloudfrontDomain=undefined \
 		--context fullCloudfrontDomain=undefined
 
@@ -216,6 +217,7 @@ cdk-synth-stateless-resources-mock:
 		--context mockOidcTokenEndpoint=undefined \
 		--context mockOidcUserInfoEndpoint=undefined \
 		--context mockOidcjwksEndpoint=undefined \
+		--context fullCognitoDomain=undefined \
 		--context shortCloudfrontDomain=undefined \
 		--context fullCloudfrontDomain=undefined
 
