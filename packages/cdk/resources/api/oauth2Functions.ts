@@ -42,11 +42,18 @@ export interface OAuth2FunctionsProps {
   readonly stateMappingTableReadPolicy: IManagedPolicy
   readonly useStateMappingKmsKeyPolicy: IManagedPolicy
 
+  readonly sessionStateMappingTable: ITableV2
+  readonly sessionStateMappingTableWritePolicy: IManagedPolicy
+  readonly sessionStateMappingTableReadPolicy: IManagedPolicy
+  readonly useSessionStateMappingKmsKeyPolicy: IManagedPolicy
+
   readonly sharedSecrets: SharedSecrets
 
   readonly logRetentionInDays: number
   readonly logLevel: string
   readonly jwtKid: string
+  readonly apigeeApiKey: string
+  readonly apigeeApiSecret: string
 }
 
 /**
@@ -61,6 +68,7 @@ export class OAuth2Functions extends Construct {
   public readonly mockCallbackLambda: NodejsFunction
   public readonly tokenLambda: NodejsFunction
   public readonly mockTokenLambda: NodejsFunction
+  public readonly mockCallbackLambda: NodejsFunction
 
   public constructor(scope: Construct, id: string, props: OAuth2FunctionsProps) {
     super(scope, id)
@@ -185,7 +193,10 @@ export class OAuth2Functions extends Construct {
         additionalPolicies: [
           props.stateMappingTableWritePolicy,
           props.stateMappingTableReadPolicy,
-          props.useStateMappingKmsKeyPolicy
+          props.useStateMappingKmsKeyPolicy,
+          props.sessionStateMappingTableWritePolicy,
+          props.sessionStateMappingTableReadPolicy,
+          props.useSessionStateMappingKmsKeyPolicy
         ],
         logRetentionInDays: props.logRetentionInDays,
         logLevel: props.logLevel,
@@ -197,7 +208,9 @@ export class OAuth2Functions extends Construct {
           OIDC_CLIENT_ID: mockOidcClientId,
           COGNITO_CLIENT_ID: props.userPoolClientId,
           FULL_CLOUDFRONT_DOMAIN: props.fullCloudfrontDomain,
-          StateMappingTableName: props.stateMappingTable.tableName
+          StateMappingTableName: props.stateMappingTable.tableName,
+          SessionStateMappingTableName: props.sessionStateMappingTable.tableName,
+          APIGEE_API_KEY: props.apigeeApiKey
         }
       })
 
@@ -222,6 +235,7 @@ export class OAuth2Functions extends Construct {
         entryPoint: "src/token.ts",
         lambdaEnvironmentVariables: {
           TokenMappingTableName: props.tokenMappingTable.tableName,
+          SessionStateMappingTableName: props.sessionStateMappingTable.tableName,
           MOCK_IDP_TOKEN_PATH: props.mockOidcTokenEndpoint,
           MOCK_USER_POOL_IDP: props.mockPoolIdentityProviderName,
           MOCK_OIDCJWKS_ENDPOINT: props.mockOidcjwksEndpoint,
@@ -230,7 +244,9 @@ export class OAuth2Functions extends Construct {
           MOCK_OIDC_ISSUER: props.mockOidcIssuer,
           FULL_CLOUDFRONT_DOMAIN: props.fullCloudfrontDomain,
           jwtKid: props.jwtKid,
-          useMock: "true"
+          useMock: "true",
+          APIGEE_API_KEY: props.apigeeApiKey,
+          APIGEE_API_SECRET: props.apigeeApiSecret
         }
       })
 
