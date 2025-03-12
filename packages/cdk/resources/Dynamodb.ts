@@ -37,6 +37,11 @@ export class Dynamodb extends Construct {
   public readonly stateMappingTableWritePolicy: ManagedPolicy
   public readonly stateMappingTableReadPolicy: ManagedPolicy
 
+  public readonly sessionStateMappingTable: TableV2
+  public readonly useSessionStateMappingKmsKeyPolicy: ManagedPolicy
+  public readonly sessionStateMappingTableWritePolicy: ManagedPolicy
+  public readonly sessionStateMappingTableReadPolicy: ManagedPolicy
+
   public constructor(scope: Construct, id: string, props: DynamodbProps) {
     super(scope, id)
 
@@ -262,6 +267,117 @@ export class Dynamodb extends Construct {
       ]
     })
 
+    // KMS key for state mapping table
+    const sessionStateMappingKmsKey = new Key(this, "SessionStateMappingKMSKey", {
+      removalPolicy: RemovalPolicy.DESTROY,
+      pendingWindow: Duration.days(7),
+      alias: `${props.stackName}-SessionStateMappingKMSKey`,
+      description: `${props.stackName}-SessionStateMappingKMSKey`,
+      enableKeyRotation: true,
+      policy: new PolicyDocument({
+        statements: [
+          new PolicyStatement({
+            sid: "Enable IAM User Permissions",
+            effect: Effect.ALLOW,
+            actions: [
+              "kms:*"
+            ],
+            principals: [
+              new AccountRootPrincipal //NOSONAR: Access is controlled via ARN condition.
+            ],
+            resources: ["*"]
+          }),
+          new PolicyStatement({
+            sid: "Enable read only decrypt",
+            effect: Effect.ALLOW,
+            actions: [
+              "kms:DescribeKey",
+              "kms:Decrypt"
+            ],
+            principals: [
+              new AnyPrincipal()
+            ],
+            resources: ["*"],
+            conditions: {
+              ArnLike: {
+                // eslint-disable-next-line max-len
+                "aws:PrincipalArn": `arn:aws:iam::${props.account}:role/aws-reserved/sso.amazonaws.com/${props.region}/AWSReservedSSO_ReadOnly*`
+              }
+            }
+          })
+        ]
+      })
+    })
+
+    // State Mapping Table
+    const sessionStateMappingTable = new TableV2(this, "SessionStateMappingTable", {
+      partitionKey: {
+        name: "SessionState",
+        type: AttributeType.STRING
+      },
+      tableName: `${props.stackName}-SessionStateMapping`,
+      removalPolicy: RemovalPolicy.DESTROY,
+      pointInTimeRecovery: true,
+      encryption: TableEncryptionV2.customerManagedKey(stateMappingKmsKey),
+      billing: Billing.onDemand(),
+      timeToLiveAttribute: "ExpiryTime"
+    })
+
+    // Policy to use state mapping KMS key
+    const useSessionStateMappingKmsKeyPolicy = new ManagedPolicy(this, "UseSessionStateMappingKMSKeyPolicy", {
+      statements: [
+        new PolicyStatement({
+          actions: [
+            "kms:DescribeKey",
+            "kms:GenerateDataKey",
+            "kms:Encrypt",
+            "kms:ReEncryptFrom",
+            "kms:ReEncryptTo",
+            "kms:Decrypt"
+          ],
+          resources: [
+            sessionStateMappingKmsKey.keyArn
+          ]
+        })
+      ]
+    })
+
+    const sessionStateTableReadManagedPolicy = new ManagedPolicy(this, "SessionStateTableReadManagedPolicy", {
+      statements: [
+        new PolicyStatement({
+          actions: [
+            "dynamodb:GetItem",
+            "dynamodb:BatchGetItem",
+            "dynamodb:Scan",
+            "dynamodb:Query",
+            "dynamodb:ConditionCheckItem",
+            "dynamodb:DescribeTable"
+          ],
+          resources: [
+            sessionStateMappingTable.tableArn,
+            `${sessionStateMappingTable.tableArn}/index/*`
+          ]
+        })
+      ]
+    })
+
+    const sessionStateTableWriteManagedPolicy = new ManagedPolicy(this, "SessionStateTableWriteManagedPolicy", {
+      statements: [
+        new PolicyStatement({
+          actions: [
+            "dynamodb:PutItem",
+            "dynamodb:BatchWriteItem",
+            "dynamodb:UpdateItem",
+            "dynamodb:DeleteItem"
+          ],
+          resources: [
+            sessionStateMappingTable.tableArn,
+            `${sessionStateMappingTable.tableArn}/index/*`
+          ]
+        })
+      ]
+    })
+
     // Outputs: assign the created resources to the class properties
     this.tokenMappingTable = tokenMappingTable
     this.useTokensMappingKmsKeyPolicy = useTokensMappingKmsKeyPolicy
@@ -272,5 +388,11 @@ export class Dynamodb extends Construct {
     this.useStateMappingKmsKeyPolicy = useStateMappingKmsKeyPolicy
     this.stateMappingTableWritePolicy = stateTableWriteManagedPolicy
     this.stateMappingTableReadPolicy = stateTableReadManagedPolicy
+
+    this.sessionStateMappingTable = sessionStateMappingTable
+    this.useSessionStateMappingKmsKeyPolicy = useSessionStateMappingKmsKeyPolicy
+    this.sessionStateMappingTableWritePolicy = sessionStateTableWriteManagedPolicy
+    this.sessionStateMappingTableReadPolicy = sessionStateTableReadManagedPolicy
+
   }
 }

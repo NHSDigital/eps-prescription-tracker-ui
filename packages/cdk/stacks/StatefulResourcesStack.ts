@@ -192,6 +192,24 @@ export class StatefulResourcesStack extends Stack {
       exportName: `${props.stackName}:useStateMappingKmsKeyPolicy:Arn`
     })
 
+    // State mapping table
+    new CfnOutput(this, "sessionStateMappingTableArn", {
+      value: dynamodb.sessionStateMappingTable.tableArn,
+      exportName: `${props.stackName}:sessionStateMappingTable:Arn`
+    })
+    new CfnOutput(this, "sessionStateMappingTableReadPolicyArn", {
+      value: dynamodb.sessionStateMappingTableReadPolicy.managedPolicyArn,
+      exportName: `${props.stackName}:sessionStateMappingTableReadPolicy:Arn`
+    })
+    new CfnOutput(this, "sessionStateMappingTableWritePolicyArn", {
+      value: dynamodb.sessionStateMappingTableWritePolicy.managedPolicyArn,
+      exportName: `${props.stackName}:sessionStateMappingTableWritePolicy:Arn`
+    })
+    new CfnOutput(this, "useSessionStateMappingKmsKeyPolicyArn", {
+      value: dynamodb.useSessionStateMappingKmsKeyPolicy.managedPolicyArn,
+      exportName: `${props.stackName}:useSessionStateMappingKmsKeyPolicy:Arn`
+    })
+
     // User pool stuff
     new CfnOutput(this, "primaryPoolIdentityProviderName", {
       value: cognito.primaryPoolIdentityProvider.providerName,

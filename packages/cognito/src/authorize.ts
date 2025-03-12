@@ -36,6 +36,7 @@ const useMock: boolean = process.env["useMock"] === "true"
 const userPoolClientId = process.env["COGNITO_CLIENT_ID"] as string
 const cloudfrontDomain = process.env["FULL_CLOUDFRONT_DOMAIN"] as string
 const stateMappingTableName = process.env["StateMappingTableName"] as string
+const apigeeApiKey = process.env["APIGEE_API_KEY"] as string
 
 const logger = new Logger({serviceName: "authorize"})
 const errorResponseBody = {message: "A system error has occurred"}
@@ -78,7 +79,9 @@ const lambdaHandler = async (
   const stateTtl = Math.floor(Date.now() / 1000) + 300
 
   // Build the callback URI for redirection
-  const callbackUri = `https://${cloudfrontDomain}/oauth2/callback`
+  const callbackUri = useMock ?
+    `https://${cloudfrontDomain}/oauth2/mock-callback`:
+    `https://${cloudfrontDomain}/oauth2/callback`
 
   // Store original state mapping in DynamoDB
   const item: StateItem = {
@@ -94,6 +97,27 @@ const lambdaHandler = async (
       Item: item
     })
   )
+
+  if (useMock) {
+    const responseParameters = {
+      client_id: apigeeApiKey,
+      redirect_uri: callbackUri,
+      response_type: "code",
+      state: cis2State
+    }
+    // how do we deal with different callback uri
+    // https://docs.apigee.com/api-platform/security/oauth/advanced-oauth-20-topics
+    // apigee does not support wildcards
+    // eslint-disable-next-line max-len
+    const redirectPath = `https://internal-dev.api.service.nhs.uk/oauth2-mock/authorize?${new URLSearchParams(responseParameters)}`
+
+    return {
+      statusCode: 302,
+      headers: {Location: redirectPath},
+      isBase64Encoded: false,
+      body: JSON.stringify({})
+    }
+  }
 
   // Build the redirect parameters for CIS2
   const responseParameters = {
