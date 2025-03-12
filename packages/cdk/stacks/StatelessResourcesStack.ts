@@ -77,6 +77,7 @@ export class StatelessResourcesStack extends Stack {
 
     const useMockOidc: boolean = this.node.tryGetContext("useMockOidc")
     const apigeeApiKey = this.node.tryGetContext("apigeeApiKey")
+    const apigeeApiSecret = this.node.tryGetContext("apigeeApiSecret")
     const apigeeCIS2TokenEndpoint = this.node.tryGetContext("apigeeCIS2TokenEndpoint")
     const apigeeMockTokenEndpoint = this.node.tryGetContext("apigeeMockTokenEndpoint")
     const apigeePrescriptionsEndpoint = this.node.tryGetContext("apigeePrescriptionsEndpoint")
@@ -101,6 +102,14 @@ export class StatelessResourcesStack extends Stack {
     const stateMappingTableReadPolicyImport = Fn.importValue(`${baseImportPath}:stateMappingTableReadPolicy:Arn`)
     const stateMappingTableWritePolicyImport = Fn.importValue(`${baseImportPath}:stateMappingTableWritePolicy:Arn`)
     const useStateMappingKmsKeyPolicyImport = Fn.importValue(`${baseImportPath}:useStateMappingKmsKeyPolicy:Arn`)
+
+    const sessionStateMappingTableImport = Fn.importValue(`${baseImportPath}:sessionStateMappingTable:Arn`)
+    const sessionStateMappingTableReadPolicyImport = Fn.importValue(
+      `${baseImportPath}:sessionStateMappingTableReadPolicy:Arn`)
+    const sessionStateMappingTableWritePolicyImport = Fn.importValue(
+      `${baseImportPath}:sessionStateMappingTableWritePolicy:Arn`)
+    const useSessionStateMappingKmsKeyPolicyImport = Fn.importValue(
+      `${baseImportPath}:useSessionStateMappingKmsKeyPolicy:Arn`)
 
     // User pool
     const primaryPoolIdentityProviderName = Fn.importValue(`${baseImportPath}:primaryPoolIdentityProvider:Name`)
@@ -133,6 +142,15 @@ export class StatelessResourcesStack extends Stack {
       this, "stateMappingTableWritePolicy", stateMappingTableWritePolicyImport)
     const useStateMappingKmsKeyPolicy = ManagedPolicy.fromManagedPolicyArn(
       this, "useStateMappingKmsKeyPolicy", useStateMappingKmsKeyPolicyImport)
+
+    const sessionStateMappingTable = TableV2.fromTableArn(
+      this, "sessionStateMappingTable", sessionStateMappingTableImport)
+    const sessionStateMappingTableReadPolicy = ManagedPolicy.fromManagedPolicyArn(
+      this, "sessionStateMappingTableReadPolicy", sessionStateMappingTableReadPolicyImport)
+    const sessionStateMappingTableWritePolicy = ManagedPolicy.fromManagedPolicyArn(
+      this, "sessionStateMappingTableWritePolicy", sessionStateMappingTableWritePolicyImport)
+    const useSessionStateMappingKmsKeyPolicy = ManagedPolicy.fromManagedPolicyArn(
+      this, "useSessionStateMappingKmsKeyPolicy", useSessionStateMappingKmsKeyPolicyImport)
 
     const userPool = UserPool.fromUserPoolArn(
       this, "userPool", userPoolImport)
@@ -199,11 +217,18 @@ export class StatelessResourcesStack extends Stack {
       stateMappingTableReadPolicy,
       useStateMappingKmsKeyPolicy,
 
+      sessionStateMappingTable,
+      sessionStateMappingTableWritePolicy,
+      sessionStateMappingTableReadPolicy,
+      useSessionStateMappingKmsKeyPolicy,
+
       sharedSecrets,
 
       logRetentionInDays,
       logLevel,
-      jwtKid
+      jwtKid,
+      apigeeApiKey,
+      apigeeApiSecret
     })
 
     // -- functions for API

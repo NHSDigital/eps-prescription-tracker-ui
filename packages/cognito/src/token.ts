@@ -3,7 +3,7 @@ import {Logger} from "@aws-lambda-powertools/logger"
 import {injectLambdaContext} from "@aws-lambda-powertools/logger/middleware"
 import {getSecret} from "@aws-lambda-powertools/parameters/secrets"
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
-import {DynamoDBDocumentClient, PutCommand} from "@aws-sdk/lib-dynamodb"
+import {DynamoDBDocumentClient, GetCommand, PutCommand} from "@aws-sdk/lib-dynamodb"
 
 import middy from "@middy/core"
 import inputOutputLogger from "@middy/input-output-logger"
@@ -16,6 +16,7 @@ import {verifyIdToken, initializeOidcConfig} from "@cpt-ui-common/authFunctions"
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 
 import {formatHeaders, rewriteRequestBody} from "./helpers"
+import {SessionStateItem} from "./types"
 
 /*
 This is the lambda code that is used to intercept calls to token endpoint as part of the cognito login flow
@@ -58,6 +59,10 @@ const TokenMappingTableName = process.env["TokenMappingTableName"] as string
 const jwtPrivateKeyArn = process.env["jwtPrivateKeyArn"] as string
 const jwtKid = process.env["jwtKid"] as string
 
+const SessionStateMappingTableName = process.env["SessionStateMappingTableName"] as string
+const apigeeApiKey = process.env["APIGEE_API_KEY"] as string
+const apigeeApiSecret = process.env["APIGEE_API_SECRET"] as string
+
 const idpTokenPath = useMock ?
   process.env["MOCK_IDP_TOKEN_PATH"] as string :
   process.env["CIS2_IDP_TOKEN_PATH"] as string
@@ -79,6 +84,70 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     "apigw-request-id": event.requestContext?.requestId
   })
   const axiosInstance = axios.create()
+  if (useMock) {
+    // need to get the code from the session state table
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const {state, code, session_state} = event.queryStringParameters || {}
+
+    // Get the original Cognito state from DynamoDB
+    const getResult = await documentClient.send(
+      new GetCommand({
+        TableName: SessionStateMappingTableName,
+        Key: {SessionState: session_state}
+      })
+    )
+
+    if (!getResult.Item) {
+      logger.error("Failed to get state from table", {SessionStateMappingTableName})
+      throw new Error("State not found in DynamoDB")
+    }
+
+    const sessionStateItem = getResult.Item as SessionStateItem
+    const apigeeCode = sessionStateItem.ApigeeCode
+    const callbackUri = `https://${cloudfrontDomain}/oauth2/mock-callback`
+
+    // then call the apim token exchange endpoint to get token from code
+    const apigeeTokenExchange = "https://internal-dev.api.service.nhs.uk/oauth2-mock/token"
+    const tokenResponse = await axiosInstance.post(apigeeTokenExchange, {}, {params: {
+      "grant_type": "authorization_code",
+      "client_id": apigeeApiKey,
+      "client_secret": apigeeApiSecret,
+      "redirect_uri": callbackUri,
+      code: apigeeCode
+    }}
+    )
+    logger.debug("apigee token response", {data: tokenResponse.data})
+    const access_token = tokenResponse.data.access_token
+    const refresh_token = tokenResponse.data.refresh_token
+
+    // then call userinfo endpoint to get username
+    const apigeeUserInfo = "https://internal-dev.api.service.nhs.uk/oauth2-mock/userinfo"
+
+    const userInfo = axiosInstance.get(apigeeUserInfo, {headers: {
+      "Authorization": `Bearer ${access_token}`
+    }})
+    logger.debug("apigee userinfo response", {userInfo})
+    // then create an signed JWT for the id token
+
+    // will have needed to set the jwks url for the mock coginito
+
+    // then return some data that looks like this
+    const responseData = {
+      "access_token": access_token,
+      "expires_in": 3600,
+      "id_token": "NEED TO CREATE THIS",
+      "not-before-policy": 1735638487,
+      "refresh_expires_in": 1800,
+      "refresh_token": refresh_token,
+      "scope": "openid associatedorgs profile nationalrbacaccess nhsperson email",
+      "session_state": session_state,
+      "token_type": "Bearer"
+    }
+    return {
+      statusCode: 200,
+      body: JSON.stringify(responseData)
+    }
+  }
 
   const body = event.body
   if (body === undefined) {
