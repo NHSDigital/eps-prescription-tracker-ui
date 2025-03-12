@@ -48,6 +48,8 @@ FULL_CLOUDFRONT_DOMAIN
 const logger = new Logger({serviceName: "token"})
 const useMock: boolean = process.env["useMock"] === "true"
 
+const cloudfrontDomain = process.env["FULL_CLOUDFRONT_DOMAIN"] as string
+
 // Create a config for cis2 and mock
 // this is outside functions so it can be re-used and caching works
 const {mockOidcConfig, cis2OidcConfig} = initializeOidcConfig()
@@ -60,7 +62,6 @@ const idpTokenPath = useMock ?
   process.env["MOCK_IDP_TOKEN_PATH"] as string :
   process.env["CIS2_IDP_TOKEN_PATH"] as string
 
-const cloudfrontDomain = process.env["FULL_CLOUDFRONT_DOMAIN"] as string
 // Set the redirect back to our proxy lambda
 const idpCallbackPath = `https://${cloudfrontDomain}/oauth2/callback`
 

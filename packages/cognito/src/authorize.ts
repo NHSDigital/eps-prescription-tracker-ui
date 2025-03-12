@@ -12,13 +12,30 @@ import inputOutputLogger from "@middy/input-output-logger"
 
 import {createHash} from "crypto"
 
+import {StateItem} from "./types"
+
+/*
+ * Expects the following environment variables to be set:
+ *
+ * useMock
+ *
+ * IDP_AUTHORIZE_PATH  -> This is the upstream auth provider - in this case CIS2
+ * OIDC_CLIENT_ID
+ * COGNITO_CLIENT_ID
+ *
+ * FULL_CLOUDFRONT_DOMAIN
+ *
+ * StateMappingTableName
+ *
+ */
+
 // Environment variables
 const authorizeEndpoint = process.env["IDP_AUTHORIZE_PATH"] as string
 const cis2ClientId = process.env["OIDC_CLIENT_ID"] as string
-const useMock = process.env["useMock"] as string
+const useMock: boolean = process.env["useMock"] === "true"
 const userPoolClientId = process.env["COGNITO_CLIENT_ID"] as string
 const cloudfrontDomain = process.env["FULL_CLOUDFRONT_DOMAIN"] as string
-const tableName = process.env["StateMappingTableName"] as string
+const stateMappingTableName = process.env["StateMappingTableName"] as string
 
 const logger = new Logger({serviceName: "authorize"})
 const errorResponseBody = {message: "A system error has occurred"}
@@ -27,24 +44,14 @@ const middyErrorHandler = new MiddyErrorHandler(errorResponseBody)
 const dynamoClient = new DynamoDBClient()
 const documentClient = DynamoDBDocumentClient.from(dynamoClient)
 
-type StateItem = {
-  State: string;
-  CognitoState: string;
-  Ttl: number;
-  UseMock: boolean;
-};
-
 const lambdaHandler = async (
   event: APIGatewayProxyEvent
 ): Promise<APIGatewayProxyResult> => {
   logger.appendKeys({"apigw-request-id": event.requestContext?.requestId})
-  logger.info("Event payload:", {event})
 
   // Validate required environment variables
-  console.log(useMock)
-  if (useMock === undefined) throw new Error("useMock not defined!")
   if (!cloudfrontDomain) throw new Error("Cloudfront domain environment variable not set")
-  if (!tableName) throw new Error("State mapping table name environment variable not set")
+  if (!stateMappingTableName) throw new Error("State mapping table name environment variable not set")
   if (!userPoolClientId) throw new Error("Cognito user pool client ID environment variable not set")
   if (!cis2ClientId) throw new Error("OIDC client ID environment variable not set")
 
@@ -77,13 +84,13 @@ const lambdaHandler = async (
   const item: StateItem = {
     State: cis2State,
     CognitoState: originalState,
-    Ttl: stateTtl,
-    UseMock: useMock === "true"
+    ExpiryTime: stateTtl,
+    UseMock: useMock
   }
 
   await documentClient.send(
     new PutCommand({
-      TableName: tableName,
+      TableName: stateMappingTableName,
       Item: item
     })
   )

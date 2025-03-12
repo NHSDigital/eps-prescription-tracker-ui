@@ -7,28 +7,32 @@ import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 import middy from "@middy/core"
 import inputOutputLogger from "@middy/input-output-logger"
 
+import {StateItem} from "./types"
+
+/*
+ * Expects the following environment variables to be set:
+ *
+ * StateMappingTableName
+ * COGNITO_CLIENT_ID
+ * COGNITO_DOMAIN
+ * MOCK_OIDC_ISSUER
+ * PRIMARY_OIDC_ISSUER
+ *
+ */
+
 const logger = new Logger({serviceName: "idp-response"})
 const errorResponseBody = {message: "A system error has occurred"}
 const middyErrorHandler = new MiddyErrorHandler(errorResponseBody)
 
 // Environment variables
-const tableName = process.env["StateMappingTableName"] as string
+const stateMappingTableName = process.env["StateMappingTableName"] as string
 const fullCognitoDomain = process.env["COGNITO_DOMAIN"] as string
 
 const dynamoClient = new DynamoDBClient()
 const documentClient = DynamoDBDocumentClient.from(dynamoClient)
 
-type StateItem = {
-  State: string;
-  CodeVerifier: string;
-  CognitoState: string;
-  Ttl: number;
-  UseMock: boolean;
-};
-
 const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   logger.appendKeys({"apigw-request-id": event.requestContext?.requestId})
-  logger.info("Event payload:", {event})
 
   // Destructure and validate required query parameters
   const {state, code, session_state} = event.queryStringParameters || {}
@@ -44,7 +48,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   // Get the original Cognito state from DynamoDB
   const getResult = await documentClient.send(
     new GetCommand({
-      TableName: tableName,
+      TableName: stateMappingTableName,
       Key: {State: state}
     })
   )
@@ -52,13 +56,13 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   // Always delete the old state
   await documentClient.send(
     new DeleteCommand({
-      TableName: tableName,
+      TableName: stateMappingTableName,
       Key: {State: state}
     })
   )
 
   if (!getResult.Item) {
-    logger.error("Failed to get state from table", {tableName})
+    logger.error("Failed to get state from table", {tableName: stateMappingTableName})
     throw new Error("State not found in DynamoDB")
   }
 
