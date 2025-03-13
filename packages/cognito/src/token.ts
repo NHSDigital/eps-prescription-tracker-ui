@@ -94,28 +94,18 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   })
   if (useMock) {
     // need to get the code from the session state table
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const {state, code, session_state} = event.queryStringParameters || {}
 
-    logger.debug("trying to get data from session state mapping table", {
-      SessionStateMappingTableName,
-      session_state
-    })
-    // Get the original Cognito state from DynamoDB
-    const getResult = await documentClient.send(
-      new GetCommand({
-        TableName: SessionStateMappingTableName,
-        Key: {SessionState: session_state}
-      })
-    )
-
-    if (!getResult.Item) {
-      logger.error("Failed to get state from table", {SessionStateMappingTableName})
-      throw new Error("State not found in DynamoDB")
+    const body = event.body
+    if (body === undefined) {
+      throw new Error("can not get body")
     }
+    const objectBodyParameters = parse(body as string)
+    //    const grant_type = objectBodyParameters.grant_type
+    //    const client_id = objectBodyParameters.client_id
+    //    const redirect_uri = objectBodyParameters.redirect_uri
+    //    const client_secret = objectBodyParameters.client_secret
+    const apigeeCode = objectBodyParameters.code
 
-    const sessionStateItem = getResult.Item as SessionStateItem
-    const apigeeCode = sessionStateItem.ApigeeCode
     const callbackUri = `https://${cloudfrontDomain}/oauth2/mock-callback`
 
     // then call the apim token exchange endpoint to get token from code
