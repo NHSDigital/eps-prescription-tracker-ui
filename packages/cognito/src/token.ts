@@ -159,7 +159,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     logger.debug("going to call apigee user info", {
       apigeeUserInfoUrl
     })
-    const userInfo = axiosInstance.get(apigeeUserInfoUrl, {headers: {
+    const userInfo = await axiosInstance.get(apigeeUserInfoUrl, {headers: {
       "Authorization": `Bearer ${access_token}`
     }})
     logger.debug("apigee userinfo response", {userInfo})
