@@ -11,7 +11,7 @@ import {
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 import middy from "@middy/core"
 import inputOutputLogger from "@middy/input-output-logger"
-import {createHash} from "crypto"
+import {createHash, randomBytes} from "crypto"
 
 import {StateItem} from "./types"
 
@@ -40,6 +40,7 @@ const dynamoClient = new DynamoDBClient()
 const documentClient = DynamoDBDocumentClient.from(dynamoClient)
 
 type SessionStateItem = {
+  LocalCode: string,
   SessionState: string;
   ApigeeCode: string;
   ExpiryTime: number
@@ -102,10 +103,12 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     // as that will be used in the token lambda
     // Generate the hashed state value
     const sessionState = createHash("sha256").update(state).digest("hex")
+    const localCode = randomBytes(20).toString("hex")
 
     const sessionStateExpiryTime = Math.floor(Date.now() / 1000) + 300
 
     const item: SessionStateItem = {
+      LocalCode: localCode,
       SessionState: sessionState,
       ApigeeCode: code,
       ExpiryTime: sessionStateExpiryTime
@@ -126,7 +129,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     const responseParams = {
       state: cognitoStateItem.CognitoState,
       session_state: sessionState,
-      code
+      code: localCode
     }
 
     const redirectUri = `https://${fullCognitoDomain}/oauth2/idpresponse` +
