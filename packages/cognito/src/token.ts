@@ -141,7 +141,13 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
       apigeeTokenExchangeUrl,
       tokenExchangeParams
     })
-    const tokenResponse = await axiosInstance.post(apigeeTokenExchangeUrl, {}, {params: tokenExchangeParams}
+    const tokenResponse = await axiosInstance.post(apigeeTokenExchangeUrl,
+      tokenExchangeParams,
+      {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded"
+        }
+      }
     )
     logger.debug("apigee token response", {data: tokenResponse.data})
     const access_token = tokenResponse.data.access_token
