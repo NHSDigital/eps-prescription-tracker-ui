@@ -268,7 +268,10 @@ export class OAuth2Functions extends Construct {
         additionalPolicies: [
           props.stateMappingTableWritePolicy,
           props.stateMappingTableReadPolicy,
-          props.useStateMappingKmsKeyPolicy
+          props.useStateMappingKmsKeyPolicy,
+          props.sessionStateMappingTableReadPolicy,
+          props.sessionStateMappingTableWritePolicy,
+          props.useSessionStateMappingKmsKeyPolicy
         ],
         logRetentionInDays: props.logRetentionInDays,
         logLevel: props.logLevel,
@@ -276,6 +279,7 @@ export class OAuth2Functions extends Construct {
         entryPoint: "src/callbackMock.ts",
         lambdaEnvironmentVariables: {
           StateMappingTableName: props.stateMappingTable.tableName,
+          SessionStateMappingTableName: props.sessionStateMappingTable.tableName,
           COGNITO_CLIENT_ID: props.userPoolClientId,
           COGNITO_DOMAIN: props.fullCognitoDomain,
           MOCK_OIDC_ISSUER: mockOidcIssuer,

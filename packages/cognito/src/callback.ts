@@ -60,6 +60,10 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   logger.info("Incoming query parameters", {state, code, session_state})
 
   // Get the original Cognito state from DynamoDB
+  logger.debug("trying to get data from session state table", {
+    stateMappingTableName,
+    state
+  })
   const getResult = await documentClient.send(
     new GetCommand({
       TableName: stateMappingTableName,
@@ -74,11 +78,11 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     useMock
   })
 
-  logger.debug("trying to get data from session state table", {
+  // Always delete the old state
+  logger.debug("going to delete from state mapping table", {
     stateMappingTableName,
     state
   })
-  // Always delete the old state
   await documentClient.send(
     new DeleteCommand({
       TableName: stateMappingTableName,
@@ -107,6 +111,10 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
       ExpiryTime: sessionStateExpiryTime
     }
 
+    logger.debug("going to insert into session state mapping table", {
+      SessionStateMappingTableName,
+      item
+    })
     await documentClient.send(
       new PutCommand({
         TableName: SessionStateMappingTableName,
