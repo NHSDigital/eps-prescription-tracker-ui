@@ -67,6 +67,17 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     })
   )
 
+  logger.debug("environment variables", {
+    stateMappingTableName,
+    SessionStateMappingTableName,
+    fullCognitoDomain,
+    useMock
+  })
+
+  logger.debug("trying to get data from session state table", {
+    stateMappingTableName,
+    state
+  })
   // Always delete the old state
   await documentClient.send(
     new DeleteCommand({
