@@ -8,8 +8,8 @@ import {
 import {getPrescriptions, PrescriptionError} from "../src/services/prescriptionsLookupService"
 import {Logger} from "@aws-lambda-powertools/logger"
 import {AxiosInstance, AxiosResponse} from "axios"
-import {Bundle} from "fhir/r4"
 import {TreatmentType} from "../src/types"
+import {mockPrescriptionBundle} from "./mockObjects"
 
 const mockGet = jest.fn(() => Promise.resolve({} as unknown as AxiosResponse))
 const mockAxiosInstance = {
@@ -26,62 +26,6 @@ describe("Prescriptions Lookup Service Tests", () => {
   const mockAccessToken = "test-token"
   const mockRoleId = "test-role"
 
-  const mockFhirBundle: Bundle = {
-    resourceType: "Bundle",
-    type: "searchset",
-    total: 1,
-    entry: [
-      {
-        resource: {
-          resourceType: "Patient",
-          identifier: [{
-            system: "https://fhir.nhs.uk/Id/nhs-number",
-            value: "9999999999"
-          }]
-        }
-      },
-      {
-        resource: {
-          resourceType: "RequestGroup",
-          identifier: [{
-            system: "https://fhir.nhs.uk/Id/prescription-order-number",
-            value: "01ABC123"
-          }],
-          status: "active",
-          intent: "order",
-          authoredOn: "2023-01-01",
-          subject: {
-            reference: "Patient/9999999999"
-          },
-          extension: [
-            {
-              url: "https://fhir.nhs.uk/StructureDefinition/Extension-DM-PrescriptionStatusHistory",
-              extension: [{
-                url: "status",
-                valueCoding: {
-                  code: "0001"
-                }
-              }]
-            },
-            {
-              url: "https://fhir.nhs.uk/StructureDefinition/Extension-DM-PendingCancellation",
-              extension: [
-                {
-                  url: "prescriptionPendingCancellation",
-                  valueBoolean: false
-                },
-                {
-                  url: "lineItemPendingCancellation",
-                  valueBoolean: false
-                }
-              ]
-            }
-          ]
-        }
-      }
-    ]
-  }
-
   beforeEach(() => {
     jest.clearAllMocks()
   })
@@ -93,7 +37,7 @@ describe("Prescriptions Lookup Service Tests", () => {
       mockGet.mockResolvedValueOnce({
         status: 200,
         statusText: "OK",
-        data: mockFhirBundle
+        data: mockPrescriptionBundle
       } as unknown as AxiosResponse)
 
       const result = await getPrescriptions(
@@ -170,7 +114,7 @@ describe("Prescriptions Lookup Service Tests", () => {
       mockGet.mockResolvedValueOnce({
         status: 200,
         statusText: "OK",
-        data: mockFhirBundle
+        data: mockPrescriptionBundle
       } as unknown as AxiosResponse)
 
       const result = await getPrescriptions(

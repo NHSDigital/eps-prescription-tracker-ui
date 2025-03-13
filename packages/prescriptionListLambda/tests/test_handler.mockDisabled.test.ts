@@ -12,8 +12,10 @@ import jwksClient from "jwks-rsa"
 import {OidcConfig} from "@cpt-ui-common/authFunctions"
 
 import {Logger} from "@aws-lambda-powertools/logger"
+import {mockPdsPatient, mockPrescriptionBundle} from "./mockObjects"
 
-const apigeeHost = process.env.apigeeHost ?? ""
+const apigeePrescriptionsEndpoint = process.env.apigeePrescriptionsEndpoint as string ?? ""
+const apigeePersonalDemographicsEndpoint = process.env.apigeePersonalDemographicsEndpoint as string ?? ""
 const apigeeCIS2TokenEndpoint = process.env.apigeeCIS2TokenEndpoint
 //const apigeeMockTokenEndpoint = process.env.apigeeMockTokenEndpoint
 //const apigeePrescriptionsEndpoint = process.env.apigeePrescriptionsEndpoint
@@ -167,23 +169,24 @@ const dummyContext = {
   succeed: () => console.log("Succeeded!")
 }
 
-//TODO: fix these tests
-describe.skip("handler tests with cis2 auth", () => {
+describe("handler tests with cis2 auth", () => {
   const jwks = createJWKSMock("https://dummyauth.com/")
   beforeEach(() => {
     jest.resetModules()
     jest.clearAllMocks()
     jwks.start()
-    nock(apigeeHost)
-      .get("/prescriptions")
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      .query(_ => {
-      // handle any query string
-        return true
-      })
-      .reply(200, {
-        prescription: "123"
-      })
+    // Mock the Patient endpoint with patient data
+    nock(apigeePersonalDemographicsEndpoint)
+      .get("/Patient/9000000009")
+      .query(true)
+      .reply(200, mockPdsPatient
+      )
+
+    // Mock the prescriptions endpoint with prescription data
+    nock(apigeePrescriptionsEndpoint)
+      .get("/RequestGroup")
+      .query(true)
+      .reply(200, mockPrescriptionBundle)
   })
 
   afterEach(() => {
@@ -192,7 +195,10 @@ describe.skip("handler tests with cis2 auth", () => {
 
   it("responds with success", async () => {
 
-    const response = await handler({
+    const event = {
+      queryStringParameters: {
+        nhsNumber: "9000000009"
+      },
       requestContext: {
         authorizer: {
           claims: {
@@ -200,7 +206,9 @@ describe.skip("handler tests with cis2 auth", () => {
           }
         }
       }
-    }, dummyContext)
+    }
+
+    const response = await handler(event, dummyContext)
     const responseBody = JSON.parse(response.body)
 
     expect(response).toMatchObject({
@@ -208,8 +216,32 @@ describe.skip("handler tests with cis2 auth", () => {
     })
 
     expect(responseBody).toMatchObject({
-      prescription: "123"
-    })
+      "currentPrescriptions": [{
+        "issueDate": "2023-01-01",
+        "itemsPendingCancellation": false,
+        "nhsNumber": 9999999999,
+        "prescriptionId": "01ABC123",
+        "prescriptionPendingCancellation": false,
+        "prescriptionTreatmentType": "0001",
+        "statusCode": "0001"
+      }],
+      "futurePrescriptions": [],
+      "pastPrescriptions": [],
+      "patient": {
+        "address": {
+          "city": "Leeds",
+          "line1": "1 Trevelyan Square",
+          "line2": "Boar Lane",
+          "postcode": "LS1 6AE"
+        },
+        "dateOfBirth": "2010-10-22",
+        "family": "Smith",
+        "gender": "female",
+        "given": "Jane",
+        "nhsNumber": "9000000009",
+        "prefix": "Mrs",
+        "suffix": ""
+      }})
 
     expect(mockUpdateApigeeAccessToken).toBeCalledWith(
       expect.any(Object),
@@ -228,6 +260,9 @@ describe.skip("handler tests with cis2 auth", () => {
     const loggerSpy = jest.spyOn(Logger.prototype, "error")
 
     const response = await handler({
+      queryStringParameters: {
+        nhsNumber: "9999999999"
+      },
       requestContext: {}
     }, dummyContext)
 
@@ -246,6 +281,9 @@ describe.skip("handler tests with cis2 auth", () => {
     })
 
     await handler({
+      queryStringParameters: {
+        nhsNumber: "9999999999"
+      },
       requestContext: {}
     }, dummyContext)
 

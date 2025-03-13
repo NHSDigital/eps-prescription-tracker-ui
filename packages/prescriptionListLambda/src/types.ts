@@ -121,7 +121,6 @@ export interface SearchParams {
   nhsNumber?: string;
 }
 
-//TODO: optional issue number and optional max repeats, only if they are ERD
 export interface PrescriptionAPIResponse {
   prescriptionId: string;
   statusCode: string;

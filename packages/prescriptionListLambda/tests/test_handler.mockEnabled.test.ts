@@ -12,7 +12,8 @@ import createJWKSMock from "mock-jwks"
 import {OidcConfig} from "@cpt-ui-common/authFunctions"
 import {PatientAPIResponse, PrescriptionAPIResponse, TreatmentType} from "../src/types"
 
-const apigeeHost = process.env.apigeeHost ?? ""
+const apigeePrescriptionsEndpoint = process.env.apigeePrescriptionsEndpoint as string ?? ""
+const apigeePersonalDemographicsEndpoint = process.env.apigeePersonalDemographicsEndpoint as string ?? ""
 const apigeeCIS2TokenEndpoint = process.env.apigeeCIS2TokenEndpoint
 const apigeeMockTokenEndpoint = process.env.apigeeMockTokenEndpoint
 //const apigeePrescriptionsEndpoint = process.env.apigeePrescriptionsEndpoint
@@ -243,11 +244,38 @@ describe("handler tests with mock mode enabled", () => {
     jest.clearAllMocks()
     jwks.start()
 
-    // Set up nock for mocking HTTP requests
-    nock(apigeeHost)
-      .get("/prescriptionList")
+    // Mock the Patient endpoint with patient data
+    nock(apigeePersonalDemographicsEndpoint)
+      .get("/Patient/9999999999")
       .query(true)
-      .reply(200, {})
+      .reply(200, {
+        resourceType: "Patient",
+        id: "9999999999",
+        name: [{
+          use: "official",
+          family: "Smith",
+          given: ["John"],
+          prefix: ["Mr"]
+        }],
+        gender: "male",
+        birthDate: "1970-01-01"
+      })
+
+    // Mock the prescriptions endpoint with prescription data
+    nock(apigeePrescriptionsEndpoint)
+      .get("/RequestGroup")
+      .query(true)
+      .reply(200, {
+        resourceType: "Bundle",
+        type: "searchset",
+        entry: [{
+          resource: {
+            resourceType: "RequestGroup",
+            id: "123",
+            status: "active"
+          }
+        }]
+      })
   })
 
   afterEach(() => {
@@ -255,8 +283,7 @@ describe("handler tests with mock mode enabled", () => {
     nock.cleanAll()
   })
 
-  // TODO: fix this test
-  it.skip("responds with success", async () => {
+  it("responds with success", async () => {
     // Import handler here to make sure all mocks are set up first
     const {handler} = await import("../src/handler")
 

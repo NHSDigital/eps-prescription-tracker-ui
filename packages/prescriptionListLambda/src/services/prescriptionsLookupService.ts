@@ -25,7 +25,6 @@ export const getPrescriptions = async (
   const {prescriptionId, nhsNumber} = query
   const searchParam = prescriptionId ? `prescriptionId=${prescriptionId}` : `nhsNumber=${nhsNumber}`
   const endpoint = `${prescriptionsEndpoint}/RequestGroup?${searchParam}`
-  // const endpoint = `${prescriptionsEndpoint}/clinical-prescription-tracker-pr-808/RequestGroup?${searchParam}`
   const logContext = prescriptionId ? {prescriptionId} : {nhsNumber}
 
   logger.info("Fetching prescriptions", logContext)
