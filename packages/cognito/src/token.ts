@@ -100,12 +100,32 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
       throw new Error("can not get body")
     }
     const objectBodyParameters = parse(body as string)
-    //    const grant_type = objectBodyParameters.grant_type
-    //    const client_id = objectBodyParameters.client_id
-    //    const redirect_uri = objectBodyParameters.redirect_uri
-    //    const client_secret = objectBodyParameters.client_secret
-    const apigeeCode = objectBodyParameters.code
+    const grant_type = objectBodyParameters.grant_type
+    const client_id = objectBodyParameters.client_id
+    const redirect_uri = objectBodyParameters.redirect_uri
+    const client_secret = objectBodyParameters.client_secret
+    const code = objectBodyParameters.code
 
+    logger.debug("trying to get data from session state mapping table", {
+      SessionStateMappingTableName,
+      code
+    })
+    // Get the original Cognito state from DynamoDB
+    const getResult = await documentClient.send(
+      new GetCommand({
+        TableName: SessionStateMappingTableName,
+        Key: {LocalCode: code}
+      })
+    )
+
+    if (!getResult.Item) {
+      logger.error("Failed to get state from table", {SessionStateMappingTableName})
+      throw new Error("State not found in DynamoDB")
+    }
+
+    const sessionStateItem = getResult.Item as SessionStateItem
+    const apigeeCode = sessionStateItem.ApigeeCode
+    const sessionState = sessionStateItem.SessionState
     const callbackUri = `https://${cloudfrontDomain}/oauth2/mock-callback`
 
     // then call the apim token exchange endpoint to get token from code
@@ -150,7 +170,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
       "refresh_expires_in": 1800,
       "refresh_token": refresh_token,
       "scope": "openid associatedorgs profile nationalrbacaccess nhsperson email",
-      "session_state": session_state,
+      "session_state": sessionState,
       "token_type": "Bearer"
     }
     return {

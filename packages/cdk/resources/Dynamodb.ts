@@ -312,7 +312,7 @@ export class Dynamodb extends Construct {
     // State Mapping Table
     const sessionStateMappingTable = new TableV2(this, "SessionStateMappingTable", {
       partitionKey: {
-        name: "SessionState",
+        name: "LocalCode",
         type: AttributeType.STRING
       },
       tableName: `${props.stackName}-SessionStateMapping`,
