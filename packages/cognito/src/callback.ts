@@ -26,7 +26,7 @@ import {StateItem} from "./types"
  *
  */
 
-const logger = new Logger({serviceName: "idp-response"})
+const logger = new Logger({serviceName: "callback"})
 const errorResponseBody = {message: "A system error has occurred"}
 const middyErrorHandler = new MiddyErrorHandler(errorResponseBody)
 
