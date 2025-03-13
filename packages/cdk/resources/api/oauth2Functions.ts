@@ -226,6 +226,12 @@ export class OAuth2Functions extends Construct {
           props.tokenMappingTableWritePolicy,
           props.tokenMappingTableReadPolicy,
           props.useTokensMappingKmsKeyPolicy,
+          props.stateMappingTableReadPolicy,
+          props.stateMappingTableWritePolicy,
+          props.useStateMappingKmsKeyPolicy,
+          props.sessionStateMappingTableReadPolicy,
+          props.sessionStateMappingTableWritePolicy,
+          props.useSessionStateMappingKmsKeyPolicy,
           props.sharedSecrets.useJwtKmsKeyPolicy,
           props.sharedSecrets.getMockJwtPrivateKeyPolicy
         ],
@@ -236,6 +242,7 @@ export class OAuth2Functions extends Construct {
         lambdaEnvironmentVariables: {
           TokenMappingTableName: props.tokenMappingTable.tableName,
           SessionStateMappingTableName: props.sessionStateMappingTable.tableName,
+          StateMappingTableName: props.stateMappingTable.tableName,
           MOCK_IDP_TOKEN_PATH: props.mockOidcTokenEndpoint,
           MOCK_USER_POOL_IDP: props.mockPoolIdentityProviderName,
           MOCK_OIDCJWKS_ENDPOINT: props.mockOidcjwksEndpoint,
