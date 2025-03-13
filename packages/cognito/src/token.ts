@@ -84,11 +84,23 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     "apigw-request-id": event.requestContext?.requestId
   })
   const axiosInstance = axios.create()
+  logger.debug("data from env variables", {
+    cloudfrontDomain,
+    TokenMappingTableName,
+    jwtPrivateKeyArn,
+    jwtKid,
+    SessionStateMappingTableName,
+    idpTokenPath
+  })
   if (useMock) {
     // need to get the code from the session state table
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const {state, code, session_state} = event.queryStringParameters || {}
 
+    logger.debug("trying to get data from session state mapping table", {
+      SessionStateMappingTableName,
+      session_state
+    })
     // Get the original Cognito state from DynamoDB
     const getResult = await documentClient.send(
       new GetCommand({
@@ -107,23 +119,31 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     const callbackUri = `https://${cloudfrontDomain}/oauth2/mock-callback`
 
     // then call the apim token exchange endpoint to get token from code
-    const apigeeTokenExchange = "https://internal-dev.api.service.nhs.uk/oauth2-mock/token"
-    const tokenResponse = await axiosInstance.post(apigeeTokenExchange, {}, {params: {
+    const apigeeTokenExchangeUrl = "https://internal-dev.api.service.nhs.uk/oauth2-mock/token"
+    const tokenExchangeParams = {
       "grant_type": "authorization_code",
       "client_id": apigeeApiKey,
       "client_secret": apigeeApiSecret,
       "redirect_uri": callbackUri,
       code: apigeeCode
-    }}
+    }
+    logger.debug("going to call apigee token exchange", {
+      apigeeTokenExchangeUrl,
+      tokenExchangeParams
+    })
+    const tokenResponse = await axiosInstance.post(apigeeTokenExchangeUrl, {}, {params: tokenExchangeParams}
     )
     logger.debug("apigee token response", {data: tokenResponse.data})
     const access_token = tokenResponse.data.access_token
     const refresh_token = tokenResponse.data.refresh_token
 
     // then call userinfo endpoint to get username
-    const apigeeUserInfo = "https://internal-dev.api.service.nhs.uk/oauth2-mock/userinfo"
+    const apigeeUserInfoUrl = "https://internal-dev.api.service.nhs.uk/oauth2-mock/userinfo"
 
-    const userInfo = axiosInstance.get(apigeeUserInfo, {headers: {
+    logger.debug("going to call apigee user info", {
+      apigeeUserInfoUrl
+    })
+    const userInfo = axiosInstance.get(apigeeUserInfoUrl, {headers: {
       "Authorization": `Bearer ${access_token}`
     }})
     logger.debug("apigee userinfo response", {userInfo})
