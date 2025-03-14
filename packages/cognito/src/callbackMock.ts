@@ -1,13 +1,9 @@
 import {Logger} from "@aws-lambda-powertools/logger"
 import {APIGatewayProxyEvent, APIGatewayProxyResult} from "aws-lambda"
 import {injectLambdaContext} from "@aws-lambda-powertools/logger/middleware"
-import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
-import {DynamoDBDocumentClient, GetCommand, DeleteCommand} from "@aws-sdk/lib-dynamodb"
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 import middy from "@middy/core"
 import inputOutputLogger from "@middy/input-output-logger"
-
-import {StateItem} from "./types"
 
 /*
  * Expects the following environment variables to be set:
@@ -23,13 +19,6 @@ import {StateItem} from "./types"
 const logger = new Logger({serviceName: "idp-response"})
 const errorResponseBody = {message: "A system error has occurred"}
 const middyErrorHandler = new MiddyErrorHandler(errorResponseBody)
-
-// Environment variables
-const stateMappingTableName = process.env["StateMappingTableName"] as string
-const fullCognitoDomain = process.env["COGNITO_DOMAIN"] as string
-
-const dynamoClient = new DynamoDBClient()
-const documentClient = DynamoDBDocumentClient.from(dynamoClient)
 
 const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   logger.appendKeys({"apigw-request-id": event.requestContext?.requestId})
@@ -70,48 +59,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   } catch (e) {
     logger.warn("Could not base64 decode state")
   }
-
-  // Get the original Cognito state from DynamoDB
-  const getResult = await documentClient.send(
-    new GetCommand({
-      TableName: stateMappingTableName,
-      Key: {State: state}
-    })
-  )
-
-  // Always delete the old state
-  await documentClient.send(
-    new DeleteCommand({
-      TableName: stateMappingTableName,
-      Key: {State: state}
-    })
-  )
-
-  if (!getResult.Item) {
-    logger.error("Failed to get state from table", {tableName: stateMappingTableName})
-    throw new Error("State not found in DynamoDB")
-  }
-
-  const cognitoStateItem = getResult.Item as StateItem
-
-  // Build response parameters for redirection
-  const responseParams = {
-    state: cognitoStateItem.CognitoState,
-    session_state,
-    code
-  }
-
-  const redirectUri = `https://${fullCognitoDomain}/oauth2/idpresponse` +
-    `?${new URLSearchParams(responseParams).toString()}`
-
-  logger.info("Redirecting to Cognito", {redirectUri})
-
-  return {
-    statusCode: 302,
-    headers: {Location: redirectUri},
-    isBase64Encoded: false,
-    body: JSON.stringify({})
-  }
+  throw new Error("Not implemented")
 }
 
 export const handler = middy(lambdaHandler)
