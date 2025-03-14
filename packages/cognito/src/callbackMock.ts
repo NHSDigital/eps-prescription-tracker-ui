@@ -102,6 +102,11 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
       Key: {State: state}
     })
   )
+  const cognitoStateItem = getResult.Item as StateItem
+  if (!getResult.Item) {
+    logger.error("Failed to get state from table", {tableName: stateMappingTableName})
+    throw new Error("State not found in DynamoDB")
+  }
 
   logger.debug("environment variables", {
     stateMappingTableName,

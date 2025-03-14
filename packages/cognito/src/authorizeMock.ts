@@ -34,7 +34,7 @@ const cloudfrontDomain = process.env["FULL_CLOUDFRONT_DOMAIN"] as string
 const stateMappingTableName = process.env["StateMappingTableName"] as string
 const apigeeApiKey = process.env["APIGEE_API_KEY"] as string
 
-const logger = new Logger({serviceName: "authorize"})
+const logger = new Logger({serviceName: "authorizeMock"})
 const errorResponseBody = {message: "A system error has occurred"}
 const middyErrorHandler = new MiddyErrorHandler(errorResponseBody)
 

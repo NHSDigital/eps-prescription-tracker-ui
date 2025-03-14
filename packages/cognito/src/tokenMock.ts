@@ -46,7 +46,7 @@ MOCK_IDP_TOKEN_PATH
 FULL_CLOUDFRONT_DOMAIN
 */
 
-const logger = new Logger({serviceName: "token"})
+const logger = new Logger({serviceName: "tokenMock"})
 
 const cloudfrontDomain = process.env["FULL_CLOUDFRONT_DOMAIN"] as string
 
