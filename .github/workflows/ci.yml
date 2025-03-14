@@ -130,6 +130,7 @@ jobs:
       CIS2_PRIVATE_KEY: ${{ secrets.DEV_JWT_PRIVATE_KEY }}
       REGRESSION_TESTS_PEM: ${{ secrets.REGRESSION_TESTS_PEM }}
       APIGEE_API_KEY: ${{ secrets.APIGEE_DEV_API_KEY }}
+      APIGEE_API_SECRET: ${{ secrets.APIGEE_DEV_API_SECRET }}
   
   create_release_notes:
     needs: [tag_release, package_code, get_commit_id, release_dev]
@@ -183,3 +184,4 @@ jobs:
       CIS2_PRIVATE_KEY: ${{ secrets.QA_JWT_PRIVATE_KEY }}
       REGRESSION_TESTS_PEM: ${{ secrets.REGRESSION_TESTS_PEM }}
       APIGEE_API_KEY: ${{ secrets.APIGEE_QA_API_KEY }}
+      APIGEE_API_SECRET: ${{ secrets.APIGEE_QA_API_SECRET }}

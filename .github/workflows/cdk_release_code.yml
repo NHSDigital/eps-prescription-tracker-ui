@@ -75,6 +75,8 @@ on:
         required: false
       APIGEE_API_KEY:
         required: false
+      APIGEE_API_SECRET:
+        required: false
 jobs:
   release_code:
     runs-on: ubuntu-22.04
