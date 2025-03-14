@@ -3,7 +3,7 @@ import {Logger} from "@aws-lambda-powertools/logger"
 import {injectLambdaContext} from "@aws-lambda-powertools/logger/middleware"
 import {getSecret} from "@aws-lambda-powertools/parameters/secrets"
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
-import {DynamoDBDocumentClient, GetCommand} from "@aws-sdk/lib-dynamodb"
+import {DynamoDBDocumentClient, GetCommand, PutCommand} from "@aws-sdk/lib-dynamodb"
 
 import middy from "@middy/core"
 import inputOutputLogger from "@middy/input-output-logger"
@@ -12,8 +12,7 @@ import {parse} from "querystring"
 
 import {PrivateKey} from "jsonwebtoken"
 
-// TODO: will be needed for storing username in dynamoDB
-// import {initializeOidcConfig} from "@cpt-ui-common/authFunctions"
+import {initializeOidcConfig} from "@cpt-ui-common/authFunctions"
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 
 import {SessionStateItem} from "./types"
@@ -52,8 +51,7 @@ const cloudfrontDomain = process.env["FULL_CLOUDFRONT_DOMAIN"] as string
 
 // Create a config for cis2 and mock
 // this is outside functions so it can be re-used and caching works
-// TODO: will be needed for storing username in dynamoDB
-// const {mockOidcConfig} = initializeOidcConfig()
+const {mockOidcConfig} = initializeOidcConfig()
 
 const TokenMappingTableName = process.env["TokenMappingTableName"] as string
 const jwtPrivateKeyArn = process.env["jwtPrivateKeyArn"] as string
@@ -94,6 +92,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   if (body === undefined) {
     throw new Error("can not get body")
   }
+
   const objectBodyParameters = parse(body as string)
   // TODO: investigate if these are needed at all
   //   const grant_type = objectBodyParameters.grant_type
@@ -106,6 +105,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     SessionStateMappingTableName,
     code
   })
+
   // Get the original Cognito state from DynamoDB
   const getResult = await documentClient.send(
     new GetCommand({
@@ -124,7 +124,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   const sessionState = sessionStateItem.SessionState
   const callbackUri = `https://${cloudfrontDomain}/oauth2/mock-callback`
 
-  // then call the apim token exchange endpoint to get token from code
+  // Call the Apigee token exchange endpoint to get token from code
   const apigeeTokenExchangeUrl = "https://internal-dev.api.service.nhs.uk/oauth2-mock/token"
   const tokenExchangeParams = {
     "grant_type": "authorization_code",
@@ -133,10 +133,12 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     "redirect_uri": callbackUri,
     code: apigeeCode
   }
+
   logger.debug("going to call apigee token exchange", {
     apigeeTokenExchangeUrl,
     tokenExchangeParams
   })
+
   const tokenResponse = await axiosInstance.post(apigeeTokenExchangeUrl,
     tokenExchangeParams,
     {
@@ -145,31 +147,36 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
       }
     }
   )
+
   logger.debug("apigee token response", {data: tokenResponse.data})
   const access_token = tokenResponse.data.access_token
   const refresh_token = tokenResponse.data.refresh_token
 
-  // then call userinfo endpoint to get username
+  // Call userinfo endpoint to get user information
   const apigeeUserInfoUrl = "https://internal-dev.api.service.nhs.uk/oauth2-mock/userinfo"
 
   logger.debug("going to call apigee user info", {
     apigeeUserInfoUrl
   })
-  const userInfo = await axiosInstance.get(apigeeUserInfoUrl, {headers: {
-    "Authorization": `Bearer ${access_token}`
-  }})
+
+  const userInfo = await axiosInstance.get(apigeeUserInfoUrl, {
+    headers: {
+      "Authorization": `Bearer ${access_token}`
+    }
+  })
+
   logger.debug("apigee userinfo response", {
     response: {
-      headers: userInfo.headers,
       data: userInfo.data,
       status: userInfo.status
     }
   })
-  // then create an signed JWT for the id token
-  // TODO: needs adding to dynamoDB
-  //   const userName = `${mockOidcConfig.userPoolIdp}_${userInfo.data.sub}`
+
+  // Create a signed JWT for the ID token
+  const username = `${mockOidcConfig.userPoolIdp}_${userInfo.data.sub}`
   const current_time = Math.floor(Date.now() / 1000)
   const expiration_time = current_time + 300
+
   const jwtClaims = {
     exp: expiration_time,
     iat: current_time,
@@ -191,21 +198,37 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     authentication_assurance_level: "3",
     given_name: userInfo.data.given_name,
     family_name: userInfo.data.family_name,
-    email: userInfo.data.email
+    email: userInfo.data.email,
+    selected_roleid: userInfo.data.selected_roleid
   }
 
   logger.debug("Claims", {jwtClaims})
+
   const signOptions: jwt.SignOptions = {
     algorithm: "RS512",
     keyid: jwtKid
   }
+
   const jwtPrivateKey = await getSecret(jwtPrivateKeyArn)
   const jwt_token = jwt.sign(jwtClaims, jwtPrivateKey as PrivateKey, signOptions)
-  logger.debug("jwt_token", {jwt_token})
+  logger.debug("id_token", {jwt_token})
 
-  // will have needed to set the jwks url for the mock coginito
+  // Store token information in DynamoDB
+  const params = {
+    Item: {
+      "username": username,
+      "CIS2_accessToken": access_token,
+      "CIS2_idToken": jwt_token,
+      "CIS2_expiresIn": expiration_time,
+      "selectedRoleId": jwtClaims.selected_roleid
+    },
+    TableName: TokenMappingTableName
+  }
 
-  // then return some data that looks like this
+  logger.debug("going to insert into dynamodb", {params})
+  await documentClient.send(new PutCommand(params))
+
+  // Return the mock token response
   const responseData = {
     "access_token": access_token,
     "expires_in": 3600,
@@ -217,6 +240,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     "session_state": sessionState,
     "token_type": "Bearer"
   }
+
   return {
     statusCode: 200,
     body: JSON.stringify(responseData)
