@@ -17,7 +17,8 @@ import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 
 import {formatHeaders, rewriteRequestBody} from "./helpers"
 import {SessionStateItem} from "./types"
-
+import {v4 as uuidv4} from "uuid"
+import jwt from "jsonwebtoken"
 /*
 This is the lambda code that is used to intercept calls to token endpoint as part of the cognito login flow
 It expects the following environment variables to be set
@@ -162,8 +163,49 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     const userInfo = await axiosInstance.get(apigeeUserInfoUrl, {headers: {
       "Authorization": `Bearer ${access_token}`
     }})
-    logger.debug("apigee userinfo response", {userInfo})
+    logger.debug("apigee userinfo response", {
+      response: {
+        headers: userInfo.headers,
+        data: userInfo.data,
+        status: userInfo.status
+      }
+    })
     // then create an signed JWT for the id token
+    const userName = `${mockOidcConfig.userPoolIdp}_${userInfo.data.sub}`
+    const current_time = Math.floor(Date.now() / 1000)
+    const expiration_time = current_time + 300
+    const jwtClaims = {
+      exp: expiration_time,
+      iat: current_time,
+      jti: uuidv4(),
+      iss: "https://identity.ptl.api.platform.nhs.uk/realms/Cis2-mock-internal-dev",
+      aud: "eps_cpt_ui_dev",
+      sub: userInfo.data.sub,
+      typ: "ID",
+      azp: "eps_cpt_ui_dev",
+      sessionState: sessionState,
+      acr: "AAL3_ANY",
+      sid: sessionState,
+      id_assurance_level: "3",
+      uid: userInfo.data.sub,
+      amr: [
+        "N3_SMARTCARD"
+      ],
+      name: userInfo.data.name,
+      authentication_assurance_level: "3",
+      given_name: userInfo.data.given_name,
+      family_name: userInfo.data.family_name,
+      email: userInfo.data.email
+    }
+
+    logger.debug("Claims", {jwtClaims})
+    const signOptions: jwt.SignOptions = {
+      algorithm: "RS512",
+      keyid: jwtKid
+    }
+    const jwtPrivateKey = await getSecret(jwtPrivateKeyArn)
+    const jwt_token = jwt.sign(jwtClaims, jwtPrivateKey as PrivateKey, signOptions)
+    logger.debug("jwt_token", {jwt_token})
 
     // will have needed to set the jwks url for the mock coginito
 
@@ -171,8 +213,8 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     const responseData = {
       "access_token": access_token,
       "expires_in": 3600,
-      "id_token": "NEED TO CREATE THIS",
-      "not-before-policy": 1735638487,
+      "id_token": jwt_token,
+      "not-before-policy": current_time,
       "refresh_expires_in": 1800,
       "refresh_token": refresh_token,
       "scope": "openid associatedorgs profile nationalrbacaccess nhsperson email",
