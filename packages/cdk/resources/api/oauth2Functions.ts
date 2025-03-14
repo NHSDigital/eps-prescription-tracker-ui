@@ -73,17 +73,14 @@ export class OAuth2Functions extends Construct {
   public constructor(scope: Construct, id: string, props: OAuth2FunctionsProps) {
     super(scope, id)
 
-    let useMock
     let mockOidcAuthorizeEndpoint
     let mockOidcIssuer
     let mockOidcClientId
     if (props.useMockOidc) {
-      useMock = "true"
       mockOidcIssuer = props.mockOidcIssuer as string
       mockOidcAuthorizeEndpoint = props.mockOidcAuthorizeEndpoint as string
       mockOidcClientId = props.mockOidcClientId as string
     } else {
-      useMock = "false"
       mockOidcAuthorizeEndpoint = ""
       mockOidcIssuer = ""
       mockOidcClientId = ""
@@ -114,8 +111,7 @@ export class OAuth2Functions extends Construct {
         CIS2_OIDC_CLIENT_ID: props.primaryOidcClientId,
         CIS2_OIDC_ISSUER: props.primaryOidcIssuer,
         FULL_CLOUDFRONT_DOMAIN: props.fullCloudfrontDomain,
-        jwtKid: props.jwtKid,
-        useMock: "false"
+        jwtKid: props.jwtKid
       }
     })
 
@@ -134,7 +130,6 @@ export class OAuth2Functions extends Construct {
       packageBasePath: "packages/cognito",
       entryPoint: "src/authorize.ts",
       lambdaEnvironmentVariables: {
-        useMock,
         IDP_AUTHORIZE_PATH: props.primaryOidcAuthorizeEndpoint,
         OIDC_CLIENT_ID: props.primaryOidcClientId,
         COGNITO_CLIENT_ID: props.userPoolClientId,
@@ -201,9 +196,8 @@ export class OAuth2Functions extends Construct {
         logRetentionInDays: props.logRetentionInDays,
         logLevel: props.logLevel,
         packageBasePath: "packages/cognito",
-        entryPoint: "src/authorize.ts",
+        entryPoint: "src/authorizeMock.ts",
         lambdaEnvironmentVariables: {
-          useMock,
           IDP_AUTHORIZE_PATH: mockOidcAuthorizeEndpoint,
           OIDC_CLIENT_ID: mockOidcClientId,
           COGNITO_CLIENT_ID: props.userPoolClientId,
@@ -238,7 +232,7 @@ export class OAuth2Functions extends Construct {
         logRetentionInDays: props.logRetentionInDays,
         logLevel: props.logLevel,
         packageBasePath: "packages/cognito",
-        entryPoint: "src/token.ts",
+        entryPoint: "src/tokenMock.ts",
         lambdaEnvironmentVariables: {
           TokenMappingTableName: props.tokenMappingTable.tableName,
           SessionStateMappingTableName: props.sessionStateMappingTable.tableName,
@@ -251,7 +245,6 @@ export class OAuth2Functions extends Construct {
           MOCK_OIDC_ISSUER: props.mockOidcIssuer,
           FULL_CLOUDFRONT_DOMAIN: props.fullCloudfrontDomain,
           jwtKid: props.jwtKid,
-          useMock: "true",
           APIGEE_API_KEY: props.apigeeApiKey,
           APIGEE_API_SECRET: props.apigeeApiSecret
         }

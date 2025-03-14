@@ -2,16 +2,10 @@ import {Logger} from "@aws-lambda-powertools/logger"
 import {APIGatewayProxyEvent, APIGatewayProxyResult} from "aws-lambda"
 import {injectLambdaContext} from "@aws-lambda-powertools/logger/middleware"
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
-import {
-  DynamoDBDocumentClient,
-  GetCommand,
-  DeleteCommand,
-  PutCommand
-} from "@aws-sdk/lib-dynamodb"
+import {DynamoDBDocumentClient, GetCommand, DeleteCommand} from "@aws-sdk/lib-dynamodb"
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 import middy from "@middy/core"
 import inputOutputLogger from "@middy/input-output-logger"
-import {createHash, randomBytes} from "crypto"
 
 import {StateItem} from "./types"
 
@@ -21,7 +15,6 @@ import {StateItem} from "./types"
  * StateMappingTableName
  * COGNITO_CLIENT_ID
  * COGNITO_DOMAIN
- * MOCK_OIDC_ISSUER
  * PRIMARY_OIDC_ISSUER
  *
  */
@@ -34,17 +27,9 @@ const middyErrorHandler = new MiddyErrorHandler(errorResponseBody)
 const stateMappingTableName = process.env["StateMappingTableName"] as string
 const SessionStateMappingTableName = process.env["SessionStateMappingTableName"] as string
 const fullCognitoDomain = process.env["COGNITO_DOMAIN"] as string
-const useMock: boolean = process.env["useMock"] === "true"
 
 const dynamoClient = new DynamoDBClient()
 const documentClient = DynamoDBDocumentClient.from(dynamoClient)
-
-type SessionStateItem = {
-  LocalCode: string,
-  SessionState: string;
-  ApigeeCode: string;
-  ExpiryTime: number
-};
 
 const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   logger.appendKeys({"apigw-request-id": event.requestContext?.requestId})
@@ -75,8 +60,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   logger.debug("environment variables", {
     stateMappingTableName,
     SessionStateMappingTableName,
-    fullCognitoDomain,
-    useMock
+    fullCognitoDomain
   })
 
   // Always delete the old state
@@ -97,54 +81,6 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   }
 
   const cognitoStateItem = getResult.Item as StateItem
-
-  if (useMock) {
-    // we need to generate a session state param and store it along with code returned
-    // as that will be used in the token lambda
-    // Generate the hashed state value
-    const sessionState = createHash("sha256").update(state).digest("hex")
-    const localCode = randomBytes(20).toString("hex")
-
-    const sessionStateExpiryTime = Math.floor(Date.now() / 1000) + 300
-
-    const item: SessionStateItem = {
-      LocalCode: localCode,
-      SessionState: sessionState,
-      ApigeeCode: code,
-      ExpiryTime: sessionStateExpiryTime
-    }
-
-    logger.debug("going to insert into session state mapping table", {
-      SessionStateMappingTableName,
-      item
-    })
-    await documentClient.send(
-      new PutCommand({
-        TableName: SessionStateMappingTableName,
-        Item: item
-      })
-    )
-
-    // Build response parameters for redirection
-    const responseParams = {
-      state: cognitoStateItem.CognitoState,
-      session_state: sessionState,
-      code: localCode
-    }
-
-    const redirectUri = `https://${fullCognitoDomain}/oauth2/idpresponse` +
-    `?${new URLSearchParams(responseParams).toString()}`
-
-    logger.info("Redirecting to Cognito", {redirectUri})
-
-    return {
-      statusCode: 302,
-      headers: {Location: redirectUri},
-      isBase64Encoded: false,
-      body: JSON.stringify({})
-    }
-
-  }
 
   if (!session_state) {
     logger.error(
