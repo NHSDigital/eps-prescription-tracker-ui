@@ -17,7 +17,6 @@ import {StateItem} from "./types"
 /*
  * Expects the following environment variables to be set:
  *
- *
  * IDP_AUTHORIZE_PATH  -> This is the upstream auth provider - in this case CIS2
  * OIDC_CLIENT_ID
  * COGNITO_CLIENT_ID
@@ -29,11 +28,11 @@ import {StateItem} from "./types"
  */
 
 // Environment variables
-const authorizeEndpoint = process.env["IDP_AUTHORIZE_PATH"] as string
 const cis2ClientId = process.env["OIDC_CLIENT_ID"] as string
 const userPoolClientId = process.env["COGNITO_CLIENT_ID"] as string
 const cloudfrontDomain = process.env["FULL_CLOUDFRONT_DOMAIN"] as string
 const stateMappingTableName = process.env["StateMappingTableName"] as string
+const apigeeApiKey = process.env["APIGEE_API_KEY"] as string
 
 const logger = new Logger({serviceName: "authorize"})
 const errorResponseBody = {message: "A system error has occurred"}
@@ -76,7 +75,7 @@ const lambdaHandler = async (
   const stateTtl = Math.floor(Date.now() / 1000) + 300
 
   // Build the callback URI for redirection
-  const callbackUri = `https://${cloudfrontDomain}/oauth2/callback`
+  const callbackUri = `https://${cloudfrontDomain}/oauth2/mock-callback`
 
   // Store original state mapping in DynamoDB
   const item: StateItem = {
@@ -92,18 +91,18 @@ const lambdaHandler = async (
     })
   )
 
-  // Build the redirect parameters for CIS2
   const responseParameters = {
-    response_type: queryParams.response_type as string,
-    scope: queryParams.scope as string,
-    client_id: cis2ClientId,
-    state: cis2State,
+    client_id: apigeeApiKey,
     redirect_uri: callbackUri,
-    prompt: "login"
+    response_type: "code",
+    state: cis2State
   }
 
-  // This is the CIS2 URL we are pointing the client towards
-  const redirectPath = `${authorizeEndpoint}?${new URLSearchParams(responseParameters)}`
+  // how do we deal with different callback uri
+  // https://docs.apigee.com/api-platform/security/oauth/advanced-oauth-20-topics
+  // apigee does not support wildcards
+  // eslint-disable-next-line max-len
+  const redirectPath = `https://internal-dev.api.service.nhs.uk/oauth2-mock/authorize?${new URLSearchParams(responseParameters)}`
 
   return {
     statusCode: 302,
