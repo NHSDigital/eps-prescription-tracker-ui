@@ -90,14 +90,6 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     throw new Error("Missing required query parameters: session_state")
   }
 
-  // Always delete the old state
-  await documentClient.send(
-    new DeleteCommand({
-      TableName: stateMappingTableName,
-      Key: {State: state}
-    })
-  )
-
   // Build response parameters for redirection
   const responseParams = {
     state: cognitoStateItem.CognitoState,
