@@ -12,6 +12,7 @@ export interface OAuth2ApiGatewayMethodsProps {
   readonly authorizeLambda: NodejsFunction
   readonly mockAuthorizeLambda: NodejsFunction
   readonly callbackLambda: NodejsFunction
+  readonly mockCallbackLambda: NodejsFunction
   readonly useMockOidc: boolean
 }
 
@@ -63,6 +64,13 @@ export class OAuth2ApiGatewayMethods extends Construct {
       credentialsRole: props.oauth2APiGatewayRole
     }))
 
+    // Return journey login callback.
+    if (props.useMockOidc) {
+      const mockCallbackResource = props.oauth2ApiGateway.root.addResource("mock-callback")
+      mockCallbackResource.addMethod("GET", new LambdaIntegration(props.mockCallbackLambda, {
+        credentialsRole: props.oauth2APiGatewayRole
+      }))
+    }
     //Outputs
   }
 }
