@@ -37,6 +37,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   // see if we need to redirect for a pull request
   try {
     const decodedStateString = Buffer.from(state, "base64").toString("utf-8")
+    logger.debug("Decoded state string", {decodedStateString})
     const decodedState = JSON.parse(decodedStateString)
     if (decodedState.isPullRequest) {
       const responseParams = {
@@ -55,9 +56,8 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
       }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  } catch (e) {
-    logger.warn("Could not base64 decode state")
+  } catch (error) {
+    logger.warn("Could not base64 decode state", {error})
   }
   throw new Error("Not implemented")
 }
