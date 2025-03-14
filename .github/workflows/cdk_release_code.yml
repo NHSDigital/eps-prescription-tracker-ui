@@ -73,6 +73,8 @@ on:
         required: false
       APIGEE_API_KEY:
         required: false
+      APIGEE_API_SECRET:
+        required: false
 jobs:
   release_code:
     runs-on: ubuntu-22.04
@@ -182,6 +184,7 @@ jobs:
           --arg apigeePrescriptionsEndpoint "${{ inputs.APIGEE_PRESCRIPTIONS_ENDPOINT }}" \
           --arg apigeePersonalDemographicsEndpoint "${{ inputs.APIGEE_PDS_ENDPOINT }}" \
           --arg apigeeApiKey "${{ secrets.APIGEE_API_KEY }}" \
+          --arg apigeeApiSecret "${{ secrets.APIGEE_API_SECRET }}" \
           --arg jwtKid "${{ inputs.JWT_KID }}" \
           --arg roleId "${{ inputs.ROLE_ID }}" \
           '.context += {
@@ -218,6 +221,7 @@ jobs:
             "apigeePrescriptionsEndpoint": $apigeePrescriptionsEndpoint,
             "apigeePersonalDemographicsEndpoint": $apigeePersonalDemographicsEndpoint,
             "apigeeApiKey": $apigeeApiKey,
+            "apigeeApiSecret": $apigeeApiSecret,
             "jwtKid": $jwtKid,
             "roleId": $roleId
             }' \
