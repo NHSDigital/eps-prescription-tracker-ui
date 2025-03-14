@@ -58,6 +58,7 @@ export class OAuth2Functions extends Construct {
   public readonly authorizeLambda: NodejsFunction
   public readonly mockAuthorizeLambda: NodejsFunction
   public readonly callbackLambda: NodejsFunction
+  public readonly mockCallbackLambda: NodejsFunction
   public readonly tokenLambda: NodejsFunction
   public readonly mockTokenLambda: NodejsFunction
 
@@ -237,9 +238,36 @@ export class OAuth2Functions extends Construct {
         mockTokenLambda.executeLambdaManagedPolicy
       )
 
+      const mockCallbackLambda = new LambdaFunction(this, "MockCallbackLambdaResources", {
+        serviceName: props.serviceName,
+        stackName: props.stackName,
+        lambdaName: `${props.stackName}-mock-callback`,
+        additionalPolicies: [
+          props.stateMappingTableWritePolicy,
+          props.stateMappingTableReadPolicy,
+          props.useStateMappingKmsKeyPolicy
+        ],
+        logRetentionInDays: props.logRetentionInDays,
+        logLevel: props.logLevel,
+        packageBasePath: "packages/cognito",
+        entryPoint: "src/callbackMock.ts",
+        lambdaEnvironmentVariables: {
+          StateMappingTableName: props.stateMappingTable.tableName,
+          COGNITO_CLIENT_ID: props.userPoolClientId,
+          COGNITO_DOMAIN: props.fullCognitoDomain,
+          MOCK_OIDC_ISSUER: mockOidcIssuer,
+          PRIMARY_OIDC_ISSUER: props.primaryOidcIssuer
+        }
+      })
+
+      oauth2Policies.push(
+        mockCallbackLambda.executeLambdaManagedPolicy
+      )
+
       // Output
       this.mockAuthorizeLambda = mockAuthorizeLambda.lambda
       this.mockTokenLambda = mockTokenLambda.lambda
+      this.mockCallbackLambda = mockCallbackLambda.lambda
     }
 
     // Outputs
