@@ -102,11 +102,13 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
       Key: {State: state}
     })
   )
-  const cognitoStateItem = getResult.Item as StateItem
+
   if (!getResult.Item) {
     logger.error("Failed to get state from table", {tableName: stateMappingTableName})
     throw new Error("State not found in DynamoDB")
   }
+
+  const cognitoStateItem = getResult.Item as StateItem
 
   logger.debug("environment variables", {
     stateMappingTableName,
@@ -125,13 +127,6 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
       Key: {State: state}
     })
   )
-
-  if (!getResult.Item) {
-    logger.error("Failed to get state from table", {tableName: stateMappingTableName})
-    throw new Error("State not found in DynamoDB")
-  }
-
-  const cognitoStateItem = getResult.Item as StateItem
 
   // we need to generate a session state param and store it along with code returned
   // as that will be used in the token lambda
