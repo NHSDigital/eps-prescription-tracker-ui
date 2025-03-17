@@ -14,7 +14,7 @@
   "dependencies": {
     "aws-amplify": "^6.13.4",
     "axios": "^1.8.3",
-    "i18next": "^24.2.1",
+    "i18next": "^24.2.3",
     "i18next-browser-languagedetector": "^8.0.4",
     "nhsuk-frontend": "^8.0.2",
     "i18next-http-backend": "^3.0.2",
@@ -28,7 +28,7 @@
     "react-router-dom": "^6.22.3"
   },
   "devDependencies": {
-    "@swc/core": "^1.11.8",
+    "@swc/core": "^1.11.9",
     "@swc/jest": "^0.2.37",
     "@testing-library/jest-dom": "^6.6.2",
     "@testing-library/react": "^16.2.0",
@@ -53,6 +53,6 @@
     "sass": "^1.85.1",
     "ts-jest": "^29.2.6",
     "typescript": "^5.8.2",
-    "vite": "^6.2.1"
+    "vite": "^6.2.2"
   }
 }
