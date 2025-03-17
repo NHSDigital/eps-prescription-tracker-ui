@@ -4,13 +4,17 @@ import jwt from "jsonwebtoken"
 import {ParsedUrlQuery} from "querystring"
 import {v4 as uuidv4} from "uuid"
 
-export function rewriteBodyToAddSignedJWT(
+export function rewriteRequestBody(
   logger: Logger,
   objectBodyParameters: ParsedUrlQuery,
   idpTokenPath: string,
+  idpCallbackPath: string,
   jwtPrivateKey: jwt.PrivateKey,
   jwtKid: string
 ): ParsedUrlQuery {
+  logger.debug("Updating the callback URI")
+  objectBodyParameters.redirect_uri = idpCallbackPath
+
   logger.debug("Rewriting body to include signed jwt")
   const current_time = Math.floor(Date.now() / 1000)
   const expiration_time = current_time + 300
