@@ -68,7 +68,6 @@ export class OAuth2Functions extends Construct {
   public readonly mockCallbackLambda: NodejsFunction
   public readonly tokenLambda: NodejsFunction
   public readonly mockTokenLambda: NodejsFunction
-  public readonly mockCallbackLambda: NodejsFunction
 
   public constructor(scope: Construct, id: string, props: OAuth2FunctionsProps) {
     super(scope, id)
