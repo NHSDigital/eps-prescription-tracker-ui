@@ -7,6 +7,7 @@ import React, {
 } from "react"
 
 import { useLocalStorageState } from "@/helpers/useLocalStorageState"
+import { normalizePath } from '@/helpers/utils'
 import { AuthContext } from "./AuthProvider"
 
 import {
@@ -140,7 +141,8 @@ export const AccessProvider = ({ children }: { children: ReactNode }) => {
     ]
 
     if (!selectedRole) {
-      if (!allowed_no_role_paths.includes(location.pathname)) {
+      if (!allowed_no_role_paths.includes(normalizePath(location.pathname))) {
+        console.log("Redirecting from", location.pathname)
         navigate("/selectyourrole")
       }
     }
@@ -183,7 +185,7 @@ export const AccessProvider = ({ children }: { children: ReactNode }) => {
     updateAccessVariables()
     setUsingLocal(false)
 
-    ensureRoleSelected()
+    // ensureRoleSelected()
   }, [auth?.idToken]) // run ONLY ONCE on mount (i.e. on initial page load)
 
   return (

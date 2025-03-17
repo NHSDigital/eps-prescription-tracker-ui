@@ -4,7 +4,8 @@ import { Hub } from "aws-amplify/utils"
 import { signInWithRedirect, signOut, getCurrentUser, AuthUser, fetchAuthSession, JWT, SignInWithRedirectInput } from 'aws-amplify/auth'
 import { authConfig } from './configureAmplify'
 
-import { useLocalStorageState } from '@/helpers/useLocalStorageState';
+import { useLocalStorageState } from '@/helpers/useLocalStorageState'
+import { normalizePath } from '@/helpers/utils'
 import { useNavigate, useLocation } from 'react-router-dom'
 
 export interface AuthContextType {
@@ -47,7 +48,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           "/logout"
         ]
 
-        if (!noRedirectPaths.includes(location.pathname)) {
+        if (!noRedirectPaths.includes(normalizePath(location.pathname))) {
           navigate("/login")
         }
       }
