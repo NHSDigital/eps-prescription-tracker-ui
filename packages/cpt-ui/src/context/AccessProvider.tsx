@@ -185,7 +185,7 @@ export const AccessProvider = ({ children }: { children: ReactNode }) => {
     updateAccessVariables()
     setUsingLocal(false)
 
-    // ensureRoleSelected()
+    ensureRoleSelected()
   }, [auth?.idToken]) // run ONLY ONCE on mount (i.e. on initial page load)
 
   return (
