@@ -28,6 +28,7 @@ import {StateItem} from "./types"
  */
 
 // Environment variables
+const authorizeEndpoint = process.env["IDP_AUTHORIZE_PATH"] as string
 const cis2ClientId = process.env["OIDC_CLIENT_ID"] as string
 const userPoolClientId = process.env["COGNITO_CLIENT_ID"] as string
 const cloudfrontDomain = process.env["FULL_CLOUDFRONT_DOMAIN"] as string
@@ -98,11 +99,8 @@ const lambdaHandler = async (
     state: cis2State
   }
 
-  // how do we deal with different callback uri
-  // https://docs.apigee.com/api-platform/security/oauth/advanced-oauth-20-topics
-  // apigee does not support wildcards
-  // eslint-disable-next-line max-len
-  const redirectPath = `https://internal-dev.api.service.nhs.uk/oauth2-mock/authorize?${new URLSearchParams(responseParameters)}`
+  // This is the CIS2 URL we are pointing the client towards
+  const redirectPath = `${authorizeEndpoint}?${new URLSearchParams(responseParameters)}`
 
   return {
     statusCode: 302,
