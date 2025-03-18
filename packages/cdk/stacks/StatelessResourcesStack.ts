@@ -265,6 +265,7 @@ export class StatelessResourcesStack extends Stack {
       executePolices: [
         ...apiFunctions.apiFunctionsPolicies
       ],
+      CIS2SignOutLambda: apiFunctions.CIS2SignOutLambda,
       restAPiGatewayRole: apiGateway.apiGatewayRole,
       restApiGateway: apiGateway.apiGateway,
       prescriptionSearchLambda: apiFunctions.prescriptionSearchLambda,

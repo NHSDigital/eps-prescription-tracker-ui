@@ -4,8 +4,13 @@ import { Hub } from "aws-amplify/utils"
 import { signInWithRedirect, signOut, getCurrentUser, AuthUser, fetchAuthSession, JWT, SignInWithRedirectInput } from 'aws-amplify/auth'
 import { authConfig } from './configureAmplify'
 
+import { API_ENDPOINTS } from "@/constants/environment"
 import { useLocalStorageState } from '@/helpers/useLocalStorageState';
 import { useNavigate, useLocation } from 'react-router-dom'
+
+import http from "@/helpers/axios"
+
+const CIS2SignOutEndpoint = API_ENDPOINTS.CIS2_SIGNOUT_ENDPOINT
 
 export interface AuthContextType {
   error: string | null
@@ -172,13 +177,29 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
    */
   const cognitoSignOut = async () => {
     console.log("Signing out...")
-
-    // TODO: Also sign out of the CPT API, so it can delete the token
-    // This is blocked until we have a central Dynamo interaction lambda
-
     try {
-      await signOut({ global: true });
-      console.log("Signed out successfully!");
+      const signOutPromise = signOut({ global: true })
+        .then(() => {
+          console.log("Frontend Cognito signout OK!")
+        }).catch((err) => {
+          console.log("Failed to sign out of cognito", err)
+          throw err
+        })
+      const httpPromise = http
+        .get(CIS2SignOutEndpoint, {
+          headers: {
+            Authorization: `Bearer ${idToken}`,
+            "NHSD-Session-URID": "555254242106",
+          },
+        })
+        .then(() => {
+          console.log("Backend CIS2 signout OK")
+        })
+        .catch((err) => {
+          console.warn("Backend CIS2 sign-out API call failed", err)
+        })
+
+      await Promise.all([signOutPromise, httpPromise])
 
       // Immediately reset state to signed out.
       setUser(null)

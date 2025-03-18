@@ -30,6 +30,7 @@
         "packages/prescriptionDetailsLambda",
         "packages/auth_demo",
         "packages/trackerUserInfoLambda",
+        "packages/CIS2SignOutLambda",
         "packages/selectedRoleLambda"
     ],
     "devDependencies": {

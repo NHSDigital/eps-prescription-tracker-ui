@@ -14,6 +14,12 @@ import {
 
 import { AuthContext, AuthProvider } from "@/context/AuthProvider";
 
+import axios from "@/helpers/axios";
+jest.mock("@/helpers/axios");
+
+// Tell TypeScript that axios is a mocked version.
+const mockedAxios = axios as jest.Mocked<typeof axios>;
+
 // Mock environment variables to mimic the real environment
 process.env.VITE_userPoolId = "testUserPoolId";
 process.env.VITE_userPoolClientId = "testUserPoolClientId";
@@ -127,6 +133,13 @@ describe("AuthProvider", () => {
       }
       return () => { }; // Mock unsubscribe function
     });
+
+    // This mocks the backend CIS2 logout call, which just deletes the 
+    // tokens from the Dynamo table.
+    mockedAxios.get.mockResolvedValue({
+      status: 200
+    });
+
   });
 
   // Initialization and Configuration

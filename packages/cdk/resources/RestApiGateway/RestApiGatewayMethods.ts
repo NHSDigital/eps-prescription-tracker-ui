@@ -12,6 +12,7 @@ export interface RestApiGatewayMethodsProps {
   readonly executePolices: Array<IManagedPolicy>
   readonly restAPiGatewayRole: IRole
   readonly restApiGateway: RestApi
+  readonly CIS2SignOutLambda: NodejsFunction
   readonly prescriptionSearchLambda: NodejsFunction
   readonly prescriptionDetailsLambda: NodejsFunction
   readonly trackerUserInfoLambda: NodejsFunction
@@ -38,6 +39,15 @@ export class RestApiGatewayMethods extends Construct {
     for (const policy of props.executePolices) {
       props.restAPiGatewayRole.addManagedPolicy(policy)
     }
+
+    // prescription-search endpoint
+    const CIS2SignOutLambdaResource = props.restApiGateway.root.addResource("cis2-signout")
+    CIS2SignOutLambdaResource.addMethod("GET", new LambdaIntegration(props.CIS2SignOutLambda, {
+      credentialsRole: props.restAPiGatewayRole
+    }), {
+      authorizationType: AuthorizationType.COGNITO,
+      authorizer: props.authorizer
+    })
 
     // prescription-search endpoint
     const prescriptionSearchLambdaResource = props.restApiGateway.root.addResource("prescription-search")
