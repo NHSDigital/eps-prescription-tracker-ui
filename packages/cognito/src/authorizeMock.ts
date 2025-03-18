@@ -33,7 +33,7 @@ const cis2ClientId = process.env["OIDC_CLIENT_ID"] as string
 const userPoolClientId = process.env["COGNITO_CLIENT_ID"] as string
 const cloudfrontDomain = process.env["FULL_CLOUDFRONT_DOMAIN"] as string
 const stateMappingTableName = process.env["StateMappingTableName"] as string
-const apigeeApiKey = process.env["APIGEE_API_KEY"] as string
+// const apigeeApiKey = process.env["APIGEE_API_KEY"] as string
 
 const logger = new Logger({serviceName: "authorizeMock"})
 const errorResponseBody = {message: "A system error has occurred"}
@@ -95,7 +95,7 @@ const lambdaHandler = async (
   const responseParameters = {
     response_type: "code",
     scope: queryParams.scope as string,
-    client_id: apigeeApiKey,
+    client_id: cis2ClientId,
     state: cis2State,
     redirect_uri: callbackUri,
     prompt: "login"
