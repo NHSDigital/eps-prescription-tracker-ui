@@ -118,7 +118,7 @@ export REACT_APP_redirectSignOut=$VITE_redirectSignOut
 To enable mock auth for the local dev server, we only need the user pool details. To fetch these, you can use the following AWS CLI commands:
 
 ```
-export SERVICE_NAME=cpt-ui-pr-566
+export SERVICE_NAME=cpt-ui-pr-<PR NUMBER>
 userPoolClientId=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${SERVICE_NAME}-stateful-resources:userPoolClient:userPoolClientId'].Value" --output text)
 userPoolId=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${SERVICE_NAME}-stateful-resources:userPool:Id'].Value" --output text)
 echo $userPoolClientId
