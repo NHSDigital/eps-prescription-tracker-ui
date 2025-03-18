@@ -63,27 +63,22 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   try {
     const decodedStateString = Buffer.from(state, "base64").toString("utf-8")
     logger.debug("Decoded state string", {decodedStateString})
-
-    try {
-      const decodedState = JSON.parse(decodedStateString)
-      if (decodedState.isPullRequest) {
-        const responseParams = {
-          state,
-          session_state,
-          code
-        }
-        const baseRedirectUri = decodedState.redirectUri
-        const redirectUri = `${baseRedirectUri}?${new URLSearchParams(responseParams).toString()}`
-        logger.debug(`return redirect to ${redirectUri}`, {baseRedirectUri, responseParams})
-        return {
-          statusCode: 302,
-          headers: {Location: redirectUri},
-          isBase64Encoded: false,
-          body: JSON.stringify({})
-        }
+    const decodedState = JSON.parse(decodedStateString)
+    if (decodedState.isPullRequest) {
+      const responseParams = {
+        state,
+        session_state,
+        code
       }
-    } catch (jsonError) {
-      logger.warn("Could not parse JSON from decoded state", {error: jsonError})
+      const baseRedirectUri = decodedState.redirectUri
+      const redirectUri = `${baseRedirectUri}?${new URLSearchParams(responseParams).toString()}`
+      logger.debug(`return redirect to ${redirectUri}`, {baseRedirectUri, responseParams})
+      return {
+        statusCode: 302,
+        headers: {Location: redirectUri},
+        isBase64Encoded: false,
+        body: JSON.stringify({})
+      }
     }
   } catch (decodeError) {
     logger.warn("Could not base64 decode state", {error: decodeError})
