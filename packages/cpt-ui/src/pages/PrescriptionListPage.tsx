@@ -58,7 +58,16 @@ export default function PrescriptionListPage() {
                         {/* Prescription list items would go here */}
                     </div>
                 </Container>
-            </main>
+                <Container className="results-container">
+                    <p data-testid="results-heading">
+                        <strong data-testid="results-count">We found {prescriptionCount} results</strong>
+                    </p>
+                    <div data-testid="prescription-results-list">
+                        {/* Prescription list items would go here see more here: https://prototype-nhs-eps.herokuapp.com/epsv12/prescription-results?nhsNumber=9726919215#current-prescriptions */}
+                    </div>
+                </Container>
+
+            </main >
         </>
     );
 }
