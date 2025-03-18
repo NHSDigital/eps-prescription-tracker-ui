@@ -6,16 +6,16 @@ import {
 } from "@jest/globals"
 import {generateKeyPairSync} from "crypto"
 import nock from "nock"
+import jwksClient from "jwks-rsa"
 
 import createJWKSMock from "mock-jwks"
-import jwksClient from "jwks-rsa"
 import {OidcConfig} from "@cpt-ui-common/authFunctions"
+import {PatientAPIResponse, PrescriptionAPIResponse, TreatmentType} from "../src/types"
 
-import {Logger} from "@aws-lambda-powertools/logger"
-
-const apigeeHost = process.env.apigeeHost ?? ""
+const apigeePrescriptionsEndpoint = process.env.apigeePrescriptionsEndpoint as string ?? ""
+const apigeePersonalDemographicsEndpoint = process.env.apigeePersonalDemographicsEndpoint as string ?? ""
 const apigeeCIS2TokenEndpoint = process.env.apigeeCIS2TokenEndpoint
-//const apigeeMockTokenEndpoint = process.env.apigeeMockTokenEndpoint
+const apigeeMockTokenEndpoint = process.env.apigeeMockTokenEndpoint
 //const apigeePrescriptionsEndpoint = process.env.apigeePrescriptionsEndpoint
 const TokenMappingTableName = process.env.TokenMappingTableName
 
@@ -35,7 +35,7 @@ const TokenMappingTableName = process.env.TokenMappingTableName
 //const MOCK_USER_POOL_IDP = process.env.MOCK_USER_POOL_IDP
 //const MOCK_IDP_TOKEN_PATH = process.env.MOCK_IDP_TOKEN_PATH
 
-process.env.MOCK_MODE_ENABLED = "false"
+process.env.MOCK_MODE_ENABLED = "true"
 
 const mockFetchAndVerifyCIS2Tokens = jest.fn()
 const mockGetUsernameFromEvent = jest.fn()
@@ -58,6 +58,80 @@ const {
     format: "pem"
   }
 })
+
+const mockPatientDetails: PatientAPIResponse = {
+  nhsNumber: "9999999999",
+  given: "John",
+  family: "Doe",
+  prefix: "",
+  suffix: "",
+  gender: "male",
+  dateOfBirth: "1990-01-01",
+  address: null
+}
+
+const mockPrescription: Array<PrescriptionAPIResponse> = [{
+  prescriptionId: "01ABC123",
+  statusCode: "0001",
+  issueDate: "2023-01-01",
+  prescriptionTreatmentType: TreatmentType.ACUTE,
+  prescriptionPendingCancellation: false,
+  itemsPendingCancellation: false,
+  nhsNumber: 9999999999
+}]
+
+// Mock the validation module - do this before importing handler
+jest.mock("../src/utils/validation", () => ({
+  validateSearchParams: jest.fn(),
+  ValidationError: class ValidationError extends Error {
+    constructor(message: string) {
+      super(message)
+      this.name = "ValidationError"
+    }
+  }
+}))
+
+// Mock patient and prescription services
+jest.mock("../src/services/patientDetailsLookupService", () => ({
+  getPdsPatientDetails: jest.fn<() => Promise<PatientAPIResponse>>().mockResolvedValue(mockPatientDetails)
+}))
+
+jest.mock("../src/services/prescriptionsLookupService", () => ({
+  getPrescriptions: jest.fn<() => Promise<Array<PrescriptionAPIResponse>>>().mockResolvedValue(mockPrescription),
+  PrescriptionError: class PrescriptionError extends Error {
+    constructor(message: string) {
+      super(message)
+      this.name = "PrescriptionError"
+    }
+  }
+}))
+
+// Mock response mapper
+jest.mock("../src/utils/responseMapper", () => ({
+  mapSearchResponse: jest.fn().mockReturnValue({
+    patient: {
+      nhsNumber: "9999999999",
+      given: "John",
+      family: "Doe",
+      prefix: "",
+      suffix: "",
+      gender: "male",
+      dateOfBirth: "1990-01-01",
+      address: null
+    },
+    currentPrescriptions: [{
+      prescriptionId: "01ABC123",
+      statusCode: "0001",
+      issueDate: "2023-01-01",
+      prescriptionTreatmentType: "0001",
+      prescriptionPendingCancellation: false,
+      itemsPendingCancellation: false
+    }],
+    futurePrescriptions: [],
+    pastPrescriptions: []
+  })
+}))
+
 jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
   const fetchAndVerifyCIS2Tokens = mockFetchAndVerifyCIS2Tokens.mockImplementation(async () => {
     return {
@@ -67,7 +141,7 @@ jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
   })
 
   const getUsernameFromEvent = mockGetUsernameFromEvent.mockImplementation(() => {
-    return "Primary_JoeBloggs"
+    return "Mock_JoeBloggs"
   })
 
   const constructSignedJWTBody = mockConstructSignedJWTBody.mockImplementation(() => {
@@ -81,14 +155,12 @@ jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
       accessToken: "foo",
       expiresIn: 100
     }
-
   })
 
   const updateApigeeAccessToken = mockUpdateApigeeAccessToken.mockImplementation(() => {})
 
-  const initializeOidcConfig = mockInitializeOidcConfig.mockImplementation( () => {
+  const initializeOidcConfig = mockInitializeOidcConfig.mockImplementation(() => {
     // Create a JWKS client for cis2 and mock
-  // this is outside functions so it can be re-used
     const cis2JwksUri = process.env["CIS2_OIDCJWKS_ENDPOINT"] as string
     const cis2JwksClient = jwksClient({
       jwksUri: cis2JwksUri,
@@ -148,9 +220,7 @@ jest.unstable_mockModule("@aws-lambda-powertools/parameters/secrets", () => {
   }
 })
 
-const {handler} = await import("../src/handler")
-
-// redefining readonly property of the performance object
+// Lambda context for tests
 const dummyContext = {
   callbackWaitsForEmptyEventLoop: true,
   functionVersion: "$LATEST",
@@ -167,31 +237,60 @@ const dummyContext = {
   succeed: () => console.log("Succeeded!")
 }
 
-describe("handler tests with cis2 auth", () => {
+describe("handler tests with mock mode enabled", () => {
   const jwks = createJWKSMock("https://dummyauth.com/")
+
   beforeEach(() => {
-    jest.resetModules()
     jest.clearAllMocks()
     jwks.start()
-    nock(apigeeHost)
-      .get("/prescriptions")
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      .query(_ => {
-      // handle any query string
-        return true
-      })
+
+    // Mock the Patient endpoint with patient data
+    nock(apigeePersonalDemographicsEndpoint)
+      .get("/Patient/9999999999")
+      .query(true)
       .reply(200, {
-        prescription: "123"
+        resourceType: "Patient",
+        id: "9999999999",
+        name: [{
+          use: "official",
+          family: "Smith",
+          given: ["John"],
+          prefix: ["Mr"]
+        }],
+        gender: "male",
+        birthDate: "1970-01-01"
+      })
+
+    // Mock the prescriptions endpoint with prescription data
+    nock(apigeePrescriptionsEndpoint)
+      .get("/RequestGroup")
+      .query(true)
+      .reply(200, {
+        resourceType: "Bundle",
+        type: "searchset",
+        entry: [{
+          resource: {
+            resourceType: "RequestGroup",
+            id: "123",
+            status: "active"
+          }
+        }]
       })
   })
 
   afterEach(() => {
     jwks.stop()
+    nock.cleanAll()
   })
 
   it("responds with success", async () => {
+    // Import handler here to make sure all mocks are set up first
+    const {handler} = await import("../src/handler")
 
-    const response = await handler({
+    const event = {
+      queryStringParameters: {
+        nhsNumber: "9999999999"
+      },
       requestContext: {
         authorizer: {
           claims: {
@@ -199,60 +298,66 @@ describe("handler tests with cis2 auth", () => {
           }
         }
       }
-    }, dummyContext)
-    const responseBody = JSON.parse(response.body)
+    }
+
+    const response = await handler(event, dummyContext)
 
     expect(response).toMatchObject({
-      statusCode: 200
+      statusCode: 200,
+      headers: expect.objectContaining({
+        "Content-Type": "application/json"
+      })
     })
 
-    expect(responseBody).toMatchObject({
-      prescription: "123"
-    })
-
-    expect(mockUpdateApigeeAccessToken).toBeCalledWith(
-      expect.any(Object),
+    expect(mockUpdateApigeeAccessToken).toHaveBeenCalledWith(
+      expect.anything(),
       TokenMappingTableName,
       "Mock_JoeBloggs",
       "foo",
       100,
-      expect.any(Object)
+      expect.anything()
     )
   })
 
-  it("throw error when it is a mock user", async () => {
-    mockGetUsernameFromEvent.mockImplementation(() => {
-      return "Mock_JoeBloggs"
-    })
-    const loggerSpy = jest.spyOn(Logger.prototype, "error")
+  it("calls mock apigee token endpoint when it is a mock user", async () => {
+    // Import handler here to make sure all mocks are set up first
+    const {handler} = await import("../src/handler")
 
-    const response = await handler({
+    mockGetUsernameFromEvent.mockReturnValueOnce("Mock_JoeBloggs")
+
+    await handler({
+      queryStringParameters: {
+        nhsNumber: "9999999999"
+      },
       requestContext: {}
     }, dummyContext)
 
-    expect(response).toMatchObject({
-      message: "A system error has occurred"
-    })
-    expect(loggerSpy).toHaveBeenCalledWith(
-      expect.any(Object),
-      "Error: Trying to use a mock user when mock mode is disabled"
+    expect(mockExchangeTokenForApigeeAccessToken).toHaveBeenCalledWith(
+      expect.anything(),
+      apigeeMockTokenEndpoint,
+      expect.anything(),
+      expect.anything()
     )
   })
 
   it("calls cis2 apigee token endpoint when it is a cis2 user", async () => {
-    mockGetUsernameFromEvent.mockImplementation(() => {
-      return "Primary_JoeBloggs"
-    })
+    // Import handler here to make sure all mocks are set up first
+    const {handler} = await import("../src/handler")
+
+    mockGetUsernameFromEvent.mockReturnValueOnce("Primary_JoeBloggs")
 
     await handler({
+      queryStringParameters: {
+        nhsNumber: "9999999999"
+      },
       requestContext: {}
     }, dummyContext)
 
-    expect(mockExchangeTokenForApigeeAccessToken).toBeCalledWith(
-      expect.any(Function),
+    expect(mockExchangeTokenForApigeeAccessToken).toHaveBeenCalledWith(
+      expect.anything(),
       apigeeCIS2TokenEndpoint,
-      expect.any(Object),
-      expect.any(Object)
+      expect.anything(),
+      expect.anything()
     )
   })
 })

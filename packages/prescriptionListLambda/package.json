@@ -1,7 +1,7 @@
 {
-  "name": "prescriptionSearchLambda",
+  "name": "prescriptionListLambda",
   "version": "1.0.0",
-  "description": "Lambda for prescription search",
+  "description": "Lambda for listing prescriptions by NHS number or Prescription ID",
   "main": "handler.ts",
   "author": "NHS Digital",
   "license": "MIT",
@@ -33,6 +33,7 @@
     "@types/aws-lambda": "^8.10.147",
     "axios-mock-adapter": "^2.0.0",
     "mock-jwks": "^3.2.2",
-    "nock": "^14.0.0"
+    "nock": "^14.0.0",
+    "@types/fhir": "^0.0.41"
   }
 }
