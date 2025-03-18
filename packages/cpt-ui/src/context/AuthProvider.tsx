@@ -49,6 +49,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         ]
 
         if (!noRedirectPaths.includes(normalizePath(location.pathname))) {
+          console.warn("No login detected. Redirecting to the login page")
           navigate("/login")
         }
       }
