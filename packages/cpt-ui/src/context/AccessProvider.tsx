@@ -14,6 +14,7 @@ import {
   TrackerUserInfo,
   UserDetails,
 } from "@/types/TrackerUserInfoTypes"
+import { PatientDetails } from "@/types/PrescriptionDetailsTypes"
 
 import { API_ENDPOINTS } from "@/constants/environment"
 
@@ -30,6 +31,8 @@ export type AccessContextType = {
   setSelectedRole: (value: RoleDetails | undefined) => void
   userDetails: UserDetails | undefined
   setUserDetails: (value: UserDetails | undefined) => void
+  patientDetails: PatientDetails | undefined
+  setPatientDetails: (value: PatientDetails | undefined) => void
   rolesWithAccess: RoleDetails[]
   rolesWithoutAccess: RoleDetails[]
   loading: boolean
@@ -58,6 +61,7 @@ export const AccessProvider = ({ children }: { children: ReactNode }) => {
   const [userDetails, setUserDetails] = useLocalStorageState<
     UserDetails | undefined
   >("userDetails", "access", undefined)
+  const [patientDetails, setPatientDetails] = useLocalStorageState<PatientDetails | undefined>("patientDetails", "access", undefined)
   const [usingLocal, setUsingLocal] = useState(true)
   const [rolesWithAccess, setRolesWithAccess] = useState<RoleDetails[]>([])
   const [rolesWithoutAccess, setRolesWithoutAccess] = useState<RoleDetails[]>(
@@ -74,6 +78,7 @@ export const AccessProvider = ({ children }: { children: ReactNode }) => {
     setSingleAccess(false)
     setSelectedRole(undefined)
     setUserDetails(undefined)
+    setPatientDetails(undefined)
 
     // Clear from localStorage to ensure RBAC Banner is removed
     localStorage.removeItem("access")
@@ -183,6 +188,8 @@ export const AccessProvider = ({ children }: { children: ReactNode }) => {
         setSelectedRole,
         userDetails,
         setUserDetails,
+        patientDetails,
+        setPatientDetails,
         rolesWithAccess,
         rolesWithoutAccess,
         loading,
