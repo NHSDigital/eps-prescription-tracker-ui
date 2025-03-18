@@ -269,6 +269,7 @@ export class StatelessResourcesStack extends Stack {
       restAPiGatewayRole: apiGateway.apiGatewayRole,
       restApiGateway: apiGateway.apiGateway,
       prescriptionSearchLambda: apiFunctions.prescriptionSearchLambda,
+      prescriptionDetailsLambda: apiFunctions.prescriptionDetailsLambda,
       trackerUserInfoLambda: apiFunctions.trackerUserInfoLambda,
       selectedRoleLambda: apiFunctions.selectedRoleLambda,
       authorizer: apiGateway.authorizer
