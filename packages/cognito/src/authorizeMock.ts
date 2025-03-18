@@ -93,10 +93,12 @@ const lambdaHandler = async (
   )
 
   const responseParameters = {
-    client_id: apigeeApiKey,
-    redirect_uri: callbackUri,
     response_type: "code",
-    state: cis2State
+    scope: queryParams.scope as string,
+    client_id: apigeeApiKey,
+    state: cis2State,
+    redirect_uri: callbackUri,
+    prompt: "login"
   }
 
   // This is the CIS2 URL we are pointing the client towards
