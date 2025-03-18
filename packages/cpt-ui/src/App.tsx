@@ -10,6 +10,7 @@ import ChangeRolePage from "@/pages/ChangeRolePage";
 import SearchPrescriptionPage from "@/pages/SearchPrescriptionPage";
 import YourSelectedRolePage from "@/pages/YourSelectedRolePage";
 import NotFoundPage from "@/pages/NotFoundPage";
+import PrescriptionListPage from "@/pages/PrescriptionListPage";
 
 export default function App() {
 
@@ -29,9 +30,13 @@ export default function App() {
               path="searchforaprescription"
               element={<SearchPrescriptionPage />}
             />
+            <Route
+              path="prescriptionresults"
+              element={<PrescriptionListPage />}
+            />
           </Route>
         </Routes>
       </AccessProvider>
-    </AuthProvider>
+    </AuthProvider >
   );
 }
