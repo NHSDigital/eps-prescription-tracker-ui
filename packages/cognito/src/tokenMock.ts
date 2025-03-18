@@ -8,7 +8,7 @@ import {DynamoDBDocumentClient, GetCommand, PutCommand} from "@aws-sdk/lib-dynam
 import middy from "@middy/core"
 import inputOutputLogger from "@middy/input-output-logger"
 import axios from "axios"
-import {parse} from "querystring"
+import {parse, stringify} from "querystring"
 
 import {PrivateKey} from "jsonwebtoken"
 
@@ -139,14 +139,32 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     tokenExchangeParams
   })
 
-  const tokenResponse = await axiosInstance.post(apigeeTokenExchangeUrl,
-    tokenExchangeParams,
-    {
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded"
+  //TODO: clean up logging
+  let tokenResponse
+  try {
+    tokenResponse = await axiosInstance.post(apigeeTokenExchangeUrl,
+      stringify(tokenExchangeParams),
+      {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded"
+        }
       }
+    )
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      logger.error("Token exchange failed", {
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        error: error.message
+      })
+    } else {
+      logger.error("Token exchange failed with an unknown error", {
+        error: String(error)
+      })
     }
-  )
+    throw error
+  }
 
   logger.debug("apigee token response", {data: tokenResponse.data})
   const access_token = tokenResponse.data.access_token
