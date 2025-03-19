@@ -16,16 +16,16 @@ export default function PatientDetailsBanner() {
 
     const { patientDetails } = useAccess()
 
-    const capitalize = (string: String) => {
+    const capitalize = (string: string) => {
         return string[0].toLocaleUpperCase() + string.slice(1)
     }
 
     const constructAddress = (address: PatientDetailsAddress) => {
         const stringified = "" +
-            `${address.line1 || ""}, ` +
-            `${address.line2 || ""}, ` +
-            `${address.city || ""}, ` +
-            `${address.postcode || ""} `
+            `${address.line1 ?? ""}, ` +
+            `${address.line2 ?? ""}, ` +
+            `${address.city ?? ""}, ` +
+            `${address.postcode ?? ""} `
 
         return stringified.toLocaleUpperCase()
     }

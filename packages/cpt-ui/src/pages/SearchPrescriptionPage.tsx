@@ -8,7 +8,7 @@ import { useAccess } from "@/context/AccessProvider";
 import { PatientDetails } from "@cpt-ui-common/common-types";
 
 export default function SearchForAPrescriptionPage() {
-  const { patientDetails, setPatientDetails } = useAccess()
+  const { setPatientDetails } = useAccess()
 
   const handleFullClick = () => {
     const newDetails: PatientDetails = {
