@@ -22,6 +22,13 @@ export interface PDSResponse {
   };
 }
 
+export interface PatientDetailsAddress {
+    line1?: string;
+    line2?: string;
+    city?: string;
+    postcode?: string;
+}
+
 export interface PatientDetails {
   nhsNumber: string;
   prefix: string;
@@ -30,12 +37,7 @@ export interface PatientDetails {
   family: string;
   gender: string | null;
   dateOfBirth: string | null;
-  address: {
-    line1?: string;
-    line2?: string;
-    city?: string;
-    postcode?: string;
-  } | null;
+  address: PatientDetailsAddress | null;
   supersededBy?: string;
 }
 

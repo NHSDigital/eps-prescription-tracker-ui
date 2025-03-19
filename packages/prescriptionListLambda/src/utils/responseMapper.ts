@@ -8,7 +8,7 @@ import {
   PrescriptionAPIResponse,
   PrescriptionStatusCategories,
   STATUS_CATEGORY_MAP
-} from "../types"
+} from "@cpt-ui-common/common-types"
 import {
   Bundle,
   BundleEntry,

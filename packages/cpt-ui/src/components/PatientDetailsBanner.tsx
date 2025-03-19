@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react"
 
-import { Row, Col } from "nhsuk-react-components"
-
 import { STRINGS } from "@/constants/ui-strings/PatientDetailsBannerStrings"
 import { useAccess } from "@/context/AccessProvider"
+
+import { PatientDetailsAddress } from "@cpt-ui-common/common-types"
 
 export default function PatientDetailsBanner() {
     const [nameText, setNameText] = useState("")
@@ -13,6 +13,16 @@ export default function PatientDetailsBanner() {
     const [addressText, setAddressText] = useState("")
 
     const { patientDetails } = useAccess()
+
+    const constructAddress = (address: PatientDetailsAddress) => {
+        const stringified = "" +
+            `${address.line1 || ""}, ` +
+            `${address.line2 || ""}, ` +
+            `${address.city || ""}, ` +
+            `${address.postcode || ""} `
+
+        return stringified.toLocaleUpperCase()
+    }
 
     useEffect(() => {
         if (!patientDetails) {
@@ -26,11 +36,15 @@ export default function PatientDetailsBanner() {
         }
         console.log("Patient details are present.", patientDetails)
 
-        setNameText(`${patientDetails.name.given} ${patientDetails.name.family.toLocaleUpperCase()}`)
-        setGenderText(patientDetails.gender)
-        setNhsNumberText(patientDetails.identifier)
-        setDobText(patientDetails.birthDate)
-        setAddressText(patientDetails.address.text)
+        setNameText(`${patientDetails.given} ${patientDetails.family.toLocaleUpperCase()}`)
+        setGenderText(patientDetails.gender || "Unknown")
+        setNhsNumberText(patientDetails.nhsNumber)
+        setDobText(patientDetails.dateOfBirth || "Unknown")
+        if (patientDetails.address) {
+            setAddressText(constructAddress(patientDetails.address))
+        } else {
+            setAddressText("UNKNOWN")
+        }
     }, [patientDetails])
 
     /**
@@ -50,7 +64,6 @@ export default function PatientDetailsBanner() {
                     width: "100%"
                 }}
             >
-                <div />
                 <div style={{ textAlign: "left", fontWeight: "bold", fontSize: "1.1rem" }}>{nameText}</div>
                 <div style={{ textAlign: "left" }}>{STRINGS.GENDER}: {genderText}</div>
                 <div style={{ textAlign: "left" }}>{STRINGS.NHS_NUMBER}: {nhsNumberText}</div>

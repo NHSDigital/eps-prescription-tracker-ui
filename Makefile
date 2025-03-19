@@ -18,6 +18,7 @@ install-hooks: install-python
 	poetry run pre-commit install --install-hooks --overwrite
 
 compile-node:
+	npm run compile --workspace packages/common/commonTypes
 	npm run compile --workspace packages/common/middyErrorHandler
 	npm run compile --workspace packages/common/authFunctions
 	npx tsc --build tsconfig.build.json
@@ -25,6 +26,7 @@ compile-node:
 compile: compile-node
 
 lint-node: compile-node
+	npm run lint --workspace packages/common/commonTypes
 	npm run lint --workspace packages/cloudfrontFunctions
 	npm run lint --workspace packages/cdk
 	npm run lint --workspace packages/cognito
@@ -45,6 +47,7 @@ lint-githubaction-scripts:
 lint: lint-node lint-githubactions lint-githubaction-scripts react-lint
 
 test: compile
+	npm run test --workspace packages/common/commonTypes
 	npm run test --workspace packages/cloudfrontFunctions
 	npm run test --workspace packages/cdk
 	npm run test --workspace packages/cpt-ui
@@ -57,6 +60,8 @@ test: compile
 	npm run test --workspace packages/common/authFunctions
 
 clean:
+	rm -rf packages/common/commonTypes/coverage
+	rm -rf packages/common/commonTypes/lib
 	rm -rf packages/cloudfrontFunctions/coverage
 	rm -rf packages/cloudfrontFunctions/lib
 	rm -rf packages/cdk/coverage
@@ -87,6 +92,7 @@ check-licenses: check-licenses-node check-licenses-python
 
 check-licenses-node:
 	npm run check-licenses
+	npm run check-licenses --workspace packages/common/commonTypes
 	npm run check-licenses --workspace packages/cloudfrontFunctions
 	npm run check-licenses --workspace packages/cdk
 	npm run check-licenses --workspace packages/cpt-ui

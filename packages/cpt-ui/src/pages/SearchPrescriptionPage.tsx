@@ -5,30 +5,25 @@ import { HERO_TEXT } from "@/constants/ui-strings/SearchForAPrescriptionStrings"
 
 import { useAccess } from "@/context/AccessProvider";
 
-import { PatientDetails } from "@/types/PrescriptionDetailsTypes";
+import { PatientDetails } from "@cpt-ui-common/common-types";
 
 export default function SearchForAPrescriptionPage() {
   const { patientDetails, setPatientDetails } = useAccess()
 
   const handleClick = () => {
     const newDetails: PatientDetails = {
-      identifier: "5900009890",
-      name: {
-        prefix: "Mr.",
-        given: "William",
-        family: "Wolderton",
-        suffix: ""
-      },
+      nhsNumber: "5900009890",
+      prefix: "Mr",
+      suffix: "",
+      given: "William",
+      family: "Wolderton",
       gender: "male",
-      birthDate: "01-Nov-1988",
+      dateOfBirth: "01-Nov-1988",
       address: {
-        text: "55 OAK STREET, OAK LANE, LEEDS, WEST YORKSHIRE, LS1 1XX",
-        line: "55 OAK STREET, OAK LANE",
-        city: "LEEDS",
-        district: "WEST YORKSHIRE",
-        postalCode: "LS1 1XX",
-        type: "home", // no idea what these will be
-        use: "true"
+        line1: "55 OAK STREET",
+        line2: "OAK LANE",
+        city: "Leeds",
+        postcode: "LS1 1XX"
       }
     }
 

@@ -10,7 +10,7 @@ import jwksClient from "jwks-rsa"
 
 import createJWKSMock from "mock-jwks"
 import {OidcConfig} from "@cpt-ui-common/authFunctions"
-import {PatientAPIResponse, PrescriptionAPIResponse, TreatmentType} from "../src/types"
+import {PatientAPIResponse, PrescriptionAPIResponse, TreatmentType} from "@cpt-ui-common/common-types"
 
 const apigeePrescriptionsEndpoint = process.env.apigeePrescriptionsEndpoint as string ?? ""
 const apigeePersonalDemographicsEndpoint = process.env.apigeePersonalDemographicsEndpoint as string ?? ""

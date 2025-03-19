@@ -20,7 +20,7 @@ import {
   updateApigeeAccessToken,
   initializeOidcConfig
 } from "@cpt-ui-common/authFunctions"
-import {SearchResponse, SearchParams} from "./types"
+import {SearchResponse, SearchParams} from "@cpt-ui-common/common-types"
 import {mapSearchResponse} from "./utils/responseMapper"
 
 /*
