@@ -116,6 +116,23 @@ const MockAuthProvider = ({
   );
 };
 
+// Mock the AccessProvider context
+jest.mock("@/context/AccessProvider", () => {
+  const React = require("react");
+
+  let mockContextValue = {
+    clear: jest.fn(),
+  }
+
+  const MockAccessContext = React.createContext(mockContextValue);
+  const useAccess = () => React.useContext(MockAccessContext);
+
+  return {
+    AccessContext: MockAccessContext,
+    useAccess
+  };
+});
+
 const renderWithProviders = (
   component: React.ReactElement,
   initialState = defaultAuthState,
