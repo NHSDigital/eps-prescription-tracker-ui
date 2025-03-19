@@ -12,7 +12,13 @@ export default function PatientDetailsBanner() {
     const [dobText, setDobText] = useState("")
     const [addressText, setAddressText] = useState("")
 
+    const [successfulDetails, setSuccessfulDetails] = useState(true)
+
     const { patientDetails } = useAccess()
+
+    const capitalize = (string: String) => {
+        return string[0].toLocaleUpperCase() + string.slice(1)
+    }
 
     const constructAddress = (address: PatientDetailsAddress) => {
         const stringified = "" +
@@ -36,15 +42,34 @@ export default function PatientDetailsBanner() {
         }
         console.log("Patient details are present.", patientDetails)
 
+        let allDetailsPresent = true
+
         setNameText(`${patientDetails.given} ${patientDetails.family.toLocaleUpperCase()}`)
-        setGenderText(patientDetails.gender || "Unknown")
+
         setNhsNumberText(patientDetails.nhsNumber)
-        setDobText(patientDetails.dateOfBirth || "Unknown")
+
+        if (patientDetails.gender) {
+            setGenderText(capitalize(patientDetails.gender))
+        } else {
+            setGenderText(STRINGS.UNKNOWN)
+            allDetailsPresent = false
+        }
+
+        if (patientDetails.dateOfBirth) {
+            setDobText(patientDetails.dateOfBirth)
+        } else {
+            setDobText(STRINGS.UNKNOWN)
+            allDetailsPresent = false
+        }
+
         if (patientDetails.address) {
             setAddressText(constructAddress(patientDetails.address))
         } else {
-            setAddressText("UNKNOWN")
+            setAddressText(STRINGS.UNKNOWN)
+            allDetailsPresent = false
         }
+
+        setSuccessfulDetails(allDetailsPresent)
     }, [patientDetails])
 
     /**
@@ -55,20 +80,25 @@ export default function PatientDetailsBanner() {
     }
 
     return (
-        <div className="nhsuk-banner patient-details-banner" data-testid="patient-detail-banner-div">
+        <div
+            className={`nhsuk-banner patient-details-banner ${!successfulDetails ? "patient-details-partial-data" : ""}`}
+            data-testid="patient-detail-banner-div"
+        >
             <div
-                style={{
-                    display: "flex",
-                    justifyContent: "flex-start",
-                    gap: "30px",
-                    width: "100%"
-                }}
+                className={"patient-detail-banner-row"}
             >
-                <div style={{ textAlign: "left", fontWeight: "bold", fontSize: "1.1rem" }}>{nameText}</div>
-                <div style={{ textAlign: "left" }}>{STRINGS.GENDER}: {genderText}</div>
-                <div style={{ textAlign: "left" }}>{STRINGS.NHS_NUMBER}: {nhsNumberText}</div>
-                <div style={{ textAlign: "left" }}>{STRINGS.DOB}: {dobText}</div>
-                <div style={{ textAlign: "left" }}>{STRINGS.ADDRESS}: {addressText}</div>
+                <div style={{ fontWeight: "bold", fontSize: "1.1rem" }}>{nameText}</div>
+                <div>{STRINGS.GENDER}: {genderText}</div>
+                <div>{STRINGS.NHS_NUMBER}: {nhsNumberText}</div>
+                <div>{STRINGS.DOB}: {dobText}</div>
+                <div>{STRINGS.ADDRESS}: {addressText}</div>
+
+                {
+                    // Places the missing data message on the next line
+                    !successfulDetails && (
+                        <div>{STRINGS.MISSING_DATA}</div>
+                    )
+                }
             </div>
         </div >
     )

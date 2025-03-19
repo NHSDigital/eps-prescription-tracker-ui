@@ -10,7 +10,7 @@ import { PatientDetails } from "@cpt-ui-common/common-types";
 export default function SearchForAPrescriptionPage() {
   const { patientDetails, setPatientDetails } = useAccess()
 
-  const handleClick = () => {
+  const handleFullClick = () => {
     const newDetails: PatientDetails = {
       nhsNumber: "5900009890",
       prefix: "Mr",
@@ -27,12 +27,25 @@ export default function SearchForAPrescriptionPage() {
       }
     }
 
-    console.log("Patient details", patientDetails)
-    if (patientDetails) {
-      setPatientDetails(undefined)
-    } else {
-      setPatientDetails(newDetails)
+    setPatientDetails(newDetails)
+  }
+
+  const handlePartialClick = () => {
+    const newDetails: PatientDetails = {
+      nhsNumber: "5900009890",
+      prefix: "Mr",
+      suffix: "",
+      given: "William",
+      family: "Wolderton",
+      gender: null,
+      dateOfBirth: null,
+      address: null
     }
+    setPatientDetails(newDetails)
+  }
+
+  const handleClearClick = () => {
+    setPatientDetails(undefined)
   }
 
   return (
@@ -51,7 +64,9 @@ export default function SearchForAPrescriptionPage() {
           </Row>
         </Container>
         <Row>
-          <Button onClick={handleClick}>Fake patient data</Button>
+          <Button onClick={handleFullClick}>Complete fake patient data</Button>
+          <Button onClick={handlePartialClick}>Partial fake patient data</Button>
+          <Button onClick={handleClearClick}>Clear fake patient data</Button>
           <Col width="full">
             <EpsTabs />
           </Col>
