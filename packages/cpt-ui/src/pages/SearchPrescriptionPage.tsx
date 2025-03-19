@@ -19,11 +19,13 @@ export default function SearchForAPrescriptionPage() {
             </Col>
           </Row>
         </Container>
-        <Row>
-          <Col width="full">
-            <EpsTabs />
-          </Col>
-        </Row>
+        <Container>
+          <Row>
+            <Col width="full">
+              <EpsTabs />
+            </Col>
+          </Row>
+        </Container>
       </main>
     </>
   )
