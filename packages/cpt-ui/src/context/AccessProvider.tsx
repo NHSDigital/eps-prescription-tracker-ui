@@ -5,7 +5,7 @@ import React, {
   useEffect,
   ReactNode,
 } from "react"
-import { useLocation } from 'react-router-dom'
+import { useLocation, useNavigate } from "react-router-dom"
 
 import { useLocalStorageState } from "@/helpers/useLocalStorageState"
 import { normalizePath } from '@/helpers/utils'
@@ -21,7 +21,6 @@ import { PatientDetails } from "@cpt-ui-common/common-types"
 import { API_ENDPOINTS } from "@/constants/environment"
 
 import http from "@/helpers/axios"
-import { useLocation, useNavigate } from "react-router-dom"
 
 const trackerUserInfoEndpoint = API_ENDPOINTS.TRACKER_USER_INFO
 
@@ -47,10 +46,6 @@ export const AccessContext = createContext<AccessContextType | undefined>(
   undefined
 )
 
-// FIXME: Replace this with the one in the utils.
-export const normalizePath = (path: string) =>
-  path !== "/" && path.endsWith("/") ? path.slice(0, -1) : path;
-
 export const AccessProvider = ({ children }: { children: ReactNode }) => {
   const [noAccess, setNoAccess] = useLocalStorageState<boolean>(
     "noAccess",
@@ -70,8 +65,6 @@ export const AccessProvider = ({ children }: { children: ReactNode }) => {
   const [rolesWithoutAccess, setRolesWithoutAccess] = useState<RoleDetails[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-
-  const location = useLocation()
 
   const auth = useContext(AuthContext)
 

@@ -32,6 +32,8 @@ const defaultAccessContext: AccessContextType = {
   setSelectedRole: jest.fn(),
   userDetails: undefined,
   setUserDetails: jest.fn(),
+  patientDetails: undefined,
+  setPatientDetails: jest.fn(),
   clear: jest.fn(),
 };
 
