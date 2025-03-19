@@ -33,9 +33,8 @@ const cis2ClientId = process.env["OIDC_CLIENT_ID"] as string
 const userPoolClientId = process.env["COGNITO_CLIENT_ID"] as string
 const cloudfrontDomain = process.env["FULL_CLOUDFRONT_DOMAIN"] as string
 const stateMappingTableName = process.env["StateMappingTableName"] as string
-// const apigeeApiKey = process.env["APIGEE_API_KEY"] as string
 
-const logger = new Logger({serviceName: "authorizeMock"})
+const logger = new Logger({serviceName: "authorize"})
 const errorResponseBody = {message: "A system error has occurred"}
 const middyErrorHandler = new MiddyErrorHandler(errorResponseBody)
 
@@ -76,7 +75,7 @@ const lambdaHandler = async (
   const stateTtl = Math.floor(Date.now() / 1000) + 300
 
   // Build the callback URI for redirection
-  const callbackUri = `https://${cloudfrontDomain}/oauth2/mock-callback`
+  const callbackUri = `https://${cloudfrontDomain}/oauth2/callback`
 
   // Store original state mapping in DynamoDB
   const item: StateItem = {
@@ -92,8 +91,9 @@ const lambdaHandler = async (
     })
   )
 
+  // Build the redirect parameters for CIS2
   const responseParameters = {
-    response_type: "code",
+    response_type: queryParams.response_type as string,
     scope: queryParams.scope as string,
     client_id: cis2ClientId,
     state: cis2State,
