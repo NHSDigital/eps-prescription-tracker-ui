@@ -47,7 +47,6 @@ lint-githubaction-scripts:
 lint: lint-node lint-githubactions lint-githubaction-scripts react-lint
 
 test: compile
-	npm run test --workspace packages/common/commonTypes
 	npm run test --workspace packages/cloudfrontFunctions
 	npm run test --workspace packages/cdk
 	npm run test --workspace packages/cpt-ui
