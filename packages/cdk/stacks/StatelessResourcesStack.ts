@@ -80,6 +80,7 @@ export class StatelessResourcesStack extends Stack {
     const apigeeCIS2TokenEndpoint = this.node.tryGetContext("apigeeCIS2TokenEndpoint")
     const apigeeMockTokenEndpoint = this.node.tryGetContext("apigeeMockTokenEndpoint")
     const apigeePrescriptionsEndpoint = this.node.tryGetContext("apigeePrescriptionsEndpoint")
+    const apigeePersonalDemographicsEndpoint = this.node.tryGetContext("apigeePersonalDemographicsEndpoint")
     const jwtKid: string = this.node.tryGetContext("jwtKid")
     const roleId: string = this.node.tryGetContext("roleId")
 
@@ -233,7 +234,8 @@ export class StatelessResourcesStack extends Stack {
       apigeePrescriptionsEndpoint: apigeePrescriptionsEndpoint,
       apigeeApiKey: apigeeApiKey,
       jwtKid: jwtKid,
-      roleId: roleId
+      roleId: roleId,
+      apigeePersonalDemographicsEndpoint: apigeePersonalDemographicsEndpoint
     })
 
     // - CPT backend API Gateway (/api/*)
@@ -268,7 +270,7 @@ export class StatelessResourcesStack extends Stack {
       CIS2SignOutLambda: apiFunctions.CIS2SignOutLambda,
       restAPiGatewayRole: apiGateway.apiGatewayRole,
       restApiGateway: apiGateway.apiGateway,
-      prescriptionSearchLambda: apiFunctions.prescriptionSearchLambda,
+      prescriptionListLambda: apiFunctions.prescriptionListLambda,
       trackerUserInfoLambda: apiFunctions.trackerUserInfoLambda,
       selectedRoleLambda: apiFunctions.selectedRoleLambda,
       authorizer: apiGateway.authorizer

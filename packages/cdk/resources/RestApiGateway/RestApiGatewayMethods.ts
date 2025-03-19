@@ -13,7 +13,7 @@ export interface RestApiGatewayMethodsProps {
   readonly restAPiGatewayRole: IRole
   readonly restApiGateway: RestApi
   readonly CIS2SignOutLambda: NodejsFunction
-  readonly prescriptionSearchLambda: NodejsFunction
+  readonly prescriptionListLambda: NodejsFunction
   readonly trackerUserInfoLambda: NodejsFunction
   readonly selectedRoleLambda: NodejsFunction
   readonly authorizer?: CognitoUserPoolsAuthorizer
@@ -39,7 +39,7 @@ export class RestApiGatewayMethods extends Construct {
       props.restAPiGatewayRole.addManagedPolicy(policy)
     }
 
-    // prescription-search endpoint
+    // cis2-signout endpoint
     const CIS2SignOutLambdaResource = props.restApiGateway.root.addResource("cis2-signout")
     CIS2SignOutLambdaResource.addMethod("GET", new LambdaIntegration(props.CIS2SignOutLambda, {
       credentialsRole: props.restAPiGatewayRole
@@ -48,9 +48,9 @@ export class RestApiGatewayMethods extends Construct {
       authorizer: props.authorizer
     })
 
-    // prescription-search endpoint
-    const prescriptionSearchLambdaResource = props.restApiGateway.root.addResource("prescription-search")
-    prescriptionSearchLambdaResource.addMethod("GET", new LambdaIntegration(props.prescriptionSearchLambda, {
+    // prescription-list endpoint
+    const prescriptionListLambdaResource = props.restApiGateway.root.addResource("prescription-list")
+    prescriptionListLambdaResource.addMethod("GET", new LambdaIntegration(props.prescriptionListLambda, {
       credentialsRole: props.restAPiGatewayRole
     }), {
       authorizationType: AuthorizationType.COGNITO,
