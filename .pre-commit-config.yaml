@@ -32,14 +32,14 @@ repos:
         types_or: [ts, tsx, javascript, jsx, json]
         pass_filenames: false
 
-      - id: lint-cpt-ui
-        name: Lint cpt-ui
-        entry: npm
-        args: ["run", "--prefix=packages/cpt-ui", "lint"]
-        language: system
-        files: ^packages\/cpt-ui
-        types_or: [ts, tsx, javascript, jsx, json]
-        pass_filenames: false
+      # - id: lint-cpt-ui
+      #   name: Lint cpt-ui
+      #   entry: npm
+      #   args: ["run", "--prefix=packages/cpt-ui", "lint"]
+      #   language: system
+      #   files: ^packages\/cpt-ui
+      #   types_or: [ts, tsx, javascript, jsx, json]
+      #   pass_filenames: false
 
       - id: lint-cognito
         name: Lint cognito

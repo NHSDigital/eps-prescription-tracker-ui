@@ -12,10 +12,6 @@ import {
 import {AuthContext} from "@/context/AuthProvider"
 import {PRESCRIPTION_ID_SEARCH_STRINGS} from "@/constants/ui-strings/SearchForAPrescriptionStrings"
 
-interface MergedResponse extends MergedResponseBackend {
-    json: string
-}
-
 // API endpoint for prescription details
 const prescriptionDetailsEndpoint = "/api/prescription-details"
 
@@ -24,7 +20,7 @@ export default function PrescriptionIdSearch() {
 
     // State variables
     const [prescriptionId, setPrescriptionId] = useState<string>("")
-    const [searchResult, setSearchResult] = useState<MergedResponse | null>(null)
+    const [searchResult, setSearchResult] = useState(null)
     const [error, setError] = useState<string>("")
     const [loading, setLoading] = useState<boolean>(false)
 
