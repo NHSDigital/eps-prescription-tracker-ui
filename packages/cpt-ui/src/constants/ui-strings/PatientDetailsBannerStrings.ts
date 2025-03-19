@@ -1,5 +1,5 @@
 export const STRINGS = {
-  UNKNOWN: "UNKNOWN",
+  UNKNOWN: "Unavailable",
   GENDER: "Gender",
   NHS_NUMBER: "NHS number",
   DOB: "Date of birth",

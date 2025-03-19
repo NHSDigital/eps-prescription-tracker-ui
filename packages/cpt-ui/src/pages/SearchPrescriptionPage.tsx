@@ -10,8 +10,9 @@ import { PatientDetails } from "@cpt-ui-common/common-types";
 export default function SearchForAPrescriptionPage() {
   const { setPatientDetails } = useAccess()
 
+  // FIXME: These need to be deleted when we start getting live data
   const handleFullClick = () => {
-    const newDetails: PatientDetails = {
+    const completeDetails: PatientDetails = {
       nhsNumber: "5900009890",
       prefix: "Mr",
       suffix: "",
@@ -27,11 +28,11 @@ export default function SearchForAPrescriptionPage() {
       }
     }
 
-    setPatientDetails(newDetails)
+    setPatientDetails(completeDetails)
   }
 
   const handlePartialClick = () => {
-    const newDetails: PatientDetails = {
+    const minimumDetails: PatientDetails = {
       nhsNumber: "5900009890",
       prefix: "Mr",
       suffix: "",
@@ -41,7 +42,7 @@ export default function SearchForAPrescriptionPage() {
       dateOfBirth: null,
       address: null
     }
-    setPatientDetails(newDetails)
+    setPatientDetails(minimumDetails)
   }
 
   const handleClearClick = () => {

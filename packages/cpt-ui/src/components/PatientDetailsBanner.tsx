@@ -16,8 +16,14 @@ export default function PatientDetailsBanner() {
 
     const { patientDetails } = useAccess()
 
-    const capitalize = (string: string) => {
-        return string[0].toLocaleUpperCase() + string.slice(1)
+    const capitalize = (input: string) => {
+        return input[0].toLocaleUpperCase() + input.slice(1)
+    }
+
+    const formatNhsNumber = (input: string) => {
+        // Convert from whatever format, to `XXX XXX XXXX`. remove whitespace first
+        const cleaned = input.replace(/\s+/g, '')
+        return `${cleaned.slice(0, 3)} ${cleaned.slice(3, 6)} ${cleaned.slice(6)}`
     }
 
     const constructAddress = (address: PatientDetailsAddress) => {
@@ -46,7 +52,7 @@ export default function PatientDetailsBanner() {
 
         setNameText(`${patientDetails.given} ${patientDetails.family.toLocaleUpperCase()}`)
 
-        setNhsNumberText(patientDetails.nhsNumber)
+        setNhsNumberText(formatNhsNumber(patientDetails.nhsNumber))
 
         if (patientDetails.gender) {
             setGenderText(capitalize(patientDetails.gender))
@@ -92,14 +98,17 @@ export default function PatientDetailsBanner() {
                 <div>{STRINGS.NHS_NUMBER}: {nhsNumberText}</div>
                 <div>{STRINGS.DOB}: {dobText}</div>
                 <div>{STRINGS.ADDRESS}: {addressText}</div>
-
-                {
-                    // Places the missing data message on the next line
-                    !successfulDetails && (
-                        <div>{STRINGS.MISSING_DATA}</div>
-                    )
-                }
             </div>
+            {
+                // Places the missing data message on the next line
+                !successfulDetails && (
+                    <div
+                        className={"patient-detail-banner-row"}
+                    >
+                        <div>{STRINGS.MISSING_DATA}</div>
+                    </div>
+                )
+            }
         </div >
     )
 }

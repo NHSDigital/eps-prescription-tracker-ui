@@ -1,7 +1,10 @@
 .patient-details-banner {
     padding: 1rem;
-    color: black !important;
-    background-color: #d2edf6 !important;
+    color: black;
+    background-color: #d2edf6; 
+    display: flex;
+    flex-direction: column;
+    row-gap: 0.5rem;
 }
 
 .patient-detail-banner-row {
@@ -12,9 +15,9 @@
     column-gap: 3rem;
     row-gap: 0.5rem;
     width: 100%;
-    overflow-x: auto; // Allows horizontal scrolling if needed
+    overflow-x: auto;
 }
 
 .patient-details-banner.patient-details-partial-data {
-    background-color: #ffeb3b !important;
+    background-color: #ffeb3b;
 }
