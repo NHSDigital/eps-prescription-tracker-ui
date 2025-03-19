@@ -1,3 +1,6 @@
 export const STRINGS = {
-  PLACEHOLDER: "There is patient data"
+  GENDER: "Gender",
+  NHS_NUMBER: "NHS number",
+  DOB: "Date of birth",
+  ADDRESS: "Address"
 }
