@@ -60,14 +60,17 @@ export default function PrescriptionListPage() {
                 </Container>
                 <Container className="results-container">
                     <p data-testid="results-heading">
-                        <strong data-testid="results-count">We found {prescriptionCount} results</strong>
+                        <strong data-testid="results-count">
+                            {PRESCRIPTION_LIST_PAGE_STRINGS.RESULTS_PREFIX}
+                            {prescriptionCount}
+                            {PRESCRIPTION_LIST_PAGE_STRINGS.RESULTS_SUFFIX}
+                        </strong>
                     </p>
                     <div data-testid="prescription-results-list">
                         {/* Prescription list items would go here see more here: https://prototype-nhs-eps.herokuapp.com/epsv12/prescription-results?nhsNumber=9726919215#current-prescriptions */}
                     </div>
                 </Container>
-
-            </main >
+            </main>
         </>
     );
 }
