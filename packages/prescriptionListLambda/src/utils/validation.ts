@@ -1,4 +1,5 @@
-import {PatientDetails, SearchParams} from "@cpt-ui-common/common-types"
+import {PatientDetails} from "@cpt-ui-common/common-types"
+import {SearchParams} from "./types"
 import {PDSError} from "./errors"
 
 export class ValidationError extends Error {
