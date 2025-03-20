@@ -2,6 +2,7 @@ import React from 'react';
 import "@testing-library/jest-dom";
 import { fireEvent, render, waitFor } from "@testing-library/react";
 import { Tabs } from "nhsuk-react-components";
+import { BrowserRouter } from 'react-router-dom'; // Import BrowserRouter
 
 import EpsTabs from '@/components/EpsTabs';
 
@@ -40,9 +41,12 @@ global.ResizeObserver = jest.fn().mockImplementation(function () {
 describe('The tabs component', () => {
   it('Switches the visibility of panels when tabs are clicked', async () => {
     const { container } = render(
-      <div className="nhsuk-tabs">
-        <EpsTabs />
-      </div>
+      // Wrap with BrowserRouter to provide the routing context
+      <BrowserRouter>
+        <div className="nhsuk-tabs">
+          <EpsTabs />
+        </div>
+      </BrowserRouter>
     );
 
     // Get the panels
