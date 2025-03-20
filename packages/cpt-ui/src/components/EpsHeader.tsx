@@ -62,9 +62,9 @@ export default function EpsHeader() {
 
     // Show the "Exit" button under these conditions
     setShouldShowExitButton(
-      (path === "/logout" && !auth?.isSignedIn) ||
-      (path === "/selectyourrole" && accessContext.noAccess) ||
-      (path === "/notfound")
+      (location.pathname === "/logout" && !auth?.isSignedIn) ||
+      (location.pathname === "/select-role" && accessContext.noAccess) ||
+      (location.pathname === "/notfound")
     )
   }, [location, auth, accessContext])
 
