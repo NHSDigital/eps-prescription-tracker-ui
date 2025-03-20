@@ -86,7 +86,7 @@ export default function PatientDetailsBanner() {
     return (
         <div
             className={`nhsuk-banner patient-details-banner ${!successfulDetails ? "patient-details-partial-data" : ""}`}
-            data-testid="patient-detail-banner-div"
+            data-testid="patient-details-banner"
         >
             <div
                 className={"patient-detail-banner-row"}
@@ -101,7 +101,8 @@ export default function PatientDetailsBanner() {
                 // Places the missing data message on the next line
                 !successfulDetails && (
                     <div
-                        className={"patient-detail-banner-row"}
+                        className="patient-detail-banner-row"
+                        data-testid="patient-detail-banner-incomplete"
                     >
                         <div>{STRINGS.MISSING_DATA}</div>
                     </div>
