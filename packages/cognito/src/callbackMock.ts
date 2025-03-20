@@ -2,12 +2,7 @@ import {Logger} from "@aws-lambda-powertools/logger"
 import {APIGatewayProxyEvent, APIGatewayProxyResult} from "aws-lambda"
 import {injectLambdaContext} from "@aws-lambda-powertools/logger/middleware"
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
-import {
-  DynamoDBDocumentClient,
-  GetCommand,
-  DeleteCommand,
-  PutCommand
-} from "@aws-sdk/lib-dynamodb"
+import {DynamoDBDocumentClient, GetCommand, PutCommand} from "@aws-sdk/lib-dynamodb"
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 import middy from "@middy/core"
 import inputOutputLogger from "@middy/input-output-logger"
@@ -112,16 +107,16 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   })
 
   // Always delete the old state
-  logger.debug("going to delete from state mapping table", {
-    stateMappingTableName,
-    state
-  })
-  await documentClient.send(
-    new DeleteCommand({
-      TableName: stateMappingTableName,
-      Key: {State: state}
-    })
-  )
+  // logger.debug("going to delete from state mapping table", {
+  //   stateMappingTableName,
+  //   state
+  // })
+  // await documentClient.send(
+  //   new DeleteCommand({
+  //     TableName: stateMappingTableName,
+  //     Key: {State: state}
+  //   })
+  // )
 
   // we need to generate a session state param and store it along with code returned
   // as that will be used in the token lambda
