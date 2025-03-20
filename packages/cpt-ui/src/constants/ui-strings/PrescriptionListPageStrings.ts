@@ -4,8 +4,8 @@ export const PRESCRIPTION_LIST_PAGE_STRINGS = {
   GO_BACK_LINK_TEXT: "Go back",
   RESULTS_PREFIX: "We found ",
   RESULTS_SUFFIX: " results",
-  DEFAULT_BACK_LINK_TARGET: "/searchforaprescription",
-  PRESCRIPTION_ID_SEARCH_TARGET: "/searchforaprescription#PrescriptionIdSearch",
-  NHS_NUMBER_SEARCH_TARGET: "/searchforaprescription#NhsNumSearch",
-  BASIC_DETAILS_SEARCH_TARGET: "/searchforaprescription#BasicDetailsSearch"
+  DEFAULT_BACK_LINK_TARGET: "/search",
+  PRESCRIPTION_ID_SEARCH_TARGET: "/search#PrescriptionIdSearch",
+  NHS_NUMBER_SEARCH_TARGET: "/search#NhsNumSearch",
+  BASIC_DETAILS_SEARCH_TARGET: "/search#BasicDetailsSearch"
 }

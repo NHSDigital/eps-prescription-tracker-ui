@@ -23,15 +23,15 @@ export default function App() {
             <Route path='*' element={<NotFoundPage />} />
             <Route path="login" element={<LoginPage />} />
             <Route path="logout" element={<LogoutPage />} />
-            <Route path="selectyourrole" element={<SelectYourRolePage />} />
-            <Route path="yourselectedrole" element={<YourSelectedRolePage />} />
-            <Route path="changerole" element={<ChangeRolePage />} />
+            <Route path="select-role" element={<SelectYourRolePage />} />
+            <Route path="selected-role" element={<YourSelectedRolePage />} />
+            <Route path="change-role" element={<ChangeRolePage />} />
             <Route
-              path="searchforaprescription"
+              path="search"
               element={<SearchPrescriptionPage />}
             />
             <Route
-              path="prescriptionresults"
+              path="prescription-results"
               element={<PrescriptionListPage />}
             />
           </Route>

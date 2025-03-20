@@ -8,7 +8,7 @@ export default function PrescriptionIdSearch() {
             <div className="eps-modal-button-group">
                 <Button
                     className="nhsuk-button eps-modal-button"
-                    to="/prescriptionresults?prescriptionId=123456"
+                    to="/prescription-results?prescriptionId=123456"
                 >
                     Find a prescription
                 </Button>

@@ -88,7 +88,7 @@ export default function RoleSelectionPage({
     ? rawRolesWithAccess.map((role: RoleDetails, index) => ({
       uuid: `role_with_access_${index}`,
       role,
-      link: "/yourselectedrole",
+      link: "/selected-role",
     }))
     : [];
 
@@ -103,7 +103,7 @@ export default function RoleSelectionPage({
   useEffect(() => {
     if (rawRolesWithAccess.length === 1 && rawRolesWithoutAccess.length === 0) {
       setRedirecting(true)
-      navigate("/searchforaprescription")
+      navigate("/search")
     }
   }, [rawRolesWithAccess, rawRolesWithoutAccess, navigate])
 

@@ -8,7 +8,7 @@ export default function NhsNumSearch() {
             <div className="eps-modal-button-group">
                 <Button
                     className="nhsuk-button eps-modal-button"
-                    to="/prescriptionresults?nhsNumber=123456"
+                    to="/prescription-results?nhsNumber=123456"
                 >
                     Find a patient
                 </Button>

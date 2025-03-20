@@ -112,15 +112,15 @@ describe("YourSelectedRolePage", () => {
     expect(changeLinks).toHaveLength(2); // one for role, one for org
 
     changeLinks.forEach((link) => {
-      expect(link).toHaveAttribute("href", "/changerole");
+      expect(link).toHaveAttribute("href", "/change-role");
     });
   });
 
-  it("navigates to /searchforaprescription when the confirm button is clicked", async () => {
+  it("navigates to /search when the confirm button is clicked", async () => {
     renderWithProviders();
     const button = screen.getByTestId("confirm-and-continue");
     await fireEvent.click(button);
-    expect(mockNavigate).toHaveBeenCalledWith("/searchforaprescription");
+    expect(mockNavigate).toHaveBeenCalledWith("/search");
   });
 
   it("does not crash if selectedRole is undefined", () => {
