@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "aws-amplify": "^6.13.5",
-    "axios": "^1.8.3",
+    "axios": "^1.8.4",
     "i18next": "^24.2.3",
     "i18next-browser-languagedetector": "^8.0.4",
     "nhsuk-frontend": "^8.0.2",
@@ -37,7 +37,7 @@
     "@types/node": "^22.13.10",
     "@types/react": "^18.2.64",
     "@types/react-dom": "^18.2.21",
-    "@typescript-eslint/eslint-plugin": "^8.26.0",
+    "@typescript-eslint/eslint-plugin": "^8.27.0",
     "@typescript-eslint/parser": "^8.26.0",
     "@vitejs/plugin-react": "^4.2.1",
     "@vitejs/plugin-react-swc": "^3.8.1",
