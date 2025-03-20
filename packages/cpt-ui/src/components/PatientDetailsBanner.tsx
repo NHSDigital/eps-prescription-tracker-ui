@@ -27,14 +27,11 @@ export default function PatientDetailsBanner() {
     }
 
     const constructAddress = (address: PatientDetailsAddress) => {
-        const units = [address.line1, address.line2, address.city, address.postcode].filter((x) => {return x})
-        const stringified = "" +
-            `${address.line1 ?? ""}, ` +
-            `${address.line2 ?? ""}, ` +
-            `${address.city ?? ""}, ` +
-            `${address.postcode ?? ""} `
-
-        return stringified.toLocaleUpperCase()
+        const units = [address.line1, address.line2, address.city, address.postcode]
+        return units
+            .filter((x) => { return !!x })
+            .join(", ")
+            .toLocaleUpperCase()
     }
 
     useEffect(() => {
