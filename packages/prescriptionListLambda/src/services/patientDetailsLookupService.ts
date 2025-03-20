@@ -1,6 +1,6 @@
 import {AxiosInstance} from "axios"
 import {v4 as uuidv4} from "uuid"
-import {PatientAPIResponse} from "@cpt-ui-common/common-types"
+import {PatientAPIResponse} from "../utils/types"
 import {Logger} from "@aws-lambda-powertools/logger"
 import {createMinimalPatientDetails, mapPdsResponseToPatientDetails} from "../utils/responseMapper"
 import {PDSError} from "../utils/errors"
