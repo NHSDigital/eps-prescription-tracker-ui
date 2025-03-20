@@ -75,7 +75,7 @@ const lambdaHandler = async (
   const stateTtl = Math.floor(Date.now() / 1000) + 300
 
   // Build the callback URI for redirection
-  const callbackUri = `https://${cloudfrontDomain}/oauth2/callback`
+  const callbackUri = `https://${cloudfrontDomain}/oauth2/mock-callback`
 
   // Store original state mapping in DynamoDB
   const item: StateItem = {
