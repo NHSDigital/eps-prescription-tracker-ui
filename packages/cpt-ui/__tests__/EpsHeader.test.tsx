@@ -15,8 +15,8 @@ jest.mock("@/constants/ui-strings/HeaderStrings", () => ({
   HEADER_EXIT_BUTTON: "Exit",
   HEADER_EXIT_TARGET: "/exit",
   HEADER_CHANGE_ROLE_BUTTON: "Change role",
-  HEADER_CHANGE_ROLE_TARGET: "/changerole",
-  HEADER_SELECT_YOUR_ROLE_TARGET: "/selectyourrole",
+  HEADER_CHANGE_ROLE_TARGET: "/change-role",
+  HEADER_SELECT_YOUR_ROLE_TARGET: "/select-role",
   HEADER_SELECT_YOUR_ROLE_BUTTON: "Select your role",
 }));
 
@@ -174,9 +174,9 @@ describe("EpsHeader", () => {
       expect(link).toHaveTextContent("Select your role");
     });
 
-    it("does NOT show 'Select your role' when the route is /selectyourrole", () => {
+    it("does NOT show 'Select your role' when the route is /select-role", () => {
       renderWithProviders(
-        "/selectyourrole",
+        "/select-role",
         { isSignedIn: true },
         { selectedRole: "" },
       );
