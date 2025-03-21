@@ -112,7 +112,7 @@ const defaultAuthContext = {
 import ChangeRolePage from "@/pages/ChangeRolePage";
 
 // Utility function to render the component with custom AuthContext overrides
-const renderWithAuth = (authOverrides = {}, accessOverrides = {}) => {
+const renderWithAuth = (authOverrides = {}) => {
   const authValue = { ...defaultAuthContext, ...authOverrides };
   return render(
     <AuthContext.Provider value={authValue}>
@@ -217,7 +217,7 @@ describe("ChangeRolePage", () => {
         },
       ],
     });
-    
+
     // Render the page with user signed in
     renderWithAuth({
       isSignedIn: true,
@@ -299,7 +299,7 @@ describe("ChangeRolePage", () => {
     __setMockAccessValue({
       loading: true,
     });
-    mockedAxios.get.mockImplementation(() => new Promise(() => {}));
+    mockedAxios.get.mockImplementation(() => new Promise(() => { }));
     renderWithAuth();
     expect(screen.getByText("Loading...")).toBeInTheDocument();
   });
