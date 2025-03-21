@@ -4,7 +4,7 @@ import {v4 as uuidv4} from "uuid"
 import axios, {AxiosInstance} from "axios"
 import {ParsedUrlQuery, stringify} from "querystring"
 import {handleAxiosError} from "./errorUtils"
-import {DynamoDBDocumentClient, UpdateCommand} from "@aws-sdk/lib-dynamodb"
+import {DynamoDBDocumentClient, GetCommand, UpdateCommand} from "@aws-sdk/lib-dynamodb"
 
 /**
  * Constructs a new body for the token exchange, including a signed JWT
@@ -153,5 +153,77 @@ export const updateApigeeAccessToken = async (
   } catch (error) {
     logger.error("Failed to update Apigee access token in DynamoDB", {error})
     throw new Error("Failed to update Apigee access token in DynamoDB")
+  }
+}
+
+//TODO: getApigeeAccessToken function to check if apigee access token already exists
+//  if yes, use that if not use good old flow
+/**
+ * Checks if a valid Apigee access token exists for a user in DynamoDB
+ * @param documentClient - DynamoDB DocumentClient instance
+ * @param tableName - Name of the DynamoDB table
+ * @param username - Username for which to check the token
+ * @param logger - Logger instance for logging
+ * @returns The existing token and expiry time if valid, null otherwise
+ */
+export const getExistingApigeeAccessToken = async (
+  documentClient: DynamoDBDocumentClient,
+  tableName: string,
+  username: string,
+  logger: Logger
+): Promise<{accessToken: string; expiresIn: number} | null> => {
+  logger.debug("Checking for existing Apigee access token in DynamoDB", {
+    username,
+    tableName
+  })
+
+  try {
+    // Get the user record from DynamoDB
+    const getResult = await documentClient.send(
+      new GetCommand({
+        TableName: tableName,
+        Key: {username}
+      })
+    )
+
+    if (!getResult.Item) {
+      logger.debug("No user record found in DynamoDB", {username})
+      return null
+    }
+
+    const userRecord = getResult.Item
+
+    // Check if Apigee access token exists and is not expired
+    if (userRecord.Apigee_accessToken && userRecord.Apigee_expiresIn) {
+      const currentTime = Math.floor(Date.now() / 1000)
+
+      // Add buffer time (e.g., 60 seconds) to ensure token isn't about to expire
+      const bufferTime = 60
+
+      if (userRecord.Apigee_expiresIn > (currentTime + bufferTime)) {
+        logger.info("Found valid existing Apigee access token", {
+          username,
+          expiresIn: userRecord.Apigee_expiresIn - currentTime
+        })
+
+        return {
+          accessToken: userRecord.Apigee_accessToken,
+          expiresIn: userRecord.Apigee_expiresIn
+        }
+      } else {
+        logger.debug("Existing Apigee token has expired or will expire soon", {
+          username,
+          expiresIn: userRecord.Apigee_expiresIn,
+          currentTime
+        })
+      }
+    } else {
+      logger.debug("No Apigee token found in user record", {username})
+    }
+
+    return null
+  } catch (error) {
+    logger.error("Error retrieving Apigee access token from DynamoDB", {error, username})
+    return null
   }
 }
