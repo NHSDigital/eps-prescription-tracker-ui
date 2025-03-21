@@ -28,10 +28,10 @@ export default function PrescriptionListPage() {
         <>
             <title>{PRESCRIPTION_LIST_PAGE_STRINGS.PAGE_TITLE}</title>
             <main id="prescription-list" data-testid="prescription-list-page">
-                <Container className="hero-container">
+                <Container className="hero-container" data-testid="prescription-list-hero-container">
                     <Row>
                         <Col width="full">
-                            <nav className="nhsuk-breadcrumb" aria-label="Breadcrumb">
+                            <nav className="nhsuk-breadcrumb" aria-label="Breadcrumb" data-testid="prescription-list-nav">
                                 <Link to={backLinkTarget} data-testid="back-link-container">
                                     <BackLink data-testid="go-back-link">{PRESCRIPTION_LIST_PAGE_STRINGS.GO_BACK_LINK_TEXT}</BackLink>
                                 </Link>
@@ -40,13 +40,13 @@ export default function PrescriptionListPage() {
                     </Row>
                     <Row>
                         <Col width="full">
-                            <h2 className="nhsuk-heading-l" id="hero-heading" data-testid="hero-heading">
+                            <h2 className="nhsuk-heading-l" id="hero-heading" data-testid="prescription-list-heading">
                                 {PRESCRIPTION_LIST_PAGE_STRINGS.HEADING}
                             </h2>
                         </Col>
                     </Row>
                 </Container>
-                <Container className="results-container">
+                <Container className="results-container" data-testid="prescription-results-container">
                     <p data-testid="results-heading">
                         <strong data-testid="results-count">
                             {PRESCRIPTION_LIST_PAGE_STRINGS.RESULTS_PREFIX}
@@ -55,7 +55,7 @@ export default function PrescriptionListPage() {
                         </strong>
                     </p>
                     <div data-testid="prescription-results-list">
-                        {/* Prescription list items would go here see more here: https://prototype-nhs-eps.herokuapp.com/epsv12/prescription-results?nhsNumber=9726919215#current-prescriptions */}
+                        {/* Prescription list items would go here */}
                     </div>
                 </Container>
             </main>

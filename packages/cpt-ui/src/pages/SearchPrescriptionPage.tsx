@@ -8,7 +8,7 @@ export default function SearchForAPrescriptionPage() {
     <>
       <title>Search for a prescription</title>
       <main id="search-for-a-prescription" data-testid="search-for-a-prescription">
-        <Container className="hero-container">
+        <Container className="hero-container" data-testid="search-hero-container">
           <Row>
             <Col width="full">
               <Hero className="nhsuk-hero-wrapper" data-testid="hero-banner">
@@ -19,7 +19,7 @@ export default function SearchForAPrescriptionPage() {
             </Col>
           </Row>
         </Container>
-        <Container>
+        <Container data-testid="search-tabs-container">
           <Row>
             <Col width="full">
               <EpsTabs />
