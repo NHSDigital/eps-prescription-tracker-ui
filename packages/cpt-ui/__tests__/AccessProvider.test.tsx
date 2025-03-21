@@ -435,3 +435,135 @@ describe("AccessProvider", () => {
     });
   });
 });
+
+// Add this new consumer component to your tests file:
+function TestUpdateRoleConsumer() {
+  const { selectedRole, updateSelectedRole } = useAccess();
+  const handleUpdate = async () => {
+    // Passing a new role object to update
+    await updateSelectedRole({ role_id: "NEW_ROLE", role_name: "New Role" });
+  };
+  return (
+    <div>
+      <div data-testid="selectedRole">
+        {selectedRole ? selectedRole.role_id : "(none)"}
+      </div>
+      <button data-testid="update-role-button" onClick={handleUpdate}>
+        Update Role
+      </button>
+    </div>
+  );
+}
+
+// Extend your existing test suite with the following tests:
+describe("AccessProvider updateSelectedRole", () => {
+  beforeEach(() => {
+    jest.restoreAllMocks();
+    jest.clearAllMocks();
+    localStorage.clear();
+  });
+
+  it("updates selectedRole when updateSelectedRole is called successfully", async () => {
+    // Mock axios.put to simulate a successful update (status 200)
+    mockedAxios.put.mockResolvedValueOnce({
+      status: 200,
+    });
+
+    renderWithProviders(
+      <AccessProvider>
+        <TestUpdateRoleConsumer />
+      </AccessProvider>,
+      ["/dashboard"],
+      {
+        ...defaultAuthState,
+        isSignedIn: true,
+        idToken: { toString: jest.fn().mockReturnValue("mock-id-token") } as any,
+      }
+    );
+
+    // Initially, selectedRole should be empty.
+    expect(screen.getByTestId("selectedRole")).toHaveTextContent("(none)");
+
+    userEvent.click(screen.getByTestId("update-role-button"));
+
+    await waitFor(() => {
+      expect(mockedAxios.put).toHaveBeenCalledTimes(1);
+    });
+
+    // After the update, selectedRole should be updated.
+    await waitFor(() => {
+      expect(screen.getByTestId("selectedRole")).toHaveTextContent("NEW_ROLE");
+    });
+  });
+
+  it("alerts user when updateSelectedRole fails due to non-200 response", async () => {
+    // Mock axios.put to simulate a failure (non-200 response)
+    mockedAxios.put.mockResolvedValueOnce({
+      status: 500,
+    });
+
+    // Spy on window.alert
+    const alertSpy = jest.spyOn(window, "alert").mockImplementation(() => { });
+
+    renderWithProviders(
+      <AccessProvider>
+        <TestUpdateRoleConsumer />
+      </AccessProvider>,
+      ["/dashboard"],
+      {
+        ...defaultAuthState,
+        isSignedIn: true,
+        idToken: { toString: jest.fn().mockReturnValue("mock-id-token") } as any,
+      }
+    );
+
+    userEvent.click(screen.getByTestId("update-role-button"));
+
+    await waitFor(() => {
+      expect(mockedAxios.put).toHaveBeenCalledTimes(1);
+    });
+
+    await waitFor(() => {
+      expect(alertSpy).toHaveBeenCalledWith(
+        "There was an issue selecting your role. Please notify the EPS team."
+      );
+    });
+
+    // Ensure selectedRole remains unchanged
+    expect(screen.getByTestId("selectedRole")).toHaveTextContent("(none)");
+  });
+
+  it("alerts user when updateSelectedRole throws an error", async () => {
+    // Mock axios.put to simulate an error (e.g. network error)
+    mockedAxios.put.mockRejectedValueOnce(new Error("Network error"));
+
+    const alertSpy = jest.spyOn(window, "alert").mockImplementation(() => { });
+
+    renderWithProviders(
+      <AccessProvider>
+        <TestUpdateRoleConsumer />
+      </AccessProvider>,
+      ["/dashboard"],
+      {
+        ...defaultAuthState,
+        isSignedIn: true,
+        idToken: { toString: jest.fn().mockReturnValue("mock-id-token") } as any,
+      }
+    );
+
+    userEvent.click(screen.getByTestId("update-role-button"));
+
+    await waitFor(() => {
+      expect(mockedAxios.put).toHaveBeenCalledTimes(1);
+    });
+
+    await waitFor(() => {
+      expect(alertSpy).toHaveBeenCalledWith(
+        "There was an issue selecting your role. Please notify the EPS team."
+      );
+    });
+
+    // Verify that selectedRole still remains unset.
+    expect(screen.getByTestId("selectedRole")).toHaveTextContent("(none)");
+  });
+});

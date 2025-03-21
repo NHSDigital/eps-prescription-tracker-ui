@@ -193,8 +193,7 @@ export const AccessProvider = ({ children }: { children: ReactNode }) => {
   const updateSelectedRole = async (newRole: RoleDetails | undefined) => {
     try {
       // Update selected role in the backend via the selectedRoleLambda endpoint
-      const response = await fetch(selectedRoleEndpoint, {
-        method: 'PUT',
+      const response = await http.put(selectedRoleEndpoint, {
         headers: {
           Authorization: `Bearer ${auth?.idToken}`,
           'Content-Type': 'application/json',
@@ -205,7 +204,7 @@ export const AccessProvider = ({ children }: { children: ReactNode }) => {
         }),
       })
 
-      if (!response.ok) {
+      if (response.status !== 200) {
         throw new Error('Failed to update the selected role')
       }
 
