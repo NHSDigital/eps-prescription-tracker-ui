@@ -82,7 +82,7 @@ jobs:
       primaryOidcUserInfoEndpoint: "https://am.nhsint.auth-ptl.cis2.spineservices.nhs.uk:443/openam/oauth2/realms/root/realms/NHSIdentity/realms/Healthcare/userinfo"
       primaryOidcjwksEndpoint: "https://am.nhsint.auth-ptl.cis2.spineservices.nhs.uk:443/openam/oauth2/realms/root/realms/NHSIdentity/realms/Healthcare/connect/jwk_uri"
       mockOidcIssuer: "https://identity.ptl.api.platform.nhs.uk/realms/Cis2-mock-internal-dev"
-      mockOidcAuthorizeEndpoint: "https://identity.ptl.api.platform.nhs.uk/realms/Cis2-mock-internal-dev/protocol/openid-connect/auth"
+      mockOidcAuthorizeEndpoint: "https://internal-dev.api.service.nhs.uk/oauth2-mock/authorize"
       mockOidcTokenEndpoint: "https://identity.ptl.api.platform.nhs.uk/realms/Cis2-mock-internal-dev/protocol/openid-connect/token"
       mockOidcUserInfoEndpoint: "https://identity.ptl.api.platform.nhs.uk/realms/Cis2-mock-internal-dev/protocol/openid-connect/userinfo"
       mockOidcjwksEndpoint: "https://identity.ptl.api.platform.nhs.uk/realms/Cis2-mock-internal-dev/protocol/openid-connect/certs"

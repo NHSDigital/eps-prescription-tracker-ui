@@ -33,6 +33,7 @@ const cis2ClientId = process.env["OIDC_CLIENT_ID"] as string
 const userPoolClientId = process.env["COGNITO_CLIENT_ID"] as string
 const cloudfrontDomain = process.env["FULL_CLOUDFRONT_DOMAIN"] as string
 const stateMappingTableName = process.env["StateMappingTableName"] as string
+const apigeeApiKey = process.env["APIGEE_API_KEY"] as string
 
 const logger = new Logger({serviceName: "authorize"})
 const errorResponseBody = {message: "A system error has occurred"}
@@ -93,15 +94,15 @@ const lambdaHandler = async (
 
   // Build the redirect parameters for CIS2
   const responseParameters = {
-    response_type: queryParams.response_type as string,
-    scope: queryParams.scope as string,
-    client_id: cis2ClientId,
-    state: cis2State,
     redirect_uri: callbackUri,
-    prompt: "login"
+    clientId: apigeeApiKey,
+    response_type: "code",
+    state: cis2State
   }
 
-  // This is the CIS2 URL we are pointing the client towards
+  // how do we deal with different callback uri
+  // https://docs.apigee.com/api-platform/security/oauth/advanced-oauth-20-topics
+  // apigee does not support wildcards
   const redirectPath = `${authorizeEndpoint}?${new URLSearchParams(responseParameters)}`
 
   return {
