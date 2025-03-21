@@ -19,7 +19,6 @@ const mockAuthContext = {
   cognitoSignOut: jest.fn()
 } as AuthContextType
 
-// Wrap with context
 const renderWithProviders = (ui: React.ReactElement) => {
   return render(
     <MemoryRouter>
