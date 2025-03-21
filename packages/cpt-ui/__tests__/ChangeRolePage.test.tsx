@@ -63,7 +63,7 @@ global.fetch = mockFetch;
 jest.mock("@/context/AccessProvider", () => {
   const React = require("react");
 
-  const createMockContext = (overrides = {}) => ({
+  let mockContextValue = {
     noAccess: false,
     singleAccess: false,
     selectedRole: undefined,
@@ -73,19 +73,20 @@ jest.mock("@/context/AccessProvider", () => {
     error: null,
     setNoAccess: jest.fn(),
     setSingleAccess: jest.fn(),
-    setSelectedRole: jest.fn(),
-    ...overrides,
-  });
-
-  // Create the initial mock context value
-  const mockContextValue = createMockContext();
+    updateSelectedRole: jest.fn(() => Promise.resolve()),
+    setUserDetails: jest.fn(),
+    userDetails: undefined,
+    clear: jest.fn(),
+  }
 
   const MockAccessContext = React.createContext(mockContextValue);
   const useAccess = () => React.useContext(MockAccessContext);
 
-  // Add a method to update the mock value for testing
-  const __setMockAccessValue = (overrides = {}) => {
-    Object.assign(mockContextValue, createMockContext(overrides));
+  const __setMockAccessValue = (newValue: any) => {
+    mockContextValue = { ...mockContextValue, ...newValue };
+    // Reassign the context’s defaultValue so subsequent consumers get the new values
+    MockAccessContext._currentValue = mockContextValue;
+    MockAccessContext._currentValue2 = mockContextValue;
   };
 
   return {
@@ -121,7 +122,6 @@ const renderWithAuth = (authOverrides = {}, accessOverrides = {}) => {
 };
 
 import { CHANGE_YOUR_ROLE_PAGE_TEXT } from "@/constants/ui-strings/ChangeRolePageStrings";
-import { EpsSpinnerStrings } from "@/constants/ui-strings/EpsSpinnerStrings";
 
 describe("ChangeRolePage", () => {
   beforeEach(() => {
@@ -189,13 +189,25 @@ describe("ChangeRolePage", () => {
 
   it("renders the page content when valid userInfo is returned", async () => {
     __setMockAccessValue({
+      noAccess: false,
       loading: false,
+      error: null, // clear any error state
+      selectedRole: {
+        role_name: "Pharmacist",
+        org_name: "Test Pharmacy Org",
+        org_code: "ORG123",
+      },
       rolesWithAccess: [
         {
           role_name: "Pharmacist",
           org_name: "Test Pharmacy Org",
           org_code: "ORG123",
         },
+        {
+          role_name: "Administrator",
+          org_name: "Second Test Pharmacy Org",
+          org_code: "ORG789",
+        }
       ],
       rolesWithoutAccess: [
         {
@@ -205,7 +217,7 @@ describe("ChangeRolePage", () => {
         },
       ],
     });
-
+    
     // Render the page with user signed in
     renderWithAuth({
       isSignedIn: true,

@@ -17,9 +17,10 @@ export interface EpsCardProps {
 
 export default function EpsCard({ role, link }: EpsCardProps) {
   const navigate = useNavigate()
-  const auth = useContext(AuthContext)
   const { updateSelectedRole } = useAccess()
 
+  console.log("CARD CREATED", role)
+  
   const handleSetSelectedRole = async (e: React.MouseEvent) => {
     e.preventDefault()
     await updateSelectedRole(role)

@@ -214,7 +214,7 @@ export const AccessProvider = ({ children }: { children: ReactNode }) => {
 
     } catch (error) {
       console.error('Error selecting role:', error)
-      alert("There was an issue selecting your role. Please try again.")
+      alert("There was an issue selecting your role. Please notify the EPS team.")
     }
   }
 
