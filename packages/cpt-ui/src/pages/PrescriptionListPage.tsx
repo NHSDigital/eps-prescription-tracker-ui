@@ -67,7 +67,7 @@ export default function PrescriptionListPage() {
                         </strong>
                     </p>
                     <div data-testid="prescription-results-list">
-                        {/* Prescription list items would go here see more here: https://prototype-nhs-eps.herokuapp.com/epsv12/prescription-results?nhsNumber=9726919215#current-prescriptions */}
+                        {/* Prescription list items would go here */}
                     </div>
                 </Container>
             </main>
