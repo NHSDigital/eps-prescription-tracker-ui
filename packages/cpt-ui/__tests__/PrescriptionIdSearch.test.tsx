@@ -7,18 +7,19 @@ import {MemoryRouter} from "react-router-dom"
 import PrescriptionIdSearch from "@/components/prescriptionSearch/PrescriptionIdSearch"
 import {PRESCRIPTION_ID_SEARCH_STRINGS} from "@/constants/ui-strings/SearchForAPrescriptionStrings"
 import {AuthContext} from "@/context/AuthProvider"
+import type {AuthContextType} from "@/context/AuthProvider"
 
 const mockAuthContext = {
   error: null,
   user: null,
   isSignedIn: true,
-  idToken: "mock-id-token",
-  accessToken: "mock-access-token",
+  idToken: "mock-id-token" as any,
+  accessToken: "mock-access-token" as any,
   cognitoSignIn: jest.fn(),
   cognitoSignOut: jest.fn()
-}
+} as AuthContextType
 
-// Utility to wrap the component in context
+// Wrap with context
 const renderWithProviders = (ui: React.ReactElement) => {
   return render(
     <MemoryRouter>
