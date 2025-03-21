@@ -4,6 +4,7 @@ export const PRESCRIPTION_ID_SEARCH_STRINGS = {
   labelText: "Search using a prescription ID",
   hintText: "This is 18 characters and may also be called barcode or token ID.",
   buttonText: "Find a prescription",
+  errorSummaryTitle: "There is a problem",
   errors: {
     empty: "Enter a prescription ID number",
     length: "The prescription ID number must contain 18 characters",
