@@ -48,8 +48,16 @@ export default function PrescriptionIdSearch() {
         }
 
         const raw = prescriptionId.trim()
+
+        // First validate characters directly from raw input
+        const invalidCharPattern = /[^A-Za-z0-9+-]/g
+        if (invalidCharPattern.test(raw)) {
+            setErrorType("chars")
+            setLoading(false)
+            return
+        }
+
         const cleaned = raw.replace(/[^A-Za-z0-9+]/g, "")
-        const formatted = normalizePrescriptionId(cleaned)
 
         // Validation: Must be exactly 18 chars (excluding dashes)
         if (cleaned.length !== 18) {
@@ -65,6 +73,8 @@ export default function PrescriptionIdSearch() {
             setLoading(false)
             return
         }
+
+        const formatted = normalizePrescriptionId(cleaned)
 
         const url = `${prescriptionDetailsEndpoint}/${formatted}`
 
