@@ -95,7 +95,7 @@ const lambdaHandler = async (
   // Build the redirect parameters for CIS2
   const responseParameters = {
     redirect_uri: callbackUri,
-    clientId: apigeeApiKey,
+    client_id: apigeeApiKey,
     response_type: "code",
     state: cis2State
   }

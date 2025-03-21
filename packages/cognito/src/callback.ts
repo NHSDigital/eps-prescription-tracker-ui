@@ -35,15 +35,16 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   logger.appendKeys({"apigw-request-id": event.requestContext?.requestId})
 
   // Destructure and validate required query parameters
+  // TODO: investigate if session_state is needed at all for this function
   const {state, code, session_state} = event.queryStringParameters || {}
-  if (!state || !code || !session_state) {
+  if (!state || !code) {
     logger.error(
       "Missing required query parameters: state, code, or session_state",
-      {state, code, session_state}
+      {state, code}
     )
     throw new Error("Missing required query parameters: state, code, or session_state")
   }
-  logger.info("Incoming query parameters", {state, code, session_state})
+  logger.info("Incoming query parameters", {state, code})
 
   // Get the original Cognito state from DynamoDB
   logger.debug("trying to get data from session state table", {
@@ -82,18 +83,10 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
   const cognitoStateItem = getResult.Item as StateItem
 
-  if (!session_state) {
-    logger.error(
-      "Missing required session_state",
-      {state, code, session_state}
-    )
-    throw new Error("Missing required query parameters: session_state")
-  }
-
   // Build response parameters for redirection
   const responseParams = {
     state: cognitoStateItem.CognitoState,
-    session_state: session_state,
+    session_state: session_state || "",
     code
   }
 
