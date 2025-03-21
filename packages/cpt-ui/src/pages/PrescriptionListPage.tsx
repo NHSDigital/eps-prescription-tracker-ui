@@ -40,7 +40,7 @@ export default function PrescriptionListPage() {
                     </Row>
                     <Row>
                         <Col width="full">
-                            <h2 className="nhsuk-heading-l" id="hero-heading" data-testid="prescription-list-heading">
+                            <h2 className="nhsuk-heading-l" data-testid="prescription-list-heading">
                                 {PRESCRIPTION_LIST_PAGE_STRINGS.HEADING}
                             </h2>
                         </Col>

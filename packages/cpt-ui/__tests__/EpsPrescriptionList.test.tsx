@@ -18,9 +18,9 @@ const renderWithRouter = (route: string) => {
 
 describe("PrescriptionListPage", () => {
     it("renders the component with the correct title and heading", () => {
-        renderWithRouter("/prescriptions");
+        renderWithRouter("/prescription-results");
 
-        const heading = screen.getByTestId("hero-heading");
+        const heading = screen.getByTestId("prescription-list-heading");
         expect(heading).toBeInTheDocument();
         expect(heading).toHaveTextContent(PRESCRIPTION_LIST_PAGE_STRINGS.HEADING);
 
@@ -33,14 +33,14 @@ describe("PrescriptionListPage", () => {
     });
 
     it("shows the correct number of results", () => {
-        renderWithRouter("/prescriptions");
+        renderWithRouter("/prescription-results");
 
         const resultsCount = screen.getByTestId("results-count");
         expect(resultsCount).toHaveTextContent(`${PRESCRIPTION_LIST_PAGE_STRINGS.RESULTS_PREFIX}5${PRESCRIPTION_LIST_PAGE_STRINGS.RESULTS_SUFFIX}`);
     });
 
     it("sets the back link to the default target when no query parameters are present", () => {
-        renderWithRouter("/prescriptions");
+        renderWithRouter("/prescription-results");
 
         // Now checking the link-container which has the href attribute
         const linkContainer = screen.getByTestId("back-link-container");
@@ -48,7 +48,7 @@ describe("PrescriptionListPage", () => {
     });
 
     it("sets the back link to the prescription ID search when prescriptionId query parameter is present", async () => {
-        renderWithRouter("/prescriptions?prescriptionId=123456");
+        renderWithRouter("/prescription-results?prescriptionId=123456");
 
         // We need to wait for the useEffect to run
         await waitFor(() => {
@@ -58,7 +58,7 @@ describe("PrescriptionListPage", () => {
     });
 
     it("sets the back link to the NHS number search when nhsNumber query parameter is present", async () => {
-        renderWithRouter("/prescriptions?nhsNumber=1234567890");
+        renderWithRouter("/prescription-results?nhsNumber=1234567890");
 
         // We need to wait for the useEffect to run
         await waitFor(() => {
