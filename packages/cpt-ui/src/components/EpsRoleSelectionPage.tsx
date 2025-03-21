@@ -73,6 +73,7 @@ export default function RoleSelectionPage({
   const {
     noAccess,
     selectedRole,
+    updateSelectedRole,
     rolesWithAccess: rawRolesWithAccess = [],
     rolesWithoutAccess: rawRolesWithoutAccess = [],
     loading,
@@ -103,7 +104,13 @@ export default function RoleSelectionPage({
   useEffect(() => {
     if (rawRolesWithAccess.length === 1 && rawRolesWithoutAccess.length === 0) {
       setRedirecting(true)
-      navigate("/searchforaprescription")
+      updateSelectedRole(rawRolesWithAccess[0])
+        .then(() => {
+          navigate("/searchforaprescription")
+        })
+        .catch((err) => {
+          console.error(err)
+        })
     }
   }, [rawRolesWithAccess, rawRolesWithoutAccess, navigate])
 

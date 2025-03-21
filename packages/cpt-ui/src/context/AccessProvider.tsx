@@ -22,6 +22,7 @@ import http from "@/helpers/axios"
 import { useLocation, useNavigate } from "react-router-dom"
 
 const trackerUserInfoEndpoint = API_ENDPOINTS.TRACKER_USER_INFO
+const selectedRoleEndpoint = API_ENDPOINTS.SELECTED_ROLE
 
 export type AccessContextType = {
   noAccess: boolean
@@ -29,7 +30,7 @@ export type AccessContextType = {
   singleAccess: boolean
   setSingleAccess: (value: boolean) => void
   selectedRole: RoleDetails | undefined
-  setSelectedRole: (value: RoleDetails | undefined) => void
+  updateSelectedRole: (value: RoleDetails | undefined) => Promise<void>
   userDetails: UserDetails | undefined
   setUserDetails: (value: UserDetails | undefined) => void
   rolesWithAccess: RoleDetails[]
@@ -188,6 +189,35 @@ export const AccessProvider = ({ children }: { children: ReactNode }) => {
     ensureRoleSelected()
   }, [auth?.idToken]) // run ONLY ONCE on mount (i.e. on initial page load)
 
+
+  const updateSelectedRole = async (newRole: RoleDetails | undefined) => {
+    try {
+      // Update selected role in the backend via the selectedRoleLambda endpoint
+      const response = await fetch(selectedRoleEndpoint, {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${auth?.idToken}`,
+          'Content-Type': 'application/json',
+          'NHSD-Session-URID': '555254242106'
+        },
+        body: JSON.stringify({
+          currently_selected_role: newRole
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to update the selected role')
+      }
+
+      // Update frontend state with selected role
+      setSelectedRole(newRole)
+
+    } catch (error) {
+      console.error('Error selecting role:', error)
+      alert("There was an issue selecting your role. Please try again.")
+    }
+  }
+
   return (
     <AccessContext.Provider
       value={{
@@ -196,7 +226,7 @@ export const AccessProvider = ({ children }: { children: ReactNode }) => {
         singleAccess,
         setSingleAccess,
         selectedRole,
-        setSelectedRole,
+        updateSelectedRole,
         userDetails,
         setUserDetails,
         rolesWithAccess,
