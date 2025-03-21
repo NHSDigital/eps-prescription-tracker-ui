@@ -4,6 +4,9 @@ guard-%:
 		exit 1; \
 	fi
 
+NPROCS = $(shell grep -c 'processor' /proc/cpuinfo)
+MAKEFLAGS += -j$(NPROCS)
+
 .PHONY: install build test publish release clean
 
 install: install-node install-python install-hooks
@@ -44,16 +47,36 @@ lint-githubaction-scripts:
 
 lint: lint-node lint-githubactions lint-githubaction-scripts react-lint
 
-test: compile
+test: compile test-cloudfrontFunctions test-cdk test-cpt-ui test-cognito test-prescriptionListLambda test-middyErrorHandler test-trackerUserInfoLambda test-selectedRoleLambda test-CIS2SignOutLambda test-authFunctions
+
+test-cloudfrontFunctions: compile
 	npm run test --workspace packages/cloudfrontFunctions
+
+test-cdk: compile
 	npm run test --workspace packages/cdk
+
+test-cpt-ui: compile
 	npm run test --workspace packages/cpt-ui
+
+test-cognito: compile
 	npm run test --workspace packages/cognito
+
+test-prescriptionListLambda: compile
 	npm run test --workspace packages/prescriptionListLambda
+
+test-middyErrorHandler: compile
 	npm run test --workspace packages/common/middyErrorHandler
+
+test-trackerUserInfoLambda: compile
 	npm run test --workspace packages/trackerUserInfoLambda
+
+test-selectedRoleLambda: compile
 	npm run test --workspace packages/selectedRoleLambda
+
+test-CIS2SignOutLambda: compile
 	npm run test --workspace packages/CIS2SignOutLambda
+
+test-authFunctions: compile
 	npm run test --workspace packages/common/authFunctions
 
 clean:
