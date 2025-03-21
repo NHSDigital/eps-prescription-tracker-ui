@@ -2,7 +2,7 @@ import React from 'react';
 import "@testing-library/jest-dom";
 import { fireEvent, render, waitFor } from "@testing-library/react";
 import { Tabs } from "nhsuk-react-components";
-import { BrowserRouter } from 'react-router-dom'; // Import BrowserRouter
+import { BrowserRouter } from 'react-router-dom';
 
 import EpsTabs from '@/components/EpsTabs';
 

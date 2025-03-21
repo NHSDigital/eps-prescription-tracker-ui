@@ -39,9 +39,9 @@ export default function EpsHeader() {
 
     // Show "Select your role" link
     setShouldShowSelectRole(
-      location.pathname !== "/select-role" &&
-      location.pathname !== "/change-role" &&
-      location.pathname !== "/logout" &&
+      path !== "/select-role" &&
+      path !== "/change-role" &&
+      path !== "/logout" &&
       isSignedIn &&
       !accessContext.singleAccess &&
       !accessContext.selectedRole
@@ -49,9 +49,9 @@ export default function EpsHeader() {
 
     // Show "Change role" link (if not single access)
     setShouldShowChangeRole(
-      location.pathname !== "/select-role" &&
-      location.pathname !== "/change-role" &&
-      location.pathname !== "/logout" &&
+      path !== "/select-role" &&
+      path !== "/change-role" &&
+      path !== "/logout" &&
       isSignedIn &&
       !accessContext.singleAccess &&
       accessContext.selectedRole !== undefined
@@ -62,9 +62,9 @@ export default function EpsHeader() {
 
     // Show the "Exit" button under these conditions
     setShouldShowExitButton(
-      (location.pathname === "/logout" && !auth?.isSignedIn) ||
-      (location.pathname === "/select-role" && accessContext.noAccess) ||
-      (location.pathname === "/notfound")
+      (path === "/logout" && !auth?.isSignedIn) ||
+      (path === "/select-role" && accessContext.noAccess) ||
+      (path === "/notfound")
     )
   }, [location, auth, accessContext])
 
