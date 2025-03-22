@@ -79,7 +79,7 @@ jest.mock("@/context/AccessProvider", () => {
     error: null,
     setNoAccess: jest.fn(),
     setSingleAccess: jest.fn(),
-    setSelectedRole: jest.fn(),
+    updateSelectedRole: jest.fn(() => Promise.resolve()),
     setUserDetails: jest.fn(),
     userDetails: undefined,
     clear: jest.fn(),
