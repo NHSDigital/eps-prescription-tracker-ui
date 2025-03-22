@@ -41,7 +41,7 @@
         "@types/node": "^22.13.11",
         "@types/react": "18.3.12",
         "@typescript-eslint/eslint-plugin": "^8.27.0",
-        "@typescript-eslint/parser": "^8.26.0",
+        "@typescript-eslint/parser": "^8.27.0",
         "aws-sdk-client-mock": "^4.1.0",
         "eslint": "^9.22.0",
         "eslint-config-prettier": "^10.1.1",
@@ -55,7 +55,7 @@
         "ts-jest": "^29.2.6",
         "ts-node": "^10.9.2",
         "typescript": "^5.8.2",
-        "typescript-eslint": "^8.26.1"
+        "typescript-eslint": "^8.27.0"
     },
     "dependencies": {
         "conventional-changelog-eslint": "^6.0.0",
