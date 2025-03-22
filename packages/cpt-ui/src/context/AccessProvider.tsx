@@ -5,6 +5,7 @@ import React, {
   useEffect,
   ReactNode,
 } from "react"
+import { useLocation, useNavigate } from "react-router-dom"
 
 import { useLocalStorageState } from "@/helpers/useLocalStorageState"
 import { normalizePath } from '@/helpers/utils'
@@ -15,11 +16,11 @@ import {
   TrackerUserInfo,
   UserDetails,
 } from "@/types/TrackerUserInfoTypes"
+import { PatientDetails } from "@cpt-ui-common/common-types"
 
 import { API_ENDPOINTS } from "@/constants/environment"
 
 import http from "@/helpers/axios"
-import { useLocation, useNavigate } from "react-router-dom"
 
 const trackerUserInfoEndpoint = API_ENDPOINTS.TRACKER_USER_INFO
 
@@ -32,6 +33,8 @@ export type AccessContextType = {
   setSelectedRole: (value: RoleDetails | undefined) => void
   userDetails: UserDetails | undefined
   setUserDetails: (value: UserDetails | undefined) => void
+  patientDetails: PatientDetails | undefined
+  setPatientDetails: (value: PatientDetails | undefined) => void
   rolesWithAccess: RoleDetails[]
   rolesWithoutAccess: RoleDetails[]
   loading: boolean
@@ -56,6 +59,7 @@ export const AccessProvider = ({ children }: { children: ReactNode }) => {
   )
   const [selectedRole, setSelectedRole] = useLocalStorageState<RoleDetails | undefined>("selectedRole", "access", undefined)
   const [userDetails, setUserDetails] = useLocalStorageState<UserDetails | undefined>("userDetails", "access", undefined)
+  const [patientDetails, setPatientDetails] = useLocalStorageState<PatientDetails | undefined>("patientDetails", "access", undefined)
   const [usingLocal, setUsingLocal] = useState(true)
   const [rolesWithAccess, setRolesWithAccess] = useState<RoleDetails[]>([])
   const [rolesWithoutAccess, setRolesWithoutAccess] = useState<RoleDetails[]>([])
@@ -73,11 +77,13 @@ export const AccessProvider = ({ children }: { children: ReactNode }) => {
     setSingleAccess(false)
     setSelectedRole(undefined)
     setUserDetails(undefined)
+    setPatientDetails(undefined)
 
     // Clear from localStorage to ensure RBAC Banner is removed
     localStorage.removeItem("access")
     localStorage.removeItem("selectedRole")
     localStorage.removeItem("userDetails")
+    localStorage.removeItem("patientDetails")
     console.log("Local storage cleared.")
   }
 
@@ -188,6 +194,21 @@ export const AccessProvider = ({ children }: { children: ReactNode }) => {
     ensureRoleSelected()
   }, [auth?.idToken]) // run ONLY ONCE on mount (i.e. on initial page load)
 
+  // Clear the patient details if the user navigates away from the pages about the patient
+  useEffect(() => {
+    const patientDetailsAllowedPaths = [
+      "/searchforaprescription"
+      // prescriptionsearchresults
+      // prescriptiondetails
+    ]
+
+    const path = normalizePath(location.pathname)
+    if (!patientDetailsAllowedPaths.includes(path)) {
+      console.info("Clearing patient details.")
+      setPatientDetails(undefined)
+    }
+  }, [location.pathname])
+
   return (
     <AccessContext.Provider
       value={{
@@ -199,6 +220,8 @@ export const AccessProvider = ({ children }: { children: ReactNode }) => {
         setSelectedRole,
         userDetails,
         setUserDetails,
+        patientDetails,
+        setPatientDetails,
         rolesWithAccess,
         rolesWithoutAccess,
         loading,

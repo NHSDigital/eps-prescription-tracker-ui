@@ -48,6 +48,8 @@ const defaultAccessContext: AccessContextType = {
     family_name: "Doe",
   },
   setUserDetails: jest.fn(),
+  patientDetails: undefined,
+  setPatientDetails: jest.fn(),
   setNoAccess: jest.fn(),
   setSingleAccess: jest.fn(),
   setSelectedRole: jest.fn(),
