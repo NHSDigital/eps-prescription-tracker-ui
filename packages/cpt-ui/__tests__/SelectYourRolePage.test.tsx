@@ -27,7 +27,7 @@ jest.mock("@/constants/ui-strings/CardStrings", () => {
     },
     confirmButton: {
       text: "Continue to find a prescription",
-      link: "searchforaprescription",
+      link: "search",
     },
     alternativeMessage: "Alternatively, you can choose a new role below.",
     organisation: "Organisation",
@@ -298,7 +298,7 @@ describe("SelectYourRolePage", () => {
     })
   })
 
-  it("redirects to searchforaprescription when there is one role with access and no roles without access", async () => {
+  it("redirects to search when there is one role with access and no roles without access", async () => {
     const mockNavigate = jest.fn();
     (useNavigate as jest.Mock).mockReturnValue(mockNavigate);
 
@@ -322,7 +322,7 @@ describe("SelectYourRolePage", () => {
     })
 
     await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith("/searchforaprescription");
+      expect(mockNavigate).toHaveBeenCalledWith("/search");
     })
   })
 
@@ -368,7 +368,7 @@ describe("SelectYourRolePage", () => {
     })
 
     await waitFor(() => {
-      expect(useNavigate()).toHaveBeenCalledWith("/searchforaprescription");
+      expect(useNavigate()).toHaveBeenCalledWith("/search");
     });
   });
 

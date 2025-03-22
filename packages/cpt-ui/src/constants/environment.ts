@@ -25,6 +25,7 @@ export const APP_CONFIG = {
 export const API_ENDPOINTS = {
   TRACKER_USER_INFO: "/api/tracker-user-info",
   SELECTED_ROLE: "/api/selected-role",
+  PRESCRIPTION_LIST: "/api/prescription-list",
   CIS2_SIGNOUT_ENDPOINT: "/api/cis2-signout"
 } as const
 

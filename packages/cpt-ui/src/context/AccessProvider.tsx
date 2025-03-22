@@ -135,7 +135,7 @@ export const AccessProvider = ({ children }: { children: ReactNode }) => {
 
   const ensureRoleSelected = () => {
     const allowed_no_role_paths = [
-      "/selectyourrole",
+      "/select-role",
       "/login",
       "/logout"
     ]
@@ -143,7 +143,7 @@ export const AccessProvider = ({ children }: { children: ReactNode }) => {
     if (!selectedRole) {
       if (!allowed_no_role_paths.includes(normalizePath(location.pathname))) {
         console.log("Redirecting from", location.pathname)
-        navigate("/selectyourrole")
+        navigate("/select-role")
       }
     }
   }
