@@ -149,7 +149,8 @@ export class Rum extends Construct {
         guestRoleArn: unauthenticatedRumRole.roleArn
       }
     })
-    new CustomResource(this, "UploadRumScriptToWebsiteBucket", {
+
+    const uploadRumScriptToWebsiteBucket = new CustomResource(this, "UploadRumScriptToWebsiteBucket", {
       serviceToken: uploadRum.lambda.functionArn,
       properties: {
         s3BucketName: props.s3Bucket.bucketName,
@@ -160,6 +161,7 @@ export class Rum extends Construct {
         trigger: Date.now()
       }
     })
+    uploadRumScriptToWebsiteBucket.node.addDependency(uploadRum.lambda)
   }
 
 }

@@ -1,4 +1,4 @@
-import {RUM} from "@aws-sdk/client-rum"
+import {RUM, AppMonitor} from "@aws-sdk/client-rum"
 
 export interface CustomProperties {
   appMonitorName: string;
@@ -39,7 +39,6 @@ export const rumFileService = async (
     .getAppMonitor({
       Name: appMonitorName
     })
-    .promise()
 
   if (appMonitor.AppMonitor) {
     const fileString = RUM_TEMPLATE(appMonitor.AppMonitor)
@@ -50,7 +49,7 @@ export const rumFileService = async (
   return ""
 }
 
-const RUM_TEMPLATE = (rum: RUM.AppMonitor): string => `
+const RUM_TEMPLATE = (rum: AppMonitor): string => `
 (function (n, i, v, r, s, c, x, z) {
   x = window.AwsRumClient = { q: [], n: n, i: i, v: v, r: r, c: c };
   window[n] = function (c, p) {

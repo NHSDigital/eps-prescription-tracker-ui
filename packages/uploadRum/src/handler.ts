@@ -20,7 +20,7 @@ const lambdaHandler: CloudFormationCustomResourceHandler = async (
   })
 
   if (!customPropertiesTypeGuard(event.ResourceProperties)) {
-    await sendFailureMessage(event)
+    await sendFailureMessage(event, logger)
     return
   }
 
