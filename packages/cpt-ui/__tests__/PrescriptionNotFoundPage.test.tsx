@@ -14,7 +14,6 @@ describe('PrescriptionNotFoundPage', () => {
     })
 
     it('renders the main container with the correct id and class', () => {
-        // The <main> element has an implicit role of "main"
         const mainElement = screen.getByRole('main')
         expect(mainElement).toBeInTheDocument()
         expect(mainElement).toHaveAttribute('id', 'main-content')
@@ -29,5 +28,30 @@ describe('PrescriptionNotFoundPage', () => {
         expect(header).toHaveTextContent(PRESCRIPTION_NOT_FOUND_STRINGS.headerText)
         expect(body).toHaveTextContent(PRESCRIPTION_NOT_FOUND_STRINGS.body1)
         expect(link).toHaveTextContent(PRESCRIPTION_NOT_FOUND_STRINGS.backLinkText)
+    })
+})
+
+describe('PrescriptionNotFoundPage - searchType parameter behavior', () => {
+    it('should append hash to the backLink URL when searchType is provided', () => {
+        render(
+            <MemoryRouter initialEntries={['/notfound?searchType=example']}>
+                <PrescriptionNotFoundPage />
+            </MemoryRouter>
+        )
+        const link = screen.getByTestId('presc-not-found-backlink')
+        // The rendered link might have a full URL like "http://localhost/search#example"
+        expect(link.getAttribute('href')).toContain('/search#example')
+    })
+
+    it('should not append a hash to the backLink URL when searchType is not provided', () => {
+        render(
+            <MemoryRouter initialEntries={['/notfound']}>
+                <PrescriptionNotFoundPage />
+            </MemoryRouter>
+        )
+        const link = screen.getByTestId('presc-not-found-backlink')
+        expect(link.getAttribute('href')).toContain('/search')
+        // Ensure that no hash is appended when searchType is absent.
+        expect(link.getAttribute('href')).not.toContain('#')
     })
 })
