@@ -238,6 +238,16 @@ export const nagSuppressions = (stack: Stack) => {
         }
       ]
     )
+    safeAddNagSuppression(
+      stack,
+      "/StatelessStack/Rum/LambdaPutLogsManagedPolicy/Resource",
+      [
+        {
+          id: "AwsSolutions-IAM5",
+          reason: "Suppress error for not having allowing wildcard permissions. This is by design"
+        }
+      ]
+    )
 
   }
 }
