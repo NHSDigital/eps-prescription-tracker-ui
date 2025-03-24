@@ -7,7 +7,7 @@ import {MemoryRouter} from "react-router-dom"
 import PrescriptionIdSearch from "@/components/prescriptionSearch/PrescriptionIdSearch"
 import {PRESCRIPTION_ID_SEARCH_STRINGS} from "@/constants/ui-strings/SearchForAPrescriptionStrings"
 import {AuthContext} from "@/context/AuthProvider"
-import type {AuthContextType} from "@/context/AuthProvider"
+import {AuthContextType} from "@/context/AuthProvider"
 
 const mockAuthContext = {
   error: null,
@@ -38,14 +38,14 @@ describe("PrescriptionIdSearch", () => {
     renderWithProviders(<PrescriptionIdSearch />)
     expect(screen.getByTestId("prescription-id-label")).toBeInTheDocument()
     expect(screen.getByTestId("prescription-id-hint")).toBeInTheDocument()
-    expect(screen.getByTestId("prescription-id-submit")).toHaveTextContent(
+    expect(screen.getByTestId("find-prescription-button")).toHaveTextContent(
       PRESCRIPTION_ID_SEARCH_STRINGS.buttonText
     )
   })
 
   it("shows error for empty input", async () => {
     renderWithProviders(<PrescriptionIdSearch />)
-    await userEvent.click(screen.getByTestId("prescription-id-submit"))
+    await userEvent.click(screen.getByTestId("find-prescription-button"))
     expect(await screen.findByTestId("error-summary")).toBeInTheDocument()
     expect(screen.getAllByText(/Enter a prescription ID number/i).length).toBeGreaterThan(0)
   })
@@ -53,7 +53,7 @@ describe("PrescriptionIdSearch", () => {
   it("shows error for invalid length", async () => {
     renderWithProviders(<PrescriptionIdSearch />)
     await userEvent.type(screen.getByTestId("prescription-id-input"), "12345")
-    await userEvent.click(screen.getByTestId("prescription-id-submit"))
+    await userEvent.click(screen.getByTestId("find-prescription-button"))
     expect(screen.getAllByText(/must contain 18 characters/i).length).toBeGreaterThan(0)
   })
 
@@ -62,7 +62,7 @@ describe("PrescriptionIdSearch", () => {
 
     const invalidChars = "1234567890ABCDEFG!" // 18 characters with illegal `!`
     await userEvent.type(screen.getByTestId("prescription-id-input"), invalidChars)
-    await userEvent.click(screen.getByTestId("prescription-id-submit"))
+    await userEvent.click(screen.getByTestId("find-prescription-button"))
 
     const errorSummary = await screen.findByTestId("error-summary")
 
@@ -78,7 +78,7 @@ describe("PrescriptionIdSearch", () => {
 
     renderWithProviders(<PrescriptionIdSearch />)
     await userEvent.type(screen.getByTestId("prescription-id-input"), "9D4C80A830085EA4D3")
-    await userEvent.click(screen.getByTestId("prescription-id-submit"))
+    await userEvent.click(screen.getByTestId("find-prescription-button"))
 
     expect(screen.getAllByText(/not recognised/i).length).toBeGreaterThan(0)
   })
@@ -95,7 +95,7 @@ describe("PrescriptionIdSearch", () => {
 
     renderWithProviders(<PrescriptionIdSearch />)
     await userEvent.type(screen.getByTestId("prescription-id-input"), "9D4C80A830085EA4D3")
-    await userEvent.click(screen.getByTestId("prescription-id-submit"))
+    await userEvent.click(screen.getByTestId("find-prescription-button"))
 
     expect(screen.getAllByText(/Loading search results/i).length).toBeGreaterThan(1)
 

@@ -12,6 +12,8 @@ import {
 import {AuthContext} from "@/context/AuthProvider"
 import {PRESCRIPTION_ID_SEARCH_STRINGS} from "@/constants/ui-strings/SearchForAPrescriptionStrings"
 
+import {useNavigate} from "react-router-dom"
+
 // API endpoint for prescription details
 const prescriptionDetailsEndpoint = "/api/prescription-details"
 
@@ -165,7 +167,7 @@ export default function PrescriptionIdSearch() {
                             />
                         </div>
 
-                        <Button type="submit" data-testid="prescription-id-submit">
+                        <Button type="submit" data-testid="find-prescription-button">
                             {loading ? "Loading search results" : PRESCRIPTION_ID_SEARCH_STRINGS.buttonText}
                         </Button>
                     </Form>
