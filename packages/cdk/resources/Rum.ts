@@ -75,7 +75,7 @@ export class Rum extends Construct {
     const splunkSubscriptionFilterRole = Role.fromRoleArn(
       this, "splunkSubscriptionFilterRole", Fn.importValue("lambda-resources:SplunkSubscriptionFilterRole"))
 
-    const rumLogGroup = new LogGroup(this, "LambdaLogGroup", {
+    const rumLogGroup = new LogGroup(this, "RumLogGroup", {
       encryptionKey: cloudWatchLogsKmsKey,
       logGroupName: `/aws/rum/${props.appMonitorName!}`,
       retention: props.logRetentionInDays,
