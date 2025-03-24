@@ -22,7 +22,7 @@ export default function EpsTabs() {
             {
                 tabData.map(tabContent =>
                     <Tabs.Contents id={tabContent.targetId} key={tabContent.title}>
-                        <div>
+                        <div className='search-form-container'>
                             {(tabContent.targetId === 'PrescriptionIdSearch' && <PrescriptionIdSearch />) ||
                                 (tabContent.targetId === 'NhsNumSearch' && <NhsNumSearch />) ||
                                 (tabContent.targetId === 'BasicDetailsSearch' && <BasicDetailsSearch />) ||

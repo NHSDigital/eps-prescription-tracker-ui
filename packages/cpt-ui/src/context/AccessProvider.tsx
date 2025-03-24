@@ -7,6 +7,7 @@ import React, {
 } from "react"
 
 import { useLocalStorageState } from "@/helpers/useLocalStorageState"
+import { normalizePath } from '@/helpers/utils'
 import { AuthContext } from "./AuthProvider"
 
 import {
@@ -18,6 +19,7 @@ import {
 import { API_ENDPOINTS } from "@/constants/environment"
 
 import http from "@/helpers/axios"
+import { useLocation, useNavigate } from "react-router-dom"
 
 const trackerUserInfoEndpoint = API_ENDPOINTS.TRACKER_USER_INFO
 
@@ -52,21 +54,18 @@ export const AccessProvider = ({ children }: { children: ReactNode }) => {
     "access",
     false
   )
-  const [selectedRole, setSelectedRole] = useLocalStorageState<
-    RoleDetails | undefined
-  >("selectedRole", "access", undefined)
-  const [userDetails, setUserDetails] = useLocalStorageState<
-    UserDetails | undefined
-  >("userDetails", "access", undefined)
+  const [selectedRole, setSelectedRole] = useLocalStorageState<RoleDetails | undefined>("selectedRole", "access", undefined)
+  const [userDetails, setUserDetails] = useLocalStorageState<UserDetails | undefined>("userDetails", "access", undefined)
   const [usingLocal, setUsingLocal] = useState(true)
   const [rolesWithAccess, setRolesWithAccess] = useState<RoleDetails[]>([])
-  const [rolesWithoutAccess, setRolesWithoutAccess] = useState<RoleDetails[]>(
-    []
-  )
+  const [rolesWithoutAccess, setRolesWithoutAccess] = useState<RoleDetails[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   const auth = useContext(AuthContext)
+
+  const navigate = useNavigate()
+  const location = useLocation()
 
   const clear = () => {
     console.log("Clearing access context and local storage...")
@@ -134,6 +133,21 @@ export const AccessProvider = ({ children }: { children: ReactNode }) => {
     }
   }
 
+  const ensureRoleSelected = () => {
+    const allowed_no_role_paths = [
+      "/select-role",
+      "/login",
+      "/logout"
+    ]
+
+    if (!selectedRole) {
+      if (!allowed_no_role_paths.includes(normalizePath(location.pathname))) {
+        console.log("Redirecting from", location.pathname)
+        navigate("/select-role")
+      }
+    }
+  }
+
   // The access variables are cached, and the values are initially assumed to have not changed.
   // On a full page reload, make a tracker use info call to update them from the backend
   useEffect(() => {
@@ -170,6 +184,8 @@ export const AccessProvider = ({ children }: { children: ReactNode }) => {
 
     updateAccessVariables()
     setUsingLocal(false)
+
+    ensureRoleSelected()
   }, [auth?.idToken]) // run ONLY ONCE on mount (i.e. on initial page load)
 
   return (
