@@ -115,36 +115,43 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
     const isMockRequest = MOCK_MODE_ENABLED === "true" && isMockToken
     const apigeeTokenEndpoint = isMockRequest ? apigeeMockTokenEndpoint : apigeeCIS2TokenEndpoint
-
-    // Authentication flow
-    const {cis2AccessToken, cis2IdToken} = await fetchAndVerifyCIS2Tokens(
-      event,
-      documentClient,
-      logger,
-      isMockRequest ? mockOidcConfig : cis2OidcConfig
-    )
-    logger.debug("Successfully fetched CIS2 tokens", {cis2AccessToken, cis2IdToken})
-
-    // Check for existing valid Apigee token
-    const apigeeUsername = event.requestContext.authorizer?.claims?.["cognito:username"] || "unknown"
-    const existingToken = await getExistingApigeeAccessToken(
-      documentClient,
-      TokenMappingTableName,
-      apigeeUsername,
-      logger
-    )
-
+    const oidcConfig = isMockRequest ? mockOidcConfig : cis2OidcConfig
     let apigeeAccessToken
 
-    if (existingToken) {
-      // Use existing token if valid
-      logger.info("Using existing Apigee access token")
-      apigeeAccessToken = existingToken.accessToken
-    } else {
-      // Get new token if no valid token exists
-      logger.info("No valid Apigee token found, obtaining new token")
+    // Authentication flow
+    // for mock mode - check if we already have a valid token
+    if (isMockRequest) {
+      logger.info("Mock mode detected, checking for existing Apigee token")
+      const existingToken = await getExistingApigeeAccessToken(
+        documentClient,
+        TokenMappingTableName,
+        username,
+        logger
+      )
 
-      // Step 2: Fetch the private key for signing the client assertion
+      if (existingToken) {
+        // use existing token if valid
+        // skip the token exchange process and go directly to the API calls
+        logger.info("Using existing Apigee access token in mock mode")
+        apigeeAccessToken = existingToken.accessToken
+      }
+    }
+
+    // if we don't have a valid token yet (either because we're in a live environment or
+    // we're in mock mode but didn't find a valid token), go through the token exchange flow
+    if (!apigeeAccessToken) {
+      logger.info(`Obtaining new Apigee token (${isMockRequest ? "mock" : "real"} mode)`)
+
+      // Get CIS2 tokens
+      const {cis2AccessToken, cis2IdToken} = await fetchAndVerifyCIS2Tokens(
+        event,
+        documentClient,
+        logger,
+        oidcConfig
+      )
+      logger.debug("Successfully fetched CIS2 tokens", {cis2AccessToken, cis2IdToken})
+
+      // Fetch the private key for signing the client assertion
       logger.info("Accessing JWT private key from Secrets Manager to create signed client assertion")
       const jwtPrivateKey = await getSecret(jwtPrivateKeyArn)
       if (!jwtPrivateKey || typeof jwtPrivateKey !== "string") {
@@ -173,7 +180,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
       await updateApigeeAccessToken(
         documentClient,
         TokenMappingTableName,
-        apigeeUsername,
+        username,
         accessToken,
         expiresIn,
         logger
