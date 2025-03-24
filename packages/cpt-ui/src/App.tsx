@@ -11,6 +11,7 @@ import SearchPrescriptionPage from "@/pages/SearchPrescriptionPage";
 import YourSelectedRolePage from "@/pages/YourSelectedRolePage";
 import NotFoundPage from "@/pages/NotFoundPage";
 import PrescriptionListPage from "@/pages/PrescriptionListPage";
+import PrescriptionNotFoundPage from "./pages/PrescriptionNotFoundPage";
 
 export default function App() {
 
@@ -33,6 +34,10 @@ export default function App() {
             <Route
               path="prescription-results"
               element={<PrescriptionListPage />}
+            />
+            <Route
+              path="prescription-not-found"
+              element={<PrescriptionNotFoundPage />}
             />
           </Route>
         </Routes>
