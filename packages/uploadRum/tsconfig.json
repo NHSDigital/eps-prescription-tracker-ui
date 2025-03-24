@@ -5,13 +5,5 @@
     "outDir": "lib"
   },
   "include": ["src/**/*", "tests/**/*"],
-  "exclude": ["node_modules"],
-  "references": [
-    {
-      "path": "../common/authFunctions"
-    },
-    {
-      "path": "../common/middyErrorHandler"
-    }
-  ]
+  "exclude": ["node_modules"]
 }

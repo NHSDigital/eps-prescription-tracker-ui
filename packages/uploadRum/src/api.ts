@@ -1,4 +1,4 @@
-import {RUM} from "aws-sdk"
+import {RUM} from "@aws-sdk/client-rum"
 
 export interface CustomProperties {
   appMonitorName: string;

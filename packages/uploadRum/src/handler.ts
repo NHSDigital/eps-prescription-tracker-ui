@@ -14,7 +14,7 @@ const logger = new Logger({serviceName: "uploadRum"})
 const lambdaHandler: CloudFormationCustomResourceHandler = async (
   event
 ) => {
-  logger.info("Received request to update the RUM tempalte", {
+  logger.info("Received request to update the RUM template", {
     props: event.ResourceProperties,
     requestType: event.RequestType
   })

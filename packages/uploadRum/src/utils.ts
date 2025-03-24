@@ -1,4 +1,4 @@
-import {S3} from "aws-sdk"
+import {S3} from "@aws-sdk/client-s3"
 import {CustomProperties, rumFileService} from "./api"
 import {Logger} from "@aws-lambda-powertools/logger"
 
