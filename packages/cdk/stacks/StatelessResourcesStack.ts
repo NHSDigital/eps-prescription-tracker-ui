@@ -35,6 +35,7 @@ import {OAuth2ApiGatewayMethods} from "../resources/RestApiGateway/OAuth2ApiGate
 import {CloudfrontBehaviors} from "../resources/CloudfrontBehaviors"
 import {HostedZone} from "aws-cdk-lib/aws-route53"
 import {Certificate} from "aws-cdk-lib/aws-certificatemanager"
+import {Rum} from "../resources/Rum"
 
 export interface StatelessResourcesStackProps extends StackProps {
   readonly serviceName: string
@@ -373,6 +374,16 @@ export class StatelessResourcesStack extends Stack {
           ttl: Duration.seconds(10)
         }
       ]
+    })
+
+    new Rum(this, "Rum", {
+      topLevelDomain: fullCloudfrontDomain,
+      appMonitorName: `${props.stackName}-rum`,
+      s3Bucket: staticContentBucket,
+      serviceName: props.serviceName,
+      stackName: props.stackName,
+      logRetentionInDays: logRetentionInDays,
+      logLevel: logLevel
     })
 
     // Outputs

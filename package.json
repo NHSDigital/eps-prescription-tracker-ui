@@ -29,7 +29,8 @@
         "packages/auth_demo",
         "packages/trackerUserInfoLambda",
         "packages/CIS2SignOutLambda",
-        "packages/selectedRoleLambda"
+        "packages/selectedRoleLambda",
+        "packages/uploadRum"
     ],
     "devDependencies": {
         "@semantic-release/changelog": "^6.0.3",

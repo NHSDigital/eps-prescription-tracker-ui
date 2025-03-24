@@ -55,6 +55,10 @@
       {
         "name": "packages/selectedRoleLambda",
         "path": "../packages/selectedRoleLambda"
+      },
+      {
+        "name": "packages/uploadRum",
+        "path": "../packages/uploadRum"
       }
     ],
     "settings": {
