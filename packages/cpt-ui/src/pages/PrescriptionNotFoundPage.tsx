@@ -13,15 +13,16 @@ export default function PrescriptionNotFoundPage() {
         <main id="main-content" className="nhsuk-main-wrapper">
             <Container>
                 <BackLink
+                    data-testid="presc-not-found-backlink"
                     asElement={Link}
                     to={backLinkUrl}
                 >
                     {PRESCRIPTION_NOT_FOUND_STRINGS.backLinkText}
                 </BackLink>
-                <h1 data-testid="eps-presc-not-found-header">
+                <h1 data-testid="presc-not-found-header">
                     {PRESCRIPTION_NOT_FOUND_STRINGS.headerText}
                 </h1>
-                <p data-testid="eps-presc-not-found-body1">
+                <p data-testid="presc-not-found-body1">
                     {PRESCRIPTION_NOT_FOUND_STRINGS.body1}
                 </p>
             </Container>
