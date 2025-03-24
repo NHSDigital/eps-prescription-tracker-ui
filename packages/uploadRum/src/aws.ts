@@ -1,3 +1,4 @@
+import {Logger} from "@aws-lambda-powertools/logger"
 import {
   CloudFormationCustomResourceEvent,
   CloudFormationCustomResourceFailedResponse,
@@ -6,7 +7,8 @@ import {
 import axios from "axios"
 
 export const sendFailureMessage = async (
-  event: CloudFormationCustomResourceEvent
+  event: CloudFormationCustomResourceEvent,
+  logger: Logger
 ) => {
   const errorResponse: CloudFormationCustomResourceFailedResponse = {
     Status: "FAILED",
@@ -17,7 +19,7 @@ export const sendFailureMessage = async (
     StackId: event.StackId
   }
 
-  console.info("Sending failed response", errorResponse)
+  logger.info("Sending failed response", {errorResponse})
 
   const data = JSON.stringify(errorResponse)
   return axios.put(event.ResponseURL, data, {
@@ -29,7 +31,8 @@ export const sendFailureMessage = async (
 }
 
 export const sendSuccessMessage = async (
-  event: CloudFormationCustomResourceEvent
+  event: CloudFormationCustomResourceEvent,
+  logger: Logger
 ) => {
   const successResponse: CloudFormationCustomResourceSuccessResponse = {
     Status: "SUCCESS",
@@ -40,7 +43,7 @@ export const sendSuccessMessage = async (
     StackId: event.StackId
   }
 
-  console.info("Sending success response", successResponse)
+  logger.info("Sending success response", {successResponse})
 
   const data = JSON.stringify(successResponse)
   return await axios.put(event.ResponseURL, data, {

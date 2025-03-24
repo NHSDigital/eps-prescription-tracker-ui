@@ -16,9 +16,9 @@ export const upsert = async (
     Key: "rum.js",
     Body: file
   }
-  logger.info("Uploading the script with props", props)
+  logger.info(`Uploading the script with props ${props}`, {props})
 
-  await s3.putObject(props).promise()
+  await s3.putObject(props)
   logger.info("Script was uploaded")
 }
 
@@ -31,9 +31,9 @@ export const destroy = async (
     Bucket: s3BucketName,
     Key: "rum.js"
   }
-  logger.info("Deleting the script with props", props)
+  logger.info(`Deleting the script with props ${props}`, {props})
 
-  await s3.deleteObject(props).promise()
+  await s3.deleteObject(props)
 
   logger.info("Script was deleted")
 }

@@ -41,11 +41,11 @@ const lambdaHandler: CloudFormationCustomResourceHandler = async (
       requestType: event.RequestType
     })
 
-    await sendSuccessMessage(event)
+    await sendSuccessMessage(event, logger)
     return
   } catch (e) {
     logger.error("Error processing event", {e})
-    await sendFailureMessage(event)
+    await sendFailureMessage(event, logger)
   }
 }
 
