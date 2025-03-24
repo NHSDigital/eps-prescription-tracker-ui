@@ -1,4 +1,4 @@
-import {Stack} from "aws-cdk-lib"
+import {Stack, CustomResource} from "aws-cdk-lib"
 import {CfnIdentityPool, CfnIdentityPoolRoleAttachment} from "aws-cdk-lib/aws-cognito"
 import {
   FederatedPrincipal,
@@ -122,7 +122,7 @@ export class Rum extends Construct {
         })
       ]
     })
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
     const uploadRum = new LambdaFunction(this, "uploadRum", {
       serviceName: props.serviceName,
       stackName: props.stackName,
@@ -136,7 +136,6 @@ export class Rum extends Construct {
       lambdaEnvironmentVariables: {foo: "bar"}
     })
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const appMonitor = new CfnAppMonitor(this, "RumAppMonitor", {
       name: props.appMonitorName,
       cwLogEnabled: true,
@@ -150,17 +149,17 @@ export class Rum extends Construct {
         guestRoleArn: unauthenticatedRumRole.roleArn
       }
     })
-    // new CustomResource(this, "UploadRumScriptToWebsiteBucket", {
-    //   serviceToken: uploadRum.lambda.functionArn,
-    //   properties: {
-    //     s3BucketName: props.s3Bucket.bucketName,
-    //     appMonitorName: props.appMonitorName,
-    //     appMonitorConfiguration: appMonitor,
-    //     // The CDK needs to always upload the rum, otherwise the new web
-    //     // deployment erases the file.
-    //     trigger: Date.now()
-    //   }
-    // })
+    new CustomResource(this, "UploadRumScriptToWebsiteBucket", {
+      serviceToken: uploadRum.lambda.functionArn,
+      properties: {
+        s3BucketName: props.s3Bucket.bucketName,
+        appMonitorName: props.appMonitorName,
+        appMonitorConfiguration: appMonitor.appMonitorConfiguration,
+        // The CDK needs to always upload the rum, otherwise the new web
+        // deployment erases the file.
+        trigger: Date.now()
+      }
+    })
   }
 
 }
