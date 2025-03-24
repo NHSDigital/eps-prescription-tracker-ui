@@ -194,26 +194,26 @@ export const getExistingApigeeAccessToken = async (
     const userRecord = getResult.Item
 
     // Check if Apigee access token exists and is not expired
-    if (userRecord.Apigee_accessToken && userRecord.Apigee_expiresIn) {
+    if (userRecord.CIS2_accessToken && userRecord.CIS2_expiresIn) {
       const currentTime = Math.floor(Date.now() / 1000)
 
       // Add buffer time (e.g., 60 seconds) to ensure token isn't about to expire
       const bufferTime = 60
 
-      if (userRecord.Apigee_expiresIn > (currentTime + bufferTime)) {
+      if (userRecord.CIS2_expiresIn > (currentTime + bufferTime)) {
         logger.info("Found valid existing Apigee access token", {
           username,
-          expiresIn: userRecord.Apigee_expiresIn - currentTime
+          expiresIn: userRecord.CIS2_expiresIn - currentTime
         })
 
         return {
-          accessToken: userRecord.Apigee_accessToken,
-          expiresIn: userRecord.Apigee_expiresIn
+          accessToken: userRecord.CIS2_accessToken,
+          expiresIn: userRecord.CIS2_expiresIn
         }
       } else {
         logger.debug("Existing Apigee token has expired or will expire soon", {
           username,
-          expiresIn: userRecord.Apigee_expiresIn,
+          expiresIn: userRecord.CIS2_expiresIn,
           currentTime
         })
       }
