@@ -8,7 +8,7 @@ import {generateKeyPairSync} from "crypto"
 import nock from "nock"
 import jwksClient from "jwks-rsa"
 
-import {createJWKSMock} from "mock-jwks"
+import createJWKSMock from "mock-jwks"
 import {OidcConfig} from "@cpt-ui-common/authFunctions"
 import {PatientAPIResponse, PrescriptionAPIResponse, TreatmentType} from "../src/types"
 

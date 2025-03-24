@@ -7,7 +7,7 @@ import {
 import {generateKeyPairSync} from "crypto"
 import nock from "nock"
 
-import {createJWKSMock} from "mock-jwks"
+import createJWKSMock from "mock-jwks"
 import jwksClient from "jwks-rsa"
 import {OidcConfig} from "@cpt-ui-common/authFunctions"
 
