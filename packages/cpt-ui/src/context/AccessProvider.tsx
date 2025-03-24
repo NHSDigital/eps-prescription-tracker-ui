@@ -16,12 +16,13 @@ import {
   UserDetails,
 } from "@/types/TrackerUserInfoTypes"
 
-import { API_ENDPOINTS } from "@/constants/environment"
+import { API_ENDPOINTS, NHS_REQUEST_URID } from "@/constants/environment"
 
 import http from "@/helpers/axios"
 import { useLocation, useNavigate } from "react-router-dom"
 
 const trackerUserInfoEndpoint = API_ENDPOINTS.TRACKER_USER_INFO
+const selectedRoleEndpoint = API_ENDPOINTS.SELECTED_ROLE
 
 export type AccessContextType = {
   noAccess: boolean
@@ -29,7 +30,7 @@ export type AccessContextType = {
   singleAccess: boolean
   setSingleAccess: (value: boolean) => void
   selectedRole: RoleDetails | undefined
-  setSelectedRole: (value: RoleDetails | undefined) => void
+  updateSelectedRole: (value: RoleDetails) => Promise<void>
   userDetails: UserDetails | undefined
   setUserDetails: (value: UserDetails | undefined) => void
   rolesWithAccess: RoleDetails[]
@@ -89,7 +90,7 @@ export const AccessProvider = ({ children }: { children: ReactNode }) => {
       const response = await http.get(trackerUserInfoEndpoint, {
         headers: {
           Authorization: `Bearer ${auth?.idToken}`,
-          "NHSD-Session-URID": "555254242106",
+          "NHSD-Session-URID": NHS_REQUEST_URID,
         },
       })
 
@@ -188,6 +189,33 @@ export const AccessProvider = ({ children }: { children: ReactNode }) => {
     ensureRoleSelected()
   }, [auth?.idToken]) // run ONLY ONCE on mount (i.e. on initial page load)
 
+  const updateSelectedRole = async (newRole: RoleDetails) => {
+    try {
+      // Update selected role in the backend via the selectedRoleLambda endpoint using axios
+      const response = await http.put(
+        selectedRoleEndpoint,
+        { currently_selected_role: newRole },
+        {
+          headers: {
+            Authorization: `Bearer ${auth?.idToken?.toString()}`,
+            "Content-Type": "application/json",
+            "NHSD-Session-URID": NHS_REQUEST_URID,
+          },
+        }
+      )
+
+      if (response.status !== 200) {
+        throw new Error("Failed to update the selected role")
+      }
+
+      // Update frontend state with selected role
+      setSelectedRole(newRole)
+    } catch (error) {
+      console.error("Error selecting role:", error)
+      alert("There was an issue selecting your role. Please notify the EPS team.")
+    }
+  }
+
   return (
     <AccessContext.Provider
       value={{
@@ -196,7 +224,7 @@ export const AccessProvider = ({ children }: { children: ReactNode }) => {
         singleAccess,
         setSingleAccess,
         selectedRole,
-        setSelectedRole,
+        updateSelectedRole,
         userDetails,
         setUserDetails,
         rolesWithAccess,

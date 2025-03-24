@@ -73,8 +73,9 @@ export default function RoleSelectionPage({
   const {
     noAccess,
     selectedRole,
-    rolesWithAccess: rawRolesWithAccess = [],
-    rolesWithoutAccess: rawRolesWithoutAccess = [],
+    updateSelectedRole,
+    rolesWithAccess,
+    rolesWithoutAccess,
     loading,
     error,
   } = useAccess()
@@ -83,29 +84,43 @@ export default function RoleSelectionPage({
   const [redirecting, setRedirecting] = useState<boolean>(false)
   const navigate = useNavigate()
 
-  // Transform roles data for display
-  const rolesWithAccess = !noAccess
-    ? rawRolesWithAccess.map((role: RoleDetails, index) => ({
-      uuid: `role_with_access_${index}`,
-      role,
-      link: "/selected-role",
-    }))
-    : [];
+  const [roleCardPropsWithAccess, setRoleCardPropsWithAccess] = useState<Array<RolesWithAccessProps>>([])
+  const [roleCardPropsWithoutAccess, setRoleCardPropsWithoutAccess] = useState<Array<RolesWithoutAccessProps>>([])
 
-  const rolesWithoutAccess = rawRolesWithoutAccess.map((role, index) => ({
-    uuid: `role_without_access_${index}`,
-    roleName: role.role_name || noRoleName,
-    orgName: role.org_name || noOrgName,
-    odsCode: role.org_code || noODSCode,
-  }))
+  useEffect(() => {
+    // Transform roles data for display
+    setRoleCardPropsWithAccess((!noAccess)
+      ? rolesWithAccess.map((role: RoleDetails, index) => ({
+        uuid: `role_with_access_${index}`,
+        role,
+        link: "/selected-role",
+      }))
+      : []
+    )
+
+    setRoleCardPropsWithoutAccess(rolesWithoutAccess.map((role, index) => ({
+      uuid: `role_without_access_${index}`,
+      roleName: role.role_name || noRoleName,
+      orgName: role.org_name || noOrgName,
+      odsCode: role.org_code || noODSCode,
+    })))
+
+    console.warn("RoleCardPropsWithAccess length: ", { roleCardPropsWithAccess, loading, error })
+  }, [rolesWithAccess, rolesWithoutAccess])
 
   // Handle auto-redirect for single role
   useEffect(() => {
-    if (rawRolesWithAccess.length === 1 && rawRolesWithoutAccess.length === 0) {
+    if (rolesWithAccess.length === 1 && rolesWithoutAccess.length === 0) {
       setRedirecting(true)
-      navigate("/search")
+      updateSelectedRole(rolesWithAccess[0])
+        .then(() => {
+          navigate("/search")
+        })
+        .catch((err) => {
+          console.error(err)
+        })
     }
-  }, [rawRolesWithAccess, rawRolesWithoutAccess, navigate])
+  }, [rolesWithAccess, rolesWithoutAccess, navigate])
 
   // Set login message when selected role is available
   useEffect(() => {
@@ -175,7 +190,7 @@ export default function RoleSelectionPage({
                 </span>
                 <span className="nhsuk-caption-l nhsuk-caption--bottom">
                   <span className="nhsuk-u-visually-hidden"> - </span>
-                  {!noAccess && caption}
+                  {(!noAccess) && caption}
                 </span>
               </span>
             </h1>
@@ -205,11 +220,11 @@ export default function RoleSelectionPage({
             )}
           </Col>
 
-          {!noAccess && rolesWithAccess.length > 0 && (
+          {(!noAccess) && (roleCardPropsWithAccess.length > 0) && (
             <Col width="two-thirds">
               <div className="section">
-                {rolesWithAccess.map((role: RolesWithAccessProps) => (
-                  <EpsCard {...role} key={role.uuid} />
+                {roleCardPropsWithAccess.map((roleCardProps: RolesWithAccessProps) => (
+                  <EpsCard {...roleCardProps} key={roleCardProps.uuid} />
                 ))}
               </div>
             </Col>
@@ -230,7 +245,7 @@ export default function RoleSelectionPage({
                     </Table.Row>
                   </Table.Head>
                   <Table.Body>
-                    {rolesWithoutAccess.map(
+                    {roleCardPropsWithoutAccess.map(
                       (roleItem: RolesWithoutAccessProps) => (
                         <Table.Row key={roleItem.uuid}>
                           <Table.Cell data-testid="change-role-name-cell">
