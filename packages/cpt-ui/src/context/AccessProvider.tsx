@@ -16,7 +16,7 @@ import {
   UserDetails,
 } from "@/types/TrackerUserInfoTypes"
 
-import { API_ENDPOINTS } from "@/constants/environment"
+import { API_ENDPOINTS, NHS_REQUEST_URID } from "@/constants/environment"
 
 import http from "@/helpers/axios"
 import { useLocation, useNavigate } from "react-router-dom"
@@ -90,7 +90,7 @@ export const AccessProvider = ({ children }: { children: ReactNode }) => {
       const response = await http.get(trackerUserInfoEndpoint, {
         headers: {
           Authorization: `Bearer ${auth?.idToken}`,
-          "NHSD-Session-URID": "555254242106",
+          "NHSD-Session-URID": NHS_REQUEST_URID,
         },
       })
 
@@ -189,30 +189,29 @@ export const AccessProvider = ({ children }: { children: ReactNode }) => {
     ensureRoleSelected()
   }, [auth?.idToken]) // run ONLY ONCE on mount (i.e. on initial page load)
 
-
   const updateSelectedRole = async (newRole: RoleDetails | undefined) => {
     try {
-      // Update selected role in the backend via the selectedRoleLambda endpoint
-      const response = await http.put(selectedRoleEndpoint, {
-        headers: {
-          Authorization: `Bearer ${auth?.idToken}`,
-          'Content-Type': 'application/json',
-          'NHSD-Session-URID': '555254242106'
-        },
-        body: JSON.stringify({
-          currently_selected_role: newRole
-        }),
-      })
+      // Update selected role in the backend via the selectedRoleLambda endpoint using axios
+      const response = await http.put(
+        selectedRoleEndpoint,
+        { currently_selected_role: newRole },
+        {
+          headers: {
+            Authorization: `Bearer ${auth?.idToken?.toString()}`,
+            "Content-Type": "application/json",
+            "NHSD-Session-URID": NHS_REQUEST_URID,
+          },
+        }
+      )
 
       if (response.status !== 200) {
-        throw new Error('Failed to update the selected role')
+        throw new Error("Failed to update the selected role")
       }
 
       // Update frontend state with selected role
       setSelectedRole(newRole)
-
     } catch (error) {
-      console.error('Error selecting role:', error)
+      console.error("Error selecting role:", error)
       alert("There was an issue selecting your role. Please notify the EPS team.")
     }
   }

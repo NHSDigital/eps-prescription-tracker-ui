@@ -28,6 +28,9 @@ export const API_ENDPOINTS = {
   CIS2_SIGNOUT_ENDPOINT: "/api/cis2-signout"
 } as const
 
+// This needs to be provided in backend requests as a header
+export const NHS_REQUEST_URID = "555254242106"
+
 // Type for environment
 export type MockAuthEnvironment = "dev" | "dev-pr" | "int" | "qa";
 
