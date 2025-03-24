@@ -30,7 +30,7 @@ export type AccessContextType = {
   singleAccess: boolean
   setSingleAccess: (value: boolean) => void
   selectedRole: RoleDetails | undefined
-  updateSelectedRole: (value: RoleDetails | undefined) => Promise<void>
+  updateSelectedRole: (value: RoleDetails) => Promise<void>
   userDetails: UserDetails | undefined
   setUserDetails: (value: UserDetails | undefined) => void
   rolesWithAccess: RoleDetails[]
@@ -189,7 +189,7 @@ export const AccessProvider = ({ children }: { children: ReactNode }) => {
     ensureRoleSelected()
   }, [auth?.idToken]) // run ONLY ONCE on mount (i.e. on initial page load)
 
-  const updateSelectedRole = async (newRole: RoleDetails | undefined) => {
+  const updateSelectedRole = async (newRole: RoleDetails) => {
     try {
       // Update selected role in the backend via the selectedRoleLambda endpoint using axios
       const response = await http.put(
