@@ -1,6 +1,11 @@
 import React from 'react';
 import { Button } from '../ReactRouterButton';
 
+// TODO:
+// When this search does not return a prescription (either invalid, or non-existent), redirect to 
+// /prescription-not-found
+// That page takes a query string, which is set to the original search tab label. In this case,
+// be sure to redirect the user to prescription-not-found?searchType=PrescriptionIdSearch
 export default function PrescriptionIdSearch() {
     return (
         <>
