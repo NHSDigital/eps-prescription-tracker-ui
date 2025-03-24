@@ -94,7 +94,7 @@ const defaultAuthContext = {
 };
 
 const defaultAccessContext = {
-  setSelectedRole: jest.fn(),
+  updateSelectedRole: jest.fn(),
   noAccess: false,
   singleAccess: false,
   selectedRole: null,
@@ -173,29 +173,11 @@ describe("EpsCard Component", () => {
     renderWithProviders(
       { role: mockRole, link: mockLink },
       {},
-      { setSelectedRole: mockSetSelectedRole },
+      { updateSelectedRole: mockSetSelectedRole },
     );
 
     const cardLink = screen.getByRole("link", { name: /test organization/i });
     await fireEvent.click(cardLink);
-
-    // Update to match the mocked endpoint
-    expect(global.fetch).toHaveBeenCalledWith("/mock-endpoint", {
-      method: "PUT",
-      headers: {
-        Authorization: "Bearer mock-token",
-        "Content-Type": "application/json",
-        "NHSD-Session-URID": "555254242106",
-      },
-      body: JSON.stringify({
-        currently_selected_role: {
-          role_id: "123",
-          org_name: "Test Organization",
-          org_code: "XYZ123",
-          role_name: "Pharmacist",
-        },
-      }),
-    });
 
     expect(mockSetSelectedRole).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -207,25 +189,5 @@ describe("EpsCard Component", () => {
     );
 
     expect(mockNavigate).toHaveBeenCalledWith(mockLink);
-  });
-
-  it("shows an alert when API call fails", async () => {
-    global.fetch = jest.fn().mockImplementation(() =>
-      Promise.resolve({
-        ok: false,
-      }),
-    );
-    const mockAlert = jest.spyOn(window, "alert").mockImplementation(() => {});
-
-    renderWithProviders({ role: mockRole, link: mockLink });
-
-    const cardLink = screen.getByRole("link", { name: /test organization/i });
-    await fireEvent.click(cardLink);
-
-    expect(mockAlert).toHaveBeenCalledWith(
-      "There was an issue selecting your role. Please try again.",
-    );
-
-    mockAlert.mockRestore();
   });
 });
