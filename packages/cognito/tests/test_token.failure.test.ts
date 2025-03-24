@@ -5,7 +5,7 @@ import {
   jest
 } from "@jest/globals"
 
-import createJWKSMock from "mock-jwks"
+import {createJWKSMock} from "mock-jwks"
 import {generateKeyPairSync} from "crypto"
 import jwksClient from "jwks-rsa"
 import {OidcConfig} from "@cpt-ui-common/authFunctions"

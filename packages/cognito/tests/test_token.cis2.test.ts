@@ -6,7 +6,7 @@ import {
 } from "@jest/globals"
 
 import {DynamoDBDocumentClient, PutCommandInput} from "@aws-sdk/lib-dynamodb"
-import createJWKSMock from "mock-jwks"
+import {createJWKSMock} from "mock-jwks"
 import nock from "nock"
 import {generateKeyPairSync} from "crypto"
 import jwksClient from "jwks-rsa"
