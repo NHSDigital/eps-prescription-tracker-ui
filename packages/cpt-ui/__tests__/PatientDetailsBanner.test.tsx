@@ -62,13 +62,13 @@ describe("PatientDetailsBanner", () => {
 
     it("does not render the banner when patientDetails is null", () => {
         renderWithAccess(null)
-        expect(screen.queryByTestId("patient-detail-banner-div")).toBeNull()
+        expect(screen.queryByTestId("patient-details-banner")).toBeNull()
     })
 
     it("renders complete patient details correctly", async () => {
         renderWithAccess(completeDetails)
         await waitFor(() => {
-            expect(screen.getByTestId("patient-detail-banner-div")).toBeInTheDocument()
+            expect(screen.getByTestId("patient-details-banner")).toBeInTheDocument()
         })
 
         // Check that the patient's name is displayed correctly.
@@ -97,7 +97,7 @@ describe("PatientDetailsBanner", () => {
         expect(screen.queryByText(STRINGS.MISSING_DATA)).toBeNull()
 
         // Confirm the banner does not have the partial-data styling
-        const bannerDiv = screen.getByTestId("patient-detail-banner-div")
+        const bannerDiv = screen.getByTestId("patient-details-banner")
         expect(bannerDiv.className).not.toMatch(/patient-details-partial-data/)
     })
 
@@ -105,7 +105,7 @@ describe("PatientDetailsBanner", () => {
         renderWithAccess(minimumDetails)
 
         await waitFor(() => {
-            expect(screen.getByTestId("patient-detail-banner-div")).toBeInTheDocument()
+            expect(screen.getByTestId("patient-details-banner")).toBeInTheDocument()
         })
 
         // When details are missing, gender, date of birth, and address should show STRINGS.UNKNOWN.
@@ -129,10 +129,10 @@ describe("PatientDetailsBanner", () => {
         expect(screen.getByText(STRINGS.MISSING_DATA)).toBeInTheDocument()
 
         // The banner should now have the class for partial data.
-        const bannerDiv = screen.getByTestId("patient-detail-banner-div")
+        const bannerDiv = screen.getByTestId("patient-details-banner")
         expect(bannerDiv.className).toMatch(/patient-details-partial-data/)
     })
-    
+
     it("renders patient details with a partially populated address", async () => {
         const partialAddressDetails = {
             nhsNumber: "5900009890",
@@ -150,33 +150,33 @@ describe("PatientDetailsBanner", () => {
                 // postcode is omitted
             },
         };
-    
+
         renderWithAccess(partialAddressDetails);
-    
+
         await waitFor(() => {
-            expect(screen.getByTestId("patient-detail-banner-div")).toBeInTheDocument();
+            expect(screen.getByTestId("patient-details-banner")).toBeInTheDocument();
         });
-    
+
         // Verify the patient's name is rendered correctly.
         expect(screen.getByText("William WOLDERTON")).toBeInTheDocument();
-    
+
         // Verify that gender, NHS number and DOB are rendered as expected.
         expect(screen.getByText(new RegExp(`${STRINGS.GENDER}:\\s*Male`, "i"))).toBeInTheDocument();
         expect(screen.getByText(new RegExp(`${STRINGS.NHS_NUMBER}:\\s*590 000 9890`, "i"))).toBeInTheDocument();
         expect(screen.getByText(new RegExp(`${STRINGS.DOB}:\\s*01-Nov-1988`, "i"))).toBeInTheDocument();
-    
+
         // Expected address: Only provided fields should be concatenated, in uppercase.
         // "55 Oak Street" becomes "55 OAK STREET" and "Leeds" becomes "LEEDS"
         const expectedAddress = "55 OAK STREET, LEEDS";
         expect(
             screen.getByText(new RegExp(`${STRINGS.ADDRESS}:\\s*${expectedAddress}`, "i"))
         ).toBeInTheDocument();
-    
+
         // Ensure that the missing data message is not rendered.
         expect(screen.queryByText(STRINGS.MISSING_DATA)).toBeNull();
-    
+
         // Verify that the banner does not have the partial-data styling.
-        const bannerDiv = screen.getByTestId("patient-detail-banner-div");
+        const bannerDiv = screen.getByTestId("patient-details-banner");
         expect(bannerDiv.className).not.toMatch(/patient-details-partial-data/);
-    });    
+    });
 })
