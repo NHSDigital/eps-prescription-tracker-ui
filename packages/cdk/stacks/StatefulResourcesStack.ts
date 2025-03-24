@@ -127,6 +127,10 @@ export class StatefulResourcesStack extends Stack {
       value: staticContentBucket.bucket.bucketName,
       exportName: `${props.stackName}:StaticContentBucket:Name`
     })
+    new CfnOutput(this, "StaticContentBucketKmsKeyArn", {
+      value: staticContentBucket.kmsKey.keyArn,
+      exportName: `${props.stackName}:StaticContentBucketKmsKey:Arn`
+    })
 
     // Token mapping table
     new CfnOutput(this, "tokenMappingTableArn", {

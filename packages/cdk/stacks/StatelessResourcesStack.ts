@@ -89,6 +89,7 @@ export class StatelessResourcesStack extends Stack {
     const baseImportPath = `${props.serviceName}-stateful-resources`
 
     const staticContentBucketImport = Fn.importValue(`${baseImportPath}:StaticContentBucket:Arn`)
+    const staticContentBucketKmsKeyImport = Fn.importValue(`${baseImportPath}:StaticContentBucketKmsKey:Arn`)
 
     // CIS2 tokens and user info table
     const tokenMappingTableImport = Fn.importValue(`${baseImportPath}:tokenMappingTable:Arn`)
@@ -117,6 +118,7 @@ export class StatelessResourcesStack extends Stack {
 
     // Coerce context and imports to relevant types
     const staticContentBucket = Bucket.fromBucketArn(this, "StaticContentBucket", staticContentBucketImport)
+    const staticContentBucketKmsKey = Key.fromKeyArn(this, "StaticContentBucketKmsKey", staticContentBucketKmsKeyImport)
 
     const tokenMappingTable = TableV2.fromTableArn(this, "tokenMappingTable", tokenMappingTableImport)
     const tokenMappingTableReadPolicy = ManagedPolicy.fromManagedPolicyArn(
@@ -383,7 +385,8 @@ export class StatelessResourcesStack extends Stack {
       serviceName: props.serviceName,
       stackName: props.stackName,
       logRetentionInDays: logRetentionInDays,
-      logLevel: logLevel
+      logLevel: logLevel,
+      s3BucketKmsKey: staticContentBucketKmsKey
     })
 
     // Outputs

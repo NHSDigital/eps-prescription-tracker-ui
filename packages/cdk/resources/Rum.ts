@@ -1,4 +1,9 @@
-import {Stack, CustomResource} from "aws-cdk-lib"
+import {
+  Stack,
+  CustomResource,
+  Fn,
+  RemovalPolicy
+} from "aws-cdk-lib"
 import {CfnIdentityPool, CfnIdentityPoolRoleAttachment} from "aws-cdk-lib/aws-cognito"
 import {
   FederatedPrincipal,
@@ -10,6 +15,9 @@ import {CfnAppMonitor} from "aws-cdk-lib/aws-rum"
 import {IBucket} from "aws-cdk-lib/aws-s3"
 import {Construct} from "constructs"
 import {LambdaFunction} from "./LambdaFunction"
+import {Stream} from "aws-cdk-lib/aws-kinesis"
+import {IKey, Key} from "aws-cdk-lib/aws-kms"
+import {CfnLogGroup, CfnSubscriptionFilter, LogGroup} from "aws-cdk-lib/aws-logs"
 
 export interface RumProps {
   /**
@@ -29,6 +37,7 @@ export interface RumProps {
    * or by attaching a Cross-Origin Resource Sharing policy to the target bucket.
    */
   readonly s3Bucket: IBucket;
+  readonly s3BucketKmsKey: IKey
   readonly serviceName: string;
   readonly stackName: string;
   readonly logRetentionInDays: number
@@ -56,6 +65,54 @@ export class Rum extends Construct {
 
   constructor(scope: Construct, id: string, props: RumProps) {
     super(scope, id)
+
+    const cloudWatchLogsKmsKey = Key.fromKeyArn(
+      this, "cloudWatchLogsKmsKey", Fn.importValue("account-resources:CloudwatchLogsKmsKeyArn"))
+
+    const splunkDeliveryStream = Stream.fromStreamArn(
+      this, "SplunkDeliveryStream", Fn.importValue("lambda-resources:SplunkDeliveryStream"))
+
+    const splunkSubscriptionFilterRole = Role.fromRoleArn(
+      this, "splunkSubscriptionFilterRole", Fn.importValue("lambda-resources:SplunkSubscriptionFilterRole"))
+
+    const rumLogGroup = new LogGroup(this, "LambdaLogGroup", {
+      encryptionKey: cloudWatchLogsKmsKey,
+      logGroupName: `/aws/rum/${props.appMonitorName!}`,
+      retention: props.logRetentionInDays,
+      removalPolicy: RemovalPolicy.DESTROY
+    })
+
+    const cfnlambdaLogGroup = rumLogGroup.node.defaultChild as CfnLogGroup
+    cfnlambdaLogGroup.cfnOptions.metadata = {
+      guard: {
+        SuppressedRules: [
+          "CW_LOGGROUP_RETENTION_PERIOD_CHECK"
+        ]
+      }
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const rumLogGroupManagedPolicy = new ManagedPolicy(this, "LambdaPutLogsManagedPolicy", {
+      description: `write to ${props.appMonitorName} logs`,
+      statements: [
+        new PolicyStatement({
+          actions: [
+            "logs:CreateLogStream",
+            "logs:PutLogEvents"
+          ],
+          resources: [
+            rumLogGroup.logGroupArn,
+            `${rumLogGroup.logGroupArn}:log-stream:*`
+          ]
+        })]
+    })
+
+    new CfnSubscriptionFilter(this, "CoordinatorSplunkSubscriptionFilter", {
+      destinationArn: splunkDeliveryStream.streamArn,
+      filterPattern: "",
+      logGroupName: rumLogGroup.logGroupName,
+      roleArn: splunkSubscriptionFilterRole.roleArn
+    })
 
     // use L1 construct as currently no stable L2 construct for identity pool
     const identityPool = new CfnIdentityPool(this, "RumAppIdentityPool", {
@@ -112,6 +169,12 @@ export class Rum extends Construct {
           resources: [`${props.s3Bucket.bucketArn}/rum.js`]
         }),
         new PolicyStatement({
+          actions: ["kms:Encrypt", "kms:GenerateDataKey"],
+          resources: [
+            props.s3BucketKmsKey.keyArn
+          ]
+        }),
+        new PolicyStatement({
           actions: ["rum:GetAppMonitor"],
           resources: [
             Stack.of(this).formatArn({
@@ -136,17 +199,21 @@ export class Rum extends Construct {
       lambdaEnvironmentVariables: {foo: "bar"}
     })
 
-    const appMonitor = new CfnAppMonitor(this, "RumAppMonitor", {
+    // using an L1 construct as no L2 construct available for RUM
+    const baseAppMonitorConfiguration = {
+      allowCookies: true,
+      enableXRay: true,
+      sessionSampleRate: 1,
+      telemetries: ["errors", "performance", "http"],
+      identityPoolId: identityPool.ref,
+      guestRoleArn: unauthenticatedRumRole.roleArn
+    }
+    new CfnAppMonitor(this, "RumAppMonitor", {
       name: props.appMonitorName,
       cwLogEnabled: true,
       domain: props.topLevelDomain,
       appMonitorConfiguration: {
-        allowCookies: true,
-        enableXRay: true,
-        sessionSampleRate: 1,
-        telemetries: ["errors", "performance", "http"],
-        identityPoolId: identityPool.ref,
-        guestRoleArn: unauthenticatedRumRole.roleArn
+        ...baseAppMonitorConfiguration
       }
     })
 
@@ -155,7 +222,7 @@ export class Rum extends Construct {
       properties: {
         s3BucketName: props.s3Bucket.bucketName,
         appMonitorName: props.appMonitorName,
-        appMonitorConfiguration: appMonitor.appMonitorConfiguration,
+        appMonitorConfiguration: baseAppMonitorConfiguration,
         // The CDK needs to always upload the rum, otherwise the new web
         // deployment erases the file.
         trigger: Date.now()

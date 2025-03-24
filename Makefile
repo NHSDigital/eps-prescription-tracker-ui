@@ -35,6 +35,7 @@ lint-node: compile-node
 	npm run lint --workspace packages/selectedRoleLambda
 	npm run lint --workspace packages/CIS2SignOutLambda
 	npm run lint --workspace packages/common/authFunctions
+	npm run lint --workspace packages/uploadRum
 
 lint-githubactions:
 	actionlint

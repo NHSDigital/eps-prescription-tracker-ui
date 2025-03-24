@@ -79,6 +79,10 @@ export class CloudfrontBehaviors extends Construct{
         {
           key: "auth_demo_basePath",
           value: "/auth_demo"
+        },
+        {
+          key: "rum_rewrite",
+          value: "rum.js"
         }
       ]}))
     })
@@ -203,6 +207,21 @@ export class CloudfrontBehaviors extends Construct{
     on how many can be created simultaneously */
     authDemoStaticContentUriRewriteFunction.node.addDependency(s3JwksUriRewriteFunction)
 
+    const s3RumsUriRewriteFunction = new CloudfrontFunction(this, "s3RumUriRewriteFunction", {
+      functionName: `${props.serviceName}-s3RumUriRewriteFunction`,
+      sourceFileName: "genericS3FixedObjectUriRewrite.js",
+      keyValueStore: keyValueStore,
+      codeReplacements: [
+        {
+          valueToReplace: "OBJECT_PLACEHOLDER",
+          replacementValue: "rum_rewrite"
+        }
+      ]
+    })
+    /* Add dependency on previous function to force them to build one by one to avoid aws limits
+    on how many can be created simultaneously */
+    s3RumsUriRewriteFunction.node.addDependency(authDemoStaticContentUriRewriteFunction)
+
     const additionalBehaviors = {
       "/site*": {
         origin: props.staticContentBucketOrigin,
@@ -280,6 +299,17 @@ export class CloudfrontBehaviors extends Construct{
         origin: props.staticContentBucketOrigin,
         allowedMethods: AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
         viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS
+      },
+      "/rum.js": { // matches exactly <url>/rum.js and will only serve the rum.js page (via cf function)
+        origin: props.staticContentBucketOrigin,
+        allowedMethods: AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
+        viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+        functionAssociations: [
+          {
+            function: s3RumsUriRewriteFunction.function,
+            eventType: FunctionEventType.VIEWER_REQUEST
+          }
+        ]
       }
     }
 
