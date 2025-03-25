@@ -115,7 +115,7 @@ export default function PrescriptionIdSearch() {
         if (formatted === "C0C757-A83008-C2D93O") {
             navigate(`/prescription-results?prescriptionId=${formatted}`)
         } else {
-            navigate("/prescription-not-found")
+            setErrorType("noMatch")
         }
 
         setLoading(false)
