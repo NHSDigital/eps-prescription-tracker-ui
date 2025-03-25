@@ -28,11 +28,12 @@ lint-node: compile-node
 	npm run lint --workspace packages/cloudfrontFunctions
 	npm run lint --workspace packages/cdk
 	npm run lint --workspace packages/cognito
-	npm run lint --workspace packages/prescriptionSearchLambda
+	npm run lint --workspace packages/prescriptionListLambda
 	npm run lint --workspace packages/common/testing
 	npm run lint --workspace packages/common/middyErrorHandler
 	npm run lint --workspace packages/trackerUserInfoLambda
 	npm run lint --workspace packages/selectedRoleLambda
+	npm run lint --workspace packages/CIS2SignOutLambda
 	npm run lint --workspace packages/common/authFunctions
 
 lint-githubactions:
@@ -48,10 +49,11 @@ test: compile
 	npm run test --workspace packages/cdk
 	npm run test --workspace packages/cpt-ui
 	npm run test --workspace packages/cognito
-	npm run test --workspace packages/prescriptionSearchLambda
+	npm run test --workspace packages/prescriptionListLambda
 	npm run test --workspace packages/common/middyErrorHandler
 	npm run test --workspace packages/trackerUserInfoLambda
 	npm run test --workspace packages/selectedRoleLambda
+	npm run test --workspace packages/CIS2SignOutLambda
 	npm run test --workspace packages/common/authFunctions
 
 clean:
@@ -61,8 +63,8 @@ clean:
 	rm -rf packages/cdk/lib
 	rm -rf packages/cognito/coverage
 	rm -rf packages/cognito/lib
-	rm -rf packages/prescriptionSearchLambda/coverage
-	rm -rf packages/prescriptionSearchLambda/lib
+	rm -rf packages/prescriptionListLambda/coverage
+	rm -rf packages/prescriptionListLambda/lib
 	rm -rf packages/common/middyErrorHandler/coverage
 	rm -rf packages/common/middyErrorHandler/lib
 	rm -rf cdk.out
@@ -74,6 +76,8 @@ clean:
 	rm -rf packages/selectedRoleLambda/lib
 	rm -rf packages/common/authFunctions/coverage
 	rm -rf packages/common/authFunctions/lib
+	rm -rf packages/CIS2SignOutLambda/coverage
+	rm -rf packages/CIS2SignOutLambda/lib
 
 deep-clean: clean
 	rm -rf .venv
@@ -88,9 +92,10 @@ check-licenses-node:
 	npm run check-licenses --workspace packages/cpt-ui
 	npm run check-licenses --workspace packages/common/authFunctions
 	npm run check-licenses --workspace packages/cognito
-	npm run check-licenses --workspace packages/prescriptionSearchLambda
+	npm run check-licenses --workspace packages/prescriptionListLambda
 	npm run check-licenses --workspace packages/trackerUserInfoLambda
 	npm run check-licenses --workspace packages/selectedRoleLambda
+	npm run check-licenses --workspace packages/CIS2SignOutLambda
 
 check-licenses-python:
 	scripts/check_python_licenses.sh
@@ -187,6 +192,7 @@ cdk-synth-stateful-resources-mock:
 		--context mockOidcTokenEndpoint=undefined \
 		--context mockOidcUserInfoEndpoint=undefined \
 		--context mockOidcjwksEndpoint=undefined \
+		--context fullCognitoDomain=undefined \
 		--context shortCloudfrontDomain=undefined \
 		--context fullCloudfrontDomain=undefined
 
@@ -216,6 +222,7 @@ cdk-synth-stateless-resources-mock:
 		--context mockOidcTokenEndpoint=undefined \
 		--context mockOidcUserInfoEndpoint=undefined \
 		--context mockOidcjwksEndpoint=undefined \
+		--context fullCognitoDomain=undefined \
 		--context shortCloudfrontDomain=undefined \
 		--context fullCloudfrontDomain=undefined
 

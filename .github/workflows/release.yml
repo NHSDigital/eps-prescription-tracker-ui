@@ -137,6 +137,7 @@ jobs:
       APIGEE_CIS2_TOKEN_ENDPOINT: "https://internal-dev.api.service.nhs.uk/oauth2/token"
       APIGEE_MOCK_TOKEN_ENDPOINT: "https://internal-dev.api.service.nhs.uk/oauth2-mock/token"
       APIGEE_PRESCRIPTIONS_ENDPOINT: "https://internal-dev.api.service.nhs.uk/clinical-prescription-tracker/"
+      APIGEE_PDS_ENDPOINT: "https://internal-dev.api.service.nhs.uk/personal-demographics/FHIR/R4/"
       JWT_KID: "eps-cpt-ui-dev"
       ROLE_ID: "555254242106"
       LOG_LEVEL: "DEBUG"
@@ -188,6 +189,7 @@ jobs:
       APIGEE_CIS2_TOKEN_ENDPOINT: "https://ref.api.service.nhs.uk/oauth2/token"
       APIGEE_MOCK_TOKEN_ENDPOINT: "https://ref.api.service.nhs.uk/oauth2-mock/token"
       APIGEE_PRESCRIPTIONS_ENDPOINT: "https://ref.api.service.nhs.uk/clinical-prescription-tracker/"
+      APIGEE_PDS_ENDPOINT: "https://ref.api.service.nhs.uk/personal-demographics/FHIR/R4/"
       JWT_KID: "eps-cpt-ui-ref"
       ROLE_ID: "555254242106"
       LOG_LEVEL: "DEBUG"
@@ -224,6 +226,7 @@ jobs:
       APIGEE_CIS2_TOKEN_ENDPOINT: "https://internal-qa.api.service.nhs.uk/oauth2-int/token"
       APIGEE_MOCK_TOKEN_ENDPOINT: "https://internal-qa.api.service.nhs.uk/oauth2-mock/token"
       APIGEE_PRESCRIPTIONS_ENDPOINT: "https://internal-qa.api.service.nhs.uk/clinical-prescription-tracker/"
+      APIGEE_PDS_ENDPOINT: "https://internal-qa.api.service.nhs.uk/personal-demographics/FHIR/R4/"
       JWT_KID: "eps-cpt-ui-qa"
       ROLE_ID: "555254242106"
       LOG_LEVEL: "DEBUG"
@@ -255,9 +258,11 @@ jobs:
       APIGEE_CIS2_TOKEN_ENDPOINT: "https://int.api.service.nhs.uk/oauth2/token"
       APIGEE_MOCK_TOKEN_ENDPOINT: "UNUSED"
       APIGEE_PRESCRIPTIONS_ENDPOINT: "https://int.api.service.nhs.uk/clinical-prescription-tracker/"
+      APIGEE_PDS_ENDPOINT: "https://int.api.service.nhs.uk/personal-demographics/FHIR/R4/"
       JWT_KID: "eps-cpt-ui-int"
       ROLE_ID: "555254242106"
       LOG_LEVEL: "DEBUG"
+      RUN_REGRESSION_TESTS: false
     secrets:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.INT_CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.INT_CLOUD_FORMATION_DEPLOY_ROLE }}
@@ -276,6 +281,7 @@ jobs:
   #     COMMIT_ID: ${{needs.get_commit_id.outputs.commit_id}}
   #     APIGEE_TOKEN_ENDPOINT: "https://api.service.nhs.uk/oauth2/token"
   #     APIGEE_PRESCRIPTIONS_ENDPOINT: "https://api.service.nhs.uk/clinical-prescription-tracker/"
+  #     APIGEE_PDS_ENDPOINT: "https://api.service.nhs.uk/personal-demographics/FHIR/R4/"
   #     ROLE_ID: "555254242106"
   #     LOG_LEVEL: "INFO"
   #   secrets:

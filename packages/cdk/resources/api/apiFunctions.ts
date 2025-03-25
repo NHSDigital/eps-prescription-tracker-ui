@@ -33,6 +33,7 @@ export interface ApiFunctionsProps {
   readonly apigeeCIS2TokenEndpoint: string
   readonly apigeeMockTokenEndpoint: string
   readonly apigeePrescriptionsEndpoint: string
+  readonly apigeePersonalDemographicsEndpoint: string
   readonly apigeeApiKey: string
   readonly jwtKid: string
   readonly logLevel: string
@@ -44,7 +45,8 @@ export interface ApiFunctionsProps {
  */
 export class ApiFunctions extends Construct {
   public readonly apiFunctionsPolicies: Array<IManagedPolicy>
-  public readonly prescriptionSearchLambda: NodejsFunction
+  public readonly CIS2SignOutLambda: NodejsFunction
+  public readonly prescriptionListLambda: NodejsFunction
   public readonly trackerUserInfoLambda: NodejsFunction
   public readonly selectedRoleLambda: NodejsFunction
   public readonly primaryJwtPrivateKey: Secret
@@ -93,11 +95,27 @@ export class ApiFunctions extends Construct {
       commonLambdaEnv["MOCK_OIDC_ISSUER"] = props.mockOidcIssuer!
     }
 
+    // Prescription Search Lambda Function
+    const CIS2SignOutLambda = new LambdaFunction(this, "CIS2SignOut", {
+      serviceName: props.serviceName,
+      stackName: props.stackName,
+      lambdaName: `${props.stackName}-CIS2SignOut`,
+      additionalPolicies: additionalPolicies,
+      logRetentionInDays: props.logRetentionInDays,
+      logLevel: props.logLevel,
+      packageBasePath: "packages/CIS2SignOutLambda",
+      entryPoint: "src/handler.ts",
+      lambdaEnvironmentVariables: commonLambdaEnv
+    })
+
+    // Add the policy to apiFunctionsPolicies
+    apiFunctionsPolicies.push(CIS2SignOutLambda.executeLambdaManagedPolicy)
+
     // Single Lambda for both real and mock scenarios
     const trackerUserInfoLambda = new LambdaFunction(this, "TrackerUserInfo", {
       serviceName: props.serviceName,
       stackName: props.stackName,
-      lambdaName: `${props.stackName}-TrkUsrNfoUnified`,
+      lambdaName: `${props.stackName}-TrkUsrInfo`,
       additionalPolicies: additionalPolicies,
       logRetentionInDays: props.logRetentionInDays,
       logLevel: props.logLevel,
@@ -125,11 +143,11 @@ export class ApiFunctions extends Construct {
     // Add the policy to apiFunctionsPolicies
     apiFunctionsPolicies.push(selectedRoleLambda.executeLambdaManagedPolicy)
 
-    // Prescription Search Lambda Function
-    const prescriptionSearchLambda = new LambdaFunction(this, "PrescriptionSearch", {
+    // Prescription List Lambda Function
+    const prescriptionListLambda = new LambdaFunction(this, "PrescriptionList", {
       serviceName: props.serviceName,
       stackName: props.stackName,
-      lambdaName: `${props.stackName}-prescSearch`,
+      lambdaName: `${props.stackName}-prescList`,
       additionalPolicies: [
         props.tokenMappingTableWritePolicy,
         props.tokenMappingTableReadPolicy,
@@ -139,7 +157,7 @@ export class ApiFunctions extends Construct {
       ],
       logRetentionInDays: props.logRetentionInDays,
       logLevel: props.logLevel,
-      packageBasePath: "packages/prescriptionSearchLambda",
+      packageBasePath: "packages/prescriptionListLambda",
       entryPoint: "src/handler.ts",
       lambdaEnvironmentVariables: {
         ...commonLambdaEnv,
@@ -147,6 +165,7 @@ export class ApiFunctions extends Construct {
         apigeeCIS2TokenEndpoint: props.apigeeCIS2TokenEndpoint,
         apigeeMockTokenEndpoint: props.apigeeMockTokenEndpoint,
         apigeePrescriptionsEndpoint: props.apigeePrescriptionsEndpoint,
+        apigeePersonalDemographicsEndpoint: props.apigeePersonalDemographicsEndpoint,
         apigeeApiKey: props.apigeeApiKey,
         jwtKid: props.jwtKid,
         roleId: props.roleId
@@ -154,15 +173,15 @@ export class ApiFunctions extends Construct {
     })
 
     // Add the policy to apiFunctionsPolicies
-    apiFunctionsPolicies.push(prescriptionSearchLambda.executeLambdaManagedPolicy)
+    apiFunctionsPolicies.push(prescriptionListLambda.executeLambdaManagedPolicy)
 
     // const apiFunctionsPolicies: Array<IManagedPolicy> = [
     //   trackerUserInfoLambda.executeLambdaManagedPolicy,
-    //   prescriptionSearchLambda.executeLambdaManagedPolicy
+    //   prescriptionListLambda.executeLambdaManagedPolicy
     // ]
 
-    // Suppress the AwsSolutions-L1 rule for the prescription search Lambda function
-    NagSuppressions.addResourceSuppressions(prescriptionSearchLambda.lambda, [
+    // Suppress the AwsSolutions-L1 rule for the prescription list Lambda function
+    NagSuppressions.addResourceSuppressions(prescriptionListLambda.lambda, [
       {
         id: "AwsSolutions-L1",
         reason: "The Lambda function uses the latest runtime version supported at the time of implementation."
@@ -173,7 +192,8 @@ export class ApiFunctions extends Construct {
     this.apiFunctionsPolicies = apiFunctionsPolicies
     this.primaryJwtPrivateKey = props.sharedSecrets.primaryJwtPrivateKey
 
-    this.prescriptionSearchLambda = prescriptionSearchLambda.lambda
+    this.CIS2SignOutLambda = CIS2SignOutLambda.lambda
+    this.prescriptionListLambda = prescriptionListLambda.lambda
     this.trackerUserInfoLambda = trackerUserInfoLambda.lambda
     this.selectedRoleLambda = selectedRoleLambda.lambda
   }

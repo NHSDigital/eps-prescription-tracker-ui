@@ -56,6 +56,8 @@ on:
         type: string
       APIGEE_PRESCRIPTIONS_ENDPOINT:
         type: string
+      APIGEE_PDS_ENDPOINT:
+        type: string
       JWT_KID:
         type: string
       ROLE_ID:
@@ -144,6 +146,8 @@ jobs:
           shortCloudfrontDomain=$(aws cloudformation list-exports --region us-east-1 --query "Exports[?Name=='"${{ inputs.SERVICE_NAME }}-us-certs:shortCloudfrontDomain:Name"'].Value" --output text)
           # shellcheck disable=SC2140
           fullCloudfrontDomain=$(aws cloudformation list-exports --region us-east-1 --query "Exports[?Name=='"${{ inputs.SERVICE_NAME }}-us-certs:fullCloudfrontDomain:Name"'].Value" --output text)
+          # shellcheck disable=SC2140
+          fullCognitoDomain=$(aws cloudformation list-exports --region us-east-1 --query "Exports[?Name=='"${{ inputs.SERVICE_NAME }}-us-certs:fullCognitoDomain:Name"'].Value" --output text)
           jq \
           --arg serviceName "${{ inputs.SERVICE_NAME }}" \
           --arg VERSION_NUMBER "${{ inputs.VERSION_NUMBER }}" \
@@ -170,11 +174,13 @@ jobs:
           --arg mockOidcjwksEndpoint "${{ inputs.mockOidcjwksEndpoint }}" \
           --arg shortCloudfrontDomain "${shortCloudfrontDomain}" \
           --arg fullCloudfrontDomain "${fullCloudfrontDomain}" \
+          --arg fullCognitoDomain "${fullCognitoDomain}" \
           --argjson useCustomCognitoDomain "${{ inputs.useCustomCognitoDomain }}" \
           --argjson useLocalhostCallback "${{ inputs.useLocalhostCallback }}" \
           --arg apigeeCIS2TokenEndpoint "${{ inputs.APIGEE_CIS2_TOKEN_ENDPOINT }}" \
           --arg apigeeMockTokenEndpoint "${{ inputs.APIGEE_MOCK_TOKEN_ENDPOINT }}" \
           --arg apigeePrescriptionsEndpoint "${{ inputs.APIGEE_PRESCRIPTIONS_ENDPOINT }}" \
+          --arg apigeePersonalDemographicsEndpoint "${{ inputs.APIGEE_PDS_ENDPOINT }}" \
           --arg apigeeApiKey "${{ secrets.APIGEE_API_KEY }}" \
           --arg jwtKid "${{ inputs.JWT_KID }}" \
           --arg roleId "${{ inputs.ROLE_ID }}" \
@@ -205,10 +211,12 @@ jobs:
             "mockOidcUserInfoEndpoint": $mockOidcUserInfoEndpoint,
             "mockOidcjwksEndpoint": $mockOidcjwksEndpoint,
             "useCustomCognitoDomain": $useCustomCognitoDomain,
+            "fullCognitoDomain": $fullCognitoDomain,
             "useLocalhostCallback": $useLocalhostCallback,
             "apigeeCIS2TokenEndpoint": $apigeeCIS2TokenEndpoint,
             "apigeeMockTokenEndpoint": $apigeeMockTokenEndpoint,
             "apigeePrescriptionsEndpoint": $apigeePrescriptionsEndpoint,
+            "apigeePersonalDemographicsEndpoint": $apigeePersonalDemographicsEndpoint,
             "apigeeApiKey": $apigeeApiKey,
             "jwtKid": $jwtKid,
             "roleId": $roleId

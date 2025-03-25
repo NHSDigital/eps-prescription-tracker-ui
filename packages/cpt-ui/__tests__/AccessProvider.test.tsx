@@ -1,7 +1,7 @@
 import React from "react";
 import { render, screen, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom";
-import { BrowserRouter } from "react-router-dom";
+import { MemoryRouter, useLocation } from "react-router-dom";
 
 import { TrackerUserInfo } from "@/types/TrackerUserInfoTypes";
 
@@ -22,7 +22,7 @@ function TestConsumer() {
       <div data-testid="noAccess">{noAccess ? "true" : "false"}</div>
       <div data-testid="singleAccess">{singleAccess ? "true" : "false"}</div>
       <div data-testid="selectedRole">
-        {selectedRole ? selectedRole?.role_id : "(none)"}
+        {selectedRole ? selectedRole.role_id : "(none)"}
       </div>
       <button data-testid="clear-button" onClick={clear}>
         Clear
@@ -31,7 +31,14 @@ function TestConsumer() {
   );
 }
 
-describe("AccessProvider", () => {
+// Helper component to display the current location
+function LocationDisplay() {
+  const location = useLocation();
+  return <div data-testid="location-display">{location.pathname}</div>;
+}
+
+// Modified render function that accepts initial router entries.
+const renderWithContext = (authOverrides = {}, initialEntries = ["/"]) => {
   const defaultAuthContext = {
     error: null,
     user: null,
@@ -41,20 +48,21 @@ describe("AccessProvider", () => {
     cognitoSignIn: jest.fn(),
     cognitoSignOut: jest.fn(),
   };
+  const authValue = { ...defaultAuthContext, ...authOverrides };
 
-  const renderWithContext = (authOverrides = {}) => {
-    const authValue = { ...defaultAuthContext, ...authOverrides };
-    return render(
-      <BrowserRouter>
-        <AuthContext.Provider value={authValue}>
-          <AccessProvider>
-            <TestConsumer />
-          </AccessProvider>
-        </AuthContext.Provider>
-      </BrowserRouter>
-    );
-  };
+  return render(
+    <MemoryRouter initialEntries={initialEntries}>
+      <AuthContext.Provider value={authValue}>
+        <AccessProvider>
+          <TestConsumer />
+          <LocationDisplay />
+        </AccessProvider>
+      </AuthContext.Provider>
+    </MemoryRouter>
+  );
+};
 
+describe("AccessProvider", () => {
   beforeEach(() => {
     jest.restoreAllMocks();
     jest.clearAllMocks();
@@ -102,10 +110,13 @@ describe("AccessProvider", () => {
       data: { userInfo: mockUserInfo },
     });
 
-    renderWithContext({
-      isSignedIn: true,
-      idToken: { toString: jest.fn().mockReturnValue("mock-id-token") },
-    });
+    renderWithContext(
+      {
+        isSignedIn: true,
+        idToken: { toString: jest.fn().mockReturnValue("mock-id-token") },
+      },
+      ["/dashboard"]
+    );
 
     await waitFor(() => {
       expect(mockedAxios.get).toHaveBeenCalledTimes(1);
@@ -130,10 +141,13 @@ describe("AccessProvider", () => {
       data: { userInfo: mockUserInfo },
     });
 
-    renderWithContext({
-      isSignedIn: true,
-      idToken: { toString: jest.fn().mockReturnValue("mock-id-token") },
-    });
+    renderWithContext(
+      {
+        isSignedIn: true,
+        idToken: { toString: jest.fn().mockReturnValue("mock-id-token") },
+      },
+      ["/dashboard"]
+    );
 
     await waitFor(() => {
       expect(mockedAxios.get).toHaveBeenCalledTimes(1);
@@ -144,7 +158,6 @@ describe("AccessProvider", () => {
   });
 
   it("sets noAccess = false and singleAccess = false if multiple roles exist", async () => {
-    // Using a type cast to "any" for simplicity if your TrackerUserInfo type requires more fields.
     const mockUserInfo: TrackerUserInfo = {
       roles_with_access: [
         { role_id: "ROLE1" } as any,
@@ -162,10 +175,13 @@ describe("AccessProvider", () => {
       data: { userInfo: mockUserInfo },
     });
 
-    renderWithContext({
-      isSignedIn: true,
-      idToken: { toString: jest.fn().mockReturnValue("mock-id-token") },
-    });
+    renderWithContext(
+      {
+        isSignedIn: true,
+        idToken: { toString: jest.fn().mockReturnValue("mock-id-token") },
+      },
+      ["/dashboard"]
+    );
 
     await waitFor(() => {
       expect(mockedAxios.get).toHaveBeenCalledTimes(1);
@@ -182,10 +198,13 @@ describe("AccessProvider", () => {
       data: {},
     });
 
-    renderWithContext({
-      isSignedIn: true,
-      idToken: { toString: jest.fn().mockReturnValue("mock-id-token") },
-    });
+    renderWithContext(
+      {
+        isSignedIn: true,
+        idToken: { toString: jest.fn().mockReturnValue("mock-id-token") },
+      },
+      ["/dashboard"]
+    );
 
     await waitFor(() => {
       expect(mockedAxios.get).toHaveBeenCalledTimes(1);
@@ -220,28 +239,97 @@ describe("AccessProvider", () => {
       data: { userInfo: mockUserInfo },
     });
 
-    renderWithContext({
-      isSignedIn: true,
-      idToken: { toString: jest.fn().mockReturnValue("mock-id-token") },
-    });
+    renderWithContext(
+      {
+        isSignedIn: true,
+        idToken: { toString: jest.fn().mockReturnValue("mock-id-token") },
+      },
+      ["/dashboard"]
+    );
 
-    // Confirm everything is updated
     await waitFor(() => {
       expect(screen.getByTestId("noAccess")).toHaveTextContent("false");
       expect(screen.getByTestId("singleAccess")).toHaveTextContent("true");
-      expect(screen.getByTestId("selectedRole")).toHaveTextContent(
-        "ROLE_SINGLE"
-      );
+      expect(screen.getByTestId("selectedRole")).toHaveTextContent("ROLE_SINGLE");
     });
 
-    // Click the "clear" button, which calls the `clear` function on the AccessContext
     screen.getByTestId("clear-button").click();
 
-    // Expect defaults again
     await waitFor(() => {
       expect(screen.getByTestId("noAccess")).toHaveTextContent("false");
       expect(screen.getByTestId("selectedRole")).toHaveTextContent("(none)");
       expect(screen.getByTestId("singleAccess")).toHaveTextContent("false");
+    });
+  });
+
+  it("redirects to /select-role if selectedRole is undefined and location (with trailing slash) is not allowed", async () => {
+    // Simulate a fetch response where no role is selected.
+    const mockUserInfo: TrackerUserInfo = {
+      roles_with_access: [
+        { role_id: "ROLE1", role_name: "Role1" } as any,
+      ],
+      roles_without_access: [],
+      // Pass an empty object so that ensureRoleSelected treats it as undefined.
+      currently_selected_role: {},
+      user_details: { family_name: "Doe", given_name: "John" },
+    };
+
+    mockedAxios.get.mockResolvedValueOnce({
+      status: 200,
+      data: { userInfo: mockUserInfo },
+    });
+
+    // Provide an initial location with a trailing slash that is not allowed.
+    renderWithContext(
+      {
+        isSignedIn: true,
+        idToken: { toString: jest.fn().mockReturnValue("mock-id-token") },
+      },
+      ["/dashboard/"]
+    );
+
+    // Wait for the API call.
+    await waitFor(() => {
+      expect(mockedAxios.get).toHaveBeenCalledTimes(1);
+    });
+
+    // Because normalizePath("/dashboard/") becomes "/dashboard" (not allowed),
+    // ensureRoleSelected should trigger a redirect to "/select-role".
+    await waitFor(() => {
+      expect(screen.getByTestId("location-display")).toHaveTextContent("/select-role");
+    });
+  });
+
+  it("does not redirect if location is allowed (with trailing slash) even when selectedRole is undefined", async () => {
+    const mockUserInfo: TrackerUserInfo = {
+      roles_with_access: [],
+      roles_without_access: [],
+      // No currently_selected_role provided.
+      user_details: { family_name: "Doe", given_name: "John" },
+    };
+
+    mockedAxios.get.mockResolvedValueOnce({
+      status: 200,
+      data: { userInfo: mockUserInfo },
+    });
+
+    // Use an allowed path ("/login/") with a trailing slash.
+    renderWithContext(
+      {
+        isSignedIn: true,
+        idToken: { toString: jest.fn().mockReturnValue("mock-id-token") },
+      },
+      ["/login/"]
+    );
+
+    await waitFor(() => {
+      expect(mockedAxios.get).toHaveBeenCalledTimes(1);
+    });
+
+    // normalizePath("/login/") becomes "/login" which is in the allowed list,
+    // so no redirect should occur.
+    await waitFor(() => {
+      expect(screen.getByTestId("location-display")).toHaveTextContent("/login/");
     });
   });
 });

@@ -15,6 +15,7 @@ import { AuthContext } from "@/context/AuthProvider"
 import { useAccess } from '@/context/AccessProvider'
 
 import { EpsLogoutModal } from "@/components/EpsLogoutModal"
+import { normalizePath } from "@/helpers/utils";
 
 export default function EpsHeader() {
   const navigate = useNavigate()
@@ -34,11 +35,13 @@ export default function EpsHeader() {
   useEffect(() => {
     const isSignedIn = auth?.isSignedIn as boolean
 
+    const path = normalizePath(location.pathname)
+
     // Show "Select your role" link
     setShouldShowSelectRole(
-      location.pathname !== "/selectyourrole" &&
-      location.pathname !== "/changerole" &&
-      location.pathname !== "/logout" &&
+      path !== "/select-role" &&
+      path !== "/change-role" &&
+      path !== "/logout" &&
       isSignedIn &&
       !accessContext.singleAccess &&
       !accessContext.selectedRole
@@ -46,9 +49,9 @@ export default function EpsHeader() {
 
     // Show "Change role" link (if not single access)
     setShouldShowChangeRole(
-      location.pathname !== "/selectyourrole" &&
-      location.pathname !== "/changerole" &&
-      location.pathname !== "/logout" &&
+      path !== "/select-role" &&
+      path !== "/change-role" &&
+      path !== "/logout" &&
       isSignedIn &&
       !accessContext.singleAccess &&
       accessContext.selectedRole !== undefined
@@ -59,9 +62,9 @@ export default function EpsHeader() {
 
     // Show the "Exit" button under these conditions
     setShouldShowExitButton(
-      (location.pathname === "/logout" && !auth?.isSignedIn) ||
-      (location.pathname === "/selectyourrole" && accessContext.noAccess) ||
-      (location.pathname === "/notfound")
+      (path === "/logout" && !auth?.isSignedIn) ||
+      (path === "/select-role" && accessContext.noAccess) ||
+      (path === "/notfound")
     )
   }, [location, auth, accessContext])
 

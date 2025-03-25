@@ -18,6 +18,9 @@ on:
       useMockOidc:
         type: boolean
         default: false
+      RUN_REGRESSION_TESTS:
+        type: boolean
+        default: true
       primaryOidcIssuer:
         type: string
       primaryOidcAuthorizeEndpoint:
@@ -49,6 +52,8 @@ on:
       APIGEE_MOCK_TOKEN_ENDPOINT:
         type: string
       APIGEE_PRESCRIPTIONS_ENDPOINT:
+        type: string
+      APIGEE_PDS_ENDPOINT:
         type: string
       JWT_KID:
         type: string
@@ -173,6 +178,7 @@ jobs:
       APIGEE_CIS2_TOKEN_ENDPOINT: ${{ inputs.APIGEE_CIS2_TOKEN_ENDPOINT }}
       APIGEE_MOCK_TOKEN_ENDPOINT: ${{ inputs.APIGEE_MOCK_TOKEN_ENDPOINT }}
       APIGEE_PRESCRIPTIONS_ENDPOINT: ${{ inputs.APIGEE_PRESCRIPTIONS_ENDPOINT }}
+      APIGEE_PDS_ENDPOINT: ${{ inputs.APIGEE_PDS_ENDPOINT }}
       JWT_KID: ${{ inputs.JWT_KID }}
       ROLE_ID: ${{ inputs.ROLE_ID }}
     secrets:
@@ -320,7 +326,7 @@ jobs:
   regression_tests:
     name: Regression Tests
     uses: ./.github/workflows/run_regression_tests.yml
-    if: ${{ always() && !failure() && !cancelled() }}
+    if: ${{ always() && !failure() && !cancelled() && inputs.RUN_REGRESSION_TESTS == true }}
     needs: [release_stateful_resources, release_stateless_resources, rerelease_stateful_resources, deploy_website_content, update_cloudfront_kvs]
     with:
       ENVIRONMENT: ${{ inputs.TARGET_ENVIRONMENT }}

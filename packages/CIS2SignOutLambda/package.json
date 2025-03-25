@@ -1,8 +1,8 @@
 {
-  "name": "prescriptionSearchLambda",
+  "name": "sign-out-lambda",
   "version": "1.0.0",
-  "description": "Lambda for prescription search",
-  "main": "handler.ts",
+  "description": "Lambda to handle extra backend actions to sign out a user",
+  "main": "src/handler.ts",
   "author": "NHS Digital",
   "license": "MIT",
   "scripts": {
@@ -14,24 +14,20 @@
   },
   "dependencies": {
     "@aws-lambda-powertools/commons": "^2.12.0",
-    "@aws-lambda-powertools/logger": "^2.15.0",
-    "@aws-lambda-powertools/parameters": "^2.15.0",
-    "@aws-sdk/client-dynamodb": "^3.758.0",
-    "@aws-sdk/client-secrets-manager": "^3.758.0",
-    "@aws-sdk/lib-dynamodb": "^3.758.0",
+    "@aws-lambda-powertools/logger": "^2.13.1",
+    "@aws-lambda-powertools/parameters": "^2.13.0",
+    "@aws-sdk/client-dynamodb": "^3.772.0",
+    "@aws-sdk/client-secrets-manager": "^3.772.0",
+    "@aws-sdk/lib-dynamodb": "^3.772.0",
     "@cpt-ui-common/authFunctions": "^1.0.0",
     "@cpt-ui-common/middyErrorHandler": "^1.0.0",
-    "@middy/core": "^6.1.5",
-    "@middy/input-output-logger": "^6.1.5",
+    "@middy/core": "^6.1.6",
+    "@middy/input-output-logger": "^6.1.6",
     "aws-lambda": "^1.0.7",
-    "axios": "^1.8.1",
-    "jsonwebtoken": "^9.0.2",
-    "jwks-rsa": "^3.1.0",
-    "uuid": "^11.1.0"
+    "uuid": "^11.0.5"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.147",
-    "axios-mock-adapter": "^2.0.0",
     "mock-jwks": "^3.2.2",
     "nock": "^14.0.0"
   }

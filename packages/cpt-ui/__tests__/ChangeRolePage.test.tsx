@@ -23,7 +23,7 @@ jest.mock("@/constants/ui-strings/CardStrings", () => {
     },
     confirmButton: {
       text: "Continue to find a prescription",
-      link: "searchforaprescription",
+      link: "search",
     },
     alternativeMessage: "Alternatively, you can choose a new role below.",
     organisation: "Organisation",
@@ -254,7 +254,7 @@ describe("ChangeRolePage", () => {
     expect(screen.getByText("Missing access or ID token")).toBeInTheDocument();
   });
 
-  it("redirects to searchforaprescription when there is one role with access and no roles without access", async () => {
+  it("redirects to search when there is one role with access and no roles without access", async () => {
     __setMockAccessValue({
       loading: false,
       rolesWithAccess: [
@@ -279,7 +279,7 @@ describe("ChangeRolePage", () => {
 
     // Wait for redirection
     await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith("/searchforaprescription");
+      expect(mockNavigate).toHaveBeenCalledWith("/search");
     });
   });
 
@@ -287,7 +287,7 @@ describe("ChangeRolePage", () => {
     __setMockAccessValue({
       loading: true,
     });
-    mockedAxios.get.mockImplementation(() => new Promise(() => {}));
+    mockedAxios.get.mockImplementation(() => new Promise(() => { }));
     renderWithAuth();
     expect(screen.getByText("Loading...")).toBeInTheDocument();
   });
@@ -315,7 +315,7 @@ describe("ChangeRolePage", () => {
     });
 
     await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith("/searchforaprescription");
+      expect(mockNavigate).toHaveBeenCalledWith("/search");
     });
   });
 
