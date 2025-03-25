@@ -16,7 +16,7 @@
     "mock-jwks": "^3.2.2"
   },
   "dependencies": {
-    "@aws-lambda-powertools/logger": "^2.16.0",
+    "@aws-lambda-powertools/logger": "^2.17.0",
     "@aws-sdk/lib-dynamodb": "^3.772.0",
     "aws-lambda": "^1.0.7",
     "jsonwebtoken": "^9.0.2",
