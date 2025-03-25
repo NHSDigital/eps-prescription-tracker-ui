@@ -58,6 +58,10 @@ FULL_COGNITO_DOMAIN=$(aws cloudformation list-exports --region us-east-1 --outpu
     jq \
     --arg SERVICE_NAME "${SERVICE_NAME}" \
     -r '.Exports[] | select(.Name == "$SERVICE_NAME-us-certs:fullCognitoDomain:Name") | .Value')
+RUM_LOG_GROUP_ARN=$(aws cloudformation list-exports --region eu-west-2 --output json | \
+    jq \
+    --arg SERVICE_NAME "${SERVICE_NAME}" \
+    -r '.Exports[] | select(.Name == "$SERVICE_NAME-stateful-resources:rum:logGroup:arn") | .Value')
 
 # go through all the key values we need to set
 fix_string_key serviceName "${SERVICE_NAME}"
@@ -90,8 +94,13 @@ if [ "$CDK_APP_NAME" == "StatefulResourcesApp" ]; then
     fix_string_key epsHostedZoneId "${EPS_HOSTED_ZONE_ID}"
 
     fix_boolean_number_key allowAutoDeleteObjects "${AUTO_DELETE_OBJECTS}"
+    # we may not have cloudfront distribution id if its a first deployment
     if [ -n "${cloudfrontDistributionId}" ]; then
         fix_string_key cloudfrontDistributionId "${CLOUDFRONT_DISTRIBUTION_ID}"
+    fi
+    # if we have a rum log group arn, then we can set cwLogEnabled on the rum app
+    if [ -n "${RUM_LOG_GROUP_ARN}" ]; then
+        fix_boolean_number_key cwLogEnabled "true"
     fi
     fix_boolean_number_key useLocalhostCallback "${USE_LOCALHOST_CALLBACK}"
 

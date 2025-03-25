@@ -63,6 +63,7 @@ export class StatefulResourcesStack extends Stack {
 
     const useLocalhostCallback: boolean = this.node.tryGetContext("useLocalhostCallback")
     const logRetentionInDays: number = Number(this.node.tryGetContext("logRetentionInDays"))
+    const cwLogEnabled: boolean = this.node.tryGetContext("cwLogEnabled")
 
     // Imports
     const auditLoggingBucketImport = Fn.importValue("account-resources:AuditLoggingBucket")
@@ -123,7 +124,8 @@ export class StatefulResourcesStack extends Stack {
       appMonitorName: `${props.stackName}`,
       serviceName: props.serviceName,
       stackName: props.stackName,
-      logRetentionInDays: logRetentionInDays
+      logRetentionInDays: logRetentionInDays,
+      cwLogEnabled
 
     })
 

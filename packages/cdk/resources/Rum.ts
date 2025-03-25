@@ -27,6 +27,7 @@ export interface RumProps {
   readonly serviceName: string;
   readonly stackName: string;
   readonly logRetentionInDays: number
+  readonly cwLogEnabled: boolean
 
 }
 export class Rum extends Construct {
@@ -103,7 +104,6 @@ export class Rum extends Construct {
       }
     })
 
-    // using an L1 construct as no L2 construct available for RUM
     // TODO - add javascript source maps property when it is available in CF/CDK (feature released 18 March 2025)
     // https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-RUM-JavaScriptStackTraceSourceMaps.html
     const baseAppMonitorConfiguration: CfnAppMonitor.AppMonitorConfigurationProperty = {
@@ -114,9 +114,12 @@ export class Rum extends Construct {
       identityPoolId: identityPool.ref,
       guestRoleArn: unauthenticatedRumRole.roleArn
     }
+    // using an L1 construct as no L2 construct available for RUM
+    // this is another 'must do two deployments' as we can only enable cwLog when we have a log group
+    // and the log group name is based on the id of this resource
     const rumApp = new CfnAppMonitor(this, "RumApp", {
       name: props.appMonitorName,
-      cwLogEnabled: false, // figure out how to change this based on if log exists
+      cwLogEnabled: props.cwLogEnabled,
       domain: props.topLevelDomain,
       appMonitorConfiguration: {
         ...baseAppMonitorConfiguration
@@ -125,9 +128,10 @@ export class Rum extends Construct {
 
     // log group for rum events
     // note - name is /aws/vendedlogs/<RUM APP NAME><FIRST 8 CHARS OF THE RUM APP ID>
+    const logGroupName = `/aws/vendedlogs/${props.appMonitorName}${rumApp.ref}`
     const rumLogGroup = new LogGroup(this, "RumLogGroup", {
       encryptionKey: cloudWatchLogsKmsKey,
-      logGroupName: `/aws/vendedlogs/${props.appMonitorName}${rumApp.attrId.substring(0, 8)}`,
+      logGroupName: logGroupName,
       retention: props.logRetentionInDays,
       removalPolicy: RemovalPolicy.DESTROY
     })
