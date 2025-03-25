@@ -164,6 +164,7 @@ jobs:
           APIGEE_API_KEY: ${{ secrets.APIGEE_API_KEY }}
           JWT_KID: ${{ inputs.JWT_KID }}
           ROLE_ID: ${{ inputs.ROLE_ID }}
+          CDK_APP_NAME: ${{ inputs.CDK_APP_NAME }}
 
       - name: Show diff
         run: |
