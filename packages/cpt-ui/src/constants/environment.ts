@@ -29,6 +29,16 @@ export const API_ENDPOINTS = {
   CIS2_SIGNOUT_ENDPOINT: "/api/cis2-signout"
 } as const
 
+// RUM CONFIG
+export const RUM_CONFIG = {
+  GUEST_ROLE_ARN: import.meta.env.VITE_APP_GUEST_ROLE_ARN,
+  IDENTITY_POOL_ID: import.meta.env.VITE_APP_IDENTITY_POOL_ID,
+  ENDPOINT: "https://dataplane.rum.eu-west-2.amazonaws.com",
+  APPLICATION_ID: import.meta.env.VITE_APP_APPLICATION_ID,
+  REGION: "eu-west-2",
+  VERSION: "1.0.0"
+} as const
+
 // Type for environment
 export type MockAuthEnvironment = "dev" | "dev-pr" | "int" | "qa";
 

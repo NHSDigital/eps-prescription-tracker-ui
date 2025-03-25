@@ -62,6 +62,9 @@ export interface RumProps {
  *
  */
 export class Rum extends Construct {
+  public readonly unauthenticatedRumRole: Role
+  public readonly identityPool: CfnIdentityPool
+  public readonly rumApp: CfnAppMonitor
 
   constructor(scope: Construct, id: string, props: RumProps) {
     super(scope, id)
@@ -208,7 +211,7 @@ export class Rum extends Construct {
       identityPoolId: identityPool.ref,
       guestRoleArn: unauthenticatedRumRole.roleArn
     }
-    new CfnAppMonitor(this, "RumAppMonitor", {
+    const rumApp = new CfnAppMonitor(this, "RumAppMonitor", {
       name: props.appMonitorName,
       cwLogEnabled: true,
       domain: props.topLevelDomain,
@@ -229,6 +232,10 @@ export class Rum extends Construct {
       }
     })
     uploadRumScriptToWebsiteBucket.node.addDependency(uploadRum.lambda)
+
+    this.identityPool = identityPool
+    this.rumApp = rumApp
+    this.unauthenticatedRumRole = unauthenticatedRumRole
   }
 
 }

@@ -14,6 +14,7 @@ import {Dynamodb} from "../resources/Dynamodb"
 import {Bucket} from "aws-cdk-lib/aws-s3"
 import {Role} from "aws-cdk-lib/aws-iam"
 import {HostedZone} from "aws-cdk-lib/aws-route53"
+import {Rum} from "../resources/Rum"
 
 export interface StatefulResourcesStackProps extends StackProps {
   readonly serviceName: string
@@ -116,6 +117,17 @@ export class StatefulResourcesStack extends Stack {
       region: this.region
     })
 
+    const rum = new Rum(this, "Rum", {
+      topLevelDomain: props.fullCloudfrontDomain,
+      appMonitorName: `${props.stackName}-rum`,
+      s3Bucket: staticContentBucket.bucket,
+      serviceName: props.serviceName,
+      stackName: props.stackName,
+      logRetentionInDays: 30,
+      logLevel: "DEBUG",
+      s3BucketKmsKey: staticContentBucket.kmsKey
+    })
+
     // Outputs
 
     // Exports
@@ -192,6 +204,20 @@ export class StatefulResourcesStack extends Stack {
       exportName: `${props.stackName}:userPoolClient:userPoolClientId`
     })
 
+    new CfnOutput(this, "unauthenticatedRumRoleArn", {
+      value: rum.unauthenticatedRumRole.roleArn,
+      exportName: `${props.stackName}:unauthenticatedRumRole:Arn`
+    })
+
+    new CfnOutput(this, "identityPoolId", {
+      value: rum.identityPool.ref,
+      exportName: `${props.stackName}:identityPool:Id`
+    })
+
+    new CfnOutput(this, "rumAppId", {
+      value: rum.rumApp.ref,
+      exportName: `${props.stackName}:rumApp:Id`
+    })
     nagSuppressions(this)
   }
 }

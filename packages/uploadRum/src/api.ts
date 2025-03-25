@@ -73,7 +73,7 @@ const RUM_TEMPLATE = (rum: AppMonitor): string => `
     guestRoleArn:
       '${rum.AppMonitorConfiguration?.GuestRoleArn}',
     identityPoolId: '${rum.AppMonitorConfiguration?.IdentityPoolId}',
-    endpoint: 'https://dataplane.rum.eu-west-1.amazonaws.com',
+    endpoint: 'https://dataplane.rum.eu-west-2.amazonaws.com',
     telemetries: [${
   '"' + rum.AppMonitorConfiguration?.Telemetries?.join('","') + '"'
 }],
