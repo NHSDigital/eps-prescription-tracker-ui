@@ -166,8 +166,7 @@ cdk-synth-stateless-resources-no-mock:
 		--context LogLevel=debug \
 		--context epsDomainName=undefined \
 		--context epsHostedZoneId=undefined \
-		--context cloudfrontCertArn=arn:aws:acm:us-east-1:444455556666:certificate/certificate_ID \
-		--context fullCloudfrontDomain="foo.bar" 
+		--context cloudfrontCertArn=arn:aws:acm:us-east-1:444455556666:certificate/certificate_ID
 
 cdk-synth-stateful-resources-mock:
 	npx cdk synth \
@@ -194,9 +193,7 @@ cdk-synth-stateful-resources-mock:
 		--context mockOidcUserInfoEndpoint=undefined \
 		--context mockOidcjwksEndpoint=undefined \
 		--context fullCognitoDomain=undefined \
-		--context shortCloudfrontDomain=undefined \
-		--context fullCloudfrontDomain="foo.bar"
-
+		--context shortCloudfrontDomain=undefined
 
 cdk-synth-stateless-resources-mock:
 	npx cdk synth \
@@ -224,8 +221,7 @@ cdk-synth-stateless-resources-mock:
 		--context mockOidcUserInfoEndpoint=undefined \
 		--context mockOidcjwksEndpoint=undefined \
 		--context fullCognitoDomain=undefined \
-		--context shortCloudfrontDomain=undefined \
-		--context fullCloudfrontDomain="foo.bar"
+		--context shortCloudfrontDomain=undefined
 
 cdk-diff: guard-CDK_APP_NAME
 	npx cdk diff \
