@@ -153,7 +153,7 @@ export default function PrescriptionIdSearch() {
                             <Label id="presc-id-label">
                                 <h2
                                     className="nhsuk-heading-m nhsuk-u-margin-bottom-1 no-outline"
-                                    data-testid="prescription-id-label"
+                                    data-testid="prescription-id-search-heading"
                                 >
                                     {PRESCRIPTION_ID_SEARCH_STRINGS.labelText}
                                 </h2>
