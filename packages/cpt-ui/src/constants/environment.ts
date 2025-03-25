@@ -31,12 +31,16 @@ export const API_ENDPOINTS = {
 
 // RUM CONFIG
 export const RUM_CONFIG = {
-  GUEST_ROLE_ARN: import.meta.env.VITE_APP_GUEST_ROLE_ARN,
-  IDENTITY_POOL_ID: import.meta.env.VITE_APP_IDENTITY_POOL_ID,
+  GUEST_ROLE_ARN: import.meta.env.VITE_RUM_GUEST_ROLE_ARN,
+  IDENTITY_POOL_ID: import.meta.env.VITE_RUM_IDENTITY_POOL_ID,
   ENDPOINT: "https://dataplane.rum.eu-west-2.amazonaws.com",
-  APPLICATION_ID: import.meta.env.VITE_APP_APPLICATION_ID,
+  APPLICATION_ID: import.meta.env.VITE_RUM_APPLICATION_ID,
   REGION: "eu-west-2",
-  VERSION: "1.0.0"
+  VERSION: "1.0.0",
+  ALLOW_COOKIES: import.meta.env.VITE_RUM_IDENTITY_POOL_ID === "true",
+  ENABLE_XRAY: import.meta.env.VITE_RUM_ENABLE_XRAY === "true",
+  SESSION_SAMPLE_RATE: Number(import.meta.env.VITE_RUM_SESSION_SAMPLE_RATE),
+  TELEMETRIES: import.meta.env.VITE_RUM_TELEMETRIES.split(",")
 } as const
 // This needs to be provided in backend requests as a header
 export const NHS_REQUEST_URID = "555254242106"

@@ -18,13 +18,13 @@ export const AwsRumProvider: React.FC<AwsRumProviderProps> = ({ children }) => {
 
   try {
     const config: AwsRumConfig = {
-      sessionSampleRate: 1,
+      sessionSampleRate: RUM_CONFIG.SESSION_SAMPLE_RATE,
       guestRoleArn: RUM_CONFIG.GUEST_ROLE_ARN,
       identityPoolId: RUM_CONFIG.IDENTITY_POOL_ID,
       endpoint: RUM_CONFIG.ENDPOINT,
-      telemetries: ["performance", "errors", "http"],
-      allowCookies: true,
-      enableXRay: false,
+      telemetries: RUM_CONFIG.TELEMETRIES,
+      allowCookies: RUM_CONFIG.ALLOW_COOKIES,
+      enableXRay: RUM_CONFIG.ENABLE_XRAY,
     };
 
     awsRum = new AwsRum(RUM_CONFIG.APPLICATION_ID, RUM_CONFIG.VERSION, RUM_CONFIG.REGION, config)

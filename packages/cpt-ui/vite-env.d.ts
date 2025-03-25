@@ -18,9 +18,13 @@ interface ImportMetaEnv {
   readonly VITE_LOCAL_DEV: string;
   readonly VITE_COMMIT_ID: string;
 
-  readonly VITE_APP_GUEST_ROLE_ARN: string;
-  readonly VITE_APP_IDENTITY_POOL_ID: string;
-  readonly VITE_APP_APPLICATION_ID: string;
+  readonly VITE_RUM_GUEST_ROLE_ARN: string;
+  readonly VITE_RUM_IDENTITY_POOL_ID: string;
+  readonly VITE_RUM_APPLICATION_ID: string;
+  readonly VITE_RUM_ALLOW_COOKIES: string;
+  readonly VITE_RUM_ENABLE_XRAY: string;
+  readonly VITE_RUM_SESSION_SAMPLE_RATE: string;
+  readonly VITE_RUM_TELEMETRIES: string;
 }
 
 interface ImportMeta {

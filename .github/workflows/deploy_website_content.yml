@@ -65,6 +65,10 @@ jobs:
           unauthenticatedRumRoleArn=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${{ inputs.SERVICE_NAME }}-stateful-resources:unauthenticatedRumRole:Arn'].Value" --output text)
           identityPoolId=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${{ inputs.SERVICE_NAME }}-stateful-resources:identityPool:Id'].Value" --output text)
           rumAppId=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${{ inputs.SERVICE_NAME }}-stateful-resources:rumApp:Id'].Value" --output text)
+          rumAllowCookies=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${{ inputs.SERVICE_NAME }}-stateful-resources:rumConfig:allowCookies'].Value" --output text)
+          rumEnableXRay=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${{ inputs.SERVICE_NAME }}-stateful-resources:rumConfig:enableXRay'].Value" --output text)
+          rumSessionSampleRate=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${{ inputs.SERVICE_NAME }}-stateful-resources:rumConfig:sessionSampleRate'].Value" --output text)
+          rumTelemetries=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${{ inputs.SERVICE_NAME }}-stateful-resources:rumConfig:telemetries'].Value" --output text)
 
           {
             echo "hostedLoginDomain=${hostedLoginDomain}"
@@ -74,7 +78,11 @@ jobs:
             echo "unauthenticatedRumRoleArn=${unauthenticatedRumRoleArn}"
             echo "identityPoolId=${identityPoolId}"
             echo "rumAppId=${rumAppId}"
-          } >> "$GITHUB_ENV"
+            echo "rumAllowCookies=${rumAllowCookies}"
+            echo "rumEnableXRay=${rumEnableXRay}"
+            echo "rumSessionSampleRate=${rumSessionSampleRate}"
+            echo "rumTelemetries=${rumTelemetries}"
+            } >> "$GITHUB_ENV"
 
       - name: build react app
         run: |
@@ -85,9 +93,13 @@ jobs:
           export VITE_redirectSignOut="https://${fullCloudfrontDomain}/site/logout"
           export VITE_COMMIT_ID=${{ inputs.COMMIT_ID }}
           export VITE_TARGET_ENVIRONMENT=${{ inputs.TARGET_ENVIRONMENT }}
-          export VITE_APP_GUEST_ROLE_ARN=${unauthenticatedRumRoleArn}
-          export VITE_APP_IDENTITY_POOL_ID=${identityPoolId}
-          export VITE_APP_APPLICATION_ID=${rumAppId}
+          export VITE_RUM_GUEST_ROLE_ARN=${unauthenticatedRumRoleArn}
+          export VITE_RUM_IDENTITY_POOL_ID=${identityPoolId}
+          export VITE_RUM_APPLICATION_ID=${rumAppId}
+          export VITE_RUM_ALLOW_COOKIES=${rumAllowCookies}
+          export VITE_RUM_ENABLE_XRAY=${rumEnableXRay}
+          export VITE_RUM_SESSION_SAMPLE_RATE=${rumSessionSampleRate}
+          export VITE_RUM_TELEMETRIES=${rumTelemetries}
 
           cd .build
           make react-build

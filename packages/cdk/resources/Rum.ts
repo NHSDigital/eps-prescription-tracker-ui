@@ -51,6 +51,7 @@ export class Rum extends Construct {
   public readonly unauthenticatedRumRole: Role
   public readonly identityPool: CfnIdentityPool
   public readonly rumApp: CfnAppMonitor
+  public readonly baseAppMonitorConfiguration: CfnAppMonitor.AppMonitorConfigurationProperty
 
   constructor(scope: Construct, id: string, props: RumProps) {
     super(scope, id)
@@ -104,10 +105,10 @@ export class Rum extends Construct {
     })
 
     // using an L1 construct as no L2 construct available for RUM
-    const baseAppMonitorConfiguration = {
+    const baseAppMonitorConfiguration: CfnAppMonitor.AppMonitorConfigurationProperty = {
       allowCookies: true,
       enableXRay: true,
-      sessionSampleRate: 1,
+      sessionSampleRate: 1, // this means 100%
       telemetries: ["errors", "performance", "http"],
       identityPoolId: identityPool.ref,
       guestRoleArn: unauthenticatedRumRole.roleArn
@@ -124,6 +125,7 @@ export class Rum extends Construct {
     this.identityPool = identityPool
     this.rumApp = rumApp
     this.unauthenticatedRumRole = unauthenticatedRumRole
+    this.baseAppMonitorConfiguration = baseAppMonitorConfiguration
   }
 
 }

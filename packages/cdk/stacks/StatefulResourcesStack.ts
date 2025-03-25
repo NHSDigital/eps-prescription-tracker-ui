@@ -214,6 +214,26 @@ export class StatefulResourcesStack extends Stack {
       value: rum.rumApp.attrId,
       exportName: `${props.stackName}:rumApp:Id`
     })
+
+    new CfnOutput(this, "rumAllowCookies", {
+      value: rum.baseAppMonitorConfiguration.allowCookies!.toString(),
+      exportName: `${props.stackName}:rumConfig:allowCookies`
+    })
+
+    new CfnOutput(this, "rumEnableXRay", {
+      value: rum.baseAppMonitorConfiguration.enableXRay!.toString(),
+      exportName: `${props.stackName}:rumConfig:enableXRay`
+    })
+
+    new CfnOutput(this, "rumSessionSampleRate", {
+      value: rum.baseAppMonitorConfiguration.sessionSampleRate!.toString(),
+      exportName: `${props.stackName}:rumConfig:sessionSampleRate`
+    })
+
+    new CfnOutput(this, "rumTelemetries", {
+      value: rum.baseAppMonitorConfiguration.telemetries!.toString(),
+      exportName: `${props.stackName}:rumConfig:telemetries`
+    })
     nagSuppressions(this)
   }
 }
