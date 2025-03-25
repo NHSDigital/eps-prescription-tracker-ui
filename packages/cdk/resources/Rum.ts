@@ -34,6 +34,7 @@ export class Rum extends Construct {
   public readonly identityPool: CfnIdentityPool
   public readonly rumApp: CfnAppMonitor
   public readonly baseAppMonitorConfiguration: CfnAppMonitor.AppMonitorConfigurationProperty
+  public readonly logGroup: LogGroup
 
   constructor(scope: Construct, id: string, props: RumProps) {
     super(scope, id)
@@ -47,6 +48,8 @@ export class Rum extends Construct {
 
     const splunkSubscriptionFilterRole = Role.fromRoleArn(
       this, "splunkSubscriptionFilterRole", Fn.importValue("lambda-resources:SplunkSubscriptionFilterRole"))
+
+    // Resources
 
     // use L1 construct as currently no stable L2 construct for identity pool
     const identityPool = new CfnIdentityPool(this, "RumAppIdentityPool", {
@@ -120,13 +123,16 @@ export class Rum extends Construct {
       }
     })
 
-    // Resources
+    // log group for rum events
+    // note - name is /aws/vendedlogs/<RUM APP NAME><FIRST 8 CHARS OF THE RUM APP ID>
     const rumLogGroup = new LogGroup(this, "RumLogGroup", {
       encryptionKey: cloudWatchLogsKmsKey,
       logGroupName: `/aws/vendedlogs/${props.appMonitorName}${rumApp.attrId.substring(0, 8)}`,
       retention: props.logRetentionInDays,
       removalPolicy: RemovalPolicy.DESTROY
     })
+    // force a dependency as the name is based on rum app id
+    rumLogGroup.node.addDependency(rumApp)
 
     const cfnlambdaLogGroup = rumLogGroup.node.defaultChild as CfnLogGroup
     cfnlambdaLogGroup.cfnOptions.metadata = {
@@ -148,6 +154,7 @@ export class Rum extends Construct {
     this.rumApp = rumApp
     this.unauthenticatedRumRole = unauthenticatedRumRole
     this.baseAppMonitorConfiguration = baseAppMonitorConfiguration
+    this.logGroup = rumLogGroup
   }
 
 }
