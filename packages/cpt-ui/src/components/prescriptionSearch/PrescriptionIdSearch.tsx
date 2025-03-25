@@ -1,4 +1,4 @@
-import React, {useContext, useState} from "react"
+import React, {useContext, useState, useEffect, useRef} from "react"
 import {
     Container,
     Row,
@@ -24,13 +24,19 @@ const normalizePrescriptionId = (raw: string): string => {
 
 export default function PrescriptionIdSearch() {
     const auth = useContext(AuthContext)
+    const navigate = useNavigate()
+    const inputRef = useRef<HTMLInputElement | null>(null)
 
     const [prescriptionId, setPrescriptionId] = useState<string>("")
-    const [searchResult, setSearchResult] = useState(null)
     const [errorType, setErrorType] = useState<"" | "empty" | "length" | "chars" | "noMatch">("")
     const [loading, setLoading] = useState<boolean>(false)
 
     const errorMessages = PRESCRIPTION_ID_SEARCH_STRINGS.errors
+
+    useEffect(() => {
+        const input = document.querySelector<HTMLInputElement>("#presc-id-input")
+        input?.focus()
+    }, [])
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setPrescriptionId(e.target.value)
@@ -39,7 +45,6 @@ export default function PrescriptionIdSearch() {
 
     const handlePrescriptionDetails = async (e: React.FormEvent) => {
         e.preventDefault()
-        setSearchResult(null)
         setErrorType("")
         setLoading(true)
 
@@ -78,30 +83,38 @@ export default function PrescriptionIdSearch() {
 
         const formatted = normalizePrescriptionId(cleaned)
 
-        const url = `${prescriptionDetailsEndpoint}/${formatted}`
+        // const url = `${prescriptionDetailsEndpoint}/${formatted}`
 
-        try {
-            const response = await fetch(url, {
-                method: "GET",
-                headers: {
-                    Authorization: `Bearer ${auth?.idToken}`,
-                    "NHSD-Session-URID": "555254242106"
-                }
-            })
+        // try {
+        //     const response = await fetch(url, {
+        //         method: "GET",
+        //         headers: {
+        //             Authorization: `Bearer ${auth?.idToken}`,
+        //             "NHSD-Session-URID": "555254242106"
+        //         }
+        //     })
 
-            if (!response.ok) {
-                throw new Error(`Status Code: ${response.status}`)
-            }
+        //     if (!response.ok) throw new Error(`Status Code: ${response.status}`)
 
-            const data = await response.json()
-            setSearchResult({...data, json: JSON.stringify(data, null, 2)})
-        } catch (error) {
-            console.error("Error retrieving prescription details:", error)
-            setSearchResult(null)
-            setErrorType("noMatch")
-        } finally {
-            setLoading(false)
+        //     // Redirect to prescription results page
+        //     navigate(`/prescription-results?prescriptionId=${formatted}`)
+        // } catch (error) {
+        //     console.error("Error retrieving prescription details:", error)
+        //     navigate("/prescription-not-found")
+        // } finally {
+        //     setLoading(false)
+        // }
+
+        // MOCK: Hardcoded response for known test ID
+        await new Promise((res) => setTimeout(res, 500)) // simulate loading
+
+        if (formatted === "C0C757-A83008-C2D93O") {
+            navigate(`/prescription-results?prescriptionId=${formatted}`)
+        } else {
+            navigate("/prescription-not-found")
         }
+
+        setLoading(false)
     }
 
     return (
@@ -112,7 +125,6 @@ export default function PrescriptionIdSearch() {
             <Row>
                 <Col width="one-half">
                     <Form onSubmit={handlePrescriptionDetails} noValidate>
-                        {/* Error Summary */}
                         {errorType && (
                             <div
                                 className="nhsuk-error-summary"

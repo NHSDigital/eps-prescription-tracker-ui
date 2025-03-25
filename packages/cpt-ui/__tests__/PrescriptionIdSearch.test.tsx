@@ -2,12 +2,31 @@ import "@testing-library/jest-dom"
 import {render, screen} from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import React from "react"
-import {MemoryRouter} from "react-router-dom"
+import {MemoryRouter, Routes, Route, useLocation} from "react-router-dom"
 
 import PrescriptionIdSearch from "@/components/prescriptionSearch/PrescriptionIdSearch"
 import {PRESCRIPTION_ID_SEARCH_STRINGS} from "@/constants/ui-strings/SearchForAPrescriptionStrings"
 import {AuthContext} from "@/context/AuthProvider"
 import {AuthContextType} from "@/context/AuthProvider"
+
+
+const LocationDisplay = () => {
+  const location = useLocation()
+  return <div data-testid="location-display">{location.pathname}</div>
+}
+
+const renderWithRouter = (ui: React.ReactElement) => {
+  return render(
+    <MemoryRouter initialEntries={["/search"]}>
+      <AuthContext.Provider value={mockAuthContext}>
+        <Routes>
+          <Route path="/search" element={ui} />
+          <Route path="*" element={<LocationDisplay />} />
+        </Routes>
+      </AuthContext.Provider>
+    </MemoryRouter>
+  )
+}
 
 const mockAuthContext = {
   error: null,
@@ -71,16 +90,18 @@ describe("PrescriptionIdSearch", () => {
     )
   })
 
-  it("shows 'not recognised' error if fetch fails", async () => {
+  it("redirects to 'not found' page if fetch fails", async () => {
     global.fetch = jest.fn(() =>
       Promise.resolve({ok: false, status: 404})
     ) as jest.Mock
 
-    renderWithProviders(<PrescriptionIdSearch />)
+    renderWithRouter(<PrescriptionIdSearch />)
+
     await userEvent.type(screen.getByTestId("prescription-id-input"), "9D4C80A830085EA4D3")
     await userEvent.click(screen.getByTestId("find-prescription-button"))
 
-    expect(screen.getAllByText(/not recognised/i).length).toBeGreaterThan(0)
+    const location = await screen.findByTestId("location-display")
+    expect(location).toHaveTextContent("/prescription-not-found")
   })
 
   it("shows loading message while fetching", async () => {
@@ -100,5 +121,15 @@ describe("PrescriptionIdSearch", () => {
     expect(screen.getAllByText(/Loading search results/i).length).toBeGreaterThan(1)
 
     resolveFetch()
+  })
+
+  it("redirects to prescription results if valid ID is entered", async () => {
+    renderWithRouter(<PrescriptionIdSearch />)
+
+    await userEvent.type(screen.getByTestId("prescription-id-input"), "C0C757A83008C2D93O")
+    await userEvent.click(screen.getByTestId("find-prescription-button"))
+
+    const location = await screen.findByTestId("location-display")
+    expect(location).toHaveTextContent("/prescription-results")
   })
 })
