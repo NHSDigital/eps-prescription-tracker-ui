@@ -62,6 +62,7 @@ export class StatefulResourcesStack extends Stack {
     const cloudfrontDistributionId: string = this.node.tryGetContext("cloudfrontDistributionId")
 
     const useLocalhostCallback: boolean = this.node.tryGetContext("useLocalhostCallback")
+    const logRetentionInDays: number = Number(this.node.tryGetContext("logRetentionInDays"))
 
     // Imports
     const auditLoggingBucketImport = Fn.importValue("account-resources:AuditLoggingBucket")
@@ -119,9 +120,11 @@ export class StatefulResourcesStack extends Stack {
 
     const rum = new Rum(this, "Rum", {
       topLevelDomain: props.fullCloudfrontDomain,
-      appMonitorName: `${props.stackName}-rum`,
+      appMonitorName: `${props.stackName}`,
       serviceName: props.serviceName,
-      stackName: props.stackName
+      stackName: props.stackName,
+      logRetentionInDays: logRetentionInDays
+
     })
 
     // Outputs

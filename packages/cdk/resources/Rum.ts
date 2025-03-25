@@ -1,4 +1,4 @@
-import {Stack} from "aws-cdk-lib"
+import {Fn, RemovalPolicy, Stack} from "aws-cdk-lib"
 import {CfnIdentityPool, CfnIdentityPoolRoleAttachment} from "aws-cdk-lib/aws-cognito"
 import {
   FederatedPrincipal,
@@ -6,6 +6,9 @@ import {
   PolicyStatement,
   Role
 } from "aws-cdk-lib/aws-iam"
+import {Stream} from "aws-cdk-lib/aws-kinesis"
+import {Key} from "aws-cdk-lib/aws-kms"
+import {CfnLogGroup, CfnSubscriptionFilter, LogGroup} from "aws-cdk-lib/aws-logs"
 import {CfnAppMonitor} from "aws-cdk-lib/aws-rum"
 import {Construct} from "constructs"
 
@@ -23,6 +26,7 @@ export interface RumProps {
   readonly appMonitorName: string;
   readonly serviceName: string;
   readonly stackName: string;
+  readonly logRetentionInDays: number
 
 }
 export class Rum extends Construct {
@@ -33,6 +37,16 @@ export class Rum extends Construct {
 
   constructor(scope: Construct, id: string, props: RumProps) {
     super(scope, id)
+
+    // Imports
+    // These are imported here rather than at stack level as they are all imports from account-resources stacks
+    const cloudWatchLogsKmsKey = Key.fromKeyArn(
+      this, "cloudWatchLogsKmsKey", Fn.importValue("account-resources:CloudwatchLogsKmsKeyArn"))
+    const splunkDeliveryStream = Stream.fromStreamArn(
+      this, "SplunkDeliveryStream", Fn.importValue("lambda-resources:SplunkDeliveryStream"))
+
+    const splunkSubscriptionFilterRole = Role.fromRoleArn(
+      this, "splunkSubscriptionFilterRole", Fn.importValue("lambda-resources:SplunkSubscriptionFilterRole"))
 
     // use L1 construct as currently no stable L2 construct for identity pool
     const identityPool = new CfnIdentityPool(this, "RumAppIdentityPool", {
@@ -97,13 +111,37 @@ export class Rum extends Construct {
       identityPoolId: identityPool.ref,
       guestRoleArn: unauthenticatedRumRole.roleArn
     }
-    const rumApp = new CfnAppMonitor(this, "RumAppMonitor", {
+    const rumApp = new CfnAppMonitor(this, "RumApp", {
       name: props.appMonitorName,
-      cwLogEnabled: true,
+      cwLogEnabled: false, // figure out how to change this based on if log exists
       domain: props.topLevelDomain,
       appMonitorConfiguration: {
         ...baseAppMonitorConfiguration
       }
+    })
+
+    // Resources
+    const rumLogGroup = new LogGroup(this, "RumLogGroup", {
+      encryptionKey: cloudWatchLogsKmsKey,
+      logGroupName: `/aws/vendedlogs/${props.appMonitorName}${rumApp.attrId.substring(0, 8)}`,
+      retention: props.logRetentionInDays,
+      removalPolicy: RemovalPolicy.DESTROY
+    })
+
+    const cfnlambdaLogGroup = rumLogGroup.node.defaultChild as CfnLogGroup
+    cfnlambdaLogGroup.cfnOptions.metadata = {
+      guard: {
+        SuppressedRules: [
+          "CW_LOGGROUP_RETENTION_PERIOD_CHECK"
+        ]
+      }
+    }
+
+    new CfnSubscriptionFilter(this, "CoordinatorSplunkSubscriptionFilter", {
+      destinationArn: splunkDeliveryStream.streamArn,
+      filterPattern: "",
+      logGroupName: rumLogGroup.logGroupName,
+      roleArn: splunkSubscriptionFilterRole.roleArn
     })
 
     this.identityPool = identityPool
