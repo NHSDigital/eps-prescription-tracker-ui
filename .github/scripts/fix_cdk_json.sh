@@ -40,28 +40,28 @@ EPS_DOMAIN_NAME=$(aws cloudformation list-exports --output json | jq -r '.Export
 EPS_HOSTED_ZONE_ID=$(aws cloudformation list-exports --output json | jq -r '.Exports[] | select(.Name == "eps-route53-resources:EPS-ZoneID") | .Value')
 CLOUDFRONT_DISTRIBUTION_ID=$(aws cloudformation list-exports --output json | \
     jq \
-    --arg SERVICE_NAME "${SERVICE_NAME}" \
-    -r '.Exports[] | select(.Name == "$SERVICE_NAME-stateless-resources:cloudfrontDistribution:Id") | .Value')
+    --arg EXPORT_NAME "${SERVICE_NAME}-stateless-resources:cloudfrontDistribution:Id" \
+    -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
 CLOUDFRONT_CERT_ARN=$(aws cloudformation list-exports --region us-east-1 --output json | \
     jq \
-    --arg SERVICE_NAME "${SERVICE_NAME}" \
-    -r '.Exports[] | select(.Name == "$SERVICE_NAME-us-certs:cloudfrontCertificate:Arn") | .Value')
+    --arg EXPORT_NAME "${SERVICE_NAME}-us-certs:cloudfrontCertificate:Arn" \
+    -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
 SHORT_CLOUDFRONT_DOMAIN=$(aws cloudformation list-exports --region us-east-1 --output json | \
     jq \
-    --arg SERVICE_NAME "${SERVICE_NAME}" \
-    -r '.Exports[] | select(.Name == "$SERVICE_NAME-us-certs:shortCloudfrontDomain:Name") | .Value')
+    --arg EXPORT_NAME "${SERVICE_NAME}-us-certs:shortCloudfrontDomain:Name" \
+    -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
 FULL_CLOUDFRONT_DOMAIN=$(aws cloudformation list-exports --region us-east-1 --output json | \
     jq \
-    --arg SERVICE_NAME "${SERVICE_NAME}" \
-    -r '.Exports[] | select(.Name == "$SERVICE_NAME-us-certs:fullCloudfrontDomain:Name") | .Value')
+    --arg EXPORT_NAME "${SERVICE_NAME}-us-certs:fullCloudfrontDomain:Name" \
+    -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
 FULL_COGNITO_DOMAIN=$(aws cloudformation list-exports --region us-east-1 --output json | \
     jq \
-    --arg SERVICE_NAME "${SERVICE_NAME}" \
-    -r '.Exports[] | select(.Name == "$SERVICE_NAME-us-certs:fullCognitoDomain:Name") | .Value')
-RUM_LOG_GROUP_ARN=$(aws cloudformation list-exports --region eu-west-2 --output json | \
-    jq \
-    --arg SERVICE_NAME "${SERVICE_NAME}" \
-    -r '.Exports[] | select(.Name == "$SERVICE_NAME-stateful-resources:rum:logGroup:arn") | .Value')
+    --arg EXPORT_NAME "${SERVICE_NAME}-us-certs:fullCognitoDomain:Name" \
+    -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+#RUM_LOG_GROUP_ARN=$(aws cloudformation list-exports --region eu-west-2 --output json | \
+#    jq \
+#    --arg EXPORT_NAME "${SERVICE_NAME}-stateful-resources:rum:logGroup:arn" \
+#    -r '.Exports[] | select(.Name == EXPORT_NAME) | .Value')
 
 # go through all the key values we need to set
 fix_string_key serviceName "${SERVICE_NAME}"
@@ -99,9 +99,9 @@ if [ "$CDK_APP_NAME" == "StatefulResourcesApp" ]; then
         fix_string_key cloudfrontDistributionId "${CLOUDFRONT_DISTRIBUTION_ID}"
     fi
     # if we have a rum log group arn, then we can set cwLogEnabled on the rum app
-    if [ -n "${RUM_LOG_GROUP_ARN}" ]; then
-        fix_boolean_number_key cwLogEnabled "true"
-    fi
+    # if [ -n "${RUM_LOG_GROUP_ARN}" ]; then
+    #    fix_boolean_number_key cwLogEnabled "true"
+    # fi
     fix_boolean_number_key useLocalhostCallback "${USE_LOCALHOST_CALLBACK}"
 
 elif [ "$CDK_APP_NAME" == "StatelessResourcesApp" ]; then
