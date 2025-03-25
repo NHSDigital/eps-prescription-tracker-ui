@@ -29,7 +29,7 @@ const defaultAccessContext: AccessContextType = {
   error: null,
   setNoAccess: jest.fn(),
   setSingleAccess: jest.fn(),
-  setSelectedRole: jest.fn(),
+  updateSelectedRole: jest.fn(),
   userDetails: undefined,
   setUserDetails: jest.fn(),
   clear: jest.fn(),

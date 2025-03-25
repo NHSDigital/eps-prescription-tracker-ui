@@ -38,6 +38,8 @@ export const RUM_CONFIG = {
   REGION: "eu-west-2",
   VERSION: "1.0.0"
 } as const
+// This needs to be provided in backend requests as a header
+export const NHS_REQUEST_URID = "555254242106"
 
 // Type for environment
 export type MockAuthEnvironment = "dev" | "dev-pr" | "int" | "qa";
