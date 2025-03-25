@@ -11,8 +11,8 @@ import {Construct} from "constructs"
 
 export interface RumProps {
   /**
-   * Provide a domain that will be allowed to send telemetry data to the Real
-   * User Monitoring agent
+   * Provide a domain that will be allowed to send telemetry data to the
+   * Realtime User Monitoring (RUM) agent
    */
   readonly topLevelDomain: string;
   /**
@@ -21,32 +21,10 @@ export interface RumProps {
    * @unique
    */
   readonly appMonitorName: string;
-  /**
-   * The s3 bucket that the rum script will be uploaded into after creation. This
-   * should be accessible to the website, either by using the s3 origin bucket,
-   * or by attaching a Cross-Origin Resource Sharing policy to the target bucket.
-   */
   readonly serviceName: string;
   readonly stackName: string;
 
 }
-
-/**
- * The RUM custom resource can be used to setup Real User Monitoring using AWS
- *
- * The resource itself creates all the required infrastructure.
- *
- * A Cloudformation custom resource uploads the rum script to the s3 bucket that
- * the website is deployed to
- *
- * @example
- * const rum = new Rum(this, "SiteRum", {
- *   topLevelDomain: "*.s3-website-eu-west-1.amazonaws.com",
- *   appMonitorName: "canary-stack-rum",
- *   s3Bucket: websiteBucket,
- * });
- *
- */
 export class Rum extends Construct {
   public readonly unauthenticatedRumRole: Role
   public readonly identityPool: CfnIdentityPool
@@ -61,6 +39,7 @@ export class Rum extends Construct {
       allowUnauthenticatedIdentities: true
     })
 
+    // policies to allow to put to rum event
     const unauthenticatedRumRolePolicies = new ManagedPolicy(this, "unauthenticatedRumRolePolicies", {
       statements: [
         new PolicyStatement({
@@ -79,6 +58,8 @@ export class Rum extends Construct {
         })
       ]
     })
+
+    // role assumed by cognito to post to rum
     const unauthenticatedRumRole = new Role(this, "UnauthenticatedRumRole", {
       assumedBy: new FederatedPrincipal(
         "cognito-identity.amazonaws.com",
@@ -97,6 +78,7 @@ export class Rum extends Construct {
       ]
     })
 
+    // attach the role to the identity pool
     new CfnIdentityPoolRoleAttachment(this, "RumAppRoleAttachment", {
       identityPoolId: identityPool.ref,
       roles: {
