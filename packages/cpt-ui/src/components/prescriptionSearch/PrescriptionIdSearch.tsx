@@ -83,6 +83,10 @@ export default function PrescriptionIdSearch() {
 
         const formatted = normalizePrescriptionId(cleaned)
 
+        // This block will be used in the future when backend data is available.
+        // For now, it is commented out and replaced with a mock implementation below
+        // to allow front-end testing without a live API.
+
         // const url = `${prescriptionDetailsEndpoint}/${formatted}`
 
         // try {
