@@ -90,18 +90,17 @@ describe("PrescriptionIdSearch", () => {
     )
   })
 
-  it("redirects to 'not found' page if fetch fails", async () => {
-    global.fetch = jest.fn(() =>
-      Promise.resolve({ok: false, status: 404})
-    ) as jest.Mock
+  it("shows noMatch error if ID is correctly formatted but not recognised", async () => {
+    renderWithProviders(<PrescriptionIdSearch />)
 
-    renderWithRouter(<PrescriptionIdSearch />)
-
-    await userEvent.type(screen.getByTestId("prescription-id-input"), "9D4C80A830085EA4D3")
+    // Enter a correctly formatted but unrecognised prescription ID
+    await userEvent.type(screen.getByTestId("prescription-id-input"), "111111222222333333")
     await userEvent.click(screen.getByTestId("find-prescription-button"))
 
-    const location = await screen.findByTestId("location-display")
-    expect(location).toHaveTextContent("/prescription-not-found")
+    const errorSummary = await screen.findByTestId("error-summary")
+    expect(errorSummary).toHaveTextContent(
+      "The prescription ID number is not recognised"
+    )
   })
 
   it("shows loading message while fetching", async () => {
