@@ -90,7 +90,7 @@ if [ "$CDK_APP_NAME" == "StatefulResourcesApp" ]; then
     fix_string_key epsHostedZoneId "${EPS_HOSTED_ZONE_ID}"
 
     fix_boolean_number_key allowAutoDeleteObjects "${AUTO_DELETE_OBJECTS}"
-    if [ -z "${cloudfrontDistributionId}" ]; then
+    if [ -n "${cloudfrontDistributionId}" ]; then
         fix_string_key cloudfrontDistributionId "${CLOUDFRONT_DISTRIBUTION_ID}"
     fi
     fix_boolean_number_key useLocalhostCallback "${USE_LOCALHOST_CALLBACK}"
