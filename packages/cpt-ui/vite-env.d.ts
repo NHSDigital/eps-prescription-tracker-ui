@@ -17,6 +17,10 @@ interface ImportMetaEnv {
   readonly VITE_BASE_PATH: string;
   readonly VITE_LOCAL_DEV: string;
   readonly VITE_COMMIT_ID: string;
+
+  readonly VITE_APP_GUEST_ROLE_ARN: string;
+  readonly VITE_APP_IDENTITY_POOL_ID: string;
+  readonly VITE_APP_APPLICATION_ID: string;
 }
 
 interface ImportMeta {
