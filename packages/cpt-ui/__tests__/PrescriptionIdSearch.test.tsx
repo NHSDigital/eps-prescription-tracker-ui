@@ -55,7 +55,7 @@ describe("PrescriptionIdSearch", () => {
 
   it("renders the label, hint, and submit button", () => {
     renderWithProviders(<PrescriptionIdSearch />)
-    expect(screen.getByTestId("prescription-id-label")).toBeInTheDocument()
+    expect(screen.getByTestId("prescription-id-search-heading")).toBeInTheDocument()
     expect(screen.getByTestId("prescription-id-hint")).toBeInTheDocument()
     expect(screen.getByTestId("find-prescription-button")).toHaveTextContent(
       PRESCRIPTION_ID_SEARCH_STRINGS.buttonText
