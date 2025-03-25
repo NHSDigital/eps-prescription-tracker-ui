@@ -105,6 +105,7 @@ export class Rum extends Construct {
     })
 
     // using an L1 construct as no L2 construct available for RUM
+    // TODO - add javascript source maps property when it is available in CF/CDK (feature released 18 March 2025)
     const baseAppMonitorConfiguration: CfnAppMonitor.AppMonitorConfigurationProperty = {
       allowCookies: true,
       enableXRay: true,
