@@ -120,12 +120,8 @@ export class StatefulResourcesStack extends Stack {
     const rum = new Rum(this, "Rum", {
       topLevelDomain: props.fullCloudfrontDomain,
       appMonitorName: `${props.stackName}-rum`,
-      s3Bucket: staticContentBucket.bucket,
       serviceName: props.serviceName,
-      stackName: props.stackName,
-      logRetentionInDays: 30,
-      logLevel: "DEBUG",
-      s3BucketKmsKey: staticContentBucket.kmsKey
+      stackName: props.stackName
     })
 
     // Outputs

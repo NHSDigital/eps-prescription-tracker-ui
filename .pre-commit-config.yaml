@@ -95,15 +95,6 @@ repos:
         types_or: [ts, tsx, javascript, jsx, json]
         pass_filenames: false
 
-      - id: lint-uploadRum
-        name: Lint uploadRum
-        entry: npm
-        args: ["run", "--prefix=packages/uploadRum", "lint"]
-        language: system
-        files: ^packages\/uploadRum
-        types_or: [ts, tsx, javascript, jsx, json]
-        pass_filenames: false
-
       - id: lint-githubactions
         name: Lint github actions
         entry: make

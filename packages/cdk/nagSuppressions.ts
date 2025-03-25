@@ -68,6 +68,27 @@ export const nagSuppressions = (stack: Stack) => {
         }
       ]
     )
+    safeAddNagSuppression(
+      stack,
+      "/StatefulStack/Rum/RumAppIdentityPool",
+      [
+        {
+          id: "AwsSolutions-COG7",
+          reason: "Suppress error for not having allowing unauthenticed logins. This is by design"
+        }
+      ]
+    )
+
+    safeAddNagSuppression(
+      stack,
+      "/StatefulStack/Rum/unauthenticatedRumRolePolicies/Resource",
+      [
+        {
+          id: "AwsSolutions-IAM5",
+          reason: "Suppress error for not having allowing wildcard permissions. This is by design"
+        }
+      ]
+    )
 
   }
 
@@ -195,60 +216,6 @@ export const nagSuppressions = (stack: Stack) => {
         }
       ]
     )
-
-    safeAddNagSuppression(
-      stack,
-      "/StatelessStack/Rum/RumAppIdentityPool",
-      [
-        {
-          id: "AwsSolutions-COG7",
-          reason: "Suppress error for not having allowing unauthenticed logins. This is by design"
-        }
-      ]
-    )
-
-    safeAddNagSuppression(
-      stack,
-      "/StatelessStack/Rum/unauthenticatedRumRolePolicies/Resource",
-      [
-        {
-          id: "AwsSolutions-IAM5",
-          reason: "Suppress error for not having allowing wildcard permissions. This is by design"
-        }
-      ]
-    )
-
-    safeAddNagSuppression(
-      stack,
-      "/StatelessStack/Rum/uploadFilePolicy/Resource",
-      [
-        {
-          id: "AwsSolutions-IAM5",
-          reason: "Suppress error for not having allowing wildcard permissions. This is by design"
-        }
-      ]
-    )
-    safeAddNagSuppression(
-      stack,
-      "/StatelessStack/Rum/uploadRum/LambdaPutLogsManagedPolicy/Resource",
-      [
-        {
-          id: "AwsSolutions-IAM5",
-          reason: "Suppress error for not having allowing wildcard permissions. This is by design"
-        }
-      ]
-    )
-    safeAddNagSuppression(
-      stack,
-      "/StatelessStack/Rum/LambdaPutLogsManagedPolicy/Resource",
-      [
-        {
-          id: "AwsSolutions-IAM5",
-          reason: "Suppress error for not having allowing wildcard permissions. This is by design"
-        }
-      ]
-    )
-
   }
 }
 
