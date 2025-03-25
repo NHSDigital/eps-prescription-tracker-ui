@@ -220,6 +220,11 @@ export class StatefulResourcesStack extends Stack {
       exportName: `${props.stackName}:rum:rumApp:Id`
     })
 
+    new CfnOutput(this, "rumAppName", {
+      value: rum.rumApp.ref,
+      exportName: `${props.stackName}:rum:rumApp:Name`
+    })
+
     new CfnOutput(this, "rumAllowCookies", {
       value: rum.baseAppMonitorConfiguration.allowCookies!.toString(),
       exportName: `${props.stackName}:rum:config:allowCookies`
@@ -240,10 +245,6 @@ export class StatefulResourcesStack extends Stack {
       exportName: `${props.stackName}:rum:config:telemetries`
     })
 
-    new CfnOutput(this, "rumLogGroupArn", {
-      value: rum.logGroup.logGroupArn,
-      exportName: `${props.stackName}:rum:logGroup:arn`
-    })
     nagSuppressions(this)
   }
 }

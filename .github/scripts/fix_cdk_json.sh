@@ -61,15 +61,15 @@ FULL_COGNITO_DOMAIN=$(aws cloudformation list-exports --region us-east-1 --outpu
 RUM_LOG_GROUP_ARN=$(aws cloudformation list-exports --region eu-west-2 --output json | \
     jq \
     --arg EXPORT_NAME "${SERVICE_NAME}-rum-log-group:rum:logGroup:arn" \
-    -r '.Exports[] | select(.Name == EXPORT_NAME) | .Value')
+    -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
 RUM_APP_NAME=$(aws cloudformation list-exports --region eu-west-2 --output json | \
     jq \
     --arg EXPORT_NAME "${SERVICE_NAME}-stateful-resources:rum:rumApp:Name" \
-    -r '.Exports[] | select(.Name == EXPORT_NAME) | .Value')
+    -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
 RUM_APP_ID=$(aws cloudformation list-exports --region eu-west-2 --output json | \
     jq \
     --arg EXPORT_NAME "${SERVICE_NAME}-stateful-resources:rum:rumApp:Id" \
-    -r '.Exports[] | select(.Name == EXPORT_NAME) | .Value')
+    -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
 RUM_LOG_GROUP_NAME="RUMService_${RUM_APP_NAME}${RUM_APP_ID:0:8}"
 
 # go through all the key values we need to set
