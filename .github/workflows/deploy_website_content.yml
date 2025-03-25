@@ -62,21 +62,21 @@ jobs:
           userPoolClientId=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${{ inputs.SERVICE_NAME }}-stateful-resources:userPoolClient:userPoolClientId'].Value" --output text)
           userPoolId=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${{ inputs.SERVICE_NAME }}-stateful-resources:userPool:Id'].Value" --output text)
           fullCloudfrontDomain=$(aws cloudformation list-exports --region us-east-1 --query "Exports[?Name=='${{ inputs.SERVICE_NAME }}-us-certs:fullCloudfrontDomain:Name'].Value" --output text)
-          unauthenticatedRumRoleArn=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${{ inputs.SERVICE_NAME }}-stateful-resources:unauthenticatedRumRole:Arn'].Value" --output text)
-          identityPoolId=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${{ inputs.SERVICE_NAME }}-stateful-resources:identityPool:Id'].Value" --output text)
-          rumAppId=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${{ inputs.SERVICE_NAME }}-stateful-resources:rumApp:Id'].Value" --output text)
-          rumAllowCookies=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${{ inputs.SERVICE_NAME }}-stateful-resources:rumConfig:allowCookies'].Value" --output text)
-          rumEnableXRay=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${{ inputs.SERVICE_NAME }}-stateful-resources:rumConfig:enableXRay'].Value" --output text)
-          rumSessionSampleRate=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${{ inputs.SERVICE_NAME }}-stateful-resources:rumConfig:sessionSampleRate'].Value" --output text)
-          rumTelemetries=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${{ inputs.SERVICE_NAME }}-stateful-resources:rumConfig:telemetries'].Value" --output text)
+          rumUnauthenticatedRumRoleArn=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${{ inputs.SERVICE_NAME }}-stateful-resources:rum:unauthenticatedRumRole:Arn'].Value" --output text)
+          rumIdentityPoolId=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${{ inputs.SERVICE_NAME }}-stateful-resources:rum:identityPool:Id'].Value" --output text)
+          rumAppId=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${{ inputs.SERVICE_NAME }}-stateful-resources:rum:rumApp:Id'].Value" --output text)
+          rumAllowCookies=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${{ inputs.SERVICE_NAME }}-stateful-resources:rum:config:allowCookies'].Value" --output text)
+          rumEnableXRay=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${{ inputs.SERVICE_NAME }}-stateful-resources:rum:config:enableXRay'].Value" --output text)
+          rumSessionSampleRate=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${{ inputs.SERVICE_NAME }}-stateful-resources:rum:config:sessionSampleRate'].Value" --output text)
+          rumTelemetries=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${{ inputs.SERVICE_NAME }}-stateful-resources:rum:config:telemetries'].Value" --output text)
 
           {
             echo "hostedLoginDomain=${hostedLoginDomain}"
             echo "userPoolClientId=${userPoolClientId}"
             echo "userPoolId=${userPoolId}"
             echo "fullCloudfrontDomain=${fullCloudfrontDomain}"
-            echo "unauthenticatedRumRoleArn=${unauthenticatedRumRoleArn}"
-            echo "identityPoolId=${identityPoolId}"
+            echo "rumUnauthenticatedRumRoleArn=${rumUnauthenticatedRumRoleArn}"
+            echo "rumIdentityPoolId=${rumIdentityPoolId}"
             echo "rumAppId=${rumAppId}"
             echo "rumAllowCookies=${rumAllowCookies}"
             echo "rumEnableXRay=${rumEnableXRay}"
@@ -93,8 +93,8 @@ jobs:
           export VITE_redirectSignOut="https://${fullCloudfrontDomain}/site/logout"
           export VITE_COMMIT_ID=${{ inputs.COMMIT_ID }}
           export VITE_TARGET_ENVIRONMENT=${{ inputs.TARGET_ENVIRONMENT }}
-          export VITE_RUM_GUEST_ROLE_ARN=${unauthenticatedRumRoleArn}
-          export VITE_RUM_IDENTITY_POOL_ID=${identityPoolId}
+          export VITE_RUM_GUEST_ROLE_ARN=${rumUnauthenticatedRumRoleArn}
+          export VITE_RUM_IDENTITY_POOL_ID=${rumIdentityPoolId}
           export VITE_RUM_APPLICATION_ID=${rumAppId}
           export VITE_RUM_ALLOW_COOKIES=${rumAllowCookies}
           export VITE_RUM_ENABLE_XRAY=${rumEnableXRay}

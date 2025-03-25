@@ -202,37 +202,37 @@ export class StatefulResourcesStack extends Stack {
 
     new CfnOutput(this, "unauthenticatedRumRoleArn", {
       value: rum.unauthenticatedRumRole.roleArn,
-      exportName: `${props.stackName}:unauthenticatedRumRole:Arn`
+      exportName: `${props.stackName}:rum:unauthenticatedRumRole:Arn`
     })
 
     new CfnOutput(this, "identityPoolId", {
       value: rum.identityPool.ref,
-      exportName: `${props.stackName}:identityPool:Id`
+      exportName: `${props.stackName}:rum:identityPool:Id`
     })
 
     new CfnOutput(this, "rumAppId", {
       value: rum.rumApp.attrId,
-      exportName: `${props.stackName}:rumApp:Id`
+      exportName: `${props.stackName}:rum:rumApp:Id`
     })
 
     new CfnOutput(this, "rumAllowCookies", {
       value: rum.baseAppMonitorConfiguration.allowCookies!.toString(),
-      exportName: `${props.stackName}:rumConfig:allowCookies`
+      exportName: `${props.stackName}:rum:config:allowCookies`
     })
 
     new CfnOutput(this, "rumEnableXRay", {
       value: rum.baseAppMonitorConfiguration.enableXRay!.toString(),
-      exportName: `${props.stackName}:rumConfig:enableXRay`
+      exportName: `${props.stackName}:rum:config:enableXRay`
     })
 
     new CfnOutput(this, "rumSessionSampleRate", {
       value: rum.baseAppMonitorConfiguration.sessionSampleRate!.toString(),
-      exportName: `${props.stackName}:rumConfig:sessionSampleRate`
+      exportName: `${props.stackName}:rum:config:sessionSampleRate`
     })
 
     new CfnOutput(this, "rumTelemetries", {
       value: rum.baseAppMonitorConfiguration.telemetries!.toString(),
-      exportName: `${props.stackName}:rumConfig:telemetries`
+      exportName: `${props.stackName}:rum:config:telemetries`
     })
     nagSuppressions(this)
   }
