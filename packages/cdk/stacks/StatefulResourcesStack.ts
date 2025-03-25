@@ -211,7 +211,7 @@ export class StatefulResourcesStack extends Stack {
     })
 
     new CfnOutput(this, "rumAppId", {
-      value: rum.rumApp.ref,
+      value: rum.rumApp.attrId,
       exportName: `${props.stackName}:rumApp:Id`
     })
     nagSuppressions(this)
