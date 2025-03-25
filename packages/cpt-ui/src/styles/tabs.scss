@@ -16,6 +16,8 @@ padding:1rem 2rem
    .nhsuk-tabs__list-item {
     background-color:#ffffff;    
     padding:calc(1rem + -3px) calc(2rem + 1px) 1rem;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
    
    .nhsuk-tabs__tab {
     font-size: 1.0625rem;
@@ -34,6 +36,8 @@ padding:1rem 2rem
     margin-bottom: -1px !important;
     border-bottom: 4px solid #f0f4f5;
     padding:1rem 2rem;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
     .nhsuk-tabs__tab {
         color:#005eb8 !important
     }
