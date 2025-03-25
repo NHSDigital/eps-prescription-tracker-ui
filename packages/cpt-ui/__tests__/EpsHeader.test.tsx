@@ -65,7 +65,7 @@ const defaultAccessContext: AccessContextType = {
   setPatientDetails: jest.fn(),
   setNoAccess: jest.fn(),
   setSingleAccess: jest.fn(),
-  setSelectedRole: jest.fn(),
+  updateSelectedRole: jest.fn(),
   clear: jest.fn(),
   rolesWithAccess: [],
   rolesWithoutAccess: [],
