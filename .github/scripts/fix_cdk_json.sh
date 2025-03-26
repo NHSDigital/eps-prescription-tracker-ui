@@ -100,7 +100,9 @@ if [ "$CDK_APP_NAME" == "StatefulResourcesApp" ]; then
     fi
     # if we have a rum log group arn, then we can set cwLogEnabled on the rum app
     if [ -n "${RUM_LOG_GROUP_ARN}" ]; then
-        fix_boolean_number_key cwLogEnabled "true"
+        fix_boolean_number_key rumCloudwatchLogEnabled "true"
+    else
+        fix_boolean_number_key rumCloudwatchLogEnabled "false"
     fi
     fix_boolean_number_key useLocalhostCallback "${USE_LOCALHOST_CALLBACK}"
 
