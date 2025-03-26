@@ -6,8 +6,8 @@ import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
 import {
   DynamoDBDocumentClient,
   GetCommand,
-  UpdateCommand,
-  UpdateCommandInput
+  PutCommand,
+  UpdateCommand
 } from "@aws-sdk/lib-dynamodb"
 
 import middy from "@middy/core"
@@ -242,29 +242,52 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     expirationTime: expiration_time
   })
 
-  const params: UpdateCommandInput = {
-    TableName: TokenMappingTableName,
-    Key: {
-      username: username
-    },
-    UpdateExpression: `SET 
-      CIS2_accessToken = :accessToken, 
-      CIS2_idToken = :idToken, 
-      CIS2_expiresIn = :expiresIn, 
-      selectedRoleId = :selectedRoleId`,
-    ExpressionAttributeValues: {
-      ":accessToken": access_token,
-      ":idToken": jwt_token,
-      ":expiresIn": expiration_time,
-      ":selectedRoleId": jwtClaims.selected_roleid
-    },
-    ReturnValues: "ALL_NEW" // This is optional, just to see what was written
-  }
-
   try {
-    logger.debug("going to update/insert into dynamodb", {params})
-    await documentClient.send(new UpdateCommand(params))
-    logger.info("Successfully updated/inserted token information in DynamoDB")
+    // First, check if the item exists
+    const getResult = await documentClient.send(
+      new GetCommand({
+        TableName: TokenMappingTableName,
+        Key: {username: username}
+      })
+    )
+
+    if (!getResult.Item) {
+      // If item doesn't exist, create it first
+      await documentClient.send(
+        new PutCommand({
+          TableName: TokenMappingTableName,
+          Item: {
+            username: username,
+            CIS2_accessToken: access_token,
+            CIS2_idToken: jwt_token,
+            CIS2_expiresIn: expiration_time,
+            selectedRoleId: jwtClaims.selected_roleid
+          }
+        })
+      )
+      logger.info("Created new item in DynamoDB")
+    } else {
+      // If item exists, update it
+      await documentClient.send(new UpdateCommand({
+        TableName: TokenMappingTableName,
+        Key: {
+          username: username
+        },
+        UpdateExpression: `SET 
+          CIS2_accessToken = :accessToken, 
+          CIS2_idToken = :idToken, 
+          CIS2_expiresIn = :expiresIn, 
+          selectedRoleId = :selectedRoleId`,
+        ExpressionAttributeValues: {
+          ":accessToken": access_token,
+          ":idToken": jwt_token,
+          ":expiresIn": expiration_time,
+          ":selectedRoleId": jwtClaims.selected_roleid
+        },
+        ReturnValues: "ALL_NEW"
+      }))
+      logger.info("Updated existing item in DynamoDB")
+    }
   } catch (error) {
     logger.error("Failed to update/insert token information in DynamoDB", {error})
     throw new Error("Failed to update/insert token information in DynamoDB")
