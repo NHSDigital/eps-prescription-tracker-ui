@@ -62,15 +62,6 @@ RUM_LOG_GROUP_ARN=$(aws cloudformation list-exports --region eu-west-2 --output 
     jq \
     --arg EXPORT_NAME "${SERVICE_NAME}-stateful-resources:rum:logGroup:arn" \
     -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
-RUM_APP_NAME=$(aws cloudformation list-exports --region eu-west-2 --output json | \
-    jq \
-    --arg EXPORT_NAME "${SERVICE_NAME}-stateful-resources:rum:rumApp:Name" \
-    -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
-RUM_APP_ID=$(aws cloudformation list-exports --region eu-west-2 --output json | \
-    jq \
-    --arg EXPORT_NAME "${SERVICE_NAME}-stateful-resources:rum:rumApp:Id" \
-    -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
-RUM_LOG_GROUP_NAME="RUMService_${RUM_APP_NAME}${RUM_APP_ID:0:8}"
 
 # go through all the key values we need to set
 fix_string_key serviceName "${SERVICE_NAME}"
@@ -143,8 +134,6 @@ elif [ "$CDK_APP_NAME" == "StatelessResourcesApp" ]; then
     fix_string_key apigeePersonalDemographicsEndpoint "${APIGEE_PERSONAL_DEMOGRAPHICS_ENDPOINT}"
     fix_string_key jwtKid "${JWT_KID}"
     fix_string_key ROLE_ID "${ROLE_ID}"
-elif [ "$CDK_APP_NAME" == "RumLogGroupApp" ]; then
-    fix_string_key rumLogGroupName "${RUM_LOG_GROUP_NAME}"
 else
     echo "unknown cdk app name"
     exit 1

@@ -113,15 +113,16 @@ export class Rum extends Construct {
       }
     })
 
-    // log group for rum events
-    // note - name is /aws/vendedlogs/<RUM APP NAME><FIRST 8 CHARS OF THE RUM APP ID>
+    // calculate the log group for rum events
+    // this is /aws/vendedlogs/RUMService_<RUM APP NAME><FIRST 8 CHARS OF THE RUM APP ID>
+    // use Fn.split and Fn.select to force it to use cloudformation intrinsic functions so its calculated at deploy time
     const splitRumAppId = Fn.split("-", rumApp.attrId)
     const startOfRumAppId = Fn.select(0, splitRumAppId)
     const logGroupName = `RUMService_${props.appMonitorName}${startOfRumAppId}`
 
     const logGroup = new RumLog(this, "RumLog", {
       rumLogGroupName: logGroupName,
-      logRetentionInDays: 30
+      logRetentionInDays: props.logRetentionInDays
     })
 
     this.identityPool = identityPool

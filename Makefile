@@ -143,15 +143,6 @@ cdk-synth-no-mock: cdk-synth-stateful-resources-no-mock cdk-synth-stateless-reso
 
 cdk-synth-mock: cdk-synth-stateful-resources-mock cdk-synth-stateless-resources-mock
 
-cdk-synth-rumloggroup:
-	npx cdk synth \
-		--quiet \
-		--app "npx ts-node --prefer-ts-exts packages/cdk/bin/RumLogGroupApp.ts" \
-		--context serviceName=cpt-ui \
-		--context VERSION_NUMBER=undefined \
-		--context COMMIT_ID=undefined \
-		--context allowAutoDeleteObjects=true
-
 cdk-synth-stateful-resources-no-mock:
 	npx cdk synth \
 		--quiet \
