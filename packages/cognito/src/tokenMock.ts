@@ -3,7 +3,12 @@ import {Logger} from "@aws-lambda-powertools/logger"
 import {injectLambdaContext} from "@aws-lambda-powertools/logger/middleware"
 import {getSecret} from "@aws-lambda-powertools/parameters/secrets"
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
-import {DynamoDBDocumentClient, GetCommand, UpdateCommand} from "@aws-sdk/lib-dynamodb"
+import {
+  DynamoDBDocumentClient,
+  GetCommand,
+  UpdateCommand,
+  UpdateCommandInput
+} from "@aws-sdk/lib-dynamodb"
 
 import middy from "@middy/core"
 import inputOutputLogger from "@middy/input-output-logger"
@@ -237,23 +242,33 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     expirationTime: expiration_time
   })
 
-  const params = {
+  const params: UpdateCommandInput = {
     TableName: TokenMappingTableName,
     Key: {
       username: username
     },
-    // eslint-disable-next-line max-len
-    UpdateExpression: "SET CIS2_accessToken = :accessToken, CIS2_idToken = :idToken, CIS2_expiresIn = :expiresIn, selectedRoleId = :selectedRoleId",
+    UpdateExpression: `SET 
+      CIS2_accessToken = :accessToken, 
+      CIS2_idToken = :idToken, 
+      CIS2_expiresIn = :expiresIn, 
+      selectedRoleId = :selectedRoleId`,
     ExpressionAttributeValues: {
       ":accessToken": access_token,
       ":idToken": jwt_token,
       ":expiresIn": expiration_time,
       ":selectedRoleId": jwtClaims.selected_roleid
-    }
+    },
+    ReturnValues: "ALL_NEW" // This is optional, just to see what was written
   }
 
-  logger.debug("going to insert into dynamodb", {params})
-  await documentClient.send(new UpdateCommand(params))
+  try {
+    logger.debug("going to update/insert into dynamodb", {params})
+    await documentClient.send(new UpdateCommand(params))
+    logger.info("Successfully updated/inserted token information in DynamoDB")
+  } catch (error) {
+    logger.error("Failed to update/insert token information in DynamoDB", {error})
+    throw new Error("Failed to update/insert token information in DynamoDB")
+  }
 
   // Return the mock token response
   const responseData = {
