@@ -79,6 +79,10 @@ export default function RoleSelectionPage({
     error,
   } = useAccess()
 
+  useEffect(() => {
+  }, [selectedRole]);
+
+
   const [loginInfoMessage, setLoginInfoMessage] = useState<string | null>(null)
   const [redirecting, setRedirecting] = useState<boolean>(false)
   const navigate = useNavigate()
@@ -158,6 +162,7 @@ export default function RoleSelectionPage({
       </main>
     )
   }
+  console.log(selectedRole, '***')
 
   return (
     <main
@@ -181,7 +186,6 @@ export default function RoleSelectionPage({
             </h1>
 
             {noAccess && <p>{captionNoAccess}</p>}
-
             {selectedRole && (
               <section aria-label="Login Information">
                 <InsetText data-testid="eps_select_your_role_pre_role_selected">
@@ -208,9 +212,11 @@ export default function RoleSelectionPage({
           {!noAccess && rolesWithAccess.length > 0 && (
             <Col width="two-thirds">
               <div className="section">
-                {rolesWithAccess.map((role: RolesWithAccessProps) => (
-                  <EpsCard {...role} key={role.uuid} />
-                ))}
+                {rolesWithAccess
+                  .filter((duplicateRole) => duplicateRole.role.role_id !== selectedRole?.role_id)
+                  .map((role: RolesWithAccessProps) => (
+                    <EpsCard {...role} key={role.uuid} />
+                  ))}
               </div>
             </Col>
           )}
