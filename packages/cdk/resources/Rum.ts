@@ -104,6 +104,9 @@ export class Rum extends Construct {
     // using an L1 construct as no L2 construct available for RUM
     // this is another 'must do two deployments' as we can only enable cwLog when we have a log group
     // and the log group name is based on the id of this resource
+    // TODO - add multiple domains for localhost when it is available in CF/CDK (feature released 18 March 2025)
+    // eslint-disable-next-line max-len
+    // https://aws.amazon.com/about-aws/whats-new/2025/03/amazon-cloudwatch-rum-monitoring-multiple-domains-single-app-monitor/
     const rumApp = new CfnAppMonitor(this, "RumApp", {
       name: props.appMonitorName,
       cwLogEnabled: props.cwLogEnabled,

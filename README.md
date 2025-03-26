@@ -86,7 +86,7 @@ When the token expires, you may need to reauthorise using `make aws-login`
 
 ### Local Environment Configuration
 
-To run the CPT UI locally (with mock auth and actual API usage), you can configure your `.envrc` file with a few variables. Below is an example configuration:
+To run the CPT UI locally (with mock auth, RUM monitoring and actual API usage), you can configure your `.envrc` file with a few variables. Below is an example configuration:
 
 ```
 ################
@@ -115,7 +115,7 @@ export REACT_APP_redirectSignIn=$VITE_redirectSignIn
 export REACT_APP_redirectSignOut=$VITE_redirectSignOut
 ```
 
-To enable mock auth for the local dev server, we only need the user pool details. To fetch these, you can use the following AWS CLI commands:
+To enable mock auth and RUM for the local dev server we need some variables from AWS. To fetch these, you can use the following AWS CLI commands:
 
 ```
 export PULL_REQUEST_ID=<PR NUMBER BY ITSELF>
@@ -152,6 +152,8 @@ n.b. Ensure you've properly sourced these variables! `direnv` can sometimes miss
 ```
 source .envrc
 ```
+
+To enable RUM monitoring you need to manually go in and configure the application domain list to include localhost as this can not currently be done through CDK
 
 ###  React app
 React/Next.js code resides in app folder.  More details to be added as dev progresses, see make section for relevant commands
