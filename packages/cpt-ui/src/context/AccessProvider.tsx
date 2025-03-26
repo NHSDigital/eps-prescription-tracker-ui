@@ -200,7 +200,7 @@ export const AccessProvider = ({ children }: { children: ReactNode }) => {
     // TODO: Ensure this is up to date as pages get implemented!
     const patientDetailsAllowedPaths = [
       "/prescription-results",
-      // prescriptiondetails
+      // "/prescription-details",
     ]
 
     const path = normalizePath(location.pathname)
