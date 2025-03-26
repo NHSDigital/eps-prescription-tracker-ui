@@ -18,6 +18,13 @@ export default function NhsNumSearch() {
                 >
                     Find a patient
                 </Button>
+                <Button
+                    className="nhsuk-button eps-modal-button"
+                    to="/prescription-not-found?searchType=NhsNumSearch"
+                    data-testid="fail-find-prescription-button"
+                >
+                    Fail to find a patient
+                </Button>
             </div>
         </>
     )
