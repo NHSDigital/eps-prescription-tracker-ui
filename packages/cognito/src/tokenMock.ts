@@ -222,7 +222,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     given_name: userInfo.data.given_name,
     family_name: userInfo.data.family_name,
     email: userInfo.data.email,
-    selected_roleid: userInfo.data.selected_roleid
+    selected_roleid: userInfo.data.uid
   }
 
   logger.debug("Claims", {jwtClaims})
@@ -261,7 +261,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
             CIS2_accessToken: access_token,
             CIS2_idToken: jwt_token,
             CIS2_expiresIn: expiration_time,
-            selectedRoleId: jwtClaims.selected_roleid
+            selectedRoleId: jwtClaims.uid
           }
         })
       )
@@ -282,7 +282,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
           ":accessToken": access_token,
           ":idToken": jwt_token,
           ":expiresIn": expiration_time,
-          ":selectedRoleId": jwtClaims.selected_roleid
+          ":selectedRoleId": jwtClaims.uid
         },
         ReturnValues: "ALL_NEW"
       }))
