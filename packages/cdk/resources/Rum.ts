@@ -8,6 +8,7 @@ import {
 } from "aws-cdk-lib/aws-iam"
 import {CfnAppMonitor} from "aws-cdk-lib/aws-rum"
 import {Construct} from "constructs"
+import {RumLog} from "./RumLog"
 
 export interface RumProps {
   /**
@@ -112,6 +113,11 @@ export class Rum extends Construct {
 
     // log group for rum events
     // note - name is /aws/vendedlogs/<RUM APP NAME><FIRST 8 CHARS OF THE RUM APP ID>
+
+    new RumLog(this, "RumLog", {
+      rumLogGroupName: "RUMService_cpt-ui-pr-621-stateful-resources1ac3f90d",
+      logRetentionInDays: 30
+    })
 
     this.identityPool = identityPool
     this.rumApp = rumApp
