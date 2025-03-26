@@ -247,6 +247,11 @@ export class StatefulResourcesStack extends Stack {
       exportName: `${props.stackName}:rum:config:telemetries`
     })
 
+    new CfnOutput(this, "rumLogGroupArn", {
+      value: rum.logGroup.logGroupArn,
+      exportName: `${props.stackName}:rum:logGroup:arn`
+    })
+
     nagSuppressions(this)
   }
 }

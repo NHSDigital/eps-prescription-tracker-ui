@@ -9,6 +9,7 @@ import {
 import {CfnAppMonitor} from "aws-cdk-lib/aws-rum"
 import {Construct} from "constructs"
 import {RumLog} from "./RumLog"
+import {LogGroup} from "aws-cdk-lib/aws-logs"
 
 export interface RumProps {
   /**
@@ -33,6 +34,7 @@ export class Rum extends Construct {
   public readonly identityPool: CfnIdentityPool
   public readonly rumApp: CfnAppMonitor
   public readonly baseAppMonitorConfiguration: CfnAppMonitor.AppMonitorConfigurationProperty
+  public readonly logGroup: LogGroup
 
   constructor(scope: Construct, id: string, props: RumProps) {
     super(scope, id)
@@ -117,7 +119,7 @@ export class Rum extends Construct {
     const startOfRumAppId = Fn.select(0, splitRumAppId)
     const logGroupName = `RUMService_${props.appMonitorName}${startOfRumAppId}`
 
-    new RumLog(this, "RumLog", {
+    const logGroup = new RumLog(this, "RumLog", {
       rumLogGroupName: logGroupName,
       logRetentionInDays: 30
     })
@@ -126,6 +128,7 @@ export class Rum extends Construct {
     this.rumApp = rumApp
     this.unauthenticatedRumRole = unauthenticatedRumRole
     this.baseAppMonitorConfiguration = baseAppMonitorConfiguration
+    this.logGroup = logGroup.logGroup
   }
 
 }
