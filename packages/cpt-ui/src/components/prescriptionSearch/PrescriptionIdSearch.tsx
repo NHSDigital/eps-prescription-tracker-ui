@@ -26,6 +26,7 @@ export default function PrescriptionIdSearch() {
     const auth = useContext(AuthContext)
     const navigate = useNavigate()
     const inputRef = useRef<HTMLInputElement | null>(null)
+    const errorRef = useRef<HTMLDivElement | null>(null)
 
     const [prescriptionId, setPrescriptionId] = useState<string>("")
     const [errorType, setErrorType] = useState<"" | "empty" | "length" | "chars" | "noMatch">("")
@@ -33,10 +34,18 @@ export default function PrescriptionIdSearch() {
 
     const errorMessages = PRESCRIPTION_ID_SEARCH_STRINGS.errors
 
+    // Focus input on page load
     useEffect(() => {
         const input = document.querySelector<HTMLInputElement>("#presc-id-input")
         input?.focus()
     }, [])
+
+    // Focus error box when error appears
+    useEffect(() => {
+        if (errorType && errorRef.current) {
+            errorRef.current.focus()
+        }
+    }, [errorType])
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setPrescriptionId(e.target.value)
@@ -132,6 +141,7 @@ export default function PrescriptionIdSearch() {
                     <Form onSubmit={handlePrescriptionDetails} noValidate>
                         {errorType && (
                             <div
+                                ref={errorRef}
                                 className="nhsuk-error-summary"
                                 aria-labelledby="error-summary-title"
                                 role="alert"
