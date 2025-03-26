@@ -48,40 +48,40 @@ export default function PrescriptionIdSearch() {
         setErrorType("")
         setLoading(true)
 
-        if (!prescriptionId.trim()) {
+        const raw = prescriptionId.trim()
+        if (!raw) {
             setErrorType("empty")
             setLoading(false)
             return
         }
 
-        const raw = prescriptionId.trim()
-
-        // First validate characters directly from raw input
-        const invalidCharPattern = /[^A-Za-z0-9+-]/g
-        if (invalidCharPattern.test(raw)) {
+        // Show "chars" error if input has invalid characters
+        const rawCharPattern = /^[a-zA-Z0-9+ -]*$/
+        if (!rawCharPattern.test(raw)) {
             setErrorType("chars")
             setLoading(false)
             return
         }
 
-        const cleaned = raw.replace(/[^A-Za-z0-9+]/g, "")
+        // Normalize and clean input
+        const cleaned = raw.replace(/[^a-zA-Z0-9+]/g, "").toUpperCase()
 
-        // Validation: Must be exactly 18 chars (excluding dashes)
+        // Must be exactly 18 chars (excluding dashes)
         if (cleaned.length !== 18) {
             setErrorType("length")
             setLoading(false)
             return
         }
 
-        // Validation: Only allow A-F and 0-9 for first 17 chars, final can include +
-        const validChars = /^[A-F0-9]{17}[A-Z0-9+]$/i
-        if (!validChars.test(cleaned)) {
-            setErrorType("chars")
+        const formatted = normalizePrescriptionId(cleaned)
+
+        // Validate full formatted pattern
+        const shortFormPattern = /^[0-9A-F]{6}-[0-9A-Z]{6}-[0-9A-F]{5}[0-9A-Z+]$/
+        if (!shortFormPattern.test(formatted)) {
+            setErrorType("noMatch")
             setLoading(false)
             return
         }
-
-        const formatted = normalizePrescriptionId(cleaned)
 
         // This block will be used in the future when backend data is available.
         // For now, it is commented out and replaced with a mock implementation below
@@ -112,6 +112,7 @@ export default function PrescriptionIdSearch() {
         // MOCK: Hardcoded response for known test ID
         await new Promise((res) => setTimeout(res, 500)) // simulate loading
 
+        // Check against known match
         if (formatted === "C0C757-A83008-C2D93O") {
             navigate(`/prescription-results?prescriptionId=${formatted}`)
         } else {
