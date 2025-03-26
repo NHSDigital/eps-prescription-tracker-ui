@@ -11,7 +11,7 @@ import SearchPrescriptionPage from "@/pages/SearchPrescriptionPage";
 import YourSelectedRolePage from "@/pages/YourSelectedRolePage";
 import NotFoundPage from "@/pages/NotFoundPage";
 import PrescriptionListPage from "@/pages/PrescriptionListPage";
-import PrescriptionNotFoundPage from "./pages/PrescriptionNotFoundPage";
+import PrescriptionNotFoundPage from "@/pages/PrescriptionNotFoundPage";
 
 export default function App() {
 

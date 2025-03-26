@@ -21,7 +21,7 @@ export default function NhsNumSearch() {
                 <Button
                     className="nhsuk-button eps-modal-button"
                     to="/prescription-not-found?searchType=NhsNumSearch"
-                    data-testid="fail-find-prescription-button"
+                    data-testid="fail-find-patient-button"
                 >
                     Fail to find a patient
                 </Button>
