@@ -118,11 +118,31 @@ export REACT_APP_redirectSignOut=$VITE_redirectSignOut
 To enable mock auth for the local dev server, we only need the user pool details. To fetch these, you can use the following AWS CLI commands:
 
 ```
-export SERVICE_NAME=cpt-ui-pr-<PR NUMBER>
+export PULL_REQUEST_ID=<PR NUMBER BY ITSELF>
+
+
+export SERVICE_NAME=cpt-ui-pr-$PULL_REQUEST_ID
 userPoolClientId=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${SERVICE_NAME}-stateful-resources:userPoolClient:userPoolClientId'].Value" --output text)
 userPoolId=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${SERVICE_NAME}-stateful-resources:userPool:Id'].Value" --output text)
-echo $userPoolClientId
-echo $userPoolId
+rumUnauthenticatedRumRoleArn=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${SERVICE_NAME}-stateful-resources:rum:unauthenticatedRumRole:Arn'].Value" --output text)
+rumIdentityPoolId=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${SERVICE_NAME}-stateful-resources:rum:identityPool:Id'].Value" --output text)
+rumAppId=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${SERVICE_NAME}-stateful-resources:rum:rumApp:Id'].Value" --output text)
+rumAllowCookies=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${SERVICE_NAME}-stateful-resources:rum:config:allowCookies'].Value" --output text)
+rumEnableXRay=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${SERVICE_NAME}-stateful-resources:rum:config:enableXRay'].Value" --output text)
+rumSessionSampleRate=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${SERVICE_NAME}-stateful-resources:rum:config:sessionSampleRate'].Value" --output text)
+rumTelemetries=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${SERVICE_NAME}-stateful-resources:rum:config:telemetries'].Value" --output text)
+
+echo "*******************"
+echo
+echo "export VITE_userPoolClientId=\"$userPoolClientId\""
+echo "export VITE_userPoolId=\"$userPoolId\""
+echo "export VITE_RUM_GUEST_ROLE_ARN=\"$rumUnauthenticatedRumRoleArn\""
+echo "export VITE_RUM_IDENTITY_POOL_ID=\"$rumIdentityPoolId\""
+echo "export VITE_RUM_APPLICATION_ID=\"$rumAppId\""
+echo "export VITE_RUM_ALLOW_COOKIES=\"$rumAllowCookies\""
+echo "export VITE_RUM_ENABLE_XRAY=\"$rumEnableXRay\""
+echo "export VITE_RUM_SESSION_SAMPLE_RATE=\"$rumSessionSampleRate\""
+echo "export VITE_RUM_TELEMETRIES=\"$rumTelemetries\""
 
 ```
 
