@@ -3,7 +3,7 @@ import {Logger} from "@aws-lambda-powertools/logger"
 import {injectLambdaContext} from "@aws-lambda-powertools/logger/middleware"
 import {getSecret} from "@aws-lambda-powertools/parameters/secrets"
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
-import {DynamoDBDocumentClient, GetCommand, PutCommand} from "@aws-sdk/lib-dynamodb"
+import {DynamoDBDocumentClient, GetCommand, UpdateCommand} from "@aws-sdk/lib-dynamodb"
 
 import middy from "@middy/core"
 import inputOutputLogger from "@middy/input-output-logger"
@@ -193,7 +193,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   // Create a signed JWT for the ID token
   const username = `${mockOidcConfig.userPoolIdp}_${userInfo.data.sub}`
   const current_time = Math.floor(Date.now() / 1000)
-  const expiration_time = current_time + 300
+  const expiration_time = current_time + 900
 
   const jwtClaims = {
     exp: expiration_time,
@@ -232,19 +232,28 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   logger.debug("id_token", {jwt_token})
 
   // Store token information in DynamoDB
+  logger.debug("going to update token information in dynamodb", {
+    username,
+    expirationTime: expiration_time
+  })
+
   const params = {
-    Item: {
-      "username": username,
-      "CIS2_accessToken": access_token,
-      "CIS2_idToken": jwt_token,
-      "CIS2_expiresIn": expiration_time,
-      "selectedRoleId": jwtClaims.selected_roleid
+    TableName: TokenMappingTableName,
+    Key: {
+      username: username
     },
-    TableName: TokenMappingTableName
+    // eslint-disable-next-line max-len
+    UpdateExpression: "SET CIS2_accessToken = :accessToken, CIS2_idToken = :idToken, CIS2_expiresIn = :expiresIn, selectedRoleId = :selectedRoleId",
+    ExpressionAttributeValues: {
+      ":accessToken": access_token,
+      ":idToken": jwt_token,
+      ":expiresIn": expiration_time,
+      ":selectedRoleId": jwtClaims.selected_roleid
+    }
   }
 
   logger.debug("going to insert into dynamodb", {params})
-  await documentClient.send(new PutCommand(params))
+  await documentClient.send(new UpdateCommand(params))
 
   // Return the mock token response
   const responseData = {
