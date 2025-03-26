@@ -2,17 +2,49 @@ import React from "react";
 import { render, screen, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
-import PrescriptionListPage from "@/pages/PrescriptionListPage";
 import { PRESCRIPTION_LIST_PAGE_STRINGS } from "@/constants/ui-strings/PrescriptionListPageStrings";
 
-// Helper function to render the component with different query parameters
+
+jest.mock("@/context/AccessProvider", () => {
+    const React = require("react");
+    const AccessContext = React.createContext({
+        patientDetails: null,
+        setPatientDetails: () => { },
+    });
+
+    // A provider that uses state to allow updating patientDetails (for later)
+    // @ts-ignore:next-line
+    const MockAccessProvider = ({ children }) => {
+        const [patientDetails, setPatientDetails] = React.useState(null);
+        const value = { patientDetails, setPatientDetails };
+        return (
+            <AccessContext.Provider value={value}>
+                {children}
+            </AccessContext.Provider>
+        );
+    };
+
+    const useAccess = () => React.useContext(AccessContext);
+
+    return {
+        AccessContext,
+        MockAccessProvider,
+        useAccess,
+    };
+});
+
+import PrescriptionListPage from "@/pages/PrescriptionListPage";
+
 const renderWithRouter = (route: string) => {
+    const { MockAccessProvider } = require("@/context/AccessProvider");
     return render(
-        <MemoryRouter initialEntries={[route]}>
-            <Routes>
-                <Route path="*" element={<PrescriptionListPage />} />
-            </Routes>
-        </MemoryRouter>
+        <MockAccessProvider>
+            <MemoryRouter initialEntries={[route]}>
+                <Routes>
+                    <Route path="*" element={<PrescriptionListPage />} />
+                </Routes>
+            </MemoryRouter>
+        </MockAccessProvider>
     );
 };
 
