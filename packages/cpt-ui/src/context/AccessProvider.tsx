@@ -197,10 +197,9 @@ export const AccessProvider = ({ children }: { children: ReactNode }) => {
 
   // Clear the patient details if the user navigates away from the pages about the patient
   useEffect(() => {
+    // TODO: Ensure this is up to date as pages get implemented!
     const patientDetailsAllowedPaths = [
-      "/search",
-      "/prescription-not-found",
-      // prescriptionsearchresults
+      "/prescription-results",
       // prescriptiondetails
     ]
 
