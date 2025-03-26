@@ -92,43 +92,35 @@ export default function PrescriptionIdSearch() {
             return
         }
 
-        // This block will be used in the future when backend data is available.
-        // For now, it is commented out and replaced with a mock implementation below
-        // to allow front-end testing without a live API.
+        const url = `${prescriptionDetailsEndpoint}/${formatted}`
 
-        // const url = `${prescriptionDetailsEndpoint}/${formatted}`
+        // Fetch prescription details with auth headers. If successful, redirect to results.
+        // On failure, allow a known test ID through; otherwise, redirect to "not found".
+        try {
+            const response = await fetch(url, {
+                method: "GET",
+                headers: {
+                    Authorization: `Bearer ${auth?.idToken}`,
+                    "NHSD-Session-URID": "555254242106"
+                }
+            })
 
-        // try {
-        //     const response = await fetch(url, {
-        //         method: "GET",
-        //         headers: {
-        //             Authorization: `Bearer ${auth?.idToken}`,
-        //             "NHSD-Session-URID": "555254242106"
-        //         }
-        //     })
+            if (!response.ok) throw new Error(`Status Code: ${response.status}`)
 
-        //     if (!response.ok) throw new Error(`Status Code: ${response.status}`)
-
-        //     // Redirect to prescription results page
-        //     navigate(`/prescription-results?prescriptionId=${formatted}`)
-        // } catch (error) {
-        //     console.error("Error retrieving prescription details:", error)
-        //     navigate("/prescription-not-found")
-        // } finally {
-        //     setLoading(false)
-        // }
-
-        // MOCK: Hardcoded response for known test ID
-        await new Promise((res) => setTimeout(res, 500)) // simulate loading
-
-        // Check against known match
-        if (formatted === "C0C757-A83008-C2D93O") {
             navigate(`/prescription-results?prescriptionId=${formatted}`)
-        } else {
-            setErrorType("noMatch")
-        }
+        } catch (error) {
+            console.error("Error retrieving prescription details:", error)
 
-        setLoading(false)
+            // MOCK: Hardcoded response for known test ID
+            if (formatted === "C0C757-A83008-C2D93O") {
+                await new Promise((res) => setTimeout(res, 500)) // simulate loading
+                navigate(`/prescription-results?prescriptionId=${formatted}`)
+            } else {
+                navigate("/prescription-not-found?searchType=PrescriptionIdSearch")
+            }
+        } finally {
+            setLoading(false)
+        }
     }
 
     return (
