@@ -119,9 +119,11 @@ export class StatefulResourcesStack extends Stack {
       region: this.region
     })
 
+    // need to make sure the app monitor name is not too long
+    const appMonitorName = props.stackName.replace("-stateful-resources", "")
     const rum = new Rum(this, "Rum", {
       topLevelDomain: props.fullCloudfrontDomain,
-      appMonitorName: `${props.stackName}`,
+      appMonitorName: appMonitorName,
       serviceName: props.serviceName,
       stackName: props.stackName,
       logRetentionInDays: logRetentionInDays,
