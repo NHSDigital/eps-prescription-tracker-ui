@@ -140,6 +140,21 @@ jobs:
       primaryOidcClientId: ${{ secrets.primaryOidcClientId }}
       mockOidcClientId: ${{ secrets.mockOidcClientId }}
 
+  # release_rum_log_group:
+  #   uses: ./.github/workflows/cdk_release_code.yml
+  #   needs: [release_stateful_resources]
+  #   with:
+  #     SERVICE_NAME: ${{ inputs.SERVICE_NAME }}
+  #     TARGET_ENVIRONMENT: ${{ inputs.TARGET_ENVIRONMENT }}
+  #     VERSION_NUMBER: ${{ inputs.VERSION_NUMBER }}
+  #     COMMIT_ID: ${{ inputs.COMMIT_ID }}
+  #     CDK_APP_NAME: RumLogGroupApp
+  #     LOG_RETENTION_IN_DAYS: 30
+  #     LOG_LEVEL: ${{ inputs.LOG_LEVEL }}
+  #   secrets:
+  #     CDK_PULL_IMAGE_ROLE: ${{ secrets.CDK_PULL_IMAGE_ROLE }}
+  #     CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}
+
   deploy_website_content:
     uses: ./.github/workflows/deploy_website_content.yml
     needs: [release_stateful_resources]
@@ -187,7 +202,6 @@ jobs:
       primaryOidcClientId: ${{ secrets.primaryOidcClientId }}
       mockOidcClientId: ${{ secrets.mockOidcClientId }}
       APIGEE_API_KEY: ${{ secrets.APIGEE_API_KEY }}
-
 
   update_cloudfront_kvs:
     runs-on: ubuntu-22.04
