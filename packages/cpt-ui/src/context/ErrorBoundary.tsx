@@ -1,6 +1,6 @@
 import React, { Component, ReactNode } from "react"
-import { AwsRumContextType } from "./AwsRumProvider"
 import { AwsRum } from "aws-rum-web"
+import { AwsRumContext, AwsRumContextType } from "./AwsRumProvider"
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -11,12 +11,16 @@ interface ErrorBoundaryState {
 }
 
 class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
-  static contextType = React.createContext<AwsRumContextType>(null);
+  // Declare the context type
+  declare context: React.ContextType<typeof AwsRumContext>;
 
   constructor(props: ErrorBoundaryProps) {
     super(props);
     this.state = { hasError: false }
   }
+
+  // Specify the contextType
+  static contextType = AwsRumContext;
 
   static getDerivedStateFromError(error: Error): ErrorBoundaryState {
     return { hasError: true }
@@ -24,9 +28,10 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo): void {
     console.error("recordingError:", error);
-    const awsRum = this.context as AwsRum;
-    if (awsRum) {
-      awsRum.recordError(error)
+    
+    // Correctly access the context value
+    if (this.context) {
+      (this.context as AwsRum).recordError(error);
     }
   }
 
@@ -44,7 +49,5 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
     return this.props.children;
   }
 }
-
-ErrorBoundary.contextType = React.createContext<AwsRumContextType>(null)
 
 export default ErrorBoundary;
