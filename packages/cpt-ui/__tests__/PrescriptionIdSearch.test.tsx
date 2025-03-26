@@ -90,11 +90,11 @@ describe("PrescriptionIdSearch", () => {
     )
   })
 
-  it("shows noMatch error if ID is correctly formatted but not recognised", async () => {
+  it("shows noMatch error if ID is in incorrect format (invalid characters)", async () => {
     renderWithProviders(<PrescriptionIdSearch />)
 
-    // Enter a correctly formatted but unrecognised prescription ID
-    await userEvent.type(screen.getByTestId("prescription-id-input"), "111111222222333333")
+    // This ID contains characters that make the short-form pattern invalid
+    await userEvent.type(screen.getByTestId("prescription-id-input"), "H0C757-X83008-C2G93O")
     await userEvent.click(screen.getByTestId("find-prescription-button"))
 
     const errorSummary = await screen.findByTestId("error-summary")
