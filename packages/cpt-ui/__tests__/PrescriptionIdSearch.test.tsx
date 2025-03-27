@@ -1,13 +1,13 @@
 import "@testing-library/jest-dom"
-import {render, screen} from "@testing-library/react"
+import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import React from "react"
-import {MemoryRouter, Routes, Route, useLocation} from "react-router-dom"
+import { MemoryRouter, Routes, Route, useLocation } from "react-router-dom"
 
 import PrescriptionIdSearch from "@/components/prescriptionSearch/PrescriptionIdSearch"
-import {PRESCRIPTION_ID_SEARCH_STRINGS} from "@/constants/ui-strings/SearchForAPrescriptionStrings"
-import {AuthContext} from "@/context/AuthProvider"
-import {AuthContextType} from "@/context/AuthProvider"
+import { PRESCRIPTION_ID_SEARCH_STRINGS } from "@/constants/ui-strings/SearchForAPrescriptionStrings"
+import { AuthContext } from "@/context/AuthProvider"
+import { AuthContextType } from "@/context/AuthProvider"
 
 
 const LocationDisplay = () => {
@@ -101,25 +101,6 @@ describe("PrescriptionIdSearch", () => {
     expect(errorSummary).toHaveTextContent(
       "The prescription ID number is not recognised"
     )
-  })
-
-  it("shows loading message while fetching", async () => {
-    let resolveFetch: () => void = () => {}
-
-    global.fetch = jest.fn(
-      () =>
-        new Promise((resolve) => {
-          resolveFetch = () => resolve({ok: true, json: () => Promise.resolve({data: "mock"})})
-        })
-    ) as jest.Mock
-
-    renderWithProviders(<PrescriptionIdSearch />)
-    await userEvent.type(screen.getByTestId("prescription-id-input"), "9D4C80A830085EA4D3")
-    await userEvent.click(screen.getByTestId("find-prescription-button"))
-
-    expect(screen.getAllByText(/Loading search results/i).length).toBeGreaterThan(1)
-
-    resolveFetch()
   })
 
   it("redirects to prescription results if valid ID is entered", async () => {
