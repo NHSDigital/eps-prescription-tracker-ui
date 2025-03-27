@@ -93,7 +93,7 @@ export default function RoleSelectionPage({
       ? rolesWithAccess.map((role: RoleDetails, index) => ({
         uuid: `role_with_access_${index}`,
         role,
-        link: "/selected-role",
+        link: "/your-selected-role",
       }))
       : []
     )
@@ -114,7 +114,7 @@ export default function RoleSelectionPage({
       setRedirecting(true)
       updateSelectedRole(rolesWithAccess[0])
         .then(() => {
-          navigate("/search")
+          navigate("/search-by-prescription-id")
         })
         .catch((err) => {
           console.error(err)

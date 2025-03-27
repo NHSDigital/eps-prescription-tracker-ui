@@ -66,8 +66,8 @@ export class RestApiGatewayMethods extends Construct {
       authorizer: props.authorizer
     })
 
-    // selected-role endpoint
-    const selectedRoleLambdaResource = props.restApiGateway.root.addResource("selected-role")
+    // your-selected-role endpoint
+    const selectedRoleLambdaResource = props.restApiGateway.root.addResource("your-selected-role")
     selectedRoleLambdaResource.addMethod("PUT", new LambdaIntegration(props.selectedRoleLambda, {
       credentialsRole: props.restAPiGatewayRole
     }), {

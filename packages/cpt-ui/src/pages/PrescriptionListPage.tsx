@@ -58,18 +58,6 @@ export default function PrescriptionListPage() {
                         {/* Prescription list items would go here */}
                     </div>
                 </Container>
-                <Container className="results-container">
-                    <p data-testid="results-heading">
-                        <strong data-testid="results-count">
-                            {PRESCRIPTION_LIST_PAGE_STRINGS.RESULTS_PREFIX}
-                            {prescriptionCount}
-                            {PRESCRIPTION_LIST_PAGE_STRINGS.RESULTS_SUFFIX}
-                        </strong>
-                    </p>
-                    <div data-testid="prescription-results-list">
-                        {/* Prescription list items would go here */}
-                    </div>
-                </Container>
             </main>
         </>
     );

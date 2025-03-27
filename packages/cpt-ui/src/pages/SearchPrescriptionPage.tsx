@@ -3,7 +3,7 @@ import { Col, Container, Hero, Row } from "nhsuk-react-components";
 import EpsTabs from "@/components/EpsTabs";
 import { HERO_TEXT } from "@/constants/ui-strings/SearchForAPrescriptionStrings"
 
-export default function SearchForAPrescriptionPage() {
+export default function SearchForAPrescriptionPage(props: { SearchMode: 'prescription-id' | 'nhs-number' | 'basic-details' }) {
   return (
     <>
       <title>Search for a prescription</title>
@@ -22,7 +22,7 @@ export default function SearchForAPrescriptionPage() {
         <Container data-testid="search-tabs-container">
           <Row>
             <Col width="full">
-              <EpsTabs />
+              <EpsTabs SearchMode={props.SearchMode} />
             </Col>
           </Row>
         </Container>
