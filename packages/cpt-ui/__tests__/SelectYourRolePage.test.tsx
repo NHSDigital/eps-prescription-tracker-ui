@@ -322,7 +322,7 @@ describe("SelectYourRolePage", () => {
     })
 
     await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith("/search");
+      expect(mockNavigate).toHaveBeenCalledWith("/search-by-prescription-id");
     })
   })
 
@@ -368,7 +368,7 @@ describe("SelectYourRolePage", () => {
     })
 
     await waitFor(() => {
-      expect(useNavigate()).toHaveBeenCalledWith("/search");
+      expect(useNavigate()).toHaveBeenCalledWith("/search-by-prescription-id");
     });
   });
 

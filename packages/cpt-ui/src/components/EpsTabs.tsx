@@ -7,10 +7,16 @@ import {
     PRESCRIPTION_SEARCH_TABS
 } from "@/constants/ui-strings/SearchTabStrings";
 
-export default function EpsTabs() {
+export default function EpsTabs(props: { SearchMode: 'prescription-id' | 'nhs-number' | 'basic-details' }) {
     const tabData = PRESCRIPTION_SEARCH_TABS;
+    const { SearchMode } = props;
+    const tabDataMap = {
+        'prescription-id': tabData[0],
+        'nhs-number': tabData[1],
+        'basic-details': tabData[2]
+    }
     return (
-        <Tabs defaultValue={tabData[0].targetId}>
+        <Tabs defaultValue={tabDataMap[SearchMode].targetId}>
             <Tabs.Title>Contents</Tabs.Title>
             <Tabs.List>
                 {

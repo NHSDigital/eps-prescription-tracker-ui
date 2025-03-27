@@ -291,7 +291,7 @@ describe("ChangeRolePage", () => {
 
     // Wait for redirection
     await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith("/search");
+      expect(mockNavigate).toHaveBeenCalledWith("/search-by-prescription-id");
     });
   });
 
@@ -327,7 +327,7 @@ describe("ChangeRolePage", () => {
     });
 
     await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith("/search");
+      expect(mockNavigate).toHaveBeenCalledWith("/search-by-prescription-id");
     });
   });
 
