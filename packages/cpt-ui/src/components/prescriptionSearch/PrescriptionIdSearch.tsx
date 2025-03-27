@@ -17,6 +17,7 @@ import {
 
 import { AuthContext } from "@/context/AuthProvider"
 import { PRESCRIPTION_ID_SEARCH_STRINGS } from "@/constants/ui-strings/SearchForAPrescriptionStrings"
+import { NHS_REQUEST_URID } from "@/constants/environment"
 
 
 // API endpoint for prescription details
@@ -110,7 +111,7 @@ export default function PrescriptionIdSearch() {
                 method: "GET",
                 headers: {
                     Authorization: `Bearer ${auth?.idToken}`,
-                    "NHSD-Session-URID": "555254242106"
+                    "NHSD-Session-URID": NHS_REQUEST_URID
                 }
             })
 
@@ -143,6 +144,7 @@ export default function PrescriptionIdSearch() {
                         {errorType && (
                             <ErrorSummary
                                 data-testid="error-summary"
+                                ref={errorRef}
                             >
                                 <ErrorSummary.Title>
                                     {PRESCRIPTION_ID_SEARCH_STRINGS.errorSummaryHeading}
@@ -195,8 +197,6 @@ export default function PrescriptionIdSearch() {
                     </Form>
                 </Col>
             </Row>
-
-            {loading && <p>Loading search results...</p>}
         </Container>
     )
 }
