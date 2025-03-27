@@ -79,10 +79,6 @@ export default function RoleSelectionPage({
     error,
   } = useAccess()
 
-  useEffect(() => {
-  }, [selectedRole]);
-
-
   const [loginInfoMessage, setLoginInfoMessage] = useState<string | null>(null)
   const [redirecting, setRedirecting] = useState<boolean>(false)
   const navigate = useNavigate()
@@ -105,7 +101,7 @@ export default function RoleSelectionPage({
 
   // Handle auto-redirect for single role
   useEffect(() => {
-    if (rawRolesWithAccess.length === 1 && rawRolesWithoutAccess.length === 0) {
+    if (!loading && rawRolesWithAccess.length === 1 && rawRolesWithoutAccess.length === 0) {
       setRedirecting(true)
       navigate("/search")
     }
@@ -162,7 +158,6 @@ export default function RoleSelectionPage({
       </main>
     )
   }
-  console.log(selectedRole, '***')
 
   return (
     <main
