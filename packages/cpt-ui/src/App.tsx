@@ -1,16 +1,16 @@
-import { Routes, Route } from "react-router-dom";
-import { AuthProvider } from "@/context/AuthProvider";
-import { AccessProvider } from "@/context/AccessProvider";
-import Layout from "@/Layout";
+import {Routes, Route} from "react-router-dom"
+import {AuthProvider} from "@/context/AuthProvider"
+import {AccessProvider} from "@/context/AccessProvider"
+import Layout from "@/Layout"
 
-import LoginPage from "@/pages/LoginPage";
-import LogoutPage from "@/pages/LogoutPage";
-import SelectYourRolePage from "@/pages/SelectYourRolePage";
-import ChangeRolePage from "@/pages/ChangeRolePage";
-import SearchPrescriptionPage from "@/pages/SearchPrescriptionPage";
-import YourSelectedRolePage from "@/pages/YourSelectedRolePage";
-import NotFoundPage from "@/pages/NotFoundPage";
-import PrescriptionListPage from "@/pages/PrescriptionListPage";
+import LoginPage from "@/pages/LoginPage"
+import LogoutPage from "@/pages/LogoutPage"
+import SelectYourRolePage from "@/pages/SelectYourRolePage"
+import ChangeRolePage from "@/pages/ChangeRolePage"
+import SearchPrescriptionPage from "@/pages/SearchPrescriptionPage"
+import YourSelectedRolePage from "@/pages/YourSelectedRolePage"
+import NotFoundPage from "@/pages/NotFoundPage"
+import PrescriptionListPage from "@/pages/PrescriptionListPage"
 
 export default function App() {
 
@@ -38,5 +38,5 @@ export default function App() {
         </Routes>
       </AccessProvider>
     </AuthProvider >
-  );
+  )
 }

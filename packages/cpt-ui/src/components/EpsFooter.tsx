@@ -1,11 +1,8 @@
-import React, { useEffect } from 'react';
+import React, {useEffect} from "react"
 
-import { Footer } from "nhsuk-react-components";
+import {Footer} from "nhsuk-react-components"
 
-import {
-  FOOTER_COPYRIGHT,
-  COMMIT_ID
-} from "@/constants/ui-strings/FooterStrings"
+import {FOOTER_COPYRIGHT, COMMIT_ID} from "@/constants/ui-strings/FooterStrings"
 
 export default function EpsFooter() {
 
