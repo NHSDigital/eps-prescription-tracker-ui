@@ -51,8 +51,10 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
     "access",
     false
   )
-  const [selectedRole, setSelectedRole] = useLocalStorageState<RoleDetails | undefined>("selectedRole", "access", undefined)
-  const [userDetails, setUserDetails] = useLocalStorageState<UserDetails | undefined>("userDetails", "access", undefined)
+  const [selectedRole, setSelectedRole] =
+    useLocalStorageState<RoleDetails | undefined>("selectedRole", "access", undefined)
+  const [userDetails, setUserDetails] =
+    useLocalStorageState<UserDetails | undefined>("userDetails", "access", undefined)
   const [usingLocal, setUsingLocal] = useState(true)
   const [rolesWithAccess, setRolesWithAccess] = useState<Array<RoleDetails>>([])
   const [rolesWithoutAccess, setRolesWithoutAccess] = useState<Array<RoleDetails>>([])
@@ -175,6 +177,7 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
     }
     // Now that we know there is an id token, check that it has a toString property.
     // For some reason, it doesn't have this immediately, it gets added after a brief pause.
+    // eslint-disable-next-line no-prototype-builtins
     if (!auth?.idToken.hasOwnProperty("toString")) {
       return
     }

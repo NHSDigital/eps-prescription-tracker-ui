@@ -6,8 +6,6 @@ import {BrowserRouter} from "react-router-dom"
 
 import EpsTabs from "@/components/EpsTabs"
 
-import {PRESCRIPTION_SEARCH_TABS} from "@/constants/ui-strings/SearchTabStrings"
-
 // Move MediaQueryList mock outside
 class MediaQueryList {
   matches = false
@@ -28,6 +26,7 @@ class MediaQueryList {
 window.matchMedia = jest.fn().mockImplementation(() => new MediaQueryList())
 
 // Mock ResizeObserver
+// eslint-disable-next-line no-undef
 global.ResizeObserver = jest.fn().mockImplementation(function () {
   return {
     observe: jest.fn(),

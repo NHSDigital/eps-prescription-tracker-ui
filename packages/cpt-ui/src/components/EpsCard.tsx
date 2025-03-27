@@ -1,14 +1,12 @@
-import React, {useContext} from "react"
+import React from "react"
 import {Card, Col, Row} from "nhsuk-react-components"
 
-import {AuthContext} from "@/context/AuthProvider"
 import {useAccess} from "@/context/AccessProvider"
 import {useNavigate} from "react-router-dom"
 
 import {RoleDetails} from "@/types/TrackerUserInfoTypes"
 
 import {EPS_CARD_STRINGS} from "@/constants/ui-strings/CardStrings"
-import {API_ENDPOINTS} from "@/constants/environment"
 
 export interface EpsCardProps {
   role: RoleDetails

@@ -26,10 +26,15 @@ jest.mock("@/helpers/axios")
 const mockedAxios = axios as jest.Mocked<typeof axios>
 
 // Mock environment variables to mimic the real environment
+// eslint-disable-next-line no-undef
 process.env.VITE_userPoolId = "testUserPoolId"
+// eslint-disable-next-line no-undef
 process.env.VITE_userPoolClientId = "testUserPoolClientId"
+// eslint-disable-next-line no-undef
 process.env.VITE_hostedLoginDomain = "testDomain"
+// eslint-disable-next-line no-undef
 process.env.VITE_redirectSignIn = "http://localhost:3000"
+// eslint-disable-next-line no-undef
 process.env.VITE_redirectSignOut = "http://localhost:3000"
 
 // Mock AWS Amplify functions to isolate AuthProvider logic
@@ -74,6 +79,7 @@ const TestConsumer = () => {
 // Test suite for AuthProvider
 describe("AuthProvider", () => {
   // Variable to store the callback for Amplify Hub events
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let hubCallback: ((data: any) => void) | null = null
 
   // Token payloads for mock sessions
@@ -98,7 +104,9 @@ describe("AuthProvider", () => {
 
   type RenderWithProviderOptions = {
     sessionMock?: { tokens: Record<string, unknown> };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     userMock?: any | null; // userMock can be `null` or `any`
+    // eslint-disable-next-line no-undef
     TestComponent?: JSX.Element;
   };
 
@@ -125,7 +133,9 @@ describe("AuthProvider", () => {
 
   // Global setup for encoding functions
   beforeAll(() => {
+    // eslint-disable-next-line no-undef
     global.atob = (str) => Buffer.from(str, "base64").toString("binary")
+    // eslint-disable-next-line no-undef
     global.btoa = (str) => Buffer.from(str, "binary").toString("base64")
   })
 
@@ -262,6 +272,7 @@ describe("AuthProvider", () => {
     const signOutError = new Error("Sign out failed");
     (signOut as jest.Mock).mockRejectedValue(signOutError)
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let contextValue: any
     const TestComponent = () => {
       contextValue = useContext(AuthContext)
@@ -470,6 +481,7 @@ describe("AuthProvider", () => {
 
   // Auth Functions
   it("should provide cognitoSignIn and cognitoSignOut functions", async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let contextValue: any
     const TestComponent = () => {
       contextValue = useContext(AuthContext)

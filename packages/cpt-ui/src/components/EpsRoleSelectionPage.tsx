@@ -136,7 +136,8 @@ export default function RoleSelectionPage({
 
     if (!loginInfoMessage && selectedRole) {
       setLoginInfoMessage(
-        `You are currently logged in at ${selectedRole.org_name || noOrgName} (ODS: ${selectedRole.org_code || noODSCode}) with ${selectedRole.role_name || noRoleName}.`
+        `You are currently logged in at ${selectedRole.org_name || noOrgName} ` +
+        `(ODS: ${selectedRole.org_code || noODSCode}) with ${selectedRole.role_name || noRoleName}.`
       )
     }
   }, [selectedRole, loginInfoMessage, noOrgName, noODSCode, noRoleName, loading])

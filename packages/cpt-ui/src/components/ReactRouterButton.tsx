@@ -18,6 +18,7 @@ interface ReactRouterButtonProps extends React.ButtonHTMLAttributes<HTMLButtonEl
 export const Button: React.FC<ReactRouterButtonProps> = ({
   children,
   to,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   disabled = false,
   onClick,
   className = "",

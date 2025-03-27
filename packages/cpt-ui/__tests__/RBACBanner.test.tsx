@@ -5,12 +5,9 @@ import {JWT} from "aws-amplify/auth"
 
 import RBACBanner from "@/components/RBACBanner"
 
-const {
-  RBAC_BANNER_STRINGS
-} = require("@/constants/ui-strings/RBACBannerStrings")
-
 // Mock AccessProvider
 jest.mock("@/context/AccessProvider", () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports, no-undef
   const React = require("react")
 
   let mockContextValue = {
@@ -31,6 +28,7 @@ jest.mock("@/context/AccessProvider", () => {
   const MockAccessContext = React.createContext(mockContextValue)
   const useAccess = () => React.useContext(MockAccessContext)
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const __setMockContextValue = (newValue: any) => {
     mockContextValue = {...mockContextValue, ...newValue}
     // Reassign the context’s defaultValue so subsequent consumers get new values
@@ -45,9 +43,11 @@ jest.mock("@/context/AccessProvider", () => {
     __setMockContextValue
   }
 })
+// eslint-disable-next-line @typescript-eslint/no-require-imports, no-undef
 const {__setMockContextValue} = require("@/context/AccessProvider")
 
 // Mock an AuthContext
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const AuthContext = React.createContext<any>(null)
 
 // Default mock values for the `AuthContext` to simulate authentication state
@@ -55,6 +55,7 @@ const defaultAuthContext = {
   error: null,
   user: null,
   isSignedIn: true,
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
   idToken: {
     toString: jest.fn().mockReturnValue("mock-id-token"),
     payload: {}
@@ -101,6 +102,7 @@ describe("RBACBanner", () => {
     expect(bannerText).toBeInTheDocument()
 
     // Check that placeholders are properly replaced
+    // eslint-disable-next-line max-len
     const expectedText = `CONFIDENTIAL: PERSONAL PATIENT DATA accessed by DOE, Jane - Role Name - org name (ODS: deadbeef)`
     expect(bannerText).toHaveTextContent(expectedText)
   })
@@ -144,6 +146,7 @@ describe("RBACBanner", () => {
 
     const bannerText = screen.getByTestId("rbac-banner-text")
     expect(bannerText).toHaveTextContent(
+      // eslint-disable-next-line max-len
       `CONFIDENTIAL: PERSONAL PATIENT DATA accessed by NO_FAMILY_NAME, NO_GIVEN_NAME - Role Name - org name (ODS: deadbeef)`
     )
   })

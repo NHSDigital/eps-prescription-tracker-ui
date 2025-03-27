@@ -4,7 +4,6 @@ import {BrowserRouter} from "react-router-dom"
 import EpsCard from "@/components/EpsCard"
 import {AuthContext} from "@/context/AuthProvider"
 import {AccessContext} from "@/context/AccessProvider"
-import {JWT} from "aws-amplify/auth"
 
 // Mock the auth configuration
 jest.mock("@/context/configureAmplify", () => ({
@@ -71,17 +70,6 @@ const mockRole = {
 
 const mockLink = "/role-detail"
 
-// Default context values
-const mockJWT = {
-  toString: () => "mock-token",
-  payload: {
-    sub: "mock-sub",
-    aud: "mock-audience",
-    iss: "mock-issuer",
-    token_use: "id"
-  }
-} satisfies JWT
-
 // Update default auth context with proper JWT
 const defaultAuthContext = {
   error: null,
@@ -106,17 +94,24 @@ const defaultAccessContext = {
 }
 
 const renderWithProviders = (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   props: { role: any; link: string },
+  // eslint-disable-next-line no-undef
   authOverrides: Partial<React.ContextType<typeof AuthContext>> = {},
+  // eslint-disable-next-line no-undef
   accessOverrides: Partial<React.ContextType<typeof AccessContext>> = {}
 ) => {
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
   const authValue = {
     ...defaultAuthContext,
     ...authOverrides
+  // eslint-disable-next-line no-undef
   } as React.ContextType<typeof AuthContext>
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
   const accessValue = {
     ...defaultAccessContext,
     ...accessOverrides
+  // eslint-disable-next-line no-undef
   } as React.ContextType<typeof AccessContext>
 
   return render(
@@ -133,6 +128,7 @@ const renderWithProviders = (
 describe("EpsCard Component", () => {
   beforeEach(() => {
     jest.clearAllMocks()
+    // eslint-disable-next-line no-undef
     global.fetch = jest.fn().mockImplementation(() =>
       Promise.resolve({
         ok: true,

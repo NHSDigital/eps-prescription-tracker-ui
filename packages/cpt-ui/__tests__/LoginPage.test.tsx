@@ -88,13 +88,16 @@ const MockAuthProvider = ({
       setAuthState((prev) => ({
         ...prev,
         isSignedIn: true,
+        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
         user: {
           username:
             (input?.provider as { custom: string })?.custom || "mockUser",
           userId: "mock-user-id"
         } as AuthUser,
         error: null,
+        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
         idToken: {toString: () => "mockIdToken"} as JWT,
+        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
         accessToken: {toString: () => "mockAccessToken"} as JWT
       }))
     },
@@ -181,8 +184,11 @@ describe("LoginPage", () => {
     renderWithProviders(<LoginPage />, {
       ...defaultAuthState,
       isSignedIn: true,
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
       user: {username: "testUser"} as AuthUser,
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
       idToken: {toString: () => "mockIdToken"} as JWT,
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
       accessToken: {toString: () => "mockAccessToken"} as JWT
     })
 

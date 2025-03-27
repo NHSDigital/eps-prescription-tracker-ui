@@ -6,6 +6,7 @@ import {
 } from "react"
 
 /** Returns an object from localStorage or an empty object if not available */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function readItemGroupFromLocalStorage(group: string): any {
   // Only attempt localStorage access if `window` is defined
   if (typeof window === "undefined") {

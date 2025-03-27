@@ -18,6 +18,7 @@ jest.mock("@/constants/ui-strings/CardStrings", () => {
     caption: "Select the role you wish to use to access the service.",
     titleNoAccess: "No access to the clinical prescription tracking service",
     captionNoAccess:
+      // eslint-disable-next-line max-len
       "None of the roles on your Smartcard or other authenticators allow you to access the clinical prescription tracking service. " +
       "Contact your Registration Authority representative to obtain the correct code.",
     insetText: {
@@ -61,6 +62,7 @@ jest.mock("react-router-dom", () => ({
 
 // Mock the AccessProvider context
 jest.mock("@/context/AccessProvider", () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports, no-undef
   const React = require("react")
 
   let mockContextValue = {
@@ -88,6 +90,7 @@ jest.mock("@/context/AccessProvider", () => {
   const MockAccessContext = React.createContext(mockContextValue)
   const useAccess = () => React.useContext(MockAccessContext)
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const __setMockContextValue = (newValue: any) => {
     mockContextValue = {...mockContextValue, ...newValue}
     // Reassign the context’s defaultValue so subsequent consumers get the new values
@@ -102,6 +105,7 @@ jest.mock("@/context/AccessProvider", () => {
   }
 })
 // Import the setter for the mock access context.
+// eslint-disable-next-line @typescript-eslint/no-require-imports, no-undef
 const {__setMockContextValue} = require("@/context/AccessProvider")
 
 // Default mock values for the AuthContext to simulate authentication state

@@ -33,6 +33,7 @@ jest.mock("react-router-dom", () => ({
   }: {
     children: React.ReactNode;
     to: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [key: string]: any;
   }) => (
     <a href={to} {...props}>

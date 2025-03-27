@@ -49,7 +49,9 @@ const MockAuthProvider = ({
           userId: "mock-user-id"
         },
         error: null,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         idToken: {toString: () => "mockIdToken"} as any,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         accessToken: {toString: () => "mockAccessToken"} as any
       }))
     },
@@ -176,6 +178,7 @@ describe("AccessProvider", () => {
       {
         ...defaultAuthState,
         isSignedIn: true,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         idToken: {toString: jest.fn().mockReturnValue("mock-id-token")} as any
       }
     )
@@ -214,6 +217,7 @@ describe("AccessProvider", () => {
       {
         ...defaultAuthState,
         isSignedIn: true,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         idToken: {toString: jest.fn().mockReturnValue("mock-id-token")} as any
       }
     )
@@ -229,7 +233,9 @@ describe("AccessProvider", () => {
   it("sets noAccess = false and singleAccess = false if multiple roles exist", async () => {
     const mockUserInfo: TrackerUserInfo = {
       roles_with_access: [
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         {role_id: "ROLE1", role_name: "Role1"} as any,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         {role_id: "ROLE2", role_name: "Role2"} as any
       ],
       roles_without_access: [],
@@ -255,6 +261,7 @@ describe("AccessProvider", () => {
       {
         ...defaultAuthState,
         isSignedIn: true,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         idToken: {toString: jest.fn().mockReturnValue("mock-id-token")} as any
       }
     )
@@ -284,6 +291,7 @@ describe("AccessProvider", () => {
       {
         ...defaultAuthState,
         isSignedIn: true,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         idToken: {toString: jest.fn().mockReturnValue("mock-id-token")} as any
       }
     )
@@ -332,6 +340,7 @@ describe("AccessProvider", () => {
       {
         ...defaultAuthState,
         isSignedIn: true,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         idToken: {toString: jest.fn().mockReturnValue("mock-id-token")} as any
       }
     )
@@ -351,10 +360,12 @@ describe("AccessProvider", () => {
     })
   })
 
+  // eslint-disable-next-line max-len
   it("redirects to /select-role if selectedRole is undefined and location (with trailing slash) is not allowed", async () => {
     // Simulate a fetch response where no role is selected.
     const mockUserInfo: TrackerUserInfo = {
       roles_with_access: [
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         {role_id: "ROLE1", role_name: "Role1"} as any
       ],
       roles_without_access: [],
@@ -379,6 +390,7 @@ describe("AccessProvider", () => {
       {
         ...defaultAuthState,
         isSignedIn: true,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         idToken: {toString: jest.fn().mockReturnValue("mock-id-token")} as any
       }
     )
@@ -420,6 +432,7 @@ describe("AccessProvider", () => {
       {
         ...defaultAuthState,
         isSignedIn: true,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         idToken: {toString: jest.fn().mockReturnValue("mock-id-token")} as any
       }
     )
@@ -477,6 +490,7 @@ describe("AccessProvider updateSelectedRole", () => {
       {
         ...defaultAuthState,
         isSignedIn: true,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         idToken: {toString: jest.fn().mockReturnValue("mock-id-token")} as any
       }
     )
@@ -513,6 +527,7 @@ describe("AccessProvider updateSelectedRole", () => {
       {
         ...defaultAuthState,
         isSignedIn: true,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         idToken: {toString: jest.fn().mockReturnValue("mock-id-token")} as any
       }
     )
@@ -547,6 +562,7 @@ describe("AccessProvider updateSelectedRole", () => {
       {
         ...defaultAuthState,
         isSignedIn: true,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         idToken: {toString: jest.fn().mockReturnValue("mock-id-token")} as any
       }
     )

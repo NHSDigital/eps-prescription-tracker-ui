@@ -16,6 +16,7 @@ const MockAuthProvider = ({
 }) => {
   const mockCognitoSignOut = jest.fn().mockResolvedValue(undefined)
 
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
   const authContextValue: AuthContextType = {
     error: null,
     user: defaultIsSignedIn ? {username: "testUser"} : null,

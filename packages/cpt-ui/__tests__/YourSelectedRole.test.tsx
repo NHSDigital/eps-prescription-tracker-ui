@@ -9,6 +9,7 @@ import {AccessContext, AccessContextType} from "@/context/AccessProvider"
 
 const {
   YOUR_SELECTED_ROLE_STRINGS
+// eslint-disable-next-line @typescript-eslint/no-require-imports, no-undef
 } = require("@/constants/ui-strings/YourSelectedRoleStrings")
 
 // Mock `react-router-dom`
@@ -25,6 +26,7 @@ const defaultAuthContext = {
   error: null,
   user: null,
   isSignedIn: true,
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
   idToken: {
     toString: jest.fn().mockReturnValue("mock-id-token"),
     payload: {}

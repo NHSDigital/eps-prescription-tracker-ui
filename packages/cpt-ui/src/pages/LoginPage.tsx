@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 import React, {useContext, useEffect, useCallback} from "react"
 import {Container, Col, Row} from "nhsuk-react-components"
 import {AuthContext} from "@/context/AuthProvider"
@@ -79,6 +80,7 @@ export default function LoginPage() {
   }
 
   // This is a dev page, so no need to bother with language support
+
   return (
     <main className="nhsuk-main-wrapper">
       <Container>

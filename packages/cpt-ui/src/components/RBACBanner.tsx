@@ -24,7 +24,8 @@ export default function RBACBanner() {
      * CONFIDENTIAL: PERSONAL PATIENT DATA accessed by LAST NAME, First Name - RBAC Role - Site Name (ODS: ODS)
      *
      * Locum User (org_code === 'FFFFF'):
-     * CONFIDENTIAL: PERSONAL PATIENT DATA accessed by LAST NAME, First Name - RBAC Role - Locum pharmacy (ODS: FFFFF) - Site Name (ODS: ODS Code)
+     * CONFIDENTIAL: PERSONAL PATIENT DATA accessed by LAST NAME,
+     *      First Name - RBAC Role - Locum pharmacy (ODS: FFFFF) - Site Name (ODS: ODS Code)
      */
 
     // Determine the organization name (use "Locum pharmacy" for locum users)

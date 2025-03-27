@@ -57,10 +57,12 @@ jest.mock("react-router-dom", () => ({
 
 // Create a global mock for `fetch` to simulate API requests
 const mockFetch = jest.fn()
+// eslint-disable-next-line no-undef
 global.fetch = mockFetch
 
 // Mock the AccessProvider context
 jest.mock("@/context/AccessProvider", () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports, no-undef
   const React = require("react")
 
   let mockContextValue = {
@@ -82,6 +84,7 @@ jest.mock("@/context/AccessProvider", () => {
   const MockAccessContext = React.createContext(mockContextValue)
   const useAccess = () => React.useContext(MockAccessContext)
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const __setMockAccessValue = (newValue: any) => {
     mockContextValue = {...mockContextValue, ...newValue}
     // Reassign the context’s defaultValue so subsequent consumers get the new values
@@ -96,6 +99,7 @@ jest.mock("@/context/AccessProvider", () => {
   }
 })
 
+// eslint-disable-next-line @typescript-eslint/no-require-imports, no-undef
 const {__setMockAccessValue} = require("@/context/AccessProvider")
 
 // Default mock values for the AuthContext to simulate authentication state

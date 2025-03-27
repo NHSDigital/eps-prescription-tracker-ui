@@ -36,7 +36,9 @@ describe("PrescriptionListPage", () => {
     renderWithRouter("/prescription-results")
 
     const resultsCount = screen.getByTestId("results-count")
-    expect(resultsCount).toHaveTextContent(`${PRESCRIPTION_LIST_PAGE_STRINGS.RESULTS_PREFIX}5${PRESCRIPTION_LIST_PAGE_STRINGS.RESULTS_SUFFIX}`)
+    expect(resultsCount).toHaveTextContent(
+      `${PRESCRIPTION_LIST_PAGE_STRINGS.RESULTS_PREFIX}5${PRESCRIPTION_LIST_PAGE_STRINGS.RESULTS_SUFFIX}`
+    )
   })
 
   it("sets the back link to the default target when no query parameters are present", () => {
