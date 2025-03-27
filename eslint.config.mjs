@@ -1,13 +1,15 @@
 import globals from "globals";
-import tsParser from "@typescript-eslint/parser";
 import tsPlugin from "@typescript-eslint/eslint-plugin";
 import eslintJsPlugin from "@eslint/js";
 import importNewlines from "eslint-plugin-import-newlines";
+import typescriptParser from "@typescript-eslint/parser";
+import react from "eslint-plugin-react"
 
 const commonConfig = {
   plugins: {
     "@typescript-eslint": tsPlugin,
     "import-newlines": importNewlines,
+    react: react
   },
   rules: {
     ...tsPlugin.configs.recommended.rules,
@@ -96,7 +98,7 @@ const commonConfig = {
 
 export default [
   {
-    ignores: ["**/lib/*", "**/coverage/*", "**/cdk.out/**"],
+    ignores: ["**/lib/*", "**/coverage/*", "**/cdk.out/**", "**/dist/**"],
   },
   {
     rules: eslintJsPlugin.configs.recommended.rules,
@@ -105,7 +107,7 @@ export default [
     files: ["**/*.ts"],
 
     languageOptions: {
-      parser: tsParser,
+      parser: typescriptParser,
       globals: {
         ...globals.node,
       },
@@ -123,10 +125,47 @@ export default [
     ...commonConfig,
   },
   {
+    files: [ "**/*.{jsx,mjs,cjs,ts,tsx}" ],
+
+    languageOptions: {
+      ecmaVersion: "latest",
+      sourceType: "module",
+      parser: typescriptParser,
+      parserOptions: {
+        ecmaFeatures: {
+          jsx: true,
+        },
+     },
+     globals: {
+        ...globals.browser,
+      },
+    },
+    ...commonConfig,
+  },
+  {
+    files: [ "**/__tests__/*.{jsx,mjs,cjs,ts,tsx}" ],
+
+    languageOptions: {
+      ecmaVersion: "latest",
+      sourceType: "module",
+      parser: typescriptParser,
+      parserOptions: {
+        ecmaFeatures: {
+          jsx: true,
+        },
+     },
+     globals: {
+        ...globals.browser,
+        ...globals.jest
+      },
+    },
+    ...commonConfig,
+  },
+  {
     files: ["**/tests/**/*.ts"],
 
     languageOptions: {
-      parser: tsParser,
+      parser: typescriptParser,
       globals: {
         ...globals.jest,
         ...globals.node,

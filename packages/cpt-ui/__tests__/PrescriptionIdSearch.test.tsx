@@ -1,14 +1,18 @@
 import "@testing-library/jest-dom"
-import { render, screen } from "@testing-library/react"
+import {render, screen} from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import React from "react"
-import { MemoryRouter, Routes, Route, useLocation } from "react-router-dom"
+import {
+  MemoryRouter,
+  Routes,
+  Route,
+  useLocation
+} from "react-router-dom"
 
 import PrescriptionIdSearch from "@/components/prescriptionSearch/PrescriptionIdSearch"
-import { PRESCRIPTION_ID_SEARCH_STRINGS } from "@/constants/ui-strings/SearchForAPrescriptionStrings"
-import { AuthContext } from "@/context/AuthProvider"
-import { AuthContextType } from "@/context/AuthProvider"
-
+import {PRESCRIPTION_ID_SEARCH_STRINGS} from "@/constants/ui-strings/SearchForAPrescriptionStrings"
+import {AuthContext} from "@/context/AuthProvider"
+import {AuthContextType} from "@/context/AuthProvider"
 
 const LocationDisplay = () => {
   const location = useLocation()
@@ -28,15 +32,15 @@ const renderWithRouter = (ui: React.ReactElement) => {
   )
 }
 
-const mockAuthContext = {
+const mockAuthContext: AuthContextType = {
   error: null,
   user: null,
   isSignedIn: true,
-  idToken: "mock-id-token" as any,
-  accessToken: "mock-access-token" as any,
+  idToken: "mock-id-token",
+  accessToken: "mock-access-token",
   cognitoSignIn: jest.fn(),
   cognitoSignOut: jest.fn()
-} as AuthContextType
+}
 
 const renderWithProviders = (ui: React.ReactElement) => {
   return render(
