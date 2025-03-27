@@ -1,4 +1,6 @@
 import React, { useContext, useState, useEffect, useRef } from "react"
+import { useNavigate } from "react-router-dom"
+
 import {
     Container,
     Row,
@@ -12,13 +14,15 @@ import {
     ErrorMessage,
     FormGroup
 } from "nhsuk-react-components"
+
 import { AuthContext } from "@/context/AuthProvider"
 import { PRESCRIPTION_ID_SEARCH_STRINGS } from "@/constants/ui-strings/SearchForAPrescriptionStrings"
 
-import { useNavigate } from "react-router-dom"
 
 // API endpoint for prescription details
 const prescriptionDetailsEndpoint = "/api/prescription-details"
+const prescriptionNotFoundPath = "/prescription-not-found"
+const prescriptionDetailsPath = "/prescription-results"
 
 const normalizePrescriptionId = (raw: string): string => {
     const cleaned = raw.replace(/[^a-zA-Z0-9+]/g, "") // remove non-allowed chars
@@ -43,6 +47,9 @@ export default function PrescriptionIdSearch() {
     }, [])
 
     // Focus error box when error appears
+    // According to the docs, the ErrorSummary component SHOULD do this itself, but that doesn't seem to be the case
+    // so we'll do it ourselves
+    // https://github.com/nhsuk/nhsuk-frontend/tree/main/packages/components/error-summary
     useEffect(() => {
         if (errorType && errorRef.current) {
             errorRef.current.focus()
@@ -109,16 +116,16 @@ export default function PrescriptionIdSearch() {
 
             if (!response.ok) throw new Error(`Status Code: ${response.status}`)
 
-            navigate(`/prescription-results?prescriptionId=${formatted}`)
+            navigate(`${prescriptionDetailsPath}?prescriptionId=${formatted}`)
         } catch (error) {
             console.error("Error retrieving prescription details:", error)
 
             // MOCK: Hardcoded response for known test ID
             if (formatted === "C0C757-A83008-C2D93O") {
                 await new Promise((res) => setTimeout(res, 500)) // simulate loading
-                navigate(`/prescription-results?prescriptionId=${formatted}`)
+                navigate(`${prescriptionDetailsPath}?prescriptionId=${formatted}`)
             } else {
-                navigate("/prescription-not-found?searchType=PrescriptionIdSearch")
+                navigate(`${prescriptionNotFoundPath}?searchType=PrescriptionIdSearch`)
             }
         } finally {
             setLoading(false)
