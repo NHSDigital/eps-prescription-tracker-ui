@@ -1,4 +1,4 @@
-import React, {useContext, useState, useEffect, useRef} from "react"
+import React, { useContext, useState, useEffect, useRef } from "react"
 import {
     Container,
     Row,
@@ -7,12 +7,15 @@ import {
     HintText,
     TextInput,
     Button,
-    Form
+    Form,
+    ErrorSummary,
+    ErrorMessage,
+    FormGroup
 } from "nhsuk-react-components"
-import {AuthContext} from "@/context/AuthProvider"
-import {PRESCRIPTION_ID_SEARCH_STRINGS} from "@/constants/ui-strings/SearchForAPrescriptionStrings"
+import { AuthContext } from "@/context/AuthProvider"
+import { PRESCRIPTION_ID_SEARCH_STRINGS } from "@/constants/ui-strings/SearchForAPrescriptionStrings"
 
-import {useNavigate} from "react-router-dom"
+import { useNavigate } from "react-router-dom"
 
 // API endpoint for prescription details
 const prescriptionDetailsEndpoint = "/api/prescription-details"
@@ -25,7 +28,6 @@ const normalizePrescriptionId = (raw: string): string => {
 export default function PrescriptionIdSearch() {
     const auth = useContext(AuthContext)
     const navigate = useNavigate()
-    const inputRef = useRef<HTMLInputElement | null>(null)
     const errorRef = useRef<HTMLDivElement | null>(null)
 
     const [prescriptionId, setPrescriptionId] = useState<string>("")
@@ -125,37 +127,31 @@ export default function PrescriptionIdSearch() {
 
     return (
         <Container
-            className="nhsuk-width-container-fluid patient-search-form-container"
+            className="nhsuk-width-container-fluid"
             data-testid="prescription-id-search-container"
         >
             <Row>
                 <Col width="one-half">
                     <Form onSubmit={handlePrescriptionDetails} noValidate>
                         {errorType && (
-                            <div
-                                ref={errorRef}
-                                className="nhsuk-error-summary"
-                                aria-labelledby="error-summary-title"
-                                role="alert"
-                                tabIndex={-1}
+                            <ErrorSummary
                                 data-testid="error-summary"
                             >
-                                <h2 className="nhsuk-error-summary__title" id="error-summary-title">
-                                    {PRESCRIPTION_ID_SEARCH_STRINGS.errorSummaryTitle}
-                                </h2>
-                                <div className="nhsuk-error-summary__body">
-                                    <ul className="nhsuk-list nhsuk-error-summary__list">
-                                        <li>
+                                <ErrorSummary.Title>
+                                    {PRESCRIPTION_ID_SEARCH_STRINGS.errorSummaryHeading}
+                                </ErrorSummary.Title>
+                                <ErrorSummary.Body>
+                                    <ErrorSummary.List>
+                                        <ErrorSummary.Item>
                                             <a href="#presc-id-input">{errorMessages[errorType]}</a>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div>
+                                        </ErrorSummary.Item>
+                                    </ErrorSummary.List>
+                                </ErrorSummary.Body>
+                            </ErrorSummary>
                         )}
 
-                        <div
-                            className={`patient-search-form__field-group ${errorType ? "nhsuk-form-group--error" : ""
-                                }`}
+                        <FormGroup
+                            className={`${errorType ? "nhsuk-form-group--error" : ""}`}
                         >
                             <Label id="presc-id-label">
                                 <h2
@@ -170,9 +166,9 @@ export default function PrescriptionIdSearch() {
                             </HintText>
 
                             {errorType && (
-                                <span id="nhs-no-error-error" className="nhsuk-error-message">
+                                <ErrorMessage>
                                     {errorMessages[errorType]}
-                                </span>
+                                </ErrorMessage>
                             )}
 
                             <TextInput
@@ -184,7 +180,7 @@ export default function PrescriptionIdSearch() {
                                 autoComplete="off"
                                 data-testid="prescription-id-input"
                             />
-                        </div>
+                        </FormGroup>
 
                         <Button type="submit" data-testid="find-prescription-button">
                             {loading ? "Loading search results" : PRESCRIPTION_ID_SEARCH_STRINGS.buttonText}
