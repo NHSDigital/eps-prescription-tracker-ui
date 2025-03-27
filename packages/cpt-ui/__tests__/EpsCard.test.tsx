@@ -1,10 +1,9 @@
-import "@testing-library/jest-dom";
-import { render, screen, fireEvent } from "@testing-library/react";
-import { BrowserRouter } from "react-router-dom";
-import EpsCard from "@/components/EpsCard";
-import { AuthContext } from "@/context/AuthProvider";
-import { AccessContext } from "@/context/AccessProvider";
-import { JWT } from "aws-amplify/auth";
+import "@testing-library/jest-dom"
+import {render, screen, fireEvent} from "@testing-library/react"
+import {BrowserRouter} from "react-router-dom"
+import EpsCard from "@/components/EpsCard"
+import {AuthContext} from "@/context/AuthProvider"
+import {AccessContext} from "@/context/AccessProvider"
 
 // Mock the auth configuration
 jest.mock("@/context/configureAmplify", () => ({
@@ -22,27 +21,27 @@ jest.mock("@/context/configureAmplify", () => ({
               "email",
               "phone",
               "profile",
-              "aws.cognito.signin.user.admin",
+              "aws.cognito.signin.user.admin"
             ],
             redirectSignIn: ["mockRedirectSignIn"],
             redirectSignOut: ["mockRedirectSignOut"],
-            responseType: "code",
+            responseType: "code"
           },
           username: true,
           email: false,
-          phone: false,
-        },
-      },
-    },
-  },
-}));
+          phone: false
+        }
+      }
+    }
+  }
+}))
 
 // Mock useNavigate
-const mockNavigate = jest.fn();
+const mockNavigate = jest.fn()
 jest.mock("react-router-dom", () => ({
   ...jest.requireActual("react-router-dom"),
-  useNavigate: () => mockNavigate,
-}));
+  useNavigate: () => mockNavigate
+}))
 
 // Mock EPS_CARD_STRINGS
 jest.mock("@/constants/ui-strings/CardStrings", () => ({
@@ -50,37 +49,26 @@ jest.mock("@/constants/ui-strings/CardStrings", () => ({
     noODSCode: "No ODS code",
     noOrgName: "NO ORG NAME",
     noRoleName: "No role name",
-    noAddress: "Address not found",
-  },
-}));
+    noAddress: "Address not found"
+  }
+}))
 
 jest.mock("@/constants/environment", () => ({
   API_ENDPOINTS: {
     TRACKER_USER_INFO: "/mock-endpoint",
-    SELECTED_ROLE: "/mock-endpoint",
-  },
-}));
+    SELECTED_ROLE: "/mock-endpoint"
+  }
+}))
 
 const mockRole = {
   role_id: "123",
   org_name: "Test Organization",
   org_code: "XYZ123",
   role_name: "Pharmacist",
-  site_address: "123 Test Street\nTest City",
-};
+  site_address: "123 Test Street\nTest City"
+}
 
-const mockLink = "/role-detail";
-
-// Default context values
-const mockJWT = {
-  toString: () => "mock-token",
-  payload: {
-    sub: "mock-sub",
-    aud: "mock-audience",
-    iss: "mock-issuer",
-    token_use: "id",
-  },
-} satisfies JWT;
+const mockLink = "/role-detail"
 
 // Update default auth context with proper JWT
 const defaultAuthContext = {
@@ -90,8 +78,8 @@ const defaultAuthContext = {
   idToken: "mock-token",
   accessToken: null,
   cognitoSignIn: jest.fn(),
-  cognitoSignOut: jest.fn(),
-};
+  cognitoSignOut: jest.fn()
+}
 
 const defaultAccessContext = {
   updateSelectedRole: jest.fn(),
@@ -102,22 +90,29 @@ const defaultAccessContext = {
   setUserDetails: jest.fn(),
   setNoAccess: jest.fn(),
   setSingleAccess: jest.fn(),
-  clear: jest.fn(),
-};
+  clear: jest.fn()
+}
 
 const renderWithProviders = (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   props: { role: any; link: string },
+  // eslint-disable-next-line no-undef
   authOverrides: Partial<React.ContextType<typeof AuthContext>> = {},
-  accessOverrides: Partial<React.ContextType<typeof AccessContext>> = {},
+  // eslint-disable-next-line no-undef
+  accessOverrides: Partial<React.ContextType<typeof AccessContext>> = {}
 ) => {
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
   const authValue = {
     ...defaultAuthContext,
-    ...authOverrides,
-  } as React.ContextType<typeof AuthContext>;
+    ...authOverrides
+  // eslint-disable-next-line no-undef
+  } as React.ContextType<typeof AuthContext>
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
   const accessValue = {
     ...defaultAccessContext,
-    ...accessOverrides,
-  } as React.ContextType<typeof AccessContext>;
+    ...accessOverrides
+  // eslint-disable-next-line no-undef
+  } as React.ContextType<typeof AccessContext>
 
   return render(
     <AuthContext.Provider value={authValue}>
@@ -126,68 +121,69 @@ const renderWithProviders = (
           <EpsCard {...props} />
         </BrowserRouter>
       </AccessContext.Provider>
-    </AuthContext.Provider>,
-  );
-};
+    </AuthContext.Provider>
+  )
+}
 
 describe("EpsCard Component", () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    jest.clearAllMocks()
+    // eslint-disable-next-line no-undef
     global.fetch = jest.fn().mockImplementation(() =>
       Promise.resolve({
         ok: true,
-        json: () => Promise.resolve({ message: "Success" }),
-      }),
-    );
-  });
+        json: () => Promise.resolve({message: "Success"})
+      })
+    )
+  })
 
   it("renders role details correctly", () => {
-    renderWithProviders({ role: mockRole, link: mockLink });
+    renderWithProviders({role: mockRole, link: mockLink})
 
     expect(
-      screen.getByText((content) => content.includes("Test Organization")),
-    ).toBeInTheDocument();
+      screen.getByText((content) => content.includes("Test Organization"))
+    ).toBeInTheDocument()
     expect(
-      screen.getByText((content) => content.includes("ODS: XYZ123")),
-    ).toBeInTheDocument();
-    expect(screen.getByText("Pharmacist")).toBeInTheDocument();
-    expect(screen.getByText("123 Test Street")).toBeInTheDocument();
-    expect(screen.getByText("Test City")).toBeInTheDocument();
-  });
+      screen.getByText((content) => content.includes("ODS: XYZ123"))
+    ).toBeInTheDocument()
+    expect(screen.getByText("Pharmacist")).toBeInTheDocument()
+    expect(screen.getByText("123 Test Street")).toBeInTheDocument()
+    expect(screen.getByText("Test City")).toBeInTheDocument()
+  })
 
   it("handles missing role data gracefully", () => {
-    renderWithProviders({ role: {}, link: mockLink });
+    renderWithProviders({role: {}, link: mockLink})
 
     expect(
-      screen.getByText((content) => content.includes("NO ORG NAME")),
-    ).toBeInTheDocument();
+      screen.getByText((content) => content.includes("NO ORG NAME"))
+    ).toBeInTheDocument()
     expect(
-      screen.getByText((content) => content.includes("ODS: No ODS code")),
-    ).toBeInTheDocument();
-    expect(screen.getByText("No role name")).toBeInTheDocument();
-    expect(screen.getByText("Address not found")).toBeInTheDocument();
-  });
+      screen.getByText((content) => content.includes("ODS: No ODS code"))
+    ).toBeInTheDocument()
+    expect(screen.getByText("No role name")).toBeInTheDocument()
+    expect(screen.getByText("Address not found")).toBeInTheDocument()
+  })
 
   it("calls API and navigates on card click", async () => {
-    const mockSetSelectedRole = jest.fn();
+    const mockSetSelectedRole = jest.fn()
     renderWithProviders(
-      { role: mockRole, link: mockLink },
+      {role: mockRole, link: mockLink},
       {},
-      { updateSelectedRole: mockSetSelectedRole },
-    );
+      {updateSelectedRole: mockSetSelectedRole}
+    )
 
-    const cardLink = screen.getByRole("link", { name: /test organization/i });
-    await fireEvent.click(cardLink);
+    const cardLink = screen.getByRole("link", {name: /test organization/i})
+    await fireEvent.click(cardLink)
 
     expect(mockSetSelectedRole).toHaveBeenCalledWith(
       expect.objectContaining({
         role_id: "123",
         org_name: "Test Organization",
         org_code: "XYZ123",
-        role_name: "Pharmacist",
-      }),
-    );
+        role_name: "Pharmacist"
+      })
+    )
 
-    expect(mockNavigate).toHaveBeenCalledWith(mockLink);
-  });
-});
+    expect(mockNavigate).toHaveBeenCalledWith(mockLink)
+  })
+})

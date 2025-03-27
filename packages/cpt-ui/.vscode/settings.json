@@ -1,3 +1,4 @@
 {
-  "jest.jestCommandLine": "/workspaces/eps-prescription-tracker-ui/node_modules/.bin/jest --no-cache"
+  "jest.jestCommandLine": "/workspaces/eps-prescription-tracker-ui/node_modules/.bin/jest --no-cache",
+  "eslint.format.enable": true
 }

@@ -1,6 +1,6 @@
-import React, { Component, ReactNode } from "react"
-import { AwsRum } from "aws-rum-web"
-import { AwsRumContext, AwsRumContextType } from "./AwsRumProvider"
+import React, {Component, ReactNode} from "react"
+import {AwsRum} from "aws-rum-web"
+import {AwsRumContext} from "./AwsRumProvider"
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -12,26 +12,28 @@ interface ErrorBoundaryState {
 
 class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   // Declare the context type
-  declare context: React.ContextType<typeof AwsRumContext>;
+  declare context: React.ContextType<typeof AwsRumContext>
 
   constructor(props: ErrorBoundaryProps) {
-    super(props);
-    this.state = { hasError: false }
+    super(props)
+    this.state = {hasError: false}
   }
 
   // Specify the contextType
-  static contextType = AwsRumContext;
+  static contextType = AwsRumContext
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   static getDerivedStateFromError(error: Error): ErrorBoundaryState {
-    return { hasError: true }
+    return {hasError: true}
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo): void {
-    console.error("recordingError:", error);
-    
+    console.error("recordingError:", error)
+
     // Correctly access the context value
     if (this.context) {
-      (this.context as AwsRum).recordError(error);
+      (this.context as AwsRum).recordError(error)
     }
   }
 
@@ -44,10 +46,10 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
             Clear Error
           </button>
         </div>
-      );
+      )
     }
-    return this.props.children;
+    return this.props.children
   }
 }
 
-export default ErrorBoundary;
+export default ErrorBoundary
