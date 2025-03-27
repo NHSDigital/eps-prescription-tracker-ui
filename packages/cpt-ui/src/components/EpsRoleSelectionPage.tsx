@@ -1,12 +1,20 @@
-import React, { useState, useEffect, } from "react"
-import { useNavigate } from "react-router-dom"
-import { Container, Col, Row, Details, Table, ErrorSummary, InsetText } from "nhsuk-react-components"
+import React, {useState, useEffect} from "react"
+import {useNavigate} from "react-router-dom"
+import {
+  Container,
+  Col,
+  Row,
+  Details,
+  Table,
+  ErrorSummary,
+  InsetText
+} from "nhsuk-react-components"
 
-import { useAccess } from "@/context/AccessProvider"
+import {useAccess} from "@/context/AccessProvider"
 import EpsCard from "@/components/EpsCard"
 import EpsSpinner from "@/components/EpsSpinner"
-import { RoleDetails } from "@/types/TrackerUserInfoTypes"
-import { Button } from "./ReactRouterButton"
+import {RoleDetails} from "@/types/TrackerUserInfoTypes"
+import {Button} from "./ReactRouterButton"
 
 // This is passed to the EPS card component.
 export type RolesWithAccessProps = {
@@ -50,7 +58,7 @@ interface RoleSelectionPageProps {
 }
 
 export default function RoleSelectionPage({
-  contentText,
+  contentText
 }: RoleSelectionPageProps) {
   const {
     title,
@@ -67,7 +75,7 @@ export default function RoleSelectionPage({
     rolesWithoutAccessHeader,
     noODSCode,
     noRoleName,
-    errorDuringRoleSelection,
+    errorDuringRoleSelection
   } = contentText
 
   const {
@@ -77,7 +85,7 @@ export default function RoleSelectionPage({
     rolesWithAccess,
     rolesWithoutAccess,
     loading,
-    error,
+    error
   } = useAccess()
 
   const [loginInfoMessage, setLoginInfoMessage] = useState<string | null>(null)
@@ -93,7 +101,7 @@ export default function RoleSelectionPage({
       ? rolesWithAccess.map((role: RoleDetails, index) => ({
         uuid: `role_with_access_${index}`,
         role,
-        link: "/selected-role",
+        link: "/selected-role"
       }))
       : []
     )
@@ -102,10 +110,10 @@ export default function RoleSelectionPage({
       uuid: `role_without_access_${index}`,
       roleName: role.role_name || noRoleName,
       orgName: role.org_name || noOrgName,
-      odsCode: role.org_code || noODSCode,
+      odsCode: role.org_code || noODSCode
     })))
 
-    console.warn("RoleCardPropsWithAccess length: ", { roleCardPropsWithAccess, loading, error })
+    console.warn("RoleCardPropsWithAccess length: ", {roleCardPropsWithAccess, loading, error})
   }, [rolesWithAccess, rolesWithoutAccess])
 
   // Handle auto-redirect for single role
@@ -129,9 +137,9 @@ export default function RoleSelectionPage({
     if (!loginInfoMessage && selectedRole) {
       setLoginInfoMessage(
         `You are currently logged in at ${selectedRole.org_name || noOrgName} (ODS: ${selectedRole.org_code || noODSCode}) with ${selectedRole.role_name || noRoleName}.`
-      );
+      )
     }
-  }, [selectedRole, loginInfoMessage, noOrgName, noODSCode, noRoleName, loading]);
+  }, [selectedRole, loginInfoMessage, noOrgName, noODSCode, noRoleName, loading])
 
   // Show spinner while loading or redirecting
   if (loading || redirecting) {
@@ -205,7 +213,7 @@ export default function RoleSelectionPage({
                   </span>
                   {loginInfoMessage && (
                     <p
-                      dangerouslySetInnerHTML={{ __html: loginInfoMessage }}
+                      dangerouslySetInnerHTML={{__html: loginInfoMessage}}
                     ></p>
                   )}
                 </InsetText>

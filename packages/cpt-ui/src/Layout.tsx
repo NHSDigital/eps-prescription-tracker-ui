@@ -1,7 +1,7 @@
-import { Outlet } from "react-router-dom";
-import EpsHeader from "@/components/EpsHeader";
-import RBACBanner from "@/components/RBACBanner";
-import EpsFooter from "@/components/EpsFooter";
+import {Outlet} from "react-router-dom"
+import EpsHeader from "@/components/EpsHeader"
+import RBACBanner from "@/components/RBACBanner"
+import EpsFooter from "@/components/EpsFooter"
 
 export default function Layout() {
   return (
@@ -11,5 +11,5 @@ export default function Layout() {
       <RBACBanner />
       <EpsFooter />
     </>
-  );
+  )
 }

@@ -1,52 +1,52 @@
-import React, { useContext, useEffect, useCallback } from "react";
-import { Container, Col, Row } from "nhsuk-react-components";
-import { AuthContext } from "@/context/AuthProvider";
-import EpsSpinner from "@/components/EpsSpinner";
-import { EpsLoginPageStrings } from "@/constants/ui-strings/EpsLoginPageStrings";
+import React, {useContext, useEffect, useCallback} from "react"
+import {Container, Col, Row} from "nhsuk-react-components"
+import {AuthContext} from "@/context/AuthProvider"
+import EpsSpinner from "@/components/EpsSpinner"
+import {EpsLoginPageStrings} from "@/constants/ui-strings/EpsLoginPageStrings"
 
 import {
   ENV_CONFIG,
   MOCK_AUTH_ALLOWED_ENVIRONMENTS,
   type Environment,
-  type MockAuthEnvironment,
-} from "@/constants/environment";
-import { Button } from "@/components/ReactRouterButton";
+  type MockAuthEnvironment
+} from "@/constants/environment"
+import {Button} from "@/components/ReactRouterButton"
 
 export default function LoginPage() {
-  const auth = useContext(AuthContext);
+  const auth = useContext(AuthContext)
   const target_environment: string =
-    ENV_CONFIG.TARGET_ENVIRONMENT as Environment;
+    ENV_CONFIG.TARGET_ENVIRONMENT as Environment
 
   const mockSignIn = async () => {
-    console.log("Signing in (Mock)", auth);
+    console.log("Signing in (Mock)", auth)
     await auth?.cognitoSignIn({
       provider: {
         custom: "Mock"
       }
-    });
+    })
   }
 
   const signIn = useCallback(async () => {
-    console.log("Signing in (Primary)", auth);
+    console.log("Signing in (Primary)", auth)
     await auth?.cognitoSignIn({
       provider: {
         custom: "Primary"
       }
-    });
-    console.log("Signed in: ", auth);
-  }, [auth]);
+    })
+    console.log("Signed in: ", auth)
+  }, [auth])
 
   const signOut = async () => {
-    console.log("Signing out", auth);
-    await auth?.cognitoSignOut();
-    console.log("Signed out: ", auth);
+    console.log("Signing out", auth)
+    await auth?.cognitoSignOut()
+    console.log("Signed out: ", auth)
   }
 
   useEffect(() => {
     console.log(
       "Login page loaded. What environment are we in?",
       target_environment
-    );
+    )
 
     if (
       !MOCK_AUTH_ALLOWED_ENVIRONMENTS.includes(
@@ -54,10 +54,10 @@ export default function LoginPage() {
       ) &&
       !auth?.isSignedIn
     ) {
-      console.log("User must sign in with Primary auth");
-      signIn();
+      console.log("User must sign in with Primary auth")
+      signIn()
     }
-  }, [auth?.isSignedIn, signIn, target_environment]);
+  }, [auth?.isSignedIn, signIn, target_environment])
 
   if (
     !MOCK_AUTH_ALLOWED_ENVIRONMENTS.includes(
@@ -94,9 +94,9 @@ export default function LoginPage() {
 
         <Row>
           <Col width="full">
-            <Button id="primary-signin" style={{ margin: '8px' }} onClick={signIn}>Log in with PTL CIS2</Button>
-            <Button id="mock-signin" style={{ margin: '8px' }} onClick={mockSignIn}>Log in with mock CIS2</Button>
-            <Button id="signout" style={{ margin: '8px' }} onClick={signOut}>Sign Out</Button>
+            <Button id="primary-signin" style={{margin: "8px"}} onClick={signIn}>Log in with PTL CIS2</Button>
+            <Button id="mock-signin" style={{margin: "8px"}} onClick={mockSignIn}>Log in with mock CIS2</Button>
+            <Button id="signout" style={{margin: "8px"}} onClick={signOut}>Sign Out</Button>
 
             {auth && (
               <>
@@ -112,5 +112,5 @@ export default function LoginPage() {
         </Row>
       </Container>
     </main>
-  );
+  )
 }

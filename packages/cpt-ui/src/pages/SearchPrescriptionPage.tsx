@@ -1,7 +1,12 @@
-import React from "react";
-import { Col, Container, Hero, Row } from "nhsuk-react-components";
-import EpsTabs from "@/components/EpsTabs";
-import { HERO_TEXT } from "@/constants/ui-strings/SearchForAPrescriptionStrings"
+import React from "react"
+import {
+  Col,
+  Container,
+  Hero,
+  Row
+} from "nhsuk-react-components"
+import EpsTabs from "@/components/EpsTabs"
+import {HERO_TEXT} from "@/constants/ui-strings/SearchForAPrescriptionStrings"
 
 export default function SearchForAPrescriptionPage() {
   return (
