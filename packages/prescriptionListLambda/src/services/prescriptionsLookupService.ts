@@ -1,6 +1,6 @@
 import {AxiosInstance} from "axios"
 import {v4 as uuidv4} from "uuid"
-import {PrescriptionAPIResponse} from "@cpt-ui-common/common-types"
+import {PrescriptionAPIResponse} from "../utils/types"
 import {Logger} from "@aws-lambda-powertools/logger"
 import {mapResponseToPrescriptionSummary} from "../utils/responseMapper"
 import {Bundle, FhirResource} from "fhir/r4"

@@ -13,8 +13,7 @@ jest.mock("@/context/AccessProvider", () => {
     });
 
     // A provider that uses state to allow updating patientDetails (for later)
-    // @ts-ignore:next-line
-    const MockAccessProvider = ({ children }) => {
+    const MockAccessProvider = (children: React.ReactElement) => {
         const [patientDetails, setPatientDetails] = React.useState(null);
         const value = { patientDetails, setPatientDetails };
         return (
