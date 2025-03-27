@@ -401,7 +401,7 @@ describe("AccessProvider", () => {
     })
 
     // Because normalizePath("/dashboard/") becomes "/dashboard" (not allowed),
-    // ensureRoleSelected should trigger a redirect to "/select-role".
+    // ensureRoleSelected should trigger a redirect to "/select-your-role".
     await waitFor(() => {
       expect(screen.getByTestId("location-display")).toHaveTextContent("/select-role")
     })

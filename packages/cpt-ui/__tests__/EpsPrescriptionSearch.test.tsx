@@ -41,7 +41,7 @@ describe("The tabs component", () => {
       // Wrap with BrowserRouter to provide the routing context
       <BrowserRouter>
         <div className="nhsuk-tabs">
-          <EpsTabs />
+          <EpsTabs SearchMode={'prescription-id'} />
         </div>
       </BrowserRouter>
     )

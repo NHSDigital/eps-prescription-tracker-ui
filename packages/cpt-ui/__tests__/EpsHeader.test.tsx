@@ -156,7 +156,7 @@ describe("EpsHeader", () => {
   })
 
   describe("Select Your Role link behavior", () => {
-    it("shows 'Select your role' when user is signed in, route !== /select-role, and role not yet selected", () => {
+    it("shows 'Select your role' when user is signed in, route !== /select-your-role, and role not yet selected", () => {
       renderWithProviders(
         "/other-route",
         {isSignedIn: true},
@@ -172,7 +172,7 @@ describe("EpsHeader", () => {
       expect(link).toHaveTextContent("Select your role")
     })
 
-    it("does NOT show 'Select your role' when the route is /select-role", () => {
+    it("does NOT show 'Select your role' when the route is /select-your-role", () => {
       renderWithProviders(
         "/select-role",
         {isSignedIn: true},
