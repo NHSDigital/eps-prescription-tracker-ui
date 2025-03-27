@@ -18,6 +18,7 @@
     "author": "NHS Digital",
     "license": "MIT",
     "workspaces": [
+        "packages/common/commonTypes",
         "packages/cloudfrontFunctions",
         "packages/cpt-ui",
         "packages/cdk",
