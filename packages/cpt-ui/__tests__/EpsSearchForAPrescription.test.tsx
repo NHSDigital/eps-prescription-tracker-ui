@@ -63,13 +63,13 @@ jest.mock("@/components/EpsTabs", () => {
 
 describe("SearchForAPrescription", () => {
   it("renders the hero banner", () => {
-    renderWithProviders(<SearchForAPrescription />);
+    renderWithProviders(<SearchForAPrescription SearchMode={"prescription-id"} />);
     const heroBanner = screen.getByRole("heading", { name: /Search for a prescription/i });
     expect(heroBanner).toBeInTheDocument();
   });
 
   it(`contains the text '${HERO_TEXT}'`, () => {
-    renderWithProviders(<SearchForAPrescription />);
+    renderWithProviders(<SearchForAPrescription SearchMode={"prescription-id"} />);
     const heroHeading = screen.getByRole("heading", { name: /Search for a prescription/i });
     expect(heroHeading).toHaveTextContent(HERO_TEXT);
   });
