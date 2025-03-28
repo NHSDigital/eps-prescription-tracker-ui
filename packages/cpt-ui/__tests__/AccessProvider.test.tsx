@@ -1,18 +1,89 @@
-import React from "react";
-import { render, screen, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom";
+import { render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import React, { useState } from "react";
 import { MemoryRouter, useLocation } from "react-router-dom";
 
 import { TrackerUserInfo } from "@/types/TrackerUserInfoTypes";
 
 import { AccessProvider, useAccess } from "@/context/AccessProvider";
-import { AuthContext } from "@/context/AuthProvider";
+import { AuthContext, type AuthContextType } from "@/context/AuthProvider";
 
 import axios from "@/helpers/axios";
 jest.mock("@/helpers/axios");
 
 // Tell TypeScript that axios is a mocked version.
 const mockedAxios = axios as jest.Mocked<typeof axios>;
+
+const mockCognitoSignIn = jest.fn();
+const mockCognitoSignOut = jest.fn();
+
+const defaultAuthState: AuthContextType = {
+  isSignedIn: false,
+  user: null,
+  error: null,
+  idToken: null,
+  accessToken: null,
+  cognitoSignIn: mockCognitoSignIn,
+  cognitoSignOut: mockCognitoSignOut,
+};
+
+const MockAuthProvider = ({
+  children,
+  initialState = defaultAuthState,
+}: {
+  children: React.ReactNode;
+  initialState?: AuthContextType;
+}) => {
+  const [authState, setAuthState] = useState<AuthContextType>({
+    ...initialState,
+    cognitoSignIn: async (input) => {
+      mockCognitoSignIn(input);
+      // Simulate a sign-in update
+      setAuthState((prev) => ({
+        ...prev,
+        isSignedIn: true,
+        user: {
+          username:
+            (input?.provider as { custom: string })?.custom || "mockUser",
+          userId: "mock-user-id",
+        },
+        error: null,
+        idToken: { toString: () => "mockIdToken" } as any,
+        accessToken: { toString: () => "mockAccessToken" } as any,
+      }));
+    },
+    cognitoSignOut: async () => {
+      mockCognitoSignOut();
+      setAuthState((prev) => ({
+        ...prev,
+        isSignedIn: false,
+        user: null,
+        error: null,
+        idToken: null,
+        accessToken: null,
+      }));
+    },
+  });
+
+  return (
+    <AuthContext.Provider value={authState}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+const renderWithProviders = (
+  component: React.ReactElement,
+  initialEntries: string[] = ["/"],
+  initialAuthState: AuthContextType = defaultAuthState
+) => {
+  return render(
+    <MockAuthProvider initialState={initialAuthState}>
+      <MemoryRouter initialEntries={initialEntries}>{component}</MemoryRouter>
+    </MockAuthProvider>
+  );
+};
 
 function TestConsumer() {
   const { noAccess, singleAccess, selectedRole, clear } = useAccess();
@@ -37,31 +108,6 @@ function LocationDisplay() {
   return <div data-testid="location-display">{location.pathname}</div>;
 }
 
-// Modified render function that accepts initial router entries.
-const renderWithContext = (authOverrides = {}, initialEntries = ["/"]) => {
-  const defaultAuthContext = {
-    error: null,
-    user: null,
-    isSignedIn: false,
-    idToken: null,
-    accessToken: null,
-    cognitoSignIn: jest.fn(),
-    cognitoSignOut: jest.fn(),
-  };
-  const authValue = { ...defaultAuthContext, ...authOverrides };
-
-  return render(
-    <MemoryRouter initialEntries={initialEntries}>
-      <AuthContext.Provider value={authValue}>
-        <AccessProvider>
-          <TestConsumer />
-          <LocationDisplay />
-        </AccessProvider>
-      </AuthContext.Provider>
-    </MemoryRouter>
-  );
-};
-
 describe("AccessProvider", () => {
   beforeEach(() => {
     jest.restoreAllMocks();
@@ -71,7 +117,16 @@ describe("AccessProvider", () => {
   });
 
   it("does not fetch roles when user is not signed in", () => {
-    renderWithContext({ isSignedIn: false, idToken: null });
+    renderWithProviders(
+      <>
+        <AccessProvider>
+          <TestConsumer />
+          <LocationDisplay />
+        </AccessProvider>
+      </>,
+      ["/"],
+      { ...defaultAuthState, isSignedIn: false, idToken: null }
+    );
 
     // Expect that axios.get is never called.
     expect(mockedAxios.get).not.toHaveBeenCalled();
@@ -110,12 +165,19 @@ describe("AccessProvider", () => {
       data: { userInfo: mockUserInfo },
     });
 
-    renderWithContext(
+    renderWithProviders(
+      <>
+        <AccessProvider>
+          <TestConsumer />
+          <LocationDisplay />
+        </AccessProvider>
+      </>,
+      ["/dashboard"],
       {
+        ...defaultAuthState,
         isSignedIn: true,
-        idToken: { toString: jest.fn().mockReturnValue("mock-id-token") },
-      },
-      ["/dashboard"]
+        idToken: { toString: jest.fn().mockReturnValue("mock-id-token") } as any,
+      }
     );
 
     await waitFor(() => {
@@ -141,12 +203,19 @@ describe("AccessProvider", () => {
       data: { userInfo: mockUserInfo },
     });
 
-    renderWithContext(
+    renderWithProviders(
+      <>
+        <AccessProvider>
+          <TestConsumer />
+          <LocationDisplay />
+        </AccessProvider>
+      </>,
+      ["/dashboard"],
       {
+        ...defaultAuthState,
         isSignedIn: true,
-        idToken: { toString: jest.fn().mockReturnValue("mock-id-token") },
-      },
-      ["/dashboard"]
+        idToken: { toString: jest.fn().mockReturnValue("mock-id-token") } as any,
+      }
     );
 
     await waitFor(() => {
@@ -160,8 +229,8 @@ describe("AccessProvider", () => {
   it("sets noAccess = false and singleAccess = false if multiple roles exist", async () => {
     const mockUserInfo: TrackerUserInfo = {
       roles_with_access: [
-        { role_id: "ROLE1" } as any,
-        { role_id: "ROLE2" } as any,
+        { role_id: "ROLE1", role_name: "Role1" } as any,
+        { role_id: "ROLE2", role_name: "Role2" } as any,
       ],
       roles_without_access: [],
       user_details: {
@@ -175,12 +244,19 @@ describe("AccessProvider", () => {
       data: { userInfo: mockUserInfo },
     });
 
-    renderWithContext(
+    renderWithProviders(
+      <>
+        <AccessProvider>
+          <TestConsumer />
+          <LocationDisplay />
+        </AccessProvider>
+      </>,
+      ["/dashboard"],
       {
+        ...defaultAuthState,
         isSignedIn: true,
-        idToken: { toString: jest.fn().mockReturnValue("mock-id-token") },
-      },
-      ["/dashboard"]
+        idToken: { toString: jest.fn().mockReturnValue("mock-id-token") } as any,
+      }
     );
 
     await waitFor(() => {
@@ -192,18 +268,24 @@ describe("AccessProvider", () => {
   });
 
   it("does not update state if fetch returns a non-200 status", async () => {
-    // Simulate an error response from the API.
     mockedAxios.get.mockResolvedValueOnce({
       status: 500,
       data: {},
     });
 
-    renderWithContext(
+    renderWithProviders(
+      <>
+        <AccessProvider>
+          <TestConsumer />
+          <LocationDisplay />
+        </AccessProvider>
+      </>,
+      ["/dashboard"],
       {
+        ...defaultAuthState,
         isSignedIn: true,
-        idToken: { toString: jest.fn().mockReturnValue("mock-id-token") },
-      },
-      ["/dashboard"]
+        idToken: { toString: jest.fn().mockReturnValue("mock-id-token") } as any,
+      }
     );
 
     await waitFor(() => {
@@ -239,12 +321,19 @@ describe("AccessProvider", () => {
       data: { userInfo: mockUserInfo },
     });
 
-    renderWithContext(
+    renderWithProviders(
+      <>
+        <AccessProvider>
+          <TestConsumer />
+          <LocationDisplay />
+        </AccessProvider>
+      </>,
+      ["/dashboard"],
       {
+        ...defaultAuthState,
         isSignedIn: true,
-        idToken: { toString: jest.fn().mockReturnValue("mock-id-token") },
-      },
-      ["/dashboard"]
+        idToken: { toString: jest.fn().mockReturnValue("mock-id-token") } as any,
+      }
     );
 
     await waitFor(() => {
@@ -253,7 +342,7 @@ describe("AccessProvider", () => {
       expect(screen.getByTestId("selectedRole")).toHaveTextContent("ROLE_SINGLE");
     });
 
-    screen.getByTestId("clear-button").click();
+    userEvent.click(screen.getByTestId("clear-button"));
 
     await waitFor(() => {
       expect(screen.getByTestId("noAccess")).toHaveTextContent("false");
@@ -279,13 +368,19 @@ describe("AccessProvider", () => {
       data: { userInfo: mockUserInfo },
     });
 
-    // Provide an initial location with a trailing slash that is not allowed.
-    renderWithContext(
+    renderWithProviders(
+      <>
+        <AccessProvider>
+          <TestConsumer />
+          <LocationDisplay />
+        </AccessProvider>
+      </>,
+      ["/dashboard/"],
       {
+        ...defaultAuthState,
         isSignedIn: true,
-        idToken: { toString: jest.fn().mockReturnValue("mock-id-token") },
-      },
-      ["/dashboard/"]
+        idToken: { toString: jest.fn().mockReturnValue("mock-id-token") } as any,
+      }
     );
 
     // Wait for the API call.
@@ -314,12 +409,19 @@ describe("AccessProvider", () => {
     });
 
     // Use an allowed path ("/login/") with a trailing slash.
-    renderWithContext(
+    renderWithProviders(
+      <>
+        <AccessProvider>
+          <TestConsumer />
+          <LocationDisplay />
+        </AccessProvider>
+      </>,
+      ["/login/"],
       {
+        ...defaultAuthState,
         isSignedIn: true,
-        idToken: { toString: jest.fn().mockReturnValue("mock-id-token") },
-      },
-      ["/login/"]
+        idToken: { toString: jest.fn().mockReturnValue("mock-id-token") } as any,
+      }
     );
 
     await waitFor(() => {
@@ -331,5 +433,137 @@ describe("AccessProvider", () => {
     await waitFor(() => {
       expect(screen.getByTestId("location-display")).toHaveTextContent("/login/");
     });
+  });
+});
+
+// Add this new consumer component to your tests file:
+function TestUpdateRoleConsumer() {
+  const { selectedRole, updateSelectedRole } = useAccess();
+  const handleUpdate = async () => {
+    // Passing a new role object to update
+    await updateSelectedRole({ role_id: "NEW_ROLE", role_name: "New Role" });
+  };
+  return (
+    <div>
+      <div data-testid="selectedRole">
+        {selectedRole ? selectedRole.role_id : "(none)"}
+      </div>
+      <button data-testid="update-role-button" onClick={handleUpdate}>
+        Update Role
+      </button>
+    </div>
+  );
+}
+
+// Extend your existing test suite with the following tests:
+describe("AccessProvider updateSelectedRole", () => {
+  beforeEach(() => {
+    jest.restoreAllMocks();
+    jest.clearAllMocks();
+    localStorage.clear();
+  });
+
+  it("updates selectedRole when updateSelectedRole is called successfully", async () => {
+    // Mock axios.put to simulate a successful update (status 200)
+    mockedAxios.put.mockResolvedValueOnce({
+      status: 200,
+    });
+
+    renderWithProviders(
+      <AccessProvider>
+        <TestUpdateRoleConsumer />
+      </AccessProvider>,
+      ["/dashboard"],
+      {
+        ...defaultAuthState,
+        isSignedIn: true,
+        idToken: { toString: jest.fn().mockReturnValue("mock-id-token") } as any,
+      }
+    );
+
+    // Initially, selectedRole should be empty.
+    expect(screen.getByTestId("selectedRole")).toHaveTextContent("(none)");
+
+    userEvent.click(screen.getByTestId("update-role-button"));
+
+    await waitFor(() => {
+      expect(mockedAxios.put).toHaveBeenCalledTimes(1);
+    });
+
+    // After the update, selectedRole should be updated.
+    await waitFor(() => {
+      expect(screen.getByTestId("selectedRole")).toHaveTextContent("NEW_ROLE");
+    });
+  });
+
+  it("alerts user when updateSelectedRole fails due to non-200 response", async () => {
+    // Mock axios.put to simulate a failure (non-200 response)
+    mockedAxios.put.mockResolvedValueOnce({
+      status: 500,
+    });
+
+    // Spy on window.alert
+    const alertSpy = jest.spyOn(window, "alert").mockImplementation(() => { });
+
+    renderWithProviders(
+      <AccessProvider>
+        <TestUpdateRoleConsumer />
+      </AccessProvider>,
+      ["/dashboard"],
+      {
+        ...defaultAuthState,
+        isSignedIn: true,
+        idToken: { toString: jest.fn().mockReturnValue("mock-id-token") } as any,
+      }
+    );
+
+    userEvent.click(screen.getByTestId("update-role-button"));
+
+    await waitFor(() => {
+      expect(mockedAxios.put).toHaveBeenCalledTimes(1);
+    });
+
+    await waitFor(() => {
+      expect(alertSpy).toHaveBeenCalledWith(
+        "There was an issue selecting your role. Please notify the EPS team."
+      );
+    });
+
+    // Ensure selectedRole remains unchanged
+    expect(screen.getByTestId("selectedRole")).toHaveTextContent("(none)");
+  });
+
+  it("alerts user when updateSelectedRole throws an error", async () => {
+    // Mock axios.put to simulate an error (e.g. network error)
+    mockedAxios.put.mockRejectedValueOnce(new Error("Network error"));
+
+    const alertSpy = jest.spyOn(window, "alert").mockImplementation(() => { });
+
+    renderWithProviders(
+      <AccessProvider>
+        <TestUpdateRoleConsumer />
+      </AccessProvider>,
+      ["/dashboard"],
+      {
+        ...defaultAuthState,
+        isSignedIn: true,
+        idToken: { toString: jest.fn().mockReturnValue("mock-id-token") } as any,
+      }
+    );
+
+    userEvent.click(screen.getByTestId("update-role-button"));
+
+    await waitFor(() => {
+      expect(mockedAxios.put).toHaveBeenCalledTimes(1);
+    });
+
+    await waitFor(() => {
+      expect(alertSpy).toHaveBeenCalledWith(
+        "There was an issue selecting your role. Please notify the EPS team."
+      );
+    });
+
+    // Verify that selectedRole still remains unset.
+    expect(screen.getByTestId("selectedRole")).toHaveTextContent("(none)");
   });
 });

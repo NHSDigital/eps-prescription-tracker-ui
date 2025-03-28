@@ -14,11 +14,11 @@
   },
   "dependencies": {
     "@aws-lambda-powertools/commons": "^2.12.0",
-    "@aws-lambda-powertools/logger": "^2.16.0",
-    "@aws-lambda-powertools/parameters": "^2.16.0",
-    "@aws-sdk/client-dynamodb": "^3.772.0",
-    "@aws-sdk/client-secrets-manager": "^3.772.0",
-    "@aws-sdk/lib-dynamodb": "^3.772.0",
+    "@aws-lambda-powertools/logger": "^2.17.0",
+    "@aws-lambda-powertools/parameters": "^2.17.0",
+    "@aws-sdk/client-dynamodb": "^3.774.0",
+    "@aws-sdk/client-secrets-manager": "^3.775.0",
+    "@aws-sdk/lib-dynamodb": "^3.775.0",
     "@cpt-ui-common/authFunctions": "^1.0.0",
     "@cpt-ui-common/middyErrorHandler": "^1.0.0",
     "@middy/core": "^6.1.6",
@@ -30,7 +30,7 @@
     "uuid": "^11.1.0"
   },
   "devDependencies": {
-    "@types/aws-lambda": "^8.10.147",
+    "@types/aws-lambda": "^8.10.148",
     "axios-mock-adapter": "^2.0.0",
     "mock-jwks": "^3.2.2",
     "nock": "^14.0.0"
