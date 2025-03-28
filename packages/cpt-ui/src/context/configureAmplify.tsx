@@ -1,5 +1,5 @@
-import { ResourcesConfig } from "aws-amplify";
-import { AUTH_CONFIG } from "@/constants/environment";
+import {ResourcesConfig} from "aws-amplify"
+import {AUTH_CONFIG} from "@/constants/environment"
 
 export const authConfig: ResourcesConfig = {
   Auth: {
@@ -15,16 +15,16 @@ export const authConfig: ResourcesConfig = {
             "email",
             "phone",
             "profile",
-            "aws.cognito.signin.user.admin",
+            "aws.cognito.signin.user.admin"
           ],
           redirectSignIn: [AUTH_CONFIG.REDIRECT_SIGN_IN!],
           redirectSignOut: [AUTH_CONFIG.REDIRECT_SIGN_OUT!],
-          responseType: "code",
+          responseType: "code"
         },
         username: true,
         email: false, // Optional
-        phone: false, // Optional
-      },
-    },
-  },
-};
+        phone: false // Optional
+      }
+    }
+  }
+}
