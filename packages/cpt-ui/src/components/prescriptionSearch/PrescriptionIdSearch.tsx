@@ -1,9 +1,4 @@
-import React, {
-  useContext,
-  useState,
-  useEffect,
-  useRef
-} from "react"
+import React, {useState, useEffect, useRef} from "react"
 import {useNavigate} from "react-router-dom"
 
 import {
@@ -13,35 +8,27 @@ import {
   Label,
   HintText,
   TextInput,
-  Button,
   Form,
   ErrorSummary,
   ErrorMessage,
-  FormGroup
+  FormGroup,
+  Button
 } from "nhsuk-react-components"
 
-import {AuthContext} from "@/context/AuthProvider"
 import {PRESCRIPTION_ID_SEARCH_STRINGS} from "@/constants/ui-strings/SearchForAPrescriptionStrings"
-import {NHS_REQUEST_URID, API_ENDPOINTS, FRONTEND_PATHS} from "@/constants/environment"
+import {FRONTEND_PATHS} from "@/constants/environment"
 
 const normalizePrescriptionId = (raw: string): string => {
   const cleaned = raw.replace(/[^a-zA-Z0-9+]/g, "") // remove non-allowed chars
   return cleaned.match(/.{1,6}/g)?.join("-").toUpperCase() || ""
 }
 
-// TODO:
-// When this search does not return a prescription (either invalid, or non-existent), redirect to
-// /prescription-not-found
-// That page takes a query string, which is set to the original search tab label. In this case,
-// be sure to redirect the user to prescription-not-found?searchType=PrescriptionIdSearch
 export default function PrescriptionIdSearch() {
-  const auth = useContext(AuthContext)
   const navigate = useNavigate()
   const errorRef = useRef<HTMLDivElement | null>(null)
 
   const [prescriptionId, setPrescriptionId] = useState<string>("")
   const [errorType, setErrorType] = useState<"" | "empty" | "length" | "chars" | "noMatch">("")
-  const [loading, setLoading] = useState<boolean>(false)
 
   const errorMessages = PRESCRIPTION_ID_SEARCH_STRINGS.errors
 
@@ -69,12 +56,10 @@ export default function PrescriptionIdSearch() {
   const handlePrescriptionDetails = async (e: React.FormEvent) => {
     e.preventDefault()
     setErrorType("")
-    setLoading(true)
 
     const raw = prescriptionId.trim()
     if (!raw) {
       setErrorType("empty")
-      setLoading(false)
       return
     }
 
@@ -82,7 +67,6 @@ export default function PrescriptionIdSearch() {
     const rawCharPattern = /^[a-zA-Z0-9+ -]*$/
     if (!rawCharPattern.test(raw)) {
       setErrorType("chars")
-      setLoading(false)
       return
     }
 
@@ -92,7 +76,6 @@ export default function PrescriptionIdSearch() {
     // Must be exactly 18 chars (excluding dashes)
     if (cleaned.length !== 18) {
       setErrorType("length")
-      setLoading(false)
       return
     }
 
@@ -102,39 +85,10 @@ export default function PrescriptionIdSearch() {
     const shortFormPattern = /^[0-9A-F]{6}-[0-9A-Z]{6}-[0-9A-F]{5}[0-9A-Z+]$/
     if (!shortFormPattern.test(formatted)) {
       setErrorType("noMatch")
-      setLoading(false)
       return
     }
 
-    const url = `${API_ENDPOINTS.PRESCRIPTION_DETAILS}/${formatted}`
-
-    // Fetch prescription details with auth headers. If successful, redirect to results.
-    // On failure, allow a known test ID through; otherwise, redirect to "not found".
-    try {
-      const response = await fetch(url, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${auth?.idToken}`,
-          "NHSD-Session-URID": NHS_REQUEST_URID
-        }
-      })
-
-      if (!response.ok) throw new Error(`Status Code: ${response.status}`)
-
-      navigate(`${FRONTEND_PATHS.PRESCRIPTION_RESULTS}?prescriptionId=${formatted}`)
-    } catch (error) {
-      console.error("Error retrieving prescription details:", error)
-
-      // MOCK: Hardcoded response for known test ID
-      if (formatted === "C0C757-A83008-C2D93O") {
-        await new Promise((res) => setTimeout(res, 500)) // simulate loading
-        navigate(`${FRONTEND_PATHS.PRESCRIPTION_RESULTS}?prescriptionId=${formatted}`)
-      } else {
-        navigate(`${FRONTEND_PATHS.PRESCRIPTION_NOT_FOUND}?searchType=PrescriptionIdSearch`)
-      }
-    } finally {
-      setLoading(false)
-    }
+    navigate(`${FRONTEND_PATHS.PRESCRIPTION_RESULTS}?prescriptionId=${formatted}`)
   }
 
   return (
@@ -196,7 +150,7 @@ export default function PrescriptionIdSearch() {
             </FormGroup>
 
             <Button type="submit" data-testid="find-prescription-button">
-              {loading ? "Loading search results" : PRESCRIPTION_ID_SEARCH_STRINGS.buttonText}
+              {PRESCRIPTION_ID_SEARCH_STRINGS.buttonText}
             </Button>
           </Form>
         </Col>
