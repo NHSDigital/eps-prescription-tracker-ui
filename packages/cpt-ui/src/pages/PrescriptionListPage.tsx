@@ -7,6 +7,7 @@ import {
 } from "nhsuk-react-components"
 import {Link, useLocation, useNavigate} from "react-router-dom"
 import {PRESCRIPTION_LIST_PAGE_STRINGS} from "@/constants/ui-strings/PrescriptionListPageStrings"
+import {FRONTEND_PATHS} from "@/constants/environment"
 
 export default function PrescriptionListPage() {
   // TODO: mock data - in the real implementation, this would come from props or context
@@ -16,7 +17,7 @@ export default function PrescriptionListPage() {
   const [backLinkTarget, setBackLinkTarget] = useState<string>(PRESCRIPTION_LIST_PAGE_STRINGS.DEFAULT_BACK_LINK_TARGET)
 
   const notFoundRedirect = () => {
-    navigate("/prescription-not-found")
+    navigate(FRONTEND_PATHS.PRESCRIPTION_NOT_FOUND)
   }
 
   useEffect(() => {

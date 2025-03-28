@@ -38,7 +38,7 @@ export default function App() {
               element={<PrescriptionListPage />}
             />
             <Route
-              path="prescription-not-found"
+              path={FRONTEND_PATHS.PRESCRIPTION_NOT_FOUND}
               element={<PrescriptionNotFoundPage />}
             />
           </Route>
