@@ -27,6 +27,10 @@ export default function PrescriptionListPage() {
     const hasPrescriptionId = !!queryParams.get("prescriptionId")
     const hasNhsNumber = !!queryParams.get("nhsNumber")
 
+    // FIXME: Since the resolution of the search will be done by the search page,
+    // this logic will need to be moved to that page. It's not implemented yet,
+    // so it's here for now.
+    //
     // determine which search page to go back to based on query parameters
     if (hasPrescriptionId) {
       setBackLinkTarget(PRESCRIPTION_LIST_PAGE_STRINGS.PRESCRIPTION_ID_SEARCH_TARGET)

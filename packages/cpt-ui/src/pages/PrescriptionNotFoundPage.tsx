@@ -1,5 +1,3 @@
-"use client"
-
 import {Link, useSearchParams} from "react-router-dom"
 import {BackLink, Container} from "nhsuk-react-components"
 import {PRESCRIPTION_NOT_FOUND_STRINGS} from "@/constants/ui-strings/PrescriptionNotFoundPageStrings"
