@@ -1,4 +1,4 @@
-import React, { useEffect } from "react"
+import React, {useEffect} from "react"
 
 interface EpsModalProps {
   readonly children: React.ReactNode
@@ -6,7 +6,7 @@ interface EpsModalProps {
   readonly onClose: () => void
 }
 
-export function EpsModal({ children, isOpen, onClose }: EpsModalProps) {
+export function EpsModal({children, isOpen, onClose}: EpsModalProps) {
   // Close modal on `Escape` key
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {

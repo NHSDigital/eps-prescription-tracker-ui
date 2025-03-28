@@ -1,15 +1,19 @@
-import React, { useEffect, useState } from "react"
+import React, {useEffect, useState} from "react"
 
-import { Container, Col, Row, Table } from "nhsuk-react-components"
-import { useNavigate, Link } from "react-router-dom"
+import {
+  Container,
+  Col,
+  Row,
+  Table
+} from "nhsuk-react-components"
+import {Link} from "react-router-dom"
 
-import { YOUR_SELECTED_ROLE_STRINGS } from "@/constants/ui-strings/YourSelectedRoleStrings"
-import { useAccess } from "@/context/AccessProvider"
-import { Button } from "@/components/ReactRouterButton"
+import {YOUR_SELECTED_ROLE_STRINGS} from "@/constants/ui-strings/YourSelectedRoleStrings"
+import {useAccess} from "@/context/AccessProvider"
+import {Button} from "@/components/ReactRouterButton"
 
 export default function YourSelectedRolePage() {
-  const navigate = useNavigate()
-  const { selectedRole } = useAccess()
+  const {selectedRole} = useAccess()
 
   const [roleName, setRoleName] = useState<string>(YOUR_SELECTED_ROLE_STRINGS.noRoleName)
   const [orgName, setOrgName] = useState<string>(YOUR_SELECTED_ROLE_STRINGS.noOrgName)

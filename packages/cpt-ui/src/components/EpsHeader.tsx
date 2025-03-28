@@ -1,6 +1,6 @@
-import React, { useContext, useEffect, useState } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
-import { Header } from "nhsuk-react-components";
+import React, {useContext, useEffect, useState} from "react"
+import {Link, useNavigate, useLocation} from "react-router-dom"
+import {Header} from "nhsuk-react-components"
 import {
   HEADER_SERVICE,
   HEADER_EXIT_BUTTON,
@@ -11,11 +11,11 @@ import {
   HEADER_SELECT_YOUR_ROLE_BUTTON
 } from "@/constants/ui-strings/HeaderStrings"
 
-import { AuthContext } from "@/context/AuthProvider"
-import { useAccess } from '@/context/AccessProvider'
+import {AuthContext} from "@/context/AuthProvider"
+import {useAccess} from "@/context/AccessProvider"
 
-import { EpsLogoutModal } from "@/components/EpsLogoutModal"
-import { normalizePath } from "@/helpers/utils";
+import {EpsLogoutModal} from "@/components/EpsLogoutModal"
+import {normalizePath} from "@/helpers/utils"
 
 export default function EpsHeader() {
   const navigate = useNavigate()
