@@ -14,6 +14,7 @@ import {Dynamodb} from "../resources/Dynamodb"
 import {Bucket} from "aws-cdk-lib/aws-s3"
 import {Role} from "aws-cdk-lib/aws-iam"
 import {HostedZone} from "aws-cdk-lib/aws-route53"
+import {Rum} from "../resources/Rum"
 
 export interface StatefulResourcesStackProps extends StackProps {
   readonly serviceName: string
@@ -61,6 +62,8 @@ export class StatefulResourcesStack extends Stack {
     const cloudfrontDistributionId: string = this.node.tryGetContext("cloudfrontDistributionId")
 
     const useLocalhostCallback: boolean = this.node.tryGetContext("useLocalhostCallback")
+    const logRetentionInDays: number = Number(this.node.tryGetContext("logRetentionInDays"))
+    const rumCloudwatchLogEnabled: boolean = this.node.tryGetContext("rumCloudwatchLogEnabled")
 
     // Imports
     const auditLoggingBucketImport = Fn.importValue("account-resources:AuditLoggingBucket")
@@ -116,6 +119,18 @@ export class StatefulResourcesStack extends Stack {
       region: this.region
     })
 
+    // need to make sure the app monitor name is not too long
+    const appMonitorName = props.stackName.replace("-stateful-resources", "")
+    const rum = new Rum(this, "Rum", {
+      topLevelDomain: props.fullCloudfrontDomain,
+      appMonitorName: appMonitorName,
+      serviceName: props.serviceName,
+      stackName: props.stackName,
+      logRetentionInDays: logRetentionInDays,
+      cwLogEnabled: rumCloudwatchLogEnabled
+
+    })
+
     // Outputs
 
     // Exports
@@ -126,6 +141,10 @@ export class StatefulResourcesStack extends Stack {
     new CfnOutput(this, "StaticContentBucketName", {
       value: staticContentBucket.bucket.bucketName,
       exportName: `${props.stackName}:StaticContentBucket:Name`
+    })
+    new CfnOutput(this, "StaticContentBucketKmsKeyArn", {
+      value: staticContentBucket.kmsKey.keyArn,
+      exportName: `${props.stackName}:StaticContentBucketKmsKey:Arn`
     })
 
     // Token mapping table
@@ -186,6 +205,51 @@ export class StatefulResourcesStack extends Stack {
     new CfnOutput(this, "userPoolClientId", {
       value: cognito.userPoolClient.userPoolClientId,
       exportName: `${props.stackName}:userPoolClient:userPoolClientId`
+    })
+
+    new CfnOutput(this, "unauthenticatedRumRoleArn", {
+      value: rum.unauthenticatedRumRole.roleArn,
+      exportName: `${props.stackName}:rum:unauthenticatedRumRole:Arn`
+    })
+
+    new CfnOutput(this, "identityPoolId", {
+      value: rum.identityPool.ref,
+      exportName: `${props.stackName}:rum:identityPool:Id`
+    })
+
+    new CfnOutput(this, "rumAppId", {
+      value: rum.rumApp.attrId,
+      exportName: `${props.stackName}:rum:rumApp:Id`
+    })
+
+    new CfnOutput(this, "rumAppName", {
+      value: rum.rumApp.ref,
+      exportName: `${props.stackName}:rum:rumApp:Name`
+    })
+
+    new CfnOutput(this, "rumAllowCookies", {
+      value: rum.baseAppMonitorConfiguration.allowCookies!.toString(),
+      exportName: `${props.stackName}:rum:config:allowCookies`
+    })
+
+    new CfnOutput(this, "rumEnableXRay", {
+      value: rum.baseAppMonitorConfiguration.enableXRay!.toString(),
+      exportName: `${props.stackName}:rum:config:enableXRay`
+    })
+
+    new CfnOutput(this, "rumSessionSampleRate", {
+      value: rum.baseAppMonitorConfiguration.sessionSampleRate!.toString(),
+      exportName: `${props.stackName}:rum:config:sessionSampleRate`
+    })
+
+    new CfnOutput(this, "rumTelemetries", {
+      value: rum.baseAppMonitorConfiguration.telemetries!.toString(),
+      exportName: `${props.stackName}:rum:config:telemetries`
+    })
+
+    new CfnOutput(this, "rumLogGroupArn", {
+      value: rum.logGroup.logGroupArn,
+      exportName: `${props.stackName}:rum:logGroup:arn`
     })
 
     nagSuppressions(this)

@@ -68,6 +68,27 @@ export const nagSuppressions = (stack: Stack) => {
         }
       ]
     )
+    safeAddNagSuppression(
+      stack,
+      "/StatefulStack/Rum/RumAppIdentityPool",
+      [
+        {
+          id: "AwsSolutions-COG7",
+          reason: "Suppress error for not having allowing unauthenticed logins. This is by design"
+        }
+      ]
+    )
+
+    safeAddNagSuppression(
+      stack,
+      "/StatefulStack/Rum/unauthenticatedRumRolePolicies/Resource",
+      [
+        {
+          id: "AwsSolutions-IAM5",
+          reason: "Suppress error for not having allowing wildcard permissions. This is by design"
+        }
+      ]
+    )
 
   }
 
@@ -195,7 +216,6 @@ export const nagSuppressions = (stack: Stack) => {
         }
       ]
     )
-
   }
 }
 

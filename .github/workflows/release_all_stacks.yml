@@ -188,7 +188,6 @@ jobs:
       mockOidcClientId: ${{ secrets.mockOidcClientId }}
       APIGEE_API_KEY: ${{ secrets.APIGEE_API_KEY }}
 
-
   update_cloudfront_kvs:
     runs-on: ubuntu-22.04
     environment: ${{ inputs.TARGET_ENVIRONMENT }}

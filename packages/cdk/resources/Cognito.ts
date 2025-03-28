@@ -203,7 +203,7 @@ export class Cognito extends Construct {
       logoutUrls.push("http://localhost:3000/logout/")
       // Local, with base path set to /site
       logoutUrls.push("http://localhost:3000/site/logout/")
-      callbackUrls.push("http://localhost:3000/site/select-role/")
+      callbackUrls.push("http://localhost:3000/site/select-role")
       // Auth demo stuff
       callbackUrls.push("http://localhost:3000/auth/")
       callbackUrls.push("http://localhost:3000/auth_demo/")

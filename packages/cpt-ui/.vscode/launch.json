@@ -5,6 +5,27 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "type": "firefox",
+      "request": "launch",
+      "name": "Launch Firefox against localhost",
+      "url": "http://localhost:3000",
+      "webRoot": "${workspaceFolder}"
+    },
+    {
+      "type": "chrome",
+      "request": "launch",
+      "name": "Launch Chrome against localhost",
+      "url": "http://localhost:3000",
+      "webRoot": "${workspaceFolder}"
+    },
+    {
+      "type": "msedge",
+      "request": "launch",
+      "name": "Launch Edge against localhost",
+      "url": "http://localhost:3000",
+      "webRoot": "${workspaceFolder}"
+    },
+    {
       "type": "node",
       "name": "vscode-jest-tests.v2",
       "request": "launch",
@@ -22,13 +43,9 @@
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "disableOptimisticBPs": true,
-      "program": "${workspaceFolder}/../../../node_modules/.bin/jest",
+      "program": "${workspaceFolder}/../../node_modules/.bin/jest",
       "windows": {
         "program": "${workspaceFolder}/node_modules/jest/bin/jest"
-      },
-      "env": {
-        "POWERTOOLS_DEV": true,
-        "NODE_OPTIONS": "--experimental-vm-modules"
       }
     }
   ]

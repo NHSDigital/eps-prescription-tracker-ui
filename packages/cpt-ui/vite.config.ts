@@ -18,6 +18,9 @@ export default defineConfig(({mode}) => {
   return {
     base: process.env.BASE_PATH || "",
     plugins: [react()],
+    build: {
+      sourcemap: true
+    },
     resolve: {
       alias: {
         "@": path.resolve(__dirname, "./src")
