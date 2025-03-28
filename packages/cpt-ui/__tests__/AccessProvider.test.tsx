@@ -267,6 +267,79 @@ describe("AccessProvider", () => {
     });
   });
 
+  // New tests to add to the existing test file
+  it("retrieves roles from localStorage when userInfo has no roles_with_access", async () => {
+    // Prepare localStorage with stored roles
+    localStorage.setItem('rolesWithAccess', JSON.stringify([
+      {
+        role_id: "ROLE456",
+        role_name: "Nurse",
+        org_name: "Test Hospital",
+        org_code: "ORG456",
+        site_address: "2 Mock Street",
+      }
+    ]));
+
+    const mockUserInfo: TrackerUserInfo = {
+      roles_without_access: [],
+      user_details: {
+        family_name: "FAMILY",
+        given_name: "GIVEN",
+      },
+    };
+
+    // When axios.get is called, return a resolved promise with the expected response.
+    mockedAxios.get.mockResolvedValueOnce({
+      status: 200,
+      data: { userInfo: mockUserInfo },
+    });
+
+    renderWithProviders(
+      <>
+        <AccessProvider>
+          <TestConsumer />
+          <LocationDisplay />
+        </AccessProvider>
+      </>,
+      ["/dashboard"],
+      {
+        ...defaultAuthState,
+        isSignedIn: true,
+        idToken: { toString: jest.fn().mockReturnValue("mock-id-token") } as any,
+      }
+    );
+
+    await waitFor(() => {
+      expect(mockedAxios.get).toHaveBeenCalledTimes(1);
+      expect(screen.getByTestId("noAccess")).toHaveTextContent("false");
+      expect(screen.getByTestId("singleAccess")).toHaveTextContent("true");
+      expect(screen.getByTestId("selectedRole")).toHaveTextContent("ROLE456");
+    });
+  });
+
+  it("sets empty roles when userInfo is null", async () => {
+    renderWithProviders(
+      <>
+        <AccessProvider>
+          <TestConsumer />
+          <LocationDisplay />
+        </AccessProvider>
+      </>,
+      ["/dashboard"],
+      {
+        ...defaultAuthState,
+        isSignedIn: true,
+        idToken: { toString: jest.fn().mockReturnValue("mock-id-token") } as any,
+      }
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId("noAccess")).toHaveTextContent("true");
+      expect(screen.getByTestId("singleAccess")).toHaveTextContent("false");
+      expect(screen.getByTestId("selectedRole")).toHaveTextContent("No Role");
+    });
+  });
+  
   it("does not update state if fetch returns a non-200 status", async () => {
     mockedAxios.get.mockResolvedValueOnce({
       status: 500,

@@ -108,10 +108,6 @@ export const AccessProvider = ({ children }: { children: ReactNode }) => {
 
       const userInfo: TrackerUserInfo = data.userInfo
 
-      // if (userInfo) {
-      //   setRolesWithAccess(userInfo.roles_with_access || [])
-      // }
-
       if (userInfo) {
         if (userInfo.roles_with_access) {
           setRolesWithAccess(userInfo.roles_with_access);

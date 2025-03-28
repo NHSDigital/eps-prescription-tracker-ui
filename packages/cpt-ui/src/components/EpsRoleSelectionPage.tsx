@@ -110,7 +110,7 @@ export default function RoleSelectionPage({
 
   // Handle auto-redirect for single role
   useEffect(() => {
-    if (!loading && rolesWithAccess.length === 1 && rolesWithoutAccess.length === 0) {
+    if (rolesWithAccess.length === 1 && rolesWithoutAccess.length === 0) {
       setRedirecting(true)
       updateSelectedRole(rolesWithAccess[0])
         .then(() => {
