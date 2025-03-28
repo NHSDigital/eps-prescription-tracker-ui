@@ -15,6 +15,8 @@ import PrescriptionNotFoundPage from "@/pages/PrescriptionNotFoundPage"
 
 import {FRONTEND_PATHS} from "@/constants/environment"
 
+import {FRONTEND_PATHS} from "@/constants/environment"
+
 export default function App() {
 
   return (

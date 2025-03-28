@@ -29,6 +29,29 @@ const normalizePrescriptionId = (raw: string): string => {
   return cleaned.match(/.{1,6}/g)?.join("-").toUpperCase() || ""
 }
 
+import {
+  Container,
+  Row,
+  Col,
+  Label,
+  HintText,
+  TextInput,
+  Button,
+  Form,
+  ErrorSummary,
+  ErrorMessage,
+  FormGroup
+} from "nhsuk-react-components"
+
+import {AuthContext} from "@/context/AuthProvider"
+import {PRESCRIPTION_ID_SEARCH_STRINGS} from "@/constants/ui-strings/SearchForAPrescriptionStrings"
+import {NHS_REQUEST_URID, API_ENDPOINTS, FRONTEND_PATHS} from "@/constants/environment"
+
+const normalizePrescriptionId = (raw: string): string => {
+  const cleaned = raw.replace(/[^a-zA-Z0-9+]/g, "") // remove non-allowed chars
+  return cleaned.match(/.{1,6}/g)?.join("-").toUpperCase() || ""
+}
+
 // TODO:
 // When this search does not return a prescription (either invalid, or non-existent), redirect to
 // /prescription-not-found
