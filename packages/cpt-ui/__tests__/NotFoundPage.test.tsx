@@ -1,8 +1,11 @@
 import React from "react"
 import {render, screen} from "@testing-library/react"
 import {MemoryRouter} from "react-router-dom"
-import NotFoundPage from "@/pages/NotFoundPage"
+
 import {NOT_FOUND_PAGE_STRINGS} from "@/constants/ui-strings/NotFoundPage"
+import {FRONTEND_PATHS} from "@/constants/environment"
+
+import NotFoundPage from "@/pages/NotFoundPage"
 
 describe("NotFoundPage", () => {
   beforeEach(() => {
@@ -40,6 +43,6 @@ describe("NotFoundPage", () => {
       name: NOT_FOUND_PAGE_STRINGS.bodyText3LinkText
     })
     expect(link).toBeInTheDocument()
-    expect(link).toHaveAttribute("href", "/search")
+    expect(link).toHaveAttribute("href", FRONTEND_PATHS.SEARCH)
   })
 })
