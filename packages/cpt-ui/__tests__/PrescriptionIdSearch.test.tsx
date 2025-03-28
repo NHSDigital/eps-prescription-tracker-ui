@@ -13,6 +13,7 @@ import PrescriptionIdSearch from "@/components/prescriptionSearch/PrescriptionId
 import {PRESCRIPTION_ID_SEARCH_STRINGS} from "@/constants/ui-strings/SearchForAPrescriptionStrings"
 import {AuthContext} from "@/context/AuthProvider"
 import {AuthContextType} from "@/context/AuthProvider"
+import {JWT} from "aws-amplify/auth"
 
 const LocationDisplay = () => {
   const location = useLocation()
@@ -36,8 +37,8 @@ const mockAuthContext: AuthContextType = {
   error: null,
   user: null,
   isSignedIn: true,
-  idToken: "mock-id-token",
-  accessToken: "mock-access-token",
+  idToken: "mock-id-token" as unknown as JWT,
+  accessToken: "mock-access-token" as unknown as JWT,
   cognitoSignIn: jest.fn(),
   cognitoSignOut: jest.fn()
 }
