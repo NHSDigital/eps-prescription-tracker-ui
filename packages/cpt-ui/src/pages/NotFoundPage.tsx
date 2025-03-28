@@ -4,6 +4,7 @@ import {Container} from "nhsuk-react-components"
 
 import {NOT_FOUND_PAGE_STRINGS} from "@/constants/ui-strings/NotFoundPage"
 import {useEffect, useState} from "react"
+import {FRONTEND_PATHS} from "@/constants/environment"
 
 export default function NotFoundPage() {
   const [headerText, setHeaderText] = useState("")
@@ -28,7 +29,7 @@ export default function NotFoundPage() {
         <h1 data-testid="eps-404-header">{headerText}</h1>
         <p data-testid="eps-404-body1">{body1}</p>
         <p data-testid="eps-404-body2">{body2}</p>
-        <p data-testid="eps-404-body3">{body3}<Link to="/search">{body3Link}</Link>{body3PostLink}</p>
+        <p data-testid="eps-404-body3">{body3}<Link to={FRONTEND_PATHS.SEARCH}>{body3Link}</Link>{body3PostLink}</p>
       </Container>
     </main>
   )

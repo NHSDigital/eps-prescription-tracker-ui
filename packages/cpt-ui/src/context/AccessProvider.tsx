@@ -12,7 +12,7 @@ import {AuthContext} from "./AuthProvider"
 
 import {RoleDetails, TrackerUserInfo, UserDetails} from "@/types/TrackerUserInfoTypes"
 
-import {API_ENDPOINTS, NHS_REQUEST_URID} from "@/constants/environment"
+import {API_ENDPOINTS, FRONTEND_PATHS, NHS_REQUEST_URID} from "@/constants/environment"
 
 import http from "@/helpers/axios"
 import {useLocation, useNavigate} from "react-router-dom"
@@ -134,15 +134,15 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
 
   const ensureRoleSelected = () => {
     const allowed_no_role_paths = [
-      "/select-role",
-      "/login",
-      "/logout"
+      FRONTEND_PATHS.SELECT_ROLE,
+      FRONTEND_PATHS.LOGIN,
+      FRONTEND_PATHS.LOGOUT
     ]
 
     if (!selectedRole) {
       if (!allowed_no_role_paths.includes(normalizePath(location.pathname))) {
         console.log("Redirecting from", location.pathname)
-        navigate("/select-role")
+        navigate(FRONTEND_PATHS.SELECT_ROLE)
       }
     }
   }

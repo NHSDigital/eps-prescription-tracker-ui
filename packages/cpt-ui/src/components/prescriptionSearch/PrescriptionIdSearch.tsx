@@ -22,12 +22,7 @@ import {
 
 import {AuthContext} from "@/context/AuthProvider"
 import {PRESCRIPTION_ID_SEARCH_STRINGS} from "@/constants/ui-strings/SearchForAPrescriptionStrings"
-import {NHS_REQUEST_URID} from "@/constants/environment"
-
-// API endpoint for prescription details
-const prescriptionDetailsEndpoint = "/api/prescription-details"
-const prescriptionNotFoundPath = "/prescription-not-found"
-const prescriptionDetailsPath = "/prescription-results"
+import {NHS_REQUEST_URID, API_ENDPOINTS, FRONTEND_PATHS} from "@/constants/environment"
 
 const normalizePrescriptionId = (raw: string): string => {
   const cleaned = raw.replace(/[^a-zA-Z0-9+]/g, "") // remove non-allowed chars
@@ -106,7 +101,7 @@ export default function PrescriptionIdSearch() {
       return
     }
 
-    const url = `${prescriptionDetailsEndpoint}/${formatted}`
+    const url = `${API_ENDPOINTS.PRESCRIPTION_DETAILS}/${formatted}`
 
     // Fetch prescription details with auth headers. If successful, redirect to results.
     // On failure, allow a known test ID through; otherwise, redirect to "not found".
@@ -121,16 +116,16 @@ export default function PrescriptionIdSearch() {
 
       if (!response.ok) throw new Error(`Status Code: ${response.status}`)
 
-      navigate(`${prescriptionDetailsPath}?prescriptionId=${formatted}`)
+      navigate(`${FRONTEND_PATHS.PRESCRIPTION_RESULTS}?prescriptionId=${formatted}`)
     } catch (error) {
       console.error("Error retrieving prescription details:", error)
 
       // MOCK: Hardcoded response for known test ID
       if (formatted === "C0C757-A83008-C2D93O") {
         await new Promise((res) => setTimeout(res, 500)) // simulate loading
-        navigate(`${prescriptionDetailsPath}?prescriptionId=${formatted}`)
+        navigate(`${FRONTEND_PATHS.PRESCRIPTION_RESULTS}?prescriptionId=${formatted}`)
       } else {
-        navigate(`${prescriptionNotFoundPath}?searchType=PrescriptionIdSearch`)
+        navigate(`${FRONTEND_PATHS.PRESCRIPTION_NOT_FOUND}?searchType=PrescriptionIdSearch`)
       }
     } finally {
       setLoading(false)
