@@ -4,13 +4,24 @@ import "@testing-library/jest-dom"
 import {MemoryRouter, Route, Routes} from "react-router-dom"
 import PrescriptionListPage from "@/pages/PrescriptionListPage"
 import {PRESCRIPTION_LIST_PAGE_STRINGS} from "@/constants/ui-strings/PrescriptionListPageStrings"
+import {FRONTEND_PATHS} from "@/constants/environment"
 
-// Helper function to render the component with different query parameters
+function Dummy404() {
+  return (
+    <main>
+      <div>
+        <p data-testid="dummy-no-prescription-page">Dummy page</p>
+      </div>
+    </main>
+  )
+}
+
 const renderWithRouter = (route: string) => {
   return render(
     <MemoryRouter initialEntries={[route]}>
       <Routes>
-        <Route path="*" element={<PrescriptionListPage />} />
+        <Route path={FRONTEND_PATHS.PRESCRIPTION_NOT_FOUND} element={<Dummy404 />} />
+        <Route path={FRONTEND_PATHS.PRESCRIPTION_RESULTS} element={<PrescriptionListPage />} />
       </Routes>
     </MemoryRouter>
   )
@@ -18,7 +29,7 @@ const renderWithRouter = (route: string) => {
 
 describe("PrescriptionListPage", () => {
   it("renders the component with the correct title and heading", () => {
-    renderWithRouter("/prescription-results")
+    renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_RESULTS + "?prescriptionId=123456")
 
     const heading = screen.getByTestId("prescription-list-heading")
     expect(heading).toBeInTheDocument()
@@ -33,7 +44,7 @@ describe("PrescriptionListPage", () => {
   })
 
   it("shows the correct number of results", () => {
-    renderWithRouter("/prescription-results")
+    renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_RESULTS + "?prescriptionId=123456")
 
     const resultsCount = screen.getByTestId("results-count")
     expect(resultsCount).toHaveTextContent(
@@ -41,16 +52,15 @@ describe("PrescriptionListPage", () => {
     )
   })
 
-  it("sets the back link to the default target when no query parameters are present", () => {
-    renderWithRouter("/prescription-results")
+  it("redirects to the no prescription found page when no query parameters are present", () => {
+    renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_RESULTS)
 
-    // Now checking the link-container which has the href attribute
-    const linkContainer = screen.getByTestId("back-link-container")
-    expect(linkContainer).toHaveAttribute("href", PRESCRIPTION_LIST_PAGE_STRINGS.DEFAULT_BACK_LINK_TARGET)
+    const dummyTag = screen.getByTestId("dummy-no-prescription-page")
+    expect(dummyTag).toBeInTheDocument()
   })
 
   it("sets the back link to the prescription ID search when prescriptionId query parameter is present", async () => {
-    renderWithRouter("/prescription-results?prescriptionId=123456")
+    renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_RESULTS + "?prescriptionId=123456")
 
     // We need to wait for the useEffect to run
     await waitFor(() => {
@@ -60,7 +70,7 @@ describe("PrescriptionListPage", () => {
   })
 
   it("sets the back link to the NHS number search when nhsNumber query parameter is present", async () => {
-    renderWithRouter("/prescription-results?nhsNumber=1234567890")
+    renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_RESULTS + "?nhsNumber=1234567890")
 
     // We need to wait for the useEffect to run
     await waitFor(() => {
