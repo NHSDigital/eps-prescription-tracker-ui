@@ -13,6 +13,8 @@ import NotFoundPage from "@/pages/NotFoundPage"
 import PrescriptionListPage from "@/pages/PrescriptionListPage"
 import PrescriptionNotFoundPage from "@/pages/PrescriptionNotFoundPage"
 
+import {FRONTEND_PATHS} from "@/constants/environment"
+
 export default function App() {
 
   return (
@@ -22,17 +24,17 @@ export default function App() {
           <Route path="/" element={<Layout />}>
             <Route index element={<NotFoundPage />} />
             <Route path='*' element={<NotFoundPage />} />
-            <Route path="login" element={<LoginPage />} />
-            <Route path="logout" element={<LogoutPage />} />
-            <Route path="select-role" element={<SelectYourRolePage />} />
-            <Route path="selected-role" element={<YourSelectedRolePage />} />
-            <Route path="change-role" element={<ChangeRolePage />} />
+            <Route path={FRONTEND_PATHS.LOGIN} element={<LoginPage />} />
+            <Route path={FRONTEND_PATHS.LOGOUT} element={<LogoutPage />} />
+            <Route path={FRONTEND_PATHS.SELECT_ROLE} element={<SelectYourRolePage />} />
+            <Route path={FRONTEND_PATHS.SELECTED_ROLE} element={<YourSelectedRolePage />} />
+            <Route path={FRONTEND_PATHS.CHANGE_ROLE} element={<ChangeRolePage />} />
             <Route
-              path="search"
+              path={FRONTEND_PATHS.SEARCH}
               element={<SearchPrescriptionPage />}
             />
             <Route
-              path="prescription-results"
+              path={FRONTEND_PATHS.PRESCRIPTION_RESULTS}
               element={<PrescriptionListPage />}
             />
             <Route
