@@ -108,8 +108,21 @@ export const AccessProvider = ({ children }: { children: ReactNode }) => {
 
       const userInfo: TrackerUserInfo = data.userInfo
 
+      // if (userInfo) {
+      //   setRolesWithAccess(userInfo.roles_with_access || [])
+      // }
+
       if (userInfo) {
-        setRolesWithAccess(userInfo.roles_with_access || [])
+        if (userInfo.roles_with_access) {
+          setRolesWithAccess(userInfo.roles_with_access);
+        } else {
+          const storedRolesWithAccess = localStorage.getItem('rolesWithAccess');
+          if (storedRolesWithAccess) {
+            setRolesWithAccess(JSON.parse(storedRolesWithAccess))
+          } else {
+            setRolesWithAccess([]);
+          }
+        }
       }
 
       // The current role may be either undefined, or an empty object. If it's empty, set it undefined.
@@ -121,11 +134,7 @@ export const AccessProvider = ({ children }: { children: ReactNode }) => {
         currentlySelectedRole = undefined
       }
 
-      // Only update noAccess after roles are set, and not on first load. Stops noAccess message being incorrectly shown
-      if (!loading && !usingLocal) {
-        setNoAccess(userInfo.roles_with_access.length === 0);
-      }
-
+      setNoAccess(userInfo.roles_with_access.length === 0 && !currentlySelectedRole);
       setRolesWithoutAccess(userInfo.roles_without_access || [])
       setSelectedRole(currentlySelectedRole)
       setUserDetails(userInfo.user_details)
