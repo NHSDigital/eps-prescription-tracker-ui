@@ -46,9 +46,13 @@ export default function PrescriptionListPage() {
           <Row>
             <Col width="full">
               <nav className="nhsuk-breadcrumb" aria-label="Breadcrumb" data-testid="prescription-list-nav">
-                <Link to={backLinkTarget} data-testid="back-link-container">
-                  <BackLink data-testid="go-back-link">{PRESCRIPTION_LIST_PAGE_STRINGS.GO_BACK_LINK_TEXT}</BackLink>
-                </Link>
+                <BackLink
+                  data-testid="go-back-link"
+                  asElement={Link}
+                  to={backLinkTarget}
+                >
+                  {PRESCRIPTION_LIST_PAGE_STRINGS.GO_BACK_LINK_TEXT}
+                </BackLink>
               </nav>
             </Col>
           </Row>

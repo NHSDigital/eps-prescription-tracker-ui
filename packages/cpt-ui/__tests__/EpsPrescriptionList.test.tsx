@@ -64,7 +64,7 @@ describe("PrescriptionListPage", () => {
 
     // We need to wait for the useEffect to run
     await waitFor(() => {
-      const linkContainer = screen.getByTestId("back-link-container")
+      const linkContainer = screen.getByTestId("go-back-link")
       expect(linkContainer).toHaveAttribute("href", PRESCRIPTION_LIST_PAGE_STRINGS.PRESCRIPTION_ID_SEARCH_TARGET)
     })
   })
@@ -74,7 +74,7 @@ describe("PrescriptionListPage", () => {
 
     // We need to wait for the useEffect to run
     await waitFor(() => {
-      const linkContainer = screen.getByTestId("back-link-container")
+      const linkContainer = screen.getByTestId("go-back-link")
       expect(linkContainer).toHaveAttribute("href", PRESCRIPTION_LIST_PAGE_STRINGS.NHS_NUMBER_SEARCH_TARGET)
     })
   })
