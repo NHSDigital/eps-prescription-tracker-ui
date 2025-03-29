@@ -3,5 +3,6 @@
   "jest.nodeEnv": {
     "POWERTOOLS_DEV": true,
     "NODE_OPTIONS": "--experimental-vm-modules"
-  }
+  },
+  "eslint.format.enable": true
 }

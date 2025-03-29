@@ -1,9 +1,9 @@
 import React from "react"
-import { Container } from "nhsuk-react-components"
+import {Container} from "nhsuk-react-components"
 
-import { EpsModal } from "@/components/EpsModal"
-import { EpsLogoutModalStrings } from "@/constants/ui-strings/EpsLogoutModalStrings"
-import { Button } from "./ReactRouterButton"
+import {EpsModal} from "@/components/EpsModal"
+import {EpsLogoutModalStrings} from "@/constants/ui-strings/EpsLogoutModalStrings"
+import {Button} from "./ReactRouterButton"
 
 interface EpsLogoutModalProps {
   readonly isOpen: boolean
@@ -11,7 +11,7 @@ interface EpsLogoutModalProps {
   readonly onConfirm: () => void
 }
 
-export function EpsLogoutModal({ isOpen, onClose, onConfirm }: EpsLogoutModalProps) {
+export function EpsLogoutModal({isOpen, onClose, onConfirm}: EpsLogoutModalProps) {
 
   return (
     <EpsModal isOpen={isOpen} onClose={onClose}>

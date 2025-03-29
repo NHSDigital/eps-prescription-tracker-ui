@@ -1,35 +1,35 @@
-import React, { useContext, useEffect } from "react";
-import { Container } from "nhsuk-react-components";
-import { Link } from "react-router-dom"
+import React, {useContext, useEffect} from "react"
+import {Container} from "nhsuk-react-components"
+import {Link} from "react-router-dom"
 
-import { AuthContext } from "@/context/AuthProvider";
-import { useAccess } from "@/context/AccessProvider";
-import EpsSpinner from "@/components/EpsSpinner";
-import { EpsLogoutStrings } from "@/constants/ui-strings/EpsLogoutPageStrings";
+import {AuthContext} from "@/context/AuthProvider"
+import {useAccess} from "@/context/AccessProvider"
+import EpsSpinner from "@/components/EpsSpinner"
+import {EpsLogoutStrings} from "@/constants/ui-strings/EpsLogoutPageStrings"
 
 export default function LogoutPage() {
-  const auth = useContext(AuthContext);
-  const { clear } = useAccess();
+  const auth = useContext(AuthContext)
+  const {clear} = useAccess()
 
   // Log out on page load
   useEffect(() => {
     const signOut = async () => {
-      console.log("Signing out", auth);
+      console.log("Signing out", auth)
 
-      await auth?.cognitoSignOut();
+      await auth?.cognitoSignOut()
 
       // Ensure user details & roles are cleared from local storage
-      clear();
-      console.log("Signed out and cleared session data");
-    };
+      clear()
+      console.log("Signed out and cleared session data")
+    }
 
     if (auth?.isSignedIn) {
-      signOut();
+      signOut()
     } else {
-      console.log("Cannot sign out - not signed in");
-      clear(); // Clear data even if not signed in
+      console.log("Cannot sign out - not signed in")
+      clear() // Clear data even if not signed in
     }
-  }, [auth, clear]);
+  }, [auth, clear])
 
   return (
     <main id="main-content" className="nhsuk-main-wrapper">
@@ -48,5 +48,5 @@ export default function LogoutPage() {
         )}
       </Container>
     </main>
-  );
+  )
 }

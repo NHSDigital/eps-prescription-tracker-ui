@@ -1,13 +1,13 @@
-import React, { useEffect, useState } from "react"
+import React, {useEffect, useState} from "react"
 
-import { Row } from "nhsuk-react-components"
+import {Row} from "nhsuk-react-components"
 
-import { RBAC_BANNER_STRINGS } from "@/constants/ui-strings/RBACBannerStrings"
-import { useAccess } from "@/context/AccessProvider"
+import {RBAC_BANNER_STRINGS} from "@/constants/ui-strings/RBACBannerStrings"
+import {useAccess} from "@/context/AccessProvider"
 
 export default function RBACBanner() {
   const [bannerText, setBannerText] = useState<string>("")
-  const { selectedRole, userDetails } = useAccess()
+  const {selectedRole, userDetails} = useAccess()
 
   useEffect(() => {
     if (!selectedRole || !userDetails) {
@@ -24,7 +24,8 @@ export default function RBACBanner() {
      * CONFIDENTIAL: PERSONAL PATIENT DATA accessed by LAST NAME, First Name - RBAC Role - Site Name (ODS: ODS)
      *
      * Locum User (org_code === 'FFFFF'):
-     * CONFIDENTIAL: PERSONAL PATIENT DATA accessed by LAST NAME, First Name - RBAC Role - Locum pharmacy (ODS: FFFFF) - Site Name (ODS: ODS Code)
+     * CONFIDENTIAL: PERSONAL PATIENT DATA accessed by LAST NAME,
+     *      First Name - RBAC Role - Locum pharmacy (ODS: FFFFF) - Site Name (ODS: ODS Code)
      */
 
     // Determine the organization name (use "Locum pharmacy" for locum users)
@@ -58,7 +59,7 @@ export default function RBACBanner() {
   return (
     <div className="nhsuk-banner" data-testid="rbac-banner-div">
       <Row>
-        <p style={{ paddingLeft: "60px", margin: "8px" }} data-testid="rbac-banner-text">
+        <p style={{paddingLeft: "60px", margin: "8px"}} data-testid="rbac-banner-text">
           {bannerText}
         </p>
       </Row>
