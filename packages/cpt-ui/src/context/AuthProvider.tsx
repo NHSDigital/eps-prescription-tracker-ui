@@ -14,7 +14,7 @@ import {authConfig} from "./configureAmplify"
 
 import {useLocalStorageState} from "@/helpers/useLocalStorageState"
 import {normalizePath} from "@/helpers/utils"
-import {API_ENDPOINTS} from "@/constants/environment"
+import {API_ENDPOINTS, FRONTEND_PATHS, NHS_REQUEST_URID} from "@/constants/environment"
 
 import {useNavigate, useLocation} from "react-router-dom"
 
@@ -58,13 +58,13 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
 
       if (!sessionIdToken || !sessionAccessToken) {
         const noRedirectPaths = [
-          "/login",
-          "/logout"
+          FRONTEND_PATHS.LOGIN,
+          FRONTEND_PATHS.LOGOUT
         ]
 
         if (!noRedirectPaths.includes(normalizePath(location.pathname))) {
           console.warn("No login detected. Redirecting to the login page")
-          navigate("/login")
+          navigate(FRONTEND_PATHS.LOGIN)
         }
       }
 
@@ -200,7 +200,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
         .get(CIS2SignOutEndpoint, {
           headers: {
             Authorization: `Bearer ${idToken}`,
-            "NHSD-Session-URID": "555254242106"
+            "NHSD-Session-URID": NHS_REQUEST_URID
           }
         })
         .then(() => {
