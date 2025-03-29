@@ -2,13 +2,16 @@ import {
   SearchResponse,
   PatientDetails,
   TreatmentType,
+  PrescriptionStatus,
+  PrescriptionStatusCategories
+} from "@cpt-ui-common/common-types"
+import {
   PDSResponse,
   IntentMap,
-  PrescriptionStatus,
-  PrescriptionAPIResponse,
-  PrescriptionStatusCategories,
-  STATUS_CATEGORY_MAP
-} from "../types"
+  STATUS_CATEGORY_MAP,
+  PrescriptionAPIResponse
+} from "./types"
+
 import {
   Bundle,
   BundleEntry,

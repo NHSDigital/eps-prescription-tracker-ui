@@ -2,23 +2,56 @@ import React from "react"
 import {render, screen, waitFor} from "@testing-library/react"
 import "@testing-library/jest-dom"
 import {MemoryRouter, Route, Routes} from "react-router-dom"
-import PrescriptionListPage from "@/pages/PrescriptionListPage"
 import {PRESCRIPTION_LIST_PAGE_STRINGS} from "@/constants/ui-strings/PrescriptionListPageStrings"
 
-// Helper function to render the component with different query parameters
-const renderWithRouter = (route: string) => {
+jest.mock("@/context/AccessProvider", () => {
+  interface AccessContextType {
+    patientDetails: null;
+    setPatientDetails: React.Dispatch<React.SetStateAction<null>>;
+  }
+
+  const AccessContext = React.createContext<AccessContextType>({
+    patientDetails: null,
+    setPatientDetails: () => {}
+  })
+
+  const AccessProvider = ({children}: { children: React.ReactNode }) => {
+    const [patientDetails, setPatientDetails] = React.useState(null)
+    const value = {patientDetails, setPatientDetails}
+    return (
+      <AccessContext.Provider value={value}>
+        {children}
+      </AccessContext.Provider>
+    )
+  }
+
+  const useAccess = () => React.useContext(AccessContext)
+
+  return {
+    AccessContext,
+    AccessProvider,
+    useAccess
+  }
+})
+
+import {AccessProvider} from "@/context/AccessProvider"
+import PrescriptionListPage from "@/pages/PrescriptionListPage"
+
+const renderWithRouter = async (route: string) => {
   return render(
-    <MemoryRouter initialEntries={[route]}>
-      <Routes>
-        <Route path="*" element={<PrescriptionListPage />} />
-      </Routes>
-    </MemoryRouter>
+    <AccessProvider>
+      <MemoryRouter initialEntries={[route]}>
+        <Routes>
+          <Route path="*" element={<PrescriptionListPage />} />
+        </Routes>
+      </MemoryRouter>
+    </AccessProvider>
   )
 }
 
 describe("PrescriptionListPage", () => {
-  it("renders the component with the correct title and heading", () => {
-    renderWithRouter("/prescription-results")
+  it("renders the component with the correct title and heading", async () => {
+    await renderWithRouter("/prescription-results")
 
     const heading = screen.getByTestId("prescription-list-heading")
     expect(heading).toBeInTheDocument()
@@ -32,8 +65,8 @@ describe("PrescriptionListPage", () => {
     expect(resultsListContainer).toBeInTheDocument()
   })
 
-  it("shows the correct number of results", () => {
-    renderWithRouter("/prescription-results")
+  it("shows the correct number of results", async () => {
+    await renderWithRouter("/prescription-results")
 
     const resultsCount = screen.getByTestId("results-count")
     expect(resultsCount).toHaveTextContent(
@@ -41,8 +74,8 @@ describe("PrescriptionListPage", () => {
     )
   })
 
-  it("sets the back link to the default target when no query parameters are present", () => {
-    renderWithRouter("/prescription-results")
+  it("sets the back link to the default target when no query parameters are present", async () => {
+    await renderWithRouter("/prescription-results")
 
     // Now checking the link-container which has the href attribute
     const linkContainer = screen.getByTestId("back-link-container")
@@ -50,7 +83,7 @@ describe("PrescriptionListPage", () => {
   })
 
   it("sets the back link to the prescription ID search when prescriptionId query parameter is present", async () => {
-    renderWithRouter("/prescription-results?prescriptionId=123456")
+    await renderWithRouter("/prescription-results?prescriptionId=123456")
 
     // We need to wait for the useEffect to run
     await waitFor(() => {
@@ -60,7 +93,7 @@ describe("PrescriptionListPage", () => {
   })
 
   it("sets the back link to the NHS number search when nhsNumber query parameter is present", async () => {
-    renderWithRouter("/prescription-results?nhsNumber=1234567890")
+    await renderWithRouter("/prescription-results?nhsNumber=1234567890")
 
     // We need to wait for the useEffect to run
     await waitFor(() => {

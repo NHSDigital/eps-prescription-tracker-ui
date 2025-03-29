@@ -1,0 +1,19 @@
+{
+  "name": "@cpt-ui-common/common-types",
+  "version": "1.0.0",
+  "description": "Common type resources",
+  "author": "NHS Digital",
+  "license": "MIT",
+  "main": "lib/src/index.js",
+  "types": "lib/src/index.d.ts",
+  "type": "module",
+  "scripts": {
+    "unit": "jest",
+    "lint": "eslint  --max-warnings 0 --fix --config ../../../eslint.config.mjs .",
+    "compile": "tsc",
+    "test": "npm run compile && npm run unit",
+    "check-licenses": "license-checker --failOn GPL --failOn LGPL --start ../.."
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}

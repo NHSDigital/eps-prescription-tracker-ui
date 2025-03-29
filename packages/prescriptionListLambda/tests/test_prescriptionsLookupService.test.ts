@@ -8,7 +8,7 @@ import {
 import {getPrescriptions, PrescriptionError} from "../src/services/prescriptionsLookupService"
 import {Logger} from "@aws-lambda-powertools/logger"
 import {AxiosInstance, AxiosResponse} from "axios"
-import {TreatmentType} from "../src/types"
+import {TreatmentType} from "@cpt-ui-common/common-types"
 import {mockPrescriptionBundle} from "./mockObjects"
 
 const mockGet = jest.fn(() => Promise.resolve({} as unknown as AxiosResponse))

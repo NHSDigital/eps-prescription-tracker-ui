@@ -5,17 +5,18 @@ import React, {
   useEffect,
   ReactNode
 } from "react"
+import {useLocation, useNavigate} from "react-router-dom"
 
 import {useLocalStorageState} from "@/helpers/useLocalStorageState"
 import {normalizePath} from "@/helpers/utils"
 import {AuthContext} from "./AuthProvider"
 
 import {RoleDetails, TrackerUserInfo, UserDetails} from "@/types/TrackerUserInfoTypes"
+import {PatientDetails} from "@cpt-ui-common/common-types"
 
 import {API_ENDPOINTS, FRONTEND_PATHS, NHS_REQUEST_URID} from "@/constants/environment"
 
 import http from "@/helpers/axios"
-import {useLocation, useNavigate} from "react-router-dom"
 
 const trackerUserInfoEndpoint = API_ENDPOINTS.TRACKER_USER_INFO
 const selectedRoleEndpoint = API_ENDPOINTS.SELECTED_ROLE
@@ -29,6 +30,8 @@ export type AccessContextType = {
   updateSelectedRole: (value: RoleDetails) => Promise<void>
   userDetails: UserDetails | undefined
   setUserDetails: (value: UserDetails | undefined) => void
+  patientDetails: PatientDetails | undefined
+  setPatientDetails: (value: PatientDetails | undefined) => void
   rolesWithAccess: Array<RoleDetails>
   rolesWithoutAccess: Array<RoleDetails>
   loading: boolean
@@ -41,6 +44,7 @@ export const AccessContext = createContext<AccessContextType | undefined>(
 )
 
 export const AccessProvider = ({children}: { children: ReactNode }) => {
+  // These get cached to local storage
   const [noAccess, setNoAccess] = useLocalStorageState<boolean>(
     "noAccess",
     "access",
@@ -51,10 +55,23 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
     "access",
     false
   )
-  const [selectedRole, setSelectedRole] =
-    useLocalStorageState<RoleDetails | undefined>("selectedRole", "access", undefined)
-  const [userDetails, setUserDetails] =
-    useLocalStorageState<UserDetails | undefined>("userDetails", "access", undefined)
+  const [selectedRole, setSelectedRole] = useLocalStorageState<RoleDetails | undefined>(
+    "selectedRole",
+    "access",
+    undefined
+  )
+  const [userDetails, setUserDetails] = useLocalStorageState<UserDetails | undefined>(
+    "userDetails",
+    "access",
+    undefined
+  )
+  const [patientDetails, setPatientDetails] = useLocalStorageState<PatientDetails | undefined>(
+    "patientDetails",
+    "access",
+    undefined
+  )
+
+  // These are reset on a page reload
   const [usingLocal, setUsingLocal] = useState(true)
   const [rolesWithAccess, setRolesWithAccess] = useState<Array<RoleDetails>>([])
   const [rolesWithoutAccess, setRolesWithoutAccess] = useState<Array<RoleDetails>>([])
@@ -72,11 +89,13 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
     setSingleAccess(false)
     setSelectedRole(undefined)
     setUserDetails(undefined)
+    setPatientDetails(undefined)
 
     // Clear from localStorage to ensure RBAC Banner is removed
     localStorage.removeItem("access")
     localStorage.removeItem("selectedRole")
     localStorage.removeItem("userDetails")
+    localStorage.removeItem("patientDetails")
     console.log("Local storage cleared.")
   }
 
@@ -188,6 +207,21 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
     ensureRoleSelected()
   }, [auth?.idToken]) // run ONLY ONCE on mount (i.e. on initial page load)
 
+  // Clear the patient details if the user navigates away from the pages about the patient
+  useEffect(() => {
+    // TODO: Ensure this is up to date as pages get implemented!
+    const patientDetailsAllowedPaths = [
+      "/prescription-results"
+      // "/prescription-details",
+    ]
+
+    const path = normalizePath(location.pathname)
+    if (!patientDetailsAllowedPaths.includes(path)) {
+      console.info("Clearing patient details.")
+      setPatientDetails(undefined)
+    }
+  }, [location.pathname])
+
   const updateSelectedRole = async (newRole: RoleDetails) => {
     try {
       // Update selected role in the backend via the selectedRoleLambda endpoint using axios
@@ -226,6 +260,8 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
         updateSelectedRole,
         userDetails,
         setUserDetails,
+        patientDetails,
+        setPatientDetails,
         rolesWithAccess,
         rolesWithoutAccess,
         loading,
