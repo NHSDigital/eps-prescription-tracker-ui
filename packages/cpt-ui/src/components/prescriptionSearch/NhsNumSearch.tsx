@@ -1,6 +1,8 @@
 import React from "react"
 import {Button} from "../ReactRouterButton"
 
+import {FRONTEND_PATHS} from "@/constants/environment"
+
 export default function NhsNumSearch() {
   return (
     <>
@@ -8,7 +10,7 @@ export default function NhsNumSearch() {
       <div className="eps-modal-button-group" data-testid="nhs-number-search-button-group">
         <Button
           className="nhsuk-button eps-modal-button"
-          to="/prescription-results?nhsNumber=123456"
+          to={`${FRONTEND_PATHS.PRESCRIPTION_RESULTS}?nhsNumber=123456`}
           data-testid="find-patient-button"
         >
                     Find a patient

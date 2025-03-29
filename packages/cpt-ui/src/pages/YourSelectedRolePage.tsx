@@ -11,6 +11,7 @@ import {Link} from "react-router-dom"
 import {YOUR_SELECTED_ROLE_STRINGS} from "@/constants/ui-strings/YourSelectedRoleStrings"
 import {useAccess} from "@/context/AccessProvider"
 import {Button} from "@/components/ReactRouterButton"
+import {FRONTEND_PATHS} from "@/constants/environment"
 
 export default function YourSelectedRolePage() {
   const {selectedRole} = useAccess()
@@ -75,7 +76,7 @@ export default function YourSelectedRolePage() {
                   </Table.Cell>
                   <Table.Cell data-testid="role-change-role-cell">
                     <Link
-                      to="/change-role"
+                      to={FRONTEND_PATHS.CHANGE_ROLE}
                     >
                       {changeLinkText}
                     </Link>
@@ -90,7 +91,7 @@ export default function YourSelectedRolePage() {
                   </Table.Cell>
                   <Table.Cell data-testid="org-change-role-cell">
                     <Link
-                      to="/change-role"
+                      to={FRONTEND_PATHS.CHANGE_ROLE}
                     >
                       {changeLinkText}
                     </Link>
@@ -104,7 +105,7 @@ export default function YourSelectedRolePage() {
         <Row>
           <Col width="two-thirds">
             <Button
-              to="/search"
+              to={FRONTEND_PATHS.SEARCH}
               data-testid="confirm-and-continue"
             >
               {confirmButtonText}
