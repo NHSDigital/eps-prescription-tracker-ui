@@ -15,6 +15,7 @@ import EpsCard from "@/components/EpsCard"
 import EpsSpinner from "@/components/EpsSpinner"
 import {RoleDetails} from "@/types/TrackerUserInfoTypes"
 import {Button} from "./ReactRouterButton"
+import {FRONTEND_PATHS} from "@/constants/environment"
 
 // This is passed to the EPS card component.
 export type RolesWithAccessProps = {
@@ -101,7 +102,7 @@ export default function RoleSelectionPage({
       ? rolesWithAccess.map((role: RoleDetails, index) => ({
         uuid: `role_with_access_${index}`,
         role,
-        link: "/selected-role"
+        link: FRONTEND_PATHS.SELECTED_ROLE
       }))
       : []
     )
@@ -122,7 +123,7 @@ export default function RoleSelectionPage({
       setRedirecting(true)
       updateSelectedRole(rolesWithAccess[0])
         .then(() => {
-          navigate("/search")
+          navigate(FRONTEND_PATHS.SEARCH)
         })
         .catch((err) => {
           console.error(err)

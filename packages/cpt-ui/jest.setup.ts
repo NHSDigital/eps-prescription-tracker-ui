@@ -36,5 +36,15 @@ jest.mock("@/constants/environment", () => ({
   API_ENDPOINTS: {
     TRACKER_USER_INFO: "/api/tracker-user-info"
   },
+  FRONTEND_PATHS: {
+    PRESCRIPTION_NOT_FOUND: "/prescription-not-found",
+    PRESCRIPTION_RESULTS: "/prescription-results",
+    LOGIN: "/login",
+    LOGOUT: "/logout",
+    SELECT_ROLE: "/select-role",
+    SELECTED_ROLE: "/selected-role",
+    CHANGE_ROLE: "/change-role",
+    SEARCH: "/search"
+  },
   MOCK_AUTH_ALLOWED_ENVIRONMENTS: ["dev", "dev-pr", "int", "qa"]
 }))
