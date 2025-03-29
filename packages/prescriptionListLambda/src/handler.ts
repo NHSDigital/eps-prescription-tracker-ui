@@ -18,6 +18,7 @@ import {
   constructSignedJWTBody,
   exchangeTokenForApigeeAccessToken,
   updateApigeeAccessToken,
+  getExistingApigeeAccessToken,
   initializeOidcConfig
 } from "@cpt-ui-common/authFunctions"
 import {SearchResponse, SearchParams} from "./types"
@@ -112,54 +113,79 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
     const isMockRequest = MOCK_MODE_ENABLED === "true" && isMockToken
     const apigeeTokenEndpoint = isMockRequest ? apigeeMockTokenEndpoint : apigeeCIS2TokenEndpoint
+    const oidcConfig = isMockRequest ? mockOidcConfig : cis2OidcConfig
+    let apigeeAccessToken
 
     // Authentication flow
-    const {cis2AccessToken, cis2IdToken} = await fetchAndVerifyCIS2Tokens(
-      event,
-      documentClient,
-      logger,
-      isMockRequest ? mockOidcConfig : cis2OidcConfig
-    )
-    logger.debug("Successfully fetched CIS2 tokens", {cis2AccessToken, cis2IdToken})
+    // for mock mode - check if we already have a valid token
+    if (isMockRequest) {
+      logger.info("Mock mode detected, checking for existing Apigee token")
+      const existingToken = await getExistingApigeeAccessToken(
+        documentClient,
+        TokenMappingTableName,
+        username,
+        logger
+      )
 
-    // Step 2: Fetch the private key for signing the client assertion
-    logger.info("Accessing JWT private key from Secrets Manager to create signed client assertion")
-    const jwtPrivateKey = await getSecret(jwtPrivateKeyArn)
-    if (!jwtPrivateKey || typeof jwtPrivateKey !== "string") {
-      throw new Error("Invalid or missing JWT private key")
+      if (existingToken) {
+        // use existing token if valid
+        // skip the token exchange process and go directly to the API calls
+        logger.info("Using existing Apigee access token in mock mode")
+        apigeeAccessToken = existingToken.accessToken
+      }
     }
 
-    logger.debug("JWT private key retrieved successfully")
+    // if we don't have a valid token yet (either because we're in a live environment or
+    // we're in mock mode but didn't find a valid token), go through the token exchange flow
+    if (!apigeeAccessToken) {
+      logger.info(`Obtaining new Apigee token (${isMockRequest ? "mock" : "real"} mode)`)
 
-    // Construct a new body with the signed JWT client assertion
-    logger.info("Generating signed JWT for Apigee token exchange payload")
-    const requestBody = constructSignedJWTBody(
-      logger,
-      apigeeTokenEndpoint,
-      jwtPrivateKey,
-      apigeeApiKey,
-      jwtKid,
-      cis2IdToken
-    )
-    logger.debug("Constructed request body for Apigee token exchange", {requestBody})
+      // Get CIS2 tokens
+      const {cis2AccessToken, cis2IdToken} = await fetchAndVerifyCIS2Tokens(
+        event,
+        documentClient,
+        logger,
+        oidcConfig
+      )
+      logger.debug("Successfully fetched CIS2 tokens", {cis2AccessToken, cis2IdToken})
 
-    // Step 3: Exchange token with Apigee
-    const {accessToken: apigeeAccessToken, expiresIn} = await exchangeTokenForApigeeAccessToken(
-      axiosInstance,
-      apigeeTokenEndpoint,
-      requestBody,
-      logger
-    )
+      // Fetch the private key for signing the client assertion
+      logger.info("Accessing JWT private key from Secrets Manager to create signed client assertion")
+      const jwtPrivateKey = await getSecret(jwtPrivateKeyArn)
+      if (!jwtPrivateKey || typeof jwtPrivateKey !== "string") {
+        throw new Error("Invalid or missing JWT private key")
+      }
 
-    // Step 4: Update DynamoDB with the new Apigee access token
-    await updateApigeeAccessToken(
-      documentClient,
-      TokenMappingTableName,
-      event.requestContext.authorizer?.claims?.["cognito:username"] || "unknown",
-      apigeeAccessToken,
-      expiresIn,
-      logger
-    )
+      // Construct a new body with the signed JWT client assertion
+      const requestBody = constructSignedJWTBody(
+        logger,
+        apigeeTokenEndpoint,
+        jwtPrivateKey,
+        apigeeApiKey,
+        jwtKid,
+        cis2IdToken
+      )
+
+      // Exchange token with Apigee
+      const {accessToken, expiresIn} = await exchangeTokenForApigeeAccessToken(
+        axiosInstance,
+        apigeeTokenEndpoint,
+        requestBody,
+        logger
+      )
+
+      // Update DynamoDB with the new Apigee access token
+      await updateApigeeAccessToken(
+        documentClient,
+        TokenMappingTableName,
+        username,
+        accessToken,
+        expiresIn,
+        logger
+      )
+
+      apigeeAccessToken = accessToken
+    }
 
     // Search logic
     let searchResponse: SearchResponse
