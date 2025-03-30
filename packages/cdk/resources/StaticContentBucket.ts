@@ -1,5 +1,6 @@
 import {RemovalPolicy} from "aws-cdk-lib"
 import {
+  AddToResourcePolicyResult,
   Effect,
   IRole,
   PolicyStatement,
@@ -37,6 +38,7 @@ export interface StaticContentBucketProps {
 export class StaticContentBucket extends Construct{
   public readonly bucket: Bucket
   public readonly kmsKey: Key
+  public readonly bucketPolicy: AddToResourcePolicyResult
 
   public constructor(scope: Construct, id: string, props: StaticContentBucketProps){
     super(scope, id)
@@ -98,7 +100,7 @@ export class StaticContentBucket extends Construct{
         bucket.arnForObjects("*")
       ]
     })
-    bucket.addToResourcePolicy(rumAllowReadObject)
+    const bucketPolicy = bucket.addToResourcePolicy(rumAllowReadObject)
     /*
      we also need to do the same for kms key
      but to avoid circular dependencies we need to use an escape hatch
@@ -154,5 +156,6 @@ export class StaticContentBucket extends Construct{
     //Outputs
     this.bucket = bucket
     this.kmsKey = kmsKey
+    this.bucketPolicy = bucketPolicy
   }
 }
