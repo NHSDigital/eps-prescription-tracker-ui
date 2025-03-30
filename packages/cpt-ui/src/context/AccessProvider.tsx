@@ -3,23 +3,22 @@ import React, {
   useContext,
   useState,
   useEffect,
-  ReactNode,
+  ReactNode
 } from "react"
 
-import { useLocalStorageState } from "@/helpers/useLocalStorageState"
-import { AuthContext } from "./AuthProvider"
+import {useLocalStorageState} from "@/helpers/useLocalStorageState"
+import {normalizePath} from "@/helpers/utils"
+import {AuthContext} from "./AuthProvider"
 
-import {
-  RoleDetails,
-  TrackerUserInfo,
-  UserDetails,
-} from "@/types/TrackerUserInfoTypes"
+import {RoleDetails, TrackerUserInfo, UserDetails} from "@/types/TrackerUserInfoTypes"
 
-import { API_ENDPOINTS } from "@/constants/environment"
+import {API_ENDPOINTS, FRONTEND_PATHS, NHS_REQUEST_URID} from "@/constants/environment"
 
 import http from "@/helpers/axios"
+import {useLocation, useNavigate} from "react-router-dom"
 
 const trackerUserInfoEndpoint = API_ENDPOINTS.TRACKER_USER_INFO
+const selectedRoleEndpoint = API_ENDPOINTS.SELECTED_ROLE
 
 export type AccessContextType = {
   noAccess: boolean
@@ -27,11 +26,11 @@ export type AccessContextType = {
   singleAccess: boolean
   setSingleAccess: (value: boolean) => void
   selectedRole: RoleDetails | undefined
-  setSelectedRole: (value: RoleDetails | undefined) => void
+  updateSelectedRole: (value: RoleDetails) => Promise<void>
   userDetails: UserDetails | undefined
   setUserDetails: (value: UserDetails | undefined) => void
-  rolesWithAccess: RoleDetails[]
-  rolesWithoutAccess: RoleDetails[]
+  rolesWithAccess: Array<RoleDetails>
+  rolesWithoutAccess: Array<RoleDetails>
   loading: boolean
   error: string | null
   clear: () => void
@@ -41,7 +40,7 @@ export const AccessContext = createContext<AccessContextType | undefined>(
   undefined
 )
 
-export const AccessProvider = ({ children }: { children: ReactNode }) => {
+export const AccessProvider = ({children}: { children: ReactNode }) => {
   const [noAccess, setNoAccess] = useLocalStorageState<boolean>(
     "noAccess",
     "access",
@@ -52,21 +51,20 @@ export const AccessProvider = ({ children }: { children: ReactNode }) => {
     "access",
     false
   )
-  const [selectedRole, setSelectedRole] = useLocalStorageState<
-    RoleDetails | undefined
-  >("selectedRole", "access", undefined)
-  const [userDetails, setUserDetails] = useLocalStorageState<
-    UserDetails | undefined
-  >("userDetails", "access", undefined)
+  const [selectedRole, setSelectedRole] =
+    useLocalStorageState<RoleDetails | undefined>("selectedRole", "access", undefined)
+  const [userDetails, setUserDetails] =
+    useLocalStorageState<UserDetails | undefined>("userDetails", "access", undefined)
   const [usingLocal, setUsingLocal] = useState(true)
-  const [rolesWithAccess, setRolesWithAccess] = useState<RoleDetails[]>([])
-  const [rolesWithoutAccess, setRolesWithoutAccess] = useState<RoleDetails[]>(
-    []
-  )
+  const [rolesWithAccess, setRolesWithAccess] = useState<Array<RoleDetails>>([])
+  const [rolesWithoutAccess, setRolesWithoutAccess] = useState<Array<RoleDetails>>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   const auth = useContext(AuthContext)
+
+  const navigate = useNavigate()
+  const location = useLocation()
 
   const clear = () => {
     console.log("Clearing access context and local storage...")
@@ -90,8 +88,8 @@ export const AccessProvider = ({ children }: { children: ReactNode }) => {
       const response = await http.get(trackerUserInfoEndpoint, {
         headers: {
           Authorization: `Bearer ${auth?.idToken}`,
-          "NHSD-Session-URID": "555254242106",
-        },
+          "NHSD-Session-URID": NHS_REQUEST_URID
+        }
       })
 
       if (response.status !== 200) {
@@ -134,6 +132,21 @@ export const AccessProvider = ({ children }: { children: ReactNode }) => {
     }
   }
 
+  const ensureRoleSelected = () => {
+    const allowed_no_role_paths = [
+      FRONTEND_PATHS.SELECT_ROLE,
+      FRONTEND_PATHS.LOGIN,
+      FRONTEND_PATHS.LOGOUT
+    ]
+
+    if (!selectedRole) {
+      if (!allowed_no_role_paths.includes(normalizePath(location.pathname))) {
+        console.log("Redirecting from", location.pathname)
+        navigate(FRONTEND_PATHS.SELECT_ROLE)
+      }
+    }
+  }
+
   // The access variables are cached, and the values are initially assumed to have not changed.
   // On a full page reload, make a tracker use info call to update them from the backend
   useEffect(() => {
@@ -164,13 +177,43 @@ export const AccessProvider = ({ children }: { children: ReactNode }) => {
     }
     // Now that we know there is an id token, check that it has a toString property.
     // For some reason, it doesn't have this immediately, it gets added after a brief pause.
+    // eslint-disable-next-line no-prototype-builtins
     if (!auth?.idToken.hasOwnProperty("toString")) {
       return
     }
 
     updateAccessVariables()
     setUsingLocal(false)
+
+    ensureRoleSelected()
   }, [auth?.idToken]) // run ONLY ONCE on mount (i.e. on initial page load)
+
+  const updateSelectedRole = async (newRole: RoleDetails) => {
+    try {
+      // Update selected role in the backend via the selectedRoleLambda endpoint using axios
+      const response = await http.put(
+        selectedRoleEndpoint,
+        {currently_selected_role: newRole},
+        {
+          headers: {
+            Authorization: `Bearer ${auth?.idToken?.toString()}`,
+            "Content-Type": "application/json",
+            "NHSD-Session-URID": NHS_REQUEST_URID
+          }
+        }
+      )
+
+      if (response.status !== 200) {
+        throw new Error("Failed to update the selected role")
+      }
+
+      // Update frontend state with selected role
+      setSelectedRole(newRole)
+    } catch (error) {
+      console.error("Error selecting role:", error)
+      alert("There was an issue selecting your role. Please notify the EPS team.")
+    }
+  }
 
   return (
     <AccessContext.Provider
@@ -180,14 +223,14 @@ export const AccessProvider = ({ children }: { children: ReactNode }) => {
         singleAccess,
         setSingleAccess,
         selectedRole,
-        setSelectedRole,
+        updateSelectedRole,
         userDetails,
         setUserDetails,
         rolesWithAccess,
         rolesWithoutAccess,
         loading,
         error,
-        clear,
+        clear
       }}
     >
       {children}

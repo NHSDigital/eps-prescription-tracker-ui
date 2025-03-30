@@ -50,12 +50,12 @@ repos:
         types_or: [ts, tsx, javascript, jsx, json]
         pass_filenames: false
 
-      - id: lint-prescriptionSearchLambda
-        name: Lint prescriptionSearchLambda
+      - id: lint-prescriptionListLambda
+        name: Lint prescriptionListLambda
         entry: npm
-        args: ["run", "--prefix=packages/prescriptionSearchLambda", "lint"]
+        args: ["run", "--prefix=packages/prescriptionListLambda", "lint"]
         language: system
-        files: ^packages\/prescriptionSearchLambda
+        files: ^packages\/prescriptionListLambda
         types_or: [ts, tsx, javascript, jsx, json]
         pass_filenames: false
 
@@ -65,6 +65,15 @@ repos:
         args: ["run", "--prefix=packages/trackerUserInfoLambda", "lint"]
         language: system
         files: ^packages\/trackerUserInfoLambda
+        types_or: [ts, tsx, javascript, jsx, json]
+        pass_filenames: false
+
+      - id: lint-CIS2SignOutLambda
+        name: Lint CIS2SignOutLambda
+        entry: npm
+        args: ["run", "--prefix=packages/CIS2SignOutLambda", "lint"]
+        language: system
+        files: ^packages\/CIS2SignOutLambda
         types_or: [ts, tsx, javascript, jsx, json]
         pass_filenames: false
 

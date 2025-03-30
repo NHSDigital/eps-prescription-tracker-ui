@@ -1,3 +1,5 @@
+import {FRONTEND_PATHS} from "@/constants/environment"
+
 export const CHANGE_YOUR_ROLE_PAGE_TEXT = {
   title: "Change your role",
   caption: "Select the role you wish to use to access the service.",
@@ -12,7 +14,7 @@ export const CHANGE_YOUR_ROLE_PAGE_TEXT = {
   },
   confirmButton: {
     text: "Continue to find a prescription",
-    link: "searchforaprescription"
+    link: FRONTEND_PATHS.SEARCH
   },
   alternativeMessage: "Alternatively, you can choose a new role below.",
   organisation: "Organisation",

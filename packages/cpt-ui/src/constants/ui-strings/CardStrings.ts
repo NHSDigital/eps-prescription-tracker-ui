@@ -1,3 +1,5 @@
+import {FRONTEND_PATHS} from "@/constants/environment"
+
 /* eslint-disable max-len */
 export const SELECT_YOUR_ROLE_PAGE_TEXT = {
   title: "Select your role",
@@ -13,7 +15,7 @@ export const SELECT_YOUR_ROLE_PAGE_TEXT = {
   },
   confirmButton: {
     text: "Continue to find a prescription",
-    link: "searchforaprescription"
+    link: FRONTEND_PATHS.SEARCH
   },
   alternativeMessage: "Alternatively, you can choose a new role below.",
   organisation: "Organisation",

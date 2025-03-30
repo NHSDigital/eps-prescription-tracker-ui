@@ -57,7 +57,9 @@ export const nagSuppressions = (stack: Stack) => {
       stack,
       [
         "/StatefulStack/DynamoDB/TableReadManagedPolicy/Resource",
-        "/StatefulStack/DynamoDB/TableWriteManagedPolicy/Resource"
+        "/StatefulStack/DynamoDB/TableWriteManagedPolicy/Resource",
+        "/StatefulStack/DynamoDB/StateTableReadManagedPolicy/Resource",
+        "/StatefulStack/DynamoDB/StateTableWriteManagedPolicy/Resource"
       ],
       [
         {
@@ -70,9 +72,12 @@ export const nagSuppressions = (stack: Stack) => {
   }
 
   if (stack.artifactId === "StatelessStack") {
-    safeAddNagSuppression(
+    safeAddNagSuppressionGroup(
       stack,
-      "/StatelessStack/ApiGateway/ApiGateway/Resource",
+      [
+        "/StatelessStack/ApiGateway/ApiGateway/Resource",
+        "/StatelessStack/OAuth2Gateway/ApiGateway/Resource"
+      ],
       [
         {
           id: "AwsSolutions-APIG2",
@@ -81,12 +86,26 @@ export const nagSuppressions = (stack: Stack) => {
       ]
     )
 
+    safeAddNagSuppression(
+      stack,
+      "/StatelessStack/SharedSecrets/GetRandomPasswordPolicy/Resource",
+      [
+        {
+          id: "AwsSolutions-IAM5",
+          reason: "Suppress error for having a wildcard in the GetRandomPasswordPolicy. Cant apply this to the specific ARN"
+        }
+      ]
+    )
+
     safeAddNagSuppressionGroup(
       stack,
       [
-        "/StatelessStack/ApiGateway/ApiGateway/Default/token/POST/Resource",
-        "/StatelessStack/ApiGateway/ApiGateway/Default/mocktoken/POST/Resource",
-        "/StatelessStack/ApiGateway/ApiGateway/Default/mocknoauth/GET/Resource"
+        "/StatelessStack/OAuth2Gateway/ApiGateway/Default/authorize/GET/Resource",
+        "/StatelessStack/OAuth2Gateway/ApiGateway/Default/mock-authorize/GET/Resource",
+        "/StatelessStack/OAuth2Gateway/ApiGateway/Default/callback/GET/Resource",
+        "/StatelessStack/OAuth2Gateway/ApiGateway/Default/mock-callback/GET/Resource",
+        "/StatelessStack/OAuth2Gateway/ApiGateway/Default/token/POST/Resource",
+        "/StatelessStack/OAuth2Gateway/ApiGateway/Default/mocktoken/POST/Resource"
       ],
       [
         {
@@ -102,15 +121,11 @@ export const nagSuppressions = (stack: Stack) => {
 
     safeAddNagSuppression(
       stack,
-      "/StatelessStack/ApiGateway/ApiGateway/Default/mocknoauth/GET/Resource",
+      "/StatelessStack/ApiFunctions/CIS2SignOut/LambdaPutLogsManagedPolicy/Resource",
       [
         {
-          id: "AwsSolutions-APIG4",
-          reason: "Suppress error for not implementing authorization. Token endpoint should not have an authorizer"
-        },
-        {
-          id: "AwsSolutions-COG4",
-          reason: "Suppress error for not implementing a Cognito user pool authorizer. Token endpoint should not have an authorizer"
+          id: "AwsSolutions-IAM5",
+          reason: "Suppress error for wildcard permissions. This suppression is necessary as the Lambda log group requires access to all log streams."
         }
       ]
     )
@@ -121,8 +136,13 @@ export const nagSuppressions = (stack: Stack) => {
         "/StatelessStack/ApiFunctions/TrackerUserInfo/LambdaPutLogsManagedPolicy/Resource",
         "/StatelessStack/ApiFunctions/MockTrackerUserInfo/LambdaPutLogsManagedPolicy/Resource",
         "/StatelessStack/ApiFunctions/SelectedRole/LambdaPutLogsManagedPolicy/Resource",
-        "/StatelessStack/CognitoFunctions/TokenResources/LambdaPutLogsManagedPolicy/Resource",
-        "/StatelessStack/CognitoFunctions/MockTokenResources/LambdaPutLogsManagedPolicy/Resource"
+        "/StatelessStack/OAuth2Functions/TokenResources/LambdaPutLogsManagedPolicy/Resource",
+        "/StatelessStack/OAuth2Functions/MockTokenResources/LambdaPutLogsManagedPolicy/Resource",
+        "/StatelessStack/OAuth2Functions/AuthorizeLambdaResources/LambdaPutLogsManagedPolicy/Resource",
+        "/StatelessStack/OAuth2Functions/CallbackLambdaResources/LambdaPutLogsManagedPolicy/Resource",
+        "/StatelessStack/OAuth2Functions/MockCallbackLambdaResources/LambdaPutLogsManagedPolicy/Resource",
+        "/StatelessStack/OAuth2Functions/MockAuthorizeLambdaResources/LambdaPutLogsManagedPolicy/Resource",
+        "/StatelessStack/OAuth2Functions/MockIDPResponseLambdaResources/LambdaPutLogsManagedPolicy/Resource"
       ],
       [
         {
@@ -134,7 +154,7 @@ export const nagSuppressions = (stack: Stack) => {
 
     safeAddNagSuppression(
       stack,
-      "/StatelessStack/CognitoFunctions/MockTokenResources/LambdaPutLogsManagedPolicy/Resource",
+      "/StatelessStack/OAuth2Functions/MockTokenResources/LambdaPutLogsManagedPolicy/Resource",
       [
         {
           id: "AwsSolutions-IAM5",
@@ -145,26 +165,11 @@ export const nagSuppressions = (stack: Stack) => {
 
     safeAddNagSuppression(
       stack,
-      "/StatelessStack/ApiFunctions/PrescriptionSearch/LambdaPutLogsManagedPolicy/Resource",
+      "/StatelessStack/ApiFunctions/PrescriptionList/LambdaPutLogsManagedPolicy/Resource",
       [
         {
           id: "AwsSolutions-IAM5",
           reason: "Suppress error for not having wildcards in permissions. This is a fine as we need to have permissions on all log streams under path"
-        }
-      ]
-    )
-
-    safeAddNagSuppression(
-      stack,
-      "/StatelessStack/ApiGateway/ApiGateway/Default/mocknoauth/GET/Resource",
-      [
-        {
-          id: "AwsSolutions-APIG4",
-          reason: "Suppress error for not implementing authorization. Token endpoint should not have an authorizer"
-        },
-        {
-          id: "AwsSolutions-COG4",
-          reason: "Suppress error for not implementing a Cognito user pool authorizer. Token endpoint should not have an authorizer"
         }
       ]
     )

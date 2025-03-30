@@ -96,9 +96,9 @@ export class Cognito extends Construct {
     // these are the endpoints that are added to user pool identity provider
     // note we override the token endpoint to point back to our custom token
     const oidcEndpoints: OidcEndpoints = {
-      authorization: props.primaryOidcAuthorizeEndpoint,
+      authorization: `https://${props.fullCloudfrontDomain}/oauth2/authorize`,
       jwksUri: props.primaryOidcjwksEndpoint,
-      token: `https://${props.fullCloudfrontDomain}/api/token`,
+      token: `https://${props.fullCloudfrontDomain}/oauth2/token`,
       userInfo: props.primaryOidcUserInfoEndpoint
     }
 
@@ -138,9 +138,9 @@ export class Cognito extends Construct {
       // these are the endpoints that are added to user pool identity provider
       // note we override the token endpoint to point back to our custom token
       const mockOidcEndpoints: OidcEndpoints = {
-        authorization: props.mockOidcAuthorizeEndpoint,
+        authorization: `https://${props.fullCloudfrontDomain}/oauth2/mock-authorize`,
         jwksUri: props.mockOidcjwksEndpoint,
-        token: `https://${props.fullCloudfrontDomain}/api/mocktoken`,
+        token: `https://${props.fullCloudfrontDomain}/oauth2/mocktoken`,
         userInfo: props.mockOidcUserInfoEndpoint
       }
 
@@ -185,12 +185,10 @@ export class Cognito extends Construct {
     }
 
     const callbackUrls = [
-      `https://${props.fullCloudfrontDomain}/site/selectyourrole`,
-      // FIXME: This is temporary, until we get routing fixed
-      `https://${props.fullCloudfrontDomain}/site/selectyourrole.html`,
+      `https://${props.fullCloudfrontDomain}/site/select-role`,
       // TODO: This is for the proof-of-concept login page, and can probably be deleted soon.
       `https://${props.fullCloudfrontDomain}/auth_demo/`,
-      `https://${props.fullCloudfrontDomain}/oauth2/idpresponse`
+      `https://${props.fullCloudfrontDomain}/oauth2/callback`
     ]
 
     const logoutUrls = [
@@ -201,11 +199,11 @@ export class Cognito extends Construct {
 
     if (props.useLocalhostCallback) {
       // Local, without base path set
-      callbackUrls.push("http://localhost:3000/selectyourrole/")
+      callbackUrls.push("http://localhost:3000/select-role/")
       logoutUrls.push("http://localhost:3000/logout/")
       // Local, with base path set to /site
       logoutUrls.push("http://localhost:3000/site/logout/")
-      callbackUrls.push("http://localhost:3000/site/selectyourrole/")
+      callbackUrls.push("http://localhost:3000/site/select-role/")
       // Auth demo stuff
       callbackUrls.push("http://localhost:3000/auth/")
       callbackUrls.push("http://localhost:3000/auth_demo/")

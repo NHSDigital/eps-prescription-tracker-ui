@@ -1,11 +1,26 @@
-import React, { createContext, useEffect, useState } from 'react'
-import { Amplify } from 'aws-amplify'
-import { Hub } from "aws-amplify/utils"
-import { signInWithRedirect, signOut, getCurrentUser, AuthUser, fetchAuthSession, JWT, SignInWithRedirectInput } from 'aws-amplify/auth'
-import { authConfig } from './configureAmplify'
+import React, {createContext, useEffect, useState} from "react"
+import {Amplify} from "aws-amplify"
+import {Hub} from "aws-amplify/utils"
+import {
+  signInWithRedirect,
+  signOut,
+  getCurrentUser,
+  AuthUser,
+  fetchAuthSession,
+  JWT,
+  SignInWithRedirectInput
+} from "aws-amplify/auth"
+import {authConfig} from "./configureAmplify"
 
-import { useLocalStorageState } from '@/helpers/useLocalStorageState';
-import { useNavigate, useLocation } from 'react-router-dom'
+import {useLocalStorageState} from "@/helpers/useLocalStorageState"
+import {normalizePath} from "@/helpers/utils"
+import {API_ENDPOINTS, FRONTEND_PATHS, NHS_REQUEST_URID} from "@/constants/environment"
+
+import {useNavigate, useLocation} from "react-router-dom"
+
+import http from "@/helpers/axios"
+
+const CIS2SignOutEndpoint = API_ENDPOINTS.CIS2_SIGNOUT_ENDPOINT
 
 export interface AuthContextType {
   error: string | null
@@ -19,12 +34,12 @@ export interface AuthContextType {
 
 export const AuthContext = createContext<AuthContextType | null>(null)
 
-export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+export const AuthProvider = ({children}: { children: React.ReactNode }) => {
   const [error, setError] = useState<string | null>(null)
-  const [user, setUser] = useLocalStorageState<AuthUser | null>('user', 'auth', null)
-  const [isSignedIn, setIsSignedIn] = useLocalStorageState<boolean>('isSignedIn', 'auth', false)
-  const [idToken, setIdToken] = useLocalStorageState<JWT | null>('idToken', 'auth', null)
-  const [accessToken, setAccessToken] = useLocalStorageState<JWT | null>('accessToken', 'auth', null)
+  const [user, setUser] = useLocalStorageState<AuthUser | null>("user", "auth", null)
+  const [isSignedIn, setIsSignedIn] = useLocalStorageState<boolean>("isSignedIn", "auth", false)
+  const [idToken, setIdToken] = useLocalStorageState<JWT | null>("idToken", "auth", null)
+  const [accessToken, setAccessToken] = useLocalStorageState<JWT | null>("accessToken", "auth", null)
 
   const navigate = useNavigate()
   const location = useLocation()
@@ -35,7 +50,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const getUser = async () => {
     console.log("Fetching user session...")
     try {
-      const authSession = await fetchAuthSession({ forceRefresh: true })
+      const authSession = await fetchAuthSession({forceRefresh: true})
       const sessionIdToken = authSession.tokens?.idToken
       const sessionAccessToken = authSession.tokens?.accessToken
 
@@ -43,12 +58,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       if (!sessionIdToken || !sessionAccessToken) {
         const noRedirectPaths = [
-          "/login",
-          "/logout"
+          FRONTEND_PATHS.LOGIN,
+          FRONTEND_PATHS.LOGOUT
         ]
 
-        if (!noRedirectPaths.includes(location.pathname)) {
-          navigate("/login")
+        if (!noRedirectPaths.includes(normalizePath(location.pathname))) {
+          console.warn("No login detected. Redirecting to the login page")
+          navigate(FRONTEND_PATHS.LOGIN)
         }
       }
 
@@ -109,7 +125,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
    * Set up Hub listener to react to auth events and refresh session state.
    */
   useEffect(() => {
-    const unsubscribe = Hub.listen("auth", ({ payload }) => {
+    const unsubscribe = Hub.listen("auth", ({payload}) => {
       console.log("Auth event payload:", payload)
       switch (payload.event) {
         // On successful signIn or token refresh, get the latest user state
@@ -163,7 +179,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
    */
   useEffect(() => {
     console.log("Configuring Amplify with authConfig:", authConfig)
-    Amplify.configure(authConfig, { ssr: true })
+    Amplify.configure(authConfig, {ssr: true})
     getUser()
   }, [authConfig])
 
@@ -172,13 +188,29 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
    */
   const cognitoSignOut = async () => {
     console.log("Signing out...")
-
-    // TODO: Also sign out of the CPT API, so it can delete the token
-    // This is blocked until we have a central Dynamo interaction lambda
-
     try {
-      await signOut({ global: true });
-      console.log("Signed out successfully!");
+      const signOutPromise = signOut({global: true})
+        .then(() => {
+          console.log("Frontend Cognito signout OK!")
+        }).catch((err) => {
+          console.log("Failed to sign out of cognito", err)
+          throw err
+        })
+      const httpPromise = http
+        .get(CIS2SignOutEndpoint, {
+          headers: {
+            Authorization: `Bearer ${idToken}`,
+            "NHSD-Session-URID": NHS_REQUEST_URID
+          }
+        })
+        .then(() => {
+          console.log("Backend CIS2 signout OK")
+        })
+        .catch((err) => {
+          console.warn("Backend CIS2 sign-out API call failed", err)
+        })
+
+      await Promise.all([signOutPromise, httpPromise])
 
       // Immediately reset state to signed out.
       setUser(null)
@@ -208,7 +240,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       idToken,
       accessToken,
       cognitoSignIn,
-      cognitoSignOut,
+      cognitoSignOut
     }}>
       {children}
     </AuthContext.Provider>

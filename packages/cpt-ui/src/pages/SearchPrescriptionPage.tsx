@@ -1,14 +1,19 @@
-import React from "react";
-import { Col, Container, Hero, Row } from "nhsuk-react-components";
-import EpsTabs from "@/components/EpsTabs";
-import { HERO_TEXT } from "@/constants/ui-strings/SearchForAPrescriptionStrings"
+import React from "react"
+import {
+  Col,
+  Container,
+  Hero,
+  Row
+} from "nhsuk-react-components"
+import EpsTabs from "@/components/EpsTabs"
+import {HERO_TEXT} from "@/constants/ui-strings/SearchForAPrescriptionStrings"
 
 export default function SearchForAPrescriptionPage() {
   return (
     <>
       <title>Search for a prescription</title>
       <main id="search-for-a-prescription" data-testid="search-for-a-prescription">
-        <Container className="hero-container">
+        <Container className="hero-container" data-testid="search-hero-container">
           <Row>
             <Col width="full">
               <Hero className="nhsuk-hero-wrapper" data-testid="hero-banner">
@@ -19,11 +24,13 @@ export default function SearchForAPrescriptionPage() {
             </Col>
           </Row>
         </Container>
-        <Row>
-          <Col width="full">
-            <EpsTabs />
-          </Col>
-        </Row>
+        <Container data-testid="search-tabs-container">
+          <Row>
+            <Col width="full">
+              <EpsTabs />
+            </Col>
+          </Row>
+        </Container>
       </main>
     </>
   )

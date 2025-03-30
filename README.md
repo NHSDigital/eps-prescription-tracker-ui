@@ -103,7 +103,7 @@ export BASE_PATH="/site"                                                        
 export API_DOMAIN_OVERRIDE=https://${SERVICE_NAME}.dev.eps.national.nhs.uk/     # Proxies the actual deployed backend for this PR
 
 export VITE_hostedLoginDomain=${SERVICE_NAME}.auth.eu-west-2.amazoncognito.com
-export VITE_redirectSignIn=http://localhost:3000/site/selectyourrole
+export VITE_redirectSignIn=http://localhost:3000/site/select-role
 export VITE_redirectSignOut=http://localhost:3000/site/logout
 
 export VITE_COMMIT_ID="Local Development Server"

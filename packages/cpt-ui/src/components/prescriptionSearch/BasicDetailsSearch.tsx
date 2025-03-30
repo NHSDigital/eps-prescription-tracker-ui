@@ -1,7 +1,7 @@
-import React from 'react';
+import React from "react"
 
 export default function BasicDetailsSearch() {
-    return (
-        <h1>Basic Details Search</h1>
-    )
+  return (
+    <h1 data-testid="basic-details-search-heading">Basic Details Search</h1>
+  )
 }

@@ -15,7 +15,7 @@ import {PrivateKey} from "jsonwebtoken"
 import {verifyIdToken, initializeOidcConfig} from "@cpt-ui-common/authFunctions"
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 
-import {formatHeaders, rewriteBodyToAddSignedJWT} from "./helpers"
+import {formatHeaders, rewriteRequestBody} from "./helpers"
 
 /*
 This is the lambda code that is used to intercept calls to token endpoint as part of the cognito login flow
@@ -33,6 +33,7 @@ CIS2_OIDCJWKS_ENDPOINT
 CIS2_USER_INFO_ENDPOINT
 CIS2_USER_POOL_IDP
 CIS2_IDP_TOKEN_PATH
+FULL_CLOUDFRONT_DOMAIN
 
 For mock calls, the following must be set
 MOCK_OIDC_ISSUER
@@ -41,10 +42,13 @@ MOCK_OIDCJWKS_ENDPOINT
 MOCK_USER_INFO_ENDPOINT
 MOCK_USER_POOL_IDP
 MOCK_IDP_TOKEN_PATH
+FULL_CLOUDFRONT_DOMAIN
 */
 
 const logger = new Logger({serviceName: "token"})
 const useMock: boolean = process.env["useMock"] === "true"
+
+const cloudfrontDomain = process.env["FULL_CLOUDFRONT_DOMAIN"] as string
 
 // Create a config for cis2 and mock
 // this is outside functions so it can be re-used and caching works
@@ -57,6 +61,9 @@ const jwtKid = process.env["jwtKid"] as string
 const idpTokenPath = useMock ?
   process.env["MOCK_IDP_TOKEN_PATH"] as string :
   process.env["CIS2_IDP_TOKEN_PATH"] as string
+
+// Set the redirect back to our proxy lambda
+const idpCallbackPath = `https://${cloudfrontDomain}/oauth2/callback`
 
 const dynamoClient = new DynamoDBClient()
 const documentClient = DynamoDBDocumentClient.from(dynamoClient)
@@ -81,8 +88,14 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   let rewrittenObjectBodyParameters: ParsedUrlQuery
 
   const jwtPrivateKey = await getSecret(jwtPrivateKeyArn)
-  rewrittenObjectBodyParameters = rewriteBodyToAddSignedJWT(
-    logger, objectBodyParameters, idpTokenPath, jwtPrivateKey as PrivateKey, jwtKid)
+  rewrittenObjectBodyParameters = rewriteRequestBody(
+    logger,
+    objectBodyParameters,
+    idpTokenPath,
+    idpCallbackPath,
+    jwtPrivateKey as PrivateKey,
+    jwtKid
+  )
 
   logger.debug("about to call downstream idp with rewritten body", {idpTokenPath, body: rewrittenObjectBodyParameters})
 
