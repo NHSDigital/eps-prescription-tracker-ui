@@ -107,7 +107,7 @@ export class Rum extends Construct {
     // and the log group name is based on the id of this resource
     const allowedDomains = [props.topLevelDomain]
     if (props.allowLocalhostAccess) {
-      allowedDomains.push("http://localhost:3000")
+      allowedDomains.push("localhost")
     }
     const rumApp = new CfnAppMonitor(this, "RumApp", {
       name: props.appMonitorName,
