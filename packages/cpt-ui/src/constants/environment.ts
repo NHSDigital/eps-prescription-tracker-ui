@@ -26,7 +26,8 @@ export const API_ENDPOINTS = {
   TRACKER_USER_INFO: "/api/tracker-user-info",
   SELECTED_ROLE: "/api/selected-role",
   PRESCRIPTION_LIST: "/api/prescription-list",
-  CIS2_SIGNOUT_ENDPOINT: "/api/cis2-signout"
+  CIS2_SIGNOUT_ENDPOINT: "/api/cis2-signout",
+  PRESCRIPTION_DETAILS: "/api/prescription-details"
 } as const
 
 // RUM CONFIG
@@ -42,6 +43,18 @@ export const RUM_CONFIG = {
   SESSION_SAMPLE_RATE: Number(import.meta.env.VITE_RUM_SESSION_SAMPLE_RATE),
   TELEMETRIES: import.meta.env.VITE_RUM_TELEMETRIES.split(",")
 } as const
+// Web page paths
+export const FRONTEND_PATHS = {
+  PRESCRIPTION_NOT_FOUND: "/prescription-not-found",
+  PRESCRIPTION_RESULTS: "/prescription-results",
+  LOGIN: "/login",
+  LOGOUT: "/logout",
+  SELECT_ROLE: "/select-role",
+  SELECTED_ROLE: "/selected-role",
+  CHANGE_ROLE: "/change-role",
+  SEARCH: "/search"
+}
+
 // This needs to be provided in backend requests as a header
 export const NHS_REQUEST_URID = "555254242106"
 
