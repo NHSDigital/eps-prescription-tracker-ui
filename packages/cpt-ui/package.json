@@ -25,7 +25,7 @@
     "react-intl": "^7.1.10",
     "sass": "^1.86.0",
     "uuid": "^11.1.0",
-    "react-router-dom": "^6.22.3"
+    "react-router-dom": "^7.4.1"
   },
   "devDependencies": {
     "@swc/core": "^1.11.13",
