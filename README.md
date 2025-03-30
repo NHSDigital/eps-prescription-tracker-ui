@@ -153,7 +153,6 @@ n.b. Ensure you've properly sourced these variables! `direnv` can sometimes miss
 source .envrc
 ```
 
-To enable RUM monitoring you need to manually go in and configure the application domain list to include localhost as this can not currently be done through CDK
 
 ###  React app
 React/Next.js code resides in app folder.  More details to be added as dev progresses, see make section for relevant commands

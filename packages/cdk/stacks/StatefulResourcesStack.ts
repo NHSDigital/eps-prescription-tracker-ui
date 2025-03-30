@@ -127,8 +127,8 @@ export class StatefulResourcesStack extends Stack {
       serviceName: props.serviceName,
       stackName: props.stackName,
       logRetentionInDays: logRetentionInDays,
-      cwLogEnabled: rumCloudwatchLogEnabled
-
+      cwLogEnabled: rumCloudwatchLogEnabled,
+      allowLocalhostAccess: useLocalhostCallback
     })
 
     // Outputs
