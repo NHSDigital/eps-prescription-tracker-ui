@@ -41,7 +41,8 @@ export const RUM_CONFIG = {
   ALLOW_COOKIES: import.meta.env.VITE_RUM_ALLOW_COOKIES === "true",
   ENABLE_XRAY: import.meta.env.VITE_RUM_ENABLE_XRAY === "true",
   SESSION_SAMPLE_RATE: Number(import.meta.env.VITE_RUM_SESSION_SAMPLE_RATE),
-  TELEMETRIES: import.meta.env.VITE_RUM_TELEMETRIES.split(",")
+  TELEMETRIES: import.meta.env.VITE_RUM_TELEMETRIES.split(","),
+  RELEASE_ID: import.meta.env.VITE_COMMIT_ID
 } as const
 // Web page paths
 export const FRONTEND_PATHS = {

@@ -10,6 +10,7 @@ import {CfnAppMonitor} from "aws-cdk-lib/aws-rum"
 import {Construct} from "constructs"
 import {RumLog} from "./RumLog"
 import {LogGroup} from "aws-cdk-lib/aws-logs"
+import {IBucket} from "aws-cdk-lib/aws-s3"
 
 export interface RumProps {
   /**
@@ -28,6 +29,7 @@ export interface RumProps {
   readonly logRetentionInDays: number
   readonly cwLogEnabled: boolean
   readonly allowLocalhostAccess: boolean
+  readonly staticContentBucket: IBucket
 
 }
 export class Rum extends Construct {
@@ -92,8 +94,6 @@ export class Rum extends Construct {
       }
     })
 
-    // TODO - add javascript source maps property when it is available in CF/CDK (feature released 18 March 2025)
-    // https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-RUM-JavaScriptStackTraceSourceMaps.html
     const baseAppMonitorConfiguration: CfnAppMonitor.AppMonitorConfigurationProperty = {
       allowCookies: true,
       enableXRay: true,
@@ -113,6 +113,12 @@ export class Rum extends Construct {
       name: props.appMonitorName,
       cwLogEnabled: props.cwLogEnabled,
       domainList: allowedDomains,
+      deobfuscationConfiguration: {
+        javaScriptSourceMaps: {
+          status: "ENABLED",
+          s3Uri: `s3://${props.staticContentBucket.bucketName}/source_maps/`
+        }
+      },
       appMonitorConfiguration: {
         ...baseAppMonitorConfiguration
       }

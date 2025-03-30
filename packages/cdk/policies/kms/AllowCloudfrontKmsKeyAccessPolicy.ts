@@ -42,6 +42,11 @@ export class AllowCloudfrontKmsKeyAccessPolicy extends Construct{
             "kms:GenerateDataKey*"
           ],
           resources:["*"]
+        }),
+        new PolicyStatement({
+          effect: Effect.ALLOW,
+          principals: [new ServicePrincipal("rum.amazonaws.com")],
+          actions: ["kms:Decrypt"]
         })
       ]
     })

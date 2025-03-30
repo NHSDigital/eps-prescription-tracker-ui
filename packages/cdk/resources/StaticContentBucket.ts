@@ -1,5 +1,10 @@
 import {RemovalPolicy} from "aws-cdk-lib"
-import {Effect, IRole, PolicyStatement} from "aws-cdk-lib/aws-iam"
+import {
+  Effect,
+  IRole,
+  PolicyStatement,
+  ServicePrincipal
+} from "aws-cdk-lib/aws-iam"
 import {CfnKey, Key} from "aws-cdk-lib/aws-kms"
 import {
   BlockPublicAccess,
@@ -81,6 +86,19 @@ export class StaticContentBucket extends Construct{
     })
     bucket.addToResourcePolicy(bucketAllowDeployUploadPolicyStatement)
 
+    const rumAllowReadObject = new PolicyStatement({
+      effect: Effect.ALLOW,
+      principals: [new ServicePrincipal("rum.amazonaws.com")],
+      actions: [
+        "s3:GetObject",
+        "s3:ListBucket"
+      ],
+      resources: [
+        bucket.bucketArn,
+        bucket.arnForObjects("*")
+      ]
+    })
+    bucket.addToResourcePolicy(rumAllowReadObject)
     /*
      we also need to do the same for kms key
      but to avoid circular dependencies we need to use an escape hatch

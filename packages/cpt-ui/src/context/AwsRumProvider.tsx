@@ -22,7 +22,8 @@ export const AwsRumProvider: React.FC<AwsRumProviderProps> = ({children}) => {
       endpoint: RUM_CONFIG.ENDPOINT,
       telemetries: RUM_CONFIG.TELEMETRIES,
       allowCookies: RUM_CONFIG.ALLOW_COOKIES,
-      enableXRay: RUM_CONFIG.ENABLE_XRAY
+      enableXRay: RUM_CONFIG.ENABLE_XRAY,
+      releaseId: RUM_CONFIG.RELEASE_ID
     }
     awsRum = new AwsRum(RUM_CONFIG.APPLICATION_ID, RUM_CONFIG.VERSION, RUM_CONFIG.REGION, config)
   } catch (error) {
