@@ -16,9 +16,10 @@ import {Construct} from "constructs"
 export interface PolicyProps {
   cloudfrontDistributionId: string
   deploymentRole: IPrincipal
+  rumAppName: string
 }
 
-export class AllowCloudfrontKmsKeyAccessPolicy extends Construct{
+export class AllowStaticBucketKmsKeyAccessPolicy extends Construct{
   public readonly policyJson
 
   public constructor(scope: Construct, id: string, props: PolicyProps){
@@ -42,14 +43,24 @@ export class AllowCloudfrontKmsKeyAccessPolicy extends Construct{
             "kms:GenerateDataKey*"
           ],
           resources:["*"]
-        }),
-        new PolicyStatement({
-          effect: Effect.ALLOW,
-          principals: [new ServicePrincipal("rum.amazonaws.com")],
-          actions: ["kms:Decrypt"]
         })
       ]
     })
+
+    if (props.rumAppName) {
+      policy.addStatements(
+        new PolicyStatement({
+          effect: Effect.ALLOW,
+          principals: [new ServicePrincipal("rum.amazonaws.com")],
+          actions: ["kms:Decrypt"],
+          conditions: {
+            StringEquals: {
+              "AWS:SourceArn": `arn:aws:cloudfront::${accountRootPrincipal.accountId}:appmonitor/${props.rumAppName}` // eslint-disable-line max-len
+            }
+          }
+        })
+      )
+    }
 
     // if we have a cloudfrontDistributionId, then add correct policy
     if(props.cloudfrontDistributionId) {

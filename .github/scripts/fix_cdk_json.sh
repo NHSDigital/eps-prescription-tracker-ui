@@ -62,6 +62,10 @@ RUM_LOG_GROUP_ARN=$(aws cloudformation list-exports --region eu-west-2 --output 
     jq \
     --arg EXPORT_NAME "${SERVICE_NAME}-stateful-resources:rum:logGroup:arn" \
     -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+RUM_APP_NAME=$(aws cloudformation list-exports --region eu-west-2 --output json | \
+    jq \
+    --arg EXPORT_NAME "${SERVICE_NAME}-stateful-resources:rum:rumApp:Name" \
+    -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
 
 # go through all the key values we need to set
 fix_string_key serviceName "${SERVICE_NAME}"
@@ -103,6 +107,9 @@ if [ "$CDK_APP_NAME" == "StatefulResourcesApp" ]; then
         fix_boolean_number_key rumCloudwatchLogEnabled "true"
     else
         fix_boolean_number_key rumCloudwatchLogEnabled "false"
+    fi
+    if [ -n "${RUM_APP_NAME}" ]; then
+        fix_boolean_number_key rumAppName "${RUM_APP_NAME}"
     fi
     fix_boolean_number_key allowLocalhostAccess "${ALLOW_LOCALHOST_ACCESS}"
 

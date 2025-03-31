@@ -64,11 +64,11 @@ export class StatefulResourcesStack extends Stack {
     const allowLocalhostAccess: boolean = this.node.tryGetContext("allowLocalhostAccess")
     const logRetentionInDays: number = Number(this.node.tryGetContext("logRetentionInDays"))
     const rumCloudwatchLogEnabled: boolean = this.node.tryGetContext("rumCloudwatchLogEnabled")
+    const rumAppName: string = this.node.tryGetContext("rumAppName")
 
     // Imports
     const auditLoggingBucketImport = Fn.importValue("account-resources:AuditLoggingBucket")
     const deploymentRoleImport = Fn.importValue("ci-resources:CloudFormationDeployRole")
-    const rumAppName = Fn.importValue(`${props.stackName}:rum:rumApp:Name`)
 
     // Coerce context and imports to relevant types
     const auditLoggingBucket = Bucket.fromBucketArn(
@@ -132,12 +132,12 @@ export class StatefulResourcesStack extends Stack {
       cwLogEnabled: rumCloudwatchLogEnabled,
       allowLocalhostAccess: allowLocalhostAccess,
       staticContentBucket: staticContentBucket.bucket,
-      uploadSourceMaps: staticContentBucket.bucketPolicy.policyDependable ? true: false
+      uploadSourceMaps: false //staticContentBucket.addRumBucketPolicy.policyDependable ? true: false
     })
 
     // add dependency on bucket policy
-    if (staticContentBucket.bucketPolicy.policyDependable) {
-      rum.node.addDependency(staticContentBucket.bucketPolicy.policyDependable)
+    if (staticContentBucket.addRumBucketPolicy?.policyDependable) {
+      rum.node.addDependency(staticContentBucket.addRumBucketPolicy.policyDependable)
     }
     // Outputs
 
