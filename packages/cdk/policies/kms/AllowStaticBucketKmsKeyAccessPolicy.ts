@@ -53,6 +53,7 @@ export class AllowStaticBucketKmsKeyAccessPolicy extends Construct{
           effect: Effect.ALLOW,
           principals: [new ServicePrincipal("rum.amazonaws.com")],
           actions: ["kms:Decrypt"],
+          resources:["*"],
           conditions: {
             StringEquals: {
               "AWS:SourceArn": `arn:aws:rum::${accountRootPrincipal.accountId}/${props.rumAppName}` // eslint-disable-line max-len
