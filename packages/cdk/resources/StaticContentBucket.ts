@@ -1,5 +1,6 @@
 import {RemovalPolicy} from "aws-cdk-lib"
 import {
+  AccountRootPrincipal,
   AddToResourcePolicyResult,
   Effect,
   IRole,
@@ -28,6 +29,7 @@ export interface StaticContentBucketProps {
   readonly cloudfrontDistributionId: string
   readonly auditLoggingBucket: IBucket,
   readonly deploymentRole: IRole
+  readonly rumAppName: string
 }
 
 /**
@@ -88,19 +90,28 @@ export class StaticContentBucket extends Construct{
     })
     bucket.addToResourcePolicy(bucketAllowDeployUploadPolicyStatement)
 
-    const rumAllowReadObject = new PolicyStatement({
-      effect: Effect.ALLOW,
-      principals: [new ServicePrincipal("rum.amazonaws.com")],
-      actions: [
-        "s3:GetObject",
-        "s3:ListBucket"
-      ],
-      resources: [
-        bucket.bucketArn,
-        bucket.arnForObjects("*")
-      ]
-    })
-    const bucketPolicy = bucket.addToResourcePolicy(rumAllowReadObject)
+    if (props.rumAppName) {
+      const accountRootPrincipal = new AccountRootPrincipal()
+      const rumAllowReadObject = new PolicyStatement({
+        effect: Effect.ALLOW,
+        principals: [new ServicePrincipal("rum.amazonaws.com")],
+        actions: [
+          "s3:GetObject",
+          "s3:ListBucket"
+        ],
+        resources: [
+          bucket.bucketArn,
+          bucket.arnForObjects("*")
+        ],
+        conditions: {
+          StringEquals: {
+            "AWS:SourceArn": `arn:aws:cloudfront::${accountRootPrincipal.accountId}:appmonitor/${props.rumAppName}` // eslint-disable-line max-len
+          }
+        }
+      })
+      const bucketPolicy = bucket.addToResourcePolicy(rumAllowReadObject)
+      this.bucketPolicy = bucketPolicy
+    }
     /*
      we also need to do the same for kms key
      but to avoid circular dependencies we need to use an escape hatch
@@ -156,6 +167,5 @@ export class StaticContentBucket extends Construct{
     //Outputs
     this.bucket = bucket
     this.kmsKey = kmsKey
-    this.bucketPolicy = bucketPolicy
   }
 }

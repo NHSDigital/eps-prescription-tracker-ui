@@ -61,13 +61,14 @@ export class StatefulResourcesStack extends Stack {
     const allowAutoDeleteObjects: boolean = this.node.tryGetContext("allowAutoDeleteObjects")
     const cloudfrontDistributionId: string = this.node.tryGetContext("cloudfrontDistributionId")
 
-    const useLocalhostCallback: boolean = this.node.tryGetContext("useLocalhostCallback")
+    const allowLocalhostAccess: boolean = this.node.tryGetContext("allowLocalhostAccess")
     const logRetentionInDays: number = Number(this.node.tryGetContext("logRetentionInDays"))
     const rumCloudwatchLogEnabled: boolean = this.node.tryGetContext("rumCloudwatchLogEnabled")
 
     // Imports
     const auditLoggingBucketImport = Fn.importValue("account-resources:AuditLoggingBucket")
     const deploymentRoleImport = Fn.importValue("ci-resources:CloudFormationDeployRole")
+    const rumAppName = Fn.importValue(`${props.stackName}:rum:rumApp:Name`)
 
     // Coerce context and imports to relevant types
     const auditLoggingBucket = Bucket.fromBucketArn(
@@ -85,7 +86,8 @@ export class StatefulResourcesStack extends Stack {
       allowAutoDeleteObjects: allowAutoDeleteObjects,
       cloudfrontDistributionId: cloudfrontDistributionId,
       auditLoggingBucket: auditLoggingBucket,
-      deploymentRole: deploymentRole
+      deploymentRole: deploymentRole,
+      rumAppName: rumAppName
     })
 
     // - Cognito resources
@@ -108,7 +110,7 @@ export class StatefulResourcesStack extends Stack {
       fullCloudfrontDomain: props.fullCloudfrontDomain,
       cognitoCertificate: props.cognitoCertificate,
       hostedZone: hostedZone,
-      useLocalhostCallback: useLocalhostCallback,
+      allowLocalhostAccess: allowLocalhostAccess,
       useCustomCognitoDomain: useCustomCognitoDomain
     })
 
@@ -128,8 +130,9 @@ export class StatefulResourcesStack extends Stack {
       stackName: props.stackName,
       logRetentionInDays: logRetentionInDays,
       cwLogEnabled: rumCloudwatchLogEnabled,
-      allowLocalhostAccess: useLocalhostCallback,
-      staticContentBucket: staticContentBucket.bucket
+      allowLocalhostAccess: allowLocalhostAccess,
+      staticContentBucket: staticContentBucket.bucket,
+      uploadSourceMaps: staticContentBucket.bucketPolicy.policyDependable ? true: false
     })
 
     // add dependency on bucket policy

@@ -41,7 +41,7 @@ export interface CognitoProps {
   readonly fullCognitoDomain: string
   readonly cognitoCertificate: ICertificate
   readonly hostedZone: IHostedZone
-  readonly useLocalhostCallback: boolean
+  readonly allowLocalhostAccess: boolean
   readonly useCustomCognitoDomain: boolean
 }
 
@@ -197,7 +197,7 @@ export class Cognito extends Construct {
       `https://${props.fullCloudfrontDomain}/auth_demo/`
     ]
 
-    if (props.useLocalhostCallback) {
+    if (props.allowLocalhostAccess) {
       // Local, without base path set
       callbackUrls.push("http://localhost:3000/select-role/")
       logoutUrls.push("http://localhost:3000/logout/")

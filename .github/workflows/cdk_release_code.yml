@@ -46,7 +46,7 @@ on:
         type: string
       mockOidcjwksEndpoint:
         type: string
-      useLocalhostCallback:
+      allowLocalhostAccess:
         type: boolean
       useCustomCognitoDomain:
         type: boolean
@@ -156,7 +156,7 @@ jobs:
           MOCK_OIDC_USERINFO_ENDPOINT: "${{ inputs.mockOidcUserInfoEndpoint }}"
           MOCK_OIDC_JWKS_ENDPOINT: ${{ inputs.mockOidcjwksEndpoint }}
           USE_CUSTOM_COGNITO_DOMAIN: ${{ inputs.useCustomCognitoDomain }}
-          USE_LOCALHOST_CALLBACK: ${{ inputs.useLocalhostCallback }}
+          ALLOW_LOCALHOST_ACCESS: ${{ inputs.allowLocalhostAccess }}
           APIGEE_CIS2_TOKEN_ENDPOINT: ${{ inputs.APIGEE_CIS2_TOKEN_ENDPOINT }}
           APIGEE_MOCK_TOKEN_ENDPOINT: ${{ inputs.APIGEE_MOCK_TOKEN_ENDPOINT }}
           APIGEE_PRESCRIPTION_ENDPOINT: ${{ inputs.APIGEE_PRESCRIPTIONS_ENDPOINT }}
