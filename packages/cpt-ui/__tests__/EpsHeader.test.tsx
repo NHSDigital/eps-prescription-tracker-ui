@@ -12,8 +12,8 @@ jest.mock("@/constants/ui-strings/HeaderStrings", () => ({
   HEADER_EXIT_BUTTON: "Exit",
   HEADER_EXIT_TARGET: "/exit",
   HEADER_CHANGE_ROLE_BUTTON: "Change role",
-  HEADER_CHANGE_ROLE_TARGET: "/change-role",
-  HEADER_SELECT_YOUR_ROLE_TARGET: "/select-role",
+  HEADER_CHANGE_ROLE_TARGET: "/change-your-role",
+  HEADER_SELECT_YOUR_ROLE_TARGET: "/select-your-role",
   HEADER_SELECT_YOUR_ROLE_BUTTON: "Select your role"
 }))
 
@@ -156,6 +156,7 @@ describe("EpsHeader", () => {
   })
 
   describe("Select Your Role link behavior", () => {
+    /* eslint-disable max-len */
     it("shows 'Select your role' when user is signed in, route !== /select-your-role, and role not yet selected", () => {
       renderWithProviders(
         "/other-route",
@@ -174,7 +175,7 @@ describe("EpsHeader", () => {
 
     it("does NOT show 'Select your role' when the route is /select-your-role", () => {
       renderWithProviders(
-        "/select-role",
+        "/select-your-role",
         {isSignedIn: true},
         {selectedRole: ""}
       )

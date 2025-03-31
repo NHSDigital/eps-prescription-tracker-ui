@@ -115,6 +115,6 @@ describe("PrescriptionIdSearch", () => {
     await userEvent.click(screen.getByTestId("find-prescription-button"))
 
     const location = await screen.findByTestId("location-display")
-    expect(location).toHaveTextContent("/prescription-results")
+    expect(location).toHaveTextContent("/prescription-list")
   })
 })

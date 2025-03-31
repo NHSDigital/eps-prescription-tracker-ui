@@ -361,7 +361,7 @@ describe("AccessProvider", () => {
   })
 
   // eslint-disable-next-line max-len
-  it("redirects to /select-role if selectedRole is undefined and location (with trailing slash) is not allowed", async () => {
+  it("redirects to /select-your-role if selectedRole is undefined and location (with trailing slash) is not allowed", async () => {
     // Simulate a fetch response where no role is selected.
     const mockUserInfo: TrackerUserInfo = {
       roles_with_access: [
@@ -403,7 +403,7 @@ describe("AccessProvider", () => {
     // Because normalizePath("/dashboard/") becomes "/dashboard" (not allowed),
     // ensureRoleSelected should trigger a redirect to "/select-your-role".
     await waitFor(() => {
-      expect(screen.getByTestId("location-display")).toHaveTextContent("/select-role")
+      expect(screen.getByTestId("location-display")).toHaveTextContent("/select-your-role")
     })
   })
 

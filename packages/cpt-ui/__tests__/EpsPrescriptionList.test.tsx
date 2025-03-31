@@ -35,7 +35,7 @@ const renderWithRouter = (route: string) => {
 
 describe("PrescriptionListPage", () => {
   it("renders the component with the correct title and heading", async () => {
-    renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_RESULTS + "?prescriptionId=C0C757-A83008-C2D93O")
+    renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_LIST + "?prescriptionId=C0C757-A83008-C2D93O")
 
     await waitFor(() => {
       const heading = screen.getByTestId("prescription-list-heading")
@@ -52,7 +52,7 @@ describe("PrescriptionListPage", () => {
   })
 
   it("shows the correct number of results", async () => {
-    renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_RESULTS + "?prescriptionId=C0C757-A83008-C2D93O")
+    renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_LIST + "?prescriptionId=C0C757-A83008-C2D93O")
 
     await waitFor(() => {
       const resultsCount = screen.getByTestId("results-count")
@@ -63,7 +63,7 @@ describe("PrescriptionListPage", () => {
   })
 
   it("redirects to the no prescription found page when no query parameters are present", async () => {
-    renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_RESULTS)
+    renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_LIST)
 
     await waitFor(() => {
       const dummyTag = screen.getByTestId("dummy-no-prescription-page")
@@ -72,7 +72,7 @@ describe("PrescriptionListPage", () => {
   })
 
   it("sets the back link to the prescription ID search when prescriptionId query parameter is present", async () => {
-    renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_RESULTS + "?prescriptionId=C0C757-A83008-C2D93O")
+    renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_LIST + "?prescriptionId=C0C757-A83008-C2D93O")
 
     // We need to wait for the useEffect to run
     await waitFor(() => {
@@ -82,7 +82,7 @@ describe("PrescriptionListPage", () => {
   })
 
   it("sets the back link to the NHS number search when nhsNumber query parameter is present", async () => {
-    renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_RESULTS + "?nhsNumber=1234567890")
+    renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_LIST + "?nhsNumber=1234567890")
 
     // We need to wait for the useEffect to run
     await waitFor(() => {
