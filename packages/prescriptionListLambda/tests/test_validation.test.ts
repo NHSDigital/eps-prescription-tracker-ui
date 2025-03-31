@@ -1,7 +1,7 @@
 import {describe, it, expect} from "@jest/globals"
 import {validateSearchParams, validatePatientDetails, ValidationError} from "../src/utils/validation"
 import {PDSError} from "../src/utils/errors"
-import {PatientDetails} from "../src/types"
+import {PatientDetails} from "@cpt-ui-common/common-types"
 
 describe("Validation Utils Tests", () => {
   describe("validateSearchParams", () => {

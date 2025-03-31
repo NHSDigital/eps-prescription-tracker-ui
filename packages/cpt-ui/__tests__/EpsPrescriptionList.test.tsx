@@ -1,10 +1,14 @@
 import React from "react"
+import {MemoryRouter, Route, Routes} from "react-router-dom"
+
 import {render, screen, waitFor} from "@testing-library/react"
 import "@testing-library/jest-dom"
-import {MemoryRouter, Route, Routes} from "react-router-dom"
-import PrescriptionListPage from "@/pages/PrescriptionListPage"
+
 import {PRESCRIPTION_LIST_PAGE_STRINGS} from "@/constants/ui-strings/PrescriptionListPageStrings"
 import {FRONTEND_PATHS} from "@/constants/environment"
+import PrescriptionListPage from "@/pages/PrescriptionListPage"
+
+import {MockPatientDetailsProvider} from "../__mocks__/MockPatientDetailsProvider"
 
 function Dummy404() {
   return (
@@ -18,12 +22,14 @@ function Dummy404() {
 
 const renderWithRouter = (route: string) => {
   return render(
-    <MemoryRouter initialEntries={[route]}>
-      <Routes>
-        <Route path={FRONTEND_PATHS.PRESCRIPTION_NOT_FOUND} element={<Dummy404 />} />
-        <Route path={FRONTEND_PATHS.PRESCRIPTION_RESULTS} element={<PrescriptionListPage />} />
-      </Routes>
-    </MemoryRouter>
+    <MockPatientDetailsProvider>
+      <MemoryRouter initialEntries={[route]}>
+        <Routes>
+          <Route path={FRONTEND_PATHS.PRESCRIPTION_NOT_FOUND} element={<Dummy404 />} />
+          <Route path={FRONTEND_PATHS.PRESCRIPTION_RESULTS} element={<PrescriptionListPage />} />
+        </Routes>
+      </MemoryRouter>
+    </MockPatientDetailsProvider>
   )
 }
 

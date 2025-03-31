@@ -1,0 +1,10 @@
+{
+  "extends": "../../../tsconfig.defaults.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "outDir": "lib",
+    "esModuleInterop": true
+  },
+  "include": ["src/**/*", "src/**/*.json"],
+  "exclude": ["node_modules"]
+}

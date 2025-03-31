@@ -5,6 +5,7 @@ import React, {
   useEffect,
   ReactNode
 } from "react"
+import {useLocation, useNavigate} from "react-router-dom"
 
 import {useLocalStorageState} from "@/helpers/useLocalStorageState"
 import {normalizePath} from "@/helpers/utils"
@@ -15,7 +16,6 @@ import {RoleDetails, TrackerUserInfo, UserDetails} from "@/types/TrackerUserInfo
 import {API_ENDPOINTS, FRONTEND_PATHS, NHS_REQUEST_URID} from "@/constants/environment"
 
 import http from "@/helpers/axios"
-import {useLocation, useNavigate} from "react-router-dom"
 
 const trackerUserInfoEndpoint = API_ENDPOINTS.TRACKER_USER_INFO
 const selectedRoleEndpoint = API_ENDPOINTS.SELECTED_ROLE
@@ -41,6 +41,7 @@ export const AccessContext = createContext<AccessContextType | undefined>(
 )
 
 export const AccessProvider = ({children}: { children: ReactNode }) => {
+  // These get cached to local storage
   const [noAccess, setNoAccess] = useLocalStorageState<boolean>(
     "noAccess",
     "access",
@@ -51,10 +52,18 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
     "access",
     false
   )
-  const [selectedRole, setSelectedRole] =
-    useLocalStorageState<RoleDetails | undefined>("selectedRole", "access", undefined)
-  const [userDetails, setUserDetails] =
-    useLocalStorageState<UserDetails | undefined>("userDetails", "access", undefined)
+  const [selectedRole, setSelectedRole] = useLocalStorageState<RoleDetails | undefined>(
+    "selectedRole",
+    "access",
+    undefined
+  )
+  const [userDetails, setUserDetails] = useLocalStorageState<UserDetails | undefined>(
+    "userDetails",
+    "access",
+    undefined
+  )
+
+  // These are reset on a page reload
   const [usingLocal, setUsingLocal] = useState(true)
   const [rolesWithAccess, setRolesWithAccess] = useState<Array<RoleDetails>>([])
   const [rolesWithoutAccess, setRolesWithoutAccess] = useState<Array<RoleDetails>>([])

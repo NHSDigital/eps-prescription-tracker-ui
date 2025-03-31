@@ -1,6 +1,7 @@
 import {Routes, Route} from "react-router-dom"
 import {AuthProvider} from "@/context/AuthProvider"
 import {AccessProvider} from "@/context/AccessProvider"
+import {PatientDetailsProvider} from "./context/PatientDetailsProvider"
 import Layout from "@/Layout"
 
 import LoginPage from "@/pages/LoginPage"
@@ -20,29 +21,31 @@ export default function App() {
   return (
     <AuthProvider>
       <AccessProvider>
-        <Routes>
-          <Route path="/" element={<Layout />}>
-            <Route index element={<NotFoundPage />} />
-            <Route path='*' element={<NotFoundPage />} />
-            <Route path={FRONTEND_PATHS.LOGIN} element={<LoginPage />} />
-            <Route path={FRONTEND_PATHS.LOGOUT} element={<LogoutPage />} />
-            <Route path={FRONTEND_PATHS.SELECT_ROLE} element={<SelectYourRolePage />} />
-            <Route path={FRONTEND_PATHS.SELECTED_ROLE} element={<YourSelectedRolePage />} />
-            <Route path={FRONTEND_PATHS.CHANGE_ROLE} element={<ChangeRolePage />} />
-            <Route
-              path={FRONTEND_PATHS.SEARCH}
-              element={<SearchPrescriptionPage />}
-            />
-            <Route
-              path={FRONTEND_PATHS.PRESCRIPTION_RESULTS}
-              element={<PrescriptionListPage />}
-            />
-            <Route
-              path={FRONTEND_PATHS.PRESCRIPTION_NOT_FOUND}
-              element={<PrescriptionNotFoundPage />}
-            />
-          </Route>
-        </Routes>
+        <PatientDetailsProvider>
+          <Routes>
+            <Route path="/" element={<Layout />}>
+              <Route index element={<NotFoundPage />} />
+              <Route path='*' element={<NotFoundPage />} />
+              <Route path={FRONTEND_PATHS.LOGIN} element={<LoginPage />} />
+              <Route path={FRONTEND_PATHS.LOGOUT} element={<LogoutPage />} />
+              <Route path={FRONTEND_PATHS.SELECT_ROLE} element={<SelectYourRolePage />} />
+              <Route path={FRONTEND_PATHS.SELECTED_ROLE} element={<YourSelectedRolePage />} />
+              <Route path={FRONTEND_PATHS.CHANGE_ROLE} element={<ChangeRolePage />} />
+              <Route
+                path={FRONTEND_PATHS.SEARCH}
+                element={<SearchPrescriptionPage />}
+              />
+              <Route
+                path={FRONTEND_PATHS.PRESCRIPTION_RESULTS}
+                element={<PrescriptionListPage />}
+              />
+              <Route
+                path={FRONTEND_PATHS.PRESCRIPTION_NOT_FOUND}
+                element={<PrescriptionNotFoundPage />}
+              />
+            </Route>
+          </Routes>
+        </PatientDetailsProvider>
       </AccessProvider>
     </AuthProvider >
   )
