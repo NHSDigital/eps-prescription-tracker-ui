@@ -1,51 +1,24 @@
 import React from "react"
+import {MemoryRouter, Route, Routes} from "react-router-dom"
+
 import {render, screen, waitFor} from "@testing-library/react"
 import "@testing-library/jest-dom"
-import {MemoryRouter, Route, Routes} from "react-router-dom"
+
 import {PRESCRIPTION_LIST_PAGE_STRINGS} from "@/constants/ui-strings/PrescriptionListPageStrings"
 
-jest.mock("@/context/AccessProvider", () => {
-  interface AccessContextType {
-    patientDetails: null;
-    setPatientDetails: React.Dispatch<React.SetStateAction<null>>;
-  }
+import {MockPatientDetailsProvider} from "../__mocks__/MockPatientDetailsProvider"
 
-  const AccessContext = React.createContext<AccessContextType>({
-    patientDetails: null,
-    setPatientDetails: () => {}
-  })
-
-  const AccessProvider = ({children}: { children: React.ReactNode }) => {
-    const [patientDetails, setPatientDetails] = React.useState(null)
-    const value = {patientDetails, setPatientDetails}
-    return (
-      <AccessContext.Provider value={value}>
-        {children}
-      </AccessContext.Provider>
-    )
-  }
-
-  const useAccess = () => React.useContext(AccessContext)
-
-  return {
-    AccessContext,
-    AccessProvider,
-    useAccess
-  }
-})
-
-import {AccessProvider} from "@/context/AccessProvider"
 import PrescriptionListPage from "@/pages/PrescriptionListPage"
 
 const renderWithRouter = async (route: string) => {
   return render(
-    <AccessProvider>
+    <MockPatientDetailsProvider>
       <MemoryRouter initialEntries={[route]}>
         <Routes>
           <Route path="*" element={<PrescriptionListPage />} />
         </Routes>
       </MemoryRouter>
-    </AccessProvider>
+    </MockPatientDetailsProvider>
   )
 }
 

@@ -1,54 +1,58 @@
 import {jest} from "@jest/globals"
+import React from "react"
+
 import "@testing-library/jest-dom"
 import {render, screen, waitFor} from "@testing-library/react"
-import React from "react"
-// import {PatientDetails} from "@cpt-ui-common/common-types"
+
+import {PatientDetails} from "@cpt-ui-common/common-types"
 import {STRINGS} from "@/constants/ui-strings/PatientDetailsBannerStrings"
 
-// // Example patient data
-// const completeDetails = {
-//   nhsNumber: "5900009890",
-//   prefix: "Mr",
-//   suffix: "",
-//   given: "William",
-//   family: "Wolderton",
-//   gender: "male",
-//   dateOfBirth: "01-Nov-1988",
-//   address: {
-//     line1: "55 OAK STREET",
-//     line2: "OAK LANE",
-//     city: "Leeds",
-//     postcode: "LS1 1XX"
-//   }
-// }
+import {MockPatientDetailsProvider} from "../__mocks__/MockPatientDetailsProvider"
 
-// const minimumDetails = {
-//   nhsNumber: "5900009890",
-//   prefix: "Mr",
-//   suffix: "",
-//   given: "William",
-//   family: "Wolderton",
-//   gender: null,
-//   dateOfBirth: null,
-//   address: null
-// }
+// Example patient data
+const completeDetails: PatientDetails = {
+  nhsNumber: "5900009890",
+  prefix: "Mr",
+  suffix: "",
+  given: "William",
+  family: "Wolderton",
+  gender: "male",
+  dateOfBirth: "01-Nov-1988",
+  address: {
+    line1: "55 OAK STREET",
+    line2: "OAK LANE",
+    city: "Leeds",
+    postcode: "LS1 1XX"
+  }
+}
 
-// const partialAddressDetails = {
-//   nhsNumber: "5900009890",
-//   prefix: "Mr",
-//   suffix: "",
-//   given: "William",
-//   family: "Wolderton",
-//   gender: "male",
-//   dateOfBirth: "01-Nov-1988",
-//   // Only line1 and city are provided; line2 and postcode are missing.
-//   address: {
-//     line1: "55 Oak Street",
-//     // line2 is omitted
-//     city: "Leeds"
-//     // postcode is omitted
-//   }
-// }
+const minimumDetails: PatientDetails = {
+  nhsNumber: "5900009890",
+  prefix: "Mr",
+  suffix: "",
+  given: "William",
+  family: "Wolderton",
+  gender: null,
+  dateOfBirth: null,
+  address: null
+}
+
+const partialAddressDetails: PatientDetails = {
+  nhsNumber: "5900009890",
+  prefix: "Mr",
+  suffix: "",
+  given: "William",
+  family: "Wolderton",
+  gender: "male",
+  dateOfBirth: "01-Nov-1988",
+  // Only line1 and city are provided; line2 and postcode are missing.
+  address: {
+    line1: "55 Oak Street",
+    // line2 is omitted
+    city: "Leeds"
+    // postcode is omitted
+  }
+}
 
 // TODO: Mock the patient details context, which only has `patientDetails: PatientDetails` on it.
 
@@ -60,14 +64,20 @@ describe("PatientDetailsBanner", () => {
   })
 
   it("does not render the banner when patientDetails is null", () => {
-    // TODO: Set patient details context
-    render(<PatientDetailsBanner />)
+    render(
+      <MockPatientDetailsProvider patientDetails={undefined}>
+        <PatientDetailsBanner />
+      </MockPatientDetailsProvider>
+    )
     expect(screen.queryByTestId("patient-details-banner")).toBeNull()
   })
 
   it("renders complete patient details correctly", async () => {
-    // TODO: Set patient details context
-    render(<PatientDetailsBanner />)
+    render(
+      <MockPatientDetailsProvider patientDetails={completeDetails}>
+        <PatientDetailsBanner />
+      </MockPatientDetailsProvider>
+    )
     await waitFor(() => {
       expect(screen.getByTestId("patient-details-banner")).toBeInTheDocument()
     })
@@ -103,8 +113,11 @@ describe("PatientDetailsBanner", () => {
   })
 
   it("renders partial patient details with missing data message", async () => {
-    // TODO: Set patient details context
-    render(<PatientDetailsBanner />)
+    render(
+      <MockPatientDetailsProvider patientDetails={minimumDetails}>
+        <PatientDetailsBanner />
+      </MockPatientDetailsProvider>
+    )
 
     await waitFor(() => {
       expect(screen.getByTestId("patient-details-banner")).toBeInTheDocument()
@@ -136,8 +149,11 @@ describe("PatientDetailsBanner", () => {
   })
 
   it("renders patient details with a partially populated address", async () => {
-    // TODO: Set patient details context
-    render(<PatientDetailsBanner />)
+    render(
+      <MockPatientDetailsProvider patientDetails={partialAddressDetails}>
+        <PatientDetailsBanner />
+      </MockPatientDetailsProvider>
+    )
 
     await waitFor(() => {
       expect(screen.getByTestId("patient-details-banner")).toBeInTheDocument()
