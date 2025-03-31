@@ -6,11 +6,12 @@ import {
   PolicyStatement,
   ServicePrincipal
 } from "aws-cdk-lib/aws-iam"
-import {Construct} from "constructs"
 
 /**
- * Policy to restrict access to a single Cloudfront Distribution for KMS Keys
-
+ * Policy document to restrict access to the kms key
+ * for deployment role, rum app, cloudfront
+*  This does not extend construct as it just defines the policy document
+*  it does not create them
  */
 
 export interface PolicyProps {
@@ -20,11 +21,10 @@ export interface PolicyProps {
   region: string
 }
 
-export class AllowStaticBucketKmsKeyAccessPolicy extends Construct{
+export class AllowStaticBucketKmsKeyAccessPolicy {
   public readonly policyDocument: PolicyDocument
 
-  public constructor(scope: Construct, id: string, props: PolicyProps){
-    super(scope, id)
+  public constructor(props: PolicyProps){
 
     const accountRootPrincipal = new AccountRootPrincipal()
 

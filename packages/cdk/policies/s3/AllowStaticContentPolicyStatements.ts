@@ -6,11 +6,12 @@ import {
   ServicePrincipal
 } from "aws-cdk-lib/aws-iam"
 import {Bucket} from "aws-cdk-lib/aws-s3"
-import {Construct} from "constructs"
 
 /**
- * Policy to allow cloudfront to get objects from a S3 bucket
-
+ * Policies to allow access to the S3 bucket
+ * for deployment role, rum app, cloudfront
+ * This does not extend construct as it just defines policy statements
+ * it does not create them
  */
 
 export interface PolicyProps {
@@ -21,13 +22,12 @@ export interface PolicyProps {
   region: string
 }
 
-export class AllowStaticContentPolicyStatements extends Construct{
+export class AllowStaticContentPolicyStatements {
   public readonly cloudfrontAccessPolicyStatement: PolicyStatement
   public readonly rumAccessPolicyStatement: PolicyStatement
   public readonly deploymentRoleAccessPolicyStatement: PolicyStatement
 
-  public constructor(scope: Construct, id: string, props: PolicyProps){
-    super(scope, id)
+  public constructor(props: PolicyProps){
 
     const accountRootPrincipal = new AccountRootPrincipal()
     const cloudfrontAccessPolicyStatement = new PolicyStatement({

@@ -61,14 +61,13 @@ export class StaticContentBucket extends Construct{
       autoDeleteObjects: props.allowAutoDeleteObjects // if true forces a deletion even if bucket is not empty
     })
 
-    const bucketPolicies = new AllowStaticContentPolicyStatements(
-      this, "StaticContentBucketAllowCloudfrontGetObjectPolicyStatement", {
-        bucket: bucket,
-        cloudfrontDistributionId: props.cloudfrontDistributionId,
-        rumAppName: props.rumAppName,
-        deploymentRole: props.deploymentRole,
-        region: props.region
-      })
+    const bucketPolicies = new AllowStaticContentPolicyStatements({
+      bucket: bucket,
+      cloudfrontDistributionId: props.cloudfrontDistributionId,
+      rumAppName: props.rumAppName,
+      deploymentRole: props.deploymentRole,
+      region: props.region
+    })
 
     // we need to add a policy to the bucket so that our deploy role can use the bucket
     bucket.addToResourcePolicy(bucketPolicies.deploymentRoleAccessPolicyStatement)
@@ -82,19 +81,18 @@ export class StaticContentBucket extends Construct{
     }
     /*
      we also need to do the same for kms key
-     but to avoid circular dependencies we need to use an escape hatch
-     this also does a conditional and if we have a cloudfrontDistributionId or rum app
+     but to avoid circular dependencies we need to use an escape hatch to set the policy on the key
+     rather than using addToResourcePolicy
+     AllowStaticBucketKmsKeyAccessPolicy uses conditional to allow access from cloudfrontDistributionId or rum app
      then it adds the correct policy to allow access from cloudfront and rum
-     this is added as one policy rather than using addToResourcePolicy
     */
 
-    const kmsPolicies = new AllowStaticBucketKmsKeyAccessPolicy(
-      this, "StaticContentBucketAllowKmsKeyAccessPolicy", {
-        cloudfrontDistributionId: props.cloudfrontDistributionId,
-        deploymentRole: props.deploymentRole,
-        rumAppName: props.rumAppName,
-        region: props.region
-      })
+    const kmsPolicies = new AllowStaticBucketKmsKeyAccessPolicy({
+      cloudfrontDistributionId: props.cloudfrontDistributionId,
+      deploymentRole: props.deploymentRole,
+      rumAppName: props.rumAppName,
+      region: props.region
+    })
 
     const contentBucketKmsKey = (kmsKey.node.defaultChild as CfnKey)
     contentBucketKmsKey.keyPolicy = kmsPolicies.policyDocument.toJSON()
