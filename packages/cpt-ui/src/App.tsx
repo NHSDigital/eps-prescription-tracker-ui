@@ -12,6 +12,7 @@ import SearchPrescriptionPage from "@/pages/SearchPrescriptionPage"
 import YourSelectedRolePage from "@/pages/YourSelectedRolePage"
 import NotFoundPage from "@/pages/NotFoundPage"
 import PrescriptionListPage from "@/pages/PrescriptionListPage"
+import PrescriptionNotFoundPage from "@/pages/PrescriptionNotFoundPage"
 
 import {FRONTEND_PATHS} from "@/constants/environment"
 
@@ -37,6 +38,10 @@ export default function App() {
               <Route
                 path={FRONTEND_PATHS.PRESCRIPTION_RESULTS}
                 element={<PrescriptionListPage />}
+              />
+              <Route
+                path={FRONTEND_PATHS.PRESCRIPTION_NOT_FOUND}
+                element={<PrescriptionNotFoundPage />}
               />
             </Route>
           </Routes>
