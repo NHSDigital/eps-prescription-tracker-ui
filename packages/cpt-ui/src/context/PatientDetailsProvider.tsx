@@ -5,6 +5,7 @@ import React, {
   useEffect,
   ReactNode
 } from "react"
+import {useLocation} from "react-router-dom"
 
 import {PatientDetails} from "@cpt-ui-common/common-types"
 import {normalizePath} from "@/helpers/utils"
@@ -20,12 +21,12 @@ export const PatientDetailsContext = createContext<PatientDetailsContextType | u
 )
 
 export const PatientDetailsProvider = ({children}: { children: ReactNode }) => {
+  const location = useLocation()
   const [patientDetails, setPatientDetails] = useState<PatientDetails | undefined>(undefined)
 
   const clear = () => {
     console.log("Clearing patient details context...")
     setPatientDetails(undefined)
-    localStorage.removeItem("patientDetails")
   }
 
   // Clear the patient details if the user navigates away from the pages about the patient

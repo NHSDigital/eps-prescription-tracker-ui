@@ -35,6 +35,17 @@ export default function PrescriptionListPage() {
     }
   }
 
+  const minimumDetails: PatientDetails = {
+    nhsNumber: "5900009890",
+    prefix: "Mr",
+    suffix: "",
+    given: "William",
+    family: "Wolderton",
+    gender: null,
+    dateOfBirth: null,
+    address: null
+  }
+
   const navigate = useNavigate()
   const auth = useContext(AuthContext)
   const {setPatientDetails} = usePatientDetails()
@@ -67,8 +78,6 @@ export default function PrescriptionListPage() {
         if (!searchResults) {
           const notFoundUrl = `${FRONTEND_PATHS.PRESCRIPTION_NOT_FOUND}?searchType=PrescriptionIdSearch`
           navigate(notFoundUrl)
-        } else {
-          setPatientDetails(mockPatient)
         }
       }
 
@@ -119,6 +128,12 @@ export default function PrescriptionListPage() {
       // Allow known test ID through; otherwise, return false.
       if (prescriptionId === "C0C757-A83008-C2D93O") {
         console.log("Using mock data")
+        setPatientDetails(mockPatient)
+        return true
+      }
+      if (prescriptionId === "209E3D-A83008-327F9F") {
+        console.log("Using mock data")
+        setPatientDetails(minimumDetails)
         return true
       }
       return false
