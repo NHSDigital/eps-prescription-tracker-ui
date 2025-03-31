@@ -58,7 +58,7 @@ export class AllowStaticBucketKmsKeyAccessPolicy {
           conditions: {
             StringEquals: {
               "AWS:SourceAccount": accountRootPrincipal.accountId,
-              "AWS:SourceArn": `arn:aws:rum:${props.region}:${accountRootPrincipal.accountId}/${props.rumAppName}` // eslint-disable-line max-len
+              "AWS:SourceArn": `arn:aws:rum:${props.region}:${accountRootPrincipal.accountId}:appmonitor/${props.rumAppName}` // eslint-disable-line max-len
             }
           }
         })
