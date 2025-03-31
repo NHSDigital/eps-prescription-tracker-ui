@@ -104,7 +104,7 @@ if [ "$CDK_APP_NAME" == "StatefulResourcesApp" ]; then
     else
         fix_boolean_number_key rumCloudwatchLogEnabled "false"
     fi
-    fix_boolean_number_key allowLocalhostAccess "${USE_LOCALHOST_CALLBACK}"
+    fix_boolean_number_key allowLocalhostAccess "${ALLOW_LOCALHOST_ACCESS}"
 
 elif [ "$CDK_APP_NAME" == "StatelessResourcesApp" ]; then
     fix_string_key epsDomainName "${EPS_DOMAIN_NAME}"
