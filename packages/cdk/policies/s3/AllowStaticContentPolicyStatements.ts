@@ -18,6 +18,7 @@ export interface PolicyProps {
   cloudfrontDistributionId: string
   rumAppName: string
   deploymentRole: IRole
+  region: string
 }
 
 export class AllowStaticContentPolicyStatements extends Construct{
@@ -54,7 +55,8 @@ export class AllowStaticContentPolicyStatements extends Construct{
       ],
       conditions: {
         StringEquals: {
-          "AWS:SourceArn": `arn:aws:rum::${accountRootPrincipal.accountId}:appmonitor/${props.rumAppName}` // eslint-disable-line max-len
+          "AWS:SourceAccount": accountRootPrincipal.accountId,
+          "AWS:SourceArn": `arn:aws:rum:${props.region}:${accountRootPrincipal.accountId}:appmonitor/${props.rumAppName}` // eslint-disable-line max-len
         }
       }
     })

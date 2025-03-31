@@ -17,17 +17,18 @@ export interface PolicyProps {
   cloudfrontDistributionId: string
   deploymentRole: IPrincipal
   rumAppName: string
+  region: string
 }
 
 export class AllowStaticBucketKmsKeyAccessPolicy extends Construct{
-  public readonly policyJson
+  public readonly policyDocument: PolicyDocument
 
   public constructor(scope: Construct, id: string, props: PolicyProps){
     super(scope, id)
 
     const accountRootPrincipal = new AccountRootPrincipal()
 
-    const policy = new PolicyDocument({
+    const policyDocument = new PolicyDocument({
       statements: [
         new PolicyStatement({
           effect: Effect.ALLOW,
@@ -48,7 +49,7 @@ export class AllowStaticBucketKmsKeyAccessPolicy extends Construct{
     })
 
     if (props.rumAppName) {
-      policy.addStatements(
+      policyDocument.addStatements(
         new PolicyStatement({
           effect: Effect.ALLOW,
           principals: [new ServicePrincipal("rum.amazonaws.com")],
@@ -56,7 +57,8 @@ export class AllowStaticBucketKmsKeyAccessPolicy extends Construct{
           resources:["*"],
           conditions: {
             StringEquals: {
-              "AWS:SourceArn": `arn:aws:rum::${accountRootPrincipal.accountId}/${props.rumAppName}` // eslint-disable-line max-len
+              "AWS:SourceAccount": accountRootPrincipal.accountId,
+              "AWS:SourceArn": `arn:aws:rum:${props.region}:${accountRootPrincipal.accountId}/${props.rumAppName}` // eslint-disable-line max-len
             }
           }
         })
@@ -65,7 +67,7 @@ export class AllowStaticBucketKmsKeyAccessPolicy extends Construct{
 
     // if we have a cloudfrontDistributionId, then add correct policy
     if(props.cloudfrontDistributionId) {
-      policy.addStatements(
+      policyDocument.addStatements(
         new PolicyStatement({
           effect: Effect.ALLOW,
           principals: [new ServicePrincipal("cloudfront.amazonaws.com")],
@@ -85,6 +87,6 @@ export class AllowStaticBucketKmsKeyAccessPolicy extends Construct{
     }
 
     // return the policy
-    this.policyJson = policy.toJSON()
+    this.policyDocument = policyDocument
   }
 }

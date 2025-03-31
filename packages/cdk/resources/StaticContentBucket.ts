@@ -23,6 +23,7 @@ export interface StaticContentBucketProps {
   readonly auditLoggingBucket: IBucket,
   readonly deploymentRole: IRole
   readonly rumAppName: string
+  readonly region: string
 }
 
 /**
@@ -65,7 +66,8 @@ export class StaticContentBucket extends Construct{
         bucket: bucket,
         cloudfrontDistributionId: props.cloudfrontDistributionId,
         rumAppName: props.rumAppName,
-        deploymentRole: props.deploymentRole
+        deploymentRole: props.deploymentRole,
+        region: props.region
       })
 
     // we need to add a policy to the bucket so that our deploy role can use the bucket
@@ -86,13 +88,16 @@ export class StaticContentBucket extends Construct{
      this is added as one policy rather than using addToResourcePolicy
     */
 
-    const contentBucketKmsKey = (kmsKey.node.defaultChild as CfnKey)
-    contentBucketKmsKey.keyPolicy = new AllowStaticBucketKmsKeyAccessPolicy(
+    const kmsPolicies = new AllowStaticBucketKmsKeyAccessPolicy(
       this, "StaticContentBucketAllowKmsKeyAccessPolicy", {
         cloudfrontDistributionId: props.cloudfrontDistributionId,
         deploymentRole: props.deploymentRole,
-        rumAppName: props.rumAppName
-      }).policyJson
+        rumAppName: props.rumAppName,
+        region: props.region
+      })
+
+    const contentBucketKmsKey = (kmsKey.node.defaultChild as CfnKey)
+    contentBucketKmsKey.keyPolicy = kmsPolicies.policyDocument.toJSON().policyJson
 
     /* As you cannot modify imported policies, cdk cannot not update the s3 bucket with the correct permissions
     for OAC when the distribution and bucket are in different stacks

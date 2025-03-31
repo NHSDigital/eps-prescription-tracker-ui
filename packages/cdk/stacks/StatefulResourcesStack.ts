@@ -87,7 +87,8 @@ export class StatefulResourcesStack extends Stack {
       cloudfrontDistributionId: cloudfrontDistributionId,
       auditLoggingBucket: auditLoggingBucket,
       deploymentRole: deploymentRole,
-      rumAppName: rumAppName
+      rumAppName: rumAppName,
+      region: this.region
     })
 
     // - Cognito resources
