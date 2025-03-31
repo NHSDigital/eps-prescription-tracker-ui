@@ -115,7 +115,7 @@ export class Rum extends Construct {
       deobfuscationConfiguration = {
         javaScriptSourceMaps: {
           status: "ENABLED",
-          s3Uri: `s3://${props.staticContentBucket.bucketName}/source_maps/`
+          s3Uri: `s3://${props.staticContentBucket.bucketName}/source_maps`
         }
       }
     }
