@@ -9,7 +9,7 @@ import {
   createMinimalPatientDetails
 } from "../src/utils/responseMapper"
 import {Bundle, BundleEntry, RequestGroup} from "fhir/r4"
-import {PatientDetails, TreatmentType} from "../src/types"
+import {PatientDetails, TreatmentType} from "@cpt-ui-common/common-types"
 
 describe("Response Mapper Tests", () => {
   const mockBundle: Bundle = {

@@ -1,24 +1,54 @@
 import React, {useContext, useEffect, useState} from "react"
+import {Link, useNavigate, useSearchParams} from "react-router-dom"
 import {
   BackLink,
   Col,
   Container,
   Row
 } from "nhsuk-react-components"
-import {Link, useNavigate, useSearchParams} from "react-router-dom"
 
 import http from "@/helpers/axios"
 import {AuthContext} from "@/context/AuthProvider"
 import EpsSpinner from "@/components/EpsSpinner"
 import {PRESCRIPTION_LIST_PAGE_STRINGS} from "@/constants/ui-strings/PrescriptionListPageStrings"
 import {API_ENDPOINTS, FRONTEND_PATHS, NHS_REQUEST_URID} from "@/constants/environment"
+import {PatientDetails} from "@cpt-ui-common/common-types"
+
+import {usePatientDetails} from "@/context/PatientDetailsProvider"
 
 export default function PrescriptionListPage() {
   // TODO: mock data - in the real implementation, this would come from props or context
   const prescriptionCount = 5
+  const mockPatient: PatientDetails = {
+    nhsNumber: "5900009890",
+    prefix: "Mr",
+    suffix: "",
+    given: "William",
+    family: "Wolderton",
+    gender: "male",
+    dateOfBirth: "01-Nov-1988",
+    address: {
+      line1: "55 OAK STREET",
+      line2: "OAK LANE",
+      city: "Leeds",
+      postcode: "LS1 1XX"
+    }
+  }
+
+  const minimumDetails: PatientDetails = {
+    nhsNumber: "5900009890",
+    prefix: "Mr",
+    suffix: "",
+    given: "William",
+    family: "Wolderton",
+    gender: null,
+    dateOfBirth: null,
+    address: null
+  }
 
   const navigate = useNavigate()
   const auth = useContext(AuthContext)
+  const {setPatientDetails} = usePatientDetails()
   const [queryParams] = useSearchParams()
 
   const [backLinkTarget, setBackLinkTarget] = useState<string>(PRESCRIPTION_LIST_PAGE_STRINGS.DEFAULT_BACK_LINK_TARGET)
@@ -98,6 +128,12 @@ export default function PrescriptionListPage() {
       // Allow known test ID through; otherwise, return false.
       if (prescriptionId === "C0C757-A83008-C2D93O") {
         console.log("Using mock data")
+        setPatientDetails(mockPatient)
+        return true
+      }
+      if (prescriptionId === "209E3D-A83008-327F9F") {
+        console.log("Using mock data")
+        setPatientDetails(minimumDetails)
         return true
       }
       return false

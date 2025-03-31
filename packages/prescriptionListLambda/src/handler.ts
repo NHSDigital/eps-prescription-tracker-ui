@@ -11,6 +11,8 @@ import {formatHeaders} from "./utils/headerUtils"
 import {validateSearchParams} from "./utils/validation"
 import {getPdsPatientDetails} from "./services/patientDetailsLookupService"
 import {getPrescriptions, PrescriptionError} from "./services/prescriptionsLookupService"
+import {SearchParams} from "./utils/types"
+
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 import {
   getUsernameFromEvent,
@@ -20,7 +22,7 @@ import {
   updateApigeeAccessToken,
   initializeOidcConfig
 } from "@cpt-ui-common/authFunctions"
-import {SearchResponse, SearchParams} from "./types"
+import {SearchResponse} from "@cpt-ui-common/common-types"
 import {mapSearchResponse} from "./utils/responseMapper"
 
 /*

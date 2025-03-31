@@ -9,7 +9,7 @@ import {EpsLogoutStrings} from "@/constants/ui-strings/EpsLogoutPageStrings"
 
 export default function LogoutPage() {
   const auth = useContext(AuthContext)
-  const {clear} = useAccess()
+  const access = useAccess()
 
   // Log out on page load
   useEffect(() => {
@@ -19,7 +19,7 @@ export default function LogoutPage() {
       await auth?.cognitoSignOut()
 
       // Ensure user details & roles are cleared from local storage
-      clear()
+      access.clear()
       console.log("Signed out and cleared session data")
     }
 
@@ -27,9 +27,9 @@ export default function LogoutPage() {
       signOut()
     } else {
       console.log("Cannot sign out - not signed in")
-      clear() // Clear data even if not signed in
+      access.clear() // Clear data even if not signed in
     }
-  }, [auth, clear])
+  }, [auth, access.clear])
 
   return (
     <main id="main-content" className="nhsuk-main-wrapper">
