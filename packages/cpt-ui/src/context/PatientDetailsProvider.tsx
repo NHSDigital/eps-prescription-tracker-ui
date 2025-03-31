@@ -31,7 +31,6 @@ export const PatientDetailsProvider = ({children}: { children: ReactNode }) => {
 
   // Clear the patient details if the user navigates away from the pages about the patient
   useEffect(() => {
-    console.log("!!!! Detected a change in location", location.pathname)
     // TODO: Ensure this is up to date as pages get implemented!
     const patientDetailsAllowedPaths = [
       "/prescription-results"
