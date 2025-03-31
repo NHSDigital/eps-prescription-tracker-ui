@@ -1,14 +1,16 @@
 import React, {useEffect, useState} from "react"
+import {Link, useLocation} from "react-router-dom"
 import {
   BackLink,
   Col,
   Container,
   Row
 } from "nhsuk-react-components"
-import {Link, useLocation} from "react-router-dom"
+
 import {PRESCRIPTION_LIST_PAGE_STRINGS} from "@/constants/ui-strings/PrescriptionListPageStrings"
-import {useAccess} from "@/context/AccessProvider"
 import {PatientDetails} from "@cpt-ui-common/common-types"
+
+import {usePatientDetails} from "@/context/PatientDetailsProvider"
 
 export default function PrescriptionListPage() {
   // TODO: mock data - in the real implementation, this would come from props or context
@@ -32,7 +34,7 @@ export default function PrescriptionListPage() {
   const location = useLocation()
   const [backLinkTarget, setBackLinkTarget] = useState<string>(PRESCRIPTION_LIST_PAGE_STRINGS.DEFAULT_BACK_LINK_TARGET)
 
-  const {setPatientDetails} = useAccess()
+  const {setPatientDetails} = usePatientDetails()
 
   useEffect(() => {
     // parse the current URL's query parameters

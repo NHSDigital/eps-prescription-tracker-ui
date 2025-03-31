@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from "react"
 
 import {STRINGS} from "@/constants/ui-strings/PatientDetailsBannerStrings"
-import {useAccess} from "@/context/AccessProvider"
+import {usePatientDetails} from "@/context/PatientDetailsProvider"
 
 import {PatientDetailsAddress} from "@cpt-ui-common/common-types"
 
@@ -14,7 +14,7 @@ export default function PatientDetailsBanner() {
 
   const [successfulDetails, setSuccessfulDetails] = useState(true)
 
-  const {patientDetails} = useAccess()
+  const {patientDetails} = usePatientDetails()
 
   const capitalize = (input: string) => {
     return input[0].toLocaleUpperCase() + input.slice(1)

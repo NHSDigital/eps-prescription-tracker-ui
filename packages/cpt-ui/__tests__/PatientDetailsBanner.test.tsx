@@ -2,79 +2,57 @@ import {jest} from "@jest/globals"
 import "@testing-library/jest-dom"
 import {render, screen, waitFor} from "@testing-library/react"
 import React from "react"
-import {PatientDetails} from "@cpt-ui-common/common-types"
+// import {PatientDetails} from "@cpt-ui-common/common-types"
 import {STRINGS} from "@/constants/ui-strings/PatientDetailsBannerStrings"
 
-// Example patient data
-const completeDetails = {
-  nhsNumber: "5900009890",
-  prefix: "Mr",
-  suffix: "",
-  given: "William",
-  family: "Wolderton",
-  gender: "male",
-  dateOfBirth: "01-Nov-1988",
-  address: {
-    line1: "55 OAK STREET",
-    line2: "OAK LANE",
-    city: "Leeds",
-    postcode: "LS1 1XX"
-  }
-}
+// // Example patient data
+// const completeDetails = {
+//   nhsNumber: "5900009890",
+//   prefix: "Mr",
+//   suffix: "",
+//   given: "William",
+//   family: "Wolderton",
+//   gender: "male",
+//   dateOfBirth: "01-Nov-1988",
+//   address: {
+//     line1: "55 OAK STREET",
+//     line2: "OAK LANE",
+//     city: "Leeds",
+//     postcode: "LS1 1XX"
+//   }
+// }
 
-const minimumDetails = {
-  nhsNumber: "5900009890",
-  prefix: "Mr",
-  suffix: "",
-  given: "William",
-  family: "Wolderton",
-  gender: null,
-  dateOfBirth: null,
-  address: null
-}
+// const minimumDetails = {
+//   nhsNumber: "5900009890",
+//   prefix: "Mr",
+//   suffix: "",
+//   given: "William",
+//   family: "Wolderton",
+//   gender: null,
+//   dateOfBirth: null,
+//   address: null
+// }
 
-jest.unstable_mockModule("@/context/AccessProvider", () => {
-  interface AccessContextType {
-    patientDetails: PatientDetails | null;
-    setPatientDetails: React.Dispatch<React.SetStateAction<null | PatientDetails>>;
-  }
+// const partialAddressDetails = {
+//   nhsNumber: "5900009890",
+//   prefix: "Mr",
+//   suffix: "",
+//   given: "William",
+//   family: "Wolderton",
+//   gender: "male",
+//   dateOfBirth: "01-Nov-1988",
+//   // Only line1 and city are provided; line2 and postcode are missing.
+//   address: {
+//     line1: "55 Oak Street",
+//     // line2 is omitted
+//     city: "Leeds"
+//     // postcode is omitted
+//   }
+// }
 
-  const AccessContext = React.createContext<AccessContextType>({
-    patientDetails: null,
-    setPatientDetails: () => {}
-  })
+// TODO: Mock the patient details context, which only has `patientDetails: PatientDetails` on it.
 
-  const AccessProvider = ({children}: { children: React.ReactNode }) => {
-    const [patientDetails, setPatientDetails] = React.useState(null)
-    const value = {patientDetails, setPatientDetails}
-    return (
-      <AccessContext.Provider value={value}>
-        {children}
-      </AccessContext.Provider>
-    )
-  }
-
-  const useAccess = () => React.useContext(AccessContext)
-
-  return {
-    AccessContext,
-    AccessProvider,
-    useAccess
-  }
-})
-
-import {AccessContext} from "@/context/AccessProvider"
 import PatientDetailsBanner from "@/components/PatientDetailsBanner"
-
-// Helper to render the component with a custom AccessProvider value
-const renderWithAccess = (patientDetails: PatientDetails) => {
-  return render(
-    // @ts-expect-error The following value is sufficient for these tests. Fully defining the type would be excessive
-    <AccessContext.Provider value={{patientDetails} as unknown}>
-      <PatientDetailsBanner />
-    </AccessContext.Provider>
-  )
-}
 
 describe("PatientDetailsBanner", () => {
   beforeEach(() => {
@@ -82,12 +60,14 @@ describe("PatientDetailsBanner", () => {
   })
 
   it("does not render the banner when patientDetails is null", () => {
-    renderWithAccess(null)
+    // TODO: Set patient details context
+    render(<PatientDetailsBanner />)
     expect(screen.queryByTestId("patient-details-banner")).toBeNull()
   })
 
   it("renders complete patient details correctly", async () => {
-    renderWithAccess(completeDetails)
+    // TODO: Set patient details context
+    render(<PatientDetailsBanner />)
     await waitFor(() => {
       expect(screen.getByTestId("patient-details-banner")).toBeInTheDocument()
     })
@@ -123,7 +103,8 @@ describe("PatientDetailsBanner", () => {
   })
 
   it("renders partial patient details with missing data message", async () => {
-    renderWithAccess(minimumDetails)
+    // TODO: Set patient details context
+    render(<PatientDetailsBanner />)
 
     await waitFor(() => {
       expect(screen.getByTestId("patient-details-banner")).toBeInTheDocument()
@@ -155,24 +136,8 @@ describe("PatientDetailsBanner", () => {
   })
 
   it("renders patient details with a partially populated address", async () => {
-    const partialAddressDetails = {
-      nhsNumber: "5900009890",
-      prefix: "Mr",
-      suffix: "",
-      given: "William",
-      family: "Wolderton",
-      gender: "male",
-      dateOfBirth: "01-Nov-1988",
-      // Only line1 and city are provided; line2 and postcode are missing.
-      address: {
-        line1: "55 Oak Street",
-        // line2 is omitted
-        city: "Leeds"
-        // postcode is omitted
-      }
-    }
-
-    renderWithAccess(partialAddressDetails)
+    // TODO: Set patient details context
+    render(<PatientDetailsBanner />)
 
     await waitFor(() => {
       expect(screen.getByTestId("patient-details-banner")).toBeInTheDocument()

@@ -12,7 +12,6 @@ import {normalizePath} from "@/helpers/utils"
 import {AuthContext} from "./AuthProvider"
 
 import {RoleDetails, TrackerUserInfo, UserDetails} from "@/types/TrackerUserInfoTypes"
-import {PatientDetails} from "@cpt-ui-common/common-types"
 
 import {API_ENDPOINTS, FRONTEND_PATHS, NHS_REQUEST_URID} from "@/constants/environment"
 
@@ -30,8 +29,6 @@ export type AccessContextType = {
   updateSelectedRole: (value: RoleDetails) => Promise<void>
   userDetails: UserDetails | undefined
   setUserDetails: (value: UserDetails | undefined) => void
-  patientDetails: PatientDetails | undefined
-  setPatientDetails: (value: PatientDetails | undefined) => void
   rolesWithAccess: Array<RoleDetails>
   rolesWithoutAccess: Array<RoleDetails>
   loading: boolean
@@ -65,11 +62,6 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
     "access",
     undefined
   )
-  const [patientDetails, setPatientDetails] = useLocalStorageState<PatientDetails | undefined>(
-    "patientDetails",
-    "access",
-    undefined
-  )
 
   // These are reset on a page reload
   const [usingLocal, setUsingLocal] = useState(true)
@@ -89,13 +81,11 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
     setSingleAccess(false)
     setSelectedRole(undefined)
     setUserDetails(undefined)
-    setPatientDetails(undefined)
 
     // Clear from localStorage to ensure RBAC Banner is removed
     localStorage.removeItem("access")
     localStorage.removeItem("selectedRole")
     localStorage.removeItem("userDetails")
-    localStorage.removeItem("patientDetails")
     console.log("Local storage cleared.")
   }
 
@@ -207,21 +197,6 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
     ensureRoleSelected()
   }, [auth?.idToken]) // run ONLY ONCE on mount (i.e. on initial page load)
 
-  // Clear the patient details if the user navigates away from the pages about the patient
-  useEffect(() => {
-    // TODO: Ensure this is up to date as pages get implemented!
-    const patientDetailsAllowedPaths = [
-      "/prescription-results"
-      // "/prescription-details",
-    ]
-
-    const path = normalizePath(location.pathname)
-    if (!patientDetailsAllowedPaths.includes(path)) {
-      console.info("Clearing patient details.")
-      setPatientDetails(undefined)
-    }
-  }, [location.pathname])
-
   const updateSelectedRole = async (newRole: RoleDetails) => {
     try {
       // Update selected role in the backend via the selectedRoleLambda endpoint using axios
@@ -260,8 +235,6 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
         updateSelectedRole,
         userDetails,
         setUserDetails,
-        patientDetails,
-        setPatientDetails,
         rolesWithAccess,
         rolesWithoutAccess,
         loading,
