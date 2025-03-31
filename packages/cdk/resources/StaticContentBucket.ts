@@ -97,7 +97,7 @@ export class StaticContentBucket extends Construct{
       })
 
     const contentBucketKmsKey = (kmsKey.node.defaultChild as CfnKey)
-    contentBucketKmsKey.keyPolicy = kmsPolicies.policyDocument.toJSON().policyJson
+    contentBucketKmsKey.keyPolicy = kmsPolicies.policyDocument.toJSON()
 
     /* As you cannot modify imported policies, cdk cannot not update the s3 bucket with the correct permissions
     for OAC when the distribution and bucket are in different stacks
