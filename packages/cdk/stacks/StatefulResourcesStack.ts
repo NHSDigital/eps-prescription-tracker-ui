@@ -133,7 +133,9 @@ export class StatefulResourcesStack extends Stack {
     })
 
     // add dependency on bucket policy
-    rum.node.addDependency(staticContentBucket.bucketPolicy)
+    if (staticContentBucket.bucketPolicy.policyDependable) {
+      rum.node.addDependency(staticContentBucket.bucketPolicy.policyDependable)
+    }
     // Outputs
 
     // Exports
