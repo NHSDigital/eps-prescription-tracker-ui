@@ -171,7 +171,7 @@ export const getExistingApigeeAccessToken = async (
   tableName: string,
   username: string,
   logger: Logger
-): Promise<{accessToken: string; expiresIn: number} | null> => {
+): Promise<{accessToken: string; expiresIn: number, roleId: string} | null> => {
   logger.debug("Checking for existing Apigee access token in DynamoDB", {
     username,
     tableName
@@ -208,7 +208,8 @@ export const getExistingApigeeAccessToken = async (
 
         return {
           accessToken: userRecord.CIS2_accessToken,
-          expiresIn: userRecord.CIS2_expiresIn
+          expiresIn: userRecord.CIS2_expiresIn,
+          roleId: userRecord.selectedRoleId
         }
       } else {
         logger.debug("Existing Apigee token has expired or will expire soon", {
