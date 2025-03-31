@@ -132,7 +132,7 @@ export class StatefulResourcesStack extends Stack {
       cwLogEnabled: rumCloudwatchLogEnabled,
       allowLocalhostAccess: allowLocalhostAccess,
       staticContentBucket: staticContentBucket.bucket,
-      uploadSourceMaps: staticContentBucket.addRumBucketPolicy?.policyDependable ? true: false
+      uploadSourceMaps: false //staticContentBucket.addRumBucketPolicy?.policyDependable ? true: false
     })
 
     // add dependency on bucket policy
