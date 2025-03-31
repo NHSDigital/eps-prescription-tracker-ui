@@ -1,33 +1,132 @@
-import React, {useEffect, useState} from "react"
+import React, {useContext, useEffect, useState} from "react"
 import {
   BackLink,
   Col,
   Container,
   Row
 } from "nhsuk-react-components"
-import {Link, useLocation} from "react-router-dom"
+import {Link, useNavigate, useSearchParams} from "react-router-dom"
+
+import http from "@/helpers/axios"
+import {AuthContext} from "@/context/AuthProvider"
+import EpsSpinner from "@/components/EpsSpinner"
 import {PRESCRIPTION_LIST_PAGE_STRINGS} from "@/constants/ui-strings/PrescriptionListPageStrings"
+import {API_ENDPOINTS, FRONTEND_PATHS, NHS_REQUEST_URID} from "@/constants/environment"
 
 export default function PrescriptionListPage() {
   // TODO: mock data - in the real implementation, this would come from props or context
   const prescriptionCount = 5
-  const location = useLocation()
+
+  const navigate = useNavigate()
+  const auth = useContext(AuthContext)
+  const [queryParams] = useSearchParams()
+
   const [backLinkTarget, setBackLinkTarget] = useState<string>(PRESCRIPTION_LIST_PAGE_STRINGS.DEFAULT_BACK_LINK_TARGET)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // parse the current URL's query parameters
-    const queryParams = new URLSearchParams(location.search)
+    const runSearch = async () => {
+      const hasPrescriptionId = !!queryParams.get("prescriptionId")
+      const hasNhsNumber = !!queryParams.get("nhsNumber")
 
-    // determine which search page to go back to based on query parameters
-    if (queryParams.has("prescriptionId")) {
-      setBackLinkTarget(PRESCRIPTION_LIST_PAGE_STRINGS.PRESCRIPTION_ID_SEARCH_TARGET)
-    } else if (queryParams.has("nhsNumber")) {
-      setBackLinkTarget(PRESCRIPTION_LIST_PAGE_STRINGS.NHS_NUMBER_SEARCH_TARGET)
-    } else {
-      // default fallback
-      setBackLinkTarget(PRESCRIPTION_LIST_PAGE_STRINGS.DEFAULT_BACK_LINK_TARGET)
+      // determine which search page to go back to based on query parameters
+      if (hasPrescriptionId) {
+        setBackLinkTarget(PRESCRIPTION_LIST_PAGE_STRINGS.PRESCRIPTION_ID_SEARCH_TARGET)
+      } else if (hasNhsNumber) {
+        setBackLinkTarget(PRESCRIPTION_LIST_PAGE_STRINGS.NHS_NUMBER_SEARCH_TARGET)
+      } else {
+        setBackLinkTarget(PRESCRIPTION_LIST_PAGE_STRINGS.DEFAULT_BACK_LINK_TARGET)
+        // if no search is given, navigate to the not found page
+        navigate(FRONTEND_PATHS.PRESCRIPTION_NOT_FOUND)
+        return
+      }
+
+      if (hasPrescriptionId) {
+        const prescId = queryParams.get("prescriptionId")!
+        const searchResults = await searchPrescriptionID(prescId)
+        console.log("Got search results", searchResults)
+        if (!searchResults) {
+          const notFoundUrl = `${FRONTEND_PATHS.PRESCRIPTION_NOT_FOUND}?searchType=PrescriptionIdSearch`
+          navigate(notFoundUrl)
+        }
+      }
+
+      if (hasNhsNumber) {
+        const nhsNumber = queryParams.get("nhsNumber")!
+        // Assuming you’ll also refactor searchNhsNumber to be async
+        const result = await searchNhsNumber(nhsNumber)
+        if (!result) {
+          const notFoundUrl = `${FRONTEND_PATHS.PRESCRIPTION_NOT_FOUND}?searchType=NhsNumberSearch`
+          navigate(notFoundUrl)
+        }
+      }
     }
-  }, [location])
+
+    setLoading(true)
+    runSearch()
+  }, [queryParams])
+
+  // TODO: This should return the search results. For now, just return true or false for mock stuff.
+  const searchPrescriptionID = async (prescriptionId: string): Promise<boolean> => {
+    console.log("Searching for prescription ID ", prescriptionId)
+
+    // TODO: Validate ID (if invalid, navigate away)
+    // if (!validatePrescriptionId(prescriptionId)) {
+    //   navigate(notFoundUrl);
+    //   return;
+    // }
+
+    const url = `${API_ENDPOINTS.PRESCRIPTION_DETAILS}/${prescriptionId}`
+
+    try {
+      const response = await http.get(url, {
+        headers: {
+          Authorization: `Bearer ${auth?.idToken}`,
+          "NHSD-Session-URID": NHS_REQUEST_URID
+        }
+      })
+
+      if (response.status !== 200) {
+      // Throwing an error here will jump to the catch block.
+        throw new Error(`Status Code: ${response.status}`)
+      }
+      // TODO: populate mock data
+      return true
+
+    } catch (error) {
+      console.error("Error retrieving prescription details:", error)
+      // Allow known test ID through; otherwise, return false.
+      if (prescriptionId === "C0C757-A83008-C2D93O") {
+        console.log("Using mock data")
+        return true
+      }
+      return false
+
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // TODO: This will need to be implemented later
+  const searchNhsNumber = (nhsNumber: string): Promise<boolean> => {
+    console.log("Searching for nhs number:", nhsNumber)
+    setLoading(false)
+    return Promise.resolve(true)
+  }
+
+  if (loading) {
+    return (
+      <main id="main-content" className="nhsuk-main-wrapper">
+        <Container>
+          <Row>
+            <Col width="full">
+              <EpsSpinner />
+            </Col>
+          </Row>
+        </Container>
+      </main>
+    )
+  }
 
   return (
     <>
@@ -37,9 +136,13 @@ export default function PrescriptionListPage() {
           <Row>
             <Col width="full">
               <nav className="nhsuk-breadcrumb" aria-label="Breadcrumb" data-testid="prescription-list-nav">
-                <Link to={backLinkTarget} data-testid="back-link-container">
-                  <BackLink data-testid="go-back-link">{PRESCRIPTION_LIST_PAGE_STRINGS.GO_BACK_LINK_TEXT}</BackLink>
-                </Link>
+                <BackLink
+                  data-testid="go-back-link"
+                  asElement={Link}
+                  to={backLinkTarget}
+                >
+                  {PRESCRIPTION_LIST_PAGE_STRINGS.GO_BACK_LINK_TEXT}
+                </BackLink>
               </nav>
             </Col>
           </Row>
