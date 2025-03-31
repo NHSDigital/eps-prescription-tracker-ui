@@ -54,7 +54,7 @@ export class AllowStaticContentPolicyStatements extends Construct{
       ],
       conditions: {
         StringEquals: {
-          "AWS:SourceArn": `arn:aws:cloudfront::${accountRootPrincipal.accountId}:appmonitor/${props.rumAppName}` // eslint-disable-line max-len
+          "AWS:SourceArn": `arn:aws:rum::${accountRootPrincipal.accountId}:appmonitor/${props.rumAppName}` // eslint-disable-line max-len
         }
       }
     })

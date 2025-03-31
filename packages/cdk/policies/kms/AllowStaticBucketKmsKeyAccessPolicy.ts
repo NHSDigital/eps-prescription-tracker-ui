@@ -55,7 +55,7 @@ export class AllowStaticBucketKmsKeyAccessPolicy extends Construct{
           actions: ["kms:Decrypt"],
           conditions: {
             StringEquals: {
-              "AWS:SourceArn": `arn:aws:cloudfront::${accountRootPrincipal.accountId}:appmonitor/${props.rumAppName}` // eslint-disable-line max-len
+              "AWS:SourceArn": `arn:aws:rum::${accountRootPrincipal.accountId}/${props.rumAppName}` // eslint-disable-line max-len
             }
           }
         })
