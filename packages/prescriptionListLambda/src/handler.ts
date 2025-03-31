@@ -67,8 +67,8 @@ const TokenMappingTableName = process.env["TokenMappingTableName"] as string
 const jwtPrivateKeyArn = process.env["jwtPrivateKeyArn"] as string
 const apigeeApiKey = process.env["apigeeApiKey"] as string
 const jwtKid = process.env["jwtKid"] as string
-const roleId = process.env["roleId"] as string
 const MOCK_MODE_ENABLED = process.env["MOCK_MODE_ENABLED"]
+let roleId = process.env["roleId"] as string
 
 // DynamoDB client setup
 const dynamoClient = new DynamoDBClient()
@@ -134,6 +134,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
         // skip the token exchange process and go directly to the API calls
         logger.info("Using existing Apigee access token in mock mode")
         apigeeAccessToken = existingToken.accessToken
+        roleId = existingToken.roleId
       }
     }
 
