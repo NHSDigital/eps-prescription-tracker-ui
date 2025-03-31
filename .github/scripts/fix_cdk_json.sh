@@ -109,7 +109,7 @@ if [ "$CDK_APP_NAME" == "StatefulResourcesApp" ]; then
         fix_boolean_number_key rumCloudwatchLogEnabled "false"
     fi
     if [ -n "${RUM_APP_NAME}" ]; then
-        fix_boolean_number_key rumAppName "${RUM_APP_NAME}"
+        fix_string_key rumAppName "${RUM_APP_NAME}"
     fi
     fix_boolean_number_key allowLocalhostAccess "${ALLOW_LOCALHOST_ACCESS}"
 

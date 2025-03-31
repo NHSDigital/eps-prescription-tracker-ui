@@ -69,13 +69,13 @@ export class StaticContentBucket extends Construct{
       })
 
     // we need to add a policy to the bucket so that our deploy role can use the bucket
-    bucket.addToResourcePolicy(bucketPolicies.bucketAllowDeployUploadPolicyStatement)
+    bucket.addToResourcePolicy(bucketPolicies.deploymentRoleAccessPolicyStatement)
 
     // if we have a rum app defined, then add a policy to allow it to be used
     // note - we output this action so it can be used as a dependency for the rum app
     // we can also only do this once the rum app is created
     if (props.rumAppName) {
-      const addRumBucketPolicy = bucket.addToResourcePolicy(bucketPolicies.rumAllowReadObject)
+      const addRumBucketPolicy = bucket.addToResourcePolicy(bucketPolicies.rumAccessPolicyStatement)
       this.addRumBucketPolicy = addRumBucketPolicy
     }
     /*

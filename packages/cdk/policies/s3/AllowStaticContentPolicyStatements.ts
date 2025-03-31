@@ -22,8 +22,8 @@ export interface PolicyProps {
 
 export class AllowStaticContentPolicyStatements extends Construct{
   public readonly cloudfrontAccessPolicyStatement: PolicyStatement
-  public readonly rumAllowReadObject: PolicyStatement
-  public readonly bucketAllowDeployUploadPolicyStatement: PolicyStatement
+  public readonly rumAccessPolicyStatement: PolicyStatement
+  public readonly deploymentRoleAccessPolicyStatement: PolicyStatement
 
   public constructor(scope: Construct, id: string, props: PolicyProps){
     super(scope, id)
@@ -41,7 +41,7 @@ export class AllowStaticContentPolicyStatements extends Construct{
       }
     })
 
-    const rumAllowReadObject = new PolicyStatement({
+    const rumAccessPolicyStatement = new PolicyStatement({
       effect: Effect.ALLOW,
       principals: [new ServicePrincipal("rum.amazonaws.com")],
       actions: [
@@ -59,7 +59,7 @@ export class AllowStaticContentPolicyStatements extends Construct{
       }
     })
 
-    const bucketAllowDeployUploadPolicyStatement = new PolicyStatement({
+    const deploymentRoleAccessPolicyStatement = new PolicyStatement({
       effect: Effect.ALLOW,
       principals: [props.deploymentRole],
       actions: [
@@ -80,7 +80,7 @@ export class AllowStaticContentPolicyStatements extends Construct{
       ]
     })
     this.cloudfrontAccessPolicyStatement = cloudfrontAccessPolicyStatement
-    this.rumAllowReadObject = rumAllowReadObject
-    this.bucketAllowDeployUploadPolicyStatement = bucketAllowDeployUploadPolicyStatement
+    this.rumAccessPolicyStatement = rumAccessPolicyStatement
+    this.deploymentRoleAccessPolicyStatement = deploymentRoleAccessPolicyStatement
   }
 }
