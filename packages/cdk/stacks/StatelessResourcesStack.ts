@@ -83,6 +83,7 @@ export class StatelessResourcesStack extends Stack {
     const apigeePersonalDemographicsEndpoint = this.node.tryGetContext("apigeePersonalDemographicsEndpoint")
     const jwtKid: string = this.node.tryGetContext("jwtKid")
     const roleId: string = this.node.tryGetContext("roleId")
+    const allowLocalhostAccess: boolean = this.node.tryGetContext("allowLocalhostAccess")
 
     // Imports
     const baseImportPath = `${props.serviceName}-stateful-resources`
@@ -402,6 +403,36 @@ export class StatelessResourcesStack extends Stack {
       new CfnOutput(this, "mockJwtPrivateKeyName", {
         value: sharedSecrets.mockJwtPrivateKey.secretName,
         exportName: `${props.stackName}:mockJwtPrivateKey:Name`
+      })
+    }
+    if (allowLocalhostAccess) {
+      new CfnOutput(this, "apigeeApiKey", {
+        value: apigeeApiKey,
+        exportName: `${props.stackName}:local:apigeeApiKey`
+      })
+      new CfnOutput(this, "apigeeCIS2TokenEndpoint", {
+        value: apigeeCIS2TokenEndpoint,
+        exportName: `${props.stackName}:local:apigeeCIS2TokenEndpoint`
+      })
+      new CfnOutput(this, "apigeeMockTokenEndpoint", {
+        value: apigeeMockTokenEndpoint,
+        exportName: `${props.stackName}:local:apigeeMockTokenEndpoint`
+      })
+      new CfnOutput(this, "apigeePrescriptionsEndpoint", {
+        value: apigeePrescriptionsEndpoint,
+        exportName: `${props.stackName}:local:apigeePrescriptionsEndpoint`
+      })
+      new CfnOutput(this, "apigeePersonalDemographicsEndpoint", {
+        value: apigeePersonalDemographicsEndpoint,
+        exportName: `${props.stackName}:local:apigeePersonalDemographicsEndpoint`
+      })
+      new CfnOutput(this, "jwtKid", {
+        value: apigeePersonalDemographicsEndpoint,
+        exportName: `${props.stackName}:local:jwtKid`
+      })
+      new CfnOutput(this, "roleId", {
+        value: apigeePersonalDemographicsEndpoint,
+        exportName: `${props.stackName}:local:roleId`
       })
     }
     nagSuppressions(this)
