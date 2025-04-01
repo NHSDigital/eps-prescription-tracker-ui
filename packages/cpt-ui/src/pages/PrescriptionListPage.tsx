@@ -150,7 +150,6 @@ export default function PrescriptionListPage() {
       } else if (hasNhsNumber) {
         setBackLinkTarget(PRESCRIPTION_LIST_PAGE_STRINGS.NHS_NUMBER_SEARCH_TARGET)
       } else {
-        setBackLinkTarget(PRESCRIPTION_LIST_PAGE_STRINGS.DEFAULT_BACK_LINK_TARGET)
         // if no search is given, navigate to the not found page
         navigate(FRONTEND_PATHS.PRESCRIPTION_NOT_FOUND)
         return
@@ -163,8 +162,7 @@ export default function PrescriptionListPage() {
         searchResults = await searchPrescriptionID(prescId)
         console.log("Got search results", searchResults)
         if (!searchResults) {
-          const notFoundUrl = `${FRONTEND_PATHS.PRESCRIPTION_NOT_FOUND}?searchType=PrescriptionIdSearch`
-          navigate(notFoundUrl)
+          navigate(backLinkTarget)
         }
       }
 
@@ -173,8 +171,7 @@ export default function PrescriptionListPage() {
         // Assuming you’ll also refactor searchNhsNumber to be async
         searchResults = await searchNhsNumber(nhsNumber)
         if (!searchResults) {
-          const notFoundUrl = `${FRONTEND_PATHS.PRESCRIPTION_NOT_FOUND}?searchType=NhsNumberSearch`
-          navigate(notFoundUrl)
+          navigate(backLinkTarget)
         }
       }
 
@@ -204,7 +201,7 @@ export default function PrescriptionListPage() {
 
     // TODO: Validate ID (if invalid, navigate away)
     // if (!validatePrescriptionId(prescriptionId)) {
-    //   navigate(notFoundUrl);
+    //   navigate(backLinkTarget);
     //   return;
     // }
 
@@ -249,9 +246,31 @@ export default function PrescriptionListPage() {
   }
 
   // TODO: This will need to be implemented later
-  const searchNhsNumber = (nhsNumber: string): Promise<SearchResponse | undefined> => {
+  const searchNhsNumber = async (nhsNumber: string): Promise<SearchResponse | undefined> => {
     console.log("Searching for nhs number:", nhsNumber)
-    return Promise.resolve(mockSearchResponse)
+
+    const url = `${API_ENDPOINTS.PRESCRIPTION_DETAILS}/${nhsNumber}`
+
+    try {
+      const response = await http.get(url, {
+        headers: {
+          Authorization: `Bearer ${auth?.idToken}`,
+          "NHSD-Session-URID": NHS_REQUEST_URID
+        }
+      })
+
+      if (response.status !== 200) {
+      // Throwing an error here will jump to the catch block.
+        throw new Error(`Status Code: ${response.status}`)
+      }
+
+      const payload: SearchResponse = response.data
+      return payload
+
+    } catch (error) {
+      console.error("Failed to fetch. Returning mock data", error)
+      return Promise.resolve(mockSearchResponse)
+    }
   }
 
   if (loading) {
