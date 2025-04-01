@@ -6,7 +6,6 @@ import "@testing-library/jest-dom"
 
 import {PRESCRIPTION_LIST_PAGE_STRINGS} from "@/constants/ui-strings/PrescriptionListPageStrings"
 import {FRONTEND_PATHS} from "@/constants/environment"
-import PrescriptionListPage from "@/pages/PrescriptionListPage"
 
 import {PrescriptionStatus, SearchResponse, TreatmentType} from "@cpt-ui-common/common-types"
 
@@ -17,6 +16,8 @@ jest.mock("@/helpers/axios")
 
 // Tell TypeScript that axios is a mocked version.
 const mockedAxios = axios as jest.Mocked<typeof axios>
+
+import PrescriptionListPage from "@/pages/PrescriptionListPage"
 
 const mockSearchResponse: SearchResponse = {
   patient: {
@@ -117,6 +118,7 @@ const renderWithRouter = (route: string) => {
     <MockPatientDetailsProvider>
       <MemoryRouter initialEntries={[route]}>
         <Routes>
+          <Route path="*" element={<Dummy404 />} />
           <Route path={FRONTEND_PATHS.PRESCRIPTION_NOT_FOUND} element={<Dummy404 />} />
           <Route path={FRONTEND_PATHS.PRESCRIPTION_RESULTS} element={<PrescriptionListPage />} />
         </Routes>
@@ -126,14 +128,18 @@ const renderWithRouter = (route: string) => {
 }
 
 describe("PrescriptionListPage", () => {
+  beforeEach(() => {
+    jest.restoreAllMocks()
+  })
+
   it("renders the component with the correct title and heading", async () => {
-    mockedAxios.get.mockResolvedValueOnce({
+    mockedAxios.get.mockResolvedValue({
       status: 200,
       data: mockSearchResponse
     })
 
     renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_RESULTS + "?prescriptionId=C0C757-A83008-C2D93O")
-    expect(mockedAxios.get).toHaveBeenCalled()
+    expect(mockedAxios.get).toHaveBeenCalledTimes(1)
 
     await waitFor(() => {
       const heading = screen.getByTestId("prescription-list-heading")
@@ -150,13 +156,13 @@ describe("PrescriptionListPage", () => {
   })
 
   it("shows the correct number of results", async () => {
-    mockedAxios.get.mockResolvedValueOnce({
+    mockedAxios.get.mockResolvedValue({
       status: 200,
       data: mockSearchResponse
     })
 
     renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_RESULTS + "?prescriptionId=C0C757-A83008-C2D93O")
-    expect(mockedAxios.get).toHaveBeenCalled()
+    expect(mockedAxios.get).toHaveBeenCalledTimes(1)
 
     await waitFor(() => {
       const resultsCount = screen.getByTestId("results-count")
@@ -167,8 +173,10 @@ describe("PrescriptionListPage", () => {
   })
 
   it("redirects to the no prescription found page when no query parameters are present", async () => {
-    mockedAxios.get.mockResolvedValueOnce({
-      status: 204 // No content, but it just has to not be 200 to trigger
+    mockedAxios.get.mockResolvedValue({
+      // No content, but it just has to not be 200 to trigger
+      status: 204,
+      data: {}
     })
 
     renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_RESULTS)
@@ -181,12 +189,13 @@ describe("PrescriptionListPage", () => {
   })
 
   it("sets the back link to the prescription ID search when prescriptionId query parameter is present", async () => {
-    mockedAxios.get.mockResolvedValueOnce({
+    mockedAxios.get.mockResolvedValue({
       status: 200,
       data: mockSearchResponse
     })
-    renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_RESULTS + "?prescriptionId=C0C757-A83008-C2D93O")
-    expect(mockedAxios.get).toHaveBeenCalled()
+
+    renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_RESULTS + "?prescriptionId=ABC123-A83008-C2D93O")
+    expect(mockedAxios.get).toHaveBeenCalledTimes(1)
 
     // We need to wait for the useEffect to run
     await waitFor(() => {
@@ -196,17 +205,45 @@ describe("PrescriptionListPage", () => {
   })
 
   it("sets the back link to the NHS number search when nhsNumber query parameter is present", async () => {
-    mockedAxios.get.mockResolvedValueOnce({
+    mockedAxios.get.mockResolvedValue({
       status: 200,
       data: mockSearchResponse
     })
     renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_RESULTS + "?nhsNumber=1234567890")
-    expect(mockedAxios.get).toHaveBeenCalled()
+    expect(mockedAxios.get).toHaveBeenCalledTimes(1)
 
     // We need to wait for the useEffect to run
     await waitFor(() => {
       const linkContainer = screen.getByTestId("back-link-container")
       expect(linkContainer).toHaveAttribute("href", PRESCRIPTION_LIST_PAGE_STRINGS.NHS_NUMBER_SEARCH_TARGET)
+    })
+  })
+
+  it("navigates back to the prescription ID search when prescriptionId query fails", async () => {
+    mockedAxios.get.mockResolvedValue({
+      status: 204,
+      data: {}
+    })
+    renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_RESULTS + "?prescriptionId=ABC123-ABC123-ABC123")
+    expect(mockedAxios.get).toHaveBeenCalledTimes(1)
+
+    await waitFor(() => {
+      const dummyTag = screen.getByTestId("dummy-no-prescription-page")
+      expect(dummyTag).toBeInTheDocument()
+    })
+  })
+
+  it("navigates back to the NHS number search when nhsNumber query fails", async () => {
+    mockedAxios.get.mockResolvedValue({
+      status: 204,
+      data: {}
+    })
+    renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_RESULTS + "?nhsNumber=32165649870")
+    expect(mockedAxios.get).toHaveBeenCalledTimes(1)
+
+    await waitFor(() => {
+      const dummyTag = screen.getByTestId("dummy-no-prescription-page")
+      expect(dummyTag).toBeInTheDocument()
     })
   })
 

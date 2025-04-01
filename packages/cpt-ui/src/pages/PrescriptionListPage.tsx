@@ -16,114 +16,108 @@ import EpsSpinner from "@/components/EpsSpinner"
 import PrescriptionsListTabs from "@/components/prescriptionList/PrescriptionsListTab"
 
 import {PRESCRIPTION_LIST_PAGE_STRINGS} from "@/constants/ui-strings/PrescriptionListPageStrings"
-import {API_ENDPOINTS, FRONTEND_PATHS, NHS_REQUEST_URID} from "@/constants/environment"
+import {API_ENDPOINTS, NHS_REQUEST_URID} from "@/constants/environment"
 
-import {
-  PatientDetails,
-  SearchResponse,
-  TreatmentType,
-  PrescriptionStatus,
-  PrescriptionSummary
-} from "@cpt-ui-common/common-types"
+import {SearchResponse, PrescriptionSummary} from "@cpt-ui-common/common-types"
 
 export default function PrescriptionListPage() {
-  // FIXME: mock data. DELETEME!
-  const mockPatient: PatientDetails = {
-    nhsNumber: "5900009890",
-    prefix: "Mr",
-    suffix: "",
-    given: "William",
-    family: "Wolderton",
-    gender: "male",
-    dateOfBirth: "01-Nov-1988",
-    address: {
-      line1: "55 OAK STREET",
-      line2: "OAK LANE",
-      city: "Leeds",
-      postcode: "LS1 1XX"
-    }
-  }
+  // // FIXME: mock data. DELETEME!
+  // const mockPatient: PatientDetails = {
+  //   nhsNumber: "5900009890",
+  //   prefix: "Mr",
+  //   suffix: "",
+  //   given: "William",
+  //   family: "Wolderton",
+  //   gender: "male",
+  //   dateOfBirth: "01-Nov-1988",
+  //   address: {
+  //     line1: "55 OAK STREET",
+  //     line2: "OAK LANE",
+  //     city: "Leeds",
+  //     postcode: "LS1 1XX"
+  //   }
+  // }
 
-  const minimumDetails: PatientDetails = {
-    nhsNumber: "5900009890",
-    prefix: "Ms",
-    suffix: "",
-    given: "Janet",
-    family: "Piper",
-    gender: null,
-    dateOfBirth: null,
-    address: null
-  }
+  // const minimumDetails: PatientDetails = {
+  //   nhsNumber: "5900009890",
+  //   prefix: "Ms",
+  //   suffix: "",
+  //   given: "Janet",
+  //   family: "Piper",
+  //   gender: null,
+  //   dateOfBirth: null,
+  //   address: null
+  // }
 
-  const mockSearchResponse: SearchResponse = {
-    patient: mockPatient,
-    currentPrescriptions: [
-      {
-        prescriptionId: "RX001",
-        statusCode: PrescriptionStatus.TO_BE_DISPENSED,
-        issueDate: "2025-03-01",
-        prescriptionTreatmentType: TreatmentType.REPEAT,
-        issueNumber: 1,
-        maxRepeats: 5,
-        prescriptionPendingCancellation: false,
-        itemsPendingCancellation: false
-      },
-      {
-        prescriptionId: "RX002",
-        statusCode: PrescriptionStatus.WITH_DISPENSER,
-        issueDate: "2025-02-15",
-        prescriptionTreatmentType: TreatmentType.ACUTE,
-        issueNumber: 2,
-        maxRepeats: 3,
-        prescriptionPendingCancellation: false,
-        itemsPendingCancellation: false
-      },
-      {
-        prescriptionId: "RX003",
-        statusCode: PrescriptionStatus.WITH_DISPENSER_ACTIVE,
-        issueDate: "2025-03-10",
-        prescriptionTreatmentType: TreatmentType.ERD,
-        issueNumber: 3,
-        maxRepeats: 4,
-        prescriptionPendingCancellation: false,
-        itemsPendingCancellation: true
-      }
-    ],
-    pastPrescriptions: [
-      {
-        prescriptionId: "RX004",
-        statusCode: PrescriptionStatus.DISPENSED,
-        issueDate: "2025-01-15",
-        prescriptionTreatmentType: TreatmentType.REPEAT,
-        issueNumber: 1,
-        maxRepeats: 2,
-        prescriptionPendingCancellation: false,
-        itemsPendingCancellation: false
-      },
-      {
-        prescriptionId: "RX005",
-        statusCode: PrescriptionStatus.NOT_DISPENSED,
-        issueDate: "2024-12-20",
-        prescriptionTreatmentType: TreatmentType.ACUTE,
-        issueNumber: 1,
-        maxRepeats: 1,
-        prescriptionPendingCancellation: false,
-        itemsPendingCancellation: false
-      }
-    ],
-    futurePrescriptions: [
-      {
-        prescriptionId: "RX006",
-        statusCode: PrescriptionStatus.FUTURE_DATED_PRESCRIPTION,
-        issueDate: "2025-04-01",
-        prescriptionTreatmentType: TreatmentType.REPEAT,
-        issueNumber: 1,
-        maxRepeats: 10,
-        prescriptionPendingCancellation: false,
-        itemsPendingCancellation: false
-      }
-    ]
-  }
+  // const mockSearchResponse: SearchResponse = {
+  //   patient: mockPatient,
+  //   currentPrescriptions: [
+  //     {
+  //       prescriptionId: "RX001",
+  //       statusCode: PrescriptionStatus.TO_BE_DISPENSED,
+  //       issueDate: "2025-03-01",
+  //       prescriptionTreatmentType: TreatmentType.REPEAT,
+  //       issueNumber: 1,
+  //       maxRepeats: 5,
+  //       prescriptionPendingCancellation: false,
+  //       itemsPendingCancellation: false
+  //     },
+  //     {
+  //       prescriptionId: "RX002",
+  //       statusCode: PrescriptionStatus.WITH_DISPENSER,
+  //       issueDate: "2025-02-15",
+  //       prescriptionTreatmentType: TreatmentType.ACUTE,
+  //       issueNumber: 2,
+  //       maxRepeats: 3,
+  //       prescriptionPendingCancellation: false,
+  //       itemsPendingCancellation: false
+  //     },
+  //     {
+  //       prescriptionId: "RX003",
+  //       statusCode: PrescriptionStatus.WITH_DISPENSER_ACTIVE,
+  //       issueDate: "2025-03-10",
+  //       prescriptionTreatmentType: TreatmentType.ERD,
+  //       issueNumber: 3,
+  //       maxRepeats: 4,
+  //       prescriptionPendingCancellation: false,
+  //       itemsPendingCancellation: true
+  //     }
+  //   ],
+  //   pastPrescriptions: [
+  //     {
+  //       prescriptionId: "RX004",
+  //       statusCode: PrescriptionStatus.DISPENSED,
+  //       issueDate: "2025-01-15",
+  //       prescriptionTreatmentType: TreatmentType.REPEAT,
+  //       issueNumber: 1,
+  //       maxRepeats: 2,
+  //       prescriptionPendingCancellation: false,
+  //       itemsPendingCancellation: false
+  //     },
+  //     {
+  //       prescriptionId: "RX005",
+  //       statusCode: PrescriptionStatus.NOT_DISPENSED,
+  //       issueDate: "2024-12-20",
+  //       prescriptionTreatmentType: TreatmentType.ACUTE,
+  //       issueNumber: 1,
+  //       maxRepeats: 1,
+  //       prescriptionPendingCancellation: false,
+  //       itemsPendingCancellation: false
+  //     }
+  //   ],
+  //   futurePrescriptions: [
+  //     {
+  //       prescriptionId: "RX006",
+  //       statusCode: PrescriptionStatus.FUTURE_DATED_PRESCRIPTION,
+  //       issueDate: "2025-04-01",
+  //       prescriptionTreatmentType: TreatmentType.REPEAT,
+  //       issueNumber: 1,
+  //       maxRepeats: 10,
+  //       prescriptionPendingCancellation: false,
+  //       itemsPendingCancellation: false
+  //     }
+  //   ]
+  // }
 
   const auth = useContext(AuthContext)
   const {setPatientDetails} = usePatientDetails()
@@ -144,51 +138,51 @@ export default function PrescriptionListPage() {
       const hasPrescriptionId = !!queryParams.get("prescriptionId")
       const hasNhsNumber = !!queryParams.get("nhsNumber")
 
+      // Local version to prevent a race condition
+      let newBackLinkTarget = backLinkTarget
+
       // determine which search page to go back to based on query parameters
       if (hasPrescriptionId) {
-        setBackLinkTarget(PRESCRIPTION_LIST_PAGE_STRINGS.PRESCRIPTION_ID_SEARCH_TARGET)
+        newBackLinkTarget = PRESCRIPTION_LIST_PAGE_STRINGS.PRESCRIPTION_ID_SEARCH_TARGET
+        setBackLinkTarget(newBackLinkTarget)
       } else if (hasNhsNumber) {
-        setBackLinkTarget(PRESCRIPTION_LIST_PAGE_STRINGS.NHS_NUMBER_SEARCH_TARGET)
-      } else {
-        // if no search is given, navigate to the not found page
-        navigate(FRONTEND_PATHS.PRESCRIPTION_NOT_FOUND)
-        return
+        newBackLinkTarget = PRESCRIPTION_LIST_PAGE_STRINGS.NHS_NUMBER_SEARCH_TARGET
+        setBackLinkTarget(newBackLinkTarget)
       }
 
       let searchResults: SearchResponse | undefined
+      let searchValue: string = ""
 
       if (hasPrescriptionId) {
-        const prescId = queryParams.get("prescriptionId")!
-        searchResults = await searchPrescriptionID(prescId)
-        console.log("Got search results", searchResults)
-        if (!searchResults) {
-          navigate(backLinkTarget)
-        }
+        searchValue = queryParams.get("prescriptionId")!
+        searchResults = await searchPrescriptionID(searchValue)
       }
 
       if (hasNhsNumber) {
-        const nhsNumber = queryParams.get("nhsNumber")!
+        searchValue = queryParams.get("nhsNumber")!
         // Assuming you’ll also refactor searchNhsNumber to be async
-        searchResults = await searchNhsNumber(nhsNumber)
-        if (!searchResults) {
-          navigate(backLinkTarget)
-        }
+        searchResults = await searchNhsNumber(searchValue)
       }
+
+      if (!searchResults) {
+        navigate(newBackLinkTarget)
+        return
+      }
+
+      console.warn("Searched for, got", {searchValue, searchResults})
 
       // Update the data with the mock object defined above. TEMPORARY!
       // TODO: Use real data here
-      if (searchResults) {
-        setPastPrescriptions(searchResults.pastPrescriptions)
-        setFuturePrescriptions(searchResults.futurePrescriptions)
-        setCurrentPrescriptions(searchResults.currentPrescriptions)
-        setPatientDetails(searchResults.patient)
+      setPastPrescriptions(searchResults.pastPrescriptions)
+      setFuturePrescriptions(searchResults.futurePrescriptions)
+      setCurrentPrescriptions(searchResults.currentPrescriptions)
+      setPatientDetails(searchResults.patient)
 
-        setPrescriptionCount(
-          searchResults.pastPrescriptions.length +
+      setPrescriptionCount(
+        searchResults.pastPrescriptions.length +
           searchResults.futurePrescriptions.length +
           searchResults.currentPrescriptions.length
-        )
-      }
+      )
     }
 
     setLoading(true)
@@ -215,6 +209,7 @@ export default function PrescriptionListPage() {
         }
       })
 
+      console.log("Response status", {status: response.status})
       if (response.status !== 200) {
       // Throwing an error here will jump to the catch block.
         throw new Error(`Status Code: ${response.status}`)
@@ -225,23 +220,23 @@ export default function PrescriptionListPage() {
 
     } catch (error) {
       console.error("Error retrieving prescription details:", error)
-      // Allow known test ID through; otherwise, return false.
-      if (prescriptionId === "C0C757-A83008-C2D93O") {
-        console.log("Using mock data")
-        const response = {
-          ...mockSearchResponse,
-          patient: mockPatient
-        }
-        return response
-      }
-      if (prescriptionId === "209E3D-A83008-327F9F") {
-        console.log("Using mock data")
-        const response = {
-          ...mockSearchResponse,
-          patient: minimumDetails
-        }
-        return response
-      }
+      // // Allow known test ID through; otherwise, return false.
+      // if (prescriptionId === "C0C757-A83008-C2D93O") {
+      //   console.log("Using mock data")
+      //   const response = {
+      //     ...mockSearchResponse,
+      //     patient: mockPatient
+      //   }
+      //   return response
+      // }
+      // if (prescriptionId === "209E3D-A83008-327F9F") {
+      //   console.log("Using mock data")
+      //   const response = {
+      //     ...mockSearchResponse,
+      //     patient: minimumDetails
+      //   }
+      //   return response
+      // }
     }
   }
 
@@ -259,6 +254,7 @@ export default function PrescriptionListPage() {
         }
       })
 
+      console.log("Response status", {status: response.status})
       if (response.status !== 200) {
       // Throwing an error here will jump to the catch block.
         throw new Error(`Status Code: ${response.status}`)
@@ -268,8 +264,11 @@ export default function PrescriptionListPage() {
       return payload
 
     } catch (error) {
-      console.error("Failed to fetch. Returning mock data", error)
-      return Promise.resolve(mockSearchResponse)
+      // if (nhsNumber === "1234567890") {
+      //   console.error("Failed to fetch. Returning mock data", error)
+      //   return Promise.resolve(mockSearchResponse)
+      // }
+      console.error("Failed to fetch prescription search.", error)
     }
   }
 
