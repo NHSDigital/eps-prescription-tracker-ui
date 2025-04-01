@@ -26,7 +26,7 @@ const renderWithRouter = (route: string) => {
       <MemoryRouter initialEntries={[route]}>
         <Routes>
           <Route path={FRONTEND_PATHS.PRESCRIPTION_NOT_FOUND} element={<Dummy404 />} />
-          <Route path={FRONTEND_PATHS.PRESCRIPTION_RESULTS} element={<PrescriptionListPage />} />
+          <Route path={FRONTEND_PATHS.PRESCRIPTION_LIST} element={<PrescriptionListPage />} />
         </Routes>
       </MemoryRouter>
     </MockPatientDetailsProvider>
