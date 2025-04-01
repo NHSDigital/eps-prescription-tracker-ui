@@ -136,7 +136,7 @@ jobs:
   
       - name: fix cdk.json for deployment
         run: |
-          ./.github/scripts/fix_cdk_json.sh
+          ./.github/scripts/fix_cdk_json.sh ${{ inputs.CONFIG_FILE }}
           jq \
             --arg configFileName "${{ inputs.CONFIG_FILE }}" \
             '.context += {
@@ -174,7 +174,6 @@ jobs:
           JWT_KID: ${{ inputs.JWT_KID }}
           ROLE_ID: ${{ inputs.ROLE_ID }}
           CDK_APP_NAME: ${{ inputs.CDK_APP_NAME }}
-          OUTPUT_FILE_NAME: ${{ inputs.CONFIG_FILE }}
 
       - name: Show diff
         run: |

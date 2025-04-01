@@ -37,7 +37,7 @@ fix_boolean_number_key() {
 
 OUTPUT_FILE_NAME=$1
 if [ -z "${OUTPUT_FILE_NAME}" ]; then
-    echo "${OUTPUT_FILE_NAME} value is unset or set to the empty string"
+    echo "OUTPUT_FILE_NAME value is unset or set to the empty string"
     exit 1
 fi
 echo "{}" > "$OUTPUT_FILE_NAME"
