@@ -46,9 +46,7 @@ export interface SearchResponse {
   pastPrescriptions: Array<PrescriptionSummary>;
 }
 
-export type PrescriptionSummary = Omit<PrescriptionAPIResponse, "nhsNumber">
-
-export interface PrescriptionAPIResponse {
+export interface PrescriptionSummary {
   prescriptionId: string;
   statusCode: string;
   issueDate: string;
@@ -57,11 +55,15 @@ export interface PrescriptionAPIResponse {
   maxRepeats?: number;
   prescriptionPendingCancellation: boolean;
   itemsPendingCancellation: boolean;
-  nhsNumber?: number
+  // nhsNumber?: number
 }
 
 export enum TreatmentType {
   ACUTE = "0001",
   REPEAT = "0002",
   ERD = "0003"
+}
+
+export interface PrescriptionAPIResponse extends PrescriptionSummary {
+  nhsNumber?: number
 }
