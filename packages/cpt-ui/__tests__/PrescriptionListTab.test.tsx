@@ -13,7 +13,7 @@ import {
 import {PrescriptionSummary, TreatmentType} from "@cpt-ui-common/common-types"
 
 // This mock just displays the data. Nothing fancy!
-jest.mock("@/components/prescriptionList/PrescriptionsList", () => {
+jest.mock("@/components/prescriptionList/PrescriptionsListTable", () => {
   return function DummyPrescriptionsList({
     textContent,
     prescriptions

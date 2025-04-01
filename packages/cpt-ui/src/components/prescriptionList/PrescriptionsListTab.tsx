@@ -1,7 +1,7 @@
 import React from "react"
 import {Tabs} from "nhsuk-react-components"
 
-import PrescriptionsList from "@/components/prescriptionList/PrescriptionsList"
+import PrescriptionsListTable from "@/components/prescriptionList/PrescriptionsListTable"
 
 import {
   CURRENT_PRESCRIPTIONS,
@@ -54,19 +54,19 @@ export default function PrescriptionsListTabs({
           <div>
             {
               (tabContent.targetId === "current" && (
-                <PrescriptionsList
+                <PrescriptionsListTable
                   textContent={CURRENT_PRESCRIPTIONS}
                   prescriptions={currentPrescriptions}
                 />
               )) ||
               (tabContent.targetId === "future" && (
-                <PrescriptionsList
+                <PrescriptionsListTable
                   textContent={FUTURE_PRESCRIPTIONS}
                   prescriptions={futurePrescriptions}
                 />
               )) ||
               (tabContent.targetId === "past" && (
-                <PrescriptionsList
+                <PrescriptionsListTable
                   textContent={PAST_PRESCRIPTIONS}
                   prescriptions={pastPrescriptions}
                 />
