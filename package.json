@@ -42,7 +42,7 @@
         "@types/node": "^22.13.16",
         "@types/react": "18.3.12",
         "@typescript-eslint/eslint-plugin": "^8.27.0",
-        "@typescript-eslint/parser": "^8.28.0",
+        "@typescript-eslint/parser": "^8.29.0",
         "aws-sdk-client-mock": "^4.1.0",
         "eslint": "^9.23.0",
         "eslint-config-prettier": "^10.1.1",
