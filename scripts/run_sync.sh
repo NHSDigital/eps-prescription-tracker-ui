@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+CURRENT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+echo "Script directory: $CURRENT_DIR"
+
 echo "What is the pull request id?"
 read -r PULL_REQUEST_ID
 
