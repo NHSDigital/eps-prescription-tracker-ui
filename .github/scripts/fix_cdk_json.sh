@@ -109,7 +109,7 @@ if [ "$CDK_APP_NAME" == "StatefulResourcesApp" ]; then
     fix_string_key primaryOidcClientId "${PRIMARY_OIDC_CLIENT_ID}"
     fix_string_key primaryOidcIssuer "${PRIMARY_OIDC_ISSUER}"
     fix_string_key primaryOidcAuthorizeEndpoint "${PRIMARY_OIDC_AUTHORIZE_ENDPOINT}"
-    fix_string_key primaryOidcTokenEndpoint "${PRIMARY_OIDC_TOKEN_ENDPOINT}"
+    fix_string_key primaryTokenEndpoint "${PRIMARY_OIDC_TOKEN_ENDPOINT}"
     fix_string_key primaryOidcUserInfoEndpoint "${PRIMARY_OIDC_USERINFO_ENDPOINT}"
     fix_string_key primaryOidcjwksEndpoint "${PRIMARY_OIDC_JWKS_ENDPOINT}"
 
@@ -118,7 +118,7 @@ if [ "$CDK_APP_NAME" == "StatefulResourcesApp" ]; then
         fix_string_key mockOidcClientId "${MOCK_OIDC_CLIENT_ID}"
         fix_string_key mockOidcIssuer "${MOCK_OIDC_ISSUER}"
         fix_string_key mockOidcAuthorizeEndpoint "${MOCK_OIDC_AUTHORIZE_ENDPOINT}"
-        fix_string_key mockOidcTokenEndpoint "${MOCK_OIDC_TOKEN_ENDPOINT}"
+        fix_string_key mockTokenEndpoint "${MOCK_OIDC_TOKEN_ENDPOINT}"
         fix_string_key mockOidcUserInfoEndpoint "${MOCK_OIDC_USERINFO_ENDPOINT}"
         fix_string_key mockOidcjwksEndpoint "${MOCK_OIDC_JWKS_ENDPOINT}"
     fi
