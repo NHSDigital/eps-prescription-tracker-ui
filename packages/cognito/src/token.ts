@@ -136,14 +136,17 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   let rolesWithAccess
   let rolesWithoutAccess
 
-  const selectedRoleIdFromToken = decodedIdToken.selected_roleid
+  const selectedRoleIdFromToken = decodedIdToken.selected_roleid?.toString()
+  const existingRoleId = existingItem?.currentlySelectedRole?.role_id?.toString()
+
   if (
-    existingItem?.currentlySelectedRole?.role_id &&
-    existingItem.currentlySelectedRole.role_id === selectedRoleIdFromToken
+    existingRoleId &&
+    selectedRoleIdFromToken &&
+    existingRoleId === selectedRoleIdFromToken
   ) {
     logger.info("Preserving existing role-related fields from DynamoDB", {
       selectedRoleIdFromToken,
-      matchedRoleId: existingItem.currentlySelectedRole.role_id
+      matchedRoleId: existingRoleId
     })
 
     currentlySelectedRole = existingItem.currentlySelectedRole
@@ -152,7 +155,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   } else {
     logger.info("Not preserving role data. Either missing or mismatched role_id", {
       selectedRoleIdFromToken,
-      existingRoleId: existingItem?.currentlySelectedRole?.role_id
+      existingRoleId
     })
 
     currentlySelectedRole = {}
