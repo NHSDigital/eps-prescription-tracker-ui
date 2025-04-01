@@ -43,8 +43,15 @@ export default function PrescriptionsListTabs({
         {tabData.map(tabHeader => {
           const count = prescriptionCounts[tabHeader.targetId as keyof typeof prescriptionCounts] || 0
           return (
-            <Tabs.ListItem id={tabHeader.targetId} key={tabHeader.title}>
-              {`${tabHeader.title} (${count})`}
+            <Tabs.ListItem
+              id={tabHeader.targetId}
+              key={tabHeader.title}
+            >
+              <div
+                data-testid={`prescription-results-list-tab-heading ${tabHeader.targetId}`}
+              >
+                {`${tabHeader.title} (${count})`}
+              </div>
             </Tabs.ListItem>
           )
         })}
