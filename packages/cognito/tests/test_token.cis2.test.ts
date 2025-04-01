@@ -70,9 +70,9 @@ jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
     }
   })
 
-  const initializeOidcConfig = mockInitializeOidcConfig.mockImplementation( () => {
+  const initializeOidcConfig = mockInitializeOidcConfig.mockImplementation(() => {
     // Create a JWKS client for cis2 and mock
-  // this is outside functions so it can be re-used
+    // this is outside functions so it can be re-used
     const cis2JwksUri = process.env["CIS2_OIDCJWKS_ENDPOINT"] as string
     const cis2JwksClient = jwksClient({
       jwksUri: cis2JwksUri,
@@ -170,7 +170,7 @@ describe("handler tests with cis2", () => {
       id_token: token,
       access_token: "access_token_reply"
     }))
-    expect(dynamoSpy).toHaveBeenCalledTimes(1)
+    expect(dynamoSpy).toHaveBeenCalledTimes(2)
     const call = dynamoSpy.mock.calls[0][0].input as PutCommandInput
     expect(call.Item).toEqual(
       {

@@ -3,7 +3,7 @@ import {Logger} from "@aws-lambda-powertools/logger"
 import {injectLambdaContext} from "@aws-lambda-powertools/logger/middleware"
 import {getSecret} from "@aws-lambda-powertools/parameters/secrets"
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
-import {DynamoDBDocumentClient, PutCommand} from "@aws-sdk/lib-dynamodb"
+import {DynamoDBDocumentClient, PutCommand, GetCommand} from "@aws-sdk/lib-dynamodb"
 
 import middy from "@middy/core"
 import inputOutputLogger from "@middy/input-output-logger"
@@ -112,16 +112,65 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   const decodedIdToken = await verifyIdToken(idToken, logger, useMock ? mockOidcConfig : cis2OidcConfig)
   logger.debug("decoded idToken", {decodedIdToken})
 
-  const username = useMock ?
-    `${mockOidcConfig.userPoolIdp}_${decodedIdToken.sub}` :
-    `${cis2OidcConfig.userPoolIdp}_${decodedIdToken.sub}`
+  const username = useMock
+    ? `${mockOidcConfig.userPoolIdp}_${decodedIdToken.sub}`
+    : `${cis2OidcConfig.userPoolIdp}_${decodedIdToken.sub}`
+
+  // Attempt to fetch existing user data from DynamoDB
+  let existingItem
+  try {
+    const existingData = await documentClient.send(
+      new GetCommand({
+        TableName: TokenMappingTableName,
+        Key: {username}
+      })
+    )
+    existingItem = existingData.Item
+    logger.debug("Fetched existing item from DynamoDB", {existingItem})
+  } catch (error) {
+    logger.warn("Failed to fetch existing user record", {username, error})
+  }
+
+  // Determine if we should keep the existing role-related fields
+  let currentlySelectedRole
+  let rolesWithAccess
+  let rolesWithoutAccess
+
+  const selectedRoleIdFromToken = decodedIdToken.selected_roleid
+  if (
+    existingItem?.currentlySelectedRole?.role_id &&
+    existingItem.currentlySelectedRole.role_id === selectedRoleIdFromToken
+  ) {
+    logger.info("Preserving existing role-related fields from DynamoDB", {
+      selectedRoleIdFromToken,
+      matchedRoleId: existingItem.currentlySelectedRole.role_id
+    })
+
+    currentlySelectedRole = existingItem.currentlySelectedRole
+    rolesWithAccess = existingItem.rolesWithAccess || []
+    rolesWithoutAccess = existingItem.rolesWithoutAccess || []
+  } else {
+    logger.info("Not preserving role data. Either missing or mismatched role_id", {
+      selectedRoleIdFromToken,
+      existingRoleId: existingItem?.currentlySelectedRole?.role_id
+    })
+
+    currentlySelectedRole = {}
+    rolesWithAccess = []
+    rolesWithoutAccess = []
+  }
+
+  // Prepare the item to write
   const params = {
     Item: {
-      "username": username,
-      "CIS2_accessToken": accessToken,
-      "CIS2_idToken": idToken,
-      "CIS2_expiresIn": decodedIdToken.exp,
-      "selectedRoleId": decodedIdToken.selected_roleid
+      username,
+      CIS2_accessToken: accessToken,
+      CIS2_idToken: idToken,
+      CIS2_expiresIn: decodedIdToken.exp,
+      selectedRoleId: selectedRoleIdFromToken,
+      currentlySelectedRole,
+      rolesWithAccess,
+      rolesWithoutAccess
     },
     TableName: TokenMappingTableName
   }
