@@ -137,6 +137,8 @@ jobs:
       - name: fix cdk.json for deployment
         run: |
           ./.github/scripts/fix_cdk_json.sh .build/${{ inputs.CONFIG_FILE }}
+          echo "******"
+          cat .build/${{ inputs.CONFIG_FILE }}
         env:
           SERVICE_NAME: ${{ inputs.SERVICE_NAME }}
           VERSION_NUMBER: "${{ inputs.VERSION_NUMBER }}"
