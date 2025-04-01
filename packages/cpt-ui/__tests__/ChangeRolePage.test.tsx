@@ -4,6 +4,7 @@ import {useNavigate} from "react-router-dom"
 import React from "react"
 
 import {AuthContext} from "@/context/AuthProvider"
+import {FRONTEND_PATHS} from "@/constants/environment"
 
 import axios from "@/helpers/axios"
 jest.mock("@/helpers/axios")
@@ -23,7 +24,7 @@ jest.mock("@/constants/ui-strings/CardStrings", () => {
     },
     confirmButton: {
       text: "Continue to find a prescription",
-      link: "search"
+      link: "search-by-prescription-id"
     },
     alternativeMessage: "Alternatively, you can choose a new role below.",
     organisation: "Organisation",
@@ -87,7 +88,7 @@ jest.mock("@/context/AccessProvider", () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const __setMockAccessValue = (newValue: any) => {
     mockContextValue = {...mockContextValue, ...newValue}
-    // Reassign the context’s defaultValue so subsequent consumers get the new values
+    // Reassign the context's defaultValue so subsequent consumers get the new values
     MockAccessContext._currentValue = mockContextValue
     MockAccessContext._currentValue2 = mockContextValue
   }
@@ -293,9 +294,9 @@ describe("ChangeRolePage", () => {
       idToken: {toString: jest.fn().mockReturnValue("mock-id-token")}
     })
 
-    // Wait for redirection
+    // Wait for redirection - use FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID from the global mock
     await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith("/search")
+      expect(mockNavigate).toHaveBeenCalledWith(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
     })
   })
 
@@ -331,7 +332,8 @@ describe("ChangeRolePage", () => {
     })
 
     await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith("/search")
+      // Use FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID from the global mock
+      expect(mockNavigate).toHaveBeenCalledWith(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
     })
   })
 
