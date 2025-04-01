@@ -18,6 +18,25 @@ jest.mock("@/helpers/axios")
 // Tell TypeScript that axios is a mocked version.
 const mockedAxios = axios as jest.Mocked<typeof axios>
 
+// Move MediaQueryList mock outside
+class MediaQueryList {
+  matches = false
+  media = ""
+  onchange = null
+  addListener = jest.fn()
+  removeListener = jest.fn()
+  addEventListener = jest.fn()
+  removeEventListener = jest.fn()
+  dispatchEvent = jest.fn()
+
+  constructor() {
+    this.matches = false
+    this.media = ""
+  }
+}
+
+window.matchMedia = jest.fn().mockImplementation(() => new MediaQueryList())
+
 const mockSearchResponse: SearchResponse = {
   patient: {
     nhsNumber: "5900009890",
@@ -161,7 +180,7 @@ describe("PrescriptionListPage", () => {
     await waitFor(() => {
       const resultsCount = screen.getByTestId("results-count")
       expect(resultsCount).toHaveTextContent(
-        `${PRESCRIPTION_LIST_PAGE_STRINGS.RESULTS_PREFIX}5${PRESCRIPTION_LIST_PAGE_STRINGS.RESULTS_SUFFIX}`
+        `${PRESCRIPTION_LIST_PAGE_STRINGS.RESULTS_PREFIX}6${PRESCRIPTION_LIST_PAGE_STRINGS.RESULTS_SUFFIX}`
       )
     })
   })
@@ -190,7 +209,7 @@ describe("PrescriptionListPage", () => {
 
     // We need to wait for the useEffect to run
     await waitFor(() => {
-      const linkContainer = screen.getByTestId("go-back-link")
+      const linkContainer = screen.getByTestId("back-link-container")
       expect(linkContainer).toHaveAttribute("href", PRESCRIPTION_LIST_PAGE_STRINGS.PRESCRIPTION_ID_SEARCH_TARGET)
     })
   })
@@ -205,7 +224,7 @@ describe("PrescriptionListPage", () => {
 
     // We need to wait for the useEffect to run
     await waitFor(() => {
-      const linkContainer = screen.getByTestId("go-back-link")
+      const linkContainer = screen.getByTestId("back-link-container")
       expect(linkContainer).toHaveAttribute("href", PRESCRIPTION_LIST_PAGE_STRINGS.NHS_NUMBER_SEARCH_TARGET)
     })
   })
