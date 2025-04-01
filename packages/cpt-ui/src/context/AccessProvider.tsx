@@ -86,7 +86,6 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
     localStorage.removeItem("access")
     localStorage.removeItem("selectedRole")
     localStorage.removeItem("userDetails")
-    localStorage.removeItem("patientDetails")
     console.log("Local storage cleared.")
   }
 

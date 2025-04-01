@@ -56,9 +56,6 @@ export default function LoginPage() {
     // If we're on the login page, we need to clear the states
     access.clear()
 
-    // If we're on the login page, we need to clear the states
-    access.clear()
-
     if (
       !MOCK_AUTH_ALLOWED_ENVIRONMENTS.includes(
         target_environment as MockAuthEnvironment

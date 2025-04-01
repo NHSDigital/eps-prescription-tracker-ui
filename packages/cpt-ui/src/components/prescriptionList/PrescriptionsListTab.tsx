@@ -52,24 +52,27 @@ export default function PrescriptionsListTabs({
       {tabData.map(tabContent => (
         <Tabs.Contents id={tabContent.targetId} key={tabContent.title}>
           <div>
-            {(tabContent.targetId === "current" && (
-              <PrescriptionsList
-                textContent={CURRENT_PRESCRIPTIONS}
-                prescriptions={currentPrescriptions}
-              />
-            )) ||
-                            (tabContent.targetId === "future" && (
-                              <PrescriptionsList
-                                textContent={FUTURE_PRESCRIPTIONS}
-                                prescriptions={futurePrescriptions}
-                              />
-                            )) ||
-                            (tabContent.targetId === "past" && (
-                              <PrescriptionsList
-                                textContent={PAST_PRESCRIPTIONS}
-                                prescriptions={pastPrescriptions}
-                              />
-                            )) || <p>This Search not available</p>}
+            {
+              (tabContent.targetId === "current" && (
+                <PrescriptionsList
+                  textContent={CURRENT_PRESCRIPTIONS}
+                  prescriptions={currentPrescriptions}
+                />
+              )) ||
+              (tabContent.targetId === "future" && (
+                <PrescriptionsList
+                  textContent={FUTURE_PRESCRIPTIONS}
+                  prescriptions={futurePrescriptions}
+                />
+              )) ||
+              (tabContent.targetId === "past" && (
+                <PrescriptionsList
+                  textContent={PAST_PRESCRIPTIONS}
+                  prescriptions={pastPrescriptions}
+                />
+              )) ||
+              <p>This Search not available</p>
+            }
           </div>
         </Tabs.Contents>
       ))}
