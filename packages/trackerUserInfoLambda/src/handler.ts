@@ -72,7 +72,9 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   // Check if cached data exists and has valid role information
   if (
     cachedUserInfo &&
-    (cachedUserInfo.roles_with_access.length > 0 || cachedUserInfo.roles_without_access.length > 0)
+    (cachedUserInfo.roles_with_access.length > 0 || cachedUserInfo.roles_without_access.length > 0) &&
+    cachedUserInfo.currently_selected_role &&
+    Object.keys(cachedUserInfo.currently_selected_role).length > 0
   ) {
     logger.info("Returning cached user info from DynamoDB", {cachedUserInfo})
 
