@@ -30,6 +30,20 @@ export const API_ENDPOINTS = {
   PRESCRIPTION_DETAILS: "/api/prescription-details"
 } as const
 
+// RUM CONFIG
+export const RUM_CONFIG = {
+  GUEST_ROLE_ARN: import.meta.env.VITE_RUM_GUEST_ROLE_ARN,
+  IDENTITY_POOL_ID: import.meta.env.VITE_RUM_IDENTITY_POOL_ID,
+  ENDPOINT: "https://dataplane.rum.eu-west-2.amazonaws.com",
+  APPLICATION_ID: import.meta.env.VITE_RUM_APPLICATION_ID,
+  REGION: "eu-west-2",
+  VERSION: "1.0.0",
+  ALLOW_COOKIES: import.meta.env.VITE_RUM_ALLOW_COOKIES === "true",
+  ENABLE_XRAY: import.meta.env.VITE_RUM_ENABLE_XRAY === "true",
+  SESSION_SAMPLE_RATE: Number(import.meta.env.VITE_RUM_SESSION_SAMPLE_RATE),
+  TELEMETRIES: import.meta.env.VITE_RUM_TELEMETRIES.split(","),
+  RELEASE_ID: import.meta.env.VITE_COMMIT_ID
+} as const
 // Web page paths
 export const FRONTEND_PATHS = {
   PRESCRIPTION_NOT_FOUND: "/prescription-not-found",

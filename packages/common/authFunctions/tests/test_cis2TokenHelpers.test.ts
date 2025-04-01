@@ -13,7 +13,7 @@ import {APIGatewayProxyEvent} from "aws-lambda"
 import {Logger} from "@aws-lambda-powertools/logger"
 import jwksClient from "jwks-rsa"
 import jwt from "jsonwebtoken"
-import {createJWKSMock} from "mock-jwks"
+import createJWKSMock from "mock-jwks"
 import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
 
