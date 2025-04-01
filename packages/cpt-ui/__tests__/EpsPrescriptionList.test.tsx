@@ -18,25 +18,6 @@ jest.mock("@/helpers/axios")
 // Tell TypeScript that axios is a mocked version.
 const mockedAxios = axios as jest.Mocked<typeof axios>
 
-// Move MediaQueryList mock outside
-class MediaQueryList {
-  matches = false
-  media = ""
-  onchange = null
-  addListener = jest.fn()
-  removeListener = jest.fn()
-  addEventListener = jest.fn()
-  removeEventListener = jest.fn()
-  dispatchEvent = jest.fn()
-
-  constructor() {
-    this.matches = false
-    this.media = ""
-  }
-}
-
-window.matchMedia = jest.fn().mockImplementation(() => new MediaQueryList())
-
 const mockSearchResponse: SearchResponse = {
   patient: {
     nhsNumber: "5900009890",

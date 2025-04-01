@@ -6,25 +6,6 @@ import {BrowserRouter} from "react-router-dom"
 
 import EpsTabs from "@/components/EpsTabs"
 
-// Move MediaQueryList mock outside
-class MediaQueryList {
-  matches = false
-  media = ""
-  onchange = null
-  addListener = jest.fn()
-  removeListener = jest.fn()
-  addEventListener = jest.fn()
-  removeEventListener = jest.fn()
-  dispatchEvent = jest.fn()
-
-  constructor() {
-    this.matches = false
-    this.media = ""
-  }
-}
-
-window.matchMedia = jest.fn().mockImplementation(() => new MediaQueryList())
-
 // Mock ResizeObserver
 // eslint-disable-next-line no-undef
 global.ResizeObserver = jest.fn().mockImplementation(function () {

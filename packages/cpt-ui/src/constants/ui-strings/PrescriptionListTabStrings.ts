@@ -21,5 +21,5 @@ export const PAST_PRESCRIPTIONS: PrescriptionsListStrings = {
 
 export const FUTURE_PRESCRIPTIONS: PrescriptionsListStrings = {
   testid: "future",
-  heading: "future prescriptions table"
+  heading: "Future prescriptions table"
 }

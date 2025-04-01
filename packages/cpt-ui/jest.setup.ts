@@ -48,3 +48,22 @@ jest.mock("@/constants/environment", () => ({
   },
   MOCK_AUTH_ALLOWED_ENVIRONMENTS: ["dev", "dev-pr", "int", "qa"]
 }))
+
+// Allows for tab selection
+class MediaQueryList {
+  matches = false
+  media = ""
+  onchange = null
+  addListener = jest.fn()
+  removeListener = jest.fn()
+  addEventListener = jest.fn()
+  removeEventListener = jest.fn()
+  dispatchEvent = jest.fn()
+
+  constructor() {
+    this.matches = false
+    this.media = ""
+  }
+}
+
+window.matchMedia = jest.fn().mockImplementation(() => new MediaQueryList())
