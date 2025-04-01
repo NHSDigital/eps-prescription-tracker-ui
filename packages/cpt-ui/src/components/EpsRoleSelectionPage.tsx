@@ -1,4 +1,3 @@
-/* eslint-disable no-unreachable */
 import React, {useState, useEffect} from "react"
 import {useNavigate} from "react-router-dom"
 import {
@@ -98,8 +97,6 @@ export default function RoleSelectionPage({
   const [roleCardPropsWithoutAccess, setRoleCardPropsWithoutAccess] = useState<Array<RolesWithoutAccessProps>>([])
 
   useEffect(() => {
-    console.log("going to throw an error")
-    throw new Error("throwing to test source maps")
     // Transform roles data for display
     setRoleCardPropsWithAccess((!noAccess)
       ? rolesWithAccess.map((role: RoleDetails, index) => ({
