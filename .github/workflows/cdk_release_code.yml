@@ -62,6 +62,8 @@ on:
         type: string
       ROLE_ID:
         type: string
+      CONFIG_FILE:
+        type: string
     secrets:
       CLOUD_FORMATION_DEPLOY_ROLE:
         required: true
@@ -135,6 +137,13 @@ jobs:
       - name: fix cdk.json for deployment
         run: |
           ./.github/scripts/fix_cdk_json.sh
+          jq \
+            --arg configFileName "${{ inputs.CONFIG_FILE }}" \
+            '.context += {
+              "configFileName": $configFileName
+            }' \
+          .build/cdk.json > .build/cdk.new.json
+          mv .build/cdk.new.json .build/cdk.json
         env:
           SERVICE_NAME: ${{ inputs.SERVICE_NAME }}
           VERSION_NUMBER: "${{ inputs.VERSION_NUMBER }}"
@@ -165,6 +174,7 @@ jobs:
           JWT_KID: ${{ inputs.JWT_KID }}
           ROLE_ID: ${{ inputs.ROLE_ID }}
           CDK_APP_NAME: ${{ inputs.CDK_APP_NAME }}
+          OUTPUT_FILE_NAME: ${{ inputs.CONFIG_FILE }}
 
       - name: Show diff
         run: |
@@ -176,6 +186,7 @@ jobs:
           -e AWS_REGION="eu-west-2" \
           -e SHOW_DIFF="true" \
           -e DEPLOY_CODE="false" \
+          -e CONFIG_FILE_NAME="${{ inputs.CONFIG_FILE }}" \
           -e CDK_APP_PATH="packages/cdk/bin/${{ inputs.CDK_APP_NAME }}.ts" \
           cdk-utils-build-repo:latest
         shell: bash
@@ -190,6 +201,7 @@ jobs:
           -e AWS_REGION="eu-west-2" \
           -e SHOW_DIFF="false" \
           -e DEPLOY_CODE="true" \
+          -e CONFIG_FILE_NAME="${{ inputs.CONFIG_FILE }}" \
           -e CDK_APP_PATH="packages/cdk/bin/${{ inputs.CDK_APP_NAME }}.ts" \
           cdk-utils-build-repo:latest
         shell: bash

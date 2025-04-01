@@ -34,3 +34,5 @@ cdk.out/
 packages/cpt-ui/dist
 packages/auth_demo/build/
 .build/
+local.stateful_resources.json
+local.stateless_resources.json
