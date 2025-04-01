@@ -152,7 +152,7 @@ elif [ "$CDK_APP_NAME" == "StatelessResourcesApp" ]; then
     fix_string_key fullCloudfrontDomain "${FULL_CLOUDFRONT_DOMAIN}"
     fix_string_key fullCognitoDomain "${FULL_COGNITO_DOMAIN}"
     fix_string_key primaryOidcClientId "${PRIMARY_OIDC_CLIENT_ID}"
-    fix_string_key primaryOidcTokenEndpoint "${PRIMARY_OIDC_TOKEN_ENDPOINT}"
+    fix_string_key primaryTokenEndpoint "${PRIMARY_OIDC_TOKEN_ENDPOINT}"
     fix_string_key primaryOidcAuthorizeEndpoint "${PRIMARY_OIDC_AUTHORIZE_ENDPOINT}"
     fix_string_key primaryOidcIssuer "${PRIMARY_OIDC_ISSUER}"
     fix_string_key primaryOidcUserInfoEndpoint "${PRIMARY_OIDC_USERINFO_ENDPOINT}"
