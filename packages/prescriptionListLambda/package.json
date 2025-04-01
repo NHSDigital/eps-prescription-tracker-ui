@@ -31,9 +31,9 @@
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.148",
+    "@types/fhir": "^0.0.41",
     "axios-mock-adapter": "^2.0.0",
     "mock-jwks": "^3.2.2",
-    "nock": "^14.0.2",
-    "@types/fhir": "^0.0.41"
+    "nock": "^14.0.2"
   }
 }
