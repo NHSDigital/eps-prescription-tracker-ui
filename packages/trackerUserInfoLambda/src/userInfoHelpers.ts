@@ -167,36 +167,8 @@ export const updateDynamoTable = async (
 
   logger.debug("Adding user roles to DynamoDB", {username, data})
 
-  // Fetch existing record to preserve currentlySelectedRole if needed
-  let existingItem
-  try {
-    const result = await documentClient.send(
-      new GetCommand({
-        TableName: tokenMappingTableName,
-        Key: {username}
-      })
-    )
-    existingItem = result.Item
-  } catch (error) {
-    logger.warn("Failed to fetch existing item from DynamoDB", {username, error})
-  }
-
-  const hasValidSelectedRole =
-    data.currently_selected_role && Object.keys(data.currently_selected_role).length > 0
-
-  if (!hasValidSelectedRole && existingItem?.currentlySelectedRole) {
-    logger.info("Preserving existing currentlySelectedRole as incoming one was empty", {
-      preserved: existingItem.currentlySelectedRole
-    })
-  }
-
-  // Use existing currentlySelectedRole if incoming one is empty
-  const currentlySelectedRole: RoleDetails =
-    hasValidSelectedRole
-      ? data.currently_selected_role
-      : existingItem?.currentlySelectedRole || {}
-
   // Dynamo cannot allow undefined values. We need to scrub any undefined values from the data objects
+  const currentlySelectedRole: RoleDetails = data.currently_selected_role ? data.currently_selected_role : {}
   const rolesWithAccess: Array<RoleDetails> = data.roles_with_access ? data.roles_with_access : []
   const rolesWithoutAccess: Array<RoleDetails> = data.roles_without_access ? data.roles_without_access : []
   const userDetails: UserDetails = data.user_details || {family_name: "", given_name: ""}
