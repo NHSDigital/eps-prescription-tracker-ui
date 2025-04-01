@@ -11,9 +11,10 @@ export interface PrescriptionsListTableProps {
 export default function PrescriptionsListTable({textContent, prescriptions}: PrescriptionsListTableProps) {
   return (
     <>
-      <div data-testid={`prescription-results-list-tab-table ${textContent.testid}`} />
-      <p>{textContent.heading}</p>
-      <p>{JSON.stringify(prescriptions)}</p>
+      <div data-testid={`prescription-results-list-tab-table ${textContent.testid}`}>
+        <p>{textContent.heading}</p>
+        <p>{JSON.stringify(prescriptions)}</p>
+      </div>
     </>
   )
 }

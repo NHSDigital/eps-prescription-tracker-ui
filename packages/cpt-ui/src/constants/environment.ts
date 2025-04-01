@@ -44,6 +44,7 @@ export const RUM_CONFIG = {
   TELEMETRIES: import.meta.env.VITE_RUM_TELEMETRIES.split(","),
   RELEASE_ID: import.meta.env.VITE_COMMIT_ID
 } as const
+
 // Web page paths
 export const FRONTEND_PATHS = {
   PRESCRIPTION_NOT_FOUND: "/prescription-not-found",
