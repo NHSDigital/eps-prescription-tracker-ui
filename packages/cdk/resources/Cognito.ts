@@ -28,14 +28,14 @@ export interface CognitoProps {
   readonly primaryOidcAuthorizeEndpoint: string
   readonly primaryOidcUserInfoEndpoint: string
   readonly primaryOidcjwksEndpoint: string
-  readonly primaryTokenEndpoint: string
+  readonly primaryOidcTokenEndpoint: string
   readonly useMockOidc: boolean
   readonly mockOidcClientId?: string
   readonly mockOidcIssuer?: string
   readonly mockOidcAuthorizeEndpoint?: string
   readonly mockOidcUserInfoEndpoint?: string
   readonly mockOidcjwksEndpoint?: string
-  readonly mockTokenEndpoint: string
+  readonly mockOidcTokenEndpoint: string
   readonly shortCognitoDomain: string
   readonly fullCloudfrontDomain: string
   readonly fullCognitoDomain: string

@@ -43,14 +43,14 @@ export class StatefulResourcesStack extends Stack {
     const primaryOidcAuthorizeEndpoint = this.node.tryGetContext("primaryOidcAuthorizeEndpoint")
     const primaryOidcUserInfoEndpoint = this.node.tryGetContext("primaryOidcUserInfoEndpoint")
     const primaryOidcjwksEndpoint = this.node.tryGetContext("primaryOidcjwksEndpoint")
-    const primaryTokenEndpoint = this.node.tryGetContext("primaryTokenEndpoint")
+    const primaryOidcTokenEndpoint = this.node.tryGetContext("primaryOidcTokenEndpoint")
 
     const mockOidcClientId = this.node.tryGetContext("mockOidcClientId")
     const mockOidcIssuer = this.node.tryGetContext("mockOidcIssuer")
     const mockOidcAuthorizeEndpoint = this.node.tryGetContext("mockOidcAuthorizeEndpoint")
     const mockOidcUserInfoEndpoint = this.node.tryGetContext("mockOidcUserInfoEndpoint")
     const mockOidcjwksEndpoint = this.node.tryGetContext("mockOidcjwksEndpoint")
-    const mockTokenEndpoint = this.node.tryGetContext("mockTokenEndpoint")
+    const mockOidcTokenEndpoint = this.node.tryGetContext("mockOidcTokenEndpoint")
 
     const useMockOidc: boolean = this.node.tryGetContext("useMockOidc")
     const useCustomCognitoDomain: boolean = this.node.tryGetContext("useCustomCognitoDomain")
@@ -98,13 +98,13 @@ export class StatefulResourcesStack extends Stack {
       primaryOidcAuthorizeEndpoint: primaryOidcAuthorizeEndpoint,
       primaryOidcUserInfoEndpoint: primaryOidcUserInfoEndpoint,
       primaryOidcjwksEndpoint: primaryOidcjwksEndpoint,
-      primaryTokenEndpoint: primaryTokenEndpoint,
+      primaryOidcTokenEndpoint: primaryOidcTokenEndpoint,
       mockOidcClientId: mockOidcClientId,
       mockOidcIssuer: mockOidcIssuer,
       mockOidcAuthorizeEndpoint: mockOidcAuthorizeEndpoint,
       mockOidcUserInfoEndpoint: mockOidcUserInfoEndpoint,
       mockOidcjwksEndpoint: mockOidcjwksEndpoint,
-      mockTokenEndpoint: mockTokenEndpoint,
+      mockOidcTokenEndpoint: mockOidcTokenEndpoint,
       useMockOidc: useMockOidc,
       shortCognitoDomain: props.shortCognitoDomain,
       fullCognitoDomain: props.fullCognitoDomain,
