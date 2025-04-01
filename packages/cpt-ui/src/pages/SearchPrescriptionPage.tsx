@@ -5,10 +5,27 @@ import {
   Hero,
   Row
 } from "nhsuk-react-components"
+import {useLocation} from "react-router-dom"
 import EpsTabs from "@/components/EpsTabs"
+import PrescriptionIdSearch from "@/components/prescriptionSearch/PrescriptionIdSearch"
+import NhsNumSearch from "@/components/prescriptionSearch/NhsNumSearch"
+import BasicDetailsSearch from "@/components/prescriptionSearch/BasicDetailsSearch"
 import {HERO_TEXT} from "@/constants/ui-strings/SearchForAPrescriptionStrings"
 
-export default function SearchForAPrescriptionPage() {
+export default function SearchPrescriptionPage() {
+  const location = useLocation()
+  const pathname = location.pathname
+
+  // Map paths directly to content components
+  const pathContent: Record<string, React.ReactNode> = {
+    "/search-by-prescription-id": <PrescriptionIdSearch />,
+    "/search-by-nhs-number": <NhsNumSearch />,
+    "/search-by-basic-details": <BasicDetailsSearch />
+  }
+
+  // Default to prescription ID search if path not found
+  const content = pathContent[pathname] || <PrescriptionIdSearch />
+
   return (
     <>
       <title>Search for a prescription</title>
@@ -27,7 +44,9 @@ export default function SearchForAPrescriptionPage() {
         <Container data-testid="search-tabs-container">
           <Row>
             <Col width="full">
-              <EpsTabs />
+              <EpsTabs activeTabPath={pathname}>
+                {content}
+              </EpsTabs>
             </Col>
           </Row>
         </Container>

@@ -120,7 +120,7 @@ const renderWithRouter = (route: string) => {
         <Routes>
           <Route path="*" element={<Dummy404 />} />
           <Route path={FRONTEND_PATHS.PRESCRIPTION_NOT_FOUND} element={<Dummy404 />} />
-          <Route path={FRONTEND_PATHS.PRESCRIPTION_RESULTS} element={<PrescriptionListPage />} />
+          <Route path={FRONTEND_PATHS.PRESCRIPTION_LIST} element={<PrescriptionListPage />} />
         </Routes>
       </MemoryRouter>
     </MockPatientDetailsProvider>
@@ -138,7 +138,7 @@ describe("PrescriptionListPage", () => {
       data: mockSearchResponse
     })
 
-    renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_RESULTS + "?prescriptionId=C0C757-A83008-C2D93O")
+    renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_LIST + "?prescriptionId=C0C757-A83008-C2D93O")
     expect(mockedAxios.get).toHaveBeenCalledTimes(1)
 
     await waitFor(() => {
@@ -161,7 +161,7 @@ describe("PrescriptionListPage", () => {
       data: mockSearchResponse
     })
 
-    renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_RESULTS + "?prescriptionId=C0C757-A83008-C2D93O")
+    renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_LIST + "?prescriptionId=C0C757-A83008-C2D93O")
     expect(mockedAxios.get).toHaveBeenCalledTimes(1)
 
     await waitFor(() => {
@@ -179,7 +179,7 @@ describe("PrescriptionListPage", () => {
       data: {}
     })
 
-    renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_RESULTS)
+    renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_LIST)
     expect(mockedAxios.get).not.toHaveBeenCalled()
 
     await waitFor(() => {
@@ -194,7 +194,7 @@ describe("PrescriptionListPage", () => {
       data: mockSearchResponse
     })
 
-    renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_RESULTS + "?prescriptionId=ABC123-A83008-C2D93O")
+    renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_LIST + "?prescriptionId=ABC123-A83008-C2D93O")
     expect(mockedAxios.get).toHaveBeenCalledTimes(1)
 
     // We need to wait for the useEffect to run
@@ -209,7 +209,7 @@ describe("PrescriptionListPage", () => {
       status: 200,
       data: mockSearchResponse
     })
-    renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_RESULTS + "?nhsNumber=1234567890")
+    renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_LIST + "?nhsNumber=1234567890")
     expect(mockedAxios.get).toHaveBeenCalledTimes(1)
 
     // We need to wait for the useEffect to run
@@ -224,7 +224,7 @@ describe("PrescriptionListPage", () => {
       status: 204,
       data: {}
     })
-    renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_RESULTS + "?prescriptionId=ABC123-ABC123-ABC123")
+    renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_LIST + "?prescriptionId=ABC123-ABC123-ABC123")
     expect(mockedAxios.get).toHaveBeenCalledTimes(1)
 
     await waitFor(() => {
@@ -238,7 +238,7 @@ describe("PrescriptionListPage", () => {
       status: 204,
       data: {}
     })
-    renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_RESULTS + "?nhsNumber=32165649870")
+    renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_LIST + "?nhsNumber=32165649870")
     expect(mockedAxios.get).toHaveBeenCalledTimes(1)
 
     await waitFor(() => {

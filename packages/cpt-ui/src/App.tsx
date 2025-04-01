@@ -28,15 +28,23 @@ export default function App() {
               <Route path='*' element={<NotFoundPage />} />
               <Route path={FRONTEND_PATHS.LOGIN} element={<LoginPage />} />
               <Route path={FRONTEND_PATHS.LOGOUT} element={<LogoutPage />} />
-              <Route path={FRONTEND_PATHS.SELECT_ROLE} element={<SelectYourRolePage />} />
-              <Route path={FRONTEND_PATHS.SELECTED_ROLE} element={<YourSelectedRolePage />} />
-              <Route path={FRONTEND_PATHS.CHANGE_ROLE} element={<ChangeRolePage />} />
+              <Route path={FRONTEND_PATHS.SELECT_YOUR_ROLE} element={<SelectYourRolePage />} />
+              <Route path={FRONTEND_PATHS.YOUR_SELECTED_ROLE} element={<YourSelectedRolePage />} />
+              <Route path={FRONTEND_PATHS.CHANGE_YOUR_ROLE} element={<ChangeRolePage />} />
               <Route
-                path={FRONTEND_PATHS.SEARCH}
+                path={FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID}
                 element={<SearchPrescriptionPage />}
               />
               <Route
-                path={FRONTEND_PATHS.PRESCRIPTION_RESULTS}
+                path={FRONTEND_PATHS.SEARCH_BY_NHS_NUMBER}
+                element={<SearchPrescriptionPage />}
+              />
+              <Route
+                path={FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS}
+                element={<SearchPrescriptionPage />}
+              />
+              <Route
+                path={FRONTEND_PATHS.PRESCRIPTION_LIST}
                 element={<PrescriptionListPage />}
               />
               <Route
