@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --host",
     "build": "vite build",
     "lint": "eslint  --max-warnings 0 --fix --config ../../eslint.config.mjs .",
     "start": "vite preview",
@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "aws-amplify": "^6.14.1",
+    "aws-rum-web": "^1.21.0",
     "axios": "^1.8.4",
     "i18next": "^24.2.3",
     "i18next-browser-languagedetector": "^8.0.4",

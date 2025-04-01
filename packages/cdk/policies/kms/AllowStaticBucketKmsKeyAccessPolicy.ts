@@ -6,27 +6,29 @@ import {
   PolicyStatement,
   ServicePrincipal
 } from "aws-cdk-lib/aws-iam"
-import {Construct} from "constructs"
 
 /**
- * Policy to restrict access to a single Cloudfront Distribution for KMS Keys
-
+ * Policy document to restrict access to the kms key
+ * for deployment role, rum app, cloudfront
+*  This does not extend construct as it just defines the policy document
+*  it does not create them
  */
 
 export interface PolicyProps {
   cloudfrontDistributionId: string
   deploymentRole: IPrincipal
+  rumAppName: string
+  region: string
 }
 
-export class AllowCloudfrontKmsKeyAccessPolicy extends Construct{
-  public readonly policyJson
+export class AllowStaticBucketKmsKeyAccessPolicy {
+  public readonly policyDocument: PolicyDocument
 
-  public constructor(scope: Construct, id: string, props: PolicyProps){
-    super(scope, id)
+  public constructor(props: PolicyProps){
 
     const accountRootPrincipal = new AccountRootPrincipal()
 
-    const policy = new PolicyDocument({
+    const policyDocument = new PolicyDocument({
       statements: [
         new PolicyStatement({
           effect: Effect.ALLOW,
@@ -46,9 +48,26 @@ export class AllowCloudfrontKmsKeyAccessPolicy extends Construct{
       ]
     })
 
+    if (props.rumAppName) {
+      policyDocument.addStatements(
+        new PolicyStatement({
+          effect: Effect.ALLOW,
+          principals: [new ServicePrincipal("rum.amazonaws.com")],
+          actions: ["kms:Decrypt"],
+          resources:["*"],
+          conditions: {
+            StringEquals: {
+              "AWS:SourceAccount": accountRootPrincipal.accountId,
+              "AWS:SourceArn": `arn:aws:rum:${props.region}:${accountRootPrincipal.accountId}:appmonitor/${props.rumAppName}` // eslint-disable-line max-len
+            }
+          }
+        })
+      )
+    }
+
     // if we have a cloudfrontDistributionId, then add correct policy
     if(props.cloudfrontDistributionId) {
-      policy.addStatements(
+      policyDocument.addStatements(
         new PolicyStatement({
           effect: Effect.ALLOW,
           principals: [new ServicePrincipal("cloudfront.amazonaws.com")],
@@ -68,6 +87,6 @@ export class AllowCloudfrontKmsKeyAccessPolicy extends Construct{
     }
 
     // return the policy
-    this.policyJson = policy.toJSON()
+    this.policyDocument = policyDocument
   }
 }

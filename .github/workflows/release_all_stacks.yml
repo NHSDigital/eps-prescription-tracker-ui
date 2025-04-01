@@ -41,7 +41,7 @@ on:
         type: string
       mockOidcjwksEndpoint:
         type: string
-      useLocalhostCallback:
+      allowLocalhostAccess:
         type: boolean
       useCustomCognitoDomain:
         type: boolean
@@ -130,7 +130,7 @@ jobs:
       mockOidcTokenEndpoint: ${{ inputs.mockOidcTokenEndpoint }}
       mockOidcUserInfoEndpoint: ${{ inputs.mockOidcUserInfoEndpoint }}
       mockOidcjwksEndpoint: ${{ inputs.mockOidcjwksEndpoint }}
-      useLocalhostCallback: ${{ inputs.useLocalhostCallback }}
+      allowLocalhostAccess: ${{ inputs.allowLocalhostAccess }}
       useCustomCognitoDomain: ${{ inputs.useCustomCognitoDomain }}
       JWT_KID: ${{ inputs.JWT_KID }}
       ROLE_ID: ${{ inputs.ROLE_ID }}
@@ -173,7 +173,7 @@ jobs:
       mockOidcTokenEndpoint: ${{ inputs.mockOidcTokenEndpoint }}
       mockOidcUserInfoEndpoint: ${{ inputs.mockOidcUserInfoEndpoint }}
       mockOidcjwksEndpoint: ${{ inputs.mockOidcjwksEndpoint }}
-      useLocalhostCallback: ${{ inputs.useLocalhostCallback }}
+      allowLocalhostAccess: ${{ inputs.allowLocalhostAccess }}
       useCustomCognitoDomain: ${{ inputs.useCustomCognitoDomain }}
       APIGEE_CIS2_TOKEN_ENDPOINT: ${{ inputs.APIGEE_CIS2_TOKEN_ENDPOINT }}
       APIGEE_MOCK_TOKEN_ENDPOINT: ${{ inputs.APIGEE_MOCK_TOKEN_ENDPOINT }}
@@ -187,7 +187,6 @@ jobs:
       primaryOidcClientId: ${{ secrets.primaryOidcClientId }}
       mockOidcClientId: ${{ secrets.mockOidcClientId }}
       APIGEE_API_KEY: ${{ secrets.APIGEE_API_KEY }}
-
 
   update_cloudfront_kvs:
     runs-on: ubuntu-22.04
@@ -283,7 +282,7 @@ jobs:
       mockOidcTokenEndpoint: ${{ inputs.mockOidcTokenEndpoint }}
       mockOidcUserInfoEndpoint: ${{ inputs.mockOidcUserInfoEndpoint }}
       mockOidcjwksEndpoint: ${{ inputs.mockOidcjwksEndpoint }}
-      useLocalhostCallback: ${{ inputs.useLocalhostCallback }}
+      allowLocalhostAccess: ${{ inputs.allowLocalhostAccess }}
       useCustomCognitoDomain: ${{ inputs.useCustomCognitoDomain }}
       JWT_KID: ${{ inputs.JWT_KID }}
     secrets:
