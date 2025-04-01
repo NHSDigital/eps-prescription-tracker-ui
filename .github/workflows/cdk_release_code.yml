@@ -136,14 +136,7 @@ jobs:
   
       - name: fix cdk.json for deployment
         run: |
-          ./.github/scripts/fix_cdk_json.sh ${{ inputs.CONFIG_FILE }}
-          jq \
-            --arg configFileName "${{ inputs.CONFIG_FILE }}" \
-            '.context += {
-              "configFileName": $configFileName
-            }' \
-          .build/cdk.json > .build/cdk.new.json
-          mv .build/cdk.new.json .build/cdk.json
+          ./.github/scripts/fix_cdk_json.sh .build/${{ inputs.CONFIG_FILE }}
         env:
           SERVICE_NAME: ${{ inputs.SERVICE_NAME }}
           VERSION_NUMBER: "${{ inputs.VERSION_NUMBER }}"
