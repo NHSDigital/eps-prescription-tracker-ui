@@ -72,17 +72,23 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   // Check if cached data exists and has valid role information
   if (
     cachedUserInfo &&
-    (cachedUserInfo.roles_with_access.length > 0 || cachedUserInfo.roles_without_access.length > 0) &&
-    cachedUserInfo.currently_selected_role &&
-    Object.keys(cachedUserInfo.currently_selected_role).length > 0
+    (cachedUserInfo.roles_with_access.length > 0 || cachedUserInfo.roles_without_access.length > 0)
   ) {
-    logger.info("Returning cached user info from DynamoDB", {cachedUserInfo})
+    const selectedRole = cachedUserInfo.currently_selected_role
 
-    return {
-      statusCode: 200,
-      body: JSON.stringify({
-        message: "UserInfo fetched successfully from DynamoDB",
-        userInfo: cachedUserInfo
+    if (selectedRole && Object.keys(selectedRole).length > 0) {
+      logger.info("Returning cached user info from DynamoDB", {cachedUserInfo})
+
+      return {
+        statusCode: 200,
+        body: JSON.stringify({
+          message: "UserInfo fetched successfully from DynamoDB",
+          userInfo: cachedUserInfo
+        })
+      }
+    } else {
+      logger.warn("Cached user info found but currentlySelectedRole is missing or empty", {
+        currentlySelectedRole: selectedRole
       })
     }
   }
