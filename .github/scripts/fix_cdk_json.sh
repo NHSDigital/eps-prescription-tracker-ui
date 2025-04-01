@@ -160,7 +160,7 @@ elif [ "$CDK_APP_NAME" == "StatelessResourcesApp" ]; then
 
     if [ "$USE_MOCK_OIDC" == "true" ]; then
         fix_string_key mockOidcClientId "${MOCK_OIDC_CLIENT_ID}"
-        fix_string_key mockOidcTokenEndpoint "${MOCK_OIDC_TOKEN_ENDPOINT}"
+        fix_string_key mockTokenEndpoint "${MOCK_OIDC_TOKEN_ENDPOINT}"
         fix_string_key mockOidcAuthorizeEndpoint "${MOCK_OIDC_AUTHORIZE_ENDPOINT}"
         fix_string_key mockOidcIssuer "${MOCK_OIDC_ISSUER}"
         fix_string_key mockOidcUserInfoEndpoint "${MOCK_OIDC_USERINFO_ENDPOINT}"
