@@ -62,13 +62,27 @@ jobs:
           userPoolClientId=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${{ inputs.SERVICE_NAME }}-stateful-resources:userPoolClient:userPoolClientId'].Value" --output text)
           userPoolId=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${{ inputs.SERVICE_NAME }}-stateful-resources:userPool:Id'].Value" --output text)
           fullCloudfrontDomain=$(aws cloudformation list-exports --region us-east-1 --query "Exports[?Name=='${{ inputs.SERVICE_NAME }}-us-certs:fullCloudfrontDomain:Name'].Value" --output text)
+          rumUnauthenticatedRumRoleArn=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${{ inputs.SERVICE_NAME }}-stateful-resources:rum:unauthenticatedRumRole:Arn'].Value" --output text)
+          rumIdentityPoolId=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${{ inputs.SERVICE_NAME }}-stateful-resources:rum:identityPool:Id'].Value" --output text)
+          rumAppId=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${{ inputs.SERVICE_NAME }}-stateful-resources:rum:rumApp:Id'].Value" --output text)
+          rumAllowCookies=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${{ inputs.SERVICE_NAME }}-stateful-resources:rum:config:allowCookies'].Value" --output text)
+          rumEnableXRay=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${{ inputs.SERVICE_NAME }}-stateful-resources:rum:config:enableXRay'].Value" --output text)
+          rumSessionSampleRate=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${{ inputs.SERVICE_NAME }}-stateful-resources:rum:config:sessionSampleRate'].Value" --output text)
+          rumTelemetries=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${{ inputs.SERVICE_NAME }}-stateful-resources:rum:config:telemetries'].Value" --output text)
 
           {
             echo "hostedLoginDomain=${hostedLoginDomain}"
             echo "userPoolClientId=${userPoolClientId}"
             echo "userPoolId=${userPoolId}"
             echo "fullCloudfrontDomain=${fullCloudfrontDomain}"
-          } >> "$GITHUB_ENV"
+            echo "rumUnauthenticatedRumRoleArn=${rumUnauthenticatedRumRoleArn}"
+            echo "rumIdentityPoolId=${rumIdentityPoolId}"
+            echo "rumAppId=${rumAppId}"
+            echo "rumAllowCookies=${rumAllowCookies}"
+            echo "rumEnableXRay=${rumEnableXRay}"
+            echo "rumSessionSampleRate=${rumSessionSampleRate}"
+            echo "rumTelemetries=${rumTelemetries}"
+            } >> "$GITHUB_ENV"
 
       - name: build react app
         run: |
@@ -79,6 +93,13 @@ jobs:
           export VITE_redirectSignOut="https://${fullCloudfrontDomain}/site/logout"
           export VITE_COMMIT_ID=${{ inputs.COMMIT_ID }}
           export VITE_TARGET_ENVIRONMENT=${{ inputs.TARGET_ENVIRONMENT }}
+          export VITE_RUM_GUEST_ROLE_ARN=${rumUnauthenticatedRumRoleArn}
+          export VITE_RUM_IDENTITY_POOL_ID=${rumIdentityPoolId}
+          export VITE_RUM_APPLICATION_ID=${rumAppId}
+          export VITE_RUM_ALLOW_COOKIES=${rumAllowCookies}
+          export VITE_RUM_ENABLE_XRAY=${rumEnableXRay}
+          export VITE_RUM_SESSION_SAMPLE_RATE=${rumSessionSampleRate}
+          export VITE_RUM_TELEMETRIES=${rumTelemetries}
 
           cd .build
           make react-build
@@ -101,6 +122,7 @@ jobs:
           aws s3 cp ".build/packages/staticContent/500.html" "s3://${staticBucketName}/500.html"
           aws s3 cp ".build/packages/staticContent/jwks/${{ inputs.TARGET_ENVIRONMENT }}/jwks.json" "s3://${staticBucketName}/jwks.json"
           aws s3 cp --recursive ".build/packages/cpt-ui/dist/" "s3://${staticBucketName}/${{ inputs.VERSION_NUMBER }}/"
+          aws s3 cp  ".build/packages/cpt-ui/dist/assets/" "s3://${staticBucketName}/source_maps/${{ inputs.COMMIT_ID }}/site/assets/" --exclude "*" --include "*.map" --recursive
 
       - name: deploy auth_demo website (temp for testing)
         run: |
