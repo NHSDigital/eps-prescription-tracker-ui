@@ -3,6 +3,7 @@ import {render, screen} from "@testing-library/react"
 import {MemoryRouter} from "react-router-dom"
 import PrescriptionNotFoundPage from "@/pages/PrescriptionNotFoundPage"
 import {PRESCRIPTION_NOT_FOUND_STRINGS} from "@/constants/ui-strings/PrescriptionNotFoundPageStrings"
+import {FRONTEND_PATHS} from "@/constants/environment"
 
 describe("PrescriptionNotFoundPage", () => {
   beforeEach(() => {
@@ -40,7 +41,7 @@ describe("PrescriptionNotFoundPage - searchType parameter behavior", () => {
     )
     const link = screen.getByTestId("presc-not-found-backlink")
     // The rendered link might have a full URL like "http://localhost/search#example"
-    expect(link.getAttribute("href")).toContain("/search#example")
+    expect(link.getAttribute("href")).toContain(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
   })
 
   it("should not append a hash to the backLink URL when searchType is not provided", () => {

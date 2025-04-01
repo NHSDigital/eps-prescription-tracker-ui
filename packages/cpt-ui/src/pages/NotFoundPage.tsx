@@ -28,7 +28,8 @@ export default function NotFoundPage() {
         <h1 data-testid="eps-404-header">{headerText}</h1>
         <p data-testid="eps-404-body1">{body1}</p>
         <p data-testid="eps-404-body2">{body2}</p>
-        <p data-testid="eps-404-body3">{body3}<Link to={FRONTEND_PATHS.SEARCH}>{body3Link}</Link>{body3PostLink}</p>
+        {/* eslint-disable max-len */}
+        <p data-testid="eps-404-body3">{body3}<Link to={FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID}>{body3Link}</Link>{body3PostLink}</p>
       </Container>
     </main>
   )

@@ -43,6 +43,6 @@ describe("NotFoundPage", () => {
       name: NOT_FOUND_PAGE_STRINGS.bodyText3LinkText
     })
     expect(link).toBeInTheDocument()
-    expect(link).toHaveAttribute("href", FRONTEND_PATHS.SEARCH)
+    expect(link).toHaveAttribute("href", FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
   })
 })

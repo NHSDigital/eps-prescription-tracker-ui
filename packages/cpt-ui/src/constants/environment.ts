@@ -33,13 +33,15 @@ export const API_ENDPOINTS = {
 // Web page paths
 export const FRONTEND_PATHS = {
   PRESCRIPTION_NOT_FOUND: "/prescription-not-found",
-  PRESCRIPTION_RESULTS: "/prescription-results",
+  PRESCRIPTION_LIST: "/prescription-list",
   LOGIN: "/login",
   LOGOUT: "/logout",
-  SELECT_ROLE: "/select-role",
-  SELECTED_ROLE: "/selected-role",
-  CHANGE_ROLE: "/change-role",
-  SEARCH: "/search"
+  SELECT_YOUR_ROLE: "/select-your-role",
+  YOUR_SELECTED_ROLE: "/your-selected-role",
+  CHANGE_YOUR_ROLE: "/change-your-role",
+  SEARCH_BY_PRESCRIPTION_ID: "/search-by-prescription-id",
+  SEARCH_BY_NHS_NUMBER: "/search-by-nhs-number",
+  SEARCH_BY_BASIC_DETAILS: "/search-by-basic-details"
 }
 
 // This needs to be provided in backend requests as a header

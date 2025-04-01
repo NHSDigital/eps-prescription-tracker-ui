@@ -88,7 +88,7 @@ export default function PrescriptionIdSearch() {
       return
     }
 
-    navigate(`${FRONTEND_PATHS.PRESCRIPTION_RESULTS}?prescriptionId=${formatted}`)
+    navigate(`${FRONTEND_PATHS.PRESCRIPTION_LIST}?prescriptionId=${formatted}`)
   }
 
   return (

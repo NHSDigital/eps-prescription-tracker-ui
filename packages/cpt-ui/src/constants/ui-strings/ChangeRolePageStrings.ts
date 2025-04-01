@@ -14,7 +14,7 @@ export const CHANGE_YOUR_ROLE_PAGE_TEXT = {
   },
   confirmButton: {
     text: "Continue to find a prescription",
-    link: FRONTEND_PATHS.SEARCH
+    link: FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID
   },
   alternativeMessage: "Alternatively, you can choose a new role below.",
   organisation: "Organisation",

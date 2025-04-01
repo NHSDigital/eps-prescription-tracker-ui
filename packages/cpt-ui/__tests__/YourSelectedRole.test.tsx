@@ -6,10 +6,11 @@ import YourSelectedRolePage from "@/pages/YourSelectedRolePage"
 import {JWT} from "aws-amplify/auth"
 import {AuthContext} from "@/context/AuthProvider"
 import {AccessContext, AccessContextType} from "@/context/AccessProvider"
+import {FRONTEND_PATHS} from "@/constants/environment"
 
 const {
   YOUR_SELECTED_ROLE_STRINGS
-// eslint-disable-next-line @typescript-eslint/no-require-imports, no-undef
+  // eslint-disable-next-line @typescript-eslint/no-require-imports, no-undef
 } = require("@/constants/ui-strings/YourSelectedRoleStrings")
 
 // Mock `react-router-dom`
@@ -114,15 +115,15 @@ describe("YourSelectedRolePage", () => {
     expect(changeLinks).toHaveLength(2) // one for role, one for org
 
     changeLinks.forEach((link) => {
-      expect(link).toHaveAttribute("href", "/change-role")
+      expect(link).toHaveAttribute("href", "/change-your-role")
     })
   })
 
-  it("navigates to /search when the confirm button is clicked", async () => {
+  it("navigates to /search-by-prescription-id when the confirm button is clicked", async () => {
     renderWithProviders()
     const button = screen.getByTestId("confirm-and-continue")
     await fireEvent.click(button)
-    expect(mockNavigate).toHaveBeenCalledWith("/search")
+    expect(mockNavigate).toHaveBeenCalledWith(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
   })
 
   it("does not crash if selectedRole is undefined", () => {
