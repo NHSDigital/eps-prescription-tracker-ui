@@ -185,7 +185,7 @@ export class Cognito extends Construct {
     }
 
     const callbackUrls = [
-      `https://${props.fullCloudfrontDomain}/site/select-role`,
+      `https://${props.fullCloudfrontDomain}/site/select-your-role`,
       // TODO: This is for the proof-of-concept login page, and can probably be deleted soon.
       `https://${props.fullCloudfrontDomain}/auth_demo/`,
       `https://${props.fullCloudfrontDomain}/oauth2/callback`
@@ -199,11 +199,11 @@ export class Cognito extends Construct {
 
     if (props.useLocalhostCallback) {
       // Local, without base path set
-      callbackUrls.push("http://localhost:3000/select-role/")
+      callbackUrls.push("http://localhost:3000/select-your-role/")
       logoutUrls.push("http://localhost:3000/logout/")
       // Local, with base path set to /site
       logoutUrls.push("http://localhost:3000/site/logout/")
-      callbackUrls.push("http://localhost:3000/site/select-role/")
+      callbackUrls.push("http://localhost:3000/site/select-your-role/")
       // Auth demo stuff
       callbackUrls.push("http://localhost:3000/auth/")
       callbackUrls.push("http://localhost:3000/auth_demo/")

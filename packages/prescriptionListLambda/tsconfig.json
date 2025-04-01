@@ -8,6 +8,9 @@
   "exclude": ["node_modules"],
   "references": [
     {
+      "path": "../common/commonTypes"
+    },
+    {
       "path": "../common/authFunctions"
     },
     {

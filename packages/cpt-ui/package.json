@@ -6,26 +6,26 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "lint": "eslint . --report-unused-disable-directives --max-warnings 0",
+    "lint": "eslint  --max-warnings 0 --fix --config ../../eslint.config.mjs .",
     "start": "vite preview",
     "test": "NODE_NO_WARNINGS=1 jest --no-cache --coverage",
     "check-licenses": "license-checker --failOn GPL --failOn LGPL --start ../.."
   },
   "dependencies": {
-    "aws-amplify": "^6.14.0",
+    "aws-amplify": "^6.14.1",
     "axios": "^1.8.4",
     "i18next": "^24.2.3",
     "i18next-browser-languagedetector": "^8.0.4",
-    "nhsuk-frontend": "^8.0.2",
     "i18next-http-backend": "^3.0.2",
+    "nhsuk-frontend": "^8.0.2",
     "nhsuk-react-components": "^5.0.0",
     "react": "^18",
     "react-dom": "^18",
     "react-i18next": "^15.4.1",
     "react-intl": "^7.1.10",
+    "react-router-dom": "^6.22.3",
     "sass": "^1.86.0",
-    "uuid": "^11.1.0",
-    "react-router-dom": "^6.22.3"
+    "uuid": "^11.1.0"
   },
   "devDependencies": {
     "@swc/core": "^1.11.13",
@@ -34,7 +34,7 @@
     "@testing-library/react": "^16.2.0",
     "@testing-library/user-event": "^14.5.2",
     "@types/jest": "^29.5.14",
-    "@types/node": "^22.13.13",
+    "@types/node": "^22.13.14",
     "@types/react": "^18.2.64",
     "@types/react-dom": "^18.2.21",
     "@typescript-eslint/eslint-plugin": "^8.27.0",
@@ -46,6 +46,7 @@
     "eslint-plugin-react": "^7.37.4",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.5",
+    "history": "^5.3.0",
     "identity-obj-proxy": "^3.0.0",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",
@@ -53,6 +54,6 @@
     "sass": "^1.86.0",
     "ts-jest": "^29.3.0",
     "typescript": "^5.8.2",
-    "vite": "^6.2.3"
+    "vite": "^6.2.4"
   }
 }

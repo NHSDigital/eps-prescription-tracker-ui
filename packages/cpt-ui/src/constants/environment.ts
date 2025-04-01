@@ -26,8 +26,23 @@ export const API_ENDPOINTS = {
   TRACKER_USER_INFO: "/api/tracker-user-info",
   SELECTED_ROLE: "/api/selected-role",
   PRESCRIPTION_LIST: "/api/prescription-list",
-  CIS2_SIGNOUT_ENDPOINT: "/api/cis2-signout"
+  CIS2_SIGNOUT_ENDPOINT: "/api/cis2-signout",
+  PRESCRIPTION_DETAILS: "/api/prescription-details"
 } as const
+
+// Web page paths
+export const FRONTEND_PATHS = {
+  PRESCRIPTION_NOT_FOUND: "/prescription-not-found",
+  PRESCRIPTION_LIST: "/prescription-list",
+  LOGIN: "/login",
+  LOGOUT: "/logout",
+  SELECT_YOUR_ROLE: "/select-your-role",
+  YOUR_SELECTED_ROLE: "/your-selected-role",
+  CHANGE_YOUR_ROLE: "/change-your-role",
+  SEARCH_BY_PRESCRIPTION_ID: "/search-by-prescription-id",
+  SEARCH_BY_NHS_NUMBER: "/search-by-nhs-number",
+  SEARCH_BY_BASIC_DETAILS: "/search-by-basic-details"
+}
 
 // This needs to be provided in backend requests as a header
 export const NHS_REQUEST_URID = "555254242106"

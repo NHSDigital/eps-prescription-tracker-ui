@@ -37,6 +37,10 @@
         "path": "../packages/common/middyErrorHandler"
       },
       {
+        "name": "packages/common/commonTypes",
+        "path": "../packages/common/commonTypes"
+      },
+      {
         "name": "packages/common/testing",
         "path": "../packages/common/testing"
       },
@@ -159,10 +163,10 @@
       "eslint.format.enable": true,
       "editor.defaultFormatter": "dbaeumer.vscode-eslint",
       "[typescriptreact]": {
-        "editor.defaultFormatter": "vscode.typescript-language-features"
+        "editor.defaultFormatter": "dbaeumer.vscode-eslint"
       },
       "[javascriptreact]": {
-        "editor.defaultFormatter": "vscode.typescript-language-features"
+        "editor.defaultFormatter": "dbaeumer.vscode-eslint"
       },
       "[html]": {
         "editor.defaultFormatter": "vscode.html-language-features"
