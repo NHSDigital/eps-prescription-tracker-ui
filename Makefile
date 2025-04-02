@@ -83,6 +83,8 @@ clean:
 	rm -rf packages/CIS2SignOutLambda/coverage
 	rm -rf packages/CIS2SignOutLambda/lib
 	rm -rf .local_config
+	rm -rf cdk.out
+	rm -rf cfn_guard_output
 
 deep-clean: clean
 	rm -rf .venv
