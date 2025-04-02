@@ -200,9 +200,9 @@ export class Cognito extends Construct {
     if (props.allowLocalhostAccess) {
       // Local, without base path set
       callbackUrls.push("http://localhost:3000/select-your-role")
-      logoutUrls.push("http://localhost:3000/logout/")
+      logoutUrls.push("http://localhost:3000/logout")
       // Local, with base path set to /site
-      logoutUrls.push("http://localhost:3000/site/logout/")
+      logoutUrls.push("http://localhost:3000/site/logout")
       callbackUrls.push("http://localhost:3000/site/select-your-role")
       // Auth demo stuff
       callbackUrls.push("http://localhost:3000/auth/")

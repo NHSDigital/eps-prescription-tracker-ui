@@ -124,27 +124,80 @@ RUM_APP_NAME=$(echo "$CF_LONDON_EXPORTS" | \
     -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
 EPS_HOSTED_ZONE_ID=$(echo "$CF_LONDON_EXPORTS" | jq -r '.Exports[] | select(.Name == "eps-route53-resources:EPS-ZoneID") | .Value')
 USE_MOCK_OIDC=true
-PRIMARY_OIDC_CLIENT_ID=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${SERVICE_NAME}-stateful-resources:local:primaryOidcClientId'].Value" --output text)
-PRIMARY_OIDC_ISSUER=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${SERVICE_NAME}-stateful-resources:local:primaryOidcIssuer'].Value" --output text)
-PRIMARY_OIDC_AUTHORIZE_ENDPOINT=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${SERVICE_NAME}-stateful-resources:local:primaryOidcAuthorizeEndpoint'].Value" --output text)
-PRIMARY_OIDC_TOKEN_ENDPOINT=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${SERVICE_NAME}-stateful-resources:local:primaryOidcUserInfoEndpoint'].Value" --output text)
-PRIMARY_OIDC_USERINFO_ENDPOINT=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${SERVICE_NAME}-stateful-resources:local:primaryOidcjwksEndpoint'].Value" --output text)
-PRIMARY_OIDC_JWKS_ENDPOINT=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${SERVICE_NAME}-stateful-resources:local:primaryOidcTokenEndpoint'].Value" --output text)
-MOCK_OIDC_CLIENT_ID=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${SERVICE_NAME}-stateful-resources:local:mockOidcClientId'].Value" --output text)
-MOCK_OIDC_ISSUER=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${SERVICE_NAME}-stateful-resources:local:mockOidcIssuer'].Value" --output text)
-MOCK_OIDC_AUTHORIZE_ENDPOINT=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${SERVICE_NAME}-stateful-resources:local:mockOidcAuthorizeEndpoint'].Value" --output text)
-MOCK_OIDC_TOKEN_ENDPOINT=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${SERVICE_NAME}-stateful-resources:local:mockOidcTokenEndpoint'].Value" --output text)
-MOCK_OIDC_USERINFO_ENDPOINT=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${SERVICE_NAME}-stateful-resources:local:mockOidcUserInfoEndpoint'].Value" --output text)
-MOCK_OIDC_JWKS_ENDPOINT=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${SERVICE_NAME}-stateful-resources:local:mockOidcjwksEndpoint'].Value" --output text)
+PRIMARY_OIDC_CLIENT_ID=$(echo "$CF_LONDON_EXPORTS" | \
+    jq \
+    --arg EXPORT_NAME "${SERVICE_NAME}-stateful-resources:local:primaryOidcClientId" \
+    -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+PRIMARY_OIDC_ISSUER=$(echo "$CF_LONDON_EXPORTS" | \
+    jq \
+    --arg EXPORT_NAME "${SERVICE_NAME}-stateful-resources:local:primaryOidcIssuer" \
+    -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+PRIMARY_OIDC_AUTHORIZE_ENDPOINT=$(echo "$CF_LONDON_EXPORTS" | \
+    jq \
+    --arg EXPORT_NAME "${SERVICE_NAME}-stateful-resources:local:primaryOidcAuthorizeEndpoint" \
+    -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+PRIMARY_OIDC_TOKEN_ENDPOINT=$(echo "$CF_LONDON_EXPORTS" | \
+    jq \
+    --arg EXPORT_NAME "${SERVICE_NAME}-stateful-resources:local:primaryOidcTokenEndpoint" \
+    -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+PRIMARY_OIDC_USERINFO_ENDPOINT=$(echo "$CF_LONDON_EXPORTS" | \
+    jq \
+    --arg EXPORT_NAME "${SERVICE_NAME}-stateful-resources:local:primaryOidcUserInfoEndpoint" \
+    -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+PRIMARY_OIDC_JWKS_ENDPOINT=$(echo "$CF_LONDON_EXPORTS" | \
+    jq \
+    --arg EXPORT_NAME "${SERVICE_NAME}-stateful-resources:local:primaryOidcjwksEndpoint" \
+    -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+MOCK_OIDC_CLIENT_ID=$(echo "$CF_LONDON_EXPORTS" | \
+    jq \
+    --arg EXPORT_NAME "${SERVICE_NAME}-stateful-resources:local:mockOidcClientId" \
+    -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+MOCK_OIDC_ISSUER=$(echo "$CF_LONDON_EXPORTS" | \
+    jq \
+    --arg EXPORT_NAME "${SERVICE_NAME}-stateful-resources:local:mockOidcIssuer" \
+    -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+MOCK_OIDC_AUTHORIZE_ENDPOINT=$(echo "$CF_LONDON_EXPORTS" | \
+    jq \
+    --arg EXPORT_NAME "${SERVICE_NAME}-stateful-resources:local:mockOidcAuthorizeEndpoint" \
+    -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+MOCK_OIDC_TOKEN_ENDPOINT=$(echo "$CF_LONDON_EXPORTS" | \
+    jq \
+    --arg EXPORT_NAME "${SERVICE_NAME}-stateful-resources:local:mockOidcTokenEndpoint" \
+    -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+MOCK_OIDC_USERINFO_ENDPOINT=$(echo "$CF_LONDON_EXPORTS" | \
+    jq \
+    --arg EXPORT_NAME "${SERVICE_NAME}-stateful-resources:local:mockOidcUserInfoEndpoint" \
+    -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+MOCK_OIDC_JWKS_ENDPOINT=$(echo "$CF_LONDON_EXPORTS" | \
+    jq \
+    --arg EXPORT_NAME "${SERVICE_NAME}-stateful-resources:local:mockOidcjwksEndpoint" \
+    -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
 LOG_RETENTION_IN_DAYS=30
 LOG_LEVEL=debug
 USE_CUSTOM_COGNITO_DOMAIN=false
 ALLOW_LOCALHOST_ACCESS=true
-APIGEE_API_KEY=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${SERVICE_NAME}-stateless-resources:local:apigeeApiKey'].Value" --output text)
-APIGEE_CIS2_TOKEN_ENDPOINT=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${SERVICE_NAME}-stateless-resources:local:apigeeCIS2TokenEndpoint'].Value" --output text)
-APIGEE_MOCK_TOKEN_ENDPOINT=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${SERVICE_NAME}-stateless-resources:local:apigeeMockTokenEndpoint'].Value" --output text)
-APIGEE_PRESCRIPTION_ENDPOINT=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${SERVICE_NAME}-stateless-resources:local:apigeePrescriptionsEndpoint'].Value" --output text)
-APIGEE_PERSONAL_DEMOGRAPHICS_ENDPOINT=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${SERVICE_NAME}-stateless-resources:local:apigeePersonalDemographicsEndpoint'].Value" --output text)
+APIGEE_API_KEY=$(echo "$CF_LONDON_EXPORTS" | \
+    jq \
+    --arg EXPORT_NAME "${SERVICE_NAME}-stateless-resources:local:apigeeApiKey" \
+    -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+APIGEE_CIS2_TOKEN_ENDPOINT=$(echo "$CF_LONDON_EXPORTS" | \
+    jq \
+    --arg EXPORT_NAME "${SERVICE_NAME}-stateless-resources:local:apigeeCIS2TokenEndpoint" \
+    -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+
+APIGEE_MOCK_TOKEN_ENDPOINT=$(echo "$CF_LONDON_EXPORTS" | \
+    jq \
+    --arg EXPORT_NAME "${SERVICE_NAME}-stateless-resources:local:apigeeMockTokenEndpoint" \
+    -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+APIGEE_PRESCRIPTION_ENDPOINT=$(echo "$CF_LONDON_EXPORTS" | \
+    jq \
+    --arg EXPORT_NAME "${SERVICE_NAME}-stateless-resources:local:apigeePrescriptionsEndpoint" \
+    -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+APIGEE_PERSONAL_DEMOGRAPHICS_ENDPOINT=$(echo "$CF_LONDON_EXPORTS" | \
+    jq \
+    --arg EXPORT_NAME "${SERVICE_NAME}-stateless-resources:local:apigeePersonalDemographicsEndpoint" \
+    -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+
 JWT_KID=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${SERVICE_NAME}-stateless-resources:local:jwtKid'].Value" --output text)
 ROLE_ID=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${SERVICE_NAME}-stateless-resources:local:roleId'].Value" --output text)
 
@@ -230,8 +283,8 @@ echo "Generating config for ${STATELESS_CONFIG}"
 "$FIX_SCRIPT" "$STATELESS_CONFIG"
 
 sync_stateful_app() {
-    echo "Starting stateful app"
-    echo "See log file at ${STATEFUL_LOG}"
+    echo "Starting sync stateful CDK app"
+    echo "Stateful CDK app log file at ${STATEFUL_LOG}"
     CONFIG_FILE_NAME="${STATEFUL_CONFIG}" npx cdk deploy \
         --app "npx ts-node --prefer-ts-exts packages/cdk/bin/StatefulResourcesApp.ts" \
         --watch \
@@ -239,12 +292,12 @@ sync_stateful_app() {
         --ci true \
         --require-approval never \
         --output .local_config/stateful_app.out/ \
-        > $STATEFUL_LOG
+        > $STATEFUL_LOG 2>&1
 }
 
 sync_stateless_app() {
-    echo "Starting stateless app"
-    echo "See log file at ${STATELESS_LOG}"
+    echo "Starting sync stateless CDK app"
+    echo "Stateless CDK app log file at ${STATELESS_LOG}"
     CONFIG_FILE_NAME="${STATELESS_CONFIG}" npx cdk deploy \
         --app "npx ts-node --prefer-ts-exts packages/cdk/bin/StatelessResourcesApp.ts" \
         --watch \
@@ -252,13 +305,13 @@ sync_stateless_app() {
         --ci true \
         --require-approval never \
         --output .local_config/stateless_app.out/ \
-        > $STATELESS_LOG
+        > $STATELESS_LOG  2>&1
 }
 
 start_website() {
     echo "Starting website"
-    echo "See log file at ${WEBSITE_LOG}"
-    npm run dev --workspace packages/cpt-ui > $WEBSITE_LOG
+    echo "Website log file at ${WEBSITE_LOG}"
+    npm run dev --workspace packages/cpt-ui > $WEBSITE_LOG  2>&1
 }
 
 echo "Compiling code"
