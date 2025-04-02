@@ -82,6 +82,7 @@ clean:
 	rm -rf packages/common/authFunctions/lib
 	rm -rf packages/CIS2SignOutLambda/coverage
 	rm -rf packages/CIS2SignOutLambda/lib
+	rm -rf .local_config
 
 deep-clean: clean
 	rm -rf .venv

@@ -135,7 +135,6 @@ These are used to do common commands related to cdk
 - `cdk-synth` Converts the CDK code to cloudformation templates
 - `cdk-diff` Runs cdk diff comparing the deployed stack with local CDK code to see differences
 - `cdk-watch` Syncs the code and CDK templates to AWS, and starts local webserver. This keeps running and automatically uploads changes to AWS
-- `build-deployment-container-image` Creates a container with all code necessary to run cdk deploy
 
 #### Clean and deep-clean targets
 
