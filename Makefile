@@ -152,6 +152,7 @@ cdk-synth-no-mock: cdk-synth-stateful-resources-no-mock cdk-synth-stateless-reso
 cdk-synth-mock: cdk-synth-stateful-resources-mock cdk-synth-stateless-resources-mock
 
 cdk-synth-stateful-resources-no-mock:
+	mkdir -p .local_config
 	CDK_APP_NAME=StatefulResourcesApp \
 	SERVICE_NAME=cpt-ui \
 	VERSION_NUMBER=undefined \
@@ -176,13 +177,15 @@ cdk-synth-stateful-resources-no-mock:
 	LOG_RETENTION_IN_DAYS=30 \
 	LOG_LEVEL=debug \
 	USE_CUSTOM_COGNITO_DOMAIN=true \
-	ALLOW_LOCALHOST_ACCESS=true \
-		 ./.github/scripts/fix_cdk_json.sh local.stateful_resources.json
-	CONFIG_FILE_NAME=local.stateful_resources.json npx cdk synth \
+	ALLOW_LOCALHOST_ACCESS=false \
+	DO_NOT_GET_AWS_EXPORT=true \
+		 ./.github/scripts/fix_cdk_json.sh .local_config/stateful_app.config.json
+	CONFIG_FILE_NAME=.local_config/stateful_app.config.json npx cdk synth \
 		--quiet \
 		--app "npx ts-node --prefer-ts-exts packages/cdk/bin/StatefulResourcesApp.ts" 
 
 cdk-synth-stateless-resources-no-mock:
+	mkdir -p .local_config
 	CDK_APP_NAME=StatelessResourcesApp \
 	SERVICE_NAME=cpt-ui \
 	VERSION_NUMBER=undefined \
@@ -211,13 +214,16 @@ cdk-synth-stateless-resources-no-mock:
 	APIGEE_PERSONAL_DEMOGRAPHICS_ENDPOINT=foo \
 	JWT_KID=foo \
 	ROLE_ID=foo \
+	ALLOW_LOCALHOST_ACCESS=false \
 	CLOUDFRONT_CERT_ARN=arn:aws:acm:us-east-1:444455556666:certificate/certificate_ID \
-		 ./.github/scripts/fix_cdk_json.sh local.stateless_resources.json
-	CONFIG_FILE_NAME=local.stateless_resources.json npx cdk synth \
+	DO_NOT_GET_AWS_EXPORT=true \
+		 ./.github/scripts/fix_cdk_json.sh .local_config/stateless_app.config.json
+	CONFIG_FILE_NAME=.local_config/stateless_app.config.json npx cdk synth \
 		--quiet \
 		--app "npx ts-node --prefer-ts-exts packages/cdk/bin/StatelessResourcesApp.ts" 
 
 cdk-synth-stateful-resources-mock:
+	mkdir -p .local_config
 	CDK_APP_NAME=StatefulResourcesApp \
 	SERVICE_NAME=cpt-ui \
 	VERSION_NUMBER=undefined \
@@ -248,13 +254,15 @@ cdk-synth-stateful-resources-mock:
 	LOG_RETENTION_IN_DAYS=30 \
 	LOG_LEVEL=debug \
 	USE_CUSTOM_COGNITO_DOMAIN=true \
-	ALLOW_LOCALHOST_ACCESS=true \
-		 ./.github/scripts/fix_cdk_json.sh local.stateful_resources.json
-	CONFIG_FILE_NAME=local.stateful_resources.json npx cdk synth \
+	ALLOW_LOCALHOST_ACCESS=false \
+	DO_NOT_GET_AWS_EXPORT=true \
+		 ./.github/scripts/fix_cdk_json.sh .local_config/stateful_app.config.json
+	CONFIG_FILE_NAME=.local_config/stateful_app.config.json npx cdk synth \
 		--quiet \
 		--app "npx ts-node --prefer-ts-exts packages/cdk/bin/StatefulResourcesApp.ts" 
 
 cdk-synth-stateless-resources-mock:
+	mkdir -p .local_config
 	CDK_APP_NAME=StatelessResourcesApp \
 	SERVICE_NAME=cpt-ui \
 	VERSION_NUMBER=undefined \
@@ -290,9 +298,11 @@ cdk-synth-stateless-resources-mock:
 	APIGEE_PERSONAL_DEMOGRAPHICS_ENDPOINT=foo \
 	JWT_KID=foo \
 	ROLE_ID=foo \
+	ALLOW_LOCALHOST_ACCESS=false \
 	CLOUDFRONT_CERT_ARN=arn:aws:acm:us-east-1:444455556666:certificate/certificate_ID \
-		 ./.github/scripts/fix_cdk_json.sh local.stateless_resources.json
-	CONFIG_FILE_NAME=local.stateless_resources.json npx cdk synth \
+	DO_NOT_GET_AWS_EXPORT=true \
+		 ./.github/scripts/fix_cdk_json.sh .local_config/stateless_app.config.json
+	CONFIG_FILE_NAME=.local_config/stateless_app.config.json npx cdk synth \
 		--quiet \
 		--app "npx ts-node --prefer-ts-exts packages/cdk/bin/StatelessResourcesApp.ts" 
 

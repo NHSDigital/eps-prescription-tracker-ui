@@ -43,9 +43,11 @@ fi
 echo "{}" > "$OUTPUT_FILE_NAME"
 TEMP_FILE=$(mktemp)
 
-# get some values from 
-CF_LONDON_EXPORTS=$(aws cloudformation list-exports --region eu-west-2 --output json)
-CF_US_EXPORTS=$(aws cloudformation list-exports --region us-east-1 --output json)
+# get some values from aws
+if [ -n "${DO_NOT_GET_AWS_EXPORT}" ]; then
+    CF_LONDON_EXPORTS=$(aws cloudformation list-exports --region eu-west-2 --output json)
+    CF_US_EXPORTS=$(aws cloudformation list-exports --region us-east-1 --output json)
+fi
 
 if [ -z "${EPS_DOMAIN_NAME}" ]; then
     EPS_DOMAIN_NAME=$(echo "$CF_LONDON_EXPORTS" | jq  -r '.Exports[] | select(.Name == "eps-route53-resources:EPS-domain") | .Value')
