@@ -117,13 +117,13 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
 
       if (userInfo) {
         if (userInfo.roles_with_access) {
-          setRolesWithAccess(userInfo.roles_with_access);
+          setRolesWithAccess(userInfo.roles_with_access)
         } else {
-          const storedRolesWithAccess = localStorage.getItem('rolesWithAccess');
+          const storedRolesWithAccess = localStorage.getItem("rolesWithAccess")
           if (storedRolesWithAccess) {
             setRolesWithAccess(JSON.parse(storedRolesWithAccess))
           } else {
-            setRolesWithAccess([]);
+            setRolesWithAccess([])
           }
         }
       }
@@ -137,7 +137,7 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
         currentlySelectedRole = undefined
       }
 
-      setNoAccess(userInfo.roles_with_access.length === 0 && !currentlySelectedRole);
+      setNoAccess(userInfo.roles_with_access.length === 0 && !currentlySelectedRole)
       setRolesWithoutAccess(userInfo.roles_without_access || [])
       setSelectedRole(currentlySelectedRole)
       setUserDetails(userInfo.user_details)
@@ -169,18 +169,19 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
     }
   }
 
-
   // The access variables are cached, and the values are initially assumed to have not changed.
   // On a full page reload, make a tracker use info call to update them from the backend
   useEffect(() => {
     const updateAccessVariables = async () => {
-      try {
-        await fetchTrackerUserInfo()
-      } catch (error) {
-        console.error(
-          "Access provider failed to fetch roles with access:",
-          error
-        )
+      if (!selectedRole){
+        try {
+          await fetchTrackerUserInfo()
+        } catch (error) {
+          console.error(
+            "Access provider failed to fetch roles with access:",
+            error
+          )
+        }
       }
     }
 
