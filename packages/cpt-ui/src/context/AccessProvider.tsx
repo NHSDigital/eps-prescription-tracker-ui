@@ -173,6 +173,8 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
   // On a full page reload, make a tracker use info call to update them from the backend
   useEffect(() => {
     const updateAccessVariables = async () => {
+      // Only fetch tracker user info if selectedRole is missing.
+      // This prevents re-fetching on every page refresh and avoids flickering banners.
       if (!selectedRole){
         try {
           await fetchTrackerUserInfo()
