@@ -15,56 +15,81 @@ WEBSITE_LOG=".local_config/website.log"
 echo "What is the pull request id?"
 read -r PULL_REQUEST_ID
 
-export SERVICE_NAME=cpt-ui-pr-$PULL_REQUEST_ID
+SERVICE_NAME=cpt-ui-pr-$PULL_REQUEST_ID
 
 echo "Getting exports from stacks ${SERVICE_NAME}"
 
 CF_LONDON_EXPORTS=$(aws cloudformation list-exports --region eu-west-2 --output json)
 CF_US_EXPORTS=$(aws cloudformation list-exports --region us-east-1 --output json)
 
-
-userPoolClientId=$(echo "$CF_LONDON_EXPORTS" | \
+# vars needed for local website
+VITE_userPoolClientId=$(echo "$CF_LONDON_EXPORTS" | \
     jq \
     --arg EXPORT_NAME "${SERVICE_NAME}-stateful-resources:userPoolClient:userPoolClientId" \
     -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
-userPoolId=$(echo "$CF_LONDON_EXPORTS" | \
+VITE_userPoolId=$(echo "$CF_LONDON_EXPORTS" | \
     jq \
     --arg EXPORT_NAME "${SERVICE_NAME}-stateful-resources:userPool:Id" \
     -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
-rumUnauthenticatedRumRoleArn=$(echo "$CF_LONDON_EXPORTS" | \
+VITE_RUM_GUEST_ROLE_ARN=$(echo "$CF_LONDON_EXPORTS" | \
     jq \
     --arg EXPORT_NAME "${SERVICE_NAME}-stateful-resources:rum:unauthenticatedRumRole:Arn" \
     -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
 
-rumIdentityPoolId=$(echo "$CF_LONDON_EXPORTS" | \
+VITE_RUM_IDENTITY_POOL_ID=$(echo "$CF_LONDON_EXPORTS" | \
     jq \
     --arg EXPORT_NAME "${SERVICE_NAME}-stateful-resources:rum:identityPool:Id" \
     -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
 
-rumAppId=$(echo "$CF_LONDON_EXPORTS" | \
+VITE_RUM_APPLICATION_ID=$(echo "$CF_LONDON_EXPORTS" | \
     jq \
     --arg EXPORT_NAME "${SERVICE_NAME}-stateful-resources:rum:rumApp:Id" \
     -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
 
-rumAllowCookies=$(echo "$CF_LONDON_EXPORTS" | \
+VITE_RUM_ALLOW_COOKIES=$(echo "$CF_LONDON_EXPORTS" | \
     jq \
     --arg EXPORT_NAME "${SERVICE_NAME}-stateful-resources:rum:config:allowCookies" \
     -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
 
-rumEnableXRay=$(echo "$CF_LONDON_EXPORTS" | \
+VITE_RUM_ENABLE_XRAY=$(echo "$CF_LONDON_EXPORTS" | \
     jq \
     --arg EXPORT_NAME "${SERVICE_NAME}-stateful-resources:rum:config:enableXRay" \
     -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
 
-rumSessionSampleRate=$(echo "$CF_LONDON_EXPORTS" | \
+VITE_RUM_SESSION_SAMPLE_RATE=$(echo "$CF_LONDON_EXPORTS" | \
     jq \
     --arg EXPORT_NAME "${SERVICE_NAME}-stateful-resources:rum:config:sessionSampleRate" \
     -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
 
-rumTelemetries=$(echo "$CF_LONDON_EXPORTS" | \
+VITE_RUM_TELEMETRIES=$(echo "$CF_LONDON_EXPORTS" | \
     jq \
     --arg EXPORT_NAME "${SERVICE_NAME}-stateful-resources:rum:config:telemetries" \
     -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+LOCAL_DEV=true
+BASE_PATH="/site"
+API_DOMAIN_OVERRIDE=https://${SERVICE_NAME}.dev.eps.national.nhs.uk/ 
+VITE_hostedLoginDomain=${SERVICE_NAME}.auth.eu-west-2.amazoncognito.com
+VITE_redirectSignIn=http://localhost:3000/site/select-role
+VITE_redirectSignOut=http://localhost:3000/site/logout
+
+VITE_COMMIT_ID="Local Development Server"
+
+REACT_APP_hostedLoginDomain=$VITE_hostedLoginDomain
+REACT_APP_userPoolClientId=$VITE_userPoolClientId
+REACT_APP_userPoolId=$VITE_userPoolId
+REACT_APP_redirectSignIn=$VITE_redirectSignIn
+REACT_APP_redirectSignOut=$VITE_redirectSignOut
+
+REACT_APP_RUM_GUEST_ROLE_ARN=$VITE_RUM_GUEST_ROLE_ARN
+REACT_APP_RUM_IDENTITY_POOL_ID=$VITE_RUM_IDENTITY_POOL_ID
+REACT_APP_RUM_APPLICATION_ID=$VITE_RUM_APPLICATION_ID
+REACT_APP_RUM_ALLOW_COOKIES_ARN=$VITE_RUM_ALLOW_COOKIES
+REACT_APP_RUM_ENABLE_XRAY=$VITE_RUM_ENABLE_XRAY
+REACT_APP_RUM_SESSION_SAMPLE_RATE=$VITE_RUM_SESSION_SAMPLE_RATE
+REACT_APP_RUM_TELEMETRIES=$VITE_RUM_TELEMETRIES
+
+
+# vars needed for cdk
 VERSION_NUMBER="PR-${PULL_REQUEST_ID}"
 COMMIT_ID=unknown
 AUTO_DELETE_OBJECTS=true
@@ -123,15 +148,37 @@ APIGEE_PERSONAL_DEMOGRAPHICS_ENDPOINT=$(aws cloudformation list-exports --region
 JWT_KID=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${SERVICE_NAME}-stateless-resources:local:jwtKid'].Value" --output text)
 ROLE_ID=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${SERVICE_NAME}-stateless-resources:local:roleId'].Value" --output text)
 
-export userPoolClientId
-export userPoolId
-export rumUnauthenticatedRumRoleArn
-export rumIdentityPoolId
-export rumAppId
-export rumAllowCookies
-export rumEnableXRay
-export rumSessionSampleRate
-export rumTelemetries
+# export all the vars so they can be picked up by external programs
+export SERVICE_NAME
+export VITE_userPoolClientId
+export VITE_userPoolId
+export VITE_RUM_GUEST_ROLE_ARN
+export VITE_RUM_IDENTITY_POOL_ID
+export VITE_RUM_APPLICATION_ID
+export VITE_RUM_ALLOW_COOKIES
+export VITE_RUM_ENABLE_XRAY
+export VITE_RUM_SESSION_SAMPLE_RATE
+export VITE_RUM_TELEMETRIES
+export LOCAL_DEV
+export BASE_PATH
+export API_DOMAIN_OVERRIDE
+export VITE_hostedLoginDomain
+export VITE_redirectSignIn
+export VITE_redirectSignOut
+export VITE_COMMIT_ID
+export REACT_APP_hostedLoginDomain
+export REACT_APP_userPoolClientId
+export REACT_APP_userPoolId
+export REACT_APP_redirectSignIn
+export REACT_APP_redirectSignOut
+export REACT_APP_RUM_GUEST_ROLE_ARN
+export REACT_APP_RUM_IDENTITY_POOL_ID
+export REACT_APP_RUM_APPLICATION_ID
+export REACT_APP_RUM_ALLOW_COOKIES_ARN
+export REACT_APP_RUM_ENABLE_XRAY
+export REACT_APP_RUM_SESSION_SAMPLE_RATE
+export REACT_APP_RUM_TELEMETRIES
+
 export VERSION_NUMBER
 export COMMIT_ID
 export AUTO_DELETE_OBJECTS
@@ -176,13 +223,11 @@ export CDK_APP_NAME
 echo "Generating config for ${STATEFUL_CONFIG}"
 "$FIX_SCRIPT" "$STATEFUL_CONFIG"
 
-
 # variables needed for statelessResourcesApp
 CDK_APP_NAME=StatelessResourcesApp
 export CDK_APP_NAME
 echo "Generating config for ${STATELESS_CONFIG}"
 "$FIX_SCRIPT" "$STATELESS_CONFIG"
-
 
 sync_stateful_app() {
     echo "Starting stateful app"
