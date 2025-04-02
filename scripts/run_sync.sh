@@ -10,6 +10,7 @@ STATEFUL_CONFIG=".local_config/stateful_app.config.json"
 STATELESS_CONFIG=".local_config/stateless_app.config.json"
 STATEFUL_LOG=".local_config/stateful_app.log"
 STATELESS_LOG=".local_config/stateless_app.log"
+WEBSITE_LOG=".local_config/website.log"
 
 echo "What is the pull request id?"
 read -r PULL_REQUEST_ID
@@ -172,20 +173,20 @@ export ROLE_ID
 CDK_APP_NAME=StatefulResourcesApp
 export CDK_APP_NAME
 
-echo "Running ${FIX_SCRIPT} for ${STATEFUL_CONFIG}"
+echo "Generating config for ${STATEFUL_CONFIG}"
 "$FIX_SCRIPT" "$STATEFUL_CONFIG"
-cat "${STATEFUL_CONFIG}"
 
 
 # variables needed for statelessResourcesApp
 CDK_APP_NAME=StatelessResourcesApp
 export CDK_APP_NAME
-echo "Running ${FIX_SCRIPT} for ${STATELESS_CONFIG}"
+echo "Generating config for ${STATELESS_CONFIG}"
 "$FIX_SCRIPT" "$STATELESS_CONFIG"
-cat "${STATELESS_CONFIG}"
 
 
 sync_stateful_app() {
+    echo "Starting stateful app"
+    echo "See log file at ${STATEFUL_LOG}"
     CONFIG_FILE_NAME="${STATEFUL_CONFIG}" npx cdk deploy \
         --app "npx ts-node --prefer-ts-exts packages/cdk/bin/StatefulResourcesApp.ts" \
         --watch \
@@ -197,6 +198,8 @@ sync_stateful_app() {
 }
 
 sync_stateless_app() {
+    echo "Starting stateless app"
+    echo "See log file at ${STATELESS_LOG}"
     CONFIG_FILE_NAME="${STATELESS_CONFIG}" npx cdk deploy \
         --app "npx ts-node --prefer-ts-exts packages/cdk/bin/StatelessResourcesApp.ts" \
         --watch \
@@ -207,5 +210,12 @@ sync_stateless_app() {
         > $STATELESS_LOG
 }
 
-echo "Starting sync"
-(trap 'kill 0' SIGINT; sync_stateful_app & sync_stateless_app)
+start_website() {
+    echo "Starting website"
+    echo "See log file at ${WEBSITE_LOG}"
+    npm run dev --workspace packages/cpt-ui > $WEBSITE_LOG
+}
+
+echo "Compiling code"
+make compile
+(trap 'kill 0' SIGINT; sync_stateful_app & sync_stateless_app & start_website)
