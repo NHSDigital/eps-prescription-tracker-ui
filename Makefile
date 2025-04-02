@@ -142,7 +142,7 @@ cdk-deploy: guard-service_name guard-CDK_APP_NAME
 		--context VERSION_NUMBER=$$VERSION_NUMBER \
 		--context COMMIT_ID=$$COMMIT_ID
 
-cdk-sync:
+cdk-watch:
 	./scripts/run_sync.sh
 
 cdk-synth: cdk-synth-no-mock cdk-synth-mock
@@ -312,21 +312,6 @@ cdk-diff: guard-CDK_APP_NAME
 		--context serviceName=$$service_name \
 		--context VERSION_NUMBER=$$VERSION_NUMBER \
 		--context COMMIT_ID=$$COMMIT_ID
-
-cdk-watch: guard-service_name guard-CDK_APP_NAME
-	REQUIRE_APPROVAL="$${REQUIRE_APPROVAL:-any-change}" && \
-	VERSION_NUMBER="$${VERSION_NUMBER:-undefined}" && \
-	COMMIT_ID="$${COMMIT_ID:-undefined}" && \
-		npx cdk deploy \
-		--app "npx ts-node --prefer-ts-exts packages/cdk/bin/$$CDK_APP_NAME.ts" \
-		--watch \
-		--all \
-		--ci true \
-		--require-approval $${REQUIRE_APPROVAL} \
-		--context serviceName=$$service_name \
-		--context VERSION_NUMBER=$$VERSION_NUMBER \
-		--context COMMIT_ID=$$COMMIT_ID
-
 
 build-deployment-container-image:
 	docker build -t "clinical-prescription-tracker-ui" -f docker/Dockerfile .

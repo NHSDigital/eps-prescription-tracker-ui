@@ -57,10 +57,7 @@ Ensure you have the following lines in the file .envrc
 
 ```
 export AWS_DEFAULT_PROFILE=prescription-dev
-export stack_name=<UNIQUE_NAME_FOR_YOU>
 ```
-
-UNIQUE_NAME_FOR_YOU should be a unique name for you with no underscores in it - eg anthony-brown-1
 
 Once you have saved .envrc, start a new terminal in vscode and run this command to authenticate against AWS
 
@@ -84,78 +81,27 @@ You will now be able to use AWS and CDK CLI commands to access the dev account. 
 
 When the token expires, you may need to reauthorise using `make aws-login`
 
-### Local Environment Configuration
+### Running website locally and syncing CDK
 
-To run the CPT UI locally (with mock auth, RUM monitoring and actual API usage), you can configure your `.envrc` file with a few variables. Below is an example configuration:
+To speed up feedback time during development, you can run the website locally and automatically sync any cdk changes automatically to AWS.  
+You must have already created a pull request for your branch to set up the initial CDK infrastructure.
 
+Once this is done, you can run
 ```
-################
-# UPDATE THESE #
-################
-export SERVICE_NAME=cpt-ui-pr-123
-export VITE_userPoolClientId="1234567890deadbeef"
-export VITE_userPoolId="eu-west-2_deadbeef"
-export LOCAL_DEV=true
-
-# DON'T TOUCH!
-export VITE_TARGET_ENVIRONMENT=dev                                       # enables mock auth
-export BASE_PATH="/site"                                                        # Hosts the site at `localhost:3000/site`
-export API_DOMAIN_OVERRIDE=https://${SERVICE_NAME}.dev.eps.national.nhs.uk/     # Proxies the actual deployed backend for this PR
-
-export VITE_hostedLoginDomain=${SERVICE_NAME}.auth.eu-west-2.amazoncognito.com
-export VITE_redirectSignIn=http://localhost:3000/site/select-your-role
-export VITE_redirectSignOut=http://localhost:3000/site/logout
-
-export VITE_COMMIT_ID="Local Development Server"
-
-export REACT_APP_hostedLoginDomain=$VITE_hostedLoginDomain
-export REACT_APP_userPoolClientId=$VITE_userPoolClientId
-export REACT_APP_userPoolId=$VITE_userPoolId
-export REACT_APP_redirectSignIn=$VITE_redirectSignIn
-export REACT_APP_redirectSignOut=$VITE_redirectSignOut
+make cdk-watch
 ```
+and enter the pull request id (just the number)
+Log files are written to at
+- .local_config/stateful_app.log
+- .local_config/stateless_app.log
+- .local_config/website.log
 
-To enable mock auth and RUM for the local dev server we need some variables from AWS. To fetch these, you can use the following AWS CLI commands:
-
-```
-export PULL_REQUEST_ID=<PR NUMBER BY ITSELF>
-
-
-export SERVICE_NAME=cpt-ui-pr-$PULL_REQUEST_ID
-userPoolClientId=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${SERVICE_NAME}-stateful-resources:userPoolClient:userPoolClientId'].Value" --output text)
-userPoolId=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${SERVICE_NAME}-stateful-resources:userPool:Id'].Value" --output text)
-rumUnauthenticatedRumRoleArn=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${SERVICE_NAME}-stateful-resources:rum:unauthenticatedRumRole:Arn'].Value" --output text)
-rumIdentityPoolId=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${SERVICE_NAME}-stateful-resources:rum:identityPool:Id'].Value" --output text)
-rumAppId=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${SERVICE_NAME}-stateful-resources:rum:rumApp:Id'].Value" --output text)
-rumAllowCookies=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${SERVICE_NAME}-stateful-resources:rum:config:allowCookies'].Value" --output text)
-rumEnableXRay=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${SERVICE_NAME}-stateful-resources:rum:config:enableXRay'].Value" --output text)
-rumSessionSampleRate=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${SERVICE_NAME}-stateful-resources:rum:config:sessionSampleRate'].Value" --output text)
-rumTelemetries=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${SERVICE_NAME}-stateful-resources:rum:config:telemetries'].Value" --output text)
-
-echo "*******************"
-echo
-echo "export VITE_userPoolClientId=\"$userPoolClientId\""
-echo "export VITE_userPoolId=\"$userPoolId\""
-echo "export VITE_RUM_GUEST_ROLE_ARN=\"$rumUnauthenticatedRumRoleArn\""
-echo "export VITE_RUM_IDENTITY_POOL_ID=\"$rumIdentityPoolId\""
-echo "export VITE_RUM_APPLICATION_ID=\"$rumAppId\""
-echo "export VITE_RUM_ALLOW_COOKIES=\"$rumAllowCookies\""
-echo "export VITE_RUM_ENABLE_XRAY=\"$rumEnableXRay\""
-echo "export VITE_RUM_SESSION_SAMPLE_RATE=\"$rumSessionSampleRate\""
-echo "export VITE_RUM_TELEMETRIES=\"$rumTelemetries\""
-
-```
-
-For me, the aws terminal console installed in the dev container refuses to work without causing a headache. Another approach is to use the browser console, accessed by clicking the terminal icon next to the search bar on the AWS web dashboard.
-
-n.b. Ensure you've properly sourced these variables! `direnv` can sometimes miss changes on my machine.
-```
-source .envrc
-```
+You should monitor the stateful and stateless log files as it can take a few minutes for the sync to complete.   
+This runs cdk watch against the stateless and stateful stacks, and also starts the website running locally which you can access at http://localhost:3000
 
 
 ###  React app
-React/Next.js code resides in app folder.  More details to be added as dev progresses, see make section for relevant commands
+React code resides in packages/cpt-ui folder.  
 
 ### CI Setup
 
@@ -163,21 +109,6 @@ The GitHub Actions require a secret to exist on the repo called "SONAR_TOKEN".
 This can be obtained from [SonarCloud](https://sonarcloud.io/)
 as described [here](https://docs.sonarsource.com/sonarqube/latest/user-guide/user-account/generating-and-using-tokens/).
 You will need the "Execute Analysis" permission for the project (NHSDigital_electronic-prescription-service-clinical-prescription-tracker) in order for the token to work.
-
-
-### Continuous deployment for testing
-
-You can run the following command to deploy the code to AWS for testing
-
-```
-make cdk-watch
-```
-
-This will take a few minutes to deploy - you will see a message saying deployment complete when it has finished.
-
-Note - the command will keep running and should not be stopped.
-
-Any code changes you make are automatically uploaded to AWS while `make cdk-watch` is running allowing you to quickly test any changes you make
 
 ### Pre-commit hooks
 
@@ -203,7 +134,7 @@ These are used to do common commands related to cdk
 - `cdk-deploy` Builds and deploys the code to AWS
 - `cdk-synth` Converts the CDK code to cloudformation templates
 - `cdk-diff` Runs cdk diff comparing the deployed stack with local CDK code to see differences
-- `cdk-watch` Syncs the code and CDK templates to AWS. This keeps running and automatically uploads changes to AWS
+- `cdk-watch` Syncs the code and CDK templates to AWS, and starts local webserver. This keeps running and automatically uploads changes to AWS
 - `build-deployment-container-image` Creates a container with all code necessary to run cdk deploy
 
 #### Clean and deep-clean targets
