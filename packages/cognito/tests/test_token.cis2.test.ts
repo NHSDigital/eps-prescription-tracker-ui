@@ -70,9 +70,9 @@ jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
     }
   })
 
-  const initializeOidcConfig = mockInitializeOidcConfig.mockImplementation(() => {
+  const initializeOidcConfig = mockInitializeOidcConfig.mockImplementation( () => {
     // Create a JWKS client for cis2 and mock
-    // this is outside functions so it can be re-used
+  // this is outside functions so it can be re-used
     const cis2JwksUri = process.env["CIS2_OIDCJWKS_ENDPOINT"] as string
     const cis2JwksClient = jwksClient({
       jwksUri: cis2JwksUri,
