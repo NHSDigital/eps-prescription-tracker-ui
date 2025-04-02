@@ -198,8 +198,14 @@ APIGEE_PERSONAL_DEMOGRAPHICS_ENDPOINT=$(echo "$CF_LONDON_EXPORTS" | \
     --arg EXPORT_NAME "${SERVICE_NAME}-stateless-resources:local:apigeePersonalDemographicsEndpoint" \
     -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
 
-JWT_KID=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${SERVICE_NAME}-stateless-resources:local:jwtKid'].Value" --output text)
-ROLE_ID=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${SERVICE_NAME}-stateless-resources:local:roleId'].Value" --output text)
+JWT_KID=$(echo "$CF_LONDON_EXPORTS" | \
+    jq \
+    --arg EXPORT_NAME "${SERVICE_NAME}-stateless-resources:local:jwtKid" \
+    -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+ROLE_ID=$(echo "$CF_LONDON_EXPORTS" | \
+    jq \
+    --arg EXPORT_NAME "${SERVICE_NAME}-stateless-resources:local:roleId" \
+    -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
 
 # export all the vars so they can be picked up by external programs
 export SERVICE_NAME

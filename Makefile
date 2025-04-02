@@ -148,7 +148,7 @@ cdk-deploy: guard-service_name guard-CDK_APP_NAME
 cdk-watch:
 	./scripts/run_sync.sh
 
-cdk-synth: cdk-synth-no-mock cdk-synth-mock
+cdk-synth: compile cdk-synth-no-mock cdk-synth-mock
 
 cdk-synth-no-mock: cdk-synth-stateful-resources-no-mock cdk-synth-stateless-resources-no-mock
 
