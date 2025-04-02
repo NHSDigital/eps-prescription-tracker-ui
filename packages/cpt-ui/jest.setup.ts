@@ -38,7 +38,9 @@ jest.mock("@/constants/environment", () => ({
   },
   FRONTEND_PATHS: {
     PRESCRIPTION_NOT_FOUND: "/prescription-not-found",
-    PRESCRIPTION_LIST: "/prescription-list",
+    PRESCRIPTION_LIST_CURRENT: "/prescription-list-current",
+    PRESCRIPTION_LIST_FUTURE: "/prescription-list-future",
+    PRESCRIPTION_LIST_PAST: "/prescription-list-past",
     LOGIN: "/login",
     LOGOUT: "/logout",
     SELECT_YOUR_ROLE: "/select-your-role",

@@ -6,7 +6,6 @@ import {
   CURRENT_PRESCRIPTIONS,
   FUTURE_PRESCRIPTIONS,
   PAST_PRESCRIPTIONS,
-  PRESCRIPTION_LIST_TABS,
   PrescriptionsListStrings
 } from "@/constants/ui-strings/PrescriptionListTabStrings"
 
@@ -31,6 +30,7 @@ jest.mock("@/components/prescriptionList/PrescriptionsListTable", () => {
 })
 
 import PrescriptionsListTabs from "@/components/prescriptionList/PrescriptionsListTab"
+import {MemoryRouter} from "react-router-dom"
 
 describe("PrescriptionsListTabs", () => {
   const currentPrescriptions: Array<PrescriptionSummary> = [
@@ -101,29 +101,38 @@ describe("PrescriptionsListTabs", () => {
       itemsPendingCancellation: false
     }
   ]
+  const tabData = [
+    {
+      title: "Current Prescriptions",
+      link: "/current"
+    },
+    {
+      title: "Future Prescriptions",
+      link: "/future"
+    },
+    {
+      title: "Past Prescriptions",
+      link: "/past"
+    }
+  ]
 
   beforeEach(() => {
     render(
-      <PrescriptionsListTabs
-        currentPrescriptions={currentPrescriptions}
-        pastPrescriptions={pastPrescriptions}
-        futurePrescriptions={futurePrescriptions}
-      />
+      <MemoryRouter>
+        <PrescriptionsListTabs
+          tabData={tabData}
+          currentPrescriptions={currentPrescriptions}
+          pastPrescriptions={pastPrescriptions}
+          futurePrescriptions={futurePrescriptions}
+        />
+      </MemoryRouter>
     )
   })
 
-  it("renders tab headers with correct counts", () => {
-    PRESCRIPTION_LIST_TABS.forEach((tab) => {
-      let count = 0
-      if (tab.targetId === "current") {
-        count = currentPrescriptions.length
-      } else if (tab.targetId === "future") {
-        count = futurePrescriptions.length
-      } else if (tab.targetId === "past") {
-        count = pastPrescriptions.length
-      }
+  it("renders tab headers", () => {
+    tabData.forEach((tab) => {
       expect(
-        screen.getByText(`${tab.title} (${count})`)
+        screen.getByText(tab.title)
       ).toBeInTheDocument()
     })
   })
@@ -137,9 +146,7 @@ describe("PrescriptionsListTabs", () => {
 
   it("switches to the future tab and displays correct content", async () => {
     // Click on the "Future" tab
-    const futureTabHeader = screen.getByText(
-      `${PRESCRIPTION_LIST_TABS.find((tab) => tab.targetId === "future")?.title} (${futurePrescriptions.length})`
-    )
+    const futureTabHeader = screen.getByText("Future Prescriptions")
     await userEvent.click(futureTabHeader)
 
     expect(screen.getByTestId(FUTURE_PRESCRIPTIONS.testid)).toHaveTextContent(
@@ -152,9 +159,7 @@ describe("PrescriptionsListTabs", () => {
 
   it("switches to the past tab and displays correct content", async () => {
     // Click on the "Past" tab
-    const pastTabHeader = screen.getByText(
-      `${PRESCRIPTION_LIST_TABS.find((tab) => tab.targetId === "past")?.title} (${pastPrescriptions.length})`
-    )
+    const pastTabHeader = screen.getByText("Past Prescriptions")
     await userEvent.click(pastTabHeader)
 
     expect(screen.getByTestId(PAST_PRESCRIPTIONS.testid)).toHaveTextContent(

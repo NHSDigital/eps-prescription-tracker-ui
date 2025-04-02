@@ -1,10 +1,18 @@
 import React from "react"
 import "@testing-library/jest-dom"
 import {fireEvent, render, waitFor} from "@testing-library/react"
-import {Tabs} from "nhsuk-react-components"
 import {BrowserRouter} from "react-router-dom"
 
-import EpsTabs from "@/components/EpsTabs"
+import {FRONTEND_PATHS} from "@/constants/environment"
+
+import {Tabs} from "nhsuk-react-components"
+import EpsTabs, {TabHeader} from "@/components/EpsTabs"
+
+const exampleTabs: Array<TabHeader> = [
+  {title: "Prescription ID search", link: FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID},
+  {title: "NHS number search", link: FRONTEND_PATHS.SEARCH_BY_NHS_NUMBER},
+  {title: "Basic details search", link: FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS}
+]
 
 // Mock ResizeObserver
 // eslint-disable-next-line no-undef
@@ -20,7 +28,10 @@ describe("The tabs component", () => {
   it("Switches between tabs when links are clicked", async () => {
     const {container} = render(
       <BrowserRouter>
-        <EpsTabs activeTabPath="/search-by-prescription-id">
+        <EpsTabs
+          activeTabPath="/search-by-prescription-id"
+          tabHeaderArray={exampleTabs}
+        >
           <div data-testid="tab-content">Tab Content</div>
         </EpsTabs>
       </BrowserRouter>

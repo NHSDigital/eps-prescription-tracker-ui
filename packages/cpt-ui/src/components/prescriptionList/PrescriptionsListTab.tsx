@@ -1,88 +1,66 @@
 import React from "react"
-import {Tabs} from "nhsuk-react-components"
-
-import PrescriptionsListTable from "@/components/prescriptionList/PrescriptionsListTable"
+import {useLocation} from "react-router-dom"
 
 import {
   CURRENT_PRESCRIPTIONS,
   FUTURE_PRESCRIPTIONS,
-  PAST_PRESCRIPTIONS,
-  PRESCRIPTION_LIST_TABS
+  PAST_PRESCRIPTIONS
 } from "@/constants/ui-strings/PrescriptionListTabStrings"
+
 import {PrescriptionSummary} from "@cpt-ui-common/common-types"
 
+import PrescriptionsListTable from "@/components/prescriptionList/PrescriptionsListTable"
+import EpsTabs, {TabHeader} from "@/components/EpsTabs"
+
 export interface PrescriptionsListTabsProps {
+    tabData: Array<TabHeader>
     currentPrescriptions: Array<PrescriptionSummary>,
     pastPrescriptions: Array<PrescriptionSummary>,
     futurePrescriptions: Array<PrescriptionSummary>
 }
 
-interface PrescriptionCounts {
-    current: number,
-    past: number,
-    future: number
-}
-
 export default function PrescriptionsListTabs({
+  tabData,
   currentPrescriptions,
   pastPrescriptions,
   futurePrescriptions
 }: PrescriptionsListTabsProps) {
-  const tabData = PRESCRIPTION_LIST_TABS
-  // Will update when the component re-renders, so no useEffect needed here
-  const prescriptionCounts: PrescriptionCounts = {
-    current: currentPrescriptions.length,
-    future: futurePrescriptions.length,
-    past: pastPrescriptions.length
+  const location = useLocation()
+  const pathname = location.pathname
+
+  const currentTable =
+    <PrescriptionsListTable
+      textContent={CURRENT_PRESCRIPTIONS}
+      prescriptions={currentPrescriptions}
+    />
+  const pastTable =
+      <PrescriptionsListTable
+        textContent={PAST_PRESCRIPTIONS}
+        prescriptions={pastPrescriptions}
+      />
+  const futureTable =
+        <PrescriptionsListTable
+          textContent={FUTURE_PRESCRIPTIONS}
+          prescriptions={futurePrescriptions}
+        />
+
+  // Map paths to content components. Note that we can't use the
+  // FRONTEND_PATHS object here, because typescript completely falls over if we do...
+  const pathContent: Record<string, React.ReactNode> = {
+    "/prescription-list-current": currentTable,
+    "/prescription-list-future": futureTable,
+    "/prescription-list-past": pastTable
   }
 
+  // Default to prescription ID search if path not found
+  const content = pathContent[pathname] || currentTable
+
   return (
-    <Tabs defaultValue={tabData[0].targetId}>
-      <Tabs.Title>Contents</Tabs.Title>
-      <Tabs.List>
-        {tabData.map(tabHeader => {
-          const count = prescriptionCounts[tabHeader.targetId as keyof typeof prescriptionCounts] || 0
-          return (
-            <Tabs.ListItem
-              id={tabHeader.targetId}
-              key={tabHeader.title}
-            >
-              <div
-                data-testid={`prescription-results-list-tab-heading ${tabHeader.targetId}`}
-              >
-                {`${tabHeader.title} (${count})`}
-              </div>
-            </Tabs.ListItem>
-          )
-        })}
-      </Tabs.List>
-      {tabData.map(tabContent => (
-        <Tabs.Contents id={tabContent.targetId} key={tabContent.title}>
-          <div>
-            {
-              (tabContent.targetId === "current" && (
-                <PrescriptionsListTable
-                  textContent={CURRENT_PRESCRIPTIONS}
-                  prescriptions={currentPrescriptions}
-                />
-              )) ||
-              (tabContent.targetId === "future" && (
-                <PrescriptionsListTable
-                  textContent={FUTURE_PRESCRIPTIONS}
-                  prescriptions={futurePrescriptions}
-                />
-              )) ||
-              (tabContent.targetId === "past" && (
-                <PrescriptionsListTable
-                  textContent={PAST_PRESCRIPTIONS}
-                  prescriptions={pastPrescriptions}
-                />
-              )) ||
-              <p>This Search not available</p>
-            }
-          </div>
-        </Tabs.Contents>
-      ))}
-    </Tabs>
+    <EpsTabs
+      activeTabPath={pathname}
+      tabHeaderArray={tabData}
+    >
+      {content}
+    </EpsTabs>
   )
 }

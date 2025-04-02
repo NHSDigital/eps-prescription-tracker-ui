@@ -14,7 +14,9 @@ import {usePatientDetails} from "@/context/PatientDetailsProvider"
 
 import EpsSpinner from "@/components/EpsSpinner"
 import PrescriptionsListTabs from "@/components/prescriptionList/PrescriptionsListTab"
+import {TabHeader} from "@/components/EpsTabs"
 
+import {PRESCRIPTION_LIST_TABS} from "@/constants/ui-strings/PrescriptionListTabStrings"
 import {PRESCRIPTION_LIST_PAGE_STRINGS} from "@/constants/ui-strings/PrescriptionListPageStrings"
 import {API_ENDPOINTS, FRONTEND_PATHS, NHS_REQUEST_URID} from "@/constants/environment"
 
@@ -136,6 +138,7 @@ export default function PrescriptionListPage() {
   const [currentPrescriptions, setCurrentPrescriptions] = useState<Array<PrescriptionSummary>>([])
   const [prescriptionCount, setPrescriptionCount] = useState(0)
 
+  const [tabData, setTabData] = useState<Array<TabHeader>>([])
   const [backLinkTarget, setBackLinkTarget] = useState<string>(PRESCRIPTION_LIST_PAGE_STRINGS.DEFAULT_BACK_LINK_TARGET)
   const [loading, setLoading] = useState(true)
 
@@ -175,13 +178,9 @@ export default function PrescriptionListPage() {
         return
       }
 
-      console.warn("Searched for, got", {searchValue, searchResults})
-
-      // Update the data with the mock object defined above. TEMPORARY!
-      // TODO: Use real data here
-      setPastPrescriptions(searchResults.pastPrescriptions)
-      setFuturePrescriptions(searchResults.futurePrescriptions)
       setCurrentPrescriptions(searchResults.currentPrescriptions)
+      setFuturePrescriptions(searchResults.futurePrescriptions)
+      setPastPrescriptions(searchResults.pastPrescriptions)
       setPatientDetails(searchResults.patient)
 
       setPrescriptionCount(
@@ -189,6 +188,21 @@ export default function PrescriptionListPage() {
           searchResults.futurePrescriptions.length +
           searchResults.currentPrescriptions.length
       )
+
+      setTabData([
+        {
+          link: PRESCRIPTION_LIST_TABS.current.link(queryParams.toString()),
+          title: PRESCRIPTION_LIST_TABS.current.title(searchResults.currentPrescriptions.length)
+        },
+        {
+          link: PRESCRIPTION_LIST_TABS.future.link(queryParams.toString()),
+          title: PRESCRIPTION_LIST_TABS.future.title(searchResults.futurePrescriptions.length)
+        },
+        {
+          link: PRESCRIPTION_LIST_TABS.past.link(queryParams.toString()),
+          title: PRESCRIPTION_LIST_TABS.past.title(searchResults.pastPrescriptions.length)
+        }
+      ])
     }
 
     setLoading(true)
@@ -324,6 +338,7 @@ export default function PrescriptionListPage() {
           </p>
           <div data-testid="prescription-results-list">
             <PrescriptionsListTabs
+              tabData={tabData}
               currentPrescriptions={currentPrescriptions}
               pastPrescriptions={pastPrescriptions}
               futurePrescriptions={futurePrescriptions}
