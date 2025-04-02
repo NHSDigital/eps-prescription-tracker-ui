@@ -89,7 +89,7 @@ jobs:
           export VITE_hostedLoginDomain=${hostedLoginDomain}
           export VITE_userPoolClientId=${userPoolClientId}
           export VITE_userPoolId=${userPoolId}
-          export VITE_redirectSignIn="https://${fullCloudfrontDomain}/site/select-role"
+          export VITE_redirectSignIn="https://${fullCloudfrontDomain}/site/select-your-role"
           export VITE_redirectSignOut="https://${fullCloudfrontDomain}/site/logout"
           export VITE_COMMIT_ID=${{ inputs.COMMIT_ID }}
           export VITE_TARGET_ENVIRONMENT=${{ inputs.TARGET_ENVIRONMENT }}

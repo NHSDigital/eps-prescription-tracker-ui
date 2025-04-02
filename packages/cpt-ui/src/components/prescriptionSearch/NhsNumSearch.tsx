@@ -10,10 +10,10 @@ export default function NhsNumSearch() {
       <div className="eps-modal-button-group" data-testid="nhs-number-search-button-group">
         <Button
           className="nhsuk-button eps-modal-button"
-          to={`${FRONTEND_PATHS.PRESCRIPTION_RESULTS}?nhsNumber=123456`}
+          to={`${FRONTEND_PATHS.PRESCRIPTION_LIST}?nhsNumber=123456`}
           data-testid="find-patient-button"
         >
-                    Find a patient
+          Find a patient
         </Button>
       </div>
     </>

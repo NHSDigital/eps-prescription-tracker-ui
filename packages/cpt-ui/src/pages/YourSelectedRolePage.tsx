@@ -76,7 +76,7 @@ export default function YourSelectedRolePage() {
                   </Table.Cell>
                   <Table.Cell data-testid="role-change-role-cell">
                     <Link
-                      to={FRONTEND_PATHS.CHANGE_ROLE}
+                      to={FRONTEND_PATHS.CHANGE_YOUR_ROLE}
                     >
                       {changeLinkText}
                     </Link>
@@ -91,7 +91,7 @@ export default function YourSelectedRolePage() {
                   </Table.Cell>
                   <Table.Cell data-testid="org-change-role-cell">
                     <Link
-                      to={FRONTEND_PATHS.CHANGE_ROLE}
+                      to={FRONTEND_PATHS.CHANGE_YOUR_ROLE}
                     >
                       {changeLinkText}
                     </Link>
@@ -105,7 +105,7 @@ export default function YourSelectedRolePage() {
         <Row>
           <Col width="two-thirds">
             <Button
-              to={FRONTEND_PATHS.SEARCH}
+              to={FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID}
               data-testid="confirm-and-continue"
             >
               {confirmButtonText}

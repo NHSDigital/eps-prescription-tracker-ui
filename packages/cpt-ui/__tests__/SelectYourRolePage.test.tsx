@@ -28,7 +28,7 @@ jest.mock("@/constants/ui-strings/CardStrings", () => {
     },
     confirmButton: {
       text: "Continue to find a prescription",
-      link: "search"
+      link: "search-by-prescription-id"
     },
     alternativeMessage: "Alternatively, you can choose a new role below.",
     organisation: "Organisation",
@@ -131,6 +131,7 @@ export const renderWithAuth = (authOverrides = {}) => {
 
 import {SELECT_YOUR_ROLE_PAGE_TEXT} from "@/constants/ui-strings/CardStrings"
 import {EpsSpinnerStrings} from "@/constants/ui-strings/EpsSpinnerStrings"
+import {FRONTEND_PATHS} from "@/constants/environment"
 
 const mockUserInfo = {
   roles_with_access: [
@@ -324,7 +325,7 @@ describe("SelectYourRolePage", () => {
     })
 
     await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith("/search")
+      expect(mockNavigate).toHaveBeenCalledWith(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
     })
   })
 
@@ -369,7 +370,7 @@ describe("SelectYourRolePage", () => {
     })
 
     await waitFor(() => {
-      expect(useNavigate()).toHaveBeenCalledWith("/search")
+      expect(useNavigate()).toHaveBeenCalledWith(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
     })
   })
 
