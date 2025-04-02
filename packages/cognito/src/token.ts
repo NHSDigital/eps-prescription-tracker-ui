@@ -145,12 +145,17 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   }
 
   // Determine if we should keep the existing role-related fields
-  const selectedRoleIdFromToken = decodedIdToken.selected_roleid?.toString()
-  const existingRoleId = existingItem?.currentlySelectedRole?.role_id?.toString()
+  const selectedRoleIdFromToken = decodedIdToken.selected_roleid?.toString()?.trim()
+  const existingRoleIdRaw = existingItem?.currentlySelectedRole?.role_id
+  const existingRoleId = existingRoleIdRaw?.toString()?.trim()
 
   logger.debug("Comparing role IDs", {
     selectedRoleIdFromToken,
+    selectedRoleIdFromTokenType: typeof selectedRoleIdFromToken,
+    existingRoleIdRaw,
+    existingRoleIdRawType: typeof existingRoleIdRaw,
     existingRoleId,
+    existingRoleIdType: typeof existingRoleId,
     match: selectedRoleIdFromToken === existingRoleId
   })
 
