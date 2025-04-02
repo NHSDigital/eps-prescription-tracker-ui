@@ -127,6 +127,19 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     )
     existingItem = existingData.Item
     logger.debug("Fetched existing item from DynamoDB", {existingItem})
+
+    if (existingItem) {
+      logger.debug("existingItem.currentlySelectedRole", {
+        currentlySelectedRole: existingItem.currentlySelectedRole
+      })
+      logger.debug("existingItem.currentlySelectedRole.role_id", {
+        role_id: existingItem.currentlySelectedRole?.role_id,
+        type: typeof existingItem.currentlySelectedRole?.role_id
+      })
+    } else {
+      logger.warn("No existingItem found in DynamoDB for user", {username})
+    }
+
   } catch (error) {
     logger.warn("Failed to fetch existing user record", {username, error})
   }
@@ -134,6 +147,12 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   // Determine if we should keep the existing role-related fields
   const selectedRoleIdFromToken = decodedIdToken.selected_roleid?.toString()
   const existingRoleId = existingItem?.currentlySelectedRole?.role_id?.toString()
+
+  logger.debug("Comparing role IDs", {
+    selectedRoleIdFromToken,
+    existingRoleId,
+    match: selectedRoleIdFromToken === existingRoleId
+  })
 
   let currentlySelectedRole
   let rolesWithAccess
