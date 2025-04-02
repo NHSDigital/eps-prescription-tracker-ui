@@ -176,7 +176,7 @@ elif [ "$CDK_APP_NAME" == "StatelessResourcesApp" ]; then
     fix_string_key apigeePrescriptionsEndpoint "${APIGEE_PRESCRIPTION_ENDPOINT}"
     fix_string_key apigeePersonalDemographicsEndpoint "${APIGEE_PERSONAL_DEMOGRAPHICS_ENDPOINT}"
     fix_string_key jwtKid "${JWT_KID}"
-    fix_string_key ROLE_ID "${ROLE_ID}"
+    fix_string_key roleId "${ROLE_ID}"
     fix_boolean_number_key allowLocalhostAccess "${ALLOW_LOCALHOST_ACCESS}"
 else
     echo "unknown cdk app name"

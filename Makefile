@@ -142,6 +142,9 @@ cdk-deploy: guard-service_name guard-CDK_APP_NAME
 		--context VERSION_NUMBER=$$VERSION_NUMBER \
 		--context COMMIT_ID=$$COMMIT_ID
 
+cdk-sync:
+	./scripts/run_sync.sh
+
 cdk-synth: cdk-synth-no-mock cdk-synth-mock
 
 cdk-synth-no-mock: cdk-synth-stateful-resources-no-mock cdk-synth-stateless-resources-no-mock
