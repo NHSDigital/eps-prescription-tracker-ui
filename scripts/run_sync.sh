@@ -69,7 +69,7 @@ LOCAL_DEV=true
 BASE_PATH="/site"
 API_DOMAIN_OVERRIDE=https://${SERVICE_NAME}.dev.eps.national.nhs.uk/ 
 VITE_hostedLoginDomain=${SERVICE_NAME}.auth.eu-west-2.amazoncognito.com
-VITE_redirectSignIn=http://localhost:3000/site/select-role
+VITE_redirectSignIn=http://localhost:3000/site/select-your-role
 VITE_redirectSignOut=http://localhost:3000/site/logout
 
 VITE_COMMIT_ID="Local Development Server"
