@@ -115,6 +115,19 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
 
       const userInfo: TrackerUserInfo = data.userInfo
 
+      if (userInfo) {
+        if (userInfo.roles_with_access) {
+          setRolesWithAccess(userInfo.roles_with_access);
+        } else {
+          const storedRolesWithAccess = localStorage.getItem('rolesWithAccess');
+          if (storedRolesWithAccess) {
+            setRolesWithAccess(JSON.parse(storedRolesWithAccess))
+          } else {
+            setRolesWithAccess([]);
+          }
+        }
+      }
+
       // The current role may be either undefined, or an empty object. If it's empty, set it undefined.
       let currentlySelectedRole = userInfo.currently_selected_role
       if (
@@ -124,12 +137,12 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
         currentlySelectedRole = undefined
       }
 
-      setRolesWithAccess(userInfo.roles_with_access || [])
+      setNoAccess(userInfo.roles_with_access.length === 0 && !currentlySelectedRole);
       setRolesWithoutAccess(userInfo.roles_without_access || [])
       setSelectedRole(currentlySelectedRole)
       setUserDetails(userInfo.user_details)
-      setNoAccess(userInfo.roles_with_access.length === 0)
       setSingleAccess(userInfo.roles_with_access.length === 1)
+
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Failed to fetch user info"
@@ -155,6 +168,7 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
       }
     }
   }
+
 
   // The access variables are cached, and the values are initially assumed to have not changed.
   // On a full page reload, make a tracker use info call to update them from the backend
