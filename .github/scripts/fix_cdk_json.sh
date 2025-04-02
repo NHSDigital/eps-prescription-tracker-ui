@@ -43,56 +43,59 @@ fi
 echo "{}" > "$OUTPUT_FILE_NAME"
 TEMP_FILE=$(mktemp)
 
-# get some values from AWS
+# get some values from 
+CF_LONDON_EXPORTS=$(aws cloudformation list-exports --region eu-west-2 --output json)
+CF_US_EXPORTS=$(aws cloudformation list-exports --region us-east-1 --output json)
+
 if [ -z "${EPS_DOMAIN_NAME}" ]; then
-    EPS_DOMAIN_NAME=$(aws cloudformation list-exports --output json | jq -r '.Exports[] | select(.Name == "eps-route53-resources:EPS-domain") | .Value')
+    EPS_DOMAIN_NAME=$(echo "$CF_LONDON_EXPORTS" | jq  -r '.Exports[] | select(.Name == "eps-route53-resources:EPS-domain") | .Value')
 fi
 if [ -z "${EPS_HOSTED_ZONE_ID}" ]; then
-    EPS_HOSTED_ZONE_ID=$(aws cloudformation list-exports --output json | jq -r '.Exports[] | select(.Name == "eps-route53-resources:EPS-ZoneID") | .Value')
+    EPS_HOSTED_ZONE_ID=$(echo "$CF_LONDON_EXPORTS" | jq -r '.Exports[] | select(.Name == "eps-route53-resources:EPS-ZoneID") | .Value')
 fi
 if [ -z "${CLOUDFRONT_DISTRIBUTION_ID}" ]; then
-    CLOUDFRONT_DISTRIBUTION_ID=$(aws cloudformation list-exports --output json | \
+    CLOUDFRONT_DISTRIBUTION_ID=$(echo "$CF_LONDON_EXPORTS" | \
         jq \
         --arg EXPORT_NAME "${SERVICE_NAME}-stateless-resources:cloudfrontDistribution:Id" \
         -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
 fi
 if [ -z "${CLOUDFRONT_CERT_ARN}" ]; then
-    CLOUDFRONT_CERT_ARN=$(aws cloudformation list-exports --region us-east-1 --output json | \
+    CLOUDFRONT_CERT_ARN=$(echo "$CF_US_EXPORTS" | \
         jq \
         --arg EXPORT_NAME "${SERVICE_NAME}-us-certs:cloudfrontCertificate:Arn" \
         -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
 fi
 
 if [ -z "${SHORT_CLOUDFRONT_DOMAIN}" ]; then
-    SHORT_CLOUDFRONT_DOMAIN=$(aws cloudformation list-exports --region us-east-1 --output json | \
+    SHORT_CLOUDFRONT_DOMAIN=$(echo "$CF_US_EXPORTS" | \
         jq \
         --arg EXPORT_NAME "${SERVICE_NAME}-us-certs:shortCloudfrontDomain:Name" \
         -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
 fi
 
 if [ -z "${FULL_CLOUDFRONT_DOMAIN}" ]; then
-    FULL_CLOUDFRONT_DOMAIN=$(aws cloudformation list-exports --region us-east-1 --output json | \
+    FULL_CLOUDFRONT_DOMAIN=$(echo "$CF_US_EXPORTS" | \
         jq \
         --arg EXPORT_NAME "${SERVICE_NAME}-us-certs:fullCloudfrontDomain:Name" \
         -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
 fi
 
 if [ -z "${FULL_COGNITO_DOMAIN}" ]; then
-    FULL_COGNITO_DOMAIN=$(aws cloudformation list-exports --region us-east-1 --output json | \
+    FULL_COGNITO_DOMAIN=$(echo "$CF_US_EXPORTS" | \
         jq \
         --arg EXPORT_NAME "${SERVICE_NAME}-us-certs:fullCognitoDomain:Name" \
         -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
 fi
 
 if [ -z "${RUM_LOG_GROUP_ARN}" ]; then
-    RUM_LOG_GROUP_ARN=$(aws cloudformation list-exports --region eu-west-2 --output json | \
+    RUM_LOG_GROUP_ARN=$(echo "$CF_LONDON_EXPORTS" | \
         jq \
         --arg EXPORT_NAME "${SERVICE_NAME}-stateful-resources:rum:logGroup:arn" \
         -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
 fi
 
 if [ -z "${RUM_APP_NAME}" ]; then
-    RUM_APP_NAME=$(aws cloudformation list-exports --region eu-west-2 --output json | \
+    RUM_APP_NAME=$(echo "$CF_LONDON_EXPORTS" | \
         jq \
         --arg EXPORT_NAME "${SERVICE_NAME}-stateful-resources:rum:rumApp:Name" \
         -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
