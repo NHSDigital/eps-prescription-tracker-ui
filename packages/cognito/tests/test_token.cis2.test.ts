@@ -170,7 +170,7 @@ describe("handler tests with cis2", () => {
       id_token: token,
       access_token: "access_token_reply"
     }))
-    expect(dynamoSpy).toHaveBeenCalledTimes(2)
+    expect(dynamoSpy).toHaveBeenCalledTimes(1)
     const call = dynamoSpy.mock.calls[0][0].input as PutCommandInput
     expect(call.Item).toEqual(
       {
