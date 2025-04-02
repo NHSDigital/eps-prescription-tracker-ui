@@ -44,7 +44,7 @@ echo "{}" > "$OUTPUT_FILE_NAME"
 TEMP_FILE=$(mktemp)
 
 # get some values from aws
-if [ -n "${DO_NOT_GET_AWS_EXPORT}" ]; then
+if [ "${DO_NOT_GET_AWS_EXPORT}" != "true" ]; then
     CF_LONDON_EXPORTS=$(aws cloudformation list-exports --region eu-west-2 --output json)
     CF_US_EXPORTS=$(aws cloudformation list-exports --region us-east-1 --output json)
 fi
