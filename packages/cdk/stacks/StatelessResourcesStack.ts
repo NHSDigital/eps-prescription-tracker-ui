@@ -427,11 +427,11 @@ export class StatelessResourcesStack extends Stack {
         exportName: `${props.stackName}:local:apigeePersonalDemographicsEndpoint`
       })
       new CfnOutput(this, "jwtKid", {
-        value: apigeePersonalDemographicsEndpoint,
+        value: jwtKid,
         exportName: `${props.stackName}:local:jwtKid`
       })
       new CfnOutput(this, "roleId", {
-        value: apigeePersonalDemographicsEndpoint,
+        value: roleId,
         exportName: `${props.stackName}:local:roleId`
       })
     }
