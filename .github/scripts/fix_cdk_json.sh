@@ -15,8 +15,8 @@ fix_string_key() {
     jq \
         --arg key_value "${KEY_VALUE}" \
         --arg key_name "${KEY_NAME}" \
-        '.context += {($key_name): $key_value}' .build/cdk.json > .build/cdk.new.json
-    mv .build/cdk.new.json .build/cdk.json
+        '. += {($key_name): $key_value}' "$OUTPUT_FILE_NAME" > "${TEMP_FILE}"
+    mv "${TEMP_FILE}" "$OUTPUT_FILE_NAME"
 }
 
 # helper function to set boolean and number values (without quotes)
@@ -31,41 +31,77 @@ fix_boolean_number_key() {
     jq \
         --argjson key_value "${KEY_VALUE}" \
         --arg key_name "${KEY_NAME}" \
-        '.context += {($key_name): $key_value}' .build/cdk.json > .build/cdk.new.json
-    mv .build/cdk.new.json .build/cdk.json
+        '. += {($key_name): $key_value}' "$OUTPUT_FILE_NAME" > "${TEMP_FILE}"
+    mv "${TEMP_FILE}" "$OUTPUT_FILE_NAME"
 }
 
-# get some values from AWS
-EPS_DOMAIN_NAME=$(aws cloudformation list-exports --output json | jq -r '.Exports[] | select(.Name == "eps-route53-resources:EPS-domain") | .Value')
-EPS_HOSTED_ZONE_ID=$(aws cloudformation list-exports --output json | jq -r '.Exports[] | select(.Name == "eps-route53-resources:EPS-ZoneID") | .Value')
-CLOUDFRONT_DISTRIBUTION_ID=$(aws cloudformation list-exports --output json | \
-    jq \
-    --arg EXPORT_NAME "${SERVICE_NAME}-stateless-resources:cloudfrontDistribution:Id" \
-    -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
-CLOUDFRONT_CERT_ARN=$(aws cloudformation list-exports --region us-east-1 --output json | \
-    jq \
-    --arg EXPORT_NAME "${SERVICE_NAME}-us-certs:cloudfrontCertificate:Arn" \
-    -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
-SHORT_CLOUDFRONT_DOMAIN=$(aws cloudformation list-exports --region us-east-1 --output json | \
-    jq \
-    --arg EXPORT_NAME "${SERVICE_NAME}-us-certs:shortCloudfrontDomain:Name" \
-    -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
-FULL_CLOUDFRONT_DOMAIN=$(aws cloudformation list-exports --region us-east-1 --output json | \
-    jq \
-    --arg EXPORT_NAME "${SERVICE_NAME}-us-certs:fullCloudfrontDomain:Name" \
-    -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
-FULL_COGNITO_DOMAIN=$(aws cloudformation list-exports --region us-east-1 --output json | \
-    jq \
-    --arg EXPORT_NAME "${SERVICE_NAME}-us-certs:fullCognitoDomain:Name" \
-    -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
-RUM_LOG_GROUP_ARN=$(aws cloudformation list-exports --region eu-west-2 --output json | \
-    jq \
-    --arg EXPORT_NAME "${SERVICE_NAME}-stateful-resources:rum:logGroup:arn" \
-    -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
-RUM_APP_NAME=$(aws cloudformation list-exports --region eu-west-2 --output json | \
-    jq \
-    --arg EXPORT_NAME "${SERVICE_NAME}-stateful-resources:rum:rumApp:Name" \
-    -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+OUTPUT_FILE_NAME=$1
+if [ -z "${OUTPUT_FILE_NAME}" ]; then
+    echo "OUTPUT_FILE_NAME value is unset or set to the empty string"
+    exit 1
+fi
+echo "{}" > "$OUTPUT_FILE_NAME"
+TEMP_FILE=$(mktemp)
+
+# get some values from aws
+if [ "${DO_NOT_GET_AWS_EXPORT}" != "true" ]; then
+    CF_LONDON_EXPORTS=$(aws cloudformation list-exports --region eu-west-2 --output json)
+    CF_US_EXPORTS=$(aws cloudformation list-exports --region us-east-1 --output json)
+fi
+
+if [ -z "${EPS_DOMAIN_NAME}" ]; then
+    EPS_DOMAIN_NAME=$(echo "$CF_LONDON_EXPORTS" | jq  -r '.Exports[] | select(.Name == "eps-route53-resources:EPS-domain") | .Value')
+fi
+if [ -z "${EPS_HOSTED_ZONE_ID}" ]; then
+    EPS_HOSTED_ZONE_ID=$(echo "$CF_LONDON_EXPORTS" | jq -r '.Exports[] | select(.Name == "eps-route53-resources:EPS-ZoneID") | .Value')
+fi
+if [ -z "${CLOUDFRONT_DISTRIBUTION_ID}" ]; then
+    CLOUDFRONT_DISTRIBUTION_ID=$(echo "$CF_LONDON_EXPORTS" | \
+        jq \
+        --arg EXPORT_NAME "${SERVICE_NAME}-stateless-resources:cloudfrontDistribution:Id" \
+        -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+fi
+if [ -z "${CLOUDFRONT_CERT_ARN}" ]; then
+    CLOUDFRONT_CERT_ARN=$(echo "$CF_US_EXPORTS" | \
+        jq \
+        --arg EXPORT_NAME "${SERVICE_NAME}-us-certs:cloudfrontCertificate:Arn" \
+        -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+fi
+
+if [ -z "${SHORT_CLOUDFRONT_DOMAIN}" ]; then
+    SHORT_CLOUDFRONT_DOMAIN=$(echo "$CF_US_EXPORTS" | \
+        jq \
+        --arg EXPORT_NAME "${SERVICE_NAME}-us-certs:shortCloudfrontDomain:Name" \
+        -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+fi
+
+if [ -z "${FULL_CLOUDFRONT_DOMAIN}" ]; then
+    FULL_CLOUDFRONT_DOMAIN=$(echo "$CF_US_EXPORTS" | \
+        jq \
+        --arg EXPORT_NAME "${SERVICE_NAME}-us-certs:fullCloudfrontDomain:Name" \
+        -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+fi
+
+if [ -z "${FULL_COGNITO_DOMAIN}" ]; then
+    FULL_COGNITO_DOMAIN=$(echo "$CF_US_EXPORTS" | \
+        jq \
+        --arg EXPORT_NAME "${SERVICE_NAME}-us-certs:fullCognitoDomain:Name" \
+        -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+fi
+
+if [ -z "${RUM_LOG_GROUP_ARN}" ]; then
+    RUM_LOG_GROUP_ARN=$(echo "$CF_LONDON_EXPORTS" | \
+        jq \
+        --arg EXPORT_NAME "${SERVICE_NAME}-stateful-resources:rum:logGroup:arn" \
+        -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+fi
+
+if [ -z "${RUM_APP_NAME}" ]; then
+    RUM_APP_NAME=$(echo "$CF_LONDON_EXPORTS" | \
+        jq \
+        --arg EXPORT_NAME "${SERVICE_NAME}-stateful-resources:rum:rumApp:Name" \
+        -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+fi
 
 # go through all the key values we need to set
 fix_string_key serviceName "${SERVICE_NAME}"
@@ -142,7 +178,8 @@ elif [ "$CDK_APP_NAME" == "StatelessResourcesApp" ]; then
     fix_string_key apigeePrescriptionsEndpoint "${APIGEE_PRESCRIPTION_ENDPOINT}"
     fix_string_key apigeePersonalDemographicsEndpoint "${APIGEE_PERSONAL_DEMOGRAPHICS_ENDPOINT}"
     fix_string_key jwtKid "${JWT_KID}"
-    fix_string_key ROLE_ID "${ROLE_ID}"
+    fix_string_key roleId "${ROLE_ID}"
+    fix_boolean_number_key allowLocalhostAccess "${ALLOW_LOCALHOST_ACCESS}"
 else
     echo "unknown cdk app name"
     exit 1
