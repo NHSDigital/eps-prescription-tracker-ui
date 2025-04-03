@@ -2,6 +2,13 @@ import React from "react"
 import {render, screen} from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 
+import {
+  BrowserRouter,
+  Route,
+  Routes,
+  useLocation
+} from "react-router-dom"
+
 import {PrescriptionsListStrings} from "@/constants/ui-strings/PrescriptionListTabStrings"
 
 import {PrescriptionSummary, TreatmentType} from "@cpt-ui-common/common-types"
@@ -15,17 +22,18 @@ jest.mock("@/components/prescriptionList/PrescriptionsListTable", () => {
     textContent: PrescriptionsListStrings
     prescriptions: Array<PrescriptionSummary>
   }) {
+    const location = useLocation()
     return (
       <div data-testid={textContent.testid}>
         <p>{textContent.heading}</p>
-        <p>Count: {prescriptions.length}</p>
+        <p data-testid="mock-prescription-data">Count: {prescriptions.length}</p>
+        <p>{location.pathname}</p>
       </div>
     )
   }
 })
 
 import PrescriptionsListTabs from "@/components/prescriptionList/PrescriptionsListTab"
-import {MemoryRouter} from "react-router-dom"
 
 describe("PrescriptionsListTabs", () => {
   const currentPrescriptions: Array<PrescriptionSummary> = [
@@ -96,31 +104,36 @@ describe("PrescriptionsListTabs", () => {
       itemsPendingCancellation: false
     }
   ]
+
   const tabData = [
     {
       title: "Current Prescriptions",
-      link: "/current"
+      link: "/prescription-list-current"
     },
     {
       title: "Future Prescriptions",
-      link: "/future"
+      link: "/prescription-list-future"
     },
     {
       title: "Past Prescriptions",
-      link: "/past"
+      link: "/prescription-list-past"
     }
   ]
 
   beforeEach(() => {
+    const page =
+      <PrescriptionsListTabs
+        tabData={tabData}
+        currentPrescriptions={currentPrescriptions}
+        futurePrescriptions={futurePrescriptions}
+        pastPrescriptions={pastPrescriptions}
+      />
     render(
-      <MemoryRouter>
-        <PrescriptionsListTabs
-          tabData={tabData}
-          currentPrescriptions={currentPrescriptions}
-          pastPrescriptions={pastPrescriptions}
-          futurePrescriptions={futurePrescriptions}
-        />
-      </MemoryRouter>
+      <BrowserRouter>
+        <Routes>
+          <Route path="*" element={page} />
+        </Routes>
+      </BrowserRouter>
     )
   })
 
@@ -136,6 +149,9 @@ describe("PrescriptionsListTabs", () => {
     // Click on nothing - should default to current prescriptions
     const list = screen.getByTestId(`eps-tab-heading ${tabData[0].link}`)
     expect(list).toHaveTextContent(tabData[0].title)
+    expect(screen.getByTestId("mock-prescription-data")).toHaveTextContent(
+      `Count: ${currentPrescriptions.length}`
+    )
   })
 
   it("switches to the future tab and displays correct content", async () => {
@@ -143,8 +159,13 @@ describe("PrescriptionsListTabs", () => {
     const futureTabHeader = screen.getByText("Future Prescriptions")
     await userEvent.click(futureTabHeader)
 
+    console.log(screen.debug())
+
     expect(screen.getByTestId(`eps-tab-heading ${tabData[1].link}`)).toHaveTextContent(
       tabData[1].title
+    )
+    expect(screen.getByTestId("mock-prescription-data")).toHaveTextContent(
+      `Count: ${futurePrescriptions.length}`
     )
   })
 
@@ -155,6 +176,9 @@ describe("PrescriptionsListTabs", () => {
 
     expect(screen.getByTestId(`eps-tab-heading ${tabData[2].link}`)).toHaveTextContent(
       tabData[2].title
+    )
+    expect(screen.getByTestId("mock-prescription-data")).toHaveTextContent(
+      `Count: ${pastPrescriptions.length}`
     )
   })
 })
