@@ -180,6 +180,10 @@ APIGEE_API_KEY=$(echo "$CF_LONDON_EXPORTS" | \
     jq \
     --arg EXPORT_NAME "${SERVICE_NAME}-stateless-resources:local:apigeeApiKey" \
     -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+APIGEE_API_SECRET=$(echo "$CF_LONDON_EXPORTS" | \
+    jq \
+    --arg EXPORT_NAME "${SERVICE_NAME}-stateless-resources:local:apigeeApiSecret" \
+    -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
 APIGEE_CIS2_TOKEN_ENDPOINT=$(echo "$CF_LONDON_EXPORTS" | \
     jq \
     --arg EXPORT_NAME "${SERVICE_NAME}-stateless-resources:local:apigeeCIS2TokenEndpoint" \
@@ -268,6 +272,7 @@ export LOG_LEVEL
 export USE_CUSTOM_COGNITO_DOMAIN
 export ALLOW_LOCALHOST_ACCESS
 export APIGEE_API_KEY
+export APIGEE_API_SECRET
 export APIGEE_CIS2_TOKEN_ENDPOINT
 export APIGEE_MOCK_TOKEN_ENDPOINT
 export APIGEE_PRESCRIPTION_ENDPOINT
