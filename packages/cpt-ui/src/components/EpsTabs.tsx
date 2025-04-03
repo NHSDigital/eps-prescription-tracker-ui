@@ -29,6 +29,10 @@ export default function EpsTabs({
       <Tabs.Title>Contents</Tabs.Title>
       <Tabs.List>
         {tabHeaderArray.map((tab) => (
+          // we are using a custom list item component here instead of Tabs.ListItem
+          // because the built-in functionality of Tabs.ListItem does not allow for
+          // the tab to navigate us to separate urls instead it is hardwired to work
+          // with target ids, which goes against our intended use case
           <li
             key={tab.link}
             className={
