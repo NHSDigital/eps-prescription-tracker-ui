@@ -50,6 +50,7 @@ export default function SearchPrescriptionPage() {
               <EpsTabs
                 activeTabPath={pathname}
                 tabHeaderArray={PRESCRIPTION_SEARCH_TABS}
+                variant="large"
               >
                 {content}
               </EpsTabs>

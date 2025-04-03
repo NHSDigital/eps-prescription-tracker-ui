@@ -11,31 +11,33 @@ interface EpsTabsProps {
   activeTabPath: string;
   tabHeaderArray: Array<TabHeader>;
   children: React.ReactNode;
+  variant?: "default" | "large";
 }
 
 export default function EpsTabs({
   activeTabPath,
   tabHeaderArray,
-  children
+  children,
+  variant = "default"
 }: EpsTabsProps) {
+  const baseClass = "nhsuk-tabs"
+  const variantClass = variant === "large" ? `${baseClass}--large` : ""
+  const tabClass = `${baseClass} ${variantClass}`.trim()
+
   return (
-    <div className="nhsuk-tabs">
+    <div className={tabClass}>
       <Tabs.Title>Contents</Tabs.Title>
       <Tabs.List>
         {tabHeaderArray.map((tab) => (
-          // we are using a custom list item component here instead of Tabs.ListItem
-          // because the built-in functionality of Tabs.ListItem does not allow for
-          // the tab to navigate us to separate urls instead it is hardwired to work
-          // with target ids, which goes against our intended use case
           <li
             key={tab.link}
             className={
-              `nhsuk-tabs__list-item ${tab.link.includes(activeTabPath) ? "nhsuk-tabs__list-item--selected" : ""}`
+              `${baseClass}__list-item ${tab.link.includes(activeTabPath) ? `${baseClass}__list-item--selected` : ""}`
             }
             role="presentation"
           >
             <Link
-              className="nhsuk-tabs__tab"
+              className={`${baseClass}__tab`}
               role="tab"
               aria-selected={tab.link.includes(activeTabPath) ? "true" : "false"}
               id={`tab_${tab.link.substring(1)}`}
@@ -49,7 +51,7 @@ export default function EpsTabs({
         ))}
       </Tabs.List>
       <div
-        className="nhsuk-tabs__panel"
+        className={`${baseClass}__panel`}
         id={`panel_${activeTabPath.substring(1)}`}
         role="tabpanel"
         aria-labelledby={`tab_${activeTabPath.substring(1)}`}
@@ -58,5 +60,4 @@ export default function EpsTabs({
       </div>
     </div>
   )
-
 }
