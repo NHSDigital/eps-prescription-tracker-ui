@@ -168,6 +168,7 @@ jobs:
           APIGEE_PRESCRIPTION_ENDPOINT: ${{ inputs.APIGEE_PRESCRIPTIONS_ENDPOINT }}
           APIGEE_PERSONAL_DEMOGRAPHICS_ENDPOINT: ${{ inputs.APIGEE_PDS_ENDPOINT }}
           APIGEE_API_KEY: ${{ secrets.APIGEE_API_KEY }}
+          APIGEE_API_SECRET: ${{ secrets.APIGEE_API_SECRET }}
           JWT_KID: ${{ inputs.JWT_KID }}
           ROLE_ID: ${{ inputs.ROLE_ID }}
           CDK_APP_NAME: ${{ inputs.CDK_APP_NAME }}
