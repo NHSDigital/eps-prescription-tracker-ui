@@ -174,7 +174,7 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
   useEffect(() => {
     const updateAccessVariables = async () => {
       // Only fetch tracker user info if selectedRole is missing.
-      // This prevents re-fetching on every page refresh and avoids flickering banners.
+      // This prevents re-fetching on every page load and avoids flickering of the RBAC banner.
       if (!selectedRole){
         try {
           await fetchTrackerUserInfo()
