@@ -322,9 +322,9 @@ export default function PrescriptionListPage() {
           </Row>
           <Row>
             <Col width="full">
-              <h2 className="nhsuk-heading-l" data-testid="prescription-list-heading">
+              <h1 className="nhsuk-heading-l" data-testid="prescription-list-heading">
                 {PRESCRIPTION_LIST_PAGE_STRINGS.HEADING}
-              </h2>
+              </h1>
             </Col>
           </Row>
         </Container>

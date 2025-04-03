@@ -57,7 +57,8 @@ export default function PrescriptionsListTabs({
 
   return (
     <EpsTabs
-      activeTabPath={pathname}
+      // The active tab needs to include the query parameters in order to get labelled correctly
+      activeTabPath={pathname+window.location.search}
       tabHeaderArray={tabData}
     >
       {content}
