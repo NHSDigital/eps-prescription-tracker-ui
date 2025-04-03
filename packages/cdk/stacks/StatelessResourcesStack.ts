@@ -435,6 +435,10 @@ export class StatelessResourcesStack extends Stack {
         value: apigeeApiKey,
         exportName: `${props.stackName}:local:apigeeApiKey`
       })
+      new CfnOutput(this, "apigeeApiSecret", {
+        value: apigeeApiSecret,
+        exportName: `${props.stackName}:local:apigeeApiSecret`
+      })
       new CfnOutput(this, "apigeeCIS2TokenEndpoint", {
         value: apigeeCIS2TokenEndpoint,
         exportName: `${props.stackName}:local:apigeeCIS2TokenEndpoint`
