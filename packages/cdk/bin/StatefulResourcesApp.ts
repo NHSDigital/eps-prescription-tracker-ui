@@ -4,17 +4,19 @@ import {AwsSolutionsChecks} from "cdk-nag"
 import {addCfnGuardMetadata} from "./utils/appUtils"
 import {UsCertsStack} from "../stacks/UsCertsStack"
 import {StatefulResourcesStack} from "../stacks/StatefulResourcesStack"
+import fs from "fs"
 
-const app = new App()
-/* Required Context:
-  - serviceName
-  - version
-  - commit
-  - allowAutoDeleteObjects
-  - cloudfrontDistributionId
-  - epsDomainName
-  - epsHostedZoneId
-*/
+// read the config in
+const configFileName = process.env["CONFIG_FILE_NAME"]
+if (configFileName === undefined) {
+  throw new Error("Can not read config file")
+}
+
+const configDetails = JSON.parse(fs.readFileSync(configFileName, "utf-8"))
+
+// create the app using the config details
+const app = new App({context: configDetails})
+
 const serviceName = app.node.tryGetContext("serviceName")
 const version = app.node.tryGetContext("VERSION_NUMBER")
 const commit = app.node.tryGetContext("COMMIT_ID")

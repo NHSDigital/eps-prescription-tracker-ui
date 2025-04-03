@@ -67,8 +67,10 @@
         "packages/staticContent",
         "packages/auth_demo",
         "packages/common/testing",
+        "packages/common/commonTypes",
         "packages/staticContent"
       ],
+      "python.testing.pytestEnabled": false,
       "files.exclude": {
         "packages/": true
       },
