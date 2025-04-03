@@ -15,17 +15,17 @@ import {StateItem} from "./types"
  * StateMappingTableName
  * COGNITO_CLIENT_ID
  * COGNITO_DOMAIN
- * MOCK_OIDC_ISSUER
  * PRIMARY_OIDC_ISSUER
  *
  */
 
-const logger = new Logger({serviceName: "idp-response"})
+const logger = new Logger({serviceName: "callback"})
 const errorResponseBody = {message: "A system error has occurred"}
 const middyErrorHandler = new MiddyErrorHandler(errorResponseBody)
 
 // Environment variables
 const stateMappingTableName = process.env["StateMappingTableName"] as string
+const SessionStateMappingTableName = process.env["SessionStateMappingTableName"] as string
 const fullCognitoDomain = process.env["COGNITO_DOMAIN"] as string
 
 const dynamoClient = new DynamoDBClient()
@@ -35,17 +35,22 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   logger.appendKeys({"apigw-request-id": event.requestContext?.requestId})
 
   // Destructure and validate required query parameters
+  // TODO: investigate if session_state is needed at all for this function
   const {state, code, session_state} = event.queryStringParameters || {}
-  if (!state || !code || !session_state) {
+  if (!state || !code) {
     logger.error(
       "Missing required query parameters: state, code, or session_state",
-      {state, code, session_state}
+      {state, code}
     )
     throw new Error("Missing required query parameters: state, code, or session_state")
   }
-  logger.info("Incoming query parameters", {state, code, session_state})
+  logger.info("Incoming query parameters", {state, code})
 
   // Get the original Cognito state from DynamoDB
+  logger.debug("trying to get data from session state table", {
+    stateMappingTableName,
+    state
+  })
   const getResult = await documentClient.send(
     new GetCommand({
       TableName: stateMappingTableName,
@@ -53,7 +58,17 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     })
   )
 
+  logger.debug("environment variables", {
+    stateMappingTableName,
+    SessionStateMappingTableName,
+    fullCognitoDomain
+  })
+
   // Always delete the old state
+  logger.debug("going to delete from state mapping table", {
+    stateMappingTableName,
+    state
+  })
   await documentClient.send(
     new DeleteCommand({
       TableName: stateMappingTableName,
@@ -71,7 +86,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   // Build response parameters for redirection
   const responseParams = {
     state: cognitoStateItem.CognitoState,
-    session_state,
+    session_state: session_state || "",
     code
   }
 
