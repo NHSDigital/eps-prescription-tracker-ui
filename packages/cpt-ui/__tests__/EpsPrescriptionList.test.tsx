@@ -135,7 +135,15 @@ describe("PrescriptionListPage", () => {
   })
 
   it("renders the loading spinner before the request resolves", () => {
-    console.warn("TODO - IMPLEMENT THIS")
+  // Create a pending promise that never resolves.
+    const pendingPromise = new Promise(() => {})
+    mockedAxios.get.mockReturnValue(pendingPromise)
+
+    renderWithRouter(
+      FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT + "?prescriptionId=ABC123-A83008-C2D93O"
+    )
+
+    expect(screen.getByText("Loading...")).toBeVisible()
   })
 
   it("renders the component with the correct title and heading", async () => {
@@ -251,13 +259,5 @@ describe("PrescriptionListPage", () => {
       const dummyTag = screen.getByTestId("dummy-no-prescription-page")
       expect(dummyTag).toBeInTheDocument()
     })
-  })
-
-  it("Displays the future prescriptions tab when the heading is clicked", () => {
-    console.warn("TODO: IMPLEMENT THIS")
-  })
-
-  it("Displays the past prescriptions tab when the heading is clicked", () => {
-    console.warn("TODO: IMPLEMENT THIS")
   })
 })
