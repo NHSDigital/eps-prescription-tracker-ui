@@ -134,6 +134,7 @@ jobs:
       useCustomCognitoDomain: ${{ inputs.useCustomCognitoDomain }}
       JWT_KID: ${{ inputs.JWT_KID }}
       ROLE_ID: ${{ inputs.ROLE_ID }}
+      CONFIG_FILE: stateful_resources.json
     secrets:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}
@@ -181,6 +182,7 @@ jobs:
       APIGEE_PDS_ENDPOINT: ${{ inputs.APIGEE_PDS_ENDPOINT }}
       JWT_KID: ${{ inputs.JWT_KID }}
       ROLE_ID: ${{ inputs.ROLE_ID }}
+      CONFIG_FILE: stateless_resources.json
     secrets:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}
@@ -285,6 +287,7 @@ jobs:
       allowLocalhostAccess: ${{ inputs.allowLocalhostAccess }}
       useCustomCognitoDomain: ${{ inputs.useCustomCognitoDomain }}
       JWT_KID: ${{ inputs.JWT_KID }}
+      CONFIG_FILE: stateful_resources.json
     secrets:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}
