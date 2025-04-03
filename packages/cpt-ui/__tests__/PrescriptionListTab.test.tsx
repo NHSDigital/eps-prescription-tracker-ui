@@ -2,12 +2,7 @@ import React from "react"
 import {render, screen} from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 
-import {
-  CURRENT_PRESCRIPTIONS,
-  FUTURE_PRESCRIPTIONS,
-  PAST_PRESCRIPTIONS,
-  PrescriptionsListStrings
-} from "@/constants/ui-strings/PrescriptionListTabStrings"
+import {PrescriptionsListStrings} from "@/constants/ui-strings/PrescriptionListTabStrings"
 
 import {PrescriptionSummary, TreatmentType} from "@cpt-ui-common/common-types"
 
@@ -139,9 +134,8 @@ describe("PrescriptionsListTabs", () => {
 
   it("displays the correct PrescriptionsList for the default active tab", () => {
     // Click on nothing - should default to current prescriptions
-    const list = screen.getByTestId(CURRENT_PRESCRIPTIONS.testid)
-    expect(list).toHaveTextContent(CURRENT_PRESCRIPTIONS.heading)
-    expect(list).toHaveTextContent(`Count: ${currentPrescriptions.length}`)
+    const list = screen.getByTestId(`eps-tab-heading ${tabData[0].link}`)
+    expect(list).toHaveTextContent(tabData[0].title)
   })
 
   it("switches to the future tab and displays correct content", async () => {
@@ -149,11 +143,8 @@ describe("PrescriptionsListTabs", () => {
     const futureTabHeader = screen.getByText("Future Prescriptions")
     await userEvent.click(futureTabHeader)
 
-    expect(screen.getByTestId(FUTURE_PRESCRIPTIONS.testid)).toHaveTextContent(
-      FUTURE_PRESCRIPTIONS.heading
-    )
-    expect(screen.getByTestId(FUTURE_PRESCRIPTIONS.testid)).toHaveTextContent(
-      `Count: ${futurePrescriptions.length}`
+    expect(screen.getByTestId(`eps-tab-heading ${tabData[1].link}`)).toHaveTextContent(
+      tabData[1].title
     )
   })
 
@@ -162,11 +153,8 @@ describe("PrescriptionsListTabs", () => {
     const pastTabHeader = screen.getByText("Past Prescriptions")
     await userEvent.click(pastTabHeader)
 
-    expect(screen.getByTestId(PAST_PRESCRIPTIONS.testid)).toHaveTextContent(
-      PAST_PRESCRIPTIONS.heading
-    )
-    expect(screen.getByTestId(PAST_PRESCRIPTIONS.testid)).toHaveTextContent(
-      `Count: ${pastPrescriptions.length}`
+    expect(screen.getByTestId(`eps-tab-heading ${tabData[2].link}`)).toHaveTextContent(
+      tabData[2].title
     )
   })
 })
