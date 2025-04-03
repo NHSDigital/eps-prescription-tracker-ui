@@ -34,3 +34,4 @@ cdk.out/
 packages/cpt-ui/dist
 packages/auth_demo/build/
 .build/
+.local_config/
