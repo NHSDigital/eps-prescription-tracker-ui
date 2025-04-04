@@ -206,7 +206,7 @@ export default function PrescriptionListPage() {
     }
 
     setLoading(true)
-    runSearch().then(() => setLoading(false))
+    runSearch().finally(() => setLoading(false))
   }, [queryParams])
 
   // TODO: This should return the search results. For now, just return true or false for mock stuff.
@@ -239,6 +239,7 @@ export default function PrescriptionListPage() {
       return payload
 
     } catch (error) {
+      // FIXME remove references to mock data
       console.error("Error retrieving prescription details:", error)
       // Allow known test ID through; otherwise, return false.
       if (prescriptionId === "C0C757-A83008-C2D93O") {
@@ -255,6 +256,9 @@ export default function PrescriptionListPage() {
           ...mockSearchResponse,
           patient: minimumDetails
         }
+        // Remove future prescriptions
+        response.futurePrescriptions = []
+        response.pastPrescriptions = []
         return response
       }
     }
