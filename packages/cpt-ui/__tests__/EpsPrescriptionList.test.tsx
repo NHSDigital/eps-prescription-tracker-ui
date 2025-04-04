@@ -189,7 +189,7 @@ describe("PrescriptionListPage", () => {
   it("shows 0 when there are no results", async () => {
     const noResults: SearchResponse = {
       patient: mockSearchResponse.patient,
-      currentPrescriptions: [],
+      currentPrescriptions: mockSearchResponse.currentPrescriptions,
       pastPrescriptions: [],
       futurePrescriptions: []
     }
@@ -204,13 +204,13 @@ describe("PrescriptionListPage", () => {
     await waitFor(() => {
       const resultsCount = screen.getByTestId("results-count")
       expect(resultsCount).toHaveTextContent(
-        `${PRESCRIPTION_LIST_PAGE_STRINGS.RESULTS_PREFIX}0${PRESCRIPTION_LIST_PAGE_STRINGS.RESULTS_SUFFIX}`
+        `${PRESCRIPTION_LIST_PAGE_STRINGS.RESULTS_PREFIX}3${PRESCRIPTION_LIST_PAGE_STRINGS.RESULTS_SUFFIX}`
       )
 
       const tabCurrentHeading = screen
         .getByTestId(`eps-tab-heading ${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}?prescriptionId=C0C757-A83008-C2D93O`)
 
-      expect(tabCurrentHeading).toHaveTextContent("(0)")
+      expect(tabCurrentHeading).toHaveTextContent("(3)")
       const tabPastHeading = screen
         .getByTestId(`eps-tab-heading ${FRONTEND_PATHS.PRESCRIPTION_LIST_PAST}?prescriptionId=C0C757-A83008-C2D93O`)
       expect(tabPastHeading).toHaveTextContent("(0)")
@@ -273,6 +273,27 @@ describe("PrescriptionListPage", () => {
       status: 204,
       data: {}
     })
+    renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT + "?prescriptionId=ABC123-ABC123-ABC123")
+    expect(mockedAxios.get).toHaveBeenCalledTimes(1)
+
+    await waitFor(() => {
+      const dummyTag = screen.getByTestId("dummy-no-prescription-page")
+      expect(dummyTag).toBeInTheDocument()
+    })
+  })
+
+  it("navigates back to the prescription ID search when prescriptionId query returns no results", async () => {
+    const noResults: SearchResponse = {
+      patient: mockSearchResponse.patient,
+      currentPrescriptions: [],
+      pastPrescriptions: [],
+      futurePrescriptions: []
+    }
+    mockedAxios.get.mockResolvedValue({
+      status: 200,
+      data: noResults
+    })
+
     renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT + "?prescriptionId=ABC123-ABC123-ABC123")
     expect(mockedAxios.get).toHaveBeenCalledTimes(1)
 

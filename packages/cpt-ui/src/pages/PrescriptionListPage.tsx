@@ -174,8 +174,18 @@ export default function PrescriptionListPage() {
       }
 
       if (!searchResults) {
+        console.error("No search results were returned", searchResults)
         navigate(FRONTEND_PATHS.PRESCRIPTION_NOT_FOUND)
         return
+      }
+
+      if (
+        searchResults.currentPrescriptions.length === 0
+        && searchResults.pastPrescriptions.length === 0
+        && searchResults.futurePrescriptions.length === 0
+      ) {
+        console.error("A patient was returned, but they do not have any prescriptions.", searchResults)
+        navigate(FRONTEND_PATHS.PRESCRIPTION_NOT_FOUND)
       }
 
       setCurrentPrescriptions(searchResults.currentPrescriptions)
