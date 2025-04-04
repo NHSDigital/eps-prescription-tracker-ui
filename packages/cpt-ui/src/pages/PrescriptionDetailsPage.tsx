@@ -3,20 +3,23 @@ import {SiteCards} from "@/components/siteCards/SiteCards"
 export default function PrescriptionDetailsPage() {
   // Mock data, lifted from the prototype page.
   const prescriber = {
-    org: "Fiji surgery (ODS: FI05964)",
+    orgName: "Fiji surgery",
+    orgOds: "FI05964",
     address: "90 YARROW LANE, FINNSBURY, E45 T46",
     contact: "01232 231321",
     prescribedFrom: "England"
   }
 
   const dispenser = {
-    org: "Cohens chemist (ODS: FV519)",
+    orgName: "Cohens chemist",
+    orgOds: "FV519",
     address: "22 RUE LANE, CHISWICK, KT19 D12",
     contact: "01943 863158"
   }
 
   const nominatedDispenser = {
-    org: "Cohens chemist (ODS: FV519)",
+    orgName: "Cohens chemist",
+    orgOds: "FV519",
     address: "22 RUE LANE, CHISWICK, KT19 D12",
     contact: "01943 863158"
   }

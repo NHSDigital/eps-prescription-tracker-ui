@@ -2,7 +2,8 @@ import {Card, Col, Row} from "nhsuk-react-components"
 
 export interface SiteCardProps {
     heading: string
-    org: string
+    orgName: string
+    orgOds: string
     address: string
     contact: string
     prescribedFrom?: string
@@ -16,7 +17,8 @@ export interface SiteCardsProps {
 
 export function SiteCard({
   heading,
-  org,
+  orgName,
+  orgOds,
   address,
   contact,
   prescribedFrom
@@ -29,7 +31,7 @@ export function SiteCard({
           <p className="nhsuk-u-margin-bottom-2">
             <strong>{heading}</strong>
             <br />
-            {org}
+            {`${orgName} (ODS ${orgOds})`}
           </p>
           <p className={"nhsuk-u-margin-bottom-2"}>
             {address}
