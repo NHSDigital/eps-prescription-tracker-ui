@@ -186,6 +186,41 @@ describe("PrescriptionListPage", () => {
     })
   })
 
+  it("shows 0 when there are no results", async () => {
+    const noResults: SearchResponse = {
+      patient: mockSearchResponse.patient,
+      currentPrescriptions: [],
+      pastPrescriptions: [],
+      futurePrescriptions: []
+    }
+    mockedAxios.get.mockResolvedValue({
+      status: 200,
+      data: noResults
+    })
+
+    renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT + "?prescriptionId=C0C757-A83008-C2D93O")
+    expect(mockedAxios.get).toHaveBeenCalledTimes(1)
+
+    await waitFor(() => {
+      const resultsCount = screen.getByTestId("results-count")
+      expect(resultsCount).toHaveTextContent(
+        `${PRESCRIPTION_LIST_PAGE_STRINGS.RESULTS_PREFIX}0${PRESCRIPTION_LIST_PAGE_STRINGS.RESULTS_SUFFIX}`
+      )
+
+      const tabCurrentHeading = screen
+        .getByTestId(`eps-tab-heading ${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}?prescriptionId=C0C757-A83008-C2D93O`)
+
+      expect(tabCurrentHeading).toHaveTextContent("(0)")
+      const tabPastHeading = screen
+        .getByTestId(`eps-tab-heading ${FRONTEND_PATHS.PRESCRIPTION_LIST_PAST}?prescriptionId=C0C757-A83008-C2D93O`)
+      expect(tabPastHeading).toHaveTextContent("(0)")
+
+      const tabFutureHeading = screen
+        .getByTestId(`eps-tab-heading ${FRONTEND_PATHS.PRESCRIPTION_LIST_FUTURE}?prescriptionId=C0C757-A83008-C2D93O`)
+      expect(tabFutureHeading).toHaveTextContent("(0)")
+    })
+  })
+
   it("redirects to the no prescription found page when no query parameters are present", async () => {
     mockedAxios.get.mockResolvedValue({
       // No content, but it just has to not be 200 to trigger

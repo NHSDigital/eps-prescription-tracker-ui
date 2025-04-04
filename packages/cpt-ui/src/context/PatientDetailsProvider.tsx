@@ -37,7 +37,6 @@ export const PatientDetailsProvider = ({children}: { children: ReactNode }) => {
       FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT,
       FRONTEND_PATHS.PRESCRIPTION_LIST_PAST,
       FRONTEND_PATHS.PRESCRIPTION_LIST_FUTURE
-      // "/prescription-details",
     ]
 
     const path = normalizePath(location.pathname)
