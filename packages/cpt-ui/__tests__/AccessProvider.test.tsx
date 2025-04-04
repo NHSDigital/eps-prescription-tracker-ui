@@ -191,6 +191,44 @@ describe("AccessProvider", () => {
     })
   })
 
+  it("does not fetch tracker user info if selectedRole is already present in local storage", async () => {
+    const cachedRole = {
+      role_id: "ROLE_ALREADY_CACHED",
+      role_name: "Pharmacist"
+    }
+
+    // Simulate previously cached access context in localStorage
+    localStorage.setItem("access", JSON.stringify({
+      selectedRole: cachedRole,
+      noAccess: false,
+      singleAccess: true,
+      userDetails: {
+        family_name: "Smith",
+        given_name: "Jane"
+      }
+    }))
+
+    renderWithProviders(
+      <AccessProvider>
+        <TestConsumer />
+      </AccessProvider>,
+      ["/dashboard"],
+      {
+        ...defaultAuthState,
+        isSignedIn: true,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        idToken: {toString: jest.fn().mockReturnValue("mock-id-token")} as any
+      }
+    )
+
+    await waitFor(() => {
+      expect(screen.getByTestId("selectedRole")).toHaveTextContent("ROLE_ALREADY_CACHED")
+    })
+
+    // Confirm that fetch was not triggered because selectedRole was already loaded from localStorage
+    expect(mockedAxios.get).not.toHaveBeenCalled()
+  })
+
   it("sets noAccess = true if roles_with_access is empty", async () => {
     const mockUserInfo: TrackerUserInfo = {
       roles_with_access: [],

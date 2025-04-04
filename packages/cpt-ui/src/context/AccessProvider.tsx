@@ -173,13 +173,21 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
   // On a full page reload, make a tracker use info call to update them from the backend
   useEffect(() => {
     const updateAccessVariables = async () => {
-      try {
-        await fetchTrackerUserInfo()
-      } catch (error) {
-        console.error(
-          "Access provider failed to fetch roles with access:",
-          error
-        )
+      // If the user has only one role and selectedRole is already set,
+      // we skip re-fetching to avoid unnecessary API calls and flickering RBAC banner.
+      // However, if they have multiple roles, we always fetch to keep role state in sync across tabs.
+
+      const hasSingleRole = singleAccess === true
+
+      if (!selectedRole || !hasSingleRole) {
+        try {
+          await fetchTrackerUserInfo()
+        } catch (error) {
+          console.error(
+            "Access provider failed to fetch roles with access:",
+            error
+          )
+        }
       }
     }
 
