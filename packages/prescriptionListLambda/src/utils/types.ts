@@ -1,14 +1,5 @@
 import {RequestGroup} from "fhir/r4"
-import {
-  PrescriptionStatus,
-  PrescriptionStatusCategories,
-  PatientDetails,
-  PrescriptionSummary
-} from "@cpt-ui-common/common-types"
-
-export interface PrescriptionAPIResponse extends PrescriptionSummary {
-  nhsNumber?: number
-}
+import {PrescriptionStatus, PrescriptionStatusCategories, PatientDetails} from "@cpt-ui-common/common-types"
 
 export interface PDSResponse {
     id: string;

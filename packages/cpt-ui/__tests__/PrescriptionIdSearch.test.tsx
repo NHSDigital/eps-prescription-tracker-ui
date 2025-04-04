@@ -9,6 +9,8 @@ import {
   useLocation
 } from "react-router-dom"
 
+import {FRONTEND_PATHS} from "@/constants/environment"
+
 import PrescriptionIdSearch from "@/components/prescriptionSearch/PrescriptionIdSearch"
 import {PRESCRIPTION_ID_SEARCH_STRINGS} from "@/constants/ui-strings/SearchForAPrescriptionStrings"
 import {AuthContext} from "@/context/AuthProvider"
@@ -115,6 +117,6 @@ describe("PrescriptionIdSearch", () => {
     await userEvent.click(screen.getByTestId("find-prescription-button"))
 
     const location = await screen.findByTestId("location-display")
-    expect(location).toHaveTextContent("/prescription-list")
+    expect(location).toHaveTextContent(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT)
   })
 })
