@@ -1,5 +1,3 @@
-import {useState} from "react"
-
 import {Card, Col, Row} from "nhsuk-react-components"
 
 import {
@@ -18,30 +16,14 @@ type SiteCardProps = {
   address: string
   contact: string
   prescribedFrom?: string
-  shadowEnabled: boolean
 }
 
-export type SiteDetailsProps = Omit<SiteCardProps, "heading" | "shadowEnabled">
+export type SiteDetailsProps = Omit<SiteCardProps, "heading">
 
 export type SiteCardsProps = {
   prescriber: SiteDetailsProps
   dispenser?: SiteDetailsProps
   nominatedDispenser?: SiteDetailsProps
-}
-
-// FIXME: Delete this temporary demo code
-const Checkbox = ({shadowEnabled, onToggle}: { shadowEnabled: boolean, onToggle: () => void }) => {
-  return (
-    <div>
-      <input
-        type="checkbox"
-        id="checkbox"
-        checked={shadowEnabled}
-        onChange={onToggle}
-      />
-      <label htmlFor="checkbox">Enable Shadows</label>
-    </div>
-  )
 }
 
 function SiteCard({
@@ -50,14 +32,13 @@ function SiteCard({
   orgOds,
   address,
   contact,
-  prescribedFrom,
-  shadowEnabled
+  prescribedFrom
 }: SiteCardProps) {
   return (
     <Card
       cardType="primary"
       clickable={false}
-      className={`site-card ${shadowEnabled ? "shadow" : ""}`}
+      className="site-card"
     >
       <Card.Content className="site-card content">
         <Card.Description>
@@ -90,26 +71,21 @@ export function SiteCards({
   dispenser,
   nominatedDispenser
 }: SiteCardsProps) {
-  const [shadowEnabled, setShadowEnabled] = useState(true)
-
-  const toggleShadows = () => setShadowEnabled((prev) => !prev)
 
   return (
     <Row>
       <Col width="one-third">
         {dispenser && (
-          <SiteCard heading={DISPENSER} {...dispenser} shadowEnabled={shadowEnabled} />
+          <SiteCard heading={DISPENSER} {...dispenser} />
         )}
         {nominatedDispenser && (
           <SiteCard
             heading={NOMINATED_DISPENSER}
             {...nominatedDispenser}
-            shadowEnabled={shadowEnabled}
           />
         )}
-        <SiteCard heading={PRESCRIBER} {...prescriber} shadowEnabled={shadowEnabled} />
+        <SiteCard heading={PRESCRIBER} {...prescriber} />
       </Col>
-      <Checkbox shadowEnabled={shadowEnabled} onToggle={toggleShadows} />
     </Row>
   )
 }
