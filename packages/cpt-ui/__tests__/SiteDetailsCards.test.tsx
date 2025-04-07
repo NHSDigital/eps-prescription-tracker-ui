@@ -1,7 +1,8 @@
-// SiteCards.test.tsx
 import React from "react"
-import {render, screen} from "@testing-library/react"
+import {render, screen, within} from "@testing-library/react"
+
 import "@testing-library/jest-dom"
+
 import {SiteDetailsCard, SiteDetailsCards} from "@/components/SiteDetailsCards"
 
 // Mock the constants
@@ -22,7 +23,7 @@ describe("SiteDetailsCard Component", () => {
     contact: "01234567890"
   }
 
-  test("renders SiteDetailsCard with prescribedFrom", () => {
+  it("renders SiteDetailsCard with prescribedFrom", () => {
     const props = {
       heading: "Test Heading",
       ...baseProps,
@@ -31,23 +32,26 @@ describe("SiteDetailsCard Component", () => {
 
     render(<SiteDetailsCard {...props} />)
 
-    // Check heading and ODS_LABEL output
-    expect(screen.getByText("Test Heading")).toBeInTheDocument()
-    expect(
-      screen.getByText(`${baseProps.orgName} (${baseProps.orgOds})`)
-    ).toBeInTheDocument()
+    // Check card container using the test id (important later for regression tests)
+    const card = screen.getByTestId("site-card-test-heading")
+    expect(card).toBeInTheDocument()
 
-    // Check address and contact details
+    // look for heading and organization details using the ODS_LABEL helper
+    expect(screen.getByText("Test Heading")).toBeInTheDocument()
+    expect(screen.getByText(`${baseProps.orgName} (${baseProps.orgOds})`)).toBeInTheDocument()
+
     expect(screen.getByText(baseProps.address)).toBeInTheDocument()
     expect(screen.getByText("Contact Details")).toBeInTheDocument()
     expect(screen.getByText(baseProps.contact)).toBeInTheDocument()
 
-    // Check prescribedFrom section is rendered
+    // Check that the prescribedFrom section is rendered using its test id
+    const prescribedEl = screen.getByTestId("site-card-prescribed-from")
+    expect(prescribedEl).toBeInTheDocument()
     expect(screen.getByText("Prescribed From")).toBeInTheDocument()
     expect(screen.getByText("Test Prescribed")).toBeInTheDocument()
   })
 
-  test("renders SiteDetailsCard without prescribedFrom", () => {
+  it("renders SiteDetailsCard without prescribedFrom", () => {
     const props = {
       heading: "Test Heading",
       ...baseProps
@@ -55,21 +59,23 @@ describe("SiteDetailsCard Component", () => {
 
     render(<SiteDetailsCard {...props} />)
 
-    // Check heading, ODS_LABEL, address, and contact
+    // Check card container using the test id based on heading
+    const card = screen.getByTestId("site-card-test-heading")
+    expect(card).toBeInTheDocument()
+
+    // Required fields
     expect(screen.getByText("Test Heading")).toBeInTheDocument()
-    expect(
-      screen.getByText(`${baseProps.orgName} (${baseProps.orgOds})`)
-    ).toBeInTheDocument()
+    expect(screen.getByText(`${baseProps.orgName} (${baseProps.orgOds})`)).toBeInTheDocument()
     expect(screen.getByText(baseProps.address)).toBeInTheDocument()
     expect(screen.getByText("Contact Details")).toBeInTheDocument()
     expect(screen.getByText(baseProps.contact)).toBeInTheDocument()
 
-    // The prescribedFrom section should not be rendered
-    expect(screen.queryByText("Prescribed From")).not.toBeInTheDocument()
+    // The prescribedFrom section should be absent
+    expect(screen.queryByTestId("site-card-prescribed-from")).not.toBeInTheDocument()
   })
 })
 
-describe("SiteCards Component", () => {
+describe("SiteDetailsCards Component", () => {
   const prescriber = {
     orgName: "Prescriber Org",
     orgOds: "11111",
@@ -92,7 +98,7 @@ describe("SiteCards Component", () => {
     prescribedFrom: "Nominated Prescribed"
   }
 
-  test("renders all three SiteCards when all props are provided", () => {
+  it("renders all three SiteDetailsCards when all props are provided", () => {
     render(
       <SiteDetailsCards
         prescriber={prescriber}
@@ -101,43 +107,43 @@ describe("SiteCards Component", () => {
       />
     )
 
-    // Check that each card heading is rendered
-    expect(screen.getByText("Dispenser")).toBeInTheDocument()
-    expect(screen.getByText("Nominated Dispenser")).toBeInTheDocument()
-    expect(screen.getByText("Prescriber")).toBeInTheDocument()
+    // Check that each card is rendered using its test id based on the heading
+    expect(screen.getByTestId("site-card-dispenser")).toBeInTheDocument()
+    expect(screen.getByTestId("site-card-nominated-dispenser")).toBeInTheDocument()
+    expect(screen.getByTestId("site-card-prescriber")).toBeInTheDocument()
 
-    // Verify details within the prescriber card
-    expect(
-      screen.getByText(`${prescriber.orgName} (${prescriber.orgOds})`)
-    ).toBeInTheDocument()
+    // prescriber card
+    expect(screen.getByText(`${prescriber.orgName} (${prescriber.orgOds})`)).toBeInTheDocument()
     expect(screen.getByText(prescriber.address)).toBeInTheDocument()
     expect(screen.getByText(prescriber.contact)).toBeInTheDocument()
 
-    // Verify details within the dispenser card
-    expect(
-      screen.getByText(`${dispenser.orgName} (${dispenser.orgOds})`)
-    ).toBeInTheDocument()
+    // dispenser card
+    expect(screen.getByText(`${dispenser.orgName} (${dispenser.orgOds})`)).toBeInTheDocument()
     expect(screen.getByText(dispenser.address)).toBeInTheDocument()
     expect(screen.getByText(dispenser.contact)).toBeInTheDocument()
 
-    // Verify details within the nominated dispenser card
-    expect(
-      screen.getByText(`${nominatedDispenser.orgName} (${nominatedDispenser.orgOds})`)
-    ).toBeInTheDocument()
+    // nominated dispenser card
+    expect(screen.getByText(`${nominatedDispenser.orgName} (${nominatedDispenser.orgOds})`)).toBeInTheDocument()
     expect(screen.getByText(nominatedDispenser.address)).toBeInTheDocument()
     expect(screen.getByText(nominatedDispenser.contact)).toBeInTheDocument()
+
+    // check for the prescribedFrom section
+    const nominatedCard = screen.getByTestId("site-card-nominated-dispenser")
+    // Make sure we only look for the prescribedFrom text, within the nominated card!
+    const prescribedEl = within(nominatedCard).getByTestId("site-card-prescribed-from")
+    expect(prescribedEl).toBeInTheDocument()
     expect(screen.getByText("Prescribed From")).toBeInTheDocument()
     expect(screen.getByText(nominatedDispenser.prescribedFrom)).toBeInTheDocument()
   })
 
-  test("renders only prescriber card when dispenser and nominatedDispenser are not provided", () => {
+  it("renders only prescriber card when dispenser and nominatedDispenser are not provided", () => {
     render(<SiteDetailsCards prescriber={prescriber} />)
 
-    // Check that dispenser and nominated dispenser headings are not rendered
-    expect(screen.queryByText("Dispenser")).not.toBeInTheDocument()
-    expect(screen.queryByText("Nominated Dispenser")).not.toBeInTheDocument()
+    // Only the prescriber card should be rendered
+    expect(screen.getByTestId("site-card-prescriber")).toBeInTheDocument()
 
-    // Only prescriber card should be rendered
-    expect(screen.getByText("Prescriber")).toBeInTheDocument()
+    // Dispenser and nominated dispenser cards absent
+    expect(screen.queryByTestId("site-card-dispenser")).not.toBeInTheDocument()
+    expect(screen.queryByTestId("site-card-Nominated-Dispenser")).not.toBeInTheDocument()
   })
 })

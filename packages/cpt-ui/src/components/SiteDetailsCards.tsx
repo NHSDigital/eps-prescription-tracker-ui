@@ -39,7 +39,8 @@ export function SiteDetailsCard({
       cardType="primary"
       clickable={false}
       className="site-card"
-      data-testid={`site-card-${heading}`}
+      // The test id here includes the heading - later, this will be used for regression tests to find the cards
+      data-testid={`site-card-${heading.replaceAll(" ", "-").toLowerCase()}`}
     >
       <Card.Content className="site-card content">
         <Card.Description>
