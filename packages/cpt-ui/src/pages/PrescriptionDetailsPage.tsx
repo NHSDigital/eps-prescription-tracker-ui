@@ -1,4 +1,4 @@
-import {SiteCards, SiteDetailsProps} from "@/components/SiteDetailsCards"
+import {SiteDetailsCards, SiteDetailsProps} from "@/components/SiteDetailsCards"
 
 export default function PrescriptionDetailsPage() {
   // Mock data, lifted from the prototype page.
@@ -7,7 +7,7 @@ export default function PrescriptionDetailsPage() {
     orgOds: "FI05964",
     address: "90 YARROW LANE, FINNSBURY, E45 T46",
     contact: "01232 231321",
-    prescribedFrom: "Not available. Try again later."
+    prescribedFrom: "England"
   }
 
   const dispenser: SiteDetailsProps = {
@@ -27,7 +27,7 @@ export default function PrescriptionDetailsPage() {
   return (
     // Temporary holding div to add padding. Not where this will actually be placed.
     <div className={"nhsuk-u-margin-top-2 nhsuk-u-margin-left-2"}>
-      <SiteCards
+      <SiteDetailsCards
         prescriber={prescriber}
         dispenser={dispenser}
         nominatedDispenser={nominatedDispenser}

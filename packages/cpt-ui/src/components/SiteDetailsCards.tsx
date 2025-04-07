@@ -9,7 +9,7 @@ import {
   PRESCRIBER
 } from "@/constants/ui-strings/SiteDetailsCardsStrings"
 
-type SiteCardProps = {
+export type SiteDetailsCardProps = {
   heading: string
   orgName: string
   orgOds: string
@@ -18,27 +18,28 @@ type SiteCardProps = {
   prescribedFrom?: string
 }
 
-export type SiteDetailsProps = Omit<SiteCardProps, "heading">
+export type SiteDetailsProps = Omit<SiteDetailsCardProps, "heading">
 
-export type SiteCardsProps = {
+export type SiteDetailsCardsProps = {
   prescriber: SiteDetailsProps
   dispenser?: SiteDetailsProps
   nominatedDispenser?: SiteDetailsProps
 }
 
-function SiteCard({
+export function SiteDetailsCard({
   heading,
   orgName,
   orgOds,
   address,
   contact,
   prescribedFrom
-}: SiteCardProps) {
+}: SiteDetailsCardProps) {
   return (
     <Card
       cardType="primary"
       clickable={false}
       className="site-card"
+      data-testid={`site-card-${heading}`}
     >
       <Card.Content className="site-card content">
         <Card.Description>
@@ -54,7 +55,7 @@ function SiteCard({
             {contact}
           </p>
           {prescribedFrom && (
-            <p className="nhsuk-u-margin-bottom-1">
+            <p className="nhsuk-u-margin-bottom-1" data-testid="site-card-prescribed-from">
               <strong>{PRESCRIBED_FROM}</strong>
               <br />
               {prescribedFrom}
@@ -66,25 +67,25 @@ function SiteCard({
   )
 }
 
-export function SiteCards({
+export function SiteDetailsCards({
   prescriber,
   dispenser,
   nominatedDispenser
-}: SiteCardsProps) {
+}: SiteDetailsCardsProps) {
 
   return (
     <Row>
       <Col width="one-third">
         {dispenser && (
-          <SiteCard heading={DISPENSER} {...dispenser} />
+          <SiteDetailsCard heading={DISPENSER} {...dispenser} />
         )}
         {nominatedDispenser && (
-          <SiteCard
+          <SiteDetailsCard
             heading={NOMINATED_DISPENSER}
             {...nominatedDispenser}
           />
         )}
-        <SiteCard heading={PRESCRIBER} {...prescriber} />
+        <SiteDetailsCard heading={PRESCRIBER} {...prescriber} />
       </Col>
     </Row>
   )
