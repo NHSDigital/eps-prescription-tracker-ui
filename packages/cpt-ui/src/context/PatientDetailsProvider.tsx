@@ -32,7 +32,6 @@ export const PatientDetailsProvider = ({children}: { children: ReactNode }) => {
 
   // Clear the patient details if the user navigates away from the pages about the patient
   useEffect(() => {
-    // TODO: Ensure this is up to date as pages get implemented!
     const patientDetailsAllowedPaths = [
       FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT,
       FRONTEND_PATHS.PRESCRIPTION_LIST_PAST,

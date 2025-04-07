@@ -252,7 +252,13 @@ export default function PrescriptionListPage() {
       // FIXME remove references to mock data
       console.error("Error retrieving prescription details:", error)
       // Allow known test ID through; otherwise, return false.
-      if (prescriptionId === "C0C757-A83008-C2D93O") {
+      const fullPrescriptionIds = [
+        "C0C757-A83008-C2D93O",
+        "7F1A4B-A83008-91DC2E",
+        "B8C9E2-A83008-5F7B3A",
+        "4D6F2C-A83008-A3E7D1"
+      ]
+      if (fullPrescriptionIds.includes(prescriptionId)) {
         console.log("Using mock data")
         const response = {
           ...mockSearchResponse,
@@ -359,6 +365,22 @@ export default function PrescriptionListPage() {
             />
           </div>
         </Container>
+
+        {/* FIXME: DELETE THIS WHEN WE HAVE ANOTHER WAY TO NAVIGATE TO PRESCRIPTION DETAILS! */}
+        {!!queryParams.get("prescriptionId") &&
+          <Container>
+            <Row>
+              <Col width="full" style={{margin: 20}}>
+                <Link
+                  to={`${FRONTEND_PATHS.PRESCRIPTION_DETAILS_PAGE}?prescriptionId=${queryParams.get("prescriptionId")}`}
+                  data-testid="back-link-container"
+                >
+                  [DEV] Go to corresponding prescription details page
+                </Link>
+              </Col>
+            </Row>
+          </Container>
+        }
       </main>
     </>
   )

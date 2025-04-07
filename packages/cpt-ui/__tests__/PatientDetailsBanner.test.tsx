@@ -54,8 +54,6 @@ const partialAddressDetails: PatientDetails = {
   }
 }
 
-// TODO: Mock the patient details context, which only has `patientDetails: PatientDetails` on it.
-
 import PatientDetailsBanner from "@/components/PatientDetailsBanner"
 
 describe("PatientDetailsBanner", () => {
