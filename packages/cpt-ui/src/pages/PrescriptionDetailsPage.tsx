@@ -18,9 +18,9 @@ export default function PrescriptionDetailsPage() {
         status: "All items dispensed",
         type: "Acute",
         isERD: false,
-        instanceNumber: null,
-        maxRepeats: null,
-        daysSupply: null
+        instanceNumber: undefined,
+        maxRepeats: undefined,
+        daysSupply: undefined
       })
     }
 

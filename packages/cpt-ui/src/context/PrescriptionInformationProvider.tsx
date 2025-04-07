@@ -11,11 +11,14 @@ import {normalizePath} from "@/helpers/utils"
 import {FRONTEND_PATHS} from "@/constants/environment"
 
 export interface PrescriptionInformation {
-  prescriptionId: string
+  id: string
   issueDate: string
   status: string
   type: string
-  daysSupply?: string
+  isERD?: boolean
+  instanceNumber?: number
+  maxRepeats?: number
+  daysSupply?: number
 }
 
 export type PrescriptionInformationContextType = {
