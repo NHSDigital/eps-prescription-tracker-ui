@@ -7,7 +7,7 @@ export default function PrescriptionDetailsPage() {
     orgOds: "FI05964",
     address: "90 YARROW LANE, FINNSBURY, E45 T46",
     contact: "01232 231321",
-    prescribedFrom: "0101"
+    prescribedFrom: "England"
   }
 
   const dispenser: SiteDetailsProps = {
