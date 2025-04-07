@@ -1,8 +1,8 @@
-import {SiteCards} from "@/components/siteCards/SiteCards"
+import {SiteCards, SiteDetailsProps} from "@/components/SiteDetailsCards"
 
 export default function PrescriptionDetailsPage() {
   // Mock data, lifted from the prototype page.
-  const prescriber = {
+  const prescriber: SiteDetailsProps = {
     orgName: "Fiji surgery",
     orgOds: "FI05964",
     address: "90 YARROW LANE, FINNSBURY, E45 T46",
@@ -10,14 +10,14 @@ export default function PrescriptionDetailsPage() {
     prescribedFrom: "0101"
   }
 
-  const dispenser = {
+  const dispenser: SiteDetailsProps = {
     orgName: "Cohens chemist",
     orgOds: "FV519",
     address: "22 RUE LANE, CHISWICK, KT19 D12",
     contact: "01943 863158"
   }
 
-  const nominatedDispenser = {
+  const nominatedDispenser: SiteDetailsProps = {
     orgName: "Cohens chemist",
     orgOds: "FV519",
     address: "22 RUE LANE, CHISWICK, KT19 D12",
