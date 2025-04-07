@@ -8,17 +8,28 @@ import {
 } from "nhsuk-react-components"
 
 import http from "@/helpers/axios"
-import {AuthContext} from "@/context/AuthProvider"
-import EpsSpinner from "@/components/EpsSpinner"
-import {PRESCRIPTION_LIST_PAGE_STRINGS} from "@/constants/ui-strings/PrescriptionListPageStrings"
-import {API_ENDPOINTS, FRONTEND_PATHS, NHS_REQUEST_URID} from "@/constants/environment"
-import {PatientDetails} from "@cpt-ui-common/common-types"
 
+import {AuthContext} from "@/context/AuthProvider"
 import {usePatientDetails} from "@/context/PatientDetailsProvider"
 
+import EpsSpinner from "@/components/EpsSpinner"
+import PrescriptionsListTabs from "@/components/prescriptionList/PrescriptionsListTab"
+import {TabHeader} from "@/components/EpsTabs"
+
+import {PRESCRIPTION_LIST_TABS} from "@/constants/ui-strings/PrescriptionListTabStrings"
+import {PRESCRIPTION_LIST_PAGE_STRINGS} from "@/constants/ui-strings/PrescriptionListPageStrings"
+import {API_ENDPOINTS, FRONTEND_PATHS, NHS_REQUEST_URID} from "@/constants/environment"
+
+import {
+  PatientDetails,
+  SearchResponse,
+  TreatmentType,
+  PrescriptionStatus,
+  PrescriptionSummary
+} from "@cpt-ui-common/common-types"
+
 export default function PrescriptionListPage() {
-  // TODO: mock data - in the real implementation, this would come from props or context
-  const prescriptionCount = 5
+  // FIXME: mock data. DELETEME!
   const mockPatient: PatientDetails = {
     nhsNumber: "5900009890",
     prefix: "Mr",
@@ -37,20 +48,97 @@ export default function PrescriptionListPage() {
 
   const minimumDetails: PatientDetails = {
     nhsNumber: "5900009890",
-    prefix: "Mr",
+    prefix: "Ms",
     suffix: "",
-    given: "William",
-    family: "Wolderton",
+    given: "Janet",
+    family: "Piper",
     gender: null,
     dateOfBirth: null,
     address: null
   }
 
-  const navigate = useNavigate()
+  const mockSearchResponse: SearchResponse = {
+    patient: mockPatient,
+    currentPrescriptions: [
+      {
+        prescriptionId: "RX001",
+        statusCode: PrescriptionStatus.TO_BE_DISPENSED,
+        issueDate: "2025-03-01",
+        prescriptionTreatmentType: TreatmentType.REPEAT,
+        issueNumber: 1,
+        maxRepeats: 5,
+        prescriptionPendingCancellation: false,
+        itemsPendingCancellation: false
+      },
+      {
+        prescriptionId: "RX002",
+        statusCode: PrescriptionStatus.WITH_DISPENSER,
+        issueDate: "2025-02-15",
+        prescriptionTreatmentType: TreatmentType.ACUTE,
+        issueNumber: 2,
+        maxRepeats: 3,
+        prescriptionPendingCancellation: false,
+        itemsPendingCancellation: false
+      },
+      {
+        prescriptionId: "RX003",
+        statusCode: PrescriptionStatus.WITH_DISPENSER_ACTIVE,
+        issueDate: "2025-03-10",
+        prescriptionTreatmentType: TreatmentType.ERD,
+        issueNumber: 3,
+        maxRepeats: 4,
+        prescriptionPendingCancellation: false,
+        itemsPendingCancellation: true
+      }
+    ],
+    pastPrescriptions: [
+      {
+        prescriptionId: "RX004",
+        statusCode: PrescriptionStatus.DISPENSED,
+        issueDate: "2025-01-15",
+        prescriptionTreatmentType: TreatmentType.REPEAT,
+        issueNumber: 1,
+        maxRepeats: 2,
+        prescriptionPendingCancellation: false,
+        itemsPendingCancellation: false
+      },
+      {
+        prescriptionId: "RX005",
+        statusCode: PrescriptionStatus.NOT_DISPENSED,
+        issueDate: "2024-12-20",
+        prescriptionTreatmentType: TreatmentType.ACUTE,
+        issueNumber: 1,
+        maxRepeats: 1,
+        prescriptionPendingCancellation: false,
+        itemsPendingCancellation: false
+      }
+    ],
+    futurePrescriptions: [
+      {
+        prescriptionId: "RX006",
+        statusCode: PrescriptionStatus.FUTURE_DATED_PRESCRIPTION,
+        issueDate: "2025-04-01",
+        prescriptionTreatmentType: TreatmentType.REPEAT,
+        issueNumber: 1,
+        maxRepeats: 10,
+        prescriptionPendingCancellation: false,
+        itemsPendingCancellation: false
+      }
+    ]
+  }
+
   const auth = useContext(AuthContext)
   const {setPatientDetails} = usePatientDetails()
+
+  const navigate = useNavigate()
   const [queryParams] = useSearchParams()
 
+  const [futurePrescriptions, setFuturePrescriptions] = useState<Array<PrescriptionSummary>>([])
+  const [pastPrescriptions, setPastPrescriptions] = useState<Array<PrescriptionSummary>>([])
+  const [currentPrescriptions, setCurrentPrescriptions] = useState<Array<PrescriptionSummary>>([])
+  const [prescriptionCount, setPrescriptionCount] = useState(0)
+
+  const [tabData, setTabData] = useState<Array<TabHeader>>([])
   const [backLinkTarget, setBackLinkTarget] = useState<string>(PRESCRIPTION_LIST_PAGE_STRINGS.DEFAULT_BACK_LINK_TARGET)
   const [loading, setLoading] = useState(true)
 
@@ -59,50 +147,85 @@ export default function PrescriptionListPage() {
       const hasPrescriptionId = !!queryParams.get("prescriptionId")
       const hasNhsNumber = !!queryParams.get("nhsNumber")
 
+      // Local version to prevent a race condition
+      let newBackLinkTarget = backLinkTarget
+
       // determine which search page to go back to based on query parameters
       if (hasPrescriptionId) {
-        setBackLinkTarget(PRESCRIPTION_LIST_PAGE_STRINGS.PRESCRIPTION_ID_SEARCH_TARGET)
+        newBackLinkTarget = PRESCRIPTION_LIST_PAGE_STRINGS.PRESCRIPTION_ID_SEARCH_TARGET
+        setBackLinkTarget(newBackLinkTarget)
       } else if (hasNhsNumber) {
-        setBackLinkTarget(PRESCRIPTION_LIST_PAGE_STRINGS.NHS_NUMBER_SEARCH_TARGET)
-      } else {
-        setBackLinkTarget(PRESCRIPTION_LIST_PAGE_STRINGS.DEFAULT_BACK_LINK_TARGET)
-        // if no search is given, navigate to the not found page
+        newBackLinkTarget = PRESCRIPTION_LIST_PAGE_STRINGS.NHS_NUMBER_SEARCH_TARGET
+        setBackLinkTarget(newBackLinkTarget)
+      }
+
+      let searchResults: SearchResponse | undefined
+      let searchValue: string = ""
+
+      if (hasPrescriptionId) {
+        searchValue = queryParams.get("prescriptionId")!
+        searchResults = await searchPrescriptionID(searchValue)
+      }
+
+      if (hasNhsNumber) {
+        searchValue = queryParams.get("nhsNumber")!
+        // Assuming you’ll also refactor searchNhsNumber to be async
+        searchResults = await searchNhsNumber(searchValue)
+      }
+
+      if (!searchResults) {
+        console.error("No search results were returned", searchResults)
         navigate(FRONTEND_PATHS.PRESCRIPTION_NOT_FOUND)
         return
       }
 
-      if (hasPrescriptionId) {
-        const prescId = queryParams.get("prescriptionId")!
-        const searchResults = await searchPrescriptionID(prescId)
-        console.log("Got search results", searchResults)
-        if (!searchResults) {
-          const notFoundUrl = `${FRONTEND_PATHS.PRESCRIPTION_NOT_FOUND}?searchType=PrescriptionIdSearch`
-          navigate(notFoundUrl)
-        }
+      if (
+        searchResults.currentPrescriptions.length === 0
+        && searchResults.pastPrescriptions.length === 0
+        && searchResults.futurePrescriptions.length === 0
+      ) {
+        console.error("A patient was returned, but they do not have any prescriptions.", searchResults)
+        navigate(FRONTEND_PATHS.PRESCRIPTION_NOT_FOUND)
       }
 
-      if (hasNhsNumber) {
-        const nhsNumber = queryParams.get("nhsNumber")!
-        // Assuming you’ll also refactor searchNhsNumber to be async
-        const result = await searchNhsNumber(nhsNumber)
-        if (!result) {
-          const notFoundUrl = `${FRONTEND_PATHS.PRESCRIPTION_NOT_FOUND}?searchType=NhsNumberSearch`
-          navigate(notFoundUrl)
+      setCurrentPrescriptions(searchResults.currentPrescriptions)
+      setFuturePrescriptions(searchResults.futurePrescriptions)
+      setPastPrescriptions(searchResults.pastPrescriptions)
+      setPatientDetails(searchResults.patient)
+
+      setPrescriptionCount(
+        searchResults.pastPrescriptions.length +
+          searchResults.futurePrescriptions.length +
+          searchResults.currentPrescriptions.length
+      )
+
+      setTabData([
+        {
+          link: PRESCRIPTION_LIST_TABS.current.link(queryParams.toString()),
+          title: PRESCRIPTION_LIST_TABS.current.title(searchResults.currentPrescriptions.length)
+        },
+        {
+          link: PRESCRIPTION_LIST_TABS.future.link(queryParams.toString()),
+          title: PRESCRIPTION_LIST_TABS.future.title(searchResults.futurePrescriptions.length)
+        },
+        {
+          link: PRESCRIPTION_LIST_TABS.past.link(queryParams.toString()),
+          title: PRESCRIPTION_LIST_TABS.past.title(searchResults.pastPrescriptions.length)
         }
-      }
+      ])
     }
 
     setLoading(true)
-    runSearch()
+    runSearch().finally(() => setLoading(false))
   }, [queryParams])
 
   // TODO: This should return the search results. For now, just return true or false for mock stuff.
-  const searchPrescriptionID = async (prescriptionId: string): Promise<boolean> => {
+  const searchPrescriptionID = async (prescriptionId: string): Promise<SearchResponse | undefined> => {
     console.log("Searching for prescription ID ", prescriptionId)
 
     // TODO: Validate ID (if invalid, navigate away)
     // if (!validatePrescriptionId(prescriptionId)) {
-    //   navigate(notFoundUrl);
+    //   navigate(backLinkTarget);
     //   return;
     // }
 
@@ -116,38 +239,71 @@ export default function PrescriptionListPage() {
         }
       })
 
+      console.log("Response status", {status: response.status})
       if (response.status !== 200) {
       // Throwing an error here will jump to the catch block.
         throw new Error(`Status Code: ${response.status}`)
       }
-      // TODO: populate mock data
-      return true
+
+      const payload: SearchResponse = response.data
+      return payload
 
     } catch (error) {
+      // FIXME remove references to mock data
       console.error("Error retrieving prescription details:", error)
       // Allow known test ID through; otherwise, return false.
       if (prescriptionId === "C0C757-A83008-C2D93O") {
         console.log("Using mock data")
-        setPatientDetails(mockPatient)
-        return true
+        const response = {
+          ...mockSearchResponse,
+          patient: mockPatient
+        }
+        return response
       }
       if (prescriptionId === "209E3D-A83008-327F9F") {
         console.log("Using mock data")
-        setPatientDetails(minimumDetails)
-        return true
+        const response = {
+          ...mockSearchResponse,
+          patient: minimumDetails
+        }
+        // Remove future prescriptions
+        response.futurePrescriptions = []
+        response.pastPrescriptions = []
+        return response
       }
-      return false
-
-    } finally {
-      setLoading(false)
     }
   }
 
   // TODO: This will need to be implemented later
-  const searchNhsNumber = (nhsNumber: string): Promise<boolean> => {
+  const searchNhsNumber = async (nhsNumber: string): Promise<SearchResponse | undefined> => {
     console.log("Searching for nhs number:", nhsNumber)
-    setLoading(false)
-    return Promise.resolve(true)
+
+    const url = `${API_ENDPOINTS.PRESCRIPTION_DETAILS}/${nhsNumber}`
+
+    try {
+      const response = await http.get(url, {
+        headers: {
+          Authorization: `Bearer ${auth?.idToken}`,
+          "NHSD-Session-URID": NHS_REQUEST_URID
+        }
+      })
+
+      console.log("Response status", {status: response.status})
+      if (response.status !== 200) {
+      // Throwing an error here will jump to the catch block.
+        throw new Error(`Status Code: ${response.status}`)
+      }
+
+      const payload: SearchResponse = response.data
+      return payload
+
+    } catch (error) {
+      if (nhsNumber === "1234567890") {
+        console.error("Failed to fetch. Returning mock data", error)
+        return Promise.resolve(mockSearchResponse)
+      }
+      console.error("Failed to fetch prescription search.", error)
+    }
   }
 
   if (loading) {
@@ -172,21 +328,17 @@ export default function PrescriptionListPage() {
           <Row>
             <Col width="full">
               <nav className="nhsuk-breadcrumb" aria-label="Breadcrumb" data-testid="prescription-list-nav">
-                <BackLink
-                  data-testid="go-back-link"
-                  asElement={Link}
-                  to={backLinkTarget}
-                >
-                  {PRESCRIPTION_LIST_PAGE_STRINGS.GO_BACK_LINK_TEXT}
-                </BackLink>
+                <Link to={backLinkTarget} data-testid="back-link-container">
+                  <BackLink data-testid="go-back-link">{PRESCRIPTION_LIST_PAGE_STRINGS.GO_BACK_LINK_TEXT}</BackLink>
+                </Link>
               </nav>
             </Col>
           </Row>
           <Row>
             <Col width="full">
-              <h2 className="nhsuk-heading-l" data-testid="prescription-list-heading">
+              <h1 className="nhsuk-heading-l" data-testid="prescription-list-heading">
                 {PRESCRIPTION_LIST_PAGE_STRINGS.HEADING}
-              </h2>
+              </h1>
             </Col>
           </Row>
         </Container>
@@ -199,7 +351,12 @@ export default function PrescriptionListPage() {
             </strong>
           </p>
           <div data-testid="prescription-results-list">
-            {/* Prescription list items would go here */}
+            <PrescriptionsListTabs
+              tabData={tabData}
+              currentPrescriptions={currentPrescriptions}
+              pastPrescriptions={pastPrescriptions}
+              futurePrescriptions={futurePrescriptions}
+            />
           </div>
         </Container>
       </main>

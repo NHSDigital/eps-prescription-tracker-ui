@@ -34,8 +34,9 @@ export const PatientDetailsProvider = ({children}: { children: ReactNode }) => {
   useEffect(() => {
     // TODO: Ensure this is up to date as pages get implemented!
     const patientDetailsAllowedPaths = [
-      "/prescription-results",
-      // "/prescription-details",
+      FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT,
+      FRONTEND_PATHS.PRESCRIPTION_LIST_PAST,
+      FRONTEND_PATHS.PRESCRIPTION_LIST_FUTURE,
       FRONTEND_PATHS.PRESCRIPTION_DETAILS_PAGE
     ]
 

@@ -45,7 +45,15 @@ export default function App() {
                 element={<SearchPrescriptionPage />}
               />
               <Route
-                path={FRONTEND_PATHS.PRESCRIPTION_LIST}
+                path={FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}
+                element={<PrescriptionListPage />}
+              />
+              <Route
+                path={FRONTEND_PATHS.PRESCRIPTION_LIST_FUTURE}
+                element={<PrescriptionListPage />}
+              />
+              <Route
+                path={FRONTEND_PATHS.PRESCRIPTION_LIST_PAST}
                 element={<PrescriptionListPage />}
               />
               <Route
