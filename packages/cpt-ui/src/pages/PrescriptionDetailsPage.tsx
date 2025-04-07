@@ -1,12 +1,14 @@
 import React, {useEffect} from "react"
 import {useSearchParams} from "react-router-dom"
 import {usePrescriptionInformation} from "@/context/PrescriptionInformationProvider"
+import {usePatientDetails} from "@/context/PatientDetailsProvider"
 import {Container, Row, Col} from "nhsuk-react-components"
 
 export default function PrescriptionDetailsPage() {
   const [searchParams] = useSearchParams()
   const prescriptionId = searchParams.get("prescriptionId")
   const {setPrescriptionInformation} = usePrescriptionInformation()
+  const {setPatientDetails} = usePatientDetails()
 
   useEffect(() => {
     if (!prescriptionId) return
@@ -22,6 +24,22 @@ export default function PrescriptionDetailsPage() {
         maxRepeats: undefined,
         daysSupply: undefined
       })
+
+      setPatientDetails({
+        nhsNumber: "5900009890",
+        prefix: "Mr",
+        suffix: "",
+        given: "William",
+        family: "Wolderton",
+        gender: "male",
+        dateOfBirth: "01-Nov-1988",
+        address: {
+          line1: "55 OAK STREET",
+          line2: "OAK LANE",
+          city: "Leeds",
+          postcode: "LS1 1XX"
+        }
+      })
     }
 
     if (prescriptionId === "EC5ACF-A83008-733FD3") {
@@ -35,8 +53,19 @@ export default function PrescriptionDetailsPage() {
         maxRepeats: 6,
         daysSupply: 28
       })
+
+      setPatientDetails({
+        nhsNumber: "5900009890",
+        prefix: "Ms",
+        suffix: "",
+        given: "Janet",
+        family: "Piper",
+        gender: null,
+        dateOfBirth: null,
+        address: null
+      })
     }
-  }, [prescriptionId, setPrescriptionInformation])
+  }, [prescriptionId, setPrescriptionInformation, setPatientDetails])
 
   return (
     <main id="prescription-details-page" className="nhsuk-main-wrapper">
