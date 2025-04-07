@@ -6,15 +6,18 @@ import {
   NOMINATED_DISPENSER,
   ODS_LABEL,
   PRESCRIBED_FROM,
-  PRESCRIBER
+  PRESCRIBER,
+  NO_ORG_NAME,
+  NO_ADDRESS,
+  NO_CONTACT
 } from "@/constants/ui-strings/SiteDetailsCardsStrings"
 
 export type SiteDetailsCardProps = {
   heading: string
-  orgName: string
+  orgName?: string
   orgOds: string
-  address: string
-  contact: string
+  address?: string
+  contact?: string
   prescribedFrom?: string
 }
 
@@ -34,6 +37,16 @@ export function SiteDetailsCard({
   contact,
   prescribedFrom
 }: SiteDetailsCardProps) {
+  if (!orgName) {
+    orgName = NO_ORG_NAME
+  }
+  if (!address) {
+    address = NO_ADDRESS
+  }
+  if (!contact) {
+    contact = NO_CONTACT
+  }
+
   return (
     <Card
       cardType="primary"
