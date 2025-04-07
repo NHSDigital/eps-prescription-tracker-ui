@@ -55,16 +55,17 @@ export const FRONTEND_PATHS = {
   CHANGE_YOUR_ROLE: "/change-your-role",
   SEARCH_BY_PRESCRIPTION_ID: "/search-by-prescription-id",
   SEARCH_BY_NHS_NUMBER: "/search-by-nhs-number",
-  SEARCH_BY_BASIC_DETAILS: "/search-by-basic-details"
+  SEARCH_BY_BASIC_DETAILS: "/search-by-basic-details",
+  PRESCRIPTION_DETAILS_PAGE: "/prescription-details"
 }
 
 // This needs to be provided in backend requests as a header
 export const NHS_REQUEST_URID = "555254242106"
 
 // Type for environment
-export type MockAuthEnvironment = "dev" | "dev-pr" | "int" | "qa";
+export type MockAuthEnvironment = "dev" | "dev-pr" | "int" | "qa"
 
-export type Environment = MockAuthEnvironment | "prod" | "test";
+export type Environment = MockAuthEnvironment | "prod" | "test"
 
 // Mock Auth Configuration
 export const MOCK_AUTH_ALLOWED_ENVIRONMENTS: ReadonlyArray<MockAuthEnvironment> =

@@ -9,6 +9,7 @@ import {useLocation} from "react-router-dom"
 
 import {PatientDetails} from "@cpt-ui-common/common-types"
 import {normalizePath} from "@/helpers/utils"
+import {FRONTEND_PATHS} from "@/constants/environment"
 
 export type PatientDetailsContextType = {
     patientDetails: PatientDetails | undefined
@@ -33,8 +34,8 @@ export const PatientDetailsProvider = ({children}: { children: ReactNode }) => {
   useEffect(() => {
     // TODO: Ensure this is up to date as pages get implemented!
     const patientDetailsAllowedPaths = [
-      "/prescription-results"
-      // "/prescription-details",
+      FRONTEND_PATHS.PRESCRIPTION_LIST,
+      FRONTEND_PATHS.PRESCRIPTION_DETAILS_PAGE
     ]
 
     const path = normalizePath(location.pathname)
