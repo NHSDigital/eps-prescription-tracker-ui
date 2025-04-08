@@ -373,7 +373,7 @@ export default function PrescriptionListPage() {
               <Col width="full" style={{margin: 20}}>
                 <Link
                   to={`${FRONTEND_PATHS.PRESCRIPTION_DETAILS_PAGE}?prescriptionId=${queryParams.get("prescriptionId")}`}
-                  data-testid="back-link-container"
+                  data-testid="prescription-details-link-container"
                 >
                   [DEV] Go to corresponding prescription details page
                 </Link>
