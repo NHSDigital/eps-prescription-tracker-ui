@@ -1,5 +1,5 @@
 import {RemovalPolicy} from "aws-cdk-lib"
-import {Effect, IRole, PolicyStatement} from "aws-cdk-lib/aws-iam"
+import {AddToResourcePolicyResult, IRole} from "aws-cdk-lib/aws-iam"
 import {CfnKey, Key} from "aws-cdk-lib/aws-kms"
 import {
   BlockPublicAccess,
@@ -13,8 +13,8 @@ import {
 } from "aws-cdk-lib/aws-s3"
 import {Construct} from "constructs"
 
-import {AllowCloudfrontGetObjectPolicyStatement} from "../policies/s3/AllowCloudfrontGetObjectPolicyStatement"
-import {AllowCloudfrontKmsKeyAccessPolicy} from "../policies/kms/AllowCloudfrontKmsKeyAccessPolicy"
+import {AllowStaticContentPolicyStatements} from "../policies/s3/AllowStaticContentPolicyStatements"
+import {AllowStaticBucketKmsKeyAccessPolicy} from "../policies/kms/AllowStaticBucketKmsKeyAccessPolicy"
 
 export interface StaticContentBucketProps {
   readonly bucketName: string
@@ -22,6 +22,8 @@ export interface StaticContentBucketProps {
   readonly cloudfrontDistributionId: string
   readonly auditLoggingBucket: IBucket,
   readonly deploymentRole: IRole
+  readonly rumAppName: string
+  readonly region: string
 }
 
 /**
@@ -32,6 +34,7 @@ export interface StaticContentBucketProps {
 export class StaticContentBucket extends Construct{
   public readonly bucket: Bucket
   public readonly kmsKey: Key
+  public readonly addRumBucketPolicy: AddToResourcePolicyResult
 
   public constructor(scope: Construct, id: string, props: StaticContentBucketProps){
     super(scope, id)
@@ -58,53 +61,47 @@ export class StaticContentBucket extends Construct{
       autoDeleteObjects: props.allowAutoDeleteObjects // if true forces a deletion even if bucket is not empty
     })
 
-    // we need to add a policy to the bucket so that our deploy role can use the bucket
-    const bucketAllowDeployUploadPolicyStatement = new PolicyStatement({
-      effect: Effect.ALLOW,
-      principals: [props.deploymentRole],
-      actions: [
-        "s3:Abort*",
-        "s3:DeleteObject*",
-        "s3:GetBucket*",
-        "s3:GetObject*",
-        "s3:List*",
-        "s3:PutObject",
-        "s3:PutObjectLegalHold",
-        "s3:PutObjectRetention",
-        "s3:PutObjectTagging",
-        "s3:PutObjectVersionTagging"
-      ],
-      resources: [
-        bucket.bucketArn,
-        bucket.arnForObjects("*")
-      ]
+    const bucketPolicies = new AllowStaticContentPolicyStatements({
+      bucket: bucket,
+      cloudfrontDistributionId: props.cloudfrontDistributionId,
+      rumAppName: props.rumAppName,
+      deploymentRole: props.deploymentRole,
+      region: props.region
     })
-    bucket.addToResourcePolicy(bucketAllowDeployUploadPolicyStatement)
 
+    // we need to add a policy to the bucket so that our deploy role can use the bucket
+    bucket.addToResourcePolicy(bucketPolicies.deploymentRoleAccessPolicyStatement)
+
+    // if we have a rum app defined, then add a policy to allow it to be used
+    // note - we output this action so it can be used as a dependency for the rum app
+    // we can also only do this once the rum app is created
+    if (props.rumAppName) {
+      const addRumBucketPolicy = bucket.addToResourcePolicy(bucketPolicies.rumAccessPolicyStatement)
+      this.addRumBucketPolicy = addRumBucketPolicy
+    }
     /*
      we also need to do the same for kms key
-     but to avoid circular dependencies we need to use an escape hatch
-     this also does a conditional and if we have a cloudfrontDistributionId
-     then it adds the correct policy to allow access from cloudfront
+     but to avoid circular dependencies we need to use an escape hatch to set the policy on the key
+     rather than using addToResourcePolicy
+     AllowStaticBucketKmsKeyAccessPolicy uses conditional to allow access from cloudfrontDistributionId or rum app
+     then it adds the correct policy to allow access from cloudfront and rum
     */
 
+    const kmsPolicies = new AllowStaticBucketKmsKeyAccessPolicy({
+      cloudfrontDistributionId: props.cloudfrontDistributionId,
+      deploymentRole: props.deploymentRole,
+      rumAppName: props.rumAppName,
+      region: props.region
+    })
+
     const contentBucketKmsKey = (kmsKey.node.defaultChild as CfnKey)
-    contentBucketKmsKey.keyPolicy = new AllowCloudfrontKmsKeyAccessPolicy(
-      this, "StaticContentBucketAllowCloudfrontKmsKeyAccessPolicy", {
-        cloudfrontDistributionId: props.cloudfrontDistributionId,
-        deploymentRole: props.deploymentRole
-      }).policyJson
+    contentBucketKmsKey.keyPolicy = kmsPolicies.policyDocument.toJSON()
 
     /* As you cannot modify imported policies, cdk cannot not update the s3 bucket with the correct permissions
     for OAC when the distribution and bucket are in different stacks
     !! This can only be added after the distribution has been deployed !! */
     if (props.cloudfrontDistributionId){
-      bucket.addToResourcePolicy(new AllowCloudfrontGetObjectPolicyStatement(
-        this, "StaticContentBucketAllowCloudfrontGetObjectPolicyStatement", {
-          bucket: bucket,
-          cloudfrontDistributionId: props.cloudfrontDistributionId
-        }).policyStatement)
-
+      bucket.addToResourcePolicy(bucketPolicies.cloudfrontAccessPolicyStatement)
     }
 
     const cfnBucket = bucket.node.defaultChild as CfnBucket

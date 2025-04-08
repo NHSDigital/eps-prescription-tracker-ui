@@ -206,7 +206,6 @@ export default function RoleSelectionPage({
             </h1>
 
             {noAccess && <p>{captionNoAccess}</p>}
-
             {selectedRole && (
               <section aria-label="Login Information">
                 <InsetText data-testid="eps_select_your_role_pre_role_selected">
@@ -233,9 +232,11 @@ export default function RoleSelectionPage({
           {(!noAccess) && (roleCardPropsWithAccess.length > 0) && (
             <Col width="two-thirds">
               <div className="section">
-                {roleCardPropsWithAccess.map((roleCardProps: RolesWithAccessProps) => (
-                  <EpsCard {...roleCardProps} key={roleCardProps.uuid} />
-                ))}
+                {roleCardPropsWithAccess
+                  .filter((duplicateRole) => duplicateRole.role.role_id !== selectedRole?.role_id)
+                  .map((roleCardProps: RolesWithAccessProps) => (
+                    <EpsCard {...roleCardProps} key={roleCardProps.uuid} />
+                  ))}
               </div>
             </Col>
           )}
