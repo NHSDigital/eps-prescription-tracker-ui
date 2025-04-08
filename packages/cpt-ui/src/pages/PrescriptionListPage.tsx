@@ -175,7 +175,16 @@ export default function PrescriptionListPage() {
 
       if (!searchResults) {
         console.error("No search results were returned", searchResults)
-        navigate(FRONTEND_PATHS.PRESCRIPTION_NOT_FOUND)
+
+        // Send the search method and parameters to the not found page
+        let searchType
+        if (hasPrescriptionId) {
+          searchType = "prescriptionId"
+        } else if (hasNhsNumber) {
+          searchType = "nhsNumber"
+        }
+
+        navigate(FRONTEND_PATHS.PRESCRIPTION_NOT_FOUND + "?" + queryParams.toString() + `&searchType=${searchType}`)
         return
       }
 
@@ -185,7 +194,7 @@ export default function PrescriptionListPage() {
         && searchResults.futurePrescriptions.length === 0
       ) {
         console.error("A patient was returned, but they do not have any prescriptions.", searchResults)
-        navigate(FRONTEND_PATHS.PRESCRIPTION_NOT_FOUND)
+        navigate(FRONTEND_PATHS.PRESCRIPTION_NOT_FOUND + "?" + queryParams.toString())
       }
 
       setCurrentPrescriptions(searchResults.currentPrescriptions)

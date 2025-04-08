@@ -1,5 +1,5 @@
 import React, {useState, useEffect, useRef} from "react"
-import {useNavigate} from "react-router-dom"
+import {useNavigate, useSearchParams} from "react-router-dom"
 
 import {
   Container,
@@ -25,6 +25,7 @@ const normalizePrescriptionId = (raw: string): string => {
 
 export default function PrescriptionIdSearch() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const errorRef = useRef<HTMLDivElement | null>(null)
 
   const [prescriptionId, setPrescriptionId] = useState<string>("")
@@ -36,6 +37,8 @@ export default function PrescriptionIdSearch() {
   useEffect(() => {
     const input = document.querySelector<HTMLInputElement>("#presc-id-input")
     input?.focus()
+
+    setPrescriptionId(searchParams.get("prescriptionId") || "")
   }, [])
 
   // Focus error box when error appears

@@ -10,13 +10,27 @@ export default function PrescriptionNotFoundPage() {
 
   // Map searchType to the correct back link URL
   const getBackLinkUrl = () => {
+
+    // Preserve any search terms
+    const params = searchParams
+      .entries()
+      .filter(
+        (entry) => {
+          return (entry[0] !== "searchType")
+        }
+      )
+      .toArray()
+    const newQueryString = new URLSearchParams(params)
+
+    console.info("Search type", searchType)
+
     switch (searchType) {
-      case "PrescriptionIdSearch":
-        return FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID
-      case "NhsNumberSearch":
-        return FRONTEND_PATHS.SEARCH_BY_NHS_NUMBER
-      case "BasicDetailsSearch":
-        return FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS
+      case "prescriptionId":
+        return FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID + "?" + newQueryString.toString()
+      case "nhsNumber":
+        return FRONTEND_PATHS.SEARCH_BY_NHS_NUMBER + "?" + newQueryString.toString()
+      case "basicDetails":
+        return FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS + "?" + newQueryString.toString()
       default:
         // Default fallback if no searchType is provided
         return FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID
