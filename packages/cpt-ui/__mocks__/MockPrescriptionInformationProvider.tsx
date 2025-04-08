@@ -9,8 +9,14 @@ export const MockPrescriptionInformationProvider = ({children}: {children: React
     window.__mockedPrescriptionInformation = info
   }
 
+  const clear: PrescriptionInformationContextType["clear"] = () => {
+    window.__mockedPrescriptionInformation = undefined
+  }
+
   return (
-    <PrescriptionInformationContext.Provider value={{prescriptionInformation: null, setPrescriptionInformation}}>
+    <PrescriptionInformationContext.Provider
+      value={{prescriptionInformation: undefined, setPrescriptionInformation, clear}}
+    >
       {children}
     </PrescriptionInformationContext.Provider>
   )
