@@ -10,7 +10,9 @@ jest.mock("@/constants/ui-strings/SiteDetailsCardsStrings", () => ({
   CONTACT_DETAILS: "Contact Details",
   DISPENSER: "Dispenser",
   NOMINATED_DISPENSER: "Nominated Dispenser",
-  ODS_LABEL: (name: string, odsCode: string) => `${name} (${odsCode})`,
+  // I put a bit of noise in this function to check that the mock one is being used,
+  // and not some hardcoded something or other
+  ODS_LABEL: (name: string, odsCode: string) => `${name} SPAM AND EGGS (${odsCode})`,
   PRESCRIBED_FROM: "Prescribed From",
   PRESCRIBER: "Prescriber"
 }))
@@ -36,17 +38,17 @@ describe("SiteDetailsCard Component", () => {
     const card = screen.getByTestId("site-card-test-heading")
     expect(card).toBeInTheDocument()
 
-    // look for heading and organization details using the ODS_LABEL helper
     expect(screen.getByText("Test Heading")).toBeInTheDocument()
-    expect(screen.getByText(`${baseProps.name} (${baseProps.odsCode})`)).toBeInTheDocument()
+    // check that the ODS_LABEL helper is being used, and has outputted the correct format
+    expect(screen.getByText(`${baseProps.name} SPAM AND EGGS (${baseProps.odsCode})`)).toBeInTheDocument()
 
     expect(screen.getByText(baseProps.address)).toBeInTheDocument()
     expect(screen.getByText("Contact Details")).toBeInTheDocument()
     expect(screen.getByText(baseProps.telephone)).toBeInTheDocument()
 
     // Check that the prescribedFrom section is rendered using its test id
-    const prescribedEl = screen.getByTestId("site-card-prescribed-from")
-    expect(prescribedEl).toBeInTheDocument()
+    const prescribedFromEl = screen.getByTestId("site-card-prescribed-from")
+    expect(prescribedFromEl).toBeInTheDocument()
     expect(screen.getByText("Prescribed From")).toBeInTheDocument()
     expect(screen.getByText("Test Prescribed")).toBeInTheDocument()
   })
@@ -65,7 +67,7 @@ describe("SiteDetailsCard Component", () => {
 
     // Required fields
     expect(screen.getByText("Test Heading")).toBeInTheDocument()
-    expect(screen.getByText(`${baseProps.name} (${baseProps.odsCode})`)).toBeInTheDocument()
+    expect(screen.getByText(`${baseProps.name} SPAM AND EGGS (${baseProps.odsCode})`)).toBeInTheDocument()
     expect(screen.getByText(baseProps.address)).toBeInTheDocument()
     expect(screen.getByText("Contact Details")).toBeInTheDocument()
     expect(screen.getByText(baseProps.telephone)).toBeInTheDocument()
@@ -113,17 +115,18 @@ describe("SiteDetailsCards Component", () => {
     expect(screen.getByTestId("site-card-prescriber")).toBeInTheDocument()
 
     // prescriber card
-    expect(screen.getByText(`${prescriber.name} (${prescriber.odsCode})`)).toBeInTheDocument()
+    expect(screen.getByText(`${prescriber.name} SPAM AND EGGS (${prescriber.odsCode})`)).toBeInTheDocument()
     expect(screen.getByText(prescriber.address)).toBeInTheDocument()
     expect(screen.getByText(prescriber.telephone)).toBeInTheDocument()
 
     // dispenser card
-    expect(screen.getByText(`${dispenser.name} (${dispenser.odsCode})`)).toBeInTheDocument()
+    expect(screen.getByText(`${dispenser.name} SPAM AND EGGS (${dispenser.odsCode})`)).toBeInTheDocument()
     expect(screen.getByText(dispenser.address)).toBeInTheDocument()
     expect(screen.getByText(dispenser.telephone)).toBeInTheDocument()
 
     // nominated dispenser card
-    expect(screen.getByText(`${nominatedDispenser.name} (${nominatedDispenser.odsCode})`)).toBeInTheDocument()
+    expect(screen.getByText(`${nominatedDispenser.name} SPAM AND EGGS (${nominatedDispenser.odsCode})`))
+      .toBeInTheDocument()
     expect(screen.getByText(nominatedDispenser.address)).toBeInTheDocument()
     expect(screen.getByText(nominatedDispenser.telephone)).toBeInTheDocument()
 

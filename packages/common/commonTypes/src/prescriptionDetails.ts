@@ -1,4 +1,3 @@
-// Patient Details
 export interface PersonName {
     prefix?: string;
     given: string;
@@ -24,7 +23,6 @@ export interface PatientDetails {
     address: Address;
 }
 
-// Item Details for Prescribed Items
 export interface PrescribedItemDetails {
     medicationName: string;
     quantity: string;
@@ -82,7 +80,7 @@ export interface OrganisationSummary {
 
 // The prescriber's organisation has an extra property
 export interface PrescriberOrganisationSummary extends OrganisationSummary {
-    prescribedFrom: string;
+    prescribedFrom?: string;
 }
 
 export interface PrescriberOrganisation {
@@ -93,7 +91,7 @@ export interface DispenserOrganisation {
     organisationSummaryObjective: OrganisationSummary;
 }
 
-// Main Response Interface
+// Complete response
 export interface PrescriptionDetailsResponse {
     patientDetails: PatientDetails;
     prescriptionID: string;

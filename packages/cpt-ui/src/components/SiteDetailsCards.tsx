@@ -16,6 +16,7 @@ import {
 
 export type SiteDetailsCardProps = OrganisationSummary & {
   heading: string
+  // This is a bit of a kludge, but its cleaner than defining two new prop types
   prescribedFrom?: string
 }
 
@@ -48,7 +49,7 @@ export function SiteDetailsCard({
     <Card
       cardType="primary"
       clickable={false}
-      className="site-card" // shadow class adds the bottom shadow, if required
+      className="site-card" // "shadow" class adds the bottom shadow, if required
       // The test id here includes the heading - later, this will be used for regression tests to find the cards
       data-testid={`site-card-${heading.replaceAll(" ", "-").toLowerCase()}`}
     >
