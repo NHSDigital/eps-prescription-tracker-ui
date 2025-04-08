@@ -29,7 +29,7 @@
     "uuid": "^11.1.0"
   },
   "devDependencies": {
-    "@swc/core": "^1.11.16",
+    "@swc/core": "^1.11.18",
     "@swc/jest": "^0.2.37",
     "@testing-library/jest-dom": "^6.6.2",
     "@testing-library/react": "^16.3.0",
@@ -42,7 +42,7 @@
     "@typescript-eslint/parser": "^8.28.0",
     "@vitejs/plugin-react": "^4.2.1",
     "@vitejs/plugin-react-swc": "^3.8.1",
-    "eslint": "^9.23.0",
+    "eslint": "^9.24.0",
     "eslint-plugin-jest": "^28.11.0",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^5.2.0",
@@ -54,7 +54,7 @@
     "jest-watch-typeahead": "^2.2.2",
     "sass": "^1.86.3",
     "ts-jest": "^29.3.1",
-    "typescript": "^5.8.2",
+    "typescript": "^5.8.3",
     "vite": "^6.2.5"
   }
 }
