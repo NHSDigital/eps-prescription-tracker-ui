@@ -10,17 +10,17 @@ jest.mock("@/constants/ui-strings/SiteDetailsCardsStrings", () => ({
   CONTACT_DETAILS: "Contact Details",
   DISPENSER: "Dispenser",
   NOMINATED_DISPENSER: "Nominated Dispenser",
-  ODS_LABEL: (orgName: string, orgOds: string) => `${orgName} (${orgOds})`,
+  ODS_LABEL: (name: string, odsCode: string) => `${name} (${odsCode})`,
   PRESCRIBED_FROM: "Prescribed From",
   PRESCRIBER: "Prescriber"
 }))
 
 describe("SiteDetailsCard Component", () => {
   const baseProps = {
-    orgName: "Test Org",
-    orgOds: "ABC123",
+    name: "Test Org",
+    odsCode: "ABC123",
     address: "123 Test Street",
-    contact: "01234567890"
+    telephone: "01234567890"
   }
 
   it("renders SiteDetailsCard with prescribedFrom", () => {
@@ -38,11 +38,11 @@ describe("SiteDetailsCard Component", () => {
 
     // look for heading and organization details using the ODS_LABEL helper
     expect(screen.getByText("Test Heading")).toBeInTheDocument()
-    expect(screen.getByText(`${baseProps.orgName} (${baseProps.orgOds})`)).toBeInTheDocument()
+    expect(screen.getByText(`${baseProps.name} (${baseProps.odsCode})`)).toBeInTheDocument()
 
     expect(screen.getByText(baseProps.address)).toBeInTheDocument()
     expect(screen.getByText("Contact Details")).toBeInTheDocument()
-    expect(screen.getByText(baseProps.contact)).toBeInTheDocument()
+    expect(screen.getByText(baseProps.telephone)).toBeInTheDocument()
 
     // Check that the prescribedFrom section is rendered using its test id
     const prescribedEl = screen.getByTestId("site-card-prescribed-from")
@@ -65,10 +65,10 @@ describe("SiteDetailsCard Component", () => {
 
     // Required fields
     expect(screen.getByText("Test Heading")).toBeInTheDocument()
-    expect(screen.getByText(`${baseProps.orgName} (${baseProps.orgOds})`)).toBeInTheDocument()
+    expect(screen.getByText(`${baseProps.name} (${baseProps.odsCode})`)).toBeInTheDocument()
     expect(screen.getByText(baseProps.address)).toBeInTheDocument()
     expect(screen.getByText("Contact Details")).toBeInTheDocument()
-    expect(screen.getByText(baseProps.contact)).toBeInTheDocument()
+    expect(screen.getByText(baseProps.telephone)).toBeInTheDocument()
 
     // The prescribedFrom section should be absent
     expect(screen.queryByTestId("site-card-prescribed-from")).not.toBeInTheDocument()
@@ -77,25 +77,25 @@ describe("SiteDetailsCard Component", () => {
 
 describe("SiteDetailsCards Component", () => {
   const prescriber = {
-    orgName: "Prescriber Org",
-    orgOds: "11111",
+    name: "Prescriber Org",
+    odsCode: "11111",
     address: "Prescriber Address",
-    contact: "prescriber@example.com"
+    telephone: "prescriber@example.com",
+    prescribedFrom: "Nominated Prescribed"
   }
 
   const dispenser = {
-    orgName: "Dispenser Org",
-    orgOds: "22222",
+    name: "Dispenser Org",
+    odsCode: "22222",
     address: "Dispenser Address",
-    contact: "dispenser@example.com"
+    telephone: "dispenser@example.com"
   }
 
   const nominatedDispenser = {
-    orgName: "Nominated Dispenser Org",
-    orgOds: "33333",
+    name: "Nominated Dispenser Org",
+    odsCode: "33333",
     address: "Nominated Address",
-    contact: "nominated@example.com",
-    prescribedFrom: "Nominated Prescribed"
+    telephone: "nominated@example.com"
   }
 
   it("renders all three SiteDetailsCards when all props are provided", () => {
@@ -113,27 +113,27 @@ describe("SiteDetailsCards Component", () => {
     expect(screen.getByTestId("site-card-prescriber")).toBeInTheDocument()
 
     // prescriber card
-    expect(screen.getByText(`${prescriber.orgName} (${prescriber.orgOds})`)).toBeInTheDocument()
+    expect(screen.getByText(`${prescriber.name} (${prescriber.odsCode})`)).toBeInTheDocument()
     expect(screen.getByText(prescriber.address)).toBeInTheDocument()
-    expect(screen.getByText(prescriber.contact)).toBeInTheDocument()
+    expect(screen.getByText(prescriber.telephone)).toBeInTheDocument()
 
     // dispenser card
-    expect(screen.getByText(`${dispenser.orgName} (${dispenser.orgOds})`)).toBeInTheDocument()
+    expect(screen.getByText(`${dispenser.name} (${dispenser.odsCode})`)).toBeInTheDocument()
     expect(screen.getByText(dispenser.address)).toBeInTheDocument()
-    expect(screen.getByText(dispenser.contact)).toBeInTheDocument()
+    expect(screen.getByText(dispenser.telephone)).toBeInTheDocument()
 
     // nominated dispenser card
-    expect(screen.getByText(`${nominatedDispenser.orgName} (${nominatedDispenser.orgOds})`)).toBeInTheDocument()
+    expect(screen.getByText(`${nominatedDispenser.name} (${nominatedDispenser.odsCode})`)).toBeInTheDocument()
     expect(screen.getByText(nominatedDispenser.address)).toBeInTheDocument()
-    expect(screen.getByText(nominatedDispenser.contact)).toBeInTheDocument()
+    expect(screen.getByText(nominatedDispenser.telephone)).toBeInTheDocument()
 
     // check for the prescribedFrom section
-    const nominatedCard = screen.getByTestId("site-card-nominated-dispenser")
-    // Make sure we only look for the prescribedFrom text, within the nominated card!
-    const prescribedEl = within(nominatedCard).getByTestId("site-card-prescribed-from")
+    const prescriberCard = screen.getByTestId("site-card-prescriber")
+    // Make sure we only look for the prescribedFrom text, within the prescriber card!
+    const prescribedEl = within(prescriberCard).getByTestId("site-card-prescribed-from")
     expect(prescribedEl).toBeInTheDocument()
     expect(screen.getByText("Prescribed From")).toBeInTheDocument()
-    expect(screen.getByText(nominatedDispenser.prescribedFrom)).toBeInTheDocument()
+    expect(screen.getByText(prescriber.prescribedFrom)).toBeInTheDocument()
   })
 
   it("renders only prescriber card when dispenser and nominatedDispenser are not provided", () => {

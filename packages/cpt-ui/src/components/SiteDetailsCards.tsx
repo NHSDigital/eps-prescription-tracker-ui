@@ -1,5 +1,7 @@
 import {Card, Col, Row} from "nhsuk-react-components"
 
+import {PrescriberOrganisationSummary, OrganisationSummary} from "@cpt-ui-common/common-types/src/prescriptionDetails"
+
 import {
   CONTACT_DETAILS,
   DISPENSER,
@@ -14,44 +16,44 @@ import {
 
 export type SiteDetailsCardProps = {
   heading: string
-  orgName?: string
-  orgOds: string
+  name?: string
+  odsCode: string
   address?: string
-  contact?: string
+  telephone?: string
   prescribedFrom?: string
 }
 
 export type SiteDetailsProps = Omit<SiteDetailsCardProps, "heading">
 
 export type SiteDetailsCardsProps = {
-  prescriber: SiteDetailsProps
-  dispenser?: SiteDetailsProps
-  nominatedDispenser?: SiteDetailsProps
+  prescriber: PrescriberOrganisationSummary
+  dispenser?: OrganisationSummary
+  nominatedDispenser?: OrganisationSummary
 }
 
 export function SiteDetailsCard({
   heading,
-  orgName,
-  orgOds,
+  name,
+  odsCode,
   address,
-  contact,
+  telephone,
   prescribedFrom
 }: SiteDetailsCardProps) {
-  if (!orgName) {
-    orgName = NO_ORG_NAME
+  if (!name) {
+    name = NO_ORG_NAME
   }
   if (!address) {
     address = NO_ADDRESS
   }
-  if (!contact) {
-    contact = NO_CONTACT
+  if (!telephone) {
+    telephone = NO_CONTACT
   }
 
   return (
     <Card
       cardType="primary"
       clickable={false}
-      className="site-card"
+      className="site-card" // shadow class adds the bottom shadow, if required
       // The test id here includes the heading - later, this will be used for regression tests to find the cards
       data-testid={`site-card-${heading.replaceAll(" ", "-").toLowerCase()}`}
     >
@@ -60,13 +62,13 @@ export function SiteDetailsCard({
           <p className="nhsuk-u-margin-bottom-2">
             <strong>{heading}</strong>
             <br />
-            {ODS_LABEL(orgName, orgOds)}
+            {ODS_LABEL(name, odsCode)}
           </p>
           <p className="nhsuk-u-margin-bottom-2">{address}</p>
           <p className="nhsuk-u-margin-bottom-2">
             <strong>{CONTACT_DETAILS}</strong>
             <br />
-            {contact}
+            {telephone}
           </p>
           {prescribedFrom && (
             <p className="nhsuk-u-margin-bottom-1" data-testid="site-card-prescribed-from">

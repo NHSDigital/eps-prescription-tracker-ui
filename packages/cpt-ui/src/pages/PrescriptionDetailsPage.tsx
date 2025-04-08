@@ -3,14 +3,50 @@ import {useNavigate, useSearchParams} from "react-router-dom"
 
 import {Col, Container, Row} from "nhsuk-react-components"
 
+import {
+  PrescriberOrganisationSummary,
+  OrganisationSummary,
+  PrescriptionDetailsResponse
+} from "@cpt-ui-common/common-types/src/prescriptionDetails"
+
 import {AuthContext} from "@/context/AuthProvider"
 
 import {API_ENDPOINTS, FRONTEND_PATHS, NHS_REQUEST_URID} from "@/constants/environment"
 
 import EpsSpinner from "@/components/EpsSpinner"
-import {SiteDetailsCards, SiteDetailsProps} from "@/components/SiteDetailsCards"
+import {SiteDetailsCards} from "@/components/SiteDetailsCards"
 
 import http from "@/helpers/axios"
+
+// Mock data, lifted from the prototype page.
+const mockPrescriber: PrescriberOrganisationSummary = {
+  name: "Fiji surgery",
+  odsCode: "FI05964",
+  address: "90 YARROW LANE, FINNSBURY, E45 T46",
+  telephone: "01232 231321",
+  prescribedFrom: "England"
+}
+
+const mockDispenser: OrganisationSummary = {
+  name: "Cohens chemist",
+  odsCode: "FV519",
+  address: "22 RUE LANE, CHISWICK, KT19 D12",
+  telephone: "01943 863158"
+}
+
+const mockNominatedDispenser: OrganisationSummary = {
+  name: "Cohens chemist",
+  odsCode: "FV519",
+  address: "22 RUE LANE, CHISWICK, KT19 D12",
+  telephone: "01943 863158"
+}
+
+const altMockNominatedDispenser: OrganisationSummary = {
+  name: "Some Guy",
+  odsCode: "ABC123",
+  address: "7&8 WELLINGTON PLACE, LEEDS, LS1 4AP",
+  telephone: "07712 345678"
+}
 
 export default function PrescriptionDetailsPage() {
   const auth = useContext(AuthContext)
@@ -19,39 +55,9 @@ export default function PrescriptionDetailsPage() {
 
   const [loading, setLoading] = useState(true)
 
-  const [prescriber, setPrescriber] = useState<SiteDetailsProps | undefined>()
-  const [nominatedDispenser, setNominatedDispenser] = useState<SiteDetailsProps | undefined>()
-  const [dispenser, setDispenser] = useState<SiteDetailsProps | undefined>()
-
-  // Mock data, lifted from the prototype page.
-  const mockPrescriber: SiteDetailsProps = {
-    orgName: "Fiji surgery",
-    orgOds: "FI05964",
-    address: "90 YARROW LANE, FINNSBURY, E45 T46",
-    contact: "01232 231321",
-    prescribedFrom: "England"
-  }
-
-  const mockDispenser: SiteDetailsProps = {
-    orgName: "Cohens chemist",
-    orgOds: "FV519",
-    address: "22 RUE LANE, CHISWICK, KT19 D12",
-    contact: "01943 863158"
-  }
-
-  const mockNominatedDispenser: SiteDetailsProps = {
-    orgName: "Cohens chemist",
-    orgOds: "FV519",
-    address: "22 RUE LANE, CHISWICK, KT19 D12",
-    contact: "01943 863158"
-  }
-
-  const altMockNominatedDispenser: SiteDetailsProps = {
-    orgName: "Some Guy",
-    orgOds: "ABC123",
-    address: "7&8 WELLINGTON PLACE, LEEDS, LS1 4AP",
-    contact: "07712 345678"
-  }
+  const [prescriber, setPrescriber] = useState<PrescriberOrganisationSummary | undefined>()
+  const [nominatedDispenser, setNominatedDispenser] = useState<OrganisationSummary | undefined>()
+  const [dispenser, setDispenser] = useState<OrganisationSummary | undefined>()
 
   const getPrescriptionDetails = async (prescriptionId: string) => {
     console.log("Prescription ID", prescriptionId)
@@ -68,7 +74,23 @@ export default function PrescriptionDetailsPage() {
         throw new Error(`Status Code: ${response.status}`)
       }
 
-      // TODO: Implement parsing out the response here... Blocked by AEA-4752
+      // TODO: Implement parsing out the response here...
+      const payload: PrescriptionDetailsResponse = response.data
+
+      setPrescriber(payload.prescriberOrganisation.organisationSummaryObjective)
+
+      if (!payload.currentDispenser) {
+        setDispenser(undefined)
+      } else {
+        setDispenser(payload.currentDispenser[0].organisationSummaryObjective)
+      }
+
+      if (!payload.nominatedDispenser) {
+        setNominatedDispenser(undefined)
+      } else {
+        setNominatedDispenser(payload.nominatedDispenser.organisationSummaryObjective)
+      }
+
     } catch (err) {
       console.error(err)
       // FIXME: Mock data for now, since we cant get live data.
@@ -92,10 +114,10 @@ export default function PrescriptionDetailsPage() {
         setPrescriber(mockPrescriber)
         setDispenser(mockDispenser)
         setNominatedDispenser({
-          orgName: undefined,
-          orgOds: "FV519",
+          name: undefined,
+          odsCode: "FV519",
           address: undefined,
-          contact: undefined
+          telephone: undefined
         })
       } else {
         setPrescriber(undefined)
