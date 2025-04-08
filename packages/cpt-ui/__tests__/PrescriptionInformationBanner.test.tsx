@@ -37,7 +37,7 @@ describe("PrescriptionInformationBanner", () => {
       issueDate: "18-Jan-2024",
       status: "All items dispensed",
       type: "Acute"
-    } // as const or as any if needed
+    }
 
     renderWithContext(data)
 
