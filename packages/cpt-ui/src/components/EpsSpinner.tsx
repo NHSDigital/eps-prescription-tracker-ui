@@ -3,6 +3,7 @@ import React from "react"
 import {EpsSpinnerStrings} from "@/constants/ui-strings/EpsSpinnerStrings"
 
 function Spinner({
+  message = EpsSpinnerStrings.loading,
   radius = 100,
   thickness = 12,
   fraction = 0.2, // The fraction of the hoop that is green
@@ -73,20 +74,40 @@ function Spinner({
             />
           </g>
 
-          {/* "Loading..." text in the center */}
-          <text
-            x="50%"
-            y="50%"
-            textAnchor="middle"
-            dominantBaseline="central"
-            fontSize="1.5rem"
-            style={{
-              transformOrigin: "50% 50%",
-              rotate: "90deg"
-            }}
-          >
-            {EpsSpinnerStrings.loading}
-          </text>
+          {message.includes("\n") ? (
+            <text
+              x="50%"
+              y="40%"
+              textAnchor="middle"
+              dominantBaseline="central"
+              fontSize="1.5rem"
+              style={{
+                transformOrigin: "50% 50%",
+                rotate: "90deg",
+                whiteSpace: "pre"
+              }}
+            >
+              {message.split("\n").map((line, index) => (
+                <tspan key={index} x="50%" dy={index === 0 ? 0 : "1.2em"}>
+                  {line}
+                </tspan>
+              ))}
+            </text>
+          ) : (
+            <text
+              x="50%"
+              y="50%"
+              textAnchor="middle"
+              dominantBaseline="central"
+              fontSize="1.5rem"
+              style={{
+                transformOrigin: "50% 50%",
+                rotate: "90deg"
+              }}
+            >
+              {message}
+            </text>
+          )}
         </svg>
 
         {/* Inline keyframes for the spin animation */}
