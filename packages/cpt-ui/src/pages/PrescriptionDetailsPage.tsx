@@ -103,7 +103,7 @@ export default function PrescriptionDetailsPage() {
       <Container>
         <Row>
           <Col width="full">
-            <h2 className="nhsuk-heading-l">Prescription Details</h2>
+            <h2 className="nhsuk-heading-l">{PRESCRIPTION_DETAILS_PAGE_STRINGS.PAGE_TITLE}</h2>
           </Col>
         </Row>
       </Container>
