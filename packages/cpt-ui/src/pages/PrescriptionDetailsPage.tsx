@@ -44,7 +44,8 @@ const mockNominatedDispenser: OrganisationSummary = {
 const altMockNominatedDispenser: OrganisationSummary = {
   name: "Some Guy",
   odsCode: "ABC123",
-  address: "7&8 WELLINGTON PLACE, LEEDS, LS1 4AP",
+  // eslint-disable-next-line max-len
+  address: "7&8 WELLINGTON PLACE, thisisaverylongwordthatshouldtriggerthelinetowraparoundwhilstbreakingthewordupintosmallerchunks, LEEDS, LS1 4AP",
   telephone: "07712 345678"
 }
 
