@@ -14,16 +14,10 @@ import {
   NO_CONTACT
 } from "@/constants/ui-strings/SiteDetailsCardsStrings"
 
-export type SiteDetailsCardProps = {
+export type SiteDetailsCardProps = OrganisationSummary & {
   heading: string
-  name?: string
-  odsCode: string
-  address?: string
-  telephone?: string
   prescribedFrom?: string
 }
-
-export type SiteDetailsProps = Omit<SiteDetailsCardProps, "heading">
 
 export type SiteDetailsCardsProps = {
   prescriber: PrescriberOrganisationSummary
@@ -39,6 +33,7 @@ export function SiteDetailsCard({
   telephone,
   prescribedFrom
 }: SiteDetailsCardProps) {
+
   if (!name) {
     name = NO_ORG_NAME
   }
