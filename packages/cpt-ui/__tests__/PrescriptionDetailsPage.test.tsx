@@ -1,9 +1,9 @@
-import React from "react"
+import React, {useState} from "react"
 import {useNavigate, useSearchParams} from "react-router-dom"
 
 import {render, screen, waitFor} from "@testing-library/react"
 
-import {AuthContext} from "@/context/AuthProvider"
+import {AuthContext, AuthContextType} from "@/context/AuthProvider"
 
 import {FRONTEND_PATHS} from "@/constants/environment"
 
@@ -31,6 +31,67 @@ jest.mock("react-router-dom", () => {
   }
 })
 
+const mockCognitoSignIn = jest.fn()
+const mockCognitoSignOut = jest.fn()
+
+const defaultAuthState: AuthContextType = {
+  isSignedIn: false,
+  user: null,
+  error: null,
+  idToken: null,
+  accessToken: null,
+  cognitoSignIn: mockCognitoSignIn,
+  cognitoSignOut: mockCognitoSignOut
+}
+
+// Auth provider mock
+const MockAuthProvider = ({
+  children,
+  initialState = defaultAuthState
+}: {
+  children: React.ReactNode;
+  initialState?: AuthContextType;
+}) => {
+  const [authState, setAuthState] = useState<AuthContextType>({
+    ...initialState,
+    cognitoSignIn: async (input) => {
+      mockCognitoSignIn(input)
+      // Simulate a sign-in update
+      setAuthState((prev) => ({
+        ...prev,
+        isSignedIn: true,
+        user: {
+          username:
+            (input?.provider as { custom: string })?.custom || "mockUser",
+          userId: "mock-user-id"
+        },
+        error: null,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        idToken: {toString: () => "mockIdToken"} as any,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        accessToken: {toString: () => "mockAccessToken"} as any
+      }))
+    },
+    cognitoSignOut: async () => {
+      mockCognitoSignOut()
+      setAuthState((prev) => ({
+        ...prev,
+        isSignedIn: false,
+        user: null,
+        error: null,
+        idToken: null,
+        accessToken: null
+      }))
+    }
+  })
+
+  return (
+    <AuthContext.Provider value={authState}>
+      {children}
+    </AuthContext.Provider>
+  )
+}
+
 // Mock the spinner component.
 jest.mock("@/components/EpsSpinner", () => () => (
   <div data-testid="eps-spinner">Spinner</div>
@@ -42,7 +103,7 @@ type SiteDetailsCardsProps = {
   nominatedDispenser?: OrganisationSummary
 }
 
-// Create a simple mock for SiteDetailsCards so we can inspect the props.
+// simple mock for SiteDetailsCards so we can inspect the props.
 jest.mock("@/components/SiteDetailsCards", () => ({
 
   SiteDetailsCards: (props: SiteDetailsCardsProps) => {
@@ -54,26 +115,26 @@ jest.mock("@/components/SiteDetailsCards", () => ({
   }
 }))
 
-// --- Test Suite ---
+// Helper to render the component with a given query string.
+const renderComponent = (
+  searchParamString: string = "",
+  initialAuthState: AuthContextType = defaultAuthState
+) => {
+  (useSearchParams as jest.Mock).mockReturnValue([new URLSearchParams(searchParamString)])
+  return render(
+    <MockAuthProvider initialState={initialAuthState}>
+      <PrescriptionDetailsPage />
+    </MockAuthProvider>
+  )
+}
 
 describe("PrescriptionDetailsPage", () => {
   const mockNavigate = jest.fn()
-  const fakeAuth = {idToken: "fakeToken"}
 
   beforeEach(() => {
     mockNavigate.mockClear();
     (useNavigate as jest.Mock).mockReturnValue(mockNavigate)
   })
-
-  // Helper to render the component with a given query string.
-  function renderComponent(searchParamString: string = "") {
-    (useSearchParams as jest.Mock).mockReturnValue([new URLSearchParams(searchParamString)])
-    return render(
-      <AuthContext.Provider value={fakeAuth}>
-        <PrescriptionDetailsPage />
-      </AuthContext.Provider>
-    )
-  }
 
   it("renders spinner while loading", async () => {
     // For this test, simulate a pending HTTP request.
@@ -207,6 +268,9 @@ describe("PrescriptionDetailsPage", () => {
     const props = JSON.parse(cards.textContent || "{}")
 
     expect(props.prescriber).toEqual(payload.prescriberOrganisation.organisationSummaryObjective)
+    if (!payload.currentDispenser || !payload.nominatedDispenser) {
+      throw new Error("Expected the payload to be populated")
+    }
     expect(props.dispenser).toEqual(payload.currentDispenser[0].organisationSummaryObjective)
     expect(props.nominatedDispenser).toEqual(payload.nominatedDispenser.organisationSummaryObjective)
   })
