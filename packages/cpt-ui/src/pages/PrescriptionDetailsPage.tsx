@@ -4,7 +4,7 @@ import {usePrescriptionInformation} from "@/context/PrescriptionInformationProvi
 import {usePatientDetails} from "@/context/PatientDetailsProvider"
 import {Container, Row, Col} from "nhsuk-react-components"
 import EpsSpinner from "@/components/EpsSpinner"
-import {EpsSpinnerStrings} from "@/constants/ui-strings/EpsSpinnerStrings"
+import {PRESCRIPTION_DETAILS_PAGE_STRINGS} from "@/constants/ui-strings/PrescriptionDetailsPageStrings"
 
 export default function PrescriptionDetailsPage() {
   const [searchParams] = useSearchParams()
@@ -89,7 +89,8 @@ export default function PrescriptionDetailsPage() {
         <Container>
           <Row>
             <Col width="full">
-              <EpsSpinner message={EpsSpinnerStrings.loadingFullPrescription} />
+              <h2>{PRESCRIPTION_DETAILS_PAGE_STRINGS.LOADING_FULL_PRESCRIPTION}</h2>
+              <EpsSpinner />
             </Col>
           </Row>
         </Container>
