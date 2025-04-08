@@ -13,8 +13,8 @@ import EpsSpinner from "@/components/EpsSpinner"
 import {PRESCRIPTION_LIST_PAGE_STRINGS} from "@/constants/ui-strings/PrescriptionListPageStrings"
 import {API_ENDPOINTS, FRONTEND_PATHS, NHS_REQUEST_URID} from "@/constants/environment"
 import {PatientDetails} from "@cpt-ui-common/common-types"
-
 import {usePatientDetails} from "@/context/PatientDetailsProvider"
+import {EPSPrescriptionTable} from "@/components/EPSPrescriptionTable"
 
 export default function PrescriptionListPage() {
   // TODO: mock data - in the real implementation, this would come from props or context
@@ -200,6 +200,9 @@ export default function PrescriptionListPage() {
           </p>
           <div data-testid="prescription-results-list">
             {/* Prescription list items would go here */}
+            <div>
+              <EPSPrescriptionTable />
+            </div>
           </div>
         </Container>
       </main>

@@ -60,6 +60,7 @@
         "typescript-eslint": "^8.28.0"
     },
     "dependencies": {
+        "@ministryofjustice/frontend": "^4.0.1",
         "conventional-changelog-eslint": "^6.0.0",
         "esbuild": "^0.25.2",
         "next": "^15.2.4",
