@@ -142,91 +142,96 @@ export default function PrescriptionListPage() {
   const [backLinkTarget, setBackLinkTarget] = useState<string>(PRESCRIPTION_LIST_PAGE_STRINGS.DEFAULT_BACK_LINK_TARGET)
   const [loading, setLoading] = useState(true)
 
+  const getSearchDetails = () => {
+    const prescriptionId = queryParams.get("prescriptionId")
+    const nhsNumber = queryParams.get("nhsNumber")
+
+    if (prescriptionId) {
+      return {
+        searchType: "prescriptionId",
+        searchValue: prescriptionId,
+        backLink: PRESCRIPTION_LIST_PAGE_STRINGS.PRESCRIPTION_ID_SEARCH_TARGET
+      }
+    } else if (nhsNumber) {
+      return {
+        searchType: "nhsNumber",
+        searchValue: nhsNumber,
+        backLink: PRESCRIPTION_LIST_PAGE_STRINGS.NHS_NUMBER_SEARCH_TARGET
+      }
+    }
+    return {
+      searchType: "",
+      searchValue: "",
+      backLink: PRESCRIPTION_LIST_PAGE_STRINGS.DEFAULT_BACK_LINK_TARGET
+    }
+  }
+
   useEffect(() => {
     const runSearch = async () => {
-      const hasPrescriptionId = !!queryParams.get("prescriptionId")
-      const hasNhsNumber = !!queryParams.get("nhsNumber")
+      const {searchType, searchValue, backLink} = getSearchDetails()
+      setBackLinkTarget(backLink)
 
-      // Local version to prevent a race condition
-      let newBackLinkTarget = backLinkTarget
-
-      // determine which search page to go back to based on query parameters
-      if (hasPrescriptionId) {
-        newBackLinkTarget = PRESCRIPTION_LIST_PAGE_STRINGS.PRESCRIPTION_ID_SEARCH_TARGET
-        setBackLinkTarget(newBackLinkTarget)
-      } else if (hasNhsNumber) {
-        newBackLinkTarget = PRESCRIPTION_LIST_PAGE_STRINGS.NHS_NUMBER_SEARCH_TARGET
-        setBackLinkTarget(newBackLinkTarget)
-      }
-
-      let searchResults: SearchResponse | undefined
-      let searchValue: string = ""
-
-      if (hasPrescriptionId) {
-        searchValue = queryParams.get("prescriptionId")!
-        searchResults = await searchPrescriptionID(searchValue)
-      }
-
-      if (hasNhsNumber) {
-        searchValue = queryParams.get("nhsNumber")!
-        // Assuming you’ll also refactor searchNhsNumber to be async
-        searchResults = await searchNhsNumber(searchValue)
-      }
-
-      if (!searchResults) {
-        console.error("No search results were returned", searchResults)
-
-        // Send the search method and parameters to the not found page
-        let searchType
-        if (hasPrescriptionId) {
-          searchType = "prescriptionId"
-        } else if (hasNhsNumber) {
-          searchType = "nhsNumber"
-        }
-
-        navigate(FRONTEND_PATHS.PRESCRIPTION_NOT_FOUND + "?" + queryParams.toString() + `&searchType=${searchType}`)
+      // If neither search parameter exists, we cant find anything"
+      if (!searchType || !searchValue) {
+        navigate(FRONTEND_PATHS.PRESCRIPTION_NOT_FOUND)
         return
       }
 
-      if (
-        searchResults.currentPrescriptions.length === 0
-        && searchResults.pastPrescriptions.length === 0
-        && searchResults.futurePrescriptions.length === 0
-      ) {
-        console.error("A patient was returned, but they do not have any prescriptions.", searchResults)
-        navigate(FRONTEND_PATHS.PRESCRIPTION_NOT_FOUND + "?" + queryParams.toString())
+      // These parameters will be passed to the not found page, if we need/want to
+      const receivedSearchParams = `?searchType=${searchType}&${queryParams.toString()}`
+
+      // Perform the appropriate search based on type.
+      let searchResults: SearchResponse | undefined
+      if (searchType === "prescriptionId") {
+        searchResults = await searchPrescriptionID(searchValue)
+      } else if (searchType === "nhsNumber") {
+        searchResults = await searchNhsNumber(searchValue)
       }
 
-      setCurrentPrescriptions(searchResults.currentPrescriptions)
-      setFuturePrescriptions(searchResults.futurePrescriptions)
-      setPastPrescriptions(searchResults.pastPrescriptions)
-      setPatientDetails(searchResults.patient)
+      // If no results are returned, send the user to the not found page and preserve their query
+      if (!searchResults) {
+        console.error("No search results were returned", searchResults)
+        navigate(FRONTEND_PATHS.PRESCRIPTION_NOT_FOUND + receivedSearchParams)
+        return
+      }
 
-      setPrescriptionCount(
-        searchResults.pastPrescriptions.length +
-          searchResults.futurePrescriptions.length +
-          searchResults.currentPrescriptions.length
-      )
+      // we have results, so handle setting them
+      const {currentPrescriptions, pastPrescriptions, futurePrescriptions, patient} = searchResults
+      const totalPrescriptions =
+        currentPrescriptions.length + pastPrescriptions.length + futurePrescriptions.length
+
+      if (totalPrescriptions === 0) {
+        console.error("A patient was returned, but they do not have any prescriptions.", searchResults)
+        navigate(FRONTEND_PATHS.PRESCRIPTION_NOT_FOUND + receivedSearchParams)
+        return
+      }
+
+      // Update states
+      setCurrentPrescriptions(currentPrescriptions)
+      setFuturePrescriptions(futurePrescriptions)
+      setPastPrescriptions(pastPrescriptions)
+      setPatientDetails(patient)
+      setPrescriptionCount(totalPrescriptions)
 
       setTabData([
         {
           link: PRESCRIPTION_LIST_TABS.current.link(queryParams.toString()),
-          title: PRESCRIPTION_LIST_TABS.current.title(searchResults.currentPrescriptions.length)
+          title: PRESCRIPTION_LIST_TABS.current.title(currentPrescriptions.length)
         },
         {
           link: PRESCRIPTION_LIST_TABS.future.link(queryParams.toString()),
-          title: PRESCRIPTION_LIST_TABS.future.title(searchResults.futurePrescriptions.length)
+          title: PRESCRIPTION_LIST_TABS.future.title(futurePrescriptions.length)
         },
         {
           link: PRESCRIPTION_LIST_TABS.past.link(queryParams.toString()),
-          title: PRESCRIPTION_LIST_TABS.past.title(searchResults.pastPrescriptions.length)
+          title: PRESCRIPTION_LIST_TABS.past.title(pastPrescriptions.length)
         }
       ])
     }
 
     setLoading(true)
     runSearch().finally(() => setLoading(false))
-  }, [queryParams])
+  }, [queryParams, navigate, setPatientDetails])
 
   // TODO: This should return the search results. For now, just return true or false for mock stuff.
   const searchPrescriptionID = async (prescriptionId: string): Promise<SearchResponse | undefined> => {
