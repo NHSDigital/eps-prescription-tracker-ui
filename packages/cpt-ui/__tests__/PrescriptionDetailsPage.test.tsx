@@ -1,6 +1,12 @@
 import React, {useState} from "react"
 import {useNavigate, useSearchParams} from "react-router-dom"
 
+import {
+  PrescriptionDetailsResponse,
+  PrescriberOrganisationSummary,
+  OrganisationSummary
+} from "@cpt-ui-common/common-types/src/prescriptionDetails"
+
 import {render, screen, waitFor} from "@testing-library/react"
 
 import {AuthContext, AuthContextType} from "@/context/AuthProvider"
@@ -10,18 +16,11 @@ import {FRONTEND_PATHS} from "@/constants/environment"
 import http from "@/helpers/axios"
 
 import PrescriptionDetailsPage from "@/pages/PrescriptionDetailsPage"
-import {
-  PrescriptionDetailsResponse,
-  PrescriberOrganisationSummary,
-  OrganisationSummary
-} from "@cpt-ui-common/common-types/src/prescriptionDetails"
 
-// Mock the axios instance.
 jest.mock("@/helpers/axios", () => ({
   get: jest.fn()
 }))
 
-// Mock the react-router-dom hooks.
 jest.mock("react-router-dom", () => {
   const actual = jest.requireActual("react-router-dom")
   return {
@@ -115,7 +114,6 @@ jest.mock("@/components/SiteDetailsCards", () => ({
   }
 }))
 
-// Helper to render the component with a given query string.
 const renderComponent = (
   searchParamString: string = "",
   initialAuthState: AuthContextType = defaultAuthState
@@ -137,7 +135,7 @@ describe("PrescriptionDetailsPage", () => {
   })
 
   it("renders spinner while loading", async () => {
-    // For this test, simulate a pending HTTP request.
+    // pending HTTP request.
     (http.get as jest.Mock).mockImplementation(() => new Promise(() => {}))
     renderComponent("prescriptionId=C0C757-A83008-C2D93O")
 
@@ -154,7 +152,7 @@ describe("PrescriptionDetailsPage", () => {
 
   // FIXME: REMOVE THIS WHEN THE MOCK DATA IS PULL OUT!!!
   it("renders SiteDetailsCards with mock data on known prescriptionId (C0C757-A83008-C2D93O)", async () => {
-    // Simulate a failure in the HTTP call so that the catch block is executed.
+    // failed http request
     (http.get as jest.Mock).mockRejectedValue(new Error("HTTP error"))
 
     renderComponent("prescriptionId=C0C757-A83008-C2D93O")
@@ -200,7 +198,6 @@ describe("PrescriptionDetailsPage", () => {
   })
 
   it("renders SiteDetailsCards with correct data for a successful HTTP GET response", async () => {
-    // Define a payload that satisfies the PrescriptionDetailsResponse interface.
     const payload: PrescriptionDetailsResponse = {
       patientDetails: {
         identifier: "123",
