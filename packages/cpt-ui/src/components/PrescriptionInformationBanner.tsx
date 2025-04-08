@@ -11,6 +11,13 @@ const PrescriptionInformationBanner: React.FC = () => {
     navigator.clipboard.writeText(prescription.id)
   }
 
+  const renderType = () => {
+    if (prescription.isERD && prescription.instanceNumber !== undefined && prescription.maxRepeats !== undefined) {
+      return `${prescription.type} ${prescription.instanceNumber} of ${prescription.maxRepeats}`
+    }
+    return prescription.type
+  }
+
   return (
     <div className="prescription-information-banner" data-testid="prescription-information-banner">
       <div className="prescription-information-banner-row">
@@ -43,22 +50,15 @@ const PrescriptionInformationBanner: React.FC = () => {
         </div>
         <div className="patient-summary__block" id="summary-type">
           <span className="patient-summary__info">
-            {STRINGS.TYPE}: {prescription.type}
+            {STRINGS.TYPE}: {renderType()}
           </span>
         </div>
-        {prescription.isERD && (
-          <>
-            <div className="patient-summary__block" id="summary-erd-instance">
-              <span className="patient-summary__info">
-                {STRINGS.REPEAT}: {prescription.instanceNumber} of {prescription.maxRepeats}
-              </span>
-            </div>
-            <div className="patient-summary__block" id="summary-erd-days">
-              <span className="patient-summary__info">
-                {STRINGS.DAYS_SUPPLY}: {prescription.daysSupply}
-              </span>
-            </div>
-          </>
+        {prescription.isERD && prescription.daysSupply !== undefined && (
+          <div className="patient-summary__block" id="summary-erd-days">
+            <span className="patient-summary__info">
+              {STRINGS.DAYS_SUPPLY}: {prescription.daysSupply} days
+            </span>
+          </div>
         )}
       </div>
       <div id="patientview-sentinel" style={{height: "1px", backgroundColor: "transparent"}} />

@@ -60,12 +60,14 @@ describe("PrescriptionInformationBanner", () => {
       maxRepeats: 6,
       daysSupply: 28
     }
-
     renderWithContext(data)
-
     expect(screen.getByTestId("prescription-information-banner")).toBeInTheDocument()
-    expect(screen.getByText(`${STRINGS.REPEAT}: ${data.instanceNumber} of ${data.maxRepeats}`)).toBeInTheDocument()
-    expect(screen.getByText(`${STRINGS.DAYS_SUPPLY}: ${data.daysSupply}`)).toBeInTheDocument()
+    expect(
+      screen.getByText(
+        `${STRINGS.TYPE}: ${data.type} ${data.instanceNumber} of ${data.maxRepeats}`
+      )
+    ).toBeInTheDocument()
+    expect(screen.getByText(`${STRINGS.DAYS_SUPPLY}: ${data.daysSupply} days`)).toBeInTheDocument()
   })
 
   it("copies the prescription ID to clipboard when copy button is clicked", async () => {

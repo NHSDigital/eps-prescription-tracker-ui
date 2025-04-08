@@ -5,6 +5,5 @@ export const STRINGS = {
   ISSUE_DATE: "Issue date",
   STATUS: "Status",
   TYPE: "Type",
-  REPEAT: "Repeat",
   DAYS_SUPPLY: "Days supply"
 }
