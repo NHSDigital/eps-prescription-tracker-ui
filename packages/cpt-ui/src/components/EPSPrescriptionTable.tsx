@@ -184,6 +184,7 @@ export const EPSPrescriptionTable = () => {
               ))}
             </tr>
           ))}
+          <tr className="eps-prescription-table-sort-button"> Showing 2 of 2</tr>
         </tbody>
       </table>
     </div>

@@ -6,11 +6,14 @@ import {
   Row
 } from "nhsuk-react-components"
 import {useLocation} from "react-router-dom"
+
 import EpsTabs from "@/components/EpsTabs"
 import PrescriptionIdSearch from "@/components/prescriptionSearch/PrescriptionIdSearch"
 import NhsNumSearch from "@/components/prescriptionSearch/NhsNumSearch"
 import BasicDetailsSearch from "@/components/prescriptionSearch/BasicDetailsSearch"
+
 import {HERO_TEXT} from "@/constants/ui-strings/SearchForAPrescriptionStrings"
+import {PRESCRIPTION_SEARCH_TABS} from "@/constants/ui-strings/SearchTabStrings"
 
 export default function SearchPrescriptionPage() {
   const location = useLocation()
@@ -44,7 +47,11 @@ export default function SearchPrescriptionPage() {
         <Container data-testid="search-tabs-container">
           <Row>
             <Col width="full">
-              <EpsTabs activeTabPath={pathname}>
+              <EpsTabs
+                activeTabPath={pathname}
+                tabHeaderArray={PRESCRIPTION_SEARCH_TABS}
+                variant="large"
+              >
                 {content}
               </EpsTabs>
             </Col>

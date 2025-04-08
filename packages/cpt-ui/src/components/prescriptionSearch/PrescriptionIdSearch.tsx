@@ -88,7 +88,7 @@ export default function PrescriptionIdSearch() {
       return
     }
 
-    navigate(`${FRONTEND_PATHS.PRESCRIPTION_LIST}?prescriptionId=${formatted}`)
+    navigate(`${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}?prescriptionId=${formatted}`)
   }
 
   return (
@@ -120,7 +120,7 @@ export default function PrescriptionIdSearch() {
             <FormGroup
               className={`${errorType ? "nhsuk-form-group--error" : ""}`}
             >
-              <Label id="presc-id-label">
+              <Label htmlFor="presc-id-input" id="presc-id-label">
                 <h2
                   className="nhsuk-heading-m nhsuk-u-margin-bottom-1 no-outline"
                   data-testid="prescription-id-search-heading"
