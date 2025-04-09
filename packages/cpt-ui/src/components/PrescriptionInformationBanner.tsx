@@ -21,21 +21,21 @@ const PrescriptionInformationBanner: React.FC = () => {
   return (
     <div className="prescription-information-banner" data-testid="prescription-information-banner">
       <div className="prescription-information-banner-row">
-        <div className="patient-summary__block" id="prescription-id">
-          <span className="patient-summary__info">
+        <div className="patient-summary__block prescription-id-block" id="prescription-id">
+          <span className="patient-summary__info no-margin-bottom">
             {STRINGS.PRESCRIPTION_ID}: <span id="copyText">{prescription.id}</span>
           </span>
-        </div>
-        <div className="nhsuk-u-margin-0" id="summary-nhs-number-copy">
-          <button
-            id="copyButton"
-            aria-label={STRINGS.COPY_BUTTON_ARIA_LABEL}
-            className="nhsuk-button nhsuk-button--reverse copy-button nhsuk-u-margin-1"
-            onClick={copyToClipboard}
-            type="button"
-          >
-            {STRINGS.COPY_BUTTON_TEXT}
-          </button>
+          <span className="patient-summary__info copy-button-wrapper">
+            <button
+              id="copyButton"
+              aria-label={STRINGS.COPY_BUTTON_ARIA_LABEL}
+              className="nhsuk-button nhsuk-button--reverse copy-button nhsuk-u-margin-1 nhsuk-u-margin-right-4"
+              onClick={copyToClipboard}
+              type="button"
+            >
+              {STRINGS.COPY_BUTTON_TEXT}
+            </button>
+          </span>
         </div>
         <div className="patient-summary__block" id="summary-issue-date">
           <span className="patient-summary__info">
@@ -44,8 +44,7 @@ const PrescriptionInformationBanner: React.FC = () => {
         </div>
         <div className="patient-summary__block" id="summary-status">
           <span className="patient-summary__info">
-            {STRINGS.STATUS}:{" "}
-            <strong className="nhsuk-tag nhsuk-tag--green">{prescription.status}</strong>
+            {STRINGS.STATUS}: <strong className="nhsuk-tag nhsuk-tag--green">{prescription.status}</strong>
           </span>
         </div>
         <div className="patient-summary__block" id="summary-type">

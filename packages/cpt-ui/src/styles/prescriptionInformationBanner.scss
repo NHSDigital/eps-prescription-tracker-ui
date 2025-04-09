@@ -1,22 +1,19 @@
 .prescription-information-banner {
   color: #212b32;
-  background-color: #fff; 
+  background-color: #fff;
   display: flex;
   flex-direction: column;
-  padding-bottom: 16px;
-  padding-left: 32px;
-  padding-right: 32px;
-  padding-top: 16px;
+  padding: 16px 32px;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   line-height: 1.5;
 }
 
 .prescription-information-banner-row {
-  align-items: flex-end;
   display: flex;
-  flex-direction: row;
   flex-wrap: wrap;
+  flex-direction: row;
+  align-items: flex-end;
   column-gap: 3rem;
   row-gap: 0.5rem;
   width: 100%;
@@ -25,12 +22,25 @@
   margin-right: -8px;
 }
 
+.patient-summary__block {
+  display: flex;
+  align-items: flex-end;
+}
+
+.copy-button-wrapper {
+  margin-left: 8px;
+}
+
+.no-margin-bottom {
+  margin-bottom: 0;
+}
+
 .copy-button {
   background-color: #007f3b;
   color: #ffffff;
   display: inline-block;
-  padding-bottom: 0;
   padding-top: 0;
+  padding-bottom: 0;
   font-size: 0.875rem;
   line-height: 1.71429;
 }
