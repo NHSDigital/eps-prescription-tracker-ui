@@ -7,6 +7,8 @@ import PrescriptionDetailsPage from "@/pages/PrescriptionDetailsPage"
 import {MockPatientDetailsProvider} from "../__mocks__/MockPatientDetailsProvider"
 import {MockPrescriptionInformationProvider} from "../__mocks__/MockPrescriptionInformationProvider"
 
+import {PRESCRIPTION_DETAILS_PAGE_STRINGS} from "@/constants/ui-strings/PrescriptionDetailsPageStrings"
+
 function renderWithRoute(prescriptionId?: string) {
   const initialRoute = `/site/prescription-details${prescriptionId ? `?prescriptionId=${prescriptionId}` : ""}`
 
@@ -29,9 +31,28 @@ describe("PrescriptionDetailsPage", () => {
     delete window.__mockedPrescriptionInformation
   })
 
+  it("displays loading message and spinner while fetching data", async () => {
+    renderWithRoute("EC5ACF-A83008-733FD3")
+
+    // Check that the loading message is rendered
+    const loadingHeading = screen.getByRole("heading", {
+      name: PRESCRIPTION_DETAILS_PAGE_STRINGS.LOADING_FULL_PRESCRIPTION
+    })
+    expect(loadingHeading).toBeInTheDocument()
+
+    // Check that the spinner is rendered
+    const spinner = screen.getByTestId("spinner")
+    expect(spinner).toBeInTheDocument()
+
+    // Wait for loading to finish and spinner to disappear
+    await waitFor(() => {
+      expect(screen.queryByTestId("spinner")).not.toBeInTheDocument()
+    })
+  })
+
   it("renders the page with heading", () => {
     renderWithRoute()
-    expect(screen.getByRole("heading", {name: "Prescription Details"})).toBeInTheDocument()
+    expect(screen.getByRole("heading", {name: "Prescription details"})).toBeInTheDocument()
   })
 
   it("sets context for acute prescription", async () => {
