@@ -1,4 +1,5 @@
 import React from "react"
+import {Button, Tag} from "nhsuk-react-components"
 import {usePrescriptionInformation} from "@/context/PrescriptionInformationProvider"
 import {STRINGS} from "@/constants/ui-strings/PrescriptionInformationBannerStrings"
 
@@ -26,15 +27,16 @@ const PrescriptionInformationBanner: React.FC = () => {
             {STRINGS.PRESCRIPTION_ID}:<span id="copyText">{prescription.prescriptionId}</span>
           </span>
           <span className="patient-summary__info copy-button-wrapper">
-            <button
+            <Button
               id="copyButton"
               aria-label={STRINGS.COPY_BUTTON_ARIA_LABEL}
-              className="nhsuk-button nhsuk-button--reverse copy-button nhsuk-u-margin-1 nhsuk-u-margin-right-4"
+              className="nhsuk-button--reverse copy-button nhsuk-u-margin-1 nhsuk-u-margin-right-4"
               onClick={copyToClipboard}
               type="button"
+              secondary
             >
               {STRINGS.COPY_BUTTON_TEXT}
-            </button>
+            </Button>
           </span>
         </div>
         <div className="patient-summary__block" id="summary-issue-date">
@@ -44,7 +46,7 @@ const PrescriptionInformationBanner: React.FC = () => {
         </div>
         <div className="patient-summary__block" id="summary-status">
           <span className="patient-summary__info">
-            {STRINGS.STATUS}: <strong className="nhsuk-tag nhsuk-tag--green">{prescription.status}</strong>
+            {STRINGS.STATUS}: <Tag className="nhsuk-tag--green">{prescription.status}</Tag>
           </span>
         </div>
         <div className="patient-summary__block" id="summary-type">
