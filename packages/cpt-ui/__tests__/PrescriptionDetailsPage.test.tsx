@@ -1,5 +1,5 @@
 import React, {useState} from "react"
-import {useNavigate, useSearchParams} from "react-router-dom"
+import {BrowserRouter, useNavigate, useSearchParams} from "react-router-dom"
 
 import {
   PrescriptionDetailsResponse,
@@ -120,9 +120,11 @@ const renderComponent = (
 ) => {
   (useSearchParams as jest.Mock).mockReturnValue([new URLSearchParams(searchParamString)])
   return render(
-    <MockAuthProvider initialState={initialAuthState}>
-      <PrescriptionDetailsPage />
-    </MockAuthProvider>
+    <BrowserRouter>
+      <MockAuthProvider initialState={initialAuthState}>
+        <PrescriptionDetailsPage />
+      </MockAuthProvider>
+    </BrowserRouter>
   )
 }
 
@@ -147,43 +149,6 @@ describe("PrescriptionDetailsPage", () => {
 
     await waitFor(() => {
       expect(mockNavigate).toHaveBeenCalledWith(FRONTEND_PATHS.PRESCRIPTION_NOT_FOUND)
-    })
-  })
-
-  // FIXME: REMOVE THIS WHEN THE MOCK DATA IS PULL OUT!!!
-  it("renders SiteDetailsCards with mock data on known prescriptionId (C0C757-A83008-C2D93O)", async () => {
-    // failed http request
-    (http.get as jest.Mock).mockRejectedValue(new Error("HTTP error"))
-
-    renderComponent("prescriptionId=C0C757-A83008-C2D93O")
-
-    // Wait for the async useEffect to update the UI.
-    await waitFor(() => {
-      expect(screen.getByTestId("site-details-cards")).toBeInTheDocument()
-    })
-
-    const cards = screen.getByTestId("site-details-cards")
-    const props = JSON.parse(cards.textContent || "{}")
-
-    // These are the hardcoded mock values defined on the component file.
-    expect(props.prescriber).toEqual({
-      name: "Fiji surgery",
-      odsCode: "FI05964",
-      address: "90 YARROW LANE, FINNSBURY, E45 T46",
-      telephone: "01232 231321",
-      prescribedFrom: "England"
-    })
-    expect(props.dispenser).toEqual({
-      name: "Cohens chemist",
-      odsCode: "FV519",
-      address: "22 RUE LANE, CHISWICK, KT19 D12",
-      telephone: "01943 863158"
-    })
-    expect(props.nominatedDispenser).toEqual({
-      name: "Cohens chemist",
-      odsCode: "FV519",
-      address: "22 RUE LANE, CHISWICK, KT19 D12",
-      telephone: "01943 863158"
     })
   })
 

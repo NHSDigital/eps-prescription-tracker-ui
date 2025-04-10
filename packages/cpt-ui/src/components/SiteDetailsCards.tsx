@@ -49,7 +49,9 @@ export function SiteDetailsCard({
   }
 
   let humanReadablePrescribedFrom
-  if (prescribedFrom?.startsWith("01") || prescribedFrom?.startsWith("10")) {
+  if (!prescribedFrom) {
+    humanReadablePrescribedFrom = undefined
+  } else if (prescribedFrom?.startsWith("01") || prescribedFrom?.startsWith("10")) {
     humanReadablePrescribedFrom = ENGLAND
   } else if (prescribedFrom?.startsWith("02") || prescribedFrom?.startsWith("20")) {
     humanReadablePrescribedFrom = WALES
