@@ -3,6 +3,7 @@ import {Card, Col, Row} from "nhsuk-react-components"
 import {PrescriberOrganisationSummary, OrganisationSummary} from "@cpt-ui-common/common-types/src/prescriptionDetails"
 
 import {
+  HEADING,
   CONTACT_DETAILS,
   DISPENSER,
   NOMINATED_DISPENSER,
@@ -88,6 +89,7 @@ export function SiteDetailsCards({
   return (
     <Row>
       <Col width="one-third">
+        <h1 className="nhsuk-heading-xs nhsuk-u-margin-bottom-2">{HEADING}</h1>
         {dispenser && (
           <SiteDetailsCard heading={DISPENSER} {...dispenser} />
         )}

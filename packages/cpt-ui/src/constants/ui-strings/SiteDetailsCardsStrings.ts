@@ -1,3 +1,4 @@
+export const HEADING = "Prescriber and dispenser information"
 export const CONTACT_DETAILS = "Contact Details"
 export const PRESCRIBED_FROM = "Prescribed from"
 
