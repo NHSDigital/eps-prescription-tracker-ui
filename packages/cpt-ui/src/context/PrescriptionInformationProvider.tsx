@@ -9,21 +9,11 @@ import {useLocation} from "react-router-dom"
 
 import {normalizePath} from "@/helpers/utils"
 import {FRONTEND_PATHS} from "@/constants/environment"
-
-export interface PrescriptionInformation {
-  id: string
-  issueDate: string
-  status: string
-  type: string
-  isERD?: boolean
-  instanceNumber?: number
-  maxRepeats?: number
-  daysSupply?: number
-}
+import {PrescriptionDetails} from "@cpt-ui-common/common-types"
 
 export type PrescriptionInformationContextType = {
-  prescriptionInformation: PrescriptionInformation | undefined
-  setPrescriptionInformation: (value: PrescriptionInformation) => void
+  prescriptionInformation: PrescriptionDetails | undefined
+  setPrescriptionInformation: (value: PrescriptionDetails) => void
   clear: () => void
 }
 
@@ -31,7 +21,7 @@ export const PrescriptionInformationContext = createContext<PrescriptionInformat
 
 export const PrescriptionInformationProvider = ({children}: {children: ReactNode}) => {
   const location = useLocation()
-  const [prescriptionInformation, setPrescriptionInformation] = useState<PrescriptionInformation | undefined>(undefined)
+  const [prescriptionInformation, setPrescriptionInformation] = useState<PrescriptionDetails | undefined>(undefined)
 
   const clear = () => {
     console.log("Clearing prescription information context...")
