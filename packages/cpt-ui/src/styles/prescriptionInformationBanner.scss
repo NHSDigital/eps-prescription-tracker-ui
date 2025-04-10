@@ -14,7 +14,7 @@
   flex-wrap: wrap;
   flex-direction: row;
   align-items: flex-end;
-  column-gap: 3rem;
+  column-gap: 2rem;
   row-gap: 0.5rem;
   width: 100%;
   overflow-x: auto;
@@ -25,6 +25,15 @@
 .patient-summary__block {
   display: flex;
   align-items: flex-end;
+  font-size: 16px;
+}
+
+.patient-summary__info {
+  display: inline-flex;
+  align-items: center;
+  font-size: 16px;
+  line-height: 1.5;
+  margin: 4;
 }
 
 .copy-button-wrapper {
@@ -47,4 +56,24 @@
 
 .nhsuk-u-margin-1 {
   margin: 4px !important;
+}
+
+#summary-issue-date {
+  margin-left: 0.9rem;
+}
+
+#summary-status {
+  margin-left: -0.5rem;
+}
+
+#summary-status .nhsuk-tag {
+  margin-left: 0.2rem;
+}
+
+#summary-type {
+  margin-left: -0.4rem;
+}
+
+#summary-erd-days {
+  margin-left: -0.5rem;
 }
