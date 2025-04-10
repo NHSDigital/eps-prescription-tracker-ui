@@ -12,7 +12,9 @@ import {
   PRESCRIBER,
   NO_ORG_NAME,
   NO_ADDRESS,
-  NO_CONTACT
+  NO_CONTACT,
+  ENGLAND,
+  WALES
 } from "@/constants/ui-strings/SiteDetailsCardsStrings"
 
 export type SiteDetailsCardProps = OrganisationSummary & {
@@ -46,6 +48,16 @@ export function SiteDetailsCard({
     telephone = NO_CONTACT
   }
 
+  let humanReadablePrescribedFrom
+  if (prescribedFrom?.startsWith("01") || prescribedFrom?.startsWith("10")) {
+    humanReadablePrescribedFrom = ENGLAND
+  } else if (prescribedFrom?.startsWith("02") || prescribedFrom?.startsWith("20")) {
+    humanReadablePrescribedFrom = WALES
+  } else {
+    // Fall back to using the incoming code
+    humanReadablePrescribedFrom = prescribedFrom
+  }
+
   return (
     <Card
       cardType="primary"
@@ -71,7 +83,7 @@ export function SiteDetailsCard({
             <p className="nhsuk-u-margin-bottom-1" data-testid="site-card-prescribed-from">
               <strong>{PRESCRIBED_FROM}</strong>
               <br />
-              {prescribedFrom}
+              {humanReadablePrescribedFrom}
             </p>
           )}
         </Card.Description>
@@ -88,7 +100,7 @@ export function SiteDetailsCards({
 
   return (
     <Row>
-      <Col width="one-third">
+      <Col width="one-third" className="site-card-column">
         <h1 className="nhsuk-heading-xs nhsuk-u-margin-bottom-2">{HEADING}</h1>
         {dispenser && (
           <SiteDetailsCard heading={DISPENSER} {...dispenser} />

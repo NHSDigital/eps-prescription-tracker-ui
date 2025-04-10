@@ -1,7 +1,12 @@
 import {useContext, useEffect, useState} from "react"
-import {useNavigate, useSearchParams} from "react-router-dom"
+import {Link, useNavigate, useSearchParams} from "react-router-dom"
 
-import {Col, Container, Row} from "nhsuk-react-components"
+import {
+  BackLink,
+  Col,
+  Container,
+  Row
+} from "nhsuk-react-components"
 
 import {
   PrescriberOrganisationSummary,
@@ -24,7 +29,15 @@ const mockPrescriber: PrescriberOrganisationSummary = {
   odsCode: "FI05964",
   address: "90 YARROW LANE, FINNSBURY, E45 T46",
   telephone: "01232 231321",
-  prescribedFrom: "England"
+  prescribedFrom: "012345"
+}
+
+const altMockPrescriber: PrescriberOrganisationSummary = {
+  name: "Fiji surgery",
+  odsCode: "FI05964",
+  address: "90 YARROW LANE, FINNSBURY, E45 T46",
+  telephone: "01232 231321",
+  prescribedFrom: "021345"
 }
 
 const mockDispenser: OrganisationSummary = {
@@ -95,23 +108,23 @@ export default function PrescriptionDetailsPage() {
     } catch (err) {
       console.error(err)
       // FIXME: Mock data for now, since we cant get live data.
-      if (prescriptionId === "C0C757-A83008-C2D93O") {
+      if (prescriptionId === "C0C757-A83008-C2D93O") { //     // Full vanilla data
         setPrescriber(mockPrescriber)
         setDispenser(mockDispenser)
         setNominatedDispenser(mockNominatedDispenser)
-      } else if (prescriptionId === "209E3D-A83008-327F9F") {
-        setPrescriber(mockPrescriber)
+      } else if (prescriptionId === "209E3D-A83008-327F9F") { // Alt prescriber only
+        setPrescriber(altMockPrescriber)
         setDispenser(undefined)
         setNominatedDispenser(undefined)
-      } else if (prescriptionId === "7F1A4B-A83008-91DC2E") {
+      } else if (prescriptionId === "7F1A4B-A83008-91DC2E") { // Prescriber and dispenser only
         setPrescriber(mockPrescriber)
         setDispenser(mockDispenser)
         setNominatedDispenser(undefined)
-      } else if (prescriptionId === "B8C9E2-A83008-5F7B3A") {
-        setPrescriber(mockPrescriber)
+      } else if (prescriptionId === "B8C9E2-A83008-5F7B3A") { // All populated, long address nominated dispenser
+        setPrescriber(altMockPrescriber)
         setDispenser(mockDispenser)
         setNominatedDispenser(altMockNominatedDispenser)
-      } else if (prescriptionId === "4D6F2C-A83008-A3E7D1") {
+      } else if (prescriptionId === "4D6F2C-A83008-A3E7D1") { // missing data
         setPrescriber(mockPrescriber)
         setDispenser(mockDispenser)
         setNominatedDispenser({
@@ -161,12 +174,21 @@ export default function PrescriptionDetailsPage() {
 
   return (
     // Temporary holding div to add padding. Not where this will actually be placed.
-    <div className={"nhsuk-u-margin-top-2 nhsuk-u-margin-left-2"}>
+    <Container className={"nhsuk-u-margin-top-2 nhsuk-u-margin-left-2"} width="100%" style={{maxWidth: "100%"}}>
+      <Row>
+        <Col width="full">
+          <nav className="nhsuk-breadcrumb" aria-label="Breadcrumb" data-testid="prescription-list-nav">
+            <Link to={FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID} data-testid="back-link-container">
+              <BackLink data-testid="go-back-link">Go Back</BackLink>
+            </Link>
+          </nav>
+        </Col>
+      </Row>
       <SiteDetailsCards
         prescriber={prescriber}
         dispenser={dispenser}
         nominatedDispenser={nominatedDispenser}
       />
-    </div>
+    </Container>
   )
 }
