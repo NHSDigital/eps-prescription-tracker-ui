@@ -195,7 +195,7 @@ export default function PrescriptionDetailsPage() {
       <Row>
         <Col width="full">
           <h1
-            style={{display: "none"}}
+            className="nhsuk-u-visually-hidden"
           >
             {HEADER}
           </h1>
