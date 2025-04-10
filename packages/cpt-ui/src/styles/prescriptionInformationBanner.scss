@@ -3,10 +3,16 @@
   background-color: #fff;
   display: flex;
   flex-direction: column;
-  padding: 16px 32px;
+  padding: 16px 25px;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   line-height: 1.5;
+
+  @media (max-width: 640px) {
+    padding: 8px 16px;
+    margin-left: 0;
+    margin-right: 0;
+  }
 }
 
 .prescription-information-banner-row {
@@ -14,66 +20,67 @@
   flex-wrap: wrap;
   flex-direction: row;
   align-items: flex-end;
-  column-gap: 2rem;
-  row-gap: 0.5rem;
+  row-gap: 0.05rem;
   width: 100%;
   overflow-x: auto;
-  margin-left: -8px;
-  margin-right: -8px;
 }
 
 .patient-summary__block {
   display: flex;
   align-items: flex-end;
   font-size: 16px;
+  white-space: nowrap;
+  margin-right: 24px;
+}
+
+.prescription-id-block {
+  margin-right: 44px;
 }
 
 .patient-summary__info {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   font-size: 16px;
   line-height: 1.5;
-  margin: 4;
+  margin-bottom: 0;
+  white-space: nowrap;
+  text-wrap: nowrap;
+  white-space-collapse: collapse;
+  box-sizing: border-box;
+  color: #212b32;
 }
 
 .copy-button-wrapper {
-  margin-left: 8px;
-}
-
-.no-margin-bottom {
-  margin-bottom: 0;
+  margin-left: 10px;
 }
 
 .copy-button {
   background-color: #007f3b;
+  box-shadow: 0 4px 0 #004721;
   color: #ffffff;
   display: inline-block;
   padding-top: 0;
   padding-bottom: 0;
   font-size: 0.875rem;
   line-height: 1.71429;
-}
 
+  @media (max-width: 640px) {
+    font-size: 0.75rem;
+    line-height: 1.6667;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+}
 .nhsuk-u-margin-1 {
   margin: 4px !important;
 }
 
-#summary-issue-date {
-  margin-left: 0.9rem;
-}
-
-#summary-status {
-  margin-left: -0.5rem;
+#copyText {
+  margin-left: 0.25rem;
+  white-space: normal;
+  word-break: break-word;
 }
 
 #summary-status .nhsuk-tag {
-  margin-left: 0.2rem;
-}
-
-#summary-type {
-  margin-left: -0.4rem;
-}
-
-#summary-erd-days {
-  margin-left: -0.5rem;
+  margin-left: 0.25rem;
 }
