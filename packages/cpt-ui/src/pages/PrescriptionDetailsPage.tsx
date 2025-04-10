@@ -178,7 +178,7 @@ export default function PrescriptionDetailsPage() {
       <Row>
         <Col width="full">
           <nav className="nhsuk-breadcrumb" aria-label="Breadcrumb" data-testid="prescription-list-nav">
-            <Link to={FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID} data-testid="back-link-container">
+            <Link to={FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT} data-testid="back-link-container">
               <BackLink data-testid="go-back-link">Go Back</BackLink>
             </Link>
           </nav>
