@@ -60,7 +60,7 @@ describe("PrescriptionDetailsPage", () => {
 
     await waitFor(() => {
       expect(window.__mockedPrescriptionInformation).toEqual({
-        id: "C0C757-A83008-C2D93O",
+        prescriptionId: "C0C757-A83008-C2D93O",
         issueDate: "18-Jan-2024",
         status: "All items dispensed",
         type: "Acute",
@@ -93,7 +93,7 @@ describe("PrescriptionDetailsPage", () => {
 
     await waitFor(() => {
       expect(window.__mockedPrescriptionInformation).toEqual({
-        id: "EC5ACF-A83008-733FD3",
+        prescriptionId: "EC5ACF-A83008-733FD3",
         issueDate: "22-Jan-2025",
         status: "All items dispensed",
         type: "eRD",

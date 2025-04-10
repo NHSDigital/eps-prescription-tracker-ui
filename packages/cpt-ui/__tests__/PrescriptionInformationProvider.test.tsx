@@ -50,12 +50,12 @@ describe("PrescriptionInformationContext", () => {
       return (
         <div>
           <div data-testid="prescription-info">
-            {prescriptionInformation ? prescriptionInformation.id : "none"}
+            {prescriptionInformation ? prescriptionInformation.prescriptionId : "none"}
           </div>
           <button
             onClick={() =>
               setPrescriptionInformation({
-                id: "123",
+                prescriptionId: "123",
                 issueDate: "2024-01-01",
                 status: "Pending",
                 type: "Acute"
@@ -88,12 +88,12 @@ describe("PrescriptionInformationContext", () => {
       return (
         <div>
           <div data-testid="prescription-info">
-            {prescriptionInformation ? prescriptionInformation.id : "none"}
+            {prescriptionInformation ? prescriptionInformation.prescriptionId : "none"}
           </div>
           <button
             onClick={() =>
               setPrescriptionInformation({
-                id: "456",
+                prescriptionId: "456",
                 issueDate: "2024-02-02",
                 status: "Dispensed",
                 type: "Repeat"
@@ -131,12 +131,12 @@ describe("PrescriptionInformationContext", () => {
       return (
         <div>
           <div data-testid="prescription-info">
-            {prescriptionInformation ? prescriptionInformation.id : "none"}
+            {prescriptionInformation ? prescriptionInformation.prescriptionId : "none"}
           </div>
           <button
             onClick={() =>
               setPrescriptionInformation({
-                id: "789",
+                prescriptionId: "789",
                 issueDate: "2024-03-03",
                 status: "With Dispenser",
                 type: "eRD"
@@ -176,12 +176,12 @@ describe("PrescriptionInformationContext", () => {
       return (
         <div>
           <div data-testid="prescription-info">
-            {prescriptionInformation ? prescriptionInformation.id : "none"}
+            {prescriptionInformation ? prescriptionInformation.prescriptionId : "none"}
           </div>
           <button
             onClick={() =>
               setPrescriptionInformation({
-                id: "999",
+                prescriptionId: "999",
                 issueDate: "2024-04-04",
                 status: "Pending",
                 type: "Repeat"

@@ -8,7 +8,7 @@ const PrescriptionInformationBanner: React.FC = () => {
   if (!prescription) return null
 
   const copyToClipboard = () => {
-    navigator.clipboard.writeText(prescription.id)
+    navigator.clipboard.writeText(prescription.prescriptionId)
   }
 
   const renderType = () => {
@@ -23,7 +23,7 @@ const PrescriptionInformationBanner: React.FC = () => {
       <div className="prescription-information-banner-row">
         <div className="patient-summary__block prescription-id-block" id="prescription-id">
           <span className="patient-summary__info no-margin-bottom">
-            {STRINGS.PRESCRIPTION_ID}:<span id="copyText">{prescription.id}</span>
+            {STRINGS.PRESCRIPTION_ID}:<span id="copyText">{prescription.prescriptionId}</span>
           </span>
           <span className="patient-summary__info copy-button-wrapper">
             <button

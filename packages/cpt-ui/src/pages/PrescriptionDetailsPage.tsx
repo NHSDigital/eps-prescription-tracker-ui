@@ -26,7 +26,7 @@ export default function PrescriptionDetailsPage() {
 
       if (prescriptionId === "C0C757-A83008-C2D93O") {
         setPrescriptionInformation({
-          id: prescriptionId,
+          prescriptionId: prescriptionId,
           issueDate: "18-Jan-2024",
           status: "All items dispensed",
           type: "Acute",
@@ -55,7 +55,7 @@ export default function PrescriptionDetailsPage() {
 
       if (prescriptionId === "EC5ACF-A83008-733FD3") {
         setPrescriptionInformation({
-          id: prescriptionId,
+          prescriptionId: prescriptionId,
           issueDate: "22-Jan-2025",
           status: "All items dispensed",
           type: "eRD",
