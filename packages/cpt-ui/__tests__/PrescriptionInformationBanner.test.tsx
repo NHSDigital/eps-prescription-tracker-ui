@@ -43,7 +43,8 @@ describe("PrescriptionInformationBanner", () => {
 
     const banner = screen.getByTestId("prescription-information-banner")
     expect(banner).toBeInTheDocument()
-    expect(banner.querySelector("#prescription-id")).toHaveTextContent(`${STRINGS.PRESCRIPTION_ID}: ${data.id}`)
+    expect(banner.querySelector("#prescription-id")).toHaveTextContent(`${STRINGS.PRESCRIPTION_ID}:`)
+    expect(banner.querySelector("#copyText")).toHaveTextContent(data.id)
     expect(banner.querySelector("#summary-issue-date")).toHaveTextContent(`${STRINGS.ISSUE_DATE}: ${data.issueDate}`)
     expect(banner.querySelector("#summary-status")).toHaveTextContent(`${STRINGS.STATUS}: ${data.status}`)
     expect(banner.querySelector("#summary-type")).toHaveTextContent(`${STRINGS.TYPE}: ${data.type}`)
