@@ -17,6 +17,7 @@ import {
 import {AuthContext} from "@/context/AuthProvider"
 
 import {API_ENDPOINTS, FRONTEND_PATHS, NHS_REQUEST_URID} from "@/constants/environment"
+import {HEADER, GO_BACK} from "@/constants/ui-strings/PrescriptionDetailsPageStrings"
 
 import EpsSpinner from "@/components/EpsSpinner"
 import {SiteDetailsCards} from "@/components/SiteDetailsCards"
@@ -174,14 +175,30 @@ export default function PrescriptionDetailsPage() {
 
   return (
     // Temporary holding div to add padding. Not where this will actually be placed.
-    <Container className={"nhsuk-u-margin-top-2 nhsuk-u-margin-left-2"} width="100%" style={{maxWidth: "100%"}}>
+    <Container
+      className={"nhsuk-main-wrapper nhsuk-main-wrapper--s nhsuk-u-margin-left-9"}
+      width="100%"
+      style={{maxWidth: "100%"}}
+    >
+
       <Row>
         <Col width="full">
-          <nav className="nhsuk-breadcrumb" aria-label="Breadcrumb" data-testid="prescription-list-nav">
-            <Link to={FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT} data-testid="back-link-container">
-              <BackLink data-testid="go-back-link">Go Back</BackLink>
-            </Link>
-          </nav>
+          <BackLink
+            data-testid="go-back-link"
+            asElement={Link}
+            to={`${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}?${queryParams.toString()}`}
+          >
+            {GO_BACK}
+          </BackLink>
+        </Col>
+      </Row>
+      <Row>
+        <Col width="full">
+          <h1
+            style={{display: "none"}}
+          >
+            {HEADER}
+          </h1>
         </Col>
       </Row>
       <SiteDetailsCards

@@ -14,7 +14,8 @@ import {
   NO_ADDRESS,
   NO_CONTACT,
   ENGLAND,
-  WALES
+  WALES,
+  IOM
 } from "@/constants/ui-strings/SiteDetailsCardsStrings"
 
 export type SiteDetailsCardProps = OrganisationSummary & {
@@ -55,6 +56,8 @@ export function SiteDetailsCard({
     humanReadablePrescribedFrom = ENGLAND
   } else if (prescribedFrom.startsWith("02") || prescribedFrom.startsWith("20")) {
     humanReadablePrescribedFrom = WALES
+  } else if (prescribedFrom.startsWith("05") || prescribedFrom.startsWith("50")) {
+    humanReadablePrescribedFrom = IOM
   } else {
     // Fall back to using the incoming code
     humanReadablePrescribedFrom = prescribedFrom
@@ -64,7 +67,7 @@ export function SiteDetailsCard({
     <Card
       cardType="primary"
       clickable={false}
-      className="site-card" // "shadow" class adds the bottom shadow, if required
+      className="site-card"
       // The test id here includes the heading - later, this will be used for regression tests to find the cards
       data-testid={`site-card-${heading.replaceAll(" ", "-").toLowerCase()}`}
     >
@@ -103,7 +106,7 @@ export function SiteDetailsCards({
   return (
     <Row>
       <Col width="one-third" className="site-card-column">
-        <h1 className="nhsuk-heading-xs nhsuk-u-margin-bottom-2">{HEADING}</h1>
+        <h2 className="nhsuk-heading-xs nhsuk-u-margin-bottom-2">{HEADING}</h2>
         {dispenser && (
           <SiteDetailsCard heading={DISPENSER} {...dispenser} />
         )}

@@ -45,15 +45,16 @@
     margin-top: 16px;
 }
 
-.site-card.shadow {
-    border-bottom-width: 4px;
-}
-
 .site-card .content {
     overflow-wrap: break-word;
     padding: 16px;
     padding-bottom: 8px;
     margin: 0;
+}
+
+.site-card-column {
+    padding: 16px;
+    padding-top: 0px;
 }
 
 .site-card-column>.site-card:last-child {
