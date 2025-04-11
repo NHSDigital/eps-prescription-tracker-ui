@@ -1,8 +1,10 @@
 import React, {useState} from "react"
 import {MemoryRouter, useNavigate, useSearchParams} from "react-router-dom"
+import {render, screen, waitFor} from "@testing-library/react"
 
 import {MockPatientDetailsProvider} from "../__mocks__/MockPatientDetailsProvider"
 import {MockPrescriptionInformationProvider} from "../__mocks__/MockPrescriptionInformationProvider"
+import {mockPrescriptionDetailsResponse} from "../__mocks__/MockPrescriptionDetailsResponse"
 
 import {
   PrescriptionDetailsResponse,
@@ -10,20 +12,17 @@ import {
   OrganisationSummary
 } from "@cpt-ui-common/common-types/src/prescriptionDetails"
 
-import {render, screen, waitFor} from "@testing-library/react"
+import {FRONTEND_PATHS} from "@/constants/environment"
+import {LOADING_FULL_PRESCRIPTION} from "@/constants/ui-strings/PrescriptionDetailsPageStrings"
 
 import {AuthContext, AuthContextType} from "@/context/AuthProvider"
 
-import {FRONTEND_PATHS} from "@/constants/environment"
-
-import http from "@/helpers/axios"
-
 import PrescriptionDetailsPage from "@/pages/PrescriptionDetailsPage"
-import {LOADING_FULL_PRESCRIPTION} from "@/constants/ui-strings/PrescriptionDetailsPageStrings"
 
 jest.mock("@/helpers/axios", () => ({
   get: jest.fn()
 }))
+import http from "@/helpers/axios"
 
 jest.mock("react-router-dom", () => {
   const actual = jest.requireActual("react-router-dom")
@@ -179,57 +178,7 @@ describe("PrescriptionDetailsPage", () => {
 
   it("renders SiteDetailsCards with correct data for a successful HTTP GET response", async () => {
     const payload: PrescriptionDetailsResponse = {
-      patientDetails: {
-        identifier: "123",
-        name: {given: "John", family: "Doe"},
-        gender: "male",
-        birthDate: "1980-01-01",
-        address: {
-          text: "Some address",
-          line: "123 Street",
-          city: "City",
-          district: "District",
-          postalCode: "LS11TW",
-          type: "home",
-          use: "primary"
-        }
-      },
-      prescriptionID: "SUCCESS_ID",
-      typeCode: "type",
-      statusCode: "status",
-      issueDate: "2020-01-01",
-      instanceNumber: 1,
-      maxRepeats: 0,
-      daysSupply: "30",
-      prescriptionPendingCancellation: false,
-      prescribedItems: [],
-      dispensedItems: [],
-      messageHistory: [],
-      prescriberOrganisation: {
-        organisationSummaryObjective: {
-          name: "Fiji surgery",
-          odsCode: "FI05964",
-          address: "90 YARROW LANE, FINNSBURY, E45 T46",
-          telephone: "01232 231321",
-          prescribedFrom: "England"
-        }
-      },
-      nominatedDispenser: {
-        organisationSummaryObjective: {
-          name: "Some Nominated Dispenser",
-          odsCode: "NOM123",
-          address: "Nominated Address",
-          telephone: "1234567890"
-        }
-      },
-      currentDispenser: [{
-        organisationSummaryObjective: {
-          name: "Cohens chemist",
-          odsCode: "FV519",
-          address: "22 RUE LANE, CHISWICK, KT19 D12",
-          telephone: "01943 863158"
-        }
-      }]
+      ...mockPrescriptionDetailsResponse
     };
 
     (http.get as jest.Mock).mockResolvedValue({status: 200, data: payload})
@@ -275,64 +224,18 @@ describe("PrescriptionDetailsPage", () => {
     expect(screen.getByRole("heading", {name: "Prescription details"})).toBeInTheDocument()
   })
 
-  it("sets context for acute prescription", async () => {
-    renderComponent("C0C757-A83008-C2D93O")
+  it("sets context when the prescription get resolves", async () => {
+    const payload = {
+      ...mockPrescriptionDetailsResponse
+    }
+
+    ;(http.get as jest.Mock).mockResolvedValue({status: 200, data: payload})
+
+    renderComponent("SUCCESS_ID")
 
     await waitFor(() => {
-      expect(window.__mockedPrescriptionInformation).toEqual({
-        prescriptionId: "C0C757-A83008-C2D93O",
-        issueDate: "18-Jan-2024",
-        status: "All items dispensed",
-        type: "Acute",
-        isERD: false,
-        instanceNumber: undefined,
-        maxRepeats: undefined,
-        daysSupply: undefined
-      })
-
-      expect(window.__mockedPatientDetails).toEqual({
-        nhsNumber: "5900009890",
-        prefix: "Mr",
-        suffix: "",
-        given: "William",
-        family: "Wolderton",
-        gender: "male",
-        dateOfBirth: "01-Nov-1988",
-        address: {
-          line1: "55 OAK STREET",
-          line2: "OAK LANE",
-          city: "Leeds",
-          postcode: "LS1 1XX"
-        }
-      })
-    })
-  })
-
-  it("sets context for eRD prescription", async () => {
-    renderComponent("EC5ACF-A83008-733FD3")
-
-    await waitFor(() => {
-      expect(window.__mockedPrescriptionInformation).toEqual({
-        prescriptionId: "EC5ACF-A83008-733FD3",
-        issueDate: "22-Jan-2025",
-        status: "All items dispensed",
-        type: "eRD",
-        isERD: true,
-        instanceNumber: 2,
-        maxRepeats: 6,
-        daysSupply: 28
-      })
-
-      expect(window.__mockedPatientDetails).toEqual({
-        nhsNumber: "5900009890",
-        prefix: "Ms",
-        suffix: "",
-        given: "Janet",
-        family: "Piper",
-        gender: null,
-        dateOfBirth: null,
-        address: null
-      })
+      expect(window.__mockedPrescriptionInformation).toEqual(payload)
+      expect(window.__mockedPatientDetails).toEqual(payload.patientDetails)
     })
   })
 

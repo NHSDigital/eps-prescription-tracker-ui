@@ -1,27 +1,33 @@
-export interface PersonName {
-    prefix?: string;
-    given: string;
-    family: string;
-    suffix?: string;
-}
+// export interface PersonName {
+//     prefix?: string;
+//     given: string;
+//     family: string;
+//     suffix?: string;
+// }
 
-export interface Address {
-    text: string;
-    line: string;
-    city: string;
-    district: string;
-    postalCode: string;
-    type: string;
-    use: string;
-}
+// export interface Address {
+//     // Following a conversation with Sean,
+//     // I'm reluctant to assume ANYTHING is required for an address
+//     text?: string;
+//     line?: string;
+//     city?: string;
+//     district?: string;
+//     postalCode?: string;
+//     type: string;
+//     use: string;
+// }
 
-export interface PatientDetails {
-    identifier: string;
-    name: PersonName;
-    gender: string;
-    birthDate: string;
-    address: Address;
-}
+// export interface PatientDetails {
+//     identifier: string;
+//     name: PersonName;
+//     gender?: string;
+//     birthDate?: string;
+//     address?: Address;
+// }
+
+// The above is from PR 417 - but there's no reason to use two different definitions
+// of the same data. Instead, use a common one between the two lambdas
+import {PatientDetails} from "./prescriptionList"
 
 export interface PrescribedItemDetails {
     medicationName: string;

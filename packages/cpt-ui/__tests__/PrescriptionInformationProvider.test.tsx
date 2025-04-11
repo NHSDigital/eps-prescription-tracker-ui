@@ -7,6 +7,8 @@ import {
 } from "@testing-library/react"
 import {MemoryRouter, useNavigate, Link} from "react-router-dom"
 
+import {mockPrescriptionDetailsResponse} from "../__mocks__/MockPrescriptionDetailsResponse"
+
 import {PrescriptionInformationProvider, usePrescriptionInformation} from "@/context/PrescriptionInformationProvider"
 
 describe("PrescriptionInformationContext", () => {
@@ -47,19 +49,22 @@ describe("PrescriptionInformationContext", () => {
       const {prescriptionInformation, setPrescriptionInformation} =
         usePrescriptionInformation()
 
+      const setData = {
+        ...mockPrescriptionDetailsResponse,
+        prescriptionID: "123",
+        issueDate: "2024-01-01",
+        statusCode: "Pending",
+        typeCode: "Acute"
+      }
+
       return (
         <div>
           <div data-testid="prescription-info">
-            {prescriptionInformation ? prescriptionInformation.prescriptionId : "none"}
+            {prescriptionInformation ? prescriptionInformation.prescriptionID : "none"}
           </div>
           <button
             onClick={() =>
-              setPrescriptionInformation({
-                prescriptionId: "123",
-                issueDate: "2024-01-01",
-                status: "Pending",
-                type: "Acute"
-              })
+              setPrescriptionInformation(setData)
             }
           >
             Set Info
@@ -85,19 +90,22 @@ describe("PrescriptionInformationContext", () => {
       const {prescriptionInformation, setPrescriptionInformation, clear} =
         usePrescriptionInformation()
 
+      const setData = {
+        ...mockPrescriptionDetailsResponse,
+        prescriptionID: "456",
+        issueDate: "2024-02-02",
+        statusCode: "Dispensed",
+        typeCode: "Repeat"
+      }
+
       return (
         <div>
           <div data-testid="prescription-info">
-            {prescriptionInformation ? prescriptionInformation.prescriptionId : "none"}
+            {prescriptionInformation ? prescriptionInformation.prescriptionID : "none"}
           </div>
           <button
             onClick={() =>
-              setPrescriptionInformation({
-                prescriptionId: "456",
-                issueDate: "2024-02-02",
-                status: "Dispensed",
-                type: "Repeat"
-              })
+              setPrescriptionInformation(setData)
             }
           >
             Set Info
@@ -128,19 +136,22 @@ describe("PrescriptionInformationContext", () => {
       const {prescriptionInformation, setPrescriptionInformation} =
         usePrescriptionInformation()
 
+      const setData = {
+        ...mockPrescriptionDetailsResponse,
+        prescriptionID: "789",
+        issueDate: "2024-03-03",
+        statusCode: "With Dispenser",
+        typeCode: "eRD"
+      }
+
       return (
         <div>
           <div data-testid="prescription-info">
-            {prescriptionInformation ? prescriptionInformation.prescriptionId : "none"}
+            {prescriptionInformation ? prescriptionInformation.prescriptionID : "none"}
           </div>
           <button
             onClick={() =>
-              setPrescriptionInformation({
-                prescriptionId: "789",
-                issueDate: "2024-03-03",
-                status: "With Dispenser",
-                type: "eRD"
-              })
+              setPrescriptionInformation(setData)
             }
           >
             Set Info
@@ -173,19 +184,22 @@ describe("PrescriptionInformationContext", () => {
       const {prescriptionInformation, setPrescriptionInformation} =
         usePrescriptionInformation()
 
+      const setData = {
+        ...mockPrescriptionDetailsResponse,
+        prescriptionID: "999",
+        issueDate: "2024-04-04",
+        statusCode: "Pending",
+        typeCode: "Repeat"
+      }
+
       return (
         <div>
           <div data-testid="prescription-info">
-            {prescriptionInformation ? prescriptionInformation.prescriptionId : "none"}
+            {prescriptionInformation ? prescriptionInformation.prescriptionID : "none"}
           </div>
           <button
             onClick={() =>
-              setPrescriptionInformation({
-                prescriptionId: "999",
-                issueDate: "2024-04-04",
-                status: "Pending",
-                type: "Repeat"
-              })
+              setPrescriptionInformation(setData)
             }
           >
             Set Info

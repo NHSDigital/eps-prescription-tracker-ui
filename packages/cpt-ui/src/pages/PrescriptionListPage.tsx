@@ -26,7 +26,7 @@ import {
   TreatmentType,
   PrescriptionStatus,
   PrescriptionSummary
-} from "@cpt-ui-common/common-types"
+} from "@cpt-ui-common/common-types/src/prescriptionList"
 
 export default function PrescriptionListPage() {
   // FIXME: mock data. DELETEME!

@@ -9,23 +9,11 @@ import {useLocation} from "react-router-dom"
 
 import {normalizePath} from "@/helpers/utils"
 import {FRONTEND_PATHS} from "@/constants/environment"
-
-// FIXME: This component needs to use the common-types structure, shared by the prescriptionDetails lambda
-// from PR #417: https://github.com/NHSDigital/eps-prescription-tracker-ui/pull/417
-export interface PrescriptionDetails {
-  prescriptionId: string
-  issueDate: string
-  status: string
-  type: string
-  isERD?: boolean
-  instanceNumber?: number
-  maxRepeats?: number
-  daysSupply?: number
-}
+import {PrescriptionDetailsResponse} from "@cpt-ui-common/common-types/src/prescriptionDetails"
 
 export type PrescriptionInformationContextType = {
-  prescriptionInformation: PrescriptionDetails | undefined
-  setPrescriptionInformation: (value: PrescriptionDetails | undefined) => void
+  prescriptionInformation: PrescriptionDetailsResponse | undefined
+  setPrescriptionInformation: (value: PrescriptionDetailsResponse | undefined) => void
   clear: () => void
 }
 
@@ -33,7 +21,10 @@ export const PrescriptionInformationContext = createContext<PrescriptionInformat
 
 export const PrescriptionInformationProvider = ({children}: {children: ReactNode}) => {
   const location = useLocation()
-  const [prescriptionInformation, setPrescriptionInformation] = useState<PrescriptionDetails | undefined>(undefined)
+  const [
+    prescriptionInformation,
+    setPrescriptionInformation
+  ] = useState<PrescriptionDetailsResponse | undefined>(undefined)
 
   const clear = () => {
     console.log("Clearing prescription information context...")

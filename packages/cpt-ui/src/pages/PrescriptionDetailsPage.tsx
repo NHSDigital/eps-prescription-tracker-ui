@@ -13,6 +13,7 @@ import {
   OrganisationSummary,
   PrescriptionDetailsResponse
 } from "@cpt-ui-common/common-types/src/prescriptionDetails"
+import {PatientDetails} from "@cpt-ui-common/common-types/src/prescriptionList"
 
 import {AuthContext} from "@/context/AuthProvider"
 import {usePrescriptionInformation} from "@/context/PrescriptionInformationProvider"
@@ -68,15 +69,15 @@ const altMockNominatedDispenser: OrganisationSummary = {
 const mockPrescriptionInformation = {
   prescriptionId: "",
   issueDate: "22-Jan-2025",
-  status: "All items dispensed",
-  type: "eRD",
+  statusCode: "All items dispensed", // FIXME: The banner does not use codes? Needs to be implemented!
+  typeCode: "eRD",
   isERD: true,
   instanceNumber: 2,
   maxRepeats: 6,
-  daysSupply: 28
+  daysSupply: "28"
 }
 
-const mockPatientDetails = {
+const mockPatientDetails: PatientDetails = {
   nhsNumber: "5900009890",
   prefix: "Mr",
   suffix: "",
@@ -109,6 +110,8 @@ export default function PrescriptionDetailsPage() {
   const getPrescriptionDetails = async (prescriptionId: string) => {
     console.log("Prescription ID", prescriptionId)
     const url = `${API_ENDPOINTS.PRESCRIPTION_DETAILS}/${prescriptionId}`
+
+    let payload: PrescriptionDetailsResponse | undefined
     try {
       const response = await http.get(url, {
         headers: {
@@ -121,77 +124,113 @@ export default function PrescriptionDetailsPage() {
         throw new Error(`Status Code: ${response.status}`)
       }
 
-      // TODO: Implement parsing out the response here...
-      const payload: PrescriptionDetailsResponse = response.data
-
-      setPrescriber(payload.prescriberOrganisation.organisationSummaryObjective)
-
-      if (!payload.currentDispenser) {
-        setDispenser(undefined)
-      } else {
-        setDispenser(payload.currentDispenser[0].organisationSummaryObjective)
+      payload = response.data
+      if (!payload) {
+        throw new Error("No payload received from the API")
       }
-
-      if (!payload.nominatedDispenser) {
-        setNominatedDispenser(undefined)
-      } else {
-        setNominatedDispenser(payload.nominatedDispenser.organisationSummaryObjective)
-      }
-
     } catch (err) {
       console.error(err)
-      // FIXME: Mock data for now, since we cant get live data.
-      if (prescriptionId === "C0C757-A83008-C2D93O") { //     // Full vanilla data
-        setPrescriptionInformation({...mockPrescriptionInformation, prescriptionId})
-        setPatientDetails(mockPatientDetails)
 
-        setPrescriber(mockPrescriber)
-        setDispenser(mockDispenser)
-        setNominatedDispenser(mockNominatedDispenser)
-      } else if (prescriptionId === "209E3D-A83008-327F9F") { // Alt prescriber only
-        setPrescriptionInformation({...mockPrescriptionInformation, prescriptionId})
-        setPatientDetails(mockPatientDetails)
+      // ___      ___  _        ___ ______    ___      ___ ___    ___
+      // |   \    /  _]| |      /  _]      |  /  _]    |   |   |  /  _]
+      // |    \  /  [_ | |     /  [_|      | /  [_     | _   _ | /  [_
+      // |  D  ||    _]| |___ |    _]_|  |_||    _]    |  \_/  ||    _]
+      // |     ||   [_ |     ||   [_  |  |  |   [_     |   |   ||   [_
+      // |     ||     ||     ||     | |  |  |     |    |   |   ||     |
+      // |_____||_____||_____||_____| |__|  |_____|    |___|___||_____|
+      //
+      // FIXME: This is a static, mock data fallback we can use in lieu of the real data
+      // backend endpoint, which is still waiting for the auth SNAFU to get sorted out.
+      //
 
-        setPrescriber(altMockPrescriber)
-        setDispenser(undefined)
-        setNominatedDispenser(undefined)
-      } else if (prescriptionId === "7F1A4B-A83008-91DC2E") { // Prescriber and dispenser only
-        setPrescriptionInformation({...mockPrescriptionInformation, prescriptionId})
-        setPatientDetails(mockPatientDetails)
+      // Shared properties
+      const commonPrescriptionData = {
+        ...mockPrescriptionInformation,
+        prescriptionID: prescriptionId,
+        patientDetails: mockPatientDetails,
+        prescriptionPendingCancellation: false,
+        prescribedItems: [],
+        dispensedItems: [],
+        messageHistory: []
+      }
 
-        setPrescriber(mockPrescriber)
-        setDispenser(mockDispenser)
-        setNominatedDispenser(undefined)
-      } else if (prescriptionId === "B8C9E2-A83008-5F7B3A") { // All populated, long address nominated dispenser
-        setPrescriptionInformation({...mockPrescriptionInformation, prescriptionId})
-        setPatientDetails(mockPatientDetails)
-
-        setPrescriber(altMockPrescriber)
-        setDispenser(mockDispenser)
-        setNominatedDispenser(altMockNominatedDispenser)
-      } else if (prescriptionId === "4D6F2C-A83008-A3E7D1") { // missing data
-        setPrescriptionInformation({...mockPrescriptionInformation, prescriptionId})
-        setPatientDetails(mockPatientDetails)
-
-        setPrescriber(mockPrescriber)
-        setDispenser(mockDispenser)
-        setNominatedDispenser({
-          name: undefined,
-          odsCode: "FV519",
-          address: undefined,
-          telephone: undefined
-        })
+      // Construct payload based on the prescriptionId.
+      if (prescriptionId === "C0C757-A83008-C2D93O") {
+        // Full vanilla data: all organisations populated.
+        payload = {
+          ...commonPrescriptionData,
+          prescriberOrganisation: {organisationSummaryObjective: mockPrescriber},
+          nominatedDispenser: {organisationSummaryObjective: mockNominatedDispenser},
+          currentDispenser: [{organisationSummaryObjective: mockDispenser}]
+        }
+      } else if (prescriptionId === "209E3D-A83008-327F9F") {
+        // Alt prescriber only: no dispenser data.
+        payload = {
+          ...commonPrescriptionData,
+          prescriberOrganisation: {organisationSummaryObjective: altMockPrescriber},
+          nominatedDispenser: undefined,
+          currentDispenser: undefined
+        }
+      } else if (prescriptionId === "7F1A4B-A83008-91DC2E") {
+        // Prescriber and dispenser only.
+        payload = {
+          ...commonPrescriptionData,
+          prescriberOrganisation: {organisationSummaryObjective: mockPrescriber},
+          nominatedDispenser: undefined,
+          currentDispenser: [{organisationSummaryObjective: mockDispenser}]
+        }
+      } else if (prescriptionId === "B8C9E2-A83008-5F7B3A") {
+        // All populated, with a long address nominated dispenser.
+        payload = {
+          ...commonPrescriptionData,
+          prescriberOrganisation: {organisationSummaryObjective: altMockPrescriber},
+          nominatedDispenser: {organisationSummaryObjective: altMockNominatedDispenser},
+          currentDispenser: [{organisationSummaryObjective: mockDispenser}]
+        }
+      } else if (prescriptionId === "4D6F2C-A83008-A3E7D1") {
+        // Missing nominated dispenser data.
+        payload = {
+          ...commonPrescriptionData,
+          prescriberOrganisation: {organisationSummaryObjective: mockPrescriber},
+          nominatedDispenser: {
+            organisationSummaryObjective: {
+              name: undefined,
+              odsCode: "FV519",
+              address: undefined,
+              telephone: undefined
+            }
+          },
+          currentDispenser: [{organisationSummaryObjective: mockDispenser}]
+        }
       } else {
+        // Error condition here, no matching mock found so we clear it all out and redirect
         setPrescriptionInformation(undefined)
         setPatientDetails(undefined)
-
         setPrescriber(undefined)
         setDispenser(undefined)
         setNominatedDispenser(undefined)
         navigate(FRONTEND_PATHS.PRESCRIPTION_NOT_FOUND)
+        return
       }
     }
 
+    // Use the populated payload (retrieved live or from mock fallback).
+    setPrescriptionInformation(payload)
+    setPatientDetails(payload.patientDetails)
+
+    setPrescriber(payload.prescriberOrganisation.organisationSummaryObjective)
+
+    if (!payload.currentDispenser) {
+      setDispenser(undefined)
+    } else {
+      setDispenser(payload.currentDispenser[0].organisationSummaryObjective)
+    }
+
+    if (!payload.nominatedDispenser) {
+      setNominatedDispenser(undefined)
+    } else {
+      setNominatedDispenser(payload.nominatedDispenser.organisationSummaryObjective)
+    }
   }
 
   useEffect(() => {

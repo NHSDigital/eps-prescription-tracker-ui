@@ -1,6 +1,8 @@
 import React from "react"
 import {Button, Tag} from "nhsuk-react-components"
+
 import {usePrescriptionInformation} from "@/context/PrescriptionInformationProvider"
+
 import {STRINGS} from "@/constants/ui-strings/PrescriptionInformationBannerStrings"
 
 const PrescriptionInformationBanner: React.FC = () => {
@@ -9,14 +11,14 @@ const PrescriptionInformationBanner: React.FC = () => {
   if (!prescription) return null
 
   const copyToClipboard = () => {
-    navigator.clipboard.writeText(prescription.prescriptionId)
+    navigator.clipboard.writeText(prescription.prescriptionID)
   }
 
   const renderType = () => {
     if (prescription.isERD && prescription.instanceNumber !== undefined && prescription.maxRepeats !== undefined) {
-      return `${prescription.type} ${prescription.instanceNumber} of ${prescription.maxRepeats}`
+      return `${prescription.typeCode} ${prescription.instanceNumber} of ${prescription.maxRepeats}`
     }
-    return prescription.type
+    return prescription.typeCode
   }
 
   return (
@@ -24,7 +26,7 @@ const PrescriptionInformationBanner: React.FC = () => {
       <div className="prescription-information-banner-row">
         <div className="patient-summary__block prescription-id-block" id="prescription-id">
           <span className="patient-summary__info no-margin-bottom">
-            {STRINGS.PRESCRIPTION_ID}:<span id="copyText">{prescription.prescriptionId}</span>
+            {STRINGS.PRESCRIPTION_ID}:<span id="copyText">{prescription.prescriptionID}</span>
           </span>
           <span className="patient-summary__info copy-button-wrapper">
             <Button
@@ -46,7 +48,7 @@ const PrescriptionInformationBanner: React.FC = () => {
         </div>
         <div className="patient-summary__block" id="summary-status">
           <span className="patient-summary__info">
-            {STRINGS.STATUS}: <Tag className="nhsuk-tag--green">{prescription.status}</Tag>
+            {STRINGS.STATUS}: <Tag className="nhsuk-tag--green">{prescription.statusCode}</Tag>
           </span>
         </div>
         <div className="patient-summary__block" id="summary-type">
