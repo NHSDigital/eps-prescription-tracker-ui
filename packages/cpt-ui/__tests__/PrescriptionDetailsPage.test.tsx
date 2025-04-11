@@ -50,9 +50,14 @@ describe("PrescriptionDetailsPage", () => {
     })
   })
 
-  it("renders the page with heading", () => {
-    renderWithRoute()
-    expect(screen.getByRole("heading", {name: "Prescription details"})).toBeInTheDocument()
+  it("renders the page with heading", async () => {
+    renderWithRoute("C0C757-A83008-C2D93O")
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", {
+        name: PRESCRIPTION_DETAILS_PAGE_STRINGS.DISPENSED_ITEMS_TITLE
+      })).toBeInTheDocument()
+    })
   })
 
   it("sets context for acute prescription", async () => {
@@ -62,7 +67,7 @@ describe("PrescriptionDetailsPage", () => {
       expect(window.__mockedPrescriptionInformation).toEqual({
         prescriptionId: "C0C757-A83008-C2D93O",
         issueDate: "18-Jan-2024",
-        status: "All items dispensed",
+        status: "Some items dispensed",
         type: "Acute",
         isERD: false,
         instanceNumber: undefined,
