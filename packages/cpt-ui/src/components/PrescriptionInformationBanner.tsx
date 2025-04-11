@@ -2,7 +2,7 @@ import React from "react"
 import {Button, Tag} from "nhsuk-react-components"
 import {usePrescriptionInformation} from "@/context/PrescriptionInformationProvider"
 import {STRINGS} from "@/constants/ui-strings/PrescriptionInformationBannerStrings"
-import {getTagColourFromStatus} from "@/helpers/tagTranslator"
+import {getTagColourFromStatus} from "@/helpers/statusToTagColour"
 
 const PrescriptionInformationBanner: React.FC = () => {
   const {prescriptionInformation: prescription} = usePrescriptionInformation()
