@@ -23,6 +23,7 @@ function Spinner({
         justifyContent: "center"
       }}
       role="progressbar"
+      data-testid="spinner"
     >
       <div
         className="spinner-container"

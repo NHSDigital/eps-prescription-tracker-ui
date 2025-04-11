@@ -1,5 +1,3 @@
-import {jest} from "@jest/globals"
-
 import React, {ReactNode} from "react"
 import {PatientDetailsContext, PatientDetailsContextType} from "@/context/PatientDetailsProvider"
 
@@ -12,8 +10,13 @@ export const MockPatientDetailsProvider = ({
   children,
   patientDetails = undefined
 }: MockPatientDetailsProviderProps) => {
-  const setPatientDetails = jest.fn()
-  const clear = jest.fn()
+  const setPatientDetails: PatientDetailsContextType["setPatientDetails"] = (details) => {
+    window.__mockedPatientDetails = details
+  }
+
+  const clear: PatientDetailsContextType["clear"] = () => {
+    window.__mockedPatientDetails = undefined
+  }
 
   const value: PatientDetailsContextType = {
     patientDetails,
