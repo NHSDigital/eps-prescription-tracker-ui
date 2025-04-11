@@ -9,9 +9,6 @@ import {PatientDetails} from "@cpt-ui-common/common-types"
 import {STRINGS} from "@/constants/ui-strings/PatientDetailsBannerStrings"
 
 import {MockPatientDetailsProvider} from "../__mocks__/MockPatientDetailsProvider"
-// import {mockPrescriptionDetailsResponse} from "__mocks__/MockPrescriptionDetailsResponse"
-
-// Example patient data
 
 // Example patient data
 const completeDetails: PatientDetails = {
