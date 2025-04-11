@@ -100,6 +100,9 @@ export interface PrescriptionDetailsResponse {
     issueDate: string;
     instanceNumber: number | string;
     maxRepeats: number | string;
+    // FIXME: This was added in https://github.com/NHSDigital/eps-prescription-tracker-ui/pull/670
+    // and needs to be handled by https://github.com/NHSDigital/eps-prescription-tracker-ui/pull/417
+    isERD?: boolean
     daysSupply: string;
     prescriptionPendingCancellation: boolean;
     prescribedItems: Array<PrescribedItem>;

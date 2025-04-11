@@ -12,16 +12,16 @@ import {normalizePath} from "@/helpers/utils"
 import {FRONTEND_PATHS} from "@/constants/environment"
 
 export type PatientDetailsContextType = {
-    patientDetails: PatientDetails | undefined
-    setPatientDetails: (value: PatientDetails) => void
-    clear: () => void
+  patientDetails: PatientDetails | undefined
+  setPatientDetails: (value: PatientDetails | undefined) => void
+  clear: () => void
 }
 
 export const PatientDetailsContext = createContext<PatientDetailsContextType | undefined>(
   undefined
 )
 
-export const PatientDetailsProvider = ({children}: { children: ReactNode }) => {
+export const PatientDetailsProvider = ({children}: {children: ReactNode}) => {
   const location = useLocation()
   const [patientDetails, setPatientDetails] = useState<PatientDetails | undefined>(undefined)
 

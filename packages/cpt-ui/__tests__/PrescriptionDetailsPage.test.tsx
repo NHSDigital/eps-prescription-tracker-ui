@@ -1,5 +1,8 @@
 import React, {useState} from "react"
-import {BrowserRouter, useNavigate, useSearchParams} from "react-router-dom"
+import {MemoryRouter, useNavigate, useSearchParams} from "react-router-dom"
+
+import {MockPatientDetailsProvider} from "../__mocks__/MockPatientDetailsProvider"
+import {MockPrescriptionInformationProvider} from "../__mocks__/MockPrescriptionInformationProvider"
 
 import {
   PrescriptionDetailsResponse,
@@ -16,6 +19,7 @@ import {FRONTEND_PATHS} from "@/constants/environment"
 import http from "@/helpers/axios"
 
 import PrescriptionDetailsPage from "@/pages/PrescriptionDetailsPage"
+import {LOADING_FULL_PRESCRIPTION} from "@/constants/ui-strings/PrescriptionDetailsPageStrings"
 
 jest.mock("@/helpers/axios", () => ({
   get: jest.fn()
@@ -115,16 +119,24 @@ jest.mock("@/components/SiteDetailsCards", () => ({
 }))
 
 const renderComponent = (
-  searchParamString: string = "",
+  prescriptionId: string,
   initialAuthState: AuthContextType = defaultAuthState
 ) => {
-  (useSearchParams as jest.Mock).mockReturnValue([new URLSearchParams(searchParamString)])
+  const queryString = prescriptionId ? `?prescriptionId=${prescriptionId}` : ""
+  const initialRoute = `/site/prescription-details${queryString}`
+
+  ;(useSearchParams as jest.Mock).mockReturnValue([new URLSearchParams(queryString)])
+
   return render(
-    <BrowserRouter>
-      <MockAuthProvider initialState={initialAuthState}>
-        <PrescriptionDetailsPage />
-      </MockAuthProvider>
-    </BrowserRouter>
+    <MockAuthProvider initialState={initialAuthState}>
+      <MockPatientDetailsProvider>
+        <MockPrescriptionInformationProvider>
+          <MemoryRouter initialEntries={[initialRoute]}>
+            <PrescriptionDetailsPage />
+          </MemoryRouter>
+        </MockPrescriptionInformationProvider>
+      </MockPatientDetailsProvider>
+    </MockAuthProvider>
   )
 }
 
@@ -134,12 +146,15 @@ describe("PrescriptionDetailsPage", () => {
   beforeEach(() => {
     mockNavigate.mockClear();
     (useNavigate as jest.Mock).mockReturnValue(mockNavigate)
+
+    delete window.__mockedPatientDetails
+    delete window.__mockedPrescriptionInformation
   })
 
   it("renders spinner while loading", async () => {
     // pending HTTP request.
     (http.get as jest.Mock).mockImplementation(() => new Promise(() => {}))
-    renderComponent("prescriptionId=C0C757-A83008-C2D93O")
+    renderComponent("C0C757-A83008-C2D93L")
 
     expect(screen.getByTestId("eps-spinner")).toBeInTheDocument()
   })
@@ -155,7 +170,7 @@ describe("PrescriptionDetailsPage", () => {
   it("navigates to prescription not found on unknown prescriptionId", async () => {
     (http.get as jest.Mock).mockRejectedValue(new Error("HTTP error"))
 
-    renderComponent("prescriptionId=UNKNOWN_ID")
+    renderComponent("UNKNOWN_ID")
 
     await waitFor(() => {
       expect(mockNavigate).toHaveBeenCalledWith(FRONTEND_PATHS.PRESCRIPTION_NOT_FOUND)
@@ -217,10 +232,9 @@ describe("PrescriptionDetailsPage", () => {
       }]
     };
 
-    // Simulate a successful HTTP GET.
     (http.get as jest.Mock).mockResolvedValue({status: 200, data: payload})
 
-    renderComponent("prescriptionId=SUCCESS_ID")
+    renderComponent("SUCCESS_ID")
 
     await waitFor(() => {
       expect(screen.getByTestId("site-details-cards")).toBeInTheDocument()
@@ -235,5 +249,96 @@ describe("PrescriptionDetailsPage", () => {
     }
     expect(props.dispenser).toEqual(payload.currentDispenser[0].organisationSummaryObjective)
     expect(props.nominatedDispenser).toEqual(payload.nominatedDispenser.organisationSummaryObjective)
+  })
+
+  it("displays loading message and spinner while fetching data", async () => {
+    renderComponent("EC5ACF-A83008-733FD3")
+
+    // Check that the loading message is rendered
+    const loadingHeading = screen.getByRole("heading", {
+      name: LOADING_FULL_PRESCRIPTION
+    })
+    expect(loadingHeading).toBeInTheDocument()
+
+    // Check that the spinner is rendered
+    const spinner = screen.getByTestId("eps-spinner")
+    expect(spinner).toBeInTheDocument()
+
+    // Wait for loading to finish and spinner to disappear
+    await waitFor(() => {
+      expect(screen.queryByTestId("eps-spinner")).not.toBeInTheDocument()
+    })
+  })
+
+  it("renders the page with heading", () => {
+    renderComponent("")
+    expect(screen.getByRole("heading", {name: "Prescription details"})).toBeInTheDocument()
+  })
+
+  it("sets context for acute prescription", async () => {
+    renderComponent("C0C757-A83008-C2D93O")
+
+    await waitFor(() => {
+      expect(window.__mockedPrescriptionInformation).toEqual({
+        prescriptionId: "C0C757-A83008-C2D93O",
+        issueDate: "18-Jan-2024",
+        status: "All items dispensed",
+        type: "Acute",
+        isERD: false,
+        instanceNumber: undefined,
+        maxRepeats: undefined,
+        daysSupply: undefined
+      })
+
+      expect(window.__mockedPatientDetails).toEqual({
+        nhsNumber: "5900009890",
+        prefix: "Mr",
+        suffix: "",
+        given: "William",
+        family: "Wolderton",
+        gender: "male",
+        dateOfBirth: "01-Nov-1988",
+        address: {
+          line1: "55 OAK STREET",
+          line2: "OAK LANE",
+          city: "Leeds",
+          postcode: "LS1 1XX"
+        }
+      })
+    })
+  })
+
+  it("sets context for eRD prescription", async () => {
+    renderComponent("EC5ACF-A83008-733FD3")
+
+    await waitFor(() => {
+      expect(window.__mockedPrescriptionInformation).toEqual({
+        prescriptionId: "EC5ACF-A83008-733FD3",
+        issueDate: "22-Jan-2025",
+        status: "All items dispensed",
+        type: "eRD",
+        isERD: true,
+        instanceNumber: 2,
+        maxRepeats: 6,
+        daysSupply: 28
+      })
+
+      expect(window.__mockedPatientDetails).toEqual({
+        nhsNumber: "5900009890",
+        prefix: "Ms",
+        suffix: "",
+        given: "Janet",
+        family: "Piper",
+        gender: null,
+        dateOfBirth: null,
+        address: null
+      })
+    })
+  })
+
+  it("does not set context if no prescriptionId is provided", () => {
+    renderComponent("")
+    expect(window.__mockedPrescriptionInformation).toBeUndefined()
+    expect(window.__mockedPatientDetails).toBeUndefined()
   })
 })

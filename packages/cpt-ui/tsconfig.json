@@ -9,7 +9,8 @@
     "**/*.tsx",
     "vite-env.d.ts",
     "jest.config.ts",
-    "jest.setup.ts"
+    "jest.setup.ts",
+    "global.d.ts"
   ],
   "compilerOptions": {
     "baseUrl": ".",

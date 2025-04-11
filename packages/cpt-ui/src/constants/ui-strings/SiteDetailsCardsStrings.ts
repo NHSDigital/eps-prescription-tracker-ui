@@ -1,5 +1,5 @@
 export const HEADING = "Prescriber and dispenser information"
-export const CONTACT_DETAILS = "Contact details"
+export const CONTACT_DETAILS = "Phone number"
 export const PRESCRIBED_FROM = "Prescribed from"
 
 export const DISPENSER = "Dispenser"

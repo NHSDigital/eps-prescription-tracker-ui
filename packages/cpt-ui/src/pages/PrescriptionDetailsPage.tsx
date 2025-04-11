@@ -15,9 +15,11 @@ import {
 } from "@cpt-ui-common/common-types/src/prescriptionDetails"
 
 import {AuthContext} from "@/context/AuthProvider"
+import {usePrescriptionInformation} from "@/context/PrescriptionInformationProvider"
+import {usePatientDetails} from "@/context/PatientDetailsProvider"
 
 import {API_ENDPOINTS, FRONTEND_PATHS, NHS_REQUEST_URID} from "@/constants/environment"
-import {HEADER, GO_BACK} from "@/constants/ui-strings/PrescriptionDetailsPageStrings"
+import {HEADER, GO_BACK, LOADING_FULL_PRESCRIPTION} from "@/constants/ui-strings/PrescriptionDetailsPageStrings"
 
 import EpsSpinner from "@/components/EpsSpinner"
 import {SiteDetailsCards} from "@/components/SiteDetailsCards"
@@ -63,12 +65,42 @@ const altMockNominatedDispenser: OrganisationSummary = {
   telephone: "07712 345678"
 }
 
+const mockPrescriptionInformation = {
+  prescriptionId: "",
+  issueDate: "22-Jan-2025",
+  status: "All items dispensed",
+  type: "eRD",
+  isERD: true,
+  instanceNumber: 2,
+  maxRepeats: 6,
+  daysSupply: 28
+}
+
+const mockPatientDetails = {
+  nhsNumber: "5900009890",
+  prefix: "Mr",
+  suffix: "",
+  given: "William",
+  family: "Wolderton",
+  gender: "male",
+  dateOfBirth: "01-Nov-1988",
+  address: {
+    line1: "55 OAK STREET",
+    line2: "OAK LANE",
+    city: "Leeds",
+    postcode: "LS1 1XX"
+  }
+}
+
 export default function PrescriptionDetailsPage() {
   const auth = useContext(AuthContext)
   const navigate = useNavigate()
   const [queryParams] = useSearchParams()
 
   const [loading, setLoading] = useState(true)
+
+  const {setPrescriptionInformation} = usePrescriptionInformation()
+  const {setPatientDetails} = usePatientDetails()
 
   const [prescriber, setPrescriber] = useState<PrescriberOrganisationSummary | undefined>()
   const [nominatedDispenser, setNominatedDispenser] = useState<OrganisationSummary | undefined>()
@@ -110,22 +142,37 @@ export default function PrescriptionDetailsPage() {
       console.error(err)
       // FIXME: Mock data for now, since we cant get live data.
       if (prescriptionId === "C0C757-A83008-C2D93O") { //     // Full vanilla data
+        setPrescriptionInformation({...mockPrescriptionInformation, prescriptionId})
+        setPatientDetails(mockPatientDetails)
+
         setPrescriber(mockPrescriber)
         setDispenser(mockDispenser)
         setNominatedDispenser(mockNominatedDispenser)
       } else if (prescriptionId === "209E3D-A83008-327F9F") { // Alt prescriber only
+        setPrescriptionInformation({...mockPrescriptionInformation, prescriptionId})
+        setPatientDetails(mockPatientDetails)
+
         setPrescriber(altMockPrescriber)
         setDispenser(undefined)
         setNominatedDispenser(undefined)
       } else if (prescriptionId === "7F1A4B-A83008-91DC2E") { // Prescriber and dispenser only
+        setPrescriptionInformation({...mockPrescriptionInformation, prescriptionId})
+        setPatientDetails(mockPatientDetails)
+
         setPrescriber(mockPrescriber)
         setDispenser(mockDispenser)
         setNominatedDispenser(undefined)
       } else if (prescriptionId === "B8C9E2-A83008-5F7B3A") { // All populated, long address nominated dispenser
+        setPrescriptionInformation({...mockPrescriptionInformation, prescriptionId})
+        setPatientDetails(mockPatientDetails)
+
         setPrescriber(altMockPrescriber)
         setDispenser(mockDispenser)
         setNominatedDispenser(altMockNominatedDispenser)
       } else if (prescriptionId === "4D6F2C-A83008-A3E7D1") { // missing data
+        setPrescriptionInformation({...mockPrescriptionInformation, prescriptionId})
+        setPatientDetails(mockPatientDetails)
+
         setPrescriber(mockPrescriber)
         setDispenser(mockDispenser)
         setNominatedDispenser({
@@ -135,6 +182,9 @@ export default function PrescriptionDetailsPage() {
           telephone: undefined
         })
       } else {
+        setPrescriptionInformation(undefined)
+        setPatientDetails(undefined)
+
         setPrescriber(undefined)
         setDispenser(undefined)
         setNominatedDispenser(undefined)
@@ -165,6 +215,12 @@ export default function PrescriptionDetailsPage() {
         <Container>
           <Row>
             <Col width="full">
+              <h1
+                className="nhsuk-u-visually-hidden"
+              >
+                {HEADER}
+              </h1>
+              <h2>{LOADING_FULL_PRESCRIPTION}</h2>
               <EpsSpinner />
             </Col>
           </Row>
