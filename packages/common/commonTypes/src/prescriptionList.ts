@@ -11,9 +11,9 @@ export interface PatientDetails {
   suffix: string;
   given: string;
   family: string;
-  gender?: string;
-  dateOfBirth?: string;
-  address?: PatientDetailsAddress;
+  gender: string | null;
+  dateOfBirth: string | null;
+  address: PatientDetailsAddress | null;
   supersededBy?: string;
 }
 

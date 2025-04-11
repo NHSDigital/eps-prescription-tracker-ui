@@ -33,9 +33,9 @@ const minimumDetails: PatientDetails = {
   suffix: "",
   given: "William",
   family: "Wolderton",
-  gender: undefined,
-  dateOfBirth: undefined,
-  address: undefined
+  gender: null,
+  dateOfBirth: null,
+  address: null
 }
 
 const partialAddressDetails: PatientDetails = {
