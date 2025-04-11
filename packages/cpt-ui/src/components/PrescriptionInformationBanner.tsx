@@ -2,6 +2,7 @@ import React from "react"
 import {Button, Tag} from "nhsuk-react-components"
 import {usePrescriptionInformation} from "@/context/PrescriptionInformationProvider"
 import {STRINGS} from "@/constants/ui-strings/PrescriptionInformationBannerStrings"
+import {getTagColourFromStatus} from "@/helpers/tagTranslator"
 
 const PrescriptionInformationBanner: React.FC = () => {
   const {prescriptionInformation: prescription} = usePrescriptionInformation()
@@ -46,7 +47,10 @@ const PrescriptionInformationBanner: React.FC = () => {
         </div>
         <div className="patient-summary__block" id="summary-status">
           <span className="patient-summary__info">
-            {STRINGS.STATUS}: <Tag className="nhsuk-tag--green">{prescription.status}</Tag>
+            {STRINGS.STATUS}:{" "}
+            <Tag color={getTagColourFromStatus(prescription.status)}>
+              {prescription.status}
+            </Tag>
           </span>
         </div>
         <div className="patient-summary__block" id="summary-type">
