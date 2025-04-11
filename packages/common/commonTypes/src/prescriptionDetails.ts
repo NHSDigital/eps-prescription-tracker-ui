@@ -8,3 +8,34 @@ export interface PrescriptionDetails {
   maxRepeats?: number
   daysSupply?: number
 }
+
+export interface PrescribedItemDetails {
+  medicationName: string
+  quantity: string
+  dosageInstructions: string
+  epsStatusCode: string
+  nhsAppStatus?: string
+  itemPendingCancellation: boolean
+  cancellationReason?: string | null
+}
+
+export interface PrescribedItem {
+  itemDetails: PrescribedItemDetails
+}
+
+// Additional fields for Dispensed Items
+export interface InitiallyPrescribed {
+  medicationName: string
+  quantity: string
+  dosageInstructions: string
+}
+
+export interface DispensedItemDetails extends PrescribedItemDetails {
+  notDispensedReason?: string | null
+  initiallyPrescribed?: InitiallyPrescribed
+  pharmacyStatus?: string
+}
+
+export interface DispensedItem {
+  itemDetails: DispensedItemDetails
+}

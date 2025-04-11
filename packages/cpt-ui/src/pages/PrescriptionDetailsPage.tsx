@@ -1,10 +1,17 @@
-import React, {useEffect, useState} from "react"
+import {useEffect, useState} from "react"
 import {useSearchParams} from "react-router-dom"
-import {usePrescriptionInformation} from "@/context/PrescriptionInformationProvider"
-import {usePatientDetails} from "@/context/PatientDetailsProvider"
-import {Container, Row, Col} from "nhsuk-react-components"
+import {
+  BackLink,
+  Container,
+  Row,
+  Col
+} from "nhsuk-react-components"
+import {PrescribedDispensedItems} from "@/components/PrescribedDispensedItemsCards"
 import EpsSpinner from "@/components/EpsSpinner"
 import {PRESCRIPTION_DETAILS_PAGE_STRINGS} from "@/constants/ui-strings/PrescriptionDetailsPageStrings"
+import {usePrescriptionInformation} from "@/context/PrescriptionInformationProvider"
+import {usePatientDetails} from "@/context/PatientDetailsProvider"
+import {DispensedItem} from "@cpt-ui-common/common-types/src/prescriptionDetails"
 
 export default function PrescriptionDetailsPage() {
   const [searchParams] = useSearchParams()
@@ -13,6 +20,7 @@ export default function PrescriptionDetailsPage() {
   const {setPatientDetails} = usePatientDetails()
 
   const [loading, setLoading] = useState(true)
+  const [dispensedItems, setDispensedItems] = useState<Array<DispensedItem>>([])
 
   useEffect(() => {
     const loadData = async () => {
@@ -21,14 +29,14 @@ export default function PrescriptionDetailsPage() {
         return
       }
 
-      // Simulate data fetch delay
+      // Simulate delay for loading state
       await new Promise((resolve) => setTimeout(resolve, 500))
 
       if (prescriptionId === "C0C757-A83008-C2D93O") {
         setPrescriptionInformation({
           prescriptionId: prescriptionId,
           issueDate: "18-Jan-2024",
-          status: "All items dispensed",
+          status: "Some items dispensed",
           type: "Acute",
           isERD: false,
           instanceNumber: undefined,
@@ -51,6 +59,43 @@ export default function PrescriptionDetailsPage() {
             postcode: "LS1 1XX"
           }
         })
+
+        // Mocked dispensed items
+        setDispensedItems([
+          {
+            itemDetails: {
+              medicationName: "Raberprazole 10mg tablets",
+              quantity: "56 tablets",
+              dosageInstructions: "Take one twice daily",
+              epsStatusCode: "0001",
+              nhsAppStatus: "Item fully dispensed",
+              pharmacyStatus: "Collected",
+              itemPendingCancellation: false
+            }
+          },
+          {
+            itemDetails: {
+              medicationName: "Glyceryl trinitrate 400micrograms/does aerosol sublingual spray",
+              quantity: "1 spray",
+              dosageInstructions: "Use as needed",
+              epsStatusCode: "0001",
+              nhsAppStatus: "Item fully dispensed",
+              pharmacyStatus: "Collected",
+              itemPendingCancellation: false
+            }
+          },
+          {
+            itemDetails: {
+              medicationName: "Oseltamivir 30mg capsules",
+              quantity: "20 capsules",
+              dosageInstructions: "One capsule twice a day ",
+              epsStatusCode: "0001",
+              nhsAppStatus: "Item not dispensed - owing",
+              pharmacyStatus: "With pharmacy",
+              itemPendingCancellation: false
+            }
+          }
+        ])
       }
 
       if (prescriptionId === "EC5ACF-A83008-733FD3") {
@@ -99,14 +144,25 @@ export default function PrescriptionDetailsPage() {
   }
 
   return (
-    <main id="prescription-details-page" className="nhsuk-main-wrapper">
-      <Container>
-        <Row>
-          <Col width="full">
-            <h2 className="nhsuk-heading-l">{PRESCRIPTION_DETAILS_PAGE_STRINGS.PAGE_TITLE}</h2>
-          </Col>
-        </Row>
-      </Container>
-    </main>
+
+    <Container
+      className={"nhsuk-main-wrapper nhsuk-main-wrapper--s nhsuk-u-margin-left-9"}
+      width="100%"
+      style={{maxWidth: "100%"}}
+    >
+      <Row>
+        <Col width="full">
+          <BackLink
+            data-testid="go-back-link"
+          >
+            {PRESCRIPTION_DETAILS_PAGE_STRINGS.GO_BACK}
+          </BackLink>
+        </Col>
+      </Row>
+      <Row>
+        <PrescribedDispensedItems items={dispensedItems} />
+      </Row>
+    </Container>
+
   )
 }
