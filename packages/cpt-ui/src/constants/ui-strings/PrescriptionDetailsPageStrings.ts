@@ -1,4 +1,4 @@
-export const PRESCRIPTION_DETAILS_PAGE_STRINGS = {
-  PAGE_TITLE: "Prescription details",
-  LOADING_FULL_PRESCRIPTION: "Loading full prescription"
-}
+export const HEADER = "Prescription details"
+export const GO_BACK = "Go back"
+export const PAGE_TITLE = "Full prescription details"
+export const LOADING_FULL_PRESCRIPTION = "Loading full prescription"
