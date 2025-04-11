@@ -9,7 +9,7 @@ import {useLocation} from "react-router-dom"
 
 import {normalizePath} from "@/helpers/utils"
 import {FRONTEND_PATHS} from "@/constants/environment"
-import {PrescriptionDetailsResponse} from "@cpt-ui-common/common-types/src/prescriptionDetails"
+import {PrescriptionDetailsResponse} from "@cpt-ui-common/common-types"
 
 export type PrescriptionInformationContextType = {
   prescriptionInformation: PrescriptionDetailsResponse | undefined

@@ -1,6 +1,6 @@
 import {Card, Col, Row} from "nhsuk-react-components"
 
-import {PrescriberOrganisationSummary, OrganisationSummary} from "@cpt-ui-common/common-types/src/prescriptionDetails"
+import {PrescriberOrganisationSummary, OrganisationSummary} from "@cpt-ui-common/common-types"
 
 import {
   HEADING,

@@ -3,7 +3,7 @@ import React, {useEffect, useState} from "react"
 import {STRINGS} from "@/constants/ui-strings/PatientDetailsBannerStrings"
 import {usePatientDetails} from "@/context/PatientDetailsProvider"
 
-import {PatientDetailsAddress} from "@cpt-ui-common/common-types/src/prescriptionList"
+import {PatientDetailsAddress} from "@cpt-ui-common/common-types"
 
 export default function PatientDetailsBanner() {
   const [nameText, setNameText] = useState("")

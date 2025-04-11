@@ -10,7 +10,7 @@ import {
   PrescriptionDetailsResponse,
   PrescriberOrganisationSummary,
   OrganisationSummary
-} from "@cpt-ui-common/common-types/src/prescriptionDetails"
+} from "@cpt-ui-common/common-types"
 
 import {FRONTEND_PATHS} from "@/constants/environment"
 import {LOADING_FULL_PRESCRIPTION} from "@/constants/ui-strings/PrescriptionDetailsPageStrings"

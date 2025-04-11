@@ -1,4 +1,4 @@
-import {PrescriptionDetailsResponse} from "@cpt-ui-common/common-types/src/prescriptionDetails"
+import {PrescriptionDetailsResponse} from "@cpt-ui-common/common-types"
 
 export const mockPrescriptionDetailsResponse: PrescriptionDetailsResponse = {
   patientDetails: {

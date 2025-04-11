@@ -10,10 +10,10 @@ import {
 
 import {
   PrescriberOrganisationSummary,
+  PatientDetails,
   OrganisationSummary,
   PrescriptionDetailsResponse
-} from "@cpt-ui-common/common-types/src/prescriptionDetails"
-import {PatientDetails} from "@cpt-ui-common/common-types/src/prescriptionList"
+} from "@cpt-ui-common/common-types"
 
 import {AuthContext} from "@/context/AuthProvider"
 import {usePrescriptionInformation} from "@/context/PrescriptionInformationProvider"

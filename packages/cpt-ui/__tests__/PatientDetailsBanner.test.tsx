@@ -4,7 +4,7 @@ import React from "react"
 import "@testing-library/jest-dom"
 import {render, screen} from "@testing-library/react"
 
-// import {PatientDetails} from "@cpt-ui-common/common-types/src/prescriptionDetails"
+// import {PatientDetails} from "@cpt-ui-common/common-types"
 
 // import {STRINGS} from "@/constants/ui-strings/PatientDetailsBannerStrings"
 

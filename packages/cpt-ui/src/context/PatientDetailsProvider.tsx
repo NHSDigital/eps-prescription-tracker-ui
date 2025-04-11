@@ -7,7 +7,7 @@ import React, {
 } from "react"
 import {useLocation} from "react-router-dom"
 
-import {PatientDetails} from "@cpt-ui-common/common-types/src/prescriptionList"
+import {PatientDetails} from "@cpt-ui-common/common-types"
 import {normalizePath} from "@/helpers/utils"
 import {FRONTEND_PATHS} from "@/constants/environment"
 

@@ -5,7 +5,7 @@ import {render, screen, fireEvent} from "@testing-library/react"
 
 import {mockPrescriptionDetailsResponse} from "../__mocks__/MockPrescriptionDetailsResponse"
 
-import {PrescriptionDetailsResponse} from "@cpt-ui-common/common-types/src/prescriptionDetails"
+import {PrescriptionDetailsResponse} from "@cpt-ui-common/common-types"
 
 import PrescriptionInformationBanner from "@/components/PrescriptionInformationBanner"
 
