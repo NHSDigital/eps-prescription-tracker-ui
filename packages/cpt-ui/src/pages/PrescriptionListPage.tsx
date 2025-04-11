@@ -195,8 +195,8 @@ export default function PrescriptionListPage() {
 
       setPrescriptionCount(
         searchResults.pastPrescriptions.length +
-          searchResults.futurePrescriptions.length +
-          searchResults.currentPrescriptions.length
+        searchResults.futurePrescriptions.length +
+        searchResults.currentPrescriptions.length
       )
 
       setTabData([
@@ -241,7 +241,7 @@ export default function PrescriptionListPage() {
 
       console.log("Response status", {status: response.status})
       if (response.status !== 200) {
-      // Throwing an error here will jump to the catch block.
+        // Throwing an error here will jump to the catch block.
         throw new Error(`Status Code: ${response.status}`)
       }
 
@@ -290,7 +290,7 @@ export default function PrescriptionListPage() {
 
       console.log("Response status", {status: response.status})
       if (response.status !== 200) {
-      // Throwing an error here will jump to the catch block.
+        // Throwing an error here will jump to the catch block.
         throw new Error(`Status Code: ${response.status}`)
       }
 

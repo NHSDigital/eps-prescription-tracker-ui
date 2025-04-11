@@ -9,6 +9,8 @@ import {
   SearchResponse
 } from "./prescriptionList"
 
+import {PrescriptionDetails} from "./prescriptionDetails"
+
 export {
   PatientDetails,
   PatientDetailsAddress,
@@ -17,5 +19,6 @@ export {
   TreatmentType,
   PrescriptionAPIResponse,
   PrescriptionSummary,
-  SearchResponse
+  SearchResponse,
+  PrescriptionDetails
 }
