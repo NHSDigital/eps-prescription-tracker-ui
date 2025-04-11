@@ -14,35 +14,25 @@ import {MockPatientDetailsProvider} from "../__mocks__/MockPatientDetailsProvide
 // Example patient data
 
 // const minimumDetails: PatientDetails = {
-//   identifier: "5900009890",
-//   name: {
-//     prefix: "Mr",
-//     suffix: "",
-//     given: "William",
-//     family: "Wolderton"
-//   },
+//   nhsNumber: "5900009890",
+//   given: "William",
+//   family: "Wolderton",
 //   gender: undefined,
-//   birthDate: undefined,
+//   dateOfBirth: undefined,
 //   address: undefined
 // }
 
 // const partialAddressDetails: PatientDetails = {
-//   identifier: "5900009890",
-//   name: {
-//     prefix: "Mr",
-//     suffix: "",
-//     given: "William",
-//     family: "Wolderton"
-//   },
+//   nhsNumber: "5900009890",
+//   given: "William",
+//   family: "Wolderton",
 //   gender: "male",
-//   birthDate: "01-Nov-1988",
+//   dateOfBirth: "01-Nov-1988",
 //   // Only line and city are provided.
 //   address: {
-//     line: "55 Oak Street",
-//     city: "Leeds",
+//     line1: "55 Oak Street",
+//     city: "Leeds"
 //     // postcode is omitted
-//     type: "home",
-//     use: "primary"
 //   }
 // }
 

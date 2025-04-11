@@ -52,9 +52,9 @@ export default function PrescriptionListPage() {
     suffix: "",
     given: "Janet",
     family: "Piper",
-    gender: null,
-    dateOfBirth: null,
-    address: null
+    gender: undefined,
+    dateOfBirth: undefined,
+    address: undefined
   }
 
   const mockSearchResponse: SearchResponse = {

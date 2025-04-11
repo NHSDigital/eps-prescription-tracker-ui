@@ -25,8 +25,8 @@
 //     address?: Address;
 // }
 
-// The above is from PR 417 - but there's no reason to use two different definitions
-// of the same data. Instead, use a common one between the two lambdas
+// TODO: The above is from PR 417 - but there's no reason to use two different definitions
+// of the same data. Instead, use a common one between the two lambdas. The PR will need refactoring
 import {PatientDetails} from "./prescriptionList"
 
 export interface PrescribedItemDetails {
