@@ -4,6 +4,8 @@ import {getSecret} from "@aws-lambda-powertools/parameters/secrets"
 import {Logger} from "@aws-lambda-powertools/logger"
 import {injectLambdaContext} from "@aws-lambda-powertools/logger/middleware"
 
+import axios from "axios"
+
 import middy from "@middy/core"
 import inputOutputLogger from "@middy/input-output-logger"
 
@@ -60,6 +62,8 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   logger.appendKeys({"apigw-request-id": event.requestContext?.requestId})
   logger.info("Lambda handler invoked", {event})
 
+  const axiosInstance = axios.create()
+
   const MOCK_MODE_ENABLED = process.env["MOCK_MODE_ENABLED"]
 
   // ****************************************
@@ -115,6 +119,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
   // Exchange token with Apigee
   const {accessToken: apigeeAccessToken, expiresIn} = await exchangeTokenForApigeeAccessToken(
+    axiosInstance,
     apigeeTokenEndpoint,
     requestBody,
     logger

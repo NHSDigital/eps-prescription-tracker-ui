@@ -46,7 +46,7 @@ on:
         type: string
       mockOidcjwksEndpoint:
         type: string
-      useLocalhostCallback:
+      allowLocalhostAccess:
         type: boolean
       useCustomCognitoDomain:
         type: boolean
@@ -56,9 +56,13 @@ on:
         type: string
       APIGEE_PRESCRIPTIONS_ENDPOINT:
         type: string
+      APIGEE_PDS_ENDPOINT:
+        type: string
       JWT_KID:
         type: string
       ROLE_ID:
+        type: string
+      CONFIG_FILE:
         type: string
     secrets:
       CLOUD_FORMATION_DEPLOY_ROLE:
@@ -132,93 +136,39 @@ jobs:
   
       - name: fix cdk.json for deployment
         run: |
-          # shellcheck disable=SC2140
-          epsDomainName=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='"eps-route53-resources:EPS-domain"'].Value" --output text)
-          # shellcheck disable=SC2140
-          epsHostedZoneId=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='"eps-route53-resources:EPS-ZoneID"'].Value" --output text)
-          # shellcheck disable=SC2140
-          cloudfrontDistributionId=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='"${{ inputs.SERVICE_NAME }}-stateless-resources:cloudfrontDistribution:Id"'].Value" --output text)
-          # shellcheck disable=SC2140
-          cloudfrontCertArn=$(aws cloudformation list-exports --region us-east-1 --query "Exports[?Name=='"${{ inputs.SERVICE_NAME }}-us-certs:cloudfrontCertificate:Arn"'].Value" --output text)
-          # shellcheck disable=SC2140
-          shortCloudfrontDomain=$(aws cloudformation list-exports --region us-east-1 --query "Exports[?Name=='"${{ inputs.SERVICE_NAME }}-us-certs:shortCloudfrontDomain:Name"'].Value" --output text)
-          # shellcheck disable=SC2140
-          fullCloudfrontDomain=$(aws cloudformation list-exports --region us-east-1 --query "Exports[?Name=='"${{ inputs.SERVICE_NAME }}-us-certs:fullCloudfrontDomain:Name"'].Value" --output text)
-          # shellcheck disable=SC2140
-          fullCognitoDomain=$(aws cloudformation list-exports --region us-east-1 --query "Exports[?Name=='"${{ inputs.SERVICE_NAME }}-us-certs:fullCognitoDomain:Name"'].Value" --output text)
-          jq \
-          --arg serviceName "${{ inputs.SERVICE_NAME }}" \
-          --arg VERSION_NUMBER "${{ inputs.VERSION_NUMBER }}" \
-          --arg COMMIT_ID "${{ inputs.COMMIT_ID }}" \
-          --arg logRetentionInDays "${{ inputs.LOG_RETENTION_IN_DAYS }}" \
-          --arg logLevel "${{ inputs.LOG_LEVEL }}" \
-          --arg epsDomainName "${epsDomainName}" \
-          --arg epsHostedZoneId "${epsHostedZoneId}" \
-          --argjson allowAutoDeleteObjects "true" \
-          --arg cloudfrontDistributionId "${cloudfrontDistributionId}" \
-          --arg cloudfrontCertArn "${cloudfrontCertArn}" \
-          --argjson useMockOidc "${{ inputs.useMockOidc }}" \
-          --arg primaryOidcClientId "${{ secrets.primaryOidcClientId }}" \
-          --arg primaryOidcIssuer "${{ inputs.primaryOidcIssuer }}" \
-          --arg primaryOidcAuthorizeEndpoint "${{ inputs.primaryOidcAuthorizeEndpoint }}" \
-          --arg primaryOidcTokenEndpoint "${{ inputs.primaryOidcTokenEndpoint }}" \
-          --arg primaryOidcUserInfoEndpoint "${{ inputs.primaryOidcUserInfoEndpoint }}" \
-          --arg primaryOidcjwksEndpoint "${{ inputs.primaryOidcjwksEndpoint }}" \
-          --arg mockOidcClientId "${{ secrets.mockOidcClientId }}" \
-          --arg mockOidcIssuer "${{ inputs.mockOidcIssuer }}" \
-          --arg mockOidcAuthorizeEndpoint "${{ inputs.mockOidcAuthorizeEndpoint }}" \
-          --arg mockOidcTokenEndpoint "${{ inputs.mockOidcTokenEndpoint }}" \
-          --arg mockOidcUserInfoEndpoint "${{ inputs.mockOidcUserInfoEndpoint }}" \
-          --arg mockOidcjwksEndpoint "${{ inputs.mockOidcjwksEndpoint }}" \
-          --arg shortCloudfrontDomain "${shortCloudfrontDomain}" \
-          --arg fullCloudfrontDomain "${fullCloudfrontDomain}" \
-          --arg fullCognitoDomain "${fullCognitoDomain}" \
-          --argjson useCustomCognitoDomain "${{ inputs.useCustomCognitoDomain }}" \
-          --argjson useLocalhostCallback "${{ inputs.useLocalhostCallback }}" \
-          --arg apigeeCIS2TokenEndpoint "${{ inputs.APIGEE_CIS2_TOKEN_ENDPOINT }}" \
-          --arg apigeeMockTokenEndpoint "${{ inputs.APIGEE_MOCK_TOKEN_ENDPOINT }}" \
-          --arg apigeePrescriptionsEndpoint "${{ inputs.APIGEE_PRESCRIPTIONS_ENDPOINT }}" \
-          --arg apigeeApiKey "${{ secrets.APIGEE_API_KEY }}" \
-          --arg jwtKid "${{ inputs.JWT_KID }}" \
-          --arg roleId "${{ inputs.ROLE_ID }}" \
-          '.context += {
-            "serviceName": $serviceName,
-            "VERSION_NUMBER": $VERSION_NUMBER,
-            "COMMIT_ID": $COMMIT_ID,
-            "logRetentionInDays": $logRetentionInDays,
-            "logLevel": $logLevel,
-            "epsDomainName": $epsDomainName,
-            "epsHostedZoneId": $epsHostedZoneId,
-            "allowAutoDeleteObjects": $allowAutoDeleteObjects,
-            "cloudfrontDistributionId": $cloudfrontDistributionId,
-            "cloudfrontCertArn": $cloudfrontCertArn,
-            "shortCloudfrontDomain": $shortCloudfrontDomain,
-            "fullCloudfrontDomain": $fullCloudfrontDomain,
-            "useMockOidc": $useMockOidc,
-            "primaryOidcClientId": $primaryOidcClientId,
-            "primaryOidcIssuer": $primaryOidcIssuer,
-            "primaryOidcAuthorizeEndpoint": $primaryOidcAuthorizeEndpoint,
-            "primaryOidcTokenEndpoint": $primaryOidcTokenEndpoint,
-            "primaryOidcUserInfoEndpoint": $primaryOidcUserInfoEndpoint,
-            "primaryOidcjwksEndpoint": $primaryOidcjwksEndpoint,
-            "mockOidcClientId": $mockOidcClientId,
-            "mockOidcIssuer": $mockOidcIssuer,
-            "mockOidcAuthorizeEndpoint": $mockOidcAuthorizeEndpoint,
-            "mockOidcTokenEndpoint": $mockOidcTokenEndpoint,
-            "mockOidcUserInfoEndpoint": $mockOidcUserInfoEndpoint,
-            "mockOidcjwksEndpoint": $mockOidcjwksEndpoint,
-            "useCustomCognitoDomain": $useCustomCognitoDomain,
-            "fullCognitoDomain": $fullCognitoDomain,
-            "useLocalhostCallback": $useLocalhostCallback,
-            "apigeeCIS2TokenEndpoint": $apigeeCIS2TokenEndpoint,
-            "apigeeMockTokenEndpoint": $apigeeMockTokenEndpoint,
-            "apigeePrescriptionsEndpoint": $apigeePrescriptionsEndpoint,
-            "apigeeApiKey": $apigeeApiKey,
-            "jwtKid": $jwtKid,
-            "roleId": $roleId
-            }' \
-          .build/cdk.json > .build/cdk.new.json
-          mv .build/cdk.new.json .build/cdk.json
+          ./.github/scripts/fix_cdk_json.sh .build/${{ inputs.CONFIG_FILE }}
+          echo "******"
+          cat .build/${{ inputs.CONFIG_FILE }}
+        env:
+          SERVICE_NAME: ${{ inputs.SERVICE_NAME }}
+          VERSION_NUMBER: "${{ inputs.VERSION_NUMBER }}"
+          COMMIT_ID: "${{ inputs.COMMIT_ID }}"
+          LOG_RETENTION_IN_DAYS: "${{ inputs.LOG_RETENTION_IN_DAYS }}"
+          LOG_LEVEL: "${{ inputs.LOG_LEVEL }}"
+          AUTO_DELETE_OBJECTS: "true"
+          USE_MOCK_OIDC: "${{ inputs.useMockOidc }}"
+          PRIMARY_OIDC_CLIENT_ID: "${{ secrets.primaryOidcClientId }}"
+          PRIMARY_OIDC_ISSUER: "${{ inputs.primaryOidcIssuer }}"
+          PRIMARY_OIDC_AUTHORIZE_ENDPOINT: "${{ inputs.primaryOidcAuthorizeEndpoint }}"
+          PRIMARY_OIDC_TOKEN_ENDPOINT: "${{ inputs.primaryOidcTokenEndpoint }}"
+          PRIMARY_OIDC_USERINFO_ENDPOINT: "${{ inputs.primaryOidcUserInfoEndpoint }}"
+          PRIMARY_OIDC_JWKS_ENDPOINT: "${{ inputs.primaryOidcjwksEndpoint }}"
+          MOCK_OIDC_CLIENT_ID: "${{ secrets.mockOidcClientId }}"
+          MOCK_OIDC_ISSUER: "${{ inputs.mockOidcIssuer }}"
+          MOCK_OIDC_AUTHORIZE_ENDPOINT: "${{ inputs.mockOidcAuthorizeEndpoint }}"
+          MOCK_OIDC_TOKEN_ENDPOINT: "${{ inputs.mockOidcTokenEndpoint }}"
+          MOCK_OIDC_USERINFO_ENDPOINT: "${{ inputs.mockOidcUserInfoEndpoint }}"
+          MOCK_OIDC_JWKS_ENDPOINT: ${{ inputs.mockOidcjwksEndpoint }}
+          USE_CUSTOM_COGNITO_DOMAIN: ${{ inputs.useCustomCognitoDomain }}
+          ALLOW_LOCALHOST_ACCESS: ${{ inputs.allowLocalhostAccess }}
+          APIGEE_CIS2_TOKEN_ENDPOINT: ${{ inputs.APIGEE_CIS2_TOKEN_ENDPOINT }}
+          APIGEE_MOCK_TOKEN_ENDPOINT: ${{ inputs.APIGEE_MOCK_TOKEN_ENDPOINT }}
+          APIGEE_PRESCRIPTION_ENDPOINT: ${{ inputs.APIGEE_PRESCRIPTIONS_ENDPOINT }}
+          APIGEE_PERSONAL_DEMOGRAPHICS_ENDPOINT: ${{ inputs.APIGEE_PDS_ENDPOINT }}
+          APIGEE_API_KEY: ${{ secrets.APIGEE_API_KEY }}
+          JWT_KID: ${{ inputs.JWT_KID }}
+          ROLE_ID: ${{ inputs.ROLE_ID }}
+          CDK_APP_NAME: ${{ inputs.CDK_APP_NAME }}
 
       - name: Show diff
         run: |
@@ -230,6 +180,7 @@ jobs:
           -e AWS_REGION="eu-west-2" \
           -e SHOW_DIFF="true" \
           -e DEPLOY_CODE="false" \
+          -e CONFIG_FILE_NAME="${{ inputs.CONFIG_FILE }}" \
           -e CDK_APP_PATH="packages/cdk/bin/${{ inputs.CDK_APP_NAME }}.ts" \
           cdk-utils-build-repo:latest
         shell: bash
@@ -244,6 +195,7 @@ jobs:
           -e AWS_REGION="eu-west-2" \
           -e SHOW_DIFF="false" \
           -e DEPLOY_CODE="true" \
+          -e CONFIG_FILE_NAME="${{ inputs.CONFIG_FILE }}" \
           -e CDK_APP_PATH="packages/cdk/bin/${{ inputs.CDK_APP_NAME }}.ts" \
           cdk-utils-build-repo:latest
         shell: bash

@@ -14,6 +14,7 @@ import {Dynamodb} from "../resources/Dynamodb"
 import {Bucket} from "aws-cdk-lib/aws-s3"
 import {Role} from "aws-cdk-lib/aws-iam"
 import {HostedZone} from "aws-cdk-lib/aws-route53"
+import {Rum} from "../resources/Rum"
 
 export interface StatefulResourcesStackProps extends StackProps {
   readonly serviceName: string
@@ -42,14 +43,14 @@ export class StatefulResourcesStack extends Stack {
     const primaryOidcAuthorizeEndpoint = this.node.tryGetContext("primaryOidcAuthorizeEndpoint")
     const primaryOidcUserInfoEndpoint = this.node.tryGetContext("primaryOidcUserInfoEndpoint")
     const primaryOidcjwksEndpoint = this.node.tryGetContext("primaryOidcjwksEndpoint")
-    const primaryTokenEndpoint = this.node.tryGetContext("primaryTokenEndpoint")
+    const primaryOidcTokenEndpoint = this.node.tryGetContext("primaryOidcTokenEndpoint")
 
     const mockOidcClientId = this.node.tryGetContext("mockOidcClientId")
     const mockOidcIssuer = this.node.tryGetContext("mockOidcIssuer")
     const mockOidcAuthorizeEndpoint = this.node.tryGetContext("mockOidcAuthorizeEndpoint")
     const mockOidcUserInfoEndpoint = this.node.tryGetContext("mockOidcUserInfoEndpoint")
     const mockOidcjwksEndpoint = this.node.tryGetContext("mockOidcjwksEndpoint")
-    const mockTokenEndpoint = this.node.tryGetContext("mockTokenEndpoint")
+    const mockOidcTokenEndpoint = this.node.tryGetContext("mockOidcTokenEndpoint")
 
     const useMockOidc: boolean = this.node.tryGetContext("useMockOidc")
     const useCustomCognitoDomain: boolean = this.node.tryGetContext("useCustomCognitoDomain")
@@ -60,7 +61,10 @@ export class StatefulResourcesStack extends Stack {
     const allowAutoDeleteObjects: boolean = this.node.tryGetContext("allowAutoDeleteObjects")
     const cloudfrontDistributionId: string = this.node.tryGetContext("cloudfrontDistributionId")
 
-    const useLocalhostCallback: boolean = this.node.tryGetContext("useLocalhostCallback")
+    const allowLocalhostAccess: boolean = this.node.tryGetContext("allowLocalhostAccess")
+    const logRetentionInDays: number = Number(this.node.tryGetContext("logRetentionInDays"))
+    const rumCloudwatchLogEnabled: boolean = this.node.tryGetContext("rumCloudwatchLogEnabled")
+    const rumAppName: string = this.node.tryGetContext("rumAppName")
 
     // Imports
     const auditLoggingBucketImport = Fn.importValue("account-resources:AuditLoggingBucket")
@@ -82,7 +86,9 @@ export class StatefulResourcesStack extends Stack {
       allowAutoDeleteObjects: allowAutoDeleteObjects,
       cloudfrontDistributionId: cloudfrontDistributionId,
       auditLoggingBucket: auditLoggingBucket,
-      deploymentRole: deploymentRole
+      deploymentRole: deploymentRole,
+      rumAppName: rumAppName,
+      region: this.region
     })
 
     // - Cognito resources
@@ -92,20 +98,20 @@ export class StatefulResourcesStack extends Stack {
       primaryOidcAuthorizeEndpoint: primaryOidcAuthorizeEndpoint,
       primaryOidcUserInfoEndpoint: primaryOidcUserInfoEndpoint,
       primaryOidcjwksEndpoint: primaryOidcjwksEndpoint,
-      primaryTokenEndpoint: primaryTokenEndpoint,
+      primaryOidcTokenEndpoint: primaryOidcTokenEndpoint,
       mockOidcClientId: mockOidcClientId,
       mockOidcIssuer: mockOidcIssuer,
       mockOidcAuthorizeEndpoint: mockOidcAuthorizeEndpoint,
       mockOidcUserInfoEndpoint: mockOidcUserInfoEndpoint,
       mockOidcjwksEndpoint: mockOidcjwksEndpoint,
-      mockTokenEndpoint: mockTokenEndpoint,
+      mockOidcTokenEndpoint: mockOidcTokenEndpoint,
       useMockOidc: useMockOidc,
       shortCognitoDomain: props.shortCognitoDomain,
       fullCognitoDomain: props.fullCognitoDomain,
       fullCloudfrontDomain: props.fullCloudfrontDomain,
       cognitoCertificate: props.cognitoCertificate,
       hostedZone: hostedZone,
-      useLocalhostCallback: useLocalhostCallback,
+      allowLocalhostAccess: allowLocalhostAccess,
       useCustomCognitoDomain: useCustomCognitoDomain
     })
 
@@ -116,6 +122,24 @@ export class StatefulResourcesStack extends Stack {
       region: this.region
     })
 
+    // need to make sure the app monitor name is not too long
+    const appMonitorName = props.stackName.replace("-stateful-resources", "")
+    const rum = new Rum(this, "Rum", {
+      topLevelDomain: props.fullCloudfrontDomain,
+      appMonitorName: appMonitorName,
+      serviceName: props.serviceName,
+      stackName: props.stackName,
+      logRetentionInDays: logRetentionInDays,
+      cwLogEnabled: rumCloudwatchLogEnabled,
+      allowLocalhostAccess: allowLocalhostAccess,
+      staticContentBucket: staticContentBucket.bucket,
+      uploadSourceMaps: staticContentBucket.addRumBucketPolicy?.policyDependable ? true: false
+    })
+
+    // add dependency on bucket policy
+    if (staticContentBucket.addRumBucketPolicy?.policyDependable) {
+      rum.node.addDependency(staticContentBucket.addRumBucketPolicy.policyDependable)
+    }
     // Outputs
 
     // Exports
@@ -126,6 +150,10 @@ export class StatefulResourcesStack extends Stack {
     new CfnOutput(this, "StaticContentBucketName", {
       value: staticContentBucket.bucket.bucketName,
       exportName: `${props.stackName}:StaticContentBucket:Name`
+    })
+    new CfnOutput(this, "StaticContentBucketKmsKeyArn", {
+      value: staticContentBucket.kmsKey.keyArn,
+      exportName: `${props.stackName}:StaticContentBucketKmsKey:Arn`
     })
 
     // Token mapping table
@@ -187,6 +215,103 @@ export class StatefulResourcesStack extends Stack {
       value: cognito.userPoolClient.userPoolClientId,
       exportName: `${props.stackName}:userPoolClient:userPoolClientId`
     })
+
+    new CfnOutput(this, "unauthenticatedRumRoleArn", {
+      value: rum.unauthenticatedRumRole.roleArn,
+      exportName: `${props.stackName}:rum:unauthenticatedRumRole:Arn`
+    })
+
+    new CfnOutput(this, "identityPoolId", {
+      value: rum.identityPool.ref,
+      exportName: `${props.stackName}:rum:identityPool:Id`
+    })
+
+    new CfnOutput(this, "rumAppId", {
+      value: rum.rumApp.attrId,
+      exportName: `${props.stackName}:rum:rumApp:Id`
+    })
+
+    new CfnOutput(this, "rumAppName", {
+      value: rum.rumApp.ref,
+      exportName: `${props.stackName}:rum:rumApp:Name`
+    })
+
+    new CfnOutput(this, "rumAllowCookies", {
+      value: rum.baseAppMonitorConfiguration.allowCookies!.toString(),
+      exportName: `${props.stackName}:rum:config:allowCookies`
+    })
+
+    new CfnOutput(this, "rumEnableXRay", {
+      value: rum.baseAppMonitorConfiguration.enableXRay!.toString(),
+      exportName: `${props.stackName}:rum:config:enableXRay`
+    })
+
+    new CfnOutput(this, "rumSessionSampleRate", {
+      value: rum.baseAppMonitorConfiguration.sessionSampleRate!.toString(),
+      exportName: `${props.stackName}:rum:config:sessionSampleRate`
+    })
+
+    new CfnOutput(this, "rumTelemetries", {
+      value: rum.baseAppMonitorConfiguration.telemetries!.toString(),
+      exportName: `${props.stackName}:rum:config:telemetries`
+    })
+
+    new CfnOutput(this, "rumLogGroupArn", {
+      value: rum.logGroup.logGroupArn,
+      exportName: `${props.stackName}:rum:logGroup:arn`
+    })
+
+    if (allowLocalhostAccess) {
+      new CfnOutput(this, "primaryOidcClientId", {
+        value: primaryOidcClientId,
+        exportName: `${props.stackName}:local:primaryOidcClientId`
+      })
+      new CfnOutput(this, "primaryOidcIssuer", {
+        value: primaryOidcIssuer,
+        exportName: `${props.stackName}:local:primaryOidcIssuer`
+      })
+      new CfnOutput(this, "primaryOidcAuthorizeEndpoint", {
+        value: primaryOidcAuthorizeEndpoint,
+        exportName: `${props.stackName}:local:primaryOidcAuthorizeEndpoint`
+      })
+      new CfnOutput(this, "primaryOidcUserInfoEndpoint", {
+        value: primaryOidcUserInfoEndpoint,
+        exportName: `${props.stackName}:local:primaryOidcUserInfoEndpoint`
+      })
+      new CfnOutput(this, "primaryOidcjwksEndpoint", {
+        value: primaryOidcjwksEndpoint,
+        exportName: `${props.stackName}:local:primaryOidcjwksEndpoint`
+      })
+      new CfnOutput(this, "primaryOidcTokenEndpoint", {
+        value: primaryOidcTokenEndpoint,
+        exportName: `${props.stackName}:local:primaryOidcTokenEndpoint`
+      })
+      new CfnOutput(this, "mockOidcClientId", {
+        value: mockOidcClientId,
+        exportName: `${props.stackName}:local:mockOidcClientId`
+      })
+      new CfnOutput(this, "mockOidcIssuer", {
+        value: mockOidcIssuer,
+        exportName: `${props.stackName}:local:mockOidcIssuer`
+      })
+      new CfnOutput(this, "mockOidcAuthorizeEndpoint", {
+        value: mockOidcAuthorizeEndpoint,
+        exportName: `${props.stackName}:local:mockOidcAuthorizeEndpoint`
+      })
+      new CfnOutput(this, "mockOidcUserInfoEndpoint", {
+        value: mockOidcUserInfoEndpoint,
+        exportName: `${props.stackName}:local:mockOidcUserInfoEndpoint`
+      })
+      new CfnOutput(this, "mockOidcjwksEndpoint", {
+        value: mockOidcjwksEndpoint,
+        exportName: `${props.stackName}:local:mockOidcjwksEndpoint`
+      })
+      new CfnOutput(this, "mockOidcTokenEndpoint", {
+        value: mockOidcTokenEndpoint,
+        exportName: `${props.stackName}:local:mockOidcTokenEndpoint`
+      })
+
+    }
 
     nagSuppressions(this)
   }

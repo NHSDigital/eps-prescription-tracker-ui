@@ -1,38 +1,67 @@
-import React from 'react'
-import { Tabs } from "nhsuk-react-components";
-import PrescriptionIdSearch from "@/components/prescriptionSearch/PrescriptionIdSearch"
-import NhsNumSearch from '@/components/prescriptionSearch/NhsNumSearch';
-import BasicDetailsSearch from '@/components/prescriptionSearch/BasicDetailsSearch';
-import {
-    PRESCRIPTION_SEARCH_TABS
-} from "@/constants/ui-strings/SearchTabStrings";
+import React from "react"
+import {Link} from "react-router-dom"
+import {Tabs} from "nhsuk-react-components"
 
-export default function EpsTabs() {
-    const tabData = PRESCRIPTION_SEARCH_TABS;
-    return (
-        <Tabs defaultValue={tabData[0].targetId}>
-            <Tabs.Title>Contents</Tabs.Title>
-            <Tabs.List>
-                {
-                    tabData.map(tabHeader =>
-                        <Tabs.ListItem id={tabHeader.targetId} key={tabHeader.title}>{tabHeader.title}</Tabs.ListItem>
-                    )
-                }
-            </Tabs.List>
-            {
-                tabData.map(tabContent =>
-                    <Tabs.Contents id={tabContent.targetId} key={tabContent.title}>
-                        <div>
-                            {(tabContent.targetId === 'PrescriptionIdSearch' && <PrescriptionIdSearch />) ||
-                                (tabContent.targetId === 'NhsNumSearch' && <NhsNumSearch />) ||
-                                (tabContent.targetId === 'BasicDetailsSearch' && <BasicDetailsSearch />) ||
-                                <p>This Search not available</p>
-                            }
-                        </div>
+export interface TabHeader {
+  title: string,
+  link: string
+}
 
-                    </Tabs.Contents>
-                )
+interface EpsTabsProps {
+  activeTabPath: string;
+  tabHeaderArray: Array<TabHeader>;
+  children: React.ReactNode;
+  variant?: "default" | "large";
+}
+
+export default function EpsTabs({
+  activeTabPath,
+  tabHeaderArray,
+  children,
+  variant = "default"
+}: EpsTabsProps) {
+  const baseClass = "nhsuk-tabs"
+  const variantClass = variant === "large" ? `${baseClass}--large` : ""
+  const tabClass = `${baseClass} ${variantClass}`.trim()
+
+  return (
+    <div className={tabClass}>
+      <Tabs.Title>Contents</Tabs.Title>
+      <Tabs.List>
+        {tabHeaderArray.map((tab) => (
+          // we are using a custom list item component here instead of Tabs.ListItem
+          // because the built-in functionality of Tabs.ListItem does not allow for
+          // the tab to navigate us to separate urls instead it is hardwired to work
+          // with target ids, which goes against our intended use case
+          <li
+            key={tab.link}
+            className={
+              `${baseClass}__list-item ${tab.link.includes(activeTabPath) ? `${baseClass}__list-item--selected` : ""}`
             }
-        </Tabs>
-    )
+            role="presentation"
+          >
+            <Link
+              className={`${baseClass}__tab`}
+              role="tab"
+              aria-selected={tab.link.includes(activeTabPath) ? "true" : "false"}
+              id={`tab_${tab.link.substring(1)}`}
+              aria-controls={`panel_${tab.link.substring(1)}`}
+              to={tab.link}
+              data-testid={`eps-tab-heading ${tab.link}`}
+            >
+              {tab.title}
+            </Link>
+          </li>
+        ))}
+      </Tabs.List>
+      <div
+        className={`${baseClass}__panel`}
+        id={`panel_${activeTabPath.substring(1)}`}
+        role="tabpanel"
+        aria-labelledby={`tab_${activeTabPath.substring(1)}`}
+      >
+        {children}
+      </div>
+    </div>
+  )
 }

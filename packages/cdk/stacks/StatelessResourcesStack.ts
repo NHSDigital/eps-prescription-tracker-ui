@@ -80,8 +80,10 @@ export class StatelessResourcesStack extends Stack {
     const apigeeCIS2TokenEndpoint = this.node.tryGetContext("apigeeCIS2TokenEndpoint")
     const apigeeMockTokenEndpoint = this.node.tryGetContext("apigeeMockTokenEndpoint")
     const apigeePrescriptionsEndpoint = this.node.tryGetContext("apigeePrescriptionsEndpoint")
+    const apigeePersonalDemographicsEndpoint = this.node.tryGetContext("apigeePersonalDemographicsEndpoint")
     const jwtKid: string = this.node.tryGetContext("jwtKid")
     const roleId: string = this.node.tryGetContext("roleId")
+    const allowLocalhostAccess: boolean = this.node.tryGetContext("allowLocalhostAccess")
 
     // Imports
     const baseImportPath = `${props.serviceName}-stateful-resources`
@@ -233,7 +235,8 @@ export class StatelessResourcesStack extends Stack {
       apigeePrescriptionsEndpoint: apigeePrescriptionsEndpoint,
       apigeeApiKey: apigeeApiKey,
       jwtKid: jwtKid,
-      roleId: roleId
+      roleId: roleId,
+      apigeePersonalDemographicsEndpoint: apigeePersonalDemographicsEndpoint
     })
 
     // - CPT backend API Gateway (/api/*)
@@ -268,7 +271,7 @@ export class StatelessResourcesStack extends Stack {
       CIS2SignOutLambda: apiFunctions.CIS2SignOutLambda,
       restAPiGatewayRole: apiGateway.apiGatewayRole,
       restApiGateway: apiGateway.apiGateway,
-      prescriptionSearchLambda: apiFunctions.prescriptionSearchLambda,
+      prescriptionListLambda: apiFunctions.prescriptionListLambda,
       prescriptionDetailsLambda: apiFunctions.prescriptionDetailsLambda,
       trackerUserInfoLambda: apiFunctions.trackerUserInfoLambda,
       selectedRoleLambda: apiFunctions.selectedRoleLambda,
@@ -401,6 +404,36 @@ export class StatelessResourcesStack extends Stack {
       new CfnOutput(this, "mockJwtPrivateKeyName", {
         value: sharedSecrets.mockJwtPrivateKey.secretName,
         exportName: `${props.stackName}:mockJwtPrivateKey:Name`
+      })
+    }
+    if (allowLocalhostAccess) {
+      new CfnOutput(this, "apigeeApiKey", {
+        value: apigeeApiKey,
+        exportName: `${props.stackName}:local:apigeeApiKey`
+      })
+      new CfnOutput(this, "apigeeCIS2TokenEndpoint", {
+        value: apigeeCIS2TokenEndpoint,
+        exportName: `${props.stackName}:local:apigeeCIS2TokenEndpoint`
+      })
+      new CfnOutput(this, "apigeeMockTokenEndpoint", {
+        value: apigeeMockTokenEndpoint,
+        exportName: `${props.stackName}:local:apigeeMockTokenEndpoint`
+      })
+      new CfnOutput(this, "apigeePrescriptionsEndpoint", {
+        value: apigeePrescriptionsEndpoint,
+        exportName: `${props.stackName}:local:apigeePrescriptionsEndpoint`
+      })
+      new CfnOutput(this, "apigeePersonalDemographicsEndpoint", {
+        value: apigeePersonalDemographicsEndpoint,
+        exportName: `${props.stackName}:local:apigeePersonalDemographicsEndpoint`
+      })
+      new CfnOutput(this, "jwtKid", {
+        value: jwtKid,
+        exportName: `${props.stackName}:local:jwtKid`
+      })
+      new CfnOutput(this, "roleId", {
+        value: roleId,
+        exportName: `${props.stackName}:local:roleId`
       })
     }
     nagSuppressions(this)

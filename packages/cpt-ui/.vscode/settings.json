@@ -1,7 +1,4 @@
 {
   "jest.jestCommandLine": "/workspaces/eps-prescription-tracker-ui/node_modules/.bin/jest --no-cache",
-  "jest.nodeEnv": {
-    "POWERTOOLS_DEV": true,
-    "NODE_OPTIONS": "--experimental-vm-modules"
-  }
+  "eslint.format.enable": true
 }

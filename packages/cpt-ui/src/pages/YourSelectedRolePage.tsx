@@ -1,15 +1,20 @@
-import React, { useEffect, useState } from "react"
+import React, {useEffect, useState} from "react"
 
-import { Container, Col, Row, Table } from "nhsuk-react-components"
-import { useNavigate, Link } from "react-router-dom"
+import {
+  Container,
+  Col,
+  Row,
+  Table
+} from "nhsuk-react-components"
+import {Link} from "react-router-dom"
 
-import { YOUR_SELECTED_ROLE_STRINGS } from "@/constants/ui-strings/YourSelectedRoleStrings"
-import { useAccess } from "@/context/AccessProvider"
-import { Button } from "@/components/ReactRouterButton"
+import {YOUR_SELECTED_ROLE_STRINGS} from "@/constants/ui-strings/YourSelectedRoleStrings"
+import {useAccess} from "@/context/AccessProvider"
+import {Button} from "@/components/ReactRouterButton"
+import {FRONTEND_PATHS} from "@/constants/environment"
 
 export default function YourSelectedRolePage() {
-  const navigate = useNavigate()
-  const { selectedRole } = useAccess()
+  const {selectedRole} = useAccess()
 
   const [roleName, setRoleName] = useState<string>(YOUR_SELECTED_ROLE_STRINGS.noRoleName)
   const [orgName, setOrgName] = useState<string>(YOUR_SELECTED_ROLE_STRINGS.noOrgName)
@@ -71,7 +76,7 @@ export default function YourSelectedRolePage() {
                   </Table.Cell>
                   <Table.Cell data-testid="role-change-role-cell">
                     <Link
-                      to="/changerole"
+                      to={FRONTEND_PATHS.CHANGE_YOUR_ROLE}
                     >
                       {changeLinkText}
                     </Link>
@@ -86,7 +91,7 @@ export default function YourSelectedRolePage() {
                   </Table.Cell>
                   <Table.Cell data-testid="org-change-role-cell">
                     <Link
-                      to="/changerole"
+                      to={FRONTEND_PATHS.CHANGE_YOUR_ROLE}
                     >
                       {changeLinkText}
                     </Link>
@@ -100,7 +105,7 @@ export default function YourSelectedRolePage() {
         <Row>
           <Col width="two-thirds">
             <Button
-              to="/searchforaprescription"
+              to={FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID}
               data-testid="confirm-and-continue"
             >
               {confirmButtonText}

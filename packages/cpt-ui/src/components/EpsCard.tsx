@@ -1,65 +1,28 @@
-import React, { useContext } from "react"
-import { Card, Col, Row } from "nhsuk-react-components"
+import React from "react"
+import {Card, Col, Row} from "nhsuk-react-components"
 
-import { AuthContext } from "@/context/AuthProvider"
-import { useAccess } from '@/context/AccessProvider'
-import { useNavigate } from "react-router-dom";
+import {useAccess} from "@/context/AccessProvider"
+import {useNavigate} from "react-router-dom"
 
-import { RoleDetails } from "@/types/TrackerUserInfoTypes"
+import {RoleDetails} from "@/types/TrackerUserInfoTypes"
 
-import { EPS_CARD_STRINGS } from "@/constants/ui-strings/CardStrings"
-import { API_ENDPOINTS } from "@/constants/environment";
-
-const selectedRoleEndpoint = API_ENDPOINTS.SELECTED_ROLE;
+import {EPS_CARD_STRINGS} from "@/constants/ui-strings/CardStrings"
 
 export interface EpsCardProps {
   role: RoleDetails
   link: string
 }
 
-export default function EpsCard({ role, link }: EpsCardProps) {
+export default function EpsCard({role, link}: EpsCardProps) {
   const navigate = useNavigate()
-  const auth = useContext(AuthContext)
-  const { setSelectedRole } = useAccess()
+  const {updateSelectedRole} = useAccess()
 
   const handleSetSelectedRole = async (e: React.MouseEvent) => {
     e.preventDefault()
+    await updateSelectedRole(role)
 
-    try {
-      // Define currentlySelectedRole before sending the request
-      const currentlySelectedRole: RoleDetails = {
-        role_id: role.role_id || "",
-        org_name: role.org_name || "",
-        org_code: role.org_code || "",
-        role_name: role.role_name || ""
-      }
-
-      // Update selected role in the backend via the selectedRoleLambda endpoint
-      const response = await fetch(selectedRoleEndpoint, {
-        method: 'PUT',
-        headers: {
-          Authorization: `Bearer ${auth?.idToken}`,
-          'Content-Type': 'application/json',
-          'NHSD-Session-URID': '555254242106'
-        },
-        body: JSON.stringify({
-          currently_selected_role: currentlySelectedRole
-        }),
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to update the selected role')
-      }
-
-      // Update frontend state with selected role
-      setSelectedRole(currentlySelectedRole)
-
-      // Redirect to the appropriate page
-      navigate(link)
-    } catch (error) {
-      console.error('Error selecting role:', error)
-      alert("There was an issue selecting your role. Please try again.")
-    }
+    // Redirect to the appropriate page
+    navigate(link)
   }
 
   const {

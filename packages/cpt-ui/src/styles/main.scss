@@ -6,5 +6,7 @@
 @use "./footer";
 @use "./header";
 @use "./rbacBanner";
+@use "./patientDetailsBanner";
+@use "./prescriptionInformationBanner.scss";
 @use "./searchforaprescription";
 @use "./tabs";

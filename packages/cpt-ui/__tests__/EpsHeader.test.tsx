@@ -1,13 +1,10 @@
-import "@testing-library/jest-dom";
-import { render, screen } from "@testing-library/react";
-import { useLocation } from "react-router-dom";
-import React from "react";
-import EpsHeader from "@/components/EpsHeader";
-import { AuthContext, type AuthContextType } from "@/context/AuthProvider";
-import {
-  AccessContext,
-  type AccessContextType,
-} from "@/context/AccessProvider";
+import "@testing-library/jest-dom"
+import {render, screen} from "@testing-library/react"
+import {useLocation} from "react-router-dom"
+import React from "react"
+import EpsHeader from "@/components/EpsHeader"
+import {AuthContext, type AuthContextType} from "@/context/AuthProvider"
+import {AccessContext, type AccessContextType} from "@/context/AccessProvider"
 
 // Mock the strings module
 jest.mock("@/constants/ui-strings/HeaderStrings", () => ({
@@ -15,10 +12,10 @@ jest.mock("@/constants/ui-strings/HeaderStrings", () => ({
   HEADER_EXIT_BUTTON: "Exit",
   HEADER_EXIT_TARGET: "/exit",
   HEADER_CHANGE_ROLE_BUTTON: "Change role",
-  HEADER_CHANGE_ROLE_TARGET: "/changerole",
-  HEADER_SELECT_YOUR_ROLE_TARGET: "/selectyourrole",
-  HEADER_SELECT_YOUR_ROLE_BUTTON: "Select your role",
-}));
+  HEADER_CHANGE_ROLE_TARGET: "/change-your-role",
+  HEADER_SELECT_YOUR_ROLE_TARGET: "/select-your-role",
+  HEADER_SELECT_YOUR_ROLE_BUTTON: "Select your role"
+}))
 
 // Mock react-router-dom
 jest.mock("react-router-dom", () => ({
@@ -27,7 +24,7 @@ jest.mock("react-router-dom", () => ({
     pathname: "/",
     search: "",
     hash: "",
-    state: null,
+    state: null
   })),
   Link: ({
     children,
@@ -36,13 +33,14 @@ jest.mock("react-router-dom", () => ({
   }: {
     children: React.ReactNode;
     to: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [key: string]: any;
   }) => (
     <a href={to} {...props}>
       {children}
     </a>
-  ),
-}));
+  )
+}))
 
 // Default context values
 const defaultAuthContext: AuthContextType = {
@@ -52,8 +50,8 @@ const defaultAuthContext: AuthContextType = {
   idToken: null,
   accessToken: null,
   cognitoSignIn: jest.fn(),
-  cognitoSignOut: jest.fn(),
-};
+  cognitoSignOut: jest.fn()
+}
 
 const defaultAccessContext: AccessContextType = {
   noAccess: false,
@@ -63,127 +61,128 @@ const defaultAccessContext: AccessContextType = {
   setUserDetails: jest.fn(),
   setNoAccess: jest.fn(),
   setSingleAccess: jest.fn(),
-  setSelectedRole: jest.fn(),
+  updateSelectedRole: jest.fn(),
   clear: jest.fn(),
   rolesWithAccess: [],
   rolesWithoutAccess: [],
   loading: false,
   error: null
-};
+}
 
 const renderWithProviders = (
   pathname = "/",
   authOverrides = {},
-  accessOverrides = {},
+  accessOverrides = {}
 ) => {
   (useLocation as jest.Mock).mockReturnValue({
     pathname,
     search: "",
     hash: "",
-    state: null,
-  });
+    state: null
+  })
 
-  const authValue = { ...defaultAuthContext, ...authOverrides };
-  const accessValue = { ...defaultAccessContext, ...accessOverrides };
+  const authValue = {...defaultAuthContext, ...authOverrides}
+  const accessValue = {...defaultAccessContext, ...accessOverrides}
 
   return render(
     <AuthContext.Provider value={authValue}>
       <AccessContext.Provider value={accessValue}>
         <EpsHeader />
       </AccessContext.Provider>
-    </AuthContext.Provider>,
-  );
-};
+    </AuthContext.Provider>
+  )
+}
 
 describe("EpsHeader", () => {
   beforeEach(() => {
-    jest.clearAllMocks();
-  });
+    jest.clearAllMocks()
+  })
 
   describe("When the user is NOT signed in", () => {
     beforeEach(() => {
-      renderWithProviders("/");
-    });
+      renderWithProviders("/")
+    })
 
     it("renders the header (role='banner')", () => {
-      expect(screen.getByRole("banner")).toBeInTheDocument();
-    });
+      expect(screen.getByRole("banner")).toBeInTheDocument()
+    })
 
     it("displays the correct service name in the header", () => {
       expect(screen.getByTestId("eps_header_serviceName")).toHaveTextContent(
-        "Clinical Prescription Tracker",
-      );
-    });
+        "Clinical Prescription Tracker"
+      )
+    })
 
     it("does NOT display the 'Log out' link", () => {
-      expect(screen.queryByTestId("eps_header_logout")).not.toBeInTheDocument();
-    });
+      expect(screen.queryByTestId("eps_header_logout")).not.toBeInTheDocument()
+    })
 
     it("does NOT display the 'Change role' link", () => {
       expect(
-        screen.queryByTestId("eps_header_changeRoleLink"),
-      ).not.toBeInTheDocument();
-    });
-  });
+        screen.queryByTestId("eps_header_changeRoleLink")
+      ).not.toBeInTheDocument()
+    })
+  })
 
   describe("When the user IS signed in", () => {
     beforeEach(() => {
       renderWithProviders(
         "/",
-        { isSignedIn: true },
-        { selectedRole: "", singleAccess: false },
-      );
-    });
+        {isSignedIn: true},
+        {selectedRole: "", singleAccess: false}
+      )
+    })
 
     it("renders the header (role='banner')", () => {
-      expect(screen.getByRole("banner")).toBeInTheDocument();
-    });
+      expect(screen.getByRole("banner")).toBeInTheDocument()
+    })
 
     it("displays the correct service name in the header", () => {
       expect(screen.getByTestId("eps_header_serviceName")).toHaveTextContent(
-        "Clinical Prescription Tracker",
-      );
-    });
+        "Clinical Prescription Tracker"
+      )
+    })
 
     it("displays the 'Log out' link", () => {
-      expect(screen.getByTestId("eps_header_logout")).toBeInTheDocument();
+      expect(screen.getByTestId("eps_header_logout")).toBeInTheDocument()
       expect(screen.getByTestId("eps_header_logout")).toHaveTextContent(
-        "Log out",
-      );
-    });
+        "Log out"
+      )
+    })
 
     it("does NOT display an 'Exit' button by default", () => {
-      expect(screen.queryByTestId("eps_header_exit")).not.toBeInTheDocument();
-    });
-  });
+      expect(screen.queryByTestId("eps_header_exit")).not.toBeInTheDocument()
+    })
+  })
 
   describe("Select Your Role link behavior", () => {
-    it("shows 'Select your role' when user is signed in, route !== /selectyourrole, and role not yet selected", () => {
+    /* eslint-disable max-len */
+    it("shows 'Select your role' when user is signed in, route !== /select-your-role, and role not yet selected", () => {
       renderWithProviders(
         "/other-route",
-        { isSignedIn: true },
+        {isSignedIn: true},
         {
           selectedRole: null,
           singleAccess: false,
-          noAccess: false,
-        },
-      );
+          noAccess: false
+        }
+      )
 
-      const link = screen.getByTestId("eps_header_selectYourRoleLink");
-      expect(link).toBeInTheDocument();
-      expect(link).toHaveTextContent("Select your role");
-    });
+      const link = screen.getByTestId("eps_header_selectYourRoleLink")
+      expect(link).toBeInTheDocument()
+      expect(link).toHaveTextContent("Select your role")
+    })
 
-    it("does NOT show 'Select your role' when the route is /selectyourrole", () => {
+    it("does NOT show 'Select your role' when the route is /select-your-role", () => {
       renderWithProviders(
-        "/selectyourrole",
-        { isSignedIn: true },
-        { selectedRole: "" },
-      );
+        "/select-your-role",
+        {isSignedIn: true},
+        {selectedRole: ""}
+      )
 
       expect(
-        screen.queryByTestId("eps_header_selectYourRoleLink"),
-      ).not.toBeInTheDocument();
-    });
-  });
-});
+        screen.queryByTestId("eps_header_selectYourRoleLink")
+      ).not.toBeInTheDocument()
+    })
+  })
+})

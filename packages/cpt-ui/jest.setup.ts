@@ -36,5 +36,38 @@ jest.mock("@/constants/environment", () => ({
   API_ENDPOINTS: {
     TRACKER_USER_INFO: "/api/tracker-user-info"
   },
+  FRONTEND_PATHS: {
+    PRESCRIPTION_NOT_FOUND: "/prescription-not-found",
+    PRESCRIPTION_LIST_CURRENT: "/prescription-list-current",
+    PRESCRIPTION_LIST_FUTURE: "/prescription-list-future",
+    PRESCRIPTION_LIST_PAST: "/prescription-list-past",
+    LOGIN: "/login",
+    LOGOUT: "/logout",
+    SELECT_YOUR_ROLE: "/select-your-role",
+    YOUR_SELECTED_ROLE: "/your-selected-role",
+    CHANGE_YOUR_ROLE: "/change-your-role",
+    SEARCH_BY_PRESCRIPTION_ID: "/search-by-prescription-id",
+    SEARCH_BY_NHS_NUMBER: "/search-by-nhs-number",
+    SEARCH_BY_BASIC_DETAILS: "/search-by-basic-details"
+  },
   MOCK_AUTH_ALLOWED_ENVIRONMENTS: ["dev", "dev-pr", "int", "qa"]
 }))
+
+// Allows for tab selection
+class MediaQueryList {
+  matches = false
+  media = ""
+  onchange = null
+  addListener = jest.fn()
+  removeListener = jest.fn()
+  addEventListener = jest.fn()
+  removeEventListener = jest.fn()
+  dispatchEvent = jest.fn()
+
+  constructor() {
+    this.matches = false
+    this.media = ""
+  }
+}
+
+window.matchMedia = jest.fn().mockImplementation(() => new MediaQueryList())

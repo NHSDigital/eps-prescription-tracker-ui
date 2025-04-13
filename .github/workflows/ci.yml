@@ -113,11 +113,12 @@ jobs:
       mockOidcTokenEndpoint: "https://identity.ptl.api.platform.nhs.uk/realms/Cis2-mock-internal-dev/protocol/openid-connect/token"
       mockOidcUserInfoEndpoint: "https://identity.ptl.api.platform.nhs.uk/realms/Cis2-mock-internal-dev/protocol/openid-connect/userinfo"
       mockOidcjwksEndpoint: "https://identity.ptl.api.platform.nhs.uk/realms/Cis2-mock-internal-dev/protocol/openid-connect/certs"
-      useLocalhostCallback: true
+      allowLocalhostAccess: true
       useCustomCognitoDomain: true
       APIGEE_CIS2_TOKEN_ENDPOINT: "https://internal-dev.api.service.nhs.uk/oauth2/token"
       APIGEE_MOCK_TOKEN_ENDPOINT: "https://internal-dev.api.service.nhs.uk/oauth2-mock/token"
       APIGEE_PRESCRIPTIONS_ENDPOINT: "https://internal-dev.api.service.nhs.uk/clinical-prescription-tracker/"
+      APIGEE_PDS_ENDPOINT: "https://internal-dev.api.service.nhs.uk/personal-demographics/FHIR/R4/"
       JWT_KID: "eps-cpt-ui-dev"
       ROLE_ID: "555254242106"
       LOG_LEVEL: "DEBUG"
@@ -165,11 +166,12 @@ jobs:
       mockOidcTokenEndpoint: "https://identity.ptl.api.platform.nhs.uk/realms/Cis2-mock-internal-qa/protocol/openid-connect/token"
       mockOidcUserInfoEndpoint: "https://identity.ptl.api.platform.nhs.uk/realms/Cis2-mock-internal-qa/protocol/openid-connect/userinfo"
       mockOidcjwksEndpoint: "https://identity.ptl.api.platform.nhs.uk/realms/Cis2-mock-internal-qa/protocol/openid-connect/certs"
-      useLocalhostCallback: false
+      allowLocalhostAccess: false
       useCustomCognitoDomain: true
       APIGEE_CIS2_TOKEN_ENDPOINT: "https://internal-qa.api.service.nhs.uk/oauth2-int/token"
       APIGEE_MOCK_TOKEN_ENDPOINT: "https://internal-qa.api.service.nhs.uk/oauth2-mock/token"
       APIGEE_PRESCRIPTIONS_ENDPOINT: "https://internal-qa.api.service.nhs.uk/clinical-prescription-tracker/"
+      APIGEE_PDS_ENDPOINT: "https://internal-qa.api.service.nhs.ukpersonal-demographics/FHIR/R4/"
       JWT_KID: "eps-cpt-ui-qa"
       ROLE_ID: "555254242106"
       LOG_LEVEL: "DEBUG"

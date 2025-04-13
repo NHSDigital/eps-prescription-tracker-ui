@@ -1,17 +1,17 @@
-import React from "react";
+import React from "react"
 
-import { EpsSpinnerStrings } from "@/constants/ui-strings/EpsSpinnerStrings";
+import {EpsSpinnerStrings} from "@/constants/ui-strings/EpsSpinnerStrings"
 
 function Spinner({
   radius = 100,
   thickness = 12,
   fraction = 0.2, // The fraction of the hoop that is green
-  speed = 1, // The speed (in seconds) for one full rotation
+  speed = 1 // The speed (in seconds) for one full rotation
 }) {
   // The portion that should appear green is defined by "fraction"
   // If fraction = 0.25, then 25% of the hoop is green and 75% is grey
-  const circumference = 2 * Math.PI * radius;
-  const offset = circumference * (1 - fraction);
+  const circumference = 2 * Math.PI * radius
+  const offset = circumference * (1 - fraction)
 
   return (
     // FIXME: In theory, this should be a <progress>, but doing that makes the spinner come out all funky.
@@ -20,9 +20,10 @@ function Spinner({
       style={{
         display: "flex",
         alignItems: "center",
-        justifyContent: "center",
+        justifyContent: "center"
       }}
       role="progressbar"
+      data-testid="spinner"
     >
       <div
         className="spinner-container"
@@ -31,7 +32,7 @@ function Spinner({
           width: radius * 2,
           height: radius * 2,
           position: "relative",
-          display: "inline-block",
+          display: "inline-block"
         }}
       >
         <svg
@@ -41,7 +42,7 @@ function Spinner({
           style={{
             // Do NOT animate the entire SVG (so text remains static)
             overflow: "visible",
-            rotate: "-90deg",
+            rotate: "-90deg"
           }}
         >
           {/* Grey base circle (non-spinning) */}
@@ -58,7 +59,7 @@ function Spinner({
           <g
             style={{
               transformOrigin: "50% 50%",
-              animation: `spin ${speed}s ease-in-out infinite`,
+              animation: `spin ${speed}s ease-in-out infinite`
             }}
           >
             <circle
@@ -82,7 +83,7 @@ function Spinner({
             fontSize="1.5rem"
             style={{
               transformOrigin: "50% 50%",
-              rotate: "90deg",
+              rotate: "90deg"
             }}
           >
             {EpsSpinnerStrings.loading}
@@ -101,7 +102,7 @@ function Spinner({
         </style>
       </div>
     </div>
-  );
+  )
 }
 
-export default Spinner;
+export default Spinner

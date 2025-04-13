@@ -1,14 +1,39 @@
-import React from "react";
-import { Col, Container, Hero, Row } from "nhsuk-react-components";
-import EpsTabs from "@/components/EpsTabs";
-import { HERO_TEXT } from "@/constants/ui-strings/SearchForAPrescriptionStrings"
+import React from "react"
+import {
+  Col,
+  Container,
+  Hero,
+  Row
+} from "nhsuk-react-components"
+import {useLocation} from "react-router-dom"
 
-export default function SearchForAPrescriptionPage() {
+import EpsTabs from "@/components/EpsTabs"
+import PrescriptionIdSearch from "@/components/prescriptionSearch/PrescriptionIdSearch"
+import NhsNumSearch from "@/components/prescriptionSearch/NhsNumSearch"
+import BasicDetailsSearch from "@/components/prescriptionSearch/BasicDetailsSearch"
+
+import {HERO_TEXT} from "@/constants/ui-strings/SearchForAPrescriptionStrings"
+import {PRESCRIPTION_SEARCH_TABS} from "@/constants/ui-strings/SearchTabStrings"
+
+export default function SearchPrescriptionPage() {
+  const location = useLocation()
+  const pathname = location.pathname
+
+  // Map paths directly to content components
+  const pathContent: Record<string, React.ReactNode> = {
+    "/search-by-prescription-id": <PrescriptionIdSearch />,
+    "/search-by-nhs-number": <NhsNumSearch />,
+    "/search-by-basic-details": <BasicDetailsSearch />
+  }
+
+  // Default to prescription ID search if path not found
+  const content = pathContent[pathname] || <PrescriptionIdSearch />
+
   return (
     <>
       <title>Search for a prescription</title>
       <main id="search-for-a-prescription" data-testid="search-for-a-prescription">
-        <Container className="hero-container">
+        <Container className="hero-container" data-testid="search-hero-container">
           <Row>
             <Col width="full">
               <Hero className="nhsuk-hero-wrapper" data-testid="hero-banner">
@@ -19,11 +44,19 @@ export default function SearchForAPrescriptionPage() {
             </Col>
           </Row>
         </Container>
-        <Row>
-          <Col width="full">
-            <EpsTabs />
-          </Col>
-        </Row>
+        <Container data-testid="search-tabs-container">
+          <Row>
+            <Col width="full">
+              <EpsTabs
+                activeTabPath={pathname}
+                tabHeaderArray={PRESCRIPTION_SEARCH_TABS}
+                variant="large"
+              >
+                {content}
+              </EpsTabs>
+            </Col>
+          </Row>
+        </Container>
       </main>
     </>
   )

@@ -1,7 +1,7 @@
 import {Logger} from "@aws-lambda-powertools/logger"
 import jwt from "jsonwebtoken"
 import {v4 as uuidv4} from "uuid"
-import axios from "axios"
+import axios, {AxiosInstance} from "axios"
 import {ParsedUrlQuery, stringify} from "querystring"
 import {handleAxiosError} from "./errorUtils"
 import {DynamoDBDocumentClient, UpdateCommand} from "@aws-sdk/lib-dynamodb"
@@ -73,6 +73,7 @@ export function constructSignedJWTBody(
  * @throws If the request fails or the response is invalid
  */
 export const exchangeTokenForApigeeAccessToken = async (
+  axiosInstance: AxiosInstance,
   apigeeTokenEndpoint: string,
   requestBody: ParsedUrlQuery,
   logger: Logger
@@ -80,7 +81,7 @@ export const exchangeTokenForApigeeAccessToken = async (
   logger.info("Initiating token exchange request", {apigeeTokenEndpoint})
 
   try {
-    const response = await axios.post(apigeeTokenEndpoint, stringify(requestBody), {
+    const response = await axiosInstance.post(apigeeTokenEndpoint, stringify(requestBody), {
       headers: {"Content-Type": "application/x-www-form-urlencoded"}
     })
 

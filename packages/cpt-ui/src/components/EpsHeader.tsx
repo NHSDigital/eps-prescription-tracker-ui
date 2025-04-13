@@ -1,6 +1,6 @@
-import React, { useContext, useEffect, useState } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
-import { Header } from "nhsuk-react-components";
+import React, {useContext, useEffect, useState} from "react"
+import {Link, useNavigate, useLocation} from "react-router-dom"
+import {Header} from "nhsuk-react-components"
 import {
   HEADER_SERVICE,
   HEADER_EXIT_BUTTON,
@@ -11,10 +11,12 @@ import {
   HEADER_SELECT_YOUR_ROLE_BUTTON
 } from "@/constants/ui-strings/HeaderStrings"
 
-import { AuthContext } from "@/context/AuthProvider"
-import { useAccess } from '@/context/AccessProvider'
+import {AuthContext} from "@/context/AuthProvider"
+import {useAccess} from "@/context/AccessProvider"
 
-import { EpsLogoutModal } from "@/components/EpsLogoutModal"
+import {EpsLogoutModal} from "@/components/EpsLogoutModal"
+import {normalizePath} from "@/helpers/utils"
+import {FRONTEND_PATHS} from "@/constants/environment"
 
 export default function EpsHeader() {
   const navigate = useNavigate()
@@ -34,11 +36,13 @@ export default function EpsHeader() {
   useEffect(() => {
     const isSignedIn = auth?.isSignedIn as boolean
 
+    const path = normalizePath(location.pathname)
+
     // Show "Select your role" link
     setShouldShowSelectRole(
-      location.pathname !== "/selectyourrole" &&
-      location.pathname !== "/changerole" &&
-      location.pathname !== "/logout" &&
+      path !== FRONTEND_PATHS.SELECT_YOUR_ROLE &&
+      path !== FRONTEND_PATHS.CHANGE_YOUR_ROLE &&
+      path !== FRONTEND_PATHS.LOGOUT &&
       isSignedIn &&
       !accessContext.singleAccess &&
       !accessContext.selectedRole
@@ -46,9 +50,9 @@ export default function EpsHeader() {
 
     // Show "Change role" link (if not single access)
     setShouldShowChangeRole(
-      location.pathname !== "/selectyourrole" &&
-      location.pathname !== "/changerole" &&
-      location.pathname !== "/logout" &&
+      path !== FRONTEND_PATHS.SELECT_YOUR_ROLE &&
+      path !== FRONTEND_PATHS.CHANGE_YOUR_ROLE &&
+      path !== FRONTEND_PATHS.LOGOUT &&
       isSignedIn &&
       !accessContext.singleAccess &&
       accessContext.selectedRole !== undefined
@@ -59,16 +63,16 @@ export default function EpsHeader() {
 
     // Show the "Exit" button under these conditions
     setShouldShowExitButton(
-      (location.pathname === "/logout" && !auth?.isSignedIn) ||
-      (location.pathname === "/selectyourrole" && accessContext.noAccess) ||
-      (location.pathname === "/notfound")
+      (path === FRONTEND_PATHS.LOGOUT && !auth?.isSignedIn) ||
+      (path === FRONTEND_PATHS.SELECT_YOUR_ROLE && accessContext.noAccess) ||
+      (path === "/notfound")
     )
   }, [location, auth, accessContext])
 
   const redirectToLogin = async (e: React.MouseEvent | React.KeyboardEvent) => {
     // Naked href don't respect the router, so this overrides that
     e.preventDefault()
-    navigate("/login")
+    navigate(FRONTEND_PATHS.LOGIN)
   }
 
   const handleLogoutClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
@@ -78,7 +82,7 @@ export default function EpsHeader() {
 
   const handleConfirmLogout = async () => {
     setShowLogoutModal(false)
-    navigate("/logout")
+    navigate(FRONTEND_PATHS.LOGOUT)
   }
 
   return (
@@ -88,7 +92,7 @@ export default function EpsHeader() {
           <Header.Logo href="/" data-testid="eps_header_logoLink" />
 
           <Header.ServiceName
-            href="/login"
+            href={FRONTEND_PATHS.LOGIN}
             onClick={redirectToLogin}
             data-testid="eps_header_serviceName"
           >
@@ -129,7 +133,7 @@ export default function EpsHeader() {
             <li className="nhsuk-header__navigation-item">
               <Link
                 className="nhsuk-header__navigation-link"
-                to="/logout"
+                to={FRONTEND_PATHS.LOGOUT}
                 data-testid="eps_header_logout"
                 onClick={handleLogoutClick}
               >

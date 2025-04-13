@@ -35,6 +35,7 @@ describe("apigeeUtils", () => {
       mockAxiosPost.mockResolvedValueOnce({data: {access_token: "testToken", expires_in: 3600}} as never)
 
       const result = await exchangeTokenForApigeeAccessToken(
+        axios,
         "https://mock-endpoint",
         {param: "test"},
         mockLogger as Logger
@@ -52,6 +53,7 @@ describe("apigeeUtils", () => {
       mockAxiosPost.mockResolvedValueOnce({data: {}} as never)
       await expect(
         exchangeTokenForApigeeAccessToken(
+          axios,
           "https://mock-endpoint",
           {param: "test"},
           mockLogger as Logger
@@ -69,6 +71,7 @@ describe("apigeeUtils", () => {
 
       await expect(
         exchangeTokenForApigeeAccessToken(
+          axios,
           "https://mock-endpoint",
           {param: "test"},
           mockLogger as Logger

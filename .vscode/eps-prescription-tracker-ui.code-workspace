@@ -29,8 +29,8 @@
         "path": "../packages/CIS2SignOutLambda"
       },
       {
-        "name": "packages/prescriptionSearchLambda",
-        "path": "../packages/prescriptionSearchLambda"
+        "name": "packages/prescriptionListLambda",
+        "path": "../packages/prescriptionListLambda"
       },
       {
         "name": "packages/prescriptionDetailsLambda",
@@ -47,6 +47,10 @@
       {
         "name": "packages/common/middyErrorHandler",
         "path": "../packages/common/middyErrorHandler"
+      },
+      {
+        "name": "packages/common/commonTypes",
+        "path": "../packages/common/commonTypes"
       },
       {
         "name": "packages/common/testing",
@@ -71,8 +75,10 @@
         "packages/staticContent",
         "packages/auth_demo",
         "packages/common/testing",
+        "packages/common/commonTypes",
         "packages/staticContent"
       ],
+      "python.testing.pytestEnabled": false,
       "files.exclude": {
         "packages/": true
       },
@@ -167,15 +173,18 @@
       "eslint.format.enable": true,
       "editor.defaultFormatter": "dbaeumer.vscode-eslint",
       "[typescriptreact]": {
-        "editor.defaultFormatter": "vscode.typescript-language-features"
+        "editor.defaultFormatter": "dbaeumer.vscode-eslint"
       },
       "[javascriptreact]": {
-        "editor.defaultFormatter": "vscode.typescript-language-features"
+        "editor.defaultFormatter": "dbaeumer.vscode-eslint"
       },
       "[html]": {
         "editor.defaultFormatter": "vscode.html-language-features"
       },
       "[css]": {
+        "editor.defaultFormatter": "vscode.css-language-features"
+      },
+      "[scss]": {
         "editor.defaultFormatter": "vscode.css-language-features"
       }
     },
