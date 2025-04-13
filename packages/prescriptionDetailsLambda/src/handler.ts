@@ -30,7 +30,8 @@ const logger = new Logger({serviceName: "prescriptionDetails"})
 // External endpoints and environment variables
 const apigeeCIS2TokenEndpoint = process.env["apigeeCIS2TokenEndpoint"] as string
 const apigeeMockTokenEndpoint = process.env["apigeeMockTokenEndpoint"] as string
-// FIXME: Get from environment
+
+// TODO: Replace hardcoded value with environment variable before production
 // The Apigee API base endpoint for prescription tracking
 // const apigeePrescriptionsEndpoint = process.env["apigeePrescriptionsEndpoint"] as string
 const apigeePrescriptionsEndpoint = "https://internal-dev.api.service.nhs.uk/clinical-prescription-tracker-pr-809/"
@@ -94,7 +95,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   logger.info("JWT private key retrieved successfully")
 
   // ****************************************
-  // TOKEN FAFF
+  // TOKEN EXCHANGE & AUTH FLOW
   // ****************************************
 
   // Fetch CIS2 tokens
