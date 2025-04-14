@@ -9,11 +9,11 @@ import {useLocation} from "react-router-dom"
 
 import {normalizePath} from "@/helpers/utils"
 import {FRONTEND_PATHS} from "@/constants/environment"
-import {PrescriptionDetails} from "@cpt-ui-common/common-types"
+import {PrescriptionDetailsResponse} from "@cpt-ui-common/common-types"
 
 export type PrescriptionInformationContextType = {
-  prescriptionInformation: PrescriptionDetails | undefined
-  setPrescriptionInformation: (value: PrescriptionDetails) => void
+  prescriptionInformation: PrescriptionDetailsResponse | undefined
+  setPrescriptionInformation: (value: PrescriptionDetailsResponse | undefined) => void
   clear: () => void
 }
 
@@ -21,7 +21,10 @@ export const PrescriptionInformationContext = createContext<PrescriptionInformat
 
 export const PrescriptionInformationProvider = ({children}: {children: ReactNode}) => {
   const location = useLocation()
-  const [prescriptionInformation, setPrescriptionInformation] = useState<PrescriptionDetails | undefined>(undefined)
+  const [
+    prescriptionInformation,
+    setPrescriptionInformation
+  ] = useState<PrescriptionDetailsResponse | undefined>(undefined)
 
   const clear = () => {
     console.log("Clearing prescription information context...")

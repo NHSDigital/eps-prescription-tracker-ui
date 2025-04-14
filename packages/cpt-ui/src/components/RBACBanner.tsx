@@ -57,11 +57,9 @@ export default function RBACBanner() {
   }
 
   return (
-    <div className="nhsuk-banner" data-testid="rbac-banner-div">
-      <Row>
-        <p style={{paddingLeft: "60px", margin: "8px"}} data-testid="rbac-banner-text">
-          {bannerText}
-        </p>
+    <div className="rbac-banner" data-testid="rbac-banner-div">
+      <Row className="rbac-content" data-testid="rbac-banner-text">
+        {bannerText}
       </Row>
     </div>
   )
