@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-current_deployed_tag=$(aws cloudformation describe-stacks --stack-name clinical-tracker-ui --query "Stacks[0].Tags[?Key=='version'].Value" --output text)
+current_deployed_tag=$(aws cloudformation describe-stacks --stack-name cpt-ui-stateful-resources --query "Stacks[0].Tags[?Key=='version'].Value" --output text)
 
 if [ -z "$current_deployed_tag" ]
 then

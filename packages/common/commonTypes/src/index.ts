@@ -4,9 +4,12 @@ import {
   PrescriptionStatusCategories,
   PrescriptionStatus,
   TreatmentType,
+  PrescriptionAPIResponse,
   PrescriptionSummary,
   SearchResponse
 } from "./prescriptionList"
+
+import {PrescriptionDetails} from "./prescriptionDetails"
 
 export {
   PatientDetails,
@@ -14,6 +17,8 @@ export {
   PrescriptionStatusCategories,
   PrescriptionStatus,
   TreatmentType,
+  PrescriptionAPIResponse,
   PrescriptionSummary,
-  SearchResponse
+  SearchResponse,
+  PrescriptionDetails
 }

@@ -63,3 +63,7 @@ export enum TreatmentType {
   REPEAT = "0002",
   ERD = "0003"
 }
+
+export interface PrescriptionAPIResponse extends PrescriptionSummary {
+  nhsNumber?: number
+}

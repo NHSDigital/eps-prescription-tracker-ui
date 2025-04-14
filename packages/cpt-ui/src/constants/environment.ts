@@ -44,10 +44,13 @@ export const RUM_CONFIG = {
   TELEMETRIES: import.meta.env.VITE_RUM_TELEMETRIES.split(","),
   RELEASE_ID: import.meta.env.VITE_COMMIT_ID
 } as const
+
 // Web page paths
 export const FRONTEND_PATHS = {
   PRESCRIPTION_NOT_FOUND: "/prescription-not-found",
-  PRESCRIPTION_LIST: "/prescription-list",
+  PRESCRIPTION_LIST_CURRENT: "/prescription-list-current",
+  PRESCRIPTION_LIST_FUTURE: "/prescription-list-future",
+  PRESCRIPTION_LIST_PAST: "/prescription-list-past",
   LOGIN: "/login",
   LOGOUT: "/logout",
   SELECT_YOUR_ROLE: "/select-your-role",
@@ -55,16 +58,17 @@ export const FRONTEND_PATHS = {
   CHANGE_YOUR_ROLE: "/change-your-role",
   SEARCH_BY_PRESCRIPTION_ID: "/search-by-prescription-id",
   SEARCH_BY_NHS_NUMBER: "/search-by-nhs-number",
-  SEARCH_BY_BASIC_DETAILS: "/search-by-basic-details"
+  SEARCH_BY_BASIC_DETAILS: "/search-by-basic-details",
+  PRESCRIPTION_DETAILS_PAGE: "/prescription-details"
 }
 
 // This needs to be provided in backend requests as a header
 export const NHS_REQUEST_URID = "555254242106"
 
 // Type for environment
-export type MockAuthEnvironment = "dev" | "dev-pr" | "int" | "qa";
+export type MockAuthEnvironment = "dev" | "dev-pr" | "int" | "qa"
 
-export type Environment = MockAuthEnvironment | "prod" | "test";
+export type Environment = MockAuthEnvironment | "prod" | "test"
 
 // Mock Auth Configuration
 export const MOCK_AUTH_ALLOWED_ENVIRONMENTS: ReadonlyArray<MockAuthEnvironment> =
