@@ -262,7 +262,7 @@ function App() {
 
       {prescriptionDetails && (
         <div style={{marginTop: '20px'}}>
-          <h3>Prescription Details123:</h3>
+          <h3>Prescription Details:</h3>
           <pre>{JSON.stringify(prescriptionDetails.body, null, 2)}</pre>
         </div>
       )}
