@@ -24,6 +24,7 @@
         "packages/cdk",
         "packages/cognito",
         "packages/prescriptionListLambda",
+        "packages/patientSearchLambda",
         "packages/common/middyErrorHandler",
         "packages/common/testing",
         "packages/common/authFunctions",

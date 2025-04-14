@@ -59,6 +59,16 @@ repos:
         types_or: [ts, tsx, javascript, jsx, json]
         pass_filenames: false
 
+      - id: lint-patientSearchLambda
+        name: Lint patientSearchLambda
+        entry: npm
+        args: ["run", "--prefix=packages/patientSearchLambda", "lint"]
+        language: system
+        files: ^packages\/patientSearchLambda
+        types_or: [ts, tsx, javascript, jsx, json]
+        pass_filenames: false
+
+
       - id: lint-trackerUserInfoLambda
         name: Lint trackerUserInfoLambda
         entry: npm

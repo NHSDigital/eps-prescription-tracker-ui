@@ -31,6 +31,7 @@ lint-node: compile-node
 	npm run lint --workspace packages/cdk
 	npm run lint --workspace packages/cognito
 	npm run lint --workspace packages/prescriptionListLambda
+	npm run lint --workspace packages/patientSearchLambda
 	npm run lint --workspace packages/common/testing
 	npm run lint --workspace packages/common/middyErrorHandler
 	npm run lint --workspace packages/trackerUserInfoLambda
@@ -52,6 +53,7 @@ test: compile
 	npm run test --workspace packages/cpt-ui
 	npm run test --workspace packages/cognito
 	npm run test --workspace packages/prescriptionListLambda
+	npm run test --workspace packages/patientSearchLambda
 	npm run test --workspace packages/common/middyErrorHandler
 	npm run test --workspace packages/trackerUserInfoLambda
 	npm run test --workspace packages/selectedRoleLambda
@@ -69,6 +71,8 @@ clean:
 	rm -rf packages/cognito/lib
 	rm -rf packages/prescriptionListLambda/coverage
 	rm -rf packages/prescriptionListLambda/lib
+	rm -rf packages/patientSearchLambda/coverage
+	rm -rf packages/patientSearchLambda/lib
 	rm -rf packages/common/middyErrorHandler/coverage
 	rm -rf packages/common/middyErrorHandler/lib
 	rm -rf cdk.out
@@ -101,6 +105,7 @@ check-licenses-node:
 	npm run check-licenses --workspace packages/common/authFunctions
 	npm run check-licenses --workspace packages/cognito
 	npm run check-licenses --workspace packages/prescriptionListLambda
+	npm run check-licenses --workspace packages/patientSearchLambda
 	npm run check-licenses --workspace packages/trackerUserInfoLambda
 	npm run check-licenses --workspace packages/selectedRoleLambda
 	npm run check-licenses --workspace packages/CIS2SignOutLambda

@@ -33,6 +33,10 @@
         "path": "../packages/prescriptionListLambda"
       },
       {
+        "name": "packages/patientSearchLambda",
+        "path": "../packages/patientSearchLambda"
+      },
+      {
         "name": "packages/common/middyErrorHandler",
         "path": "../packages/common/middyErrorHandler"
       },
