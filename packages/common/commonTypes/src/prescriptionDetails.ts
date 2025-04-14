@@ -25,8 +25,9 @@
 //     address?: Address;
 // }
 
-// TODO: The above is from PR 417 - but there's no reason to use two different definitions
-// of the same data. Instead, use a common one between the two lambdas. The PR will need refactoring
+// TODO: These types were defined in PR 417, but are now duplicated in the prescriptionList lambda.
+// Since they represent the same data, we've moved the definitions to the common-types package.
+// When continuing work on PR 417, update the details lambda to use the shared types.
 import {PatientDetails} from "./prescriptionList"
 
 export interface PrescribedItemDetails {
