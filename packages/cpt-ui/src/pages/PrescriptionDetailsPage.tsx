@@ -146,7 +146,7 @@ export default function PrescriptionDetailsPage() {
       // Shared properties
       const commonPrescriptionData = {
         ...mockPrescriptionInformation,
-        prescriptionID: prescriptionId,
+        prescriptionId: prescriptionId,
         patientDetails: mockPatientDetails,
         prescriptionPendingCancellation: false,
         prescribedItems: [],

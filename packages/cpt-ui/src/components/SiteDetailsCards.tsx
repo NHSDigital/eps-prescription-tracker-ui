@@ -79,7 +79,7 @@ export function SiteDetailsCard({
             {ODS_LABEL(name, odsCode)}
           </p>
           <p className="nhsuk-u-margin-bottom-2">{address}</p>
-          <p className="nhsuk-u-margin-bottom-2">
+          <p className={`nhsuk-u-margin-bottom-${prescribedFrom ? "2" : "1"}`}>
             <strong>{CONTACT_DETAILS}</strong>
             <br />
             {telephone}

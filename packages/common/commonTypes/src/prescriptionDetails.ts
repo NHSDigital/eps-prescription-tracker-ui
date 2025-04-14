@@ -100,7 +100,7 @@ export interface DispenserOrganisation {
 // Complete response
 export interface PrescriptionDetailsResponse {
     patientDetails: PatientDetails;
-    prescriptionID: string;
+    prescriptionId: string;
     typeCode: string;
     statusCode: string;
     issueDate: string;

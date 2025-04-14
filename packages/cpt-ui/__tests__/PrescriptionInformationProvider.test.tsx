@@ -51,7 +51,7 @@ describe("PrescriptionInformationContext", () => {
 
       const setData = {
         ...mockPrescriptionDetailsResponse,
-        prescriptionID: "123",
+        prescriptionId: "123",
         issueDate: "2024-01-01",
         statusCode: "Pending",
         typeCode: "Acute"
@@ -60,7 +60,7 @@ describe("PrescriptionInformationContext", () => {
       return (
         <div>
           <div data-testid="prescription-info">
-            {prescriptionInformation ? prescriptionInformation.prescriptionID : "none"}
+            {prescriptionInformation ? prescriptionInformation.prescriptionId : "none"}
           </div>
           <button
             onClick={() =>
@@ -92,7 +92,7 @@ describe("PrescriptionInformationContext", () => {
 
       const setData = {
         ...mockPrescriptionDetailsResponse,
-        prescriptionID: "456",
+        prescriptionId: "456",
         issueDate: "2024-02-02",
         statusCode: "Dispensed",
         typeCode: "Repeat"
@@ -101,7 +101,7 @@ describe("PrescriptionInformationContext", () => {
       return (
         <div>
           <div data-testid="prescription-info">
-            {prescriptionInformation ? prescriptionInformation.prescriptionID : "none"}
+            {prescriptionInformation ? prescriptionInformation.prescriptionId : "none"}
           </div>
           <button
             onClick={() =>
@@ -138,7 +138,7 @@ describe("PrescriptionInformationContext", () => {
 
       const setData = {
         ...mockPrescriptionDetailsResponse,
-        prescriptionID: "789",
+        prescriptionId: "789",
         issueDate: "2024-03-03",
         statusCode: "With Dispenser",
         typeCode: "eRD"
@@ -147,7 +147,7 @@ describe("PrescriptionInformationContext", () => {
       return (
         <div>
           <div data-testid="prescription-info">
-            {prescriptionInformation ? prescriptionInformation.prescriptionID : "none"}
+            {prescriptionInformation ? prescriptionInformation.prescriptionId : "none"}
           </div>
           <button
             onClick={() =>
@@ -186,7 +186,7 @@ describe("PrescriptionInformationContext", () => {
 
       const setData = {
         ...mockPrescriptionDetailsResponse,
-        prescriptionID: "999",
+        prescriptionId: "999",
         issueDate: "2024-04-04",
         statusCode: "Pending",
         typeCode: "Repeat"
@@ -195,7 +195,7 @@ describe("PrescriptionInformationContext", () => {
       return (
         <div>
           <div data-testid="prescription-info">
-            {prescriptionInformation ? prescriptionInformation.prescriptionID : "none"}
+            {prescriptionInformation ? prescriptionInformation.prescriptionId : "none"}
           </div>
           <button
             onClick={() =>

@@ -16,7 +16,7 @@ export const mockPrescriptionDetailsResponse: PrescriptionDetailsResponse = {
       postcode: "LS11TW"
     }
   },
-  prescriptionID: "SUCCESS_ID",
+  prescriptionId: "SUCCESS_ID",
   typeCode: "type",
   statusCode: "status",
   issueDate: "2020-01-01",

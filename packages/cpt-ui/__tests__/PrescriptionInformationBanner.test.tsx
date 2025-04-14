@@ -40,7 +40,7 @@ describe("PrescriptionInformationBanner", () => {
   it("renders Acute prescription information correctly", () => {
     const data: PrescriptionDetailsResponse = {
       ...mockPrescriptionDetailsResponse,
-      prescriptionID: "C0C757-A83008-C2D93O",
+      prescriptionId: "C0C757-A83008-C2D93O",
       issueDate: "18-Jan-2024",
       statusCode: "All items dispensed",
       typeCode: "Acute"
@@ -51,7 +51,7 @@ describe("PrescriptionInformationBanner", () => {
     const banner = screen.getByTestId("prescription-information-banner")
     expect(banner).toBeInTheDocument()
     expect(banner.querySelector("#prescription-id")).toHaveTextContent(`${STRINGS.PRESCRIPTION_ID}:`)
-    expect(banner.querySelector("#copyText")).toHaveTextContent(data.prescriptionID)
+    expect(banner.querySelector("#copyText")).toHaveTextContent(data.prescriptionId)
     expect(banner.querySelector("#summary-issue-date")).toHaveTextContent(`${STRINGS.ISSUE_DATE}: ${data.issueDate}`)
     expect(banner.querySelector("#summary-status")).toHaveTextContent(`${STRINGS.STATUS}: ${data.statusCode}`)
     expect(banner.querySelector("#summary-type")).toHaveTextContent(`${STRINGS.TYPE}: ${data.typeCode}`)
@@ -60,7 +60,7 @@ describe("PrescriptionInformationBanner", () => {
   it("renders eRD prescription information with repeat and days supply", () => {
     const data: PrescriptionDetailsResponse = {
       ...mockPrescriptionDetailsResponse,
-      prescriptionID: "EC5ACF-A83008-733FD3",
+      prescriptionId: "EC5ACF-A83008-733FD3",
       issueDate: "22-Jan-2025",
       statusCode: "All items dispensed",
       typeCode: "eRD",
@@ -84,7 +84,7 @@ describe("PrescriptionInformationBanner", () => {
   it("copies the prescription ID to clipboard when copy button is clicked", async () => {
     const data: PrescriptionDetailsResponse = {
       ...mockPrescriptionDetailsResponse,
-      prescriptionID: "COPYME123",
+      prescriptionId: "COPYME123",
       issueDate: "01-Apr-2024",
       statusCode: "Pending",
       typeCode: "Repeat"
@@ -104,6 +104,6 @@ describe("PrescriptionInformationBanner", () => {
     })
     fireEvent.click(copyButton)
 
-    expect(mockWriteText).toHaveBeenCalledWith(data.prescriptionID)
+    expect(mockWriteText).toHaveBeenCalledWith(data.prescriptionId)
   })
 })
