@@ -61,7 +61,7 @@ describe("PrescriptionInformationBanner", () => {
     const data: PrescriptionDetailsResponse = {
       ...mockPrescriptionDetailsResponse,
       prescriptionId: "EC5ACF-A83008-733FD3",
-      issueDate: "22-Jan-2025",
+      issueDate: "18-Jan-2024",
       statusCode: "All items dispensed",
       typeCode: "eRD",
       isERD: true,

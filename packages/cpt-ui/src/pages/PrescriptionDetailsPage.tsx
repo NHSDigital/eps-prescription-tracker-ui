@@ -68,10 +68,10 @@ const altMockNominatedDispenser: OrganisationSummary = {
 
 const mockPrescriptionInformation = {
   prescriptionId: "",
-  issueDate: "22-Jan-2025",
+  issueDate: "18-Jan-2024",
   statusCode: "All items dispensed", // FIXME: The banner does not use codes? Needs to be implemented!
-  typeCode: "eRD",
-  isERD: true,
+  typeCode: "Acute",
+  isERD: false,
   instanceNumber: 2,
   maxRepeats: 6,
   daysSupply: "28"
@@ -167,6 +167,9 @@ export default function PrescriptionDetailsPage() {
         // Alt prescriber only: no dispenser data.
         payload = {
           ...commonPrescriptionData,
+          issueDate: "22-Jan-2025",
+          typeCode: "eRD",
+          isERD: true,
           prescriberOrganisation: {organisationSummaryObjective: altMockPrescriber},
           nominatedDispenser: undefined,
           currentDispenser: undefined
@@ -259,7 +262,9 @@ export default function PrescriptionDetailsPage() {
               >
                 {HEADER}
               </h1>
-              <h2>{LOADING_FULL_PRESCRIPTION}</h2>
+              <h2 data-testid="loading-message">
+                {LOADING_FULL_PRESCRIPTION}
+              </h2>
               <EpsSpinner />
             </Col>
           </Row>
@@ -269,38 +274,34 @@ export default function PrescriptionDetailsPage() {
   }
 
   return (
-    // Temporary holding div to add padding. Not where this will actually be placed.
-    <Container
-      className={"nhsuk-main-wrapper nhsuk-main-wrapper--s nhsuk-u-margin-left-9"}
-      width="100%"
-      style={{maxWidth: "100%"}}
-    >
-
-      <Row>
-        <Col width="full">
-          <BackLink
-            data-testid="go-back-link"
-            asElement={Link}
-            to={`${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}?${queryParams.toString()}`}
-          >
-            {GO_BACK}
-          </BackLink>
-        </Col>
-      </Row>
-      <Row>
-        <Col width="full">
-          <h1
-            className="nhsuk-u-visually-hidden"
-          >
-            {HEADER}
-          </h1>
-        </Col>
-      </Row>
-      <SiteDetailsCards
-        prescriber={prescriber}
-        dispenser={dispenser}
-        nominatedDispenser={nominatedDispenser}
-      />
-    </Container>
+    <main id="main-content" className="nhsuk-main-wrapper">
+      <Container width="full" fluid={true}>
+        <Row>
+          <Col width="full">
+            <BackLink
+              data-testid="go-back-link"
+              asElement={Link}
+              to={`${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}?${queryParams.toString()}`}
+            >
+              {GO_BACK}
+            </BackLink>
+          </Col>
+        </Row>
+        <Row>
+          <Col width="full">
+            <h1
+              className="nhsuk-u-visually-hidden"
+            >
+              {HEADER}
+            </h1>
+          </Col>
+        </Row>
+        <SiteDetailsCards
+          prescriber={prescriber}
+          dispenser={dispenser}
+          nominatedDispenser={nominatedDispenser}
+        />
+      </Container>
+    </main>
   )
 }

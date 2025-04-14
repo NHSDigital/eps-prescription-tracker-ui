@@ -10,7 +10,7 @@ export const ODS_LABEL = (orgName: string, orgOds?: string) => `${orgName} (ODS:
 
 export const NO_ORG_NAME = "Site name not available. Try again later."
 export const NO_ADDRESS = "Address not available. Try again later."
-export const NO_CONTACT = "Contact details not available. Try again later."
+export const NO_CONTACT = "Phone number not available. Try again later."
 
 export const ENGLAND = "England"
 export const WALES = "Wales"
