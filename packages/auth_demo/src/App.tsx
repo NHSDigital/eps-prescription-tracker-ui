@@ -147,8 +147,16 @@ function App() {
         }
       })
 
+      let parsedData = prescriptionResponse.data
+      if (typeof parsedData === "string") {
+        parsedData = JSON.parse(parsedData)
+      }
+      if (typeof parsedData.body === "string") {
+        parsedData.body = JSON.parse(parsedData.body)
+      }
+
       // Update the frontend state with the retrieved prescription details
-      setPrescriptionDetails(prescriptionResponse.data)
+      setPrescriptionDetails(parsedData)
     } catch (err) {
       // Handle and log any errors during the API call
       setError("Failed to retrieve prescription details.")
@@ -254,8 +262,8 @@ function App() {
 
       {prescriptionDetails && (
         <div style={{marginTop: '20px'}}>
-          <h3>Prescription Details:</h3>
-          <pre>{JSON.stringify(prescriptionDetails, null, 2)}</pre>
+          <h3>Prescription Details123:</h3>
+          <pre>{JSON.stringify(prescriptionDetails.body, null, 2)}</pre>
         </div>
       )}
 

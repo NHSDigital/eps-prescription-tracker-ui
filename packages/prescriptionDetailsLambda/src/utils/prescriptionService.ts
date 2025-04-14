@@ -8,6 +8,7 @@ import {doHSClient} from "@cpt-ui-common/doHSClient"
 
 import {mergePrescriptionDetails} from "./responseMapper"
 import {formatHeaders} from "./headerUtils"
+// import {invokeClinicalViewLambda} from "./invokeClinicalViewLambda"
 
 import {
   ApigeeDataResponse,
@@ -176,7 +177,7 @@ export async function processPrescriptionRequest(
 
   logger.info("Fetching prescription details from Apigee", {prescriptionId})
   const requestUrl = `${apigeePrescriptionsEndpoint}RequestGroup/${prescriptionId}`
-  const headers = buildApigeeHeaders(apigeeAccessToken, roleId)
+  const headers = buildApigeeHeaders(apigeeAccessToken, roleId) // Required to invoke the clinicalView Lambda directly
 
   const apigeeResponse = await axios.get(requestUrl, {headers})
   logger.info("Apigee response:", {apigeeResponse})
@@ -203,4 +204,16 @@ export async function processPrescriptionRequest(
     body: JSON.stringify(mergedResponse),
     headers: formatHeaders(apigeeResponse.headers)
   }
+
+  /**
+ * Alternative integration path:
+ * Instead of calling the Apigee proxy endpoint, the following line allows you
+ * to invoke the clinicalView Lambda function directly. This is useful for:
+ * - Local testing when Apigee is unavailable
+ * - Debugging Lambda behavior without proxy interference
+ * - Performance or permission troubleshooting
+ *
+ * To use, uncomment the line below and comment out the Apigee integration block above.
+ */
+  // return await invokeClinicalViewLambda(prescriptionId, headers, logger)
 }
