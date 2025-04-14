@@ -1,6 +1,6 @@
 import {Card, Col, Tag} from "nhsuk-react-components"
 import {DispensedItem} from "@cpt-ui-common/common-types/src/prescriptionDetails"
-import {getTagColourFromStatus} from "@/helpers/statusToTagColour"
+// import {getTagColourFromStatus} from "@/helpers/statusToTagColour"
 import {PRESCRIPTION_DETAILS_PAGE_STRINGS as STRINGS} from "@/constants/ui-strings/PrescriptionDetailsPageStrings"
 
 interface PrescribedDispensedItemsProps {
@@ -32,7 +32,8 @@ export function PrescribedDispensedItems({items}: PrescribedDispensedItemsProps)
 
                 {nhsAppStatus && (
                   <p className="nhsuk-u-margin-bottom-2">
-                    <Tag color={getTagColourFromStatus(nhsAppStatus)}>
+                    {/* <Tag color={getTagColourFromStatus(nhsAppStatus)}> */}
+                    <Tag className="nhsuk-tag--green">
                       {nhsAppStatus}
                     </Tag>
                   </p>

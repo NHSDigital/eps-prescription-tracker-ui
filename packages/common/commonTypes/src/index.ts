@@ -9,8 +9,6 @@ import {
   SearchResponse
 } from "./prescriptionList"
 
-import {PrescriptionDetails} from "./prescriptionDetails"
-
 export {
   PatientDetails,
   PatientDetailsAddress,
@@ -19,6 +17,35 @@ export {
   TreatmentType,
   PrescriptionAPIResponse,
   PrescriptionSummary,
-  SearchResponse,
-  PrescriptionDetails
+  SearchResponse
+}
+
+import {
+  PrescribedItemDetails,
+  PrescribedItem,
+  InitiallyPrescribed,
+  DispensedItemDetails,
+  DispensedItem,
+  DispenseNotification,
+  MessageHistory,
+  OrganisationSummary,
+  PrescriberOrganisationSummary,
+  PrescriberOrganisation,
+  DispenserOrganisation,
+  PrescriptionDetailsResponse
+} from "./prescriptionDetails"
+
+export {
+  PrescribedItemDetails,
+  PrescribedItem,
+  InitiallyPrescribed,
+  DispensedItemDetails,
+  DispensedItem,
+  DispenseNotification,
+  MessageHistory,
+  OrganisationSummary,
+  PrescriberOrganisationSummary,
+  PrescriberOrganisation,
+  DispenserOrganisation,
+  PrescriptionDetailsResponse
 }

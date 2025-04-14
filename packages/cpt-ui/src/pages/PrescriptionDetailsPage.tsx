@@ -1,140 +1,270 @@
-import {useEffect, useState} from "react"
-import {useSearchParams} from "react-router-dom"
+import {useContext, useEffect, useState} from "react"
+import {Link, useNavigate, useSearchParams} from "react-router-dom"
+
 import {
   BackLink,
+  Col,
   Container,
-  Row,
-  Col
+  Row
 } from "nhsuk-react-components"
-import {PrescribedDispensedItems} from "@/components/PrescribedDispensedItemsCards"
-import EpsSpinner from "@/components/EpsSpinner"
-import {PRESCRIPTION_DETAILS_PAGE_STRINGS} from "@/constants/ui-strings/PrescriptionDetailsPageStrings"
+
+import {
+  PrescriberOrganisationSummary,
+  PatientDetails,
+  OrganisationSummary,
+  PrescriptionDetailsResponse
+} from "@cpt-ui-common/common-types"
+
+import {AuthContext} from "@/context/AuthProvider"
 import {usePrescriptionInformation} from "@/context/PrescriptionInformationProvider"
 import {usePatientDetails} from "@/context/PatientDetailsProvider"
-import {DispensedItem} from "@cpt-ui-common/common-types/src/prescriptionDetails"
+
+import {API_ENDPOINTS, FRONTEND_PATHS, NHS_REQUEST_URID} from "@/constants/environment"
+import {HEADER, GO_BACK, LOADING_FULL_PRESCRIPTION} from "@/constants/ui-strings/PrescriptionDetailsPageStrings"
+
+import EpsSpinner from "@/components/EpsSpinner"
+import {SiteDetailsCards} from "@/components/SiteDetailsCards"
+
+import http from "@/helpers/axios"
+
+// Mock data, lifted from the prototype page.
+const mockPrescriber: PrescriberOrganisationSummary = {
+  name: "Fiji surgery",
+  odsCode: "FI05964",
+  address: "90 YARROW LANE, FINNSBURY, E45 T46",
+  telephone: "01232 231321",
+  prescribedFrom: "012345"
+}
+
+const altMockPrescriber: PrescriberOrganisationSummary = {
+  name: "Fiji surgery",
+  odsCode: "FI05964",
+  address: "90 YARROW LANE, FINNSBURY, E45 T46",
+  telephone: "01232 231321",
+  prescribedFrom: "021345"
+}
+
+const mockDispenser: OrganisationSummary = {
+  name: "Cohens chemist",
+  odsCode: "FV519",
+  address: "22 RUE LANE, CHISWICK, KT19 D12",
+  telephone: "01943 863158"
+}
+
+const mockNominatedDispenser: OrganisationSummary = {
+  name: "Cohens chemist",
+  odsCode: "FV519",
+  address: "22 RUE LANE, CHISWICK, KT19 D12",
+  telephone: "01943 863158"
+}
+
+const altMockNominatedDispenser: OrganisationSummary = {
+  name: "Some Guy",
+  odsCode: "ABC123",
+  // eslint-disable-next-line max-len
+  address: "7&8 WELLINGTON PLACE, thisisaverylongwordthatshouldtriggerthelinetowraparoundwhilstbreakingthewordupintosmallerchunks, LEEDS, LS1 4AP",
+  telephone: "07712 345678"
+}
+
+const mockPrescriptionInformation = {
+  prescriptionId: "",
+  issueDate: "18-Jan-2024",
+  statusCode: "All items dispensed", // FIXME: The banner does not use codes? Needs to be implemented!
+  typeCode: "Acute",
+  isERD: false,
+  instanceNumber: 2,
+  maxRepeats: 6,
+  daysSupply: "28"
+}
+
+const mockPatientDetails: PatientDetails = {
+  nhsNumber: "5900009890",
+  prefix: "Mr",
+  suffix: "",
+  given: "William",
+  family: "Wolderton",
+  gender: "male",
+  dateOfBirth: "01-Nov-1988",
+  address: {
+    line1: "55 OAK STREET",
+    line2: "OAK LANE",
+    city: "Leeds",
+    postcode: "LS1 1XX"
+  }
+}
 
 export default function PrescriptionDetailsPage() {
-  const [searchParams] = useSearchParams()
-  const prescriptionId = searchParams.get("prescriptionId")
+  const auth = useContext(AuthContext)
+  const navigate = useNavigate()
+  const [queryParams] = useSearchParams()
+
+  const [loading, setLoading] = useState(true)
+
   const {setPrescriptionInformation} = usePrescriptionInformation()
   const {setPatientDetails} = usePatientDetails()
 
-  const [loading, setLoading] = useState(true)
-  const [dispensedItems, setDispensedItems] = useState<Array<DispensedItem>>([])
+  const [prescriber, setPrescriber] = useState<PrescriberOrganisationSummary | undefined>()
+  const [nominatedDispenser, setNominatedDispenser] = useState<OrganisationSummary | undefined>()
+  const [dispenser, setDispenser] = useState<OrganisationSummary | undefined>()
 
-  useEffect(() => {
-    const loadData = async () => {
-      if (!prescriptionId) {
-        setLoading(false)
+  const getPrescriptionDetails = async (prescriptionId: string) => {
+    console.log("Prescription ID", prescriptionId)
+    const url = `${API_ENDPOINTS.PRESCRIPTION_DETAILS}/${prescriptionId}`
+
+    let payload: PrescriptionDetailsResponse | undefined
+    try {
+      const response = await http.get(url, {
+        headers: {
+          Authorization: `Bearer ${auth?.idToken}`,
+          "NHSD-Session-URID": NHS_REQUEST_URID
+        }
+      })
+
+      if (response.status !== 200) {
+        throw new Error(`Status Code: ${response.status}`)
+      }
+
+      payload = response.data
+      if (!payload) {
+        throw new Error("No payload received from the API")
+      }
+    } catch (err) {
+      console.error(err)
+
+      // ___      ___  _        ___ ______    ___      ___ ___    ___
+      // |   \    /  _]| |      /  _]      |  /  _]    |   |   |  /  _]
+      // |    \  /  [_ | |     /  [_|      | /  [_     | _   _ | /  [_
+      // |  D  ||    _]| |___ |    _]_|  |_||    _]    |  \_/  ||    _]
+      // |     ||   [_ |     ||   [_  |  |  |   [_     |   |   ||   [_
+      // |     ||     ||     ||     | |  |  |     |    |   |   ||     |
+      // |_____||_____||_____||_____| |__|  |_____|    |___|___||_____|
+      //
+      // FIXME: This is a static, mock data fallback we can use in lieu of the real data
+      // backend endpoint, which is still waiting for the auth SNAFU to get sorted out.
+      //
+
+      // Shared properties
+      const commonPrescriptionData = {
+        ...mockPrescriptionInformation,
+        prescriptionId: prescriptionId,
+        patientDetails: mockPatientDetails,
+        prescriptionPendingCancellation: false,
+        prescribedItems: [],
+        dispensedItems: [],
+        messageHistory: []
+      }
+
+      // Construct payload based on the prescriptionId.
+      if (prescriptionId === "C0C757-A83008-C2D93O") {
+        // Full vanilla data: all organisations populated.
+        payload = {
+          ...commonPrescriptionData,
+          prescriberOrganisation: {organisationSummaryObjective: mockPrescriber},
+          nominatedDispenser: {organisationSummaryObjective: mockNominatedDispenser},
+          currentDispenser: [{organisationSummaryObjective: mockDispenser}]
+        }
+      } else if (prescriptionId === "209E3D-A83008-327F9F") {
+        // Alt prescriber only: no dispenser data.
+        payload = {
+          ...commonPrescriptionData,
+          issueDate: "22-Jan-2025",
+          typeCode: "eRD",
+          isERD: true,
+          prescriberOrganisation: {organisationSummaryObjective: altMockPrescriber},
+          nominatedDispenser: undefined,
+          currentDispenser: undefined
+        }
+      } else if (prescriptionId === "7F1A4B-A83008-91DC2E") {
+        // Prescriber and dispenser only.
+        payload = {
+          ...commonPrescriptionData,
+          prescriberOrganisation: {organisationSummaryObjective: mockPrescriber},
+          nominatedDispenser: undefined,
+          currentDispenser: [{organisationSummaryObjective: mockDispenser}]
+        }
+      } else if (prescriptionId === "B8C9E2-A83008-5F7B3A") {
+        // All populated, with a long address nominated dispenser.
+        payload = {
+          ...commonPrescriptionData,
+          prescriberOrganisation: {organisationSummaryObjective: altMockPrescriber},
+          nominatedDispenser: {organisationSummaryObjective: altMockNominatedDispenser},
+          currentDispenser: [{organisationSummaryObjective: mockDispenser}]
+        }
+      } else if (prescriptionId === "4D6F2C-A83008-A3E7D1") {
+        // Missing nominated dispenser data.
+        payload = {
+          ...commonPrescriptionData,
+          prescriberOrganisation: {organisationSummaryObjective: mockPrescriber},
+          nominatedDispenser: {
+            organisationSummaryObjective: {
+              name: undefined,
+              odsCode: "FV519",
+              address: undefined,
+              telephone: undefined
+            }
+          },
+          currentDispenser: [{organisationSummaryObjective: mockDispenser}]
+        }
+      } else {
+        // Error condition here, no matching mock found so we clear it all out and redirect
+        setPrescriptionInformation(undefined)
+        setPatientDetails(undefined)
+        setPrescriber(undefined)
+        setDispenser(undefined)
+        setNominatedDispenser(undefined)
+        navigate(FRONTEND_PATHS.PRESCRIPTION_NOT_FOUND)
         return
       }
+    }
 
-      // Simulate delay for loading state
-      await new Promise((resolve) => setTimeout(resolve, 500))
+    // Use the populated payload (retrieved live or from mock fallback).
+    setPrescriptionInformation(payload)
+    setPatientDetails(payload.patientDetails)
 
-      if (prescriptionId === "C0C757-A83008-C2D93O") {
-        setPrescriptionInformation({
-          prescriptionId: prescriptionId,
-          issueDate: "18-Jan-2024",
-          status: "Some items dispensed",
-          type: "Acute",
-          isERD: false,
-          instanceNumber: undefined,
-          maxRepeats: undefined,
-          daysSupply: undefined
-        })
+    setPrescriber(payload.prescriberOrganisation.organisationSummaryObjective)
 
-        setPatientDetails({
-          nhsNumber: "5900009890",
-          prefix: "Mr",
-          suffix: "",
-          given: "William",
-          family: "Wolderton",
-          gender: "male",
-          dateOfBirth: "01-Nov-1988",
-          address: {
-            line1: "55 OAK STREET",
-            line2: "OAK LANE",
-            city: "Leeds",
-            postcode: "LS1 1XX"
-          }
-        })
+    if (!payload.currentDispenser) {
+      setDispenser(undefined)
+    } else {
+      setDispenser(payload.currentDispenser[0].organisationSummaryObjective)
+    }
 
-        // Mocked dispensed items
-        setDispensedItems([
-          {
-            itemDetails: {
-              medicationName: "Raberprazole 10mg tablets",
-              quantity: "56 tablets",
-              dosageInstructions: "Take one twice daily",
-              epsStatusCode: "0001",
-              nhsAppStatus: "Item fully dispensed",
-              pharmacyStatus: "Collected",
-              itemPendingCancellation: false
-            }
-          },
-          {
-            itemDetails: {
-              medicationName: "Glyceryl trinitrate 400micrograms/does aerosol sublingual spray",
-              quantity: "1 spray",
-              dosageInstructions: "Use as needed",
-              epsStatusCode: "0001",
-              nhsAppStatus: "Item fully dispensed",
-              pharmacyStatus: "Collected",
-              itemPendingCancellation: false
-            }
-          },
-          {
-            itemDetails: {
-              medicationName: "Oseltamivir 30mg capsules",
-              quantity: "20 capsules",
-              dosageInstructions: "One capsule twice a day ",
-              epsStatusCode: "0001",
-              nhsAppStatus: "Item not dispensed - owing",
-              pharmacyStatus: "With pharmacy",
-              itemPendingCancellation: false
-            }
-          }
-        ])
+    if (!payload.nominatedDispenser) {
+      setNominatedDispenser(undefined)
+    } else {
+      setNominatedDispenser(payload.nominatedDispenser.organisationSummaryObjective)
+    }
+  }
+
+  useEffect(() => {
+    const runGetPrescriptionDetails = async () => {
+      setLoading(true)
+
+      const prescriptionId = queryParams.get("prescriptionId")
+      if (!prescriptionId) {
+        navigate(FRONTEND_PATHS.PRESCRIPTION_NOT_FOUND)
       }
-
-      if (prescriptionId === "EC5ACF-A83008-733FD3") {
-        setPrescriptionInformation({
-          prescriptionId: prescriptionId,
-          issueDate: "22-Jan-2025",
-          status: "All items dispensed",
-          type: "eRD",
-          isERD: true,
-          instanceNumber: 2,
-          maxRepeats: 6,
-          daysSupply: 28
-        })
-
-        setPatientDetails({
-          nhsNumber: "5900009890",
-          prefix: "Ms",
-          suffix: "",
-          given: "Janet",
-          family: "Piper",
-          gender: null,
-          dateOfBirth: null,
-          address: null
-        })
-      }
+      await getPrescriptionDetails(prescriptionId!)
 
       setLoading(false)
     }
+    runGetPrescriptionDetails()
+  }, [])
 
-    loadData()
-  }, [prescriptionId, setPrescriptionInformation, setPatientDetails])
-
-  if (loading) {
+  if (loading || !prescriber) {
     return (
-      <main className="nhsuk-main-wrapper" id="prescription-details-page">
+      <main id="main-content" className="nhsuk-main-wrapper">
         <Container>
           <Row>
             <Col width="full">
-              <h2>{PRESCRIPTION_DETAILS_PAGE_STRINGS.LOADING_FULL_PRESCRIPTION}</h2>
+              <h1
+                className="nhsuk-u-visually-hidden"
+              >
+                {HEADER}
+              </h1>
+              <h2 data-testid="loading-message">
+                {LOADING_FULL_PRESCRIPTION}
+              </h2>
               <EpsSpinner />
             </Col>
           </Row>
@@ -144,25 +274,34 @@ export default function PrescriptionDetailsPage() {
   }
 
   return (
-
-    <Container
-      className={"nhsuk-main-wrapper nhsuk-main-wrapper--s nhsuk-u-margin-left-9"}
-      width="100%"
-      style={{maxWidth: "100%"}}
-    >
-      <Row>
-        <Col width="full">
-          <BackLink
-            data-testid="go-back-link"
-          >
-            {PRESCRIPTION_DETAILS_PAGE_STRINGS.GO_BACK}
-          </BackLink>
-        </Col>
-      </Row>
-      <Row>
-        <PrescribedDispensedItems items={dispensedItems} />
-      </Row>
-    </Container>
-
+    <main id="main-content" className="nhsuk-main-wrapper">
+      <Container width="full" fluid={true}>
+        <Row>
+          <Col width="full">
+            <BackLink
+              data-testid="go-back-link"
+              asElement={Link}
+              to={`${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}?${queryParams.toString()}`}
+            >
+              {GO_BACK}
+            </BackLink>
+          </Col>
+        </Row>
+        <Row>
+          <Col width="full">
+            <h1
+              className="nhsuk-u-visually-hidden"
+            >
+              {HEADER}
+            </h1>
+          </Col>
+        </Row>
+        <SiteDetailsCards
+          prescriber={prescriber}
+          dispenser={dispenser}
+          nominatedDispenser={nominatedDispenser}
+        />
+      </Container>
+    </main>
   )
 }

@@ -87,7 +87,7 @@ export default function PatientDetailsBanner() {
 
   return (
     <div
-      className={`nhsuk-banner patient-details-banner ${!successfulDetails ? "patient-details-partial-data" : ""}`}
+      className={`patient-details-banner ${!successfulDetails ? "patient-details-partial-data" : ""}`}
       data-testid="patient-details-banner"
     >
       <div

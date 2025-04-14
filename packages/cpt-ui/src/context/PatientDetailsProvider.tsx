@@ -13,7 +13,7 @@ import {FRONTEND_PATHS} from "@/constants/environment"
 
 export type PatientDetailsContextType = {
   patientDetails: PatientDetails | undefined
-  setPatientDetails: (value: PatientDetails) => void
+  setPatientDetails: (value: PatientDetails | undefined) => void
   clear: () => void
 }
 
@@ -32,7 +32,6 @@ export const PatientDetailsProvider = ({children}: {children: ReactNode}) => {
 
   // Clear the patient details if the user navigates away from the pages about the patient
   useEffect(() => {
-    // TODO: Ensure this is up to date as pages get implemented!
     const patientDetailsAllowedPaths = [
       FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT,
       FRONTEND_PATHS.PRESCRIPTION_LIST_PAST,

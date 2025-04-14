@@ -1,8 +1,9 @@
 import React from "react"
 import {Button, Tag} from "nhsuk-react-components"
+
 import {usePrescriptionInformation} from "@/context/PrescriptionInformationProvider"
+
 import {STRINGS} from "@/constants/ui-strings/PrescriptionInformationBannerStrings"
-import {getTagColourFromStatus} from "@/helpers/statusToTagColour"
 
 const PrescriptionInformationBanner: React.FC = () => {
   const {prescriptionInformation: prescription} = usePrescriptionInformation()
@@ -15,9 +16,9 @@ const PrescriptionInformationBanner: React.FC = () => {
 
   const renderType = () => {
     if (prescription.isERD && prescription.instanceNumber !== undefined && prescription.maxRepeats !== undefined) {
-      return `${prescription.type} ${prescription.instanceNumber} of ${prescription.maxRepeats}`
+      return `${prescription.typeCode} ${prescription.instanceNumber} of ${prescription.maxRepeats}`
     }
-    return prescription.type
+    return prescription.typeCode
   }
 
   return (
@@ -47,10 +48,7 @@ const PrescriptionInformationBanner: React.FC = () => {
         </div>
         <div className="patient-summary__block" id="summary-status">
           <span className="patient-summary__info">
-            {STRINGS.STATUS}:{" "}
-            <Tag color={getTagColourFromStatus(prescription.status)}>
-              {prescription.status}
-            </Tag>
+            {STRINGS.STATUS}: <Tag className="nhsuk-tag--green">{prescription.statusCode}</Tag>
           </span>
         </div>
         <div className="patient-summary__block" id="summary-type">
