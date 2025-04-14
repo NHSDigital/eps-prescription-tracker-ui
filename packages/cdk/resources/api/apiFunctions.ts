@@ -49,6 +49,7 @@ export class ApiFunctions extends Construct {
   public readonly prescriptionListLambda: NodejsFunction
   public readonly trackerUserInfoLambda: NodejsFunction
   public readonly selectedRoleLambda: NodejsFunction
+  public readonly patientSearchLambda: NodejsFunction
   public readonly primaryJwtPrivateKey: Secret
 
   public constructor(scope: Construct, id: string, props: ApiFunctionsProps) {
@@ -175,6 +176,17 @@ export class ApiFunctions extends Construct {
     // Add the policy to apiFunctionsPolicies
     apiFunctionsPolicies.push(prescriptionListLambda.executeLambdaManagedPolicy)
 
+    const patientSearchLambda = new LambdaFunction(this, "PatientSearch", {
+      serviceName: props.serviceName,
+      stackName: props.stackName,
+      lambdaName: `${props.stackName}-patientSearch`,
+      logRetentionInDays: props.logRetentionInDays,
+      logLevel: props.logLevel,
+      packageBasePath: "packages/patientSearchLambda",
+      entryPoint: "src/handler.ts",
+      lambdaEnvironmentVariables: commonLambdaEnv
+    })
+
     // const apiFunctionsPolicies: Array<IManagedPolicy> = [
     //   trackerUserInfoLambda.executeLambdaManagedPolicy,
     //   prescriptionListLambda.executeLambdaManagedPolicy
@@ -196,5 +208,6 @@ export class ApiFunctions extends Construct {
     this.prescriptionListLambda = prescriptionListLambda.lambda
     this.trackerUserInfoLambda = trackerUserInfoLambda.lambda
     this.selectedRoleLambda = selectedRoleLambda.lambda
+    this.patientSearchLambda = patientSearchLambda.lambda
   }
 }
