@@ -37,7 +37,7 @@ const mockSearchResponse: SearchResponse = {
   },
   currentPrescriptions: [
     {
-      prescriptionId: "RX001",
+      prescriptionId: " 6GA337-P34302-2H597C ",
       statusCode: PrescriptionStatus.TO_BE_DISPENSED,
       issueDate: "2025-03-01",
       prescriptionTreatmentType: TreatmentType.REPEAT,

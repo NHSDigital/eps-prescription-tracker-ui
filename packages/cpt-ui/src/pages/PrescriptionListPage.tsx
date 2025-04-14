@@ -11,7 +11,6 @@ import http from "@/helpers/axios"
 
 import {AuthContext} from "@/context/AuthProvider"
 import {usePatientDetails} from "@/context/PatientDetailsProvider"
-import {EPSPrescriptionTable} from "@/components/EPSPrescriptionTable"
 
 import EpsSpinner from "@/components/EpsSpinner"
 import PrescriptionsListTabs from "@/components/prescriptionList/PrescriptionsListTab"
@@ -27,7 +26,7 @@ import {
   TreatmentType,
   PrescriptionStatus,
   PrescriptionSummary
-} from "@cpt-ui-common/common-types"
+} from "@cpt-ui-common/common-types/src/prescriptionList"
 
 export default function PrescriptionListPage() {
   // FIXME: mock data. DELETEME!
@@ -62,7 +61,7 @@ export default function PrescriptionListPage() {
     patient: mockPatient,
     currentPrescriptions: [
       {
-        prescriptionId: "RX001",
+        prescriptionId: " 6GA337-P34302-2H597C ",
         statusCode: PrescriptionStatus.TO_BE_DISPENSED,
         issueDate: "2025-03-01",
         prescriptionTreatmentType: TreatmentType.REPEAT,
@@ -353,14 +352,12 @@ export default function PrescriptionListPage() {
           </p>
           <div data-testid="prescription-results-list">
             {/* Prescription list items would go here */}
-            <div>
-              <EPSPrescriptionTable />
-            </div>
             <PrescriptionsListTabs
               tabData={tabData}
               currentPrescriptions={currentPrescriptions}
               pastPrescriptions={pastPrescriptions}
               futurePrescriptions={futurePrescriptions}
+              prescriptionCount={prescriptionCount}
             />
           </div>
         </Container>

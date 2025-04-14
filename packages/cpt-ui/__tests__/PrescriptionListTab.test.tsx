@@ -38,7 +38,7 @@ import PrescriptionsListTabs from "@/components/prescriptionList/PrescriptionsLi
 describe("PrescriptionsListTabs", () => {
   const currentPrescriptions: Array<PrescriptionSummary> = [
     {
-      prescriptionId: "RX001",
+      prescriptionId: " 6GA337-P34302-2H597C ",
       statusCode: "001",
       issueDate: "2025-03-01",
       prescriptionTreatmentType: TreatmentType.REPEAT,
