@@ -1,47 +1,48 @@
+// src/helpers/statusToTagColour.ts
+
 export type NhsTagColor =
-  | "white"
-  | "grey"
-  | "green"
-  | "aqua-green"
-  | "blue"
-  | "purple"
-  | "pink"
-  | "red"
-  | "orange"
-  | "yellow"
+  | "white" | "grey" | "green" | "aqua-green"
+  | "blue" | "purple" | "pink" | "red"
+  | "orange" | "yellow"
 
-/**
- * Maps EPS status strings to NHS tag colour values based on NHS design system.
- */
+export type StatusCategory = "dispensed" | "prescribed" | "other"
+
+type StatusMetadata = {
+  color: NhsTagColor
+  category: StatusCategory
+}
+
+const statusMap: Record<string, StatusMetadata> = {
+  // Prescription-level
+  "next repeat ready to be downloaded": {color: "orange", category: "other"},
+  "available to download": {color: "yellow", category: "other"},
+  "downloaded by a dispenser": {color: "purple", category: "other"},
+  "some items dispensed": {color: "blue", category: "dispensed"},
+  "expired": {color: "white", category: "prescribed"},
+  "cancelled": {color: "red", category: "prescribed"},
+  "all items dispensed": {color: "green", category: "dispensed"},
+  "not dispensed": {color: "red", category: "prescribed"},
+  "claimed": {color: "grey", category: "other"},
+  "not claimed": {color: "pink", category: "other"},
+  "future erd issue": {color: "aqua-green", category: "other"},
+  "future issue date dispense": {color: "blue", category: "other"},
+  "future prescription cancelled": {color: "red", category: "prescribed"},
+
+  // Line item statuses
+  "item fully dispensed": {color: "green", category: "dispensed"},
+  "item dispensed - partial": {color: "blue", category: "dispensed"},
+  "item not dispensed": {color: "orange", category: "prescribed"},
+  "item not dispensed - owing": {color: "blue", category: "prescribed"},
+  "item cancelled": {color: "red", category: "prescribed"},
+  "item expired": {color: "white", category: "prescribed"},
+  "item to be dispensed": {color: "yellow", category: "prescribed"},
+  "item with dispenser": {color: "purple", category: "prescribed"}
+}
+
 export function getTagColourFromStatus(status: string): NhsTagColor | undefined {
-  const lowerStatus = status.toLowerCase()
+  return statusMap[status.toLowerCase()]?.color
+}
 
-  const statusMap: Record<string, NhsTagColor> = {
-    // Prescription-level statuses
-    "next repeat ready to be downloaded": "orange",
-    "available to download": "yellow",
-    "downloaded by a dispenser": "purple",
-    "some items dispensed": "blue",
-    "expired": "white",
-    "cancelled": "red",
-    "all items dispensed": "green",
-    "not dispensed": "red",
-    "claimed": "grey",
-    "not claimed": "pink",
-    "future erd issue": "aqua-green",
-    "future issue date dispense": "blue",
-    "future prescription cancelled": "red",
-
-    // Line item statuses
-    "item fully dispensed": "green",
-    "item not dispensed": "orange",
-    "item dispensed - partial": "blue",
-    "item not dispensed - owing": "blue",
-    "item cancelled": "red",
-    "item expired": "white",
-    "item to be dispensed": "yellow",
-    "item with dispenser": "purple"
-  }
-
-  return statusMap[lowerStatus]
+export function getStatusCategory(status: string): StatusCategory | undefined {
+  return statusMap[status.toLowerCase()]?.category
 }
