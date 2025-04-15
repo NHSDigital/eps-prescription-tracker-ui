@@ -21,7 +21,7 @@ import {usePrescriptionInformation} from "@/context/PrescriptionInformationProvi
 import {usePatientDetails} from "@/context/PatientDetailsProvider"
 
 import {API_ENDPOINTS, FRONTEND_PATHS, NHS_REQUEST_URID} from "@/constants/environment"
-import {HEADER, GO_BACK, LOADING_FULL_PRESCRIPTION} from "@/constants/ui-strings/PrescriptionDetailsPageStrings"
+import {STRINGS} from "@/constants/ui-strings/PrescriptionDetailsPageStrings"
 
 import EpsSpinner from "@/components/EpsSpinner"
 import {SiteDetailsCards} from "@/components/SiteDetailsCards"
@@ -93,6 +93,17 @@ const mockPatientDetails: PatientDetails = {
     city: "Leeds",
     postcode: "LS1 1XX"
   }
+}
+
+const mockUnavailablePatientDetails: PatientDetails = {
+  nhsNumber: "5900009890",
+  prefix: "Ms",
+  suffix: "",
+  given: "Janet",
+  family: "Piper",
+  gender: null,
+  dateOfBirth: null,
+  address: null
 }
 
 const mockDispensedItems: Array<DispensedItem> = [
@@ -170,13 +181,6 @@ export default function PrescriptionDetailsPage() {
     } catch (err) {
       console.error(err)
 
-      // ___      ___  _        ___ ______    ___      ___ ___    ___
-      // |   \    /  _]| |      /  _]      |  /  _]    |   |   |  /  _]
-      // |    \  /  [_ | |     /  [_|      | /  [_     | _   _ | /  [_
-      // |  D  ||    _]| |___ |    _]_|  |_||    _]    |  \_/  ||    _]
-      // |     ||   [_ |     ||   [_  |  |  |   [_     |   |   ||   [_
-      // |     ||     ||     ||     | |  |  |     |    |   |   ||     |
-      // |_____||_____||_____||_____| |__|  |_____|    |___|___||_____|
       //
       // FIXME: This is a static, mock data fallback we can use in lieu of the real data
       // backend endpoint, which is still waiting for the auth SNAFU to get sorted out.
@@ -204,12 +208,21 @@ export default function PrescriptionDetailsPage() {
           currentDispenser: [{organisationSummaryObjective: mockDispenser}]
         }
       } else if (prescriptionId === "209E3D-A83008-327F9F") {
-        // Alt prescriber only: no dispenser data.
+        // Alt prescriber only: no dispenser data and unavailable patient details.
         payload = {
-          ...commonPrescriptionData,
+          prescriptionId,
           issueDate: "22-Jan-2025",
           typeCode: "eRD",
+          statusCode: "All items dispensed",
           isERD: true,
+          instanceNumber: 1,
+          maxRepeats: 6,
+          daysSupply: "28",
+          prescriptionPendingCancellation: false,
+          patientDetails: mockUnavailablePatientDetails,
+          prescribedItems: [],
+          dispensedItems: [],
+          messageHistory: [],
           prescriberOrganisation: {organisationSummaryObjective: altMockPrescriber},
           nominatedDispenser: undefined,
           currentDispenser: undefined
@@ -301,10 +314,10 @@ export default function PrescriptionDetailsPage() {
               <h1
                 className="nhsuk-u-visually-hidden"
               >
-                {HEADER}
+                {STRINGS.HEADER}
               </h1>
               <h2 data-testid="loading-message">
-                {LOADING_FULL_PRESCRIPTION}
+                {STRINGS.LOADING_FULL_PRESCRIPTION}
               </h2>
               <EpsSpinner />
             </Col>
@@ -324,13 +337,13 @@ export default function PrescriptionDetailsPage() {
               asElement={Link}
               to={`${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}?${queryParams.toString()}`}
             >
-              {GO_BACK}
+              {STRINGS.GO_BACK}
             </BackLink>
           </Col>
         </Row>
         <Row>
           <Col width="full">
-            <h1 className="nhsuk-u-visually-hidden">{HEADER}</h1>
+            <h2 className="nhsuk-u-visually-hidden">{STRINGS.HEADER}</h2>
           </Col>
         </Row>
         {/* === Main Grid Layout === */}
