@@ -51,7 +51,7 @@ const PrescriptionInformationBanner: React.FC = () => {
         <div className="patient-summary__block" id="summary-status">
           <span className="patient-summary__info">
             {STRINGS.STATUS}:{" "}
-            <Tag color={getTagColourFromStatus(prescription.status)}>
+            <Tag color={getTagColourFromStatus(prescription.statusCode)}>
               {prescription.status}
             </Tag>
           </span>
