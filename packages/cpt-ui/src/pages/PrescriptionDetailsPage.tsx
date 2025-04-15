@@ -349,11 +349,11 @@ export default function PrescriptionDetailsPage() {
         {/* === Main Grid Layout === */}
         <Row>
           {/* Prescribed/Dispensed items */}
-          <Col >
+          <Col width="one-third">
             <PrescribedDispensedItemsCards items={dispensedItems} />
           </Col>
           {/* Prescriber and dispenser information */}
-          <Col>
+          <Col width="one-third">
             <SiteDetailsCards
               prescriber={prescriber}
               dispenser={dispenser}

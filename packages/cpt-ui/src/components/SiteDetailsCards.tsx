@@ -105,7 +105,7 @@ export function SiteDetailsCards({
 
   return (
     <Row>
-      <Col width="one-third" className="site-card-column">
+      <Col width="full" className="site-card-column">
         <h2 className="nhsuk-heading-xs nhsuk-u-margin-bottom-2">{HEADING}</h2>
         {dispenser && (
           <SiteDetailsCard heading={DISPENSER} {...dispenser} />

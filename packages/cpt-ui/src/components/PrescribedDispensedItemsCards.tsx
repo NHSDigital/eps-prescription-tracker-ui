@@ -73,7 +73,7 @@ export function PrescribedDispensedItemsCards({items}: PrescribedDispensedItemsP
   }
 
   return (
-    <Col width="one-third" className="site-card-column">
+    <Col width="full" className="site-card-column">
       {dispensedItems.length > 0 && (
         <>
           <h2 className="nhsuk-heading-xs nhsuk-u-margin-bottom-2">
