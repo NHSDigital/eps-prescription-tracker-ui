@@ -59,6 +59,33 @@ repos:
         types_or: [ts, tsx, javascript, jsx, json]
         pass_filenames: false
 
+      - id: lint-middyErrorHandler
+        name: Lint middyErrorHandler
+        entry: npm
+        args: ["run", "--prefix=packages/common/middyErrorHandler", "lint"]
+        language: system
+        files: ^packages\/common\/middyErrorHandler
+        types_or: [ts, tsx, javascript, jsx, json]
+        pass_filenames: false
+
+      - id: lint-commonTypes
+        name: Lint commonTypes
+        entry: npm
+        args: ["run", "--prefix=packages/common/commonTypes", "lint"]
+        language: system
+        files: ^packages\/common\/commonTypes
+        types_or: [ts, tsx, javascript, jsx, json]
+        pass_filenames: false
+
+      - id: lint-common-testing
+        name: Lint common-testing
+        entry: npm
+        args: ["run", "--prefix=packages/common/testing", "lint"]
+        language: system
+        files: ^packages\/common\/testing
+        types_or: [ts, tsx, javascript, jsx, json]
+        pass_filenames: false
+
       - id: lint-prescriptionListLambda
         name: Lint prescriptionListLambda
         entry: npm
