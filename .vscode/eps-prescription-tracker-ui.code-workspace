@@ -41,6 +41,10 @@
         "path": "../packages/common/middyErrorHandler"
       },
       {
+        "name": "packages/common/pdsClient",
+        "path": "../packages/common/pdsClient"
+      },
+      {
         "name": "packages/common/commonTypes",
         "path": "../packages/common/commonTypes"
       },

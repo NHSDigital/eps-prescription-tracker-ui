@@ -26,6 +26,7 @@
         "packages/prescriptionListLambda",
         "packages/patientSearchLambda",
         "packages/common/middyErrorHandler",
+        "packages/common/pdsClient",
         "packages/common/testing",
         "packages/common/authFunctions",
         "packages/auth_demo",

@@ -7,6 +7,7 @@
       {"path": "packages/common/commonTypes"},
       {"path": "packages/common/testing"},
       {"path": "packages/common/middyErrorHandler"},
+      {"path": "packages/common/pdsClient"},
       {"path": "packages/cdk"},
       {"path": "packages/cpt-ui"},
       {"path": "packages/cognito"}

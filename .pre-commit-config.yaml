@@ -50,6 +50,15 @@ repos:
         types_or: [ts, tsx, javascript, jsx, json]
         pass_filenames: false
 
+      - id: lint-pdsClient
+        name: Lint pdsClient
+        entry: npm
+        args: ["run", "--prefix=packages/common/pdsClient", "lint"]
+        language: system
+        files: ^packages\/common\/pdsClient
+        types_or: [ts, tsx, javascript, jsx, json]
+        pass_filenames: false
+
       - id: lint-prescriptionListLambda
         name: Lint prescriptionListLambda
         entry: npm
