@@ -172,6 +172,7 @@
       "eslint.useFlatConfig": true,
       "eslint.format.enable": true,
       "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+      "editor.tabSize": 2,
       "[typescriptreact]": {
         "editor.defaultFormatter": "dbaeumer.vscode-eslint"
       },
