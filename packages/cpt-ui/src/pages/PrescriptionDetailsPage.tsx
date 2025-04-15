@@ -12,7 +12,8 @@ import {
   PrescriberOrganisationSummary,
   PatientDetails,
   OrganisationSummary,
-  PrescriptionDetailsResponse
+  PrescriptionDetailsResponse,
+  DispensedItem
 } from "@cpt-ui-common/common-types"
 
 import {AuthContext} from "@/context/AuthProvider"
@@ -24,6 +25,7 @@ import {HEADER, GO_BACK, LOADING_FULL_PRESCRIPTION} from "@/constants/ui-strings
 
 import EpsSpinner from "@/components/EpsSpinner"
 import {SiteDetailsCards} from "@/components/SiteDetailsCards"
+import {PrescribedDispensedItemsCards} from "@/components/PrescribedDispensedItemsCards"
 
 import http from "@/helpers/axios"
 
@@ -69,7 +71,7 @@ const altMockNominatedDispenser: OrganisationSummary = {
 const mockPrescriptionInformation = {
   prescriptionId: "",
   issueDate: "18-Jan-2024",
-  statusCode: "All items dispensed", // FIXME: The banner does not use codes? Needs to be implemented!
+  statusCode: "Some items dispensed", // FIXME: The banner does not use codes? Needs to be implemented!
   typeCode: "Acute",
   isERD: false,
   instanceNumber: 2,
@@ -93,6 +95,42 @@ const mockPatientDetails: PatientDetails = {
   }
 }
 
+const mockDispensedItems: Array<DispensedItem> = [
+  {
+    itemDetails: {
+      medicationName: "Raberprazole 10mg tablets",
+      quantity: "56 tablets",
+      dosageInstructions: "Take one twice daily",
+      epsStatusCode: "0001",
+      nhsAppStatus: "Item fully dispensed",
+      pharmacyStatus: "Collected",
+      itemPendingCancellation: false
+    }
+  },
+  {
+    itemDetails: {
+      medicationName: "Glyceryl trinitrate 400micrograms/does aerosol sublingual spray",
+      quantity: "1 spray",
+      dosageInstructions: "Use as needed",
+      epsStatusCode: "0001",
+      nhsAppStatus: "Item fully dispensed",
+      pharmacyStatus: "Collected",
+      itemPendingCancellation: false
+    }
+  },
+  {
+    itemDetails: {
+      medicationName: "Oseltamivir 30mg capsules",
+      quantity: "20 capsules",
+      dosageInstructions: "One capsule twice a day",
+      epsStatusCode: "0004",
+      nhsAppStatus: "Item not dispensed - owing",
+      pharmacyStatus: "With pharmacy",
+      itemPendingCancellation: false
+    }
+  }
+]
+
 export default function PrescriptionDetailsPage() {
   const auth = useContext(AuthContext)
   const navigate = useNavigate()
@@ -106,6 +144,7 @@ export default function PrescriptionDetailsPage() {
   const [prescriber, setPrescriber] = useState<PrescriberOrganisationSummary | undefined>()
   const [nominatedDispenser, setNominatedDispenser] = useState<OrganisationSummary | undefined>()
   const [dispenser, setDispenser] = useState<OrganisationSummary | undefined>()
+  const [dispensedItems, setDispensedItems] = useState<Array<DispensedItem>>([])
 
   const getPrescriptionDetails = async (prescriptionId: string) => {
     console.log("Prescription ID", prescriptionId)
@@ -159,6 +198,7 @@ export default function PrescriptionDetailsPage() {
         // Full vanilla data: all organisations populated.
         payload = {
           ...commonPrescriptionData,
+          dispensedItems: mockDispensedItems,
           prescriberOrganisation: {organisationSummaryObjective: mockPrescriber},
           nominatedDispenser: {organisationSummaryObjective: mockNominatedDispenser},
           currentDispenser: [{organisationSummaryObjective: mockDispenser}]
@@ -220,6 +260,7 @@ export default function PrescriptionDetailsPage() {
     // Use the populated payload (retrieved live or from mock fallback).
     setPrescriptionInformation(payload)
     setPatientDetails(payload.patientDetails)
+    setDispensedItems(payload.dispensedItems)
 
     setPrescriber(payload.prescriberOrganisation.organisationSummaryObjective)
 
@@ -289,18 +330,24 @@ export default function PrescriptionDetailsPage() {
         </Row>
         <Row>
           <Col width="full">
-            <h1
-              className="nhsuk-u-visually-hidden"
-            >
-              {HEADER}
-            </h1>
+            <h1 className="nhsuk-u-visually-hidden">{HEADER}</h1>
           </Col>
         </Row>
-        <SiteDetailsCards
-          prescriber={prescriber}
-          dispenser={dispenser}
-          nominatedDispenser={nominatedDispenser}
-        />
+        {/* === Main Grid Layout === */}
+        <Row>
+          {/* Prescribed/Dispensed items */}
+          <Col >
+            <PrescribedDispensedItemsCards items={dispensedItems} />
+          </Col>
+          {/* Prescriber and dispenser information */}
+          <Col>
+            <SiteDetailsCards
+              prescriber={prescriber}
+              dispenser={dispenser}
+              nominatedDispenser={nominatedDispenser}
+            />
+          </Col>
+        </Row>
       </Container>
     </main>
   )
