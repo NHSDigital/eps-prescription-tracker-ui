@@ -1,4 +1,4 @@
-import {
+import type {
   PatientDetails,
   PatientDetailsAddress,
   PrescriptionStatusCategories,
@@ -9,7 +9,7 @@ import {
   SearchResponse
 } from "./prescriptionList"
 
-export {
+export type {
   PatientDetails,
   PatientDetailsAddress,
   PrescriptionStatusCategories,
@@ -20,7 +20,7 @@ export {
   SearchResponse
 }
 
-import {
+import type {
   PrescribedItemDetails,
   PrescribedItem,
   InitiallyPrescribed,
@@ -35,7 +35,7 @@ import {
   PrescriptionDetailsResponse
 } from "./prescriptionDetails"
 
-export {
+export type {
   PrescribedItemDetails,
   PrescribedItem,
   InitiallyPrescribed,
