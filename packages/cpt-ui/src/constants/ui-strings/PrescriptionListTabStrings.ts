@@ -28,19 +28,23 @@ export const PRESCRIPTION_LIST_TABS: Record<string, FormattableTabHeader> = {
 export interface PrescriptionsListStrings {
     testid: string
     heading: string
+    noPrescriptionsMessage: string
 }
 
 export const CURRENT_PRESCRIPTIONS: PrescriptionsListStrings = {
   testid: "current",
-  heading: "Current prescriptions table"
+  heading: "Current prescriptions table",
+  noPrescriptionsMessage: "There are no current prescriptions."
 }
 
 export const PAST_PRESCRIPTIONS: PrescriptionsListStrings = {
   testid: "past",
-  heading: "Past prescriptions table"
+  heading: "Past prescriptions table",
+  noPrescriptionsMessage: "No claimed or expired prescriptions found."
 }
 
 export const FUTURE_PRESCRIPTIONS: PrescriptionsListStrings = {
   testid: "future",
-  heading: "Future prescriptions table"
+  heading: "Future prescriptions table",
+  noPrescriptionsMessage: "No future-dated prescriptions found."
 }

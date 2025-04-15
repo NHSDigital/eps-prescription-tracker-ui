@@ -357,7 +357,6 @@ export default function PrescriptionListPage() {
               currentPrescriptions={currentPrescriptions}
               pastPrescriptions={pastPrescriptions}
               futurePrescriptions={futurePrescriptions}
-              prescriptionCount={prescriptionCount}
             />
           </div>
         </Container>
