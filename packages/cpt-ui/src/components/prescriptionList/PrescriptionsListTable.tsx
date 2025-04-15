@@ -151,6 +151,8 @@ const PrescriptionsListTable = ({textContent, prescriptions}: PrescriptionsListT
     return <p className="nhsuk-body">{textContent.noPrescriptionsMessage}</p>
   }
 
+  //this is partically decalred here to address linting errors for the line being too long.
+  // The url is formed in the render below
   const prescriptionLink = "https://cpt-ui.dev.eps.national.nhs.uk/site/prescription-details?prescriptionId="
 
   return (
