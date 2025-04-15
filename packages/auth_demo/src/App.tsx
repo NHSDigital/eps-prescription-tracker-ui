@@ -1,14 +1,15 @@
-import React, { useEffect, useState } from 'react'
-import { Hub } from "aws-amplify/utils"
-import { signInWithRedirect, signOut, getCurrentUser, fetchAuthSession, JWT } from "aws-amplify/auth"
-import { Amplify } from "aws-amplify"
+import React, {useEffect, useState} from 'react'
+import {Hub} from "aws-amplify/utils"
+import {signInWithRedirect, signOut, getCurrentUser, fetchAuthSession, JWT} from "aws-amplify/auth"
+import {Amplify} from "aws-amplify"
 import axios from "axios"
 import './interceptors'
 
 import './App.css'
-import { authConfig } from './configureAmplify'
-Amplify.configure(authConfig, { ssr: true })
+import {authConfig} from './configureAmplify'
+Amplify.configure(authConfig, {ssr: true})
 
+const prescriptionDetailsEndpoint = "/api/prescription-details"
 const trackerUserInfoEndpoint = "/api/tracker-user-info"
 
 const API_ENDPOINT = '/api/prescription-list'
@@ -23,6 +24,7 @@ function App() {
   const [prescriptionId, setPrescriptionId] = useState<string>('')
   const [nhsNumber, setNhsNumber] = useState<number>(0)
   const [prescriptionData, setPrescriptionData] = useState<any>(null)
+  const [prescriptionDetails, setPrescriptionDetails] = useState<any>(null)
   const [trackerUserInfoData, setTrackerUserInfoData] = useState<JWT>(null)
   const [loading, setLoading] = useState<boolean>(false)
 
@@ -95,7 +97,7 @@ function App() {
            */
           Authorization: `Bearer ${idToken}`,
           /**
-           * Include the hardcoded role ID in the `NHSD-Session-URID` header:
+           * Include the hardcoded role ID in the NHSD-Session-URID header:
            * - This is required for the CPT API to handle the request correctly.
            */
           "NHSD-Session-URID": "555254242106"
@@ -108,6 +110,57 @@ function App() {
       // Handle and log any errors during the API call
       setError("Failed to fetch prescription data.")
       console.error("Error fetching data:", err)
+    } finally {
+      // Ensure the loading state is updated regardless of success or failure
+      setLoading(false)
+    }
+  }
+
+  const retrievePrescriptionDetails = async () => {
+    if (!prescriptionId) {
+      setError("Please enter a Prescription ID.")
+      return
+    }
+
+    setLoading(true)
+    setPrescriptionDetails(null)
+    setError(null)
+
+    try {
+      // Construct the request URL with prescriptionId
+      const requestUrl = `${prescriptionDetailsEndpoint}/${prescriptionId}`
+
+      // Call the backend to retrieve prescription details
+      const prescriptionResponse = await axios.get(requestUrl, {
+        headers: {
+          /**
+           * Provide the Cognito id token:
+           * - This token is issued by AWS Cognito and is used to authenticate the request.
+           * - The backend uses this token to identify the user and securely manage CIS2/Apigee tokens.
+           */
+          Authorization: `Bearer ${idToken}`,
+          /**
+           * Include the hardcoded role ID in the NHSD-Session-URID header:
+           * - This is required for the CPT API to handle the request correctly.
+           */
+          "NHSD-Session-URID": "555254242106"
+        }
+      })
+
+      let parsedData = prescriptionResponse.data
+      if (typeof parsedData === "string") {
+        parsedData = JSON.parse(parsedData)
+      }
+      if (typeof parsedData.body === "string") {
+        parsedData.body = JSON.parse(parsedData.body)
+      }
+
+      // Update the frontend state with the retrieved prescription details
+      setPrescriptionDetails(parsedData)
+    } catch (err) {
+      // Handle and log any errors during the API call
+      setError("Failed to retrieve prescription details.")
+      console.error("Error retrieving prescription details:", err)
     } finally {
       // Ensure the loading state is updated regardless of success or failure
       setLoading(false)
@@ -166,7 +219,13 @@ function App() {
           onClick={() => fetchPrescriptionData({ prescriptionId })}
           disabled={!isSignedIn || !prescriptionId}
         >
-          Fetch Prescription Data
+          Search for a prescription
+        </button>
+        <button
+          onClick={retrievePrescriptionDetails}
+          disabled={!isSignedIn || !prescriptionId}
+        >
+          Retrieve prescription details
         </button>
       </div>
 
@@ -195,14 +254,21 @@ function App() {
       {loading && <p>Loading...</p>}
 
       {prescriptionData && (
-        <div style={{ marginTop: '20px' }}>
+        <div style={{marginTop: '20px'}}>
           <h3>Prescription Data:</h3>
           <pre>{JSON.stringify(prescriptionData, null, 2)}</pre>
         </div>
       )}
 
+      {prescriptionDetails && (
+        <div style={{marginTop: '20px'}}>
+          <h3>Prescription Details:</h3>
+          <pre>{JSON.stringify(prescriptionDetails.body, null, 2)}</pre>
+        </div>
+      )}
+
       {trackerUserInfoData && (
-        <div style={{ marginTop: '20px' }}>
+        <div style={{marginTop: '20px'}}>
           <h3>Tracker User Info Data:</h3>
           <pre>{JSON.stringify(trackerUserInfoData, null, 2)}</pre>
         </div>

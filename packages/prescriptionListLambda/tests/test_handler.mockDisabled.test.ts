@@ -88,9 +88,9 @@ jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
 
   const updateApigeeAccessToken = mockUpdateApigeeAccessToken.mockImplementation(() => {})
 
-  const initializeOidcConfig = mockInitializeOidcConfig.mockImplementation( () => {
+  const initializeOidcConfig = mockInitializeOidcConfig.mockImplementation(() => {
     // Create a JWKS client for cis2 and mock
-  // this is outside functions so it can be re-used
+    // this is outside functions so it can be re-used
     const cis2JwksUri = process.env["CIS2_OIDCJWKS_ENDPOINT"] as string
     const cis2JwksClient = jwksClient({
       jwksUri: cis2JwksUri,
@@ -241,7 +241,8 @@ describe("handler tests with cis2 auth", () => {
         "nhsNumber": "9000000009",
         "prefix": "Mrs",
         "suffix": ""
-      }})
+      }
+    })
 
     expect(mockUpdateApigeeAccessToken).toBeCalledWith(
       expect.any(Object),
