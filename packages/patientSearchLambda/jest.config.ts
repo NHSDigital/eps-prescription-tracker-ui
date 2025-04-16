@@ -3,8 +3,7 @@ import type {JestConfigWithTsJest} from "ts-jest"
 
 const jestConfig: JestConfigWithTsJest = {
   ...defaultConfig,
-  "rootDir": "./",
-  setupFiles: ["<rootDir>/.jest/setEnvVars.js"]
+  "rootDir": "./"
 }
 
 export default jestConfig
