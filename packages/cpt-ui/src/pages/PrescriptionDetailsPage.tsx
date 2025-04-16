@@ -13,7 +13,8 @@ import {
   PatientDetails,
   OrganisationSummary,
   PrescriptionDetailsResponse,
-  DispensedItem
+  DispensedItem,
+  PrescribedItem
 } from "@cpt-ui-common/common-types"
 
 import {AuthContext} from "@/context/AuthProvider"
@@ -128,7 +129,10 @@ const mockDispensedItems: Array<DispensedItem> = [
       pharmacyStatus: "Collected",
       itemPendingCancellation: false
     }
-  },
+  }
+]
+
+const mockPrescribedItems: Array<PrescribedItem> = [
   {
     itemDetails: {
       medicationName: "Oseltamivir 30mg capsules",
@@ -137,7 +141,59 @@ const mockDispensedItems: Array<DispensedItem> = [
       epsStatusCode: "0004",
       nhsAppStatus: "Item not dispensed - owing",
       pharmacyStatus: "With pharmacy",
-      itemPendingCancellation: false
+      itemPendingCancellation: false,
+      cancellationReason: null
+    }
+  }
+]
+
+const mockPrescribedItemsCancellation: Array<PrescribedItem> = [
+  {
+    itemDetails: {
+      medicationName: "Phosphates enema (Formula B) 129ml standard tube",
+      quantity: "1 tube",
+      dosageInstructions: "Use ONE when required",
+      epsStatusCode: "0003",
+      nhsAppStatus: "Item to be dispensed",
+      pharmacyStatus: "With pharmacy",
+      itemPendingCancellation: true,
+      cancellationReason: "Prescribing error"
+    }
+  },
+  {
+    itemDetails: {
+      medicationName: "Mirtazapine 30mg",
+      quantity: "1 spray",
+      dosageInstructions: "Use as needed",
+      epsStatusCode: "0003",
+      nhsAppStatus: "Item to be dispensed",
+      pharmacyStatus: "With pharmacy",
+      itemPendingCancellation: true,
+      cancellationReason: "Prescribing error"
+    }
+  },
+  {
+    itemDetails: {
+      medicationName: "Oseltamivir 30mg capsules",
+      quantity: "20 capsules",
+      dosageInstructions: "One capsule twice a day",
+      epsStatusCode: "0003",
+      nhsAppStatus: "Item to be dispensed",
+      pharmacyStatus: "With pharmacy",
+      itemPendingCancellation: true,
+      cancellationReason: "Prescribing error"
+    }
+  },
+  {
+    itemDetails: {
+      medicationName: "Glyceryl trinitrate 400micrograms/does aerosol sublingual spray",
+      quantity: "21 tablets",
+      dosageInstructions: "Take 3 times a day with water",
+      epsStatusCode: "0003",
+      nhsAppStatus: "Item to be dispensed",
+      pharmacyStatus: "With pharmacy",
+      itemPendingCancellation: true,
+      cancellationReason: "Prescribing error"
     }
   }
 ]
@@ -155,6 +211,7 @@ export default function PrescriptionDetailsPage() {
   const [prescriber, setPrescriber] = useState<PrescriberOrganisationSummary | undefined>()
   const [nominatedDispenser, setNominatedDispenser] = useState<OrganisationSummary | undefined>()
   const [dispenser, setDispenser] = useState<OrganisationSummary | undefined>()
+  const [prescribedItems, setPrescribedItems] = useState<Array<PrescribedItem>>([])
   const [dispensedItems, setDispensedItems] = useState<Array<DispensedItem>>([])
 
   const getPrescriptionDetails = async (prescriptionId: string) => {
@@ -202,6 +259,7 @@ export default function PrescriptionDetailsPage() {
         // Full vanilla data: all organisations populated.
         payload = {
           ...commonPrescriptionData,
+          prescribedItems: mockPrescribedItems,
           dispensedItems: mockDispensedItems,
           prescriberOrganisation: {organisationSummaryObjective: mockPrescriber},
           nominatedDispenser: {organisationSummaryObjective: mockNominatedDispenser},
@@ -210,19 +268,10 @@ export default function PrescriptionDetailsPage() {
       } else if (prescriptionId === "209E3D-A83008-327F9F") {
         // Alt prescriber only: no dispenser data and unavailable patient details.
         payload = {
-          prescriptionId,
-          issueDate: "22-Jan-2025",
-          typeCode: "eRD",
-          statusCode: "All items dispensed",
-          isERD: true,
-          instanceNumber: 1,
-          maxRepeats: 6,
-          daysSupply: "28",
-          prescriptionPendingCancellation: false,
+          ...commonPrescriptionData,
+          prescribedItems: mockPrescribedItems,
+          dispensedItems: mockDispensedItems,
           patientDetails: mockUnavailablePatientDetails,
-          prescribedItems: [],
-          dispensedItems: [],
-          messageHistory: [],
           prescriberOrganisation: {organisationSummaryObjective: altMockPrescriber},
           nominatedDispenser: undefined,
           currentDispenser: undefined
@@ -231,6 +280,7 @@ export default function PrescriptionDetailsPage() {
         // Prescriber and dispenser only.
         payload = {
           ...commonPrescriptionData,
+          prescribedItems: mockPrescribedItemsCancellation,
           prescriberOrganisation: {organisationSummaryObjective: mockPrescriber},
           nominatedDispenser: undefined,
           currentDispenser: [{organisationSummaryObjective: mockDispenser}]
@@ -239,6 +289,7 @@ export default function PrescriptionDetailsPage() {
         // All populated, with a long address nominated dispenser.
         payload = {
           ...commonPrescriptionData,
+          prescribedItems: mockPrescribedItemsCancellation,
           prescriberOrganisation: {organisationSummaryObjective: altMockPrescriber},
           nominatedDispenser: {organisationSummaryObjective: altMockNominatedDispenser},
           currentDispenser: [{organisationSummaryObjective: mockDispenser}]
@@ -273,6 +324,7 @@ export default function PrescriptionDetailsPage() {
     // Use the populated payload (retrieved live or from mock fallback).
     setPrescriptionInformation(payload)
     setPatientDetails(payload.patientDetails)
+    setPrescribedItems(payload.prescribedItems)
     setDispensedItems(payload.dispensedItems)
 
     setPrescriber(payload.prescriberOrganisation.organisationSummaryObjective)
@@ -349,9 +401,10 @@ export default function PrescriptionDetailsPage() {
         {/* === Main Grid Layout === */}
         <Row>
           {/* Prescribed/Dispensed items */}
-          <Col width="one-third">
-            <PrescribedDispensedItemsCards items={dispensedItems} />
-          </Col>
+          <PrescribedDispensedItemsCards
+            prescribedItems={prescribedItems}
+            dispensedItems={dispensedItems}
+          />
           {/* Prescriber and dispenser information */}
           <Col width="one-third">
             <SiteDetailsCards
