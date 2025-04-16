@@ -140,7 +140,7 @@ export class Cognito extends Construct {
       const mockOidcEndpoints: OidcEndpoints = {
         authorization: `https://${props.fullCloudfrontDomain}/oauth2/mock-authorize`,
         jwksUri: "https://cpt-ui.dev.eps.national.nhs.uk/jwks/",
-        token: `https://${props.fullCloudfrontDomain}/oauth2/mocktoken`,
+        token: `https://${props.fullCloudfrontDomain}/oauth2/mock-token`,
         userInfo: props.mockOidcUserInfoEndpoint
       }
 
