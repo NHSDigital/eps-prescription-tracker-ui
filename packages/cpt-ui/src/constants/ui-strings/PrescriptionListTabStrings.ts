@@ -24,25 +24,6 @@ export const PRESCRIPTION_LIST_TABS: Record<string, FormattableTabHeader> = {
       FRONTEND_PATHS.PRESCRIPTION_LIST_PAST + (query ? "?" + query : "")
   }
 }
-
-// export const PRESCRIPTION_LIST_TABS: Record<string, FormattableTabHeader> = {
-//   current: {
-//     title: (count: number) => `Current Prescriptions (${count})`,
-//     link: (query?: string) =>
-//       FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT + (query ? "?" + query : "")
-//   },
-//   future: {
-//     title: (count: number) => `Future dated Prescriptions (${count})`,
-//     link: (query?: string) =>
-//       FRONTEND_PATHS.PRESCRIPTION_LIST_FUTURE + (query ? "?" + query : "")
-//   },
-//   past: {
-//     title: (count: number) => `Claimed and expired Prescriptions (${count})`,
-//     link: (query?: string) =>
-//       FRONTEND_PATHS.PRESCRIPTION_LIST_PAST + (query ? "?" + query : "")
-//   }
-// }
-
 export interface PrescriptionsListStrings {
     testid: string
     heading: string

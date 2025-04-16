@@ -44,7 +44,7 @@
 
 .eps-prescription-table th, .eps-prescription-table td {
   word-wrap: break-word;
-  white-space: normal; /* Allow text to wrap in smaller screens */
+  white-space: normal; 
 }
 
 .narrow-cancellation-column {
@@ -81,7 +81,7 @@
 .eps-prescription-table-sort-text.issueDate,
 .eps-prescription-table-sort-text.statusCode,
 .eps-prescription-table-sort-text.prescriptionId {
-  white-space: nowrap; /* Prevent wrapping for large columns */
+  white-space: nowrap; 
 }
 
 .eps-prescription-table-sort-text.prescriptionTreatmentType,
@@ -108,7 +108,7 @@
 }
 
 .eps-prescription-id {
-  white-space: normal; /* Allow Prescription ID to wrap */
+  white-space: normal; 
   word-wrap: break-word;
   max-width: 12rem;
 }
@@ -171,7 +171,7 @@
   font-style: italic;
 }
 
-/* Responsive design tweaks */
+
 @media (max-width: 1024px) {
   .eps-prescription-table th,
   .eps-prescription-table td,
@@ -179,21 +179,21 @@
     font-size: 1rem;
   }
 
-  /* Allow Issue Date and Prescription ID to wrap */
+
   .eps-prescription-id,
   .eps-prescription-table-sort-text.issueDate {
     white-space: normal;
     word-wrap: break-word;
-    max-width: 10rem; /* Adjust width earlier */
+    max-width: 10rem;
   }
 
   .narrow-cancellation-column {
-    width: 9rem; /* Adjust the pending cancellation column width */
+    width: 9rem; 
   }
 
   .eps-prescription-table th,
   .eps-prescription-table td {
-    padding: 0.8rem 0.5rem; /* Reduce padding for smaller screens */
+    padding: 0.8rem 0.5rem;
   }
 }
 
@@ -204,22 +204,22 @@
     font-size: 0.95rem;
   }
 
-  /* Allow Issue Date and Prescription ID to wrap earlier */
+
   .eps-prescription-id,
   .eps-prescription-table-sort-text.issueDate {
     white-space: normal;
     word-wrap: break-word;
-    max-width: 8rem; /* Adjust width further */
+    max-width: 8rem; 
   }
 
-  /* Adjust the pending cancellation column width */
+
   .narrow-cancellation-column {
     width: 8rem;
   }
 
   .eps-prescription-table th,
   .eps-prescription-table td {
-    padding: 0.8rem 0.5rem; /* Reduce padding for smaller screens */
+    padding: 0.8rem 0.5rem; 
   }
 }
 
@@ -227,10 +227,9 @@
   .eps-prescription-table th,
   .eps-prescription-table td,
   .eps-prescription-table-sort-text {
-    font-size: 0.85rem; /* Slightly smaller font for very small screens */
+    font-size: 0.85rem; 
   }
 
-  /* Further reduce Prescription ID column width */
   .eps-prescription-id,
   .eps-prescription-table-sort-text.issueDate {
     width: 6rem;
@@ -238,7 +237,6 @@
     word-wrap: break-word;
   }
 
-  /* Further narrow the pending cancellation column */
   .narrow-cancellation-column {
     width: 7rem; 
     white-space: normal;
@@ -247,10 +245,10 @@
 
   .eps-prescription-table th,
   .eps-prescription-table td {
-    padding: 0.5rem 0.25rem; /* Further reduce padding */
+    padding: 0.5rem 0.25rem; 
   }
 
-  /* Allow wrapping of Prescription ID and Pending Cancellation warning */
+
   .eps-prescription-id {
     white-space: normal;
     word-wrap: break-word;

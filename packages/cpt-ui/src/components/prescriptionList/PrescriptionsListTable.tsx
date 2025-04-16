@@ -80,6 +80,7 @@ const PrescriptionsListTable = ({textContent, prescriptions}: PrescriptionsListT
     }
   }
 
+  //some logic will need to change here to update X and Y
   const getPrescriptionTypeDisplayText = (prescriptionType: string): string => {
     switch (prescriptionType) {
       case "0001": return "Acute"
@@ -136,9 +137,9 @@ const PrescriptionsListTable = ({textContent, prescriptions}: PrescriptionsListT
   }
 
   const formatPrescriptionStatus = () => {
-    return prescriptions.map((p) => ({
-      ...p,
-      statusLabel: getStatusDisplayText(p.statusCode)
+    return prescriptions.map((prescription) => ({
+      ...prescription,
+      statusLabel: getStatusDisplayText(prescription.statusCode)
     }))
   }
 
@@ -180,25 +181,55 @@ const PrescriptionsListTable = ({textContent, prescriptions}: PrescriptionsListT
     return <p className="nhsuk-body">{textContent.noPrescriptionsMessage}</p>
   }
 
-  //this is partically decalred here to address linting errors for the line being too long.
+  //this is partially decalred here to address linting errors for the line being too long.
   // The url is formed in the render below
   const prescriptionLink = "https://cpt-ui.dev.eps.national.nhs.uk/site/prescription-details?prescriptionId="
+
+  const renderTableDescription = () => {
+    switch (textContent.testid) {
+      case "current":
+        return (
+          <caption className="nhsuk-u-visually-hidden">
+            A sortable table showing current prescriptions matching the search criteria.
+            Column one shows the date the prescription was issued. Columns two and three
+            show the type and status of the prescription. Column four shows whether the
+            prescription is pending cancellation. Column five shows the prescription ID
+            and has a link to view the details of the prescription.
+          </caption>
+        )
+      case "future":
+        return (
+          <caption className="nhsuk-u-visually-hidden">
+            A sortable table showing future-dated prescriptions matching the search criteria.
+            Column one shows the date the prescription was issued. Columns two and three
+            show the type and status of the prescription. Column four shows whether the
+            prescription is pending cancellation. Column five shows the prescription ID
+            and has a link to view the details of the prescription.
+          </caption>
+        )
+      case "claimedExpired":
+        return (
+          <caption className="nhsuk-u-visually-hidden">
+            A sortable table showing claimed and expired prescriptions matching the search criteria.
+            Column one shows the date the prescription was issued. Columns two and three
+            show the type and status of the prescription. Column four shows whether the
+            prescription is pending cancellation. Column five shows the prescription ID
+            and has a link to view the details of the prescription.
+          </caption>
+        )
+    }
+  }
 
   return (
     <div className="eps-prescription-table-container" data-testid="eps-prescription-table-container">
       <table className="eps-prescription-table">
-        <caption className="nhsuk-u-visually-hidden">
-          A sortable table showing current prescriptions matching the search criteria.
-          Column one shows the date the prescription was issued. Columns two and three
-          show the type and status of the prescription. Column four shows whether the
-          prescription is pending cancellation. Column five shows the prescription ID
-          and has a link to view the details of the prescription.
-        </caption>
+        {renderTableDescription()}
         <thead>
           <tr>
             {headings.map((heading) => (
               <th
                 key={heading.key}
+                role="columnheader"
                 onClick={() => requestSort(heading.key)}
                 aria-sort={
                   sortConfig.key === heading.key
@@ -207,8 +238,27 @@ const PrescriptionsListTable = ({textContent, prescriptions}: PrescriptionsListT
                 }
                 className={activeHeader === heading.key ? "active-header" : ""}
               >
-                <span className={`eps-prescription-table-sort-text ${heading.key}`}>
+                <span
+                  role="button"
+                  tabIndex={0}
+                  className={`eps-prescription-table-sort-text ${heading.key} 
+                  ${activeHeader === heading.key ? "active-header" : ""}`}
+                  onClick={() => requestSort(heading.key)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault()
+                      requestSort(heading.key)
+                    }
+                  }}
+                  aria-label={`
+                    Sort by ${heading.label} 
+                    ${sortConfig.key === heading.key && sortConfig.direction === "ascending"
+                ? "descending"
+                : "ascending"}
+                  `}
+                >
                   <span className="sort-label-text">{heading.label}</span>
+                  <span className="nhsuk-u-visually-hidden">, button</span>
                   {renderSortIcons(heading.key)}
                 </span>
               </th>
@@ -283,7 +333,10 @@ const PrescriptionsListTable = ({textContent, prescriptions}: PrescriptionsListT
             </tr>
           ))}
           <tr>
-            <td colSpan={headings.length} className="eps-prescription-table-summary-row">
+            <td colSpan={headings.length}
+              className="eps-prescription-table-summary-row"
+              aria-live="polite"
+              aria-label={`Showing ${prescriptions.length} of ${prescriptions.length} prescriptions`}>
               Showing {prescriptions.length} of {prescriptions.length}
             </td>
           </tr>
