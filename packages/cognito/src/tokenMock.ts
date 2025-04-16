@@ -3,12 +3,7 @@ import {Logger} from "@aws-lambda-powertools/logger"
 import {injectLambdaContext} from "@aws-lambda-powertools/logger/middleware"
 import {getSecret} from "@aws-lambda-powertools/parameters/secrets"
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
-import {
-  DynamoDBDocumentClient,
-  GetCommand,
-  PutCommand,
-  UpdateCommand
-} from "@aws-sdk/lib-dynamodb"
+import {DynamoDBDocumentClient, GetCommand, UpdateCommand} from "@aws-sdk/lib-dynamodb"
 
 import middy from "@middy/core"
 import inputOutputLogger from "@middy/input-output-logger"
@@ -130,7 +125,8 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   const callbackUri = `https://${cloudfrontDomain}/oauth2/mock-callback`
 
   // Call the Apigee token exchange endpoint to get token from code
-  const apigeeTokenExchangeUrl = "https://internal-dev.api.service.nhs.uk/oauth2-mock/token"
+  const apigeeTokenExchangeUrl = mockOidcConfig.oidcTokenEndpoint
+  logger.debug("oidc config:", {mockOidcConfig})
   const tokenExchangeParams = {
     "grant_type": "authorization_code",
     "client_id": apigeeApiKey,
@@ -172,11 +168,11 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   }
 
   logger.debug("apigee token response", {data: tokenResponse.data})
-  const access_token = tokenResponse.data.access_token
+  const apigee_access_token = tokenResponse.data.access_token
   const refresh_token = tokenResponse.data.refresh_token
 
   // Call userinfo endpoint to get user information
-  const apigeeUserInfoUrl = "https://internal-dev.api.service.nhs.uk/oauth2-mock/userinfo"
+  const apigeeUserInfoUrl = mockOidcConfig.oidcUserInfoEndpoint
 
   logger.debug("going to call apigee user info", {
     apigeeUserInfoUrl
@@ -184,7 +180,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
   const userInfo = await axiosInstance.get(apigeeUserInfoUrl, {
     headers: {
-      "Authorization": `Bearer ${access_token}`
+      "Authorization": `Bearer ${apigee_access_token}`
     }
   })
 
@@ -204,11 +200,11 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     exp: expiration_time,
     iat: current_time,
     jti: uuidv4(),
-    iss: "https://identity.ptl.api.platform.nhs.uk/realms/Cis2-mock-internal-dev",
-    aud: "eps_cpt_ui_dev",
+    iss: mockOidcConfig.oidcIssuer,
+    aud: mockOidcConfig.oidcClientID,
     sub: userInfo.data.sub,
     typ: "ID",
-    azp: "eps_cpt_ui_dev",
+    azp: mockOidcConfig.oidcClientID,
     sessionState: sessionState,
     acr: "AAL3_ANY",
     sid: sessionState,
@@ -243,59 +239,39 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   })
 
   try {
-    // First, check if the item exists
-    const getResult = await documentClient.send(
-      new GetCommand({
-        TableName: TokenMappingTableName,
-        Key: {username: username}
-      })
-    )
-
-    if (!getResult.Item) {
-      // If item doesn't exist, create it first
-      await documentClient.send(
-        new PutCommand({
-          TableName: TokenMappingTableName,
-          Item: {
-            username: username,
-            CIS2_accessToken: access_token,
-            CIS2_idToken: jwt_token,
-            CIS2_expiresIn: expiration_time,
-            selectedRoleId: jwtClaims.uid
-          }
-        })
-      )
-      logger.info("Created new item in DynamoDB")
-    } else {
-      // If item exists, update it
-      await documentClient.send(new UpdateCommand({
+    // Using UpdateCommand with conditional expression for upsert operation
+    const result = await documentClient.send(
+      new UpdateCommand({
         TableName: TokenMappingTableName,
         Key: {
           username: username
         },
         UpdateExpression: `SET 
-          CIS2_accessToken = :accessToken, 
-          CIS2_idToken = :idToken, 
-          CIS2_expiresIn = :expiresIn, 
+          apigee_accessToken = :apigee_accessToken, 
+          apigee_idToken = :apigee_idToken, 
+          apigee_expiresIn = :apigee_expiresIn, 
           selectedRoleId = :selectedRoleId`,
         ExpressionAttributeValues: {
-          ":accessToken": access_token,
-          ":idToken": jwt_token,
-          ":expiresIn": expiration_time,
-          ":selectedRoleId": jwtClaims.uid
+          ":apigee_accessToken": apigee_access_token,
+          ":apigee_idToken": jwt_token,
+          ":apigee_expiresIn": expiration_time,
+          ":selectedRoleId": jwtClaims.selected_roleid
         },
+        // Return all attributes of the updated item
         ReturnValues: "ALL_NEW"
-      }))
-      logger.info("Updated existing item in DynamoDB")
-    }
+      })
+    )
+    logger.info("Successfully upserted token information in DynamoDB", {
+      isNewItem: !result.Attributes // Check if this was a new item or update
+    })
   } catch (error) {
-    logger.error("Failed to update/insert token information in DynamoDB", {error})
-    throw new Error("Failed to update/insert token information in DynamoDB")
+    logger.error("Failed to upsert token information in DynamoDB", {error})
+    throw new Error("Failed to upsert token information in DynamoDB")
   }
 
   // Return the mock token response
   const responseData = {
-    "access_token": access_token,
+    "access_token": apigee_access_token,
     "expires_in": 3600,
     "id_token": jwt_token,
     "not-before-policy": current_time,

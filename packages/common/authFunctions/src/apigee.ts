@@ -171,7 +171,7 @@ export const getExistingApigeeAccessToken = async (
   tableName: string,
   username: string,
   logger: Logger
-): Promise<{accessToken: string; expiresIn: number, roleId: string} | null> => {
+): Promise<{accessToken: string; idToken: string; expiresIn: number, roleId: string} | null> => {
   logger.debug("Checking for existing Apigee access token in DynamoDB", {
     username,
     tableName
@@ -194,27 +194,28 @@ export const getExistingApigeeAccessToken = async (
     const userRecord = getResult.Item
 
     // Check if Apigee access token exists and is not expired
-    if (userRecord.CIS2_accessToken && userRecord.CIS2_expiresIn) {
+    if (userRecord.apigee_accessToken && userRecord.apigee_expiresIn) {
       const currentTime = Math.floor(Date.now() / 1000)
 
       // Add buffer time (e.g., 60 seconds) to ensure token isn't about to expire
       const bufferTime = 60
 
-      if (userRecord.CIS2_expiresIn > (currentTime + bufferTime)) {
+      if (userRecord.apigee_expiresIn > (currentTime + bufferTime)) {
         logger.info("Found valid existing Apigee access token", {
           username,
-          expiresIn: userRecord.CIS2_expiresIn - currentTime
+          expiresIn: userRecord.apigee_expiresIn - currentTime
         })
 
         return {
-          accessToken: userRecord.CIS2_accessToken,
-          expiresIn: userRecord.CIS2_expiresIn,
+          accessToken: userRecord.apigee_accessToken,
+          idToken: userRecord.apigee_idToken,
+          expiresIn: userRecord.apigee_expiresIn,
           roleId: userRecord.selectedRoleId
         }
       } else {
         logger.debug("Existing Apigee token has expired or will expire soon", {
           username,
-          expiresIn: userRecord.CIS2_expiresIn,
+          expiresIn: userRecord.apigee_expiresIn,
           currentTime
         })
       }

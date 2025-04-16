@@ -241,6 +241,8 @@ export class OAuth2Functions extends Construct {
           MOCK_OIDCJWKS_ENDPOINT: props.mockOidcjwksEndpoint,
           jwtPrivateKeyArn: props.sharedSecrets.mockJwtPrivateKey!.secretArn,
           MOCK_OIDC_CLIENT_ID: props.mockOidcClientId,
+          MOCK_OIDC_TOKEN_ENDPOINT: props.mockOidcTokenEndpoint,
+          MOCK_USER_INFO_ENDPOINT: props.mockOidcUserInfoEndpoint,
           MOCK_OIDC_ISSUER: props.mockOidcIssuer,
           FULL_CLOUDFRONT_DOMAIN: props.fullCloudfrontDomain,
           jwtKid: props.jwtKid,
