@@ -38,7 +38,7 @@ export class OAuth2ApiGatewayMethods extends Construct {
 
     // mock token endpoint
     if (props.useMockOidc) {
-      const mockTokenResource = props.oauth2ApiGateway.root.addResource("mocktoken")
+      const mockTokenResource = props.oauth2ApiGateway.root.addResource("mock-token")
       mockTokenResource.addMethod("POST", new LambdaIntegration(props.mockTokenLambda, {
         credentialsRole: props.oauth2APiGatewayRole
       }))
