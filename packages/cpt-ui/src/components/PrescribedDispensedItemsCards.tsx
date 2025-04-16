@@ -31,9 +31,11 @@ export function PrescribedDispensedItemsCards({
       cancellationReason
     } = item.itemDetails
 
-    // Type guard for DispensedItem with initiallyPrescribed
-    const hasInitial =
-      "initiallyPrescribed" in item.itemDetails && item.itemDetails.initiallyPrescribed
+    // Type guard for DispensedItem
+    const isDispensedItem = (itm: typeof item): itm is DispensedItem =>
+      "initiallyPrescribed" in itm.itemDetails
+
+    const hasInitial = isDispensedItem(item) && item.itemDetails.initiallyPrescribed
 
     return (
       <div key={`item-${index}`} className="data-panel__wrapper no-outline" tabIndex={-1}>
@@ -99,7 +101,7 @@ export function PrescribedDispensedItemsCards({
             </dl>
 
             {hasInitial && (
-              <Details closed>
+              <Details>
                 <Details.Summary>
                   {STRINGS.INITIALLY_PRESCRIBED_DETAILS}
                 </Details.Summary>
@@ -110,7 +112,7 @@ export function PrescribedDispensedItemsCards({
                         {STRINGS.INITIALLY_PRESCRIBED_ITEM}
                       </dt>
                       <dd className="nhsuk-summary-list__value">
-                        {item.itemDetails.initiallyPrescribed.medicationName}
+                        {item.itemDetails.initiallyPrescribed!.medicationName}
                       </dd>
                     </div>
                     <div className="nhsuk-summary-list__row">
@@ -118,7 +120,7 @@ export function PrescribedDispensedItemsCards({
                         {STRINGS.INITIALLY_PRESCRIBED_QUANTITY}
                       </dt>
                       <dd className="nhsuk-summary-list__value">
-                        {item.itemDetails.initiallyPrescribed.quantity}
+                        {item.itemDetails.initiallyPrescribed!.quantity}
                       </dd>
                     </div>
                     <div className="nhsuk-summary-list__row">
@@ -126,7 +128,7 @@ export function PrescribedDispensedItemsCards({
                         {STRINGS.INITIALLY_PRESCRIBED_INSTRUCTION}
                       </dt>
                       <dd className="nhsuk-summary-list__value">
-                        {item.itemDetails.initiallyPrescribed.dosageInstructions}
+                        {item.itemDetails.initiallyPrescribed!.dosageInstructions}
                       </dd>
                     </div>
                   </dl>
