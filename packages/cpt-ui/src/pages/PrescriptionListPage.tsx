@@ -6,6 +6,7 @@ import {
   Container,
   Row
 } from "nhsuk-react-components"
+import "../styles/PrescriptionTable.scss"
 
 import http from "@/helpers/axios"
 
@@ -61,7 +62,7 @@ export default function PrescriptionListPage() {
     patient: mockPatient,
     currentPrescriptions: [
       {
-        prescriptionId: " 6GA337-P34302-2H597C ",
+        prescriptionId: "C0C757-A83008-C2D93O",
         statusCode: PrescriptionStatus.TO_BE_DISPENSED,
         issueDate: "2025-03-01",
         prescriptionTreatmentType: TreatmentType.REPEAT,
@@ -368,7 +369,7 @@ export default function PrescriptionListPage() {
         </Container>
 
         {/* FIXME: DELETE THIS WHEN WE HAVE ANOTHER WAY TO NAVIGATE TO PRESCRIPTION DETAILS! */}
-        {!!queryParams.get("prescriptionId") &&
+        {/* {!!queryParams.get("prescriptionId") &&
           <Container>
             <Row>
               <Col width="full" style={{margin: 20}}>
@@ -381,7 +382,7 @@ export default function PrescriptionListPage() {
               </Col>
             </Row>
           </Container>
-        }
+        } */}
       </main>
     </>
   )

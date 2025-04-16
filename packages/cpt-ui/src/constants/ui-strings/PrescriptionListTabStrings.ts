@@ -9,21 +9,39 @@ export interface FormattableTabHeader {
 
 export const PRESCRIPTION_LIST_TABS: Record<string, FormattableTabHeader> = {
   current: {
-    title: (count: number) => `Current Prescriptions (${count})`,
+    title: (count: number) => `Current prescriptions (${count})`,
     link: (query?: string) =>
       FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT + (query ? "?" + query : "")
   },
   future: {
-    title: (count: number) => `Future dated Prescriptions (${count})`,
+    title: (count: number) => `Future dated prescriptions (${count})`,
     link: (query?: string) =>
       FRONTEND_PATHS.PRESCRIPTION_LIST_FUTURE + (query ? "?" + query : "")
   },
   past: {
-    title: (count: number) => `Claimed and expired Prescriptions (${count})`,
+    title: (count: number) => `Claimed and expired prescriptions (${count})`,
     link: (query?: string) =>
       FRONTEND_PATHS.PRESCRIPTION_LIST_PAST + (query ? "?" + query : "")
   }
 }
+
+// export const PRESCRIPTION_LIST_TABS: Record<string, FormattableTabHeader> = {
+//   current: {
+//     title: (count: number) => `Current Prescriptions (${count})`,
+//     link: (query?: string) =>
+//       FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT + (query ? "?" + query : "")
+//   },
+//   future: {
+//     title: (count: number) => `Future dated Prescriptions (${count})`,
+//     link: (query?: string) =>
+//       FRONTEND_PATHS.PRESCRIPTION_LIST_FUTURE + (query ? "?" + query : "")
+//   },
+//   past: {
+//     title: (count: number) => `Claimed and expired Prescriptions (${count})`,
+//     link: (query?: string) =>
+//       FRONTEND_PATHS.PRESCRIPTION_LIST_PAST + (query ? "?" + query : "")
+//   }
+// }
 
 export interface PrescriptionsListStrings {
     testid: string

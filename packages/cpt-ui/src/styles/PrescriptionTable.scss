@@ -1,10 +1,11 @@
-
 .eps-prescription-table-container {
   width: 100%;
-  overflow-x: auto;
   margin-bottom: 2rem;
 }
 
+.results-container {
+  max-width: 962px !important;
+}
 
 .eps-prescription-table {
   width: 100%;
@@ -13,8 +14,9 @@
   font-family: Frutiger W01, Arial, Sans-serif;
 }
 
-
 .eps-prescription-table th {
+  position: sticky;
+  top: 0;
   padding: 1.25rem 1rem;
   text-align: left;
   font-weight: 700;
@@ -22,8 +24,9 @@
   border-bottom: 2px solid #b1b4b6;
   white-space: nowrap;
   vertical-align: top;
-  height: 4rem; 
-  position: relative;
+  height: 4rem;
+  background-color: #fff;
+  z-index: 1;
 }
 
 .eps-prescription-table th.active-header .eps-prescription-table-sort-text {
@@ -33,7 +36,15 @@
   border-bottom: 2px solid #000;
   border-radius: 5px;
   box-shadow: 0 -2px #ffdd00, 0 4px #0b0c0c;
-  // white-space: nowrap; 
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+.eps-prescription-table th, .eps-prescription-table td {
+  word-wrap: break-word;
+  white-space: normal; /* Allow text to wrap in smaller screens */
 }
 
 .narrow-cancellation-column {
@@ -59,17 +70,18 @@
   color: #005ea5 !important;
   font-size: 1.2rem;
   cursor: pointer;
-  display: inline-flex;
+  display: flex;
   align-items: center;
   justify-content: flex-start;
+  text-align: left;
   gap: 0.25rem;
-  width: 100%;
+  width: auto;
 }
 
 .eps-prescription-table-sort-text.issueDate,
 .eps-prescription-table-sort-text.statusCode,
 .eps-prescription-table-sort-text.prescriptionId {
-  white-space: nowrap;
+  white-space: nowrap; /* Prevent wrapping for large columns */
 }
 
 .eps-prescription-table-sort-text.prescriptionTreatmentType,
@@ -86,49 +98,70 @@
   color: #1d70b8;
   align-self: flex-start;
   width: 10px;
-  height: 30px; 
-  justify-content: space-between; 
+  height: 30px;
+  justify-content: space-between;
 }
 
 .eps-prescription-table-sort-icon-wrapper span:first-child {
   display: block;
-  height: 12px; 
+  height: 12px;
 }
 
 .eps-prescription-id {
-  white-space: nowrap;
-  word-break: keep-all;
+  white-space: normal; /* Allow Prescription ID to wrap */
+  word-wrap: break-word;
+  max-width: 12rem;
 }
 
 .eps-prescription-table-sort-icon-wrapper span:last-child {
   display: block;
-  height: 12px; 
+  height: 12px;
+}
+
+.eps-prescription-table-sort-icon-wrapper-container {
+  margin-top: 5px;
+}
+
+.eps-prescription-table-sort-text.cancellationWarning .eps-prescription-table-sort-icon-wrapper-container,
+.eps-prescription-table-sort-text.prescriptionTreatmentType .eps-prescription-table-sort-icon-wrapper-container {
+  margin-top: -20px;
 }
 
 .eps-prescription-table-sort-icon-wrapper {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  line-height: 1;
+  justify-content: space-between;
   height: 1.5rem;
   width: 1rem;
+  margin-left: 0.25rem;
+  position: relative;
+}
 
-  .arrow {
-    color: #1d70b8;
-    font-size: 0.75rem;
-    line-height: 0.75rem;
-    height: 0.75rem;
-    visibility: visible;
-  }
+.eps-prescription-table-sort-icon-wrapper .arrow {
+  font-size: 0.75rem;
+  color: #1d70b8;
+  line-height: 1;
+  height: 0.75rem;
+  visibility: visible;
+}
 
-  .hidden-arrow {
-    visibility: hidden;
-  }
+.eps-prescription-table-sort-icon-wrapper .hidden-arrow {
+  visibility: hidden;
+}
+
+.eps-prescription-table-sort-icon-wrapper .selected-arrow {
+  font-size: 1.1rem;
+  color: #0b0c0c;
+  font-weight: bold;
+  position: absolute;
+  top: 45%;
+  transform: translateY(-50%);
 }
 
 .eps-prescription-table-summary-row {
-  font-size:inherit;
+  font-size: inherit;
+  border-bottom: none !important;
 }
 
 .eps-prescription-table-empty {
@@ -138,11 +171,55 @@
   font-style: italic;
 }
 
+/* Responsive design tweaks */
+@media (max-width: 1024px) {
+  .eps-prescription-table th,
+  .eps-prescription-table td,
+  .eps-prescription-table-sort-text {
+    font-size: 1rem;
+  }
+
+  /* Allow Issue Date and Prescription ID to wrap */
+  .eps-prescription-id,
+  .eps-prescription-table-sort-text.issueDate {
+    white-space: normal;
+    word-wrap: break-word;
+    max-width: 10rem; /* Adjust width earlier */
+  }
+
+  .narrow-cancellation-column {
+    width: 9rem; /* Adjust the pending cancellation column width */
+  }
+
+  .eps-prescription-table th,
+  .eps-prescription-table td {
+    padding: 0.8rem 0.5rem; /* Reduce padding for smaller screens */
+  }
+}
+
 @media (max-width: 768px) {
   .eps-prescription-table th,
   .eps-prescription-table td,
   .eps-prescription-table-sort-text {
     font-size: 0.95rem;
+  }
+
+  /* Allow Issue Date and Prescription ID to wrap earlier */
+  .eps-prescription-id,
+  .eps-prescription-table-sort-text.issueDate {
+    white-space: normal;
+    word-wrap: break-word;
+    max-width: 8rem; /* Adjust width further */
+  }
+
+  /* Adjust the pending cancellation column width */
+  .narrow-cancellation-column {
+    width: 8rem;
+  }
+
+  .eps-prescription-table th,
+  .eps-prescription-table td {
+    padding: 0.8rem 0.5rem; /* Reduce padding for smaller screens */
   }
 }
 
@@ -150,6 +227,37 @@
   .eps-prescription-table th,
   .eps-prescription-table td,
   .eps-prescription-table-sort-text {
-    font-size: 0.85rem;
+    font-size: 0.85rem; /* Slightly smaller font for very small screens */
+  }
+
+  /* Further reduce Prescription ID column width */
+  .eps-prescription-id,
+  .eps-prescription-table-sort-text.issueDate {
+    width: 6rem;
+    white-space: normal;
+    word-wrap: break-word;
+  }
+
+  /* Further narrow the pending cancellation column */
+  .narrow-cancellation-column {
+    width: 7rem; 
+    white-space: normal;
+    word-wrap: break-word;
+  }
+
+  .eps-prescription-table th,
+  .eps-prescription-table td {
+    padding: 0.5rem 0.25rem; /* Further reduce padding */
+  }
+
+  /* Allow wrapping of Prescription ID and Pending Cancellation warning */
+  .eps-prescription-id {
+    white-space: normal;
+    word-wrap: break-word;
+  }
+
+  .narrow-cancellation-column {
+    white-space: normal;
+    word-wrap: break-word;
   }
 }

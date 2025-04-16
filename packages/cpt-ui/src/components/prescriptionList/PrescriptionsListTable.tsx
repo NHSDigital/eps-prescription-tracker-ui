@@ -39,7 +39,7 @@ const PrescriptionsListTable = ({textContent, prescriptions}: PrescriptionsListT
     {key: "issueDate", label: "Issue date"},
     {key: "prescriptionTreatmentType", label: "Prescription type"},
     {key: "statusCode", label: "Status"},
-    {key: "cancellationWarning", label: "Pending Cancellation"},
+    {key: "cancellationWarning", label: "Pending cancellation"},
     {key: "prescriptionId", label: "Prescription ID"}
   ]
 
@@ -83,8 +83,8 @@ const PrescriptionsListTable = ({textContent, prescriptions}: PrescriptionsListT
   const getPrescriptionTypeDisplayText = (prescriptionType: string): string => {
     switch (prescriptionType) {
       case "0001": return "Acute"
-      case "0002": return "Repeat (Y of X)"
-      case "0003": return "eRD (Y of X)"
+      case "0002": return "Repeat Y of X"
+      case "0003": return "eRD Y of X"
       default: return "Unknown"
     }
   }
@@ -112,9 +112,25 @@ const PrescriptionsListTable = ({textContent, prescriptions}: PrescriptionsListT
     const direction = sortConfig.direction
 
     return (
-      <span className="eps-prescription-table-sort-icon-wrapper">
-        <span className={`arrow up-arrow ${isActive && direction !== "ascending" ? "hidden-arrow" : ""}`}>▲</span>
-        <span className={`arrow down-arrow ${isActive && direction !== "descending" ? "hidden-arrow" : ""}`}>▼</span>
+      <span className="eps-prescription-table-sort-icon-wrapper-container">
+        <span className="eps-prescription-table-sort-icon-wrapper">
+          <span
+            className={`arrow up-arrow ${
+              isActive && direction !== "ascending" ? "hidden-arrow" : isActive ? "selected-arrow" : ""
+            }`}
+            aria-label="Sort ascending"
+          >
+            ▲
+          </span>
+          <span
+            className={`arrow down-arrow ${
+              isActive && direction !== "descending" ? "hidden-arrow" : isActive ? "selected-arrow" : ""
+            }`}
+            aria-label="Sort descending"
+          >
+            ▼
+          </span>
+        </span>
       </span>
     )
   }
@@ -128,9 +144,22 @@ const PrescriptionsListTable = ({textContent, prescriptions}: PrescriptionsListT
 
   const getSortedItems = () => {
     const sorted = [...formatPrescriptionStatus()]
-    const key = sortConfig.key as keyof typeof sorted[0]
 
     sorted.sort((a, b) => {
+
+      if (sortConfig.key === "cancellationWarning") {
+        const aHasWarning = a.prescriptionPendingCancellation || a.itemsPendingCancellation
+        const bHasWarning = b.prescriptionPendingCancellation || b.itemsPendingCancellation
+
+        if (aHasWarning === bHasWarning) return 0
+        if (sortConfig.direction === "ascending") {
+          return aHasWarning ? 1 : -1
+        } else {
+          return aHasWarning ? -1 : 1
+        }
+      }
+
+      const key = sortConfig.key as keyof typeof sorted[0]
       if (a[key]! < b[key]!) return sortConfig.direction === "ascending" ? -1 : 1
       if (a[key]! > b[key]!) return sortConfig.direction === "ascending" ? 1 : -1
       return 0
@@ -158,6 +187,13 @@ const PrescriptionsListTable = ({textContent, prescriptions}: PrescriptionsListT
   return (
     <div className="eps-prescription-table-container" data-testid="eps-prescription-table-container">
       <table className="eps-prescription-table">
+        <caption className="nhsuk-u-visually-hidden">
+          A sortable table showing current prescriptions matching the search criteria.
+          Column one shows the date the prescription was issued. Columns two and three
+          show the type and status of the prescription. Column four shows whether the
+          prescription is pending cancellation. Column five shows the prescription ID
+          and has a link to view the details of the prescription.
+        </caption>
         <thead>
           <tr>
             {headings.map((heading) => (
@@ -172,7 +208,8 @@ const PrescriptionsListTable = ({textContent, prescriptions}: PrescriptionsListT
                 className={activeHeader === heading.key ? "active-header" : ""}
               >
                 <span className={`eps-prescription-table-sort-text ${heading.key}`}>
-                  {heading.label} {renderSortIcons(heading.key)}
+                  <span className="sort-label-text">{heading.label}</span>
+                  {renderSortIcons(heading.key)}
                 </span>
               </th>
             ))}
@@ -213,7 +250,15 @@ const PrescriptionsListTable = ({textContent, prescriptions}: PrescriptionsListT
                     row.prescriptionPendingCancellation || row.itemsPendingCancellation
                   return (
                     <td key={key} className="eps-prescription-table-rows narrow-cancellation-column">
-                      {showWarning ? "⚠️ One or more items pending cancellation" : "None"}
+                      {showWarning ? (
+                        <span>
+                          <span aria-hidden="true" role="img" className="warning-icon">⚠️</span>
+                          <span className="nhsuk-u-visually-hidden">Warning: </span>
+                          One or more items pending cancellation
+                        </span>
+                      ) : (
+                        "None"
+                      )}
                     </td>
                   )
                 }
@@ -226,7 +271,7 @@ const PrescriptionsListTable = ({textContent, prescriptions}: PrescriptionsListT
                         <a
                           href={prescriptionLink + row.prescriptionId}
                           className="nhsuk-link">
-                          View Prescription
+                          View prescription
                         </a>
                       </div>
                     </td>
