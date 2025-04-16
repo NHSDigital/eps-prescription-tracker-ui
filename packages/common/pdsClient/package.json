@@ -14,7 +14,9 @@
     "check-licenses": "license-checker --failOn GPL --failOn LGPL --start ../.."
   },
   "dependencies": {
-    "@aws-lambda-powertools/logger": "^2.18.0"
+    "@aws-lambda-powertools/logger": "^2.18.0",
+    "@cpt-ui-common/common-types": "^1.0.0",
+    "axios": "^1.8.4"
   },
   "devDependencies": {
     "@cpt-ui-common/testing": "^1.0.0"
