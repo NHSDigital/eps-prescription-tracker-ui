@@ -198,6 +198,36 @@ const mockPrescribedItemsCancellation: Array<PrescribedItem> = [
   }
 ]
 
+const mockDispensedPartialWithInitial: Array<DispensedItem> = [
+  {
+    itemDetails: {
+      medicationName: "Raberprazole 10mg tablets",
+      quantity: "28 out of 56 tablets",
+      dosageInstructions: "Take one twice daily",
+      epsStatusCode: "0002",
+      nhsAppStatus: "Item dispensed - partial",
+      pharmacyStatus: "Collected",
+      itemPendingCancellation: false,
+      initiallyPrescribed: {
+        medicationName: "Raberprazole 10mg tablets",
+        quantity: "56 tablets",
+        dosageInstructions: "Take one twice daily"
+      }
+    }
+  },
+  {
+    itemDetails: {
+      medicationName: "Glyceryl trinitrate 400micrograms/does aerosol sublingual spray",
+      quantity: "1 spray",
+      dosageInstructions: "Use as needed",
+      epsStatusCode: "0001",
+      nhsAppStatus: "Item fully dispensed",
+      pharmacyStatus: "Collected",
+      itemPendingCancellation: false
+    }
+  }
+]
+
 export default function PrescriptionDetailsPage() {
   const auth = useContext(AuthContext)
   const navigate = useNavigate()
@@ -289,7 +319,8 @@ export default function PrescriptionDetailsPage() {
         // All populated, with a long address nominated dispenser.
         payload = {
           ...commonPrescriptionData,
-          prescribedItems: mockPrescribedItemsCancellation,
+          prescribedItems: [],
+          dispensedItems: mockDispensedPartialWithInitial,
           prescriberOrganisation: {organisationSummaryObjective: altMockPrescriber},
           nominatedDispenser: {organisationSummaryObjective: altMockNominatedDispenser},
           currentDispenser: [{organisationSummaryObjective: mockDispenser}]
@@ -395,7 +426,7 @@ export default function PrescriptionDetailsPage() {
         </Row>
         <Row>
           <Col width="full">
-            <h2 className="nhsuk-u-visually-hidden">{STRINGS.HEADER}</h2>
+            <h1 className="nhsuk-u-visually-hidden">{STRINGS.HEADER}</h1>
           </Col>
         </Row>
         {/* === Main Grid Layout === */}

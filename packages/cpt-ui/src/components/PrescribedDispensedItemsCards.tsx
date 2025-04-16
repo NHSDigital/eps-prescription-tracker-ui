@@ -1,4 +1,9 @@
-import {Card, Col, Tag} from "nhsuk-react-components"
+import {
+  Card,
+  Col,
+  Tag,
+  Details
+} from "nhsuk-react-components"
 import {DispensedItem, PrescribedItem} from "@cpt-ui-common/common-types/src/prescriptionDetails"
 import {getTagColourFromStatus} from "@/helpers/statusToTagColour"
 import {STRINGS} from "@/constants/ui-strings/PrescriptionDetailsPageStrings"
@@ -13,9 +18,7 @@ export function PrescribedDispensedItemsCards({
   dispensedItems
 }: PrescribedDispensedItemsProps) {
   const renderCard = (
-    item:
-      | DispensedItem
-      | PrescribedItem,
+    item: DispensedItem | PrescribedItem,
     index: number
   ) => {
     const {
@@ -28,14 +31,18 @@ export function PrescribedDispensedItemsCards({
       cancellationReason
     } = item.itemDetails
 
+    // Type guard for DispensedItem with initiallyPrescribed
+    const hasInitial =
+      "initiallyPrescribed" in item.itemDetails && item.itemDetails.initiallyPrescribed
+
     return (
       <div key={`item-${index}`} className="data-panel__wrapper no-outline" tabIndex={-1}>
         <Card className="nhsuk-u-margin-bottom-3" style={{boxShadow: "none"}}>
           <Card.Content className="nhsuk-u-padding-top-3 nhsuk-u-padding-bottom-1
                                    nhsuk-u-padding-right-3 nhsuk-u-padding-left-3">
-            <h3 className="nhsuk-card__headingMVP nhsuk-heading-xs nhsuk-u-margin-bottom-1">
+            <Card.Heading className="nhsuk-card__headingMVP nhsuk-heading-xs nhsuk-u-margin-bottom-1">
               <span>{medicationName}</span>
-            </h3>
+            </Card.Heading>
 
             {nhsAppStatus && (
               <p className="nhsuk-u-margin-bottom-2">
@@ -90,6 +97,42 @@ export function PrescribedDispensedItemsCards({
                 </div>
               )}
             </dl>
+
+            {hasInitial && (
+              <Details closed>
+                <Details.Summary>
+                  {STRINGS.INITIALLY_PRESCRIBED_DETAILS}
+                </Details.Summary>
+                <Details.Text>
+                  <dl className="nhsuk-summary-list">
+                    <div className="nhsuk-summary-list__row">
+                      <dt className="nhsuk-summary-list__key">
+                        {STRINGS.INITIALLY_PRESCRIBED_ITEM}
+                      </dt>
+                      <dd className="nhsuk-summary-list__value">
+                        {item.itemDetails.initiallyPrescribed.medicationName}
+                      </dd>
+                    </div>
+                    <div className="nhsuk-summary-list__row">
+                      <dt className="nhsuk-summary-list__key">
+                        {STRINGS.INITIALLY_PRESCRIBED_QUANTITY}
+                      </dt>
+                      <dd className="nhsuk-summary-list__value">
+                        {item.itemDetails.initiallyPrescribed.quantity}
+                      </dd>
+                    </div>
+                    <div className="nhsuk-summary-list__row">
+                      <dt className="nhsuk-summary-list__key">
+                        {STRINGS.INITIALLY_PRESCRIBED_INSTRUCTION}
+                      </dt>
+                      <dd className="nhsuk-summary-list__value">
+                        {item.itemDetails.initiallyPrescribed.dosageInstructions}
+                      </dd>
+                    </div>
+                  </dl>
+                </Details.Text>
+              </Details>
+            )}
           </Card.Content>
         </Card>
       </div>
