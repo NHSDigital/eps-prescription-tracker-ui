@@ -83,7 +83,7 @@ const mockPrescriptionInformation = {
 const mockPrescriptionInformationErd = {
   prescriptionId: "",
   issueDate: "22-Mar-2024",
-  statusCode: "Some items dispensed",
+  statusCode: "Downloaded by a dispenser",
   typeCode: "eRD",
   isERD: true,
   instanceNumber: 1,
@@ -358,6 +358,7 @@ export default function PrescriptionDetailsPage() {
         payload = {
           ...commonPrescriptionData,
           ...mockPrescriptionInformationErd,
+          prescriptionId: prescriptionId,
           prescribedItems: mockPrescribedItemsCancellation,
           prescriberOrganisation: {organisationSummaryObjective: mockPrescriber},
           nominatedDispenser: undefined,
