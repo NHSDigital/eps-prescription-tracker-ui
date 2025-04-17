@@ -6,6 +6,7 @@ import {
   Container,
   Row
 } from "nhsuk-react-components"
+import "../styles/PrescriptionTable.scss"
 
 import http from "@/helpers/axios"
 
@@ -26,7 +27,7 @@ import {
   TreatmentType,
   PrescriptionStatus,
   PrescriptionSummary
-} from "@cpt-ui-common/common-types"
+} from "@cpt-ui-common/common-types/src/prescriptionList"
 
 export default function PrescriptionListPage() {
   // FIXME: mock data. DELETEME!
@@ -61,7 +62,7 @@ export default function PrescriptionListPage() {
     patient: mockPatient,
     currentPrescriptions: [
       {
-        prescriptionId: "RX001",
+        prescriptionId: "C0C757-A83008-C2D93O",
         statusCode: PrescriptionStatus.TO_BE_DISPENSED,
         issueDate: "2025-03-01",
         prescriptionTreatmentType: TreatmentType.REPEAT,
@@ -71,7 +72,7 @@ export default function PrescriptionListPage() {
         itemsPendingCancellation: false
       },
       {
-        prescriptionId: "RX002",
+        prescriptionId: "209E3D-A83008-327F9F",
         statusCode: PrescriptionStatus.WITH_DISPENSER,
         issueDate: "2025-02-15",
         prescriptionTreatmentType: TreatmentType.ACUTE,
@@ -357,6 +358,7 @@ export default function PrescriptionListPage() {
             </strong>
           </p>
           <div data-testid="prescription-results-list">
+            {/* Prescription list items would go here */}
             <PrescriptionsListTabs
               tabData={tabData}
               currentPrescriptions={currentPrescriptions}
@@ -367,7 +369,7 @@ export default function PrescriptionListPage() {
         </Container>
 
         {/* FIXME: DELETE THIS WHEN WE HAVE ANOTHER WAY TO NAVIGATE TO PRESCRIPTION DETAILS! */}
-        {!!queryParams.get("prescriptionId") &&
+        {/* {!!queryParams.get("prescriptionId") &&
           <Container>
             <Row>
               <Col width="full" style={{margin: 20}}>
@@ -380,7 +382,7 @@ export default function PrescriptionListPage() {
               </Col>
             </Row>
           </Container>
-        }
+        } */}
       </main>
     </>
   )
