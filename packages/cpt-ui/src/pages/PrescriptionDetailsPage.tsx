@@ -309,14 +309,15 @@ export default function PrescriptionDetailsPage() {
       //
 
       // Shared base structure for all mock payloads
-      const commonPrescriptionData = {
+      const commonPrescriptionData: PrescriptionDetailsResponse = {
         ...mockPrescriptionInformation,
         prescriptionId,
         patientDetails: mockPatientDetails,
         prescriptionPendingCancellation: false,
         prescribedItems: [],
         dispensedItems: [],
-        messageHistory: []
+        messageHistory: [],
+        prescriberOrganisation: {organisationSummaryObjective: mockPrescriber} // ensure this is defined
       }
 
       // ID-specific overrides for different mock scenarios
@@ -386,12 +387,11 @@ export default function PrescriptionDetailsPage() {
       }
     }
 
-    // Use the populated payload (retrieved live or from mock fallback).
+    // Use the populated payload (retrieved live or from mock fallback)
     setPrescriptionInformation(payload)
     setPatientDetails(payload.patientDetails)
     setPrescribedItems(payload.prescribedItems)
     setDispensedItems(payload.dispensedItems)
-
     setPrescriber(payload.prescriberOrganisation.organisationSummaryObjective)
 
     if (!payload.currentDispenser) {
