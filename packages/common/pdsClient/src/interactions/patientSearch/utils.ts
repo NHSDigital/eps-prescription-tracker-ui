@@ -1,10 +1,10 @@
-import {familyName, dateOfBirth, postcode} from "./types"
+import {FamilyName, DateOfBirth, Postcode} from "./types"
 
 export const PATIENT_DETAILS_PATH = (
   url: string,
-  familyName: familyName,
-  dateOfBirth: dateOfBirth,
-  postcode: postcode
+  familyName: FamilyName,
+  dateOfBirth: DateOfBirth,
+  postcode: Postcode
 ) =>{
   return `${url}/Patient`
     +`?family=${familyName.to_query_string()}`

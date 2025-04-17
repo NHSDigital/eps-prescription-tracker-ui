@@ -7,11 +7,11 @@ enum FamilyNameFromStringOutcomeType {
 }
 
 type FamilyNameFromStringOutcome =
-  | { type: FamilyNameFromStringOutcomeType.OK, familyName: familyName }
+  | { type: FamilyNameFromStringOutcomeType.OK, familyName: FamilyName }
   | { type: FamilyNameFromStringOutcomeType.TOO_LONG }
   | { type: FamilyNameFromStringOutcomeType.WILDCARD_TOO_SOON }
 
-class familyName {
+class FamilyName {
   family: string
   private constructor(family: string) {
     this.family = family
@@ -26,7 +26,7 @@ class familyName {
       return {type: FamilyNameFromStringOutcomeType.WILDCARD_TOO_SOON}
     }
 
-    return {type: FamilyNameFromStringOutcomeType.OK, familyName: new familyName(family)}
+    return {type: FamilyNameFromStringOutcomeType.OK, familyName: new FamilyName(family)}
   }
 
   public to_query_string(): string {
@@ -39,5 +39,5 @@ class familyName {
 export {
   FamilyNameFromStringOutcomeType,
   FamilyNameFromStringOutcome,
-  familyName
+  FamilyName
 }

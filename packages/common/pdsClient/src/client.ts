@@ -48,9 +48,9 @@ export class Client implements _client, patientDetailsLookup.Interface, patientS
 
   // PatientSearch interface
   patientSearchPath = (
-    familyName: patientSearch.types.familyName,
-    dateOfBirth: patientSearch.types.dateOfBirth,
-    postcode: patientSearch.types.postcode
+    familyName: patientSearch.types.FamilyName,
+    dateOfBirth: patientSearch.types.DateOfBirth,
+    postcode: patientSearch.types.Postcode
   ) => patientSearch.utils.PATIENT_DETAILS_PATH(
     this.pdsEndpoint,
     familyName,

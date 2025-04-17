@@ -18,7 +18,7 @@ export async function axios_get(
   additionalLogParams: Record<string, string> = {}
 ): Promise<AxiosCallOutcome> {
   const startTime = Date.now()
-  client.logger.info("Fetching patient details from PDS", additionalLogParams)
+  client.logger.info("Performing get from PDS", {url, ...additionalLogParams})
 
   let response
   try {

@@ -5,10 +5,10 @@ enum PostcodeFromStringOutcomeType {
 }
 
 type PostcodeFromStringOutcome =
-  | { type: PostcodeFromStringOutcomeType.OK, postcode: postcode }
+  | { type: PostcodeFromStringOutcomeType.OK, postcode: Postcode }
   | { type: PostcodeFromStringOutcomeType.WILDCARD_TOO_SOON }
 
-class postcode {
+class Postcode {
   postcode: string
   private constructor(postcode: string) {
     this.postcode = postcode
@@ -19,7 +19,7 @@ class postcode {
       return {type: PostcodeFromStringOutcomeType.WILDCARD_TOO_SOON}
     }
 
-    return {type: PostcodeFromStringOutcomeType.OK, postcode: new postcode(_postcode)}
+    return {type: PostcodeFromStringOutcomeType.OK, postcode: new Postcode(_postcode)}
   }
 
   public to_query_string(): string {
@@ -32,5 +32,5 @@ class postcode {
 export {
   PostcodeFromStringOutcomeType,
   PostcodeFromStringOutcome,
-  postcode
+  Postcode
 }

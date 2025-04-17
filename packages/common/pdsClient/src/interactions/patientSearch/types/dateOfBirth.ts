@@ -5,11 +5,11 @@ enum DateOfBirthFromStringOutcomeType {
 }
 
 type DateOfBirthFromStringOutcome =
-  | { type: DateOfBirthFromStringOutcomeType.OK, dateOfBirth: dateOfBirth }
+  | { type: DateOfBirthFromStringOutcomeType.OK, dateOfBirth: DateOfBirth }
   | { type: DateOfBirthFromStringOutcomeType.BAD_FORMAT }
   | { type: DateOfBirthFromStringOutcomeType.INVALID_DATE }
 
-class dateOfBirth {
+class DateOfBirth {
   date: string
   private constructor(date: string) {
     this.date = date
@@ -26,7 +26,7 @@ class dateOfBirth {
       return {type: DateOfBirthFromStringOutcomeType.INVALID_DATE}
     }
 
-    return {type: DateOfBirthFromStringOutcomeType.OK, dateOfBirth: new dateOfBirth(date)}
+    return {type: DateOfBirthFromStringOutcomeType.OK, dateOfBirth: new DateOfBirth(date)}
   }
 
   public to_query_string(): string {
@@ -37,5 +37,5 @@ class dateOfBirth {
 export {
   DateOfBirthFromStringOutcomeType,
   DateOfBirthFromStringOutcome,
-  dateOfBirth
+  DateOfBirth
 }
