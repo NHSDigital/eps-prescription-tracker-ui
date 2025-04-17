@@ -4,8 +4,10 @@ token: ?"?\$\{\{\s*secrets\.DEPENDABOT_TOKEN\s*\}\}"?
 id-token: write
 accountId: "123456789012"
 token: `https:\/\/\${props\.fullCloudfrontDomain}\/oauth2\/token`,
+token: `https:\/\/\${props\.fullCloudfrontDomain}\/oauth2\/mock-token`,
 token: `https:\/\/\${props\.fullCloudfrontDomain}\/oauth2\/mocktoken`,
 token: `https:\/\/\${props\.fullCloudfrontDomain}\/api\/token`,
+token: `https:\/\/\${props\.fullCloudfrontDomain}\/api\/mock-token`,
 token: `https:\/\/\${props\.fullCloudfrontDomain}\/api\/mocktoken`,
 target: RecordTarget.fromIpAddresses\("127.0.0.1"\),
 const token = jwks.token\({
@@ -25,3 +27,4 @@ token: `.*{props\.cloudfrontDomain}\/api\/token`
 packages\/auth_demo\/src\/App.tsx:150
 token: `https:\/\/\$\{props\.fullCloudfrontDomain\}\/oauth2\/mock-?token`,
 \(token: string\)
+packages/common/authFunctions/src/cis2\.ts:.*decodeToken
