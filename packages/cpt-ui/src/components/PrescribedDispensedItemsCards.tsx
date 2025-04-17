@@ -57,7 +57,7 @@ export function PrescribedDispensedItemsCards({
 
             {itemPendingCancellation && (
               <p className="nhsuk-u-margin-bottom-2">
-                ⚠️ {STRINGS.CANCELLATION_REASON_MESSAGE}
+                <span role="img" aria-label="warning">⚠️</span> {STRINGS.CANCELLATION_REASON_MESSAGE}
               </p>
             )}
 
