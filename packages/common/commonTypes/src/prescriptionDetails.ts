@@ -34,8 +34,7 @@ export interface PrescribedItemDetails {
     medicationName: string
     quantity: string
     dosageInstructions: string
-    epsStatusCode: string
-    nhsAppStatus?: string
+    epsStatusCode?: string
     pharmacyStatus?: string | null
     itemPendingCancellation: boolean
     cancellationReason?: string | null

@@ -6,7 +6,7 @@ import {
   SummaryList
 } from "nhsuk-react-components"
 import {DispensedItem, PrescribedItem} from "@cpt-ui-common/common-types/src/prescriptionDetails"
-import {getTagColourFromStatus} from "@/helpers/statusToTagColour"
+import {getItemStatusTagColour, getItemStatusDisplayText} from "@/helpers/prescriptionFormatters"
 import {STRINGS} from "@/constants/ui-strings/PrescriptionDetailsPageStrings"
 
 interface PrescribedDispensedItemsProps {
@@ -26,13 +26,12 @@ export function PrescribedDispensedItemsCards({
       medicationName,
       quantity,
       dosageInstructions,
-      nhsAppStatus,
+      epsStatusCode,
       pharmacyStatus,
       itemPendingCancellation,
       cancellationReason
     } = item.itemDetails
 
-    // Type guard for DispensedItem
     const isDispensedItem = (itm: typeof item): itm is DispensedItem =>
       "initiallyPrescribed" in itm.itemDetails
 
@@ -47,17 +46,17 @@ export function PrescribedDispensedItemsCards({
               <span>{medicationName}</span>
             </Card.Heading>
 
-            {nhsAppStatus && (
+            {epsStatusCode && (
               <p className="nhsuk-u-margin-bottom-2">
-                <Tag color={getTagColourFromStatus(nhsAppStatus)}>
-                  {nhsAppStatus}
+                <Tag color={getItemStatusTagColour(epsStatusCode)}>
+                  {getItemStatusDisplayText(epsStatusCode)}
                 </Tag>
               </p>
             )}
 
             {itemPendingCancellation && (
               <p className="nhsuk-u-margin-bottom-2">
-                <span role="img" aria-label="warning">⚠️</span> {STRINGS.CANCELLATION_REASON_MESSAGE}
+                <span role="img" aria-label="Warning">⚠️</span> {STRINGS.CANCELLATION_REASON_MESSAGE}
               </p>
             )}
 

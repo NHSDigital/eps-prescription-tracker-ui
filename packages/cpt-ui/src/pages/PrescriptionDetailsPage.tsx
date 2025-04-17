@@ -72,7 +72,7 @@ const altMockNominatedDispenser: OrganisationSummary = {
 const mockPrescriptionInformation = {
   prescriptionId: "",
   issueDate: "18-Jan-2024",
-  statusCode: "Some items dispensed", // FIXME: The banner does not use codes? Needs to be implemented!
+  statusCode: "0003", // Some items dispensed"
   typeCode: "Acute",
   isERD: false,
   instanceNumber: 2,
@@ -83,7 +83,7 @@ const mockPrescriptionInformation = {
 const mockPrescriptionInformationErd = {
   prescriptionId: "",
   issueDate: "22-Mar-2024",
-  statusCode: "Downloaded by a dispenser",
+  statusCode: "0002", // Downloaded by a dispenser
   typeCode: "eRD",
   isERD: true,
   instanceNumber: 1,
@@ -124,8 +124,7 @@ const mockDispensedItems: Array<DispensedItem> = [
       medicationName: "Raberprazole 10mg tablets",
       quantity: "56 tablets",
       dosageInstructions: "Take one twice daily",
-      epsStatusCode: "0001",
-      nhsAppStatus: "Item fully dispensed",
+      epsStatusCode: "0001", // Item fully dispensed
       pharmacyStatus: "Collected",
       itemPendingCancellation: false
     }
@@ -135,8 +134,7 @@ const mockDispensedItems: Array<DispensedItem> = [
       medicationName: "Glyceryl trinitrate 400micrograms/does aerosol sublingual spray",
       quantity: "1 spray",
       dosageInstructions: "Use as needed",
-      epsStatusCode: "0001",
-      nhsAppStatus: "Item fully dispensed",
+      epsStatusCode: "0001", // Item fully dispensed
       pharmacyStatus: "Collected",
       itemPendingCancellation: false
     }
@@ -149,8 +147,7 @@ const mockPrescribedItems: Array<PrescribedItem> = [
       medicationName: "Oseltamivir 30mg capsules",
       quantity: "20 capsules",
       dosageInstructions: "One capsule twice a day",
-      epsStatusCode: "0004",
-      nhsAppStatus: "Item not dispensed - owing",
+      epsStatusCode: "0004", //Item not dispensed - owing
       pharmacyStatus: "With pharmacy",
       itemPendingCancellation: false,
       cancellationReason: null
@@ -164,8 +161,7 @@ const mockPrescribedItemsCancellation: Array<PrescribedItem> = [
       medicationName: "Phosphates enema (Formula B) 129ml standard tube",
       quantity: "1 tube",
       dosageInstructions: "Use ONE when required",
-      epsStatusCode: "0003",
-      nhsAppStatus: "Item to be dispensed",
+      epsStatusCode: "0007", // Item not dispensed
       pharmacyStatus: "With pharmacy",
       itemPendingCancellation: true,
       cancellationReason: "Prescribing error"
@@ -176,8 +172,7 @@ const mockPrescribedItemsCancellation: Array<PrescribedItem> = [
       medicationName: "Mirtazapine 30mg",
       quantity: "1 spray",
       dosageInstructions: "Use as needed",
-      epsStatusCode: "0003",
-      nhsAppStatus: "Item to be dispensed",
+      epsStatusCode: "0007", // Item not dispensed
       pharmacyStatus: "With pharmacy",
       itemPendingCancellation: true,
       cancellationReason: "Prescribing error"
@@ -188,8 +183,7 @@ const mockPrescribedItemsCancellation: Array<PrescribedItem> = [
       medicationName: "Oseltamivir 30mg capsules",
       quantity: "20 capsules",
       dosageInstructions: "One capsule twice a day",
-      epsStatusCode: "0003",
-      nhsAppStatus: "Item to be dispensed",
+      epsStatusCode: "0007", // Item not dispensed
       pharmacyStatus: "With pharmacy",
       itemPendingCancellation: true,
       cancellationReason: "Prescribing error"
@@ -200,8 +194,7 @@ const mockPrescribedItemsCancellation: Array<PrescribedItem> = [
       medicationName: "Glyceryl trinitrate 400micrograms/does aerosol sublingual spray",
       quantity: "21 tablets",
       dosageInstructions: "Take 3 times a day with water",
-      epsStatusCode: "0003",
-      nhsAppStatus: "Item to be dispensed",
+      epsStatusCode: "0007", // Item not dispensed
       pharmacyStatus: "With pharmacy",
       itemPendingCancellation: true,
       cancellationReason: "Prescribing error"
@@ -215,8 +208,7 @@ const mockDispensedPartialWithInitial: Array<DispensedItem> = [
       medicationName: "Raberprazole 10mg tablets",
       quantity: "28 out of 56 tablets",
       dosageInstructions: "Take one twice daily",
-      epsStatusCode: "0002",
-      nhsAppStatus: "Item dispensed - partial",
+      epsStatusCode: "0003", // Item dispensed - partial
       pharmacyStatus: "Collected",
       itemPendingCancellation: false,
       initiallyPrescribed: {
@@ -232,7 +224,6 @@ const mockDispensedPartialWithInitial: Array<DispensedItem> = [
       quantity: "1 spray",
       dosageInstructions: "Use as needed",
       epsStatusCode: "0001",
-      nhsAppStatus: "Item fully dispensed",
       pharmacyStatus: "Collected",
       itemPendingCancellation: false
     }
@@ -246,7 +237,6 @@ const mockDispensedItemsNoPharmacyStatus: Array<DispensedItem> = [
       quantity: "56 tablets",
       dosageInstructions: "Take one twice daily",
       epsStatusCode: "0001",
-      nhsAppStatus: "Item fully dispensed",
       pharmacyStatus: undefined,
       itemPendingCancellation: false
     }
@@ -257,7 +247,6 @@ const mockDispensedItemsNoPharmacyStatus: Array<DispensedItem> = [
       quantity: "1 spray",
       dosageInstructions: "Use as needed",
       epsStatusCode: "0001",
-      nhsAppStatus: "Item fully dispensed",
       pharmacyStatus: undefined,
       itemPendingCancellation: false
     }
@@ -268,7 +257,6 @@ const mockDispensedItemsNoPharmacyStatus: Array<DispensedItem> = [
       quantity: "20 capsules",
       dosageInstructions: "One capsule twice a day",
       epsStatusCode: "0001",
-      nhsAppStatus: "Item fully dispensed",
       pharmacyStatus: undefined,
       itemPendingCancellation: false
     }
@@ -380,7 +368,7 @@ export default function PrescriptionDetailsPage() {
           ...commonPrescriptionData,
           dispensedItems: mockDispensedItemsNoPharmacyStatus,
           prescriberOrganisation: {organisationSummaryObjective: mockPrescriber},
-          statusCode: "All items dispensed",
+          statusCode: "0006", // All items dispensed
           nominatedDispenser: {
             organisationSummaryObjective: {
               name: undefined,
