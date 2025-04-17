@@ -301,17 +301,17 @@ export default function PrescriptionDetailsPage() {
         throw new Error("No payload received from the API")
       }
     } catch (err) {
-      console.error(err)
+      console.error("Failed to fetch prescription details. Using mock data fallback.", err)
 
       //
       // FIXME: This is a static, mock data fallback we can use in lieu of the real data
       // backend endpoint, which is still waiting for the auth SNAFU to get sorted out.
       //
 
-      // Shared properties
+      // Shared base structure for all mock payloads
       const commonPrescriptionData = {
         ...mockPrescriptionInformation,
-        prescriptionId: prescriptionId,
+        prescriptionId,
         patientDetails: mockPatientDetails,
         prescriptionPendingCancellation: false,
         prescribedItems: [],
@@ -319,53 +319,39 @@ export default function PrescriptionDetailsPage() {
         messageHistory: []
       }
 
-      // Construct payload based on the prescriptionId.
-      if (prescriptionId === "C0C757-A83008-C2D93O") {
-        // Full vanilla data: all organisations populated.
-        payload = {
-          ...commonPrescriptionData,
+      // ID-specific overrides for different mock scenarios
+      const mockPrescriptionOverrides: Record<string, Partial<PrescriptionDetailsResponse>> = {
+        "C0C757-A83008-C2D93O": {
           prescribedItems: mockPrescribedItems,
           dispensedItems: mockDispensedItems,
           prescriberOrganisation: {organisationSummaryObjective: mockPrescriber},
           nominatedDispenser: {organisationSummaryObjective: mockNominatedDispenser},
           currentDispenser: [{organisationSummaryObjective: mockDispenser}]
-        }
-      } else if (prescriptionId === "209E3D-A83008-327F9F") {
-        // Alt prescriber only: no dispenser data and unavailable patient details.
-        payload = {
-          ...commonPrescriptionData,
+        },
+        "209E3D-A83008-327F9F": {
           prescribedItems: mockPrescribedItems,
           dispensedItems: mockDispensedItems,
           patientDetails: mockUnavailablePatientDetails,
           prescriberOrganisation: {organisationSummaryObjective: altMockPrescriber},
           nominatedDispenser: undefined,
           currentDispenser: undefined
-        }
-      } else if (prescriptionId === "7F1A4B-A83008-91DC2E") {
-        // Prescriber and dispenser only.
-        payload = {
-          ...commonPrescriptionData,
+        },
+        "7F1A4B-A83008-91DC2E": {
           ...mockPrescriptionInformationErd,
-          prescriptionId: prescriptionId,
+          prescriptionId,
           prescribedItems: mockPrescribedItemsCancellation,
           prescriberOrganisation: {organisationSummaryObjective: mockPrescriber},
           nominatedDispenser: undefined,
           currentDispenser: [{organisationSummaryObjective: mockDispenser}]
-        }
-      } else if (prescriptionId === "B8C9E2-A83008-5F7B3A") {
-        // All populated, with a long address nominated dispenser.
-        payload = {
-          ...commonPrescriptionData,
+        },
+        "B8C9E2-A83008-5F7B3A": {
           prescribedItems: [],
           dispensedItems: mockDispensedPartialWithInitial,
           prescriberOrganisation: {organisationSummaryObjective: altMockPrescriber},
           nominatedDispenser: {organisationSummaryObjective: altMockNominatedDispenser},
           currentDispenser: [{organisationSummaryObjective: mockDispenser}]
-        }
-      } else if (prescriptionId === "4D6F2C-A83008-A3E7D1") {
-        // Missing nominated dispenser data.
-        payload = {
-          ...commonPrescriptionData,
+        },
+        "4D6F2C-A83008-A3E7D1": {
           dispensedItems: mockDispensedItemsNoPharmacyStatus,
           prescriberOrganisation: {organisationSummaryObjective: mockPrescriber},
           statusCode: "0006", // All items dispensed
@@ -379,8 +365,12 @@ export default function PrescriptionDetailsPage() {
           },
           currentDispenser: [{organisationSummaryObjective: mockDispenser}]
         }
-      } else {
-        // Error condition here, no matching mock found so we clear it all out and redirect
+      }
+
+      const overrides = mockPrescriptionOverrides[prescriptionId]
+
+      // No matching mock found so we clear it all out and redirect
+      if (!overrides) {
         setPrescriptionInformation(undefined)
         setPatientDetails(undefined)
         setPrescriber(undefined)
@@ -388,6 +378,11 @@ export default function PrescriptionDetailsPage() {
         setNominatedDispenser(undefined)
         navigate(FRONTEND_PATHS.PRESCRIPTION_NOT_FOUND)
         return
+      }
+
+      payload = {
+        ...commonPrescriptionData,
+        ...overrides
       }
     }
 
