@@ -228,6 +228,42 @@ const mockDispensedPartialWithInitial: Array<DispensedItem> = [
   }
 ]
 
+const mockDispensedItemsNoPharmacyStatus: Array<DispensedItem> = [
+  {
+    itemDetails: {
+      medicationName: "Raberprazole 10mg tablets",
+      quantity: "56 tablets",
+      dosageInstructions: "Take one twice daily",
+      epsStatusCode: "0001",
+      nhsAppStatus: "Item fully dispensed",
+      pharmacyStatus: undefined,
+      itemPendingCancellation: false
+    }
+  },
+  {
+    itemDetails: {
+      medicationName: "Glyceryl trinitrate 400micrograms/does aerosol sublingual spray",
+      quantity: "1 spray",
+      dosageInstructions: "Use as needed",
+      epsStatusCode: "0001",
+      nhsAppStatus: "Item fully dispensed",
+      pharmacyStatus: undefined,
+      itemPendingCancellation: false
+    }
+  },
+  {
+    itemDetails: {
+      medicationName: "Oseltamivir 30mg capsules",
+      quantity: "20 capsules",
+      dosageInstructions: "One capsule twice a day",
+      epsStatusCode: "0001",
+      nhsAppStatus: "Item fully dispensed",
+      pharmacyStatus: undefined,
+      itemPendingCancellation: false
+    }
+  }
+]
+
 export default function PrescriptionDetailsPage() {
   const auth = useContext(AuthContext)
   const navigate = useNavigate()
@@ -329,6 +365,7 @@ export default function PrescriptionDetailsPage() {
         // Missing nominated dispenser data.
         payload = {
           ...commonPrescriptionData,
+          dispensedItems: mockDispensedItemsNoPharmacyStatus,
           prescriberOrganisation: {organisationSummaryObjective: mockPrescriber},
           nominatedDispenser: {
             organisationSummaryObjective: {
