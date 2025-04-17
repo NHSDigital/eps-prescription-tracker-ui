@@ -380,6 +380,7 @@ export default function PrescriptionDetailsPage() {
           ...commonPrescriptionData,
           dispensedItems: mockDispensedItemsNoPharmacyStatus,
           prescriberOrganisation: {organisationSummaryObjective: mockPrescriber},
+          statusCode: "All items dispensed",
           nominatedDispenser: {
             organisationSummaryObjective: {
               name: undefined,
@@ -440,7 +441,7 @@ export default function PrescriptionDetailsPage() {
 
   if (loading || !prescriber) {
     return (
-      <main id="main-content" className="nhsuk-main-wrapper">
+      <main id="main-content" className="nhsuk-main-wrapper nhsuk-main-wrapper--s">
         <Container>
           <Row>
             <Col width="full">
@@ -461,7 +462,7 @@ export default function PrescriptionDetailsPage() {
   }
 
   return (
-    <main id="main-content" className="nhsuk-main-wrapper">
+    <main id="main-content" className="nhsuk-main-wrapper nhsuk-main-wrapper--s">
       <Container width="full" fluid={true}>
         <Row>
           <Col width="full">
