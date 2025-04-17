@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {PatientDetails} from "@cpt-ui-common/common-types"
 
-import * as pds from "../src"
+import * as pds from "../../src"
 
 const validatePatientDetails = pds.patientDetailsLookup.ValidatePatientDetails.validate
 const OutcomeType = pds.patientDetailsLookup.ValidatePatientDetails.OutcomeType

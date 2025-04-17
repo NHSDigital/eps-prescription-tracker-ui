@@ -1,4 +1,4 @@
-import {mapPdsResponseToPatientDetails} from "../src/interactions/patientDetailsLookup/utils"
+import {mapPdsResponseToPatientDetails} from "../../src/interactions/patientDetailsLookup/utils"
 
 const mockPdsResponse = {
   id: "9999999999",
