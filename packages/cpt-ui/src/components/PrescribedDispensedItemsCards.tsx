@@ -41,7 +41,7 @@ export function PrescribedDispensedItemsCards({
     return (
       <div key={`item-${index}`} className="data-panel__wrapper no-outline" tabIndex={-1}>
         <Card className="nhsuk-u-margin-bottom-3" style={{boxShadow: "none"}}>
-          <Card.Content className="nhsuk-u-padding-top-3 nhsuk-u-padding-bottom-1
+          <Card.Content className="nhsuk-u-padding-top-3 nhsuk-u-padding-bottom-3
                                    nhsuk-u-padding-right-3 nhsuk-u-padding-left-3">
             <Card.Heading className="nhsuk-card__headingMVP nhsuk-heading-xs nhsuk-u-margin-bottom-1">
               <span>{medicationName}</span>
@@ -56,50 +56,52 @@ export function PrescribedDispensedItemsCards({
             )}
 
             {itemPendingCancellation && (
-              <p className="nhsuk-u-margin-bottom-2">⚠️ {STRINGS.CANCELLATION_REASON_MESSAGE}</p>
+              <p className="nhsuk-u-margin-bottom-2">
+                ⚠️ {STRINGS.CANCELLATION_REASON_MESSAGE}
+              </p>
             )}
 
-            <dl className="nhsuk-summary-list nhsuk-u-margin-bottom-2">
+            <SummaryList>
               {cancellationReason && (
-                <div className="nhsuk-summary-list__row">
-                  <dt className="nhsuk-summary-list__key">{STRINGS.CANCELLATION_REASON}</dt>
-                  <dd className="nhsuk-summary-list__value">
+                <SummaryList.Row>
+                  <SummaryList.Key>{STRINGS.CANCELLATION_REASON}</SummaryList.Key>
+                  <SummaryList.Value>
                     <span className="data-field__content data-field__content--address">
                       {cancellationReason}
                     </span>
-                  </dd>
-                </div>
+                  </SummaryList.Value>
+                </SummaryList.Row>
               )}
 
-              <div className="nhsuk-summary-list__row nhsuk-u-padding-top-0 nhsuk-u-padding-bottom-0">
-                <dt className="nhsuk-summary-list__key">{STRINGS.QUANTITY_LABEL}</dt>
-                <dd className="nhsuk-summary-list__value">
+              <SummaryList.Row>
+                <SummaryList.Key>{STRINGS.QUANTITY_LABEL}</SummaryList.Key>
+                <SummaryList.Value>
                   <span className="data-field__content data-field__content--address">
                     {quantity}
                   </span>
-                </dd>
-              </div>
+                </SummaryList.Value>
+              </SummaryList.Row>
 
-              <div className="nhsuk-summary-list__row nhsuk-u-padding-top-0 nhsuk-u-padding-bottom-0">
-                <dt className="nhsuk-summary-list__key">{STRINGS.INSTRUCTIONS_LABEL}</dt>
-                <dd className="nhsuk-summary-list__value">
+              <SummaryList.Row>
+                <SummaryList.Key>{STRINGS.INSTRUCTIONS_LABEL}</SummaryList.Key>
+                <SummaryList.Value>
                   <span className="data-field__content data-field__content--address">
                     {dosageInstructions}
                   </span>
-                </dd>
-              </div>
+                </SummaryList.Value>
+              </SummaryList.Row>
 
               {pharmacyStatus && (
-                <div className="nhsuk-summary-list__row">
-                  <dt className="nhsuk-summary-list__key">{STRINGS.PHARMACY_STATUS_LABEL}</dt>
-                  <dd className="nhsuk-summary-list__value">
+                <SummaryList.Row>
+                  <SummaryList.Key>{STRINGS.PHARMACY_STATUS_LABEL}</SummaryList.Key>
+                  <SummaryList.Value>
                     <span className="data-field__content data-field__content--address">
                       <Tag>{pharmacyStatus}</Tag>
                     </span>
-                  </dd>
-                </div>
+                  </SummaryList.Value>
+                </SummaryList.Row>
               )}
-            </dl>
+            </SummaryList>
 
             {hasInitial && (
               <Details>
