@@ -7,7 +7,8 @@ import {
   fetchCIS2TokensFromDynamoDB,
   fetchAndVerifyCIS2Tokens,
   verifyIdToken,
-  OidcConfig
+  OidcConfig,
+  decodeToken
 } from "./cis2"
 
 import {
@@ -28,5 +29,6 @@ export {
   updateApigeeAccessToken,
   OidcConfig,
   initializeOidcConfig,
-  getExistingApigeeAccessToken
+  getExistingApigeeAccessToken,
+  decodeToken
 }
