@@ -41,7 +41,7 @@ export function PrescribedDispensedItemsCards({
     return (
       <div key={`item-${index}`} className="data-panel__wrapper no-outline" tabIndex={-1}>
         <Card className="nhsuk-u-margin-bottom-3" style={{boxShadow: "none"}}>
-          <Card.Content className="nhsuk-u-padding-top-3 nhsuk-u-padding-bottom-3
+          <Card.Content className="nhsuk-u-padding-top-3 nhsuk-u-padding-bottom-1
                                    nhsuk-u-padding-right-3 nhsuk-u-padding-left-3">
             <Card.Heading className="nhsuk-card__headingMVP nhsuk-heading-xs nhsuk-u-margin-bottom-1">
               <span>{medicationName}</span>
@@ -61,7 +61,7 @@ export function PrescribedDispensedItemsCards({
               </p>
             )}
 
-            <SummaryList>
+            <SummaryList className="nhsuk-u-margin-bottom-2">
               {cancellationReason && (
                 <SummaryList.Row>
                   <SummaryList.Key>{STRINGS.CANCELLATION_REASON}</SummaryList.Key>
