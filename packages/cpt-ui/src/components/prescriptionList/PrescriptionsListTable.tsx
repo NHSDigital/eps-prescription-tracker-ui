@@ -237,6 +237,7 @@ const PrescriptionsListTable = ({textContent, prescriptions}: PrescriptionsListT
                     : "none"
                 }
                 className={activeHeader === heading.key ? "active-header" : ""}
+                data-testid={`eps-prescription-table-header-${heading.key}`}
               >
                 <span
                   role="button"
@@ -256,6 +257,7 @@ const PrescriptionsListTable = ({textContent, prescriptions}: PrescriptionsListT
                 ? "descending"
                 : "ascending"}
                   `}
+                  data-testid={`eps-prescription-table-sort-${heading.key}`}
                 >
                   <span className="sort-label-text">{heading.label}</span>
                   <span className="nhsuk-u-visually-hidden">, button</span>
@@ -267,11 +269,13 @@ const PrescriptionsListTable = ({textContent, prescriptions}: PrescriptionsListT
         </thead>
         <tbody>
           {getSortedItems().map((row, index) => (
-            <tr key={index} className="eps-prescription-table-sort-button">
+            <tr
+              key={index} className="eps-prescription-table-sort-button"
+              data-testid="eps-prescription-table-sort-button">
               {headings.map(({key}) => {
                 if (key === "issueDate") {
                   return (
-                    <td key={key} className="eps-prescription-table-rows nowrap-cell">
+                    <td key={key} className="eps-prescription-table-rows nowrap-cell" data-testid="issue-date-column">
                       <div>{formatDate(row.issueDate)}</div>
                     </td>
                   )
@@ -279,7 +283,7 @@ const PrescriptionsListTable = ({textContent, prescriptions}: PrescriptionsListT
 
                 if (key === "prescriptionTreatmentType") {
                   return (
-                    <td key={key} className="eps-prescription-table-rows">
+                    <td key={key} className="eps-prescription-table-rows" data-testid="prescription-type-column">
                       <div>{getPrescriptionTypeDisplayText(row.prescriptionTreatmentType)}</div>
                     </td>
                   )
@@ -287,7 +291,7 @@ const PrescriptionsListTable = ({textContent, prescriptions}: PrescriptionsListT
 
                 if (key === "statusCode") {
                   return (
-                    <td key={key} className="eps-prescription-table-rows">
+                    <td key={key} className="eps-prescription-table-rows" data-testid="status-code-column">
                       <Tag color={getStatusTagColour(row.statusCode)}>
                         {row.statusLabel}
                       </Tag>
@@ -299,7 +303,11 @@ const PrescriptionsListTable = ({textContent, prescriptions}: PrescriptionsListT
                   const showWarning =
                     row.prescriptionPendingCancellation || row.itemsPendingCancellation
                   return (
-                    <td key={key} className="eps-prescription-table-rows narrow-cancellation-column">
+                    <td
+                      key={key}
+                      className="eps-prescription-table-rows narrow-cancellation-column"
+                      data-testid="cancellation-warning-column"
+                    >
                       {showWarning ? (
                         <span>
                           <span aria-hidden="true" role="img" className="warning-icon">⚠️</span>
@@ -315,12 +323,14 @@ const PrescriptionsListTable = ({textContent, prescriptions}: PrescriptionsListT
 
                 if (key === "prescriptionId") {
                   return (
-                    <td key={key} className="eps-prescription-table-rows">
+                    <td key={key} className="eps-prescription-table-rows" data-testid="prescription-id-column">
                       <div className="eps-prescription-id">{row.prescriptionId}</div>
                       <div>
                         <a
                           href={prescriptionLink + row.prescriptionId}
-                          className="nhsuk-link">
+                          className="nhsuk-link"
+                          data-testid="view-prescription-link"
+                        >
                           View prescription
                         </a>
                       </div>
@@ -333,10 +343,13 @@ const PrescriptionsListTable = ({textContent, prescriptions}: PrescriptionsListT
             </tr>
           ))}
           <tr>
-            <td colSpan={headings.length}
+            <td
+              colSpan={headings.length}
               className="eps-prescription-table-summary-row"
               aria-live="polite"
-              aria-label={`Showing ${prescriptions.length} of ${prescriptions.length} prescriptions`}>
+              aria-label={`Showing ${prescriptions.length} of ${prescriptions.length} prescriptions`}
+              data-testid="table-summary-row"
+            >
               Showing {prescriptions.length} of {prescriptions.length}
             </td>
           </tr>
