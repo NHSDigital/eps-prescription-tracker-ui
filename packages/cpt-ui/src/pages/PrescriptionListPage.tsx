@@ -72,7 +72,7 @@ export default function PrescriptionListPage() {
         itemsPendingCancellation: false
       },
       {
-        prescriptionId: "RX002",
+        prescriptionId: "209E3D-A83008-327F9F",
         statusCode: PrescriptionStatus.WITH_DISPENSER,
         issueDate: "2025-02-15",
         prescriptionTreatmentType: TreatmentType.ACUTE,

@@ -2,7 +2,6 @@
 export type {
   PatientDetails,
   PatientDetailsAddress,
-  PrescriptionStatusCategories,
   PrescriptionAPIResponse,
   PrescriptionSummary,
   SearchResponse
@@ -11,6 +10,7 @@ export type {
 // Runtime values from prescriptionList (likely enums or consts)
 export {
   PrescriptionStatus,
+  PrescriptionStatusCategories,
   TreatmentType
 } from "./prescriptionList"
 

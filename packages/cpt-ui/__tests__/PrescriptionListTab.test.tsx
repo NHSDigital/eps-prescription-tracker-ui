@@ -48,7 +48,7 @@ describe("PrescriptionsListTabs", () => {
       itemsPendingCancellation: false
     },
     {
-      prescriptionId: "RX002",
+      prescriptionId: "209E3D-A83008-327F9F",
       statusCode: "002",
       issueDate: "2025-03-02",
       prescriptionTreatmentType: TreatmentType.REPEAT,
