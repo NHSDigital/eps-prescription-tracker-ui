@@ -1,5 +1,4 @@
-import {Logger} from "@aws-lambda-powertools/logger"
-import {AxiosInstance} from "axios"
+import {Client} from "index"
 
 export enum AxiosCallOutcomeType {
   SUCCESS = "SUCCESS",
@@ -13,29 +12,28 @@ export type AxiosCallOutcome =
 | { type: AxiosCallOutcomeType.ERROR, error: any, timeMs: number }
 
 export async function axios_get(
-  axiosInstance: AxiosInstance,
-  logger: Logger,
+  client: Client,
   url: string,
   headers: Record<string, string>,
   additionalLogParams: Record<string, string> = {}
 ): Promise<AxiosCallOutcome> {
   const startTime = Date.now()
-  logger.info("Fetching patient details from PDS", additionalLogParams)
+  client.logger.info("Fetching patient details from PDS", additionalLogParams)
 
   let response
   try {
-    response = await axiosInstance.get(url, {headers: headers})
+    response = await client.axiosInstance.get(url, {headers: headers})
   } catch (error) {
     return {type: AxiosCallOutcomeType.ERROR, error, timeMs: Date.now() - startTime}
   }
 
-  logger.info("PDS response time", {
+  client.logger.info("PDS response time", {
     timeMs: Date.now() - startTime,
     ...additionalLogParams
   })
 
   if(response.status !== 200){
-    logger.warn("PDS response not OK", {
+    client.logger.warn("PDS response not OK", {
       status: response.status,
       statusText: response.statusText,
       ...additionalLogParams

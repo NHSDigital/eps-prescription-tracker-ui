@@ -3,8 +3,16 @@ import {v4 as uuidv4} from "uuid"
 import {PatientDetails} from "@cpt-ui-common/common-types"
 import * as validatePatientDetails from "./validatePatientDetails"
 import {Client} from "../../client"
-import {axios_get, AxiosCallOutcomeType} from "../../axios_wrapper"
+import {AxiosCallOutcomeType} from "../../axios_wrapper"
 import {mapPdsResponseToPatientDetails} from "./utils"
+
+const exhaustive_switch_guard = (guard: never): never => {
+  // Ensures that all possible cases of a union type are handled by a switch.
+  // By calling this function in the default case with the value switched on
+  // the typescript compiler will throw an error if any cases are missing,
+  // since an exhaustive switch leaves the value with only the never type.
+  throw guard
+}
 
 enum PatientDetailsLookupOutcomeType {
   SUCCESS = "success",
@@ -34,19 +42,21 @@ async function getPatientDetails(
   client: Client,
   nhsNumber: string
 ): Promise<PatientDetailsLookupOutcome> {
-  const api_call = await axios_get(
-    client.axiosInstance,
-    client.logger,
-    client.patientDetailsPath(nhsNumber),
-    {
-      Accept: "application/fhir+json",
-      Authorization: `Bearer ${client.apigeeAccessToken}`,
-      "NHSD-End-User-Organisation-ODS": "A83008",
-      "NHSD-Session-URID": client.roleId,
-      "X-Request-ID": uuidv4(),
-      "X-Correlation-ID": uuidv4()
-    },
-    {nhsNumber})
+  const url = client.patientDetailsPath(nhsNumber)
+  const headers = {
+    Accept: "application/fhir+json",
+    Authorization: `Bearer ${client.apigeeAccessToken}`,
+    "NHSD-End-User-Organisation-ODS": "A83008",
+    "NHSD-Session-URID": client.roleId,
+    "X-Request-ID": uuidv4(),
+    "X-Correlation-ID": uuidv4()
+  }
+  const api_call = await client.axios_get(
+    url,
+    headers,
+    {nhsNumber}
+  )
+
   if (api_call.type === AxiosCallOutcomeType.ERROR){
     return {
       type: PatientDetailsLookupOutcomeType.AXIOS_ERROR,
@@ -112,6 +122,8 @@ async function getPatientDetails(
         patientDetails,
         nhsNumber
       }
+    default:
+      return exhaustive_switch_guard(validationOutcome)
   }
 }
 
