@@ -43,7 +43,7 @@ export function PrescribedDispensedItemsCards({
         <Card className="nhsuk-u-margin-bottom-3" style={{boxShadow: "none"}}>
           <Card.Content className="nhsuk-u-padding-top-3 nhsuk-u-padding-bottom-1
                                    nhsuk-u-padding-right-3 nhsuk-u-padding-left-3">
-            <Card.Heading className="nhsuk-card__headingMVP nhsuk-heading-xs nhsuk-u-margin-bottom-1">
+            <Card.Heading className="nhsuk-heading-xs nhsuk-u-margin-bottom-1">
               <span>{medicationName}</span>
             </Card.Heading>
 
