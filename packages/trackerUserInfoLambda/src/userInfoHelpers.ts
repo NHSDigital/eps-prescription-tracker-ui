@@ -7,7 +7,7 @@ import {
   RoleDetails,
   UserDetails
 } from "./userInfoTypes"
-import {OidcConfig, verifyIdToken} from "@cpt-ui-common/authFunctions"
+import {OidcConfig, decodeToken} from "@cpt-ui-common/authFunctions"
 
 /**
  * **Extracts role name from a structured string.**
@@ -44,7 +44,7 @@ export const fetchUserInfo = async (
   logger.info("Fetching user info from OIDC UserInfo endpoint", {oidcConfig})
 
   // Verify and decode cis2IdToken
-  const decodedIdToken = await verifyIdToken(cis2IdToken, logger, oidcConfig)
+  const decodedIdToken = decodeToken(cis2IdToken)
   logger.debug("Decoded cis2IdToken", {decodedIdToken})
 
   // Extract the selected_roleid from the decoded cis2IdToken
@@ -56,11 +56,14 @@ export const fetchUserInfo = async (
   }
 
   try {
-    const response = await axios.get<UserInfoResponse>(oidcConfig.oidcUserInfoEndpoint, {
-      headers: {
-        Authorization: `Bearer ${cis2AccessToken}`
-      }
-    })
+    const response = await axios.get<UserInfoResponse>(
+      oidcConfig.oidcUserInfoEndpoint,
+      // "https://internal-dev.api.service.nhs.uk/oauth2-mock/userinfo",
+      {
+        headers: {
+          Authorization: `Bearer ${cis2AccessToken}`
+        }
+      })
     logger.info("User info fetched successfully")
 
     // Extract the roles from the user info response
