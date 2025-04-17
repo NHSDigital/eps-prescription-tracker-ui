@@ -23,3 +23,4 @@ token: props..*TokenEndpoint
 token: `\${baseApiGwUrl}\/.*[Tt]oken`
 token: `.*{props\.cloudfrontDomain}\/api\/token`
 packages\/auth_demo\/src\/App.tsx:150
+packages/common/authFunctions/src/cis2\.ts:.*decodeToken
