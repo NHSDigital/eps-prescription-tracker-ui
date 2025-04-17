@@ -14,10 +14,17 @@ interface PrescribedDispensedItemsProps {
   dispensedItems: Array<DispensedItem>
 }
 
+// Reusable component for rendering both prescribed and dispensed item cards
 export function PrescribedDispensedItemsCards({
   prescribedItems,
   dispensedItems
 }: PrescribedDispensedItemsProps) {
+
+  // Utility to determine if an item is a DispensedItem (and not just PrescribedItem)
+  // This enables us to access 'initiallyPrescribed' property safely
+  const isDispensedItem = (itm: DispensedItem | PrescribedItem): itm is DispensedItem =>
+    "initiallyPrescribed" in itm.itemDetails
+
   const renderCard = (
     item: DispensedItem | PrescribedItem,
     index: number
@@ -32,9 +39,7 @@ export function PrescribedDispensedItemsCards({
       cancellationReason
     } = item.itemDetails
 
-    const isDispensedItem = (itm: typeof item): itm is DispensedItem =>
-      "initiallyPrescribed" in itm.itemDetails
-
+    // Check if we should render the "Initially Prescribed" expandable section
     const hasInitial = isDispensedItem(item) && item.itemDetails.initiallyPrescribed
 
     return (
@@ -46,6 +51,7 @@ export function PrescribedDispensedItemsCards({
               <span>{medicationName}</span>
             </Card.Heading>
 
+            {/* Display EPS status as NHS Tag */}
             {epsStatusCode && (
               <p className="nhsuk-u-margin-bottom-2">
                 <Tag color={getItemStatusTagColour(epsStatusCode)}>
@@ -54,6 +60,7 @@ export function PrescribedDispensedItemsCards({
               </p>
             )}
 
+            {/* Cancellation warning if applicable */}
             {itemPendingCancellation && (
               <p className="nhsuk-u-margin-bottom-2">
                 <span role="img" aria-label="Warning">⚠️</span> {STRINGS.CANCELLATION_REASON_MESSAGE}
@@ -61,6 +68,7 @@ export function PrescribedDispensedItemsCards({
             )}
 
             <SummaryList className="nhsuk-u-margin-bottom-2">
+              {/* Optional cancellation reason */}
               {cancellationReason && (
                 <SummaryList.Row>
                   <SummaryList.Key>{STRINGS.CANCELLATION_REASON}</SummaryList.Key>
@@ -72,6 +80,7 @@ export function PrescribedDispensedItemsCards({
                 </SummaryList.Row>
               )}
 
+              {/* Quantity */}
               <SummaryList.Row>
                 <SummaryList.Key>{STRINGS.QUANTITY_LABEL}</SummaryList.Key>
                 <SummaryList.Value>
@@ -81,6 +90,7 @@ export function PrescribedDispensedItemsCards({
                 </SummaryList.Value>
               </SummaryList.Row>
 
+              {/* Dosage instructions */}
               <SummaryList.Row>
                 <SummaryList.Key>{STRINGS.INSTRUCTIONS_LABEL}</SummaryList.Key>
                 <SummaryList.Value>
@@ -90,6 +100,7 @@ export function PrescribedDispensedItemsCards({
                 </SummaryList.Value>
               </SummaryList.Row>
 
+              {/* Optional pharmacy status */}
               {pharmacyStatus && (
                 <SummaryList.Row>
                   <SummaryList.Key>{STRINGS.PHARMACY_STATUS_LABEL}</SummaryList.Key>
@@ -102,6 +113,7 @@ export function PrescribedDispensedItemsCards({
               )}
             </SummaryList>
 
+            {/* Expandable details for initially prescribed info, only for dispensed items */}
             {hasInitial && (
               <Details>
                 <Details.Summary>{STRINGS.INITIALLY_PRESCRIBED_DETAILS}</Details.Summary>
@@ -131,6 +143,7 @@ export function PrescribedDispensedItemsCards({
 
   return (
     <Col width="one-third" className="site-card-column">
+      {/* Dispensed Section */}
       {dispensedItems.length > 0 && (
         <>
           <h2 className="nhsuk-heading-xs nhsuk-u-margin-bottom-2">
@@ -139,7 +152,7 @@ export function PrescribedDispensedItemsCards({
           {dispensedItems.map(renderCard)}
         </>
       )}
-
+      {/* Prescribed Section */}
       {prescribedItems.length > 0 && (
         <>
           <h2 className="nhsuk-heading-xs nhsuk-u-margin-bottom-2">
