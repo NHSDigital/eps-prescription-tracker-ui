@@ -126,9 +126,21 @@ export interface OidcConfig {
   oidcClientID: string
   oidcJwksEndpoint: string
   oidcUserInfoEndpoint: string
+  oidcTokenEndpoint: string
   userPoolIdp: string
   jwksClient: jwksClient.JwksClient,
   tokenMappingTableName: string
+}
+
+export const decodeToken = (token: string): JwtPayload => {
+  const decodedToken = jwt.decode(token, {complete: true})
+  if (!decodedToken || typeof decodedToken === "string") {
+    throw new Error("Invalid token - token is either undefined or a string")
+  }
+  if (!decodedToken.header.kid) {
+    throw new Error("Invalid token - no KID present")
+  }
+  return decodedToken as JwtPayload
 }
 
 /**
@@ -168,14 +180,9 @@ export const verifyCIS2Token = async (
   }
 
   // Decode the token header to get the kid
-  const decodedToken = jwt.decode(cis2Token, {complete: true})
-  if (!decodedToken || typeof decodedToken === "string") {
-    throw new Error("Invalid token - token is either undefined or a string")
-  }
+  // const decodedToken = jwt.decode(cis2Token, {complete: true})
+  const decodedToken = decodeToken(cis2Token)
   const kid = decodedToken.header.kid
-  if (!kid) {
-    throw new Error("Invalid token - no KID present")
-  }
   logger.info("Token KID", {kid})
 
   // Fetch the signing key from the JWKS endpoint

@@ -74,6 +74,8 @@ on:
         required: true
       APIGEE_API_KEY:
         required: true
+      APIGEE_API_SECRET:
+        required: true
 
 jobs:
   check_first_deployment:
@@ -189,6 +191,7 @@ jobs:
       primaryOidcClientId: ${{ secrets.primaryOidcClientId }}
       mockOidcClientId: ${{ secrets.mockOidcClientId }}
       APIGEE_API_KEY: ${{ secrets.APIGEE_API_KEY }}
+      APIGEE_API_SECRET: ${{ secrets.APIGEE_API_SECRET }}
 
   update_cloudfront_kvs:
     runs-on: ubuntu-22.04

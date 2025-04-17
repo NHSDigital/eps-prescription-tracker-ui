@@ -7,10 +7,16 @@ import {
   fetchCIS2TokensFromDynamoDB,
   fetchAndVerifyCIS2Tokens,
   verifyIdToken,
-  OidcConfig
+  OidcConfig,
+  decodeToken
 } from "./cis2"
 
-import {constructSignedJWTBody, exchangeTokenForApigeeAccessToken, updateApigeeAccessToken} from "./apigee"
+import {
+  constructSignedJWTBody,
+  exchangeTokenForApigeeAccessToken,
+  updateApigeeAccessToken,
+  getExistingApigeeAccessToken
+} from "./apigee"
 
 export {
   getUsernameFromEvent,
@@ -22,5 +28,7 @@ export {
   exchangeTokenForApigeeAccessToken,
   updateApigeeAccessToken,
   OidcConfig,
-  initializeOidcConfig
+  initializeOidcConfig,
+  getExistingApigeeAccessToken,
+  decodeToken
 }
