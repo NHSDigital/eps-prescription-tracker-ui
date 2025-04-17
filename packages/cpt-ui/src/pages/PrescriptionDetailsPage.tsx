@@ -80,6 +80,17 @@ const mockPrescriptionInformation = {
   daysSupply: "28"
 }
 
+const mockPrescriptionInformationErd = {
+  prescriptionId: "",
+  issueDate: "22-Mar-2024",
+  statusCode: "Some items dispensed",
+  typeCode: "eRD",
+  isERD: true,
+  instanceNumber: 1,
+  maxRepeats: 6,
+  daysSupply: "28"
+}
+
 const mockPatientDetails: PatientDetails = {
   nhsNumber: "5900009890",
   prefix: "Mr",
@@ -346,6 +357,7 @@ export default function PrescriptionDetailsPage() {
         // Prescriber and dispenser only.
         payload = {
           ...commonPrescriptionData,
+          ...mockPrescriptionInformationErd,
           prescribedItems: mockPrescribedItemsCancellation,
           prescriberOrganisation: {organisationSummaryObjective: mockPrescriber},
           nominatedDispenser: undefined,
