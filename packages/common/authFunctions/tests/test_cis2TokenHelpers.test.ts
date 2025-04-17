@@ -231,7 +231,8 @@ describe("fetchAndVerifyCIS2Tokens", () => {
     oidcUserInfoEndpoint:  "https://dummyauth.com/userinfo",
     userPoolIdp: "DummyPoolIdentityProvider",
     tokenMappingTableName: "dummyTable",
-    jwksClient: client
+    jwksClient: client,
+    oidcTokenEndpoint: "https://dummyauth.com/token"
   }
 
   beforeEach(() => {
@@ -314,7 +315,8 @@ describe("verifyIdToken", () => {
     oidcUserInfoEndpoint:  "https://dummyauth.com/userinfo",
     userPoolIdp: "DummyPoolIdentityProvider",
     tokenMappingTableName: "dummyTable",
-    jwksClient: client
+    jwksClient: client,
+    oidcTokenEndpoint: "https://dummyauth.com/token"
   }
   it("should verify a valid ID token", async () => {
     const payload = createPayload()
