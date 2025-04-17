@@ -2,7 +2,8 @@ import {
   Card,
   Col,
   Tag,
-  Details
+  Details,
+  SummaryList
 } from "nhsuk-react-components"
 import {DispensedItem, PrescribedItem} from "@cpt-ui-common/common-types/src/prescriptionDetails"
 import {getTagColourFromStatus} from "@/helpers/statusToTagColour"
@@ -102,36 +103,22 @@ export function PrescribedDispensedItemsCards({
 
             {hasInitial && (
               <Details>
-                <Details.Summary>
-                  {STRINGS.INITIALLY_PRESCRIBED_DETAILS}
-                </Details.Summary>
+                <Details.Summary>{STRINGS.INITIALLY_PRESCRIBED_DETAILS}</Details.Summary>
                 <Details.Text>
-                  <dl className="nhsuk-summary-list">
-                    <div className="nhsuk-summary-list__row">
-                      <dt className="nhsuk-summary-list__key">
-                        {STRINGS.INITIALLY_PRESCRIBED_ITEM}
-                      </dt>
-                      <dd className="nhsuk-summary-list__value">
-                        {item.itemDetails.initiallyPrescribed!.medicationName}
-                      </dd>
-                    </div>
-                    <div className="nhsuk-summary-list__row">
-                      <dt className="nhsuk-summary-list__key">
-                        {STRINGS.INITIALLY_PRESCRIBED_QUANTITY}
-                      </dt>
-                      <dd className="nhsuk-summary-list__value">
-                        {item.itemDetails.initiallyPrescribed!.quantity}
-                      </dd>
-                    </div>
-                    <div className="nhsuk-summary-list__row">
-                      <dt className="nhsuk-summary-list__key">
-                        {STRINGS.INITIALLY_PRESCRIBED_INSTRUCTION}
-                      </dt>
-                      <dd className="nhsuk-summary-list__value">
-                        {item.itemDetails.initiallyPrescribed!.dosageInstructions}
-                      </dd>
-                    </div>
-                  </dl>
+                  <SummaryList>
+                    <SummaryList.Row>
+                      <SummaryList.Key>{STRINGS.INITIALLY_PRESCRIBED_ITEM}</SummaryList.Key>
+                      <SummaryList.Value>{item.itemDetails.initiallyPrescribed!.medicationName}</SummaryList.Value>
+                    </SummaryList.Row>
+                    <SummaryList.Row>
+                      <SummaryList.Key>{STRINGS.INITIALLY_PRESCRIBED_QUANTITY}</SummaryList.Key>
+                      <SummaryList.Value>{item.itemDetails.initiallyPrescribed!.quantity}</SummaryList.Value>
+                    </SummaryList.Row>
+                    <SummaryList.Row>
+                      <SummaryList.Key>{STRINGS.INITIALLY_PRESCRIBED_INSTRUCTION}</SummaryList.Key>
+                      <SummaryList.Value>{item.itemDetails.initiallyPrescribed!.dosageInstructions}</SummaryList.Value>
+                    </SummaryList.Row>
+                  </SummaryList>
                 </Details.Text>
               </Details>
             )}
