@@ -64,43 +64,45 @@ export function SiteDetailsCard({
   }
 
   return (
-    <Card
-      cardType="primary"
-      clickable={false}
-      className="site-card"
-      // The test id here includes the heading - later, this will be used for regression tests to find the cards
-      data-testid={`site-card-${heading.replaceAll(" ", "-").toLowerCase()}`}
-    >
-      <Card.Content className="site-card content">
-        <Card.Description>
-          <Card.Heading headingLevel="H3" className="nhsuk-heading-xs nhsuk-u-margin-bottom-1">
-            {heading}
-          </Card.Heading>
-          <p className="nhsuk-u-margin-bottom-2">
-            {ODS_LABEL(name, odsCode)}
-          </p>
-          <p className="nhsuk-u-margin-bottom-2">{address}</p>
+    <div className="data-panel__wrapper no-outline" tabIndex={-1}>
+      <Card
+        cardType="primary"
+        clickable={false}
+        className="site-card"
+        // The test id here includes the heading - later, this will be used for regression tests to find the cards
+        data-testid={`site-card-${heading.replaceAll(" ", "-").toLowerCase()}`}
+      >
+        <Card.Content className="site-card content">
+          <Card.Description>
+            <Card.Heading headingLevel="H3" className="nhsuk-heading-xs nhsuk-u-margin-bottom-1">
+              {heading}
+            </Card.Heading>
+            <p className="nhsuk-u-margin-bottom-2">
+              {ODS_LABEL(name, odsCode)}
+            </p>
+            <p className="nhsuk-u-margin-bottom-2">{address}</p>
 
-          <Card.Heading headingLevel="H3" className="nhsuk-heading-xs nhsuk-u-margin-bottom-1">
-            {CONTACT_DETAILS}
-          </Card.Heading>
-          <p className={`nhsuk-u-margin-bottom-${prescribedFrom ? "2" : "1"}`}>
-            {telephone}
-          </p>
+            <Card.Heading headingLevel="H3" className="nhsuk-heading-xs nhsuk-u-margin-bottom-1">
+              {CONTACT_DETAILS}
+            </Card.Heading>
+            <p className={`nhsuk-u-margin-bottom-${prescribedFrom ? "2" : "1"}`}>
+              {telephone}
+            </p>
 
-          {prescribedFrom && (
-            <>
-              <Card.Heading headingLevel="H3" className="nhsuk-heading-xs nhsuk-u-margin-bottom-1">
-                {PRESCRIBED_FROM}
-              </Card.Heading>
-              <p className="nhsuk-u-margin-bottom-1" data-testid="site-card-prescribed-from">
-                {humanReadablePrescribedFrom}
-              </p>
-            </>
-          )}
-        </Card.Description>
-      </Card.Content>
-    </Card>
+            {prescribedFrom && (
+              <>
+                <Card.Heading headingLevel="H3" className="nhsuk-heading-xs nhsuk-u-margin-bottom-1">
+                  {PRESCRIBED_FROM}
+                </Card.Heading>
+                <p className="nhsuk-u-margin-bottom-1" data-testid="site-card-prescribed-from">
+                  {humanReadablePrescribedFrom}
+                </p>
+              </>
+            )}
+          </Card.Description>
+        </Card.Content>
+      </Card>
+    </div>
   )
 }
 
