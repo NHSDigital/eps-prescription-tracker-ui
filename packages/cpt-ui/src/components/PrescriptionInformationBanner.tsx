@@ -5,7 +5,7 @@ import {usePrescriptionInformation} from "@/context/PrescriptionInformationProvi
 
 import {STRINGS} from "@/constants/ui-strings/PrescriptionInformationBannerStrings"
 
-import {getStatusTagColour, getStatusDisplayText} from "@/helpers/prescriptionFormatters"
+import {getStatusTagColour, getStatusDisplayText} from "@/helpers/statusMetadata"
 
 const PrescriptionInformationBanner: React.FC = () => {
   const {prescriptionInformation: prescription} = usePrescriptionInformation()

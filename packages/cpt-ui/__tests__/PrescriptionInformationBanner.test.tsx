@@ -10,7 +10,7 @@ import PrescriptionInformationBanner from "@/components/PrescriptionInformationB
 
 import {STRINGS} from "@/constants/ui-strings/PrescriptionInformationBannerStrings"
 import {PrescriptionInformationContext} from "@/context/PrescriptionInformationProvider"
-import {getStatusTagColour, getStatusDisplayText} from "@/helpers/prescriptionFormatters"
+import {getStatusTagColour, getStatusDisplayText} from "@/helpers/statusMetadata"
 
 const renderWithContext = (prescriptionInformation: PrescriptionDetailsResponse | undefined) => {
   return render(

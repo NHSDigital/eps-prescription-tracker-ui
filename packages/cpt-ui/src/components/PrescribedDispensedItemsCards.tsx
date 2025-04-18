@@ -6,7 +6,7 @@ import {
   SummaryList
 } from "nhsuk-react-components"
 import {DispensedItem, PrescribedItem} from "@cpt-ui-common/common-types/src/prescriptionDetails"
-import {getItemStatusTagColour, getItemStatusDisplayText} from "@/helpers/prescriptionFormatters"
+import {getItemStatusTagColour, getItemStatusDisplayText} from "@/helpers/statusMetadata"
 import {STRINGS} from "@/constants/ui-strings/PrescriptionDetailsPageStrings"
 
 interface PrescribedDispensedItemsProps {
