@@ -106,7 +106,7 @@ type SiteDetailsCardsProps = {
 }
 
 // simple mock for SiteDetailsCards so we can inspect the props.
-jest.mock("@/components/SiteDetailsCards", () => ({
+jest.mock("@/components/prescriptionDetails/SiteDetailsCards", () => ({
 
   SiteDetailsCards: (props: SiteDetailsCardsProps) => {
     return (

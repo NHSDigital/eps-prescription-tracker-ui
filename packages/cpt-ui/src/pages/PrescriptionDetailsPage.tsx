@@ -25,8 +25,8 @@ import {API_ENDPOINTS, FRONTEND_PATHS, NHS_REQUEST_URID} from "@/constants/envir
 import {STRINGS} from "@/constants/ui-strings/PrescriptionDetailsPageStrings"
 
 import EpsSpinner from "@/components/EpsSpinner"
-import {SiteDetailsCards} from "@/components/SiteDetailsCards"
-import {PrescribedDispensedItemsCards} from "@/components/PrescribedDispensedItemsCards"
+import {SiteDetailsCards} from "@/components/prescriptionDetails/SiteDetailsCards"
+import {PrescribedDispensedItemsCards} from "@/components/prescriptionDetails/PrescribedDispensedItemsCards"
 
 import http from "@/helpers/axios"
 

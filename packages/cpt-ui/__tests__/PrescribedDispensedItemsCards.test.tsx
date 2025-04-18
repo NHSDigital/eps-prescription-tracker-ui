@@ -2,7 +2,7 @@ import React from "react"
 import {render, screen} from "@testing-library/react"
 import "@testing-library/jest-dom"
 
-import {PrescribedDispensedItemsCards} from "@/components/PrescribedDispensedItemsCards"
+import {PrescribedDispensedItemsCards} from "@/components/prescriptionDetails/PrescribedDispensedItemsCards"
 
 describe("PrescribedDispensedItemsCards", () => {
   const dispensedItems = [
