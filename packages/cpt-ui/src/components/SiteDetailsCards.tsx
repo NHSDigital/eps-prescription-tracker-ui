@@ -73,23 +73,30 @@ export function SiteDetailsCard({
     >
       <Card.Content className="site-card content">
         <Card.Description>
+          <Card.Heading headingLevel="H3" className="nhsuk-heading-xs nhsuk-u-margin-bottom-1">
+            {heading}
+          </Card.Heading>
           <p className="nhsuk-u-margin-bottom-2">
-            <strong>{heading}</strong>
-            <br />
             {ODS_LABEL(name, odsCode)}
           </p>
           <p className="nhsuk-u-margin-bottom-2">{address}</p>
+
+          <Card.Heading headingLevel="H3" className="nhsuk-heading-xs nhsuk-u-margin-bottom-1">
+            {CONTACT_DETAILS}
+          </Card.Heading>
           <p className={`nhsuk-u-margin-bottom-${prescribedFrom ? "2" : "1"}`}>
-            <strong>{CONTACT_DETAILS}</strong>
-            <br />
             {telephone}
           </p>
+
           {prescribedFrom && (
-            <p className="nhsuk-u-margin-bottom-1" data-testid="site-card-prescribed-from">
-              <strong>{PRESCRIBED_FROM}</strong>
-              <br />
-              {humanReadablePrescribedFrom}
-            </p>
+            <>
+              <Card.Heading headingLevel="H3" className="nhsuk-heading-xs nhsuk-u-margin-bottom-1">
+                {PRESCRIBED_FROM}
+              </Card.Heading>
+              <p className="nhsuk-u-margin-bottom-1" data-testid="site-card-prescribed-from">
+                {humanReadablePrescribedFrom}
+              </p>
+            </>
           )}
         </Card.Description>
       </Card.Content>
