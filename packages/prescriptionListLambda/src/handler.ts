@@ -6,10 +6,9 @@ import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
 import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
 import middy from "@middy/core"
 import inputOutputLogger from "@middy/input-output-logger"
-import axios from "axios"
+import axios, {AxiosInstance} from "axios"
 import {formatHeaders} from "./utils/headerUtils"
 import {validateSearchParams} from "./utils/validation"
-import {getPdsPatientDetails} from "./services/patientDetailsLookupService"
 import {getPrescriptions, PrescriptionError} from "./services/prescriptionsLookupService"
 import {SearchParams} from "./utils/types"
 
@@ -22,8 +21,9 @@ import {
   updateApigeeAccessToken,
   initializeOidcConfig
 } from "@cpt-ui-common/authFunctions"
-import {SearchResponse} from "@cpt-ui-common/common-types"
-import {mapSearchResponse} from "./utils/responseMapper"
+import {PatientDetails, SearchResponse} from "@cpt-ui-common/common-types"
+import {createMinimalPatientDetails, mapSearchResponse} from "./utils/responseMapper"
+import * as pds from "@cpt-ui-common/pdsClient"
 
 /*
 This is the lambda code to search for a prescription
@@ -165,97 +165,21 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
     // Search logic
     let searchResponse: SearchResponse
-
     if (searchParams.nhsNumber) {
-      // NHS Number search flow
-      const patientDetails = await getPdsPatientDetails(
+      searchResponse = await nhsNumberSearchFlow(
         axiosInstance,
         logger,
-        apigeePersonalDemographicsEndpoint,
-        searchParams.nhsNumber,
         apigeeAccessToken,
-        roleId
+        searchParams.nhsNumber
       )
-
-      logger.debug("patientDetails", {
-        body: patientDetails
-      })
-
-      // Check if NHS Number has been superseded
-      if (patientDetails.supersededBy) {
-        logger.info("Using superseded NHS Number for prescription search", {
-          originalNhsNumber: searchParams.nhsNumber,
-          newNhsNumber: patientDetails.supersededBy
-        })
-        // Use the superseded NHS Number for prescription search
-        const prescriptions = await getPrescriptions(
-          axiosInstance,
-          logger,
-          apigeePrescriptionsEndpoint,
-          {nhsNumber: patientDetails.supersededBy},
-          apigeeAccessToken,
-          roleId
-        )
-
-        logger.debug("Prescriptions", {
-          total: prescriptions.length,
-          body: prescriptions
-        })
-
-        searchResponse = mapSearchResponse(patientDetails, prescriptions)
-      } else {
-        // Normal flow - use original NHS Number
-        const prescriptions = await getPrescriptions(
-          axiosInstance,
-          logger,
-          apigeePrescriptionsEndpoint,
-          {nhsNumber: searchParams.nhsNumber},
-          apigeeAccessToken,
-          roleId
-        )
-
-        logger.debug("Prescriptions", {
-          total: prescriptions.length,
-          body: prescriptions
-        })
-
-        searchResponse = mapSearchResponse(patientDetails, prescriptions)
-      }
     } else {
       // Prescription ID search flow
-      const prescriptions = await getPrescriptions(
+      searchResponse = await prescriptionIdSearchFlow(
         axiosInstance,
         logger,
-        apigeePrescriptionsEndpoint,
-        {prescriptionId: searchParams.prescriptionId!},
         apigeeAccessToken,
-        roleId
+        searchParams.prescriptionId!
       )
-
-      // Get patient details using NHS Number from first prescription
-      if (prescriptions.length === 0) {
-        throw new PrescriptionError("Prescription not found")
-      }
-
-      logger.debug("Prescriptions", {
-        total: prescriptions.length,
-        body: prescriptions
-      })
-
-      const patientDetails = await getPdsPatientDetails(
-        axiosInstance,
-        logger,
-        apigeePersonalDemographicsEndpoint,
-        prescriptions[0].nhsNumber!.toString(),
-        apigeeAccessToken,
-        roleId
-      )
-
-      logger.debug("patientDetails", {
-        body: patientDetails
-      })
-
-      searchResponse = mapSearchResponse(patientDetails, prescriptions)
     }
 
     logger.info("Search completed", {
@@ -288,6 +212,185 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
     throw error
   }
+}
+
+const nhsNumberSearchFlow = async (
+  axiosInstance: AxiosInstance,
+  logger: Logger,
+  apigeeAccessToken: string,
+  nhsNumber: string
+) => {
+  const pdsClient = new pds.Client(
+    axiosInstance,
+    apigeePersonalDemographicsEndpoint,
+    logger,
+    apigeeAccessToken,
+    roleId
+  )
+  const outcome = await pdsClient.getPatientDetails(nhsNumber)
+
+  let currentNhsNumber = nhsNumber
+  let patientDetails
+  switch( outcome.type) {
+    case pds.patientDetailsLookup.OutcomeType.SUCCESS:
+      patientDetails = outcome.patientDetails
+      break
+    case pds.patientDetailsLookup.OutcomeType.SUPERSEDED:
+      currentNhsNumber = outcome.supersededBy
+      patientDetails = outcome.patientDetails
+
+      logger.info("NHS Number has been superseded", {
+        originalNhsNumber: nhsNumber,
+        newNhsNumber: patientDetails.supersededBy
+      })
+      break
+    case pds.patientDetailsLookup.OutcomeType.AXIOS_ERROR:
+      patientDetails = createMinimalPatientDetails()
+      logger.error("Error fetching patient details from PDS", {
+        axios_error: outcome.error,
+        nhsNumber: outcome.nhsNumber,
+        timeMs: outcome.timeMs
+      })
+      break
+    case pds.patientDetailsLookup.OutcomeType.R_FLAG:
+    case pds.patientDetailsLookup.OutcomeType.S_FLAG:
+    case pds.patientDetailsLookup.OutcomeType.PATIENT_NOT_FOUND:
+    case pds.patientDetailsLookup.OutcomeType.PATIENT_DETAILS_VALIDATION_ERROR:
+      throw handlePatientDetailsLookupError(outcome)
+  }
+
+  logger.debug("patientDetails", {
+    body: patientDetails
+  })
+
+  const prescriptions = await getPrescriptions(
+    axiosInstance,
+    logger,
+    apigeePrescriptionsEndpoint,
+    {nhsNumber: currentNhsNumber},
+    apigeeAccessToken,
+    roleId
+  )
+
+  logger.debug("Prescriptions", {
+    total: prescriptions.length,
+    body: prescriptions
+  })
+
+  return mapSearchResponse(patientDetails, prescriptions)
+}
+
+const prescriptionIdSearchFlow = async(
+  axiosInstance: AxiosInstance,
+  logger: Logger,
+  apigeeAccessToken: string,
+  prescriptionId: string
+) => {
+  const prescriptions = await getPrescriptions(
+    axiosInstance,
+    logger,
+    apigeePrescriptionsEndpoint,
+    {prescriptionId: prescriptionId},
+    apigeeAccessToken,
+    roleId
+  )
+
+  // Get patient details using NHS Number from first prescription
+  if (prescriptions.length === 0) {
+    throw new PrescriptionError("Prescription not found")
+  }
+
+  logger.debug("Prescriptions", {
+    total: prescriptions.length,
+    body: prescriptions
+  })
+
+  const pdsClient = new pds.Client(
+    axiosInstance,
+    apigeePersonalDemographicsEndpoint,
+    logger,
+    apigeeAccessToken,
+    roleId
+  )
+  const nhsNumber = prescriptions[0].nhsNumber!.toString()
+  const outcome = await pdsClient.getPatientDetails(nhsNumber)
+
+  let patientDetails
+  switch(outcome.type) {
+    case pds.patientDetailsLookup.OutcomeType.SUCCESS:
+    case pds.patientDetailsLookup.OutcomeType.SUPERSEDED:
+      patientDetails = outcome.patientDetails
+      break
+    case pds.patientDetailsLookup.OutcomeType.AXIOS_ERROR:
+      patientDetails = createMinimalPatientDetails()
+      logger.error("Error fetching patient details from PDS", {
+        axios_error: outcome.error,
+        nhsNumber: outcome.nhsNumber,
+        timeMs: outcome.timeMs
+      })
+      break
+    case pds.patientDetailsLookup.OutcomeType.R_FLAG:
+    case pds.patientDetailsLookup.OutcomeType.S_FLAG:
+    case pds.patientDetailsLookup.OutcomeType.PATIENT_NOT_FOUND:
+    case pds.patientDetailsLookup.OutcomeType.PATIENT_DETAILS_VALIDATION_ERROR:
+      throw handlePatientDetailsLookupError(outcome)
+  }
+
+  logger.debug("patientDetails", {
+    body: patientDetails
+  })
+
+  return mapSearchResponse(patientDetails, prescriptions)
+}
+
+const handlePatientDetailsLookupError = (outcome: pds.patientDetailsLookup.Outcome) => {
+  switch (outcome.type) {
+    case pds.patientDetailsLookup.OutcomeType.PATIENT_NOT_FOUND:
+      logger.error("PDS response data is empty", {nhsNumber: outcome.nhsNumber})
+      throw new pds.PDSError("Patient not found", "NOT_FOUND")
+    case pds.patientDetailsLookup.OutcomeType.S_FLAG:
+      logger.info("Patient record marked with S Flag", {nhsNumber: outcome.nhsNumber})
+      throw new pds.PDSError("Prescription not found", "S_FLAG")
+    case pds.patientDetailsLookup.OutcomeType.R_FLAG:
+      logger.info("Patient record marked as restricted", {nhsNumber: outcome.nhsNumber})
+      throw new pds.PDSError("Prescription not found", "R_FLAG")
+    case pds.patientDetailsLookup.OutcomeType.PATIENT_DETAILS_VALIDATION_ERROR:
+      throw handleValidationError(outcome.error, outcome.patientDetails, outcome.nhsNumber)
+    // Following cases will not be hit
+    case pds.patientDetailsLookup.OutcomeType.SUCCESS:
+    case pds.patientDetailsLookup.OutcomeType.SUPERSEDED:
+    case pds.patientDetailsLookup.OutcomeType.AXIOS_ERROR:
+      throw undefined
+  }
+}
+
+const handleValidationError = (
+  error: pds.patientDetailsLookup.ValidatePatientDetails.Outcome,
+  patientDetails: PatientDetails,
+  nhsNumber: string
+) => {
+  let validationError
+  switch (error.type) {
+    // Valid case will never be hit
+    case pds.patientDetailsLookup.ValidatePatientDetails.OutcomeType.VALID:
+      throw undefined
+    case pds.patientDetailsLookup.ValidatePatientDetails.OutcomeType.MISSING_FIELDS:
+      validationError = new pds.PDSError(
+        `Incomplete patient information. Missing required fields: ${error.missingFields.join(", ")}`,
+        "INCOMPLETE_DATA"
+      )
+      break
+    case pds.patientDetailsLookup.ValidatePatientDetails.OutcomeType.NOT_NULL_WHEN_NOT_PRESENT:
+      validationError = new pds.PDSError(`${error.field} must be explicitly null when not present`)
+      break
+  }
+
+  logger.error("Patient data validation failed", {
+    error: validationError,
+    patientDetails: JSON.stringify(patientDetails),
+    nhsNumber
+  })
+  throw new pds.PDSError("Incomplete patient data", "INCOMPLETE_DATA")
 }
 
 // Export the Lambda function with middleware applied
