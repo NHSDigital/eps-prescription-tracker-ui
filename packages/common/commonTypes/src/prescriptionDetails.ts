@@ -31,91 +31,92 @@
 import {PatientDetails} from "./prescriptionList"
 
 export interface PrescribedItemDetails {
-    medicationName: string;
-    quantity: string;
-    dosageInstructions: string;
-    epsStatusCode: string;
-    nhsAppStatus?: string;
-    itemPendingCancellation: boolean;
-    cancellationReason?: string | null;
+    medicationName: string
+    quantity: string
+    dosageInstructions: string
+    epsStatusCode?: string
+    pharmacyStatus?: string | null
+    itemPendingCancellation: boolean
+    cancellationReason?: string | null
 }
 
 export interface PrescribedItem {
-    itemDetails: PrescribedItemDetails;
+    itemDetails: PrescribedItemDetails
 }
 
 // Additional fields for Dispensed Items
 export interface InitiallyPrescribed {
-    medicationName: string;
-    quantity: string;
-    dosageInstructions: string;
+    medicationName: string
+    quantity: string
+    dosageInstructions: string
 }
 
 export interface DispensedItemDetails extends PrescribedItemDetails {
-    notDispensedReason?: string | null;
-    initiallyPrescribed?: InitiallyPrescribed;
+    notDispensedReason?: string | null
+    initiallyPrescribed?: InitiallyPrescribed
+    pharmacyStatus?: string | null
 }
 
 export interface DispensedItem {
-    itemDetails: DispensedItemDetails;
+    itemDetails: DispensedItemDetails
 }
 
 // Message History and Notifications
 export interface DispenseNotification {
-    ID: string;
-    medicationName: string;
-    quantity: string;
-    dosageInstruction: string;
+    ID: string
+    medicationName: string
+    quantity: string
+    dosageInstruction: string
 }
 
 export interface MessageHistory {
-    messageCode: string;
-    sentDateTime: string;
-    organisationName: string;
-    organisationODS: string;
-    newStatusCode: string;
-    dispenseNotification?: Array<DispenseNotification>;
+    messageCode: string
+    sentDateTime: string
+    organisationName: string
+    organisationODS: string
+    newStatusCode: string
+    dispenseNotification?: Array<DispenseNotification>
 }
 
 // Organisation Details
 export interface OrganisationSummary {
-    name?: string;
-    odsCode: string;
-    address?: string;
-    telephone?: string;
+    name?: string
+    odsCode: string
+    address?: string
+    telephone?: string
 }
 
 // The prescriber's organisation has an extra property
 export interface PrescriberOrganisationSummary extends OrganisationSummary {
-    prescribedFrom?: string;
+    prescribedFrom?: string
 }
 
 export interface PrescriberOrganisation {
-    organisationSummaryObjective: PrescriberOrganisationSummary;
+    organisationSummaryObjective: PrescriberOrganisationSummary
 }
 
 export interface DispenserOrganisation {
-    organisationSummaryObjective: OrganisationSummary;
+    organisationSummaryObjective: OrganisationSummary
 }
 
 // Complete response
 export interface PrescriptionDetailsResponse {
-    patientDetails: PatientDetails;
-    prescriptionId: string;
-    typeCode: string;
-    statusCode: string;
-    issueDate: string;
-    instanceNumber: number | string;
-    maxRepeats: number | string;
+    patientDetails: PatientDetails
+    prescriptionId: string
+    typeCode: string
+    statusCode: string
+    issueDate: string
+    instanceNumber: number | string
+    maxRepeats: number | string
     // FIXME: This was added in https://github.com/NHSDigital/eps-prescription-tracker-ui/pull/670
     // and needs to be handled by https://github.com/NHSDigital/eps-prescription-tracker-ui/pull/417
     isERD?: boolean
-    daysSupply: string;
-    prescriptionPendingCancellation: boolean;
-    prescribedItems: Array<PrescribedItem>;
-    dispensedItems: Array<DispensedItem>;
-    messageHistory: Array<MessageHistory>;
-    prescriberOrganisation: PrescriberOrganisation;
-    nominatedDispenser?: DispenserOrganisation;
-    currentDispenser?: Array<DispenserOrganisation>;
+    daysSupply: string
+    prescriptionPendingCancellation: boolean
+    prescribedItems: Array<PrescribedItem>
+    dispensedItems: Array<DispensedItem>
+    messageHistory: Array<MessageHistory>
+    prescriberOrganisation: PrescriberOrganisation
+    nominatedDispenser?: DispenserOrganisation
+    currentDispenser?: Array<DispenserOrganisation>
 }

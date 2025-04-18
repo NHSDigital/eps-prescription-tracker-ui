@@ -5,6 +5,8 @@ import {usePrescriptionInformation} from "@/context/PrescriptionInformationProvi
 
 import {STRINGS} from "@/constants/ui-strings/PrescriptionInformationBannerStrings"
 
+import {getStatusTagColour, getStatusDisplayText} from "@/helpers/statusMetadata"
+
 const PrescriptionInformationBanner: React.FC = () => {
   const {prescriptionInformation: prescription} = usePrescriptionInformation()
 
@@ -48,7 +50,10 @@ const PrescriptionInformationBanner: React.FC = () => {
         </div>
         <div className="patient-summary__block" id="summary-status">
           <span className="patient-summary__info">
-            {STRINGS.STATUS}: <Tag className="nhsuk-tag--green">{prescription.statusCode}</Tag>
+            {STRINGS.STATUS}:{" "}
+            <Tag color={getStatusTagColour(prescription.statusCode)}>
+              {getStatusDisplayText(prescription.statusCode)}
+            </Tag>
           </span>
         </div>
         <div className="patient-summary__block" id="summary-type">

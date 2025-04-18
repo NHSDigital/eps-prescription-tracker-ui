@@ -13,7 +13,7 @@ import {
 } from "@cpt-ui-common/common-types"
 
 import {FRONTEND_PATHS} from "@/constants/environment"
-import {LOADING_FULL_PRESCRIPTION} from "@/constants/ui-strings/PrescriptionDetailsPageStrings"
+import {STRINGS} from "@/constants/ui-strings/PrescriptionDetailsPageStrings"
 
 import {AuthContext, AuthContextType} from "@/context/AuthProvider"
 
@@ -51,8 +51,8 @@ const MockAuthProvider = ({
   children,
   initialState = defaultAuthState
 }: {
-  children: React.ReactNode;
-  initialState?: AuthContextType;
+  children: React.ReactNode
+  initialState?: AuthContextType
 }) => {
   const [authState, setAuthState] = useState<AuthContextType>({
     ...initialState,
@@ -64,7 +64,7 @@ const MockAuthProvider = ({
         isSignedIn: true,
         user: {
           username:
-            (input?.provider as { custom: string })?.custom || "mockUser",
+            (input?.provider as {custom: string})?.custom || "mockUser",
           userId: "mock-user-id"
         },
         error: null,
@@ -106,7 +106,7 @@ type SiteDetailsCardsProps = {
 }
 
 // simple mock for SiteDetailsCards so we can inspect the props.
-jest.mock("@/components/SiteDetailsCards", () => ({
+jest.mock("@/components/prescriptionDetails/SiteDetailsCards", () => ({
 
   SiteDetailsCards: (props: SiteDetailsCardsProps) => {
     return (
@@ -124,7 +124,7 @@ const renderComponent = (
   const queryString = prescriptionId ? `?prescriptionId=${prescriptionId}` : ""
   const initialRoute = `/site/prescription-details${queryString}`
 
-  ;(useSearchParams as jest.Mock).mockReturnValue([new URLSearchParams(queryString)])
+    ; (useSearchParams as jest.Mock).mockReturnValue([new URLSearchParams(queryString)])
 
   return render(
     <MockAuthProvider initialState={initialAuthState}>
@@ -205,7 +205,7 @@ describe("PrescriptionDetailsPage", () => {
 
     // Check that the loading message is rendered
     const loadingHeading = screen.getByRole("heading", {
-      name: LOADING_FULL_PRESCRIPTION
+      name: STRINGS.LOADING_FULL_PRESCRIPTION
     })
     expect(loadingHeading).toBeInTheDocument()
 
@@ -229,7 +229,7 @@ describe("PrescriptionDetailsPage", () => {
       ...mockPrescriptionDetailsResponse
     }
 
-    ;(http.get as jest.Mock).mockResolvedValue({status: 200, data: payload})
+      ; (http.get as jest.Mock).mockResolvedValue({status: 200, data: payload})
 
     renderComponent("SUCCESS_ID")
 

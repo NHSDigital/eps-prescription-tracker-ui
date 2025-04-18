@@ -3,7 +3,7 @@ import {render, screen, within} from "@testing-library/react"
 
 import "@testing-library/jest-dom"
 
-import {SiteDetailsCard, SiteDetailsCards} from "@/components/SiteDetailsCards"
+import {SiteDetailsCard, SiteDetailsCards} from "@/components/prescriptionDetails/SiteDetailsCards"
 
 // Mock the constants
 jest.mock("@/constants/ui-strings/SiteDetailsCardsStrings", () => ({
