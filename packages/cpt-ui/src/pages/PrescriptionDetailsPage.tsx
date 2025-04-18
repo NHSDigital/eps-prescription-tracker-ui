@@ -10,7 +10,6 @@ import {
 
 import {
   PrescriberOrganisationSummary,
-  PatientDetails,
   OrganisationSummary,
   PrescriptionDetailsResponse,
   DispensedItem,
@@ -29,239 +28,7 @@ import {SiteDetailsCards} from "@/components/prescriptionDetails/SiteDetailsCard
 import {PrescribedDispensedItemsCards} from "@/components/prescriptionDetails/PrescribedDispensedItemsCards"
 
 import http from "@/helpers/axios"
-
-// Mock data, lifted from the prototype page.
-const mockPrescriber: PrescriberOrganisationSummary = {
-  name: "Fiji surgery",
-  odsCode: "FI05964",
-  address: "90 YARROW LANE, FINNSBURY, E45 T46",
-  telephone: "01232 231321",
-  prescribedFrom: "012345"
-}
-
-const altMockPrescriber: PrescriberOrganisationSummary = {
-  name: "Fiji surgery",
-  odsCode: "FI05964",
-  address: "90 YARROW LANE, FINNSBURY, E45 T46",
-  telephone: "01232 231321",
-  prescribedFrom: "021345"
-}
-
-const mockDispenser: OrganisationSummary = {
-  name: "Cohens chemist",
-  odsCode: "FV519",
-  address: "22 RUE LANE, CHISWICK, KT19 D12",
-  telephone: "01943 863158"
-}
-
-const mockNominatedDispenser: OrganisationSummary = {
-  name: "Cohens chemist",
-  odsCode: "FV519",
-  address: "22 RUE LANE, CHISWICK, KT19 D12",
-  telephone: "01943 863158"
-}
-
-const altMockNominatedDispenser: OrganisationSummary = {
-  name: "Some Guy",
-  odsCode: "ABC123",
-  // eslint-disable-next-line max-len
-  address: "7&8 WELLINGTON PLACE, thisisaverylongwordthatshouldtriggerthelinetowraparoundwhilstbreakingthewordupintosmallerchunks, LEEDS, LS1 4AP",
-  telephone: "07712 345678"
-}
-
-const mockPrescriptionInformation = {
-  prescriptionId: "",
-  issueDate: "18-Jan-2024",
-  statusCode: "0003", // Some items dispensed"
-  typeCode: "Acute",
-  isERD: false,
-  instanceNumber: 2,
-  maxRepeats: 6,
-  daysSupply: "28"
-}
-
-const mockPrescriptionInformationErd = {
-  prescriptionId: "",
-  issueDate: "22-Mar-2024",
-  statusCode: "0002", // Downloaded by a dispenser
-  typeCode: "eRD",
-  isERD: true,
-  instanceNumber: 1,
-  maxRepeats: 6,
-  daysSupply: "28"
-}
-
-const mockPatientDetails: PatientDetails = {
-  nhsNumber: "5900009890",
-  prefix: "Mr",
-  suffix: "",
-  given: "William",
-  family: "Wolderton",
-  gender: "male",
-  dateOfBirth: "01-Nov-1988",
-  address: {
-    line1: "55 OAK STREET",
-    line2: "OAK LANE",
-    city: "Leeds",
-    postcode: "LS1 1XX"
-  }
-}
-
-const mockUnavailablePatientDetails: PatientDetails = {
-  nhsNumber: "5900009890",
-  prefix: "Ms",
-  suffix: "",
-  given: "Janet",
-  family: "Piper",
-  gender: null,
-  dateOfBirth: null,
-  address: null
-}
-
-const mockDispensedItems: Array<DispensedItem> = [
-  {
-    itemDetails: {
-      medicationName: "Raberprazole 10mg tablets",
-      quantity: "56 tablets",
-      dosageInstructions: "Take one twice daily",
-      epsStatusCode: "0001", // Item fully dispensed
-      pharmacyStatus: "Collected",
-      itemPendingCancellation: false
-    }
-  },
-  {
-    itemDetails: {
-      medicationName: "Glyceryl trinitrate 400micrograms/does aerosol sublingual spray",
-      quantity: "1 spray",
-      dosageInstructions: "Use as needed",
-      epsStatusCode: "0001", // Item fully dispensed
-      pharmacyStatus: "Collected",
-      itemPendingCancellation: false
-    }
-  }
-]
-
-const mockPrescribedItems: Array<PrescribedItem> = [
-  {
-    itemDetails: {
-      medicationName: "Oseltamivir 30mg capsules",
-      quantity: "20 capsules",
-      dosageInstructions: "One capsule twice a day",
-      epsStatusCode: "0004", //Item not dispensed - owing
-      pharmacyStatus: "With pharmacy",
-      itemPendingCancellation: false,
-      cancellationReason: null
-    }
-  }
-]
-
-const mockPrescribedItemsCancellation: Array<PrescribedItem> = [
-  {
-    itemDetails: {
-      medicationName: "Phosphates enema (Formula B) 129ml standard tube",
-      quantity: "1 tube",
-      dosageInstructions: "Use ONE when required",
-      epsStatusCode: "0007", // Item not dispensed
-      pharmacyStatus: "With pharmacy",
-      itemPendingCancellation: true,
-      cancellationReason: "Prescribing error"
-    }
-  },
-  {
-    itemDetails: {
-      medicationName: "Mirtazapine 30mg",
-      quantity: "1 spray",
-      dosageInstructions: "Use as needed",
-      epsStatusCode: "0007", // Item not dispensed
-      pharmacyStatus: "With pharmacy",
-      itemPendingCancellation: true,
-      cancellationReason: "Prescribing error"
-    }
-  },
-  {
-    itemDetails: {
-      medicationName: "Oseltamivir 30mg capsules",
-      quantity: "20 capsules",
-      dosageInstructions: "One capsule twice a day",
-      epsStatusCode: "0007", // Item not dispensed
-      pharmacyStatus: "With pharmacy",
-      itemPendingCancellation: true,
-      cancellationReason: "Prescribing error"
-    }
-  },
-  {
-    itemDetails: {
-      medicationName: "Glyceryl trinitrate 400micrograms/does aerosol sublingual spray",
-      quantity: "21 tablets",
-      dosageInstructions: "Take 3 times a day with water",
-      epsStatusCode: "0007", // Item not dispensed
-      pharmacyStatus: "With pharmacy",
-      itemPendingCancellation: true,
-      cancellationReason: "Prescribing error"
-    }
-  }
-]
-
-const mockDispensedPartialWithInitial: Array<DispensedItem> = [
-  {
-    itemDetails: {
-      medicationName: "Raberprazole 10mg tablets",
-      quantity: "28 out of 56 tablets",
-      dosageInstructions: "Take one twice daily",
-      epsStatusCode: "0003", // Item dispensed - partial
-      pharmacyStatus: "Collected",
-      itemPendingCancellation: false,
-      initiallyPrescribed: {
-        medicationName: "Raberprazole 10mg tablets",
-        quantity: "56 tablets",
-        dosageInstructions: "Take one twice daily"
-      }
-    }
-  },
-  {
-    itemDetails: {
-      medicationName: "Glyceryl trinitrate 400micrograms/does aerosol sublingual spray",
-      quantity: "1 spray",
-      dosageInstructions: "Use as needed",
-      epsStatusCode: "0001",
-      pharmacyStatus: "Collected",
-      itemPendingCancellation: false
-    }
-  }
-]
-
-const mockDispensedItemsNoPharmacyStatus: Array<DispensedItem> = [
-  {
-    itemDetails: {
-      medicationName: "Raberprazole 10mg tablets",
-      quantity: "56 tablets",
-      dosageInstructions: "Take one twice daily",
-      epsStatusCode: "0001",
-      pharmacyStatus: undefined,
-      itemPendingCancellation: false
-    }
-  },
-  {
-    itemDetails: {
-      medicationName: "Glyceryl trinitrate 400micrograms/does aerosol sublingual spray",
-      quantity: "1 spray",
-      dosageInstructions: "Use as needed",
-      epsStatusCode: "0001",
-      pharmacyStatus: undefined,
-      itemPendingCancellation: false
-    }
-  },
-  {
-    itemDetails: {
-      medicationName: "Oseltamivir 30mg capsules",
-      quantity: "20 capsules",
-      dosageInstructions: "One capsule twice a day",
-      epsStatusCode: "0001",
-      pharmacyStatus: undefined,
-      itemPendingCancellation: false
-    }
-  }
-]
+import {getMockPayload} from "@/helpers/mockPayload"
 
 export default function PrescriptionDetailsPage() {
   const auth = useContext(AuthContext)
@@ -285,6 +52,7 @@ export default function PrescriptionDetailsPage() {
 
     let payload: PrescriptionDetailsResponse | undefined
     try {
+      // Attempt to fetch live prescription details from the API
       const response = await http.get(url, {
         headers: {
           Authorization: `Bearer ${auth?.idToken}`,
@@ -292,10 +60,12 @@ export default function PrescriptionDetailsPage() {
         }
       })
 
+      // Validate HTTP response status
       if (response.status !== 200) {
         throw new Error(`Status Code: ${response.status}`)
       }
 
+      // Assign response payload or throw if none received
       payload = response.data
       if (!payload) {
         throw new Error("No payload received from the API")
@@ -303,75 +73,12 @@ export default function PrescriptionDetailsPage() {
     } catch (err) {
       console.error("Failed to fetch prescription details. Using mock data fallback.", err)
 
-      //
       // FIXME: This is a static, mock data fallback we can use in lieu of the real data
       // backend endpoint, which is still waiting for the auth SNAFU to get sorted out.
-      //
+      const mockPayload = getMockPayload(prescriptionId)
 
-      // Shared base structure for all mock payloads
-      const commonPrescriptionData: PrescriptionDetailsResponse = {
-        ...mockPrescriptionInformation,
-        prescriptionId,
-        patientDetails: mockPatientDetails,
-        prescriptionPendingCancellation: false,
-        prescribedItems: [],
-        dispensedItems: [],
-        messageHistory: [],
-        prescriberOrganisation: {organisationSummaryObjective: mockPrescriber} // ensure this is defined
-      }
-
-      // ID-specific overrides for different mock scenarios
-      const mockPrescriptionOverrides: Record<string, Partial<PrescriptionDetailsResponse>> = {
-        "C0C757-A83008-C2D93O": {
-          prescribedItems: mockPrescribedItems,
-          dispensedItems: mockDispensedItems,
-          prescriberOrganisation: {organisationSummaryObjective: mockPrescriber},
-          nominatedDispenser: {organisationSummaryObjective: mockNominatedDispenser},
-          currentDispenser: [{organisationSummaryObjective: mockDispenser}]
-        },
-        "209E3D-A83008-327F9F": {
-          prescribedItems: mockPrescribedItems,
-          dispensedItems: mockDispensedItems,
-          patientDetails: mockUnavailablePatientDetails,
-          prescriberOrganisation: {organisationSummaryObjective: altMockPrescriber},
-          nominatedDispenser: undefined,
-          currentDispenser: undefined
-        },
-        "7F1A4B-A83008-91DC2E": {
-          ...mockPrescriptionInformationErd,
-          prescriptionId,
-          prescribedItems: mockPrescribedItemsCancellation,
-          prescriberOrganisation: {organisationSummaryObjective: mockPrescriber},
-          nominatedDispenser: undefined,
-          currentDispenser: [{organisationSummaryObjective: mockDispenser}]
-        },
-        "B8C9E2-A83008-5F7B3A": {
-          prescribedItems: [],
-          dispensedItems: mockDispensedPartialWithInitial,
-          prescriberOrganisation: {organisationSummaryObjective: altMockPrescriber},
-          nominatedDispenser: {organisationSummaryObjective: altMockNominatedDispenser},
-          currentDispenser: [{organisationSummaryObjective: mockDispenser}]
-        },
-        "4D6F2C-A83008-A3E7D1": {
-          dispensedItems: mockDispensedItemsNoPharmacyStatus,
-          prescriberOrganisation: {organisationSummaryObjective: mockPrescriber},
-          statusCode: "0006", // All items dispensed
-          nominatedDispenser: {
-            organisationSummaryObjective: {
-              name: undefined,
-              odsCode: "FV519",
-              address: undefined,
-              telephone: undefined
-            }
-          },
-          currentDispenser: [{organisationSummaryObjective: mockDispenser}]
-        }
-      }
-
-      const overrides = mockPrescriptionOverrides[prescriptionId]
-
-      // No matching mock found so we clear it all out and redirect
-      if (!overrides) {
+      // If no matching mock scenario exists, redirect to 'not found' page and reset state
+      if (!mockPayload) {
         setPrescriptionInformation(undefined)
         setPatientDetails(undefined)
         setPrescriber(undefined)
@@ -381,10 +88,7 @@ export default function PrescriptionDetailsPage() {
         return
       }
 
-      payload = {
-        ...commonPrescriptionData,
-        ...overrides
-      }
+      payload = mockPayload
     }
 
     // Use the populated payload (retrieved live or from mock fallback)
