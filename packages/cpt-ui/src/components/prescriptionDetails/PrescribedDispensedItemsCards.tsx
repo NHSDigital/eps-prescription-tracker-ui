@@ -53,7 +53,7 @@ export function PrescribedDispensedItemsCards({
 
             {/* Display EPS status as NHS Tag */}
             {epsStatusCode && (
-              <p className="nhsuk-u-margin-bottom-2">
+              <p className="nhsuk-u-margin-bottom-2" data-testid="eps-status-tag">
                 <Tag color={getItemStatusTagColour(epsStatusCode)}>
                   {getItemStatusDisplayText(epsStatusCode)}
                 </Tag>
@@ -62,12 +62,12 @@ export function PrescribedDispensedItemsCards({
 
             {/* Cancellation warning if applicable */}
             {itemPendingCancellation && (
-              <p className="nhsuk-u-margin-bottom-2">
+              <p className="nhsuk-u-margin-bottom-2" data-testid="cancellation-warning">
                 <span role="img" aria-label="Warning">⚠️</span> {STRINGS.CANCELLATION_REASON_MESSAGE}
               </p>
             )}
 
-            <SummaryList className="nhsuk-u-margin-bottom-2">
+            <SummaryList className="nhsuk-u-margin-bottom-2" data-testid="prescription-summary-list">
               {/* Optional cancellation reason */}
               {cancellationReason && (
                 <SummaryList.Row>
@@ -115,10 +115,10 @@ export function PrescribedDispensedItemsCards({
 
             {/* Expandable details for initially prescribed info, only for dispensed items */}
             {hasInitial && (
-              <Details>
+              <Details data-testid="initial-prescription-details">
                 <Details.Summary>{STRINGS.INITIALLY_PRESCRIBED_DETAILS}</Details.Summary>
                 <Details.Text>
-                  <SummaryList>
+                  <SummaryList data-testid="initial-prescription-summary-list">
                     <SummaryList.Row>
                       <SummaryList.Key>{STRINGS.INITIALLY_PRESCRIBED_ITEM}</SummaryList.Key>
                       <SummaryList.Value>{item.itemDetails.initiallyPrescribed!.medicationName}</SummaryList.Value>
