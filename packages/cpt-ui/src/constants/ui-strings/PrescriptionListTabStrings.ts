@@ -14,7 +14,7 @@ export const PRESCRIPTION_LIST_TABS: Record<string, FormattableTabHeader> = {
       FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT + (query ? "?" + query : "")
   },
   future: {
-    title: (count: number) => `Future dated prescriptions (${count})`,
+    title: (count: number) => `Future-dated prescriptions (${count})`,
     link: (query?: string) =>
       FRONTEND_PATHS.PRESCRIPTION_LIST_FUTURE + (query ? "?" + query : "")
   },

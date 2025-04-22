@@ -4,23 +4,12 @@ import "../../styles/PrescriptionTable.scss"
 import EpsSpinner from "@/components/EpsSpinner"
 import {PrescriptionSummary} from "@cpt-ui-common/common-types/src"
 import {PrescriptionsListStrings} from "../../constants/ui-strings/PrescriptionListTabStrings"
+import {getStatusTagColour, getStatusDisplayText} from "@/helpers/statusMetadata"
 
 export interface PrescriptionsListTableProps {
   textContent: PrescriptionsListStrings
   prescriptions: Array<PrescriptionSummary>
 }
-
-type TagColour =
-  | "red"
-  | "yellow"
-  | "purple"
-  | "blue"
-  | "white"
-  | "green"
-  | "grey"
-  | "pink"
-  | "aqua-green"
-  | "orange"
 
 const PrescriptionsListTable = ({textContent, prescriptions}: PrescriptionsListTableProps) => {
   const [sortConfig, setSortConfig] = useState({
@@ -43,44 +32,45 @@ const PrescriptionsListTable = ({textContent, prescriptions}: PrescriptionsListT
     {key: "prescriptionId", label: "Prescription ID"}
   ]
 
-  const getStatusTagColour = (statusCode: string): TagColour => {
-    switch (statusCode) {
-      case "0000": return "orange"
-      case "0001": return "yellow"
-      case "0002": return "purple"
-      case "0003": return "blue"
-      case "0004": return "white"
-      case "0005": return "red"
-      case "0006": return "green"
-      case "0007": return "red"
-      case "0008": return "grey"
-      case "0009": return "pink"
-      case "9000": return "aqua-green"
-      case "9001": return "blue"
-      case "9005": return "red"
-      default: return "red"
-    }
-  }
+  // const getStatusTagColour = (statusCode: string): TagColour => {
+  //   switch (statusCode) {
+  //     case "0000": return "orange"
+  //     case "0001": return "yellow"
+  //     case "0002": return "purple"
+  //     case "0003": return "blue"
+  //     case "0004": return "white"
+  //     case "0005": return "red"
+  //     case "0006": return "green"
+  //     case "0007": return "red"
+  //     case "0008": return "grey"
+  //     case "0009": return "pink"
+  //     case "9000": return "aqua-green"
+  //     case "9001": return "blue"
+  //     case "9005": return "red"
+  //     default: return "red"
+  //   }
+  // }
 
-  const getStatusDisplayText = (statusCode: string): string => {
-    switch (statusCode) {
-      case "0001": return "Available to download"
-      case "0002": return "Downloaded by a dispenser"
-      case "0003": return "Some items dispensed"
-      case "0004": return "Expired"
-      case "0005": return "Cancelled"
-      case "0006": return "All items dispensed"
-      case "0007": return "Not dispensed"
-      case "0008": return "Claimed"
-      case "0009": return "Not claimed"
-      case "9000": return "Future eRD issue"
-      case "9001": return "Future issue date dispense"
-      case "9005": return "Future prescription cancelled"
-      default: return "Unknown"
-    }
-  }
+  // const getStatusDisplayText = (statusCode: string): string => {
+  //   switch (statusCode) {
+  //     case "0001": return "Available to download"
+  //     case "0002": return "Downloaded by a dispenser"
+  //     case "0003": return "Some items dispensed"
+  //     case "0004": return "Expired"
+  //     case "0005": return "Cancelled"
+  //     case "0006": return "All items dispensed"
+  //     case "0007": return "Not dispensed"
+  //     case "0008": return "Claimed"
+  //     case "0009": return "Not claimed"
+  //     case "9000": return "Future eRD issue"
+  //     case "9001": return "Future issue date dispense"
+  //     case "9005": return "Future prescription cancelled"
+  //     default: return "Unknown"
+  //   }
+  // }
 
-  //some logic will need to change here to update X and Y
+  // this functionality is also performed at getPrescriptionTypeDisplayText in "@/helpers/statusMetadata"
+  //however we do not currently have instanceNumber or maxRepeats to make it work fully here
   const getPrescriptionTypeDisplayText = (prescriptionType: string): string => {
     switch (prescriptionType) {
       case "0001": return "Acute"
@@ -222,7 +212,10 @@ const PrescriptionsListTable = ({textContent, prescriptions}: PrescriptionsListT
 
   return (
     <div className="eps-prescription-table-container" data-testid="eps-prescription-table-container">
-      <table className="eps-prescription-table">
+      <table
+        className="eps-prescription-table"
+        data-testid={`${textContent.testid}-prescriptions-results-table`}
+      >
         {renderTableDescription()}
         <thead>
           <tr>
@@ -230,7 +223,7 @@ const PrescriptionsListTable = ({textContent, prescriptions}: PrescriptionsListT
               <th
                 key={heading.key}
                 role="columnheader"
-                onClick={() => requestSort(heading.key)}
+                // onClick={() => requestSort(heading.key)}
                 aria-sort={
                   sortConfig.key === heading.key
                     ? (sortConfig.direction as "ascending" | "descending" | "none" | "other")
