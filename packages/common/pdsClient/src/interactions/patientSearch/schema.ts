@@ -156,10 +156,14 @@ const PatientSearchEntrySchema = {
 } as const satisfies JSONSchema
 type PatientSearchEntry = FromSchema<typeof PatientSearchEntrySchema>
 
+enum ResponseType {
+  BUNDLE = "Bundle",
+  OPERATION_OUTCOME = "OperationOutcome"
+}
 const PatientSearchResponseSchema = {
   type: "object",
   properties: {
-    resourceType: {type: "string", enum: ["Bundle"]},
+    resourceType: {const: ResponseType.BUNDLE},
     entry: {
       type: "array",
       items: PatientSearchEntrySchema
@@ -169,33 +173,32 @@ const PatientSearchResponseSchema = {
 } as const satisfies JSONSchema
 type PatientSearchResponse = FromSchema<typeof PatientSearchResponseSchema>
 
-const OperationOutcomeSchema = {
+const TooManyMatchesResponseSchema = {
   type: "object",
   properties: {
-    resourceType: {type: "string", enum: ["OperationOutcome"]},
+    resourceType: {const: ResponseType.OPERATION_OUTCOME},
     issue: {
       type: "array",
       items: {
         type: "object",
         properties: {
-          code: {type: "string"}
+          code: {const: "TOO_MANY_MATCHES"}
         },
         required: ["code"]
       },
       minItems: 1
     }
   },
-  required: ["issue"]
+  required: ["resourceType", "issue"]
 } as const satisfies JSONSchema
 
 const PDSResponseSchema = {
   type: "object",
   oneOf: [
-    PatientSearchResponseSchema,
-    OperationOutcomeSchema
+    TooManyMatchesResponseSchema,
+    PatientSearchResponseSchema
   ]
 } as const satisfies JSONSchema
-type PDSResponse = FromSchema<typeof PDSResponseSchema>
 
 const $compile: $Compiler = (schema) => {
   const validate = new Ajv().compile(schema)
@@ -211,8 +214,8 @@ export {
   PatientNameUse,
   PatientAddress,
   PatientAddressUse,
-  PDSResponse,
   responseValidator,
   PatientSearchResponse,
-  PatientSearchEntry
+  PatientSearchEntry,
+  ResponseType
 }

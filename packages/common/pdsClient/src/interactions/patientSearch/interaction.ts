@@ -15,12 +15,11 @@ import * as axios from "../../axios_wrapper"
 import {AxiosResponse} from "axios"
 import {
   responseValidator,
-  PDSResponse,
-  PatientSearchResponse,
   PatientNameUse,
   PatientAddressUse,
   PatientMetaCode,
-  PatientSearchEntry
+  PatientSearchEntry,
+  ResponseType
 } from "./schema"
 
 enum PatientSearchOutcomeType {
@@ -101,6 +100,14 @@ async function patientSearch(
   const response = api_call.response
   const data = api_call.data
 
+  // Check for response errors
+  if (response.status !== 200) {
+    return {
+      type: PatientSearchOutcomeType.PDS_ERROR,
+      response
+    }
+  }
+
   const isValidResponse = responseValidator(data)
   if (!isValidResponse) {
     return {
@@ -108,17 +115,19 @@ async function patientSearch(
       response
     }
   }
-
-  const responseError = handleResponseErrors(
-    response,
-    data,
-    searchParameters)
-  if (responseError) {
-    return responseError
+  // Check for too many matches
+  // (Response is a 200, and the body is an OperationOutcome.
+  // Response body is either a bundle or a
+  // too many matches operation outcome verified from schema)
+  if(data.resourceType === ResponseType.OPERATION_OUTCOME){
+    return {
+      type: PatientSearchOutcomeType.TOO_MANY_MATCHES,
+      searchParameters
+    }
   }
 
   // Parse response
-  let patients: Array<PatientSummary> = (data as PatientSearchResponse)
+  let patients: Array<PatientSummary> = data
     .entry
     // Filter out restricted/redacted patients
     .filter((entry) => entry.resource.meta.code === PatientMetaCode.UNRESTRICTED)
@@ -212,34 +221,6 @@ const validatePostcode = (
   }
 
   return [postcode, validationErrors]
-}
-
-const handleResponseErrors = (
-  response: AxiosResponse,
-  data: PDSResponse,
-  searchParameters: PatientSearchParameters
-): PatientSearchOutcome | undefined => {
-// Check for too many matches
-  if(
-    data.resourceType === "OperationOutcome"
-    && data.issue[0].code === "TOO_MANY_MATCHES"
-  ){
-    return {
-      type: PatientSearchOutcomeType.TOO_MANY_MATCHES,
-      searchParameters
-    }
-  }
-
-  // Check for other response errors
-  if (
-    response.status !== 200
-    || data.resourceType === "OperationOutcome"
-  ) {
-    return {
-      type: PatientSearchOutcomeType.PDS_ERROR,
-      response
-    }
-  }
 }
 
 const parseEntry = (entry: PatientSearchEntry): PatientSummary => {
