@@ -1,5 +1,5 @@
 import {Outcome} from "./interaction"
-import {FamilyName, DateOfBirth, Postcode} from "./types"
+import {PatientSearchParameters} from "./types"
 
 export interface Interface {
   patientSearch(
@@ -8,8 +8,6 @@ export interface Interface {
     postcode: string,
   ): Promise<Outcome>;
   patientSearchPath(
-    familyName: FamilyName,
-    dateOfBirth: DateOfBirth,
-    postcode: Postcode
+    searchParameters: PatientSearchParameters
   ): string;
 }

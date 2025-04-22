@@ -3,9 +3,9 @@ import {v4 as uuidv4} from "uuid"
 import {PatientDetails} from "@cpt-ui-common/common-types"
 import * as validatePatientDetails from "./validatePatientDetails"
 import {Client} from "../../client"
-import {AxiosCallOutcomeType} from "../../axios_wrapper"
+import {exhaustive_switch_guard} from "../../utils"
+import * as axios from "../../axios_wrapper"
 import {mapPdsResponseToPatientDetails} from "./utils"
-import {exhaustive_switch_guard} from "utils"
 
 enum PatientDetailsLookupOutcomeType {
   SUCCESS = "success",
@@ -50,7 +50,7 @@ async function getPatientDetails(
     {nhsNumber}
   )
 
-  if (api_call.type === AxiosCallOutcomeType.ERROR){
+  if (api_call.type === axios.OutcomeType.ERROR){
     return {
       type: PatientDetailsLookupOutcomeType.AXIOS_ERROR,
       error: api_call.error,

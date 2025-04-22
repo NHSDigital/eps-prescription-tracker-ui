@@ -1,4 +1,5 @@
-
 export * from "./client"
 export * from "./interactions"
 export * from "./error"
+export * as utils from "./utils"
+export * as axios from "./axios_wrapper"

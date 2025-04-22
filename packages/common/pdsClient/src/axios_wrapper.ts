@@ -1,17 +1,18 @@
+import {AxiosResponse} from "axios"
 import {Client} from "index"
 
-export enum AxiosCallOutcomeType {
+enum AxiosCallOutcomeType {
   SUCCESS = "SUCCESS",
   ERROR = "ERROR",
 }
 
-export type AxiosCallOutcome =
+type AxiosCallOutcome =
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-| { type: AxiosCallOutcomeType.SUCCESS, data: any }
+| { type: AxiosCallOutcomeType.SUCCESS, data: any, response: AxiosResponse }
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 | { type: AxiosCallOutcomeType.ERROR, error: any, timeMs: number }
 
-export async function axios_get(
+async function axios_get(
   client: Client,
   url: string,
   headers: Record<string, string>,
@@ -40,5 +41,11 @@ export async function axios_get(
     })
   }
 
-  return {type: AxiosCallOutcomeType.SUCCESS, data: response.data}
+  return {type: AxiosCallOutcomeType.SUCCESS, data: response.data, response: response}
+}
+
+export {
+  axios_get,
+  AxiosCallOutcome as Outcome,
+  AxiosCallOutcomeType as OutcomeType
 }

@@ -1,15 +1,14 @@
 import {AxiosInstance} from "axios"
 import {Logger} from "@aws-lambda-powertools/logger"
 
-import {patientDetailsLookup, patientSearch} from "."
-import {axios_get as _axios_get, AxiosCallOutcome} from "./axios_wrapper"
+import {patientDetailsLookup, patientSearch, axios} from "."
 
 interface _client{
     axiosInstance: AxiosInstance,
     pdsEndpoint: string,
     logger: Logger,
 
-    axios_get(url: string, headers: Record<string, string>): Promise<AxiosCallOutcome>
+    axios_get(url: string, headers: Record<string, string>): Promise<axios.Outcome>
 }
 
 export class Client implements _client, patientDetailsLookup.Interface, patientSearch.Interface {
@@ -39,7 +38,7 @@ export class Client implements _client, patientDetailsLookup.Interface, patientS
     headers: Record<string, string>,
     additionalLogParams: Record<string, string> = {}
   )=>
-    _axios_get(this, url, headers, additionalLogParams)
+    axios.axios_get(this, url, headers, additionalLogParams)
 
   // PatientDetailsLookup interface
   patientDetailsPath = (nhsNumber: string) =>
@@ -48,14 +47,10 @@ export class Client implements _client, patientDetailsLookup.Interface, patientS
 
   // PatientSearch interface
   patientSearchPath = (
-    familyName: patientSearch.types.FamilyName,
-    dateOfBirth: patientSearch.types.DateOfBirth,
-    postcode: patientSearch.types.Postcode
+    searchParameters: patientSearch.types.PatientSearchParameters
   ) => patientSearch.utils.PATIENT_DETAILS_PATH(
     this.pdsEndpoint,
-    familyName,
-    dateOfBirth,
-    postcode
+    searchParameters
   )
   patientSearch = (
     familyName: string,

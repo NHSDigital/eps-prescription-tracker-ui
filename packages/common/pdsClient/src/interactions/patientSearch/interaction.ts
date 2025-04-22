@@ -6,34 +6,53 @@ import {
   DateOfBirth,
   DateOfBirthFromStringOutcomeType,
   Postcode,
-  PostcodeFromStringOutcomeType
+  PostcodeFromStringOutcomeType,
+  ValidatedParameter,
+  PatientSearchParameters
 } from "./types"
-import {exhaustive_switch_guard} from "utils"
-import {AxiosCallOutcomeType} from "axios_wrapper"
-
-// type PatientSummary = {
-//   familyName: string,
-//   givenName: string,
-//   dateOfBirth: string,
-//   address: string,
-//   postcode: string,
-//   nhsNumber: string,
-// }
+import {exhaustive_switch_guard} from "../../utils"
+import * as axios from "../../axios_wrapper"
+import {AxiosResponse} from "axios"
+import {
+  responseValidator,
+  PDSResponse,
+  PatientSearchResponse,
+  PatientNameUse,
+  PatientAddressUse,
+  PatientMetaCode,
+  PatientSearchEntry
+} from "./schema"
 
 enum PatientSearchOutcomeType {
-  PLACEHOLDER = "PLACEHOLDER",
+  SUCCESS = "SUCCESS",
   INVALID_PARAMETERS = "INVALID_PARAMETERS",
   AXIOS_ERROR = "AXIOS_ERROR",
+  RESPONSE_PARSE_ERROR = "RESPONSE_PARSE_ERROR",
+  TOO_MANY_MATCHES = "TOO_MANY_MATCHES",
+  PDS_ERROR = "PDS_ERROR"
+}
+
+type PatientSummary = {
+  familyName: string,
+  givenName?: Array<string>,
+  gender: string,
+  dateOfBirth: string,
+  address?: Array<string>,
+  postcode?: string,
+  nhsNumber: string,
 }
 
 type InvalidParameter = {
-  name: string,
+  name: ValidatedParameter,
   error: string
 }
 type PatientSearchOutcome =
-  | { type: PatientSearchOutcomeType.PLACEHOLDER }
+  | { type: PatientSearchOutcomeType.SUCCESS, patients: Array<PatientSummary> }
   | { type: PatientSearchOutcomeType.INVALID_PARAMETERS, validationErrors: Array<InvalidParameter> }
   | { type: PatientSearchOutcomeType.AXIOS_ERROR, error: Error, url: string, timeMs: number }
+  | { type: PatientSearchOutcomeType.RESPONSE_PARSE_ERROR, response: AxiosResponse }
+  | { type: PatientSearchOutcomeType.TOO_MANY_MATCHES, searchParameters: PatientSearchParameters }
+  | { type:PatientSearchOutcomeType.PDS_ERROR, response: AxiosResponse }
 
 async function patientSearch(
   client: Client,
@@ -43,10 +62,13 @@ async function patientSearch(
 ): Promise<PatientSearchOutcome> {
   // Input validation
   let validationErrors: Array<InvalidParameter> = []
+  let familyName
+  let dateOfBirth
+  let postcode
 
-  const familyName = validateFamilyName(_familyName, validationErrors)
-  const dateOfBirth = validateDateOfBirth(_dateOfBirth, validationErrors)
-  const postcode = validatePostcode(_postcode, validationErrors)
+  [familyName, validationErrors] = validateFamilyName(_familyName, validationErrors);
+  [dateOfBirth, validationErrors] = validateDateOfBirth(_dateOfBirth, validationErrors);
+  [postcode, validationErrors] = validatePostcode(_postcode, validationErrors)
   if (validationErrors.length > 0) {
     return {
       type: PatientSearchOutcomeType.INVALID_PARAMETERS,
@@ -55,19 +77,20 @@ async function patientSearch(
   }
 
   // API call
+  const searchParameters: PatientSearchParameters = {
+    familyName: familyName as FamilyName,
+    dateOfBirth: dateOfBirth as DateOfBirth,
+    postcode: postcode as Postcode
+  }
   const url = client.patientSearchPath(
-    familyName as FamilyName,
-    dateOfBirth as DateOfBirth,
-    postcode as Postcode
+    searchParameters
   )
   const headers = {}
-  const additionalLogParams = {}
   const api_call = await client.axios_get(
     url,
-    headers,
-    additionalLogParams
+    headers
   )
-  if (api_call.type === AxiosCallOutcomeType.ERROR) {
+  if (api_call.type === axios.OutcomeType.ERROR) {
     return {
       type: PatientSearchOutcomeType.AXIOS_ERROR,
       error: api_call.error,
@@ -75,12 +98,42 @@ async function patientSearch(
       timeMs: api_call.timeMs
     }
   }
+  const response = api_call.response
   const data = api_call.data
 
-  throw data
+  const isValidResponse = responseValidator(data)
+  if (!isValidResponse) {
+    return {
+      type: PatientSearchOutcomeType.RESPONSE_PARSE_ERROR,
+      response
+    }
+  }
+
+  const responseError = handleResponseErrors(
+    response,
+    data,
+    searchParameters)
+  if (responseError) {
+    return responseError
+  }
+
+  // Parse response
+  let patients: Array<PatientSummary> = (data as PatientSearchResponse)
+    .entry
+    // Filter out restricted/redacted patients
+    .filter((entry) => entry.resource.meta.code === PatientMetaCode.UNRESTRICTED)
+    .map(parseEntry)
+
+  return {
+    type: PatientSearchOutcomeType.SUCCESS,
+    patients
+  }
 }
 
-const validateFamilyName = (_familyName: string, validationErrors: Array<InvalidParameter>): FamilyName | undefined => {
+const validateFamilyName = (
+  _familyName: string,
+  validationErrors: Array<InvalidParameter>
+): [FamilyName | undefined, Array<InvalidParameter>] => {
   let familyName
 
   const familyNameValidationOutcome = FamilyName.from_string(_familyName)
@@ -90,13 +143,13 @@ const validateFamilyName = (_familyName: string, validationErrors: Array<Invalid
       break
     case FamilyNameFromStringOutcomeType.TOO_LONG:
       validationErrors.push({
-        name: "familyName",
+        name: ValidatedParameter.FAMILY_NAME,
         error: "Family name can be at most 35 characters"
       })
       break
     case FamilyNameFromStringOutcomeType.WILDCARD_TOO_SOON:
       validationErrors.push({
-        name: "familyName",
+        name: ValidatedParameter.FAMILY_NAME,
         error: "Wildcard cannot be in first 2 characters"
       })
       break
@@ -104,13 +157,13 @@ const validateFamilyName = (_familyName: string, validationErrors: Array<Invalid
       exhaustive_switch_guard(familyNameValidationOutcome)
   }
 
-  return familyName
+  return [familyName, validationErrors]
 }
 
 const validateDateOfBirth = (
   _dateOfBirth: string,
   validationErrors: Array<InvalidParameter>
-): DateOfBirth | undefined => {
+): [DateOfBirth | undefined, Array<InvalidParameter>] => {
   let dateOfBirth
 
   const dateOfBirthValidationOutcome = DateOfBirth.from_string(_dateOfBirth)
@@ -120,13 +173,13 @@ const validateDateOfBirth = (
       break
     case DateOfBirthFromStringOutcomeType.BAD_FORMAT:
       validationErrors.push({
-        name: "dateOfBirth",
+        name: ValidatedParameter.DATE_OF_BIRTH,
         error: "Date of birth must be in YYYY-MM-DD format"
       })
       break
     case DateOfBirthFromStringOutcomeType.INVALID_DATE:
       validationErrors.push({
-        name: "dateOfBirth",
+        name: ValidatedParameter.DATE_OF_BIRTH,
         error: "Date of birth is not a valid date"
       })
       break
@@ -134,10 +187,13 @@ const validateDateOfBirth = (
       exhaustive_switch_guard(dateOfBirthValidationOutcome)
   }
 
-  return dateOfBirth
+  return [dateOfBirth, validationErrors]
 }
 
-const validatePostcode = (_postcode: string, validationErrors: Array<InvalidParameter>): Postcode | undefined => {
+const validatePostcode = (
+  _postcode: string,
+  validationErrors: Array<InvalidParameter>
+): [Postcode | undefined, Array<InvalidParameter>] => {
   let postcode
 
   const postcodeValidationOutcome = Postcode.from_string(_postcode)
@@ -147,7 +203,7 @@ const validatePostcode = (_postcode: string, validationErrors: Array<InvalidPara
       break
     case PostcodeFromStringOutcomeType.WILDCARD_TOO_SOON:
       validationErrors.push({
-        name: "postcode",
+        name: ValidatedParameter.POSTCODE,
         error: "Wildcard cannot be in first 2 characters"
       })
       break
@@ -155,7 +211,63 @@ const validatePostcode = (_postcode: string, validationErrors: Array<InvalidPara
       exhaustive_switch_guard(postcodeValidationOutcome)
   }
 
-  return postcode
+  return [postcode, validationErrors]
+}
+
+const handleResponseErrors = (
+  response: AxiosResponse,
+  data: PDSResponse,
+  searchParameters: PatientSearchParameters
+): PatientSearchOutcome | undefined => {
+// Check for too many matches
+  if(
+    data.resourceType === "OperationOutcome"
+    && data.issue[0].code === "TOO_MANY_MATCHES"
+  ){
+    return {
+      type: PatientSearchOutcomeType.TOO_MANY_MATCHES,
+      searchParameters
+    }
+  }
+
+  // Check for other response errors
+  if (
+    response.status !== 200
+    || data.resourceType === "OperationOutcome"
+  ) {
+    return {
+      type: PatientSearchOutcomeType.PDS_ERROR,
+      response
+    }
+  }
+}
+
+const parseEntry = (entry: PatientSearchEntry): PatientSummary => {
+  const resource = entry.resource
+
+  const nhsNumber = resource.id
+  const gender = resource.gender
+  const dateOfBirth = resource.birthDate
+
+  // Find the usual name (validated in the schema to be present)
+  const usualName = resource.name.find((name) => name.use === PatientNameUse.USUAL)!
+  const familyName = usualName.family
+  const givenName = usualName.given
+
+  // Find the home address (validated in the schema to be present)
+  const homeAddress = resource.address.find((address) => address.use === PatientAddressUse.HOME)!
+  const address = homeAddress.line
+  const postcode = homeAddress.postalCode
+
+  return {
+    nhsNumber,
+    gender,
+    dateOfBirth,
+    familyName,
+    givenName,
+    address,
+    postcode
+  }
 }
 
 export {
