@@ -165,7 +165,7 @@
       "eslint.format.enable": true,
       "editor.defaultFormatter": "dbaeumer.vscode-eslint",
       "[typescriptreact]": {
-        "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+        "editor.defaultFormatter": "vscode.typescript-language-features"
       },
       "[javascriptreact]": {
         "editor.defaultFormatter": "dbaeumer.vscode-eslint"
