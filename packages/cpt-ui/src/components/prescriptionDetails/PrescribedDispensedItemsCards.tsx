@@ -142,7 +142,7 @@ export function PrescribedDispensedItemsCards({
   }
 
   return (
-    <Col width="one-third" className="site-card-column">
+    <Col width="one-third">
       {/* Dispensed Section */}
       {dispensedItems.length > 0 && (
         <>

@@ -68,11 +68,12 @@ export function SiteDetailsCard({
       <Card
         cardType="primary"
         clickable={false}
-        className="site-card"
+        className="nhsuk-u-margin-bottom-3"
         // The test id here includes the heading - later, this will be used for regression tests to find the cards
         data-testid={`site-card-${heading.replaceAll(" ", "-").toLowerCase()}`}
       >
-        <Card.Content className="site-card content">
+        <Card.Content className="nhsuk-u-padding-top-3 nhsuk-u-padding-bottom-1
+                                 nhsuk-u-padding-right-3 nhsuk-u-padding-left-3">
           <Card.Description>
             <Card.Heading headingLevel="H3" className="nhsuk-heading-xs nhsuk-u-margin-bottom-1">
               {heading}
@@ -114,7 +115,7 @@ export function SiteDetailsCards({
 
   return (
     <Row>
-      <Col width="full" className="site-card-column">
+      <Col width="full">
         <h2 className="nhsuk-heading-xs nhsuk-u-margin-bottom-2">{HEADING}</h2>
         {dispenser && (
           <SiteDetailsCard heading={DISPENSER} {...dispenser} />
