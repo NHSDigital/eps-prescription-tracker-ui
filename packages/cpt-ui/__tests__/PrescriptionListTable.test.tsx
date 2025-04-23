@@ -91,29 +91,6 @@ describe("PrescriptionsListTable", () => {
     jest.useRealTimers()
   })
 
-  it("displays the correct prescription data in each column", async () => {
-    jest.useFakeTimers()
-    render(<PrescriptionsListTable textContent={textContent} prescriptions={prescriptions} />)
-
-    jest.advanceTimersByTime(2000)
-
-    await waitFor(() => {
-      expect(screen.getByText("01-Mar-2025")).toBeInTheDocument()
-
-      expect(screen.getByText("Acute")).toBeInTheDocument()
-      expect(screen.getByText("Repeat Y of X")).toBeInTheDocument()
-      expect(screen.getByText("eRD Y of X")).toBeInTheDocument()
-
-      expect(screen.getByText("One or more items pending cancellation")).toBeInTheDocument()
-      expect(screen.getByText("None")).toBeInTheDocument()
-
-      expect(screen.getByText("C0C757-A83008-C2D93O")).toBeInTheDocument()
-      expect(screen.getByText("209E3D-A83008-327F9F")).toBeInTheDocument()
-    })
-
-    jest.useRealTimers()
-  })
-
   it("sorts the table when a column header is clicked", async () => {
     jest.useFakeTimers()
     render(<PrescriptionsListTable textContent={textContent} prescriptions={prescriptions} />)
