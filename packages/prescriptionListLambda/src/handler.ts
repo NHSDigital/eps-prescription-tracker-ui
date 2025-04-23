@@ -365,7 +365,7 @@ const handlePatientDetailsLookupError = (outcome: pds.patientDetailsLookup.Outco
     case pds.patientDetailsLookup.OutcomeType.SUCCESS:
     case pds.patientDetailsLookup.OutcomeType.SUPERSEDED:
     case pds.patientDetailsLookup.OutcomeType.AXIOS_ERROR:
-      throw "Unreachable"
+      throw new Error("Unreachable")
     default:
       throw exhaustive_switch_guard(outcome)
   }
@@ -380,7 +380,7 @@ const handleValidationError = (
   switch (error.type) {
     // Valid case will never be hit
     case pds.patientDetailsLookup.ValidatePatientDetails.OutcomeType.VALID:
-      throw "Unreachable"
+      throw new Error("Unreachable")
     case pds.patientDetailsLookup.ValidatePatientDetails.OutcomeType.MISSING_FIELDS:
       validationError = new pds.PDSError(
         `Incomplete patient information. Missing required fields: ${error.missingFields.join(", ")}`,
