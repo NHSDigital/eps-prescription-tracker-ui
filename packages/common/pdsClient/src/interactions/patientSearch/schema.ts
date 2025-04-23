@@ -1,21 +1,11 @@
-import {
-  FromSchema,
-  JSONSchema,
-  wrapCompilerAsTypeGuard,
-  $Compiler
-} from "json-schema-to-ts"
-import Ajv from "ajv"
+import {FromSchema, JSONSchema} from "json-schema-to-ts"
+import Ajv, {ErrorObject, ValidateFunction} from "ajv"
 
 enum PatientMetaCode {
   UNRESTRICTED = "U",
   RESTRICTED = "R",
   VERY_RESTRICTED = "V"
 }
-
-const PatientMetaCodeSchema = {
-  type: "string",
-  enum: Object.values(PatientMetaCode)
-} as const satisfies JSONSchema
 
 enum PatientNameUse {
   USUAL = "usual",
@@ -25,10 +15,29 @@ enum PatientNameUse {
   MAIDEN = "maiden"
 }
 
-const PatientUsualNameSchema = {
+enum PatientGender {
+  MALE = "male",
+  FEMALE = "female",
+  OTHER = "other",
+  UNKNOWN = "unknown"
+}
+
+enum PatientAddressUse {
+  HOME = "home",
+  TEMP = "temp",
+  BILLING = "billing",
+  WORK = "work"
+}
+
+enum ResponseType {
+  BUNDLE = "Bundle",
+  OPERATION_OUTCOME = "OperationOutcome"
+}
+
+const PatientNameSchema = {
   type: "object",
   properties: {
-    use: {const: PatientNameUse.USUAL},
+    use: {enum: Object.values(PatientNameUse)},
     given: {
       type: "array",
       items: {type: "string"}
@@ -38,86 +47,42 @@ const PatientUsualNameSchema = {
   required: ["use", "family"]
 } as const satisfies JSONSchema
 
-// Only the usual name is used by our API, hence the `anyOf`
-const PatientNameSchema = {
-  type: "object",
-  anyOf: [
-    PatientUsualNameSchema,
-    {
-      type: "object",
-      properties: {
-        use: {
-          type: "string",
-          enum: Object.values(PatientNameUse).filter((use) => use !== PatientNameUse.USUAL)
-        }
-      }
-    }
-  ]
-} as const satisfies JSONSchema
-
-type PatientName = FromSchema<typeof PatientNameSchema>
-
-enum PatientGender {
-  MALE = "male",
-  FEMALE = "female",
-  OTHER = "other",
-  UNKNOWN = "unknown"
-}
-
-const PatientGenderSchema = {
-  type: "string",
-  enum: Object.values(PatientGender)
-} as const satisfies JSONSchema
-
-enum PatientAddressUse {
-  HOME = "home",
-  TEMP = "temp",
-  BILLING = "billing",
-  WORK = "work"
-}
-
-const PatientHomeAddressSchema = {
+const PatientAddressSchema = {
   type: "object",
   properties: {
-    use: {const: PatientAddressUse.HOME},
+    use: {enum: Object.values(PatientAddressUse)},
     line: {
       type: "array",
       items: {type: "string"}
     },
     postalCode: {type: "string"}
   },
-  required: ["use"]
+  required: ["use", "line"]
 } as const satisfies JSONSchema
 
-// Only the home address is used by our API, hence the `anyOf`
-const PatientAddressSchema = {
-  type: "object",
-  anyOf: [
-    PatientHomeAddressSchema,
-    {
-      type: "object",
-      properties: {
-        use: {
-          type: "string",
-          enum: Object.values(PatientAddressUse).filter((use) => use !== PatientAddressUse.HOME)
-        }
-      }
-    }
-  ]
-} as const satisfies JSONSchema
-type PatientAddress = FromSchema<typeof PatientAddressSchema>
-
-const PatientSearchEntryResourceSchema = {
+const UnrestrictedPatientResourceSchema = {
   type: "object",
   properties: {
-    id: {type: "string"},
     meta: {
       type: "object",
       properties: {
-        code: PatientMetaCodeSchema
+        security:{
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              code: {
+                const: PatientMetaCode.UNRESTRICTED
+              }
+            },
+            required: ["code"]
+          },
+          minItems: 1
+        }
       },
-      required: ["code"]
+      required: ["security"]
     },
+    id: {type: "string"},
     name: {
       type: "array",
       items: PatientNameSchema,
@@ -127,9 +92,10 @@ const PatientSearchEntryResourceSchema = {
         properties: {
           use: {const: PatientNameUse.USUAL}
         }
-      }
+      },
+      minItems: 1
     },
-    gender: PatientGenderSchema,
+    gender: {enum: Object.values(PatientGender)},
     birthDate: {type: "string"},
     address: {
       type: "array",
@@ -139,39 +105,78 @@ const PatientSearchEntryResourceSchema = {
         type: "object",
         properties: {
           use: {const: PatientAddressUse.HOME}
-        }
-      }
+        },
+        required: ["use"]
+      },
+      minItems: 1
     }
   },
-  required: ["id", "meta", "name", "gender", "birthDate", "address"]
+  required: ["meta", "id", "name", "gender", "birthDate", "address"]
 } as const satisfies JSONSchema
 
-const PatientSearchEntrySchema = {
+type UnrestrictedPatientResource = FromSchema<typeof UnrestrictedPatientResourceSchema>
+
+const RestrictedPatientResourceSchema = {
   type: "object",
   properties: {
-    fullUrl: {type: "string"},
-    resource: PatientSearchEntryResourceSchema
+    meta: {
+      type: "object",
+      properties: {
+        security:{
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              code: {
+                type: "string",
+                enum: Object.values(PatientMetaCode).filter((code) => code !== PatientMetaCode.UNRESTRICTED)
+              }
+            },
+            required: ["code"]
+          },
+          minItems: 1
+        }
+      },
+      required: ["security"]
+    }
   },
-  required: ["fullUrl", "resource"]
+  required: ["meta"]
 } as const satisfies JSONSchema
-type PatientSearchEntry = FromSchema<typeof PatientSearchEntrySchema>
 
-enum ResponseType {
-  BUNDLE = "Bundle",
-  OPERATION_OUTCOME = "OperationOutcome"
-}
-const PatientSearchResponseSchema = {
+const SuccessfulResponseSchema = {
   type: "object",
   properties: {
     resourceType: {const: ResponseType.BUNDLE},
+    total: {type: "integer", minimum: 1},
     entry: {
       type: "array",
-      items: PatientSearchEntrySchema
+      items: {
+        type: "object",
+        properties: {
+          resource: {
+            anyOf: [
+              RestrictedPatientResourceSchema,
+              UnrestrictedPatientResourceSchema
+            ]
+          }
+        },
+        required: ["resource"]
+      },
+      minItems: 1
     }
   },
-  required: ["resourceType", "entry"]
+  required: ["resourceType", "total", "entry"]
 } as const satisfies JSONSchema
-type PatientSearchResponse = FromSchema<typeof PatientSearchResponseSchema>
+type SuccessfulResponse = FromSchema<typeof SuccessfulResponseSchema>
+
+const EmptySearchResponseSchema = {
+  type: "object",
+  properties: {
+    resourceType: {const: ResponseType.BUNDLE},
+    total: {const: 0}
+  },
+  required: ["resourceType", "total"]
+} as const satisfies JSONSchema
 
 const TooManyMatchesResponseSchema = {
   type: "object",
@@ -182,9 +187,23 @@ const TooManyMatchesResponseSchema = {
       items: {
         type: "object",
         properties: {
-          code: {const: "TOO_MANY_MATCHES"}
+          details: {
+            type: "object",
+            properties: {
+              coding: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    code: {const: "TOO_MANY_MATCHES"}
+                  }
+                }
+              }
+            },
+            required: ["coding"]
+          }
         },
-        required: ["code"]
+        required: ["details"]
       },
       minItems: 1
     }
@@ -196,26 +215,35 @@ const PDSResponseSchema = {
   type: "object",
   oneOf: [
     TooManyMatchesResponseSchema,
-    PatientSearchResponseSchema
+    EmptySearchResponseSchema,
+    SuccessfulResponseSchema
   ]
 } as const satisfies JSONSchema
 
-const $compile: $Compiler = (schema) => {
-  const validate = new Ajv().compile(schema)
-  return ((data: unknown) => validate(data) as boolean)
-}
-const compile = wrapCompilerAsTypeGuard($compile)
+type PDSResponseType = FromSchema<typeof PDSResponseSchema>
 
-const responseValidator = compile(PDSResponseSchema)
+class ResponseValidator {
+  private ajv: Ajv
+  private validator: ValidateFunction<PDSResponseType>
+  validate: (data: unknown) => data is PDSResponseType
+  validationErrors: () => Array<ErrorObject>
+
+  constructor() {
+    this.ajv = new Ajv()
+    this.validator = this.ajv.compile<PDSResponseType>(PDSResponseSchema)
+
+    this.validate = (data: unknown) => this.validator(data)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    this.validationErrors = () => (this.validator as any).errors ?? []
+  }
+}
 
 export {
+  ResponseValidator,
+  ResponseType,
+  SuccessfulResponse,
   PatientMetaCode,
-  PatientName,
+  UnrestrictedPatientResource,
   PatientNameUse,
-  PatientAddress,
-  PatientAddressUse,
-  responseValidator,
-  PatientSearchResponse,
-  PatientSearchEntry,
-  ResponseType
+  PatientAddressUse
 }

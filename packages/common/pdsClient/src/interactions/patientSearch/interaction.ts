@@ -14,13 +14,15 @@ import {exhaustive_switch_guard} from "../../utils"
 import * as axios from "../../axios_wrapper"
 import {AxiosResponse} from "axios"
 import {
-  responseValidator,
-  PatientNameUse,
   PatientAddressUse,
   PatientMetaCode,
-  PatientSearchEntry,
-  ResponseType
+  PatientNameUse,
+  ResponseType,
+  ResponseValidator,
+  SuccessfulResponse,
+  UnrestrictedPatientResource
 } from "./schema"
+import {ErrorObject} from "ajv"
 
 enum PatientSearchOutcomeType {
   SUCCESS = "SUCCESS",
@@ -49,7 +51,10 @@ type PatientSearchOutcome =
   | { type: PatientSearchOutcomeType.SUCCESS, patients: Array<PatientSummary> }
   | { type: PatientSearchOutcomeType.INVALID_PARAMETERS, validationErrors: Array<InvalidParameter> }
   | { type: PatientSearchOutcomeType.AXIOS_ERROR, error: Error, url: string, timeMs: number }
-  | { type: PatientSearchOutcomeType.RESPONSE_PARSE_ERROR, response: AxiosResponse }
+  | { type: PatientSearchOutcomeType.RESPONSE_PARSE_ERROR,
+      response: AxiosResponse,
+      validationErrors: Array<ErrorObject>
+    }
   | { type: PatientSearchOutcomeType.TOO_MANY_MATCHES, searchParameters: PatientSearchParameters }
   | { type:PatientSearchOutcomeType.PDS_ERROR, response: AxiosResponse }
 
@@ -98,7 +103,7 @@ async function patientSearch(
     }
   }
   const response = api_call.response
-  const data = api_call.data
+  let data = api_call.data
 
   // Check for response errors
   if (response.status !== 200) {
@@ -108,11 +113,13 @@ async function patientSearch(
     }
   }
 
-  const isValidResponse = responseValidator(data)
+  const responseValidator = new ResponseValidator()
+  const isValidResponse = responseValidator.validate(data)
   if (!isValidResponse) {
     return {
       type: PatientSearchOutcomeType.RESPONSE_PARSE_ERROR,
-      response
+      response,
+      validationErrors: responseValidator.validationErrors()
     }
   }
   // Check for too many matches
@@ -126,12 +133,21 @@ async function patientSearch(
     }
   }
 
+  // Check for empty response
+  if (data.total === 0) {
+    return {
+      type: PatientSearchOutcomeType.SUCCESS,
+      patients: []
+    }
+  }
+
   // Parse response
-  let patients: Array<PatientSummary> = data
+  const patients: Array<PatientSummary> = (data as SuccessfulResponse)
     .entry
     // Filter out restricted/redacted patients
-    .filter((entry) => entry.resource.meta.code === PatientMetaCode.UNRESTRICTED)
-    .map(parseEntry)
+    .filter((entry) => entry.resource.meta.security[0].code === PatientMetaCode.UNRESTRICTED)
+    .map((entry) => entry.resource as UnrestrictedPatientResource)
+    .map(parseResource)
 
   return {
     type: PatientSearchOutcomeType.SUCCESS,
@@ -223,9 +239,7 @@ const validatePostcode = (
   return [postcode, validationErrors]
 }
 
-const parseEntry = (entry: PatientSearchEntry): PatientSummary => {
-  const resource = entry.resource
-
+const parseResource = (resource: UnrestrictedPatientResource): PatientSummary => {
   const nhsNumber = resource.id
   const gender = resource.gender
   const dateOfBirth = resource.birthDate
