@@ -1,149 +1,177 @@
-// import React from "react"
-// import {render, screen} from "@testing-library/react"
-// import userEvent from "@testing-library/user-event"
+import React from "react"
+import {
+  render,
+  screen,
+  fireEvent,
+  waitFor
+} from "@testing-library/react"
+import PrescriptionsListTable from "@/components/prescriptionList/PrescriptionsListTable"
+import {PrescriptionsListStrings} from "@/constants/ui-strings/PrescriptionListTabStrings"
+import {PrescriptionSummary, TreatmentType} from "@cpt-ui-common/common-types"
 
-// import {
-//   BrowserRouter,
-//   Route,
-//   Routes,
-//   useLocation
-// } from "react-router-dom"
+jest.mock("@/helpers/statusMetadata", () => ({
+  getStatusTagColour: jest.fn().mockReturnValue("blue"),
+  getStatusDisplayText: jest.fn().mockReturnValue("Available to download")
+}))
 
-// import {PrescriptionsListStrings} from "@/constants/ui-strings/PrescriptionListTabStrings"
+describe("PrescriptionsListTable", () => {
+  // Sample data for testing
+  const textContent: PrescriptionsListStrings = {
+    heading: "Current Prescriptions",
+    testid: "current",
+    noPrescriptionsMessage: "No current prescriptions found."
+  }
 
-// import {PrescriptionSummary, TreatmentType} from "@cpt-ui-common/common-types"
+  const prescriptions: Array<PrescriptionSummary> = [
+    {
+      prescriptionId: "C0C757-A83008-C2D93O",
+      statusCode: "0001",
+      issueDate: "2025-03-01",
+      prescriptionTreatmentType: TreatmentType.ACUTE,
+      issueNumber: 1,
+      maxRepeats: 5,
+      prescriptionPendingCancellation: false,
+      itemsPendingCancellation: false
+    },
+    {
+      prescriptionId: "209E3D-A83008-327F9F",
+      statusCode: "0002",
+      issueDate: "2025-03-10",
+      prescriptionTreatmentType: TreatmentType.REPEAT,
+      issueNumber: 2,
+      maxRepeats: 5,
+      prescriptionPendingCancellation: true,
+      itemsPendingCancellation: false
+    },
+    {
+      prescriptionId: "209E3D-A83008-327FXZ",
+      statusCode: "0003",
+      issueDate: "2025-02-15",
+      prescriptionTreatmentType: TreatmentType.REPEAT,
+      issueNumber: 3,
+      maxRepeats: 10,
+      prescriptionPendingCancellation: false,
+      itemsPendingCancellation: true
+    }
+  ]
 
-// // This mock just displays the data. Nothing fancy!
-// jest.mock("@/components/prescriptionList/PrescriptionsListTable", () => {
-//   return function DummyPrescriptionsList({
-//     textContent,
-//     prescriptions
-//   }: {
-//     textContent: PrescriptionsListStrings
-//     prescriptions: Array<PrescriptionSummary>
-//   }) {
-//     const location = useLocation()
-//     return (
-//       <div data-testid={textContent.testid}>
-//         <p>{textContent.heading}</p>
-//         <p data-testid="mock-prescription-data">Count: {prescriptions.length}</p>
-//         <p>{location.pathname}</p>
-//       </div>
-//     )
-//   }
-// })
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
 
-// import PrescriptionsListTabs from "@/components/prescriptionList/PrescriptionsListTab"
-// import PrescriptionsListTable from "@/components/prescriptionList/PrescriptionsListTable"
+  it("displays loading spinner initially", () => {
+    render(<PrescriptionsListTable textContent={textContent} prescriptions={prescriptions} />)
 
-// describe("PrescriptionsListTabs", () => {
-//   const currentPrescriptions: Array<PrescriptionSummary> = [
-//     {
-//       prescriptionId: "C0C757-A83008-C2D93O",
-//       statusCode: "001",
-//       issueDate: "2025-03-01",
-//       prescriptionTreatmentType: TreatmentType.REPEAT,
-//       issueNumber: 1,
-//       maxRepeats: 5,
-//       prescriptionPendingCancellation: false,
-//       itemsPendingCancellation: false
-//     },
-//     {
-//       prescriptionId: "209E3D-A83008-327F9F",
-//       statusCode: "002",
-//       issueDate: "2025-03-02",
-//       prescriptionTreatmentType: TreatmentType.REPEAT,
-//       issueNumber: 1,
-//       maxRepeats: 5,
-//       prescriptionPendingCancellation: false,
-//       itemsPendingCancellation: false
-//     }
-//   ]
+    expect(screen.getByTestId("eps-loading-spinner")).toBeInTheDocument()
+  })
 
-//   const pastPrescriptions: Array<PrescriptionSummary> = [
-//     {
-//       prescriptionId: "RX003",
-//       statusCode: "003",
-//       issueDate: "2025-01-01",
-//       prescriptionTreatmentType: TreatmentType.ACUTE,
-//       issueNumber: 1,
-//       maxRepeats: 5,
-//       prescriptionPendingCancellation: false,
-//       itemsPendingCancellation: false
-//     }
-//   ]
+  it("displays the prescriptions table after loading", async () => {
+    jest.useFakeTimers()
+    render(<PrescriptionsListTable textContent={textContent} prescriptions={prescriptions} />)
+    jest.advanceTimersByTime(2000)
 
-//   const futurePrescriptions: Array<PrescriptionSummary> = [
-//     {
-//       prescriptionId: "RX004",
-//       statusCode: "004",
-//       issueDate: "2025-04-01",
-//       prescriptionTreatmentType: TreatmentType.REPEAT,
-//       issueNumber: 1,
-//       maxRepeats: 5,
-//       prescriptionPendingCancellation: false,
-//       itemsPendingCancellation: false
-//     },
-//     {
-//       prescriptionId: "RX005",
-//       statusCode: "005",
-//       issueDate: "2025-04-02",
-//       prescriptionTreatmentType: TreatmentType.REPEAT,
-//       issueNumber: 1,
-//       maxRepeats: 5,
-//       prescriptionPendingCancellation: false,
-//       itemsPendingCancellation: false
-//     },
-//     {
-//       prescriptionId: "RX006",
-//       statusCode: "006",
-//       issueDate: "2025-04-03",
-//       prescriptionTreatmentType: TreatmentType.REPEAT,
-//       issueNumber: 1,
-//       maxRepeats: 5,
-//       prescriptionPendingCancellation: false,
-//       itemsPendingCancellation: false
-//     }
-//   ]
+    await waitFor(() => {
+      expect(screen.queryByTestId("eps-loading-spinner")).not.toBeInTheDocument()
+      expect(screen.getByTestId("eps-prescription-table-container")).toBeInTheDocument()
+      expect(screen.getByTestId("current-prescriptions-results-table")).toBeInTheDocument()
+    })
 
-//   const tabData = [
-//     {
-//       title: "Current Prescriptions",
-//       link: "/prescription-list-current"
-//     },
-//     {
-//       title: "Future Prescriptions",
-//       link: "/prescription-list-future"
-//     },
-//     {
-//       title: "Past Prescriptions",
-//       link: "/prescription-list-past"
-//     }
-//   ]
+    jest.useRealTimers()
+  })
 
-//   beforeEach(() => {
-//     const page =
-//     <div>
-//       <PrescriptionsListTabs
-//         tabData={tabData}
-//         currentPrescriptions={currentPrescriptions}
-//         futurePrescriptions={futurePrescriptions}
-//         pastPrescriptions={pastPrescriptions}
-//       />
-//       <PrescriptionsListTable
-//       textContent={}
-//       prescriptions={pres}
-//       />
-//       </div>
-//     render(
-//       <BrowserRouter>
-//         <Routes>
-//           <Route path="*" element={page} />
-//         </Routes>
-//       </BrowserRouter>
-//     )
-//   })
+  it("shows a message when no prescriptions are available", async () => {
+    jest.useFakeTimers()
+    render(<PrescriptionsListTable textContent={textContent} prescriptions={[]} />)
+    jest.advanceTimersByTime(2000)
 
-//   it("renders a table", () => {
-//     currentPrescriptions
-//   })
+    await waitFor(() => {
+      expect(screen.getByText("No current prescriptions found.")).toBeInTheDocument()
+    })
+
+    jest.useRealTimers()
+  })
+
+  it("displays the correct prescription data in each column", async () => {
+    jest.useFakeTimers()
+    render(<PrescriptionsListTable textContent={textContent} prescriptions={prescriptions} />)
+
+    jest.advanceTimersByTime(2000)
+
+    await waitFor(() => {
+      expect(screen.getByText("01-Mar-2025")).toBeInTheDocument()
+
+      expect(screen.getByText("Acute")).toBeInTheDocument()
+      expect(screen.getByText("Repeat Y of X")).toBeInTheDocument()
+      expect(screen.getByText("eRD Y of X")).toBeInTheDocument()
+
+      expect(screen.getByText("One or more items pending cancellation")).toBeInTheDocument()
+      expect(screen.getByText("None")).toBeInTheDocument()
+
+      expect(screen.getByText("C0C757-A83008-C2D93O")).toBeInTheDocument()
+      expect(screen.getByText("209E3D-A83008-327F9F")).toBeInTheDocument()
+    })
+
+    jest.useRealTimers()
+  })
+
+  it("sorts the table when a column header is clicked", async () => {
+    jest.useFakeTimers()
+    render(<PrescriptionsListTable textContent={textContent} prescriptions={prescriptions} />)
+
+    jest.advanceTimersByTime(2000)
+
+    await waitFor(() => {
+      const rows = screen.getAllByTestId("eps-prescription-table-sort-button")
+      const firstRowDate = rows[0].querySelector("[data-testid='issue-date-column']")
+      expect(firstRowDate?.textContent).toContain("10-Mar-2025")
+    })
+
+    const issueDateSortButton = screen.getByTestId("eps-prescription-table-sort-issueDate")
+    fireEvent.click(issueDateSortButton)
+
+    await waitFor(() => {
+      const rows = screen.getAllByTestId("eps-prescription-table-sort-button")
+      const firstRowDate = rows[0].querySelector("[data-testid='issue-date-column']")
+      expect(firstRowDate?.textContent).toContain("15-Feb-2025") // Oldest date
+    })
+
+    jest.useRealTimers()
+  })
+
+  it("renders the correct table description based on testid", async () => {
+    jest.useFakeTimers()
+
+    const futureTextContent = {
+      ...textContent,
+      testid: "future"
+    }
+
+    render(<PrescriptionsListTable textContent={futureTextContent} prescriptions={prescriptions} />)
+
+    jest.advanceTimersByTime(2000)
+
+    await waitFor(() => {
+      const table = screen.getByTestId("future-prescriptions-results-table")
+      const caption = table.querySelector("caption")
+      expect(caption).toHaveClass("nhsuk-u-visually-hidden")
+      expect(caption?.textContent).toContain("A sortable table showing future-dated prescriptions")
+    })
+
+    jest.useRealTimers()
+  })
+
+  it("displays the correct number of prescriptions info text", async () => {
+    jest.useFakeTimers()
+    render(<PrescriptionsListTable textContent={textContent} prescriptions={prescriptions} />)
+
+    jest.advanceTimersByTime(2000)
+
+    await waitFor(() => {
+      const summaryRow = screen.getByTestId("table-summary-row")
+      expect(summaryRow).toHaveTextContent("Showing 3 of 3")
+      expect(summaryRow).toHaveAttribute("aria-label", "Showing 3 of 3 prescriptions")
+    })
+
+    jest.useRealTimers()
+  })
+})
