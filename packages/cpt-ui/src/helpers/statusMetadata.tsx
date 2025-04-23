@@ -12,6 +12,8 @@
  * Used across multiple components for consistent styling and display logic.
  */
 
+import {STATUS_LABELS} from "@/constants/ui-strings/StatusLabels"
+
 export type TagColour =
   | "green"
   | "red"
@@ -32,32 +34,32 @@ type StatusMetadata = {
 }
 
 // --- Prescription-Level Status Codes ---
-export const prescriptionStatusMap: Record<string, StatusMetadata> = {
-  "0000": {color: "orange", label: "Next repeat ready to download"},
-  "0001": {color: "yellow", label: "Available to download"},
-  "0002": {color: "purple", label: "Downloaded by a dispenser"},
-  "0003": {color: "blue", label: "Some items dispensed"},
-  "0004": {color: "white", label: "Expired"},
-  "0005": {color: "red", label: "Cancelled"},
-  "0006": {color: "green", label: "All items dispensed"},
-  "0007": {color: "red", label: "Not dispensed"},
-  "0008": {color: "grey", label: "Claimed"},
-  "0009": {color: "pink", label: "Not claimed"},
-  "9000": {color: "aqua-green", label: "Future eRD issue"},
-  "9001": {color: "blue", label: "Future issue date dispense"},
-  "9005": {color: "red", label: "Future prescription cancelled"}
+const prescriptionStatusMap: Record<string, StatusMetadata> = {
+  "0000": {color: "orange", label: STATUS_LABELS.prescription["0000"]},
+  "0001": {color: "yellow", label: STATUS_LABELS.prescription["0001"]},
+  "0002": {color: "purple", label: STATUS_LABELS.prescription["0002"]},
+  "0003": {color: "blue", label: STATUS_LABELS.prescription["0003"]},
+  "0004": {color: "white", label: STATUS_LABELS.prescription["0004"]},
+  "0005": {color: "red", label: STATUS_LABELS.prescription["0005"]},
+  "0006": {color: "green", label: STATUS_LABELS.prescription["0006"]},
+  "0007": {color: "red", label: STATUS_LABELS.prescription["0007"]},
+  "0008": {color: "grey", label: STATUS_LABELS.prescription["0008"]},
+  "0009": {color: "pink", label: STATUS_LABELS.prescription["0009"]},
+  "9000": {color: "aqua-green", label: STATUS_LABELS.prescription["9000"]},
+  "9001": {color: "blue", label: STATUS_LABELS.prescription["9001"]},
+  "9005": {color: "red", label: STATUS_LABELS.prescription["9005"]}
 }
 
 // --- Item-Level Status Codes ---
-export const itemStatusMap: Record<string, StatusMetadata> = {
-  "0001": {color: "green", label: "Item fully dispensed"},
-  "0002": {color: "orange", label: "Item not dispensed"},
-  "0003": {color: "blue", label: "Item dispensed - partial"},
-  "0004": {color: "blue", label: "Item not dispensed - owing"},
-  "0005": {color: "red", label: "Item cancelled"},
-  "0006": {color: "white", label: "Item expired"},
-  "0007": {color: "yellow", label: "Item to be dispensed"},
-  "0008": {color: "purple", label: "Item with dispenser"}
+const itemStatusMap: Record<string, StatusMetadata> = {
+  "0001": {color: "green", label: STATUS_LABELS.item["0001"]},
+  "0002": {color: "orange", label: STATUS_LABELS.item["0002"]},
+  "0003": {color: "blue", label: STATUS_LABELS.item["0003"]},
+  "0004": {color: "blue", label: STATUS_LABELS.item["0004"]},
+  "0005": {color: "red", label: STATUS_LABELS.item["0005"]},
+  "0006": {color: "white", label: STATUS_LABELS.item["0006"]},
+  "0007": {color: "yellow", label: STATUS_LABELS.item["0007"]},
+  "0008": {color: "purple", label: STATUS_LABELS.item["0008"]}
 }
 
 // --- Accessors: Prescription-Level ---
