@@ -32,7 +32,7 @@ type StatusMetadata = {
 }
 
 // --- Prescription-Level Status Codes ---
-const prescriptionStatusMap: Record<string, StatusMetadata> = {
+export const prescriptionStatusMap: Record<string, StatusMetadata> = {
   "0000": {color: "orange", label: "Next repeat ready to download"},
   "0001": {color: "yellow", label: "Available to download"},
   "0002": {color: "purple", label: "Downloaded by a dispenser"},
@@ -49,7 +49,7 @@ const prescriptionStatusMap: Record<string, StatusMetadata> = {
 }
 
 // --- Item-Level Status Codes ---
-const itemStatusMap: Record<string, StatusMetadata> = {
+export const itemStatusMap: Record<string, StatusMetadata> = {
   "0001": {color: "green", label: "Item fully dispensed"},
   "0002": {color: "orange", label: "Item not dispensed"},
   "0003": {color: "blue", label: "Item dispensed - partial"},
