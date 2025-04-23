@@ -3,7 +3,8 @@ import {
   PatientDetails,
   OrganisationSummary,
   DispensedItem,
-  PrescribedItem
+  PrescribedItem,
+  MessageHistory
 } from "@cpt-ui-common/common-types"
 
 export const mockPrescriber: PrescriberOrganisationSummary = {
@@ -229,3 +230,19 @@ export const mockPrescriptionInformationErd = {
   maxRepeats: 6,
   daysSupply: "28"
 }
+export const mockMessageHistory: Array<MessageHistory> = [
+  {
+    messageCode: "0003",
+    sentDateTime: "2024-01-18T10:00:00Z",
+    organisationName: "Cohen's Chemist ",
+    organisationODS: "FV519",
+    newStatusCode: "0006"
+  },
+  {
+    messageCode: "0003",
+    sentDateTime: "2024-01-18T10:00:00Z",
+    organisationName: "Fiji surgery",
+    organisationODS: "FI05964",
+    newStatusCode: "0001"
+  }
+]

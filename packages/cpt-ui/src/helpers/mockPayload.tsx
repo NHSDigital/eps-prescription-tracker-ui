@@ -12,6 +12,7 @@ import {
   mockPrescriptionInformationErd,
   mockPrescriber,
   mockNominatedDispenser,
+  mockMessageHistory,
   altMockPrescriber,
   altMockNominatedDispenser
 } from "@/mocks/mockPrescriptions"
@@ -25,7 +26,7 @@ export const getMockPayload = (prescriptionId: string): PrescriptionDetailsRespo
     prescribedItems: [],
     dispensedItems: [],
     prescriptionPendingCancellation: false,
-    messageHistory: [],
+    messageHistory: mockMessageHistory,
     prescriberOrganisation: {organisationSummaryObjective: mockDispenser}
   }
 

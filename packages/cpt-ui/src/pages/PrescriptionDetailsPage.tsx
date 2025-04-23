@@ -13,7 +13,8 @@ import {
   OrganisationSummary,
   PrescriptionDetailsResponse,
   DispensedItem,
-  PrescribedItem
+  PrescribedItem,
+  MessageHistory
 } from "@cpt-ui-common/common-types"
 
 import {AuthContext} from "@/context/AuthProvider"
@@ -26,6 +27,7 @@ import {STRINGS} from "@/constants/ui-strings/PrescriptionDetailsPageStrings"
 import EpsSpinner from "@/components/EpsSpinner"
 import {SiteDetailsCards} from "@/components/prescriptionDetails/SiteDetailsCards"
 import {PrescribedDispensedItemsCards} from "@/components/prescriptionDetails/PrescribedDispensedItemsCards"
+import {MessageHistoryCard} from "@/components/prescriptionDetails/MessageHistoryCard"
 
 import http from "@/helpers/axios"
 import {getMockPayload} from "@/helpers/mockPayload"
@@ -45,6 +47,7 @@ export default function PrescriptionDetailsPage() {
   const [dispenser, setDispenser] = useState<OrganisationSummary | undefined>()
   const [prescribedItems, setPrescribedItems] = useState<Array<PrescribedItem>>([])
   const [dispensedItems, setDispensedItems] = useState<Array<DispensedItem>>([])
+  const [messageHistory, setMessageHistory] = useState<Array<MessageHistory>>([])
 
   const getPrescriptionDetails = async (prescriptionId: string) => {
     console.log("Prescription ID", prescriptionId)
@@ -97,6 +100,7 @@ export default function PrescriptionDetailsPage() {
     setPrescribedItems(payload.prescribedItems)
     setDispensedItems(payload.dispensedItems)
     setPrescriber(payload.prescriberOrganisation.organisationSummaryObjective)
+    setMessageHistory(payload.messageHistory)
 
     if (!payload.currentDispenser) {
       setDispenser(undefined)
@@ -182,6 +186,8 @@ export default function PrescriptionDetailsPage() {
               nominatedDispenser={nominatedDispenser}
             />
           </Col>
+          {/* Message history timeline */}
+          <MessageHistoryCard messageHistory={messageHistory} />
         </Row>
       </Container>
     </main>
