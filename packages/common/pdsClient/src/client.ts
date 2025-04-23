@@ -2,16 +2,9 @@ import {AxiosInstance} from "axios"
 import {Logger} from "@aws-lambda-powertools/logger"
 
 import {patientDetailsLookup, patientSearch, axios} from "."
+import {Client as clientInterface} from "./interface"
 
-interface client{
-    axiosInstance: AxiosInstance,
-    pdsEndpoint: string,
-    logger: Logger,
-
-    axios_get(url: string, headers: Record<string, string>): Promise<axios.Outcome>
-}
-
-export class Client implements client, patientDetailsLookup.Interface, patientSearch.Interface {
+export class Client implements clientInterface, patientDetailsLookup.Interface, patientSearch.Interface {
   // Client interface
   axiosInstance: AxiosInstance
   pdsEndpoint: string
