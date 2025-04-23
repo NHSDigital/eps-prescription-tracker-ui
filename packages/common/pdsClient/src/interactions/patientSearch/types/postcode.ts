@@ -14,12 +14,12 @@ class Postcode {
     this.postcode = postcode
   }
 
-  static from_string(_postcode: string): PostcodeFromStringOutcome {
-    if (_postcode[0] === "*" || _postcode[1] === "*") {
+  static from_string(postcode: string): PostcodeFromStringOutcome {
+    if ("*" in postcode.slice(0, 2).split("")) {
       return {type: PostcodeFromStringOutcomeType.WILDCARD_TOO_SOON}
     }
 
-    return {type: PostcodeFromStringOutcomeType.OK, postcode: new Postcode(_postcode)}
+    return {type: PostcodeFromStringOutcomeType.OK, postcode: new Postcode(postcode)}
   }
 
   public to_query_string(): string {

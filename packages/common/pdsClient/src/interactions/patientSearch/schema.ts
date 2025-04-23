@@ -223,8 +223,8 @@ const PDSResponseSchema = {
 type PDSResponseType = FromSchema<typeof PDSResponseSchema>
 
 class ResponseValidator {
-  private ajv: Ajv
-  private validator: ValidateFunction<PDSResponseType>
+  private readonly ajv: Ajv
+  private readonly validator: ValidateFunction<PDSResponseType>
   validate: (data: unknown) => data is PDSResponseType
   validationErrors: () => Array<ErrorObject>
 
