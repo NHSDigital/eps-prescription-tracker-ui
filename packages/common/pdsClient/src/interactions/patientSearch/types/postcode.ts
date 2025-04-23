@@ -15,7 +15,7 @@ class Postcode {
   }
 
   static from_string(postcode: string): PostcodeFromStringOutcome {
-    if ("*" in postcode.slice(0, 2).split("")) {
+    if (postcode.slice(0, 2).split("").includes("*")) {
       return {type: PostcodeFromStringOutcomeType.WILDCARD_TOO_SOON}
     }
 

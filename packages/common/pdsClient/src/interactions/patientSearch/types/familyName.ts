@@ -22,7 +22,7 @@ class FamilyName {
       return {type: FamilyNameFromStringOutcomeType.TOO_LONG}
     }
 
-    if ("*" in family.slice(0, 2).split("")) {
+    if (family.slice(0, 2).includes("*")) {
       return {type: FamilyNameFromStringOutcomeType.WILDCARD_TOO_SOON}
     }
 
