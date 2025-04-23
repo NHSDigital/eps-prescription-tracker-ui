@@ -24,6 +24,7 @@ import {
 import {PatientDetails, SearchResponse} from "@cpt-ui-common/common-types"
 import {createMinimalPatientDetails, mapSearchResponse} from "./utils/responseMapper"
 import * as pds from "@cpt-ui-common/pdsClient"
+import {exhaustive_switch_guard} from "./utils"
 
 /*
 This is the lambda code to search for a prescription
@@ -231,7 +232,7 @@ const nhsNumberSearchFlow = async (
 
   let currentNhsNumber = nhsNumber
   let patientDetails
-  switch( outcome.type) {
+  switch(outcome.type) {
     case pds.patientDetailsLookup.OutcomeType.SUCCESS:
       patientDetails = outcome.patientDetails
       break
@@ -257,6 +258,8 @@ const nhsNumberSearchFlow = async (
     case pds.patientDetailsLookup.OutcomeType.PATIENT_NOT_FOUND:
     case pds.patientDetailsLookup.OutcomeType.PATIENT_DETAILS_VALIDATION_ERROR:
       throw handlePatientDetailsLookupError(outcome)
+    default:
+      throw exhaustive_switch_guard(outcome)
   }
 
   logger.debug("patientDetails", {
@@ -334,6 +337,8 @@ const prescriptionIdSearchFlow = async(
     case pds.patientDetailsLookup.OutcomeType.PATIENT_NOT_FOUND:
     case pds.patientDetailsLookup.OutcomeType.PATIENT_DETAILS_VALIDATION_ERROR:
       throw handlePatientDetailsLookupError(outcome)
+    default:
+      throw exhaustive_switch_guard(outcome)
   }
 
   logger.debug("patientDetails", {
@@ -361,6 +366,8 @@ const handlePatientDetailsLookupError = (outcome: pds.patientDetailsLookup.Outco
     case pds.patientDetailsLookup.OutcomeType.SUPERSEDED:
     case pds.patientDetailsLookup.OutcomeType.AXIOS_ERROR:
       throw undefined
+    default:
+      throw exhaustive_switch_guard(outcome)
   }
 }
 
@@ -383,6 +390,8 @@ const handleValidationError = (
     case pds.patientDetailsLookup.ValidatePatientDetails.OutcomeType.NOT_NULL_WHEN_NOT_PRESENT:
       validationError = new pds.PDSError(`${error.field} must be explicitly null when not present`)
       break
+    default:
+      throw exhaustive_switch_guard(error)
   }
 
   logger.error("Patient data validation failed", {
