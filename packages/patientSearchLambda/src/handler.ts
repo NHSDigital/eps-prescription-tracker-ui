@@ -1,24 +1,11 @@
 import {APIGatewayProxyEvent, APIGatewayProxyResult} from "aws-lambda"
 import {Logger} from "@aws-lambda-powertools/logger"
-import {getSecret} from "@aws-lambda-powertools/parameters/secrets"
 import {injectLambdaContext} from "@aws-lambda-powertools/logger/middleware"
-import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
-import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
 import middy from "@middy/core"
 import axios, {AxiosInstance} from "axios"
 import inputOutputLogger from "@middy/input-output-logger"
 import {headers} from "@cpt-ui-common/lambdaUtils"
-
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
-import {
-  getUsernameFromEvent,
-  fetchAndVerifyCIS2Tokens,
-  constructSignedJWTBody,
-  exchangeTokenForApigeeAccessToken,
-  updateApigeeAccessToken,
-  initializeOidcConfig,
-  OidcConfig
-} from "@cpt-ui-common/authFunctions"
 import * as pds from "@cpt-ui-common/pdsClient"
 import {exhaustive_switch_guard} from "./utils"
 
@@ -52,29 +39,15 @@ MOCK_USER_POOL_IDP
 
 type HandlerParameters = {
   logger: Logger,
-  authParameters: AuthParameters,
-  documentClient: DynamoDBDocumentClient,
-  axiosInstance: AxiosInstance,
   pdsClient: pds.Client
 }
 
-type AuthParameters = {
-  mockOidcConfig: OidcConfig,
-  cis2OidcConfig: OidcConfig,
-  mockMode: string | undefined,
-  apigeeMockTokenEndpoint: string,
-  apigeeCIS2TokenEndpoint: string,
-  jwtPrivateKeyArn: string,
-  apigeeApiKey: string,
-  jwtKid: string,
-  TokenMappingTableName: string,
-}
-
-type HandlerInitialisationParameters = {
+export type HandlerInitialisationParameters = {
+  errorResponseBody: object,
   logger: Logger,
-  authParameters: AuthParameters,
   axiosInstance: AxiosInstance,
   apigeePersonalDemographicsEndpoint: string,
+  apigeeApiKey: string,
   roleId: string,
 }
 
@@ -82,19 +55,6 @@ const lambdaHandler = async (
   event: APIGatewayProxyEvent,
   {
     logger,
-    documentClient,
-    axiosInstance,
-    authParameters: {
-      mockOidcConfig,
-      cis2OidcConfig,
-      mockMode,
-      apigeeMockTokenEndpoint,
-      apigeeCIS2TokenEndpoint,
-      jwtPrivateKeyArn,
-      apigeeApiKey,
-      jwtKid,
-      TokenMappingTableName
-    },
     pdsClient
   }: HandlerParameters
 ): Promise<APIGatewayProxyResult> => {
@@ -107,73 +67,7 @@ const lambdaHandler = async (
   const searchStartTime = Date.now()
 
   // Auth
-  try {
-    // Handle mock/real request logic
-    const username = getUsernameFromEvent(event)
-    const isMockToken = username.startsWith("Mock_")
-
-    if (isMockToken && mockMode !== "true") {
-      throw new Error("Trying to use a mock user when mock mode is disabled")
-    }
-
-    const isMockRequest = mockMode === "true" && isMockToken
-    const apigeeTokenEndpoint = isMockRequest ? apigeeMockTokenEndpoint : apigeeCIS2TokenEndpoint
-
-    // Authentication flow
-    const {cis2AccessToken, cis2IdToken} = await fetchAndVerifyCIS2Tokens(
-      event,
-      documentClient,
-      logger,
-      isMockRequest ? mockOidcConfig : cis2OidcConfig
-    )
-    logger.debug("Successfully fetched CIS2 tokens", {cis2AccessToken, cis2IdToken})
-
-    // Step 2: Fetch the private key for signing the client assertion
-    logger.info("Accessing JWT private key from Secrets Manager to create signed client assertion")
-    const jwtPrivateKey = await getSecret(jwtPrivateKeyArn)
-    if (!jwtPrivateKey || typeof jwtPrivateKey !== "string") {
-      throw new Error("Invalid or missing JWT private key")
-    }
-
-    logger.debug("JWT private key retrieved successfully")
-
-    // Construct a new body with the signed JWT client assertion
-    logger.info("Generating signed JWT for Apigee token exchange payload")
-    const requestBody = constructSignedJWTBody(
-      logger,
-      apigeeTokenEndpoint,
-      jwtPrivateKey,
-      apigeeApiKey,
-      jwtKid,
-      cis2IdToken
-    )
-    logger.debug("Constructed request body for Apigee token exchange", {requestBody})
-
-    // Step 3: Exchange token with Apigee
-    const {accessToken: apigeeAccessToken, expiresIn} = await exchangeTokenForApigeeAccessToken(
-      axiosInstance,
-      apigeeTokenEndpoint,
-      requestBody,
-      logger
-    )
-
-    // Step 4: Update DynamoDB with the new Apigee access token
-    await updateApigeeAccessToken(
-      documentClient,
-      TokenMappingTableName,
-      event.requestContext.authorizer?.claims?.["cognito:username"] ?? "unknown",
-      apigeeAccessToken,
-      expiresIn,
-      logger
-    )
-  } catch (error) {
-    logger.error("Search failed", {
-      error,
-      timeMs: Date.now() - searchStartTime
-    })
-
-    throw error
-  }
+  // TODO
 
   // Validate query parameters
   let familyName: string
@@ -205,8 +99,9 @@ const lambdaHandler = async (
       })
       return {
         statusCode: 400,
-        // TODO: Body
-        body: "",
+        body: JSON.stringify({
+          errors: patientSearchOutcome.validationErrors
+        }),
         headers: headers.formatHeaders({"Content-Type": "application/json"})
       }
     case outcomeType.SUCCESS:
@@ -281,23 +176,19 @@ const validateQueryParameter = (query: string | undefined, paramName: string): s
   return query
 }
 
-const newHandler = (
-  initParams: HandlerInitialisationParameters,
-  middyErrorHandler: MiddyErrorHandler
+export const newHandler = (
+  initParams: HandlerInitialisationParameters
 ) => {
   const pdsClient = new pds.Client(
     initParams.axiosInstance,
     initParams.apigeePersonalDemographicsEndpoint,
     initParams.logger,
-    initParams.authParameters.apigeeApiKey,
+    initParams.apigeeApiKey,
     initParams.roleId
   )
 
   const params: HandlerParameters = {
     logger: initParams.logger,
-    documentClient: DynamoDBDocumentClient.from(new DynamoDBClient({})),
-    axiosInstance: initParams.axiosInstance,
-    authParameters: initParams.authParameters,
     pdsClient
   }
 
@@ -310,47 +201,27 @@ const newHandler = (
         }
       })
     )
-    .use(middyErrorHandler.errorHandler({logger: initParams.logger}))
+    .use(
+      new MiddyErrorHandler(initParams.errorResponseBody)
+        .errorHandler({logger: initParams.logger})
+    )
 }
 
 // External endpoints and environment variables
-const apigeeCIS2TokenEndpoint = process.env["apigeeCIS2TokenEndpoint"] as string
-const apigeeMockTokenEndpoint = process.env["apigeeMockTokenEndpoint"] as string
 const apigeePersonalDemographicsEndpoint = process.env["apigeePersonalDemographicsEndpoint"] as string
-const TokenMappingTableName = process.env["TokenMappingTableName"] as string
-const jwtPrivateKeyArn = process.env["jwtPrivateKeyArn"] as string
 const apigeeApiKey = process.env["apigeeApiKey"] as string
-const jwtKid = process.env["jwtKid"] as string
 const roleId = process.env["roleId"] as string
-const MOCK_MODE_ENABLED = process.env["MOCK_MODE_ENABLED"]
-
-const {mockOidcConfig, cis2OidcConfig} = initializeOidcConfig()
 
 const errorResponseBody = {
   message: "A system error has occurred"
 }
 
-// Export the Lambda function with middleware applied
-const DEFAULT_AUTH_PARAMETERS: AuthParameters = {
-  mockOidcConfig,
-  cis2OidcConfig,
-  mockMode: MOCK_MODE_ENABLED,
-  apigeeMockTokenEndpoint,
-  apigeeCIS2TokenEndpoint,
-  jwtPrivateKeyArn,
-  apigeeApiKey,
-  jwtKid,
-  TokenMappingTableName
-}
-
 const DEFAULT_HANDLER_PARAMETERS: HandlerInitialisationParameters = {
+  errorResponseBody,
   logger: new Logger({serviceName: "patientSearchLambda"}),
   axiosInstance: axios.create(),
-  authParameters: DEFAULT_AUTH_PARAMETERS,
   apigeePersonalDemographicsEndpoint,
+  apigeeApiKey,
   roleId
 }
-export const handler = newHandler(
-  DEFAULT_HANDLER_PARAMETERS,
-  new MiddyErrorHandler(errorResponseBody)
-)
+export const handler = newHandler(DEFAULT_HANDLER_PARAMETERS)
