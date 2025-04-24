@@ -32,43 +32,6 @@ const PrescriptionsListTable = ({textContent, prescriptions}: PrescriptionsListT
     {key: "prescriptionId", label: "Prescription ID"}
   ]
 
-  // const getStatusTagColour = (statusCode: string): TagColour => {
-  //   switch (statusCode) {
-  //     case "0000": return "orange"
-  //     case "0001": return "yellow"
-  //     case "0002": return "purple"
-  //     case "0003": return "blue"
-  //     case "0004": return "white"
-  //     case "0005": return "red"
-  //     case "0006": return "green"
-  //     case "0007": return "red"
-  //     case "0008": return "grey"
-  //     case "0009": return "pink"
-  //     case "9000": return "aqua-green"
-  //     case "9001": return "blue"
-  //     case "9005": return "red"
-  //     default: return "red"
-  //   }
-  // }
-
-  // const getStatusDisplayText = (statusCode: string): string => {
-  //   switch (statusCode) {
-  //     case "0001": return "Available to download"
-  //     case "0002": return "Downloaded by a dispenser"
-  //     case "0003": return "Some items dispensed"
-  //     case "0004": return "Expired"
-  //     case "0005": return "Cancelled"
-  //     case "0006": return "All items dispensed"
-  //     case "0007": return "Not dispensed"
-  //     case "0008": return "Claimed"
-  //     case "0009": return "Not claimed"
-  //     case "9000": return "Future eRD issue"
-  //     case "9001": return "Future issue date dispense"
-  //     case "9005": return "Future prescription cancelled"
-  //     default: return "Unknown"
-  //   }
-  // }
-
   // this functionality is also performed at getPrescriptionTypeDisplayText in "@/helpers/statusMetadata"
   //however we do not currently have instanceNumber or maxRepeats to make it work fully here
   const getPrescriptionTypeDisplayText = (prescriptionType: string): string => {
@@ -171,7 +134,7 @@ const PrescriptionsListTable = ({textContent, prescriptions}: PrescriptionsListT
     return <p className="nhsuk-body">{textContent.noPrescriptionsMessage}</p>
   }
 
-  //this is partially decalred here to address linting errors for the line being too long.
+  //this is partially declared here to address linting errors for the line being too long.
   // The url is formed in the render below
   const prescriptionLink = "https://cpt-ui.dev.eps.national.nhs.uk/site/prescription-details?prescriptionId="
 

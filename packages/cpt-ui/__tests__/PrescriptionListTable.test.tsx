@@ -15,7 +15,6 @@ jest.mock("@/helpers/statusMetadata", () => ({
 }))
 
 describe("PrescriptionsListTable", () => {
-  // Sample data for testing
   const textContent: PrescriptionsListStrings = {
     heading: "Current Prescriptions",
     testid: "current",
