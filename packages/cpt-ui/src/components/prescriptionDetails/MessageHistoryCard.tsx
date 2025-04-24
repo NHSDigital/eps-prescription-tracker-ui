@@ -18,10 +18,12 @@ export function MessageHistoryCard({messageHistory}: MessageHistoryProps) {
         <Card className="nhsuk-u-margin-bottom-3 data-panel" style={{boxShadow: "none"}}>
           <Card.Content className="nhsuk-u-padding-4">
             <Card.Heading headingLevel="H3" className="nhsuk-heading-xs nhsuk-u-margin-bottom-1">
-              Dispenser has sent a dispense
+              Dispenser has sent a dispense notification.
+              <br />
+              {firstMessage.sentDateTime}
             </Card.Heading>
             <p className="nhsuk-body-s nhsuk-u-margin-bottom-2">
-              Organisation: {firstMessage.organisationName}
+              Organisation: {firstMessage.organisationName} (ODS:{firstMessage.organisationODS})
             </p>
             <p className="nhsuk-body-s nhsuk-u-margin-bottom-2">
               New status:{" "}
