@@ -48,3 +48,33 @@
 .data-field__content--address {
     color: rgb(76, 98, 114);
 }
+
+.nhs-screening-whole-timeline {
+    position: relative;
+    padding-left: 0.5rem;
+
+    &::before {
+        content: "";
+        position: absolute;
+        top: 10px;
+        left: 0;
+        width: 5px;
+        height: 105%;
+        background-color: #005eb8;
+    }
+}
+
+.nhs-screening-whole-timeline__item {
+    position: relative;
+    padding-left: 1rem;
+
+    &::before {
+        content: "";
+        position: absolute;
+        top: 10px;
+        left: -5px;
+        width: 12px;
+        height: 5px;
+        background-color: #005eb8;
+    }
+}
