@@ -14,7 +14,7 @@ export function MessageHistoryCard({messageHistory}: MessageHistoryProps) {
 
   return (
     <Col width="one-third">
-      <h2 className="nhsuk-heading-xs nhsuk-u-margin-bottom-2">History</h2>
+      <h2 className="nhsuk-heading-xs nhsuk-u-margin-bottom-2">{STRINGS.HISTORY_HEADER}</h2>
       <div className="data-panel__wrapper no-outline" tabIndex={-1}>
         <Card className="nhsuk-u-margin-bottom-3 data-panel" style={{boxShadow: "none"}}>
           <Card.Content className="nhsuk-u-padding-4">
