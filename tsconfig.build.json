@@ -8,6 +8,7 @@
       {"path": "packages/common/testing"},
       {"path": "packages/common/middyErrorHandler"},
       {"path": "packages/common/pdsClient"},
+      {"path": "packages/common/lambdaUtils"},
       {"path": "packages/cdk"},
       {"path": "packages/cpt-ui"},
       {"path": "packages/cognito"}

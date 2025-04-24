@@ -22,6 +22,7 @@ compile-node:
 	npm run compile --workspace packages/common/middyErrorHandler
 	npm run compile --workspace packages/common/authFunctions
 	npm run compile --workspace packages/common/pdsClient
+	npm run compile --workspace packages/common/lambdaUtils
 	npx tsc --build tsconfig.build.json
 
 compile: compile-node
@@ -36,6 +37,7 @@ lint-node: compile-node
 	npm run lint --workspace packages/common/testing
 	npm run lint --workspace packages/common/middyErrorHandler
 	npm run lint --workspace packages/common/pdsClient
+	npm run lint --workspace packages/common/lambdaUtils
 	npm run lint --workspace packages/trackerUserInfoLambda
 	npm run lint --workspace packages/selectedRoleLambda
 	npm run lint --workspace packages/CIS2SignOutLambda
@@ -58,6 +60,7 @@ test: compile
 	npm run test --workspace packages/patientSearchLambda
 	npm run test --workspace packages/common/middyErrorHandler
 	npm run test --workspace packages/common/pdsClient
+	npm run test --workspace packages/common/lambdaUtils
 	npm run test --workspace packages/trackerUserInfoLambda
 	npm run test --workspace packages/selectedRoleLambda
 	npm run test --workspace packages/CIS2SignOutLambda
@@ -80,6 +83,8 @@ clean:
 	rm -rf packages/common/middyErrorHandler/lib
 	rm -rf packages/common/pdsClient/coverage
 	rm -rf packages/common/pdsClient/lib
+	rm -rf packages/common/lambdaUtils/coverage
+	rm -rf packages/common/lambdaUtils/lib
 	rm -rf cdk.out
 	rm -rf packages/cpt-ui/.next
 	rm -rf packages/auth_demo/build

@@ -77,6 +77,15 @@ repos:
         types_or: [ts, tsx, javascript, jsx, json]
         pass_filenames: false
 
+      - id: lint-lambdaUtils
+        name: Lint lambdaUtils
+        entry: npm
+        args: ["run", "--prefix=packages/common/lambdaUtils", "lint"]
+        language: system
+        files: ^packages\/common\/lambdaUtils
+        types_or: [ts, tsx, javascript, jsx, json]
+        pass_filenames: false
+
       - id: lint-common-testing
         name: Lint common-testing
         entry: npm
