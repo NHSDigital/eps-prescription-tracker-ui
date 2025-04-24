@@ -1,6 +1,7 @@
 import {Col, Card, Tag} from "nhsuk-react-components"
 import {MessageHistory} from "@cpt-ui-common/common-types"
 import {getStatusTagColour, getStatusDisplayText, getMessageHistoryHeader} from "@/helpers/statusMetadata"
+import {STRINGS} from "@/constants/ui-strings/MessageHistoryCardStrings"
 
 interface MessageHistoryProps {
   messageHistory: Array<MessageHistory>
@@ -23,10 +24,10 @@ export function MessageHistoryCard({messageHistory}: MessageHistoryProps) {
               {firstMessage.sentDateTime}
             </Card.Heading>
             <p className="nhsuk-body-s nhsuk-u-margin-bottom-2">
-              Organisation: {firstMessage.organisationName} (ODS:{firstMessage.organisationODS})
+              {STRINGS.ORGANISATION} {firstMessage.organisationName} ({STRINGS.ODS_TEXT}{firstMessage.organisationODS})
             </p>
             <p className="nhsuk-body-s nhsuk-u-margin-bottom-2">
-              New status:{" "}
+              {STRINGS.NEW_STATUS} {" "}
               <Tag color={getStatusTagColour(firstMessage.newStatusCode)}>
                 {getStatusDisplayText(firstMessage.newStatusCode)}
               </Tag>
