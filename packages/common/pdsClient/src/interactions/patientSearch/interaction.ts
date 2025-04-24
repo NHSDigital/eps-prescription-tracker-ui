@@ -23,6 +23,7 @@ import {
   UnrestrictedPatientResource
 } from "./schema"
 import {ErrorObject} from "ajv"
+import {PatientSummary} from "@cpt-ui-common/common-types"
 
 enum PatientSearchOutcomeType {
   SUCCESS = "SUCCESS",
@@ -31,16 +32,6 @@ enum PatientSearchOutcomeType {
   RESPONSE_PARSE_ERROR = "RESPONSE_PARSE_ERROR",
   TOO_MANY_MATCHES = "TOO_MANY_MATCHES",
   PDS_ERROR = "PDS_ERROR"
-}
-
-type PatientSummary = {
-  familyName: string,
-  givenName?: Array<string>,
-  gender: string,
-  dateOfBirth: string,
-  address?: Array<string>,
-  postcode?: string,
-  nhsNumber: string,
 }
 
 type InvalidParameter = {
