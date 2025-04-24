@@ -6,11 +6,11 @@ import {Client as clientInterface} from "./interface"
 
 export class Client implements clientInterface, patientDetailsLookup.Interface, patientSearch.Interface {
   // Client interface
-  axiosInstance: AxiosInstance
-  pdsEndpoint: string
-  logger: Logger
-  apigeeAccessToken: string
-  roleId: string
+  readonly axiosInstance: AxiosInstance
+  readonly pdsEndpoint: string
+  readonly logger: Logger
+  readonly apigeeAccessToken: string
+  readonly roleId: string
 
   constructor(
     axiosInstance: AxiosInstance,

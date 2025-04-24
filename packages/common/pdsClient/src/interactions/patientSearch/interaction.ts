@@ -268,5 +268,6 @@ const parseResource = (resource: UnrestrictedPatientResource): PatientSummary =>
 export {
   PatientSearchOutcome as Outcome,
   PatientSearchOutcomeType as OutcomeType,
-  patientSearch
+  patientSearch,
+  PatientSummary
 }
