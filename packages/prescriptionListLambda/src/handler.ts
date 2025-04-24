@@ -7,7 +7,7 @@ import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
 import middy from "@middy/core"
 import inputOutputLogger from "@middy/input-output-logger"
 import axios, {AxiosInstance} from "axios"
-import {formatHeaders} from "./utils/headerUtils"
+import {headers} from "@cpt-ui-common/lambdaUtils"
 import {validateSearchParams} from "./utils/validation"
 import {getPrescriptions, PrescriptionError} from "./services/prescriptionsLookupService"
 import {SearchParams} from "./utils/types"
@@ -195,7 +195,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     return {
       statusCode: 200,
       body: JSON.stringify(searchResponse),
-      headers: formatHeaders({"Content-Type": "application/json"})
+      headers: headers.formatHeaders({"Content-Type": "application/json"})
     }
   } catch (error) {
     logger.error("Search failed", {
@@ -207,7 +207,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
       return {
         statusCode: 404,
         body: JSON.stringify({message: "Prescription not found"}),
-        headers: formatHeaders({"Content-Type": "application/json"})
+        headers: headers.formatHeaders({"Content-Type": "application/json"})
       }
     }
 
