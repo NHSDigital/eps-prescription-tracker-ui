@@ -232,14 +232,14 @@ export const mockPrescriptionInformationErd = {
 }
 export const mockMessageHistory: Array<MessageHistory> = [
   {
-    messageCode: "0003",
+    messageText: "Dispense claim successful",
     sentDateTime: "23-Feb-2025 13:35:33",
     organisationName: "Cohen's Chemist ",
     organisationODS: "FV519",
     newStatusCode: "0006"
   },
   {
-    messageCode: "0003",
+    messageText: "Release Request successful",
     sentDateTime: "23-Feb-2025 13:05:33",
     organisationName: "Fiji surgery",
     organisationODS: "FI05964",

@@ -1,6 +1,6 @@
 import {Col, Card, Tag} from "nhsuk-react-components"
 import {MessageHistory} from "@cpt-ui-common/common-types"
-import {getStatusTagColour, getStatusDisplayText} from "@/helpers/statusMetadata"
+import {getStatusTagColour, getStatusDisplayText, getMessageHistoryHeader} from "@/helpers/statusMetadata"
 
 interface MessageHistoryProps {
   messageHistory: Array<MessageHistory>
@@ -18,7 +18,7 @@ export function MessageHistoryCard({messageHistory}: MessageHistoryProps) {
         <Card className="nhsuk-u-margin-bottom-3 data-panel" style={{boxShadow: "none"}}>
           <Card.Content className="nhsuk-u-padding-4">
             <Card.Heading headingLevel="H3" className="nhsuk-heading-xs nhsuk-u-margin-bottom-1">
-              Dispenser has sent a dispense notification.
+              {getMessageHistoryHeader(firstMessage.messageText)}
               <br />
               {firstMessage.sentDateTime}
             </Card.Heading>
