@@ -161,7 +161,7 @@ const lambdaHandler = async (
     await updateApigeeAccessToken(
       documentClient,
       TokenMappingTableName,
-      event.requestContext.authorizer?.claims?.["cognito:username"] || "unknown",
+      event.requestContext.authorizer?.claims?.["cognito:username"] ?? "unknown",
       apigeeAccessToken,
       expiresIn,
       logger
@@ -278,7 +278,7 @@ const validateQueryParameter = (query: string | undefined, paramName: string): s
     throw new Error(`Missing query parameter: ${paramName}`)
   }
 
-  return query as string
+  return query
 }
 
 const newHandler = (
