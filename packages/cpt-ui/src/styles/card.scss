@@ -49,6 +49,12 @@
     color: rgb(76, 98, 114);
 }
 
+.break-word {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+
 .nhs-screening-whole-timeline {
     position: relative;
     padding-left: 0.5rem;

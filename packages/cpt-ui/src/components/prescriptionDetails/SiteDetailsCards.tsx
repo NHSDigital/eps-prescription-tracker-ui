@@ -81,7 +81,7 @@ export function SiteDetailsCard({
             <p className="nhsuk-u-margin-bottom-2">
               {ODS_LABEL(name, odsCode)}
             </p>
-            <p className="nhsuk-u-margin-bottom-2">{address}</p>
+            <p className="nhsuk-u-margin-bottom-2 break-word">{address}</p>
 
             <Card.Heading headingLevel="H3" className="nhsuk-heading-xs nhsuk-u-margin-bottom-1">
               {CONTACT_DETAILS}
