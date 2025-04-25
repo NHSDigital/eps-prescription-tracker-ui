@@ -184,7 +184,12 @@ export class ApiFunctions extends Construct {
       logLevel: props.logLevel,
       packageBasePath: "packages/patientSearchLambda",
       entryPoint: "src/handler.ts",
-      lambdaEnvironmentVariables: commonLambdaEnv
+      lambdaEnvironmentVariables: {
+        ...commonLambdaEnv,
+        apigeePersonalDemographicsEndpoint: props.apigeePersonalDemographicsEndpoint,
+        apigeeApiKey: props.apigeeApiKey,
+        roleId: props.roleId
+      }
     })
 
     // const apiFunctionsPolicies: Array<IManagedPolicy> = [
