@@ -27,12 +27,14 @@ export function MessageHistoryCard({messageHistory}: MessageHistoryProps) {
                   <p className="nhsuk-body-s nhsuk-u-margin-bottom-2">
                     {STRINGS.ORGANISATION} {msg.organisationName} ({STRINGS.ODS_TEXT}{msg.organisationODS})
                   </p>
-                  <p className="nhsuk-body-s nhsuk-u-margin-bottom-2">
-                    {STRINGS.NEW_STATUS}{" "}
-                    <Tag color={getStatusTagColour(msg.newStatusCode)}>
-                      {getStatusDisplayText(msg.newStatusCode)}
-                    </Tag>
-                  </p>
+                  {msg.newStatusCode && (
+                    <p className="nhsuk-body-s nhsuk-u-margin-bottom-2">
+                      {STRINGS.NEW_STATUS}{" "}
+                      <Tag color={getStatusTagColour(msg.newStatusCode)}>
+                        {getStatusDisplayText(msg.newStatusCode)}
+                      </Tag>
+                    </p>
+                  )}
                 </div>
               ))}
             </div>
