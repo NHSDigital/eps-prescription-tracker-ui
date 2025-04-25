@@ -209,6 +209,52 @@ export const mockDispensedPartialWithInitial: Array<DispensedItem> = [
     }
   }
 ]
+export const mockDispensedItemsCancelled: Array<DispensedItem> = [
+  {
+    itemDetails: {
+      medicationName: "Raberprazole 10mg tablets",
+      quantity: "56 tablets",
+      dosageInstructions: "Take one twice daily",
+      epsStatusCode: "0005", // Item cancelled
+      pharmacyStatus: "Prescriber cancelled",
+      itemPendingCancellation: false,
+      cancellationReason: "Prescribing error"
+    }
+  },
+  {
+    itemDetails: {
+      medicationName: "Glyceryl trinitrate 400micrograms/does aerosol sublingual spray",
+      quantity: "1 spray",
+      dosageInstructions: "Use as needed",
+      epsStatusCode: "0005", // Item cancelled
+      pharmacyStatus: "Prescriber cancelled",
+      itemPendingCancellation: false,
+      cancellationReason: "Prescribing error"
+    }
+  },
+  {
+    itemDetails: {
+      medicationName: "Oseltamivir 30mg capsules",
+      quantity: "20 capsules",
+      dosageInstructions: "One capsule twice a day",
+      epsStatusCode: "0005", // Item cancelled
+      pharmacyStatus: "Prescriber cancelled",
+      itemPendingCancellation: false,
+      cancellationReason: "Prescribing error"
+    }
+  },
+  {
+    itemDetails: {
+      medicationName: "Mirtazapine 30mg",
+      quantity: "21 tablets",
+      dosageInstructions: "Take once a day",
+      epsStatusCode: "0005", // Item cancelled
+      pharmacyStatus: "Prescriber cancelled",
+      itemPendingCancellation: false,
+      cancellationReason: "Prescribing error"
+    }
+  }
+]
 
 export const mockPrescriptionInformation = {
   prescriptionId: "",
@@ -251,6 +297,43 @@ export const mockMessageHistoryDispenseNotifInfo: Array<MessageHistory> = [
     sentDateTime: "23-Feb-2025 12:33:33",
     organisationName: "Fiji surgery",
     organisationODS: "FI05964",
+    newStatusCode: "0001"
+  }
+]
+
+export const mockMessageHistoryCancelled: Array<MessageHistory> = [
+  {
+    messageText: "Dispense claim successful",
+    sentDateTime: "02-Jan-2025 13:35:33",
+    organisationName: "Fiji surgery",
+    organisationODS: "F10DE",
+    newStatusCode: "0005"
+  },
+  {
+    messageText: "Dispense claim successful",
+    sentDateTime: "02-Jan-2025 13:05:33",
+    organisationName: "Cohen's Chemist",
+    organisationODS: "FV519",
+    newStatusCode: "0001"
+  },
+  {
+    messageText: "Prescription/item was not cancelled. With dispenser. Marked for cancellation",
+    sentDateTime: "23-Feb-2025 13:35:33",
+    organisationName: "Fiji surgery",
+    organisationODS: "F10DE"
+  },
+  {
+    messageText: "Release Request successful",
+    sentDateTime: "01-Jan-2025 12:33:33",
+    organisationName: "Cohen's Chemist",
+    organisationODS: "FV519",
+    newStatusCode: "0002"
+  },
+  {
+    messageText: "Prescription upload successful",
+    sentDateTime: "01-Jan-2025 12:33:33",
+    organisationName: "Fiji surgery",
+    organisationODS: "F10DE",
     newStatusCode: "0001"
   }
 ]

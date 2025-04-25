@@ -6,6 +6,7 @@ import {
   mockDispensedItems,
   mockDispensedItemsNoPharmacyStatus,
   mockDispensedPartialWithInitial,
+  mockDispensedItemsCancelled,
   mockPatientDetails,
   mockUnavailablePatientDetails,
   mockPrescriptionInformation,
@@ -13,6 +14,7 @@ import {
   mockPrescriber,
   mockNominatedDispenser,
   mockMessageHistoryDispenseNotifInfo,
+  mockMessageHistoryCancelled,
   altMockPrescriber,
   altMockNominatedDispenser
 } from "@/mocks/mockPrescriptions"
@@ -77,6 +79,12 @@ export const getMockPayload = (prescriptionId: string): PrescriptionDetailsRespo
         }
       },
       currentDispenser: [{organisationSummaryObjective: mockDispenser}]
+    },
+    "3DA34A-A83008-A0B2EV": {
+      prescribedItems: [],
+      dispensedItems: mockDispensedItemsCancelled,
+      messageHistory: mockMessageHistoryCancelled,
+      prescriberOrganisation: {organisationSummaryObjective: mockPrescriber}
     }
   }
 
