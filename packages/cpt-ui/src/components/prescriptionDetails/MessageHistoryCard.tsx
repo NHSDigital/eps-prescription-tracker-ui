@@ -1,6 +1,17 @@
-import {Col, Card, Tag} from "nhsuk-react-components"
+import {
+  Col,
+  Card,
+  Tag,
+  Details
+} from "nhsuk-react-components"
 import {MessageHistory} from "@cpt-ui-common/common-types"
-import {getStatusTagColour, getStatusDisplayText, getMessageHistoryHeader} from "@/helpers/statusMetadata"
+import {
+  getStatusTagColour,
+  getStatusDisplayText,
+  getItemStatusTagColour,
+  getItemStatusDisplayText,
+  getMessageHistoryHeader
+} from "@/helpers/statusMetadata"
 import {STRINGS} from "@/constants/ui-strings/MessageHistoryCardStrings"
 
 interface MessageHistoryProps {
@@ -19,14 +30,16 @@ export function MessageHistoryCard({messageHistory}: MessageHistoryProps) {
             <div className="nhs-screening-whole-timeline">
               {messageHistory.map((msg, index) => (
                 <div key={index} className="nhsuk-u-margin-bottom-4 nhs-screening-whole-timeline__item">
-                  <Card.Heading headingLevel="H3" className="nhsuk-heading-xs nhsuk-u-margin-bottom-1 ">
+                  <Card.Heading headingLevel="H3" className="nhsuk-heading-xs nhsuk-u-margin-bottom-1">
                     {getMessageHistoryHeader(msg.messageText)}
                     <br />
                     {msg.sentDateTime}
                   </Card.Heading>
+
                   <p className="nhsuk-body-s nhsuk-u-margin-bottom-2">
                     {STRINGS.ORGANISATION} {msg.organisationName} ({STRINGS.ODS_TEXT}{msg.organisationODS})
                   </p>
+
                   {msg.newStatusCode && (
                     <p className="nhsuk-body-s nhsuk-u-margin-bottom-2">
                       {STRINGS.NEW_STATUS}{" "}
@@ -34,6 +47,41 @@ export function MessageHistoryCard({messageHistory}: MessageHistoryProps) {
                         {getStatusDisplayText(msg.newStatusCode)}
                       </Tag>
                     </p>
+                  )}
+
+                  {/* Dispense notification info */}
+                  {msg.newStatusCode === "0006" && msg.dispenseNotification?.length > 0 && (
+                    <Details className="nhsuk-u-padding-top-2 nhsuk-u-margin-bottom-0">
+                      <Details.Summary>
+                        <span className="nhsuk-details__summary-text nhsuk-u-font-size-16">
+                          {STRINGS.DISPENSE_NOTIFICATION_INFO}
+                        </span>
+                      </Details.Summary>
+                      <Details.Text>
+                        <div className="nhs-screening-whole-timeline__description">
+                          {STRINGS.DISPENSE_NOTIFICATION_ID} {msg.dispenseNotification[0].ID}
+                        </div>
+
+                        <div className="nhs-screening-whole-timeline__description">
+                          {STRINGS.PRESCRIPTION_ITEMS}
+                          <ul className="nhsuk-u-padding-top-2">
+                            {msg.dispenseNotification.map((item, idx) => (
+                              <li key={idx} className="nhsuk-u-font-size-16">
+                                {item.medicationName}
+                                <br />
+                                <Tag color={getItemStatusTagColour("0001")}>
+                                  {getItemStatusDisplayText("0001")}
+                                </Tag>
+                                <br />
+                                {STRINGS.QUANTITY} {item.quantity}
+                                <br />
+                                {STRINGS.INSTRUCTIONS} {item.dosageInstruction}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      </Details.Text>
+                    </Details>
                   )}
                 </div>
               ))}
