@@ -16,6 +16,7 @@ import {
   mockMessageHistoryDispenseNotifInfo,
   mockMessageHistoryCancelled,
   mockMessageHistoryPendingCancellation,
+  mockMessageHistoryMissingData,
   altMockPrescriber,
   altMockNominatedDispenser
 } from "@/mocks/mockPrescriptions"
@@ -88,6 +89,21 @@ export const getMockPayload = (prescriptionId: string): PrescriptionDetailsRespo
       dispensedItems: mockDispensedItemsCancelled,
       messageHistory: mockMessageHistoryCancelled,
       prescriberOrganisation: {organisationSummaryObjective: mockPrescriber}
+    },
+    "88AAF5-A83008-3D404Q": {
+      dispensedItems: mockDispensedItemsNoPharmacyStatus,
+      messageHistory: mockMessageHistoryMissingData,
+      prescriberOrganisation: {organisationSummaryObjective: mockPrescriber},
+      statusCode: "0006", // All items dispensed
+      nominatedDispenser: {
+        organisationSummaryObjective: {
+          name: undefined,
+          odsCode: "FV519",
+          address: undefined,
+          telephone: undefined
+        }
+      },
+      currentDispenser: [{organisationSummaryObjective: mockDispenser}]
     }
   }
 

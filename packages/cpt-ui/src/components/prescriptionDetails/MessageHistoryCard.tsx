@@ -30,16 +30,24 @@ export function MessageHistoryCard({messageHistory}: MessageHistoryProps) {
             <div className="nhs-screening-whole-timeline">
               {messageHistory.map((msg, index) => (
                 <div key={index} className="nhsuk-u-margin-bottom-4 nhs-screening-whole-timeline__item">
+
+                  {/* Timeline Heading */}
                   <Card.Heading headingLevel="H3" className="nhsuk-heading-xs nhsuk-u-margin-bottom-1">
                     {getMessageHistoryHeader(msg.messageText)}
                     <br />
                     {msg.sentDateTime}
                   </Card.Heading>
 
-                  <p className="nhsuk-body-s nhsuk-u-margin-bottom-2">
-                    {STRINGS.ORGANISATION} {msg.organisationName} ({STRINGS.ODS_TEXT}{msg.organisationODS})
+                  {/* Organisation info */}
+                  <p className="nhsuk-body-s nhsuk-u-margin-bottom-2 break-word">
+                    {STRINGS.ORGANISATION}{" "}
+                    {msg.organisationName
+                      ? `${msg.organisationName} (${STRINGS.ODS_TEXT}${msg.organisationODS})`
+                      : `Site name not available. Try again later. (${STRINGS.ODS_TEXT}${msg.organisationODS})`
+                    }
                   </p>
 
+                  {/* Status tag */}
                   {msg.newStatusCode && (
                     <p className="nhsuk-body-s nhsuk-u-margin-bottom-2">
                       {STRINGS.NEW_STATUS}{" "}
@@ -50,43 +58,41 @@ export function MessageHistoryCard({messageHistory}: MessageHistoryProps) {
                   )}
 
                   {/* Dispense notification information */}
-                  {msg.newStatusCode === "0006" && (() => {
-                    const notifications = msg.dispenseNotification!
+                  {msg.newStatusCode === "0006" && msg.dispenseNotification && msg.dispenseNotification.length > 0 && (
+                    <Details className="nhsuk-u-padding-top-2 nhsuk-u-margin-bottom-0">
+                      <Details.Summary>
+                        <span className="nhsuk-details__summary-text nhsuk-u-font-size-16">
+                          {STRINGS.DISPENSE_NOTIFICATION_INFO}
+                        </span>
+                      </Details.Summary>
+                      <Details.Text>
+                        {/* Notification ID */}
+                        <div className="nhs-screening-whole-timeline__description">
+                          {STRINGS.DISPENSE_NOTIFICATION_ID} {msg.dispenseNotification![0].ID}
+                        </div>
 
-                    return (
-                      <Details className="nhsuk-u-padding-top-2 nhsuk-u-margin-bottom-0">
-                        <Details.Summary>
-                          <span className="nhsuk-details__summary-text nhsuk-u-font-size-16">
-                            {STRINGS.DISPENSE_NOTIFICATION_INFO}
-                          </span>
-                        </Details.Summary>
-                        <Details.Text>
-                          <div className="nhs-screening-whole-timeline__description">
-                            {STRINGS.DISPENSE_NOTIFICATION_ID} {notifications[0].ID}
-                          </div>
-
-                          <div className="nhs-screening-whole-timeline__description">
-                            {STRINGS.PRESCRIPTION_ITEMS}
-                            <ul className="nhsuk-u-padding-top-2">
-                              {notifications.map((item, idx) => (
-                                <li key={idx} className="nhsuk-u-font-size-16">
-                                  {item.medicationName}
-                                  <br />
-                                  <Tag color={getItemStatusTagColour("0001")}>
-                                    {getItemStatusDisplayText("0001")}
-                                  </Tag>
-                                  <br />
-                                  {STRINGS.QUANTITY} {item.quantity}
-                                  <br />
-                                  {STRINGS.INSTRUCTIONS} {item.dosageInstruction}
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        </Details.Text>
-                      </Details>
-                    )
-                  })()}
+                        {/* Items List */}
+                        <div className="nhs-screening-whole-timeline__description">
+                          {STRINGS.PRESCRIPTION_ITEMS}
+                          <ul className="nhsuk-u-padding-top-2">
+                            {msg.dispenseNotification!.map((item, idx) => (
+                              <li key={idx} className="nhsuk-u-font-size-16">
+                                {item.medicationName}
+                                <br />
+                                <Tag color={getItemStatusTagColour("0001")}>
+                                  {getItemStatusDisplayText("0001")}
+                                </Tag>
+                                <br />
+                                {STRINGS.QUANTITY} {item.quantity}
+                                <br />
+                                {STRINGS.INSTRUCTIONS} {item.dosageInstruction}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      </Details.Text>
+                    </Details>
+                  )}
                 </div>
               ))}
             </div>
