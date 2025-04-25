@@ -11,7 +11,7 @@ export const PRESCRIPTION_MESSAGES: Record<string, string> = {
   "Prescription upload successful": "Prescription has been uploaded.",
   "Prescription/Item was cancelled": "This prescription or item was cancelled.",
   "Prescription/item was not cancelled. With dispenser. Marked for cancellation":
-    "This prescription has a pending cancellation, but the prescription or items on it have not been cancelled at it has been downloaded by a dispenser.",
+    "This prescription has a pending cancellation, but the prescription or items on it have not been cancelled as it has been downloaded by a dispenser.",
   "Rebuild Dispense History successful": "Dispenser has corrected the prescription's dispensing history.",
   "Release Request successful": "Dispenser has downloaded the prescription.",
   "Subsequent cancellation":

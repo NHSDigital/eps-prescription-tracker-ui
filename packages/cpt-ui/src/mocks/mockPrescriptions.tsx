@@ -320,7 +320,6 @@ export const mockMessageHistoryDispenseNotifInfo: Array<MessageHistory> = [
     newStatusCode: "0001"
   }
 ]
-
 export const mockMessageHistoryCancelled: Array<MessageHistory> = [
   {
     messageText: "Dispense claim successful",
@@ -352,6 +351,28 @@ export const mockMessageHistoryCancelled: Array<MessageHistory> = [
   {
     messageText: "Prescription upload successful",
     sentDateTime: "01-Jan-2025 12:33:33",
+    organisationName: "Fiji surgery",
+    organisationODS: "F10DE",
+    newStatusCode: "0001"
+  }
+]
+export const mockMessageHistoryPendingCancellation: Array<MessageHistory> = [
+  {
+    messageText: "Prescription/item was not cancelled. With dispenser. Marked for cancellation",
+    sentDateTime: "20-Jan-2025 13:35:33",
+    organisationName: "Fiji surgery",
+    organisationODS: "FI05964"
+  },
+  {
+    messageText: "Release Request successful",
+    sentDateTime: "20-Jan-2025 13:05:33",
+    organisationName: "Cohen's Chemist",
+    organisationODS: "FV519",
+    newStatusCode: "0002"
+  },
+  {
+    messageText: "Prescription upload successful",
+    sentDateTime: "20-Jan-2025 12:33:33",
     organisationName: "Fiji surgery",
     organisationODS: "F10DE",
     newStatusCode: "0001"
