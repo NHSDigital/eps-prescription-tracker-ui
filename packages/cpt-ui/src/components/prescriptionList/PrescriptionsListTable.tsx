@@ -285,7 +285,7 @@ const PrescriptionsListTable = ({textContent, prescriptions}: PrescriptionsListT
                         <a
                           href={prescriptionLink + row.prescriptionId}
                           className="nhsuk-link"
-                          data-testid="view-prescription-link"
+                          data-testid={`view-prescription-link-${row.prescriptionId}`}
                         >
                           View prescription
                         </a>
