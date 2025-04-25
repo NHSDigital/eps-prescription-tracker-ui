@@ -83,7 +83,14 @@ const lambdaHandler = async (
       timeMs: Date.now() - searchStartTime
     })
 
-    throw error
+    return {
+      statusCode: 400,
+      body: JSON.stringify({
+        message: "Invalid query parameters",
+        error: error
+      }),
+      headers: headers.formatHeaders({"Content-Type": "application/json"})
+    }
   }
   // Query PDS
   const patientSearchOutcome = await pdsClient.patientSearch(familyName, dateOfBirth, postcode)
