@@ -87,7 +87,7 @@ const lambdaHandler = async (
       statusCode: 400,
       body: JSON.stringify({
         message: "Invalid query parameters",
-        error: error
+        error: String(error)
       }),
       headers: headers.formatHeaders({"Content-Type": "application/json"})
     }
