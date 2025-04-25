@@ -108,4 +108,61 @@ describe("MessageHistoryCard", () => {
     const {container} = render(<MessageHistoryCard messageHistory={[]} />)
     expect(container).toBeEmptyDOMElement()
   })
+
+  it("renders fallback org name when organisationName is missing", () => {
+    render(
+      <MessageHistoryCard messageHistory={[{
+        messageText: "Some status",
+        sentDateTime: "01-Jan-2025",
+        organisationName: "",
+        organisationODS: "XYZ123"
+      }]} />
+    )
+    expect(screen.getByText(/Site name not available/)).toBeInTheDocument()
+  })
+
+  it("does not render new status tag if newStatusCode is missing", () => {
+    render(
+      <MessageHistoryCard messageHistory={[{
+        messageText: "No Status",
+        sentDateTime: "01-Jan-2025",
+        organisationName: "Test",
+        organisationODS: "ABC123"
+      }]} />
+    )
+    expect(screen.queryByText(/New status:/)).not.toBeInTheDocument()
+  })
+
+  it("does not render dispense notification if status !== '0006'", () => {
+    render(
+      <MessageHistoryCard messageHistory={[{
+        messageText: "Not Dispensed",
+        sentDateTime: "01-Jan-2025",
+        organisationName: "Test",
+        organisationODS: "ABC123",
+        newStatusCode: "0002",
+        dispenseNotification: [{
+          ID: "abc",
+          medicationName: "Something",
+          quantity: "1",
+          dosageInstruction: "Take it"
+        }]
+      }]} />
+    )
+    expect(screen.queryByText(/Dispense notification information/)).not.toBeInTheDocument()
+  })
+
+  it("does not render dispense notification if list is empty", () => {
+    render(
+      <MessageHistoryCard messageHistory={[{
+        messageText: "Empty Notif",
+        sentDateTime: "01-Jan-2025",
+        organisationName: "Test",
+        organisationODS: "ABC123",
+        newStatusCode: "0006",
+        dispenseNotification: []
+      }]} />
+    )
+    expect(screen.queryByText(/Dispense notification information/)).not.toBeInTheDocument()
+  })
 })
