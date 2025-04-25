@@ -230,6 +230,7 @@ export const mockPrescriptionInformationErd = {
   maxRepeats: 6,
   daysSupply: "28"
 }
+
 export const mockMessageHistory: Array<MessageHistory> = [
   {
     messageText: "Dispense claim successful",
