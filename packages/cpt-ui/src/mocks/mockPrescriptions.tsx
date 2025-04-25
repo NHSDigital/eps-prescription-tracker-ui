@@ -231,7 +231,7 @@ export const mockPrescriptionInformationErd = {
   daysSupply: "28"
 }
 
-export const mockMessageHistory: Array<MessageHistory> = [
+export const mockMessageHistoryDispenseNotifInfo: Array<MessageHistory> = [
   {
     messageText: "Dispense claim successful",
     sentDateTime: "23-Feb-2025 13:35:33",
@@ -242,6 +242,13 @@ export const mockMessageHistory: Array<MessageHistory> = [
   {
     messageText: "Release Request successful",
     sentDateTime: "23-Feb-2025 13:05:33",
+    organisationName: "Cohen's Chemist ",
+    organisationODS: "FV519",
+    newStatusCode: "0002"
+  },
+  {
+    messageText: "Release Request successful",
+    sentDateTime: "23-Feb-2025 12:33:33",
     organisationName: "Fiji surgery",
     organisationODS: "FI05964",
     newStatusCode: "0001"
