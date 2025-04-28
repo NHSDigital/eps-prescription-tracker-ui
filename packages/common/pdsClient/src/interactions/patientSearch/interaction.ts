@@ -1,8 +1,8 @@
 
 import {Client} from "client"
 import {
-  FamilyName,
-  FamilyNameFromStringOutcomeType,
+  Name,
+  NameFromStringOutcomeType,
   DateOfBirth,
   DateOfBirthFromStringOutcomeType,
   Postcode,
@@ -54,15 +54,20 @@ async function patientSearch(
   client: Client,
   _familyName: string,
   _dateOfBirth: string,
-  _postcode: string
+  _postcode: string,
+  _givenName?: string
 ): Promise<PatientSearchOutcome> {
   // Input validation
   let validationErrors: Array<InvalidParameter> = []
   let familyName
+  let givenName
   let dateOfBirth
   let postcode
 
-  [familyName, validationErrors] = validateFamilyName(_familyName, validationErrors);
+  [familyName, validationErrors] = validateName(_familyName, ValidatedParameter.FAMILY_NAME, validationErrors)
+  if (_givenName !== undefined) {
+    [givenName, validationErrors] = validateName(_givenName as string, ValidatedParameter.GIVEN_NAME, validationErrors)
+  }
   [dateOfBirth, validationErrors] = validateDateOfBirth(_dateOfBirth, validationErrors);
   [postcode, validationErrors] = validatePostcode(_postcode, validationErrors)
   if (validationErrors.length > 0) {
@@ -74,7 +79,8 @@ async function patientSearch(
 
   // API call
   const searchParameters: PatientSearchParameters = {
-    familyName: familyName as FamilyName,
+    familyName: familyName as Name,
+    givenName: givenName,
     dateOfBirth: dateOfBirth as DateOfBirth,
     postcode: postcode as Postcode
   }
@@ -154,34 +160,35 @@ async function patientSearch(
   }
 }
 
-const validateFamilyName = (
-  _familyName: string,
+const validateName = (
+  _name: string,
+  name_type: ValidatedParameter.FAMILY_NAME | ValidatedParameter.GIVEN_NAME,
   validationErrors: Array<InvalidParameter>
-): [FamilyName | undefined, Array<InvalidParameter>] => {
-  let familyName
+): [Name | undefined, Array<InvalidParameter>] => {
+  let name
 
-  const familyNameValidationOutcome = FamilyName.from_string(_familyName)
-  switch (familyNameValidationOutcome.type) {
-    case FamilyNameFromStringOutcomeType.OK:
-      familyName = familyNameValidationOutcome.familyName
+  const nameValidationOutcome = Name.from_string(_name)
+  switch (nameValidationOutcome.type) {
+    case NameFromStringOutcomeType.OK:
+      name = nameValidationOutcome.Name
       break
-    case FamilyNameFromStringOutcomeType.TOO_LONG:
+    case NameFromStringOutcomeType.TOO_LONG:
       validationErrors.push({
-        name: ValidatedParameter.FAMILY_NAME,
-        error: "Family name can be at most 35 characters"
+        name: name_type,
+        error: `Name can be at most 35 characters`
       })
       break
-    case FamilyNameFromStringOutcomeType.WILDCARD_TOO_SOON:
+    case NameFromStringOutcomeType.WILDCARD_TOO_SOON:
       validationErrors.push({
-        name: ValidatedParameter.FAMILY_NAME,
+        name: name_type,
         error: "Wildcard cannot be in first 2 characters"
       })
       break
     default:
-      exhaustive_switch_guard(familyNameValidationOutcome)
+      exhaustive_switch_guard(nameValidationOutcome)
   }
 
-  return [familyName, validationErrors]
+  return [name, validationErrors]
 }
 
 const validateDateOfBirth = (

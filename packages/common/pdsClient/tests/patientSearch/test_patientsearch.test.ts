@@ -25,6 +25,63 @@ const mockAxiosInstance = (status: number, data: unknown) => {
 }
 
 describe("PatientSearch Unit Tests", () => {
+  describe("Input Validation", () => {
+    it("Should return an invalid parameters outcome when given an invalid family name", async () => {
+      const _mockAxiosInstance = mockAxiosInstance(200, undefined)
+
+      const client = new pds.Client(_mockAxiosInstance, "test-endpoint", mockLogger, "test-token", "test-role")
+
+      const outcome = await client.patientSearch("a*", "1234-01-01", "testPostcode")
+
+      expect(outcome.type).toBe(OutcomeType.INVALID_PARAMETERS)
+      expect((outcome as any).validationErrors).toEqual([{
+        name: "familyName",
+        error: "Wildcard cannot be in first 2 characters"
+      }])
+    })
+
+    it("Should return an invalid parameters outcome when given an invalid date of birth", async () => {
+      const _mockAxiosInstance = mockAxiosInstance(200, undefined)
+
+      const client = new pds.Client(_mockAxiosInstance, "test-endpoint", mockLogger, "test-token", "test-role")
+
+      const outcome = await client.patientSearch("testFamilyName", "123-401-01", "testPostcode")
+
+      expect(outcome.type).toBe(OutcomeType.INVALID_PARAMETERS)
+      expect((outcome as any).validationErrors).toEqual([{
+        name: "dateOfBirth",
+        error: "Date of birth must be in YYYY-MM-DD format"
+      }])
+    })
+
+    it("Should return an invalid parameters outcome when given an invalid postcode", async () => {
+      const _mockAxiosInstance = mockAxiosInstance(200, undefined)
+
+      const client = new pds.Client(_mockAxiosInstance, "test-endpoint", mockLogger, "test-token", "test-role")
+
+      const outcome = await client.patientSearch("testFamilyName", "1234-01-01", "**")
+
+      expect(outcome.type).toBe(OutcomeType.INVALID_PARAMETERS)
+      expect((outcome as any).validationErrors).toEqual([{
+        name: "postcode",
+        error: "Wildcard cannot be in first 2 characters"
+      }])
+    })
+
+    it("Should return an invalid parameters outcome when given an invalid givenName", async () => {
+      const _mockAxiosInstance = mockAxiosInstance(200, undefined)
+
+      const client = new pds.Client(_mockAxiosInstance, "test-endpoint", mockLogger, "test-token", "test-role")
+
+      const outcome = await client.patientSearch("testFamilyName", "1234-01-01", "testPostcode", "a*")
+
+      expect(outcome.type).toBe(OutcomeType.INVALID_PARAMETERS)
+      expect((outcome as any).validationErrors).toEqual([{
+        name: "givenName",
+        error: "Wildcard cannot be in first 2 characters"
+      }])
+    })
+  })
   it("Should handle an axios error", async () => {
     // Create mock axios instance with get method
     const mockGet = jest.fn(() => Promise.reject({} as unknown as AxiosResponse))

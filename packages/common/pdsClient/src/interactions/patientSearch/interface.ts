@@ -6,6 +6,7 @@ export interface Interface {
     familyName: string,
     dateOfBirth: string,
     postcode: string,
+    givenName?: string
   ): Promise<Outcome>;
   patientSearchPath(
     searchParameters: PatientSearchParameters

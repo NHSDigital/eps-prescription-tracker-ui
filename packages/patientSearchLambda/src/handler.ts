@@ -71,10 +71,12 @@ const lambdaHandler = async (
 
   // Validate query parameters
   let familyName: string
+  let givenName: string | undefined
   let dateOfBirth: string
   let postcode: string
   try{
     familyName = validateQueryParameter(event.queryStringParameters?.familyName, "familyName")
+    givenName = event.queryStringParameters?.givenName
     dateOfBirth = validateQueryParameter(event.queryStringParameters?.dateOfBirth, "dateOfBirth")
     postcode = validateQueryParameter(event.queryStringParameters?.postcode, "postcode")
   } catch (error) {
@@ -93,7 +95,7 @@ const lambdaHandler = async (
     }
   }
   // Query PDS
-  const patientSearchOutcome = await pdsClient.patientSearch(familyName, dateOfBirth, postcode)
+  const patientSearchOutcome = await pdsClient.patientSearch(familyName, dateOfBirth, postcode, givenName)
 
   let patients: Array<pds.patientSearch.PatientSummary> = []
 
