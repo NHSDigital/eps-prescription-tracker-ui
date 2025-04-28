@@ -1,3 +1,5 @@
+import {encodeQueryString} from "../utils"
+
 enum NameFromStringOutcomeType {
   OK = "OK",
   // 35 character limit
@@ -30,9 +32,7 @@ class Name {
   }
 
   public to_query_string(): string {
-    return this.name
-      .replaceAll(" ", "%20")
-      .replaceAll("*", "%2A")
+    return encodeQueryString(this.name)
   }
 }
 

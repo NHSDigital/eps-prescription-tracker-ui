@@ -1,3 +1,5 @@
+import {encodeQueryString} from "../utils"
+
 enum DateOfBirthFromStringOutcomeType {
   OK = "OK",
   BAD_FORMAT = "BAD_FORMAT",
@@ -30,7 +32,7 @@ class DateOfBirth {
   }
 
   public to_query_string(): string {
-    return this.date
+    return encodeQueryString(this.date)
   }
 }
 

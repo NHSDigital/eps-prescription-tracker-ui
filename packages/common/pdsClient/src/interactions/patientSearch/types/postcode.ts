@@ -1,3 +1,5 @@
+import {encodeQueryString} from "../utils"
+
 enum PostcodeFromStringOutcomeType {
   OK = "OK",
   // Cannot use wildcards in first 2 characters
@@ -23,9 +25,7 @@ class Postcode {
   }
 
   public to_query_string(): string {
-    return this.postcode
-      .replaceAll(" ", "%20")
-      .replaceAll("*", "%2A")
+    return encodeQueryString(this.postcode)
   }
 }
 
