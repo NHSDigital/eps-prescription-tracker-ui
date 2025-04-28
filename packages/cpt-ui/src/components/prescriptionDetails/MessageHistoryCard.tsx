@@ -27,7 +27,7 @@ export function MessageHistoryCard({messageHistory}: MessageHistoryProps) {
       <div className="data-panel__wrapper no-outline" tabIndex={-1}>
         <Card className="nhsuk-u-margin-bottom-3 data-panel" style={{boxShadow: "none"}}>
           <Card.Content className="nhsuk-u-padding-4">
-            <div className="nhs-screening-whole-timeline">
+            <div className="nhs-screening-whole-timeline" data-testid="message-history-timeline">
               {messageHistory.map((msg, index) => (
                 <div key={index} className="nhsuk-u-margin-bottom-4 nhs-screening-whole-timeline__item">
 
@@ -59,7 +59,8 @@ export function MessageHistoryCard({messageHistory}: MessageHistoryProps) {
 
                   {/* Dispense notification information */}
                   {msg.newStatusCode === "0006" && msg.dispenseNotification && msg.dispenseNotification.length > 0 && (
-                    <Details className="nhsuk-u-padding-top-2 nhsuk-u-margin-bottom-0">
+                    <Details className="nhsuk-u-padding-top-2 nhsuk-u-margin-bottom-0"
+                      data-testid="message-history-dropdown">
                       <Details.Summary>
                         <span className="nhsuk-details__summary-text nhsuk-u-font-size-16">
                           {STRINGS.DISPENSE_NOTIFICATION_INFO}
