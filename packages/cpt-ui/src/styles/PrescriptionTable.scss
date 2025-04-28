@@ -42,6 +42,10 @@
   -ms-user-select: none;
 }
 
+.eps-prescription-table-sort-text.prescriptionTreatmentType {
+  max-width: 100px; 
+}
+
 .eps-prescription-table th, .eps-prescription-table td {
   word-wrap: break-word;
   white-space: normal; 
@@ -92,14 +96,12 @@
 .eps-prescription-table-sort-icon-wrapper {
   display: flex;
   flex-direction: column;
-  line-height: 1;
-  margin-left: 0.25rem;
-  font-size: 1rem;
-  color: #1d70b8;
-  align-self: flex-start;
-  width: 10px;
-  height: 30px;
+  align-items: center;
   justify-content: space-between;
+  height: 1.5rem;
+  width: 1rem;
+  margin-left: 0.25rem;
+  position: relative;
 }
 
 .eps-prescription-table-sort-icon-wrapper span:first-child {
@@ -123,19 +125,13 @@
 }
 
 .eps-prescription-table-sort-text.cancellationWarning .eps-prescription-table-sort-icon-wrapper-container,
-.eps-prescription-table-sort-text.prescriptionTreatmentType .eps-prescription-table-sort-icon-wrapper-container {
+.eps-prescription-table-sort-text.prescriptionTreatmentType .eps-prescription-table-sort-icon-wrapper-container,
+.regular-treatment-type {
   margin-top: -20px;
 }
 
-.eps-prescription-table-sort-icon-wrapper {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: space-between;
-  height: 1.5rem;
-  width: 1rem;
-  margin-left: 0.25rem;
-  position: relative;
+.claimed-expired-treatment-type {
+  margin-top: 5px !important;
 }
 
 .eps-prescription-table-sort-icon-wrapper .arrow {
