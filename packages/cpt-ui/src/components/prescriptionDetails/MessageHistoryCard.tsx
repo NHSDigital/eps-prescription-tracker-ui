@@ -39,13 +39,15 @@ export function MessageHistoryCard({messageHistory}: MessageHistoryProps) {
                   </Card.Heading>
 
                   {/* Organisation info */}
-                  <p className="nhsuk-body-s nhsuk-u-margin-bottom-2 break-word">
-                    {STRINGS.ORGANISATION}{" "}
-                    {msg.organisationName
-                      ? `${msg.organisationName} (${STRINGS.ODS_TEXT}${msg.organisationODS})`
-                      : `Site name not available. Try again later. (${STRINGS.ODS_TEXT}${msg.organisationODS})`
-                    }
-                  </p>
+                  {msg.organisationName ? (
+                    <p className="nhsuk-body-s nhsuk-u-margin-bottom-2 break-word">
+                      {STRINGS.ORGANISATION} {msg.organisationName} ({STRINGS.ODS_TEXT}{msg.organisationODS})
+                    </p>
+                  ) : (
+                    <p className="nhsuk-body-s nhsuk-u-margin-bottom-2 break-word">
+                      {STRINGS.NO_ORG_NAME} ({STRINGS.ODS_TEXT}{msg.organisationODS})
+                    </p>
+                  )}
 
                   {/* Status tag */}
                   {msg.newStatusCode && (

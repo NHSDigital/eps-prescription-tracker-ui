@@ -7,5 +7,6 @@ export const STRINGS = {
   DISPENSE_NOTIFICATION_ID: "Dispense notification ID:",
   PRESCRIPTION_ITEMS: "Prescription items:",
   QUANTITY: "Quantity",
-  INSTRUCTIONS: "Instructions"
+  INSTRUCTIONS: "Instructions",
+  NO_ORG_NAME: "Organisation name not available. Try again later."
 }

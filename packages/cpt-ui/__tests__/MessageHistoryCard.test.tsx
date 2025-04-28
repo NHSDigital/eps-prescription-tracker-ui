@@ -79,7 +79,7 @@ describe("MessageHistoryCard", () => {
     // Organisation names and fallback text
     expect(screen.getByText(/Test Pharmacy/)).toBeInTheDocument()
     expect(screen.getByText(/LongNamePharmacyWhichShouldWrapProperlyWithoutBreakingUI/)).toBeInTheDocument()
-    expect(screen.getByText(/Site name not available/)).toBeInTheDocument()
+    expect(screen.getByText(/Organisation name not available/)).toBeInTheDocument()
 
     // New status tags
     expect(screen.getAllByText(/Mock status/)).toHaveLength(2)
@@ -118,7 +118,7 @@ describe("MessageHistoryCard", () => {
         organisationODS: "XYZ123"
       }]} />
     )
-    expect(screen.getByText(/Site name not available/)).toBeInTheDocument()
+    expect(screen.getByText(/Organisation name not available/)).toBeInTheDocument()
   })
 
   it("does not render new status tag if newStatusCode is missing", () => {
