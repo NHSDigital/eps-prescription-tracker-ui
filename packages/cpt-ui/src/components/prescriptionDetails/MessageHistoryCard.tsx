@@ -30,7 +30,8 @@ export function MessageHistoryCard({messageHistory}: MessageHistoryProps) {
             <div className="nhs-screening-whole-timeline" data-testid="message-history-timeline">
               {messageHistory.map((msg) => (
                 <div key={`${msg.sentDateTime}-${msg.organisationODS}`}
-                  className="nhsuk-u-margin-bottom-4 nhs-screening-whole-timeline__item">
+                  className="nhsuk-u-margin-bottom-4 nhs-screening-whole-timeline__item"
+                  data-testid="prescription-message">
 
                   {/* Timeline Heading */}
                   <Card.Heading headingLevel="H3" className="nhsuk-heading-xs nhsuk-u-margin-bottom-1">
@@ -46,7 +47,7 @@ export function MessageHistoryCard({messageHistory}: MessageHistoryProps) {
                     </p>
                   ) : (
                     <p className="nhsuk-body-s nhsuk-u-margin-bottom-2 break-word"
-                      data-testid="pending-cancellation-message">
+                      data-testid="no-org-name-message">
                       {STRINGS.NO_ORG_NAME} ({STRINGS.ODS_TEXT}{msg.organisationODS})
                     </p>
                   )}
@@ -55,7 +56,8 @@ export function MessageHistoryCard({messageHistory}: MessageHistoryProps) {
                   {msg.newStatusCode && (
                     <p className="nhsuk-body-s nhsuk-u-margin-bottom-2">
                       {STRINGS.NEW_STATUS}{" "}
-                      <Tag color={getStatusTagColour(msg.newStatusCode)}>
+                      <Tag color={getStatusTagColour(msg.newStatusCode)}
+                        data-testid="new-status-code-tag">
                         {getStatusDisplayText(msg.newStatusCode)}
                       </Tag>
                     </p>
