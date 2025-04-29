@@ -15,7 +15,7 @@ import {
 import {STRINGS} from "@/constants/ui-strings/MessageHistoryCardStrings"
 
 interface MessageHistoryProps {
-  messageHistory: Array<MessageHistory>
+  readonly messageHistory: ReadonlyArray<MessageHistory>
 }
 
 export function MessageHistoryCard({messageHistory}: MessageHistoryProps) {
