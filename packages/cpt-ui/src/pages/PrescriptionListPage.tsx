@@ -74,7 +74,7 @@ export default function PrescriptionListPage() {
       {
         prescriptionId: "209E3D-A83008-327F9F",
         statusCode: PrescriptionStatus.WITH_DISPENSER,
-        issueDate: "2025-02-15",
+        issueDate: "2025-01-22",
         prescriptionTreatmentType: TreatmentType.ACUTE,
         issueNumber: 2,
         maxRepeats: 3,
