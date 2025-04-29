@@ -82,7 +82,17 @@ export default function PrescriptionListPage() {
         itemsPendingCancellation: false
       },
       {
-        prescriptionId: "RX003",
+        prescriptionId: "4D6F2C-A83008-A3E7D1",
+        statusCode: PrescriptionStatus.WITH_DISPENSER_ACTIVE,
+        issueDate: "2025-03-10",
+        prescriptionTreatmentType: TreatmentType.ERD,
+        issueNumber: 3,
+        maxRepeats: 4,
+        prescriptionPendingCancellation: false,
+        itemsPendingCancellation: true
+      },
+      {
+        prescriptionId: "7F1A4B-A83008-91DC2E",
         statusCode: PrescriptionStatus.WITH_DISPENSER_ACTIVE,
         issueDate: "2025-03-10",
         prescriptionTreatmentType: TreatmentType.ERD,
