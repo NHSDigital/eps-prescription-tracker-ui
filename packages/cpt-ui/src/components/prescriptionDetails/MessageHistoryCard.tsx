@@ -44,7 +44,8 @@ export function MessageHistoryCard({messageHistory}: MessageHistoryProps) {
                       {STRINGS.ORGANISATION} {msg.organisationName} ({STRINGS.ODS_TEXT}{msg.organisationODS})
                     </p>
                   ) : (
-                    <p className="nhsuk-body-s nhsuk-u-margin-bottom-2 break-word">
+                    <p className="nhsuk-body-s nhsuk-u-margin-bottom-2 break-word"
+                      data-testid="pending-cancellation-message">
                       {STRINGS.NO_ORG_NAME} ({STRINGS.ODS_TEXT}{msg.organisationODS})
                     </p>
                   )}
