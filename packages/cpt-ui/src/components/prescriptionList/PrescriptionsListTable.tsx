@@ -136,7 +136,7 @@ const PrescriptionsListTable = ({textContent, prescriptions}: PrescriptionsListT
 
   //this is partially declared here to address linting errors for the line being too long.
   // The url is formed in the render below
-  const prescriptionLink = "https://cpt-ui.dev.eps.national.nhs.uk/site/prescription-details?prescriptionId="
+  const prescriptionLink = "/site/prescription-details?prescriptionId="
 
   const renderTableDescription = () => {
     switch (textContent.testid) {
