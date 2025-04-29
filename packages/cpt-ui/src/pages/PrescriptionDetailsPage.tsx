@@ -133,22 +133,20 @@ export default function PrescriptionDetailsPage() {
   if (loading || !prescriber) {
     return (
       <main id="main-content" className="nhsuk-main-wrapper nhsuk-main-wrapper--s">
-        <Container>
-          <Container width="full" fluid={true}>
-            <Row>
-              <Col width="full">
-                <h1
-                  className="nhsuk-u-visually-hidden"
-                >
-                  {STRINGS.HEADER}
-                </h1>
-                <h2 data-testid="loading-message">
-                  {STRINGS.LOADING_FULL_PRESCRIPTION}
-                </h2>
-                <EpsSpinner />
-              </Col>
-            </Row>
-          </Container>
+        <Container width="full" fluid={true} className="container-details-page">
+          <Row>
+            <Col width="full">
+              <h1
+                className="nhsuk-u-visually-hidden"
+              >
+                {STRINGS.HEADER}
+              </h1>
+              <h2 data-testid="loading-message">
+                {STRINGS.LOADING_FULL_PRESCRIPTION}
+              </h2>
+              <EpsSpinner />
+            </Col>
+          </Row>
         </Container>
       </main>
     )
@@ -156,43 +154,41 @@ export default function PrescriptionDetailsPage() {
 
   return (
     <main id="main-content" className="nhsuk-main-wrapper nhsuk-main-wrapper--s">
-      <Container width="full" fluid={true}>
-        <Container width="full" fluid={true}>
-          <Row>
-            <Col width="full">
-              <BackLink
-                data-testid="go-back-link"
-                asElement={Link}
-                to={`${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}?${queryParams.toString()}`}
-              >
-                {STRINGS.GO_BACK}
-              </BackLink>
-            </Col>
-          </Row>
-          <Row>
-            <Col width="full">
-              <h1 className="nhsuk-u-visually-hidden">{STRINGS.HEADER}</h1>
-            </Col>
-          </Row>
-          {/* === Main Grid Layout === */}
-          <Row>
-            {/* Prescribed/Dispensed items */}
-            <PrescribedDispensedItemsCards
-              prescribedItems={prescribedItems}
-              dispensedItems={dispensedItems}
+      <Container width="full" fluid={true} className="container-details-page">
+        <Row>
+          <Col width="full">
+            <BackLink
+              data-testid="go-back-link"
+              asElement={Link}
+              to={`${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}?${queryParams.toString()}`}
+            >
+              {STRINGS.GO_BACK}
+            </BackLink>
+          </Col>
+        </Row>
+        <Row>
+          <Col width="full">
+            <h1 className="nhsuk-u-visually-hidden">{STRINGS.HEADER}</h1>
+          </Col>
+        </Row>
+        {/* === Main Grid Layout === */}
+        <Row>
+          {/* Prescribed/Dispensed items */}
+          <PrescribedDispensedItemsCards
+            prescribedItems={prescribedItems}
+            dispensedItems={dispensedItems}
+          />
+          {/* Prescriber and dispenser information */}
+          <Col width="one-third">
+            <SiteDetailsCards
+              prescriber={prescriber}
+              dispenser={dispenser}
+              nominatedDispenser={nominatedDispenser}
             />
-            {/* Prescriber and dispenser information */}
-            <Col width="one-third">
-              <SiteDetailsCards
-                prescriber={prescriber}
-                dispenser={dispenser}
-                nominatedDispenser={nominatedDispenser}
-              />
-            </Col>
-            {/* Message history timeline */}
-            <MessageHistoryCard messageHistory={messageHistory} />
-          </Row>
-        </Container>
+          </Col>
+          {/* Message history timeline */}
+          <MessageHistoryCard messageHistory={messageHistory} />
+        </Row>
       </Container>
     </main>
   )
