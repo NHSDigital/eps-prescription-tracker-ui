@@ -29,7 +29,7 @@ export function MessageHistoryCard({messageHistory}: MessageHistoryProps) {
           <Card.Content className="nhsuk-u-padding-4">
             <div className="nhs-screening-whole-timeline" data-testid="message-history-timeline">
               {messageHistory.map((msg, index) => (
-                <div key={index} className="nhsuk-u-margin-bottom-4 nhs-screening-whole-timeline__item">
+                <div key={`item-${index}`} className="nhsuk-u-margin-bottom-4 nhs-screening-whole-timeline__item">
 
                   {/* Timeline Heading */}
                   <Card.Heading headingLevel="H3" className="nhsuk-heading-xs nhsuk-u-margin-bottom-1">
@@ -79,8 +79,8 @@ export function MessageHistoryCard({messageHistory}: MessageHistoryProps) {
                         <div className="nhs-screening-whole-timeline__description">
                           {STRINGS.PRESCRIPTION_ITEMS}
                           <ul className="nhsuk-u-padding-top-2">
-                            {msg.dispenseNotification!.map((item, idx) => (
-                              <li key={idx} className="nhsuk-u-font-size-16">
+                            {msg.dispenseNotification!.map((item, index) => (
+                              <li key={`item-${index}`} className="nhsuk-u-font-size-16">
                                 {item.medicationName}
                                 <br />
                                 <Tag color={getItemStatusTagColour("0001")}>
