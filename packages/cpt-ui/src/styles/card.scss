@@ -45,27 +45,62 @@
     }
 }
 
-.site-card {
-    margin-bottom: 16px;
-    margin-top: 16px;
-}
-
-.site-card .content {
-    overflow-wrap: break-word;
-    padding: 16px;
-    padding-bottom: 8px;
-    margin: 0;
-}
-
-.site-card-column {
-    padding: 16px;
-    padding-top: 0px;
-}
-
-.site-card-column>.site-card:last-child {
-    margin-bottom: 48px;
-}
-
 .data-field__content--address {
     color: rgb(76, 98, 114);
+}
+
+.break-word {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    word-break: break-word;
+}
+
+.nhs-screening-whole-timeline {
+    position: relative;
+    padding-left: 0.5rem;
+
+    &::before {
+        content: "";
+        position: absolute;
+        top: 10px;
+        left: 0;
+        width: 5px;
+        height: 102%;
+        background-color: #005eb8;
+    }
+}
+
+.nhs-screening-whole-timeline__item {
+    position: relative;
+    padding-left: 1rem;
+
+    &::before {
+        content: "";
+        position: absolute;
+        top: 10px;
+        left: -5px;
+        width: 12px;
+        height: 5px;
+        background-color: #005eb8;
+    }
+}
+
+.nhsuk-details__text {
+    border-left: 4px solid #d8dde0;
+    margin-top: 8px;
+    padding: 16px;
+    padding-left: 20px;
+}
+
+.container-details-page {
+    margin-left: 64px;
+    margin-right: 64px
+}
+
+@media (min-width: 40.0625em) {
+    .nhs-screening-whole-timeline__description {
+        font-size: 1rem;
+        line-height: 1.25;
+        margin-top: 20px;
+    }
 }
