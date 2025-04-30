@@ -13,6 +13,7 @@
  */
 
 import {STATUS_LABELS} from "@/constants/ui-strings/StatusLabels"
+import {PRESCRIPTION_MESSAGES} from "@/constants/ui-strings/PrescriptionMessage"
 
 export type TagColour =
   | "green"
@@ -75,6 +76,14 @@ export const getItemStatusTagColour = (code: string): TagColour =>
 
 export const getItemStatusDisplayText = (code: string): string =>
   itemStatusMap[code]?.label ?? "Unknown"
+
+// --- Accessors: Message History ---
+/**
+ * Returns a human-readable heading for a CPTS message history event.
+ * Falls back to the original heading if no match is found.
+ */
+export const getMessageHistoryHeader = (heading: string): string =>
+  PRESCRIPTION_MESSAGES[heading] ?? heading
 
 // --- Formatter: Prescription Type ---
 export const getPrescriptionTypeDisplayText = (
