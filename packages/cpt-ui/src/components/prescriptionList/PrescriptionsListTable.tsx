@@ -134,10 +134,6 @@ const PrescriptionsListTable = ({textContent, prescriptions}: PrescriptionsListT
     return <p className="nhsuk-body">{textContent.noPrescriptionsMessage}</p>
   }
 
-  //this is partially declared here to address linting errors for the line being too long.
-  // The url is formed in the render below
-  const prescriptionLink = "/site/prescription-details?prescriptionId="
-
   const renderTableDescription = () => {
     switch (textContent.testid) {
       case "current":
@@ -283,7 +279,7 @@ const PrescriptionsListTable = ({textContent, prescriptions}: PrescriptionsListT
                       <div className="eps-prescription-id">{row.prescriptionId}</div>
                       <div>
                         <a
-                          href={prescriptionLink + row.prescriptionId}
+                          href={"/site/prescription-details?prescriptionId="+ row.prescriptionId}
                           className="nhsuk-link"
                           data-testid={`view-prescription-link-${row.prescriptionId}`}
                         >
