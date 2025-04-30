@@ -110,6 +110,26 @@ export default function PrescriptionListPage() {
         maxRepeats: 4,
         prescriptionPendingCancellation: false,
         itemsPendingCancellation: true
+      },
+      {
+        prescriptionId: "209E3D-A83008-327F9F",
+        statusCode: PrescriptionStatus.WITH_DISPENSER_ACTIVE,
+        issueDate: "2025-03-10",
+        prescriptionTreatmentType: TreatmentType.ERD,
+        issueNumber: 3,
+        maxRepeats: 4,
+        prescriptionPendingCancellation: false,
+        itemsPendingCancellation: true
+      },
+      {
+        prescriptionId: "3DA34A-A83008-A0B2EV",
+        statusCode: PrescriptionStatus.WITH_DISPENSER_ACTIVE,
+        issueDate: "2025-03-10",
+        prescriptionTreatmentType: TreatmentType.ERD,
+        issueNumber: 3,
+        maxRepeats: 4,
+        prescriptionPendingCancellation: false,
+        itemsPendingCancellation: true
       }
     ],
     pastPrescriptions: [
