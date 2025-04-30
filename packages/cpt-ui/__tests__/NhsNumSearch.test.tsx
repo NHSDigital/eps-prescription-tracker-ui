@@ -71,11 +71,10 @@ describe("NhsNumSearch", () => {
     await userEvent.type(screen.getByTestId("nhs-number-input"), "abc")
     await userEvent.click(screen.getByTestId("find-patient-button"))
 
-    expect(screen.getByText("NHS number must be 10 digits long")).toBeInTheDocument()
-    expect(screen.getByText("NHS number must contain digits only")).toBeInTheDocument()
+    expect(screen.getByText("NHS number must have 10 numbers")).toBeInTheDocument()
     expect(
-      screen.getByText("NHS number must contain 10 digits, with no letters or special characters.")
-    ).toBeInTheDocument()
+      screen.getAllByText("Enter an NHS number in the correct format").length
+    ).toBeGreaterThan(1)
   })
 
   it("shows error for short input (123)", async () => {
@@ -83,9 +82,9 @@ describe("NhsNumSearch", () => {
     await userEvent.type(screen.getByTestId("nhs-number-input"), "123")
     await userEvent.click(screen.getByTestId("find-patient-button"))
 
-    expect(screen.getAllByText("NHS number must be 10 digits long").length).toBeGreaterThan(1)
+    expect(screen.getAllByText("NHS number must have 10 numbers").length).toBeGreaterThan(1)
     expect(
-      screen.queryByText("NHS number must contain digits only")
+      screen.queryByText("Enter an NHS number in the correct format")
     ).not.toBeInTheDocument()
   })
 
@@ -94,9 +93,9 @@ describe("NhsNumSearch", () => {
     await userEvent.type(screen.getByTestId("nhs-number-input"), "1234567890000")
     await userEvent.click(screen.getByTestId("find-patient-button"))
 
-    expect(screen.getAllByText("NHS number must be 10 digits long").length).toBeGreaterThan(1)
+    expect(screen.getAllByText("NHS number must have 10 numbers").length).toBeGreaterThan(1)
     expect(
-      screen.queryByText("NHS number must contain digits only")
+      screen.queryByText("Enter an NHS number in the correct format")
     ).not.toBeInTheDocument()
   })
 
