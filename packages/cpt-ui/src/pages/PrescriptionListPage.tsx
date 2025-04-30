@@ -94,7 +94,7 @@ export default function PrescriptionListPage() {
       {
         prescriptionId: "7F1A4B-A83008-91DC2E",
         statusCode: PrescriptionStatus.WITH_DISPENSER_ACTIVE,
-        issueDate: "2025-03-10",
+        issueDate: "2025-03-11",
         prescriptionTreatmentType: TreatmentType.ERD,
         issueNumber: 3,
         maxRepeats: 4,
@@ -104,9 +104,9 @@ export default function PrescriptionListPage() {
       {
         prescriptionId: "88AAF5-A83008-3D404Q",
         statusCode: PrescriptionStatus.WITH_DISPENSER_ACTIVE,
-        issueDate: "2025-03-10",
+        issueDate: "2025-04-10",
         prescriptionTreatmentType: TreatmentType.ERD,
-        issueNumber: 3,
+        issueNumber: 2,
         maxRepeats: 4,
         prescriptionPendingCancellation: false,
         itemsPendingCancellation: true
@@ -114,12 +114,12 @@ export default function PrescriptionListPage() {
       {
         prescriptionId: "209E3D-A83008-327F9F",
         statusCode: PrescriptionStatus.WITH_DISPENSER_ACTIVE,
-        issueDate: "2025-03-10",
+        issueDate: "2024S-03-10",
         prescriptionTreatmentType: TreatmentType.ERD,
-        issueNumber: 3,
-        maxRepeats: 4,
+        issueNumber: 1,
+        maxRepeats: 2,
         prescriptionPendingCancellation: false,
-        itemsPendingCancellation: true
+        itemsPendingCancellation: false
       },
       {
         prescriptionId: "3DA34A-A83008-A0B2EV",
