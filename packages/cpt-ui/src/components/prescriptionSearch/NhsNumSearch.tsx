@@ -91,7 +91,8 @@ export default function NhsNumSearch() {
 
             <FormGroup className={errorTypes.length > 0 ? "nhsuk-form-group--error" : ""}>
               <Label htmlFor="nhs-number-input" id="nhs-number-label" data-testid="nhs-number-label">
-                <h2 className="nhsuk-heading-m nhsuk-u-margin-bottom-1 no-outline">
+                <h2 className="nhsuk-heading-m nhsuk-u-margin-bottom-1 no-outline"
+                  data-testid="nhs-number-search-heading">
                   <span className="nhsuk-u-visually-hidden">{STRINGS.hiddenText}</span>
                   {STRINGS.labelText}
                 </h2>
