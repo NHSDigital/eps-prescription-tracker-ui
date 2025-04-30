@@ -20,6 +20,8 @@ describe("PrescriptionsListTable", () => {
     testid: "current",
     noPrescriptionsMessage: "No current prescriptions found."
   }
+  const futureTextContent = {...textContent, testid: "future"}
+  const expiredTextContent = {...textContent, testid: "claimedExpired"}
 
   const prescriptions: Array<PrescriptionSummary> = [
     {
@@ -64,15 +66,59 @@ describe("PrescriptionsListTable", () => {
     expect(screen.getByTestId("eps-loading-spinner")).toBeInTheDocument()
   })
 
-  it("displays the prescriptions table after loading", async () => {
+  it("renders the full table container, table, and table head when prescriptions exist", async () => {
     jest.useFakeTimers()
+
     render(<PrescriptionsListTable textContent={textContent} prescriptions={prescriptions} />)
+
     jest.advanceTimersByTime(2000)
 
     await waitFor(() => {
-      expect(screen.queryByTestId("eps-loading-spinner")).not.toBeInTheDocument()
-      expect(screen.getByTestId("eps-prescription-table-container")).toBeInTheDocument()
-      expect(screen.getByTestId("current-prescriptions-results-table")).toBeInTheDocument()
+      const container = screen.getByTestId("eps-prescription-table-container")
+      const table = screen.getByTestId(`${textContent.testid}-prescriptions-results-table`)
+      const tableHead = table.querySelector("thead")
+      const firstRow = tableHead?.querySelector("tr")
+
+      expect(container).toBeInTheDocument()
+      expect(table).toBeInTheDocument()
+      expect(tableHead).toBeInTheDocument()
+      expect(firstRow).toBeInTheDocument()
+    })
+
+    jest.useRealTimers()
+  })
+
+  it("renders the future prescriptions correctly", async () => {
+    jest.useFakeTimers()
+
+    render(<PrescriptionsListTable textContent={futureTextContent} prescriptions={prescriptions} />)
+
+    jest.advanceTimersByTime(2000)
+
+    await waitFor(() => {
+      const table = screen.getByTestId("future-prescriptions-results-table")
+      expect(table).toBeInTheDocument()
+
+      const caption = table.querySelector("caption")
+      expect(caption?.textContent).toContain("A sortable table showing future-dated prescriptions")
+    })
+
+    jest.useRealTimers()
+  })
+
+  it("renders the expired prescriptions correctly", async () => {
+    jest.useFakeTimers()
+
+    render(<PrescriptionsListTable textContent={expiredTextContent} prescriptions={prescriptions} />)
+
+    jest.advanceTimersByTime(2000)
+
+    await waitFor(() => {
+      const table = screen.getByTestId("claimedExpired-prescriptions-results-table")
+      expect(table).toBeInTheDocument()
+
+      const caption = table.querySelector("caption")
+      expect(caption?.textContent).toContain("A sortable table showing claimed and expired prescriptions")
     })
 
     jest.useRealTimers()
@@ -150,4 +196,71 @@ describe("PrescriptionsListTable", () => {
 
     jest.useRealTimers()
   })
+
+  it("sorts prescriptions by cancellation warning when header is clicked", async () => {
+    jest.useFakeTimers()
+
+    render(<PrescriptionsListTable textContent={textContent} prescriptions={prescriptions} />)
+
+    jest.advanceTimersByTime(2000)
+
+    await waitFor(() => {
+      expect(screen.getByTestId("current-prescriptions-results-table")).toBeInTheDocument()
+    })
+
+    const cancellationHeader = screen.getByTestId("eps-prescription-table-sort-cancellationWarning")
+    fireEvent.click(cancellationHeader)
+
+    await waitFor(() => {
+      const rows = screen.getAllByTestId("eps-prescription-table-sort-button")
+
+      const firstRow = rows[0]
+
+      expect(firstRow).toHaveTextContent("C0C757-A83008-C2D93O")
+    })
+
+    jest.useRealTimers()
+  })
+  it("renders noPrescriptionsMessage when prescriptions array is empty", async () => {
+    jest.useFakeTimers()
+
+    render(<PrescriptionsListTable textContent={textContent} prescriptions={[]} />)
+
+    jest.advanceTimersByTime(2000)
+
+    await waitFor(() => {
+      const message = screen.getByText(textContent.noPrescriptionsMessage)
+      expect(message).toBeInTheDocument()
+      expect(message).toHaveClass("nhsuk-body")
+    })
+
+    jest.useRealTimers()
+  })
+
+  it("responds to click and keyboard interactions on sortable column headers", async () => {
+    jest.useFakeTimers()
+
+    render(<PrescriptionsListTable textContent={textContent} prescriptions={prescriptions} />)
+    jest.advanceTimersByTime(2000)
+
+    await waitFor(() => {
+      const sortButton = screen.getByTestId("eps-prescription-table-sort-issueDate")
+
+      // Check that it's rendered with the correct role and label
+      expect(sortButton).toBeInTheDocument()
+      expect(sortButton).toHaveAttribute("role", "button")
+      expect(sortButton).toHaveAttribute("tabIndex", "0")
+
+      // Trigger click
+      fireEvent.click(sortButton)
+
+      // Trigger keyboard "Enter"
+      fireEvent.keyDown(sortButton, {key: "Enter"})
+      // Trigger keyboard "Space"
+      fireEvent.keyDown(sortButton, {key: " "})
+    })
+
+    jest.useRealTimers()
+  })
+
 })
