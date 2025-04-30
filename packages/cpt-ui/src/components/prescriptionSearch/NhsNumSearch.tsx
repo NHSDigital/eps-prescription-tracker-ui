@@ -19,82 +19,86 @@ import {FRONTEND_PATHS} from "@/constants/environment"
 
 export default function NhsNumSearch() {
   const [nhsNumber, setNhsNumber] = useState("")
-  const [errorType, setErrorType] = useState<"" | "empty" | "length" | "chars">("")
+  const [errorTypes, setErrorTypes] = useState<Array<string>>([])
   const errorRef = useRef<HTMLDivElement | null>(null)
   const navigate = useNavigate()
 
   const errorMessages = STRINGS.errors
 
   useEffect(() => {
-    const input = document.querySelector<HTMLInputElement>("#nhs-number-input")
-    input?.focus()
+    document.querySelector<HTMLInputElement>("#nhs-number-input")?.focus()
   }, [])
 
   useEffect(() => {
-    if (errorType && errorRef.current) {
+    if (errorTypes.length > 0 && errorRef.current) {
       errorRef.current.focus()
     }
-  }, [errorType])
+  }, [errorTypes])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setNhsNumber(e.target.value)
-    setErrorType("")
+    setErrorTypes([])
   }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     const cleaned = nhsNumber.replace(/\s/g, "")
+    const errors: Array<string> = []
 
     if (!cleaned) {
-      setErrorType("empty")
-      return
+      errors.push("empty")
+    } else {
+      if (cleaned.length !== 10) errors.push("length")
+      if (!/^\d+$/.test(cleaned)) errors.push("chars")
     }
 
-    if (!/^\d+$/.test(cleaned)) {
-      setErrorType("chars")
-      return
-    }
-
-    if (cleaned.length !== 10) {
-      setErrorType("length")
+    if (errors.length > 0) {
+      setErrorTypes(errors)
       return
     }
 
     navigate(`${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}?nhsNumber=${cleaned}`)
   }
 
+  const showCombinedFieldError =
+    errorTypes.includes("length") && errorTypes.includes("chars")
+
   return (
     <Container className="nhsuk-width-container-fluid patient-search-form-container">
       <Row>
         <Col width="one-half">
           <Form onSubmit={handleSubmit} noValidate>
-            {errorType && (
+            {errorTypes.length > 0 && (
               <ErrorSummary ref={errorRef}>
-                <ErrorSummary.Title>
-                  {STRINGS.errorSummaryHeading}
-                </ErrorSummary.Title>
+                <ErrorSummary.Title>{STRINGS.errorSummaryHeading}</ErrorSummary.Title>
                 <ErrorSummary.Body>
                   <ErrorSummary.List>
-                    <ErrorSummary.Item>
-                      <a href="#nhs-number-input">{errorMessages[errorType]}</a>
-                    </ErrorSummary.Item>
+                    {errorTypes.map((err) => (
+                      <ErrorSummary.Item key={err}>
+                        <a href="#nhs-number-input">{errorMessages[err]}</a>
+                      </ErrorSummary.Item>
+                    ))}
                   </ErrorSummary.List>
                 </ErrorSummary.Body>
               </ErrorSummary>
             )}
 
-            <FormGroup className={errorType ? "nhsuk-form-group--error" : ""}>
+            <FormGroup className={errorTypes.length > 0 ? "nhsuk-form-group--error" : ""}>
               <Label htmlFor="nhs-number-input" id="nhs-number-label">
                 <h2 className="nhsuk-heading-m nhsuk-u-margin-bottom-1 no-outline">
                   <span className="nhsuk-u-visually-hidden">{STRINGS.hiddenText}</span>
                   {STRINGS.labelText}
                 </h2>
               </Label>
-              <HintText id="nhs-number-hint">
-                {STRINGS.hintText}
-              </HintText>
+              <HintText id="nhs-number-hint">{STRINGS.hintText}</HintText>
 
-              {errorType && <ErrorMessage>{errorMessages[errorType]}</ErrorMessage>}
+              {errorTypes.length > 0 && (
+                <ErrorMessage>
+                  {showCombinedFieldError
+                    ? errorMessages.combined
+                    : errorMessages[errorTypes[0]]}
+                </ErrorMessage>
+              )}
 
               <TextInput
                 id="nhs-number-input"
@@ -104,7 +108,7 @@ export default function NhsNumSearch() {
                 autoComplete="off"
                 type="tel"
                 className={`nhsuk-input nhsuk-input--width-10 
-                  ${errorType ? "nhsuk-input--error" : ""}`}
+                  ${errorTypes.length > 0 ? "nhsuk-input--error" : ""}`}
                 aria-describedby="nhs-number-hint"
                 aria-labelledby="nhs-number-label"
                 data-testid="nhs-number-input"

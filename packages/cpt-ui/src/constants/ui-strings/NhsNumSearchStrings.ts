@@ -7,6 +7,7 @@ export const STRINGS = {
   errors: {
     empty: "Enter an NHS number",
     length: "NHS number must be 10 digits long",
-    chars: "NHS number must contain digits only"
+    chars: "NHS number must contain digits only",
+    combined: "NHS number must contain 10 digits, with no letters or special characters."
   }
 }
