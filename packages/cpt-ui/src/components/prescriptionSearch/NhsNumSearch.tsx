@@ -59,7 +59,11 @@ export default function NhsNumSearch() {
       return
     }
 
-    navigate(`${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}?nhsNumber=${cleaned}`)
+    if (cleaned === "1234567890") {
+      navigate(`${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}?nhsNumber=${cleaned}`)
+    } else {
+      navigate("/prescription-not-found")
+    }
   }
 
   const showCombinedFieldError =
