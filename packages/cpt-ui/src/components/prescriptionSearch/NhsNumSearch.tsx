@@ -17,9 +17,11 @@ import {
 import {STRINGS} from "@/constants/ui-strings/NhsNumSearchStrings"
 import {FRONTEND_PATHS} from "@/constants/environment"
 
+type ErrorKey = keyof typeof STRINGS.errors
+
 export default function NhsNumSearch() {
   const [nhsNumber, setNhsNumber] = useState("")
-  const [errorTypes, setErrorTypes] = useState<Array<string>>([])
+  const [errorTypes, setErrorTypes] = useState<Array<ErrorKey>>([])
   const errorRef = useRef<HTMLDivElement | null>(null)
   const navigate = useNavigate()
 
@@ -43,7 +45,7 @@ export default function NhsNumSearch() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     const cleaned = nhsNumber.replace(/\s/g, "")
-    const errors: Array<string> = []
+    const errors: Array<ErrorKey> = []
 
     if (!cleaned) {
       errors.push("empty")
@@ -67,14 +69,14 @@ export default function NhsNumSearch() {
     <Container className="nhsuk-width-container-fluid patient-search-form-container">
       <Row>
         <Col width="one-half">
-          <Form onSubmit={handleSubmit} noValidate>
+          <Form onSubmit={handleSubmit} noValidate data-testid="nhs-number-form">
             {errorTypes.length > 0 && (
-              <ErrorSummary ref={errorRef}>
+              <ErrorSummary ref={errorRef} data-testid="error-summary">
                 <ErrorSummary.Title>{STRINGS.errorSummaryHeading}</ErrorSummary.Title>
                 <ErrorSummary.Body>
                   <ErrorSummary.List>
                     {errorTypes.map((err) => (
-                      <ErrorSummary.Item key={err}>
+                      <ErrorSummary.Item key={err} data-testid={`error-summary-item-${err}`}>
                         <a href="#nhs-number-input">{errorMessages[err]}</a>
                       </ErrorSummary.Item>
                     ))}
@@ -84,18 +86,20 @@ export default function NhsNumSearch() {
             )}
 
             <FormGroup className={errorTypes.length > 0 ? "nhsuk-form-group--error" : ""}>
-              <Label htmlFor="nhs-number-input" id="nhs-number-label">
+              <Label htmlFor="nhs-number-input" id="nhs-number-label" data-testid="nhs-number-label">
                 <h2 className="nhsuk-heading-m nhsuk-u-margin-bottom-1 no-outline">
                   <span className="nhsuk-u-visually-hidden">{STRINGS.hiddenText}</span>
                   {STRINGS.labelText}
                 </h2>
               </Label>
-              <HintText id="nhs-number-hint">{STRINGS.hintText}</HintText>
+              <HintText id="nhs-number-hint" data-testid="nhs-number-hint">
+                {STRINGS.hintText}
+              </HintText>
 
               {errorTypes.length > 0 && (
-                <ErrorMessage>
+                <ErrorMessage data-testid="error-message">
                   {showCombinedFieldError
-                    ? errorMessages.combined
+                    ? errorMessages["combined"]
                     : errorMessages[errorTypes[0]]}
                 </ErrorMessage>
               )}
