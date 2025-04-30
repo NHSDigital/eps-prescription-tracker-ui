@@ -2,11 +2,15 @@ import "@testing-library/jest-dom"
 import {render, screen} from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import React from "react"
-import {MemoryRouter} from "react-router-dom"
+import {
+  MemoryRouter,
+  useLocation,
+  Routes,
+  Route
+} from "react-router-dom"
 
 import NhsNumSearch from "@/components/prescriptionSearch/NhsNumSearch"
 import {STRINGS} from "@/constants/ui-strings/NhsNumSearchStrings"
-import {useLocation, Routes, Route} from "react-router-dom"
 
 const LocationDisplay = () => {
   const location = useLocation()
