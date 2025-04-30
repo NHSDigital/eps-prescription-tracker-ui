@@ -70,7 +70,7 @@ export default function NhsNumSearch() {
     errorTypes.includes("length") && errorTypes.includes("chars")
 
   return (
-    <Container className="nhsuk-width-container-fluid patient-search-form-container">
+    <Container className="nhsuk-width-container-fluid" data-testid="patient-search-form-container">
       <Row>
         <Col width="one-half">
           <Form onSubmit={handleSubmit} noValidate data-testid="nhs-number-form">
@@ -114,9 +114,7 @@ export default function NhsNumSearch() {
                 value={nhsNumber}
                 onChange={handleChange}
                 autoComplete="off"
-                type="tel"
-                className={`nhsuk-input nhsuk-input--width-10 
-                  ${errorTypes.length > 0 ? "nhsuk-input--error" : ""}`}
+                className={`nhsuk-input--width-10 ${errorTypes.length > 0 ? "nhsuk-input--error" : ""}`}
                 aria-describedby="nhs-number-hint"
                 aria-labelledby="nhs-number-label"
                 data-testid="nhs-number-input"
