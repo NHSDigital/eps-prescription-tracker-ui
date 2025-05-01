@@ -259,6 +259,7 @@ export class StatelessResourcesStack extends Stack {
       apigeeMockTokenEndpoint: apigeeMockTokenEndpoint,
       apigeePrescriptionsEndpoint: apigeePrescriptionsEndpoint,
       apigeeApiKey: apigeeApiKey,
+      apigeeApiSecret,
       jwtKid: jwtKid,
       roleId: roleId,
       apigeePersonalDemographicsEndpoint: apigeePersonalDemographicsEndpoint

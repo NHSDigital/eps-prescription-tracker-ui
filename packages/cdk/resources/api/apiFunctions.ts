@@ -35,6 +35,7 @@ export interface ApiFunctionsProps {
   readonly apigeePrescriptionsEndpoint: string
   readonly apigeePersonalDemographicsEndpoint: string
   readonly apigeeApiKey: string
+  readonly apigeeApiSecret: string
   readonly jwtKid: string
   readonly logLevel: string
   readonly roleId: string
@@ -83,7 +84,10 @@ export class ApiFunctions extends Construct {
       CIS2_OIDC_ISSUER: props.primaryOidcIssuer,
 
       // Indicate if mock mode is available
-      MOCK_MODE_ENABLED: props.useMockOidc ? "true" : "false"
+      MOCK_MODE_ENABLED: props.useMockOidc ? "true" : "false",
+
+      APIGEE_API_SECRET: props.apigeeApiSecret,
+      APIGEE_API_KEY: props.apigeeApiKey
     }
 
     // If mock OIDC is enabled, add mock environment variables
@@ -121,7 +125,11 @@ export class ApiFunctions extends Construct {
       logLevel: props.logLevel,
       packageBasePath: "packages/trackerUserInfoLambda",
       entryPoint: "src/handler.ts",
-      lambdaEnvironmentVariables: commonLambdaEnv
+      lambdaEnvironmentVariables: {
+        ...commonLambdaEnv,
+        apigeeCIS2TokenEndpoint: props.apigeeCIS2TokenEndpoint,
+        apigeeMockTokenEndpoint: props.apigeeMockTokenEndpoint
+      }
     })
 
     // Add the policy to apiFunctionsPolicies
@@ -137,7 +145,11 @@ export class ApiFunctions extends Construct {
       logLevel: props.logLevel,
       packageBasePath: "packages/selectedRoleLambda",
       entryPoint: "src/handler.ts",
-      lambdaEnvironmentVariables: commonLambdaEnv
+      lambdaEnvironmentVariables: {
+        ...commonLambdaEnv,
+        apigeeCIS2TokenEndpoint: props.apigeeCIS2TokenEndpoint,
+        apigeeMockTokenEndpoint: props.apigeeMockTokenEndpoint
+      }
     })
 
     // Add the policy to apiFunctionsPolicies
@@ -166,7 +178,6 @@ export class ApiFunctions extends Construct {
         apigeeMockTokenEndpoint: props.apigeeMockTokenEndpoint,
         apigeePrescriptionsEndpoint: props.apigeePrescriptionsEndpoint,
         apigeePersonalDemographicsEndpoint: props.apigeePersonalDemographicsEndpoint,
-        apigeeApiKey: props.apigeeApiKey,
         jwtKid: props.jwtKid,
         roleId: props.roleId
       }
