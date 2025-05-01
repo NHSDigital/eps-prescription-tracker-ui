@@ -60,6 +60,8 @@ export default function NhsNumSearch() {
       return
     }
 
+    // FIXME: This is temporary logic for front-end demo/testing only.
+    // Replace with real backend call once NHS number search is implemented server-side.
     if (cleaned === "1234567890") {
       navigate(`${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}?nhsNumber=${cleaned}`)
     } else {
