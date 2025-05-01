@@ -11,7 +11,6 @@ import jwksClient from "jwks-rsa"
 import createJWKSMock from "mock-jwks"
 import {OidcConfig} from "@cpt-ui-common/authFunctions"
 import {TreatmentType, PrescriptionAPIResponse} from "@cpt-ui-common/common-types"
-import {PatientAPIResponse} from "../src/utils/types"
 
 const apigeePrescriptionsEndpoint = process.env.apigeePrescriptionsEndpoint as string ?? ""
 const apigeePersonalDemographicsEndpoint = process.env.apigeePersonalDemographicsEndpoint as string ?? ""
@@ -60,17 +59,6 @@ const {
   }
 })
 
-const mockPatientDetails: PatientAPIResponse = {
-  nhsNumber: "9999999999",
-  given: "John",
-  family: "Doe",
-  prefix: "",
-  suffix: "",
-  gender: "male",
-  dateOfBirth: "1990-01-01",
-  address: null
-}
-
 const mockPrescription: Array<PrescriptionAPIResponse> = [{
   prescriptionId: "01ABC123",
   statusCode: "0001",
@@ -92,11 +80,6 @@ jest.mock("../src/utils/validation", () => ({
   }
 }))
 
-// Mock patient and prescription services
-jest.mock("../src/services/patientDetailsLookupService", () => ({
-  getPdsPatientDetails: jest.fn<() => Promise<PatientAPIResponse>>().mockResolvedValue(mockPatientDetails)
-}))
-
 jest.mock("../src/services/prescriptionsLookupService", () => ({
   getPrescriptions: jest.fn<() => Promise<Array<PrescriptionAPIResponse>>>().mockResolvedValue(mockPrescription),
   PrescriptionError: class PrescriptionError extends Error {
@@ -105,32 +88,6 @@ jest.mock("../src/services/prescriptionsLookupService", () => ({
       this.name = "PrescriptionError"
     }
   }
-}))
-
-// Mock response mapper
-jest.mock("../src/utils/responseMapper", () => ({
-  mapSearchResponse: jest.fn().mockReturnValue({
-    patient: {
-      nhsNumber: "9999999999",
-      given: "John",
-      family: "Doe",
-      prefix: "",
-      suffix: "",
-      gender: "male",
-      dateOfBirth: "1990-01-01",
-      address: null
-    },
-    currentPrescriptions: [{
-      prescriptionId: "01ABC123",
-      statusCode: "0001",
-      issueDate: "2023-01-01",
-      prescriptionTreatmentType: "0001",
-      prescriptionPendingCancellation: false,
-      itemsPendingCancellation: false
-    }],
-    futurePrescriptions: [],
-    pastPrescriptions: []
-  })
 }))
 
 jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {

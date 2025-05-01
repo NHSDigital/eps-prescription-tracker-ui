@@ -49,3 +49,7 @@ export {
   DispenserOrganisation,
   PrescriptionDetailsResponse
 }
+
+export {
+  PatientSummary
+} from "./patientSearch"

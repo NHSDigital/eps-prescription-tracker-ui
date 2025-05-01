@@ -1,0 +1,17 @@
+{
+  "resourceType": "OperationOutcome",
+  "issue": [
+    {
+      "severity": "information",
+      "code": "multiple-matches",
+      "details": {
+        "coding": [
+          {
+            "code": "TOO_MANY_MATCHES",
+            "display": "Too Many Matches"
+          }
+        ]
+      }
+    }
+  ]
+}

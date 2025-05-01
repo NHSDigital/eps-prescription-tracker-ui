@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   jest,
   describe,
@@ -5,11 +6,14 @@ import {
   expect,
   beforeEach
 } from "@jest/globals"
-import {getPdsPatientDetails} from "../src/services/patientDetailsLookupService"
-import {Logger} from "@aws-lambda-powertools/logger"
 import {AxiosInstance, AxiosResponse} from "axios"
-import {PDSError} from "../src/utils/errors"
 import {mockPdsPatient} from "./mockObjects"
+import {Logger} from "@aws-lambda-powertools/logger"
+
+import * as pds from "@cpt-ui-common/pdsClient"
+
+const OutcomeType = pds.patientDetailsLookup.OutcomeType
+const ValidatePatientDetailsOutcomeType = pds.patientDetailsLookup.ValidatePatientDetails.OutcomeType
 
 // Create mock axios instance with get method
 const mockGet = jest.fn(() => Promise.resolve({} as unknown as AxiosResponse))
@@ -28,6 +32,17 @@ describe("Patient Details Lookup Service Tests", () => {
   const mockAccessToken = "test-token"
   const mockRoleId = "test-role"
   const mockNhsNumber = "9000000009"
+  const mockPdsClient = new pds.Client(
+    mockAxiosInstance as unknown as AxiosInstance,
+    mockEndpoint,
+    mockLogger,
+    mockAccessToken,
+    mockRoleId
+  )
+
+  const makeRequest = async () => {
+    return await mockPdsClient.getPatientDetails(mockNhsNumber)
+  }
 
   beforeEach(() => {
     jest.clearAllMocks()
@@ -40,17 +55,11 @@ describe("Patient Details Lookup Service Tests", () => {
       data: mockPdsPatient
     } as unknown as AxiosResponse )
 
-    const result = await getPdsPatientDetails(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        mockAxiosInstance as any, // Use type assertion to avoid TypeScript errors
-        mockLogger,
-        mockEndpoint,
-        mockNhsNumber,
-        mockAccessToken,
-        mockRoleId
-    )
+    const outcome = await makeRequest()
 
-    expect(result).toMatchObject({
+    expect(outcome.type).toBe(OutcomeType.SUCCESS)
+
+    expect((outcome as any).patientDetails).toMatchObject({
       nhsNumber: mockNhsNumber,
       given: "Jane",
       family: "Smith",
@@ -84,18 +93,9 @@ describe("Patient Details Lookup Service Tests", () => {
       data: null
     } as unknown as AxiosResponse)
 
-    const result = await getPdsPatientDetails(
-        mockAxiosInstance as unknown as AxiosInstance,
-        mockLogger,
-        mockEndpoint,
-        mockNhsNumber,
-        mockAccessToken,
-        mockRoleId
-    )
+    const outcome = await makeRequest()
 
-    expect(result).toHaveProperty("_pdsError")
-    expect(result._pdsError).toBeInstanceOf(PDSError)
-    expect(result._pdsError?.message).toContain("Patient not found")
+    expect(outcome.type).toBe(OutcomeType.PATIENT_NOT_FOUND)
   })
 
   it("should detect and handle S-Flag", async () => {
@@ -110,19 +110,9 @@ describe("Patient Details Lookup Service Tests", () => {
       }
     } as unknown as AxiosResponse)
 
-    const result = await getPdsPatientDetails(
-        mockAxiosInstance as unknown as AxiosInstance,
-        mockLogger,
-        mockEndpoint,
-        mockNhsNumber,
-        mockAccessToken,
-        mockRoleId
-    )
+    const outcome = await makeRequest()
 
-    expect(result).toHaveProperty("_pdsError")
-    expect(result._pdsError).toBeInstanceOf(PDSError)
-    expect(result._pdsError?.message).toContain("Prescription not found")
-    expect((result._pdsError as PDSError).code).toBe("S_FLAG")
+    expect(outcome.type).toBe(OutcomeType.S_FLAG)
   })
 
   it("should detect and handle R-Flag", async () => {
@@ -137,19 +127,9 @@ describe("Patient Details Lookup Service Tests", () => {
       }
     } as unknown as AxiosResponse)
 
-    const result = await getPdsPatientDetails(
-        mockAxiosInstance as unknown as AxiosInstance,
-        mockLogger,
-        mockEndpoint,
-        mockNhsNumber,
-        mockAccessToken,
-        mockRoleId
-    )
+    const outcome = await makeRequest()
 
-    expect(result).toHaveProperty("_pdsError")
-    expect(result._pdsError).toBeInstanceOf(PDSError)
-    expect(result._pdsError?.message).toContain("Prescription not found")
-    expect((result._pdsError as PDSError).code).toBe("R_FLAG")
+    expect(outcome.type).toBe(OutcomeType.R_FLAG)
   })
 
   it("should handle superseded NHS numbers", async () => {
@@ -163,19 +143,11 @@ describe("Patient Details Lookup Service Tests", () => {
       }
     } as unknown as AxiosResponse)
 
-    const result = await getPdsPatientDetails(
-        mockAxiosInstance as unknown as AxiosInstance,
-        mockLogger,
-        mockEndpoint,
-        mockNhsNumber,
-        mockAccessToken,
-        mockRoleId
-    )
+    const outcome = await makeRequest()
 
-    expect(result).toMatchObject({
-      nhsNumber: newNhsNumber,
-      supersededBy: newNhsNumber
-    })
+    expect(outcome.type).toBe(OutcomeType.SUPERSEDED)
+
+    expect((outcome as any).supersededBy).toBe(newNhsNumber)
   })
 
   it("should handle incomplete patient data", async () => {
@@ -188,35 +160,18 @@ describe("Patient Details Lookup Service Tests", () => {
       }
     } as unknown as AxiosResponse)
 
-    const result = await getPdsPatientDetails(
-        mockAxiosInstance as unknown as AxiosInstance,
-        mockLogger,
-        mockEndpoint,
-        mockNhsNumber,
-        mockAccessToken,
-        mockRoleId
-    )
+    const outcome = await makeRequest()
 
-    expect(result).toHaveProperty("_pdsError")
-    expect(result._pdsError).toBeInstanceOf(PDSError)
-    expect(result._pdsError?.message).toContain("Incomplete patient data")
-    expect((result._pdsError as PDSError).code).toBe("INCOMPLETE_DATA")
+    expect(outcome.type).toBe(OutcomeType.PATIENT_DETAILS_VALIDATION_ERROR)
+    expect((outcome as any).error.type).toBe(ValidatePatientDetailsOutcomeType.MISSING_FIELDS)
+    expect((outcome as any).error.missingFields).toEqual(["given", "family"])
   })
 
   it("should handle API errors", async () => {
     mockGet.mockRejectedValueOnce(new Error("API Error"))
 
-    const result = await getPdsPatientDetails(
-        mockAxiosInstance as unknown as AxiosInstance,
-        mockLogger,
-        mockEndpoint,
-        mockNhsNumber,
-        mockAccessToken,
-        mockRoleId
-    )
+    const outcome = await makeRequest()
 
-    expect(result).toHaveProperty("_pdsError")
-    expect(result._pdsError).toBeInstanceOf(PDSError)
-    expect(result._pdsError?.message).toContain("Failed to fetch patient details")
+    expect(outcome.type).toBe(OutcomeType.AXIOS_ERROR)
   })
 })

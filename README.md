@@ -6,6 +6,18 @@ This is the code for the Clinical Prescription Tracker UI.
 
 - `packages/cpt-ui` Client side react front end for clinical prescription tracker UI
 - `packages/cdk/` Contains the cdk code used to define the stacks.
+- `packages/cloudfrontFunctions/` Functions used to modify the requests and responses in CloudFront.
+- `packages/staticContent/` Static content used by the website.
+- `packages/cognito/` Lambda function used by cognito
+- `packages/CIS2SignOutLambda/` Lambda function used by CIS2 to sign out users
+- `packages/prescriptionListLambda/` Lambda function used to list prescriptions
+- `packages/patientSearchLambda/` Lambda function used to search for patients
+- `packages/common/middyErrorHandler/` Common error handler used by the lambda functions
+- `packages/common/pdsClient/` Common PDS client used by the lambda functions
+- `packages/common/commonTypes/` Common types used throughout the lambda functions
+- `packages/common/lambdaUtils/` Common utils used by the lambda functions
+- `packages/common/testing/` Common testing utils used by the lambda functions
+- `packages/common/authFunctions/` Common auth functions used by the lambda functions
 - `scripts/` Utilities helpful to developers of this specification.
 - `.devcontainer` Contains a dockerfile and vscode devcontainer definition.
 - `.github` Contains github workflows that are used for building and deploying from pull requests and releases.

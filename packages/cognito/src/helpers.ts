@@ -1,5 +1,4 @@
 import {Logger} from "@aws-lambda-powertools/logger"
-import {AxiosResponseHeaders, RawAxiosResponseHeaders} from "axios"
 import jwt from "jsonwebtoken"
 import {ParsedUrlQuery} from "querystring"
 import {v4 as uuidv4} from "uuid"
@@ -40,16 +39,4 @@ export function rewriteRequestBody(
   objectBodyParameters.client_assertion = jwt_token
   delete objectBodyParameters.client_secret
   return objectBodyParameters
-}
-
-// eslint-disable-next-line max-len
-export function formatHeaders(headers: AxiosResponseHeaders | Partial<RawAxiosResponseHeaders>): { [header: string]: string } {
-  const formattedHeaders: { [header: string]: string } = {}
-
-  // Iterate through the Axios headers and ensure values are stringified
-  for (const [key, value] of Object.entries(headers)) {
-    formattedHeaders[key] = String(value) // Ensure each value is converted to string
-  }
-
-  return formattedHeaders
 }
