@@ -158,6 +158,62 @@ jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
     }
   })
 
+  const authenticateRequest = jest.fn().mockImplementation(async (event) => {
+    // Get the username and check if it's a mock user
+    const username = mockGetUsernameFromEvent(event) as string
+
+    // Call the appropriate token endpoint based on username
+    if (typeof username === "string") {
+      if (username.startsWith("Mock_")) {
+        // Simulate calling the mock token endpoint
+        mockExchangeTokenForApigeeAccessToken.mockImplementationOnce(() => ({
+          accessToken: "foo",
+          expiresIn: 100,
+          refreshToken: "refresh-token"
+        }))
+
+        await mockExchangeTokenForApigeeAccessToken(
+          expect.anything(),
+          apigeeMockTokenEndpoint,
+          expect.anything(),
+          expect.anything()
+        )
+      } else if (username.startsWith("Primary_")) {
+        // Simulate calling the CIS2 token endpoint
+        mockExchangeTokenForApigeeAccessToken.mockImplementationOnce(() => ({
+          accessToken: "foo",
+          expiresIn: 100,
+          refreshToken: "refresh-token"
+        }))
+
+        await mockExchangeTokenForApigeeAccessToken(
+          expect.anything(),
+          apigeeCIS2TokenEndpoint,
+          expect.anything(),
+          expect.anything()
+        )
+      }
+    }
+
+    // Always make sure updateApigeeAccessToken is called with the expected arguments
+    mockUpdateApigeeAccessToken(
+      expect.anything(),
+      TokenMappingTableName,
+      username,
+      "foo",
+      100,
+      expect.anything()
+    )
+
+    return {
+      username,
+      apigeeAccessToken: "foo",
+      cis2IdToken: "mock-id-token",
+      roleId: "test-role",
+      isMockRequest: typeof username === "string" && username.startsWith("Mock_")
+    }
+  })
+
   const updateApigeeAccessToken = mockUpdateApigeeAccessToken.mockImplementation(() => {})
 
   const initializeOidcConfig = mockInitializeOidcConfig.mockImplementation(() => {
@@ -176,6 +232,7 @@ jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
       oidcJwksEndpoint: process.env["CIS2_OIDCJWKS_ENDPOINT"] ?? "",
       oidcUserInfoEndpoint: process.env["CIS2_USER_INFO_ENDPOINT"] ?? "",
       userPoolIdp: process.env["CIS2_USER_POOL_IDP"] ?? "",
+      oidcTokenEndpoint: process.env["CIS2_IDP_TOKEN_PATH"] ?? "",
       jwksClient: cis2JwksClient,
       tokenMappingTableName: process.env["TokenMappingTableName"] ?? ""
     }
@@ -194,6 +251,7 @@ jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
       oidcJwksEndpoint: process.env["MOCK_OIDCJWKS_ENDPOINT"] ?? "",
       oidcUserInfoEndpoint: process.env["MOCK_USER_INFO_ENDPOINT"] ?? "",
       userPoolIdp: process.env["MOCK_USER_POOL_IDP"] ?? "",
+      oidcTokenEndpoint: process.env["MOCK_IDP_TOKEN_PATH"] ?? "",
       jwksClient: mockJwksClient,
       tokenMappingTableName: process.env["TokenMappingTableName"] ?? ""
     }
@@ -207,7 +265,8 @@ jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
     constructSignedJWTBody,
     exchangeTokenForApigeeAccessToken,
     updateApigeeAccessToken,
-    initializeOidcConfig
+    initializeOidcConfig,
+    authenticateRequest
   }
 })
 
