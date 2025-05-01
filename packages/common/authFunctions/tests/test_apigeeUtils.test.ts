@@ -1,14 +1,21 @@
 /* eslint-disable @typescript-eslint/consistent-type-assertions */
 import {jest} from "@jest/globals"
-import {exchangeTokenForApigeeAccessToken, updateApigeeAccessToken} from "../src/apigee"
+import {
+  exchangeTokenForApigeeAccessToken,
+  updateApigeeAccessToken,
+  getExistingApigeeAccessToken,
+  refreshApigeeAccessToken
+} from "../src/apigee"
 import axios from "axios"
 import {DynamoDBDocumentClient, UpdateCommand} from "@aws-sdk/lib-dynamodb"
 import {Logger} from "@aws-lambda-powertools/logger"
 
 jest.mock("axios")
+jest.mock("jsonwebtoken")
 
 jest.mock("@aws-sdk/lib-dynamodb", () => ({
-  UpdateCommand: jest.fn()
+  UpdateCommand: jest.fn(),
+  GetCommand: jest.fn()
 }))
 
 const mockLogger: Partial<Logger> = {
@@ -92,6 +99,7 @@ describe("apigeeUtils", () => {
       const mockTableName = "mockTable"
       const mockUsername = "testUser"
       const mockAccessToken = "testToken"
+      const mockRefreshToken = "testRefreshToken"
       const mockExpiresIn = 3600
 
       await updateApigeeAccessToken(
@@ -99,6 +107,7 @@ describe("apigeeUtils", () => {
         mockTableName,
         mockUsername,
         mockAccessToken,
+        mockRefreshToken,
         mockExpiresIn,
         mockLogger as Logger
       )
@@ -127,6 +136,7 @@ describe("apigeeUtils", () => {
       const mockTableName = "mockTable"
       const mockUsername = "testUser"
       const mockAccessToken = "testToken"
+      const mockRefreshToken = "testRefreshToken"
       const mockExpiresIn = 3600
 
       await expect(
@@ -135,6 +145,7 @@ describe("apigeeUtils", () => {
           mockTableName,
           mockUsername,
           mockAccessToken,
+          mockRefreshToken,
           mockExpiresIn,
           mockLogger as Logger
         )
@@ -145,6 +156,158 @@ describe("apigeeUtils", () => {
         {error: mockError}
       )
       expect(mockDocumentClient.send).toHaveBeenCalledTimes(1)
+    })
+  })
+
+  describe("getExistingApigeeAccessToken", () => {
+    it("should return null when no user record exists", async () => {
+      mockDocumentClient.send.mockResolvedValueOnce({} as never)
+
+      const result = await getExistingApigeeAccessToken(
+        mockDocumentClient,
+        "mockTable",
+        "testUser",
+        mockLogger as Logger
+      )
+
+      expect(result).toBeNull()
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        "No user record found in DynamoDB",
+        {username: "testUser"}
+      )
+    })
+
+    it("should return null when no valid token exists", async () => {
+      mockDocumentClient.send.mockResolvedValueOnce({
+        Item: {
+          username: "testUser"
+        }
+      } as never)
+
+      const result = await getExistingApigeeAccessToken(
+        mockDocumentClient,
+        "mockTable",
+        "testUser",
+        mockLogger as Logger
+      )
+
+      expect(result).toBeNull()
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        "No Apigee token found in user record",
+        {username: "testUser"}
+      )
+    })
+
+    it("should return valid token when it exists and is not expired", async () => {
+      const currentTime = Math.floor(Date.now() / 1000)
+      const expiryTime = currentTime + 3600
+
+      mockDocumentClient.send.mockResolvedValueOnce({
+        Item: {
+          username: "testUser",
+          apigee_accessToken: "valid-token",
+          apigee_expiresIn: expiryTime,
+          apigee_idToken: "id-token",
+          apigee_refreshToken: "refresh-token",
+          selectedRoleId: "role-id"
+        }
+      } as never)
+
+      const result = await getExistingApigeeAccessToken(
+        mockDocumentClient,
+        "mockTable",
+        "testUser",
+        mockLogger as Logger
+      )
+
+      expect(result).toEqual({
+        accessToken: "valid-token",
+        idToken: "id-token",
+        refreshToken: "refresh-token",
+        expiresIn: expiryTime,
+        roleId: "role-id"
+      })
+    })
+
+  })
+
+  describe("refreshApigeeAccessToken", () => {
+    it("should successfully refresh token with client secret", async () => {
+      mockAxiosPost.mockReturnValue(Promise.resolve({
+        data: {
+          access_token: "new-access-token",
+          refresh_token_expires_in: 1738,
+          refresh_token: "new-refresh-token",
+          expires_in: 3600
+        }
+      }))
+
+      const result = await refreshApigeeAccessToken(
+        axios,
+        "https://mock-endpoint",
+        "old-refresh-token",
+        "mock-api-key",
+        "mock-api-secret",
+        mockLogger as Logger
+      )
+
+      expect(result).toEqual({
+        accessToken: "new-access-token",
+        refreshTokenExpiresIn: 1738,
+        refreshToken: "new-refresh-token",
+        expiresIn: 3600
+      })
+
+      expect(mockAxiosPost).toHaveBeenCalledWith(
+        "https://mock-endpoint",
+        expect.any(String),
+        {headers: {"Content-Type": "application/x-www-form-urlencoded"}}
+      )
+    })
+
+    it("should successfully refresh token without client secret", async () => {
+      mockAxiosPost.mockResolvedValueOnce({
+        data: {
+          access_token: "new-access-token",
+          expires_in: 3600
+        }
+      } as never)
+
+      const result = await refreshApigeeAccessToken(
+        axios,
+        "https://mock-endpoint",
+        "old-refresh-token",
+        "mock-api-key",
+        "",
+        mockLogger as Logger
+      )
+
+      expect(result).toEqual({
+        accessToken: "new-access-token",
+        expiresIn: 3600
+      })
+    })
+
+    it("should throw error for invalid response", async () => {
+      mockAxiosPost.mockResolvedValueOnce({
+        data: {}
+      } as never)
+
+      await expect(
+        refreshApigeeAccessToken(
+          axios,
+          "https://mock-endpoint",
+          "old-refresh-token",
+          "mock-api-key",
+          "mock-api-secret",
+          mockLogger as Logger
+        )
+      ).rejects.toThrow("Invalid response from Apigee token refresh endpoint")
+
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        "Invalid response from Apigee token refresh",
+        expect.any(Object)
+      )
     })
   })
 })

@@ -7,7 +7,7 @@ import {Logger} from "@aws-lambda-powertools/logger"
 const sign = jest.spyOn(jwt, "sign")
 sign.mockImplementation(() => "mocked-jwt-token")
 
-const {constructSignedJWTBody} = await import("../src/apigee")
+import {constructSignedJWTBody} from "../src/apigee"
 
 describe("constructSignedJWTBody tests", () => {
   const logger = new Logger()
