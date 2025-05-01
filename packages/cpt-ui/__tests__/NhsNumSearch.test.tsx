@@ -5,12 +5,24 @@ import React from "react"
 import {
   MemoryRouter,
   useLocation,
+  useNavigate,
   Routes,
   Route
 } from "react-router-dom"
 
 import NhsNumSearch from "@/components/prescriptionSearch/NhsNumSearch"
 import {STRINGS} from "@/constants/ui-strings/NhsNumSearchStrings"
+import {SEARCH_TYPES} from "@/constants/ui-strings/PrescriptionNotFoundPageStrings"
+import {FRONTEND_PATHS} from "@/constants/environment"
+
+jest.mock("react-router-dom", () => {
+  const actual = jest.requireActual("react-router-dom")
+  return {
+    ...actual,
+    useLocation: actual.useLocation,
+    useNavigate: jest.fn()
+  }
+})
 
 const LocationDisplay = () => {
   const location = useLocation()
@@ -33,22 +45,30 @@ describe("NhsNumSearch", () => {
     jest.resetAllMocks()
   })
 
-  it("redirects to prescription list if valid NHS number 1234567890 is entered", async () => {
+  it("redirects to prescription list if valid NHS number", async () => {
+    const mockNavigate = jest.fn()
+      ; (useNavigate as jest.Mock).mockReturnValue(mockNavigate)
+
     renderWithRouter(<NhsNumSearch />)
     await userEvent.type(screen.getByTestId("nhs-number-input"), "1234567890")
     await userEvent.click(screen.getByTestId("find-patient-button"))
 
-    const location = await screen.findByTestId("location-display")
-    expect(location).toHaveTextContent("/prescription-list-current?nhsNumber=1234567890")
+    expect(mockNavigate).toHaveBeenCalledWith(
+      `${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}?nhsNumber=1234567890`
+    )
   })
 
   it("redirects to not found for any non-matching NHS number", async () => {
+    const mockNavigate = jest.fn()
+      ; (useNavigate as jest.Mock).mockReturnValue(mockNavigate)
+
     renderWithRouter(<NhsNumSearch />)
     await userEvent.type(screen.getByTestId("nhs-number-input"), "0987654321")
     await userEvent.click(screen.getByTestId("find-patient-button"))
 
-    const location = await screen.findByTestId("location-display")
-    expect(location).toHaveTextContent("/prescription-not-found")
+    expect(mockNavigate).toHaveBeenCalledWith(
+      `${FRONTEND_PATHS.PRESCRIPTION_NOT_FOUND}?searchType=${SEARCH_TYPES.NHS_NUMBER}`
+    )
   })
 
   it("renders label, hint, and submit button", () => {
@@ -96,16 +116,6 @@ describe("NhsNumSearch", () => {
     expect(screen.getAllByText("NHS number must have 10 numbers").length).toBeGreaterThan(1)
     expect(
       screen.queryByText("Enter an NHS number in the correct format")
-    ).not.toBeInTheDocument()
-  })
-
-  it("redirects to prescription list if valid NHS number", async () => {
-    renderWithRouter(<NhsNumSearch />)
-    await userEvent.type(screen.getByTestId("nhs-number-input"), "4857773456")
-    await userEvent.click(screen.getByTestId("find-patient-button"))
-
-    expect(
-      screen.queryByText("Enter an NHS number")
     ).not.toBeInTheDocument()
   })
 })
