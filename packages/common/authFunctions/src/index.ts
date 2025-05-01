@@ -1,4 +1,3 @@
-
 import {getUsernameFromEvent} from "./event"
 import {initializeOidcConfig} from "./initialization"
 
@@ -15,8 +14,11 @@ import {
   constructSignedJWTBody,
   exchangeTokenForApigeeAccessToken,
   updateApigeeAccessToken,
-  getExistingApigeeAccessToken
+  getExistingApigeeAccessToken,
+  refreshApigeeAccessToken
 } from "./apigee"
+
+import {authenticateRequest} from "./authenticateRequest"
 
 export {
   getUsernameFromEvent,
@@ -30,5 +32,7 @@ export {
   OidcConfig,
   initializeOidcConfig,
   getExistingApigeeAccessToken,
-  decodeToken
+  decodeToken,
+  refreshApigeeAccessToken,
+  authenticateRequest
 }

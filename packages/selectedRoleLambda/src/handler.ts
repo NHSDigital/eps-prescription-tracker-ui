@@ -1,22 +1,12 @@
 import {APIGatewayProxyEvent, APIGatewayProxyResult} from "aws-lambda"
 import {Logger} from "@aws-lambda-powertools/logger"
-import {getSecret} from "@aws-lambda-powertools/parameters/secrets"
 import {injectLambdaContext} from "@aws-lambda-powertools/logger/middleware"
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
 import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
 import middy from "@middy/core"
 import inputOutputLogger from "@middy/input-output-logger"
-import axios from "axios"
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
-import {
-  getUsernameFromEvent,
-  fetchAndVerifyCIS2Tokens,
-  constructSignedJWTBody,
-  exchangeTokenForApigeeAccessToken,
-  updateApigeeAccessToken,
-  getExistingApigeeAccessToken,
-  initializeOidcConfig
-} from "@cpt-ui-common/authFunctions"
+import {initializeOidcConfig, authenticateRequest} from "@cpt-ui-common/authFunctions"
 import {updateDynamoTable, fetchUserRolesFromDynamoDB} from "./selectedRoleHelpers"
 
 /**
@@ -25,27 +15,27 @@ import {updateDynamoTable, fetchUserRolesFromDynamoDB} from "./selectedRoleHelpe
  * parses the request body, and updates the user's role in the database.
  */
 
-// Initialize a logger instance for the service
-const logger = new Logger({serviceName: "selectedRole"})
+const tokenMappingTableName = process.env["TokenMappingTableName"] ?? ""
+const MOCK_MODE_ENABLED = process.env["MOCK_MODE_ENABLED"]
+const jwtPrivateKeyArn = process.env["jwtPrivateKeyArn"] as string
+const apigeeApiKey = process.env["APIGEE_API_KEY"] as string
+const jwtKid = process.env["jwtKid"] as string
+const apigeeApiSecret= process.env["APIGEE_API_SECRET"] as string
+const cis2ApigeeTokenEndpoint = process.env["apigeeCIS2TokenEndpoint"] as string
+const apigeeMockTokenEndpoint = process.env["apigeeMockTokenEndpoint"] as string
 
 // Create a DynamoDB client and document client for interacting with the database
 const dynamoClient = new DynamoDBClient({})
 const documentClient = DynamoDBDocumentClient.from(dynamoClient)
 
-// Retrieve the table name from environment variables
-const tokenMappingTableName = process.env["TokenMappingTableName"] ?? ""
-const MOCK_MODE_ENABLED = process.env["MOCK_MODE_ENABLED"]
-
-// Default error response body for internal system errors
 const errorResponseBody = {message: "A system error has occurred"}
-
-// Custom error handler for handling unexpected errors in the Lambda function
 const middyErrorHandler = new MiddyErrorHandler(errorResponseBody)
-const jwtPrivateKeyArn = process.env["jwtPrivateKeyArn"] as string
-const apigeeApiKey = process.env["apigeeApiKey"] as string
-const jwtKid = process.env["jwtKid"] as string
 
+const logger = new Logger({serviceName: "selectedRole"})
 const {mockOidcConfig, cis2OidcConfig} = initializeOidcConfig()
+
+const oidcConfig = MOCK_MODE_ENABLED === "true" ? mockOidcConfig : cis2OidcConfig
+const apigeeTokenEndpoint = MOCK_MODE_ENABLED === "true" ? apigeeMockTokenEndpoint : cis2ApigeeTokenEndpoint
 
 /**
  * Lambda function handler for updating a user's selected role.
@@ -54,105 +44,30 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   logger.appendKeys({"apigw-request-id": event.requestContext?.requestId})
   logger.info("Lambda handler invoked", {event})
 
-  // Extract username from the event
-  const username = getUsernameFromEvent(event)
-  const isMockToken = username.startsWith("Mock_")
+  // Use the authenticateRequest function for authentication
+  const authResult = await authenticateRequest(event, documentClient, logger, {
+    tokenMappingTableName: tokenMappingTableName,
+    jwtPrivateKeyArn,
+    apigeeApiKey,
+    apigeeApiSecret,
+    jwtKid,
+    oidcConfig,
+    mockModeEnabled: MOCK_MODE_ENABLED === "true",
+    apigeeTokenEndpoint
+  })
 
-  // Verify mock mode settings
-  if (isMockToken && MOCK_MODE_ENABLED !== "true") {
-    throw new Error("Trying to use a mock user when mock mode is disabled")
-  }
-
-  const isMockRequest = MOCK_MODE_ENABLED === "true" && isMockToken
-  const apigeeTokenEndpoint = isMockRequest ? mockOidcConfig.oidcTokenEndpoint : cis2OidcConfig.oidcTokenEndpoint
-  const oidcConfig = isMockRequest ? mockOidcConfig : cis2OidcConfig
-  const axiosInstance = axios.create()
-
-  logger.info("Is this a mock request?", {isMockRequest})
-  logger.info("oidc config:", {oidcConfig})
-
-  // Authentication flow
-  let apigeeAccessToken: string | undefined
-  let cis2IdToken: string | undefined
-
-  // For mock mode - check if we already have a valid token
-  if (isMockRequest) {
-    logger.info("Mock mode detected, checking for existing Apigee token")
-    const existingToken = await getExistingApigeeAccessToken(
-      documentClient,
-      tokenMappingTableName,
-      username,
-      logger
-    )
-
-    if (existingToken) {
-      // Use existing token if valid
-      logger.info("Using existing Apigee access token in mock mode")
-      apigeeAccessToken = existingToken.accessToken
-      cis2IdToken = existingToken.idToken
+  if (!authResult) {
+    logger.error("Authentication failed, no auth result returned")
+    return {
+      statusCode: 401,
+      body: JSON.stringify({message: "Authentication failed"}),
+      headers: {"Content-Type": "application/json"}
     }
-  }
-
-  // If we don't have a valid token yet, go through the token exchange flow
-  if (!apigeeAccessToken) {
-    logger.info(`Obtaining new Apigee token (${isMockRequest ? "mock" : "real"} mode)`)
-
-    // Get CIS2 tokens
-    const tokensResult = await fetchAndVerifyCIS2Tokens(
-      event,
-      documentClient,
-      logger,
-      oidcConfig
-    )
-
-    cis2IdToken = tokensResult.cis2IdToken
-    logger.debug("Successfully fetched CIS2 tokens", {
-      cis2AccessToken: tokensResult.cis2AccessToken,
-      cis2IdToken
-    })
-
-    // Fetch the private key for signing the client assertion
-    logger.info("Accessing JWT private key from Secrets Manager to create signed client assertion")
-    const jwtPrivateKey = await getSecret(jwtPrivateKeyArn)
-    if (!jwtPrivateKey || typeof jwtPrivateKey !== "string") {
-      throw new Error("Invalid or missing JWT private key")
-    }
-
-    // Construct a new body with the signed JWT client assertion
-    const requestBody = constructSignedJWTBody(
-      logger,
-      apigeeTokenEndpoint,
-      jwtPrivateKey,
-      apigeeApiKey,
-      jwtKid,
-      cis2IdToken
-    )
-
-    // Exchange token with Apigee
-    const tokenResult = await exchangeTokenForApigeeAccessToken(
-      axiosInstance,
-      apigeeTokenEndpoint,
-      requestBody,
-      logger
-    )
-
-    // Update DynamoDB with the new Apigee access token
-    await updateApigeeAccessToken(
-      documentClient,
-      tokenMappingTableName,
-      username,
-      tokenResult.accessToken,
-      tokenResult.expiresIn,
-      logger,
-      cis2IdToken
-    )
-
-    apigeeAccessToken = tokenResult.accessToken
   }
 
   // Validate the presence of request body
   if (!event.body) {
-    logger.warn("Request body is missing", {username})
+    logger.warn("Request body is missing", {username: authResult.username})
     return {
       statusCode: 400,
       body: JSON.stringify({message: "Request body is required"})
@@ -172,18 +87,18 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   }
 
   logger.info("Received role selection request", {
-    username,
+    username: authResult.username,
     selectedRoleFromRequest: userInfoSelectedRole.currently_selected_role ?? "No role provided"
   })
 
   // Fetch current roles and selected role from DynamoDB
   logger.info("Fetching user roles from DynamoDB", {
-    username,
+    username: authResult.username,
     tableName: tokenMappingTableName
   })
 
   const cachedRolesWithAccess = await fetchUserRolesFromDynamoDB(
-    username,
+    authResult.username,
     documentClient,
     logger,
     tokenMappingTableName
@@ -199,7 +114,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
   // Log extracted role details
   logger.info("Extracted role data", {
-    username,
+    username: authResult.username,
     rolesWithAccessCount: rolesWithAccess.length,
     rolesWithAccess: rolesWithAccess.map(role => ({
       role_id: role.role_id,
@@ -233,7 +148,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   ]
 
   logger.info("Updated roles list before database update", {
-    username,
+    username: authResult.username,
     newSelectedRole: newSelectedRole
       ? {
         role_id: newSelectedRole.role_id,
@@ -264,12 +179,12 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   }
 
   logger.info("Updating user role in DynamoDB", {
-    username,
+    username: authResult.username,
     updatedUserInfo
   })
 
   // Persist changes to DynamoDB
-  await updateDynamoTable(username, updatedUserInfo, documentClient, logger, tokenMappingTableName)
+  await updateDynamoTable(authResult.username, updatedUserInfo, documentClient, logger, tokenMappingTableName)
 
   return {
     statusCode: 200,

@@ -77,7 +77,7 @@ export const exchangeTokenForApigeeAccessToken = async (
   apigeeTokenEndpoint: string,
   requestBody: ParsedUrlQuery,
   logger: Logger
-): Promise<{accessToken: string; expiresIn: number}> => {
+): Promise<{accessToken: string; refreshToken: string; expiresIn: number}> => {
   logger.info("Initiating token exchange request", {apigeeTokenEndpoint})
 
   try {
@@ -91,11 +91,13 @@ export const exchangeTokenForApigeeAccessToken = async (
     }
 
     logger.debug("Successfully exchanged token for Apigee access token", {
+      refreshToken: response.data.refresh_token,
       accessToken: response.data.access_token,
       expiresIn: response.data.expires_in
     })
 
     return {
+      refreshToken: response.data.refresh_token,
       accessToken: response.data.access_token,
       expiresIn: response.data.expires_in
     }
@@ -123,6 +125,7 @@ export const updateApigeeAccessToken = async (
   tableName: string,
   username: string,
   accessToken: string,
+  refreshToken: string,
   expiresIn: number,
   logger: Logger
 ): Promise<void> => {
@@ -141,10 +144,14 @@ export const updateApigeeAccessToken = async (
       new UpdateCommand({
         TableName: tableName,
         Key: {username},
-        UpdateExpression: "SET Apigee_accessToken = :apigeeAccessToken, Apigee_expiresIn = :apigeeExpiresIn",
+        UpdateExpression: `
+        SET apigee_accessToken = :apigeeAccessToken, 
+        apigee_expiresIn = :apigeeExpiresIn, 
+        apigee_refreshToken = :apigeeRefreshToken`,
         ExpressionAttributeValues: {
           ":apigeeAccessToken": accessToken,
-          ":apigeeExpiresIn": expiryTimestamp
+          ":apigeeExpiresIn": expiryTimestamp,
+          ":apigeeRefreshToken": refreshToken
         }
       })
     )
@@ -171,7 +178,13 @@ export const getExistingApigeeAccessToken = async (
   tableName: string,
   username: string,
   logger: Logger
-): Promise<{accessToken: string; idToken: string; expiresIn: number, roleId: string} | null> => {
+): Promise<{
+  accessToken: string;
+  idToken: string;
+  refreshToken?: string;
+  expiresIn: number;
+  roleId?: string;
+} | null> => {
   logger.debug("Checking for existing Apigee access token in DynamoDB", {
     username,
     tableName
@@ -193,31 +206,22 @@ export const getExistingApigeeAccessToken = async (
 
     const userRecord = getResult.Item
 
-    // Check if Apigee access token exists and is not expired
+    // Check if Apigee access token exists
     if (userRecord.apigee_accessToken && userRecord.apigee_expiresIn) {
       const currentTime = Math.floor(Date.now() / 1000)
 
-      // Add buffer time (e.g., 60 seconds) to ensure token isn't about to expire
-      const bufferTime = 60
+      logger.info("Found existing Apigee access token", {
+        username,
+        expiresIn: userRecord.apigee_expiresIn - currentTime,
+        hasRefreshToken: !!userRecord.apigee_refreshToken
+      })
 
-      if (userRecord.apigee_expiresIn > (currentTime + bufferTime)) {
-        logger.info("Found valid existing Apigee access token", {
-          username,
-          expiresIn: userRecord.apigee_expiresIn - currentTime
-        })
-
-        return {
-          accessToken: userRecord.apigee_accessToken,
-          idToken: userRecord.apigee_idToken,
-          expiresIn: userRecord.apigee_expiresIn,
-          roleId: userRecord.selectedRoleId
-        }
-      } else {
-        logger.debug("Existing Apigee token has expired or will expire soon", {
-          username,
-          expiresIn: userRecord.apigee_expiresIn,
-          currentTime
-        })
+      return {
+        accessToken: userRecord.apigee_accessToken,
+        idToken: userRecord.apigee_idToken,
+        refreshToken: userRecord.apigee_refreshToken,
+        expiresIn: userRecord.apigee_expiresIn,
+        roleId: userRecord.selectedRoleId
       }
     } else {
       logger.debug("No Apigee token found in user record", {username})
@@ -228,4 +232,66 @@ export const getExistingApigeeAccessToken = async (
     logger.error("Error retrieving Apigee access token from DynamoDB", {error, username})
     return null
   }
+}
+
+/**
+ * Refreshes an Apigee access token using a refresh token
+ */
+export const refreshApigeeAccessToken = async (
+  axiosInstance: AxiosInstance,
+  apigeeTokenEndpoint: string,
+  refreshToken: string,
+  apigeeApiKey: string,
+  apigeeApiSecret: string,
+  logger: Logger
+): Promise<{
+  accessToken: string;
+  refreshToken: string;
+  expiresIn: number;
+  refreshTokenExpiresIn: number;
+}> => {
+
+  logger.info("Refreshing Apigee access token", {
+    apigeeTokenEndpoint,
+    refreshToken,
+    apigeeApiKey
+  })
+
+  const requestBody: Record<string, string> = {
+    grant_type: "refresh_token",
+    refresh_token: refreshToken,
+    client_id: apigeeApiKey,
+    client_secret: apigeeApiSecret
+  }
+
+  // Make the token refresh request
+  const response = await axiosInstance.post(
+    apigeeTokenEndpoint,
+    stringify(requestBody),
+    {
+      headers: {"Content-Type": "application/x-www-form-urlencoded"}
+    })
+
+  // Validate the response
+  if (!response.data?.access_token || !response.data?.expires_in) {
+    logger.error("Invalid response from Apigee token refresh", {response: response.data})
+    throw new Error("Invalid response from Apigee token refresh endpoint")
+  }
+
+  logger.info("Successfully refreshed Apigee access token")
+
+  // Build the result object
+  const result: {
+    accessToken: string;
+    refreshToken: string;
+    expiresIn: number;
+    refreshTokenExpiresIn: number;
+  } = {
+    accessToken: response.data.access_token,
+    expiresIn: response.data.expires_in,
+    refreshToken: response.data.refresh_token,
+    refreshTokenExpiresIn: response.data.refresh_token_expires_in
+  }
+
+  return result
 }
