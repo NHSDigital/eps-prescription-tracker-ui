@@ -1,22 +1,12 @@
 import {APIGatewayProxyEvent, APIGatewayProxyResult} from "aws-lambda"
 import {Logger} from "@aws-lambda-powertools/logger"
-import {getSecret} from "@aws-lambda-powertools/parameters/secrets"
 import {injectLambdaContext} from "@aws-lambda-powertools/logger/middleware"
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
 import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
 import middy from "@middy/core"
 import inputOutputLogger from "@middy/input-output-logger"
-import axios from "axios"
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
-import {
-  getUsernameFromEvent,
-  fetchAndVerifyCIS2Tokens,
-  initializeOidcConfig,
-  constructSignedJWTBody,
-  exchangeTokenForApigeeAccessToken,
-  updateApigeeAccessToken,
-  getExistingApigeeAccessToken
-} from "@cpt-ui-common/authFunctions"
+import {getUsernameFromEvent, initializeOidcConfig, authenticateRequest} from "@cpt-ui-common/authFunctions"
 import {fetchUserInfo, updateDynamoTable, fetchDynamoTable} from "./userInfoHelpers"
 
 /*
@@ -53,10 +43,10 @@ const apigeeCIS2TokenEndpoint = process.env["apigeeCIS2TokenEndpoint"] as string
 const apigeeMockTokenEndpoint = process.env["apigeeMockTokenEndpoint"] as string
 const tokenMappingTableName = process.env["TokenMappingTableName"] ?? ""
 const jwtPrivateKeyArn = process.env["jwtPrivateKeyArn"] as string
-const apigeeApiKey = process.env["apigeeApiKey"] as string
+const apigeeApiKey = process.env["APIGEE_API_KEY"] as string
+const apigeeApiSecret = process.env["APIGEE_API_SECRET"] as string
 const jwtKid = process.env["jwtKid"] as string
-const MOCK_MODE_ENABLED = process.env["MOCK_MODE_ENABLED"]
-// let roleId = process.env["roleId"] as string
+const MOCK_MODE_ENABLED = process.env["MOCK_MODE_ENABLED"] === "true"
 
 const errorResponseBody = {
   message: "A system error has occurred"
@@ -70,34 +60,16 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   logger.appendKeys({"apigw-request-id": event.requestContext?.requestId})
   logger.info("Lambda handler invoked", {event})
 
-  const axiosInstance = axios.create()
-
-  // Mock usernames start with "Mock_", and real requests use usernames starting with "Primary_"
   const username = getUsernameFromEvent(event)
-  const isMockToken = username.startsWith("Mock_")
 
-  // Determine whether this request should be treated as mock or real.
-  if (isMockToken && MOCK_MODE_ENABLED !== "true") {
-    throw new Error("Trying to use a mock user when mock mode is disabled")
-  }
-
-  const isMockRequest = MOCK_MODE_ENABLED === "true" && isMockToken
-  const apigeeTokenEndpoint = isMockRequest ? apigeeMockTokenEndpoint : apigeeCIS2TokenEndpoint
-  const oidcConfig = isMockRequest ? mockOidcConfig : cis2OidcConfig
-
-  logger.info("Is this a mock request?", {isMockRequest})
-  logger.info("oidc config:", {oidcConfig})
-
-  // Fetch user info from DynamoDB
+  // First, try to use cached user info
   const cachedUserInfo = await fetchDynamoTable(username, documentClient, logger, tokenMappingTableName)
 
-  // Check if cached data exists and has valid role information
   if (
     cachedUserInfo &&
-      (cachedUserInfo.roles_with_access.length > 0 || cachedUserInfo.roles_without_access.length > 0)
+    (cachedUserInfo.roles_with_access.length > 0 || cachedUserInfo.roles_without_access.length > 0)
   ) {
     logger.info("Returning cached user info from DynamoDB", {cachedUserInfo})
-
     return {
       statusCode: 200,
       body: JSON.stringify({
@@ -107,109 +79,32 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     }
   }
 
-  logger.info("No valid cached user info found. Fetching from OIDC UserInfo endpoint...")
+  logger.info("No valid cached user info found. Authenticating and calling userinfo endpoint...")
 
-  let apigeeAccessToken: string | undefined
-  let cis2IdToken: string | undefined
+  const authResult = await authenticateRequest(event, documentClient, logger, {
+    tokenMappingTableName,
+    jwtPrivateKeyArn,
+    apigeeApiKey,
+    apigeeApiSecret,
+    jwtKid,
+    oidcConfig: MOCK_MODE_ENABLED ? mockOidcConfig : cis2OidcConfig,
+    mockModeEnabled: MOCK_MODE_ENABLED,
+    apigeeTokenEndpoint: MOCK_MODE_ENABLED ? apigeeMockTokenEndpoint : apigeeCIS2TokenEndpoint
+  })
 
-  if (isMockRequest) {
-    logger.info("Mock mode detected, checking for existing Apigee token")
-    const existingToken = await getExistingApigeeAccessToken(
-      documentClient,
-      tokenMappingTableName,
-      username,
-      logger
-    )
-
-    if (existingToken) {
-      // Use existing token if valid
-      logger.info("Using existing Apigee access token in mock mode")
-      apigeeAccessToken = existingToken.accessToken
-      cis2IdToken = existingToken.idToken
-    }
-  }
-
-  // If we don't have a valid token yet, go through the token exchange flow
-  if (!apigeeAccessToken) {
-    logger.info(`Obtaining new Apigee token (${isMockRequest ? "mock" : "real"} mode)`)
-
-    // Get CIS2 tokens
-    const tokensResult = await fetchAndVerifyCIS2Tokens(
-      event,
-      documentClient,
-      logger,
-      oidcConfig
-    )
-
-    cis2IdToken = tokensResult.cis2IdToken
-    logger.debug("Successfully fetched CIS2 tokens", {
-      cis2AccessToken: tokensResult.cis2AccessToken,
-      cis2IdToken
-    })
-
-    // Fetch the private key for signing the client assertion
-    logger.info("Accessing JWT private key from Secrets Manager to create signed client assertion")
-    const jwtPrivateKey = await getSecret(jwtPrivateKeyArn)
-    if (!jwtPrivateKey || typeof jwtPrivateKey !== "string") {
-      throw new Error("Invalid or missing JWT private key")
-    }
-
-    // Construct a new body with the signed JWT client assertion
-    const requestBody = constructSignedJWTBody(
-      logger,
-      apigeeTokenEndpoint,
-      jwtPrivateKey,
-      apigeeApiKey,
-      jwtKid,
-      cis2IdToken
-    )
-
-    // Exchange token with Apigee
-    const tokenResult = await exchangeTokenForApigeeAccessToken(
-      axiosInstance,
-      apigeeTokenEndpoint,
-      requestBody,
-      logger
-    )
-
-    // Update DynamoDB with the new Apigee access token
-    await updateApigeeAccessToken(
-      documentClient,
-      tokenMappingTableName,
-      username,
-      tokenResult.accessToken,
-      tokenResult.expiresIn,
-      logger
-    )
-
-    apigeeAccessToken = tokenResult.accessToken
-  }
-
-  // If we still don't have tokens, we need to get them
-  if (!cis2IdToken) {
-    // Get CIS2 tokens if we don't have them yet (e.g., when using cached Apigee token)
-    const tokensResult = await fetchAndVerifyCIS2Tokens(
-      event,
-      documentClient,
-      logger,
-      oidcConfig
-    )
-    cis2IdToken = tokensResult.cis2IdToken
-  }
-
-  if (!apigeeAccessToken || !cis2IdToken) {
-    throw new Error("Failed to obtain required tokens")
+  if (!authResult.apigeeAccessToken || !authResult.cis2IdToken) {
+    throw new Error("Authentication failed: missing tokens")
   }
 
   const userInfoResponse = await fetchUserInfo(
-    apigeeAccessToken,
-    cis2IdToken,
+    authResult.apigeeAccessToken,
+    authResult.cis2IdToken,
     CPT_ACCESS_ACTIVITY_CODES,
     logger,
-    oidcConfig
+    MOCK_MODE_ENABLED ? mockOidcConfig : cis2OidcConfig
   )
 
-  // Store the new data in DynamoDB, making sure not to override the apigeeAccessToken
+  // Save user info to DynamoDB (but not tokens)
   await updateDynamoTable(username, userInfoResponse, documentClient, logger, tokenMappingTableName)
 
   return {

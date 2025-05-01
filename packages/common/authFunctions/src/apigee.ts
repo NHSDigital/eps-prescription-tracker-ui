@@ -163,8 +163,6 @@ export const updateApigeeAccessToken = async (
   }
 }
 
-//TODO: getApigeeAccessToken function to check if apigee access token already exists
-//  if yes, use that if not use good old flow
 /**
  * Checks if a valid Apigee access token exists for a user in DynamoDB
  * @param documentClient - DynamoDB DocumentClient instance

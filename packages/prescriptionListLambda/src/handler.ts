@@ -143,7 +143,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     // Log the token for debugging (redacted for security)
     logger.info("Using Apigee access token", {
       tokenLength: apigeeAccessToken ? apigeeAccessToken.length : 0,
-      tokenPrefix: apigeeAccessToken ? apigeeAccessToken.substring(0, 10) + "..." : "none"
+      apigeeAccessToken: apigeeAccessToken
     })
 
     // Ensure we have a valid token

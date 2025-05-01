@@ -203,14 +203,13 @@ export async function authenticateRequest(
 
   // In mock mode, we don't expect to reach this point normally
   // since authentication should have created tokens
-  if (isMockRequest) {
+  if (isMockRequest && !existingToken) {
     logger.warn("Mock mode enabled but no valid token exists or refresh failed.")
     logger.info("This is an unexpected state in mock mode.")
     throw new Error("Unexpected state in mock mode")
   }
 
-  // In non-mock mode, get CIS2 tokens and exchange for Apigee token
-  // Get CIS2 tokens
+  // When we aren't mocking, get CIS2 tokens and exchange for Apigee token
   const {cis2AccessToken, cis2IdToken: newCis2IdToken} = await fetchAndVerifyCIS2Tokens(
     event,
     documentClient,
