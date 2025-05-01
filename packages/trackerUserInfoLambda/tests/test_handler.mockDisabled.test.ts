@@ -6,29 +6,19 @@ const TokenMappingTableName = process.env.TokenMappingTableName
 
 const CIS2_OIDC_ISSUER = process.env.CIS2_OIDC_ISSUER
 const CIS2_OIDC_CLIENT_ID = process.env.CIS2_OIDC_CLIENT_ID
-//const CIS2_OIDC_HOST = process.env.CIS2_OIDC_HOST ?? ""
 const CIS2_OIDCJWKS_ENDPOINT = process.env.CIS2_OIDCJWKS_ENDPOINT
 const CIS2_USER_INFO_ENDPOINT = process.env.CIS2_USER_INFO_ENDPOINT
 const CIS2_USER_POOL_IDP = process.env.CIS2_USER_POOL_IDP
-//const CIS2_IDP_TOKEN_PATH = process.env.CIS2_IDP_TOKEN_PATH ?? ""
-
-//const MOCK_OIDC_ISSUER = process.env.MOCK_OIDC_ISSUER
-//const MOCK_OIDC_CLIENT_ID = process.env.MOCK_OIDC_CLIENT_ID
-//const MOCK_OIDC_HOST = process.env.MOCK_OIDC_HOST ?? ""
-//const MOCK_OIDCJWKS_ENDPOINT = process.env.MOCK_OIDCJWKS_ENDPOINT
-//const MOCK_USER_INFO_ENDPOINT = process.env.MOCK_USER_INFO_ENDPOINT
-//const MOCK_USER_POOL_IDP = process.env.MOCK_USER_POOL_IDP
-//const MOCK_IDP_TOKEN_PATH = process.env.MOCK_IDP_TOKEN_PATH
 
 process.env.MOCK_MODE_ENABLED = "false"
 
-// Mocked functions from cis2TokenHelpers
-const mockFetchAndVerifyCIS2Tokens = jest.fn()
+// Mocked functions from authFunctions
 const mockGetUsernameFromEvent = jest.fn()
 const mockInitializeOidcConfig = jest.fn()
+const mockAuthenticateRequest = jest.fn()
 
 jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
-  const fetchAndVerifyCIS2Tokens = mockFetchAndVerifyCIS2Tokens.mockImplementation(async () => {
+  const fetchAndVerifyCIS2Tokens = mockAuthenticateRequest.mockImplementation(async () => {
     return {
       cis2IdToken: "idToken",
       cis2AccessToken: "accessToken"
@@ -39,9 +29,25 @@ jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
     return "Primary_JoeBloggs"
   })
 
+  const authenticateRequest = mockAuthenticateRequest.mockImplementation(async (event) => {
+    const username = mockGetUsernameFromEvent(event) as string
+
+    // Throw error if mock user in non-mock mode
+    if (username.startsWith("Mock_")) {
+      throw new Error("Trying to use a mock user when mock mode is disabled")
+    }
+
+    return {
+      username,
+      apigeeAccessToken: "foo",
+      cis2IdToken: "mock-id-token",
+      roleId: "test-role",
+      isMockRequest: false
+    }
+  })
+
   const initializeOidcConfig = mockInitializeOidcConfig.mockImplementation(() => {
     // Create a JWKS client for cis2 and mock
-    // this is outside functions so it can be re-used
     const cis2JwksUri = process.env["CIS2_OIDCJWKS_ENDPOINT"] as string
     const cis2JwksClient = jwksClient({
       jwksUri: cis2JwksUri,
@@ -57,7 +63,8 @@ jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
       oidcUserInfoEndpoint: process.env["CIS2_USER_INFO_ENDPOINT"] ?? "",
       userPoolIdp: process.env["CIS2_USER_POOL_IDP"] ?? "",
       jwksClient: cis2JwksClient,
-      tokenMappingTableName: process.env["TokenMappingTableName"] ?? ""
+      tokenMappingTableName: process.env["TokenMappingTableName"] ?? "",
+      oidcTokenEndpoint: "https://dummyauth.com/token"
     }
 
     const mockJwksUri = process.env["MOCK_OIDCJWKS_ENDPOINT"] as string
@@ -75,7 +82,8 @@ jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
       oidcUserInfoEndpoint: process.env["MOCK_USER_INFO_ENDPOINT"] ?? "",
       userPoolIdp: process.env["MOCK_USER_POOL_IDP"] ?? "",
       jwksClient: mockJwksClient,
-      tokenMappingTableName: process.env["TokenMappingTableName"] ?? ""
+      tokenMappingTableName: process.env["TokenMappingTableName"] ?? "",
+      oidcTokenEndpoint: "https://dummyauth.com/token"
     }
 
     return {cis2OidcConfig, mockOidcConfig}
@@ -84,7 +92,8 @@ jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
   return {
     fetchAndVerifyCIS2Tokens,
     getUsernameFromEvent,
-    initializeOidcConfig
+    initializeOidcConfig,
+    authenticateRequest
   }
 })
 
@@ -124,7 +133,7 @@ describe("Lambda Handler Tests with mock disabled", () => {
   it("should return a successful response when called normally", async () => {
     const response = await handler(event, context)
 
-    expect(mockFetchAndVerifyCIS2Tokens).toHaveBeenCalled()
+    expect(mockAuthenticateRequest).toHaveBeenCalled()
     expect(mockFetchUserInfo).toHaveBeenCalled()
     expect(mockUpdateDynamoTable).toHaveBeenCalled()
 
@@ -142,7 +151,7 @@ describe("Lambda Handler Tests with mock disabled", () => {
       mockGetUsernameFromEvent.mockReturnValue("Primary_JohnDoe")
       await handler(event, context)
       expect(mockGetUsernameFromEvent).toHaveBeenCalled()
-      expect(mockFetchAndVerifyCIS2Tokens).toHaveBeenCalledWith(
+      expect(mockAuthenticateRequest).toHaveBeenCalledWith(
         expect.any(Object),
         expect.any(Object),
         expect.any(Object),

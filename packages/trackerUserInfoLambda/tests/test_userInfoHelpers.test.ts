@@ -14,6 +14,7 @@ const oidcIssuer = "valid_iss"
 const jwksEndpoint = "https://dummyauth.com/.well-known/jwks.json"
 
 const mockVerifyIdToken = jest.fn()
+const mockDecodeToken = jest.fn()
 
 // We need a dummy verification to pass so we can decode out the selected role ID
 jest.unstable_mockModule("@cpt-ui-common/authFunctions", async () => {
@@ -23,11 +24,18 @@ jest.unstable_mockModule("@cpt-ui-common/authFunctions", async () => {
     }
   })
 
+  const decodeToken = mockDecodeToken.mockImplementation(() => {
+    return {
+      selected_roleid: "role-id-1"
+    }
+  })
+
   return {
     __esModule: true,
     // This will need to be made to return the decoded ID token, which should be like:
     // { selected_roleid: "foo" }
-    verifyIdToken: verifyIdToken
+    verifyIdToken: verifyIdToken,
+    decodeToken: decodeToken
   }
 })
 
@@ -53,7 +61,8 @@ describe("fetchUserInfo", () => {
     oidcUserInfoEndpoint: "https://dummyauth.com/userinfo",
     userPoolIdp: "DummyPoolIdentityProvider",
     tokenMappingTableName: "dummyTable",
-    jwksClient: client
+    jwksClient: client,
+    oidcTokenEndpoint: "https://dummyauth.com/token"
   }
 
   beforeEach(() => {
@@ -121,6 +130,12 @@ describe("fetchUserInfo", () => {
     jest.spyOn(axios, "get").mockResolvedValue({data: userInfoResponse})
 
     mockVerifyIdToken.mockImplementation(async () => {
+      return {
+        selected_roleid: "role-id-1"
+      }
+    })
+
+    mockDecodeToken.mockImplementation(() => {
       return {
         selected_roleid: "role-id-1"
       }
@@ -196,6 +211,12 @@ describe("fetchUserInfo", () => {
     }
 
     jest.spyOn(axios, "get").mockResolvedValue({data: userInfoResponse})
+
+    mockDecodeToken.mockImplementation(() => {
+      return {
+        selected_roleid: "role-id-1"
+      }
+    })
 
     const result = await fetchUserInfo(
       accessToken,
