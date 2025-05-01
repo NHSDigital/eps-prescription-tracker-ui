@@ -5,7 +5,7 @@ import {
   jest
 } from "@jest/globals"
 
-import {DynamoDBDocumentClient, GetCommandOutput, PutCommandInput} from "@aws-sdk/lib-dynamodb"
+import {DynamoDBDocumentClient, GetCommandOutput, UpdateCommandInput} from "@aws-sdk/lib-dynamodb"
 import createJWKSMock from "mock-jwks"
 import nock from "nock"
 import {generateKeyPairSync} from "crypto"
@@ -40,6 +40,7 @@ const dummyContext = {
 //const MOCK_USER_INFO_ENDPOINT = process.env.MOCK_USER_INFO_ENDPOINT
 const MOCK_USER_POOL_IDP = process.env.MOCK_USER_POOL_IDP
 //const MOCK_IDP_TOKEN_PATH = process.env.MOCK_IDP_TOKEN_PATH
+const MOCK_OIDC_TOKEN_ENDPOINT = "https://internal-dev.api.service.nhs.uk/oauth2-mock/token"
 
 const mockInitializeOidcConfig = jest.fn()
 const mockGetSecret = jest.fn()
@@ -97,7 +98,7 @@ jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
       userPoolIdp: process.env["MOCK_USER_POOL_IDP"] ?? "",
       jwksClient: mockJwksClient,
       tokenMappingTableName: process.env["TokenMappingTableName"] ?? "",
-      oidcTokenEndpoint: process.env["MOCK_OIDC_TOKEN_ENDPOINT"] ?? ""
+      oidcTokenEndpoint: MOCK_OIDC_TOKEN_ENDPOINT
     }
 
     return {cis2OidcConfig, mockOidcConfig}
@@ -121,12 +122,24 @@ jest.unstable_mockModule("@aws-lambda-powertools/parameters/secrets", () => {
 const {handler} = await import("../src/tokenMock")
 
 describe("handler tests with mock", () => {
-  const jwks = createJWKSMock("https://dummyauth.com/")
+  const jwks = createJWKSMock("https://dummy_mock_auth.com/")
 
   beforeEach(() => {
     jest.resetModules()
     jest.clearAllMocks()
     jwks.start()
+    // Set up required environment variables
+    process.env.MOCK_USER_INFO_ENDPOINT = "https://dummy_mock_auth.com/userinfo"
+    process.env.MOCK_OIDC_ISSUER = "https://dummy_mock_auth.com"
+    process.env.MOCK_OIDC_CLIENT_ID = "test-client-id"
+    process.env.MOCK_USER_POOL_IDP = "test-idp"
+    process.env.TokenMappingTableName = "test-token-mapping-table"
+    process.env.SessionStateMappingTableName = "test-session-state-table"
+    process.env.FULL_CLOUDFRONT_DOMAIN = "test.cloudfront.net"
+    process.env.jwtPrivateKeyArn = "test-private-key-arn"
+    process.env.jwtKid = "test-kid"
+    process.env.APIGEE_API_KEY = "test-api-key"
+    process.env.APIGEE_API_SECRET = "test-api-secret"
   })
 
   afterEach(() => {
@@ -135,15 +148,15 @@ describe("handler tests with mock", () => {
 
   it("inserts correct details into dynamo table", async () => {
     // Configure our spy to capture the PutCommand parameters
-    const putParams = {Item: undefined} as unknown as PutCommandInput
+    const updateParams = {ExpressionAttributeValues: undefined, Key: undefined} as unknown as UpdateCommandInput
 
     const dynamoSpy = jest.spyOn(DynamoDBDocumentClient.prototype, "send")
       .mockImplementation(async (cmd) => {
-        // Check the constructor name to differentiate between command types
+      // Check the constructor name to differentiate between command types
         const commandName = cmd.constructor.name
 
         if (commandName.includes("GetCommand")) {
-          // Return session state for GetCommand
+        // Return session state for GetCommand
           return {
             Item: {
               LocalCode: "test-code",
@@ -151,9 +164,10 @@ describe("handler tests with mock", () => {
               SessionState: "test-session-state"
             }
           } as unknown as GetCommandOutput
-        } else if (commandName.includes("PutCommand")) {
-          // For PutCommand, capture the parameters and return success
-          putParams.Item = (cmd.input as PutCommandInput).Item
+        } else if (commandName.includes("UpdateCommand")) {
+        // For UpdateCommand, capture the parameters and return success
+          updateParams.ExpressionAttributeValues = (cmd.input as UpdateCommandInput).ExpressionAttributeValues
+          updateParams.Key = (cmd.input as UpdateCommandInput).Key
           return {}
         }
 
@@ -166,12 +180,16 @@ describe("handler tests with mock", () => {
       .post("/oauth2-mock/token")
       .reply(200, {
         access_token: "test-access-token",
-        refresh_token: "test-refresh-token"
+        refresh_token: "test-refresh-token",
+        expires_in: "3600",
+        refresh_token_expires_in: "7200",
+        token_type: "Bearer",
+        sid: "test-sid"
       })
 
     // Mock Apigee userinfo response
-    nock("https://internal-dev.api.service.nhs.uk")
-      .get("/oauth2-mock/userinfo")
+    nock("https://dummy_mock_auth.com")
+      .get("/userinfo")
       .reply(200, {
         sub: "foo",
         name: "Test User",
@@ -183,7 +201,10 @@ describe("handler tests with mock", () => {
 
     const response = await handler({
       body: "code=test-code",
-      headers: {}
+      headers: {},
+      requestContext: {
+        requestId: "test-id"
+      }
     }, dummyContext)
 
     // Check response structure
@@ -194,9 +215,9 @@ describe("handler tests with mock", () => {
     expect(dynamoSpy).toHaveBeenCalled()
 
     // Check the captured PutCommand parameters
-    expect(putParams.Item).toBeDefined()
-    expect(putParams.Item!.username).toBe(`${MOCK_USER_POOL_IDP}_foo`)
-    expect(putParams.Item!.CIS2_accessToken).toBe("test-access-token")
-    expect(putParams.Item!.CIS2_idToken).toBeTruthy()
+    expect(updateParams.ExpressionAttributeValues).toBeDefined()
+    expect(updateParams.Key).toEqual({username: `${MOCK_USER_POOL_IDP}_foo`})
+    expect(updateParams.ExpressionAttributeValues![":apigee_accessToken"]).toBe("test-access-token")
+    expect(updateParams.ExpressionAttributeValues![":apigee_idToken"]).toBeTruthy()
   })
 })

@@ -18,7 +18,8 @@ jest.unstable_mockModule("@aws-sdk/lib-dynamodb", () => {
       })
     },
     DeleteCommand: jest.fn(),
-    GetCommand: jest.fn()
+    GetCommand: jest.fn(),
+    PutCommand: jest.fn()
   }
 })
 
