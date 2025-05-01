@@ -69,9 +69,6 @@ export default function NhsNumSearch() {
     }
   }
 
-  const showCombinedFieldError =
-    errorTypes.includes("length") && errorTypes.includes("chars")
-
   return (
     <Container className="nhsuk-width-container-fluid" data-testid="patient-search-form-container">
       <Row>
@@ -105,11 +102,13 @@ export default function NhsNumSearch() {
               </HintText>
 
               {errorTypes.length > 0 && (
-                <ErrorMessage data-testid="error-message">
-                  {showCombinedFieldError
-                    ? errorMessages["chars"]
-                    : errorMessages[errorTypes[0]]}
-                </ErrorMessage>
+                <div className="error-message-stack">
+                  {errorTypes.map((type) => (
+                    <ErrorMessage key={type} data-testid={`error-message-${type}`}>
+                      {errorMessages[type]}
+                    </ErrorMessage>
+                  ))}
+                </div>
               )}
 
               <TextInput

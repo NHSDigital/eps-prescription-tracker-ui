@@ -91,7 +91,7 @@ describe("NhsNumSearch", () => {
     await userEvent.type(screen.getByTestId("nhs-number-input"), "abc")
     await userEvent.click(screen.getByTestId("find-patient-button"))
 
-    expect(screen.getByText("NHS number must have 10 numbers")).toBeInTheDocument()
+    expect(screen.getAllByText("NHS number must have 10 digits").length).toBeGreaterThan(1)
     expect(
       screen.getAllByText("Enter an NHS number in the correct format").length
     ).toBeGreaterThan(1)
@@ -102,7 +102,7 @@ describe("NhsNumSearch", () => {
     await userEvent.type(screen.getByTestId("nhs-number-input"), "123")
     await userEvent.click(screen.getByTestId("find-patient-button"))
 
-    expect(screen.getAllByText("NHS number must have 10 numbers").length).toBeGreaterThan(1)
+    expect(screen.getAllByText("NHS number must have 10 digits").length).toBeGreaterThan(1)
     expect(
       screen.queryByText("Enter an NHS number in the correct format")
     ).not.toBeInTheDocument()
@@ -113,7 +113,7 @@ describe("NhsNumSearch", () => {
     await userEvent.type(screen.getByTestId("nhs-number-input"), "1234567890000")
     await userEvent.click(screen.getByTestId("find-patient-button"))
 
-    expect(screen.getAllByText("NHS number must have 10 numbers").length).toBeGreaterThan(1)
+    expect(screen.getAllByText("NHS number must have 10 digits").length).toBeGreaterThan(1)
     expect(
       screen.queryByText("Enter an NHS number in the correct format")
     ).not.toBeInTheDocument()

@@ -6,7 +6,7 @@ export const STRINGS = {
   errorSummaryHeading: "There is a problem",
   errors: {
     empty: "Enter an NHS number",
-    length: "NHS number must have 10 numbers",
+    length: "NHS number must have 10 digits",
     chars: "Enter an NHS number in the correct format"
   }
 }
