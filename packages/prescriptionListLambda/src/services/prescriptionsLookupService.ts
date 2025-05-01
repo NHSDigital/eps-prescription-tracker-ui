@@ -28,7 +28,7 @@ export const getPrescriptions = async (
   const logContext = prescriptionId ? {prescriptionId} : {nhsNumber}
 
   logger.info("Fetching prescriptions", logContext)
-  // TODO: address nhs-urid being invalid (make sure to pass correct role)
+  // TODO: Look at multiple headers with the same value
   try {
     const response = await axiosInstance.get(
       endpoint,

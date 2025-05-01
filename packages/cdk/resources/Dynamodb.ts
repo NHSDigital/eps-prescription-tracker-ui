@@ -309,6 +309,7 @@ export class Dynamodb extends Construct {
       })
     })
 
+    //TODO: we can remove the session state mapping table and just use the state mapping table
     // State Mapping Table
     const sessionStateMappingTable = new TableV2(this, "SessionStateMappingTable", {
       partitionKey: {

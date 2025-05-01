@@ -86,6 +86,8 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     // Continue with regular flow
   }
 
+  // TODO: remove session state mapping we can just use the state mapping
+  //TODO: make sure to update the logic that currently points to the session state mapping table
   // If not a PR redirect, continue with the standard Cognito flow
   // Get the original Cognito state from DynamoDB
   logger.debug("trying to get data from session state table", {
