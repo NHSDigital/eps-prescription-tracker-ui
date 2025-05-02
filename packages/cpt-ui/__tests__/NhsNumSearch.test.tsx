@@ -82,19 +82,15 @@ describe("NhsNumSearch", () => {
     renderWithRouter(<NhsNumSearch />)
     await userEvent.click(screen.getByTestId("find-patient-button"))
 
-    const allMatches = screen.getAllByText("Enter an NHS number")
-    expect(allMatches.length).toBeGreaterThan(1) // Expect in summary + message
+    expect(screen.getByText("Enter an NHS number.")).toBeInTheDocument()
   })
 
-  it("shows errors for letters in input (abc)", async () => {
+  it("shows error for letters in input (abc)", async () => {
     renderWithRouter(<NhsNumSearch />)
     await userEvent.type(screen.getByTestId("nhs-number-input"), "abc")
     await userEvent.click(screen.getByTestId("find-patient-button"))
 
-    expect(screen.getAllByText("NHS number must have 10 digits").length).toBeGreaterThan(1)
-    expect(
-      screen.getAllByText("Enter an NHS number in the correct format").length
-    ).toBeGreaterThan(1)
+    expect(screen.getByText("NHS number must have 10 digits.")).toBeInTheDocument()
   })
 
   it("shows error for short input (123)", async () => {
@@ -102,10 +98,7 @@ describe("NhsNumSearch", () => {
     await userEvent.type(screen.getByTestId("nhs-number-input"), "123")
     await userEvent.click(screen.getByTestId("find-patient-button"))
 
-    expect(screen.getAllByText("NHS number must have 10 digits").length).toBeGreaterThan(1)
-    expect(
-      screen.queryByText("Enter an NHS number in the correct format")
-    ).not.toBeInTheDocument()
+    expect(screen.getByText("NHS number must have 10 digits.")).toBeInTheDocument()
   })
 
   it("shows error for too long input", async () => {
@@ -113,9 +106,6 @@ describe("NhsNumSearch", () => {
     await userEvent.type(screen.getByTestId("nhs-number-input"), "1234567890000")
     await userEvent.click(screen.getByTestId("find-patient-button"))
 
-    expect(screen.getAllByText("NHS number must have 10 digits").length).toBeGreaterThan(1)
-    expect(
-      screen.queryByText("Enter an NHS number in the correct format")
-    ).not.toBeInTheDocument()
+    expect(screen.getByText("NHS number must have 10 digits.")).toBeInTheDocument()
   })
 })

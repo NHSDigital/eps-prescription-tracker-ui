@@ -50,9 +50,10 @@ export default function NhsNumSearch() {
 
     if (!cleaned) {
       errors.push("empty")
-    } else {
-      if (cleaned.length !== 10) errors.push("length")
-      if (!/^\d+$/.test(cleaned)) errors.push("chars")
+    } else if (cleaned.length !== 10) {
+      errors.push("length")
+    } else if (!/^\d+$/.test(cleaned)) {
+      errors.push("chars")
     }
 
     if (errors.length > 0) {
@@ -102,13 +103,9 @@ export default function NhsNumSearch() {
               </HintText>
 
               {errorTypes.length > 0 && (
-                <div className="error-message-stack">
-                  {errorTypes.map((type) => (
-                    <ErrorMessage key={type} data-testid={`error-message-${type}`}>
-                      {errorMessages[type]}
-                    </ErrorMessage>
-                  ))}
-                </div>
+                <ErrorMessage data-testid={`error-message-${errorTypes[0]}`}>
+                  {errorMessages[errorTypes[0]]}.
+                </ErrorMessage>
               )}
 
               <TextInput
