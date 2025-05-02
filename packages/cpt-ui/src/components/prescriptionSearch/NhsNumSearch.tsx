@@ -104,7 +104,7 @@ export default function NhsNumSearch() {
 
               {errorTypes.length > 0 && (
                 <ErrorMessage data-testid={`error-message-${errorTypes[0]}`}>
-                  {errorMessages[errorTypes[0]]}.
+                  {errorMessages[errorTypes[0]]}
                 </ErrorMessage>
               )}
 

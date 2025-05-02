@@ -82,7 +82,7 @@ describe("NhsNumSearch", () => {
     renderWithRouter(<NhsNumSearch />)
     await userEvent.click(screen.getByTestId("find-patient-button"))
 
-    expect(screen.getByText("Enter an NHS number.")).toBeInTheDocument()
+    expect(screen.getAllByText("Enter an NHS number").length).toBeGreaterThan(1)
   })
 
   it("shows error for letters in input (abc)", async () => {
@@ -90,7 +90,7 @@ describe("NhsNumSearch", () => {
     await userEvent.type(screen.getByTestId("nhs-number-input"), "abc")
     await userEvent.click(screen.getByTestId("find-patient-button"))
 
-    expect(screen.getByText("NHS number must have 10 digits.")).toBeInTheDocument()
+    expect(screen.getAllByText("NHS number must have 10 digits").length).toBeGreaterThan(1)
   })
 
   it("shows error for short input (123)", async () => {
@@ -98,7 +98,7 @@ describe("NhsNumSearch", () => {
     await userEvent.type(screen.getByTestId("nhs-number-input"), "123")
     await userEvent.click(screen.getByTestId("find-patient-button"))
 
-    expect(screen.getByText("NHS number must have 10 digits.")).toBeInTheDocument()
+    expect(screen.getAllByText("NHS number must have 10 digits").length).toBeGreaterThan(1)
   })
 
   it("shows error for too long input", async () => {
@@ -106,6 +106,6 @@ describe("NhsNumSearch", () => {
     await userEvent.type(screen.getByTestId("nhs-number-input"), "1234567890000")
     await userEvent.click(screen.getByTestId("find-patient-button"))
 
-    expect(screen.getByText("NHS number must have 10 digits.")).toBeInTheDocument()
+    expect(screen.getAllByText("NHS number must have 10 digits").length).toBeGreaterThan(1)
   })
 })
