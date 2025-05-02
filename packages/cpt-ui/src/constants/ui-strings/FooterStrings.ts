@@ -3,15 +3,14 @@ export const COMMIT_ID = import.meta.env.VITE_COMMIT_ID
 
 export const FOOTER_LINKS = [
   {
-    text: "Privacy notice",
+    text: "Privacy notice (opens in new tab)",
     // eslint-disable-next-line max-len
     href: "https://digital.nhs.uk/services/care-identity-service/registration-authority-users/registration-authority-help/privacy-notice",
     external: true
   },
   {
-    text: "Terms and conditions (opens in new tab)",
-    // eslint-disable-next-line max-len
-    href: "https://digital.nhs.uk/services/care-identity-service/registration-authority-users/registration-authority-help/privacy-notice",
+    text: "Terms and conditions",
+    href: "terms-and-conditions",
     external: false
   },
   {
