@@ -12,11 +12,11 @@
     "check-licenses": "license-checker --failOn GPL --failOn LGPL --start ../.."
   },
   "dependencies": {
-    "aws-amplify": "^6.14.3",
+    "aws-amplify": "^6.14.4",
     "aws-rum-web": "^1.22.1",
     "axios": "^1.9.0",
-    "i18next": "^25.0.1",
-    "i18next-browser-languagedetector": "^8.0.5",
+    "i18next": "^25.0.2",
+    "i18next-browser-languagedetector": "^8.1.0",
     "i18next-http-backend": "^3.0.2",
     "nhsuk-frontend": "^9.4.1",
     "nhsuk-react-components": "^5.0.0",
@@ -29,7 +29,7 @@
     "uuid": "^11.1.0"
   },
   "devDependencies": {
-    "@swc/core": "^1.11.22",
+    "@swc/core": "^1.11.24",
     "@swc/jest": "^0.2.38",
     "@testing-library/jest-dom": "^6.6.2",
     "@testing-library/react": "^16.3.0",
@@ -55,6 +55,6 @@
     "sass": "^1.87.0",
     "ts-jest": "^29.3.2",
     "typescript": "^5.8.3",
-    "vite": "^6.3.3"
+    "vite": "^6.3.4"
   }
 }

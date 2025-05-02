@@ -254,9 +254,12 @@ export default function PrescriptionListPage() {
       // Allow known test ID through; otherwise, return false.
       const fullPrescriptionIds = [
         "C0C757-A83008-C2D93O",
+        "209E3D-A83008-327F9F",
         "7F1A4B-A83008-91DC2E",
         "B8C9E2-A83008-5F7B3A",
-        "4D6F2C-A83008-A3E7D1"
+        "4D6F2C-A83008-A3E7D1",
+        "3DA34A-A83008-A0B2EV",
+        "88AAF5-A83008-3D404Q"
       ]
       if (fullPrescriptionIds.includes(prescriptionId)) {
         console.log("Using mock data")
