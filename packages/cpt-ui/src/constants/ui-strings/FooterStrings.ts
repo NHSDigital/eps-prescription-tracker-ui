@@ -10,7 +10,8 @@ export const FOOTER_LINKS = [
   },
   {
     text: "Terms and conditions (opens in new tab)",
-    href: "https://www.nhs.uk/terms-and-conditions",
+    // eslint-disable-next-line max-len
+    href: "https://digital.nhs.uk/services/care-identity-service/registration-authority-users/registration-authority-help/privacy-notice",
     external: false
   },
   {
