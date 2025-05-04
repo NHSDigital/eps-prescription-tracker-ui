@@ -9,20 +9,26 @@ export default function EpsFooter() {
   }, [])
 
   return (
-    <Footer id="eps_footer" className="eps_footer">
+    <Footer id="eps_footer" className="eps_footer" data-testid="eps_footer">
       <Footer.List>
-        {FOOTER_LINKS.map(({href, text, external}, index) => (
-          <Footer.ListItem key={index}>
-            <a
-              className="nhsuk-footer__list-item-link"
+        {FOOTER_LINKS.map(({href, text, external}, index) => {
+          const testId = `eps_footer-link-${text.toLowerCase()
+            .replace(/\s+/g, "-")
+            .replace(/[()]/g, "")
+            .replace(/-+/g, "-")}`
+
+          return (
+            <Footer.ListItem
+              key={index}
               href={href}
               target={external ? "_blank" : undefined}
               rel={external ? "noopener noreferrer" : undefined}
+              data-testid={testId}
             >
               {text}
-            </a>
-          </Footer.ListItem>
-        ))}
+            </Footer.ListItem>
+          )
+        })}
       </Footer.List>
 
       <Footer.Copyright data-testid="eps_footer-copyright">
