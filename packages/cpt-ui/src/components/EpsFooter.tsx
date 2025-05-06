@@ -11,9 +11,9 @@ export default function EpsFooter() {
   return (
     <Footer id="eps_footer" className="eps_footer" data-testid="eps_footer">
       <Footer.List>
-        {FOOTER_LINKS.map(({href, text, external, testId}, index) => (
+        {FOOTER_LINKS.map(({href, text, external, testId}) => (
           <Footer.ListItem
-            key={index}
+            key={testId}
             href={href}
             target={external ? "_blank" : undefined}
             rel={external ? "noopener noreferrer" : undefined}
