@@ -11,13 +11,13 @@ export const FOOTER_LINKS = [
   },
   {
     text: "Terms and conditions",
-    href: "terms-and-conditions",
+    href: "/site/terms-and-conditions",
     external: false,
     testId: "eps_footer-link-terms-and-conditions"
   },
   {
     text: "Cookie policy",
-    href: "cookies",
+    href: "/site/cookies",
     external: false,
     testId: "eps_footer-link-cookie-policy"
   }
