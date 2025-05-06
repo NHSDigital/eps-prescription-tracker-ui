@@ -6,16 +6,19 @@ export const FOOTER_LINKS = [
     text: "Privacy notice (opens in new tab)",
     // eslint-disable-next-line max-len
     href: "https://digital.nhs.uk/services/care-identity-service/registration-authority-users/registration-authority-help/privacy-notice",
-    external: true
+    external: true,
+    testId: "eps_footer-link-privacy-notice"
   },
   {
     text: "Terms and conditions",
     href: "terms-and-conditions",
-    external: false
+    external: false,
+    testId: "eps_footer-link-terms-and-conditions"
   },
   {
     text: "Cookie policy",
     href: "cookies",
-    external: false
+    external: false,
+    testId: "eps_footer-link-cookie-policy"
   }
 ]
