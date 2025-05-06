@@ -132,15 +132,14 @@ export default function EpsHeader() {
 
           {/* Give feedback (opens in new tab) */}
           <li className="nhsuk-header__navigation-item">
-            <a
-              className="nhsuk-header__navigation-link"
+            <Header.NavItem
               href={HEADER_FEEDBACK_TARGET}
               target="_blank"
               rel="noopener noreferrer"
               data-testid="eps_header_feedbackLink"
             >
               {HEADER_FEEDBACK_BUTTON}
-            </a>
+            </Header.NavItem>
           </li>
 
           {/* Log out */}
