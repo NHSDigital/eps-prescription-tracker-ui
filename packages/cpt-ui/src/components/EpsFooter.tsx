@@ -32,11 +32,7 @@ export default function EpsFooter() {
       </Footer.List>
 
       <Footer.Copyright data-testid="eps_footer-copyright">
-        <p>
-          <small>
-            {FOOTER_COPYRIGHT}
-          </small>
-        </p>
+        {FOOTER_COPYRIGHT}
       </Footer.Copyright>
     </Footer>
   )
