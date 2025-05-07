@@ -10,7 +10,8 @@ import {
   HEADER_SELECT_YOUR_ROLE_TARGET,
   HEADER_SELECT_YOUR_ROLE_BUTTON,
   HEADER_FEEDBACK_BUTTON,
-  HEADER_FEEDBACK_TARGET
+  HEADER_FEEDBACK_TARGET,
+  HEADER_LOG_OUT_BUTTON
 } from "@/constants/ui-strings/HeaderStrings"
 
 import {AuthContext} from "@/context/AuthProvider"
@@ -149,7 +150,7 @@ export default function EpsHeader() {
                 data-testid="eps_header_logout"
                 onClick={handleLogoutClick}
               >
-                Log out
+                {HEADER_LOG_OUT_BUTTON}
               </Link>
             </li>
           )}
