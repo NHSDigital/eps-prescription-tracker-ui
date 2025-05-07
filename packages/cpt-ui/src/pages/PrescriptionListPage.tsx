@@ -401,7 +401,6 @@ export default function PrescriptionListPage() {
             </strong>
           </p>
           <div data-testid="prescription-results-list">
-            {/* Prescription list items would go here */}
             <PrescriptionsListTabs
               tabData={tabData}
               currentPrescriptions={currentPrescriptions}
@@ -410,22 +409,6 @@ export default function PrescriptionListPage() {
             />
           </div>
         </Container>
-
-        {/* FIXME: DELETE THIS WHEN WE HAVE ANOTHER WAY TO NAVIGATE TO PRESCRIPTION DETAILS! */}
-        {/* {!!queryParams.get("prescriptionId") &&
-          <Container>
-            <Row>
-              <Col width="full" style={{margin: 20}}>
-                <Link
-                  to={`${FRONTEND_PATHS.PRESCRIPTION_DETAILS_PAGE}?prescriptionId=${queryParams.get("prescriptionId")}`}
-                  data-testid="prescription-details-link-container"
-                >
-                  [DEV] Go to corresponding prescription details page
-                </Link>
-              </Col>
-            </Row>
-          </Container>
-        } */}
       </main>
     </>
   )

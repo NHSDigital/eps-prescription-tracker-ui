@@ -1,5 +1,5 @@
-import React, {useEffect, useRef, useCallback} from "react"
-import {Link} from "react-router-dom"
+import React, {useEffect, useCallback} from "react"
+import {Link, useNavigate} from "react-router-dom"
 import {Tabs} from "nhsuk-react-components"
 
 export interface TabHeader {
@@ -23,16 +23,12 @@ export default function EpsTabs({
   const baseClass = "nhsuk-tabs"
   const variantClass = variant === "large" ? `${baseClass}--large` : ""
   const tabClass = `${baseClass} ${variantClass}`.trim()
-  const containerRef = useRef<HTMLDivElement>(null)
-  // const [tabListElement, setTabListElement] = useState<HTMLElement | null>(null)
 
+  const navigate = useNavigate()
   const handleKeyDown = useCallback((event: KeyboardEvent) => {
-    if (!containerRef.current) {
-      return
-    }
-    const tabs = Array.from(containerRef.current.querySelectorAll('[role="tab"]')) as Array<HTMLElement>
+    const tabs = tabHeaderArray
     const currentTabIndex = tabs.findIndex(
-      (tab) => tab.getAttribute("aria-selected") === "true"
+      (tab) => tab.link.includes(activeTabPath)
     )
 
     let newTabIndex = currentTabIndex
@@ -44,9 +40,9 @@ export default function EpsTabs({
 
     if (newTabIndex !== currentTabIndex) {
       const newTab = tabs[newTabIndex]
-      newTab.click()
+      navigate(newTab.link)
     }
-  }, [])
+  }, [navigate])
 
   useEffect(() => {
     window.addEventListener("keydown", handleKeyDown)
@@ -57,7 +53,7 @@ export default function EpsTabs({
   }, [handleKeyDown])
 
   return (
-    <div className={tabClass} ref={containerRef}>
+    <div className={tabClass}>
       <Tabs.Title>Contents</Tabs.Title>
       <Tabs.List>
         {tabHeaderArray.map((tab) => {

@@ -5,6 +5,7 @@ import EpsSpinner from "@/components/EpsSpinner"
 import {PrescriptionSummary} from "@cpt-ui-common/common-types/src"
 import {PrescriptionsListStrings} from "../../constants/ui-strings/PrescriptionListTabStrings"
 import {getStatusTagColour, getStatusDisplayText} from "@/helpers/statusMetadata"
+import {PRESCRIPTION_LIST_TABLE_TEXT} from "@/constants/ui-strings/PrescriptionListTableStrings"
 
 export interface PrescriptionsListTableProps {
   textContent: PrescriptionsListStrings
@@ -16,7 +17,6 @@ const PrescriptionsListTable = ({textContent, prescriptions}: PrescriptionsListT
     key: "issueDate",
     direction: "descending"
   })
-  const [activeHeader, setActiveHeader] = useState(sortConfig.key)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -36,10 +36,10 @@ const PrescriptionsListTable = ({textContent, prescriptions}: PrescriptionsListT
   //however we do not currently have instanceNumber or maxRepeats to make it work fully here
   const getPrescriptionTypeDisplayText = (prescriptionType: string): string => {
     switch (prescriptionType) {
-      case "0001": return "Acute"
-      case "0002": return "Repeat Y of X"
-      case "0003": return "eRD Y of X"
-      default: return "Unknown"
+      case "0001": return PRESCRIPTION_LIST_TABLE_TEXT.typeDisplayText.acute
+      case "0002": return PRESCRIPTION_LIST_TABLE_TEXT.typeDisplayText.repeat
+      case "0003": return PRESCRIPTION_LIST_TABLE_TEXT.typeDisplayText.erd
+      default: return PRESCRIPTION_LIST_TABLE_TEXT.typeDisplayText.unknown
     }
   }
 
@@ -58,7 +58,6 @@ const PrescriptionsListTable = ({textContent, prescriptions}: PrescriptionsListT
         ? "descending"
         : "ascending"
     setSortConfig({key, direction})
-    setActiveHeader(key)
   }
 
   const renderSortIcons = (key: string) => {
@@ -72,7 +71,7 @@ const PrescriptionsListTable = ({textContent, prescriptions}: PrescriptionsListT
             className={`arrow up-arrow ${
               isActive && direction !== "ascending" ? "hidden-arrow" : isActive ? "selected-arrow" : ""
             }`}
-            aria-label="Sort ascending"
+            aria-label={PRESCRIPTION_LIST_TABLE_TEXT.sortAscending}
           >
             ▲
           </span>
@@ -80,7 +79,7 @@ const PrescriptionsListTable = ({textContent, prescriptions}: PrescriptionsListT
             className={`arrow down-arrow ${
               isActive && direction !== "descending" ? "hidden-arrow" : isActive ? "selected-arrow" : ""
             }`}
-            aria-label="Sort descending"
+            aria-label={PRESCRIPTION_LIST_TABLE_TEXT.sortDescending}
           >
             ▼
           </span>
@@ -135,38 +134,16 @@ const PrescriptionsListTable = ({textContent, prescriptions}: PrescriptionsListT
   }
 
   const renderTableDescription = () => {
-    switch (textContent.testid) {
-      case "current":
-        return (
-          <caption className="nhsuk-u-visually-hidden">
-            A sortable table showing current prescriptions matching the search criteria.
-            Column one shows the date the prescription was issued. Columns two and three
-            show the type and status of the prescription. Column four shows whether the
-            prescription is pending cancellation. Column five shows the prescription ID
-            and has a link to view the details of the prescription.
-          </caption>
-        )
-      case "future":
-        return (
-          <caption className="nhsuk-u-visually-hidden">
-            A sortable table showing future-dated prescriptions matching the search criteria.
-            Column one shows the date the prescription was issued. Columns two and three
-            show the type and status of the prescription. Column four shows whether the
-            prescription is pending cancellation. Column five shows the prescription ID
-            and has a link to view the details of the prescription.
-          </caption>
-        )
-      case "claimedExpired":
-        return (
-          <caption className="nhsuk-u-visually-hidden">
-            A sortable table showing claimed and expired prescriptions matching the search criteria.
-            Column one shows the date the prescription was issued. Columns two and three
-            show the type and status of the prescription. Column four shows whether the
-            prescription is pending cancellation. Column five shows the prescription ID
-            and has a link to view the details of the prescription.
-          </caption>
-        )
-    }
+    const {testid} = textContent
+
+    const intro = PRESCRIPTION_LIST_TABLE_TEXT.caption[testid as keyof typeof PRESCRIPTION_LIST_TABLE_TEXT.caption]
+    const sharedText = PRESCRIPTION_LIST_TABLE_TEXT.caption.sharedText
+
+    return (
+      <caption className="nhsuk-u-visually-hidden">
+        {intro} {sharedText}
+      </caption>
+    )
   }
 
   return (
@@ -182,29 +159,28 @@ const PrescriptionsListTable = ({textContent, prescriptions}: PrescriptionsListT
               <th
                 key={heading.key}
                 role="columnheader"
-                // onClick={() => requestSort(heading.key)}
                 aria-sort={
                   sortConfig.key === heading.key
                     ? (sortConfig.direction as "ascending" | "descending" | "none" | "other")
                     : "none"
                 }
-                className={activeHeader === heading.key ? "active-header" : ""}
+                className={sortConfig.key === heading.key ? "active-header" : ""}
                 data-testid={`eps-prescription-table-header-${heading.key}`}
+                onClick={() => requestSort(heading.key)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault()
+                    requestSort(heading.key)
+                  }
+                }}
               >
                 <span
                   role="button"
                   tabIndex={0}
                   className={`eps-prescription-table-sort-text ${heading.key} 
-                  ${activeHeader === heading.key ? "active-header" : ""}`}
-                  onClick={() => requestSort(heading.key)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault()
-                      requestSort(heading.key)
-                    }
-                  }}
+                  ${sortConfig.key === heading.key ? "active-header" : ""}`}
                   aria-label={`
-                    Sort by ${heading.label} 
+                    ${PRESCRIPTION_LIST_TABLE_TEXT.sortBy} ${heading.label} 
                     ${sortConfig.key === heading.key && sortConfig.direction === "ascending"
                 ? "descending"
                 : "ascending"}
@@ -212,7 +188,7 @@ const PrescriptionsListTable = ({textContent, prescriptions}: PrescriptionsListT
                   data-testid={`eps-prescription-table-sort-${heading.key}`}
                 >
                   <span className="sort-label-text">{heading.label}</span>
-                  <span className="nhsuk-u-visually-hidden">, button</span>
+                  <span className="nhsuk-u-visually-hidden">{PRESCRIPTION_LIST_TABLE_TEXT.button}</span>
                   {renderSortIcons(heading.key)}
                 </span>
               </th>
@@ -262,12 +238,14 @@ const PrescriptionsListTable = ({textContent, prescriptions}: PrescriptionsListT
                     >
                       {showWarning ? (
                         <span>
-                          <span aria-hidden="true" role="img" className="warning-icon">⚠️</span>
-                          <span className="nhsuk-u-visually-hidden">Warning: </span>
-                          One or more items pending cancellation
+                          <span
+                            aria-hidden="true"
+                            role="img" className="warning-icon"
+                            aria-label={PRESCRIPTION_LIST_TABLE_TEXT.warning}>⚠️</span>
+                          {PRESCRIPTION_LIST_TABLE_TEXT.pendingCancellationItems}
                         </span>
                       ) : (
-                        "None"
+                        PRESCRIPTION_LIST_TABLE_TEXT.none
                       )}
                     </td>
                   )
@@ -275,7 +253,7 @@ const PrescriptionsListTable = ({textContent, prescriptions}: PrescriptionsListT
 
                 if (key === "prescriptionId") {
                   return (
-                    <td key={key} className="eps-prescription-table-rows" data-testid="prescription-id-column">
+                    <td key={key} className="eps-prescription-table-rows">
                       <div className="eps-prescription-id">{row.prescriptionId}</div>
                       <div>
                         <a
@@ -283,7 +261,7 @@ const PrescriptionsListTable = ({textContent, prescriptions}: PrescriptionsListT
                           className="nhsuk-link"
                           data-testid={`view-prescription-link-${row.prescriptionId}`}
                         >
-                          View prescription
+                          {PRESCRIPTION_LIST_TABLE_TEXT.viewPrescription}
                         </a>
                       </div>
                     </td>
@@ -299,10 +277,12 @@ const PrescriptionsListTable = ({textContent, prescriptions}: PrescriptionsListT
               colSpan={headings.length}
               className="eps-prescription-table-summary-row"
               aria-live="polite"
-              aria-label={`Showing ${prescriptions.length} of ${prescriptions.length} prescriptions`}
+              aria-label={`Showing ${prescriptions.length} of ${prescriptions.length}`}
               data-testid="table-summary-row"
             >
-              Showing {prescriptions.length} of {prescriptions.length}
+              {PRESCRIPTION_LIST_TABLE_TEXT.showing} {prescriptions.length} {" "}
+              {PRESCRIPTION_LIST_TABLE_TEXT.of} {prescriptions.length}
+
             </td>
           </tr>
         </tbody>

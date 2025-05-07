@@ -30,7 +30,7 @@
 }
 
 .eps-prescription-table th.active-header .eps-prescription-table-sort-text {
-  color: #000 !important;
+  color: #000;
   border: 0;
   background-color: #ffdd00;
   border-bottom: 2px solid #000;
@@ -66,12 +66,19 @@
   vertical-align: top;
 }
 
+.eps-prescription-table {
+  .eps-prescription-table-summary-row {
+    font-size: inherit;
+    border-bottom: none;
+  }
+}
+
 .nowrap-cell {
   white-space: nowrap;
 }
 
 .eps-prescription-table-sort-text {
-  color: #005ea5 !important;
+  color: #005ea5;
   font-size: 1.2rem;
   cursor: pointer;
   display: flex;
@@ -130,10 +137,6 @@
   margin-top: -20px;
 }
 
-.claimed-expired-treatment-type {
-  margin-top: 5px !important;
-}
-
 .eps-prescription-table-sort-icon-wrapper .arrow {
   font-size: 0.75rem;
   color: #1d70b8;
@@ -155,14 +158,8 @@
   transform: translateY(-50%);
 }
 
-.eps-prescription-table-summary-row {
-  font-size: inherit;
-  border-bottom: none !important;
-}
-
 .eps-prescription-table-empty {
   text-align: center;
-  padding: 2rem !important;
   color: #505a5f;
   font-style: italic;
 }
@@ -173,14 +170,6 @@
   .eps-prescription-table td,
   .eps-prescription-table-sort-text {
     font-size: 1rem;
-  }
-
-
-  .eps-prescription-id,
-  .eps-prescription-table-sort-text.issueDate {
-    white-space: normal;
-    word-wrap: break-word;
-    max-width: 10rem;
   }
 
   .narrow-cancellation-column {
@@ -200,15 +189,6 @@
     font-size: 0.95rem;
   }
 
-
-  .eps-prescription-id,
-  .eps-prescription-table-sort-text.issueDate {
-    white-space: normal;
-    word-wrap: break-word;
-    max-width: 8rem; 
-  }
-
-
   .narrow-cancellation-column {
     width: 8rem;
   }
@@ -226,32 +206,8 @@
     font-size: 0.85rem; 
   }
 
-  .eps-prescription-id,
-  .eps-prescription-table-sort-text.issueDate {
-    width: 6rem;
-    white-space: normal;
-    word-wrap: break-word;
-  }
-
-  .narrow-cancellation-column {
-    width: 7rem; 
-    white-space: normal;
-    word-wrap: break-word;
-  }
-
   .eps-prescription-table th,
   .eps-prescription-table td {
     padding: 0.5rem 0.25rem; 
-  }
-
-
-  .eps-prescription-id {
-    white-space: normal;
-    word-wrap: break-word;
-  }
-
-  .narrow-cancellation-column {
-    white-space: normal;
-    word-wrap: break-word;
   }
 }
