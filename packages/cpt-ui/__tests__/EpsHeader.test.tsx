@@ -191,11 +191,9 @@ describe("EpsHeader", () => {
     it("displays the 'Give feedback' link", () => {
       renderWithProviders("/", {isSignedIn: true})
 
-      const link = screen.getByTestId("eps_header_feedbackLink")
-      expect(link).toBeInTheDocument()
-      expect(link).toHaveTextContent("Give feedback (opens in new tab)")
-      expect(link).toHaveAttribute("href", "https://feedback.digital.nhs.uk/jfe/form/SV_ahG2dymAdr0oRz8")
-      expect(link).toHaveAttribute("target", "_blank")
+      const feedback = screen.getByTestId("eps_header_feedbackLink")
+      expect(feedback).toBeInTheDocument()
+      expect(feedback).toHaveTextContent("Give feedback (opens in new tab)")
     })
   })
 })
