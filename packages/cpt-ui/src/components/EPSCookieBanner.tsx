@@ -1,6 +1,7 @@
 import React, {useState} from "react"
 import {Link, useLocation} from "react-router-dom"
 import "../styles/epscookiebanner.scss"
+import {CookieStrings} from "@/constants/ui-strings/CookieStrings"
 
 export default function EPSCookieBanner() {
   const [cookiesSet, setCookiesSet] = useState<"accepted" | "rejected" | null>(null)
@@ -19,9 +20,9 @@ export default function EPSCookieBanner() {
           <div className="page-section">
             <div className="nhsuk-width-container">
               <h2 className="nhsuk-cookie-banner__heading govuk-heading-m">
-                Cookies on the Clinical prescription tracking service
+                {CookieStrings.banner.cookie_title}
               </h2>
-              <p>We've put some small files called cookies on your device to make our site work.</p>
+              {/* <p>We've put some small files called cookies on your device to make our site work.</p>
               <p className="nhsuk-body">
                 We’d also like to use analytics cookies.
                 These send anonymous information about how our site is used to a service called Amazon CloudWatch RUM.
@@ -30,6 +31,17 @@ export default function EPSCookieBanner() {
               <p className="nhsuk-body">
                 Let us know if this is OK. We'll use a cookie to save your choice. You can{" "}
                 <Link to="/cookies">read more about our cookies</Link> before you choose.
+              </p> */}
+              <p className="nhsuk-body">
+                {CookieStrings.banner.cookie_text_p1}
+              </p>
+              <p className="nhsuk-body">
+                {CookieStrings.banner.cookie_text_p2}
+              </p>
+              <p className="nhsuk-body">
+                {CookieStrings.banner.cookie_text_p3}
+                {CookieStrings.cookies_page_link}
+                {CookieStrings.banner.cookie_text_p4}
               </p>
               <div className="nhsuk-button-group nhsuk-u-margin-bottom-0">
                 <button
