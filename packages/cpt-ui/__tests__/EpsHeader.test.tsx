@@ -14,7 +14,10 @@ jest.mock("@/constants/ui-strings/HeaderStrings", () => ({
   HEADER_CHANGE_ROLE_BUTTON: "Change role",
   HEADER_CHANGE_ROLE_TARGET: "/change-your-role",
   HEADER_SELECT_YOUR_ROLE_TARGET: "/select-your-role",
-  HEADER_SELECT_YOUR_ROLE_BUTTON: "Select your role"
+  HEADER_SELECT_YOUR_ROLE_BUTTON: "Select your role",
+  HEADER_LOG_OUT_BUTTON: "Log out",
+  HEADER_FEEDBACK_BUTTON: "Give feedback (opens in new tab)",
+  HEADER_FEEDBACK_TARGET: "https://feedback.digital.nhs.uk/jfe/form/SV_ahG2dymAdr0oRz8"
 }))
 
 // Mock react-router-dom
@@ -31,10 +34,10 @@ jest.mock("react-router-dom", () => ({
     to,
     ...props
   }: {
-    children: React.ReactNode;
+    children: React.ReactNode
     to: string;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    [key: string]: any;
+    [key: string]: any
   }) => (
     <a href={to} {...props}>
       {children}
@@ -183,6 +186,14 @@ describe("EpsHeader", () => {
       expect(
         screen.queryByTestId("eps_header_selectYourRoleLink")
       ).not.toBeInTheDocument()
+    })
+
+    it("displays the 'Give feedback' link", () => {
+      renderWithProviders("/", {isSignedIn: true})
+
+      const feedback = screen.getByTestId("eps_header_feedbackLink")
+      expect(feedback).toBeInTheDocument()
+      expect(feedback).toHaveTextContent("Give feedback (opens in new tab)")
     })
   })
 })
