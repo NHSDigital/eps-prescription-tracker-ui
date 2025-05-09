@@ -10,3 +10,6 @@ export const HEADER_PRESCRIPTION_SEARCH_BUTTON = "Search for a prescription"
 export const HEADER_PRESCRIPTION_SEARCH_TARGET = FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID
 export const HEADER_EXIT_BUTTON = "Exit"
 export const HEADER_EXIT_TARGET = "/"
+export const HEADER_FEEDBACK_BUTTON = "Give feedback (opens in new tab)"
+export const HEADER_FEEDBACK_TARGET = "https://feedback.digital.nhs.uk/jfe/form/SV_ahG2dymAdr0oRz8"
+export const HEADER_LOG_OUT_BUTTON = "Log out"
