@@ -191,7 +191,7 @@ describe("PrescriptionsListTable", () => {
     await waitFor(() => {
       const summaryRow = screen.getByTestId("table-summary-row")
       expect(summaryRow).toHaveTextContent("Showing 3 of 3")
-      expect(summaryRow).toHaveAttribute("aria-label", "Showing 3 of 3 prescriptions")
+      expect(summaryRow).toHaveAttribute("aria-label", "Showing 3 of 3")
     })
 
     jest.useRealTimers()

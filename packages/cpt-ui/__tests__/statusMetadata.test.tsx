@@ -3,7 +3,9 @@ import {
   getStatusDisplayText,
   getItemStatusTagColour,
   getItemStatusDisplayText,
-  getPrescriptionTypeDisplayText
+  getPrescriptionTypeDisplayText,
+  itemStatusMap,
+  prescriptionStatusMap
 } from "@/helpers/statusMetadata"
 
 import {STATUS_LABELS} from "@/constants/ui-strings/StatusLabels"
@@ -11,10 +13,12 @@ import {STATUS_LABELS} from "@/constants/ui-strings/StatusLabels"
 describe("Status Metadata Utility Functions", () => {
   describe("getStatusTagColour", () => {
     it.each(Object.keys(STATUS_LABELS.prescription))(
-      "returns a defined colour for known prescription status code %s",
+      "returns the correct colour for known prescription status code %s",
       (code) => {
         const result = getStatusTagColour(code)
-        expect(result).not.toBe("red") // red is default return
+        const expected = prescriptionStatusMap[code].color
+
+        expect(result).toBe(expected)
         expect(typeof result).toBe("string")
       }
     )
@@ -39,10 +43,12 @@ describe("Status Metadata Utility Functions", () => {
 
   describe("getItemStatusTagColour", () => {
     it.each(Object.keys(STATUS_LABELS.item))(
-      "returns a defined colour for known item status code %s",
+      "returns the correct colour for known item status code %s",
       (code) => {
         const result = getItemStatusTagColour(code)
-        expect(result).not.toBe("red") // red is default return
+        const expected = itemStatusMap[code].color
+
+        expect(result).toBe(expected)
         expect(typeof result).toBe("string")
       }
     )
