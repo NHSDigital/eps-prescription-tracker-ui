@@ -8,7 +8,8 @@ import {
   Label,
   HintText,
   TextInput,
-  Button
+  Button,
+  Fieldset
 } from "nhsuk-react-components"
 
 import {STRINGS} from "@/constants/ui-strings/BasicDetailsSearchStrings"
@@ -64,64 +65,70 @@ export default function BasicDetailsSearch() {
               </FormGroup>
 
               <FormGroup>
-                <Label data-testid="dob-label">
-                  <h3 className="nhsuk-heading-s nhsuk-u-margin-bottom-1 no-outline">
-                    {STRINGS.dobLabel}
-                  </h3>
-                </Label>
-                <HintText id="dob-hint" data-testid="dob-hint">
-                  {STRINGS.dobHint}
-                </HintText>
-                <div className="nhsuk-date-input" id="dob" data-testid="dob-input-group">
-                  <div className="nhsuk-date-input__item">
-                    <FormGroup>
-                      <Label className="nhsuk-label nhsuk-date-input__label" htmlFor="dob-day"
-                        data-testid="dob-day-label">
-                        {STRINGS.dobDay}
-                      </Label>
-                      <TextInput
-                        id="dob-day"
-                        name="dob-day"
-                        type="number"
-                        pattern="[0-9]*"
-                        className="nhsuk-date-input__input nhsuk-input--width-2"
-                        data-testid="dob-day-input"
-                      />
-                    </FormGroup>
+                <Fieldset role="group" aria-labelledby="dob-label">
+                  <Fieldset.Legend
+                    className="nhsuk-fieldset__legend nhsuk-fieldset__legend--s"
+                    id="dob-label"
+                    data-testid="dob-label"
+                  >
+                    <h3 className="nhsuk-heading-s nhsuk-u-margin-bottom-1 no-outline">
+                      {STRINGS.dobLabel}
+                    </h3>
+                  </Fieldset.Legend>
+                  <HintText id="dob-hint" data-testid="dob-hint">
+                    {STRINGS.dobHint}
+                  </HintText>
+                  <div className="nhsuk-date-input" id="dob" data-testid="dob-input-group">
+                    <div className="nhsuk-date-input__item">
+                      <FormGroup>
+                        <Label className="nhsuk-label nhsuk-date-input__label" htmlFor="dob-day"
+                          data-testid="dob-day-label">
+                          {STRINGS.dobDay}
+                        </Label>
+                        <TextInput
+                          id="dob-day"
+                          name="dob-day"
+                          type="number"
+                          pattern="[0-9]*"
+                          className="nhsuk-date-input__input nhsuk-input--width-2"
+                          data-testid="dob-day-input"
+                        />
+                      </FormGroup>
+                    </div>
+                    <div className="nhsuk-date-input__item">
+                      <FormGroup>
+                        <Label className="nhsuk-label nhsuk-date-input__label" htmlFor="dob-month"
+                          data-testid="dob-month-label">
+                          {STRINGS.dobMonth}
+                        </Label>
+                        <TextInput
+                          id="dob-month"
+                          name="dob-month"
+                          type="number"
+                          pattern="[0-9]*"
+                          className="nhsuk-date-input__input nhsuk-input--width-2"
+                          data-testid="dob-month-input"
+                        />
+                      </FormGroup>
+                    </div>
+                    <div className="nhsuk-date-input__item">
+                      <FormGroup>
+                        <Label className="nhsuk-label nhsuk-date-input__label" htmlFor="dob-year"
+                          data-testid="dob-year-label">
+                          {STRINGS.dobYear}
+                        </Label>
+                        <TextInput
+                          id="dob-year"
+                          name="dob-year"
+                          type="number"
+                          pattern="[0-9]*"
+                          className="nhsuk-date-input__input nhsuk-input--width-4"
+                          data-testid="dob-year-input"
+                        />
+                      </FormGroup>
+                    </div>
                   </div>
-                  <div className="nhsuk-date-input__item">
-                    <FormGroup>
-                      <Label className="nhsuk-label nhsuk-date-input__label" htmlFor="dob-month"
-                        data-testid="dob-month-label">
-                        {STRINGS.dobMonth}
-                      </Label>
-                      <TextInput
-                        id="dob-month"
-                        name="dob-month"
-                        type="number"
-                        pattern="[0-9]*"
-                        className="nhsuk-date-input__input nhsuk-input--width-2"
-                        data-testid="dob-month-input"
-                      />
-                    </FormGroup>
-                  </div>
-                  <div className="nhsuk-date-input__item">
-                    <FormGroup>
-                      <Label className="nhsuk-label nhsuk-date-input__label" htmlFor="dob-year"
-                        data-testid="dob-year-label">
-                        {STRINGS.dobYear}
-                      </Label>
-                      <TextInput
-                        id="dob-year"
-                        name="dob-year"
-                        type="number"
-                        pattern="[0-9]*"
-                        className="nhsuk-date-input__input nhsuk-input--width-4"
-                        data-testid="dob-year-input"
-                      />
-                    </FormGroup>
-                  </div>
-                </div>
+                </Fieldset>
               </FormGroup>
 
               <FormGroup>
