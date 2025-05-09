@@ -3,6 +3,7 @@ import {APIGatewayProxyEvent} from "aws-lambda"
 import {Logger} from "@aws-lambda-powertools/logger"
 import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
 import {JwksClient} from "jwks-rsa"
+import {OidcConfig} from "../src/index"
 // import * as parameterSecrets from "@aws-lambda-powertools/parameters/secrets"
 
 // Mock the jwt module
@@ -61,9 +62,7 @@ jest.unstable_mockModule("../src/index", () => ({
   verifyIdToken: mockVerifyIdToken
 }))
 
-const authModule = await import("../src/authenticateRequest")
-const {authenticateRequest} = authModule
-import {OidcConfig} from "../src/index"
+const {authenticateRequest} = await import("../src/authenticateRequest")
 
 describe("authenticateRequest", () => {
   // Common test setup
@@ -113,7 +112,6 @@ describe("authenticateRequest", () => {
     jwtKid: "test-kid",
     oidcConfig: mockOidcConfig,
     mockModeEnabled: false,
-    defaultRoleId: "test-role-id",
     apigeeApiSecret: "test-api-secret",
     apigeeTokenEndpoint: "mock-token-endpoint"
   }
@@ -322,7 +320,7 @@ describe("authenticateRequest", () => {
       username: "test-user",
       apigeeAccessToken: "fallback-access-token",
       cis2IdToken: "mock-cis2-id",
-      roleId: "test-role-id", // This comes from options.defaultRoleId
+      roleId: "", // Role ID falls back to empty string if not set
       isMockRequest: false
     })
 

@@ -178,7 +178,6 @@ export const getExistingApigeeAccessToken = async (
   logger: Logger
 ): Promise<{
   accessToken: string;
-  idToken: string;
   refreshToken?: string;
   expiresIn: number;
   roleId?: string;
@@ -216,7 +215,6 @@ export const getExistingApigeeAccessToken = async (
 
       return {
         accessToken: userRecord.apigee_accessToken,
-        idToken: userRecord.apigee_idToken,
         refreshToken: userRecord.apigee_refreshToken,
         expiresIn: userRecord.apigee_expiresIn,
         roleId: userRecord.selectedRoleId

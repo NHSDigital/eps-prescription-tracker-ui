@@ -183,8 +183,7 @@ describe("handler tests with mock", () => {
         refresh_token: "test-refresh-token",
         expires_in: "3600",
         refresh_token_expires_in: "7200",
-        token_type: "Bearer",
-        sid: "test-sid"
+        token_type: "Bearer"
       })
 
     // Mock Apigee userinfo response
@@ -218,6 +217,5 @@ describe("handler tests with mock", () => {
     expect(updateParams.ExpressionAttributeValues).toBeDefined()
     expect(updateParams.Key).toEqual({username: `${MOCK_USER_POOL_IDP}_foo`})
     expect(updateParams.ExpressionAttributeValues![":apigee_accessToken"]).toBe("test-access-token")
-    expect(updateParams.ExpressionAttributeValues![":apigee_idToken"]).toBeTruthy()
   })
 })

@@ -174,42 +174,6 @@ export class StatefulResourcesStack extends Stack {
       exportName: `${props.stackName}:useTokensMappingKmsKeyPolicy:Arn`
     })
 
-    // State mapping table
-    new CfnOutput(this, "stateMappingTableArn", {
-      value: dynamodb.stateMappingTable.tableArn,
-      exportName: `${props.stackName}:stateMappingTable:Arn`
-    })
-    new CfnOutput(this, "stateMappingTableReadPolicyArn", {
-      value: dynamodb.stateMappingTableReadPolicy.managedPolicyArn,
-      exportName: `${props.stackName}:stateMappingTableReadPolicy:Arn`
-    })
-    new CfnOutput(this, "stateMappingTableWritePolicyArn", {
-      value: dynamodb.stateMappingTableWritePolicy.managedPolicyArn,
-      exportName: `${props.stackName}:stateMappingTableWritePolicy:Arn`
-    })
-    new CfnOutput(this, "useStateMappingKmsKeyPolicyArn", {
-      value: dynamodb.useStateMappingKmsKeyPolicy.managedPolicyArn,
-      exportName: `${props.stackName}:useStateMappingKmsKeyPolicy:Arn`
-    })
-
-    // State mapping table
-    new CfnOutput(this, "sessionStateMappingTableArn", {
-      value: dynamodb.sessionStateMappingTable.tableArn,
-      exportName: `${props.stackName}:sessionStateMappingTable:Arn`
-    })
-    new CfnOutput(this, "sessionStateMappingTableReadPolicyArn", {
-      value: dynamodb.sessionStateMappingTableReadPolicy.managedPolicyArn,
-      exportName: `${props.stackName}:sessionStateMappingTableReadPolicy:Arn`
-    })
-    new CfnOutput(this, "sessionStateMappingTableWritePolicyArn", {
-      value: dynamodb.sessionStateMappingTableWritePolicy.managedPolicyArn,
-      exportName: `${props.stackName}:sessionStateMappingTableWritePolicy:Arn`
-    })
-    new CfnOutput(this, "useSessionStateMappingKmsKeyPolicyArn", {
-      value: dynamodb.useSessionStateMappingKmsKeyPolicy.managedPolicyArn,
-      exportName: `${props.stackName}:useSessionStateMappingKmsKeyPolicy:Arn`
-    })
-
     // User pool stuff
     new CfnOutput(this, "primaryPoolIdentityProviderName", {
       value: cognito.primaryPoolIdentityProvider.providerName,

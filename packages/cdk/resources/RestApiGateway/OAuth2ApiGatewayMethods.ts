@@ -10,9 +10,6 @@ export interface OAuth2ApiGatewayMethodsProps {
   readonly tokenLambda: NodejsFunction
   readonly mockTokenLambda: NodejsFunction
   readonly authorizeLambda: NodejsFunction
-  readonly mockAuthorizeLambda: NodejsFunction
-  readonly callbackLambda: NodejsFunction
-  readonly mockCallbackLambda: NodejsFunction
   readonly useMockOidc: boolean
 }
 
@@ -49,28 +46,5 @@ export class OAuth2ApiGatewayMethods extends Construct {
     authorizeResource.addMethod("GET", new LambdaIntegration(props.authorizeLambda, {
       credentialsRole: props.oauth2APiGatewayRole
     }))
-
-    // MOCK Authorize redirection endpoint
-    if (props.useMockOidc) {
-      const mockAuthorizeResource = props.oauth2ApiGateway.root.addResource("mock-authorize")
-      mockAuthorizeResource.addMethod("GET", new LambdaIntegration(props.mockAuthorizeLambda, {
-        credentialsRole: props.oauth2APiGatewayRole
-      }))
-    }
-
-    // Return journey login callback.
-    const callbackResource = props.oauth2ApiGateway.root.addResource("callback")
-    callbackResource.addMethod("GET", new LambdaIntegration(props.callbackLambda, {
-      credentialsRole: props.oauth2APiGatewayRole
-    }))
-
-    // Return journey login callback.
-    if (props.useMockOidc) {
-      const mockCallbackResource = props.oauth2ApiGateway.root.addResource("mock-callback")
-      mockCallbackResource.addMethod("GET", new LambdaIntegration(props.mockCallbackLambda, {
-        credentialsRole: props.oauth2APiGatewayRole
-      }))
-    }
-    //Outputs
   }
 }

@@ -1,7 +1,7 @@
-import {getUsernameFromEvent} from "./event"
-import {initializeOidcConfig} from "./initialization"
+export {getUsernameFromEvent} from "./event"
+export {initializeOidcConfig} from "./initialization"
 
-import {
+export {
   getSigningKey,
   fetchCIS2TokensFromDynamoDB,
   fetchAndVerifyCIS2Tokens,
@@ -10,7 +10,7 @@ import {
   decodeToken
 } from "./cis2"
 
-import {
+export {
   constructSignedJWTBody,
   exchangeTokenForApigeeAccessToken,
   updateApigeeAccessToken,
@@ -18,21 +18,6 @@ import {
   refreshApigeeAccessToken
 } from "./apigee"
 
-import {authenticateRequest} from "./authenticateRequest"
+export {authenticateRequest, initializeAuthConfig} from "./authenticateRequest"
 
-export {
-  getUsernameFromEvent,
-  getSigningKey,
-  fetchCIS2TokensFromDynamoDB,
-  fetchAndVerifyCIS2Tokens,
-  verifyIdToken,
-  constructSignedJWTBody,
-  exchangeTokenForApigeeAccessToken,
-  updateApigeeAccessToken,
-  OidcConfig,
-  initializeOidcConfig,
-  getExistingApigeeAccessToken,
-  decodeToken,
-  refreshApigeeAccessToken,
-  authenticateRequest
-}
+export {RoleDetails, TrackerUserInfo, UserDetails, fetchCachedUserInfo, updateCachedUserInfo} from "./userInfo"

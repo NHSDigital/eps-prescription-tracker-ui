@@ -87,7 +87,8 @@ export class ApiFunctions extends Construct {
       MOCK_MODE_ENABLED: props.useMockOidc ? "true" : "false",
 
       APIGEE_API_SECRET: props.apigeeApiSecret,
-      APIGEE_API_KEY: props.apigeeApiKey
+      APIGEE_API_KEY: props.apigeeApiKey,
+      apigeeCIS2TokenEndpoint: props.apigeeCIS2TokenEndpoint
     }
 
     // If mock OIDC is enabled, add mock environment variables
@@ -97,6 +98,7 @@ export class ApiFunctions extends Construct {
       commonLambdaEnv["MOCK_USER_POOL_IDP"] = props.mockPoolIdentityProviderName
       commonLambdaEnv["MOCK_OIDC_CLIENT_ID"] = props.mockOidcClientId!
       commonLambdaEnv["MOCK_OIDC_ISSUER"] = props.mockOidcIssuer!
+      commonLambdaEnv["apigeeMockTokenEndpoint"] = props.apigeeMockTokenEndpoint
     }
 
     // Prescription Search Lambda Function
@@ -125,11 +127,7 @@ export class ApiFunctions extends Construct {
       logLevel: props.logLevel,
       packageBasePath: "packages/trackerUserInfoLambda",
       entryPoint: "src/handler.ts",
-      lambdaEnvironmentVariables: {
-        ...commonLambdaEnv,
-        apigeeCIS2TokenEndpoint: props.apigeeCIS2TokenEndpoint,
-        apigeeMockTokenEndpoint: props.apigeeMockTokenEndpoint
-      }
+      lambdaEnvironmentVariables: commonLambdaEnv
     })
 
     // Add the policy to apiFunctionsPolicies
@@ -145,11 +143,7 @@ export class ApiFunctions extends Construct {
       logLevel: props.logLevel,
       packageBasePath: "packages/selectedRoleLambda",
       entryPoint: "src/handler.ts",
-      lambdaEnvironmentVariables: {
-        ...commonLambdaEnv,
-        apigeeCIS2TokenEndpoint: props.apigeeCIS2TokenEndpoint,
-        apigeeMockTokenEndpoint: props.apigeeMockTokenEndpoint
-      }
+      lambdaEnvironmentVariables: commonLambdaEnv
     })
 
     // Add the policy to apiFunctionsPolicies
@@ -174,8 +168,6 @@ export class ApiFunctions extends Construct {
       lambdaEnvironmentVariables: {
         ...commonLambdaEnv,
         jwtPrivateKeyArn: props.sharedSecrets.primaryJwtPrivateKey.secretArn,
-        apigeeCIS2TokenEndpoint: props.apigeeCIS2TokenEndpoint,
-        apigeeMockTokenEndpoint: props.apigeeMockTokenEndpoint,
         apigeePrescriptionsEndpoint: props.apigeePrescriptionsEndpoint,
         apigeePersonalDemographicsEndpoint: props.apigeePersonalDemographicsEndpoint,
         jwtKid: props.jwtKid,

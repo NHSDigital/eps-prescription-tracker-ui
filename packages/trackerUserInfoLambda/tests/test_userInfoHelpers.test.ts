@@ -1,45 +1,18 @@
 import {jest} from "@jest/globals"
-
-import {OidcConfig} from "@cpt-ui-common/authFunctions"
-import {UserInfoResponse, TrackerUserInfo} from "../src/userInfoTypes"
-
+import {UserInfoResponse} from "../src/userInfoHelpers"
 import {Logger} from "@aws-lambda-powertools/logger"
 import axios from "axios"
-import {DynamoDBDocumentClient, GetCommand} from "@aws-sdk/lib-dynamodb"
-import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
-import jwksClient from "jwks-rsa"
 
-const oidcClientId = "valid_aud"
-const oidcIssuer = "valid_iss"
-const jwksEndpoint = "https://dummyauth.com/.well-known/jwks.json"
-
-const mockVerifyIdToken = jest.fn()
-const mockDecodeToken = jest.fn()
+const mockDecodeToken = jest.fn(() => ({selected_roleid: "role-id-1"}))
 
 // We need a dummy verification to pass so we can decode out the selected role ID
-jest.unstable_mockModule("@cpt-ui-common/authFunctions", async () => {
-  const verifyIdToken = mockVerifyIdToken.mockImplementation(async () => {
-    return {
-      selected_roleid: "role-id-1"
-    }
-  })
-
-  const decodeToken = mockDecodeToken.mockImplementation(() => {
-    return {
-      selected_roleid: "role-id-1"
-    }
-  })
-
+jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
   return {
-    __esModule: true,
-    // This will need to be made to return the decoded ID token, which should be like:
-    // { selected_roleid: "foo" }
-    verifyIdToken: verifyIdToken,
-    decodeToken: decodeToken
+    decodeToken: mockDecodeToken
   }
 })
 
-const {fetchUserInfo, updateDynamoTable, fetchDynamoTable} = await import("../src/userInfoHelpers")
+const {fetchUserInfo} = await import("../src/userInfoHelpers")
 
 describe("fetchUserInfo", () => {
   const logger = new Logger()
@@ -47,29 +20,10 @@ describe("fetchUserInfo", () => {
   const idToken = "test-id-token"
   const acceptedAccessCodes = ["CPT_CODE"]
 
-  const client = jwksClient({
-    jwksUri: `${jwksEndpoint}`,
-    cache: true,
-    cacheMaxEntries: 5,
-    cacheMaxAge: 3600000 // 1 hour
-  })
-
-  const oidcConfig: OidcConfig = {
-    oidcIssuer: oidcIssuer,
-    oidcClientID: oidcClientId,
-    oidcJwksEndpoint: "https://dummyauth.com/.well-known/jwks.json",
-    oidcUserInfoEndpoint: "https://dummyauth.com/userinfo",
-    userPoolIdp: "DummyPoolIdentityProvider",
-    tokenMappingTableName: "dummyTable",
-    jwksClient: client,
-    oidcTokenEndpoint: "https://dummyauth.com/token"
-  }
+  const oidcTokenEndpoint = "https://dummyauth.com/token"
 
   beforeEach(() => {
     jest.restoreAllMocks()
-  })
-
-  afterEach(() => {
   })
 
   it("should fetch and process user info", async () => {
@@ -129,24 +83,12 @@ describe("fetchUserInfo", () => {
 
     jest.spyOn(axios, "get").mockResolvedValue({data: userInfoResponse})
 
-    mockVerifyIdToken.mockImplementation(async () => {
-      return {
-        selected_roleid: "role-id-1"
-      }
-    })
-
-    mockDecodeToken.mockImplementation(() => {
-      return {
-        selected_roleid: "role-id-1"
-      }
-    })
-
     const result = await fetchUserInfo(
       accessToken,
       idToken,
       acceptedAccessCodes,
       logger,
-      oidcConfig
+      oidcTokenEndpoint
     )
 
     expect(result).toEqual({
@@ -212,18 +154,12 @@ describe("fetchUserInfo", () => {
 
     jest.spyOn(axios, "get").mockResolvedValue({data: userInfoResponse})
 
-    mockDecodeToken.mockImplementation(() => {
-      return {
-        selected_roleid: "role-id-1"
-      }
-    })
-
     const result = await fetchUserInfo(
       accessToken,
       idToken,
       acceptedAccessCodes,
       logger,
-      oidcConfig
+      oidcTokenEndpoint
     )
 
     expect(result).toEqual({
@@ -244,23 +180,6 @@ describe("fetchUserInfo", () => {
     })
   })
 
-  it("should throw an error if userInfoEndpoint is not set", async () => {
-    const clonedOidcConfig = {
-      ...oidcConfig
-    }
-    clonedOidcConfig.oidcUserInfoEndpoint = ""
-
-    await expect(
-      fetchUserInfo(
-        accessToken,
-        idToken,
-        acceptedAccessCodes,
-        logger,
-        clonedOidcConfig
-      )
-    ).rejects.toThrow("OIDC UserInfo endpoint not set")
-  })
-
   it("should throw an error if axios request fails", async () => {
     jest.spyOn(axios, "get").mockRejectedValue(new Error("Network error"))
 
@@ -270,192 +189,8 @@ describe("fetchUserInfo", () => {
         idToken,
         acceptedAccessCodes,
         logger,
-        oidcConfig
+        oidcTokenEndpoint
       )
-    ).rejects.toThrow("Error fetching user info")
-  })
-})
-
-jest.mock("@aws-sdk/lib-dynamodb")
-
-describe("updateDynamoTable", () => {
-  const logger = new Logger()
-  const dynamoDBClient = new DynamoDBClient({})
-  const documentClient = DynamoDBDocumentClient.from(dynamoDBClient)
-
-  beforeEach(() => {
-    jest.restoreAllMocks()
-
-    // Mock the documentClient send method
-    jest.spyOn(documentClient, "send").mockImplementation(() => Promise.resolve({}))
-  })
-
-  const username = "testUser"
-  const data: TrackerUserInfo = {
-    roles_with_access: [
-      {
-        role_name: "Doctor",
-        role_id: "123",
-        org_code: "ABC",
-        org_name: "Test Hospital",
-        site_name: "Main",
-        site_address: "123 Street"
-      }
-    ],
-    roles_without_access: [
-      {
-        role_name: "Nurse",
-        role_id: "456",
-        org_code: "DEF",
-        org_name: "Test Clinic",
-        site_name: "Branch",
-        site_address: "456 Avenue"
-      }
-    ],
-    currently_selected_role: {
-      role_name: "Doctor",
-      role_id: "123",
-      org_code: "ABC",
-      org_name: "Test Hospital",
-      site_name: "Main",
-      site_address: "123 Street"
-    },
-    user_details: {
-      family_name: "FAMILY",
-      given_name: "GIVEN"
-    }
-  }
-
-  it("should update DynamoDB with user roles successfully", async () => {
-
-    // Expect not to run into an error
-    await updateDynamoTable(username, data, documentClient, logger, "dummyTable")
-
-    // Expect successful call to DynamoDB
-    expect(documentClient.send).toHaveBeenCalled()
-  })
-
-  it("should throw an error when TokenMappingTableName is not set", async () => {
-    await expect(
-      updateDynamoTable(username, data, documentClient, logger, "")
-    ).rejects.toThrow("Token mapping table name not set")
-
-    expect(documentClient.send).not.toHaveBeenCalled()
-  })
-
-  it("should handle DynamoDB update errors", async () => {
-    // This is async
-    jest.spyOn(documentClient, "send").mockImplementation(() => Promise.reject(
-      new Error("Error adding user roles to DynamoDB"))
-    )
-
-    await expect(
-      updateDynamoTable(username, data, documentClient, logger, "dummyTable")
-    ).rejects.toThrow("Error adding user roles to DynamoDB")
-  })
-})
-
-describe("fetchDynamoTable", () => {
-  const logger = new Logger()
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const mockSend = jest.fn() as jest.MockedFunction<(command: GetCommand) => Promise<{Item?: any}>>
-
-  const documentClient = {
-    send: mockSend
-  } as unknown as DynamoDBDocumentClient
-
-  const username = "testUser"
-  const tokenMappingTableName = "dummyTable"
-
-  beforeEach(() => {
-    jest.clearAllMocks()
-  })
-
-  it("should fetch user roles and user details from DynamoDB", async () => {
-    const mockResponse = {
-      Item: {
-        rolesWithAccess: [
-          {role_name: "Doctor", role_id: "123", org_code: "ABC", org_name: "Test Hospital"}
-        ],
-        rolesWithoutAccess: [],
-        currentlySelectedRole: undefined,
-        userDetails: {family_name: "Doe", given_name: "John"}
-      }
-    }
-
-    mockSend.mockResolvedValueOnce(mockResponse as never)
-
-    const result = await fetchDynamoTable(username, documentClient, logger, tokenMappingTableName)
-
-    expect(result).toEqual({
-      roles_with_access: [
-        {role_name: "Doctor", role_id: "123", org_code: "ABC", org_name: "Test Hospital"}
-      ],
-      roles_without_access: [],
-      currently_selected_role: undefined,
-      user_details: {family_name: "Doe", given_name: "John"}
-    })
-
-    expect(mockSend).toHaveBeenCalled()
-  })
-
-  it("should throw an error when DynamoDB retrieval fails", async () => {
-    mockSend.mockRejectedValue(new Error("DynamoDB error"))
-
-    await expect(fetchDynamoTable(username, documentClient, logger, tokenMappingTableName)).rejects.toThrow(
-      "Failed to retrieve user info from cache"
-    )
-
-    expect(mockSend).toHaveBeenCalled()
-  })
-
-  it("should handle case when some attributes are missing in DynamoDB response", async () => {
-    const mockResponse = {
-      Item: {
-        rolesWithAccess: [
-          {role_name: "Doctor", role_id: "123", org_code: "ABC", org_name: "Test Hospital"}
-        ],
-        rolesWithoutAccess: [],
-        currentlySelectedRole: undefined,
-        userDetails: {family_name: "Doe", given_name: "John"}
-      }
-    }
-
-    mockSend.mockResolvedValueOnce(mockResponse as never)
-
-    const result = await fetchDynamoTable(username, documentClient, logger, tokenMappingTableName)
-
-    expect(result).toEqual({
-      roles_with_access: [
-        {role_name: "Doctor", role_id: "123", org_code: "ABC", org_name: "Test Hospital"}
-      ],
-      roles_without_access: [],
-      currently_selected_role: undefined,
-      user_details: {family_name: "Doe", given_name: "John"}
-    })
-  })
-
-  it("should return default user details if missing in DynamoDB", async () => {
-    const mockResponse = {
-      Item: {
-        rolesWithAccess: [],
-        rolesWithoutAccess: [],
-        currentlySelectedRole: undefined
-        // userDetails is missing
-      }
-    }
-
-    mockSend.mockResolvedValueOnce(mockResponse as never)
-
-    const result = await fetchDynamoTable(username, documentClient, logger, tokenMappingTableName)
-
-    expect(result).toEqual({
-      roles_with_access: [],
-      roles_without_access: [],
-      currently_selected_role: undefined,
-      user_details: {family_name: "", given_name: ""}
-    })
-
-    expect(mockSend).toHaveBeenCalled()
+    ).rejects.toThrow("Network error")
   })
 })

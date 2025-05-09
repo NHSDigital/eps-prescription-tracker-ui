@@ -97,25 +97,10 @@ export class StatelessResourcesStack extends Stack {
     const tokenMappingTableWritePolicyImport = Fn.importValue(`${baseImportPath}:tokenMappingTableWritePolicy:Arn`)
     const useTokensMappingKmsKeyPolicyImport = Fn.importValue(`${baseImportPath}:useTokensMappingKmsKeyPolicy:Arn`)
 
-    // Login proxy state cache
-    const stateMappingTableImport = Fn.importValue(`${baseImportPath}:stateMappingTable:Arn`)
-    const stateMappingTableReadPolicyImport = Fn.importValue(`${baseImportPath}:stateMappingTableReadPolicy:Arn`)
-    const stateMappingTableWritePolicyImport = Fn.importValue(`${baseImportPath}:stateMappingTableWritePolicy:Arn`)
-    const useStateMappingKmsKeyPolicyImport = Fn.importValue(`${baseImportPath}:useStateMappingKmsKeyPolicy:Arn`)
-
-    const sessionStateMappingTableImport = Fn.importValue(`${baseImportPath}:sessionStateMappingTable:Arn`)
-    const sessionStateMappingTableReadPolicyImport = Fn.importValue(
-      `${baseImportPath}:sessionStateMappingTableReadPolicy:Arn`)
-    const sessionStateMappingTableWritePolicyImport = Fn.importValue(
-      `${baseImportPath}:sessionStateMappingTableWritePolicy:Arn`)
-    const useSessionStateMappingKmsKeyPolicyImport = Fn.importValue(
-      `${baseImportPath}:useSessionStateMappingKmsKeyPolicy:Arn`)
-
     // User pool
     const primaryPoolIdentityProviderName = Fn.importValue(`${baseImportPath}:primaryPoolIdentityProvider:Name`)
     const mockPoolIdentityProviderName = Fn.importValue(`${baseImportPath}:mockPoolIdentityProvider:Name`)
     const userPoolImport = Fn.importValue(`${baseImportPath}:userPool:Arn`)
-    const userPoolClientId = Fn.importValue(`${baseImportPath}:userPoolClient:userPoolClientId`)
 
     // Logging
     const cloudfrontLoggingBucketImport = Fn.importValue("account-resources:CloudfrontLoggingBucket")
@@ -134,23 +119,6 @@ export class StatelessResourcesStack extends Stack {
       this, "tokenMappingTableWritePolicy", tokenMappingTableWritePolicyImport)
     const useTokensMappingKmsKeyPolicy = ManagedPolicy.fromManagedPolicyArn(
       this, "useTokensMappingKmsKeyPolicy", useTokensMappingKmsKeyPolicyImport)
-
-    const stateMappingTable = TableV2.fromTableArn(this, "stateMappingTable", stateMappingTableImport)
-    const stateMappingTableReadPolicy = ManagedPolicy.fromManagedPolicyArn(
-      this, "stateMappingTableReadPolicy", stateMappingTableReadPolicyImport)
-    const stateMappingTableWritePolicy = ManagedPolicy.fromManagedPolicyArn(
-      this, "stateMappingTableWritePolicy", stateMappingTableWritePolicyImport)
-    const useStateMappingKmsKeyPolicy = ManagedPolicy.fromManagedPolicyArn(
-      this, "useStateMappingKmsKeyPolicy", useStateMappingKmsKeyPolicyImport)
-
-    const sessionStateMappingTable = TableV2.fromTableArn(
-      this, "sessionStateMappingTable", sessionStateMappingTableImport)
-    const sessionStateMappingTableReadPolicy = ManagedPolicy.fromManagedPolicyArn(
-      this, "sessionStateMappingTableReadPolicy", sessionStateMappingTableReadPolicyImport)
-    const sessionStateMappingTableWritePolicy = ManagedPolicy.fromManagedPolicyArn(
-      this, "sessionStateMappingTableWritePolicy", sessionStateMappingTableWritePolicyImport)
-    const useSessionStateMappingKmsKeyPolicy = ManagedPolicy.fromManagedPolicyArn(
-      this, "useSessionStateMappingKmsKeyPolicy", useSessionStateMappingKmsKeyPolicyImport)
 
     const userPool = UserPool.fromUserPoolArn(
       this, "userPool", userPoolImport)
@@ -186,8 +154,6 @@ export class StatelessResourcesStack extends Stack {
       stackName: props.stackName,
       fullCognitoDomain,
 
-      fullCloudfrontDomain,
-      userPoolClientId,
       primaryPoolIdentityProviderName,
       mockPoolIdentityProviderName,
 
@@ -211,16 +177,6 @@ export class StatelessResourcesStack extends Stack {
       tokenMappingTableWritePolicy,
       tokenMappingTableReadPolicy,
       useTokensMappingKmsKeyPolicy,
-
-      stateMappingTable,
-      stateMappingTableWritePolicy,
-      stateMappingTableReadPolicy,
-      useStateMappingKmsKeyPolicy,
-
-      sessionStateMappingTable,
-      sessionStateMappingTableWritePolicy,
-      sessionStateMappingTableReadPolicy,
-      useSessionStateMappingKmsKeyPolicy,
 
       sharedSecrets,
 
@@ -289,8 +245,7 @@ export class StatelessResourcesStack extends Stack {
     })
 
     // --- Methods & Resources
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const apiMethods = new RestApiGatewayMethods(this, "RestApiGatewayMethods", {
+    new RestApiGatewayMethods(this, "RestApiGatewayMethods", {
       executePolices: [
         ...apiFunctions.apiFunctionsPolicies
       ],
@@ -303,8 +258,7 @@ export class StatelessResourcesStack extends Stack {
       authorizer: apiGateway.authorizer
     })
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const oauth2Methods = new OAuth2ApiGatewayMethods(this, "OAuth2ApiGatewayMethods", {
+    new OAuth2ApiGatewayMethods(this, "OAuth2ApiGatewayMethods", {
       executePolices: [
         ...oauth2Functions.oAuth2Policies
       ],
@@ -313,9 +267,6 @@ export class StatelessResourcesStack extends Stack {
       tokenLambda: oauth2Functions.tokenLambda,
       mockTokenLambda: oauth2Functions.mockTokenLambda,
       authorizeLambda: oauth2Functions.authorizeLambda,
-      mockAuthorizeLambda: oauth2Functions.mockAuthorizeLambda,
-      callbackLambda: oauth2Functions.callbackLambda,
-      mockCallbackLambda: oauth2Functions.mockCallbackLambda,
       useMockOidc: useMockOidc
     })
 

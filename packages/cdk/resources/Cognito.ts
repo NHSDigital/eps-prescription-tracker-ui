@@ -138,7 +138,7 @@ export class Cognito extends Construct {
       // these are the endpoints that are added to user pool identity provider
       // note we override the token endpoint to point back to our custom token
       const mockOidcEndpoints: OidcEndpoints = {
-        authorization: `https://${props.fullCloudfrontDomain}/oauth2/mock-authorize`,
+        authorization: props.mockOidcAuthorizeEndpoint,
         jwksUri: "https://cpt-ui.dev.eps.national.nhs.uk/jwks/",
         token: `https://${props.fullCloudfrontDomain}/oauth2/mock-token`,
         userInfo: props.mockOidcUserInfoEndpoint
@@ -187,8 +187,7 @@ export class Cognito extends Construct {
     const callbackUrls = [
       `https://${props.fullCloudfrontDomain}/site/select-your-role`,
       // TODO: This is for the proof-of-concept login page, and can probably be deleted soon.
-      `https://${props.fullCloudfrontDomain}/auth_demo/`,
-      `https://${props.fullCloudfrontDomain}/oauth2/callback`
+      `https://${props.fullCloudfrontDomain}/auth_demo/`
     ]
 
     const logoutUrls = [

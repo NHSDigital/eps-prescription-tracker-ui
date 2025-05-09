@@ -207,7 +207,6 @@ describe("apigeeUtils", () => {
           username: "testUser",
           apigee_accessToken: "valid-token",
           apigee_expiresIn: expiryTime,
-          apigee_idToken: "id-token",
           apigee_refreshToken: "refresh-token",
           selectedRoleId: "role-id"
         }
@@ -222,7 +221,6 @@ describe("apigeeUtils", () => {
 
       expect(result).toEqual({
         accessToken: "valid-token",
-        idToken: "id-token",
         refreshToken: "refresh-token",
         expiresIn: expiryTime,
         roleId: "role-id"

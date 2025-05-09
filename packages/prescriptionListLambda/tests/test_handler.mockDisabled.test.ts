@@ -8,8 +8,6 @@ import {generateKeyPairSync} from "crypto"
 import nock from "nock"
 
 import createJWKSMock from "mock-jwks"
-import jwksClient from "jwks-rsa"
-import {OidcConfig} from "@cpt-ui-common/authFunctions"
 
 import {Logger} from "@aws-lambda-powertools/logger"
 import {mockPdsPatient, mockPrescriptionBundle} from "./mockObjects"
@@ -29,7 +27,6 @@ const mockConstructSignedJWTBody = jest.fn()
 const mockExchangeTokenForApigeeAccessToken = jest.fn()
 const mockUpdateApigeeAccessToken = jest.fn()
 const mockGetSecret = jest.fn()
-const mockInitializeOidcConfig = jest.fn()
 const mockAuthenticateRequest = jest.fn()
 
 const {
@@ -72,19 +69,9 @@ jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
     }
   })
 
-  const authenticateRequest = mockAuthenticateRequest.mockImplementation(async (
-    event,
-    options
-  ) => {
+  const authenticateRequest = mockAuthenticateRequest.mockImplementation(async (event) => {
     // Get the username that would normally be extracted
     const username = mockGetUsernameFromEvent(event) as string
-
-    // Check if this is a mock user in non-mock mode (for the error test)
-    if (username.startsWith("Mock_") &&
-        options && typeof options === "object" && "mockModeEnabled" in options &&
-        options.mockModeEnabled === false) {
-      throw new Error("Trying to use a mock user when mock mode is disabled")
-    }
 
     // For other test cases, simulate the appropriate behavior
     if (username.startsWith("Primary_")) {
@@ -139,49 +126,7 @@ jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
   })
 
   const updateApigeeAccessToken = mockUpdateApigeeAccessToken.mockImplementation(() => {})
-
-  const initializeOidcConfig = mockInitializeOidcConfig.mockImplementation( () => {
-    // Create a JWKS client for cis2 and mock
-    const cis2JwksUri = process.env["CIS2_OIDCJWKS_ENDPOINT"] as string
-    const cis2JwksClient = jwksClient({
-      jwksUri: cis2JwksUri,
-      cache: true,
-      cacheMaxEntries: 5,
-      cacheMaxAge: 3600000 // 1 hour
-    })
-
-    const cis2OidcConfig: OidcConfig = {
-      oidcIssuer: process.env["CIS2_OIDC_ISSUER"] ?? "",
-      oidcClientID: process.env["CIS2_OIDC_CLIENT_ID"] ?? "",
-      oidcJwksEndpoint: process.env["CIS2_OIDCJWKS_ENDPOINT"] ?? "",
-      oidcUserInfoEndpoint: process.env["CIS2_USER_INFO_ENDPOINT"] ?? "",
-      userPoolIdp: process.env["CIS2_USER_POOL_IDP"] ?? "",
-      oidcTokenEndpoint: process.env["CIS2_IDP_TOKEN_PATH"] ?? "",
-      jwksClient: cis2JwksClient,
-      tokenMappingTableName: process.env["TokenMappingTableName"] ?? ""
-    }
-
-    const mockJwksUri = process.env["MOCK_OIDCJWKS_ENDPOINT"] as string
-    const mockJwksClient = jwksClient({
-      jwksUri: mockJwksUri,
-      cache: true,
-      cacheMaxEntries: 5,
-      cacheMaxAge: 3600000 // 1 hour
-    })
-
-    const mockOidcConfig: OidcConfig = {
-      oidcIssuer: process.env["MOCK_OIDC_ISSUER"] ?? "",
-      oidcClientID: process.env["MOCK_OIDC_CLIENT_ID"] ?? "",
-      oidcJwksEndpoint: process.env["MOCK_OIDCJWKS_ENDPOINT"] ?? "",
-      oidcUserInfoEndpoint: process.env["MOCK_USER_INFO_ENDPOINT"] ?? "",
-      userPoolIdp: process.env["MOCK_USER_POOL_IDP"] ?? "",
-      oidcTokenEndpoint: process.env["MOCK_IDP_TOKEN_PATH"] ?? "",
-      jwksClient: mockJwksClient,
-      tokenMappingTableName: process.env["TokenMappingTableName"] ?? ""
-    }
-
-    return {cis2OidcConfig, mockOidcConfig}
-  })
+  const initializeAuthConfig = () => ({})
 
   return {
     fetchAndVerifyCIS2Tokens,
@@ -189,8 +134,8 @@ jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
     constructSignedJWTBody,
     exchangeTokenForApigeeAccessToken,
     updateApigeeAccessToken,
-    initializeOidcConfig,
-    authenticateRequest
+    authenticateRequest,
+    initializeAuthConfig
   }
 })
 

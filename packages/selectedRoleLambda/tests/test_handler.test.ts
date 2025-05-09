@@ -1,152 +1,38 @@
 import {jest} from "@jest/globals"
-import jwksClient from "jwks-rsa"
-
-const apigeeCIS2TokenEndpoint = process.env.apigeeCIS2TokenEndpoint
-const apigeeMockTokenEndpoint = process.env.apigeeMockTokenEndpoint
-const TokenMappingTableName = process.env.TokenMappingTableName
+import {mockContext, mockAPIGatewayProxyEvent} from "./mockObjects"
+import {Logger} from "@aws-lambda-powertools/logger"
+import {TrackerUserInfo} from "@cpt-ui-common/authFunctions"
 
 // Mocked functions from authFunctions
-const mockGetUsernameFromEvent = jest.fn()
-const mockExchangeTokenForApigeeAccessToken = jest.fn()
-const mockUpdateApigeeAccessToken = jest.fn()
-const mockInitializeOidcConfig = jest.fn()
+const mockAuthConfig = {
+  oidcConfig: {oidcTokenEndpoint: "https://dummy.com/token"},
+  tokenMappingTableName: "TokenMappingTable"
+}
+const mockUpdateDynamoTable = jest.fn()
+const mockFetchDynamoTable = jest.fn<() => TrackerUserInfo>(() => ({
+  roles_with_access: [
+    {role_id: "123", org_code: "XYZ", role_name: "MockRole_1"},
+    {role_id: "456", org_code: "ABC", role_name: "MockRole_2"}
+  ],
+  roles_without_access: [],
+  currently_selected_role: undefined, // Initially no role is selected
+  user_details: {family_name: "Bloggs", given_name: "Joe"}
+}))
 
 jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
-  const getUsernameFromEvent = mockGetUsernameFromEvent.mockImplementation(() => "Mock_JoeBloggs")
-
-  const initializeOidcConfig = mockInitializeOidcConfig.mockImplementation(() => {
-    // Create a JWKS client for cis2 and mock
-    const cis2JwksUri = process.env["CIS2_OIDCJWKS_ENDPOINT"] as string
-    const cis2JwksClient = jwksClient({
-      jwksUri: cis2JwksUri,
-      cache: true,
-      cacheMaxEntries: 5,
-      cacheMaxAge: 3600000 // 1 hour
-    })
-
-    const cis2OidcConfig: OidcConfig = {
-      oidcIssuer: process.env["CIS2_OIDC_ISSUER"] ?? "",
-      oidcClientID: process.env["CIS2_OIDC_CLIENT_ID"] ?? "",
-      oidcJwksEndpoint: process.env["CIS2_OIDCJWKS_ENDPOINT"] ?? "",
-      oidcUserInfoEndpoint: process.env["CIS2_USER_INFO_ENDPOINT"] ?? "",
-      userPoolIdp: process.env["CIS2_USER_POOL_IDP"] ?? "",
-      oidcTokenEndpoint: process.env["CIS2_IDP_TOKEN_PATH"] ?? "",
-      jwksClient: cis2JwksClient,
-      tokenMappingTableName: process.env["TokenMappingTableName"] ?? ""
-    }
-
-    const mockJwksUri = process.env["MOCK_OIDCJWKS_ENDPOINT"] as string
-    const mockJwksClient = jwksClient({
-      jwksUri: mockJwksUri,
-      cache: true,
-      cacheMaxEntries: 5,
-      cacheMaxAge: 3600000 // 1 hour
-    })
-
-    const mockOidcConfig: OidcConfig = {
-      oidcIssuer: process.env["MOCK_OIDC_ISSUER"] ?? "",
-      oidcClientID: process.env["MOCK_OIDC_CLIENT_ID"] ?? "",
-      oidcJwksEndpoint: process.env["MOCK_OIDCJWKS_ENDPOINT"] ?? "",
-      oidcUserInfoEndpoint: process.env["MOCK_USER_INFO_ENDPOINT"] ?? "",
-      userPoolIdp: process.env["MOCK_USER_POOL_IDP"] ?? "",
-      oidcTokenEndpoint: process.env["MOCK_IDP_TOKEN_PATH"] ?? "",
-      jwksClient: mockJwksClient,
-      tokenMappingTableName: process.env["TokenMappingTableName"] ?? ""
-    }
-
-    return {cis2OidcConfig, mockOidcConfig}
-  })
-
-  const authenticateRequest = jest.fn().mockImplementation(async (event) => {
-    // Get the username and check if it's a mock user
-    const username = mockGetUsernameFromEvent(event) as string
-
-    // Call the appropriate token endpoint based on username
-    if (typeof username === "string") {
-      if (username.startsWith("Mock_")) {
-        // Simulate calling the mock token endpoint
-        mockExchangeTokenForApigeeAccessToken.mockImplementationOnce(() => ({
-          accessToken: "foo",
-          expiresIn: 100,
-          refreshToken: "refresh-token"
-        }))
-
-        await mockExchangeTokenForApigeeAccessToken(
-          expect.anything(),
-          apigeeMockTokenEndpoint,
-          expect.anything(),
-          expect.anything()
-        )
-      } else if (username.startsWith("Primary_")) {
-        // Simulate calling the CIS2 token endpoint
-        mockExchangeTokenForApigeeAccessToken.mockImplementationOnce(() => ({
-          accessToken: "foo",
-          expiresIn: 100,
-          refreshToken: "refresh-token"
-        }))
-
-        await mockExchangeTokenForApigeeAccessToken(
-          expect.anything(),
-          apigeeCIS2TokenEndpoint,
-          expect.anything(),
-          expect.anything()
-        )
-      }
-    }
-
-    // Always make sure updateApigeeAccessToken is called with the expected arguments
-    mockUpdateApigeeAccessToken(
-      expect.anything(),
-      TokenMappingTableName,
-      username,
-      "foo",
-      100,
-      expect.anything()
-    )
-
-    return {
-      username,
+  return {
+    authenticateRequest: () => ({
+      username: "Mock_JoeBloggs",
       apigeeAccessToken: "foo",
-      cis2IdToken: "mock-id-token",
-      roleId: "test-role",
-      isMockRequest: typeof username === "string" && username.startsWith("Mock_")
-    }
-  })
-
-  return {
-    getUsernameFromEvent,
-    authenticateRequest,
-    initializeOidcConfig
-  }
-})
-
-// Mocked functions from selectedRoleHelpers
-const mockFetchUserRolesFromDynamoDB = jest.fn()
-const mockUpdateDynamoTable = jest.fn()
-
-jest.unstable_mockModule("@/selectedRoleHelpers", () => {
-  const fetchUserRolesFromDynamoDB = mockFetchUserRolesFromDynamoDB.mockImplementation(() => {
-    return {
-      rolesWithAccess: [
-        {role_id: "123", org_code: "XYZ", role_name: "MockRole_1"},
-        {role_id: "456", org_code: "ABC", role_name: "MockRole_2"}
-      ],
-      currentlySelectedRole: undefined // Initially no role is selected
-    }
-  })
-
-  const updateDynamoTable = mockUpdateDynamoTable.mockImplementation(() => {})
-
-  return {
-    fetchUserRolesFromDynamoDB,
-    updateDynamoTable
+      roleId: "test-role"
+    }),
+    initializeAuthConfig: () => mockAuthConfig,
+    fetchCachedUserInfo: mockFetchDynamoTable,
+    updateCachedUserInfo: mockUpdateDynamoTable
   }
 })
 
 const {handler} = await import("../src/handler")
-import {mockContext, mockAPIGatewayProxyEvent} from "./mockObjects"
-import {Logger} from "@aws-lambda-powertools/logger"
-import {OidcConfig} from "@cpt-ui-common/authFunctions"
 
 describe("Lambda Handler Tests", () => {
   let event = {
@@ -159,11 +45,7 @@ describe("Lambda Handler Tests", () => {
       }
     })
   }
-  let context = {...mockContext}
-
-  beforeAll(() => {
-    jest.clearAllMocks()
-  })
+  let context = mockContext
 
   it("should return a successful response when called", async () => {
     const response = await handler(event, context)
@@ -184,24 +66,24 @@ describe("Lambda Handler Tests", () => {
       const testUsername = "Mock_JoeBloggs"
       const updatedUserInfo = {
         // The selected role has been moved from rolesWithAccess to currentlySelectedRole
-        currentlySelectedRole: {
+        currently_selected_role: {
           role_id: "123",
           org_code: "XYZ",
           role_name: "MockRole_1"
         },
-        rolesWithAccess: [
+        roles_with_access: [
           {
             role_id: "456",
             org_code: "ABC",
             role_name: "MockRole_2"
           }
         ],
-        selectedRoleId: "123"
+        roles_without_access: [],
+        user_details: {family_name: "Bloggs", given_name: "Joe"}
       }
 
       const response = await handler(event, context)
 
-      expect(mockGetUsernameFromEvent).toHaveBeenCalled()
       expect(mockUpdateDynamoTable).toHaveBeenCalledWith(
         testUsername,
         updatedUserInfo,
@@ -214,36 +96,39 @@ describe("Lambda Handler Tests", () => {
         body: JSON.stringify({
           message: "Selected role data has been updated successfully",
           userInfo: {
-            currentlySelectedRole: {
+            currently_selected_role: {
               role_id: "123",
               org_code: "XYZ",
               role_name: "MockRole_1"
             },
-            rolesWithAccess: [
+            roles_with_access: [
               {
                 role_id: "456",
                 org_code: "ABC",
                 role_name: "MockRole_2"
               }
             ],
-            selectedRoleId: "123"
+            roles_without_access: [],
+            user_details: {family_name: "Bloggs", given_name: "Joe"}
           }
         })
       })
     })
 
   it(
-    "should swap currentlySelectedRole with the new selected role and move the old one back to rolesWithAccess",
+    "should swap currently_selected_role with the new selected role and move the old one back to roles_with_access",
     async () => {
-      // Initial rolesWithAccess contains multiple roles, currentlySelectedRole is undefined
-      mockFetchUserRolesFromDynamoDB.mockImplementation(() => {
+      // Initial roles_with_access contains multiple roles, currently_selected_role is undefined
+      mockFetchDynamoTable.mockImplementation(() => {
         return {
-          rolesWithAccess: [
+          roles_with_access: [
             {role_id: "123", org_code: "XYZ", role_name: "MockRole_1"},
             {role_id: "456", org_code: "ABC", role_name: "MockRole_2"},
             {role_id: "789", org_code: "DEF", role_name: "MockRole_3"}
           ],
-          currentlySelectedRole: undefined // Initially no role is selected
+          currently_selected_role: undefined, // Initially no role is selected
+          roles_without_access: [],
+          user_details: {family_name: "Bloggs", given_name: "Joe"}
         }
       })
 
@@ -263,12 +148,13 @@ describe("Lambda Handler Tests", () => {
       let firstResponseBody = JSON.parse(response.body)
 
       expect(firstResponseBody.userInfo).toEqual({
-        currentlySelectedRole: {role_id: "123", org_code: "XYZ", role_name: "MockRole_1"},
-        rolesWithAccess: [
+        currently_selected_role: {role_id: "123", org_code: "XYZ", role_name: "MockRole_1"},
+        roles_with_access: [
           {role_id: "456", org_code: "ABC", role_name: "MockRole_2"},
           {role_id: "789", org_code: "DEF", role_name: "MockRole_3"}
         ],
-        selectedRoleId: "123"
+        roles_without_access: [],
+        user_details: {family_name: "Bloggs", given_name: "Joe"}
       })
 
       // User selects "MockRole_2" (role_id: 456)
@@ -287,12 +173,13 @@ describe("Lambda Handler Tests", () => {
       let secondResponseBody = JSON.parse(response.body)
 
       expect(secondResponseBody.userInfo).toEqual({
-        currentlySelectedRole: {role_id: "456", org_code: "ABC", role_name: "MockRole_2"},
-        rolesWithAccess: [
+        currently_selected_role: {role_id: "456", org_code: "ABC", role_name: "MockRole_2"},
+        roles_with_access: [
           {role_id: "123", org_code: "XYZ", role_name: "MockRole_1"}, // Previously selected role moved back
           {role_id: "789", org_code: "DEF", role_name: "MockRole_3"}
         ],
-        selectedRoleId: "456"
+        roles_without_access: [],
+        user_details: {family_name: "Bloggs", given_name: "Joe"}
       })
 
       // User selects "MockRole_3" (role_id: 789)
@@ -311,12 +198,13 @@ describe("Lambda Handler Tests", () => {
       let thirdResponseBody = JSON.parse(response.body)
 
       expect(thirdResponseBody.userInfo).toEqual({
-        currentlySelectedRole: {role_id: "789", org_code: "DEF", role_name: "MockRole_3"},
-        rolesWithAccess: [
+        currently_selected_role: {role_id: "789", org_code: "DEF", role_name: "MockRole_3"},
+        roles_with_access: [
           {role_id: "123", org_code: "XYZ", role_name: "MockRole_1"},
           {role_id: "456", org_code: "ABC", role_name: "MockRole_2"} // Previously selected role moved back
         ],
-        selectedRoleId: "789"
+        roles_without_access: [],
+        user_details: {family_name: "Bloggs", given_name: "Joe"}
       })
     }
   )
@@ -325,14 +213,16 @@ describe("Lambda Handler Tests", () => {
     "should swap initially selected role with the new selected role and move the old one back to rolesWithAccess",
     async () => {
       // Initial database state with a previously selected role
-      mockFetchUserRolesFromDynamoDB.mockImplementation(() => {
+      mockFetchDynamoTable.mockImplementation(() => {
         return {
-          rolesWithAccess: [
+          roles_with_access: [
             {role_id: "123", org_code: "XYZ", role_name: "MockRole_1"},
             {role_id: "456", org_code: "ABC", role_name: "MockRole_2"},
             {role_id: "789", org_code: "DEF", role_name: "MockRole_3"}
           ],
-          currentlySelectedRole: {role_id: "555", org_code: "GHI", role_name: "MockRole_4"} // Initially selected role
+          currently_selected_role: {role_id: "555", org_code: "GHI", role_name: "MockRole_4"},
+          roles_without_access: [],
+          user_details: {family_name: "Bloggs", given_name: "Joe"}
         }
       })
 
@@ -354,17 +244,18 @@ describe("Lambda Handler Tests", () => {
       expect(mockUpdateDynamoTable).toHaveBeenCalledWith(
         "Mock_JoeBloggs",
         {
-          currentlySelectedRole: {
+          currently_selected_role: {
             role_id: "123",
             org_code: "XYZ",
             role_name: "MockRole_1"
           },
-          rolesWithAccess: [
+          roles_with_access: [
             {role_id: "456", org_code: "ABC", role_name: "MockRole_2"},
             {role_id: "789", org_code: "DEF", role_name: "MockRole_3"},
             {role_id: "555", org_code: "GHI", role_name: "MockRole_4"} // Old role moved back
           ],
-          selectedRoleId: "123"
+          roles_without_access: [],
+          user_details: {family_name: "Bloggs", given_name: "Joe"}
         },
         expect.any(Object),
         expect.any(Object),
@@ -372,7 +263,7 @@ describe("Lambda Handler Tests", () => {
       )
 
       // Now simulate switching to another role
-      mockFetchUserRolesFromDynamoDB.mockImplementation(() => firstResponseBody.userInfo)
+      mockFetchDynamoTable.mockImplementation(() => firstResponseBody.userInfo)
 
       const secondEvent = {
         ...mockAPIGatewayProxyEvent,
@@ -391,17 +282,18 @@ describe("Lambda Handler Tests", () => {
       expect(secondResponseBody).toEqual({
         message: "Selected role data has been updated successfully",
         userInfo: {
-          currentlySelectedRole: {
+          currently_selected_role: {
             role_id: "789",
             org_code: "DEF",
             role_name: "MockRole_3"
           },
-          rolesWithAccess: [
+          roles_with_access: [
             {role_id: "456", org_code: "ABC", role_name: "MockRole_2"},
             {role_id: "555", org_code: "GHI", role_name: "MockRole_4"},
             {role_id: "123", org_code: "XYZ", role_name: "MockRole_1"} // Previously selected role moved back
           ],
-          selectedRoleId: "789"
+          roles_without_access: [],
+          user_details: {family_name: "Bloggs", given_name: "Joe"}
         }
       })
     })
