@@ -11,6 +11,18 @@ export default function EPSCookieBanner() {
 
   const handleCookieChoice = (choice: "accepted" | "rejected") => {
     setCookiesSet(choice)
+
+    if (typeof window !== "undefined" && window.NHSCookieConsent) {
+      if (choice === "accepted") {
+        window.NHSCookieConsent.setStatistics(true)
+      } else {
+        window.NHSCookieConsent.setStatistics(false)
+      }
+
+      window.NHSCookieConsent.setConsented(true)
+    } else {
+      console.warn("NHSCookieConsent API not available on window object.")
+    }
   }
 
   return (
@@ -22,16 +34,6 @@ export default function EPSCookieBanner() {
               <h2 className="nhsuk-cookie-banner__heading govuk-heading-m">
                 {CookieStrings.banner.cookie_title}
               </h2>
-              {/* <p>We've put some small files called cookies on your device to make our site work.</p>
-              <p className="nhsuk-body">
-                We’d also like to use analytics cookies.
-                These send anonymous information about how our site is used to a service called Amazon CloudWatch RUM.
-                We use this information to improve our site.
-              </p>
-              <p className="nhsuk-body">
-                Let us know if this is OK. We'll use a cookie to save your choice. You can{" "}
-                <Link to="/cookies">read more about our cookies</Link> before you choose.
-              </p> */}
               <p className="nhsuk-body">
                 {CookieStrings.banner.cookie_text_p1}
               </p>
