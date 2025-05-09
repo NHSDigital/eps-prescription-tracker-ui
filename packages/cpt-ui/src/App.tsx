@@ -15,7 +15,7 @@ import NotFoundPage from "@/pages/NotFoundPage"
 import PrescriptionListPage from "@/pages/PrescriptionListPage"
 import PrescriptionNotFoundPage from "@/pages/PrescriptionNotFoundPage"
 import PrescriptionDetailsPage from "@/pages/PrescriptionDetailsPage"
-import SearchResultsPage from "@/pages/SearchResultsPage"
+import SearchResultsPage from "@/pages/BasicDetailsSearchResultsPage"
 
 import {FRONTEND_PATHS} from "@/constants/environment"
 
