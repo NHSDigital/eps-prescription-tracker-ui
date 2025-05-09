@@ -3,9 +3,10 @@ import {Logger} from "@aws-lambda-powertools/logger"
 import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
 import {getSecret} from "@aws-lambda-powertools/parameters/secrets"
 import axios from "axios"
-import {initializeOidcConfig, OidcConfig, refreshApigeeAccessToken} from "./index"
-
 import {
+  initializeOidcConfig,
+  OidcConfig,
+  refreshApigeeAccessToken,
   getUsernameFromEvent,
   fetchAndVerifyCIS2Tokens,
   constructSignedJWTBody,

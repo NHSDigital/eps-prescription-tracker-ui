@@ -59,7 +59,8 @@ jest.unstable_mockModule("../src/index", () => ({
   fetchAndVerifyCIS2Tokens: mockFetchAndVerifyCIS2Tokens,
   constructSignedJWTBody: mockConstructSignedJWTBody,
   decodeToken: mockDecodeToken,
-  verifyIdToken: mockVerifyIdToken
+  verifyIdToken: mockVerifyIdToken,
+  initializeOidcConfig: jest.fn()
 }))
 
 const {authenticateRequest} = await import("../src/authenticateRequest")
