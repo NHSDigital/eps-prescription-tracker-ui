@@ -16,7 +16,6 @@ import {verifyIdToken, initializeOidcConfig} from "@cpt-ui-common/authFunctions"
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 
 import {formatHeaders, rewriteRequestBody} from "./helpers"
-
 /*
 This is the lambda code that is used to intercept calls to token endpoint as part of the cognito login flow
 It expects the following environment variables to be set
@@ -24,46 +23,32 @@ It expects the following environment variables to be set
 TokenMappingTableName
 jwtPrivateKeyArn
 jwtKid
-useMock
+COGNITO_DOMAIN
 
-For CIS2 calls, the following must be set
 CIS2_OIDC_ISSUER
 CIS2_OIDC_CLIENT_ID
 CIS2_OIDCJWKS_ENDPOINT
 CIS2_USER_INFO_ENDPOINT
 CIS2_USER_POOL_IDP
 CIS2_IDP_TOKEN_PATH
-FULL_CLOUDFRONT_DOMAIN
-
-For mock calls, the following must be set
-MOCK_OIDC_ISSUER
-MOCK_OIDC_CLIENT_ID
-MOCK_OIDCJWKS_ENDPOINT
-MOCK_USER_INFO_ENDPOINT
-MOCK_USER_POOL_IDP
-MOCK_IDP_TOKEN_PATH
-FULL_CLOUDFRONT_DOMAIN
 */
 
 const logger = new Logger({serviceName: "token"})
-const useMock: boolean = process.env["useMock"] === "true"
 
-const cloudfrontDomain = process.env["FULL_CLOUDFRONT_DOMAIN"] as string
+const cognitoDomain = process.env["COGNITO_DOMAIN"] as string
 
 // Create a config for cis2 and mock
 // this is outside functions so it can be re-used and caching works
-const {mockOidcConfig, cis2OidcConfig} = initializeOidcConfig()
+const {cis2OidcConfig} = initializeOidcConfig()
 
 const TokenMappingTableName = process.env["TokenMappingTableName"] as string
 const jwtPrivateKeyArn = process.env["jwtPrivateKeyArn"] as string
 const jwtKid = process.env["jwtKid"] as string
 
-const idpTokenPath = useMock ?
-  process.env["MOCK_IDP_TOKEN_PATH"] as string :
-  process.env["CIS2_IDP_TOKEN_PATH"] as string
+const idpTokenPath = process.env["CIS2_IDP_TOKEN_PATH"] as string
 
 // Set the redirect back to our proxy lambda
-const idpCallbackPath = `https://${cloudfrontDomain}/oauth2/callback`
+const idpCallbackPath = `https://${cognitoDomain}/oauth2/idpresponse`
 
 const dynamoClient = new DynamoDBClient()
 const documentClient = DynamoDBDocumentClient.from(dynamoClient)
@@ -79,6 +64,13 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     "apigw-request-id": event.requestContext?.requestId
   })
   const axiosInstance = axios.create()
+  logger.debug("data from env variables", {
+    cognitoDomain,
+    TokenMappingTableName,
+    jwtPrivateKeyArn,
+    jwtKid,
+    idpTokenPath
+  })
 
   const body = event.body
   if (body === undefined) {
@@ -109,12 +101,10 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   const idToken = tokenResponse.data.id_token
 
   // verify and decode idToken
-  const decodedIdToken = await verifyIdToken(idToken, logger, useMock ? mockOidcConfig : cis2OidcConfig)
+  const decodedIdToken = await verifyIdToken(idToken, logger, cis2OidcConfig)
   logger.debug("decoded idToken", {decodedIdToken})
 
-  const username = useMock ?
-    `${mockOidcConfig.userPoolIdp}_${decodedIdToken.sub}` :
-    `${cis2OidcConfig.userPoolIdp}_${decodedIdToken.sub}`
+  const username = `${cis2OidcConfig.userPoolIdp}_${decodedIdToken.sub}`
   const params = {
     Item: {
       "username": username,

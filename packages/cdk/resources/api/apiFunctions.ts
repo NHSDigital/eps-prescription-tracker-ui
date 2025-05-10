@@ -35,6 +35,7 @@ export interface ApiFunctionsProps {
   readonly apigeePrescriptionsEndpoint: string
   readonly apigeePersonalDemographicsEndpoint: string
   readonly apigeeApiKey: string
+  readonly apigeeApiSecret: string
   readonly jwtKid: string
   readonly logLevel: string
   readonly roleId: string
@@ -83,7 +84,11 @@ export class ApiFunctions extends Construct {
       CIS2_OIDC_ISSUER: props.primaryOidcIssuer,
 
       // Indicate if mock mode is available
-      MOCK_MODE_ENABLED: props.useMockOidc ? "true" : "false"
+      MOCK_MODE_ENABLED: props.useMockOidc ? "true" : "false",
+
+      APIGEE_API_SECRET: props.apigeeApiSecret,
+      APIGEE_API_KEY: props.apigeeApiKey,
+      apigeeCIS2TokenEndpoint: props.apigeeCIS2TokenEndpoint
     }
 
     // If mock OIDC is enabled, add mock environment variables
@@ -93,6 +98,7 @@ export class ApiFunctions extends Construct {
       commonLambdaEnv["MOCK_USER_POOL_IDP"] = props.mockPoolIdentityProviderName
       commonLambdaEnv["MOCK_OIDC_CLIENT_ID"] = props.mockOidcClientId!
       commonLambdaEnv["MOCK_OIDC_ISSUER"] = props.mockOidcIssuer!
+      commonLambdaEnv["apigeeMockTokenEndpoint"] = props.apigeeMockTokenEndpoint
     }
 
     // Prescription Search Lambda Function
@@ -162,11 +168,8 @@ export class ApiFunctions extends Construct {
       lambdaEnvironmentVariables: {
         ...commonLambdaEnv,
         jwtPrivateKeyArn: props.sharedSecrets.primaryJwtPrivateKey.secretArn,
-        apigeeCIS2TokenEndpoint: props.apigeeCIS2TokenEndpoint,
-        apigeeMockTokenEndpoint: props.apigeeMockTokenEndpoint,
         apigeePrescriptionsEndpoint: props.apigeePrescriptionsEndpoint,
         apigeePersonalDemographicsEndpoint: props.apigeePersonalDemographicsEndpoint,
-        apigeeApiKey: props.apigeeApiKey,
         jwtKid: props.jwtKid,
         roleId: props.roleId
       }

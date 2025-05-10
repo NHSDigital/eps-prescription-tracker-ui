@@ -31,11 +31,6 @@ export class Dynamodb extends Construct {
   public readonly useTokensMappingKmsKeyPolicy: ManagedPolicy
   public readonly tokenMappingTableWritePolicy: ManagedPolicy
   public readonly tokenMappingTableReadPolicy: ManagedPolicy
-  //
-  public readonly stateMappingTable: TableV2
-  public readonly useStateMappingKmsKeyPolicy: ManagedPolicy
-  public readonly stateMappingTableWritePolicy: ManagedPolicy
-  public readonly stateMappingTableReadPolicy: ManagedPolicy
 
   public constructor(scope: Construct, id: string, props: DynamodbProps) {
     super(scope, id)
@@ -151,126 +146,11 @@ export class Dynamodb extends Construct {
       ]
     })
 
-    // KMS key for state mapping table
-    const stateMappingKmsKey = new Key(this, "StateMappingKMSKey", {
-      removalPolicy: RemovalPolicy.DESTROY,
-      pendingWindow: Duration.days(7),
-      alias: `${props.stackName}-StateMappingKMSKey`,
-      description: `${props.stackName}-StateMappingKMSKey`,
-      enableKeyRotation: true,
-      policy: new PolicyDocument({
-        statements: [
-          new PolicyStatement({
-            sid: "Enable IAM User Permissions",
-            effect: Effect.ALLOW,
-            actions: [
-              "kms:*"
-            ],
-            principals: [
-              new AccountRootPrincipal //NOSONAR: Access is controlled via ARN condition.
-            ],
-            resources: ["*"]
-          }),
-          new PolicyStatement({
-            sid: "Enable read only decrypt",
-            effect: Effect.ALLOW,
-            actions: [
-              "kms:DescribeKey",
-              "kms:Decrypt"
-            ],
-            principals: [
-              new AnyPrincipal()
-            ],
-            resources: ["*"],
-            conditions: {
-              ArnLike: {
-                // eslint-disable-next-line max-len
-                "aws:PrincipalArn": `arn:aws:iam::${props.account}:role/aws-reserved/sso.amazonaws.com/${props.region}/AWSReservedSSO_ReadOnly*`
-              }
-            }
-          })
-        ]
-      })
-    })
-
-    // State Mapping Table
-    const stateMappingTable = new TableV2(this, "StateMappingTable", {
-      partitionKey: {
-        name: "State",
-        type: AttributeType.STRING
-      },
-      tableName: `${props.stackName}-StateMapping`,
-      removalPolicy: RemovalPolicy.DESTROY,
-      pointInTimeRecovery: true,
-      encryption: TableEncryptionV2.customerManagedKey(stateMappingKmsKey),
-      billing: Billing.onDemand(),
-      timeToLiveAttribute: "ExpiryTime"
-    })
-
-    // Policy to use state mapping KMS key
-    const useStateMappingKmsKeyPolicy = new ManagedPolicy(this, "UseStateMappingKMSKeyPolicy", {
-      statements: [
-        new PolicyStatement({
-          actions: [
-            "kms:DescribeKey",
-            "kms:GenerateDataKey",
-            "kms:Encrypt",
-            "kms:ReEncryptFrom",
-            "kms:ReEncryptTo",
-            "kms:Decrypt"
-          ],
-          resources: [
-            stateMappingKmsKey.keyArn
-          ]
-        })
-      ]
-    })
-
-    const stateTableReadManagedPolicy = new ManagedPolicy(this, "StateTableReadManagedPolicy", {
-      statements: [
-        new PolicyStatement({
-          actions: [
-            "dynamodb:GetItem",
-            "dynamodb:BatchGetItem",
-            "dynamodb:Scan",
-            "dynamodb:Query",
-            "dynamodb:ConditionCheckItem",
-            "dynamodb:DescribeTable"
-          ],
-          resources: [
-            stateMappingTable.tableArn,
-            `${stateMappingTable.tableArn}/index/*`
-          ]
-        })
-      ]
-    })
-
-    const stateTableWriteManagedPolicy = new ManagedPolicy(this, "StateTableWriteManagedPolicy", {
-      statements: [
-        new PolicyStatement({
-          actions: [
-            "dynamodb:PutItem",
-            "dynamodb:BatchWriteItem",
-            "dynamodb:UpdateItem",
-            "dynamodb:DeleteItem"
-          ],
-          resources: [
-            stateMappingTable.tableArn,
-            `${stateMappingTable.tableArn}/index/*`
-          ]
-        })
-      ]
-    })
-
     // Outputs: assign the created resources to the class properties
     this.tokenMappingTable = tokenMappingTable
     this.useTokensMappingKmsKeyPolicy = useTokensMappingKmsKeyPolicy
     this.tokenMappingTableWritePolicy = tableWriteManagedPolicy
     this.tokenMappingTableReadPolicy = tableReadManagedPolicy
 
-    this.stateMappingTable = stateMappingTable
-    this.useStateMappingKmsKeyPolicy = useStateMappingKmsKeyPolicy
-    this.stateMappingTableWritePolicy = stateTableWriteManagedPolicy
-    this.stateMappingTableReadPolicy = stateTableReadManagedPolicy
   }
 }

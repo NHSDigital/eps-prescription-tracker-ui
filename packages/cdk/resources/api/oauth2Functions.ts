@@ -9,10 +9,8 @@ import {SharedSecrets} from "../SharedSecrets"
 export interface OAuth2FunctionsProps {
   readonly serviceName: string
   readonly stackName: string
-  readonly fullCloudfrontDomain: string
 
   readonly fullCognitoDomain: string
-  readonly userPoolClientId: string
   readonly primaryPoolIdentityProviderName: string
   readonly mockPoolIdentityProviderName: string
 
@@ -37,16 +35,13 @@ export interface OAuth2FunctionsProps {
   readonly tokenMappingTableReadPolicy: IManagedPolicy
   readonly useTokensMappingKmsKeyPolicy: IManagedPolicy
 
-  readonly stateMappingTable: ITableV2
-  readonly stateMappingTableWritePolicy: IManagedPolicy
-  readonly stateMappingTableReadPolicy: IManagedPolicy
-  readonly useStateMappingKmsKeyPolicy: IManagedPolicy
-
   readonly sharedSecrets: SharedSecrets
 
   readonly logRetentionInDays: number
   readonly logLevel: string
   readonly jwtKid: string
+  readonly apigeeApiKey: string
+  readonly apigeeApiSecret: string
 }
 
 /**
@@ -56,30 +51,11 @@ export class OAuth2Functions extends Construct {
   public readonly oAuth2Policies: Array<IManagedPolicy>
   public readonly primaryJwtPrivateKey: Secret
   public readonly authorizeLambda: NodejsFunction
-  public readonly mockAuthorizeLambda: NodejsFunction
-  public readonly callbackLambda: NodejsFunction
-  public readonly mockCallbackLambda: NodejsFunction
   public readonly tokenLambda: NodejsFunction
   public readonly mockTokenLambda: NodejsFunction
 
   public constructor(scope: Construct, id: string, props: OAuth2FunctionsProps) {
     super(scope, id)
-
-    let useMock
-    let mockOidcAuthorizeEndpoint
-    let mockOidcIssuer
-    let mockOidcClientId
-    if (props.useMockOidc) {
-      useMock = "true"
-      mockOidcIssuer = props.mockOidcIssuer as string
-      mockOidcAuthorizeEndpoint = props.mockOidcAuthorizeEndpoint as string
-      mockOidcClientId = props.mockOidcClientId as string
-    } else {
-      useMock = "false"
-      mockOidcAuthorizeEndpoint = ""
-      mockOidcIssuer = ""
-      mockOidcClientId = ""
-    }
 
     // Create the token Lambda function
     const tokenLambda = new LambdaFunction(this, "TokenResources", {
@@ -102,12 +78,11 @@ export class OAuth2Functions extends Construct {
         CIS2_IDP_TOKEN_PATH: props.primaryOidcTokenEndpoint,
         CIS2_USER_POOL_IDP: props.primaryPoolIdentityProviderName,
         CIS2_OIDCJWKS_ENDPOINT: props.primaryOidcjwksEndpoint,
-        jwtPrivateKeyArn: props.sharedSecrets.primaryJwtPrivateKey.secretArn,
         CIS2_OIDC_CLIENT_ID: props.primaryOidcClientId,
         CIS2_OIDC_ISSUER: props.primaryOidcIssuer,
-        FULL_CLOUDFRONT_DOMAIN: props.fullCloudfrontDomain,
-        jwtKid: props.jwtKid,
-        useMock: "false"
+        COGNITO_DOMAIN: props.fullCognitoDomain,
+        jwtPrivateKeyArn: props.sharedSecrets.primaryJwtPrivateKey.secretArn,
+        jwtKid: props.jwtKid
       }
     })
 
@@ -116,56 +91,21 @@ export class OAuth2Functions extends Construct {
       serviceName: props.serviceName,
       stackName: props.stackName,
       lambdaName: `${props.stackName}-authorize`,
-      additionalPolicies: [
-        props.stateMappingTableWritePolicy,
-        props.stateMappingTableReadPolicy,
-        props.useStateMappingKmsKeyPolicy
-      ],
       logRetentionInDays: props.logRetentionInDays,
       logLevel: props.logLevel,
       packageBasePath: "packages/cognito",
       entryPoint: "src/authorize.ts",
       lambdaEnvironmentVariables: {
-        useMock,
-        IDP_AUTHORIZE_PATH: props.primaryOidcAuthorizeEndpoint,
-        OIDC_CLIENT_ID: props.primaryOidcClientId,
-        COGNITO_CLIENT_ID: props.userPoolClientId,
-        FULL_CLOUDFRONT_DOMAIN: props.fullCloudfrontDomain,
-        StateMappingTableName: props.stateMappingTable.tableName
-      }
-    })
-
-    // This proxy handles the return journey from the IdP login initiated by the authorize lambda
-    const callbackLambda = new LambdaFunction(this, "CallbackLambdaResources", {
-      serviceName: props.serviceName,
-      stackName: props.stackName,
-      lambdaName: `${props.stackName}-callback`,
-      additionalPolicies: [
-        props.stateMappingTableWritePolicy,
-        props.stateMappingTableReadPolicy,
-        props.useStateMappingKmsKeyPolicy
-      ],
-      logRetentionInDays: props.logRetentionInDays,
-      logLevel: props.logLevel,
-      packageBasePath: "packages/cognito",
-      entryPoint: "src/callback.ts",
-      lambdaEnvironmentVariables: {
-        StateMappingTableName: props.stateMappingTable.tableName,
-        COGNITO_CLIENT_ID: props.userPoolClientId,
-        COGNITO_DOMAIN: props.fullCognitoDomain,
-        MOCK_OIDC_ISSUER: mockOidcIssuer,
-        PRIMARY_OIDC_ISSUER: props.primaryOidcIssuer
+        IDP_AUTHORIZE_PATH: props.primaryOidcAuthorizeEndpoint
       }
     })
 
     // Initialize policies
     const oauth2Policies: Array<IManagedPolicy> = [
       authorizeLambda.executeLambdaManagedPolicy,
-      callbackLambda.executeLambdaManagedPolicy,
       tokenLambda.executeLambdaManagedPolicy
     ]
 
-    let mockAuthorizeLambda: LambdaFunction
     let mockTokenLambda: LambdaFunction
     if (props.useMockOidc) {
       if (
@@ -178,33 +118,6 @@ export class OAuth2Functions extends Construct {
         throw new Error("Missing mock OIDC configuration.")
       }
 
-      mockAuthorizeLambda = new LambdaFunction(this, "MockAuthorizeLambdaResources", {
-        serviceName: props.serviceName,
-        stackName: props.stackName,
-        lambdaName: `${props.stackName}-mock-authorize`,
-        additionalPolicies: [
-          props.stateMappingTableWritePolicy,
-          props.stateMappingTableReadPolicy,
-          props.useStateMappingKmsKeyPolicy
-        ],
-        logRetentionInDays: props.logRetentionInDays,
-        logLevel: props.logLevel,
-        packageBasePath: "packages/cognito",
-        entryPoint: "src/authorize.ts",
-        lambdaEnvironmentVariables: {
-          useMock,
-          IDP_AUTHORIZE_PATH: mockOidcAuthorizeEndpoint,
-          OIDC_CLIENT_ID: mockOidcClientId,
-          COGNITO_CLIENT_ID: props.userPoolClientId,
-          FULL_CLOUDFRONT_DOMAIN: props.fullCloudfrontDomain,
-          StateMappingTableName: props.stateMappingTable.tableName
-        }
-      })
-
-      oauth2Policies.push(
-        mockAuthorizeLambda.executeLambdaManagedPolicy
-      )
-
       mockTokenLambda = new LambdaFunction(this, "MockTokenResources", {
         serviceName: props.serviceName,
         stackName: props.stackName,
@@ -212,25 +125,23 @@ export class OAuth2Functions extends Construct {
         additionalPolicies: [
           props.tokenMappingTableWritePolicy,
           props.tokenMappingTableReadPolicy,
-          props.useTokensMappingKmsKeyPolicy,
-          props.sharedSecrets.useJwtKmsKeyPolicy,
-          props.sharedSecrets.getMockJwtPrivateKeyPolicy
+          props.useTokensMappingKmsKeyPolicy
         ],
         logRetentionInDays: props.logRetentionInDays,
         logLevel: props.logLevel,
         packageBasePath: "packages/cognito",
-        entryPoint: "src/token.ts",
+        entryPoint: "src/tokenMock.ts",
         lambdaEnvironmentVariables: {
           TokenMappingTableName: props.tokenMappingTable.tableName,
-          MOCK_IDP_TOKEN_PATH: props.mockOidcTokenEndpoint,
           MOCK_USER_POOL_IDP: props.mockPoolIdentityProviderName,
           MOCK_OIDCJWKS_ENDPOINT: props.mockOidcjwksEndpoint,
-          jwtPrivateKeyArn: props.sharedSecrets.mockJwtPrivateKey!.secretArn,
           MOCK_OIDC_CLIENT_ID: props.mockOidcClientId,
+          MOCK_OIDC_TOKEN_ENDPOINT: props.mockOidcTokenEndpoint,
+          MOCK_USER_INFO_ENDPOINT: props.mockOidcUserInfoEndpoint,
           MOCK_OIDC_ISSUER: props.mockOidcIssuer,
-          FULL_CLOUDFRONT_DOMAIN: props.fullCloudfrontDomain,
-          jwtKid: props.jwtKid,
-          useMock: "true"
+          COGNITO_DOMAIN: props.fullCognitoDomain,
+          APIGEE_API_KEY: props.apigeeApiKey,
+          APIGEE_API_SECRET: props.apigeeApiSecret
         }
       })
 
@@ -238,36 +149,8 @@ export class OAuth2Functions extends Construct {
         mockTokenLambda.executeLambdaManagedPolicy
       )
 
-      const mockCallbackLambda = new LambdaFunction(this, "MockCallbackLambdaResources", {
-        serviceName: props.serviceName,
-        stackName: props.stackName,
-        lambdaName: `${props.stackName}-mock-callback`,
-        additionalPolicies: [
-          props.stateMappingTableWritePolicy,
-          props.stateMappingTableReadPolicy,
-          props.useStateMappingKmsKeyPolicy
-        ],
-        logRetentionInDays: props.logRetentionInDays,
-        logLevel: props.logLevel,
-        packageBasePath: "packages/cognito",
-        entryPoint: "src/callbackMock.ts",
-        lambdaEnvironmentVariables: {
-          StateMappingTableName: props.stateMappingTable.tableName,
-          COGNITO_CLIENT_ID: props.userPoolClientId,
-          COGNITO_DOMAIN: props.fullCognitoDomain,
-          MOCK_OIDC_ISSUER: mockOidcIssuer,
-          PRIMARY_OIDC_ISSUER: props.primaryOidcIssuer
-        }
-      })
-
-      oauth2Policies.push(
-        mockCallbackLambda.executeLambdaManagedPolicy
-      )
-
       // Output
-      this.mockAuthorizeLambda = mockAuthorizeLambda.lambda
       this.mockTokenLambda = mockTokenLambda.lambda
-      this.mockCallbackLambda = mockCallbackLambda.lambda
     }
 
     // Outputs
@@ -275,7 +158,6 @@ export class OAuth2Functions extends Construct {
     this.primaryJwtPrivateKey = props.sharedSecrets.primaryJwtPrivateKey
 
     this.authorizeLambda = authorizeLambda.lambda
-    this.callbackLambda = callbackLambda.lambda
     this.tokenLambda = tokenLambda.lambda
   }
 }

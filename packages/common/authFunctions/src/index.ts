@@ -1,26 +1,23 @@
-
-import {getUsernameFromEvent} from "./event"
-import {initializeOidcConfig} from "./initialization"
-
-import {
-  getSigningKey,
-  fetchCIS2TokensFromDynamoDB,
-  fetchAndVerifyCIS2Tokens,
-  verifyIdToken,
-  OidcConfig
-} from "./cis2"
-
-import {constructSignedJWTBody, exchangeTokenForApigeeAccessToken, updateApigeeAccessToken} from "./apigee"
+export {getUsernameFromEvent} from "./event"
+export {initializeOidcConfig} from "./initialization"
 
 export {
-  getUsernameFromEvent,
   getSigningKey,
   fetchCIS2TokensFromDynamoDB,
   fetchAndVerifyCIS2Tokens,
   verifyIdToken,
+  OidcConfig,
+  decodeToken
+} from "./cis2"
+
+export {
   constructSignedJWTBody,
   exchangeTokenForApigeeAccessToken,
   updateApigeeAccessToken,
-  OidcConfig,
-  initializeOidcConfig
-}
+  getExistingApigeeAccessToken,
+  refreshApigeeAccessToken
+} from "./apigee"
+
+export {authenticateRequest, initializeAuthConfig} from "./authenticateRequest"
+
+export {RoleDetails, TrackerUserInfo, UserDetails, fetchCachedUserInfo, updateCachedUserInfo} from "./userInfo"

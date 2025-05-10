@@ -1,42 +1,38 @@
 import {jest} from "@jest/globals"
-
-// Mocked functions from authFunctions
-const mockGetUsernameFromEvent = jest.fn()
-
-jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
-  const getUsernameFromEvent = mockGetUsernameFromEvent.mockImplementation(() => "Mock_JoeBloggs")
-
-  return {
-    getUsernameFromEvent
-  }
-})
-
-// Mocked functions from selectedRoleHelpers
-const mockFetchUserRolesFromDynamoDB = jest.fn()
-const mockUpdateDynamoTable = jest.fn()
-
-jest.unstable_mockModule("@/selectedRoleHelpers", () => {
-  const fetchUserRolesFromDynamoDB = mockFetchUserRolesFromDynamoDB.mockImplementation(() => {
-    return {
-      rolesWithAccess: [
-        {role_id: "123", org_code: "XYZ", role_name: "MockRole_1"},
-        {role_id: "456", org_code: "ABC", role_name: "MockRole_2"}
-      ],
-      currentlySelectedRole: undefined // Initially no role is selected
-    }
-  })
-
-  const updateDynamoTable = mockUpdateDynamoTable.mockImplementation(() => {})
-
-  return {
-    fetchUserRolesFromDynamoDB,
-    updateDynamoTable
-  }
-})
-
-const {handler} = await import("@/handler")
 import {mockContext, mockAPIGatewayProxyEvent} from "./mockObjects"
 import {Logger} from "@aws-lambda-powertools/logger"
+import {TrackerUserInfo} from "@cpt-ui-common/authFunctions"
+
+// Mocked functions from authFunctions
+const mockAuthConfig = {
+  oidcConfig: {oidcTokenEndpoint: "https://dummy.com/token"},
+  tokenMappingTableName: "TokenMappingTable"
+}
+const mockUpdateDynamoTable = jest.fn()
+const mockFetchDynamoTable = jest.fn<() => TrackerUserInfo>(() => ({
+  roles_with_access: [
+    {role_id: "123", org_code: "XYZ", role_name: "MockRole_1"},
+    {role_id: "456", org_code: "ABC", role_name: "MockRole_2"}
+  ],
+  roles_without_access: [],
+  currently_selected_role: undefined, // Initially no role is selected
+  user_details: {family_name: "Bloggs", given_name: "Joe"}
+}))
+
+jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
+  return {
+    authenticateRequest: () => ({
+      username: "Mock_JoeBloggs",
+      apigeeAccessToken: "foo",
+      roleId: "test-role"
+    }),
+    initializeAuthConfig: () => mockAuthConfig,
+    fetchCachedUserInfo: mockFetchDynamoTable,
+    updateCachedUserInfo: mockUpdateDynamoTable
+  }
+})
+
+const {handler} = await import("../src/handler")
 
 describe("Lambda Handler Tests", () => {
   let event = {
@@ -49,11 +45,7 @@ describe("Lambda Handler Tests", () => {
       }
     })
   }
-  let context = {...mockContext}
-
-  beforeAll(() => {
-    jest.clearAllMocks()
-  })
+  let context = mockContext
 
   it("should return a successful response when called", async () => {
     const response = await handler(event, context)
@@ -74,24 +66,24 @@ describe("Lambda Handler Tests", () => {
       const testUsername = "Mock_JoeBloggs"
       const updatedUserInfo = {
         // The selected role has been moved from rolesWithAccess to currentlySelectedRole
-        currentlySelectedRole: {
+        currently_selected_role: {
           role_id: "123",
           org_code: "XYZ",
           role_name: "MockRole_1"
         },
-        rolesWithAccess: [
+        roles_with_access: [
           {
             role_id: "456",
             org_code: "ABC",
             role_name: "MockRole_2"
           }
         ],
-        selectedRoleId: "123"
+        roles_without_access: [],
+        user_details: {family_name: "Bloggs", given_name: "Joe"}
       }
 
       const response = await handler(event, context)
 
-      expect(mockGetUsernameFromEvent).toHaveBeenCalled()
       expect(mockUpdateDynamoTable).toHaveBeenCalledWith(
         testUsername,
         updatedUserInfo,
@@ -104,36 +96,39 @@ describe("Lambda Handler Tests", () => {
         body: JSON.stringify({
           message: "Selected role data has been updated successfully",
           userInfo: {
-            currentlySelectedRole: {
+            currently_selected_role: {
               role_id: "123",
               org_code: "XYZ",
               role_name: "MockRole_1"
             },
-            rolesWithAccess: [
+            roles_with_access: [
               {
                 role_id: "456",
                 org_code: "ABC",
                 role_name: "MockRole_2"
               }
             ],
-            selectedRoleId: "123"
+            roles_without_access: [],
+            user_details: {family_name: "Bloggs", given_name: "Joe"}
           }
         })
       })
     })
 
   it(
-    "should swap currentlySelectedRole with the new selected role and move the old one back to rolesWithAccess",
+    "should swap currently_selected_role with the new selected role and move the old one back to roles_with_access",
     async () => {
-      // Initial rolesWithAccess contains multiple roles, currentlySelectedRole is undefined
-      mockFetchUserRolesFromDynamoDB.mockImplementation(() => {
+      // Initial roles_with_access contains multiple roles, currently_selected_role is undefined
+      mockFetchDynamoTable.mockImplementation(() => {
         return {
-          rolesWithAccess: [
+          roles_with_access: [
             {role_id: "123", org_code: "XYZ", role_name: "MockRole_1"},
             {role_id: "456", org_code: "ABC", role_name: "MockRole_2"},
             {role_id: "789", org_code: "DEF", role_name: "MockRole_3"}
           ],
-          currentlySelectedRole: undefined // Initially no role is selected
+          currently_selected_role: undefined, // Initially no role is selected
+          roles_without_access: [],
+          user_details: {family_name: "Bloggs", given_name: "Joe"}
         }
       })
 
@@ -153,12 +148,13 @@ describe("Lambda Handler Tests", () => {
       let firstResponseBody = JSON.parse(response.body)
 
       expect(firstResponseBody.userInfo).toEqual({
-        currentlySelectedRole: {role_id: "123", org_code: "XYZ", role_name: "MockRole_1"},
-        rolesWithAccess: [
+        currently_selected_role: {role_id: "123", org_code: "XYZ", role_name: "MockRole_1"},
+        roles_with_access: [
           {role_id: "456", org_code: "ABC", role_name: "MockRole_2"},
           {role_id: "789", org_code: "DEF", role_name: "MockRole_3"}
         ],
-        selectedRoleId: "123"
+        roles_without_access: [],
+        user_details: {family_name: "Bloggs", given_name: "Joe"}
       })
 
       // User selects "MockRole_2" (role_id: 456)
@@ -177,12 +173,13 @@ describe("Lambda Handler Tests", () => {
       let secondResponseBody = JSON.parse(response.body)
 
       expect(secondResponseBody.userInfo).toEqual({
-        currentlySelectedRole: {role_id: "456", org_code: "ABC", role_name: "MockRole_2"},
-        rolesWithAccess: [
+        currently_selected_role: {role_id: "456", org_code: "ABC", role_name: "MockRole_2"},
+        roles_with_access: [
           {role_id: "123", org_code: "XYZ", role_name: "MockRole_1"}, // Previously selected role moved back
           {role_id: "789", org_code: "DEF", role_name: "MockRole_3"}
         ],
-        selectedRoleId: "456"
+        roles_without_access: [],
+        user_details: {family_name: "Bloggs", given_name: "Joe"}
       })
 
       // User selects "MockRole_3" (role_id: 789)
@@ -201,12 +198,13 @@ describe("Lambda Handler Tests", () => {
       let thirdResponseBody = JSON.parse(response.body)
 
       expect(thirdResponseBody.userInfo).toEqual({
-        currentlySelectedRole: {role_id: "789", org_code: "DEF", role_name: "MockRole_3"},
-        rolesWithAccess: [
+        currently_selected_role: {role_id: "789", org_code: "DEF", role_name: "MockRole_3"},
+        roles_with_access: [
           {role_id: "123", org_code: "XYZ", role_name: "MockRole_1"},
           {role_id: "456", org_code: "ABC", role_name: "MockRole_2"} // Previously selected role moved back
         ],
-        selectedRoleId: "789"
+        roles_without_access: [],
+        user_details: {family_name: "Bloggs", given_name: "Joe"}
       })
     }
   )
@@ -215,14 +213,16 @@ describe("Lambda Handler Tests", () => {
     "should swap initially selected role with the new selected role and move the old one back to rolesWithAccess",
     async () => {
       // Initial database state with a previously selected role
-      mockFetchUserRolesFromDynamoDB.mockImplementation(() => {
+      mockFetchDynamoTable.mockImplementation(() => {
         return {
-          rolesWithAccess: [
+          roles_with_access: [
             {role_id: "123", org_code: "XYZ", role_name: "MockRole_1"},
             {role_id: "456", org_code: "ABC", role_name: "MockRole_2"},
             {role_id: "789", org_code: "DEF", role_name: "MockRole_3"}
           ],
-          currentlySelectedRole: {role_id: "555", org_code: "GHI", role_name: "MockRole_4"} // Initially selected role
+          currently_selected_role: {role_id: "555", org_code: "GHI", role_name: "MockRole_4"},
+          roles_without_access: [],
+          user_details: {family_name: "Bloggs", given_name: "Joe"}
         }
       })
 
@@ -244,17 +244,18 @@ describe("Lambda Handler Tests", () => {
       expect(mockUpdateDynamoTable).toHaveBeenCalledWith(
         "Mock_JoeBloggs",
         {
-          currentlySelectedRole: {
+          currently_selected_role: {
             role_id: "123",
             org_code: "XYZ",
             role_name: "MockRole_1"
           },
-          rolesWithAccess: [
+          roles_with_access: [
             {role_id: "456", org_code: "ABC", role_name: "MockRole_2"},
             {role_id: "789", org_code: "DEF", role_name: "MockRole_3"},
             {role_id: "555", org_code: "GHI", role_name: "MockRole_4"} // Old role moved back
           ],
-          selectedRoleId: "123"
+          roles_without_access: [],
+          user_details: {family_name: "Bloggs", given_name: "Joe"}
         },
         expect.any(Object),
         expect.any(Object),
@@ -262,7 +263,7 @@ describe("Lambda Handler Tests", () => {
       )
 
       // Now simulate switching to another role
-      mockFetchUserRolesFromDynamoDB.mockImplementation(() => firstResponseBody.userInfo)
+      mockFetchDynamoTable.mockImplementation(() => firstResponseBody.userInfo)
 
       const secondEvent = {
         ...mockAPIGatewayProxyEvent,
@@ -281,17 +282,18 @@ describe("Lambda Handler Tests", () => {
       expect(secondResponseBody).toEqual({
         message: "Selected role data has been updated successfully",
         userInfo: {
-          currentlySelectedRole: {
+          currently_selected_role: {
             role_id: "789",
             org_code: "DEF",
             role_name: "MockRole_3"
           },
-          rolesWithAccess: [
+          roles_with_access: [
             {role_id: "456", org_code: "ABC", role_name: "MockRole_2"},
             {role_id: "555", org_code: "GHI", role_name: "MockRole_4"},
             {role_id: "123", org_code: "XYZ", role_name: "MockRole_1"} // Previously selected role moved back
           ],
-          selectedRoleId: "789"
+          roles_without_access: [],
+          user_details: {family_name: "Bloggs", given_name: "Joe"}
         }
       })
     })

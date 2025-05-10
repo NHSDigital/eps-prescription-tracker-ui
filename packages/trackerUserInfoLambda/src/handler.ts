@@ -6,8 +6,15 @@ import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
 import middy from "@middy/core"
 import inputOutputLogger from "@middy/input-output-logger"
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
-import {getUsernameFromEvent, fetchAndVerifyCIS2Tokens, initializeOidcConfig} from "@cpt-ui-common/authFunctions"
-import {fetchUserInfo, updateDynamoTable, fetchDynamoTable} from "./userInfoHelpers"
+import {
+  getUsernameFromEvent,
+  authenticateRequest,
+  fetchAndVerifyCIS2Tokens,
+  initializeAuthConfig,
+  updateCachedUserInfo,
+  fetchCachedUserInfo
+} from "@cpt-ui-common/authFunctions"
+import {fetchUserInfo} from "./userInfoHelpers"
 
 /*
 This is the lambda code to get user info
@@ -19,7 +26,13 @@ CIS2_OIDCJWKS_ENDPOINT
 CIS2_USER_INFO_ENDPOINT
 CIS2_USER_POOL_IDP
 
+apigeeMockTokenEndpoint
+apigeeCIS2TokenEndpoint
 TokenMappingTableName
+jwtPrivateKeyArn
+jwtKid
+APIGEE_API_KEY
+APIGEE_API_SECRET
 MOCK_MODE_ENABLED
 
 For mock calls, the following must be set
@@ -34,12 +47,9 @@ const logger = new Logger({serviceName: "trackerUserInfo"})
 const dynamoClient = new DynamoDBClient({})
 const documentClient = DynamoDBDocumentClient.from(dynamoClient)
 
-// Create a config for cis2 and mock
+// Create auth config
 // this is outside functions so it can be re-used and caching works
-const {mockOidcConfig, cis2OidcConfig} = initializeOidcConfig()
-
-const MOCK_MODE_ENABLED = process.env["MOCK_MODE_ENABLED"]
-const tokenMappingTableName = process.env["TokenMappingTableName"] ?? ""
+const authConfig = initializeAuthConfig()
 
 const errorResponseBody = {
   message: "A system error has occurred"
@@ -53,29 +63,16 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   logger.appendKeys({"apigw-request-id": event.requestContext?.requestId})
   logger.info("Lambda handler invoked", {event})
 
-  // Mock usernames start with "Mock_", and real requests use usernames starting with "Primary_"
   const username = getUsernameFromEvent(event)
-  const isMockToken = username.startsWith("Mock_")
 
-  // Determine whether this request should be treated as mock or real.
-  if (isMockToken && MOCK_MODE_ENABLED !== "true") {
-    throw new Error("Trying to use a mock user when mock mode is disabled")
-  }
+  // First, try to use cached user info
+  const cachedUserInfo = await fetchCachedUserInfo(username, documentClient, logger, authConfig.tokenMappingTableName)
 
-  const isMockRequest = MOCK_MODE_ENABLED === "true" && isMockToken
-
-  logger.info("Is this a mock request?", {isMockRequest})
-
-  // Fetch user info from DynamoDB
-  const cachedUserInfo = await fetchDynamoTable(username, documentClient, logger, tokenMappingTableName)
-
-  // Check if cached data exists and has valid role information
   if (
     cachedUserInfo &&
     (cachedUserInfo.roles_with_access.length > 0 || cachedUserInfo.roles_without_access.length > 0)
   ) {
     logger.info("Returning cached user info from DynamoDB", {cachedUserInfo})
-
     return {
       statusCode: 200,
       body: JSON.stringify({
@@ -85,26 +82,38 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     }
   }
 
-  logger.info("No valid cached user info found. Fetching from OIDC UserInfo endpoint...")
+  logger.info("No valid cached user info found. Authenticating and calling userinfo endpoint...")
 
-  // If no cached data found, proceed to fetch user info from the OIDC UserInfo endpoint
-  const {cis2AccessToken, cis2IdToken} = await fetchAndVerifyCIS2Tokens(
-    event,
-    documentClient,
-    logger,
-    isMockRequest ? mockOidcConfig : cis2OidcConfig
-  )
+  let userInfoResponse
+  if (username.startsWith("Mock_")) {
+    const authResult = await authenticateRequest(event, documentClient, logger, authConfig)
 
-  const userInfoResponse = await fetchUserInfo(
-    cis2AccessToken,
-    cis2IdToken,
-    CPT_ACCESS_ACTIVITY_CODES,
-    logger,
-    isMockRequest ? mockOidcConfig : cis2OidcConfig
-  )
+    userInfoResponse = await fetchUserInfo(
+      authResult.apigeeAccessToken,
+      null,
+      CPT_ACCESS_ACTIVITY_CODES,
+      logger,
+      authConfig.oidcConfig.oidcTokenEndpoint
+    )
+  } else {
+    const authResult = await fetchAndVerifyCIS2Tokens(
+      event,
+      documentClient,
+      logger,
+      authConfig.oidcConfig
+    )
 
-  // Store the new data in DynamoDB
-  await updateDynamoTable(username, userInfoResponse, documentClient, logger, tokenMappingTableName)
+    userInfoResponse = await fetchUserInfo(
+      authResult.cis2AccessToken,
+      authResult.cis2IdToken,
+      CPT_ACCESS_ACTIVITY_CODES,
+      logger,
+      authConfig.oidcConfig.oidcTokenEndpoint
+    )
+  }
+
+  // Save user info to DynamoDB (but not tokens)
+  await updateCachedUserInfo(username, userInfoResponse, documentClient, logger, authConfig.tokenMappingTableName)
 
   return {
     statusCode: 200,
