@@ -3,71 +3,109 @@ import {
   getStatusDisplayText,
   getItemStatusTagColour,
   getItemStatusDisplayText,
-  getPrescriptionTypeDisplayText
+  getPrescriptionTypeDisplayText,
+  itemStatusMap,
+  prescriptionStatusMap
 } from "@/helpers/statusMetadata"
 
-describe("statusMetadata utility functions", () => {
-  describe("getStatusTagColour", () => {
-    it("returns correct colour for known codes", () => {
-      expect(getStatusTagColour("0006")).toBe("green")
-      expect(getStatusTagColour("0005")).toBe("red")
-    })
+import {STATUS_LABELS} from "@/constants/ui-strings/StatusLabels"
 
-    it("returns red for unknown codes", () => {
-      expect(getStatusTagColour("9999")).toBe("red")
+describe("Status Metadata Utility Functions", () => {
+  describe("getStatusTagColour", () => {
+    it.each(Object.keys(STATUS_LABELS.prescription))(
+      "returns the correct colour for known prescription status code %s",
+      (code) => {
+        const result = getStatusTagColour(code)
+        const expected = prescriptionStatusMap[code].color
+
+        expect(result).toBe(expected)
+        expect(typeof result).toBe("string")
+      }
+    )
+
+    it.each(["", "UNKNOWN", "9999"])("returns red for unknown code %s", (code) => {
+      expect(getStatusTagColour(code)).toBe("red")
     })
   })
 
   describe("getStatusDisplayText", () => {
-    it("returns correct label for known codes", () => {
-      expect(getStatusDisplayText("0001")).toBe("Available to download")
-    })
+    it.each(Object.entries(STATUS_LABELS.prescription))(
+      "returns label '%s' for prescription status code %s",
+      (code, expectedLabel) => {
+        expect(getStatusDisplayText(code)).toBe(expectedLabel)
+      }
+    )
 
-    it("returns Unknown for unknown codes", () => {
-      expect(getStatusDisplayText("XXXX")).toBe("Unknown")
+    it.each(["", "UNKNOWN", "9999"])("returns 'Unknown' for unknown code %s", (code) => {
+      expect(getStatusDisplayText(code)).toBe("Unknown")
     })
   })
 
   describe("getItemStatusTagColour", () => {
-    it("returns correct colour for known item codes", () => {
-      expect(getItemStatusTagColour("0001")).toBe("green")
-    })
+    it.each(Object.keys(STATUS_LABELS.item))(
+      "returns the correct colour for known item status code %s",
+      (code) => {
+        const result = getItemStatusTagColour(code)
+        const expected = itemStatusMap[code].color
 
-    it("returns red for unknown item codes", () => {
-      expect(getItemStatusTagColour("XXXX")).toBe("red")
+        expect(result).toBe(expected)
+        expect(typeof result).toBe("string")
+      }
+    )
+
+    it.each(["", "UNKNOWN", "9999"])("returns red for unknown code %s", (code) => {
+      expect(getItemStatusTagColour(code)).toBe("red")
     })
   })
 
   describe("getItemStatusDisplayText", () => {
-    it("returns correct label for known item codes", () => {
-      expect(getItemStatusDisplayText("0003")).toBe("Item dispensed - partial")
-    })
+    it.each(Object.entries(STATUS_LABELS.item))(
+      "returns label '%s' for item status code %s",
+      (code, expectedLabel) => {
+        expect(getItemStatusDisplayText(code)).toBe(expectedLabel)
+      }
+    )
 
-    it("returns Unknown for unknown item codes", () => {
-      expect(getItemStatusDisplayText("XXXX")).toBe("Unknown")
+    it.each(["", "UNKNOWN", "9999"])("returns 'Unknown' for unknown code %s", (code) => {
+      expect(getItemStatusDisplayText(code)).toBe("Unknown")
     })
   })
 
   describe("getPrescriptionTypeDisplayText", () => {
-    it("formats acute types", () => {
+    it("returns 'Acute' for type 0001", () => {
       expect(getPrescriptionTypeDisplayText("0001")).toBe("Acute")
+      expect(getPrescriptionTypeDisplayText("0001", 1, 5)).toBe("Acute")
     })
 
-    it("formats repeat with counts", () => {
-      expect(getPrescriptionTypeDisplayText("0002", 2, 6)).toBe("Repeat 2 of 6")
-    })
-
-    it("formats eRD with counts", () => {
-      expect(getPrescriptionTypeDisplayText("0003", 1, 3)).toBe("eRD 1 of 3")
-    })
-
-    it("returns simple labels for missing counts", () => {
+    it("returns 'Repeat' for type 0002 with no instance info", () => {
       expect(getPrescriptionTypeDisplayText("0002")).toBe("Repeat")
+    })
+
+    it("returns 'Repeat X of Y' for type 0002 with instance info", () => {
+      expect(getPrescriptionTypeDisplayText("0002", 1, 5)).toBe("Repeat 1 of 5")
+      expect(getPrescriptionTypeDisplayText("0002", 3, 6)).toBe("Repeat 3 of 6")
+    })
+
+    it("returns 'eRD' for type 0003 with no instance info", () => {
       expect(getPrescriptionTypeDisplayText("0003")).toBe("eRD")
     })
 
-    it("handles unknown codes", () => {
-      expect(getPrescriptionTypeDisplayText("XXXX")).toBe("Unknown")
+    it("returns 'eRD X of Y' for type 0003 with instance info", () => {
+      expect(getPrescriptionTypeDisplayText("0003", 2, 10)).toBe("eRD 2 of 10")
+      expect(getPrescriptionTypeDisplayText("0003", 5, 12)).toBe("eRD 5 of 12")
+    })
+
+    it("returns 'Unknown' for invalid prescription types", () => {
+      expect(getPrescriptionTypeDisplayText("0000")).toBe("Unknown")
+      expect(getPrescriptionTypeDisplayText("")).toBe("Unknown")
+      expect(getPrescriptionTypeDisplayText("INVALID")).toBe("Unknown")
+    })
+
+    it("handles missing or partial instance information correctly", () => {
+      expect(getPrescriptionTypeDisplayText("0002", 2)).toBe("Repeat")
+      expect(getPrescriptionTypeDisplayText("0003", 3)).toBe("eRD")
+      expect(getPrescriptionTypeDisplayText("0002", undefined, 6)).toBe("Repeat")
+      expect(getPrescriptionTypeDisplayText("0003", undefined, 10)).toBe("eRD")
     })
   })
 })

@@ -37,7 +37,7 @@ const mockSearchResponse: SearchResponse = {
   },
   currentPrescriptions: [
     {
-      prescriptionId: "RX001",
+      prescriptionId: "C0C757-A83008-C2D93O",
       statusCode: PrescriptionStatus.TO_BE_DISPENSED,
       issueDate: "2025-03-01",
       prescriptionTreatmentType: TreatmentType.REPEAT,
@@ -47,7 +47,7 @@ const mockSearchResponse: SearchResponse = {
       itemsPendingCancellation: false
     },
     {
-      prescriptionId: "RX002",
+      prescriptionId: "209E3D-A83008-327F9F",
       statusCode: PrescriptionStatus.WITH_DISPENSER,
       issueDate: "2025-02-15",
       prescriptionTreatmentType: TreatmentType.ACUTE,
