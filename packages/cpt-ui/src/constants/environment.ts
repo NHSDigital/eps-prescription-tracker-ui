@@ -59,6 +59,7 @@ export const FRONTEND_PATHS = {
   SEARCH_BY_PRESCRIPTION_ID: "/search-by-prescription-id",
   SEARCH_BY_NHS_NUMBER: "/search-by-nhs-number",
   SEARCH_BY_BASIC_DETAILS: "/search-by-basic-details",
+  SEARCH_RESULTS_TOO_MANY: "/search-results-too-many",
   PRESCRIPTION_DETAILS_PAGE: "/prescription-details"
 }
 
