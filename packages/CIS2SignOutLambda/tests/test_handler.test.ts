@@ -40,7 +40,8 @@ jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
       oidcUserInfoEndpoint: process.env["CIS2_USER_INFO_ENDPOINT"] ?? "",
       userPoolIdp: process.env["CIS2_USER_POOL_IDP"] ?? "",
       jwksClient: cis2JwksClient,
-      tokenMappingTableName: process.env["TokenMappingTableName"] ?? ""
+      tokenMappingTableName: process.env["TokenMappingTableName"] ?? "",
+      oidcTokenEndpoint: ""
     }
 
     const mockJwksUri = process.env["MOCK_OIDCJWKS_ENDPOINT"] as string
@@ -58,7 +59,8 @@ jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
       oidcUserInfoEndpoint: process.env["MOCK_USER_INFO_ENDPOINT"] ?? "",
       userPoolIdp: process.env["MOCK_USER_POOL_IDP"] ?? "",
       jwksClient: mockJwksClient,
-      tokenMappingTableName: process.env["TokenMappingTableName"] ?? ""
+      tokenMappingTableName: process.env["TokenMappingTableName"] ?? "",
+      oidcTokenEndpoint: ""
     }
 
     return {cis2OidcConfig, mockOidcConfig}
