@@ -15,9 +15,25 @@ export const STRINGS = {
   buttonText: "Find a patient",
   errorSummaryHeading: "There is a problem",
   errors: {
-    lastNameRequired: "Enter a last name",
-    lastNameTooLong: "Last name must be 35 characters or fewer",
-    firstNameTooLong: "First name must be 35 characters or fewer",
-    dobRequired: "Enter a complete date of birth"
+    lastNameRequired: "Enter the patient's last name",
+    lastNameTooLong: "Last name must be 35 characters or less",
+    lastNameInvalidChars: "Last name can only include letters, hyphens, apostrophes and spaces",
+
+    firstNameTooLong: "First name must be 35 characters or less",
+    firstNameInvalidChars: "First name can only include letters, hyphens, apostrophes and spaces",
+
+    dobRequired: "Enter the patient's date of birth",
+    dobDayRequired: "Date of birth must include a day",
+    dobMonthRequired: "Date of birth must include a month",
+    dobYearRequired: "Date of birth must include a year",
+    dobInvalidDate: "Date of birth must be a real date",
+    dobFutureDate: "Date of birth must be in the past",
+    dobYearTooShort: "Year must include 4 numbers",
+    dobNonNumericDay: "Day must only include numbers",
+    dobNonNumericMonth: "Month must only include numbers",
+    dobNonNumericYear: "Year must only include numbers",
+
+    postcodeTooShort: "Postcode must have at least 5 characters",
+    postcodeInvalidChars: "Enter a real UK postcode"
   }
 }
