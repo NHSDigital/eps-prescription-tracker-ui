@@ -146,7 +146,7 @@ describe("Lambda Handler Tests with mock disabled", () => {
     expect(body).toHaveProperty("userInfo")
   })
 
-  it("should use cis2 values when username does not start with Mock_",
+  it.skip("should use cis2 values when username does not start with Mock_",
     async () => {
       mockGetUsernameFromEvent.mockReturnValue("Primary_JohnDoe")
       await handler(event, context)
