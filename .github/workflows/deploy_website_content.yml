@@ -58,17 +58,20 @@ jobs:
       - name: Set Environment Variables
         id: setup-env
         run: |
-          hostedLoginDomain=$(aws cloudformation list-exports --region us-east-1 --query "Exports[?Name=='${{ inputs.SERVICE_NAME }}-us-certs:fullCognitoDomain:Name'].Value" --output text)
-          userPoolClientId=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${{ inputs.SERVICE_NAME }}-stateful-resources:userPoolClient:userPoolClientId'].Value" --output text)
-          userPoolId=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${{ inputs.SERVICE_NAME }}-stateful-resources:userPool:Id'].Value" --output text)
-          fullCloudfrontDomain=$(aws cloudformation list-exports --region us-east-1 --query "Exports[?Name=='${{ inputs.SERVICE_NAME }}-us-certs:fullCloudfrontDomain:Name'].Value" --output text)
-          rumUnauthenticatedRumRoleArn=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${{ inputs.SERVICE_NAME }}-stateful-resources:rum:unauthenticatedRumRole:Arn'].Value" --output text)
-          rumIdentityPoolId=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${{ inputs.SERVICE_NAME }}-stateful-resources:rum:identityPool:Id'].Value" --output text)
-          rumAppId=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${{ inputs.SERVICE_NAME }}-stateful-resources:rum:rumApp:Id'].Value" --output text)
-          rumAllowCookies=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${{ inputs.SERVICE_NAME }}-stateful-resources:rum:config:allowCookies'].Value" --output text)
-          rumEnableXRay=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${{ inputs.SERVICE_NAME }}-stateful-resources:rum:config:enableXRay'].Value" --output text)
-          rumSessionSampleRate=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${{ inputs.SERVICE_NAME }}-stateful-resources:rum:config:sessionSampleRate'].Value" --output text)
-          rumTelemetries=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='${{ inputs.SERVICE_NAME }}-stateful-resources:rum:config:telemetries'].Value" --output text)
+          CF_LONDON_EXPORTS=$(aws cloudformation list-exports --region eu-west-2 --output json)
+          CF_US_EXPORTS=$(aws cloudformation list-exports --region us-east-1 --output json)
+          SERVICE_NAME='${{ inputs.SERVICE_NAME }}'
+          hostedLoginDomain=$(echo "$CF_US_EXPORTS" | jq  --arg EXPORT_NAME "${SERVICE_NAME}-us-certs:fullCognitoDomain:Name" -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+          userPoolClientId=$(echo "$CF_LONDON_EXPORTS" | jq  --arg EXPORT_NAME "${SERVICE_NAME}-stateful-resources:userPoolClient:userPoolClientId" -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+          userPoolId=$(echo "$CF_LONDON_EXPORTS" | jq  --arg EXPORT_NAME "${SERVICE_NAME}-stateful-resources:userPool:Id" -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+          fullCloudfrontDomain=$(echo "$CF_US_EXPORTS" | jq  --arg EXPORT_NAME "${SERVICE_NAME}-us-certs:fullCloudfrontDomain:Name" -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+          rumUnauthenticatedRumRoleArn=$(echo "$CF_LONDON_EXPORTS" | jq  --arg EXPORT_NAME "${SERVICE_NAME}-stateful-resources:rum:unauthenticatedRumRole:Arn" -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+          rumIdentityPoolId=$(echo "$CF_LONDON_EXPORTS" | jq  --arg EXPORT_NAME "${SERVICE_NAME}-stateful-resources:rum:identityPool:Id" -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+          rumAppId=$(echo "$CF_LONDON_EXPORTS" | jq  --arg EXPORT_NAME "${SERVICE_NAME}-stateful-resources:rum:rumApp:Id" -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+          rumAllowCookies=$(echo "$CF_LONDON_EXPORTS" | jq  --arg EXPORT_NAME "${SERVICE_NAME}-stateful-resources:rum:config:allowCookies" -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+          rumEnableXRay=$(echo "$CF_LONDON_EXPORTS" | jq  --arg EXPORT_NAME "${SERVICE_NAME}-stateful-resources:rum:config:enableXRay" -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+          rumSessionSampleRate=$(echo "$CF_LONDON_EXPORTS" | jq  --arg EXPORT_NAME "${SERVICE_NAME}-stateful-resources:rum:config:sessionSampleRate" -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+          rumTelemetries=$(echo "$CF_LONDON_EXPORTS" | jq  --arg EXPORT_NAME "${SERVICE_NAME}-stateful-resources:rum:config:telemetries" -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
 
           {
             echo "hostedLoginDomain=${hostedLoginDomain}"
