@@ -124,7 +124,7 @@ export default function BasicDetailsSearch() {
               </ErrorSummary>
             )}
 
-            <div className="patient-search-form__field-group" data-testid="field-group">
+            <FormGroup data-testid="field-group">
               <h2
                 className="nhsuk-heading-m nhsuk-u-margin-bottom-3 no-outline"
                 id="basic-details-search-heading"
@@ -262,7 +262,7 @@ export default function BasicDetailsSearch() {
                   data-testid="postcode-input"
                 />
               </FormGroup>
-            </div>
+            </FormGroup>
 
             <Button id="basic-details-submit" type="submit" data-testid="find-patient-button">
               {STRINGS.buttonText}
