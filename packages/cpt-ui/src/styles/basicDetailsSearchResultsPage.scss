@@ -16,53 +16,26 @@ $spacing-lg: 1rem;
 $spacing-xl: 1.5rem;
 $spacing-2xl: 2rem;
 
-.query-results-table {
+.nhsuk-table__body {
   width: 100%;
+  background-color: #fff;
   margin-top: $spacing-xl;
   border-collapse: separate;
   border-spacing: 0;
-  font-size: $spacing-lg;
+  font-size: $spacing-md;
 
-  th, td {
+    th, td {
     padding-left: 12px;
     padding-right: 12px;
   }
 
-  &__header {
-    background: $color-header-bg;
-    font-weight: bold;
-    border-bottom: 2px solid $color-border-header;
-    padding: $spacing-md 0;
-    color: $color-text-header;
-  }
+  >.nhsuk-table__row:hover,
+:focus,
+:active {
+cursor: pointer;
+background-color: $color-hover-bg;
+border: 3px solid $color-hover-border;
+border-bottom: 3px solid $color-hover-border;
+}
 
-  &__data-row {
-    cursor: pointer;
-    background-color: #fff;
-    border: 0;
-    border-bottom: 1px solid $color-border;
-    transition: background 0.2s, border 0.2s;
-    outline: none;
-    box-sizing: border-box;
-
-    &:hover,
-    &:focus {
-      border: 3px solid $color-hover-border;
-      border-bottom: 3px solid $color-hover-border;
-    }
-
-    &:focus {
-      outline-offset: -4px;
-    }
-
-    &:active {
-      border: 3px solid $color-hover-border;
-      border-bottom: 3px solid $color-hover-border;
-    }
-  }
-
-  &__data-row-name {
-    text-decoration: underline;
-    font-weight: 500;
-  }
 }

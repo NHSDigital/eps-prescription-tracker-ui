@@ -6,7 +6,8 @@ import {
   Table,
   Container,
   Row,
-  Col
+  Col,
+  Breadcrumb
 } from "nhsuk-react-components"
 import {SearchResultsPageStrings} from "@/constants/ui-strings/BasicDetailsSearchResultsPageStrings"
 import {FRONTEND_PATHS} from "@/constants/environment"
@@ -51,12 +52,12 @@ export default function SearchResultsPage() {
 
   return (
     <main className="nhsuk-main-wrapper nhsuk-main-wrapper--s" id="main-content" role="main">
+      <Breadcrumb>
+        <Col width="full">
+          <BackLink onClick={handleGoBack}>{SearchResultsPageStrings.GO_BACK}</BackLink>
+        </Col>
+      </Breadcrumb>
       <Container>
-        <Row>
-          <Col width="full">
-            <BackLink onClick={handleGoBack}>{SearchResultsPageStrings.GO_BACK}</BackLink>
-          </Col>
-        </Row>
         <Row>
           <Col width="full">
             <h1 className="nhsuk-u-margin-bottom-3 nhsuk-heading-m" id="results-header">
@@ -65,14 +66,14 @@ export default function SearchResultsPage() {
             <h2 className="nhsuk-heading-xs" id="results-count-text">
               {SearchResultsPageStrings.RESULTS_COUNT.replace("{count}", sortedPatients.length.toString())}
             </h2>
-            <Table responsive className="query-results-table">
+            <Table responsive>
               <Table.Head role="rowgroup">
                 <Table.Row>
-                  <Table.Cell as="th" scope="col" width="23%">{SearchResultsPageStrings.TABLE.NAME}</Table.Cell>
-                  <Table.Cell as="th" scope="col" width="10%">{SearchResultsPageStrings.TABLE.GENDER}</Table.Cell>
-                  <Table.Cell as="th" scope="col" width="17%">{SearchResultsPageStrings.TABLE.DOB}</Table.Cell>
-                  <Table.Cell as="th" scope="col" width="35%">{SearchResultsPageStrings.TABLE.ADDRESS}</Table.Cell>
-                  <Table.Cell as="th" scope="col" width="15%">{SearchResultsPageStrings.TABLE.NHS_NUMBER}</Table.Cell>
+                  <Table.Cell as="th" scope="col" width="25%">{SearchResultsPageStrings.TABLE.NAME}</Table.Cell>
+                  <Table.Cell as="th" scope="col" width="8.3%">{SearchResultsPageStrings.TABLE.GENDER}</Table.Cell>
+                  <Table.Cell as="th" scope="col" width="16.67%">{SearchResultsPageStrings.TABLE.DOB}</Table.Cell>
+                  <Table.Cell as="th" scope="col" width="33%">{SearchResultsPageStrings.TABLE.ADDRESS}</Table.Cell>
+                  <Table.Cell as="th" scope="col" width="16.67%">{SearchResultsPageStrings.TABLE.NHS_NUMBER}</Table.Cell>
                 </Table.Row>
               </Table.Head>
               <Table.Body>
@@ -80,7 +81,6 @@ export default function SearchResultsPage() {
                   <Table.Row
                     key={patient.nhsNumber}
                     tabIndex={0}
-                    className="query-results-table__data-row"
                     onClick={() => handleRowClick(patient.nhsNumber)}
                     onKeyDown={e => (e.key === "Enter" || e.key === " ") && handleRowClick(patient.nhsNumber)}
                     aria-label={SearchResultsPageStrings.ACCESSIBILITY.PATIENT_ROW.replace("{name}", `${patient.given} ${patient.family}`)}
@@ -88,7 +88,6 @@ export default function SearchResultsPage() {
                   >
                     <Table.Cell>
                       <a
-                        className="query-results-table__data-row-name"
                         href="#"
                         onClick={(e) => {
                           e.preventDefault()
