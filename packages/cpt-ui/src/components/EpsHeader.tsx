@@ -8,7 +8,10 @@ import {
   HEADER_CHANGE_ROLE_BUTTON,
   HEADER_CHANGE_ROLE_TARGET,
   HEADER_SELECT_YOUR_ROLE_TARGET,
-  HEADER_SELECT_YOUR_ROLE_BUTTON
+  HEADER_SELECT_YOUR_ROLE_BUTTON,
+  HEADER_FEEDBACK_BUTTON,
+  HEADER_FEEDBACK_TARGET,
+  HEADER_LOG_OUT_BUTTON
 } from "@/constants/ui-strings/HeaderStrings"
 
 import {AuthContext} from "@/context/AuthProvider"
@@ -128,6 +131,16 @@ export default function EpsHeader() {
             </li>
           )}
 
+          {/* Give feedback (opens in new tab) */}
+          <Header.NavItem
+            href={HEADER_FEEDBACK_TARGET}
+            target="_blank"
+            rel="noopener noreferrer"
+            data-testid="eps_header_feedbackLink"
+          >
+            {HEADER_FEEDBACK_BUTTON}
+          </Header.NavItem>
+
           {/* Log out */}
           {shouldShowLogoutLink && (
             <li className="nhsuk-header__navigation-item">
@@ -137,7 +150,7 @@ export default function EpsHeader() {
                 data-testid="eps_header_logout"
                 onClick={handleLogoutClick}
               >
-                Log out
+                {HEADER_LOG_OUT_BUTTON}
               </Link>
             </li>
           )}
