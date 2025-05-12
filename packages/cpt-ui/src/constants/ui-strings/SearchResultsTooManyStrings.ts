@@ -1,10 +1,10 @@
 export const STRINGS = {
   heading: "Too many search results",
   intro: "There are too many results for these patient details:",
-  details: {
-    lastName: "Last name: Jones",
-    dob: "Date of birth: 01-Jan-2000"
-  },
+  firstName: "First name:",
+  lastName: "Last name:",
+  dob: "Date of birth:",
+  postcode: "Postcode:",
   retryMessage: "There are too many results for this search. Try adding more ",
   retryLinkText: "basic details",
   retryMessageSuffix: " and searching again.",

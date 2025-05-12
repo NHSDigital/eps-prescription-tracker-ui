@@ -5,11 +5,21 @@ import {
   Col,
   BackLink
 } from "nhsuk-react-components"
-import {Link} from "react-router-dom"
+import {Link, useLocation} from "react-router-dom"
 import {FRONTEND_PATHS} from "@/constants/environment"
 import {STRINGS} from "@/constants/ui-strings/SearchResultsTooManyStrings"
 
+interface SearchState {
+  firstName?: string
+  lastName: string
+  dob: string
+  postcode?: string
+}
+
 export default function SearchResultsTooManyPage() {
+  const location = useLocation()
+  const {firstName, lastName, dob, postcode} = (location.state || {}) as SearchState
+
   return (
     <Row>
       <nav className="nhsuk-breadcrumb nhsuk-u-padding-bottom-0 nhsuk-u-padding-left-8" aria-label="Breadcrumb">
@@ -18,24 +28,37 @@ export default function SearchResultsTooManyPage() {
         </Link>
       </nav>
 
-      <Container className="nhsuk-width-container-fluid patient-search-form-container"
-        data-testid="too-many-results-page">
-        <main className="nhsuk-main-wrapper nhsuk-main-wrapper--s patient-search-main-wrapper"
-          id="main-content" role="main"
-          data-testid="main-content">
+      <Container
+        className="nhsuk-width-container-fluid patient-search-form-container"
+        data-testid="too-many-results-page"
+      >
+        <main
+          className="nhsuk-main-wrapper nhsuk-main-wrapper--s patient-search-main-wrapper"
+          id="main-content"
+          role="main"
+          data-testid="main-content"
+        >
           <Row>
             <Col width="full">
-              <div className="query-results-header nhsuk-u-margin-left-2 nhsuk-u-margin-right-2" id="query-summary"
-                data-testid="query-summary">
-                <h1 className="nhsuk-heading-m nhsuk-u-margin-bottom-3" id="results-header"
-                  data-testid="too-many-results-heading">
+              <div
+                className="query-results-header nhsuk-u-margin-left-2 nhsuk-u-margin-right-2"
+                id="query-summary"
+                data-testid="query-summary"
+              >
+                <h1
+                  className="nhsuk-heading-m nhsuk-u-margin-bottom-3"
+                  id="results-header"
+                  data-testid="too-many-results-heading"
+                >
                   {STRINGS.heading}
                 </h1>
 
                 <p>{STRINGS.intro}</p>
                 <ul data-testid="too-many-results-details-list">
-                  <li>{STRINGS.details.lastName}</li>
-                  <li>{STRINGS.details.dob}</li>
+                  {firstName && <li>{STRINGS.firstName} {firstName}</li>}
+                  <li>{STRINGS.lastName} {lastName}</li>
+                  <li>{STRINGS.dob} {dob}</li>
+                  {postcode && <li>{STRINGS.postcode} {postcode}</li>}
                 </ul>
 
                 <p id="results-count-text" data-testid="too-many-results-count-text">

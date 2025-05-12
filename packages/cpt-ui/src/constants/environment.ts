@@ -60,7 +60,8 @@ export const FRONTEND_PATHS = {
   SEARCH_BY_NHS_NUMBER: "/search-by-nhs-number",
   SEARCH_BY_BASIC_DETAILS: "/search-by-basic-details",
   SEARCH_RESULTS_TOO_MANY: "/search-results-too-many",
-  PRESCRIPTION_DETAILS_PAGE: "/prescription-details"
+  PRESCRIPTION_DETAILS_PAGE: "/prescription-details",
+  PATIENT_SEARCH_RESULTS: "/patient-search-results"
 }
 
 // This needs to be provided in backend requests as a header

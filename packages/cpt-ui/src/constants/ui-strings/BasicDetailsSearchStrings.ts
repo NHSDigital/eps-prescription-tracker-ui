@@ -12,5 +12,12 @@ export const STRINGS = {
   dobYear: "Year",
   postcodeLabel: "Postcode (optional)",
   postcodeHint: "For example, LS1 1AB",
-  buttonText: "Find a patient"
+  buttonText: "Find a patient",
+  errorSummaryHeading: "There is a problem",
+  errors: {
+    lastNameRequired: "Enter a last name",
+    lastNameTooLong: "Last name must be 35 characters or fewer",
+    firstNameTooLong: "First name must be 35 characters or fewer",
+    dobRequired: "Enter a complete date of birth"
+  }
 }
