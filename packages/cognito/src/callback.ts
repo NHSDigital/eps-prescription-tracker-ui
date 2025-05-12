@@ -25,7 +25,6 @@ const middyErrorHandler = new MiddyErrorHandler(errorResponseBody)
 
 // Environment variables
 const stateMappingTableName = process.env["StateMappingTableName"] as string
-const SessionStateMappingTableName = process.env["SessionStateMappingTableName"] as string
 const fullCognitoDomain = process.env["COGNITO_DOMAIN"] as string
 
 const dynamoClient = new DynamoDBClient()
@@ -60,7 +59,6 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
   logger.debug("environment variables", {
     stateMappingTableName,
-    SessionStateMappingTableName,
     fullCognitoDomain
   })
 

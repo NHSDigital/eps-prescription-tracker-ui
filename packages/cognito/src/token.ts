@@ -55,8 +55,6 @@ const TokenMappingTableName = process.env["TokenMappingTableName"] as string
 const jwtPrivateKeyArn = process.env["jwtPrivateKeyArn"] as string
 const jwtKid = process.env["jwtKid"] as string
 
-const SessionStateMappingTableName = process.env["SessionStateMappingTableName"] as string
-
 const idpTokenPath = process.env["CIS2_IDP_TOKEN_PATH"] as string
 
 // Set the redirect back to our proxy lambda
@@ -81,7 +79,6 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     TokenMappingTableName,
     jwtPrivateKeyArn,
     jwtKid,
-    SessionStateMappingTableName,
     idpTokenPath
   })
 

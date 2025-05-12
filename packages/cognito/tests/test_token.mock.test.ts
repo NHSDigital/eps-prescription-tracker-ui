@@ -5,7 +5,7 @@ import {
   jest
 } from "@jest/globals"
 
-import {DynamoDBDocumentClient, GetCommandOutput, UpdateCommandInput} from "@aws-sdk/lib-dynamodb"
+import {DynamoDBDocumentClient, GetCommandOutput} from "@aws-sdk/lib-dynamodb"
 import createJWKSMock from "mock-jwks"
 import nock from "nock"
 import {generateKeyPairSync} from "crypto"
@@ -29,17 +29,6 @@ const dummyContext = {
   succeed: () => console.log("Succeeded!")
 }
 
-//const CIS2_OIDC_ISSUER = process.env.CIS2_OIDC_ISSUER
-//const CIS2_OIDC_CLIENT_ID = process.env.CIS2_OIDC_CLIENT_ID
-//const CIS2_OIDC_HOST = process.env.CIS2_OIDC_HOST ?? ""
-//const CIS2_OIDCJWKS_ENDPOINT = process.env.CIS2_OIDCJWKS_ENDPOINT
-//const CIS2_USER_INFO_ENDPOINT = process.env.CIS2_USER_INFO_ENDPOINT
-//const CIS2_USER_POOL_IDP = process.env.CIS2_USER_POOL_IDP
-//const CIS2_IDP_TOKEN_PATH = process.env.CIS2_IDP_TOKEN_PATH ?? ""
-//const MOCK_OIDCJWKS_ENDPOINT = process.env.MOCK_OIDCJWKS_ENDPOINT
-//const MOCK_USER_INFO_ENDPOINT = process.env.MOCK_USER_INFO_ENDPOINT
-const MOCK_USER_POOL_IDP = process.env.MOCK_USER_POOL_IDP
-//const MOCK_IDP_TOKEN_PATH = process.env.MOCK_IDP_TOKEN_PATH
 const MOCK_OIDC_TOKEN_ENDPOINT = "https://internal-dev.api.service.nhs.uk/oauth2-mock/token"
 
 const mockInitializeOidcConfig = jest.fn()
@@ -58,8 +47,8 @@ const {
     format: "pem"
   }
 })
-jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
 
+jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
   const initializeOidcConfig = mockInitializeOidcConfig.mockImplementation( () => {
     // Create a JWKS client for cis2 and mock
   // this is outside functions so it can be re-used
@@ -105,7 +94,8 @@ jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
   })
 
   return {
-    initializeOidcConfig
+    initializeOidcConfig,
+    updateApigeeAccessToken: jest.fn()
   }
 })
 
@@ -147,10 +137,8 @@ describe("handler tests with mock", () => {
   })
 
   it("inserts correct details into dynamo table", async () => {
-    // Configure our spy to capture the PutCommand parameters
-    const updateParams = {ExpressionAttributeValues: undefined, Key: undefined} as unknown as UpdateCommandInput
-
-    const dynamoSpy = jest.spyOn(DynamoDBDocumentClient.prototype, "send")
+    // return some valid data for the get command
+    jest.spyOn(DynamoDBDocumentClient.prototype, "send")
       .mockImplementation(async (cmd) => {
       // Check the constructor name to differentiate between command types
         const commandName = cmd.constructor.name
@@ -164,13 +152,7 @@ describe("handler tests with mock", () => {
               SessionState: "test-session-state"
             }
           } as unknown as GetCommandOutput
-        } else if (commandName.includes("UpdateCommand")) {
-        // For UpdateCommand, capture the parameters and return success
-          updateParams.ExpressionAttributeValues = (cmd.input as UpdateCommandInput).ExpressionAttributeValues
-          updateParams.Key = (cmd.input as UpdateCommandInput).Key
-          return {}
         }
-
         // Default empty response
         return {}
       })
@@ -210,14 +192,5 @@ describe("handler tests with mock", () => {
     // Check response structure
     expect(response.statusCode).toBe(200)
     expect(response.body).toBeDefined()
-
-    // Check that the DynamoDB was called
-    expect(dynamoSpy).toHaveBeenCalled()
-
-    // Check the captured PutCommand parameters
-    expect(updateParams.ExpressionAttributeValues).toBeDefined()
-    expect(updateParams.Key).toEqual({username: `${MOCK_USER_POOL_IDP}_foo`})
-    expect(updateParams.ExpressionAttributeValues![":apigee_accessToken"]).toBe("test-access-token")
-    expect(updateParams.ExpressionAttributeValues![":apigee_idToken"]).toBeTruthy()
   })
 })

@@ -3,13 +3,13 @@ import {Logger} from "@aws-lambda-powertools/logger"
 import {injectLambdaContext} from "@aws-lambda-powertools/logger/middleware"
 import {getSecret} from "@aws-lambda-powertools/parameters/secrets"
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
-import {DynamoDBDocumentClient, GetCommand, UpdateCommand} from "@aws-sdk/lib-dynamodb"
+import {DynamoDBDocumentClient, GetCommand} from "@aws-sdk/lib-dynamodb"
 import middy from "@middy/core"
 import inputOutputLogger from "@middy/input-output-logger"
 import axios from "axios"
 import {parse, stringify} from "querystring"
 import {PrivateKey} from "jsonwebtoken"
-import {initializeOidcConfig} from "@cpt-ui-common/authFunctions"
+import {initializeOidcConfig, updateApigeeAccessToken} from "@cpt-ui-common/authFunctions"
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 import {SessionStateItem} from "./types"
 import {v4 as uuidv4} from "uuid"
@@ -50,7 +50,7 @@ const cloudfrontDomain= process.env["FULL_CLOUDFRONT_DOMAIN"] as string
 const tokenMappingTable= process.env["TokenMappingTableName"] as string
 const jwtPrivateKeyArn= process.env["jwtPrivateKeyArn"] as string
 const jwtKid= process.env["jwtKid"] as string
-const sessionStateMappingTable= process.env["SessionStateMappingTableName"] as string
+const SessionStateMappingTableName = process.env["SessionStateMappingTableName"] as string
 const apigeeApiKey= process.env["APIGEE_API_KEY"] as string
 const apigeeApiSecret= process.env["APIGEE_API_SECRET"] as string
 const idpTokenPath= process.env["MOCK_IDP_TOKEN_PATH"] as string
@@ -66,47 +66,12 @@ async function getSessionState(code: string): Promise<SessionStateItem> {
   logger.debug("Retrieving session state", {code})
   const result = await documentClient.send(
     new GetCommand({
-      TableName: sessionStateMappingTable,
+      TableName: SessionStateMappingTableName,
       Key: {LocalCode: code}
     })
   )
   if (!result.Item) throw new Error("State not found in DynamoDB")
   return result.Item as SessionStateItem
-}
-
-async function storeApigeeTokenInfo(username: string, tokenData: {
-  accessToken: string;
-  jwtToken: string;
-  expirationTime: number;
-  refreshToken: string;
-  selectedRoleId: string;
-}) {
-  logger.debug("Storing token information", {username, expirationTime: tokenData.expirationTime})
-  try {
-    await documentClient.send(
-      new UpdateCommand({
-        TableName: tokenMappingTable,
-        Key: {username},
-        UpdateExpression: `
-          SET apigee_accessToken = :apigee_accessToken, 
-          apigee_idToken = :apigee_idToken, 
-          apigee_expiresIn = :apigee_expiresIn, 
-          apigee_refreshToken = :apigee_refreshToken, 
-          selectedRoleId = :selectedRoleId
-          `,
-        ExpressionAttributeValues: {
-          ":apigee_accessToken": tokenData.accessToken,
-          ":apigee_idToken": tokenData.jwtToken,
-          ":apigee_expiresIn": tokenData.expirationTime,
-          ":apigee_refreshToken": tokenData.refreshToken,
-          ":selectedRoleId": tokenData.selectedRoleId
-        }
-      })
-    )
-  } catch (error) {
-    logger.error("Failed to store token information", {error})
-    throw new Error("Failed to store token information in DynamoDB")
-  }
 }
 
 async function exchangeApigeeCode(apigeeCode: string, callbackUri: string) {
@@ -154,7 +119,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     tokenMappingTable,
     jwtPrivateKeyArn,
     jwtKid,
-    sessionStateMappingTable,
+    SessionStateMappingTableName,
     idpTokenPath
   })
 
@@ -196,13 +161,15 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
   const jwtToken = await createSignedJwt(jwtClaims)
 
-  await storeApigeeTokenInfo(username, {
-    accessToken: tokenResponse.access_token,
-    jwtToken,
+  await updateApigeeAccessToken(
+    documentClient,
+    tokenMappingTable,
+    username,
+    tokenResponse.access_token,
+    tokenResponse.refresh_token,
     expirationTime,
-    refreshToken: tokenResponse.refresh_token,
-    selectedRoleId: jwtClaims.selected_roleid
-  })
+    logger
+  )
 
   return {
     statusCode: 200,
