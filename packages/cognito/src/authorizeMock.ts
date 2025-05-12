@@ -76,7 +76,14 @@ const lambdaHandler = async (
   const stateTtl = Math.floor(Date.now() / 1000) + 300
 
   // Build the callback URI for redirection
-  const callbackUri = `https://${cloudfrontDomain}/oauth2/mock-callback`
+  const realCallbackUri = `https://${cloudfrontDomain}/oauth2/mock-callback`
+  const callbackUri = "https://cpt-ui.dev.eps.national.nhs.uk/oauth2/mock-callback"
+
+  const newStateJson = {
+    isPullRequest: true,
+    redirectUri: realCallbackUri
+  }
+  const newState = Buffer.from(JSON.stringify(newStateJson)).toString("base64")
 
   // Store original state mapping in DynamoDB
   const item: StateItem = {
@@ -97,7 +104,7 @@ const lambdaHandler = async (
     redirect_uri: callbackUri,
     client_id: apigeeApiKey,
     response_type: "code",
-    state: cis2State
+    state: newState
   }
 
   // how do we deal with different callback uri
