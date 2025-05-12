@@ -174,7 +174,7 @@ export default function BasicDetailsSearch() {
                   id="first-name"
                   name="first-name"
                   value={firstName}
-                  onChange={e => setFirstName(e.target.value)}
+                  onChange={e => setFirstName((e.target as HTMLInputElement).value)}
                   className={`nhsuk-input--width-20 ${hasError(["firstNameTooLong", "firstNameInvalidChars"])
                     ? "nhsuk-input--error" : ""}`}
                   data-testid="first-name-input"
@@ -203,7 +203,7 @@ export default function BasicDetailsSearch() {
                   id="last-name"
                   name="last-name"
                   value={lastName}
-                  onChange={e => setLastName(e.target.value)}
+                  onChange={e => setLastName((e.target as HTMLInputElement).value)}
                   className={`nhsuk-input--width-20 ${hasError([
                     "lastNameRequired",
                     "lastNameTooLong",
@@ -243,7 +243,7 @@ export default function BasicDetailsSearch() {
                           id="dob-day"
                           name="dob-day"
                           value={dobDay}
-                          onChange={e => setDobDay(e.target.value)}
+                          onChange={e => setDobDay((e.target as HTMLInputElement).value)}
                           className={`nhsuk-date-input__input nhsuk-input--width-2 ${hasError([
                             "dobDayRequired",
                             "dobInvalidDate",
@@ -264,7 +264,7 @@ export default function BasicDetailsSearch() {
                           id="dob-month"
                           name="dob-month"
                           value={dobMonth}
-                          onChange={e => setDobMonth(e.target.value)}
+                          onChange={e => setDobMonth((e.target as HTMLInputElement).value)}
                           className={`nhsuk-date-input__input nhsuk-input--width-2 ${hasError([
                             "dobMonthRequired",
                             "dobInvalidDate",
@@ -285,7 +285,7 @@ export default function BasicDetailsSearch() {
                           id="dob-year"
                           name="dob-year"
                           value={dobYear}
-                          onChange={e => setDobYear(e.target.value)}
+                          onChange={e => setDobYear((e.target as HTMLInputElement).value)}
                           className={`nhsuk-date-input__input nhsuk-input--width-4 ${hasError([
                             "dobYearRequired",
                             "dobInvalidDate",
@@ -324,7 +324,7 @@ export default function BasicDetailsSearch() {
                   id="postcode-only"
                   name="postcode-only"
                   value={postcode}
-                  onChange={e => setPostcode(e.target.value)}
+                  onChange={e => setPostcode((e.target as HTMLInputElement).value)}
                   className={`nhsuk-input--width-10 ${hasError(["postcodeTooShort", "postcodeInvalidChars"])
                     ? "nhsuk-input--error" : ""}`}
                   data-testid="postcode-input"
