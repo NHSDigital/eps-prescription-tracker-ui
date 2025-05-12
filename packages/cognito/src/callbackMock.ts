@@ -41,7 +41,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     const decodedState = JSON.parse(decodedStateString)
     if (decodedState.isPullRequest) {
       const responseParams = {
-        state,
+        state: decodedState.originalState,
         session_state: session_state || "",
         code
       }
