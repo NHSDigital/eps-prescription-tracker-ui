@@ -1,67 +1,218 @@
+import React, {useState} from "react"
 import {Link} from "react-router-dom"
+import {CookieStrings} from "@/constants/ui-strings/CookiePolicyStrings"
 
-const CookiePolicyPage = () => (
-  <main className="nhsuk-main-wrapper nhsuk-main-wrapper--s" id="main-content" role="main">
-    <nav className="nhsuk-breadcrumb" aria-label="Breadcrumb">
-      <ol className="nhsuk-breadcrumb__list">
-        <li className="nhsuk-breadcrumb__item">
-          <Link className="nhsuk-breadcrumb__link" to="/search">Home</Link>
-        </li>
-      </ol>
-      <p className="nhsuk-breadcrumb__back">
-        <a className="nhsuk-breadcrumb__backlink" href="#">
-          <span className="nhsuk-u-visually-hidden">Back to &nbsp;</span>
-          Level three
-        </a>
-      </p>
-    </nav>
+interface Cookie {
+  name: string;
+  purpose: string;
+  expiry: string;
+}
+interface CookieTableProps {
+  cookies: Array<Cookie>;
+  title: string;
+}
 
-    <div className="nhsuk-grid-row">
-      <div className="nhsuk-grid-column-full">
-        <h1 className="nhsuk-heading-xl">Cookie policy</h1>
+const CookiePolicyPage = () => {
+  const essentialCookies: Array<Cookie> = [
+    {
+      name: CookieStrings.essential.name1,
+      purpose: CookieStrings.essential.purpose1,
+      expiry: CookieStrings.essential.expiry1
+    },
+    {
+      name: CookieStrings.essential.name2,
+      purpose: CookieStrings.essential.purpose2,
+      expiry: CookieStrings.essential.expiry2
+    },
+    {
+      name: CookieStrings.essential.name3,
+      purpose: CookieStrings.essential.purpose3,
+      expiry: CookieStrings.essential.expiry3
+    },
+    {
+      name: CookieStrings.essential.name4,
+      purpose: CookieStrings.essential.purpose4,
+      expiry: CookieStrings.essential.expiry4
+    },
+    {
+      name: CookieStrings.essential.name5,
+      purpose: CookieStrings.essential.purpose5,
+      expiry: CookieStrings.essential.expiry5
+    },
+    {
+      name: CookieStrings.essential.name6,
+      purpose: CookieStrings.essential.purpose6,
+      expiry: CookieStrings.essential.expiry6
+    },
+    {
+      name: CookieStrings.essential.name7,
+      purpose: CookieStrings.essential.purpose7,
+      expiry: CookieStrings.essential.expiry7
+    }
+  ]
+
+  const analyticsCookies: Array<Cookie> = [
+    {
+      name: CookieStrings.analytics.name1,
+      purpose: CookieStrings.analytics.purpose1,
+      expiry: CookieStrings.analytics.expiry1
+    },
+    {
+      name: CookieStrings.analytics.name2,
+      purpose: CookieStrings.analytics.purpose2,
+      expiry: CookieStrings.analytics.expiry2
+    }
+  ]
+
+  const [essentialCookiesOpen, setEssentialCookiesOpen] = useState<boolean>(false)
+  const [analyticsCookiesOpen, setAnalyticsCookiesOpen] = useState<boolean>(false)
+
+  const CookieTable: React.FC<CookieTableProps> = ({cookies, title}) => (
+    <details
+      className="nhsuk-details"
+      open={title === "Essential cookies" ? essentialCookiesOpen : analyticsCookiesOpen}
+      onToggle={(e) => {
+        if (title === "Essential cookies") {
+          setEssentialCookiesOpen(e.currentTarget.open)
+        } else {
+          setAnalyticsCookiesOpen(e.currentTarget.open)
+        }
+      }}
+    >
+      <summary
+        className="nhsuk-details__summary"
+        onClick={(e) => {
+          e.preventDefault()
+          if (title === "Essential cookies") {
+            setEssentialCookiesOpen(!essentialCookiesOpen)
+          } else {
+            setAnalyticsCookiesOpen(!analyticsCookiesOpen)
+          }
+        }}
+      >
+        <span className="nhsuk-details__summary-text">
+          See the {title.toLowerCase()} we use
+        </span>
+      </summary>
+      <div className="nhsuk-details__text">
+        <table role="table" className="nhsuk-table-responsive">
+          <caption className="nhsuk-table__caption nhsuk-u-visually-hidden">
+            {title}
+          </caption>
+          <thead role="rowgroup" className="nhsuk-table__head">
+            <tr role="row">
+              <th role="columnheader" scope="col">
+                Cookie name
+              </th>
+              <th role="columnheader" scope="col">
+                Purpose
+              </th>
+              <th role="columnheader" scope="col">
+                Expiry
+              </th>
+            </tr>
+          </thead>
+          <tbody className="nhsuk-table__body">
+            {cookies.map((cookie, index) => (
+              <tr key={index} role="row" className="nhsuk-table__row">
+                <td role="cell" className="nhsuk-table__cell">
+                  <span className="nhsuk-table-responsive__heading" aria-hidden="true">Cookie name </span>
+                  {cookie.name}
+                </td>
+                <td role="cell" className="nhsuk-table__cell">
+                  <span className="nhsuk-table-responsive__heading" aria-hidden="true">Purpose </span>
+                  {cookie.purpose}
+                </td>
+                <td role="cell" className="nhsuk-table__cell">
+                  <span className="nhsuk-table-responsive__heading" aria-hidden="true">Expiry </span>
+                  {cookie.expiry}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </details>
+  )
+
+  return (
+    <div className="cookie-policy-container">
+      <main className="nhsuk-main-wrapper nhsuk-main-wrapper--s" id="main-content" role="main">
+        <nav className="nhsuk-breadcrumb" aria-label="Breadcrumb">
+          <ol className="nhsuk-breadcrumb__list">
+            <li className="nhsuk-breadcrumb__item">
+              <Link className="nhsuk-breadcrumb__link" to="/search">Home</Link>
+            </li>
+          </ol>
+          <p className="nhsuk-breadcrumb__back">
+            <a className="nhsuk-breadcrumb__backlink" href="#">
+              <span className="nhsuk-u-visually-hidden">Back to &nbsp;</span>
+              Level three
+            </a>
+          </p>
+        </nav>
+        <h1 className="nhsuk-heading-xl">{CookieStrings.title}</h1>
         <p>
-          NHS England uses cookies on the Clinical Prescription Tracking Service (CPTS).
-          For information about how we store your data, check our{" "}
-          <a href="#">privacy policy</a> for this service.
+          {CookieStrings.intro.paragraph1.split("privacy policy")[0]}
+          <a href="#">{CookieStrings.intro.privacyPolicyText}</a>
+          {CookieStrings.intro.paragraph1.split("privacy policy")[1]}
         </p>
 
-        <h2 className="nhsuk-heading-l">What are cookies?</h2>
+        <h2 className="nhsuk-heading-l">{CookieStrings.whatAreCookies.heading}
+        </h2>
+        <p>{CookieStrings.whatAreCookies.paragraph1}</p>
+        <p>{CookieStrings.whatAreCookies.paragraph2}</p>
+        <p>{CookieStrings.whatAreCookies.paragraph3}</p>
+        <h2 className="nhsuk-heading-l">{CookieStrings.howWeUseCookies.heading}
+        </h2>
+        <p>{CookieStrings.howWeUseCookies.paragraph1}</p>
+        <p>{CookieStrings.howWeUseCookies.paragraph2}</p>
+        <h2 className="nhsuk-heading-l">{CookieStrings.essentialCookies.heading}</h2>
+        <CookieTable
+          cookies={essentialCookies}
+          title={CookieStrings.essentialCookies.tableTitle}
+        />
+        <h2 className="nhsuk-heading-l">{CookieStrings.analyticsCookies.heading}</h2>
         <p>
-          Cookies are small files that are put on your phone, tablet, laptop or computer when you use a website or app.
+          {CookieStrings.analyticsCookies.paragraph1.split("Amazon CloudWatch RUM privacy policy")[0]}
+          <a href="#">{CookieStrings.analyticsCookies.policyLinkText}</a>
+          {CookieStrings.analyticsCookies.paragraph1.split("Amazon CloudWatch RUM privacy policy")[1]}
         </p>
-        <p>
-          Some cookies make a website or app work and others store information about how you use a service,
-          such as the pages you visit.
-        </p>
-        <p>Cookies are not viruses or computer programs. They are very small so do not take up much space.</p>
-
-        <h2 className="nhsuk-heading-l">How we use cookies</h2>
-        <p>We use cookies to make our service work and keep it secure. These are known as essential cookies.</p>
-        <p>
-          We also use cookies to measure how you use our service.
-          These are analytics cookies and we will only use them if you say it’s ok.
-        </p>
+        <CookieTable
+          cookies={analyticsCookies}
+          title={CookieStrings.analyticsCookies.tableTitle}
+        />
 
         <div className="nhsuk-form-group">
           <fieldset className="nhsuk-fieldset">
             <legend className="nhsuk-fieldset__legend nhsuk-fieldset__legend--m">
               <h3 className="nhsuk-fieldset__heading">
-                Choose if we can use cookies to measure your website use
+                {CookieStrings.cookieSettings.heading}
               </h3>
             </legend>
-
             <div className="nhsuk-radios">
               <div className="nhsuk-radios__item">
-                <input className="nhsuk-radios__input" id="example-1" name="cookie-measure" type="radio" value="yes" />
+                <input
+                  className="nhsuk-radios__input"
+                  id="example-1"
+                  name="cookie-measure"
+                  type="radio"
+                  value="yes"
+                />
                 <label className="nhsuk-label nhsuk-radios__label" htmlFor="example-1">
-                  Use cookies to measure my website use
+                  {CookieStrings.cookieSettings.acceptLabel}
                 </label>
               </div>
-
               <div className="nhsuk-radios__item">
-                <input className="nhsuk-radios__input" id="example-2" name="cookie-measure" type="radio" value="no" />
+                <input
+                  className="nhsuk-radios__input"
+                  id="example-2"
+                  name="cookie-measure"
+                  type="radio"
+                  value="no"
+                />
                 <label className="nhsuk-label nhsuk-radios__label" htmlFor="example-2">
-                  Do not use cookies to measure my website use
+                  {CookieStrings.cookieSettings.rejectLabel}
                 </label>
               </div>
             </div>
@@ -69,19 +220,19 @@ const CookiePolicyPage = () => (
         </div>
 
         <Link className="nhsuk-button" to="/cookies-selected">
-          Save my cookie settings
+          {CookieStrings.cookieSettings.saveButton}
         </Link>
 
-        <h2 className="nhsuk-heading-l">How to change your cookie settings</h2>
-        <p>You can visit this page at any time to change your cookie settings.</p>
-        <p>You can also change your cookie settings in most devices and browsers.</p>
-        <p>CPTS might not work properly if all cookies are turned off.</p>
+        <h2 className="nhsuk-heading-l">{CookieStrings.changeSettings.heading}</h2>
+        <p>{CookieStrings.changeSettings.paragraph1}</p>
+        <p>{CookieStrings.changeSettings.paragraph2}</p>
+        <p>{CookieStrings.changeSettings.paragraph3}</p>
 
-        <h2 className="nhsuk-heading-l">Changes to this cookie policy</h2>
-        <p>If this policy changes, you will see the cookie banner again next time you visit CPTS.</p>
-      </div>
+        <h2 className="nhsuk-heading-l">{CookieStrings.policyChanges.heading}</h2>
+        <p>{CookieStrings.policyChanges.paragraph1}</p>
+      </main>
     </div>
-  </main>
-)
+  )
+}
 
 export default CookiePolicyPage

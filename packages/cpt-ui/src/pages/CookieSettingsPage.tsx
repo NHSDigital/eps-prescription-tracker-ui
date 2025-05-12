@@ -3,7 +3,7 @@ import {Link} from "react-router-dom"
 
 export default function CookieSettingsPage() {
   return (
-    <main className="nhsuk-main-wrapper nhsuk-main-wrapper--s" id="main-content" role="main">
+    <main className="nhsuk-navigation-container">
       <nav className="nhsuk-breadcrumb" aria-label="Breadcrumb">
         <ol className="nhsuk-breadcrumb__list">
           <li className="nhsuk-breadcrumb__item">

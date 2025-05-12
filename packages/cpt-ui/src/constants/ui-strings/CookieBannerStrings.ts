@@ -14,5 +14,7 @@ export const CookieStrings = {
   cookies_page_link: FRONTEND_PATHS.COOKIES,
   cookie_banner: "cookie banner",
   accept_cookies: "Accept analytics cookies",
-  reject_cookies: "Reject analytics cookies"
+  reject_cookies: "Reject analytics cookies",
+  text_linking_to_info_page: "You can change your cookie settings at any time using our ",
+  cookies_page: "cookies page"
 }

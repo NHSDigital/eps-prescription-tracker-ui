@@ -1,7 +1,7 @@
 import React, {useState} from "react"
 import {Link, useLocation} from "react-router-dom"
-import "../styles/epscookiebanner.scss"
-import {CookieStrings} from "@/constants/ui-strings/CookieStrings"
+import "../styles/epscookies.scss"
+import {CookieStrings} from "@/constants/ui-strings/CookieBannerStrings"
 
 export default function EPSCookieBanner() {
   const [cookiesSet, setCookiesSet] = useState<"accepted" | "rejected" | null>(null)
@@ -31,10 +31,7 @@ export default function EPSCookieBanner() {
         <div className="nhsuk-cookie-banner" id="cookieBanner" role="banner" aria-label={CookieStrings.cookie_banner}>
           <div className="page-section">
             <div className="nhsuk-width-container">
-              <h2
-                className="nhsuk-cookie-banner-heading"
-                data
-              >
+              <h2 className="nhsuk-cookie-banner-heading">
                 {CookieStrings.banner.cookie_title}
               </h2>
               <p className="nhsuk-body">
@@ -54,18 +51,18 @@ export default function EPSCookieBanner() {
               </p>
               <div className="nhsuk-button-group nhsuk-u-margin-bottom-0">
                 <button
-                  id="accept"
                   type="button"
                   className="nhsuk-button full-width nhsuk-u-margin-right-3"
                   onClick={() => handleCookieChoice("accepted")}
+                  data-testid="accept-button"
                 >
                   {CookieStrings.accept_cookies}
                 </button>
                 <button
-                  id="reject"
                   type="button"
                   className="nhsuk-button full-width"
                   onClick={() => handleCookieChoice("rejected")}
+                  data-testid="reject-button"
                 >
                   {CookieStrings.reject_cookies}
                 </button>
@@ -78,9 +75,9 @@ export default function EPSCookieBanner() {
       {cookiesSet !== null && (
         <div className="chargeable-status-banner--green" id="chargeable-status-banner-id">
           <div className="chargeable-status-banner-content">
-            You can change your cookie settings at any time using our{" "}
+            {CookieStrings.text_linking_to_info_page}
             <Link to="/cookies" className="chargeable-status-banner-link">
-              cookies page
+              {CookieStrings.cookies_page}
             </Link>.
           </div>
         </div>

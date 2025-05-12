@@ -1,4 +1,5 @@
 import {render, screen, fireEvent} from "@testing-library/react"
+import {MemoryRouter} from "react-router-dom"
 import EPSCookieBanner from "@/components/EPSCookieBanner"
 
 beforeEach(() => {
@@ -19,22 +20,39 @@ afterEach(() => {
   jest.clearAllMocks()
 })
 
-test("accepts cookies and calls NHSCookieConsent methods", () => {
-  render(<EPSCookieBanner />)
+describe("EPSCookieBanner", () => {
+  const renderComponent = () => {
+    return render(
+      <MemoryRouter>
+        <EPSCookieBanner />
+      </MemoryRouter>
+    )
+  }
 
-  const acceptButton = screen.getByRole("button", {name: /accept analytics cookies/i})
-  fireEvent.click(acceptButton)
+  it("accepts cookies and calls NHSCookieConsent methods when clicked", () => {
+    renderComponent()
+    const acceptButton = screen.getByRole("button", {name: /accept analytics cookies/i})
+    fireEvent.click(acceptButton)
+    expect(window.NHSCookieConsent.setStatistics).toHaveBeenCalledWith(true)
+    expect(window.NHSCookieConsent.setConsented).toHaveBeenCalledWith(true)
+  })
 
-  expect(window.NHSCookieConsent.setStatistics).toHaveBeenCalledWith(true)
-  expect(window.NHSCookieConsent.setConsented).toHaveBeenCalledWith(true)
-})
+  it("rejects cookies and disables statistics", () => {
+    renderComponent()
+    const rejectButton = screen.getByRole("button", {name: /reject analytics cookies/i})
+    fireEvent.click(rejectButton)
+    expect(window.NHSCookieConsent.setStatistics).toHaveBeenCalledWith(false)
+    expect(window.NHSCookieConsent.setConsented).toHaveBeenCalledWith(true)
+  })
 
-test("rejects cookies and disables statistics", () => {
-  render(<EPSCookieBanner />)
+  it("does not render when on cookies page", () => {
+    render(
+      <MemoryRouter initialEntries={["/cookies"]}>
+        <EPSCookieBanner />
+      </MemoryRouter>
+    )
 
-  const rejectButton = screen.getByRole("button", {name: /reject analytics cookies/i})
-  fireEvent.click(rejectButton)
-
-  expect(window.NHSCookieConsent.setStatistics).toHaveBeenCalledWith(false)
-  expect(window.NHSCookieConsent.setConsented).toHaveBeenCalledWith(true)
+    const cookieBanner = screen.queryByRole("banner", {name: /cookie banner/i})
+    expect(cookieBanner).toBeNull()
+  })
 })
