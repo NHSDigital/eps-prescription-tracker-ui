@@ -9,7 +9,7 @@ import axios from "axios"
 import {formatHeaders} from "./utils/headerUtils"
 import {validateSearchParams} from "./utils/validation"
 import {getPdsPatientDetails} from "./services/patientDetailsLookupService"
-import {getPrescriptions, PrescriptionError} from "./services/prescriptionsLookupService"
+import {getPrescriptions} from "./services/prescriptionsLookupService"
 import {SearchParams} from "./utils/types"
 
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
@@ -174,45 +174,31 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
       })
 
       // Check if NHS Number has been superseded
+      let nhsNumber = searchParams.nhsNumber
       if (patientDetails.supersededBy) {
         logger.info("Using superseded NHS Number for prescription search", {
           originalNhsNumber: searchParams.nhsNumber,
           newNhsNumber: patientDetails.supersededBy
         })
-        // Use the superseded NHS Number for prescription search
-        const prescriptions = await getPrescriptions(
-          axiosInstance,
-          logger,
-          apigeePrescriptionsEndpoint,
-          {nhsNumber: patientDetails.supersededBy},
-          apigeeAccessToken,
-          roleId
-        )
-
-        logger.debug("Prescriptions", {
-          total: prescriptions.length,
-          body: prescriptions
-        })
-
-        searchResponse = mapSearchResponse(patientDetails, prescriptions)
-      } else {
-        // Normal flow - use original NHS Number
-        const prescriptions = await getPrescriptions(
-          axiosInstance,
-          logger,
-          apigeePrescriptionsEndpoint,
-          {nhsNumber: searchParams.nhsNumber},
-          apigeeAccessToken,
-          roleId
-        )
-
-        logger.debug("Prescriptions", {
-          total: prescriptions.length,
-          body: prescriptions
-        })
-
-        searchResponse = mapSearchResponse(patientDetails, prescriptions)
+        nhsNumber = patientDetails.supersededBy
       }
+      // Normal flow - use original NHS Number
+      const prescriptions = await getPrescriptions(
+        axiosInstance,
+        logger,
+        apigeePrescriptionsEndpoint,
+        {nhsNumber},
+        apigeeAccessToken,
+        roleId
+      )
+
+      logger.debug("Prescriptions", {
+        total: prescriptions.length,
+        body: prescriptions
+      })
+
+      searchResponse = mapSearchResponse(patientDetails, prescriptions)
+
     } else {
       // Prescription ID search flow
       const prescriptions = await getPrescriptions(
@@ -226,7 +212,11 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
       // Get patient details using NHS Number from first prescription
       if (prescriptions.length === 0) {
-        throw new PrescriptionError("Prescription not found")
+        return {
+          statusCode: 404,
+          body: JSON.stringify({message: "Prescription not found"}),
+          headers: formatHeaders({"Content-Type": "application/json"})
+        }
       }
 
       logger.debug("Prescriptions", {
@@ -269,14 +259,6 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
       error,
       timeMs: Date.now() - searchStartTime
     })
-
-    if (error instanceof PrescriptionError && error.message === "Prescription not found") {
-      return {
-        statusCode: 404,
-        body: JSON.stringify({message: "Prescription not found"}),
-        headers: formatHeaders({"Content-Type": "application/json"})
-      }
-    }
 
     throw error
   }
