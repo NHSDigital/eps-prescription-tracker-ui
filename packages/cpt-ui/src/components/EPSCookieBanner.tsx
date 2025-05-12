@@ -28,10 +28,13 @@ export default function EPSCookieBanner() {
   return (
     <>
       {cookiesSet === null && (
-        <div className="nhsuk-cookie-banner" id="cookieBanner" role="banner" aria-label="Cookie banner">
+        <div className="nhsuk-cookie-banner" id="cookieBanner" role="banner" aria-label={CookieStrings.cookie_banner}>
           <div className="page-section">
             <div className="nhsuk-width-container">
-              <h2 className="nhsuk-cookie-banner__heading govuk-heading-m">
+              <h2
+                className="nhsuk-cookie-banner-heading"
+                data
+              >
                 {CookieStrings.banner.cookie_title}
               </h2>
               <p className="nhsuk-body">
@@ -42,7 +45,11 @@ export default function EPSCookieBanner() {
               </p>
               <p className="nhsuk-body">
                 {CookieStrings.banner.cookie_text_p3}
-                {CookieStrings.cookies_page_link}
+                <Link
+                  to={CookieStrings.cookies_page_link}
+                  className="cookie_info_link"
+                >{CookieStrings.banner.cookies_info_link_text}
+                </Link>
                 {CookieStrings.banner.cookie_text_p4}
               </p>
               <div className="nhsuk-button-group nhsuk-u-margin-bottom-0">
@@ -52,7 +59,7 @@ export default function EPSCookieBanner() {
                   className="nhsuk-button full-width nhsuk-u-margin-right-3"
                   onClick={() => handleCookieChoice("accepted")}
                 >
-                  Accept analytics cookies
+                  {CookieStrings.accept_cookies}
                 </button>
                 <button
                   id="reject"
@@ -60,7 +67,7 @@ export default function EPSCookieBanner() {
                   className="nhsuk-button full-width"
                   onClick={() => handleCookieChoice("rejected")}
                 >
-                  Reject analytics cookies
+                  {CookieStrings.reject_cookies}
                 </button>
               </div>
             </div>
