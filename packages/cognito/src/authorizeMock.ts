@@ -77,11 +77,12 @@ const lambdaHandler = async (
 
   // Build the callback URI for redirection
   const realCallbackUri = `https://${cloudfrontDomain}/oauth2/mock-callback`
-  const callbackUri = "https://cpt-ui.dev.eps.national.nhs.uk/oauth2/mock-callback"
+  const callbackUri = "https://cpt-ui-pr-854.dev.eps.national.nhs.uk/oauth2/mock-callback"
 
   const newStateJson = {
     isPullRequest: true,
-    redirectUri: realCallbackUri
+    redirectUri: realCallbackUri,
+    originalState: cis2State
   }
   const newState = Buffer.from(JSON.stringify(newStateJson)).toString("base64")
 

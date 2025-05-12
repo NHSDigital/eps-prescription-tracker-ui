@@ -53,10 +53,10 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   const {state, code, session_state} = event.queryStringParameters || {}
   if (!state || !code) {
     logger.error(
-      "Missing required query parameters: state, code, or session_state",
+      "Missing required query parameters: state, or code",
       {state, code, session_state}
     )
-    throw new Error("Missing required query parameters: state, code, or session_state")
+    throw new Error("Missing required query parameters: state or code")
   }
   logger.info("Incoming query parameters", {state, code, session_state})
 
@@ -67,7 +67,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     const decodedState = JSON.parse(decodedStateString)
     if (decodedState.isPullRequest) {
       const responseParams = {
-        state,
+        state: decodedState.originalState,
         session_state: session_state || "",
         code
       }
