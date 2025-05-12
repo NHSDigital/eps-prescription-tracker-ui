@@ -36,7 +36,8 @@ describe("Callback Response Lambda Handler", () => {
     // Prepare an event with valid query parameters.
     const stateObject = {
       isPullRequest: true,
-      redirectUri: "https://foo/bar"
+      redirectUri: "https://foo/bar",
+      originalState: "foo"
     }
     const stateString = JSON.stringify(stateObject)
     const state = Buffer.from(stateString).toString("base64")
@@ -57,7 +58,7 @@ describe("Callback Response Lambda Handler", () => {
     // Verify the redirect URL.
     const redirectUrl = new URL(result.headers?.Location as string)
     const params = redirectUrl.searchParams
-    expect(params.get("state")).toBe(state)
+    expect(params.get("state")).toBe("foo")
     expect(params.get("session_state")).toBe("testSessionState")
     expect(params.get("code")).toBe("testCode")
     expect(redirectUrl.hostname).toBe("foo")
