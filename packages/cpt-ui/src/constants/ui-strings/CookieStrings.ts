@@ -1,4 +1,22 @@
+import {FRONTEND_PATHS} from "@/constants/environment"
+
 export const CookieStrings = {
+  banner : {
+    cookie_title: "Cookies on the Clinical prescription tracking service",
+    cookie_text_p1: "We've put some small files called cookies on your device to make our site work.",
+    cookie_text_p2: "We’d also like to use analytics cookies. "
+    + "These send anonymous information about how our site is used to a service "
+    + "called Amazon CloudWatch RUM. We use this information to improve our site.",
+    cookie_text_p3:"Let us know if this is OK. We'll use a cookie to save your choice. You can ",
+    cookie_text_p4: "before you choose.",
+    cookies_info_link_text: "read more about our cookies "
+  },
+  cookies_page_link: FRONTEND_PATHS.COOKIES,
+  cookie_banner: "cookie banner",
+  accept_cookies: "Accept analytics cookies",
+  reject_cookies: "Reject analytics cookies",
+  text_linking_to_info_page: "You can change your cookie settings at any time using our ",
+  cookies_page: "cookies page",
   essential: {
     name1: "cpts-cookie-consent",
     purpose1: "Saves your cookie consent settings",
@@ -45,7 +63,7 @@ export const CookieStrings = {
     purpose2: "Used by Amazon CloudWatch RUM. Tells us if you've used our bsite before",
     expiry2: "When you close the browser"
   },
-  title: "Cookie policy",
+  cookie_policy: "Cookie policy",
 
   intro: {
     paragraph1:
@@ -68,7 +86,7 @@ export const CookieStrings = {
     heading: "How we use cookies",
     paragraph1: "We use cookies to make our service work and keep it secure. These are known as essential cookies.",
     paragraph2:
-     "We also use cookies to measure how you use our service. " +
+     "We also use cookies to measure how you use our service, such as which links you click on. " +
      "These are analytics cookies and we will only use them if you say it's ok."
   },
 
@@ -98,12 +116,28 @@ export const CookieStrings = {
   changeSettings: {
     heading: "How to change your cookie settings",
     paragraph1: "You can visit this page at any time to change your cookie settings.",
-    paragraph2: "You can also change your cookie settings in most devices and browsers.",
-    paragraph3: "CPTS might not work properly if all cookies are turned off."
+    paragraph2: "You can also change your cookie settings in most devices and browsers. " +
+    "CPTS might not work properly if all cookies are turned off, because it needs the essential cookies to work.",
+    paragraph3:
+    "You can also delete any cookies that are already on your device or browser by visiting their cookie settings. "
   },
 
   policyChanges: {
     heading: "Changes to this cookie policy",
-    paragraph1: "If this policy changes, you will see the cookie banner again next time you visit CPTS."
-  }
+    paragraph1:
+    "If this cookie policy changes, you will see the cookie banner again next time you visit CPTS. " +
+    "You can check this policy for any changes to the cookies that we use"
+  },
+  savedCookieSettings: "Your cookie settings have been saved",
+  home: "Home",
+  saveSettings: "We'll save your settings for a year.",
+  questionSaveSettings: "We'll ask you if you're still OK with us using cookies when either:",
+  oneYear: "it's been a year since you last saved your settings",
+  newCookies: "we add any new cookies or change the cookies we use",
+  also: "You can also ",
+  cookieChoose: "choose which cookies we use",
+  anyTime: " at any time.",
+  pageLastReviewed: "Page last reviewed: 15 March 2025",
+  pageNextReviewed: "Next review due: 15 March 2026",
+  cptCookies: "Cookies on the Clinical Prescription Tracking Service "
 }

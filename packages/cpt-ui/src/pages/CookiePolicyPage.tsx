@@ -1,6 +1,6 @@
 import React, {useState} from "react"
 import {Link} from "react-router-dom"
-import {CookieStrings} from "@/constants/ui-strings/CookiePolicyStrings"
+import {CookieStrings} from "@/constants/ui-strings/CookieStrings"
 
 interface Cookie {
   name: string;
@@ -141,7 +141,7 @@ const CookiePolicyPage = () => {
         <nav className="nhsuk-breadcrumb" aria-label="Breadcrumb">
           <ol className="nhsuk-breadcrumb__list">
             <li className="nhsuk-breadcrumb__item">
-              <Link className="nhsuk-breadcrumb__link" to="/search">Home</Link>
+              <Link className="nhsuk-breadcrumb__link" to="/search">{CookieStrings.home}</Link>
             </li>
           </ol>
           <p className="nhsuk-breadcrumb__back">
@@ -151,7 +151,7 @@ const CookiePolicyPage = () => {
             </a>
           </p>
         </nav>
-        <h1 className="nhsuk-heading-xl">{CookieStrings.title}</h1>
+        <h1 className="nhsuk-heading-xl">{CookieStrings.cptCookies}</h1>
         <p>
           {CookieStrings.intro.paragraph1.split("privacy policy")[0]}
           <a href="#">{CookieStrings.intro.privacyPolicyText}</a>
@@ -223,7 +223,7 @@ const CookiePolicyPage = () => {
           {CookieStrings.cookieSettings.saveButton}
         </Link>
 
-        <h2 className="nhsuk-heading-l">{CookieStrings.changeSettings.heading}</h2>
+        <h2 className="nhsuk-heading-2">{CookieStrings.changeSettings.heading}</h2>
         <p>{CookieStrings.changeSettings.paragraph1}</p>
         <p>{CookieStrings.changeSettings.paragraph2}</p>
         <p>{CookieStrings.changeSettings.paragraph3}</p>

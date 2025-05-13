@@ -1,13 +1,22 @@
 import React, {useState} from "react"
 import {Link, useLocation} from "react-router-dom"
 import "../styles/epscookies.scss"
-import {CookieStrings} from "@/constants/ui-strings/CookieBannerStrings"
+import {CookieStrings} from "@/constants/ui-strings/CookieStrings"
 
 export default function EPSCookieBanner() {
   const [cookiesSet, setCookiesSet] = useState<"accepted" | "rejected" | null>(null)
   const location = useLocation()
 
-  if (location.pathname === "/cookies") return null
+  if (location.pathname === "/cookies" || location.pathname === "/cookies-selected") return null
+
+  // useEffect(() => {
+  //   if (typeof window !== "undefined" && window.NHSCookieConsent) {
+  //     if (window.NHSCookieConsent.getConsented()) {
+  //       const hasAnalytics = window.NHSCookieConsent.getStatistics()
+  //       setCookiesSet(hasAnalytics ? "accepted" : "rejected")
+  //     }
+  //   }
+  // }, [])
 
   const handleCookieChoice = (choice: "accepted" | "rejected") => {
     setCookiesSet(choice)
@@ -20,8 +29,6 @@ export default function EPSCookieBanner() {
       }
 
       window.NHSCookieConsent.setConsented(true)
-    } else {
-      console.warn("NHSCookieConsent API not available on window object.")
     }
   }
 

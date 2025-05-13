@@ -1,16 +1,17 @@
 import React from "react"
 import {Link} from "react-router-dom"
+import {CookieStrings} from "@/constants/ui-strings/CookieStrings"
 
 export default function CookieSettingsPage() {
   return (
-    <main className="nhsuk-navigation-container">
+    <main className="cookie-policy-container">
       <nav className="nhsuk-breadcrumb" aria-label="Breadcrumb">
         <ol className="nhsuk-breadcrumb__list">
           <li className="nhsuk-breadcrumb__item">
-            <Link className="nhsuk-breadcrumb__link" to="/search">Home</Link>
+            <Link className="nhsuk-breadcrumb__link" to="/search">{CookieStrings.home}</Link>
           </li>
           <li className="nhsuk-breadcrumb__item">
-            <Link className="nhsuk-breadcrumb__link" to="/cookies">Cookie policy</Link>
+            <Link className="nhsuk-breadcrumb__link" to="/cookies">{CookieStrings.cookie_policy}</Link>
           </li>
         </ol>
         <p className="nhsuk-breadcrumb__back">
@@ -23,25 +24,25 @@ export default function CookieSettingsPage() {
 
       <div className="nhsuk-grid-row">
         <div className="nhsuk-grid-column-full">
-          <h1 className="nhsuk-heading-xl">Your cookie settings have been saved</h1>
+          <h1 className="nhsuk-heading-xl">{CookieStrings.savedCookieSettings}</h1>
 
-          <p>We'll save your settings for a year.</p>
-          <p>We'll ask you if you're still OK with us using cookies when either:</p>
+          <p>{CookieStrings.saveSettings}.</p>
+          <p>{CookieStrings.questionSaveSettings}</p>
 
           <ul>
-            <li>it's been a year since you last saved your settings</li>
-            <li>we add any new cookies or change the cookies we use</li>
+            <li>{CookieStrings.oneYear}</li>
+            <li>{CookieStrings.newCookies}</li>
           </ul>
 
           <p>
-            You can also{" "}
-            <Link to="/cookies">choose which cookies we use</Link>{" "}
-            at any time.
+            {CookieStrings.also}
+            <Link to="/cookies">{CookieStrings.cookieChoose}</Link>
+            {CookieStrings.anyTime}
           </p>
 
           <p className="nhsuk-body-s nhsuk-u-secondary-text-color nhsuk-u-margin-top-7 nhsuk-u-margin-bottom-0">
-            Page last reviewed: 15 March 2025<br />
-            Next review due: 15 March 2026
+            {CookieStrings.pageLastReviewed}
+            {CookieStrings.pageNextReviewed}
           </p>
         </div>
       </div>
