@@ -151,11 +151,11 @@ export const extractRoleInformation = (
         // If the role has access and matches the selectedRoleId, set it as currently selected
         logger.debug("Role has access and matches selectedRoleId; setting as currently selected", {roleInfo})
         currentlySelectedRole = roleInfo
-      } else {
-        // Add the role to rolesWithAccess array only if it is NOT the selectedRoleId
-        rolesWithAccess.push(roleInfo)
-        logger.debug("Role has access; adding to rolesWithAccess", {roleInfo})
       }
+      // Add the role to rolesWithAccess array only if it is NOT the selectedRoleId
+      rolesWithAccess.push(roleInfo)
+      logger.debug("Role has access; adding to rolesWithAccess", {roleInfo})
+
     } else {
       // If role lacks access, add it to rolesWithoutAccess array
       rolesWithoutAccess.push(roleInfo)

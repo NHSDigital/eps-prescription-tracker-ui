@@ -62,6 +62,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
   // First, try to use cached user info
   const cachedUserInfo = await fetchDynamoTable(username, documentClient, logger, tokenMappingTableName)
+  logger.debug("retrieved this from dynamodb", {cachedUserInfo})
 
   if (
     cachedUserInfo &&

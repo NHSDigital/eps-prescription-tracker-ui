@@ -147,6 +147,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     logger
   )
 
+  logger.debug("extracted role details", {roleDetails})
   const jwtClaims = {
     exp: expirationTime,
     iat: current_time,
