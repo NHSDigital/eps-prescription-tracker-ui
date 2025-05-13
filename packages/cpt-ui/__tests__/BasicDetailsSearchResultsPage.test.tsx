@@ -157,7 +157,9 @@ describe("BasicDetailsSearchResultsPage", () => {
     const firstPatientRow = screen.getByText("Issac Wolderton-Rodriguez").closest("tr")
     expect(firstPatientRow).toHaveAttribute(
       "aria-label",
-      SearchResultsPageStrings.ACCESSIBILITY.PATIENT_ROW.replace("{name}", "Issac Wolderton-Rodriguez")
+      SearchResultsPageStrings.ACCESSIBILITY.PATIENT_ROW
+        .replace("{name}", "Issac Wolderton-Rodriguez")
+        .replace("{nhsNumber}", "9726919207")
     )
   })
 })
