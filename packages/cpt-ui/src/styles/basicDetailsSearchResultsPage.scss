@@ -1,13 +1,6 @@
 // Colors
-$color-link: #005eb8;
 $color-border: #c8cfd3;
-$color-border-header: #4c6272;
-$color-text-secondary: #4c6272;
-$color-text-header: #212b32;
-$color-hover-bg: #d2edf6;
 $color-hover-border: #ffb81C;
-$color-focus-outline: #ffeb3b;
-$color-header-bg: #f0f4f5;
 
 // Spacing
 $spacing-sm: 0.5rem;
@@ -17,6 +10,8 @@ $spacing-xl: 1.5rem;
 $spacing-2xl: 2rem;
 
 .nhsuk-table__body {
+  border-bottom: 3px solid $color-border;
+  border-top: 3px solid $color-border;
   width: 100%;
   background-color: #fff;
   margin-top: $spacing-xl;
@@ -33,9 +28,15 @@ $spacing-2xl: 2rem;
 :focus,
 :active {
 cursor: pointer;
-background-color: $color-hover-bg;
 border: 3px solid $color-hover-border;
 border-bottom: 3px solid $color-hover-border;
 }
+}
 
+.nhsuk-table__cell {
+  font-size: $spacing-lg;
+}
+
+.nhsuk-table__header {
+  font-size: $spacing-lg;
 }
