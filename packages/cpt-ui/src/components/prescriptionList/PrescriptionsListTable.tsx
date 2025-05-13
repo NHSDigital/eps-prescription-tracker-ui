@@ -6,6 +6,7 @@ import {PrescriptionSummary} from "@cpt-ui-common/common-types/src"
 import {PrescriptionsListStrings} from "../../constants/ui-strings/PrescriptionListTabStrings"
 import {getStatusTagColour, getStatusDisplayText} from "@/helpers/statusMetadata"
 import {PRESCRIPTION_LIST_TABLE_TEXT} from "@/constants/ui-strings/PrescriptionListTableStrings"
+import {FRONTEND_PATHS} from "@/constants/environment"
 
 export interface PrescriptionsListTableProps {
   textContent: PrescriptionsListStrings
@@ -257,7 +258,7 @@ const PrescriptionsListTable = ({textContent, prescriptions}: PrescriptionsListT
                       <div className="eps-prescription-id">{row.prescriptionId}</div>
                       <div>
                         <a
-                          href={"/site/prescription-details?prescriptionId="+ row.prescriptionId}
+                          href={`${FRONTEND_PATHS.PRESCRIPTION_DETAILS_PAGE}?prescriptionId=${row.prescriptionId}`}
                           className="nhsuk-link"
                           data-testid={`view-prescription-link-${row.prescriptionId}`}
                         >
