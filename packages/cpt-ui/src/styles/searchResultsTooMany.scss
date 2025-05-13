@@ -34,3 +34,15 @@
 .nhsuk-header.masthead .nhsuk-header__container {
   margin: 0 16px;
 }
+
+@media (max-width: 40.0625em) {
+  .nhsuk-heading-m {
+    font-size: 20px;
+    font-size: 1.25rem;
+    line-height: 1.4;
+    display: block;
+    font-weight: 600;
+    margin-top: 0;
+    margin-bottom: 16px;
+  }
+}
