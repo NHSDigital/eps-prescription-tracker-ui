@@ -27,7 +27,8 @@ export const API_ENDPOINTS = {
   SELECTED_ROLE: "/api/selected-role",
   PRESCRIPTION_LIST: "/api/prescription-list",
   CIS2_SIGNOUT_ENDPOINT: "/api/cis2-signout",
-  PRESCRIPTION_DETAILS: "/api/prescription-details"
+  PRESCRIPTION_DETAILS: "/api/prescription-details",
+  PATIENT_SEARCH: "/api/patient-search"
 } as const
 
 // RUM CONFIG

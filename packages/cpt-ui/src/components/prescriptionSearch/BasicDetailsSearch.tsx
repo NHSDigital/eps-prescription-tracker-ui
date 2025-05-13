@@ -15,19 +15,31 @@ import {
 } from "nhsuk-react-components"
 import {useNavigate} from "react-router-dom"
 import {STRINGS} from "@/constants/ui-strings/BasicDetailsSearchStrings"
-import {FRONTEND_PATHS} from "@/constants/environment"
+import {API_ENDPOINTS, FRONTEND_PATHS} from "@/constants/environment"
 import {validateBasicDetails} from "@/helpers/validateBasicDetails"
 import {errorFocusMap, ErrorKey} from "@/helpers/basicDetailsValidationMeta"
 
 // Temporary mock data used for frontend search simulation
-const mockPatients = [
+const mockPatient = [
   {
+    nhsNumber: "1234567890",
+    given: "James",
+    family: "Smith",
+    dateOfBirth: "02-04-2006",
+    postCode: "LS1 1AB"
+  }
+]
+
+const mockMultiplePatient = [
+  {
+    nhsNumber: "9726919207",
     given: "Issac",
     family: "Wolderton-Rodriguez",
     dateOfBirth: "06-05-2013",
     postCode: "LS6 1JL"
   },
   {
+    nhsNumber: "9726919207",
     given: "Steve",
     family: "Wolderton-Rodriguez",
     dateOfBirth: "06-05-2013",
@@ -62,7 +74,7 @@ export default function BasicDetailsSearch() {
     }
   }, [errors])
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
     // Validate input fields
@@ -83,33 +95,56 @@ export default function BasicDetailsSearch() {
     // Combine and format DOB input
     const searchDob = `${dobDay.padStart(2, "0")}-${dobMonth.padStart(2, "0")}-${dobYear}`
 
-    // FIXME: This is temporary logic for front-end demo/testing only.
-    // Replace with real backend call once NHS number search is implemented server-side.
-    const matchedPatients = mockPatients.filter(p => {
-      const matchFirstName = firstName
-        ? formatInput(p.given) === formatInput(firstName)
-        : true
-      const matchLastName = formatInput(p.family) === formatInput(lastName)
-      const matchDob = p.dateOfBirth === searchDob
-      const matchPostcode = postcode
-        ? formatInput(p.postCode) === formatInput(postcode)
-        : true
-      return matchFirstName && matchLastName && matchDob && matchPostcode
-    })
-
-    if (matchedPatients.length > 0) {
-      navigate(FRONTEND_PATHS.PATIENT_SEARCH_RESULTS, {
-        state: {patients: matchedPatients}
-      })
-    } else {
-      navigate(FRONTEND_PATHS.SEARCH_RESULTS_TOO_MANY, {
-        state: {
+    try {
+      // Call backend API (not implemented yet, expect failure)
+      await fetch(API_ENDPOINTS.PATIENT_SEARCH, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({
           firstName,
           lastName,
           dob: searchDob,
           postcode
-        }
+        })
       })
+
+      // If it works, this code won't run because the API is not ready
+      throw new Error("Backend not implemented")
+    } catch (err) {
+      console.error("Failed to fetch patient details. Using mock data fallback.", err)
+
+      // FIXME: This is temporary logic for front-end demo/testing only.
+      // Replace with real backend call once NHS number search is implemented server-side.
+      const allMocks = [...mockPatient, ...mockMultiplePatient]
+
+      const matchedPatients = allMocks.filter(p => {
+        const matchFirstName = firstName
+          ? formatInput(p.given) === formatInput(firstName)
+          : true
+        const matchLastName = formatInput(p.family) === formatInput(lastName)
+        const matchDob = p.dateOfBirth === searchDob
+        const matchPostcode = postcode
+          ? formatInput(p.postCode) === formatInput(postcode)
+          : true
+        return matchFirstName && matchLastName && matchDob && matchPostcode
+      })
+
+      if (matchedPatients.length === 1) {
+        navigate(`${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}?nhsNumber=${matchedPatients[0].nhsNumber}`)
+      } else if (matchedPatients.length > 1) {
+        navigate(FRONTEND_PATHS.PATIENT_SEARCH_RESULTS, {
+          state: {patients: matchedPatients}
+        })
+      } else {
+        navigate(FRONTEND_PATHS.SEARCH_RESULTS_TOO_MANY, {
+          state: {
+            firstName,
+            lastName,
+            dob: searchDob,
+            postcode
+          }
+        })
+      }
     }
   }
 
