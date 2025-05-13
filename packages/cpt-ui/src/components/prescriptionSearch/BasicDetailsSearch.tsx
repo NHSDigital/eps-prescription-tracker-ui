@@ -63,7 +63,8 @@ export default function BasicDetailsSearch() {
   const [errors, setErrors] = useState<Array<ErrorKey>>([])
 
   const inlineErrors = getInlineErrors(errors)
-  const getInlineError = (field: string) => inlineErrors.find(([key]) => key === field)?.[1]
+  const getInlineError = (...fields: Array<string>) =>
+    inlineErrors.find(([key]) => fields.includes(key))?.[1]
 
   useEffect(() => {
     document.querySelector<HTMLInputElement>("#last-name")?.focus()
@@ -217,33 +218,77 @@ export default function BasicDetailsSearch() {
               </FormGroup>
 
               {/* Date of Birth */}
-              <FormGroup className={getInlineError("dob") ? "nhsuk-form-group--error" : ""}>
+              <FormGroup className={getInlineError(
+                "dobRequired",
+                "dobDayRequired",
+                "dobMonthRequired",
+                "dobYearRequired",
+                "dobNonNumericDay",
+                "dobNonNumericMonth",
+                "dobNonNumericYear",
+                "dobYearTooShort",
+                "dobInvalidDate",
+                "dobFutureDate"
+              ) ? "nhsuk-form-group--error" : ""}>
                 <Fieldset role="group" aria-labelledby="dob-label">
-                  <Fieldset.Legend className="nhsuk-fieldset__legend--s"
-                    id="dob-label"
-                    data-testid="dob-label"
-                  >
+                  <Fieldset.Legend className="nhsuk-fieldset__legend--s" id="dob-label" data-testid="dob-label">
                     <h3 className="nhsuk-heading-s nhsuk-u-margin-bottom-1 no-outline">
                       {STRINGS.dobLabel}
                     </h3>
                   </Fieldset.Legend>
-                  <HintText id="dob-hint" data-testid="dob-hint">
-                    {STRINGS.dobHint}
-                  </HintText>
-                  {getInlineError("dob") && <ErrorMessage>{getInlineError("dob")}</ErrorMessage>}
+                  <HintText id="dob-hint" data-testid="dob-hint">{STRINGS.dobHint}</HintText>
+
+                  {/* Inline error for DOB (shown once above all inputs) */}
+                  {getInlineError(
+                    "dobRequired",
+                    "dobDayRequired",
+                    "dobMonthRequired",
+                    "dobYearRequired",
+                    "dobNonNumericDay",
+                    "dobNonNumericMonth",
+                    "dobNonNumericYear",
+                    "dobYearTooShort",
+                    "dobInvalidDate",
+                    "dobFutureDate"
+                  ) && (
+                    <ErrorMessage>
+                      {getInlineError(
+                        "dobRequired",
+                        "dobDayRequired",
+                        "dobMonthRequired",
+                        "dobYearRequired",
+                        "dobNonNumericDay",
+                        "dobNonNumericMonth",
+                        "dobNonNumericYear",
+                        "dobYearTooShort",
+                        "dobInvalidDate",
+                        "dobFutureDate"
+                      )}
+                    </ErrorMessage>
+                  )}
+
                   <div className="nhsuk-date-input" id="dob" data-testid="dob-input-group">
+                    {/* Day */}
                     <div className="nhsuk-date-input__item">
-                      <Label htmlFor="dob-day" className="nhsuk-label nhsuk-date-input__label">{STRINGS.dobDay}</Label>
+                      <Label htmlFor="dob-day" className="nhsuk-label nhsuk-date-input__label">
+                        {STRINGS.dobDay}
+                      </Label>
                       <TextInput
                         id="dob-day"
                         name="dob-day"
                         value={dobDay}
                         onChange={e => setDobDay((e.target as HTMLInputElement).value)}
-                        className={`nhsuk-date-input__input nhsuk-input--width-2 ${getInlineError("dob")
+                        className={`nhsuk-date-input__input nhsuk-input--width-2 ${getInlineError(
+                          "dobDayRequired",
+                          "dobNonNumericDay",
+                          "dobInvalidDate",
+                          "dobFutureDate")
                           ? "nhsuk-input--error" : ""}`}
                         data-testid="dob-day-input"
                       />
                     </div>
+
+                    {/* Month */}
                     <div className="nhsuk-date-input__item">
                       <Label htmlFor="dob-month" className="nhsuk-label nhsuk-date-input__label">
                         {STRINGS.dobMonth}
@@ -253,20 +298,28 @@ export default function BasicDetailsSearch() {
                         name="dob-month"
                         value={dobMonth}
                         onChange={e => setDobMonth((e.target as HTMLInputElement).value)}
-                        className={`nhsuk-date-input__input nhsuk-input--width-2 ${getInlineError("dob")
+                        className={`nhsuk-date-input__input nhsuk-input--width-2 ${getInlineError(
+                          "dobMonthRequired",
+                          "dobNonNumericMonth")
                           ? "nhsuk-input--error" : ""}`}
                         data-testid="dob-month-input"
                       />
                     </div>
+
+                    {/* Year */}
                     <div className="nhsuk-date-input__item">
                       <Label htmlFor="dob-year" className="nhsuk-label nhsuk-date-input__label">
                         {STRINGS.dobYear}
                       </Label>
                       <TextInput
                         id="dob-year"
+                        name="dob-year"
                         value={dobYear}
                         onChange={e => setDobYear((e.target as HTMLInputElement).value)}
-                        className={`nhsuk-date-input__input nhsuk-input--width-4 ${getInlineError("dob")
+                        className={`nhsuk-date-input__input nhsuk-input--width-4 ${getInlineError(
+                          "dobYearRequired",
+                          "dobNonNumericYear",
+                          "dobYearTooShort")
                           ? "nhsuk-input--error" : ""}`}
                         data-testid="dob-year-input"
                       />

@@ -10,6 +10,7 @@ interface ValidationInput {
   postcode: string
 }
 
+// Main validation function
 export function validateBasicDetails(input: ValidationInput): Array<ErrorKey> {
   const errors: Array<ErrorKey> = []
   const {firstName, lastName, dobDay, dobMonth, dobYear, postcode} = input
@@ -17,13 +18,13 @@ export function validateBasicDetails(input: ValidationInput): Array<ErrorKey> {
   const onlyLettersAndAllowed = /^[A-Za-zÀ-ÿ \-'.]*$/
   const numericOnly = /^\d+$/
 
-  // --- First name ---
+  // --- First name validations ---
   if (firstName.length > 35) errors.push("firstNameTooLong")
   if (firstName && !onlyLettersAndAllowed.test(firstName)) {
     errors.push("firstNameInvalidChars")
   }
 
-  // --- Last name ---
+  // --- Last name validations ---
   if (!lastName.trim()) {
     errors.push("lastNameRequired")
   } else {
@@ -33,7 +34,7 @@ export function validateBasicDetails(input: ValidationInput): Array<ErrorKey> {
     }
   }
 
-  // --- DOB ---
+  // --- Date of Birth (DOB) validations ---
   const hasDay = dobDay !== ""
   const hasMonth = dobMonth !== ""
   const hasYear = dobYear !== ""
@@ -45,55 +46,108 @@ export function validateBasicDetails(input: ValidationInput): Array<ErrorKey> {
   const allEmpty = !hasDay && !hasMonth && !hasYear
 
   if (allEmpty) {
+    // If all DOB fields are empty, it's required
     errors.push("dobRequired")
+  } else if (!hasDay || !hasMonth || !hasYear) {
+    // Partial DOB: check structure and numeric-ness
+    const nonNumericCount = [
+      {val: dobDay, isNumeric: dayIsNumeric},
+      {val: dobMonth, isNumeric: monthIsNumeric},
+      {val: dobYear, isNumeric: yearIsNumeric}
+    ].filter(({val, isNumeric}) => val !== "" && !isNumeric).length
+
+    const numericCount = [
+      hasDay && dayIsNumeric,
+      hasMonth && monthIsNumeric,
+      hasYear && yearIsNumeric
+    ].filter(Boolean).length
+
+    const emptyCount = [!hasDay, !hasMonth, !hasYear].filter(Boolean).length
+
+    // One non-numeric, one empty, one valid — treat as invalid
+    if (
+      (nonNumericCount === 1 && emptyCount === 1 && numericCount === 1) ||
+      nonNumericCount >= 2 || // Two or more non-numeric
+      [hasDay, hasMonth, hasYear].filter(Boolean).length === 1 // Only one field filled
+    ) {
+      errors.push("dobInvalidDate")
+    } else {
+      // Otherwise, treat missing parts individually
+      if (!hasDay) errors.push("dobDayRequired")
+      else if (!hasMonth) errors.push("dobMonthRequired")
+      else if (!hasYear) errors.push("dobYearRequired")
+    }
   } else {
-    if (!hasDay) {
-      errors.push("dobDayRequired")
-    } else if (!dayIsNumeric) {
-      errors.push("dobNonNumericDay")
-    }
+    // All three DOB parts are present
+    const nonNumericFields = [
+      !dayIsNumeric,
+      !monthIsNumeric,
+      !yearIsNumeric
+    ].filter(Boolean).length
 
-    // Month
-    if (!hasMonth) {
-      errors.push("dobMonthRequired")
-    } else if (!monthIsNumeric) {
-      errors.push("dobNonNumericMonth")
-    }
+    const hasShortYear = yearIsNumeric && dobYear.length < 4
 
-    // Year
-    if (!hasYear) {
-      errors.push("dobYearRequired")
-    } else if (!yearIsNumeric) {
-      errors.push("dobNonNumericYear")
-    } else if (dobYear.length < 4) {
-      errors.push("dobYearTooShort")
-    }
+    if (nonNumericFields >= 2 || (nonNumericFields === 1 && hasShortYear)) {
+      // Collapse to generic invalid date if multiple numeric issues
+      errors.push("dobInvalidDate")
+    } else {
+      // Specific numeric errors
+      if (!dayIsNumeric) errors.push("dobNonNumericDay")
+      if (!monthIsNumeric) errors.push("dobNonNumericMonth")
+      if (!yearIsNumeric) errors.push("dobNonNumericYear")
 
-    const canConstructDate =
-      hasDay && hasMonth && hasYear &&
-      dayIsNumeric && monthIsNumeric && yearIsNumeric &&
-      dobYear.length === 4
+      if (yearIsNumeric && dobYear.length < 4) {
+        errors.push("dobYearTooShort")
+      }
 
-    if (canConstructDate) {
-      const year = parseInt(dobYear, 10)
-      const month = parseInt(dobMonth, 10)
-      const day = parseInt(dobDay, 10)
+      // Try to construct and validate the date
+      const canConstructDate =
+        dayIsNumeric && monthIsNumeric && yearIsNumeric && dobYear.length === 4
 
-      const dob = new Date(`${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`)
-      const isValid =
-        dob.getFullYear() === year &&
-        dob.getMonth() === month - 1 &&
-        dob.getDate() === day
+      if (canConstructDate) {
+        const year = parseInt(dobYear, 10)
+        const month = parseInt(dobMonth, 10)
+        const day = parseInt(dobDay, 10)
 
-      if (!isValid) {
-        errors.push("dobInvalidDate")
-      } else if (dob > new Date()) {
-        errors.push("dobFutureDate")
+        const dob = new Date(`${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`)
+        const isValid =
+          dob.getFullYear() === year &&
+          dob.getMonth() === month - 1 &&
+          dob.getDate() === day
+
+        if (!isValid) {
+          errors.push("dobInvalidDate")
+        } else if (dob > new Date()) {
+          errors.push("dobFutureDate")
+        }
       }
     }
   }
 
-  // --- Postcode ---
+  // --- Collapse multiple DOB errors into a single generic one ---
+  const dobErrorKeys: Array<ErrorKey> = [
+    "dobDayRequired",
+    "dobMonthRequired",
+    "dobYearRequired",
+    "dobNonNumericDay",
+    "dobNonNumericMonth",
+    "dobNonNumericYear",
+    "dobYearTooShort",
+    "dobInvalidDate",
+    "dobFutureDate"
+  ]
+
+  const dobErrors = errors.filter(e => dobErrorKeys.includes(e))
+  if (dobErrors.length > 2) {
+    // Replace with a single "dobInvalidDate" error if too many DOB-related issues
+    for (const err of dobErrors) {
+      const i = errors.indexOf(err)
+      if (i !== -1) errors.splice(i, 1)
+    }
+    errors.push("dobInvalidDate")
+  }
+
+  // --- Postcode validation ---
   if (postcode) {
     const trimmed = postcode.trim()
     const isValidChars = /^[A-Za-z0-9 ]+$/.test(trimmed)
@@ -108,11 +162,12 @@ export function validateBasicDetails(input: ValidationInput): Array<ErrorKey> {
   return errors
 }
 
+// Maps error keys to user-facing inline error messages
 export function getInlineErrors(errors: Array<ErrorKey>): Array<[string, string]> {
   const {errors: STR} = STRINGS
   const inlineErrors: Array<[string, string]> = []
 
-  // First Name
+  // --- First Name errors ---
   const firstTooLong = errors.includes("firstNameTooLong")
   const firstInvalid = errors.includes("firstNameInvalidChars")
   if (firstTooLong && firstInvalid) {
@@ -126,7 +181,7 @@ export function getInlineErrors(errors: Array<ErrorKey>): Array<[string, string]
     inlineErrors.push(["firstName", STR.firstNameInvalidChars])
   }
 
-  // Last Name
+  // --- Last Name errors ---
   if (errors.includes("lastNameRequired")) {
     inlineErrors.push(["lastName", STR.lastNameRequired])
   } else {
@@ -144,31 +199,27 @@ export function getInlineErrors(errors: Array<ErrorKey>): Array<[string, string]
     }
   }
 
-  // DOB
-  const dobErrors = errors.filter(e => e.startsWith("dob"))
-  if (dobErrors.includes("dobRequired")) {
-    inlineErrors.push(["dob", STR.dobRequired])
-  } else if (dobErrors.includes("dobDayRequired")) {
-    inlineErrors.push(["dob", STR.dobDayRequired])
-  } else if (dobErrors.includes("dobMonthRequired")) {
-    inlineErrors.push(["dob", STR.dobMonthRequired])
-  } else if (dobErrors.includes("dobYearRequired")) {
-    inlineErrors.push(["dob", STR.dobYearRequired])
-  } else if (dobErrors.includes("dobNonNumericDay")) {
-    inlineErrors.push(["dob", STR.dobNonNumericDay])
-  } else if (dobErrors.includes("dobNonNumericMonth")) {
-    inlineErrors.push(["dob", STR.dobNonNumericMonth])
-  } else if (dobErrors.includes("dobNonNumericYear")) {
-    inlineErrors.push(["dob", STR.dobNonNumericYear])
-  } else if (dobErrors.includes("dobYearTooShort")) {
-    inlineErrors.push(["dob", STR.dobYearTooShort])
-  } else if (dobErrors.includes("dobInvalidDate")) {
-    inlineErrors.push(["dob", STR.dobInvalidDate])
-  } else if (dobErrors.includes("dobFutureDate")) {
-    inlineErrors.push(["dob", STR.dobFutureDate])
-  }
+  // --- Date of Birth errors ---
+  const dobErrorKeys: Array<ErrorKey> = [
+    "dobRequired",
+    "dobDayRequired",
+    "dobMonthRequired",
+    "dobYearRequired",
+    "dobNonNumericDay",
+    "dobNonNumericMonth",
+    "dobNonNumericYear",
+    "dobYearTooShort",
+    "dobInvalidDate",
+    "dobFutureDate"
+  ]
 
-  // Postcode
+  dobErrorKeys.forEach(key => {
+    if (errors.includes(key)) {
+      inlineErrors.push([key, STR[key]])
+    }
+  })
+
+  // --- Postcode errors ---
   if (errors.includes("postcodeInvalidChars")) {
     inlineErrors.push(["postcode", STR.postcodeInvalidChars])
   } else if (errors.includes("postcodeTooShort")) {
