@@ -7,3 +7,22 @@
   padding-top: 32px;
   padding-bottom: 0;
 }
+
+.nhsuk-heading-m {
+  font-size: 1.5rem;
+}
+
+@media (max-width: 61.875em) {
+  .nhsuk-main-wrapper--s {
+    padding-top: 0px;
+    padding-bottom: 24px;
+  }
+
+  .patient-search-form-container {
+    margin: 0 48px;
+  }
+}
+
+.nhsuk-header.masthead .nhsuk-header__container {
+  margin: 0 16px;
+}
