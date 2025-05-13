@@ -13,6 +13,6 @@ export const SearchResultsPageStrings = {
     SORT_BY_NAME: "Sort by name",
     SORT_BY_NAME_DESC: "Sort by name in descending order",
     SORT_BY_NAME_ASC: "Sort by name in ascending order",
-    PATIENT_ROW: "View prescriptions for {name}"
+    PATIENT_ROW: "View prescriptions for {name}, NHS Number: {nhsNumber}"
   }
 } as const

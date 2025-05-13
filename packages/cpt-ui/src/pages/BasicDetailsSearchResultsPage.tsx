@@ -6,8 +6,7 @@ import {
   Table,
   Container,
   Row,
-  Col,
-  Breadcrumb
+  Col
 } from "nhsuk-react-components"
 import {SearchResultsPageStrings} from "@/constants/ui-strings/BasicDetailsSearchResultsPageStrings"
 import {FRONTEND_PATHS} from "@/constants/environment"
@@ -20,8 +19,7 @@ const patients = [
     family: "Wolderton-Rodriguez",
     gender: "Male",
     dateOfBirth: "6-May-2013",
-    address: "123 Brundel Close, Headingley, Leeds, West Yorkshire, LS6 1JL",
-    restricted: false
+    address: "123 Brundel Close, Headingley, Leeds, West Yorkshire, LS6 1JL"
   },
   {
     nhsNumber: "9725919207",
@@ -29,17 +27,15 @@ const patients = [
     family: "Wolderton-Rodriguez",
     gender: "Male",
     dateOfBirth: "6-May-2013",
-    address: "123 Brundel Close, Headingley, Leeds, West Yorkshire, LS6 1JL",
-    restricted: false
+    address: "123 Brundel Close, Headingley, Leeds, West Yorkshire, LS6 1JL"
   }
 ]
 
 export default function SearchResultsPage() {
   const navigate = useNavigate()
 
-  // Sort by first name
+  // to sort by first name
   const sortedPatients = patients
-    .filter(p => !p.restricted)
     .sort((a, b) => a.given.localeCompare(b.given))
 
   const handleRowClick = (nhsNumber: string) => {
@@ -51,39 +47,45 @@ export default function SearchResultsPage() {
   }
 
   return (
-    <main className="nhsuk-main-wrapper nhsuk-main-wrapper--s" id="main-content" role="main">
-      <Breadcrumb>
-        <Col width="full">
-          <BackLink onClick={handleGoBack}>{SearchResultsPageStrings.GO_BACK}</BackLink>
-        </Col>
-      </Breadcrumb>
+    <main className="nhsuk-main-wrapper" id="main-content" role="main">
       <Container>
+        <Row>
+          <Col width="full">
+            <BackLink onClick={handleGoBack}>{SearchResultsPageStrings.GO_BACK}</BackLink>
+          </Col>
+        </Row>
         <Row>
           <Col width="full">
             <h1 className="nhsuk-u-margin-bottom-3 nhsuk-heading-m" id="results-header">
               {SearchResultsPageStrings.TITLE}
             </h1>
-            <h2 className="nhsuk-heading-xs" id="results-count-text">
+            <h2 className="nhsuk-heading-xs" id="results-count">
               {SearchResultsPageStrings.RESULTS_COUNT.replace("{count}", sortedPatients.length.toString())}
             </h2>
-            <Table responsive>
+            <Table responsive id='results-table'>
               <Table.Head role="rowgroup">
                 <Table.Row>
-                  <Table.Cell as="th" scope="col" width="25%">{SearchResultsPageStrings.TABLE.NAME}</Table.Cell>
-                  <Table.Cell as="th" scope="col" width="8.3%">{SearchResultsPageStrings.TABLE.GENDER}</Table.Cell>
-                  <Table.Cell as="th" scope="col" width="16.67%">{SearchResultsPageStrings.TABLE.DOB}</Table.Cell>
-                  <Table.Cell as="th" scope="col" width="33%">{SearchResultsPageStrings.TABLE.ADDRESS}</Table.Cell>
-                  <Table.Cell as="th" scope="col" width="16.67%">{SearchResultsPageStrings.TABLE.NHS_NUMBER}</Table.Cell>
+                  <Table.Cell id="table-header" as="th" scope="col" width="25%">{SearchResultsPageStrings.TABLE.NAME}</Table.Cell>
+                  <Table.Cell id="table-header" as="th" scope="col" width="8.3%">{SearchResultsPageStrings.TABLE.GENDER}</Table.Cell>
+                  <Table.Cell id="table-header" as="th" scope="col" width="16.67%">{SearchResultsPageStrings.TABLE.DOB}</Table.Cell>
+                  <Table.Cell id="table-header" as="th" scope="col" width="33%">{SearchResultsPageStrings.TABLE.ADDRESS}</Table.Cell>
+                  <Table.Cell id="table-header" as="th" scope="col" width="16.67%">{
+                    SearchResultsPageStrings.TABLE.NHS_NUMBER
+                  }</Table.Cell>
                 </Table.Row>
               </Table.Head>
               <Table.Body>
                 {sortedPatients.map((patient) => (
                   <Table.Row
+                    id="patient-row"
                     key={patient.nhsNumber}
                     tabIndex={0}
                     onClick={() => handleRowClick(patient.nhsNumber)}
                     onKeyDown={e => (e.key === "Enter" || e.key === " ") && handleRowClick(patient.nhsNumber)}
-                    aria-label={SearchResultsPageStrings.ACCESSIBILITY.PATIENT_ROW.replace("{name}", `${patient.given} ${patient.family}`)}
+                    aria-label={
+                      SearchResultsPageStrings.ACCESSIBILITY.PATIENT_ROW
+                        .replace("{name}", `${patient.given} ${patient.family}`)
+                        .replace("{nhsNumber}", patient.nhsNumber)}
                     role="button"
                   >
                     <Table.Cell>
