@@ -10,9 +10,9 @@ import {
   fetchAndVerifyCIS2Tokens,
   constructSignedJWTBody,
   exchangeTokenForApigeeAccessToken,
-  updateApigeeAccessToken,
   getExistingApigeeAccessToken
 } from "./index"
+import {updateApigeeAccessToken} from "@cpt-ui-common/dynamoFunctions"
 
 // Define the ApigeeTokenResponse type
 interface ApigeeTokenResponse {
@@ -35,14 +35,6 @@ export interface AuthResult {
   cis2IdToken: string
   roleId?: string
   isMockRequest: boolean
-}
-
-export interface TokenMappingItem {
-  username: string,
-  accessToken: string,
-  refreshToken: string,
-  expiresIn: number,
-  selectedRoleId?: string
 }
 
 /**

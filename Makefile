@@ -20,6 +20,7 @@ install-hooks: install-python
 compile-node:
 	npm run compile --workspace packages/common/commonTypes
 	npm run compile --workspace packages/common/middyErrorHandler
+	npm run compile --workspace packages/common/dynamoFunctions
 	npm run compile --workspace packages/common/authFunctions
 	npx tsc --build tsconfig.build.json
 
@@ -37,6 +38,7 @@ lint-node: compile-node
 	npm run lint --workspace packages/selectedRoleLambda
 	npm run lint --workspace packages/CIS2SignOutLambda
 	npm run lint --workspace packages/common/authFunctions
+	npm run lint --workspace packages/common/dynamoFunctions
 
 lint-githubactions:
 	actionlint
@@ -57,6 +59,7 @@ test: compile
 	npm run test --workspace packages/selectedRoleLambda
 	npm run test --workspace packages/CIS2SignOutLambda
 	npm run test --workspace packages/common/authFunctions
+	npm run test --workspace packages/common/dynamoFunctions
 
 clean:
 	rm -rf packages/common/commonTypes/coverage
@@ -80,6 +83,8 @@ clean:
 	rm -rf packages/selectedRoleLambda/lib
 	rm -rf packages/common/authFunctions/coverage
 	rm -rf packages/common/authFunctions/lib
+	rm -rf packages/common/dynamoFunctions/coverage
+	rm -rf packages/common/dynamoFunctions/lib
 	rm -rf packages/CIS2SignOutLambda/coverage
 	rm -rf packages/CIS2SignOutLambda/lib
 	rm -rf .local_config
@@ -99,6 +104,7 @@ check-licenses-node:
 	npm run check-licenses --workspace packages/cdk
 	npm run check-licenses --workspace packages/cpt-ui
 	npm run check-licenses --workspace packages/common/authFunctions
+	npm run check-licenses --workspace packages/common/dynamoFunctions
 	npm run check-licenses --workspace packages/cognito
 	npm run check-licenses --workspace packages/prescriptionListLambda
 	npm run check-licenses --workspace packages/trackerUserInfoLambda

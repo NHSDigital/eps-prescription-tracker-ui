@@ -48,13 +48,20 @@ jest.mock("axios", () => ({
   })
 }))
 
+jest.unstable_mockModule("@cpt-ui-common/dynamoFunctions", () => {
+  const updateApigeeAccessToken = mockUpdateApigeeAccessToken
+
+  return {
+    updateApigeeAccessToken
+  }
+})
+
 // Mock the index module
 jest.unstable_mockModule("../src/index", () => ({
   getUsernameFromEvent: mockGetUsernameFromEvent,
   getExistingApigeeAccessToken: mockGetExistingApigeeAccessToken,
   refreshApigeeAccessToken: mockRefreshApigeeAccessToken,
   exchangeTokenForApigeeAccessToken: mockExchangeTokenForApigeeAccessToken,
-  updateApigeeAccessToken: mockUpdateApigeeAccessToken,
   fetchAndVerifyCIS2Tokens: mockFetchAndVerifyCIS2Tokens,
   constructSignedJWTBody: mockConstructSignedJWTBody,
   decodeToken: mockDecodeToken,

@@ -1,17 +1,20 @@
 /* eslint-disable @typescript-eslint/consistent-type-assertions */
 import {jest} from "@jest/globals"
-import {
-  exchangeTokenForApigeeAccessToken,
-  updateApigeeAccessToken,
-  getExistingApigeeAccessToken,
-  refreshApigeeAccessToken
-} from "../src/apigee"
+
 import axios from "axios"
-import {DynamoDBDocumentClient, UpdateCommand} from "@aws-sdk/lib-dynamodb"
+import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
 import {Logger} from "@aws-lambda-powertools/logger"
 
 jest.mock("axios")
 jest.mock("jsonwebtoken")
+
+jest.unstable_mockModule("@cpt-ui-common/dynamoFunctions", () => {
+  const updateApigeeAccessToken = jest.fn()
+
+  return {
+    updateApigeeAccessToken
+  }
+})
 
 jest.mock("@aws-sdk/lib-dynamodb", () => ({
   UpdateCommand: jest.fn(),
@@ -23,6 +26,10 @@ const mockLogger: Partial<Logger> = {
   debug: jest.fn(),
   error: jest.fn()
 }
+
+const {exchangeTokenForApigeeAccessToken,
+  getExistingApigeeAccessToken,
+  refreshApigeeAccessToken} = await import("../src/apigee")
 
 describe("apigeeUtils", () => {
   const mockAxiosPost = jest.fn();
@@ -89,77 +96,6 @@ describe("apigeeUtils", () => {
         "Unexpected error during Apigee token exchange",
         {error: new Error("Axios error")}
       )
-    })
-  })
-
-  describe("updateApigeeAccessToken", () => {
-    it("should update DynamoDB successfully", async () => {
-      mockDocumentClient.send.mockResolvedValueOnce({} as never)
-
-      const mockTableName = "mockTable"
-      const mockUsername = "testUser"
-      const mockAccessToken = "testToken"
-      const mockRefreshToken = "testRefreshToken"
-      const mockExpiresIn = 3600
-
-      await updateApigeeAccessToken(
-        mockDocumentClient,
-        mockTableName,
-        {
-          username: mockUsername,
-          accessToken: mockAccessToken,
-          refreshToken: mockRefreshToken,
-          expiresIn: mockExpiresIn
-        },
-        mockLogger as Logger
-      )
-
-      expect(mockDocumentClient.send).toHaveBeenCalledWith(
-        expect.any(UpdateCommand)
-      )
-
-      const calledCommand = mockDocumentClient.send.mock.calls[0][0] as UpdateCommand
-      const expectedExpiryTime = Math.floor(Date.now() / 1000) + mockExpiresIn
-
-      if (calledCommand.input && "ExpressionAttributeValues" in calledCommand.input) {
-        expect(
-          (calledCommand.input as UpdateCommand["input"]).ExpressionAttributeValues?.[":apigeeExpiresIn"]
-        ).toBeCloseTo(expectedExpiryTime, -2)
-      } else {
-        throw new Error("Called command input is not an UpdateCommand input")
-      }
-    })
-
-    it("should log and throw an error on failure", async () => {
-      const mockError = new Error("DynamoDB error") as never
-
-      mockDocumentClient.send.mockRejectedValueOnce(mockError)
-
-      const mockTableName = "mockTable"
-      const mockUsername = "testUser"
-      const mockAccessToken = "testToken"
-      const mockRefreshToken = "testRefreshToken"
-      const mockExpiresIn = 3600
-
-      await expect(
-        updateApigeeAccessToken(
-          mockDocumentClient,
-          mockTableName,
-          {
-            username: mockUsername,
-            accessToken: mockAccessToken,
-            refreshToken: mockRefreshToken,
-            expiresIn: mockExpiresIn
-          },
-          mockLogger as Logger
-        )
-      ).rejects.toThrow("Failed to update Apigee access token in DynamoDB")
-
-      expect(mockLogger.error).toHaveBeenCalledWith(
-        "Failed to update Apigee access token in DynamoDB",
-        {error: mockError}
-      )
-      expect(mockDocumentClient.send).toHaveBeenCalledTimes(1)
     })
   })
 

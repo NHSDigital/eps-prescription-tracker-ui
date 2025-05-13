@@ -27,6 +27,7 @@
         "packages/common/middyErrorHandler",
         "packages/common/testing",
         "packages/common/authFunctions",
+        "packages/common/dynamoFunctions",
         "packages/auth_demo",
         "packages/trackerUserInfoLambda",
         "packages/CIS2SignOutLambda",

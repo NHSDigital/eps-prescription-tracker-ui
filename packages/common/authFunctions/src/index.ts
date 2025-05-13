@@ -13,7 +13,6 @@ import {
 import {
   constructSignedJWTBody,
   exchangeTokenForApigeeAccessToken,
-  updateApigeeAccessToken,
   getExistingApigeeAccessToken,
   refreshApigeeAccessToken
 } from "./apigee"
@@ -28,7 +27,6 @@ export {
   verifyIdToken,
   constructSignedJWTBody,
   exchangeTokenForApigeeAccessToken,
-  updateApigeeAccessToken,
   OidcConfig,
   initializeOidcConfig,
   getExistingApigeeAccessToken,

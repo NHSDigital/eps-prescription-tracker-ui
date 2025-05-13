@@ -1,14 +1,5 @@
 import {jest} from "@jest/globals"
 
-import {
-  getSigningKey,
-  getUsernameFromEvent,
-  fetchCIS2TokensFromDynamoDB,
-  fetchAndVerifyCIS2Tokens,
-  verifyIdToken,
-  OidcConfig
-} from "../src/index"
-
 import {APIGatewayProxyEvent} from "aws-lambda"
 import {Logger} from "@aws-lambda-powertools/logger"
 import jwksClient from "jwks-rsa"
@@ -16,6 +7,20 @@ import jwt from "jsonwebtoken"
 import createJWKSMock from "mock-jwks"
 import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
+
+jest.unstable_mockModule("@cpt-ui-common/dynamoFunctions", () => {
+  const updateApigeeAccessToken = jest.fn()
+
+  return {
+    updateApigeeAccessToken
+  }
+})
+
+const {getSigningKey,
+  getUsernameFromEvent,
+  fetchCIS2TokensFromDynamoDB,
+  fetchAndVerifyCIS2Tokens,
+  verifyIdToken} = await import("../src/index")
 
 // Common test setup
 const logger = new Logger()
@@ -224,7 +229,7 @@ describe("fetchAndVerifyCIS2Tokens", () => {
     cacheMaxAge: 3600000 // 1 hour
   })
 
-  const oidcConfig: OidcConfig = {
+  const oidcConfig = {
     oidcIssuer: oidcIssuer,
     oidcClientID: oidcClientId,
     oidcJwksEndpoint: "https://dummyauth.com/.well-known/jwks.json",
@@ -308,7 +313,7 @@ describe("verifyIdToken", () => {
     cacheMaxAge: 3600000 // 1 hour
   })
 
-  const oidcConfig: OidcConfig = {
+  const oidcConfig = {
     oidcIssuer: oidcIssuer,
     oidcClientID: oidcClientId,
     oidcJwksEndpoint: "https://dummyauth.com/.well-known/jwks.json",

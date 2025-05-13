@@ -11,6 +11,9 @@
       "path": "../common/authFunctions"
     },
     {
+      "path": "../common/dynamoFunctions"
+    },
+    {
       "path": "../common/middyErrorHandler"
     }
   ]

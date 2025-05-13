@@ -48,6 +48,14 @@ const {
   }
 })
 
+jest.unstable_mockModule("@cpt-ui-common/dynamoFunctions", () => {
+  const updateApigeeAccessToken = jest.fn()
+
+  return {
+    updateApigeeAccessToken
+  }
+})
+
 jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
   const initializeOidcConfig = mockInitializeOidcConfig.mockImplementation( () => {
     // Create a JWKS client for cis2 and mock
@@ -94,8 +102,7 @@ jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
   })
 
   return {
-    initializeOidcConfig,
-    updateApigeeAccessToken: jest.fn()
+    initializeOidcConfig
   }
 })
 
