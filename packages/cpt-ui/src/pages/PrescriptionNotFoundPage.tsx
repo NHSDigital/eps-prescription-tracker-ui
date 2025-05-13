@@ -1,7 +1,7 @@
 import React from "react"
 import {Link, useSearchParams} from "react-router-dom"
 import {BackLink, Container} from "nhsuk-react-components"
-import {PRESCRIPTION_NOT_FOUND_STRINGS} from "@/constants/ui-strings/PrescriptionNotFoundPageStrings"
+import {SEARCH_TYPES, PRESCRIPTION_NOT_FOUND_STRINGS} from "@/constants/ui-strings/PrescriptionNotFoundPageStrings"
 import {FRONTEND_PATHS} from "@/constants/environment"
 
 export default function PrescriptionNotFoundPage() {
@@ -11,11 +11,11 @@ export default function PrescriptionNotFoundPage() {
   // Map searchType to the correct back link URL
   const getBackLinkUrl = () => {
     switch (searchType) {
-      case "PrescriptionIdSearch":
+      case SEARCH_TYPES.PRESCRIPTION_ID:
         return FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID
-      case "NhsNumberSearch":
+      case SEARCH_TYPES.NHS_NUMBER:
         return FRONTEND_PATHS.SEARCH_BY_NHS_NUMBER
-      case "BasicDetailsSearch":
+      case SEARCH_TYPES.BASIC_DETAILS:
         return FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS
       default:
         // Default fallback if no searchType is provided
