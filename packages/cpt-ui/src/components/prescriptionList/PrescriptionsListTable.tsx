@@ -6,8 +6,6 @@ import {PrescriptionSummary} from "@cpt-ui-common/common-types/src"
 import {PrescriptionsListStrings} from "../../constants/ui-strings/PrescriptionListTabStrings"
 import {getStatusTagColour, getStatusDisplayText} from "@/helpers/statusMetadata"
 import {PRESCRIPTION_LIST_TABLE_TEXT} from "@/constants/ui-strings/PrescriptionListTableStrings"
-import {FRONTEND_PATHS} from "@/constants/environment"
-import {Link} from "react-router-dom"
 
 export interface PrescriptionsListTableProps {
   textContent: PrescriptionsListStrings
@@ -258,13 +256,13 @@ const PrescriptionsListTable = ({textContent, prescriptions}: PrescriptionsListT
                     <td key={key} className="eps-prescription-table-rows">
                       <div className="eps-prescription-id">{row.prescriptionId}</div>
                       <div>
-                        <Link
-                          to={`${FRONTEND_PATHS.PRESCRIPTION_DETAILS_PAGE}?prescriptionId=${row.prescriptionId}`}
+                        <a
+                          href={`/prescription-details?prescriptionId=${row.prescriptionId}`}
                           className="nhsuk-link"
                           data-testid={`view-prescription-link-${row.prescriptionId}`}
                         >
                           {PRESCRIPTION_LIST_TABLE_TEXT.viewPrescription}
-                        </Link>
+                        </a>
                       </div>
                     </td>
                   )
