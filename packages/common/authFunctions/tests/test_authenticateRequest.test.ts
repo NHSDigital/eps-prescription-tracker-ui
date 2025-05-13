@@ -215,10 +215,13 @@ describe("authenticateRequest", () => {
     expect(mockUpdateApigeeAccessToken).toHaveBeenCalledWith(
       mockDocumentClient,
       mockOptions.tokenMappingTableName,
-      "test-user",
-      "refreshed-token",
-      "refreshed-refresh-token", // refreshToken
-      3600,
+      {
+        "accessToken": "refreshed-token",
+        "expiresIn": 3600,
+        "refreshToken":
+        "refreshed-refresh-token",
+        "username": "test-user"
+      },
       expect.anything() // logger
     )
   })

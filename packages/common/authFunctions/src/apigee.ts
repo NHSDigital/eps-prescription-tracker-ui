@@ -5,6 +5,7 @@ import axios, {AxiosInstance} from "axios"
 import {ParsedUrlQuery, stringify} from "querystring"
 import {handleAxiosError} from "./errorUtils"
 import {DynamoDBDocumentClient, GetCommand, UpdateCommand} from "@aws-sdk/lib-dynamodb"
+import {TokenMappingItem} from "./authenticateRequest"
 
 /**
  * Constructs a new body for the token exchange, including a signed JWT
@@ -123,36 +124,44 @@ export const exchangeTokenForApigeeAccessToken = async (
 export const updateApigeeAccessToken = async (
   documentClient: DynamoDBDocumentClient,
   tableName: string,
-  username: string,
-  accessToken: string,
-  refreshToken: string,
-  expiresIn: number,
+  tokenMappingItem: TokenMappingItem,
   logger: Logger
 ): Promise<void> => {
   const currentTime = Math.floor(Date.now() / 1000)
 
   logger.debug("Updating DynamoDB with new Apigee access token", {
-    username,
-    accessToken,
-    expiresIn
+    tokenMappingItem
   })
 
   try {
-    const expiryTimestamp = currentTime + Number(expiresIn)
+    const expiryTimestamp = currentTime + Number(tokenMappingItem.expiresIn)
+
+    let updateExpression = `
+        SET apigee_accessToken = :apigeeAccessToken, 
+        apigee_expiresIn = :apigeeExpiresIn, 
+        apigee_refreshToken = :apigeeRefreshToken`
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let expressionAttributeValues: any = {
+      ":apigeeAccessToken": tokenMappingItem.accessToken,
+      ":apigeeExpiresIn": expiryTimestamp,
+      ":apigeeRefreshToken": tokenMappingItem.refreshToken
+    }
+
+    if (tokenMappingItem.selectedRoleId) {
+      updateExpression = updateExpression + ", selectedRoleId = :selectedRoleId"
+      expressionAttributeValues = {
+        ...expressionAttributeValues,
+        ":selectedRoleId": tokenMappingItem.selectedRoleId
+      }
+    }
 
     await documentClient.send(
       new UpdateCommand({
         TableName: tableName,
-        Key: {username},
-        UpdateExpression: `
-        SET apigee_accessToken = :apigeeAccessToken, 
-        apigee_expiresIn = :apigeeExpiresIn, 
-        apigee_refreshToken = :apigeeRefreshToken`,
-        ExpressionAttributeValues: {
-          ":apigeeAccessToken": accessToken,
-          ":apigeeExpiresIn": expiryTimestamp,
-          ":apigeeRefreshToken": refreshToken
-        }
+        Key: {username: tokenMappingItem.username},
+        UpdateExpression: updateExpression,
+        ExpressionAttributeValues: expressionAttributeValues
       })
     )
 

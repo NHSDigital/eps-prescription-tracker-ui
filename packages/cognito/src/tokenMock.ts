@@ -164,10 +164,13 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   await updateApigeeAccessToken(
     documentClient,
     tokenMappingTable,
-    username,
-    tokenResponse.access_token,
-    tokenResponse.refresh_token,
-    expirationTime,
+    {
+      username,
+      accessToken: tokenResponse.access_token,
+      refreshToken: tokenResponse.refresh_token,
+      expiresIn: expirationTime,
+      selectedRoleId: jwtClaims.selected_roleid
+    },
     logger
   )
 

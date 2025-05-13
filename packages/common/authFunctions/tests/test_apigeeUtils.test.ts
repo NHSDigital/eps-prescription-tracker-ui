@@ -105,10 +105,12 @@ describe("apigeeUtils", () => {
       await updateApigeeAccessToken(
         mockDocumentClient,
         mockTableName,
-        mockUsername,
-        mockAccessToken,
-        mockRefreshToken,
-        mockExpiresIn,
+        {
+          username: mockUsername,
+          accessToken: mockAccessToken,
+          refreshToken: mockRefreshToken,
+          expiresIn: mockExpiresIn
+        },
         mockLogger as Logger
       )
 
@@ -143,10 +145,12 @@ describe("apigeeUtils", () => {
         updateApigeeAccessToken(
           mockDocumentClient,
           mockTableName,
-          mockUsername,
-          mockAccessToken,
-          mockRefreshToken,
-          mockExpiresIn,
+          {
+            username: mockUsername,
+            accessToken: mockAccessToken,
+            refreshToken: mockRefreshToken,
+            expiresIn: mockExpiresIn
+          },
           mockLogger as Logger
         )
       ).rejects.toThrow("Failed to update Apigee access token in DynamoDB")

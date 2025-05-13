@@ -37,6 +37,14 @@ export interface AuthResult {
   isMockRequest: boolean
 }
 
+export interface TokenMappingItem {
+  username: string,
+  accessToken: string,
+  refreshToken: string,
+  expiresIn: number,
+  selectedRoleId?: string
+}
+
 /**
  * Options for the authenticateRequest function
  */
@@ -82,10 +90,12 @@ const refreshTokenFlow = async (
     await updateApigeeAccessToken(
       documentClient,
       tokenMappingTableName,
-      username,
-      refreshResult.accessToken,
-      refreshResult.refreshToken,
-      refreshResult.expiresIn,
+      {
+        username,
+        accessToken: refreshResult.accessToken,
+        expiresIn: refreshResult.expiresIn,
+        refreshToken: refreshResult.refreshToken
+      },
       logger
     )
 
@@ -254,10 +264,12 @@ export async function authenticateRequest(
   await updateApigeeAccessToken(
     documentClient,
     tokenMappingTableName,
-    username,
-    accessToken,
-    refreshToken,
-    expiresIn,
+    {
+      username,
+      accessToken,
+      refreshToken,
+      expiresIn
+    },
     logger
   )
 
