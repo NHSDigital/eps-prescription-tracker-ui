@@ -17,13 +17,13 @@ export function validateBasicDetails(input: ValidationInput): Array<ErrorKey> {
   const onlyLettersAndAllowed = /^[A-Za-zÀ-ÿ \-'.]*$/
   const numericOnly = /^\d+$/
 
-  // --- First Name ---
+  // --- First name ---
   if (firstName.length > 35) errors.push("firstNameTooLong")
   if (firstName && !onlyLettersAndAllowed.test(firstName)) {
     errors.push("firstNameInvalidChars")
   }
 
-  // --- Last Name ---
+  // --- Last name ---
   if (!lastName.trim()) {
     errors.push("lastNameRequired")
   } else {
@@ -53,12 +53,14 @@ export function validateBasicDetails(input: ValidationInput): Array<ErrorKey> {
       errors.push("dobNonNumericDay")
     }
 
+    // Month
     if (!hasMonth) {
       errors.push("dobMonthRequired")
     } else if (!monthIsNumeric) {
       errors.push("dobNonNumericMonth")
     }
 
+    // Year
     if (!hasYear) {
       errors.push("dobYearRequired")
     } else if (!yearIsNumeric) {
