@@ -444,10 +444,12 @@ export class StatelessResourcesStack extends Stack {
         value: apigeeCIS2TokenEndpoint,
         exportName: `${props.stackName}:local:apigeeCIS2TokenEndpoint`
       })
-      new CfnOutput(this, "apigeeMockTokenEndpoint", {
-        value: apigeeMockTokenEndpoint,
-        exportName: `${props.stackName}:local:apigeeMockTokenEndpoint`
-      })
+      if (useMockOidc) {
+        new CfnOutput(this, "apigeeMockTokenEndpoint", {
+          value: apigeeMockTokenEndpoint,
+          exportName: `${props.stackName}:local:apigeeMockTokenEndpoint`
+        })
+      }
       new CfnOutput(this, "apigeePrescriptionsEndpoint", {
         value: apigeePrescriptionsEndpoint,
         exportName: `${props.stackName}:local:apigeePrescriptionsEndpoint`
