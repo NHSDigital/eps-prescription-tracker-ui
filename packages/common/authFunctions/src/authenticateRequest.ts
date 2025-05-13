@@ -136,7 +136,7 @@ export async function authenticateRequest(
 
   // Extract username and determine if this is a mock request
   const username = getUsernameFromEvent(event)
-  const isMockRequest = mockModeEnabled === true
+  const isMockRequest = username.startsWith("Mock_")
 
   //Get the existing saved Apigee token from DynamoDB
   const existingToken = await getExistingApigeeAccessToken(
@@ -228,26 +228,28 @@ export async function authenticateRequest(
   const cis2IdToken = newCis2IdToken
 
   // Fetch the private key for signing the client assertion
-  logger.info("Fetching JWT private key from Secrets Manager")
+  logger.info("Fetching JWT private key from Secrets Manager", {jwtPrivateKeyArn})
   const jwtPrivateKey = await getSecret(jwtPrivateKeyArn)
   if (!jwtPrivateKey || typeof jwtPrivateKey !== "string") {
     throw new Error("Invalid or missing JWT private key")
   }
 
+  logger.debug("This is the oidcConfig", {oidcConfig})
   // Construct a new body with the signed JWT client assertion
   const requestBody = constructSignedJWTBody(
     logger,
-    oidcConfig.oidcTokenEndpoint,
+    options.apigeeTokenEndpoint,
     jwtPrivateKey,
     apigeeApiKey,
     jwtKid,
     cis2IdToken
   )
 
+  logger.debug("these are the options", {options})
   // Exchange token with Apigee
   const {accessToken, refreshToken, expiresIn} = await exchangeTokenForApigeeAccessToken(
     axiosInstance,
-    oidcConfig.oidcTokenEndpoint,
+    options.apigeeTokenEndpoint,
     requestBody,
     logger
   )

@@ -127,6 +127,8 @@ export class ApiFunctions extends Construct {
       entryPoint: "src/handler.ts",
       lambdaEnvironmentVariables: {
         ...commonLambdaEnv,
+        jwtKid: props.jwtKid,
+        jwtPrivateKeyArn: props.sharedSecrets.primaryJwtPrivateKey.secretArn,
         apigeeCIS2TokenEndpoint: props.apigeeCIS2TokenEndpoint,
         apigeeMockTokenEndpoint: props.apigeeMockTokenEndpoint
       }

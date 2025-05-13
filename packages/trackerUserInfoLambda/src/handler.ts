@@ -46,7 +46,6 @@ const jwtPrivateKeyArn = process.env["jwtPrivateKeyArn"] as string
 const apigeeApiKey = process.env["APIGEE_API_KEY"] as string
 const apigeeApiSecret = process.env["APIGEE_API_SECRET"] as string
 const jwtKid = process.env["jwtKid"] as string
-const MOCK_MODE_ENABLED = process.env["MOCK_MODE_ENABLED"] === "true"
 
 const errorResponseBody = {
   message: "A system error has occurred"
@@ -79,16 +78,16 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   }
 
   logger.info("No valid cached user info found. Authenticating and calling userinfo endpoint...")
-
+  const isMockToken = username.startsWith("Mock_")
   const authResult = await authenticateRequest(event, documentClient, logger, {
     tokenMappingTableName,
     jwtPrivateKeyArn,
     apigeeApiKey,
     apigeeApiSecret,
     jwtKid,
-    oidcConfig: MOCK_MODE_ENABLED ? mockOidcConfig : cis2OidcConfig,
-    mockModeEnabled: MOCK_MODE_ENABLED,
-    apigeeTokenEndpoint: MOCK_MODE_ENABLED ? apigeeMockTokenEndpoint : apigeeCIS2TokenEndpoint
+    oidcConfig: isMockToken ? mockOidcConfig : cis2OidcConfig,
+    mockModeEnabled: isMockToken,
+    apigeeTokenEndpoint: isMockToken ? apigeeMockTokenEndpoint : apigeeCIS2TokenEndpoint
   })
 
   if (!authResult.apigeeAccessToken || !authResult.cis2IdToken) {
@@ -99,7 +98,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     authResult.apigeeAccessToken,
     authResult.cis2IdToken,
     logger,
-    MOCK_MODE_ENABLED ? mockOidcConfig : cis2OidcConfig
+    isMockToken ? mockOidcConfig : cis2OidcConfig
   )
 
   // Save user info to DynamoDB (but not tokens)
