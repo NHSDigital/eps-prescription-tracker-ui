@@ -1,12 +1,26 @@
 import {Logger} from "@aws-lambda-powertools/logger"
 import {DynamoDBDocumentClient, UpdateCommand} from "@aws-sdk/lib-dynamodb"
+import {RoleDetails} from "./userUtils"
 
+interface UserDetails {
+  family_name: string,
+  given_name: string
+}
+
+interface currentlySelectedRole {
+  org_code?: string,
+  role_id?: string,
+  role_name?: string
+}
 export interface TokenMappingItem {
     username: string,
     accessToken: string,
     refreshToken: string,
     expiresIn: number,
-    selectedRoleId?: string
+    selectedRoleId?: currentlySelectedRole,
+    userDetails?: UserDetails,
+    rolesWithAccess?: Array<RoleDetails>,
+    rolesWithoutAccess?: Array<RoleDetails>
   }
 
 /**
@@ -53,6 +67,29 @@ export const updateApigeeAccessToken = async (
       }
     }
 
+    if (tokenMappingItem.userDetails) {
+      updateExpression = updateExpression + ", userDetails = :userDetails"
+      expressionAttributeValues = {
+        ...expressionAttributeValues,
+        ":userDetails": tokenMappingItem.userDetails
+      }
+    }
+
+    if (tokenMappingItem.rolesWithAccess) {
+      updateExpression = updateExpression + ", rolesWithAccess = :rolesWithAccess"
+      expressionAttributeValues = {
+        ...expressionAttributeValues,
+        ":rolesWithAccess": tokenMappingItem.rolesWithAccess
+      }
+    }
+
+    if (tokenMappingItem.rolesWithoutAccess) {
+      updateExpression = updateExpression + ", rolesWithoutAccess = :rolesWithoutAccess"
+      expressionAttributeValues = {
+        ...expressionAttributeValues,
+        ":rolesWithoutAccess": tokenMappingItem.rolesWithoutAccess
+      }
+    }
     await documentClient.send(
       new UpdateCommand({
         TableName: tokenMappingTableName,

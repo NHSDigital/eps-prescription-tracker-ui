@@ -54,8 +54,6 @@ const errorResponseBody = {
 
 const middyErrorHandler = new MiddyErrorHandler(errorResponseBody)
 
-const CPT_ACCESS_ACTIVITY_CODES = ["B0570", "B0278"]
-
 const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   logger.appendKeys({"apigw-request-id": event.requestContext?.requestId})
   logger.info("Lambda handler invoked", {event})
@@ -99,7 +97,6 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   const userInfoResponse = await fetchUserInfo(
     authResult.apigeeAccessToken,
     authResult.cis2IdToken,
-    CPT_ACCESS_ACTIVITY_CODES,
     logger,
     MOCK_MODE_ENABLED ? mockOidcConfig : cis2OidcConfig
   )

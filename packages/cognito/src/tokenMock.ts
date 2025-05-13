@@ -10,7 +10,7 @@ import axios from "axios"
 import {parse, stringify} from "querystring"
 import {PrivateKey} from "jsonwebtoken"
 import {initializeOidcConfig} from "@cpt-ui-common/authFunctions"
-import {updateApigeeAccessToken} from "@cpt-ui-common/dynamoFunctions"
+import {updateApigeeAccessToken, extractRoleInformation} from "@cpt-ui-common/dynamoFunctions"
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 import {SessionStateItem} from "./types"
 import {v4 as uuidv4} from "uuid"
@@ -57,7 +57,10 @@ const apigeeApiSecret= process.env["APIGEE_API_SECRET"] as string
 const idpTokenPath= process.env["MOCK_IDP_TOKEN_PATH"] as string
 
 const dynamoClient = new DynamoDBClient()
-const documentClient = DynamoDBDocumentClient.from(dynamoClient)
+const documentClient = DynamoDBDocumentClient.from(dynamoClient, {
+  marshallOptions: {
+    removeUndefinedValues: true
+  }})
 const axiosInstance = axios.create()
 
 const errorResponseBody = {message: "A system error has occurred"}
@@ -133,9 +136,16 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   logger.debug("Token response", {tokenResponse})
 
   const userInfo = await getUserInfo(tokenResponse.access_token)
+  logger.debug("received user info", {userInfo})
   const current_time = Math.floor(Date.now() / 1000)
   const expirationTime = current_time + parseInt(tokenResponse.expires_in)
   const username = `${mockOidcConfig.userPoolIdp}_${userInfo.sub}`
+
+  const roleDetails = extractRoleInformation(
+    userInfo,
+    userInfo.uid,
+    logger
+  )
 
   const jwtClaims = {
     exp: expirationTime,
@@ -154,8 +164,8 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     amr: ["N3_SMARTCARD"],
     name: userInfo.name,
     authentication_assurance_level: "3",
-    given_name: userInfo.given_name,
-    family_name: userInfo.family_name,
+    given_name: roleDetails.user_details.given_name,
+    family_name: roleDetails.user_details.given_name,
     email: userInfo.email,
     selected_roleid: userInfo.uid
   }
@@ -170,7 +180,10 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
       accessToken: tokenResponse.access_token,
       refreshToken: tokenResponse.refresh_token,
       expiresIn: expirationTime,
-      selectedRoleId: jwtClaims.selected_roleid
+      selectedRoleId: roleDetails.currently_selected_role,
+      userDetails: roleDetails.user_details,
+      rolesWithAccess: roleDetails.roles_with_access,
+      rolesWithoutAccess: roleDetails.roles_without_access
     },
     logger
   )
