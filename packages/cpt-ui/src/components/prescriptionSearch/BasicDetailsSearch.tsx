@@ -16,7 +16,7 @@ import {
 import {useNavigate} from "react-router-dom"
 import {STRINGS} from "@/constants/ui-strings/BasicDetailsSearchStrings"
 import {API_ENDPOINTS, FRONTEND_PATHS} from "@/constants/environment"
-import {validateBasicDetails} from "@/helpers/validateBasicDetails"
+import {validateBasicDetails, getInlineErrors} from "@/helpers/validateBasicDetails"
 import {errorFocusMap, ErrorKey} from "@/helpers/basicDetailsValidationMeta"
 
 // Temporary mock data used for frontend search simulation
@@ -62,7 +62,8 @@ export default function BasicDetailsSearch() {
   const [dobYear, setDobYear] = useState("")
   const [errors, setErrors] = useState<Array<ErrorKey>>([])
 
-  const {errors: errorMessages} = STRINGS
+  const inlineErrors = getInlineErrors(errors)
+  const getInlineError = (field: string) => inlineErrors.find(([key]) => key === field)?.[1]
 
   useEffect(() => {
     document.querySelector<HTMLInputElement>("#last-name")?.focus()
@@ -137,38 +138,26 @@ export default function BasicDetailsSearch() {
         })
       } else {
         navigate(FRONTEND_PATHS.SEARCH_RESULTS_TOO_MANY, {
-          state: {
-            firstName,
-            lastName,
-            dob: searchDob,
-            postcode
-          }
+          state: {firstName, lastName, dob: searchDob, postcode}
         })
       }
     }
   }
-
-  // Utility to check if any of a list of error keys are present
-  const hasError = (keys: Array<ErrorKey>) => keys.some(key => errors.includes(key))
-
-  // Get first DOB error for inline display
-  const dobErrorKey = errors.find(e => e.startsWith("dob"))
-  const dobError = dobErrorKey ? errorMessages[dobErrorKey] : null
 
   return (
     <Container className="nhsuk-width-container-fluid" data-testid="basic-details-search-form-container">
       <Row className="patient-search-form">
         <Col width="three-quarters">
           <Form onSubmit={handleSubmit} noValidate data-testid="basic-details-form">
-            {errors.length > 0 && (
+            {inlineErrors.length > 0 && (
               <ErrorSummary ref={errorRef} data-testid="error-summary">
                 <ErrorSummary.Title>{STRINGS.errorSummaryHeading}</ErrorSummary.Title>
                 <ErrorSummary.Body>
                   <ErrorSummary.List>
-                    {errors.map(error => (
-                      <ErrorSummary.Item key={error}>
-                        <a href={`#${errorFocusMap[error] ?? "basic-details-search-heading"}`}>
-                          {errorMessages[error]}
+                    {inlineErrors.map(([key, message]) => (
+                      <ErrorSummary.Item key={key}>
+                        <a href={`#${errorFocusMap[key] ?? "basic-details-search-heading"}`}>
+                          {message}
                         </a>
                       </ErrorSummary.Item>
                     ))}
@@ -192,69 +181,45 @@ export default function BasicDetailsSearch() {
               <p data-testid="intro-text">{STRINGS.introText}</p>
 
               {/* First Name */}
-              <FormGroup className={hasError(["firstNameTooLong", "firstNameInvalidChars"])
-                ? "nhsuk-form-group--error" : ""}>
+              <FormGroup className={getInlineError("firstName") ? "nhsuk-form-group--error" : ""}>
                 <Label htmlFor="first-name" data-testid="first-name-label">
                   <h3 className="nhsuk-heading-s nhsuk-u-margin-bottom-1 no-outline">
                     {STRINGS.firstNameLabel}
                   </h3>
                 </Label>
-                {errors.includes("firstNameTooLong") && (
-                  <ErrorMessage>{errorMessages.firstNameTooLong}</ErrorMessage>
-                )}
-                {errors.includes("firstNameInvalidChars") && (
-                  <ErrorMessage>{errorMessages.firstNameInvalidChars}</ErrorMessage>
-                )}
+                {getInlineError("firstName") && <ErrorMessage>{getInlineError("firstName")}</ErrorMessage>}
                 <TextInput
                   id="first-name"
                   name="first-name"
                   value={firstName}
                   onChange={e => setFirstName((e.target as HTMLInputElement).value)}
-                  className={`nhsuk-input--width-20 ${hasError(["firstNameTooLong", "firstNameInvalidChars"])
-                    ? "nhsuk-input--error" : ""}`}
+                  className={`nhsuk-input--width-20 ${getInlineError("firstName") ? "nhsuk-input--error" : ""}`}
                   data-testid="first-name-input"
                 />
               </FormGroup>
 
               {/* Last Name */}
-              <FormGroup className={hasError(["lastNameRequired", "lastNameTooLong", "lastNameInvalidChars"])
-                ? "nhsuk-form-group--error"
-                : ""}>
+              <FormGroup className={getInlineError("lastName") ? "nhsuk-form-group--error" : ""}>
                 <Label htmlFor="last-name" data-testid="last-name-label">
                   <h3 className="nhsuk-heading-s nhsuk-u-margin-bottom-1 no-outline">
                     {STRINGS.lastNameLabel}
                   </h3>
                 </Label>
-                {errors.includes("lastNameRequired") && (
-                  <ErrorMessage>{errorMessages.lastNameRequired}</ErrorMessage>
-                )}
-                {errors.includes("lastNameTooLong") && (
-                  <ErrorMessage>{errorMessages.lastNameTooLong}</ErrorMessage>
-                )}
-                {errors.includes("lastNameInvalidChars") && (
-                  <ErrorMessage>{errorMessages.lastNameInvalidChars}</ErrorMessage>
-                )}
+                {getInlineError("lastName") && <ErrorMessage>{getInlineError("lastName")}</ErrorMessage>}
                 <TextInput
                   id="last-name"
                   name="last-name"
                   value={lastName}
                   onChange={e => setLastName((e.target as HTMLInputElement).value)}
-                  className={`nhsuk-input--width-20 ${hasError([
-                    "lastNameRequired",
-                    "lastNameTooLong",
-                    "lastNameInvalidChars"])
-                    ? "nhsuk-input--error" : ""}`}
+                  className={`nhsuk-input--width-20 ${getInlineError("lastName") ? "nhsuk-input--error" : ""}`}
                   data-testid="last-name-input"
                 />
               </FormGroup>
 
               {/* Date of Birth */}
-              <FormGroup className={errors.some(e => e.startsWith("dob"))
-                ? "nhsuk-form-group nhsuk-form-group--error"
-                : "nhsuk-form-group"}>
+              <FormGroup className={getInlineError("dob") ? "nhsuk-form-group--error" : ""}>
                 <Fieldset role="group" aria-labelledby="dob-label">
-                  <Fieldset.Legend
-                    className="nhsuk-fieldset__legend nhsuk-fieldset__legend--s"
+                  <Fieldset.Legend className="nhsuk-fieldset__legend--s"
                     id="dob-label"
                     data-testid="dob-label"
                   >
@@ -265,103 +230,62 @@ export default function BasicDetailsSearch() {
                   <HintText id="dob-hint" data-testid="dob-hint">
                     {STRINGS.dobHint}
                   </HintText>
-
-                  {dobError && <ErrorMessage>{dobError}</ErrorMessage>}
-
+                  {getInlineError("dob") && <ErrorMessage>{getInlineError("dob")}</ErrorMessage>}
                   <div className="nhsuk-date-input" id="dob" data-testid="dob-input-group">
                     <div className="nhsuk-date-input__item">
-                      <FormGroup>
-                        <Label htmlFor="dob-day" className="nhsuk-label nhsuk-date-input__label">
-                          {STRINGS.dobDay}
-                        </Label>
-                        <TextInput
-                          id="dob-day"
-                          name="dob-day"
-                          value={dobDay}
-                          onChange={e => setDobDay((e.target as HTMLInputElement).value)}
-                          className={`nhsuk-date-input__input nhsuk-input--width-2 ${hasError([
-                            "dobDayRequired",
-                            "dobInvalidDate",
-                            "dobNonNumericDay"])
-                            ? "nhsuk-input--error" : ""}`}
-                          type="number"
-                          pattern="[0-9]*"
-                          data-testid="dob-day-input"
-                        />
-                      </FormGroup>
+                      <Label htmlFor="dob-day" className="nhsuk-label nhsuk-date-input__label">{STRINGS.dobDay}</Label>
+                      <TextInput
+                        id="dob-day"
+                        name="dob-day"
+                        value={dobDay}
+                        onChange={e => setDobDay((e.target as HTMLInputElement).value)}
+                        className={`nhsuk-date-input__input nhsuk-input--width-2 ${getInlineError("dob")
+                          ? "nhsuk-input--error" : ""}`}
+                        data-testid="dob-day-input"
+                      />
                     </div>
                     <div className="nhsuk-date-input__item">
-                      <FormGroup>
-                        <Label htmlFor="dob-month" className="nhsuk-label nhsuk-date-input__label">
-                          {STRINGS.dobMonth}
-                        </Label>
-                        <TextInput
-                          id="dob-month"
-                          name="dob-month"
-                          value={dobMonth}
-                          onChange={e => setDobMonth((e.target as HTMLInputElement).value)}
-                          className={`nhsuk-date-input__input nhsuk-input--width-2 ${hasError([
-                            "dobMonthRequired",
-                            "dobInvalidDate",
-                            "dobNonNumericMonth"])
-                            ? "nhsuk-input--error" : ""}`}
-                          type="number"
-                          pattern="[0-9]*"
-                          data-testid="dob-month-input"
-                        />
-                      </FormGroup>
+                      <Label htmlFor="dob-month" className="nhsuk-label nhsuk-date-input__label">
+                        {STRINGS.dobMonth}
+                      </Label>
+                      <TextInput
+                        id="dob-month"
+                        name="dob-month"
+                        value={dobMonth}
+                        onChange={e => setDobMonth((e.target as HTMLInputElement).value)}
+                        className={`nhsuk-date-input__input nhsuk-input--width-2 ${getInlineError("dob")
+                          ? "nhsuk-input--error" : ""}`}
+                        data-testid="dob-month-input"
+                      />
                     </div>
                     <div className="nhsuk-date-input__item">
-                      <FormGroup>
-                        <Label htmlFor="dob-year" className="nhsuk-label nhsuk-date-input__label">
-                          {STRINGS.dobYear}
-                        </Label>
-                        <TextInput
-                          id="dob-year"
-                          name="dob-year"
-                          value={dobYear}
-                          onChange={e => setDobYear((e.target as HTMLInputElement).value)}
-                          className={`nhsuk-date-input__input nhsuk-input--width-4 ${hasError([
-                            "dobYearRequired",
-                            "dobInvalidDate",
-                            "dobNonNumericYear",
-                            "dobYearTooShort"
-                          ])
-                            ? "nhsuk-input--error" : ""}`}
-                          type="number"
-                          pattern="[0-9]*"
-                          data-testid="dob-year-input"
-                        />
-                      </FormGroup>
+                      <Label htmlFor="dob-year" className="nhsuk-label nhsuk-date-input__label">
+                        {STRINGS.dobYear}
+                      </Label>
+                      <TextInput
+                        id="dob-year"
+                        value={dobYear}
+                        onChange={e => setDobYear((e.target as HTMLInputElement).value)}
+                        className={`nhsuk-date-input__input nhsuk-input--width-4 ${getInlineError("dob")
+                          ? "nhsuk-input--error" : ""}`}
+                        data-testid="dob-year-input"
+                      />
                     </div>
                   </div>
                 </Fieldset>
               </FormGroup>
 
               {/* Postcode */}
-              <FormGroup className={hasError(["postcodeTooShort", "postcodeInvalidChars"])
-                ? "nhsuk-form-group--error" : ""}>
-                <Label htmlFor="postcode-only" data-testid="postcode-label">
-                  <h3 className="nhsuk-heading-s nhsuk-u-margin-bottom-1 no-outline">
-                    {STRINGS.postcodeLabel}
-                  </h3>
-                </Label>
-                <HintText id="postcode-hint" data-testid="postcode-hint">
-                  {STRINGS.postcodeHint}
-                </HintText>
-                {errors.includes("postcodeTooShort") && (
-                  <ErrorMessage>{errorMessages.postcodeTooShort}</ErrorMessage>
-                )}
-                {errors.includes("postcodeInvalidChars") && (
-                  <ErrorMessage>{errorMessages.postcodeInvalidChars}</ErrorMessage>
-                )}
+              <FormGroup className={getInlineError("postcode") ? "nhsuk-form-group--error" : ""}>
+                <Label htmlFor="postcode-only"><h3 className="nhsuk-heading-s">{STRINGS.postcodeLabel}</h3></Label>
+                <HintText>{STRINGS.postcodeHint}</HintText>
+                {getInlineError("postcode") && <ErrorMessage>{getInlineError("postcode")}</ErrorMessage>}
                 <TextInput
                   id="postcode-only"
                   name="postcode-only"
                   value={postcode}
                   onChange={e => setPostcode((e.target as HTMLInputElement).value)}
-                  className={`nhsuk-input--width-10 ${hasError(["postcodeTooShort", "postcodeInvalidChars"])
-                    ? "nhsuk-input--error" : ""}`}
+                  className={`nhsuk-input--width-10 ${getInlineError("postcode") ? "nhsuk-input--error" : ""}`}
                   data-testid="postcode-input"
                 />
               </FormGroup>

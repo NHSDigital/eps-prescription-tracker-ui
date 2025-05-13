@@ -17,12 +17,10 @@ export type ErrorKey =
   | "postcodeTooShort"
   | "postcodeInvalidChars"
 
-export const errorFocusMap: Partial<Record<ErrorKey, string>> = {
-  firstNameTooLong: "first-name",
-  firstNameInvalidChars: "first-name",
-  lastNameRequired: "last-name",
-  lastNameTooLong: "last-name",
-  lastNameInvalidChars: "last-name",
+export const errorFocusMap: Record<string, string> = {
+  firstName: "first-name",
+  lastName: "last-name",
+  dob: "dob-day",
   dobRequired: "dob-day",
   dobDayRequired: "dob-day",
   dobMonthRequired: "dob-month",
@@ -31,8 +29,7 @@ export const errorFocusMap: Partial<Record<ErrorKey, string>> = {
   dobNonNumericMonth: "dob-month",
   dobNonNumericYear: "dob-year",
   dobYearTooShort: "dob-year",
-  dobInvalidDate: "dob-day", // Focus on the first field in group
+  dobInvalidDate: "dob-day",
   dobFutureDate: "dob-day",
-  postcodeTooShort: "postcode-only",
-  postcodeInvalidChars: "postcode-only"
+  postcode: "postcode-only"
 }
