@@ -304,31 +304,32 @@ export class StatefulResourcesStack extends Stack {
         value: primaryOidcTokenEndpoint,
         exportName: `${props.stackName}:local:primaryOidcTokenEndpoint`
       })
-      new CfnOutput(this, "mockOidcClientId", {
-        value: mockOidcClientId,
-        exportName: `${props.stackName}:local:mockOidcClientId`
-      })
-      new CfnOutput(this, "mockOidcIssuer", {
-        value: mockOidcIssuer,
-        exportName: `${props.stackName}:local:mockOidcIssuer`
-      })
-      new CfnOutput(this, "mockOidcAuthorizeEndpoint", {
-        value: mockOidcAuthorizeEndpoint,
-        exportName: `${props.stackName}:local:mockOidcAuthorizeEndpoint`
-      })
-      new CfnOutput(this, "mockOidcUserInfoEndpoint", {
-        value: mockOidcUserInfoEndpoint,
-        exportName: `${props.stackName}:local:mockOidcUserInfoEndpoint`
-      })
-      new CfnOutput(this, "mockOidcjwksEndpoint", {
-        value: mockOidcjwksEndpoint,
-        exportName: `${props.stackName}:local:mockOidcjwksEndpoint`
-      })
-      new CfnOutput(this, "mockOidcTokenEndpoint", {
-        value: mockOidcTokenEndpoint,
-        exportName: `${props.stackName}:local:mockOidcTokenEndpoint`
-      })
-
+      if (useMockOidc) {
+        new CfnOutput(this, "mockOidcClientId", {
+          value: mockOidcClientId,
+          exportName: `${props.stackName}:local:mockOidcClientId`
+        })
+        new CfnOutput(this, "mockOidcIssuer", {
+          value: mockOidcIssuer,
+          exportName: `${props.stackName}:local:mockOidcIssuer`
+        })
+        new CfnOutput(this, "mockOidcAuthorizeEndpoint", {
+          value: mockOidcAuthorizeEndpoint,
+          exportName: `${props.stackName}:local:mockOidcAuthorizeEndpoint`
+        })
+        new CfnOutput(this, "mockOidcUserInfoEndpoint", {
+          value: mockOidcUserInfoEndpoint,
+          exportName: `${props.stackName}:local:mockOidcUserInfoEndpoint`
+        })
+        new CfnOutput(this, "mockOidcjwksEndpoint", {
+          value: mockOidcjwksEndpoint,
+          exportName: `${props.stackName}:local:mockOidcjwksEndpoint`
+        })
+        new CfnOutput(this, "mockOidcTokenEndpoint", {
+          value: mockOidcTokenEndpoint,
+          exportName: `${props.stackName}:local:mockOidcTokenEndpoint`
+        })
+      }
     }
 
     nagSuppressions(this)
