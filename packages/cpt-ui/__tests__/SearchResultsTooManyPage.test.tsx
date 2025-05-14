@@ -7,7 +7,7 @@ import SearchResultsTooManyPage from "@/pages/SearchResultsTooManyPage"
 import {STRINGS} from "@/constants/ui-strings/SearchResultsTooManyStrings"
 import {FRONTEND_PATHS} from "@/constants/environment"
 
-const renderWithRouter = (state: React.ReactElement = {}) => {
+const renderWithRouter = (state: Record<string, unknown> = {}) => {
   return render(
     <MemoryRouter initialEntries={[{pathname: "/search-too-many", state}]}>
       <Routes>
