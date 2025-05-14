@@ -1,6 +1,5 @@
 import React from "react"
 import {useLocation} from "react-router-dom"
-import {FRONTEND_PATHS} from "@/constants/environment"
 import {
   CURRENT_PRESCRIPTIONS,
   FUTURE_PRESCRIPTIONS,
@@ -28,19 +27,19 @@ export default function PrescriptionsListTabs({
   const pathname = location.pathname
 
   const pathContent: Record<string, React.ReactNode> = {
-    [FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT]: (
+    "/prescription-list-current": (
       <PrescriptionsListTable
         textContent={CURRENT_PRESCRIPTIONS}
         prescriptions={currentPrescriptions}
       />
     ),
-    [FRONTEND_PATHS.PRESCRIPTION_LIST_PAST]: (
+    "/prescription-list-past": (
       <PrescriptionsListTable
         textContent={PAST_PRESCRIPTIONS}
         prescriptions={pastPrescriptions}
       />
     ),
-    [FRONTEND_PATHS.PRESCRIPTION_LIST_FUTURE]: (
+    "/prescription-list-future": (
       <PrescriptionsListTable
         textContent={FUTURE_PRESCRIPTIONS}
         prescriptions={futurePrescriptions}
