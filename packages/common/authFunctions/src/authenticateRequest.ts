@@ -12,7 +12,7 @@ import {
   exchangeTokenForApigeeAccessToken,
   getExistingApigeeAccessToken
 } from "./index"
-import {updateApigeeAccessToken} from "@cpt-ui-common/dynamoFunctions"
+import {updateTokenMapping} from "@cpt-ui-common/dynamoFunctions"
 
 // Define the ApigeeTokenResponse type
 interface ApigeeTokenResponse {
@@ -79,7 +79,7 @@ const refreshTokenFlow = async (
     )
 
     // Update DynamoDB with the new tokens
-    await updateApigeeAccessToken(
+    await updateTokenMapping(
       documentClient,
       tokenMappingTableName,
       {
@@ -263,7 +263,7 @@ export async function authenticateRequest(
   )
 
   // Update DynamoDB with the new Apigee access token
-  await updateApigeeAccessToken(
+  await updateTokenMapping(
     documentClient,
     tokenMappingTableName,
     {

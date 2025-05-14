@@ -42,7 +42,7 @@ const mockFetchAndVerifyCIS2Tokens = jest.fn()
 const mockGetUsernameFromEvent = jest.fn()
 const mockConstructSignedJWTBody = jest.fn()
 const mockExchangeTokenForApigeeAccessToken = jest.fn()
-const mockUpdateApigeeAccessToken = jest.fn()
+const mockUpdateTokenMapping = jest.fn()
 const mockGetSecret = jest.fn()
 const mockInitializeOidcConfig = jest.fn()
 
@@ -195,8 +195,8 @@ jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
       }
     }
 
-    // Always make sure updateApigeeAccessToken is called with the expected arguments
-    mockUpdateApigeeAccessToken(
+    // Always make sure updateTokenMapping is called with the expected arguments
+    mockUpdateTokenMapping(
       expect.anything(),
       TokenMappingTableName,
       username,
@@ -214,7 +214,7 @@ jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
     }
   })
 
-  const updateApigeeAccessToken = mockUpdateApigeeAccessToken.mockImplementation(() => {})
+  const updateTokenMapping = mockUpdateTokenMapping.mockImplementation(() => {})
 
   const initializeOidcConfig = mockInitializeOidcConfig.mockImplementation(() => {
     // Create a JWKS client for cis2 and mock
@@ -264,7 +264,7 @@ jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
     getUsernameFromEvent,
     constructSignedJWTBody,
     exchangeTokenForApigeeAccessToken,
-    updateApigeeAccessToken,
+    updateTokenMapping,
     initializeOidcConfig,
     authenticateRequest
   }
@@ -369,7 +369,7 @@ describe("handler tests with mock mode enabled", () => {
       })
     })
 
-    expect(mockUpdateApigeeAccessToken).toHaveBeenCalledWith(
+    expect(mockUpdateTokenMapping).toHaveBeenCalledWith(
       expect.anything(),
       TokenMappingTableName,
       "Mock_JoeBloggs",

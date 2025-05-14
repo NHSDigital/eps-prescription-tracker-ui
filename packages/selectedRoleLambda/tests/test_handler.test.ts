@@ -8,7 +8,7 @@ const TokenMappingTableName = process.env.TokenMappingTableName
 // Mocked functions from authFunctions
 const mockGetUsernameFromEvent = jest.fn()
 const mockExchangeTokenForApigeeAccessToken = jest.fn()
-const mockUpdateApigeeAccessToken = jest.fn()
+const mockUpdateTokenMapping = jest.fn()
 const mockInitializeOidcConfig = jest.fn()
 
 jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
@@ -94,8 +94,8 @@ jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
       }
     }
 
-    // Always make sure updateApigeeAccessToken is called with the expected arguments
-    mockUpdateApigeeAccessToken(
+    // Always make sure updateTokeMapping is called with the expected arguments
+    mockUpdateTokenMapping(
       expect.anything(),
       TokenMappingTableName,
       username,

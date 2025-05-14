@@ -9,10 +9,10 @@ import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
 
 jest.unstable_mockModule("@cpt-ui-common/dynamoFunctions", () => {
-  const updateApigeeAccessToken = jest.fn()
+  const updateTokenMapping = jest.fn()
 
   return {
-    updateApigeeAccessToken
+    updateTokenMapping
   }
 })
 

@@ -49,10 +49,10 @@ const {
 })
 
 jest.unstable_mockModule("@cpt-ui-common/dynamoFunctions", () => {
-  const updateApigeeAccessToken = jest.fn()
+  const updateTokenMapping = jest.fn()
 
   return {
-    updateApigeeAccessToken,
+    updateTokenMapping,
     extractRoleInformation: jest.fn()
   }
 })

@@ -26,13 +26,11 @@ export interface TokenMappingItem {
 /**
  * Updates the Apigee access token in DynamoDB.
  * @param documentClient - DynamoDB DocumentClient instance
- * @param tableName - Name of the DynamoDB table
- * @param username - Username for which to update the token
- * @param accessToken - Access token to update
- * @param expiresIn - Token expiry duration in seconds
+ * @param tokenMappingTableName - Name of the tokenMappingTableName DynamoDB table
+ * @param tokenMappingItem - details to update
  * @param logger - Logger instance for logging
  */
-export const updateApigeeAccessToken = async (
+export const updateTokenMapping = async (
   documentClient: DynamoDBDocumentClient,
   tokenMappingTableName: string,
   tokenMappingItem: TokenMappingItem,
@@ -40,7 +38,7 @@ export const updateApigeeAccessToken = async (
 ): Promise<void> => {
   const currentTime = Math.floor(Date.now() / 1000)
 
-  logger.debug("Updating DynamoDB with new Apigee access token", {
+  logger.debug("Updating DynamoDB with new details", {
     tokenMappingItem
   })
 
@@ -99,9 +97,9 @@ export const updateApigeeAccessToken = async (
       })
     )
 
-    logger.info("Apigee Access token successfully updated in DynamoDB")
+    logger.info("TokenMapping table successfully updated in DynamoDB")
   } catch (error) {
-    logger.error("Failed to update Apigee access token in DynamoDB", {error})
-    throw new Error("Failed to update Apigee access token in DynamoDB")
+    logger.error("Failed to update TokenMapping table in DynamoDB", {error})
+    throw new Error("Failed to update TokenMapping table in DynamoDB")
   }
 }

@@ -2,7 +2,7 @@ import {jest} from "@jest/globals"
 
 import {DynamoDBDocumentClient, UpdateCommand} from "@aws-sdk/lib-dynamodb"
 import {Logger} from "@aws-lambda-powertools/logger"
-import {updateApigeeAccessToken} from "../src/tokenMapping"
+import {updateTokenMapping} from "../src/tokenMapping"
 
 const mockLogger: Partial<Logger> = {
   info: jest.fn(),
@@ -10,7 +10,7 @@ const mockLogger: Partial<Logger> = {
   error: jest.fn()
 }
 
-describe("updateApigeeAccessToken", () => {
+describe("tokenMappingTable", () => {
   let mockDocumentClient: jest.Mocked<DynamoDBDocumentClient>
 
   beforeEach(() => {
@@ -30,7 +30,7 @@ describe("updateApigeeAccessToken", () => {
     const mockRefreshToken = "testRefreshToken"
     const mockExpiresIn = 3600
 
-    await updateApigeeAccessToken(
+    await updateTokenMapping(
       mockDocumentClient,
       mockTableName,
       {
@@ -49,13 +49,16 @@ describe("updateApigeeAccessToken", () => {
     const calledCommand = mockDocumentClient.send.mock.calls[0][0] as UpdateCommand
     const expectedExpiryTime = Math.floor(Date.now() / 1000) + mockExpiresIn
 
-    if (calledCommand.input && "ExpressionAttributeValues" in calledCommand.input) {
-      expect(
-        (calledCommand.input as UpdateCommand["input"]).ExpressionAttributeValues?.[":apigeeExpiresIn"]
-      ).toBeCloseTo(expectedExpiryTime, -2)
-    } else {
-      throw new Error("Called command input is not an UpdateCommand input")
-    }
+    expect(calledCommand.input).toBeDefined()
+    const calledAttributeValues = (calledCommand.input as UpdateCommand["input"]).ExpressionAttributeValues
+    expect(calledAttributeValues[":apigeeExpiresIn"]
+    ).toBeCloseTo(expectedExpiryTime, -2)
+    expect(calledAttributeValues[":apigeeAccessToken"]).toBe(mockAccessToken)
+    expect(calledAttributeValues[":apigeeRefreshToken"]).toBe(mockRefreshToken)
+    expect(calledAttributeValues[":selectedRoleId"]).toBeUndefined()
+    expect(calledAttributeValues[":userDetails"]).toBeUndefined()
+    expect(calledAttributeValues[":rolesWithAccess"]).toBeUndefined()
+    expect(calledAttributeValues[":rolesWithoutAccess"]).toBeUndefined()
   })
 
   it("should log and throw an error on failure", async () => {
@@ -70,7 +73,7 @@ describe("updateApigeeAccessToken", () => {
     const mockExpiresIn = 3600
 
     await expect(
-      updateApigeeAccessToken(
+      updateTokenMapping(
         mockDocumentClient,
         mockTableName,
         {
@@ -81,10 +84,10 @@ describe("updateApigeeAccessToken", () => {
         },
           mockLogger as Logger
       )
-    ).rejects.toThrow("Failed to update Apigee access token in DynamoDB")
+    ).rejects.toThrow("Failed to update TokenMapping table in DynamoDB")
 
     expect(mockLogger.error).toHaveBeenCalledWith(
-      "Failed to update Apigee access token in DynamoDB",
+      "Failed to update TokenMapping table in DynamoDB",
       {error: mockError}
     )
     expect(mockDocumentClient.send).toHaveBeenCalledTimes(1)

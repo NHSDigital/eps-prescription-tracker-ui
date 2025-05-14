@@ -10,7 +10,7 @@ import axios from "axios"
 import {parse, stringify} from "querystring"
 import {PrivateKey} from "jsonwebtoken"
 import {initializeOidcConfig} from "@cpt-ui-common/authFunctions"
-import {updateApigeeAccessToken, extractRoleInformation} from "@cpt-ui-common/dynamoFunctions"
+import {updateTokenMapping, extractRoleInformation} from "@cpt-ui-common/dynamoFunctions"
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 import {SessionStateItem} from "./types"
 import {v4 as uuidv4} from "uuid"
@@ -173,7 +173,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
   const jwtToken = await createSignedJwt(jwtClaims)
 
-  await updateApigeeAccessToken(
+  await updateTokenMapping(
     documentClient,
     tokenMappingTable,
     {

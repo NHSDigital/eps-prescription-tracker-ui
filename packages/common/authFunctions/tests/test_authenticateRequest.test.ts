@@ -34,7 +34,7 @@ const mockGetUsernameFromEvent = jest.fn()
 const mockGetExistingApigeeAccessToken = jest.fn()
 const mockRefreshApigeeAccessToken = jest.fn()
 const mockExchangeTokenForApigeeAccessToken = jest.fn()
-const mockUpdateApigeeAccessToken = jest.fn()
+const mockUpdateTokenMapping = jest.fn()
 const mockFetchAndVerifyCIS2Tokens = jest.fn()
 const mockConstructSignedJWTBody = jest.fn()
 const mockDecodeToken = jest.fn()
@@ -49,10 +49,10 @@ jest.mock("axios", () => ({
 }))
 
 jest.unstable_mockModule("@cpt-ui-common/dynamoFunctions", () => {
-  const updateApigeeAccessToken = mockUpdateApigeeAccessToken
+  const updateTokenMapping = mockUpdateTokenMapping
 
   return {
-    updateApigeeAccessToken
+    updateTokenMapping
   }
 })
 
@@ -219,7 +219,7 @@ describe("authenticateRequest", () => {
     )
 
     // Verify token was updated in DB
-    expect(mockUpdateApigeeAccessToken).toHaveBeenCalledWith(
+    expect(mockUpdateTokenMapping).toHaveBeenCalledWith(
       mockDocumentClient,
       mockOptions.tokenMappingTableName,
       {
@@ -266,7 +266,7 @@ describe("authenticateRequest", () => {
     expect(mockFetchAndVerifyCIS2Tokens).toHaveBeenCalled()
     expect(mockConstructSignedJWTBody).toHaveBeenCalled()
     expect(mockExchangeTokenForApigeeAccessToken).toHaveBeenCalled()
-    expect(mockUpdateApigeeAccessToken).toHaveBeenCalled()
+    expect(mockUpdateTokenMapping).toHaveBeenCalled()
     expect(mockGetSecret).toHaveBeenCalledWith("test-key-arn")
   })
 

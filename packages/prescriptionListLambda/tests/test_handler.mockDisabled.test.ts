@@ -27,7 +27,7 @@ const mockFetchAndVerifyCIS2Tokens = jest.fn()
 const mockGetUsernameFromEvent = jest.fn()
 const mockConstructSignedJWTBody = jest.fn()
 const mockExchangeTokenForApigeeAccessToken = jest.fn()
-const mockUpdateApigeeAccessToken = jest.fn()
+const mockUpdateTokenMapping = jest.fn()
 const mockGetSecret = jest.fn()
 const mockInitializeOidcConfig = jest.fn()
 const mockAuthenticateRequest = jest.fn()
@@ -102,8 +102,8 @@ jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
         expect.any(Object)
       )
 
-      // Make sure updateApigeeAccessToken is called with the expected parameters
-      mockUpdateApigeeAccessToken(
+      // Make sure updateTokenMapping is called with the expected parameters
+      mockUpdateTokenMapping(
         expect.any(Object),
         TokenMappingTableName,
         username,
@@ -118,7 +118,7 @@ jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
         event.queryStringParameters && typeof event.queryStringParameters === "object" &&
         "nhsNumber" in event.queryStringParameters &&
         event.queryStringParameters.nhsNumber === "9000000009") {
-      mockUpdateApigeeAccessToken(
+      mockUpdateTokenMapping(
         expect.any(Object),
         TokenMappingTableName,
         "Mock_JoeBloggs",
@@ -138,7 +138,7 @@ jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
     }
   })
 
-  const updateApigeeAccessToken = mockUpdateApigeeAccessToken.mockImplementation(() => {})
+  const updateTokenMapping = mockUpdateTokenMapping.mockImplementation(() => {})
 
   const initializeOidcConfig = mockInitializeOidcConfig.mockImplementation( () => {
     // Create a JWKS client for cis2 and mock
@@ -188,7 +188,7 @@ jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
     getUsernameFromEvent,
     constructSignedJWTBody,
     exchangeTokenForApigeeAccessToken,
-    updateApigeeAccessToken,
+    updateTokenMapping,
     initializeOidcConfig,
     authenticateRequest
   }
@@ -297,7 +297,7 @@ describe("handler tests with cis2 auth", () => {
         "suffix": ""
       }})
 
-    expect(mockUpdateApigeeAccessToken).toBeCalledWith(
+    expect(mockUpdateTokenMapping).toBeCalledWith(
       expect.any(Object),
       TokenMappingTableName,
       "Mock_JoeBloggs",
