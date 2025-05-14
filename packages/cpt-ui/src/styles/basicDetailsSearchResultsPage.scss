@@ -9,7 +9,7 @@ $spacing-lg: 1rem;
 $spacing-xl: 1.5rem;
 $spacing-2xl: 2rem;
 
-.nhsuk-table__body {
+.nhsuk-table__body.patients {
   border-bottom: 3px solid $color-border;
   border-top: 3px solid $color-border;
   width: 100%;
@@ -31,7 +31,6 @@ cursor: pointer;
 border: 3px solid $color-hover-border;
 border-bottom: 3px solid $color-hover-border;
 }
-}
 
 .nhsuk-table__cell {
   font-size: $spacing-lg;
@@ -39,4 +38,6 @@ border-bottom: 3px solid $color-hover-border;
 
 .nhsuk-table__header {
   font-size: $spacing-lg;
+}
+
 }

@@ -36,7 +36,7 @@ export default function SearchResultsPage() {
 
   // to sort by first name
   const sortedPatients = patients
-    .sort((a, b) => a.given.localeCompare(b.given))
+    .toSorted((a, b) => a.given.localeCompare(b.given))
 
   const handleRowClick = (nhsNumber: string) => {
     navigate(`${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}?nhsNumber=${nhsNumber}`)
@@ -63,7 +63,7 @@ export default function SearchResultsPage() {
               {SearchResultsPageStrings.RESULTS_COUNT.replace("{count}", sortedPatients.length.toString())}
             </h2>
             <Table responsive id='results-table'>
-              <Table.Head role="rowgroup">
+              <Table.Head role="thead">
                 <Table.Row>
                   <Table.Cell id="table-header" as="th" scope="col" width="25%">{SearchResultsPageStrings.TABLE.NAME}</Table.Cell>
                   <Table.Cell id="table-header" as="th" scope="col" width="8.3%">{SearchResultsPageStrings.TABLE.GENDER}</Table.Cell>
@@ -74,7 +74,7 @@ export default function SearchResultsPage() {
                   }</Table.Cell>
                 </Table.Row>
               </Table.Head>
-              <Table.Body>
+              <Table.Body className="patients">
                 {sortedPatients.map((patient) => (
                   <Table.Row
                     id="patient-row"
@@ -87,6 +87,7 @@ export default function SearchResultsPage() {
                         .replace("{name}", `${patient.given} ${patient.family}`)
                         .replace("{nhsNumber}", patient.nhsNumber)}
                     role="button"
+                    type="submit"
                   >
                     <Table.Cell>
                       <a
