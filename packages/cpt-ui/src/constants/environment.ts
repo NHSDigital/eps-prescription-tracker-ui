@@ -76,7 +76,7 @@ export const MOCK_AUTH_ALLOWED_ENVIRONMENTS: ReadonlyArray<MockAuthEnvironment> 
 
 // Validation helper
 const validateEnvironment = (env: string): env is Environment => {
-  return ["dev", "dev-pr", "int", "qa", "prod", "test"].includes(env)
+  return ["dev", "dev-pr", "int", "qa", "prod", "ref", "test"].includes(env)
 }
 
 // Ensure environment is valid
