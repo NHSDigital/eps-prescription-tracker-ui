@@ -35,10 +35,17 @@ export default function EPSCookieBanner() {
   return (
     <>
       {cookiesSet === null && (
-        <div className="nhsuk-cookie-banner" id="cookieBanner" role="banner" aria-label={CookieStrings.cookie_banner}>
+        <div
+          className="nhsuk-cookie-banner"
+          data-testid="cookieBanner"
+          role="banner"
+          aria-label={CookieStrings.cookie_banner}>
           <div className="page-section">
             <div className="nhsuk-width-container">
-              <h2 className="nhsuk-cookie-banner-heading">
+              <h2
+                className="nhsuk-cookie-banner-heading"
+                data-testid="cookieTitle"
+              >
                 {CookieStrings.banner.cookie_title}
               </h2>
               <p className="nhsuk-body">
@@ -52,6 +59,7 @@ export default function EPSCookieBanner() {
                 <Link
                   to={CookieStrings.cookies_page_link}
                   className="cookie_info_link"
+                  data-testid="cookieInfoLink"
                 >{CookieStrings.banner.cookies_info_link_text}
                 </Link>
                 {CookieStrings.banner.cookie_text_p4}
@@ -81,7 +89,10 @@ export default function EPSCookieBanner() {
 
       {cookiesSet !== null && (
         <div className="chargeable-status-banner--green" id="chargeable-status-banner-id">
-          <div className="chargeable-status-banner-content">
+          <div
+            className="chargeable-status-banner-content"
+            data-testid="secondaryCookieBanner"
+          >
             {CookieStrings.text_linking_to_info_page}
             <Link to="/cookies" className="chargeable-status-banner-link">
               {CookieStrings.cookies_page}

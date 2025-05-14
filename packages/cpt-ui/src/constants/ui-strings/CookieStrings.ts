@@ -139,5 +139,6 @@ export const CookieStrings = {
   anyTime: " at any time.",
   pageLastReviewed: "Page last reviewed: 15 March 2025",
   pageNextReviewed: "Next review due: 15 March 2026",
-  cptCookies: "Cookies on the Clinical Prescription Tracking Service "
+  cptCookies: "Cookies on the Clinical Prescription Tracking Service ",
+  detailsSummaryText: (type: string) => `See the ${type.toLowerCase()} cookies we use`
 }

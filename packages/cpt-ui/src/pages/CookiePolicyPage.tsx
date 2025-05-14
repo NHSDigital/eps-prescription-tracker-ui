@@ -90,12 +90,19 @@ const CookiePolicyPage = () => {
           }
         }}
       >
-        <span className="nhsuk-details__summary-text">
-          See the {title.toLowerCase()} we use
+        <span
+          className="nhsuk-details__summary-text"
+          data-testid={`see-${title.toLowerCase()}-cookies`}
+        >
+          {CookieStrings.detailsSummaryText(title)}
         </span>
       </summary>
       <div className="nhsuk-details__text">
-        <table role="table" className="nhsuk-table-responsive">
+        <table
+          role="table"
+          className="nhsuk-table-responsive"
+          data-testid={title === "Essential cookies" ? "essential-cookies-table" : "analytics-cookies-table"}
+        >
           <caption className="nhsuk-table__caption nhsuk-u-visually-hidden">
             {title}
           </caption>
@@ -198,6 +205,7 @@ const CookiePolicyPage = () => {
                   name="cookie-measure"
                   type="radio"
                   value="yes"
+                  data-testid="accept-analytics-cookies"
                 />
                 <label className="nhsuk-label nhsuk-radios__label" htmlFor="example-1">
                   {CookieStrings.cookieSettings.acceptLabel}
@@ -210,8 +218,13 @@ const CookiePolicyPage = () => {
                   name="cookie-measure"
                   type="radio"
                   value="no"
+                  data-testid="reject-analytics-cookies"
                 />
-                <label className="nhsuk-label nhsuk-radios__label" htmlFor="example-2">
+                <label
+                  className="nhsuk-label nhsuk-radios__label"
+                  htmlFor="example-2"
+                  data-testid="save-cookie-preferences"
+                >
                   {CookieStrings.cookieSettings.rejectLabel}
                 </label>
               </div>
