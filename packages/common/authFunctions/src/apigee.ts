@@ -125,11 +125,13 @@ export const getExistingApigeeAccessToken = async (
   username: string,
   logger: Logger
 ): Promise<{
-  accessToken: string;
-  idToken: string;
-  refreshToken?: string;
-  expiresIn: number;
+  apigeeAccessToken: string;
+  apigeeIdToken: string;
+  apigeeRefreshToken?: string;
+  apigeeExpiresIn: number;
   roleId?: string;
+  cis2IdToken?: string;
+  cis2AccessToken?: string;
 } | null> => {
   logger.debug("Checking for existing Apigee access token in DynamoDB", {
     username,
@@ -151,6 +153,7 @@ export const getExistingApigeeAccessToken = async (
     }
 
     const userRecord = getResult.Item
+    logger.debug("Got this userRecord", {userRecord})
 
     // Check if Apigee access token exists
     if (userRecord.apigee_accessToken && userRecord.apigee_expiresIn) {
@@ -163,11 +166,13 @@ export const getExistingApigeeAccessToken = async (
       })
 
       return {
-        accessToken: userRecord.apigee_accessToken,
-        idToken: userRecord.apigee_idToken,
-        refreshToken: userRecord.apigee_refreshToken,
-        expiresIn: userRecord.apigee_expiresIn,
-        roleId: userRecord.selectedRoleId
+        apigeeAccessToken: userRecord.apigee_accessToken,
+        apigeeIdToken: userRecord.apigee_idToken,
+        apigeeRefreshToken: userRecord.apigee_refreshToken,
+        apigeeExpiresIn: userRecord.apigee_expiresIn,
+        roleId: userRecord.selectedRoleId,
+        cis2IdToken: userRecord.CIS2_idToken,
+        cis2AccessToken: userRecord.CIS2_accessToken
       }
     } else {
       logger.debug("No Apigee token found in user record", {username})

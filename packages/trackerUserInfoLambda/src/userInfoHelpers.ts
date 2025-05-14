@@ -1,5 +1,5 @@
 import {Logger} from "@aws-lambda-powertools/logger"
-import axios from "axios"
+import axios, {isAxiosError} from "axios"
 import {DynamoDBDocumentClient, GetCommand, UpdateCommand} from "@aws-sdk/lib-dynamodb"
 import {OidcConfig, decodeToken} from "@cpt-ui-common/authFunctions"
 import {
@@ -61,6 +61,11 @@ export const fetchUserInfo = async (
     )
 
   } catch (error) {
+    if (isAxiosError(error)) {
+      if (error.response) {
+        logger.error("received this response", {respone: error.response})
+      }
+    }
     logger.error("Error fetching user info", {error})
     throw new Error("Error fetching user info")
   }

@@ -117,6 +117,7 @@ export async function authenticateRequest(
   username: string
   apigeeAccessToken: string
   cis2IdToken?: string
+  cis2AccessToken?: string
   roleId: string
   isMockRequest: boolean
 }> {
@@ -147,9 +148,9 @@ export async function authenticateRequest(
   )
 
   // If token exists, check if we need to refresh it
-  if (existingToken?.accessToken) {
+  if (existingToken?.apigeeAccessToken) {
     const currentTime = Math.floor(Date.now() / 1000)
-    const timeUntilExpiry = existingToken.expiresIn - currentTime
+    const timeUntilExpiry = existingToken.apigeeExpiresIn - currentTime
 
     // If token is expired or will expire soon (within 60 seconds), refresh it
     if (timeUntilExpiry <= 60) {
@@ -159,7 +160,13 @@ export async function authenticateRequest(
           documentClient,
           tokenMappingTableName,
           username,
-          existingToken,
+          {
+            accessToken: existingToken.apigeeAccessToken,
+            idToken: existingToken.apigeeIdToken,
+            refreshToken: existingToken.apigeeRefreshToken,
+            expiresIn: existingToken.apigeeExpiresIn,
+            roleId: existingToken.roleId
+          },
           logger,
           {
             isMockRequest,
@@ -192,8 +199,9 @@ export async function authenticateRequest(
 
       return {
         username,
-        apigeeAccessToken: existingToken.accessToken,
-        cis2IdToken: existingToken.idToken,
+        apigeeAccessToken: existingToken.apigeeAccessToken,
+        cis2IdToken: existingToken.cis2IdToken,
+        cis2AccessToken: existingToken.cis2AccessToken,
         roleId: existingToken.roleId || defaultRoleId || "",
         isMockRequest
       }
