@@ -101,9 +101,15 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
   logger.debug("about to call downstream idp with rewritten body", {idpTokenPath, body: rewrittenObjectBodyParameters})
 
-  const tokenResponse = await axiosInstance.post(idpTokenPath,
-    stringify(rewrittenObjectBodyParameters)
-  )
+  let tokenResponse
+  try {
+    tokenResponse = await axiosInstance.post(idpTokenPath,
+      stringify(rewrittenObjectBodyParameters)
+    )
+  } catch(e) {
+    logger.error("error calling idp", {e, response: e.response.data})
+    throw(e)
+  }
 
   logger.debug("response from external oidc", {data: tokenResponse.data})
 
