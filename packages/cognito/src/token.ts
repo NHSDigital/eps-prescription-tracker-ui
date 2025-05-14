@@ -7,7 +7,7 @@ import {DynamoDBDocumentClient, PutCommand} from "@aws-sdk/lib-dynamodb"
 
 import middy from "@middy/core"
 import inputOutputLogger from "@middy/input-output-logger"
-import axios from "axios"
+import axios, {isAxiosError} from "axios"
 import {parse, ParsedUrlQuery, stringify} from "querystring"
 
 import {PrivateKey} from "jsonwebtoken"
@@ -107,7 +107,11 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
       stringify(rewrittenObjectBodyParameters)
     )
   } catch(e) {
-    logger.error("error calling idp", {e, response: e.response.data})
+    if (isAxiosError(e)) {
+      if (e.response) {
+        logger.error("error calling idp - response", {e, response: e.response})
+      }
+    }
     throw(e)
   }
 
