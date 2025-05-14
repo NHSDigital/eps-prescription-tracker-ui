@@ -257,7 +257,7 @@ const PrescriptionsListTable = ({textContent, prescriptions}: PrescriptionsListT
                       <div className="eps-prescription-id">{row.prescriptionId}</div>
                       <div>
                         <a
-                          href={`/prescription-details?prescriptionId=${row.prescriptionId}`}
+                          href={`/site/prescription-details?prescriptionId=${row.prescriptionId}`}
                           className="nhsuk-link"
                           data-testid={`view-prescription-link-${row.prescriptionId}`}
                         >
