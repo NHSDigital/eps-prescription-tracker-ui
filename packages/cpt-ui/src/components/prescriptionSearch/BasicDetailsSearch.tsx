@@ -230,7 +230,7 @@ export default function BasicDetailsSearch() {
                 "dobInvalidDate",
                 "dobFutureDate"
               ) ? "nhsuk-form-group--error" : ""}>
-                <Fieldset role="group" aria-labelledby="dob-label">
+                <Fieldset aria-labelledby="dob-label">
                   <Fieldset.Legend className="nhsuk-fieldset__legend--s" id="dob-label" data-testid="dob-label">
                     <h3 className="nhsuk-heading-s nhsuk-u-margin-bottom-1 no-outline">
                       {STRINGS.dobLabel}
