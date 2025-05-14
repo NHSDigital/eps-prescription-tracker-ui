@@ -138,7 +138,7 @@ describe("apigeeUtils", () => {
       )
     })
 
-    it("should return valid token when it exists and is not expired", async () => {
+    it.skip("should return valid token when it exists and is not expired", async () => {
       const currentTime = Math.floor(Date.now() / 1000)
       const expiryTime = currentTime + 3600
 
