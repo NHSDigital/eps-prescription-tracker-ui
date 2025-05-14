@@ -63,47 +63,46 @@ export default function SearchResultsPage() {
               {SearchResultsPageStrings.RESULTS_COUNT.replace("{count}", sortedPatients.length.toString())}
             </h2>
             <Table responsive id='results-table'>
-              <Table.Head role="thead">
+              <Table.Head>
                 <Table.Row>
-                  <Table.Cell id="table-header" as="th" scope="col" width="25%">{SearchResultsPageStrings.TABLE.NAME}</Table.Cell>
-                  <Table.Cell id="table-header" as="th" scope="col" width="8.3%">{SearchResultsPageStrings.TABLE.GENDER}</Table.Cell>
-                  <Table.Cell id="table-header" as="th" scope="col" width="16.67%">{SearchResultsPageStrings.TABLE.DOB}</Table.Cell>
-                  <Table.Cell id="table-header" as="th" scope="col" width="33%">{SearchResultsPageStrings.TABLE.ADDRESS}</Table.Cell>
-                  <Table.Cell id="table-header" as="th" scope="col" width="16.67%">{
-                    SearchResultsPageStrings.TABLE.NHS_NUMBER
-                  }</Table.Cell>
+                  <Table.Cell as="th" scope="col" id="header-name" width="25%">{SearchResultsPageStrings.TABLE.NAME}</Table.Cell>
+                  <Table.Cell as="th" scope="col" id="header-gender" width="8.3%">{SearchResultsPageStrings.TABLE.GENDER}</Table.Cell>
+                  <Table.Cell as="th" scope="col" id="header-dob" width="16.67%">{SearchResultsPageStrings.TABLE.DOB}</Table.Cell>
+                  <Table.Cell as="th" scope="col" id="header-address" width="33%">{SearchResultsPageStrings.TABLE.ADDRESS}</Table.Cell>
+                  <Table.Cell as="th" scope="col" id="header-nhs" width="16.67%">{SearchResultsPageStrings.TABLE.NHS_NUMBER}</Table.Cell>
                 </Table.Row>
               </Table.Head>
               <Table.Body className="patients">
                 {sortedPatients.map((patient) => (
                   <Table.Row
-                    id="patient-row"
+                    id={`patient-row-${patient.nhsNumber}`}
                     key={patient.nhsNumber}
-                    tabIndex={0}
                     onClick={() => handleRowClick(patient.nhsNumber)}
                     onKeyDown={e => (e.key === "Enter" || e.key === " ") && handleRowClick(patient.nhsNumber)}
-                    aria-label={
-                      SearchResultsPageStrings.ACCESSIBILITY.PATIENT_ROW
-                        .replace("{name}", `${patient.given} ${patient.family}`)
-                        .replace("{nhsNumber}", patient.nhsNumber)}
-                    role="button"
-                    type="submit"
                   >
-                    <Table.Cell>
+                    <Table.Cell headers="header-name">
                       <a
-                        href="#"
+                        href={`${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}?nhsNumber=${patient.nhsNumber}`}
                         onClick={(e) => {
                           e.preventDefault()
                           handleRowClick(patient.nhsNumber)
                         }}
+                      // aria-label={
+                      //   SearchResultsPageStrings.ACCESSIBILITY.PATIENT_ROW
+                      //     .replace("{name}", `${patient.given} ${patient.family}`)
+                      //     .replace("{nhsNumber}", patient.nhsNumber)
+                      // }
                       >
                         {patient.given} {patient.family}
+                        <span id={`patient-details-${patient.nhsNumber}`} className="nhsuk-u-visually-hidden">
+                          {`NHS number ${patient.nhsNumber.replace(/(\d{3})(\d{3})(\d{4})/, "$1 $2 $3")}`}
+                        </span>
                       </a>
                     </Table.Cell>
-                    <Table.Cell>{patient.gender}</Table.Cell>
-                    <Table.Cell>{patient.dateOfBirth}</Table.Cell>
-                    <Table.Cell>{patient.address}&nbsp;</Table.Cell>
-                    <Table.Cell>
+                    <Table.Cell headers="header-gender">{patient.gender}</Table.Cell>
+                    <Table.Cell headers="header-dob">{patient.dateOfBirth}</Table.Cell>
+                    <Table.Cell headers="header-address">{patient.address}&nbsp;</Table.Cell>
+                    <Table.Cell headers="header-nhs">
                       {patient.nhsNumber.replace(/(\d{3})(\d{3})(\d{4})/, "$1 $2 $3")}
                     </Table.Cell>
                   </Table.Row>
@@ -113,6 +112,6 @@ export default function SearchResultsPage() {
           </Col>
         </Row>
       </Container>
-    </main>
+    </main >
   )
 }
