@@ -17,12 +17,12 @@ export type TrackerUserInfo = {
     roles_without_access: Array<RoleDetails>
     currently_selected_role?: RoleDetails
     user_details: UserDetails
-  }
+}
 
 //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-//
 
-  // Types for the incoming data
-  type AssuranceLevel = "0" | "1" | "2" | "3"
+// Types for the incoming data
+type AssuranceLevel = "0" | "1" | "2" | "3"
 
 export interface UserInfoResponse {
     // Always included

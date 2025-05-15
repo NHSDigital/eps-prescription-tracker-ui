@@ -7,7 +7,7 @@ import middy from "@middy/core"
 import inputOutputLogger from "@middy/input-output-logger"
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 import {initializeOidcConfig, authenticateRequest} from "@cpt-ui-common/authFunctions"
-import {updateDynamoTable, fetchUserRolesFromDynamoDB} from "./selectedRoleHelpers"
+import {getTokenMapping, updateTokenMapping} from "@cpt-ui-common/dynamoFunctions"
 
 /**
  * Lambda function for updating the selected role in the DynamoDB table.
@@ -42,7 +42,17 @@ const apigeeTokenEndpoint = MOCK_MODE_ENABLED === "true" ? apigeeMockTokenEndpoi
  */
 const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   logger.appendKeys({"apigw-request-id": event.requestContext?.requestId})
-  logger.info("Lambda handler invoked", {event})
+  logger.debug("Environment variables", {env: {
+    tokenMappingTableName,
+    MOCK_MODE_ENABLED,
+    jwtPrivateKeyArn,
+    apigeeApiKey,
+    jwtKid,
+    apigeeApiSecret,
+    cis2ApigeeTokenEndpoint,
+    apigeeMockTokenEndpoint,
+    apigeeTokenEndpoint
+  }})
 
   // Use the authenticateRequest function for authentication
   const authResult = await authenticateRequest(event, documentClient, logger, {
@@ -97,16 +107,16 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     tableName: tokenMappingTableName
   })
 
-  const cachedRolesWithAccess = await fetchUserRolesFromDynamoDB(
-    authResult.username,
+  const tokenMappingItem = await getTokenMapping(
     documentClient,
-    logger,
-    tokenMappingTableName
+    tokenMappingTableName,
+    authResult.username,
+    logger
   )
 
   // Extract rolesWithAccess and currentlySelectedRole from the DynamoDB response
-  const rolesWithAccess = cachedRolesWithAccess?.rolesWithAccess || []
-  const currentSelectedRole = cachedRolesWithAccess?.currentlySelectedRole // Could be undefined
+  const rolesWithAccess = tokenMappingItem?.rolesWithAccess || []
+  const currentSelectedRole = tokenMappingItem?.currentlySelectedRole // Could be undefined
 
   // Identify the new selected role from request
   const userSelectedRoleId = userInfoSelectedRole.currently_selected_role?.role_id
@@ -184,7 +194,13 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   })
 
   // Persist changes to DynamoDB
-  await updateDynamoTable(authResult.username, updatedUserInfo, documentClient, logger, tokenMappingTableName)
+  const item = {
+    username: authResult.username,
+    currentlySelectedRole: updatedUserInfo.currentlySelectedRole || {},
+    rolesWithAccess: updatedUserInfo.rolesWithAccess || [],
+    selectedRoleId: updatedUserInfo.selectedRoleId || ""
+  }
+  await updateTokenMapping(documentClient, tokenMappingTableName, item, logger)
 
   return {
     statusCode: 200,
