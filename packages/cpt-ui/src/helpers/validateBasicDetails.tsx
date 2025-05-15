@@ -160,7 +160,7 @@ export function validateBasicDetails(input: ValidationInput): Array<ErrorKey> {
 
   const dobErrors = validateDob(input.dobDay, input.dobMonth, input.dobYear)
   // Collapse excessive DOB errors into a single generic error if needed
-  errors.push(...(dobErrors.length > 2 ? ["dobInvalidDate"] : dobErrors))
+  errors.push(...(dobErrors.length > 2 ? ["dobInvalidDate"] as Array<ErrorKey> : dobErrors))
 
   errors.push(...validatePostcode(input.postcode))
 
