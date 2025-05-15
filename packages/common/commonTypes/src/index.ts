@@ -30,4 +30,4 @@ export type {
   PrescriptionDetailsResponse
 } from "./prescriptionDetails"
 
-export {PatientSummary} from "./patientSearch"
+export type {PatientSummary} from "./patientSearch"
