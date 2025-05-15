@@ -20,7 +20,7 @@ export default function SearchResultsTooManyPage() {
     dobMonth,
     dobYear,
     postcode
-  } = (location.state || {}) as BasicDetailsSearchType
+  } = (location.state ?? {}) as BasicDetailsSearchType
 
   return (
     <Container
