@@ -19,7 +19,14 @@ const renderWithRouter = (state: Record<string, unknown> = {}) => {
 
 describe("SearchResultsTooManyPage", () => {
   it("renders heading, intro, and retry message", () => {
-    renderWithRouter({firstName: "Alex", lastName: "Johnson", dob: "10-02-2010", postcode: "AB1 2CD"})
+    renderWithRouter({
+      firstName: "Alex",
+      lastName: "Johnson",
+      dobDay: "10",
+      dobMonth: "02",
+      dobYear: "2010",
+      postcode: "AB1 2CD"
+    })
 
     expect(screen.getByTestId("too-many-results-page")).toBeInTheDocument()
     expect(screen.getByTestId("too-many-results-heading")).toHaveTextContent(STRINGS.heading)
@@ -28,7 +35,14 @@ describe("SearchResultsTooManyPage", () => {
   })
 
   it("renders details list with all fields when available", () => {
-    renderWithRouter({firstName: "Jane", lastName: "Doe", dob: "01-01-2000", postcode: "XY9 8ZZ"})
+    renderWithRouter({
+      firstName: "Jane",
+      lastName: "Doe",
+      dobDay: "01",
+      dobMonth: "01",
+      dobYear: "2000",
+      postcode: "XY9 8ZZ"
+    })
 
     const list = screen.getByTestId("too-many-results-details-list")
     expect(list).toHaveTextContent("First name: Jane")
@@ -38,7 +52,12 @@ describe("SearchResultsTooManyPage", () => {
   })
 
   it("renders details list without optional fields if not provided", () => {
-    renderWithRouter({lastName: "Smith", dob: "15-03-1995"})
+    renderWithRouter({
+      lastName: "Smith",
+      dobDay: "15",
+      dobMonth: "03",
+      dobYear: "1995"
+    })
 
     const list = screen.getByTestId("too-many-results-details-list")
     expect(list).not.toHaveTextContent("First name")
@@ -48,7 +67,12 @@ describe("SearchResultsTooManyPage", () => {
   })
 
   it("renders retry and alternative search links", () => {
-    renderWithRouter({lastName: "Smith", dob: "15-03-1995"})
+    renderWithRouter({
+      lastName: "Smith",
+      dobDay: "15",
+      dobMonth: "03",
+      dobYear: "1995"
+    })
 
     expect(screen.getByText(STRINGS.retryLinkText)).toHaveAttribute("href", FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS)
     expect(screen.getByText(STRINGS.nhsNumberLinkText)).toHaveAttribute("href", FRONTEND_PATHS.SEARCH_BY_NHS_NUMBER)
@@ -57,7 +81,13 @@ describe("SearchResultsTooManyPage", () => {
   })
 
   it("renders go back link", () => {
-    renderWithRouter({lastName: "Smith", dob: "15-03-1995"})
+    renderWithRouter({
+      lastName: "Smith",
+      dobDay: "15",
+      dobMonth: "03",
+      dobYear: "1995"
+    })
+
     expect(screen.getByTestId("too-many-results-back-link"))
       .toHaveAttribute("href", FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS)
     expect(screen.getByTestId("go-back-link")).toHaveTextContent(STRINGS.goBackLink)

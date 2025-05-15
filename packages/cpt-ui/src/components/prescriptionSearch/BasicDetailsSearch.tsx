@@ -1,8 +1,14 @@
-import React, {useState, useEffect, useRef} from "react"
+import React, {
+  useContext,
+  useState,
+  useEffect,
+  useRef
+} from "react"
 import {
   Container,
   Row,
   Col,
+  DateInput,
   Form,
   FormGroup,
   Label,
@@ -14,10 +20,14 @@ import {
   Fieldset
 } from "nhsuk-react-components"
 import {useNavigate} from "react-router-dom"
-import {STRINGS} from "@/constants/ui-strings/BasicDetailsSearchStrings"
-import {API_ENDPOINTS, FRONTEND_PATHS} from "@/constants/environment"
+import {AuthContext} from "@/context/AuthProvider"
+import http from "@/helpers/axios"
+import {formatDob} from "@/helpers/formatters"
 import {validateBasicDetails, getInlineErrors} from "@/helpers/validateBasicDetails"
 import {errorFocusMap, ErrorKey, resolveDobInvalidFields} from "@/helpers/basicDetailsValidationMeta"
+import {STRINGS} from "@/constants/ui-strings/BasicDetailsSearchStrings"
+import {API_ENDPOINTS, FRONTEND_PATHS, NHS_REQUEST_URID} from "@/constants/environment"
+import {BasicDetailsSearchType} from "@cpt-ui-common/common-types"
 
 // Temporary mock data used for frontend search simulation
 const mockPatient = [
@@ -51,6 +61,7 @@ const mockMultiplePatient = [
 const formatInput = (input: string) => input.trim().toLowerCase()
 
 export default function BasicDetailsSearch() {
+  const auth = useContext(AuthContext)
   const navigate = useNavigate()
   const errorRef = useRef<HTMLDivElement | null>(null)
 
@@ -125,40 +136,50 @@ export default function BasicDetailsSearch() {
       return
     }
 
-    // Combine and format DOB input
-    const searchDob = `${dobDay.padStart(2, "0")}-${dobMonth.padStart(2, "0")}-${dobYear}`
+    const formState: BasicDetailsSearchType = {
+      firstName,
+      lastName,
+      dobDay,
+      dobMonth,
+      dobYear,
+      postcode
+    }
 
     try {
-      // Call backend API (not implemented yet, expect failure)
-      await fetch(API_ENDPOINTS.PATIENT_SEARCH, {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({
-          firstName,
-          lastName,
-          dob: searchDob,
-          postcode
-        })
+      // Attempt to fetch patient details from the backend API
+      const response = await http.post(API_ENDPOINTS.PATIENT_SEARCH, {
+        headers: {
+          Authorization: `Bearer ${auth?.idToken}`,
+          "NHSD-Session-URID": NHS_REQUEST_URID
+        },
+        ...formState
       })
 
-      // If it works, this code won't run because the API is not ready
-      throw new Error("Backend not implemented")
+      // Validate HTTP response status
+      if (response.status !== 200) {
+        throw new Error(`Status Code: ${response.status}`)
+      }
+
+      // Assign response payload or throw if none received
+      const payload = response.data
+      if (!payload) {
+        throw new Error("No payload received from the API")
+      }
     } catch (err) {
       console.error("Failed to fetch patient details. Using mock data fallback.", err)
 
-      // FIXME: This is temporary logic for front-end demo/testing only.
-      // Replace with real backend call once NHS number search is implemented server-side.
-      const allMocks = [...mockPatient, ...mockMultiplePatient]
+      // FIXME: This is a static, mock data fallback we can use in lieu of the real data
+      // backend endpoint, which is still waiting for the auth SNAFU to get sorted out.
 
-      const matchedPatients = allMocks.filter(p => {
-        const matchFirstName = firstName
-          ? formatInput(p.given) === formatInput(firstName)
-          : true
+      // Construct a normalized DOB string to match against mock patient data,
+      // since mock DOBs are stored in the format 'DD-MM-YYYY'
+      const searchDob = formatDob({dobDay, dobMonth, dobYear})
+
+      const matchedPatients = [...mockPatient, ...mockMultiplePatient].filter(p => {
+        const matchFirstName = firstName ? formatInput(p.given) === formatInput(firstName) : true
         const matchLastName = formatInput(p.family) === formatInput(lastName)
         const matchDob = p.dateOfBirth === searchDob
-        const matchPostcode = postcode
-          ? formatInput(p.postCode) === formatInput(postcode)
-          : true
+        const matchPostcode = postcode ? formatInput(p.postCode) === formatInput(postcode) : true
         return matchFirstName && matchLastName && matchDob && matchPostcode
       })
 
@@ -170,7 +191,7 @@ export default function BasicDetailsSearch() {
         })
       } else {
         navigate(FRONTEND_PATHS.SEARCH_RESULTS_TOO_MANY, {
-          state: {firstName, lastName, dob: searchDob, postcode}
+          state: formState
         })
       }
     }
@@ -294,55 +315,49 @@ export default function BasicDetailsSearch() {
                     </ErrorMessage>
                   )}
 
-                  <div className="nhsuk-date-input" id="dob" data-testid="dob-input-group">
+                  <DateInput id="dob" data-testid="dob-input-group">
                     {/* Day */}
-                    <div className="nhsuk-date-input__item">
-                      <Label htmlFor="dob-day" bold={false}>
-                        {STRINGS.dobDay}
-                      </Label>
-                      <TextInput
-                        id="dob-day"
-                        name="dob-day"
-                        value={dobDay}
-                        onChange={e => setDobDay((e.target as HTMLInputElement).value)}
-                        className={`nhsuk-date-input__input nhsuk-input--width-2 ${hasDobFieldError("day")
-                          ? "nhsuk-input--error" : ""}`}
-                        data-testid="dob-day-input"
-                      />
-                    </div>
+                    <DateInput.Day
+                      id="dob-day"
+                      name="dob-day"
+                      value={dobDay}
+                      onChange={e => setDobDay((e.target as HTMLInputElement).value)}
+                      error={hasDobFieldError("day")}
+                      labelProps={{
+                        children: STRINGS.dobDay,
+                        bold: false
+                      }}
+                      data-testid="dob-day-input"
+                    />
 
                     {/* Month */}
-                    <div className="nhsuk-date-input__item">
-                      <Label htmlFor="dob-month" bold={false}>
-                        {STRINGS.dobMonth}
-                      </Label>
-                      <TextInput
-                        id="dob-month"
-                        name="dob-month"
-                        value={dobMonth}
-                        onChange={e => setDobMonth((e.target as HTMLInputElement).value)}
-                        className={`nhsuk-date-input__input nhsuk-input--width-2 ${hasDobFieldError("month")
-                          ? "nhsuk-input--error" : ""}`}
-                        data-testid="dob-month-input"
-                      />
-                    </div>
+                    <DateInput.Month
+                      id="dob-month"
+                      name="dob-month"
+                      value={dobMonth}
+                      onChange={e => setDobMonth((e.target as HTMLInputElement).value)}
+                      error={hasDobFieldError("month")}
+                      labelProps={{
+                        children: STRINGS.dobMonth,
+                        bold: false
+                      }}
+                      data-testid="dob-month-input"
+                    />
 
                     {/* Year */}
-                    <div className="nhsuk-date-input__item">
-                      <Label htmlFor="dob-year" bold={false}>
-                        {STRINGS.dobYear}
-                      </Label>
-                      <TextInput
-                        id="dob-year"
-                        name="dob-year"
-                        value={dobYear}
-                        onChange={e => setDobYear((e.target as HTMLInputElement).value)}
-                        className={`nhsuk-date-input__input nhsuk-input--width-4 ${hasDobFieldError("year")
-                          ? "nhsuk-input--error" : ""}`}
-                        data-testid="dob-year-input"
-                      />
-                    </div>
-                  </div>
+                    <DateInput.Year
+                      id="dob-year"
+                      name="dob-year"
+                      value={dobYear}
+                      onChange={e => setDobYear((e.target as HTMLInputElement).value)}
+                      error={hasDobFieldError("year")}
+                      labelProps={{
+                        children: STRINGS.dobYear,
+                        bold: false
+                      }}
+                      data-testid="dob-year-input"
+                    />
+                  </DateInput>
                 </Fieldset>
               </FormGroup>
 
