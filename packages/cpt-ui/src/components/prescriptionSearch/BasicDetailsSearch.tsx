@@ -17,7 +17,7 @@ import {useNavigate} from "react-router-dom"
 import {STRINGS} from "@/constants/ui-strings/BasicDetailsSearchStrings"
 import {API_ENDPOINTS, FRONTEND_PATHS} from "@/constants/environment"
 import {validateBasicDetails, getInlineErrors} from "@/helpers/validateBasicDetails"
-import {errorFocusMap, ErrorKey} from "@/helpers/basicDetailsValidationMeta"
+import {ErrorKey, errorFocusMap} from "@/helpers/basicDetailsValidationMeta"
 
 // Temporary mock data used for frontend search simulation
 const mockPatient = [

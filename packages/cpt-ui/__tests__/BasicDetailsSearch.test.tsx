@@ -228,4 +228,14 @@ describe("BasicDetailsSearch Validation", () => {
     expect(monthInput).toHaveClass("nhsuk-input--error")
     expect(yearInput).toHaveClass("nhsuk-input--error")
   })
+
+  it("adds nhsuk-input--error to year input when dobFutureDate is triggered", async () => {
+    renderComponent()
+    const nextYear = new Date().getFullYear() + 1
+    await fillForm({lastName: "Smith", dobDay: "01", dobMonth: "01", dobYear: `${nextYear}`})
+    await submitForm()
+
+    const yearInput = screen.getByTestId("dob-year-input")
+    expect(yearInput).toHaveClass("nhsuk-input--error")
+  })
 })
