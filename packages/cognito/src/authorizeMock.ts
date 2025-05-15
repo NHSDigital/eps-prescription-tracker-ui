@@ -12,7 +12,7 @@ import inputOutputLogger from "@middy/input-output-logger"
 
 import {createHash} from "crypto"
 
-import {insertStateMapping, StateItem} from "@cpt-ui-common/dynamoFunctions"
+import {insertStateMapping} from "@cpt-ui-common/dynamoFunctions"
 
 /*
  * Expects the following environment variables to be set:
@@ -87,7 +87,7 @@ const lambdaHandler = async (
   const newState = Buffer.from(JSON.stringify(newStateJson)).toString("base64")
 
   // Store original state mapping in DynamoDB
-  const item: StateItem = {
+  const item = {
     State: cis2State,
     CognitoState: originalState,
     ExpiryTime: stateTtl

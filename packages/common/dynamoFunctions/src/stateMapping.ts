@@ -6,7 +6,7 @@ import {
   PutCommand
 } from "@aws-sdk/lib-dynamodb"
 
-export type StateItem = {
+type StateItem = {
     State: string;
     CognitoState: string;
     ExpiryTime : number;
@@ -18,8 +18,7 @@ export const insertStateMapping = async (
   item: StateItem,
   logger: Logger
 ): Promise<void> => {
-  logger.debug("Inserting into stateMapping", {item})
-
+  logger.debug("Inserting into stateMapping", {item, stateMappingTableName})
   try {
     await documentClient.send(
       new PutCommand({
@@ -27,10 +26,10 @@ export const insertStateMapping = async (
         Item: item
       })
     )
-    logger.info("Data inserted into stateMapping")
+    logger.debug("Successfully inserted into stateMapping", {stateMappingTableName})
   } catch (error) {
-    logger.error("Failed to insert into stateMapping table in DynamoDB", {error})
-    throw new Error("Failed to insert into stateMapping table in DynamoDB")
+    logger.error("Error inserting into stateMapping", {error})
+    throw new Error("Error inserting into stateMapping")
   }
 }
 
@@ -40,7 +39,7 @@ export const getStateMapping = async (
   state: string,
   logger: Logger
 ): Promise<StateItem> => {
-  logger.debug("Going to get data from stateMapping", {state})
+  logger.debug("Retrieving data from stateMapping", {state, stateMappingTableName})
   try {
     const getResult = await documentClient.send(
       new GetCommand({
@@ -50,11 +49,11 @@ export const getStateMapping = async (
     )
 
     if (!getResult.Item) {
-      logger.error("State not found in DynamoDB", {state, getResult})
-      throw new Error("State not found in DynamoDB")
+      logger.error("state not found in stateMapping", {state, getResult, stateMappingTableName})
+      throw new Error("state not found in stateMapping")
     }
     const stateItem = getResult.Item as StateItem
-    logger.debug("Successfully retrieved data from stateMapping")
+    logger.debug("Successfully retrieved data from stateMapping", {stateItem})
     return stateItem
 
   } catch (error) {
@@ -69,7 +68,7 @@ export const deleteStateMapping = async (
   state: string,
   logger: Logger
 ): Promise<void> => {
-  logger.debug("Going to delete from stateMapping", {state})
+  logger.debug("Deleting from stateMapping", {state, stateMappingTableName})
   try {
     const response = await documentClient.send(
       new DeleteCommand({
@@ -78,10 +77,10 @@ export const deleteStateMapping = async (
       })
     )
     if (response.$metadata.httpStatusCode !== 200) {
-      logger.error("Failed to delete tokens from dynamoDB", response)
-      throw new Error("Failed to delete tokens from dynamoDB")
+      logger.error("Failed to delete from stateMapping", {response})
+      throw new Error("Failed to delete from stateMapping")
     }
-    logger.debug("Successfully deleted from stateMapping")
+    logger.debug("Successfully deleted from stateMapping", {stateMappingTableName})
   } catch(error) {
     logger.error("Error deleting data from stateMapping", {error})
     throw new Error("Error deleting data from stateMapping")

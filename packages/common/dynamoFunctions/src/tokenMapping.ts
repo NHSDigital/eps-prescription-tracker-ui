@@ -13,7 +13,7 @@ interface UserDetails {
   given_name: string
 }
 
-export interface TokenMappingItem {
+interface TokenMappingItem {
     username: string,
     cis2AccessToken?: string,
     cis2RefreshToken?: string,
@@ -35,7 +35,7 @@ export const insertTokenMapping = async (
   item: TokenMappingItem,
   logger: Logger
 ): Promise<void> => {
-  logger.debug("Going to insert into tokenMapping")
+  logger.debug("Inserting into tokenMapping", {item, tokenMappingTableName})
   try {
     await documentClient.send(
       new PutCommand({
@@ -43,20 +43,13 @@ export const insertTokenMapping = async (
         Item: item
       })
     )
-    logger.info("Data inserted into stateMapping")
+    logger.debug("Successfully inserted into tokenMapping", {tokenMappingTableName})
   } catch(error) {
     logger.error("Error inserting into tokenMapping", {error})
-    throw new Error("Error inserting into tokenMapping table")
+    throw new Error("Error inserting into tokenMapping")
   }
 }
 
-/**
- * Updates the Apigee access token in DynamoDB.
- * @param documentClient - DynamoDB DocumentClient instance
- * @param tokenMappingTableName - Name of the tokenMappingTableName DynamoDB table
- * @param tokenMappingItem - details to update
- * @param logger - Logger instance for logging
- */
 export const updateTokenMapping = async (
   documentClient: DynamoDBDocumentClient,
   tokenMappingTableName: string,
@@ -65,9 +58,7 @@ export const updateTokenMapping = async (
 ): Promise<void> => {
   const currentTime = Math.floor(Date.now() / 1000)
 
-  logger.debug("Updating DynamoDB with new details", {
-    tokenMappingItem
-  })
+  logger.debug("Updating data in tokenMapping", {tokenMappingItem, tokenMappingTableName})
 
   try {
     const expiryTimestamp = currentTime + Number(tokenMappingItem.apigeeExpiresIn)
@@ -108,10 +99,10 @@ export const updateTokenMapping = async (
       })
     )
 
-    logger.info("TokenMapping table successfully updated in DynamoDB")
+    logger.debug("Successfully updated data in tokenMapping")
   } catch (error) {
-    logger.error("Failed to update TokenMapping table in DynamoDB", {error})
-    throw new Error("Failed to update TokenMapping table in DynamoDB")
+    logger.error("Error updating data in tokenMapping", {error})
+    throw new Error("Error updating data in tokenMapping")
   }
 }
 
@@ -121,7 +112,7 @@ export const deleteTokenMapping = async (
   username: string,
   logger: Logger
 ): Promise<void> => {
-  logger.debug("Going to delete from tokenMapping", {username})
+  logger.debug("Deleting from tokenMapping", {username, tokenMappingTableName})
   try {
     const response = await documentClient.send(
       new DeleteCommand({
@@ -130,10 +121,10 @@ export const deleteTokenMapping = async (
       })
     )
     if (response.$metadata.httpStatusCode !== 200) {
-      logger.error("Failed to delete tokens from dynamoDB", response)
-      throw new Error("Failed to delete tokens from dynamoDB")
+      logger.error("Failed to delete from tokenMapping", {response})
+      throw new Error("Failed to delete from tokenMapping")
     }
-    logger.debug("Successfully deleted from stateMapping")
+    logger.debug("Successfully deleted from stateMapping", {tokenMappingTableName})
 
   } catch(error) {
     logger.error("Error deleting data from tokenMapping", {error})
@@ -147,7 +138,7 @@ export const getTokenMapping = async (
   username: string,
   logger: Logger
 ): Promise<TokenMappingItem> => {
-  logger.debug("Going to get from tokenMapping", {username})
+  logger.debug("Going to get from tokenMapping", {username, tokenMappingTableName})
   try {
     const getResult = await documentClient.send(
       new GetCommand({
@@ -158,13 +149,13 @@ export const getTokenMapping = async (
 
     if (!getResult.Item) {
       logger.error("username not found in DynamoDB", {username, getResult})
-      throw new Error("State not found in DynamoDB")
+      throw new Error("username not found in DynamoDB")
     }
     const tokenMappingItem = getResult.Item as TokenMappingItem
-    logger.debug("Successfully retrieved data from tokenMapping")
+    logger.debug("Successfully retrieved data from tokenMapping", {tokenMappingTableName, tokenMappingItem})
     return tokenMappingItem
   } catch(error) {
-    logger.error("Error deleting data from tokenMapping", {error})
-    throw new Error("Error deleting data from tokenMapping")
+    logger.error("Error retrieving data from tokenMapping", {error})
+    throw new Error("Error retrieving data from tokenMapping")
   }
 }

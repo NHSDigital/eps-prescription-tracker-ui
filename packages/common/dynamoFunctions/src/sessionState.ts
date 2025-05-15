@@ -1,12 +1,12 @@
 import {Logger} from "@aws-lambda-powertools/logger"
 import {DynamoDBDocumentClient, GetCommand, PutCommand} from "@aws-sdk/lib-dynamodb"
 
-export type SessionStateItem = {
-    LocalCode: string,
-    SessionState: string;
-    ApigeeCode: string;
-    ExpiryTime: number
-  };
+type SessionStateItem = {
+  LocalCode: string
+  SessionState: string
+  ApigeeCode: string
+  ExpiryTime: number
+}
 
 export const insertSessionState = async (
   documentClient: DynamoDBDocumentClient,
@@ -14,8 +14,7 @@ export const insertSessionState = async (
   item: SessionStateItem,
   logger: Logger
 ): Promise<void> => {
-  logger.debug("Inserting into sessionState", {item})
-
+  logger.debug("Inserting into sessionState", {item, sessionStateTableName})
   try {
     await documentClient.send(
       new PutCommand({
@@ -23,10 +22,10 @@ export const insertSessionState = async (
         Item: item
       })
     )
-    logger.info("Data inserted into sessionState")
+    logger.info("Successfully inserted into sessionState", {sessionStateTableName})
   } catch (error) {
-    logger.error("Failed to insert into sessionState table in DynamoDB", {error})
-    throw new Error("Failed to insert into sessionState table in DynamoDB")
+    logger.error("Error inserting into sessionState", {error})
+    throw new Error("Error inserting into sessionState")
   }
 }
 
@@ -36,7 +35,7 @@ export const getSessionState = async (
   localCode: string,
   logger: Logger
 ): Promise<SessionStateItem> => {
-  logger.debug("Going to get data from sessionState", {localCode})
+  logger.debug("Retrieving data from sessionState", {localCode, sessionStateTableName})
   try {
     const getResult = await documentClient.send(
       new GetCommand({
@@ -46,12 +45,12 @@ export const getSessionState = async (
     )
 
     if (!getResult.Item) {
-      logger.error("sessionState not found in DynamoDB", {localCode, getResult})
-      throw new Error("sessionState not found in DynamoDB")
+      logger.error("localCode not found in sessionState", {localCode, getResult, sessionStateTableName})
+      throw new Error("localCode not found in sessionState")
     }
-    const stateItem = getResult.Item as SessionStateItem
-    logger.debug("Successfully retrieved data from sessionState")
-    return stateItem
+    const sessionStateItem = getResult.Item as SessionStateItem
+    logger.debug("Successfully retrieved data from sessionState", {sessionStateItem, sessionStateTableName})
+    return sessionStateItem
 
   } catch (error) {
     logger.error("Error retrieving data from sessionState", {error})
