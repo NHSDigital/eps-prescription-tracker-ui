@@ -83,7 +83,7 @@ export default function BasicDetailsSearch() {
     const errorKeysMap = {
       day: ["dobDayRequired", "dobNonNumericDay"],
       month: ["dobMonthRequired", "dobNonNumericMonth"],
-      year: ["dobYearRequired", "dobNonNumericYear", "dobYearTooShort"]
+      year: ["dobYearRequired", "dobNonNumericYear", "dobYearTooShort", "dobFutureDate"]
     }
 
     const fieldErrors = errorKeysMap[field]
@@ -178,7 +178,9 @@ export default function BasicDetailsSearch() {
                   <ErrorSummary.List>
                     {inlineErrors.map(([key, message]) => (
                       <ErrorSummary.Item key={key}>
-                        <a href={`#${errorFocusMap[key] ?? "basic-details-search-heading"}`}>
+                        <a href={`#${typeof errorFocusMap[key] === "function"
+                          ? errorFocusMap[key]({dobDay, dobMonth, dobYear})
+                          : errorFocusMap[key] ?? "basic-details-search-heading"}`}>
                           {message}
                         </a>
                       </ErrorSummary.Item>

@@ -17,19 +17,28 @@ export type ErrorKey =
   | "postcodeTooShort"
   | "postcodeInvalidChars"
 
-export const errorFocusMap: Record<string, string> = {
-  firstName: "first-name",
-  lastName: "last-name",
-  dob: "dob-day",
-  dobRequired: "dob-day",
-  dobDayRequired: "dob-day",
-  dobMonthRequired: "dob-month",
-  dobYearRequired: "dob-year",
-  dobNonNumericDay: "dob-day",
-  dobNonNumericMonth: "dob-month",
-  dobNonNumericYear: "dob-year",
-  dobYearTooShort: "dob-year",
-  dobInvalidDate: "dob-day",
-  dobFutureDate: "dob-day",
-  postcode: "postcode-only"
-}
+export const errorFocusMap: Record<string, string | ((input: {dobDay: string, dobMonth: string, dobYear: string})
+  => string)> = {
+    firstName: "first-name",
+    lastName: "last-name",
+    dobRequired: "dob-day",
+    dobDayRequired: "dob-day",
+    dobMonthRequired: "dob-month",
+    dobYearRequired: "dob-year",
+    dobNonNumericDay: "dob-day",
+    dobNonNumericMonth: "dob-month",
+    dobNonNumericYear: "dob-year",
+    dobYearTooShort: "dob-year",
+    dobFutureDate: "dob-year",
+
+    // Dynamic focus logic for invalid date
+    dobInvalidDate: ({dobDay, dobMonth, dobYear}) => {
+      const numeric = /^\d+$/
+      if (!numeric.test(dobDay)) return "dob-day"
+      if (!numeric.test(dobMonth)) return "dob-month"
+      if (!numeric.test(dobYear) || dobYear.length < 4) return "dob-year"
+      return "dob-day" // fallback
+    },
+
+    postcode: "postcode-only"
+  }
