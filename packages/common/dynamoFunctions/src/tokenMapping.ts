@@ -45,49 +45,36 @@ export const updateTokenMapping = async (
   try {
     const expiryTimestamp = currentTime + Number(tokenMappingItem.expiresIn)
 
-    let updateExpression = `
-        SET apigee_accessToken = :apigeeAccessToken, 
-        apigee_expiresIn = :apigeeExpiresIn, 
-        apigee_refreshToken = :apigeeRefreshToken`
+    const expressionParts: Array<string> = []
+    const expressionAttributeValues: Record<string, unknown> = {}
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let expressionAttributeValues: any = {
-      ":apigeeAccessToken": tokenMappingItem.accessToken,
-      ":apigeeExpiresIn": expiryTimestamp,
-      ":apigeeRefreshToken": tokenMappingItem.refreshToken
-    }
+    // Required fields
+    expressionParts.push("apigee_accessToken = :apigeeAccessToken")
+    expressionAttributeValues[":apigeeAccessToken"] = tokenMappingItem.accessToken
 
-    if (tokenMappingItem.selectedRoleId) {
-      updateExpression = updateExpression + ", selectedRoleId = :selectedRoleId"
-      expressionAttributeValues = {
-        ...expressionAttributeValues,
-        ":selectedRoleId": tokenMappingItem.selectedRoleId
+    expressionParts.push("apigee_expiresIn = :apigeeExpiresIn")
+    expressionAttributeValues[":apigeeExpiresIn"] = expiryTimestamp
+
+    expressionParts.push("apigee_refreshToken = :apigeeRefreshToken")
+    expressionAttributeValues[":apigeeRefreshToken"] = tokenMappingItem.refreshToken
+
+    const optionalFields: Array<[keyof typeof tokenMappingItem, string]> = [
+      ["selectedRoleId", "selectedRoleId"],
+      ["userDetails", "userDetails"],
+      ["rolesWithAccess", "rolesWithAccess"],
+      ["rolesWithoutAccess", "rolesWithoutAccess"]
+    ]
+
+    for (const [key, attr] of optionalFields) {
+      const value = tokenMappingItem[key]
+      if (value !== undefined && value !== null) {
+        expressionParts.push(`${attr} = :${attr}`)
+        expressionAttributeValues[`:${attr}`] = value
       }
     }
 
-    if (tokenMappingItem.userDetails) {
-      updateExpression = updateExpression + ", userDetails = :userDetails"
-      expressionAttributeValues = {
-        ...expressionAttributeValues,
-        ":userDetails": tokenMappingItem.userDetails
-      }
-    }
+    const updateExpression = "SET " + expressionParts.join(", ")
 
-    if (tokenMappingItem.rolesWithAccess) {
-      updateExpression = updateExpression + ", rolesWithAccess = :rolesWithAccess"
-      expressionAttributeValues = {
-        ...expressionAttributeValues,
-        ":rolesWithAccess": tokenMappingItem.rolesWithAccess
-      }
-    }
-
-    if (tokenMappingItem.rolesWithoutAccess) {
-      updateExpression = updateExpression + ", rolesWithoutAccess = :rolesWithoutAccess"
-      expressionAttributeValues = {
-        ...expressionAttributeValues,
-        ":rolesWithoutAccess": tokenMappingItem.rolesWithoutAccess
-      }
-    }
     await documentClient.send(
       new UpdateCommand({
         TableName: tokenMappingTableName,
