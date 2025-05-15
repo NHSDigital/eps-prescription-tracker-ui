@@ -125,6 +125,7 @@ describe("BasicDetailsSearch Validation", () => {
       [{dobDay: "", dobMonth: "", dobYear: "ab"}, STRINGS.errors.dobInvalidDate],
       [{dobDay: "ab", dobMonth: "ab", dobYear: "2020"}, STRINGS.errors.dobInvalidDate],
       [{dobDay: "02", dobMonth: "13", dobYear: "2020"}, STRINGS.errors.dobInvalidDate],
+      [{dobDay: "72", dobMonth: "ab", dobYear: "2020"}, STRINGS.errors.dobInvalidDate],
       [{dobDay: "", dobMonth: "01", dobYear: "2020"}, STRINGS.errors.dobDayRequired],
       [{dobDay: "02", dobMonth: "", dobYear: "2020"}, STRINGS.errors.dobMonthRequired],
       [{dobDay: "02", dobMonth: "01", dobYear: ""}, STRINGS.errors.dobYearRequired],
