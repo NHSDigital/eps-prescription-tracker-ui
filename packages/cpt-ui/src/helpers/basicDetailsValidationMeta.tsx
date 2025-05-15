@@ -30,6 +30,7 @@ export const resolveDobInvalidField = ({
 }): string => {
   const numeric = /^\d+$/
 
+  // Prioritize errors in visual order: day -> month -> year
   if (!numeric.test(dobDay)) return "dob-day"
   if (!numeric.test(dobMonth)) return "dob-month"
   if (!numeric.test(dobYear)) return "dob-year"
@@ -46,9 +47,10 @@ export const resolveDobInvalidField = ({
     constructed.getMonth() === month - 1 &&
     constructed.getDate() === day
 
+  // Visual priority for invalid structured date: day -> month -> year
   if (!isValid) {
-    if (month < 1 || month > 12) return "dob-month"
     if (day < 1 || day > 31) return "dob-day"
+    if (month < 1 || month > 12) return "dob-month"
     return "dob-year"
   }
 
