@@ -17,3 +17,8 @@
     padding-left: 1rem;
     padding-right: 1rem;
 }
+
+
+.nhsuk-u-visually-hidden::before::after {
+    content: none;
+}

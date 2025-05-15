@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
-import React from "react"
-import {useNavigate} from "react-router-dom"
+import React, {useContext, useEffect, useState} from "react"
+import {useNavigate, useSearchParams} from "react-router-dom"
 import {
   BackLink,
   Table,
@@ -9,34 +9,78 @@ import {
   Col
 } from "nhsuk-react-components"
 import {SearchResultsPageStrings} from "@/constants/ui-strings/BasicDetailsSearchResultsPageStrings"
-import {FRONTEND_PATHS} from "@/constants/environment"
+import {API_ENDPOINTS, FRONTEND_PATHS, NHS_REQUEST_URID} from "@/constants/environment"
+import {AuthContext} from "@/context/AuthProvider"
+import {PatientSummary} from "@cpt-ui-common/common-types"
+import http from "@/helpers/axios"
+import EpsSpinner from "@/components/EpsSpinner"
 
-// Mock patient data (from the prototype)
-const patients = [
+// Mock patient data (fallback)
+const mockPatients: Array<PatientSummary> = [
   {
     nhsNumber: "9726919207",
-    given: "Issac",
-    family: "Wolderton-Rodriguez",
+    givenName: ["Issac"],
+    familyName: "Wolderton-Rodriguez",
     gender: "Male",
     dateOfBirth: "6-May-2013",
-    address: "123 Brundel Close, Headingley, Leeds, West Yorkshire, LS6 1JL"
+    address: ["123 Brundel Close", "Headingley", "Leeds", "West Yorkshire", "LS6 1JL"]
   },
   {
     nhsNumber: "9725919207",
-    given: "Steve",
-    family: "Wolderton-Rodriguez",
+    givenName: ["Steve"],
+    familyName: "Wolderton-Rodriguez",
     gender: "Male",
     dateOfBirth: "6-May-2013",
-    address: "123 Brundel Close, Headingley, Leeds, West Yorkshire, LS6 1JL"
+    address: ["123 Brundel Close", "Headingley", "Leeds", "West Yorkshire", "LS6 1JL"]
   }
 ]
 
 export default function SearchResultsPage() {
+  const auth = useContext(AuthContext)
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const [loading, setLoading] = useState(true)
+  const [patients, setPatients] = useState<Array<PatientSummary>>([])
 
-  // to sort by first name
-  const sortedPatients = patients
-    .toSorted((a, b) => a.given.localeCompare(b.given))
+  const getSearchResults = async () => {
+    try {
+      // Attempt to fetch live search results from the API
+      const response = await http.get(API_ENDPOINTS.PATIENT_SEARCH, {
+        headers: {
+          Authorization: `Bearer ${auth?.idToken}`,
+          "NHSD-Session-URID": NHS_REQUEST_URID
+        },
+        params: {
+          family: searchParams.get("family"),
+          birthdate: `eq${searchParams.get("dateOfBirth")}`,
+          "address-postalcode": searchParams.get("postcode"),
+          given: searchParams.get("given") || undefined
+        }
+      })
+
+      // Validate HTTP response status
+      if (response.status !== 200) {
+        throw new Error(`Status Code: ${response.status}`)
+      }
+
+      // Assign response payload or throw if none received
+      const payload: Array<PatientSummary> = response.data
+      if (!payload) {
+        throw new Error("No payload received from the API")
+      }
+
+      setPatients(payload)
+    } catch (err) {
+      console.error("Failed to fetch patient search results. Using mock data fallback.", err)
+      setPatients(mockPatients)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    getSearchResults()
+  }, [])
 
   const handleRowClick = (nhsNumber: string) => {
     navigate(`${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}?nhsNumber=${nhsNumber}`)
@@ -45,6 +89,26 @@ export default function SearchResultsPage() {
   const handleGoBack = () => {
     navigate(FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS, {state: {clear: true}})
   }
+
+  if (loading) {
+    return (
+      <main className="nhsuk-main-wrapper" id="main-content" role="main">
+        <Container>
+          <Row>
+            <Col width="full">
+              <h1 className="nhsuk-u-visually-hidden">{SearchResultsPageStrings.TITLE}</h1>
+              <h2 data-testid="loading-message">{SearchResultsPageStrings.LOADING}</h2>
+              <EpsSpinner />
+            </Col>
+          </Row>
+        </Container>
+      </main>
+    )
+  }
+
+  // to sort by first name
+  const sortedPatients = patients
+    .toSorted((a, b) => (a.givenName?.[0] || "").localeCompare(b.givenName?.[0] || ""))
 
   return (
     <main className="nhsuk-main-wrapper" id="main-content" role="main">
@@ -87,13 +151,8 @@ export default function SearchResultsPage() {
                           e.preventDefault()
                           handleRowClick(patient.nhsNumber)
                         }}
-                      // aria-label={
-                      //   SearchResultsPageStrings.ACCESSIBILITY.PATIENT_ROW
-                      //     .replace("{name}", `${patient.given} ${patient.family}`)
-                      //     .replace("{nhsNumber}", patient.nhsNumber)
-                      // }
                       >
-                        {patient.given} {patient.family}
+                        {patient.givenName?.[0] || ""} {patient.familyName}
                         <span id={`patient-details-${patient.nhsNumber}`} className="nhsuk-u-visually-hidden">
                           {`NHS number ${patient.nhsNumber.replace(/(\d{3})(\d{3})(\d{4})/, "$1 $2 $3")}`}
                         </span>
@@ -101,7 +160,7 @@ export default function SearchResultsPage() {
                     </Table.Cell>
                     <Table.Cell headers="header-gender">{patient.gender}</Table.Cell>
                     <Table.Cell headers="header-dob">{patient.dateOfBirth}</Table.Cell>
-                    <Table.Cell headers="header-address">{patient.address}&nbsp;</Table.Cell>
+                    <Table.Cell headers="header-address">{patient.address?.join(", ")}&nbsp;</Table.Cell>
                     <Table.Cell headers="header-nhs">
                       {patient.nhsNumber.replace(/(\d{3})(\d{3})(\d{4})/, "$1 $2 $3")}
                     </Table.Cell>
@@ -112,6 +171,6 @@ export default function SearchResultsPage() {
           </Col>
         </Row>
       </Container>
-    </main >
+    </main>
   )
 }
