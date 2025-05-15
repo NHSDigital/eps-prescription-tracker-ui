@@ -200,4 +200,18 @@ describe("BasicDetailsSearch Validation", () => {
     await submitForm()
     assertInlineAndSummaryError(STRINGS.errors.postcodeInvalidChars)
   })
+
+  it("applies nhsuk-input--error only to invalid DOB fields for dobInvalidDate", async () => {
+    renderComponent()
+    await fillForm({lastName: "Smith", dobDay: "ab", dobMonth: "", dobYear: "2014"})
+    await submitForm()
+
+    const dayInput = screen.getByTestId("dob-day-input")
+    const monthInput = screen.getByTestId("dob-month-input")
+    const yearInput = screen.getByTestId("dob-year-input")
+
+    expect(dayInput).toHaveClass("nhsuk-input--error")
+    expect(monthInput).toHaveClass("nhsuk-input--error")
+    expect(yearInput).not.toHaveClass("nhsuk-input--error")
+  })
 })

@@ -76,6 +76,23 @@ export default function BasicDetailsSearch() {
     }
   }, [errors])
 
+  // Determines whether a specific DOB input field should display an error style
+  const hasDobFieldError = (field: "day" | "month" | "year") => {
+    const valueMap = {day: dobDay, month: dobMonth, year: dobYear}
+    const errorKeysMap = {
+      day: ["dobDayRequired", "dobNonNumericDay"],
+      month: ["dobMonthRequired", "dobNonNumericMonth"],
+      year: ["dobYearRequired", "dobNonNumericYear", "dobYearTooShort"]
+    }
+
+    const fieldErrors = errorKeysMap[field]
+    const hasSpecificError = getInlineError(...fieldErrors)
+    const hasInvalidDateError = errors.includes("dobInvalidDate")
+    const isFieldInvalid = valueMap[field].trim() === "" || !/^\d+$/.test(valueMap[field])
+
+    return Boolean(hasSpecificError) || (hasInvalidDateError && isFieldInvalid)
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -278,11 +295,7 @@ export default function BasicDetailsSearch() {
                         name="dob-day"
                         value={dobDay}
                         onChange={e => setDobDay((e.target as HTMLInputElement).value)}
-                        className={`nhsuk-date-input__input nhsuk-input--width-2 ${getInlineError(
-                          "dobDayRequired",
-                          "dobNonNumericDay",
-                          "dobInvalidDate",
-                          "dobFutureDate")
+                        className={`nhsuk-date-input__input nhsuk-input--width-2 ${hasDobFieldError("day")
                           ? "nhsuk-input--error" : ""}`}
                         data-testid="dob-day-input"
                       />
@@ -298,9 +311,7 @@ export default function BasicDetailsSearch() {
                         name="dob-month"
                         value={dobMonth}
                         onChange={e => setDobMonth((e.target as HTMLInputElement).value)}
-                        className={`nhsuk-date-input__input nhsuk-input--width-2 ${getInlineError(
-                          "dobMonthRequired",
-                          "dobNonNumericMonth")
+                        className={`nhsuk-date-input__input nhsuk-input--width-2 ${hasDobFieldError("month")
                           ? "nhsuk-input--error" : ""}`}
                         data-testid="dob-month-input"
                       />
@@ -316,10 +327,7 @@ export default function BasicDetailsSearch() {
                         name="dob-year"
                         value={dobYear}
                         onChange={e => setDobYear((e.target as HTMLInputElement).value)}
-                        className={`nhsuk-date-input__input nhsuk-input--width-4 ${getInlineError(
-                          "dobYearRequired",
-                          "dobNonNumericYear",
-                          "dobYearTooShort")
+                        className={`nhsuk-date-input__input nhsuk-input--width-4 ${hasDobFieldError("year")
                           ? "nhsuk-input--error" : ""}`}
                         data-testid="dob-year-input"
                       />
