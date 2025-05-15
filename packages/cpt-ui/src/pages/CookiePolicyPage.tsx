@@ -92,7 +92,7 @@ const CookiePolicyPage = () => {
       >
         <span
           className="nhsuk-details__summary-text"
-          data-testid={`see-${title.toLowerCase()}-cookies`}
+          data-testid={`see-${title.replace(/ cookies/i, "").toLowerCase()}-cookies`}
         >
           {CookieStrings.detailsSummaryText(title)}
         </span>
@@ -223,7 +223,6 @@ const CookiePolicyPage = () => {
                 <label
                   className="nhsuk-label nhsuk-radios__label"
                   htmlFor="example-2"
-                  data-testid="save-cookie-preferences"
                 >
                   {CookieStrings.cookieSettings.rejectLabel}
                 </label>
@@ -232,7 +231,10 @@ const CookiePolicyPage = () => {
           </fieldset>
         </div>
 
-        <Link className="nhsuk-button" to="/cookies-selected">
+        <Link
+          className="nhsuk-button"
+          to="/cookies-selected"
+          data-testid="save-cookie-preferences">
           {CookieStrings.cookieSettings.saveButton}
         </Link>
 

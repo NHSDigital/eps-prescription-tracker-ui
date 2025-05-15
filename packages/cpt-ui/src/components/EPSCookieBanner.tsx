@@ -1,35 +1,50 @@
-import React, {useState} from "react"
+import React, {useState, useEffect} from "react"
 import {Link, useLocation} from "react-router-dom"
 import "../styles/epscookies.scss"
 import {CookieStrings} from "@/constants/ui-strings/CookieStrings"
 
 export default function EPSCookieBanner() {
   const [cookiesSet, setCookiesSet] = useState<"accepted" | "rejected" | null>(null)
+  const [showSecondaryBanner, setShowSecondaryBanner] = useState(false)
   const location = useLocation()
 
-  if (location.pathname === "/cookies" || location.pathname === "/cookies-selected") return null
+  if (location.pathname === "/cookies" || location.pathname === "/cookies-selected") {
+    return null
+  }
 
-  // useEffect(() => {
-  //   if (typeof window !== "undefined" && window.NHSCookieConsent) {
-  //     if (window.NHSCookieConsent.getConsented()) {
-  //       const hasAnalytics = window.NHSCookieConsent.getStatistics()
-  //       setCookiesSet(hasAnalytics ? "accepted" : "rejected")
-  //     }
-  //   }
-  // }, [])
+  useEffect(() => {
+    const storedChoice = localStorage.getItem("eps-cookie-consent")
+    const secondaryShown = localStorage.getItem("eps-secondary-banner-shown")
+
+    if (storedChoice === "accepted" || storedChoice === "rejected") {
+      setCookiesSet(storedChoice)
+
+      if (secondaryShown !== "true") {
+        setShowSecondaryBanner(true)
+        localStorage.setItem("eps-secondary-banner-shown", "true")
+      }
+    } else if (typeof window !== "undefined" && window.NHSCookieConsent?.getConsented()) {
+      const hasAnalytics = window.NHSCookieConsent.getStatistics()
+      const initialChoice = hasAnalytics ? "accepted" : "rejected"
+      setCookiesSet(initialChoice)
+      localStorage.setItem("eps-cookie-consent", initialChoice)
+
+      setShowSecondaryBanner(true)
+      localStorage.setItem("eps-secondary-banner-shown", "true")
+    }
+  }, [])
 
   const handleCookieChoice = (choice: "accepted" | "rejected") => {
     setCookiesSet(choice)
+    localStorage.setItem("eps-cookie-consent", choice)
 
     if (typeof window !== "undefined" && window.NHSCookieConsent) {
-      if (choice === "accepted") {
-        window.NHSCookieConsent.setStatistics(true)
-      } else {
-        window.NHSCookieConsent.setStatistics(false)
-      }
-
+      window.NHSCookieConsent.setStatistics(choice === "accepted")
       window.NHSCookieConsent.setConsented(true)
     }
+
+    setShowSecondaryBanner(true)
+    localStorage.setItem("eps-secondary-banner-shown", "true")
   }
 
   return (
@@ -39,7 +54,8 @@ export default function EPSCookieBanner() {
           className="nhsuk-cookie-banner"
           data-testid="cookieBanner"
           role="banner"
-          aria-label={CookieStrings.cookie_banner}>
+          aria-label={CookieStrings.cookie_banner}
+        >
           <div className="page-section">
             <div className="nhsuk-width-container">
               <h2
@@ -60,7 +76,9 @@ export default function EPSCookieBanner() {
                   to={CookieStrings.cookies_page_link}
                   className="cookie_info_link"
                   data-testid="cookieInfoLink"
-                >{CookieStrings.banner.cookies_info_link_text}
+                  aria-label={CookieStrings.banner.cookies_info_link_text}
+                >
+                  {CookieStrings.banner.cookies_info_link_text}
                 </Link>
                 {CookieStrings.banner.cookie_text_p4}
               </p>
@@ -70,6 +88,7 @@ export default function EPSCookieBanner() {
                   className="nhsuk-button full-width nhsuk-u-margin-right-3"
                   onClick={() => handleCookieChoice("accepted")}
                   data-testid="accept-button"
+                  aria-label={CookieStrings.accept_cookies}
                 >
                   {CookieStrings.accept_cookies}
                 </button>
@@ -78,6 +97,7 @@ export default function EPSCookieBanner() {
                   className="nhsuk-button full-width"
                   onClick={() => handleCookieChoice("rejected")}
                   data-testid="reject-button"
+                  aria-label={CookieStrings.reject_cookies}
                 >
                   {CookieStrings.reject_cookies}
                 </button>
@@ -87,14 +107,20 @@ export default function EPSCookieBanner() {
         </div>
       )}
 
-      {cookiesSet !== null && (
-        <div className="chargeable-status-banner--green" id="chargeable-status-banner-id">
-          <div
-            className="chargeable-status-banner-content"
-            data-testid="secondaryCookieBanner"
-          >
+      {showSecondaryBanner && (
+        <div
+          className="chargeable-status-banner--green"
+          id="chargeable-status-banner-id"
+          data-testid="secondaryCookieBanner"
+        >
+          <div className="chargeable-status-banner-content">
             {CookieStrings.text_linking_to_info_page}
-            <Link to="/cookies" className="chargeable-status-banner-link">
+            <Link
+              to="/cookies"
+              className="chargeable-status-banner-link"
+              data-testid="smallCookieBannerLink"
+              aria-label={CookieStrings.cookie_banner_link}
+            >
               {CookieStrings.cookies_page}
             </Link>.
           </div>
