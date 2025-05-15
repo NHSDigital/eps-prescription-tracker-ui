@@ -10,7 +10,7 @@ interface ValidationInput {
   postcode: string
 }
 
-// Main validation function
+// Main validation function that checks user input and returns an array of error keys
 export function validateBasicDetails(input: ValidationInput): Array<ErrorKey> {
   const errors: Array<ErrorKey> = []
   const {firstName, lastName, dobDay, dobMonth, dobYear, postcode} = input
@@ -34,11 +34,13 @@ export function validateBasicDetails(input: ValidationInput): Array<ErrorKey> {
     }
   }
 
-  // --- Date of Birth (DOB) validations ---
+  // --- Date of Birth validations ---
+  // Track which fields are filled
   const hasDay = dobDay !== ""
   const hasMonth = dobMonth !== ""
   const hasYear = dobYear !== ""
 
+  // Track which fields are numeric
   const dayIsNumeric = numericOnly.test(dobDay)
   const monthIsNumeric = numericOnly.test(dobMonth)
   const yearIsNumeric = numericOnly.test(dobYear)
@@ -46,39 +48,42 @@ export function validateBasicDetails(input: ValidationInput): Array<ErrorKey> {
   const allEmpty = !hasDay && !hasMonth && !hasYear
 
   if (allEmpty) {
-    // If all DOB fields are empty, it's required
+    // No DOB fields provided
     errors.push("dobRequired")
   } else if (!hasDay || !hasMonth || !hasYear) {
-    // Partial DOB: check structure and numeric-ness
-    const nonNumericCount = [
-      {val: dobDay, isNumeric: dayIsNumeric},
-      {val: dobMonth, isNumeric: monthIsNumeric},
-      {val: dobYear, isNumeric: yearIsNumeric}
-    ].filter(({val, isNumeric}) => val !== "" && !isNumeric).length
+    // Incomplete DOB input (one or two fields missing)
 
-    const numericCount = [
-      hasDay && dayIsNumeric,
-      hasMonth && monthIsNumeric,
-      hasYear && yearIsNumeric
-    ].filter(Boolean).length
+    // Convert to numbers only if numeric and present
+    const numericDay = hasDay && dayIsNumeric ? parseInt(dobDay, 10) : null
+    const numericMonth = hasMonth && monthIsNumeric ? parseInt(dobMonth, 10) : null
 
-    const emptyCount = [!hasDay, !hasMonth, !hasYear].filter(Boolean).length
+    // Check if numeric day/month are out of bounds
+    const invalidNumericDay = numericDay !== null && (numericDay < 1 || numericDay > 31)
+    const invalidNumericMonth = numericMonth !== null && (numericMonth < 1 || numericMonth > 12)
 
-    // One non-numeric, one empty, one valid — treat as invalid
-    if (
-      (nonNumericCount === 1 && emptyCount === 1 && numericCount === 1) ||
-      nonNumericCount >= 2 || // Two or more non-numeric
-      [hasDay, hasMonth, hasYear].filter(Boolean).length === 1 // Only one field filled
-    ) {
+    // Any non-numeric values in filled fields
+    const partialNonNumeric =
+      (hasDay && !dayIsNumeric) ||
+      (hasMonth && !monthIsNumeric) ||
+      (hasYear && !yearIsNumeric)
+
+    // Only one field filled (clearly insufficient)
+    const filledCount = [hasDay, hasMonth, hasYear].filter(Boolean).length
+
+    const shouldBeInvalidDate =
+      invalidNumericDay || invalidNumericMonth || partialNonNumeric || filledCount === 1
+
+    if (shouldBeInvalidDate) {
       errors.push("dobInvalidDate")
     } else {
-      // Otherwise, treat missing parts individually
+      // Highlight exactly which field(s) are missing
       if (!hasDay) errors.push("dobDayRequired")
-      else if (!hasMonth) errors.push("dobMonthRequired")
-      else if (!hasYear) errors.push("dobYearRequired")
+      if (!hasMonth) errors.push("dobMonthRequired")
+      if (!hasYear) errors.push("dobYearRequired")
     }
   } else {
-    // All three DOB parts are present
+    // All DOB fields are present
+
     const nonNumericFields = [
       !dayIsNumeric,
       !monthIsNumeric,
@@ -88,10 +93,10 @@ export function validateBasicDetails(input: ValidationInput): Array<ErrorKey> {
     const hasShortYear = yearIsNumeric && dobYear.length < 4
 
     if (nonNumericFields >= 2 || (nonNumericFields === 1 && hasShortYear)) {
-      // Collapse to generic invalid date if multiple numeric issues
+      // Multiple numeric problems – collapse to generic error
       errors.push("dobInvalidDate")
     } else {
-      // Specific numeric errors
+      // Specific numeric field errors
       if (!dayIsNumeric) errors.push("dobNonNumericDay")
       if (!monthIsNumeric) errors.push("dobNonNumericMonth")
       if (!yearIsNumeric) errors.push("dobNonNumericYear")
@@ -100,7 +105,7 @@ export function validateBasicDetails(input: ValidationInput): Array<ErrorKey> {
         errors.push("dobYearTooShort")
       }
 
-      // Try to construct and validate the date
+      // Try to validate the constructed date only if all fields are numeric and year has 4 digits
       const canConstructDate =
         dayIsNumeric && monthIsNumeric && yearIsNumeric && dobYear.length === 4
 
@@ -162,15 +167,18 @@ export function validateBasicDetails(input: ValidationInput): Array<ErrorKey> {
   return errors
 }
 
-// Maps error keys to user-facing inline error messages
+// Maps internal error keys to inline UI error messages.
+// Returns a list of [fieldKey, errorMessage] tuples used for rendering inline + summary errors.
 export function getInlineErrors(errors: Array<ErrorKey>): Array<[string, string]> {
   const {errors: STR} = STRINGS
   const inlineErrors: Array<[string, string]> = []
 
-  // --- First Name errors ---
+  // --- First Name Error Handling ---
   const firstTooLong = errors.includes("firstNameTooLong")
   const firstInvalid = errors.includes("firstNameInvalidChars")
+
   if (firstTooLong && firstInvalid) {
+    // Combined error message for multiple issues
     inlineErrors.push([
       "firstName",
       "First name must be 35 characters or less, and can only include letters, hyphens, apostrophes and spaces"
@@ -181,7 +189,7 @@ export function getInlineErrors(errors: Array<ErrorKey>): Array<[string, string]
     inlineErrors.push(["firstName", STR.firstNameInvalidChars])
   }
 
-  // --- Last Name errors ---
+  // --- Last Name Error Handling ---
   if (errors.includes("lastNameRequired")) {
     inlineErrors.push(["lastName", STR.lastNameRequired])
   } else {
@@ -199,7 +207,7 @@ export function getInlineErrors(errors: Array<ErrorKey>): Array<[string, string]
     }
   }
 
-  // --- Date of Birth errors ---
+  // --- Date of Birth Error Handling ---
   const dobErrorKeys: Array<ErrorKey> = [
     "dobRequired",
     "dobDayRequired",
@@ -213,13 +221,14 @@ export function getInlineErrors(errors: Array<ErrorKey>): Array<[string, string]
     "dobFutureDate"
   ]
 
+  // Add DOB errors directly using their corresponding UI string
   dobErrorKeys.forEach(key => {
     if (errors.includes(key)) {
       inlineErrors.push([key, STR[key]])
     }
   })
 
-  // --- Postcode errors ---
+  // --- Postcode Error Handling ---
   if (errors.includes("postcodeInvalidChars")) {
     inlineErrors.push(["postcode", STR.postcodeInvalidChars])
   } else if (errors.includes("postcodeTooShort")) {

@@ -278,4 +278,24 @@ describe("BasicDetailsSearch Validation", () => {
 
     expect(document.activeElement).toBe(screen.getByTestId("dob-day-input"))
   })
+
+  it("adds nhsuk-input--error to all DOB fields and focuses day input for completely invalid date", async () => {
+    renderComponent()
+    await fillForm({lastName: "Smith", dobDay: "78", dobMonth: "75", dobYear: ""})
+    await submitForm()
+
+    const dayInput = screen.getByTestId("dob-day-input")
+    const monthInput = screen.getByTestId("dob-month-input")
+    const yearInput = screen.getByTestId("dob-year-input")
+
+    expect(dayInput).toHaveClass("nhsuk-input--error")
+    expect(monthInput).toHaveClass("nhsuk-input--error")
+    expect(yearInput).toHaveClass("nhsuk-input--error")
+
+    const errorLinks = screen.getAllByText(STRINGS.errors.dobInvalidDate)
+    const errorLink = errorLinks.find(el => el.tagName === "A") as HTMLAnchorElement
+    await userEvent.click(errorLink)
+
+    expect(document.activeElement).toBe(dayInput)
+  })
 })
