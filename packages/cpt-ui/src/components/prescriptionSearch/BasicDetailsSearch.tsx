@@ -216,10 +216,8 @@ export default function BasicDetailsSearch() {
 
               {/* First Name */}
               <FormGroup className={getInlineError("firstName") ? "nhsuk-form-group--error" : ""}>
-                <Label htmlFor="first-name" data-testid="first-name-label">
-                  <h3 className="nhsuk-heading-s nhsuk-u-margin-bottom-1 no-outline">
-                    {STRINGS.firstNameLabel}
-                  </h3>
+                <Label htmlFor="first-name" className="nhsuk-label-h3" data-testid="first-name-label">
+                  {STRINGS.firstNameLabel}
                 </Label>
                 {getInlineError("firstName") && <ErrorMessage>{getInlineError("firstName")}</ErrorMessage>}
                 <TextInput
@@ -234,10 +232,8 @@ export default function BasicDetailsSearch() {
 
               {/* Last Name */}
               <FormGroup className={getInlineError("lastName") ? "nhsuk-form-group--error" : ""}>
-                <Label htmlFor="last-name" data-testid="last-name-label">
-                  <h3 className="nhsuk-heading-s nhsuk-u-margin-bottom-1 no-outline">
-                    {STRINGS.lastNameLabel}
-                  </h3>
+                <Label htmlFor="last-name" className="nhsuk-label-h3" data-testid="last-name-label">
+                  {STRINGS.lastNameLabel}
                 </Label>
                 {getInlineError("lastName") && <ErrorMessage>{getInlineError("lastName")}</ErrorMessage>}
                 <TextInput
@@ -264,10 +260,8 @@ export default function BasicDetailsSearch() {
                 "dobFutureDate"
               ) ? "nhsuk-form-group--error" : ""}>
                 <Fieldset aria-labelledby="dob-label">
-                  <Fieldset.Legend className="nhsuk-fieldset__legend--s" id="dob-label" data-testid="dob-label">
-                    <h3 className="nhsuk-heading-s nhsuk-u-margin-bottom-1 no-outline">
-                      {STRINGS.dobLabel}
-                    </h3>
+                  <Fieldset.Legend className="nhsuk-fieldset__legend--s" id="dob-label">
+                    <span className="nhsuk-label-h3">{STRINGS.dobLabel}</span>
                   </Fieldset.Legend>
                   <HintText id="dob-hint" data-testid="dob-hint">{STRINGS.dobHint}</HintText>
 
@@ -354,7 +348,9 @@ export default function BasicDetailsSearch() {
 
               {/* Postcode */}
               <FormGroup className={getInlineError("postcode") ? "nhsuk-form-group--error" : ""}>
-                <Label htmlFor="postcode-only"><h3 className="nhsuk-heading-s">{STRINGS.postcodeLabel}</h3></Label>
+                <Label htmlFor="postcode-only" className="nhsuk-label-h3">
+                  {STRINGS.postcodeLabel}
+                </Label>
                 <HintText>{STRINGS.postcodeHint}</HintText>
                 {getInlineError("postcode") && <ErrorMessage>{getInlineError("postcode")}</ErrorMessage>}
                 <TextInput
