@@ -297,7 +297,7 @@ export default function BasicDetailsSearch() {
                   <div className="nhsuk-date-input" id="dob" data-testid="dob-input-group">
                     {/* Day */}
                     <div className="nhsuk-date-input__item">
-                      <Label htmlFor="dob-day" className="nhsuk-label nhsuk-date-input__label">
+                      <Label htmlFor="dob-day" bold={false}>
                         {STRINGS.dobDay}
                       </Label>
                       <TextInput
@@ -313,7 +313,7 @@ export default function BasicDetailsSearch() {
 
                     {/* Month */}
                     <div className="nhsuk-date-input__item">
-                      <Label htmlFor="dob-month" className="nhsuk-label nhsuk-date-input__label">
+                      <Label htmlFor="dob-month" bold={false}>
                         {STRINGS.dobMonth}
                       </Label>
                       <TextInput
@@ -329,7 +329,7 @@ export default function BasicDetailsSearch() {
 
                     {/* Year */}
                     <div className="nhsuk-date-input__item">
-                      <Label htmlFor="dob-year" className="nhsuk-label nhsuk-date-input__label">
+                      <Label htmlFor="dob-year" bold={false}>
                         {STRINGS.dobYear}
                       </Label>
                       <TextInput
