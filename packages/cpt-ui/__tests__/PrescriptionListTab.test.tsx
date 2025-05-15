@@ -38,7 +38,7 @@ import PrescriptionsListTabs from "@/components/prescriptionList/PrescriptionsLi
 describe("PrescriptionsListTabs", () => {
   const currentPrescriptions: Array<PrescriptionSummary> = [
     {
-      prescriptionId: "RX001",
+      prescriptionId: "C0C757-A83008-C2D93O",
       statusCode: "001",
       issueDate: "2025-03-01",
       prescriptionTreatmentType: TreatmentType.REPEAT,
@@ -48,7 +48,7 @@ describe("PrescriptionsListTabs", () => {
       itemsPendingCancellation: false
     },
     {
-      prescriptionId: "RX002",
+      prescriptionId: "209E3D-A83008-327F9F",
       statusCode: "002",
       issueDate: "2025-03-02",
       prescriptionTreatmentType: TreatmentType.REPEAT,
