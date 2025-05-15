@@ -214,4 +214,18 @@ describe("BasicDetailsSearch Validation", () => {
     expect(monthInput).toHaveClass("nhsuk-input--error")
     expect(yearInput).not.toHaveClass("nhsuk-input--error")
   })
+
+  it("applies nhsuk-input--error to all DOB fields when dobRequired is triggered", async () => {
+    renderComponent()
+    await fillForm({lastName: "Smith"})
+    await submitForm()
+
+    const dayInput = screen.getByTestId("dob-day-input")
+    const monthInput = screen.getByTestId("dob-month-input")
+    const yearInput = screen.getByTestId("dob-year-input")
+
+    expect(dayInput).toHaveClass("nhsuk-input--error")
+    expect(monthInput).toHaveClass("nhsuk-input--error")
+    expect(yearInput).toHaveClass("nhsuk-input--error")
+  })
 })

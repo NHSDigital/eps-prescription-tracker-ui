@@ -79,6 +79,7 @@ export default function BasicDetailsSearch() {
   // Determines whether a specific DOB input field should display an error style
   const hasDobFieldError = (field: "day" | "month" | "year") => {
     const valueMap = {day: dobDay, month: dobMonth, year: dobYear}
+
     const errorKeysMap = {
       day: ["dobDayRequired", "dobNonNumericDay"],
       month: ["dobMonthRequired", "dobNonNumericMonth"],
@@ -88,9 +89,12 @@ export default function BasicDetailsSearch() {
     const fieldErrors = errorKeysMap[field]
     const hasSpecificError = getInlineError(...fieldErrors)
     const hasInvalidDateError = errors.includes("dobInvalidDate")
+    const hasDobRequiredError = errors.includes("dobRequired")
     const isFieldInvalid = valueMap[field].trim() === "" || !/^\d+$/.test(valueMap[field])
 
-    return Boolean(hasSpecificError) || (hasInvalidDateError && isFieldInvalid)
+    return Boolean(hasSpecificError)
+      || (hasInvalidDateError && isFieldInvalid)
+      || hasDobRequiredError
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
