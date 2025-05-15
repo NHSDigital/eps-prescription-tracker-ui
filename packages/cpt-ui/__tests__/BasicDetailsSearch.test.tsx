@@ -238,4 +238,32 @@ describe("BasicDetailsSearch Validation", () => {
     const yearInput = screen.getByTestId("dob-year-input")
     expect(yearInput).toHaveClass("nhsuk-input--error")
   })
+
+  it("highlights month field and focuses it for invalid month input (e.g., 45)", async () => {
+    renderComponent()
+    await fillForm({lastName: "Smith", dobDay: "01", dobMonth: "45", dobYear: "2014"})
+    await submitForm()
+
+    const monthInput = screen.getByTestId("dob-month-input")
+    expect(monthInput).toHaveClass("nhsuk-input--error")
+
+    const errorLinks = screen.getAllByText(STRINGS.errors.dobInvalidDate)
+    const errorLink = errorLinks.find(el => el.tagName === "A") as HTMLAnchorElement
+    await userEvent.click(errorLink)
+    expect(document.activeElement).toBe(monthInput)
+  })
+
+  it("adds nhsuk-input--error to day and month inputs when both are out of range (e.g., 79/45/2014)", async () => {
+    renderComponent()
+    await fillForm({lastName: "Smith", dobDay: "79", dobMonth: "45", dobYear: "2014"})
+    await submitForm()
+
+    const dayInput = screen.getByTestId("dob-day-input")
+    const monthInput = screen.getByTestId("dob-month-input")
+    const yearInput = screen.getByTestId("dob-year-input")
+
+    expect(dayInput).toHaveClass("nhsuk-input--error")
+    expect(monthInput).toHaveClass("nhsuk-input--error")
+    expect(yearInput).not.toHaveClass("nhsuk-input--error")
+  })
 })

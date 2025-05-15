@@ -17,7 +17,7 @@ import {useNavigate} from "react-router-dom"
 import {STRINGS} from "@/constants/ui-strings/BasicDetailsSearchStrings"
 import {API_ENDPOINTS, FRONTEND_PATHS} from "@/constants/environment"
 import {validateBasicDetails, getInlineErrors} from "@/helpers/validateBasicDetails"
-import {ErrorKey, errorFocusMap} from "@/helpers/basicDetailsValidationMeta"
+import {errorFocusMap, ErrorKey, resolveDobInvalidFields} from "@/helpers/basicDetailsValidationMeta"
 
 // Temporary mock data used for frontend search simulation
 const mockPatient = [
@@ -76,25 +76,39 @@ export default function BasicDetailsSearch() {
     }
   }, [errors])
 
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      const target = (e.target as HTMLElement)?.closest("a[href^='#']")
+      if (target) {
+        const id = target.getAttribute("href")?.substring(1)
+        const el = document.getElementById(id!)
+        if (el && typeof el.focus === "function") {
+          el.focus()
+        }
+      }
+    }
+
+    document.addEventListener("click", handler)
+    return () => document.removeEventListener("click", handler)
+  }, [])
+
   // Determines whether a specific DOB input field should display an error style
   const hasDobFieldError = (field: "day" | "month" | "year") => {
-    const valueMap = {day: dobDay, month: dobMonth, year: dobYear}
-
-    const errorKeysMap = {
+    const fieldErrorsMap = {
       day: ["dobDayRequired", "dobNonNumericDay"],
       month: ["dobMonthRequired", "dobNonNumericMonth"],
       year: ["dobYearRequired", "dobNonNumericYear", "dobYearTooShort", "dobFutureDate"]
     }
 
-    const fieldErrors = errorKeysMap[field]
-    const hasSpecificError = getInlineError(...fieldErrors)
-    const hasInvalidDateError = errors.includes("dobInvalidDate")
+    const hasSpecificError = getInlineError(...fieldErrorsMap[field])
     const hasDobRequiredError = errors.includes("dobRequired")
-    const isFieldInvalid = valueMap[field].trim() === "" || !/^\d+$/.test(valueMap[field])
 
-    return Boolean(hasSpecificError)
-      || (hasInvalidDateError && isFieldInvalid)
-      || hasDobRequiredError
+    // Use resolveDobInvalidField to decide which field should show error class
+    const shouldHighlightForInvalidDate =
+      errors.includes("dobInvalidDate") &&
+      resolveDobInvalidFields({dobDay, dobMonth, dobYear}).includes(field)
+
+    return Boolean(hasSpecificError || hasDobRequiredError || shouldHighlightForInvalidDate)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
