@@ -1,5 +1,9 @@
 import {BasicDetailsSearchType} from "@cpt-ui-common/common-types"
 
+/**
+ * Formats the provided day, month, and year fields into a string in the format DD-MM-YYYY.
+ * If any part of the date is missing, fallback placeholders ("??" or "????") are used.
+ */
 export function formatDob({
   dobDay,
   dobMonth,
