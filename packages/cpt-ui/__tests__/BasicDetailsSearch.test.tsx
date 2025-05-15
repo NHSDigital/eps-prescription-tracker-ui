@@ -5,6 +5,7 @@ import React from "react"
 import {MemoryRouter, Routes, Route} from "react-router-dom"
 
 import BasicDetailsSearch from "@/components/prescriptionSearch/BasicDetailsSearch"
+import {BasicDetailsSearchType} from "@cpt-ui-common/common-types"
 import {STRINGS} from "@/constants/ui-strings/BasicDetailsSearchStrings"
 
 jest.mock("react-router-dom", () => {
@@ -115,7 +116,7 @@ describe("BasicDetailsSearch Validation", () => {
   })
 
   describe("DOB validation scenarios", () => {
-    const dobCases = [
+    const dobCases: Array<[BasicDetailsSearchType, string]> = [
       [{dobDay: "ab", dobMonth: "ab", dobYear: ""}, STRINGS.errors.dobInvalidDate],
       [{dobDay: "ab", dobMonth: "", dobYear: "ab"}, STRINGS.errors.dobInvalidDate],
       [{dobDay: "", dobMonth: "ab", dobYear: "ab"}, STRINGS.errors.dobInvalidDate],
