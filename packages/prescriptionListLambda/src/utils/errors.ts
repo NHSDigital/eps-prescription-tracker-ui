@@ -8,10 +8,3 @@ export class PDSError extends Error {
     this.name = "PDSError"
   }
 }
-
-export class PrescriptionError extends Error {
-  constructor(message: string) {
-    super(message)
-    this.name = "PrescriptionError"
-  }
-}

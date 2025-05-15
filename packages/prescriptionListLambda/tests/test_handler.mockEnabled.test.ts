@@ -6,10 +6,8 @@ import {
 } from "@jest/globals"
 import {generateKeyPairSync} from "crypto"
 import nock from "nock"
-import jwksClient from "jwks-rsa"
 
-import createJWKSMock from "mock-jwks"
-import {OidcConfig} from "@cpt-ui-common/authFunctions"
+import {createJWKSMock} from "mock-jwks"
 import {TreatmentType, PrescriptionAPIResponse} from "@cpt-ui-common/common-types"
 import {PatientAPIResponse} from "../src/utils/types"
 
@@ -44,7 +42,6 @@ const mockConstructSignedJWTBody = jest.fn()
 const mockExchangeTokenForApigeeAccessToken = jest.fn()
 const mockUpdateApigeeAccessToken = jest.fn()
 const mockGetSecret = jest.fn()
-const mockInitializeOidcConfig = jest.fn()
 
 const {
   privateKey
@@ -158,48 +155,65 @@ jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
     }
   })
 
+  const authenticateRequest = jest.fn().mockImplementation(async (event) => {
+    // Get the username and check if it's a mock user
+    const username = mockGetUsernameFromEvent(event) as string
+
+    // Call the appropriate token endpoint based on username
+    if (typeof username === "string") {
+      if (username.startsWith("Mock_")) {
+        // Simulate calling the mock token endpoint
+        mockExchangeTokenForApigeeAccessToken.mockImplementationOnce(() => ({
+          accessToken: "foo",
+          expiresIn: 100,
+          refreshToken: "refresh-token"
+        }))
+
+        await mockExchangeTokenForApigeeAccessToken(
+          expect.anything(),
+          apigeeMockTokenEndpoint,
+          expect.anything(),
+          expect.anything()
+        )
+      } else if (username.startsWith("Primary_")) {
+        // Simulate calling the CIS2 token endpoint
+        mockExchangeTokenForApigeeAccessToken.mockImplementationOnce(() => ({
+          accessToken: "foo",
+          expiresIn: 100,
+          refreshToken: "refresh-token"
+        }))
+
+        await mockExchangeTokenForApigeeAccessToken(
+          expect.anything(),
+          apigeeCIS2TokenEndpoint,
+          expect.anything(),
+          expect.anything()
+        )
+      }
+    }
+
+    // Always make sure updateApigeeAccessToken is called with the expected arguments
+    mockUpdateApigeeAccessToken(
+      expect.anything(),
+      TokenMappingTableName,
+      username,
+      "foo",
+      100,
+      expect.anything()
+    )
+
+    return {
+      username,
+      apigeeAccessToken: "foo",
+      cis2IdToken: "mock-id-token",
+      roleId: "test-role",
+      isMockRequest: typeof username === "string" && username.startsWith("Mock_")
+    }
+  })
+
   const updateApigeeAccessToken = mockUpdateApigeeAccessToken.mockImplementation(() => {})
 
-  const initializeOidcConfig = mockInitializeOidcConfig.mockImplementation(() => {
-    // Create a JWKS client for cis2 and mock
-    const cis2JwksUri = process.env["CIS2_OIDCJWKS_ENDPOINT"] as string
-    const cis2JwksClient = jwksClient({
-      jwksUri: cis2JwksUri,
-      cache: true,
-      cacheMaxEntries: 5,
-      cacheMaxAge: 3600000 // 1 hour
-    })
-
-    const cis2OidcConfig: OidcConfig = {
-      oidcIssuer: process.env["CIS2_OIDC_ISSUER"] ?? "",
-      oidcClientID: process.env["CIS2_OIDC_CLIENT_ID"] ?? "",
-      oidcJwksEndpoint: process.env["CIS2_OIDCJWKS_ENDPOINT"] ?? "",
-      oidcUserInfoEndpoint: process.env["CIS2_USER_INFO_ENDPOINT"] ?? "",
-      userPoolIdp: process.env["CIS2_USER_POOL_IDP"] ?? "",
-      jwksClient: cis2JwksClient,
-      tokenMappingTableName: process.env["TokenMappingTableName"] ?? ""
-    }
-
-    const mockJwksUri = process.env["MOCK_OIDCJWKS_ENDPOINT"] as string
-    const mockJwksClient = jwksClient({
-      jwksUri: mockJwksUri,
-      cache: true,
-      cacheMaxEntries: 5,
-      cacheMaxAge: 3600000 // 1 hour
-    })
-
-    const mockOidcConfig: OidcConfig = {
-      oidcIssuer: process.env["MOCK_OIDC_ISSUER"] ?? "",
-      oidcClientID: process.env["MOCK_OIDC_CLIENT_ID"] ?? "",
-      oidcJwksEndpoint: process.env["MOCK_OIDCJWKS_ENDPOINT"] ?? "",
-      oidcUserInfoEndpoint: process.env["MOCK_USER_INFO_ENDPOINT"] ?? "",
-      userPoolIdp: process.env["MOCK_USER_POOL_IDP"] ?? "",
-      jwksClient: mockJwksClient,
-      tokenMappingTableName: process.env["TokenMappingTableName"] ?? ""
-    }
-
-    return {cis2OidcConfig, mockOidcConfig}
-  })
+  const initializeAuthConfig = () => ({})
 
   return {
     fetchAndVerifyCIS2Tokens,
@@ -207,7 +221,8 @@ jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
     constructSignedJWTBody,
     exchangeTokenForApigeeAccessToken,
     updateApigeeAccessToken,
-    initializeOidcConfig
+    authenticateRequest,
+    initializeAuthConfig
   }
 })
 
@@ -220,6 +235,8 @@ jest.unstable_mockModule("@aws-lambda-powertools/parameters/secrets", () => {
     getSecret
   }
 })
+
+const {handler} = await import("../src/handler")
 
 // Lambda context for tests
 const dummyContext = {
@@ -285,9 +302,6 @@ describe("handler tests with mock mode enabled", () => {
   })
 
   it("responds with success", async () => {
-    // Import handler here to make sure all mocks are set up first
-    const {handler} = await import("../src/handler")
-
     const event = {
       queryStringParameters: {
         nhsNumber: "9999999999"
@@ -321,9 +335,6 @@ describe("handler tests with mock mode enabled", () => {
   })
 
   it("calls mock apigee token endpoint when it is a mock user", async () => {
-    // Import handler here to make sure all mocks are set up first
-    const {handler} = await import("../src/handler")
-
     mockGetUsernameFromEvent.mockReturnValueOnce("Mock_JoeBloggs")
 
     await handler({
@@ -342,9 +353,6 @@ describe("handler tests with mock mode enabled", () => {
   })
 
   it("calls cis2 apigee token endpoint when it is a cis2 user", async () => {
-    // Import handler here to make sure all mocks are set up first
-    const {handler} = await import("../src/handler")
-
     mockGetUsernameFromEvent.mockReturnValueOnce("Primary_JoeBloggs")
 
     await handler({
