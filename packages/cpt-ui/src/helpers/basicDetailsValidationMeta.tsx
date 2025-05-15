@@ -19,9 +19,29 @@ export type ErrorKey =
   | "postcodeInvalidChars"
 
 /**
+ * Validates if a string is a numeric value within a given range.
+ */
+const isValidNumericInRange = (value: string, min: number, max: number): boolean => {
+  const isNumeric = /^\d+$/.test(value)
+  const num = parseInt(value, 10)
+  return isNumeric && num >= min && num <= max
+}
+
+/**
+ * Validates if the provided day, month, and year form a valid date.
+ */
+const isValidDate = (day: number, month: number, year: number): boolean => {
+  const date = new Date(`${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`)
+  return (
+    date.getFullYear() === year &&
+    date.getMonth() === month - 1 &&
+    date.getDate() === day
+  )
+}
+
+/**
  * Determines which individual DOB input field (day, month, or year)
  * should receive focus when a `dobInvalidDate` error is triggered.
- * The logic prioritizes visible field order: day → month → year.
  */
 export const resolveDobInvalidField = ({
   dobDay,
@@ -32,54 +52,34 @@ export const resolveDobInvalidField = ({
   dobMonth: string
   dobYear: string
 }): string => {
-  const numeric = /^\d+$/
-
-  const isDayNumeric = numeric.test(dobDay)
-  const isMonthNumeric = numeric.test(dobMonth)
-  const isYearNumeric = numeric.test(dobYear)
+  const isDayNumeric = /^\d+$/.test(dobDay)
+  const isMonthNumeric = /^\d+$/.test(dobMonth)
+  const isYearNumeric = /^\d+$/.test(dobYear)
   const isYearTooShort = dobYear.length > 0 && dobYear.length < 4
-  const isYearMissing = dobYear === ""
 
-  // Prioritize visibly ordered errors
+  // Field-level checks in visible order
   if (!isDayNumeric) return "dob-day"
   if (!isMonthNumeric) return "dob-month"
-  if (!isYearNumeric && !isYearMissing) return "dob-year"
+  if (!isYearNumeric && dobYear !== "") return "dob-year"
   if (isYearTooShort) return "dob-year"
+  if (dobYear === "") return "dob-day"
 
-  // Validate numeric but out-of-bounds values
-  if (isDayNumeric) {
-    const day = parseInt(dobDay, 10)
-    if (day < 1 || day > 31) return "dob-day"
-  }
+  // Range checks
+  if (!isValidNumericInRange(dobDay, 1, 31)) return "dob-day"
+  if (!isValidNumericInRange(dobMonth, 1, 12)) return "dob-month"
 
-  if (isMonthNumeric) {
-    const month = parseInt(dobMonth, 10)
-    if (month < 1 || month > 12) return "dob-month"
-  }
-
-  // If year is missing and day/month are invalid, default to day
-  if (isYearMissing) {
-    return "dob-day"
-  }
-
-  // Full date validation if all fields are numeric
   const day = parseInt(dobDay, 10)
   const month = parseInt(dobMonth, 10)
   const year = parseInt(dobYear, 10)
 
-  const constructed = new Date(`${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`)
-  const isValid =
-    constructed.getFullYear() === year &&
-    constructed.getMonth() === month - 1 &&
-    constructed.getDate() === day
-
-  if (!isValid) {
-    if (day < 1 || day > 31) return "dob-day"
-    if (month < 1 || month > 12) return "dob-month"
+  // Full date validity check
+  if (!isValidDate(day, month, year)) {
+    if (!isValidNumericInRange(dobDay, 1, 31)) return "dob-day"
+    if (!isValidNumericInRange(dobMonth, 1, 12)) return "dob-month"
     return "dob-year"
   }
 
-  return "dob-day" // fallback to day input
+  return "dob-day" // fallback
 }
 
 /**
@@ -92,34 +92,24 @@ export const errorFocusMap: Record<
 > = {
   firstName: "first-name",
   lastName: "last-name",
+  postcode: "postcode-only",
 
-  // Required DOB fallback focus
+  // DOB-specific error mappings
   dobRequired: "dob-day",
-
-  // Field-specific DOB errors
   dobDayRequired: "dob-day",
   dobMonthRequired: "dob-month",
   dobYearRequired: "dob-year",
-
-  // Non-numeric DOB fields
   dobNonNumericDay: "dob-day",
   dobNonNumericMonth: "dob-month",
   dobNonNumericYear: "dob-year",
-
-  // Structural/year-based DOB issues
   dobYearTooShort: "dob-year",
   dobFutureDate: "dob-year",
-
-  // Dynamic focus for invalid combined DOB
-  dobInvalidDate: resolveDobInvalidField,
-
-  // Postcode error focus
-  postcode: "postcode-only"
+  dobInvalidDate: resolveDobInvalidField
 }
 
 /**
- * Identifies which individual DOB input fields (day/month/year)
- * should be visually styled with an error class for a `dobInvalidDate` error.
+ * Identifies which DOB input fields (day/month/year) should be visually styled
+ * with an error class when a `dobInvalidDate` error is triggered.
  */
 export const resolveDobInvalidFields = ({
   dobDay,
@@ -130,55 +120,41 @@ export const resolveDobInvalidFields = ({
   dobMonth: string
   dobYear: string
 }): Array<"day" | "month" | "year"> => {
-  const numeric = /^\d+$/
-  const invalidFields: Array<"day" | "month" | "year"> = []
+  const invalidFields = new Set<"day" | "month" | "year">()
 
-  const isDayNumeric = numeric.test(dobDay)
-  const isMonthNumeric = numeric.test(dobMonth)
-  const isYearNumeric = numeric.test(dobYear)
+  const isDayNumeric = /^\d+$/.test(dobDay)
+  const isMonthNumeric = /^\d+$/.test(dobMonth)
+  const isYearNumeric = /^\d+$/.test(dobYear)
   const isYearTooShort = dobYear.length > 0 && dobYear.length < 4
   const isYearMissing = dobYear === ""
 
-  // Mark non-numeric or missing fields
-  if (!isDayNumeric) invalidFields.push("day")
-  if (!isMonthNumeric) invalidFields.push("month")
-  if (!isYearNumeric && !isYearMissing) invalidFields.push("year")
-  if (isYearTooShort) invalidFields.push("year")
-  if (isYearMissing) invalidFields.push("year")
+  // Non-numeric or missing fields
+  if (!isDayNumeric) invalidFields.add("day")
+  if (!isMonthNumeric) invalidFields.add("month")
+  if (!isYearNumeric && !isYearMissing) invalidFields.add("year")
+  if (isYearTooShort || isYearMissing) invalidFields.add("year")
 
-  // Validate individual numeric values even if full date can't be constructed
-  if (isDayNumeric) {
-    const day = parseInt(dobDay, 10)
-    if (day < 1 || day > 31) invalidFields.push("day")
-  }
+  // Range-based validation
+  if (isDayNumeric && !isValidNumericInRange(dobDay, 1, 31)) invalidFields.add("day")
+  if (isMonthNumeric && !isValidNumericInRange(dobMonth, 1, 12)) invalidFields.add("month")
 
-  if (isMonthNumeric) {
-    const month = parseInt(dobMonth, 10)
-    if (month < 1 || month > 12) invalidFields.push("month")
-  }
-
-  // Validate full constructed date if all fields are numeric and year is 4 digits
-  const allValidNumeric = isDayNumeric && isMonthNumeric && isYearNumeric && dobYear.length === 4
-  if (allValidNumeric) {
+  // Cross-field validation if all values are present and year is 4 digits
+  if (isDayNumeric && isMonthNumeric && isYearNumeric && dobYear.length === 4) {
     const day = parseInt(dobDay, 10)
     const month = parseInt(dobMonth, 10)
     const year = parseInt(dobYear, 10)
 
-    const constructed = new Date(`${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`)
-    const isValid =
-      constructed.getFullYear() === year &&
-      constructed.getMonth() === month - 1 &&
-      constructed.getDate() === day
-
-    if (!isValid) {
-      if (month < 1 || month > 12) invalidFields.push("month")
-      if (day < 1 || day > 31) invalidFields.push("day")
-      if (month >= 1 && month <= 12 && day >= 1 && day <= 31) {
-        // Logical fallback when day/month are structurally valid but the date is still invalid (e.g., 31/02/2020)
-        invalidFields.push("year")
+    if (!isValidDate(day, month, year)) {
+      if (!isValidNumericInRange(dobMonth, 1, 12)) invalidFields.add("month")
+      if (!isValidNumericInRange(dobDay, 1, 31)) invalidFields.add("day")
+      if (
+        isValidNumericInRange(dobMonth, 1, 12) &&
+        isValidNumericInRange(dobDay, 1, 31)
+      ) {
+        invalidFields.add("year") // Catch logically invalid date like 31/02/2022
       }
     }
   }
 
-  return Array.from(new Set(invalidFields)) // Ensure uniqueness
+  return Array.from(invalidFields)
 }

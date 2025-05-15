@@ -100,14 +100,14 @@ export default function BasicDetailsSearch() {
   }, [])
 
   // Determines whether a specific DOB input field should display an error style
-  const hasDobFieldError = (field: "day" | "month" | "year") => {
+  const hasDobFieldError = (field: "day" | "month" | "year"): boolean => {
     const fieldErrorsMap = {
       day: ["dobDayRequired", "dobNonNumericDay"],
       month: ["dobMonthRequired", "dobNonNumericMonth"],
       year: ["dobYearRequired", "dobNonNumericYear", "dobYearTooShort", "dobFutureDate"]
     }
 
-    const hasSpecificError = getInlineError(...fieldErrorsMap[field])
+    const hasSpecificError = Boolean(getInlineError(...fieldErrorsMap[field]))
     const hasDobRequiredError = errors.includes("dobRequired")
 
     // Use resolveDobInvalidField to decide which field should show error class
