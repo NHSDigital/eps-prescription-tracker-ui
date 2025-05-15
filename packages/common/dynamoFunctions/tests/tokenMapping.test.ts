@@ -222,9 +222,13 @@ describe("get tokenMapping", () => {
     } as unknown as jest.Mocked<DynamoDBDocumentClient>
   })
 
-  it.skip("should get data from DynamoDB successfully", async () => {
+  it("should get data from DynamoDB successfully", async () => {
+    const mockItem = {
+      username: "foo",
+      cis2AccessToken: "bar"
+    }
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-    mockDocumentClient.send.mockResolvedValueOnce({"Item": {httpStatusCode: 200}} as never)
+    mockDocumentClient.send.mockResolvedValueOnce({"Item": mockItem} as never)
 
     const mockUsername = "testUser"
     const mockTableName = "mockTable"
@@ -238,7 +242,7 @@ describe("get tokenMapping", () => {
     expect(mockDocumentClient.send).toHaveBeenCalledWith(
       expect.any(GetCommand)
     )
-    expect(result).toBe(1)
+    expect(result).toBe(mockItem)
   })
 
   it("should log and throw an error on failure", async () => {
