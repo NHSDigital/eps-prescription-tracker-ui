@@ -1,3 +1,24 @@
 .nhsuk-hint {
   margin-bottom: 16px !important;
 }
+
+.nhsuk-tabs--large .nhsuk-tabs__panel {
+  padding-top: 3.5rem !important;
+}
+
+.nhsuk-tabs--large .nhsuk-tabs__panel {
+
+  @media (max-width: 990px) {
+    padding: 1.6rem 1rem !important;
+  }
+
+  @media (max-width: 640px) {
+    padding: 1rem 0rem !important;
+  }
+}
+
+.nhsuk-tabs__list {
+  @media (max-width: 640px) {
+    margin-bottom: 0 !important;
+  }
+}
