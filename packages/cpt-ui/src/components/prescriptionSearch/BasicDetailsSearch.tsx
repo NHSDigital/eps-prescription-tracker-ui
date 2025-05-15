@@ -67,10 +67,6 @@ export default function BasicDetailsSearch() {
     inlineErrors.find(([key]) => fields.includes(key))?.[1]
 
   useEffect(() => {
-    document.querySelector<HTMLInputElement>("#last-name")?.focus()
-  }, [])
-
-  useEffect(() => {
     if (errors.length > 0 && errorRef.current) {
       errorRef.current.focus()
     }
