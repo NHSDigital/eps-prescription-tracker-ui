@@ -21,12 +21,12 @@ jest.unstable_mockModule("@cpt-ui-common/dynamoFunctions", () => {
 import {mockAPIGatewayProxyEvent, mockContext} from "./mockObjects"
 const {handler} = await import("../src/callbackMock")
 
-describe("Callback Response Lambda Handler", () => {
+describe("Callback mock handler", () => {
   beforeEach(() => {
     jest.clearAllMocks()
   })
 
-  test("should redirect to pull request with correct parameters", async () => {
+  it("should redirect to pull request with correct parameters", async () => {
     // Prepare an event with valid query parameters.
     const stateObject = {
       isPullRequest: true,

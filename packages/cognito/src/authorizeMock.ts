@@ -46,12 +46,22 @@ const lambdaHandler = async (
   event: APIGatewayProxyEvent
 ): Promise<APIGatewayProxyResult> => {
   logger.appendKeys({"apigw-request-id": event.requestContext?.requestId})
+  logger.debug("Environment variable", {env: {
+    authorizeEndpoint,
+    cis2ClientId,
+    userPoolClientId,
+    cloudfrontDomain,
+    stateMappingTableName,
+    apigeeApiKey
+  }})
 
   // Validate required environment variables
+  if (!authorizeEndpoint) throw new Error("Authorize endpoint environment variable not set")
   if (!cloudfrontDomain) throw new Error("Cloudfront domain environment variable not set")
   if (!stateMappingTableName) throw new Error("State mapping table name environment variable not set")
   if (!userPoolClientId) throw new Error("Cognito user pool client ID environment variable not set")
   if (!cis2ClientId) throw new Error("OIDC client ID environment variable not set")
+  if (!apigeeApiKey) throw new Error("apigee api key environment variable not set")
 
   const queryParams = event.queryStringParameters || {}
 
@@ -61,9 +71,6 @@ const lambdaHandler = async (
       `Mismatch in OIDC client ID. Payload: ${queryParams.client_id} | Expected: ${userPoolClientId}`
     )
   }
-
-  // Update the scope to the CIS2 scopes
-  queryParams.scope = "openid profile email nhsperson nationalrbacaccess associatedorgs"
 
   // Ensure the state parameter is provided
   const originalState = queryParams.state
@@ -76,6 +83,8 @@ const lambdaHandler = async (
   const stateTtl = Math.floor(Date.now() / 1000) + 300
 
   // Build the callback URI for redirection
+  // for pull requests we pack the real callback url for this pull request into the state
+  // the callback lambda then decodes this and redirects to the callback url for this pull request
   const realCallbackUri = `https://${cloudfrontDomain}/oauth2/mock-callback`
   const callbackUri = "https://cpt-ui-pr-854.dev.eps.national.nhs.uk/oauth2/mock-callback"
 
@@ -103,9 +112,6 @@ const lambdaHandler = async (
     state: newState
   }
 
-  // how do we deal with different callback uri
-  // https://docs.apigee.com/api-platform/security/oauth/advanced-oauth-20-topics
-  // apigee does not support wildcards
   const redirectPath = `${authorizeEndpoint}?${new URLSearchParams(responseParameters)}`
 
   return {

@@ -122,7 +122,7 @@ jest.unstable_mockModule("@aws-lambda-powertools/parameters/secrets", () => {
 
 const {handler} = await import("../src/token")
 
-describe("handler tests", () => {
+describe("cis2 token handler tests - failures", () => {
   const jwks = createJWKSMock("https://dummyauth.com/")
   beforeEach(() => {
     jest.resetModules()

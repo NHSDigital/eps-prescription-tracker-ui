@@ -19,9 +19,9 @@ jest.unstable_mockModule("@cpt-ui-common/dynamoFunctions", () => {
 
 // Import the handler after setting the env variables and mocks.
 import {mockAPIGatewayProxyEvent, mockContext} from "./mockObjects"
-const {handler} = await import("../src/authorize")
+const {handler} = await import("../src/authorizeMock")
 
-describe("authorize handler", () => {
+describe("authorize mock handler", () => {
   beforeEach(() => {
     jest.restoreAllMocks()
   })
@@ -45,21 +45,25 @@ describe("authorize handler", () => {
     const params = locationUrl.searchParams
 
     expect(params.get("response_type")).toBe("code")
-    expect(params.get("scope")).toBe(
-      "openid profile email nhsperson nationalrbacaccess associatedorgs"
-    )
-    expect(params.get("client_id")).toBe("cis2Client123")
+    expect(params.get("client_id")).toBe("apigee_api_key")
 
     // Verify that the state parameter is hashed correctly.
     const expectedHash = createHash("sha256")
       .update("test-state")
       .digest("hex")
-    expect(params.get("state")).toBe(expectedHash)
+    const expectedStateJson = {
+      isPullRequest: true,
+      redirectUri: `https://${process.env.FULL_CLOUDFRONT_DOMAIN}/oauth2/mock-callback`,
+      originalState: expectedHash
+    }
+    const expectedState = Buffer.from(JSON.stringify(expectedStateJson)).toString("base64")
+
+    expect(params.get("state")).toBe(expectedState)
 
     expect(params.get("redirect_uri")).toBe(
-      `https://${process.env.FULL_CLOUDFRONT_DOMAIN}/oauth2/callback`
+      "https://cpt-ui-pr-854.dev.eps.national.nhs.uk/oauth2/mock-callback"
     )
-    expect(params.get("prompt")).toBe("login")
+    expect(params.get("prompt")).toBe(null)
 
     // Ensure the DynamoDB put command was called.
     expect(insertStateMapping).toHaveBeenCalledTimes(1)

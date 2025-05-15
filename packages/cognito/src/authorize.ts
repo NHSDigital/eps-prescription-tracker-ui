@@ -46,8 +46,16 @@ const lambdaHandler = async (
   event: APIGatewayProxyEvent
 ): Promise<APIGatewayProxyResult> => {
   logger.appendKeys({"apigw-request-id": event.requestContext?.requestId})
+  logger.debug("Environment variable", {env: {
+    authorizeEndpoint,
+    cis2ClientId,
+    userPoolClientId,
+    cloudfrontDomain,
+    stateMappingTableName
+  }})
 
   // Validate required environment variables
+  if (!authorizeEndpoint) throw new Error("Authorize endpoint environment variable not set")
   if (!cloudfrontDomain) throw new Error("Cloudfront domain environment variable not set")
   if (!stateMappingTableName) throw new Error("State mapping table name environment variable not set")
   if (!userPoolClientId) throw new Error("Cognito user pool client ID environment variable not set")

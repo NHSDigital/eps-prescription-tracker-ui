@@ -124,7 +124,7 @@ jest.unstable_mockModule("@aws-lambda-powertools/parameters/secrets", () => {
 
 const {handler} = await import("../src/tokenMock")
 
-describe("handler tests with mock", () => {
+describe("token mock handler", () => {
   const jwks = createJWKSMock("https://dummy_mock_auth.com/")
 
   beforeEach(() => {

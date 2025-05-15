@@ -19,12 +19,12 @@ jest.unstable_mockModule("@cpt-ui-common/dynamoFunctions", () => {
 import {mockAPIGatewayProxyEvent, mockContext} from "./mockObjects"
 const {handler} = await import("../src/callback")
 
-describe("IDP Response Lambda Handler", () => {
+describe("callback handler", () => {
   beforeEach(() => {
     jest.clearAllMocks()
   })
 
-  test("should redirect to Cognito with correct parameters", async () => {
+  it("should redirect to Cognito with correct parameters", async () => {
     // Prepare an event with valid query parameters.
     const event: APIGatewayProxyEvent = {
       ...mockAPIGatewayProxyEvent,
@@ -63,7 +63,7 @@ describe("IDP Response Lambda Handler", () => {
     expect(deleteStateMapping).toHaveBeenCalledTimes(1)
   })
 
-  test("should throw error if missing required query parameters", async () => {
+  it("should throw error if missing required query parameters", async () => {
     const event: APIGatewayProxyEvent = {
       ...mockAPIGatewayProxyEvent,
       queryStringParameters: {
@@ -78,7 +78,7 @@ describe("IDP Response Lambda Handler", () => {
     )
   })
 
-  test("should throw error if state not found in DynamoDB", async () => {
+  it("should throw error if state not found in DynamoDB", async () => {
     const event: APIGatewayProxyEvent = {
       ...mockAPIGatewayProxyEvent,
       queryStringParameters: {
