@@ -57,7 +57,7 @@ const mockMultiplePatient = [
   }
 ]
 
-// Normalise input for case-insensitive and whitespace-tolerant comparisons
+// Utility to normalize input for case-insensitive and whitespace-tolerant comparison
 const formatInput = (input: string) => input.trim().toLowerCase()
 
 export default function BasicDetailsSearch() {
@@ -74,16 +74,22 @@ export default function BasicDetailsSearch() {
   const [errors, setErrors] = useState<Array<ErrorKey>>([])
 
   const inlineErrors = getInlineErrors(errors)
+
+  // Inline error lookup: used to find the error message string for specific field(s)
+  // Returns the first match found in the array of inline error tuples
   const getInlineError = (...fields: Array<string>) =>
     inlineErrors.find(([key]) => fields.includes(key))?.[1]
 
   useEffect(() => {
+    // Auto-focus the error summary block if there are any validation errors
     if (errors.length > 0 && errorRef.current) {
       errorRef.current.focus()
     }
   }, [errors])
 
   useEffect(() => {
+    // Allows keyboard/screen-reader users to jump to field when clicking summary links
+    // Needed for tests: jsdom doesn't auto-focus elements via href="#field-id" links.
     const handler = (e: MouseEvent) => {
       const target = (e.target as HTMLElement)?.closest("a[href^='#']")
       if (target) {
@@ -99,7 +105,8 @@ export default function BasicDetailsSearch() {
     return () => document.removeEventListener("click", handler)
   }, [])
 
-  // Determines whether a specific DOB input field should display an error style
+  // Checks whether a specific DOB input field should be highlighted in red (error styling)
+  // Combines individual errors, missing fields, and invalid full date logic
   const hasDobFieldError = (field: "day" | "month" | "year"): boolean => {
     const fieldErrorsMap = {
       day: ["dobDayRequired", "dobNonNumericDay"],
@@ -107,7 +114,10 @@ export default function BasicDetailsSearch() {
       year: ["dobYearRequired", "dobNonNumericYear", "dobYearTooShort", "dobFutureDate"]
     }
 
+    // Field-specific validation errors
     const hasSpecificError = Boolean(getInlineError(...fieldErrorsMap[field]))
+
+    // Global DOB-required error
     const hasDobRequiredError = errors.includes("dobRequired")
 
     // Use resolveDobInvalidField to decide which field should show error class
@@ -118,10 +128,12 @@ export default function BasicDetailsSearch() {
     return hasSpecificError || hasDobRequiredError || shouldHighlightForInvalidDate
   }
 
+  // Handles form submission logic
+  // Performs validation, sends API request, handles errors, and navigates appropriately
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    // Validate input fields
+    // Run validation and collect any error keys
     const newErrors = validateBasicDetails({
       firstName,
       lastName,
@@ -131,6 +143,7 @@ export default function BasicDetailsSearch() {
       postcode
     })
 
+    // If validation fails, render errors and stop
     if (newErrors.length > 0) {
       setErrors(newErrors)
       return
@@ -183,6 +196,7 @@ export default function BasicDetailsSearch() {
         return matchFirstName && matchLastName && matchDob && matchPostcode
       })
 
+      // Navigate based on match count
       if (matchedPatients.length === 1) {
         navigate(`${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}?nhsNumber=${matchedPatients[0].nhsNumber}`)
       } else if (matchedPatients.length > 1) {
