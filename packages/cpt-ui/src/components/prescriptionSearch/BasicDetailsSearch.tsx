@@ -115,7 +115,7 @@ export default function BasicDetailsSearch() {
       errors.includes("dobInvalidDate") &&
       resolveDobInvalidFields({dobDay, dobMonth, dobYear}).includes(field)
 
-    return Boolean(hasSpecificError || hasDobRequiredError || shouldHighlightForInvalidDate)
+    return hasSpecificError || hasDobRequiredError || shouldHighlightForInvalidDate
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
