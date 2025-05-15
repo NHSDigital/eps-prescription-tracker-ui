@@ -29,3 +29,8 @@ export type {
   DispenserOrganisation,
   PrescriptionDetailsResponse
 } from "./prescriptionDetails"
+
+// Types from basicDetailsSearch
+export type {
+  BasicDetailsSearchType
+} from "./basicDetailsSearch"
