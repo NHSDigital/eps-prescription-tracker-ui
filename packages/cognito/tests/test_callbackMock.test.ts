@@ -6,20 +6,14 @@ import {APIGatewayProxyEvent} from "aws-lambda"
 process.env.StateMappingTableName = "testStateMappingTable"
 process.env.COGNITO_DOMAIN = "cognito.example.com"
 
-// Create a mock for the DynamoDBDocumentClient send method.
-const mockSend = jest.fn().mockImplementation(async () => Promise.resolve({}))
-
-// Mock the @aws-sdk/lib-dynamodb module so that calls to DynamoDB are intercepted.
-jest.unstable_mockModule("@aws-sdk/lib-dynamodb", () => {
+const deleteStateMapping = jest.fn()
+const getStateMapping = jest.fn()
+const insertSessionState = jest.fn()
+jest.unstable_mockModule("@cpt-ui-common/dynamoFunctions", () => {
   return {
-    DynamoDBDocumentClient: {
-      from: () => ({
-        send: mockSend
-      })
-    },
-    DeleteCommand: jest.fn(),
-    GetCommand: jest.fn(),
-    PutCommand: jest.fn()
+    deleteStateMapping: deleteStateMapping,
+    getStateMapping: getStateMapping,
+    insertSessionState: insertSessionState
   }
 })
 

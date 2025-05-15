@@ -35,9 +35,9 @@ describe("tokenMappingTable", () => {
       mockTableName,
       {
         username: mockUsername,
-        accessToken: mockAccessToken,
-        refreshToken: mockRefreshToken,
-        expiresIn: mockExpiresIn
+        apigeeAccessToken: mockAccessToken,
+        apigeeRefreshToken: mockRefreshToken,
+        apigeeExpiresIn: mockExpiresIn
       },
         mockLogger as Logger
     )
@@ -78,9 +78,9 @@ describe("tokenMappingTable", () => {
         mockTableName,
         {
           username: mockUsername,
-          accessToken: mockAccessToken,
-          refreshToken: mockRefreshToken,
-          expiresIn: mockExpiresIn
+          apigeeAccessToken: mockAccessToken,
+          apigeeRefreshToken: mockRefreshToken,
+          apigeeExpiresIn: mockExpiresIn
         },
           mockLogger as Logger
       )

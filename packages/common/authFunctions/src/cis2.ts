@@ -4,6 +4,7 @@ import {Logger} from "@aws-lambda-powertools/logger"
 import jwt, {JwtPayload} from "jsonwebtoken"
 import jwksClient from "jwks-rsa"
 import {getUsernameFromEvent} from "./event"
+import {getTokenMapping} from "@cpt-ui-common/dynamoFunctions"
 
 const VALID_ACR_VALUES: Array<string> = [
   "AAL3_ANY",
@@ -104,12 +105,9 @@ export const fetchAndVerifyCIS2Tokens = async (
   logger.info("Extracted username from ID token", {username})
 
   // Fetch CIS2 tokens from DynamoDB
-  const {cis2AccessToken, cis2IdToken} = await fetchCIS2TokensFromDynamoDB(
-    username,
-    oidcConfig.tokenMappingTableName,
-    documentClient,
-    logger
-  )
+  const userRecord = await getTokenMapping(documentClient, oidcConfig.tokenMappingTableName, username, logger)
+  const cis2AccessToken = userRecord.cis2AccessToken
+  const cis2IdToken = userRecord.cis2AccessToken
 
   // Verify the id token, access token from cis2 is not a JWT
   await verifyIdToken(cis2IdToken, logger, oidcConfig)

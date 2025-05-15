@@ -4,8 +4,8 @@ import {v4 as uuidv4} from "uuid"
 import axios, {AxiosInstance} from "axios"
 import {ParsedUrlQuery, stringify} from "querystring"
 import {handleAxiosError} from "./errorUtils"
-import {DynamoDBDocumentClient, GetCommand} from "@aws-sdk/lib-dynamodb"
-
+import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
+import {getTokenMapping} from "@cpt-ui-common/dynamoFunctions"
 /**
  * Constructs a new body for the token exchange, including a signed JWT
  * @param logger - Logger instance for logging
@@ -126,7 +126,6 @@ export const getExistingApigeeAccessToken = async (
   logger: Logger
 ): Promise<{
   apigeeAccessToken: string;
-  apigeeIdToken: string;
   apigeeRefreshToken?: string;
   apigeeExpiresIn: number;
   roleId?: string;
@@ -140,39 +139,25 @@ export const getExistingApigeeAccessToken = async (
 
   try {
     // Get the user record from DynamoDB
-    const getResult = await documentClient.send(
-      new GetCommand({
-        TableName: tableName,
-        Key: {username}
-      })
-    )
-
-    if (!getResult.Item) {
-      logger.debug("No user record found in DynamoDB", {username})
-      return null
-    }
-
-    const userRecord = getResult.Item
-    logger.debug("Got this userRecord", {userRecord})
+    const userRecord = await getTokenMapping(documentClient, tableName, username, logger)
 
     // Check if Apigee access token exists
-    if (userRecord.apigee_accessToken && userRecord.apigee_expiresIn) {
+    if (userRecord.apigeeAccessToken && userRecord.apigeeExpiresIn) {
       const currentTime = Math.floor(Date.now() / 1000)
 
       logger.info("Found existing Apigee access token", {
         username,
-        expiresIn: userRecord.apigee_expiresIn - currentTime,
-        hasRefreshToken: !!userRecord.apigee_refreshToken
+        expiresIn: userRecord.apigeeExpiresIn - currentTime,
+        hasRefreshToken: !!userRecord.apigeeRefreshToken
       })
 
       return {
-        apigeeAccessToken: userRecord.apigee_accessToken,
-        apigeeIdToken: userRecord.apigee_idToken,
-        apigeeRefreshToken: userRecord.apigee_refreshToken,
-        apigeeExpiresIn: userRecord.apigee_expiresIn,
+        apigeeAccessToken: userRecord.apigeeAccessToken,
+        apigeeRefreshToken: userRecord.apigeeRefreshToken,
+        apigeeExpiresIn: userRecord.apigeeExpiresIn,
         roleId: userRecord.selectedRoleId,
-        cis2IdToken: userRecord.CIS2_idToken,
-        cis2AccessToken: userRecord.CIS2_accessToken
+        cis2IdToken: userRecord.cis2IdToken,
+        cis2AccessToken: userRecord.cis2AccessToken
       }
     } else {
       logger.debug("No Apigee token found in user record", {username})

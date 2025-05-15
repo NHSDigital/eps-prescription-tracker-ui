@@ -1,7 +1,7 @@
 import {Logger} from "@aws-lambda-powertools/logger"
-import {DynamoDBDocumentClient, GetCommand, UpdateCommand} from "@aws-sdk/lib-dynamodb"
+import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
 import {RoleDetails, SelectedRole} from "./selectedRoleTypes"
-
+import {updateTokenMapping, getTokenMapping} from "@cpt-ui-common/dynamoFunctions"
 /**
  * **Updates the user's selected role in DynamoDB**
  *
@@ -44,27 +44,13 @@ export const updateDynamoTable = async (
 
   try {
     // Construct the UpdateCommand to modify user role data in DynamoDB
-    const updateCommand = new UpdateCommand({
-      TableName: tokenMappingTableName,
-      Key: {username},
-      UpdateExpression: `
-        SET currentlySelectedRole = :currentlySelectedRole,
-            selectedRoleId = :selectedRoleId,
-            rolesWithAccess = :rolesWithAccess
-      `,
-      ExpressionAttributeValues: {
-        ":currentlySelectedRole": scrubbedCurrentlySelectedRole,
-        ":rolesWithAccess": scrubbedRolesWithAccess,
-        ":selectedRoleId": selectedRoleId
-      },
-      ReturnValues: "ALL_NEW"
-    })
-
-    logger.debug("Executing DynamoDB update command", {updateCommand})
-
-    // Execute the update operation
-    const response = await documentClient.send(updateCommand)
-    logger.info("DynamoDB update successful", {response})
+    const item = {
+      username,
+      currentlySelectedRole: scrubbedCurrentlySelectedRole,
+      rolesWithAccess: scrubbedRolesWithAccess,
+      selectedRoleId: selectedRoleId
+    }
+    await updateTokenMapping(documentClient, tokenMappingTableName, item, logger)
 
   } catch (error) {
     if (error instanceof Error) {
@@ -100,24 +86,12 @@ export const fetchUserRolesFromDynamoDB = async (
   logger.info("Fetching user role information from DynamoDB", {username})
 
   try {
-    // Execute a GetCommand to fetch user role details
-    const response = await documentClient.send(
-      new GetCommand({
-        TableName: tokenMappingTableName,
-        Key: {username}
-      })
-    )
-
-    // Handle case where no user data is found
-    if (!response.Item) {
-      logger.warn("No user info found in DynamoDB", {username})
-      return {rolesWithAccess: [], currentlySelectedRole: undefined} // Ensure both fields are always returned
-    }
+    const tokenMappingItem = await getTokenMapping(documentClient, tokenMappingTableName, username, logger)
 
     // Extract rolesWithAccess and currentlySelectedRole safely
     const retrievedRolesWithAccess: SelectedRole = {
-      rolesWithAccess: response.Item.rolesWithAccess || [],
-      currentlySelectedRole: response.Item.currentlySelectedRole || undefined // Retrieve currentlySelectedRole
+      rolesWithAccess: tokenMappingItem.rolesWithAccess || [],
+      currentlySelectedRole: tokenMappingItem.currentlySelectedRole || undefined // Retrieve currentlySelectedRole
     }
 
     logger.info("Roles and selected role successfully retrieved from DynamoDB", {

@@ -2,12 +2,11 @@ import {Logger} from "@aws-lambda-powertools/logger"
 import {APIGatewayProxyEvent, APIGatewayProxyResult} from "aws-lambda"
 import {injectLambdaContext} from "@aws-lambda-powertools/logger/middleware"
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
-import {DynamoDBDocumentClient, GetCommand, DeleteCommand} from "@aws-sdk/lib-dynamodb"
+import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 import middy from "@middy/core"
 import inputOutputLogger from "@middy/input-output-logger"
-
-import {StateItem} from "./types"
+import {deleteStateMapping, getStateMapping} from "@cpt-ui-common/dynamoFunctions"
 
 /*
  * Expects the following environment variables to be set:
@@ -45,41 +44,8 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   }
   logger.info("Incoming query parameters", {state, code})
 
-  // Get the original Cognito state from DynamoDB
-  logger.debug("trying to get data from session state table", {
-    stateMappingTableName,
-    state
-  })
-  const getResult = await documentClient.send(
-    new GetCommand({
-      TableName: stateMappingTableName,
-      Key: {State: state}
-    })
-  )
-
-  logger.debug("environment variables", {
-    stateMappingTableName,
-    fullCognitoDomain
-  })
-
-  // Always delete the old state
-  logger.debug("going to delete from state mapping table", {
-    stateMappingTableName,
-    state
-  })
-  await documentClient.send(
-    new DeleteCommand({
-      TableName: stateMappingTableName,
-      Key: {State: state}
-    })
-  )
-
-  if (!getResult.Item) {
-    logger.error("Failed to get state from table", {tableName: stateMappingTableName})
-    throw new Error("State not found in DynamoDB")
-  }
-
-  const cognitoStateItem = getResult.Item as StateItem
+  const cognitoStateItem = await getStateMapping(documentClient, stateMappingTableName, state, logger)
+  await deleteStateMapping(documentClient, stateMappingTableName, state, logger)
 
   // Build response parameters for redirection
   const responseParams = {

@@ -1,13 +1,15 @@
 import {Logger} from "@aws-lambda-powertools/logger"
 import axios, {isAxiosError} from "axios"
-import {DynamoDBDocumentClient, GetCommand, UpdateCommand} from "@aws-sdk/lib-dynamodb"
+import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
 import {OidcConfig, decodeToken} from "@cpt-ui-common/authFunctions"
 import {
   extractRoleInformation,
   UserInfoResponse,
   TrackerUserInfo,
   RoleDetails,
-  UserDetails
+  UserDetails,
+  updateTokenMapping,
+  getTokenMapping
 } from "@cpt-ui-common/dynamoFunctions"
 /**
  * **Fetches user information from the OIDC UserInfo endpoint.**
@@ -104,24 +106,14 @@ export const updateDynamoTable = async (
   const scrubbedUserDetails = JSON.parse(JSON.stringify(userDetails))
 
   try {
-    await documentClient.send(
-      new UpdateCommand({
-        TableName: tokenMappingTableName,
-        Key: {username},
-        UpdateExpression: `
-          SET rolesWithAccess = :rolesWithAccess,
-              rolesWithoutAccess = :rolesWithoutAccess,
-              currentlySelectedRole = :currentlySelectedRole,
-              userDetails = :userDetails
-        `,
-        ExpressionAttributeValues: {
-          ":rolesWithAccess": scrubbedRolesWithAccess,
-          ":rolesWithoutAccess": scrubbedRolesWithoutAccess,
-          ":currentlySelectedRole": scrubbedCurrentlySelectedRole,
-          ":userDetails": scrubbedUserDetails
-        }
-      })
-    )
+    const item = {
+      username,
+      rolesWithAccess: scrubbedRolesWithAccess,
+      rolesWithoutAccess: scrubbedRolesWithoutAccess,
+      currentlySelectedRole: scrubbedCurrentlySelectedRole,
+      userDetails: scrubbedUserDetails
+    }
+    await updateTokenMapping(documentClient, tokenMappingTableName, item, logger)
     logger.info("User roles added to DynamoDB", {username})
   } catch (error) {
     logger.error("Error adding user roles to DynamoDB", {username, data, error})
@@ -144,24 +136,14 @@ export const fetchDynamoTable = async (
   logger.info("Fetching user info from DynamoDB", {username})
 
   try {
-    const response = await documentClient.send(
-      new GetCommand({
-        TableName: tokenMappingTableName,
-        Key: {username}
-      })
-    )
-
-    if (!response.Item) {
-      logger.warn("No user info found in DynamoDB", {username})
-      return null
-    }
+    const tokenMappingItem = await getTokenMapping(documentClient, tokenMappingTableName, username, logger)
 
     // Ensure correct keys are returned
     const mappedUserInfo: TrackerUserInfo = {
-      roles_with_access: response.Item.rolesWithAccess || [],
-      roles_without_access: response.Item.rolesWithoutAccess || [],
-      currently_selected_role: response.Item.currentlySelectedRole || undefined,
-      user_details: response.Item.userDetails || {family_name: "", given_name: ""}
+      roles_with_access: tokenMappingItem.rolesWithAccess || [],
+      roles_without_access: tokenMappingItem.rolesWithoutAccess || [],
+      currently_selected_role: tokenMappingItem.currentlySelectedRole || undefined,
+      user_details: tokenMappingItem.userDetails || {family_name: "", given_name: ""}
     }
 
     logger.info("User info successfully retrieved from DynamoDB", {data: mappedUserInfo})

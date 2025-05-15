@@ -44,6 +44,14 @@ const {
     format: "pem"
   }
 })
+const insertTokenMapping = jest.fn()
+const getTokenMapping = jest.fn()
+jest.unstable_mockModule("@cpt-ui-common/dynamoFunctions", () => {
+  return {
+    insertTokenMapping: insertTokenMapping,
+    getTokenMapping: getTokenMapping
+  }
+})
 jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
   const verifyIdToken = mockVerifyIdToken.mockImplementation(async () => {
     return {

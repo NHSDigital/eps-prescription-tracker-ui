@@ -1,6 +1,7 @@
 import {jest} from "@jest/globals"
 import {APIGatewayProxyEvent} from "aws-lambda"
 import {Logger} from "@aws-lambda-powertools/logger"
+import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
 import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
 import {JwksClient} from "jwks-rsa"
 // import * as parameterSecrets from "@aws-lambda-powertools/parameters/secrets"
@@ -39,7 +40,8 @@ const mockFetchAndVerifyCIS2Tokens = jest.fn()
 const mockConstructSignedJWTBody = jest.fn()
 const mockDecodeToken = jest.fn()
 const mockVerifyIdToken = jest.fn()
-
+const dynamoClient = new DynamoDBClient()
+const documentClient = DynamoDBDocumentClient.from(dynamoClient)
 // Mock the axios module
 jest.mock("axios", () => ({
   create: jest.fn().mockReturnValue({
@@ -48,8 +50,8 @@ jest.mock("axios", () => ({
   })
 }))
 
+const updateTokenMapping = mockUpdateTokenMapping
 jest.unstable_mockModule("@cpt-ui-common/dynamoFunctions", () => {
-  const updateTokenMapping = mockUpdateTokenMapping
 
   return {
     updateTokenMapping
@@ -83,15 +85,6 @@ describe("authenticateRequest", () => {
       }
     }
   } as unknown as APIGatewayProxyEvent
-
-  const mockDocumentClient = {
-    send: jest.fn().mockImplementation(() => ({
-      Item: {
-        CIS2_accessToken: "mock-access-token",
-        CIS2_idToken: "mock-id-token"
-      }
-    }))
-  } as unknown as DynamoDBDocumentClient
 
   const mockLogger = {
     info: jest.fn(),
@@ -145,7 +138,7 @@ describe("authenticateRequest", () => {
     process.env.APIGEE_API_SECRET = "test-api-secret"
   })
 
-  test.skip("should use existing valid token when available", async () => {
+  it.skip("should use existing valid token when available", async () => {
     // Set up mock implementation for this test
     mockGetExistingApigeeAccessToken.mockReturnValue({
       accessToken: "existing-token",
@@ -157,7 +150,7 @@ describe("authenticateRequest", () => {
 
     const result = await authenticateRequest(
       mockEvent,
-      mockDocumentClient,
+      documentClient,
       mockLogger,
       mockOptions
     )
@@ -175,7 +168,7 @@ describe("authenticateRequest", () => {
     expect(mockFetchAndVerifyCIS2Tokens).not.toHaveBeenCalled()
   })
 
-  test.skip("should refresh token when it's about to expire", async () => {
+  it.skip("should refresh token when it's about to expire", async () => {
     // Set up mock implementations for this test
     mockGetExistingApigeeAccessToken.mockReturnValue({
       accessToken: "expiring-token",
@@ -195,7 +188,7 @@ describe("authenticateRequest", () => {
 
     const result = await authenticateRequest(
       mockEvent,
-      mockDocumentClient,
+      documentClient,
       mockLogger,
       mockOptions
     )
@@ -220,7 +213,7 @@ describe("authenticateRequest", () => {
 
     // Verify token was updated in DB
     expect(mockUpdateTokenMapping).toHaveBeenCalledWith(
-      mockDocumentClient,
+      documentClient,
       mockOptions.tokenMappingTableName,
       {
         "accessToken": "refreshed-token",
@@ -234,7 +227,7 @@ describe("authenticateRequest", () => {
   })
 
   // TODO: this test needs fixing currently not currently mocks
-  test.skip("should acquire new token when no token exists", async () => {
+  it.skip("should acquire new token when no token exists", async () => {
     // Set up mock implementations for this test
     mockGetExistingApigeeAccessToken.mockReturnValue(null)
 
@@ -249,7 +242,7 @@ describe("authenticateRequest", () => {
 
     const result = await authenticateRequest(
       mockEvent,
-      mockDocumentClient,
+      documentClient,
       mockLogger,
       mockOptions
     )
@@ -270,7 +263,7 @@ describe("authenticateRequest", () => {
     expect(mockGetSecret).toHaveBeenCalledWith("test-key-arn")
   })
 
-  test.skip("should handle mock mode without apigee access token edge case correctly", async () => {
+  it.skip("should handle mock mode without apigee access token edge case correctly", async () => {
     // Enable mock mode
     const mockOptionsWithMock = {
       ...mockOptions,
@@ -283,7 +276,7 @@ describe("authenticateRequest", () => {
     // We expect the function to throw an error in mock mode with no token
     await expect(authenticateRequest(
       mockEvent,
-      mockDocumentClient,
+      documentClient,
       mockLogger,
       mockOptionsWithMock
     )).rejects.toThrow("Unexpected state in mock mode")
@@ -300,7 +293,7 @@ describe("authenticateRequest", () => {
   })
 
   // TODO: this test needs fixing currently not currently mocks
-  test.skip("should handle token refresh failure gracefully", async () => {
+  it.skip("should handle token refresh failure gracefully", async () => {
     // Set up mock implementations for this test
     mockGetExistingApigeeAccessToken.mockReturnValue({
       accessToken: "expiring-token",
@@ -322,7 +315,7 @@ describe("authenticateRequest", () => {
 
     const result = await authenticateRequest(
       mockEvent,
-      mockDocumentClient,
+      documentClient,
       mockLogger,
       mockOptions
     )

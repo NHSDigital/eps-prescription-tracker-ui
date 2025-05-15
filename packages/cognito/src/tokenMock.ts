@@ -3,16 +3,15 @@ import {Logger} from "@aws-lambda-powertools/logger"
 import {injectLambdaContext} from "@aws-lambda-powertools/logger/middleware"
 import {getSecret} from "@aws-lambda-powertools/parameters/secrets"
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
-import {DynamoDBDocumentClient, GetCommand} from "@aws-sdk/lib-dynamodb"
+import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
 import middy from "@middy/core"
 import inputOutputLogger from "@middy/input-output-logger"
 import axios from "axios"
 import {parse, stringify} from "querystring"
 import {PrivateKey} from "jsonwebtoken"
 import {initializeOidcConfig} from "@cpt-ui-common/authFunctions"
-import {updateTokenMapping, extractRoleInformation} from "@cpt-ui-common/dynamoFunctions"
+import {updateTokenMapping, extractRoleInformation, getSessionState} from "@cpt-ui-common/dynamoFunctions"
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
-import {SessionStateItem} from "./types"
 import {v4 as uuidv4} from "uuid"
 import jwt from "jsonwebtoken"
 /*
@@ -66,18 +65,6 @@ const axiosInstance = axios.create()
 const errorResponseBody = {message: "A system error has occurred"}
 const middyErrorHandler = new MiddyErrorHandler(errorResponseBody)
 
-async function getSessionState(code: string): Promise<SessionStateItem> {
-  logger.debug("Retrieving session state", {code})
-  const result = await documentClient.send(
-    new GetCommand({
-      TableName: SessionStateMappingTableName,
-      Key: {LocalCode: code}
-    })
-  )
-  if (!result.Item) throw new Error("State not found in DynamoDB")
-  return result.Item as SessionStateItem
-}
-
 async function exchangeApigeeCode(apigeeCode: string, callbackUri: string) {
   const params = {
     grant_type: "authorization_code",
@@ -130,7 +117,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   const {code} = parse(event.body || "")
   if (!code) throw new Error("Code parameter is missing")
 
-  const sessionState = await getSessionState(code as string)
+  const sessionState = await getSessionState(documentClient, SessionStateMappingTableName, code as string, logger)
   const callbackUri = `https://${cloudfrontDomain}/oauth2/mock-callback`
   const tokenResponse = await exchangeApigeeCode(sessionState.ApigeeCode, callbackUri)
   logger.debug("Token response", {tokenResponse})
@@ -178,10 +165,10 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     tokenMappingTable,
     {
       username,
-      accessToken: tokenResponse.access_token,
-      refreshToken: tokenResponse.refresh_token,
-      expiresIn: expirationTime,
-      selectedRoleId: roleDetails.currently_selected_role,
+      apigeeAccessToken: tokenResponse.access_token,
+      apigeeRefreshToken: tokenResponse.refresh_token,
+      apigeeExpiresIn: expirationTime,
+      selectedRoleId: userInfo.uid,
       userDetails: roleDetails.user_details,
       rolesWithAccess: roleDetails.roles_with_access,
       rolesWithoutAccess: roleDetails.roles_without_access

@@ -5,7 +5,6 @@ import {
   jest
 } from "@jest/globals"
 
-import {DynamoDBDocumentClient, GetCommandOutput} from "@aws-sdk/lib-dynamodb"
 import createJWKSMock from "mock-jwks"
 import nock from "nock"
 import {generateKeyPairSync} from "crypto"
@@ -48,12 +47,18 @@ const {
   }
 })
 
+const insertTokenMapping = jest.fn()
+const getTokenMapping = jest.fn()
+const extractRoleInformation = jest.fn()
+const updateTokenMapping = jest.fn()
+const getSessionState = jest.fn()
 jest.unstable_mockModule("@cpt-ui-common/dynamoFunctions", () => {
-  const updateTokenMapping = jest.fn()
-
   return {
     updateTokenMapping,
-    extractRoleInformation: jest.fn()
+    extractRoleInformation,
+    getTokenMapping,
+    insertTokenMapping,
+    getSessionState
   }
 })
 
@@ -144,27 +149,22 @@ describe("handler tests with mock", () => {
     jwks.stop()
   })
 
-  it.skip("inserts correct details into dynamo table", async () => {
+  it("inserts correct details into dynamo table", async () => {
     // return some valid data for the get command
-    jest.spyOn(DynamoDBDocumentClient.prototype, "send")
-      .mockImplementation(async (cmd) => {
-      // Check the constructor name to differentiate between command types
-        const commandName = cmd.constructor.name
-
-        if (commandName.includes("GetCommand")) {
-        // Return session state for GetCommand
-          return {
-            Item: {
-              LocalCode: "test-code",
-              ApigeeCode: "apigee-code",
-              SessionState: "test-session-state"
-            }
-          } as unknown as GetCommandOutput
-        }
-        // Default empty response
-        return {}
-      })
-
+    getSessionState.mockImplementationOnce(() => Promise.resolve(() => ({
+      LocalCode: "test-code",
+      ApigeeCode: "apigee-code",
+      SessionState: "test-session-state"
+    })))
+    extractRoleInformation.mockImplementationOnce(() => ({
+      roles_with_access: [],
+      roles_without_access: [],
+      currently_selected_role: undefined,
+      user_details: {
+        family_name: "User",
+        given_name: "Test"
+      }
+    }))
     // Mock Apigee token exchange response
     nock("https://internal-dev.api.service.nhs.uk")
       .post("/oauth2-mock/token")

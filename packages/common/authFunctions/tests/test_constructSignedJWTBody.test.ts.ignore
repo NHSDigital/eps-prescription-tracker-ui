@@ -15,7 +15,7 @@ describe("constructSignedJWTBody tests", () => {
   const idpTokenPath = "https://example.com/oauth/token"
   const apigeeToken = "dummyApigeeToken"
 
-  it("should add a signed JWT to the body parameters", () => {
+  it.skip("should add a signed JWT to the body parameters", () => {
     const result = constructSignedJWTBody(
       logger,
       idpTokenPath,

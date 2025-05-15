@@ -3,7 +3,7 @@ import {APIGatewayProxyEvent, APIGatewayProxyResult} from "aws-lambda"
 import {injectLambdaContext} from "@aws-lambda-powertools/logger/middleware"
 
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
-import {DynamoDBDocumentClient, PutCommand} from "@aws-sdk/lib-dynamodb"
+import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
 
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 
@@ -12,7 +12,7 @@ import inputOutputLogger from "@middy/input-output-logger"
 
 import {createHash} from "crypto"
 
-import {StateItem} from "./types"
+import {insertStateMapping, StateItem} from "@cpt-ui-common/dynamoFunctions"
 
 /*
  * Expects the following environment variables to be set:
@@ -93,12 +93,7 @@ const lambdaHandler = async (
     ExpiryTime: stateTtl
   }
 
-  await documentClient.send(
-    new PutCommand({
-      TableName: stateMappingTableName,
-      Item: item
-    })
-  )
+  await insertStateMapping(documentClient, stateMappingTableName, item, logger)
 
   // Build the redirect parameters for CIS2
   const responseParameters = {

@@ -2,24 +2,23 @@
 import {jest} from "@jest/globals"
 
 import axios from "axios"
-import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
 import {Logger} from "@aws-lambda-powertools/logger"
+import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
+import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
 
 jest.mock("axios")
 jest.mock("jsonwebtoken")
+const dynamoClient = new DynamoDBClient()
+const documentClient = DynamoDBDocumentClient.from(dynamoClient)
+const getTokenMapping = jest.fn()
+const updateTokenMapping = jest.fn()
 
 jest.unstable_mockModule("@cpt-ui-common/dynamoFunctions", () => {
-  const updateTokenMapping = jest.fn()
-
   return {
-    updateTokenMapping
+    updateTokenMapping,
+    getTokenMapping
   }
 })
-
-jest.mock("@aws-sdk/lib-dynamodb", () => ({
-  UpdateCommand: jest.fn(),
-  GetCommand: jest.fn()
-}))
 
 const mockLogger: Partial<Logger> = {
   info: jest.fn(),
@@ -35,13 +34,8 @@ describe("apigeeUtils", () => {
   const mockAxiosPost = jest.fn();
   (axios.post as unknown as jest.Mock) = mockAxiosPost
 
-  let mockDocumentClient: jest.Mocked<DynamoDBDocumentClient>
-
   beforeEach(() => {
     jest.clearAllMocks()
-    mockDocumentClient = {
-      send: jest.fn()
-    } as unknown as jest.Mocked<DynamoDBDocumentClient>
   })
 
   describe("exchangeTokenForApigeeAccessToken", () => {
@@ -101,31 +95,24 @@ describe("apigeeUtils", () => {
 
   describe("getExistingApigeeAccessToken", () => {
     it("should return null when no user record exists", async () => {
-      mockDocumentClient.send.mockResolvedValueOnce({} as never)
 
       const result = await getExistingApigeeAccessToken(
-        mockDocumentClient,
+        documentClient,
         "mockTable",
         "testUser",
         mockLogger as Logger
       )
 
       expect(result).toBeNull()
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        "No user record found in DynamoDB",
-        {username: "testUser"}
-      )
     })
 
     it("should return null when no valid token exists", async () => {
-      mockDocumentClient.send.mockResolvedValueOnce({
-        Item: {
-          username: "testUser"
-        }
-      } as never)
 
+      getTokenMapping.mockImplementationOnce(() => Promise.resolve( {
+        username: "testUser"
+      }))
       const result = await getExistingApigeeAccessToken(
-        mockDocumentClient,
+        documentClient,
         "mockTable",
         "testUser",
         mockLogger as Logger
@@ -138,33 +125,29 @@ describe("apigeeUtils", () => {
       )
     })
 
-    it.skip("should return valid token when it exists and is not expired", async () => {
+    it("should return valid token when it exists and is not expired", async () => {
       const currentTime = Math.floor(Date.now() / 1000)
       const expiryTime = currentTime + 3600
-
-      mockDocumentClient.send.mockResolvedValueOnce({
-        Item: {
-          username: "testUser",
-          apigee_accessToken: "valid-token",
-          apigee_expiresIn: expiryTime,
-          apigee_idToken: "id-token",
-          apigee_refreshToken: "refresh-token",
-          selectedRoleId: "role-id"
-        }
-      } as never)
+      getTokenMapping.mockImplementationOnce(() => Promise.resolve( {
+        username: "testUser",
+        apigeeAccessToken: "valid-token",
+        apigeeExpiresIn: expiryTime,
+        apigeeIdToken: "id-token",
+        apigeeRefreshToken: "refresh-token",
+        selectedRoleId: "role-id"
+      }))
 
       const result = await getExistingApigeeAccessToken(
-        mockDocumentClient,
+        documentClient,
         "mockTable",
         "testUser",
         mockLogger as Logger
       )
 
       expect(result).toEqual({
-        accessToken: "valid-token",
-        idToken: "id-token",
-        refreshToken: "refresh-token",
-        expiresIn: expiryTime,
+        apigeeAccessToken: "valid-token",
+        apigeeRefreshToken: "refresh-token",
+        apigeeExpiresIn: expiryTime,
         roleId: "role-id"
       })
     })

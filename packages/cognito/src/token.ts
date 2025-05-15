@@ -3,7 +3,7 @@ import {Logger} from "@aws-lambda-powertools/logger"
 import {injectLambdaContext} from "@aws-lambda-powertools/logger/middleware"
 import {getSecret} from "@aws-lambda-powertools/parameters/secrets"
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
-import {DynamoDBDocumentClient, PutCommand} from "@aws-sdk/lib-dynamodb"
+import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
 
 import middy from "@middy/core"
 import inputOutputLogger from "@middy/input-output-logger"
@@ -16,6 +16,7 @@ import {verifyIdToken, initializeOidcConfig} from "@cpt-ui-common/authFunctions"
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 
 import {formatHeaders, rewriteRequestBody} from "./helpers"
+import {insertTokenMapping} from "@cpt-ui-common/dynamoFunctions"
 /*
 This is the lambda code that is used to intercept calls to token endpoint as part of the cognito login flow
 It expects the following environment variables to be set
@@ -125,19 +126,17 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   logger.debug("decoded idToken", {decodedIdToken})
 
   const username = `${cis2OidcConfig.userPoolIdp}_${decodedIdToken.sub}`
-  const params = {
-    Item: {
-      "username": username,
-      "CIS2_accessToken": accessToken,
-      "CIS2_idToken": idToken,
-      "CIS2_expiresIn": decodedIdToken.exp,
-      "selectedRoleId": decodedIdToken.selected_roleid
-    },
-    TableName: TokenMappingTableName
+  if (!decodedIdToken.exp) {
+    throw new Error("Can not get expiry time from decoded token")
   }
-
-  logger.debug("going to insert into dynamodb", {params})
-  await documentClient.send(new PutCommand(params))
+  const tokenMappingItem = {
+    username: username,
+    cis2AccessToken: accessToken,
+    cis2IdToken: idToken,
+    cis2ExpiresIn: decodedIdToken.exp.toString(),
+    selectedRoleId: decodedIdToken.selected_roleid
+  }
+  await insertTokenMapping(documentClient, TokenMappingTableName, tokenMappingItem, logger)
 
   // return status code and body from request to downstream idp
   return {

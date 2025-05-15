@@ -84,9 +84,9 @@ const refreshTokenFlow = async (
       tokenMappingTableName,
       {
         username,
-        accessToken: refreshResult.accessToken,
-        expiresIn: refreshResult.expiresIn,
-        refreshToken: refreshResult.refreshToken
+        apigeeAccessToken: refreshResult.accessToken,
+        apigeeExpiresIn: refreshResult.expiresIn,
+        apigeeRefreshToken: refreshResult.refreshToken
       },
       logger
     )
@@ -162,7 +162,6 @@ export async function authenticateRequest(
           username,
           {
             accessToken: existingToken.apigeeAccessToken,
-            idToken: existingToken.apigeeIdToken,
             refreshToken: existingToken.apigeeRefreshToken,
             expiresIn: existingToken.apigeeExpiresIn,
             roleId: existingToken.roleId
@@ -268,9 +267,9 @@ export async function authenticateRequest(
     tokenMappingTableName,
     {
       username,
-      accessToken,
-      refreshToken,
-      expiresIn
+      apigeeAccessToken: accessToken,
+      apigeeRefreshToken: refreshToken,
+      apigeeExpiresIn: expiresIn
     },
     logger
   )
