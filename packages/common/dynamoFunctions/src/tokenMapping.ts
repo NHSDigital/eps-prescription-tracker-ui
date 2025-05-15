@@ -61,7 +61,10 @@ export const updateTokenMapping = async (
   logger.debug("Updating data in tokenMapping", {tokenMappingItem, tokenMappingTableName})
 
   try {
-    const expiryTimestamp = currentTime + Number(tokenMappingItem.apigeeExpiresIn)
+    let expiryTimestamp
+    if (tokenMappingItem.apigeeExpiresIn) {
+      expiryTimestamp = currentTime + Number(tokenMappingItem.apigeeExpiresIn)
+    }
 
     const expressionParts: Array<string> = []
     const expressionAttributeValues: Record<string, unknown> = {}
