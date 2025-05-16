@@ -54,7 +54,7 @@ export default function SearchResultsPage() {
           family: searchParams.get("family"),
           birthdate: `eq${searchParams.get("dateOfBirth")}`,
           "address-postalcode": searchParams.get("postcode"),
-          given: searchParams.get("given") || undefined
+          given: searchParams.get("given") ?? undefined
         }
       })
 
@@ -108,7 +108,7 @@ export default function SearchResultsPage() {
 
   // to sort by first name
   const sortedPatients = patients
-    .toSorted((a, b) => (a.givenName?.[0] || "").localeCompare(b.givenName?.[0] || ""))
+    .toSorted((a, b) => (a.givenName?.[0] ?? "").localeCompare(b.givenName?.[0] ?? ""))
 
   return (
     <main className="nhsuk-main-wrapper" id="main-content" role="main">
@@ -152,7 +152,7 @@ export default function SearchResultsPage() {
                           handleRowClick(patient.nhsNumber)
                         }}
                       >
-                        {patient.givenName?.[0] || ""} {patient.familyName}
+                        {patient.givenName?.[0] ?? ""} {patient.familyName}
                         <span id={`patient-details-${patient.nhsNumber}`} className="nhsuk-u-visually-hidden">
                           {`NHS number ${patient.nhsNumber.replace(/(\d{3})(\d{3})(\d{4})/, "$1 $2 $3")}`}
                         </span>
