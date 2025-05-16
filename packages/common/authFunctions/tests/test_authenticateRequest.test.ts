@@ -35,7 +35,6 @@ const mockGetUsernameFromEvent = jest.fn()
 const mockGetExistingApigeeAccessToken = jest.fn()
 const mockRefreshApigeeAccessToken = jest.fn()
 const mockExchangeTokenForApigeeAccessToken = jest.fn()
-const mockUpdateTokenMapping = jest.fn()
 const mockFetchAndVerifyCIS2Tokens = jest.fn()
 const mockConstructSignedJWTBody = jest.fn()
 const mockDecodeToken = jest.fn()
@@ -50,11 +49,11 @@ jest.mock("axios", () => ({
   })
 }))
 
-const updateTokenMapping = mockUpdateTokenMapping
+const mockUpdateTokenMapping = jest.fn()
 jest.unstable_mockModule("@cpt-ui-common/dynamoFunctions", () => {
 
   return {
-    updateTokenMapping
+    updateTokenMapping: mockUpdateTokenMapping
   }
 })
 

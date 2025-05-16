@@ -8,13 +8,13 @@ import createJWKSMock from "mock-jwks"
 import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
 
-const updateTokenMapping = jest.fn()
-const getTokenMapping = jest.fn()
+const mockUpdateTokenMapping = jest.fn()
+const mockGetTokenMapping = jest.fn()
 jest.unstable_mockModule("@cpt-ui-common/dynamoFunctions", () => {
 
   return {
-    updateTokenMapping,
-    getTokenMapping
+    updateTokenMapping: mockUpdateTokenMapping,
+    getTokenMapping: mockGetTokenMapping
   }
 })
 

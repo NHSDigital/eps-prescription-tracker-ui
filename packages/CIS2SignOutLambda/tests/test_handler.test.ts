@@ -10,11 +10,11 @@ const mockFetchAndVerifyCIS2Tokens = jest.fn()
 const mockGetUsernameFromEvent = jest.fn()
 const mockInitializeOidcConfig = jest.fn()
 
-const deleteTokenMappingMock = jest.fn()
+const mockDeleteTokenMappingMock = jest.fn()
 jest.unstable_mockModule("@cpt-ui-common/dynamoFunctions", () => {
 
   return {
-    deleteTokenMapping: deleteTokenMappingMock
+    deleteTokenMapping: mockDeleteTokenMappingMock
   }
 })
 
@@ -98,7 +98,7 @@ describe("Lambda Handler", () => {
     expect(body.message).toBe("CIS2 logout completed")
 
     // Verify that DeleteCommand was called with the expected parameters
-    expect(deleteTokenMappingMock).toHaveBeenCalledWith(
+    expect(mockDeleteTokenMappingMock).toHaveBeenCalledWith(
       expect.anything(),
       process.env.TokenMappingTableName,
       mockAPIGatewayProxyEvent.requestContext.authorizer.claims["cognito:username"],
@@ -107,7 +107,7 @@ describe("Lambda Handler", () => {
   })
 
   it("should return error message if deletion is unsuccessful", async () => {
-    deleteTokenMappingMock.mockImplementationOnce(() => Promise.reject(new Error("there was a problem")))
+    mockDeleteTokenMappingMock.mockImplementationOnce(() => Promise.reject(new Error("there was a problem")))
 
     const response = await handler(mockAPIGatewayProxyEvent, mockContext)
     expect(response).toMatchObject({

@@ -6,12 +6,12 @@ import {APIGatewayProxyEvent} from "aws-lambda"
 process.env.StateMappingTableName = "testStateMappingTable"
 process.env.COGNITO_DOMAIN = "cognito.example.com"
 
-const deleteStateMapping = jest.fn()
-const getStateMapping = jest.fn()
+const mockDeleteStateMapping = jest.fn()
+const mockGetStateMapping = jest.fn()
 jest.unstable_mockModule("@cpt-ui-common/dynamoFunctions", () => {
   return {
-    deleteStateMapping: deleteStateMapping,
-    getStateMapping: getStateMapping
+    deleteStateMapping: mockDeleteStateMapping,
+    getStateMapping: mockGetStateMapping
   }
 })
 
@@ -43,7 +43,7 @@ describe("callback handler", () => {
       Ttl: 123456,
       UseMock: true
     }
-    getStateMapping.mockImplementationOnce(() => Promise.resolve(stateItem))
+    mockGetStateMapping.mockImplementationOnce(() => Promise.resolve(stateItem))
 
     const result = await handler(event, mockContext)
     expect(result.statusCode).toBe(302)
@@ -59,8 +59,8 @@ describe("callback handler", () => {
     expect(redirectUrl.pathname).toBe("/oauth2/idpresponse")
 
     // Ensure DynamoDB commands were executed (one for Get, one for Delete).
-    expect(getStateMapping).toHaveBeenCalledTimes(1)
-    expect(deleteStateMapping).toHaveBeenCalledTimes(1)
+    expect(mockGetStateMapping).toHaveBeenCalledTimes(1)
+    expect(mockDeleteStateMapping).toHaveBeenCalledTimes(1)
   })
 
   it("should throw error if missing required query parameters", async () => {
@@ -89,7 +89,7 @@ describe("callback handler", () => {
     }
 
     // For GetCommand, simulate that no item is found.
-    getStateMapping.mockImplementationOnce(() => Promise.reject(new Error("there was a problem")))
+    mockGetStateMapping.mockImplementationOnce(() => Promise.reject(new Error("there was a problem")))
 
     await expect(handler(event, mockContext)).resolves.toStrictEqual(
       {"message": "A system error has occurred"}

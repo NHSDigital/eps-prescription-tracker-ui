@@ -62,12 +62,12 @@ const {
   }
 })
 
-const insertTokenMapping = jest.fn()
-const getTokenMapping = jest.fn()
+const mockInsertTokenMapping = jest.fn()
+const mockGetTokenMapping = jest.fn()
 jest.unstable_mockModule("@cpt-ui-common/dynamoFunctions", () => {
   return {
-    insertTokenMapping: insertTokenMapping,
-    getTokenMapping: getTokenMapping
+    insertTokenMapping: mockInsertTokenMapping,
+    getTokenMapping: mockGetTokenMapping
   }
 })
 jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
@@ -178,8 +178,8 @@ describe("cis2 token handler", () => {
       id_token: token,
       access_token: "access_token_reply"
     }))
-    expect(insertTokenMapping).toHaveBeenCalledTimes(1)
-    expect(insertTokenMapping).toBeCalledWith(
+    expect(mockInsertTokenMapping).toHaveBeenCalledTimes(1)
+    expect(mockInsertTokenMapping).toBeCalledWith(
       expect.anything(),
       expect.anything(),
       {

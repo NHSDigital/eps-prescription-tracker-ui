@@ -5,14 +5,14 @@ import {APIGatewayProxyEvent} from "aws-lambda"
 process.env.StateMappingTableName = "testStateMappingTable"
 process.env.COGNITO_DOMAIN = "cognito.example.com"
 
-const deleteStateMapping = jest.fn()
-const getStateMapping = jest.fn()
-const insertSessionState = jest.fn()
+const mockDeleteStateMapping = jest.fn()
+const mockGetStateMapping = jest.fn()
+const mockInsertSessionState = jest.fn()
 jest.unstable_mockModule("@cpt-ui-common/dynamoFunctions", () => {
   return {
-    deleteStateMapping: deleteStateMapping,
-    getStateMapping: getStateMapping,
-    insertSessionState: insertSessionState
+    deleteStateMapping: mockDeleteStateMapping,
+    getStateMapping: mockGetStateMapping,
+    insertSessionState: mockInsertSessionState
   }
 })
 

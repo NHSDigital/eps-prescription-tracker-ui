@@ -10,10 +10,10 @@ process.env.COGNITO_CLIENT_ID = "userPoolClient123"
 process.env.FULL_CLOUDFRONT_DOMAIN = "d111111abcdef8.cloudfront.net"
 process.env.StateMappingTableName = "stateMappingTest"
 
-const insertStateMapping = jest.fn()
+const mockInsertStateMapping = jest.fn()
 jest.unstable_mockModule("@cpt-ui-common/dynamoFunctions", () => {
   return {
-    insertStateMapping: insertStateMapping
+    insertStateMapping: mockInsertStateMapping
   }
 })
 
@@ -62,7 +62,7 @@ describe("authorize handler", () => {
     expect(params.get("prompt")).toBe("login")
 
     // Ensure the DynamoDB put command was called.
-    expect(insertStateMapping).toHaveBeenCalledTimes(1)
+    expect(mockInsertStateMapping).toHaveBeenCalledTimes(1)
   })
 
   it("should throw error if missing state parameter", async () => {

@@ -10,13 +10,13 @@ jest.mock("axios")
 jest.mock("jsonwebtoken")
 const dynamoClient = new DynamoDBClient()
 const documentClient = DynamoDBDocumentClient.from(dynamoClient)
-const getTokenMapping = jest.fn()
-const updateTokenMapping = jest.fn()
+const mockGetTokenMapping = jest.fn()
+const mockUpdateTokenMapping = jest.fn()
 
 jest.unstable_mockModule("@cpt-ui-common/dynamoFunctions", () => {
   return {
-    updateTokenMapping,
-    getTokenMapping
+    updateTokenMapping: mockUpdateTokenMapping,
+    getTokenMapping: mockGetTokenMapping
   }
 })
 
@@ -108,7 +108,7 @@ describe("apigeeUtils", () => {
 
     it("should return null when no valid token exists", async () => {
 
-      getTokenMapping.mockImplementationOnce(() => Promise.resolve( {
+      mockGetTokenMapping.mockImplementationOnce(() => Promise.resolve( {
         username: "testUser"
       }))
       const result = await getExistingApigeeAccessToken(
@@ -128,7 +128,7 @@ describe("apigeeUtils", () => {
     it("should return valid token when it exists and is not expired", async () => {
       const currentTime = Math.floor(Date.now() / 1000)
       const expiryTime = currentTime + 3600
-      getTokenMapping.mockImplementationOnce(() => Promise.resolve( {
+      mockGetTokenMapping.mockImplementationOnce(() => Promise.resolve( {
         username: "testUser",
         apigeeAccessToken: "valid-token",
         apigeeExpiresIn: expiryTime,

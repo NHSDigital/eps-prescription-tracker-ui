@@ -47,18 +47,18 @@ const {
   }
 })
 
-const insertTokenMapping = jest.fn()
-const getTokenMapping = jest.fn()
-const extractRoleInformation = jest.fn()
-const updateTokenMapping = jest.fn()
-const getSessionState = jest.fn()
+const mockInsertTokenMapping = jest.fn()
+const mockGetTokenMapping = jest.fn()
+const mockExtractRoleInformation = jest.fn()
+const mockUpdateTokenMapping = jest.fn()
+const mockGetSessionState = jest.fn()
 jest.unstable_mockModule("@cpt-ui-common/dynamoFunctions", () => {
   return {
-    updateTokenMapping,
-    extractRoleInformation,
-    getTokenMapping,
-    insertTokenMapping,
-    getSessionState
+    updateTokenMapping: mockUpdateTokenMapping,
+    extractRoleInformation: mockExtractRoleInformation,
+    getTokenMapping: mockGetTokenMapping,
+    insertTokenMapping: mockInsertTokenMapping,
+    getSessionState: mockGetSessionState
   }
 })
 
@@ -151,12 +151,12 @@ describe("token mock handler", () => {
 
   it("inserts correct details into dynamo table", async () => {
     // return some valid data for the get command
-    getSessionState.mockImplementationOnce(() => Promise.resolve(() => ({
+    mockGetSessionState.mockImplementationOnce(() => Promise.resolve(() => ({
       LocalCode: "test-code",
       ApigeeCode: "apigee-code",
       SessionState: "test-session-state"
     })))
-    extractRoleInformation.mockImplementationOnce(() => ({
+    mockExtractRoleInformation.mockImplementationOnce(() => ({
       roles_with_access: [],
       roles_without_access: [],
       currently_selected_role: undefined,
