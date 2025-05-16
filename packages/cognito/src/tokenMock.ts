@@ -118,7 +118,8 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   if (!code) throw new Error("Code parameter is missing")
 
   const sessionState = await getSessionState(documentClient, SessionStateMappingTableName, code as string, logger)
-  const callbackUri = `https://${cloudfrontDomain}/oauth2/mock-callback`
+  //const callbackUri = `https://${cloudfrontDomain}/oauth2/mock-callback`
+  const callbackUri = "https://cpt-ui.dev.eps.national.nhs.uk/oauth2/mock-callback"
   const tokenResponse = await exchangeApigeeCode(sessionState.ApigeeCode, callbackUri)
   logger.debug("Token response", {tokenResponse})
 
