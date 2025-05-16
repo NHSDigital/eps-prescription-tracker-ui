@@ -61,7 +61,7 @@ describe("authorize mock handler", () => {
     expect(params.get("state")).toBe(expectedState)
 
     expect(params.get("redirect_uri")).toBe(
-      "https://cpt-ui-pr-854.dev.eps.national.nhs.uk/oauth2/mock-callback"
+      "https://cpt-ui.dev.eps.national.nhs.uk/oauth2/mock-callback"
     )
     expect(params.get("prompt")).toBe(null)
 
