@@ -120,26 +120,13 @@ jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
   }
 })
 
-// Mocked functions from selectedRoleHelpers
-const mockFetchUserRolesFromDynamoDB = jest.fn()
-const mockUpdateDynamoTable = jest.fn()
-
-jest.unstable_mockModule("@/selectedRoleHelpers", () => {
-  const fetchUserRolesFromDynamoDB = mockFetchUserRolesFromDynamoDB.mockImplementation(() => {
-    return {
-      rolesWithAccess: [
-        {role_id: "123", org_code: "XYZ", role_name: "MockRole_1"},
-        {role_id: "456", org_code: "ABC", role_name: "MockRole_2"}
-      ],
-      currentlySelectedRole: undefined // Initially no role is selected
-    }
-  })
-
-  const updateDynamoTable = mockUpdateDynamoTable.mockImplementation(() => {})
+const updateTokenMapping = jest.fn()
+const getTokenMapping = jest.fn()
+jest.unstable_mockModule("@cpt-ui-common/dynamoFunctions", () => {
 
   return {
-    fetchUserRolesFromDynamoDB,
-    updateDynamoTable
+    updateTokenMapping,
+    getTokenMapping
   }
 })
 
@@ -167,7 +154,7 @@ describe("Lambda Handler Tests", () => {
 
   it("should return a successful response when called", async () => {
     const response = await handler(event, context)
-    expect(mockUpdateDynamoTable).toHaveBeenCalled()
+    expect(updateTokenMapping).toHaveBeenCalled()
 
     expect(response).toBeDefined()
     expect(response).toHaveProperty("statusCode", 200)
@@ -181,33 +168,44 @@ describe("Lambda Handler Tests", () => {
   it(
     "should call updateDynamoTable and move the selected role from rolesWithAccess to currentlySelectedRole",
     async () => {
+
+      getTokenMapping.mockImplementation(() => {
+        return {
+          rolesWithAccess:  [
+            {role_id: "123", org_code: "XYZ", role_name: "MockRole_1"},
+            {role_id: "456", org_code: "ABC", role_name: "MockRole_2"}
+          ],
+          currentlySelectedRole: undefined // Initially no role is selected
+        }
+      })
       const testUsername = "Mock_JoeBloggs"
-      const updatedUserInfo = {
-        // The selected role has been moved from rolesWithAccess to currentlySelectedRole
-        currentlySelectedRole: {
-          role_id: "123",
-          org_code: "XYZ",
-          role_name: "MockRole_1"
-        },
-        rolesWithAccess: [
-          {
-            role_id: "456",
-            org_code: "ABC",
-            role_name: "MockRole_2"
-          }
-        ],
-        selectedRoleId: "123"
+      const currentlySelectedRole = {
+        role_id: "123",
+        org_code: "XYZ",
+        role_name: "MockRole_1"
       }
+      const rolesWithAccess = [
+        {
+          role_id: "456",
+          org_code: "ABC",
+          role_name: "MockRole_2"
+        }
+      ]
+      const selectedRoleId = "123"
 
       const response = await handler(event, context)
 
       expect(mockGetUsernameFromEvent).toHaveBeenCalled()
-      expect(mockUpdateDynamoTable).toHaveBeenCalledWith(
-        testUsername,
-        updatedUserInfo,
-        expect.any(Object),
-        expect.any(Object),
-        expect.any(String)
+      expect(updateTokenMapping).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.anything(),
+        {
+          username: testUsername,
+          currentlySelectedRole,
+          rolesWithAccess,
+          selectedRoleId
+        },
+        expect.anything()
       )
       expect(response).toEqual({
         statusCode: 200,
@@ -236,7 +234,7 @@ describe("Lambda Handler Tests", () => {
     "should swap currentlySelectedRole with the new selected role and move the old one back to rolesWithAccess",
     async () => {
       // Initial rolesWithAccess contains multiple roles, currentlySelectedRole is undefined
-      mockFetchUserRolesFromDynamoDB.mockImplementation(() => {
+      getTokenMapping.mockImplementation(() => {
         return {
           rolesWithAccess: [
             {role_id: "123", org_code: "XYZ", role_name: "MockRole_1"},
@@ -325,7 +323,7 @@ describe("Lambda Handler Tests", () => {
     "should swap initially selected role with the new selected role and move the old one back to rolesWithAccess",
     async () => {
       // Initial database state with a previously selected role
-      mockFetchUserRolesFromDynamoDB.mockImplementation(() => {
+      getTokenMapping.mockImplementation(() => {
         return {
           rolesWithAccess: [
             {role_id: "123", org_code: "XYZ", role_name: "MockRole_1"},
@@ -351,9 +349,11 @@ describe("Lambda Handler Tests", () => {
       const firstResponse = await handler(firstEvent, mockContext)
       const firstResponseBody = JSON.parse(firstResponse.body)
 
-      expect(mockUpdateDynamoTable).toHaveBeenCalledWith(
-        "Mock_JoeBloggs",
+      expect(updateTokenMapping).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.anything(),
         {
+          username: "Mock_JoeBloggs",
           currentlySelectedRole: {
             role_id: "123",
             org_code: "XYZ",
@@ -366,13 +366,11 @@ describe("Lambda Handler Tests", () => {
           ],
           selectedRoleId: "123"
         },
-        expect.any(Object),
-        expect.any(Object),
-        expect.any(String)
+        expect.anything()
       )
 
       // Now simulate switching to another role
-      mockFetchUserRolesFromDynamoDB.mockImplementation(() => firstResponseBody.userInfo)
+      getTokenMapping.mockImplementation(() => firstResponseBody.userInfo)
 
       const secondEvent = {
         ...mockAPIGatewayProxyEvent,
@@ -409,7 +407,7 @@ describe("Lambda Handler Tests", () => {
   it("should return 500 and log error when updateDynamoTable throws an error", async () => {
     const error = new Error("Dynamo update failed")
     const loggerSpy = jest.spyOn(Logger.prototype, "error")
-    mockUpdateDynamoTable.mockImplementation(() => {
+    updateTokenMapping.mockImplementation(() => {
       throw error
     })
 
@@ -424,7 +422,7 @@ describe("Lambda Handler Tests", () => {
   })
 
   it("should handle unexpected error types gracefully", async () => {
-    mockUpdateDynamoTable.mockImplementation(() => {
+    updateTokenMapping.mockImplementation(() => {
       throw new Error("Unexpected error string")
     })
     const loggerSpy = jest.spyOn(Logger.prototype, "error")
