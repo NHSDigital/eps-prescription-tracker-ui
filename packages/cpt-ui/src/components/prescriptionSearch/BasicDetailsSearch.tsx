@@ -22,7 +22,7 @@ import {
 import {useNavigate} from "react-router-dom"
 import {AuthContext} from "@/context/AuthProvider"
 import http from "@/helpers/axios"
-import {formatDob} from "@/helpers/formatters"
+import {formatDobForSearch} from "@/helpers/formatters"
 import {validateBasicDetails, getInlineErrors} from "@/helpers/validateBasicDetails"
 import {errorFocusMap, ErrorKey, resolveDobInvalidFields} from "@/helpers/basicDetailsValidationMeta"
 import {STRINGS} from "@/constants/ui-strings/BasicDetailsSearchStrings"
@@ -186,7 +186,7 @@ export default function BasicDetailsSearch() {
 
       // Construct a normalized DOB string to match against mock patient data,
       // since mock DOBs are stored in the format 'DD-MM-YYYY'
-      const searchDob = formatDob({dobDay, dobMonth, dobYear})
+      const searchDob = formatDobForSearch({dobDay, dobMonth, dobYear})
 
       const matchedPatients = [...mockPatient, ...mockMultiplePatient].filter(p => {
         const matchFirstName = firstName ? formatInput(p.given) === formatInput(firstName) : true
