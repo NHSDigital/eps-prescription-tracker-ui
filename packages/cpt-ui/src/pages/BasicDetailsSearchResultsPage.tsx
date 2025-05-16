@@ -71,6 +71,7 @@ export default function SearchResultsPage() {
 
       setPatients(payload)
     } catch (err) {
+      // TODO: Remove the fallback to mock data when the backend is working
       console.error("Failed to fetch patient search results. Using mock data fallback.", err)
       setPatients(mockPatients)
     } finally {
