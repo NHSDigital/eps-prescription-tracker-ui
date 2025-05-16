@@ -118,6 +118,12 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   if (!code) throw new Error("Code parameter is missing")
 
   const sessionState = await getSessionState(documentClient, SessionStateMappingTableName, code as string, logger)
+  // this needs to be the callback url defined for the apigee app being used
+  // for pull requests it needs to point to dev mock-callback
+  // otherwise it needs to be the one for the environment
+  // this is needed for the request to exchange the token but note below
+  //
+  // THE CALLBACK URI IS NOT CALLED AS PART OF THIS FLOW
   //const callbackUri = `https://${cloudfrontDomain}/oauth2/mock-callback`
   const callbackUri = "https://cpt-ui.dev.eps.national.nhs.uk/oauth2/mock-callback"
   const tokenResponse = await exchangeApigeeCode(sessionState.ApigeeCode, callbackUri)
