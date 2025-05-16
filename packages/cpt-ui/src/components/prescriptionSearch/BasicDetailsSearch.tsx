@@ -294,8 +294,8 @@ export default function BasicDetailsSearch() {
                 "dobInvalidDate",
                 "dobFutureDate"
               ) ? "nhsuk-form-group--error" : ""}>
-                <Fieldset aria-labelledby="dob-label">
-                  <Fieldset.Legend headingLevel="h3" id="dob-label">
+                <Fieldset >
+                  <Fieldset.Legend headingLevel="h3" id="dob-label" aria-labelledby="dob-label">
                     <span className="nhsuk-label-h3">{STRINGS.dobLabel}</span>
                   </Fieldset.Legend>
                   <HintText id="dob-hint" data-testid="dob-hint">{STRINGS.dobHint}</HintText>
