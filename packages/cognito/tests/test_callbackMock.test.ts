@@ -1,5 +1,4 @@
 import {jest} from "@jest/globals"
-
 import {APIGatewayProxyEvent} from "aws-lambda"
 
 // Set required environment variables before importing the handler.
@@ -59,4 +58,18 @@ describe("Callback mock handler", () => {
     expect(redirectUrl.pathname).toBe("/bar")
   })
 
+  test("should throw error if missing required query parameters", async () => {
+    const event: APIGatewayProxyEvent = {
+      ...mockAPIGatewayProxyEvent,
+      queryStringParameters: {
+        code: "testCode",
+        session_state: "testSessionState"
+        // Missing the 'state' parameter.
+      }
+    }
+
+    await expect(handler(event, mockContext)).resolves.toStrictEqual(
+      {"message": "A system error has occurred"}
+    )
+  })
 })

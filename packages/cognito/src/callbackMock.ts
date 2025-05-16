@@ -40,12 +40,12 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   const {state, code, session_state} = event.queryStringParameters || {}
   if (!state || !code) {
     logger.error(
-      "Missing required query parameters: state, or code",
-      {state, code, session_state}
+      "Missing required query parameters: state or code",
+      {state, code}
     )
     throw new Error("Missing required query parameters: state or code")
   }
-  logger.info("Incoming query parameters", {state, code, session_state})
+  logger.debug("Incoming query parameters", {state, code, session_state})
 
   // First, check if this is a pull request redirection
   try {
