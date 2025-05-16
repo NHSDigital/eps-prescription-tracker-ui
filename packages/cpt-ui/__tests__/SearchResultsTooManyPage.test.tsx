@@ -47,7 +47,7 @@ describe("SearchResultsTooManyPage", () => {
     const list = screen.getByTestId("too-many-results-details-list")
     expect(list).toHaveTextContent("First name: Jane")
     expect(list).toHaveTextContent("Last name: Doe")
-    expect(list).toHaveTextContent("Date of birth: 01-01-2000")
+    expect(list).toHaveTextContent("Date of birth: 01-Jan-2000")
     expect(list).toHaveTextContent("Postcode: XY9 8ZZ")
   })
 
@@ -62,7 +62,7 @@ describe("SearchResultsTooManyPage", () => {
     const list = screen.getByTestId("too-many-results-details-list")
     expect(list).not.toHaveTextContent("First name")
     expect(list).toHaveTextContent("Last name: Smith")
-    expect(list).toHaveTextContent("Date of birth: 15-03-1995")
+    expect(list).toHaveTextContent("Date of birth: 15-Mar-1995")
     expect(list).not.toHaveTextContent("Postcode")
   })
 

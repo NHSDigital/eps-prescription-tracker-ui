@@ -8,7 +8,7 @@ import {
 import {Link, useLocation} from "react-router-dom"
 import {FRONTEND_PATHS} from "@/constants/environment"
 import {STRINGS} from "@/constants/ui-strings/SearchResultsTooManyStrings"
-import {formatDob} from "@/helpers/formatters"
+import {formatDobForDisplay} from "@/helpers/formatters"
 import {BasicDetailsSearchType} from "@cpt-ui-common/common-types"
 
 export default function SearchResultsTooManyPage() {
@@ -57,7 +57,7 @@ export default function SearchResultsTooManyPage() {
               <ul data-testid="too-many-results-details-list">
                 {firstName && <li>{STRINGS.firstName} {firstName}</li>}
                 <li>{STRINGS.lastName} {lastName}</li>
-                <li>{STRINGS.dob} {formatDob({dobDay, dobMonth, dobYear})}</li>
+                <li>{STRINGS.dob} {formatDobForDisplay({dobDay, dobMonth, dobYear})}</li>
                 {postcode && <li>{STRINGS.postcode} {postcode}</li>}
               </ul>
 
