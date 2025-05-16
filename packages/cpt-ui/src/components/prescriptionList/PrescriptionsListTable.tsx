@@ -161,31 +161,34 @@ const PrescriptionsListTable = ({textContent, prescriptions}: PrescriptionsListT
                 role="columnheader"
                 aria-sort={
                   sortConfig.key === heading.key
-                    ? (sortConfig.direction as "ascending" | "descending" | "none" | "other")
+                    ? (sortConfig.direction as "ascending" | "descending" | "none")
                     : "none"
                 }
-                className={sortConfig.key === heading.key ? "active-header" : ""}
                 data-testid={`eps-prescription-table-header-${heading.key}`}
-                onClick={() => requestSort(heading.key)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault()
-                    requestSort(heading.key)
-                  }
-                }}
               >
                 <span
                   role="button"
                   tabIndex={0}
-                  className={`eps-prescription-table-sort-text ${heading.key} 
-                  ${sortConfig.key === heading.key ? "active-header" : ""}`}
+                  className={`eps-prescription-table-sort-text ${heading.key}`}
                   aria-label={`
                     ${PRESCRIPTION_LIST_TABLE_TEXT.sortBy} ${heading.label} 
-                    ${sortConfig.key === heading.key && sortConfig.direction === "ascending"
+                    ${
+              sortConfig.key === heading.key && sortConfig.direction === "ascending"
                 ? "descending"
-                : "ascending"}
+                : "ascending"
+              }
                   `}
                   data-testid={`eps-prescription-table-sort-${heading.key}`}
+                  onClick={(e) => {
+                    e.preventDefault()
+                    requestSort(heading.key)
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault()
+                      requestSort(heading.key)
+                    }
+                  }}
                 >
                   <span className="sort-label-text">{heading.label}</span>
                   <span className="nhsuk-u-visually-hidden">{PRESCRIPTION_LIST_TABLE_TEXT.button}</span>
