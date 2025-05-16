@@ -8,10 +8,6 @@ export default function EPSCookieBanner() {
   const [showSecondaryBanner, setShowSecondaryBanner] = useState(false)
   const location = useLocation()
 
-  if (location.pathname === "/cookies" || location.pathname === "/cookies-selected") {
-    return null
-  }
-
   useEffect(() => {
     const storedChoice = localStorage.getItem("eps-cookie-consent")
     const secondaryShown = localStorage.getItem("eps-secondary-banner-shown")
@@ -47,6 +43,10 @@ export default function EPSCookieBanner() {
     localStorage.setItem("eps-secondary-banner-shown", "true")
   }
 
+  if (location.pathname === "/cookies" || location.pathname === "/cookies-selected") {
+    return null
+  }
+
   return (
     <>
       {cookiesSet === null && (
@@ -64,12 +64,8 @@ export default function EPSCookieBanner() {
               >
                 {CookieStrings.banner.cookie_title}
               </h2>
-              <p className="nhsuk-body">
-                {CookieStrings.banner.cookie_text_p1}
-              </p>
-              <p className="nhsuk-body">
-                {CookieStrings.banner.cookie_text_p2}
-              </p>
+              <p className="nhsuk-body">{CookieStrings.banner.cookie_text_p1}</p>
+              <p className="nhsuk-body">{CookieStrings.banner.cookie_text_p2}</p>
               <p className="nhsuk-body">
                 {CookieStrings.banner.cookie_text_p3}
                 <Link
