@@ -3,6 +3,7 @@ import {MemoryRouter} from "react-router-dom"
 import EPSCookieBanner from "@/components/EPSCookieBanner"
 
 beforeEach(() => {
+  localStorage.clear()
   window.NHSCookieConsent = {
     VERSION: "1.0.0",
     getPreferences: jest.fn(() => false),
@@ -39,7 +40,7 @@ describe("EPSCookieBanner", () => {
 
   it("rejects cookies and disables statistics", () => {
     renderComponent()
-    const rejectButton = screen.getByRole("button", {name: /reject analytics cookies/i})
+    const rejectButton = screen.getByTestId("reject-button")
     fireEvent.click(rejectButton)
     expect(window.NHSCookieConsent.setStatistics).toHaveBeenCalledWith(false)
     expect(window.NHSCookieConsent.setConsented).toHaveBeenCalledWith(true)
