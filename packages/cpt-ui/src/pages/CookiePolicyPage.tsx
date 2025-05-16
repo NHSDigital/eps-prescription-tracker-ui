@@ -143,7 +143,7 @@ const CookiePolicyPage = () => {
   )
 
   return (
-    <div className="cookie-policy-container">
+    <div className="nhsuk-width-container nhsuk-u-margin-top-4">
       <main className="nhsuk-main-wrapper nhsuk-main-wrapper--s" id="main-content" role="main">
         <nav className="nhsuk-breadcrumb" aria-label="Breadcrumb">
           <ol className="nhsuk-breadcrumb__list">
@@ -153,8 +153,9 @@ const CookiePolicyPage = () => {
           </ol>
           <p className="nhsuk-breadcrumb__back">
             <a className="nhsuk-breadcrumb__backlink" href="#">
-              <span className="nhsuk-u-visually-hidden">Back to &nbsp;</span>
-              Level three
+              <span className="nhsuk-u-visually-hidden">
+                {CookieStrings.breadcrumbBack.visuallyHidden}&nbsp;</span>
+              {CookieStrings.home}
             </a>
           </p>
         </nav>
@@ -244,7 +245,7 @@ const CookiePolicyPage = () => {
         <p>{CookieStrings.changeSettings.paragraph3}</p>
 
         <h2 className="nhsuk-heading-l">{CookieStrings.policyChanges.heading}</h2>
-        <p>{CookieStrings.policyChanges.paragraph1}</p>
+        <p className="bottomPolicyText">{CookieStrings.policyChanges.paragraph1}</p>
       </main>
     </div>
   )

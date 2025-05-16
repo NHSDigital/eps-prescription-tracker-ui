@@ -4,7 +4,8 @@ import {CookieStrings} from "@/constants/ui-strings/CookieStrings"
 
 export default function CookieSettingsPage() {
   return (
-    <main className="cookie-policy-container">
+    <main className="nhsuk-width-container nhsuk-u-margin-top-4">
+
       <nav className="nhsuk-breadcrumb" aria-label="Breadcrumb">
         <ol className="nhsuk-breadcrumb__list">
           <li className="nhsuk-breadcrumb__item">
@@ -16,8 +17,9 @@ export default function CookieSettingsPage() {
         </ol>
         <p className="nhsuk-breadcrumb__back">
           <a className="nhsuk-breadcrumb__backlink" href="#">
-            <span className="nhsuk-u-visually-hidden">Back to&nbsp;</span>
-            Level three
+            <span className="nhsuk-u-visually-hidden">
+              {CookieStrings.breadcrumbBack.visuallyHidden}&nbsp;</span>
+            {CookieStrings.breadcrumbBack.label}
           </a>
         </p>
       </nav>

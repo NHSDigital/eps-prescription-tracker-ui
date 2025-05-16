@@ -141,5 +141,9 @@ export const CookieStrings = {
   pageNextReviewed: "Next review due: 15 March 2026",
   cptCookies: "Cookies on the Clinical Prescription Tracking Service ",
   detailsSummaryText: (type: string) => `See the ${type.toLowerCase()} cookies we use`,
-  cookie_banner_link: "Link to cookie policy"
+  cookie_banner_link: "Link to cookie policy",
+  breadcrumbBack: {
+    visuallyHidden: "Back to",
+    label: "Home"
+  }
 }
