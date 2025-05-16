@@ -147,8 +147,10 @@ describe("Lambda Handler Tests", () => {
   }
   let context = {...mockContext}
 
-  beforeAll(() => {
+  beforeEach(() => {
     jest.clearAllMocks()
+    mockGetTokenMapping.mockImplementation(() => {})
+    mockUpdateTokenMapping.mockImplementation(() => {})
   })
 
   it("should return a successful response when called", async () => {
