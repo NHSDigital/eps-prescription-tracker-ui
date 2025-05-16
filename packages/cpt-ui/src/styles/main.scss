@@ -9,10 +9,16 @@
 @use "./patientDetailsBanner";
 @use "./prescriptionInformationBanner.scss";
 @use "./searchforaprescription";
+@use "./basicDetailsSearchResultsPage";
 @use "./tabs";
 
 
 .nhsuk-grid-column-two-thirds {
     padding-left: 1rem;
     padding-right: 1rem;
+}
+
+
+.nhsuk-u-visually-hidden::before::after {
+    content: none;
 }
