@@ -107,7 +107,7 @@ export const fetchAndVerifyCIS2Tokens = async (
   // Fetch CIS2 tokens from DynamoDB
   const userRecord = await getTokenMapping(documentClient, oidcConfig.tokenMappingTableName, username, logger)
   const cis2AccessToken = userRecord.cis2AccessToken
-  const cis2IdToken = userRecord.cis2AccessToken
+  const cis2IdToken = userRecord.cis2IdToken
 
   // Verify the id token, access token from cis2 is not a JWT
   await verifyIdToken(cis2IdToken, logger, oidcConfig)
