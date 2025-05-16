@@ -295,7 +295,7 @@ export default function BasicDetailsSearch() {
                 "dobFutureDate"
               ) ? "nhsuk-form-group--error" : ""}>
                 <Fieldset aria-labelledby="dob-label">
-                  <Fieldset.Legend className="nhsuk-fieldset__legend--s" id="dob-label">
+                  <Fieldset.Legend headingLevel="h3" id="dob-label">
                     <span className="nhsuk-label-h3">{STRINGS.dobLabel}</span>
                   </Fieldset.Legend>
                   <HintText id="dob-hint" data-testid="dob-hint">{STRINGS.dobHint}</HintText>
