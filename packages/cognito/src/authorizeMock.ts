@@ -86,7 +86,7 @@ const lambdaHandler = async (
   // for pull requests we pack the real callback url for this pull request into the state
   // the callback lambda then decodes this and redirects to the callback url for this pull request
   const realCallbackUri = `https://${cloudfrontDomain}/oauth2/mock-callback`
-  const callbackUri = "https://cpt-ui-pr-854.dev.eps.national.nhs.uk/oauth2/mock-callback"
+  const callbackUri = "https://cpt-ui.dev.eps.national.nhs.uk/oauth2/mock-callback"
 
   const newStateJson = {
     isPullRequest: true,
