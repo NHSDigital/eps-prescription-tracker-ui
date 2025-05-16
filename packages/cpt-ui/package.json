@@ -53,7 +53,7 @@
     "jest-environment-jsdom": "^29.7.0",
     "jest-watch-typeahead": "^2.2.2",
     "sass": "^1.88.0",
-    "ts-jest": "^29.3.2",
+    "ts-jest": "^29.3.3",
     "typescript": "^5.8.3",
     "vite": "^6.3.5"
   }
