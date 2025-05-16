@@ -27,11 +27,13 @@
 @media (max-width: 61.875em) {
   .patient-search-main-wrapper {
     padding-top: 4px !important;
+    padding-bottom: 20px !important;
   }
 
   .patient-search-form-container {
     margin: 0 28px !important;
     padding-top: 0 !important;
+    padding-bottom: 16px;
   }
 
 }
@@ -44,6 +46,7 @@
 
   .patient-search-form-container {
     margin: 0 16px !important;
+    padding-bottom: 8px;
   }
 
   .nhsuk-heading-m {
