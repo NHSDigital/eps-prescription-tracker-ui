@@ -7,7 +7,8 @@ import middy from "@middy/core"
 import inputOutputLogger from "@middy/input-output-logger"
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 import {getUsernameFromEvent, initializeOidcConfig, authenticateRequest} from "@cpt-ui-common/authFunctions"
-import {fetchUserInfo, updateDynamoTable, fetchDynamoTable} from "./userInfoHelpers"
+import {fetchUserInfo} from "./userInfoHelpers"
+import {getTokenMapping, updateTokenMapping} from "@cpt-ui-common/dynamoFunctions"
 
 /*
 This is the lambda code to get user info
@@ -60,8 +61,13 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   const username = getUsernameFromEvent(event)
 
   // First, try to use cached user info
-  const cachedUserInfo = await fetchDynamoTable(username, documentClient, logger, tokenMappingTableName)
-  logger.debug("retrieved this from dynamodb", {cachedUserInfo})
+  const tokenMappingItem = await getTokenMapping(documentClient, tokenMappingTableName, username, logger)
+  const cachedUserInfo = {
+    roles_with_access: tokenMappingItem.rolesWithAccess || [],
+    roles_without_access: tokenMappingItem.rolesWithoutAccess || [],
+    currently_selected_role: tokenMappingItem.currentlySelectedRole || undefined,
+    user_details: tokenMappingItem.userDetails || {family_name: "", given_name: ""}
+  }
 
   if (
     cachedUserInfo &&
@@ -103,7 +109,14 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   )
 
   // Save user info to DynamoDB (but not tokens)
-  await updateDynamoTable(username, userInfoResponse, documentClient, logger, tokenMappingTableName)
+  const item = {
+    username,
+    rolesWithAccess: userInfoResponse.roles_with_access,
+    rolesWithoutAccess: userInfoResponse.roles_without_access,
+    currentlySelectedRole: userInfoResponse.currently_selected_role,
+    userDetails: userInfoResponse.user_details
+  }
+  await updateTokenMapping(documentClient, tokenMappingTableName, item, logger)
 
   return {
     statusCode: 200,
