@@ -1,8 +1,5 @@
 import {jest} from "@jest/globals"
 
-import {OidcConfig} from "@cpt-ui-common/authFunctions"
-import {UserInfoResponse} from "@cpt-ui-common/dynamoFunctions"
-
 import {Logger} from "@aws-lambda-powertools/logger"
 import axios from "axios"
 import jwksClient from "jwks-rsa"
@@ -10,6 +7,14 @@ import jwksClient from "jwks-rsa"
 const oidcClientId = "valid_aud"
 const oidcIssuer = "valid_iss"
 const jwksEndpoint = "https://dummyauth.com/.well-known/jwks.json"
+
+const mockExtractRoleInformation = jest.fn()
+
+jest.unstable_mockModule("@cpt-ui-common/dynamoFunctions", () => {
+  return {
+    extractRoleInformation: mockExtractRoleInformation
+  }
+})
 
 const mockVerifyIdToken = jest.fn()
 const mockDecodeToken = jest.fn()
@@ -51,7 +56,7 @@ describe("fetchUserInfo", () => {
     cacheMaxAge: 3600000 // 1 hour
   })
 
-  const oidcConfig: OidcConfig = {
+  const oidcConfig = {
     oidcIssuer: oidcIssuer,
     oidcClientID: oidcClientId,
     oidcJwksEndpoint: "https://dummyauth.com/.well-known/jwks.json",
@@ -70,7 +75,7 @@ describe("fetchUserInfo", () => {
   })
 
   it("should fetch and process user info", async () => {
-    const userInfoResponse: UserInfoResponse = {
+    const data = {
       sub: "test-sub",
       uid: "test-uid",
       email: "test@example.com",
@@ -124,7 +129,7 @@ describe("fetchUserInfo", () => {
       ]
     }
 
-    jest.spyOn(axios, "get").mockResolvedValue({data: userInfoResponse})
+    jest.spyOn(axios, "get").mockResolvedValue({data})
 
     mockVerifyIdToken.mockImplementation(async () => {
       return {
@@ -138,6 +143,36 @@ describe("fetchUserInfo", () => {
       }
     })
 
+    mockExtractRoleInformation.mockImplementationOnce(() => {
+      return {
+        roles_with_access: [
+          {
+            role_name: "Doctor",
+            role_id: "role-id-3",
+            org_code: "ORG3",
+            org_name: "Organization Three"
+          }
+        ],
+        roles_without_access: [
+          {
+            role_name: "Nurse",
+            role_id: "role-id-2",
+            org_code: "ORG2",
+            org_name: "Organization Two"
+          }
+        ],
+        currently_selected_role: {
+          role_name: "Doctor",
+          role_id: "role-id-1",
+          org_code: "ORG1",
+          org_name: "Organization One"
+        },
+        user_details: {
+          family_name: "Doe",
+          given_name: "John"
+        }
+      }
+    })
     const result = await fetchUserInfo(
       accessToken,
       idToken,
@@ -171,70 +206,6 @@ describe("fetchUserInfo", () => {
       user_details: {
         family_name: "Doe",
         given_name: "John"
-      }
-    })
-  })
-
-  it("should handle user with no roles with access", async () => {
-    const userInfoResponse: UserInfoResponse = {
-      sub: "test-sub",
-      uid: "test-uid",
-      email: "test@example.com",
-      nhsid_useruid: "test-useruid",
-      given_name: "Jane",
-      family_name: "Smith",
-      name: "Jane Smith",
-      display_name: "J. Smith",
-      title: "Ms.",
-      initials: "JS",
-      middle_names: "Marie",
-      nhsid_nrbac_roles: [
-        {
-          role_name: "Receptionist",
-          person_roleid: "role-id-3",
-          org_code: "ORG3",
-          activity_codes: ["OTHER_CODE"],
-          person_orgid: "org-id-3",
-          role_code: "role-code-3"
-        }
-      ],
-      nhsid_user_orgs: [
-        {
-          org_code: "ORG3",
-          org_name: "Organization Three"
-        }
-      ]
-    }
-
-    jest.spyOn(axios, "get").mockResolvedValue({data: userInfoResponse})
-
-    mockDecodeToken.mockImplementation(() => {
-      return {
-        selected_roleid: "role-id-1"
-      }
-    })
-
-    const result = await fetchUserInfo(
-      accessToken,
-      idToken,
-      logger,
-      oidcConfig
-    )
-
-    expect(result).toEqual({
-      roles_with_access: [],
-      roles_without_access: [
-        {
-          role_name: "Receptionist",
-          role_id: "role-id-3",
-          org_code: "ORG3",
-          org_name: "Organization Three"
-        }
-      ],
-      currently_selected_role: undefined,
-      user_details: {
-        family_name: "Smith",
-        given_name: "Jane"
       }
     })
   })

@@ -1,7 +1,7 @@
 import {Logger} from "@aws-lambda-powertools/logger"
 import axios, {isAxiosError} from "axios"
 import {OidcConfig, decodeToken} from "@cpt-ui-common/authFunctions"
-import {extractRoleInformation, UserInfoResponse, TrackerUserInfo} from "@cpt-ui-common/dynamoFunctions"
+import {extractRoleInformation, TrackerUserInfo} from "@cpt-ui-common/dynamoFunctions"
 /**
  * **Fetches user information from the OIDC UserInfo endpoint.**
  *
@@ -34,7 +34,7 @@ export const fetchUserInfo = async (
   }
 
   try {
-    const response = await axios.get<UserInfoResponse>(
+    const response = await axios.get(
       oidcConfig.oidcUserInfoEndpoint,
       // "https://internal-dev.api.service.nhs.uk/oauth2-mock/userinfo",
       {
@@ -45,7 +45,7 @@ export const fetchUserInfo = async (
     logger.info("User info fetched successfully")
 
     // Extract the roles from the user info response
-    const data: UserInfoResponse = response.data
+    const data = response.data
 
     return extractRoleInformation(
       data,
