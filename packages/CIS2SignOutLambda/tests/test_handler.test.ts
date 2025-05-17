@@ -10,6 +10,14 @@ const mockFetchAndVerifyCIS2Tokens = jest.fn()
 const mockGetUsernameFromEvent = jest.fn()
 const mockInitializeOidcConfig = jest.fn()
 
+const mockDeleteTokenMappingMock = jest.fn()
+jest.unstable_mockModule("@cpt-ui-common/dynamoFunctions", () => {
+
+  return {
+    deleteTokenMapping: mockDeleteTokenMappingMock
+  }
+})
+
 jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
   const fetchAndVerifyCIS2Tokens = mockFetchAndVerifyCIS2Tokens.mockImplementation(async () => {
     return {
@@ -40,7 +48,8 @@ jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
       oidcUserInfoEndpoint: process.env["CIS2_USER_INFO_ENDPOINT"] ?? "",
       userPoolIdp: process.env["CIS2_USER_POOL_IDP"] ?? "",
       jwksClient: cis2JwksClient,
-      tokenMappingTableName: process.env["TokenMappingTableName"] ?? ""
+      tokenMappingTableName: process.env["TokenMappingTableName"] ?? "",
+      oidcTokenEndpoint: ""
     }
 
     const mockJwksUri = process.env["MOCK_OIDCJWKS_ENDPOINT"] as string
@@ -58,7 +67,8 @@ jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
       oidcUserInfoEndpoint: process.env["MOCK_USER_INFO_ENDPOINT"] ?? "",
       userPoolIdp: process.env["MOCK_USER_POOL_IDP"] ?? "",
       jwksClient: mockJwksClient,
-      tokenMappingTableName: process.env["TokenMappingTableName"] ?? ""
+      tokenMappingTableName: process.env["TokenMappingTableName"] ?? "",
+      oidcTokenEndpoint: ""
     }
 
     return {cis2OidcConfig, mockOidcConfig}
@@ -71,58 +81,35 @@ jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
   }
 })
 
-// This mock will be used for the documentClient.send() call
-const sendMock = jest.fn()
-
-// Mock the DynamoDB client constructor (if needed)
-jest.mock("@aws-sdk/client-dynamodb", () => ({
-  DynamoDBClient: jest.fn()
-}))
-
-// Mock the lib-dynamodb module so that DeleteCommand and DynamoDBDocumentClient are replaced.
-const deleteCommandMock = jest.fn()
-jest.mock("@aws-sdk/lib-dynamodb", () => {
-  return {
-    DeleteCommand: deleteCommandMock,
-    DynamoDBDocumentClient: {
-      from: jest.fn(() => ({
-        send: sendMock
-      }))
-    }
-  }
-})
-
 const {handler} = await import("@/handler")
 
 describe("Lambda Handler", () => {
   beforeEach(async () => {
     jest.clearAllMocks()
+    jest.resetModules()
   })
 
   it("should return 200 and success message on successful deletion", async () => {
-    sendMock.mockImplementationOnce(() => Promise.resolve({$metadata: {httpStatusCode: 200}}))
 
     const response = await handler(mockAPIGatewayProxyEvent, mockContext)
 
-    console.log(response)
     expect(response.statusCode).toBe(200)
     const body = JSON.parse(response.body)
     expect(body.message).toBe("CIS2 logout completed")
 
     // Verify that DeleteCommand was called with the expected parameters
-    expect(deleteCommandMock).toHaveBeenCalledWith({
-      TableName: process.env.TokenMappingTableName,
-      Key: {username: mockAPIGatewayProxyEvent.requestContext.authorizer.claims["cognito:username"]}
-    })
-
-    expect(sendMock).toHaveBeenCalled()
+    expect(mockDeleteTokenMappingMock).toHaveBeenCalledWith(
+      expect.anything(),
+      process.env.TokenMappingTableName,
+      mockAPIGatewayProxyEvent.requestContext.authorizer.claims["cognito:username"],
+      expect.anything()
+    )
   })
 
   it("should return error message if deletion is unsuccessful", async () => {
-    sendMock.mockImplementationOnce(() => Promise.resolve({$metadata: {httpStatusCode: 500}}))
+    mockDeleteTokenMappingMock.mockImplementationOnce(() => Promise.reject(new Error("there was a problem")))
 
     const response = await handler(mockAPIGatewayProxyEvent, mockContext)
-    console.log(response)
     expect(response).toMatchObject({
       message: "A system error has occurred"
     })

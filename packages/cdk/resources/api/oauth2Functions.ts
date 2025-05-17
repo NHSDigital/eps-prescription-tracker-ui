@@ -42,11 +42,18 @@ export interface OAuth2FunctionsProps {
   readonly stateMappingTableReadPolicy: IManagedPolicy
   readonly useStateMappingKmsKeyPolicy: IManagedPolicy
 
+  readonly sessionStateMappingTable: ITableV2
+  readonly sessionStateMappingTableWritePolicy: IManagedPolicy
+  readonly sessionStateMappingTableReadPolicy: IManagedPolicy
+  readonly useSessionStateMappingKmsKeyPolicy: IManagedPolicy
+
   readonly sharedSecrets: SharedSecrets
 
   readonly logRetentionInDays: number
   readonly logLevel: string
   readonly jwtKid: string
+  readonly apigeeApiKey: string
+  readonly apigeeApiSecret: string
 }
 
 /**
@@ -65,17 +72,14 @@ export class OAuth2Functions extends Construct {
   public constructor(scope: Construct, id: string, props: OAuth2FunctionsProps) {
     super(scope, id)
 
-    let useMock
     let mockOidcAuthorizeEndpoint
     let mockOidcIssuer
     let mockOidcClientId
     if (props.useMockOidc) {
-      useMock = "true"
       mockOidcIssuer = props.mockOidcIssuer as string
       mockOidcAuthorizeEndpoint = props.mockOidcAuthorizeEndpoint as string
       mockOidcClientId = props.mockOidcClientId as string
     } else {
-      useMock = "false"
       mockOidcAuthorizeEndpoint = ""
       mockOidcIssuer = ""
       mockOidcClientId = ""
@@ -106,8 +110,7 @@ export class OAuth2Functions extends Construct {
         CIS2_OIDC_CLIENT_ID: props.primaryOidcClientId,
         CIS2_OIDC_ISSUER: props.primaryOidcIssuer,
         FULL_CLOUDFRONT_DOMAIN: props.fullCloudfrontDomain,
-        jwtKid: props.jwtKid,
-        useMock: "false"
+        jwtKid: props.jwtKid
       }
     })
 
@@ -126,7 +129,6 @@ export class OAuth2Functions extends Construct {
       packageBasePath: "packages/cognito",
       entryPoint: "src/authorize.ts",
       lambdaEnvironmentVariables: {
-        useMock,
         IDP_AUTHORIZE_PATH: props.primaryOidcAuthorizeEndpoint,
         OIDC_CLIENT_ID: props.primaryOidcClientId,
         COGNITO_CLIENT_ID: props.userPoolClientId,
@@ -185,19 +187,23 @@ export class OAuth2Functions extends Construct {
         additionalPolicies: [
           props.stateMappingTableWritePolicy,
           props.stateMappingTableReadPolicy,
-          props.useStateMappingKmsKeyPolicy
+          props.useStateMappingKmsKeyPolicy,
+          props.sessionStateMappingTableWritePolicy,
+          props.sessionStateMappingTableReadPolicy,
+          props.useSessionStateMappingKmsKeyPolicy
         ],
         logRetentionInDays: props.logRetentionInDays,
         logLevel: props.logLevel,
         packageBasePath: "packages/cognito",
-        entryPoint: "src/authorize.ts",
+        entryPoint: "src/authorizeMock.ts",
         lambdaEnvironmentVariables: {
-          useMock,
           IDP_AUTHORIZE_PATH: mockOidcAuthorizeEndpoint,
           OIDC_CLIENT_ID: mockOidcClientId,
           COGNITO_CLIENT_ID: props.userPoolClientId,
           FULL_CLOUDFRONT_DOMAIN: props.fullCloudfrontDomain,
-          StateMappingTableName: props.stateMappingTable.tableName
+          StateMappingTableName: props.stateMappingTable.tableName,
+          SessionStateMappingTableName: props.sessionStateMappingTable.tableName,
+          APIGEE_API_KEY: props.apigeeApiKey
         }
       })
 
@@ -213,24 +219,35 @@ export class OAuth2Functions extends Construct {
           props.tokenMappingTableWritePolicy,
           props.tokenMappingTableReadPolicy,
           props.useTokensMappingKmsKeyPolicy,
+          props.stateMappingTableReadPolicy,
+          props.stateMappingTableWritePolicy,
+          props.useStateMappingKmsKeyPolicy,
+          props.sessionStateMappingTableReadPolicy,
+          props.sessionStateMappingTableWritePolicy,
+          props.useSessionStateMappingKmsKeyPolicy,
           props.sharedSecrets.useJwtKmsKeyPolicy,
           props.sharedSecrets.getMockJwtPrivateKeyPolicy
         ],
         logRetentionInDays: props.logRetentionInDays,
         logLevel: props.logLevel,
         packageBasePath: "packages/cognito",
-        entryPoint: "src/token.ts",
+        entryPoint: "src/tokenMock.ts",
         lambdaEnvironmentVariables: {
           TokenMappingTableName: props.tokenMappingTable.tableName,
+          SessionStateMappingTableName: props.sessionStateMappingTable.tableName,
+          StateMappingTableName: props.stateMappingTable.tableName,
           MOCK_IDP_TOKEN_PATH: props.mockOidcTokenEndpoint,
           MOCK_USER_POOL_IDP: props.mockPoolIdentityProviderName,
           MOCK_OIDCJWKS_ENDPOINT: props.mockOidcjwksEndpoint,
           jwtPrivateKeyArn: props.sharedSecrets.mockJwtPrivateKey!.secretArn,
           MOCK_OIDC_CLIENT_ID: props.mockOidcClientId,
+          MOCK_OIDC_TOKEN_ENDPOINT: props.mockOidcTokenEndpoint,
+          MOCK_USER_INFO_ENDPOINT: props.mockOidcUserInfoEndpoint,
           MOCK_OIDC_ISSUER: props.mockOidcIssuer,
           FULL_CLOUDFRONT_DOMAIN: props.fullCloudfrontDomain,
           jwtKid: props.jwtKid,
-          useMock: "true"
+          APIGEE_API_KEY: props.apigeeApiKey,
+          APIGEE_API_SECRET: props.apigeeApiSecret
         }
       })
 
@@ -245,7 +262,10 @@ export class OAuth2Functions extends Construct {
         additionalPolicies: [
           props.stateMappingTableWritePolicy,
           props.stateMappingTableReadPolicy,
-          props.useStateMappingKmsKeyPolicy
+          props.useStateMappingKmsKeyPolicy,
+          props.sessionStateMappingTableReadPolicy,
+          props.sessionStateMappingTableWritePolicy,
+          props.useSessionStateMappingKmsKeyPolicy
         ],
         logRetentionInDays: props.logRetentionInDays,
         logLevel: props.logLevel,
@@ -253,6 +273,7 @@ export class OAuth2Functions extends Construct {
         entryPoint: "src/callbackMock.ts",
         lambdaEnvironmentVariables: {
           StateMappingTableName: props.stateMappingTable.tableName,
+          SessionStateMappingTableName: props.sessionStateMappingTable.tableName,
           COGNITO_CLIENT_ID: props.userPoolClientId,
           COGNITO_DOMAIN: props.fullCognitoDomain,
           MOCK_OIDC_ISSUER: mockOidcIssuer,

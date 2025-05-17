@@ -2,13 +2,14 @@ import {APIGatewayProxyEvent, APIGatewayProxyResult} from "aws-lambda"
 import {Logger} from "@aws-lambda-powertools/logger"
 import {injectLambdaContext} from "@aws-lambda-powertools/logger/middleware"
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
-import {DynamoDBDocumentClient, DeleteCommand} from "@aws-sdk/lib-dynamodb"
+import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
 
 import middy from "@middy/core"
 import inputOutputLogger from "@middy/input-output-logger"
 
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 import {getUsernameFromEvent} from "@cpt-ui-common/authFunctions"
+import {deleteTokenMapping} from "@cpt-ui-common/dynamoFunctions"
 
 const logger = new Logger({serviceName: "CIS2SignOut"})
 
@@ -36,17 +37,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     throw new Error("Trying to use a mock user when mock mode is disabled")
   }
 
-  const docDelete = new DeleteCommand({
-    TableName: tokenMappingTableName,
-    Key: {username}
-  })
-  const response = await documentClient.send(docDelete)
-  logger.info("Attempted to delete record for this user. Dynamo response:", {response, username})
-
-  if (response.$metadata.httpStatusCode !== 200) {
-    logger.error("Failed to delete tokens from dynamoDB", response)
-    throw new Error("Failed to delete tokens from dynamoDB")
-  }
+  await deleteTokenMapping(documentClient, tokenMappingTableName, username, logger)
 
   return {
     statusCode: 200,

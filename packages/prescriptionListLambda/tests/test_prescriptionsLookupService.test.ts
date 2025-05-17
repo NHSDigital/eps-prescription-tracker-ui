@@ -5,7 +5,7 @@ import {
   expect,
   beforeEach
 } from "@jest/globals"
-import {getPrescriptions, PrescriptionError} from "../src/services/prescriptionsLookupService"
+import {getPrescriptions} from "../src/services/prescriptionsLookupService"
 import {Logger} from "@aws-lambda-powertools/logger"
 import {AxiosInstance, AxiosResponse} from "axios"
 import {TreatmentType} from "@cpt-ui-common/common-types"
@@ -79,31 +79,30 @@ describe("Prescriptions Lookup Service Tests", () => {
         data: null
       } as unknown as AxiosResponse)
 
-      await expect(
-        getPrescriptions(
+      const result = await getPrescriptions(
           mockAxiosInstance as unknown as AxiosInstance,
           mockLogger,
           mockEndpoint,
           {prescriptionId: mockPrescriptionId},
           mockAccessToken,
           mockRoleId
-        )
-      ).rejects.toThrow(PrescriptionError)
+      )
+      expect(result).toHaveLength(0)
     })
 
     it("should handle API errors", async () => {
       mockGet.mockRejectedValueOnce(new Error("API Error"))
 
-      await expect(
-        getPrescriptions(
+      const action = getPrescriptions(
           mockAxiosInstance as unknown as AxiosInstance,
           mockLogger,
           mockEndpoint,
           {prescriptionId: mockPrescriptionId},
           mockAccessToken,
           mockRoleId
-        )
-      ).rejects.toThrow(PrescriptionError)
+      )
+      expect(action).rejects.toThrow(Error)
+      await expect(action).rejects.toThrow("API Error")
     })
   })
 
@@ -176,16 +175,17 @@ describe("Prescriptions Lookup Service Tests", () => {
     it("should handle API errors", async () => {
       mockGet.mockRejectedValueOnce(new Error("API Error"))
 
-      await expect(
-        getPrescriptions(
+      const action = getPrescriptions(
           mockAxiosInstance as unknown as AxiosInstance,
           mockLogger,
           mockEndpoint,
           {nhsNumber: mockNhsNumber},
           mockAccessToken,
           mockRoleId
-        )
-      ).rejects.toThrow(PrescriptionError)
+      )
+
+      await expect(action).rejects.toThrow(Error)
+      await expect(action).rejects.toThrow("API Error")
     })
   })
 })

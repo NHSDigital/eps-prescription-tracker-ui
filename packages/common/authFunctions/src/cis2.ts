@@ -4,6 +4,7 @@ import {Logger} from "@aws-lambda-powertools/logger"
 import jwt, {JwtPayload} from "jsonwebtoken"
 import jwksClient from "jwks-rsa"
 import {getUsernameFromEvent} from "./event"
+import {getTokenMapping} from "@cpt-ui-common/dynamoFunctions"
 
 const VALID_ACR_VALUES: Array<string> = [
   "AAL3_ANY",
@@ -104,12 +105,9 @@ export const fetchAndVerifyCIS2Tokens = async (
   logger.info("Extracted username from ID token", {username})
 
   // Fetch CIS2 tokens from DynamoDB
-  const {cis2AccessToken, cis2IdToken} = await fetchCIS2TokensFromDynamoDB(
-    username,
-    oidcConfig.tokenMappingTableName,
-    documentClient,
-    logger
-  )
+  const userRecord = await getTokenMapping(documentClient, oidcConfig.tokenMappingTableName, username, logger)
+  const cis2AccessToken = userRecord.cis2AccessToken
+  const cis2IdToken = userRecord.cis2IdToken
 
   // Verify the id token, access token from cis2 is not a JWT
   await verifyIdToken(cis2IdToken, logger, oidcConfig)
@@ -126,9 +124,21 @@ export interface OidcConfig {
   oidcClientID: string
   oidcJwksEndpoint: string
   oidcUserInfoEndpoint: string
+  oidcTokenEndpoint: string
   userPoolIdp: string
   jwksClient: jwksClient.JwksClient,
   tokenMappingTableName: string
+}
+
+export const decodeToken = (token: string): JwtPayload => {
+  const decodedToken = jwt.decode(token, {complete: true})
+  if (!decodedToken || typeof decodedToken === "string") {
+    throw new Error("Invalid token - token is either undefined or a string")
+  }
+  if (!decodedToken.header.kid) {
+    throw new Error("Invalid token - no KID present")
+  }
+  return decodedToken as JwtPayload
 }
 
 /**
@@ -168,14 +178,9 @@ export const verifyCIS2Token = async (
   }
 
   // Decode the token header to get the kid
-  const decodedToken = jwt.decode(cis2Token, {complete: true})
-  if (!decodedToken || typeof decodedToken === "string") {
-    throw new Error("Invalid token - token is either undefined or a string")
-  }
+  // const decodedToken = jwt.decode(cis2Token, {complete: true})
+  const decodedToken = decodeToken(cis2Token)
   const kid = decodedToken.header.kid
-  if (!kid) {
-    throw new Error("Invalid token - no KID present")
-  }
   logger.info("Token KID", {kid})
 
   // Fetch the signing key from the JWKS endpoint

@@ -1,14 +1,5 @@
 import {jest} from "@jest/globals"
 
-import {
-  getSigningKey,
-  getUsernameFromEvent,
-  fetchCIS2TokensFromDynamoDB,
-  fetchAndVerifyCIS2Tokens,
-  verifyIdToken,
-  OidcConfig
-} from "../src/index"
-
 import {APIGatewayProxyEvent} from "aws-lambda"
 import {Logger} from "@aws-lambda-powertools/logger"
 import jwksClient from "jwks-rsa"
@@ -16,6 +7,22 @@ import jwt from "jsonwebtoken"
 import createJWKSMock from "mock-jwks"
 import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
+
+const mockUpdateTokenMapping = jest.fn()
+const mockGetTokenMapping = jest.fn()
+jest.unstable_mockModule("@cpt-ui-common/dynamoFunctions", () => {
+
+  return {
+    updateTokenMapping: mockUpdateTokenMapping,
+    getTokenMapping: mockGetTokenMapping
+  }
+})
+
+const {getSigningKey,
+  getUsernameFromEvent,
+  fetchCIS2TokensFromDynamoDB,
+  fetchAndVerifyCIS2Tokens,
+  verifyIdToken} = await import("../src/index")
 
 // Common test setup
 const logger = new Logger()
@@ -224,14 +231,15 @@ describe("fetchAndVerifyCIS2Tokens", () => {
     cacheMaxAge: 3600000 // 1 hour
   })
 
-  const oidcConfig: OidcConfig = {
+  const oidcConfig = {
     oidcIssuer: oidcIssuer,
     oidcClientID: oidcClientId,
     oidcJwksEndpoint: "https://dummyauth.com/.well-known/jwks.json",
     oidcUserInfoEndpoint:  "https://dummyauth.com/userinfo",
     userPoolIdp: "DummyPoolIdentityProvider",
     tokenMappingTableName: "dummyTable",
-    jwksClient: client
+    jwksClient: client,
+    oidcTokenEndpoint: "https://dummyauth.com/token"
   }
 
   beforeEach(() => {
@@ -266,6 +274,10 @@ describe("fetchAndVerifyCIS2Tokens", () => {
     })
 
     jest.spyOn(jwt, "verify").mockImplementation(() => cis2IdToken)
+    mockGetTokenMapping.mockImplementationOnce(() => Promise.resolve( {
+      cis2AccessToken: cis2AccessToken,
+      cis2IdToken: cis2IdToken
+    }))
 
     await expect(
       fetchAndVerifyCIS2Tokens(event, documentClient, logger, oidcConfig)
@@ -307,14 +319,15 @@ describe("verifyIdToken", () => {
     cacheMaxAge: 3600000 // 1 hour
   })
 
-  const oidcConfig: OidcConfig = {
+  const oidcConfig = {
     oidcIssuer: oidcIssuer,
     oidcClientID: oidcClientId,
     oidcJwksEndpoint: "https://dummyauth.com/.well-known/jwks.json",
     oidcUserInfoEndpoint:  "https://dummyauth.com/userinfo",
     userPoolIdp: "DummyPoolIdentityProvider",
     tokenMappingTableName: "dummyTable",
-    jwksClient: client
+    jwksClient: client,
+    oidcTokenEndpoint: "https://dummyauth.com/token"
   }
   it("should verify a valid ID token", async () => {
     const payload = createPayload()

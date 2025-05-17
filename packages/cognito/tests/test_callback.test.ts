@@ -6,19 +6,12 @@ import {APIGatewayProxyEvent} from "aws-lambda"
 process.env.StateMappingTableName = "testStateMappingTable"
 process.env.COGNITO_DOMAIN = "cognito.example.com"
 
-// Create a mock for the DynamoDBDocumentClient send method.
-const mockSend = jest.fn().mockImplementation(async () => Promise.resolve({}))
-
-// Mock the @aws-sdk/lib-dynamodb module so that calls to DynamoDB are intercepted.
-jest.unstable_mockModule("@aws-sdk/lib-dynamodb", () => {
+const mockDeleteStateMapping = jest.fn()
+const mockGetStateMapping = jest.fn()
+jest.unstable_mockModule("@cpt-ui-common/dynamoFunctions", () => {
   return {
-    DynamoDBDocumentClient: {
-      from: () => ({
-        send: mockSend
-      })
-    },
-    DeleteCommand: jest.fn(),
-    GetCommand: jest.fn()
+    deleteStateMapping: mockDeleteStateMapping,
+    getStateMapping: mockGetStateMapping
   }
 })
 
@@ -26,12 +19,12 @@ jest.unstable_mockModule("@aws-sdk/lib-dynamodb", () => {
 import {mockAPIGatewayProxyEvent, mockContext} from "./mockObjects"
 const {handler} = await import("../src/callback")
 
-describe("IDP Response Lambda Handler", () => {
+describe("callback handler", () => {
   beforeEach(() => {
     jest.clearAllMocks()
   })
 
-  test("should redirect to Cognito with correct parameters", async () => {
+  it("should redirect to Cognito with correct parameters", async () => {
     // Prepare an event with valid query parameters.
     const event: APIGatewayProxyEvent = {
       ...mockAPIGatewayProxyEvent,
@@ -50,11 +43,7 @@ describe("IDP Response Lambda Handler", () => {
       Ttl: 123456,
       UseMock: true
     }
-
-    // First call for GetCommand returns the state item.
-    mockSend.mockImplementationOnce(() => Promise.resolve({Item: stateItem}))
-    // Second call for DeleteCommand returns an empty object.
-    mockSend.mockImplementationOnce(() => Promise.resolve({}))
+    mockGetStateMapping.mockImplementationOnce(() => Promise.resolve(stateItem))
 
     const result = await handler(event, mockContext)
     expect(result.statusCode).toBe(302)
@@ -70,10 +59,11 @@ describe("IDP Response Lambda Handler", () => {
     expect(redirectUrl.pathname).toBe("/oauth2/idpresponse")
 
     // Ensure DynamoDB commands were executed (one for Get, one for Delete).
-    expect(mockSend).toHaveBeenCalledTimes(2)
+    expect(mockGetStateMapping).toHaveBeenCalledTimes(1)
+    expect(mockDeleteStateMapping).toHaveBeenCalledTimes(1)
   })
 
-  test("should throw error if missing required query parameters", async () => {
+  it("should throw error if missing required query parameters", async () => {
     const event: APIGatewayProxyEvent = {
       ...mockAPIGatewayProxyEvent,
       queryStringParameters: {
@@ -88,7 +78,7 @@ describe("IDP Response Lambda Handler", () => {
     )
   })
 
-  test("should throw error if state not found in DynamoDB", async () => {
+  it("should throw error if state not found in DynamoDB", async () => {
     const event: APIGatewayProxyEvent = {
       ...mockAPIGatewayProxyEvent,
       queryStringParameters: {
@@ -99,9 +89,7 @@ describe("IDP Response Lambda Handler", () => {
     }
 
     // For GetCommand, simulate that no item is found.
-    mockSend.mockImplementationOnce(() => Promise.resolve({}))
-    // Simulate DeleteCommand call (even if not used).
-    mockSend.mockImplementationOnce(() => Promise.resolve({}))
+    mockGetStateMapping.mockImplementationOnce(() => Promise.reject(new Error("there was a problem")))
 
     await expect(handler(event, mockContext)).resolves.toStrictEqual(
       {"message": "A system error has occurred"}

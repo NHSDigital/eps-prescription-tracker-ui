@@ -122,6 +122,7 @@ export class LambdaFunction extends Construct {
     })
 
     props.lambdaEnvironmentVariables["LOG_LEVEL"] = props.logLevel
+    props.lambdaEnvironmentVariables["NODE_OPTIONS"] = "--enable-source-maps"
 
     const lambdaFunction = new NodejsFunction(this, props.lambdaName, {
       ...lambdaOptions,

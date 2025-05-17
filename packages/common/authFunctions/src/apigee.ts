@@ -4,8 +4,8 @@ import {v4 as uuidv4} from "uuid"
 import axios, {AxiosInstance} from "axios"
 import {ParsedUrlQuery, stringify} from "querystring"
 import {handleAxiosError} from "./errorUtils"
-import {DynamoDBDocumentClient, UpdateCommand} from "@aws-sdk/lib-dynamodb"
-
+import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
+import {getTokenMapping} from "@cpt-ui-common/dynamoFunctions"
 /**
  * Constructs a new body for the token exchange, including a signed JWT
  * @param logger - Logger instance for logging
@@ -77,7 +77,7 @@ export const exchangeTokenForApigeeAccessToken = async (
   apigeeTokenEndpoint: string,
   requestBody: ParsedUrlQuery,
   logger: Logger
-): Promise<{accessToken: string; expiresIn: number}> => {
+): Promise<{accessToken: string; refreshToken: string; expiresIn: number}> => {
   logger.info("Initiating token exchange request", {apigeeTokenEndpoint})
 
   try {
@@ -91,11 +91,13 @@ export const exchangeTokenForApigeeAccessToken = async (
     }
 
     logger.debug("Successfully exchanged token for Apigee access token", {
+      refreshToken: response.data.refresh_token,
       accessToken: response.data.access_token,
       expiresIn: response.data.expires_in
     })
 
     return {
+      refreshToken: response.data.refresh_token,
       accessToken: response.data.access_token,
       expiresIn: response.data.expires_in
     }
@@ -110,48 +112,122 @@ export const exchangeTokenForApigeeAccessToken = async (
 }
 
 /**
- * Updates the Apigee access token in DynamoDB.
+ * Checks if a valid Apigee access token exists for a user in DynamoDB
  * @param documentClient - DynamoDB DocumentClient instance
  * @param tableName - Name of the DynamoDB table
- * @param username - Username for which to update the token
- * @param accessToken - Access token to update
- * @param expiresIn - Token expiry duration in seconds
+ * @param username - Username for which to check the token
  * @param logger - Logger instance for logging
+ * @returns The existing token and expiry time if valid, null otherwise
  */
-export const updateApigeeAccessToken = async (
+export const getExistingApigeeAccessToken = async (
   documentClient: DynamoDBDocumentClient,
   tableName: string,
   username: string,
-  accessToken: string,
-  expiresIn: number,
   logger: Logger
-): Promise<void> => {
-  const currentTime = Math.floor(Date.now() / 1000)
-
-  logger.debug("Updating DynamoDB with new Apigee access token", {
+): Promise<{
+  apigeeAccessToken: string;
+  apigeeRefreshToken?: string;
+  apigeeExpiresIn: number;
+  roleId?: string;
+  cis2IdToken?: string;
+  cis2AccessToken?: string;
+} | null> => {
+  logger.debug("Checking for existing Apigee access token in DynamoDB", {
     username,
-    accessToken,
-    expiresIn
+    tableName
   })
 
   try {
-    const expiryTimestamp = currentTime + Number(expiresIn)
+    // Get the user record from DynamoDB
+    const userRecord = await getTokenMapping(documentClient, tableName, username, logger)
 
-    await documentClient.send(
-      new UpdateCommand({
-        TableName: tableName,
-        Key: {username},
-        UpdateExpression: "SET Apigee_accessToken = :apigeeAccessToken, Apigee_expiresIn = :apigeeExpiresIn",
-        ExpressionAttributeValues: {
-          ":apigeeAccessToken": accessToken,
-          ":apigeeExpiresIn": expiryTimestamp
-        }
+    // Check if Apigee access token exists
+    if (userRecord.apigeeAccessToken && userRecord.apigeeExpiresIn) {
+      const currentTime = Math.floor(Date.now() / 1000)
+
+      logger.info("Found existing Apigee access token", {
+        username,
+        expiresIn: userRecord.apigeeExpiresIn - currentTime,
+        hasRefreshToken: !!userRecord.apigeeRefreshToken
       })
-    )
 
-    logger.info("Apigee Access token successfully updated in DynamoDB")
+      return {
+        apigeeAccessToken: userRecord.apigeeAccessToken,
+        apigeeRefreshToken: userRecord.apigeeRefreshToken,
+        apigeeExpiresIn: userRecord.apigeeExpiresIn,
+        roleId: userRecord.selectedRoleId,
+        cis2IdToken: userRecord.cis2IdToken,
+        cis2AccessToken: userRecord.cis2AccessToken
+      }
+    } else {
+      logger.debug("No Apigee token found in user record", {username})
+    }
+
+    return null
   } catch (error) {
-    logger.error("Failed to update Apigee access token in DynamoDB", {error})
-    throw new Error("Failed to update Apigee access token in DynamoDB")
+    logger.error("Error retrieving Apigee access token from DynamoDB", {error, username})
+    return null
   }
+}
+
+/**
+ * Refreshes an Apigee access token using a refresh token
+ */
+export const refreshApigeeAccessToken = async (
+  axiosInstance: AxiosInstance,
+  apigeeTokenEndpoint: string,
+  refreshToken: string,
+  apigeeApiKey: string,
+  apigeeApiSecret: string,
+  logger: Logger
+): Promise<{
+  accessToken: string;
+  refreshToken: string;
+  expiresIn: number;
+  refreshTokenExpiresIn: number;
+}> => {
+
+  logger.info("Refreshing Apigee access token", {
+    apigeeTokenEndpoint,
+    refreshToken,
+    apigeeApiKey
+  })
+
+  const requestBody: Record<string, string> = {
+    grant_type: "refresh_token",
+    refresh_token: refreshToken,
+    client_id: apigeeApiKey,
+    client_secret: apigeeApiSecret
+  }
+
+  // Make the token refresh request
+  const response = await axiosInstance.post(
+    apigeeTokenEndpoint,
+    stringify(requestBody),
+    {
+      headers: {"Content-Type": "application/x-www-form-urlencoded"}
+    })
+
+  // Validate the response
+  if (!response.data?.access_token || !response.data?.expires_in) {
+    logger.error("Invalid response from Apigee token refresh", {response: response.data})
+    throw new Error("Invalid response from Apigee token refresh endpoint")
+  }
+
+  logger.info("Successfully refreshed Apigee access token")
+
+  // Build the result object
+  const result: {
+    accessToken: string;
+    refreshToken: string;
+    expiresIn: number;
+    refreshTokenExpiresIn: number;
+  } = {
+    accessToken: response.data.access_token,
+    expiresIn: response.data.expires_in,
+    refreshToken: response.data.refresh_token,
+    refreshTokenExpiresIn: response.data.refresh_token_expires_in
+  }
+
+  return result
 }

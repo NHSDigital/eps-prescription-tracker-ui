@@ -16,7 +16,7 @@ export const getPdsPatientDetails = async (
 ): Promise<PatientAPIResponse> => {
   const startTime = Date.now()
   logger.info("Fetching patient details from PDS", {nhsNumber})
-
+  // TODO: address nhs-urid being invalid (make sure to pass correct role)
   try {
     const response = await axiosInstance.get(
       `${pdsEndpoint}/Patient/${nhsNumber}`,

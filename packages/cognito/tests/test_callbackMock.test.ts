@@ -5,19 +5,14 @@ import {APIGatewayProxyEvent} from "aws-lambda"
 process.env.StateMappingTableName = "testStateMappingTable"
 process.env.COGNITO_DOMAIN = "cognito.example.com"
 
-// Create a mock for the DynamoDBDocumentClient send method.
-const mockSend = jest.fn().mockImplementation(async () => Promise.resolve({}))
-
-// Mock the @aws-sdk/lib-dynamodb module so that calls to DynamoDB are intercepted.
-jest.unstable_mockModule("@aws-sdk/lib-dynamodb", () => {
+const mockDeleteStateMapping = jest.fn()
+const mockGetStateMapping = jest.fn()
+const mockInsertSessionState = jest.fn()
+jest.unstable_mockModule("@cpt-ui-common/dynamoFunctions", () => {
   return {
-    DynamoDBDocumentClient: {
-      from: () => ({
-        send: mockSend
-      })
-    },
-    DeleteCommand: jest.fn(),
-    GetCommand: jest.fn()
+    deleteStateMapping: mockDeleteStateMapping,
+    getStateMapping: mockGetStateMapping,
+    insertSessionState: mockInsertSessionState
   }
 })
 
@@ -25,12 +20,12 @@ jest.unstable_mockModule("@aws-sdk/lib-dynamodb", () => {
 import {mockAPIGatewayProxyEvent, mockContext} from "./mockObjects"
 const {handler} = await import("../src/callbackMock")
 
-describe("Callback Response Lambda Handler", () => {
+describe("Callback mock handler", () => {
   beforeEach(() => {
     jest.clearAllMocks()
   })
 
-  test("should redirect to pull request with correct parameters", async () => {
+  it("should redirect to pull request with correct parameters", async () => {
     // Prepare an event with valid query parameters.
     const stateObject = {
       isPullRequest: true,

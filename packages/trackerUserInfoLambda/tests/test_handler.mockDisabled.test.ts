@@ -1,34 +1,40 @@
 import {jest} from "@jest/globals"
 import jwksClient from "jwks-rsa"
 import {OidcConfig} from "@cpt-ui-common/authFunctions"
+import {Logger} from "@aws-lambda-powertools/logger"
 
 const TokenMappingTableName = process.env.TokenMappingTableName
 
 const CIS2_OIDC_ISSUER = process.env.CIS2_OIDC_ISSUER
 const CIS2_OIDC_CLIENT_ID = process.env.CIS2_OIDC_CLIENT_ID
-//const CIS2_OIDC_HOST = process.env.CIS2_OIDC_HOST ?? ""
 const CIS2_OIDCJWKS_ENDPOINT = process.env.CIS2_OIDCJWKS_ENDPOINT
 const CIS2_USER_INFO_ENDPOINT = process.env.CIS2_USER_INFO_ENDPOINT
 const CIS2_USER_POOL_IDP = process.env.CIS2_USER_POOL_IDP
-//const CIS2_IDP_TOKEN_PATH = process.env.CIS2_IDP_TOKEN_PATH ?? ""
 
-//const MOCK_OIDC_ISSUER = process.env.MOCK_OIDC_ISSUER
-//const MOCK_OIDC_CLIENT_ID = process.env.MOCK_OIDC_CLIENT_ID
-//const MOCK_OIDC_HOST = process.env.MOCK_OIDC_HOST ?? ""
-//const MOCK_OIDCJWKS_ENDPOINT = process.env.MOCK_OIDCJWKS_ENDPOINT
-//const MOCK_USER_INFO_ENDPOINT = process.env.MOCK_USER_INFO_ENDPOINT
-//const MOCK_USER_POOL_IDP = process.env.MOCK_USER_POOL_IDP
-//const MOCK_IDP_TOKEN_PATH = process.env.MOCK_IDP_TOKEN_PATH
+const MOCK_OIDC_ISSUER = process.env.MOCK_OIDC_ISSUER
+const MOCK_OIDC_CLIENT_ID = process.env.MOCK_OIDC_CLIENT_ID
+const MOCK_OIDCJWKS_ENDPOINT = process.env.MOCK_OIDCJWKS_ENDPOINT
+const MOCK_USER_INFO_ENDPOINT = process.env.MOCK_USER_INFO_ENDPOINT
+const MOCK_USER_POOL_IDP = process.env.MOCK_USER_POOL_IDP
 
 process.env.MOCK_MODE_ENABLED = "false"
 
-// Mocked functions from cis2TokenHelpers
-const mockFetchAndVerifyCIS2Tokens = jest.fn()
+const mockGetTokenMapping = jest.fn()
+const mockUpdateTokenMapping = jest.fn()
+jest.unstable_mockModule("@cpt-ui-common/dynamoFunctions", () => {
+  return {
+    getTokenMapping: mockGetTokenMapping,
+    updateTokenMapping: mockUpdateTokenMapping
+  }
+})
+
+// Mocked functions from authFunctions
 const mockGetUsernameFromEvent = jest.fn()
 const mockInitializeOidcConfig = jest.fn()
+const mockAuthenticateRequest = jest.fn()
 
 jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
-  const fetchAndVerifyCIS2Tokens = mockFetchAndVerifyCIS2Tokens.mockImplementation(async () => {
+  const fetchAndVerifyCIS2Tokens = mockAuthenticateRequest.mockImplementation(async () => {
     return {
       cis2IdToken: "idToken",
       cis2AccessToken: "accessToken"
@@ -39,9 +45,20 @@ jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
     return "Primary_JoeBloggs"
   })
 
+  const authenticateRequest = mockAuthenticateRequest.mockImplementation(async (event) => {
+    const username = mockGetUsernameFromEvent(event) as string
+
+    return {
+      username,
+      cis2AccessToken: "foo",
+      cis2IdToken: "mock-id-token",
+      roleId: "test-role",
+      isMockRequest: false
+    }
+  })
+
   const initializeOidcConfig = mockInitializeOidcConfig.mockImplementation(() => {
     // Create a JWKS client for cis2 and mock
-    // this is outside functions so it can be re-used
     const cis2JwksUri = process.env["CIS2_OIDCJWKS_ENDPOINT"] as string
     const cis2JwksClient = jwksClient({
       jwksUri: cis2JwksUri,
@@ -57,7 +74,8 @@ jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
       oidcUserInfoEndpoint: process.env["CIS2_USER_INFO_ENDPOINT"] ?? "",
       userPoolIdp: process.env["CIS2_USER_POOL_IDP"] ?? "",
       jwksClient: cis2JwksClient,
-      tokenMappingTableName: process.env["TokenMappingTableName"] ?? ""
+      tokenMappingTableName: process.env["TokenMappingTableName"] ?? "",
+      oidcTokenEndpoint: "https://dummyauth.com/token"
     }
 
     const mockJwksUri = process.env["MOCK_OIDCJWKS_ENDPOINT"] as string
@@ -75,7 +93,8 @@ jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
       oidcUserInfoEndpoint: process.env["MOCK_USER_INFO_ENDPOINT"] ?? "",
       userPoolIdp: process.env["MOCK_USER_POOL_IDP"] ?? "",
       jwksClient: mockJwksClient,
-      tokenMappingTableName: process.env["TokenMappingTableName"] ?? ""
+      tokenMappingTableName: process.env["TokenMappingTableName"] ?? "",
+      oidcTokenEndpoint: "https://dummyauth.com/token"
     }
 
     return {cis2OidcConfig, mockOidcConfig}
@@ -84,14 +103,13 @@ jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
   return {
     fetchAndVerifyCIS2Tokens,
     getUsernameFromEvent,
-    initializeOidcConfig
+    initializeOidcConfig,
+    authenticateRequest
   }
 })
 
 // Mocked functions from userInfoHelpers
 const mockFetchUserInfo = jest.fn()
-const mockUpdateDynamoTable = jest.fn()
-const mockFetchDynamoTable = jest.fn()
 
 jest.unstable_mockModule("@/userInfoHelpers", () => {
   const fetchUserInfo = mockFetchUserInfo.mockImplementation(() => {
@@ -101,32 +119,31 @@ jest.unstable_mockModule("@/userInfoHelpers", () => {
       selected_role: {}
     }
   })
-
-  const updateDynamoTable = mockUpdateDynamoTable.mockImplementation(() => {})
-
-  const fetchDynamoTable = mockFetchDynamoTable.mockImplementation(() => {})
-
   return {
-    fetchUserInfo,
-    updateDynamoTable,
-    fetchDynamoTable
+    fetchUserInfo
   }
 })
 
 const {handler} = await import("@/handler")
 import {mockContext, mockAPIGatewayProxyEvent} from "./mockObjects"
-import {Logger} from "@aws-lambda-powertools/logger"
 
 describe("Lambda Handler Tests with mock disabled", () => {
   let event = {...mockAPIGatewayProxyEvent}
   let context = {...mockContext}
 
   it("should return a successful response when called normally", async () => {
+    mockGetTokenMapping.mockImplementationOnce(() => Promise.resolve( {
+      username: "testUser",
+      apigeeAccessToken: "valid-token",
+      apigeeIdToken: "id-token",
+      apigeeRefreshToken: "refresh-token",
+      selectedRoleId: "role-id"
+    }))
     const response = await handler(event, context)
 
-    expect(mockFetchAndVerifyCIS2Tokens).toHaveBeenCalled()
+    expect(mockAuthenticateRequest).toHaveBeenCalled()
     expect(mockFetchUserInfo).toHaveBeenCalled()
-    expect(mockUpdateDynamoTable).toHaveBeenCalled()
+    expect(mockUpdateTokenMapping).toHaveBeenCalled()
 
     expect(response).toBeDefined()
     expect(response).toHaveProperty("statusCode", 200)
@@ -140,19 +157,28 @@ describe("Lambda Handler Tests with mock disabled", () => {
   it("should use cis2 values when username does not start with Mock_",
     async () => {
       mockGetUsernameFromEvent.mockReturnValue("Primary_JohnDoe")
+      mockGetTokenMapping.mockImplementationOnce(() => Promise.resolve( {
+        username: "testUser",
+        apigeeAccessToken: "valid-token",
+        apigeeIdToken: "id-token",
+        apigeeRefreshToken: "refresh-token",
+        selectedRoleId: "role-id"
+      }))
       await handler(event, context)
       expect(mockGetUsernameFromEvent).toHaveBeenCalled()
-      expect(mockFetchAndVerifyCIS2Tokens).toHaveBeenCalledWith(
+      expect(mockAuthenticateRequest).toHaveBeenCalledWith(
         expect.any(Object),
         expect.any(Object),
         expect.any(Object),
         expect.objectContaining({
-          oidcIssuer: CIS2_OIDC_ISSUER,
-          oidcClientID: CIS2_OIDC_CLIENT_ID,
-          oidcJwksEndpoint: CIS2_OIDCJWKS_ENDPOINT,
-          oidcUserInfoEndpoint: CIS2_USER_INFO_ENDPOINT,
-          userPoolIdp: CIS2_USER_POOL_IDP,
-          tokenMappingTableName: TokenMappingTableName
+          oidcConfig: expect.objectContaining({
+            oidcIssuer: CIS2_OIDC_ISSUER,
+            oidcClientID: CIS2_OIDC_CLIENT_ID,
+            oidcJwksEndpoint: CIS2_OIDCJWKS_ENDPOINT,
+            oidcUserInfoEndpoint: CIS2_USER_INFO_ENDPOINT,
+            userPoolIdp: CIS2_USER_POOL_IDP,
+            tokenMappingTableName: TokenMappingTableName
+          })
         })
       )
 
@@ -160,7 +186,6 @@ describe("Lambda Handler Tests with mock disabled", () => {
         expect.any(String),
         expect.any(String),
         expect.any(Object),
-        expect.any(Object),
         expect.objectContaining({
           oidcIssuer: CIS2_OIDC_ISSUER,
           oidcClientID: CIS2_OIDC_CLIENT_ID,
@@ -172,20 +197,248 @@ describe("Lambda Handler Tests with mock disabled", () => {
       )
     })
 
-  it("should throw an error when username starts with Mock_",
+  it("should use mock values when username does start with Mock_",
     async () => {
-      mockGetUsernameFromEvent.mockReturnValue("Mock_JaneDoe")
-      const loggerSpy = jest.spyOn(Logger.prototype, "error")
-
-      const response = await handler(event, context)
-      expect(response).toMatchObject({
-        message: "A system error has occurred"
-      })
-      expect(mockFetchUserInfo).not.toHaveBeenCalled()
-      expect(mockUpdateDynamoTable).not.toHaveBeenCalled()
-      expect(loggerSpy).toHaveBeenCalledWith(
+      mockGetUsernameFromEvent.mockReturnValue("Mock_JohnDoe")
+      mockGetTokenMapping.mockImplementationOnce(() => Promise.resolve( {
+        username: "testUser",
+        apigeeAccessToken: "valid-token",
+        apigeeIdToken: "id-token",
+        apigeeRefreshToken: "refresh-token",
+        selectedRoleId: "role-id"
+      }))
+      await handler(event, context)
+      expect(mockGetUsernameFromEvent).toHaveBeenCalled()
+      expect(mockAuthenticateRequest).toHaveBeenCalledWith(
         expect.any(Object),
-        "Error: Trying to use a mock user when mock mode is disabled"
+        expect.any(Object),
+        expect.any(Object),
+        expect.objectContaining({
+          oidcConfig: expect.objectContaining({
+            oidcIssuer: MOCK_OIDC_ISSUER,
+            oidcClientID: MOCK_OIDC_CLIENT_ID,
+            oidcJwksEndpoint: MOCK_OIDCJWKS_ENDPOINT,
+            oidcUserInfoEndpoint: MOCK_USER_INFO_ENDPOINT,
+            userPoolIdp: MOCK_USER_POOL_IDP,
+            tokenMappingTableName: TokenMappingTableName
+          })
+        })
+      )
+
+      expect(mockFetchUserInfo).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.any(String),
+        expect.any(Object),
+        expect.objectContaining({
+          oidcIssuer: MOCK_OIDC_ISSUER,
+          oidcClientID: MOCK_OIDC_CLIENT_ID,
+          oidcJwksEndpoint: MOCK_OIDCJWKS_ENDPOINT,
+          oidcUserInfoEndpoint: MOCK_USER_INFO_ENDPOINT,
+          userPoolIdp: MOCK_USER_POOL_IDP,
+          tokenMappingTableName: TokenMappingTableName
+        })
       )
     })
+
+  it("should return error when authenticateRequest throws an error", async () => {
+    const error = new Error("Token verification failed")
+    const loggerSpy = jest.spyOn(Logger.prototype, "error")
+    mockGetTokenMapping.mockImplementationOnce(() => Promise.resolve( {
+      username: "testUser",
+      apigeeAccessToken: "valid-token",
+      apigeeIdToken: "id-token",
+      apigeeRefreshToken: "refresh-token",
+      selectedRoleId: "role-id"
+    }))
+
+    // Important: Use implementation, not return value
+    mockAuthenticateRequest.mockImplementationOnce(() => {
+      throw error
+    })
+
+    const response = await handler(event, context)
+
+    // Check response format matches what the middleware produces
+    expect(response).toMatchObject({
+      message: "A system error has occurred"
+    })
+
+    expect(loggerSpy).toHaveBeenCalledWith(
+      expect.any(Object),
+      "Error: Token verification failed"
+    )
+    expect(mockFetchUserInfo).not.toHaveBeenCalled()
+    expect(mockUpdateTokenMapping).not.toHaveBeenCalled()
+  })
+
+  it("should return error when fetchUserInfo throws an error", async () => {
+    const error = new Error("User info fetch failed")
+    mockGetTokenMapping.mockImplementationOnce(() => Promise.resolve( {
+      username: "testUser",
+      apigeeAccessToken: "valid-token",
+      apigeeIdToken: "id-token",
+      apigeeRefreshToken: "refresh-token",
+      selectedRoleId: "role-id"
+    }))
+    const loggerSpy = jest.spyOn(Logger.prototype, "error")
+
+    // Use implementation to throw an error synchronously
+    mockFetchUserInfo.mockImplementationOnce(() => {
+      throw error
+    })
+
+    const response = await handler(event, context)
+    expect(response).toMatchObject({
+      message: "A system error has occurred"
+    })
+
+    expect(loggerSpy).toHaveBeenCalledWith(
+      expect.any(Object),
+      "Error: User info fetch failed"
+    )
+    expect(mockUpdateTokenMapping).not.toHaveBeenCalled()
+  })
+
+  it("should return error when updateDynamoTable throws an error", async () => {
+    const error = new Error("Dynamo update failed")
+    const loggerSpy = jest.spyOn(Logger.prototype, "error")
+
+    // Use implementation to throw an error synchronously
+    mockUpdateTokenMapping.mockImplementationOnce(() => {
+      throw error
+    })
+    mockGetTokenMapping.mockImplementationOnce(() => Promise.resolve( {
+      username: "testUser",
+      apigeeAccessToken: "valid-token",
+      apigeeIdToken: "id-token",
+      apigeeRefreshToken: "refresh-token",
+      selectedRoleId: "role-id"
+    }))
+
+    const response = await handler(event, context)
+    expect(response).toMatchObject({
+      message: "A system error has occurred"
+    })
+
+    expect(loggerSpy).toHaveBeenCalledWith(
+      expect.any(Object),
+      "Error: Dynamo update failed"
+    )
+  })
+
+  it("should return user info if roles_with_access is not empty", async () => {
+    const testUsername = "Mock_JaneDoe"
+    mockGetUsernameFromEvent.mockReturnValue(testUsername)
+    mockGetTokenMapping.mockImplementationOnce(() => Promise.resolve( {
+      username: "testUser",
+      apigeeAccessToken: "valid-token",
+      apigeeIdToken: "id-token",
+      apigeeRefreshToken: "refresh-token",
+      selectedRoleId: "role-id",
+      rolesWithAccess: [
+        {role_name: "Doctor", role_id: "123", org_code: "ABC", org_name: "Test Hospital"}
+      ],
+      rolesWithoutAccess: [],
+      currentlySelectedRole: {
+        role_name: "Doctor",
+        role_id: "123",
+        org_code: "ABC",
+        org_name: "Test Hospital"
+      },
+      userDetails: {family_name: "Doe", given_name: "John"}
+    }))
+
+    const response = await handler(event, context)
+
+    expect(response.statusCode).toBe(200)
+    expect(response.body).toContain("UserInfo fetched successfully from DynamoDB")
+
+    const responseBody = JSON.parse(response.body)
+    expect(responseBody.userInfo).toEqual({
+      "currently_selected_role":       {
+        "org_code": "ABC", "org_name": "Test Hospital", "role_id": "123", "role_name": "Doctor"
+      },
+      "roles_with_access": [{"org_code": "ABC", "org_name": "Test Hospital", "role_id": "123", "role_name": "Doctor"}],
+      "roles_without_access": [],
+      "user_details": {"family_name": "Doe", "given_name": "John"}}
+    )
+  })
+
+  it("should return user info if roles_without_access is not empty", async () => {
+    const testUsername = "Mock_JaneDoe"
+    mockGetUsernameFromEvent.mockReturnValue(testUsername)
+    mockGetTokenMapping.mockImplementationOnce(() => Promise.resolve( {
+      username: "testUser",
+      apigeeAccessToken: "valid-token",
+      apigeeIdToken: "id-token",
+      apigeeRefreshToken: "refresh-token",
+      selectedRoleId: "role-id",
+      rolesWithAccess: [
+        {role_name: "Doctor", role_id: "123", org_code: "ABC", org_name: "Test Hospital"}
+      ],
+      rolesWithoutAccess: [
+        {role_name: "Receptionist", role_id: "456", org_code: "DEF", org_name: "Test Hospital"}
+      ],
+      currentlySelectedRole: {
+        role_name: "Doctor",
+        role_id: "123",
+        org_code: "ABC",
+        org_name: "Test Hospital"
+      },
+      userDetails: {family_name: "Doe", given_name: "John"}
+    }))
+
+    const response = await handler(event, context)
+
+    expect(response.statusCode).toBe(200)
+    expect(response.body).toContain("UserInfo fetched successfully from DynamoDB")
+
+    const responseBody = JSON.parse(response.body)
+    expect(responseBody.userInfo).toEqual({
+      "currently_selected_role":       {
+        "org_code": "ABC", "org_name": "Test Hospital", "role_id": "123", "role_name": "Doctor"
+      },
+      "roles_with_access": [{"org_code": "ABC", "org_name": "Test Hospital", "role_id": "123", "role_name": "Doctor"}],
+      "roles_without_access": [
+        {role_name: "Receptionist", role_id: "456", org_code: "DEF", org_name: "Test Hospital"}
+      ],
+      "user_details": {"family_name": "Doe", "given_name": "John"}}
+    )
+  })
+
+  it("should return cached user info even if currently_selected_role is undefined", async () => {
+    const testUsername = "Mock_JaneDoe"
+    mockGetUsernameFromEvent.mockReturnValue(testUsername)
+    mockGetTokenMapping.mockImplementationOnce(() => Promise.resolve( {
+      username: "testUser",
+      apigeeAccessToken: "valid-token",
+      apigeeIdToken: "id-token",
+      apigeeRefreshToken: "refresh-token",
+      selectedRoleId: "role-id",
+      rolesWithAccess: [
+        {role_name: "Doctor", role_id: "123", org_code: "ABC", org_name: "Test Hospital"}
+      ],
+      rolesWithoutAccess: [
+        {role_name: "Receptionist", role_id: "456", org_code: "DEF", org_name: "Test Hospital"}
+      ],
+      currentlySelectedRole: {},
+      userDetails: {family_name: "Doe", given_name: "John"}
+    }))
+
+    const response = await handler(event, context)
+
+    expect(response.statusCode).toBe(200)
+    expect(response.body).toContain("UserInfo fetched successfully from DynamoDB")
+
+    const responseBody = JSON.parse(response.body)
+    expect(responseBody.userInfo).toEqual({
+      "currently_selected_role":  {},
+      "roles_with_access": [{"org_code": "ABC", "org_name": "Test Hospital", "role_id": "123", "role_name": "Doctor"}],
+      "roles_without_access": [
+        {role_name: "Receptionist", role_id: "456", org_code: "DEF", org_name: "Test Hospital"}
+      ],
+      "user_details": {"family_name": "Doe", "given_name": "John"}}
+    )
+  })
+
 })

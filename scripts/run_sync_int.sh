@@ -123,7 +123,7 @@ RUM_APP_NAME=$(echo "$CF_LONDON_EXPORTS" | \
     --arg EXPORT_NAME "${SERVICE_NAME}-stateful-resources:rum:rumApp:Name" \
     -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
 EPS_HOSTED_ZONE_ID=$(echo "$CF_LONDON_EXPORTS" | jq -r '.Exports[] | select(.Name == "eps-route53-resources:EPS-ZoneID") | .Value')
-USE_MOCK_OIDC=true
+USE_MOCK_OIDC=false
 PRIMARY_OIDC_CLIENT_ID=$(echo "$CF_LONDON_EXPORTS" | \
     jq \
     --arg EXPORT_NAME "${SERVICE_NAME}-stateful-resources:local:primaryOidcClientId" \
@@ -148,34 +148,10 @@ PRIMARY_OIDC_JWKS_ENDPOINT=$(echo "$CF_LONDON_EXPORTS" | \
     jq \
     --arg EXPORT_NAME "${SERVICE_NAME}-stateful-resources:local:primaryOidcjwksEndpoint" \
     -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
-MOCK_OIDC_CLIENT_ID=$(echo "$CF_LONDON_EXPORTS" | \
-    jq \
-    --arg EXPORT_NAME "${SERVICE_NAME}-stateful-resources:local:mockOidcClientId" \
-    -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
-MOCK_OIDC_ISSUER=$(echo "$CF_LONDON_EXPORTS" | \
-    jq \
-    --arg EXPORT_NAME "${SERVICE_NAME}-stateful-resources:local:mockOidcIssuer" \
-    -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
-MOCK_OIDC_AUTHORIZE_ENDPOINT=$(echo "$CF_LONDON_EXPORTS" | \
-    jq \
-    --arg EXPORT_NAME "${SERVICE_NAME}-stateful-resources:local:mockOidcAuthorizeEndpoint" \
-    -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
-MOCK_OIDC_TOKEN_ENDPOINT=$(echo "$CF_LONDON_EXPORTS" | \
-    jq \
-    --arg EXPORT_NAME "${SERVICE_NAME}-stateful-resources:local:mockOidcTokenEndpoint" \
-    -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
-MOCK_OIDC_USERINFO_ENDPOINT=$(echo "$CF_LONDON_EXPORTS" | \
-    jq \
-    --arg EXPORT_NAME "${SERVICE_NAME}-stateful-resources:local:mockOidcUserInfoEndpoint" \
-    -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
-MOCK_OIDC_JWKS_ENDPOINT=$(echo "$CF_LONDON_EXPORTS" | \
-    jq \
-    --arg EXPORT_NAME "${SERVICE_NAME}-stateful-resources:local:mockOidcjwksEndpoint" \
-    -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
 LOG_RETENTION_IN_DAYS=30
 LOG_LEVEL=debug
 USE_CUSTOM_COGNITO_DOMAIN=false
-ALLOW_LOCALHOST_ACCESS=true
+ALLOW_LOCALHOST_ACCESS=false
 APIGEE_API_KEY=$(echo "$CF_LONDON_EXPORTS" | \
     jq \
     --arg EXPORT_NAME "${SERVICE_NAME}-stateless-resources:local:apigeeApiKey" \

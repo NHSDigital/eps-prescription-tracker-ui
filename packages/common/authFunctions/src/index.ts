@@ -1,4 +1,3 @@
-
 import {getUsernameFromEvent} from "./event"
 import {initializeOidcConfig} from "./initialization"
 
@@ -7,10 +6,18 @@ import {
   fetchCIS2TokensFromDynamoDB,
   fetchAndVerifyCIS2Tokens,
   verifyIdToken,
-  OidcConfig
+  OidcConfig,
+  decodeToken
 } from "./cis2"
 
-import {constructSignedJWTBody, exchangeTokenForApigeeAccessToken, updateApigeeAccessToken} from "./apigee"
+import {
+  constructSignedJWTBody,
+  exchangeTokenForApigeeAccessToken,
+  getExistingApigeeAccessToken,
+  refreshApigeeAccessToken
+} from "./apigee"
+
+import {authenticateRequest} from "./authenticateRequest"
 
 export {
   getUsernameFromEvent,
@@ -20,7 +27,10 @@ export {
   verifyIdToken,
   constructSignedJWTBody,
   exchangeTokenForApigeeAccessToken,
-  updateApigeeAccessToken,
   OidcConfig,
-  initializeOidcConfig
+  initializeOidcConfig,
+  getExistingApigeeAccessToken,
+  decodeToken,
+  refreshApigeeAccessToken,
+  authenticateRequest
 }
