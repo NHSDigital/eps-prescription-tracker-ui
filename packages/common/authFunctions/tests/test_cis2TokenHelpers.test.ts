@@ -246,7 +246,7 @@ describe("fetchAndVerifyCIS2Tokens", () => {
     jest.restoreAllMocks()
   })
 
-  it.skip("should fetch and verify tokens", async () => {
+  it("should fetch and verify tokens", async () => {
 
     const event = {
       requestContext: {
@@ -274,6 +274,10 @@ describe("fetchAndVerifyCIS2Tokens", () => {
     })
 
     jest.spyOn(jwt, "verify").mockImplementation(() => cis2IdToken)
+    mockGetTokenMapping.mockImplementationOnce(() => Promise.resolve( {
+      cis2AccessToken: cis2AccessToken,
+      cis2IdToken: cis2IdToken
+    }))
 
     await expect(
       fetchAndVerifyCIS2Tokens(event, documentClient, logger, oidcConfig)
