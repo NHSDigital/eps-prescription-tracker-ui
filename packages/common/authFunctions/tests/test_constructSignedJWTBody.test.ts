@@ -3,11 +3,18 @@ import {jest} from "@jest/globals"
 import jwt from "jsonwebtoken"
 import {Logger} from "@aws-lambda-powertools/logger"
 
+const mockGetTokenMapping = jest.fn()
+jest.unstable_mockModule("@cpt-ui-common/dynamoFunctions", () => {
+  return {
+    getTokenMapping: mockGetTokenMapping
+  }
+})
+
 // mock jwt.sign before importing constructSignedJWTBody
 const sign = jest.spyOn(jwt, "sign")
 sign.mockImplementation(() => "mocked-jwt-token")
 
-import {constructSignedJWTBody} from "../src/apigee"
+const {constructSignedJWTBody} = await import("../src/apigee")
 
 describe("constructSignedJWTBody tests", () => {
   const logger = new Logger()
@@ -15,7 +22,7 @@ describe("constructSignedJWTBody tests", () => {
   const idpTokenPath = "https://example.com/oauth/token"
   const apigeeToken = "dummyApigeeToken"
 
-  it.skip("should add a signed JWT to the body parameters", () => {
+  it("should add a signed JWT to the body parameters", () => {
     const result = constructSignedJWTBody(
       logger,
       idpTokenPath,
