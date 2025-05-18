@@ -124,10 +124,12 @@ describe("BasicDetailsSearch", () => {
     await fillForm(formData)
     await submitForm()
 
-    expect(mockNavigate).toHaveBeenCalledWith(
-      FRONTEND_PATHS.SEARCH_RESULTS_TOO_MANY,
-      {state: formData}
-    )
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith(
+        FRONTEND_PATHS.SEARCH_RESULTS_TOO_MANY,
+        {state: formData}
+      )
+    })
   })
 
   it("redirects to the patient search results page if more than one but fewer than 11 patients are found", async () => {
@@ -147,29 +149,31 @@ describe("BasicDetailsSearch", () => {
 
     await submitForm()
 
-    expect(mockNavigate).toHaveBeenCalledWith(
-      FRONTEND_PATHS.PATIENT_SEARCH_RESULTS,
-      {
-        state: {
-          patients: [
-            {
-              nhsNumber: "9726919207",
-              given: "Issac",
-              family: "Wolderton-Rodriguez",
-              dateOfBirth: "06-05-2013",
-              postcode: "LS6 1JL"
-            },
-            {
-              nhsNumber: "9726919207",
-              given: "Steve",
-              family: "Wolderton-Rodriguez",
-              dateOfBirth: "06-05-2013",
-              postcode: "LS6 1JL"
-            }
-          ]
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith(
+        FRONTEND_PATHS.PATIENT_SEARCH_RESULTS,
+        {
+          state: {
+            patients: [
+              {
+                nhsNumber: "9726919207",
+                given: "Issac",
+                family: "Wolderton-Rodriguez",
+                dateOfBirth: "06-05-2013",
+                postcode: "LS6 1JL"
+              },
+              {
+                nhsNumber: "9726919207",
+                given: "Steve",
+                family: "Wolderton-Rodriguez",
+                dateOfBirth: "06-05-2013",
+                postcode: "LS6 1JL"
+              }
+            ]
+          }
         }
-      }
-    )
+      )
+    })
   })
 
   const testCases = [
