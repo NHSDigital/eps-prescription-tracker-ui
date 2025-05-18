@@ -63,15 +63,21 @@ export default function SearchResultsTooManyPage() {
 
               <p id="results-count-text" data-testid="too-many-results-count-text">
                 {STRINGS.retryMessage}
-                <Link to={FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS}>{STRINGS.basicDetailsLinkText}</Link>
+                <Link
+                  data-testid="too-many-results-basic-details-link"
+                  to={FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS}>{STRINGS.basicDetailsLinkText}</Link>
                 {STRINGS.retryMessageSuffix}
               </p>
 
               <p data-testid="too-many-results-alt-options">
                 {STRINGS.alternativeSearch}
-                <Link to={FRONTEND_PATHS.SEARCH_BY_NHS_NUMBER}>{STRINGS.nhsNumberLinkText}</Link>
+                <Link
+                  data-testid="too-many-results-nhs-number-link"
+                  to={FRONTEND_PATHS.SEARCH_BY_NHS_NUMBER}>{STRINGS.nhsNumberLinkText}</Link>
                 {STRINGS.orText}
-                <Link to={FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID}>{STRINGS.prescriptionIdLinkText}</Link>
+                <Link
+                  data-testid="too-many-results-prescription-id-link"
+                  to={FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID}>{STRINGS.prescriptionIdLinkText}</Link>
                 {STRINGS.endPunctuation}
               </p>
             </div>
