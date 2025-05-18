@@ -117,6 +117,9 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   if (!code) throw new Error("Code parameter is missing")
 
   const sessionState = await getSessionState(documentClient, SessionStateMappingTableName, code as string, logger)
+  // we need to do an apigee token exchange now as we need to call the apigee get user info endpoint
+  // to get the real user name which we then include in the jwt returned to cognito oidc
+
   // this needs to be the callback url defined for the apigee app being used
   // for pull requests it needs to point to dev mock-callback
   // otherwise it needs to be the one for the environment
@@ -166,6 +169,8 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
   const jwtToken = await createSignedJwt(jwtClaims)
 
+  // as we now have all the user information including roles, and apigee tokens
+  // store them in the token mapping table
   await updateTokenMapping(
     documentClient,
     mockOidcConfig.tokenMappingTableName,

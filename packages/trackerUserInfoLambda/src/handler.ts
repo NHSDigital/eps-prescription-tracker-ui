@@ -63,10 +63,10 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   // First, try to use cached user info
   const tokenMappingItem = await getTokenMapping(documentClient, tokenMappingTableName, username, logger)
   const cachedUserInfo = {
-    roles_with_access: tokenMappingItem.rolesWithAccess || [],
-    roles_without_access: tokenMappingItem.rolesWithoutAccess || [],
-    currently_selected_role: tokenMappingItem.currentlySelectedRole || undefined,
-    user_details: tokenMappingItem.userDetails || {family_name: "", given_name: ""}
+    roles_with_access: tokenMappingItem?.rolesWithAccess || [],
+    roles_without_access: tokenMappingItem?.rolesWithoutAccess || [],
+    currently_selected_role: tokenMappingItem?.currentlySelectedRole || undefined,
+    user_details: tokenMappingItem?.userDetails || {family_name: "", given_name: ""}
   }
 
   if (

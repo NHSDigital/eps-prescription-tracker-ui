@@ -7,30 +7,16 @@ import {
 import {generateKeyPairSync} from "crypto"
 import nock from "nock"
 
-import createJWKSMock from "mock-jwks"
-import jwksClient from "jwks-rsa"
-import {OidcConfig} from "@cpt-ui-common/authFunctions"
-
 import {Logger} from "@aws-lambda-powertools/logger"
 import {mockPdsPatient, mockPrescriptionBundle} from "./mockObjects"
 
 const apigeePrescriptionsEndpoint = process.env.apigeePrescriptionsEndpoint as string ?? ""
 const apigeePersonalDemographicsEndpoint = process.env.apigeePersonalDemographicsEndpoint as string ?? ""
-const apigeeCIS2TokenEndpoint = process.env.apigeeCIS2TokenEndpoint
-//const apigeeMockTokenEndpoint = process.env.apigeeMockTokenEndpoint
-//const apigeePrescriptionsEndpoint = process.env.apigeePrescriptionsEndpoint
-const TokenMappingTableName = process.env.TokenMappingTableName
 
 process.env.MOCK_MODE_ENABLED = "false"
-
-const mockFetchAndVerifyCIS2Tokens = jest.fn()
-const mockConstructSignedJWTBody = jest.fn()
-const mockExchangeTokenForApigeeAccessToken = jest.fn()
-const mockUpdateTokenMapping = jest.fn()
-const mockGetSecret = jest.fn()
-const mockInitializeOidcConfig = jest.fn()
 const mockAuthenticateRequest = jest.fn()
 const mockGetUsernameFromEvent = jest.fn()
+const mockGetSecret = jest.fn()
 
 const {
   privateKey
@@ -45,80 +31,9 @@ const {
     format: "pem"
   }
 })
-
 // Mock all the modules first
 jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
-  const fetchAndVerifyCIS2Tokens = mockFetchAndVerifyCIS2Tokens.mockImplementation(async () => {
-    return {
-      cis2IdToken: "idToken",
-      cis2AccessToken: "accessToken"
-    }
-  })
-
-  const constructSignedJWTBody = mockConstructSignedJWTBody.mockImplementation(() => {
-    return {
-      client_assertion: "foo"
-    }
-  })
-
-  const exchangeTokenForApigeeAccessToken = mockExchangeTokenForApigeeAccessToken.mockImplementation(async () => {
-    return {
-      accessToken: "foo",
-      expiresIn: 100
-    }
-  })
-
-  const updateTokenMapping = mockUpdateTokenMapping.mockImplementation(() => {})
-
-  const initializeOidcConfig = mockInitializeOidcConfig.mockImplementation( () => {
-    // Create a JWKS client for cis2 and mock
-    const cis2JwksUri = process.env["CIS2_OIDCJWKS_ENDPOINT"] as string
-    const cis2JwksClient = jwksClient({
-      jwksUri: cis2JwksUri,
-      cache: true,
-      cacheMaxEntries: 5,
-      cacheMaxAge: 3600000 // 1 hour
-    })
-
-    const cis2OidcConfig: OidcConfig = {
-      oidcIssuer: process.env["CIS2_OIDC_ISSUER"] ?? "",
-      oidcClientID: process.env["CIS2_OIDC_CLIENT_ID"] ?? "",
-      oidcJwksEndpoint: process.env["CIS2_OIDCJWKS_ENDPOINT"] ?? "",
-      oidcUserInfoEndpoint: process.env["CIS2_USER_INFO_ENDPOINT"] ?? "",
-      userPoolIdp: process.env["CIS2_USER_POOL_IDP"] ?? "",
-      oidcTokenEndpoint: process.env["CIS2_IDP_TOKEN_PATH"] ?? "",
-      jwksClient: cis2JwksClient,
-      tokenMappingTableName: process.env["TokenMappingTableName"] ?? ""
-    }
-
-    const mockJwksUri = process.env["MOCK_OIDCJWKS_ENDPOINT"] as string
-    const mockJwksClient = jwksClient({
-      jwksUri: mockJwksUri,
-      cache: true,
-      cacheMaxEntries: 5,
-      cacheMaxAge: 3600000 // 1 hour
-    })
-
-    const mockOidcConfig: OidcConfig = {
-      oidcIssuer: process.env["MOCK_OIDC_ISSUER"] ?? "",
-      oidcClientID: process.env["MOCK_OIDC_CLIENT_ID"] ?? "",
-      oidcJwksEndpoint: process.env["MOCK_OIDCJWKS_ENDPOINT"] ?? "",
-      oidcUserInfoEndpoint: process.env["MOCK_USER_INFO_ENDPOINT"] ?? "",
-      userPoolIdp: process.env["MOCK_USER_POOL_IDP"] ?? "",
-      oidcTokenEndpoint: process.env["MOCK_IDP_TOKEN_PATH"] ?? "",
-      jwksClient: mockJwksClient,
-      tokenMappingTableName: process.env["TokenMappingTableName"] ?? ""
-    }
-
-    return {cis2OidcConfig, mockOidcConfig}
-  })
-
   return {
-    fetchAndVerifyCIS2Tokens,
-    constructSignedJWTBody,
-    exchangeTokenForApigeeAccessToken,
-    updateTokenMapping,
-    initializeOidcConfig,
     authenticateRequest: mockAuthenticateRequest,
     getUsernameFromEvent: mockGetUsernameFromEvent
   }
@@ -155,12 +70,11 @@ const dummyContext = {
   succeed: () => console.log("Succeeded!")
 }
 
-describe.skip("handler tests with cis2 auth", () => {
-  const jwks = createJWKSMock("https://dummyauth.com/")
+describe("handler tests with cis2 auth", () => {
+
   beforeEach(() => {
     jest.resetModules()
     jest.clearAllMocks()
-    jwks.start()
     // Mock the Patient endpoint with patient data
     nock(apigeePersonalDemographicsEndpoint)
       .get("/Patient/9000000009")
@@ -174,11 +88,15 @@ describe.skip("handler tests with cis2 auth", () => {
       .reply(200, mockPrescriptionBundle)
   })
 
-  afterEach(() => {
-    jwks.stop()
-  })
-
   it("responds with success", async () => {
+    mockGetUsernameFromEvent.mockReturnValue("test_user")
+    mockAuthenticateRequest.mockImplementation(() => {
+      return Promise.resolve({
+        cis2AccessToken: "cis2_access_token",
+        cis2IdToken: "cis2_id_token",
+        apigeeAccessToken: "apigee_access_token"
+      })
+    })
     const event = {
       queryStringParameters: {
         nhsNumber: "9000000009"
@@ -227,14 +145,6 @@ describe.skip("handler tests with cis2 auth", () => {
         "suffix": ""
       }})
 
-    expect(mockUpdateTokenMapping).toBeCalledWith(
-      expect.any(Object),
-      TokenMappingTableName,
-      "Mock_JoeBloggs",
-      "foo",
-      100,
-      expect.any(Object)
-    )
   })
 
   it("throw error when it is a mock user", async () => {
@@ -263,20 +173,4 @@ describe.skip("handler tests with cis2 auth", () => {
     )
   })
 
-  it("calls cis2 apigee token endpoint when it is a cis2 user", async () => {
-
-    await handler({
-      queryStringParameters: {
-        nhsNumber: "9999999999"
-      },
-      requestContext: {}
-    }, dummyContext)
-
-    expect(mockExchangeTokenForApigeeAccessToken).toBeCalledWith(
-      expect.any(Function),
-      apigeeCIS2TokenEndpoint,
-      expect.any(Object),
-      expect.any(Object)
-    )
-  })
 })
