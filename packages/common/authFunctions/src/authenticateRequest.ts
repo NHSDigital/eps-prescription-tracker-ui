@@ -3,16 +3,15 @@ import {Logger} from "@aws-lambda-powertools/logger"
 import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
 import {getSecret} from "@aws-lambda-powertools/parameters/secrets"
 import axios from "axios"
-import {OidcConfig, refreshApigeeAccessToken} from "./index"
+import {refreshApigeeAccessToken} from "./index"
 
 import {
   getUsernameFromEvent,
   fetchAndVerifyCIS2Tokens,
   constructSignedJWTBody,
-  exchangeTokenForApigeeAccessToken,
-  getExistingApigeeAccessToken
+  exchangeTokenForApigeeAccessToken
 } from "./index"
-import {updateTokenMapping} from "@cpt-ui-common/dynamoFunctions"
+import {getTokenMapping, updateTokenMapping} from "@cpt-ui-common/dynamoFunctions"
 
 // Define the ApigeeTokenResponse type
 interface ApigeeTokenResponse {
@@ -46,9 +45,8 @@ export interface AuthenticateRequestOptions {
   apigeeApiKey: string
   apigeeApiSecret: string
   jwtKid: string
-  oidcConfig: OidcConfig
-  mockModeEnabled: boolean
-  apigeeTokenEndpoint: string
+  apigeeCis2TokenEndpoint: string
+  apigeeMockTokenEndpoint: string
   defaultRoleId?: string
 }
 
@@ -65,7 +63,6 @@ const refreshTokenFlow = async (
     apigeeApiSecret: string
     jwtKid: string
     apigeeTokenEndpoint: string
-    mockModeEnabled: boolean
   }
 ): Promise<ApigeeTokenResponse> => {
   try {
@@ -127,10 +124,9 @@ export async function authenticateRequest(
     apigeeApiKey,
     apigeeApiSecret,
     jwtKid,
-    oidcConfig,
-    mockModeEnabled,
     defaultRoleId,
-    apigeeTokenEndpoint
+    apigeeMockTokenEndpoint,
+    apigeeCis2TokenEndpoint
   } = options
 
   logger.info("Starting authentication flow")
@@ -140,17 +136,12 @@ export async function authenticateRequest(
   const isMockRequest = username.startsWith("Mock_")
 
   //Get the existing saved Apigee token from DynamoDB
-  const existingToken = await getExistingApigeeAccessToken(
-    documentClient,
-    tokenMappingTableName,
-    username,
-    logger
-  )
+  const userRecord = await getTokenMapping(documentClient, tokenMappingTableName, username, logger)
 
   // If token exists, check if we need to refresh it
-  if (existingToken?.apigeeAccessToken) {
+  if (userRecord?.apigeeAccessToken) {
     const currentTime = Math.floor(Date.now() / 1000)
-    const timeUntilExpiry = existingToken.apigeeExpiresIn - currentTime
+    const timeUntilExpiry = userRecord.apigeeExpiresIn - currentTime
 
     // If token is expired or will expire soon (within 60 seconds), refresh it
     if (timeUntilExpiry <= 60) {
@@ -161,10 +152,10 @@ export async function authenticateRequest(
           tokenMappingTableName,
           username,
           {
-            accessToken: existingToken.apigeeAccessToken,
-            refreshToken: existingToken.apigeeRefreshToken,
-            expiresIn: existingToken.apigeeExpiresIn,
-            roleId: existingToken.roleId
+            accessToken: userRecord.apigeeAccessToken,
+            refreshToken: userRecord.apigeeRefreshToken,
+            expiresIn: userRecord.apigeeExpiresIn,
+            roleId: userRecord.selectedRoleId
           },
           logger,
           {
@@ -173,8 +164,7 @@ export async function authenticateRequest(
             apigeeApiKey,
             apigeeApiSecret,
             jwtKid,
-            apigeeTokenEndpoint,
-            mockModeEnabled
+            apigeeTokenEndpoint: isMockRequest ? apigeeMockTokenEndpoint : apigeeCis2TokenEndpoint
           }
         )
 
@@ -198,10 +188,10 @@ export async function authenticateRequest(
 
       return {
         username,
-        apigeeAccessToken: existingToken.apigeeAccessToken,
-        cis2IdToken: existingToken.cis2IdToken,
-        cis2AccessToken: existingToken.cis2AccessToken,
-        roleId: existingToken.roleId || defaultRoleId || "",
+        apigeeAccessToken: userRecord.apigeeAccessToken,
+        cis2IdToken: userRecord.cis2IdToken,
+        cis2AccessToken: userRecord.cis2AccessToken,
+        roleId: userRecord.selectedRoleId || defaultRoleId || "",
         isMockRequest
       }
     }
@@ -212,18 +202,17 @@ export async function authenticateRequest(
 
   // In mock mode, we don't expect to reach this point normally
   // since authentication should have created tokens
-  if (isMockRequest && !existingToken) {
-    logger.warn("Mock mode enabled but no valid token exists or refresh failed.")
-    logger.info("This is an unexpected state in mock mode.")
-    throw new Error("Unexpected state in mock mode")
+  if (isMockRequest && !userRecord.apigeeAccessToken) {
+    logger.warn("Mock user but no valid token exists or refresh failed.")
+    logger.info("This is an unexpected state with a mock request.")
+    throw new Error("Unexpected state for mock request")
   }
 
   // When we aren't mocking, get CIS2 tokens and exchange for Apigee token
   const {cis2AccessToken, cis2IdToken: newCis2IdToken} = await fetchAndVerifyCIS2Tokens(
-    event,
+    username,
     documentClient,
-    logger,
-    oidcConfig
+    logger
   )
 
   logger.debug("Successfully fetched CIS2 tokens", {
@@ -241,11 +230,10 @@ export async function authenticateRequest(
     throw new Error("Invalid or missing JWT private key")
   }
 
-  logger.debug("This is the oidcConfig", {oidcConfig})
   // Construct a new body with the signed JWT client assertion
   const requestBody = constructSignedJWTBody(
     logger,
-    options.apigeeTokenEndpoint,
+    options.apigeeCis2TokenEndpoint,
     jwtPrivateKey,
     apigeeApiKey,
     jwtKid,
@@ -256,7 +244,7 @@ export async function authenticateRequest(
   // Exchange token with Apigee
   const {accessToken, refreshToken, expiresIn} = await exchangeTokenForApigeeAccessToken(
     axiosInstance,
-    options.apigeeTokenEndpoint,
+    options.apigeeCis2TokenEndpoint,
     requestBody,
     logger
   )

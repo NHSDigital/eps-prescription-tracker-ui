@@ -6,7 +6,7 @@ import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
 import middy from "@middy/core"
 import inputOutputLogger from "@middy/input-output-logger"
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
-import {initializeOidcConfig, authenticateRequest} from "@cpt-ui-common/authFunctions"
+import {authenticateRequest} from "@cpt-ui-common/authFunctions"
 import {getTokenMapping, updateTokenMapping} from "@cpt-ui-common/dynamoFunctions"
 
 /**
@@ -21,7 +21,7 @@ const jwtPrivateKeyArn = process.env["jwtPrivateKeyArn"] as string
 const apigeeApiKey = process.env["APIGEE_API_KEY"] as string
 const jwtKid = process.env["jwtKid"] as string
 const apigeeApiSecret= process.env["APIGEE_API_SECRET"] as string
-const cis2ApigeeTokenEndpoint = process.env["apigeeCIS2TokenEndpoint"] as string
+const apigeeCis2TokenEndpoint = process.env["apigeeCIS2TokenEndpoint"] as string
 const apigeeMockTokenEndpoint = process.env["apigeeMockTokenEndpoint"] as string
 
 // Create a DynamoDB client and document client for interacting with the database
@@ -32,10 +32,6 @@ const errorResponseBody = {message: "A system error has occurred"}
 const middyErrorHandler = new MiddyErrorHandler(errorResponseBody)
 
 const logger = new Logger({serviceName: "selectedRole"})
-const {mockOidcConfig, cis2OidcConfig} = initializeOidcConfig()
-
-const oidcConfig = MOCK_MODE_ENABLED === "true" ? mockOidcConfig : cis2OidcConfig
-const apigeeTokenEndpoint = MOCK_MODE_ENABLED === "true" ? apigeeMockTokenEndpoint : cis2ApigeeTokenEndpoint
 
 /**
  * Lambda function handler for updating a user's selected role.
@@ -49,9 +45,8 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     apigeeApiKey,
     jwtKid,
     apigeeApiSecret,
-    cis2ApigeeTokenEndpoint,
-    apigeeMockTokenEndpoint,
-    apigeeTokenEndpoint
+    apigeeCis2TokenEndpoint,
+    apigeeMockTokenEndpoint
   }})
 
   // Use the authenticateRequest function for authentication
@@ -61,9 +56,8 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     apigeeApiKey,
     apigeeApiSecret,
     jwtKid,
-    oidcConfig,
-    mockModeEnabled: MOCK_MODE_ENABLED === "true",
-    apigeeTokenEndpoint
+    apigeeCis2TokenEndpoint,
+    apigeeMockTokenEndpoint
   })
 
   if (!authResult) {

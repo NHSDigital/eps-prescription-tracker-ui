@@ -3,7 +3,6 @@ import {APIGatewayProxyEvent} from "aws-lambda"
 import {Logger} from "@aws-lambda-powertools/logger"
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
 import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
-import {JwksClient} from "jwks-rsa"
 // import * as parameterSecrets from "@aws-lambda-powertools/parameters/secrets"
 
 // Mock the jwt module
@@ -50,17 +49,18 @@ jest.mock("axios", () => ({
 }))
 
 const mockUpdateTokenMapping = jest.fn()
+const mockGetTokenMapping = jest.fn()
 jest.unstable_mockModule("@cpt-ui-common/dynamoFunctions", () => {
 
   return {
-    updateTokenMapping: mockUpdateTokenMapping
+    updateTokenMapping: mockUpdateTokenMapping,
+    getTokenMapping: mockGetTokenMapping
   }
 })
 
 // Mock the index module
 jest.unstable_mockModule("../src/index", () => ({
   getUsernameFromEvent: mockGetUsernameFromEvent,
-  getExistingApigeeAccessToken: mockGetExistingApigeeAccessToken,
   refreshApigeeAccessToken: mockRefreshApigeeAccessToken,
   exchangeTokenForApigeeAccessToken: mockExchangeTokenForApigeeAccessToken,
   fetchAndVerifyCIS2Tokens: mockFetchAndVerifyCIS2Tokens,
@@ -71,7 +71,6 @@ jest.unstable_mockModule("../src/index", () => ({
 
 const authModule = await import("../src/authenticateRequest")
 const {authenticateRequest} = authModule
-import {OidcConfig} from "../src/index"
 
 describe("authenticateRequest", () => {
   // Common test setup
@@ -92,29 +91,15 @@ describe("authenticateRequest", () => {
     error: jest.fn()
   } as unknown as Logger
 
-  const mockJwksClient = {} as unknown as JwksClient
-
-  const mockOidcConfig: OidcConfig = {
-    oidcIssuer: "mock-issuer",
-    oidcClientID: "mock-client-id",
-    oidcJwksEndpoint: "mock-jwks-endpoint",
-    oidcUserInfoEndpoint: "mock-userinfo-endpoint",
-    userPoolIdp: "mock-idp",
-    tokenMappingTableName: "mock-table",
-    jwksClient: mockJwksClient,
-    oidcTokenEndpoint: "mock-token-endpoint"
-  }
-
   const mockOptions = {
     tokenMappingTableName: "test-table",
     jwtPrivateKeyArn: "test-key-arn",
     apigeeApiKey: "test-api-key",
     jwtKid: "test-kid",
-    oidcConfig: mockOidcConfig,
-    mockModeEnabled: false,
     defaultRoleId: "test-role-id",
     apigeeApiSecret: "test-api-secret",
-    apigeeTokenEndpoint: "mock-token-endpoint"
+    apigeeMockTokenEndpoint: "mock-token-endpoint",
+    apigeeCis2TokenEndpoint: "cis2-token-endpoint"
   }
 
   beforeEach(() => {
@@ -139,13 +124,15 @@ describe("authenticateRequest", () => {
 
   it("should use existing valid token when available", async () => {
     // Set up mock implementation for this test
-    mockGetExistingApigeeAccessToken.mockReturnValue({
+
+    mockGetTokenMapping.mockImplementationOnce(() => Promise.resolve( {
+      username: "test-user",
       apigeeAccessToken: "existing-token",
       cis2IdToken: "existing-cis2-token",
-      apigeeRefreshToken: "existing-refresh-token",
-      apigeeExpiresIn: Math.floor(Date.now() / 1000) + 599, // expires in 10 minutes
-      roleId: "existing-role-id"
-    })
+      cis2AccessToken: "existing-cis2-access-token",
+      selectedRoleId: "existing-role-id",
+      apigeeExpiresIn: Math.floor(Date.now() / 1000) + 1000
+    }))
 
     const result = await authenticateRequest(
       mockEvent,
@@ -158,6 +145,7 @@ describe("authenticateRequest", () => {
       username: "test-user",
       apigeeAccessToken: "existing-token",
       cis2IdToken: "existing-cis2-token",
+      cis2AccessToken: "existing-cis2-access-token",
       roleId: "existing-role-id",
       isMockRequest: false
     })
@@ -169,13 +157,15 @@ describe("authenticateRequest", () => {
 
   it("should refresh token when it's about to expire", async () => {
     // Set up mock implementations for this test
-    mockGetExistingApigeeAccessToken.mockReturnValue({
+    mockGetTokenMapping.mockImplementationOnce(() => Promise.resolve( {
+      username: "test-user",
       apigeeAccessToken: "expiring-token",
       cis2IdToken: "expiring-cis2-token",
+      cis2AccessToken: "expiring-cis2-access-token",
+      selectedRoleId: "expiring-role-id",
       apigeeRefreshToken: "expiring-refresh-token",
-      apigeeExpiresIn: Math.floor(Date.now() / 1000) + 30, // expires in 30 seconds
-      roleId: "expiring-role-id"
-    })
+      apigeeExpiresIn: Math.floor(Date.now() / 1000) + 30 // expires in 30 seconds
+    }))
 
     mockRefreshApigeeAccessToken.mockReturnValue({
       accessToken: "refreshed-token",
@@ -203,7 +193,7 @@ describe("authenticateRequest", () => {
     // Verify refresh was called with correct params
     expect(mockRefreshApigeeAccessToken).toHaveBeenCalledWith(
       expect.anything(), // axios instance
-      mockOptions.apigeeTokenEndpoint, // Use the one from options
+      mockOptions.apigeeCis2TokenEndpoint, // Use the one from options
       "expiring-refresh-token",
       mockOptions.apigeeApiKey,
       "test-api-secret", // API secret from env var
@@ -269,20 +259,22 @@ describe("authenticateRequest", () => {
     }
 
     // Set up mock implementations for this test
-    mockGetExistingApigeeAccessToken.mockReturnValue(null)
     mockGetUsernameFromEvent.mockReturnValue("Mock_user")
-
+    mockGetTokenMapping.mockImplementationOnce(() => Promise.resolve( {
+      username: "Mock_user",
+      apigeeAccessToken: undefined
+    }))
     // We expect the function to throw an error in mock mode with no token
     await expect(authenticateRequest(
       mockEvent,
       documentClient,
       mockLogger,
       mockOptionsWithMock
-    )).rejects.toThrow("Unexpected state in mock mode")
+    )).rejects.toThrow("Unexpected state for mock request")
 
     // Verify warning was logged about unexpected state
     expect(mockLogger.warn).toHaveBeenCalledWith(
-      "Mock mode enabled but no valid token exists or refresh failed."
+      "Mock user but no valid token exists or refresh failed."
     )
 
     // No token-related functions should be called
@@ -294,13 +286,16 @@ describe("authenticateRequest", () => {
   // TODO: this test needs fixing currently not currently mocks
   it("should handle token refresh failure gracefully", async () => {
     // Set up mock implementations for this test
-    mockGetExistingApigeeAccessToken.mockReturnValue({
+
+    mockGetTokenMapping.mockImplementationOnce(() => Promise.resolve( {
+      username: "test-user",
       apigeeAccessToken: "expiring-token",
       cis2IdToken: "expiring-cis2-token",
+      cis2AccessToken: "expiring-cis2-access-token",
+      selectedRoleId: "expiring-role-id",
       apigeeRefreshToken: "expiring-refresh-token",
-      apigeeExpiresIn: Math.floor(Date.now() / 1000) + 30,
-      roleId: "expiring-role-id"
-    })
+      apigeeExpiresIn: Math.floor(Date.now() / 1000) + 30 // expires in 30 seconds
+    }))
 
     // IMPORTANT FIX: Properly mock rejection instead of returning an Error object
     mockRefreshApigeeAccessToken.mockRejectedValue(new Error("Refresh failed") as never)

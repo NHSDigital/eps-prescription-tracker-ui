@@ -40,7 +40,7 @@ const documentClient = DynamoDBDocumentClient.from(dynamoClient)
 const {mockOidcConfig, cis2OidcConfig} = initializeOidcConfig()
 
 // External endpoints and environment variables
-const apigeeCIS2TokenEndpoint = process.env["apigeeCIS2TokenEndpoint"] as string
+const apigeeCis2TokenEndpoint = process.env["apigeeCIS2TokenEndpoint"] as string
 const apigeeMockTokenEndpoint = process.env["apigeeMockTokenEndpoint"] as string
 const tokenMappingTableName = process.env["TokenMappingTableName"] ?? ""
 const jwtPrivateKeyArn = process.env["jwtPrivateKeyArn"] as string
@@ -91,9 +91,8 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     apigeeApiKey,
     apigeeApiSecret,
     jwtKid,
-    oidcConfig: isMockToken ? mockOidcConfig : cis2OidcConfig,
-    mockModeEnabled: isMockToken,
-    apigeeTokenEndpoint: isMockToken ? apigeeMockTokenEndpoint : apigeeCIS2TokenEndpoint
+    apigeeMockTokenEndpoint,
+    apigeeCis2TokenEndpoint
   })
 
   logger.debug("auth result", {authResult})

@@ -52,7 +52,6 @@ const cloudfrontDomain = process.env["FULL_CLOUDFRONT_DOMAIN"] as string
 // this is outside functions so it can be re-used and caching works
 const {cis2OidcConfig} = initializeOidcConfig()
 
-const TokenMappingTableName = process.env["TokenMappingTableName"] as string
 const jwtPrivateKeyArn = process.env["jwtPrivateKeyArn"] as string
 const jwtKid = process.env["jwtKid"] as string
 
@@ -77,7 +76,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   const axiosInstance = axios.create()
   logger.debug("data from env variables", {
     cloudfrontDomain,
-    TokenMappingTableName,
+    tokenMappingTableName: cis2OidcConfig.tokenMappingTableName,
     jwtPrivateKeyArn,
     jwtKid,
     idpTokenPath
@@ -122,7 +121,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   const idToken = tokenResponse.data.id_token
 
   // verify and decode idToken
-  const decodedIdToken = await verifyIdToken(idToken, logger, cis2OidcConfig)
+  const decodedIdToken = await verifyIdToken(idToken, logger)
   logger.debug("decoded idToken", {decodedIdToken})
 
   const username = `${cis2OidcConfig.userPoolIdp}_${decodedIdToken.sub}`
@@ -136,7 +135,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     cis2ExpiresIn: decodedIdToken.exp.toString(),
     selectedRoleId: decodedIdToken.selected_roleid
   }
-  await insertTokenMapping(documentClient, TokenMappingTableName, tokenMappingItem, logger)
+  await insertTokenMapping(documentClient, cis2OidcConfig.tokenMappingTableName, tokenMappingItem, logger)
 
   // return status code and body from request to downstream idp
   return {

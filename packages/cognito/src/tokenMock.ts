@@ -47,7 +47,6 @@ const {mockOidcConfig} = initializeOidcConfig()
 // Environment variables
 
 const cloudfrontDomain= process.env["FULL_CLOUDFRONT_DOMAIN"] as string
-const tokenMappingTable= process.env["TokenMappingTableName"] as string
 const jwtPrivateKeyArn= process.env["jwtPrivateKeyArn"] as string
 const jwtKid= process.env["jwtKid"] as string
 const SessionStateMappingTableName = process.env["SessionStateMappingTableName"] as string
@@ -107,7 +106,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
   logger.debug("data from env variables", {
     cloudfrontDomain,
-    tokenMappingTable,
+    tokenMappingTable: mockOidcConfig.tokenMappingTableName,
     jwtPrivateKeyArn,
     jwtKid,
     SessionStateMappingTableName,
@@ -169,7 +168,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
   await updateTokenMapping(
     documentClient,
-    tokenMappingTable,
+    mockOidcConfig.tokenMappingTableName,
     {
       username,
       apigeeAccessToken: tokenResponse.access_token,

@@ -4,8 +4,7 @@ import {v4 as uuidv4} from "uuid"
 import axios, {AxiosInstance} from "axios"
 import {ParsedUrlQuery, stringify} from "querystring"
 import {handleAxiosError} from "./errorUtils"
-import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
-import {getTokenMapping} from "@cpt-ui-common/dynamoFunctions"
+
 /**
  * Constructs a new body for the token exchange, including a signed JWT
  * @param logger - Logger instance for logging
@@ -108,65 +107,6 @@ export const exchangeTokenForApigeeAccessToken = async (
       logger.error("Unexpected error during Apigee token exchange", {error})
     }
     throw new Error("Error during Apigee token exchange")
-  }
-}
-
-/**
- * Checks if a valid Apigee access token exists for a user in DynamoDB
- * @param documentClient - DynamoDB DocumentClient instance
- * @param tableName - Name of the DynamoDB table
- * @param username - Username for which to check the token
- * @param logger - Logger instance for logging
- * @returns The existing token and expiry time if valid, null otherwise
- */
-export const getExistingApigeeAccessToken = async (
-  documentClient: DynamoDBDocumentClient,
-  tableName: string,
-  username: string,
-  logger: Logger
-): Promise<{
-  apigeeAccessToken: string;
-  apigeeRefreshToken?: string;
-  apigeeExpiresIn: number;
-  roleId?: string;
-  cis2IdToken?: string;
-  cis2AccessToken?: string;
-} | null> => {
-  logger.debug("Checking for existing Apigee access token in DynamoDB", {
-    username,
-    tableName
-  })
-
-  try {
-    // Get the user record from DynamoDB
-    const userRecord = await getTokenMapping(documentClient, tableName, username, logger)
-
-    // Check if Apigee access token exists
-    if (userRecord.apigeeAccessToken && userRecord.apigeeExpiresIn) {
-      const currentTime = Math.floor(Date.now() / 1000)
-
-      logger.info("Found existing Apigee access token", {
-        username,
-        expiresIn: userRecord.apigeeExpiresIn - currentTime,
-        hasRefreshToken: !!userRecord.apigeeRefreshToken
-      })
-
-      return {
-        apigeeAccessToken: userRecord.apigeeAccessToken,
-        apigeeRefreshToken: userRecord.apigeeRefreshToken,
-        apigeeExpiresIn: userRecord.apigeeExpiresIn,
-        roleId: userRecord.selectedRoleId,
-        cis2IdToken: userRecord.cis2IdToken,
-        cis2AccessToken: userRecord.cis2AccessToken
-      }
-    } else {
-      logger.debug("No Apigee token found in user record", {username})
-    }
-
-    return null
-  } catch (error) {
-    logger.error("Error retrieving Apigee access token from DynamoDB", {error, username})
-    return null
   }
 }
 

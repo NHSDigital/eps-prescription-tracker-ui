@@ -13,7 +13,7 @@ import {getPrescriptions} from "./services/prescriptionsLookupService"
 import {SearchParams} from "./utils/types"
 
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
-import {initializeOidcConfig, authenticateRequest} from "@cpt-ui-common/authFunctions"
+import {authenticateRequest} from "@cpt-ui-common/authFunctions"
 import {SearchResponse} from "@cpt-ui-common/common-types"
 import {mapSearchResponse} from "./utils/responseMapper"
 
@@ -57,20 +57,13 @@ const jwtPrivateKeyArn = process.env["jwtPrivateKeyArn"] as string
 const apigeeApiKey = process.env["APIGEE_API_KEY"] as string
 const apigeeApiSecret= process.env["APIGEE_API_SECRET"] as string
 const jwtKid = process.env["jwtKid"] as string
-const MOCK_MODE_ENABLED = process.env["MOCK_MODE_ENABLED"]
 let roleId = process.env["roleId"] as string
-const cis2ApigeeTokenEndpoint = process.env["apigeeCIS2TokenEndpoint"] as string
+const apigeeCis2TokenEndpoint = process.env["apigeeCIS2TokenEndpoint"] as string
 const apigeeMockTokenEndpoint = process.env["apigeeMockTokenEndpoint"] as string
 
 // DynamoDB client setup
 const dynamoClient = new DynamoDBClient()
 const documentClient = DynamoDBDocumentClient.from(dynamoClient)
-
-// Create a config for cis2 and mock
-// this is outside functions so it can be re-used and caching works
-const {mockOidcConfig, cis2OidcConfig} = initializeOidcConfig()
-const apigeeTokenEndpoint = MOCK_MODE_ENABLED === "true" ? apigeeMockTokenEndpoint : cis2ApigeeTokenEndpoint
-const oidcConfig = MOCK_MODE_ENABLED === "true" ? mockOidcConfig : cis2OidcConfig
 
 logger.info("env vars", {
   TokenMappingTableName,
@@ -80,7 +73,8 @@ logger.info("env vars", {
   roleId,
   apigeePrescriptionsEndpoint,
   apigeePersonalDemographicsEndpoint,
-  oidcConfig
+  apigeeCis2TokenEndpoint,
+  apigeeMockTokenEndpoint
 })
 
 // Error response template
@@ -117,10 +111,9 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
       apigeeApiKey,
       apigeeApiSecret,
       jwtKid,
-      oidcConfig,
-      mockModeEnabled: MOCK_MODE_ENABLED === "true",
       defaultRoleId: roleId,
-      apigeeTokenEndpoint
+      apigeeMockTokenEndpoint,
+      apigeeCis2TokenEndpoint
     })
 
     // Destructure the authentication result

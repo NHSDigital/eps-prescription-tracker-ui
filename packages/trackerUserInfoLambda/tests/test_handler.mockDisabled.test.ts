@@ -3,22 +3,6 @@ import jwksClient from "jwks-rsa"
 import {OidcConfig} from "@cpt-ui-common/authFunctions"
 import {Logger} from "@aws-lambda-powertools/logger"
 
-const TokenMappingTableName = process.env.TokenMappingTableName
-
-const CIS2_OIDC_ISSUER = process.env.CIS2_OIDC_ISSUER
-const CIS2_OIDC_CLIENT_ID = process.env.CIS2_OIDC_CLIENT_ID
-const CIS2_OIDCJWKS_ENDPOINT = process.env.CIS2_OIDCJWKS_ENDPOINT
-const CIS2_USER_INFO_ENDPOINT = process.env.CIS2_USER_INFO_ENDPOINT
-const CIS2_USER_POOL_IDP = process.env.CIS2_USER_POOL_IDP
-
-const MOCK_OIDC_ISSUER = process.env.MOCK_OIDC_ISSUER
-const MOCK_OIDC_CLIENT_ID = process.env.MOCK_OIDC_CLIENT_ID
-const MOCK_OIDCJWKS_ENDPOINT = process.env.MOCK_OIDCJWKS_ENDPOINT
-const MOCK_USER_INFO_ENDPOINT = process.env.MOCK_USER_INFO_ENDPOINT
-const MOCK_USER_POOL_IDP = process.env.MOCK_USER_POOL_IDP
-
-process.env.MOCK_MODE_ENABLED = "false"
-
 const mockGetTokenMapping = jest.fn()
 const mockUpdateTokenMapping = jest.fn()
 jest.unstable_mockModule("@cpt-ui-common/dynamoFunctions", () => {
@@ -153,92 +137,6 @@ describe("Lambda Handler Tests with mock disabled", () => {
     expect(body).toHaveProperty("message", "UserInfo fetched successfully from the OIDC endpoint")
     expect(body).toHaveProperty("userInfo")
   })
-
-  it("should use cis2 values when username does not start with Mock_",
-    async () => {
-      mockGetUsernameFromEvent.mockReturnValue("Primary_JohnDoe")
-      mockGetTokenMapping.mockImplementationOnce(() => Promise.resolve( {
-        username: "testUser",
-        apigeeAccessToken: "valid-token",
-        apigeeIdToken: "id-token",
-        apigeeRefreshToken: "refresh-token",
-        selectedRoleId: "role-id"
-      }))
-      await handler(event, context)
-      expect(mockGetUsernameFromEvent).toHaveBeenCalled()
-      expect(mockAuthenticateRequest).toHaveBeenCalledWith(
-        expect.any(Object),
-        expect.any(Object),
-        expect.any(Object),
-        expect.objectContaining({
-          oidcConfig: expect.objectContaining({
-            oidcIssuer: CIS2_OIDC_ISSUER,
-            oidcClientID: CIS2_OIDC_CLIENT_ID,
-            oidcJwksEndpoint: CIS2_OIDCJWKS_ENDPOINT,
-            oidcUserInfoEndpoint: CIS2_USER_INFO_ENDPOINT,
-            userPoolIdp: CIS2_USER_POOL_IDP,
-            tokenMappingTableName: TokenMappingTableName
-          })
-        })
-      )
-
-      expect(mockFetchUserInfo).toHaveBeenCalledWith(
-        expect.any(String),
-        expect.any(String),
-        expect.any(Object),
-        expect.objectContaining({
-          oidcIssuer: CIS2_OIDC_ISSUER,
-          oidcClientID: CIS2_OIDC_CLIENT_ID,
-          oidcJwksEndpoint: CIS2_OIDCJWKS_ENDPOINT,
-          oidcUserInfoEndpoint: CIS2_USER_INFO_ENDPOINT,
-          userPoolIdp: CIS2_USER_POOL_IDP,
-          tokenMappingTableName: TokenMappingTableName
-        })
-      )
-    })
-
-  it("should use mock values when username does start with Mock_",
-    async () => {
-      mockGetUsernameFromEvent.mockReturnValue("Mock_JohnDoe")
-      mockGetTokenMapping.mockImplementationOnce(() => Promise.resolve( {
-        username: "testUser",
-        apigeeAccessToken: "valid-token",
-        apigeeIdToken: "id-token",
-        apigeeRefreshToken: "refresh-token",
-        selectedRoleId: "role-id"
-      }))
-      await handler(event, context)
-      expect(mockGetUsernameFromEvent).toHaveBeenCalled()
-      expect(mockAuthenticateRequest).toHaveBeenCalledWith(
-        expect.any(Object),
-        expect.any(Object),
-        expect.any(Object),
-        expect.objectContaining({
-          oidcConfig: expect.objectContaining({
-            oidcIssuer: MOCK_OIDC_ISSUER,
-            oidcClientID: MOCK_OIDC_CLIENT_ID,
-            oidcJwksEndpoint: MOCK_OIDCJWKS_ENDPOINT,
-            oidcUserInfoEndpoint: MOCK_USER_INFO_ENDPOINT,
-            userPoolIdp: MOCK_USER_POOL_IDP,
-            tokenMappingTableName: TokenMappingTableName
-          })
-        })
-      )
-
-      expect(mockFetchUserInfo).toHaveBeenCalledWith(
-        expect.any(String),
-        expect.any(String),
-        expect.any(Object),
-        expect.objectContaining({
-          oidcIssuer: MOCK_OIDC_ISSUER,
-          oidcClientID: MOCK_OIDC_CLIENT_ID,
-          oidcJwksEndpoint: MOCK_OIDCJWKS_ENDPOINT,
-          oidcUserInfoEndpoint: MOCK_USER_INFO_ENDPOINT,
-          userPoolIdp: MOCK_USER_POOL_IDP,
-          tokenMappingTableName: TokenMappingTableName
-        })
-      )
-    })
 
   it("should return error when authenticateRequest throws an error", async () => {
     const error = new Error("Token verification failed")
