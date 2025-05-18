@@ -41,93 +41,105 @@ function validateLastName(lastName: string): Array<ErrorKey> {
   return errors
 }
 
-// --- Validate the individual DOB inputs: day, month, and year ---
+// --- Validate the individual DOB input fields and detect errors ---
 function validateDob(dobDay: string, dobMonth: string, dobYear: string): Array<ErrorKey> {
   const errors: Array<ErrorKey> = []
   const numericOnly = /^\d+$/
 
-  // Track field presence
+  // Track field presence and format
   const hasDay = !!dobDay
   const hasMonth = !!dobMonth
   const hasYear = !!dobYear
 
-  // Track numeric format
   const isDayNumeric = numericOnly.test(dobDay)
   const isMonthNumeric = numericOnly.test(dobMonth)
   const isYearNumeric = numericOnly.test(dobYear)
 
-  // Case: all fields are empty
+  const filledFields = [hasDay, hasMonth, hasYear].filter(Boolean).length
+  const isPartialInvalid =
+    (hasDay && !isDayNumeric) ||
+    (hasMonth && !isMonthNumeric) ||
+    (hasYear && !isYearNumeric)
+
+  const numericDay = isDayNumeric ? parseInt(dobDay, 10) : null
+  const numericMonth = isMonthNumeric ? parseInt(dobMonth, 10) : null
+
+  // Case: all fields are empty — trigger single required error
   if (!hasDay && !hasMonth && !hasYear) return ["dobRequired"]
 
-  // Case: some fields are missing
+  // Case: some fields are missing or invalid — determine specific or fallback error
   if (!hasDay || !hasMonth || !hasYear) {
-    const filled = [hasDay, hasMonth, hasYear].filter(Boolean).length
-    const partialInvalid =
-      (hasDay && !isDayNumeric) ||
-      (hasMonth && !isMonthNumeric) ||
-      (hasYear && !isYearNumeric)
-
-    const numericDay = isDayNumeric ? parseInt(dobDay, 10) : null
-    const numericMonth = isMonthNumeric ? parseInt(dobMonth, 10) : null
-
-    // If there's only one field filled, non-numeric values, or out-of-range day/month — it's invalid
-    if (
+    const isOutOfRange =
       (numericDay !== null && (numericDay < 1 || numericDay > 31)) ||
-      (numericMonth !== null && (numericMonth < 1 || numericMonth > 12)) ||
-      partialInvalid ||
-      filled === 1
-    ) {
+      (numericMonth !== null && (numericMonth < 1 || numericMonth > 12))
+
+    if (filledFields === 1 || isPartialInvalid || isOutOfRange) {
       return ["dobInvalidDate"]
     }
 
-    // Add specific missing field errors
+    // Identify specific missing fields
     if (!hasDay) errors.push("dobDayRequired")
     if (!hasMonth) errors.push("dobMonthRequired")
     if (!hasYear) errors.push("dobYearRequired")
     return errors
   }
 
-  // Validate numeric content and year length
-  const tempErrors: Array<ErrorKey> = []
+  // Case: all fields present — validate numeric format and logical range
+  const formatErrors = getDobFormatErrors(dobDay, dobMonth, dobYear)
 
-  if (!isDayNumeric) tempErrors.push("dobNonNumericDay")
-  if (!isMonthNumeric) tempErrors.push("dobNonNumericMonth")
-  if (!isYearNumeric) tempErrors.push("dobNonNumericYear")
-  if (isYearNumeric && dobYear.length < 4) tempErrors.push("dobYearTooShort")
+  // Collapse multiple format issues into a single generic error
+  if (formatErrors.length > 1) return ["dobInvalidDate"]
+  errors.push(...formatErrors)
 
-  // Range checks
-  const numericDay = isDayNumeric ? parseInt(dobDay, 10) : null
-  const numericMonth = isMonthNumeric ? parseInt(dobMonth, 10) : null
-  const dayOutOfRange = numericDay !== null && (numericDay < 1 || numericDay > 31)
-  const monthOutOfRange = numericMonth !== null && (numericMonth < 1 || numericMonth > 12)
+  // If fields are valid and year has 4 digits, perform full date validation
+  const canConstructDate =
+    isDayNumeric && isMonthNumeric && isYearNumeric && dobYear.length === 4
 
-  // If more than one DOB-related issue exists, collapse into a single generic error
-  if (tempErrors.length + Number(dayOutOfRange) + Number(monthOutOfRange) > 1) {
-    return ["dobInvalidDate"]
-  }
-
-  errors.push(...tempErrors)
-
-  // Validate the actual constructed date if inputs are complete and numeric
-  const canValidateDate = isDayNumeric && isMonthNumeric && isYearNumeric && dobYear.length === 4
-  if (canValidateDate) {
+  if (canConstructDate) {
     const day = parseInt(dobDay, 10)
     const month = parseInt(dobMonth, 10)
     const year = parseInt(dobYear, 10)
-
     const dob = new Date(`${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`)
 
-    // Check if date is valid and not in the future
-    const isValid =
+    const isValidDate =
       dob.getFullYear() === year &&
       dob.getMonth() === month - 1 &&
       dob.getDate() === day
 
-    if (!isValid) {
-      return ["dobInvalidDate"]
-    } else if (dob > new Date()) {
-      errors.push("dobFutureDate")
-    }
+    if (!isValidDate) return ["dobInvalidDate"]
+    if (dob > new Date()) errors.push("dobFutureDate")
+  }
+
+  return errors
+}
+
+// --- Identifies format and range errors for DOB inputs individually ---
+function getDobFormatErrors(dobDay: string, dobMonth: string, dobYear: string): Array<ErrorKey> {
+  const errors: Array<ErrorKey> = []
+  const numericOnly = /^\d+$/
+
+  const isDayNumeric = numericOnly.test(dobDay)
+  const isMonthNumeric = numericOnly.test(dobMonth)
+  const isYearNumeric = numericOnly.test(dobYear)
+
+  // Add numeric format errors per field
+  if (!isDayNumeric) errors.push("dobNonNumericDay")
+  if (!isMonthNumeric) errors.push("dobNonNumericMonth")
+  if (!isYearNumeric) errors.push("dobNonNumericYear")
+
+  // Year must be 4 digits if numeric
+  if (isYearNumeric && dobYear.length < 4) errors.push("dobYearTooShort")
+
+  const numericDay = isDayNumeric ? parseInt(dobDay, 10) : null
+  const numericMonth = isMonthNumeric ? parseInt(dobMonth, 10) : null
+
+  // Add range errors if numeric values fall outside expected boundaries
+  if (numericDay !== null && (numericDay < 1 || numericDay > 31)) {
+    errors.push("dobInvalidDate")
+  }
+
+  if (numericMonth !== null && (numericMonth < 1 || numericMonth > 12)) {
+    errors.push("dobInvalidDate")
   }
 
   return errors
@@ -151,7 +163,10 @@ function validatePostcode(postcode: string): Array<ErrorKey> {
   return errors
 }
 
-// --- Entry point: validates the full form input and aggregates all errors ---
+/**
+ * Validates a full set of basic patient details, including name, DOB, and postcode.
+ * Returns an array of error keys for invalid or incomplete input fields.
+ */
 export function validateBasicDetails(input: ValidationInput): Array<ErrorKey> {
   let errors: Array<ErrorKey> = []
 
@@ -167,7 +182,10 @@ export function validateBasicDetails(input: ValidationInput): Array<ErrorKey> {
   return errors
 }
 
-// --- Maps error keys to UI messages for summary and inline rendering ---
+/**
+ * Maps a list of error keys into field-specific inline error messages.
+ * Used to drive summary links and field-level error hints in the UI.
+ */
 export function getInlineErrors(errors: Array<ErrorKey>): Array<[string, string]> {
   const {errors: STR} = STRINGS
   const inlineErrors: Array<[string, string]> = []

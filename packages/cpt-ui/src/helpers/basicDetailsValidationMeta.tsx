@@ -123,38 +123,58 @@ export const resolveDobInvalidFields = ({
 }): Array<"day" | "month" | "year"> => {
   const invalidFields = new Set<"day" | "month" | "year">()
 
-  const isDayNumeric = /^\d+$/.test(dobDay)
-  const isMonthNumeric = /^\d+$/.test(dobMonth)
-  const isYearNumeric = /^\d+$/.test(dobYear)
+  // Utility helpers
+  const isNumeric = (value: string) => /^\d+$/.test(value)
+  const toInt = (value: string) => parseInt(value, 10)
+
+  // Numeric checks for each field
+  const isDayNumeric = isNumeric(dobDay)
+  const isMonthNumeric = isNumeric(dobMonth)
+  const isYearNumeric = isNumeric(dobYear)
+
+  // Special year format checks
   const isYearTooShort = dobYear.length > 0 && dobYear.length < 4
   const isYearMissing = dobYear === ""
   const isYearAllZero = dobYear === "0000"
 
+  // Determine if year should be flagged as invalid
+  const shouldFlagYear =
+    (!isYearNumeric && !isYearMissing) ||
+    isYearTooShort ||
+    isYearMissing ||
+    isYearAllZero
+
   // Non-numeric or missing fields
   if (!isDayNumeric) invalidFields.add("day")
   if (!isMonthNumeric) invalidFields.add("month")
-  if (!isYearNumeric && !isYearMissing) invalidFields.add("year")
-  if (isYearTooShort || isYearMissing || isYearAllZero) invalidFields.add("year")
+  if (shouldFlagYear) invalidFields.add("year")
 
   // Range-based validation
   if (isDayNumeric && !isValidNumericInRange(dobDay, 1, 31)) invalidFields.add("day")
   if (isMonthNumeric && !isValidNumericInRange(dobMonth, 1, 12)) invalidFields.add("month")
 
-  // Cross-field validation if all values are present and year is 4 digits
-  if (isDayNumeric && isMonthNumeric && isYearNumeric && dobYear.length === 4) {
-    const day = parseInt(dobDay, 10)
-    const month = parseInt(dobMonth, 10)
-    const year = parseInt(dobYear, 10)
+  // Only run cross-field validation if all parts are numeric and year is 4 digits
+  const canCheckDate =
+    isDayNumeric &&
+    isMonthNumeric &&
+    isYearNumeric &&
+    dobYear.length === 4
+
+  if (canCheckDate) {
+    const day = toInt(dobDay)
+    const month = toInt(dobMonth)
+    const year = toInt(dobYear)
 
     if (!isValidDate(day, month, year)) {
-      if (!isValidNumericInRange(dobMonth, 1, 12)) invalidFields.add("month")
-      if (!isValidNumericInRange(dobDay, 1, 31)) invalidFields.add("day")
-      if (
-        isValidNumericInRange(dobMonth, 1, 12) &&
-        isValidNumericInRange(dobDay, 1, 31)
-      ) {
-        invalidFields.add("year") // Catch logically invalid date like 31/02/2022
-      }
+      // Add more specific field errors if date is not valid
+      const monthInRange = isValidNumericInRange(dobMonth, 1, 12)
+      const dayInRange = isValidNumericInRange(dobDay, 1, 31)
+
+      if (!monthInRange) invalidFields.add("month")
+      if (!dayInRange) invalidFields.add("day")
+
+      // If day and month are in range, assume the year is logically wrong (e.g. 31/02/2022)
+      if (monthInRange && dayInRange) invalidFields.add("year")
     }
   }
 
