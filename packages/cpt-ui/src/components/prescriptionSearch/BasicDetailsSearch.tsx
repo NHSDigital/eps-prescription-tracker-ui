@@ -36,7 +36,7 @@ const mockPatient = [
     given: "James",
     family: "Smith",
     dateOfBirth: "02-04-2006",
-    postCode: "LS1 1AB"
+    postcode: "LS1 1AB"
   }
 ]
 
@@ -46,14 +46,14 @@ const mockMultiplePatient = [
     given: "Issac",
     family: "Wolderton-Rodriguez",
     dateOfBirth: "06-05-2013",
-    postCode: "LS6 1JL"
+    postcode: "LS6 1JL"
   },
   {
     nhsNumber: "9726919207",
     given: "Steve",
     family: "Wolderton-Rodriguez",
     dateOfBirth: "06-05-2013",
-    postCode: "LS6 1JL"
+    postcode: "LS6 1JL"
   }
 ]
 
@@ -192,7 +192,7 @@ export default function BasicDetailsSearch() {
         const matchFirstName = firstName ? formatInput(p.given) === formatInput(firstName) : true
         const matchLastName = formatInput(p.family) === formatInput(lastName)
         const matchDob = p.dateOfBirth === searchDob
-        const matchPostcode = postcode ? formatInput(p.postCode) === formatInput(postcode) : true
+        const matchPostcode = postcode ? formatInput(p.postcode) === formatInput(postcode) : true
         return matchFirstName && matchLastName && matchDob && matchPostcode
       })
 
