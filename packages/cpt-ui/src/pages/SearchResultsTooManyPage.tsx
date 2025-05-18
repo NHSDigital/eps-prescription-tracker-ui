@@ -63,7 +63,7 @@ export default function SearchResultsTooManyPage() {
 
               <p id="results-count-text" data-testid="too-many-results-count-text">
                 {STRINGS.retryMessage}
-                <Link to={FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS}>{STRINGS.retryLinkText}</Link>
+                <Link to={FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS}>{STRINGS.basicDetailsLinkText}</Link>
                 {STRINGS.retryMessageSuffix}
               </p>
 

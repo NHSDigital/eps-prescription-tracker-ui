@@ -6,7 +6,7 @@ export const STRINGS = {
   dob: "Date of birth:",
   postcode: "Postcode:",
   retryMessage: "There are too many results for this search. Try adding more ",
-  retryLinkText: "basic details",
+  basicDetailsLinkText: "basic details",
   retryMessageSuffix: " and searching again.",
   alternativeSearch: "You can also search by ",
   nhsNumberLinkText: "NHS number",
