@@ -44,73 +44,105 @@ function validateLastName(lastName: string): Array<ErrorKey> {
 // --- Validate the individual DOB input fields and detect errors ---
 function validateDob(dobDay: string, dobMonth: string, dobYear: string): Array<ErrorKey> {
   const errors: Array<ErrorKey> = []
-  const numericOnly = /^\d+$/
 
-  // Track field presence and format
   const hasDay = !!dobDay
   const hasMonth = !!dobMonth
   const hasYear = !!dobYear
 
-  const isDayNumeric = numericOnly.test(dobDay)
-  const isMonthNumeric = numericOnly.test(dobMonth)
-  const isYearNumeric = numericOnly.test(dobYear)
-
-  const filledFields = [hasDay, hasMonth, hasYear].filter(Boolean).length
-  const isPartialInvalid =
-    (hasDay && !isDayNumeric) ||
-    (hasMonth && !isMonthNumeric) ||
-    (hasYear && !isYearNumeric)
+  const isDayNumeric = /^\d+$/.test(dobDay)
+  const isMonthNumeric = /^\d+$/.test(dobMonth)
+  const isYearNumeric = /^\d+$/.test(dobYear)
 
   const numericDay = isDayNumeric ? parseInt(dobDay, 10) : null
   const numericMonth = isMonthNumeric ? parseInt(dobMonth, 10) : null
 
   // Case: all fields are empty — trigger single required error
-  if (!hasDay && !hasMonth && !hasYear) return ["dobRequired"]
+  if (isAllDobFieldsEmpty(hasDay, hasMonth, hasYear)) return ["dobRequired"]
 
-  // Case: some fields are missing or invalid — determine specific or fallback error
-  if (!hasDay || !hasMonth || !hasYear) {
-    const isOutOfRange =
-      (numericDay !== null && (numericDay < 1 || numericDay > 31)) ||
-      (numericMonth !== null && (numericMonth < 1 || numericMonth > 12))
-
-    if (filledFields === 1 || isPartialInvalid || isOutOfRange) {
+  // Case: one or more fields missing or partially invalid
+  if (isPartialDob(hasDay, hasMonth, hasYear)) {
+    if (
+      hasSingleField(hasDay, hasMonth, hasYear) ||
+      hasInvalidPartialInput(hasDay, hasMonth, hasYear, isDayNumeric, isMonthNumeric, isYearNumeric) ||
+      isDayMonthOutOfRange(numericDay, numericMonth)
+    ) {
       return ["dobInvalidDate"]
     }
 
-    // Identify specific missing fields
+    // Add specific missing field errors
     if (!hasDay) errors.push("dobDayRequired")
     if (!hasMonth) errors.push("dobMonthRequired")
     if (!hasYear) errors.push("dobYearRequired")
     return errors
   }
 
-  // Case: all fields present — validate numeric format and logical range
+  // Case: all fields present — validate individual field format and value ranges
   const formatErrors = getDobFormatErrors(dobDay, dobMonth, dobYear)
 
-  // Collapse multiple format issues into a single generic error
+  // Collapse multiple issues into a single generic error
   if (formatErrors.length > 1) return ["dobInvalidDate"]
   errors.push(...formatErrors)
 
-  // If fields are valid and year has 4 digits, perform full date validation
-  const canConstructDate =
-    isDayNumeric && isMonthNumeric && isYearNumeric && dobYear.length === 4
+  // Validate real calendar date and check it's not in the future
+  if (canConstructValidDate(isDayNumeric, isMonthNumeric, isYearNumeric, dobYear)) {
+    const dob = buildDate(dobDay, dobMonth, dobYear)
 
-  if (canConstructDate) {
-    const day = parseInt(dobDay, 10)
-    const month = parseInt(dobMonth, 10)
-    const year = parseInt(dobYear, 10)
-    const dob = new Date(`${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`)
-
-    const isValidDate =
-      dob.getFullYear() === year &&
-      dob.getMonth() === month - 1 &&
-      dob.getDate() === day
-
-    if (!isValidDate) return ["dobInvalidDate"]
+    if (!isExactDateMatch(dob, dobDay, dobMonth, dobYear)) return ["dobInvalidDate"]
     if (dob > new Date()) errors.push("dobFutureDate")
   }
 
   return errors
+}
+
+// --- Check if all DOB fields are empty ---
+function isAllDobFieldsEmpty(day: boolean, month: boolean, year: boolean): boolean {
+  return !day && !month && !year
+}
+
+// --- Check if any DOB field is missing ---
+function isPartialDob(day: boolean, month: boolean, year: boolean): boolean {
+  return !day || !month || !year
+}
+
+// --- Check if only one DOB field is filled ---
+function hasSingleField(day: boolean, month: boolean, year: boolean): boolean {
+  return [day, month, year].filter(Boolean).length === 1
+}
+
+// --- Check for any non-numeric value among filled fields ---
+function hasInvalidPartialInput(
+  day: boolean,
+  month: boolean,
+  year: boolean,
+  isDayNumeric: boolean,
+  isMonthNumeric: boolean,
+  isYearNumeric: boolean
+): boolean {
+  return (day && !isDayNumeric) || (month && !isMonthNumeric) || (year && !isYearNumeric)
+}
+
+// --- Validate numeric day/month are within correct range ---
+function isDayMonthOutOfRange(day: number | null, month: number | null): boolean {
+  return (day !== null && (day < 1 || day > 31)) || (month !== null && (month < 1 || month > 12))
+}
+
+// --- Check that day/month/year are all numeric and year is 4 digits ---
+function canConstructValidDate(dayValid: boolean, monthValid: boolean, yearValid: boolean, year: string): boolean {
+  return dayValid && monthValid && yearValid && year.length === 4
+}
+
+// --- Build a JS Date object from given DOB parts ---
+function buildDate(day: string, month: string, year: string): Date {
+  return new Date(`${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`)
+}
+
+// --- Confirm that constructed date matches input exactly ---
+function isExactDateMatch(date: Date, day: string, month: string, year: string): boolean {
+  return (
+    date.getFullYear() === parseInt(year, 10) &&
+    date.getMonth() === parseInt(month, 10) - 1 &&
+    date.getDate() === parseInt(day, 10)
+  )
 }
 
 // --- Identifies format and range errors for DOB inputs individually ---
