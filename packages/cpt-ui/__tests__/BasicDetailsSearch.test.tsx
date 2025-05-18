@@ -1,5 +1,10 @@
 import "@testing-library/jest-dom"
-import {render, screen, cleanup} from "@testing-library/react"
+import {
+  render,
+  screen,
+  cleanup,
+  waitFor
+} from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import React from "react"
 import {
@@ -94,9 +99,11 @@ describe("BasicDetailsSearch", () => {
 
     await submitForm()
 
-    expect(mockNavigate).toHaveBeenCalledWith(
-      `${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}?nhsNumber=1234567890`
-    )
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith(
+        `${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}?nhsNumber=1234567890`
+      )
+    })
   })
 
   it("redirects to the too many results page if 11 or more results are returned", async () => {
