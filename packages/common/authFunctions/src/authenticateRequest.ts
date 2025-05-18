@@ -1,16 +1,10 @@
-import {APIGatewayProxyEvent} from "aws-lambda"
 import {Logger} from "@aws-lambda-powertools/logger"
 import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
 import {getSecret} from "@aws-lambda-powertools/parameters/secrets"
 import axios from "axios"
 import {refreshApigeeAccessToken} from "./index"
 
-import {
-  getUsernameFromEvent,
-  fetchAndVerifyCIS2Tokens,
-  constructSignedJWTBody,
-  exchangeTokenForApigeeAccessToken
-} from "./index"
+import {fetchAndVerifyCIS2Tokens, constructSignedJWTBody, exchangeTokenForApigeeAccessToken} from "./index"
 import {getTokenMapping, updateTokenMapping} from "@cpt-ui-common/dynamoFunctions"
 
 // Define the ApigeeTokenResponse type
@@ -106,12 +100,11 @@ const refreshTokenFlow = async (
  * @returns Authentication result containing tokens and metadata
  */
 export async function authenticateRequest(
-  event: APIGatewayProxyEvent,
+  username: string,
   documentClient: DynamoDBDocumentClient,
   logger: Logger,
   options: AuthenticateRequestOptions
 ): Promise<{
-  username: string
   apigeeAccessToken: string
   cis2IdToken?: string
   cis2AccessToken?: string
@@ -132,7 +125,6 @@ export async function authenticateRequest(
   logger.info("Starting authentication flow")
 
   // Extract username and determine if this is a mock request
-  const username = getUsernameFromEvent(event)
   const isMockRequest = username.startsWith("Mock_")
 
   //Get the existing saved Apigee token from DynamoDB
@@ -169,7 +161,6 @@ export async function authenticateRequest(
         )
 
         return {
-          username,
           apigeeAccessToken: refreshedToken.accessToken,
           cis2IdToken: refreshedToken.idToken,
           roleId: refreshedToken.roleId || defaultRoleId || "",
@@ -187,7 +178,6 @@ export async function authenticateRequest(
       })
 
       return {
-        username,
         apigeeAccessToken: userRecord.apigeeAccessToken,
         cis2IdToken: userRecord.cis2IdToken,
         cis2AccessToken: userRecord.cis2AccessToken,
@@ -275,7 +265,6 @@ export async function authenticateRequest(
   })
 
   return {
-    username,
     apigeeAccessToken: accessToken,
     cis2IdToken,
     roleId: defaultRoleId || "",

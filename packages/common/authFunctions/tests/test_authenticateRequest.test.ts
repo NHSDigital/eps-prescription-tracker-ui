@@ -1,5 +1,4 @@
 import {jest} from "@jest/globals"
-import {APIGatewayProxyEvent} from "aws-lambda"
 import {Logger} from "@aws-lambda-powertools/logger"
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
 import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
@@ -74,15 +73,6 @@ const {authenticateRequest} = authModule
 
 describe("authenticateRequest", () => {
   // Common test setup
-  const mockEvent = {
-    requestContext: {
-      authorizer: {
-        claims: {
-          "cognito:username": "test-user"
-        }
-      }
-    }
-  } as unknown as APIGatewayProxyEvent
 
   const mockLogger = {
     info: jest.fn(),
@@ -135,14 +125,13 @@ describe("authenticateRequest", () => {
     }))
 
     const result = await authenticateRequest(
-      mockEvent,
+      "test-user",
       documentClient,
       mockLogger,
       mockOptions
     )
 
     expect(result).toEqual({
-      username: "test-user",
       apigeeAccessToken: "existing-token",
       cis2IdToken: "existing-cis2-token",
       cis2AccessToken: "existing-cis2-access-token",
@@ -176,14 +165,13 @@ describe("authenticateRequest", () => {
     })
 
     const result = await authenticateRequest(
-      mockEvent,
+      "test-user",
       documentClient,
       mockLogger,
       mockOptions
     )
 
     expect(result).toEqual({
-      username: "test-user",
       apigeeAccessToken: "refreshed-token",
       cis2IdToken: "refreshed-cis2-token",
       roleId: "expiring-role-id",
@@ -229,14 +217,13 @@ describe("authenticateRequest", () => {
     mockGetSecret.mockReturnValue("test-private-key")
 
     const result = await authenticateRequest(
-      mockEvent,
+      "test-user",
       documentClient,
       mockLogger,
       mockOptions
     )
 
     expect(result).toEqual({
-      username: "test-user",
       apigeeAccessToken: "new-access-token",
       cis2IdToken: "mock-cis2-id",
       roleId: "test-role-id",
@@ -266,7 +253,7 @@ describe("authenticateRequest", () => {
     }))
     // We expect the function to throw an error in mock mode with no token
     await expect(authenticateRequest(
-      mockEvent,
+      "Mock_user",
       documentClient,
       mockLogger,
       mockOptionsWithMock
@@ -308,7 +295,7 @@ describe("authenticateRequest", () => {
     })
 
     const result = await authenticateRequest(
-      mockEvent,
+      "test-user",
       documentClient,
       mockLogger,
       mockOptions
@@ -316,7 +303,6 @@ describe("authenticateRequest", () => {
 
     // Should fall back to new token acquisition
     expect(result).toEqual({
-      username: "test-user",
       apigeeAccessToken: "fallback-access-token",
       cis2IdToken: "mock-cis2-id",
       roleId: "test-role-id", // This comes from options.defaultRoleId

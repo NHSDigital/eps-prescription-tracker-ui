@@ -85,7 +85,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
   logger.info("No valid cached user info found. Authenticating and calling userinfo endpoint...")
   const isMockToken = username.startsWith("Mock_")
-  const authResult = await authenticateRequest(event, documentClient, logger, {
+  const authResult = await authenticateRequest(username, documentClient, logger, {
     tokenMappingTableName,
     jwtPrivateKeyArn,
     apigeeApiKey,

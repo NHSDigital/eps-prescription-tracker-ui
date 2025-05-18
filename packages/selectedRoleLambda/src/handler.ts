@@ -6,7 +6,7 @@ import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
 import middy from "@middy/core"
 import inputOutputLogger from "@middy/input-output-logger"
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
-import {authenticateRequest} from "@cpt-ui-common/authFunctions"
+import {authenticateRequest, getUsernameFromEvent} from "@cpt-ui-common/authFunctions"
 import {getTokenMapping, updateTokenMapping} from "@cpt-ui-common/dynamoFunctions"
 
 /**
@@ -50,7 +50,9 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   }})
 
   // Use the authenticateRequest function for authentication
-  const authResult = await authenticateRequest(event, documentClient, logger, {
+  const username = getUsernameFromEvent(event)
+
+  const authResult = await authenticateRequest(username, documentClient, logger, {
     tokenMappingTableName: tokenMappingTableName,
     jwtPrivateKeyArn,
     apigeeApiKey,
@@ -71,7 +73,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
   // Validate the presence of request body
   if (!event.body) {
-    logger.warn("Request body is missing", {username: authResult.username})
+    logger.warn("Request body is missing", {username})
     return {
       statusCode: 400,
       body: JSON.stringify({message: "Request body is required"})
@@ -91,20 +93,20 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   }
 
   logger.info("Received role selection request", {
-    username: authResult.username,
+    username,
     selectedRoleFromRequest: userInfoSelectedRole.currently_selected_role ?? "No role provided"
   })
 
   // Fetch current roles and selected role from DynamoDB
   logger.info("Fetching user roles from DynamoDB", {
-    username: authResult.username,
+    username,
     tableName: tokenMappingTableName
   })
 
   const tokenMappingItem = await getTokenMapping(
     documentClient,
     tokenMappingTableName,
-    authResult.username,
+    username,
     logger
   )
 
@@ -118,7 +120,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
   // Log extracted role details
   logger.info("Extracted role data", {
-    username: authResult.username,
+    username: username,
     rolesWithAccessCount: rolesWithAccess.length,
     rolesWithAccess: rolesWithAccess.map(role => ({
       role_id: role.role_id,
@@ -152,7 +154,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   ]
 
   logger.info("Updated roles list before database update", {
-    username: authResult.username,
+    username: username,
     newSelectedRole: newSelectedRole
       ? {
         role_id: newSelectedRole.role_id,
@@ -183,13 +185,13 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   }
 
   logger.info("Updating user role in DynamoDB", {
-    username: authResult.username,
+    username: username,
     updatedUserInfo
   })
 
   // Persist changes to DynamoDB
   const item = {
-    username: authResult.username,
+    username: username,
     currentlySelectedRole: updatedUserInfo.currentlySelectedRole || {},
     rolesWithAccess: updatedUserInfo.rolesWithAccess || [],
     selectedRoleId: updatedUserInfo.selectedRoleId || ""

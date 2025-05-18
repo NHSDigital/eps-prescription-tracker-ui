@@ -13,7 +13,7 @@ import {getPrescriptions} from "./services/prescriptionsLookupService"
 import {SearchParams} from "./utils/types"
 
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
-import {authenticateRequest} from "@cpt-ui-common/authFunctions"
+import {authenticateRequest, getUsernameFromEvent} from "@cpt-ui-common/authFunctions"
 import {SearchResponse} from "@cpt-ui-common/common-types"
 import {mapSearchResponse} from "./utils/responseMapper"
 
@@ -105,7 +105,9 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     validateSearchParams(searchParams)
 
     // Use the authenticateRequest function for authentication
-    const authResult = await authenticateRequest(event, documentClient, logger, {
+    const username = getUsernameFromEvent(event)
+
+    const authResult = await authenticateRequest(username, documentClient, logger, {
       tokenMappingTableName: TokenMappingTableName,
       jwtPrivateKeyArn,
       apigeeApiKey,

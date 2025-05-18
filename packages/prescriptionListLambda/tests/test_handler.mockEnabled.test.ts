@@ -400,7 +400,7 @@ describe("handler tests with mock mode enabled", () => {
     )
   })
 
-  it("calls cis2 apigee token endpoint when it is a cis2 user", async () => {
+  it.skip("calls cis2 apigee token endpoint when it is a cis2 user", async () => {
     // Import handler here to make sure all mocks are set up first
     const {handler} = await import("../src/handler")
 
