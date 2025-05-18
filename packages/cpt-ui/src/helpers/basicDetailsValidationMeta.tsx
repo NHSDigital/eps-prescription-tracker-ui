@@ -56,13 +56,14 @@ export const resolveDobInvalidField = ({
   const isMonthNumeric = /^\d+$/.test(dobMonth)
   const isYearNumeric = /^\d+$/.test(dobYear)
   const isYearTooShort = dobYear.length > 0 && dobYear.length < 4
+  const isYearMissing = dobYear === ""
 
   // Field-level checks in visible order
   if (!isDayNumeric) return "dob-day"
   if (!isMonthNumeric) return "dob-month"
   if (!isYearNumeric && dobYear !== "") return "dob-year"
   if (isYearTooShort) return "dob-year"
-  if (dobYear === "") return "dob-day"
+  if (isYearMissing) return "dob-day"
 
   // Range checks
   if (!isValidNumericInRange(dobDay, 1, 31)) return "dob-day"
@@ -127,12 +128,13 @@ export const resolveDobInvalidFields = ({
   const isYearNumeric = /^\d+$/.test(dobYear)
   const isYearTooShort = dobYear.length > 0 && dobYear.length < 4
   const isYearMissing = dobYear === ""
+  const isYearAllZero = dobYear === "0000"
 
   // Non-numeric or missing fields
   if (!isDayNumeric) invalidFields.add("day")
   if (!isMonthNumeric) invalidFields.add("month")
   if (!isYearNumeric && !isYearMissing) invalidFields.add("year")
-  if (isYearTooShort || isYearMissing) invalidFields.add("year")
+  if (isYearTooShort || isYearMissing || isYearAllZero) invalidFields.add("year")
 
   // Range-based validation
   if (isDayNumeric && !isValidNumericInRange(dobDay, 1, 31)) invalidFields.add("day")

@@ -126,6 +126,7 @@ describe("BasicDetailsSearch Validation", () => {
       [{dobDay: "ab", dobMonth: "ab", dobYear: "2020"}, STRINGS.errors.dobInvalidDate],
       [{dobDay: "02", dobMonth: "13", dobYear: "2020"}, STRINGS.errors.dobInvalidDate],
       [{dobDay: "72", dobMonth: "ab", dobYear: "2020"}, STRINGS.errors.dobInvalidDate],
+      [{dobDay: "00", dobMonth: "00", dobYear: "0000"}, STRINGS.errors.dobInvalidDate],
       [{dobDay: "", dobMonth: "01", dobYear: "2020"}, STRINGS.errors.dobDayRequired],
       [{dobDay: "02", dobMonth: "", dobYear: "2020"}, STRINGS.errors.dobMonthRequired],
       [{dobDay: "02", dobMonth: "01", dobYear: ""}, STRINGS.errors.dobYearRequired],
@@ -205,6 +206,18 @@ describe("BasicDetailsSearch Validation", () => {
   it("adds error class to all DOB fields and focuses day if all invalid", async () => {
     renderComponent()
     await fillForm({lastName: "Smith", dobDay: "78", dobMonth: "75", dobYear: ""})
+    await submitForm()
+    expectFieldHasErrorClass("dob-day-input")
+    expectFieldHasErrorClass("dob-month-input")
+    expectFieldHasErrorClass("dob-year-input")
+    const link = screen.getAllByText(STRINGS.errors.dobInvalidDate).find(el => el.tagName === "A")!
+    await userEvent.click(link)
+    expect(document.activeElement).toBe(screen.getByTestId("dob-day-input"))
+  })
+
+  it("adds error class to all DOB fields and focuses day for all-zero DOB input", async () => {
+    renderComponent()
+    await fillForm({lastName: "Smith", dobDay: "00", dobMonth: "00", dobYear: "0000"})
     await submitForm()
     expectFieldHasErrorClass("dob-day-input")
     expectFieldHasErrorClass("dob-month-input")
