@@ -29,3 +29,5 @@ export type {
   DispenserOrganisation,
   PrescriptionDetailsResponse
 } from "./prescriptionDetails"
+
+export type {PatientSummary} from "./patientSearch"
