@@ -104,8 +104,12 @@ async function createSignedJwt(claims: Record<string, unknown>) {
 const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   logger.appendKeys({"apigw-request-id": event.requestContext?.requestId})
 
+  // we need to use the base domain for the environment so that pull requests go to that callback uri
+  // as we can only have one callback uri per apigee application
+  const baseEnvironmentDomain = cloudfrontDomain.replace(/-pr-(\d*)/, "")
   logger.debug("data from env variables", {
     cloudfrontDomain,
+    baseEnvironmentDomain,
     tokenMappingTable: mockOidcConfig.tokenMappingTableName,
     jwtPrivateKeyArn,
     jwtKid,
@@ -126,8 +130,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   // this is needed for the request to exchange the token but note below
   //
   // THE CALLBACK URI IS NOT CALLED AS PART OF THIS FLOW
-  //const callbackUri = `https://${cloudfrontDomain}/oauth2/mock-callback`
-  const callbackUri = "https://cpt-ui.dev.eps.national.nhs.uk/oauth2/mock-callback"
+  const callbackUri = `https://${baseEnvironmentDomain}/oauth2/mock-callback`
   const tokenResponse = await exchangeApigeeCode(sessionState.ApigeeCode, callbackUri)
   logger.debug("Token response", {tokenResponse})
 

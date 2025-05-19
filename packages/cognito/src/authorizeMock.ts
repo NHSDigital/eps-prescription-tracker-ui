@@ -46,8 +46,13 @@ const lambdaHandler = async (
   event: APIGatewayProxyEvent
 ): Promise<APIGatewayProxyResult> => {
   logger.appendKeys({"apigw-request-id": event.requestContext?.requestId})
+  // we need to use the base domain for the environment so that pull requests go to that callback uri
+  // as we can only have one callback uri per apigee application
+  const baseEnvironmentDomain = cloudfrontDomain.replace(/-pr-(\d*)/, "")
+
   logger.debug("Environment variable", {env: {
     authorizeEndpoint,
+    baseEnvironmentDomain,
     cis2ClientId,
     userPoolClientId,
     cloudfrontDomain,
@@ -86,7 +91,7 @@ const lambdaHandler = async (
   // for pull requests we pack the real callback url for this pull request into the state
   // the callback lambda then decodes this and redirects to the callback url for this pull request
   const realCallbackUri = `https://${cloudfrontDomain}/oauth2/mock-callback`
-  const callbackUri = "https://cpt-ui.dev.eps.national.nhs.uk/oauth2/mock-callback"
+  const callbackUri = `https://${baseEnvironmentDomain}/oauth2/mock-callback`
 
   const newStateJson = {
     isPullRequest: true,

@@ -7,7 +7,7 @@ process.env.IDP_AUTHORIZE_PATH = "https://example.com/authorize"
 process.env.OIDC_CLIENT_ID = "cis2Client123"
 process.env.useMock = "true"
 process.env.COGNITO_CLIENT_ID = "userPoolClient123"
-process.env.FULL_CLOUDFRONT_DOMAIN = "d111111abcdef8.cloudfront.net"
+process.env.FULL_CLOUDFRONT_DOMAIN = "cpt-ui-pr-854.dev.eps.national.nhs.uk"
 process.env.StateMappingTableName = "stateMappingTest"
 
 const mockInsertStateMapping = jest.fn()
