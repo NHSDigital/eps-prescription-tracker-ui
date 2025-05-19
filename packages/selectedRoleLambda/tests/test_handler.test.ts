@@ -5,7 +5,6 @@ import {Logger} from "@aws-lambda-powertools/logger"
 // Mocked functions from authFunctions
 const mockGetUsernameFromEvent = jest.fn()
 const mockInitializeOidcConfig = jest.fn()
-const mockAuthenticateRequest = jest.fn()
 const mockUpdateTokenMapping = jest.fn()
 const mockGetTokenMapping = jest.fn()
 
@@ -38,7 +37,6 @@ jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
 
   return {
     getUsernameFromEvent: mockGetUsernameFromEvent,
-    authenticateRequest : mockAuthenticateRequest,
     initializeOidcConfig: mockInitializeOidcConfig
   }
 })
@@ -72,12 +70,6 @@ describe("Lambda Handler Tests", () => {
 
   it("should return a successful response when called", async () => {
     mockGetUsernameFromEvent.mockReturnValue("JoeBlogs")
-    mockAuthenticateRequest.mockImplementation(() => {
-      return Promise.resolve({
-        cis2AccessToken: "cis2_access_token",
-        cis2IdToken: "cis2_id_token"
-      })
-    })
     const response = await handler(event, context)
     expect(mockUpdateTokenMapping).toHaveBeenCalled()
 
@@ -94,12 +86,6 @@ describe("Lambda Handler Tests", () => {
     "should call updateDynamoTable and move the selected role from rolesWithAccess to currentlySelectedRole",
     async () => {
       mockGetUsernameFromEvent.mockReturnValue("Mock_JoeBloggs")
-      mockAuthenticateRequest.mockImplementation(() => {
-        return Promise.resolve({
-          cis2AccessToken: "cis2_access_token",
-          cis2IdToken: "cis2_id_token"
-        })
-      })
       mockGetTokenMapping.mockImplementation(() => {
         return {
           rolesWithAccess:  [
@@ -165,12 +151,6 @@ describe("Lambda Handler Tests", () => {
     "should swap currentlySelectedRole with the new selected role and move the old one back to rolesWithAccess",
     async () => {
       mockGetUsernameFromEvent.mockReturnValue("Mock_JoeBloggs")
-      mockAuthenticateRequest.mockImplementation(() => {
-        return Promise.resolve({
-          cis2AccessToken: "cis2_access_token",
-          cis2IdToken: "cis2_id_token"
-        })
-      })
       // Initial rolesWithAccess contains multiple roles, currentlySelectedRole is undefined
       mockGetTokenMapping.mockImplementation(() => {
         return {
@@ -261,12 +241,6 @@ describe("Lambda Handler Tests", () => {
     "should swap initially selected role with the new selected role and move the old one back to rolesWithAccess",
     async () => {
       mockGetUsernameFromEvent.mockReturnValue("Mock_JoeBloggs")
-      mockAuthenticateRequest.mockImplementation(() => {
-        return Promise.resolve({
-          cis2AccessToken: "cis2_access_token",
-          cis2IdToken: "cis2_id_token"
-        })
-      })
       // Initial database state with a previously selected role
       mockGetTokenMapping.mockImplementation(() => {
         return {
@@ -351,12 +325,6 @@ describe("Lambda Handler Tests", () => {
 
   it("should return 500 and log error when updateDynamoTable throws an error", async () => {
     mockGetUsernameFromEvent.mockReturnValue("Mock_JoeBloggs")
-    mockAuthenticateRequest.mockImplementation(() => {
-      return Promise.resolve({
-        cis2AccessToken: "cis2_access_token",
-        cis2IdToken: "cis2_id_token"
-      })
-    })
     const error = new Error("Dynamo update failed")
     const loggerSpy = jest.spyOn(Logger.prototype, "error")
     mockUpdateTokenMapping.mockImplementation(() => {
@@ -375,12 +343,6 @@ describe("Lambda Handler Tests", () => {
 
   it("should handle unexpected error types gracefully", async () => {
     mockGetUsernameFromEvent.mockReturnValue("Mock_JoeBloggs")
-    mockAuthenticateRequest.mockImplementation(() => {
-      return Promise.resolve({
-        cis2AccessToken: "cis2_access_token",
-        cis2IdToken: "cis2_id_token"
-      })
-    })
     mockUpdateTokenMapping.mockImplementation(() => {
       throw new Error("Unexpected error string")
     })
@@ -398,12 +360,6 @@ describe("Lambda Handler Tests", () => {
 
   it("should return 400 when request body is missing", async () => {
     mockGetUsernameFromEvent.mockReturnValue("Mock_JoeBloggs")
-    mockAuthenticateRequest.mockImplementation(() => {
-      return Promise.resolve({
-        cis2AccessToken: "cis2_access_token",
-        cis2IdToken: "cis2_id_token"
-      })
-    })
     event.body = "" as unknown as string
     const response = await handler(event, context)
 
@@ -413,12 +369,6 @@ describe("Lambda Handler Tests", () => {
 
   it("should return 400 when request body is invalid JSON", async () => {
     mockGetUsernameFromEvent.mockReturnValue("Mock_JoeBloggs")
-    mockAuthenticateRequest.mockImplementation(() => {
-      return Promise.resolve({
-        cis2AccessToken: "cis2_access_token",
-        cis2IdToken: "cis2_id_token"
-      })
-    })
     event.body = "Invalid JSON"
     const response = await handler(event, context)
 

@@ -6,7 +6,7 @@ import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
 import middy from "@middy/core"
 import inputOutputLogger from "@middy/input-output-logger"
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
-import {authenticateRequest, getUsernameFromEvent} from "@cpt-ui-common/authFunctions"
+import {getUsernameFromEvent} from "@cpt-ui-common/authFunctions"
 import {getTokenMapping, updateTokenMapping} from "@cpt-ui-common/dynamoFunctions"
 
 /**
@@ -51,25 +51,6 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
   // Use the authenticateRequest function for authentication
   const username = getUsernameFromEvent(event)
-
-  const authResult = await authenticateRequest(username, documentClient, logger, {
-    tokenMappingTableName: tokenMappingTableName,
-    jwtPrivateKeyArn,
-    apigeeApiKey,
-    apigeeApiSecret,
-    jwtKid,
-    apigeeCis2TokenEndpoint,
-    apigeeMockTokenEndpoint
-  })
-
-  if (!authResult) {
-    logger.error("Authentication failed, no auth result returned")
-    return {
-      statusCode: 401,
-      body: JSON.stringify({message: "Authentication failed"}),
-      headers: {"Content-Type": "application/json"}
-    }
-  }
 
   // Validate the presence of request body
   if (!event.body) {

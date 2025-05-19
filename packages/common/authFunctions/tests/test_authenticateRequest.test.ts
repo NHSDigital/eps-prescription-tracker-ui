@@ -133,10 +133,7 @@ describe("authenticateRequest", () => {
 
     expect(result).toEqual({
       apigeeAccessToken: "existing-token",
-      cis2IdToken: "existing-cis2-token",
-      cis2AccessToken: "existing-cis2-access-token",
-      roleId: "existing-role-id",
-      isMockRequest: false
+      roleId: "existing-role-id"
     })
 
     // Verify that token refresh functions were not called
@@ -173,9 +170,7 @@ describe("authenticateRequest", () => {
 
     expect(result).toEqual({
       apigeeAccessToken: "refreshed-token",
-      cis2IdToken: "refreshed-cis2-token",
-      roleId: "expiring-role-id",
-      isMockRequest: false
+      roleId: "expiring-role-id"
     })
 
     // Verify refresh was called with correct params
@@ -225,9 +220,7 @@ describe("authenticateRequest", () => {
 
     expect(result).toEqual({
       apigeeAccessToken: "new-access-token",
-      cis2IdToken: "mock-cis2-id",
-      roleId: "test-role-id",
-      isMockRequest: false
+      roleId: "test-role-id"
     })
 
     // Verify new token acquisition flow
@@ -304,9 +297,7 @@ describe("authenticateRequest", () => {
     // Should fall back to new token acquisition
     expect(result).toEqual({
       apigeeAccessToken: "fallback-access-token",
-      cis2IdToken: "mock-cis2-id",
-      roleId: "test-role-id", // This comes from options.defaultRoleId
-      isMockRequest: false
+      roleId: "test-role-id" // This comes from options.defaultRoleId
     })
 
     // Verify both refresh and fallback were attempted

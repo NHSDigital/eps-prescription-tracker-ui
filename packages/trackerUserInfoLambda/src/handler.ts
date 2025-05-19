@@ -96,13 +96,16 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   })
 
   logger.debug("auth result", {authResult})
-  if (!authResult.cis2AccessToken || !authResult.cis2IdToken) {
+  if (!authResult.apigeeAccessToken
+      || !tokenMappingItem.cis2IdToken
+      || !tokenMappingItem.cis2AccessToken
+  ) {
     throw new Error("Authentication failed: missing tokens")
   }
 
   const userInfoResponse = await fetchUserInfo(
-    authResult.cis2AccessToken,
-    authResult.cis2IdToken,
+    tokenMappingItem.cis2AccessToken,
+    tokenMappingItem.cis2IdToken,
     logger,
     isMockToken ? mockOidcConfig : cis2OidcConfig
   )

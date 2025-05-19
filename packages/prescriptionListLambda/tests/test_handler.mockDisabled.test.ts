@@ -92,8 +92,6 @@ describe("handler tests with cis2 auth", () => {
     mockGetUsernameFromEvent.mockReturnValue("test_user")
     mockAuthenticateRequest.mockImplementation(() => {
       return Promise.resolve({
-        cis2AccessToken: "cis2_access_token",
-        cis2IdToken: "cis2_id_token",
         apigeeAccessToken: "apigee_access_token"
       })
     })

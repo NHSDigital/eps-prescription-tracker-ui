@@ -106,10 +106,7 @@ export async function authenticateRequest(
   options: AuthenticateRequestOptions
 ): Promise<{
   apigeeAccessToken: string
-  cis2IdToken?: string
-  cis2AccessToken?: string
   roleId: string
-  isMockRequest: boolean
 }> {
   const {
     tokenMappingTableName,
@@ -162,9 +159,7 @@ export async function authenticateRequest(
 
         return {
           apigeeAccessToken: refreshedToken.accessToken,
-          cis2IdToken: refreshedToken.idToken,
-          roleId: refreshedToken.roleId || defaultRoleId || "",
-          isMockRequest
+          roleId: refreshedToken.roleId || defaultRoleId || ""
         }
       } catch (error) {
         logger.warn("Token refresh failed, will proceed with new token acquisition", {error})
@@ -179,10 +174,7 @@ export async function authenticateRequest(
 
       return {
         apigeeAccessToken: userRecord.apigeeAccessToken,
-        cis2IdToken: userRecord.cis2IdToken,
-        cis2AccessToken: userRecord.cis2AccessToken,
-        roleId: userRecord.selectedRoleId || defaultRoleId || "",
-        isMockRequest
+        roleId: userRecord.selectedRoleId || defaultRoleId || ""
       }
     }
   }
@@ -266,8 +258,6 @@ export async function authenticateRequest(
 
   return {
     apigeeAccessToken: accessToken,
-    cis2IdToken,
-    roleId: defaultRoleId || "",
-    isMockRequest
+    roleId: defaultRoleId || ""
   }
 }
