@@ -188,8 +188,9 @@ function getDobFormatErrors(dobDay: string, dobMonth: string, dobYear: string): 
   if (!isMonthNumeric) errors.push("dobNonNumericMonth")
   if (!isYearNumeric) errors.push("dobNonNumericYear")
 
-  // Year must be 4 digits if numeric
+  // Year must be exactly 4 digits if numeric
   if (isYearNumeric && dobYear.length < 4) errors.push("dobYearTooShort")
+  if (isYearNumeric && dobYear.length > 4) errors.push("dobInvalidDate")
 
   const numericDay = isDayNumeric ? parseInt(dobDay, 10) : null
   const numericMonth = isMonthNumeric ? parseInt(dobMonth, 10) : null

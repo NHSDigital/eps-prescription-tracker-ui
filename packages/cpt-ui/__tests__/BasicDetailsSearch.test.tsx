@@ -240,6 +240,7 @@ describe("BasicDetailsSearch", () => {
       [{dobDay: "02", dobMonth: "13", dobYear: "2020"}, STRINGS.errors.dobInvalidDate],
       [{dobDay: "72", dobMonth: "ab", dobYear: "2020"}, STRINGS.errors.dobInvalidDate],
       [{dobDay: "00", dobMonth: "00", dobYear: "0000"}, STRINGS.errors.dobInvalidDate],
+      [{dobDay: "17", dobMonth: "05", dobYear: "0000000"}, STRINGS.errors.dobInvalidDate],
       [{dobDay: "", dobMonth: "01", dobYear: "2020"}, STRINGS.errors.dobDayRequired],
       [{dobDay: "02", dobMonth: "", dobYear: "2020"}, STRINGS.errors.dobMonthRequired],
       [{dobDay: "02", dobMonth: "01", dobYear: ""}, STRINGS.errors.dobYearRequired],
