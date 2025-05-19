@@ -36,7 +36,6 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   logger.appendKeys({"apigw-request-id": event.requestContext?.requestId})
 
   // Destructure and validate required query parameters
-  // TODO: investigate if session_state is needed at all for this function
   const {state, code, session_state} = event.queryStringParameters || {}
   if (!state || !code) {
     logger.error(
