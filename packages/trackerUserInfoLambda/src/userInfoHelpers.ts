@@ -26,7 +26,7 @@ export const fetchUserInfo = async (
   logger.debug("Decoded cis2IdToken", {decodedIdToken})
 
   // Extract the selected_roleid from the decoded cis2IdToken
-  const selectedRoleId = decodedIdToken?.selected_roleid
+  const selectedRoleId = decodedIdToken?.payload?.selected_roleid
   logger.info("Selected role ID extracted from cis2IdToken", {selectedRoleId})
 
   if (!oidcConfig.oidcUserInfoEndpoint) {
@@ -42,7 +42,7 @@ export const fetchUserInfo = async (
           Authorization: `Bearer ${cis2AccessToken}`
         }
       })
-    logger.info("User info fetched successfully")
+    logger.debug("User info fetched successfully", {userInfo: response.data})
 
     // Extract the roles from the user info response
     const data = response.data
