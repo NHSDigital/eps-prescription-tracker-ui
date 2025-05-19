@@ -153,8 +153,6 @@ cdk-deploy: guard-service_name guard-CDK_APP_NAME
 
 cdk-watch: clean
 	./scripts/run_sync.sh
-cdk-watch-int: clean
-	./scripts/run_sync_int.sh
 
 cdk-synth: compile cdk-synth-no-mock cdk-synth-mock
 

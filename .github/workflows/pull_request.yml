@@ -97,41 +97,6 @@ jobs:
       REGRESSION_TESTS_PEM: ${{ secrets.REGRESSION_TESTS_PEM }}
       APIGEE_API_KEY: ${{ secrets.APIGEE_DEV_API_KEY }}
       APIGEE_API_SECRET: ${{ secrets.APIGEE_DEV_API_SECRET }}
-
-  release_code_int:
-    needs: [get_issue_number, package_code, get_commit_id, quality_checks]
-    uses: ./.github/workflows/release_all_stacks.yml
-    with:
-      SERVICE_NAME: cpt-ui-pr-${{needs.get_issue_number.outputs.issue_number}}-a
-      TARGET_ENVIRONMENT: dev-pr
-      VERSION_NUMBER: PR-${{ needs.get_issue_number.outputs.issue_number }}-a
-      COMMIT_ID: ${{ needs.get_commit_id.outputs.commit_id }}
-      useMockOidc: false
-      primaryOidcIssuer: "https://am.nhsint.auth-ptl.cis2.spineservices.nhs.uk:443/openam/oauth2/realms/root/realms/NHSIdentity/realms/Healthcare"
-      primaryOidcAuthorizeEndpoint: "https://am.nhsint.auth-ptl.cis2.spineservices.nhs.uk:443/openam/oauth2/realms/root/realms/NHSIdentity/realms/Healthcare/authorize"
-      primaryOidcTokenEndpoint: "https://am.nhsint.auth-ptl.cis2.spineservices.nhs.uk:443/openam/oauth2/realms/root/realms/NHSIdentity/realms/Healthcare/access_token"
-      primaryOidcUserInfoEndpoint: "https://am.nhsint.auth-ptl.cis2.spineservices.nhs.uk:443/openam/oauth2/realms/root/realms/NHSIdentity/realms/Healthcare/userinfo"
-      primaryOidcjwksEndpoint: "https://am.nhsint.auth-ptl.cis2.spineservices.nhs.uk:443/openam/oauth2/realms/root/realms/NHSIdentity/realms/Healthcare/connect/jwk_uri"
-      allowLocalhostAccess: true
-      useCustomCognitoDomain: false
-      APIGEE_CIS2_TOKEN_ENDPOINT: "https://int.api.service.nhs.uk/oauth2/token"
-      APIGEE_MOCK_TOKEN_ENDPOINT: "UNUSED"
-      APIGEE_PRESCRIPTIONS_ENDPOINT: "https://int.api.service.nhs.uk/clinical-prescription-tracker/"
-      APIGEE_PDS_ENDPOINT: "https://int.api.service.nhs.uk/personal-demographics/FHIR/R4/"
-      JWT_KID: "eps-cpt-ui-int"
-      ROLE_ID: "555254242106"
-      LOG_LEVEL: "DEBUG"
-      RUN_REGRESSION_TESTS: false
-    secrets:
-      CDK_PULL_IMAGE_ROLE: ${{ secrets.DEV_CDK_PULL_IMAGE_ROLE }}
-      CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_DEPLOY_ROLE }}
-      mockOidcClientId: ${{ secrets.DEV_MOCK_CLIENT_ID }}
-      primaryOidcClientId: ${{ secrets.INT_CIS2_OIDC_CLIENT_ID }}
-      CIS2_PRIVATE_KEY: ${{ secrets.INT_JWT_PRIVATE_KEY }}
-      REGRESSION_TESTS_PEM: ${{ secrets.REGRESSION_TESTS_PEM }}
-      APIGEE_API_KEY: ${{ secrets.APIGEE_INT_API_KEY }}
-      APIGEE_API_SECRET: ${{ secrets.APIGEE_INT_API_SECRET }}
-  
   report_deployed_url:
     needs: [release_code, get_issue_number]
     runs-on: ubuntu-22.04
