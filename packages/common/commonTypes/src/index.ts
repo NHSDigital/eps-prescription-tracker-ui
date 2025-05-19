@@ -31,3 +31,8 @@ export type {
 } from "./prescriptionDetails"
 
 export type {PatientSummary} from "./patientSearch"
+
+// Types from basicDetailsSearch
+export type {
+  BasicDetailsSearchType
+} from "./basicDetailsSearch"
