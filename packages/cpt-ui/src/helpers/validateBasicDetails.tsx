@@ -10,6 +10,20 @@ interface ValidationInput {
   postcode: string
 }
 
+interface DobPresence {
+  hasDay: boolean
+  hasMonth: boolean
+  hasYear: boolean
+}
+
+interface DobNumericStatus {
+  isDayNumeric: boolean
+  isMonthNumeric: boolean
+  isYearNumeric: boolean
+  day: number | null
+  month: number | null
+}
+
 // --- Validate the first name input field ---
 function validateFirstName(firstName: string): Array<ErrorKey> {
   const errors: Array<ErrorKey> = []
@@ -62,14 +76,8 @@ function validateDob(dobDay: string, dobMonth: string, dobYear: string): Array<E
   // Case: one or more fields missing or partially invalid
   if (isPartialDob(hasDay, hasMonth, hasYear)) {
     return getPartialDobErrors(
-      hasDay,
-      hasMonth,
-      hasYear,
-      isDayNumeric,
-      isMonthNumeric,
-      isYearNumeric,
-      numericDay,
-      numericMonth
+      {hasDay, hasMonth, hasYear},
+      {isDayNumeric, isMonthNumeric, isYearNumeric, day: numericDay, month: numericMonth}
     )
   }
 
@@ -125,15 +133,16 @@ function isDayMonthOutOfRange(day: number | null, month: number | null): boolean
 
 // --- Extracts specific missing field errors for partial DOB input ---
 function getPartialDobErrors(
-  hasDay: boolean,
-  hasMonth: boolean,
-  hasYear: boolean,
-  isDayNumeric: boolean,
-  isMonthNumeric: boolean,
-  isYearNumeric: boolean,
-  day: number | null,
-  month: number | null
+  presence: DobPresence,
+  numericStatus: DobNumericStatus
 ): Array<ErrorKey> {
+  const {hasDay, hasMonth, hasYear} = presence
+  const {isDayNumeric, isMonthNumeric, isYearNumeric, day, month} = numericStatus
+
+  // Return a generic date error if:
+  // - Only one DOB field is filled in
+  // - Any field is non-numeric
+  // - Day or month value is out of range
   if (
     hasSingleField(hasDay, hasMonth, hasYear) ||
     hasInvalidPartialInput(hasDay, hasMonth, hasYear, isDayNumeric, isMonthNumeric, isYearNumeric) ||
@@ -143,6 +152,8 @@ function getPartialDobErrors(
   }
 
   const errors: Array<ErrorKey> = []
+
+  // Add specific required errors for each missing field
   if (!hasDay) errors.push("dobDayRequired")
   if (!hasMonth) errors.push("dobMonthRequired")
   if (!hasYear) errors.push("dobYearRequired")
