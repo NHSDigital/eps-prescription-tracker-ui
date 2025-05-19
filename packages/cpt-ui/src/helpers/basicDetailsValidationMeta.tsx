@@ -1,4 +1,6 @@
-// Defines all possible validation error keys used across the UI
+/**
+ * Defines all possible validation error keys used across the UI
+ */
 export type ErrorKey =
   | "firstNameTooLong"
   | "firstNameInvalidChars"
@@ -18,18 +20,14 @@ export type ErrorKey =
   | "postcodeTooShort"
   | "postcodeInvalidChars"
 
-/**
- * Validates if a string is a numeric value within a given range.
- */
+// --- Validates if a string is a numeric value within a given range ---
 const isValidNumericInRange = (value: string, min: number, max: number): boolean => {
   const isNumeric = /^\d+$/.test(value)
   const num = parseInt(value, 10)
   return isNumeric && num >= min && num <= max
 }
 
-/**
- * Validates if the provided day, month, and year form a valid date.
- */
+// --- Validates if the provided day, month, and year form a valid date ---
 const isValidDate = (day: number, month: number, year: number): boolean => {
   const date = new Date(`${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`)
   return (
@@ -126,6 +124,7 @@ export const resolveDobInvalidFields = ({
   // Utility helpers
   const isNumeric = (value: string) => /^\d+$/.test(value)
   const toInt = (value: string) => parseInt(value, 10)
+  const isEmpty = (value: string) => value === ""
 
   // Numeric checks for each field
   const isDayNumeric = isNumeric(dobDay)
@@ -134,33 +133,24 @@ export const resolveDobInvalidFields = ({
 
   // Special year format checks
   const isYearTooShort = dobYear.length > 0 && dobYear.length < 4
-  const isYearMissing = dobYear === ""
+  const isYearMissing = isEmpty(dobYear)
   const isYearAllZero = dobYear === "0000"
 
   // Determine if year should be flagged as invalid
-  const shouldFlagYear =
-    (!isYearNumeric && !isYearMissing) ||
-    isYearTooShort ||
-    isYearMissing ||
-    isYearAllZero
+  if (shouldFlagYear(isYearNumeric, isYearMissing, isYearTooShort, isYearAllZero)) {
+    invalidFields.add("year")
+  }
 
   // Non-numeric or missing fields
   if (!isDayNumeric) invalidFields.add("day")
   if (!isMonthNumeric) invalidFields.add("month")
-  if (shouldFlagYear) invalidFields.add("year")
 
   // Range-based validation
   if (isDayNumeric && !isValidNumericInRange(dobDay, 1, 31)) invalidFields.add("day")
   if (isMonthNumeric && !isValidNumericInRange(dobMonth, 1, 12)) invalidFields.add("month")
 
-  // Only run cross-field validation if all parts are numeric and year is 4 digits
-  const canCheckDate =
-    isDayNumeric &&
-    isMonthNumeric &&
-    isYearNumeric &&
-    dobYear.length === 4
-
-  if (canCheckDate) {
+  // Cross-field date validation if eligible
+  if (canCheckDate(isDayNumeric, isMonthNumeric, isYearNumeric, dobYear)) {
     const day = toInt(dobDay)
     const month = toInt(dobMonth)
     const year = toInt(dobYear)
@@ -179,4 +169,24 @@ export const resolveDobInvalidFields = ({
   }
 
   return Array.from(invalidFields)
+}
+
+// --- Determines if the year field should be considered invalid ---
+function shouldFlagYear(
+  isYearNumeric: boolean,
+  isYearMissing: boolean,
+  isYearTooShort: boolean,
+  isYearAllZero: boolean
+): boolean {
+  return (!isYearNumeric && !isYearMissing) || isYearTooShort || isYearMissing || isYearAllZero
+}
+
+// --- Determines if cross-field date check can be performed ---
+function canCheckDate(
+  isDayNumeric: boolean,
+  isMonthNumeric: boolean,
+  isYearNumeric: boolean,
+  year: string
+): boolean {
+  return isDayNumeric && isMonthNumeric && isYearNumeric && year.length === 4
 }
