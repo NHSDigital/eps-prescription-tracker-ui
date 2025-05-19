@@ -142,7 +142,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
   const roleDetails = extractRoleInformation(
     userInfo,
-    userInfo.uid,
+    userInfo.selected_roleid,
     logger
   )
 
@@ -185,7 +185,8 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
       selectedRoleId: userInfo.uid,
       userDetails: roleDetails.user_details,
       rolesWithAccess: roleDetails.roles_with_access,
-      rolesWithoutAccess: roleDetails.roles_without_access
+      rolesWithoutAccess: roleDetails.roles_without_access,
+      currentlySelectedRole: roleDetails.currently_selected_role
     },
     logger
   )
