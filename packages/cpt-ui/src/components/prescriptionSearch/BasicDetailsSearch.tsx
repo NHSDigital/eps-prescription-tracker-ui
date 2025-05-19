@@ -329,7 +329,12 @@ export default function BasicDetailsSearch() {
                     </ErrorMessage>
                   )}
 
-                  <DateInput id="dob" data-testid="dob-input-group">
+                  <DateInput
+                    id="dob"
+                    aria-labelledby="dob-label"
+                    aria-describedby="dob-hint"
+                    data-testid="dob-input-group"
+                  >
                     {/* Day */}
                     <DateInput.Day
                       id="dob-day"
