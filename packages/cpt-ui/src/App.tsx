@@ -16,6 +16,7 @@ import NotFoundPage from "@/pages/NotFoundPage"
 import PrescriptionListPage from "@/pages/PrescriptionListPage"
 import PrescriptionNotFoundPage from "@/pages/PrescriptionNotFoundPage"
 import PrescriptionDetailsPage from "@/pages/PrescriptionDetailsPage"
+import SearchResultsPage from "@/pages/BasicDetailsSearchResultsPage"
 
 import {FRONTEND_PATHS} from "@/constants/environment"
 
@@ -70,6 +71,10 @@ export default function App() {
                 <Route
                   path={FRONTEND_PATHS.PRESCRIPTION_DETAILS_PAGE}
                   element={<PrescriptionDetailsPage />}
+                />
+                <Route
+                  path={FRONTEND_PATHS.PATIENT_SEARCH_RESULTS}
+                  element={<SearchResultsPage />}
                 />
               </Route>
             </Routes>
