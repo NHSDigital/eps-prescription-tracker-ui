@@ -25,11 +25,11 @@ const PrescriptionsListTable = ({textContent, prescriptions}: PrescriptionsListT
   }, [])
 
   const headings = [
-    {key: "issueDate", label: "Issue date"},
-    {key: "prescriptionTreatmentType", label: "Prescription type"},
-    {key: "statusCode", label: "Status"},
-    {key: "cancellationWarning", label: "Pending cancellation"},
-    {key: "prescriptionId", label: "Prescription ID"}
+    {key: "issueDate", label: "Issue date", width: "15%"},
+    {key: "prescriptionTreatmentType", label: "Prescription type", width: "20%"},
+    {key: "statusCode", label: "Status", width: "20%"},
+    {key: "cancellationWarning", label: "Pending cancellation", width: "20%"},
+    {key: "prescriptionId", label: "Prescription ID", width: "25%"}
   ]
 
   // this functionality is also performed at getPrescriptionTypeDisplayText in "@/helpers/statusMetadata"
@@ -44,12 +44,21 @@ const PrescriptionsListTable = ({textContent, prescriptions}: PrescriptionsListT
   }
 
   const formatDate = (date: string) => {
-    const options: Intl.DateTimeFormatOptions = {
-      day: "2-digit",
-      month: "short",
-      year: "numeric"
+    try {
+      const options: Intl.DateTimeFormatOptions = {
+        day: "2-digit",
+        month: "short",
+        year: "numeric"
+      }
+      // Check if date is valid before formatting
+      const dateObj = new Date(date)
+      if (isNaN(dateObj.getTime())) {
+        return "Invalid date"
+      }
+      return dateObj.toLocaleDateString("en-GB", options).replace(/ /g, "-")
+    } catch {
+      return "Invalid date"
     }
-    return new Date(date).toLocaleDateString("en-GB", options).replace(/ /g, "-")
   }
 
   const requestSort = (key: string) => {
@@ -95,6 +104,17 @@ const PrescriptionsListTable = ({textContent, prescriptions}: PrescriptionsListT
     }))
   }
 
+  const getValidDateTimestamp = (dateString: string): number => {
+
+    const date = new Date(dateString)
+
+    if (!isNaN(date.getTime())) {
+      return date.getTime()
+    }
+
+    return Number.MIN_SAFE_INTEGER
+  }
+
   const getSortedItems = () => {
     const sorted = [...formatPrescriptionStatus()]
 
@@ -104,7 +124,13 @@ const PrescriptionsListTable = ({textContent, prescriptions}: PrescriptionsListT
         const aHasWarning = a.prescriptionPendingCancellation || a.itemsPendingCancellation
         const bHasWarning = b.prescriptionPendingCancellation || b.itemsPendingCancellation
 
-        if (aHasWarning === bHasWarning) return 0
+        if (aHasWarning === bHasWarning) {
+
+          const aDateTimestamp = getValidDateTimestamp(a.issueDate)
+          const bDateTimestamp = getValidDateTimestamp(b.issueDate)
+          return bDateTimestamp - aDateTimestamp
+        }
+
         if (sortConfig.direction === "ascending") {
           return aHasWarning ? 1 : -1
         } else {
@@ -112,10 +138,29 @@ const PrescriptionsListTable = ({textContent, prescriptions}: PrescriptionsListT
         }
       }
 
+      if (sortConfig.key === "statusCode" || sortConfig.key === "issueDate") {
+        if (sortConfig.key === "statusCode" && a.statusCode === b.statusCode) {
+
+          const aDateTimestamp = getValidDateTimestamp(a.issueDate)
+          const bDateTimestamp = getValidDateTimestamp(b.issueDate)
+          return bDateTimestamp - aDateTimestamp
+        }
+
+        if (sortConfig.key === "issueDate") {
+          const aDateTimestamp = getValidDateTimestamp(a.issueDate)
+          const bDateTimestamp = getValidDateTimestamp(b.issueDate)
+          return sortConfig.direction ===
+           "ascending" ? aDateTimestamp - bDateTimestamp : bDateTimestamp - aDateTimestamp
+        }
+      }
+
       const key = sortConfig.key as keyof typeof sorted[0]
       if (a[key]! < b[key]!) return sortConfig.direction === "ascending" ? -1 : 1
       if (a[key]! > b[key]!) return sortConfig.direction === "ascending" ? 1 : -1
-      return 0
+
+      const aDateTimestamp = getValidDateTimestamp(a.issueDate)
+      const bDateTimestamp = getValidDateTimestamp(b.issueDate)
+      return bDateTimestamp - aDateTimestamp
     })
 
     return sorted
@@ -153,6 +198,7 @@ const PrescriptionsListTable = ({textContent, prescriptions}: PrescriptionsListT
         data-testid={`${textContent.testid}-prescriptions-results-table`}
       >
         {renderTableDescription()}
+
         <thead>
           <tr>
             {headings.map((heading) => (
@@ -165,6 +211,7 @@ const PrescriptionsListTable = ({textContent, prescriptions}: PrescriptionsListT
                     : "none"
                 }
                 data-testid={`eps-prescription-table-header-${heading.key}`}
+                style={{width: heading.width}}
               >
                 <span
                   role="button"
@@ -172,11 +219,8 @@ const PrescriptionsListTable = ({textContent, prescriptions}: PrescriptionsListT
                   className={`eps-prescription-table-sort-text ${heading.key}`}
                   aria-label={`
                     ${PRESCRIPTION_LIST_TABLE_TEXT.sortBy} ${heading.label} 
-                    ${
-              sortConfig.key === heading.key && sortConfig.direction === "ascending"
-                ? "descending"
-                : "ascending"
-              }
+                    ${sortConfig.key === heading.key
+                      && sortConfig.direction === "ascending" ? "descending": "ascending"}
                   `}
                   data-testid={`eps-prescription-table-sort-${heading.key}`}
                   onClick={(e) => {
@@ -191,13 +235,16 @@ const PrescriptionsListTable = ({textContent, prescriptions}: PrescriptionsListT
                   }}
                 >
                   <span className="sort-label-text">{heading.label}</span>
-                  <span className="nhsuk-u-visually-hidden">{PRESCRIPTION_LIST_TABLE_TEXT.button}</span>
+                  <span className="nhsuk-u-visually-hidden">
+                    {PRESCRIPTION_LIST_TABLE_TEXT.button}
+                  </span>
                   {renderSortIcons(heading.key)}
                 </span>
               </th>
             ))}
           </tr>
         </thead>
+
         <tbody>
           {getSortedItems().map((row, index) => (
             <tr
