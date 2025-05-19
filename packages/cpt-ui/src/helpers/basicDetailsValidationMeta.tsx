@@ -107,6 +107,11 @@ export const errorFocusMap: Record<
 }
 
 /**
+ * Defines the possible DOB fields
+ */
+type DobField = "day" | "month" | "year"
+
+/**
  * Identifies which DOB input fields (day/month/year) should be visually styled
  * with an error class when a `dobInvalidDate` error is triggered.
  */
@@ -118,26 +123,23 @@ export const resolveDobInvalidFields = ({
   dobDay: string
   dobMonth: string
   dobYear: string
-}): Array<"day" | "month" | "year"> => {
-  const invalidFields = new Set<"day" | "month" | "year">()
+}): Array<DobField> => {
+  const invalidFields = new Set<DobField>()
 
   // Utility helpers
   const isNumeric = (value: string) => /^\d+$/.test(value)
   const toInt = (value: string) => parseInt(value, 10)
 
-  // Numeric checks for each field
   const isDayNumeric = isNumeric(dobDay)
   const isMonthNumeric = isNumeric(dobMonth)
   const isYearNumeric = isNumeric(dobYear)
 
   // --- Flag year if format or content is invalid ---
-  if (shouldFlagYear(dobYear, isYearNumeric)) {
-    invalidFields.add("year")
-  }
+  if (shouldFlagYear(dobYear, isYearNumeric)) invalidFields.add("year")
 
   // --- Flag non-numeric fields ---
-  if (!isDayNumeric) invalidFields.add("day")
-  if (!isMonthNumeric) invalidFields.add("month")
+  addIfNotNumeric(isDayNumeric, "day", invalidFields)
+  addIfNotNumeric(isMonthNumeric, "month", invalidFields)
 
   // --- Flag values out of allowed numeric range ---
   addIfOutOfRange(isDayNumeric, dobDay, 1, 31, "day", invalidFields)
@@ -150,43 +152,63 @@ export const resolveDobInvalidFields = ({
     const year = toInt(dobYear)
 
     if (!isValidDate(day, month, year)) {
-      // Add more specific field errors if date is not valid
-      const monthInRange = isValidNumericInRange(dobMonth, 1, 12)
-      const dayInRange = isValidNumericInRange(dobDay, 1, 31)
-
-      if (!monthInRange) invalidFields.add("month")
-      if (!dayInRange) invalidFields.add("day")
-
-      // If day and month are in range, assume the year is logically wrong (e.g. 31/02/2022)
-      if (monthInRange && dayInRange) invalidFields.add("year")
+      addDateMismatchFlags(dobDay, dobMonth, invalidFields)
     }
   }
 
   return Array.from(invalidFields)
 }
 
-// --- Determines if the year field should be flagged as invalid ---
-function shouldFlagYear(year: string, isNumeric: boolean): boolean {
-  return (
-    (!isNumeric && year !== "") ||
-    (year.length > 0 && year.length < 4) ||
-    year === "" ||
-    year === "0000"
-  )
-}
-
-// --- Flags a field as invalid if numeric but outside range ---
+/**
+ * Adds the field if its numeric value is out of allowed range.
+ */
 function addIfOutOfRange(
   isNumeric: boolean,
   value: string,
   min: number,
   max: number,
-  key: "day" | "month",
-  set: Set<"day" | "month" | "year">
+  field: DobField,
+  invalidFields: Set<DobField>
 ) {
   if (isNumeric && !isValidNumericInRange(value, min, max)) {
-    set.add(key)
+    invalidFields.add(field)
   }
+}
+
+/**
+ * Adds the field if it's not numeric.
+ */
+function addIfNotNumeric(
+  isNumeric: boolean,
+  field: DobField,
+  invalidFields: Set<DobField>
+) {
+  if (!isNumeric) invalidFields.add(field)
+}
+
+/**
+ * Adds specific field flags if a valid date cannot be constructed.
+ */
+function addDateMismatchFlags(
+  dobDay: string,
+  dobMonth: string,
+  invalidFields: Set<DobField>
+) {
+  const dayInRange = isValidNumericInRange(dobDay, 1, 31)
+  const monthInRange = isValidNumericInRange(dobMonth, 1, 12)
+
+  if (!monthInRange) invalidFields.add("month")
+  if (!dayInRange) invalidFields.add("day")
+
+  // If day and month are in range, assume the year is logically wrong (e.g. 31/02/2022)
+  if (dayInRange && monthInRange) invalidFields.add("year")
+}
+
+// --- Determines if the year field should be flagged as invalid ---
+function shouldFlagYear(year: string, isNumeric: boolean): boolean {
+  if (!isNumeric || year.length !== 4 || !/^\d{4}$/.test(year)) return true
+  const yearNum = parseInt(year, 10)
+  return yearNum < 1800 || yearNum > 2099
 }
 
 // --- Checks if all DOB parts are numeric and year has 4 digits ---
