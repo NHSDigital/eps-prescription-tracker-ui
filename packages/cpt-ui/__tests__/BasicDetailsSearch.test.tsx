@@ -45,20 +45,25 @@ const renderWithRouter = (ui: React.ReactElement) => {
   )
 }
 
-const fillForm = async ({
-  firstName = "",
-  lastName = "",
-  dobDay = "",
-  dobMonth = "",
-  dobYear = "",
-  postcode = ""
-}) => {
-  if (firstName) await userEvent.type(screen.getByTestId("first-name-input"), firstName)
-  if (lastName) await userEvent.type(screen.getByTestId("last-name-input"), lastName)
-  if (dobDay) await userEvent.type(screen.getByTestId("dob-day-input"), dobDay)
-  if (dobMonth) await userEvent.type(screen.getByTestId("dob-month-input"), dobMonth)
-  if (dobYear) await userEvent.type(screen.getByTestId("dob-year-input"), dobYear)
-  if (postcode) await userEvent.type(screen.getByTestId("postcode-input"), postcode)
+const fieldTestIds = {
+  firstName: "first-name-input",
+  lastName: "last-name-input",
+  dobDay: "dob-day-input",
+  dobMonth: "dob-month-input",
+  dobYear: "dob-year-input",
+  postcode: "postcode-input"
+} as const
+
+type FieldKey = keyof typeof fieldTestIds
+type FillFormData = Partial<Record<FieldKey, string>>
+
+export async function fillForm(data: FillFormData = {}) {
+  for (const [key, value] of Object.entries(data) as Array<[FieldKey, string]>) {
+    if (!value) continue
+    const testId = fieldTestIds[key]
+    const input = screen.getByTestId(testId)
+    await userEvent.type(input, value)
+  }
 }
 
 const submitForm = async () => {
