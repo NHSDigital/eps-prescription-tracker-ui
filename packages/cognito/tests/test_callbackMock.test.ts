@@ -18,6 +18,8 @@ jest.unstable_mockModule("@cpt-ui-common/dynamoFunctions", () => {
 
 // Import the handler after setting env variables and mocks.
 import {mockAPIGatewayProxyEvent, mockContext} from "./mockObjects"
+import {createHash} from "crypto"
+import {Logger} from "@aws-lambda-powertools/logger"
 const {handler} = await import("../src/callbackMock")
 
 describe("Callback mock handler", () => {
@@ -71,5 +73,42 @@ describe("Callback mock handler", () => {
     await expect(handler(event, mockContext)).resolves.toStrictEqual(
       {"message": "A system error has occurred"}
     )
+  })
+
+  test("should handle state not being a JSON object", async () => {
+    const state = "non_json_state"
+    const stateItem = {
+      State: "hashedStateValue",
+      CognitoState: "originalStateValue",
+      CodeVerifier: "dummy",
+      Ttl: 123456,
+      UseMock: true
+    }
+    mockGetStateMapping.mockImplementationOnce(() => Promise.resolve(stateItem))
+    const loggerWarnSpy = jest.spyOn(Logger.prototype, "warn")
+    const event: APIGatewayProxyEvent = {
+      ...mockAPIGatewayProxyEvent,
+      queryStringParameters: {
+        state: state,
+        code: "testCode",
+        session_state: "testSessionState"
+      }
+    }
+
+    const result = await handler(event, mockContext)
+    expect(result.statusCode).toBe(302)
+    expect(result.headers).toHaveProperty("Location")
+
+    // Verify the redirect URL.
+    const redirectUrl = new URL(result.headers?.Location as string)
+    const params = redirectUrl.searchParams
+    expect(params.get("state")).toBe("originalStateValue")
+    const expectedSessionState = createHash("sha256").update(state).digest("hex")
+    expect(params.get("session_state")).toBe(expectedSessionState)
+    expect(redirectUrl.hostname).toBe("cognito.example.com")
+    expect(redirectUrl.pathname).toBe("/oauth2/idpresponse")
+    expect(loggerWarnSpy).toHaveBeenCalled()
+    expect(mockInsertSessionState).toHaveBeenCalled()
+    expect(mockDeleteStateMapping).toHaveBeenCalled()
   })
 })
