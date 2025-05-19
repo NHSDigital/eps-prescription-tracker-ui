@@ -1,5 +1,5 @@
 /**
- * Defines all possible validation error keys used across the UI
+ * Defines all possible validation error keys used in the basic details search page
  */
 export type ErrorKey =
   | "firstNameTooLong"
