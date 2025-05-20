@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react"
+import React from "react"
 import {Tag} from "nhsuk-react-components"
 import "../../styles/PrescriptionTable.scss"
 import EpsSpinner from "@/components/EpsSpinner"
@@ -8,18 +8,42 @@ import {getStatusTagColour, getStatusDisplayText, formatDateForPrescriptions} fr
 import {PRESCRIPTION_LIST_TABLE_TEXT} from "@/constants/ui-strings/PrescriptionListTableStrings"
 
 export interface PrescriptionsListTableProps {
-  textContent: PrescriptionsListStrings
-  prescriptions: Array<PrescriptionSummary>
+  textContent: PrescriptionsListStrings;
+  prescriptions: Array<PrescriptionSummary>;
 }
 
-const PrescriptionsListTable = ({textContent, prescriptions}: PrescriptionsListTableProps) => {
-  const [sortConfig, setSortConfig] = useState({
-    key: "issueDate",
-    direction: "descending"
-  })
-  const [loading, setLoading] = useState(true)
+const PrescriptionsListTable = ({
+  textContent,
+  prescriptions: initialPrescriptions
+}: PrescriptionsListTableProps) => {
+  type SortDirection = "ascending" | "descending";
+  type SortConfig = { key: string; direction: SortDirection | null };
+  type TabId = "current" | "future" | "claimed";
 
-  useEffect(() => {
+  const initialSortConfig: SortConfig = {key: "issueDate", direction: null}
+
+  const currentTabId: TabId = textContent.testid as TabId
+
+  // all tabs have own key in state object so each tab can be sorted individually
+  const [allSortConfigs, setAllSortConfigs] = React.useState<
+    Record<TabId, SortConfig>
+  >({
+    current: initialSortConfig,
+    future: {key: "issueDate", direction: null},
+    claimed: {key: "issueDate", direction: null}
+  })
+
+  const sortConfig = allSortConfigs[currentTabId] || initialSortConfig
+
+  const setSortConfigForTab = (newConfig: SortConfig) => {
+    setAllSortConfigs((prev) => ({
+      ...prev,
+      [currentTabId]: newConfig
+    }))
+  }
+
+  const [loading, setLoading] = React.useState(true)
+  React.useEffect(() => {
     const timer = setTimeout(() => setLoading(false), 2000)
     return () => clearTimeout(timer)
   }, [])
@@ -32,23 +56,27 @@ const PrescriptionsListTable = ({textContent, prescriptions}: PrescriptionsListT
     {key: "prescriptionId", label: "Prescription ID", width: "25%"}
   ]
 
-  // this functionality is also performed at getPrescriptionTypeDisplayText in "@/helpers/statusMetadata"
-  //however we do not currently have instanceNumber or maxRepeats to make it work fully here
-  const getPrescriptionTypeDisplayText = (prescriptionType: string): string => {
+  const getPrescriptionTypeDisplayText = (
+    prescriptionType: string
+  ): string => {
     switch (prescriptionType) {
-      case "0001": return PRESCRIPTION_LIST_TABLE_TEXT.typeDisplayText.acute
-      case "0002": return PRESCRIPTION_LIST_TABLE_TEXT.typeDisplayText.repeat
-      case "0003": return PRESCRIPTION_LIST_TABLE_TEXT.typeDisplayText.erd
-      default: return PRESCRIPTION_LIST_TABLE_TEXT.typeDisplayText.unknown
+      case "0001":
+        return PRESCRIPTION_LIST_TABLE_TEXT.typeDisplayText.acute
+      case "0002":
+        return PRESCRIPTION_LIST_TABLE_TEXT.typeDisplayText.repeat
+      case "0003":
+        return PRESCRIPTION_LIST_TABLE_TEXT.typeDisplayText.erd
+      default:
+        return PRESCRIPTION_LIST_TABLE_TEXT.typeDisplayText.unknown
     }
   }
 
   const requestSort = (key: string) => {
-    const direction =
+    const direction: SortDirection =
       sortConfig.key === key && sortConfig.direction === "ascending"
         ? "descending"
         : "ascending"
-    setSortConfig({key, direction})
+    setSortConfigForTab({key, direction})
   }
 
   const renderSortIcons = (key: string) => {
@@ -79,15 +107,23 @@ const PrescriptionsListTable = ({textContent, prescriptions}: PrescriptionsListT
     )
   }
 
-  const formatPrescriptionStatus = () => {
-    return prescriptions.map((prescription) => ({
+  const renderDefaultSortIcons = () => (
+    <span className="eps-prescription-table-sort-icon-wrapper-container">
+      <span className="eps-prescription-table-sort-icon-wrapper">
+        <span className="arrow up-arrow">▲</span>
+        <span className="arrow down-arrow">▼</span>
+      </span>
+    </span>
+  )
+
+  const formatPrescriptionStatus = (items: Array<PrescriptionSummary>) => {
+    return items.map((prescription) => ({
       ...prescription,
       statusLabel: getStatusDisplayText(prescription.statusCode)
     }))
   }
 
   const getValidDateTimestamp = (dateString: string): number => {
-
     const date = new Date(dateString)
 
     if (!isNaN(date.getTime())) {
@@ -97,53 +133,70 @@ const PrescriptionsListTable = ({textContent, prescriptions}: PrescriptionsListT
     return Number.MIN_SAFE_INTEGER
   }
 
-  const getSortedItems = () => {
-    const sorted = [...formatPrescriptionStatus()]
-
+  const initiallySortedPrescriptions = React.useMemo(() => {
+    const sorted = [...initialPrescriptions]
     sorted.sort((a, b) => {
-
-      if (sortConfig.key === "cancellationWarning") {
-        const aHasWarning = a.prescriptionPendingCancellation || a.itemsPendingCancellation
-        const bHasWarning = b.prescriptionPendingCancellation || b.itemsPendingCancellation
-
-        if (aHasWarning === bHasWarning) {
-
-          const aDateTimestamp = getValidDateTimestamp(a.issueDate)
-          const bDateTimestamp = getValidDateTimestamp(b.issueDate)
-          return bDateTimestamp - aDateTimestamp
-        }
-
-        if (sortConfig.direction === "ascending") {
-          return aHasWarning ? 1 : -1
-        } else {
-          return aHasWarning ? -1 : 1
-        }
-      }
-
-      if (sortConfig.key === "statusCode" || sortConfig.key === "issueDate") {
-        if (sortConfig.key === "statusCode" && a.statusCode === b.statusCode) {
-
-          const aDateTimestamp = getValidDateTimestamp(a.issueDate)
-          const bDateTimestamp = getValidDateTimestamp(b.issueDate)
-          return bDateTimestamp - aDateTimestamp
-        }
-
-        if (sortConfig.key === "issueDate") {
-          const aDateTimestamp = getValidDateTimestamp(a.issueDate)
-          const bDateTimestamp = getValidDateTimestamp(b.issueDate)
-          return sortConfig.direction ===
-           "ascending" ? aDateTimestamp - bDateTimestamp : bDateTimestamp - aDateTimestamp
-        }
-      }
-
-      const key = sortConfig.key as keyof typeof sorted[0]
-      if (a[key]! < b[key]!) return sortConfig.direction === "ascending" ? -1 : 1
-      if (a[key]! > b[key]!) return sortConfig.direction === "ascending" ? 1 : -1
-
       const aDateTimestamp = getValidDateTimestamp(a.issueDate)
       const bDateTimestamp = getValidDateTimestamp(b.issueDate)
       return bDateTimestamp - aDateTimestamp
     })
+    return sorted
+  }, [initialPrescriptions])
+
+  const getSortedItems = () => {
+    const sorted = [...formatPrescriptionStatus(initiallySortedPrescriptions)]
+
+    if (sortConfig.direction) {
+      sorted.sort((a, b) => {
+        if (sortConfig.key === "cancellationWarning") {
+          const aHasWarning =
+            a.prescriptionPendingCancellation || a.itemsPendingCancellation
+          const bHasWarning =
+            b.prescriptionPendingCancellation || b.itemsPendingCancellation
+
+          if (aHasWarning === bHasWarning) {
+            const aDateTimestamp = getValidDateTimestamp(a.issueDate)
+            const bDateTimestamp = getValidDateTimestamp(b.issueDate)
+            return bDateTimestamp - aDateTimestamp
+          }
+
+          if (sortConfig.direction === "ascending") {
+            return aHasWarning ? 1 : -1
+          } else {
+            return aHasWarning ? -1 : 1
+          }
+        }
+
+        if (sortConfig.key === "statusCode" || sortConfig.key === "issueDate") {
+          if (
+            sortConfig.key === "statusCode" &&
+            a.statusCode === b.statusCode
+          ) {
+            const aDateTimestamp = getValidDateTimestamp(a.issueDate)
+            const bDateTimestamp = getValidDateTimestamp(b.issueDate)
+            return bDateTimestamp - aDateTimestamp
+          }
+
+          if (sortConfig.key === "issueDate") {
+            const aDateTimestamp = getValidDateTimestamp(a.issueDate)
+            const bDateTimestamp = getValidDateTimestamp(b.issueDate)
+            return sortConfig.direction === "ascending"
+              ? aDateTimestamp - bDateTimestamp
+              : bDateTimestamp - aDateTimestamp
+          }
+        }
+
+        const key = sortConfig.key as keyof typeof sorted[0]
+        if (a[key]! < b[key]!)
+          return sortConfig.direction === "ascending" ? -1 : 1
+        if (a[key]! > b[key]!)
+          return sortConfig.direction === "ascending" ? 1 : -1
+
+        const aDateTimestamp = getValidDateTimestamp(a.issueDate)
+        const bDateTimestamp = getValidDateTimestamp(b.issueDate)
+        return bDateTimestamp - aDateTimestamp
+      })
+    }
 
     return sorted
   }
@@ -156,14 +209,17 @@ const PrescriptionsListTable = ({textContent, prescriptions}: PrescriptionsListT
     )
   }
 
-  if (prescriptions.length === 0) {
+  if (initiallySortedPrescriptions.length === 0) {
     return <p className="nhsuk-body">{textContent.noPrescriptionsMessage}</p>
   }
 
   const renderTableDescription = () => {
     const {testid} = textContent
 
-    const intro = PRESCRIPTION_LIST_TABLE_TEXT.caption[testid as keyof typeof PRESCRIPTION_LIST_TABLE_TEXT.caption]
+    const intro =
+      PRESCRIPTION_LIST_TABLE_TEXT.caption[
+        testid as keyof typeof PRESCRIPTION_LIST_TABLE_TEXT.caption
+      ]
     const sharedText = PRESCRIPTION_LIST_TABLE_TEXT.caption.sharedText
 
     return (
@@ -174,7 +230,10 @@ const PrescriptionsListTable = ({textContent, prescriptions}: PrescriptionsListT
   }
 
   return (
-    <div className="eps-prescription-table-container" data-testid="eps-prescription-table-container">
+    <div
+      className="eps-prescription-table-container"
+      data-testid="eps-prescription-table-container"
+    >
       <table
         className="eps-prescription-table"
         data-testid={`${textContent.testid}-prescriptions-results-table`}
@@ -189,7 +248,7 @@ const PrescriptionsListTable = ({textContent, prescriptions}: PrescriptionsListT
                 role="columnheader"
                 aria-sort={
                   sortConfig.key === heading.key
-                    ? (sortConfig.direction as "ascending" | "descending" | "none")
+                    ? (sortConfig.direction as "ascending" | "descending" | null) || "none"
                     : "none"
                 }
                 data-testid={`eps-prescription-table-header-${heading.key}`}
@@ -200,9 +259,13 @@ const PrescriptionsListTable = ({textContent, prescriptions}: PrescriptionsListT
                   tabIndex={0}
                   className={`eps-prescription-table-sort-text ${heading.key}`}
                   aria-label={`
-                    ${PRESCRIPTION_LIST_TABLE_TEXT.sortBy} ${heading.label} 
-                    ${sortConfig.key === heading.key
-                      && sortConfig.direction === "ascending" ? "descending": "ascending"}
+                    ${PRESCRIPTION_LIST_TABLE_TEXT.sortBy} ${heading.label}
+                    ${
+              sortConfig.key === heading.key &&
+                      sortConfig.direction === "ascending"
+                ? "descending"
+                : "ascending"
+              }
                   `}
                   data-testid={`eps-prescription-table-sort-${heading.key}`}
                   onClick={(e) => {
@@ -220,7 +283,9 @@ const PrescriptionsListTable = ({textContent, prescriptions}: PrescriptionsListT
                   <span className="nhsuk-u-visually-hidden">
                     {PRESCRIPTION_LIST_TABLE_TEXT.button}
                   </span>
-                  {renderSortIcons(heading.key)}
+                  {sortConfig.key === heading.key && sortConfig.direction !== null
+                    ? renderSortIcons(heading.key)
+                    : renderDefaultSortIcons()}
                 </span>
               </th>
             ))}
@@ -230,12 +295,18 @@ const PrescriptionsListTable = ({textContent, prescriptions}: PrescriptionsListT
         <tbody>
           {getSortedItems().map((row, index) => (
             <tr
-              key={index} className="eps-prescription-table-sort-button"
-              data-testid="eps-prescription-table-sort-button">
+              key={index}
+              className="eps-prescription-table-sort-button"
+              data-testid="eps-prescription-table-sort-button"
+            >
               {headings.map(({key}) => {
                 if (key === "issueDate") {
                   return (
-                    <td key={key} className="eps-prescription-table-rows nowrap-cell" data-testid="issue-date-column">
+                    <td
+                      key={key}
+                      className="eps-prescription-table-rows nowrap-cell"
+                      data-testid="issue-date-column"
+                    >
                       <div>{formatDateForPrescriptions(row.issueDate)}</div>
                     </td>
                   )
@@ -243,15 +314,27 @@ const PrescriptionsListTable = ({textContent, prescriptions}: PrescriptionsListT
 
                 if (key === "prescriptionTreatmentType") {
                   return (
-                    <td key={key} className="eps-prescription-table-rows" data-testid="prescription-type-column">
-                      <div>{getPrescriptionTypeDisplayText(row.prescriptionTreatmentType)}</div>
+                    <td
+                      key={key}
+                      className="eps-prescription-table-rows"
+                      data-testid="prescription-type-column"
+                    >
+                      <div>
+                        {getPrescriptionTypeDisplayText(
+                          row.prescriptionTreatmentType
+                        )}
+                      </div>
                     </td>
                   )
                 }
 
                 if (key === "statusCode") {
                   return (
-                    <td key={key} className="eps-prescription-table-rows" data-testid="status-code-column">
+                    <td
+                      key={key}
+                      className="eps-prescription-table-rows"
+                      data-testid="status-code-column"
+                    >
                       <Tag color={getStatusTagColour(row.statusCode)}>
                         {row.statusLabel}
                       </Tag>
@@ -261,7 +344,8 @@ const PrescriptionsListTable = ({textContent, prescriptions}: PrescriptionsListT
 
                 if (key === "cancellationWarning") {
                   const showWarning =
-                    row.prescriptionPendingCancellation || row.itemsPendingCancellation
+                    row.prescriptionPendingCancellation ||
+                    row.itemsPendingCancellation
                   return (
                     <td
                       key={key}
@@ -272,8 +356,12 @@ const PrescriptionsListTable = ({textContent, prescriptions}: PrescriptionsListT
                         <span>
                           <span
                             aria-hidden="true"
-                            role="img" className="warning-icon"
-                            aria-label={PRESCRIPTION_LIST_TABLE_TEXT.warning}>⚠️</span>
+                            role="img"
+                            className="warning-icon"
+                            aria-label={PRESCRIPTION_LIST_TABLE_TEXT.warning}
+                          >
+                            ⚠️
+                          </span>
                           {PRESCRIPTION_LIST_TABLE_TEXT.pendingCancellationItems}
                         </span>
                       ) : (
@@ -286,7 +374,9 @@ const PrescriptionsListTable = ({textContent, prescriptions}: PrescriptionsListT
                 if (key === "prescriptionId") {
                   return (
                     <td key={key} className="eps-prescription-table-rows">
-                      <div className="eps-prescription-id">{row.prescriptionId}</div>
+                      <div className="eps-prescription-id">
+                        {row.prescriptionId}
+                      </div>
                       <div>
                         <a
                           href={`/site/prescription-details?prescriptionId=${row.prescriptionId}`}
@@ -309,12 +399,11 @@ const PrescriptionsListTable = ({textContent, prescriptions}: PrescriptionsListT
               colSpan={headings.length}
               className="eps-prescription-table-summary-row"
               aria-live="polite"
-              aria-label={`Showing ${prescriptions.length} of ${prescriptions.length}`}
+              aria-label={`Showing ${initiallySortedPrescriptions.length} of ${initiallySortedPrescriptions.length}`}
               data-testid="table-summary-row"
             >
-              {PRESCRIPTION_LIST_TABLE_TEXT.showing} {prescriptions.length} {" "}
-              {PRESCRIPTION_LIST_TABLE_TEXT.of} {prescriptions.length}
-
+              {PRESCRIPTION_LIST_TABLE_TEXT.showing} {initiallySortedPrescriptions.length}{" "}
+              {PRESCRIPTION_LIST_TABLE_TEXT.of} {initiallySortedPrescriptions.length}
             </td>
           </tr>
         </tbody>

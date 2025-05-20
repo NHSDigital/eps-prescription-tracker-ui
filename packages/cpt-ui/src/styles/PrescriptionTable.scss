@@ -71,7 +71,7 @@
 
 .eps-prescription-table th, .eps-prescription-table td {
   word-wrap: break-word;
-  white-space: normal; 
+  white-space: normal;
 }
 
 .narrow-cancellation-column {
@@ -110,12 +110,19 @@
   text-align: left;
   gap: 0.25rem;
   width: auto;
+  white-space: nowrap; /* Keep all sort text on one line initially */
 }
 
 .eps-prescription-table-sort-text.issueDate,
-.eps-prescription-table-sort-text.statusCode,
-.eps-prescription-table-sort-text.prescriptionId {
-  white-space: nowrap; 
+.eps-prescription-table-sort-text.statusCode {
+  white-space: nowrap;
+}
+
+/* Target the prescriptionId header text to wrap at a specific width */
+@media (max-width: 900px) { /* Adjust this pixel value as needed */
+  .eps-prescription-table-sort-text.prescriptionId {
+    white-space: normal;
+  }
 }
 
 .eps-prescription-table-sort-text.prescriptionTreatmentType,
@@ -141,9 +148,9 @@
 }
 
 .eps-prescription-id {
-  white-space: nowrap; 
+  white-space: normal;
   word-wrap: break-word;
-  max-width: 12rem;
+  max-width: 12rem; /* Adjust this value to control when it breaks */
 }
 
 .eps-prescription-table-sort-icon-wrapper span:last-child {
@@ -194,7 +201,7 @@
   }
 
   .narrow-cancellation-column {
-    width: 9rem; 
+    width: 9rem;
   }
 
   .eps-prescription-table th,
@@ -216,7 +223,7 @@
 
   .eps-prescription-table th,
   .eps-prescription-table td {
-    padding: 0.8rem 0.5rem; 
+    padding: 0.8rem 0.5rem;
   }
 }
 
@@ -224,11 +231,11 @@
   .eps-prescription-table th,
   .eps-prescription-table td,
   .eps-prescription-table-sort-text {
-    font-size: 0.85rem; 
+    font-size: 0.85rem;
   }
 
   .eps-prescription-table th,
   .eps-prescription-table td {
-    padding: 0.5rem 0.25rem; 
+    padding: 0.5rem 0.25rem;
   }
 }
