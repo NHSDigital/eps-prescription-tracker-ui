@@ -128,9 +128,9 @@ jobs:
       primaryOidcUserInfoEndpoint: "https://am.nhsint.auth-ptl.cis2.spineservices.nhs.uk:443/openam/oauth2/realms/root/realms/NHSIdentity/realms/Healthcare/userinfo"
       primaryOidcjwksEndpoint: "https://am.nhsint.auth-ptl.cis2.spineservices.nhs.uk:443/openam/oauth2/realms/root/realms/NHSIdentity/realms/Healthcare/connect/jwk_uri"
       mockOidcIssuer: "https://identity.ptl.api.platform.nhs.uk/realms/Cis2-mock-internal-dev"
-      mockOidcAuthorizeEndpoint: "https://identity.ptl.api.platform.nhs.uk/realms/Cis2-mock-internal-dev/protocol/openid-connect/auth"
-      mockOidcTokenEndpoint: "https://identity.ptl.api.platform.nhs.uk/realms/Cis2-mock-internal-dev/protocol/openid-connect/token"
-      mockOidcUserInfoEndpoint: "https://identity.ptl.api.platform.nhs.uk/realms/Cis2-mock-internal-dev/protocol/openid-connect/userinfo"
+      mockOidcAuthorizeEndpoint: "https://internal-dev.api.service.nhs.uk/oauth2-mock/authorize"
+      mockOidcTokenEndpoint: "https://internal-dev.api.service.nhs.uk/oauth2-mock/token"
+      mockOidcUserInfoEndpoint: "https://internal-dev.api.service.nhs.uk/oauth2-mock/userinfo"
       mockOidcjwksEndpoint: "https://identity.ptl.api.platform.nhs.uk/realms/Cis2-mock-internal-dev/protocol/openid-connect/certs"
       allowLocalhostAccess: true
       useCustomCognitoDomain: true
@@ -181,9 +181,9 @@ jobs:
       primaryOidcUserInfoEndpoint: "https://am.nhsint.auth-ptl.cis2.spineservices.nhs.uk:443/openam/oauth2/realms/root/realms/NHSIdentity/realms/Healthcare/userinfo"
       primaryOidcjwksEndpoint: "https://am.nhsint.auth-ptl.cis2.spineservices.nhs.uk:443/openam/oauth2/realms/root/realms/NHSIdentity/realms/Healthcare/connect/jwk_uri"
       mockOidcIssuer: "https://identity.ptl.api.platform.nhs.uk/realms/Cis2-mock-ref"
-      mockOidcAuthorizeEndpoint: "https://identity.ptl.api.platform.nhs.uk/realms/Cis2-mock-ref/protocol/openid-connect/auth"
-      mockOidcTokenEndpoint: "https://identity.ptl.api.platform.nhs.uk/realms/Cis2-mock-ref/protocol/openid-connect/token"
-      mockOidcUserInfoEndpoint: "https://identity.ptl.api.platform.nhs.uk/realms/Cis2-mock-ref/protocol/openid-connect/userinfo"
+      mockOidcAuthorizeEndpoint: "https://ref.api.service.nhs.uk/oauth2-mock/authorize"
+      mockOidcTokenEndpoint: "https://ref.api.service.nhs.uk/oauth2-mock/token"
+      mockOidcUserInfoEndpoint: "https://ref.api.service.nhs.uk/oauth2-mock/userinfo"
       mockOidcjwksEndpoint: "https://identity.ptl.api.platform.nhs.uk/realms/Cis2-mock-ref/protocol/openid-connect/certs"
       allowLocalhostAccess: false
       useCustomCognitoDomain: true
@@ -220,9 +220,9 @@ jobs:
       primaryOidcUserInfoEndpoint: "https://am.nhsint.auth-ptl.cis2.spineservices.nhs.uk:443/openam/oauth2/realms/root/realms/NHSIdentity/realms/Healthcare/userinfo"
       primaryOidcjwksEndpoint: "https://am.nhsint.auth-ptl.cis2.spineservices.nhs.uk:443/openam/oauth2/realms/root/realms/NHSIdentity/realms/Healthcare/connect/jwk_uri"
       mockOidcIssuer: "https://identity.ptl.api.platform.nhs.uk/realms/Cis2-mock-internal-qa"
-      mockOidcAuthorizeEndpoint: "https://identity.ptl.api.platform.nhs.uk/realms/Cis2-mock-internal-qa/protocol/openid-connect/auth"
-      mockOidcTokenEndpoint: "https://identity.ptl.api.platform.nhs.uk/realms/Cis2-mock-internal-qa/protocol/openid-connect/token"
-      mockOidcUserInfoEndpoint: "https://identity.ptl.api.platform.nhs.uk/realms/Cis2-mock-internal-qa/protocol/openid-connect/userinfo"
+      mockOidcAuthorizeEndpoint: "https://internal-qa.api.service.nhs.uk/oauth2-mock/authorize"
+      mockOidcTokenEndpoint: "https://internal-qa.api.service.nhs.uk/oauth2-mock/token"
+      mockOidcUserInfoEndpoint: "https://internal-qa.api.service.nhs.uk/oauth2-mock/userinfo"
       mockOidcjwksEndpoint: "https://identity.ptl.api.platform.nhs.uk/realms/Cis2-mock-internal-qa/protocol/openid-connect/certs"
       allowLocalhostAccess: false
       useCustomCognitoDomain: true
