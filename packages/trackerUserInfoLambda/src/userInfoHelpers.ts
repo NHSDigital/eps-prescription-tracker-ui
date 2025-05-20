@@ -22,54 +22,39 @@ export const fetchUserInfo = async (
 ): Promise<TrackerUserInfo> => {
 
   logger.info("Fetching user info from OIDC UserInfo endpoint", {oidcConfig})
-
-  if (isMockToken) {
-    const response = await axios.get(oidcConfig.oidcUserInfoEndpoint, {
-      headers: {"Authorization": `Bearer ${apigeeAccessToken}`}
-    })
-    const data = response.data
-    return extractRoleInformation(
-      data,
-      data.selected_roleid,
-      logger
-    )
-  }
-  // Verify and decode cis2IdToken
-  const decodedIdToken = decodeToken(cis2IdToken)
-  logger.debug("Decoded cis2IdToken", {decodedIdToken})
-
-  // Extract the selected_roleid from the decoded cis2IdToken
-  const selectedRoleId = decodedIdToken?.payload?.selected_roleid
-  logger.info("Selected role ID extracted from cis2IdToken", {selectedRoleId})
-
   if (!oidcConfig.oidcUserInfoEndpoint) {
     throw new Error("OIDC UserInfo endpoint not set")
+  }
+
+  let authorizationHeader, selectedRoleId
+  if (isMockToken) {
+    authorizationHeader = {Authorization: `Bearer ${apigeeAccessToken}`}
+  } else {
+    authorizationHeader = {Authorization: `Bearer ${cis2AccessToken}`}
+    const decodedIdToken = decodeToken(cis2IdToken)
+    logger.debug("Decoded cis2IdToken", {decodedIdToken})
+    selectedRoleId = decodedIdToken?.payload?.selected_roleid
+    logger.debug("Selected role ID extracted from cis2IdToken", {selectedRoleId})
   }
 
   try {
     const response = await axios.get(
       oidcConfig.oidcUserInfoEndpoint,
-      // "https://internal-dev.api.service.nhs.uk/oauth2-mock/userinfo",
-      {
-        headers: {
-          Authorization: `Bearer ${cis2AccessToken}`
-        }
-      })
+      {headers: authorizationHeader})
     logger.debug("User info fetched successfully", {userInfo: response.data})
 
-    // Extract the roles from the user info response
     const data = response.data
 
     return extractRoleInformation(
       data,
-      selectedRoleId,
+      selectedRoleId ?? data.selected_roleid,
       logger
     )
 
   } catch (error) {
     if (isAxiosError(error)) {
       if (error.response) {
-        logger.error("received this response", {respone: error.response})
+        logger.error("received this response", {response: error.response})
       }
     }
     logger.error("Error fetching user info", {error})

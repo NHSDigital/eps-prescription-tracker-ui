@@ -7,6 +7,8 @@ import {refreshApigeeAccessToken} from "./index"
 import {fetchAndVerifyCIS2Tokens, constructSignedJWTBody, exchangeTokenForApigeeAccessToken} from "./index"
 import {getTokenMapping, updateTokenMapping} from "@cpt-ui-common/dynamoFunctions"
 
+const cloudfrontDomain= process.env["FULL_CLOUDFRONT_DOMAIN"] as string
+
 // Define the ApigeeTokenResponse type
 interface ApigeeTokenResponse {
   accessToken: string
@@ -182,12 +184,14 @@ export async function authenticateRequest(
   // No valid existing token found or refresh failed, need to acquire a new one
   logger.info(`Obtaining tokens through ${isMockRequest ? "mock" : "standard"} flow`)
 
-  // In mock mode, we don't expect to reach this point normally
-  // since authentication should have created tokens
-  if (isMockRequest && !userRecord.apigeeAccessToken) {
-    //const baseEnvironmentDomain = cloudfrontDomain.replace(/-pr-(\d*)/, "")
-    //const callbackUri = `https://${baseEnvironmentDomain}/oauth2/mock-callback`
-    const callbackUri = "https://cpt-ui.dev.eps.national.nhs.uk/oauth2/mock-callback"
+  let exchangeResult
+  if (isMockRequest) {
+    // for mock request we need to call apigee userinfo endpoint
+    // we also need to include the callback url registered for our apigee app
+    // for pull requests, this is the domain name for the environment (without -pr-XXX)
+
+    const baseEnvironmentDomain = cloudfrontDomain.replace(/-pr-(\d*)/, "")
+    const callbackUri = `https://${baseEnvironmentDomain}/oauth2/mock-callback`
     const tokenExchangeBody = {
       grant_type: "authorization_code",
       client_id: apigeeApiKey,
@@ -195,69 +199,55 @@ export async function authenticateRequest(
       redirect_uri: callbackUri,
       code: userRecord.apigeeCode
     }
-    const {accessToken, refreshToken, expiresIn} = await exchangeTokenForApigeeAccessToken(
+    exchangeResult = await exchangeTokenForApigeeAccessToken(
       axiosInstance,
       options.apigeeMockTokenEndpoint,
       tokenExchangeBody,
       logger
     )
-    await updateTokenMapping(
+  } else {
+  // When we aren't mocking, get CIS2 tokens and exchange for Apigee token
+    const {cis2AccessToken, cis2IdToken: newCis2IdToken} = await fetchAndVerifyCIS2Tokens(
+      username,
       documentClient,
-      tokenMappingTableName,
-      {
-        username,
-        apigeeAccessToken: accessToken,
-        apigeeRefreshToken: refreshToken,
-        apigeeExpiresIn: expiresIn
-      },
       logger
     )
-    return {
-      apigeeAccessToken: accessToken,
-      roleId: defaultRoleId || ""
+
+    logger.debug("Successfully fetched CIS2 tokens", {
+      cis2AccessToken: cis2AccessToken,
+      cis2IdToken: newCis2IdToken ? "[REDACTED]" : undefined
+    })
+
+    // Store CIS2 ID token
+    const cis2IdToken = newCis2IdToken
+
+    // Fetch the private key for signing the client assertion
+    logger.info("Fetching JWT private key from Secrets Manager", {jwtPrivateKeyArn})
+    const jwtPrivateKey = await getSecret(jwtPrivateKeyArn)
+    if (!jwtPrivateKey || typeof jwtPrivateKey !== "string") {
+      throw new Error("Invalid or missing JWT private key")
     }
+
+    // Construct a new body with the signed JWT client assertion
+    const requestBody = constructSignedJWTBody(
+      logger,
+      options.apigeeCis2TokenEndpoint,
+      jwtPrivateKey,
+      apigeeApiKey,
+      jwtKid,
+      cis2IdToken
+    )
+
+    logger.debug("these are the options", {options})
+    // Exchange token with Apigee
+    exchangeResult = await exchangeTokenForApigeeAccessToken(
+      axiosInstance,
+      options.apigeeCis2TokenEndpoint,
+      requestBody,
+      logger
+    )
+
   }
-
-  // When we aren't mocking, get CIS2 tokens and exchange for Apigee token
-  const {cis2AccessToken, cis2IdToken: newCis2IdToken} = await fetchAndVerifyCIS2Tokens(
-    username,
-    documentClient,
-    logger
-  )
-
-  logger.debug("Successfully fetched CIS2 tokens", {
-    cis2AccessToken: cis2AccessToken,
-    cis2IdToken: newCis2IdToken ? "[REDACTED]" : undefined
-  })
-
-  // Store CIS2 ID token
-  const cis2IdToken = newCis2IdToken
-
-  // Fetch the private key for signing the client assertion
-  logger.info("Fetching JWT private key from Secrets Manager", {jwtPrivateKeyArn})
-  const jwtPrivateKey = await getSecret(jwtPrivateKeyArn)
-  if (!jwtPrivateKey || typeof jwtPrivateKey !== "string") {
-    throw new Error("Invalid or missing JWT private key")
-  }
-
-  // Construct a new body with the signed JWT client assertion
-  const requestBody = constructSignedJWTBody(
-    logger,
-    options.apigeeCis2TokenEndpoint,
-    jwtPrivateKey,
-    apigeeApiKey,
-    jwtKid,
-    cis2IdToken
-  )
-
-  logger.debug("these are the options", {options})
-  // Exchange token with Apigee
-  const {accessToken, refreshToken, expiresIn} = await exchangeTokenForApigeeAccessToken(
-    axiosInstance,
-    options.apigeeCis2TokenEndpoint,
-    requestBody,
-    logger
-  )
 
   // Update DynamoDB with the new Apigee access token
   await updateTokenMapping(
@@ -265,27 +255,29 @@ export async function authenticateRequest(
     tokenMappingTableName,
     {
       username,
-      apigeeAccessToken: accessToken,
-      apigeeRefreshToken: refreshToken,
-      apigeeExpiresIn: expiresIn
+      apigeeAccessToken: exchangeResult.accessToken,
+      apigeeRefreshToken: exchangeResult.refreshToken,
+      apigeeExpiresIn: exchangeResult.expiresIn
     },
     logger
   )
 
   // Validate that we have the tokens we need
-  if (!accessToken || !cis2IdToken) {
+  if (!exchangeResult.accessToken) {
     throw new Error("Failed to obtain required tokens after authentication flow")
   }
 
-  logger.info("Authentication flow completed successfully", {
-    username,
-    hasApigeeToken: !!accessToken,
-    hasCis2IdToken: !!cis2IdToken,
-    hasRoleId: !!defaultRoleId
+  logger.info("Authentication flow completed successfully")
+  logger.debug("Authentication result", {
+    authResult: {
+      accessToken: exchangeResult.accessToken,
+      refreshToken: exchangeResult.refreshToken,
+      expiresIn: exchangeResult.expiresIn
+    }
   })
 
   return {
-    apigeeAccessToken: accessToken,
+    apigeeAccessToken: exchangeResult.accessToken,
     roleId: defaultRoleId || ""
   }
 }

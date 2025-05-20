@@ -91,7 +91,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
   const current_time = Math.floor(Date.now() / 1000)
   const expirationTime = current_time + 600
-  const baseUsername = Math.random().toString(36).slice(2, 7)
+  const baseUsername = uuidv4()
   const username = `${mockOidcConfig.userPoolIdp}_${baseUsername}`
 
   const jwtClaims = {
@@ -129,15 +129,17 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     logger
   )
 
+  // this is what gets returned to cognito
+  // access token and refresh token are not used by cognito so its ok that they are unusud
   return {
     statusCode: 200,
     body: JSON.stringify({
-      access_token: "foo",
+      access_token: "unused",
       expires_in: 3600,
       id_token: jwtToken,
       "not-before-policy": current_time,
       refresh_expires_in: 600,
-      refresh_token: "bar",
+      refresh_token: "unused",
       scope: "openid associatedorgs profile nationalrbacaccess nhsperson email",
       session_state: sessionState.SessionState,
       token_type: "Bearer"

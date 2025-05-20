@@ -107,48 +107,21 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     // Use the authenticateRequest function for authentication
     const username = getUsernameFromEvent(event)
 
-    const authResult = await authenticateRequest(username, documentClient, logger, {
+    const {apigeeAccessToken, roleId} = await authenticateRequest(username, documentClient, logger, {
       tokenMappingTableName: TokenMappingTableName,
       jwtPrivateKeyArn,
       apigeeApiKey,
       apigeeApiSecret,
       jwtKid,
-      defaultRoleId: roleId,
       apigeeMockTokenEndpoint,
       apigeeCis2TokenEndpoint
     })
 
-    // Destructure the authentication result
-    if (!authResult) {
-      logger.error("Authentication failed, no auth result returned")
-      return {
-        statusCode: 401,
-        body: JSON.stringify({message: "Authentication failed"}),
-        headers: formatHeaders({"Content-Type": "application/json"})
-      }
-    }
-
-    const {apigeeAccessToken, roleId: authRoleId} = authResult
-
-    // Use the role ID from authentication if available
-    if (authRoleId) {
-      roleId = authRoleId
-    }
-
     // Log the token for debugging (redacted for security)
-    logger.info("Using Apigee access token", {
-      tokenLength: apigeeAccessToken ? apigeeAccessToken.length : 0,
-      apigeeAccessToken: apigeeAccessToken
+    logger.debug("Using Apigee access token and role", {
+      apigeeAccessToken: apigeeAccessToken,
+      roleId: roleId
     })
-
-    // Ensure we have a valid token
-    if (!apigeeAccessToken) {
-      logger.error("No valid Apigee access token available")
-      return {
-        statusCode: 500,
-        body: JSON.stringify({message: "Authentication failed"})
-      }
-    }
 
     // Search logic
     let searchResponse: SearchResponse

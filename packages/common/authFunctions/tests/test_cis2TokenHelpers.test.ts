@@ -263,6 +263,9 @@ describe("fetchAndVerifyCIS2Tokens", () => {
 })
 
 describe("verifyIdToken", () => {
+  beforeAll(() => {
+    jest.resetAllMocks()
+  })
   it("should verify a valid ID token", async () => {
     const payload = createPayload()
     const token = createToken(payload)
@@ -336,9 +339,10 @@ describe("verifyIdToken", () => {
     )
   })
 
-  it.skip("should throw an error when ACR claim is invalid", async () => {
+  it("should throw an error when ACR claim is invalid", async () => {
     const payload = createPayload({acr: "INVALID_ACR"})
     const token = createToken(payload)
+    jest.spyOn(jwt, "verify").mockImplementation(() => payload)
 
     await expect(verifyIdToken(token, logger)).rejects.toThrow(
       "Invalid ACR claim in ID token"

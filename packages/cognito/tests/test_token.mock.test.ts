@@ -6,7 +6,6 @@ import {
 } from "@jest/globals"
 
 import createJWKSMock from "mock-jwks"
-import nock from "nock"
 import {generateKeyPairSync} from "crypto"
 import jwksClient from "jwks-rsa"
 import {OidcConfig} from "@cpt-ui-common/authFunctions"
@@ -47,17 +46,11 @@ const {
   }
 })
 
-const mockInsertTokenMapping = jest.fn()
-const mockGetTokenMapping = jest.fn()
-const mockExtractRoleInformation = jest.fn()
 const mockUpdateTokenMapping = jest.fn()
 const mockGetSessionState = jest.fn()
 jest.unstable_mockModule("@cpt-ui-common/dynamoFunctions", () => {
   return {
     updateTokenMapping: mockUpdateTokenMapping,
-    extractRoleInformation: mockExtractRoleInformation,
-    getTokenMapping: mockGetTokenMapping,
-    insertTokenMapping: mockInsertTokenMapping,
     getSessionState: mockGetSessionState
   }
 })
@@ -151,43 +144,13 @@ describe("token mock handler", () => {
 
   it("inserts correct details into dynamo table", async () => {
     // return some valid data for the get command
-    mockGetSessionState.mockImplementationOnce(() => Promise.resolve(() => ({
-      LocalCode: "test-code",
-      ApigeeCode: "apigee-code",
-      SessionState: "test-session-state"
-    })))
-    mockExtractRoleInformation.mockImplementationOnce(() => ({
-      roles_with_access: [],
-      roles_without_access: [],
-      currently_selected_role: undefined,
-      user_details: {
-        family_name: "User",
-        given_name: "Test"
-      }
-    }))
-    // Mock Apigee token exchange response
-    nock("https://internal-dev.api.service.nhs.uk")
-      .post("/oauth2-mock/token")
-      .reply(200, {
-        access_token: "test-access-token",
-        refresh_token: "test-refresh-token",
-        expires_in: "3600",
-        refresh_token_expires_in: "7200",
-        token_type: "Bearer",
-        sid: "test-sid"
+    mockGetSessionState.mockImplementationOnce(() => {
+      return Promise.resolve({
+        LocalCode: "test-code",
+        ApigeeCode: "apigee-code",
+        SessionState: "test-session-state"
       })
-
-    // Mock Apigee userinfo response
-    nock("https://dummy_mock_auth.com")
-      .get("/userinfo")
-      .reply(200, {
-        sub: "foo",
-        name: "Test User",
-        given_name: "Test",
-        family_name: "User",
-        email: "test@example.com",
-        selected_roleid: "R8004"
-      })
+    })
 
     const response = await handler({
       body: "code=test-code",
@@ -200,5 +163,17 @@ describe("token mock handler", () => {
     // Check response structure
     expect(response.statusCode).toBe(200)
     expect(response.body).toBeDefined()
+    const parsedBody = JSON.parse(response.body)
+    expect(parsedBody).toStrictEqual({
+      access_token: "unused",
+      expires_in: 3600,
+      id_token: expect.anything(),
+      "not-before-policy": expect.anything(),
+      refresh_expires_in: 600,
+      refresh_token: "unused",
+      scope: "openid associatedorgs profile nationalrbacaccess nhsperson email",
+      session_state: "test-session-state",
+      token_type: "Bearer"
+    })
   })
 })

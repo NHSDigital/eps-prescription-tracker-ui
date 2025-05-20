@@ -30,7 +30,6 @@ jest.unstable_mockModule("@aws-lambda-powertools/parameters/secrets", () => ({
 
 // Create mocks for the functions from the index module
 const mockGetUsernameFromEvent = jest.fn()
-const mockGetExistingApigeeAccessToken = jest.fn()
 const mockRefreshApigeeAccessToken = jest.fn()
 const mockExchangeTokenForApigeeAccessToken = jest.fn()
 const mockFetchAndVerifyCIS2Tokens = jest.fn()
@@ -197,10 +196,8 @@ describe("authenticateRequest", () => {
     )
   })
 
-  // TODO: this test needs fixing currently not currently mocks
-  it("should acquire new token when no token exists", async () => {
+  it("should acquire new token when no token exists for non mocked user", async () => {
     // Set up mock implementations for this test
-    mockGetExistingApigeeAccessToken.mockReturnValue(null)
 
     mockExchangeTokenForApigeeAccessToken.mockReturnValue({
       accessToken: "new-access-token",
@@ -231,36 +228,39 @@ describe("authenticateRequest", () => {
     expect(mockGetSecret).toHaveBeenCalledWith("test-key-arn")
   })
 
-  it.skip("should handle mock mode without apigee access token edge case correctly", async () => {
-    // Enable mock mode
-    const mockOptionsWithMock = {
-      ...mockOptions,
-      mockModeEnabled: true
-    }
-
+  it("should acquire new token when no token exists for mocked user", async () => {
     // Set up mock implementations for this test
-    mockGetUsernameFromEvent.mockReturnValue("Mock_user")
     mockGetTokenMapping.mockImplementationOnce(() => Promise.resolve( {
       username: "Mock_user",
-      apigeeAccessToken: undefined
+      apigeeCode: "apigee-code"
     }))
-    // We expect the function to throw an error in mock mode with no token
-    await expect(authenticateRequest(
+    mockExchangeTokenForApigeeAccessToken.mockReturnValue({
+      accessToken: "new-access-token",
+      refreshToken: "new-refresh-token",
+      expiresIn: 3600
+    })
+
+    // Make sure the getSecret mock is properly setup
+    mockGetSecret.mockReturnValue("test-private-key")
+
+    const result = await authenticateRequest(
       "Mock_user",
       documentClient,
       mockLogger,
-      mockOptionsWithMock
-    )).rejects.toThrow("Unexpected state for mock request")
-
-    // Verify warning was logged about unexpected state
-    expect(mockLogger.warn).toHaveBeenCalledWith(
-      "Mock user but no valid token exists or refresh failed."
+      mockOptions
     )
 
-    // No token-related functions should be called
+    expect(result).toEqual({
+      apigeeAccessToken: "new-access-token",
+      roleId: "test-role-id"
+    })
+
+    // Verify new token acquisition flow
     expect(mockFetchAndVerifyCIS2Tokens).not.toHaveBeenCalled()
     expect(mockConstructSignedJWTBody).not.toHaveBeenCalled()
-    expect(mockExchangeTokenForApigeeAccessToken).not.toHaveBeenCalled()
+    expect(mockExchangeTokenForApigeeAccessToken).toHaveBeenCalled()
+    expect(mockUpdateTokenMapping).toHaveBeenCalled()
+    expect(mockGetSecret).not.toHaveBeenCalled()
   })
 
   // TODO: this test needs fixing currently not currently mocks
