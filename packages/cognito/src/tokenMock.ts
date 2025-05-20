@@ -165,7 +165,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     name: userInfo.name,
     authentication_assurance_level: "3",
     given_name: roleDetails.user_details.given_name,
-    family_name: roleDetails.user_details.given_name,
+    family_name: roleDetails.user_details.family_name,
     email: userInfo.email,
     selected_roleid: userInfo.uid
   }
