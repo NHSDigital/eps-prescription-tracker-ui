@@ -49,6 +49,10 @@
         "path": "../packages/common/authFunctions"
       },
       {
+        "name": "packages/common/dynamoFunctions",
+        "path": "../packages/common/dynamoFunctions"
+      },
+      {
         "name": "packages/auth_demo",
         "path": "../packages/auth_demo"
       },

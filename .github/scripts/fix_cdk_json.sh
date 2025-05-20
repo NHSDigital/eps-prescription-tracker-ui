@@ -174,6 +174,7 @@ elif [ "$CDK_APP_NAME" == "StatelessResourcesApp" ]; then
     fi
     fix_boolean_number_key useMockOidc "${USE_MOCK_OIDC}"
     fix_string_key apigeeApiKey "${APIGEE_API_KEY}"
+    fix_string_key apigeeApiSecret "${APIGEE_API_SECRET}"
     fix_string_key apigeeCIS2TokenEndpoint "${APIGEE_CIS2_TOKEN_ENDPOINT}"
     fix_string_key apigeePrescriptionsEndpoint "${APIGEE_PRESCRIPTION_ENDPOINT}"
     fix_string_key apigeePersonalDemographicsEndpoint "${APIGEE_PERSONAL_DEMOGRAPHICS_ENDPOINT}"
