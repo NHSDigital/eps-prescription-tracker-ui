@@ -33,7 +33,10 @@ MOCK_USER_POOL_IDP
 const logger = new Logger({serviceName: "trackerUserInfo"})
 
 const dynamoClient = new DynamoDBClient({})
-const documentClient = DynamoDBDocumentClient.from(dynamoClient)
+const documentClient = DynamoDBDocumentClient.from(dynamoClient, {
+  marshallOptions: {
+    removeUndefinedValues: true
+  }})
 
 // Create a config for cis2 and mock
 // this is outside functions so it can be re-used and caching works
@@ -96,16 +99,16 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   })
 
   logger.debug("auth result", {authResult})
-  if (!authResult.apigeeAccessToken
+  if ((!authResult.apigeeAccessToken
       || !tokenMappingItem.cis2IdToken
-      || !tokenMappingItem.cis2AccessToken
+      || !tokenMappingItem.cis2AccessToken) && !isMockToken
   ) {
     throw new Error("Authentication failed: missing tokens")
   }
 
   const userInfoResponse = await fetchUserInfo(
-    tokenMappingItem.cis2AccessToken,
-    tokenMappingItem.cis2IdToken,
+    tokenMappingItem.cis2AccessToken || "",
+    tokenMappingItem.cis2IdToken || "",
     authResult.apigeeAccessToken,
     isMockToken,
     logger,

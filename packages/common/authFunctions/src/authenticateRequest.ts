@@ -187,7 +187,7 @@ export async function authenticateRequest(
   if (isMockRequest && !userRecord.apigeeAccessToken) {
     //const baseEnvironmentDomain = cloudfrontDomain.replace(/-pr-(\d*)/, "")
     //const callbackUri = `https://${baseEnvironmentDomain}/oauth2/mock-callback`
-    const callbackUri = "https://cpt-ui.dev.eps.national.nhs.uk/"
+    const callbackUri = "https://cpt-ui.dev.eps.national.nhs.uk/oauth2/mock-callback"
     const tokenExchangeBody = {
       grant_type: "authorization_code",
       client_id: apigeeApiKey,
