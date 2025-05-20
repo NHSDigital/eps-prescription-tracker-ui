@@ -106,9 +106,9 @@ export default function PrescriptionIdSearch() {
                 </HintText>
               </Label>
 
-              {errors.length > 0 && (
-                <ErrorMessage id="presc-id-error">{getDisplayedErrorMessage()}</ErrorMessage>
-              )}
+              <ErrorMessage id="presc-id-error">
+                {errors.length > 0 ? getDisplayedErrorMessage() : ""}
+              </ErrorMessage>
 
               <TextInput
                 id="presc-id-input"
