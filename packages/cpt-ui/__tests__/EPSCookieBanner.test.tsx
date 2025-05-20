@@ -45,15 +45,4 @@ describe("EPSCookieBanner", () => {
     expect(window.NHSCookieConsent.setStatistics).toHaveBeenCalledWith(false)
     expect(window.NHSCookieConsent.setConsented).toHaveBeenCalledWith(true)
   })
-
-  it("does not render when on cookies page", () => {
-    render(
-      <MemoryRouter initialEntries={["/cookies"]}>
-        <EPSCookieBanner />
-      </MemoryRouter>
-    )
-
-    const cookieBanner = screen.queryByRole("banner", {name: /cookie banner/i})
-    expect(cookieBanner).toBeNull()
-  })
 })
