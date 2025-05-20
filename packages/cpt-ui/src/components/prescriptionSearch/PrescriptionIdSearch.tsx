@@ -101,13 +101,13 @@ export default function PrescriptionIdSearch() {
                 >
                   {PRESCRIPTION_ID_SEARCH_STRINGS.labelText}
                 </h2>
+                <HintText id="presc-id-hint" data-testid="prescription-id-hint">
+                  {PRESCRIPTION_ID_SEARCH_STRINGS.hintText}
+                </HintText>
               </Label>
-              <HintText id="presc-id-hint" data-testid="prescription-id-hint">
-                {PRESCRIPTION_ID_SEARCH_STRINGS.hintText}
-              </HintText>
 
               {errors.length > 0 && (
-                <ErrorMessage>{getDisplayedErrorMessage()}</ErrorMessage>
+                <ErrorMessage id="presc-id-error">{getDisplayedErrorMessage()}</ErrorMessage>
               )}
 
               <TextInput
@@ -118,6 +118,7 @@ export default function PrescriptionIdSearch() {
                 className={errors.length > 0 ? "nhsuk-input nhsuk-input--error" : "nhsuk-input"}
                 autoComplete="off"
                 data-testid="prescription-id-input"
+                aria-describedby="presc-id-error"
               />
             </FormGroup>
 
