@@ -20,6 +20,7 @@ install-hooks: install-python
 compile-node:
 	npm run compile --workspace packages/common/commonTypes
 	npm run compile --workspace packages/common/middyErrorHandler
+	npm run compile --workspace packages/common/dynamoFunctions
 	npm run compile --workspace packages/common/authFunctions
 	npm run compile --workspace packages/common/doHSClient
 	npx tsc --build tsconfig.build.json
@@ -40,6 +41,7 @@ lint-node: compile-node
 	npm run lint --workspace packages/CIS2SignOutLambda
 	npm run lint --workspace packages/common/authFunctions
 	npm run lint --workspace packages/common/doHSClient
+	npm run lint --workspace packages/common/dynamoFunctions
 
 lint-githubactions:
 	actionlint
@@ -62,6 +64,7 @@ test: compile
 	npm run test --workspace packages/CIS2SignOutLambda
 	npm run test --workspace packages/common/authFunctions
 	npm run test --workspace packages/common/doHSClient
+	npm run test --workspace packages/common/dynamoFunctions
 
 clean:
 	rm -rf packages/common/commonTypes/coverage
@@ -89,6 +92,8 @@ clean:
 	rm -rf packages/common/authFunctions/lib
 	rm -rf packages/common/doHSClient/coverage
 	rm -rf packages/common/doHSClient/lib
+	rm -rf packages/common/dynamoFunctions/coverage
+	rm -rf packages/common/dynamoFunctions/lib
 	rm -rf packages/CIS2SignOutLambda/coverage
 	rm -rf packages/CIS2SignOutLambda/lib
 	rm -rf .local_config
@@ -109,6 +114,7 @@ check-licenses-node:
 	npm run check-licenses --workspace packages/cpt-ui
 	npm run check-licenses --workspace packages/common/authFunctions
 	npm run check-licenses --workspace packages/common/doHSClient
+	npm run check-licenses --workspace packages/common/dynamoFunctions
 	npm run check-licenses --workspace packages/cognito
 	npm run check-licenses --workspace packages/prescriptionListLambda
 	npm run check-licenses --workspace packages/prescriptionDetailsLambda
@@ -223,6 +229,7 @@ cdk-synth-stateless-resources-no-mock:
 	PRIMARY_OIDC_JWKS_ENDPOINT=undefined \
 	USE_MOCK_OIDC=false \
 	APIGEE_API_KEY=foo \
+	APIGEE_API_SECRET=foo \
 	APIGEE_CIS2_TOKEN_ENDPOINT=foo \
 	APIGEE_PRESCRIPTION_ENDPOINT=foo \
 	APIGEE_PERSONAL_DEMOGRAPHICS_ENDPOINT=foo \
@@ -306,6 +313,7 @@ cdk-synth-stateless-resources-mock:
 	MOCK_OIDC_JWKS_ENDPOINT=undefined \
 	USE_MOCK_OIDC=true \
 	APIGEE_API_KEY=foo \
+	APIGEE_API_SECRET=foo \
 	APIGEE_CIS2_TOKEN_ENDPOINT=foo \
 	APIGEE_MOCK_TOKEN_ENDPOINT=foo \
 	APIGEE_PRESCRIPTION_ENDPOINT=foo \

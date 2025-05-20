@@ -6,5 +6,10 @@
     "strict": false
   },
   "include": ["src/**/*", "src/**/*.json"],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules"],
+  "references": [
+    {
+      "path": "../dynamoFunctions"
+    }
+  ]
 }

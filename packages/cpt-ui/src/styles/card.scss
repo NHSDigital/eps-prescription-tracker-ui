@@ -1,45 +1,110 @@
 .eps-card {
-  margin-bottom: 1.5rem;
-  padding: 0rem;
+    margin-bottom: 1.5rem;
+    padding: 0rem;
 
-  &__content {
-      display: flex;
-      padding: 0rem;
-      align-items: flex-start;
-  }
+    &__content {
+        display: flex;
+        padding: 0rem;
+        align-items: flex-start;
+    }
 
-  &__roleName {
-      margin-top: 0.5rem;
-      margin-bottom: 24px;
-      font-weight: normal;
-      font-size: 16px;
-      line-height: 1.5;
-      color: #4c6272;
-  }
+    &__roleName {
+        margin-top: 0.5rem;
+        margin-bottom: 24px;
+        font-weight: normal;
+        font-size: 16px;
+        line-height: 1.5;
+        color: #4c6272;
+    }
 
-  &__siteAddress {
-      text-align: left;
-      color: #4c6272;
-      margin-top: 0.5rem;
-      font-size: 1rem;
-      line-height: 1.5;
-      &-line {
-          display: block;
-      }
-  }
+    &__siteAddress {
+        text-align: left;
+        color: #4c6272;
+        margin-top: 0.5rem;
+        font-size: 1rem;
+        line-height: 1.5;
 
-  &__link {
-    background-color: #ffffff;
-    border: 1px solid transparent;
-    box-shadow: 0 4px 0 0 #d8dde0;
-    display: block;
-    height: 100%;
-    position: relative;
-    text-decoration: none;
+        &-line {
+            display: block;
+        }
+    }
+
+    &__link {
+        background-color: #ffffff;
+        border: 1px solid transparent;
+        box-shadow: 0 4px 0 0 #d8dde0;
+        display: block;
+        height: 100%;
+        position: relative;
+        text-decoration: none;
+    }
+
+    .nhsuk-grid-column-two-thirds {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
 }
 
-  .nhsuk-grid-column-two-thirds {
-      padding-left: 1rem;
-      padding-right: 1rem;
-  }
+.data-field__content--address {
+    color: rgb(76, 98, 114);
+}
+
+.break-word {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    word-break: break-word;
+}
+
+.nhs-screening-whole-timeline {
+    position: relative;
+    padding-left: 0.5rem;
+
+    &::before {
+        content: "";
+        position: absolute;
+        top: 10px;
+        left: 0;
+        width: 5px;
+        height: 102%;
+        background-color: #005eb8;
+    }
+}
+
+.nhs-screening-whole-timeline__item {
+    position: relative;
+    padding-left: 1rem;
+
+    &::before {
+        content: "";
+        position: absolute;
+        top: 10px;
+        left: -5px;
+        width: 12px;
+        height: 5px;
+        background-color: #005eb8;
+    }
+}
+
+.nhsuk-details__text {
+    border-left: 4px solid #d8dde0;
+    margin-top: 8px;
+    padding: 16px;
+    padding-left: 20px;
+}
+
+.container-details-page {
+    margin-left: 64px;
+    margin-right: 64px
+}
+
+@media (min-width: 40.0625em) {
+    .nhs-screening-whole-timeline__description {
+        font-size: 1rem;
+        line-height: 1.25;
+        margin-top: 20px;
+    }
+}
+
+.error-message-stack .nhsuk-error-message:not(:last-child) {
+    margin-bottom: 2px;
 }

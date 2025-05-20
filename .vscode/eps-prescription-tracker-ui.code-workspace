@@ -61,8 +61,13 @@
         "path": "../packages/common/authFunctions"
       },
       {
+
         "name": "packages/common/doHSClient",
         "path": "../packages/common/doHSClient"
+      },
+      {
+        "name": "packages/common/dynamoFunctions",
+        "path": "../packages/common/dynamoFunctions"
       },
       {
         "name": "packages/auth_demo",
@@ -173,7 +178,7 @@
       "eslint.format.enable": true,
       "editor.defaultFormatter": "dbaeumer.vscode-eslint",
       "[typescriptreact]": {
-        "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+        "editor.defaultFormatter": "vscode.typescript-language-features"
       },
       "[javascriptreact]": {
         "editor.defaultFormatter": "dbaeumer.vscode-eslint"

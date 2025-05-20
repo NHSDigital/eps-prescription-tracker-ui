@@ -1,28 +1,56 @@
 import "@testing-library/jest-dom"
 import {render, screen} from "@testing-library/react"
 import EpsFooter from "@/components/EpsFooter"
-import {FOOTER_COPYRIGHT} from "@/constants/ui-strings/FooterStrings"
 
 jest.mock("@/constants/ui-strings/FooterStrings", () => ({
   FOOTER_COPYRIGHT: "© NHS England",
-  COMMIT_ID: "test-commit-id" // Add a mock commit ID
+  FOOTER_LINKS: [
+    {
+      text: "Privacy notice (opens in new tab)",
+      href: "https://example.com/privacy",
+      external: true
+    },
+    {
+      text: "Terms and conditions",
+      href: "terms-and-conditions",
+      external: false
+    },
+    {
+      text: "Cookie policy",
+      href: "cookies",
+      external: false
+    }
+  ]
 }))
 
 describe("EpsFooter", () => {
-  it("Successfully renders a footer component, evidenced by role of 'contentinfo", () => {
+  it("renders the footer element with role 'contentinfo'", () => {
     render(<EpsFooter />)
-    const footer = screen.getByRole("contentinfo")
-    expect(footer).toBeInTheDocument()
+    expect(screen.getByRole("contentinfo")).toBeInTheDocument()
   })
-  it("Extracts FOOTER_COPYRIGHT value", () => {
+
+  it("displays all footer links with correct text and href", () => {
     render(<EpsFooter />)
-    const copyright = FOOTER_COPYRIGHT
-    expect(copyright).toBeTruthy()
+    const links = screen.getAllByRole("link")
+    expect(links).toHaveLength(3)
+
+    expect(links[0]).toHaveTextContent("Privacy notice (opens in new tab)")
+    expect(links[0]).toHaveAttribute("href", "https://example.com/privacy")
+    expect(links[0]).toHaveAttribute("target", "_blank")
+    expect(links[0]).toHaveAttribute("rel", "noopener noreferrer")
+
+    expect(links[1]).toHaveTextContent("Terms and conditions")
+    expect(links[1]).toHaveAttribute("href", "terms-and-conditions")
+    expect(links[1]).not.toHaveAttribute("target")
+
+    expect(links[2]).toHaveTextContent("Cookie policy")
+    expect(links[2]).toHaveAttribute("href", "cookies")
+    expect(links[2]).not.toHaveAttribute("target")
   })
-  it("Displays copyright message matching that from FOOTER_COPYRIGHT data", () => {
+
+  it("displays the correct copyright message", () => {
     render(<EpsFooter />)
-    expect(screen.getByTestId("eps_footer-copyright")).toHaveTextContent(
-      FOOTER_COPYRIGHT
-    )
+    const copyright = screen.getByTestId("eps_footer-copyright")
+    expect(copyright).toHaveTextContent("© NHS England")
   })
 })

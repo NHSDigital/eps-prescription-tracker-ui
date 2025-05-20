@@ -1,6 +1,15 @@
-.nhsuk-banner {
+.rbac-banner {
     padding: 8px;
+    padding-left: 0px;
     margin: 0px;
     color: #ffffff;
     background-color: #1E2C33;
+}
+
+.rbac-banner .rbac-content {
+    padding-left: 24px;
+    padding-right: 24px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    margin: 0px;
 }

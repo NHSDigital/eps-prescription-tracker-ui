@@ -5,6 +5,7 @@ import "@testing-library/jest-dom"
 import {render, screen, waitFor} from "@testing-library/react"
 
 import {PatientDetails} from "@cpt-ui-common/common-types"
+
 import {STRINGS} from "@/constants/ui-strings/PatientDetailsBannerStrings"
 
 import {MockPatientDetailsProvider} from "../__mocks__/MockPatientDetailsProvider"
@@ -53,8 +54,6 @@ const partialAddressDetails: PatientDetails = {
     // postcode is omitted
   }
 }
-
-// TODO: Mock the patient details context, which only has `patientDetails: PatientDetails` on it.
 
 import PatientDetailsBanner from "@/components/PatientDetailsBanner"
 

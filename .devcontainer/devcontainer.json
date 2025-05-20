@@ -48,7 +48,8 @@
             "timonwong.shellcheck",
             "mkhl.direnv",
             "github.vscode-github-actions",
-            "Gruntfuggly.todo-tree"
+            "Gruntfuggly.todo-tree",
+            "ms-vscode.makefile-tools"
         ],
         "settings": {
           "python.defaultInterpreterPath": "/workspaces/eps-prescription-tracker-ui/.venv/bin/python",

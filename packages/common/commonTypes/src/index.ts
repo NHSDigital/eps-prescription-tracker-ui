@@ -1,24 +1,33 @@
-import {
+// Types from prescriptionList
+export type {
   PatientDetails,
   PatientDetailsAddress,
-  PrescriptionStatusCategories,
-  PrescriptionStatus,
-  TreatmentType,
   PrescriptionAPIResponse,
   PrescriptionSummary,
   SearchResponse
 } from "./prescriptionList"
 
-import {PrescriptionDetails} from "./prescriptionDetails"
-
+// Runtime values from prescriptionList (likely enums or consts)
 export {
-  PatientDetails,
-  PatientDetailsAddress,
-  PrescriptionStatusCategories,
   PrescriptionStatus,
-  TreatmentType,
-  PrescriptionAPIResponse,
-  PrescriptionSummary,
-  SearchResponse,
-  PrescriptionDetails
-}
+  PrescriptionStatusCategories,
+  TreatmentType
+} from "./prescriptionList"
+
+// Types from prescriptionDetails
+export type {
+  PrescribedItemDetails,
+  PrescribedItem,
+  InitiallyPrescribed,
+  DispensedItemDetails,
+  DispensedItem,
+  DispenseNotification,
+  MessageHistory,
+  OrganisationSummary,
+  PrescriberOrganisationSummary,
+  PrescriberOrganisation,
+  DispenserOrganisation,
+  PrescriptionDetailsResponse
+} from "./prescriptionDetails"
+
+export type {PatientSummary} from "./patientSearch"
