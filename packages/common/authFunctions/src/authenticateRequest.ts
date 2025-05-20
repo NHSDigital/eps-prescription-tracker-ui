@@ -2,9 +2,12 @@ import {Logger} from "@aws-lambda-powertools/logger"
 import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
 import {getSecret} from "@aws-lambda-powertools/parameters/secrets"
 import axios from "axios"
-import {refreshApigeeAccessToken} from "./index"
-
-import {fetchAndVerifyCIS2Tokens, constructSignedJWTBody, exchangeTokenForApigeeAccessToken} from "./index"
+import {
+  refreshApigeeAccessToken,
+  verifyIdToken,
+  constructSignedJWTBody,
+  exchangeTokenForApigeeAccessToken
+} from "./index"
 import {getTokenMapping, updateTokenMapping} from "@cpt-ui-common/dynamoFunctions"
 
 const cloudfrontDomain= process.env["FULL_CLOUDFRONT_DOMAIN"] as string
@@ -207,19 +210,7 @@ export async function authenticateRequest(
     )
   } else {
   // When we aren't mocking, get CIS2 tokens and exchange for Apigee token
-    const {cis2AccessToken, cis2IdToken: newCis2IdToken} = await fetchAndVerifyCIS2Tokens(
-      username,
-      documentClient,
-      logger
-    )
-
-    logger.debug("Successfully fetched CIS2 tokens", {
-      cis2AccessToken: cis2AccessToken,
-      cis2IdToken: newCis2IdToken ? "[REDACTED]" : undefined
-    })
-
-    // Store CIS2 ID token
-    const cis2IdToken = newCis2IdToken
+    await verifyIdToken(userRecord.cis2IdToken, logger)
 
     // Fetch the private key for signing the client assertion
     logger.info("Fetching JWT private key from Secrets Manager", {jwtPrivateKeyArn})
@@ -235,10 +226,9 @@ export async function authenticateRequest(
       jwtPrivateKey,
       apigeeApiKey,
       jwtKid,
-      cis2IdToken
+      userRecord.cis2IdToken
     )
 
-    logger.debug("these are the options", {options})
     // Exchange token with Apigee
     exchangeResult = await exchangeTokenForApigeeAccessToken(
       axiosInstance,

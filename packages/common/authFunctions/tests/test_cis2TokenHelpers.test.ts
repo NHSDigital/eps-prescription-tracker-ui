@@ -5,8 +5,6 @@ import {Logger} from "@aws-lambda-powertools/logger"
 import jwksClient from "jwks-rsa"
 import jwt from "jsonwebtoken"
 import createJWKSMock from "mock-jwks"
-import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
-import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
 
 const mockUpdateTokenMapping = jest.fn()
 const mockGetTokenMapping = jest.fn()
@@ -20,8 +18,6 @@ jest.unstable_mockModule("@cpt-ui-common/dynamoFunctions", () => {
 
 const {getSigningKey,
   getUsernameFromEvent,
-  fetchCIS2TokensFromDynamoDB,
-  fetchAndVerifyCIS2Tokens,
   verifyIdToken} = await import("../src/index")
 
 // Common test setup
@@ -139,127 +135,6 @@ describe("getUsernameFromEvent", () => {
       "Unable to extract username from ID token"
     )
   })
-})
-
-describe("fetchCIS2TokensFromDynamoDB", () => {
-  const logger = new Logger()
-  const dynamoDBClient = new DynamoDBClient({})
-  const documentClient = DynamoDBDocumentClient.from(dynamoDBClient)
-
-  beforeEach(() => {
-    jest.restoreAllMocks()
-  })
-
-  it("should fetch tokens from DynamoDB", async () => {
-    const username = "test-username"
-    const tableName = "TokenMappingTable"
-
-    const cis2AccessToken = "test-access-token"
-    const cis2IdToken = "test-id-token"
-
-    jest.spyOn(documentClient, "send")
-      .mockImplementation(() => Promise.resolve({
-        Item: {
-          CIS2_accessToken: cis2AccessToken,
-          CIS2_idToken: cis2IdToken
-        }
-      })
-      )
-
-    const result = await fetchCIS2TokensFromDynamoDB(
-      username,
-      tableName,
-      documentClient,
-      logger
-    )
-    expect(result).toEqual({cis2AccessToken, cis2IdToken})
-
-    expect(documentClient.send).toHaveBeenCalledWith(
-      expect.objectContaining({
-        input: {
-          TableName: tableName,
-          Key: {username}
-        }
-      })
-    )
-  })
-
-  it("should throw an error if tokens not found", async () => {
-    const username = "test-username"
-    const tableName = "TokenMappingTable"
-
-    jest.spyOn(documentClient, "send").mockImplementation(() => Promise.resolve({}))
-
-    await expect(
-      fetchCIS2TokensFromDynamoDB(username, tableName, documentClient, logger)
-    ).rejects.toThrow("CIS2 access token not found for user")
-  })
-
-  it("should throw an error on DynamoDB error", async () => {
-    const username = "test-username"
-    const tableName = "TokenMappingTable"
-
-    jest
-      .spyOn(documentClient, "send")
-      .mockImplementation(() => Promise.reject(new Error("DynamoDB error")))
-
-    await expect(
-      fetchCIS2TokensFromDynamoDB(username, tableName, documentClient, logger)
-    ).rejects.toThrow("Internal server error while accessing DynamoDB")
-  })
-})
-
-describe("fetchAndVerifyCIS2Tokens", () => {
-  const dynamoDBClient = new DynamoDBClient({})
-  const documentClient = DynamoDBDocumentClient.from(dynamoDBClient)
-
-  const username = "test-username"
-  const oidcIssuer = "valid_iss"
-  const oidcClientId = "valid_aud"
-  const cis2IdToken: jwt.JwtPayload = {
-    iss: oidcIssuer,
-    aud: oidcClientId,
-    exp: Math.floor(Date.now() / 1000) + 3600,
-    acr: "AAL3_ANY",
-    auth_time: Math.floor(Date.now() / 1000)
-  }
-  const cis2AccessToken = "test-access-token"
-
-  beforeEach(() => {
-    jest.restoreAllMocks()
-  })
-
-  it("should fetch and verify tokens", async () => {
-
-    jest.spyOn(documentClient, "send")
-      .mockImplementation(() => Promise.resolve({
-        Item: {
-          CIS2_accessToken: cis2AccessToken,
-          CIS2_idToken: cis2IdToken
-        }
-      })
-      )
-
-    const validKid = jwksMock.kid()
-
-    jest.spyOn(jwt, "decode").mockReturnValue({
-      header: {kid: validKid}
-    })
-
-    jest.spyOn(jwt, "verify").mockImplementation(() => cis2IdToken)
-    mockGetTokenMapping.mockImplementationOnce(() => Promise.resolve( {
-      cis2AccessToken: cis2AccessToken,
-      cis2IdToken: cis2IdToken
-    }))
-
-    await expect(
-      fetchAndVerifyCIS2Tokens(username, documentClient, logger)
-    ).resolves.toEqual({
-      cis2AccessToken,
-      cis2IdToken
-    })
-  })
-
 })
 
 describe("verifyIdToken", () => {
