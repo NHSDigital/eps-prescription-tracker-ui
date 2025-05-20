@@ -11,7 +11,23 @@ import {PrescriptionSummary, TreatmentType} from "@cpt-ui-common/common-types"
 
 jest.mock("@/helpers/statusMetadata", () => ({
   getStatusTagColour: jest.fn().mockReturnValue("blue"),
-  getStatusDisplayText: jest.fn().mockReturnValue("Available to download")
+  getStatusDisplayText: jest.fn().mockReturnValue("Available to download"),
+  formatDateForPrescriptions: jest.fn((date: string) => {
+    try {
+      const options: Intl.DateTimeFormatOptions = {
+        day: "2-digit",
+        month: "short",
+        year: "numeric"
+      }
+      const dateObj = new Date(date)
+      if (isNaN(dateObj.getTime())) {
+        return "Invalid date"
+      }
+      return dateObj.toLocaleDateString("en-GB", options).replace(/ /g, "-")
+    } catch {
+      return "Invalid date"
+    }
+  })
 }))
 
 describe("PrescriptionsListTable", () => {
@@ -246,21 +262,99 @@ describe("PrescriptionsListTable", () => {
     await waitFor(() => {
       const sortButton = screen.getByTestId("eps-prescription-table-sort-issueDate")
 
-      // Check that it's rendered with the correct role and label
       expect(sortButton).toBeInTheDocument()
       expect(sortButton).toHaveAttribute("role", "button")
       expect(sortButton).toHaveAttribute("tabIndex", "0")
 
-      // Trigger click
       fireEvent.click(sortButton)
 
-      // Trigger keyboard "Enter"
       fireEvent.keyDown(sortButton, {key: "Enter"})
-      // Trigger keyboard "Space"
       fireEvent.keyDown(sortButton, {key: " "})
     })
 
     jest.useRealTimers()
   })
+  it("correctly formats a date", () => {
+    render(<PrescriptionsListTable textContent={textContent} prescriptions={prescriptions} />)
+    jest.advanceTimersByTime(2000)
+  })
 
+  it("sorts prescriptions by statusCode, falling back to issueDate if statusCodes match", async () => {
+    jest.useFakeTimers()
+
+    const testPrescriptions = [
+      {
+        prescriptionId: "88AAF5-A83008-3D404Q",
+        statusCode: "0002",
+        issueDate: "2025-04-15",
+        prescriptionTreatmentType: TreatmentType.REPEAT,
+        issueNumber: 3,
+        maxRepeats: 6,
+        prescriptionPendingCancellation: false,
+        itemsPendingCancellation: false
+      },
+      {
+        prescriptionId: "7F1A4B-A83008-91DC2E",
+        statusCode: "0002",
+        issueDate: "2025-04-10",
+        prescriptionTreatmentType: TreatmentType.REPEAT,
+        issueNumber: 2,
+        maxRepeats: 5,
+        prescriptionPendingCancellation: false,
+        itemsPendingCancellation: false
+      },
+      {
+        prescriptionId: "4D6F2C-A83008-A3E7D1",
+        statusCode: "0003",
+        issueDate: "2025-04-01",
+        prescriptionTreatmentType: TreatmentType.REPEAT,
+        issueNumber: 1,
+        maxRepeats: 4,
+        prescriptionPendingCancellation: false,
+        itemsPendingCancellation: false
+      }
+    ]
+
+    render(
+      <PrescriptionsListTable textContent={textContent} prescriptions={testPrescriptions} />
+    )
+
+    jest.advanceTimersByTime(2000)
+
+    await waitFor(() => {
+      const sortButton = screen.getByTestId("eps-prescription-table-sort-issueDate")
+      fireEvent.click(sortButton)
+
+      const rows = screen.getAllByRole("row")
+      const dataRows = rows.slice(1)
+
+      const firstRowText = dataRows[0].textContent
+      const secondRowText = dataRows[1].textContent
+      const thirdRowText = dataRows[2].textContent
+
+      expect(firstRowText).toContain("2")
+      expect(secondRowText).toContain("3")
+      expect(thirdRowText).toContain("1")
+    })
+
+    jest.useRealTimers()
+  })
+  it("sorts prescriptions by issueNumber in ascending order", async () => {
+    jest.useFakeTimers()
+
+    render(<PrescriptionsListTable textContent={textContent} prescriptions={prescriptions} />)
+    jest.advanceTimersByTime(2000)
+
+    await waitFor(() => {
+      const sortButton = screen.getByTestId("eps-prescription-table-sort-issueDate")
+      fireEvent.click(sortButton)
+
+      const rows = screen.getAllByTestId("eps-prescription-table-sort-button")
+      expect(rows[0]).toHaveTextContent("1")
+      expect(rows[1]).toHaveTextContent("2")
+      expect(rows[2]).toHaveTextContent("3")
+    })
+
+    jest.useRealTimers()
+  })
 })

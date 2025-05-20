@@ -4,7 +4,7 @@ import "../../styles/PrescriptionTable.scss"
 import EpsSpinner from "@/components/EpsSpinner"
 import {PrescriptionSummary} from "@cpt-ui-common/common-types/src"
 import {PrescriptionsListStrings} from "../../constants/ui-strings/PrescriptionListTabStrings"
-import {getStatusTagColour, getStatusDisplayText} from "@/helpers/statusMetadata"
+import {getStatusTagColour, getStatusDisplayText, formatDateForPrescriptions} from "@/helpers/statusMetadata"
 import {PRESCRIPTION_LIST_TABLE_TEXT} from "@/constants/ui-strings/PrescriptionListTableStrings"
 
 export interface PrescriptionsListTableProps {
@@ -40,24 +40,6 @@ const PrescriptionsListTable = ({textContent, prescriptions}: PrescriptionsListT
       case "0002": return PRESCRIPTION_LIST_TABLE_TEXT.typeDisplayText.repeat
       case "0003": return PRESCRIPTION_LIST_TABLE_TEXT.typeDisplayText.erd
       default: return PRESCRIPTION_LIST_TABLE_TEXT.typeDisplayText.unknown
-    }
-  }
-
-  const formatDate = (date: string) => {
-    try {
-      const options: Intl.DateTimeFormatOptions = {
-        day: "2-digit",
-        month: "short",
-        year: "numeric"
-      }
-      // Check if date is valid before formatting
-      const dateObj = new Date(date)
-      if (isNaN(dateObj.getTime())) {
-        return "Invalid date"
-      }
-      return dateObj.toLocaleDateString("en-GB", options).replace(/ /g, "-")
-    } catch {
-      return "Invalid date"
     }
   }
 
@@ -254,7 +236,7 @@ const PrescriptionsListTable = ({textContent, prescriptions}: PrescriptionsListT
                 if (key === "issueDate") {
                   return (
                     <td key={key} className="eps-prescription-table-rows nowrap-cell" data-testid="issue-date-column">
-                      <div>{formatDate(row.issueDate)}</div>
+                      <div>{formatDateForPrescriptions(row.issueDate)}</div>
                     </td>
                   )
                 }
