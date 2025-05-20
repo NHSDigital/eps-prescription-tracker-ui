@@ -1,4 +1,4 @@
-import React, {useState} from "react"
+import React, {useState, useEffect} from "react"
 import {Link} from "react-router-dom"
 import {CookieStrings} from "@/constants/ui-strings/CookieStrings"
 
@@ -67,6 +67,60 @@ const CookiePolicyPage = () => {
   const [essentialCookiesOpen, setEssentialCookiesOpen] = useState<boolean>(false)
   const [analyticsCookiesOpen, setAnalyticsCookiesOpen] = useState<boolean>(false)
 
+  const [cookieChoice, setCookieChoice] = useState<"accepted" | "rejected">("rejected")
+  const [hasInitialized, setHasInitialized] = useState(false)
+
+  const isUserLoggedIn = () => {
+    //checks if user is logged in, as this affects redirect from home button
+    try {
+      const authData = localStorage.getItem("auth")
+      if (!authData) return false
+
+      const parsedAuth = JSON.parse(authData)
+      return parsedAuth?.isSignedIn === true && parsedAuth?.user !== null
+    } catch {
+      return false
+    }
+  }
+
+  const getHomeLink = () => {
+    return isUserLoggedIn() ? "/search" : "/login"
+  }
+
+  useEffect(() => {
+    if (hasInitialized) {
+      return
+    }
+
+    const storedChoice = localStorage.getItem("eps-cookie-consent")
+
+    if (storedChoice === "accepted" || storedChoice === "rejected") {
+      setCookieChoice(storedChoice)
+    } else if (typeof window !== "undefined" && window.NHSCookieConsent?.getConsented()) {
+      const hasAnalytics = window.NHSCookieConsent.getStatistics()
+      const initialChoice = hasAnalytics ? "accepted" : "rejected"
+      setCookieChoice(initialChoice)
+    } else {
+      setCookieChoice("rejected")
+    }
+
+    setHasInitialized(true)
+  }, [hasInitialized])
+
+  const handleCookieChoice = (choice: "accepted" | "rejected") => {
+    setCookieChoice(choice)
+    localStorage.setItem("eps-cookie-consent", choice)
+
+    if (typeof window !== "undefined" && window.NHSCookieConsent) {
+      window.NHSCookieConsent.setStatistics(choice === "accepted")
+      window.NHSCookieConsent.setConsented(true)
+    }
+
+    localStorage.setItem("eps-secondary-banner-shown", "true")
+
+    window.dispatchEvent(new CustomEvent("cookieChoiceUpdated"))
+  }
+
   const CookieTable: React.FC<CookieTableProps> = ({cookies, title}) => (
     <details
       className="nhsuk-details"
@@ -109,7 +163,7 @@ const CookiePolicyPage = () => {
           <thead role="rowgroup" className="nhsuk-table__head">
             <tr role="row">
               <th role="columnheader" scope="col">
-                Cookie name
+                {CookieStrings.cookieName}
               </th>
               <th role="columnheader" scope="col">
                 Purpose
@@ -123,15 +177,22 @@ const CookiePolicyPage = () => {
             {cookies.map((cookie, index) => (
               <tr key={index} role="row" className="nhsuk-table__row">
                 <td role="cell" className="nhsuk-table__cell">
-                  <span className="nhsuk-table-responsive__heading" aria-hidden="true">Cookie name </span>
+                  <span
+                    className="nhsuk-table-responsive__heading" aria-hidden="true"
+                  >
+                    {CookieStrings.cookieName} </span>
                   {cookie.name}
                 </td>
                 <td role="cell" className="nhsuk-table__cell">
-                  <span className="nhsuk-table-responsive__heading" aria-hidden="true">Purpose </span>
+                  <span
+                    className="nhsuk-table-responsive__heading" aria-hidden="true"
+                  >{CookieStrings.cookiePurpose} </span>
                   {cookie.purpose}
                 </td>
                 <td role="cell" className="nhsuk-table__cell">
-                  <span className="nhsuk-table-responsive__heading" aria-hidden="true">Expiry </span>
+                  <span
+                    className="nhsuk-table-responsive__heading" aria-hidden="true"
+                  >{CookieStrings.cookieExpiry} </span>
                   {cookie.expiry}
                 </td>
               </tr>
@@ -148,15 +209,15 @@ const CookiePolicyPage = () => {
         <nav className="nhsuk-breadcrumb" aria-label="Breadcrumb">
           <ol className="nhsuk-breadcrumb__list">
             <li className="nhsuk-breadcrumb__item">
-              <Link className="nhsuk-breadcrumb__link" to="/search">{CookieStrings.home}</Link>
+              <Link className="nhsuk-breadcrumb__link" to={getHomeLink()}>{CookieStrings.home}</Link>
             </li>
           </ol>
           <p className="nhsuk-breadcrumb__back">
-            <a className="nhsuk-breadcrumb__backlink" href="#">
+            <Link className="nhsuk-breadcrumb__backlink" to={getHomeLink()}>
               <span className="nhsuk-u-visually-hidden">
                 {CookieStrings.breadcrumbBack.visuallyHidden}&nbsp;</span>
               {CookieStrings.home}
-            </a>
+            </Link>
           </p>
         </nav>
         <h1 className="nhsuk-heading-xl">{CookieStrings.cptCookies}</h1>
@@ -206,6 +267,8 @@ const CookiePolicyPage = () => {
                   name="cookie-measure"
                   type="radio"
                   value="yes"
+                  checked={cookieChoice === "accepted"}
+                  onChange={() => handleCookieChoice("accepted")}
                   data-testid="accept-analytics-cookies"
                 />
                 <label className="nhsuk-label nhsuk-radios__label" htmlFor="example-1">
@@ -219,6 +282,8 @@ const CookiePolicyPage = () => {
                   name="cookie-measure"
                   type="radio"
                   value="no"
+                  checked={cookieChoice === "rejected"}
+                  onChange={() => handleCookieChoice("rejected")}
                   data-testid="reject-analytics-cookies"
                 />
                 <label

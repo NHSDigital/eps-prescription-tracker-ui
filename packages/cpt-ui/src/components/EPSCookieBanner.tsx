@@ -1,14 +1,13 @@
 import React, {useState, useEffect} from "react"
-import {Link, useLocation} from "react-router-dom"
+import {Link} from "react-router-dom"
 import "../styles/epscookies.scss"
 import {CookieStrings} from "@/constants/ui-strings/CookieStrings"
 
 export default function EPSCookieBanner() {
   const [cookiesSet, setCookiesSet] = useState<"accepted" | "rejected" | null>(null)
   const [showSecondaryBanner, setShowSecondaryBanner] = useState(false)
-  const location = useLocation()
 
-  useEffect(() => {
+  const checkCookieConsent = () => {
     const storedChoice = localStorage.getItem("eps-cookie-consent")
     const secondaryShown = localStorage.getItem("eps-secondary-banner-shown")
 
@@ -28,6 +27,29 @@ export default function EPSCookieBanner() {
       setShowSecondaryBanner(true)
       localStorage.setItem("eps-secondary-banner-shown", "true")
     }
+  }
+
+  useEffect(() => {
+    //checks cookies on load, and if theyre changed from the option on cookie settings page
+    checkCookieConsent()
+
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "eps-cookie-consent") {
+        checkCookieConsent()
+      }
+    }
+
+    const handleCookieUpdate = () => {
+      checkCookieConsent()
+    }
+
+    window.addEventListener("storage", handleStorageChange)
+    window.addEventListener("cookieChoiceUpdated", handleCookieUpdate)
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange)
+      window.removeEventListener("cookieChoiceUpdated", handleCookieUpdate)
+    }
   }, [])
 
   const handleCookieChoice = (choice: "accepted" | "rejected") => {
@@ -41,10 +63,8 @@ export default function EPSCookieBanner() {
 
     setShowSecondaryBanner(true)
     localStorage.setItem("eps-secondary-banner-shown", "true")
-  }
 
-  if (location.pathname === "/cookies" || location.pathname === "/cookies-selected") {
-    return null
+    window.dispatchEvent(new CustomEvent("cookieChoiceUpdated"))
   }
 
   return (
@@ -115,7 +135,7 @@ export default function EPSCookieBanner() {
               to="/cookies"
               className="chargeable-status-banner-link"
               data-testid="smallCookieBannerLink"
-              aria-label={CookieStrings.cookie_banner_link}
+              aria-label={CookieStrings.cookieBannerLink}
             >
               {CookieStrings.cookies_page}
             </Link>.
