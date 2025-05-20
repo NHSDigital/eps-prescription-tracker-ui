@@ -17,7 +17,6 @@ import {insertStateMapping} from "@cpt-ui-common/dynamoFunctions"
 /*
  * Expects the following environment variables to be set:
  *
- *
  * IDP_AUTHORIZE_PATH  -> This is the upstream auth provider - in this case CIS2
  * OIDC_CLIENT_ID
  * COGNITO_CLIENT_ID
@@ -34,6 +33,7 @@ const cis2ClientId = process.env["OIDC_CLIENT_ID"] as string
 const userPoolClientId = process.env["COGNITO_CLIENT_ID"] as string
 const cloudfrontDomain = process.env["FULL_CLOUDFRONT_DOMAIN"] as string
 const stateMappingTableName = process.env["StateMappingTableName"] as string
+const apigeeApiKey = process.env["APIGEE_API_KEY"] as string
 
 const logger = new Logger({serviceName: "authorize"})
 const errorResponseBody = {message: "A system error has occurred"}
@@ -46,12 +46,18 @@ const lambdaHandler = async (
   event: APIGatewayProxyEvent
 ): Promise<APIGatewayProxyResult> => {
   logger.appendKeys({"apigw-request-id": event.requestContext?.requestId})
+  // we need to use the base domain for the environment so that pull requests go to that callback uri
+  // as we can only have one callback uri per apigee application
+  const baseEnvironmentDomain = cloudfrontDomain.replace(/-pr-(\d*)/, "")
+
   logger.debug("Environment variable", {env: {
     authorizeEndpoint,
+    baseEnvironmentDomain,
     cis2ClientId,
     userPoolClientId,
     cloudfrontDomain,
-    stateMappingTableName
+    stateMappingTableName,
+    apigeeApiKey
   }})
 
   // Validate required environment variables
@@ -60,6 +66,7 @@ const lambdaHandler = async (
   if (!stateMappingTableName) throw new Error("State mapping table name environment variable not set")
   if (!userPoolClientId) throw new Error("Cognito user pool client ID environment variable not set")
   if (!cis2ClientId) throw new Error("OIDC client ID environment variable not set")
+  if (!apigeeApiKey) throw new Error("apigee api key environment variable not set")
 
   const queryParams = event.queryStringParameters || {}
 
@@ -69,9 +76,6 @@ const lambdaHandler = async (
       `Mismatch in OIDC client ID. Payload: ${queryParams.client_id} | Expected: ${userPoolClientId}`
     )
   }
-
-  // Update the scope to the CIS2 scopes
-  queryParams.scope = "openid profile email nhsperson nationalrbacaccess associatedorgs"
 
   // Ensure the state parameter is provided
   const originalState = queryParams.state
@@ -84,7 +88,17 @@ const lambdaHandler = async (
   const stateTtl = Math.floor(Date.now() / 1000) + 300
 
   // Build the callback URI for redirection
-  const callbackUri = `https://${cloudfrontDomain}/oauth2/callback`
+  // for pull requests we pack the real callback url for this pull request into the state
+  // the callback lambda then decodes this and redirects to the callback url for this pull request
+  const realCallbackUri = `https://${cloudfrontDomain}/oauth2/mock-callback`
+  const callbackUri = `https://${baseEnvironmentDomain}/oauth2/mock-callback`
+
+  const newStateJson = {
+    isPullRequest: true,
+    redirectUri: realCallbackUri,
+    originalState: cis2State
+  }
+  const newState = Buffer.from(JSON.stringify(newStateJson)).toString("base64")
 
   // Store original state mapping in DynamoDB
   const item = {
@@ -97,15 +111,12 @@ const lambdaHandler = async (
 
   // Build the redirect parameters for CIS2
   const responseParameters = {
-    response_type: queryParams.response_type as string,
-    scope: queryParams.scope as string,
-    client_id: cis2ClientId,
-    state: cis2State,
     redirect_uri: callbackUri,
-    prompt: "login"
+    client_id: apigeeApiKey,
+    response_type: "code",
+    state: newState
   }
 
-  // This is the CIS2 URL we are pointing the client towards
   const redirectPath = `${authorizeEndpoint}?${new URLSearchParams(responseParameters)}`
 
   return {

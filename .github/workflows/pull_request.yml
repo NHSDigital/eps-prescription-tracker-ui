@@ -12,7 +12,7 @@ jobs:
     uses: NHSDigital/eps-workflow-quality-checks/.github/workflows/quality-checks.yml@v4.0.5
     secrets:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-
+  
   pr_title_format_check:
     uses: ./.github/workflows/pr_title_check.yml
 
@@ -74,9 +74,9 @@ jobs:
       primaryOidcUserInfoEndpoint: "https://am.nhsint.auth-ptl.cis2.spineservices.nhs.uk:443/openam/oauth2/realms/root/realms/NHSIdentity/realms/Healthcare/userinfo"
       primaryOidcjwksEndpoint: "https://am.nhsint.auth-ptl.cis2.spineservices.nhs.uk:443/openam/oauth2/realms/root/realms/NHSIdentity/realms/Healthcare/connect/jwk_uri"
       mockOidcIssuer: "https://identity.ptl.api.platform.nhs.uk/realms/Cis2-mock-internal-dev"
-      mockOidcAuthorizeEndpoint: "https://identity.ptl.api.platform.nhs.uk/realms/Cis2-mock-internal-dev/protocol/openid-connect/auth"
-      mockOidcTokenEndpoint: "https://identity.ptl.api.platform.nhs.uk/realms/Cis2-mock-internal-dev/protocol/openid-connect/token"
-      mockOidcUserInfoEndpoint: "https://identity.ptl.api.platform.nhs.uk/realms/Cis2-mock-internal-dev/protocol/openid-connect/userinfo"
+      mockOidcAuthorizeEndpoint: "https://internal-dev.api.service.nhs.uk/oauth2-mock/authorize"
+      mockOidcTokenEndpoint: "https://internal-dev.api.service.nhs.uk/oauth2-mock/token"
+      mockOidcUserInfoEndpoint: "https://internal-dev.api.service.nhs.uk/oauth2-mock/userinfo"
       mockOidcjwksEndpoint: "https://identity.ptl.api.platform.nhs.uk/realms/Cis2-mock-internal-dev/protocol/openid-connect/certs"
       allowLocalhostAccess: true
       useCustomCognitoDomain: false
@@ -84,22 +84,19 @@ jobs:
       APIGEE_MOCK_TOKEN_ENDPOINT: "https://internal-dev.api.service.nhs.uk/oauth2-mock/token"
       APIGEE_PRESCRIPTIONS_ENDPOINT: "https://internal-dev.api.service.nhs.uk/clinical-prescription-tracker/"
       APIGEE_PDS_ENDPOINT: "https://internal-dev.api.service.nhs.uk/personal-demographics/FHIR/R4/"
-      JWT_KID: "eps-cpt-ui-test"
-      # this needs uncommenting and above line deleted once it is merged
-      # JWT_KID: "eps-cpt-ui-dev"
+      JWT_KID: "eps-cpt-ui-dev"
       ROLE_ID: "555254242106"
       LOG_LEVEL: "DEBUG"
+      RUN_REGRESSION_TESTS: true
     secrets:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.DEV_CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_DEPLOY_ROLE }}
       primaryOidcClientId: ${{ secrets.DEV_CIS2_OIDC_CLIENT_ID }}
       mockOidcClientId: ${{ secrets.DEV_MOCK_CLIENT_ID }}
-      CIS2_PRIVATE_KEY: ${{ secrets.PTL_CIS2_PRIVATE_KEY }}
-      # this needs uncommenting and above line deleted once it is merged
-      # CIS2_PRIVATE_KEY: ${{ secrets.DEV_JWT_PRIVATE_KEY }}
+      CIS2_PRIVATE_KEY: ${{ secrets.DEV_JWT_PRIVATE_KEY }}
       REGRESSION_TESTS_PEM: ${{ secrets.REGRESSION_TESTS_PEM }}
       APIGEE_API_KEY: ${{ secrets.APIGEE_DEV_API_KEY }}
-      
+      APIGEE_API_SECRET: ${{ secrets.APIGEE_DEV_API_SECRET }}
   report_deployed_url:
     needs: [release_code, get_issue_number]
     runs-on: ubuntu-22.04
