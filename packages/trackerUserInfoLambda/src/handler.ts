@@ -106,6 +106,8 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   const userInfoResponse = await fetchUserInfo(
     tokenMappingItem.cis2AccessToken,
     tokenMappingItem.cis2IdToken,
+    authResult.apigeeAccessToken,
+    isMockToken,
     logger,
     isMockToken ? mockOidcConfig : cis2OidcConfig
   )

@@ -15,12 +15,25 @@ import {extractRoleInformation, TrackerUserInfo} from "@cpt-ui-common/dynamoFunc
 export const fetchUserInfo = async (
   cis2AccessToken: string,
   cis2IdToken: string,
+  apigeeAccessToken: string,
+  isMockToken: boolean,
   logger: Logger,
   oidcConfig: OidcConfig
 ): Promise<TrackerUserInfo> => {
 
   logger.info("Fetching user info from OIDC UserInfo endpoint", {oidcConfig})
 
+  if (isMockToken) {
+    const response = await axios.get(oidcConfig.oidcUserInfoEndpoint, {
+      headers: {"Authorization": `Bearer ${apigeeAccessToken}`}
+    })
+    const data = response.data
+    return extractRoleInformation(
+      data,
+      data.selected_roleid,
+      logger
+    )
+  }
   // Verify and decode cis2IdToken
   const decodedIdToken = decodeToken(cis2IdToken)
   logger.debug("Decoded cis2IdToken", {decodedIdToken})

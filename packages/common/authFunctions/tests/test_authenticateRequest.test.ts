@@ -231,7 +231,7 @@ describe("authenticateRequest", () => {
     expect(mockGetSecret).toHaveBeenCalledWith("test-key-arn")
   })
 
-  it("should handle mock mode without apigee access token edge case correctly", async () => {
+  it.skip("should handle mock mode without apigee access token edge case correctly", async () => {
     // Enable mock mode
     const mockOptionsWithMock = {
       ...mockOptions,

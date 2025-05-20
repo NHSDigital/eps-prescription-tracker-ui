@@ -185,9 +185,37 @@ export async function authenticateRequest(
   // In mock mode, we don't expect to reach this point normally
   // since authentication should have created tokens
   if (isMockRequest && !userRecord.apigeeAccessToken) {
-    logger.warn("Mock user but no valid token exists or refresh failed.")
-    logger.info("This is an unexpected state with a mock request.")
-    throw new Error("Unexpected state for mock request")
+    //const baseEnvironmentDomain = cloudfrontDomain.replace(/-pr-(\d*)/, "")
+    //const callbackUri = `https://${baseEnvironmentDomain}/oauth2/mock-callback`
+    const callbackUri = "https://cpt-ui.dev.eps.national.nhs.uk/"
+    const tokenExchangeBody = {
+      grant_type: "authorization_code",
+      client_id: apigeeApiKey,
+      client_secret: apigeeApiSecret,
+      redirect_uri: callbackUri,
+      code: userRecord.apigeeCode
+    }
+    const {accessToken, refreshToken, expiresIn} = await exchangeTokenForApigeeAccessToken(
+      axiosInstance,
+      options.apigeeMockTokenEndpoint,
+      tokenExchangeBody,
+      logger
+    )
+    await updateTokenMapping(
+      documentClient,
+      tokenMappingTableName,
+      {
+        username,
+        apigeeAccessToken: accessToken,
+        apigeeRefreshToken: refreshToken,
+        apigeeExpiresIn: expiresIn
+      },
+      logger
+    )
+    return {
+      apigeeAccessToken: accessToken,
+      roleId: defaultRoleId || ""
+    }
   }
 
   // When we aren't mocking, get CIS2 tokens and exchange for Apigee token
