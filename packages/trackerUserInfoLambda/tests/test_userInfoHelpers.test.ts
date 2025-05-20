@@ -8,6 +8,13 @@ const oidcClientId = "valid_aud"
 const oidcIssuer = "valid_iss"
 const jwksEndpoint = "https://dummyauth.com/.well-known/jwks.json"
 
+const mockLogger: Partial<Logger> = {
+  info: jest.fn(),
+  debug: jest.fn(),
+  error: jest.fn(),
+  warn: jest.fn()
+}
+
 const mockExtractRoleInformation = jest.fn()
 
 jest.unstable_mockModule("@cpt-ui-common/dynamoFunctions", () => {
@@ -45,7 +52,6 @@ jest.unstable_mockModule("@cpt-ui-common/authFunctions", async () => {
 const {fetchUserInfo} = await import("../src/userInfoHelpers")
 
 describe("fetchUserInfo", () => {
-  const logger = new Logger()
   const accessToken = "test-access-token"
   const idToken = "test-id-token"
 
@@ -139,7 +145,9 @@ describe("fetchUserInfo", () => {
 
     mockDecodeToken.mockImplementation(() => {
       return {
-        selected_roleid: "role-id-1"
+        payload: {
+          selected_roleid: "role-id-1"
+        }
       }
     })
 
@@ -176,7 +184,7 @@ describe("fetchUserInfo", () => {
     const result = await fetchUserInfo(
       accessToken,
       idToken,
-      logger,
+      mockLogger as Logger,
       oidcConfig
     )
 
@@ -208,6 +216,9 @@ describe("fetchUserInfo", () => {
         given_name: "John"
       }
     })
+
+    expect(mockLogger.info).toHaveBeenCalledWith(
+      "Selected role ID extracted from cis2IdToken", {selectedRoleId: "role-id-1"})
   })
 
   it("should throw an error if userInfoEndpoint is not set", async () => {
@@ -220,7 +231,7 @@ describe("fetchUserInfo", () => {
       fetchUserInfo(
         accessToken,
         idToken,
-        logger,
+        mockLogger as Logger,
         clonedOidcConfig
       )
     ).rejects.toThrow("OIDC UserInfo endpoint not set")
@@ -233,7 +244,7 @@ describe("fetchUserInfo", () => {
       fetchUserInfo(
         accessToken,
         idToken,
-        logger,
+        mockLogger as Logger,
         oidcConfig
       )
     ).rejects.toThrow("Error fetching user info")
