@@ -39,7 +39,8 @@ const logger = new Logger({serviceName: "selectedRole"})
  */
 const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   logger.appendKeys({"apigw-request-id": event.requestContext?.requestId})
-  logger.appendKeys({"x-request-id": event.headers["x-request-id"]})
+  const headers = event.headers ?? []
+  logger.appendKeys({"x-request-id": headers["x-request-id"]})
   logger.debug("Environment variables", {env: {
     tokenMappingTableName,
     MOCK_MODE_ENABLED,

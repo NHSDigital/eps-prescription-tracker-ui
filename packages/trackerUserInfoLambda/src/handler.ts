@@ -60,7 +60,8 @@ const middyErrorHandler = new MiddyErrorHandler(errorResponseBody)
 
 const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   logger.appendKeys({"apigw-request-id": event.requestContext?.requestId})
-  logger.appendKeys({"x-request-id": event.headers["x-request-id"]})
+  const headers = event.headers ?? []
+  logger.appendKeys({"x-request-id": headers["x-request-id"]})
   logger.info("Lambda handler invoked", {event})
 
   const username = getUsernameFromEvent(event)
