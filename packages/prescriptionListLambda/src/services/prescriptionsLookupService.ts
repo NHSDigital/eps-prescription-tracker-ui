@@ -4,7 +4,6 @@ import {PrescriptionAPIResponse} from "@cpt-ui-common/common-types"
 import {Logger} from "@aws-lambda-powertools/logger"
 import {mapResponseToPrescriptionSummary} from "../utils/responseMapper"
 import {Bundle, FhirResource} from "fhir/r4"
-import {PrescriptionError} from "../utils/errors"
 
 type PrescriptionQuery = {
   prescriptionId?: string;
@@ -28,53 +27,27 @@ export const getPrescriptions = async (
   const logContext = prescriptionId ? {prescriptionId} : {nhsNumber}
 
   logger.info("Fetching prescriptions", logContext)
-
-  try {
-    const response = await axiosInstance.get(
-      endpoint,
-      {
-        headers: {
-          Accept: "application/fhir+json",
-          Authorization: `Bearer ${apigeeAccessToken}`,
-          "nhsd-session-urid": roleId,
-          "x-request-id": uuidv4(),
-          "nhsd-session-jobrole": roleId,
-          "nhsd-identity-uuid": roleId,
-          "nhsd-organization-uuid": "A83008"
-        }
+  const response = await axiosInstance.get(
+    endpoint,
+    {
+      headers: {
+        Accept: "application/fhir+json",
+        Authorization: `Bearer ${apigeeAccessToken}`,
+        "nhsd-session-urid": roleId,
+        "x-request-id": uuidv4(),
+        "nhsd-session-jobrole": roleId,
+        "nhsd-identity-uuid": roleId,
+        "nhsd-organization-uuid": "A83008"
       }
-    )
-
-    if (!response.data) {
-      logger.info("No data returned from prescription lookup", logContext)
-      if (prescriptionId) {
-        throw new PrescriptionError("Prescription not found")
-      }
-      return []
     }
+  )
 
-    const bundle = response.data as Bundle<FhirResource>
-    logger.info("Raws response bundle", {bundle})
-    const prescriptions = mapResponseToPrescriptionSummary(bundle)
-
-    if (prescriptionId && (!prescriptions || prescriptions.length === 0)) {
-      logger.warn("No prescriptions found in response", logContext)
-      throw new PrescriptionError("Prescription not found")
-    }
-
-    return prescriptions
-
-  } catch (error) {
-    logger.error("Error fetching prescriptions", {...logContext, error})
-    if (error instanceof PrescriptionError) {
-      throw error
-    }
-    throw new PrescriptionError(
-      prescriptionId
-        ? "Failed to fetch prescription details"
-        : "Failed to fetch prescriptions"
-    )
+  if (!response.data) {
+    logger.info("No data returned from prescription lookup", logContext)
+    return []
   }
-}
 
-export {PrescriptionError}
+  const bundle = response.data as Bundle<FhirResource>
+  logger.debug("Raws response bundle", {bundle})
+  return mapResponseToPrescriptionSummary(bundle)
+}

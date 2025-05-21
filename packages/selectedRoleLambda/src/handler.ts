@@ -7,7 +7,7 @@ import middy from "@middy/core"
 import inputOutputLogger from "@middy/input-output-logger"
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 import {getUsernameFromEvent} from "@cpt-ui-common/authFunctions"
-import {updateDynamoTable, fetchUserRolesFromDynamoDB} from "./selectedRoleHelpers"
+import {getTokenMapping, updateTokenMapping} from "@cpt-ui-common/dynamoFunctions"
 
 /**
  * Lambda function for updating the selected role in the DynamoDB table.
@@ -15,30 +15,41 @@ import {updateDynamoTable, fetchUserRolesFromDynamoDB} from "./selectedRoleHelpe
  * parses the request body, and updates the user's role in the database.
  */
 
-// Initialize a logger instance for the service
-const logger = new Logger({serviceName: "selectedRole"})
+const tokenMappingTableName = process.env["TokenMappingTableName"] ?? ""
+const MOCK_MODE_ENABLED = process.env["MOCK_MODE_ENABLED"]
+const jwtPrivateKeyArn = process.env["jwtPrivateKeyArn"] as string
+const apigeeApiKey = process.env["APIGEE_API_KEY"] as string
+const jwtKid = process.env["jwtKid"] as string
+const apigeeApiSecret= process.env["APIGEE_API_SECRET"] as string
+const apigeeCis2TokenEndpoint = process.env["apigeeCIS2TokenEndpoint"] as string
+const apigeeMockTokenEndpoint = process.env["apigeeMockTokenEndpoint"] as string
 
 // Create a DynamoDB client and document client for interacting with the database
 const dynamoClient = new DynamoDBClient({})
 const documentClient = DynamoDBDocumentClient.from(dynamoClient)
 
-// Retrieve the table name from environment variables
-const tokenMappingTableName = process.env["TokenMappingTableName"] ?? ""
-
-// Default error response body for internal system errors
 const errorResponseBody = {message: "A system error has occurred"}
-
-// Custom error handler for handling unexpected errors in the Lambda function
 const middyErrorHandler = new MiddyErrorHandler(errorResponseBody)
+
+const logger = new Logger({serviceName: "selectedRole"})
 
 /**
  * Lambda function handler for updating a user's selected role.
  */
 const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   logger.appendKeys({"apigw-request-id": event.requestContext?.requestId})
-  logger.info("Lambda handler invoked", {event})
+  logger.debug("Environment variables", {env: {
+    tokenMappingTableName,
+    MOCK_MODE_ENABLED,
+    jwtPrivateKeyArn,
+    apigeeApiKey,
+    jwtKid,
+    apigeeApiSecret,
+    apigeeCis2TokenEndpoint,
+    apigeeMockTokenEndpoint
+  }})
 
-  // Extract username from the event
+  // Use the authenticateRequest function for authentication
   const username = getUsernameFromEvent(event)
 
   // Validate the presence of request body
@@ -73,16 +84,16 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     tableName: tokenMappingTableName
   })
 
-  const cachedRolesWithAccess = await fetchUserRolesFromDynamoDB(
-    username,
+  const tokenMappingItem = await getTokenMapping(
     documentClient,
-    logger,
-    tokenMappingTableName
+    tokenMappingTableName,
+    username,
+    logger
   )
 
   // Extract rolesWithAccess and currentlySelectedRole from the DynamoDB response
-  const rolesWithAccess = cachedRolesWithAccess?.rolesWithAccess || []
-  const currentSelectedRole = cachedRolesWithAccess?.currentlySelectedRole // Could be undefined
+  const rolesWithAccess = tokenMappingItem?.rolesWithAccess || []
+  const currentSelectedRole = tokenMappingItem?.currentlySelectedRole // Could be undefined
 
   // Identify the new selected role from request
   const userSelectedRoleId = userInfoSelectedRole.currently_selected_role?.role_id
@@ -90,7 +101,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
   // Log extracted role details
   logger.info("Extracted role data", {
-    username,
+    username: username,
     rolesWithAccessCount: rolesWithAccess.length,
     rolesWithAccess: rolesWithAccess.map(role => ({
       role_id: role.role_id,
@@ -124,7 +135,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   ]
 
   logger.info("Updated roles list before database update", {
-    username,
+    username: username,
     newSelectedRole: newSelectedRole
       ? {
         role_id: newSelectedRole.role_id,
@@ -155,12 +166,18 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   }
 
   logger.info("Updating user role in DynamoDB", {
-    username,
+    username: username,
     updatedUserInfo
   })
 
   // Persist changes to DynamoDB
-  await updateDynamoTable(username, updatedUserInfo, documentClient, logger, tokenMappingTableName)
+  const item = {
+    username: username,
+    currentlySelectedRole: updatedUserInfo.currentlySelectedRole || {},
+    rolesWithAccess: updatedUserInfo.rolesWithAccess || [],
+    selectedRoleId: updatedUserInfo.selectedRoleId || ""
+  }
+  await updateTokenMapping(documentClient, tokenMappingTableName, item, logger)
 
   return {
     statusCode: 200,

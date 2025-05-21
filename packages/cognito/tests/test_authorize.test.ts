@@ -10,18 +10,10 @@ process.env.COGNITO_CLIENT_ID = "userPoolClient123"
 process.env.FULL_CLOUDFRONT_DOMAIN = "d111111abcdef8.cloudfront.net"
 process.env.StateMappingTableName = "stateMappingTest"
 
-// Create a mock for the DynamoDBDocumentClient send method.
-const mockSend = jest.fn().mockImplementation(async () => Promise.resolve({}))
-
-// Mock the @aws-sdk/lib-dynamodb module so that calls to DynamoDB are intercepted.
-jest.unstable_mockModule("@aws-sdk/lib-dynamodb", () => {
+const mockInsertStateMapping = jest.fn()
+jest.unstable_mockModule("@cpt-ui-common/dynamoFunctions", () => {
   return {
-    DynamoDBDocumentClient: {
-      from: () => ({
-        send: mockSend
-      })
-    },
-    PutCommand: jest.fn()
+    insertStateMapping: mockInsertStateMapping
   }
 })
 
@@ -29,12 +21,12 @@ jest.unstable_mockModule("@aws-sdk/lib-dynamodb", () => {
 import {mockAPIGatewayProxyEvent, mockContext} from "./mockObjects"
 const {handler} = await import("../src/authorize")
 
-describe("Lambda Handler", () => {
+describe("authorize handler", () => {
   beforeEach(() => {
     jest.restoreAllMocks()
   })
 
-  test("should redirect to CIS2 with correct parameters", async () => {
+  it("should redirect to CIS2 with correct parameters", async () => {
     const event = {
       ...mockAPIGatewayProxyEvent,
       queryStringParameters: {
@@ -70,10 +62,10 @@ describe("Lambda Handler", () => {
     expect(params.get("prompt")).toBe("login")
 
     // Ensure the DynamoDB put command was called.
-    expect(mockSend).toHaveBeenCalledTimes(1)
+    expect(mockInsertStateMapping).toHaveBeenCalledTimes(1)
   })
 
-  test("should throw error if missing state parameter", async () => {
+  it("should throw error if missing state parameter", async () => {
     const event = {
       ...mockAPIGatewayProxyEvent,
       queryStringParameters: {
@@ -88,7 +80,7 @@ describe("Lambda Handler", () => {
     )
   })
 
-  test("should throw error if client_id does not match", async () => {
+  it("should throw error if client_id does not match", async () => {
     const event = {
       ...mockAPIGatewayProxyEvent,
       queryStringParameters: {
