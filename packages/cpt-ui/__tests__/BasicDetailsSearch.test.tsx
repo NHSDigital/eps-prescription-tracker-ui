@@ -357,4 +357,16 @@ describe("BasicDetailsSearch", () => {
     await userEvent.click(link)
     expect(document.activeElement).toBe(screen.getByTestId("dob-day-input"))
   })
+
+  it("adds error class to all DOB fields and focuses day for invalid calendar dates", async () => {
+    renderWithRouter(<BasicDetailsSearch />)
+    await fillForm({lastName: "Smith", dobDay: "31", dobMonth: "11", dobYear: "2015"})
+    await submitForm()
+    expectFieldHasErrorClass("dob-day-input")
+    expectFieldHasErrorClass("dob-month-input")
+    expectFieldHasErrorClass("dob-year-input")
+    const link = screen.getAllByText(STRINGS.errors.dobInvalidDate).find(el => el.tagName === "A")!
+    await userEvent.click(link)
+    expect(document.activeElement).toBe(screen.getByTestId("dob-day-input"))
+  })
 })
