@@ -5,6 +5,7 @@ import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
 import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
 import middy from "@middy/core"
 import inputOutputLogger from "@middy/input-output-logger"
+import httpHeaderNormalizer from "@middy/http-header-normalizer"
 import axios from "axios"
 import {formatHeaders} from "./utils/headerUtils"
 import {validateSearchParams} from "./utils/validation"
@@ -89,6 +90,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   logger.appendKeys({
     "apigw-request-id": event.requestContext?.requestId
   })
+  logger.appendKeys({"x-request-id": event.headers["x-request-id"]})
 
   logger.info("Lambda handler invoked", {event})
 
@@ -235,6 +237,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 // Export the Lambda function with middleware applied
 export const handler = middy(lambdaHandler)
   .use(injectLambdaContext(logger, {clearState: true}))
+  .use(httpHeaderNormalizer())
   .use(
     inputOutputLogger({
       logger: (request) => {

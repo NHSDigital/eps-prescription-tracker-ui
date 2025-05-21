@@ -5,6 +5,7 @@ import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
 import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
 import middy from "@middy/core"
 import inputOutputLogger from "@middy/input-output-logger"
+import httpHeaderNormalizer from "@middy/http-header-normalizer"
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 import {getUsernameFromEvent} from "@cpt-ui-common/authFunctions"
 import {getTokenMapping, updateTokenMapping} from "@cpt-ui-common/dynamoFunctions"
@@ -38,6 +39,7 @@ const logger = new Logger({serviceName: "selectedRole"})
  */
 const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   logger.appendKeys({"apigw-request-id": event.requestContext?.requestId})
+  logger.appendKeys({"x-request-id": event.headers["x-request-id"]})
   logger.debug("Environment variables", {env: {
     tokenMappingTableName,
     MOCK_MODE_ENABLED,
@@ -190,6 +192,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
 export const handler = middy(lambdaHandler)
   .use(injectLambdaContext(logger, {clearState: true}))
+  .use(httpHeaderNormalizer())
   .use(
     inputOutputLogger({
       logger: (request) => {
