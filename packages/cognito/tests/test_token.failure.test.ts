@@ -44,6 +44,14 @@ const {
     format: "pem"
   }
 })
+const mockInsertTokenMapping = jest.fn()
+const mockGetTokenMapping = jest.fn()
+jest.unstable_mockModule("@cpt-ui-common/dynamoFunctions", () => {
+  return {
+    insertTokenMapping: mockInsertTokenMapping,
+    getTokenMapping: mockGetTokenMapping
+  }
+})
 jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
   const verifyIdToken = mockVerifyIdToken.mockImplementation(async () => {
     return {
@@ -70,7 +78,8 @@ jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
       oidcUserInfoEndpoint: process.env["CIS2_USER_INFO_ENDPOINT"] ?? "",
       userPoolIdp: process.env["CIS2_USER_POOL_IDP"] ?? "",
       jwksClient: cis2JwksClient,
-      tokenMappingTableName: process.env["TokenMappingTableName"] ?? ""
+      tokenMappingTableName: process.env["TokenMappingTableName"] ?? "",
+      oidcTokenEndpoint: process.env["CIS2_TOKEN_ENDPOINT"] ?? ""
     }
 
     const mockJwksUri = process.env["MOCK_OIDCJWKS_ENDPOINT"] as string
@@ -88,7 +97,8 @@ jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
       oidcUserInfoEndpoint: process.env["MOCK_USER_INFO_ENDPOINT"] ?? "",
       userPoolIdp: process.env["MOCK_USER_POOL_IDP"] ?? "",
       jwksClient: mockJwksClient,
-      tokenMappingTableName: process.env["TokenMappingTableName"] ?? ""
+      tokenMappingTableName: process.env["TokenMappingTableName"] ?? "",
+      oidcTokenEndpoint: process.env["MOCK_OIDC_TOKEN_ENDPOINT"] ?? ""
     }
 
     return {cis2OidcConfig, mockOidcConfig}
@@ -112,7 +122,7 @@ jest.unstable_mockModule("@aws-lambda-powertools/parameters/secrets", () => {
 
 const {handler} = await import("../src/token")
 
-describe("handler tests", () => {
+describe("cis2 token handler tests - failures", () => {
   const jwks = createJWKSMock("https://dummyauth.com/")
   beforeEach(() => {
     jest.resetModules()

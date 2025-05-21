@@ -8,8 +8,11 @@
 @use "./rbacBanner";
 @use "./patientDetailsBanner";
 @use "./prescriptionInformationBanner.scss";
+@use "./basicDetailsSearch.scss";
+@use "./basicDetailsSearchResultsPage";
 @use "./searchforaprescription";
 @use "./basicDetailsSearchResultsPage";
+@use "./searchResultsTooMany.scss";
 @use "./tabs";
 
 
