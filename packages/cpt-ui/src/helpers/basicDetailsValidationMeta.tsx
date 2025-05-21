@@ -75,7 +75,9 @@ export const resolveDobInvalidField = ({
   if (!isValidDate(day, month, year)) {
     if (!isValidNumericInRange(dobDay, 1, 31)) return "dob-day"
     if (!isValidNumericInRange(dobMonth, 1, 12)) return "dob-month"
-    return "dob-year"
+
+    // All parts are in range but the date is invalid (e.g. 31/11/2015)
+    return "dob-day"
   }
 
   return "dob-day" // fallback
@@ -201,7 +203,12 @@ function addDateMismatchFlags(
   if (!dayInRange) invalidFields.add("day")
 
   // If day and month are in range, assume the year is logically wrong (e.g. 31/02/2022)
-  if (dayInRange && monthInRange) invalidFields.add("year")
+  if (dayInRange && monthInRange) {
+    // Full date appears syntactically valid but is not a real date
+    invalidFields.add("day")
+    invalidFields.add("month")
+    invalidFields.add("year")
+  }
 }
 
 // --- Determines if the year field should be flagged as invalid ---
