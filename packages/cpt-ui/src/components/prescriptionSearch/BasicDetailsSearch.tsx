@@ -72,6 +72,7 @@ export default function BasicDetailsSearch() {
   const [dobMonth, setDobMonth] = useState("")
   const [dobYear, setDobYear] = useState("")
   const [errors, setErrors] = useState<Array<ErrorKey>>([])
+  const [dobErrorFields, setDobErrorFields] = useState<Array<"day" | "month" | "year">>([])
 
   const inlineErrors = getInlineErrors(errors)
 
@@ -105,27 +106,10 @@ export default function BasicDetailsSearch() {
     return () => document.removeEventListener("click", handler)
   }, [])
 
-  // Checks whether a specific DOB input field should be highlighted in red (error styling)
-  // Combines individual errors, missing fields, and invalid full date logic
+  // Returns true if the given DOB field had an error on the last submission.
+  // Error styling persists until the user submits the form again.
   const hasDobFieldError = (field: "day" | "month" | "year"): boolean => {
-    const fieldErrorsMap = {
-      day: ["dobDayRequired", "dobNonNumericDay"],
-      month: ["dobMonthRequired", "dobNonNumericMonth"],
-      year: ["dobYearRequired", "dobNonNumericYear", "dobYearTooShort", "dobFutureDate"]
-    }
-
-    // Field-specific validation errors
-    const hasSpecificError = Boolean(getInlineError(...fieldErrorsMap[field]))
-
-    // Global DOB-required error
-    const hasDobRequiredError = errors.includes("dobRequired")
-
-    // Use resolveDobInvalidField to decide which field should show error class
-    const shouldHighlightForInvalidDate =
-      errors.includes("dobInvalidDate") &&
-      resolveDobInvalidFields({dobDay, dobMonth, dobYear}).includes(field)
-
-    return hasSpecificError || hasDobRequiredError || shouldHighlightForInvalidDate
+    return dobErrorFields.includes(field)
   }
 
   // Handles form submission logic
@@ -143,9 +127,28 @@ export default function BasicDetailsSearch() {
       postcode
     })
 
-    // If validation fails, render errors and stop
+    // If validation fails, store errors and highlight relevant DOB fields.
+    // DOB field highlights are preserved until the next form submission.
     if (newErrors.length > 0) {
       setErrors(newErrors)
+
+      if (
+        newErrors.includes("dobRequired") ||
+        newErrors.includes("dobDayRequired") ||
+        newErrors.includes("dobMonthRequired") ||
+        newErrors.includes("dobYearRequired") ||
+        newErrors.includes("dobNonNumericDay") ||
+        newErrors.includes("dobNonNumericMonth") ||
+        newErrors.includes("dobNonNumericYear") ||
+        newErrors.includes("dobYearTooShort") ||
+        newErrors.includes("dobInvalidDate") ||
+        newErrors.includes("dobFutureDate")
+      ) {
+        setDobErrorFields(resolveDobInvalidFields({dobDay, dobMonth, dobYear}))
+      } else {
+        setDobErrorFields([])
+      }
+
       return
     }
 

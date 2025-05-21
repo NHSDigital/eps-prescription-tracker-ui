@@ -155,6 +155,9 @@ export const resolveDobInvalidFields = ({
 
     if (!isValidDate(day, month, year)) {
       addDateMismatchFlags(dobDay, dobMonth, invalidFields)
+    } else if (new Date(year, month - 1, day) > new Date()) {
+      // Add year if date is valid but in the future
+      invalidFields.add("year")
     }
   }
 
