@@ -5,7 +5,6 @@ import {
   jest
 } from "@jest/globals"
 
-import {DynamoDBDocumentClient, PutCommandInput} from "@aws-sdk/lib-dynamodb"
 import createJWKSMock from "mock-jwks"
 import nock from "nock"
 import {generateKeyPairSync} from "crypto"
@@ -62,6 +61,15 @@ const {
     format: "pem"
   }
 })
+
+const mockInsertTokenMapping = jest.fn()
+const mockGetTokenMapping = jest.fn()
+jest.unstable_mockModule("@cpt-ui-common/dynamoFunctions", () => {
+  return {
+    insertTokenMapping: mockInsertTokenMapping,
+    getTokenMapping: mockGetTokenMapping
+  }
+})
 jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
   const verifyIdToken = mockVerifyIdToken.mockImplementation(async () => {
     return {
@@ -88,7 +96,8 @@ jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
       oidcUserInfoEndpoint: process.env["CIS2_USER_INFO_ENDPOINT"] ?? "",
       userPoolIdp: process.env["CIS2_USER_POOL_IDP"] ?? "",
       jwksClient: cis2JwksClient,
-      tokenMappingTableName: process.env["TokenMappingTableName"] ?? ""
+      tokenMappingTableName: process.env["TokenMappingTableName"] ?? "",
+      oidcTokenEndpoint: process.env["CIS2_TOKEN_ENDPOINT"] ?? ""
     }
 
     const mockJwksUri = process.env["MOCK_OIDCJWKS_ENDPOINT"] as string
@@ -106,7 +115,8 @@ jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
       oidcUserInfoEndpoint: process.env["MOCK_USER_INFO_ENDPOINT"] ?? "",
       userPoolIdp: process.env["MOCK_USER_POOL_IDP"] ?? "",
       jwksClient: mockJwksClient,
-      tokenMappingTableName: process.env["TokenMappingTableName"] ?? ""
+      tokenMappingTableName: process.env["TokenMappingTableName"] ?? "",
+      oidcTokenEndpoint: process.env["MOCK_OIDC_TOKEN_ENDPOINT"] ?? ""
     }
 
     return {cis2OidcConfig, mockOidcConfig}
@@ -131,7 +141,7 @@ jest.unstable_mockModule("@aws-lambda-powertools/parameters/secrets", () => {
 process.env.useMock = "false"
 const {handler} = await import("../src/token")
 
-describe("handler tests with cis2", () => {
+describe("cis2 token handler", () => {
   const jwks = createJWKSMock("https://dummyauth.com/")
   beforeEach(() => {
     jest.resetModules()
@@ -144,8 +154,6 @@ describe("handler tests with cis2", () => {
   })
 
   it("inserts correct details into dynamo table", async () => {
-    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-    const dynamoSpy = jest.spyOn(DynamoDBDocumentClient.prototype, "send").mockResolvedValue({} as never)
 
     const expiryDate = Date.now() + 1000
     const token = jwks.token({
@@ -170,15 +178,18 @@ describe("handler tests with cis2", () => {
       id_token: token,
       access_token: "access_token_reply"
     }))
-    expect(dynamoSpy).toHaveBeenCalledTimes(1)
-    const call = dynamoSpy.mock.calls[0][0].input as PutCommandInput
-    expect(call.Item).toEqual(
+    expect(mockInsertTokenMapping).toHaveBeenCalledTimes(1)
+    expect(mockInsertTokenMapping).toBeCalledWith(
+      expect.anything(),
+      expect.anything(),
       {
-        "username": `${CIS2_USER_POOL_IDP}_foo`,
-        "CIS2_idToken": token,
-        "CIS2_expiresIn": 100,
-        "CIS2_accessToken": "access_token_reply"
-      }
+        username: `${CIS2_USER_POOL_IDP}_foo`,
+        cis2IdToken: token,
+        cis2ExpiresIn: "100",
+        cis2AccessToken: "access_token_reply",
+        selectedRoleId: undefined
+      },
+      expect.anything()
     )
   })
 })
