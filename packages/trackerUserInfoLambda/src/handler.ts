@@ -5,6 +5,7 @@ import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
 import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
 import middy from "@middy/core"
 import inputOutputLogger from "@middy/input-output-logger"
+import httpHeaderNormalizer from "@middy/http-header-normalizer"
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 import {getUsernameFromEvent, initializeOidcConfig, authenticateRequest} from "@cpt-ui-common/authFunctions"
 import {fetchUserInfo} from "./userInfoHelpers"
@@ -33,7 +34,10 @@ MOCK_USER_POOL_IDP
 const logger = new Logger({serviceName: "trackerUserInfo"})
 
 const dynamoClient = new DynamoDBClient({})
-const documentClient = DynamoDBDocumentClient.from(dynamoClient)
+const documentClient = DynamoDBDocumentClient.from(dynamoClient, {
+  marshallOptions: {
+    removeUndefinedValues: true
+  }})
 
 // Create a config for cis2 and mock
 // this is outside functions so it can be re-used and caching works
@@ -56,6 +60,8 @@ const middyErrorHandler = new MiddyErrorHandler(errorResponseBody)
 
 const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   logger.appendKeys({"apigw-request-id": event.requestContext?.requestId})
+  const headers = event.headers ?? []
+  logger.appendKeys({"x-request-id": headers["x-request-id"]})
   logger.info("Lambda handler invoked", {event})
 
   const username = getUsernameFromEvent(event)
@@ -96,16 +102,24 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   })
 
   logger.debug("auth result", {authResult})
-  if (!authResult.apigeeAccessToken
-      || !tokenMappingItem.cis2IdToken
-      || !tokenMappingItem.cis2AccessToken
-  ) {
-    throw new Error("Authentication failed: missing tokens")
+  if (isMockToken) {
+    if (!authResult.apigeeAccessToken) {
+      throw new Error("Authentication failed for mock: missing tokens")
+    }
+  } else {
+    if (!authResult.apigeeAccessToken
+        || !tokenMappingItem.cis2IdToken
+        || !tokenMappingItem.cis2AccessToken
+    ) {
+      throw new Error("Authentication failed for cis2: missing tokens")
+    }
   }
 
   const userInfoResponse = await fetchUserInfo(
-    tokenMappingItem.cis2AccessToken,
-    tokenMappingItem.cis2IdToken,
+    tokenMappingItem.cis2AccessToken || "",
+    tokenMappingItem.cis2IdToken || "",
+    authResult.apigeeAccessToken || "",
+    isMockToken,
     logger,
     isMockToken ? mockOidcConfig : cis2OidcConfig
   )
@@ -131,6 +145,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
 export const handler = middy(lambdaHandler)
   .use(injectLambdaContext(logger, {clearState: true}))
+  .use(httpHeaderNormalizer())
   .use(
     inputOutputLogger({
       logger: (request) => {
