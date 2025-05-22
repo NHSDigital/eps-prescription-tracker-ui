@@ -132,18 +132,22 @@ export default function BasicDetailsSearch() {
     if (newErrors.length > 0) {
       setErrors(newErrors)
 
-      if (
-        newErrors.includes("dobRequired") ||
-        newErrors.includes("dobDayRequired") ||
-        newErrors.includes("dobMonthRequired") ||
-        newErrors.includes("dobYearRequired") ||
-        newErrors.includes("dobNonNumericDay") ||
-        newErrors.includes("dobNonNumericMonth") ||
-        newErrors.includes("dobNonNumericYear") ||
-        newErrors.includes("dobYearTooShort") ||
-        newErrors.includes("dobInvalidDate") ||
-        newErrors.includes("dobFutureDate")
-      ) {
+      const dobErrorKeys = new Set([
+        "dobRequired",
+        "dobDayRequired",
+        "dobMonthRequired",
+        "dobYearRequired",
+        "dobNonNumericDay",
+        "dobNonNumericMonth",
+        "dobNonNumericYear",
+        "dobYearTooShort",
+        "dobInvalidDate",
+        "dobFutureDate"
+      ])
+
+      const hasDobRelatedError = newErrors.some(error => dobErrorKeys.has(error))
+
+      if (hasDobRelatedError) {
         setDobErrorFields(resolveDobInvalidFields({dobDay, dobMonth, dobYear}))
       } else {
         setDobErrorFields([])
