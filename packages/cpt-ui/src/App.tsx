@@ -10,11 +10,13 @@ import LogoutPage from "@/pages/LogoutPage"
 import SelectYourRolePage from "@/pages/SelectYourRolePage"
 import ChangeRolePage from "@/pages/ChangeRolePage"
 import SearchPrescriptionPage from "@/pages/SearchPrescriptionPage"
+import SearchResultsTooManyPage from "@/pages/SearchResultsTooManyPage"
 import YourSelectedRolePage from "@/pages/YourSelectedRolePage"
 import NotFoundPage from "@/pages/NotFoundPage"
 import PrescriptionListPage from "@/pages/PrescriptionListPage"
 import PrescriptionNotFoundPage from "@/pages/PrescriptionNotFoundPage"
 import PrescriptionDetailsPage from "@/pages/PrescriptionDetailsPage"
+import SearchResultsPage from "@/pages/BasicDetailsSearchResultsPage"
 
 import {FRONTEND_PATHS} from "@/constants/environment"
 
@@ -47,6 +49,10 @@ export default function App() {
                   element={<SearchPrescriptionPage />}
                 />
                 <Route
+                  path={FRONTEND_PATHS.SEARCH_RESULTS_TOO_MANY}
+                  element={<SearchResultsTooManyPage />}
+                />
+                <Route
                   path={FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}
                   element={<PrescriptionListPage />}
                 />
@@ -65,6 +71,10 @@ export default function App() {
                 <Route
                   path={FRONTEND_PATHS.PRESCRIPTION_DETAILS_PAGE}
                   element={<PrescriptionDetailsPage />}
+                />
+                <Route
+                  path={FRONTEND_PATHS.PATIENT_SEARCH_RESULTS}
+                  element={<SearchResultsPage />}
                 />
               </Route>
             </Routes>
