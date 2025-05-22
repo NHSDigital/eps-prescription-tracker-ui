@@ -71,7 +71,7 @@ export const NHS_REQUEST_URID = "555254242106"
 // Type for environment
 export type MockAuthEnvironment = "dev" | "dev-pr" | "ref" | "qa"
 
-export type Environment = MockAuthEnvironment | "prod" | "test"
+export type Environment = MockAuthEnvironment | "prod" | "test" | "int"
 
 // Mock Auth Configuration
 export const MOCK_AUTH_ALLOWED_ENVIRONMENTS: ReadonlyArray<MockAuthEnvironment> =
