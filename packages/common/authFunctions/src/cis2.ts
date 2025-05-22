@@ -1,8 +1,6 @@
-import {DynamoDBDocumentClient, GetCommand} from "@aws-sdk/lib-dynamodb"
 import {Logger} from "@aws-lambda-powertools/logger"
 import jwt, {JwtPayload} from "jsonwebtoken"
 import jwksClient from "jwks-rsa"
-import {getTokenMapping} from "@cpt-ui-common/dynamoFunctions"
 import {initializeOidcConfig} from "./initialization"
 const {cis2OidcConfig} = initializeOidcConfig()
 const VALID_ACR_VALUES: Array<string> = [
@@ -41,75 +39,6 @@ export const getSigningKey = (client: jwksClient.JwksClient, kid: string): Promi
       }
     })
   })
-}
-
-/**
- * Helper function to fetch the cis2 tokens from dynamodb
- * It also verifies the id token
- * @param username - the username to get the tokens for
- * @param tokenMappingTableName - the token mapping table name
- * @param documentClient - a dynamodb document client
- * @param logger - Logger instance for logging
- * @returns cis2 access and id tokens
- */
-export const fetchCIS2TokensFromDynamoDB = async (
-  username: string,
-  tokenMappingTableName: string,
-  documentClient: DynamoDBDocumentClient,
-  logger: Logger
-): Promise<{ cis2AccessToken: string; cis2IdToken: string }> => {
-  logger.info("Fetching CIS2 tokens from DynamoDB")
-
-  let result
-
-  try {
-    result = await documentClient.send(
-      new GetCommand({
-        TableName: tokenMappingTableName,
-        Key: {username}
-      })
-    )
-    logger.debug("DynamoDB response", {result})
-  } catch (error) {
-    logger.error("Error fetching data from DynamoDB", {error})
-    throw new Error("Internal server error while accessing DynamoDB")
-  }
-
-  if (result.Item) {
-    const existingData = result.Item
-    return {
-      cis2AccessToken: existingData.CIS2_accessToken,
-      cis2IdToken: existingData.CIS2_idToken
-    }
-  } else {
-    logger.error("CIS2 access token not found for user")
-    throw new Error("CIS2 access token not found for user")
-  }
-}
-
-export const fetchAndVerifyCIS2Tokens = async (
-  username: string,
-  documentClient: DynamoDBDocumentClient,
-  logger: Logger
-) => {
-  logger.info("Fetching and verifying CIS2 tokens")
-
-  if (cis2OidcConfig.tokenMappingTableName === "") {
-    throw new Error("Token mapping table name not set")
-  }
-
-  logger.info("Extracted username from ID token", {username})
-
-  // Fetch CIS2 tokens from DynamoDB
-  const userRecord = await getTokenMapping(documentClient, cis2OidcConfig.tokenMappingTableName, username, logger)
-  const cis2AccessToken = userRecord.cis2AccessToken
-  const cis2IdToken = userRecord.cis2IdToken
-
-  // Verify the id token, access token from cis2 is not a JWT
-  await verifyIdToken(cis2IdToken, logger)
-
-  // And return the verified tokens
-  return {cis2AccessToken, cis2IdToken}
 }
 
 /**

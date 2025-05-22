@@ -146,10 +146,10 @@ describe("handler tests with cis2 auth", () => {
 
   })
 
-  it("throw error when it is a mock user", async () => {
+  it("throw error when auth fails", async () => {
     // Make the authenticateRequest mock throw an error for this test
     mockAuthenticateRequest.mockImplementationOnce(() => {
-      throw new Error("Trying to use a mock user when mock mode is disabled")
+      throw new Error("Error in auth")
     })
 
     const loggerSpy = jest.spyOn(Logger.prototype, "error")
@@ -168,7 +168,7 @@ describe("handler tests with cis2 auth", () => {
 
     expect(loggerSpy).toHaveBeenCalledWith(
       expect.any(Object),
-      "Error: Trying to use a mock user when mock mode is disabled"
+      "Error: Error in auth"
     )
   })
 
