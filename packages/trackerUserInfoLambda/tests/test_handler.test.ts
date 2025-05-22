@@ -136,6 +136,69 @@ describe("Lambda Handler Tests with mock disabled", () => {
     expect(mockUpdateTokenMapping).toHaveBeenCalled()
   })
 
+  it("should return error when a mock token and no apigee access token", async () => {
+    const loggerSpy = jest.spyOn(Logger.prototype, "error")
+
+    mockGetTokenMapping.mockImplementation(() => {
+      return {
+        userDetails: {
+          family_name: "foo",
+          given_name: "bar"
+        },
+        cis2IdToken: "cis2_id_token",
+        cis2AccessToken: "cis2_access_token"
+      }
+    })
+    mockGetUsernameFromEvent.mockReturnValue("Mock_test_user")
+    mockAuthenticateRequest.mockImplementation(() => {
+      return Promise.resolve({})
+    })
+
+    const response = await handler(event, context)
+
+    // Check response format matches what the middleware produces
+    expect(response).toMatchObject({
+      message: "A system error has occurred"
+    })
+
+    expect(loggerSpy).toHaveBeenCalledWith(
+      expect.any(Object),
+      "Error: Authentication failed for mock: missing tokens"
+    )
+  })
+
+  it("should return error when not a mock token and no cis access token", async () => {
+    const loggerSpy = jest.spyOn(Logger.prototype, "error")
+
+    mockGetTokenMapping.mockImplementation(() => {
+      return {
+        userDetails: {
+          family_name: "foo",
+          given_name: "bar"
+        },
+        cis2AccessToken: "cis2_access_token"
+      }
+    })
+    mockGetUsernameFromEvent.mockReturnValue("test_user")
+    mockAuthenticateRequest.mockImplementation(() => {
+      return Promise.resolve({
+        apigeeAccessToken: "apigee_access_token"
+      })
+    })
+
+    const response = await handler(event, context)
+
+    // Check response format matches what the middleware produces
+    expect(response).toMatchObject({
+      message: "A system error has occurred"
+    })
+
+    expect(loggerSpy).toHaveBeenCalledWith(
+      expect.any(Object),
+      "Error: Authentication failed for cis2: missing tokens"
+    )
+  })
+
   it("should return error when authenticateRequest throws an error", async () => {
     const error = new Error("Token verification failed")
     const loggerSpy = jest.spyOn(Logger.prototype, "error")
