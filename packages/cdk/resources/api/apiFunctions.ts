@@ -39,6 +39,7 @@ export interface ApiFunctionsProps {
   readonly jwtKid: string
   readonly logLevel: string
   readonly roleId: string
+  readonly fullCloudfrontDomain: string
 }
 
 /**
@@ -87,7 +88,9 @@ export class ApiFunctions extends Construct {
       MOCK_MODE_ENABLED: props.useMockOidc ? "true" : "false",
 
       APIGEE_API_SECRET: props.apigeeApiSecret,
-      APIGEE_API_KEY: props.apigeeApiKey
+      APIGEE_API_KEY: props.apigeeApiKey,
+      FULL_CLOUDFRONT_DOMAIN: props.fullCloudfrontDomain
+
     }
 
     // If mock OIDC is enabled, add mock environment variables

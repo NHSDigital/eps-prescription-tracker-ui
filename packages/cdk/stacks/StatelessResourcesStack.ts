@@ -262,7 +262,8 @@ export class StatelessResourcesStack extends Stack {
       apigeeApiSecret,
       jwtKid: jwtKid,
       roleId: roleId,
-      apigeePersonalDemographicsEndpoint: apigeePersonalDemographicsEndpoint
+      apigeePersonalDemographicsEndpoint: apigeePersonalDemographicsEndpoint,
+      fullCloudfrontDomain: fullCloudfrontDomain
     })
 
     // - CPT backend API Gateway (/api/*)
