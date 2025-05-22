@@ -68,9 +68,6 @@ export const resolveDobInvalidField = ({
   // Date validity check
   const day = toInt(dobDay), month = toInt(dobMonth), year = toInt(dobYear)
   if (!isValidDate(day, month, year)) {
-    // If out of range, prioritize that field
-    if (!isValidNumericInRange(dobDay, ...DOB_DAY_RANGE)) return "dob-day"
-    if (!isValidNumericInRange(dobMonth, ...DOB_MONTH_RANGE)) return "dob-month"
     // All parts in range, but date is impossible (e.g., 31/11/2015)
     return "dob-day"
   }
