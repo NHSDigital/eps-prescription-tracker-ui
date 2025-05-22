@@ -16,6 +16,9 @@ import NotFoundPage from "@/pages/NotFoundPage"
 import PrescriptionListPage from "@/pages/PrescriptionListPage"
 import PrescriptionNotFoundPage from "@/pages/PrescriptionNotFoundPage"
 import PrescriptionDetailsPage from "@/pages/PrescriptionDetailsPage"
+import EPSCookieBanner from "./components/EPSCookieBanner"
+import CookiePolicyPage from "./pages/CookiePolicyPage"
+import CookieSettingsPage from "./pages/CookieSettingsPage"
 import SearchResultsPage from "@/pages/BasicDetailsSearchResultsPage"
 
 import {FRONTEND_PATHS} from "@/constants/environment"
@@ -26,6 +29,7 @@ export default function App() {
     <AuthProvider>
       <AccessProvider>
         <PatientDetailsProvider>
+          <EPSCookieBanner />
           <PrescriptionInformationProvider>
             <Routes>
               <Route path="/" element={<Layout />}>
@@ -72,6 +76,8 @@ export default function App() {
                   path={FRONTEND_PATHS.PRESCRIPTION_DETAILS_PAGE}
                   element={<PrescriptionDetailsPage />}
                 />
+                <Route path="/cookies" element={<CookiePolicyPage />} />
+                <Route path="/cookies-selected" element={<CookieSettingsPage />} />
                 <Route
                   path={FRONTEND_PATHS.PATIENT_SEARCH_RESULTS}
                   element={<SearchResultsPage />}
