@@ -3,8 +3,6 @@ import {initializeOidcConfig} from "./initialization"
 
 import {
   getSigningKey,
-  fetchCIS2TokensFromDynamoDB,
-  fetchAndVerifyCIS2Tokens,
   verifyIdToken,
   OidcConfig,
   decodeToken
@@ -17,8 +15,6 @@ import {authenticateRequest} from "./authenticateRequest"
 export {
   getUsernameFromEvent,
   getSigningKey,
-  fetchCIS2TokensFromDynamoDB,
-  fetchAndVerifyCIS2Tokens,
   verifyIdToken,
   constructSignedJWTBody,
   exchangeTokenForApigeeAccessToken,
