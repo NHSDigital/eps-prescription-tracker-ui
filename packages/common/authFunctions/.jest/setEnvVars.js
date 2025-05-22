@@ -29,3 +29,4 @@ process.env.MOCK_USER_POOL_IDP = "MockDummyPoolIdentityProvider"
 process.env.MOCK_IDP_TOKEN_PATH = `${process.env.MOCK_OIDC_HOST}/token`
 process.env.CIS2_IDP_TOKEN_PATH = `${process.env.CIS2_OIDC_HOST}/token`
 process.env.MOCK_IDP_TOKEN_PATH = `${process.env.MOCK_OIDC_HOST}/token`
+process.env.FULL_CLOUDFRONT_DOMAIN = "cpt-ui-pr-854.dev.eps.national.nhs.uk"
