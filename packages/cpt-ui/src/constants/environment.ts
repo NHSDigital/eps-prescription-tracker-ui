@@ -75,7 +75,7 @@ export type Environment = MockAuthEnvironment | "prod" | "test"
 
 // Mock Auth Configuration
 export const MOCK_AUTH_ALLOWED_ENVIRONMENTS: ReadonlyArray<MockAuthEnvironment> =
-  ["dev", "dev-pr", "int", "qa"] as const
+  ["dev", "dev-pr", "int", "qa", "ref"] as const
 
 // Validation helper
 const validateEnvironment = (env: string): env is Environment => {
