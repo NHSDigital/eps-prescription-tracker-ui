@@ -58,3 +58,18 @@
         margin-bottom: 0;
     }
 }
+
+.js-enabled .nhsuk-tabs {
+    .nhsuk-tabs__list-item {
+        background-color: #d8dde0;
+        color: #212b32;
+        font-weight: 400;
+        padding-left: 8px;
+        padding-right: 8px;
+
+
+        &--selected {
+            background-color: #ffffff;
+        }
+    }
+}
