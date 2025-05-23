@@ -150,6 +150,15 @@ repos:
         types_or: [ts, tsx, javascript, jsx, json]
         pass_filenames: false
 
+      - id: lint-dynamoFunctions
+        name: Lint dynamoFunctions
+        entry: npm
+        args: ["run", "--prefix=packages/common/dynamoFunctions", "lint"]
+        language: system
+        files: ^packages\/common\/dynamoFunctions
+        types_or: [ts, tsx, javascript, jsx, json]
+        pass_filenames: false
+
       - id: lint-githubactions
         name: Lint github actions
         entry: make

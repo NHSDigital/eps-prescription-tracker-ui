@@ -6,6 +6,7 @@ import {
   Container,
   Row
 } from "nhsuk-react-components"
+import "../styles/PrescriptionTable.scss"
 
 import http from "@/helpers/axios"
 
@@ -26,7 +27,7 @@ import {
   TreatmentType,
   PrescriptionStatus,
   PrescriptionSummary
-} from "@cpt-ui-common/common-types"
+} from "@cpt-ui-common/common-types/src/prescriptionList"
 
 export default function PrescriptionListPage() {
   // FIXME: mock data. DELETEME!
@@ -61,7 +62,7 @@ export default function PrescriptionListPage() {
     patient: mockPatient,
     currentPrescriptions: [
       {
-        prescriptionId: "RX001",
+        prescriptionId: "C0C757-A83008-C2D93O",
         statusCode: PrescriptionStatus.TO_BE_DISPENSED,
         issueDate: "2025-03-01",
         prescriptionTreatmentType: TreatmentType.REPEAT,
@@ -71,9 +72,9 @@ export default function PrescriptionListPage() {
         itemsPendingCancellation: false
       },
       {
-        prescriptionId: "RX002",
+        prescriptionId: "B8C9E2-A83008-5F7B3A",
         statusCode: PrescriptionStatus.WITH_DISPENSER,
-        issueDate: "2025-02-15",
+        issueDate: "2025-01-22",
         prescriptionTreatmentType: TreatmentType.ACUTE,
         issueNumber: 2,
         maxRepeats: 3,
@@ -81,7 +82,47 @@ export default function PrescriptionListPage() {
         itemsPendingCancellation: false
       },
       {
-        prescriptionId: "RX003",
+        prescriptionId: "4D6F2C-A83008-A3E7D1",
+        statusCode: PrescriptionStatus.WITH_DISPENSER_ACTIVE,
+        issueDate: "2025-03-10",
+        prescriptionTreatmentType: TreatmentType.ERD,
+        issueNumber: 3,
+        maxRepeats: 4,
+        prescriptionPendingCancellation: false,
+        itemsPendingCancellation: true
+      },
+      {
+        prescriptionId: "7F1A4B-A83008-91DC2E",
+        statusCode: PrescriptionStatus.WITH_DISPENSER_ACTIVE,
+        issueDate: "2025-03-11",
+        prescriptionTreatmentType: TreatmentType.ERD,
+        issueNumber: 3,
+        maxRepeats: 4,
+        prescriptionPendingCancellation: false,
+        itemsPendingCancellation: true
+      },
+      {
+        prescriptionId: "88AAF5-A83008-3D404Q",
+        statusCode: PrescriptionStatus.WITH_DISPENSER_ACTIVE,
+        issueDate: "2025-04-10",
+        prescriptionTreatmentType: TreatmentType.ERD,
+        issueNumber: 2,
+        maxRepeats: 4,
+        prescriptionPendingCancellation: false,
+        itemsPendingCancellation: true
+      },
+      {
+        prescriptionId: "209E3D-A83008-327F9F",
+        statusCode: PrescriptionStatus.WITH_DISPENSER_ACTIVE,
+        issueDate: "2024S-03-10",
+        prescriptionTreatmentType: TreatmentType.ERD,
+        issueNumber: 1,
+        maxRepeats: 2,
+        prescriptionPendingCancellation: false,
+        itemsPendingCancellation: false
+      },
+      {
+        prescriptionId: "3DA34A-A83008-A0B2EV",
         statusCode: PrescriptionStatus.WITH_DISPENSER_ACTIVE,
         issueDate: "2025-03-10",
         prescriptionTreatmentType: TreatmentType.ERD,
@@ -254,9 +295,12 @@ export default function PrescriptionListPage() {
       // Allow known test ID through; otherwise, return false.
       const fullPrescriptionIds = [
         "C0C757-A83008-C2D93O",
+        "209E3D-A83008-327F9F",
         "7F1A4B-A83008-91DC2E",
         "B8C9E2-A83008-5F7B3A",
-        "4D6F2C-A83008-A3E7D1"
+        "4D6F2C-A83008-A3E7D1",
+        "3DA34A-A83008-A0B2EV",
+        "88AAF5-A83008-3D404Q"
       ]
       if (fullPrescriptionIds.includes(prescriptionId)) {
         console.log("Using mock data")
@@ -365,22 +409,6 @@ export default function PrescriptionListPage() {
             />
           </div>
         </Container>
-
-        {/* FIXME: DELETE THIS WHEN WE HAVE ANOTHER WAY TO NAVIGATE TO PRESCRIPTION DETAILS! */}
-        {!!queryParams.get("prescriptionId") &&
-          <Container>
-            <Row>
-              <Col width="full" style={{margin: 20}}>
-                <Link
-                  to={`${FRONTEND_PATHS.PRESCRIPTION_DETAILS_PAGE}?prescriptionId=${queryParams.get("prescriptionId")}`}
-                  data-testid="prescription-details-link-container"
-                >
-                  [DEV] Go to corresponding prescription details page
-                </Link>
-              </Col>
-            </Row>
-          </Container>
-        }
       </main>
     </>
   )

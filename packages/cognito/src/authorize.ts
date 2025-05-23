@@ -3,7 +3,7 @@ import {APIGatewayProxyEvent, APIGatewayProxyResult} from "aws-lambda"
 import {injectLambdaContext} from "@aws-lambda-powertools/logger/middleware"
 
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
-import {DynamoDBDocumentClient, PutCommand} from "@aws-sdk/lib-dynamodb"
+import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
 
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 
@@ -12,12 +12,11 @@ import inputOutputLogger from "@middy/input-output-logger"
 
 import {createHash} from "crypto"
 
-import {StateItem} from "./types"
+import {insertStateMapping} from "@cpt-ui-common/dynamoFunctions"
 
 /*
  * Expects the following environment variables to be set:
  *
- * useMock
  *
  * IDP_AUTHORIZE_PATH  -> This is the upstream auth provider - in this case CIS2
  * OIDC_CLIENT_ID
@@ -32,7 +31,6 @@ import {StateItem} from "./types"
 // Environment variables
 const authorizeEndpoint = process.env["IDP_AUTHORIZE_PATH"] as string
 const cis2ClientId = process.env["OIDC_CLIENT_ID"] as string
-const useMock: boolean = process.env["useMock"] === "true"
 const userPoolClientId = process.env["COGNITO_CLIENT_ID"] as string
 const cloudfrontDomain = process.env["FULL_CLOUDFRONT_DOMAIN"] as string
 const stateMappingTableName = process.env["StateMappingTableName"] as string
@@ -48,8 +46,16 @@ const lambdaHandler = async (
   event: APIGatewayProxyEvent
 ): Promise<APIGatewayProxyResult> => {
   logger.appendKeys({"apigw-request-id": event.requestContext?.requestId})
+  logger.debug("Environment variable", {env: {
+    authorizeEndpoint,
+    cis2ClientId,
+    userPoolClientId,
+    cloudfrontDomain,
+    stateMappingTableName
+  }})
 
   // Validate required environment variables
+  if (!authorizeEndpoint) throw new Error("Authorize endpoint environment variable not set")
   if (!cloudfrontDomain) throw new Error("Cloudfront domain environment variable not set")
   if (!stateMappingTableName) throw new Error("State mapping table name environment variable not set")
   if (!userPoolClientId) throw new Error("Cognito user pool client ID environment variable not set")
@@ -81,19 +87,13 @@ const lambdaHandler = async (
   const callbackUri = `https://${cloudfrontDomain}/oauth2/callback`
 
   // Store original state mapping in DynamoDB
-  const item: StateItem = {
+  const item = {
     State: cis2State,
     CognitoState: originalState,
-    ExpiryTime: stateTtl,
-    UseMock: useMock
+    ExpiryTime: stateTtl
   }
 
-  await documentClient.send(
-    new PutCommand({
-      TableName: stateMappingTableName,
-      Item: item
-    })
-  )
+  await insertStateMapping(documentClient, stateMappingTableName, item, logger)
 
   // Build the redirect parameters for CIS2
   const responseParameters = {

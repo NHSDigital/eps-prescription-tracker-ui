@@ -27,7 +27,8 @@ export const API_ENDPOINTS = {
   SELECTED_ROLE: "/api/selected-role",
   PRESCRIPTION_LIST: "/api/prescription-list",
   CIS2_SIGNOUT_ENDPOINT: "/api/cis2-signout",
-  PRESCRIPTION_DETAILS: "/api/prescription-details"
+  PRESCRIPTION_DETAILS: "/api/prescription-details",
+  PATIENT_SEARCH: "/api/patient-search"
 } as const
 
 // RUM CONFIG
@@ -59,24 +60,26 @@ export const FRONTEND_PATHS = {
   SEARCH_BY_PRESCRIPTION_ID: "/search-by-prescription-id",
   SEARCH_BY_NHS_NUMBER: "/search-by-nhs-number",
   SEARCH_BY_BASIC_DETAILS: "/search-by-basic-details",
-  PRESCRIPTION_DETAILS_PAGE: "/prescription-details"
+  SEARCH_RESULTS_TOO_MANY: "/search-results-too-many",
+  PRESCRIPTION_DETAILS_PAGE: "/prescription-details",
+  PATIENT_SEARCH_RESULTS: "/patient-search-results"
 }
 
 // This needs to be provided in backend requests as a header
 export const NHS_REQUEST_URID = "555254242106"
 
 // Type for environment
-export type MockAuthEnvironment = "dev" | "dev-pr" | "int" | "qa"
+export type MockAuthEnvironment = "dev" | "dev-pr" | "ref" | "qa"
 
-export type Environment = MockAuthEnvironment | "prod" | "test"
+export type Environment = MockAuthEnvironment | "prod" | "test" | "int"
 
 // Mock Auth Configuration
 export const MOCK_AUTH_ALLOWED_ENVIRONMENTS: ReadonlyArray<MockAuthEnvironment> =
-  ["dev", "dev-pr", "int", "qa"] as const
+  ["dev", "dev-pr", "qa", "ref"] as const
 
 // Validation helper
 const validateEnvironment = (env: string): env is Environment => {
-  return ["dev", "dev-pr", "int", "qa", "prod", "test"].includes(env)
+  return ["dev", "dev-pr", "int", "qa", "prod", "ref", "test"].includes(env)
 }
 
 // Ensure environment is valid

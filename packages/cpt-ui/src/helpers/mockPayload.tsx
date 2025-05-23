@@ -6,12 +6,17 @@ import {
   mockDispensedItems,
   mockDispensedItemsNoPharmacyStatus,
   mockDispensedPartialWithInitial,
+  mockDispensedItemsCancelled,
   mockPatientDetails,
   mockUnavailablePatientDetails,
   mockPrescriptionInformation,
   mockPrescriptionInformationErd,
   mockPrescriber,
   mockNominatedDispenser,
+  mockMessageHistoryDispenseNotifInfo,
+  mockMessageHistoryCancelled,
+  mockMessageHistoryPendingCancellation,
+  mockMessageHistoryMissingData,
   altMockPrescriber,
   altMockNominatedDispenser
 } from "@/mocks/mockPrescriptions"
@@ -25,7 +30,7 @@ export const getMockPayload = (prescriptionId: string): PrescriptionDetailsRespo
     prescribedItems: [],
     dispensedItems: [],
     prescriptionPendingCancellation: false,
-    messageHistory: [],
+    messageHistory: mockMessageHistoryDispenseNotifInfo,
     prescriberOrganisation: {organisationSummaryObjective: mockDispenser}
   }
 
@@ -34,6 +39,7 @@ export const getMockPayload = (prescriptionId: string): PrescriptionDetailsRespo
     "C0C757-A83008-C2D93O": {
       prescribedItems: mockPrescribedItems,
       dispensedItems: mockDispensedItems,
+      messageHistory: mockMessageHistoryDispenseNotifInfo,
       prescriberOrganisation: {organisationSummaryObjective: mockPrescriber},
       nominatedDispenser: {organisationSummaryObjective: mockNominatedDispenser},
       currentDispenser: [{organisationSummaryObjective: mockDispenser}]
@@ -50,6 +56,7 @@ export const getMockPayload = (prescriptionId: string): PrescriptionDetailsRespo
       ...mockPrescriptionInformationErd,
       prescriptionId,
       prescribedItems: mockPrescribedItemsCancellation,
+      messageHistory: mockMessageHistoryPendingCancellation,
       prescriberOrganisation: {organisationSummaryObjective: mockPrescriber},
       nominatedDispenser: undefined,
       currentDispenser: [{organisationSummaryObjective: mockDispenser}]
@@ -63,6 +70,29 @@ export const getMockPayload = (prescriptionId: string): PrescriptionDetailsRespo
     },
     "4D6F2C-A83008-A3E7D1": {
       dispensedItems: mockDispensedItemsNoPharmacyStatus,
+      messageHistory: mockMessageHistoryDispenseNotifInfo,
+      prescriberOrganisation: {organisationSummaryObjective: mockPrescriber},
+      statusCode: "0006", // All items dispensed
+      nominatedDispenser: {
+        organisationSummaryObjective: {
+          name: undefined,
+          odsCode: "FV519",
+          address: undefined,
+          telephone: undefined
+        }
+      },
+      currentDispenser: [{organisationSummaryObjective: mockDispenser}]
+    },
+    "3DA34A-A83008-A0B2EV": {
+      statusCode: "0005", // Cancelled
+      prescribedItems: [],
+      dispensedItems: mockDispensedItemsCancelled,
+      messageHistory: mockMessageHistoryCancelled,
+      prescriberOrganisation: {organisationSummaryObjective: mockPrescriber}
+    },
+    "88AAF5-A83008-3D404Q": {
+      dispensedItems: mockDispensedItemsNoPharmacyStatus,
+      messageHistory: mockMessageHistoryMissingData,
       prescriberOrganisation: {organisationSummaryObjective: mockPrescriber},
       statusCode: "0006", // All items dispensed
       nominatedDispenser: {

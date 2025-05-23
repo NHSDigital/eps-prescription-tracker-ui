@@ -5,8 +5,13 @@
     "outDir": "lib",
     "strict": true
   },
-  "include": ["src/**/*", "tests/**/*"],
-  "exclude": ["node_modules"],
+  "include": [
+    "src/**/*",
+    "tests/**/*"
+  ],
+  "exclude": [
+    "node_modules"
+  ],
   "references": [
     {
       "path": "../common/commonTypes"
@@ -22,6 +27,9 @@
     },
     {
       "path": "../common/lambdaUtils"
+    },
+    {
+      "path": "../common/dynamoFunctions"
     }
   ]
 }

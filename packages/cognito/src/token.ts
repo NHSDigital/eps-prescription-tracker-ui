@@ -1,23 +1,23 @@
-import {APIGatewayProxyEvent, APIGatewayProxyResult} from "aws-lambda"
-import {Logger} from "@aws-lambda-powertools/logger"
-import {injectLambdaContext} from "@aws-lambda-powertools/logger/middleware"
-import {getSecret} from "@aws-lambda-powertools/parameters/secrets"
-import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
-import {DynamoDBDocumentClient, PutCommand} from "@aws-sdk/lib-dynamodb"
+import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda"
+import { Logger } from "@aws-lambda-powertools/logger"
+import { injectLambdaContext } from "@aws-lambda-powertools/logger/middleware"
+import { getSecret } from "@aws-lambda-powertools/parameters/secrets"
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb"
+import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb"
 
 import middy from "@middy/core"
 import inputOutputLogger from "@middy/input-output-logger"
-import axios from "axios"
-import {parse, ParsedUrlQuery, stringify} from "querystring"
+import axios, { isAxiosError } from "axios"
+import { parse, ParsedUrlQuery, stringify } from "querystring"
 
-import {PrivateKey} from "jsonwebtoken"
+import { PrivateKey } from "jsonwebtoken"
 
-import {verifyIdToken, initializeOidcConfig} from "@cpt-ui-common/authFunctions"
-import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
-import {headers} from "@cpt-ui-common/lambdaUtils"
+import { verifyIdToken, initializeOidcConfig } from "@cpt-ui-common/authFunctions"
+import { MiddyErrorHandler } from "@cpt-ui-common/middyErrorHandler"
+import { headers } from "@cpt-ui-common/lambdaUtils"
 
-import {rewriteRequestBody} from "./helpers"
-
+import { rewriteRequestBody } from "./helpers"
+import { insertTokenMapping } from "@cpt-ui-common/dynamoFunctions"
 /*
 This is the lambda code that is used to intercept calls to token endpoint as part of the cognito login flow
 It expects the following environment variables to be set
@@ -25,7 +25,6 @@ It expects the following environment variables to be set
 TokenMappingTableName
 jwtPrivateKeyArn
 jwtKid
-useMock
 
 For CIS2 calls, the following must be set
 CIS2_OIDC_ISSUER
@@ -46,22 +45,18 @@ MOCK_IDP_TOKEN_PATH
 FULL_CLOUDFRONT_DOMAIN
 */
 
-const logger = new Logger({serviceName: "token"})
-const useMock: boolean = process.env["useMock"] === "true"
+const logger = new Logger({ serviceName: "token" })
 
 const cloudfrontDomain = process.env["FULL_CLOUDFRONT_DOMAIN"] as string
 
 // Create a config for cis2 and mock
 // this is outside functions so it can be re-used and caching works
-const {mockOidcConfig, cis2OidcConfig} = initializeOidcConfig()
+const { cis2OidcConfig } = initializeOidcConfig()
 
-const TokenMappingTableName = process.env["TokenMappingTableName"] as string
 const jwtPrivateKeyArn = process.env["jwtPrivateKeyArn"] as string
 const jwtKid = process.env["jwtKid"] as string
 
-const idpTokenPath = useMock ?
-  process.env["MOCK_IDP_TOKEN_PATH"] as string :
-  process.env["CIS2_IDP_TOKEN_PATH"] as string
+const idpTokenPath = process.env["CIS2_IDP_TOKEN_PATH"] as string
 
 // Set the redirect back to our proxy lambda
 const idpCallbackPath = `https://${cloudfrontDomain}/oauth2/callback`
@@ -80,6 +75,13 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     "apigw-request-id": event.requestContext?.requestId
   })
   const axiosInstance = axios.create()
+  logger.debug("data from env variables", {
+    cloudfrontDomain,
+    tokenMappingTableName: cis2OidcConfig.tokenMappingTableName,
+    jwtPrivateKeyArn,
+    jwtKid,
+    idpTokenPath
+  })
 
   const body = event.body
   if (body === undefined) {
@@ -98,37 +100,43 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     jwtKid
   )
 
-  logger.debug("about to call downstream idp with rewritten body", {idpTokenPath, body: rewrittenObjectBodyParameters})
+  logger.debug("about to call downstream idp with rewritten body", { idpTokenPath, body: rewrittenObjectBodyParameters })
 
-  const tokenResponse = await axiosInstance.post(idpTokenPath,
-    stringify(rewrittenObjectBodyParameters)
-  )
+  let tokenResponse
+  try {
+    tokenResponse = await axiosInstance.post(idpTokenPath,
+      stringify(rewrittenObjectBodyParameters)
+    )
+  } catch (e) {
+    if (isAxiosError(e)) {
+      if (e.response) {
+        logger.error("error calling idp - response", { e, response: e.response })
+      }
+    }
+    throw (e)
+  }
 
-  logger.debug("response from external oidc", {data: tokenResponse.data})
+  logger.debug("response from external oidc", { data: tokenResponse.data })
 
   const accessToken = tokenResponse.data.access_token
   const idToken = tokenResponse.data.id_token
 
   // verify and decode idToken
-  const decodedIdToken = await verifyIdToken(idToken, logger, useMock ? mockOidcConfig : cis2OidcConfig)
-  logger.debug("decoded idToken", {decodedIdToken})
+  const decodedIdToken = await verifyIdToken(idToken, logger)
+  logger.debug("decoded idToken", { decodedIdToken })
 
-  const username = useMock ?
-    `${mockOidcConfig.userPoolIdp}_${decodedIdToken.sub}` :
-    `${cis2OidcConfig.userPoolIdp}_${decodedIdToken.sub}`
-  const params = {
-    Item: {
-      "username": username,
-      "CIS2_accessToken": accessToken,
-      "CIS2_idToken": idToken,
-      "CIS2_expiresIn": decodedIdToken.exp,
-      "selectedRoleId": decodedIdToken.selected_roleid
-    },
-    TableName: TokenMappingTableName
+  const username = `${cis2OidcConfig.userPoolIdp}_${decodedIdToken.sub}`
+  if (!decodedIdToken.exp) {
+    throw new Error("Can not get expiry time from decoded token")
   }
-
-  logger.debug("going to insert into dynamodb", {params})
-  await documentClient.send(new PutCommand(params))
+  const tokenMappingItem = {
+    username: username,
+    cis2AccessToken: accessToken,
+    cis2IdToken: idToken,
+    cis2ExpiresIn: decodedIdToken.exp.toString(),
+    selectedRoleId: decodedIdToken.selected_roleid
+  }
+  await insertTokenMapping(documentClient, cis2OidcConfig.tokenMappingTableName, tokenMappingItem, logger)
 
   // return status code and body from request to downstream idp
   return {
@@ -139,7 +147,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 }
 
 export const handler = middy(lambdaHandler)
-  .use(injectLambdaContext(logger, {clearState: true}))
+  .use(injectLambdaContext(logger, { clearState: true }))
   .use(
     inputOutputLogger({
       logger: (request) => {
@@ -147,4 +155,4 @@ export const handler = middy(lambdaHandler)
       }
     })
   )
-  .use(middyErrorHandler.errorHandler({logger: logger}))
+  .use(middyErrorHandler.errorHandler({ logger: logger }))

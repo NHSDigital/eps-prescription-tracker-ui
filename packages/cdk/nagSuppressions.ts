@@ -59,7 +59,9 @@ export const nagSuppressions = (stack: Stack) => {
         "/StatefulStack/DynamoDB/TableReadManagedPolicy/Resource",
         "/StatefulStack/DynamoDB/TableWriteManagedPolicy/Resource",
         "/StatefulStack/DynamoDB/StateTableReadManagedPolicy/Resource",
-        "/StatefulStack/DynamoDB/StateTableWriteManagedPolicy/Resource"
+        "/StatefulStack/DynamoDB/StateTableWriteManagedPolicy/Resource",
+        "/StatefulStack/DynamoDB/SessionStateTableReadManagedPolicy/Resource",
+        "/StatefulStack/DynamoDB/SessionStateTableWriteManagedPolicy/Resource"
       ],
       [
         {
@@ -126,7 +128,7 @@ export const nagSuppressions = (stack: Stack) => {
         "/StatelessStack/OAuth2Gateway/ApiGateway/Default/callback/GET/Resource",
         "/StatelessStack/OAuth2Gateway/ApiGateway/Default/mock-callback/GET/Resource",
         "/StatelessStack/OAuth2Gateway/ApiGateway/Default/token/POST/Resource",
-        "/StatelessStack/OAuth2Gateway/ApiGateway/Default/mocktoken/POST/Resource"
+        "/StatelessStack/OAuth2Gateway/ApiGateway/Default/mock-token/POST/Resource"
       ],
       [
         {
@@ -177,6 +179,17 @@ export const nagSuppressions = (stack: Stack) => {
     safeAddNagSuppression(
       stack,
       "/StatelessStack/OAuth2Functions/MockTokenResources/LambdaPutLogsManagedPolicy/Resource",
+      [
+        {
+          id: "AwsSolutions-IAM5",
+          reason: "Suppress error for not having wildcards in permissions. This is a fine as we need to have permissions on all log streams under path"
+        }
+      ]
+    )
+
+    safeAddNagSuppression(
+      stack,
+      "/StatelessStack/OAuth2Functions/MockCallbackLambdaResources/LambdaPutLogsManagedPolicy/Resource",
       [
         {
           id: "AwsSolutions-IAM5",

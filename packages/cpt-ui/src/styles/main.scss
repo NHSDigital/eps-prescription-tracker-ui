@@ -8,11 +8,19 @@
 @use "./rbacBanner";
 @use "./patientDetailsBanner";
 @use "./prescriptionInformationBanner.scss";
+@use "./basicDetailsSearch.scss";
+@use "./basicDetailsSearchResultsPage";
 @use "./searchforaprescription";
+@use "./searchResultsTooMany.scss";
 @use "./tabs";
 
 
 .nhsuk-grid-column-two-thirds {
     padding-left: 1rem;
     padding-right: 1rem;
+}
+
+
+.nhsuk-u-visually-hidden::before::after {
+    content: none;
 }
