@@ -123,7 +123,6 @@ export class SharedSecrets extends Construct {
           })
         ]
       })
-
     }
   }
 }

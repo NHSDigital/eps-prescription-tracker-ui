@@ -141,7 +141,8 @@ describe("handler tests with cis2 auth", () => {
         "nhsNumber": "9000000009",
         "prefix": "Mrs",
         "suffix": ""
-      }})
+      }
+    })
 
   })
 
