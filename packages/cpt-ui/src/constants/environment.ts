@@ -69,17 +69,17 @@ export const FRONTEND_PATHS = {
 export const NHS_REQUEST_URID = "555254242106"
 
 // Type for environment
-export type MockAuthEnvironment = "dev" | "dev-pr" | "int" | "qa"
+export type MockAuthEnvironment = "dev" | "dev-pr" | "ref" | "qa"
 
-export type Environment = MockAuthEnvironment | "prod" | "test"
+export type Environment = MockAuthEnvironment | "prod" | "test" | "int"
 
 // Mock Auth Configuration
 export const MOCK_AUTH_ALLOWED_ENVIRONMENTS: ReadonlyArray<MockAuthEnvironment> =
-  ["dev", "dev-pr", "int", "qa"] as const
+  ["dev", "dev-pr", "qa", "ref"] as const
 
 // Validation helper
 const validateEnvironment = (env: string): env is Environment => {
-  return ["dev", "dev-pr", "int", "qa", "prod", "test"].includes(env)
+  return ["dev", "dev-pr", "int", "qa", "prod", "ref", "test"].includes(env)
 }
 
 // Ensure environment is valid

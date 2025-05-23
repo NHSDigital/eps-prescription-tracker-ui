@@ -345,4 +345,44 @@ describe("BasicDetailsSearch", () => {
     await userEvent.click(link)
     expect(document.activeElement).toBe(screen.getByTestId("dob-day-input"))
   })
+
+  it("adds error class to all DOB fields and focuses day for invalid calendar dates", async () => {
+    renderWithRouter(<BasicDetailsSearch />)
+    await fillForm({lastName: "Smith", dobDay: "31", dobMonth: "11", dobYear: "2015"})
+    await submitForm()
+    expectFieldHasErrorClass("dob-day-input")
+    expectFieldHasErrorClass("dob-month-input")
+    expectFieldHasErrorClass("dob-year-input")
+    const link = screen.getAllByText(STRINGS.errors.dobInvalidDate).find(el => el.tagName === "A")!
+    await userEvent.click(link)
+    expect(document.activeElement).toBe(screen.getByTestId("dob-day-input"))
+  })
+
+  it("keeps all DOB fields with error class after correction until resubmission", async () => {
+    renderWithRouter(<BasicDetailsSearch />)
+
+    // Step 1: submit invalid input
+    await fillForm({lastName: "Smith", dobDay: "!", dobMonth: "!", dobYear: "!"})
+    await submitForm()
+
+    // Step 2: all DOB fields should show error
+    expectFieldHasErrorClass("dob-day-input")
+    expectFieldHasErrorClass("dob-month-input")
+    expectFieldHasErrorClass("dob-year-input")
+
+    // Step 3: correct all fields (simulate user editing without submitting again)
+    await userEvent.clear(screen.getByTestId("dob-day-input"))
+    await userEvent.type(screen.getByTestId("dob-day-input"), "25")
+
+    await userEvent.clear(screen.getByTestId("dob-month-input"))
+    await userEvent.type(screen.getByTestId("dob-month-input"), "12")
+
+    await userEvent.clear(screen.getByTestId("dob-year-input"))
+    await userEvent.type(screen.getByTestId("dob-year-input"), "2010")
+
+    // Step 4: error class should still be present until resubmission
+    expectFieldHasErrorClass("dob-day-input")
+    expectFieldHasErrorClass("dob-month-input")
+    expectFieldHasErrorClass("dob-year-input")
+  })
 })
