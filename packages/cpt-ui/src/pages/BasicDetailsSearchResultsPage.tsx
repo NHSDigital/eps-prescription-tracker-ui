@@ -118,7 +118,6 @@ export default function SearchResultsPage() {
           <Col width="full">
             <BackLink
               onClick={handleGoBack}
-              href="#"
               tabIndex={0}
               onKeyDown={(e) => e.key === "Enter" && handleGoBack()}
             >
