@@ -1,4 +1,5 @@
-import {formatHeaders} from "../src/utils/headerUtils"
+import {headers} from "@cpt-ui-common/lambdaUtils"
+const formatHeaders = headers.formatHeaders
 
 describe("formatHeaders tests", () => {
   it("should convert header values to strings", () => {

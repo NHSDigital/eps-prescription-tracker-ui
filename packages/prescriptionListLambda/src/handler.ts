@@ -1,22 +1,23 @@
-import {APIGatewayProxyEvent, APIGatewayProxyResult} from "aws-lambda"
-import {Logger} from "@aws-lambda-powertools/logger"
-import {injectLambdaContext} from "@aws-lambda-powertools/logger/middleware"
-import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
-import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
+import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda"
+import { Logger } from "@aws-lambda-powertools/logger"
+import { injectLambdaContext } from "@aws-lambda-powertools/logger/middleware"
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb"
+import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb"
 import middy from "@middy/core"
 import inputOutputLogger from "@middy/input-output-logger"
+import axios, { AxiosInstance } from "axios"
+import { validateSearchParams } from "./utils/validation"
+import { getPrescriptions, PrescriptionError } from "./services/prescriptionsLookupService"
+import { SearchParams } from "./utils/types"
+import { MiddyErrorHandler } from "@cpt-ui-common/middyErrorHandler"
+import { PatientDetails, SearchResponse } from "@cpt-ui-common/common-types"
+import { createMinimalPatientDetails, mapSearchResponse } from "./utils/responseMapper"
+import * as pds from "@cpt-ui-common/pdsClient"
+import { exhaustive_switch_guard } from "./utils"
 import httpHeaderNormalizer from "@middy/http-header-normalizer"
-import axios from "axios"
-import {formatHeaders} from "./utils/headerUtils"
-import {validateSearchParams} from "./utils/validation"
-import {getPdsPatientDetails} from "./services/patientDetailsLookupService"
-import {getPrescriptions} from "./services/prescriptionsLookupService"
-import {SearchParams} from "./utils/types"
-
-import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
-import {authenticateRequest, getUsernameFromEvent} from "@cpt-ui-common/authFunctions"
-import {SearchResponse} from "@cpt-ui-common/common-types"
-import {mapSearchResponse} from "./utils/responseMapper"
+import { formatHeaders } from "./utils/headerUtils"
+import { getPdsPatientDetails } from "./services/patientDetailsLookupService"
+import { authenticateRequest, getUsernameFromEvent } from "@cpt-ui-common/authFunctions"
 
 /*
 This is the lambda code to search for a prescription
@@ -48,7 +49,7 @@ MOCK_USER_POOL_IDP
 */
 
 // Logger initialization
-const logger = new Logger({serviceName: "prescriptionList"})
+const logger = new Logger({ serviceName: "prescriptionList" })
 
 // External endpoints and environment variables
 const apigeePrescriptionsEndpoint = process.env["apigeePrescriptionsEndpoint"] as string
@@ -56,7 +57,7 @@ const apigeePersonalDemographicsEndpoint = process.env["apigeePersonalDemographi
 const TokenMappingTableName = process.env["TokenMappingTableName"] as string
 const jwtPrivateKeyArn = process.env["jwtPrivateKeyArn"] as string
 const apigeeApiKey = process.env["APIGEE_API_KEY"] as string
-const apigeeApiSecret= process.env["APIGEE_API_SECRET"] as string
+const apigeeApiSecret = process.env["APIGEE_API_SECRET"] as string
 const jwtKid = process.env["jwtKid"] as string
 let roleId = process.env["roleId"] as string
 const apigeeCis2TokenEndpoint = process.env["apigeeCIS2TokenEndpoint"] as string
@@ -91,9 +92,9 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     "apigw-request-id": event.requestContext?.requestId
   })
   const headers = event.headers ?? []
-  logger.appendKeys({"x-request-id": headers["x-request-id"]})
+  logger.appendKeys({ "x-request-id": headers["x-request-id"] })
 
-  logger.info("Lambda handler invoked", {event})
+  logger.info("Lambda handler invoked", { event })
 
   const searchStartTime = Date.now()
   const axiosInstance = axios.create()
@@ -110,7 +111,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     // Use the authenticateRequest function for authentication
     const username = getUsernameFromEvent(event)
 
-    const {apigeeAccessToken, roleId} = await authenticateRequest(username, documentClient, logger, {
+    const { apigeeAccessToken, roleId } = await authenticateRequest(username, documentClient, logger, {
       tokenMappingTableName: TokenMappingTableName,
       jwtPrivateKeyArn,
       apigeeApiKey,
@@ -128,16 +129,12 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
     // Search logic
     let searchResponse: SearchResponse
-
     if (searchParams.nhsNumber) {
-      // NHS Number search flow
-      const patientDetails = await getPdsPatientDetails(
+      searchResponse = await nhsNumberSearchFlow(
         axiosInstance,
         logger,
-        apigeePersonalDemographicsEndpoint,
-        searchParams.nhsNumber,
         apigeeAccessToken,
-        roleId
+        searchParams.nhsNumber
       )
 
       logger.debug("patientDetails", {
@@ -158,7 +155,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
         axiosInstance,
         logger,
         apigeePrescriptionsEndpoint,
-        {nhsNumber},
+        { nhsNumber },
         apigeeAccessToken,
         roleId
       )
@@ -172,21 +169,19 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
     } else {
       // Prescription ID search flow
-      const prescriptions = await getPrescriptions(
+      searchResponse = await prescriptionIdSearchFlow(
         axiosInstance,
         logger,
-        apigeePrescriptionsEndpoint,
-        {prescriptionId: searchParams.prescriptionId!},
         apigeeAccessToken,
-        roleId
+        searchParams.prescriptionId!
       )
 
       // Get patient details using NHS Number from first prescription
       if (prescriptions.length === 0) {
         return {
           statusCode: 404,
-          body: JSON.stringify({message: "Prescription not found"}),
-          headers: formatHeaders({"Content-Type": "application/json"})
+          body: JSON.stringify({ message: "Prescription not found" }),
+          headers: formatHeaders({ "Content-Type": "application/json" })
         }
       }
 
@@ -223,7 +218,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     return {
       statusCode: 200,
       body: JSON.stringify(searchResponse),
-      headers: formatHeaders({"Content-Type": "application/json"})
+      headers: headers.formatHeaders({ "Content-Type": "application/json" })
     }
   } catch (error) {
     logger.error("Search failed", {
@@ -231,13 +226,208 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
       timeMs: Date.now() - searchStartTime
     })
 
+    if (error instanceof PrescriptionError && error.message === "Prescription not found") {
+      return {
+        statusCode: 404,
+        body: JSON.stringify({ message: "Prescription not found" }),
+        headers: headers.formatHeaders({ "Content-Type": "application/json" })
+      }
+    }
+
     throw error
   }
 }
 
+const nhsNumberSearchFlow = async (
+  axiosInstance: AxiosInstance,
+  logger: Logger,
+  apigeeAccessToken: string,
+  nhsNumber: string
+) => {
+  const pdsClient = new pds.Client(
+    axiosInstance,
+    apigeePersonalDemographicsEndpoint,
+    logger,
+    apigeeAccessToken,
+    roleId
+  )
+  const outcome = await pdsClient.getPatientDetails(nhsNumber)
+
+  let currentNhsNumber = nhsNumber
+  let patientDetails
+  switch (outcome.type) {
+    case pds.patientDetailsLookup.OutcomeType.SUCCESS:
+      patientDetails = outcome.patientDetails
+      break
+    case pds.patientDetailsLookup.OutcomeType.SUPERSEDED:
+      currentNhsNumber = outcome.supersededBy
+      patientDetails = outcome.patientDetails
+
+      logger.info("NHS Number has been superseded", {
+        originalNhsNumber: nhsNumber,
+        newNhsNumber: patientDetails.supersededBy
+      })
+      break
+    case pds.patientDetailsLookup.OutcomeType.AXIOS_ERROR:
+      patientDetails = createMinimalPatientDetails()
+      logger.error("Error fetching patient details from PDS", {
+        axios_error: outcome.error,
+        nhsNumber: outcome.nhsNumber,
+        timeMs: outcome.timeMs
+      })
+      break
+    case pds.patientDetailsLookup.OutcomeType.R_FLAG:
+    case pds.patientDetailsLookup.OutcomeType.S_FLAG:
+    case pds.patientDetailsLookup.OutcomeType.PATIENT_NOT_FOUND:
+    case pds.patientDetailsLookup.OutcomeType.PATIENT_DETAILS_VALIDATION_ERROR:
+      throw handlePatientDetailsLookupError(outcome)
+    default:
+      throw exhaustive_switch_guard(outcome)
+  }
+
+  logger.debug("patientDetails", {
+    body: patientDetails
+  })
+
+  const prescriptions = await getPrescriptions(
+    axiosInstance,
+    logger,
+    apigeePrescriptionsEndpoint,
+    { nhsNumber: currentNhsNumber },
+    apigeeAccessToken,
+    roleId
+  )
+
+  logger.debug("Prescriptions", {
+    total: prescriptions.length,
+    body: prescriptions
+  })
+
+  return mapSearchResponse(patientDetails, prescriptions)
+}
+
+const prescriptionIdSearchFlow = async (
+  axiosInstance: AxiosInstance,
+  logger: Logger,
+  apigeeAccessToken: string,
+  prescriptionId: string
+) => {
+  const prescriptions = await getPrescriptions(
+    axiosInstance,
+    logger,
+    apigeePrescriptionsEndpoint,
+    { prescriptionId: prescriptionId },
+    apigeeAccessToken,
+    roleId
+  )
+
+  // Get patient details using NHS Number from first prescription
+  if (prescriptions.length === 0) {
+    throw new PrescriptionError("Prescription not found")
+  }
+
+  logger.debug("Prescriptions", {
+    total: prescriptions.length,
+    body: prescriptions
+  })
+
+  const pdsClient = new pds.Client(
+    axiosInstance,
+    apigeePersonalDemographicsEndpoint,
+    logger,
+    apigeeAccessToken,
+    roleId
+  )
+  const nhsNumber = prescriptions[0].nhsNumber!.toString()
+  const outcome = await pdsClient.getPatientDetails(nhsNumber)
+
+  let patientDetails
+  switch (outcome.type) {
+    case pds.patientDetailsLookup.OutcomeType.SUCCESS:
+    case pds.patientDetailsLookup.OutcomeType.SUPERSEDED:
+      patientDetails = outcome.patientDetails
+      break
+    case pds.patientDetailsLookup.OutcomeType.AXIOS_ERROR:
+      patientDetails = createMinimalPatientDetails()
+      logger.error("Error fetching patient details from PDS", {
+        axios_error: outcome.error,
+        nhsNumber: outcome.nhsNumber,
+        timeMs: outcome.timeMs
+      })
+      break
+    case pds.patientDetailsLookup.OutcomeType.R_FLAG:
+    case pds.patientDetailsLookup.OutcomeType.S_FLAG:
+    case pds.patientDetailsLookup.OutcomeType.PATIENT_NOT_FOUND:
+    case pds.patientDetailsLookup.OutcomeType.PATIENT_DETAILS_VALIDATION_ERROR:
+      throw handlePatientDetailsLookupError(outcome)
+    default:
+      throw exhaustive_switch_guard(outcome)
+  }
+
+  logger.debug("patientDetails", {
+    body: patientDetails
+  })
+
+  return mapSearchResponse(patientDetails, prescriptions)
+}
+
+const handlePatientDetailsLookupError = (outcome: pds.patientDetailsLookup.Outcome) => {
+  switch (outcome.type) {
+    case pds.patientDetailsLookup.OutcomeType.PATIENT_NOT_FOUND:
+      logger.error("PDS response data is empty", { nhsNumber: outcome.nhsNumber })
+      throw new pds.PDSError("Patient not found", "NOT_FOUND")
+    case pds.patientDetailsLookup.OutcomeType.S_FLAG:
+      logger.info("Patient record marked with S Flag", { nhsNumber: outcome.nhsNumber })
+      throw new pds.PDSError("Prescription not found", "S_FLAG")
+    case pds.patientDetailsLookup.OutcomeType.R_FLAG:
+      logger.info("Patient record marked as restricted", { nhsNumber: outcome.nhsNumber })
+      throw new pds.PDSError("Prescription not found", "R_FLAG")
+    case pds.patientDetailsLookup.OutcomeType.PATIENT_DETAILS_VALIDATION_ERROR:
+      throw handleValidationError(outcome.error, outcome.patientDetails, outcome.nhsNumber)
+    // Following cases will not be hit
+    case pds.patientDetailsLookup.OutcomeType.SUCCESS:
+    case pds.patientDetailsLookup.OutcomeType.SUPERSEDED:
+    case pds.patientDetailsLookup.OutcomeType.AXIOS_ERROR:
+      throw new Error("Unreachable")
+    default:
+      throw exhaustive_switch_guard(outcome)
+  }
+}
+
+const handleValidationError = (
+  error: pds.patientDetailsLookup.ValidatePatientDetails.Outcome,
+  patientDetails: PatientDetails,
+  nhsNumber: string
+) => {
+  let validationError
+  switch (error.type) {
+    // Valid case will never be hit
+    case pds.patientDetailsLookup.ValidatePatientDetails.OutcomeType.VALID:
+      throw new Error("Unreachable")
+    case pds.patientDetailsLookup.ValidatePatientDetails.OutcomeType.MISSING_FIELDS:
+      validationError = new pds.PDSError(
+        `Incomplete patient information. Missing required fields: ${error.missingFields.join(", ")}`,
+        "INCOMPLETE_DATA"
+      )
+      break
+    case pds.patientDetailsLookup.ValidatePatientDetails.OutcomeType.NOT_NULL_WHEN_NOT_PRESENT:
+      validationError = new pds.PDSError(`${error.field} must be explicitly null when not present`)
+      break
+    default:
+      throw exhaustive_switch_guard(error)
+  }
+
+  logger.error("Patient data validation failed", {
+    error: validationError,
+    patientDetails: JSON.stringify(patientDetails),
+    nhsNumber
+  })
+  throw new pds.PDSError("Incomplete patient data", "INCOMPLETE_DATA")
+}
+
 // Export the Lambda function with middleware applied
 export const handler = middy(lambdaHandler)
-  .use(injectLambdaContext(logger, {clearState: true}))
+  .use(injectLambdaContext(logger, { clearState: true }))
   .use(httpHeaderNormalizer())
   .use(
     inputOutputLogger({
@@ -246,4 +436,4 @@ export const handler = middy(lambdaHandler)
       }
     })
   )
-  .use(middyErrorHandler.errorHandler({logger: logger}))
+  .use(middyErrorHandler.errorHandler({ logger: logger }))

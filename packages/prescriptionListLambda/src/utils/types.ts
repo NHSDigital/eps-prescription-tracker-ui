@@ -1,27 +1,5 @@
 import {RequestGroup} from "fhir/r4"
-import {PrescriptionStatus, PrescriptionStatusCategories, PatientDetails} from "@cpt-ui-common/common-types"
-
-export interface PDSResponse {
-    id: string;
-    name?: Array<{
-      given?: Array<string>;
-      family?: string;
-      prefix?: Array<string>;
-      suffix?: Array<string>;
-    }>;
-    gender?: string;
-    birthDate?: string;
-    address?: Array<{
-      line?: Array<string>;
-      city?: string;
-      postalCode?: string;
-    }>;
-    meta?: {
-      security?: Array<{
-        code: string;
-      }>;
-    };
-  }
+import {PrescriptionStatus, PrescriptionStatusCategories} from "@cpt-ui-common/common-types"
 
 export const STATUS_CATEGORY_MAP: Record<PrescriptionStatus, PrescriptionStatusCategories> = {
   [PrescriptionStatus.AWAITING_RELEASE_READY]: PrescriptionStatusCategories.CURRENT,
@@ -75,10 +53,6 @@ export const statusCodeMap: Record<string, string> = {
 export interface SearchParams {
     prescriptionId?: string;
     nhsNumber?: string;
-  }
-
-export interface PatientAPIResponse extends PatientDetails {
-    _pdsError?: Error
   }
 
 export interface IntentMap {
