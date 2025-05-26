@@ -20,14 +20,18 @@ export type ErrorKey =
   | "postcodeTooShort"
   | "postcodeInvalidChars"
 
-// --- Validates if a string is a numeric value within a given range ---
-const isValidNumericInRange = (value: string, min: number, max: number): boolean => {
-  const isNumeric = /^\d+$/.test(value)
-  const num = parseInt(value, 10)
-  return isNumeric && num >= min && num <= max
-}
+// --- Constants ---
+const NUMERIC_REGEX = /^\d+$/
+const DOB_DAY_RANGE = [1, 31] as const
+const DOB_MONTH_RANGE = [1, 12] as const
+const DOB_YEAR_RANGE = [1800, 2099] as const
 
-// --- Validates if the provided day, month, and year form a valid date ---
+// --- Helpers ---
+const isNumeric = (val: string) => NUMERIC_REGEX.test(val)
+const toInt = (val: string) => parseInt(val, 10)
+const isValidNumericInRange = (value: string, min: number, max: number): boolean =>
+  isNumeric(value) && (toInt(value) >= min && toInt(value) <= max)
+
 const isValidDate = (day: number, month: number, year: number): boolean => {
   const date = new Date(`${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`)
   return (
@@ -50,35 +54,25 @@ export const resolveDobInvalidField = ({
   dobMonth: string
   dobYear: string
 }): string => {
-  const isDayNumeric = /^\d+$/.test(dobDay)
-  const isMonthNumeric = /^\d+$/.test(dobMonth)
-  const isYearNumeric = /^\d+$/.test(dobYear)
-  const isYearTooShort = dobYear.length > 0 && dobYear.length < 4
-  const isYearMissing = dobYear === ""
-
-  // Field-level checks in visible order
-  if (!isDayNumeric) return "dob-day"
-  if (!isMonthNumeric) return "dob-month"
-  if (!isYearNumeric && dobYear !== "") return "dob-year"
-  if (isYearTooShort) return "dob-year"
-  if (isYearMissing) return "dob-day"
+  // Fast path checks, ordered visually
+  if (!isNumeric(dobDay)) return "dob-day"
+  if (!isNumeric(dobMonth)) return "dob-month"
+  if (!isNumeric(dobYear) && dobYear) return "dob-year"
+  if (dobYear.length > 0 && dobYear.length < 4) return "dob-year"
+  if (!dobYear) return "dob-day"
 
   // Range checks
-  if (!isValidNumericInRange(dobDay, 1, 31)) return "dob-day"
-  if (!isValidNumericInRange(dobMonth, 1, 12)) return "dob-month"
+  if (!isValidNumericInRange(dobDay, ...DOB_DAY_RANGE)) return "dob-day"
+  if (!isValidNumericInRange(dobMonth, ...DOB_MONTH_RANGE)) return "dob-month"
 
-  const day = parseInt(dobDay, 10)
-  const month = parseInt(dobMonth, 10)
-  const year = parseInt(dobYear, 10)
-
-  // Full date validity check
+  // Date validity check
+  const day = toInt(dobDay), month = toInt(dobMonth), year = toInt(dobYear)
   if (!isValidDate(day, month, year)) {
-    if (!isValidNumericInRange(dobDay, 1, 31)) return "dob-day"
-    if (!isValidNumericInRange(dobMonth, 1, 12)) return "dob-month"
-    return "dob-year"
+    // All parts in range, but date is impossible (e.g., 31/11/2015)
+    return "dob-day"
   }
-
-  return "dob-day" // fallback
+  // fallback
+  return "dob-day"
 }
 
 /**
@@ -92,7 +86,6 @@ export const errorFocusMap: Record<
   firstName: "first-name",
   lastName: "last-name",
   postcode: "postcode-only",
-
   // DOB-specific error mappings
   dobRequired: "dob-day",
   dobDayRequired: "dob-day",
@@ -124,99 +117,41 @@ export const resolveDobInvalidFields = ({
   dobMonth: string
   dobYear: string
 }): Array<DobField> => {
-  const invalidFields = new Set<DobField>()
+  const invalid = new Set<DobField>()
 
-  // Utility helpers
-  const isNumeric = (value: string) => /^\d+$/.test(value)
-  const toInt = (value: string) => parseInt(value, 10)
+  const dayNum = toInt(dobDay), monthNum = toInt(dobMonth), yearNum = toInt(dobYear)
+  const dayIsNum = isNumeric(dobDay), monthIsNum = isNumeric(dobMonth), yearIsNum = isNumeric(dobYear)
 
-  const isDayNumeric = isNumeric(dobDay)
-  const isMonthNumeric = isNumeric(dobMonth)
-  const isYearNumeric = isNumeric(dobYear)
+  // --- Year checks ---
+  if (!yearIsNum || dobYear.length !== 4 || !isValidNumericInRange(dobYear, ...DOB_YEAR_RANGE))
+    invalid.add("year")
 
-  // --- Flag year if format or content is invalid ---
-  if (shouldFlagYear(dobYear, isYearNumeric)) invalidFields.add("year")
+  // --- Non-numeric fields ---
+  if (!dayIsNum) invalid.add("day")
+  if (!monthIsNum) invalid.add("month")
 
-  // --- Flag non-numeric fields ---
-  addIfNotNumeric(isDayNumeric, "day", invalidFields)
-  addIfNotNumeric(isMonthNumeric, "month", invalidFields)
+  // --- Out-of-range numeric fields ---
+  if (dayIsNum && !isValidNumericInRange(dobDay, ...DOB_DAY_RANGE)) invalid.add("day")
+  if (monthIsNum && !isValidNumericInRange(dobMonth, ...DOB_MONTH_RANGE)) invalid.add("month")
 
-  // --- Flag values out of allowed numeric range ---
-  addIfOutOfRange(isDayNumeric, dobDay, 1, 31, "day", invalidFields)
-  addIfOutOfRange(isMonthNumeric, dobMonth, 1, 12, "month", invalidFields)
-
-  // --- Cross-field calendar date validity ---
-  if (canCheckDate(isDayNumeric, isMonthNumeric, isYearNumeric, dobYear)) {
-    const day = toInt(dobDay)
-    const month = toInt(dobMonth)
-    const year = toInt(dobYear)
-
-    if (!isValidDate(day, month, year)) {
-      addDateMismatchFlags(dobDay, dobMonth, invalidFields)
+  // --- Calendar validity ---
+  if (dayIsNum && monthIsNum && yearIsNum && dobYear.length === 4) {
+    if (!isValidDate(dayNum, monthNum, yearNum)) {
+      // Distinguish between bad ranges and impossible dates
+      const dayInRange = isValidNumericInRange(dobDay, ...DOB_DAY_RANGE)
+      const monthInRange = isValidNumericInRange(dobMonth, ...DOB_MONTH_RANGE)
+      if (!dayInRange) invalid.add("day")
+      if (!monthInRange) invalid.add("month")
+      if (dayInRange && monthInRange) {
+        invalid.add("day")
+        invalid.add("month")
+        invalid.add("year")
+      }
+    } else if (new Date(yearNum, monthNum - 1, dayNum) > new Date()) {
+      // Future date
+      invalid.add("year")
     }
   }
 
-  return Array.from(invalidFields)
-}
-
-/**
- * Adds the field if its numeric value is out of allowed range.
- */
-function addIfOutOfRange(
-  isNumeric: boolean,
-  value: string,
-  min: number,
-  max: number,
-  field: DobField,
-  invalidFields: Set<DobField>
-) {
-  if (isNumeric && !isValidNumericInRange(value, min, max)) {
-    invalidFields.add(field)
-  }
-}
-
-/**
- * Adds the field if it's not numeric.
- */
-function addIfNotNumeric(
-  isNumeric: boolean,
-  field: DobField,
-  invalidFields: Set<DobField>
-) {
-  if (!isNumeric) invalidFields.add(field)
-}
-
-/**
- * Adds specific field flags if a valid date cannot be constructed.
- */
-function addDateMismatchFlags(
-  dobDay: string,
-  dobMonth: string,
-  invalidFields: Set<DobField>
-) {
-  const dayInRange = isValidNumericInRange(dobDay, 1, 31)
-  const monthInRange = isValidNumericInRange(dobMonth, 1, 12)
-
-  if (!monthInRange) invalidFields.add("month")
-  if (!dayInRange) invalidFields.add("day")
-
-  // If day and month are in range, assume the year is logically wrong (e.g. 31/02/2022)
-  if (dayInRange && monthInRange) invalidFields.add("year")
-}
-
-// --- Determines if the year field should be flagged as invalid ---
-function shouldFlagYear(year: string, isNumeric: boolean): boolean {
-  if (!isNumeric || year.length !== 4 || !/^\d{4}$/.test(year)) return true
-  const yearNum = parseInt(year, 10)
-  return yearNum < 1800 || yearNum > 2099
-}
-
-// --- Checks if all DOB parts are numeric and year has 4 digits ---
-function canCheckDate(
-  isDayNumeric: boolean,
-  isMonthNumeric: boolean,
-  isYearNumeric: boolean,
-  year: string
-): boolean {
-  return isDayNumeric && isMonthNumeric && isYearNumeric && year.length === 4
+  return Array.from(invalid)
 }
