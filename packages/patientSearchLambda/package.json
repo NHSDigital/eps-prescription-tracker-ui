@@ -2,7 +2,7 @@
   "name": "patientSearchLambda",
   "version": "1.0.0",
   "description": "Lambda for searching for a patient using PDS",
-  "main": "handler.ts",
+  "main": "index.ts",
   "author": "NHS Digital",
   "license": "MIT",
   "scripts": {
@@ -24,6 +24,7 @@
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.149",
-    "@types/fhir": "^0.0.41"
+    "@types/fhir": "^0.0.41",
+    "@cpt-ui-common/testing": "^1.0.0"
   }
 }

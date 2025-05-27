@@ -1,30 +1,13 @@
-import {APIGatewayProxyEvent, APIGatewayProxyResult} from "aws-lambda"
+import {APIGatewayProxyEvent, APIGatewayProxyEventQueryStringParameters, APIGatewayProxyResult} from "aws-lambda"
 import {Logger} from "@aws-lambda-powertools/logger"
-import {injectLambdaContext} from "@aws-lambda-powertools/logger/middleware"
-import middy from "@middy/core"
-import axios, {AxiosInstance} from "axios"
-import inputOutputLogger from "@middy/input-output-logger"
-import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
-import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
+import {AxiosInstance} from "axios"
 import {headers as headerUtils} from "@cpt-ui-common/lambdaUtils"
-import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
-import {authenticateRequest, getUsernameFromEvent} from "@cpt-ui-common/authFunctions"
 import * as pds from "@cpt-ui-common/pdsClient"
 import {exhaustive_switch_guard} from "./utils"
 
-/*
-This is the lambda code to search for a patient
-It expects the following environment variables to be set
-
-  TokenMappingTableName
-  jwtPrivateKeyArn
-  APIGEE_API_KEY
-  APIGEE_API_SECRET
-  jwtKid
-  apigeeMockTokenEndpoint
-  apigeeCIS2TokenEndpoint
-  apigeePersonalDemographicsEndpoint
-*/
+export const ERROR_RESPONSE_BODY = {
+  message: "A system error has occurred"
+}
 
 const code = (statusCode: number) => {
   return {
@@ -38,20 +21,22 @@ const code = (statusCode: number) => {
   }
 }
 
-type AuthenticationParameters = {
+export type AuthenticationParameters = {
     tokenMappingTableName: string,
     jwtPrivateKeyArn: string,
     apigeeApiKey: string,
     apigeeApiSecret: string,
     jwtKid: string,
+    defaultRoleId: string,
     apigeeMockTokenEndpoint: string,
     apigeeCis2TokenEndpoint: string,
   }
 
-type HandlerParameters = {
+export type HandlerParameters = {
   logger: Logger,
   pdsClient: pds.Client,
-  authenticationFunction: (username: string, roleId: string) => Promise<{apigeeAccessToken: string, roleId: string}>
+  usernameExtractor: (event: APIGatewayProxyEvent) => string,
+  authenticationFunction: (username: string) => Promise<{apigeeAccessToken: string, roleId: string}>
 }
 
 export type HandlerInitialisationParameters = {
@@ -61,11 +46,12 @@ export type HandlerInitialisationParameters = {
   authenticationParameters: AuthenticationParameters,
 }
 
-const lambdaHandler = async (
+export const lambdaHandler = async (
   event: APIGatewayProxyEvent,
   {
     logger,
     pdsClient,
+    usernameExtractor,
     authenticationFunction
   }: HandlerParameters
 ): Promise<APIGatewayProxyResult> => {
@@ -82,7 +68,7 @@ const lambdaHandler = async (
   // Use the authenticateRequest function for authentication
   let username: string
   try{
-    username = getUsernameFromEvent(event)
+    username = usernameExtractor(event)
   } catch {
     logger.info("Unable to extract username from event", {event})
     return code(400).body({
@@ -93,14 +79,12 @@ const lambdaHandler = async (
   let apigeeAccessToken: string | undefined
   let roleId: string | undefined
   try{
-    const authResult = await authenticationFunction(username, roleId ?? "")
+    const authResult = await authenticationFunction(username)
 
     apigeeAccessToken = authResult.apigeeAccessToken
     roleId = authResult.roleId
   } catch (error) {
-    logger.error("Authentication failed", {
-      error
-    })
+    logger.error("Authentication failed", {error})
     return code(401).body({
       message: "Authentication failed"
     })
@@ -118,22 +102,25 @@ const lambdaHandler = async (
   let givenName: string | undefined
   let dateOfBirth: string
   let postcode: string
-  try{
-    familyName = validateQueryParameter(event.queryStringParameters?.familyName, "familyName")
-    givenName = event.queryStringParameters?.givenName
-    dateOfBirth = validateQueryParameter(event.queryStringParameters?.dateOfBirth, "dateOfBirth")
-    postcode = validateQueryParameter(event.queryStringParameters?.postcode, "postcode")
-  } catch (error) {
+
+  const validationErrors: Array<string> = []
+  const queryStringParameters = event.queryStringParameters ?? {}
+  familyName = guardQueryParameter(validationErrors, queryStringParameters, "familyName")
+  givenName = event.queryStringParameters?.givenName
+  dateOfBirth = guardQueryParameter(validationErrors, queryStringParameters, "dateOfBirth")
+  postcode = guardQueryParameter(validationErrors, queryStringParameters, "postcode")
+  if (validationErrors.length > 0) {
     logger.error("Validation error", {
-      error,
+      validationErrors,
       timeMs: Date.now() - searchStartTime
     })
 
     return code(400).body({
       message: "Invalid query parameters",
-      error: String(error)
+      error: String(validationErrors)
     })
   }
+
   // Query PDS
   const patientSearchOutcome = await pdsClient
     .with_access_token(apigeeAccessToken)
@@ -198,80 +185,16 @@ const lambdaHandler = async (
   throw new Error("Unreachable")
 }
 
-const validateQueryParameter = (query: string | undefined, paramName: string): string => {
-  if (!query) {
-    throw new Error(`Missing query parameter: ${paramName}`)
+const guardQueryParameter = (
+  validationErrors: Array<string>,
+  params: APIGatewayProxyEventQueryStringParameters,
+  paramName: string
+): string => {
+  const param = params[paramName]
+
+  if (!param) {
+    validationErrors.push(`Missing query parameter: ${paramName}`)
+    return undefined as unknown as string
   }
-
-  return query
+  return param as string
 }
-
-export const newHandler = (
-  {
-    logger,
-    axiosInstance,
-    pdsEndpoint,
-    authenticationParameters
-  }: HandlerInitialisationParameters
-) => {
-  const pdsClient = new pds.Client(
-    axiosInstance,
-    pdsEndpoint,
-    logger
-  )
-
-  const dynamoClient = new DynamoDBClient()
-  const documentClient = DynamoDBDocumentClient.from(dynamoClient)
-
-  const authenticationFunction = async (username: string, roleId: string) => {
-    return authenticateRequest(username, documentClient, logger, {
-      ...authenticationParameters,
-      defaultRoleId: roleId
-    })
-  }
-
-  const params: HandlerParameters = {
-    logger,
-    pdsClient,
-    authenticationFunction
-  }
-
-  return middy((event: APIGatewayProxyEvent) => lambdaHandler(event, params))
-    .use(injectLambdaContext(logger, {clearState: true}))
-    .use(
-      inputOutputLogger({
-        logger: (request) => {
-          logger.info(request)
-        }
-      })
-    )
-    .use(
-      new MiddyErrorHandler(ERROR_RESPONSE_BODY)
-        .errorHandler({logger: logger})
-    )
-}
-
-// External endpoints and environment variables
-const authParametersFromEnv = (): AuthenticationParameters => {
-  return {
-    tokenMappingTableName: process.env["TokenMappingTableName"] as string,
-    jwtPrivateKeyArn: process.env["jwtPrivateKeyArn"] as string,
-    apigeeApiKey: process.env["APIGEE_API_KEY"] as string,
-    apigeeApiSecret: process.env["APIGEE_API_SECRET"] as string,
-    jwtKid: process.env["jwtKid"] as string,
-    apigeeMockTokenEndpoint: process.env["apigeeMockTokenEndpoint"] as string,
-    apigeeCis2TokenEndpoint: process.env["apigeeCIS2TokenEndpoint"] as string
-  }
-}
-
-const ERROR_RESPONSE_BODY = {
-  message: "A system error has occurred"
-}
-
-const DEFAULT_HANDLER_PARAMETERS: HandlerInitialisationParameters = {
-  logger: new Logger({serviceName: "patientSearchLambda"}),
-  axiosInstance: axios.create(),
-  pdsEndpoint: process.env["apigeePersonalDemographicsEndpoint"] as string,
-  authenticationParameters: authParametersFromEnv()
-}
-export const handler = newHandler(DEFAULT_HANDLER_PARAMETERS)

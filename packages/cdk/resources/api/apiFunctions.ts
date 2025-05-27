@@ -199,7 +199,7 @@ export class ApiFunctions extends Construct {
       logRetentionInDays: props.logRetentionInDays,
       logLevel: props.logLevel,
       packageBasePath: "packages/patientSearchLambda",
-      entryPoint: "src/handler.ts",
+      entryPoint: "src/index.ts",
       lambdaEnvironmentVariables: {
         ...commonLambdaEnv,
         apigeePersonalDemographicsEndpoint: props.apigeePersonalDemographicsEndpoint,
