@@ -35,10 +35,10 @@ describe("Patient Details Lookup Service Tests", () => {
   const mockPdsClient = new pds.Client(
     mockAxiosInstance as unknown as AxiosInstance,
     mockEndpoint,
-    mockLogger,
-    mockAccessToken,
-    mockRoleId
+    mockLogger
   )
+    .with_access_token(mockAccessToken)
+    .with_role_id(mockRoleId)
 
   const makeRequest = async () => {
     return await mockPdsClient.getPatientDetails(mockNhsNumber)
