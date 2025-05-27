@@ -380,7 +380,7 @@ export default function PrescriptionListPage() {
               <nav className="nhsuk-breadcrumb" aria-label="Breadcrumb" data-testid="prescription-list-nav">
                 <BackLink
                   data-testid="go-back-link"
-                  href={backLinkTarget}
+                  to={backLinkTarget}
                 >  {PRESCRIPTION_LIST_PAGE_STRINGS.GO_BACK_LINK_TEXT}
                 </BackLink>
               </nav>
