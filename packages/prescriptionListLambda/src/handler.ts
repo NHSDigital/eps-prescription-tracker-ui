@@ -188,11 +188,12 @@ const nhsNumberSearchFlow = async (
   const pdsClient = new pds.Client(
     axiosInstance,
     apigeePersonalDemographicsEndpoint,
-    logger,
-    apigeeAccessToken,
-    roleId
+    logger
   )
-  const outcome = await pdsClient.getPatientDetails(nhsNumber)
+  const outcome = await pdsClient
+    .with_access_token(apigeeAccessToken)
+    .with_role_id(roleId)
+    .getPatientDetails(nhsNumber)
 
   let currentNhsNumber = nhsNumber
   let patientDetails
@@ -275,12 +276,13 @@ const prescriptionIdSearchFlow = async (
   const pdsClient = new pds.Client(
     axiosInstance,
     apigeePersonalDemographicsEndpoint,
-    logger,
-    apigeeAccessToken,
-    roleId
+    logger
   )
   const nhsNumber = prescriptions[0].nhsNumber!.toString()
-  const outcome = await pdsClient.getPatientDetails(nhsNumber)
+  const outcome = await pdsClient
+    .with_access_token(apigeeAccessToken)
+    .with_role_id(roleId)
+    .getPatientDetails(nhsNumber)
 
   let patientDetails
   switch (outcome.type) {

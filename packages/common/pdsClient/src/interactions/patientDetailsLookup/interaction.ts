@@ -1,5 +1,3 @@
-import {v4 as uuidv4} from "uuid"
-
 import {PatientDetails} from "@cpt-ui-common/common-types"
 import * as validatePatientDetails from "./validatePatientDetails"
 import {Client} from "../../client"
@@ -36,17 +34,8 @@ async function getPatientDetails(
   nhsNumber: string
 ): Promise<PatientDetailsLookupOutcome> {
   const url = client.patientDetailsPath(nhsNumber)
-  const headers = {
-    Accept: "application/fhir+json",
-    Authorization: `Bearer ${client.apigeeAccessToken}`,
-    "NHSD-End-User-Organisation-ODS": "A83008",
-    "NHSD-Session-URID": client.roleId,
-    "X-Request-ID": uuidv4(),
-    "X-Correlation-ID": uuidv4()
-  }
   const api_call = await client.axios_get(
     url,
-    headers,
     {nhsNumber}
   )
 

@@ -13,7 +13,6 @@ import {
 import {exhaustive_switch_guard} from "../../utils"
 import * as axios from "../../axios_wrapper"
 import {AxiosResponse} from "axios"
-import {v4 as uuidv4} from "uuid"
 import {
   PatientAddressUse,
   PatientMetaCode,
@@ -87,18 +86,8 @@ async function patientSearch(
   const url = client.patientSearchPath(
     searchParameters
   )
-  const headers = {
-    Accept: "application/fhir+json",
-    Authorization: `Bearer ${client.apigeeAccessToken}`,
-    "NHSD-End-User-Organisation-ODS": "A83008",
-    "NHSD-Session-URID": client.roleId,
-    "X-Request-ID": uuidv4(),
-    "X-Correlation-ID": uuidv4()
-  }
-  const api_call = await client.axios_get(
-    url,
-    headers
-  )
+
+  const api_call = await client.axios_get(url)
   if (api_call.type === axios.OutcomeType.ERROR) {
     return {
       type: PatientSearchOutcomeType.AXIOS_ERROR,

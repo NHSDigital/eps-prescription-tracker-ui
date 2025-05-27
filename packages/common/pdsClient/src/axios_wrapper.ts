@@ -15,7 +15,6 @@ type AxiosCallOutcome =
 async function axios_get(
   client: Client,
   url: string,
-  headers: Record<string, string>,
   additionalLogParams: Record<string, string> = {}
 ): Promise<AxiosCallOutcome> {
   const startTime = Date.now()
@@ -23,7 +22,7 @@ async function axios_get(
 
   let response
   try {
-    response = await client.axiosInstance.get(url, {headers: headers})
+    response = await client.axiosInstance.get(url, {headers: client.headers()})
   } catch (error) {
     return {type: AxiosCallOutcomeType.ERROR, error, timeMs: Date.now() - startTime}
   }
