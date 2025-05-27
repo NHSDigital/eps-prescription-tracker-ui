@@ -55,6 +55,8 @@ on:
         type: string
       APIGEE_PDS_ENDPOINT:
         type: string
+      APIGEE_DOHS_ENDPOINT:
+        type: string
       JWT_KID:
         type: string
       ROLE_ID:
@@ -182,6 +184,7 @@ jobs:
       APIGEE_MOCK_TOKEN_ENDPOINT: ${{ inputs.APIGEE_MOCK_TOKEN_ENDPOINT }}
       APIGEE_PRESCRIPTIONS_ENDPOINT: ${{ inputs.APIGEE_PRESCRIPTIONS_ENDPOINT }}
       APIGEE_PDS_ENDPOINT: ${{ inputs.APIGEE_PDS_ENDPOINT }}
+      APIGEE_DOHS_ENDPOINT: ${{ inputs.APIGEE_DOHS_ENDPOINT }}
       JWT_KID: ${{ inputs.JWT_KID }}
       ROLE_ID: ${{ inputs.ROLE_ID }}
       CONFIG_FILE: stateless_resources.json

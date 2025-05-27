@@ -32,6 +32,7 @@ export interface ApiFunctionsProps {
   readonly sharedSecrets: SharedSecrets
   readonly apigeeCIS2TokenEndpoint: string
   readonly apigeeMockTokenEndpoint: string
+  readonly apigeeDoHSEndpoint: string
   readonly apigeePrescriptionsEndpoint: string
   readonly apigeePersonalDemographicsEndpoint: string
   readonly apigeeApiKey: string
@@ -227,6 +228,7 @@ export class ApiFunctions extends Construct {
         apigeeCIS2TokenEndpoint: props.apigeeCIS2TokenEndpoint,
         apigeeMockTokenEndpoint: props.apigeeMockTokenEndpoint,
         apigeePrescriptionsEndpoint: props.apigeePrescriptionsEndpoint,
+        apigeeDoHSEndpoint: props.apigeeDoHSEndpoint,
         apigeeApiKey: props.apigeeApiKey,
         jwtKid: props.jwtKid,
         roleId: props.roleId
