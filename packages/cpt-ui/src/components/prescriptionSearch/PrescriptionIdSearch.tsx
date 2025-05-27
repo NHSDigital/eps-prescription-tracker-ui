@@ -64,7 +64,7 @@ export default function PrescriptionIdSearch() {
     if (errors.includes("noMatch") || errors.includes("checksum")) return errorMessages.noMatch
     if (errors.includes("length")) return errorMessages.length
     if (errors.includes("chars")) return errorMessages.chars
-    return errorMessages.noMatch // fallback
+    return errorMessages.noMatch
   }
 
   return (
