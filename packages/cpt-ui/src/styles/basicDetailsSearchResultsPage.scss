@@ -1,0 +1,43 @@
+// Colors
+$color-border: #c8cfd3;
+$color-hover-border: #ffb81C;
+
+// Spacing
+$spacing-sm: 0.5rem;
+$spacing-md: 0.75rem;
+$spacing-lg: 1rem;
+$spacing-xl: 1.5rem;
+$spacing-2xl: 2rem;
+
+.nhsuk-table__body.patients {
+  border-bottom: 3px solid $color-border;
+  border-top: 3px solid $color-border;
+  width: 100%;
+  background-color: #fff;
+  margin-top: $spacing-xl;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: $spacing-md;
+
+    th, td {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  >.nhsuk-table__row:hover,
+:focus,
+:active {
+cursor: pointer;
+border: 3px solid $color-hover-border;
+border-bottom: 3px solid $color-hover-border;
+}
+
+.nhsuk-table__cell {
+  font-size: $spacing-lg;
+}
+
+.nhsuk-table__header {
+  font-size: $spacing-lg;
+}
+
+}

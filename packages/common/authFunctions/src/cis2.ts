@@ -1,10 +1,8 @@
-import {APIGatewayProxyEvent} from "aws-lambda"
-import {DynamoDBDocumentClient, GetCommand} from "@aws-sdk/lib-dynamodb"
 import {Logger} from "@aws-lambda-powertools/logger"
 import jwt, {JwtPayload} from "jsonwebtoken"
 import jwksClient from "jwks-rsa"
-import {getUsernameFromEvent} from "./event"
-
+import {initializeOidcConfig} from "./initialization"
+const {cis2OidcConfig} = initializeOidcConfig()
 const VALID_ACR_VALUES: Array<string> = [
   "AAL3_ANY",
   // "AAL2_OR_AAL3_ANY",
@@ -44,81 +42,6 @@ export const getSigningKey = (client: jwksClient.JwksClient, kid: string): Promi
 }
 
 /**
- * Helper function to fetch the cis2 tokens from dynamodb
- * It also verifies the id token
- * @param username - the username to get the tokens for
- * @param tokenMappingTableName - the token mapping table name
- * @param documentClient - a dynamodb document client
- * @param logger - Logger instance for logging
- * @returns cis2 access and id tokens
- */
-export const fetchCIS2TokensFromDynamoDB = async (
-  username: string,
-  tokenMappingTableName: string,
-  documentClient: DynamoDBDocumentClient,
-  logger: Logger
-): Promise<{ cis2AccessToken: string; cis2IdToken: string }> => {
-  logger.info("Fetching CIS2 tokens from DynamoDB")
-
-  let result
-
-  try {
-    result = await documentClient.send(
-      new GetCommand({
-        TableName: tokenMappingTableName,
-        Key: {username}
-      })
-    )
-    logger.debug("DynamoDB response", {result})
-  } catch (error) {
-    logger.error("Error fetching data from DynamoDB", {error})
-    throw new Error("Internal server error while accessing DynamoDB")
-  }
-
-  if (result.Item) {
-    const existingData = result.Item
-    return {
-      cis2AccessToken: existingData.CIS2_accessToken,
-      cis2IdToken: existingData.CIS2_idToken
-    }
-  } else {
-    logger.error("CIS2 access token not found for user")
-    throw new Error("CIS2 access token not found for user")
-  }
-}
-
-export const fetchAndVerifyCIS2Tokens = async (
-  event: APIGatewayProxyEvent,
-  documentClient: DynamoDBDocumentClient,
-  logger: Logger,
-  oidcConfig: OidcConfig
-) => {
-  logger.info("Fetching and verifying CIS2 tokens")
-
-  if (oidcConfig.tokenMappingTableName === "") {
-    throw new Error("Token mapping table name not set")
-  }
-
-  // Extract username
-  const username = getUsernameFromEvent(event)
-  logger.info("Extracted username from ID token", {username})
-
-  // Fetch CIS2 tokens from DynamoDB
-  const {cis2AccessToken, cis2IdToken} = await fetchCIS2TokensFromDynamoDB(
-    username,
-    oidcConfig.tokenMappingTableName,
-    documentClient,
-    logger
-  )
-
-  // Verify the id token, access token from cis2 is not a JWT
-  await verifyIdToken(cis2IdToken, logger, oidcConfig)
-
-  // And return the verified tokens
-  return {cis2AccessToken, cis2IdToken}
-}
-
-/**
  * Interface for passing around oidc config
  */
 export interface OidcConfig {
@@ -126,9 +49,21 @@ export interface OidcConfig {
   oidcClientID: string
   oidcJwksEndpoint: string
   oidcUserInfoEndpoint: string
+  oidcTokenEndpoint: string
   userPoolIdp: string
   jwksClient: jwksClient.JwksClient,
   tokenMappingTableName: string
+}
+
+export const decodeToken = (token: string): JwtPayload => {
+  const decodedToken = jwt.decode(token, {complete: true})
+  if (!decodedToken || typeof decodedToken === "string") {
+    throw new Error("Invalid token - token is either undefined or a string")
+  }
+  if (!decodedToken.header.kid) {
+    throw new Error("Invalid token - no KID present")
+  }
+  return decodedToken as JwtPayload
 }
 
 /**
@@ -148,41 +83,35 @@ export const verifyCIS2Token = async (
   options: {
         validAcrValues: Array<string>,
         checkAudience: boolean
-      },
-  oidcConfig: OidcConfig
+      }
 ): Promise<jwt.JwtPayload> => {
-  if (oidcConfig.oidcIssuer === "") {
+  if (cis2OidcConfig.oidcIssuer === "") {
     throw new Error("OIDC issuer not set")
   }
-  if (oidcConfig.oidcClientID === "") {
+  if (cis2OidcConfig.oidcClientID === "") {
     throw new Error("OIDC client ID not set")
   }
-  if (oidcConfig.oidcJwksEndpoint === "") {
+  if (cis2OidcConfig.oidcJwksEndpoint === "") {
     throw new Error("JWKS URI not set")
   }
 
-  logger.info(`Verifying ${tokenType}`, {oidcConfig})
+  logger.info(`Verifying ${tokenType}`, {cis2OidcConfig})
 
   if (!cis2Token) {
     throw new Error(`${tokenType} not provided`)
   }
 
   // Decode the token header to get the kid
-  const decodedToken = jwt.decode(cis2Token, {complete: true})
-  if (!decodedToken || typeof decodedToken === "string") {
-    throw new Error("Invalid token - token is either undefined or a string")
-  }
+  // const decodedToken = jwt.decode(cis2Token, {complete: true})
+  const decodedToken = decodeToken(cis2Token)
   const kid = decodedToken.header.kid
-  if (!kid) {
-    throw new Error("Invalid token - no KID present")
-  }
   logger.info("Token KID", {kid})
 
   // Fetch the signing key from the JWKS endpoint
   let signingKey
   try {
     logger.info("Fetching signing key", {kid})
-    signingKey = await getSigningKey(oidcConfig.jwksClient, kid)
+    signingKey = await getSigningKey(cis2OidcConfig.jwksClient, kid)
   } catch (err) {
     logger.error("Error getting signing key", {err})
     throw new Error("Error getting signing key")
@@ -191,12 +120,12 @@ export const verifyCIS2Token = async (
 
   // Verify the token signature
   const verifyOptions: jwt.VerifyOptions = {
-    issuer: oidcConfig.oidcIssuer,
+    issuer: cis2OidcConfig.oidcIssuer,
     clockTolerance: 5 // seconds
   }
   // ID tokens have an aud claim, access tokens don't
   if (options.checkAudience) {
-    verifyOptions.audience = oidcConfig.oidcClientID
+    verifyOptions.audience = cis2OidcConfig.oidcClientID
   }
 
   let verifiedToken: JwtPayload
@@ -241,8 +170,7 @@ export const verifyCIS2Token = async (
  */
 export const verifyIdToken = async (
   idToken: string,
-  logger: Logger,
-  oidcConfig: OidcConfig
+  logger: Logger
 ) : Promise<jwt.JwtPayload> => {
   return await verifyCIS2Token(
     idToken,
@@ -251,7 +179,6 @@ export const verifyIdToken = async (
     {
       validAcrValues: VALID_ACR_VALUES,
       checkAudience: true
-    },
-    oidcConfig
+    }
   )
 }

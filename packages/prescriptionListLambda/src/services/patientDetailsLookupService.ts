@@ -16,7 +16,6 @@ export const getPdsPatientDetails = async (
 ): Promise<PatientAPIResponse> => {
   const startTime = Date.now()
   logger.info("Fetching patient details from PDS", {nhsNumber})
-
   try {
     const response = await axiosInstance.get(
       `${pdsEndpoint}/Patient/${nhsNumber}`,

@@ -1,27 +1,20 @@
 import {APIGatewayProxyEvent, APIGatewayProxyResult} from "aws-lambda"
 import {Logger} from "@aws-lambda-powertools/logger"
-import {getSecret} from "@aws-lambda-powertools/parameters/secrets"
 import {injectLambdaContext} from "@aws-lambda-powertools/logger/middleware"
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
 import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
 import middy from "@middy/core"
 import inputOutputLogger from "@middy/input-output-logger"
+import httpHeaderNormalizer from "@middy/http-header-normalizer"
 import axios from "axios"
 import {formatHeaders} from "./utils/headerUtils"
 import {validateSearchParams} from "./utils/validation"
 import {getPdsPatientDetails} from "./services/patientDetailsLookupService"
-import {getPrescriptions, PrescriptionError} from "./services/prescriptionsLookupService"
+import {getPrescriptions} from "./services/prescriptionsLookupService"
 import {SearchParams} from "./utils/types"
 
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
-import {
-  getUsernameFromEvent,
-  fetchAndVerifyCIS2Tokens,
-  constructSignedJWTBody,
-  exchangeTokenForApigeeAccessToken,
-  updateApigeeAccessToken,
-  initializeOidcConfig
-} from "@cpt-ui-common/authFunctions"
+import {authenticateRequest, getUsernameFromEvent} from "@cpt-ui-common/authFunctions"
 import {SearchResponse} from "@cpt-ui-common/common-types"
 import {mapSearchResponse} from "./utils/responseMapper"
 
@@ -58,24 +51,32 @@ MOCK_USER_POOL_IDP
 const logger = new Logger({serviceName: "prescriptionList"})
 
 // External endpoints and environment variables
-const apigeeCIS2TokenEndpoint = process.env["apigeeCIS2TokenEndpoint"] as string
-const apigeeMockTokenEndpoint = process.env["apigeeMockTokenEndpoint"] as string
 const apigeePrescriptionsEndpoint = process.env["apigeePrescriptionsEndpoint"] as string
 const apigeePersonalDemographicsEndpoint = process.env["apigeePersonalDemographicsEndpoint"] as string
 const TokenMappingTableName = process.env["TokenMappingTableName"] as string
 const jwtPrivateKeyArn = process.env["jwtPrivateKeyArn"] as string
-const apigeeApiKey = process.env["apigeeApiKey"] as string
+const apigeeApiKey = process.env["APIGEE_API_KEY"] as string
+const apigeeApiSecret= process.env["APIGEE_API_SECRET"] as string
 const jwtKid = process.env["jwtKid"] as string
-const roleId = process.env["roleId"] as string
-const MOCK_MODE_ENABLED = process.env["MOCK_MODE_ENABLED"]
+let roleId = process.env["roleId"] as string
+const apigeeCis2TokenEndpoint = process.env["apigeeCIS2TokenEndpoint"] as string
+const apigeeMockTokenEndpoint = process.env["apigeeMockTokenEndpoint"] as string
 
 // DynamoDB client setup
 const dynamoClient = new DynamoDBClient()
 const documentClient = DynamoDBDocumentClient.from(dynamoClient)
 
-// Create a config for cis2 and mock
-// this is outside functions so it can be re-used and caching works
-const {mockOidcConfig, cis2OidcConfig} = initializeOidcConfig()
+logger.info("env vars", {
+  TokenMappingTableName,
+  jwtPrivateKeyArn,
+  apigeeApiKey,
+  jwtKid,
+  roleId,
+  apigeePrescriptionsEndpoint,
+  apigeePersonalDemographicsEndpoint,
+  apigeeCis2TokenEndpoint,
+  apigeeMockTokenEndpoint
+})
 
 // Error response template
 const errorResponseBody = {
@@ -89,6 +90,8 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   logger.appendKeys({
     "apigw-request-id": event.requestContext?.requestId
   })
+  const headers = event.headers ?? []
+  logger.appendKeys({"x-request-id": headers["x-request-id"]})
 
   logger.info("Lambda handler invoked", {event})
 
@@ -104,64 +107,24 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
     validateSearchParams(searchParams)
 
-    // Handle mock/real request logic
+    // Use the authenticateRequest function for authentication
     const username = getUsernameFromEvent(event)
-    const isMockToken = username.startsWith("Mock_")
 
-    if (isMockToken && MOCK_MODE_ENABLED !== "true") {
-      throw new Error("Trying to use a mock user when mock mode is disabled")
-    }
-
-    const isMockRequest = MOCK_MODE_ENABLED === "true" && isMockToken
-    const apigeeTokenEndpoint = isMockRequest ? apigeeMockTokenEndpoint : apigeeCIS2TokenEndpoint
-
-    // Authentication flow
-    const {cis2AccessToken, cis2IdToken} = await fetchAndVerifyCIS2Tokens(
-      event,
-      documentClient,
-      logger,
-      isMockRequest ? mockOidcConfig : cis2OidcConfig
-    )
-    logger.debug("Successfully fetched CIS2 tokens", {cis2AccessToken, cis2IdToken})
-
-    // Step 2: Fetch the private key for signing the client assertion
-    logger.info("Accessing JWT private key from Secrets Manager to create signed client assertion")
-    const jwtPrivateKey = await getSecret(jwtPrivateKeyArn)
-    if (!jwtPrivateKey || typeof jwtPrivateKey !== "string") {
-      throw new Error("Invalid or missing JWT private key")
-    }
-
-    logger.debug("JWT private key retrieved successfully")
-
-    // Construct a new body with the signed JWT client assertion
-    logger.info("Generating signed JWT for Apigee token exchange payload")
-    const requestBody = constructSignedJWTBody(
-      logger,
-      apigeeTokenEndpoint,
-      jwtPrivateKey,
+    const {apigeeAccessToken, roleId} = await authenticateRequest(username, documentClient, logger, {
+      tokenMappingTableName: TokenMappingTableName,
+      jwtPrivateKeyArn,
       apigeeApiKey,
+      apigeeApiSecret,
       jwtKid,
-      cis2IdToken
-    )
-    logger.debug("Constructed request body for Apigee token exchange", {requestBody})
+      apigeeMockTokenEndpoint,
+      apigeeCis2TokenEndpoint
+    })
 
-    // Step 3: Exchange token with Apigee
-    const {accessToken: apigeeAccessToken, expiresIn} = await exchangeTokenForApigeeAccessToken(
-      axiosInstance,
-      apigeeTokenEndpoint,
-      requestBody,
-      logger
-    )
-
-    // Step 4: Update DynamoDB with the new Apigee access token
-    await updateApigeeAccessToken(
-      documentClient,
-      TokenMappingTableName,
-      event.requestContext.authorizer?.claims?.["cognito:username"] || "unknown",
-      apigeeAccessToken,
-      expiresIn,
-      logger
-    )
+    // Log the token for debugging (redacted for security)
+    logger.debug("Using Apigee access token and role", {
+      apigeeAccessToken: apigeeAccessToken,
+      roleId: roleId
+    })
 
     // Search logic
     let searchResponse: SearchResponse
@@ -182,45 +145,31 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
       })
 
       // Check if NHS Number has been superseded
+      let nhsNumber = searchParams.nhsNumber
       if (patientDetails.supersededBy) {
         logger.info("Using superseded NHS Number for prescription search", {
           originalNhsNumber: searchParams.nhsNumber,
           newNhsNumber: patientDetails.supersededBy
         })
-        // Use the superseded NHS Number for prescription search
-        const prescriptions = await getPrescriptions(
-          axiosInstance,
-          logger,
-          apigeePrescriptionsEndpoint,
-          {nhsNumber: patientDetails.supersededBy},
-          apigeeAccessToken,
-          roleId
-        )
-
-        logger.debug("Prescriptions", {
-          total: prescriptions.length,
-          body: prescriptions
-        })
-
-        searchResponse = mapSearchResponse(patientDetails, prescriptions)
-      } else {
-        // Normal flow - use original NHS Number
-        const prescriptions = await getPrescriptions(
-          axiosInstance,
-          logger,
-          apigeePrescriptionsEndpoint,
-          {nhsNumber: searchParams.nhsNumber},
-          apigeeAccessToken,
-          roleId
-        )
-
-        logger.debug("Prescriptions", {
-          total: prescriptions.length,
-          body: prescriptions
-        })
-
-        searchResponse = mapSearchResponse(patientDetails, prescriptions)
+        nhsNumber = patientDetails.supersededBy
       }
+      // Normal flow - use original NHS Number
+      const prescriptions = await getPrescriptions(
+        axiosInstance,
+        logger,
+        apigeePrescriptionsEndpoint,
+        {nhsNumber},
+        apigeeAccessToken,
+        roleId
+      )
+
+      logger.debug("Prescriptions", {
+        total: prescriptions.length,
+        body: prescriptions
+      })
+
+      searchResponse = mapSearchResponse(patientDetails, prescriptions)
+
     } else {
       // Prescription ID search flow
       const prescriptions = await getPrescriptions(
@@ -234,7 +183,11 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
       // Get patient details using NHS Number from first prescription
       if (prescriptions.length === 0) {
-        throw new PrescriptionError("Prescription not found")
+        return {
+          statusCode: 404,
+          body: JSON.stringify({message: "Prescription not found"}),
+          headers: formatHeaders({"Content-Type": "application/json"})
+        }
       }
 
       logger.debug("Prescriptions", {
@@ -278,14 +231,6 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
       timeMs: Date.now() - searchStartTime
     })
 
-    if (error instanceof PrescriptionError && error.message === "Prescription not found") {
-      return {
-        statusCode: 404,
-        body: JSON.stringify({message: "Prescription not found"}),
-        headers: formatHeaders({"Content-Type": "application/json"})
-      }
-    }
-
     throw error
   }
 }
@@ -293,6 +238,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 // Export the Lambda function with middleware applied
 export const handler = middy(lambdaHandler)
   .use(injectLambdaContext(logger, {clearState: true}))
+  .use(httpHeaderNormalizer())
   .use(
     inputOutputLogger({
       logger: (request) => {
