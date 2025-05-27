@@ -16,8 +16,10 @@ import * as pds from "@cpt-ui-common/pdsClient"
 import {exhaustive_switch_guard} from "./utils"
 import httpHeaderNormalizer from "@middy/http-header-normalizer"
 import {authenticateRequest, getUsernameFromEvent} from "@cpt-ui-common/authFunctions"
-import {formatHeaders} from "@cpt-ui-common/lambdaUtils/src/headers"
 import {PrescriptionError} from "./utils/errors"
+
+import {headers} from "@cpt-ui-common/lambdaUtils"
+const formatHeaders = headers.formatHeaders
 
 /*
 This is the lambda code to search for a prescription
