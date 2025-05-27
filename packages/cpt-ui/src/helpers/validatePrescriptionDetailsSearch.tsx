@@ -9,7 +9,7 @@ export type PrescriptionValidationError =
 
 const normalizePrescriptionId = (raw: string): string => {
   const cleaned = raw.replace(/[^a-zA-Z0-9+]/g, "")
-  return cleaned.match(/.{1,6}/g)?.join("-").toUpperCase() || ""
+  return cleaned.match(/.{1,6}/g)?.join("-").toUpperCase() ?? ""
 }
 
 export const validatePrescriptionId = (rawInput: string): Array<PrescriptionValidationError> => {
