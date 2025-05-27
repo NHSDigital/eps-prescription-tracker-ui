@@ -12,22 +12,7 @@ import {PrescriptionSummary, TreatmentType} from "@cpt-ui-common/common-types"
 jest.mock("@/helpers/statusMetadata", () => ({
   getStatusTagColour: jest.fn().mockReturnValue("blue"),
   getStatusDisplayText: jest.fn().mockReturnValue("Available to download"),
-  formatDateForPrescriptions: jest.fn((date: string) => {
-    try {
-      const options: Intl.DateTimeFormatOptions = {
-        day: "2-digit",
-        month: "short",
-        year: "numeric"
-      }
-      const dateObj = new Date(date)
-      if (isNaN(dateObj.getTime())) {
-        return "Invalid date"
-      }
-      return dateObj.toLocaleDateString("en-GB", options).replace(/ /g, "-")
-    } catch {
-      return "Invalid date"
-    }
-  })
+  formatDateForPrescriptions: jest.fn((date: string) => "Formatted: " + date)
 }))
 
 describe("PrescriptionsListTable", () => {
@@ -159,18 +144,18 @@ describe("PrescriptionsListTable", () => {
     jest.advanceTimersByTime(2000)
 
     await waitFor(() => {
-      const rows = screen.getAllByTestId("eps-prescription-table-sort-button")
+      const rows = screen.getAllByTestId("eps-prescription-table-row")
       const firstRowDate = rows[0].querySelector("[data-testid='issue-date-column']")
-      expect(firstRowDate?.textContent).toContain("10-Mar-2025")
+      expect(firstRowDate?.textContent).toContain("Formatted: 2025-03-10")
     })
 
     const issueDateSortButton = screen.getByTestId("eps-prescription-table-sort-issueDate")
     fireEvent.click(issueDateSortButton)
 
     await waitFor(() => {
-      const rows = screen.getAllByTestId("eps-prescription-table-sort-button")
+      const rows = screen.getAllByTestId("eps-prescription-table-row")
       const firstRowDate = rows[0].querySelector("[data-testid='issue-date-column']")
-      expect(firstRowDate?.textContent).toContain("15-Feb-2025") // Oldest date
+      expect(firstRowDate?.textContent).toContain("Formatted: 2025-02-15") // Oldest date
     })
 
     jest.useRealTimers()
@@ -207,7 +192,6 @@ describe("PrescriptionsListTable", () => {
     await waitFor(() => {
       const summaryRow = screen.getByTestId("table-summary-row")
       expect(summaryRow).toHaveTextContent("Showing 3 of 3")
-      expect(summaryRow).toHaveAttribute("aria-label", "Showing 3 of 3")
     })
 
     jest.useRealTimers()
@@ -228,7 +212,7 @@ describe("PrescriptionsListTable", () => {
     fireEvent.click(cancellationHeader)
 
     await waitFor(() => {
-      const rows = screen.getAllByTestId("eps-prescription-table-sort-button")
+      const rows = screen.getAllByTestId("eps-prescription-table-row")
 
       const firstRow = rows[0]
 
@@ -273,10 +257,6 @@ describe("PrescriptionsListTable", () => {
     })
 
     jest.useRealTimers()
-  })
-  it("correctly formats a date", () => {
-    render(<PrescriptionsListTable textContent={textContent} prescriptions={prescriptions} />)
-    jest.advanceTimersByTime(2000)
   })
 
   it("sorts prescriptions by statusCode, falling back to issueDate if statusCodes match", async () => {
@@ -349,7 +329,7 @@ describe("PrescriptionsListTable", () => {
       const sortButton = screen.getByTestId("eps-prescription-table-sort-issueDate")
       fireEvent.click(sortButton)
 
-      const rows = screen.getAllByTestId("eps-prescription-table-sort-button")
+      const rows = screen.getAllByTestId("eps-prescription-table-row")
       expect(rows[0]).toHaveTextContent("1")
       expect(rows[1]).toHaveTextContent("2")
       expect(rows[2]).toHaveTextContent("3")

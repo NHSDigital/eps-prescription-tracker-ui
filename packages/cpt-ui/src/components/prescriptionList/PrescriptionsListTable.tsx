@@ -12,14 +12,14 @@ export interface PrescriptionsListTableProps {
   prescriptions: Array<PrescriptionSummary>;
 }
 
+type SortDirection = "ascending" | "descending";
+type SortConfig = { key: string; direction: SortDirection | null };
+type TabId = "current" | "future" | "claimed";
+
 const PrescriptionsListTable = ({
   textContent,
   prescriptions: initialPrescriptions
 }: PrescriptionsListTableProps) => {
-  type SortDirection = "ascending" | "descending";
-  type SortConfig = { key: string; direction: SortDirection | null };
-  type TabId = "current" | "future" | "claimed";
-
   const initialSortConfig: SortConfig = {key: "issueDate", direction: null}
 
   const currentTabId: TabId = textContent.testid as TabId
@@ -29,8 +29,8 @@ const PrescriptionsListTable = ({
     Record<TabId, SortConfig>
   >({
     current: initialSortConfig,
-    future: {key: "issueDate", direction: null},
-    claimed: {key: "issueDate", direction: null}
+    future: initialSortConfig,
+    claimed: initialSortConfig
   })
 
   const sortConfig = allSortConfigs[currentTabId] || initialSortConfig
@@ -80,17 +80,20 @@ const PrescriptionsListTable = ({
   }
 
   const renderSortIcons = (key: string) => {
-    const isActive = sortConfig.key === key
+    const isActive = sortConfig.key === key && sortConfig.direction !== null
     const direction = sortConfig.direction
 
     return (
       <span className="eps-prescription-table-sort-icon-wrapper-container">
-        <span className="eps-prescription-table-sort-icon-wrapper">
+        <span
+          className="eps-prescription-table-sort-icon-wrapper"
+          role="img"
+          aria-label={PRESCRIPTION_LIST_TABLE_TEXT.sortLabel}
+        >
           <span
             className={`arrow up-arrow ${
               isActive && direction !== "ascending" ? "hidden-arrow" : isActive ? "selected-arrow" : ""
             }`}
-            aria-label={PRESCRIPTION_LIST_TABLE_TEXT.sortAscending}
           >
             ▲
           </span>
@@ -98,7 +101,6 @@ const PrescriptionsListTable = ({
             className={`arrow down-arrow ${
               isActive && direction !== "descending" ? "hidden-arrow" : isActive ? "selected-arrow" : ""
             }`}
-            aria-label={PRESCRIPTION_LIST_TABLE_TEXT.sortDescending}
           >
             ▼
           </span>
@@ -106,15 +108,6 @@ const PrescriptionsListTable = ({
       </span>
     )
   }
-
-  const renderDefaultSortIcons = () => (
-    <span className="eps-prescription-table-sort-icon-wrapper-container">
-      <span className="eps-prescription-table-sort-icon-wrapper">
-        <span className="arrow up-arrow">▲</span>
-        <span className="arrow down-arrow">▼</span>
-      </span>
-    </span>
-  )
 
   const formatPrescriptionStatus = (items: Array<PrescriptionSummary>) => {
     return items.map((prescription) => ({
@@ -133,70 +126,56 @@ const PrescriptionsListTable = ({
     return Number.MIN_SAFE_INTEGER
   }
 
-  const initiallySortedPrescriptions = React.useMemo(() => {
-    const sorted = [...initialPrescriptions]
+  const getSortedItems = () => {
+    const sorted = [...formatPrescriptionStatus(initialPrescriptions)]
+
     sorted.sort((a, b) => {
+      if (sortConfig.key === "cancellationWarning") {
+        const aHasWarning =
+            a.prescriptionPendingCancellation || a.itemsPendingCancellation
+        const bHasWarning =
+            b.prescriptionPendingCancellation || b.itemsPendingCancellation
+
+        if (aHasWarning === bHasWarning) {
+          const aDateTimestamp = getValidDateTimestamp(a.issueDate)
+          const bDateTimestamp = getValidDateTimestamp(b.issueDate)
+          return bDateTimestamp - aDateTimestamp
+        }
+
+        if (sortConfig.direction === "ascending") {
+          return aHasWarning ? 1 : -1
+        } else {
+          return aHasWarning ? -1 : 1
+        }
+      }
+
+      if (
+        sortConfig.key === "statusCode" &&
+            a.statusCode === b.statusCode
+      ) {
+        const aDateTimestamp = getValidDateTimestamp(a.issueDate)
+        const bDateTimestamp = getValidDateTimestamp(b.issueDate)
+        return bDateTimestamp - aDateTimestamp
+      }
+
+      if (sortConfig.key === "issueDate") {
+        const aDateTimestamp = getValidDateTimestamp(a.issueDate)
+        const bDateTimestamp = getValidDateTimestamp(b.issueDate)
+        return sortConfig.direction === "ascending"
+          ? aDateTimestamp - bDateTimestamp
+          : bDateTimestamp - aDateTimestamp
+      }
+
+      const key = sortConfig.key as keyof typeof sorted[0]
+      if (a[key]! < b[key]!)
+        return sortConfig.direction === "ascending" ? -1 : 1
+      if (a[key]! > b[key]!)
+        return sortConfig.direction === "ascending" ? 1 : -1
+
       const aDateTimestamp = getValidDateTimestamp(a.issueDate)
       const bDateTimestamp = getValidDateTimestamp(b.issueDate)
       return bDateTimestamp - aDateTimestamp
     })
-    return sorted
-  }, [initialPrescriptions])
-
-  const getSortedItems = () => {
-    const sorted = [...formatPrescriptionStatus(initiallySortedPrescriptions)]
-
-    if (sortConfig.direction) {
-      sorted.sort((a, b) => {
-        if (sortConfig.key === "cancellationWarning") {
-          const aHasWarning =
-            a.prescriptionPendingCancellation || a.itemsPendingCancellation
-          const bHasWarning =
-            b.prescriptionPendingCancellation || b.itemsPendingCancellation
-
-          if (aHasWarning === bHasWarning) {
-            const aDateTimestamp = getValidDateTimestamp(a.issueDate)
-            const bDateTimestamp = getValidDateTimestamp(b.issueDate)
-            return bDateTimestamp - aDateTimestamp
-          }
-
-          if (sortConfig.direction === "ascending") {
-            return aHasWarning ? 1 : -1
-          } else {
-            return aHasWarning ? -1 : 1
-          }
-        }
-
-        if (sortConfig.key === "statusCode" || sortConfig.key === "issueDate") {
-          if (
-            sortConfig.key === "statusCode" &&
-            a.statusCode === b.statusCode
-          ) {
-            const aDateTimestamp = getValidDateTimestamp(a.issueDate)
-            const bDateTimestamp = getValidDateTimestamp(b.issueDate)
-            return bDateTimestamp - aDateTimestamp
-          }
-
-          if (sortConfig.key === "issueDate") {
-            const aDateTimestamp = getValidDateTimestamp(a.issueDate)
-            const bDateTimestamp = getValidDateTimestamp(b.issueDate)
-            return sortConfig.direction === "ascending"
-              ? aDateTimestamp - bDateTimestamp
-              : bDateTimestamp - aDateTimestamp
-          }
-        }
-
-        const key = sortConfig.key as keyof typeof sorted[0]
-        if (a[key]! < b[key]!)
-          return sortConfig.direction === "ascending" ? -1 : 1
-        if (a[key]! > b[key]!)
-          return sortConfig.direction === "ascending" ? 1 : -1
-
-        const aDateTimestamp = getValidDateTimestamp(a.issueDate)
-        const bDateTimestamp = getValidDateTimestamp(b.issueDate)
-        return bDateTimestamp - aDateTimestamp
-      })
-    }
 
     return sorted
   }
@@ -209,7 +188,7 @@ const PrescriptionsListTable = ({
     )
   }
 
-  if (initiallySortedPrescriptions.length === 0) {
+  if (initialPrescriptions.length === 0) {
     return <p className="nhsuk-body">{textContent.noPrescriptionsMessage}</p>
   }
 
@@ -251,6 +230,16 @@ const PrescriptionsListTable = ({
                     ? (sortConfig.direction as "ascending" | "descending" | null) || "none"
                     : "none"
                 }
+                onClick={(e) => {
+                  e.preventDefault()
+                  requestSort(heading.key)
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault()
+                    requestSort(heading.key)
+                  }
+                }}
                 data-testid={`eps-prescription-table-header-${heading.key}`}
                 style={{width: heading.width}}
               >
@@ -260,32 +249,18 @@ const PrescriptionsListTable = ({
                   className={`eps-prescription-table-sort-text ${heading.key}`}
                   aria-label={`
                     ${PRESCRIPTION_LIST_TABLE_TEXT.sortBy} ${heading.label}
-                    ${
-              sortConfig.key === heading.key &&
-                      sortConfig.direction === "ascending"
+                    ${sortConfig.key === heading.key && sortConfig.direction === "ascending"
                 ? "descending"
                 : "ascending"
               }
                   `}
                   data-testid={`eps-prescription-table-sort-${heading.key}`}
-                  onClick={(e) => {
-                    e.preventDefault()
-                    requestSort(heading.key)
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault()
-                      requestSort(heading.key)
-                    }
-                  }}
                 >
                   <span className="sort-label-text">{heading.label}</span>
                   <span className="nhsuk-u-visually-hidden">
                     {PRESCRIPTION_LIST_TABLE_TEXT.button}
                   </span>
-                  {sortConfig.key === heading.key && sortConfig.direction !== null
-                    ? renderSortIcons(heading.key)
-                    : renderDefaultSortIcons()}
+                  {renderSortIcons(heading.key)}
                 </span>
               </th>
             ))}
@@ -294,11 +269,7 @@ const PrescriptionsListTable = ({
 
         <tbody>
           {getSortedItems().map((row, index) => (
-            <tr
-              key={index}
-              className="eps-prescription-table-sort-button"
-              data-testid="eps-prescription-table-sort-button"
-            >
+            <tr key={index} data-testid="eps-prescription-table-row">
               {headings.map(({key}) => {
                 if (key === "issueDate") {
                   return (
@@ -399,11 +370,10 @@ const PrescriptionsListTable = ({
               colSpan={headings.length}
               className="eps-prescription-table-summary-row"
               aria-live="polite"
-              aria-label={`Showing ${initiallySortedPrescriptions.length} of ${initiallySortedPrescriptions.length}`}
               data-testid="table-summary-row"
             >
-              {PRESCRIPTION_LIST_TABLE_TEXT.showing} {initiallySortedPrescriptions.length}{" "}
-              {PRESCRIPTION_LIST_TABLE_TEXT.of} {initiallySortedPrescriptions.length}
+              {PRESCRIPTION_LIST_TABLE_TEXT.showing} {initialPrescriptions.length}{" "}
+              {PRESCRIPTION_LIST_TABLE_TEXT.of} {initialPrescriptions.length}
             </td>
           </tr>
         </tbody>

@@ -381,10 +381,6 @@ export default function PrescriptionListPage() {
                 <BackLink
                   data-testid="go-back-link"
                   href={backLinkTarget}
-                  onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
-                    e.preventDefault()
-                    navigate(backLinkTarget)
-                  }}
                 >  {PRESCRIPTION_LIST_PAGE_STRINGS.GO_BACK_LINK_TEXT}
                 </BackLink>
               </nav>
