@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from "react"
-import {Link} from "react-router-dom"
+import {Link, useLocation} from "react-router-dom"
 import "../styles/epscookies.scss"
 import {CookieStrings} from "@/constants/ui-strings/CookieStrings"
 
@@ -51,6 +51,13 @@ export default function EPSCookieBanner() {
       window.removeEventListener("cookieChoiceUpdated", handleCookieUpdate)
     }
   }, [])
+
+  const location = useLocation()
+  useEffect(() => {
+    if (location.pathname === "/cookies" && showSecondaryBanner) {
+      setShowSecondaryBanner(false)
+    }
+  }, [location.pathname])
 
   const handleCookieChoice = (choice: "accepted" | "rejected") => {
     setCookiesSet(choice)

@@ -311,6 +311,12 @@ const CookiePolicyPage = () => {
 
         <h2 className="nhsuk-heading-l">{CookieStrings.policyChanges.heading}</h2>
         <p className="bottomPolicyText">{CookieStrings.policyChanges.paragraph1}</p>
+        <p className="nhsuk-body-s nhsuk-u-secondary-text-color nhsuk-u-margin-top-7 nhsuk-u-margin-bottom-0">
+          {CookieStrings.pageLastReviewed}
+        </p>
+        <p className="nhsuk-body-s nhsuk-u-secondary-text-color nhsuk-u-margin-top-0 nhsuk-u-margin-bottom-7">
+          {CookieStrings.pageNextReviewed}
+        </p>
       </main>
     </div>
   )

@@ -60,7 +60,7 @@ export const CookieStrings = {
     expiry1: "When you close the browser",
 
     name2: "cwr_u",
-    purpose2: "Used by Amazon CloudWatch RUM. Tells us if you've used our bsite before",
+    purpose2: "Used by Amazon CloudWatch RUM. Tells us if you've used our website before",
     expiry2: "When you close the browser"
   },
   cookie_policy: "Cookie policy",
