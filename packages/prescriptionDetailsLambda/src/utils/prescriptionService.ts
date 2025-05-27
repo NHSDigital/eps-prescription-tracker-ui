@@ -8,7 +8,6 @@ import {doHSClient} from "@cpt-ui-common/doHSClient"
 
 import {mergePrescriptionDetails} from "./responseMapper"
 import {formatHeaders} from "./headerUtils"
-// import {invokeClinicalViewLambda} from "./invokeClinicalViewLambda"
 
 import {
   ApigeeDataResponse,
@@ -26,10 +25,10 @@ export function buildApigeeHeaders(apigeeAccessToken: string, roleId: string): R
   return {
     Authorization: `Bearer ${apigeeAccessToken}`,
     "nhsd-session-urid": roleId,
-    "nhsd-organization-uuid": "A83008",
-    "nhsd-identity-uuid": "123456123456",
-    "nhsd-session-jobrole": "123456123456",
-    "x-request-id": uuidv4()
+    "x-request-id": uuidv4(),
+    "nhsd-session-jobrole": roleId,
+    "nhsd-identity-uuid": roleId,
+    "nhsd-organization-uuid": "A83008"
   }
 }
 
@@ -205,15 +204,4 @@ export async function processPrescriptionRequest(
     headers: formatHeaders(apigeeResponse.headers)
   }
 
-  /**
- * Alternative integration path:
- * Instead of calling the Apigee proxy endpoint, the following line allows you
- * to invoke the clinicalView Lambda function directly. This is useful for:
- * - Local testing when Apigee is unavailable
- * - Debugging Lambda behavior without proxy interference
- * - Performance or permission troubleshooting
- *
- * To use, uncomment the line below and comment out the Apigee integration block above.
- */
-  // return await invokeClinicalViewLambda(prescriptionId, headers, logger)
 }
