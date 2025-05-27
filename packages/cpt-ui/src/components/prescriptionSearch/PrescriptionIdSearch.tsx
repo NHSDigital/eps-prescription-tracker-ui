@@ -106,7 +106,7 @@ export default function PrescriptionIdSearch() {
                 </HintText>
               </Label>
 
-              <ErrorMessage id="presc-id-error">
+              <ErrorMessage id="presc-id-error" data-testid="prescription-id-error">
                 {errors.length > 0 ? getDisplayedErrorMessage() : ""}
               </ErrorMessage>
 
