@@ -59,12 +59,14 @@ export default function PrescriptionIdSearch() {
   }
 
   const getDisplayedErrorMessage = () => {
-    if (errors.includes("combined")) return errorMessages.combined
-    if (errors.includes("empty")) return errorMessages.empty
-    if (errors.includes("noMatch") || errors.includes("checksum")) return errorMessages.noMatch
-    if (errors.includes("length")) return errorMessages.length
-    if (errors.includes("chars")) return errorMessages.chars
-    return errorMessages.noMatch
+    const priorityOrder = ["combined", "empty", "chars", "length", "noMatch", "checksum"]
+    const errorKey = priorityOrder.find(key => errors.includes(key))
+
+    if (errorKey === "noMatch" || errorKey === "checksum") {
+      return errorMessages.noMatch
+    }
+
+    return errorMessages[errorKey as keyof typeof errorMessages] || errorMessages.noMatch
   }
 
   return (
