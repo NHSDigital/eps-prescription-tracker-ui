@@ -84,11 +84,28 @@ describe("handler tests with cis2 auth", () => {
     // Mock the prescriptions endpoint with prescription data
     nock(apigeePrescriptionsEndpoint)
       .get("/RequestGroup")
-      .query(true)
+      .query({
+        nhsNumber: "9000000009"
+      })
       .reply(200, mockPrescriptionBundle)
+
+    nock(apigeePrescriptionsEndpoint)
+      .get("/RequestGroup")
+      .query({
+        prescriptionId: "01ABC123"
+      })
+      .reply(200, mockPrescriptionBundle)
+
+    // Query for prescription not found
+    nock(apigeePrescriptionsEndpoint)
+      .get("/RequestGroup")
+      .query({
+        prescriptionId: "123-ABC"
+      })
+      .reply(200, {})
   })
 
-  it("responds with success", async () => {
+  it("responds with success on nhs number flow", async () => {
     mockGetUsernameFromEvent.mockReturnValue("test_user")
     mockAuthenticateRequest.mockImplementation(() => {
       return Promise.resolve({
@@ -142,7 +159,82 @@ describe("handler tests with cis2 auth", () => {
         "prefix": "Mrs",
         "suffix": ""
       }})
+  })
 
+  it("responds with success on prescription ID flow", async () => {
+    mockGetUsernameFromEvent.mockReturnValue("test_user")
+    mockAuthenticateRequest.mockImplementation(() => {
+      return Promise.resolve({
+        apigeeAccessToken: "apigee_access_token"
+      })
+    })
+    const event = {
+      queryStringParameters: {
+        prescriptionId: "01ABC123"
+      },
+      requestContext: {
+        authorizer: {
+          claims: {
+            "cognito:username": "Mock_JoeBloggs"
+          }
+        }
+      }
+    }
+
+    const response = await handler(event, dummyContext)
+    const responseBody = JSON.parse(response.body)
+
+    expect(response).toMatchObject({
+      statusCode: 200
+    })
+
+    expect(responseBody).toMatchObject({
+      "currentPrescriptions": [{
+        "issueDate": "2023-01-01",
+        "itemsPendingCancellation": false,
+        "nhsNumber": 9999999999,
+        "prescriptionId": "01ABC123",
+        "prescriptionPendingCancellation": false,
+        "prescriptionTreatmentType": "0001",
+        "statusCode": "0001"
+      }],
+      "futurePrescriptions": [],
+      "pastPrescriptions": [],
+      "patient": {
+        "nhsNumber": "9999999999"
+      }})
+  })
+
+  it("Returns a 404 if prescription is not found", async () => {
+    mockGetUsernameFromEvent.mockReturnValue("test_user")
+    mockAuthenticateRequest.mockImplementation(() => {
+      return Promise.resolve({
+        apigeeAccessToken: "apigee_access_token"
+      })
+    })
+    const event = {
+      queryStringParameters: {
+        prescriptionId: "123-ABC"
+      },
+      requestContext: {
+        authorizer: {
+          claims: {
+            "cognito:username": "Mock_JoeBloggs"
+          }
+        }
+      }
+    }
+
+    const response = await handler(event, dummyContext)
+    const responseBody = JSON.parse(response.body)
+
+    expect(response).toMatchObject({
+      statusCode: 404
+    })
+
+    expect(responseBody).toMatchObject({
+      message: "Prescription not found"
+    })
   })
 
   it("throw error when auth fails", async () => {
