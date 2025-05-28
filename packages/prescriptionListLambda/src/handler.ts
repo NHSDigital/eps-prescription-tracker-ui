@@ -17,6 +17,7 @@ import {exhaustive_switch_guard} from "@cpt-ui-common/lambdaUtils"
 import httpHeaderNormalizer from "@middy/http-header-normalizer"
 import {authenticateRequest, getUsernameFromEvent} from "@cpt-ui-common/authFunctions"
 import {PrescriptionError} from "./utils/errors"
+import {PDSError} from "./utils/errors"
 
 import {headers} from "@cpt-ui-common/lambdaUtils"
 const formatHeaders = headers.formatHeaders
@@ -320,13 +321,13 @@ const handlePatientDetailsLookupError = (outcome: pds.patientDetailsLookup.Outco
   switch (outcome.type) {
     case pds.patientDetailsLookup.OutcomeType.PATIENT_NOT_FOUND:
       logger.error("PDS response data is empty", {nhsNumber: outcome.nhsNumber})
-      throw new pds.PDSError("Patient not found", "NOT_FOUND")
+      throw new PDSError("Patient not found", "NOT_FOUND")
     case pds.patientDetailsLookup.OutcomeType.S_FLAG:
       logger.info("Patient record marked with S Flag", {nhsNumber: outcome.nhsNumber})
-      throw new pds.PDSError("Prescription not found", "S_FLAG")
+      throw new PDSError("Prescription not found", "S_FLAG")
     case pds.patientDetailsLookup.OutcomeType.R_FLAG:
       logger.info("Patient record marked as restricted", {nhsNumber: outcome.nhsNumber})
-      throw new pds.PDSError("Prescription not found", "R_FLAG")
+      throw new PDSError("Prescription not found", "R_FLAG")
     case pds.patientDetailsLookup.OutcomeType.PATIENT_DETAILS_VALIDATION_ERROR:
       throw handleValidationError(outcome.error, outcome.patientDetails, outcome.nhsNumber)
     // Following cases will not be hit
@@ -350,13 +351,13 @@ const handleValidationError = (
     case pds.patientDetailsLookup.ValidatePatientDetails.OutcomeType.VALID:
       throw new Error("Unreachable")
     case pds.patientDetailsLookup.ValidatePatientDetails.OutcomeType.MISSING_FIELDS:
-      validationError = new pds.PDSError(
+      validationError = new PDSError(
         `Incomplete patient information. Missing required fields: ${error.missingFields.join(", ")}`,
         "INCOMPLETE_DATA"
       )
       break
     case pds.patientDetailsLookup.ValidatePatientDetails.OutcomeType.NOT_NULL_WHEN_NOT_PRESENT:
-      validationError = new pds.PDSError(`${error.field} must be explicitly null when not present`)
+      validationError = new PDSError(`${error.field} must be explicitly null when not present`)
       break
     default:
       throw exhaustive_switch_guard(error)
@@ -367,7 +368,7 @@ const handleValidationError = (
     patientDetails: JSON.stringify(patientDetails),
     nhsNumber
   })
-  throw new pds.PDSError("Incomplete patient data", "INCOMPLETE_DATA")
+  throw new PDSError("Incomplete patient data", "INCOMPLETE_DATA")
 }
 
 // Export the Lambda function with middleware applied

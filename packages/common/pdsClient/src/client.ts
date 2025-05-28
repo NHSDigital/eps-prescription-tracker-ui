@@ -60,10 +60,8 @@ export class Client implements clientInterface, patientDetailsLookup.Interface, 
   // PatientSearch interface
   patientSearchPath = (
     searchParameters: patientSearch.types.PatientSearchParameters
-  ) => patientSearch.utils.PATIENT_DETAILS_PATH(
-    this.pdsEndpoint,
-    searchParameters
-  )
+  ) =>
+    patientSearch.utils.PATIENT_DETAILS_PATH(this.pdsEndpoint, searchParameters)
   patientSearch = (
     familyName: string,
     dateOfBirth: string,

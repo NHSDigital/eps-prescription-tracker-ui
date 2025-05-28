@@ -34,10 +34,7 @@ async function getPatientDetails(
   nhsNumber: string
 ): Promise<PatientDetailsLookupOutcome> {
   const url = client.patientDetailsPath(nhsNumber)
-  const api_call = await client.axios_get(
-    url,
-    {nhsNumber}
-  )
+  const api_call = await client.axios_get(url, {nhsNumber})
 
   if (api_call.type === axios.OutcomeType.ERROR){
     return {

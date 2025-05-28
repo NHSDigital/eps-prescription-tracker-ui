@@ -11,7 +11,7 @@ import {authenticateRequest, getUsernameFromEvent} from "@cpt-ui-common/authFunc
 import * as pds from "@cpt-ui-common/pdsClient"
 import {
   AuthenticationParameters,
-  ERROR_RESPONSE_BODY,
+  INTERNAL_ERROR_RESPONSE_BODY,
   HandlerInitialisationParameters,
   HandlerParameters,
   lambdaHandler
@@ -61,18 +61,18 @@ export const newHandler = (
     authenticationFunction
   }
 
-  return middy((event: APIGatewayProxyEvent) => lambdaHandler(event, params))
+  const eventHandler = (event: APIGatewayProxyEvent) => lambdaHandler(event, params)
+
+  return middy(eventHandler)
     .use(injectLambdaContext(logger, {clearState: true}))
     .use(
       inputOutputLogger({
-        logger: (request) => {
-          logger.info(request)
-        }
+        logger: logger.info
       })
     )
     .use(
-      new MiddyErrorHandler(ERROR_RESPONSE_BODY)
-        .errorHandler({logger: logger})
+      new MiddyErrorHandler(INTERNAL_ERROR_RESPONSE_BODY)
+        .errorHandler({logger})
     )
 }
 

@@ -24,8 +24,7 @@ type ValidatePatientDetailsInvalidOutcomes =
 
 type ValidatePatientDetailsOutcome =
     | ValidatePatientDetailsOutcomeValid
-    | ValidatePatientDetailsOutcomeMissingFields
-    | ValidatePatientDetailsOutcomeNotNullWhenNotPresent
+    | ValidatePatientDetailsInvalidOutcomes
 
 const validate = (details: PatientDetails): ValidatePatientDetailsOutcome => {
   const requiredFields = [

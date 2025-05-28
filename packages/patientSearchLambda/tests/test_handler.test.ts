@@ -1,7 +1,7 @@
 import {expect, describe, it} from "@jest/globals"
 import {APIGatewayProxyEvent} from "aws-lambda"
 import {mockPatientSummary, mockLogger, mockPdsClient} from "@cpt-ui-common/testing"
-import {lambdaHandler, HandlerParameters, ERROR_RESPONSE_BODY} from "../src/handler"
+import {lambdaHandler, HandlerParameters, INTERNAL_ERROR_RESPONSE_BODY} from "../src/handler"
 
 import * as pds from "@cpt-ui-common/pdsClient"
 const patientSearchOutcomeType = pds.patientSearch.OutcomeType
@@ -146,7 +146,7 @@ describe("lambda handler unit tests", () => {
       const response = await lambdaHandler(mockEvent, handlerParams)
 
       expect(response.statusCode).toBe(500)
-      expect(JSON.parse(response.body)).toEqual(ERROR_RESPONSE_BODY)
+      expect(JSON.parse(response.body)).toEqual(INTERNAL_ERROR_RESPONSE_BODY)
 
       expect(handlerParams.logger.error).toHaveBeenCalledWith("Axios error", expect.objectContaining({}))
     })
@@ -161,7 +161,7 @@ describe("lambda handler unit tests", () => {
       const response = await lambdaHandler(mockEvent, handlerParams)
 
       expect(response.statusCode).toBe(500)
-      expect(JSON.parse(response.body)).toEqual(ERROR_RESPONSE_BODY)
+      expect(JSON.parse(response.body)).toEqual(INTERNAL_ERROR_RESPONSE_BODY)
 
       expect(handlerParams.logger.error).toHaveBeenCalledWith("Unsupported PDS response", expect.objectContaining({}))
     })
@@ -169,7 +169,7 @@ describe("lambda handler unit tests", () => {
     it("should return an error for response parse errors", async () => {
       // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
       handlerParams.pdsClient.patientSearch = async () => ({
-        type: patientSearchOutcomeType.RESPONSE_PARSE_ERROR,
+        type: patientSearchOutcomeType.PARSE_ERROR,
         response: {status: 200, statusText: "OK"},
         validationErrors: [{message: "Invalid response format"}]
       } as patientSearchOutcome)
@@ -177,7 +177,7 @@ describe("lambda handler unit tests", () => {
       const response = await lambdaHandler(mockEvent, handlerParams)
 
       expect(response.statusCode).toBe(500)
-      expect(JSON.parse(response.body)).toEqual(ERROR_RESPONSE_BODY)
+      expect(JSON.parse(response.body)).toEqual(INTERNAL_ERROR_RESPONSE_BODY)
 
       expect(handlerParams.logger.error).toHaveBeenCalledWith("Response parse error", expect.objectContaining({}))
     })

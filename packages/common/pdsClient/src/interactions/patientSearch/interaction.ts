@@ -29,7 +29,7 @@ enum PatientSearchOutcomeType {
   SUCCESS = "SUCCESS",
   INVALID_PARAMETERS = "INVALID_PARAMETERS",
   AXIOS_ERROR = "AXIOS_ERROR",
-  RESPONSE_PARSE_ERROR = "RESPONSE_PARSE_ERROR",
+  PARSE_ERROR = "RESPONSE_PARSE_ERROR",
   TOO_MANY_MATCHES = "TOO_MANY_MATCHES",
   PDS_ERROR = "PDS_ERROR"
 }
@@ -42,10 +42,7 @@ type PatientSearchOutcome =
   | { type: PatientSearchOutcomeType.SUCCESS, patients: Array<PatientSummary> }
   | { type: PatientSearchOutcomeType.INVALID_PARAMETERS, validationErrors: Array<InvalidParameter> }
   | { type: PatientSearchOutcomeType.AXIOS_ERROR, error: Error, url: string, timeMs: number }
-  | { type: PatientSearchOutcomeType.RESPONSE_PARSE_ERROR,
-      response: AxiosResponse,
-      validationErrors: Array<ErrorObject>
-    }
+  | { type: PatientSearchOutcomeType.PARSE_ERROR, response: AxiosResponse, validationErrors: Array<ErrorObject>}
   | { type: PatientSearchOutcomeType.TOO_MANY_MATCHES, searchParameters: PatientSearchParameters }
   | { type:PatientSearchOutcomeType.PDS_ERROR, response: AxiosResponse }
 
@@ -111,7 +108,7 @@ async function patientSearch(
   const isValidResponse = responseValidator.validate(data)
   if (!isValidResponse) {
     return {
-      type: PatientSearchOutcomeType.RESPONSE_PARSE_ERROR,
+      type: PatientSearchOutcomeType.PARSE_ERROR,
       response,
       validationErrors: responseValidator.validationErrors()
     }
@@ -119,7 +116,7 @@ async function patientSearch(
   // Check for too many matches
   // (Response is a 200, and the body is an OperationOutcome.
   // Response body is either a bundle or a
-  // too many matches operation outcome verified from schema)
+  // too many matches operation outcome as verified by the schema)
   if(data.resourceType === ResponseType.OPERATION_OUTCOME){
     return {
       type: PatientSearchOutcomeType.TOO_MANY_MATCHES,
@@ -127,7 +124,7 @@ async function patientSearch(
     }
   }
 
-  // Check for empty response
+  // Check for empty response (Empty response has no .entry field)
   if (data.total === 0) {
     return {
       type: PatientSearchOutcomeType.SUCCESS,

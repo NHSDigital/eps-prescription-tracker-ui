@@ -5,40 +5,21 @@ import {headers as headerUtils} from "@cpt-ui-common/lambdaUtils"
 import * as pds from "@cpt-ui-common/pdsClient"
 import {exhaustive_switch_guard} from "@cpt-ui-common/lambdaUtils"
 
-export const ERROR_RESPONSE_BODY = {
+export const INTERNAL_ERROR_RESPONSE_BODY = {
   message: "A system error has occurred"
 }
 
-const code = (statusCode: number) => {
-  return {
-    body: (body: object) => {
-      return {
-        statusCode,
-        body: JSON.stringify(body),
-        headers: headerUtils.formatHeaders({"Content-Type": "application/json"})
-      }
-    }
-  }
-}
+// Wrapper for nice http responses
+const code = (statusCode: number) => ({
+  body: (body: object) => ({
+    statusCode,
+    body: JSON.stringify(body),
+    headers: headerUtils.formatHeaders({"Content-Type": "application/json"})
+  })
+})
 
-export type AuthenticationParameters = {
-    tokenMappingTableName: string,
-    jwtPrivateKeyArn: string,
-    apigeeApiKey: string,
-    apigeeApiSecret: string,
-    jwtKid: string,
-    defaultRoleId: string,
-    apigeeMockTokenEndpoint: string,
-    apigeeCis2TokenEndpoint: string,
-  }
-
-export type HandlerParameters = {
-  logger: Logger,
-  pdsClient: pds.Client,
-  usernameExtractor: (event: APIGatewayProxyEvent) => string,
-  authenticationFunction: (username: string) => Promise<{apigeeAccessToken: string, roleId: string}>
-}
-
+// Required parameters to initialise a handler
+//  for a live environment or integration tests
 export type HandlerInitialisationParameters = {
   logger: Logger,
   axiosInstance: AxiosInstance,
@@ -46,6 +27,27 @@ export type HandlerInitialisationParameters = {
   authenticationParameters: AuthenticationParameters,
 }
 
+export type AuthenticationParameters = {
+  tokenMappingTableName: string,
+  jwtPrivateKeyArn: string,
+  apigeeApiKey: string,
+  apigeeApiSecret: string,
+  jwtKid: string,
+  defaultRoleId: string,
+  apigeeMockTokenEndpoint: string,
+  apigeeCis2TokenEndpoint: string,
+}
+
+// Dependencies used by the lambda to process an event,
+//  mocked out in unit tests
+export type HandlerParameters = {
+  logger: Logger,
+  pdsClient: pds.Client,
+  usernameExtractor: (event: APIGatewayProxyEvent) => string,
+  authenticationFunction: (username: string) => Promise<{apigeeAccessToken: string, roleId: string}>
+}
+
+// Lambda handler function
 export const lambdaHandler = async (
   event: APIGatewayProxyEvent,
   {
@@ -97,18 +99,17 @@ export const lambdaHandler = async (
     })
   }
 
-  // Validate query parameters
-  let familyName: string
-  let givenName: string | undefined
-  let dateOfBirth: string
-  let postcode: string
+  // Guard query parameters
+  let validationErrors: Array<string> = []
+  let familyName
+  let dateOfBirth
+  let postcode
 
-  const validationErrors: Array<string> = []
-  const queryStringParameters = event.queryStringParameters ?? {}
-  familyName = guardQueryParameter(validationErrors, queryStringParameters, "familyName")
-  givenName = event.queryStringParameters?.givenName
-  dateOfBirth = guardQueryParameter(validationErrors, queryStringParameters, "dateOfBirth")
-  postcode = guardQueryParameter(validationErrors, queryStringParameters, "postcode")
+  const queryStringParameters = event.queryStringParameters ?? {};
+  [familyName, validationErrors] = guardQueryParameter(queryStringParameters, "familyName", validationErrors)
+  let givenName = queryStringParameters["givenName"];
+  [dateOfBirth, validationErrors] = guardQueryParameter(queryStringParameters, "dateOfBirth", validationErrors);
+  [postcode, validationErrors] = guardQueryParameter(queryStringParameters, "postcode", validationErrors)
   if (validationErrors.length > 0) {
     logger.info("Validation error", {
       validationErrors,
@@ -125,7 +126,7 @@ export const lambdaHandler = async (
   const patientSearchOutcome = await pdsClient
     .with_access_token(apigeeAccessToken)
     .with_role_id(roleId)
-    .patientSearch(familyName, dateOfBirth, postcode, givenName)
+    .patientSearch(familyName as string, dateOfBirth as string, postcode as string, givenName)
 
   let patients: Array<pds.patientSearch.PatientSummary> = []
 
@@ -164,20 +165,20 @@ export const lambdaHandler = async (
         timeMs,
         error: patientSearchOutcome.error
       })
-      return code(500).body(ERROR_RESPONSE_BODY)
+      return code(500).body(INTERNAL_ERROR_RESPONSE_BODY)
     case outcomeType.PDS_ERROR:
       logger.error("Unsupported PDS response", {
         timeMs,
         response: patientSearchOutcome.response
       })
-      return code(500).body(ERROR_RESPONSE_BODY)
-    case outcomeType.RESPONSE_PARSE_ERROR:
+      return code(500).body(INTERNAL_ERROR_RESPONSE_BODY)
+    case outcomeType.PARSE_ERROR:
       logger.error("Response parse error", {
         timeMs,
         response: patientSearchOutcome.response,
         validationErrors: patientSearchOutcome.validationErrors
       })
-      return code(500).body(ERROR_RESPONSE_BODY)
+      return code(500).body(INTERNAL_ERROR_RESPONSE_BODY)
     default:
       exhaustive_switch_guard(patientSearchOutcome)
   }
@@ -186,15 +187,15 @@ export const lambdaHandler = async (
 }
 
 const guardQueryParameter = (
-  validationErrors: Array<string>,
   params: APIGatewayProxyEventQueryStringParameters,
-  paramName: string
-): string => {
+  paramName: string,
+  validationErrors: Array<string>
+): [string | undefined, Array<string>] => {
   const param = params[paramName]
 
   if (!param) {
     validationErrors.push(paramName)
-    return undefined as unknown as string
   }
-  return param
+
+  return [param, validationErrors]
 }

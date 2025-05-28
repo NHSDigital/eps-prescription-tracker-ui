@@ -6,12 +6,11 @@ import {
   expect,
   beforeEach
 } from "@jest/globals"
+import {mockLogger} from "@cpt-ui-common/testing"
 import {AxiosInstance, AxiosResponse} from "axios"
 import {mockPdsPatient} from "./mockObjects"
-import {Logger} from "@aws-lambda-powertools/logger"
 
 import * as pds from "@cpt-ui-common/pdsClient"
-
 const OutcomeType = pds.patientDetailsLookup.OutcomeType
 const ValidatePatientDetailsOutcomeType = pds.patientDetailsLookup.ValidatePatientDetails.OutcomeType
 
@@ -27,7 +26,7 @@ jest.mock("axios", () => ({
 }))
 
 describe("Patient Details Lookup Service Tests", () => {
-  const mockLogger = new Logger({serviceName: "test"})
+  const logger = mockLogger()
   const mockEndpoint = "http://test-endpoint/personal-demographics/FHIR/R4"
   const mockAccessToken = "test-token"
   const mockRoleId = "test-role"
@@ -35,7 +34,7 @@ describe("Patient Details Lookup Service Tests", () => {
   const mockPdsClient = new pds.Client(
     mockAxiosInstance as unknown as AxiosInstance,
     mockEndpoint,
-    mockLogger
+    logger
   )
     .with_access_token(mockAccessToken)
     .with_role_id(mockRoleId)
@@ -51,7 +50,6 @@ describe("Patient Details Lookup Service Tests", () => {
   it("should successfully fetch and map patient details", async () => {
     mockGet.mockResolvedValueOnce({
       status: 200,
-      statusText: "OK",
       data: mockPdsPatient
     } as unknown as AxiosResponse )
 
@@ -88,9 +86,7 @@ describe("Patient Details Lookup Service Tests", () => {
 
   it("should handle patient not found", async () => {
     mockGet.mockResolvedValueOnce({
-      status: 200,
-      statusText: "OK",
-      data: null
+      status: 200
     } as unknown as AxiosResponse)
 
     const outcome = await makeRequest()
@@ -101,7 +97,6 @@ describe("Patient Details Lookup Service Tests", () => {
   it("should detect and handle S-Flag", async () => {
     mockGet.mockResolvedValueOnce({
       status: 200,
-      statusText: "OK",
       data: {
         ...mockPdsPatient,
         meta: {
@@ -118,7 +113,6 @@ describe("Patient Details Lookup Service Tests", () => {
   it("should detect and handle R-Flag", async () => {
     mockGet.mockResolvedValueOnce({
       status: 200,
-      statusText: "OK",
       data: {
         ...mockPdsPatient,
         meta: {
@@ -136,7 +130,6 @@ describe("Patient Details Lookup Service Tests", () => {
     const newNhsNumber = "8888888888"
     mockGet.mockResolvedValueOnce({
       status: 200,
-      statusText: "OK",
       data: {
         ...mockPdsPatient,
         id: newNhsNumber // Different NHS number than the requested one
@@ -153,7 +146,6 @@ describe("Patient Details Lookup Service Tests", () => {
   it("should handle incomplete patient data", async () => {
     mockGet.mockResolvedValueOnce({
       status: 200,
-      statusText: "OK",
       data: {
         id: mockNhsNumber
         // Missing name details
