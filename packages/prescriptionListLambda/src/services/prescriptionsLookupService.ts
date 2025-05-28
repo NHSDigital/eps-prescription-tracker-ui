@@ -19,7 +19,9 @@ export const getPrescriptions = async (
   prescriptionsEndpoint: string,
   query: PrescriptionQuery,
   apigeeAccessToken: string,
-  roleId: string
+  roleId: string,
+  orgCode: string,
+  correlationId: string
 ): Promise<Array<PrescriptionAPIResponse>> => {
   const {prescriptionId, nhsNumber} = query
   const searchParam = prescriptionId ? `prescriptionId=${prescriptionId}` : `nhsNumber=${nhsNumber}`
@@ -37,7 +39,8 @@ export const getPrescriptions = async (
         "x-request-id": uuidv4(),
         "nhsd-session-jobrole": roleId,
         "nhsd-identity-uuid": roleId,
-        "nhsd-organization-uuid": "A83008"
+        "nhsd-organization-uuid": orgCode,
+        "x-correlation-id": correlationId
       }
     }
   )
