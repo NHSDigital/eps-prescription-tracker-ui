@@ -273,7 +273,7 @@ export async function authenticateRequest(
   // at this point we may or may not have a selected role
   return {
     apigeeAccessToken: exchangeResult.accessToken,
-    roleId: userRecord.currentlySelectedRole.role_id || "",
-    orgCode: userRecord.currentlySelectedRole.org_code
+    roleId: userRecord.currentlySelectedRole?.role_id,
+    orgCode: userRecord.currentlySelectedRole?.org_code
   }
 }
