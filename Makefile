@@ -19,11 +19,11 @@ install-hooks: install-python
 
 compile-node:
 	npm run compile --workspace packages/common/commonTypes
+	npm run compile --workspace packages/common/lambdaUtils
 	npm run compile --workspace packages/common/middyErrorHandler
 	npm run compile --workspace packages/common/dynamoFunctions
 	npm run compile --workspace packages/common/authFunctions
 	npm run compile --workspace packages/common/pdsClient
-	npm run compile --workspace packages/common/lambdaUtils
 	npx tsc --build tsconfig.build.json
 
 compile: compile-node

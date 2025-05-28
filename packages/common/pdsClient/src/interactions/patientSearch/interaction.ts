@@ -10,7 +10,6 @@ import {
   ValidatedParameter,
   PatientSearchParameters
 } from "./types"
-import {exhaustive_switch_guard} from "../../utils"
 import * as axios from "../../axios_wrapper"
 import {AxiosResponse} from "axios"
 import {
@@ -24,6 +23,7 @@ import {
 } from "./schema"
 import {ErrorObject} from "ajv"
 import {PatientSummary} from "@cpt-ui-common/common-types"
+import {exhaustive_switch_guard} from "@cpt-ui-common/lambdaUtils"
 
 enum PatientSearchOutcomeType {
   SUCCESS = "SUCCESS",

@@ -1,7 +1,7 @@
 import {PatientDetails} from "@cpt-ui-common/common-types"
 import * as validatePatientDetails from "./validatePatientDetails"
 import {Client} from "../../client"
-import {exhaustive_switch_guard} from "../../utils"
+import {exhaustive_switch_guard} from "@cpt-ui-common/lambdaUtils"
 import * as axios from "../../axios_wrapper"
 import {mapPdsResponseToPatientDetails} from "./utils"
 

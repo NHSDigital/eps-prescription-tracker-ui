@@ -3,7 +3,7 @@ import {Logger} from "@aws-lambda-powertools/logger"
 import {AxiosInstance} from "axios"
 import {headers as headerUtils} from "@cpt-ui-common/lambdaUtils"
 import * as pds from "@cpt-ui-common/pdsClient"
-import {exhaustive_switch_guard} from "./utils"
+import {exhaustive_switch_guard} from "@cpt-ui-common/lambdaUtils"
 
 export const ERROR_RESPONSE_BODY = {
   message: "A system error has occurred"
