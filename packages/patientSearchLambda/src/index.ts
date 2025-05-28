@@ -12,14 +12,13 @@ import * as pds from "@cpt-ui-common/pdsClient"
 import {
   AuthenticationParameters,
   INTERNAL_ERROR_RESPONSE_BODY,
-  HandlerInitialisationParameters,
   HandlerParameters,
   lambdaHandler
 } from "./handler"
 
 /*
-This is the lambda code to search for a patient
-It expects the following environment variables to be set
+This file initialises dependencies and a lambda from the environment.
+Testable program logic is stored in the handler.ts file.
 
   TokenMappingTableName
   jwtPrivateKeyArn
@@ -30,51 +29,6 @@ It expects the following environment variables to be set
   apigeeCIS2TokenEndpoint
   apigeePersonalDemographicsEndpoint
 */
-
-export const newHandler = (
-  {
-    logger,
-    axiosInstance,
-    pdsEndpoint,
-    authenticationParameters
-  }: HandlerInitialisationParameters
-) => {
-  const pdsClient = new pds.Client(
-    axiosInstance,
-    pdsEndpoint,
-    logger
-  )
-
-  const dynamoClient = new DynamoDBClient()
-  const documentClient = DynamoDBDocumentClient.from(dynamoClient)
-
-  const authenticationFunction = async (username: string) => {
-    return await authenticateRequest(username, documentClient, logger, {
-      ...authenticationParameters
-    })
-  }
-
-  const params: HandlerParameters = {
-    logger,
-    pdsClient,
-    usernameExtractor: getUsernameFromEvent,
-    authenticationFunction
-  }
-
-  const eventHandler = (event: APIGatewayProxyEvent) => lambdaHandler(event, params)
-
-  return middy(eventHandler)
-    .use(injectLambdaContext(logger, {clearState: true}))
-    .use(
-      inputOutputLogger({
-        logger: logger.info
-      })
-    )
-    .use(
-      new MiddyErrorHandler(INTERNAL_ERROR_RESPONSE_BODY)
-        .errorHandler({logger})
-    )
-}
 
 // External endpoints and environment variables
 const authParametersFromEnv = (): AuthenticationParameters => {
@@ -90,11 +44,45 @@ const authParametersFromEnv = (): AuthenticationParameters => {
   }
 }
 
-const DEFAULT_HANDLER_PARAMETERS: HandlerInitialisationParameters = {
-  logger: new Logger({serviceName: "patientSearchLambda"}),
-  axiosInstance: axios.create(),
-  pdsEndpoint: process.env["apigeePersonalDemographicsEndpoint"] as string,
-  authenticationParameters: authParametersFromEnv()
+// Logger
+const logger = new Logger({serviceName: "patientSearchLambda"})
+
+// PDS Client
+const pdsEndpoint = process.env["apigeePersonalDemographicsEndpoint"] as string
+const axiosInstance = axios.create()
+const pdsClient = new pds.Client(
+  axiosInstance,
+  pdsEndpoint,
+  logger
+)
+
+// Authentication
+const dynamoClient = new DynamoDBClient()
+const documentClient = DynamoDBDocumentClient.from(dynamoClient)
+
+const authenticationParameters: AuthenticationParameters = authParametersFromEnv()
+
+const authenticationFunction = async (username: string) => {
+  return await authenticateRequest(username, documentClient, logger, {
+    ...authenticationParameters
+  })
 }
 
-export const handler = newHandler(DEFAULT_HANDLER_PARAMETERS)
+const handlerParams: HandlerParameters = {
+  logger,
+  pdsClient,
+  usernameExtractor: getUsernameFromEvent,
+  authenticationFunction
+}
+
+export const handler = middy((event: APIGatewayProxyEvent) => lambdaHandler(event, handlerParams))
+  .use(injectLambdaContext(logger, {clearState: true}))
+  .use(
+    inputOutputLogger({
+      logger: logger.info
+    })
+  )
+  .use(
+    new MiddyErrorHandler(INTERNAL_ERROR_RESPONSE_BODY)
+      .errorHandler({logger})
+  )

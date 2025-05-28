@@ -1,6 +1,5 @@
 import {APIGatewayProxyEvent, APIGatewayProxyEventQueryStringParameters, APIGatewayProxyResult} from "aws-lambda"
 import {Logger} from "@aws-lambda-powertools/logger"
-import {AxiosInstance} from "axios"
 import {
   headers as headerUtils,
   exhaustive_switch_guard,
@@ -13,7 +12,6 @@ export const INTERNAL_ERROR_RESPONSE_BODY = {
   message: "A system error has occurred"
 }
 
-// Wrapper for nice http responses
 const code = (statusCode: number) => ({
   body: (body: object) => ({
     statusCode,
@@ -21,15 +19,6 @@ const code = (statusCode: number) => ({
     headers: headerUtils.formatHeaders({"Content-Type": "application/json"})
   })
 })
-
-// Required parameters to initialise a handler
-//  for a live environment or integration tests
-export type HandlerInitialisationParameters = {
-  logger: Logger,
-  axiosInstance: AxiosInstance,
-  pdsEndpoint: string,
-  authenticationParameters: AuthenticationParameters,
-}
 
 export type AuthenticationParameters = {
   tokenMappingTableName: string,
@@ -43,7 +32,7 @@ export type AuthenticationParameters = {
 }
 
 // Dependencies used by the lambda to process an event,
-//  mocked out in unit tests
+//  injected to be easier to mock out in unit tests
 export type HandlerParameters = {
   logger: Logger,
   pdsClient: pds.Client,
