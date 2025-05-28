@@ -1,20 +1,9 @@
 import React from "react"
 import {Link} from "react-router-dom"
 import {CookieStrings} from "@/constants/ui-strings/CookieStrings"
+import {isUserLoggedIn} from "@/helpers/cookiesFunctions"
 
 export default function CookieSettingsPage() {
-  const isUserLoggedIn = () => {
-    //checks if user is logged in, as this affects redirect from home button
-    try {
-      const authData = localStorage.getItem("auth")
-      if (!authData) return false
-
-      const parsedAuth = JSON.parse(authData)
-      return parsedAuth?.isSignedIn === true && parsedAuth?.user !== null
-    } catch {
-      return false
-    }
-  }
 
   const getHomeLink = () => {
     return isUserLoggedIn() ? "/search" : "/login"
