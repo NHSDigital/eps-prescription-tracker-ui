@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from "react"
-import {Link} from "react-router-dom"
+import {Link, useNavigate} from "react-router-dom"
 import {CookieStrings} from "@/constants/ui-strings/CookieStrings"
 
 interface Cookie {
@@ -69,6 +69,8 @@ const CookiePolicyPage = () => {
 
   const [cookieChoice, setCookieChoice] = useState<"accepted" | "rejected">("rejected")
   const [hasInitialized, setHasInitialized] = useState(false)
+
+  const navigate = useNavigate()
 
   const isUserLoggedIn = () => {
     //checks if user is logged in, as this affects redirect from home button
@@ -296,13 +298,15 @@ const CookiePolicyPage = () => {
             </div>
           </fieldset>
         </div>
-
-        <Link
+        <button
           className="nhsuk-button"
-          to="/cookies-selected"
+          onClick={() => {
+            handleCookieChoice(cookieChoice)
+            navigate("/cookies-selected")
+          }}
           data-testid="save-cookie-preferences">
           {CookieStrings.cookieSettings.saveButton}
-        </Link>
+        </button>
 
         <h2 className="nhsuk-heading-2">{CookieStrings.changeSettings.heading}</h2>
         <p>{CookieStrings.changeSettings.paragraph1}</p>
