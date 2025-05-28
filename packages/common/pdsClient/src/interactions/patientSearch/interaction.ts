@@ -65,7 +65,7 @@ async function patientSearch(
 
   [familyName, validationErrors] = validateName(_familyName, ValidatedParameter.FAMILY_NAME, validationErrors)
   if (_givenName !== undefined) {
-    [givenName, validationErrors] = validateName(_givenName as string, ValidatedParameter.GIVEN_NAME, validationErrors)
+    [givenName, validationErrors] = validateName(_givenName, ValidatedParameter.GIVEN_NAME, validationErrors)
   }
   [dateOfBirth, validationErrors] = validateDateOfBirth(_dateOfBirth, validationErrors);
   [postcode, validationErrors] = validatePostcode(_postcode, validationErrors)

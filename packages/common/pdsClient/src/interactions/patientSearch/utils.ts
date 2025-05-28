@@ -8,7 +8,7 @@ export function PATIENT_DETAILS_PATH(
   const familyQuery = `?family=${searchParameters.familyName.to_query_string()}`
   const birthdateQuery = `&birthdate=eq${searchParameters.dateOfBirth.to_query_string()}`
   const postcodeQuery = `&address-postalcode=${searchParameters.postcode.to_query_string()}`
-  const givenNameQuery = `${searchParameters.givenName ? `&given=${searchParameters.givenName.to_query_string()}` : ""}`
+  const givenNameQuery = searchParameters.givenName ? `&given=${searchParameters.givenName.to_query_string()}` : ""
 
   return `${base}${familyQuery}${birthdateQuery}${postcodeQuery}${givenNameQuery}`
 }

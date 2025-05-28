@@ -196,5 +196,5 @@ const guardQueryParameter = (
     validationErrors.push(`Missing query parameter: ${paramName}`)
     return undefined as unknown as string
   }
-  return param as string
+  return param
 }
