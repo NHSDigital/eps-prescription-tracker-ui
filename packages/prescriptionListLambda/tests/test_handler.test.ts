@@ -122,7 +122,8 @@ describe("handler tests with cis2 auth", () => {
             "cognito:username": "Mock_JoeBloggs"
           }
         }
-      }
+      },
+      headers: {}
     }
 
     const response = await handler(event, dummyContext)
@@ -178,7 +179,8 @@ describe("handler tests with cis2 auth", () => {
             "cognito:username": "Mock_JoeBloggs"
           }
         }
-      }
+      },
+      headers: {}
     }
 
     const response = await handler(event, dummyContext)
@@ -222,7 +224,8 @@ describe("handler tests with cis2 auth", () => {
             "cognito:username": "Mock_JoeBloggs"
           }
         }
-      }
+      },
+      headers: {}
     }
 
     const response = await handler(event, dummyContext)
@@ -249,7 +252,8 @@ describe("handler tests with cis2 auth", () => {
       queryStringParameters: {
         nhsNumber: "9999999999"
       },
-      requestContext: {}
+      requestContext: {},
+      headers: {}
     }, dummyContext)
 
     // Update the assertion to match the actual response format

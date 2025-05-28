@@ -18,7 +18,8 @@ describe("lambda handler unit tests", () => {
         givenName: "John",
         dateOfBirth: "1990-01-01",
         postcode: "12345"
-      }
+      },
+      headers: {}
     } as unknown as APIGatewayProxyEvent
 
     handlerParams = {
@@ -26,7 +27,7 @@ describe("lambda handler unit tests", () => {
       pdsClient: mockPdsClient(),
       usernameExtractor: () => "test-username",
       authenticationFunction: async () => {
-        return {apigeeAccessToken: "test-access-token", roleId: "test-role-id"}
+        return {apigeeAccessToken: "test-access-token", roleId: "test-role-id", orgCode: "test-org-code"}
       }
     }
   })
@@ -59,7 +60,7 @@ describe("lambda handler unit tests", () => {
 
   it("should return an error if no Apigee access token is found", async () => {
     handlerParams.authenticationFunction = async () => {
-      return {apigeeAccessToken: "", roleId: "test-role-id"}
+      return {apigeeAccessToken: "", roleId: "test-role-id", orgCode: "test-org-code"}
     }
 
     const response = await lambdaHandler(mockEvent, handlerParams)
