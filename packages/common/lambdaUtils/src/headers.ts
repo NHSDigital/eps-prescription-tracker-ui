@@ -5,7 +5,7 @@ import {AxiosResponseHeaders, RawAxiosResponseHeaders} from "axios"
  * @param headers - Axios response headers
  * @returns Formatted headers
 */
-function formatHeaders(
+export function formatHeaders(
   headers: AxiosResponseHeaders | Partial<RawAxiosResponseHeaders>
 ): {[header: string]: string} {
   const formattedHeaders: {[header: string]: string} = {}
@@ -17,5 +17,3 @@ function formatHeaders(
 
   return formattedHeaders
 }
-
-export {formatHeaders}

@@ -17,7 +17,12 @@ import httpHeaderNormalizer from "@middy/http-header-normalizer"
 import {authenticateRequest, getUsernameFromEvent} from "@cpt-ui-common/authFunctions"
 import {PrescriptionError, PDSError} from "./utils/errors"
 
-import {headers, exhaustive_switch_guard} from "@cpt-ui-common/lambdaUtils"
+import {
+  headers,
+  exhaustive_switch_guard,
+  extractInboundEventValues,
+  appendLoggerKeys
+} from "@cpt-ui-common/lambdaUtils"
 const formatHeaders = headers.formatHeaders
 
 /*
@@ -85,17 +90,14 @@ const errorResponseBody = {
   message: "A system error has occurred"
 }
 
+const RESPONSE_HEADERS = {"Content-Type": "application/json"}
+
 // Middleware error handler
 const middyErrorHandler = new MiddyErrorHandler(errorResponseBody)
 
 const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-  logger.appendKeys({
-    "apigw-request-id": event.requestContext?.requestId
-  })
-  const headers = event.headers ?? []
-  logger.appendKeys({"x-request-id": headers["x-request-id"]})
-
-  logger.info("Lambda handler invoked", {event})
+  const {loggerKeys, correlationId} = extractInboundEventValues(event)
+  appendLoggerKeys(logger, loggerKeys)
 
   const searchStartTime = Date.now()
   const axiosInstance = axios.create()
@@ -112,7 +114,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     // Use the authenticateRequest function for authentication
     const username = getUsernameFromEvent(event)
 
-    const {apigeeAccessToken, roleId} = await authenticateRequest(username, documentClient, logger, {
+    const {apigeeAccessToken, roleId, orgCode} = await authenticateRequest(username, documentClient, logger, {
       tokenMappingTableName: TokenMappingTableName,
       jwtPrivateKeyArn,
       apigeeApiKey,
@@ -136,6 +138,9 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
         axiosInstance,
         logger,
         apigeeAccessToken,
+        roleId,
+        orgCode,
+        correlationId,
         searchParams.nhsNumber
       )
     } else {
@@ -144,6 +149,9 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
         axiosInstance,
         logger,
         apigeeAccessToken,
+        roleId,
+        orgCode,
+        correlationId,
         searchParams.prescriptionId!
       )
     }
@@ -160,7 +168,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     return {
       statusCode: 200,
       body: JSON.stringify(searchResponse),
-      headers: formatHeaders(headers)
+      headers: formatHeaders(RESPONSE_HEADERS)
     }
   } catch (error) {
     logger.error("Search failed", {
@@ -172,7 +180,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
       return {
         statusCode: 404,
         body: JSON.stringify({message: "Prescription not found"}),
-        headers: formatHeaders(headers)
+        headers: formatHeaders(RESPONSE_HEADERS)
       }
     }
 
@@ -184,6 +192,9 @@ const nhsNumberSearchFlow = async (
   axiosInstance: AxiosInstance,
   logger: Logger,
   apigeeAccessToken: string,
+  roleId: string,
+  orgCode: string,
+  correlationId: string,
   nhsNumber: string
 ): Promise<SearchResponse> => {
   const pdsClient = new pds.Client(
@@ -194,6 +205,8 @@ const nhsNumberSearchFlow = async (
   const outcome = await pdsClient
     .with_access_token(apigeeAccessToken)
     .with_role_id(roleId)
+    .with_org_code(orgCode)
+    .with_correlation_id(correlationId)
     .getPatientDetails(nhsNumber)
 
   let currentNhsNumber = nhsNumber
@@ -238,7 +251,9 @@ const nhsNumberSearchFlow = async (
     apigeePrescriptionsEndpoint,
     {nhsNumber: currentNhsNumber},
     apigeeAccessToken,
-    roleId
+    roleId,
+    orgCode,
+    correlationId
   )
 
   logger.debug("Prescriptions", {
@@ -253,6 +268,9 @@ const prescriptionIdSearchFlow = async (
   axiosInstance: AxiosInstance,
   logger: Logger,
   apigeeAccessToken: string,
+  roleId: string,
+  orgCode: string,
+  correlationId: string,
   prescriptionId: string
 ): Promise<SearchResponse> => {
   const prescriptions = await getPrescriptions(
@@ -261,7 +279,9 @@ const prescriptionIdSearchFlow = async (
     apigeePrescriptionsEndpoint,
     {prescriptionId: prescriptionId},
     apigeeAccessToken,
-    roleId
+    roleId,
+    orgCode,
+    correlationId
   )
 
   // Get patient details using NHS Number from first prescription
@@ -283,6 +303,8 @@ const prescriptionIdSearchFlow = async (
   const outcome = await pdsClient
     .with_access_token(apigeeAccessToken)
     .with_role_id(roleId)
+    .with_org_code(orgCode)
+    .with_correlation_id(correlationId)
     .getPatientDetails(nhsNumber)
 
   let patientDetails

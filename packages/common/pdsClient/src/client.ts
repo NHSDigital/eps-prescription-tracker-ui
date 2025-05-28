@@ -12,6 +12,8 @@ export class Client implements clientInterface, patientDetailsLookup.Interface, 
   readonly logger: Logger
   apigeeAccessToken?: string
   roleId?: string
+  orgCode?: string
+  correlationId?: string
 
   constructor(
     axiosInstance: AxiosInstance,
@@ -23,6 +25,8 @@ export class Client implements clientInterface, patientDetailsLookup.Interface, 
     this.logger = logger
     this.apigeeAccessToken = undefined
     this.roleId = undefined
+    this.orgCode = undefined
+    this.correlationId = undefined
   }
 
   axios_get = async (
@@ -34,11 +38,11 @@ export class Client implements clientInterface, patientDetailsLookup.Interface, 
   headers = () => {
     return {
       Accept: "application/fhir+json",
-      Authorization: this.apigeeAccessToken ? `Bearer ${this.apigeeAccessToken}` : "",
-      "NHSD-End-User-Organisation-ODS": "A83008",
-      "NHSD-Session-URID": this.roleId ?? "",
-      "X-Request-ID": uuidv4(),
-      "X-Correlation-ID": uuidv4()
+      Authorization: `Bearer ${this.apigeeAccessToken}`,
+      "NHSD-End-User-Organisation-ODS": this.orgCode!,
+      "NHSD-Session-URID": this.roleId!,
+      "x-Request-ID": uuidv4(),
+      "X-Correlation-ID": this.correlationId!
     }
   }
 
@@ -49,6 +53,16 @@ export class Client implements clientInterface, patientDetailsLookup.Interface, 
 
   with_role_id(roleId: string): this {
     this.roleId = roleId
+    return this
+  }
+
+  with_org_code(orgCode: string): this {
+    this.orgCode = orgCode
+    return this
+  }
+
+  with_correlation_id(correlationId: string): this {
+    this.correlationId = correlationId
     return this
   }
 

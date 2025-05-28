@@ -1,7 +1,12 @@
 import {APIGatewayProxyEvent, APIGatewayProxyEventQueryStringParameters, APIGatewayProxyResult} from "aws-lambda"
 import {Logger} from "@aws-lambda-powertools/logger"
 import {AxiosInstance} from "axios"
-import {headers as headerUtils, exhaustive_switch_guard} from "@cpt-ui-common/lambdaUtils"
+import {
+  headers as headerUtils,
+  exhaustive_switch_guard,
+  extractInboundEventValues,
+  appendLoggerKeys
+} from "@cpt-ui-common/lambdaUtils"
 import * as pds from "@cpt-ui-common/pdsClient"
 
 export const INTERNAL_ERROR_RESPONSE_BODY = {
@@ -43,7 +48,7 @@ export type HandlerParameters = {
   logger: Logger,
   pdsClient: pds.Client,
   usernameExtractor: (event: APIGatewayProxyEvent) => string,
-  authenticationFunction: (username: string) => Promise<{apigeeAccessToken: string, roleId: string}>
+  authenticationFunction: (username: string) => Promise<{apigeeAccessToken: string, roleId: string, orgCode: string}>
 }
 
 // Lambda handler function
@@ -56,11 +61,8 @@ export const lambdaHandler = async (
     authenticationFunction
   }: HandlerParameters
 ): Promise<APIGatewayProxyResult> => {
-  logger.appendKeys({
-    "apigw-request-id": event.requestContext?.requestId
-  })
-  const headers = event.headers ?? []
-  logger.appendKeys({"x-request-id": headers["x-request-id"]})
+  const {loggerKeys, correlationId} = extractInboundEventValues(event)
+  appendLoggerKeys(logger, loggerKeys)
 
   logger.info("Lambda handler invoked", {event})
 
@@ -79,11 +81,13 @@ export const lambdaHandler = async (
 
   let apigeeAccessToken: string | undefined
   let roleId: string | undefined
+  let orgCode: string | undefined
   try{
     const authResult = await authenticationFunction(username)
 
     apigeeAccessToken = authResult.apigeeAccessToken
     roleId = authResult.roleId
+    orgCode = authResult.orgCode
   } catch (error) {
     logger.error("Authentication failed", {error})
     return code(401).body({
@@ -125,6 +129,8 @@ export const lambdaHandler = async (
   const patientSearchOutcome = await pdsClient
     .with_access_token(apigeeAccessToken)
     .with_role_id(roleId)
+    .with_org_code(orgCode)
+    .with_correlation_id(correlationId)
     .patientSearch(familyName as string, dateOfBirth as string, postcode as string, givenName)
 
   let patients: Array<pds.patientSearch.PatientSummary> = []
