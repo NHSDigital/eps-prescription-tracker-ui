@@ -30,8 +30,8 @@ export type {
   PrescriptionDetailsResponse
 } from "./prescriptionDetails"
 
-
-export type { PatientSummary } from "./patientSearch"
+export type {PatientSummary} from "./patientSearch"
+export * as PatientSummaryTypes from "./patientSearch"
 
 // Types from basicDetailsSearch
 export type {

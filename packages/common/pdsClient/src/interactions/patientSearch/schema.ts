@@ -1,5 +1,6 @@
 import {FromSchema, JSONSchema} from "json-schema-to-ts"
 import Ajv, {ErrorObject, ValidateFunction} from "ajv"
+import {PatientSummaryTypes} from "@cpt-ui-common/common-types"
 
 enum PatientMetaCode {
   UNRESTRICTED = "U",
@@ -15,12 +16,8 @@ enum PatientNameUse {
   MAIDEN = "maiden"
 }
 
-enum PatientGender {
-  MALE = "male",
-  FEMALE = "female",
-  OTHER = "other",
-  UNKNOWN = "unknown"
-}
+// Use patient summary gender as value is mapped 1:1
+const PatientGender = PatientSummaryTypes.PatientSummaryGender
 
 enum PatientAddressUse {
   HOME = "home",

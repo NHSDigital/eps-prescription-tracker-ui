@@ -110,14 +110,14 @@ export const lambdaHandler = async (
   dateOfBirth = guardQueryParameter(validationErrors, queryStringParameters, "dateOfBirth")
   postcode = guardQueryParameter(validationErrors, queryStringParameters, "postcode")
   if (validationErrors.length > 0) {
-    logger.error("Validation error", {
+    logger.info("Validation error", {
       validationErrors,
       timeMs: Date.now() - searchStartTime
     })
 
     return code(400).body({
-      message: "Invalid query parameters",
-      error: String(validationErrors)
+      message: "Missing query parameters",
+      error: validationErrors.join(", ")
     })
   }
 
@@ -133,14 +133,6 @@ export const lambdaHandler = async (
 
   const outcomeType = pds.patientSearch.OutcomeType
   switch (patientSearchOutcome.type) {
-    case outcomeType.INVALID_PARAMETERS:
-      logger.error("Invalid parameters", {
-        timeMs,
-        error: patientSearchOutcome.validationErrors
-      })
-      return code(400).body({
-        errors: patientSearchOutcome.validationErrors
-      })
     case outcomeType.SUCCESS:
       patients = patientSearchOutcome.patients
       logger.info("Search completed", {
@@ -151,8 +143,16 @@ export const lambdaHandler = async (
         body: patients
       })
       return code(200).body(patients)
+    case outcomeType.INVALID_PARAMETERS:
+      logger.info("Invalid parameters", {
+        timeMs,
+        error: patientSearchOutcome.validationErrors
+      })
+      return code(400).body({
+        errors: patientSearchOutcome.validationErrors
+      })
     case outcomeType.TOO_MANY_MATCHES:
-      logger.error("Too many matches", {
+      logger.info("Too many matches", {
         timeMs,
         searchParameters: patientSearchOutcome.searchParameters
       })
@@ -193,7 +193,7 @@ const guardQueryParameter = (
   const param = params[paramName]
 
   if (!param) {
-    validationErrors.push(`Missing query parameter: ${paramName}`)
+    validationErrors.push(paramName)
     return undefined as unknown as string
   }
   return param
