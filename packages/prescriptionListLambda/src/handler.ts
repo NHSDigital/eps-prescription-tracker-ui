@@ -13,13 +13,11 @@ import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 import {PatientDetails, SearchResponse} from "@cpt-ui-common/common-types"
 import {createMinimalPatientDetails, mapSearchResponse} from "./utils/responseMapper"
 import * as pds from "@cpt-ui-common/pdsClient"
-import {exhaustive_switch_guard} from "@cpt-ui-common/lambdaUtils"
 import httpHeaderNormalizer from "@middy/http-header-normalizer"
 import {authenticateRequest, getUsernameFromEvent} from "@cpt-ui-common/authFunctions"
-import {PrescriptionError} from "./utils/errors"
-import {PDSError} from "./utils/errors"
+import {PrescriptionError, PDSError} from "./utils/errors"
 
-import {headers} from "@cpt-ui-common/lambdaUtils"
+import {headers, exhaustive_switch_guard} from "@cpt-ui-common/lambdaUtils"
 const formatHeaders = headers.formatHeaders
 
 /*
