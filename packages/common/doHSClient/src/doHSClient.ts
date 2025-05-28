@@ -7,8 +7,10 @@ const logger = new Logger({serviceName: "doHSClient"})
 
 // Read the DoHS API Key from environment variables
 const apigeeApiKey = process.env["apigeeApiKey"] as string
+const apigeeDoHSEndpoint = process.env["apigeeDoHSEndpoint"] as string
 
-export const doHSClient = async (odsCodes: {
+export const doHSClient = async (
+  odsCodes: {
   prescribingOrganization?: string
   nominatedPerformer?: string
   dispensingOrganizations?: Array<string> // Supports multiple dispensing orgs
@@ -25,18 +27,20 @@ export const doHSClient = async (odsCodes: {
   if (validOdsCodes.length === 0) {
     throw new Error("At least one ODS Code is required for DoHS API request")
   }
-
   if (!apigeeApiKey) {
-    throw new Error("DoHS API Key environment variable is not set")
+    throw new Error("Apigee API Key environment variable is not set")
+  }
+  if (!apigeeDoHSEndpoint) {
+    throw new Error("DoHS API endpoint environment variable is not set")
   }
 
   // Construct filter query for multiple ODS codes
   const odsFilter = validOdsCodes.map((code) => `ODSCode eq '${code}'`).join(" or ")
-  const requestUrl = `https://internal-dev.api.service.nhs.uk/service-search-api/?api-version=3&$filter=${odsFilter}`
+  const requestUrl = `${apigeeDoHSEndpoint}&$filter=${odsFilter}`
 
   try {
     const config: AxiosRequestConfig = {
-      headers: {"apikey": apigeeApiKey}
+      headers: {"apikey": `${apigeeApiKey}`}
     }
 
     const response = await axios.get(requestUrl, config)

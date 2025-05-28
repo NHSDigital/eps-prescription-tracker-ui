@@ -101,6 +101,8 @@ repos:
         args: ["run", "--prefix=packages/common/doHSClient", "lint"]
         language: system
         files: ^packages\/common\/doHSClient
+        types_or: [ts, tsx, javascript, jsx, json]
+        pass_filenames: false
         
       - id: lint-dynamoFunctions
         name: Lint dynamoFunctions
