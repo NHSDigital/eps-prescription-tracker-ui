@@ -28,6 +28,8 @@ describe("Patient Details Lookup Service Tests", () => {
   const mockAccessToken = "test-token"
   const mockRoleId = "test-role"
   const mockNhsNumber = "9000000009"
+  const mockOrgCode = "mock-org"
+  const mockCorrelationId = "mock-correlationId"
 
   beforeEach(() => {
     jest.clearAllMocks()
@@ -47,7 +49,9 @@ describe("Patient Details Lookup Service Tests", () => {
         mockEndpoint,
         mockNhsNumber,
         mockAccessToken,
-        mockRoleId
+        mockRoleId,
+        mockOrgCode,
+        mockCorrelationId
     )
 
     expect(result).toMatchObject({
@@ -90,7 +94,9 @@ describe("Patient Details Lookup Service Tests", () => {
         mockEndpoint,
         mockNhsNumber,
         mockAccessToken,
-        mockRoleId
+        mockRoleId,
+        mockOrgCode,
+        mockCorrelationId
     )
 
     expect(result).toHaveProperty("_pdsError")
@@ -116,7 +122,9 @@ describe("Patient Details Lookup Service Tests", () => {
         mockEndpoint,
         mockNhsNumber,
         mockAccessToken,
-        mockRoleId
+        mockRoleId,
+        mockOrgCode,
+        mockCorrelationId
     )
 
     expect(result).toHaveProperty("_pdsError")
@@ -143,7 +151,9 @@ describe("Patient Details Lookup Service Tests", () => {
         mockEndpoint,
         mockNhsNumber,
         mockAccessToken,
-        mockRoleId
+        mockRoleId,
+        mockOrgCode,
+        mockCorrelationId
     )
 
     expect(result).toHaveProperty("_pdsError")
@@ -169,7 +179,9 @@ describe("Patient Details Lookup Service Tests", () => {
         mockEndpoint,
         mockNhsNumber,
         mockAccessToken,
-        mockRoleId
+        mockRoleId,
+        mockOrgCode,
+        mockCorrelationId
     )
 
     expect(result).toMatchObject({
@@ -194,7 +206,9 @@ describe("Patient Details Lookup Service Tests", () => {
         mockEndpoint,
         mockNhsNumber,
         mockAccessToken,
-        mockRoleId
+        mockRoleId,
+        mockOrgCode,
+        mockCorrelationId
     )
 
     expect(result).toHaveProperty("_pdsError")
@@ -212,7 +226,9 @@ describe("Patient Details Lookup Service Tests", () => {
         mockEndpoint,
         mockNhsNumber,
         mockAccessToken,
-        mockRoleId
+        mockRoleId,
+        mockOrgCode,
+        mockCorrelationId
     )
 
     expect(result).toHaveProperty("_pdsError")
