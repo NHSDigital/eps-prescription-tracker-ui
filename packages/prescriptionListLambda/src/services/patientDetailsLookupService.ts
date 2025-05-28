@@ -12,7 +12,9 @@ export const getPdsPatientDetails = async (
   pdsEndpoint: string,
   nhsNumber: string,
   apigeeAccessToken: string,
-  roleId: string
+  roleId: string,
+  orgCode: string,
+  correlationId: string
 ): Promise<PatientAPIResponse> => {
   const startTime = Date.now()
   logger.info("Fetching patient details from PDS", {nhsNumber})
@@ -23,10 +25,10 @@ export const getPdsPatientDetails = async (
         headers: {
           Accept: "application/fhir+json",
           Authorization: `Bearer ${apigeeAccessToken}`,
-          "NHSD-End-User-Organisation-ODS": "A83008",
+          "NHSD-End-User-Organisation-ODS": orgCode,
           "NHSD-Session-URID": roleId,
-          "X-Request-ID": uuidv4(),
-          "X-Correlation-ID": uuidv4()
+          "x-Request-ID": uuidv4(),
+          "X-Correlation-ID": correlationId
         }
       }
     )

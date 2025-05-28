@@ -18,7 +18,6 @@ interface ApigeeTokenResponse {
   idToken?: string
   refreshToken?: string
   expiresIn: number
-  roleId?: string
 }
 
 // Create axios instance
@@ -46,7 +45,6 @@ export interface AuthenticateRequestOptions {
   jwtKid: string
   apigeeCis2TokenEndpoint: string
   apigeeMockTokenEndpoint: string
-  defaultRoleId?: string
 }
 
 const refreshTokenFlow = async (
@@ -111,7 +109,8 @@ export async function authenticateRequest(
   options: AuthenticateRequestOptions
 ): Promise<{
   apigeeAccessToken: string
-  roleId: string
+  roleId: string,
+  orgCode: string
 }> {
   const {
     tokenMappingTableName,
@@ -119,7 +118,6 @@ export async function authenticateRequest(
     apigeeApiKey,
     apigeeApiSecret,
     jwtKid,
-    defaultRoleId,
     apigeeMockTokenEndpoint,
     apigeeCis2TokenEndpoint
   } = options
@@ -134,6 +132,11 @@ export async function authenticateRequest(
 
   // If token exists, check if we need to refresh it
   if (userRecord?.apigeeAccessToken) {
+    if (!userRecord.currentlySelectedRole?.role_id || !userRecord.currentlySelectedRole.org_code) {
+      // we throw an error here if we have an apigee access token but no selected role
+      // as we need the role information for all apigee calls
+      throw new Error("No currently selected role")
+    }
     const currentTime = Math.floor(Date.now() / 1000)
     const timeUntilExpiry = userRecord.apigeeExpiresIn - currentTime
 
@@ -148,8 +151,7 @@ export async function authenticateRequest(
           {
             accessToken: userRecord.apigeeAccessToken,
             refreshToken: userRecord.apigeeRefreshToken,
-            expiresIn: userRecord.apigeeExpiresIn,
-            roleId: userRecord.selectedRoleId
+            expiresIn: userRecord.apigeeExpiresIn
           },
           logger,
           {
@@ -164,7 +166,8 @@ export async function authenticateRequest(
 
         return {
           apigeeAccessToken: refreshedToken.accessToken,
-          roleId: refreshedToken.roleId || defaultRoleId || ""
+          roleId: userRecord.currentlySelectedRole.role_id,
+          orgCode: userRecord.currentlySelectedRole.org_code
         }
       } catch (error) {
         logger.warn("Token refresh failed, will proceed with new token acquisition", {error})
@@ -179,7 +182,8 @@ export async function authenticateRequest(
 
       return {
         apigeeAccessToken: userRecord.apigeeAccessToken,
-        roleId: userRecord.selectedRoleId || defaultRoleId || ""
+        roleId: userRecord.currentlySelectedRole.role_id || "",
+        orgCode: userRecord.currentlySelectedRole.org_code
       }
     }
   }
@@ -209,7 +213,7 @@ export async function authenticateRequest(
       logger
     )
   } else {
-  // When we aren't mocking, get CIS2 tokens and exchange for Apigee token
+    // When we aren't mocking, get CIS2 tokens and exchange for Apigee token
     await verifyIdToken(userRecord.cis2IdToken, logger)
 
     // Fetch the private key for signing the client assertion
@@ -266,8 +270,10 @@ export async function authenticateRequest(
     }
   })
 
+  // at this point we may or may not have a selected role
   return {
     apigeeAccessToken: exchangeResult.accessToken,
-    roleId: defaultRoleId || ""
+    roleId: userRecord.currentlySelectedRole?.role_id,
+    orgCode: userRecord.currentlySelectedRole?.org_code
   }
 }
