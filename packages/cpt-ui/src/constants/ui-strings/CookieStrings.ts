@@ -2,7 +2,7 @@ import {FRONTEND_PATHS} from "@/constants/environment"
 
 export const CookieStrings = {
   banner : {
-    cookie_title: "Cookies on the Prescription tracker",
+    cookie_title: "Cookies on the Prescription Tracker",
     cookie_text_p1: "We've put some small files called cookies on your device to make our site work.",
     cookie_text_p2: "We’d also like to use analytics cookies. "
     + "These send anonymous information about how our site is used to a service "
@@ -67,7 +67,7 @@ export const CookieStrings = {
 
   intro: {
     paragraph1:
-    "NHS England uses cookies on the Prescription tracker. " +
+    "NHS England uses cookies on the Prescription Tracker. " +
      "For information about how we store your data, check our privacy policy for this service.",
     privacyPolicyText: "privacy policy"
   },
@@ -127,7 +127,7 @@ export const CookieStrings = {
     heading: "Changes to this cookie policy",
     paragraph1:
     "If this cookie policy changes, you will see the cookie banner again next time you visit the" +
-    " Prescription tracker. " +
+    " Prescription Tracker. " +
     "You can check this policy for any changes to the cookies that we use"
   },
   savedCookieSettings: "Your cookie settings have been saved",
@@ -141,7 +141,7 @@ export const CookieStrings = {
   anyTime: " at any time.",
   pageLastReviewed: "Page last reviewed: 15 March 2025",
   pageNextReviewed: "Next review due: 15 March 2026",
-  cptCookies: "Cookies on the Prescription tracker ",
+  cptCookies: "Cookies on the Prescription Tracker ",
   detailsSummaryText: (type: string) => `See the ${type.toLowerCase()} we use`,
   cookieBannerLink: "Link to cookie policy",
   breadcrumbBack: {
