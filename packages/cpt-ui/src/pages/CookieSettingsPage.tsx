@@ -3,13 +3,29 @@ import {Link} from "react-router-dom"
 import {CookieStrings} from "@/constants/ui-strings/CookieStrings"
 
 export default function CookieSettingsPage() {
+  const isUserLoggedIn = () => {
+    //checks if user is logged in, as this affects redirect from home button
+    try {
+      const authData = localStorage.getItem("auth")
+      if (!authData) return false
+
+      const parsedAuth = JSON.parse(authData)
+      return parsedAuth?.isSignedIn === true && parsedAuth?.user !== null
+    } catch {
+      return false
+    }
+  }
+
+  const getHomeLink = () => {
+    return isUserLoggedIn() ? "/search" : "/login"
+  }
   return (
     <main className="nhsuk-width-container nhsuk-u-margin-top-4">
 
       <nav className="nhsuk-breadcrumb" aria-label="Breadcrumb">
         <ol className="nhsuk-breadcrumb__list">
           <li className="nhsuk-breadcrumb__item">
-            <Link className="nhsuk-breadcrumb__link" to="/search">{CookieStrings.home}</Link>
+            <Link className="nhsuk-breadcrumb__link" to={getHomeLink()}>{CookieStrings.home}</Link>
           </li>
           <li className="nhsuk-breadcrumb__item">
             <Link className="nhsuk-breadcrumb__link" to="/cookies">{CookieStrings.cookie_policy}</Link>

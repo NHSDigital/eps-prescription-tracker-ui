@@ -168,10 +168,10 @@ const CookiePolicyPage = () => {
                 {CookieStrings.cookieName}
               </th>
               <th role="columnheader" scope="col">
-                Purpose
+                {CookieStrings.cookiePurpose}
               </th>
               <th role="columnheader" scope="col">
-                Expiry
+                {CookieStrings.cookieExpiry}
               </th>
             </tr>
           </thead>
