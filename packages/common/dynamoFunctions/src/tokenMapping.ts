@@ -23,7 +23,6 @@ interface TokenMappingItem {
     apigeeRefreshToken?: string,
     apigeeExpiresIn?: number,
     apigeeCode?: string,
-    selectedRoleId?: string,
     userDetails?: UserDetails,
     rolesWithAccess?: Array<RoleDetails>,
     rolesWithoutAccess?: Array<RoleDetails>
@@ -79,7 +78,6 @@ export const updateTokenMapping = async (
       ["apigeeRefreshToken", tokenMappingItem.apigeeRefreshToken],
       ["apigeeExpiresIn", expiryTimestamp],
       ["apigeeCode", tokenMappingItem.apigeeCode],
-      ["selectedRoleId", tokenMappingItem.selectedRoleId],
       ["userDetails", tokenMappingItem.userDetails],
       ["rolesWithAccess", tokenMappingItem.rolesWithAccess],
       ["rolesWithoutAccess", tokenMappingItem.rolesWithoutAccess],
