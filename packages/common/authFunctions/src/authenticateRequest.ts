@@ -111,7 +111,8 @@ export async function authenticateRequest(
   options: AuthenticateRequestOptions
 ): Promise<{
   apigeeAccessToken: string
-  roleId: string
+  roleId: string,
+  orgCode: string
 }> {
   const {
     tokenMappingTableName,
@@ -119,7 +120,6 @@ export async function authenticateRequest(
     apigeeApiKey,
     apigeeApiSecret,
     jwtKid,
-    defaultRoleId,
     apigeeMockTokenEndpoint,
     apigeeCis2TokenEndpoint
   } = options
@@ -164,7 +164,8 @@ export async function authenticateRequest(
 
         return {
           apigeeAccessToken: refreshedToken.accessToken,
-          roleId: refreshedToken.roleId || defaultRoleId || ""
+          roleId: refreshedToken.roleId || "",
+          orgCode: userRecord.currentlySelectedRole.org_code
         }
       } catch (error) {
         logger.warn("Token refresh failed, will proceed with new token acquisition", {error})
@@ -179,7 +180,8 @@ export async function authenticateRequest(
 
       return {
         apigeeAccessToken: userRecord.apigeeAccessToken,
-        roleId: userRecord.selectedRoleId || defaultRoleId || ""
+        roleId: userRecord.currentlySelectedRole.role_id || "",
+        orgCode: userRecord.currentlySelectedRole.org_code
       }
     }
   }
@@ -268,6 +270,7 @@ export async function authenticateRequest(
 
   return {
     apigeeAccessToken: exchangeResult.accessToken,
-    roleId: defaultRoleId || ""
+    roleId: userRecord.currentlySelectedRole.role_id || "",
+    orgCode: userRecord.currentlySelectedRole.org_code
   }
 }

@@ -111,8 +111,11 @@ describe("authenticateRequest", () => {
       apigeeAccessToken: "existing-token",
       cis2IdToken: "existing-cis2-token",
       cis2AccessToken: "existing-cis2-access-token",
-      selectedRoleId: "existing-role-id",
-      apigeeExpiresIn: Math.floor(Date.now() / 1000) + 1000
+      apigeeExpiresIn: Math.floor(Date.now() / 1000) + 1000,
+      currentlySelectedRole: {
+        role_id: "existing-role-id",
+        org_code: "existing_org"
+      }
     }))
 
     const result = await authenticateRequest(
@@ -124,7 +127,8 @@ describe("authenticateRequest", () => {
 
     expect(result).toEqual({
       apigeeAccessToken: "existing-token",
-      roleId: "existing-role-id"
+      roleId: "existing-role-id",
+      orgCode: "existing_org"
     })
 
     // Verify that token refresh functions were not called
@@ -138,9 +142,12 @@ describe("authenticateRequest", () => {
       apigeeAccessToken: "expiring-token",
       cis2IdToken: "expiring-cis2-token",
       cis2AccessToken: "expiring-cis2-access-token",
-      selectedRoleId: "expiring-role-id",
       apigeeRefreshToken: "expiring-refresh-token",
-      apigeeExpiresIn: Math.floor(Date.now() / 1000) + 30 // expires in 30 seconds
+      apigeeExpiresIn: Math.floor(Date.now() / 1000) + 30, // expires in 30 seconds
+      currentlySelectedRole: {
+        role_id: "existing-role-id",
+        org_code: "existing_org"
+      }
     }))
 
     mockRefreshApigeeAccessToken.mockReturnValue({
@@ -160,7 +167,8 @@ describe("authenticateRequest", () => {
 
     expect(result).toEqual({
       apigeeAccessToken: "refreshed-token",
-      roleId: "expiring-role-id"
+      roleId: "expiring-role-id",
+      orgCode: "existing_org"
     })
 
     // Verify refresh was called with correct params
@@ -199,7 +207,11 @@ describe("authenticateRequest", () => {
     mockGetTokenMapping.mockImplementationOnce(() => Promise.resolve( {
       username: "test-user",
       cis2IdToken: "existing-cis2-token",
-      cis2AccessToken: "existing-cis2-access-token"
+      cis2AccessToken: "existing-cis2-access-token",
+      currentlySelectedRole: {
+        role_id: "test-role-id",
+        org_code: "existing_org"
+      }
     }))
     // Make sure the getSecret mock is properly setup
     mockGetSecret.mockReturnValue("test-private-key")
@@ -213,7 +225,8 @@ describe("authenticateRequest", () => {
 
     expect(result).toEqual({
       apigeeAccessToken: "new-access-token",
-      roleId: "test-role-id"
+      roleId: "test-role-id",
+      orgCode: "existing_org"
     })
 
     // Verify new token acquisition flow
@@ -236,7 +249,11 @@ describe("authenticateRequest", () => {
     mockGetTokenMapping.mockImplementationOnce(() => Promise.resolve( {
       username: "Mock_test-user",
       cis2IdToken: "existing-cis2-token",
-      cis2AccessToken: "existing-cis2-access-token"
+      cis2AccessToken: "existing-cis2-access-token",
+      currentlySelectedRole: {
+        role_id: "test-role-id",
+        org_code: "existing_org"
+      }
     }))
 
     const result = await authenticateRequest(
@@ -248,7 +265,8 @@ describe("authenticateRequest", () => {
 
     expect(result).toEqual({
       apigeeAccessToken: "new-access-token",
-      roleId: "test-role-id"
+      roleId: "test-role-id",
+      orgCode: "existing_org"
     })
 
     // Verify new token acquisition flow
@@ -263,7 +281,11 @@ describe("authenticateRequest", () => {
     // Set up mock implementations for this test
     mockGetTokenMapping.mockImplementationOnce(() => Promise.resolve( {
       username: "Mock_user",
-      apigeeCode: "apigee-code"
+      apigeeCode: "apigee-code",
+      currentlySelectedRole: {
+        role_id: "test-role-id",
+        org_code: "existing_org"
+      }
     }))
     mockExchangeTokenForApigeeAccessToken.mockReturnValue({
       accessToken: "new-access-token",
@@ -283,7 +305,8 @@ describe("authenticateRequest", () => {
 
     expect(result).toEqual({
       apigeeAccessToken: "new-access-token",
-      roleId: "test-role-id"
+      roleId: "test-role-id",
+      orgCode: "existing_org"
     })
 
     // Verify new token acquisition flow
@@ -301,7 +324,10 @@ describe("authenticateRequest", () => {
       apigeeAccessToken: "expiring-token",
       cis2IdToken: "expiring-cis2-token",
       cis2AccessToken: "expiring-cis2-access-token",
-      selectedRoleId: "expiring-role-id",
+      currentlySelectedRole: {
+        role_id: "test-role-id",
+        org_code: "existing_org"
+      },
       apigeeRefreshToken: "expiring-refresh-token",
       apigeeExpiresIn: Math.floor(Date.now() / 1000) + 30 // expires in 30 seconds
     }))
@@ -326,7 +352,8 @@ describe("authenticateRequest", () => {
     // Should fall back to new token acquisition
     expect(result).toEqual({
       apigeeAccessToken: "fallback-access-token",
-      roleId: "test-role-id" // This comes from options.defaultRoleId
+      roleId: "test-role-id", // This comes from options.defaultRoleId
+      orgCode: "existing_org"
     })
 
     // Verify both refresh and fallback were attempted

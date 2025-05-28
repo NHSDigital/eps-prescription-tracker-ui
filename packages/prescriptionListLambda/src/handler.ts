@@ -7,6 +7,7 @@ import middy from "@middy/core"
 import inputOutputLogger from "@middy/input-output-logger"
 import httpHeaderNormalizer from "@middy/http-header-normalizer"
 import axios from "axios"
+import {v4 as uuidv4} from "uuid"
 import {formatHeaders} from "./utils/headerUtils"
 import {validateSearchParams} from "./utils/validation"
 import {getPdsPatientDetails} from "./services/patientDetailsLookupService"
@@ -93,8 +94,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   const headers = event.headers ?? []
   logger.appendKeys({"x-request-id": headers["x-request-id"]})
 
-  logger.info("Lambda handler invoked", {event})
-
+  const correlationId = headers["x-correlation-id"] || uuidv4()
   const searchStartTime = Date.now()
   const axiosInstance = axios.create()
 
@@ -110,7 +110,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     // Use the authenticateRequest function for authentication
     const username = getUsernameFromEvent(event)
 
-    const {apigeeAccessToken, roleId} = await authenticateRequest(username, documentClient, logger, {
+    const {apigeeAccessToken, roleId, orgCode} = await authenticateRequest(username, documentClient, logger, {
       tokenMappingTableName: TokenMappingTableName,
       jwtPrivateKeyArn,
       apigeeApiKey,
@@ -137,7 +137,9 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
         apigeePersonalDemographicsEndpoint,
         searchParams.nhsNumber,
         apigeeAccessToken,
-        roleId
+        roleId,
+        orgCode,
+        correlationId
       )
 
       logger.debug("patientDetails", {
@@ -160,7 +162,9 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
         apigeePrescriptionsEndpoint,
         {nhsNumber},
         apigeeAccessToken,
-        roleId
+        roleId,
+        orgCode,
+        correlationId
       )
 
       logger.debug("Prescriptions", {
@@ -178,7 +182,9 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
         apigeePrescriptionsEndpoint,
         {prescriptionId: searchParams.prescriptionId!},
         apigeeAccessToken,
-        roleId
+        roleId,
+        orgCode,
+        correlationId
       )
 
       // Get patient details using NHS Number from first prescription
@@ -201,7 +207,9 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
         apigeePersonalDemographicsEndpoint,
         prescriptions[0].nhsNumber!.toString(),
         apigeeAccessToken,
-        roleId
+        roleId,
+        orgCode,
+        correlationId
       )
 
       logger.debug("patientDetails", {
