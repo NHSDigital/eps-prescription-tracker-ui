@@ -7,19 +7,24 @@ import {
 } from "nhsuk-react-components"
 import {Link} from "react-router-dom"
 import {FRONTEND_PATHS} from "@/constants/environment"
-import {STRINGS} from "@/constants/ui-strings/PatientNotFoundPageStrings"
+import {STRINGS} from "@/constants/ui-strings/PatientNotFoundMessageStrings"
 
-export default function PatientNotFoundPage() {
-
+export default function PatientNotFoundMessage({onGoBack}: Readonly<{onGoBack?: () => void}>) {
   return (
     <Container
       className="nhsuk-width-container-fluid patient-not-found-container"
       data-testid="patient-not-found-page"
     >
       <nav className="nhsuk-breadcrumb nhsuk-u-padding-bottom-0 nhsuk-u-padding-left-2" aria-label="Breadcrumb">
-        <Link to={FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS} data-testid="patient-not-found-back-link">
-          <BackLink data-testid="go-back-link">{STRINGS.goBackLink}</BackLink>
-        </Link>
+        {onGoBack ? (
+          <BackLink data-testid="go-back-link" onClick={onGoBack}>
+            {STRINGS.goBackLink}
+          </BackLink>
+        ) : (
+          <Link to={FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS} data-testid="patient-not-found-back-link">
+            <BackLink data-testid="go-back-link">{STRINGS.goBackLink}</BackLink>
+          </Link>
+        )}
       </nav>
       <main
         className="nhsuk-main-wrapper nhsuk-main-wrapper--s patient-not-found-main-wrapper"
@@ -43,15 +48,14 @@ export default function PatientNotFoundPage() {
               </h1>
               <p>{STRINGS.intro}</p>
               <p>{STRINGS.retryMessage}</p>
-              <p>{STRINGS.alternativeSearch}
+              <p>
+                {STRINGS.alternativeSearch}
                 <Link data-testid="patient-not-found-prescription-id-link"
                   to={FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID}>
                   {STRINGS.prescriptionIdLinkText}
                 </Link>
                 {STRINGS.orText}
-                <Link
-                  data-testid="patient-not-found-nhs-number-link"
-                  to={FRONTEND_PATHS.SEARCH_BY_NHS_NUMBER}>
+                <Link data-testid="patient-not-found-nhs-number-link" to={FRONTEND_PATHS.SEARCH_BY_NHS_NUMBER}>
                   {STRINGS.nhsNumberLinkText}
                 </Link>
                 {STRINGS.endPunctuation}

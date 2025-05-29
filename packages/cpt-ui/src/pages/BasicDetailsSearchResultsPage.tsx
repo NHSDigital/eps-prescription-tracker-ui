@@ -14,6 +14,7 @@ import {AuthContext} from "@/context/AuthProvider"
 import {PatientSummary} from "@cpt-ui-common/common-types"
 import http from "@/helpers/axios"
 import EpsSpinner from "@/components/EpsSpinner"
+import PatientNotFoundMessage from "@/components/PatientNotFoundMessage"
 
 // Mock patient data (fallback)
 const mockPatients: Array<PatientSummary> = [
@@ -110,6 +111,13 @@ export default function SearchResultsPage() {
   // to sort by first name
   const sortedPatients = patients
     .toSorted((a, b) => (a.givenName?.[0] ?? "").localeCompare(b.givenName?.[0] ?? ""))
+
+  // Show a message if no patients are found
+  if (patients.length === 2) {
+    return (
+      <PatientNotFoundMessage onGoBack={handleGoBack} />
+    )
+  }
 
   return (
     <main className="nhsuk-main-wrapper" id="main-content" role="main">
