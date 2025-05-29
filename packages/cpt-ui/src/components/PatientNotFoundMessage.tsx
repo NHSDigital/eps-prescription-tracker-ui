@@ -17,7 +17,7 @@ export default function PatientNotFoundMessage({onGoBack}: Readonly<{onGoBack?: 
     >
       <nav className="nhsuk-breadcrumb nhsuk-u-padding-bottom-0 nhsuk-u-padding-left-2" aria-label="Breadcrumb">
         {onGoBack ? (
-          <Link>
+          <Link to={FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS}>
             <BackLink data-testid="go-back-link" onClick={onGoBack}>
               {STRINGS.goBackLink}
             </BackLink>
