@@ -1,4 +1,9 @@
-import React, {useState, useEffect, useRef} from "react"
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useMemo
+} from "react"
 import {useNavigate} from "react-router-dom"
 
 import {
@@ -17,56 +22,57 @@ import {
 
 import {PRESCRIPTION_ID_SEARCH_STRINGS} from "@/constants/ui-strings/SearchForAPrescriptionStrings"
 import {FRONTEND_PATHS} from "@/constants/environment"
-import {validatePrescriptionId} from "@/helpers/validatePrescriptionDetailsSearch"
-
-const normalizePrescriptionId = (raw: string): string => {
-  const cleaned = raw.replace(/[^a-zA-Z0-9+]/g, "")
-  return cleaned.match(/.{1,6}/g)?.join("-").toUpperCase() || ""
-}
+import {
+  validatePrescriptionId,
+  normalizePrescriptionId,
+  getHighestPriorityError,
+  PrescriptionValidationError
+} from "@/helpers/validatePrescriptionDetailsSearch"
 
 export default function PrescriptionIdSearch() {
   const navigate = useNavigate()
   const errorRef = useRef<HTMLDivElement | null>(null)
 
   const [prescriptionId, setPrescriptionId] = useState<string>("")
-  const [errors, setErrors] = useState<Array<string>>([])
+  const [errorKey, setErrorKey] = useState<PrescriptionValidationError | null>(null)
 
   const errorMessages = PRESCRIPTION_ID_SEARCH_STRINGS.errors
 
-  useEffect(() => {
-    if (errors.length > 0 && errorRef.current) {
-      errorRef.current.focus()
-    }
-  }, [errors])
+  // Maps a validation error key to the corresponding user-facing message.
+  // Treats "checksum" as "noMatch" to simplify the error display logic.
+  const getDisplayedErrorMessage = (key: PrescriptionValidationError | null): string => {
+    if (!key) return ""
+    if (key === "noMatch") return errorMessages.noMatch
+    return errorMessages[key] || errorMessages.noMatch
+  }
 
+  // Memoised error message for display
+  const displayedError = useMemo(() => getDisplayedErrorMessage(errorKey), [errorKey])
+
+  // When error is set, focus error summary
+  useEffect(() => {
+    if (errorKey && errorRef.current) errorRef.current.focus()
+  }, [errorKey])
+
+  // Handle input field change
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPrescriptionId(e.target.value)
   }
 
-  const handlePrescriptionDetails = async (e: React.FormEvent) => {
+  // Form submit handler
+  const handlePrescriptionDetails = (e: React.FormEvent) => {
     e.preventDefault()
     const validationErrors = validatePrescriptionId(prescriptionId)
+    const key = getHighestPriorityError(validationErrors)
 
-    if (validationErrors.length > 0) {
-      setErrors(validationErrors)
+    if (key) {
+      setErrorKey(key)
       return
     }
+    setErrorKey(null) // Clear error on valid submit
 
-    const cleaned = prescriptionId.replace(/[^a-zA-Z0-9+]/g, "").toUpperCase()
-    const formatted = normalizePrescriptionId(cleaned)
-
+    const formatted = normalizePrescriptionId(prescriptionId)
     navigate(`${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}?prescriptionId=${formatted}`)
-  }
-
-  const getDisplayedErrorMessage = () => {
-    const priorityOrder = ["combined", "empty", "chars", "length", "noMatch", "checksum"]
-    const errorKey = priorityOrder.find(key => errors.includes(key))
-
-    if (errorKey === "noMatch" || errorKey === "checksum") {
-      return errorMessages.noMatch
-    }
-
-    return errorMessages[errorKey as keyof typeof errorMessages] || errorMessages.noMatch
   }
 
   return (
@@ -77,7 +83,7 @@ export default function PrescriptionIdSearch() {
       <Row>
         <Col width="one-half">
           <Form onSubmit={handlePrescriptionDetails} noValidate>
-            {errors.length > 0 && (
+            {errorKey && (
               <ErrorSummary
                 data-testid="error-summary"
                 ref={errorRef}
@@ -88,14 +94,14 @@ export default function PrescriptionIdSearch() {
                 <ErrorSummary.Body>
                   <ErrorSummary.List>
                     <ErrorSummary.Item>
-                      <a href="#presc-id-input">{getDisplayedErrorMessage()}</a>
+                      <a href="#presc-id-input">{displayedError}</a>
                     </ErrorSummary.Item>
                   </ErrorSummary.List>
                 </ErrorSummary.Body>
               </ErrorSummary>
             )}
 
-            <FormGroup className={errors.length > 0 ? "nhsuk-form-group--error" : ""}>
+            <FormGroup className={errorKey ? "nhsuk-form-group--error" : ""}>
               <Label htmlFor="presc-id-input" id="presc-id-label">
                 <h2
                   className="nhsuk-heading-m nhsuk-u-margin-bottom-1 no-outline"
@@ -109,7 +115,7 @@ export default function PrescriptionIdSearch() {
               </Label>
 
               <ErrorMessage id="presc-id-error" data-testid="prescription-id-error">
-                {errors.length > 0 ? getDisplayedErrorMessage() : ""}
+                {errorKey ? displayedError : ""}
               </ErrorMessage>
 
               <TextInput
@@ -117,10 +123,10 @@ export default function PrescriptionIdSearch() {
                 name="prescriptionId"
                 value={prescriptionId}
                 onChange={handleInputChange}
-                className={errors.length > 0 ? "nhsuk-input nhsuk-input--error" : "nhsuk-input"}
+                className={errorKey ? "nhsuk-input nhsuk-input--error" : "nhsuk-input"}
                 autoComplete="off"
                 data-testid="prescription-id-input"
-                aria-describedby="presc-id-error"
+                aria-describedby={errorKey ? "presc-id-error" : undefined}
               />
             </FormGroup>
 
