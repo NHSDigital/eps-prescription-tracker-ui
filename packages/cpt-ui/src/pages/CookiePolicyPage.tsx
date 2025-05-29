@@ -2,16 +2,7 @@ import React, {useState, useEffect} from "react"
 import {Link, useNavigate} from "react-router-dom"
 import {CookieStrings} from "@/constants/ui-strings/CookieStrings"
 import {isUserLoggedIn} from "@/helpers/cookiesFunctions"
-
-interface Cookie {
-  name: string;
-  purpose: string;
-  expiry: string;
-}
-interface CookieTableProps {
-  cookies: Array<Cookie>;
-  title: string;
-}
+import CookieTable, {Cookie} from "@/components/CookieTable"
 
 const CookiePolicyPage = () => {
   const essentialCookies: Array<Cookie> = [
@@ -73,19 +64,6 @@ const CookiePolicyPage = () => {
 
   const navigate = useNavigate()
 
-  // const isUserLoggedIn = () => {
-  //   //checks if user is logged in, as this affects redirect from home button
-  //   try {
-  //     const authData = localStorage.getItem("auth")
-  //     if (!authData) return false
-
-  //     const parsedAuth = JSON.parse(authData)
-  //     return parsedAuth?.isSignedIn === true && parsedAuth?.user !== null
-  //   } catch {
-  //     return false
-  //   }
-  // }
-
   const getHomeLink = () => {
     return isUserLoggedIn() ? "/search" : "/login"
   }
@@ -124,88 +102,6 @@ const CookiePolicyPage = () => {
     window.dispatchEvent(new CustomEvent("cookieChoiceUpdated"))
   }
 
-  const CookieTable: React.FC<CookieTableProps> = ({cookies, title}) => (
-    <details
-      className="nhsuk-details"
-      open={title === "Essential cookies" ? essentialCookiesOpen : analyticsCookiesOpen}
-      onToggle={(e) => {
-        if (title === "Essential cookies") {
-          setEssentialCookiesOpen(e.currentTarget.open)
-        } else {
-          setAnalyticsCookiesOpen(e.currentTarget.open)
-        }
-      }}
-    >
-      <summary
-        className="nhsuk-details__summary"
-        onClick={(e) => {
-          e.preventDefault()
-          if (title === "Essential cookies") {
-            setEssentialCookiesOpen(!essentialCookiesOpen)
-          } else {
-            setAnalyticsCookiesOpen(!analyticsCookiesOpen)
-          }
-        }}
-      >
-        <span
-          className="nhsuk-details__summary-text"
-          data-testid={`see-${title.replace(/ cookies/i, "").toLowerCase()}-cookies`}
-        >
-          {CookieStrings.detailsSummaryText(title)}
-        </span>
-      </summary>
-      <div className="nhsuk-details__text">
-        <table
-          role="table"
-          className="nhsuk-table-responsive"
-          data-testid={title === "Essential cookies" ? "essential-cookies-table" : "analytics-cookies-table"}
-        >
-          <caption className="nhsuk-table__caption nhsuk-u-visually-hidden">
-            {title}
-          </caption>
-          <thead role="rowgroup" className="nhsuk-table__head">
-            <tr role="row">
-              <th role="columnheader" scope="col">
-                {CookieStrings.cookieName}
-              </th>
-              <th role="columnheader" scope="col">
-                {CookieStrings.cookiePurpose}
-              </th>
-              <th role="columnheader" scope="col">
-                {CookieStrings.cookieExpiry}
-              </th>
-            </tr>
-          </thead>
-          <tbody className="nhsuk-table__body">
-            {cookies.map((cookie, index) => (
-              <tr key={index} role="row" className="nhsuk-table__row">
-                <td role="cell" className="nhsuk-table__cell">
-                  <span
-                    className="nhsuk-table-responsive__heading" aria-hidden="true"
-                  >
-                    {CookieStrings.cookieName} </span>
-                  {cookie.name}
-                </td>
-                <td role="cell" className="nhsuk-table__cell">
-                  <span
-                    className="nhsuk-table-responsive__heading" aria-hidden="true"
-                  >{CookieStrings.cookiePurpose} </span>
-                  {cookie.purpose}
-                </td>
-                <td role="cell" className="nhsuk-table__cell">
-                  <span
-                    className="nhsuk-table-responsive__heading" aria-hidden="true"
-                  >{CookieStrings.cookieExpiry} </span>
-                  {cookie.expiry}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </details>
-  )
-
   return (
     <div className="nhsuk-width-container nhsuk-u-margin-top-4">
       <main className="nhsuk-main-wrapper nhsuk-main-wrapper--s" id="main-content" role="main">
@@ -243,16 +139,22 @@ const CookiePolicyPage = () => {
         <CookieTable
           cookies={essentialCookies}
           title={CookieStrings.essentialCookies.tableTitle}
+          isOpen={essentialCookiesOpen}
+          onToggle={setEssentialCookiesOpen}
         />
+
         <h2 className="nhsuk-heading-l">{CookieStrings.analyticsCookies.heading}</h2>
         <p>
           {CookieStrings.analyticsCookies.paragraph1.split("Amazon CloudWatch RUM privacy policy")[0]}
           <a href="#">{CookieStrings.analyticsCookies.policyLinkText}</a>
           {CookieStrings.analyticsCookies.paragraph1.split("Amazon CloudWatch RUM privacy policy")[1]}
         </p>
+
         <CookieTable
           cookies={analyticsCookies}
           title={CookieStrings.analyticsCookies.tableTitle}
+          isOpen={analyticsCookiesOpen}
+          onToggle={setAnalyticsCookiesOpen}
         />
 
         <div className="nhsuk-form-group">

@@ -80,7 +80,6 @@ export default function EPSCookieBanner() {
         <div
           className="nhsuk-cookie-banner"
           data-testid="cookieBanner"
-          role="banner"
           aria-label={CookieStrings.cookie_banner}
         >
           <div className="page-section">
