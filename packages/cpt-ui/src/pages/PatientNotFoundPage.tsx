@@ -45,15 +45,15 @@ export default function PatientNotFoundPage() {
               <p>{STRINGS.intro}</p>
               <p>{STRINGS.retryMessage}</p>
               <p>{STRINGS.alternativeSearch}
+                <Link data-testid="patient-not-found-prescription-id-link"
+                  to={FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID}>
+                  {STRINGS.prescriptionIdLinkText}
+                </Link>
+                {STRINGS.orText}
                 <Link
                   data-testid="patient-not-found-nhs-number-link"
                   to={FRONTEND_PATHS.SEARCH_BY_NHS_NUMBER}>
                   {STRINGS.nhsNumberLinkText}
-                </Link>
-                {STRINGS.orText}
-                <Link data-testid="patient-not-found-prescription-id-link"
-                  to={FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID}>
-                  {STRINGS.prescriptionIdLinkText}
                 </Link>
                 {STRINGS.endPunctuation}
               </p>
