@@ -27,32 +27,38 @@ import {validateBasicDetails, getInlineErrors} from "@/helpers/validateBasicDeta
 import {errorFocusMap, ErrorKey, resolveDobInvalidFields} from "@/helpers/basicDetailsValidationMeta"
 import {STRINGS} from "@/constants/ui-strings/BasicDetailsSearchStrings"
 import {API_ENDPOINTS, FRONTEND_PATHS, NHS_REQUEST_URID} from "@/constants/environment"
-import {BasicDetailsSearchType} from "@cpt-ui-common/common-types"
+import {BasicDetailsSearchType, PatientSummary} from "@cpt-ui-common/common-types"
 
 // Temporary mock data used for frontend search simulation
-const mockPatient = [
+const mockPatient: Array<PatientSummary> = [
   {
     nhsNumber: "1234567890",
-    given: "James",
-    family: "Smith",
+    givenName: ["James"],
+    familyName: "Smith",
+    gender: "Male",
     dateOfBirth: "02-04-2006",
+    address: ["1 Main Street", "Leeds"],
     postcode: "LS1 1AB"
   }
 ]
 
-const mockMultiplePatient = [
+const mockMultiplePatient: Array<PatientSummary> = [
   {
     nhsNumber: "9726919207",
-    given: "Issac",
-    family: "Wolderton-Rodriguez",
+    givenName: ["Issac"],
+    familyName: "Wolderton-Rodriguez",
+    gender: "Male",
     dateOfBirth: "06-05-2013",
+    address: ["123 Brundel Close", "Headingley", "Leeds", "West Yorkshire", "LS6 1JL"],
     postcode: "LS6 1JL"
   },
   {
     nhsNumber: "9726919207",
-    given: "Steve",
-    family: "Wolderton-Rodriguez",
+    givenName: ["Steve"],
+    familyName: "Wolderton-Rodriguez",
+    gender: "Male",
     dateOfBirth: "06-05-2013",
+    address: ["123 Brundel Close", "Headingley", "Leeds", "West Yorkshire", "LS6 1JL"],
     postcode: "LS6 1JL"
   }
 ]
@@ -196,10 +202,14 @@ export default function BasicDetailsSearch() {
       const searchDob = formatDobForSearch({dobDay, dobMonth, dobYear})
 
       const matchedPatients = [...mockPatient, ...mockMultiplePatient].filter(p => {
-        const matchFirstName = firstName ? formatInput(p.given) === formatInput(firstName) : true
-        const matchLastName = formatInput(p.family) === formatInput(lastName)
+        const matchFirstName = firstName
+          ? formatInput(p.givenName?.[0] ?? "") === formatInput(firstName)
+          : true
+        const matchLastName = formatInput(p.familyName) === formatInput(lastName)
         const matchDob = p.dateOfBirth === searchDob
-        const matchPostcode = postcode ? formatInput(p.postcode) === formatInput(postcode) : true
+        const matchPostcode = postcode
+          ? formatInput(p.postcode ?? "") === formatInput(postcode)
+          : true
         return matchFirstName && matchLastName && matchDob && matchPostcode
       })
 

@@ -162,16 +162,32 @@ describe("BasicDetailsSearch", () => {
             patients: [
               {
                 nhsNumber: "9726919207",
-                given: "Issac",
-                family: "Wolderton-Rodriguez",
+                givenName: ["Issac"],
+                familyName: "Wolderton-Rodriguez",
+                gender: "Male",
                 dateOfBirth: "06-05-2013",
+                address: [
+                  "123 Brundel Close",
+                  "Headingley",
+                  "Leeds",
+                  "West Yorkshire",
+                  "LS6 1JL"
+                ],
                 postcode: "LS6 1JL"
               },
               {
                 nhsNumber: "9726919207",
-                given: "Steve",
-                family: "Wolderton-Rodriguez",
+                givenName: ["Steve"],
+                familyName: "Wolderton-Rodriguez",
+                gender: "Male",
                 dateOfBirth: "06-05-2013",
+                address: [
+                  "123 Brundel Close",
+                  "Headingley",
+                  "Leeds",
+                  "West Yorkshire",
+                  "LS6 1JL"
+                ],
                 postcode: "LS6 1JL"
               }
             ]
