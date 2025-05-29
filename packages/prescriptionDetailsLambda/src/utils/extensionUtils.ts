@@ -54,8 +54,8 @@ export const getIntegerFromNestedExtension = (
 export const getDisplayFromNestedExtension = (
   extension: Extension | undefined,
   subUrl: string,
-  defaultValue: string | null = null
-): string | null => {
+  defaultValue: string | undefined = undefined
+): string | undefined => {
   if (!extension || !extension.extension || extension.extension.length === 0) {
     return defaultValue
   }

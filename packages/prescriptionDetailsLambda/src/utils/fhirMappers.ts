@@ -1,6 +1,8 @@
+/* eslint-disable max-len */
 import {Patient, MedicationRequest, Coding} from "fhir/r4"
 import {PrescriptionIntent} from "./types"
 import {findExtensionByKey, getBooleanFromNestedExtension, getDisplayFromNestedExtension} from "./extensionUtils"
+import { PatientDetails } from "@cpt-ui-common/common-types"
 
 /**
  * Maps the FHIR intent to a user-friendly prescription treatment type display value.
@@ -19,23 +21,31 @@ export const mapIntentToPrescriptionTreatmentType = (intent: string): string => 
 }
 
 /**
- * Maps FHIR status codes to user-friendly display values
+ *  Maps message history titles names to semantic message codes
  */
-// TODO: Doxuble check if this is correct
-export const mapFhirStatusToDisplay = (status: string): string => {
-  const statusMap: Record<string, string> = {
-    "0001": "To be Dispensed",
-    "0002": "With Dispenser",
-    "0003": "Item dispensed - partial",
-    "0006": "Dispensed",
-    "0007": "Item to be dispensed",
-    "0008": "With Dispenser - Active",
-    "active": "Active",
-    "completed": "Completed",
-    "in-progress": "In Progress"
+export const mapMessageHistoryTitleToMessageCode = (title: string): string => {
+  const titleToCodeMap: Record<string, string> = {
+    "Prescription upload successful": "prescription-uploaded",
+    "Release Request successful": "release-requested",
+    "Nominated Release Request successful": "nominated-release-requested",
+    "Dispense notification successful": "dispense-notified",
+    "Dispense claim successful": "dispense-claimed",
+    "Dispense proposal return successful": "dispense-proposal-returned",
+    "Dispense Withdrawal successful": "dispense-withdrawn",
+    "Administrative update successful": "admin-updated",
+    "Administrative Action Update Successful": "admin-action-updated",
+    "Prescription Reset request successful": "prescription-reset",
+    "Prescription/item was cancelled": "prescription-cancelled",
+    "Prescription/item was not cancelled. With dispenser. Marked for cancellation": "prescription-marked-for-cancellation",
+    "Subsequent cancellation": "subsequent-cancellation",
+    "Rebuild Dispense History successful": "dispense-history-rebuilt",
+    "Updated by Urgent Admin Batch worker": "urgent-batch-updated",
+    "Updated by Routine Admin Batch worker": "routine-batch-updated",
+    "Updated by Non-Urgent Admin Batch worker": "non-urgent-batch-updated",
+    "Updated by Document Batch worker": "document-batch-updated"
   }
 
-  return statusMap[status] || status
+  return titleToCodeMap[title]
 }
 
 /**
@@ -44,13 +54,14 @@ export const mapFhirStatusToDisplay = (status: string): string => {
 export const mapCourseOfTherapyType = (coding: Array<Coding> | undefined): string => {
   if (!coding || coding.length === 0) return "Unknown"
 
-  const courseOfTherapyMap: Record<string, string> = {
-    "acute": "Acute",
-    "continuous": "Continuous",
-    "continuous-repeating-dispensing": "Continuous Repeating Dispensing"
-  }
+  // const courseOfTherapyMap: Record<string, string> = {
+  //   "acute": "Acute",
+  //   "continuous": "Continuous",
+  //   "continuous-repeating-dispensing": "Continuous Repeating Dispensing"
+  // }
 
-  return courseOfTherapyMap[coding[0].code || ""] || coding[0].display || "Unknown"
+  // return courseOfTherapyMap[coding[0].code || ""] || coding[0].display || "Unknown"
+  return coding[0].code || "unknown"
 }
 
 /**
@@ -65,52 +76,51 @@ export const mapPrescriptionOrigin = (typeCode: string): string => {
 /**
  * Extracts patient details from FHIR Patient resource
  */
-export const extractPatientDetails = (patient: Patient | undefined) => {
+export const extractPatientDetails = (patient: Patient | undefined): PatientDetails => {
   if (!patient) {
     return {
-      identifier: "Unknown",
-      name: {
-        prefix: "",
-        given: "Unknown",
-        family: "Unknown",
-        suffix: ""
-      },
-      gender: "Unknown",
-      birthDate: "Unknown",
-      address: {
-        text: "Unknown",
-        line: "Unknown",
-        city: "Unknown",
-        district: "Unknown",
-        postalCode: "Unknown",
-        type: "Unknown",
-        use: "Unknown"
-      }
+      nhsNumber: "Unknown",
+      prefix: "",
+      suffix: "",
+      given: "Unknown",
+      family: "Unknown",
+      gender: null,
+      dateOfBirth: null,
+      address: null
     }
   }
 
-  const address = patient.address?.[0]
+  // Extract NHS number from identifiers
+  const nhsNumber = patient.identifier?.[0]?.value || "Unknown"
+
+  // Extract name components
   const name = patient.name?.[0]
+  const prefix = name?.prefix?.[0] || ""
+  const suffix = name?.suffix?.[0] || ""
+  const given = name?.given?.join(" ") || "Unknown"
+  const family = name?.family || "Unknown"
+
+  // Extract address components
+  const patientAddress = patient.address?.[0]
+  let address = null
+  if (patientAddress) {
+    address = {
+      line1: patientAddress.line?.[0] || "",
+      line2: patientAddress.line?.[1] || "",
+      city: patientAddress.city || "",
+      postcode: patientAddress.postalCode || ""
+    }
+  }
 
   return {
-    identifier: patient.identifier?.[0]?.value || "Unknown",
-    name: {
-      prefix: name?.prefix?.[0] || "",
-      given: name?.given?.join(" ") || "Unknown",
-      family: name?.family || "Unknown",
-      suffix: name?.suffix?.[0] || ""
-    },
-    gender: patient.gender || "Unknown",
-    birthDate: patient.birthDate || "Unknown",
-    address: {
-      text: address?.text || "Unknown",
-      line: address?.line?.join(", ") || "Unknown",
-      city: address?.city || "Unknown",
-      district: address?.district || "Unknown",
-      postalCode: address?.postalCode || "Unknown",
-      type: address?.type || "Unknown",
-      use: address?.use || "Unknown"
-    }
+    nhsNumber,
+    prefix,
+    suffix,
+    given,
+    family,
+    gender: patient.gender || null,
+    dateOfBirth: patient.birthDate || null,
+    address
   }
 }
 
@@ -122,12 +132,12 @@ export const extractPrescribedItems = (medicationRequests: Array<MedicationReque
     const pendingCancellationExt = findExtensionByKey(request.extension, "PENDING_CANCELLATION")
     const dispensingInfoExt = findExtensionByKey(request.extension, "DISPENSING_INFORMATION")
 
-    const epsStatusCode = getDisplayFromNestedExtension(dispensingInfoExt, "dispenseStatus") ||
-                         mapFhirStatusToDisplay(request.status || "unknown")
+    const epsStatusCode = getDisplayFromNestedExtension(dispensingInfoExt, "dispenseStatus") || request.status || "unknown"
 
     return {
       itemDetails: {
-        medicationName: request.medicationCodeableConcept?.text || "Unknown",
+        medicationName: request.medicationCodeableConcept?.text ||
+        request.medicationCodeableConcept?.coding?.[0]?.display || "Unknown",
         quantity: request.dispenseRequest?.quantity?.value?.toString() || "Unknown",
         dosageInstructions: request.dosageInstruction?.[0]?.text || "Unknown",
         epsStatusCode,

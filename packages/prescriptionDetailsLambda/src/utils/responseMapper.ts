@@ -9,11 +9,11 @@ import {
 } from "fhir/r4"
 import {Contact, DoHSData, DoHSValue} from "./types"
 import {
-  mapIntentToPrescriptionTreatmentType,
-  mapFhirStatusToDisplay,
   mapPrescriptionOrigin,
   extractPatientDetails,
-  extractPrescribedItems
+  extractPrescribedItems,
+  mapMessageHistoryTitleToMessageCode,
+  mapCourseOfTherapyType
 } from "./fhirMappers"
 import {
   findExtensionByKey,
@@ -28,7 +28,7 @@ import {
 const extractResourcesFromBundle = <T>(bundle: Bundle, resourceType: string): Array<T> => {
   return bundle.entry
     ?.filter(entry => entry.resource?.resourceType === resourceType)
-    .map(entry => entry.resource as T) || []
+    .map(entry => entry.resource as T) ?? []
 }
 
 /**
@@ -37,48 +37,44 @@ const extractResourcesFromBundle = <T>(bundle: Bundle, resourceType: string): Ar
 const extractDispensedItemsFromMedicationDispenses = (medicationDispenses: Array<MedicationDispense>, medicationRequests: Array<MedicationRequest>) => {
   return medicationDispenses.map(dispense => {
     const businessStatusExt = findExtensionByKey(dispense.extension, "TASK_BUSINESS_STATUS")
-    const epsStatusCode = getDisplayFromNestedExtension(businessStatusExt, "status") ||
-                         mapFhirStatusToDisplay(dispense.status || "unknown")
+    const epsStatusCode = getDisplayFromNestedExtension(businessStatusExt, "status") ?? dispense.status ?? "unknown"
 
     // extract pending cancellation information using the same pattern as prescribed items
     const pendingCancellationExt = findExtensionByKey(dispense.extension, "PENDING_CANCELLATION")
-    const itemPendingCancellation = getBooleanFromNestedExtension(pendingCancellationExt, "lineItemPendingCancellation") || false
+    const itemPendingCancellation = getBooleanFromNestedExtension(pendingCancellationExt, "lineItemPendingCancellation") ?? false
     const cancellationReason = getDisplayFromNestedExtension(pendingCancellationExt, "cancellationReason")
-
-    // TODO: extract NHS App status from dispensing information extension
-    // const dispensingInfoExt = findExtensionByKey(dispense.extension, "DISPENSING_INFORMATION")
 
     // Extract notDispensedReason from extension
     const notDispensedReasonExt = findExtensionByKey(dispense.extension, "NON_DISPENSING_REASON")
-    const notDispensedReason = notDispensedReasonExt?.valueCoding?.display ||
-                              dispense.statusReasonCodeableConcept?.text ||
+    const notDispensedReason = notDispensedReasonExt?.valueCoding?.display ??
+                              dispense.statusReasonCodeableConcept?.text ??
                               dispense.statusReasonCodeableConcept?.coding?.[0]?.display
 
     // find the corresponding medication request for initial prescription details
     const correspondingRequest = medicationRequests.find(request =>
-      dispense.authorizingPrescription?.[0]?.reference?.includes(request.id || "")
+      dispense.authorizingPrescription?.[0]?.reference?.includes(request.id ?? "")
     )
 
     // extract current dispensed item details
-    const dispensedMedicationName = dispense.medicationCodeableConcept?.text ||
-                                   dispense.medicationCodeableConcept?.coding?.[0]?.display || "Unknown"
-    const dispensedQuantity = dispense.quantity?.value?.toString() || "Unknown"
-    const dispensedDosageInstructions = dispense.dosageInstruction?.[0]?.text || "Unknown"
+    const dispensedMedicationName = dispense.medicationCodeableConcept?.text ??
+                                   dispense.medicationCodeableConcept?.coding?.[0]?.display ?? "Unknown"
+    const dispensedQuantity = dispense.quantity?.value?.toString() ?? "Unknown"
+    const dispensedDosageInstructions = dispense.dosageInstruction?.[0]?.text ?? "Unknown"
 
     // determine if initiallyPrescribed should be included (only if different from dispensed)
     let initiallyPrescribed = undefined
     if (correspondingRequest) {
-      const originalMedicationName = correspondingRequest.medicationCodeableConcept?.text ||
-                                    correspondingRequest.medicationCodeableConcept?.coding?.[0]?.display || "Unknown"
-      const originalQuantity = correspondingRequest.dispenseRequest?.quantity?.value?.toString() || "Unknown"
-      const originalDosageInstruction = correspondingRequest.dosageInstruction?.[0]?.text || "Unknown"
+      const originalMedicationName = correspondingRequest.medicationCodeableConcept?.text ??
+                                    correspondingRequest.medicationCodeableConcept?.coding?.[0]?.display ?? "Unknown"
+      const originalQuantity = correspondingRequest.dispenseRequest?.quantity?.value?.toString() ?? "Unknown"
+      const originalDosageInstruction = correspondingRequest.dosageInstruction?.[0]?.text ?? "Unknown"
 
       // only include initiallyPrescribed if any values are different
       const hasNameDifference = originalMedicationName !== dispensedMedicationName
       const hasQuantityDifference = originalQuantity !== dispensedQuantity
       const hasDosageDifference = originalDosageInstruction !== dispensedDosageInstructions
 
-      if (hasNameDifference || hasQuantityDifference || hasDosageDifference) {
+      if (hasNameDifference ?? hasQuantityDifference ?? hasDosageDifference) {
         initiallyPrescribed = {
           medicationName: originalMedicationName,
           quantity: originalQuantity,
@@ -95,8 +91,8 @@ const extractDispensedItemsFromMedicationDispenses = (medicationDispenses: Array
         epsStatusCode,
         nhsAppStatus: undefined, //TODO: investigate what this needs to be.
         itemPendingCancellation,
-        cancellationReason: cancellationReason || undefined,
-        notDispensedReason: notDispensedReason || undefined,
+        cancellationReason: cancellationReason ?? undefined,
+        notDispensedReason: notDispensedReason ?? undefined,
         initiallyPrescribed
       }
     }
@@ -122,6 +118,8 @@ const extractMessageHistory = (requestGroup: RequestGroup, doHSData: DoHSData) =
   return historyAction.action.map(action => {
     const statusCoding = action.code?.[0]?.coding?.[0]
     const organizationODS = action.participant?.[0]?.extension?.[0]?.valueReference?.identifier?.value
+    const messageCodeDisplayName = action.title
+    const messageCode = mapMessageHistoryTitleToMessageCode(messageCodeDisplayName ?? "")
 
     // for tests: if no organizationODS but nominatedPerformer exists, use that
     let orgODS = organizationODS
@@ -144,30 +142,35 @@ const extractMessageHistory = (requestGroup: RequestGroup, doHSData: DoHSData) =
       }
     }
 
-    // extrac dispense notification if present
-    let dispenseNotification: Array<{
-      id: string; medicationName: string
-      quantity: string; dosageInstruction: string
-    }> = []
-    if (action.action && action.action.length > 0) {
+    let dispenseNotification: {
+      id: string
+      medicationName: string
+      quantity: string
+      dosageInstruction: string
+    } | undefined = undefined
+
+    // Only populate if this message type should have dispense notification
+    if (messageCode === "dispense-notified" && action.action!.length > 0) {
       const notificationId = action.code?.find(code =>
         code.coding?.[0]?.system === "https://tools.ietf.org/html/rfc4122"
       )?.coding?.[0]?.code
 
-      dispenseNotification = [{
-        id: notificationId || "Unknown",
-        medicationName: "Unknown",
-        quantity: "Unknown",
-        dosageInstruction: "Unknown"
-      }]
+      dispenseNotification = notificationId ? {
+        id: notificationId,
+        medicationName: action.description ?? "",
+        quantity: action.extension?.find(ext =>
+          ext.url === "https://fhir.nhs.uk/StructureDefinition/Extension-DispenseQuantity"
+        )?.valueQuantity?.value?.toString() ?? "",
+        dosageInstruction: action.textEquivalent ?? ""
+      } : undefined
     }
 
     return {
-      messageCode: statusCoding?.code || "Unknown",
-      sentDateTime: action.timingDateTime || "Unknown",
+      messageCode: messageCode ?? "Unknown",
+      sentDateTime: action.timingDateTime ?? "Unknown",
       organisationName: orgName,
-      organisationODS: orgODS || "Unknown",
-      newStatusCode: statusCoding?.display || statusCoding?.code || "Unknown",
+      organisationODS: orgODS ?? "Unknown",
+      newStatusCode: statusCoding?.display ?? statusCoding?.code ?? "Unknown",
       dispenseNotification
     }
   })
@@ -181,18 +184,18 @@ const createOrganizationSummary = (doHSOrg: DoHSValue | null | undefined, prescr
 
   const telephone = doHSOrg.Contacts?.find((c: Contact) =>
     c.ContactMethodType === "Telephone"
-  )?.ContactValue || "Not found"
+  )?.ContactValue ?? "Not found"
 
   const address = [
     doHSOrg.Address1,
     doHSOrg.City,
     doHSOrg.Postcode
-  ].filter(Boolean).join(", ") || "Not found"
+  ].filter(Boolean).join(", ") ?? "Not found"
 
   return {
     organisationSummaryObjective: {
-      name: doHSOrg.OrganisationName || "Not found",
-      odsCode: doHSOrg.ODSCode || "Not found",
+      name: doHSOrg.OrganisationName ?? "Not found",
+      odsCode: doHSOrg.ODSCode ?? "Not found",
       address,
       telephone,
       ...(prescribedFrom && {prescribedFrom})
@@ -237,22 +240,22 @@ export const mergePrescriptionDetails = (
   const patient = patients[0]
 
   // extract basic prescription details
-  const prescriptionId = requestGroup.identifier?.[0]?.value || "Unknown"
+  const prescriptionId = requestGroup.identifier?.[0]?.value ?? "Unknown"
 
   // get prescription type and treatment type
   const prescriptionTypeExt = findExtensionByKey(requestGroup.extension, "PRESCRIPTION_TYPE")
-  const typeCode = mapIntentToPrescriptionTreatmentType(requestGroup.intent || "order")
+  const typeCode = mapCourseOfTherapyType(medicationRequests[0]?.courseOfTherapyType?.coding)
 
-  const statusCode = requestGroup.status || "unknown"
-  const issueDate = requestGroup.authoredOn || "Unknown"
+  const statusCode = requestGroup.status ?? "unknown"
+  const issueDate = requestGroup.authoredOn ?? "Unknown"
 
   // get repeat information
   const repeatInfoExt = findExtensionByKey(requestGroup.extension, "REPEAT_INFORMATION")
-  const instanceNumber = getIntegerFromNestedExtension(repeatInfoExt, "numberOfRepeatsIssued")
-  const maxRepeats = getIntegerFromNestedExtension(repeatInfoExt, "numberOfRepeatsAllowed")
+  const instanceNumber = getIntegerFromNestedExtension(repeatInfoExt, "numberOfRepeatsIssued", 1)
+  const maxRepeats = getIntegerFromNestedExtension(repeatInfoExt, "numberOfRepeatsAllowed", 0)
 
   // get days supply from medication requests
-  const daysSupply = medicationRequests[0]?.dispenseRequest?.expectedSupplyDuration?.value?.toString() || "Unknown"
+  const daysSupply = medicationRequests[0]?.dispenseRequest?.expectedSupplyDuration?.value?.toString() ?? "Unknown"
 
   // get pending cancellation status
   const pendingCancellationExt = findExtensionByKey(requestGroup.extension, "PENDING_CANCELLATION")
@@ -265,12 +268,15 @@ export const mergePrescriptionDetails = (
   const messageHistory = extractMessageHistory(requestGroup, doHSData)
 
   // create organization summaries
-  const prescriptionTypeCode = prescriptionTypeExt?.valueCoding?.code || "Unknown"
+  const prescriptionTypeCode = prescriptionTypeExt?.valueCoding?.code ?? "Unknown"
 
   const prescriberOrganisation = createOrganizationSummary(
     doHSData.prescribingOrganization,
     mapPrescriptionOrigin(prescriptionTypeCode)
   )
+
+  // TODO: extract NHS App status from dispensing information extension
+  // const dispensingInfoExt = findExtensionByKey(dispense.extension, "DISPENSING_INFORMATION")
 
   const nominatedDispenser = createOrganizationSummary(doHSData.nominatedPerformer)
 
