@@ -67,17 +67,15 @@ export default function PrescriptionListPage() {
       })
 
       console.log("Response status", {status: response.status})
-      if (response.status !== 200) {
+      if (response.status === 404) {
+        console.error("No search results were returned")
+        navigate(FRONTEND_PATHS.PRESCRIPTION_NOT_FOUND)
+        return
+      } else if (response.status !== 200) {
         throw new Error(`Status Code: ${response.status}`)
       }
 
       let searchResults: SearchResponse = response.data
-
-      if (!searchResults) {
-        console.error("No search results were returned", searchResults)
-        navigate(FRONTEND_PATHS.PRESCRIPTION_NOT_FOUND)
-        return
-      }
 
       if (
         searchResults.currentPrescriptions.length === 0
