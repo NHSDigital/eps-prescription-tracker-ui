@@ -18,9 +18,10 @@ export const getPdsPatientDetails = async (
 ): Promise<PatientAPIResponse> => {
   const startTime = Date.now()
   logger.info("Fetching patient details from PDS", {nhsNumber})
+  const pdsPath = new URL(`/Patient/${nhsNumber}`, pdsEndpoint).href
   try {
     const response = await axiosInstance.get(
-      `${pdsEndpoint}/Patient/${nhsNumber}`,
+      pdsPath,
       {
         headers: {
           Accept: "application/fhir+json",

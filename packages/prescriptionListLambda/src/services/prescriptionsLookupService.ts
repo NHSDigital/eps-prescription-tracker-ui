@@ -25,7 +25,7 @@ export const getPrescriptions = async (
 ): Promise<Array<PrescriptionAPIResponse>> => {
   const {prescriptionId, nhsNumber} = query
   const searchParam = prescriptionId ? `prescriptionId=${prescriptionId}` : `nhsNumber=${nhsNumber}`
-  const endpoint = `${prescriptionsEndpoint}/RequestGroup?${searchParam}`
+  const endpoint = new URL(`RequestGroup?${searchParam}`, prescriptionsEndpoint).href
   const logContext = prescriptionId ? {prescriptionId} : {nhsNumber}
 
   logger.info("Fetching prescriptions", logContext)
