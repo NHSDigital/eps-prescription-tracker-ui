@@ -1,0 +1,59 @@
+.patient-not-found-container {
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.patient-not-found-main-wrapper {
+  padding-top: 48px;
+  padding-bottom: 36px;
+}
+
+.nhsuk-heading-l {
+  font-size: 2rem;
+}
+
+
+.nhsuk-back-link {
+  margin-top: -4px;
+}
+
+.patient-not-found-heading {
+  margin-bottom: 28px !important;
+}
+
+@media (max-width: 61.875em) {
+  .patient-not-found-main-wrapper {
+    padding-top: 16px !important;
+    padding-bottom: 20px !important;
+  }
+
+  .patient-not-found-container {
+    margin: 0 28px !important;
+    padding-top: 0 !important;
+    padding-bottom: 16px;
+  }
+
+
+
+}
+
+@media (max-width: 40.0625em) {
+  .patient-not-found-container {
+    margin: 0 16px !important;
+    padding-bottom: 8px;
+  }
+
+  .patient-not-found-heading {
+    font-size: 20px;
+    font-size: 1.5rem;
+    line-height: 1.4;
+    display: block;
+    font-weight: 600;
+    margin-top: 0;
+    margin-bottom: 14px !important;
+  }
+
+  .nhsuk-breadcrumb {
+    margin-top: 26px;
+  }
+}
