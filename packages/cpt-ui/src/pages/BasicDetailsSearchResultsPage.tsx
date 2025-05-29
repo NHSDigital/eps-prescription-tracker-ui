@@ -113,7 +113,7 @@ export default function SearchResultsPage() {
     .toSorted((a, b) => (a.givenName?.[0] ?? "").localeCompare(b.givenName?.[0] ?? ""))
 
   // Show a message if no patients are found
-  if (patients.length === 2) {
+  if (patients.length === 0) {
     return (
       <PatientNotFoundMessage onGoBack={handleGoBack} />
     )
