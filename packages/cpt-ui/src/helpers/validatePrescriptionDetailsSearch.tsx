@@ -49,7 +49,11 @@ export const validatePrescriptionId = (
   const isInvalidLength = cleaned.length !== 18
 
   // Return combined error if both character and length checks fail
-  if (hasInvalidChars && isInvalidLength) {
+  if (
+    hasInvalidChars &&
+    isInvalidLength &&
+    raw.length !== 18 // Only combine if the original input length is not 18
+  ) {
     return ["combined"]
   }
 
