@@ -111,28 +111,44 @@ describe("BasicDetailsSearch", () => {
     })
   })
 
-  it("redirects to the too many results page if 11 or more results are returned", async () => {
-    const mockNavigate = jest.fn()
-      ; (useNavigate as jest.Mock).mockReturnValue(mockNavigate)
+  it("redirects to the patient not found page when NHS number is missing (empty string)", async () => {
+    const mockNavigate = jest.fn();
+    (useNavigate as jest.Mock).mockReturnValue(mockNavigate)
 
     renderWithRouter(<BasicDetailsSearch />)
 
     const formData = {
-      firstName: "",
-      lastName: "Jones",
-      dobDay: "16",
-      dobMonth: "07",
-      dobYear: "1985",
-      postcode: ""
+      firstName: "Not",
+      lastName: "SpecialNotFound",
+      dobDay: "01",
+      dobMonth: "01",
+      dobYear: "1990",
+      postcode: "NO0 0NE"
     }
 
     await fillForm(formData)
+
     await submitForm()
 
     await waitFor(() => {
       expect(mockNavigate).toHaveBeenCalledWith(
-        FRONTEND_PATHS.SEARCH_RESULTS_TOO_MANY,
-        {state: formData}
+        FRONTEND_PATHS.PATIENT_SEARCH_RESULTS,
+        {
+          state: {
+            patients: [
+              {
+                nhsNumber: "",
+                givenName: ["Not", "Found"],
+                familyName: "SpecialNotFound",
+                gender: "Other",
+                dateOfBirth: "01-01-1990",
+                address: ["No Address"],
+                postcode: "NO0 0NE"
+              }
+            ],
+            searchState: formData
+          }
+        }
       )
     })
   })
@@ -143,14 +159,16 @@ describe("BasicDetailsSearch", () => {
 
     renderWithRouter(<BasicDetailsSearch />)
 
-    await fillForm({
+    const formData = {
       firstName: "",
       lastName: "Wolderton-Rodriguez",
       dobDay: "06",
       dobMonth: "05",
       dobYear: "2013",
       postcode: "LS6 1JL"
-    })
+    }
+
+    await fillForm(formData)
 
     await submitForm()
 
@@ -190,48 +208,53 @@ describe("BasicDetailsSearch", () => {
                 ],
                 postcode: "LS6 1JL"
               }
-            ]
+            ],
+            searchState: formData
           }
         }
       )
     })
   })
 
-  it("redirects to the patient not found page when NHS number is missing (empty string)", async () => {
+  it("redirects to the patient search results page if more than 10 patients found", async () => {
     const mockNavigate = jest.fn();
     (useNavigate as jest.Mock).mockReturnValue(mockNavigate)
 
     renderWithRouter(<BasicDetailsSearch />)
 
-    await fillForm({
-      firstName: "Not",
-      lastName: "SpecialNotFound",
-      dobDay: "01",
-      dobMonth: "01",
-      dobYear: "1990",
-      postcode: "NO0 0NE"
-    })
+    const formData = {
+      firstName: "",
+      lastName: "Jones",
+      dobDay: "16",
+      dobMonth: "07",
+      dobYear: "1985",
+      postcode: ""
+    }
 
+    await fillForm(formData)
     await submitForm()
 
     await waitFor(() => {
       expect(mockNavigate).toHaveBeenCalledWith(
         FRONTEND_PATHS.PATIENT_SEARCH_RESULTS,
         {
-          state: {
-            patients: [
-              {
-                nhsNumber: "",
-                givenName: ["Not", "Found"],
-                familyName: "SpecialNotFound",
-                gender: "Other",
-                dateOfBirth: "01-01-1990",
-                address: ["No Address"],
-                postcode: "NO0 0NE"
-              }
-            ]
-          }
+          state: expect.objectContaining({
+            patients: expect.any(Array),
+            searchState: formData
+          })
         }
+      )
+
+      // Check that too many patients were found
+      const navArgs = mockNavigate.mock.calls[0][1]
+      expect(navArgs.state.patients.length).toBeGreaterThan(10)
+
+      // Optionally, check a few patient fields if you want:
+      expect(navArgs.state.patients[0]).toEqual(
+        expect.objectContaining({
+          familyName: "Jones",
+          dateOfBirth: "16-07-1985"
+        })
       )
     })
   })

@@ -5,14 +5,17 @@ import {
   Col,
   BackLink
 } from "nhsuk-react-components"
-import {Link, useLocation} from "react-router-dom"
+import {Link} from "react-router-dom"
 import {FRONTEND_PATHS} from "@/constants/environment"
 import {STRINGS} from "@/constants/ui-strings/SearchResultsTooManyStrings"
 import {formatDobForDisplay} from "@/helpers/formatters"
 import {BasicDetailsSearchType} from "@cpt-ui-common/common-types"
 
-export default function SearchResultsTooManyPage() {
-  const location = useLocation()
+interface Props {
+  readonly searchState?: Partial<BasicDetailsSearchType>
+}
+
+export default function SearchResultsTooManyMessage({searchState}: Props) {
   const {
     firstName,
     lastName,
@@ -20,16 +23,18 @@ export default function SearchResultsTooManyPage() {
     dobMonth,
     dobYear,
     postcode
-  } = (location.state ?? {}) as BasicDetailsSearchType
+  } = searchState || {}
 
   return (
     <Container
       className="nhsuk-width-container-fluid patient-search-form-container"
-      data-testid="too-many-results-page"
+      data-testid="too-many-results-message"
     >
       <nav className="nhsuk-breadcrumb nhsuk-u-padding-bottom-0 nhsuk-u-padding-left-2" aria-label="Breadcrumb">
         <Link to={FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS} data-testid="too-many-results-back-link">
-          <BackLink data-testid="go-back-link">{STRINGS.goBackLink}</BackLink>
+          <BackLink data-testid="go-back-link">
+            {STRINGS.goBackLink}
+          </BackLink>
         </Link>
       </nav>
       <main

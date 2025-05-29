@@ -75,6 +75,16 @@ const mockNotFoundPatients: Array<PatientSummary> = [
   }
 ]
 
+const mockTooManyPatients: Array<PatientSummary> = Array.from({length: 11}, (_, i) => ({
+  nhsNumber: `99999999${(100 + i).toString()}`,
+  givenName: [`Many${i}`],
+  familyName: "Jones",
+  gender: "Other",
+  dateOfBirth: "16-07-1985",
+  address: ["Some Address"],
+  postcode: ""
+}))
+
 // Utility to normalize input for case-insensitive and whitespace-tolerant comparison
 const formatInput = (input: string) => input.trim().toLowerCase()
 
@@ -206,9 +216,6 @@ export default function BasicDetailsSearch() {
     } catch (err) {
       console.error("Failed to fetch patient details. Using mock data fallback.", err)
 
-      // FIXME: This is a static, mock data fallback we can use in lieu of the real data
-      // backend endpoint, which is still waiting for the auth SNAFU to get sorted out.
-
       // Construct a normalized DOB string to match against mock patient data,
       // since mock DOBs are stored in the format 'DD-MM-YYYY'
       const searchDob = formatDobForSearch({dobDay, dobMonth, dobYear})
@@ -216,7 +223,8 @@ export default function BasicDetailsSearch() {
       const matchedPatients = [
         ...mockPatient,
         ...mockMultiplePatient,
-        ...mockNotFoundPatients
+        ...mockNotFoundPatients,
+        ...mockTooManyPatients
       ].filter(p => {
         const matchFirstName = firstName ? formatInput(p.givenName?.[0] ?? "") === formatInput(firstName) : true
         const matchLastName = formatInput(p.familyName) === formatInput(lastName)
@@ -225,22 +233,22 @@ export default function BasicDetailsSearch() {
         return matchFirstName && matchLastName && matchDob && matchPostcode
       })
 
-      // Navigate based on match count
-      if (
-        matchedPatients.length === 1 &&
-        !matchedPatients[0].nhsNumber ||
-        matchedPatients.length > 1
-      ) {
-        // Navigate to patient search results
-        navigate(FRONTEND_PATHS.PATIENT_SEARCH_RESULTS, {
-          state: {patients: matchedPatients}
-        })
-      } else if (matchedPatients.length === 1) {
-        // NHS number exists: found
-        navigate(`${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}?nhsNumber=${matchedPatients[0].nhsNumber}`)
+      // First, filter out "found" patients vs "not found" (empty NHS number)
+      const foundPatients = matchedPatients.filter(p => p.nhsNumber)
+      const notFound = matchedPatients.length === 1 && !matchedPatients[0].nhsNumber
+
+      if (foundPatients.length === 1) {
+        // Exactly 1 found patient (with NHS number)
+        navigate(`${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}?nhsNumber=${foundPatients[0].nhsNumber}`)
       } else {
-        navigate(FRONTEND_PATHS.SEARCH_RESULTS_TOO_MANY, {
-          state: formState
+        // All other cases (not found, too many, or 2-10 results) use the same page
+        // But we distinguish "not found" using the patients list in the page itself
+        // Always pass searchState so "Too Many" page can access the input
+        navigate(FRONTEND_PATHS.PATIENT_SEARCH_RESULTS, {
+          state: {
+            patients: notFound || matchedPatients.length === 0 ? matchedPatients : foundPatients,
+            searchState: formState
+          }
         })
       }
     }

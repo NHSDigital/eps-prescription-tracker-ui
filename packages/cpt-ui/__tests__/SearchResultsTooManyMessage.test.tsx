@@ -3,7 +3,7 @@ import {render, screen, fireEvent} from "@testing-library/react"
 import {MemoryRouter, Routes, Route} from "react-router-dom"
 import React from "react"
 
-import SearchResultsTooManyPage from "@/pages/SearchResultsTooManyPage"
+import SearchResultsTooManyMessage from "@/components/SearchResultsTooManyMessage"
 import {STRINGS} from "@/constants/ui-strings/SearchResultsTooManyStrings"
 import {FRONTEND_PATHS} from "@/constants/environment"
 
@@ -13,7 +13,7 @@ const renderWithRouter = (state: Record<string, unknown> = {}, initialPath = "/s
   return render(
     <MemoryRouter initialEntries={[{pathname: initialPath, state}]}>
       <Routes>
-        <Route path="/search-too-many" element={<SearchResultsTooManyPage />} />
+        <Route path="/search-too-many" element={<SearchResultsTooManyMessage searchState={state} />} />
         <Route path={FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS} element={<DummyPage label="Basic Details Search" />} />
         <Route path={FRONTEND_PATHS.SEARCH_BY_NHS_NUMBER} element={<DummyPage label="NHS Number Search" />} />
         <Route path={FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID} element={<DummyPage label="Prescription ID Search" />} />
@@ -22,7 +22,7 @@ const renderWithRouter = (state: Record<string, unknown> = {}, initialPath = "/s
   )
 }
 
-describe("SearchResultsTooManyPage", () => {
+describe("SearchResultsTooManyMessage", () => {
   it("renders static text content and patient details", () => {
     renderWithRouter({
       firstName: "Jane",

@@ -15,6 +15,7 @@ import {PatientSummary} from "@cpt-ui-common/common-types"
 import http from "@/helpers/axios"
 import EpsSpinner from "@/components/EpsSpinner"
 import PatientNotFoundMessage from "@/components/PatientNotFoundMessage"
+import SearchResultsTooManyMessage from "@/components/SearchResultsTooManyMessage"
 
 // Mock patient data (fallback)
 const mockPatients: Array<PatientSummary> = [
@@ -99,6 +100,9 @@ export default function SearchResultsPage() {
     navigate(FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS, {state: {clear: true}})
   }
 
+  // Calculate too many results
+  const tooManyResults = patients.length > 10
+
   if (loading) {
     return (
       <main className="nhsuk-main-wrapper" id="main-content" role="main">
@@ -124,7 +128,15 @@ export default function SearchResultsPage() {
 
   // Show a message if no patients are found or if they all have no NHS number
   if (patients.length === 0 || isPatientNotFound) {
-    return <PatientNotFoundMessage onGoBack={handleGoBack} />
+    return <PatientNotFoundMessage />
+  }
+
+  const searchState = location.state?.searchState
+
+  // If too many results, show message
+  if (tooManyResults) {
+    // Pass back the original search params if you want
+    return <SearchResultsTooManyMessage searchState={searchState} />
   }
 
   return (
