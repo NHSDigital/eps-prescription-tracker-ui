@@ -53,8 +53,6 @@ export const lambdaHandler = async (
   const {loggerKeys, correlationId} = extractInboundEventValues(event)
   appendLoggerKeys(logger, loggerKeys)
 
-  logger.info("Lambda handler invoked", {event})
-
   const searchStartTime = Date.now()
 
   // Use the authenticateRequest function for authentication
