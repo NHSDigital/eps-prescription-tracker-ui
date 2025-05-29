@@ -4,6 +4,7 @@ import {PrescriptionAPIResponse} from "@cpt-ui-common/common-types"
 import {Logger} from "@aws-lambda-powertools/logger"
 import {mapResponseToPrescriptionSummary} from "../utils/responseMapper"
 import {Bundle, FhirResource} from "fhir/r4"
+import path from "path"
 
 type PrescriptionQuery = {
   prescriptionId?: string;
@@ -24,14 +25,16 @@ export const getPrescriptions = async (
   correlationId: string
 ): Promise<Array<PrescriptionAPIResponse>> => {
   const {prescriptionId, nhsNumber} = query
-  const searchParam = prescriptionId ? `prescriptionId=${prescriptionId}` : `nhsNumber=${nhsNumber}`
-  const endpoint = new URL(`RequestGroup?${searchParam}`, prescriptionsEndpoint).href
+  const searchParam = prescriptionId ? {prescriptionId: prescriptionId} : {nhsNumber: nhsNumber}
+  const endpoint = new URL(prescriptionsEndpoint)
+  endpoint.pathname = path.join(endpoint.pathname, "/RequestGroup")
   const logContext = prescriptionId ? {prescriptionId} : {nhsNumber}
 
   logger.info("Fetching prescriptions", logContext)
   const response = await axiosInstance.get(
-    endpoint,
+    endpoint.href,
     {
+      params: searchParam,
       headers: {
         Accept: "application/fhir+json",
         Authorization: `Bearer ${apigeeAccessToken}`,

@@ -5,6 +5,7 @@ import {Logger} from "@aws-lambda-powertools/logger"
 import {createMinimalPatientDetails, mapPdsResponseToPatientDetails} from "../utils/responseMapper"
 import {PDSError} from "../utils/errors"
 import {validatePatientDetails} from "../utils/validation"
+import path from "path"
 
 export const getPdsPatientDetails = async (
   axiosInstance: AxiosInstance,
@@ -18,10 +19,11 @@ export const getPdsPatientDetails = async (
 ): Promise<PatientAPIResponse> => {
   const startTime = Date.now()
   logger.info("Fetching patient details from PDS", {nhsNumber})
-  const pdsPath = new URL(`/Patient/${nhsNumber}`, pdsEndpoint).href
+  const endpoint = new URL(pdsEndpoint)
+  endpoint.pathname = path.join(endpoint.pathname, `/Patient/${nhsNumber}`)
   try {
     const response = await axiosInstance.get(
-      pdsPath,
+      endpoint.href,
       {
         headers: {
           Accept: "application/fhir+json",
