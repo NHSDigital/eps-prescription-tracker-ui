@@ -9,24 +9,16 @@ import {Link} from "react-router-dom"
 import {FRONTEND_PATHS} from "@/constants/environment"
 import {STRINGS} from "@/constants/ui-strings/PatientNotFoundMessageStrings"
 
-export default function PatientNotFoundMessage({onGoBack}: Readonly<{onGoBack?: () => void}>) {
+export default function PatientNotFoundMessage() {
   return (
     <Container
       className="nhsuk-width-container-fluid patient-not-found-container"
-      data-testid="patient-not-found-page"
+      data-testid="patient-not-found-message"
     >
       <nav className="nhsuk-breadcrumb nhsuk-u-padding-bottom-0 nhsuk-u-padding-left-2" aria-label="Breadcrumb">
-        {onGoBack ? (
-          <Link to={FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS}>
-            <BackLink data-testid="go-back-link" onClick={onGoBack}>
-              {STRINGS.goBackLink}
-            </BackLink>
-          </Link>
-        ) : (
-          <Link to={FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS} data-testid="patient-not-found-back-link">
-            <BackLink data-testid="go-back-link">{STRINGS.goBackLink}</BackLink>
-          </Link>
-        )}
+        <Link to={FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS} data-testid="patient-not-found-back-link">
+          <BackLink data-testid="go-back-link">{STRINGS.goBackLink}</BackLink>
+        </Link>
       </nav>
       <main
         className="nhsuk-main-wrapper nhsuk-main-wrapper--s patient-not-found-main-wrapper"
