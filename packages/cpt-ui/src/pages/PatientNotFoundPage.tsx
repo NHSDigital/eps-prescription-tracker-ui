@@ -41,7 +41,6 @@ export default function PatientNotFoundPage() {
               >
                 {STRINGS.heading}
               </h1>
-
               <p>{STRINGS.intro}</p>
               <p>{STRINGS.retryMessage}</p>
               <p>{STRINGS.alternativeSearch}
