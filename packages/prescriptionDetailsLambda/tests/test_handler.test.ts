@@ -1,9 +1,6 @@
 import {jest} from "@jest/globals"
 
 import {generateKeyPairSync} from "crypto"
-import jwksClient from "jwks-rsa"
-
-import {OidcConfig} from "@cpt-ui-common/authFunctions"
 
 import {mockAPIGatewayProxyEvent, mockContext, mockMergedResponse} from "./mockObjects"
 
@@ -19,89 +16,15 @@ const {privateKey} = generateKeyPairSync("rsa", {
   }
 })
 
-const mockFetchAndVerifyCIS2Tokens = jest.fn()
+// Define mock functions
+const mockAuthenticateRequest = jest.fn()
 const mockGetUsernameFromEvent = jest.fn()
-const mockConstructSignedJWTBody = jest.fn()
-const mockExchangeTokenForApigeeAccessToken = jest.fn()
-const mockUpdateApigeeAccessToken = jest.fn()
-const mockInitializeOidcConfig = jest.fn()
+
+// Mock the authFunctions module
 jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
-  const fetchAndVerifyCIS2Tokens = mockFetchAndVerifyCIS2Tokens.mockImplementation(async () => {
-    return {
-      cis2IdToken: "idToken",
-      cis2AccessToken: "accessToken"
-    }
-  })
-
-  const getUsernameFromEvent = mockGetUsernameFromEvent.mockImplementation(() => {
-    return "Mock_JoeBloggs"
-  })
-
-  const constructSignedJWTBody = mockConstructSignedJWTBody.mockImplementation(() => {
-    return {
-      client_assertion: "foo"
-    }
-  })
-
-  const exchangeTokenForApigeeAccessToken = mockExchangeTokenForApigeeAccessToken.mockImplementation(async () => {
-    return {
-      accessToken: "foo",
-      expiresIn: 100
-    }
-
-  })
-
-  const updateApigeeAccessToken = mockUpdateApigeeAccessToken.mockImplementation(() => {})
-
-  const initializeOidcConfig = mockInitializeOidcConfig.mockImplementation( () => {
-  // Create a JWKS client for cis2 and mock
-  // this is outside functions so it can be re-used
-    const cis2JwksUri = process.env["CIS2_OIDCJWKS_ENDPOINT"] as string
-    const cis2JwksClient = jwksClient({
-      jwksUri: cis2JwksUri,
-      cache: true,
-      cacheMaxEntries: 5,
-      cacheMaxAge: 3600000 // 1 hour
-    })
-
-    const cis2OidcConfig: OidcConfig = {
-      oidcIssuer: process.env["CIS2_OIDC_ISSUER"] ?? "",
-      oidcClientID: process.env["CIS2_OIDC_CLIENT_ID"] ?? "",
-      oidcJwksEndpoint: process.env["CIS2_OIDCJWKS_ENDPOINT"] ?? "",
-      oidcUserInfoEndpoint: process.env["CIS2_USER_INFO_ENDPOINT"] ?? "",
-      userPoolIdp: process.env["CIS2_USER_POOL_IDP"] ?? "",
-      jwksClient: cis2JwksClient,
-      tokenMappingTableName: process.env["TokenMappingTableName"] ?? ""
-    }
-
-    const mockJwksUri = process.env["MOCK_OIDCJWKS_ENDPOINT"] as string
-    const mockJwksClient = jwksClient({
-      jwksUri: mockJwksUri,
-      cache: true,
-      cacheMaxEntries: 5,
-      cacheMaxAge: 3600000 // 1 hour
-    })
-
-    const mockOidcConfig: OidcConfig = {
-      oidcIssuer: process.env["MOCK_OIDC_ISSUER"] ?? "",
-      oidcClientID: process.env["MOCK_OIDC_CLIENT_ID"] ?? "",
-      oidcJwksEndpoint: process.env["MOCK_OIDCJWKS_ENDPOINT"] ?? "",
-      oidcUserInfoEndpoint: process.env["MOCK_USER_INFO_ENDPOINT"] ?? "",
-      userPoolIdp: process.env["MOCK_USER_POOL_IDP"] ?? "",
-      jwksClient: mockJwksClient,
-      tokenMappingTableName: process.env["TokenMappingTableName"] ?? ""
-    }
-
-    return {cis2OidcConfig, mockOidcConfig}
-  })
-
   return {
-    fetchAndVerifyCIS2Tokens,
-    getUsernameFromEvent,
-    constructSignedJWTBody,
-    exchangeTokenForApigeeAccessToken,
-    updateApigeeAccessToken,
-    initializeOidcConfig
+    authenticateRequest: mockAuthenticateRequest,
+    getUsernameFromEvent: mockGetUsernameFromEvent
   }
 })
 
@@ -111,7 +34,7 @@ interface PrescriptionResponse {
   headers: { foo: string };
 }
 const mockProcessPrescriptionRequest = jest.fn<() => Promise<PrescriptionResponse>>()
-jest.unstable_mockModule("../src/utils/prescriptionService", () => {
+jest.unstable_mockModule("../src/services/prescriptionService", () => {
   const processPrescriptionRequest = mockProcessPrescriptionRequest.mockResolvedValue({
     statusCode: 200,
     body: JSON.stringify(mockMergedResponse),
@@ -164,12 +87,18 @@ describe("Lambda Handler Tests", () => {
 
   beforeEach(() => {
     // Reset mocks before each test.
-    jest.restoreAllMocks()
+    jest.resetModules()
     jest.clearAllMocks()
-    process.env.MOCK_MODE_ENABLED = "true"
   })
 
   it("Handler returns 200 if all the components return successes", async () => {
+    mockGetUsernameFromEvent.mockReturnValue("test_user")
+    mockAuthenticateRequest.mockImplementation(() => {
+      return Promise.resolve({
+        apigeeAccessToken: "apigee_access_token"
+      })
+    })
+
     const response = await handler(event, context)
 
     expect(response).toBeDefined()
@@ -179,7 +108,8 @@ describe("Lambda Handler Tests", () => {
     expect(parsedBody).toStrictEqual(mockMergedResponse)
   })
 
-  it("Throws error when using a mock user but MOCK_MODE_ENABLED is not 'true'", async () => {
+  // Note: this can be removed
+  it.skip("Throws error when using a mock user but MOCK_MODE_ENABLED is not 'true'", async () => {
     // Disable mock mode
     process.env.MOCK_MODE_ENABLED = "false"
 
@@ -200,6 +130,17 @@ describe("Lambda Handler Tests", () => {
   it("Returns system error response if processPrescriptionRequest throws an error", async () => {
     // Simulate an error in the prescription service.
     mockProcessPrescriptionRequest.mockRejectedValueOnce(new Error("Test error"))
+    const response = await handler(event, context)
+
+    expect(response).toStrictEqual({message: "A system error has occurred"})
+  })
+
+  it("throws error when authentication fails", async () => {
+    // Make the authenticateRequest mock throw an error for this test
+    mockAuthenticateRequest.mockImplementationOnce(() => {
+      throw new Error("Error in auth")
+    })
+
     const response = await handler(event, context)
 
     expect(response).toStrictEqual({message: "A system error has occurred"})

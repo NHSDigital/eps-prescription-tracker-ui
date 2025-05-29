@@ -46,7 +46,7 @@ const {
   extractOdsCodes,
   getDoHSData,
   processPrescriptionRequest
-} = await import("../src/utils/prescriptionService")
+} = await import("../src/services/prescriptionService")
 
 describe("prescriptionService", () => {
   let logger: Logger
@@ -64,17 +64,20 @@ describe("prescriptionService", () => {
     it("should return correct headers given a token and roleId", () => {
       const apigeeAccessToken = "sampleToken"
       const roleId = "sampleRole"
+      const orgCode = "sampleOrgCode"
+      const correlationId = "sampleCorrelationId"
 
       const expectedHeaders = {
         Authorization: `Bearer ${apigeeAccessToken}`,
         "nhsd-session-urid": roleId,
-        "nhsd-organization-uuid": "A83008",
-        "nhsd-identity-uuid": "123456123456",
-        "nhsd-session-jobrole": "123456123456",
+        "nhsd-organization-uuid": orgCode,
+        "nhsd-identity-uuid": roleId,
+        "nhsd-session-jobrole": roleId,
+        "x-correlation-id": correlationId,
         "x-request-id": "test-uuid"
       }
 
-      const headers = buildApigeeHeaders(apigeeAccessToken, roleId)
+      const headers = buildApigeeHeaders(apigeeAccessToken, roleId, orgCode, correlationId)
       expect(headers).toEqual(expectedHeaders)
     })
   })
@@ -275,6 +278,8 @@ describe("prescriptionService", () => {
         apigeePrescriptionsEndpoint,
         apigeeAccessToken,
         roleId,
+        "",
+        "",
         logger
       )
 
@@ -343,6 +348,8 @@ describe("prescriptionService", () => {
         apigeePrescriptionsEndpoint,
         apigeeAccessToken,
         roleId,
+        "",
+        "",
         logger
       )
 
@@ -409,6 +416,8 @@ describe("prescriptionService", () => {
         apigeePrescriptionsEndpoint,
         apigeeAccessToken,
         roleId,
+        "",
+        "",
         logger
       )
 
