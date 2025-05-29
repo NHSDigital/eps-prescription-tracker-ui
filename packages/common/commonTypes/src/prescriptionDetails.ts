@@ -70,7 +70,7 @@ export interface DispenseNotification {
 }
 
 export interface MessageHistory {
-    messageText: string
+    messageCode: string
     sentDateTime: string
     organisationName: string
     organisationODS: string
@@ -120,3 +120,100 @@ export interface PrescriptionDetailsResponse {
     nominatedDispenser?: DispenserOrganisation
     currentDispenser?: Array<DispenserOrganisation>
 }
+
+// export interface MergedResponse {
+//     patientDetails: {
+//       identifier: string
+//       name: {
+//         prefix?: string
+//         given: string
+//         family: string
+//         suffix?: string
+//       }
+//       gender: string
+//       birthDate: string
+//       address: {
+//         text: string
+//         line: string
+//         city: string
+//         district: string
+//         postalCode: string
+//         type: string
+//         use: string
+//       }
+//     }
+//     prescriptionID: string
+//     typeCode: string
+//     statusCode: string
+//     issueDate: string
+//     instanceNumber: number | string
+//     maxRepeats: number | string
+//     daysSupply: string
+//     prescriptionPendingCancellation: boolean
+//     prescribedItems: Array<{
+//       itemDetails: {
+//         medicationName: string
+//         quantity: string
+//         dosageInstructions: string
+//         epsStatusCode: string
+//         nhsAppStatus?: string
+//         itemPendingCancellation: boolean
+//         cancellationReason?: string | null
+//       }
+//     }>
+//     dispensedItems: Array<{
+//       itemDetails: {
+//         medicationName: string
+//         quantity: string
+//         dosageInstructions: string
+//         epsStatusCode: string
+//         nhsAppStatus?: string
+//         itemPendingCancellation: boolean
+//         cancellationReason?: string | null
+//         notDispensedReason?: string | null
+//         initiallyPrescribed?: {
+//           medicationName: string
+//           quantity: string
+//           dosageInstructions: string
+//         }
+//       }
+//     }>
+//     messageHistory: Array<{
+//       messageCode: string
+//       sentDateTime: string
+//       organisationName: string
+//       organisationODS: string
+//       newStatusCode: string
+//       dispenseNotification?: Array<{
+//         ID: string
+//         medicationName: string
+//         quantity: string
+//         dosageInstruction: string
+//       }>
+//     }>
+//     prescriberOrganisation: {
+//       organisationSummaryObjective: {
+//         name: string
+//         odsCode: string
+//         address: string
+//         telephone: string
+//         prescribedFrom: string
+//       }
+//     }
+//     nominatedDispenser?: {
+//       organisationSummaryObjective: {
+//         name: string
+//         odsCode: string
+//         address: string
+//         telephone: string
+//       }
+//     }
+//     currentDispenser?: Array<{
+//       organisationSummaryObjective: {
+//         name: string
+//         odsCode: string
+//         address: string
+//         telephone: string
+//       }
+//     }>
+//   }

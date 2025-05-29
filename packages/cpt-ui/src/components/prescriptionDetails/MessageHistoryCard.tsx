@@ -35,7 +35,7 @@ export function MessageHistoryCard({messageHistory}: MessageHistoryProps) {
 
                   {/* Timeline Heading */}
                   <Card.Heading headingLevel="H3" className="nhsuk-heading-xs nhsuk-u-margin-bottom-1">
-                    {getMessageHistoryHeader(msg.messageText)}
+                    {getMessageHistoryHeader(msg.messageCode)}
                     <br />
                     {msg.sentDateTime}
                   </Card.Heading>

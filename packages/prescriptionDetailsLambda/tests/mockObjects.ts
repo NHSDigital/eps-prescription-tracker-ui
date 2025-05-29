@@ -1,3 +1,4 @@
+import {PrescriptionDetailsResponse} from "@cpt-ui-common/common-types"
 import {
   FhirAction,
   FhirParticipant,
@@ -6,8 +7,7 @@ import {
   Contact,
   DoHSValue,
   DoHSData,
-  PrescriptionIntent,
-  MergedResponse
+  PrescriptionIntent
 } from "../src/utils/types"
 
 export const mockAPIGatewayProxyEvent = {
@@ -237,27 +237,23 @@ export const mockDoHSData: DoHSData = {
 
 export const mockPrescriptionIntent: PrescriptionIntent = "order"
 
-export const mockMergedResponse: MergedResponse = {
+export const mockMergedResponse: PrescriptionDetailsResponse = {
   patientDetails: {
-    identifier: "patient-123",
-    name: {
-      prefix: "Mr.",
-      given: "John",
-      family: "Doe"
-    },
+    nhsNumber: "123",
+    prefix: "Mr.",
+    given: "John",
+    family: "Doe",
+    suffix: "",
     gender: "male",
-    birthDate: "1970-01-01",
+    dateOfBirth: "1970-01-01",
     address: {
-      text: "123 Main St, CityName, Country",
-      line: "123 Main St",
+      line1: "123 Main St, CityName, Country",
+      line2: "123 Main St",
       city: "CityName",
-      district: "DistrictName",
-      postalCode: "12345",
-      type: "home",
-      use: "primary"
+      postcode: "12345"
     }
   },
-  prescriptionID: "RX-123456",
+  prescriptionId: "RX-123456",
   typeCode: "order",
   statusCode: "active",
   issueDate: "2020-01-01",

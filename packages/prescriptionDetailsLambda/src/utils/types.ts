@@ -134,104 +134,34 @@ export interface DoHSData {
 export type PrescriptionIntent = "order" | "instance-order" | "reflex-order"
 
 /**
- * The MergedResponse interface represents the consolidated information
- * from the Spine response and DoHS data. It is used to structure
- * the combined output of various data sources into a single, comprehensive
- * response format for easier consumption in the application.
+ * Interface to define URL mappings for FHIR extensions.
+ * This helps with handling different URL formats for the same extension.
  */
-export interface MergedResponse {
-  patientDetails: {
-    identifier: string
-    name: {
-      prefix?: string
-      given: string
-      family: string
-      suffix?: string
-    }
-    gender: string
-    birthDate: string
-    address: {
-      text: string
-      line: string
-      city: string
-      district: string
-      postalCode: string
-      type: string
-      use: string
-    }
-  }
-  prescriptionID: string
-  typeCode: string
-  statusCode: string
-  issueDate: string
-  instanceNumber: number | string
-  maxRepeats: number | string
-  daysSupply: string
-  prescriptionPendingCancellation: boolean
-  prescribedItems: Array<{
-    itemDetails: {
-      medicationName: string
-      quantity: string
-      dosageInstructions: string
-      epsStatusCode: string
-      nhsAppStatus?: string
-      itemPendingCancellation: boolean
-      cancellationReason?: string | null
-    }
-  }>
-  dispensedItems: Array<{
-    itemDetails: {
-      medicationName: string
-      quantity: string
-      dosageInstructions: string
-      epsStatusCode: string
-      nhsAppStatus?: string
-      itemPendingCancellation: boolean
-      cancellationReason?: string | null
-      notDispensedReason?: string | null
-      initiallyPrescribed?: {
-        medicationName: string
-        quantity: string
-        dosageInstructions: string
-      }
-    }
-  }>
-  messageHistory: Array<{
-    messageCode: string
-    sentDateTime: string
-    organisationName: string
-    organisationODS: string
-    newStatusCode: string
-    dispenseNotification?: Array<{
-      ID: string
-      medicationName: string
-      quantity: string
-      dosageInstruction: string
-    }>
-  }>
-  prescriberOrganisation: {
-    organisationSummaryObjective: {
-      name: string
-      odsCode: string
-      address: string
-      telephone: string
-      prescribedFrom: string
-    }
-  }
-  nominatedDispenser?: {
-    organisationSummaryObjective: {
-      name: string
-      odsCode: string
-      address: string
-      telephone: string
-    }
-  }
-  currentDispenser?: Array<{
-    organisationSummaryObjective: {
-      name: string
-      odsCode: string
-      address: string
-      telephone: string
-    }
-  }>
+interface ExtensionUrlMappings {
+  [key: string]: Array<string>
+}
+
+/**
+ * Map of canonical extension keys to their possible URLs.
+ * This helps handle inconsistencies between different FHIR implementations.
+ */
+export const extensionUrlMappings: ExtensionUrlMappings = {
+  PENDING_CANCELLATION: [
+    "https://fhir.nhs.uk/StructureDefinition/Extension-EPS-PendingCancellations"
+  ],
+  REPEAT_INFORMATION: [
+    "https://fhir.nhs.uk/StructureDefinition/Extension-EPS-RepeatInformation"
+  ],
+  PRESCRIPTION_TYPE: [
+    "https://fhir.nhs.uk/StructureDefinition/Extension-DM-PrescriptionType"
+  ],
+  NON_DISPENSING_REASON: [
+    "https://fhir.nhs.uk/StructureDefinition/Extension-DM-PrescriptionNonDispensingReason"
+  ],
+  DISPENSING_INFORMATION: [
+    "https://fhir.nhs.uk/StructureDefinition/Extension-EPS-DispensingInformation"
+  ],
+  TASK_BUSINESS_STATUS: [
+    "https://fhir.nhs.uk/StructureDefinition/Extension-EPS-TaskBusinessStatus"
+  ]
 }
