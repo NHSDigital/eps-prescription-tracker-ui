@@ -43,7 +43,7 @@
         "@testing-library/jest-dom": "^6.6.2",
         "@testing-library/react": "^16.3.0",
         "@types/jest": "^29.5.14",
-        "@types/node": "^22.15.21",
+        "@types/node": "^22.15.23",
         "@types/react": "18.3.12",
         "@typescript-eslint/eslint-plugin": "^8.31.0",
         "@typescript-eslint/parser": "^8.32.0",
@@ -57,15 +57,15 @@
         "jest-environment-jsdom": "^29.7.0",
         "jest-junit": "^16.0.0",
         "license-checker": "^25.0.1",
-        "semantic-release": "^24.2.4",
+        "semantic-release": "^24.2.5",
         "ts-jest": "^29.3.4",
         "ts-node": "^10.9.2",
         "typescript": "^5.8.3",
-        "typescript-eslint": "^8.32.0"
+        "typescript-eslint": "^8.33.0"
     },
     "dependencies": {
         "conventional-changelog-eslint": "^6.0.0",
-        "esbuild": "^0.25.4",
+        "esbuild": "^0.25.5",
         "next": "^15.3.2",
         "nhsuk-react-components": "^5.0.0",
         "react": "^18.3.1",
