@@ -63,6 +63,18 @@ const mockMultiplePatient: Array<PatientSummary> = [
   }
 ]
 
+const mockNotFoundPatients: Array<PatientSummary> = [
+  {
+    nhsNumber: "",
+    givenName: ["Not", "Found"],
+    familyName: "SpecialNotFound",
+    gender: "Other",
+    dateOfBirth: "01-01-1990",
+    address: ["No Address"],
+    postcode: "NO0 0NE"
+  }
+]
+
 // Utility to normalize input for case-insensitive and whitespace-tolerant comparison
 const formatInput = (input: string) => input.trim().toLowerCase()
 
@@ -201,25 +213,31 @@ export default function BasicDetailsSearch() {
       // since mock DOBs are stored in the format 'DD-MM-YYYY'
       const searchDob = formatDobForSearch({dobDay, dobMonth, dobYear})
 
-      const matchedPatients = [...mockPatient, ...mockMultiplePatient].filter(p => {
-        const matchFirstName = firstName
-          ? formatInput(p.givenName?.[0] ?? "") === formatInput(firstName)
-          : true
+      const matchedPatients = [
+        ...mockPatient,
+        ...mockMultiplePatient,
+        ...mockNotFoundPatients
+      ].filter(p => {
+        const matchFirstName = firstName ? formatInput(p.givenName?.[0] ?? "") === formatInput(firstName) : true
         const matchLastName = formatInput(p.familyName) === formatInput(lastName)
         const matchDob = p.dateOfBirth === searchDob
-        const matchPostcode = postcode
-          ? formatInput(p.postcode ?? "") === formatInput(postcode)
-          : true
+        const matchPostcode = postcode ? formatInput(p.postcode ?? "") === formatInput(postcode) : true
         return matchFirstName && matchLastName && matchDob && matchPostcode
       })
 
       // Navigate based on match count
-      if (matchedPatients.length === 1) {
-        navigate(`${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}?nhsNumber=${matchedPatients[0].nhsNumber}`)
-      } else if (matchedPatients.length > 1) {
+      if (
+        matchedPatients.length === 1 &&
+        !matchedPatients[0].nhsNumber ||
+        matchedPatients.length > 1
+      ) {
+        // Navigate to patient search results
         navigate(FRONTEND_PATHS.PATIENT_SEARCH_RESULTS, {
           state: {patients: matchedPatients}
         })
+      } else if (matchedPatients.length === 1) {
+        // NHS number exists: found
+        navigate(`${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}?nhsNumber=${matchedPatients[0].nhsNumber}`)
       } else {
         navigate(FRONTEND_PATHS.SEARCH_RESULTS_TOO_MANY, {
           state: formState

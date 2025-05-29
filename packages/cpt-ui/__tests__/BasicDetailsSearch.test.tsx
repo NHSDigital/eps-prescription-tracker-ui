@@ -197,6 +197,45 @@ describe("BasicDetailsSearch", () => {
     })
   })
 
+  it("redirects to the patient not found page when NHS number is missing (empty string)", async () => {
+    const mockNavigate = jest.fn();
+    (useNavigate as jest.Mock).mockReturnValue(mockNavigate)
+
+    renderWithRouter(<BasicDetailsSearch />)
+
+    await fillForm({
+      firstName: "Not",
+      lastName: "SpecialNotFound",
+      dobDay: "01",
+      dobMonth: "01",
+      dobYear: "1990",
+      postcode: "NO0 0NE"
+    })
+
+    await submitForm()
+
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith(
+        FRONTEND_PATHS.PATIENT_SEARCH_RESULTS,
+        {
+          state: {
+            patients: [
+              {
+                nhsNumber: "",
+                givenName: ["Not", "Found"],
+                familyName: "SpecialNotFound",
+                gender: "Other",
+                dateOfBirth: "01-01-1990",
+                address: ["No Address"],
+                postcode: "NO0 0NE"
+              }
+            ]
+          }
+        }
+      )
+    })
+  })
+
   const testCases = [
     {
       title: "shows error if last name is missing",

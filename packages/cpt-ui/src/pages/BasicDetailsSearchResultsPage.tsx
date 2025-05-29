@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 import React, {useContext, useEffect, useState} from "react"
-import {useNavigate, useSearchParams} from "react-router-dom"
+import {useNavigate, useSearchParams, useLocation} from "react-router-dom"
 import {
   BackLink,
   Table,
@@ -38,10 +38,21 @@ const mockPatients: Array<PatientSummary> = [
 
 export default function SearchResultsPage() {
   const auth = useContext(AuthContext)
+  const location = useLocation()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const [loading, setLoading] = useState(true)
   const [patients, setPatients] = useState<Array<PatientSummary>>([])
+
+  useEffect(() => {
+    // Check if we were passed state from navigation
+    if (location.state && Array.isArray(location.state.patients)) {
+      setPatients(location.state.patients)
+      setLoading(false)
+    } else {
+      getSearchResults()
+    }
+  }, [])
 
   const getSearchResults = async () => {
     try {
@@ -80,10 +91,6 @@ export default function SearchResultsPage() {
     }
   }
 
-  useEffect(() => {
-    getSearchResults()
-  }, [])
-
   const handleRowClick = (nhsNumber: string) => {
     navigate(`${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}?nhsNumber=${nhsNumber}`)
   }
@@ -112,11 +119,12 @@ export default function SearchResultsPage() {
   const sortedPatients = patients
     .toSorted((a, b) => (a.givenName?.[0] ?? "").localeCompare(b.givenName?.[0] ?? ""))
 
-  // Show a message if no patients are found
-  if (patients.length === 0) {
-    return (
-      <PatientNotFoundMessage onGoBack={handleGoBack} />
-    )
+  // Patient Not Found if every patient has an empty NHS number
+  const isPatientNotFound = patients.length > 0 && patients.every((p: PatientSummary) => !p.nhsNumber)
+
+  // Show a message if no patients are found or if they all have no NHS number
+  if (patients.length === 0 || isPatientNotFound) {
+    return <PatientNotFoundMessage onGoBack={handleGoBack} />
   }
 
   return (
