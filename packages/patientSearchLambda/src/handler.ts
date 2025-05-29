@@ -103,7 +103,7 @@ export const lambdaHandler = async (
   [dateOfBirth, validationErrors] = guardQueryParameter(queryStringParameters, "dateOfBirth", validationErrors);
   [postcode, validationErrors] = guardQueryParameter(queryStringParameters, "postcode", validationErrors)
   if (validationErrors.length > 0) {
-    logger.info("Validation error", {
+    logger.error("Validation error", {
       validationErrors,
       timeMs: Date.now() - searchStartTime
     })
