@@ -14,12 +14,12 @@ export default function SearchResultsTooManyMessage({search = ""}: {search?: str
   // Parse search params (remove leading "?")
   const params = new URLSearchParams(search.startsWith("?") ? search.slice(1) : search)
 
-  const firstName = params.get("firstName") || ""
-  const lastName = params.get("lastName") || ""
-  const dobDay = params.get("dobDay") || ""
-  const dobMonth = params.get("dobMonth") || ""
-  const dobYear = params.get("dobYear") || ""
-  const postcode = params.get("postcode") || ""
+  const firstName = params.get("firstName") ?? ""
+  const lastName = params.get("lastName") ?? ""
+  const dobDay = params.get("dobDay") ?? ""
+  const dobMonth = params.get("dobMonth") ?? ""
+  const dobYear = params.get("dobYear") ?? ""
+  const postcode = params.get("postcode") ?? ""
 
   return (
     <Container

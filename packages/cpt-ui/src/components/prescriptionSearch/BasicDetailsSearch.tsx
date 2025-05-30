@@ -136,12 +136,12 @@ export default function BasicDetailsSearch() {
   }, [])
 
   useEffect(() => {
-    setFirstName(searchParams.get("firstName") || "")
-    setLastName(searchParams.get("lastName") || "")
-    setDobDay(searchParams.get("dobDay") || "")
-    setDobMonth(searchParams.get("dobMonth") || "")
-    setDobYear(searchParams.get("dobYear") || "")
-    setPostcode(searchParams.get("postcode") || "")
+    setFirstName(searchParams.get("firstName") ?? "")
+    setLastName(searchParams.get("lastName") ?? "")
+    setDobDay(searchParams.get("dobDay") ?? "")
+    setDobMonth(searchParams.get("dobMonth") ?? "")
+    setDobYear(searchParams.get("dobYear") ?? "")
+    setPostcode(searchParams.get("postcode") ?? "")
   }, [])
 
   // Returns true if the given DOB field had an error on the last submission.
