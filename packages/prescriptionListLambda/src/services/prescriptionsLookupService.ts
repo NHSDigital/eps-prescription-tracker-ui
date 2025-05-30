@@ -4,6 +4,7 @@ import {PrescriptionAPIResponse} from "@cpt-ui-common/common-types"
 import {Logger} from "@aws-lambda-powertools/logger"
 import {mapResponseToPrescriptionSummary} from "../utils/responseMapper"
 import {Bundle, FhirResource} from "fhir/r4"
+import path from "path"
 
 type PrescriptionQuery = {
   prescriptionId?: string;
@@ -19,17 +20,21 @@ export const getPrescriptions = async (
   prescriptionsEndpoint: string,
   query: PrescriptionQuery,
   apigeeAccessToken: string,
-  roleId: string
+  roleId: string,
+  orgCode: string,
+  correlationId: string
 ): Promise<Array<PrescriptionAPIResponse>> => {
   const {prescriptionId, nhsNumber} = query
-  const searchParam = prescriptionId ? `prescriptionId=${prescriptionId}` : `nhsNumber=${nhsNumber}`
-  const endpoint = `${prescriptionsEndpoint}/RequestGroup?${searchParam}`
+  const searchParam = prescriptionId ? {prescriptionId: prescriptionId} : {nhsNumber: nhsNumber}
+  const endpoint = new URL(prescriptionsEndpoint)
+  endpoint.pathname = path.join(endpoint.pathname, "/RequestGroup")
   const logContext = prescriptionId ? {prescriptionId} : {nhsNumber}
 
   logger.info("Fetching prescriptions", logContext)
   const response = await axiosInstance.get(
-    endpoint,
+    endpoint.href,
     {
+      params: searchParam,
       headers: {
         Accept: "application/fhir+json",
         Authorization: `Bearer ${apigeeAccessToken}`,
@@ -37,7 +42,8 @@ export const getPrescriptions = async (
         "x-request-id": uuidv4(),
         "nhsd-session-jobrole": roleId,
         "nhsd-identity-uuid": roleId,
-        "nhsd-organization-uuid": "A83008"
+        "nhsd-organization-uuid": orgCode,
+        "x-correlation-id": correlationId
       }
     }
   )
