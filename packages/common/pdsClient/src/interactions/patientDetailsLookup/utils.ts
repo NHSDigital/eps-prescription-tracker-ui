@@ -1,5 +1,7 @@
 import {PDSResponse} from "./types"
 import {PatientDetails} from "@cpt-ui-common/common-types"
+import {URL} from "url"
+import path from "path"
 
 /**
  * Maps PDS response to patient details without any fallback logic
@@ -22,6 +24,6 @@ export const mapPdsResponseToPatientDetails = (pdsData: PDSResponse): PatientDet
   }
 }
 
-export const PATIENT_DETAILS_PATH = (url: string, nhsNumber: string) =>{
-  return `${url}/Patient/${nhsNumber}`
+export const PATIENT_DETAILS_PATH = (pds_base: URL, nhsNumber: string): URL =>{
+  return new URL(path.join("Patient", nhsNumber), pds_base)
 }

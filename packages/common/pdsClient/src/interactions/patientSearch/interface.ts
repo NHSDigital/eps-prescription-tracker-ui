@@ -10,5 +10,5 @@ export interface Interface {
   ): Promise<Outcome>;
   patientSearchPath(
     searchParameters: PatientSearchParameters
-  ): string;
+  ): URL;
 }

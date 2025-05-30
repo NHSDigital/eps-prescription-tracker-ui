@@ -89,7 +89,7 @@ async function patientSearch(
     return {
       type: PatientSearchOutcomeType.AXIOS_ERROR,
       error: api_call.error,
-      url,
+      url: url.toString(),
       timeMs: api_call.timeMs
     }
   }

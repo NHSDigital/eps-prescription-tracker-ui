@@ -8,7 +8,7 @@ import {Client as clientInterface} from "./interface"
 export class Client implements clientInterface, patientDetailsLookup.Interface, patientSearch.Interface {
   // Client interface
   readonly axiosInstance: AxiosInstance
-  readonly pdsEndpoint: string
+  readonly pdsEndpoint: URL
   readonly logger: Logger
   apigeeAccessToken?: string
   roleId?: string
@@ -17,7 +17,7 @@ export class Client implements clientInterface, patientDetailsLookup.Interface, 
 
   constructor(
     axiosInstance: AxiosInstance,
-    pdsEndpoint: string,
+    pdsEndpoint: URL,
     logger: Logger
   ){
     this.axiosInstance = axiosInstance
@@ -30,7 +30,7 @@ export class Client implements clientInterface, patientDetailsLookup.Interface, 
   }
 
   axios_get = async (
-    url: string,
+    url: URL,
     additionalLogParams: Record<string, string> = {}
   )=>
     axios.axios_get(this, url, additionalLogParams)

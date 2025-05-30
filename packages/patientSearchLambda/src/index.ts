@@ -15,6 +15,7 @@ import {
   HandlerParameters,
   lambdaHandler
 } from "./handler"
+import {URL} from "url"
 
 /*
 This file initialises dependencies and a lambda from the environment.
@@ -48,7 +49,7 @@ const authParametersFromEnv = (): AuthenticationParameters => {
 const logger = new Logger({serviceName: "patientSearchLambda"})
 
 // PDS Client
-const pdsEndpoint = process.env["apigeePersonalDemographicsEndpoint"] as string
+const pdsEndpoint = new URL(process.env["apigeePersonalDemographicsEndpoint"] as string)
 const axiosInstance = axios.create()
 const pdsClient = new pds.Client(
   axiosInstance,

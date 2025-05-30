@@ -16,6 +16,7 @@ import * as pds from "@cpt-ui-common/pdsClient"
 import httpHeaderNormalizer from "@middy/http-header-normalizer"
 import {authenticateRequest, getUsernameFromEvent} from "@cpt-ui-common/authFunctions"
 import {PrescriptionError, PDSError} from "./utils/errors"
+import {URL} from "url"
 
 import {
   headers,
@@ -59,7 +60,7 @@ const logger = new Logger({serviceName: "prescriptionList"})
 
 // External endpoints and environment variables
 const apigeePrescriptionsEndpoint = process.env["apigeePrescriptionsEndpoint"] as string
-const apigeePersonalDemographicsEndpoint = process.env["apigeePersonalDemographicsEndpoint"] as string
+const apigeePersonalDemographicsEndpoint = new URL(process.env["apigeePersonalDemographicsEndpoint"] as string)
 const TokenMappingTableName = process.env["TokenMappingTableName"] as string
 const jwtPrivateKeyArn = process.env["jwtPrivateKeyArn"] as string
 const apigeeApiKey = process.env["APIGEE_API_KEY"] as string

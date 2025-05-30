@@ -1,16 +1,20 @@
+import {URL} from "url"
 import {PatientSearchParameters} from "./types"
 
 export function PATIENT_DETAILS_PATH(
-  url: string,
+  pds_base: URL,
   searchParameters: PatientSearchParameters
-): string {
-  const base = `${url}/Patient`
-  const familyQuery = `?family=${searchParameters.familyName.to_query_string()}`
-  const birthdateQuery = `&birthdate=eq${searchParameters.dateOfBirth.to_query_string()}`
-  const postcodeQuery = `&address-postalcode=${searchParameters.postcode.to_query_string()}`
-  const givenNameQuery = searchParameters.givenName ? `&given=${searchParameters.givenName.to_query_string()}` : ""
+): URL {
+  const url = new URL("Patient", pds_base)
 
-  return `${base}${familyQuery}${birthdateQuery}${postcodeQuery}${givenNameQuery}`
+  url.searchParams.set("family", searchParameters.familyName.to_query_string())
+  url.searchParams.set("birthdate", `eq${searchParameters.dateOfBirth.to_query_string()}`)
+  url.searchParams.set("address-postalcode", searchParameters.postcode.to_query_string())
+  if (searchParameters.givenName) {
+    url.searchParams.set("given", searchParameters.givenName.to_query_string())
+  }
+
+  return url
 }
 
 export function encodeQueryString(queryString: string): string {
