@@ -57,26 +57,6 @@ jest.unstable_mockModule("@aws-lambda-powertools/parameters/secrets", () => {
   }
 })
 
-// Mock the DynamoDB client.
-const mockSend = jest.fn()
-
-jest.unstable_mockModule("@aws-sdk/client-dynamodb", () => ({
-  DynamoDBClient: jest.fn().mockImplementation(() => {
-    return {}
-  })
-}))
-
-// Mock the DynamoDB Document Client.
-jest.unstable_mockModule("@aws-sdk/lib-dynamodb", () => ({
-  DynamoDBDocumentClient: {
-    from: jest.fn().mockImplementation(() => {
-      return {
-        send: mockSend
-      }
-    })
-  }
-}))
-
 // Import the handler after the mocks have been defined.
 const {handler} = await import("../src/handler")
 

@@ -1,4 +1,5 @@
 import {jest} from "@jest/globals"
+import nock from "nock"
 
 import {handleAxiosError} from "../src/errorUtils"
 import {AxiosError, AxiosRequestHeaders} from "axios"
@@ -11,10 +12,14 @@ describe("handleAxiosError", () => {
   beforeEach(() => {
     logger = new Logger()
     errorSpy = jest.spyOn(logger, "error").mockImplementation(() => {})
+    nock.cleanAll()
   })
 
   afterEach(() => {
     jest.resetAllMocks()
+    if (!nock.isDone()) {
+      nock.cleanAll()
+    }
   })
 
   it("logs detailed error info when error is an AxiosError", () => {

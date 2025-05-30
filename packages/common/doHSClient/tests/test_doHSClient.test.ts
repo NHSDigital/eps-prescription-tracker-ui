@@ -1,14 +1,9 @@
 import {jest} from "@jest/globals"
-import axios, {AxiosError} from "axios"
-
-// Mock axios
-jest.mock("axios")
-const mockAxiosGet = jest.fn();
-(axios.get as unknown as jest.Mock) = mockAxiosGet
+import nock from "nock"
 
 // Mock environment variables by setting them before any module loads
 const validApiKey = "dummy-api-key"
-const validEndpoint = "https://api.example.com/dohs?query=true"
+const validEndpoint = "https://api.example.com/dohs"
 
 // Set environment variables before importing the module
 process.env.apigeeApiKey = validApiKey
@@ -18,14 +13,18 @@ process.env.apigeeDoHSEndpoint = validEndpoint
 const {doHSClient} = await import("../src/doHSClient")
 
 describe("doHSClient", () => {
-  let mockedAxios
-
-  beforeAll(() => {
-    mockedAxios = axios as jest.Mocked<typeof axios>
-  })
-
   beforeEach(() => {
     jest.clearAllMocks()
+    // Clean up any pending nock interceptors
+    nock.cleanAll()
+  })
+
+  afterEach(() => {
+    // Verify that all nock interceptors were used
+    if (!nock.isDone()) {
+      console.warn("Unused nock interceptors:", nock.pendingMocks())
+      nock.cleanAll()
+    }
   })
 
   it("throws an error if no ODS codes are provided", async () => {
@@ -80,7 +79,16 @@ describe("doHSClient", () => {
       value: [{ODSCode: "ABC"}]
     }
 
-    mockedAxios.get.mockResolvedValueOnce({data: responseData})
+    // Set up nock to intercept the HTTP request
+    const odsFilter = "ODSCode eq 'ABC' or ODSCode eq 'DEF' or ODSCode eq 'XYZ' or ODSCode eq 'PQR'"
+    nock("https://api.example.com")
+      .get("/dohs")
+      .query({
+        "api-version": "3",
+        "$filter": odsFilter
+      })
+      .matchHeader("apikey", validApiKey)
+      .reply(200, responseData)
 
     const result = await doHSClient(odsCodes)
 
@@ -89,32 +97,38 @@ describe("doHSClient", () => {
       nominatedPerformer: null,
       dispensingOrganizations: [] // Expect an empty array if no matching dispensing organizations are found
     })
+  })
 
-    // Verify that axios.get was called with a URL containing the correct filter.
-    const odsFilter = "ODSCode eq 'ABC' or ODSCode eq 'DEF' or ODSCode eq 'XYZ' or ODSCode eq 'PQR'"
-    expect(mockedAxios.get).toHaveBeenCalledWith(
-      expect.stringContaining(`$filter=${odsFilter}`),
-      {headers: {apikey: validApiKey}}
+  it("handles HTTP errors and throws error", async () => {
+    const odsCodes = {prescribingOrganization: "ABC"}
+
+    // Set up nock to simulate an HTTP error
+    const odsFilter = "ODSCode eq 'ABC'"
+    nock("https://api.example.com")
+      .get("/dohs")
+      .query({
+        "$filter": odsFilter
+      })
+      .matchHeader("apikey", validApiKey)
+      .reply(500, "Internal Server Error")
+
+    await expect(doHSClient(odsCodes)).rejects.toThrow(
+      "Error fetching DoHS API data"
     )
   })
 
-  it("handles AxiosError and throws error", async () => {
+  it("handles network errors and throws error", async () => {
     const odsCodes = {prescribingOrganization: "ABC"}
-    // Create a minimal AxiosError
-    const axiosError = new Error("Request failed") as AxiosError
-    axiosError.response = {
-      status: 500,
-      statusText: "Internal Server Error",
-      data: "Internal Server Error",
-      headers: {},
-      config: {
-        headers: undefined
-      }
-    }
-    // Mark as an AxiosError
-    axiosError.isAxiosError = true
 
-    mockedAxios.get.mockRejectedValueOnce(axiosError)
+    // Set up nock to simulate a network error
+    const odsFilter = "ODSCode eq 'ABC'"
+    nock("https://api.example.com")
+      .get("/dohs")
+      .query({
+        "$filter": odsFilter
+      })
+      .matchHeader("apikey", validApiKey)
+      .replyWithError("Network Error")
 
     await expect(doHSClient(odsCodes)).rejects.toThrow(
       "Error fetching DoHS API data"

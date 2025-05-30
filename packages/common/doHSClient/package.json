@@ -18,6 +18,7 @@
     "axios-retry": "^4.5.0"
   },
   "devDependencies": {
-    "axios-mock-adapter": "^2.1.0"
+    "axios-mock-adapter": "^2.1.0",
+    "nock": "^14.0.4"
   }
 }

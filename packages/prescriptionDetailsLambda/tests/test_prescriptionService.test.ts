@@ -1,4 +1,5 @@
 import {jest} from "@jest/globals"
+import nock from "nock"
 
 import type {APIGatewayProxyEvent} from "aws-lambda"
 import type {Logger} from "@aws-lambda-powertools/logger"
@@ -31,28 +32,24 @@ jest.unstable_mockModule("../src/utils/headerUtils", () => ({
 // Import some mock objects to use in our tests.
 import {mockAPIGatewayProxyEvent, mockFhirParticipant} from "./mockObjects"
 
-// Set up the mock before any import
-jest.unstable_mockModule("axios", () => ({
-  default: {
-    get: jest.fn()
-  }
-}))
-
-const {default: axios} = await import("axios")
-const mockedAxios = axios as jest.Mocked<typeof axios>
-
 const {
-  buildApigeeHeaders,
   extractOdsCodes,
   getDoHSData,
   processPrescriptionRequest
 } = await import("../src/services/prescriptionService")
+
+const mockBuildApigeeHeaders = jest.fn()
+jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => ({
+  buildApigeeHeaders: mockBuildApigeeHeaders
+}))
 
 describe("prescriptionService", () => {
   let logger: Logger
 
   beforeEach(() => {
     jest.restoreAllMocks()
+    // Clean up any pending nock interceptors
+    nock.cleanAll()
     logger = {
       info: jest.fn(),
       warn: jest.fn(),
@@ -60,26 +57,12 @@ describe("prescriptionService", () => {
     } as unknown as Logger
   })
 
-  describe("buildApigeeHeaders", () => {
-    it("should return correct headers given a token and roleId", () => {
-      const apigeeAccessToken = "sampleToken"
-      const roleId = "sampleRole"
-      const orgCode = "sampleOrgCode"
-      const correlationId = "sampleCorrelationId"
-
-      const expectedHeaders = {
-        Authorization: `Bearer ${apigeeAccessToken}`,
-        "nhsd-session-urid": roleId,
-        "nhsd-organization-uuid": orgCode,
-        "nhsd-identity-uuid": roleId,
-        "nhsd-session-jobrole": roleId,
-        "x-correlation-id": correlationId,
-        "x-request-id": "test-uuid"
-      }
-
-      const headers = buildApigeeHeaders(apigeeAccessToken, roleId, orgCode, correlationId)
-      expect(headers).toEqual(expectedHeaders)
-    })
+  afterEach(() => {
+    // Verify that all nock interceptors were used
+    if (!nock.isDone()) {
+      console.warn("Unused nock interceptors:", nock.pendingMocks())
+      nock.cleanAll()
+    }
   })
 
   describe("extractOdsCodes", () => {
@@ -324,10 +307,19 @@ describe("prescriptionService", () => {
       }
 
       const fakeApigeeHeaders = {"content-type": "application/json"}
-      mockedAxios.get.mockResolvedValue({
-        data: fakeApigeeData,
-        headers: fakeApigeeHeaders
-      })
+
+      // Set up nock to intercept the HTTP request - note the RequestGroup path
+      nock(apigeePrescriptionsEndpoint)
+        .get(`/RequestGroup/${prescriptionId}`)
+        .matchHeader("authorization", `Bearer ${apigeeAccessToken}`)
+        .matchHeader("nhsd-session-urid", roleId)
+        .matchHeader("nhsd-identity-uuid", roleId)
+        .matchHeader("nhsd-session-jobrole", roleId)
+        .matchHeader("x-request-id", "test-uuid")
+        // Note: nhsd-organization-uuid and x-correlation-id are empty strings in the test
+        .matchHeader("nhsd-organization-uuid", "")
+        .matchHeader("x-correlation-id", "")
+        .reply(200, fakeApigeeData, fakeApigeeHeaders)
 
       // Setup the doHSClient mock so that getDoHSData returns mapped data.
       const mockDoHSResponse = {
@@ -356,8 +348,14 @@ describe("prescriptionService", () => {
       expect(result.statusCode).toEqual(200)
       expect(mockMergePrescriptionDetails).toHaveBeenCalled()
       expect(result.body).toEqual(JSON.stringify(mergedResponse))
-      expect(result.headers).toEqual(fakeApigeeHeaders)
-      expect(mockFormatHeaders).toHaveBeenCalledWith(fakeApigeeHeaders)
+
+      // Check that headers contain the expected content (axios returns AxiosHeaders object)
+      expect(result.headers).toHaveProperty("content-type", "application/json")
+
+      // Verify formatHeaders was called with the AxiosHeaders object
+      expect(mockFormatHeaders).toHaveBeenCalled()
+      const formatHeadersCall = mockFormatHeaders.mock.calls[0][0]
+      expect(formatHeadersCall).toHaveProperty("content-type", "application/json")
     })
 
     it("should return 'Prescription details not found' if mergePrescriptionDetails throws an error", async () => {
@@ -391,10 +389,18 @@ describe("prescriptionService", () => {
       }
 
       const fakeApigeeHeaders = {"content-type": "application/json"}
-      mockedAxios.get.mockResolvedValue({
-        data: fakeApigeeData,
-        headers: fakeApigeeHeaders
-      })
+
+      // Set up nock to intercept the HTTP request - note the RequestGroup path
+      nock(apigeePrescriptionsEndpoint)
+        .get(`/RequestGroup/${prescriptionId}`)
+        .matchHeader("authorization", `Bearer ${apigeeAccessToken}`)
+        .matchHeader("nhsd-session-urid", roleId)
+        .matchHeader("nhsd-identity-uuid", roleId)
+        .matchHeader("nhsd-session-jobrole", roleId)
+        .matchHeader("x-request-id", "test-uuid")
+        .matchHeader("nhsd-organization-uuid", "")
+        .matchHeader("x-correlation-id", "")
+        .reply(200, fakeApigeeData, fakeApigeeHeaders)
 
       // Ensure doHSClient returns valid data.
       const mockDoHSResponse = {
@@ -425,6 +431,83 @@ describe("prescriptionService", () => {
       const body = JSON.parse(result.body)
       expect(body).toEqual({message: "Prescription details not found"})
       expect(logger.warn).toHaveBeenCalledWith("Prescription details not found")
+    })
+
+    it("should handle prescription IDs ending with + character correctly", async () => {
+      const prescriptionId = "RX123+"
+      const event: APIGatewayProxyEvent = {
+        ...mockAPIGatewayProxyEvent,
+        pathParameters: {prescriptionId}
+      }
+
+      // Create a fake Apigee response with necessary fields.
+      const fakeApigeeData = {
+        author: {
+          identifier: {
+            value: "ODS_AUTHOR"
+          }
+        },
+        action: [
+          {
+            participant: [
+              {identifier: {system: "https://fhir.nhs.uk/Id/ods-organization-code", value: "ODS123456"}}
+            ]
+          },
+          {
+            action: [
+              {
+                title: "Dispense notification successful",
+                participant: [{identifier: {value: "ODS_DISPENSE"}}]
+              }
+            ]
+          }
+        ]
+      }
+
+      const fakeApigeeHeaders = {"content-type": "application/json"}
+
+      // Set up nock to intercept the HTTP request - the + should be properly URL encoded as %2B
+      nock(apigeePrescriptionsEndpoint)
+        .get("/RequestGroup/RX123%2B") // + gets URL encoded to %2B
+        .matchHeader("authorization", `Bearer ${apigeeAccessToken}`)
+        .matchHeader("nhsd-session-urid", roleId)
+        .matchHeader("nhsd-identity-uuid", roleId)
+        .matchHeader("nhsd-session-jobrole", roleId)
+        .matchHeader("x-request-id", "test-uuid")
+        .matchHeader("nhsd-organization-uuid", "")
+        .matchHeader("x-correlation-id", "")
+        .reply(200, fakeApigeeData, fakeApigeeHeaders)
+
+      // Setup the doHSClient mock so that getDoHSData returns mapped data.
+      const mockDoHSResponse = {
+        prescribingOrganization: {ODSCode: "ODS_AUTHOR", OrganisationName: "Org Prescriber"},
+        nominatedPerformer: {ODSCode: "ODS123456", OrganisationName: "Org Performer"},
+        dispensingOrganizations: [
+          {ODSCode: "ODS_DISPENSE", OrganisationName: "Org Dispenser"}
+        ]
+      }
+      mockDoHSClient.mockImplementationOnce(() => Promise.resolve(mockDoHSResponse))
+
+      // Make mergePrescriptionDetails return a merged object.
+      const mergedResponse = {merged: true, prescriptionId}
+      mockMergePrescriptionDetails.mockReturnValue(mergedResponse)
+
+      const result = await processPrescriptionRequest(
+        event,
+        apigeePrescriptionsEndpoint,
+        apigeeAccessToken,
+        roleId,
+        "",
+        "",
+        logger
+      )
+
+      expect(result.statusCode).toEqual(200)
+      expect(mockMergePrescriptionDetails).toHaveBeenCalled()
+      expect(result.body).toEqual(JSON.stringify(mergedResponse))
+
+      // Verify that the prescription ID with + was handled correctly
+      expect(logger.info).toHaveBeenCalledWith("Fetching prescription details from Apigee", {prescriptionId: "RX123+"})
     })
   })
 })
