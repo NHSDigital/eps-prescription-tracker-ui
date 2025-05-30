@@ -25,6 +25,8 @@ describe("Prescriptions Lookup Service Tests", () => {
   const mockEndpoint = "http://test-endpoint/clinical-prescription-tracker"
   const mockAccessToken = "test-token"
   const mockRoleId = "test-role"
+  const mockOrgCode = "mock-org"
+  const mockCorrelationId = "mock-correlationId"
 
   beforeEach(() => {
     jest.clearAllMocks()
@@ -46,7 +48,9 @@ describe("Prescriptions Lookup Service Tests", () => {
         mockEndpoint,
         {prescriptionId: mockPrescriptionId},
         mockAccessToken,
-        mockRoleId
+        mockRoleId,
+        mockOrgCode,
+        mockCorrelationId
       )
 
       expect(result).toHaveLength(1)
@@ -62,12 +66,15 @@ describe("Prescriptions Lookup Service Tests", () => {
 
       // Verify the API call
       expect(mockGet).toHaveBeenCalledWith(
-        `${mockEndpoint}/RequestGroup?prescriptionId=${mockPrescriptionId}`,
+        `${mockEndpoint}/RequestGroup`,
         expect.objectContaining({
           headers: expect.objectContaining({
             Authorization: `Bearer ${mockAccessToken}`,
             "nhsd-session-urid": mockRoleId
-          })
+          }),
+          params: {
+            prescriptionId: mockPrescriptionId
+          }
         })
       )
     })
@@ -85,7 +92,9 @@ describe("Prescriptions Lookup Service Tests", () => {
           mockEndpoint,
           {prescriptionId: mockPrescriptionId},
           mockAccessToken,
-          mockRoleId
+          mockRoleId,
+          mockOrgCode,
+          mockCorrelationId
       )
       expect(result).toHaveLength(0)
     })
@@ -99,7 +108,9 @@ describe("Prescriptions Lookup Service Tests", () => {
           mockEndpoint,
           {prescriptionId: mockPrescriptionId},
           mockAccessToken,
-          mockRoleId
+          mockRoleId,
+          mockOrgCode,
+          mockCorrelationId
       )
       expect(action).rejects.toThrow(Error)
       await expect(action).rejects.toThrow("API Error")
@@ -122,7 +133,9 @@ describe("Prescriptions Lookup Service Tests", () => {
         mockEndpoint,
         {nhsNumber: mockNhsNumber},
         mockAccessToken,
-        mockRoleId
+        mockRoleId,
+        mockOrgCode,
+        mockCorrelationId
       )
 
       expect(result).toHaveLength(1)
@@ -138,12 +151,15 @@ describe("Prescriptions Lookup Service Tests", () => {
 
       // Verify the API call
       expect(mockGet).toHaveBeenCalledWith(
-        `${mockEndpoint}/RequestGroup?nhsNumber=${mockNhsNumber}`,
+        `${mockEndpoint}/RequestGroup`,
         expect.objectContaining({
           headers: expect.objectContaining({
             Authorization: `Bearer ${mockAccessToken}`,
             "nhsd-session-urid": mockRoleId
-          })
+          }),
+          params: {
+            nhsNumber: mockNhsNumber
+          }
         })
       )
     })
@@ -166,7 +182,9 @@ describe("Prescriptions Lookup Service Tests", () => {
         mockEndpoint,
         {nhsNumber: mockNhsNumber},
         mockAccessToken,
-        mockRoleId
+        mockRoleId,
+        mockOrgCode,
+        mockCorrelationId
       )
 
       expect(result).toHaveLength(0)
@@ -181,7 +199,9 @@ describe("Prescriptions Lookup Service Tests", () => {
           mockEndpoint,
           {nhsNumber: mockNhsNumber},
           mockAccessToken,
-          mockRoleId
+          mockRoleId,
+          mockOrgCode,
+          mockCorrelationId
       )
 
       await expect(action).rejects.toThrow(Error)
