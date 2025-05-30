@@ -37,6 +37,7 @@ export interface ApiFunctionsProps {
   readonly apigeePersonalDemographicsEndpoint: string
   readonly apigeeApiKey: string
   readonly apigeeApiSecret: string
+  readonly apigeePtlDoHSApiKey: string
   readonly jwtKid: string
   readonly logLevel: string
   readonly roleId: string
@@ -231,7 +232,8 @@ export class ApiFunctions extends Construct {
         apigeeDoHSEndpoint: props.apigeeDoHSEndpoint,
         apigeeApiKey: props.apigeeApiKey,
         jwtKid: props.jwtKid,
-        roleId: props.roleId
+        roleId: props.roleId,
+        APIGEE_PTL_DOHS_API_KEY: props.apigeePtlDoHSApiKey
       }
     })
 

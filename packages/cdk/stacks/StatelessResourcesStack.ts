@@ -78,6 +78,7 @@ export class StatelessResourcesStack extends Stack {
     const useMockOidc: boolean = this.node.tryGetContext("useMockOidc")
     const apigeeApiKey = this.node.tryGetContext("apigeeApiKey")
     const apigeeApiSecret = this.node.tryGetContext("apigeeApiSecret")
+    const apigeePtlDoHSApiKey = this.node.tryGetContext("apigeePtlDoHSApiKey")
     const apigeeCIS2TokenEndpoint = this.node.tryGetContext("apigeeCIS2TokenEndpoint")
     const apigeeMockTokenEndpoint = this.node.tryGetContext("apigeeMockTokenEndpoint")
     const apigeePrescriptionsEndpoint = this.node.tryGetContext("apigeePrescriptionsEndpoint")
@@ -261,6 +262,7 @@ export class StatelessResourcesStack extends Stack {
       apigeePrescriptionsEndpoint: apigeePrescriptionsEndpoint,
       apigeeDoHSEndpoint: apigeeDoHSEndpoint,
       apigeeApiKey: apigeeApiKey,
+      apigeePtlDoHSApiKey: apigeePtlDoHSApiKey,
       apigeeApiSecret,
       jwtKid: jwtKid,
       roleId: roleId,
