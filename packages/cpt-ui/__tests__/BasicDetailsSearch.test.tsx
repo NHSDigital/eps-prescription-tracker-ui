@@ -20,6 +20,27 @@ import {BasicDetailsSearchType} from "@cpt-ui-common/common-types"
 import {STRINGS} from "@/constants/ui-strings/BasicDetailsSearchStrings"
 import {FRONTEND_PATHS} from "@/constants/environment"
 
+// Utility function to create a query string from form data
+function makeQueryString(
+  formData: Record<string, string>,
+  flags: Record<string, string> = {}
+): string {
+  const params = new URLSearchParams(
+    Object.fromEntries(
+      Object.entries({
+        firstName: formData.firstName ?? "",
+        lastName: formData.lastName ?? "",
+        dobDay: formData.dobDay ?? "",
+        dobMonth: formData.dobMonth ?? "",
+        dobYear: formData.dobYear ?? "",
+        postcode: formData.postcode ?? "",
+        ...flags
+      })
+    )
+  )
+  return params.toString()
+}
+
 jest.mock("react-router-dom", () => {
   const actual = jest.requireActual("react-router-dom")
   return {
@@ -88,8 +109,8 @@ describe("BasicDetailsSearch", () => {
   afterEach(() => cleanup())
 
   it("redirects to the prescription list if only one patient is found from the basic details search", async () => {
-    const mockNavigate = jest.fn()
-      ; (useNavigate as jest.Mock).mockReturnValue(mockNavigate)
+    const mockNavigate = jest.fn();
+    (useNavigate as jest.Mock).mockReturnValue(mockNavigate)
 
     renderWithRouter(<BasicDetailsSearch />)
 
@@ -127,35 +148,19 @@ describe("BasicDetailsSearch", () => {
     }
 
     await fillForm(formData)
-
     await submitForm()
 
     await waitFor(() => {
+      const queryString = makeQueryString(formData, {notFound: "true"})
       expect(mockNavigate).toHaveBeenCalledWith(
-        FRONTEND_PATHS.PATIENT_SEARCH_RESULTS,
-        {
-          state: {
-            patients: [
-              {
-                nhsNumber: "",
-                givenName: ["Not", "Found"],
-                familyName: "SpecialNotFound",
-                gender: "Other",
-                dateOfBirth: "01-01-1990",
-                address: ["No Address"],
-                postcode: "NO0 0NE"
-              }
-            ],
-            searchState: formData
-          }
-        }
+        `${FRONTEND_PATHS.PATIENT_SEARCH_RESULTS}?${queryString}`
       )
     })
   })
 
   it("redirects to the patient search results page if more than one but fewer than 11 patients are found", async () => {
-    const mockNavigate = jest.fn()
-      ; (useNavigate as jest.Mock).mockReturnValue(mockNavigate)
+    const mockNavigate = jest.fn();
+    (useNavigate as jest.Mock).mockReturnValue(mockNavigate)
 
     renderWithRouter(<BasicDetailsSearch />)
 
@@ -169,49 +174,12 @@ describe("BasicDetailsSearch", () => {
     }
 
     await fillForm(formData)
-
     await submitForm()
 
     await waitFor(() => {
+      const queryString = makeQueryString(formData)
       expect(mockNavigate).toHaveBeenCalledWith(
-        FRONTEND_PATHS.PATIENT_SEARCH_RESULTS,
-        {
-          state: {
-            patients: [
-              {
-                nhsNumber: "9726919207",
-                givenName: ["Issac"],
-                familyName: "Wolderton-Rodriguez",
-                gender: "Male",
-                dateOfBirth: "06-05-2013",
-                address: [
-                  "123 Brundel Close",
-                  "Headingley",
-                  "Leeds",
-                  "West Yorkshire",
-                  "LS6 1JL"
-                ],
-                postcode: "LS6 1JL"
-              },
-              {
-                nhsNumber: "9726919207",
-                givenName: ["Steve"],
-                familyName: "Wolderton-Rodriguez",
-                gender: "Male",
-                dateOfBirth: "06-05-2013",
-                address: [
-                  "123 Brundel Close",
-                  "Headingley",
-                  "Leeds",
-                  "West Yorkshire",
-                  "LS6 1JL"
-                ],
-                postcode: "LS6 1JL"
-              }
-            ],
-            searchState: formData
-          }
-        }
+        `${FRONTEND_PATHS.PATIENT_SEARCH_RESULTS}?${queryString}`
       )
     })
   })
@@ -235,26 +203,9 @@ describe("BasicDetailsSearch", () => {
     await submitForm()
 
     await waitFor(() => {
+      const queryString = makeQueryString(formData, {tooMany: "true"})
       expect(mockNavigate).toHaveBeenCalledWith(
-        FRONTEND_PATHS.PATIENT_SEARCH_RESULTS,
-        {
-          state: expect.objectContaining({
-            patients: expect.any(Array),
-            searchState: formData
-          })
-        }
-      )
-
-      // Check that too many patients were found
-      const navArgs = mockNavigate.mock.calls[0][1]
-      expect(navArgs.state.patients.length).toBeGreaterThan(10)
-
-      // Optionally, check a few patient fields if you want:
-      expect(navArgs.state.patients[0]).toEqual(
-        expect.objectContaining({
-          familyName: "Jones",
-          dateOfBirth: "16-07-1985"
-        })
+        `${FRONTEND_PATHS.PATIENT_SEARCH_RESULTS}?${queryString}`
       )
     })
   })

@@ -9,21 +9,17 @@ import {Link} from "react-router-dom"
 import {FRONTEND_PATHS} from "@/constants/environment"
 import {STRINGS} from "@/constants/ui-strings/SearchResultsTooManyStrings"
 import {formatDobForDisplay} from "@/helpers/formatters"
-import {BasicDetailsSearchType} from "@cpt-ui-common/common-types"
 
-interface Props {
-  readonly searchState?: Partial<BasicDetailsSearchType>
-}
+export default function SearchResultsTooManyMessage({search = ""}: {search?: string}) {
+  // Parse search params (remove leading "?")
+  const params = new URLSearchParams(search.startsWith("?") ? search.slice(1) : search)
 
-export default function SearchResultsTooManyMessage({searchState}: Props) {
-  const {
-    firstName,
-    lastName,
-    dobDay,
-    dobMonth,
-    dobYear,
-    postcode
-  } = searchState || {}
+  const firstName = params.get("firstName") || ""
+  const lastName = params.get("lastName") || ""
+  const dobDay = params.get("dobDay") || ""
+  const dobMonth = params.get("dobMonth") || ""
+  const dobYear = params.get("dobYear") || ""
+  const postcode = params.get("postcode") || ""
 
   return (
     <Container
@@ -31,7 +27,7 @@ export default function SearchResultsTooManyMessage({searchState}: Props) {
       data-testid="too-many-results-message"
     >
       <nav className="nhsuk-breadcrumb nhsuk-u-padding-bottom-0 nhsuk-u-padding-left-2" aria-label="Breadcrumb">
-        <Link to={FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS} data-testid="too-many-results-back-link">
+        <Link to={FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS + (search || "")} data-testid="too-many-results-back-link">
           <BackLink data-testid="go-back-link">
             {STRINGS.goBackLink}
           </BackLink>
@@ -61,8 +57,12 @@ export default function SearchResultsTooManyMessage({searchState}: Props) {
               <p>{STRINGS.intro}</p>
               <ul data-testid="too-many-results-details-list">
                 {firstName && <li>{STRINGS.firstName} {firstName}</li>}
-                <li>{STRINGS.lastName} {lastName}</li>
-                <li>{STRINGS.dob} {formatDobForDisplay({dobDay, dobMonth, dobYear})}</li>
+                {lastName && <li>{STRINGS.lastName} {lastName}</li>}
+                {(dobDay || dobMonth || dobYear) && (
+                  <li>
+                    {STRINGS.dob} {formatDobForDisplay({dobDay, dobMonth, dobYear})}
+                  </li>
+                )}
                 {postcode && <li>{STRINGS.postcode} {postcode}</li>}
               </ul>
 
@@ -70,7 +70,9 @@ export default function SearchResultsTooManyMessage({searchState}: Props) {
                 {STRINGS.retryMessage}
                 <Link
                   data-testid="too-many-results-basic-details-link"
-                  to={FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS}>{STRINGS.basicDetailsLinkText}</Link>
+                  to={FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS + (search || "")}>
+                  {STRINGS.basicDetailsLinkText}
+                </Link>
                 {STRINGS.retryMessageSuffix}
               </p>
 

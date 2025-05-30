@@ -46,13 +46,7 @@ export default function SearchResultsPage() {
   const [patients, setPatients] = useState<Array<PatientSummary>>([])
 
   useEffect(() => {
-    // Check if we were passed state from navigation
-    if (location.state && Array.isArray(location.state.patients)) {
-      setPatients(location.state.patients)
-      setLoading(false)
-    } else {
-      getSearchResults()
-    }
+    getSearchResults()
   }, [])
 
   const getSearchResults = async () => {
@@ -64,10 +58,10 @@ export default function SearchResultsPage() {
           "NHSD-Session-URID": NHS_REQUEST_URID
         },
         params: {
-          family: searchParams.get("family"),
-          birthdate: `eq${searchParams.get("dateOfBirth")}`,
+          family: searchParams.get("lastName"),
+          birthdate: `eq${searchParams.get("dobDay")}-${searchParams.get("dobMonth")}-${searchParams.get("dobYear")}`,
           "address-postalcode": searchParams.get("postcode"),
-          given: searchParams.get("given") ?? undefined
+          given: searchParams.get("firstName") ?? undefined
         }
       })
 
@@ -96,12 +90,27 @@ export default function SearchResultsPage() {
     navigate(`${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}?nhsNumber=${nhsNumber}`)
   }
 
+  // Pass back the query string to keep filled form on return
   const handleGoBack = () => {
-    navigate(FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS, {state: {clear: true}})
+    navigate(`${FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS}${location.search}`)
   }
 
-  // Calculate too many results
-  const tooManyResults = patients.length > 10
+  // Sort by first name
+  const sortedPatients = patients
+    .toSorted((a, b) => (a.givenName?.[0] ?? "").localeCompare(b.givenName?.[0] ?? ""))
+
+  const notFound = searchParams.get("notFound") === "true"
+  const tooMany = searchParams.get("tooMany") === "true"
+
+  // Show a message if no patients are found or if they all have no NHS number
+  if (notFound) {
+    return <PatientNotFoundMessage search={location.search} />
+  }
+
+  // If too many results, show message
+  if (tooMany) {
+    return <SearchResultsTooManyMessage search={location.search} />
+  }
 
   if (loading) {
     return (
@@ -117,26 +126,6 @@ export default function SearchResultsPage() {
         </Container>
       </main>
     )
-  }
-
-  // to sort by first name
-  const sortedPatients = patients
-    .toSorted((a, b) => (a.givenName?.[0] ?? "").localeCompare(b.givenName?.[0] ?? ""))
-
-  // Patient Not Found if every patient has an empty NHS number
-  const isPatientNotFound = patients.length > 0 && patients.every((p: PatientSummary) => !p.nhsNumber)
-
-  // Show a message if no patients are found or if they all have no NHS number
-  if (patients.length === 0 || isPatientNotFound) {
-    return <PatientNotFoundMessage />
-  }
-
-  const searchState = location.state?.searchState
-
-  // If too many results, show message
-  if (tooManyResults) {
-    // Pass back the original search params if you want
-    return <SearchResultsTooManyMessage searchState={searchState} />
   }
 
   return (

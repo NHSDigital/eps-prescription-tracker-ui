@@ -19,7 +19,7 @@ import {
   ErrorMessage,
   Fieldset
 } from "nhsuk-react-components"
-import {useNavigate} from "react-router-dom"
+import {useNavigate, useSearchParams, createSearchParams} from "react-router-dom"
 import {AuthContext} from "@/context/AuthProvider"
 import http from "@/helpers/axios"
 import {formatDobForSearch} from "@/helpers/formatters"
@@ -101,6 +101,7 @@ export default function BasicDetailsSearch() {
   const [dobYear, setDobYear] = useState("")
   const [errors, setErrors] = useState<Array<ErrorKey>>([])
   const [dobErrorFields, setDobErrorFields] = useState<Array<"day" | "month" | "year">>([])
+  const [searchParams] = useSearchParams()
 
   const inlineErrors = getInlineErrors(errors)
 
@@ -132,6 +133,15 @@ export default function BasicDetailsSearch() {
 
     document.addEventListener("click", handler)
     return () => document.removeEventListener("click", handler)
+  }, [])
+
+  useEffect(() => {
+    setFirstName(searchParams.get("firstName") || "")
+    setLastName(searchParams.get("lastName") || "")
+    setDobDay(searchParams.get("dobDay") || "")
+    setDobMonth(searchParams.get("dobMonth") || "")
+    setDobYear(searchParams.get("dobYear") || "")
+    setPostcode(searchParams.get("postcode") || "")
   }, [])
 
   // Returns true if the given DOB field had an error on the last submission.
@@ -220,36 +230,47 @@ export default function BasicDetailsSearch() {
       // since mock DOBs are stored in the format 'DD-MM-YYYY'
       const searchDob = formatDobForSearch({dobDay, dobMonth, dobYear})
 
-      const matchedPatients = [
+      const allMockPatients = [
         ...mockPatient,
         ...mockMultiplePatient,
         ...mockNotFoundPatients,
         ...mockTooManyPatients
-      ].filter(p => {
+      ]
+
+      const matchedPatients = allMockPatients.filter(p => {
         const matchFirstName = firstName ? formatInput(p.givenName?.[0] ?? "") === formatInput(firstName) : true
-        const matchLastName = formatInput(p.familyName) === formatInput(lastName)
+        const matchLastName = lastName ? formatInput(p.familyName) === formatInput(lastName) : true
         const matchDob = p.dateOfBirth === searchDob
         const matchPostcode = postcode ? formatInput(p.postcode ?? "") === formatInput(postcode) : true
         return matchFirstName && matchLastName && matchDob && matchPostcode
       })
 
       // First, filter out "found" patients vs "not found" (empty NHS number)
-      const foundPatients = matchedPatients.filter(p => p.nhsNumber)
-      const notFound = matchedPatients.length === 1 && !matchedPatients[0].nhsNumber
+      const foundPatients = matchedPatients.filter(p => !!p.nhsNumber)
 
-      if (foundPatients.length === 1) {
-        // Exactly 1 found patient (with NHS number)
+      const queryParams = {
+        firstName,
+        lastName,
+        dobDay,
+        dobMonth,
+        dobYear,
+        postcode
+      }
+      const queryString = createSearchParams(queryParams).toString()
+
+      // -- Route user to correct page
+      if (foundPatients.length === 0) {
+        // PATIENT NOT FOUND
+        navigate(`${FRONTEND_PATHS.PATIENT_SEARCH_RESULTS}?${queryString}&notFound=true`)
+      } else if (foundPatients.length === 1) {
+        // SINGLE PATIENT FOUND
         navigate(`${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}?nhsNumber=${foundPatients[0].nhsNumber}`)
+      } else if (foundPatients.length > 10) {
+        // TOO MANY RESULTS
+        navigate(`${FRONTEND_PATHS.PATIENT_SEARCH_RESULTS}?${queryString}&tooMany=true`)
       } else {
-        // All other cases (not found, too many, or 2-10 results) use the same page
-        // But we distinguish "not found" using the patients list in the page itself
-        // Always pass searchState so "Too Many" page can access the input
-        navigate(FRONTEND_PATHS.PATIENT_SEARCH_RESULTS, {
-          state: {
-            patients: notFound || matchedPatients.length === 0 ? matchedPatients : foundPatients,
-            searchState: formState
-          }
-        })
+        // 2-10 RESULTS: Show patient search results
+        navigate(`${FRONTEND_PATHS.PATIENT_SEARCH_RESULTS}?${queryString}`)
       }
     }
   }

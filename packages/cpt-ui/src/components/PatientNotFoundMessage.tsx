@@ -9,14 +9,14 @@ import {Link} from "react-router-dom"
 import {FRONTEND_PATHS} from "@/constants/environment"
 import {STRINGS} from "@/constants/ui-strings/PatientNotFoundMessageStrings"
 
-export default function PatientNotFoundMessage() {
+export default function PatientNotFoundMessage({search = ""}: {search?: string}) {
   return (
     <Container
       className="nhsuk-width-container-fluid patient-not-found-container"
       data-testid="patient-not-found-message"
     >
       <nav className="nhsuk-breadcrumb nhsuk-u-padding-bottom-0 nhsuk-u-padding-left-2" aria-label="Breadcrumb">
-        <Link to={FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS} data-testid="patient-not-found-back-link">
+        <Link to={FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS + (search || "")} data-testid="patient-not-found-back-link">
           <BackLink data-testid="go-back-link">{STRINGS.goBackLink}</BackLink>
         </Link>
       </nav>
