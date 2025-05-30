@@ -29,7 +29,7 @@ import {MessageHistory} from "@cpt-ui-common/common-types"
 describe("MessageHistoryCard", () => {
   const baseMessages: Array<MessageHistory> = [
     {
-      messageText: "Dispense claim successful",
+      messageCode: "Dispense claim successful",
       sentDateTime: "23-Feb-2025 13:35:33",
       organisationName: "Test Pharmacy",
       organisationODS: "XYZ123",
@@ -50,14 +50,14 @@ describe("MessageHistoryCard", () => {
       ]
     },
     {
-      messageText: "Release Request successful",
+      messageCode: "Release Request successful",
       sentDateTime: "22-Feb-2025 10:15:00",
       organisationName: "LongNamePharmacyWhichShouldWrapProperlyWithoutBreakingUI",
       organisationODS: "LONG123",
       newStatusCode: "0001"
     },
     {
-      messageText: "Prescription upload successful",
+      messageCode: "Prescription upload successful",
       sentDateTime: "21-Feb-2025 09:00:00",
       organisationName: "",
       organisationODS: "EMPTY123",
@@ -112,7 +112,7 @@ describe("MessageHistoryCard", () => {
   it("renders fallback org name when organisationName is missing", () => {
     render(
       <MessageHistoryCard messageHistory={[{
-        messageText: "Some status",
+        messageCode: "Some status",
         sentDateTime: "01-Jan-2025",
         organisationName: "",
         organisationODS: "XYZ123"
@@ -124,7 +124,7 @@ describe("MessageHistoryCard", () => {
   it("does not render new status tag if newStatusCode is missing", () => {
     render(
       <MessageHistoryCard messageHistory={[{
-        messageText: "No Status",
+        messageCode: "No Status",
         sentDateTime: "01-Jan-2025",
         organisationName: "Test",
         organisationODS: "ABC123"
@@ -136,7 +136,7 @@ describe("MessageHistoryCard", () => {
   it("does not render dispense notification if status !== '0006'", () => {
     render(
       <MessageHistoryCard messageHistory={[{
-        messageText: "Not Dispensed",
+        messageCode: "Not Dispensed",
         sentDateTime: "01-Jan-2025",
         organisationName: "Test",
         organisationODS: "ABC123",
@@ -155,7 +155,7 @@ describe("MessageHistoryCard", () => {
   it("does not render dispense notification if list is empty", () => {
     render(
       <MessageHistoryCard messageHistory={[{
-        messageText: "Empty Notif",
+        messageCode: "Empty Notif",
         sentDateTime: "01-Jan-2025",
         organisationName: "Test",
         organisationODS: "ABC123",

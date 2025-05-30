@@ -78,9 +78,11 @@ export class StatelessResourcesStack extends Stack {
     const useMockOidc: boolean = this.node.tryGetContext("useMockOidc")
     const apigeeApiKey = this.node.tryGetContext("apigeeApiKey")
     const apigeeApiSecret = this.node.tryGetContext("apigeeApiSecret")
+    const apigeePtlDoHSApiKey = this.node.tryGetContext("apigeePtlDoHSApiKey")
     const apigeeCIS2TokenEndpoint = this.node.tryGetContext("apigeeCIS2TokenEndpoint")
     const apigeeMockTokenEndpoint = this.node.tryGetContext("apigeeMockTokenEndpoint")
     const apigeePrescriptionsEndpoint = this.node.tryGetContext("apigeePrescriptionsEndpoint")
+    const apigeeDoHSEndpoint = this.node.tryGetContext("apigeeDoHSEndpoint")
     const apigeePersonalDemographicsEndpoint = this.node.tryGetContext("apigeePersonalDemographicsEndpoint")
     const jwtKid: string = this.node.tryGetContext("jwtKid")
     const roleId: string = this.node.tryGetContext("roleId")
@@ -258,7 +260,9 @@ export class StatelessResourcesStack extends Stack {
       apigeeCIS2TokenEndpoint: apigeeCIS2TokenEndpoint,
       apigeeMockTokenEndpoint: apigeeMockTokenEndpoint,
       apigeePrescriptionsEndpoint: apigeePrescriptionsEndpoint,
+      apigeeDoHSEndpoint: apigeeDoHSEndpoint,
       apigeeApiKey: apigeeApiKey,
+      apigeePtlDoHSApiKey: apigeePtlDoHSApiKey,
       apigeeApiSecret,
       jwtKid: jwtKid,
       roleId: roleId,
@@ -299,6 +303,7 @@ export class StatelessResourcesStack extends Stack {
       restAPiGatewayRole: apiGateway.apiGatewayRole,
       restApiGateway: apiGateway.apiGateway,
       prescriptionListLambda: apiFunctions.prescriptionListLambda,
+      prescriptionDetailsLambda: apiFunctions.prescriptionDetailsLambda,
       trackerUserInfoLambda: apiFunctions.trackerUserInfoLambda,
       selectedRoleLambda: apiFunctions.selectedRoleLambda,
       authorizer: apiGateway.authorizer
