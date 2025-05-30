@@ -199,9 +199,9 @@ describe("BasicDetailsSearchResultsPage", () => {
       const backLink = screen.getByText(SearchResultsPageStrings.GO_BACK)
       fireEvent.click(backLink)
 
-      expect(mockNavigate).toHaveBeenCalledWith(FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS, {
-        state: {clear: true}
-      })
+      expect(mockNavigate).toHaveBeenCalledWith(
+        `${FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS}`
+      )
     })
   })
 

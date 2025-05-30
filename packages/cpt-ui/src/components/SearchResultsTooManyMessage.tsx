@@ -5,31 +5,35 @@ import {
   Col,
   BackLink
 } from "nhsuk-react-components"
-import {Link, useLocation} from "react-router-dom"
+import {Link} from "react-router-dom"
 import {FRONTEND_PATHS} from "@/constants/environment"
 import {STRINGS} from "@/constants/ui-strings/SearchResultsTooManyStrings"
 import {formatDobForDisplay} from "@/helpers/formatters"
-import {BasicDetailsSearchType} from "@cpt-ui-common/common-types"
 
-export default function SearchResultsTooManyPage() {
-  const location = useLocation()
-  const {
-    firstName,
-    lastName,
-    dobDay,
-    dobMonth,
-    dobYear,
-    postcode
-  } = (location.state ?? {}) as BasicDetailsSearchType
+type SearchResultsTooManyMessageProps = {
+  readonly search?: string
+}
+
+export default function SearchResultsTooManyMessage({search = ""}: SearchResultsTooManyMessageProps) {
+  const params = new URLSearchParams(search.startsWith("?") ? search.slice(1) : search)
+
+  const firstName = params.get("firstName") ?? ""
+  const lastName = params.get("lastName") ?? ""
+  const dobDay = params.get("dobDay") ?? ""
+  const dobMonth = params.get("dobMonth") ?? ""
+  const dobYear = params.get("dobYear") ?? ""
+  const postcode = params.get("postcode") ?? ""
 
   return (
     <Container
       className="nhsuk-width-container-fluid patient-search-form-container"
-      data-testid="too-many-results-page"
+      data-testid="too-many-results-message"
     >
       <nav className="nhsuk-breadcrumb nhsuk-u-padding-bottom-0 nhsuk-u-padding-left-2" aria-label="Breadcrumb">
-        <Link to={FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS} data-testid="too-many-results-back-link">
-          <BackLink data-testid="go-back-link">{STRINGS.goBackLink}</BackLink>
+        <Link to={FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS + (search || "")} data-testid="too-many-results-back-link">
+          <BackLink data-testid="go-back-link">
+            {STRINGS.goBackLink}
+          </BackLink>
         </Link>
       </nav>
       <main
@@ -56,8 +60,12 @@ export default function SearchResultsTooManyPage() {
               <p>{STRINGS.intro}</p>
               <ul data-testid="too-many-results-details-list">
                 {firstName && <li>{STRINGS.firstName} {firstName}</li>}
-                <li>{STRINGS.lastName} {lastName}</li>
-                <li>{STRINGS.dob} {formatDobForDisplay({dobDay, dobMonth, dobYear})}</li>
+                {lastName && <li>{STRINGS.lastName} {lastName}</li>}
+                {(dobDay || dobMonth || dobYear) && (
+                  <li>
+                    {STRINGS.dob} {formatDobForDisplay({dobDay, dobMonth, dobYear})}
+                  </li>
+                )}
                 {postcode && <li>{STRINGS.postcode} {postcode}</li>}
               </ul>
 
@@ -65,7 +73,9 @@ export default function SearchResultsTooManyPage() {
                 {STRINGS.retryMessage}
                 <Link
                   data-testid="too-many-results-basic-details-link"
-                  to={FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS}>{STRINGS.basicDetailsLinkText}</Link>
+                  to={FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS + (search || "")}>
+                  {STRINGS.basicDetailsLinkText}
+                </Link>
                 {STRINGS.retryMessageSuffix}
               </p>
 

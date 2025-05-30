@@ -7,11 +7,12 @@
 @use "./header";
 @use "./rbacBanner";
 @use "./patientDetailsBanner";
-@use "./prescriptionInformationBanner.scss";
-@use "./basicDetailsSearch.scss";
+@use "./patientNotFound";
+@use "./prescriptionInformationBanner";
+@use "./basicDetailsSearch";
 @use "./basicDetailsSearchResultsPage";
 @use "./searchforaprescription";
-@use "./searchResultsTooMany.scss";
+@use "./searchResultsTooMany";
 @use "./tabs";
 
 
