@@ -245,7 +245,7 @@ export default function BasicDetailsSearch() {
         return matchFirstName && matchLastName && matchDob && matchPostcode
       })
 
-      // First, filter out "found" patients vs "not found" (empty NHS number)
+      // Filter out "found" patients vs "not found"
       const foundPatients = matchedPatients.filter(p => !!p.nhsNumber)
 
       const queryParams = {
