@@ -196,15 +196,25 @@ export class ApiFunctions extends Construct {
       serviceName: props.serviceName,
       stackName: props.stackName,
       lambdaName: `${props.stackName}-patientSearch`,
+      additionalPolicies: [
+        props.tokenMappingTableWritePolicy,
+        props.tokenMappingTableReadPolicy,
+        props.useTokensMappingKmsKeyPolicy,
+        props.sharedSecrets.useJwtKmsKeyPolicy,
+        props.sharedSecrets.getPrimaryJwtPrivateKeyPolicy
+      ],
       logRetentionInDays: props.logRetentionInDays,
       logLevel: props.logLevel,
       packageBasePath: "packages/patientSearchLambda",
       entryPoint: "src/index.ts",
       lambdaEnvironmentVariables: {
         ...commonLambdaEnv,
+        TokenMappingTableName: props.tokenMappingTable.tableName,
+        jwtPrivateKeyArn: props.sharedSecrets.primaryJwtPrivateKey.secretArn,
+        apigeeCIS2TokenEndpoint: props.apigeeCIS2TokenEndpoint,
+        apigeeMockTokenEndpoint: props.apigeeMockTokenEndpoint,
         apigeePersonalDemographicsEndpoint: props.apigeePersonalDemographicsEndpoint,
-        apigeeApiKey: props.apigeeApiKey,
-        roleId: props.roleId
+        jwtKid: props.jwtKid
       }
     })
 
