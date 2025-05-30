@@ -23,7 +23,8 @@ const mockLogger: Partial<Logger> = {
 }
 
 const {exchangeTokenForApigeeAccessToken,
-  refreshApigeeAccessToken} = await import("../src/apigee")
+  refreshApigeeAccessToken,
+  buildApigeeHeaders} = await import("../src/apigee")
 
 describe("apigeeUtils", () => {
   const mockAxiosPost = jest.fn();
@@ -31,6 +32,28 @@ describe("apigeeUtils", () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
+  })
+
+  describe("buildApigeeHeaders", () => {
+    it("should return correct headers given a token and roleId", () => {
+      const apigeeAccessToken = "sampleToken"
+      const roleId = "sampleRole"
+      const orgCode = "sampleOrgCode"
+      const correlationId = "sampleCorrelationId"
+
+      const expectedHeaders = {
+        Authorization: `Bearer ${apigeeAccessToken}`,
+        "nhsd-session-urid": roleId,
+        "nhsd-organization-uuid": orgCode,
+        "nhsd-identity-uuid": roleId,
+        "nhsd-session-jobrole": roleId,
+        "x-correlation-id": correlationId,
+        "x-request-id": "test-uuid"
+      }
+
+      const headers = buildApigeeHeaders(apigeeAccessToken, roleId, orgCode, correlationId)
+      expect(headers).toEqual(expectedHeaders)
+    })
   })
 
   describe("exchangeTokenForApigeeAccessToken", () => {

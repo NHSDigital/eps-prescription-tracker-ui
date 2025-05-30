@@ -1,6 +1,5 @@
 /* eslint-disable max-len */
 import axios from "axios"
-import {v4 as uuidv4} from "uuid"
 
 import {APIGatewayProxyEvent, APIGatewayProxyResult} from "aws-lambda"
 import {Logger} from "@aws-lambda-powertools/logger"
@@ -17,23 +16,8 @@ import {
   DoHSData,
   DoHSValue
 } from "../utils/types"
-
-/**
- * Build the headers needed for the Apigee request.
- */
-export function buildApigeeHeaders(apigeeAccessToken: string, roleId: string, orgCode: string,
-  correlationId: string): Record<string, string> {
-  // TODO: should these be pulled from the environment?
-  return {
-    Authorization: `Bearer ${apigeeAccessToken}`,
-    "nhsd-session-urid": roleId,
-    "x-request-id": uuidv4(),
-    "nhsd-session-jobrole": roleId,
-    "nhsd-identity-uuid": roleId,
-    "nhsd-organization-uuid": orgCode,
-    "x-correlation-id": correlationId
-  }
-}
+import {buildApigeeHeaders} from "@cpt-ui-common/authFunctions"
+import path from "path"
 
 /**
  * Extract ODS codes from the Apigee response.
@@ -180,10 +164,11 @@ export async function processPrescriptionRequest(
   }
 
   logger.info("Fetching prescription details from Apigee", {prescriptionId})
-  const requestUrl = `${apigeePrescriptionsEndpoint}RequestGroup/${prescriptionId}`
+  const endpoint = new URL(apigeePrescriptionsEndpoint)
+  endpoint.pathname = path.join(endpoint.pathname, `/RequestGroup/${prescriptionId}`)
   const headers = buildApigeeHeaders(apigeeAccessToken, roleId, orgCode, correlationId) // Required to invoke the clinicalView Lambda directly
 
-  const apigeeResponse = await axios.get(requestUrl, {headers})
+  const apigeeResponse = await axios.get(endpoint.href, {headers})
   logger.info("Apigee response:", {apigeeResponse})
 
   const odsCodes = extractOdsCodes(apigeeResponse.data, logger)
