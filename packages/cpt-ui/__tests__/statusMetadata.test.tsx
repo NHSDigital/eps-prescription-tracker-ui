@@ -5,7 +5,8 @@ import {
   getItemStatusDisplayText,
   getPrescriptionTypeDisplayText,
   itemStatusMap,
-  prescriptionStatusMap
+  prescriptionStatusMap,
+  formatDateForPrescriptions
 } from "@/helpers/statusMetadata"
 
 import {STATUS_LABELS} from "@/constants/ui-strings/StatusLabels"
@@ -106,6 +107,27 @@ describe("Status Metadata Utility Functions", () => {
       expect(getPrescriptionTypeDisplayText("0003", 3)).toBe("eRD")
       expect(getPrescriptionTypeDisplayText("0002", undefined, 6)).toBe("Repeat")
       expect(getPrescriptionTypeDisplayText("0003", undefined, 10)).toBe("eRD")
+    })
+  })
+
+  describe("formatDateForPrescriptions", () => {
+    it.each([
+      ["2024-01-01", "01-Jan-2024"],
+      ["2025-12-31", "31-Dec-2025"],
+      ["1999-07-15", "15-Jul-1999"],
+      ["2023-03-05T10:00:00Z", "05-Mar-2023"]
+    ])("formats valid ISO date string '%s' as '%s'", (input, expected) => {
+      expect(formatDateForPrescriptions(input)).toBe(expected)
+    })
+
+    it.each([
+      ["", "Invalid date"],
+      ["not-a-date", "Invalid date"],
+      ["01/2024", "Invalid date"],
+      [null as unknown as string, "Invalid date"],
+      [undefined as unknown as string, "Invalid date"]
+    ])("returns 'Invalid date' for invalid input '%s'", (input, expected) => {
+      expect(formatDateForPrescriptions(input)).toBe(expected)
     })
   })
 })

@@ -23,6 +23,5 @@ export const PRESCRIPTION_LIST_TABLE_TEXT = {
   viewPrescription: "View Prescription",
   showing: "Showing",
   of: "of",
-  sortAscending: "Sort Ascending",
-  sortDescending: "Sort Descending"
+  sortLabel: "Sort"
 }
