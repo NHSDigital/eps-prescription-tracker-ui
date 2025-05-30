@@ -8,6 +8,7 @@ const logger = new Logger({serviceName: "doHSClient"})
 // Read the DoHS API Key from environment variables
 const apigeeApiKey = process.env["apigeeApiKey"] as string
 const apigeeDoHSEndpoint = process.env["apigeeDoHSEndpoint"] as string
+const apigeePtlDoHSApiKey = process.env["APIGEE_PTL_DOHS_API_KEY"] as string
 
 export const doHSClient = async (
   odsCodes: {
@@ -27,7 +28,10 @@ export const doHSClient = async (
   if (validOdsCodes.length === 0) {
     throw new Error("At least one ODS Code is required for DoHS API request")
   }
-  if (!apigeeApiKey) {
+
+  // Use APIGEE_PTL_DOHS_API_KEY if available, otherwise fall back to apigeeApiKey
+  const effectiveApiKey = apigeePtlDoHSApiKey ?? apigeeApiKey
+  if (!effectiveApiKey) {
     throw new Error("Apigee API Key environment variable is not set")
   }
   if (!apigeeDoHSEndpoint) {
@@ -36,14 +40,17 @@ export const doHSClient = async (
 
   // Construct filter query for multiple ODS codes
   const odsFilter = validOdsCodes.map((code) => `ODSCode eq '${code}'`).join(" or ")
-  const requestUrl = `${apigeeDoHSEndpoint}&$filter=${odsFilter}`
 
   try {
     const config: AxiosRequestConfig = {
-      headers: {"apikey": `${apigeeApiKey}`}
+      params: {
+        "api-version": "3",
+        "$filter": odsFilter
+      },
+      headers: {"apikey": `${effectiveApiKey}`}
     }
 
-    const response = await axios.get(requestUrl, config)
+    const response = await axios.get(apigeeDoHSEndpoint, config)
     logger.info("Successfully fetched DoHS API response", {data: response.data})
 
     // Map DoHS response to correct roles
@@ -59,8 +66,7 @@ export const doHSClient = async (
     return mappedData
   } catch (error) {
     if (error instanceof AxiosError) {
-      const errorMessage = `Failed to fetch data for ODS Codes: ${validOdsCodes.join(", ")}. ` +
-        `Request URL: ${requestUrl}. Status: ${error?.response?.status}, Message: ${error?.message}`
+      const errorMessage = `Failed to fetch data for ODS Codes: ${validOdsCodes.join(", ")}`
       handleAxiosError(error, errorMessage, logger)
     } else {
       logger.error("Unexpected error fetching DoHS API data", {error})
