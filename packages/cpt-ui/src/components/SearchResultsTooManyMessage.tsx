@@ -10,8 +10,11 @@ import {FRONTEND_PATHS} from "@/constants/environment"
 import {STRINGS} from "@/constants/ui-strings/SearchResultsTooManyStrings"
 import {formatDobForDisplay} from "@/helpers/formatters"
 
-export default function SearchResultsTooManyMessage({search = ""}: {search?: string}) {
-  // Parse search params (remove leading "?")
+type SearchResultsTooManyMessageProps = {
+  readonly search?: string
+}
+
+export default function SearchResultsTooManyMessage({search = ""}: SearchResultsTooManyMessageProps) {
   const params = new URLSearchParams(search.startsWith("?") ? search.slice(1) : search)
 
   const firstName = params.get("firstName") ?? ""

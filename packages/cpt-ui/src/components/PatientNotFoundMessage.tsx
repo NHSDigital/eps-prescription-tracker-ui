@@ -9,7 +9,11 @@ import {Link} from "react-router-dom"
 import {FRONTEND_PATHS} from "@/constants/environment"
 import {STRINGS} from "@/constants/ui-strings/PatientNotFoundMessageStrings"
 
-export default function PatientNotFoundMessage({search = ""}: {search?: string}) {
+type PatientNotFoundMessageProps = {
+  readonly search?: string
+}
+
+export default function PatientNotFoundMessage({search = ""}: PatientNotFoundMessageProps) {
   return (
     <Container
       className="nhsuk-width-container-fluid patient-not-found-container"
