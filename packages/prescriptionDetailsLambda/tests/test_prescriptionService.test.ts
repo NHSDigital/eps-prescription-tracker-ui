@@ -29,6 +29,11 @@ jest.unstable_mockModule("../src/utils/headerUtils", () => ({
   formatHeaders: mockFormatHeaders
 }))
 
+const mockBuildApigeeHeaders = jest.fn()
+jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => ({
+  buildApigeeHeaders: mockBuildApigeeHeaders
+}))
+
 // Import some mock objects to use in our tests.
 import {mockAPIGatewayProxyEvent, mockFhirParticipant} from "./mockObjects"
 
@@ -37,11 +42,6 @@ const {
   getDoHSData,
   processPrescriptionRequest
 } = await import("../src/services/prescriptionService")
-
-const mockBuildApigeeHeaders = jest.fn()
-jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => ({
-  buildApigeeHeaders: mockBuildApigeeHeaders
-}))
 
 describe("prescriptionService", () => {
   let logger: Logger
@@ -306,6 +306,16 @@ describe("prescriptionService", () => {
         ]
       }
 
+      mockBuildApigeeHeaders.mockReturnValue({
+        "authorization": `Bearer ${apigeeAccessToken}`,
+        "nhsd-session-urid": roleId,
+        "nhsd-identity-uuid": roleId,
+        "nhsd-session-jobrole": roleId,
+        "x-request-id": "test-uuid",
+        "nhsd-organization-uuid": "",
+        "x-correlation-id": ""
+      })
+
       const fakeApigeeHeaders = {"content-type": "application/json"}
 
       // Set up nock to intercept the HTTP request - note the RequestGroup path
@@ -388,6 +398,16 @@ describe("prescriptionService", () => {
         ]
       }
 
+      mockBuildApigeeHeaders.mockReturnValue({
+        "authorization": `Bearer ${apigeeAccessToken}`,
+        "nhsd-session-urid": roleId,
+        "nhsd-identity-uuid": roleId,
+        "nhsd-session-jobrole": roleId,
+        "x-request-id": "test-uuid",
+        "nhsd-organization-uuid": "",
+        "x-correlation-id": ""
+      })
+
       const fakeApigeeHeaders = {"content-type": "application/json"}
 
       // Set up nock to intercept the HTTP request - note the RequestGroup path
@@ -463,6 +483,16 @@ describe("prescriptionService", () => {
           }
         ]
       }
+
+      mockBuildApigeeHeaders.mockReturnValue({
+        "authorization": `Bearer ${apigeeAccessToken}`,
+        "nhsd-session-urid": roleId,
+        "nhsd-identity-uuid": roleId,
+        "nhsd-session-jobrole": roleId,
+        "x-request-id": "test-uuid",
+        "nhsd-organization-uuid": "",
+        "x-correlation-id": ""
+      })
 
       const fakeApigeeHeaders = {"content-type": "application/json"}
 

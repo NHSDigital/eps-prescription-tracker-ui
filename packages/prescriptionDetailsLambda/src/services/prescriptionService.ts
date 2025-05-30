@@ -165,7 +165,7 @@ export async function processPrescriptionRequest(
 
   logger.info("Fetching prescription details from Apigee", {prescriptionId})
   const endpoint = new URL(apigeePrescriptionsEndpoint)
-  endpoint.pathname = path.join(endpoint.pathname, `/RequestGroup/${prescriptionId}`)
+  endpoint.pathname = path.join(endpoint.pathname, `/RequestGroup/${encodeURIComponent(prescriptionId)}`)
   const headers = buildApigeeHeaders(apigeeAccessToken, roleId, orgCode, correlationId) // Required to invoke the clinicalView Lambda directly
 
   const apigeeResponse = await axios.get(endpoint.href, {headers})
