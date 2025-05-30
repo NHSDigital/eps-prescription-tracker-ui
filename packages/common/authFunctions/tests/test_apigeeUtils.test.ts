@@ -6,6 +6,10 @@ import {Logger} from "@aws-lambda-powertools/logger"
 
 jest.mock("axios")
 jest.mock("jsonwebtoken")
+jest.mock("uuid", () => ({
+  v4: jest.fn(() => "test-uuid")
+}))
+
 const mockGetTokenMapping = jest.fn()
 const mockUpdateTokenMapping = jest.fn()
 
