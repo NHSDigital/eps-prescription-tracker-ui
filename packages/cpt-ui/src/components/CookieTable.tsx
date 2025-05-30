@@ -50,8 +50,8 @@ const CookieTable: React.FC<CookieTableProps> = ({cookies, title, isOpen, onTogg
           </tr>
         </thead>
         <tbody className="nhsuk-table__body">
-          {cookies.map((cookie, index) => (
-            <tr key={index} className="nhsuk-table__row">
+          {cookies.map((cookie) => (
+            <tr key={`${cookie.name}-${cookie.purpose}`} className="nhsuk-table__row">
               <td className="nhsuk-table__cell">
                 <span className="nhsuk-table-responsive__heading" aria-hidden="true">
                   {CookieStrings.cookieName}
