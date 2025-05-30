@@ -1,14 +1,23 @@
 import {jest} from "@jest/globals"
-
-import {doHSClient} from "../src/doHSClient"
 import axios, {AxiosError} from "axios"
 
+// Mock axios
 jest.mock("axios")
 const mockAxiosGet = jest.fn();
 (axios.get as unknown as jest.Mock) = mockAxiosGet
 
+// Mock environment variables by setting them before any module loads
+const validApiKey = "dummy-api-key"
+const validEndpoint = "https://api.example.com/dohs?query=true"
+
+// Set environment variables before importing the module
+process.env.apigeeApiKey = validApiKey
+process.env.apigeeDoHSEndpoint = validEndpoint
+
+// Now we can safely import the module
+const {doHSClient} = await import("../src/doHSClient")
+
 describe("doHSClient", () => {
-  const validApiKey = "dummy-api-key"
   let mockedAxios
 
   beforeAll(() => {
@@ -23,6 +32,40 @@ describe("doHSClient", () => {
     await expect(doHSClient({})).rejects.toThrow(
       "At least one ODS Code is required for DoHS API request"
     )
+  })
+
+  it("throws an error if apigeeApiKey is not set", async () => {
+    // Temporarily unset the API key
+    const originalApiKey = process.env.apigeeApiKey
+    delete process.env.apigeeApiKey
+
+    // Re-import the module to pick up the changed environment
+    jest.resetModules()
+    const {doHSClient: freshDoHSClient} = await import("../src/doHSClient")
+
+    await expect(freshDoHSClient({prescribingOrganization: "ABC"})).rejects.toThrow(
+      "Apigee API Key environment variable is not set"
+    )
+
+    // Restore the API key
+    process.env.apigeeApiKey = originalApiKey
+  })
+
+  it("throws an error if apigeeDoHSEndpoint is not set", async () => {
+    // Temporarily unset the endpoint
+    const originalEndpoint = process.env.apigeeDoHSEndpoint
+    delete process.env.apigeeDoHSEndpoint
+
+    // Re-import the module to pick up the changed environment
+    jest.resetModules()
+    const {doHSClient: freshDoHSClient} = await import("../src/doHSClient")
+
+    await expect(freshDoHSClient({prescribingOrganization: "ABC"})).rejects.toThrow(
+      "DoHS API endpoint environment variable is not set"
+    )
+
+    // Restore the endpoint
+    process.env.apigeeDoHSEndpoint = originalEndpoint
   })
 
   it("returns mapped data on successful axios request", async () => {
