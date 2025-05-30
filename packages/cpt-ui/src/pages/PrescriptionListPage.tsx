@@ -7,6 +7,7 @@ import {
   Row
 } from "nhsuk-react-components"
 import "../styles/PrescriptionTable.scss"
+import {v4 as uuidv4} from "uuid"
 
 import http from "@/helpers/axios"
 
@@ -19,7 +20,7 @@ import {TabHeader} from "@/components/EpsTabs"
 
 import {PRESCRIPTION_LIST_TABS} from "@/constants/ui-strings/PrescriptionListTabStrings"
 import {PRESCRIPTION_LIST_PAGE_STRINGS} from "@/constants/ui-strings/PrescriptionListPageStrings"
-import {API_ENDPOINTS, FRONTEND_PATHS, NHS_REQUEST_URID} from "@/constants/environment"
+import {API_ENDPOINTS, FRONTEND_PATHS} from "@/constants/environment"
 
 import {SearchResponse, PrescriptionSummary} from "@cpt-ui-common/common-types/src/prescriptionList"
 
@@ -44,25 +45,26 @@ export default function PrescriptionListPage() {
       const prescriptionId = queryParams.get("prescriptionId")
       const nhsNumber = queryParams.get("nhsNumber")
 
-      let url = API_ENDPOINTS.PRESCRIPTION_LIST
+      let searchParams = {}
 
       // determine which search page to go back to based on query parameters
       if (prescriptionId) {
         setBackLinkTarget(PRESCRIPTION_LIST_PAGE_STRINGS.PRESCRIPTION_ID_SEARCH_TARGET)
-        url += `?prescriptionId=${prescriptionId}`
+        searchParams = {prescriptionId}
       } else if (nhsNumber) {
         setBackLinkTarget(PRESCRIPTION_LIST_PAGE_STRINGS.NHS_NUMBER_SEARCH_TARGET)
-        url += `?nhsNumber=${nhsNumber}`
+        searchParams = {nhsNumber}
       } else {
         console.error("No query parameter provided.")
         navigate(FRONTEND_PATHS.PRESCRIPTION_NOT_FOUND)
         return
       }
 
-      const response = await http.get(url, {
+      const response = await http.get(API_ENDPOINTS.PRESCRIPTION_LIST, {
+        params: searchParams,
         headers: {
           Authorization: `Bearer ${auth?.idToken}`,
-          "NHSD-Session-URID": NHS_REQUEST_URID
+          "X-Correlation-Id": uuidv4()
         }
       })
 
