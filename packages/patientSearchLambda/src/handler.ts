@@ -20,17 +20,6 @@ const code = (statusCode: number) => ({
   })
 })
 
-export type AuthenticationParameters = {
-  tokenMappingTableName: string,
-  jwtPrivateKeyArn: string,
-  apigeeApiKey: string,
-  apigeeApiSecret: string,
-  jwtKid: string,
-  defaultRoleId: string,
-  apigeeMockTokenEndpoint: string,
-  apigeeCis2TokenEndpoint: string,
-}
-
 // Dependencies used by the lambda to process an event,
 //  injected to be easier to mock out in unit tests
 export type HandlerParameters = {
