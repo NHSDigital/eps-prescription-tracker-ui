@@ -84,7 +84,7 @@ jobs:
       APIGEE_MOCK_TOKEN_ENDPOINT: "https://internal-dev.api.service.nhs.uk/oauth2-mock/token"
       APIGEE_PRESCRIPTIONS_ENDPOINT: "https://internal-dev.api.service.nhs.uk/clinical-prescription-tracker/"
       APIGEE_PDS_ENDPOINT: "https://internal-dev.api.service.nhs.uk/personal-demographics/FHIR/R4/"
-      APIGEE_DOHS_ENDPOINT: "https://int.api.service.nhs.uk/service-search-api/?api-version=3"
+      APIGEE_DOHS_ENDPOINT: "https://int.api.service.nhs.uk/service-search-api/"
       JWT_KID: "eps-cpt-ui-dev"
       ROLE_ID: "555254242106"
       LOG_LEVEL: "DEBUG"
@@ -98,6 +98,7 @@ jobs:
       REGRESSION_TESTS_PEM: ${{ secrets.REGRESSION_TESTS_PEM }}
       APIGEE_API_KEY: ${{ secrets.APIGEE_DEV_API_KEY }}
       APIGEE_API_SECRET: ${{ secrets.APIGEE_DEV_API_SECRET }}
+      APIGEE_PTL_DOHS_API_KEY: ${{ secrets.APIGEE_PTL_DOHS_API_KEY }}
   report_deployed_url:
     needs: [release_code, get_issue_number]
     runs-on: ubuntu-22.04

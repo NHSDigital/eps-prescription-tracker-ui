@@ -79,6 +79,8 @@ on:
         required: false
       APIGEE_API_SECRET:
         required: false
+      APIGEE_PTL_DOHS_API_KEY:
+        required: false
 jobs:
   release_code:
     runs-on: ubuntu-22.04
@@ -172,6 +174,7 @@ jobs:
           APIGEE_DOHS_ENDPOINT: ${{ inputs.APIGEE_DOHS_ENDPOINT }}
           APIGEE_API_KEY: ${{ secrets.APIGEE_API_KEY }}
           APIGEE_API_SECRET: ${{ secrets.APIGEE_API_SECRET }}
+          APIGEE_PTL_DOHS_API_KEY: ${{ secrets.APIGEE_PTL_DOHS_API_KEY }}
           JWT_KID: ${{ inputs.JWT_KID }}
           ROLE_ID: ${{ inputs.ROLE_ID }}
           CDK_APP_NAME: ${{ inputs.CDK_APP_NAME }}
