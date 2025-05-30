@@ -25,5 +25,7 @@ export const mapPdsResponseToPatientDetails = (pdsData: PDSResponse): PatientDet
 }
 
 export const PATIENT_DETAILS_PATH = (pds_base: URL, nhsNumber: string): URL =>{
-  return new URL(path.join("Patient", nhsNumber), pds_base)
+  const url = new URL(pds_base)
+  url.pathname = path.join(url.pathname, "Patient", nhsNumber)
+  return url
 }

@@ -27,7 +27,7 @@ jest.mock("axios", () => ({
 
 describe("Patient Details Lookup Service Tests", () => {
   const logger = mockLogger()
-  const mockEndpoint = "http://test-endpoint/personal-demographics/FHIR/R4"
+  const mockEndpoint = new URL("http://test-endpoint/personal-demographics/FHIR/R4/")
   const mockAccessToken = "test-token"
   const mockRoleId = "test-role"
   const mockNhsNumber = "9000000009"
@@ -74,7 +74,7 @@ describe("Patient Details Lookup Service Tests", () => {
     })
 
     expect(mockGet).toHaveBeenCalledWith(
-      `${mockEndpoint}/Patient/${mockNhsNumber}`,
+      `${mockEndpoint}Patient/${mockNhsNumber}`,
       expect.objectContaining({
         headers: expect.objectContaining({
           Authorization: `Bearer ${mockAccessToken}`,

@@ -2,13 +2,15 @@
 import {describe, it, expect} from "@jest/globals"
 import {mockLogger, mockAxiosInstance, mockAxiosErrorInstance} from "@cpt-ui-common/testing"
 import * as examples from "./examples/index"
+import {URL} from "url"
 
 import * as pds from "@cpt-ui-common/pdsClient"
 const OutcomeType = pds.patientSearch.OutcomeType
 
 describe("PatientSearch Unit Tests", () => {
+  const mockEndpoint = new URL("https://example.com")
   describe("Input Validation", () => {
-    const client = new pds.Client(mockAxiosInstance(200, undefined), "test-endpoint", mockLogger())
+    const client = new pds.Client(mockAxiosInstance(200, undefined), mockEndpoint, mockLogger())
 
     it("Should return an invalid parameters outcome when given an invalid family name", async () => {
       const outcome = await client.patientSearch("a*", "1234-01-01", "testPostcode")
@@ -53,7 +55,7 @@ describe("PatientSearch Unit Tests", () => {
 
   describe("Axios response handling", () => {
     it("Should handle an axios error", async () => {
-      const client = new pds.Client(mockAxiosErrorInstance(), "test-endpoint", mockLogger())
+      const client = new pds.Client(mockAxiosErrorInstance(), mockEndpoint, mockLogger())
 
       const outcome = await client.patientSearch("testFamilyName", "1234-01-01", "testPostcode")
 
@@ -63,7 +65,7 @@ describe("PatientSearch Unit Tests", () => {
     it("Should handle a pds error response", async () => {
       const _mockAxiosInstance = mockAxiosInstance(400, undefined)
 
-      const client = new pds.Client(_mockAxiosInstance, "test-endpoint", mockLogger())
+      const client = new pds.Client(_mockAxiosInstance, mockEndpoint, mockLogger())
 
       const outcome = await client.patientSearch("testFamilyName", "1234-01-01", "testPostcode")
 
@@ -73,7 +75,7 @@ describe("PatientSearch Unit Tests", () => {
     it("Should correctly map a single patient", async () => {
       const _mockAxiosInstance = mockAxiosInstance(200, examples.single_patient)
 
-      const client = new pds.Client(_mockAxiosInstance, "test-endpoint", mockLogger())
+      const client = new pds.Client(_mockAxiosInstance, mockEndpoint, mockLogger())
       const outcome = await client.patientSearch("testFamilyName", "1234-01-01", "testPostcode")
 
       expect(outcome.type).toBe(OutcomeType.SUCCESS)
@@ -99,7 +101,7 @@ describe("PatientSearch Unit Tests", () => {
     it("Should correctly map two patients", async () => {
       const _mockAxiosInstance = mockAxiosInstance(200, examples.two_patients)
 
-      const client = new pds.Client(_mockAxiosInstance, "test-endpoint", mockLogger())
+      const client = new pds.Client(_mockAxiosInstance, mockEndpoint, mockLogger())
       const outcome = await client.patientSearch("testFamilyName", "1234-01-01", "testPostcode")
 
       expect(outcome.type).toBe(OutcomeType.SUCCESS)
@@ -140,7 +142,7 @@ describe("PatientSearch Unit Tests", () => {
     it("Should handle a response with no patients", async () => {
       const _mockAxiosInstance = mockAxiosInstance(200, examples.no_patients)
 
-      const client = new pds.Client(_mockAxiosInstance, "test-endpoint", mockLogger())
+      const client = new pds.Client(_mockAxiosInstance, mockEndpoint, mockLogger())
       const outcome = await client.patientSearch("testFamilyName", "1234-01-01", "testPostcode")
 
       expect(outcome.type).toBe(OutcomeType.SUCCESS)
@@ -150,7 +152,7 @@ describe("PatientSearch Unit Tests", () => {
     it("Should handle a too many matches response", async () => {
       const _mockAxiosInstance = mockAxiosInstance(200, examples.too_many_matches)
 
-      const client = new pds.Client(_mockAxiosInstance, "test-endpoint", mockLogger())
+      const client = new pds.Client(_mockAxiosInstance, mockEndpoint, mockLogger())
       const outcome = await client.patientSearch("testFamilyName", "1234-01-01", "testPostcode")
 
       expect(outcome.type).toBe(OutcomeType.TOO_MANY_MATCHES)
@@ -159,7 +161,7 @@ describe("PatientSearch Unit Tests", () => {
     it("Should filter out restricted patients", async () => {
       const _mockAxiosInstance = mockAxiosInstance(200, examples.single_restricted)
 
-      const client = new pds.Client(_mockAxiosInstance, "test-endpoint", mockLogger())
+      const client = new pds.Client(_mockAxiosInstance, mockEndpoint, mockLogger())
       const outcome = await client.patientSearch("testFamilyName", "1234-01-01", "testPostcode")
 
       expect(outcome.type).toBe(OutcomeType.SUCCESS)
@@ -169,7 +171,7 @@ describe("PatientSearch Unit Tests", () => {
     it("Should handle a response with restricted and unrestricted patients", async () => {
       const _mockAxiosInstance = mockAxiosInstance(200, examples.multiple_with_restricted)
 
-      const client = new pds.Client(_mockAxiosInstance, "test-endpoint", mockLogger())
+      const client = new pds.Client(_mockAxiosInstance, mockEndpoint, mockLogger())
       const outcome = await client.patientSearch("testFamilyName", "1234-01-01", "testPostcode")
 
       expect(outcome.type).toBe(OutcomeType.SUCCESS)
