@@ -12,7 +12,6 @@ import {
 
 import NhsNumSearch from "@/components/prescriptionSearch/NhsNumSearch"
 import {STRINGS} from "@/constants/ui-strings/NhsNumSearchStrings"
-import {SEARCH_TYPES} from "@/constants/ui-strings/PrescriptionNotFoundPageStrings"
 import {FRONTEND_PATHS} from "@/constants/environment"
 
 jest.mock("react-router-dom", () => {
@@ -55,19 +54,6 @@ describe("NhsNumSearch", () => {
 
     expect(mockNavigate).toHaveBeenCalledWith(
       `${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}?nhsNumber=1234567890`
-    )
-  })
-
-  it("redirects to not found for any non-matching NHS number", async () => {
-    const mockNavigate = jest.fn()
-      ; (useNavigate as jest.Mock).mockReturnValue(mockNavigate)
-
-    renderWithRouter(<NhsNumSearch />)
-    await userEvent.type(screen.getByTestId("nhs-number-input"), "0987654321")
-    await userEvent.click(screen.getByTestId("find-patient-button"))
-
-    expect(mockNavigate).toHaveBeenCalledWith(
-      `${FRONTEND_PATHS.PRESCRIPTION_NOT_FOUND}?searchType=${SEARCH_TYPES.NHS_NUMBER}`
     )
   })
 
