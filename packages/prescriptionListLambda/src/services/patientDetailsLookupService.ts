@@ -5,6 +5,7 @@ import {Logger} from "@aws-lambda-powertools/logger"
 import {createMinimalPatientDetails, mapPdsResponseToPatientDetails} from "../utils/responseMapper"
 import {PDSError} from "../utils/errors"
 import {validatePatientDetails} from "../utils/validation"
+import path from "path"
 
 export const getPdsPatientDetails = async (
   axiosInstance: AxiosInstance,
@@ -12,21 +13,25 @@ export const getPdsPatientDetails = async (
   pdsEndpoint: string,
   nhsNumber: string,
   apigeeAccessToken: string,
-  roleId: string
+  roleId: string,
+  orgCode: string,
+  correlationId: string
 ): Promise<PatientAPIResponse> => {
   const startTime = Date.now()
   logger.info("Fetching patient details from PDS", {nhsNumber})
+  const endpoint = new URL(pdsEndpoint)
+  endpoint.pathname = path.join(endpoint.pathname, `/Patient/${nhsNumber}`)
   try {
     const response = await axiosInstance.get(
-      `${pdsEndpoint}/Patient/${nhsNumber}`,
+      endpoint.href,
       {
         headers: {
           Accept: "application/fhir+json",
           Authorization: `Bearer ${apigeeAccessToken}`,
-          "NHSD-End-User-Organisation-ODS": "A83008",
+          "NHSD-End-User-Organisation-ODS": orgCode,
           "NHSD-Session-URID": roleId,
-          "X-Request-ID": uuidv4(),
-          "X-Correlation-ID": uuidv4()
+          "x-Request-ID": uuidv4(),
+          "X-Correlation-ID": correlationId
         }
       }
     )

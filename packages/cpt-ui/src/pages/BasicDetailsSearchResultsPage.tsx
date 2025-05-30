@@ -133,7 +133,13 @@ export default function SearchResultsPage() {
       <Container>
         <Row>
           <Col width="full">
-            <BackLink onClick={handleGoBack}>{SearchResultsPageStrings.GO_BACK}</BackLink>
+            <BackLink
+              onClick={handleGoBack}
+              tabIndex={0}
+              onKeyDown={(e) => e.key === "Enter" && handleGoBack()}
+            >
+              {SearchResultsPageStrings.GO_BACK}
+            </BackLink>
           </Col>
         </Row>
         <Row>

@@ -37,7 +37,7 @@ jobs:
 
       # using git commit sha for version of action to ensure we have stable version
       - name: Install asdf
-        uses: asdf-vm/actions/setup@05e0d2ed97b598bfce82fd30daf324ae0c4570e6
+        uses: asdf-vm/actions/setup@1902764435ca0dd2f3388eea723a4f92a4eb8302
         with:
           asdf_branch: v0.14.1
   
@@ -51,7 +51,7 @@ jobs:
             ${{ runner.os }}-asdf-${{ hashFiles('**/.tool-versions') }}
 
       - name: Install asdf dependencies in .tool-versions
-        uses: asdf-vm/actions/install@05e0d2ed97b598bfce82fd30daf324ae0c4570e6
+        uses: asdf-vm/actions/install@1902764435ca0dd2f3388eea723a4f92a4eb8302
         with:
           asdf_branch: v0.14.1
         env:
@@ -172,7 +172,7 @@ jobs:
       APIGEE_CIS2_TOKEN_ENDPOINT: "https://internal-qa.api.service.nhs.uk/oauth2-int/token"
       APIGEE_MOCK_TOKEN_ENDPOINT: "https://internal-qa.api.service.nhs.uk/oauth2-mock/token"
       APIGEE_PRESCRIPTIONS_ENDPOINT: "https://internal-qa.api.service.nhs.uk/clinical-prescription-tracker/"
-      APIGEE_PDS_ENDPOINT: "https://internal-qa.api.service.nhs.ukpersonal-demographics/FHIR/R4/"
+      APIGEE_PDS_ENDPOINT: "https://internal-qa.api.service.nhs.uk/personal-demographics/FHIR/R4/"
       JWT_KID: "eps-cpt-ui-qa"
       ROLE_ID: "555254242106"
       LOG_LEVEL: "DEBUG"
