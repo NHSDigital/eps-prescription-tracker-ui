@@ -10,7 +10,7 @@ import {
 
 import {constructSignedJWTBody, exchangeTokenForApigeeAccessToken, refreshApigeeAccessToken} from "./apigee"
 
-import {authenticateRequest} from "./authenticateRequest"
+import {authenticateRequest, AuthenticateRequestOptions} from "./authenticateRequest"
 
 export {
   getUsernameFromEvent,
@@ -22,5 +22,6 @@ export {
   initializeOidcConfig,
   decodeToken,
   refreshApigeeAccessToken,
-  authenticateRequest
+  authenticateRequest,
+  AuthenticateRequestOptions
 }
