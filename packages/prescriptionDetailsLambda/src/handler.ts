@@ -66,7 +66,7 @@ const lambdaHandler = async (
   const headers = event.headers ?? []
   logger.appendKeys({"x-request-id": headers["x-request-id"]})
 
-  const correlationId = headers["x-correlation-id"] || uuidv4()
+  const correlationId = headers["x-correlation-id"] ?? uuidv4()
 
   logger.info("Lambda handler invoked", {event})
 

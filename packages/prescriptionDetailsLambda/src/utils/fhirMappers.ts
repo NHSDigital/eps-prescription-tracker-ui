@@ -17,7 +17,7 @@ export const mapIntentToPrescriptionTreatmentType = (intent: string): string => 
   }
 
   // fallback to Unknown if we get something unexpected
-  return intentToTreatmentTypeMap[intent as PrescriptionIntent] || "Unknown" // Default to "Unknown" if not mapped
+  return intentToTreatmentTypeMap[intent as PrescriptionIntent] ?? "Unknown" // Default to "Unknown" if not mapped
 }
 
 /**
@@ -60,16 +60,16 @@ export const mapCourseOfTherapyType = (coding: Array<Coding> | undefined): strin
   //   "continuous-repeating-dispensing": "Continuous Repeating Dispensing"
   // }
 
-  // return courseOfTherapyMap[coding[0].code || ""] || coding[0].display || "Unknown"
-  return coding[0].code || "unknown"
+  // return courseOfTherapyMap[coding[0].code ?? ""] ?? coding[0].display ?? "Unknown"
+  return coding[0].code ?? "unknown"
 }
 
 /**
  * Determines prescription origin based on prescription type code
  */
 export const mapPrescriptionOrigin = (typeCode: string): string => {
-  if (typeCode.startsWith("01") || typeCode.startsWith("1")) return "England"
-  if (typeCode.startsWith("02") || typeCode.startsWith("2")) return "Wales"
+  if (typeCode.startsWith("01") ?? typeCode.startsWith("1")) return "England"
+  if (typeCode.startsWith("02") ?? typeCode.startsWith("2")) return "Wales"
   return "Unknown"
 }
 
@@ -91,24 +91,24 @@ export const extractPatientDetails = (patient: Patient | undefined): PatientDeta
   }
 
   // Extract NHS number from identifiers
-  const nhsNumber = patient.identifier?.[0]?.value || "Unknown"
+  const nhsNumber = patient.identifier?.[0]?.value ?? "Unknown"
 
   // Extract name components
   const name = patient.name?.[0]
-  const prefix = name?.prefix?.[0] || ""
-  const suffix = name?.suffix?.[0] || ""
-  const given = name?.given?.join(" ") || "Unknown"
-  const family = name?.family || "Unknown"
+  const prefix = name?.prefix?.[0] ?? ""
+  const suffix = name?.suffix?.[0] ?? ""
+  const given = name?.given?.join(" ") ?? "Unknown"
+  const family = name?.family ?? "Unknown"
 
   // Extract address components
   const patientAddress = patient.address?.[0]
   let address = null
   if (patientAddress) {
     address = {
-      line1: patientAddress.line?.[0] || "",
-      line2: patientAddress.line?.[1] || "",
-      city: patientAddress.city || "",
-      postcode: patientAddress.postalCode || ""
+      line1: patientAddress.line?.[0] ?? "",
+      line2: patientAddress.line?.[1] ?? "",
+      city: patientAddress.city ?? "",
+      postcode: patientAddress.postalCode ?? ""
     }
   }
 
@@ -118,8 +118,8 @@ export const extractPatientDetails = (patient: Patient | undefined): PatientDeta
     suffix,
     given,
     family,
-    gender: patient.gender || null,
-    dateOfBirth: patient.birthDate || null,
+    gender: patient.gender ?? null,
+    dateOfBirth: patient.birthDate ?? null,
     address
   }
 }
@@ -132,14 +132,14 @@ export const extractPrescribedItems = (medicationRequests: Array<MedicationReque
     const pendingCancellationExt = findExtensionByKey(request.extension, "PENDING_CANCELLATION")
     const dispensingInfoExt = findExtensionByKey(request.extension, "DISPENSING_INFORMATION")
 
-    const epsStatusCode = getDisplayFromNestedExtension(dispensingInfoExt, "dispenseStatus") || request.status || "unknown"
+    const epsStatusCode = getDisplayFromNestedExtension(dispensingInfoExt, "dispenseStatus") ?? request.status ?? "unknown"
 
     return {
       itemDetails: {
-        medicationName: request.medicationCodeableConcept?.text ||
-        request.medicationCodeableConcept?.coding?.[0]?.display || "Unknown",
-        quantity: request.dispenseRequest?.quantity?.value?.toString() || "Unknown",
-        dosageInstructions: request.dosageInstruction?.[0]?.text || "Unknown",
+        medicationName: request.medicationCodeableConcept?.text ??
+        request.medicationCodeableConcept?.coding?.[0]?.display ?? "Unknown",
+        quantity: request.dispenseRequest?.quantity?.value?.toString() ?? "Unknown",
+        dosageInstructions: request.dosageInstruction?.[0]?.text ?? "Unknown",
         epsStatusCode,
         nhsAppStatus: undefined, // Optional field
         itemPendingCancellation: getBooleanFromNestedExtension(pendingCancellationExt, "lineItemPendingCancellation"),

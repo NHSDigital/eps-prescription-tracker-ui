@@ -22,7 +22,7 @@ export const doHSClient = async (
   const validOdsCodes = [
     odsCodes.prescribingOrganization,
     odsCodes.nominatedPerformer,
-    ...(odsCodes.dispensingOrganizations || []) // Spread array for multiple dispensing orgs
+    ...(odsCodes.dispensingOrganizations ?? []) // Spread array for multiple dispensing orgs
   ].filter(Boolean) as Array<string>
 
   if (validOdsCodes.length === 0) {
@@ -56,11 +56,11 @@ export const doHSClient = async (
     // Map DoHS response to correct roles
     const mappedData: Record<string, {ODSCode: string} | null> = {
       prescribingOrganization: response.data.value.find((item: {ODSCode: string}) =>
-        item.ODSCode === odsCodes.prescribingOrganization) || null,
+        item.ODSCode === odsCodes.prescribingOrganization) ?? null,
       nominatedPerformer: response.data.value.find((item: {ODSCode: string}) =>
-        item.ODSCode === odsCodes.nominatedPerformer) || null,
+        item.ODSCode === odsCodes.nominatedPerformer) ?? null,
       dispensingOrganizations: response.data.value.filter((item: {ODSCode: string}) =>
-        odsCodes.dispensingOrganizations?.includes(item.ODSCode)) || []
+        odsCodes.dispensingOrganizations?.includes(item.ODSCode)) ?? []
     }
 
     return mappedData
