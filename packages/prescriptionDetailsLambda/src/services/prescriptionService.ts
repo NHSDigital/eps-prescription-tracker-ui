@@ -1,4 +1,4 @@
-/* eslint-disable max-len */
+
 import axios from "axios"
 
 import {APIGatewayProxyEvent, APIGatewayProxyResult} from "aws-lambda"
@@ -9,50 +9,10 @@ import {doHSClient} from "@cpt-ui-common/doHSClient"
 import {mergePrescriptionDetails} from "../utils/responseMapper"
 import {formatHeaders} from "../utils/headerUtils"
 
-import {
-  ApigeeDataResponse,
-  FhirAction,
-  FhirParticipant,
-  DoHSData,
-  DoHSValue
-} from "../utils/types"
+import {DoHSData, DoHSValue} from "../utils/types"
 import {buildApigeeHeaders} from "@cpt-ui-common/authFunctions"
 import path from "path"
-
-/**
- * Extract ODS codes from the Apigee response.
- */
-export function extractOdsCodes(apigeeData: ApigeeDataResponse, logger: Logger): {
-  prescribingOrganization: string | undefined
-  nominatedPerformer: string | undefined
-  dispensingOrganizations: Array<string> | undefined
-} {
-  const prescribingOrganization = apigeeData?.author?.identifier?.value || undefined
-
-  const nominatedPerformer = apigeeData?.action
-    ?.find((action: FhirAction) =>
-      action.participant?.some((participant: FhirParticipant) =>
-        participant.identifier?.system === "https://fhir.nhs.uk/Id/ods-organization-code"
-      )
-    )?.participant?.[0]?.identifier?.value || undefined
-
-  // Extract dispensing organizations' ODS codes
-  const dispensingOrganizations: Array<string> = apigeeData?.action
-    ?.flatMap((action: FhirAction) => action.action || []) // Flatten nested actions
-    ?.filter((nestedAction) =>
-      nestedAction.title === "Dispense notification successful" // Only select dispensing events
-    )
-    ?.map((dispenseAction: FhirAction) => dispenseAction.participant?.[0]?.identifier?.value || "")
-    ?.filter(odsCode => odsCode) || [] // Remove empty values
-
-  logger.info("Extracted ODS codes from Apigee", {prescribingOrganization, nominatedPerformer, dispensingOrganizations})
-
-  return {
-    prescribingOrganization,
-    nominatedPerformer,
-    dispensingOrganizations: dispensingOrganizations.length ? dispensingOrganizations : undefined
-  }
-}
+import {extractOdsCodes} from "../utils/extensionUtils"
 
 /**
  * Fetch DoHS data and map it to the expected structure.
@@ -103,7 +63,7 @@ export async function getDoHSData(
       doHSData.dispensingOrganizations =
         rawDoHSData?.dispensingOrganizations?.filter(org =>
           odsCodes.dispensingOrganizations?.some(ods => ods.toUpperCase() === org.ODSCode?.toUpperCase())
-        ) || []
+        ) ?? []
 
       // Logging Variables
       const prescribingOrganization = doHSData.prescribingOrganization
@@ -166,32 +126,77 @@ export async function processPrescriptionRequest(
   logger.info("Fetching prescription details from Apigee", {prescriptionId})
   const endpoint = new URL(apigeePrescriptionsEndpoint)
   endpoint.pathname = path.join(endpoint.pathname, `/RequestGroup/${encodeURIComponent(prescriptionId)}`)
-  const headers = buildApigeeHeaders(apigeeAccessToken, roleId, orgCode, correlationId) // Required to invoke the clinicalView Lambda directly
+  const headers = buildApigeeHeaders(apigeeAccessToken, roleId, orgCode, correlationId)
 
-  const apigeeResponse = await axios.get(endpoint.href, {headers})
-  logger.info("Apigee response:", {apigeeResponse})
-
-  const odsCodes = extractOdsCodes(apigeeResponse.data, logger)
-  const doHSData = await getDoHSData(odsCodes, logger)
-
-  logger.info("Merging prescription details fetched from Apigee with data from DoHS", {
-    prescriptionDetails: apigeeResponse.data,
-    doHSData
+  // Add detailed logging before making the request
+  logger.info("Making request to Apigee", {
+    url: endpoint.href,
+    method: "GET",
+    headers: {
+      ...headers,
+      Authorization: headers.Authorization ? "[REDACTED]" : undefined
+    },
+    prescriptionId
   })
 
-  let mergedResponse
-
   try {
-    mergedResponse = mergePrescriptionDetails(apigeeResponse.data, doHSData)
-  } catch {
-    logger.warn("Prescription details not found")
-    mergedResponse = {message: "Prescription details not found"}
-  }
+    const apigeeResponse = await axios.get(endpoint.href, {headers})
+    logger.info("Apigee response received successfully", {
+      status: apigeeResponse.status,
+      statusText: apigeeResponse.statusText,
+      dataKeys: Object.keys(apigeeResponse.data || {}),
+      prescriptionId
+    })
 
-  return {
-    statusCode: 200,
-    body: JSON.stringify(mergedResponse),
-    headers: formatHeaders(apigeeResponse.headers)
-  }
+    const odsCodes = extractOdsCodes(apigeeResponse.data, logger)
+    const doHSData = await getDoHSData(odsCodes, logger)
 
+    logger.info("Merging prescription details fetched from Apigee with data from DoHS", {
+      prescriptionDetails: apigeeResponse.data,
+      doHSData
+    })
+
+    let mergedResponse
+
+    try {
+      mergedResponse = mergePrescriptionDetails(apigeeResponse.data, doHSData)
+    } catch {
+      logger.warn("Prescription details not found")
+      mergedResponse = {message: "Prescription details not found"}
+    }
+
+    return {
+      statusCode: 200,
+      body: JSON.stringify(mergedResponse),
+      headers: formatHeaders(apigeeResponse.headers)
+    }
+
+  } catch (error) {
+    // Enhanced error logging for axios errors, then re-throw to let middy handle
+    if (axios.isAxiosError(error)) {
+      logger.error("Axios request failed", {
+        url: endpoint.href,
+        method: "GET",
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        responseData: error.response?.data,
+        responseHeaders: error.response?.headers,
+        requestHeaders: {
+          ...headers,
+          Authorization: headers.Authorization ? "[REDACTED]" : undefined
+        },
+        errorMessage: error.message,
+        prescriptionId
+      })
+    } else {
+
+      logger.error("Unexpected error in prescription service", {
+        error: error instanceof Error ? error.message : error,
+        stack: error instanceof Error ? error.stack : undefined,
+        prescriptionId
+      })
+    }
+
+    throw error
+  }
 }
