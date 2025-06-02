@@ -185,6 +185,16 @@ export default function PrescriptionListPage() {
 
   useEffect(() => {
     const runSearch = async () => {
+      if (auth?.isAuthLoading) {
+        console.log("Auth still loading, waiting...")
+        return
+      }
+
+      if (!auth?.idToken) {
+        console.log("Auth token not ready, waiting...")
+        return
+      }
+
       const hasPrescriptionId = !!queryParams.get("prescriptionId")
       const hasNhsNumber = !!queryParams.get("nhsNumber")
 
@@ -258,7 +268,7 @@ export default function PrescriptionListPage() {
 
     setLoading(true)
     runSearch().finally(() => setLoading(false))
-  }, [queryParams])
+  }, [queryParams, auth?.idToken, auth?.isAuthLoading])
 
   // TODO: This should return the search results. For now, just return true or false for mock stuff.
   const searchPrescriptionID = async (prescriptionId: string): Promise<SearchResponse | undefined> => {
@@ -270,7 +280,7 @@ export default function PrescriptionListPage() {
     //   return;
     // }
 
-    const url = `${API_ENDPOINTS.PRESCRIPTION_DETAILS}/${prescriptionId}`
+    const url = `${API_ENDPOINTS.PRESCRIPTION_LIST}?prescriptionId=${prescriptionId}`
 
     try {
       const response = await http.get(url, {
@@ -328,7 +338,7 @@ export default function PrescriptionListPage() {
   const searchNhsNumber = async (nhsNumber: string): Promise<SearchResponse | undefined> => {
     console.log("Searching for nhs number:", nhsNumber)
 
-    const url = `${API_ENDPOINTS.PRESCRIPTION_DETAILS}/${nhsNumber}`
+    const url = `${API_ENDPOINTS.PRESCRIPTION_LIST}?nhsNumber=${nhsNumber}`
 
     try {
       const response = await http.get(url, {

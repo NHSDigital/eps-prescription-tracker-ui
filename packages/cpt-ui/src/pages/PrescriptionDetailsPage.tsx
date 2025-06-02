@@ -49,7 +49,7 @@ export default function PrescriptionDetailsPage() {
   const [dispensedItems, setDispensedItems] = useState<Array<DispensedItem>>([])
   const [messageHistory, setMessageHistory] = useState<Array<MessageHistory>>([])
 
-  const getPrescriptionDetails = async (prescriptionId: string) => {
+  const getPrescriptionDetails = async (prescriptionId: string): Promise<PrescriptionDetailsResponse | undefined> => {
     console.log("Prescription ID", prescriptionId)
     const url = `${API_ENDPOINTS.PRESCRIPTION_DETAILS}/${prescriptionId}`
 
@@ -117,18 +117,31 @@ export default function PrescriptionDetailsPage() {
 
   useEffect(() => {
     const runGetPrescriptionDetails = async () => {
-      setLoading(true)
+      // Check if auth is ready
+      if (auth?.isAuthLoading) {
+        console.log("Auth still loading, waiting...")
+        return
+      }
+
+      if (!auth?.idToken) {
+        console.log("Auth token not ready, waiting...")
+        return
+      }
 
       const prescriptionId = queryParams.get("prescriptionId")
       if (!prescriptionId) {
         navigate(FRONTEND_PATHS.PRESCRIPTION_NOT_FOUND)
+        return
       }
-      await getPrescriptionDetails(prescriptionId!)
 
+      console.log("useEffect triggered for prescription:", prescriptionId)
+      setLoading(true)
+      await getPrescriptionDetails(prescriptionId)
       setLoading(false)
     }
+
     runGetPrescriptionDetails()
-  }, [])
+  }, [queryParams, auth?.idToken, auth?.isAuthLoading])
 
   if (loading || !prescriber) {
     return (
