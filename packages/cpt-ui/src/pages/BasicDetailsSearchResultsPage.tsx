@@ -102,12 +102,12 @@ export default function SearchResultsPage() {
   const notFound = searchParams.get("notFound") === "true"
   const tooMany = searchParams.get("tooMany") === "true"
 
-  // Show a message if no patients are found or if they all have no NHS number
+  // Show not found message if no valid patients
   if (notFound) {
     return <PatientNotFoundMessage search={location.search} />
   }
 
-  // If too many results, show message
+  // Show too many results message if search returns too many patients
   if (tooMany) {
     return <SearchResultsTooManyMessage search={location.search} />
   }
