@@ -102,3 +102,26 @@ export const getPrescriptionTypeDisplayText = (
       return "Unknown"
   }
 }
+
+export const formatDateForPrescriptions = (date: string) => {
+  try {
+    if (!date || date.toLowerCase() === "undefined" || date.toLowerCase() === "null") {
+      return "Invalid date"
+    }
+
+    const options: Intl.DateTimeFormatOptions = {
+      day: "2-digit",
+      month: "short",
+      year: "numeric"
+    }
+
+    const dateObj = new Date(date)
+    if (isNaN(dateObj.getTime())) {
+      return "Invalid date"
+    }
+
+    return dateObj.toLocaleDateString("en-GB", options).replace(/ /g, "-")
+  } catch {
+    return "Invalid date"
+  }
+}
