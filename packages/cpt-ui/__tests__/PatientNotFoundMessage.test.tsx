@@ -36,7 +36,7 @@ describe("PatientNotFoundMessage", () => {
   it("renders the go-back link with search query, and navigates to Basic Details Search", () => {
     const search = "?firstName=Zoe&lastName=Zero&dobDay=31&dobMonth=12&dobYear=2021&postcode=AB1%202CD"
     setupRouter(search)
-    const backLink = screen.getByTestId("patient-not-found-back-link")
+    const backLink = screen.getByTestId("go-back-link")
     expect(backLink).toHaveAttribute(
       "href",
       FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS + search
@@ -63,7 +63,7 @@ describe("PatientNotFoundMessage", () => {
 
   it("renders correctly even with empty or no search parameter", () => {
     setupRouter("") // Empty search
-    const backLink = screen.getByTestId("patient-not-found-back-link")
+    const backLink = screen.getByTestId("go-back-link")
     expect(backLink).toHaveAttribute("href", FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS)
     fireEvent.click(backLink)
     expect(screen.getByTestId("dummy-page")).toHaveTextContent("Basic Details Search")

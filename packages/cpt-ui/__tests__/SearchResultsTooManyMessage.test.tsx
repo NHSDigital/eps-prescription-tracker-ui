@@ -79,7 +79,7 @@ describe("SearchResultsTooManyMessage", () => {
 
   it("navigates to the basic details search when the go back link is clicked", () => {
     renderWithRouter()
-    fireEvent.click(screen.getByTestId("too-many-results-back-link"))
+    fireEvent.click(screen.getByTestId("go-back-link"))
     expect(screen.getByTestId("dummy-page")).toHaveTextContent("Basic Details Search")
   })
 })
