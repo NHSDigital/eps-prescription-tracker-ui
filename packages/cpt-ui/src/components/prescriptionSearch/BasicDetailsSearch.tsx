@@ -76,13 +76,13 @@ const mockNotFoundPatients: Array<PatientSummary> = [
 ]
 
 const mockTooManyPatients: Array<PatientSummary> = Array.from({length: 11}, (_, i) => ({
-  nhsNumber: `99999999${(100 + i).toString()}`,
-  givenName: [`Many${i}`],
+  nhsNumber: (9000000000 + i).toString(),
+  givenName: ["David"],
   familyName: "Jones",
   gender: "Other",
   dateOfBirth: "16-07-1985",
   address: ["Some Address"],
-  postcode: ""
+  postcode: "LS1 1AB"
 }))
 
 // Utility to normalize input for case-insensitive and whitespace-tolerant comparison
