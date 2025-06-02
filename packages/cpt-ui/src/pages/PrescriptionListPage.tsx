@@ -7,178 +7,32 @@ import {
   Row
 } from "nhsuk-react-components"
 import "../styles/PrescriptionTable.scss"
+import {v4 as uuidv4} from "uuid"
 
 import http from "@/helpers/axios"
 
 import {AuthContext} from "@/context/AuthProvider"
 import {usePatientDetails} from "@/context/PatientDetailsProvider"
-
 import EpsSpinner from "@/components/EpsSpinner"
 import PrescriptionsListTabs from "@/components/prescriptionList/PrescriptionsListTab"
 import {TabHeader} from "@/components/EpsTabs"
 
 import {PRESCRIPTION_LIST_TABS} from "@/constants/ui-strings/PrescriptionListTabStrings"
 import {PRESCRIPTION_LIST_PAGE_STRINGS} from "@/constants/ui-strings/PrescriptionListPageStrings"
-import {API_ENDPOINTS, FRONTEND_PATHS, NHS_REQUEST_URID} from "@/constants/environment"
+import {API_ENDPOINTS, FRONTEND_PATHS} from "@/constants/environment"
 
-import {
-  PatientDetails,
-  SearchResponse,
-  TreatmentType,
-  PrescriptionStatus,
-  PrescriptionSummary
-} from "@cpt-ui-common/common-types/src/prescriptionList"
+import {SearchResponse, PrescriptionSummary} from "@cpt-ui-common/common-types/src/prescriptionList"
 
 export default function PrescriptionListPage() {
-  // FIXME: mock data. DELETEME!
-  const mockPatient: PatientDetails = {
-    nhsNumber: "5900009890",
-    prefix: "Mr",
-    suffix: "",
-    given: "William",
-    family: "Wolderton",
-    gender: "male",
-    dateOfBirth: "01-Nov-1988",
-    address: {
-      line1: "55 OAK STREET",
-      line2: "OAK LANE",
-      city: "Leeds",
-      postcode: "LS1 1XX"
-    }
-  }
-
-  const minimumDetails: PatientDetails = {
-    nhsNumber: "5900009890",
-    prefix: "Ms",
-    suffix: "",
-    given: "Janet",
-    family: "Piper",
-    gender: null,
-    dateOfBirth: null,
-    address: null
-  }
-
-  const mockSearchResponse: SearchResponse = {
-    patient: mockPatient,
-    currentPrescriptions: [
-      {
-        prescriptionId: "C0C757-A83008-C2D93O",
-        statusCode: PrescriptionStatus.TO_BE_DISPENSED,
-        issueDate: "2025-03-01",
-        prescriptionTreatmentType: TreatmentType.REPEAT,
-        issueNumber: 1,
-        maxRepeats: 5,
-        prescriptionPendingCancellation: false,
-        itemsPendingCancellation: false
-      },
-      {
-        prescriptionId: "B8C9E2-A83008-5F7B3A",
-        statusCode: PrescriptionStatus.WITH_DISPENSER,
-        issueDate: "2025-01-22",
-        prescriptionTreatmentType: TreatmentType.ACUTE,
-        issueNumber: 2,
-        maxRepeats: 3,
-        prescriptionPendingCancellation: false,
-        itemsPendingCancellation: false
-      },
-      {
-        prescriptionId: "4D6F2C-A83008-A3E7D1",
-        statusCode: PrescriptionStatus.WITH_DISPENSER_ACTIVE,
-        issueDate: "2025-03-10",
-        prescriptionTreatmentType: TreatmentType.ERD,
-        issueNumber: 3,
-        maxRepeats: 4,
-        prescriptionPendingCancellation: false,
-        itemsPendingCancellation: true
-      },
-      {
-        prescriptionId: "7F1A4B-A83008-91DC2E",
-        statusCode: PrescriptionStatus.WITH_DISPENSER_ACTIVE,
-        issueDate: "2025-03-11",
-        prescriptionTreatmentType: TreatmentType.ERD,
-        issueNumber: 3,
-        maxRepeats: 4,
-        prescriptionPendingCancellation: false,
-        itemsPendingCancellation: true
-      },
-      {
-        prescriptionId: "88AAF5-A83008-3D404Q",
-        statusCode: PrescriptionStatus.WITH_DISPENSER_ACTIVE,
-        issueDate: "2025-04-10",
-        prescriptionTreatmentType: TreatmentType.ERD,
-        issueNumber: 2,
-        maxRepeats: 4,
-        prescriptionPendingCancellation: false,
-        itemsPendingCancellation: true
-      },
-      {
-        prescriptionId: "209E3D-A83008-327F9F",
-        statusCode: PrescriptionStatus.WITH_DISPENSER_ACTIVE,
-        issueDate: "2024S-03-10",
-        prescriptionTreatmentType: TreatmentType.ERD,
-        issueNumber: 1,
-        maxRepeats: 2,
-        prescriptionPendingCancellation: false,
-        itemsPendingCancellation: false
-      },
-      {
-        prescriptionId: "3DA34A-A83008-A0B2EV",
-        statusCode: PrescriptionStatus.WITH_DISPENSER_ACTIVE,
-        issueDate: "2025-03-10",
-        prescriptionTreatmentType: TreatmentType.ERD,
-        issueNumber: 3,
-        maxRepeats: 4,
-        prescriptionPendingCancellation: false,
-        itemsPendingCancellation: true
-      }
-    ],
-    pastPrescriptions: [
-      {
-        prescriptionId: "RX004",
-        statusCode: PrescriptionStatus.DISPENSED,
-        issueDate: "2025-01-15",
-        prescriptionTreatmentType: TreatmentType.REPEAT,
-        issueNumber: 1,
-        maxRepeats: 2,
-        prescriptionPendingCancellation: false,
-        itemsPendingCancellation: false
-      },
-      {
-        prescriptionId: "RX005",
-        statusCode: PrescriptionStatus.NOT_DISPENSED,
-        issueDate: "2024-12-20",
-        prescriptionTreatmentType: TreatmentType.ACUTE,
-        issueNumber: 1,
-        maxRepeats: 1,
-        prescriptionPendingCancellation: false,
-        itemsPendingCancellation: false
-      }
-    ],
-    futurePrescriptions: [
-      {
-        prescriptionId: "RX006",
-        statusCode: PrescriptionStatus.FUTURE_DATED_PRESCRIPTION,
-        issueDate: "2025-04-01",
-        prescriptionTreatmentType: TreatmentType.REPEAT,
-        issueNumber: 1,
-        maxRepeats: 10,
-        prescriptionPendingCancellation: false,
-        itemsPendingCancellation: false
-      }
-    ]
-  }
-
   const auth = useContext(AuthContext)
   const {setPatientDetails} = usePatientDetails()
 
   const navigate = useNavigate()
   const [queryParams] = useSearchParams()
-
   const [futurePrescriptions, setFuturePrescriptions] = useState<Array<PrescriptionSummary>>([])
   const [pastPrescriptions, setPastPrescriptions] = useState<Array<PrescriptionSummary>>([])
   const [currentPrescriptions, setCurrentPrescriptions] = useState<Array<PrescriptionSummary>>([])
   const [prescriptionCount, setPrescriptionCount] = useState(0)
-
   const [tabData, setTabData] = useState<Array<TabHeader>>([])
   const [backLinkTarget, setBackLinkTarget] = useState<string>(PRESCRIPTION_LIST_PAGE_STRINGS.DEFAULT_BACK_LINK_TARGET)
   const [loading, setLoading] = useState(true)
@@ -195,40 +49,42 @@ export default function PrescriptionListPage() {
         return
       }
 
-      const hasPrescriptionId = !!queryParams.get("prescriptionId")
-      const hasNhsNumber = !!queryParams.get("nhsNumber")
+      const prescriptionId = queryParams.get("prescriptionId")
+      const nhsNumber = queryParams.get("nhsNumber")
 
-      // Local version to prevent a race condition
-      let newBackLinkTarget = backLinkTarget
+      let searchParams = {}
 
       // determine which search page to go back to based on query parameters
-      if (hasPrescriptionId) {
-        newBackLinkTarget = PRESCRIPTION_LIST_PAGE_STRINGS.PRESCRIPTION_ID_SEARCH_TARGET
-        setBackLinkTarget(newBackLinkTarget)
-      } else if (hasNhsNumber) {
-        newBackLinkTarget = PRESCRIPTION_LIST_PAGE_STRINGS.NHS_NUMBER_SEARCH_TARGET
-        setBackLinkTarget(newBackLinkTarget)
-      }
-
-      let searchResults: SearchResponse | undefined
-      let searchValue: string = ""
-
-      if (hasPrescriptionId) {
-        searchValue = queryParams.get("prescriptionId")!
-        searchResults = await searchPrescriptionID(searchValue)
-      }
-
-      if (hasNhsNumber) {
-        searchValue = queryParams.get("nhsNumber")!
-        // Assuming you’ll also refactor searchNhsNumber to be async
-        searchResults = await searchNhsNumber(searchValue)
-      }
-
-      if (!searchResults) {
-        console.error("No search results were returned", searchResults)
+      if (prescriptionId) {
+        setBackLinkTarget(PRESCRIPTION_LIST_PAGE_STRINGS.PRESCRIPTION_ID_SEARCH_TARGET)
+        searchParams = {prescriptionId}
+      } else if (nhsNumber) {
+        setBackLinkTarget(PRESCRIPTION_LIST_PAGE_STRINGS.NHS_NUMBER_SEARCH_TARGET)
+        searchParams = {nhsNumber}
+      } else {
+        console.error("No query parameter provided.")
         navigate(FRONTEND_PATHS.PRESCRIPTION_NOT_FOUND)
         return
       }
+
+      const response = await http.get(API_ENDPOINTS.PRESCRIPTION_LIST, {
+        params: searchParams,
+        headers: {
+          Authorization: `Bearer ${auth?.idToken}`,
+          "X-Correlation-Id": uuidv4()
+        }
+      })
+
+      console.log("Response status", {status: response.status})
+      if (response.status === 404) {
+        console.error("No search results were returned")
+        navigate(FRONTEND_PATHS.PRESCRIPTION_NOT_FOUND)
+        return
+      } else if (response.status !== 200) {
+        throw new Error(`Status Code: ${response.status}`)
+      }
+
+      let searchResults: SearchResponse = response.data
 
       if (
         searchResults.currentPrescriptions.length === 0
@@ -237,19 +93,18 @@ export default function PrescriptionListPage() {
       ) {
         console.error("A patient was returned, but they do not have any prescriptions.", searchResults)
         navigate(FRONTEND_PATHS.PRESCRIPTION_NOT_FOUND)
+        return
       }
 
       setCurrentPrescriptions(searchResults.currentPrescriptions)
       setFuturePrescriptions(searchResults.futurePrescriptions)
       setPastPrescriptions(searchResults.pastPrescriptions)
       setPatientDetails(searchResults.patient)
-
       setPrescriptionCount(
         searchResults.pastPrescriptions.length +
         searchResults.futurePrescriptions.length +
         searchResults.currentPrescriptions.length
       )
-
       setTabData([
         {
           link: PRESCRIPTION_LIST_TABS.current.link(queryParams.toString()),
@@ -267,104 +122,8 @@ export default function PrescriptionListPage() {
     }
 
     setLoading(true)
-    runSearch().finally(() => setLoading(false))
+    runSearch().catch(() => navigate(backLinkTarget)).finally(() => setLoading(false))
   }, [queryParams, auth?.idToken, auth?.isAuthLoading])
-
-  // TODO: This should return the search results. For now, just return true or false for mock stuff.
-  const searchPrescriptionID = async (prescriptionId: string): Promise<SearchResponse | undefined> => {
-    console.log("Searching for prescription ID ", prescriptionId)
-
-    // TODO: Validate ID (if invalid, navigate away)
-    // if (!validatePrescriptionId(prescriptionId)) {
-    //   navigate(backLinkTarget);
-    //   return;
-    // }
-
-    const url = `${API_ENDPOINTS.PRESCRIPTION_LIST}?prescriptionId=${prescriptionId}`
-
-    try {
-      const response = await http.get(url, {
-        headers: {
-          Authorization: `Bearer ${auth?.idToken}`,
-          "NHSD-Session-URID": NHS_REQUEST_URID
-        }
-      })
-
-      console.log("Response status", {status: response.status})
-      if (response.status !== 200) {
-        // Throwing an error here will jump to the catch block.
-        throw new Error(`Status Code: ${response.status}`)
-      }
-
-      const payload: SearchResponse = response.data
-      return payload
-
-    } catch (error) {
-      // FIXME remove references to mock data
-      console.error("Error retrieving prescription details:", error)
-      // Allow known test ID through; otherwise, return false.
-      const fullPrescriptionIds = [
-        "C0C757-A83008-C2D93O",
-        "209E3D-A83008-327F9F",
-        "7F1A4B-A83008-91DC2E",
-        "B8C9E2-A83008-5F7B3A",
-        "4D6F2C-A83008-A3E7D1",
-        "3DA34A-A83008-A0B2EV",
-        "88AAF5-A83008-3D404Q"
-      ]
-      if (fullPrescriptionIds.includes(prescriptionId)) {
-        console.log("Using mock data")
-        const response = {
-          ...mockSearchResponse,
-          patient: mockPatient
-        }
-        return response
-      }
-      if (prescriptionId === "209E3D-A83008-327F9F") {
-        console.log("Using mock data")
-        const response = {
-          ...mockSearchResponse,
-          patient: minimumDetails
-        }
-        // Remove future prescriptions
-        response.futurePrescriptions = []
-        response.pastPrescriptions = []
-        return response
-      }
-    }
-  }
-
-  // TODO: This will need to be implemented later
-  const searchNhsNumber = async (nhsNumber: string): Promise<SearchResponse | undefined> => {
-    console.log("Searching for nhs number:", nhsNumber)
-
-    const url = `${API_ENDPOINTS.PRESCRIPTION_LIST}?nhsNumber=${nhsNumber}`
-
-    try {
-      const response = await http.get(url, {
-        headers: {
-          Authorization: `Bearer ${auth?.idToken}`,
-          "NHSD-Session-URID": NHS_REQUEST_URID
-        }
-      })
-
-      console.log("Response status", {status: response.status})
-      if (response.status !== 200) {
-        // Throwing an error here will jump to the catch block.
-        throw new Error(`Status Code: ${response.status}`)
-      }
-
-      const payload: SearchResponse = response.data
-      return payload
-
-    } catch (error) {
-      if (nhsNumber === "1234567890") {
-        console.error("Failed to fetch. Returning mock data", error)
-        return Promise.resolve(mockSearchResponse)
-      }
-      console.error("Failed to fetch prescription search.", error)
-    }
-  }
 
   if (loading) {
     return (
@@ -379,7 +138,6 @@ export default function PrescriptionListPage() {
       </main>
     )
   }
-
   return (
     <>
       <title>{PRESCRIPTION_LIST_PAGE_STRINGS.PAGE_TITLE}</title>

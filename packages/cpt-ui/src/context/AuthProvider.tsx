@@ -28,7 +28,7 @@ export interface AuthContextType {
   isSignedIn: boolean
   idToken: JWT | null
   accessToken: JWT | null
-  isAuthLoading: boolean
+  isAuthLoading?: boolean
   cognitoSignIn: (input?: SignInWithRedirectInput) => Promise<void>
   cognitoSignOut: () => Promise<void>
 }

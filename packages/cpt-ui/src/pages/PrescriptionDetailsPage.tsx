@@ -30,7 +30,6 @@ import {PrescribedDispensedItemsCards} from "@/components/prescriptionDetails/Pr
 import {MessageHistoryCard} from "@/components/prescriptionDetails/MessageHistoryCard"
 
 import http from "@/helpers/axios"
-import {getMockPayload} from "@/helpers/mockPayload"
 
 export default function PrescriptionDetailsPage() {
   const auth = useContext(AuthContext)
@@ -70,28 +69,15 @@ export default function PrescriptionDetailsPage() {
 
       // Assign response payload or throw if none received
       payload = response.data
+      setLoading(false)
       if (!payload) {
         throw new Error("No payload received from the API")
       }
     } catch (err) {
-      console.error("Failed to fetch prescription details. Using mock data fallback.", err)
-
-      // FIXME: This is a static, mock data fallback we can use in lieu of the real data
-      // backend endpoint, which is still waiting for the auth SNAFU to get sorted out.
-      const mockPayload = getMockPayload(prescriptionId)
-
-      // If no matching mock scenario exists, redirect to 'not found' page and reset state
-      if (!mockPayload) {
-        setPrescriptionInformation(undefined)
-        setPatientDetails(undefined)
-        setPrescriber(undefined)
-        setDispenser(undefined)
-        setNominatedDispenser(undefined)
-        navigate(FRONTEND_PATHS.PRESCRIPTION_NOT_FOUND)
-        return
-      }
-
-      payload = mockPayload
+      console.error("Failed to fetch prescription details", err)
+      // Navigate to prescription not found when API call fails
+      navigate(FRONTEND_PATHS.PRESCRIPTION_NOT_FOUND)
+      return
     }
 
     // Use the populated payload (retrieved live or from mock fallback)
@@ -113,6 +99,8 @@ export default function PrescriptionDetailsPage() {
     } else {
       setNominatedDispenser(payload.nominatedDispenser.organisationSummaryObjective)
     }
+
+    return payload
   }
 
   useEffect(() => {
@@ -137,13 +125,12 @@ export default function PrescriptionDetailsPage() {
       console.log("useEffect triggered for prescription:", prescriptionId)
       setLoading(true)
       await getPrescriptionDetails(prescriptionId)
-      setLoading(false)
     }
 
     runGetPrescriptionDetails()
   }, [queryParams, auth?.idToken, auth?.isAuthLoading])
 
-  if (loading || !prescriber) {
+  if (loading) {
     return (
       <main id="main-content" className="nhsuk-main-wrapper nhsuk-main-wrapper--s">
         <Container width="full" fluid={true} className="container-details-page">
@@ -194,7 +181,7 @@ export default function PrescriptionDetailsPage() {
           {/* Prescriber and dispenser information */}
           <Col width="one-third">
             <SiteDetailsCards
-              prescriber={prescriber}
+              prescriber={prescriber!}
               dispenser={dispenser}
               nominatedDispenser={nominatedDispenser}
             />
