@@ -8,26 +8,16 @@ import {
 import {Link} from "react-router-dom"
 import {FRONTEND_PATHS} from "@/constants/environment"
 import {STRINGS} from "@/constants/ui-strings/SearchResultsTooManyStrings"
-import {formatDobForDisplay} from "@/helpers/formatters"
 
 type SearchResultsTooManyMessageProps = {
   readonly search?: string
 }
 
 export default function SearchResultsTooManyMessage({search = ""}: SearchResultsTooManyMessageProps) {
-  const params = new URLSearchParams(search.startsWith("?") ? search.slice(1) : search)
-
-  const firstName = params.get("firstName") ?? ""
-  const lastName = params.get("lastName") ?? ""
-  const dobDay = params.get("dobDay") ?? ""
-  const dobMonth = params.get("dobMonth") ?? ""
-  const dobYear = params.get("dobYear") ?? ""
-  const postcode = params.get("postcode") ?? ""
-
   return (
     <Container
       className="nhsuk-width-container-fluid patient-search-form-container"
-      data-testid="too-many-results-message"
+      data-testid="too-many-results-container"
     >
       <nav className="nhsuk-breadcrumb nhsuk-u-padding-bottom-0 nhsuk-u-padding-left-2" aria-label="Breadcrumb">
         <Link to={FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS + (search || "")} data-testid="too-many-results-back-link">
@@ -57,17 +47,9 @@ export default function SearchResultsTooManyMessage({search = ""}: SearchResults
                 {STRINGS.heading}
               </h1>
 
-              <p>{STRINGS.intro}</p>
-              <ul data-testid="too-many-results-details-list">
-                {firstName && <li>{STRINGS.firstName} {firstName}</li>}
-                {lastName && <li>{STRINGS.lastName} {lastName}</li>}
-                {(dobDay || dobMonth || dobYear) && (
-                  <li>
-                    {STRINGS.dob} {formatDobForDisplay({dobDay, dobMonth, dobYear})}
-                  </li>
-                )}
-                {postcode && <li>{STRINGS.postcode} {postcode}</li>}
-              </ul>
+              <p id="results-message" data-testid="too-many-results-message">
+                {STRINGS.resultsMessage}
+              </p>
 
               <p id="results-count-text" data-testid="too-many-results-count-text">
                 {STRINGS.retryMessage}

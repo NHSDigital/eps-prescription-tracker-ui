@@ -45,24 +45,12 @@ const renderWithRouter = (
 }
 
 describe("SearchResultsTooManyMessage", () => {
-  it("renders static text content and patient details", () => {
-    renderWithRouter({
-      firstName: "Jane",
-      lastName: "Doe",
-      dobDay: "01",
-      dobMonth: "01",
-      dobYear: "2000",
-      postcode: "XY9 8ZZ"
-    })
-
+  it("renders static text content", () => {
+    renderWithRouter()
     expect(screen.getByTestId("too-many-results-heading")).toHaveTextContent(STRINGS.heading)
+    expect(screen.getByTestId("too-many-results-message")).toHaveTextContent(STRINGS.resultsMessage)
     expect(screen.getByTestId("too-many-results-count-text")).toHaveTextContent(STRINGS.retryMessage)
-
-    const details = screen.getByTestId("too-many-results-details-list")
-    expect(details).toHaveTextContent("First name: Jane")
-    expect(details).toHaveTextContent("Last name: Doe")
-    expect(details).toHaveTextContent("Date of birth: 01-Jan-2000")
-    expect(details).toHaveTextContent("Postcode: XY9 8ZZ")
+    expect(screen.getByTestId("too-many-results-alt-options")).toHaveTextContent(STRINGS.alternativeSearch)
   })
 
   const navigationLinks = [
