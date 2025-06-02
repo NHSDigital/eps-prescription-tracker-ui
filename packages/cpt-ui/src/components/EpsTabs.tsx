@@ -1,6 +1,7 @@
 import React, {useEffect, useCallback} from "react"
 import {Link, useNavigate} from "react-router-dom"
 import {Tabs} from "nhsuk-react-components"
+import "../styles/tabs.scss"
 
 export interface TabHeader {
   title: string;
