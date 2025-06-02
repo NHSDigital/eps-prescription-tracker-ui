@@ -5,7 +5,8 @@ import {
   RequestGroup,
   Patient,
   MedicationRequest,
-  MedicationDispense
+  MedicationDispense,
+  PractitionerRole
 } from "fhir/r4"
 import {Contact, DoHSData, DoHSValue} from "./types"
 import {
@@ -19,7 +20,8 @@ import {
   findExtensionByKey,
   getBooleanFromNestedExtension,
   getIntegerFromNestedExtension,
-  getDisplayFromNestedExtension
+  getDisplayFromNestedExtension,
+  getCodeFromNestedExtension
 } from "./extensionUtils"
 
 /**
@@ -37,7 +39,7 @@ const extractResourcesFromBundle = <T>(bundle: Bundle, resourceType: string): Ar
 const extractDispensedItemsFromMedicationDispenses = (medicationDispenses: Array<MedicationDispense>, medicationRequests: Array<MedicationRequest>) => {
   return medicationDispenses.map(dispense => {
     const businessStatusExt = findExtensionByKey(dispense.extension, "TASK_BUSINESS_STATUS")
-    const epsStatusCode = getDisplayFromNestedExtension(businessStatusExt, "status") ?? dispense.status ?? "unknown"
+    const epsStatusCode = getCodeFromNestedExtension(businessStatusExt, "status") ?? "unknown"
 
     // extract pending cancellation information using the same pattern as prescribed items
     const pendingCancellationExt = findExtensionByKey(dispense.extension, "PENDING_CANCELLATION")
@@ -170,7 +172,7 @@ const extractMessageHistory = (requestGroup: RequestGroup, doHSData: DoHSData) =
       sentDateTime: action.timingDateTime ?? "Unknown",
       organisationName: orgName,
       organisationODS: orgODS ?? "Unknown",
-      newStatusCode: statusCoding?.display ?? statusCoding?.code ?? "Unknown",
+      newStatusCode: statusCoding?.code ?? "Unknown",
       dispenseNotification
     }
   })
@@ -179,27 +181,84 @@ const extractMessageHistory = (requestGroup: RequestGroup, doHSData: DoHSData) =
 /**
  * Creates organization summary from DoHS data
  */
-const createOrganizationSummary = (doHSOrg: DoHSValue | null | undefined, prescribedFrom?: string) => {
-  if (!doHSOrg) return undefined
+const createOrganizationSummary = (doHSOrg: DoHSValue | null | undefined, prescribedFrom?: string, odsCodeFallback?: string) => {
+  // If we have full DoHS data, use it
+  if (doHSOrg) {
+    const telephone = doHSOrg.Contacts?.find((c: Contact) =>
+      c.ContactMethodType === "Telephone"
+    )?.ContactValue ?? "Not found"
 
-  const telephone = doHSOrg.Contacts?.find((c: Contact) =>
-    c.ContactMethodType === "Telephone"
-  )?.ContactValue ?? "Not found"
+    const address = [
+      doHSOrg.Address1,
+      doHSOrg.City,
+      doHSOrg.Postcode
+    ].filter(Boolean).join(", ") ?? "Not found"
 
-  const address = [
-    doHSOrg.Address1,
-    doHSOrg.City,
-    doHSOrg.Postcode
-  ].filter(Boolean).join(", ") ?? "Not found"
+    return {
+      organisationSummaryObjective: {
+        name: doHSOrg.OrganisationName ?? "Not found",
+        odsCode: doHSOrg.ODSCode ?? "Not found",
+        address,
+        telephone,
+        ...(prescribedFrom && {prescribedFrom})
+      }
+    }
+  }
+
+  // If we have an ODS code from FHIR, create a minimal summary
+  if (odsCodeFallback) {
+    return {
+      organisationSummaryObjective: {
+        name: "Not found",
+        odsCode: odsCodeFallback,
+        address: "Not found",
+        telephone: "Not found",
+        ...(prescribedFrom && {prescribedFrom})
+      }
+    }
+  }
+
+  return undefined
+}
+
+/**
+ * Extracts organization codes from FHIR Bundle as fallbacks
+ */
+const extractOrganizationCodes = (
+  bundle: Bundle,
+  requestGroup: RequestGroup,
+  medicationRequests: Array<MedicationRequest>
+) => {
+  // Get prescribing organization from RequestGroup author or PractitionerRole
+  let prescribingODSCode: string | undefined = requestGroup.author?.identifier?.value
+
+  if (!prescribingODSCode) {
+    const practitionerRoles = extractResourcesFromBundle<PractitionerRole>(bundle, "PractitionerRole")
+    prescribingODSCode = practitionerRoles[0]?.organization?.identifier?.value
+  }
+
+  // Get nominated performer from first MedicationRequest
+  const nominatedPerformerODSCode = medicationRequests[0]?.dispenseRequest?.performer?.identifier?.value
+
+  // Get dispensing organizations from message history
+  const dispensingODSCodes: Array<string> = []
+  const historyAction = requestGroup.action?.find(action =>
+    action.title === "Prescription status transitions"
+  )
+
+  if (historyAction?.action) {
+    historyAction.action.forEach(action => {
+      const orgODS = action.participant?.[0]?.extension?.[0]?.valueReference?.identifier?.value
+      if (orgODS && !dispensingODSCodes.includes(orgODS) && orgODS !== prescribingODSCode) {
+        dispensingODSCodes.push(orgODS)
+      }
+    })
+  }
 
   return {
-    organisationSummaryObjective: {
-      name: doHSOrg.OrganisationName ?? "Not found",
-      odsCode: doHSOrg.ODSCode ?? "Not found",
-      address,
-      telephone,
-      ...(prescribedFrom && {prescribedFrom})
-    }
+    prescribingODSCode,
+    nominatedPerformerODSCode,
+    dispensingODSCodes
   }
 }
 
@@ -246,7 +305,6 @@ export const mergePrescriptionDetails = (
   const prescriptionTypeExt = findExtensionByKey(requestGroup.extension, "PRESCRIPTION_TYPE")
   const typeCode = mapCourseOfTherapyType(medicationRequests[0]?.courseOfTherapyType?.coding)
 
-  const statusCode = requestGroup.status ?? "unknown"
   const issueDate = requestGroup.authoredOn ?? "Unknown"
 
   // get repeat information
@@ -267,22 +325,40 @@ export const mergePrescriptionDetails = (
   const dispensedItems = extractDispensedItemsFromMedicationDispenses(medicationDispenses, medicationRequests)
   const messageHistory = extractMessageHistory(requestGroup, doHSData)
 
+  // TODO: extract NHS App status from dispensing information extension
+  // const dispensingInfoExt = findExtensionByKey(dispense.extension, "DISPENSING_INFORMATION")
+
+  const statusCode = messageHistory.length > 0
+    ? messageHistory[messageHistory.length - 1].newStatusCode
+    : requestGroup.status ?? "unknown"
+
+  // Extract organization codes from FHIR as fallbacks
+  const {
+    prescribingODSCode,
+    nominatedPerformerODSCode,
+    dispensingODSCodes
+  } = extractOrganizationCodes(bundle, requestGroup, medicationRequests)
+
   // create organization summaries
   const prescriptionTypeCode = prescriptionTypeExt?.valueCoding?.code ?? "Unknown"
 
   const prescriberOrganisation = createOrganizationSummary(
     doHSData.prescribingOrganization,
-    mapPrescriptionOrigin(prescriptionTypeCode)
+    mapPrescriptionOrigin(prescriptionTypeCode),
+    prescribingODSCode
   )
 
-  // TODO: extract NHS App status from dispensing information extension
-  // const dispensingInfoExt = findExtensionByKey(dispense.extension, "DISPENSING_INFORMATION")
-
-  const nominatedDispenser = createOrganizationSummary(doHSData.nominatedPerformer)
+  const nominatedDispenser = createOrganizationSummary(
+    doHSData.nominatedPerformer,
+    undefined,
+    nominatedPerformerODSCode
+  )
 
   const currentDispenser = doHSData.dispensingOrganizations?.length
     ? createOrganizationSummary(doHSData.dispensingOrganizations[0])
-    : undefined
+    : dispensingODSCodes.length > 0
+      ? createOrganizationSummary(undefined, undefined, dispensingODSCodes[0])
+      : undefined
 
   return {
     patientDetails,

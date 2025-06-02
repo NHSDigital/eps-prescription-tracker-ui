@@ -217,7 +217,7 @@ describe("mapIntentToPrescriptionTreatmentType", () => {
         medicationName: "Medication A",
         quantity: "30",
         dosageInstructions: "Take once daily",
-        epsStatusCode: "active",
+        epsStatusCode: "unknown",
         nhsAppStatus: undefined,
         itemPendingCancellation: false,
         cancellationReason: undefined
@@ -244,7 +244,7 @@ describe("mapIntentToPrescriptionTreatmentType", () => {
         medicationName: "Unknown",
         quantity: "Unknown",
         dosageInstructions: "Unknown",
-        epsStatusCode: "active",
+        epsStatusCode: "unknown",
         nhsAppStatus: undefined,
         itemPendingCancellation: false,
         cancellationReason: undefined
@@ -286,7 +286,7 @@ describe("mapIntentToPrescriptionTreatmentType", () => {
             {
               url: "https://fhir.nhs.uk/StructureDefinition/Extension-EPS-DispensingInformation",
               extension: [
-                {url: "dispenseStatus", valueCoding: {display: "Dispensed"}}
+                {url: "dispenseStatus", valueCoding: {code: "0001", display: "Dispensed"}}
               ]
             }
           ]
@@ -294,7 +294,7 @@ describe("mapIntentToPrescriptionTreatmentType", () => {
       ]
 
       const result = extractPrescribedItems(medicationRequests)
-      expect(result[0].itemDetails.epsStatusCode).toBe("Dispensed")
+      expect(result[0].itemDetails.epsStatusCode).toBe("0001")
     })
   })
 

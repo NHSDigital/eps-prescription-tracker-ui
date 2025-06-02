@@ -104,3 +104,19 @@ export const getDisplayFromNestedExtension = (
   const nestedExt = extension.extension.find(ext => ext.url === subUrl)
   return nestedExt?.valueCoding?.display ?? defaultValue
 }
+
+/**
+ * Extracts a code value from a coding in a nested extension.
+ */
+export const getCodeFromNestedExtension = (
+  extension: Extension | undefined,
+  subUrl: string,
+  defaultValue: string | undefined = undefined
+): string | undefined => {
+  if (!extension || !extension.extension || extension.extension.length === 0) {
+    return defaultValue
+  }
+
+  const nestedExt = extension.extension.find(ext => ext.url === subUrl)
+  return nestedExt?.valueCoding?.code ?? defaultValue
+}

@@ -1,8 +1,13 @@
 /* eslint-disable max-len */
 import {Patient, MedicationRequest, Coding} from "fhir/r4"
 import {PrescriptionIntent} from "./types"
-import {findExtensionByKey, getBooleanFromNestedExtension, getDisplayFromNestedExtension} from "./extensionUtils"
-import { PatientDetails } from "@cpt-ui-common/common-types"
+import {
+  findExtensionByKey,
+  getBooleanFromNestedExtension,
+  getCodeFromNestedExtension,
+  getDisplayFromNestedExtension
+} from "./extensionUtils"
+import {PatientDetails} from "@cpt-ui-common/common-types"
 
 /**
  * Maps the FHIR intent to a user-friendly prescription treatment type display value.
@@ -68,8 +73,8 @@ export const mapCourseOfTherapyType = (coding: Array<Coding> | undefined): strin
  * Determines prescription origin based on prescription type code
  */
 export const mapPrescriptionOrigin = (typeCode: string): string => {
-  if (typeCode.startsWith("01") ?? typeCode.startsWith("1")) return "England"
-  if (typeCode.startsWith("02") ?? typeCode.startsWith("2")) return "Wales"
+  if (typeCode.startsWith("01") || typeCode.startsWith("1")) return "England"
+  if (typeCode.startsWith("02") || typeCode.startsWith("2")) return "Wales"
   return "Unknown"
 }
 
@@ -132,7 +137,7 @@ export const extractPrescribedItems = (medicationRequests: Array<MedicationReque
     const pendingCancellationExt = findExtensionByKey(request.extension, "PENDING_CANCELLATION")
     const dispensingInfoExt = findExtensionByKey(request.extension, "DISPENSING_INFORMATION")
 
-    const epsStatusCode = getDisplayFromNestedExtension(dispensingInfoExt, "dispenseStatus") ?? request.status ?? "unknown"
+    const epsStatusCode = getCodeFromNestedExtension(dispensingInfoExt, "dispenseStatus") ?? "unknown"
 
     return {
       itemDetails: {

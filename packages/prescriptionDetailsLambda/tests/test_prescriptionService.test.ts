@@ -38,10 +38,13 @@ jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => ({
 import {mockAPIGatewayProxyEvent, mockFhirParticipant} from "./mockObjects"
 
 const {
-  extractOdsCodes,
   getDoHSData,
   processPrescriptionRequest
 } = await import("../src/services/prescriptionService")
+
+const {
+  extractOdsCodes
+} = await import("../src/utils/extensionUtils")
 
 describe("prescriptionService", () => {
   let logger: Logger

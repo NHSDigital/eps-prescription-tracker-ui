@@ -79,6 +79,12 @@ describe("mergePrescriptionDetails", () => {
                 subject: {},
                 extension: [
                   {
+                    url: "https://fhir.nhs.uk/StructureDefinition/Extension-EPS-DispensingInformation",
+                    extension: [
+                      {url: "dispenseStatus", valueCoding: {code: "0007", display: "Item to be dispensed"}}
+                    ]
+                  },
+                  {
                     url: "https://fhir.nhs.uk/StructureDefinition/Extension-EPS-PendingCancellations",
                     extension: [
                       {url: "lineItemPendingCancellation", valueBoolean: false},
@@ -95,11 +101,18 @@ describe("mergePrescriptionDetails", () => {
                 status: "completed",
                 extension: [
                   {
+                    url: "https://fhir.nhs.uk/StructureDefinition/Extension-EPS-TaskBusinessStatus",
+                    extension: [
+                      {url: "status", valueCoding: {code: "0001", display: "Item fully dispensed"}}
+                    ]
+                  },
+                  {
                     url: "https://fhir.nhs.uk/StructureDefinition/Extension-DM-PrescriptionNonDispensingReason",
                     valueCoding: {display: "Not available"}
                   }
                 ]
               }
+
             ],
             action: [
               {
@@ -203,7 +216,7 @@ describe("mergePrescriptionDetails", () => {
 
     expect(result.prescriptionId).toBe("RX123")
     expect(result.typeCode).toBe("Acute")
-    expect(result.statusCode).toBe("draft")
+    expect(result.statusCode).toBe("MSG001")
     expect(result.issueDate).toBe("2020-01-01T00:00:00Z")
     expect(result.instanceNumber).toBe(2)
     expect(result.maxRepeats).toBe(5)
@@ -216,7 +229,7 @@ describe("mergePrescriptionDetails", () => {
       medicationName: "Drug A",
       quantity: "30",
       dosageInstructions: "Take one daily",
-      epsStatusCode: "active",
+      epsStatusCode: "0007",
       nhsAppStatus: undefined,
       itemPendingCancellation: false,
       cancellationReason: "None"
@@ -228,7 +241,7 @@ describe("mergePrescriptionDetails", () => {
       medicationName: "Drug B",
       quantity: "20",
       dosageInstructions: "Take two daily",
-      epsStatusCode: "completed",
+      epsStatusCode: "0001",
       nhsAppStatus: undefined,
       itemPendingCancellation: false,
       cancellationReason: undefined,
@@ -243,7 +256,7 @@ describe("mergePrescriptionDetails", () => {
       sentDateTime: "2020-01-02T00:00:00Z",
       organisationName: "Nominated Performer Org",
       organisationODS: "ODS456",
-      newStatusCode: "Sent",
+      newStatusCode: "MSG001",
       dispenseNotification: undefined
     })
 
@@ -527,8 +540,8 @@ describe("mergePrescriptionDetails", () => {
       sentDateTime: "2022-02-03T00:00:00Z",
       organisationName: "Nominated Org",
       organisationODS: "ODS000",
-      newStatusCode: "Dispatched",
-      dispenseNotification: undefined // This has changed based on implementation
+      newStatusCode: "MSG002",
+      dispenseNotification: undefined
     })
   })
 
@@ -607,6 +620,12 @@ describe("mergePrescriptionDetails", () => {
                 subject: {},
                 extension: [
                   {
+                    url: "https://fhir.nhs.uk/StructureDefinition/Extension-EPS-DispensingInformation",
+                    extension: [
+                      {url: "dispenseStatus", valueCoding: {code: "0007", display: "Item to be dispensed"}}
+                    ]
+                  },
+                  {
                     url: "https://fhir.nhs.uk/StructureDefinition/Extension-EPS-PendingCancellations",
                     extension: [
                       {url: "lineItemPendingCancellation", valueBoolean: true},
@@ -625,6 +644,12 @@ describe("mergePrescriptionDetails", () => {
                 subject: {},
                 extension: [
                   {
+                    url: "https://fhir.nhs.uk/StructureDefinition/Extension-EPS-DispensingInformation",
+                    extension: [
+                      {url: "dispenseStatus", valueCoding: {code: "0001", display: "Item fully dispensed"}}
+                    ]
+                  },
+                  {
                     url: "https://fhir.nhs.uk/StructureDefinition/Extension-EPS-PendingCancellations",
                     extension: [
                       {url: "lineItemPendingCancellation", valueBoolean: false},
@@ -641,6 +666,12 @@ describe("mergePrescriptionDetails", () => {
                 status: "completed",
                 extension: [
                   {
+                    url: "https://fhir.nhs.uk/StructureDefinition/Extension-EPS-TaskBusinessStatus",
+                    extension: [
+                      {url: "status", valueCoding: {code: "0001", display: "Item fully dispensed"}}
+                    ]
+                  },
+                  {
                     url: "https://fhir.nhs.uk/StructureDefinition/Extension-DM-PrescriptionNonDispensingReason",
                     valueCoding: {display: "Not available"}
                   }
@@ -653,6 +684,12 @@ describe("mergePrescriptionDetails", () => {
                 dosageInstruction: [{text: "Four times daily"}],
                 status: "in-progress",
                 extension: [
+                  {
+                    url: "https://fhir.nhs.uk/StructureDefinition/Extension-EPS-TaskBusinessStatus",
+                    extension: [
+                      {url: "status", valueCoding: {code: "0003", display: "Item dispensed - partial"}}
+                    ]
+                  },
                   {
                     url: "https://fhir.nhs.uk/StructureDefinition/Extension-DM-PrescriptionNonDispensingReason",
                     valueCoding: {display: "Unavailable"}
@@ -672,8 +709,8 @@ describe("mergePrescriptionDetails", () => {
       medicationName: "Drug X",
       quantity: "10",
       dosageInstructions: "Once daily",
-      epsStatusCode: "active",
-      nhsAppStatus: undefined, // This is undefined in implementation
+      epsStatusCode: "0007",
+      nhsAppStatus: undefined,
       itemPendingCancellation: true,
       cancellationReason: "Reason X"
     })
@@ -681,8 +718,8 @@ describe("mergePrescriptionDetails", () => {
       medicationName: "Drug Y",
       quantity: "20",
       dosageInstructions: "Twice daily",
-      epsStatusCode: "completed",
-      nhsAppStatus: undefined, // This is undefined in implementation
+      epsStatusCode: "0001",
+      nhsAppStatus: undefined,
       itemPendingCancellation: false,
       cancellationReason: "None"
     })
@@ -692,7 +729,7 @@ describe("mergePrescriptionDetails", () => {
       medicationName: "Drug Z",
       quantity: "15",
       dosageInstructions: "Three times daily",
-      epsStatusCode: "completed",
+      epsStatusCode: "0001",
       nhsAppStatus: undefined,
       itemPendingCancellation: false,
       cancellationReason: undefined,
@@ -703,13 +740,14 @@ describe("mergePrescriptionDetails", () => {
       medicationName: "Drug W",
       quantity: "25",
       dosageInstructions: "Four times daily",
-      epsStatusCode: "in-progress",
+      epsStatusCode: "0003",
       nhsAppStatus: undefined,
       itemPendingCancellation: false,
       cancellationReason: undefined,
       notDispensedReason: "Unavailable",
       initiallyPrescribed: undefined
     })
+
   })
 
   it("should handle different typeCode values for prescriber organisation mapping", () => {
@@ -852,7 +890,7 @@ describe("mergePrescriptionDetails", () => {
       medicationName: "Unknown",
       quantity: "Unknown",
       dosageInstructions: "Unknown",
-      epsStatusCode: "on-hold",
+      epsStatusCode: "unknown",
       nhsAppStatus: undefined,
       itemPendingCancellation: false,
       cancellationReason: undefined
@@ -863,7 +901,7 @@ describe("mergePrescriptionDetails", () => {
       medicationName: "Unknown",
       quantity: "Unknown",
       dosageInstructions: "Unknown",
-      epsStatusCode: "entered-in-error",
+      epsStatusCode: "unknown",
       nhsAppStatus: undefined,
       itemPendingCancellation: false,
       cancellationReason: undefined,
