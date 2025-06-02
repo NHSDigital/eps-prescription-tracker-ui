@@ -18,6 +18,7 @@ export function PATIENT_DETAILS_PATH(
 }
 
 export function encodeQueryString(queryString: string): string {
-  return encodeURIComponent(queryString)
+  return queryString
     .replace("*", "%2A")
+    .replace(" ", "%20")
 }
