@@ -1,5 +1,3 @@
-import {encodeQueryString} from "../utils"
-
 enum NameFromStringOutcomeType {
   OK = "OK",
   // 35 character limit
@@ -31,8 +29,8 @@ class Name {
     return {type: NameFromStringOutcomeType.OK, Name: new Name(name)}
   }
 
-  public to_query_string(): string {
-    return encodeQueryString(this.name)
+  public to_string(): string {
+    return this.name
   }
 }
 
