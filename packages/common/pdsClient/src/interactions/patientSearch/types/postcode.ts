@@ -1,5 +1,3 @@
-import {encodeQueryString} from "../utils"
-
 enum PostcodeFromStringOutcomeType {
   OK = "OK",
   // Cannot use wildcards in first 2 characters
@@ -24,8 +22,8 @@ class Postcode {
     return {type: PostcodeFromStringOutcomeType.OK, postcode: new Postcode(postcode)}
   }
 
-  public to_query_string(): string {
-    return encodeQueryString(this.postcode)
+  public to_string(): string {
+    return this.postcode
   }
 }
 

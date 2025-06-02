@@ -11,7 +11,7 @@ describe("DateOfBirthFromString Tests", () => {
     const _dateOfBirth = DateOfBirth.from_string("1990-01-01")
 
     expect(_dateOfBirth.type).toBe(OutcomeType.OK)
-    expect((_dateOfBirth as any).dateOfBirth.to_query_string()).toBe("1990-01-01")
+    expect((_dateOfBirth as any).dateOfBirth.to_string()).toBe("1990-01-01")
   })
 
   it("Should return an error when date of birth is not correctly formatted", () => {

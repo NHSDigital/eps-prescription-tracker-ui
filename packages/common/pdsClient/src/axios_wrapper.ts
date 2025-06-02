@@ -17,12 +17,14 @@ async function axios_get(
   url: URL,
   additionalLogParams: Record<string, string> = {}
 ): Promise<AxiosCallOutcome> {
+  const callUrl = url.toString().replaceAll("*", "%2A")
+
   const startTime = Date.now()
-  client.logger.info("Performing get from PDS", {url, ...additionalLogParams})
+  client.logger.info("Performing get from PDS", {url: callUrl, ...additionalLogParams})
 
   let response
   try {
-    response = await client.axiosInstance.get(url.toString(), {headers: client.headers()})
+    response = await client.axiosInstance.get(callUrl, {headers: client.headers()})
   } catch (error) {
     return {type: AxiosCallOutcomeType.ERROR, error, timeMs: Date.now() - startTime}
   }

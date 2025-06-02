@@ -11,14 +11,7 @@ describe("NameFromString Tests", () => {
     const _Name = Name.from_string("Doe")
 
     expect(_Name.type).toBe(OutcomeType.OK)
-    expect((_Name as any).Name.to_query_string()).toBe("Doe")
-  })
-
-  it("Should url encode spaces and wildcards", () => {
-    const _Name = Name.from_string("Sm*th Doe")
-
-    expect(_Name.type).toBe(OutcomeType.OK)
-    expect((_Name as any).Name.to_query_string()).toBe("Sm%2Ath%20Doe")
+    expect((_Name as any).Name.to_string()).toBe("Doe")
   })
 
   it("Should return an error when name is too long", () => {

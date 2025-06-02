@@ -12,14 +12,7 @@ describe("PostCodeFromString Tests", () => {
     const _postcode = Postcode.from_string("AB12 3CD")
 
     expect(_postcode.type).toBe(OutcomeType.OK)
-    expect((_postcode as any).postcode.to_query_string()).toBe("AB12%203CD")
-  })
-
-  it("Should url encode spaces and wildcards", () => {
-    const _postcode = Postcode.from_string("AB*2 3CD")
-
-    expect(_postcode.type).toBe(OutcomeType.OK)
-    expect((_postcode as any).postcode.to_query_string()).toBe("AB%2A2%203CD")
+    expect((_postcode as any).postcode.to_string()).toBe("AB12 3CD")
   })
 
   it("Should return an error when postcode starts with a wildcard", () => {
