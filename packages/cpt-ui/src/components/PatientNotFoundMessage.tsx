@@ -20,9 +20,12 @@ export default function PatientNotFoundMessage({search = ""}: PatientNotFoundMes
       data-testid="patient-not-found-message"
     >
       <nav className="nhsuk-breadcrumb nhsuk-u-padding-bottom-0 nhsuk-u-padding-left-2" aria-label="Breadcrumb">
-        <Link to={FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS + (search || "")} data-testid="patient-not-found-back-link">
-          <BackLink data-testid="go-back-link">{STRINGS.goBackLink}</BackLink>
-        </Link>
+        <BackLink
+          data-testid="go-back-link"
+          asElement={Link}
+          to={FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS + (search || "")}>
+          {STRINGS.goBackLink}
+        </BackLink>
       </nav>
       <main
         className="nhsuk-main-wrapper nhsuk-main-wrapper--s patient-not-found-main-wrapper"
