@@ -49,6 +49,7 @@ export const prescriptionStatusMap: Record<string, StatusMetadata> = {
   "9000": {color: "aqua-green", label: STATUS_LABELS.prescription["9000"]},
   "9001": {color: "blue", label: STATUS_LABELS.prescription["9001"]},
   "9005": {color: "red", label: STATUS_LABELS.prescription["9005"]}
+
 }
 
 // --- Item-Level Status Codes ---
