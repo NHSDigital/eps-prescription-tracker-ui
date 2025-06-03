@@ -1,7 +1,7 @@
 import {App, Aspects, Tags} from "aws-cdk-lib"
 import {AwsSolutionsChecks} from "cdk-nag"
 
-import {addCfnGuardMetadata} from "./utils/appUtils"
+import {addCfnGuardMetadata, addCustomLogGroupCfnGuardMetadata} from "./utils/appUtils"
 import {UsCertsStack} from "../stacks/UsCertsStack"
 import {StatefulResourcesStack} from "../stacks/StatefulResourcesStack"
 import fs from "fs"
@@ -77,6 +77,7 @@ addCfnGuardMetadata(UsCerts, "Custom::CrossRegionExportWriterCustomResourceProvi
 addCfnGuardMetadata(StatefulResources, "Custom::S3AutoDeleteObjectsCustomResourceProvider", "Handler")
 addCfnGuardMetadata(StatefulResources, "Custom::CrossRegionExportReaderCustomResourceProvider", "Handler")
 addCfnGuardMetadata(StatefulResources, "AWS679f53fac002430cb0da5b7982bd2287", "Resource")
+addCustomLogGroupCfnGuardMetadata(StatefulResources, "AWS679f53fac002430cb0da5b7982bd2287", "Resource")
 
 // finally run synth again with force to include the added metadata
 app.synth({
