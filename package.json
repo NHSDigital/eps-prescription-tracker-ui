@@ -24,8 +24,11 @@
         "packages/cdk",
         "packages/cognito",
         "packages/prescriptionListLambda",
+        "packages/patientSearchLambda",
         "packages/common/middyErrorHandler",
+        "packages/common/pdsClient",
         "packages/common/testing",
+        "packages/common/lambdaUtils",
         "packages/common/authFunctions",
         "packages/common/dynamoFunctions",
         "packages/auth_demo",
@@ -58,7 +61,7 @@
         "ts-jest": "^29.3.4",
         "ts-node": "^10.9.2",
         "typescript": "^5.8.3",
-        "typescript-eslint": "^8.33.0"
+        "typescript-eslint": "^8.33.1"
     },
     "dependencies": {
         "conventional-changelog-eslint": "^6.0.0",

@@ -2,19 +2,31 @@
   "extends": "../../tsconfig.defaults.json",
   "compilerOptions": {
     "rootDir": ".",
-    "outDir": "lib"
+    "outDir": "lib",
+    "strict": true
   },
-  "include": ["src/**/*", "tests/**/*"],
-  "exclude": ["node_modules"],
+  "include": [
+    "src/**/*",
+    "tests/**/*"
+  ],
+  "exclude": [
+    "node_modules"
+  ],
   "references": [
     {
       "path": "../common/commonTypes"
+    },
+    {
+      "path": "../common/pdsClient"
     },
     {
       "path": "../common/authFunctions"
     },
     {
       "path": "../common/middyErrorHandler"
+    },
+    {
+      "path": "../common/lambdaUtils"
     },
     {
       "path": "../common/dynamoFunctions"
