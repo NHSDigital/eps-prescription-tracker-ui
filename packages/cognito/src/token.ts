@@ -14,8 +14,9 @@ import {PrivateKey} from "jsonwebtoken"
 
 import {verifyIdToken, initializeOidcConfig} from "@cpt-ui-common/authFunctions"
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
+import {headers} from "@cpt-ui-common/lambdaUtils"
 
-import {formatHeaders, rewriteRequestBody} from "./helpers"
+import {rewriteRequestBody} from "./helpers"
 import {insertTokenMapping} from "@cpt-ui-common/dynamoFunctions"
 /*
 This is the lambda code that is used to intercept calls to token endpoint as part of the cognito login flow
@@ -106,13 +107,13 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     tokenResponse = await axiosInstance.post(idpTokenPath,
       stringify(rewrittenObjectBodyParameters)
     )
-  } catch(e) {
+  } catch (e) {
     if (isAxiosError(e)) {
       if (e.response) {
         logger.error("error calling idp - response", {e, response: e.response})
       }
     }
-    throw(e)
+    throw (e)
   }
 
   logger.debug("response from external oidc", {data: tokenResponse.data})
@@ -141,7 +142,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   return {
     statusCode: tokenResponse.status,
     body: JSON.stringify(tokenResponse.data),
-    headers: formatHeaders(tokenResponse.headers)
+    headers: headers.formatHeaders(tokenResponse.headers)
   }
 }
 
