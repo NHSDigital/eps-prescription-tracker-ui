@@ -18,6 +18,25 @@ jest.mock("@/helpers/axios")
 const mockedAxios = axios as jest.Mocked<typeof axios>
 
 import PrescriptionListPage from "@/pages/PrescriptionListPage"
+import {AuthContextType, AuthContext} from "@/context/AuthProvider"
+import {JWT} from "aws-amplify/auth"
+
+const mockCognitoSignIn = jest.fn()
+const mockCognitoSignOut = jest.fn()
+
+const signedInAuthState: AuthContextType = {
+  isSignedIn: true,
+  user: {
+    username: "testUser",
+    userId: "test-user-id"
+  },
+  error: null,
+  idToken: {toString: () => "mockIdToken"} as unknown as JWT,
+  accessToken: {toString: () => "mockAccessToken"} as unknown as JWT,
+  isAuthLoading: false,
+  cognitoSignIn: mockCognitoSignIn,
+  cognitoSignOut: mockCognitoSignOut
+}
 
 const mockSearchResponse: SearchResponse = {
   patient: {
@@ -113,19 +132,21 @@ function Dummy404() {
   )
 }
 
-const renderWithRouter = (route: string) => {
+const renderWithRouter = (route: string, authState: AuthContextType = signedInAuthState) => {
   return render(
-    <MockPatientDetailsProvider>
-      <MemoryRouter initialEntries={[route]}>
-        <Routes>
-          <Route path="*" element={<Dummy404 />} />
-          <Route path={FRONTEND_PATHS.PRESCRIPTION_NOT_FOUND} element={<Dummy404 />} />
-          <Route path={FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT} element={<PrescriptionListPage />} />
-          <Route path={FRONTEND_PATHS.PRESCRIPTION_LIST_PAST} element={<PrescriptionListPage />} />
-          <Route path={FRONTEND_PATHS.PRESCRIPTION_LIST_FUTURE} element={<PrescriptionListPage />} />
-        </Routes>
-      </MemoryRouter>
-    </MockPatientDetailsProvider>
+    <AuthContext.Provider value={authState}>
+      <MockPatientDetailsProvider>
+        <MemoryRouter initialEntries={[route]}>
+          <Routes>
+            <Route path="*" element={<Dummy404 />} />
+            <Route path={FRONTEND_PATHS.PRESCRIPTION_NOT_FOUND} element={<Dummy404 />} />
+            <Route path={FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT} element={<PrescriptionListPage />} />
+            <Route path={FRONTEND_PATHS.PRESCRIPTION_LIST_PAST} element={<PrescriptionListPage />} />
+            <Route path={FRONTEND_PATHS.PRESCRIPTION_LIST_FUTURE} element={<PrescriptionListPage />} />
+          </Routes>
+        </MemoryRouter>
+      </MockPatientDetailsProvider>
+    </AuthContext.Provider>
   )
 }
 
@@ -135,8 +156,8 @@ describe("PrescriptionListPage", () => {
   })
 
   it("renders the loading spinner before the request resolves", () => {
-  // Create a pending promise that never resolves.
-    const pendingPromise = new Promise(() => {})
+    // Create a pending promise that never resolves.
+    const pendingPromise = new Promise(() => { })
     mockedAxios.get.mockReturnValue(pendingPromise)
 
     renderWithRouter(
