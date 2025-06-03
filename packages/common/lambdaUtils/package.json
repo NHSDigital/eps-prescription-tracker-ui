@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "@aws-lambda-powertools/logger": "^2.18.0",
-    "@aws-lambda-powertools/commons": "^2.12.0"
+    "@aws-lambda-powertools/commons": "^2.21.0"
   },
   "devDependencies": {}
 }
