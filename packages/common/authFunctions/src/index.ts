@@ -8,7 +8,12 @@ import {
   decodeToken
 } from "./cis2"
 
-import {constructSignedJWTBody, exchangeTokenForApigeeAccessToken, refreshApigeeAccessToken} from "./apigee"
+import {
+  constructSignedJWTBody,
+  exchangeTokenForApigeeAccessToken,
+  refreshApigeeAccessToken,
+  buildApigeeHeaders
+} from "./apigee"
 
 import {authenticateRequest, AuthenticateRequestOptions} from "./authenticateRequest"
 
@@ -22,6 +27,7 @@ export {
   initializeOidcConfig,
   decodeToken,
   refreshApigeeAccessToken,
+  buildApigeeHeaders,
   authenticateRequest,
   AuthenticateRequestOptions
 }
