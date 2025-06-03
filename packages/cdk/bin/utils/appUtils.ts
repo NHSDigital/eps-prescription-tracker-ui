@@ -35,24 +35,3 @@ export const addCfnGuardMetadata = (stack: Stack, path: string, childPath: strin
     )
   }
 }
-
-export const addCustomLogGroupCfnGuardMetadata = (stack: Stack, path: string, childPath: string) => {
-  const provider = stack.node.tryFindChild(path)
-  if (provider === undefined) {
-    return
-  }
-  const logGroup = provider.node.tryFindChild("LogGroup") as CfnResource
-  const resource = logGroup.node.tryFindChild(childPath) as CfnResource
-  if (resource !== undefined) {
-    resource.cfnOptions.metadata = (
-      {
-        ...resource.cfnOptions.metadata,
-        guard: {
-          SuppressedRules: [
-            "CLOUDWATCH_LOG_GROUP_ENCRYPTED"
-          ]
-        }
-      }
-    )
-  }
-}
