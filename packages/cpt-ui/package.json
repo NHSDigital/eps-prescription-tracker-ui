@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "aws-amplify": "^6.15.0",
-    "aws-rum-web": "^1.23.0",
+    "aws-rum-web": "^1.24.0",
     "axios": "^1.9.0",
     "i18next": "^25.2.1",
     "i18next-browser-languagedetector": "^8.1.0",
