@@ -184,6 +184,14 @@ APIGEE_API_SECRET=$(echo "$CF_LONDON_EXPORTS" | \
     jq \
     --arg EXPORT_NAME "${SERVICE_NAME}-stateless-resources:local:apigeeApiSecret" \
     -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+APIGEE_PTL_DOHS_API_KEY=$(echo "$CF_LONDON_EXPORTS" | \
+    jq \
+    --arg EXPORT_NAME "${SERVICE_NAME}-stateless-resources:local:apigeePtlDoHSApiKey" \
+    -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+APIGEE_DOHS_ENDPOINT=$(echo "$CF_LONDON_EXPORTS" | \
+    jq \
+    --arg EXPORT_NAME "${SERVICE_NAME}-stateless-resources:local:apigeeDoHSEndpoint" \
+    -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
 APIGEE_CIS2_TOKEN_ENDPOINT=$(echo "$CF_LONDON_EXPORTS" | \
     jq \
     --arg EXPORT_NAME "${SERVICE_NAME}-stateless-resources:local:apigeeCIS2TokenEndpoint" \
@@ -273,10 +281,12 @@ export USE_CUSTOM_COGNITO_DOMAIN
 export ALLOW_LOCALHOST_ACCESS
 export APIGEE_API_KEY
 export APIGEE_API_SECRET
+export APIGEE_PTL_DOHS_API_KEY
 export APIGEE_CIS2_TOKEN_ENDPOINT
 export APIGEE_MOCK_TOKEN_ENDPOINT
 export APIGEE_PRESCRIPTION_ENDPOINT
 export APIGEE_PERSONAL_DEMOGRAPHICS_ENDPOINT
+export APIGEE_DOHS_ENDPOINT
 export JWT_KID
 export ROLE_ID
 
