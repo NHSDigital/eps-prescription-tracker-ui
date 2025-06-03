@@ -52,7 +52,7 @@ export const getMockPayload = (prescriptionId: string): PrescriptionDetailsRespo
       nominatedDispenser: undefined,
       currentDispenser: undefined
     },
-    "7F1A4B-A83008-91DC2E": {
+    "3F885D-A83008-900ACJ": {
       ...mockPrescriptionInformationErd,
       prescriptionId,
       prescribedItems: mockPrescribedItemsCancellation,
@@ -61,14 +61,14 @@ export const getMockPayload = (prescriptionId: string): PrescriptionDetailsRespo
       nominatedDispenser: undefined,
       currentDispenser: [{organisationSummaryObjective: mockDispenser}]
     },
-    "B8C9E2-A83008-5F7B3A": {
+    "04E5F7-A83008-D71BCQ": {
       prescribedItems: [],
       dispensedItems: mockDispensedPartialWithInitial,
       prescriberOrganisation: {organisationSummaryObjective: altMockPrescriber},
       nominatedDispenser: {organisationSummaryObjective: altMockNominatedDispenser},
       currentDispenser: [{organisationSummaryObjective: mockDispenser}]
     },
-    "4D6F2C-A83008-A3E7D1": {
+    "15023D-A83008-298451": {
       dispensedItems: mockDispensedItemsNoPharmacyStatus,
       messageHistory: mockMessageHistoryDispenseNotifInfo,
       prescriberOrganisation: {organisationSummaryObjective: mockPrescriber},
