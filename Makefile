@@ -19,10 +19,12 @@ install-hooks: install-python
 
 compile-node:
 	npm run compile --workspace packages/common/commonTypes
+	npm run compile --workspace packages/common/lambdaUtils
 	npm run compile --workspace packages/common/middyErrorHandler
 	npm run compile --workspace packages/common/dynamoFunctions
 	npm run compile --workspace packages/common/authFunctions
 	npm run compile --workspace packages/common/doHSClient
+	npm run compile --workspace packages/common/pdsClient
 	npx tsc --build tsconfig.build.json
 
 compile: compile-node
@@ -34,8 +36,11 @@ lint-node: compile-node
 	npm run lint --workspace packages/cognito
 	npm run lint --workspace packages/prescriptionListLambda
 	npm run lint --workspace packages/prescriptionDetailsLambda
+	npm run lint --workspace packages/patientSearchLambda
 	npm run lint --workspace packages/common/testing
 	npm run lint --workspace packages/common/middyErrorHandler
+	npm run lint --workspace packages/common/pdsClient
+	npm run lint --workspace packages/common/lambdaUtils
 	npm run lint --workspace packages/trackerUserInfoLambda
 	npm run lint --workspace packages/selectedRoleLambda
 	npm run lint --workspace packages/CIS2SignOutLambda
@@ -58,7 +63,10 @@ test: compile
 	npm run test --workspace packages/cognito
 	npm run test --workspace packages/prescriptionListLambda
 	npm run test --workspace packages/prescriptionDetailsLambda
+	npm run test --workspace packages/patientSearchLambda
 	npm run test --workspace packages/common/middyErrorHandler
+	npm run test --workspace packages/common/pdsClient
+	npm run test --workspace packages/common/lambdaUtils
 	npm run test --workspace packages/trackerUserInfoLambda
 	npm run test --workspace packages/selectedRoleLambda
 	npm run test --workspace packages/CIS2SignOutLambda
@@ -79,8 +87,14 @@ clean:
 	rm -rf packages/prescriptionListLambda/lib
 	rm -rf packages/prescriptionDetailsLambda/coverage
 	rm -rf packages/prescriptionDetailsLambda/lib
+	rm -rf packages/patientSearchLambda/coverage
+	rm -rf packages/patientSearchLambda/lib
 	rm -rf packages/common/middyErrorHandler/coverage
 	rm -rf packages/common/middyErrorHandler/lib
+	rm -rf packages/common/pdsClient/coverage
+	rm -rf packages/common/pdsClient/lib
+	rm -rf packages/common/lambdaUtils/coverage
+	rm -rf packages/common/lambdaUtils/lib
 	rm -rf cdk.out
 	rm -rf packages/cpt-ui/.next
 	rm -rf packages/auth_demo/build
@@ -118,6 +132,7 @@ check-licenses-node:
 	npm run check-licenses --workspace packages/cognito
 	npm run check-licenses --workspace packages/prescriptionListLambda
 	npm run check-licenses --workspace packages/prescriptionDetailsLambda
+	npm run check-licenses --workspace packages/patientSearchLambda
 	npm run check-licenses --workspace packages/trackerUserInfoLambda
 	npm run check-licenses --workspace packages/selectedRoleLambda
 	npm run check-licenses --workspace packages/CIS2SignOutLambda

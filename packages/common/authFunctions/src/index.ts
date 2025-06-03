@@ -15,7 +15,7 @@ import {
   buildApigeeHeaders
 } from "./apigee"
 
-import {authenticateRequest} from "./authenticateRequest"
+import {authenticateRequest, AuthenticateRequestOptions} from "./authenticateRequest"
 
 export {
   getUsernameFromEvent,
@@ -28,5 +28,6 @@ export {
   decodeToken,
   refreshApigeeAccessToken,
   buildApigeeHeaders,
-  authenticateRequest
+  authenticateRequest,
+  AuthenticateRequestOptions
 }

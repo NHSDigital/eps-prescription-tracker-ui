@@ -54,6 +54,7 @@ export class ApiFunctions extends Construct {
   public readonly prescriptionDetailsLambda: NodejsFunction
   public readonly trackerUserInfoLambda: NodejsFunction
   public readonly selectedRoleLambda: NodejsFunction
+  public readonly patientSearchLambda: NodejsFunction
   public readonly primaryJwtPrivateKey: Secret
 
   public constructor(scope: Construct, id: string, props: ApiFunctionsProps) {
@@ -194,6 +195,32 @@ export class ApiFunctions extends Construct {
     // Add the policy to apiFunctionsPolicies
     apiFunctionsPolicies.push(prescriptionListLambda.executeLambdaManagedPolicy)
 
+    const patientSearchLambda = new LambdaFunction(this, "PatientSearch", {
+      serviceName: props.serviceName,
+      stackName: props.stackName,
+      lambdaName: `${props.stackName}-patientSearch`,
+      additionalPolicies: [
+        props.tokenMappingTableWritePolicy,
+        props.tokenMappingTableReadPolicy,
+        props.useTokensMappingKmsKeyPolicy,
+        props.sharedSecrets.useJwtKmsKeyPolicy,
+        props.sharedSecrets.getPrimaryJwtPrivateKeyPolicy
+      ],
+      logRetentionInDays: props.logRetentionInDays,
+      logLevel: props.logLevel,
+      packageBasePath: "packages/patientSearchLambda",
+      entryPoint: "src/index.ts",
+      lambdaEnvironmentVariables: {
+        ...commonLambdaEnv,
+        TokenMappingTableName: props.tokenMappingTable.tableName,
+        jwtPrivateKeyArn: props.sharedSecrets.primaryJwtPrivateKey.secretArn,
+        apigeeCIS2TokenEndpoint: props.apigeeCIS2TokenEndpoint,
+        apigeeMockTokenEndpoint: props.apigeeMockTokenEndpoint,
+        apigeePersonalDemographicsEndpoint: props.apigeePersonalDemographicsEndpoint,
+        jwtKid: props.jwtKid
+      }
+    })
+
     // const apiFunctionsPolicies: Array<IManagedPolicy> = [
     //   trackerUserInfoLambda.executeLambdaManagedPolicy,
     //   prescriptionListLambda.executeLambdaManagedPolicy
@@ -249,5 +276,6 @@ export class ApiFunctions extends Construct {
     this.prescriptionDetailsLambda = prescriptionDetailsLambda.lambda
     this.trackerUserInfoLambda = trackerUserInfoLambda.lambda
     this.selectedRoleLambda = selectedRoleLambda.lambda
+    this.patientSearchLambda = patientSearchLambda.lambda
   }
 }

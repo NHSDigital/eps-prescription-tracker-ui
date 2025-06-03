@@ -45,13 +45,25 @@
         "path": "../packages/selectedRoleLambda"
       },
       {
+        "name": "packages/patientSearchLambda",
+        "path": "../packages/patientSearchLambda"
+      },
+      {
         "name": "packages/common/middyErrorHandler",
         "path": "../packages/common/middyErrorHandler"
+      },
+      {
+        "name": "packages/common/pdsClient",
+        "path": "../packages/common/pdsClient"
       },
       {
         "name": "packages/common/commonTypes",
         "path": "../packages/common/commonTypes"
       },
+      {
+        "name": "packages/common/lambdaUtils",
+        "path": "../packages/common/lambdaUtils"
+      }
       {
         "name": "packages/common/testing",
         "path": "../packages/common/testing"
@@ -177,6 +189,7 @@
       "eslint.useFlatConfig": true,
       "eslint.format.enable": true,
       "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+      "editor.tabSize": 2,
       "[typescriptreact]": {
         "editor.defaultFormatter": "dbaeumer.vscode-eslint"
       },
