@@ -15,5 +15,10 @@
   },
   "dependencies": {
     "@aws-lambda-powertools/logger": "^2.18.0"
+  },
+  "devDependencies": {
+    "@cpt-ui-common/common-types": "^1.0.0",
+    "@cpt-ui-common/pdsClient": "^1.0.0",
+    "axios": "^1.9.0"
   }
 }

@@ -15,15 +15,17 @@ declare -a arr=("auth_demo"
                 "common/dynamoFunctions"
                 "common/commonTypes"
                 "selectedRoleLambda"
-                "staticContent"
                 "trackerUserInfoLambda"
                 )
 
 for i in "${arr[@]}"
 do
+   echo
+   echo "*********************************************"
    echo "$i"
    cd "packages/$i"
    npx depcheck
    cd -
+   echo
    # or do whatever with individual element of the array
 done
