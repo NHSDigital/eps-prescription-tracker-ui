@@ -4,7 +4,7 @@ import {AxiosResponseHeaders, RawAxiosResponseHeaders} from "axios"
  * Formats Axios headers to ensure values are stringified
  * @param headers - Axios response headers
  * @returns Formatted headers
- */
+*/
 export function formatHeaders(
   headers: AxiosResponseHeaders | Partial<RawAxiosResponseHeaders>
 ): {[header: string]: string} {
