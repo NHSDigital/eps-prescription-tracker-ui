@@ -225,10 +225,9 @@ if __name__ == "__main__":
     if job_status != "success":
         if arguments.pr_label:
             pr_label = arguments.pr_label.lower()
-        if "pr-" in pr_label:
             env = f"PULL-REQUEST/{pr_label}"
         else:
-            env = ENVIRONMENT_NAMES[arguments.env].upper()
+            env = arguments.env.upper()
         print("The regressions test step failed! There are likely test failures.")
         print(f"See {GITHUB_RUN_URL}/{workflow_id}/ for run details)")
         print(f"See https://nhsdigital.github.io/eps-test-reports/{arguments.product}/{env}/ for allure report")

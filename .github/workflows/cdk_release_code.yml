@@ -58,6 +58,8 @@ on:
         type: string
       APIGEE_PDS_ENDPOINT:
         type: string
+      APIGEE_DOHS_ENDPOINT:
+        type: string
       JWT_KID:
         type: string
       ROLE_ID:
@@ -76,6 +78,8 @@ on:
       APIGEE_API_KEY:
         required: false
       APIGEE_API_SECRET:
+        required: false
+      APIGEE_PTL_DOHS_API_KEY:
         required: false
 jobs:
   release_code:
@@ -167,8 +171,10 @@ jobs:
           APIGEE_MOCK_TOKEN_ENDPOINT: ${{ inputs.APIGEE_MOCK_TOKEN_ENDPOINT }}
           APIGEE_PRESCRIPTION_ENDPOINT: ${{ inputs.APIGEE_PRESCRIPTIONS_ENDPOINT }}
           APIGEE_PERSONAL_DEMOGRAPHICS_ENDPOINT: ${{ inputs.APIGEE_PDS_ENDPOINT }}
+          APIGEE_DOHS_ENDPOINT: ${{ inputs.APIGEE_DOHS_ENDPOINT }}
           APIGEE_API_KEY: ${{ secrets.APIGEE_API_KEY }}
           APIGEE_API_SECRET: ${{ secrets.APIGEE_API_SECRET }}
+          APIGEE_PTL_DOHS_API_KEY: ${{ secrets.APIGEE_PTL_DOHS_API_KEY }}
           JWT_KID: ${{ inputs.JWT_KID }}
           ROLE_ID: ${{ inputs.ROLE_ID }}
           CDK_APP_NAME: ${{ inputs.CDK_APP_NAME }}

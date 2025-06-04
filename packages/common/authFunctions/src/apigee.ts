@@ -6,6 +6,22 @@ import {ParsedUrlQuery, stringify} from "querystring"
 import {handleAxiosError} from "./errorUtils"
 
 /**
+ * Build the headers needed for the Apigee request.
+ */
+export function buildApigeeHeaders(apigeeAccessToken: string, roleId: string, orgCode: string,
+  correlationId: string): Record<string, string> {
+  return {
+    Authorization: `Bearer ${apigeeAccessToken}`,
+    "nhsd-session-urid": roleId,
+    "x-request-id": uuidv4(),
+    "nhsd-session-jobrole": roleId,
+    "nhsd-identity-uuid": roleId, //TODO potentially remove this line
+    "nhsd-organization-uuid": orgCode,
+    "x-correlation-id": correlationId
+  }
+}
+
+/**
  * Constructs a new body for the token exchange, including a signed JWT
  * @param logger - Logger instance for logging
  * @param objectBodyParameters - Original body parameters

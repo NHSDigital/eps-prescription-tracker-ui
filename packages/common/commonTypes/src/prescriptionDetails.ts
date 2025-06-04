@@ -70,7 +70,7 @@ export interface DispenseNotification {
 }
 
 export interface MessageHistory {
-    messageText: string
+    messageCode: string
     sentDateTime: string
     organisationName: string
     organisationODS: string

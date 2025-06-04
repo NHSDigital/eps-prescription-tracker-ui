@@ -50,6 +50,51 @@ repos:
         types_or: [ts, tsx, javascript, jsx, json]
         pass_filenames: false
 
+      - id: lint-pdsClient
+        name: Lint pdsClient
+        entry: npm
+        args: ["run", "--prefix=packages/common/pdsClient", "lint"]
+        language: system
+        files: ^packages\/common\/pdsClient
+        types_or: [ts, tsx, javascript, jsx, json]
+        pass_filenames: false
+
+      - id: lint-middyErrorHandler
+        name: Lint middyErrorHandler
+        entry: npm
+        args: ["run", "--prefix=packages/common/middyErrorHandler", "lint"]
+        language: system
+        files: ^packages\/common\/middyErrorHandler
+        types_or: [ts, tsx, javascript, jsx, json]
+        pass_filenames: false
+
+      - id: lint-commonTypes
+        name: Lint commonTypes
+        entry: npm
+        args: ["run", "--prefix=packages/common/commonTypes", "lint"]
+        language: system
+        files: ^packages\/common\/commonTypes
+        types_or: [ts, tsx, javascript, jsx, json]
+        pass_filenames: false
+
+      - id: lint-lambdaUtils
+        name: Lint lambdaUtils
+        entry: npm
+        args: ["run", "--prefix=packages/common/lambdaUtils", "lint"]
+        language: system
+        files: ^packages\/common\/lambdaUtils
+        types_or: [ts, tsx, javascript, jsx, json]
+        pass_filenames: false
+
+      - id: lint-common-testing
+        name: Lint common-testing
+        entry: npm
+        args: ["run", "--prefix=packages/common/testing", "lint"]
+        language: system
+        files: ^packages\/common\/testing
+        types_or: [ts, tsx, javascript, jsx, json]
+        pass_filenames: false
+
       - id: lint-prescriptionListLambda
         name: Lint prescriptionListLambda
         entry: npm
@@ -58,6 +103,16 @@ repos:
         files: ^packages\/prescriptionListLambda
         types_or: [ts, tsx, javascript, jsx, json]
         pass_filenames: false
+
+      - id: lint-patientSearchLambda
+        name: Lint patientSearchLambda
+        entry: npm
+        args: ["run", "--prefix=packages/patientSearchLambda", "lint"]
+        language: system
+        files: ^packages\/patientSearchLambda
+        types_or: [ts, tsx, javascript, jsx, json]
+        pass_filenames: false
+
 
       - id: lint-trackerUserInfoLambda
         name: Lint trackerUserInfoLambda
@@ -95,6 +150,15 @@ repos:
         types_or: [ts, tsx, javascript, jsx, json]
         pass_filenames: false
 
+      - id: lint-doHSClient
+        name: Lint doHSClient
+        entry: npm
+        args: ["run", "--prefix=packages/common/doHSClient", "lint"]
+        language: system
+        files: ^packages\/common\/doHSClient
+        types_or: [ts, tsx, javascript, jsx, json]
+        pass_filenames: false
+        
       - id: lint-dynamoFunctions
         name: Lint dynamoFunctions
         entry: npm
