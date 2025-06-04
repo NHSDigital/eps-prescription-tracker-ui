@@ -21,7 +21,8 @@
     "module": "esnext",
     "isolatedModules": true,
     "jsx": "preserve",
-    "composite": false
+    "composite": false,
+    "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo"
   },
   "exclude": ["node_modules"],
   "references": [
