@@ -27,7 +27,7 @@ import {validateBasicDetails, getInlineErrors} from "@/helpers/validateBasicDeta
 import {errorFocusMap, ErrorKey, resolveDobInvalidFields} from "@/helpers/basicDetailsValidationMeta"
 import {STRINGS} from "@/constants/ui-strings/BasicDetailsSearchStrings"
 import {API_ENDPOINTS, FRONTEND_PATHS, NHS_REQUEST_URID} from "@/constants/environment"
-import {BasicDetailsSearchType, PatientSummary} from "@cpt-ui-common/common-types"
+import {BasicDetailsSearchType, PatientSummary, PatientSummaryTypes} from "@cpt-ui-common/common-types"
 
 // Temporary mock data used for frontend search simulation
 const mockPatient: Array<PatientSummary> = [
@@ -35,7 +35,7 @@ const mockPatient: Array<PatientSummary> = [
     nhsNumber: "1234567890",
     givenName: ["James"],
     familyName: "Smith",
-    gender: "Male",
+    gender: PatientSummaryTypes.PatientSummaryGender.MALE,
     dateOfBirth: "02-04-2006",
     address: ["1 Main Street", "Leeds"],
     postcode: "LS1 1AB"
@@ -47,7 +47,7 @@ const mockMultiplePatient: Array<PatientSummary> = [
     nhsNumber: "9726919207",
     givenName: ["Issac"],
     familyName: "Wolderton-Rodriguez",
-    gender: "Male",
+    gender: PatientSummaryTypes.PatientSummaryGender.MALE,
     dateOfBirth: "06-05-2013",
     address: ["123 Brundel Close", "Headingley", "Leeds", "West Yorkshire", "LS6 1JL"],
     postcode: "LS6 1JL"
@@ -56,7 +56,7 @@ const mockMultiplePatient: Array<PatientSummary> = [
     nhsNumber: "9726919207",
     givenName: ["Steve"],
     familyName: "Wolderton-Rodriguez",
-    gender: "Male",
+    gender: PatientSummaryTypes.PatientSummaryGender.MALE,
     dateOfBirth: "06-05-2013",
     address: ["123 Brundel Close", "Headingley", "Leeds", "West Yorkshire", "LS6 1JL"],
     postcode: "LS6 1JL"
@@ -68,7 +68,7 @@ const mockNotFoundPatients: Array<PatientSummary> = [
     nhsNumber: "",
     givenName: ["Not", "Found"],
     familyName: "SpecialNotFound",
-    gender: "Other",
+    gender: PatientSummaryTypes.PatientSummaryGender.OTHER,
     dateOfBirth: "01-01-1990",
     address: ["No Address"],
     postcode: "NO0 0NE"
@@ -79,7 +79,7 @@ const mockTooManyPatients: Array<PatientSummary> = Array.from({length: 11}, (_, 
   nhsNumber: (9000000000 + i).toString(),
   givenName: ["David"],
   familyName: "Jones",
-  gender: "Other",
+  gender: PatientSummaryTypes.PatientSummaryGender.OTHER,
   dateOfBirth: "16-07-1985",
   address: ["Some Address"],
   postcode: "LS1 1AB"
