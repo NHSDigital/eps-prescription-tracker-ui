@@ -3,7 +3,6 @@
   "compilerOptions": {
     "rootDir": ".",
     "outDir": "lib",
-    "strict": false,
     "baseUrl": ".",
     "tsBuildInfoFile": "lib/tsconfig.tsbuildinfo"
   },

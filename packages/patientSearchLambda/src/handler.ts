@@ -112,12 +112,6 @@ export const lambdaHandler = async (
   }
 
   // Query PDS
-  if (roleId === undefined) {
-    throw new Error("roleId is undefined")
-  }
-  if (orgCode === undefined) {
-    throw new Error("orgCode is undefined")
-  }
   const patientSearchOutcome = await pdsClient
     .with_access_token(apigeeAccessToken)
     .with_role_id(roleId)
