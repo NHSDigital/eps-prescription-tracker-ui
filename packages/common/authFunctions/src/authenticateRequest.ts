@@ -142,7 +142,7 @@ export async function authenticateRequest(
     }
     const currentTime = Math.floor(Date.now() / 1000)
     if (userRecord.apigeeExpiresIn === undefined) {
-      throw new Error("Missing expires in time")
+      throw new Error("Missing apigee expires in time")
     }
     const timeUntilExpiry = userRecord.apigeeExpiresIn - currentTime
 
