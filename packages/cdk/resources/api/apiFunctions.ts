@@ -32,10 +32,12 @@ export interface ApiFunctionsProps {
   readonly sharedSecrets: SharedSecrets
   readonly apigeeCIS2TokenEndpoint: string
   readonly apigeeMockTokenEndpoint: string
+  readonly apigeeDoHSEndpoint: string
   readonly apigeePrescriptionsEndpoint: string
   readonly apigeePersonalDemographicsEndpoint: string
   readonly apigeeApiKey: string
   readonly apigeeApiSecret: string
+  readonly apigeePtlDoHSApiKey: string
   readonly jwtKid: string
   readonly logLevel: string
   readonly roleId: string
@@ -49,8 +51,10 @@ export class ApiFunctions extends Construct {
   public readonly apiFunctionsPolicies: Array<IManagedPolicy>
   public readonly CIS2SignOutLambda: NodejsFunction
   public readonly prescriptionListLambda: NodejsFunction
+  public readonly prescriptionDetailsLambda: NodejsFunction
   public readonly trackerUserInfoLambda: NodejsFunction
   public readonly selectedRoleLambda: NodejsFunction
+  public readonly patientSearchLambda: NodejsFunction
   public readonly primaryJwtPrivateKey: Secret
 
   public constructor(scope: Construct, id: string, props: ApiFunctionsProps) {
@@ -191,6 +195,32 @@ export class ApiFunctions extends Construct {
     // Add the policy to apiFunctionsPolicies
     apiFunctionsPolicies.push(prescriptionListLambda.executeLambdaManagedPolicy)
 
+    const patientSearchLambda = new LambdaFunction(this, "PatientSearch", {
+      serviceName: props.serviceName,
+      stackName: props.stackName,
+      lambdaName: `${props.stackName}-patientSearch`,
+      additionalPolicies: [
+        props.tokenMappingTableWritePolicy,
+        props.tokenMappingTableReadPolicy,
+        props.useTokensMappingKmsKeyPolicy,
+        props.sharedSecrets.useJwtKmsKeyPolicy,
+        props.sharedSecrets.getPrimaryJwtPrivateKeyPolicy
+      ],
+      logRetentionInDays: props.logRetentionInDays,
+      logLevel: props.logLevel,
+      packageBasePath: "packages/patientSearchLambda",
+      entryPoint: "src/index.ts",
+      lambdaEnvironmentVariables: {
+        ...commonLambdaEnv,
+        TokenMappingTableName: props.tokenMappingTable.tableName,
+        jwtPrivateKeyArn: props.sharedSecrets.primaryJwtPrivateKey.secretArn,
+        apigeeCIS2TokenEndpoint: props.apigeeCIS2TokenEndpoint,
+        apigeeMockTokenEndpoint: props.apigeeMockTokenEndpoint,
+        apigeePersonalDemographicsEndpoint: props.apigeePersonalDemographicsEndpoint,
+        jwtKid: props.jwtKid
+      }
+    })
+
     // const apiFunctionsPolicies: Array<IManagedPolicy> = [
     //   trackerUserInfoLambda.executeLambdaManagedPolicy,
     //   prescriptionListLambda.executeLambdaManagedPolicy
@@ -204,13 +234,48 @@ export class ApiFunctions extends Construct {
       }
     ])
 
+    // Prescription Details Lambda Function
+    const prescriptionDetailsLambda = new LambdaFunction(this, "PrescriptionDetails", {
+      serviceName: props.serviceName,
+      stackName: props.stackName,
+      lambdaName: `${props.stackName}-prescDetails`,
+      additionalPolicies: [
+        props.tokenMappingTableWritePolicy,
+        props.tokenMappingTableReadPolicy,
+        props.useTokensMappingKmsKeyPolicy,
+        props.sharedSecrets.useJwtKmsKeyPolicy,
+        props.sharedSecrets.getPrimaryJwtPrivateKeyPolicy
+      ],
+      logRetentionInDays: props.logRetentionInDays,
+      logLevel: props.logLevel,
+      packageBasePath: "packages/prescriptionDetailsLambda",
+      entryPoint: "src/handler.ts",
+      lambdaEnvironmentVariables: {
+        ...commonLambdaEnv,
+        jwtPrivateKeyArn: props.sharedSecrets.primaryJwtPrivateKey.secretArn,
+        apigeeCIS2TokenEndpoint: props.apigeeCIS2TokenEndpoint,
+        apigeeMockTokenEndpoint: props.apigeeMockTokenEndpoint,
+        apigeePrescriptionsEndpoint: props.apigeePrescriptionsEndpoint,
+        apigeeDoHSEndpoint: props.apigeeDoHSEndpoint,
+        apigeeApiKey: props.apigeeApiKey,
+        jwtKid: props.jwtKid,
+        roleId: props.roleId,
+        APIGEE_PTL_DOHS_API_KEY: props.apigeePtlDoHSApiKey
+      }
+    })
+
+    // Add the policy to apiFunctionsPolicies
+    apiFunctionsPolicies.push(prescriptionDetailsLambda.executeLambdaManagedPolicy)
+
     // Outputs
     this.apiFunctionsPolicies = apiFunctionsPolicies
     this.primaryJwtPrivateKey = props.sharedSecrets.primaryJwtPrivateKey
 
     this.CIS2SignOutLambda = CIS2SignOutLambda.lambda
     this.prescriptionListLambda = prescriptionListLambda.lambda
+    this.prescriptionDetailsLambda = prescriptionDetailsLambda.lambda
     this.trackerUserInfoLambda = trackerUserInfoLambda.lambda
     this.selectedRoleLambda = selectedRoleLambda.lambda
+    this.patientSearchLambda = patientSearchLambda.lambda
   }
 }

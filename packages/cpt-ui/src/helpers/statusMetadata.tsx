@@ -49,6 +49,7 @@ export const prescriptionStatusMap: Record<string, StatusMetadata> = {
   "9000": {color: "aqua-green", label: STATUS_LABELS.prescription["9000"]},
   "9001": {color: "blue", label: STATUS_LABELS.prescription["9001"]},
   "9005": {color: "red", label: STATUS_LABELS.prescription["9005"]}
+
 }
 
 // --- Item-Level Status Codes ---
@@ -100,5 +101,28 @@ export const getPrescriptionTypeDisplayText = (
       return instanceNumber && maxRepeats ? `eRD ${instanceNumber} of ${maxRepeats}` : "eRD"
     default:
       return "Unknown"
+  }
+}
+
+export const formatDateForPrescriptions = (date: string) => {
+  try {
+    if (!date || date.toLowerCase() === "undefined" || date.toLowerCase() === "null") {
+      return "Invalid date"
+    }
+
+    const options: Intl.DateTimeFormatOptions = {
+      day: "2-digit",
+      month: "short",
+      year: "numeric"
+    }
+
+    const dateObj = new Date(date)
+    if (isNaN(dateObj.getTime())) {
+      return "Invalid date"
+    }
+
+    return dateObj.toLocaleDateString("en-GB", options).replace(/ /g, "-")
+  } catch {
+    return "Invalid date"
   }
 }

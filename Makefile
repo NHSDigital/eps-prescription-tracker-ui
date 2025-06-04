@@ -19,9 +19,12 @@ install-hooks: install-python
 
 compile-node:
 	npm run compile --workspace packages/common/commonTypes
+	npm run compile --workspace packages/common/lambdaUtils
 	npm run compile --workspace packages/common/middyErrorHandler
 	npm run compile --workspace packages/common/dynamoFunctions
 	npm run compile --workspace packages/common/authFunctions
+	npm run compile --workspace packages/common/doHSClient
+	npm run compile --workspace packages/common/pdsClient
 	npx tsc --build tsconfig.build.json
 
 compile: compile-node
@@ -32,12 +35,17 @@ lint-node: compile-node
 	npm run lint --workspace packages/cdk
 	npm run lint --workspace packages/cognito
 	npm run lint --workspace packages/prescriptionListLambda
+	npm run lint --workspace packages/prescriptionDetailsLambda
+	npm run lint --workspace packages/patientSearchLambda
 	npm run lint --workspace packages/common/testing
 	npm run lint --workspace packages/common/middyErrorHandler
+	npm run lint --workspace packages/common/pdsClient
+	npm run lint --workspace packages/common/lambdaUtils
 	npm run lint --workspace packages/trackerUserInfoLambda
 	npm run lint --workspace packages/selectedRoleLambda
 	npm run lint --workspace packages/CIS2SignOutLambda
 	npm run lint --workspace packages/common/authFunctions
+	npm run lint --workspace packages/common/doHSClient
 	npm run lint --workspace packages/common/dynamoFunctions
 
 lint-githubactions:
@@ -54,11 +62,16 @@ test: compile
 	npm run test --workspace packages/cpt-ui
 	npm run test --workspace packages/cognito
 	npm run test --workspace packages/prescriptionListLambda
+	npm run test --workspace packages/prescriptionDetailsLambda
+	npm run test --workspace packages/patientSearchLambda
 	npm run test --workspace packages/common/middyErrorHandler
+	npm run test --workspace packages/common/pdsClient
+	npm run test --workspace packages/common/lambdaUtils
 	npm run test --workspace packages/trackerUserInfoLambda
 	npm run test --workspace packages/selectedRoleLambda
 	npm run test --workspace packages/CIS2SignOutLambda
 	npm run test --workspace packages/common/authFunctions
+	npm run test --workspace packages/common/doHSClient
 	npm run test --workspace packages/common/dynamoFunctions
 
 clean:
@@ -72,8 +85,16 @@ clean:
 	rm -rf packages/cognito/lib
 	rm -rf packages/prescriptionListLambda/coverage
 	rm -rf packages/prescriptionListLambda/lib
+	rm -rf packages/prescriptionDetailsLambda/coverage
+	rm -rf packages/prescriptionDetailsLambda/lib
+	rm -rf packages/patientSearchLambda/coverage
+	rm -rf packages/patientSearchLambda/lib
 	rm -rf packages/common/middyErrorHandler/coverage
 	rm -rf packages/common/middyErrorHandler/lib
+	rm -rf packages/common/pdsClient/coverage
+	rm -rf packages/common/pdsClient/lib
+	rm -rf packages/common/lambdaUtils/coverage
+	rm -rf packages/common/lambdaUtils/lib
 	rm -rf cdk.out
 	rm -rf packages/cpt-ui/.next
 	rm -rf packages/auth_demo/build
@@ -83,6 +104,8 @@ clean:
 	rm -rf packages/selectedRoleLambda/lib
 	rm -rf packages/common/authFunctions/coverage
 	rm -rf packages/common/authFunctions/lib
+	rm -rf packages/common/doHSClient/coverage
+	rm -rf packages/common/doHSClient/lib
 	rm -rf packages/common/dynamoFunctions/coverage
 	rm -rf packages/common/dynamoFunctions/lib
 	rm -rf packages/CIS2SignOutLambda/coverage
@@ -104,9 +127,12 @@ check-licenses-node:
 	npm run check-licenses --workspace packages/cdk
 	npm run check-licenses --workspace packages/cpt-ui
 	npm run check-licenses --workspace packages/common/authFunctions
+	npm run check-licenses --workspace packages/common/doHSClient
 	npm run check-licenses --workspace packages/common/dynamoFunctions
 	npm run check-licenses --workspace packages/cognito
 	npm run check-licenses --workspace packages/prescriptionListLambda
+	npm run check-licenses --workspace packages/prescriptionDetailsLambda
+	npm run check-licenses --workspace packages/patientSearchLambda
 	npm run check-licenses --workspace packages/trackerUserInfoLambda
 	npm run check-licenses --workspace packages/selectedRoleLambda
 	npm run check-licenses --workspace packages/CIS2SignOutLambda
@@ -151,7 +177,7 @@ cdk-deploy: guard-service_name guard-CDK_APP_NAME
 		--context VERSION_NUMBER=$$VERSION_NUMBER \
 		--context COMMIT_ID=$$COMMIT_ID
 
-cdk-watch: clean
+cdk-watch:
 	./scripts/run_sync.sh
 
 cdk-synth: compile cdk-synth-no-mock cdk-synth-mock
@@ -219,9 +245,11 @@ cdk-synth-stateless-resources-no-mock:
 	USE_MOCK_OIDC=false \
 	APIGEE_API_KEY=foo \
 	APIGEE_API_SECRET=foo \
+	APIGEE_PTL_DOHS_API_KEY=foo \
 	APIGEE_CIS2_TOKEN_ENDPOINT=foo \
 	APIGEE_PRESCRIPTION_ENDPOINT=foo \
 	APIGEE_PERSONAL_DEMOGRAPHICS_ENDPOINT=foo \
+	APIGEE_DOHS_ENDPOINT=foo \
 	JWT_KID=foo \
 	ROLE_ID=foo \
 	ALLOW_LOCALHOST_ACCESS=false \
@@ -302,11 +330,13 @@ cdk-synth-stateless-resources-mock:
 	MOCK_OIDC_JWKS_ENDPOINT=undefined \
 	USE_MOCK_OIDC=true \
 	APIGEE_API_KEY=foo \
-	APIGEE_API_SECRET=foo \
-	APIGEE_CIS2_TOKEN_ENDPOINT=foo \
-	APIGEE_MOCK_TOKEN_ENDPOINT=foo \
-	APIGEE_PRESCRIPTION_ENDPOINT=foo \
-	APIGEE_PERSONAL_DEMOGRAPHICS_ENDPOINT=foo \
+    APIGEE_API_SECRET=foo \
+    APIGEE_PTL_DOHS_API_KEY=foo \
+    APIGEE_CIS2_TOKEN_ENDPOINT=foo \
+    APIGEE_MOCK_TOKEN_ENDPOINT=foo \
+    APIGEE_PRESCRIPTION_ENDPOINT=foo \
+    APIGEE_PERSONAL_DEMOGRAPHICS_ENDPOINT=foo \
+    APIGEE_DOHS_ENDPOINT=foo \
 	JWT_KID=foo \
 	ROLE_ID=foo \
 	ALLOW_LOCALHOST_ACCESS=false \

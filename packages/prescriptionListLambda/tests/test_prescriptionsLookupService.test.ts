@@ -66,12 +66,15 @@ describe("Prescriptions Lookup Service Tests", () => {
 
       // Verify the API call
       expect(mockGet).toHaveBeenCalledWith(
-        `${mockEndpoint}/RequestGroup?prescriptionId=${mockPrescriptionId}`,
+        `${mockEndpoint}/RequestGroup`,
         expect.objectContaining({
           headers: expect.objectContaining({
             Authorization: `Bearer ${mockAccessToken}`,
             "nhsd-session-urid": mockRoleId
-          })
+          }),
+          params: {
+            prescriptionId: mockPrescriptionId
+          }
         })
       )
     })
@@ -148,12 +151,15 @@ describe("Prescriptions Lookup Service Tests", () => {
 
       // Verify the API call
       expect(mockGet).toHaveBeenCalledWith(
-        `${mockEndpoint}/RequestGroup?nhsNumber=${mockNhsNumber}`,
+        `${mockEndpoint}/RequestGroup`,
         expect.objectContaining({
           headers: expect.objectContaining({
             Authorization: `Bearer ${mockAccessToken}`,
             "nhsd-session-urid": mockRoleId
-          })
+          }),
+          params: {
+            nhsNumber: mockNhsNumber
+          }
         })
       )
     })

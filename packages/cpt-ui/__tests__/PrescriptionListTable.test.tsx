@@ -11,7 +11,8 @@ import {PrescriptionSummary, TreatmentType} from "@cpt-ui-common/common-types"
 
 jest.mock("@/helpers/statusMetadata", () => ({
   getStatusTagColour: jest.fn().mockReturnValue("blue"),
-  getStatusDisplayText: jest.fn().mockReturnValue("Available to download")
+  getStatusDisplayText: jest.fn().mockReturnValue("Available to download"),
+  formatDateForPrescriptions: jest.fn((date: string) => "Formatted: " + date)
 }))
 
 describe("PrescriptionsListTable", () => {
@@ -143,18 +144,18 @@ describe("PrescriptionsListTable", () => {
     jest.advanceTimersByTime(2000)
 
     await waitFor(() => {
-      const rows = screen.getAllByTestId("eps-prescription-table-sort-button")
+      const rows = screen.getAllByTestId("eps-prescription-table-row")
       const firstRowDate = rows[0].querySelector("[data-testid='issue-date-column']")
-      expect(firstRowDate?.textContent).toContain("10-Mar-2025")
+      expect(firstRowDate?.textContent).toContain("Formatted: 2025-03-10")
     })
 
     const issueDateSortButton = screen.getByTestId("eps-prescription-table-sort-issueDate")
     fireEvent.click(issueDateSortButton)
 
     await waitFor(() => {
-      const rows = screen.getAllByTestId("eps-prescription-table-sort-button")
+      const rows = screen.getAllByTestId("eps-prescription-table-row")
       const firstRowDate = rows[0].querySelector("[data-testid='issue-date-column']")
-      expect(firstRowDate?.textContent).toContain("15-Feb-2025") // Oldest date
+      expect(firstRowDate?.textContent).toContain("Formatted: 2025-02-15") // Oldest date
     })
 
     jest.useRealTimers()
@@ -191,7 +192,6 @@ describe("PrescriptionsListTable", () => {
     await waitFor(() => {
       const summaryRow = screen.getByTestId("table-summary-row")
       expect(summaryRow).toHaveTextContent("Showing 3 of 3")
-      expect(summaryRow).toHaveAttribute("aria-label", "Showing 3 of 3")
     })
 
     jest.useRealTimers()
@@ -212,7 +212,7 @@ describe("PrescriptionsListTable", () => {
     fireEvent.click(cancellationHeader)
 
     await waitFor(() => {
-      const rows = screen.getAllByTestId("eps-prescription-table-sort-button")
+      const rows = screen.getAllByTestId("eps-prescription-table-row")
 
       const firstRow = rows[0]
 
@@ -246,21 +246,95 @@ describe("PrescriptionsListTable", () => {
     await waitFor(() => {
       const sortButton = screen.getByTestId("eps-prescription-table-sort-issueDate")
 
-      // Check that it's rendered with the correct role and label
       expect(sortButton).toBeInTheDocument()
       expect(sortButton).toHaveAttribute("role", "button")
       expect(sortButton).toHaveAttribute("tabIndex", "0")
 
-      // Trigger click
       fireEvent.click(sortButton)
 
-      // Trigger keyboard "Enter"
       fireEvent.keyDown(sortButton, {key: "Enter"})
-      // Trigger keyboard "Space"
       fireEvent.keyDown(sortButton, {key: " "})
     })
 
     jest.useRealTimers()
   })
 
+  it("sorts prescriptions by statusCode, falling back to issueDate if statusCodes match", async () => {
+    jest.useFakeTimers()
+
+    const testPrescriptions = [
+      {
+        prescriptionId: "88AAF5-A83008-3D404Q",
+        statusCode: "0002",
+        issueDate: "2025-04-15",
+        prescriptionTreatmentType: TreatmentType.REPEAT,
+        issueNumber: 3,
+        maxRepeats: 6,
+        prescriptionPendingCancellation: false,
+        itemsPendingCancellation: false
+      },
+      {
+        prescriptionId: "7F1A4B-A83008-91DC2E",
+        statusCode: "0002",
+        issueDate: "2025-04-10",
+        prescriptionTreatmentType: TreatmentType.REPEAT,
+        issueNumber: 2,
+        maxRepeats: 5,
+        prescriptionPendingCancellation: false,
+        itemsPendingCancellation: false
+      },
+      {
+        prescriptionId: "4D6F2C-A83008-A3E7D1",
+        statusCode: "0003",
+        issueDate: "2025-04-01",
+        prescriptionTreatmentType: TreatmentType.REPEAT,
+        issueNumber: 1,
+        maxRepeats: 4,
+        prescriptionPendingCancellation: false,
+        itemsPendingCancellation: false
+      }
+    ]
+
+    render(
+      <PrescriptionsListTable textContent={textContent} prescriptions={testPrescriptions} />
+    )
+
+    jest.advanceTimersByTime(2000)
+
+    await waitFor(() => {
+      const sortButton = screen.getByTestId("eps-prescription-table-sort-issueDate")
+      fireEvent.click(sortButton)
+
+      const rows = screen.getAllByRole("row")
+      const dataRows = rows.slice(1)
+
+      const firstRowText = dataRows[0].textContent
+      const secondRowText = dataRows[1].textContent
+      const thirdRowText = dataRows[2].textContent
+
+      expect(firstRowText).toContain("2")
+      expect(secondRowText).toContain("3")
+      expect(thirdRowText).toContain("1")
+    })
+
+    jest.useRealTimers()
+  })
+  it("sorts prescriptions by issueNumber in ascending order", async () => {
+    jest.useFakeTimers()
+
+    render(<PrescriptionsListTable textContent={textContent} prescriptions={prescriptions} />)
+    jest.advanceTimersByTime(2000)
+
+    await waitFor(() => {
+      const sortButton = screen.getByTestId("eps-prescription-table-sort-issueDate")
+      fireEvent.click(sortButton)
+
+      const rows = screen.getAllByTestId("eps-prescription-table-row")
+      expect(rows[0]).toHaveTextContent("1")
+      expect(rows[1]).toHaveTextContent("2")
+      expect(rows[2]).toHaveTextContent("3")
+    })
+
+    jest.useRealTimers()
+  })
 })

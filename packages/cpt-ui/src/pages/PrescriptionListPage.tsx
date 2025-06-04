@@ -1,5 +1,5 @@
 import React, {useContext, useEffect, useState} from "react"
-import {Link, useNavigate, useSearchParams} from "react-router-dom"
+import {useNavigate, useSearchParams} from "react-router-dom"
 import {
   BackLink,
   Col,
@@ -13,7 +13,6 @@ import http from "@/helpers/axios"
 
 import {AuthContext} from "@/context/AuthProvider"
 import {usePatientDetails} from "@/context/PatientDetailsProvider"
-
 import EpsSpinner from "@/components/EpsSpinner"
 import PrescriptionsListTabs from "@/components/prescriptionList/PrescriptionsListTab"
 import {TabHeader} from "@/components/EpsTabs"
@@ -30,18 +29,26 @@ export default function PrescriptionListPage() {
 
   const navigate = useNavigate()
   const [queryParams] = useSearchParams()
-
   const [futurePrescriptions, setFuturePrescriptions] = useState<Array<PrescriptionSummary>>([])
   const [pastPrescriptions, setPastPrescriptions] = useState<Array<PrescriptionSummary>>([])
   const [currentPrescriptions, setCurrentPrescriptions] = useState<Array<PrescriptionSummary>>([])
   const [prescriptionCount, setPrescriptionCount] = useState(0)
-
   const [tabData, setTabData] = useState<Array<TabHeader>>([])
   const [backLinkTarget, setBackLinkTarget] = useState<string>(PRESCRIPTION_LIST_PAGE_STRINGS.DEFAULT_BACK_LINK_TARGET)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const runSearch = async () => {
+      if (auth?.isAuthLoading) {
+        console.log("Auth still loading, waiting...")
+        return
+      }
+
+      if (!auth?.idToken) {
+        console.log("Auth token not ready, waiting...")
+        return
+      }
+
       const prescriptionId = queryParams.get("prescriptionId")
       const nhsNumber = queryParams.get("nhsNumber")
 
@@ -93,13 +100,11 @@ export default function PrescriptionListPage() {
       setFuturePrescriptions(searchResults.futurePrescriptions)
       setPastPrescriptions(searchResults.pastPrescriptions)
       setPatientDetails(searchResults.patient)
-
       setPrescriptionCount(
         searchResults.pastPrescriptions.length +
         searchResults.futurePrescriptions.length +
         searchResults.currentPrescriptions.length
       )
-
       setTabData([
         {
           link: PRESCRIPTION_LIST_TABS.current.link(queryParams.toString()),
@@ -118,7 +123,7 @@ export default function PrescriptionListPage() {
 
     setLoading(true)
     runSearch().catch(() => navigate(backLinkTarget)).finally(() => setLoading(false))
-  }, [queryParams])
+  }, [queryParams, auth?.idToken, auth?.isAuthLoading])
 
   if (loading) {
     return (
@@ -133,7 +138,6 @@ export default function PrescriptionListPage() {
       </main>
     )
   }
-
   return (
     <>
       <title>{PRESCRIPTION_LIST_PAGE_STRINGS.PAGE_TITLE}</title>
@@ -142,9 +146,15 @@ export default function PrescriptionListPage() {
           <Row>
             <Col width="full">
               <nav className="nhsuk-breadcrumb" aria-label="Breadcrumb" data-testid="prescription-list-nav">
-                <Link to={backLinkTarget} data-testid="back-link-container">
-                  <BackLink data-testid="go-back-link">{PRESCRIPTION_LIST_PAGE_STRINGS.GO_BACK_LINK_TEXT}</BackLink>
-                </Link>
+                <BackLink
+                  data-testid="go-back-link"
+                  href={backLinkTarget}
+                  onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
+                    e.preventDefault()
+                    navigate(backLinkTarget)
+                  }}
+                >  {PRESCRIPTION_LIST_PAGE_STRINGS.GO_BACK_LINK_TEXT}
+                </BackLink>
               </nav>
             </Col>
           </Row>
