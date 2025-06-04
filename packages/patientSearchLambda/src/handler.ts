@@ -68,6 +68,12 @@ export const lambdaHandler = async (
     apigeeAccessToken = authResult.apigeeAccessToken
     roleId = authResult.roleId
     orgCode = authResult.orgCode
+    if (roleId === undefined) {
+      throw new Error("roleId is undefined")
+    }
+    if (orgCode === undefined) {
+      throw new Error("orgCode is undefined")
+    }
   } catch (error) {
     logger.error("Authentication failed", {error})
     return code(401).body({

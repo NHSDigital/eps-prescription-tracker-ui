@@ -85,6 +85,31 @@ describe("lambda handler unit tests", () => {
     })
   })
 
+  it("should return an error if no role id is found", async () => {
+    handlerParams.authenticationFunction = async () => {
+      return {apigeeAccessToken: "mock-access-token", roleId: undefined, orgCode: "test-org-code"}
+    }
+
+    const response = await lambdaHandler(mockEvent, handlerParams)
+
+    expect(response.statusCode).toBe(401)
+    expect(JSON.parse(response.body)).toEqual({
+      message: "Authentication failed"
+    })
+  })
+
+  it("should return an error if no oreCode access token is found", async () => {
+    handlerParams.authenticationFunction = async () => {
+      return {apigeeAccessToken: "mock-access-token", roleId: "test-role-id", orgCode: undefined}
+    }
+
+    const response = await lambdaHandler(mockEvent, handlerParams)
+
+    expect(response.statusCode).toBe(401)
+    expect(JSON.parse(response.body)).toEqual({
+      message: "Authentication failed"
+    })
+  })
   it("should return an error if query parameters are missing", async () => {
     mockEvent.queryStringParameters = {}
 

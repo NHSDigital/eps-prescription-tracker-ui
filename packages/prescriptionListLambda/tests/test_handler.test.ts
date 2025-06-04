@@ -273,4 +273,48 @@ describe("handler tests with cis2 auth", () => {
     )
   })
 
+  it("throw error when no roleId returned", async () => {
+    mockAuthenticateRequest.mockImplementation(() => {
+      return Promise.resolve({
+        apigeeAccessToken: "apigee_access_token",
+        orgCode: "dummy_org"
+      })
+    })
+
+    const response = await handler({
+      queryStringParameters: {
+        nhsNumber: "9999999999"
+      },
+      requestContext: {},
+      headers: {}
+    }, dummyContext)
+
+    // Update the assertion to match the actual response format
+    expect(response).toMatchObject({
+      message: "A system error has occurred"
+    })
+  })
+
+  it("throw error when no orgCode returned", async () => {
+    mockAuthenticateRequest.mockImplementation(() => {
+      return Promise.resolve({
+        apigeeAccessToken: "apigee_access_token",
+        roleId: "dummy_role"
+      })
+    })
+
+    const response = await handler({
+      queryStringParameters: {
+        nhsNumber: "9999999999"
+      },
+      requestContext: {},
+      headers: {}
+    }, dummyContext)
+
+    // Update the assertion to match the actual response format
+    expect(response).toMatchObject({
+      message: "A system error has occurred"
+    })
+  })
+
 })
