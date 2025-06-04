@@ -279,7 +279,7 @@ export const mockPrescriptionInformationErd = {
 
 export const mockMessageHistoryDispenseNotifInfo: Array<MessageHistory> = [
   {
-    messageText: "Dispense claim successful",
+    messageCode: "Dispense claim successful",
     sentDateTime: "23-Feb-2025 13:35:33",
     organisationName: "Cohen's Chemist",
     organisationODS: "FV519",
@@ -306,14 +306,14 @@ export const mockMessageHistoryDispenseNotifInfo: Array<MessageHistory> = [
     ]
   },
   {
-    messageText: "Release Request successful",
+    messageCode: "Release Request successful",
     sentDateTime: "23-Feb-2025 13:05:33",
     organisationName: "Cohen's Chemist",
     organisationODS: "FV519",
     newStatusCode: "0002"
   },
   {
-    messageText: "Release Request successful",
+    messageCode: "Release Request successful",
     sentDateTime: "23-Feb-2025 12:33:33",
     organisationName: "Fiji surgery",
     organisationODS: "FI05964",
@@ -322,34 +322,34 @@ export const mockMessageHistoryDispenseNotifInfo: Array<MessageHistory> = [
 ]
 export const mockMessageHistoryCancelled: Array<MessageHistory> = [
   {
-    messageText: "Dispense claim successful",
+    messageCode: "Dispense claim successful",
     sentDateTime: "02-Jan-2025 13:35:33",
     organisationName: "Fiji surgery",
     organisationODS: "F10DE",
     newStatusCode: "0005"
   },
   {
-    messageText: "Dispense claim successful",
+    messageCode: "Dispense claim successful",
     sentDateTime: "02-Jan-2025 13:05:33",
     organisationName: "Cohen's Chemist",
     organisationODS: "FV519",
     newStatusCode: "0001"
   },
   {
-    messageText: "Prescription/item was not cancelled. With dispenser. Marked for cancellation",
+    messageCode: "Prescription/item was not cancelled. With dispenser. Marked for cancellation",
     sentDateTime: "23-Feb-2025 13:35:33",
     organisationName: "Fiji surgery",
     organisationODS: "F10DE"
   },
   {
-    messageText: "Release Request successful",
+    messageCode: "Release Request successful",
     sentDateTime: "01-Jan-2025 12:33:33",
     organisationName: "Cohen's Chemist",
     organisationODS: "FV519",
     newStatusCode: "0002"
   },
   {
-    messageText: "Prescription upload successful",
+    messageCode: "Prescription upload successful",
     sentDateTime: "01-Jan-2025 12:33:33",
     organisationName: "Fiji surgery",
     organisationODS: "F10DE",
@@ -358,20 +358,20 @@ export const mockMessageHistoryCancelled: Array<MessageHistory> = [
 ]
 export const mockMessageHistoryPendingCancellation: Array<MessageHistory> = [
   {
-    messageText: "Prescription/item was not cancelled. With dispenser. Marked for cancellation",
+    messageCode: "Prescription/item was not cancelled. With dispenser. Marked for cancellation",
     sentDateTime: "20-Jan-2025 13:35:33",
     organisationName: "Fiji surgery",
     organisationODS: "FI05964"
   },
   {
-    messageText: "Release Request successful",
+    messageCode: "Release Request successful",
     sentDateTime: "20-Jan-2025 13:05:33",
     organisationName: "Cohen's Chemist",
     organisationODS: "FV519",
     newStatusCode: "0002"
   },
   {
-    messageText: "Prescription upload successful",
+    messageCode: "Prescription upload successful",
     sentDateTime: "20-Jan-2025 12:33:33",
     organisationName: "Fiji surgery",
     organisationODS: "F10DE",
@@ -380,7 +380,7 @@ export const mockMessageHistoryPendingCancellation: Array<MessageHistory> = [
 ]
 export const mockMessageHistoryMissingData: Array<MessageHistory> = [
   {
-    messageText: "Dispense claim successful",
+    messageCode: "Dispense claim successful",
     sentDateTime: "23-Feb-2025 13:35:33",
     organisationName: "",
     organisationODS: "FV519",
@@ -407,14 +407,14 @@ export const mockMessageHistoryMissingData: Array<MessageHistory> = [
     ]
   },
   {
-    messageText: "Release Request successful",
+    messageCode: "Release Request successful",
     sentDateTime: "23-Feb-2025 13:05:33",
     organisationName: "",
     organisationODS: "FV519",
     newStatusCode: "0002"
   },
   {
-    messageText: "Release Request successful",
+    messageCode: "Release Request successful",
     sentDateTime: "23-Feb-2025 12:33:33",
     // eslint-disable-next-line max-len
     organisationName: "theultraextremelylongorganisationnamethatexceedsthecontainerwidthandshouldforcethetexttowrapcorrectlywithoutbreakingtheui",

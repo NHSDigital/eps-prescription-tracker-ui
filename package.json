@@ -18,12 +18,14 @@
     "author": "NHS Digital",
     "license": "MIT",
     "workspaces": [
+        "packages/common/doHSClient",
         "packages/common/commonTypes",
         "packages/cloudfrontFunctions",
         "packages/cpt-ui",
         "packages/cdk",
         "packages/cognito",
         "packages/prescriptionListLambda",
+        "packages/prescriptionDetailsLambda",
         "packages/patientSearchLambda",
         "packages/common/middyErrorHandler",
         "packages/common/pdsClient",
@@ -61,7 +63,7 @@
         "ts-jest": "^29.3.4",
         "ts-node": "^10.9.2",
         "typescript": "^5.8.3",
-        "typescript-eslint": "^8.33.0"
+        "typescript-eslint": "^8.33.1"
     },
     "dependencies": {
         "conventional-changelog-eslint": "^6.0.0",
