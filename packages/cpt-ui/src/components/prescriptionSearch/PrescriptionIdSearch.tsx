@@ -1,4 +1,9 @@
-import React, {useState, useEffect, useRef} from "react"
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useMemo
+} from "react"
 import {useNavigate} from "react-router-dom"
 
 import {
@@ -17,77 +22,56 @@ import {
 
 import {PRESCRIPTION_ID_SEARCH_STRINGS} from "@/constants/ui-strings/SearchForAPrescriptionStrings"
 import {FRONTEND_PATHS} from "@/constants/environment"
-
-const normalizePrescriptionId = (raw: string): string => {
-  const cleaned = raw.replace(/[^a-zA-Z0-9+]/g, "") // remove non-allowed chars
-  return cleaned.match(/.{1,6}/g)?.join("-").toUpperCase() || ""
-}
+import {
+  validatePrescriptionId,
+  normalizePrescriptionId,
+  getHighestPriorityError,
+  PrescriptionValidationError
+} from "@/helpers/validatePrescriptionDetailsSearch"
 
 export default function PrescriptionIdSearch() {
   const navigate = useNavigate()
   const errorRef = useRef<HTMLDivElement | null>(null)
 
   const [prescriptionId, setPrescriptionId] = useState<string>("")
-  const [errorType, setErrorType] = useState<"" | "empty" | "length" | "chars" | "noMatch">("")
+  const [errorKey, setErrorKey] = useState<PrescriptionValidationError | null>(null)
 
   const errorMessages = PRESCRIPTION_ID_SEARCH_STRINGS.errors
 
-  // Focus input on page load
-  useEffect(() => {
-    const input = document.querySelector<HTMLInputElement>("#presc-id-input")
-    input?.focus()
-  }, [])
-
-  // Focus error box when error appears
-  // According to the docs, the ErrorSummary component SHOULD do this itself, but that doesn't seem to be the case
-  // so we'll do it ourselves
-  // https://github.com/nhsuk/nhsuk-frontend/tree/main/packages/components/error-summary
-  useEffect(() => {
-    if (errorType && errorRef.current) {
-      errorRef.current.focus()
-    }
-  }, [errorType])
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setPrescriptionId(e.target.value)
-    setErrorType("")
+  // Maps a validation error key to the corresponding user-facing message.
+  // Treats "checksum" as "noMatch" to simplify the error display logic.
+  const getDisplayedErrorMessage = (key: PrescriptionValidationError | null): string => {
+    if (!key) return ""
+    if (key === "noMatch") return errorMessages.noMatch
+    return errorMessages[key] || errorMessages.noMatch
   }
 
-  const handlePrescriptionDetails = async (e: React.FormEvent) => {
+  // Memoised error message for display
+  const displayedError = useMemo(() => getDisplayedErrorMessage(errorKey), [errorKey])
+
+  // When error is set, focus error summary
+  useEffect(() => {
+    if (errorKey && errorRef.current) errorRef.current.focus()
+  }, [errorKey])
+
+  // Handle input field change
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setPrescriptionId(e.target.value)
+  }
+
+  // Form submit handler
+  const handlePrescriptionDetails = (e: React.FormEvent) => {
     e.preventDefault()
-    setErrorType("")
+    const validationErrors = validatePrescriptionId(prescriptionId)
+    const key = getHighestPriorityError(validationErrors)
 
-    const raw = prescriptionId.trim()
-    if (!raw) {
-      setErrorType("empty")
+    if (key) {
+      setErrorKey(key)
       return
     }
+    setErrorKey(null) // Clear error on valid submit
 
-    // Show "chars" error if input has invalid characters
-    const rawCharPattern = /^[a-zA-Z0-9+ -]*$/
-    if (!rawCharPattern.test(raw)) {
-      setErrorType("chars")
-      return
-    }
-
-    // Normalize and clean input
-    const cleaned = raw.replace(/[^a-zA-Z0-9+]/g, "").toUpperCase()
-
-    // Must be exactly 18 chars (excluding dashes)
-    if (cleaned.length !== 18) {
-      setErrorType("length")
-      return
-    }
-
-    const formatted = normalizePrescriptionId(cleaned)
-
-    // Validate full formatted pattern
-    const shortFormPattern = /^[0-9A-F]{6}-[0-9A-Z]{6}-[0-9A-F]{5}[0-9A-Z+]$/
-    if (!shortFormPattern.test(formatted)) {
-      setErrorType("noMatch")
-      return
-    }
-
+    const formatted = normalizePrescriptionId(prescriptionId)
     navigate(`${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}?prescriptionId=${formatted}`)
   }
 
@@ -99,7 +83,7 @@ export default function PrescriptionIdSearch() {
       <Row>
         <Col width="one-half">
           <Form onSubmit={handlePrescriptionDetails} noValidate>
-            {errorType && (
+            {errorKey && (
               <ErrorSummary
                 data-testid="error-summary"
                 ref={errorRef}
@@ -110,16 +94,14 @@ export default function PrescriptionIdSearch() {
                 <ErrorSummary.Body>
                   <ErrorSummary.List>
                     <ErrorSummary.Item>
-                      <a href="#presc-id-input">{errorMessages[errorType]}</a>
+                      <a href="#presc-id-input">{displayedError}</a>
                     </ErrorSummary.Item>
                   </ErrorSummary.List>
                 </ErrorSummary.Body>
               </ErrorSummary>
             )}
 
-            <FormGroup
-              className={`${errorType ? "nhsuk-form-group--error" : ""}`}
-            >
+            <FormGroup className={errorKey ? "nhsuk-form-group--error" : ""}>
               <Label htmlFor="presc-id-input" id="presc-id-label">
                 <h2
                   className="nhsuk-heading-m nhsuk-u-margin-bottom-1 no-outline"
@@ -127,25 +109,24 @@ export default function PrescriptionIdSearch() {
                 >
                   {PRESCRIPTION_ID_SEARCH_STRINGS.labelText}
                 </h2>
+                <HintText id="presc-id-hint" data-testid="prescription-id-hint">
+                  {PRESCRIPTION_ID_SEARCH_STRINGS.hintText}
+                </HintText>
               </Label>
-              <HintText id="presc-id-hint" data-testid="prescription-id-hint">
-                {PRESCRIPTION_ID_SEARCH_STRINGS.hintText}
-              </HintText>
 
-              {errorType && (
-                <ErrorMessage>
-                  {errorMessages[errorType]}
-                </ErrorMessage>
-              )}
+              <ErrorMessage id="presc-id-error" data-testid="prescription-id-error">
+                {errorKey ? displayedError : ""}
+              </ErrorMessage>
 
               <TextInput
                 id="presc-id-input"
                 name="prescriptionId"
                 value={prescriptionId}
                 onChange={handleInputChange}
-                className={errorType ? "nhsuk-input nhsuk-input--error" : "nhsuk-input"}
+                className={errorKey ? "nhsuk-input nhsuk-input--error" : "nhsuk-input"}
                 autoComplete="off"
                 data-testid="prescription-id-input"
+                aria-describedby={errorKey ? "presc-id-error" : undefined}
               />
             </FormGroup>
 

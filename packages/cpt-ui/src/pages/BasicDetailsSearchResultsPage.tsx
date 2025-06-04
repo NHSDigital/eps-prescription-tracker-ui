@@ -11,7 +11,7 @@ import {
 import {SearchResultsPageStrings} from "@/constants/ui-strings/BasicDetailsSearchResultsPageStrings"
 import {API_ENDPOINTS, FRONTEND_PATHS, NHS_REQUEST_URID} from "@/constants/environment"
 import {AuthContext} from "@/context/AuthProvider"
-import {PatientSummary} from "@cpt-ui-common/common-types"
+import {PatientSummary, PatientSummaryTypes} from "@cpt-ui-common/common-types/src"
 import http from "@/helpers/axios"
 import EpsSpinner from "@/components/EpsSpinner"
 
@@ -21,7 +21,7 @@ const mockPatients: Array<PatientSummary> = [
     nhsNumber: "9726919207",
     givenName: ["Issac"],
     familyName: "Wolderton-Rodriguez",
-    gender: "Male",
+    gender: PatientSummaryTypes.PatientSummaryGender.MALE,
     dateOfBirth: "6-May-2013",
     address: ["123 Brundel Close", "Headingley", "Leeds", "West Yorkshire", "LS6 1JL"]
   },
@@ -29,7 +29,7 @@ const mockPatients: Array<PatientSummary> = [
     nhsNumber: "9725919207",
     givenName: ["Steve"],
     familyName: "Wolderton-Rodriguez",
-    gender: "Male",
+    gender: PatientSummaryTypes.PatientSummaryGender.MALE,
     dateOfBirth: "6-May-2013",
     address: ["123 Brundel Close", "Headingley", "Leeds", "West Yorkshire", "LS6 1JL"]
   }
