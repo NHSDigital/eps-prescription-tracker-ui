@@ -4,6 +4,8 @@
     "rootDir": ".",
     "outDir": "lib",
     "strict": false,
+    "baseUrl": ".",
+    "tsBuildInfoFile": "lib/tsconfig.tsbuildinfo"
   },
   "include": ["src/**/*", "src/**/*.json"],
   "exclude": ["node_modules"],

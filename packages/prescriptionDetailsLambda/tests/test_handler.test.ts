@@ -75,7 +75,9 @@ describe("Lambda Handler Tests", () => {
     mockGetUsernameFromEvent.mockReturnValue("test_user")
     mockAuthenticateRequest.mockImplementation(() => {
       return Promise.resolve({
-        apigeeAccessToken: "apigee_access_token"
+        apigeeAccessToken: "apigee_access_token",
+        roleId: "dummy_role",
+        orgCode: "dummy_org"
       })
     })
 

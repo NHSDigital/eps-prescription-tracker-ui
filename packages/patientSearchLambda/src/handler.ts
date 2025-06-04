@@ -26,7 +26,11 @@ export type HandlerParameters = {
   logger: Logger,
   pdsClient: pds.Client,
   usernameExtractor: (event: APIGatewayProxyEvent) => string,
-  authenticationFunction: (username: string) => Promise<{apigeeAccessToken: string, roleId: string, orgCode: string}>
+  authenticationFunction: (username: string) => Promise<{
+    apigeeAccessToken: string,
+    roleId: string | undefined,
+    orgCode: string | undefined
+  }>
 }
 
 // Lambda handler function
@@ -102,6 +106,12 @@ export const lambdaHandler = async (
   }
 
   // Query PDS
+  if (roleId === undefined) {
+    throw new Error("roleId is undefined")
+  }
+  if (orgCode === undefined) {
+    throw new Error("orgCode is undefined")
+  }
   const patientSearchOutcome = await pdsClient
     .with_access_token(apigeeAccessToken)
     .with_role_id(roleId)

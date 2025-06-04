@@ -2,8 +2,9 @@
   "extends": "../../../tsconfig.defaults.json",
   "compilerOptions": {
     "rootDir": ".",
-    "strict": false,
     "outDir": "lib",
+    "baseUrl": ".",
+    "tsBuildInfoFile": "lib/tsconfig.tsbuildinfo"
   },
   "include": ["src/**/*", "src/**/*.json"],
   "exclude": ["node_modules"],

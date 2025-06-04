@@ -109,7 +109,9 @@ describe("handler tests with cis2 auth", () => {
     mockGetUsernameFromEvent.mockReturnValue("test_user")
     mockAuthenticateRequest.mockImplementation(() => {
       return Promise.resolve({
-        apigeeAccessToken: "apigee_access_token"
+        apigeeAccessToken: "apigee_access_token",
+        roleId: "dummy_role",
+        orgCode: "dummy_org"
       })
     })
     const event = {
@@ -166,7 +168,9 @@ describe("handler tests with cis2 auth", () => {
     mockGetUsernameFromEvent.mockReturnValue("test_user")
     mockAuthenticateRequest.mockImplementation(() => {
       return Promise.resolve({
-        apigeeAccessToken: "apigee_access_token"
+        apigeeAccessToken: "apigee_access_token",
+        roleId: "dummy_role",
+        orgCode: "dummy_org"
       })
     })
     const event = {
@@ -211,7 +215,9 @@ describe("handler tests with cis2 auth", () => {
     mockGetUsernameFromEvent.mockReturnValue("test_user")
     mockAuthenticateRequest.mockImplementation(() => {
       return Promise.resolve({
-        apigeeAccessToken: "apigee_access_token"
+        apigeeAccessToken: "apigee_access_token",
+        roleId: "dummy_role",
+        orgCode: "dummy_org"
       })
     })
     const event = {
