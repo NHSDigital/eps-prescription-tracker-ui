@@ -10,13 +10,16 @@
 
 .chargeable-status-banner-link {
   color: #fff;
+
+  &:hover,
+  &:visited,
+  &:active,
+  &:focus {
+    color: #fff;
+  }
+
   text-decoration: underline;
 }
-
-.cookie_info_link {
-  &:visited {
-    color: #005eb8;
-}}
 
 .nhsuk-cookie-banner-heading {
 font-size: 2rem;
