@@ -39,7 +39,12 @@ describe("Patient Details Lookup Service Tests", () => {
   })
 
   it("should successfully fetch and map patient details", async () => {
-    nock( mockEndpoint )
+    nock( mockEndpoint, {
+      reqheaders: {
+        Authorization: `Bearer ${mockAccessToken}`,
+        "NHSD-Session-URID": mockRoleId
+      }
+    })
       .get(`/Patient/${mockNhsNumber}`)
       .reply(200, mockPdsPatient)
     const outcome = await makeRequest()
