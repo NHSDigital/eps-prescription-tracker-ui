@@ -33,6 +33,18 @@
         "path": "../packages/prescriptionListLambda"
       },
       {
+        "name": "packages/prescriptionDetailsLambda",
+        "path": "../packages/prescriptionDetailsLambda"
+      },
+      {
+        "name": "packages/trackerUserInfoLambda",
+        "path": "../packages/trackerUserInfoLambda"
+      },
+      {
+        "name": "packages/selectedRoleLambda",
+        "path": "../packages/selectedRoleLambda"
+      },
+      {
         "name": "packages/patientSearchLambda",
         "path": "../packages/patientSearchLambda"
       },
@@ -61,20 +73,17 @@
         "path": "../packages/common/authFunctions"
       },
       {
+
+        "name": "packages/common/doHSClient",
+        "path": "../packages/common/doHSClient"
+      },
+      {
         "name": "packages/common/dynamoFunctions",
         "path": "../packages/common/dynamoFunctions"
       },
       {
         "name": "packages/auth_demo",
         "path": "../packages/auth_demo"
-      },
-      {
-        "name": "packages/trackerUserInfoLambda",
-        "path": "../packages/trackerUserInfoLambda"
-      },
-      {
-        "name": "packages/selectedRoleLambda",
-        "path": "../packages/selectedRoleLambda"
       }
     ],
     "settings": {

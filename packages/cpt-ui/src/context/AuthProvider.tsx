@@ -28,6 +28,7 @@ export interface AuthContextType {
   isSignedIn: boolean
   idToken: JWT | null
   accessToken: JWT | null
+  isAuthLoading?: boolean
   cognitoSignIn: (input?: SignInWithRedirectInput) => Promise<void>
   cognitoSignOut: () => Promise<void>
 }
@@ -40,6 +41,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
   const [isSignedIn, setIsSignedIn] = useLocalStorageState<boolean>("isSignedIn", "auth", false)
   const [idToken, setIdToken] = useLocalStorageState<JWT | null>("idToken", "auth", null)
   const [accessToken, setAccessToken] = useLocalStorageState<JWT | null>("accessToken", "auth", null)
+  const [isAuthLoading, setIsAuthLoading] = useState(true)
 
   const navigate = useNavigate()
   const location = useLocation()
@@ -49,6 +51,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
    */
   const getUser = async () => {
     console.log("Fetching user session...")
+    setIsAuthLoading(true)
     try {
       const authSession = await fetchAuthSession({forceRefresh: true})
       const sessionIdToken = authSession.tokens?.idToken
@@ -80,6 +83,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
           setIdToken(null)
           setAccessToken(null)
           setError("Cognito access token expired")
+          setIsAuthLoading(false)
           return
         }
 
@@ -91,6 +95,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
           setIdToken(null)
           setAccessToken(null)
           setError("Cognito ID token expired")
+          setIsAuthLoading(false)
           return
         }
 
@@ -102,6 +107,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
         const currentUser = await getCurrentUser()
         setUser(currentUser)
         setError(null)
+        setIsAuthLoading(false)
       } else {
         console.warn("Missing access or ID token.")
         setIsSignedIn(false)
@@ -109,6 +115,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
         setIdToken(null)
         setAccessToken(null)
         setError("Missing access or ID token")
+        setIsAuthLoading(false)
       }
     } catch (fetchError) {
       console.error("Error fetching user session:", fetchError)
@@ -118,6 +125,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
       setIdToken(null)
       setIsSignedIn(false)
       setError(String(fetchError))
+      setIsAuthLoading(false)
     }
   }
 
@@ -239,6 +247,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
       isSignedIn,
       idToken,
       accessToken,
+      isAuthLoading,
       cognitoSignIn,
       cognitoSignOut
     }}>

@@ -6,6 +6,7 @@ import {usePrescriptionInformation} from "@/context/PrescriptionInformationProvi
 import {STRINGS} from "@/constants/ui-strings/PrescriptionInformationBannerStrings"
 
 import {getStatusTagColour, getStatusDisplayText} from "@/helpers/statusMetadata"
+import {formatIssueDate} from "@/helpers/formatters"
 
 const PrescriptionInformationBanner: React.FC = () => {
   const {prescriptionInformation: prescription} = usePrescriptionInformation()
@@ -45,7 +46,7 @@ const PrescriptionInformationBanner: React.FC = () => {
         </div>
         <div className="patient-summary__block" id="summary-issue-date">
           <span className="patient-summary__info">
-            {STRINGS.ISSUE_DATE}: {prescription.issueDate}
+            {STRINGS.ISSUE_DATE}: {formatIssueDate(prescription.issueDate)}
           </span>
         </div>
         <div className="patient-summary__block" id="summary-status">
