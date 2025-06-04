@@ -23,9 +23,9 @@ do
    echo
    echo "*********************************************"
    echo "$i"
-   cd "packages/$i"
+   cd "packages/$i" || exit
    npx depcheck
-   cd -
+   cd - || exit
    echo
    # or do whatever with individual element of the array
 done
