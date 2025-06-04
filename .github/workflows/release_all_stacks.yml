@@ -55,6 +55,8 @@ on:
         type: string
       APIGEE_PDS_ENDPOINT:
         type: string
+      APIGEE_DOHS_ENDPOINT:
+        type: string
       JWT_KID:
         type: string
       ROLE_ID:
@@ -76,6 +78,8 @@ on:
         required: true
       APIGEE_API_SECRET:
         required: true
+      APIGEE_PTL_DOHS_API_KEY:
+        required: false
 
 jobs:
   check_first_deployment:
@@ -182,6 +186,7 @@ jobs:
       APIGEE_MOCK_TOKEN_ENDPOINT: ${{ inputs.APIGEE_MOCK_TOKEN_ENDPOINT }}
       APIGEE_PRESCRIPTIONS_ENDPOINT: ${{ inputs.APIGEE_PRESCRIPTIONS_ENDPOINT }}
       APIGEE_PDS_ENDPOINT: ${{ inputs.APIGEE_PDS_ENDPOINT }}
+      APIGEE_DOHS_ENDPOINT: ${{ inputs.APIGEE_DOHS_ENDPOINT }}
       JWT_KID: ${{ inputs.JWT_KID }}
       ROLE_ID: ${{ inputs.ROLE_ID }}
       CONFIG_FILE: stateless_resources.json
@@ -192,6 +197,7 @@ jobs:
       mockOidcClientId: ${{ secrets.mockOidcClientId }}
       APIGEE_API_KEY: ${{ secrets.APIGEE_API_KEY }}
       APIGEE_API_SECRET: ${{ secrets.APIGEE_API_SECRET }}
+      APIGEE_PTL_DOHS_API_KEY: ${{ secrets.APIGEE_PTL_DOHS_API_KEY }}
 
   update_cloudfront_kvs:
     runs-on: ubuntu-22.04

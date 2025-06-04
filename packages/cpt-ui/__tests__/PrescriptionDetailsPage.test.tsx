@@ -23,6 +23,7 @@ jest.mock("@/helpers/axios", () => ({
   get: jest.fn()
 }))
 import http from "@/helpers/axios"
+import {JWT} from "aws-amplify/auth"
 
 jest.mock("react-router-dom", () => {
   const actual = jest.requireActual("react-router-dom")
@@ -42,6 +43,21 @@ const defaultAuthState: AuthContextType = {
   error: null,
   idToken: null,
   accessToken: null,
+  cognitoSignIn: mockCognitoSignIn,
+  cognitoSignOut: mockCognitoSignOut,
+  isAuthLoading: false
+}
+
+const signedInAuthState: AuthContextType = {
+  isSignedIn: true,
+  user: {
+    username: "testUser",
+    userId: "test-user-id"
+  },
+  error: null,
+  idToken: {toString: () => "mockIdToken"} as unknown as JWT,
+  accessToken: {toString: () => "mockAccessToken"} as unknown as JWT,
+  isAuthLoading: false,
   cognitoSignIn: mockCognitoSignIn,
   cognitoSignOut: mockCognitoSignOut
 }
@@ -64,7 +80,7 @@ const MockAuthProvider = ({
         isSignedIn: true,
         user: {
           username:
-            (input?.provider as {custom: string})?.custom || "mockUser",
+            (input?.provider as { custom: string })?.custom || "mockUser",
           userId: "mock-user-id"
         },
         error: null,
@@ -152,14 +168,14 @@ describe("PrescriptionDetailsPage", () => {
 
   it("renders spinner while loading", async () => {
     // pending HTTP request.
-    (http.get as jest.Mock).mockImplementation(() => new Promise(() => {}))
+    (http.get as jest.Mock).mockImplementation(() => new Promise(() => { }))
     renderComponent("C0C757-A83008-C2D93L")
 
     expect(screen.getByTestId("eps-spinner")).toBeInTheDocument()
   })
 
   it("navigates to prescription not found when prescriptionId is missing", async () => {
-    renderComponent("") // No query string
+    renderComponent("", signedInAuthState) // No query string
 
     await waitFor(() => {
       expect(mockNavigate).toHaveBeenCalledWith(FRONTEND_PATHS.PRESCRIPTION_NOT_FOUND)
@@ -169,7 +185,7 @@ describe("PrescriptionDetailsPage", () => {
   it("navigates to prescription not found on unknown prescriptionId", async () => {
     (http.get as jest.Mock).mockRejectedValue(new Error("HTTP error"))
 
-    renderComponent("UNKNOWN_ID")
+    renderComponent("UNKNOWN_ID", signedInAuthState)
 
     await waitFor(() => {
       expect(mockNavigate).toHaveBeenCalledWith(FRONTEND_PATHS.PRESCRIPTION_NOT_FOUND)
@@ -183,7 +199,7 @@ describe("PrescriptionDetailsPage", () => {
 
     (http.get as jest.Mock).mockResolvedValue({status: 200, data: payload})
 
-    renderComponent("SUCCESS_ID")
+    renderComponent("SUCCESS_ID", signedInAuthState)
 
     await waitFor(() => {
       expect(screen.getByTestId("site-details-cards")).toBeInTheDocument()
@@ -201,7 +217,14 @@ describe("PrescriptionDetailsPage", () => {
   })
 
   it("displays loading message and spinner while fetching data", async () => {
-    renderComponent("EC5ACF-A83008-733FD3")
+
+    // let resolvePromise: (value) => void
+    // const promise = new Promise((resolve) => {
+    //   resolvePromise = resolve
+    // });
+
+    // (http.get as jest.Mock).mockImplementation(() => promise)
+    renderComponent("EC5ACF-A83008-733FD3", signedInAuthState)
 
     // Check that the loading message is rendered
     const loadingHeading = screen.getByRole("heading", {
@@ -231,7 +254,7 @@ describe("PrescriptionDetailsPage", () => {
 
       ; (http.get as jest.Mock).mockResolvedValue({status: 200, data: payload})
 
-    renderComponent("SUCCESS_ID")
+    renderComponent("SUCCESS_ID", signedInAuthState)
 
     await waitFor(() => {
       expect(window.__mockedPrescriptionInformation).toEqual(payload)

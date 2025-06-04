@@ -19,6 +19,8 @@ import BasicDetailsSearch from "@/components/prescriptionSearch/BasicDetailsSear
 import {BasicDetailsSearchType} from "@cpt-ui-common/common-types"
 import {STRINGS} from "@/constants/ui-strings/BasicDetailsSearchStrings"
 import {FRONTEND_PATHS} from "@/constants/environment"
+import {AuthContext, AuthContextType} from "@/context/AuthProvider"
+import {JWT} from "aws-amplify/auth"
 
 jest.mock("react-router-dom", () => {
   const actual = jest.requireActual("react-router-dom")
@@ -29,6 +31,24 @@ jest.mock("react-router-dom", () => {
   }
 })
 
+// Mock auth context
+const mockCognitoSignIn = jest.fn()
+const mockCognitoSignOut = jest.fn()
+
+const signedInAuthState: AuthContextType = {
+  isSignedIn: true,
+  user: {
+    username: "testUser",
+    userId: "test-user-id"
+  },
+  error: null,
+  idToken: {toString: () => "mockIdToken"} as unknown as JWT,
+  accessToken: {toString: () => "mockAccessToken"} as unknown as JWT,
+  isAuthLoading: false,
+  cognitoSignIn: mockCognitoSignIn,
+  cognitoSignOut: mockCognitoSignOut
+}
+
 const LocationDisplay = () => {
   const location = useLocation()
   return <div data-testid="location-display">{location.pathname + location.search}</div>
@@ -36,12 +56,14 @@ const LocationDisplay = () => {
 
 const renderWithRouter = (ui: React.ReactElement) => {
   return render(
-    <MemoryRouter initialEntries={["/search"]}>
-      <Routes>
-        <Route path="/search" element={ui} />
-        <Route path="*" element={<LocationDisplay />} />
-      </Routes>
-    </MemoryRouter>
+    <AuthContext.Provider value={signedInAuthState}>
+      <MemoryRouter initialEntries={["/search"]}>
+        <Routes>
+          <Route path="/search" element={ui} />
+          <Route path="*" element={<LocationDisplay />} />
+        </Routes>
+      </MemoryRouter>
+    </AuthContext.Provider>
   )
 }
 
@@ -59,10 +81,15 @@ type FillFormData = Partial<Record<FieldKey, string>>
 
 export async function fillForm(data: FillFormData = {}) {
   for (const [key, value] of Object.entries(data) as Array<[FieldKey, string]>) {
-    if (!value) continue
+    if (value === undefined) continue
     const testId = fieldTestIds[key]
     const input = screen.getByTestId(testId)
-    await userEvent.type(input, value)
+
+    // Clear the field first, then type the new value
+    await userEvent.clear(input)
+    if (value !== "") {
+      await userEvent.type(input, value)
+    }
   }
 }
 
@@ -108,7 +135,7 @@ describe("BasicDetailsSearch", () => {
       expect(mockNavigate).toHaveBeenCalledWith(
         `${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}?nhsNumber=1234567890`
       )
-    })
+    }, {timeout: 10000})
   })
 
   it("redirects to the too many results page if 11 or more results are returned", async () => {

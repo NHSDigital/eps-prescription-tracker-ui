@@ -30,7 +30,6 @@ import {PrescribedDispensedItemsCards} from "@/components/prescriptionDetails/Pr
 import {MessageHistoryCard} from "@/components/prescriptionDetails/MessageHistoryCard"
 
 import http from "@/helpers/axios"
-import {getMockPayload} from "@/helpers/mockPayload"
 
 export default function PrescriptionDetailsPage() {
   const auth = useContext(AuthContext)
@@ -49,7 +48,7 @@ export default function PrescriptionDetailsPage() {
   const [dispensedItems, setDispensedItems] = useState<Array<DispensedItem>>([])
   const [messageHistory, setMessageHistory] = useState<Array<MessageHistory>>([])
 
-  const getPrescriptionDetails = async (prescriptionId: string) => {
+  const getPrescriptionDetails = async (prescriptionId: string): Promise<PrescriptionDetailsResponse | undefined> => {
     console.log("Prescription ID", prescriptionId)
     const url = `${API_ENDPOINTS.PRESCRIPTION_DETAILS}/${prescriptionId}`
 
@@ -70,28 +69,15 @@ export default function PrescriptionDetailsPage() {
 
       // Assign response payload or throw if none received
       payload = response.data
+      setLoading(false)
       if (!payload) {
         throw new Error("No payload received from the API")
       }
     } catch (err) {
-      console.error("Failed to fetch prescription details. Using mock data fallback.", err)
-
-      // FIXME: This is a static, mock data fallback we can use in lieu of the real data
-      // backend endpoint, which is still waiting for the auth SNAFU to get sorted out.
-      const mockPayload = getMockPayload(prescriptionId)
-
-      // If no matching mock scenario exists, redirect to 'not found' page and reset state
-      if (!mockPayload) {
-        setPrescriptionInformation(undefined)
-        setPatientDetails(undefined)
-        setPrescriber(undefined)
-        setDispenser(undefined)
-        setNominatedDispenser(undefined)
-        navigate(FRONTEND_PATHS.PRESCRIPTION_NOT_FOUND)
-        return
-      }
-
-      payload = mockPayload
+      console.error("Failed to fetch prescription details", err)
+      // Navigate to prescription not found when API call fails
+      navigate(FRONTEND_PATHS.PRESCRIPTION_NOT_FOUND)
+      return
     }
 
     // Use the populated payload (retrieved live or from mock fallback)
@@ -113,24 +99,38 @@ export default function PrescriptionDetailsPage() {
     } else {
       setNominatedDispenser(payload.nominatedDispenser.organisationSummaryObjective)
     }
+
+    return payload
   }
 
   useEffect(() => {
     const runGetPrescriptionDetails = async () => {
-      setLoading(true)
+      // Check if auth is ready
+      if (auth?.isAuthLoading) {
+        console.log("Auth still loading, waiting...")
+        return
+      }
+
+      if (!auth?.idToken) {
+        console.log("Auth token not ready, waiting...")
+        return
+      }
 
       const prescriptionId = queryParams.get("prescriptionId")
       if (!prescriptionId) {
         navigate(FRONTEND_PATHS.PRESCRIPTION_NOT_FOUND)
+        return
       }
-      await getPrescriptionDetails(prescriptionId!)
 
-      setLoading(false)
+      console.log("useEffect triggered for prescription:", prescriptionId)
+      setLoading(true)
+      await getPrescriptionDetails(prescriptionId)
     }
-    runGetPrescriptionDetails()
-  }, [])
 
-  if (loading || !prescriber) {
+    runGetPrescriptionDetails()
+  }, [queryParams, auth?.idToken, auth?.isAuthLoading])
+
+  if (loading) {
     return (
       <main id="main-content" className="nhsuk-main-wrapper nhsuk-main-wrapper--s">
         <Container width="full" fluid={true} className="container-details-page">
@@ -181,7 +181,7 @@ export default function PrescriptionDetailsPage() {
           {/* Prescriber and dispenser information */}
           <Col width="one-third">
             <SiteDetailsCards
-              prescriber={prescriber}
+              prescriber={prescriber!}
               dispenser={dispenser}
               nominatedDispenser={nominatedDispenser}
             />
