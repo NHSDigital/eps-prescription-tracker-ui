@@ -4,8 +4,9 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
+    "compile": "tsc --build",
     "dev": "vite --host",
-    "build": "vite build",
+    "build": "tsc --build && vite build",
     "lint": "eslint  --max-warnings 0 --fix --config ../../eslint.config.mjs .",
     "start": "vite preview",
     "test": "NODE_NO_WARNINGS=1 jest --no-cache --coverage",

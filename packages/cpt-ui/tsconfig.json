@@ -1,6 +1,5 @@
 {
   "extends": "../../tsconfig.defaults.json",
-  "references": [],
   "include": [
     "src/**/*",
     "tests/**/*",
@@ -22,12 +21,12 @@
     "module": "esnext",
     "isolatedModules": true,
     "jsx": "preserve",
-    "plugins": [
-      {
-        "name": "next"
-      }
-    ],
     "composite": false
   },
-  "exclude": ["node_modules", ".next"]
+  "exclude": ["node_modules"],
+  "references": [
+    {
+      "path": "../common/commonTypes"
+    }
+  ]
 }
