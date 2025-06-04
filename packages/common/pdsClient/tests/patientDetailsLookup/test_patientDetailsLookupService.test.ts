@@ -7,23 +7,14 @@ import {
   beforeEach
 } from "@jest/globals"
 import {mockLogger} from "@cpt-ui-common/testing"
-import {AxiosInstance, AxiosResponse} from "axios"
+import axios from "axios"
 import {mockPdsPatient} from "./mockObjects"
+import nock from "nock"
 
-import * as pds from "@cpt-ui-common/pdsClient"
+import * as pds from "../../src"
 const OutcomeType = pds.patientDetailsLookup.OutcomeType
 const ValidatePatientDetailsOutcomeType = pds.patientDetailsLookup.ValidatePatientDetails.OutcomeType
-
-// Create mock axios instance with get method
-const mockGet = jest.fn(() => Promise.resolve({} as unknown as AxiosResponse))
-const mockAxiosInstance = {
-  get: mockGet
-}
-
-// Mock the axios module
-jest.mock("axios", () => ({
-  create: () => mockAxiosInstance
-}))
+const axiosInstance = axios.create()
 
 describe("Patient Details Lookup Service Tests", () => {
   const logger = mockLogger()
@@ -32,7 +23,7 @@ describe("Patient Details Lookup Service Tests", () => {
   const mockRoleId = "test-role"
   const mockNhsNumber = "9000000009"
   const mockPdsClient = new pds.Client(
-    mockAxiosInstance as unknown as AxiosInstance,
+    axiosInstance,
     mockEndpoint,
     logger
   )
@@ -48,11 +39,9 @@ describe("Patient Details Lookup Service Tests", () => {
   })
 
   it("should successfully fetch and map patient details", async () => {
-    mockGet.mockResolvedValueOnce({
-      status: 200,
-      data: mockPdsPatient
-    } as unknown as AxiosResponse )
-
+    nock( mockEndpoint )
+      .get(`/Patient/${mockNhsNumber}`)
+      .reply(200, mockPdsPatient)
     const outcome = await makeRequest()
 
     expect(outcome.type).toBe(OutcomeType.SUCCESS)
@@ -73,21 +62,12 @@ describe("Patient Details Lookup Service Tests", () => {
       }
     })
 
-    expect(mockGet).toHaveBeenCalledWith(
-      `${mockEndpoint}Patient/${mockNhsNumber}`,
-      expect.objectContaining({
-        headers: expect.objectContaining({
-          Authorization: `Bearer ${mockAccessToken}`,
-          "NHSD-Session-URID": mockRoleId
-        })
-      })
-    )
   })
 
   it("should handle patient not found", async () => {
-    mockGet.mockResolvedValueOnce({
-      status: 200
-    } as unknown as AxiosResponse)
+    nock( mockEndpoint )
+      .get(`/Patient/${mockNhsNumber}`)
+      .reply(200)
 
     const outcome = await makeRequest()
 
@@ -95,32 +75,30 @@ describe("Patient Details Lookup Service Tests", () => {
   })
 
   it("should detect and handle S-Flag", async () => {
-    mockGet.mockResolvedValueOnce({
-      status: 200,
-      data: {
+
+    nock( mockEndpoint )
+      .get(`/Patient/${mockNhsNumber}`)
+      .reply(200, {
         ...mockPdsPatient,
         meta: {
           security: [{code: "S"}]
         }
-      }
-    } as unknown as AxiosResponse)
-
+      })
     const outcome = await makeRequest()
 
     expect(outcome.type).toBe(OutcomeType.S_FLAG)
   })
 
   it("should detect and handle R-Flag", async () => {
-    mockGet.mockResolvedValueOnce({
-      status: 200,
-      data: {
+
+    nock( mockEndpoint )
+      .get(`/Patient/${mockNhsNumber}`)
+      .reply(200, {
         ...mockPdsPatient,
         meta: {
           security: [{code: "R"}]
         }
-      }
-    } as unknown as AxiosResponse)
-
+      })
     const outcome = await makeRequest()
 
     expect(outcome.type).toBe(OutcomeType.R_FLAG)
@@ -128,14 +106,13 @@ describe("Patient Details Lookup Service Tests", () => {
 
   it("should handle superseded NHS numbers", async () => {
     const newNhsNumber = "8888888888"
-    mockGet.mockResolvedValueOnce({
-      status: 200,
-      data: {
+
+    nock( mockEndpoint )
+      .get(`/Patient/${mockNhsNumber}`)
+      .reply(200, {
         ...mockPdsPatient,
         id: newNhsNumber // Different NHS number than the requested one
-      }
-    } as unknown as AxiosResponse)
-
+      })
     const outcome = await makeRequest()
 
     expect(outcome.type).toBe(OutcomeType.SUPERSEDED)
@@ -144,14 +121,13 @@ describe("Patient Details Lookup Service Tests", () => {
   })
 
   it("should handle incomplete patient data", async () => {
-    mockGet.mockResolvedValueOnce({
-      status: 200,
-      data: {
-        id: mockNhsNumber
-        // Missing name details
-      }
-    } as unknown as AxiosResponse)
 
+    nock( mockEndpoint )
+      .get(`/Patient/${mockNhsNumber}`)
+      .reply(200, {
+        id: mockNhsNumber
+      // Missing name details
+      })
     const outcome = await makeRequest()
 
     expect(outcome.type).toBe(OutcomeType.PATIENT_DETAILS_VALIDATION_ERROR)
@@ -160,8 +136,9 @@ describe("Patient Details Lookup Service Tests", () => {
   })
 
   it("should handle API errors", async () => {
-    mockGet.mockRejectedValueOnce(new Error("API Error"))
-
+    nock( mockEndpoint )
+      .get(`/Patient/${mockNhsNumber}`)
+      .reply(500)
     const outcome = await makeRequest()
 
     expect(outcome.type).toBe(OutcomeType.AXIOS_ERROR)

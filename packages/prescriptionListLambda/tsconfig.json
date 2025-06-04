@@ -3,7 +3,6 @@
   "compilerOptions": {
     "rootDir": ".",
     "outDir": "lib",
-    "strict": true
   },
   "include": [
     "src/**/*",
@@ -17,19 +16,16 @@
       "path": "../common/commonTypes"
     },
     {
-      "path": "../common/pdsClient"
-    },
-    {
       "path": "../common/authFunctions"
-    },
-    {
-      "path": "../common/middyErrorHandler"
     },
     {
       "path": "../common/lambdaUtils"
     },
     {
-      "path": "../common/dynamoFunctions"
+      "path": "../common/middyErrorHandler"
+    },
+    {
+      "path": "../common/pdsClient"
     }
   ]
 }

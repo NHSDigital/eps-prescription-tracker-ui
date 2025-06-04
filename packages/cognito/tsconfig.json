@@ -3,11 +3,6 @@
   "compilerOptions": {
     "rootDir": ".",
     "outDir": "lib",
-    "paths": {
-      "@/*": [
-        "./src/*"
-      ]
-    }
   },
   "include": [
     "src/**/*",
@@ -28,9 +23,6 @@
     },
     {
       "path": "../common/lambdaUtils"
-    },
-    {
-      "path": "../common/dynamoFunctions"
     }
   ]
 }

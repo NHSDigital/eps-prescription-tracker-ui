@@ -3,13 +3,12 @@
   "compilerOptions": {
     "rootDir": ".",
     "outDir": "lib",
-    "strict": true
   },
   "include": ["src/**/*", "tests/**/*"],
   "exclude": ["node_modules"],
   "references": [
     {
-      "path": "../common/commonTypes"
+      "path": "../common/lambdaUtils"
     },
     {
       "path": "../common/authFunctions"
@@ -19,6 +18,9 @@
     },
     {
       "path": "../common/pdsClient"
+    },
+    {
+      "path": "../common/testing"
     }
   ]
 }

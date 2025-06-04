@@ -55,7 +55,7 @@ jest.unstable_mockModule("@/userInfoHelpers", () => {
   }
 })
 
-const {handler} = await import("@/handler")
+const {handler} = await import("../src/handler")
 
 describe("Lambda Handler Tests with mock disabled", () => {
   let event = {...mockAPIGatewayProxyEvent}

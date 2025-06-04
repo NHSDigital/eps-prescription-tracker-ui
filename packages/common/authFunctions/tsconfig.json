@@ -2,14 +2,14 @@
   "extends": "../../../tsconfig.defaults.json",
   "compilerOptions": {
     "rootDir": ".",
+    "strict": false,
     "outDir": "lib",
-    "strict": false
   },
   "include": ["src/**/*", "src/**/*.json"],
   "exclude": ["node_modules"],
   "references": [
     {
       "path": "../dynamoFunctions"
-    }
+    },
   ]
 }
