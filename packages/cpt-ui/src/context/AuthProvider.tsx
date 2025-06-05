@@ -59,10 +59,14 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
 
       console.log("Tokens: ", sessionIdToken, sessionAccessToken)
 
+      //users need to be able to access cookie info without being logged in.
+      // without these URLs added theyre returned to /login on refresh
       if (!sessionIdToken || !sessionAccessToken) {
         const noRedirectPaths = [
           FRONTEND_PATHS.LOGIN,
-          FRONTEND_PATHS.LOGOUT
+          FRONTEND_PATHS.LOGOUT,
+          "/cookies",
+          "/cookies-selected"
         ]
 
         if (!noRedirectPaths.includes(normalizePath(location.pathname))) {
