@@ -1,17 +1,13 @@
 export const STRINGS = {
   heading: "Too many search results",
-  intro: "There are too many results for these patient details:",
-  firstName: "First name:",
-  lastName: "Last name:",
-  dob: "Date of birth:",
-  postcode: "Postcode:",
-  retryMessage: "There are too many results for this search. Try adding more ",
-  basicDetailsLinkText: "basic details",
+  resultsMessage: "There are too many results for the details you searched for.",
+  retryMessage: "Try ",
+  basicDetailsLinkText: "adding more basic details",
   retryMessageSuffix: " and searching again.",
-  alternativeSearch: "You can also search by ",
-  nhsNumberLinkText: "NHS number",
+  alternativeSearch: "You can also ",
+  nhsNumberLinkText: "search using an NHS number",
   orText: " or ",
-  prescriptionIdLinkText: "prescription ID",
+  prescriptionIdLinkText: "search using a prescription ID",
   endPunctuation: ".",
   goBackLink: "Go back"
 }

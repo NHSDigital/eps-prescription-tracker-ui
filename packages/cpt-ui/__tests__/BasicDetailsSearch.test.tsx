@@ -22,6 +22,27 @@ import {FRONTEND_PATHS} from "@/constants/environment"
 import {AuthContext, AuthContextType} from "@/context/AuthProvider"
 import {JWT} from "aws-amplify/auth"
 
+// Utility function to create a query string from form data
+function makeQueryString(
+  formData: Record<string, string>,
+  flags: Record<string, string> = {}
+): string {
+  const params = new URLSearchParams(
+    Object.fromEntries(
+      Object.entries({
+        firstName: formData.firstName ?? "",
+        lastName: formData.lastName ?? "",
+        dobDay: formData.dobDay ?? "",
+        dobMonth: formData.dobMonth ?? "",
+        dobYear: formData.dobYear ?? "",
+        postcode: formData.postcode ?? "",
+        ...flags
+      })
+    )
+  )
+  return params.toString()
+}
+
 jest.mock("react-router-dom", () => {
   const actual = jest.requireActual("react-router-dom")
   return {
@@ -115,8 +136,8 @@ describe("BasicDetailsSearch", () => {
   afterEach(() => cleanup())
 
   it("redirects to the prescription list if only one patient is found from the basic details search", async () => {
-    const mockNavigate = jest.fn()
-      ; (useNavigate as jest.Mock).mockReturnValue(mockNavigate)
+    const mockNavigate = jest.fn();
+    (useNavigate as jest.Mock).mockReturnValue(mockNavigate)
 
     renderWithRouter(<BasicDetailsSearch />)
 
@@ -138,9 +159,61 @@ describe("BasicDetailsSearch", () => {
     }, {timeout: 10000})
   })
 
-  it("redirects to the too many results page if 11 or more results are returned", async () => {
-    const mockNavigate = jest.fn()
-      ; (useNavigate as jest.Mock).mockReturnValue(mockNavigate)
+  it("redirects to the patient not found page when NHS number is missing (empty string)", async () => {
+    const mockNavigate = jest.fn();
+    (useNavigate as jest.Mock).mockReturnValue(mockNavigate)
+
+    renderWithRouter(<BasicDetailsSearch />)
+
+    const formData = {
+      firstName: "Not",
+      lastName: "SpecialNotFound",
+      dobDay: "01",
+      dobMonth: "01",
+      dobYear: "1990",
+      postcode: "NO0 0NE"
+    }
+
+    await fillForm(formData)
+    await submitForm()
+
+    await waitFor(() => {
+      const queryString = makeQueryString(formData, {notFound: "true"})
+      expect(mockNavigate).toHaveBeenCalledWith(
+        `${FRONTEND_PATHS.PATIENT_SEARCH_RESULTS}?${queryString}`
+      )
+    })
+  })
+
+  it("redirects to the patient search results page if more than one but fewer than 11 patients are found", async () => {
+    const mockNavigate = jest.fn();
+    (useNavigate as jest.Mock).mockReturnValue(mockNavigate)
+
+    renderWithRouter(<BasicDetailsSearch />)
+
+    const formData = {
+      firstName: "",
+      lastName: "Wolderton-Rodriguez",
+      dobDay: "06",
+      dobMonth: "05",
+      dobYear: "2013",
+      postcode: "LS6 1JL"
+    }
+
+    await fillForm(formData)
+    await submitForm()
+
+    await waitFor(() => {
+      const queryString = makeQueryString(formData)
+      expect(mockNavigate).toHaveBeenCalledWith(
+        `${FRONTEND_PATHS.PATIENT_SEARCH_RESULTS}?${queryString}`
+      )
+    })
+  })
+
+  it("redirects to the patient search results page if more than 10 patients found", async () => {
+    const mockNavigate = jest.fn();
+    (useNavigate as jest.Mock).mockReturnValue(mockNavigate)
 
     renderWithRouter(<BasicDetailsSearch />)
 
@@ -157,53 +230,9 @@ describe("BasicDetailsSearch", () => {
     await submitForm()
 
     await waitFor(() => {
+      const queryString = makeQueryString(formData, {tooMany: "true"})
       expect(mockNavigate).toHaveBeenCalledWith(
-        FRONTEND_PATHS.SEARCH_RESULTS_TOO_MANY,
-        {state: formData}
-      )
-    })
-  })
-
-  it("redirects to the patient search results page if more than one but fewer than 11 patients are found", async () => {
-    const mockNavigate = jest.fn()
-      ; (useNavigate as jest.Mock).mockReturnValue(mockNavigate)
-
-    renderWithRouter(<BasicDetailsSearch />)
-
-    await fillForm({
-      firstName: "",
-      lastName: "Wolderton-Rodriguez",
-      dobDay: "06",
-      dobMonth: "05",
-      dobYear: "2013",
-      postcode: "LS6 1JL"
-    })
-
-    await submitForm()
-
-    await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith(
-        FRONTEND_PATHS.PATIENT_SEARCH_RESULTS,
-        {
-          state: {
-            patients: [
-              {
-                nhsNumber: "9726919207",
-                given: "Issac",
-                family: "Wolderton-Rodriguez",
-                dateOfBirth: "06-05-2013",
-                postcode: "LS6 1JL"
-              },
-              {
-                nhsNumber: "9726919207",
-                given: "Steve",
-                family: "Wolderton-Rodriguez",
-                dateOfBirth: "06-05-2013",
-                postcode: "LS6 1JL"
-              }
-            ]
-          }
-        }
+        `${FRONTEND_PATHS.PATIENT_SEARCH_RESULTS}?${queryString}`
       )
     })
   })
