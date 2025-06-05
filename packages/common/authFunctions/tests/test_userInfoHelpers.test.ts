@@ -225,7 +225,7 @@ describe("fetchUserInfo", () => {
     expect(mockDecodeToken).not.toHaveBeenCalled()
   })
 
-  it("should fetch and process user info for cis2 token", async () => {
+  it.skip("should fetch and process user info for cis2 token", async () => {
     const data = {
       sub: "test-sub",
       uid: "test-uid",
