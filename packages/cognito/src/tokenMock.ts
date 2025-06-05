@@ -153,7 +153,11 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
       username: `Mock_${userInfoResponse.user_details.sub}`,
       apigeeAccessToken: exchangeResult.accessToken,
       apigeeRefreshToken: exchangeResult.refreshToken,
-      apigeeExpiresIn: exchangeResult.expiresIn
+      apigeeExpiresIn: exchangeResult.expiresIn,
+      rolesWithAccess: userInfoResponse.roles_with_access,
+      rolesWithoutAccess: userInfoResponse.roles_without_access,
+      currentlySelectedRole: userInfoResponse.currently_selected_role,
+      userDetails: userInfoResponse.user_details
     },
     logger
   )
