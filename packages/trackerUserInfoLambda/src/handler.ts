@@ -7,8 +7,12 @@ import middy from "@middy/core"
 import inputOutputLogger from "@middy/input-output-logger"
 import httpHeaderNormalizer from "@middy/http-header-normalizer"
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
-import {getUsernameFromEvent, initializeOidcConfig, authenticateRequest} from "@cpt-ui-common/authFunctions"
-import {fetchUserInfo} from "./userInfoHelpers"
+import {
+  getUsernameFromEvent,
+  initializeOidcConfig,
+  authenticateRequest,
+  fetchUserInfo
+} from "@cpt-ui-common/authFunctions"
 import {getTokenMapping, updateTokenMapping} from "@cpt-ui-common/dynamoFunctions"
 
 /*

@@ -10,7 +10,7 @@ export type RoleDetails = {
     site_address?: string
   }
 
-export type UserDetails = Pick<UserInfoResponse, "family_name" | "given_name">
+export type UserDetails = Pick<UserInfoResponse, "sub" | "name" | "family_name" | "given_name">
 
 export type TrackerUserInfo = {
     roles_with_access: Array<RoleDetails>
@@ -110,6 +110,8 @@ export const extractRoleInformation = (
 
   // Extract user details
   const userDetails: UserDetails = {
+    sub: data.sub,
+    name: data.name,
     family_name: data.family_name,
     given_name: data.given_name
   }
