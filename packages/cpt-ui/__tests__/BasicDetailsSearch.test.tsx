@@ -135,57 +135,7 @@ describe("BasicDetailsSearch", () => {
   beforeEach(() => jest.resetAllMocks())
   afterEach(() => cleanup())
 
-  it("redirects to the prescription list if only one patient is found from the basic details search", async () => {
-    const mockNavigate = jest.fn();
-    (useNavigate as jest.Mock).mockReturnValue(mockNavigate)
-
-    renderWithRouter(<BasicDetailsSearch />)
-
-    await fillForm({
-      firstName: "James",
-      lastName: "Smith",
-      dobDay: "02",
-      dobMonth: "04",
-      dobYear: "2006",
-      postcode: "LS1 1AB"
-    })
-
-    await submitForm()
-
-    await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith(
-        `${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}?nhsNumber=1234567890`
-      )
-    }, {timeout: 10000})
-  })
-
-  it("redirects to the patient not found page when NHS number is missing (empty string)", async () => {
-    const mockNavigate = jest.fn();
-    (useNavigate as jest.Mock).mockReturnValue(mockNavigate)
-
-    renderWithRouter(<BasicDetailsSearch />)
-
-    const formData = {
-      firstName: "Not",
-      lastName: "SpecialNotFound",
-      dobDay: "01",
-      dobMonth: "01",
-      dobYear: "1990",
-      postcode: "NO0 0NE"
-    }
-
-    await fillForm(formData)
-    await submitForm()
-
-    await waitFor(() => {
-      const queryString = makeQueryString(formData, {notFound: "true"})
-      expect(mockNavigate).toHaveBeenCalledWith(
-        `${FRONTEND_PATHS.PATIENT_SEARCH_RESULTS}?${queryString}`
-      )
-    })
-  })
-
-  it("redirects to the patient search results page if more than one but fewer than 11 patients are found", async () => {
+  it("redirects to the patient search results page", async () => {
     const mockNavigate = jest.fn();
     (useNavigate as jest.Mock).mockReturnValue(mockNavigate)
 
@@ -205,32 +155,6 @@ describe("BasicDetailsSearch", () => {
 
     await waitFor(() => {
       const queryString = makeQueryString(formData)
-      expect(mockNavigate).toHaveBeenCalledWith(
-        `${FRONTEND_PATHS.PATIENT_SEARCH_RESULTS}?${queryString}`
-      )
-    })
-  })
-
-  it("redirects to the patient search results page if more than 10 patients found", async () => {
-    const mockNavigate = jest.fn();
-    (useNavigate as jest.Mock).mockReturnValue(mockNavigate)
-
-    renderWithRouter(<BasicDetailsSearch />)
-
-    const formData = {
-      firstName: "",
-      lastName: "Jones",
-      dobDay: "16",
-      dobMonth: "07",
-      dobYear: "1985",
-      postcode: ""
-    }
-
-    await fillForm(formData)
-    await submitForm()
-
-    await waitFor(() => {
-      const queryString = makeQueryString(formData, {tooMany: "true"})
       expect(mockNavigate).toHaveBeenCalledWith(
         `${FRONTEND_PATHS.PATIENT_SEARCH_RESULTS}?${queryString}`
       )
