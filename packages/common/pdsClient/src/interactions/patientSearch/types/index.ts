@@ -16,5 +16,5 @@ export type PatientSearchParameters = {
   familyName: Name,
   givenName?: Name,
   dateOfBirth: DateOfBirth
-  postcode: Postcode
+  postcode?: Postcode
 }

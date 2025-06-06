@@ -221,10 +221,8 @@ export class ApiFunctions extends Construct {
       }
     })
 
-    // const apiFunctionsPolicies: Array<IManagedPolicy> = [
-    //   trackerUserInfoLambda.executeLambdaManagedPolicy,
-    //   prescriptionListLambda.executeLambdaManagedPolicy
-    // ]
+    // Add the policy to apiFunctionsPolicies
+    apiFunctionsPolicies.push(patientSearchLambda.executeLambdaManagedPolicy)
 
     // Suppress the AwsSolutions-L1 rule for the prescription list Lambda function
     NagSuppressions.addResourceSuppressions(prescriptionListLambda.lambda, [

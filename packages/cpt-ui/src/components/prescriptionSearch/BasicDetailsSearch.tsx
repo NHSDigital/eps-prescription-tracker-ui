@@ -1,9 +1,4 @@
-import React, {
-  useContext,
-  useState,
-  useEffect,
-  useRef
-} from "react"
+import React, {useState, useEffect, useRef} from "react"
 import {
   Container,
   Row,
@@ -20,76 +15,12 @@ import {
   Fieldset
 } from "nhsuk-react-components"
 import {useNavigate, useSearchParams, createSearchParams} from "react-router-dom"
-import {AuthContext} from "@/context/AuthProvider"
-import http from "@/helpers/axios"
-import {formatDobForSearch} from "@/helpers/formatters"
 import {validateBasicDetails, getInlineErrors} from "@/helpers/validateBasicDetails"
 import {errorFocusMap, ErrorKey, resolveDobInvalidFields} from "@/helpers/basicDetailsValidationMeta"
 import {STRINGS} from "@/constants/ui-strings/BasicDetailsSearchStrings"
-import {API_ENDPOINTS, FRONTEND_PATHS, NHS_REQUEST_URID} from "@/constants/environment"
-import {BasicDetailsSearchType, PatientSummary, PatientSummaryTypes} from "@cpt-ui-common/common-types"
-
-// Temporary mock data used for frontend search simulation
-const mockPatient: Array<PatientSummary> = [
-  {
-    nhsNumber: "1234567890",
-    givenName: ["James"],
-    familyName: "Smith",
-    gender: PatientSummaryTypes.PatientSummaryGender.MALE,
-    dateOfBirth: "02-04-2006",
-    address: ["1 Main Street", "Leeds"],
-    postcode: "LS1 1AB"
-  }
-]
-
-const mockMultiplePatient: Array<PatientSummary> = [
-  {
-    nhsNumber: "9726919207",
-    givenName: ["Issac"],
-    familyName: "Wolderton-Rodriguez",
-    gender: PatientSummaryTypes.PatientSummaryGender.MALE,
-    dateOfBirth: "06-05-2013",
-    address: ["123 Brundel Close", "Headingley", "Leeds", "West Yorkshire", "LS6 1JL"],
-    postcode: "LS6 1JL"
-  },
-  {
-    nhsNumber: "9726919207",
-    givenName: ["Steve"],
-    familyName: "Wolderton-Rodriguez",
-    gender: PatientSummaryTypes.PatientSummaryGender.MALE,
-    dateOfBirth: "06-05-2013",
-    address: ["123 Brundel Close", "Headingley", "Leeds", "West Yorkshire", "LS6 1JL"],
-    postcode: "LS6 1JL"
-  }
-]
-
-const mockNotFoundPatients: Array<PatientSummary> = [
-  {
-    nhsNumber: "",
-    givenName: ["Not", "Found"],
-    familyName: "SpecialNotFound",
-    gender: PatientSummaryTypes.PatientSummaryGender.OTHER,
-    dateOfBirth: "01-01-1990",
-    address: ["No Address"],
-    postcode: "NO0 0NE"
-  }
-]
-
-const mockTooManyPatients: Array<PatientSummary> = Array.from({length: 11}, (_, i) => ({
-  nhsNumber: (9000000000 + i).toString(),
-  givenName: ["David"],
-  familyName: "Jones",
-  gender: PatientSummaryTypes.PatientSummaryGender.OTHER,
-  dateOfBirth: "16-07-1985",
-  address: ["Some Address"],
-  postcode: "LS1 1AB"
-}))
-
-// Utility to normalize input for case-insensitive and whitespace-tolerant comparison
-const formatInput = (input: string) => input.trim().toLowerCase()
+import {FRONTEND_PATHS} from "@/constants/environment"
 
 export default function BasicDetailsSearch() {
-  const auth = useContext(AuthContext)
   const navigate = useNavigate()
   const errorRef = useRef<HTMLDivElement | null>(null)
 
@@ -194,7 +125,7 @@ export default function BasicDetailsSearch() {
       return
     }
 
-    const formState: BasicDetailsSearchType = {
+    const queryParams = {
       firstName,
       lastName,
       dobDay,
@@ -202,77 +133,8 @@ export default function BasicDetailsSearch() {
       dobYear,
       postcode
     }
-
-    try {
-      // Attempt to fetch patient details from the backend API
-      const response = await http.post(API_ENDPOINTS.PATIENT_SEARCH, {
-        headers: {
-          Authorization: `Bearer ${auth?.idToken}`,
-          "NHSD-Session-URID": NHS_REQUEST_URID
-        },
-        ...formState
-      })
-
-      // Validate HTTP response status
-      if (response.status !== 200) {
-        throw new Error(`Status Code: ${response.status}`)
-      }
-
-      // Assign response payload or throw if none received
-      const payload = response.data
-      if (!payload) {
-        throw new Error("No payload received from the API")
-      }
-    } catch (err) {
-      console.error("Failed to fetch patient details. Using mock data fallback.", err)
-
-      // Construct a normalized DOB string to match against mock patient data,
-      // since mock DOBs are stored in the format 'DD-MM-YYYY'
-      const searchDob = formatDobForSearch({dobDay, dobMonth, dobYear})
-
-      const allMockPatients = [
-        ...mockPatient,
-        ...mockMultiplePatient,
-        ...mockNotFoundPatients,
-        ...mockTooManyPatients
-      ]
-
-      const matchedPatients = allMockPatients.filter(p => {
-        const matchFirstName = firstName ? formatInput(p.givenName?.[0] ?? "") === formatInput(firstName) : true
-        const matchLastName = lastName ? formatInput(p.familyName) === formatInput(lastName) : true
-        const matchDob = p.dateOfBirth === searchDob
-        const matchPostcode = postcode ? formatInput(p.postcode ?? "") === formatInput(postcode) : true
-        return matchFirstName && matchLastName && matchDob && matchPostcode
-      })
-
-      // Filter out patients without an NHS number (not found)
-      const foundPatients = matchedPatients.filter(p => !!p.nhsNumber)
-
-      const queryParams = {
-        firstName,
-        lastName,
-        dobDay,
-        dobMonth,
-        dobYear,
-        postcode
-      }
-      const queryString = createSearchParams(queryParams).toString()
-
-      // -- Route user to correct page
-      if (foundPatients.length === 0) {
-        // PATIENT NOT FOUND
-        navigate(`${FRONTEND_PATHS.PATIENT_SEARCH_RESULTS}?${queryString}&notFound=true`)
-      } else if (foundPatients.length === 1) {
-        // SINGLE PATIENT FOUND
-        navigate(`${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}?nhsNumber=${foundPatients[0].nhsNumber}`)
-      } else if (foundPatients.length > 10) {
-        // TOO MANY RESULTS
-        navigate(`${FRONTEND_PATHS.PATIENT_SEARCH_RESULTS}?${queryString}&tooMany=true`)
-      } else {
-        // 2-10 RESULTS: Show patient search results
-        navigate(`${FRONTEND_PATHS.PATIENT_SEARCH_RESULTS}?${queryString}`)
-      }
-    }
+    const queryString = createSearchParams(queryParams).toString()
+    navigate(`${FRONTEND_PATHS.PATIENT_SEARCH_RESULTS}?${queryString}`)
   }
 
   return (
