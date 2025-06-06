@@ -17,6 +17,8 @@ import {
 
 import {authenticateRequest, AuthenticateRequestOptions} from "./authenticateRequest"
 
+import {fetchUserInfo} from "./userInfoHelpers"
+
 export {
   getUsernameFromEvent,
   getSigningKey,
@@ -29,5 +31,6 @@ export {
   refreshApigeeAccessToken,
   buildApigeeHeaders,
   authenticateRequest,
-  AuthenticateRequestOptions
+  AuthenticateRequestOptions,
+  fetchUserInfo
 }
