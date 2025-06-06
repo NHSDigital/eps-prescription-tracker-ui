@@ -19,7 +19,7 @@ import {
   ErrorMessage,
   Fieldset
 } from "nhsuk-react-components"
-import {useNavigate} from "react-router-dom"
+import {useNavigate, useSearchParams, createSearchParams} from "react-router-dom"
 import {AuthContext} from "@/context/AuthProvider"
 import http from "@/helpers/axios"
 import {formatDobForSearch} from "@/helpers/formatters"
@@ -27,35 +27,63 @@ import {validateBasicDetails, getInlineErrors} from "@/helpers/validateBasicDeta
 import {errorFocusMap, ErrorKey, resolveDobInvalidFields} from "@/helpers/basicDetailsValidationMeta"
 import {STRINGS} from "@/constants/ui-strings/BasicDetailsSearchStrings"
 import {API_ENDPOINTS, FRONTEND_PATHS, NHS_REQUEST_URID} from "@/constants/environment"
-import {BasicDetailsSearchType} from "@cpt-ui-common/common-types"
+import {BasicDetailsSearchType, PatientSummary, PatientSummaryTypes} from "@cpt-ui-common/common-types"
 
 // Temporary mock data used for frontend search simulation
-const mockPatient = [
+const mockPatient: Array<PatientSummary> = [
   {
     nhsNumber: "1234567890",
-    given: "James",
-    family: "Smith",
+    givenName: ["James"],
+    familyName: "Smith",
+    gender: PatientSummaryTypes.PatientSummaryGender.MALE,
     dateOfBirth: "02-04-2006",
+    address: ["1 Main Street", "Leeds"],
     postcode: "LS1 1AB"
   }
 ]
 
-const mockMultiplePatient = [
+const mockMultiplePatient: Array<PatientSummary> = [
   {
     nhsNumber: "9726919207",
-    given: "Issac",
-    family: "Wolderton-Rodriguez",
+    givenName: ["Issac"],
+    familyName: "Wolderton-Rodriguez",
+    gender: PatientSummaryTypes.PatientSummaryGender.MALE,
     dateOfBirth: "06-05-2013",
+    address: ["123 Brundel Close", "Headingley", "Leeds", "West Yorkshire", "LS6 1JL"],
     postcode: "LS6 1JL"
   },
   {
     nhsNumber: "9726919207",
-    given: "Steve",
-    family: "Wolderton-Rodriguez",
+    givenName: ["Steve"],
+    familyName: "Wolderton-Rodriguez",
+    gender: PatientSummaryTypes.PatientSummaryGender.MALE,
     dateOfBirth: "06-05-2013",
+    address: ["123 Brundel Close", "Headingley", "Leeds", "West Yorkshire", "LS6 1JL"],
     postcode: "LS6 1JL"
   }
 ]
+
+const mockNotFoundPatients: Array<PatientSummary> = [
+  {
+    nhsNumber: "",
+    givenName: ["Not", "Found"],
+    familyName: "SpecialNotFound",
+    gender: PatientSummaryTypes.PatientSummaryGender.OTHER,
+    dateOfBirth: "01-01-1990",
+    address: ["No Address"],
+    postcode: "NO0 0NE"
+  }
+]
+
+const mockTooManyPatients: Array<PatientSummary> = Array.from({length: 11}, (_, i) => ({
+  nhsNumber: (9000000000 + i).toString(),
+  givenName: ["David"],
+  familyName: "Jones",
+  gender: PatientSummaryTypes.PatientSummaryGender.OTHER,
+  dateOfBirth: "16-07-1985",
+  address: ["Some Address"],
+  postcode: "LS1 1AB"
+}))
 
 // Utility to normalize input for case-insensitive and whitespace-tolerant comparison
 const formatInput = (input: string) => input.trim().toLowerCase()
@@ -73,6 +101,7 @@ export default function BasicDetailsSearch() {
   const [dobYear, setDobYear] = useState("")
   const [errors, setErrors] = useState<Array<ErrorKey>>([])
   const [dobErrorFields, setDobErrorFields] = useState<Array<"day" | "month" | "year">>([])
+  const [searchParams] = useSearchParams()
 
   const inlineErrors = getInlineErrors(errors)
 
@@ -104,6 +133,15 @@ export default function BasicDetailsSearch() {
 
     document.addEventListener("click", handler)
     return () => document.removeEventListener("click", handler)
+  }, [])
+
+  useEffect(() => {
+    setFirstName(searchParams.get("firstName") ?? "")
+    setLastName(searchParams.get("lastName") ?? "")
+    setDobDay(searchParams.get("dobDay") ?? "")
+    setDobMonth(searchParams.get("dobMonth") ?? "")
+    setDobYear(searchParams.get("dobYear") ?? "")
+    setPostcode(searchParams.get("postcode") ?? "")
   }, [])
 
   // Returns true if the given DOB field had an error on the last submission.
@@ -188,32 +226,51 @@ export default function BasicDetailsSearch() {
     } catch (err) {
       console.error("Failed to fetch patient details. Using mock data fallback.", err)
 
-      // FIXME: This is a static, mock data fallback we can use in lieu of the real data
-      // backend endpoint, which is still waiting for the auth SNAFU to get sorted out.
-
       // Construct a normalized DOB string to match against mock patient data,
       // since mock DOBs are stored in the format 'DD-MM-YYYY'
       const searchDob = formatDobForSearch({dobDay, dobMonth, dobYear})
 
-      const matchedPatients = [...mockPatient, ...mockMultiplePatient].filter(p => {
-        const matchFirstName = firstName ? formatInput(p.given) === formatInput(firstName) : true
-        const matchLastName = formatInput(p.family) === formatInput(lastName)
+      const allMockPatients = [
+        ...mockPatient,
+        ...mockMultiplePatient,
+        ...mockNotFoundPatients,
+        ...mockTooManyPatients
+      ]
+
+      const matchedPatients = allMockPatients.filter(p => {
+        const matchFirstName = firstName ? formatInput(p.givenName?.[0] ?? "") === formatInput(firstName) : true
+        const matchLastName = lastName ? formatInput(p.familyName) === formatInput(lastName) : true
         const matchDob = p.dateOfBirth === searchDob
-        const matchPostcode = postcode ? formatInput(p.postcode) === formatInput(postcode) : true
+        const matchPostcode = postcode ? formatInput(p.postcode ?? "") === formatInput(postcode) : true
         return matchFirstName && matchLastName && matchDob && matchPostcode
       })
 
-      // Navigate based on match count
-      if (matchedPatients.length === 1) {
-        navigate(`${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}?nhsNumber=${matchedPatients[0].nhsNumber}`)
-      } else if (matchedPatients.length > 1) {
-        navigate(FRONTEND_PATHS.PATIENT_SEARCH_RESULTS, {
-          state: {patients: matchedPatients}
-        })
+      // Filter out patients without an NHS number (not found)
+      const foundPatients = matchedPatients.filter(p => !!p.nhsNumber)
+
+      const queryParams = {
+        firstName,
+        lastName,
+        dobDay,
+        dobMonth,
+        dobYear,
+        postcode
+      }
+      const queryString = createSearchParams(queryParams).toString()
+
+      // -- Route user to correct page
+      if (foundPatients.length === 0) {
+        // PATIENT NOT FOUND
+        navigate(`${FRONTEND_PATHS.PATIENT_SEARCH_RESULTS}?${queryString}&notFound=true`)
+      } else if (foundPatients.length === 1) {
+        // SINGLE PATIENT FOUND
+        navigate(`${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}?nhsNumber=${foundPatients[0].nhsNumber}`)
+      } else if (foundPatients.length > 10) {
+        // TOO MANY RESULTS
+        navigate(`${FRONTEND_PATHS.PATIENT_SEARCH_RESULTS}?${queryString}&tooMany=true`)
       } else {
-        navigate(FRONTEND_PATHS.SEARCH_RESULTS_TOO_MANY, {
-          state: formState
-        })
+        // 2-10 RESULTS: Show patient search results
+        navigate(`${FRONTEND_PATHS.PATIENT_SEARCH_RESULTS}?${queryString}`)
       }
     }
   }

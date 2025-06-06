@@ -5,32 +5,27 @@ import {
   Col,
   BackLink
 } from "nhsuk-react-components"
-import {Link, useLocation} from "react-router-dom"
+import {Link} from "react-router-dom"
 import {FRONTEND_PATHS} from "@/constants/environment"
 import {STRINGS} from "@/constants/ui-strings/SearchResultsTooManyStrings"
-import {formatDobForDisplay} from "@/helpers/formatters"
-import {BasicDetailsSearchType} from "@cpt-ui-common/common-types"
 
-export default function SearchResultsTooManyPage() {
-  const location = useLocation()
-  const {
-    firstName,
-    lastName,
-    dobDay,
-    dobMonth,
-    dobYear,
-    postcode
-  } = (location.state ?? {}) as BasicDetailsSearchType
+type SearchResultsTooManyMessageProps = {
+  readonly search?: string
+}
 
+export default function SearchResultsTooManyMessage({search = ""}: SearchResultsTooManyMessageProps) {
   return (
     <Container
       className="nhsuk-width-container-fluid patient-search-form-container"
-      data-testid="too-many-results-page"
+      data-testid="too-many-results-container"
     >
       <nav className="nhsuk-breadcrumb nhsuk-u-padding-bottom-0 nhsuk-u-padding-left-2" aria-label="Breadcrumb">
-        <Link to={FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS} data-testid="too-many-results-back-link">
-          <BackLink data-testid="go-back-link">{STRINGS.goBackLink}</BackLink>
-        </Link>
+        <BackLink
+          data-testid="go-back-link"
+          asElement={Link}
+          to={FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS + (search || "")}>
+          {STRINGS.goBackLink}
+        </BackLink>
       </nav>
       <main
         className="nhsuk-main-wrapper nhsuk-main-wrapper--s patient-search-main-wrapper"
@@ -53,19 +48,17 @@ export default function SearchResultsTooManyPage() {
                 {STRINGS.heading}
               </h1>
 
-              <p>{STRINGS.intro}</p>
-              <ul data-testid="too-many-results-details-list">
-                {firstName && <li>{STRINGS.firstName} {firstName}</li>}
-                <li>{STRINGS.lastName} {lastName}</li>
-                <li>{STRINGS.dob} {formatDobForDisplay({dobDay, dobMonth, dobYear})}</li>
-                {postcode && <li>{STRINGS.postcode} {postcode}</li>}
-              </ul>
+              <p id="results-message" data-testid="too-many-results-message">
+                {STRINGS.resultsMessage}
+              </p>
 
               <p id="results-count-text" data-testid="too-many-results-count-text">
                 {STRINGS.retryMessage}
                 <Link
                   data-testid="too-many-results-basic-details-link"
-                  to={FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS}>{STRINGS.basicDetailsLinkText}</Link>
+                  to={FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS + (search || "")}>
+                  {STRINGS.basicDetailsLinkText}
+                </Link>
                 {STRINGS.retryMessageSuffix}
               </p>
 
