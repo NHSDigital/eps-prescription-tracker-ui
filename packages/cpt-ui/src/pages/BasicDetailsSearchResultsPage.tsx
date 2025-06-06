@@ -37,10 +37,10 @@ export default function SearchResultsPage() {
         "NHSD-Session-URID": NHS_REQUEST_URID
       },
       params: {
-        family: searchParams.get("lastName"),
-        birthdate: `eq${searchParams.get("dobDay")}-${searchParams.get("dobMonth")}-${searchParams.get("dobYear")}`,
-        "address-postalcode": searchParams.get("postcode"),
-        given: searchParams.get("firstName") ?? undefined
+        familyName: searchParams.get("lastName"),
+        dateOfBirth: `${searchParams.get("dobYear")}-${searchParams.get("dobMonth")}-${searchParams.get("dobDay")}`,
+        postcode: searchParams.get("postcode"),
+        givenName: searchParams.get("firstName") ?? undefined
       }
     })
 
