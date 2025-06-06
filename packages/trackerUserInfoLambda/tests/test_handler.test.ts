@@ -45,12 +45,7 @@ jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
   return {
     getUsernameFromEvent: mockGetUsernameFromEvent,
     authenticateRequest: mockAuthenticateRequest,
-    initializeOidcConfig: mockInitializeOidcConfig
-  }
-})
-
-jest.unstable_mockModule("@/userInfoHelpers", () => {
-  return {
+    initializeOidcConfig: mockInitializeOidcConfig,
     fetchUserInfo: mockFetchUserInfo
   }
 })
