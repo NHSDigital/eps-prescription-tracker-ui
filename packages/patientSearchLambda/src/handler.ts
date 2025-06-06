@@ -92,13 +92,12 @@ export const lambdaHandler = async (
   let validationErrors: Array<string> = []
   let familyName
   let dateOfBirth
-  let postcode
 
   const queryStringParameters = event.queryStringParameters ?? {};
   [familyName, validationErrors] = guardQueryParameter(queryStringParameters, "familyName", validationErrors)
   let givenName = queryStringParameters["givenName"];
-  [dateOfBirth, validationErrors] = guardQueryParameter(queryStringParameters, "dateOfBirth", validationErrors);
-  [postcode, validationErrors] = guardQueryParameter(queryStringParameters, "postcode", validationErrors)
+  [dateOfBirth, validationErrors] = guardQueryParameter(queryStringParameters, "dateOfBirth", validationErrors)
+  let postcode = queryStringParameters["postcode"]
   if (validationErrors.length > 0) {
     logger.error("Validation error", {
       validationErrors,
@@ -117,7 +116,7 @@ export const lambdaHandler = async (
     .with_role_id(roleId)
     .with_org_code(orgCode)
     .with_correlation_id(correlationId)
-    .patientSearch(familyName as string, dateOfBirth as string, postcode as string, givenName)
+    .patientSearch(familyName as string, dateOfBirth as string, postcode, givenName)
 
   let patients: Array<pds.patientSearch.PatientSummary> = []
 
