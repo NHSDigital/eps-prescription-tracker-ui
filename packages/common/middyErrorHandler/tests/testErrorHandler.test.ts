@@ -3,6 +3,7 @@ import {MiddyErrorHandler} from "../src/errorHandler"
 import middy from "@middy/core"
 import {expect, jest} from "@jest/globals"
 import {mockContext} from "@cpt-ui-common/testing"
+import {Logger} from "@aws-lambda-powertools/logger"
 
 const mockEvent = {
   foo: "bar"
@@ -12,7 +13,10 @@ test("Middleware logs all error details", async () => {
   type ErrorLogger = (error: any, message: string) => void
   const mockErrorLogger: jest.MockedFunction<ErrorLogger> = jest.fn()
   const mockLogger = {
-    error: mockErrorLogger
+    error: mockErrorLogger,
+    info: jest.fn(),
+    warn: jest.fn(),
+    debug: jest.fn()
   }
   const errorResponse = {foo: "bar"}
 
@@ -22,7 +26,7 @@ test("Middleware logs all error details", async () => {
     throw new Error("error running lambda")
   })
 
-  handler.use(middyErrorHandler.errorHandler({logger: mockLogger}))
+  handler.use(middyErrorHandler.errorHandler({logger: mockLogger as unknown as Logger}))
 
   await handler({}, mockContext)
 
@@ -54,7 +58,7 @@ test("Middleware returns specific error message on failure", async () => {
     throw new Error("error running lambda")
   })
 
-  handler.use(middyErrorHandler.errorHandler({logger: mockLogger}))
+  handler.use(middyErrorHandler.errorHandler({logger: mockLogger as unknown as Logger}))
 
   const response: any = await handler(mockEvent, mockContext)
   expect(response.statusCode).toBe(500)

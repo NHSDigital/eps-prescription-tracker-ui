@@ -118,14 +118,14 @@ describe("update tokenMapping", () => {
 
     expect(calledCommand.input).toBeDefined()
     const calledAttributeValues = (calledCommand.input as UpdateCommand["input"]).ExpressionAttributeValues
-    expect(calledAttributeValues[":apigeeExpiresIn"]
+    expect(calledAttributeValues?.[":apigeeExpiresIn"]
     ).toBeCloseTo(expectedExpiryTime, -2)
-    expect(calledAttributeValues[":apigeeAccessToken"]).toBe(mockAccessToken)
-    expect(calledAttributeValues[":apigeeRefreshToken"]).toBe(mockRefreshToken)
-    expect(calledAttributeValues[":selectedRoleId"]).toBeUndefined()
-    expect(calledAttributeValues[":userDetails"]).toBeUndefined()
-    expect(calledAttributeValues[":rolesWithAccess"]).toBeUndefined()
-    expect(calledAttributeValues[":rolesWithoutAccess"]).toBeUndefined()
+    expect(calledAttributeValues?.[":apigeeAccessToken"]).toBe(mockAccessToken)
+    expect(calledAttributeValues?.[":apigeeRefreshToken"]).toBe(mockRefreshToken)
+    expect(calledAttributeValues?.[":selectedRoleId"]).toBeUndefined()
+    expect(calledAttributeValues?.[":userDetails"]).toBeUndefined()
+    expect(calledAttributeValues?.[":rolesWithAccess"]).toBeUndefined()
+    expect(calledAttributeValues?.[":rolesWithoutAccess"]).toBeUndefined()
   })
 
   it("should log and throw an error on failure", async () => {

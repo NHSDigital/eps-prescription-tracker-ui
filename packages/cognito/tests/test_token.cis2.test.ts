@@ -179,7 +179,7 @@ describe("cis2 token handler", () => {
       access_token: "access_token_reply"
     }))
     expect(mockInsertTokenMapping).toHaveBeenCalledTimes(1)
-    expect(mockInsertTokenMapping).toBeCalledWith(
+    expect(mockInsertTokenMapping).toHaveBeenCalledWith(
       expect.anything(),
       expect.anything(),
       {

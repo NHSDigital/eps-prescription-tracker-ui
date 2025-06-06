@@ -3,8 +3,9 @@
   "compilerOptions": {
     "rootDir": ".",
     "outDir": "lib",
-    "esModuleInterop": true
+    "baseUrl": ".",
+    "tsBuildInfoFile": "lib/tsconfig.tsbuildinfo"
   },
   "include": ["src/**/*", "src/**/*.json"],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules"],
 }

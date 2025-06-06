@@ -133,6 +133,12 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
     // Search logic
     let searchResponse: SearchResponse
+    if (roleId === undefined) {
+      throw new Error("roleId is undefined")
+    }
+    if (orgCode === undefined) {
+      throw new Error("orgCode is undefined")
+    }
     if (searchParams.nhsNumber) {
       // NHS Number search flow
       searchResponse = await nhsNumberSearchFlow(

@@ -6,7 +6,7 @@ import {Logger} from "@aws-lambda-powertools/logger"
 
 jest.mock("axios")
 jest.mock("jsonwebtoken")
-jest.mock("uuid", () => ({
+jest.unstable_mockModule("uuid", () => ({
   v4: jest.fn(() => "test-uuid")
 }))
 

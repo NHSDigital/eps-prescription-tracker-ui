@@ -109,7 +109,9 @@ describe("handler tests with cis2 auth", () => {
     mockGetUsernameFromEvent.mockReturnValue("test_user")
     mockAuthenticateRequest.mockImplementation(() => {
       return Promise.resolve({
-        apigeeAccessToken: "apigee_access_token"
+        apigeeAccessToken: "apigee_access_token",
+        roleId: "dummy_role",
+        orgCode: "dummy_org"
       })
     })
     const event = {
@@ -166,7 +168,9 @@ describe("handler tests with cis2 auth", () => {
     mockGetUsernameFromEvent.mockReturnValue("test_user")
     mockAuthenticateRequest.mockImplementation(() => {
       return Promise.resolve({
-        apigeeAccessToken: "apigee_access_token"
+        apigeeAccessToken: "apigee_access_token",
+        roleId: "dummy_role",
+        orgCode: "dummy_org"
       })
     })
     const event = {
@@ -211,7 +215,9 @@ describe("handler tests with cis2 auth", () => {
     mockGetUsernameFromEvent.mockReturnValue("test_user")
     mockAuthenticateRequest.mockImplementation(() => {
       return Promise.resolve({
-        apigeeAccessToken: "apigee_access_token"
+        apigeeAccessToken: "apigee_access_token",
+        roleId: "dummy_role",
+        orgCode: "dummy_org"
       })
     })
     const event = {
@@ -265,6 +271,50 @@ describe("handler tests with cis2 auth", () => {
       expect.any(Object),
       "Error: Error in auth"
     )
+  })
+
+  it("throw error when no roleId returned", async () => {
+    mockAuthenticateRequest.mockImplementation(() => {
+      return Promise.resolve({
+        apigeeAccessToken: "apigee_access_token",
+        orgCode: "dummy_org"
+      })
+    })
+
+    const response = await handler({
+      queryStringParameters: {
+        nhsNumber: "9999999999"
+      },
+      requestContext: {},
+      headers: {}
+    }, dummyContext)
+
+    // Update the assertion to match the actual response format
+    expect(response).toMatchObject({
+      message: "A system error has occurred"
+    })
+  })
+
+  it("throw error when no orgCode returned", async () => {
+    mockAuthenticateRequest.mockImplementation(() => {
+      return Promise.resolve({
+        apigeeAccessToken: "apigee_access_token",
+        roleId: "dummy_role"
+      })
+    })
+
+    const response = await handler({
+      queryStringParameters: {
+        nhsNumber: "9999999999"
+      },
+      requestContext: {},
+      headers: {}
+    }, dummyContext)
+
+    // Update the assertion to match the actual response format
+    expect(response).toMatchObject({
+      message: "A system error has occurred"
+    })
   })
 
 })

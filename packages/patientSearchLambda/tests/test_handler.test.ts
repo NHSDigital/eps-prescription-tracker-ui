@@ -1,11 +1,25 @@
-import {expect, describe, it} from "@jest/globals"
+import {
+  expect,
+  describe,
+  it,
+  jest
+} from "@jest/globals"
 import {APIGatewayProxyEvent} from "aws-lambda"
-import {mockPatientSummary, mockLogger, mockPdsClient} from "@cpt-ui-common/testing"
+import {mockPatientSummary, mockLogger} from "@cpt-ui-common/testing"
 import {lambdaHandler, HandlerParameters, INTERNAL_ERROR_RESPONSE_BODY} from "../src/handler"
 
 import * as pds from "@cpt-ui-common/pdsClient"
 const patientSearchOutcomeType = pds.patientSearch.OutcomeType
 type patientSearchOutcome = pds.patientSearch.Outcome
+const mockPdsClient = () => {
+  return {
+    with_access_token: jest.fn().mockReturnThis(),
+    with_role_id: jest.fn().mockReturnThis(),
+    with_org_code: jest.fn().mockReturnThis(),
+    with_correlation_id: jest.fn().mockReturnThis(),
+    patientSearch: jest.fn()
+  } as unknown as pds.Client
+}
 
 describe("lambda handler unit tests", () => {
   let handlerParams: HandlerParameters
@@ -71,6 +85,31 @@ describe("lambda handler unit tests", () => {
     })
   })
 
+  it("should return an error if no role id is found", async () => {
+    handlerParams.authenticationFunction = async () => {
+      return {apigeeAccessToken: "mock-access-token", roleId: undefined, orgCode: "test-org-code"}
+    }
+
+    const response = await lambdaHandler(mockEvent, handlerParams)
+
+    expect(response.statusCode).toBe(401)
+    expect(JSON.parse(response.body)).toEqual({
+      message: "Authentication failed"
+    })
+  })
+
+  it("should return an error if no oreCode access token is found", async () => {
+    handlerParams.authenticationFunction = async () => {
+      return {apigeeAccessToken: "mock-access-token", roleId: "test-role-id", orgCode: undefined}
+    }
+
+    const response = await lambdaHandler(mockEvent, handlerParams)
+
+    expect(response.statusCode).toBe(401)
+    expect(JSON.parse(response.body)).toEqual({
+      message: "Authentication failed"
+    })
+  })
   it("should return an error if query parameters are missing", async () => {
     mockEvent.queryStringParameters = {}
 

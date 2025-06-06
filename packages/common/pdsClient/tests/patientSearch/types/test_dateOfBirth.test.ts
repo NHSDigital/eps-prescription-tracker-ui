@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {describe, it, expect} from "@jest/globals"
 
-import * as pds from "@cpt-ui-common/pdsClient"
+import * as pds from "../../../src"
 
 const DateOfBirth = pds.patientSearch.types.DateOfBirth
 const OutcomeType = pds.patientSearch.types.DateOfBirthFromStringOutcomeType

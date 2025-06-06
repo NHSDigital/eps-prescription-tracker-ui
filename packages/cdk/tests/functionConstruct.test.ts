@@ -1,4 +1,3 @@
-import "source-map-support/register"
 import {App, assertions, Stack} from "aws-cdk-lib"
 import {ManagedPolicy, PolicyStatement, Role} from "aws-cdk-lib/aws-iam"
 import {LogGroup} from "aws-cdk-lib/aws-logs"

@@ -4,14 +4,24 @@
     "files": [],
     // Building this project will build all of the following:
     "references": [
+      {"path": "packages/common/authFunctions"},
       {"path": "packages/common/commonTypes"},
-      {"path": "packages/common/testing"},
+      {"path": "packages/common/doHSClient"},
+      {"path": "packages/common/dynamoFunctions"},
+      {"path": "packages/common/lambdaUtils"},
       {"path": "packages/common/middyErrorHandler"},
       {"path": "packages/common/pdsClient"},
-      {"path": "packages/common/lambdaUtils"},
+      {"path": "packages/common/testing"},
       {"path": "packages/cdk"},
+      {"path": "packages/CIS2SignOutLambda"},
+      {"path": "packages/cognito"},
       {"path": "packages/cpt-ui"},
-      {"path": "packages/cognito"}
+      {"path": "packages/patientSearchLambda"},
+      {"path": "packages/prescriptionDetailsLambda"},
+      {"path": "packages/patientSearchLambda"},
+      {"path": "packages/prescriptionListLambda"},
+      {"path": "packages/selectedRoleLambda"},
+      {"path": "packages/trackerUserInfoLambda"},
     ]
   }
   
