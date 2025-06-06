@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 import React, {useContext, useEffect, useState} from "react"
-import {useNavigate, useSearchParams} from "react-router-dom"
+import {useNavigate, useSearchParams, useLocation} from "react-router-dom"
 import {
   BackLink,
   Table,
@@ -11,9 +11,11 @@ import {
 import {SearchResultsPageStrings} from "@/constants/ui-strings/BasicDetailsSearchResultsPageStrings"
 import {API_ENDPOINTS, FRONTEND_PATHS, NHS_REQUEST_URID} from "@/constants/environment"
 import {AuthContext} from "@/context/AuthProvider"
-import {PatientSummary, PatientSummaryTypes} from "@cpt-ui-common/common-types"
+import {PatientSummary, PatientSummaryTypes} from "@cpt-ui-common/common-types/src"
 import http from "@/helpers/axios"
 import EpsSpinner from "@/components/EpsSpinner"
+import PatientNotFoundMessage from "@/components/PatientNotFoundMessage"
+import SearchResultsTooManyMessage from "@/components/SearchResultsTooManyMessage"
 
 // Mock patient data (fallback)
 const mockPatients: Array<PatientSummary> = [
@@ -37,10 +39,15 @@ const mockPatients: Array<PatientSummary> = [
 
 export default function SearchResultsPage() {
   const auth = useContext(AuthContext)
+  const location = useLocation()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const [loading, setLoading] = useState(true)
   const [patients, setPatients] = useState<Array<PatientSummary>>([])
+
+  useEffect(() => {
+    getSearchResults()
+  }, [])
 
   const getSearchResults = async () => {
     try {
@@ -51,10 +58,10 @@ export default function SearchResultsPage() {
           "NHSD-Session-URID": NHS_REQUEST_URID
         },
         params: {
-          family: searchParams.get("family"),
-          birthdate: `eq${searchParams.get("dateOfBirth")}`,
+          family: searchParams.get("lastName"),
+          birthdate: `eq${searchParams.get("dobDay")}-${searchParams.get("dobMonth")}-${searchParams.get("dobYear")}`,
           "address-postalcode": searchParams.get("postcode"),
-          given: searchParams.get("given") ?? undefined
+          given: searchParams.get("firstName") ?? undefined
         }
       })
 
@@ -79,16 +86,30 @@ export default function SearchResultsPage() {
     }
   }
 
-  useEffect(() => {
-    getSearchResults()
-  }, [])
-
   const handleRowClick = (nhsNumber: string) => {
     navigate(`${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}?nhsNumber=${nhsNumber}`)
   }
 
+  // Pass back the query string to keep filled form on return
   const handleGoBack = () => {
-    navigate(FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS, {state: {clear: true}})
+    navigate(`${FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS}${location.search}`)
+  }
+
+  // Sort by first name
+  const sortedPatients = patients
+    .toSorted((a, b) => (a.givenName?.[0] ?? "").localeCompare(b.givenName?.[0] ?? ""))
+
+  const notFound = searchParams.get("notFound") === "true"
+  const tooMany = searchParams.get("tooMany") === "true"
+
+  // Show not found message if no valid patients
+  if (notFound) {
+    return <PatientNotFoundMessage search={location.search} />
+  }
+
+  // Show too many results message if search returns too many patients
+  if (tooMany) {
+    return <SearchResultsTooManyMessage search={location.search} />
   }
 
   if (loading) {
@@ -106,10 +127,6 @@ export default function SearchResultsPage() {
       </main>
     )
   }
-
-  // to sort by first name
-  const sortedPatients = patients
-    .toSorted((a, b) => (a.givenName?.[0] ?? "").localeCompare(b.givenName?.[0] ?? ""))
 
   return (
     <main className="nhsuk-main-wrapper" id="main-content" role="main">
