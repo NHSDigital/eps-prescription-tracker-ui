@@ -17,9 +17,9 @@ jest.unstable_mockModule("@cpt-ui-common/dynamoFunctions", () => {
 })
 
 const {getSigningKey,
-  getUsernameFromEvent,
-  verifyIdToken} = await import("../src/index")
+  verifyIdToken} = await import("../src/cis2")
 
+const {getUsernameFromEvent} = await import("../src/event")
 // Common test setup
 const logger = new Logger()
 const oidcClientId = "valid_aud"
