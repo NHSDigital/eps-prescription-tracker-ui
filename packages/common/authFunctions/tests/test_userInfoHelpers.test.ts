@@ -27,7 +27,7 @@ const mockVerifyIdToken = jest.fn()
 const mockDecodeToken = jest.fn()
 
 // We need a dummy verification to pass so we can decode out the selected role ID
-jest.unstable_mockModule("@cpt-ui-common/authFunctions", async () => {
+jest.unstable_mockModule("../src/cis2", async () => {
   const verifyIdToken = mockVerifyIdToken.mockImplementation(async () => {
     return {
       selected_roleid: "role-id-1"
@@ -225,7 +225,7 @@ describe("fetchUserInfo", () => {
     expect(mockDecodeToken).not.toHaveBeenCalled()
   })
 
-  it.skip("should fetch and process user info for cis2 token", async () => {
+  it("should fetch and process user info for cis2 token", async () => {
     const data = {
       sub: "test-sub",
       uid: "test-uid",
