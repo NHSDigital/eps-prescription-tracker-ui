@@ -23,7 +23,6 @@ jest.mock("@/helpers/axios", () => ({
   get: jest.fn()
 }))
 import http from "@/helpers/axios"
-import {JWT} from "aws-amplify/auth"
 
 jest.mock("react-router-dom", () => {
   const actual = jest.requireActual("react-router-dom")
@@ -39,27 +38,39 @@ const mockCognitoSignOut = jest.fn()
 
 const defaultAuthState: AuthContextType = {
   isSignedIn: false,
+  isSigningIn: false,
   user: null,
   error: null,
-  idToken: null,
-  accessToken: null,
+  rolesWithAccess: [],
+  rolesWithoutAccess: [],
+  noAccess: false,
+  singleAccess: false,
+  selectedRole: undefined,
+  userDetails: undefined,
   cognitoSignIn: mockCognitoSignIn,
   cognitoSignOut: mockCognitoSignOut,
-  isAuthLoading: false
+  updateSelectedRole: jest.fn(),
+  clearAuthState: jest.fn()
 }
 
 const signedInAuthState: AuthContextType = {
   isSignedIn: true,
+  isSigningIn: false,
   user: {
     username: "testUser",
     userId: "test-user-id"
   },
   error: null,
-  idToken: {toString: () => "mockIdToken"} as unknown as JWT,
-  accessToken: {toString: () => "mockAccessToken"} as unknown as JWT,
-  isAuthLoading: false,
+  rolesWithAccess: [],
+  rolesWithoutAccess: [],
+  noAccess: false,
+  singleAccess: false,
+  selectedRole: undefined,
+  userDetails: undefined,
   cognitoSignIn: mockCognitoSignIn,
-  cognitoSignOut: mockCognitoSignOut
+  cognitoSignOut: mockCognitoSignOut,
+  updateSelectedRole: jest.fn(),
+  clearAuthState: jest.fn()
 }
 
 // Auth provider mock

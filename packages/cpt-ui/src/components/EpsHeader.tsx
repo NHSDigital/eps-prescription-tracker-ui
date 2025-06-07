@@ -15,7 +15,7 @@ import {
 } from "@/constants/ui-strings/HeaderStrings"
 
 import {AuthContext} from "@/context/AuthProvider"
-import {useAccess} from "@/context/AccessProvider"
+import {useAuth} from "@/context/AuthProvider"
 
 import {EpsLogoutModal} from "@/components/EpsLogoutModal"
 import {normalizePath} from "@/helpers/utils"
@@ -25,7 +25,7 @@ export default function EpsHeader() {
   const navigate = useNavigate()
   const location = useLocation()
   const auth = useContext(AuthContext)
-  const accessContext = useAccess()
+  const authContext = useAuth()
 
   // Individual states to control link visibility:
   const [shouldShowSelectRole, setShouldShowSelectRole] = useState(false)
@@ -47,8 +47,8 @@ export default function EpsHeader() {
       path !== FRONTEND_PATHS.CHANGE_YOUR_ROLE &&
       path !== FRONTEND_PATHS.LOGOUT &&
       isSignedIn &&
-      !accessContext.singleAccess &&
-      !accessContext.selectedRole
+      !authContext.singleAccess &&
+      !authContext.selectedRole
     )
 
     // Show "Change role" link (if not single access)
@@ -57,8 +57,8 @@ export default function EpsHeader() {
       path !== FRONTEND_PATHS.CHANGE_YOUR_ROLE &&
       path !== FRONTEND_PATHS.LOGOUT &&
       isSignedIn &&
-      !accessContext.singleAccess &&
-      accessContext.selectedRole !== undefined
+      !authContext.singleAccess &&
+      authContext.selectedRole !== undefined
     )
 
     // Show the "Logout" link only if the user is signed in
@@ -67,10 +67,10 @@ export default function EpsHeader() {
     // Show the "Exit" button under these conditions
     setShouldShowExitButton(
       (path === FRONTEND_PATHS.LOGOUT && !auth?.isSignedIn) ||
-      (path === FRONTEND_PATHS.SELECT_YOUR_ROLE && accessContext.noAccess) ||
+      (path === FRONTEND_PATHS.SELECT_YOUR_ROLE && authContext.noAccess) ||
       (path === "/notfound")
     )
-  }, [location, auth, accessContext])
+  }, [location, auth, authContext])
 
   const redirectToLogin = async (e: React.MouseEvent | React.KeyboardEvent) => {
     // Naked href don't respect the router, so this overrides that

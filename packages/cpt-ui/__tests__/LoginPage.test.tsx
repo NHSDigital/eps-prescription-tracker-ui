@@ -65,12 +65,19 @@ jest.mock("@/context/configureAmplify", () => ({
 
 const defaultAuthState: AuthContextType = {
   isSignedIn: false,
+  isSigningIn: false,
   user: null,
   error: null,
-  idToken: null,
-  accessToken: null,
+  rolesWithAccess: [],
+  rolesWithoutAccess: [],
+  noAccess: false,
+  singleAccess: false,
+  selectedRole: undefined,
+  userDetails: undefined,
   cognitoSignIn: mockCognitoSignIn,
-  cognitoSignOut: mockCognitoSignOut
+  cognitoSignOut: mockCognitoSignOut,
+  updateSelectedRole: jest.fn(),
+  clearAuthState: jest.fn()
 }
 
 const MockAuthProvider = ({
@@ -200,11 +207,8 @@ describe("LoginPage", () => {
       ...defaultAuthState,
       isSignedIn: true,
       // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      user: {username: "testUser"} as AuthUser,
-      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      idToken: {toString: () => "mockIdToken"} as JWT,
-      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      accessToken: {toString: () => "mockAccessToken"} as JWT
+      user: {username: "testUser"} as AuthUser
+
     })
 
     const signOutBtn = screen.getByRole("button", {name: /Sign Out/i})

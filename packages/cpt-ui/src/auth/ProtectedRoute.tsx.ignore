@@ -1,0 +1,25 @@
+// ProtectedRoute.tsx
+import {ReactNode, useContext, useEffect} from "react"
+import {useNavigate} from "react-router-dom"
+import {AuthContext} from "@/context/AuthProvider"
+import {FRONTEND_PATHS} from "@/constants/environment"
+
+type ProtectedRouteProps = {
+  children: ReactNode;
+};
+
+export function ProtectedRoute({children}: ProtectedRouteProps) {
+  const auth = useContext(AuthContext)
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    console.log(auth)
+    const isSignedIn = auth?.isSignedIn as boolean
+    if (!isSignedIn) {
+      console.warn("No login detected. Redirecting to the login page")
+      navigate(FRONTEND_PATHS.LOGIN)
+    }
+  }, [])
+
+  return <>{children}</>
+}

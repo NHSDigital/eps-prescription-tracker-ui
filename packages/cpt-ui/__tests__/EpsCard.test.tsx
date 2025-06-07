@@ -81,25 +81,11 @@ const defaultAuthContext = {
   cognitoSignOut: jest.fn()
 }
 
-const defaultAccessContext = {
-  updateSelectedRole: jest.fn(),
-  noAccess: false,
-  singleAccess: false,
-  selectedRole: null,
-  userDetails: undefined,
-  setUserDetails: jest.fn(),
-  setNoAccess: jest.fn(),
-  setSingleAccess: jest.fn(),
-  clear: jest.fn()
-}
-
 const renderWithProviders = (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   props: { role: any; link: string },
   // eslint-disable-next-line no-undef
-  authOverrides: Partial<React.ContextType<typeof AuthContext>> = {},
-  // eslint-disable-next-line no-undef
-  accessOverrides: Partial<React.ContextType<typeof AccessContext>> = {}
+  authOverrides: Partial<React.ContextType<typeof AuthContext>> = {}
 ) => {
   // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
   const authValue = {
@@ -107,16 +93,10 @@ const renderWithProviders = (
     ...authOverrides
   // eslint-disable-next-line no-undef
   } as React.ContextType<typeof AuthContext>
-  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-  const accessValue = {
-    ...defaultAccessContext,
-    ...accessOverrides
-  // eslint-disable-next-line no-undef
-  } as React.ContextType<typeof AccessContext>
 
   return render(
     <AuthContext.Provider value={authValue}>
-      <AccessContext.Provider value={accessValue}>
+      <AccessContext.Provider value={null}>
         <BrowserRouter>
           <EpsCard {...props} />
         </BrowserRouter>
@@ -168,8 +148,7 @@ describe("EpsCard Component", () => {
     const mockSetSelectedRole = jest.fn()
     renderWithProviders(
       {role: mockRole, link: mockLink},
-      {},
-      {updateSelectedRole: mockSetSelectedRole}
+      {}
     )
 
     const cardLink = screen.getByRole("link", {name: /test organization/i})

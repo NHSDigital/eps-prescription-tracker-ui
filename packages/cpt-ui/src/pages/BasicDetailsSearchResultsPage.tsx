@@ -1,5 +1,5 @@
 /* eslint-disable max-len */
-import React, {useContext, useEffect, useState} from "react"
+import React, {useEffect, useState} from "react"
 import {useNavigate, useSearchParams, useLocation} from "react-router-dom"
 import {
   BackLink,
@@ -9,8 +9,7 @@ import {
   Col
 } from "nhsuk-react-components"
 import {SearchResultsPageStrings} from "@/constants/ui-strings/BasicDetailsSearchResultsPageStrings"
-import {API_ENDPOINTS, FRONTEND_PATHS, NHS_REQUEST_URID} from "@/constants/environment"
-import {AuthContext} from "@/context/AuthProvider"
+import {API_ENDPOINTS, FRONTEND_PATHS} from "@/constants/environment"
 import {PatientSummary, PatientSummaryTypes} from "@cpt-ui-common/common-types/src"
 import http from "@/helpers/axios"
 import EpsSpinner from "@/components/EpsSpinner"
@@ -38,7 +37,6 @@ const mockPatients: Array<PatientSummary> = [
 ]
 
 export default function SearchResultsPage() {
-  const auth = useContext(AuthContext)
   const location = useLocation()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
@@ -53,10 +51,6 @@ export default function SearchResultsPage() {
     try {
       // Attempt to fetch live search results from the API
       const response = await http.get(API_ENDPOINTS.PATIENT_SEARCH, {
-        headers: {
-          Authorization: `Bearer ${auth?.idToken}`,
-          "NHSD-Session-URID": NHS_REQUEST_URID
-        },
         params: {
           family: searchParams.get("lastName"),
           birthdate: `eq${searchParams.get("dobDay")}-${searchParams.get("dobMonth")}-${searchParams.get("dobYear")}`,

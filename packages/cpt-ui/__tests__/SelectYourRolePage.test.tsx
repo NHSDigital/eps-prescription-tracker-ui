@@ -2,7 +2,7 @@ import "@testing-library/jest-dom"
 import {render, screen, waitFor} from "@testing-library/react"
 import React from "react"
 import SelectYourRolePage from "@/pages/SelectYourRolePage"
-import {AuthContext} from "@/context/AuthProvider"
+import {AuthContext, AuthContextType} from "@/context/AuthProvider"
 import {useNavigate} from "react-router-dom"
 
 import axios from "@/helpers/axios"
@@ -109,14 +109,21 @@ jest.mock("@/context/AccessProvider", () => {
 const {__setMockContextValue} = require("@/context/AccessProvider")
 
 // Default mock values for the AuthContext to simulate authentication state
-const defaultAuthContext = {
+const defaultAuthContext: AuthContextType = {
   error: null,
   user: null,
   isSignedIn: false,
-  idToken: null,
-  accessToken: null,
+  isSigningIn: false,
+  rolesWithAccess: [],
+  rolesWithoutAccess: [],
+  noAccess: false,
+  singleAccess: false,
+  selectedRole: undefined,
+  userDetails: undefined,
   cognitoSignIn: jest.fn(),
-  cognitoSignOut: jest.fn()
+  cognitoSignOut: jest.fn(),
+  updateSelectedRole: jest.fn(),
+  clearAuthState: jest.fn()
 }
 
 export const renderWithAuth = (authOverrides = {}) => {

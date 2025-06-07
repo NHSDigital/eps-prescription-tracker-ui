@@ -1,8 +1,7 @@
-import React, {useContext, useEffect, useCallback} from "react"
+import React, {useEffect, useCallback} from "react"
 import {Container, Col, Row} from "nhsuk-react-components"
 
-import {AuthContext} from "@/context/AuthProvider"
-import {useAccess} from "@/context/AccessProvider"
+import {useAuth} from "@/context/AuthProvider"
 
 import EpsSpinner from "@/components/EpsSpinner"
 import {EpsLoginPageStrings} from "@/constants/ui-strings/EpsLoginPageStrings"
@@ -16,8 +15,7 @@ import {
 import {Button} from "@/components/ReactRouterButton"
 
 export default function LoginPage() {
-  const auth = useContext(AuthContext)
-  const access = useAccess()
+  const auth = useAuth()
 
   const target_environment: string =
     ENV_CONFIG.TARGET_ENVIRONMENT as Environment
@@ -53,9 +51,6 @@ export default function LoginPage() {
       target_environment
     )
 
-    // If we're on the login page, we need to clear the states
-    access.clear()
-
     if (
       !MOCK_AUTH_ALLOWED_ENVIRONMENTS.includes(
         target_environment as MockAuthEnvironment
@@ -65,7 +60,7 @@ export default function LoginPage() {
       console.log("User must sign in with Primary auth")
       signIn()
     }
-  }, [auth?.isSignedIn, signIn, target_environment])
+  }, [auth, signIn, target_environment])
 
   if (
     !MOCK_AUTH_ALLOWED_ENVIRONMENTS.includes(
@@ -120,8 +115,6 @@ export default function LoginPage() {
               <>
                 <div>username: {auth.user?.username}</div>
                 <div>isSignedIn: {auth.isSignedIn} </div>
-                <div>idToken: {auth.idToken?.toString()}</div>
-                <div>accessToken: {auth.accessToken?.toString()}</div>
                 <h2>Auth Context</h2>
                 <pre>{JSON.stringify(auth, null, 2)}</pre>
               </>

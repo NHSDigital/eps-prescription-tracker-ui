@@ -3,9 +3,8 @@ import {render, screen, fireEvent} from "@testing-library/react"
 import {useNavigate} from "react-router-dom"
 import React from "react"
 import YourSelectedRolePage from "@/pages/YourSelectedRolePage"
-import {JWT} from "aws-amplify/auth"
-import {AuthContext} from "@/context/AuthProvider"
-import {AccessContext, AccessContextType} from "@/context/AccessProvider"
+import {AuthContext, AuthContextType} from "@/context/AuthProvider"
+import {AccessContext} from "@/context/AccessProvider"
 import {FRONTEND_PATHS} from "@/constants/environment"
 
 const {
@@ -23,23 +22,11 @@ jest.mock("react-router-dom", () => ({
 }))
 
 // Default mock values for contexts
-const defaultAuthContext = {
+const defaultAuthContext: AuthContextType = {
   error: null,
   user: null,
   isSignedIn: true,
-  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-  idToken: {
-    toString: jest.fn().mockReturnValue("mock-id-token"),
-    payload: {}
-  } as JWT,
-  accessToken: null,
-  cognitoSignIn: jest.fn(),
-  cognitoSignOut: jest.fn()
-}
-
-const defaultAccessContext: AccessContextType = {
-  noAccess: false,
-  singleAccess: false,
+  isSigningIn: false,
   selectedRole: {
     role_name: "Role Name",
     role_id: "role-id",
@@ -50,24 +37,23 @@ const defaultAccessContext: AccessContextType = {
     given_name: "Jane",
     family_name: "Doe"
   },
-  setUserDetails: jest.fn(),
-  setNoAccess: jest.fn(),
-  setSingleAccess: jest.fn(),
-  updateSelectedRole: jest.fn(),
-  clear: jest.fn(),
   rolesWithAccess: [],
   rolesWithoutAccess: [],
-  loading: false,
-  error: null
+  noAccess: false,
+  singleAccess: false,
+
+  cognitoSignIn: jest.fn(),
+  cognitoSignOut: jest.fn(),
+  updateSelectedRole: jest.fn(),
+  clearAuthState: jest.fn()
 }
 
-const renderWithProviders = (authOverrides = {}, accessOverrides = {}) => {
+const renderWithProviders = (authOverrides = {}) => {
   const authValue = {...defaultAuthContext, ...authOverrides}
-  const accessValue = {...defaultAccessContext, ...accessOverrides}
 
   return render(
     <AuthContext.Provider value={authValue}>
-      <AccessContext.Provider value={accessValue}>
+      <AccessContext.Provider value={null}>
         <YourSelectedRolePage />
       </AccessContext.Provider>
     </AuthContext.Provider>
@@ -127,7 +113,7 @@ describe("YourSelectedRolePage", () => {
   })
 
   it("does not crash if selectedRole is undefined", () => {
-    renderWithProviders({}, {selectedRole: undefined})
+    renderWithProviders({})
 
     const heading = screen.queryByText("Your selected role")
     expect(heading).toBeInTheDocument()

@@ -1,0 +1,31 @@
+import {FRONTEND_PATHS} from "@/constants/environment"
+import {AuthContext} from "@/context/AuthProvider"
+import {
+  ComponentType,
+  useContext,
+  useEffect,
+  useState
+} from "react"
+import {useNavigate} from "react-router-dom"
+
+export function withAuthenticationRequired<P>(WrappedComponent: ComponentType<P>) {
+  return function ProtectedComponent(props: P) {
+    const auth = useContext(AuthContext)
+    const [isAuthenticated, setIsAuthenticated] = useState(false)
+
+    const navigate = useNavigate()
+
+    useEffect(() => {
+      const isSignedIn = auth?.isSignedIn as boolean
+      setIsAuthenticated(isSignedIn)
+      if (!isSignedIn) {
+        console.warn("No login detected. Redirecting to the login page")
+        navigate(FRONTEND_PATHS.LOGIN)
+      } else {
+        console.log("already signed in - no redirect")
+      }
+    }, [])
+
+    return isAuthenticated ? <WrappedComponent {...props} /> : null
+  }
+}

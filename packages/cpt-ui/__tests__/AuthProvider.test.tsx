@@ -68,9 +68,7 @@ const TestConsumer = () => {
       <div data-testid="isSignedIn">{auth.isSignedIn ? "true" : "false"}</div>
       <div data-testid="error">{auth.error || ""}</div>
       <div data-testid="user">{auth.user ? "UserPresent" : ""}</div>
-      <div data-testid="idToken">{auth.idToken ? "IdTokenPresent" : ""}</div>
       <div data-testid="accessToken">
-        {auth.accessToken ? "AccessTokenPresent" : ""}
       </div>
     </div>
   )

@@ -1,9 +1,4 @@
-import React, {
-  useContext,
-  useState,
-  useEffect,
-  useRef
-} from "react"
+import React, {useState, useEffect, useRef} from "react"
 import {
   Container,
   Row,
@@ -20,13 +15,12 @@ import {
   Fieldset
 } from "nhsuk-react-components"
 import {useNavigate, useSearchParams, createSearchParams} from "react-router-dom"
-import {AuthContext} from "@/context/AuthProvider"
 import http from "@/helpers/axios"
 import {formatDobForSearch} from "@/helpers/formatters"
 import {validateBasicDetails, getInlineErrors} from "@/helpers/validateBasicDetails"
 import {errorFocusMap, ErrorKey, resolveDobInvalidFields} from "@/helpers/basicDetailsValidationMeta"
 import {STRINGS} from "@/constants/ui-strings/BasicDetailsSearchStrings"
-import {API_ENDPOINTS, FRONTEND_PATHS, NHS_REQUEST_URID} from "@/constants/environment"
+import {API_ENDPOINTS, FRONTEND_PATHS} from "@/constants/environment"
 import {BasicDetailsSearchType, PatientSummary, PatientSummaryTypes} from "@cpt-ui-common/common-types"
 
 // Temporary mock data used for frontend search simulation
@@ -89,7 +83,6 @@ const mockTooManyPatients: Array<PatientSummary> = Array.from({length: 11}, (_, 
 const formatInput = (input: string) => input.trim().toLowerCase()
 
 export default function BasicDetailsSearch() {
-  const auth = useContext(AuthContext)
   const navigate = useNavigate()
   const errorRef = useRef<HTMLDivElement | null>(null)
 
@@ -206,10 +199,6 @@ export default function BasicDetailsSearch() {
     try {
       // Attempt to fetch patient details from the backend API
       const response = await http.post(API_ENDPOINTS.PATIENT_SEARCH, {
-        headers: {
-          Authorization: `Bearer ${auth?.idToken}`,
-          "NHSD-Session-URID": NHS_REQUEST_URID
-        },
         ...formState
       })
 

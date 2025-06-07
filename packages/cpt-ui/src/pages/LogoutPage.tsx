@@ -1,35 +1,40 @@
-import React, {useContext, useEffect} from "react"
+import React, {useEffect, useRef} from "react"
 import {Container} from "nhsuk-react-components"
 import {Link} from "react-router-dom"
 
-import {AuthContext} from "@/context/AuthProvider"
-import {useAccess} from "@/context/AccessProvider"
+import {useAuth} from "@/context/AuthProvider"
 import EpsSpinner from "@/components/EpsSpinner"
 import {EpsLogoutStrings} from "@/constants/ui-strings/EpsLogoutPageStrings"
 
 export default function LogoutPage() {
-  const auth = useContext(AuthContext)
-  const access = useAccess()
+  const auth = useAuth()
+
+  // use ref to prevent double execution
+  const hasSignedOut = useRef(false)
 
   // Log out on page load
   useEffect(() => {
+
     const signOut = async () => {
-      console.log("Signing out", auth)
+      if (hasSignedOut.current) return // Prevent double execution
+      console.log("Signing out from logout page", auth)
+      hasSignedOut.current = true
 
       await auth?.cognitoSignOut()
 
-      // Ensure user details & roles are cleared from local storage
-      access.clear()
-      console.log("Signed out and cleared session data")
+      console.log("Signed out")
     }
 
-    if (auth?.isSignedIn) {
+    if (auth?.isSignedIn && !hasSignedOut.current) {
       signOut()
     } else {
       console.log("Cannot sign out - not signed in")
-      access.clear() // Clear data even if not signed in
+      if (!hasSignedOut.current) {
+        auth.clearAuthState() // Clear data even if not signed in
+      }
     }
-  }, [auth, access.clear])
+
+  }, [])
 
   return (
     <main id="main-content" className="nhsuk-main-wrapper">

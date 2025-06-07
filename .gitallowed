@@ -12,6 +12,7 @@ const token = jwks.token\({
 .127\.0\.0\.1
 .token: newToken
 const token = await getToken()
+const token = readItemGroupFromLocalStorage\("auth"\)\.idTokenString
 const token = new sam.CfnFunction\(this, 'Token', {
 const token = new nodeLambda.NodejsFunction\(this, "tokenLambda", {
 AWS_ACCOUNT_ID=591291862413

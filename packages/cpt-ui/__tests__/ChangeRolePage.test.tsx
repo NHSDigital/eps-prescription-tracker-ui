@@ -103,24 +103,12 @@ jest.mock("@/context/AccessProvider", () => {
 // eslint-disable-next-line @typescript-eslint/no-require-imports, no-undef
 const {__setMockAccessValue} = require("@/context/AccessProvider")
 
-// Default mock values for the AuthContext to simulate authentication state
-const defaultAuthContext = {
-  error: null, // No errors by default
-  user: null, // User is initially null (not logged in)
-  isSignedIn: false, // Default state is "not signed in"
-  idToken: null, // No ID token available
-  accessToken: null, // No access token available
-  cognitoSignIn: jest.fn(), // Mock Cognito sign-in function
-  cognitoSignOut: jest.fn() // Mock Cognito sign-out function
-}
-
 import ChangeRolePage from "@/pages/ChangeRolePage"
 
 // Utility function to render the component with custom AuthContext overrides
-const renderWithAuth = (authOverrides = {}) => {
-  const authValue = {...defaultAuthContext, ...authOverrides}
+const renderWithAuth = () => {
   return render(
-    <AuthContext.Provider value={authValue}>
+    <AuthContext.Provider value={null}>
       <ChangeRolePage />
     </AuthContext.Provider>
   )
@@ -138,10 +126,7 @@ describe("ChangeRolePage", () => {
     __setMockAccessValue({loading: true})
 
     // Render the page with user signed in
-    renderWithAuth({
-      isSignedIn: true,
-      idToken: {toString: jest.fn().mockReturnValue("mock-id-token")}
-    })
+    renderWithAuth()
   })
 
   it("renders error summary if API call returns non-200 status", async () => {
@@ -151,10 +136,7 @@ describe("ChangeRolePage", () => {
     })
 
     // Render the page with user signed in
-    renderWithAuth({
-      isSignedIn: true,
-      idToken: {toString: jest.fn().mockReturnValue("mock-id-token")}
-    })
+    renderWithAuth()
 
     // Wait for the error message to appear
     await waitFor(() => {
@@ -176,10 +158,7 @@ describe("ChangeRolePage", () => {
       error: "Failed to fetch CPT user info"
     })
 
-    renderWithAuth({
-      isSignedIn: true,
-      idToken: {toString: jest.fn().mockReturnValue("mock-id-token")}
-    })
+    renderWithAuth()
 
     await waitFor(() => {
       const errorHeading = screen.getByRole("heading", {
@@ -224,10 +203,7 @@ describe("ChangeRolePage", () => {
     })
 
     // Render the page with user signed in
-    renderWithAuth({
-      isSignedIn: true,
-      idToken: {toString: jest.fn().mockReturnValue("mock-id-token")}
-    })
+    renderWithAuth()
 
     // Wait for the main content to load
     await waitFor(() => {
@@ -262,7 +238,7 @@ describe("ChangeRolePage", () => {
       error: "Missing access or ID token"
     })
 
-    renderWithAuth({isSignedIn: false})
+    renderWithAuth()
 
     const errorHeading = screen.getByRole("heading", {
       name: CHANGE_YOUR_ROLE_PAGE_TEXT.errorDuringRoleSelection
@@ -289,10 +265,7 @@ describe("ChangeRolePage", () => {
     (useNavigate as jest.Mock).mockReturnValue(mockNavigate)
 
     // Render the page with user signed in
-    renderWithAuth({
-      isSignedIn: true,
-      idToken: {toString: jest.fn().mockReturnValue("mock-id-token")}
-    })
+    renderWithAuth()
 
     // Wait for redirection - use FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID from the global mock
     await waitFor(() => {
@@ -326,10 +299,7 @@ describe("ChangeRolePage", () => {
       singleAccess: true
     })
 
-    renderWithAuth({
-      isSignedIn: true,
-      idToken: {toString: jest.fn().mockReturnValue("mock-id-token")}
-    })
+    renderWithAuth()
 
     await waitFor(() => {
       // Use FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID from the global mock
@@ -338,7 +308,7 @@ describe("ChangeRolePage", () => {
   })
 
   it("does not fetch user roles if user is not signed in", async () => {
-    renderWithAuth({isSignedIn: false})
+    renderWithAuth()
     expect(mockedAxios.get).not.toHaveBeenCalled()
   })
 
@@ -350,10 +320,7 @@ describe("ChangeRolePage", () => {
       rolesWithoutAccess: []
     })
 
-    renderWithAuth({
-      isSignedIn: true,
-      idToken: {toString: jest.fn().mockReturnValue("mock-id-token")}
-    })
+    renderWithAuth()
 
     await waitFor(() => {
       const errorHeading = screen.getByRole("heading", {

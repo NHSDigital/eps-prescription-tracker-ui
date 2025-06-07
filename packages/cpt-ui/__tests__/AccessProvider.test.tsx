@@ -17,15 +17,24 @@ const mockedAxios = axios as jest.Mocked<typeof axios>
 
 const mockCognitoSignIn = jest.fn()
 const mockCognitoSignOut = jest.fn()
+const mockUpdateSelectedRole = jest.fn()
+const mockClearAuthState = jest.fn()
 
 const defaultAuthState: AuthContextType = {
   isSignedIn: false,
+  isSigningIn: false,
   user: null,
   error: null,
-  idToken: null,
-  accessToken: null,
+  rolesWithAccess: [],
+  rolesWithoutAccess: [],
+  noAccess: false,
+  singleAccess: false,
+  selectedRole: undefined,
+  userDetails: undefined,
   cognitoSignIn: mockCognitoSignIn,
-  cognitoSignOut: mockCognitoSignOut
+  cognitoSignOut: mockCognitoSignOut,
+  updateSelectedRole: mockUpdateSelectedRole,
+  clearAuthState: mockClearAuthState
 }
 
 const MockAuthProvider = ({
@@ -88,15 +97,13 @@ const renderWithProviders = (
 }
 
 function TestConsumer() {
-  const {noAccess, singleAccess, selectedRole, clear} = useAccess()
+  const {noAccess, singleAccess, clear} = useAccess()
 
   return (
     <div>
       <div data-testid="noAccess">{noAccess ? "true" : "false"}</div>
       <div data-testid="singleAccess">{singleAccess ? "true" : "false"}</div>
-      <div data-testid="selectedRole">
-        {selectedRole ? selectedRole.role_id : "(none)"}
-      </div>
+
       <button data-testid="clear-button" onClick={clear}>
         Clear
       </button>
@@ -127,7 +134,7 @@ describe("AccessProvider", () => {
         </AccessProvider>
       </>,
       ["/"],
-      {...defaultAuthState, isSignedIn: false, idToken: null}
+      {...defaultAuthState, isSignedIn: false}
     )
 
     // Expect that axios.get is never called.
@@ -177,9 +184,7 @@ describe("AccessProvider", () => {
       ["/dashboard"],
       {
         ...defaultAuthState,
-        isSignedIn: true,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        idToken: {toString: jest.fn().mockReturnValue("mock-id-token")} as any
+        isSignedIn: true
       }
     )
 
@@ -215,9 +220,7 @@ describe("AccessProvider", () => {
       ["/dashboard"],
       {
         ...defaultAuthState,
-        isSignedIn: true,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        idToken: {toString: jest.fn().mockReturnValue("mock-id-token")} as any
+        isSignedIn: true
       }
     )
 
@@ -254,9 +257,7 @@ describe("AccessProvider", () => {
       ["/dashboard"],
       {
         ...defaultAuthState,
-        isSignedIn: true,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        idToken: {toString: jest.fn().mockReturnValue("mock-id-token")} as any
+        isSignedIn: true
       }
     )
 
@@ -298,9 +299,7 @@ describe("AccessProvider", () => {
       ["/dashboard"],
       {
         ...defaultAuthState,
-        isSignedIn: true,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        idToken: {toString: jest.fn().mockReturnValue("mock-id-token")} as any
+        isSignedIn: true
       }
     )
 
@@ -328,9 +327,7 @@ describe("AccessProvider", () => {
       ["/dashboard"],
       {
         ...defaultAuthState,
-        isSignedIn: true,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        idToken: {toString: jest.fn().mockReturnValue("mock-id-token")} as any
+        isSignedIn: true
       }
     )
 
@@ -377,9 +374,7 @@ describe("AccessProvider", () => {
       ["/dashboard"],
       {
         ...defaultAuthState,
-        isSignedIn: true,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        idToken: {toString: jest.fn().mockReturnValue("mock-id-token")} as any
+        isSignedIn: true
       }
     )
 
@@ -427,9 +422,7 @@ describe("AccessProvider", () => {
       ["/dashboard/"],
       {
         ...defaultAuthState,
-        isSignedIn: true,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        idToken: {toString: jest.fn().mockReturnValue("mock-id-token")} as any
+        isSignedIn: true
       }
     )
 
@@ -469,9 +462,7 @@ describe("AccessProvider", () => {
       ["/login/"],
       {
         ...defaultAuthState,
-        isSignedIn: true,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        idToken: {toString: jest.fn().mockReturnValue("mock-id-token")} as any
+        isSignedIn: true
       }
     )
 
@@ -489,16 +480,12 @@ describe("AccessProvider", () => {
 
 // Add this new consumer component to your tests file:
 function TestUpdateRoleConsumer() {
-  const {selectedRole, updateSelectedRole} = useAccess()
   const handleUpdate = async () => {
     // Passing a new role object to update
-    await updateSelectedRole({role_id: "NEW_ROLE", role_name: "New Role"})
+    //await updateSelectedRole({role_id: "NEW_ROLE", role_name: "New Role"})
   }
   return (
     <div>
-      <div data-testid="selectedRole">
-        {selectedRole ? selectedRole.role_id : "(none)"}
-      </div>
       <button data-testid="update-role-button" onClick={handleUpdate}>
         Update Role
       </button>
@@ -527,9 +514,7 @@ describe("AccessProvider updateSelectedRole", () => {
       ["/dashboard"],
       {
         ...defaultAuthState,
-        isSignedIn: true,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        idToken: {toString: jest.fn().mockReturnValue("mock-id-token")} as any
+        isSignedIn: true
       }
     )
 
@@ -564,9 +549,7 @@ describe("AccessProvider updateSelectedRole", () => {
       ["/dashboard"],
       {
         ...defaultAuthState,
-        isSignedIn: true,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        idToken: {toString: jest.fn().mockReturnValue("mock-id-token")} as any
+        isSignedIn: true
       }
     )
 
@@ -599,9 +582,7 @@ describe("AccessProvider updateSelectedRole", () => {
       ["/dashboard"],
       {
         ...defaultAuthState,
-        isSignedIn: true,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        idToken: {toString: jest.fn().mockReturnValue("mock-id-token")} as any
+        isSignedIn: true
       }
     )
 

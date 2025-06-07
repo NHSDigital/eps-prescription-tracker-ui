@@ -20,7 +20,6 @@ import {BasicDetailsSearchType} from "@cpt-ui-common/common-types"
 import {STRINGS} from "@/constants/ui-strings/BasicDetailsSearchStrings"
 import {FRONTEND_PATHS} from "@/constants/environment"
 import {AuthContext, AuthContextType} from "@/context/AuthProvider"
-import {JWT} from "aws-amplify/auth"
 
 // Utility function to create a query string from form data
 function makeQueryString(
@@ -55,19 +54,27 @@ jest.mock("react-router-dom", () => {
 // Mock auth context
 const mockCognitoSignIn = jest.fn()
 const mockCognitoSignOut = jest.fn()
+const mockUpdateSelectedRole = jest.fn()
+const mockClearAuthState = jest.fn()
 
 const signedInAuthState: AuthContextType = {
   isSignedIn: true,
+  isSigningIn: false,
   user: {
     username: "testUser",
     userId: "test-user-id"
   },
   error: null,
-  idToken: {toString: () => "mockIdToken"} as unknown as JWT,
-  accessToken: {toString: () => "mockAccessToken"} as unknown as JWT,
-  isAuthLoading: false,
+  rolesWithAccess: [],
+  rolesWithoutAccess: [],
+  noAccess: false,
+  singleAccess: false,
+  selectedRole: undefined,
+  userDetails: undefined,
   cognitoSignIn: mockCognitoSignIn,
-  cognitoSignOut: mockCognitoSignOut
+  cognitoSignOut: mockCognitoSignOut,
+  updateSelectedRole: mockUpdateSelectedRole,
+  clearAuthState: mockClearAuthState
 }
 
 const LocationDisplay = () => {

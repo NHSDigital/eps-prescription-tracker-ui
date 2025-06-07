@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from "react"
+import React, {useState, useEffect, useRef} from "react"
 import {useNavigate} from "react-router-dom"
 import {
   Container,
@@ -10,7 +10,7 @@ import {
   InsetText
 } from "nhsuk-react-components"
 
-import {useAccess} from "@/context/AccessProvider"
+import {useAuth} from "@/context/AuthProvider"
 import EpsCard from "@/components/EpsCard"
 import EpsSpinner from "@/components/EpsSpinner"
 import {RoleDetails} from "@/types/TrackerUserInfoTypes"
@@ -82,16 +82,14 @@ export default function RoleSelectionPage({
   const {
     noAccess,
     selectedRole,
-    updateSelectedRole,
     rolesWithAccess,
     rolesWithoutAccess,
-    loading,
     error
-  } = useAccess()
+  } = useAuth()
 
   const [loginInfoMessage, setLoginInfoMessage] = useState<string | null>(null)
-  const [redirecting, setRedirecting] = useState<boolean>(false)
   const navigate = useNavigate()
+  const redirecting = useRef(false)
 
   const [roleCardPropsWithAccess, setRoleCardPropsWithAccess] = useState<Array<RolesWithAccessProps>>([])
   const [roleCardPropsWithoutAccess, setRoleCardPropsWithoutAccess] = useState<Array<RolesWithoutAccessProps>>([])
@@ -114,37 +112,40 @@ export default function RoleSelectionPage({
       odsCode: role.org_code || noODSCode
     })))
 
-    console.warn("RoleCardPropsWithAccess length: ", {roleCardPropsWithAccess, loading, error})
+    console.warn("RoleCardPropsWithAccess length: ", {roleCardPropsWithAccess, error})
   }, [rolesWithAccess, rolesWithoutAccess])
 
   // Handle auto-redirect for single role
   useEffect(() => {
-    if (rolesWithAccess.length === 1 && rolesWithoutAccess.length === 0) {
-      setRedirecting(true)
-      updateSelectedRole(rolesWithAccess[0])
-        .then(() => {
-          navigate(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
-        })
-        .catch((err) => {
-          console.error(err)
-        })
+    const params = new URLSearchParams(window.location.search)
+    const codeParams = params.get("code")
+    const stateParams = params.get("state")
+    console.log("in epsRoleSelectionPage with params",
+      {params, codeParams, stateParams, redirecting: redirecting.current})
+    if (codeParams && stateParams) {
+      console.log("setting redirect to true")
+      redirecting.current = true
+      return
+    } else {
+      redirecting.current = false
     }
-  }, [rolesWithAccess, rolesWithoutAccess, navigate])
+    if (rolesWithAccess.length === 1 && rolesWithoutAccess.length === 0) {
+      navigate(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
+    }
+  }, [rolesWithAccess, rolesWithoutAccess])
 
   // Set login message when selected role is available
   useEffect(() => {
-    if (loading) return
-
     if (!loginInfoMessage && selectedRole) {
       setLoginInfoMessage(
         `You are currently logged in at ${selectedRole.org_name || noOrgName} ` +
         `(ODS: ${selectedRole.org_code || noODSCode}) with ${selectedRole.role_name || noRoleName}.`
       )
     }
-  }, [selectedRole, loginInfoMessage, noOrgName, noODSCode, noRoleName, loading])
+  }, [selectedRole, loginInfoMessage, noOrgName, noODSCode, noRoleName])
 
   // Show spinner while loading or redirecting
-  if (loading || redirecting) {
+  if (redirecting.current) {
     return (
       <main id="main-content" className="nhsuk-main-wrapper">
         <Container>

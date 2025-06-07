@@ -21,10 +21,17 @@ const MockAuthProvider = ({
     error: null,
     user: defaultIsSignedIn ? {username: "testUser"} : null,
     isSignedIn: defaultIsSignedIn,
-    idToken: null,
-    accessToken: null,
+    isSigningIn: false,
+    rolesWithAccess: [],
+    rolesWithoutAccess: [],
+    noAccess: false,
+    singleAccess: false,
+    selectedRole: undefined,
+    userDetails: undefined,
     cognitoSignIn: jest.fn(),
-    cognitoSignOut: mockCognitoSignOut
+    cognitoSignOut: mockCognitoSignOut,
+    updateSelectedRole: jest.fn(),
+    clearAuthState: jest.fn()
   } as AuthContextType
 
   return (
