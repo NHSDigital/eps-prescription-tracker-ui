@@ -50,7 +50,7 @@ async function patientSearch(
   client: Client,
   _familyName: string,
   _dateOfBirth: string,
-  _postcode: string,
+  _postcode?: string,
   _givenName?: string
 ): Promise<PatientSearchOutcome> {
   // Input validation
@@ -64,8 +64,10 @@ async function patientSearch(
   if (_givenName !== undefined) {
     [givenName, validationErrors] = validateName(_givenName, ValidatedParameter.GIVEN_NAME, validationErrors)
   }
-  [dateOfBirth, validationErrors] = validateDateOfBirth(_dateOfBirth, validationErrors);
-  [postcode, validationErrors] = validatePostcode(_postcode, validationErrors)
+  [dateOfBirth, validationErrors] = validateDateOfBirth(_dateOfBirth, validationErrors)
+  if (_postcode !== undefined) {
+    [postcode, validationErrors] = validatePostcode(_postcode, validationErrors)
+  }
   if (validationErrors.length > 0) {
     return {
       type: PatientSearchOutcomeType.INVALID_PARAMETERS,
@@ -78,7 +80,7 @@ async function patientSearch(
     familyName: familyName as Name,
     givenName: givenName,
     dateOfBirth: dateOfBirth as DateOfBirth,
-    postcode: postcode as Postcode
+    postcode: postcode
   }
   const url = client.patientSearchPath(
     searchParameters

@@ -9,7 +9,9 @@ export function PATIENT_DETAILS_PATH(
 
   url.searchParams.set("family", searchParameters.familyName.to_string())
   url.searchParams.set("birthdate", `eq${searchParameters.dateOfBirth.to_string()}`)
-  url.searchParams.set("address-postalcode", searchParameters.postcode.to_string())
+  if (searchParameters.postcode) {
+    url.searchParams.set("address-postalcode", searchParameters.postcode.to_string())
+  }
   if (searchParameters.givenName) {
     url.searchParams.set("given", searchParameters.givenName.to_string())
   }

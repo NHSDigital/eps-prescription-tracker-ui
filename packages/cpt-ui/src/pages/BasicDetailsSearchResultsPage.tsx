@@ -10,31 +10,11 @@ import {
 } from "nhsuk-react-components"
 import {SearchResultsPageStrings} from "@/constants/ui-strings/BasicDetailsSearchResultsPageStrings"
 import {API_ENDPOINTS, FRONTEND_PATHS} from "@/constants/environment"
-import {PatientSummary, PatientSummaryTypes} from "@cpt-ui-common/common-types/src"
+import {PatientSummary} from "@cpt-ui-common/common-types/src"
 import http from "@/helpers/axios"
 import EpsSpinner from "@/components/EpsSpinner"
 import PatientNotFoundMessage from "@/components/PatientNotFoundMessage"
 import SearchResultsTooManyMessage from "@/components/SearchResultsTooManyMessage"
-
-// Mock patient data (fallback)
-const mockPatients: Array<PatientSummary> = [
-  {
-    nhsNumber: "9726919207",
-    givenName: ["Issac"],
-    familyName: "Wolderton-Rodriguez",
-    gender: PatientSummaryTypes.PatientSummaryGender.MALE,
-    dateOfBirth: "6-May-2013",
-    address: ["123 Brundel Close", "Headingley", "Leeds", "West Yorkshire", "LS6 1JL"]
-  },
-  {
-    nhsNumber: "9725919207",
-    givenName: ["Steve"],
-    familyName: "Wolderton-Rodriguez",
-    gender: PatientSummaryTypes.PatientSummaryGender.MALE,
-    dateOfBirth: "6-May-2013",
-    address: ["123 Brundel Close", "Headingley", "Leeds", "West Yorkshire", "LS6 1JL"]
-  }
-]
 
 export default function SearchResultsPage() {
   const location = useLocation()
@@ -48,36 +28,38 @@ export default function SearchResultsPage() {
   }, [])
 
   const getSearchResults = async () => {
-    try {
-      // Attempt to fetch live search results from the API
-      const response = await http.get(API_ENDPOINTS.PATIENT_SEARCH, {
-        params: {
-          family: searchParams.get("lastName"),
-          birthdate: `eq${searchParams.get("dobDay")}-${searchParams.get("dobMonth")}-${searchParams.get("dobYear")}`,
-          "address-postalcode": searchParams.get("postcode"),
-          given: searchParams.get("firstName") ?? undefined
-        }
-      })
-
-      // Validate HTTP response status
-      if (response.status !== 200) {
-        throw new Error(`Status Code: ${response.status}`)
+    // Attempt to fetch live search results from the API
+    const response = await http.get(API_ENDPOINTS.PATIENT_SEARCH, {
+      params: {
+        familyName: searchParams.get("lastName"),
+        dateOfBirth: `${searchParams.get("dobYear")}-${searchParams.get("dobMonth")}-${searchParams.get("dobDay")}`,
+        postcode: searchParams.get("postcode"),
+        givenName: searchParams.get("firstName") ?? undefined
       }
+    })
 
-      // Assign response payload or throw if none received
-      const payload: Array<PatientSummary> = response.data
-      if (!payload) {
-        throw new Error("No payload received from the API")
-      }
-
-      setPatients(payload)
-    } catch (err) {
-      // TODO: Remove the fallback to mock data when the backend is working
-      console.error("Failed to fetch patient search results. Using mock data fallback.", err)
-      setPatients(mockPatients)
-    } finally {
-      setLoading(false)
+    // Validate HTTP response status
+    if (response.status !== 200) {
+      throw new Error(`Status Code: ${response.status}`)
     }
+    // Validate HTTP response status
+    if (response.status !== 200) {
+      throw new Error(`Status Code: ${response.status}`)
+    }
+
+    // Assign response payload or throw if none received
+    const payload: Array<PatientSummary> = response.data
+    if (!payload) {
+      throw new Error("No payload received from the API")
+    }
+
+    if (payload.length === 1) {
+      navigate(`${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}?nhsNumber=${payload[0].nhsNumber}`)
+      return
+    }
+
+    setPatients(payload)
+    setLoading(false)
   }
 
   const handleRowClick = (nhsNumber: string) => {
@@ -93,19 +75,6 @@ export default function SearchResultsPage() {
   const sortedPatients = patients
     .toSorted((a, b) => (a.givenName?.[0] ?? "").localeCompare(b.givenName?.[0] ?? ""))
 
-  const notFound = searchParams.get("notFound") === "true"
-  const tooMany = searchParams.get("tooMany") === "true"
-
-  // Show not found message if no valid patients
-  if (notFound) {
-    return <PatientNotFoundMessage search={location.search} />
-  }
-
-  // Show too many results message if search returns too many patients
-  if (tooMany) {
-    return <SearchResultsTooManyMessage search={location.search} />
-  }
-
   if (loading) {
     return (
       <main className="nhsuk-main-wrapper" id="main-content" role="main">
@@ -120,6 +89,16 @@ export default function SearchResultsPage() {
         </Container>
       </main>
     )
+  }
+
+  // Show not found message if no valid patients
+  if (patients.length === 0) {
+    return <PatientNotFoundMessage search={location.search} />
+  }
+
+  // Show too many results message if search returns too many patients
+  if (patients.length > 10) {
+    return <SearchResultsTooManyMessage search={location.search} />
   }
 
   return (

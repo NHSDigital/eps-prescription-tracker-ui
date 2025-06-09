@@ -79,7 +79,7 @@ describe("lambda handler unit tests", () => {
     expect(response.statusCode).toBe(400)
     expect(JSON.parse(response.body)).toEqual({
       message: "Missing query parameters",
-      error: "familyName, dateOfBirth, postcode"
+      error: "familyName, dateOfBirth"
     })
   })
 

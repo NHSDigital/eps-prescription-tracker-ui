@@ -79,7 +79,7 @@ export class Client implements clientInterface, patientDetailsLookup.Interface, 
   patientSearch = (
     familyName: string,
     dateOfBirth: string,
-    postcode: string,
+    postcode?: string,
     givenName?: string
   ) => patientSearch.interaction(
     this,
