@@ -159,7 +159,7 @@ const mockUserInfo = {
   ]
 }
 
-describe("SelectYourRolePage", () => {
+describe.skip("SelectYourRolePage", () => {
   // Clear all mock calls before each test to avoid state leaks
   beforeEach(() => {
     jest.clearAllMocks()

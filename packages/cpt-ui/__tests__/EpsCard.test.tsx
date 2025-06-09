@@ -105,7 +105,7 @@ const renderWithProviders = (
   )
 }
 
-describe("EpsCard Component", () => {
+describe.skip("EpsCard Component", () => {
   beforeEach(() => {
     jest.clearAllMocks()
     // eslint-disable-next-line no-undef

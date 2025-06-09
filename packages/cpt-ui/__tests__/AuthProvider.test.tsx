@@ -14,7 +14,7 @@ import {signInWithRedirect, signOut} from "aws-amplify/auth"
 import {AuthContext, AuthProvider} from "@/context/AuthProvider"
 
 import axios from "@/helpers/axios"
-import {TrackerUserInfo} from "@/types/TrackerUserInfoTypes"
+import {RoleDetails, TrackerUserInfo} from "@/types/TrackerUserInfoTypes"
 jest.mock("@/helpers/axios")
 
 // Tell TypeScript that axios is a mocked version.
@@ -224,6 +224,48 @@ describe("AuthProvider", () => {
     })
   })
 
+  it("should set no access=true if roles with access is emptyp", async () => {
+    const currentlySelectedRole: RoleDetails = {}
+    const rolesWithAccess: Array<RoleDetails> = []
+    const userDetails = {
+      family_name: "FAMILY",
+      given_name: "GIVEN"
+    }
+    const mockUserInfo: TrackerUserInfo = {
+      roles_with_access: rolesWithAccess,
+      roles_without_access: [],
+      currently_selected_role: currentlySelectedRole,
+      user_details: userDetails
+    }
+    await renderWithProvider()
+    // Ensure the Hub event listener (hubCallback) is initialized
+    if (!hubCallback) {
+      throw new Error("hubCallback is not initialized")
+    }
+    mockedAxios.get.mockResolvedValueOnce({
+      status: 200,
+      data: {userInfo: mockUserInfo}
+    })
+    mockedAxios.put.mockResolvedValueOnce({
+      status: 200
+    })
+    // Simulate the Hub event "signedIn"
+    act(() => {
+      // Simulate a successful Hub event for signedIn
+      hubCallback!({payload: {event: "signedIn", data: {username: "test_user"}}})
+    })
+
+    await waitFor(() => {
+      expect(screen.getByTestId("isSignedIn").textContent).toBe("true")
+      expect(screen.getByTestId("user").textContent).toBe("test_user")
+      expect(screen.getByTestId("rolesWithAccess").textContent).toBe(JSON.stringify(rolesWithAccess, null, 2))
+      expect(screen.getByTestId("rolesWithoutAccess").textContent).toBe("[]")
+      expect(screen.getByTestId("noAccess").textContent).toBe("true")
+      expect(screen.getByTestId("selectedRole").textContent).toBe("")
+      expect(screen.getByTestId("userDetails").textContent).toBe(JSON.stringify(userDetails, null, 2))
+      expect(screen.getByTestId("singleAccess").textContent).toBe("false")
+    })
+  })
   it("should handle Hub event signInWithRedirect_failure", async () => {
     // Render the AuthProvider with a TestConsumer to observe context changes
     await renderWithProvider()

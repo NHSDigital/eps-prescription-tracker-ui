@@ -194,7 +194,7 @@ describe("token mock handler", () => {
       "not-before-policy": expect.anything(),
       refresh_expires_in: 600,
       refresh_token: "unused",
-      scope: "openid associatedorgs profile nationalrbacaccess nhsperson email",
+      scope: "openid associatedorgs profile nationalrbacaccess nhsperson",
       session_state: "test-session-state",
       token_type: "Bearer"
     })
