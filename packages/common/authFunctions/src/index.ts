@@ -8,9 +8,16 @@ import {
   decodeToken
 } from "./cis2"
 
-import {constructSignedJWTBody, exchangeTokenForApigeeAccessToken, refreshApigeeAccessToken} from "./apigee"
+import {
+  constructSignedJWTBody,
+  exchangeTokenForApigeeAccessToken,
+  refreshApigeeAccessToken,
+  buildApigeeHeaders
+} from "./apigee"
 
-import {authenticateRequest} from "./authenticateRequest"
+import {authenticateRequest, AuthenticateRequestOptions} from "./authenticateRequest"
+
+import {fetchUserInfo} from "./userInfoHelpers"
 
 export {
   getUsernameFromEvent,
@@ -22,5 +29,8 @@ export {
   initializeOidcConfig,
   decodeToken,
   refreshApigeeAccessToken,
-  authenticateRequest
+  buildApigeeHeaders,
+  authenticateRequest,
+  AuthenticateRequestOptions,
+  fetchUserInfo
 }

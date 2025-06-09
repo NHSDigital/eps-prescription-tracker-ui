@@ -19,6 +19,29 @@ import BasicDetailsSearch from "@/components/prescriptionSearch/BasicDetailsSear
 import {BasicDetailsSearchType} from "@cpt-ui-common/common-types"
 import {STRINGS} from "@/constants/ui-strings/BasicDetailsSearchStrings"
 import {FRONTEND_PATHS} from "@/constants/environment"
+import {AuthContext, AuthContextType} from "@/context/AuthProvider"
+import {JWT} from "aws-amplify/auth"
+
+// Utility function to create a query string from form data
+function makeQueryString(
+  formData: Record<string, string>,
+  flags: Record<string, string> = {}
+): string {
+  const params = new URLSearchParams(
+    Object.fromEntries(
+      Object.entries({
+        firstName: formData.firstName ?? "",
+        lastName: formData.lastName ?? "",
+        dobDay: formData.dobDay ?? "",
+        dobMonth: formData.dobMonth ?? "",
+        dobYear: formData.dobYear ?? "",
+        postcode: formData.postcode ?? "",
+        ...flags
+      })
+    )
+  )
+  return params.toString()
+}
 
 jest.mock("react-router-dom", () => {
   const actual = jest.requireActual("react-router-dom")
@@ -29,6 +52,24 @@ jest.mock("react-router-dom", () => {
   }
 })
 
+// Mock auth context
+const mockCognitoSignIn = jest.fn()
+const mockCognitoSignOut = jest.fn()
+
+const signedInAuthState: AuthContextType = {
+  isSignedIn: true,
+  user: {
+    username: "testUser",
+    userId: "test-user-id"
+  },
+  error: null,
+  idToken: {toString: () => "mockIdToken"} as unknown as JWT,
+  accessToken: {toString: () => "mockAccessToken"} as unknown as JWT,
+  isAuthLoading: false,
+  cognitoSignIn: mockCognitoSignIn,
+  cognitoSignOut: mockCognitoSignOut
+}
+
 const LocationDisplay = () => {
   const location = useLocation()
   return <div data-testid="location-display">{location.pathname + location.search}</div>
@@ -36,12 +77,14 @@ const LocationDisplay = () => {
 
 const renderWithRouter = (ui: React.ReactElement) => {
   return render(
-    <MemoryRouter initialEntries={["/search"]}>
-      <Routes>
-        <Route path="/search" element={ui} />
-        <Route path="*" element={<LocationDisplay />} />
-      </Routes>
-    </MemoryRouter>
+    <AuthContext.Provider value={signedInAuthState}>
+      <MemoryRouter initialEntries={["/search"]}>
+        <Routes>
+          <Route path="/search" element={ui} />
+          <Route path="*" element={<LocationDisplay />} />
+        </Routes>
+      </MemoryRouter>
+    </AuthContext.Provider>
   )
 }
 
@@ -59,10 +102,15 @@ type FillFormData = Partial<Record<FieldKey, string>>
 
 export async function fillForm(data: FillFormData = {}) {
   for (const [key, value] of Object.entries(data) as Array<[FieldKey, string]>) {
-    if (!value) continue
+    if (value === undefined) continue
     const testId = fieldTestIds[key]
     const input = screen.getByTestId(testId)
-    await userEvent.type(input, value)
+
+    // Clear the field first, then type the new value
+    await userEvent.clear(input)
+    if (value !== "") {
+      await userEvent.type(input, value)
+    }
   }
 }
 
@@ -87,96 +135,28 @@ describe("BasicDetailsSearch", () => {
   beforeEach(() => jest.resetAllMocks())
   afterEach(() => cleanup())
 
-  it("redirects to the prescription list if only one patient is found from the basic details search", async () => {
-    const mockNavigate = jest.fn()
-      ; (useNavigate as jest.Mock).mockReturnValue(mockNavigate)
-
-    renderWithRouter(<BasicDetailsSearch />)
-
-    await fillForm({
-      firstName: "James",
-      lastName: "Smith",
-      dobDay: "02",
-      dobMonth: "04",
-      dobYear: "2006",
-      postcode: "LS1 1AB"
-    })
-
-    await submitForm()
-
-    await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith(
-        `${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}?nhsNumber=1234567890`
-      )
-    })
-  })
-
-  it("redirects to the too many results page if 11 or more results are returned", async () => {
-    const mockNavigate = jest.fn()
-      ; (useNavigate as jest.Mock).mockReturnValue(mockNavigate)
+  it("redirects to the patient search results page", async () => {
+    const mockNavigate = jest.fn();
+    (useNavigate as jest.Mock).mockReturnValue(mockNavigate)
 
     renderWithRouter(<BasicDetailsSearch />)
 
     const formData = {
-      firstName: "",
-      lastName: "Jones",
-      dobDay: "16",
-      dobMonth: "07",
-      dobYear: "1985",
-      postcode: ""
-    }
-
-    await fillForm(formData)
-    await submitForm()
-
-    await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith(
-        FRONTEND_PATHS.SEARCH_RESULTS_TOO_MANY,
-        {state: formData}
-      )
-    })
-  })
-
-  it("redirects to the patient search results page if more than one but fewer than 11 patients are found", async () => {
-    const mockNavigate = jest.fn()
-      ; (useNavigate as jest.Mock).mockReturnValue(mockNavigate)
-
-    renderWithRouter(<BasicDetailsSearch />)
-
-    await fillForm({
       firstName: "",
       lastName: "Wolderton-Rodriguez",
       dobDay: "06",
       dobMonth: "05",
       dobYear: "2013",
       postcode: "LS6 1JL"
-    })
+    }
 
+    await fillForm(formData)
     await submitForm()
 
     await waitFor(() => {
+      const queryString = makeQueryString(formData)
       expect(mockNavigate).toHaveBeenCalledWith(
-        FRONTEND_PATHS.PATIENT_SEARCH_RESULTS,
-        {
-          state: {
-            patients: [
-              {
-                nhsNumber: "9726919207",
-                given: "Issac",
-                family: "Wolderton-Rodriguez",
-                dateOfBirth: "06-05-2013",
-                postcode: "LS6 1JL"
-              },
-              {
-                nhsNumber: "9726919207",
-                given: "Steve",
-                family: "Wolderton-Rodriguez",
-                dateOfBirth: "06-05-2013",
-                postcode: "LS6 1JL"
-              }
-            ]
-          }
-        }
+        `${FRONTEND_PATHS.PATIENT_SEARCH_RESULTS}?${queryString}`
       )
     })
   })

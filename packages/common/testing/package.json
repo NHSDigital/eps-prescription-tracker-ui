@@ -13,5 +13,8 @@
     "test": "npm run compile && npm run unit",
     "check-licenses": "license-checker --failOn GPL --failOn LGPL --start ../.."
   },
-  "dependencies": {}
+  "dependencies": {
+    "@aws-lambda-powertools/logger": "^2.18.0",
+    "@cpt-ui-common/pdsClient": "^1.0.0"
+  }
 }

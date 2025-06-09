@@ -1,9 +1,4 @@
-import React, {
-  useContext,
-  useState,
-  useEffect,
-  useRef
-} from "react"
+import React, {useState, useEffect, useRef} from "react"
 import {
   Container,
   Row,
@@ -19,49 +14,13 @@ import {
   ErrorMessage,
   Fieldset
 } from "nhsuk-react-components"
-import {useNavigate} from "react-router-dom"
-import {AuthContext} from "@/context/AuthProvider"
-import http from "@/helpers/axios"
-import {formatDobForSearch} from "@/helpers/formatters"
+import {useNavigate, useSearchParams, createSearchParams} from "react-router-dom"
 import {validateBasicDetails, getInlineErrors} from "@/helpers/validateBasicDetails"
 import {errorFocusMap, ErrorKey, resolveDobInvalidFields} from "@/helpers/basicDetailsValidationMeta"
 import {STRINGS} from "@/constants/ui-strings/BasicDetailsSearchStrings"
-import {API_ENDPOINTS, FRONTEND_PATHS, NHS_REQUEST_URID} from "@/constants/environment"
-import {BasicDetailsSearchType} from "@cpt-ui-common/common-types"
-
-// Temporary mock data used for frontend search simulation
-const mockPatient = [
-  {
-    nhsNumber: "1234567890",
-    given: "James",
-    family: "Smith",
-    dateOfBirth: "02-04-2006",
-    postcode: "LS1 1AB"
-  }
-]
-
-const mockMultiplePatient = [
-  {
-    nhsNumber: "9726919207",
-    given: "Issac",
-    family: "Wolderton-Rodriguez",
-    dateOfBirth: "06-05-2013",
-    postcode: "LS6 1JL"
-  },
-  {
-    nhsNumber: "9726919207",
-    given: "Steve",
-    family: "Wolderton-Rodriguez",
-    dateOfBirth: "06-05-2013",
-    postcode: "LS6 1JL"
-  }
-]
-
-// Utility to normalize input for case-insensitive and whitespace-tolerant comparison
-const formatInput = (input: string) => input.trim().toLowerCase()
+import {FRONTEND_PATHS} from "@/constants/environment"
 
 export default function BasicDetailsSearch() {
-  const auth = useContext(AuthContext)
   const navigate = useNavigate()
   const errorRef = useRef<HTMLDivElement | null>(null)
 
@@ -73,6 +32,7 @@ export default function BasicDetailsSearch() {
   const [dobYear, setDobYear] = useState("")
   const [errors, setErrors] = useState<Array<ErrorKey>>([])
   const [dobErrorFields, setDobErrorFields] = useState<Array<"day" | "month" | "year">>([])
+  const [searchParams] = useSearchParams()
 
   const inlineErrors = getInlineErrors(errors)
 
@@ -104,6 +64,15 @@ export default function BasicDetailsSearch() {
 
     document.addEventListener("click", handler)
     return () => document.removeEventListener("click", handler)
+  }, [])
+
+  useEffect(() => {
+    setFirstName(searchParams.get("firstName") ?? "")
+    setLastName(searchParams.get("lastName") ?? "")
+    setDobDay(searchParams.get("dobDay") ?? "")
+    setDobMonth(searchParams.get("dobMonth") ?? "")
+    setDobYear(searchParams.get("dobYear") ?? "")
+    setPostcode(searchParams.get("postcode") ?? "")
   }, [])
 
   // Returns true if the given DOB field had an error on the last submission.
@@ -156,7 +125,7 @@ export default function BasicDetailsSearch() {
       return
     }
 
-    const formState: BasicDetailsSearchType = {
+    const queryParams = {
       firstName,
       lastName,
       dobDay,
@@ -164,58 +133,8 @@ export default function BasicDetailsSearch() {
       dobYear,
       postcode
     }
-
-    try {
-      // Attempt to fetch patient details from the backend API
-      const response = await http.post(API_ENDPOINTS.PATIENT_SEARCH, {
-        headers: {
-          Authorization: `Bearer ${auth?.idToken}`,
-          "NHSD-Session-URID": NHS_REQUEST_URID
-        },
-        ...formState
-      })
-
-      // Validate HTTP response status
-      if (response.status !== 200) {
-        throw new Error(`Status Code: ${response.status}`)
-      }
-
-      // Assign response payload or throw if none received
-      const payload = response.data
-      if (!payload) {
-        throw new Error("No payload received from the API")
-      }
-    } catch (err) {
-      console.error("Failed to fetch patient details. Using mock data fallback.", err)
-
-      // FIXME: This is a static, mock data fallback we can use in lieu of the real data
-      // backend endpoint, which is still waiting for the auth SNAFU to get sorted out.
-
-      // Construct a normalized DOB string to match against mock patient data,
-      // since mock DOBs are stored in the format 'DD-MM-YYYY'
-      const searchDob = formatDobForSearch({dobDay, dobMonth, dobYear})
-
-      const matchedPatients = [...mockPatient, ...mockMultiplePatient].filter(p => {
-        const matchFirstName = firstName ? formatInput(p.given) === formatInput(firstName) : true
-        const matchLastName = formatInput(p.family) === formatInput(lastName)
-        const matchDob = p.dateOfBirth === searchDob
-        const matchPostcode = postcode ? formatInput(p.postcode) === formatInput(postcode) : true
-        return matchFirstName && matchLastName && matchDob && matchPostcode
-      })
-
-      // Navigate based on match count
-      if (matchedPatients.length === 1) {
-        navigate(`${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}?nhsNumber=${matchedPatients[0].nhsNumber}`)
-      } else if (matchedPatients.length > 1) {
-        navigate(FRONTEND_PATHS.PATIENT_SEARCH_RESULTS, {
-          state: {patients: matchedPatients}
-        })
-      } else {
-        navigate(FRONTEND_PATHS.SEARCH_RESULTS_TOO_MANY, {
-          state: formState
-        })
-      }
-    }
+    const queryString = createSearchParams(queryParams).toString()
+    navigate(`${FRONTEND_PATHS.PATIENT_SEARCH_RESULTS}?${queryString}`)
   }
 
   return (

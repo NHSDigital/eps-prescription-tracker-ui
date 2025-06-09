@@ -12,6 +12,7 @@ import {
   getItemStatusDisplayText,
   getMessageHistoryHeader
 } from "@/helpers/statusMetadata"
+import {formatMessageDateTime} from "@/helpers/formatters"
 import {STRINGS} from "@/constants/ui-strings/MessageHistoryCardStrings"
 
 interface MessageHistoryProps {
@@ -28,16 +29,16 @@ export function MessageHistoryCard({messageHistory}: MessageHistoryProps) {
         <Card className="nhsuk-u-margin-bottom-3 data-panel" style={{boxShadow: "none"}}>
           <Card.Content className="nhsuk-u-padding-4">
             <div className="nhs-screening-whole-timeline" data-testid="message-history-timeline">
-              {messageHistory.map((msg) => (
+              {messageHistory.slice().reverse().map((msg) => (
                 <div key={`${msg.sentDateTime}-${msg.organisationODS}`}
                   className="nhsuk-u-margin-bottom-4 nhs-screening-whole-timeline__item"
                   data-testid="prescription-message">
 
                   {/* Timeline Heading */}
                   <Card.Heading headingLevel="H3" className="nhsuk-heading-xs nhsuk-u-margin-bottom-1">
-                    {getMessageHistoryHeader(msg.messageText)}
+                    {getMessageHistoryHeader(msg.messageCode)}
                     <br />
-                    {msg.sentDateTime}
+                    {formatMessageDateTime(msg.sentDateTime)}
                   </Card.Heading>
 
                   {/* Organisation info */}
