@@ -26,10 +26,7 @@ const mockCognitoSignOut = jest.fn()
 const signedInAuthState: AuthContextType = {
   isSignedIn: true,
   isSigningIn: false,
-  user: {
-    username: "testUser",
-    userId: "test-user-id"
-  },
+  user: "testUser",
   error: null,
   rolesWithAccess: [],
   rolesWithoutAccess: [],

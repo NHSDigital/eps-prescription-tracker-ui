@@ -113,7 +113,7 @@ export default function LoginPage() {
 
             {auth && (
               <>
-                <div>username: {auth.user?.username}</div>
+                <div>username: {auth.user}</div>
                 <div>isSignedIn: {auth.isSignedIn} </div>
                 <h2>Auth Context</h2>
                 <pre>{JSON.stringify(auth, null, 2)}</pre>

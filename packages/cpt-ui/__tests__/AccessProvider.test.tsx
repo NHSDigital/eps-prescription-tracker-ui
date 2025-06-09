@@ -52,16 +52,8 @@ const MockAuthProvider = ({
       setAuthState((prev) => ({
         ...prev,
         isSignedIn: true,
-        user: {
-          username:
-            (input?.provider as { custom: string })?.custom || "mockUser",
-          userId: "mock-user-id"
-        },
-        error: null,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        idToken: {toString: () => "mockIdToken"} as any,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        accessToken: {toString: () => "mockAccessToken"} as any
+        user: (input?.provider as { custom: string })?.custom || "mockUser",
+        error: null
       }))
     },
     cognitoSignOut: async () => {

@@ -4,7 +4,7 @@ import userEvent from "@testing-library/user-event"
 import React, {useState} from "react"
 import {BrowserRouter} from "react-router-dom"
 import {AuthContext, type AuthContextType} from "@/context/AuthProvider"
-import type {SignInWithRedirectInput, AuthUser, JWT} from "@aws-amplify/auth"
+import type {SignInWithRedirectInput, JWT} from "@aws-amplify/auth"
 import LoginPage from "@/pages/LoginPage"
 
 const mockCognitoSignIn = jest.fn()
@@ -95,12 +95,8 @@ const MockAuthProvider = ({
       setAuthState((prev) => ({
         ...prev,
         isSignedIn: true,
-        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-        user: {
-          username:
-            (input?.provider as { custom: string })?.custom || "mockUser",
-          userId: "mock-user-id"
-        } as AuthUser,
+
+        user: (input?.provider as { custom: string })?.custom || "mockUser",
         error: null,
         // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
         idToken: {toString: () => "mockIdToken"} as JWT,
@@ -206,8 +202,8 @@ describe("LoginPage", () => {
     renderWithProviders(<LoginPage />, {
       ...defaultAuthState,
       isSignedIn: true,
-      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      user: {username: "testUser"} as AuthUser
+
+      user: "testUser"
 
     })
 

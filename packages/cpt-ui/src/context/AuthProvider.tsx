@@ -6,12 +6,7 @@ import React, {
 } from "react"
 import {Amplify} from "aws-amplify"
 import {Hub} from "aws-amplify/utils"
-import {
-  signInWithRedirect,
-  signOut,
-  AuthUser,
-  SignInWithRedirectInput
-} from "aws-amplify/auth"
+import {signInWithRedirect, signOut, SignInWithRedirectInput} from "aws-amplify/auth"
 import {authConfig} from "./configureAmplify"
 
 import {useLocalStorageState} from "@/helpers/useLocalStorageState"
@@ -24,7 +19,7 @@ const CIS2SignOutEndpoint = API_ENDPOINTS.CIS2_SIGNOUT_ENDPOINT
 
 export interface AuthContextType {
   error: string | null
-  user: AuthUser | null
+  user: string | null
   isSignedIn: boolean
   isSigningIn: boolean
   rolesWithAccess: Array<RoleDetails>
@@ -43,7 +38,7 @@ export const AuthContext = createContext<AuthContextType | null>(null)
 
 export const AuthProvider = ({children}: { children: React.ReactNode }) => {
   const [error, setError] = useState<string | null>(null)
-  const [user, setUser] = useLocalStorageState<AuthUser | null>("user", "user", null)
+  const [user, setUser] = useLocalStorageState<string | null>("user", "user", null)
   const [isSignedIn, setIsSignedIn] = useLocalStorageState<boolean>("isSignedIn", "isSignedIn", false)
   const [isSigningIn, setIsSigningIn] = useLocalStorageState<boolean>("isSigningIn", "isSigningIn", false)
   const [rolesWithAccess, setRolesWithAccess] = useLocalStorageState<Array<RoleDetails>>(
@@ -70,7 +65,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
   const [singleAccess, setSingleAccess] = useLocalStorageState<boolean>(
     "singleAccess",
     "singleAccess",
-    false
+    true
   )
   /**
    * Fetch and update the auth tokens
@@ -158,7 +153,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
 
   const clearAuthState = () => {
 
-    setNoAccess(false)
+    setNoAccess(true)
     setSingleAccess(false)
     setSelectedRole(undefined)
     setUserDetails(undefined)
@@ -181,6 +176,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
           await getTrackerUserInfo()
           setIsSignedIn(true)
           setIsSigningIn(false)
+          setUser(payload.data.username)
           setError(null)
           break
         case "tokenRefresh":

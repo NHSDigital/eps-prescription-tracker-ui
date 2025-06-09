@@ -7,19 +7,14 @@ import {
 } from "@testing-library/react"
 import {BrowserRouter} from "react-router-dom"
 
-import {Buffer} from "buffer"
 import {Amplify} from "aws-amplify"
 import {Hub} from "aws-amplify/utils"
-import {
-  signInWithRedirect,
-  signOut,
-  getCurrentUser,
-  fetchAuthSession
-} from "aws-amplify/auth"
+import {signInWithRedirect, signOut} from "aws-amplify/auth"
 
 import {AuthContext, AuthProvider} from "@/context/AuthProvider"
 
 import axios from "@/helpers/axios"
+import {TrackerUserInfo} from "@/types/TrackerUserInfoTypes"
 jest.mock("@/helpers/axios")
 
 // Tell TypeScript that axios is a mocked version.
@@ -46,9 +41,7 @@ jest.mock("aws-amplify", () => ({
 
 jest.mock("aws-amplify/auth", () => ({
   signInWithRedirect: jest.fn(), // Mock redirect sign-in
-  signOut: jest.fn(), // Mock sign-out
-  getCurrentUser: jest.fn(), // Mock current user retrieval
-  fetchAuthSession: jest.fn() // Mock session fetch
+  signOut: jest.fn() // Mock sign-out
 }))
 
 jest.mock("aws-amplify/utils", () => ({
@@ -65,11 +58,16 @@ const TestConsumer = () => {
   // Render state values for testing
   return (
     <div>
-      <div data-testid="isSignedIn">{auth.isSignedIn ? "true" : "false"}</div>
-      <div data-testid="error">{auth.error || ""}</div>
-      <div data-testid="user">{auth.user ? "UserPresent" : ""}</div>
-      <div data-testid="accessToken">
-      </div>
+      <div data-testid="error">{auth.error}</div>
+      <div data-testid="user">{auth.user}</div>
+      <div data-testid="isSignedIn">{auth.isSignedIn.toString()}</div>
+      <div data-testid="isSigningIn">{auth.isSigningIn.toString()}</div>
+      <div data-testid="rolesWithAccess">{JSON.stringify(auth.rolesWithAccess, null, 2)}</div>
+      <div data-testid="rolesWithoutAccess">{JSON.stringify(auth.rolesWithoutAccess, null, 2)}</div>
+      <div data-testid="noAccess">{auth.noAccess.toString()}</div>
+      <div data-testid="selectedRole">{JSON.stringify(auth.selectedRole, null, 2)}</div>
+      <div data-testid="userDetails">{JSON.stringify(auth.userDetails, null, 2)}</div>
+      <div data-testid="singleAccess">{auth.singleAccess.toString()}</div>
     </div>
   )
 }
@@ -80,41 +78,14 @@ describe("AuthProvider", () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let hubCallback: ((data: any) => void) | null = null
 
-  // Token payloads for mock sessions
-  const idTokenPayload = {exp: Math.floor(Date.now() / 1000) + 3600} // Valid token
-  const accessTokenPayload = {exp: Math.floor(Date.now() / 1000) + 3600} // Valid token
-
-  // Helper function to create mock tokens
-  const createTokenMocks = () => ({
-    tokens: {
-      idToken: {
-        toString: () =>
-          `header.${btoa(JSON.stringify(idTokenPayload))}.signature`,
-        payload: idTokenPayload
-      },
-      accessToken: {
-        toString: () =>
-          `header.${btoa(JSON.stringify(accessTokenPayload))}.signature`,
-        payload: accessTokenPayload
-      }
-    }
-  })
-
   type RenderWithProviderOptions = {
-    sessionMock?: { tokens: Record<string, unknown> };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    userMock?: any | null; // userMock can be `null` or `any`
     // eslint-disable-next-line no-undef
     TestComponent?: JSX.Element;
   };
 
   const renderWithProvider = async ({
-    sessionMock = {tokens: {}},
-    userMock = null,
     TestComponent = <TestConsumer />
   }: RenderWithProviderOptions = {}) => {
-    (fetchAuthSession as jest.Mock).mockResolvedValue(sessionMock);
-    (getCurrentUser as jest.Mock).mockResolvedValue(userMock)
 
     await act(async () => {
       render(
@@ -129,14 +100,6 @@ describe("AuthProvider", () => {
     })
   }
 
-  // Global setup for encoding functions
-  beforeAll(() => {
-    // eslint-disable-next-line no-undef
-    global.atob = (str) => Buffer.from(str, "base64").toString("binary")
-    // eslint-disable-next-line no-undef
-    global.btoa = (str) => Buffer.from(str, "binary").toString("base64")
-  })
-
   // Reset mocks before each test
   beforeEach(() => {
     jest.restoreAllMocks(); // Restore all mock implementations
@@ -145,12 +108,6 @@ describe("AuthProvider", () => {
         hubCallback = callback // Store the Hub callback
       }
       return () => { } // Mock unsubscribe function
-    })
-
-    // This mocks the backend CIS2 logout call, which just deletes the
-    // tokens from the Dynamo table.
-    mockedAxios.get.mockResolvedValue({
-      status: 200
     })
 
   })
@@ -163,112 +120,21 @@ describe("AuthProvider", () => {
   })
 
   // Session Handling
-  it("should set isSignedIn to false if no valid tokens are returned", async () => {
+  it("should set isSignedIn to false at mount", async () => {
     // Render without valid tokens
     await renderWithProvider()
     await waitFor(() => {
       // Check that the signed-in state is false and user is null
       expect(screen.getByTestId("isSignedIn").textContent).toBe("false")
-      expect(screen.getByTestId("user").textContent).toBe("")
-    })
-  })
-
-  it("should set isSignedIn to true and user when valid tokens are returned", async () => {
-    // Render with valid tokens and a mock user
-    await renderWithProvider({
-      sessionMock: createTokenMocks(),
-      userMock: {username: "testuser"}
-    })
-
-    await waitFor(() => {
-      // Check that the signed-in state is true and user is present
-      expect(screen.getByTestId("isSignedIn").textContent).toBe("true")
-      expect(screen.getByTestId("user").textContent).toBe("UserPresent")
-      expect(screen.getByTestId("idToken").textContent).toBe("IdTokenPresent")
-      expect(screen.getByTestId("accessToken").textContent).toBe(
-        "AccessTokenPresent"
-      )
-    })
-  })
-
-  it("should handle missing tokens during session fetch", async () => {
-    // Simulate a session fetch with missing tokens
-    const incompleteSession = {tokens: {}}
-
-    await renderWithProvider({sessionMock: incompleteSession})
-
-    await waitFor(() => {
-      // Assert that the user is not signed in due to missing tokens
-      expect(screen.getByTestId("isSignedIn").textContent).toBe("false")
-      expect(screen.getByTestId("user").textContent).toBe("")
     })
   })
 
   // Error Handling
-  it("should handle fetchAuthSession failure", async () => {
-    // Mock fetchAuthSession to throw an error
-    (fetchAuthSession as jest.Mock).mockRejectedValue(
-      new Error("Session fetch failed")
-    )
-
-    await renderWithProvider()
-
-    await waitFor(() => {
-      // Assert that the user is not signed in due to session fetch failure
-      expect(screen.getByTestId("isSignedIn").textContent).toBe("false")
-      expect(screen.getByTestId("user").textContent).toBe("")
-    })
-  })
-
-  it("should handle getCurrentUser failure gracefully", async () => {
-    // Mock getCurrentUser to throw an error
-    (getCurrentUser as jest.Mock).mockRejectedValue(
-      new Error("User fetch failed")
-    )
-
-    await renderWithProvider({
-      sessionMock: createTokenMocks()
-    })
-
-    await waitFor(() => {
-      // Assert that valid tokens do not automatically result in user data due to user fetch failure
-      expect(screen.getByTestId("isSignedIn").textContent).toBe("true")
-      expect(screen.getByTestId("user").textContent).toBe("")
-    })
-  })
-
-  it("should log an error and reset state when fetching user session fails", async () => {
-    // Mock console.error to track calls
-    const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation()
-
-    // Mock fetchAuthSession to throw an error
-    const sessionError = new Error("Session fetch failed");
-    (fetchAuthSession as jest.Mock).mockRejectedValueOnce(sessionError)
-
-    // Render the provider
-    await renderWithProvider()
-
-    // Wait for the state to be reset
-    await waitFor(() => {
-      // Verify that the state is reset correctly
-      expect(screen.getByTestId("isSignedIn").textContent).toBe("false")
-      expect(screen.getByTestId("user").textContent).toBe("")
-    })
-
-    // Verify that the error was logged
-    expect(consoleErrorSpy).toHaveBeenCalledWith(
-      "Error fetching user session:",
-      sessionError
-    )
-
-    // Restore the original console.error implementation
-    consoleErrorSpy.mockRestore()
-  })
 
   it("should log an error if signOut fails", async () => {
-    const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation()
+    const consoleErrorSpy = jest.spyOn(console, "error")
     const signOutError = new Error("Sign out failed");
-    (signOut as jest.Mock).mockRejectedValue(signOutError)
+    (signOut as jest.Mock).mockRejectedValue(signOutError as never)
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let contextValue: any
@@ -299,101 +165,62 @@ describe("AuthProvider", () => {
   })
 
   // Token Handling
-  it("should log a warning and reset state when the ID token is expired", async () => {
-    // Mock console.warn to track calls
-    const consoleWarnSpy = jest.spyOn(console, "warn").mockImplementation()
-
-    // Create mock tokens with an expired ID token
-    const expiredIdToken = {
-      tokens: {
-        idToken: {
-          toString: () =>
-            `header.${btoa(JSON.stringify({exp: Math.floor(Date.now() / 1000) - 3600}))}.signature`,
-          payload: {exp: Math.floor(Date.now() / 1000) - 3600}
-        },
-        accessToken: {
-          toString: () =>
-            `header.${btoa(JSON.stringify({exp: Math.floor(Date.now() / 1000) + 3600}))}.signature`,
-          payload: {exp: Math.floor(Date.now() / 1000) + 3600}
-        }
-      }
-    }
-
-    // Render the provider with the expired ID token
-    await renderWithProvider({sessionMock: expiredIdToken})
-
-    // Wait for the state to be reset and verify the warning
-    await waitFor(() => {
-      expect(screen.getByTestId("isSignedIn").textContent).toBe("false") // State reset
-      expect(screen.getByTestId("user").textContent).toBe("")
-      expect(consoleWarnSpy).toHaveBeenCalledWith(
-        "ID token is expired. Consider refreshing the token."
-      ) // Warning logged
-    })
-
-    // Restore the original console.warn implementation
-    consoleWarnSpy.mockRestore()
-  })
-
-  it("should handle expired tokens", async () => {
-    // Create mock expired tokens
-    const expiredTokens = {
-      tokens: {
-        idToken: {
-          toString: () =>
-            `header.${btoa(JSON.stringify({exp: Math.floor(Date.now() / 1000) - 3600}))}.signature`,
-          payload: {exp: Math.floor(Date.now() / 1000) - 3600}
-        },
-        accessToken: {
-          toString: () =>
-            `header.${btoa(JSON.stringify({exp: Math.floor(Date.now() / 1000) - 3600}))}.signature`,
-          payload: {exp: Math.floor(Date.now() / 1000) - 3600}
-        }
-      }
-    }
-
-    // Render with expired tokens
-    await renderWithProvider({sessionMock: expiredTokens})
-
-    await waitFor(() => {
-      // Verify signed-in state is false and user is cleared
-      expect(screen.getByTestId("isSignedIn").textContent).toBe("false")
-      expect(screen.getByTestId("user").textContent).toBe("")
-    })
-  })
 
   // Hub Events
-  it("should handle Hub event signInWithRedirect", async () => {
-    const mockSession = createTokenMocks()
-    const mockUser = {username: "testuser"};
-
-    (fetchAuthSession as jest.Mock).mockResolvedValue(mockSession);
-    (getCurrentUser as jest.Mock).mockResolvedValue(mockUser)
-
-    await act(async () => {
-      render(
-        <BrowserRouter>
-          <AuthProvider>
-            <TestConsumer />
-          </AuthProvider>
-        </BrowserRouter>
-      )
-    })
-
+  it("should handle Hub event signedIn", async () => {
+    const currentlySelectedRole = {
+      role_id: "ROLE123",
+      role_name: "Pharmacist",
+      org_name: "Test Pharmacy Org",
+      org_code: "ORG123",
+      site_address: "1 Fake Street"
+    }
+    const rolesWithAccess = [
+      {
+        role_id: "ROLE123",
+        role_name: "Pharmacist",
+        org_name: "Test Pharmacy Org",
+        org_code: "ORG123",
+        site_address: "1 Fake Street"
+      }
+    ]
+    const userDetails = {
+      family_name: "FAMILY",
+      given_name: "GIVEN"
+    }
+    const mockUserInfo: TrackerUserInfo = {
+      roles_with_access: rolesWithAccess,
+      roles_without_access: [],
+      currently_selected_role: currentlySelectedRole,
+      user_details: userDetails
+    }
+    await renderWithProvider()
     // Ensure the Hub event listener (hubCallback) is initialized
     if (!hubCallback) {
       throw new Error("hubCallback is not initialized")
     }
-
-    // Simulate the Hub event "signInWithRedirect"
+    mockedAxios.get.mockResolvedValueOnce({
+      status: 200,
+      data: {userInfo: mockUserInfo}
+    })
+    mockedAxios.put.mockResolvedValueOnce({
+      status: 200
+    })
+    // Simulate the Hub event "signedIn"
     act(() => {
-      // Simulate a successful Hub event for signInWithRedirect
-      hubCallback!({payload: {event: "signInWithRedirect"}})
+      // Simulate a successful Hub event for signedIn
+      hubCallback!({payload: {event: "signedIn", data: {username: "test_user"}}})
     })
 
     await waitFor(() => {
       expect(screen.getByTestId("isSignedIn").textContent).toBe("true")
-      expect(screen.getByTestId("user").textContent).toBe("UserPresent")
+      expect(screen.getByTestId("user").textContent).toBe("test_user")
+      expect(screen.getByTestId("rolesWithAccess").textContent).toBe(JSON.stringify(rolesWithAccess, null, 2))
+      expect(screen.getByTestId("rolesWithoutAccess").textContent).toBe("[]")
+      expect(screen.getByTestId("noAccess").textContent).toBe("false")
+      expect(screen.getByTestId("selectedRole").textContent).toBe(JSON.stringify(currentlySelectedRole, null, 2))
+      expect(screen.getByTestId("userDetails").textContent).toBe(JSON.stringify(userDetails, null, 2))
+      expect(screen.getByTestId("singleAccess").textContent).toBe("true")
     })
   })
 
@@ -420,40 +247,7 @@ describe("AuthProvider", () => {
     })
   })
 
-  it("should handle tokenRefresh event successfully", async () => {
-    await renderWithProvider({
-      sessionMock: createTokenMocks(),
-      userMock: {username: "testuser"}
-    })
-
-    await waitFor(() => {
-      // Check that the signed-in state is true and user is present
-      expect(screen.getByTestId("isSignedIn").textContent).toBe("true")
-      expect(screen.getByTestId("user").textContent).toBe("UserPresent")
-      expect(screen.getByTestId("idToken").textContent).toBe("IdTokenPresent")
-      expect(screen.getByTestId("accessToken").textContent).toBe(
-        "AccessTokenPresent"
-      )
-    });
-
-    // Now simulate a token refresh event
-    (fetchAuthSession as jest.Mock).mockResolvedValueOnce(createTokenMocks());
-    (getCurrentUser as jest.Mock).mockResolvedValue({username: "testuser"})
-
-    // Trigger the tokenRefresh Hub event
-    if (hubCallback) {
-      hubCallback({payload: {event: "tokenRefresh"}})
-    }
-
-    // After the tokenRefresh event, ensure no error and user remains signed in
-    await waitFor(() => {
-      expect(screen.getByTestId("error").textContent).toBe("")
-      expect(screen.getByTestId("isSignedIn").textContent).toBe("true")
-      expect(screen.getByTestId("user").textContent).toBe("UserPresent")
-    })
-  })
-
-  it("should handle Hub event signedOut", async () => {
+  it("should handle Hub event signedOut after a signedIn event", async () => {
     // Render the AuthProvider and capture the Hub callback
     await renderWithProvider()
 
@@ -462,6 +256,16 @@ describe("AuthProvider", () => {
       throw new Error("hubCallback is not initialized")
     }
 
+    // Simulate the Hub event "signedIn"
+    act(() => {
+      // Simulate a successful Hub event for signedIn
+      hubCallback!({payload: {event: "signedIn", data: {username: "test_user"}}})
+    })
+
+    await waitFor(() => {
+      expect(screen.getByTestId("isSignedIn").textContent).toBe("true")
+      expect(screen.getByTestId("user").textContent).toBe("test_user")
+    })
     // Simulate the 'signedOut' Hub event
     act(() => {
       hubCallback!({payload: {event: "signedOut"}})
@@ -471,14 +275,18 @@ describe("AuthProvider", () => {
     await waitFor(() => {
       expect(screen.getByTestId("isSignedIn").textContent).toBe("false")
       expect(screen.getByTestId("user").textContent).toBe("")
-      expect(screen.getByTestId("idToken").textContent).toBe("")
-      expect(screen.getByTestId("accessToken").textContent).toBe("")
       expect(screen.getByTestId("error").textContent).toBe("")
+      expect(screen.getByTestId("rolesWithAccess").textContent).toBe("[]")
+      expect(screen.getByTestId("rolesWithoutAccess").textContent).toBe("[]")
+      expect(screen.getByTestId("noAccess").textContent).toBe("true")
+      expect(screen.getByTestId("selectedRole").textContent).toBe("")
+      expect(screen.getByTestId("userDetails").textContent).toBe("")
+      expect(screen.getByTestId("singleAccess").textContent).toBe("false")
     })
   })
 
   // Auth Functions
-  it("should provide cognitoSignIn and cognitoSignOut functions", async () => {
+  it("should provide cognitoSignIn functions", async () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let contextValue: any
     const TestComponent = () => {
@@ -500,10 +308,31 @@ describe("AuthProvider", () => {
       await contextValue.cognitoSignIn()
     })
     expect(signInWithRedirect).toHaveBeenCalled()
+    expect(contextValue.isSigningIn).toBe(true)
+  })
+
+  it("should provide cognitoSignOut functions", async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let contextValue: any
+    const TestComponent = () => {
+      contextValue = useContext(AuthContext)
+      return null
+    }
+
+    await act(async () => {
+      render(
+        <BrowserRouter>
+          <AuthProvider>
+            <TestComponent />
+          </AuthProvider>
+        </BrowserRouter>
+      )
+    })
 
     await act(async () => {
       await contextValue.cognitoSignOut()
     })
     expect(signOut).toHaveBeenCalled()
   })
+
 })
