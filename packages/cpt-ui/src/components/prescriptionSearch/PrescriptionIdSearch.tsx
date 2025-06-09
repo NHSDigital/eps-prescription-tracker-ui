@@ -4,7 +4,7 @@ import React, {
   useRef,
   useMemo
 } from "react"
-import {useNavigate} from "react-router-dom"
+import {useNavigate, useSearchParams} from "react-router-dom"
 
 import {
   Container,
@@ -21,6 +21,7 @@ import {
 } from "nhsuk-react-components"
 
 import {PRESCRIPTION_ID_SEARCH_STRINGS} from "@/constants/ui-strings/SearchForAPrescriptionStrings"
+import {SEARCH_TYPES} from "@/constants/ui-strings/PrescriptionNotFoundMessageStrings"
 import {FRONTEND_PATHS} from "@/constants/environment"
 import {
   validatePrescriptionId,
@@ -33,7 +34,8 @@ export default function PrescriptionIdSearch() {
   const navigate = useNavigate()
   const errorRef = useRef<HTMLDivElement | null>(null)
 
-  const [prescriptionId, setPrescriptionId] = useState<string>("")
+  const [searchParams] = useSearchParams()
+  const [prescriptionId, setPrescriptionId] = useState<string>(searchParams.get("prescriptionId") ?? "")
   const [errorKey, setErrorKey] = useState<PrescriptionValidationError | null>(null)
 
   const errorMessages = PRESCRIPTION_ID_SEARCH_STRINGS.errors
@@ -72,7 +74,12 @@ export default function PrescriptionIdSearch() {
     setErrorKey(null) // Clear error on valid submit
 
     const formatted = normalizePrescriptionId(prescriptionId)
-    navigate(`${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}?prescriptionId=${formatted}`)
+
+    const params = new URLSearchParams({
+      searchType: SEARCH_TYPES.PRESCRIPTION_ID,
+      prescriptionId: formatted
+    })
+    navigate(`${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}?${params.toString()}`)
   }
 
   return (

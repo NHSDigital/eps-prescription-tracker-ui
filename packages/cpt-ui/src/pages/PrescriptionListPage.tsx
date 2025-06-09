@@ -16,6 +16,7 @@ import {usePatientDetails} from "@/context/PatientDetailsProvider"
 import EpsSpinner from "@/components/EpsSpinner"
 import PrescriptionsListTabs from "@/components/prescriptionList/PrescriptionsListTab"
 import {TabHeader} from "@/components/EpsTabs"
+import PatientNotFoundMessage from "@/components/PrescriptionNotFoundMessage"
 
 import {PRESCRIPTION_LIST_TABS} from "@/constants/ui-strings/PrescriptionListTabStrings"
 import {PRESCRIPTION_LIST_PAGE_STRINGS} from "@/constants/ui-strings/PrescriptionListPageStrings"
@@ -36,6 +37,7 @@ export default function PrescriptionListPage() {
   const [tabData, setTabData] = useState<Array<TabHeader>>([])
   const [backLinkTarget, setBackLinkTarget] = useState<string>(PRESCRIPTION_LIST_PAGE_STRINGS.DEFAULT_BACK_LINK_TARGET)
   const [loading, setLoading] = useState(true)
+  const [showNotFound, setShowNotFound] = useState(false)
 
   useEffect(() => {
     const runSearch = async () => {
@@ -78,7 +80,8 @@ export default function PrescriptionListPage() {
       console.log("Response status", {status: response.status})
       if (response.status === 404) {
         console.error("No search results were returned")
-        navigate(FRONTEND_PATHS.PRESCRIPTION_NOT_FOUND)
+        setShowNotFound(true)
+        setLoading(false)
         return
       } else if (response.status !== 200) {
         throw new Error(`Status Code: ${response.status}`)
@@ -92,7 +95,8 @@ export default function PrescriptionListPage() {
         && searchResults.futurePrescriptions.length === 0
       ) {
         console.error("A patient was returned, but they do not have any prescriptions.", searchResults)
-        navigate(FRONTEND_PATHS.PRESCRIPTION_NOT_FOUND)
+        setShowNotFound(true)
+        setLoading(false)
         return
       }
 
@@ -122,7 +126,8 @@ export default function PrescriptionListPage() {
     }
 
     setLoading(true)
-    runSearch().catch(() => navigate(backLinkTarget)).finally(() => setLoading(false))
+    setShowNotFound(false) // Reset when search changes
+    runSearch().catch(() => setShowNotFound(true)).finally(() => setLoading(false))
   }, [queryParams, auth?.idToken, auth?.isAuthLoading])
 
   if (loading) {
@@ -138,6 +143,12 @@ export default function PrescriptionListPage() {
       </main>
     )
   }
+
+  // Show PatientNotFoundMessage if no prescriptions found
+  if (showNotFound) {
+    return <PatientNotFoundMessage />
+  }
+
   return (
     <>
       <title>{PRESCRIPTION_LIST_PAGE_STRINGS.PAGE_TITLE}</title>

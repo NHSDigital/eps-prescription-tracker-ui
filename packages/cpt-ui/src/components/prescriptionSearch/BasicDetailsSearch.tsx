@@ -19,6 +19,7 @@ import {validateBasicDetails, getInlineErrors} from "@/helpers/validateBasicDeta
 import {errorFocusMap, ErrorKey, resolveDobInvalidFields} from "@/helpers/basicDetailsValidationMeta"
 import {STRINGS} from "@/constants/ui-strings/BasicDetailsSearchStrings"
 import {FRONTEND_PATHS} from "@/constants/environment"
+import {SEARCH_TYPES} from "@/constants/ui-strings/PrescriptionNotFoundMessageStrings"
 
 export default function BasicDetailsSearch() {
   const navigate = useNavigate()
@@ -26,10 +27,10 @@ export default function BasicDetailsSearch() {
 
   const [firstName, setFirstName] = useState("")
   const [lastName, setLastName] = useState("")
-  const [postcode, setPostcode] = useState("")
   const [dobDay, setDobDay] = useState("")
   const [dobMonth, setDobMonth] = useState("")
   const [dobYear, setDobYear] = useState("")
+  const [postcode, setPostcode] = useState("")
   const [errors, setErrors] = useState<Array<ErrorKey>>([])
   const [dobErrorFields, setDobErrorFields] = useState<Array<"day" | "month" | "year">>([])
   const [searchParams] = useSearchParams()
@@ -134,7 +135,7 @@ export default function BasicDetailsSearch() {
       postcode
     }
     const queryString = createSearchParams(queryParams).toString()
-    navigate(`${FRONTEND_PATHS.PATIENT_SEARCH_RESULTS}?${queryString}`)
+    navigate(`${FRONTEND_PATHS.PATIENT_SEARCH_RESULTS}?searchType=${SEARCH_TYPES.BASIC_DETAILS}&${queryString}`)
   }
 
   return (

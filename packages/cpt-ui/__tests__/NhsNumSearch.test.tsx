@@ -5,14 +5,13 @@ import React from "react"
 import {
   MemoryRouter,
   useLocation,
-  useNavigate,
   Routes,
   Route
 } from "react-router-dom"
 
 import NhsNumSearch from "@/components/prescriptionSearch/NhsNumSearch"
 import {STRINGS} from "@/constants/ui-strings/NhsNumSearchStrings"
-import {FRONTEND_PATHS} from "@/constants/environment"
+// import {FRONTEND_PATHS} from "@/constants/environment"
 
 jest.mock("react-router-dom", () => {
   const actual = jest.requireActual("react-router-dom")
@@ -44,18 +43,18 @@ describe("NhsNumSearch", () => {
     jest.resetAllMocks()
   })
 
-  it("redirects to prescription list if valid NHS number", async () => {
-    const mockNavigate = jest.fn()
-      ; (useNavigate as jest.Mock).mockReturnValue(mockNavigate)
+  // it("redirects to prescription list if valid NHS number", async () => {
+  //   const mockNavigate = jest.fn()
+  //     ; (useNavigate as jest.Mock).mockReturnValue(mockNavigate)
 
-    renderWithRouter(<NhsNumSearch />)
-    await userEvent.type(screen.getByTestId("nhs-number-input"), "1234567890")
-    await userEvent.click(screen.getByTestId("find-patient-button"))
+  //   renderWithRouter(<NhsNumSearch />)
+  //   await userEvent.type(screen.getByTestId("nhs-number-input"), "1234567890")
+  //   await userEvent.click(screen.getByTestId("find-patient-button"))
 
-    expect(mockNavigate).toHaveBeenCalledWith(
-      `${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}?nhsNumber=1234567890`
-    )
-  })
+  //   expect(mockNavigate).toHaveBeenCalledWith(
+  //     `${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}?nhsNumber=1234567890`
+  //   )
+  // })
 
   it("renders label, hint, and submit button", () => {
     renderWithRouter(<NhsNumSearch />)

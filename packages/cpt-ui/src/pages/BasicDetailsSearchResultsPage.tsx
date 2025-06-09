@@ -56,7 +56,12 @@ export default function SearchResultsPage() {
     }
 
     if (payload.length === 1) {
-      navigate(`${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}?nhsNumber=${payload[0].nhsNumber}`)
+      const baseParams = {
+        nhsNumber: payload[0].nhsNumber,
+        ...Object.fromEntries(searchParams.entries())
+      }
+      const queryString = new URLSearchParams(baseParams).toString()
+      navigate(`${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}?${queryString}`)
       return
     }
 
