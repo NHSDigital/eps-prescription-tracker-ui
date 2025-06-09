@@ -19,6 +19,21 @@ fix_string_key() {
     mv "${TEMP_FILE}" "$OUTPUT_FILE_NAME"
 }
 
+fix_list_key() {
+    KEY_NAME=$1
+    KEY_VALUE=$2
+    if [ -z "${KEY_VALUE}" ]; then
+        echo "${KEY_NAME} value is unset or set to empty list"
+        exit 1
+    fi
+    echo "Setting ${KEY_NAME}"
+    jq \
+        --argjson key_value "${KEY_VALUE}" \
+        --arg key_name "${KEY_NAME}" \
+        '. += {($key_name): $key_value}' "$OUTPUT_FILE_NAME" > "${TEMP_FILE}"
+    mv "${TEMP_FILE}" "$OUTPUT_FILE_NAME"
+}
+
 # helper function to set boolean and number values (without quotes)
 fix_boolean_number_key() {
     KEY_NAME=$1
@@ -68,6 +83,13 @@ if [ -z "${CLOUDFRONT_CERT_ARN}" ]; then
         -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
 fi
 
+if [ -z "${WEBACL_ATTRIBUTE_ARN}" ]; then
+    WEBACL_ATTRIBUTE_ARN=$(echo "$CF_US_EXPORTS" | \
+        jq \
+        --arg EXPORT_NAME "${SERVICE_NAME}-us-certs:webAcl:attrArn" \
+        -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+fi
+
 if [ -z "${SHORT_CLOUDFRONT_DOMAIN}" ]; then
     SHORT_CLOUDFRONT_DOMAIN=$(echo "$CF_US_EXPORTS" | \
         jq \
@@ -103,6 +125,13 @@ if [ -z "${RUM_APP_NAME}" ]; then
         -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
 fi
 
+# Acquire values externally
+## Get GitHub Actions runner IPs for use against WAF
+if [ -z "${GITHUB_ACTIONS_RUNNER_IPV4}" ]; then
+    GITHUB_ACTIONS_RUNNER_IPV4=$(curl -s https://api.github.com/meta | \
+     jq '[.actions[] | select(test("^([0-9]{1,3}\\.){3}[0-9]{1,3}(/[0-9]{1,2})?$"))]')
+fi
+
 # go through all the key values we need to set
 fix_string_key serviceName "${SERVICE_NAME}"
 fix_string_key VERSION_NUMBER "${VERSION_NUMBER}"
@@ -117,6 +146,7 @@ if [ "$CDK_APP_NAME" == "StatefulResourcesApp" ]; then
     fix_string_key primaryOidcTokenEndpoint "${PRIMARY_OIDC_TOKEN_ENDPOINT}"
     fix_string_key primaryOidcUserInfoEndpoint "${PRIMARY_OIDC_USERINFO_ENDPOINT}"
     fix_string_key primaryOidcjwksEndpoint "${PRIMARY_OIDC_JWKS_ENDPOINT}"
+    fix_list_key allowListIpv4 "${GITHUB_ACTIONS_RUNNER_IPV4}"
 
     fix_boolean_number_key useMockOidc "${USE_MOCK_OIDC}"
     if [ "$USE_MOCK_OIDC" == "true" ]; then
@@ -162,6 +192,8 @@ elif [ "$CDK_APP_NAME" == "StatelessResourcesApp" ]; then
     fix_string_key primaryOidcIssuer "${PRIMARY_OIDC_ISSUER}"
     fix_string_key primaryOidcUserInfoEndpoint "${PRIMARY_OIDC_USERINFO_ENDPOINT}"
     fix_string_key primaryOidcjwksEndpoint "${PRIMARY_OIDC_JWKS_ENDPOINT}"
+
+    fix_string_key webAclAttributeArn "${WEBACL_ATTRIBUTE_ARN}"
 
     if [ "$USE_MOCK_OIDC" == "true" ]; then
         fix_string_key mockOidcClientId "${MOCK_OIDC_CLIENT_ID}"
