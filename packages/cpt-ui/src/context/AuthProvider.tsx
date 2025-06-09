@@ -85,6 +85,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
       }
 
       const data = response.data
+      console.log("received this from tracker user info", {response})
 
       if (!data.userInfo) {
         throw new Error("Server response did not contain data")
@@ -134,11 +135,13 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
   const updateSelectedRole = async (newRole: RoleDetails) => {
     try {
       // Update selected role in the backend via the selectedRoleLambda endpoint using axios
+      console.log("calling set selected role")
       const response = await http.put(
         API_ENDPOINTS.SELECTED_ROLE,
         {currently_selected_role: newRole}
       )
 
+      console.log("set the selected role")
       if (response.status !== 200) {
         throw new Error("Failed to update the selected role")
       }
@@ -178,6 +181,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
           setIsSigningIn(false)
           setUser(payload.data.username)
           setError(null)
+          console.log("Finished the signedIn event ")
           break
         case "tokenRefresh":
           console.log("Processing tokenRefresh event")
