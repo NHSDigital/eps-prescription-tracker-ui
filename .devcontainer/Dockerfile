@@ -1,5 +1,7 @@
 FROM mcr.microsoft.com/devcontainers/base:ubuntu
 
+RUN if [ "$(uname -m)" != "aarch64" ]; then dpkg --add-architecture amd64; fi
+
 RUN apt-get update \
     && export DEBIAN_FRONTEND=noninteractive \
     && apt-get -y dist-upgrade \
@@ -9,7 +11,7 @@ RUN apt-get update \
     jq apt-transport-https ca-certificates gnupg-agent \
     software-properties-common bash-completion python3-pip make libbz2-dev \
     libreadline-dev libsqlite3-dev wget llvm libncurses5-dev libncursesw5-dev \
-    xz-utils tk-dev liblzma-dev netcat libyaml-dev
+    xz-utils tk-dev liblzma-dev netcat-traditional libyaml-dev
 
 # install aws stuff
 RUN wget -O /tmp/awscliv2.zip "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" && \
