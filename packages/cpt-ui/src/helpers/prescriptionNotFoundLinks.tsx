@@ -16,7 +16,7 @@ export function inferSearchType(params: URLSearchParams): AllowedSearchType {
   }
   if (params.has("prescriptionId")) return "PrescriptionIdSearch"
   if (params.has("nhsNumber")) return "NhsNumberSearch"
-  // Fallback (could throw if you want to force stricter validation)
+  // Fallback to BasicDetailsSearch if no other params match
   return "BasicDetailsSearch"
 }
 
