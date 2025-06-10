@@ -15,11 +15,7 @@ export const AccessContext = createContext<null>(null)
 
 export const AccessProvider = ({children}: { children: ReactNode }) => {
 
-  const {
-    isSignedIn,
-    selectedRole,
-    isSigningIn
-  } = useAuth()
+  const auth = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -30,6 +26,7 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
       FRONTEND_PATHS.LOGOUT,
       FRONTEND_PATHS.COOKIES
     ]
+    console.log("in accessProvider ensureRoleSelected with this", {auth})
     const params = new URLSearchParams(window.location.search)
     const codeParams = params.get("code")
     const stateParams = params.get("state")
@@ -39,14 +36,14 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
       return
     }
 
-    if (!isSignedIn) {
+    if (!auth.isSignedIn && !auth.isSigningIn) {
       if (!allowed_no_role_paths.includes(normalizePath(location.pathname))) {
         console.log("Not signed in - redirecting to login page")
         navigate(FRONTEND_PATHS.LOGIN)
       }
       return
     }
-    if (!selectedRole && !isSigningIn) {
+    if (!auth.selectedRole && !auth.isSigningIn) {
       if (!allowed_no_role_paths.includes(normalizePath(location.pathname))) {
         console.log("No selected role - Redirecting from", location.pathname)
         navigate(FRONTEND_PATHS.SELECT_YOUR_ROLE)
@@ -58,9 +55,9 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
   // The access variables are cached, and the values are initially assumed to have not changed.
   // On a full page reload, make a tracker use info call to update them from the backend
   useEffect(() => {
-    console.log("in accessProvider with these", {isSignedIn, isSigningIn, selectedRole})
+    console.log("in accessProvider useEffect with this", {auth})
     ensureRoleSelected()
-  }, [isSignedIn, isSigningIn, selectedRole])
+  }, [auth.isSignedIn, auth.isSigningIn, auth.selectedRole])
 
   return (
     <AccessContext.Provider

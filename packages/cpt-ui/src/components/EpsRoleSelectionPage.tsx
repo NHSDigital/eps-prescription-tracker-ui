@@ -79,13 +79,7 @@ export default function RoleSelectionPage({
     errorDuringRoleSelection
   } = contentText
 
-  const {
-    noAccess,
-    selectedRole,
-    rolesWithAccess,
-    rolesWithoutAccess,
-    error
-  } = useAuth()
+  const auth = useAuth()
 
   const [loginInfoMessage, setLoginInfoMessage] = useState<string | null>(null)
   const navigate = useNavigate()
@@ -95,9 +89,10 @@ export default function RoleSelectionPage({
   const [roleCardPropsWithoutAccess, setRoleCardPropsWithoutAccess] = useState<Array<RolesWithoutAccessProps>>([])
 
   useEffect(() => {
+    console.log("in EpsRoleSelectionPage useEffect 0 with this auth", {auth})
     // Transform roles data for display
-    setRoleCardPropsWithAccess((!noAccess)
-      ? rolesWithAccess.map((role: RoleDetails, index) => ({
+    setRoleCardPropsWithAccess((!auth.noAccess)
+      ? auth.rolesWithAccess.map((role: RoleDetails, index) => ({
         uuid: `role_with_access_${index}`,
         role,
         link: FRONTEND_PATHS.YOUR_SELECTED_ROLE
@@ -105,18 +100,19 @@ export default function RoleSelectionPage({
       : []
     )
 
-    setRoleCardPropsWithoutAccess(rolesWithoutAccess.map((role, index) => ({
+    setRoleCardPropsWithoutAccess(auth.rolesWithoutAccess.map((role, index) => ({
       uuid: `role_without_access_${index}`,
       roleName: role.role_name || noRoleName,
       orgName: role.org_name || noOrgName,
       odsCode: role.org_code || noODSCode
     })))
 
-    console.warn("RoleCardPropsWithAccess length: ", {roleCardPropsWithAccess, error})
-  }, [rolesWithAccess, rolesWithoutAccess])
+    console.warn("RoleCardPropsWithAccess length: ", {roleCardPropsWithAccess, error: auth.error})
+  }, [auth.rolesWithAccess, auth.rolesWithoutAccess])
 
   // Handle auto-redirect for single role
   useEffect(() => {
+    console.log("in EpsRoleSelectionPage useEffect 1 with this auth", {auth})
     const params = new URLSearchParams(window.location.search)
     const codeParams = params.get("code")
     const stateParams = params.get("state")
@@ -129,20 +125,21 @@ export default function RoleSelectionPage({
     } else {
       redirecting.current = false
     }
-    if (rolesWithAccess.length === 1 && rolesWithoutAccess.length === 0) {
+    if (auth.rolesWithAccess.length === 1 && auth.rolesWithoutAccess.length === 0) {
       navigate(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
     }
-  }, [rolesWithAccess, rolesWithoutAccess])
+  }, [auth.rolesWithAccess, auth.rolesWithoutAccess])
 
   // Set login message when selected role is available
   useEffect(() => {
-    if (!loginInfoMessage && selectedRole) {
+    console.log("in EpsRoleSelectionPage useEffect 2 with this auth", {auth})
+    if (!loginInfoMessage && auth.selectedRole) {
       setLoginInfoMessage(
-        `You are currently logged in at ${selectedRole.org_name || noOrgName} ` +
-        `(ODS: ${selectedRole.org_code || noODSCode}) with ${selectedRole.role_name || noRoleName}.`
+        `You are currently logged in at ${auth.selectedRole.org_name || noOrgName} ` +
+        `(ODS: ${auth.selectedRole.org_code || noODSCode}) with ${auth.selectedRole.role_name || noRoleName}.`
       )
     }
-  }, [selectedRole, loginInfoMessage, noOrgName, noODSCode, noRoleName])
+  }, [auth.selectedRole, loginInfoMessage, noOrgName, noODSCode, noRoleName])
 
   // Show spinner while loading or redirecting
   if (redirecting.current) {
@@ -160,7 +157,7 @@ export default function RoleSelectionPage({
   }
 
   // Show error if present
-  if (error) {
+  if (auth.error) {
     return (
       <main
         id="main-content"
@@ -175,7 +172,7 @@ export default function RoleSelectionPage({
               </ErrorSummary.Title>
               <ErrorSummary.List>
                 <ErrorSummary.Item href="PLACEHOLDER/contact/us">
-                  {error}
+                  {auth.error}
                 </ErrorSummary.Item>
               </ErrorSummary.List>
             </ErrorSummary>
@@ -197,17 +194,17 @@ export default function RoleSelectionPage({
             <h1 className="nhsuk-heading-xl">
               <span role="text" data-testid="eps_header_selectYourRole">
                 <span className="nhsuk-title">
-                  {noAccess ? titleNoAccess : title}
+                  {auth.noAccess ? titleNoAccess : title}
                 </span>
                 <span className="nhsuk-caption-l nhsuk-caption--bottom">
                   <span className="nhsuk-u-visually-hidden"> - </span>
-                  {(!noAccess) && caption}
+                  {(!auth.noAccess) && caption}
                 </span>
               </span>
             </h1>
 
-            {noAccess && <p>{captionNoAccess}</p>}
-            {selectedRole && (
+            {auth.noAccess && <p>{captionNoAccess}</p>}
+            {auth.selectedRole && (
               <section aria-label="Login Information">
                 <InsetText data-testid="eps_select_your_role_pre_role_selected">
                   <span className="nhsuk-u-visually-hidden">
@@ -230,11 +227,11 @@ export default function RoleSelectionPage({
             )}
           </Col>
 
-          {(!noAccess) && (roleCardPropsWithAccess.length > 0) && (
+          {(!auth.noAccess) && (roleCardPropsWithAccess.length > 0) && (
             <Col width="two-thirds">
               <div className="section">
                 {roleCardPropsWithAccess
-                  .filter((duplicateRole) => duplicateRole.role.role_id !== selectedRole?.role_id)
+                  .filter((duplicateRole) => duplicateRole.role.role_id !== auth.selectedRole?.role_id)
                   .map((roleCardProps: RolesWithAccessProps) => (
                     <EpsCard {...roleCardProps} key={roleCardProps.uuid} />
                   ))}
