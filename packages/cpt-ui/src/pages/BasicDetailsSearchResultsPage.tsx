@@ -70,7 +70,12 @@ export default function SearchResultsPage() {
   }
 
   const handleRowClick = (nhsNumber: string) => {
-    navigate(`${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}?nhsNumber=${nhsNumber}`)
+    const baseParams = {
+      nhsNumber,
+      ...Object.fromEntries(searchParams.entries())
+    }
+    const queryString = new URLSearchParams(baseParams).toString()
+    navigate(`${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}?${queryString}`)
   }
 
   // Pass back the query string to keep filled form on return
