@@ -125,6 +125,13 @@ if [ -z "${RUM_APP_NAME}" ]; then
         -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
 fi
 
+if [ -z "${PRIMARY_OIDC_CLIENT_ID}" ]; then
+    PRIMARY_OIDC_CLIENT_ID=$(echo "$CF_LONDON_EXPORTS" | \
+        jq \
+        --arg EXPORT_NAME "${SERVICE_NAME}-stateful-resources:rum:local:primaryOidcClientId" \
+        -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+fi
+
 # Acquire values externally
 ## Get GitHub Actions runner IPs for use against WAF
 if [ -z "${GITHUB_ACTIONS_RUNNER_IPV4}" ]; then
