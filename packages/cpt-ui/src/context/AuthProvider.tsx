@@ -66,7 +66,8 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
           FRONTEND_PATHS.LOGIN,
           FRONTEND_PATHS.LOGOUT,
           "/cookies",
-          "/cookies-selected"
+          "/cookies-selected",
+          "/privacy-notice"
         ]
 
         if (!noRedirectPaths.includes(normalizePath(location.pathname))) {
