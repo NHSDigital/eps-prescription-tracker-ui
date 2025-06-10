@@ -173,7 +173,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
       "not-before-policy": current_time,
       refresh_expires_in: 600,
       refresh_token: "unused",
-      scope: "openid associatedorgs profile nationalrbacaccess nhsperson email",
+      scope: "openid associatedorgs profile nationalrbacaccess nhsperson",
       session_state: sessionState.SessionState,
       token_type: "Bearer"
     })
