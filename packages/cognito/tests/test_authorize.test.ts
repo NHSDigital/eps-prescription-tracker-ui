@@ -46,7 +46,7 @@ describe("authorize handler", () => {
 
     expect(params.get("response_type")).toBe("code")
     expect(params.get("scope")).toBe(
-      "openid profile email nhsperson nationalrbacaccess associatedorgs"
+      "openid profile nhsperson nationalrbacaccess associatedorgs"
     )
     expect(params.get("client_id")).toBe("cis2Client123")
 

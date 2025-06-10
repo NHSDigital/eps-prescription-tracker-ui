@@ -71,7 +71,7 @@ const lambdaHandler = async (
   }
 
   // Update the scope to the CIS2 scopes
-  queryParams.scope = "openid profile email nhsperson nationalrbacaccess associatedorgs"
+  queryParams.scope = "openid profile nhsperson nationalrbacaccess associatedorgs"
 
   // Ensure the state parameter is provided
   const originalState = queryParams.state
