@@ -1,4 +1,5 @@
-// All search-type-specific strings
+export type AllowedSearchType = keyof typeof SEARCH_STRINGS
+
 export const SEARCH_STRINGS = {
   PrescriptionIdSearch: {
     body: [
@@ -53,17 +54,13 @@ export const SEARCH_STRINGS = {
   }
 } as const
 
-// Global UI strings
 export const STRINGS = {
   heading: "No prescriptions found",
   goBackLink: "Go back"
 } as const
 
-// The valid search type values
 export const SEARCH_TYPES = {
   PRESCRIPTION_ID: "PrescriptionIdSearch",
   NHS_NUMBER: "NhsNumberSearch",
   BASIC_DETAILS: "BasicDetailsSearch"
 } as const
-
-export type AllowedSearchType = keyof typeof SEARCH_STRINGS
