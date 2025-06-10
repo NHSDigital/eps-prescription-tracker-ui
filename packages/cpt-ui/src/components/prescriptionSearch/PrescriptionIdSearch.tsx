@@ -21,7 +21,6 @@ import {
 } from "nhsuk-react-components"
 
 import {PRESCRIPTION_ID_SEARCH_STRINGS} from "@/constants/ui-strings/SearchForAPrescriptionStrings"
-import {SEARCH_TYPES} from "@/constants/ui-strings/PrescriptionNotFoundMessageStrings"
 import {FRONTEND_PATHS} from "@/constants/environment"
 import {
   validatePrescriptionId,
@@ -74,12 +73,7 @@ export default function PrescriptionIdSearch() {
     setErrorKey(null) // Clear error on valid submit
 
     const formatted = normalizePrescriptionId(prescriptionId)
-
-    const params = new URLSearchParams({
-      searchType: SEARCH_TYPES.PRESCRIPTION_ID,
-      prescriptionId: formatted
-    })
-    navigate(`${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}?${params.toString()}`)
+    navigate(`${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}?prescriptionId=${formatted}`)
   }
 
   return (

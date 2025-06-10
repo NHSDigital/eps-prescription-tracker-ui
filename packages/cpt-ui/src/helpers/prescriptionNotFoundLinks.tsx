@@ -2,6 +2,24 @@ import {Link} from "react-router-dom"
 import {FRONTEND_PATHS} from "@/constants/environment"
 import {SEARCH_TYPES, AllowedSearchType} from "@/constants/ui-strings/PrescriptionNotFoundMessageStrings"
 
+/**
+ * Infers the type of search to display the correct "not found" message based on the URL parameters present.
+ */
+export function inferSearchType(params: URLSearchParams): AllowedSearchType {
+  if (
+    params.has("lastName") &&
+    params.has("dobDay") &&
+    params.has("dobMonth") &&
+    params.has("dobYear")
+  ) {
+    return "BasicDetailsSearch"
+  }
+  if (params.has("prescriptionId")) return "PrescriptionIdSearch"
+  if (params.has("nhsNumber")) return "NhsNumberSearch"
+  // Fallback (could throw if you want to force stricter validation)
+  return "BasicDetailsSearch"
+}
+
 // Mapping for route paths
 export const searchTypeToPath: Record<AllowedSearchType, string> = {
   [SEARCH_TYPES.PRESCRIPTION_ID]: FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID,

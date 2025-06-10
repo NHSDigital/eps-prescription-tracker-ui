@@ -19,7 +19,6 @@ import {validateBasicDetails, getInlineErrors} from "@/helpers/validateBasicDeta
 import {errorFocusMap, ErrorKey, resolveDobInvalidFields} from "@/helpers/basicDetailsValidationMeta"
 import {STRINGS} from "@/constants/ui-strings/BasicDetailsSearchStrings"
 import {FRONTEND_PATHS} from "@/constants/environment"
-import {SEARCH_TYPES} from "@/constants/ui-strings/PrescriptionNotFoundMessageStrings"
 
 export default function BasicDetailsSearch() {
   const navigate = useNavigate()
@@ -135,7 +134,7 @@ export default function BasicDetailsSearch() {
       postcode
     }
     const queryString = createSearchParams(queryParams).toString()
-    navigate(`${FRONTEND_PATHS.PATIENT_SEARCH_RESULTS}?searchType=${SEARCH_TYPES.BASIC_DETAILS}&${queryString}`)
+    navigate(`${FRONTEND_PATHS.PATIENT_SEARCH_RESULTS}?${queryString}`)
   }
 
   return (

@@ -6,23 +6,12 @@ import {
   Col,
   BackLink
 } from "nhsuk-react-components"
-import {
-  SEARCH_STRINGS,
-  STRINGS,
-  SEARCH_TYPES,
-  AllowedSearchType
-} from "@/constants/ui-strings/PrescriptionNotFoundMessageStrings"
-import {buildAltLink, buildBackLink} from "@/helpers/prescriptionNotFoundLinks"
+import {SEARCH_STRINGS, STRINGS} from "@/constants/ui-strings/PrescriptionNotFoundMessageStrings"
+import {buildAltLink, buildBackLink, inferSearchType} from "@/helpers/prescriptionNotFoundLinks"
 
 export default function PatientNotFoundMessage() {
   const [searchParams] = useSearchParams()
-  // Always use the inferred type keys for type safety!
-  const rawType = searchParams.get("searchType")
-
-  // fallback to BASIC_DETAILS if not valid
-  const searchType: AllowedSearchType =
-    (rawType && rawType in SEARCH_STRINGS ? rawType : SEARCH_TYPES.BASIC_DETAILS) as AllowedSearchType
-
+  const searchType = inferSearchType(searchParams)
   const content = SEARCH_STRINGS[searchType]
 
   /**

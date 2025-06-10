@@ -15,7 +15,6 @@ import {
 } from "nhsuk-react-components"
 
 import {STRINGS} from "@/constants/ui-strings/NhsNumSearchStrings"
-import {SEARCH_TYPES} from "@/constants/ui-strings/PrescriptionNotFoundMessageStrings"
 import {FRONTEND_PATHS} from "@/constants/environment"
 
 type ErrorKey = keyof typeof STRINGS.errors
@@ -57,12 +56,7 @@ export default function NhsNumSearch() {
       return
     }
 
-    const params = new URLSearchParams({
-      searchType: SEARCH_TYPES.NHS_NUMBER,
-      nhsNumber: cleaned
-    })
-    navigate(`${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}?${params.toString()}`)
-
+    navigate(`${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}?nhsNumber=${cleaned}`)
   }
 
   return (
