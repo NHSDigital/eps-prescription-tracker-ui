@@ -8,11 +8,12 @@ import middy from "@middy/core"
 import inputOutputLogger from "@middy/input-output-logger"
 import {parse} from "querystring"
 import {PrivateKey} from "jsonwebtoken"
-import {initializeOidcConfig} from "@cpt-ui-common/authFunctions"
+import {exchangeTokenForApigeeAccessToken, fetchUserInfo, initializeOidcConfig} from "@cpt-ui-common/authFunctions"
 import {updateTokenMapping, getSessionState} from "@cpt-ui-common/dynamoFunctions"
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 import {v4 as uuidv4} from "uuid"
 import jwt from "jsonwebtoken"
+import axios from "axios"
 /*
 This is the lambda code that is used to intercept calls to token endpoint as part of the cognito login flow
 It expects the following environment variables to be set
@@ -50,6 +51,9 @@ const jwtPrivateKeyArn= process.env["jwtPrivateKeyArn"] as string
 const jwtKid= process.env["jwtKid"] as string
 const SessionStateMappingTableName = process.env["SessionStateMappingTableName"] as string
 const idpTokenPath= process.env["MOCK_IDP_TOKEN_PATH"] as string
+const apigeeApiKey = process.env["APIGEE_API_KEY"] as string
+const apigeeApiSecret = process.env["APIGEE_API_SECRET"] as string
+const apigeeMockTokenEndpoint = process.env["MOCK_OIDC_TOKEN_ENDPOINT"] as string
 
 const dynamoClient = new DynamoDBClient()
 const documentClient = DynamoDBDocumentClient.from(dynamoClient, {
@@ -59,6 +63,7 @@ const documentClient = DynamoDBDocumentClient.from(dynamoClient, {
 
 const errorResponseBody = {message: "A system error has occurred"}
 const middyErrorHandler = new MiddyErrorHandler(errorResponseBody)
+const axiosInstance = axios.create()
 
 async function createSignedJwt(claims: Record<string, unknown>) {
   const jwtPrivateKey = await getSecret(jwtPrivateKeyArn)
@@ -89,10 +94,32 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
   const sessionState = await getSessionState(documentClient, SessionStateMappingTableName, code as string, logger)
 
+  const callbackUri = `https://${baseEnvironmentDomain}/oauth2/mock-callback`
+  const tokenExchangeBody = {
+    grant_type: "authorization_code",
+    client_id: apigeeApiKey,
+    client_secret: apigeeApiSecret,
+    redirect_uri: callbackUri,
+    code: sessionState.ApigeeCode
+  }
+  const exchangeResult = await exchangeTokenForApigeeAccessToken(
+    axiosInstance,
+    apigeeMockTokenEndpoint,
+    tokenExchangeBody,
+    logger
+  )
+
+  const userInfoResponse = await fetchUserInfo(
+    "",
+    "",
+    exchangeResult.accessToken,
+    true,
+    logger,
+    mockOidcConfig
+  )
+
   const current_time = Math.floor(Date.now() / 1000)
   const expirationTime = current_time + 600
-  const baseUsername = uuidv4()
-  const username = `${mockOidcConfig.userPoolIdp}_${baseUsername}`
 
   const jwtClaims = {
     exp: expirationTime,
@@ -100,19 +127,19 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     jti: uuidv4(),
     iss: mockOidcConfig.oidcIssuer,
     aud: mockOidcConfig.oidcClientID,
-    sub: baseUsername,
+    sub: userInfoResponse.user_details.sub,
     typ: "ID",
     azp: mockOidcConfig.oidcClientID,
     sessionState: sessionState.SessionState,
     acr: "AAL3_ANY",
     sid: sessionState.SessionState,
     id_assurance_level: "3",
-    uid: baseUsername,
+    uid: userInfoResponse.user_details.sub,
     amr: ["N3_SMARTCARD"],
-    name: baseUsername,
+    name: userInfoResponse.user_details.name,
     authentication_assurance_level: "3",
-    given_name: baseUsername,
-    family_name: baseUsername
+    given_name: userInfoResponse.user_details.given_name,
+    family_name: userInfoResponse.user_details.family_name
   }
 
   const jwtToken = await createSignedJwt(jwtClaims)
@@ -123,8 +150,14 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     documentClient,
     mockOidcConfig.tokenMappingTableName,
     {
-      username,
-      apigeeCode: sessionState.ApigeeCode
+      username: `Mock_${userInfoResponse.user_details.sub}`,
+      apigeeAccessToken: exchangeResult.accessToken,
+      apigeeRefreshToken: exchangeResult.refreshToken,
+      apigeeExpiresIn: exchangeResult.expiresIn,
+      rolesWithAccess: userInfoResponse.roles_with_access,
+      rolesWithoutAccess: userInfoResponse.roles_without_access,
+      currentlySelectedRole: userInfoResponse.currently_selected_role,
+      userDetails: userInfoResponse.user_details
     },
     logger
   )
@@ -140,7 +173,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
       "not-before-policy": current_time,
       refresh_expires_in: 600,
       refresh_token: "unused",
-      scope: "openid associatedorgs profile nationalrbacaccess nhsperson email",
+      scope: "openid associatedorgs profile nationalrbacaccess nhsperson",
       session_state: sessionState.SessionState,
       token_type: "Bearer"
     })

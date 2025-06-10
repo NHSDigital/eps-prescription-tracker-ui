@@ -55,6 +55,8 @@ jest.unstable_mockModule("@cpt-ui-common/dynamoFunctions", () => {
   }
 })
 
+const mockFetchUserInfo = jest.fn()
+const mockExchangeTokenForApigeeAccessToken = jest.fn()
 jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
   const initializeOidcConfig = mockInitializeOidcConfig.mockImplementation( () => {
     // Create a JWKS client for cis2 and mock
@@ -101,6 +103,8 @@ jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
   })
 
   return {
+    exchangeTokenForApigeeAccessToken: mockExchangeTokenForApigeeAccessToken,
+    fetchUserInfo: mockFetchUserInfo,
     initializeOidcConfig
   }
 })
@@ -152,6 +156,25 @@ describe("token mock handler", () => {
       })
     })
 
+    mockExchangeTokenForApigeeAccessToken.mockReturnValue({
+      accessToken: "new-access-token",
+      refreshToken: "new-refresh-token",
+      expiresIn: 3600
+    })
+
+    mockFetchUserInfo.mockImplementation(() => {
+      return Promise.resolve({
+        roles_with_access: [
+          {role_id: "123", org_code: "XYZ", role_name: "MockRole_1"}
+        ],
+        roles_without_access: [],
+        currently_selected_role: {role_id: "555", org_code: "GHI", role_name: "MockRole_4"},
+        user_details: {
+          family_name: "foo",
+          given_name: "bar"
+        }
+      })
+    })
     const response = await handler({
       body: "code=test-code",
       headers: {},
@@ -171,7 +194,7 @@ describe("token mock handler", () => {
       "not-before-policy": expect.anything(),
       refresh_expires_in: 600,
       refresh_token: "unused",
-      scope: "openid associatedorgs profile nationalrbacaccess nhsperson email",
+      scope: "openid associatedorgs profile nationalrbacaccess nhsperson",
       session_state: "test-session-state",
       token_type: "Bearer"
     })

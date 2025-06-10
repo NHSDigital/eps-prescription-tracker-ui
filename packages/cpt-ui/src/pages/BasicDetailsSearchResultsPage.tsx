@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 import React, {useContext, useEffect, useState} from "react"
-import {useNavigate, useSearchParams} from "react-router-dom"
+import {useNavigate, useSearchParams, useLocation} from "react-router-dom"
 import {
   BackLink,
   Table,
@@ -11,85 +11,71 @@ import {
 import {SearchResultsPageStrings} from "@/constants/ui-strings/BasicDetailsSearchResultsPageStrings"
 import {API_ENDPOINTS, FRONTEND_PATHS, NHS_REQUEST_URID} from "@/constants/environment"
 import {AuthContext} from "@/context/AuthProvider"
-import {PatientSummary, PatientSummaryTypes} from "@cpt-ui-common/common-types"
+import {PatientSummary} from "@cpt-ui-common/common-types/src"
 import http from "@/helpers/axios"
 import EpsSpinner from "@/components/EpsSpinner"
-
-// Mock patient data (fallback)
-const mockPatients: Array<PatientSummary> = [
-  {
-    nhsNumber: "9726919207",
-    givenName: ["Issac"],
-    familyName: "Wolderton-Rodriguez",
-    gender: PatientSummaryTypes.PatientSummaryGender.MALE,
-    dateOfBirth: "6-May-2013",
-    address: ["123 Brundel Close", "Headingley", "Leeds", "West Yorkshire", "LS6 1JL"]
-  },
-  {
-    nhsNumber: "9725919207",
-    givenName: ["Steve"],
-    familyName: "Wolderton-Rodriguez",
-    gender: PatientSummaryTypes.PatientSummaryGender.MALE,
-    dateOfBirth: "6-May-2013",
-    address: ["123 Brundel Close", "Headingley", "Leeds", "West Yorkshire", "LS6 1JL"]
-  }
-]
+import PatientNotFoundMessage from "@/components/PatientNotFoundMessage"
+import SearchResultsTooManyMessage from "@/components/SearchResultsTooManyMessage"
 
 export default function SearchResultsPage() {
   const auth = useContext(AuthContext)
+  const location = useLocation()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const [loading, setLoading] = useState(true)
   const [patients, setPatients] = useState<Array<PatientSummary>>([])
 
-  const getSearchResults = async () => {
-    try {
-      // Attempt to fetch live search results from the API
-      const response = await http.get(API_ENDPOINTS.PATIENT_SEARCH, {
-        headers: {
-          Authorization: `Bearer ${auth?.idToken}`,
-          "NHSD-Session-URID": NHS_REQUEST_URID
-        },
-        params: {
-          family: searchParams.get("family"),
-          birthdate: `eq${searchParams.get("dateOfBirth")}`,
-          "address-postalcode": searchParams.get("postcode"),
-          given: searchParams.get("given") ?? undefined
-        }
-      })
-
-      // Validate HTTP response status
-      if (response.status !== 200) {
-        throw new Error(`Status Code: ${response.status}`)
-      }
-
-      // Assign response payload or throw if none received
-      const payload: Array<PatientSummary> = response.data
-      if (!payload) {
-        throw new Error("No payload received from the API")
-      }
-
-      setPatients(payload)
-    } catch (err) {
-      // TODO: Remove the fallback to mock data when the backend is working
-      console.error("Failed to fetch patient search results. Using mock data fallback.", err)
-      setPatients(mockPatients)
-    } finally {
-      setLoading(false)
-    }
-  }
-
   useEffect(() => {
     getSearchResults()
   }, [])
+
+  const getSearchResults = async () => {
+    // Attempt to fetch live search results from the API
+    const response = await http.get(API_ENDPOINTS.PATIENT_SEARCH, {
+      headers: {
+        Authorization: `Bearer ${auth?.idToken}`,
+        "NHSD-Session-URID": NHS_REQUEST_URID
+      },
+      params: {
+        familyName: searchParams.get("lastName"),
+        dateOfBirth: `${searchParams.get("dobYear")}-${searchParams.get("dobMonth")}-${searchParams.get("dobDay")}`,
+        postcode: searchParams.get("postcode"),
+        givenName: searchParams.get("firstName") ?? undefined
+      }
+    })
+
+    // Validate HTTP response status
+    if (response.status !== 200) {
+      throw new Error(`Status Code: ${response.status}`)
+    }
+
+    // Assign response payload or throw if none received
+    const payload: Array<PatientSummary> = response.data
+    if (!payload) {
+      throw new Error("No payload received from the API")
+    }
+
+    if (payload.length === 1) {
+      navigate(`${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}?nhsNumber=${payload[0].nhsNumber}`)
+      return
+    }
+
+    setPatients(payload)
+    setLoading(false)
+  }
 
   const handleRowClick = (nhsNumber: string) => {
     navigate(`${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}?nhsNumber=${nhsNumber}`)
   }
 
+  // Pass back the query string to keep filled form on return
   const handleGoBack = () => {
-    navigate(FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS, {state: {clear: true}})
+    navigate(`${FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS}${location.search}`)
   }
+
+  // Sort by first name
+  const sortedPatients = patients
+    .toSorted((a, b) => (a.givenName?.[0] ?? "").localeCompare(b.givenName?.[0] ?? ""))
 
   if (loading) {
     return (
@@ -107,9 +93,15 @@ export default function SearchResultsPage() {
     )
   }
 
-  // to sort by first name
-  const sortedPatients = patients
-    .toSorted((a, b) => (a.givenName?.[0] ?? "").localeCompare(b.givenName?.[0] ?? ""))
+  // Show not found message if no valid patients
+  if (patients.length === 0) {
+    return <PatientNotFoundMessage search={location.search} />
+  }
+
+  // Show too many results message if search returns too many patients
+  if (patients.length > 10) {
+    return <SearchResultsTooManyMessage search={location.search} />
+  }
 
   return (
     <main className="nhsuk-main-wrapper" id="main-content" role="main">

@@ -148,6 +148,26 @@ describe("BasicDetailsSearchResultsPage", () => {
     })
   })
 
+  it("navigates to prescription list when there is only one result", async () => {
+    (http.get as jest.Mock).mockResolvedValue({
+      status: 200,
+      data: [mockPatients[0]]
+    })
+    render(
+      <MemoryRouter>
+        <AuthContext.Provider value={mockAuthContext}>
+          <BasicDetailsSearchResultsPage />
+        </AuthContext.Provider>
+      </MemoryRouter>
+    )
+
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith(
+        `${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}?nhsNumber=9726919207`
+      )
+    })
+  })
+
   it("navigates to prescription list when clicking a patient row", async () => {
     render(
       <MemoryRouter>
@@ -199,9 +219,9 @@ describe("BasicDetailsSearchResultsPage", () => {
       const backLink = screen.getByText(SearchResultsPageStrings.GO_BACK)
       fireEvent.click(backLink)
 
-      expect(mockNavigate).toHaveBeenCalledWith(FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS, {
-        state: {clear: true}
-      })
+      expect(mockNavigate).toHaveBeenCalledWith(
+        `${FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS}`
+      )
     })
   })
 
@@ -246,24 +266,6 @@ describe("BasicDetailsSearchResultsPage", () => {
     await waitFor(() => {
       expect(screen.getByText("972 691 9207")).toBeInTheDocument()
       expect(screen.getByText("972 591 9207")).toBeInTheDocument()
-    })
-  })
-
-  it("handles API error by showing mock data", async () => {
-    // Mock API error
-    ; (http.get as jest.Mock).mockRejectedValue(new Error("API Error"))
-
-    render(
-      <MemoryRouter>
-        <AuthContext.Provider value={mockAuthContext}>
-          <BasicDetailsSearchResultsPage />
-        </AuthContext.Provider>
-      </MemoryRouter>
-    )
-
-    await waitFor(() => {
-      expect(screen.getByText("Issac Wolderton-Rodriguez")).toBeInTheDocument()
-      expect(screen.getByText("Steve Wolderton-Rodriguez")).toBeInTheDocument()
     })
   })
 
