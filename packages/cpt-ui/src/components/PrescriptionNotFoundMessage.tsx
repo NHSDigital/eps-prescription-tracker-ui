@@ -48,6 +48,7 @@ export default function PatientNotFoundMessage() {
   }
 
   const backLinkUrl = buildBackLink({searchType, searchParams})
+
   return (
     <Container
       className="nhsuk-width-container-fluid patient-not-found-container"
