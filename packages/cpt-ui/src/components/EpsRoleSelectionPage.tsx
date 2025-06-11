@@ -122,10 +122,13 @@ export default function RoleSelectionPage({
     } else {
       redirecting.current = false
     }
+  }, [auth.isSigningIn])
+
+  useEffect(() => {
     if (auth.hasSingleRoleAccess) {
       navigate(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
     }
-  }, [auth.rolesWithAccess, auth.rolesWithoutAccess, auth.isSigningIn])
+  }, [auth.hasSingleRoleAccess])
 
   // Set login message when selected role is available
   useEffect(() => {
@@ -136,7 +139,7 @@ export default function RoleSelectionPage({
         `(ODS: ${auth.selectedRole.org_code || noODSCode}) with ${auth.selectedRole.role_name || noRoleName}.`
       )
     }
-  }, [auth.selectedRole, loginInfoMessage, noOrgName, noODSCode, noRoleName])
+  }, [auth.selectedRole, loginInfoMessage])
 
   // Show spinner while loading or redirecting
   if (redirecting.current) {

@@ -32,7 +32,7 @@ export default function EpsCard({role, link}: EpsCardProps) {
   } = EPS_CARD_STRINGS
 
   return (
-    <Card clickable className="eps-card">
+    <Card clickable className="eps-card" data-testid="eps-card">
       <Card.Content>
         <Row className="nhsuk-grid-row eps-card__content">
 
