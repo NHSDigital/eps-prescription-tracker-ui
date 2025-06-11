@@ -21,14 +21,14 @@ export async function getDoHSData(
   odsCodes: {
     prescribingOrganization: string | undefined
     nominatedPerformer: string | undefined
-    dispensingOrganizations: Array<string> | undefined
+    dispensingOrganization: string | undefined
   },
   logger: Logger
 ): Promise<DoHSData> {
   let doHSData: DoHSData = {
     prescribingOrganization: null,
     nominatedPerformer: null,
-    dispensingOrganizations: []
+    dispensingOrganization: null
   }
 
   if (Object.values(odsCodes).some(Boolean)) {
@@ -36,14 +36,14 @@ export async function getDoHSData(
       const rawDoHSData = (await doHSClient(odsCodes)) as {
         prescribingOrganization?: DoHSValue
         nominatedPerformer?: DoHSValue
-        dispensingOrganizations?: Array<DoHSValue>
+        dispensingOrganization?: DoHSValue
       }
 
       logger.info("Successfully fetched DoHS API data", {rawDoHSData})
 
       if (!rawDoHSData?.prescribingOrganization &&
         !rawDoHSData?.nominatedPerformer &&
-        !rawDoHSData?.dispensingOrganizations?.length) {
+        !rawDoHSData?.dispensingOrganization) {
         logger.warn("No organization data found in DoHS response", {rawDoHSData})
       }
 
@@ -60,10 +60,10 @@ export async function getDoHSData(
           : null
 
       // Assign multiple dispensing organizations
-      doHSData.dispensingOrganizations =
-        rawDoHSData?.dispensingOrganizations?.filter(org =>
-          odsCodes.dispensingOrganizations?.some(ods => ods.toUpperCase() === org.ODSCode?.toUpperCase())
-        ) ?? []
+      doHSData.dispensingOrganization =
+        rawDoHSData?.dispensingOrganization?.ODSCode.toUpperCase() === odsCodes.dispensingOrganization?.toUpperCase()
+          ? rawDoHSData.dispensingOrganization
+          : null
 
       // Logging Variables
       const prescribingOrganization = doHSData.prescribingOrganization
@@ -74,15 +74,15 @@ export async function getDoHSData(
         ? doHSData.nominatedPerformer.OrganisationName
         : "Not Found"
 
-      const dispensingOrganizations = doHSData.dispensingOrganizations.length
-        ? doHSData.dispensingOrganizations.map(org => org.OrganisationName)
+      const dispensingOrganization = doHSData.dispensingOrganization
+        ? doHSData.dispensingOrganization.OrganisationName
         : "Not Found"
 
       // Log results
       logger.info("Mapped DoHS organizations", {
         prescribingOrganization,
         nominatedPerformer,
-        dispensingOrganizations
+        dispensingOrganization
       })
 
     } catch (error) {
@@ -90,7 +90,7 @@ export async function getDoHSData(
       doHSData = {
         prescribingOrganization: null,
         nominatedPerformer: null,
-        dispensingOrganizations: []
+        dispensingOrganization: null
       }
     }
   }
@@ -123,9 +123,20 @@ export async function processPrescriptionRequest(
     }
   }
 
-  logger.info("Fetching prescription details from Apigee", {prescriptionId})
+  // Extract issueNumber from query parameters, default to "1" if not provided
+  const issueNumber = event.queryStringParameters?.issueNumber || "1"
+
+  logger.info("Fetching prescription details from Apigee", {
+    prescriptionId,
+    issueNumber
+  })
+
   const endpoint = new URL(apigeePrescriptionsEndpoint)
   endpoint.pathname = path.join(endpoint.pathname, `/RequestGroup/${encodeURIComponent(prescriptionId)}`)
+
+  // Add issueNumber as a query parameter to the Apigee request
+  endpoint.searchParams.set("issueNumber", issueNumber)
+
   const headers = buildApigeeHeaders(apigeeAccessToken, roleId, orgCode, correlationId)
 
   // Add detailed logging before making the request
@@ -136,7 +147,8 @@ export async function processPrescriptionRequest(
       ...headers,
       Authorization: headers.Authorization ? "[REDACTED]" : undefined
     },
-    prescriptionId
+    prescriptionId,
+    issueNumber
   })
 
   try {
@@ -145,7 +157,8 @@ export async function processPrescriptionRequest(
       status: apigeeResponse.status,
       statusText: apigeeResponse.statusText,
       dataKeys: Object.keys(apigeeResponse.data || {}),
-      prescriptionId
+      prescriptionId,
+      issueNumber
     })
 
     const odsCodes = extractOdsCodes(apigeeResponse.data, logger)
@@ -153,22 +166,26 @@ export async function processPrescriptionRequest(
 
     logger.info("Merging prescription details fetched from Apigee with data from DoHS", {
       prescriptionDetails: apigeeResponse.data,
-      doHSData
+      doHSData,
+      prescriptionId,
+      issueNumber
     })
 
-    let mergedResponse
-
     try {
-      mergedResponse = mergePrescriptionDetails(apigeeResponse.data, doHSData)
-    } catch {
-      logger.warn("Prescription details not found")
-      mergedResponse = {message: "Prescription details not found"}
-    }
+      const mergedResponse = mergePrescriptionDetails(apigeeResponse.data, doHSData)
 
-    return {
-      statusCode: 200,
-      body: JSON.stringify(mergedResponse),
-      headers: formatHeaders(apigeeResponse.headers)
+      return {
+        statusCode: 200,
+        body: JSON.stringify(mergedResponse),
+        headers: formatHeaders(apigeeResponse.headers)
+      }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (error) {
+      logger.warn("Prescription details not found")
+      return {
+        statusCode: 200,
+        body: JSON.stringify({message: "Prescription details not found"})
+      }
     }
 
   } catch (error) {
@@ -186,14 +203,15 @@ export async function processPrescriptionRequest(
           Authorization: headers.Authorization ? "[REDACTED]" : undefined
         },
         errorMessage: error.message,
-        prescriptionId
+        prescriptionId,
+        issueNumber
       })
     } else {
-
       logger.error("Unexpected error in prescription service", {
         error: error instanceof Error ? error.message : error,
         stack: error instanceof Error ? error.stack : undefined,
-        prescriptionId
+        prescriptionId,
+        issueNumber
       })
     }
 
