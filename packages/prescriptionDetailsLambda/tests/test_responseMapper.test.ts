@@ -279,7 +279,7 @@ describe("mergePrescriptionDetails", () => {
       organisationName: "Nominated Performer Org",
       organisationODS: "ODS456",
       newStatusCode: "MSG001",
-      dispenseNotification: undefined
+      dispenseNotification: []
     })
 
     // Check prescriber organisation
@@ -622,12 +622,12 @@ describe("mergePrescriptionDetails", () => {
       organisationName: "Nominated Org",
       organisationODS: "ODS000",
       newStatusCode: "0003",
-      dispenseNotification: {
+      dispenseNotification: [{
         dosageInstruction: "Take one daily",
         id: "notification-id-123",
         medicationName: "Medication A",
         quantity: "10 tablets"
-      }
+      }]
     })
   })
 

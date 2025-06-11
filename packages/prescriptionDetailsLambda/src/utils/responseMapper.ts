@@ -137,12 +137,12 @@ Array<{
   organisationName: string
   organisationODS: string
   newStatusCode: string
-  dispenseNotification: {
+  dispenseNotification: Array<{
     id: string
     medicationName: string
     quantity: string
     dosageInstruction: string
-  } | undefined
+  }>
 }> => {
   // find the specific "Prescription status transitions" action
   const historyAction = requestGroup.action?.find(action =>
@@ -174,12 +174,12 @@ Array<{
       }
     }
 
-    let dispenseNotification: {
+    const dispenseNotifications: Array<{
       id: string
       medicationName: string
       quantity: string
       dosageInstruction: string
-    } | undefined = undefined
+    }> = []
 
     // Only populate if this message type should have dispense notification
     if (messageCode === "dispense-notified" && action.action && action.action.length > 0) {
@@ -187,25 +187,30 @@ Array<{
         code.coding?.[0]?.system === "https://tools.ietf.org/html/rfc4122"
       )?.coding?.[0]?.code
 
-      // Find the referenced MedicationDispense resource
-      const referencedDispense = medicationDispenses.find(dispense => {
-        const dispenseReference = action.action?.[0]?.resource?.reference
-        return dispenseReference && dispenseReference.includes(dispense.id ?? "")
-      })
+      // Iterate through all action items to collect all dispense notifications
+      action.action.forEach(subAction => {
+        const dispenseReference = subAction.resource?.reference
+        if (dispenseReference) {
+          // Find the referenced MedicationDispense resource
+          const referencedDispense = medicationDispenses.find(dispense => 
+            dispenseReference.includes(dispense.id ?? "")
+          )
 
-      if (notificationId && referencedDispense) {
-        const dispensedQuantityValue = referencedDispense.quantity?.value?.toString() ?? ""
-        const dispensedQuantityUnit = referencedDispense.quantity?.unit ?? ""
-        const dispensedQuantity = dispensedQuantityUnit ? `${dispensedQuantityValue} ${dispensedQuantityUnit}` : dispensedQuantityValue
+          if (notificationId && referencedDispense) {
+            const dispensedQuantityValue = referencedDispense.quantity?.value?.toString() ?? ""
+            const dispensedQuantityUnit = referencedDispense.quantity?.unit ?? ""
+            const dispensedQuantity = dispensedQuantityUnit ? `${dispensedQuantityValue} ${dispensedQuantityUnit}` : dispensedQuantityValue
 
-        dispenseNotification = {
-          id: notificationId,
-          medicationName: referencedDispense.medicationCodeableConcept?.text ??
-                         referencedDispense.medicationCodeableConcept?.coding?.[0]?.display ?? "",
-          quantity: dispensedQuantity,
-          dosageInstruction: referencedDispense.dosageInstruction?.[0]?.text ?? ""
+            dispenseNotifications.push({
+              id: notificationId,
+              medicationName: referencedDispense.medicationCodeableConcept?.text ??
+                             referencedDispense.medicationCodeableConcept?.coding?.[0]?.display ?? "",
+              quantity: dispensedQuantity,
+              dosageInstruction: referencedDispense.dosageInstruction?.[0]?.text ?? ""
+            })
+          }
         }
-      }
+      })
     }
 
     return {
@@ -214,7 +219,7 @@ Array<{
       organisationName: orgName,
       organisationODS: organizationODS ?? "Unknown",
       newStatusCode: statusCoding?.code ?? "Unknown",
-      dispenseNotification
+      dispenseNotification: dispenseNotifications
     }
   })
 }
@@ -246,7 +251,7 @@ const createOrganizationSummary = (
     ].filter(Boolean).join(", ") || "Not found"
 
     return {
-      name: doHSOrg?.OrganisationName ?? "Not found",
+      name: doHSOrg?.OrganisationName ?? "",
       odsCode: doHSOrg?.ODSCode ?? odsCodeFallback ?? "Not found",
       address,
       telephone,

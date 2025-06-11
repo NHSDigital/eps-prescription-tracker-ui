@@ -254,19 +254,19 @@ export const mockMessageHistoryDispenseNotifInfo: Array<MessageHistory> = [
     newStatusCode: "0006",
     dispenseNotification: [
       {
-        ID: "b240434e-cb85-40bb-899c-1c61410c93a7",
+        id: "b240434e-cb85-40bb-899c-1c61410c93a7",
         medicationName: "Raberprazole 10mg tablets",
         quantity: "56 tablets",
         dosageInstruction: "Take one twice daily"
       },
       {
-        ID: "b240434e-cb85-40bb-899c-1c61410c93a7",
+        id: "b240434e-cb85-40bb-899c-1c61410c93a7",
         medicationName: "Glyceryl trinitrate 400micrograms/does aerosol sublingual spray",
         quantity: "1 spray",
         dosageInstruction: "Use as needed"
       },
       {
-        ID: "b240434e-cb85-40bb-899c-1c61410c93a7",
+        id: "b240434e-cb85-40bb-899c-1c61410c93a7",
         medicationName: "Oseltamivir 30mg capsules",
         quantity: "20 capsules",
         dosageInstruction: "Take 3 times a day with water"
@@ -355,19 +355,19 @@ export const mockMessageHistoryMissingData: Array<MessageHistory> = [
     newStatusCode: "0006",
     dispenseNotification: [
       {
-        ID: "b240434e-cb85-40bb-899c-1c61410c93a7",
+        id: "b240434e-cb85-40bb-899c-1c61410c93a7",
         medicationName: "Raberprazole 10mg tablets",
         quantity: "56 tablets",
         dosageInstruction: "Take one twice daily"
       },
       {
-        ID: "b240434e-cb85-40bb-899c-1c61410c93a7",
+        id: "b240434e-cb85-40bb-899c-1c61410c93a7",
         medicationName: "Glyceryl trinitrate 400micrograms/does aerosol sublingual spray",
         quantity: "1 spray",
         dosageInstruction: "Use as needed"
       },
       {
-        ID: "b240434e-cb85-40bb-899c-1c61410c93a7",
+        id: "b240434e-cb85-40bb-899c-1c61410c93a7",
         medicationName: "Oseltamivir 30mg capsules",
         quantity: "20 capsules",
         dosageInstruction: "Take 3 times a day with water"

@@ -295,7 +295,7 @@ export const mockMergedResponse: PrescriptionDetailsResponse = {
       newStatusCode: "processed",
       dispenseNotification: [
         {
-          ID: "DN001",
+          id: "DN001",
           medicationName: "Medication A",
           quantity: "30 tablets",
           dosageInstruction: "Take one tablet daily"

@@ -55,7 +55,7 @@ export interface DispensedItemDetails extends PrescribedItemDetails {
 
 // Message History and Notifications
 export interface DispenseNotification {
-    ID: string
+    id: string
     medicationName: string
     quantity: string
     dosageInstruction: string
