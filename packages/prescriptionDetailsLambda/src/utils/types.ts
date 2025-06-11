@@ -1,10 +1,4 @@
-import {
-  Address,
-  Coding,
-  HumanName,
-  Identifier,
-  Extension
-} from "fhir/r4"
+import {Coding, Extension} from "fhir/r4"
 
 // Resource type for FHIR request group
 export interface FhirAction {
@@ -58,53 +52,6 @@ export interface ExtensionWithNested extends Extension {
   }>
 }
 
-// Resource type for prescription details
-export interface Resource {
-  resourceType: string
-  intent?: string
-  status?: string
-  identifier?: Array<Identifier>
-  name?: Array<HumanName>
-  gender?: string
-  birthDate?: string
-  address?: Array<Address>
-  medicationCodeableConcept?: {
-    coding: Array<Coding>
-  }
-  groupIdentifier?: {
-    system: string
-    value: string
-  }
-  code?: {
-    coding: Array<Coding>
-  }
-  author?: {
-    reference: string
-    identifier: Identifier
-  }
-  extension?: Array<ExtensionWithNested>
-  dosageInstruction?: Array<{
-    text: string
-  }>
-  dispenseRequest?: {
-    quantity?: {
-      value: number
-    }
-  }
-  businessStatus?: {
-    coding: Array<Coding>
-  }
-  output?: Array<{
-    type: {
-      coding: Array<Coding>
-    }
-    valueReference: {
-      reference: string
-    }
-  }>
-  authoredOn?: string
-}
-
 // Type for contact information in DoHS data
 export interface Contact {
   ContactType: string
@@ -127,7 +74,7 @@ export interface DoHSValue {
 export interface DoHSData {
   prescribingOrganization?: DoHSValue | null
   nominatedPerformer?: DoHSValue | null
-  dispensingOrganizations?: Array<DoHSValue>
+  dispensingOrganization?: DoHSValue | null
 }
 
 // Defines the allowed prescription intent values based on FHIR standards.
@@ -147,7 +94,7 @@ interface ExtensionUrlMappings {
  */
 export const extensionUrlMappings: ExtensionUrlMappings = {
   PENDING_CANCELLATION: [
-    "https://fhir.nhs.uk/StructureDefinition/Extension-EPS-PendingCancellations"
+    "https://fhir.nhs.uk/StructureDefinition/Extension-PendingCancellation"
   ],
   REPEAT_INFORMATION: [
     "https://fhir.nhs.uk/StructureDefinition/Extension-EPS-RepeatInformation"
