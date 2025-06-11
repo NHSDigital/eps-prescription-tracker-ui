@@ -42,10 +42,6 @@ export default function SearchResultsPage() {
     if (response.status !== 200) {
       throw new Error(`Status Code: ${response.status}`)
     }
-    // Validate HTTP response status
-    if (response.status !== 200) {
-      throw new Error(`Status Code: ${response.status}`)
-    }
 
     // Assign response payload or throw if none received
     const payload: Array<PatientSummary> = response.data
