@@ -40,10 +40,6 @@ export interface PrescribedItemDetails {
     cancellationReason?: string | null
 }
 
-export interface PrescribedItem {
-    itemDetails: PrescribedItemDetails
-}
-
 // Additional fields for Dispensed Items
 export interface InitiallyPrescribed {
     medicationName: string
@@ -55,10 +51,6 @@ export interface DispensedItemDetails extends PrescribedItemDetails {
     notDispensedReason?: string | null
     initiallyPrescribed?: InitiallyPrescribed
     pharmacyStatus?: string | null
-}
-
-export interface DispensedItem {
-    itemDetails: DispensedItemDetails
 }
 
 // Message History and Notifications
@@ -91,14 +83,6 @@ export interface PrescriberOrganisationSummary extends OrganisationSummary {
     prescribedFrom?: string
 }
 
-export interface PrescriberOrganisation {
-    organisationSummaryObjective: PrescriberOrganisationSummary
-}
-
-export interface DispenserOrganisation {
-    organisationSummaryObjective: OrganisationSummary
-}
-
 // Complete response
 export interface PrescriptionDetailsResponse {
     patientDetails: PatientDetails
@@ -113,10 +97,10 @@ export interface PrescriptionDetailsResponse {
     isERD?: boolean
     daysSupply: string
     prescriptionPendingCancellation: boolean
-    prescribedItems: Array<PrescribedItem>
-    dispensedItems: Array<DispensedItem>
+    prescribedItems: Array<PrescribedItemDetails>
+    dispensedItems: Array<DispensedItemDetails>
     messageHistory: Array<MessageHistory>
-    prescriberOrganisation: PrescriberOrganisation
-    nominatedDispenser?: DispenserOrganisation
-    currentDispenser?: Array<DispenserOrganisation>
+    prescriberOrganisation: PrescriberOrganisationSummary
+    nominatedDispenser?: OrganisationSummary
+    currentDispenser?: OrganisationSummary
 }
