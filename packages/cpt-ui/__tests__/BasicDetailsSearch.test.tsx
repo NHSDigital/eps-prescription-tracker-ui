@@ -1,11 +1,16 @@
 import "@testing-library/jest-dom"
-// waitFor
-import {render, screen, cleanup} from "@testing-library/react"
+import {
+  render,
+  screen,
+  cleanup,
+  waitFor
+} from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import React from "react"
 import {
   MemoryRouter,
   useLocation,
+  useNavigate,
   Routes,
   Route
 } from "react-router-dom"
@@ -13,30 +18,30 @@ import {
 import BasicDetailsSearch from "@/components/prescriptionSearch/BasicDetailsSearch"
 import {BasicDetailsSearchType} from "@cpt-ui-common/common-types"
 import {STRINGS} from "@/constants/ui-strings/BasicDetailsSearchStrings"
-// import {FRONTEND_PATHS} from "@/constants/environment"
+import {FRONTEND_PATHS} from "@/constants/environment"
 import {AuthContext, AuthContextType} from "@/context/AuthProvider"
 import {JWT} from "aws-amplify/auth"
 
 // Utility function to create a query string from form data
-// function makeQueryString(
-//   formData: Record<string, string>,
-//   flags: Record<string, string> = {}
-// ): string {
-//   const params = new URLSearchParams(
-//     Object.fromEntries(
-//       Object.entries({
-//         firstName: formData.firstName ?? "",
-//         lastName: formData.lastName ?? "",
-//         dobDay: formData.dobDay ?? "",
-//         dobMonth: formData.dobMonth ?? "",
-//         dobYear: formData.dobYear ?? "",
-//         postcode: formData.postcode ?? "",
-//         ...flags
-//       })
-//     )
-//   )
-//   return params.toString()
-// }
+function makeQueryString(
+  formData: Record<string, string>,
+  flags: Record<string, string> = {}
+): string {
+  const params = new URLSearchParams(
+    Object.fromEntries(
+      Object.entries({
+        firstName: formData.firstName ?? "",
+        lastName: formData.lastName ?? "",
+        dobDay: formData.dobDay ?? "",
+        dobMonth: formData.dobMonth ?? "",
+        dobYear: formData.dobYear ?? "",
+        postcode: formData.postcode ?? "",
+        ...flags
+      })
+    )
+  )
+  return params.toString()
+}
 
 jest.mock("react-router-dom", () => {
   const actual = jest.requireActual("react-router-dom")
@@ -130,31 +135,31 @@ describe("BasicDetailsSearch", () => {
   beforeEach(() => jest.resetAllMocks())
   afterEach(() => cleanup())
 
-  // it("redirects to the patient search results page", async () => {
-  //   const mockNavigate = jest.fn();
-  //   (useNavigate as jest.Mock).mockReturnValue(mockNavigate)
+  it("redirects to the patient search results page", async () => {
+    const mockNavigate = jest.fn();
+    (useNavigate as jest.Mock).mockReturnValue(mockNavigate)
 
-  //   renderWithRouter(<BasicDetailsSearch />)
+    renderWithRouter(<BasicDetailsSearch />)
 
-  //   const formData = {
-  //     firstName: "",
-  //     lastName: "Wolderton-Rodriguez",
-  //     dobDay: "06",
-  //     dobMonth: "05",
-  //     dobYear: "2013",
-  //     postcode: "LS6 1JL"
-  //   }
+    const formData = {
+      firstName: "",
+      lastName: "Wolderton-Rodriguez",
+      dobDay: "06",
+      dobMonth: "05",
+      dobYear: "2013",
+      postcode: "LS6 1JL"
+    }
 
-  //   await fillForm(formData)
-  //   await submitForm()
+    await fillForm(formData)
+    await submitForm()
 
-  //   await waitFor(() => {
-  //     const queryString = makeQueryString(formData)
-  //     expect(mockNavigate).toHaveBeenCalledWith(
-  //       `${FRONTEND_PATHS.PATIENT_SEARCH_RESULTS}?${queryString}`
-  //     )
-  //   })
-  // })
+    await waitFor(() => {
+      const queryString = makeQueryString(formData)
+      expect(mockNavigate).toHaveBeenCalledWith(
+        `${FRONTEND_PATHS.PATIENT_SEARCH_RESULTS}?${queryString}`
+      )
+    })
+  })
 
   const testCases = [
     {
