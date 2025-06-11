@@ -8,18 +8,21 @@ export * from "./exhaustiveGuard"
 export type LoggerKeys = {
   "apigw-request-id"?: string,
   "x-request-id"?: string,
+  "x-correlation-id"?: string
 }
 export type InboundEventValues = {
   loggerKeys: LoggerKeys,
   correlationId: string
 }
 export const extractInboundEventValues = (event: APIGatewayProxyEvent): InboundEventValues => {
+  const correlationId = event.headers["x-correlation-id"] || uuidv4()
   return {
     loggerKeys: {
       "apigw-request-id": event.requestContext?.requestId,
-      "x-request-id": event.headers["x-request-id"]
+      "x-request-id": event.headers["x-request-id"],
+      "x-correlation-id": correlationId
     },
-    correlationId: event.headers["x-correlation-id"] || uuidv4()
+    correlationId
   }
 }
 

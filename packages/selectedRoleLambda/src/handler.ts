@@ -9,6 +9,7 @@ import httpHeaderNormalizer from "@middy/http-header-normalizer"
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 import {getUsernameFromEvent} from "@cpt-ui-common/authFunctions"
 import {getTokenMapping, updateTokenMapping} from "@cpt-ui-common/dynamoFunctions"
+import {extractInboundEventValues, appendLoggerKeys} from "@cpt-ui-common/lambdaUtils"
 
 /**
  * Lambda function for updating the selected role in the DynamoDB table.
@@ -38,9 +39,8 @@ const logger = new Logger({serviceName: "selectedRole"})
  * Lambda function handler for updating a user's selected role.
  */
 const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-  logger.appendKeys({"apigw-request-id": event.requestContext?.requestId})
-  const headers = event.headers ?? []
-  logger.appendKeys({"x-request-id": headers["x-request-id"]})
+  const {loggerKeys} = extractInboundEventValues(event)
+  appendLoggerKeys(logger, loggerKeys)
   logger.debug("Environment variables", {env: {
     tokenMappingTableName,
     MOCK_MODE_ENABLED,
