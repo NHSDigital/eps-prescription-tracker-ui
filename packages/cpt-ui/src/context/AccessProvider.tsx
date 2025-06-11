@@ -21,7 +21,6 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
 
   const ensureRoleSelected = () => {
     const allowed_no_role_paths = [
-      FRONTEND_PATHS.PRIVACY_NOTICE,
       FRONTEND_PATHS.LOGIN,
       FRONTEND_PATHS.LOGOUT,
       FRONTEND_PATHS.COOKIES
