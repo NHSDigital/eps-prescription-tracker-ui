@@ -2,10 +2,10 @@ import {
   PrescriberOrganisationSummary,
   PatientDetails,
   OrganisationSummary,
-  DispensedItem,
-  PrescribedItem,
-  MessageHistory
+  MessageHistory,
+  DispensedItemDetails
 } from "@cpt-ui-common/common-types"
+import {PrescribedItemDetails} from "@cpt-ui-common/common-types/src"
 
 export const mockPrescriber: PrescriberOrganisationSummary = {
   name: "Fiji surgery",
@@ -68,191 +68,159 @@ export const mockUnavailablePatientDetails: PatientDetails = {
   address: null
 }
 
-export const mockPrescribedItems: Array<PrescribedItem> = [
+export const mockPrescribedItems: Array<PrescribedItemDetails> = [
   {
-    itemDetails: {
-      medicationName: "Oseltamivir 30mg capsules",
-      quantity: "20 capsules",
-      dosageInstructions: "One capsule twice a day",
-      epsStatusCode: "0004", //Item not dispensed - owing
-      pharmacyStatus: "With pharmacy",
-      itemPendingCancellation: false,
-      cancellationReason: null
-    }
+    medicationName: "Oseltamivir 30mg capsules",
+    quantity: "20 capsules",
+    dosageInstructions: "One capsule twice a day",
+    epsStatusCode: "0004", //Item not dispensed - owing
+    pharmacyStatus: "With pharmacy",
+    itemPendingCancellation: false,
+    cancellationReason: null
   }
 ]
-export const mockPrescribedItemsCancellation: Array<PrescribedItem> = [
+export const mockPrescribedItemsCancellation: Array<PrescribedItemDetails> = [
   {
-    itemDetails: {
-      medicationName: "Phosphates enema (Formula B) 129ml standard tube",
-      quantity: "1 tube",
-      dosageInstructions: "Use ONE when required",
-      epsStatusCode: "0007", // Item not dispensed
-      pharmacyStatus: "With pharmacy",
-      itemPendingCancellation: true,
-      cancellationReason: "Prescribing error"
-    }
+    medicationName: "Phosphates enema (Formula B) 129ml standard tube",
+    quantity: "1 tube",
+    dosageInstructions: "Use ONE when required",
+    epsStatusCode: "0007", // Item not dispensed
+    pharmacyStatus: "With pharmacy",
+    itemPendingCancellation: true,
+    cancellationReason: "Prescribing error"
   },
   {
-    itemDetails: {
-      medicationName: "Mirtazapine 30mg",
-      quantity: "1 spray",
-      dosageInstructions: "Use as needed",
-      epsStatusCode: "0007", // Item not dispensed
-      pharmacyStatus: "With pharmacy",
-      itemPendingCancellation: true,
-      cancellationReason: "Prescribing error"
-    }
+    medicationName: "Mirtazapine 30mg",
+    quantity: "1 spray",
+    dosageInstructions: "Use as needed",
+    epsStatusCode: "0007", // Item not dispensed
+    pharmacyStatus: "With pharmacy",
+    itemPendingCancellation: true,
+    cancellationReason: "Prescribing error"
   },
   {
-    itemDetails: {
-      medicationName: "Oseltamivir 30mg capsules",
-      quantity: "20 capsules",
-      dosageInstructions: "One capsule twice a day",
-      epsStatusCode: "0007", // Item not dispensed
-      pharmacyStatus: "With pharmacy",
-      itemPendingCancellation: true,
-      cancellationReason: "Prescribing error"
-    }
+    medicationName: "Oseltamivir 30mg capsules",
+    quantity: "20 capsules",
+    dosageInstructions: "One capsule twice a day",
+    epsStatusCode: "0007", // Item not dispensed
+    pharmacyStatus: "With pharmacy",
+    itemPendingCancellation: true,
+    cancellationReason: "Prescribing error"
   },
   {
-    itemDetails: {
-      medicationName: "Glyceryl trinitrate 400micrograms/does aerosol sublingual spray",
-      quantity: "21 tablets",
-      dosageInstructions: "Take 3 times a day with water",
-      epsStatusCode: "0007", // Item not dispensed
-      pharmacyStatus: "With pharmacy",
-      itemPendingCancellation: true,
-      cancellationReason: "Prescribing error"
-    }
+    medicationName: "Glyceryl trinitrate 400micrograms/does aerosol sublingual spray",
+    quantity: "21 tablets",
+    dosageInstructions: "Take 3 times a day with water",
+    epsStatusCode: "0007", // Item not dispensed
+    pharmacyStatus: "With pharmacy",
+    itemPendingCancellation: true,
+    cancellationReason: "Prescribing error"
   }
 ]
 
-export const mockDispensedItems: Array<DispensedItem> = [
+export const mockDispensedItems: Array<DispensedItemDetails> = [
   {
-    itemDetails: {
-      medicationName: "Raberprazole 10mg tablets",
-      quantity: "56 tablets",
-      dosageInstructions: "Take one twice daily",
-      epsStatusCode: "0001", // Item fully dispensed
-      pharmacyStatus: "Collected",
-      itemPendingCancellation: false
-    }
+    medicationName: "Raberprazole 10mg tablets",
+    quantity: "56 tablets",
+    dosageInstructions: "Take one twice daily",
+    epsStatusCode: "0001", // Item fully dispensed
+    pharmacyStatus: "Collected",
+    itemPendingCancellation: false
   },
   {
-    itemDetails: {
-      medicationName: "Glyceryl trinitrate 400micrograms/does aerosol sublingual spray",
-      quantity: "1 spray",
-      dosageInstructions: "Use as needed",
-      epsStatusCode: "0001", // Item fully dispensed
-      pharmacyStatus: "Collected",
-      itemPendingCancellation: false
-    }
+    medicationName: "Glyceryl trinitrate 400micrograms/does aerosol sublingual spray",
+    quantity: "1 spray",
+    dosageInstructions: "Use as needed",
+    epsStatusCode: "0001", // Item fully dispensed
+    pharmacyStatus: "Collected",
+    itemPendingCancellation: false
   }
 ]
-export const mockDispensedItemsNoPharmacyStatus: Array<DispensedItem> = [
+export const mockDispensedItemsNoPharmacyStatus: Array<DispensedItemDetails> = [
   {
-    itemDetails: {
-      medicationName: "Raberprazole 10mg tablets",
-      quantity: "56 tablets",
-      dosageInstructions: "Take one twice daily",
-      epsStatusCode: "0001",
-      pharmacyStatus: undefined,
-      itemPendingCancellation: false
-    }
+    medicationName: "Raberprazole 10mg tablets",
+    quantity: "56 tablets",
+    dosageInstructions: "Take one twice daily",
+    epsStatusCode: "0001",
+    pharmacyStatus: undefined,
+    itemPendingCancellation: false
   },
   {
-    itemDetails: {
-      medicationName: "Glyceryl trinitrate 400micrograms/does aerosol sublingual spray",
-      quantity: "1 spray",
-      dosageInstructions: "Use as needed",
-      epsStatusCode: "0001",
-      pharmacyStatus: undefined,
-      itemPendingCancellation: false
-    }
+    medicationName: "Glyceryl trinitrate 400micrograms/does aerosol sublingual spray",
+    quantity: "1 spray",
+    dosageInstructions: "Use as needed",
+    epsStatusCode: "0001",
+    pharmacyStatus: undefined,
+    itemPendingCancellation: false
   },
   {
-    itemDetails: {
-      medicationName: "Oseltamivir 30mg capsules",
-      quantity: "20 capsules",
-      dosageInstructions: "One capsule twice a day",
-      epsStatusCode: "0001",
-      pharmacyStatus: undefined,
-      itemPendingCancellation: false
-    }
+    medicationName: "Oseltamivir 30mg capsules",
+    quantity: "20 capsules",
+    dosageInstructions: "One capsule twice a day",
+    epsStatusCode: "0001",
+    pharmacyStatus: undefined,
+    itemPendingCancellation: false
   }
 ]
-export const mockDispensedPartialWithInitial: Array<DispensedItem> = [
+export const mockDispensedPartialWithInitial: Array<DispensedItemDetails> = [
   {
-    itemDetails: {
-      medicationName: "Raberprazole 10mg tablets",
-      quantity: "28 out of 56 tablets",
-      dosageInstructions: "Take one twice daily",
-      epsStatusCode: "0003", // Item dispensed - partial
-      pharmacyStatus: "Collected",
-      itemPendingCancellation: false,
-      initiallyPrescribed: {
-        medicationName: "Raberprazole 10mg tablets",
-        quantity: "56 tablets",
-        dosageInstructions: "Take one twice daily"
-      }
-    }
-  },
-  {
-    itemDetails: {
-      medicationName: "Glyceryl trinitrate 400micrograms/does aerosol sublingual spray",
-      quantity: "1 spray",
-      dosageInstructions: "Use as needed",
-      epsStatusCode: "0001",
-      pharmacyStatus: "Collected",
-      itemPendingCancellation: false
-    }
-  }
-]
-export const mockDispensedItemsCancelled: Array<DispensedItem> = [
-  {
-    itemDetails: {
+    medicationName: "Raberprazole 10mg tablets",
+    quantity: "28 out of 56 tablets",
+    dosageInstructions: "Take one twice daily",
+    epsStatusCode: "0003", // Item dispensed - partial
+    pharmacyStatus: "Collected",
+    itemPendingCancellation: false,
+    initiallyPrescribed: {
       medicationName: "Raberprazole 10mg tablets",
       quantity: "56 tablets",
-      dosageInstructions: "Take one twice daily",
-      epsStatusCode: "0005", // Item cancelled
-      pharmacyStatus: "Prescriber cancelled",
-      itemPendingCancellation: false,
-      cancellationReason: "Prescribing error"
+      dosageInstructions: "Take one twice daily"
     }
   },
   {
-    itemDetails: {
-      medicationName: "Glyceryl trinitrate 400micrograms/does aerosol sublingual spray",
-      quantity: "1 spray",
-      dosageInstructions: "Use as needed",
-      epsStatusCode: "0005", // Item cancelled
-      pharmacyStatus: "Prescriber cancelled",
-      itemPendingCancellation: false,
-      cancellationReason: "Prescribing error"
-    }
+    medicationName: "Glyceryl trinitrate 400micrograms/does aerosol sublingual spray",
+    quantity: "1 spray",
+    dosageInstructions: "Use as needed",
+    epsStatusCode: "0001",
+    pharmacyStatus: "Collected",
+    itemPendingCancellation: false
+  }
+]
+export const mockDispensedItemsCancelled: Array<DispensedItemDetails> = [
+  {
+    medicationName: "Raberprazole 10mg tablets",
+    quantity: "56 tablets",
+    dosageInstructions: "Take one twice daily",
+    epsStatusCode: "0005", // Item cancelled
+    pharmacyStatus: "Prescriber cancelled",
+    itemPendingCancellation: false,
+    cancellationReason: "Prescribing error"
   },
   {
-    itemDetails: {
-      medicationName: "Oseltamivir 30mg capsules",
-      quantity: "20 capsules",
-      dosageInstructions: "One capsule twice a day",
-      epsStatusCode: "0005", // Item cancelled
-      pharmacyStatus: "Prescriber cancelled",
-      itemPendingCancellation: false,
-      cancellationReason: "Prescribing error"
-    }
+    medicationName: "Glyceryl trinitrate 400micrograms/does aerosol sublingual spray",
+    quantity: "1 spray",
+    dosageInstructions: "Use as needed",
+    epsStatusCode: "0005", // Item cancelled
+    pharmacyStatus: "Prescriber cancelled",
+    itemPendingCancellation: false,
+    cancellationReason: "Prescribing error"
   },
   {
-    itemDetails: {
-      medicationName: "Mirtazapine 30mg",
-      quantity: "21 tablets",
-      dosageInstructions: "Take once a day",
-      epsStatusCode: "0005", // Item cancelled
-      pharmacyStatus: "Prescriber cancelled",
-      itemPendingCancellation: false,
-      cancellationReason: "Prescribing error"
-    }
+    medicationName: "Oseltamivir 30mg capsules",
+    quantity: "20 capsules",
+    dosageInstructions: "One capsule twice a day",
+    epsStatusCode: "0005", // Item cancelled
+    pharmacyStatus: "Prescriber cancelled",
+    itemPendingCancellation: false,
+    cancellationReason: "Prescribing error"
+  },
+  {
+    medicationName: "Mirtazapine 30mg",
+    quantity: "21 tablets",
+    dosageInstructions: "Take once a day",
+    epsStatusCode: "0005", // Item cancelled
+    pharmacyStatus: "Prescriber cancelled",
+    itemPendingCancellation: false,
+    cancellationReason: "Prescribing error"
   }
 ]
 
