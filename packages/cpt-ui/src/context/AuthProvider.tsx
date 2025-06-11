@@ -14,7 +14,7 @@ import {API_ENDPOINTS} from "@/constants/environment"
 
 import http from "@/helpers/axios"
 import {RoleDetails, UserDetails} from "@cpt-ui-common/common-types"
-import {getTrackerUserInfo} from "@/helpers/userInfo"
+import {getTrackerUserInfo, updateRemoteSelectedRole} from "@/helpers/userInfo"
 
 const CIS2SignOutEndpoint = API_ENDPOINTS.CIS2_SIGNOUT_ENDPOINT
 
@@ -32,6 +32,7 @@ export interface AuthContextType {
   cognitoSignIn: (input?: SignInWithRedirectInput) => Promise<void>
   cognitoSignOut: () => Promise<void>
   clearAuthState: () => void
+  updateSelectedRole: (value: RoleDetails) => Promise<void>
 }
 
 export const AuthContext = createContext<AuthContextType | null>(null)
@@ -188,6 +189,11 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
     return signInWithRedirect(input)
   }
 
+  const updateSelectedRole = async(newRole: RoleDetails) => {
+    await updateRemoteSelectedRole(newRole)
+    setSelectedRole(newRole)
+  }
+
   return (
     <AuthContext.Provider value={{
       error,
@@ -202,7 +208,8 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
       userDetails,
       cognitoSignIn,
       cognitoSignOut,
-      clearAuthState
+      clearAuthState,
+      updateSelectedRole
     }}>
       {children}
     </AuthContext.Provider>

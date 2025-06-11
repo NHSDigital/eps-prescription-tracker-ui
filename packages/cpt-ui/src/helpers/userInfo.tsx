@@ -68,7 +68,7 @@ export const getTrackerUserInfo = async (): Promise<TrackerUserInfoResult> => {
     userDetails = userInfo.user_details
     hasSingleRoleAccess = userInfo.roles_with_access.length === 1
     if (userInfo.roles_with_access.length === 1 && userInfo.roles_without_access.length === 0) {
-      await updateSelectedRole(userInfo.roles_with_access[0])
+      await updateRemoteSelectedRole(userInfo.roles_with_access[0])
       selectedRole = userInfo.roles_with_access[0]
     }
 
@@ -89,7 +89,7 @@ export const getTrackerUserInfo = async (): Promise<TrackerUserInfoResult> => {
   }
 }
 
-export const updateSelectedRole = async (newRole: RoleDetails) => {
+export const updateRemoteSelectedRole = async (newRole: RoleDetails) => {
   try {
     // Update selected role in the backend via the selectedRoleLambda endpoint using axios
     console.log("calling set selected role")

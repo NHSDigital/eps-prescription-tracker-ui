@@ -6,7 +6,7 @@ import {useNavigate} from "react-router-dom"
 import {RoleDetails} from "@cpt-ui-common/common-types"
 
 import {EPS_CARD_STRINGS} from "@/constants/ui-strings/CardStrings"
-import {updateSelectedRole} from "@/helpers/userInfo"
+import {useAuth} from "@/context/AuthProvider"
 
 export interface EpsCardProps {
   role: RoleDetails
@@ -15,10 +15,12 @@ export interface EpsCardProps {
 
 export default function EpsCard({role, link}: EpsCardProps) {
   const navigate = useNavigate()
+  const authContext = useAuth()
 
   const handleSetSelectedRole = async (e: React.MouseEvent) => {
     e.preventDefault()
-    await updateSelectedRole(role)
+    console.log("going to call updateSelectedRole")
+    await authContext.updateSelectedRole(role)
 
     // Redirect to the appropriate page
     navigate(link)

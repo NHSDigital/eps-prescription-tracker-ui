@@ -2,9 +2,8 @@ import "@testing-library/jest-dom"
 import {render, screen, fireEvent} from "@testing-library/react"
 import {BrowserRouter} from "react-router-dom"
 import EpsCard from "@/components/EpsCard"
-import {AuthContext} from "@/context/AuthProvider"
+import {AuthContext, AuthContextType} from "@/context/AuthProvider"
 import {AccessContext} from "@/context/AccessProvider"
-import {updateSelectedRole} from "@/helpers/userInfo"
 
 // Mock the auth configuration
 jest.mock("@/context/configureAmplify", () => ({
@@ -75,15 +74,24 @@ const mockRole = {
 
 const mockLink = "/role-detail"
 
+const mockUpdateSelectedRole = jest.fn()
+
 // Update default auth context with proper JWT
-const defaultAuthContext = {
+const defaultAuthContext: AuthContextType = {
   error: null,
   user: null,
   isSignedIn: true,
-  idToken: "mock-token",
-  accessToken: null,
+  isSigningIn: false,
+  rolesWithAccess: [],
+  rolesWithoutAccess: [],
+  hasNoAccess: true,
+  hasSingleRoleAccess: true,
+  selectedRole: undefined,
+  userDetails: undefined,
   cognitoSignIn: jest.fn(),
-  cognitoSignOut: jest.fn()
+  cognitoSignOut: jest.fn(),
+  clearAuthState: jest.fn(),
+  updateSelectedRole: mockUpdateSelectedRole
 }
 
 const renderWithProviders = (
@@ -158,7 +166,7 @@ describe("EpsCard Component", () => {
     const cardLink = screen.getByRole("link", {name: /test organization/i})
     await fireEvent.click(cardLink)
 
-    expect(updateSelectedRole).toHaveBeenCalledWith(
+    expect(mockUpdateSelectedRole).toHaveBeenCalledWith(
       expect.objectContaining({
         role_id: "123",
         org_name: "Test Organization",

@@ -69,7 +69,8 @@ const signedInAuthState: AuthContextType = {
   userDetails: undefined,
   cognitoSignIn: mockCognitoSignIn,
   cognitoSignOut: mockCognitoSignOut,
-  clearAuthState: mockClearAuthState
+  clearAuthState: mockClearAuthState,
+  updateSelectedRole: jest.fn()
 }
 
 const LocationDisplay = () => {

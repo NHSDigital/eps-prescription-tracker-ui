@@ -36,7 +36,8 @@ const signedInAuthState: AuthContextType = {
   userDetails: undefined,
   cognitoSignIn: mockCognitoSignIn,
   cognitoSignOut: mockCognitoSignOut,
-  clearAuthState: jest.fn()
+  clearAuthState: jest.fn(),
+  updateSelectedRole: jest.fn()
 }
 
 const mockSearchResponse: SearchResponse = {

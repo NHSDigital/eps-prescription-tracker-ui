@@ -59,7 +59,8 @@ const defaultAuthContext: AuthContextType = {
   userDetails: undefined,
   cognitoSignIn: jest.fn(),
   cognitoSignOut: jest.fn(),
-  clearAuthState: jest.fn()
+  clearAuthState: jest.fn(),
+  updateSelectedRole: jest.fn()
 }
 
 const renderWithProviders = (

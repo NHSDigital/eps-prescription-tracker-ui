@@ -30,7 +30,8 @@ const MockAuthProvider = ({
     userDetails: undefined,
     cognitoSignIn: jest.fn(),
     cognitoSignOut: mockCognitoSignOut,
-    clearAuthState: jest.fn()
+    clearAuthState: jest.fn(),
+    updateSelectedRole: jest.fn()
   } as AuthContextType
 
   return (
