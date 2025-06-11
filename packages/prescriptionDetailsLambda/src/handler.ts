@@ -18,19 +18,6 @@ import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 import {processPrescriptionRequest} from "./services/prescriptionService"
 
 type HandlerParameters = {
-  logger: Logger,
-  documentClient: DynamoDBDocumentClient,
-  apigeePrescriptionsEndpoint: string,
-  tokenMappingTableName: string,
-  jwtPrivateKeyArn: string,
-  apigeeApiKey: string,
-  apigeeApiSecret: string,
-  jwtKid: string,
-  apigeeMockTokenEndpoint: string,
-  apigeeCis2TokenEndpoint: string
-}
-
-export type HandlerInitialisationParameters = {
   errorResponseBody: object,
   logger: Logger,
   documentClient: DynamoDBDocumentClient,
@@ -113,22 +100,9 @@ const lambdaHandler = async (
 }
 
 export const newHandler = (
-  initParams: HandlerInitialisationParameters
+  initParams: HandlerParameters
 ) => {
-  const params: HandlerParameters = {
-    logger: initParams.logger,
-    documentClient: initParams.documentClient,
-    apigeePrescriptionsEndpoint: initParams.apigeePrescriptionsEndpoint,
-    tokenMappingTableName: initParams.tokenMappingTableName,
-    jwtPrivateKeyArn: initParams.jwtPrivateKeyArn,
-    apigeeApiKey: initParams.apigeeApiKey,
-    apigeeApiSecret: initParams.apigeeApiSecret,
-    jwtKid: initParams.jwtKid,
-    apigeeMockTokenEndpoint: initParams.apigeeMockTokenEndpoint,
-    apigeeCis2TokenEndpoint: initParams.apigeeCis2TokenEndpoint
-  }
-
-  return middy((event: APIGatewayProxyEvent) => lambdaHandler(event, params))
+  return middy((event: APIGatewayProxyEvent) => lambdaHandler(event, initParams))
     .use(injectLambdaContext(initParams.logger, {clearState: true}))
     .use(httpHeaderNormalizer())
     .use(
@@ -148,7 +122,6 @@ export const newHandler = (
 const apigeeCis2TokenEndpoint = process.env["apigeeCIS2TokenEndpoint"] as string
 const apigeeMockTokenEndpoint = process.env["apigeeMockTokenEndpoint"] as string
 const apigeePrescriptionsEndpoint = process.env["apigeePrescriptionsEndpoint"] as string
-// const apigeePrescriptionsEndpoint = "https://internal-dev.api.service.nhs.uk/clinical-prescription-tracker-pr-809/"
 const TokenMappingTableName = process.env["TokenMappingTableName"] as string
 const jwtPrivateKeyArn = process.env["jwtPrivateKeyArn"] as string
 const jwtKid = process.env["jwtKid"] as string
@@ -162,7 +135,7 @@ const documentClient = DynamoDBDocumentClient.from(dynamoClient)
 // Error response template
 const errorResponseBody = {message: "A system error has occurred"}
 
-const DEFAULT_HANDLER_PARAMETERS: HandlerInitialisationParameters = {
+const DEFAULT_HANDLER_PARAMETERS: HandlerParameters = {
   errorResponseBody,
   logger: new Logger({serviceName: "prescriptionDetails"}),
   documentClient,
