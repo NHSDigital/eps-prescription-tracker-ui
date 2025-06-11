@@ -5,13 +5,17 @@ import {handleAxiosError} from "../src/errorUtils"
 import {AxiosError, AxiosRequestHeaders} from "axios"
 import {Logger} from "@aws-lambda-powertools/logger"
 
+const mockLogger: Partial<Logger> = {
+  info: jest.fn(),
+  debug: jest.fn(),
+  error: jest.fn(),
+  warn: jest.fn()
+}
+
 describe("handleAxiosError", () => {
-  let logger: Logger
-  let errorSpy
 
   beforeEach(() => {
-    logger = new Logger()
-    errorSpy = jest.spyOn(logger, "error").mockImplementation(() => {})
+    jest.clearAllMocks()
     nock.cleanAll()
   })
 
@@ -30,7 +34,8 @@ describe("handleAxiosError", () => {
       data: "Not Found",
       headers: {},
       config: {
-        headers: undefined
+        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+        headers: {} as AxiosRequestHeaders
       }
     }
     axiosError.isAxiosError = true
@@ -42,9 +47,9 @@ describe("handleAxiosError", () => {
     }
 
     const contextMessage = "Test AxiosError"
-    handleAxiosError(axiosError, contextMessage, logger)
+    handleAxiosError(axiosError, contextMessage, mockLogger as Logger)
 
-    expect(errorSpy).toHaveBeenCalledWith(
+    expect(mockLogger.error).toHaveBeenCalledWith(
       contextMessage,
       expect.objectContaining({
         message: "Axios error occurred",
@@ -63,8 +68,8 @@ describe("handleAxiosError", () => {
   it("logs unexpected error for non-Axios errors", () => {
     const genericError = new Error("Generic error")
     const contextMessage = "This context should not be used"
-    handleAxiosError(genericError as AxiosError, contextMessage, logger)
+    handleAxiosError(genericError as AxiosError, contextMessage, mockLogger as Logger)
 
-    expect(errorSpy).toHaveBeenCalledWith("Unexpected error during Axios request", {error: genericError})
+    expect(mockLogger.error).toHaveBeenCalledWith("Unexpected error during Axios request", {error: genericError})
   })
 })
