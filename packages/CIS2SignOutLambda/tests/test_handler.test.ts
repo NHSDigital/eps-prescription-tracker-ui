@@ -16,7 +16,7 @@ jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
   }
 })
 
-const {handler} = await import("@/handler")
+const {handler} = await import("../src/handler")
 
 describe("Lambda Handler", () => {
   beforeEach(async () => {
@@ -53,7 +53,7 @@ describe("Lambda Handler", () => {
   it("should throw an error when a mock user is used while mock mode is disabled", async () => {
     process.env.MOCK_MODE_ENABLED = "false"
     mockGetUsernameFromEvent.mockReturnValue("Mock_test_user")
-    const {handler} = await import("@/handler")
+    const {handler} = await import("../src/handler")
 
     const response = await handler(mockAPIGatewayProxyEvent, mockContext)
     expect(response).toMatchObject({

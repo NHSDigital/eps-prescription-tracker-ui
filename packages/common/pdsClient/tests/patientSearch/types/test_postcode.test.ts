@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {describe, it, expect} from "@jest/globals"
 
-import * as pds from "@cpt-ui-common/pdsClient"
+import * as pds from "../../../src"
 
 const Postcode = pds.patientSearch.types.Postcode
 const OutcomeType = pds.patientSearch.types.PostcodeFromStringOutcomeType

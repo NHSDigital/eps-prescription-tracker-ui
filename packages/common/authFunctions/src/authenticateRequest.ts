@@ -63,6 +63,9 @@ const refreshTokenFlow = async (
   }
 ): Promise<ApigeeTokenResponse> => {
   try {
+    if (existingToken.refreshToken === undefined) {
+      throw new Error("Missing refresh token")
+    }
     const refreshResult = await refreshApigeeAccessToken(
       axiosInstance,
       config.apigeeTokenEndpoint,
@@ -109,8 +112,8 @@ export async function authenticateRequest(
   options: AuthenticateRequestOptions
 ): Promise<{
   apigeeAccessToken: string
-  roleId: string,
-  orgCode: string
+  roleId: string | undefined,
+  orgCode: string | undefined
 }> {
   const {
     tokenMappingTableName,
@@ -138,6 +141,9 @@ export async function authenticateRequest(
       throw new Error("No currently selected role")
     }
     const currentTime = Math.floor(Date.now() / 1000)
+    if (userRecord.apigeeExpiresIn === undefined) {
+      throw new Error("Missing apigee expires in time")
+    }
     const timeUntilExpiry = userRecord.apigeeExpiresIn - currentTime
 
     // If token is expired or will expire soon (within 60 seconds), refresh it
@@ -214,6 +220,9 @@ export async function authenticateRequest(
     )
   } else {
     // When we aren't mocking, get CIS2 tokens and exchange for Apigee token
+    if (userRecord.cis2IdToken === undefined) {
+      throw new Error("Missing cis2IdToken")
+    }
     await verifyIdToken(userRecord.cis2IdToken, logger)
 
     // Fetch the private key for signing the client assertion
