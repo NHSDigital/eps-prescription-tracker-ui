@@ -32,7 +32,7 @@ export default function PatientNotFoundMessage() {
         parts.push(second.slice(lastIndex, match.index))
       }
       // Add the actual React Link component in place of the placeholder
-      parts.push(buildAltLink({alt: content.alternatives[idx], searchParams}))
+      parts.push(buildAltLink({alt: content.alternatives[idx]}))
       lastIndex = regex.lastIndex
     }
 
