@@ -1,130 +1,185 @@
-import "@testing-library/jest-dom"
-import {render, screen, fireEvent} from "@testing-library/react"
-import {useNavigate} from "react-router-dom"
 import React from "react"
+import {render, screen} from "@testing-library/react"
+import {MemoryRouter, Route, Routes} from "react-router-dom"
 import YourSelectedRolePage from "@/pages/YourSelectedRolePage"
-import {AuthContext, AuthContextType} from "@/context/AuthProvider"
-import {AccessContext} from "@/context/AccessProvider"
-import {FRONTEND_PATHS} from "@/constants/environment"
+import {useAuth} from "@/context/AuthProvider"
+import {YOUR_SELECTED_ROLE_STRINGS} from "@/constants/ui-strings/YourSelectedRoleStrings"
+import userEvent from "@testing-library/user-event"
 
-const {
-  YOUR_SELECTED_ROLE_STRINGS
-  // eslint-disable-next-line @typescript-eslint/no-require-imports, no-undef
-} = require("@/constants/ui-strings/YourSelectedRoleStrings")
+// Mock useAuth hook
+jest.mock("@/context/AuthProvider")
 
-// Mock `react-router-dom`
-jest.mock("react-router-dom", () => ({
-  useLocation: jest.fn(),
-  useNavigate: jest.fn(),
-  Link: ({children, to}: { children: React.ReactNode; to: string }) => (
-    <a href={to}>{children}</a>
-  )
-}))
+const mockedUseAuth = useAuth as jest.MockedFunction<typeof useAuth>
 
-// Default mock values for contexts
-const defaultAuthContext: AuthContextType = {
-  error: null,
-  user: null,
-  isSignedIn: true,
-  isSigningIn: false,
-  selectedRole: {
-    role_name: "Role Name",
-    role_id: "role-id",
-    org_code: "deadbeef",
-    org_name: "org name"
-  },
-  userDetails: {
-    given_name: "Jane",
-    family_name: "Doe"
-  },
-  rolesWithAccess: [],
-  rolesWithoutAccess: [],
-  hasNoAccess: false,
-  hasSingleRoleAccess: false,
-
-  cognitoSignIn: jest.fn(),
-  cognitoSignOut: jest.fn(),
-  clearAuthState: jest.fn()
-}
-
-const renderWithProviders = (authOverrides = {}) => {
-  const authValue = {...defaultAuthContext, ...authOverrides}
-
-  return render(
-    <AuthContext.Provider value={authValue}>
-      <AccessContext.Provider value={null}>
-        <YourSelectedRolePage />
-      </AccessContext.Provider>
-    </AuthContext.Provider>
-  )
-}
-
-describe.skip("YourSelectedRolePage", () => {
-  let mockNavigate: jest.Mock
-
+describe("YourSelectedRolePage", () => {
   beforeEach(() => {
-    jest.clearAllMocks()
-    mockNavigate = jest.fn();
-    (useNavigate as jest.Mock).mockReturnValue(mockNavigate)
+    jest.resetAllMocks()
   })
 
-  it("renders the heading and subheading correctly", () => {
-    renderWithProviders()
-    const heading = screen.getByRole("heading", {
-      level: 1,
-      name: /Your selected role/i
-    })
-    const subheading = screen.getByText(/The following role is now active/i)
+  function renderComponent() {
+    return render(
+      <MemoryRouter>
+        <YourSelectedRolePage />
+      </MemoryRouter>
+    )
+  }
 
-    expect(heading).toBeInTheDocument()
-    expect(subheading).toBeInTheDocument()
+  it("renders heading and subheading correctly", () => {
+    mockedUseAuth.mockReturnValue({
+      selectedRole: undefined,
+      error: null,
+      user: null,
+      isSignedIn: false,
+      isSigningIn: false,
+      rolesWithAccess: [],
+      rolesWithoutAccess: [],
+      hasNoAccess: false,
+      hasSingleRoleAccess: false,
+      userDetails: undefined,
+      cognitoSignIn: jest.fn(),
+      cognitoSignOut: jest.fn(),
+      clearAuthState: jest.fn()
+    })
+
+    renderComponent()
+
+    expect(screen.getByTestId("eps_yourSelectedRole_page")).toHaveTextContent(YOUR_SELECTED_ROLE_STRINGS.heading)
+    expect(screen.getByTestId("eps_yourSelectedRole_page")).toHaveTextContent(YOUR_SELECTED_ROLE_STRINGS.subheading)
   })
 
   it("renders the table with the correct role and organization data", () => {
-    renderWithProviders()
-    // Role row
-    expect(screen.getByTestId("role-label")).toHaveTextContent("Role")
-    expect(screen.getByTestId("role-text")).toHaveTextContent("Role Name")
-
-    // Org row
-    expect(screen.getByTestId("org-label")).toHaveTextContent("Organisation")
-    expect(screen.getByTestId("org-text")).toHaveTextContent(
-      "org name (ODS: deadbeef)"
-    )
-  })
-
-  it("has valid Change links for role and organization", () => {
-    renderWithProviders()
-
-    const changeLinks = screen.getAllByRole("link", {name: /Change/i})
-    expect(changeLinks).toHaveLength(2) // one for role, one for org
-
-    changeLinks.forEach((link) => {
-      expect(link).toHaveAttribute("href", "/change-your-role")
+    const selectedRole = {
+      role_name: "Pharmacist",
+      org_name: "Great Pharmacy",
+      org_code: "GP123"
+    }
+    mockedUseAuth.mockReturnValue({
+      selectedRole,
+      error: null,
+      user: null,
+      isSignedIn: false,
+      isSigningIn: false,
+      rolesWithAccess: [],
+      rolesWithoutAccess: [],
+      hasNoAccess: false,
+      hasSingleRoleAccess: false,
+      userDetails: undefined,
+      cognitoSignIn: jest.fn(),
+      cognitoSignOut: jest.fn(),
+      clearAuthState: jest.fn()
     })
+
+    renderComponent()
+
+    expect(screen.getByTestId("role-text")).toHaveTextContent("Pharmacist")
+    expect(screen.getByTestId("org-text")).toHaveTextContent("Great Pharmacy (ODS: GP123)")
   })
 
-  it("navigates to /search-by-prescription-id when the confirm button is clicked", async () => {
-    renderWithProviders()
+  it("renders confirm button with correct text", () => {
+    mockedUseAuth.mockReturnValue({
+      selectedRole: undefined,
+      error: null,
+      user: null,
+      isSignedIn: false,
+      isSigningIn: false,
+      rolesWithAccess: [],
+      rolesWithoutAccess: [],
+      hasNoAccess: false,
+      hasSingleRoleAccess: false,
+      userDetails: undefined,
+      cognitoSignIn: jest.fn(),
+      cognitoSignOut: jest.fn(),
+      clearAuthState: jest.fn()
+    })
+
+    renderComponent()
+
     const button = screen.getByTestId("confirm-and-continue")
-    await fireEvent.click(button)
-    expect(mockNavigate).toHaveBeenCalledWith(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
+    expect(button).toHaveTextContent(YOUR_SELECTED_ROLE_STRINGS.confirmButtonText)
+  })
+
+  it("renders change role links correctly", () => {
+    mockedUseAuth.mockReturnValue({
+      selectedRole: undefined,
+      error: null,
+      user: null,
+      isSignedIn: false,
+      isSigningIn: false,
+      rolesWithAccess: [],
+      rolesWithoutAccess: [],
+      hasNoAccess: false,
+      hasSingleRoleAccess: false,
+      userDetails: undefined,
+      cognitoSignIn: jest.fn(),
+      cognitoSignOut: jest.fn(),
+      clearAuthState: jest.fn()
+    })
+
+    renderComponent()
+
+    const roleChangeLink = screen.getByTestId("role-change-role-cell").querySelector("a")
+    const orgChangeLink = screen.getByTestId("org-change-role-cell").querySelector("a")
+
+    expect(roleChangeLink).toHaveAttribute("href", "/change-your-role")
+    expect(orgChangeLink).toHaveAttribute("href", "/change-your-role")
+  })
+
+  it("navigates to /search-by-prescription-id when confirm button is clicked", async () => {
+    mockedUseAuth.mockReturnValue({
+      selectedRole: {role_name: "Pharmacist", org_name: "Org", org_code: "ORG1"},
+      error: null,
+      user: null,
+      isSignedIn: false,
+      isSigningIn: false,
+      rolesWithAccess: [],
+      rolesWithoutAccess: [],
+      hasNoAccess: false,
+      hasSingleRoleAccess: false,
+      userDetails: undefined,
+      cognitoSignIn: jest.fn(),
+      cognitoSignOut: jest.fn(),
+      clearAuthState: jest.fn()
+    })
+
+    // Setup MemoryRouter with initial entry at the page, and a dummy route for /search-by-prescription-id
+    render(
+      <MemoryRouter initialEntries={["/your-selected-role"]}>
+        <Routes>
+          <Route path="/your-selected-role" element={<YourSelectedRolePage />} />
+          <Route path="/search-by-prescription-id" element={<div data-testid="search-page">Search Page</div>} />
+        </Routes>
+      </MemoryRouter>
+    )
+
+    const button = screen.getByTestId("confirm-and-continue")
+    await userEvent.click(button)
+
+    // Assert the URL changed and that the new route content is rendered
+    expect(screen.getByTestId("search-page")).toBeInTheDocument()
   })
 
   it("does not crash if selectedRole is undefined", () => {
-    renderWithProviders({})
+    mockedUseAuth.mockReturnValue({
+      selectedRole: undefined,
+      error: null,
+      user: null,
+      isSignedIn: false,
+      isSigningIn: false,
+      rolesWithAccess: [],
+      rolesWithoutAccess: [],
+      hasNoAccess: false,
+      hasSingleRoleAccess: false,
+      userDetails: undefined,
+      cognitoSignIn: jest.fn(),
+      cognitoSignOut: jest.fn(),
+      clearAuthState: jest.fn()
+    })
 
-    const heading = screen.queryByText("Your selected role")
-    expect(heading).toBeInTheDocument()
+    renderComponent()
 
-    const roleTextCell = screen.getByTestId("role-text")
-    expect(roleTextCell).toHaveTextContent(
-      YOUR_SELECTED_ROLE_STRINGS.noRoleName
-    )
-
-    const orgTextCell = screen.getByTestId("org-text")
-    expect(orgTextCell).toHaveTextContent(
-      `${YOUR_SELECTED_ROLE_STRINGS.noOrgName} (ODS: ${YOUR_SELECTED_ROLE_STRINGS.noODSCode})`
-    )
+    expect(screen.getByTestId("role-text")).toHaveTextContent(YOUR_SELECTED_ROLE_STRINGS.noRoleName)
+    // eslint-disable-next-line max-len
+    expect(screen.getByTestId("org-text")).toHaveTextContent(`${YOUR_SELECTED_ROLE_STRINGS.noOrgName} (ODS: ${YOUR_SELECTED_ROLE_STRINGS.noODSCode})`)
   })
+
 })
