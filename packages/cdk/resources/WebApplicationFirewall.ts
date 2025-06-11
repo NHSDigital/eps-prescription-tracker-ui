@@ -25,7 +25,7 @@ export class WebACL extends Construct {
       ipAddressVersion: "IPV4",
       scope: "CLOUDFRONT",
       description: "Allow list IPs that may originate outside of the UK or Crown dependencies.",
-      name: "PermittedOutsideUKandCrown"
+      name: `${props.serviceName}-PermittedOutsideUKandCrown`
     })
 
     this.webAcl = new wafv2.CfnWebACL(this, "CloudfrontWebAcl", {
