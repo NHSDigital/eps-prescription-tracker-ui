@@ -121,9 +121,9 @@ const CookiePolicyPage = () => {
         </nav>
         <h1 className="nhsuk-heading-xl">{CookieStrings.cptCookies}</h1>
         <p>
-          {CookieStrings.intro.paragraph1.split("privacy policy")[0]}
-          <a href="#">{CookieStrings.intro.privacyPolicyText}</a>
-          {CookieStrings.intro.paragraph1.split("privacy policy")[1]}
+          {CookieStrings.intro.paragraph1.split("privacy notice")[0]}
+          <a href="/site/privacy-notice">{CookieStrings.intro.privacyPolicyText}</a>
+          {CookieStrings.intro.paragraph1.split("privacy notice")[1]}
         </p>
 
         <h2 className="nhsuk-heading-l">{CookieStrings.whatAreCookies.heading}

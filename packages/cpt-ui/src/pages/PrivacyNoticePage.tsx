@@ -65,7 +65,7 @@ export default function PrivacyNoticePage() {
             <li>{PrivacyNoticeStrings.usage.legal}</li>
           </ul>
 
-          <h2 className="nhsuk-heading-l">#
+          <h2 className="nhsuk-heading-l">
             {PrivacyNoticeStrings.legal.header}
           </h2>
           <p>{PrivacyNoticeStrings.legal.basis}</p>

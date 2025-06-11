@@ -53,7 +53,7 @@ export const PrivacyNoticeStrings = {
     + " and resolve the issue you raised",
     legal:  "to comply with our legal obligations -"
     + " we process your data to comply with our legal obligation to operate the service and any"
-    + " other any applicable laws or regulations."
+    + " other any applicable laws or regulations"
   },
   legal: {
     header: "Our legal basis for data processing",
