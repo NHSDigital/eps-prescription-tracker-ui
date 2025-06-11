@@ -44,16 +44,15 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
     }
   }
 
-  // The access variables are cached, and the values are initially assumed to have not changed.
-  // On a full page reload, make a tracker use info call to update them from the backend
   useEffect(() => {
     console.log("in accessProvider useEffect with this", {auth})
-    const params = new URLSearchParams(window.location.search)
-    const codeParams = params.get("code")
-    const stateParams = params.get("state")
-    console.log("in AccessProvider.ensureRoleSelected with params", {params, codeParams, stateParams})
-    if (codeParams && stateParams) {
-      console.log("in a callback so just returning")
+
+    const currentPath = window.location.pathname
+    console.log("we are on this path", currentPath)
+    const onSelectYourRole = currentPath === `/site${FRONTEND_PATHS.SELECT_YOUR_ROLE}`
+    console.log(`value of onSelectYourRole ${onSelectYourRole}`)
+    if (auth.isSigningIn && onSelectYourRole) {
+      console.log("in sign in flow and on select your role so just returning")
       return
     }
     ensureRoleSelected()

@@ -113,12 +113,9 @@ export default function RoleSelectionPage({
   // Handle auto-redirect for single role
   useEffect(() => {
     console.log("in EpsRoleSelectionPage useEffect 1 with this auth", {auth})
-    const params = new URLSearchParams(window.location.search)
-    const codeParams = params.get("code")
-    const stateParams = params.get("state")
     console.log("in epsRoleSelectionPage with params",
-      {params, codeParams, stateParams, redirecting: redirecting.current})
-    if (codeParams && stateParams) {
+      {redirecting: redirecting.current})
+    if (auth.isSigningIn) {
       console.log("setting redirect to true")
       redirecting.current = true
       return
@@ -128,7 +125,7 @@ export default function RoleSelectionPage({
     if (auth.hasSingleRoleAccess) {
       navigate(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
     }
-  }, [auth.rolesWithAccess, auth.rolesWithoutAccess])
+  }, [auth.rolesWithAccess, auth.rolesWithoutAccess, auth.isSigningIn])
 
   // Set login message when selected role is available
   useEffect(() => {
