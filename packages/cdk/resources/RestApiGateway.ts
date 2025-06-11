@@ -62,7 +62,7 @@ export class RestApiGateway extends Construct {
     const apiGateway = new RestApi(this, "ApiGateway", {
       restApiName: `${props.serviceName}-apigw-${id}`,
       endpointConfiguration: {
-        types: [EndpointType.REGIONAL]
+        types: [EndpointType.PRIVATE]
       },
       deploy: true,
       deployOptions: {
