@@ -4,6 +4,7 @@ import {BrowserRouter} from "react-router-dom"
 import EpsCard from "@/components/EpsCard"
 import {AuthContext} from "@/context/AuthProvider"
 import {AccessContext} from "@/context/AccessProvider"
+import {updateSelectedRole} from "@/helpers/userInfo"
 
 // Mock the auth configuration
 jest.mock("@/context/configureAmplify", () => ({
@@ -60,6 +61,10 @@ jest.mock("@/constants/environment", () => ({
   }
 }))
 
+jest.mock("@/helpers/userInfo", () => ({
+  updateSelectedRole: jest.fn()
+}))
+
 const mockRole = {
   role_id: "123",
   org_name: "Test Organization",
@@ -105,7 +110,7 @@ const renderWithProviders = (
   )
 }
 
-describe.skip("EpsCard Component", () => {
+describe("EpsCard Component", () => {
   beforeEach(() => {
     jest.clearAllMocks()
     // eslint-disable-next-line no-undef
@@ -145,7 +150,6 @@ describe.skip("EpsCard Component", () => {
   })
 
   it("calls API and navigates on card click", async () => {
-    const mockSetSelectedRole = jest.fn()
     renderWithProviders(
       {role: mockRole, link: mockLink},
       {}
@@ -154,7 +158,7 @@ describe.skip("EpsCard Component", () => {
     const cardLink = screen.getByRole("link", {name: /test organization/i})
     await fireEvent.click(cardLink)
 
-    expect(mockSetSelectedRole).toHaveBeenCalledWith(
+    expect(updateSelectedRole).toHaveBeenCalledWith(
       expect.objectContaining({
         role_id: "123",
         org_name: "Test Organization",
