@@ -6,12 +6,7 @@ import {
   PutCommand,
   UpdateCommand
 } from "@aws-sdk/lib-dynamodb"
-import {RoleDetails} from "./userUtils"
-
-interface UserDetails {
-  family_name: string,
-  given_name: string
-}
+import {RoleDetails, UserDetails} from "@cpt-ui-common/common-types"
 
 interface TokenMappingItem {
     username: string,

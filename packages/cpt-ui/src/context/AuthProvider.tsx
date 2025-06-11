@@ -13,7 +13,7 @@ import {useLocalStorageState} from "@/helpers/useLocalStorageState"
 import {API_ENDPOINTS} from "@/constants/environment"
 
 import http from "@/helpers/axios"
-import {RoleDetails, UserDetails} from "@/types/TrackerUserInfoTypes"
+import {RoleDetails, UserDetails} from "@cpt-ui-common/common-types"
 import {getTrackerUserInfo} from "@/helpers/userInfo"
 
 const CIS2SignOutEndpoint = API_ENDPOINTS.CIS2_SIGNOUT_ENDPOINT

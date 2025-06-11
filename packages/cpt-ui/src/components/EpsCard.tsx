@@ -3,7 +3,7 @@ import {Card, Col, Row} from "nhsuk-react-components"
 
 import {useNavigate} from "react-router-dom"
 
-import {RoleDetails} from "@/types/TrackerUserInfoTypes"
+import {RoleDetails} from "@cpt-ui-common/common-types"
 
 import {EPS_CARD_STRINGS} from "@/constants/ui-strings/CardStrings"
 import {updateSelectedRole} from "@/helpers/userInfo"

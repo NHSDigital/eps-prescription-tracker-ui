@@ -13,7 +13,7 @@ import {
 import {useAuth} from "@/context/AuthProvider"
 import EpsCard from "@/components/EpsCard"
 import EpsSpinner from "@/components/EpsSpinner"
-import {RoleDetails} from "@/types/TrackerUserInfoTypes"
+import {RoleDetails} from "@cpt-ui-common/common-types"
 import {Button} from "./ReactRouterButton"
 import {FRONTEND_PATHS} from "@/constants/environment"
 

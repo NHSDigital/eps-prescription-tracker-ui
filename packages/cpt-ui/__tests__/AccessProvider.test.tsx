@@ -4,7 +4,7 @@ import userEvent from "@testing-library/user-event"
 import React, {useState} from "react"
 import {MemoryRouter, useLocation} from "react-router-dom"
 
-import {TrackerUserInfo} from "@/types/TrackerUserInfoTypes"
+import {TrackerUserInfo} from "@cpt-ui-common/common-types"
 
 import {AccessProvider, useAccess} from "@/context/AccessProvider"
 import {AuthContext, type AuthContextType} from "@/context/AuthProvider"

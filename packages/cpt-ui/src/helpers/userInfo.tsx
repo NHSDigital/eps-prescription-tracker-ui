@@ -1,8 +1,18 @@
 import {API_ENDPOINTS} from "@/constants/environment"
 import http from "./axios"
-import {RoleDetails, TrackerUserInfo, UserDetails} from "@/types/TrackerUserInfoTypes"
+import {RoleDetails, TrackerUserInfo, UserDetails} from "@cpt-ui-common/common-types"
 
-export const getTrackerUserInfo = async () => {
+export type TrackerUserInfoResult = {
+  rolesWithAccess: Array<RoleDetails>,
+  rolesWithoutAccess: Array<RoleDetails>,
+  hasNoAccess: boolean
+  selectedRole: RoleDetails | undefined,
+  userDetails: UserDetails | undefined,
+  hasSingleRoleAccess: boolean,
+  error: string | null
+}
+
+export const getTrackerUserInfo = async (): Promise<TrackerUserInfoResult> => {
   let rolesWithAccess: Array<RoleDetails> = []
   let rolesWithoutAccess: Array<RoleDetails> = []
   let hasNoAccess: boolean = true
