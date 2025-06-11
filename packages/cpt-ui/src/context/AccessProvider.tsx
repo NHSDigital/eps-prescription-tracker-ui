@@ -27,14 +27,6 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
       FRONTEND_PATHS.COOKIES
     ]
     console.log("in accessProvider ensureRoleSelected with this", {auth})
-    const params = new URLSearchParams(window.location.search)
-    const codeParams = params.get("code")
-    const stateParams = params.get("state")
-    console.log("in AccessProvider.ensureRoleSelected with params", {params, codeParams, stateParams})
-    if (codeParams && stateParams) {
-      console.log("in a callback so just returning")
-      return
-    }
 
     if (!auth.isSignedIn && !auth.isSigningIn) {
       if (!allowed_no_role_paths.includes(normalizePath(location.pathname))) {
@@ -56,6 +48,14 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
   // On a full page reload, make a tracker use info call to update them from the backend
   useEffect(() => {
     console.log("in accessProvider useEffect with this", {auth})
+    const params = new URLSearchParams(window.location.search)
+    const codeParams = params.get("code")
+    const stateParams = params.get("state")
+    console.log("in AccessProvider.ensureRoleSelected with params", {params, codeParams, stateParams})
+    if (codeParams && stateParams) {
+      console.log("in a callback so just returning")
+      return
+    }
     ensureRoleSelected()
   }, [auth.isSignedIn, auth.isSigningIn, auth.selectedRole])
 
