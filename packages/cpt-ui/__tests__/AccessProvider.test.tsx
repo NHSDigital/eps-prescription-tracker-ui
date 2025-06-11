@@ -17,7 +17,6 @@ const mockedAxios = axios as jest.Mocked<typeof axios>
 
 const mockCognitoSignIn = jest.fn()
 const mockCognitoSignOut = jest.fn()
-const mockUpdateSelectedRole = jest.fn()
 const mockClearAuthState = jest.fn()
 
 const defaultAuthState: AuthContextType = {
@@ -27,13 +26,12 @@ const defaultAuthState: AuthContextType = {
   error: null,
   rolesWithAccess: [],
   rolesWithoutAccess: [],
-  noAccess: false,
-  singleAccess: false,
+  hasNoAccess: false,
+  hasSingleRoleAccess: false,
   selectedRole: undefined,
   userDetails: undefined,
   cognitoSignIn: mockCognitoSignIn,
   cognitoSignOut: mockCognitoSignOut,
-  updateSelectedRole: mockUpdateSelectedRole,
   clearAuthState: mockClearAuthState
 }
 

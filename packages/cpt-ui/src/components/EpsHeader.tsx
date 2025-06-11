@@ -47,7 +47,7 @@ export default function EpsHeader() {
       path !== FRONTEND_PATHS.CHANGE_YOUR_ROLE &&
       path !== FRONTEND_PATHS.LOGOUT &&
       isSignedIn &&
-      !authContext.singleAccess &&
+      !authContext.hasSingleRoleAccess &&
       !authContext.selectedRole
     )
 
@@ -57,7 +57,7 @@ export default function EpsHeader() {
       path !== FRONTEND_PATHS.CHANGE_YOUR_ROLE &&
       path !== FRONTEND_PATHS.LOGOUT &&
       isSignedIn &&
-      !authContext.singleAccess &&
+      !authContext.hasSingleRoleAccess &&
       authContext.selectedRole !== undefined
     )
 
@@ -67,7 +67,7 @@ export default function EpsHeader() {
     // Show the "Exit" button under these conditions
     setShouldShowExitButton(
       (path === FRONTEND_PATHS.LOGOUT && !auth?.isSignedIn) ||
-      (path === FRONTEND_PATHS.SELECT_YOUR_ROLE && authContext.noAccess) ||
+      (path === FRONTEND_PATHS.SELECT_YOUR_ROLE && authContext.hasNoAccess) ||
       (path === "/notfound")
     )
   }, [location, auth, authContext])

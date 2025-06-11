@@ -1,12 +1,12 @@
 import React from "react"
 import {Card, Col, Row} from "nhsuk-react-components"
 
-import {useAuth} from "@/context/AuthProvider"
 import {useNavigate} from "react-router-dom"
 
 import {RoleDetails} from "@/types/TrackerUserInfoTypes"
 
 import {EPS_CARD_STRINGS} from "@/constants/ui-strings/CardStrings"
+import {updateSelectedRole} from "@/helpers/userInfo"
 
 export interface EpsCardProps {
   role: RoleDetails
@@ -15,7 +15,6 @@ export interface EpsCardProps {
 
 export default function EpsCard({role, link}: EpsCardProps) {
   const navigate = useNavigate()
-  const {updateSelectedRole} = useAuth()
 
   const handleSetSelectedRole = async (e: React.MouseEvent) => {
     e.preventDefault()

@@ -14,8 +14,42 @@ import {signInWithRedirect, signOut} from "aws-amplify/auth"
 import {AuthContext, AuthProvider} from "@/context/AuthProvider"
 
 import axios from "@/helpers/axios"
-import {RoleDetails, TrackerUserInfo} from "@/types/TrackerUserInfoTypes"
+import {getTrackerUserInfo} from "@/helpers/userInfo"
 jest.mock("@/helpers/axios")
+
+const currentlySelectedRole = {
+  role_id: "ROLE123",
+  role_name: "Pharmacist",
+  org_name: "Test Pharmacy Org",
+  org_code: "ORG123",
+  site_address: "1 Fake Street"
+}
+const rolesWithAccess = [
+  {
+    role_id: "ROLE123",
+    role_name: "Pharmacist",
+    org_name: "Test Pharmacy Org",
+    org_code: "ORG123",
+    site_address: "1 Fake Street"
+  }
+]
+const userDetails = {
+  family_name: "FAMILY",
+  given_name: "GIVEN"
+}
+const mockUserInfo = {
+  rolesWithAccess: rolesWithAccess,
+  rolesWithoutAccess: [],
+  hasNoAccess: false,
+  selectedRole: currentlySelectedRole,
+  userDetails: userDetails,
+  hasSingleRoleAccess: true,
+  error: undefined
+}
+
+jest.mock("@/helpers/userInfo", () => ({
+  getTrackerUserInfo: jest.fn()
+}))
 
 // Tell TypeScript that axios is a mocked version.
 const mockedAxios = axios as jest.Mocked<typeof axios>
@@ -64,10 +98,10 @@ const TestConsumer = () => {
       <div data-testid="isSigningIn">{auth.isSigningIn.toString()}</div>
       <div data-testid="rolesWithAccess">{JSON.stringify(auth.rolesWithAccess, null, 2)}</div>
       <div data-testid="rolesWithoutAccess">{JSON.stringify(auth.rolesWithoutAccess, null, 2)}</div>
-      <div data-testid="noAccess">{auth.noAccess.toString()}</div>
+      <div data-testid="noAccess">{auth.hasNoAccess.toString()}</div>
       <div data-testid="selectedRole">{JSON.stringify(auth.selectedRole, null, 2)}</div>
       <div data-testid="userDetails">{JSON.stringify(auth.userDetails, null, 2)}</div>
-      <div data-testid="singleAccess">{auth.singleAccess.toString()}</div>
+      <div data-testid="singleAccess">{auth.hasSingleRoleAccess.toString()}</div>
     </div>
   )
 }
@@ -168,32 +202,7 @@ describe("AuthProvider", () => {
 
   // Hub Events
   it("should handle Hub event signedIn", async () => {
-    const currentlySelectedRole = {
-      role_id: "ROLE123",
-      role_name: "Pharmacist",
-      org_name: "Test Pharmacy Org",
-      org_code: "ORG123",
-      site_address: "1 Fake Street"
-    }
-    const rolesWithAccess = [
-      {
-        role_id: "ROLE123",
-        role_name: "Pharmacist",
-        org_name: "Test Pharmacy Org",
-        org_code: "ORG123",
-        site_address: "1 Fake Street"
-      }
-    ]
-    const userDetails = {
-      family_name: "FAMILY",
-      given_name: "GIVEN"
-    }
-    const mockUserInfo: TrackerUserInfo = {
-      roles_with_access: rolesWithAccess,
-      roles_without_access: [],
-      currently_selected_role: currentlySelectedRole,
-      user_details: userDetails
-    }
+    (getTrackerUserInfo as jest.Mock).mockResolvedValue(mockUserInfo)
     await renderWithProvider()
     // Ensure the Hub event listener (hubCallback) is initialized
     if (!hubCallback) {
@@ -224,48 +233,6 @@ describe("AuthProvider", () => {
     })
   })
 
-  it("should set no access=true if roles with access is emptyp", async () => {
-    const currentlySelectedRole: RoleDetails = {}
-    const rolesWithAccess: Array<RoleDetails> = []
-    const userDetails = {
-      family_name: "FAMILY",
-      given_name: "GIVEN"
-    }
-    const mockUserInfo: TrackerUserInfo = {
-      roles_with_access: rolesWithAccess,
-      roles_without_access: [],
-      currently_selected_role: currentlySelectedRole,
-      user_details: userDetails
-    }
-    await renderWithProvider()
-    // Ensure the Hub event listener (hubCallback) is initialized
-    if (!hubCallback) {
-      throw new Error("hubCallback is not initialized")
-    }
-    mockedAxios.get.mockResolvedValueOnce({
-      status: 200,
-      data: {userInfo: mockUserInfo}
-    })
-    mockedAxios.put.mockResolvedValueOnce({
-      status: 200
-    })
-    // Simulate the Hub event "signedIn"
-    act(() => {
-      // Simulate a successful Hub event for signedIn
-      hubCallback!({payload: {event: "signedIn", data: {username: "test_user"}}})
-    })
-
-    await waitFor(() => {
-      expect(screen.getByTestId("isSignedIn").textContent).toBe("true")
-      expect(screen.getByTestId("user").textContent).toBe("test_user")
-      expect(screen.getByTestId("rolesWithAccess").textContent).toBe(JSON.stringify(rolesWithAccess, null, 2))
-      expect(screen.getByTestId("rolesWithoutAccess").textContent).toBe("[]")
-      expect(screen.getByTestId("noAccess").textContent).toBe("true")
-      expect(screen.getByTestId("selectedRole").textContent).toBe("")
-      expect(screen.getByTestId("userDetails").textContent).toBe(JSON.stringify(userDetails, null, 2))
-      expect(screen.getByTestId("singleAccess").textContent).toBe("false")
-    })
-  })
   it("should handle Hub event signInWithRedirect_failure", async () => {
     // Render the AuthProvider with a TestConsumer to observe context changes
     await renderWithProvider()

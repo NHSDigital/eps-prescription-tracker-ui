@@ -13,7 +13,8 @@ import {useLocalStorageState} from "@/helpers/useLocalStorageState"
 import {API_ENDPOINTS} from "@/constants/environment"
 
 import http from "@/helpers/axios"
-import {RoleDetails, TrackerUserInfo, UserDetails} from "@/types/TrackerUserInfoTypes"
+import {RoleDetails, UserDetails} from "@/types/TrackerUserInfoTypes"
+import {getTrackerUserInfo} from "@/helpers/userInfo"
 
 const CIS2SignOutEndpoint = API_ENDPOINTS.CIS2_SIGNOUT_ENDPOINT
 
@@ -24,13 +25,12 @@ export interface AuthContextType {
   isSigningIn: boolean
   rolesWithAccess: Array<RoleDetails>
   rolesWithoutAccess: Array<RoleDetails>
-  noAccess: boolean
-  singleAccess: boolean
+  hasNoAccess: boolean
+  hasSingleRoleAccess: boolean
   selectedRole: RoleDetails | undefined
   userDetails: UserDetails | undefined
   cognitoSignIn: (input?: SignInWithRedirectInput) => Promise<void>
   cognitoSignOut: () => Promise<void>
-  updateSelectedRole: (value: RoleDetails) => Promise<void>
   clearAuthState: () => void
 }
 
@@ -47,7 +47,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
     "rolesWithoutAccess",
     "rolesWithoutAccess",
     [])
-  const [noAccess, setNoAccess] = useLocalStorageState<boolean>(
+  const [hasNoAccess, setHasNoAccess] = useLocalStorageState<boolean>(
     "noAccess",
     "noAccess",
     false
@@ -62,7 +62,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
     "userDetails",
     undefined
   )
-  const [singleAccess, setSingleAccess] = useLocalStorageState<boolean>(
+  const [hasSingleRoleAccess, setHasSingleRoleAccess] = useLocalStorageState<boolean>(
     "singleAccess",
     "singleAccess",
     true
@@ -71,93 +71,10 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
    * Fetch and update the auth tokens
    */
 
-  const getTrackerUserInfo = async () => {
-    setError(null)
-
-    try {
-      console.log("calling tracker user info endpoint")
-      const response = await http.get(API_ENDPOINTS.TRACKER_USER_INFO)
-
-      if (response.status !== 200) {
-        throw new Error(
-          `Server did not return user info, response ${response.status}`
-        )
-      }
-
-      const data = response.data
-      console.log("received this from tracker user info", {response})
-
-      if (!data.userInfo) {
-        throw new Error("Server response did not contain data")
-      }
-
-      const userInfo: TrackerUserInfo = data.userInfo
-
-      if (userInfo) {
-        if (userInfo.roles_with_access) {
-          setRolesWithAccess(userInfo.roles_with_access)
-        } else {
-          const storedRolesWithAccess = localStorage.getItem("rolesWithAccess")
-          if (storedRolesWithAccess) {
-            setRolesWithAccess(JSON.parse(storedRolesWithAccess))
-          } else {
-            setRolesWithAccess([])
-          }
-        }
-      }
-
-      // The current role may be either undefined, or an empty object. If it's empty, set it undefined.
-      let currentlySelectedRole = userInfo.currently_selected_role
-      if (
-        !currentlySelectedRole ||
-        Object.keys(currentlySelectedRole).length === 0
-      ) {
-        currentlySelectedRole = undefined
-      }
-
-      setNoAccess(userInfo.roles_with_access.length === 0 && !currentlySelectedRole)
-      setRolesWithoutAccess(userInfo.roles_without_access || [])
-      setSelectedRole(currentlySelectedRole)
-      setUserDetails(userInfo.user_details)
-      setSingleAccess(userInfo.roles_with_access.length === 1)
-      if (userInfo.roles_with_access.length === 1 && userInfo.roles_without_access.length === 0) {
-        await updateSelectedRole(userInfo.roles_with_access[0])
-      }
-
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to fetch user info"
-      )
-      console.error("Error fetching tracker user info:", err)
-    }
-  }
-
-  const updateSelectedRole = async (newRole: RoleDetails) => {
-    try {
-      // Update selected role in the backend via the selectedRoleLambda endpoint using axios
-      console.log("calling set selected role")
-      const response = await http.put(
-        API_ENDPOINTS.SELECTED_ROLE,
-        {currently_selected_role: newRole}
-      )
-
-      console.log("set the selected role")
-      if (response.status !== 200) {
-        throw new Error("Failed to update the selected role")
-      }
-
-      // Update frontend state with selected role
-      setSelectedRole(newRole)
-    } catch (error) {
-      console.error("Error selecting role:", error)
-      alert("There was an issue selecting your role. Please notify the EPS team.")
-    }
-  }
-
   const clearAuthState = () => {
 
-    setNoAccess(true)
-    setSingleAccess(false)
+    setHasNoAccess(true)
+    setHasSingleRoleAccess(false)
     setSelectedRole(undefined)
     setUserDetails(undefined)
     setRolesWithAccess([])
@@ -173,16 +90,25 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
       console.log("Auth event payload:", payload)
       switch (payload.event) {
         // On successful signIn or token refresh, get the latest user state
-        case "signedIn":
+        case "signedIn": {
           console.log("Processing signedIn event")
           console.log("User %s logged in", payload.data.username)
-          await getTrackerUserInfo()
+          const trackerUserInfo = await getTrackerUserInfo()
+          console.log("got the following tracker user info", {trackerUserInfo})
+          setRolesWithAccess(trackerUserInfo.rolesWithAccess)
+          setRolesWithoutAccess(trackerUserInfo.rolesWithoutAccess)
+          setHasNoAccess(trackerUserInfo.hasNoAccess)
+          setSelectedRole(trackerUserInfo.selectedRole)
+          setUserDetails(trackerUserInfo.userDetails)
+          setHasSingleRoleAccess(trackerUserInfo.hasSingleRoleAccess)
+          setError(trackerUserInfo.error)
+
           setIsSignedIn(true)
           setIsSigningIn(false)
           setUser(payload.data.username)
-          setError(null)
           console.log("Finished the signedIn event ")
           break
+        }
         case "tokenRefresh":
           console.log("Processing tokenRefresh event")
           setError(null)
@@ -270,13 +196,12 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
       isSigningIn,
       rolesWithAccess,
       rolesWithoutAccess,
-      noAccess,
-      singleAccess,
+      hasNoAccess,
+      hasSingleRoleAccess,
       selectedRole,
       userDetails,
       cognitoSignIn,
       cognitoSignOut,
-      updateSelectedRole,
       clearAuthState
     }}>
       {children}

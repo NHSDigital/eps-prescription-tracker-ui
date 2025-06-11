@@ -30,13 +30,12 @@ const signedInAuthState: AuthContextType = {
   error: null,
   rolesWithAccess: [],
   rolesWithoutAccess: [],
-  noAccess: false,
-  singleAccess: false,
+  hasNoAccess: false,
+  hasSingleRoleAccess: false,
   selectedRole: undefined,
   userDetails: undefined,
   cognitoSignIn: mockCognitoSignIn,
   cognitoSignOut: mockCognitoSignOut,
-  updateSelectedRole: jest.fn(),
   clearAuthState: jest.fn()
 }
 

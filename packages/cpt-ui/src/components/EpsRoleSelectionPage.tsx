@@ -91,7 +91,7 @@ export default function RoleSelectionPage({
   useEffect(() => {
     console.log("in EpsRoleSelectionPage useEffect 0 with this auth", {auth})
     // Transform roles data for display
-    setRoleCardPropsWithAccess((!auth.noAccess)
+    setRoleCardPropsWithAccess((!auth.hasNoAccess)
       ? auth.rolesWithAccess.map((role: RoleDetails, index) => ({
         uuid: `role_with_access_${index}`,
         role,
@@ -125,7 +125,7 @@ export default function RoleSelectionPage({
     } else {
       redirecting.current = false
     }
-    if (auth.rolesWithAccess.length === 1 && auth.rolesWithoutAccess.length === 0) {
+    if (auth.hasSingleRoleAccess) {
       navigate(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
     }
   }, [auth.rolesWithAccess, auth.rolesWithoutAccess])
@@ -194,16 +194,16 @@ export default function RoleSelectionPage({
             <h1 className="nhsuk-heading-xl">
               <span role="text" data-testid="eps_header_selectYourRole">
                 <span className="nhsuk-title">
-                  {auth.noAccess ? titleNoAccess : title}
+                  {auth.hasNoAccess ? titleNoAccess : title}
                 </span>
                 <span className="nhsuk-caption-l nhsuk-caption--bottom">
                   <span className="nhsuk-u-visually-hidden"> - </span>
-                  {(!auth.noAccess) && caption}
+                  {(!auth.hasNoAccess) && caption}
                 </span>
               </span>
             </h1>
 
-            {auth.noAccess && <p>{captionNoAccess}</p>}
+            {auth.hasNoAccess && <p>{captionNoAccess}</p>}
             {auth.selectedRole && (
               <section aria-label="Login Information">
                 <InsetText data-testid="eps_select_your_role_pre_role_selected">
@@ -227,7 +227,7 @@ export default function RoleSelectionPage({
             )}
           </Col>
 
-          {(!auth.noAccess) && (roleCardPropsWithAccess.length > 0) && (
+          {(!auth.hasNoAccess) && (roleCardPropsWithAccess.length > 0) && (
             <Col width="two-thirds">
               <div className="section">
                 {roleCardPropsWithAccess
