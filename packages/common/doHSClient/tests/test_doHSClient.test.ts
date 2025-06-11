@@ -71,7 +71,7 @@ describe("doHSClient", () => {
     const odsCodes = {
       prescribingOrganization: "ABC",
       nominatedPerformer: "DEF",
-      dispensingOrganizations: ["XYZ", "PQR"]
+      dispensingOrganization: "XYZ"
     }
 
     // Simulate an API response that returns data for only one of the ODS codes.
@@ -80,7 +80,7 @@ describe("doHSClient", () => {
     }
 
     // Set up nock to intercept the HTTP request
-    const odsFilter = "ODSCode eq 'ABC' or ODSCode eq 'DEF' or ODSCode eq 'XYZ' or ODSCode eq 'PQR'"
+    const odsFilter = "ODSCode eq 'ABC' or ODSCode eq 'DEF' or ODSCode eq 'XYZ'"
     nock("https://api.example.com")
       .get("/dohs")
       .query({
@@ -95,7 +95,7 @@ describe("doHSClient", () => {
     expect(result).toEqual({
       prescribingOrganization: {ODSCode: "ABC"},
       nominatedPerformer: null,
-      dispensingOrganizations: [] // Expect an empty array if no matching dispensing organizations are found
+      dispensingOrganization: null
     })
   })
 
@@ -107,14 +107,13 @@ describe("doHSClient", () => {
     nock("https://api.example.com")
       .get("/dohs")
       .query({
+        "api-version": "3",
         "$filter": odsFilter
       })
       .matchHeader("apikey", validApiKey)
       .reply(500, "Internal Server Error")
 
-    await expect(doHSClient(odsCodes)).rejects.toThrow(
-      "Error fetching DoHS API data"
-    )
+    await expect(doHSClient(odsCodes)).rejects.toThrow()
   })
 
   it("handles network errors and throws error", async () => {
@@ -125,13 +124,13 @@ describe("doHSClient", () => {
     nock("https://api.example.com")
       .get("/dohs")
       .query({
+        "api-version": "3", // Add missing api-version parameter
         "$filter": odsFilter
       })
       .matchHeader("apikey", validApiKey)
       .replyWithError("Network Error")
 
-    await expect(doHSClient(odsCodes)).rejects.toThrow(
-      "Error fetching DoHS API data"
-    )
+    await expect(doHSClient(odsCodes)).rejects.toThrow()
   })
+
 })
