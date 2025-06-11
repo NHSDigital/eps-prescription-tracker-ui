@@ -1,5 +1,5 @@
 import {AxiosResponse} from "axios"
-import {Client} from "index"
+import {Client} from "./client"
 
 enum AxiosCallOutcomeType {
   SUCCESS = "SUCCESS",

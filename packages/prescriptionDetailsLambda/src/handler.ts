@@ -87,6 +87,12 @@ const lambdaHandler = async (
   // PROCESS REQUEST
   // ****************************************
 
+  if (roleId === undefined) {
+    throw new Error("roleId is undefined")
+  }
+  if (orgCode === undefined) {
+    throw new Error("orgCode is undefined")
+  }
   // Pass the gathered data in to the processor for the request
   return await processPrescriptionRequest(
     event,
