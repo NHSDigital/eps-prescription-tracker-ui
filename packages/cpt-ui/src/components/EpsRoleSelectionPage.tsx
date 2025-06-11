@@ -125,10 +125,10 @@ export default function RoleSelectionPage({
   }, [auth.isSigningIn])
 
   useEffect(() => {
-    if (auth.hasSingleRoleAccess) {
+    if (auth.hasSingleRoleAccess && auth.isSignedIn) {
       navigate(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
     }
-  }, [auth.hasSingleRoleAccess])
+  }, [auth.hasSingleRoleAccess, auth.isSignedIn])
 
   // Set login message when selected role is available
   useEffect(() => {
