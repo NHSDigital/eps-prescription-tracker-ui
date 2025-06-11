@@ -85,11 +85,9 @@ export const PrivacyNoticeStrings = {
     header: "8. How Long We Keep Your Data For",
     note: "We will retain your personal data for as long as necessary to fulfil the purposes for"
     + " which it was collected, including for legal or reporting requirements. Specific retention periods include:",
-    items: [
-      "account data, which is: retained for 2 years",
-      "system data, which is retained for 2 years",
-      "analytical data, which is: retained for 2 years"
-    ]
+    account: "account data, which is: retained for 2 years",
+    system: "system data, which is retained for 2 years",
+    analytics:"analytical data, which is: retained for 2 years"
   },
   storage: {
     header: "9. Where we store your data",

@@ -36,7 +36,7 @@ export default function PrivacyNoticePage() {
       </nav>
 
       <div className="nhsuk-grid-row">
-        <div className="nhsuk-grid-column-full">
+        <div className="nhsuk-grid-column-full" data-testid="privacy-notice-content">
           <h1 className="nhsuk-heading-xl">{PrivacyNoticeStrings.header}</h1>
 
           <h2 className="nhsuk-heading-l">{PrivacyNoticeStrings.intro.header}</h2>
@@ -117,7 +117,15 @@ export default function PrivacyNoticePage() {
             {PrivacyNoticeStrings.retention.note}
           </p>
           <ul>
-            {PrivacyNoticeStrings.retention.items.map((item, index) => <li key={index}>{item}</li>)}
+            <li>
+              {PrivacyNoticeStrings.retention.account}
+            </li>
+            <li>
+              {PrivacyNoticeStrings.retention.system}
+            </li>
+            <li>
+              {PrivacyNoticeStrings.retention.analytics}
+            </li>
           </ul>
 
           <h2 className="nhsuk-heading-l">
