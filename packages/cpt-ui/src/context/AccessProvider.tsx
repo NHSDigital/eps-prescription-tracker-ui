@@ -11,7 +11,7 @@ import {useAuth} from "./AuthProvider"
 
 import {FRONTEND_PATHS} from "@/constants/environment"
 
-export const AccessContext = createContext<null>(null)
+export const AccessContext = createContext<Record<string, never> | null>(null)
 
 export const AccessProvider = ({children}: { children: ReactNode }) => {
 
@@ -56,9 +56,7 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
   }, [auth.isSignedIn, auth.isSigningIn, auth.selectedRole])
 
   return (
-    <AccessContext.Provider
-      value={null}
-    >
+    <AccessContext.Provider value={{}}>
       {children}
     </AccessContext.Provider>
   )
