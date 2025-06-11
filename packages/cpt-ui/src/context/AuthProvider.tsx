@@ -51,7 +51,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
   const [hasNoAccess, setHasNoAccess] = useLocalStorageState<boolean>(
     "noAccess",
     "noAccess",
-    false
+    true
   )
   const [selectedRole, setSelectedRole] = useLocalStorageState<RoleDetails | undefined>(
     "selectedRole",
@@ -66,7 +66,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
   const [hasSingleRoleAccess, setHasSingleRoleAccess] = useLocalStorageState<boolean>(
     "singleAccess",
     "singleAccess",
-    true
+    false
   )
   /**
    * Fetch and update the auth tokens
@@ -82,6 +82,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
     setRolesWithoutAccess([])
     setUser(null)
     setIsSignedIn(false)
+    setIsSigningIn(false)
   }
   /**
    * Set up Hub listener to react to auth events
