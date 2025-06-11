@@ -26,7 +26,11 @@ export type HandlerParameters = {
   logger: Logger,
   pdsClient: pds.Client,
   usernameExtractor: (event: APIGatewayProxyEvent) => string,
-  authenticationFunction: (username: string) => Promise<{apigeeAccessToken: string, roleId: string, orgCode: string}>
+  authenticationFunction: (username: string) => Promise<{
+    apigeeAccessToken: string,
+    roleId: string | undefined,
+    orgCode: string | undefined
+  }>
 }
 
 // Lambda handler function
@@ -64,6 +68,12 @@ export const lambdaHandler = async (
     apigeeAccessToken = authResult.apigeeAccessToken
     roleId = authResult.roleId
     orgCode = authResult.orgCode
+    if (roleId === undefined) {
+      throw new Error("roleId is undefined")
+    }
+    if (orgCode === undefined) {
+      throw new Error("orgCode is undefined")
+    }
   } catch (error) {
     logger.error("Authentication failed", {error})
     return code(401).body({

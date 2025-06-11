@@ -2,25 +2,9 @@ import React from "react"
 import {Link} from "react-router-dom"
 import {PrivacyNoticeStrings} from "@/constants/ui-strings/PrivacyNoticeStrings"
 import {createEmailLink, createPhoneLink} from "@/helpers/contactFunctions"
+import {contactInfo} from "@/helpers/contactInfo"
 
 export default function PrivacyNoticePage() {
-
-  const contactInfo = {
-    emails: {
-      dpo: "england.dpo@nhs.net",
-      general: "england.contactus@nhs.net"
-    },
-    phones: {
-      ico: "0303 123 1113"
-    },
-    links: {
-      icoComplaint: "https://ico.org.uk/make-a-complaint/",
-      // eslint-disable-next-line max-len
-      personalData: "https://www.england.nhs.uk/contact-us/privacy-notice/find-out-how-to-access-your-personal-information-or-make-a-request-in-relation-to-other-rights/",
-      // eslint-disable-next-line max-len
-      legalLink: "https://digital.nhs.uk/about-nhs-digital/corporate-information-and-documents/directions-and-data-provision-notices/secretary-of-state-directions/spine-services-no-2-2014-direction"
-    }
-  }
 
   return (
     <main className="nhsuk-width-container nhsuk-u-margin-top-4">
@@ -81,7 +65,10 @@ export default function PrivacyNoticePage() {
             <li>{PrivacyNoticeStrings.usage.legal}</li>
           </ul>
 
-          <h2 className="nhsuk-heading-l">{PrivacyNoticeStrings.legal.header}</h2>
+          <h2 className="nhsuk-heading-l">#
+            {PrivacyNoticeStrings.legal.header}
+          </h2>
+          <p>{PrivacyNoticeStrings.legal.basis}</p>
           <ol>
             <li>
               {PrivacyNoticeStrings.legal.base1}
