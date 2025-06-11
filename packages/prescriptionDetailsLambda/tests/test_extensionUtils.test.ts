@@ -1,4 +1,4 @@
-/* eslint-disable max-len */
+
 import {Extension} from "fhir/r4"
 import {
   findExtensionByKey,

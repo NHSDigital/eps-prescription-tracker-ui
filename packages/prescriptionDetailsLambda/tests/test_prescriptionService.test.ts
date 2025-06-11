@@ -5,8 +5,6 @@ import nock from "nock"
 import type {APIGatewayProxyEvent} from "aws-lambda"
 import type {Logger} from "@aws-lambda-powertools/logger"
 
-import type {ApigeeDataResponse} from "../src/utils/types"
-
 // Mock uuid so that it is predictable.
 jest.unstable_mockModule("uuid", () => ({
   v4: jest.fn(() => "test-uuid")
@@ -36,7 +34,7 @@ jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => ({
 }))
 
 // Import some mock objects to use in our tests.
-import {mockAPIGatewayProxyEvent, mockFhirParticipant} from "./mockObjects"
+import {mockAPIGatewayProxyEvent} from "./mockObjects"
 import {Bundle, FhirResource} from "fhir/r4"
 
 const {
