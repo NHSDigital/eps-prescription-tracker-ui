@@ -41,6 +41,9 @@ export default function PrescriptionListPage() {
 
   useEffect(() => {
     const runSearch = async () => {
+      setLoading(true)
+      setShowNotFound(false) // Reset when search changes
+
       if (auth?.isAuthLoading) {
         console.log("Auth still loading, waiting...")
         return
@@ -66,68 +69,74 @@ export default function PrescriptionListPage() {
       } else {
         console.error("No query parameter provided.")
         navigate(FRONTEND_PATHS.PRESCRIPTION_NOT_FOUND)
-        return
-      }
-
-      const response = await http.get(API_ENDPOINTS.PRESCRIPTION_LIST, {
-        params: searchParams,
-        headers: {
-          Authorization: `Bearer ${auth?.idToken}`,
-          "X-Correlation-Id": uuidv4()
-        }
-      })
-
-      console.log("Response status", {status: response.status})
-      if (response.status === 404) {
-        console.error("No search results were returned")
-        setShowNotFound(true)
-        setLoading(false)
-        return
-      } else if (response.status !== 200) {
-        throw new Error(`Status Code: ${response.status}`)
-      }
-
-      let searchResults: SearchResponse = response.data
-
-      if (
-        searchResults.currentPrescriptions.length === 0
-        && searchResults.pastPrescriptions.length === 0
-        && searchResults.futurePrescriptions.length === 0
-      ) {
-        console.error("A patient was returned, but they do not have any prescriptions.", searchResults)
-        setShowNotFound(true)
         setLoading(false)
         return
       }
 
-      setCurrentPrescriptions(searchResults.currentPrescriptions)
-      setFuturePrescriptions(searchResults.futurePrescriptions)
-      setPastPrescriptions(searchResults.pastPrescriptions)
-      setPatientDetails(searchResults.patient)
-      setPrescriptionCount(
-        searchResults.pastPrescriptions.length +
-        searchResults.futurePrescriptions.length +
-        searchResults.currentPrescriptions.length
-      )
-      setTabData([
-        {
-          link: PRESCRIPTION_LIST_TABS.current.link(queryParams.toString()),
-          title: PRESCRIPTION_LIST_TABS.current.title(searchResults.currentPrescriptions.length)
-        },
-        {
-          link: PRESCRIPTION_LIST_TABS.future.link(queryParams.toString()),
-          title: PRESCRIPTION_LIST_TABS.future.title(searchResults.futurePrescriptions.length)
-        },
-        {
-          link: PRESCRIPTION_LIST_TABS.past.link(queryParams.toString()),
-          title: PRESCRIPTION_LIST_TABS.past.title(searchResults.pastPrescriptions.length)
+      try {
+        const response = await http.get(API_ENDPOINTS.PRESCRIPTION_LIST, {
+          params: searchParams,
+          headers: {
+            Authorization: `Bearer ${auth?.idToken}`,
+            "X-Correlation-Id": uuidv4()
+          }
+        })
+
+        console.log("Response status", {status: response.status})
+        if (response.status === 404) {
+          console.error("No search results were returned")
+          setShowNotFound(true)
+          setLoading(false)
+          return
+        } else if (response.status !== 200) {
+          throw new Error(`Status Code: ${response.status}`)
         }
-      ])
+
+        let searchResults: SearchResponse = response.data
+
+        if (
+          searchResults.currentPrescriptions.length === 0 &&
+          searchResults.pastPrescriptions.length === 0 &&
+          searchResults.futurePrescriptions.length === 0
+        ) {
+          console.error("A patient was returned, but they do not have any prescriptions.", searchResults)
+          setShowNotFound(true)
+          setLoading(false)
+          return
+        }
+
+        setCurrentPrescriptions(searchResults.currentPrescriptions)
+        setFuturePrescriptions(searchResults.futurePrescriptions)
+        setPastPrescriptions(searchResults.pastPrescriptions)
+        setPatientDetails(searchResults.patient)
+        setPrescriptionCount(
+          searchResults.pastPrescriptions.length +
+          searchResults.futurePrescriptions.length +
+          searchResults.currentPrescriptions.length
+        )
+        setTabData([
+          {
+            link: PRESCRIPTION_LIST_TABS.current.link(queryParams.toString()),
+            title: PRESCRIPTION_LIST_TABS.current.title(searchResults.currentPrescriptions.length)
+          },
+          {
+            link: PRESCRIPTION_LIST_TABS.future.link(queryParams.toString()),
+            title: PRESCRIPTION_LIST_TABS.future.title(searchResults.futurePrescriptions.length)
+          },
+          {
+            link: PRESCRIPTION_LIST_TABS.past.link(queryParams.toString()),
+            title: PRESCRIPTION_LIST_TABS.past.title(searchResults.pastPrescriptions.length)
+          }
+        ])
+        setLoading(false)
+      } catch (error) {
+        console.error("Error fetching prescription list", error)
+        setShowNotFound(true)
+        setLoading(false)
+      }
     }
 
-    setLoading(true)
-    setShowNotFound(false) // Reset when search changes
-    runSearch().catch(() => setShowNotFound(true)).finally(() => setLoading(false))
+    runSearch()
   }, [queryParams, auth?.idToken, auth?.isAuthLoading])
 
   if (loading) {
