@@ -29,6 +29,7 @@ export class WebACL extends Construct {
     })
 
     this.webAcl = new wafv2.CfnWebACL(this, "CloudfrontWebAcl", {
+      name: `${props.serviceName}-WebAcl`,
       defaultAction: {
         allow: {}
       },
