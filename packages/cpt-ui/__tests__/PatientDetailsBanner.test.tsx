@@ -19,12 +19,7 @@ const completeDetails: PatientDetails = {
   family: "Wolderton",
   gender: "male",
   dateOfBirth: "01-Nov-1988",
-  address: {
-    line1: "55 OAK STREET",
-    line2: "OAK LANE",
-    city: "Leeds",
-    postcode: "LS1 1XX"
-  }
+  address: "55 OAK STREET, OAK LANE, Leeds, LS1 1XX"
 }
 
 const minimumDetails: PatientDetails = {
@@ -46,13 +41,7 @@ const partialAddressDetails: PatientDetails = {
   family: "Wolderton",
   gender: "male",
   dateOfBirth: "01-Nov-1988",
-  // Only line1 and city are provided; line2 and postcode are missing.
-  address: {
-    line1: "55 Oak Street",
-    // line2 is omitted
-    city: "Leeds"
-    // postcode is omitted
-  }
+  address: "55 Oak Street, Leeds"
 }
 
 import PatientDetailsBanner from "@/components/PatientDetailsBanner"
