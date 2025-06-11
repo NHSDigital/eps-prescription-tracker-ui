@@ -74,34 +74,6 @@ describe("prescriptionService", () => {
 
   describe("extractOdsCodes", () => {
     it("should extract ODS codes correctly from a valid ApigeeDataResponse", () => {
-      // Create a sample ApigeeDataResponse with an author and actions.
-      const apigeeData: ApigeeDataResponse = {
-        author: {
-          identifier: {
-            value: "ODS_AUTHOR"
-          }
-        },
-        action: [
-          {
-            // This action will provide the nominatedPerformer.
-            participant: [mockFhirParticipant]
-          },
-          {
-            // This action has nested actions to simulate dispensing organizations.
-            action: [
-              {
-                title: "Dispense notification successful",
-                participant: [{identifier: {value: "ODS_DISPENSE"}}]
-              },
-              {
-                title: "Some other action",
-                participant: [{identifier: {value: "IGNORED"}}]
-              }
-            ]
-          }
-        ]
-      }
-
       const transformedApigeeData = {
         resourceType: "Bundle",
         entry: [
