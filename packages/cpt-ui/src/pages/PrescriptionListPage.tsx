@@ -100,6 +100,7 @@ export default function PrescriptionListPage() {
           searchResults.futurePrescriptions.length === 0
         ) {
           console.error("A patient was returned, but they do not have any prescriptions.", searchResults)
+          setPatientDetails(searchResults.patient)
           setShowNotFound(true)
           setLoading(false)
           return
