@@ -46,11 +46,8 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
 
   useEffect(() => {
     console.log("in accessProvider useEffect with this", {auth})
-
     const currentPath = window.location.pathname
-    console.log("we are on this path", currentPath)
     const onSelectYourRole = currentPath === `/site${FRONTEND_PATHS.SELECT_YOUR_ROLE}`
-    console.log(`value of onSelectYourRole ${onSelectYourRole}`)
     if (auth.isSigningIn && onSelectYourRole) {
       console.log("in sign in flow and on select your role so just returning")
       return

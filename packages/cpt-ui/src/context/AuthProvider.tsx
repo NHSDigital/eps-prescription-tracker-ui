@@ -83,7 +83,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
     setIsSignedIn(false)
   }
   /**
-   * Set up Hub listener to react to auth events and refresh state or get user information
+   * Set up Hub listener to react to auth events
    */
   useEffect(() => {
     const unsubscribe = Hub.listen("auth", async ({payload}) => {
@@ -149,7 +149,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
   }, [])
 
   /**
-   * Reconfigure Amplify on changes to authConfig, then update the user state.
+   * Reconfigure Amplify on initial state
    */
   useEffect(() => {
     console.log(`Reconfiguring auth provider on a reload`)
