@@ -40,7 +40,7 @@ export const PrivacyNoticeStrings = {
     + " we process your data to enable you to use and interact with our product",
     serviceImprovement: "service improvement - we analyse your usage patterns to understand how you use"
     + " our product and improve its functionality."
-    + "To do this we put small files called 'analytic cookies' on to your device using a software called"
+    + " To do this we put small files called 'analytic cookies' on to your device using a software called"
     + " Amazon CloudWatch RUM. These cookies are optional. The information collected includes:"
     + "the type of device you used, your browser type, your operating system, the date and time"
     + " you used the service and how you interacted with the service. For more information, please see our ",
