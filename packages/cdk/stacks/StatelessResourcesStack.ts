@@ -293,7 +293,8 @@ export class StatelessResourcesStack extends Stack {
       logLevel: logLevel,
       cloudwatchKmsKey: cloudwatchKmsKey,
       splunkDeliveryStream: splunkDeliveryStream,
-      splunkSubscriptionFilterRole: splunkSubscriptionFilterRole
+      splunkSubscriptionFilterRole: splunkSubscriptionFilterRole,
+      vpcId: vpcId
     })
 
     // --- Methods & Resources
