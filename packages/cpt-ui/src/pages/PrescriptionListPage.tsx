@@ -68,7 +68,7 @@ export default function PrescriptionListPage() {
         searchParams = {nhsNumber}
       } else {
         console.error("No query parameter provided.")
-        navigate(FRONTEND_PATHS.PRESCRIPTION_NOT_FOUND)
+        navigate(FRONTEND_PATHS.PATIENT_NOT_FOUND)
         setLoading(false)
         return
       }
