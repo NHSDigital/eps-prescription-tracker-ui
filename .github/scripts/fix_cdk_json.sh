@@ -111,6 +111,13 @@ if [ -z "${RUM_APP_NAME}" ]; then
         -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
 fi
 
+if [[ "$TARGET_ENVIRONMENT" == "int" || "$TARGET_ENVIRONMENT" == "prod" ]]; then
+    USE_BARE_DOMAIN=true
+else
+    USE_BARE_DOMAIN=false
+fi
+
+
 # go through all the key values we need to set
 fix_string_key serviceName "${SERVICE_NAME}"
 fix_string_key VERSION_NUMBER "${VERSION_NUMBER}"
@@ -140,7 +147,6 @@ if [ "$CDK_APP_NAME" == "StatefulResourcesApp" ]; then
 
     fix_string_key epsDomainName "${EPS_DOMAIN_NAME}"
     fix_string_key epsHostedZoneId "${EPS_HOSTED_ZONE_ID}"
-
     fix_boolean_number_key allowAutoDeleteObjects "${AUTO_DELETE_OBJECTS}"
     # we may not have cloudfront distribution id if its a first deployment
     if [ -n "${CLOUDFRONT_DISTRIBUTION_ID}" ]; then
@@ -156,6 +162,7 @@ if [ "$CDK_APP_NAME" == "StatefulResourcesApp" ]; then
         fix_string_key rumAppName "${RUM_APP_NAME}"
     fi
     fix_boolean_number_key allowLocalhostAccess "${ALLOW_LOCALHOST_ACCESS}"
+    fix_boolean_number_key useBareDomain "${USE_BARE_DOMAIN}"
 
 elif [ "$CDK_APP_NAME" == "StatelessResourcesApp" ]; then
     fix_string_key epsDomainName "${EPS_DOMAIN_NAME}"
