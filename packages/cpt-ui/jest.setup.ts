@@ -37,7 +37,6 @@ jest.mock("@/constants/environment", () => ({
     TRACKER_USER_INFO: "/api/tracker-user-info"
   },
   FRONTEND_PATHS: {
-    PRESCRIPTION_NOT_FOUND: "/prescription-not-found",
     PRESCRIPTION_LIST_CURRENT: "/prescription-list-current",
     PRESCRIPTION_LIST_FUTURE: "/prescription-list-future",
     PRESCRIPTION_LIST_PAST: "/prescription-list-past",
