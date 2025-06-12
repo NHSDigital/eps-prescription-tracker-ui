@@ -22,7 +22,7 @@ describe("Contact Helper Functions", () => {
 
       const link = result.getByRole("link")
       expect(link).toHaveAttribute("href", `mailto:${email}`)
-      expect(link).toHaveTextContent(text || email)
+      expect(link).toHaveTextContent(text ?? email)
     })
   })
 
@@ -77,7 +77,7 @@ describe("Contact Helper Functions", () => {
 
       const link = result.getByRole("link")
       expect(link).toHaveAttribute("href", `tel:${expectedHref}`)
-      expect(link).toHaveTextContent(text || phone)
+      expect(link).toHaveTextContent(text ?? phone)
     })
   })
 })

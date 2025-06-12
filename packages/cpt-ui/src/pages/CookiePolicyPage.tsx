@@ -65,7 +65,7 @@ const CookiePolicyPage = () => {
   const navigate = useNavigate()
 
   const getHomeLink = () => {
-    return isUserLoggedIn() ? "/search" : "/login"
+    return isUserLoggedIn() ? "/search-by-prescription-id" : "/login"
   }
 
   useEffect(() => {

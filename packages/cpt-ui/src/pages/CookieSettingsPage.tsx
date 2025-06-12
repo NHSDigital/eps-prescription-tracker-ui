@@ -6,7 +6,7 @@ import {isUserLoggedIn} from "@/helpers/cookiesFunctions"
 export default function CookieSettingsPage() {
 
   const getHomeLink = () => {
-    return isUserLoggedIn() ? "/search" : "/login"
+    return isUserLoggedIn() ? "/search-by-prescription-id" : "/login"
   }
   return (
     <main className="nhsuk-width-container nhsuk-u-margin-top-4">
