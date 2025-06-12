@@ -251,6 +251,7 @@ cdk-synth-stateless-resources-no-mock:
 	APIGEE_PERSONAL_DEMOGRAPHICS_ENDPOINT=foo \
 	APIGEE_DOHS_ENDPOINT=foo \
 	WEBACL_ATTRIBUTE_ARN=foo \
+	VPC_ID =foo \
 	JWT_KID=foo \
 	ROLE_ID=foo \
 	ALLOW_LOCALHOST_ACCESS=false \
@@ -331,6 +332,7 @@ cdk-synth-stateless-resources-mock:
 	MOCK_OIDC_JWKS_ENDPOINT=undefined \
 	USE_MOCK_OIDC=true \
 	WEBACL_ATTRIBUTE_ARN=foo \
+	VPC_ID=foo \
 	APIGEE_API_KEY=foo \
     APIGEE_API_SECRET=foo \
     APIGEE_PTL_DOHS_API_KEY=foo \
