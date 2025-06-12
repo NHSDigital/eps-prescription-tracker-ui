@@ -50,7 +50,7 @@ if [ "${DO_NOT_GET_AWS_EXPORT}" != "true" ]; then
 fi
 
 if [ -z "${EPS_DOMAIN_NAME}" ]; then
-    if [[ "$TARGET_ENVIRONMENT" == "int" || "$TARGET_ENVIRONMENT" == "prod" ]]; then
+    if [[ "$USE_BARE_DOMAIN" == "true" ]]; then
         EPS_DOMAIN_NAME=$(echo "$CF_LONDON_EXPORTS" | jq  -r '.Exports[] | select(.Name == "eps-route53-resources:CPT-domain") | .Value')
     else
         EPS_DOMAIN_NAME=$(echo "$CF_LONDON_EXPORTS" | jq  -r '.Exports[] | select(.Name == "eps-route53-resources:EPS-domain") | .Value')
@@ -110,13 +110,6 @@ if [ -z "${RUM_APP_NAME}" ]; then
         --arg EXPORT_NAME "${SERVICE_NAME}-stateful-resources:rum:rumApp:Name" \
         -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
 fi
-
-if [[ "$TARGET_ENVIRONMENT" == "int" || "$TARGET_ENVIRONMENT" == "prod" ]]; then
-    USE_BARE_DOMAIN=true
-else
-    USE_BARE_DOMAIN=false
-fi
-
 
 # go through all the key values we need to set
 fix_string_key serviceName "${SERVICE_NAME}"
