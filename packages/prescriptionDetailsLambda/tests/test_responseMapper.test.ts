@@ -45,84 +45,123 @@ describe("mergePrescriptionDetails", () => {
                 ]
               },
               {
-                url: "https://fhir.nhs.uk/StructureDefinition/Extension-EPS-PendingCancellations",
+                url: "https://fhir.nhs.uk/StructureDefinition/Extension-PendingCancellation",
                 extension: [
                   {url: "prescriptionPendingCancellation", valueBoolean: true}
                 ]
               }
             ],
-            contained: [
-              {
-                resourceType: "Patient",
-                identifier: [{value: "P123"}],
-                name: [{prefix: ["Mr."], given: ["John"], family: "Doe", suffix: ["Jr."]}],
-                gender: "male",
-                birthDate: "1980-01-01",
-                address: [{
-                  text: "123 Main St",
-                  line: ["123 Main St"],
-                  city: "Anytown",
-                  district: "AnyDistrict",
-                  postalCode: "12345",
-                  type: "physical",
-                  use: "home"
-                }]
-              },
-              {
-                resourceType: "MedicationRequest",
-                medicationCodeableConcept: {text: "Drug A"},
-                courseOfTherapyType: {coding: [{code: "Acute"}]},
-                dispenseRequest: {quantity: {value: 30}},
-                dosageInstruction: [{text: "Take one daily"}],
-                status: "active",
-                intent: "order",
-                subject: {},
-                extension: [
-                  {
-                    url: "https://fhir.nhs.uk/StructureDefinition/Extension-EPS-DispensingInformation",
-                    extension: [
-                      {url: "dispenseStatus", valueCoding: {code: "0007", display: "Item to be dispensed"}}
-                    ]
-                  },
-                  {
-                    url: "https://fhir.nhs.uk/StructureDefinition/Extension-EPS-PendingCancellations",
-                    extension: [
-                      {url: "lineItemPendingCancellation", valueBoolean: false},
-                      {url: "cancellationReason", valueCoding: {display: "None"}}
-                    ]
-                  }
-                ]
-              },
-              {
-                resourceType: "MedicationDispense",
-                medicationCodeableConcept: {text:  "Drug B"},
-                quantity: {value: 20},
-                dosageInstruction: [{text: "Take two daily"}],
-                status: "completed",
-                extension: [
-                  {
-                    url: "https://fhir.nhs.uk/StructureDefinition/Extension-EPS-TaskBusinessStatus",
-                    extension: [
-                      {url: "status", valueCoding: {code: "0001", display: "Item fully dispensed"}}
-                    ]
-                  },
-                  {
-                    url: "https://fhir.nhs.uk/StructureDefinition/Extension-DM-PrescriptionNonDispensingReason",
-                    valueCoding: {display: "Not available"}
-                  }
-                ]
-              }
-
-            ],
             action: [
               {
+                title: "Prescription Line Items(Medications)",
+                timingTiming: {
+                  repeat: {
+                    period: 28
+                  }
+                }
+              },
+              {
+                title: "Prescription status transitions",
                 action: [
                   {
                     title: "Prescription upload successful",
-                    code: [{coding: [{code: "MSG001", display: "Sent"}]}],
-                    timingDateTime: "2020-01-02T00:00:00Z"
+                    code: [
+                      {
+                        coding: [
+                          {
+                            system: "https://fhir.nhs.uk/CodeSystem/EPS-task-business-status",
+                            code: "MSG001",
+                            display: "Sent"
+                          }
+                        ]
+                      }
+                    ],
+                    timingDateTime: "2020-01-02T00:00:00Z",
+                    participant: [
+                      {
+                        extension: [
+                          {
+                            valueReference: {
+                              identifier: {
+                                value: "ODS456"
+                              }
+                            },
+                            url: ""
+                          }
+                        ]
+                      }
+                    ]
                   }
                 ]
+              }
+            ]
+          }
+        },
+        {
+          resource: {
+            resourceType: "Patient",
+            identifier: [{value: "P123"}],
+            name: [{prefix: ["Mr."], given: ["John"], family: "Doe", suffix: ["Jr."]}],
+            gender: "male",
+            birthDate: "1980-01-01",
+            address: [{
+              text: "123 Main St, Anytown, 12345",
+              line: ["123 Main St"],
+              city: "Anytown",
+              district: "AnyDistrict",
+              postalCode: "12345",
+              type: "physical",
+              use: "home"
+            }]
+          }
+        },
+        {
+          resource: {
+            resourceType: "MedicationRequest",
+            id: "med-req-1",
+            medicationCodeableConcept: {text: "Drug A"},
+            courseOfTherapyType: {coding: [{code: "Acute"}]},
+            dispenseRequest: {quantity: {value: 20}},
+            dosageInstruction: [{text: "Take two daily"}],
+            status: "active",
+            intent: "order",
+            subject: {},
+            extension: [
+              {
+                url: "https://fhir.nhs.uk/StructureDefinition/Extension-EPS-DispensingInformation",
+                extension: [
+                  {url: "dispenseStatus", valueCoding: {code: "0007", display: "Item to be dispensed"}}
+                ]
+              },
+              {
+                url: "https://fhir.nhs.uk/StructureDefinition/Extension-PendingCancellation",
+                extension: [
+                  {url: "lineItemPendingCancellation", valueBoolean: false},
+                  {url: "cancellationReason", valueCoding: {display: "None"}}
+                ]
+              }
+            ]
+          }
+        },
+        {
+          resource: {
+            resourceType: "MedicationDispense",
+            id: "dispense-1",
+            medicationCodeableConcept: {text: "Drug B"},
+            quantity: {value: 20},
+            dosageInstruction: [{text: "Take two daily"}],
+            status: "completed",
+            authorizingPrescription: [{
+              reference: "MedicationRequest/med-req-1"
+            }],
+            extension: [
+              {
+                url: "https://fhir.nhs.uk/StructureDefinition/Extension-EPS-TaskBusinessStatus",
+                valueCoding: {code: "0001", display: "Item fully dispensed"}
+              },
+              {
+                url: "https://fhir.nhs.uk/StructureDefinition/Extension-DM-PrescriptionNonDispensingReason",
+                valueCoding: {display: "Not available"}
               }
             ]
           }
@@ -161,7 +200,7 @@ describe("mergePrescriptionDetails", () => {
           }
         ]
       },
-      dispensingOrganizations: [
+      dispensingOrganization:
         {
           OrganisationName: "Dispensing Org One",
           ODSCode: "ODS789",
@@ -176,23 +215,7 @@ describe("mergePrescriptionDetails", () => {
               ContactType: "home"
             }
           ]
-        },
-        {
-          OrganisationName: "Dispensing Org Two",
-          ODSCode: "ODS912",
-          Address1: "4 Dispense Rd",
-          City: "Dispense City",
-          Postcode: "PC912",
-          Contacts: [
-            {
-              ContactMethodType: "Telephone",
-              ContactValue: "9992223333",
-              ContactAvailabilityType: "9-5",
-              ContactType: "home"
-            }
-          ]
         }
-      ]
     }
 
     const result = mergePrescriptionDetails(prescriptionDetails, doHSData)
@@ -206,12 +229,7 @@ describe("mergePrescriptionDetails", () => {
       suffix: "Jr.",
       gender: "male",
       dateOfBirth: "1980-01-01",
-      address: {
-        line1: "123 Main St",
-        line2: "",
-        city: "Anytown",
-        postcode: "12345"
-      }
+      address: "123 Main St, Anytown, 12345"
     })
 
     expect(result.prescriptionId).toBe("RX123")
@@ -220,33 +238,37 @@ describe("mergePrescriptionDetails", () => {
     expect(result.issueDate).toBe("2020-01-01T00:00:00Z")
     expect(result.instanceNumber).toBe(2)
     expect(result.maxRepeats).toBe(5)
-    expect(result.daysSupply).toBe("Unknown")
+    expect(result.daysSupply).toBe("28")
     expect(result.prescriptionPendingCancellation).toBe(true)
 
     // Check prescribed items
     expect(result.prescribedItems).toHaveLength(1)
-    expect(result.prescribedItems[0].itemDetails).toEqual({
+    expect(result.prescribedItems[0]).toEqual({
       medicationName: "Drug A",
-      quantity: "30",
-      dosageInstructions: "Take one daily",
+      quantity: "20",
+      dosageInstructions: "Take two daily",
       epsStatusCode: "0007",
       nhsAppStatus: undefined,
       itemPendingCancellation: false,
-      cancellationReason: "None"
+      cancellationReason: null
     })
 
     // Check dispensed items
     expect(result.dispensedItems).toHaveLength(1)
-    expect(result.dispensedItems[0].itemDetails).toEqual({
+    expect(result.dispensedItems[0]).toEqual({
       medicationName: "Drug B",
       quantity: "20",
       dosageInstructions: "Take two daily",
       epsStatusCode: "0001",
       nhsAppStatus: undefined,
       itemPendingCancellation: false,
-      cancellationReason: undefined,
+      cancellationReason: null,
       notDispensedReason: "Not available",
-      initiallyPrescribed: undefined
+      initiallyPrescribed: {
+        dosageInstructions: "Take two daily",
+        medicationName: "Drug A",
+        quantity: "20"
+      }
     })
 
     // Check message history
@@ -257,38 +279,32 @@ describe("mergePrescriptionDetails", () => {
       organisationName: "Nominated Performer Org",
       organisationODS: "ODS456",
       newStatusCode: "MSG001",
-      dispenseNotification: undefined
+      dispenseNotification: []
     })
 
     // Check prescriber organisation
     expect(result.prescriberOrganisation).toEqual({
-      organisationSummaryObjective: {
-        name: "Prescriber Org",
-        odsCode: "ODS123",
-        address: "1 Prescriber Rd, Presc City, PC123",
-        telephone: "0123456789",
-        prescribedFrom: "England"
-      }
+      name: "Prescriber Org",
+      odsCode: "ODS123",
+      address: "1 Prescriber Rd, Presc City, PC123",
+      telephone: "0123456789",
+      prescribedFrom: "England"
     })
 
     // Check nominated dispenser
     expect(result.nominatedDispenser).toEqual({
-      organisationSummaryObjective: {
-        name: "Nominated Performer Org",
-        odsCode: "ODS456",
-        address: "2 Performer Rd, Perform City, PC456",
-        telephone: "0987654321"
-      }
+      name: "Nominated Performer Org",
+      odsCode: "ODS456",
+      address: "2 Performer Rd, Perform City, PC456",
+      telephone: "0987654321"
     })
 
     // Check current dispenser
     expect(result.currentDispenser).toEqual({
-      organisationSummaryObjective: {
-        name: "Dispensing Org One",
-        odsCode: "ODS789",
-        address: "3 Dispense Rd, Dispense City, PC789",
-        telephone: "1112223333"
-      }
+      name: "Dispensing Org One",
+      odsCode: "ODS789",
+      address: "3 Dispense Rd, Dispense City, PC789",
+      telephone: "1112223333"
     })
   })
 
@@ -396,41 +412,43 @@ describe("mergePrescriptionDetails", () => {
           resource: {
             resourceType: "RequestGroup",
             intent: "order",
-            status: "active",
-            contained: [
-              {
-                resourceType: "Patient",
-                identifier: [{value: "P111"}],
-                name: [{prefix: ["Dr."], given: ["Alice"], family: "Smith", suffix: ["PhD"]}],
-                gender: "female",
-                birthDate: "1975-07-07",
-                address: [{
-                  text: "789 First St",
-                  line: ["789 First St"],
-                  city: "CityOne",
-                  district: "DistrictOne",
-                  postalCode: "11111",
-                  type: "physical",
-                  use: "home"
-                }]
-              },
-              {
-                resourceType: "Patient",
-                identifier: [{value: "P222"}],
-                name: [{prefix: ["Mr."], given: ["Bob"], family: "Jones", suffix: []}],
-                gender: "male",
-                birthDate: "1985-08-08",
-                address: [{
-                  text: "101 Second St",
-                  line: ["101 Second St"],
-                  city: "CityTwo",
-                  district: "DistrictTwo",
-                  postalCode: "22222",
-                  type: "physical",
-                  use: "home"
-                }]
-              }
-            ]
+            status: "active"
+          }
+        },
+        {
+          resource: {
+            resourceType: "Patient",
+            identifier: [{value: "P111"}],
+            name: [{prefix: ["Dr."], given: ["Alice"], family: "Smith", suffix: ["PhD"]}],
+            gender: "female",
+            birthDate: "1975-07-07",
+            address: [{
+              text: "789 First St, CityOne, 11111",
+              line: ["789 First St"],
+              city: "CityOne",
+              district: "DistrictOne",
+              postalCode: "11111",
+              type: "physical",
+              use: "home"
+            }]
+          }
+        },
+        {
+          resource: {
+            resourceType: "Patient",
+            identifier: [{value: "P222"}],
+            name: [{prefix: ["Mr."], given: ["Bob"], family: "Jones", suffix: []}],
+            gender: "male",
+            birthDate: "1985-08-08",
+            address: [{
+              text: "101 Second St, CityTwo, 22222",
+              line: ["101 Second St"],
+              city: "CityTwo",
+              district: "DistrictTwo",
+              postalCode: "22222",
+              type: "physical",
+              use: "home"
+            }]
           }
         }
       ]
@@ -447,12 +465,7 @@ describe("mergePrescriptionDetails", () => {
       family: "Smith",
       gender: "female",
       dateOfBirth: "1975-07-07",
-      address: {
-        line1: "789 First St",
-        line2: "",
-        city: "CityOne",
-        postcode: "11111"
-      }
+      address: "789 First St, CityOne, 11111"
     })
   })
 
@@ -468,47 +481,115 @@ describe("mergePrescriptionDetails", () => {
             status: "active",
             identifier: [{value: "RX555"}],
             authoredOn: "2022-02-02T00:00:00Z",
-            contained: [],
             action: [
               {
+                title: "Prescription status transitions",
                 action: [
                   {
                     title: "Dispense notification successful",
-                    code: [{coding: [{code: "MSG002", display: "Dispatched"}]}],
                     timingDateTime: "2022-02-03T00:00:00Z",
-                    action: [
+                    code: [
                       {
-                        resource: {reference: "Dispense/123"}
+                        coding: [
+                          {
+                            system: "https://tools.ietf.org/html/rfc4122",
+                            code: "notification-id-123"
+                          }
+                        ]
                       },
                       {
-                        resource: {reference: "Dispense/456"}
+                        coding: [
+                          {
+                            system: "https://fhir.nhs.uk/CodeSystem/EPS-task-business-status",
+                            code: "0003"
+                          }
+                        ]
+                      }
+                    ],
+                    participant: [
+                      {
+                        extension: [
+                          {
+                            valueReference: {
+                              identifier: {
+                                value: "ODS000"
+                              }
+                            },
+                            url: ""
+                          }
+                        ]
+                      }
+                    ],
+                    action: [
+                      {
+                        resource: {reference: "MedicationDispense/123"}
                       }
                     ]
                   },
                   {
                     title: "Dispense notification successful",
                     timingDateTime: "2025-02-21T11:42:06.000Z",
-                    participant: [
+                    code: [
                       {
-                        identifier: {
-                          system: "https://fhir.nhs.uk/Id/ods-organization-code",
-                          value: "FA565"
-                        }
-                      }
-                    ],
-                    code: [{coding: [{code: "0006", display: "Dispensed"}]}],
-                    action: [
-                      {
-                        resource: {reference: "Dispense/789"}
+                        coding: [
+                          {
+                            system: "https://tools.ietf.org/html/rfc4122",
+                            code: "notification-id-456"
+                          }
+                        ]
                       },
                       {
-                        resource: {reference: "Dispense/012"}
+                        coding: [
+                          {
+                            system: "https://fhir.nhs.uk/CodeSystem/EPS-task-business-status",
+                            code: "0003"
+                          }
+                        ]
+                      }
+                    ],
+                    participant: [
+                      {
+                        extension: [
+                          {
+                            valueReference: {
+                              identifier: {
+                                value: "FA565"
+                              }
+                            },
+                            url: ""
+                          }
+                        ]
+                      }
+                    ],
+                    action: [
+                      {
+                        resource: {reference: "MedicationDispense/789"}
                       }
                     ]
                   }
                 ]
               }
             ]
+          }
+        },
+        {
+          resource: {
+            resourceType: "MedicationDispense",
+            id: "123",
+            medicationCodeableConcept: {text: "Medication A"},
+            quantity: {value: 10, unit: "tablets"},
+            dosageInstruction: [{text: "Take one daily"}],
+            status: "completed"
+          }
+        },
+        {
+          resource: {
+            resourceType: "MedicationDispense",
+            id: "789",
+            medicationCodeableConcept: {text: "Medication B"},
+            quantity: {value: 20, unit: "capsules"},
+            dosageInstruction: [{text: "Take two daily"}],
+            status: "completed"
           }
         }
       ]
@@ -540,8 +621,13 @@ describe("mergePrescriptionDetails", () => {
       sentDateTime: "2022-02-03T00:00:00Z",
       organisationName: "Nominated Org",
       organisationODS: "ODS000",
-      newStatusCode: "MSG002",
-      dispenseNotification: undefined
+      newStatusCode: "0003",
+      dispenseNotification: [{
+        dosageInstruction: "Take one daily",
+        id: "notification-id-123",
+        medicationName: "Medication A",
+        quantity: "10 tablets"
+      }]
     })
   })
 
@@ -579,19 +665,17 @@ describe("mergePrescriptionDetails", () => {
           }
         ]
       }
-      // nominatedPerformer and dispensingOrganizations are missing
+      // nominatedPerformer and dispensingOrganization are missing
     }
 
     const result = mergePrescriptionDetails(mockBundle, partialDoHSData)
 
     expect(result.prescriberOrganisation).toEqual({
-      organisationSummaryObjective: {
-        name: "Only Prescriber Org",
-        odsCode: "ODS111",
-        address: "1 Only Rd, Solo City, SC111",
-        telephone: "111-222-3333",
-        prescribedFrom: "Unknown"
-      }
+      name: "Only Prescriber Org",
+      odsCode: "ODS111",
+      address: "1 Only Rd, Solo City, SC111",
+      telephone: "111-222-3333",
+      prescribedFrom: "Unknown"
     })
     expect(result.nominatedDispenser).toBeUndefined()
     expect(result.currentDispenser).toBeUndefined() // Implementation returns undefined, not []
@@ -608,93 +692,81 @@ describe("mergePrescriptionDetails", () => {
             intent: "order",
             status: "active",
             identifier: [{value: "RX888"}],
-            authoredOn: "2023-04-04T00:00:00Z",
-            contained: [
+            authoredOn: "2023-04-04T00:00:00Z"
+          }
+        },
+        {
+          resource: {
+            resourceType: "MedicationRequest",
+            medicationCodeableConcept: {text: "Drug X"},
+            dispenseRequest: {quantity: {value: 10}},
+            dosageInstruction: [{text: "Once daily"}],
+            status: "active",
+            intent: "order",
+            subject: {},
+            statusReason: {
+              text: "Reason X"
+            },
+            extension: [
               {
-                resourceType: "MedicationRequest",
-                medicationCodeableConcept: {coding: [{display: "Drug X"}]},
-                dispenseRequest: {quantity: {value: 10}},
-                dosageInstruction: [{text: "Once daily"}],
-                status: "active",
-                intent: "order",
-                subject: {},
+                url: "https://fhir.nhs.uk/StructureDefinition/Extension-EPS-DispensingInformation",
                 extension: [
-                  {
-                    url: "https://fhir.nhs.uk/StructureDefinition/Extension-EPS-DispensingInformation",
-                    extension: [
-                      {url: "dispenseStatus", valueCoding: {code: "0007", display: "Item to be dispensed"}}
-                    ]
-                  },
-                  {
-                    url: "https://fhir.nhs.uk/StructureDefinition/Extension-EPS-PendingCancellations",
-                    extension: [
-                      {url: "lineItemPendingCancellation", valueBoolean: true},
-                      {url: "cancellationReason", valueCoding: {display: "Reason X"}}
-                    ]
-                  }
+                  {url: "dispenseStatus", valueCoding: {code: "0007", display: "Item to be dispensed"}}
                 ]
               },
               {
-                resourceType: "MedicationRequest",
-                medicationCodeableConcept: {coding: [{display: "Drug Y"}]},
-                dispenseRequest: {quantity: {value: 20}},
-                dosageInstruction: [{text: "Twice daily"}],
-                status: "completed",
-                intent: "order",
-                subject: {},
+                url: "https://fhir.nhs.uk/StructureDefinition/Extension-PendingCancellation",
                 extension: [
-                  {
-                    url: "https://fhir.nhs.uk/StructureDefinition/Extension-EPS-DispensingInformation",
-                    extension: [
-                      {url: "dispenseStatus", valueCoding: {code: "0001", display: "Item fully dispensed"}}
-                    ]
-                  },
-                  {
-                    url: "https://fhir.nhs.uk/StructureDefinition/Extension-EPS-PendingCancellations",
-                    extension: [
-                      {url: "lineItemPendingCancellation", valueBoolean: false},
-                      {url: "cancellationReason", valueCoding: {display: "None"}}
-                    ]
-                  }
+                  {url: "lineItemPendingCancellation", valueBoolean: true},
+                  {url: "cancellationReason", valueCoding: {display: "Reason X"}}
+                ]
+              }
+            ]
+          }
+        },
+        {
+          resource: {
+            resourceType: "MedicationRequest",
+            medicationCodeableConcept: {text: "Drug Y"},
+            dispenseRequest: {quantity: {value: 20}},
+            dosageInstruction: [{text: "Twice daily"}],
+            status: "completed",
+            intent: "order",
+            subject: {},
+            extension: [
+              {
+                url: "https://fhir.nhs.uk/StructureDefinition/Extension-EPS-DispensingInformation",
+                extension: [
+                  {url: "dispenseStatus", valueCoding: {code: "0001", display: "Item fully dispensed"}}
                 ]
               },
               {
-                resourceType: "MedicationDispense",
-                medicationCodeableConcept: {coding: [{display: "Drug Z"}]},
-                quantity: {value: 15},
-                dosageInstruction: [{text: "Three times daily"}],
-                status: "completed",
+                url: "https://fhir.nhs.uk/StructureDefinition/Extension-PendingCancellation",
                 extension: [
-                  {
-                    url: "https://fhir.nhs.uk/StructureDefinition/Extension-EPS-TaskBusinessStatus",
-                    extension: [
-                      {url: "status", valueCoding: {code: "0001", display: "Item fully dispensed"}}
-                    ]
-                  },
-                  {
-                    url: "https://fhir.nhs.uk/StructureDefinition/Extension-DM-PrescriptionNonDispensingReason",
-                    valueCoding: {display: "Not available"}
-                  }
+                  {url: "lineItemPendingCancellation", valueBoolean: false},
+                  {url: "cancellationReason", valueCoding: {display: "None"}}
                 ]
-              },
+              }
+            ]
+          }
+        },
+        {
+          resource: {
+            resourceType: "MedicationDispense",
+            id: "dispense-x",
+            medicationCodeableConcept: {text: "Drug Z"},
+            quantity: {value: 15},
+            status: "completed",
+            authorizingPrescription: [{
+              reference: "MedicationRequest/med-req-x"
+            }],
+            statusReasonCodeableConcept: {
+              text: "Not available"
+            },
+            extension: [
               {
-                resourceType: "MedicationDispense",
-                medicationCodeableConcept: {coding: [{display: "Drug W"}]},
-                quantity: {value: 25},
-                dosageInstruction: [{text: "Four times daily"}],
-                status: "in-progress",
-                extension: [
-                  {
-                    url: "https://fhir.nhs.uk/StructureDefinition/Extension-EPS-TaskBusinessStatus",
-                    extension: [
-                      {url: "status", valueCoding: {code: "0003", display: "Item dispensed - partial"}}
-                    ]
-                  },
-                  {
-                    url: "https://fhir.nhs.uk/StructureDefinition/Extension-DM-PrescriptionNonDispensingReason",
-                    valueCoding: {display: "Unavailable"}
-                  }
-                ]
+                url: "https://fhir.nhs.uk/StructureDefinition/Extension-EPS-TaskBusinessStatus",
+                valueCoding: {code: "0001", display: "Item fully dispensed"}
               }
             ]
           }
@@ -705,7 +777,7 @@ describe("mergePrescriptionDetails", () => {
     const result = mergePrescriptionDetails(mockBundle)
 
     expect(result.prescribedItems).toHaveLength(2)
-    expect(result.prescribedItems[0].itemDetails).toEqual({
+    expect(result.prescribedItems[0]).toEqual({
       medicationName: "Drug X",
       quantity: "10",
       dosageInstructions: "Once daily",
@@ -714,40 +786,33 @@ describe("mergePrescriptionDetails", () => {
       itemPendingCancellation: true,
       cancellationReason: "Reason X"
     })
-    expect(result.prescribedItems[1].itemDetails).toEqual({
+    expect(result.prescribedItems[1]).toEqual({
       medicationName: "Drug Y",
       quantity: "20",
       dosageInstructions: "Twice daily",
       epsStatusCode: "0001",
       nhsAppStatus: undefined,
       itemPendingCancellation: false,
-      cancellationReason: "None"
+      cancellationReason: null
     })
 
-    expect(result.dispensedItems).toHaveLength(2)
-    expect(result.dispensedItems[0].itemDetails).toEqual({
+    expect(result.dispensedItems).toHaveLength(1)
+    expect(result.dispensedItems[0]).toEqual({
       medicationName: "Drug Z",
       quantity: "15",
-      dosageInstructions: "Three times daily",
+      dosageInstructions: "Once daily",
       epsStatusCode: "0001",
       nhsAppStatus: undefined,
-      itemPendingCancellation: false,
-      cancellationReason: undefined,
+      itemPendingCancellation: true,
+      cancellationReason: "Reason X",
       notDispensedReason: "Not available",
-      initiallyPrescribed: undefined
-    })
-    expect(result.dispensedItems[1].itemDetails).toEqual({
-      medicationName: "Drug W",
-      quantity: "25",
-      dosageInstructions: "Four times daily",
-      epsStatusCode: "0003",
-      nhsAppStatus: undefined,
-      itemPendingCancellation: false,
-      cancellationReason: undefined,
-      notDispensedReason: "Unavailable",
-      initiallyPrescribed: undefined
-    })
+      initiallyPrescribed: {
+        medicationName: "Drug X",
+        quantity: "10",
+        dosageInstructions: "Once daily"
 
+      }
+    })
   })
 
   it("should handle different typeCode values for prescriber organisation mapping", () => {
@@ -794,7 +859,7 @@ describe("mergePrescriptionDetails", () => {
     }
 
     const resultWales = mergePrescriptionDetails(mockBundleWales, doHSDataWales)
-    expect(resultWales.prescriberOrganisation?.organisationSummaryObjective.prescribedFrom).toBe("Wales")
+    expect(resultWales.prescriberOrganisation?.prescribedFrom).toBe("Wales")
 
     // Test with typeCode "03" should yield "Unknown"
     const mockBundleUnknown: Bundle<FhirResource> = {
@@ -839,7 +904,7 @@ describe("mergePrescriptionDetails", () => {
     }
 
     const resultUnknown = mergePrescriptionDetails(mockBundleUnknown, doHSDataUnknown)
-    expect(resultUnknown.prescriberOrganisation?.organisationSummaryObjective.prescribedFrom).toBe("Unknown")
+    expect(resultUnknown.prescriberOrganisation?.prescribedFrom).toBe("Unknown")
   })
 
   it("should handle MedicationRequest and MedicationDispense resources with missing fields gracefully", () => {
@@ -853,31 +918,33 @@ describe("mergePrescriptionDetails", () => {
             intent: "order",
             status: "active",
             identifier: [{value: "RXIncomplete"}],
-            authoredOn: "2023-07-07T00:00:00Z",
-            contained: [
+            authoredOn: "2023-07-07T00:00:00Z"
+          }
+        },
+        {
+          resource: {
+            resourceType: "MedicationRequest",
+            // missing medicationCodeableConcept, dispenseRequest, dosageInstruction
+            status: "on-hold",
+            intent: "order",
+            subject: {},
+            extension: [
               {
-                resourceType: "MedicationRequest",
-                // missing medicationCodeableConcept, dispenseRequest, dosageInstruction
-                status: "on-hold",
-                intent: "order",
-                subject: {},
+                url: "https://fhir.nhs.uk/StructureDefinition/Extension-PendingCancellation",
                 extension: [
-                  {
-                    url: "https://fhir.nhs.uk/StructureDefinition/Extension-EPS-PendingCancellations",
-                    extension: [
-                      {url: "lineItemPendingCancellation", valueBoolean: false}
-                      // missing cancellationReason
-                    ]
-                  }
+                  {url: "lineItemPendingCancellation", valueBoolean: false}
+                  // missing cancellationReason
                 ]
-              },
-              {
-                resourceType: "MedicationDispense",
-                // missing medicationCodeableConcept, quantity, dosageInstruction
-                status: "entered-in-error"
-                // no extension for non-dispensing reason
               }
             ]
+          }
+        },
+        {
+          resource: {
+            resourceType: "MedicationDispense",
+            // missing medicationCodeableConcept, quantity, dosageInstruction
+            status: "entered-in-error"
+            // no extension for non-dispensing reason
           }
         }
       ]
@@ -886,25 +953,25 @@ describe("mergePrescriptionDetails", () => {
     const result = mergePrescriptionDetails(mockBundle)
 
     expect(result.prescribedItems).toHaveLength(1)
-    expect(result.prescribedItems[0].itemDetails).toEqual({
+    expect(result.prescribedItems[0]).toEqual({
       medicationName: "Unknown",
       quantity: "Unknown",
       dosageInstructions: "Unknown",
       epsStatusCode: "unknown",
       nhsAppStatus: undefined,
       itemPendingCancellation: false,
-      cancellationReason: undefined
+      cancellationReason: null
     })
 
     expect(result.dispensedItems).toHaveLength(1)
-    expect(result.dispensedItems[0].itemDetails).toEqual({
+    expect(result.dispensedItems[0]).toEqual({
       medicationName: "Unknown",
       quantity: "Unknown",
       dosageInstructions: "Unknown",
       epsStatusCode: "unknown",
       nhsAppStatus: undefined,
       itemPendingCancellation: false,
-      cancellationReason: undefined,
+      cancellationReason: null,
       notDispensedReason: undefined,
       initiallyPrescribed: undefined
     })

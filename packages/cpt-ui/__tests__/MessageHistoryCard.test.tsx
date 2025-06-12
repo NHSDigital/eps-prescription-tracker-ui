@@ -8,7 +8,7 @@ export const STRINGS = {
   NEW_STATUS: "New status:",
   ODS_TEXT: "ODS:",
   DISPENSE_NOTIFICATION_INFO: "Dispense notification information",
-  DISPENSE_NOTIFICATION_ID: "Dispense notification ID:",
+  DISPENSE_NOTIFICATION_ID: "Dispense notification id:",
   PRESCRIPTION_ITEMS: "Prescription items:",
   QUANTITY: "Quantity:",
   INSTRUCTIONS: "Instructions:"
@@ -36,13 +36,13 @@ describe("MessageHistoryCard", () => {
       newStatusCode: "0006",
       dispenseNotification: [
         {
-          ID: "abc123",
+          id: "abc123",
           medicationName: "Medication 1",
           quantity: "10 tablets",
           dosageInstruction: "Take once daily"
         },
         {
-          ID: "abc123",
+          id: "abc123",
           medicationName: "Medication 2",
           quantity: "20 tablets",
           dosageInstruction: "Take twice daily"
@@ -86,7 +86,12 @@ describe("MessageHistoryCard", () => {
 
     // Dispense Notification Details
     expect(screen.getByText("Dispense notification information")).toBeInTheDocument()
-    expect(screen.getByText("Dispense notification ID: abc123")).toBeInTheDocument()
+    const elements = screen.getAllByText((_content, element) => {
+      const textContent = element?.textContent || ""
+      return textContent.includes("Dispense notification ID:") &&
+             textContent.includes("abc123")
+    })
+    expect(elements.length).toBeGreaterThan(0)
     expect(screen.getByText("Prescription items:")).toBeInTheDocument()
 
     // Items inside the dispense notification
@@ -142,7 +147,7 @@ describe("MessageHistoryCard", () => {
         organisationODS: "ABC123",
         newStatusCode: "0002",
         dispenseNotification: [{
-          ID: "abc",
+          id: "abc",
           medicationName: "Something",
           quantity: "1",
           dosageInstruction: "Take it"

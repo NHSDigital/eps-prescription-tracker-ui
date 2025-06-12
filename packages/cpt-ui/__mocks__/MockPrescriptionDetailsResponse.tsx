@@ -28,28 +28,22 @@ export const mockPrescriptionDetailsResponse: PrescriptionDetailsResponse = {
   dispensedItems: [],
   messageHistory: [],
   prescriberOrganisation: {
-    organisationSummaryObjective: {
-      name: "Fiji surgery",
-      odsCode: "FI05964",
-      address: "90 YARROW LANE, FINNSBURY, E45 T46",
-      telephone: "01232 231321",
-      prescribedFrom: "England"
-    }
+    name: "Fiji surgery",
+    odsCode: "FI05964",
+    address: "90 YARROW LANE, FINNSBURY, E45 T46",
+    telephone: "01232 231321",
+    prescribedFrom: "England"
   },
   nominatedDispenser: {
-    organisationSummaryObjective: {
-      name: "Some Nominated Dispenser",
-      odsCode: "NOM123",
-      address: "Nominated Address",
-      telephone: "1234567890"
-    }
+    name: "Some Nominated Dispenser",
+    odsCode: "NOM123",
+    address: "Nominated Address",
+    telephone: "1234567890"
   },
-  currentDispenser: [{
-    organisationSummaryObjective: {
-      name: "Cohens chemist",
-      odsCode: "FV519",
-      address: "22 RUE LANE, CHISWICK, KT19 D12",
-      telephone: "01943 863158"
-    }
-  }]
+  currentDispenser: {
+    name: "Cohens chemist",
+    odsCode: "FV519",
+    address: "22 RUE LANE, CHISWICK, KT19 D12",
+    telephone: "01943 863158"
+  }
 }

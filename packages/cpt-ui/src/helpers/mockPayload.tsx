@@ -31,7 +31,7 @@ export const getMockPayload = (prescriptionId: string): PrescriptionDetailsRespo
     dispensedItems: [],
     prescriptionPendingCancellation: false,
     messageHistory: mockMessageHistoryDispenseNotifInfo,
-    prescriberOrganisation: {organisationSummaryObjective: mockDispenser}
+    prescriberOrganisation: mockDispenser
   }
 
   // ID-specific overrides for different mock scenarios
@@ -40,15 +40,15 @@ export const getMockPayload = (prescriptionId: string): PrescriptionDetailsRespo
       prescribedItems: mockPrescribedItems,
       dispensedItems: mockDispensedItems,
       messageHistory: mockMessageHistoryDispenseNotifInfo,
-      prescriberOrganisation: {organisationSummaryObjective: mockPrescriber},
-      nominatedDispenser: {organisationSummaryObjective: mockNominatedDispenser},
-      currentDispenser: [{organisationSummaryObjective: mockDispenser}]
+      prescriberOrganisation: mockPrescriber,
+      nominatedDispenser: mockNominatedDispenser,
+      currentDispenser: mockDispenser
     },
     "209E3D-A83008-327F9F": {
       prescribedItems: mockPrescribedItems,
       dispensedItems: mockDispensedItems,
       patientDetails: mockUnavailablePatientDetails,
-      prescriberOrganisation: {organisationSummaryObjective: altMockPrescriber},
+      prescriberOrganisation: altMockPrescriber,
       nominatedDispenser: undefined,
       currentDispenser: undefined
     },
@@ -57,53 +57,49 @@ export const getMockPayload = (prescriptionId: string): PrescriptionDetailsRespo
       prescriptionId,
       prescribedItems: mockPrescribedItemsCancellation,
       messageHistory: mockMessageHistoryPendingCancellation,
-      prescriberOrganisation: {organisationSummaryObjective: mockPrescriber},
+      prescriberOrganisation: mockPrescriber,
       nominatedDispenser: undefined,
-      currentDispenser: [{organisationSummaryObjective: mockDispenser}]
+      currentDispenser: mockDispenser
     },
     "04E5F7-A83008-D71BCQ": {
       prescribedItems: [],
       dispensedItems: mockDispensedPartialWithInitial,
-      prescriberOrganisation: {organisationSummaryObjective: altMockPrescriber},
-      nominatedDispenser: {organisationSummaryObjective: altMockNominatedDispenser},
-      currentDispenser: [{organisationSummaryObjective: mockDispenser}]
+      prescriberOrganisation: altMockPrescriber,
+      nominatedDispenser: altMockNominatedDispenser,
+      currentDispenser: mockDispenser
     },
     "15023D-A83008-298451": {
       dispensedItems: mockDispensedItemsNoPharmacyStatus,
       messageHistory: mockMessageHistoryDispenseNotifInfo,
-      prescriberOrganisation: {organisationSummaryObjective: mockPrescriber},
+      prescriberOrganisation: mockPrescriber,
       statusCode: "0006", // All items dispensed
       nominatedDispenser: {
-        organisationSummaryObjective: {
-          name: undefined,
-          odsCode: "FV519",
-          address: undefined,
-          telephone: undefined
-        }
+        name: undefined,
+        odsCode: "FV519",
+        address: undefined,
+        telephone: undefined
       },
-      currentDispenser: [{organisationSummaryObjective: mockDispenser}]
+      currentDispenser: mockDispenser
     },
     "3DA34A-A83008-A0B2EV": {
       statusCode: "0005", // Cancelled
       prescribedItems: [],
       dispensedItems: mockDispensedItemsCancelled,
       messageHistory: mockMessageHistoryCancelled,
-      prescriberOrganisation: {organisationSummaryObjective: mockPrescriber}
+      prescriberOrganisation: mockPrescriber
     },
     "88AAF5-A83008-3D404Q": {
       dispensedItems: mockDispensedItemsNoPharmacyStatus,
       messageHistory: mockMessageHistoryMissingData,
-      prescriberOrganisation: {organisationSummaryObjective: mockPrescriber},
+      prescriberOrganisation: mockPrescriber,
       statusCode: "0006", // All items dispensed
       nominatedDispenser: {
-        organisationSummaryObjective: {
-          name: undefined,
-          odsCode: "FV519",
-          address: undefined,
-          telephone: undefined
-        }
+        name: undefined,
+        odsCode: "FV519",
+        address: undefined,
+        telephone: undefined
       },
-      currentDispenser: [{organisationSummaryObjective: mockDispenser}]
+      currentDispenser: mockDispenser
     }
   }
 

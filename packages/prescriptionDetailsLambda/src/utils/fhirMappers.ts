@@ -1,29 +1,7 @@
 /* eslint-disable max-len */
 import {Patient, MedicationRequest, Coding} from "fhir/r4"
-import {PrescriptionIntent} from "./types"
-import {
-  findExtensionByKey,
-  getBooleanFromNestedExtension,
-  getCodeFromNestedExtension,
-  getDisplayFromNestedExtension
-} from "./extensionUtils"
+import {findExtensionByKey, getBooleanFromNestedExtension, getCodeFromNestedExtension} from "./extensionUtils"
 import {PatientDetails} from "@cpt-ui-common/common-types"
-
-/**
- * Maps the FHIR intent to a user-friendly prescription treatment type display value.
- * Since FHIR uses standardized intent values, we must convert them into human-readable descriptions.
- */
-export const mapIntentToPrescriptionTreatmentType = (intent: string): string => {
-  const intentToTreatmentTypeMap: Record<PrescriptionIntent, string> = {
-    // TODO: double check this mapping with the team
-    "order": "Acute", // Standard prescription → Acute
-    "instance-order": "Repeat Prescribing", // Sub-order → Repeat Prescribing
-    "reflex-order": "Repeat Dispensing" // Self-repeating order → Repeat Dispensing
-  }
-
-  // fallback to Unknown if we get something unexpected
-  return intentToTreatmentTypeMap[intent as PrescriptionIntent] ?? "Unknown" // Default to "Unknown" if not mapped
-}
 
 /**
  *  Maps message history titles names to semantic message codes
@@ -59,13 +37,6 @@ export const mapMessageHistoryTitleToMessageCode = (title: string): string => {
 export const mapCourseOfTherapyType = (coding: Array<Coding> | undefined): string => {
   if (!coding || coding.length === 0) return "Unknown"
 
-  // const courseOfTherapyMap: Record<string, string> = {
-  //   "acute": "Acute",
-  //   "continuous": "Continuous",
-  //   "continuous-repeating-dispensing": "Continuous Repeating Dispensing"
-  // }
-
-  // return courseOfTherapyMap[coding[0].code ?? ""] ?? coding[0].display ?? "Unknown"
   return coding[0].code ?? "unknown"
 }
 
@@ -75,13 +46,15 @@ export const mapCourseOfTherapyType = (coding: Array<Coding> | undefined): strin
 export const mapPrescriptionOrigin = (typeCode: string): string => {
   if (typeCode.startsWith("01") || typeCode.startsWith("1")) return "England"
   if (typeCode.startsWith("02") || typeCode.startsWith("2")) return "Wales"
+  if (typeCode.startsWith("05") || typeCode.startsWith("50")) return "Isle of Man"
   return "Unknown"
 }
 
 /**
  * Extracts patient details from FHIR Patient resource
  */
-export const extractPatientDetails = (patient: Patient | undefined): PatientDetails => {
+export const extractPatientDetails = (patient: Patient | undefined): Omit<PatientDetails, "address"> & {address: string | null
+} => {
   if (!patient) {
     return {
       nhsNumber: "Unknown",
@@ -109,12 +82,7 @@ export const extractPatientDetails = (patient: Patient | undefined): PatientDeta
   const patientAddress = patient.address?.[0]
   let address = null
   if (patientAddress) {
-    address = {
-      line1: patientAddress.line?.[0] ?? "",
-      line2: patientAddress.line?.[1] ?? "",
-      city: patientAddress.city ?? "",
-      postcode: patientAddress.postalCode ?? ""
-    }
+    address = patientAddress.text ?? "Not Found"
   }
 
   return {
@@ -139,17 +107,21 @@ export const extractPrescribedItems = (medicationRequests: Array<MedicationReque
 
     const epsStatusCode = getCodeFromNestedExtension(dispensingInfoExt, "dispenseStatus") ?? "unknown"
 
+    const quantityValue = request.dispenseRequest?.quantity?.value?.toString() ?? "Unknown"
+    const quantityUnit = request.dispenseRequest?.quantity?.unit ?? ""
+    const quantity = quantityUnit ? `${quantityValue} ${quantityUnit}` : quantityValue
+
     return {
-      itemDetails: {
-        medicationName: request.medicationCodeableConcept?.text ??
+      medicationName: request.medicationCodeableConcept?.text ??
         request.medicationCodeableConcept?.coding?.[0]?.display ?? "Unknown",
-        quantity: request.dispenseRequest?.quantity?.value?.toString() ?? "Unknown",
-        dosageInstructions: request.dosageInstruction?.[0]?.text ?? "Unknown",
-        epsStatusCode,
-        nhsAppStatus: undefined, // Optional field
-        itemPendingCancellation: getBooleanFromNestedExtension(pendingCancellationExt, "lineItemPendingCancellation"),
-        cancellationReason: getDisplayFromNestedExtension(pendingCancellationExt, "cancellationReason")
-      }
+      quantity,
+      dosageInstructions: request.dosageInstruction?.[0]?.text ?? "Unknown",
+      epsStatusCode,
+      nhsAppStatus: undefined, // Optional field
+      itemPendingCancellation: getBooleanFromNestedExtension(pendingCancellationExt, "lineItemPendingCancellation") ?? false,
+      cancellationReason: request.statusReason?.text ??
+        request.statusReason?.coding?.[0]?.display ??
+        null
     }
   })
 }

@@ -17,16 +17,12 @@ export {
 // Types from prescriptionDetails
 export type {
   PrescribedItemDetails,
-  PrescribedItem,
   InitiallyPrescribed,
   DispensedItemDetails,
-  DispensedItem,
   DispenseNotification,
   MessageHistory,
   OrganisationSummary,
   PrescriberOrganisationSummary,
-  PrescriberOrganisation,
-  DispenserOrganisation,
   PrescriptionDetailsResponse
 } from "./prescriptionDetails"
 

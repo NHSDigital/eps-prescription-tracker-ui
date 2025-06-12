@@ -112,10 +112,10 @@ describe("Status Metadata Utility Functions", () => {
 
   describe("formatDateForPrescriptions", () => {
     it.each([
-      ["2024-01-01", "01-Jan-2024"],
+      ["2024-01-01", "1-Jan-2024"],
       ["2025-12-31", "31-Dec-2025"],
       ["1999-07-15", "15-Jul-1999"],
-      ["2023-03-05T10:00:00Z", "05-Mar-2023"]
+      ["2023-03-05T10:00:00Z", "5-Mar-2023"]
     ])("formats valid ISO date string '%s' as '%s'", (input, expected) => {
       expect(formatDateForPrescriptions(input)).toBe(expected)
     })

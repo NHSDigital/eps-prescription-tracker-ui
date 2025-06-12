@@ -1,13 +1,14 @@
 import React from "react"
 import {
-  render,
   screen,
   fireEvent,
-  waitFor
+  waitFor,
+  render
 } from "@testing-library/react"
 import PrescriptionsListTable from "@/components/prescriptionList/PrescriptionsListTable"
 import {PrescriptionsListStrings} from "@/constants/ui-strings/PrescriptionListTabStrings"
 import {PrescriptionSummary, TreatmentType} from "@cpt-ui-common/common-types"
+import {MemoryRouter} from "react-router-dom"
 
 jest.mock("@/helpers/statusMetadata", () => ({
   getStatusTagColour: jest.fn().mockReturnValue("blue"),
@@ -57,12 +58,20 @@ describe("PrescriptionsListTable", () => {
     }
   ]
 
+  const renderWithRouter = (component: React.ReactElement) => {
+    return render(
+      <MemoryRouter>
+        {component}
+      </MemoryRouter>
+    )
+  }
+
   beforeEach(() => {
     jest.clearAllMocks()
   })
 
   it("displays loading spinner initially", () => {
-    render(<PrescriptionsListTable textContent={textContent} prescriptions={prescriptions} />)
+    renderWithRouter(<PrescriptionsListTable textContent={textContent} prescriptions={prescriptions} />)
 
     expect(screen.getByTestId("eps-loading-spinner")).toBeInTheDocument()
   })
@@ -70,7 +79,7 @@ describe("PrescriptionsListTable", () => {
   it("renders the full table container, table, and table head when prescriptions exist", async () => {
     jest.useFakeTimers()
 
-    render(<PrescriptionsListTable textContent={textContent} prescriptions={prescriptions} />)
+    renderWithRouter(<PrescriptionsListTable textContent={textContent} prescriptions={prescriptions} />)
 
     jest.advanceTimersByTime(2000)
 
@@ -92,7 +101,7 @@ describe("PrescriptionsListTable", () => {
   it("renders the future prescriptions correctly", async () => {
     jest.useFakeTimers()
 
-    render(<PrescriptionsListTable textContent={futureTextContent} prescriptions={prescriptions} />)
+    renderWithRouter(<PrescriptionsListTable textContent={futureTextContent} prescriptions={prescriptions} />)
 
     jest.advanceTimersByTime(2000)
 
@@ -110,7 +119,7 @@ describe("PrescriptionsListTable", () => {
   it("renders the expired prescriptions correctly", async () => {
     jest.useFakeTimers()
 
-    render(<PrescriptionsListTable textContent={expiredTextContent} prescriptions={prescriptions} />)
+    renderWithRouter(<PrescriptionsListTable textContent={expiredTextContent} prescriptions={prescriptions} />)
 
     jest.advanceTimersByTime(2000)
 
@@ -127,7 +136,7 @@ describe("PrescriptionsListTable", () => {
 
   it("shows a message when no prescriptions are available", async () => {
     jest.useFakeTimers()
-    render(<PrescriptionsListTable textContent={textContent} prescriptions={[]} />)
+    renderWithRouter(<PrescriptionsListTable textContent={textContent} prescriptions={[]} />)
     jest.advanceTimersByTime(2000)
 
     await waitFor(() => {
@@ -139,7 +148,7 @@ describe("PrescriptionsListTable", () => {
 
   it("sorts the table when a column header is clicked", async () => {
     jest.useFakeTimers()
-    render(<PrescriptionsListTable textContent={textContent} prescriptions={prescriptions} />)
+    renderWithRouter(<PrescriptionsListTable textContent={textContent} prescriptions={prescriptions} />)
 
     jest.advanceTimersByTime(2000)
 
@@ -169,7 +178,7 @@ describe("PrescriptionsListTable", () => {
       testid: "future"
     }
 
-    render(<PrescriptionsListTable textContent={futureTextContent} prescriptions={prescriptions} />)
+    renderWithRouter(<PrescriptionsListTable textContent={futureTextContent} prescriptions={prescriptions} />)
 
     jest.advanceTimersByTime(2000)
 
@@ -185,7 +194,7 @@ describe("PrescriptionsListTable", () => {
 
   it("displays the correct number of prescriptions info text", async () => {
     jest.useFakeTimers()
-    render(<PrescriptionsListTable textContent={textContent} prescriptions={prescriptions} />)
+    renderWithRouter(<PrescriptionsListTable textContent={textContent} prescriptions={prescriptions} />)
 
     jest.advanceTimersByTime(2000)
 
@@ -200,7 +209,7 @@ describe("PrescriptionsListTable", () => {
   it("sorts prescriptions by cancellation warning when header is clicked", async () => {
     jest.useFakeTimers()
 
-    render(<PrescriptionsListTable textContent={textContent} prescriptions={prescriptions} />)
+    renderWithRouter(<PrescriptionsListTable textContent={textContent} prescriptions={prescriptions} />)
 
     jest.advanceTimersByTime(2000)
 
@@ -224,7 +233,7 @@ describe("PrescriptionsListTable", () => {
   it("renders noPrescriptionsMessage when prescriptions array is empty", async () => {
     jest.useFakeTimers()
 
-    render(<PrescriptionsListTable textContent={textContent} prescriptions={[]} />)
+    renderWithRouter(<PrescriptionsListTable textContent={textContent} prescriptions={[]} />)
 
     jest.advanceTimersByTime(2000)
 
@@ -240,7 +249,7 @@ describe("PrescriptionsListTable", () => {
   it("responds to click and keyboard interactions on sortable column headers", async () => {
     jest.useFakeTimers()
 
-    render(<PrescriptionsListTable textContent={textContent} prescriptions={prescriptions} />)
+    renderWithRouter(<PrescriptionsListTable textContent={textContent} prescriptions={prescriptions} />)
     jest.advanceTimersByTime(2000)
 
     await waitFor(() => {
@@ -295,7 +304,7 @@ describe("PrescriptionsListTable", () => {
       }
     ]
 
-    render(
+    renderWithRouter(
       <PrescriptionsListTable textContent={textContent} prescriptions={testPrescriptions} />
     )
 
@@ -322,7 +331,7 @@ describe("PrescriptionsListTable", () => {
   it("sorts prescriptions by issueNumber in ascending order", async () => {
     jest.useFakeTimers()
 
-    render(<PrescriptionsListTable textContent={textContent} prescriptions={prescriptions} />)
+    renderWithRouter(<PrescriptionsListTable textContent={textContent} prescriptions={prescriptions} />)
     jest.advanceTimersByTime(2000)
 
     await waitFor(() => {
