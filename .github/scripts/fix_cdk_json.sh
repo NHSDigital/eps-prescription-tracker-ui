@@ -50,10 +50,18 @@ if [ "${DO_NOT_GET_AWS_EXPORT}" != "true" ]; then
 fi
 
 if [ -z "${EPS_DOMAIN_NAME}" ]; then
-    EPS_DOMAIN_NAME=$(echo "$CF_LONDON_EXPORTS" | jq  -r '.Exports[] | select(.Name == "eps-route53-resources:EPS-domain") | .Value')
+    if [[ "$TARGET_ENVIRONMENT" == "int" || "$TARGET_ENVIRONMENT" == "prod" ]]; then
+        EPS_DOMAIN_NAME=$(echo "$CF_LONDON_EXPORTS" | jq  -r '.Exports[] | select(.Name == "eps-route53-resources:CPT-domain") | .Value')
+    else
+        EPS_DOMAIN_NAME=$(echo "$CF_LONDON_EXPORTS" | jq  -r '.Exports[] | select(.Name == "eps-route53-resources:EPS-domain") | .Value')
+    fi
 fi
 if [ -z "${EPS_HOSTED_ZONE_ID}" ]; then
-    EPS_HOSTED_ZONE_ID=$(echo "$CF_LONDON_EXPORTS" | jq -r '.Exports[] | select(.Name == "eps-route53-resources:EPS-ZoneID") | .Value')
+    if [[ "$TARGET_ENVIRONMENT" == "int" || "$TARGET_ENVIRONMENT" == "prod" ]]; then
+        EPS_HOSTED_ZONE_ID=$(echo "$CF_LONDON_EXPORTS" | jq -r '.Exports[] | select(.Name == "eps-route53-resources:CPT-ZoneID") | .Value')
+    else
+        EPS_HOSTED_ZONE_ID=$(echo "$CF_LONDON_EXPORTS" | jq -r '.Exports[] | select(.Name == "eps-route53-resources:EPS-ZoneID") | .Value')
+    fi
 fi
 if [ -z "${CLOUDFRONT_DISTRIBUTION_ID}" ]; then
     CLOUDFRONT_DISTRIBUTION_ID=$(echo "$CF_LONDON_EXPORTS" | \
