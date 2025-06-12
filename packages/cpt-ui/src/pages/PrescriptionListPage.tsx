@@ -146,6 +146,14 @@ export default function PrescriptionListPage() {
         <Container>
           <Row>
             <Col width="full">
+              <h1
+                className="nhsuk-u-visually-hidden"
+              >
+                {PRESCRIPTION_LIST_PAGE_STRINGS.HEADING}
+              </h1>
+              <h2 data-testid="loading-message">
+                {PRESCRIPTION_LIST_PAGE_STRINGS.LOADING_MESSAGE}
+              </h2>
               <EpsSpinner />
             </Col>
           </Row>
