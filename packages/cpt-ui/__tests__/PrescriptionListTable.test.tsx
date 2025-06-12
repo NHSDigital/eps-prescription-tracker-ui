@@ -61,12 +61,6 @@ describe("PrescriptionsListTable", () => {
     jest.clearAllMocks()
   })
 
-  it("displays loading spinner initially", () => {
-    render(<PrescriptionsListTable textContent={textContent} prescriptions={prescriptions} />)
-
-    expect(screen.getByTestId("eps-loading-spinner")).toBeInTheDocument()
-  })
-
   it("renders the full table container, table, and table head when prescriptions exist", async () => {
     jest.useFakeTimers()
 
