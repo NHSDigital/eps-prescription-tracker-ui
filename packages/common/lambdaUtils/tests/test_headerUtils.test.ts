@@ -1,4 +1,4 @@
-import {headers} from "@cpt-ui-common/lambdaUtils"
+import {headers} from "../src/"
 const formatHeaders = headers.formatHeaders
 
 describe("formatHeaders tests", () => {
