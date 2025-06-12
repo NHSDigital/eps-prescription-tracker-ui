@@ -178,6 +178,7 @@ jobs:
           JWT_KID: ${{ inputs.JWT_KID }}
           ROLE_ID: ${{ inputs.ROLE_ID }}
           CDK_APP_NAME: ${{ inputs.CDK_APP_NAME }}
+          TARGET_ENVIRONMENT: ${{ inputs.TARGET_ENVIRONMENT }}
 
       - name: Show diff
         run: |
