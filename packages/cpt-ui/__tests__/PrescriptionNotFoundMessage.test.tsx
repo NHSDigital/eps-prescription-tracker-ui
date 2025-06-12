@@ -1,20 +1,19 @@
 import React from "react"
-import {render, screen} from "@testing-library/react"
+import {render, screen, within} from "@testing-library/react"
 import {MemoryRouter, Routes, Route} from "react-router-dom"
 
 import PrescriptionNotFoundMessage from "@/components/PrescriptionNotFoundMessage"
-import {STRINGS} from "@/constants/ui-strings/PrescriptionNotFoundMessageStrings"
+import {STRINGS, SEARCH_STRINGS, SEARCH_TYPES} from "@/constants/ui-strings/PrescriptionNotFoundMessageStrings"
 import {FRONTEND_PATHS} from "@/constants/environment"
 
 const DummyPage = ({label}: {label: string}) => <div data-testid="dummy-page">{label}</div>
 
-function setupRouter(
-  search = "?firstName=Zoe&lastName=Zero&dobDay=31&dobMonth=12&dobYear=2021&postcode=AB1%202CD"
-) {
+// Helper to DRY test setup for different query params
+function setupRouter(search = "?firstName=Zoe&lastName=Zero&dobDay=31&dobMonth=12&dobYear=2021&postcode=AB1%202CD") {
   render(
     <MemoryRouter initialEntries={["/not-found" + search]}>
       <Routes>
-        <Route path="/not-found" element={<PrescriptionNotFoundMessage/>} />
+        <Route path="/not-found" element={<PrescriptionNotFoundMessage />} />
         <Route path={FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS} element={<DummyPage label="Basic Details Search" />} />
         <Route path={FRONTEND_PATHS.SEARCH_BY_NHS_NUMBER} element={<DummyPage label="NHS Number Search" />} />
         <Route path={FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID} element={<DummyPage label="Prescription ID Search" />} />
@@ -24,58 +23,79 @@ function setupRouter(
 }
 
 describe("PrescriptionNotFoundMessage", () => {
-  it("renders the main heading and static content", () => {
+  it("renders the main heading and static content for basic details search", () => {
     setupRouter()
-    expect(screen.getByTestId("presc-not-found-heading")).toHaveTextContent(STRINGS.heading)
+    const headings = screen.getAllByTestId("presc-not-found-heading")
+    expect(headings[0]).toHaveTextContent(STRINGS.heading)
   })
 
-  // beforeEach(() => {
-  //   render(
-  //     <MemoryRouter>
-  //       <PrescriptionNotFoundMessage />
-  //     </MemoryRouter>
-  //   )
-  // })
+  it("renders the main container with correct id and class", () => {
+    setupRouter()
+    const mainElement = screen.getByRole("main")
+    expect(mainElement).toBeInTheDocument()
+    expect(mainElement).toHaveAttribute("id", "main-content")
+    expect(mainElement).toHaveClass("nhsuk-main-wrapper")
+  })
 
-  // it("renders the main container with the correct id and class", () => {
-  //   const mainElement = screen.getByRole("main")
-  //   expect(mainElement).toBeInTheDocument()
-  //   expect(mainElement).toHaveAttribute("id", "main-content")
-  //   expect(mainElement).toHaveClass("nhsuk-main-wrapper")
-  // })
+  it("renders the back link with correct text for basic details search", () => {
+    setupRouter()
+    const link = screen.getByTestId("presc-not-found-backlink")
+    expect(link).toHaveTextContent(STRINGS.goBackLink)
+    expect(link.getAttribute("href")).toContain(FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS)
+  })
 
-  //   it("renders the proper elements", () => {
-  //     const header = screen.getByTestId("presc-not-found-header")
-  //     const body = screen.getByTestId("presc-not-found-body1")
-  //     const link = screen.getByTestId("presc-not-found-backlink")
+  it("renders all body paragraphs and alternative links for basic details search", () => {
+    setupRouter()
+    const querySummary = screen.getByTestId("query-summary")
 
-  //     expect(header).toHaveTextContent(STRINGS.heading)
-  //     expect(body).toHaveTextContent(STRINGS.intro)
-  //     // expect(link).toHaveTextContent(STRINGS.goBackLink)
-  //   })
-  // })
+    // First paragraph
+    expect(
+      within(querySummary).getByText(
+        "We could not find any prescriptions using the patient details you searched for."
+      )
+    ).toBeInTheDocument()
 
-  // describe("PrescriptionNotFoundMessage - searchType parameter behavior", () => {
-  //   it("should append hash to the backLink URL when searchType is provided", () => {
-  //     render(
-  //       <MemoryRouter initialEntries={["/notfound?searchType=example"]}>
-  //         <PrescriptionNotFoundMessage />
-  //       </MemoryRouter>
-  //     )
-  //     const link = screen.getByTestId("presc-not-found-backlink")
-  //     // The rendered link might have a full URL like "http://localhost/search#example"
-  //     expect(link.getAttribute("href")).toContain(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
-  //   })
+    // Last paragraph
+    expect(
+      within(querySummary).getByText(
+        "If the patient should have a prescription, contact the prescriber."
+      )
+    ).toBeInTheDocument()
 
-//   it("should not append a hash to the backLink URL when searchType is not provided", () => {
-//     render(
-//       <MemoryRouter initialEntries={["/notfound"]}>
-//         <PrescriptionNotFoundMessage />
-//       </MemoryRouter>
-//     )
-//     const link = screen.getByTestId("presc-not-found-backlink")
-//     expect(link.getAttribute("href")).toContain("/search")
-//     // Ensure that no hash is appended when searchType is absent.
-//     expect(link.getAttribute("href")).not.toContain("#")
-//   })
+    // Middle paragraph: two links
+    const links = within(querySummary).getAllByRole("link")
+    const altLabels = links.map(link => link.textContent)
+    expect(altLabels).toEqual(
+      expect.arrayContaining([
+        "search using a prescription ID",
+        "search using an NHS number"
+      ])
+    )
+  })
+
+  it("renders correct navigation and content for NHS number search", () => {
+    setupRouter("?nhsNumber=9912003071")
+    const link = screen.getByTestId("presc-not-found-backlink")
+    expect(link.getAttribute("href")).toContain(FRONTEND_PATHS.SEARCH_BY_NHS_NUMBER)
+
+    const querySummary = screen.getByTestId("query-summary")
+
+    // Should offer prescription ID and basic details as alternative links
+    const altLinks = within(querySummary).getAllByRole("link").map(l => l.textContent)
+    const nhsNumberAltLabels = SEARCH_STRINGS[SEARCH_TYPES.NHS_NUMBER].alternatives.map(a => a.label)
+    expect(altLinks).toEqual(expect.arrayContaining(nhsNumberAltLabels))
+  })
+
+  it("renders correct navigation and content for Prescription ID search", () => {
+    setupRouter("?prescriptionId=9000000001")
+    const link = screen.getByTestId("presc-not-found-backlink")
+    expect(link.getAttribute("href")).toContain(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
+
+    const querySummary = screen.getByTestId("query-summary")
+
+    // Should offer NHS number and basic details as alternative links
+    const altLinks = within(querySummary).getAllByRole("link").map(l => l.textContent)
+    const expectedAltLabels = SEARCH_STRINGS[SEARCH_TYPES.PRESCRIPTION_ID].alternatives.map(a => a.label)
+    expect(altLinks).toEqual(expect.arrayContaining(expectedAltLabels))
+  })
 })
