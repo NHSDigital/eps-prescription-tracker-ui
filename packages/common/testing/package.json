@@ -9,12 +9,15 @@
   "scripts": {
     "unit": "jest",
     "lint": "eslint  --max-warnings 0 --fix --config ../../../eslint.config.mjs .",
-    "compile": "tsc",
+    "compile": "tsc --build",
     "test": "npm run compile && npm run unit",
     "check-licenses": "license-checker --failOn GPL --failOn LGPL --start ../.."
   },
   "dependencies": {
-    "@aws-lambda-powertools/logger": "^2.18.0",
-    "@cpt-ui-common/pdsClient": "^1.0.0"
+    "@aws-lambda-powertools/logger": "^2.18.0"
+  },
+  "devDependencies": {
+    "@cpt-ui-common/common-types": "^1.0.0",
+    "axios": "^1.9.0"
   }
 }

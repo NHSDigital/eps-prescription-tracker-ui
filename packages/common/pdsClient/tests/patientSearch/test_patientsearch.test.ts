@@ -5,7 +5,7 @@ import * as examples from "./examples/index"
 import {URL} from "url"
 import axios, {AxiosError} from "axios"
 
-import * as pds from "@cpt-ui-common/pdsClient"
+import * as pds from "../../src"
 const OutcomeType = pds.patientSearch.OutcomeType
 
 describe("PatientSearch Unit Tests", () => {
