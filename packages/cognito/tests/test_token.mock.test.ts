@@ -47,10 +47,12 @@ const {
 })
 
 const mockUpdateTokenMapping = jest.fn()
+const mockDeleteTokenMapping = jest.fn()
 const mockGetSessionState = jest.fn()
 jest.unstable_mockModule("@cpt-ui-common/dynamoFunctions", () => {
   return {
     updateTokenMapping: mockUpdateTokenMapping,
+    deleteTokenMapping: mockDeleteTokenMapping,
     getSessionState: mockGetSessionState
   }
 })
