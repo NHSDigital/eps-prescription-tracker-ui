@@ -6,6 +6,7 @@ import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
 
 import middy from "@middy/core"
 import inputOutputLogger from "@middy/input-output-logger"
+import httpHeaderNormalizer from "@middy/http-header-normalizer"
 
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 import {getUsernameFromEvent} from "@cpt-ui-common/authFunctions"
@@ -49,6 +50,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
 export const handler = middy(lambdaHandler)
   .use(injectLambdaContext(logger, {clearState: true}))
+  .use(httpHeaderNormalizer())
   .use(
     inputOutputLogger({
       logger: (request) => {
