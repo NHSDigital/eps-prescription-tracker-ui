@@ -64,7 +64,7 @@ export interface DispenseNotification {
 export interface MessageHistory {
     messageCode: string
     sentDateTime: string
-    organisationName: string
+    organisationName?: string
     organisationODS: string
     newStatusCode?: string
     dispenseNotification?: Array<DispenseNotification>
@@ -76,6 +76,7 @@ export interface OrganisationSummary {
     odsCode: string
     address?: string
     telephone?: string
+    prescribedFrom?: string
 }
 
 // The prescriber's organisation has an extra property

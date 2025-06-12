@@ -190,26 +190,31 @@ describe("prescriptionService", () => {
 
     it("should return mapped DoHSData when matching ODS codes are returned", async () => {
       // Setup the mockDoHSClient to return matching data.
-      const mockDoHSResponse = {
-        prescribingOrganization: {
+      const mockDoHSResponse = [
+        {
           ODSCode: "ODS123",
           OrganisationName: "Org Prescriber"
         },
-        nominatedPerformer: {
+        {
           ODSCode: "ODS456",
           OrganisationName: "Org Performer"
         },
-        dispensingOrganization:
-          {
-            ODSCode: "ODS789",
-            OrganisationName: "Org Dispenser"
-          }
-      }
+        {
+          ODSCode: "ODS789",
+          OrganisationName: "Org Dispenser"
+        }
+      ]
       mockDoHSClient.mockImplementationOnce(() => Promise.resolve(mockDoHSResponse))
 
       const result = await getDoHSData(odsCodes, logger)
-      expect(result.prescribingOrganization).toEqual(mockDoHSResponse.prescribingOrganization)
-      expect(result.nominatedPerformer).toEqual(mockDoHSResponse.nominatedPerformer)
+      expect(result.prescribingOrganization).toEqual({
+        ODSCode: "ODS123",
+        OrganisationName: "Org Prescriber"
+      })
+      expect(result.nominatedPerformer).toEqual({
+        ODSCode: "ODS456",
+        OrganisationName: "Org Performer"
+      })
       expect(result.dispensingOrganization).toEqual(
         {
           ODSCode: "ODS789",
@@ -217,10 +222,6 @@ describe("prescriptionService", () => {
         }
       )
 
-      expect(logger.info).toHaveBeenCalledWith(
-        "Successfully fetched DoHS API data",
-        {rawDoHSData: mockDoHSResponse}
-      )
       expect(logger.info).toHaveBeenCalledWith(
         "Mapped DoHS organizations",
         expect.objectContaining({
@@ -233,21 +234,20 @@ describe("prescriptionService", () => {
 
     it("should return default DoHSData when ODS codes do not match", async () => {
       // Setup the mockDoHSClient to return data with non-matching ODS codes.
-      const mockDoHSResponse = {
-        prescribingOrganization: {
+      const mockDoHSResponse = [
+        {
           ODSCode: "MISMATCH",
           OrganisationName: "Org Prescriber"
         },
-        nominatedPerformer: {
+        {
           ODSCode: "MISMATCH",
           OrganisationName: "Org Performer"
         },
-        dispensingOrganization:
-          {
-            ODSCode: "MISMATCH",
-            OrganisationName: "Org Dispenser"
-          }
-      }
+        {
+          ODSCode: "MISMATCH",
+          OrganisationName: "Org Dispenser"
+        }
+      ]
       mockDoHSClient.mockImplementationOnce(() => Promise.resolve(mockDoHSResponse))
 
       const result = await getDoHSData(odsCodes, logger)
@@ -360,12 +360,11 @@ describe("prescriptionService", () => {
         .reply(200, fakeApigeeData, fakeApigeeHeaders)
 
       // Setup the doHSClient mock so that getDoHSData returns mapped data.
-      const mockDoHSResponse = {
-        prescribingOrganization: {ODSCode: "ODS_AUTHOR", OrganisationName: "Org Prescriber"},
-        nominatedPerformer: {ODSCode: "ODS123456", OrganisationName: "Org Performer"},
-        dispensingOrganization:
-          {ODSCode: "ODS_DISPENSE", OrganisationName: "Org Dispenser"}
-      }
+      const mockDoHSResponse = [
+        {ODSCode: "ODS_AUTHOR", OrganisationName: "Org Prescriber"},
+        {ODSCode: "ODS123456", OrganisationName: "Org Performer"},
+        {ODSCode: "ODS_DISPENSE", OrganisationName: "Org Dispenser"}
+      ]
       mockDoHSClient.mockImplementationOnce(() => Promise.resolve(mockDoHSResponse))
 
       // Make mergePrescriptionDetails return a merged object.
@@ -452,12 +451,11 @@ describe("prescriptionService", () => {
         .reply(200, fakeApigeeData, fakeApigeeHeaders)
 
       // Ensure doHSClient returns valid data.
-      const mockDoHSResponse = {
-        prescribingOrganization: {ODSCode: "ODS_AUTHOR", OrganisationName: "Org Prescriber"},
-        nominatedPerformer: {ODSCode: "ODS123456", OrganisationName: "Org Performer"},
-        dispensingOrganization:
-          {ODSCode: "ODS_DISPENSE", OrganisationName: "Org Dispenser"}
-      }
+      const mockDoHSResponse = [
+        {ODSCode: "ODS_AUTHOR", OrganisationName: "Org Prescriber"},
+        {ODSCode: "ODS123456", OrganisationName: "Org Performer"},
+        {ODSCode: "ODS_DISPENSE", OrganisationName: "Org Dispenser"}
+      ]
       mockDoHSClient.mockImplementationOnce(() => Promise.resolve(mockDoHSResponse))
 
       // Force mergePrescriptionDetails to throw an error.
@@ -538,12 +536,11 @@ describe("prescriptionService", () => {
         .reply(200, fakeApigeeData, fakeApigeeHeaders)
 
       // Setup the doHSClient mock so that getDoHSData returns mapped data.
-      const mockDoHSResponse = {
-        prescribingOrganization: {ODSCode: "ODS_AUTHOR", OrganisationName: "Org Prescriber"},
-        nominatedPerformer: {ODSCode: "ODS123456", OrganisationName: "Org Performer"},
-        dispensingOrganization:
-          {ODSCode: "ODS_DISPENSE", OrganisationName: "Org Dispenser"}
-      }
+      const mockDoHSResponse = [
+        {ODSCode: "ODS_AUTHOR", OrganisationName: "Org Prescriber"},
+        {ODSCode: "ODS123456", OrganisationName: "Org Performer"},
+        {ODSCode: "ODS_DISPENSE", OrganisationName: "Org Dispenser"}
+      ]
       mockDoHSClient.mockImplementationOnce(() => Promise.resolve(mockDoHSResponse))
 
       // Make mergePrescriptionDetails return a merged object.

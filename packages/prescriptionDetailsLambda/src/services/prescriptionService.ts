@@ -9,7 +9,7 @@ import {doHSClient} from "@cpt-ui-common/doHSClient"
 import {mergePrescriptionDetails} from "../utils/responseMapper"
 import {formatHeaders} from "../utils/headerUtils"
 
-import {DoHSData, DoHSValue} from "../utils/types"
+import {DoHSData} from "../utils/types"
 import {buildApigeeHeaders} from "@cpt-ui-common/authFunctions"
 import path from "path"
 import {extractOdsCodes} from "../utils/extensionUtils"
@@ -25,77 +25,59 @@ export async function getDoHSData(
   },
   logger: Logger
 ): Promise<DoHSData> {
-  let doHSData: DoHSData = {
-    prescribingOrganization: null,
-    nominatedPerformer: null,
-    dispensingOrganization: null
-  }
+  // Collect all valid ODS codes into an array
+  const validOdsCodes = [
+    odsCodes.prescribingOrganization,
+    odsCodes.nominatedPerformer,
+    odsCodes.dispensingOrganization
+  ].filter(Boolean) as Array<string>
 
-  if (Object.values(odsCodes).some(Boolean)) {
-    try {
-      const rawDoHSData = (await doHSClient(odsCodes)) as {
-        prescribingOrganization?: DoHSValue
-        nominatedPerformer?: DoHSValue
-        dispensingOrganization?: DoHSValue
-      }
-
-      logger.info("Successfully fetched DoHS API data", {rawDoHSData})
-
-      if (!rawDoHSData?.prescribingOrganization &&
-        !rawDoHSData?.nominatedPerformer &&
-        !rawDoHSData?.dispensingOrganization) {
-        logger.warn("No organization data found in DoHS response", {rawDoHSData})
-      }
-
-      // Assign prescribing organization
-      doHSData.prescribingOrganization =
-        rawDoHSData?.prescribingOrganization?.ODSCode?.toUpperCase() === odsCodes.prescribingOrganization?.toUpperCase()
-          ? rawDoHSData.prescribingOrganization
-          : null
-
-      // Assign nominated performer
-      doHSData.nominatedPerformer =
-        rawDoHSData?.nominatedPerformer?.ODSCode?.toUpperCase() === odsCodes.nominatedPerformer?.toUpperCase()
-          ? rawDoHSData.nominatedPerformer
-          : null
-
-      // Assign multiple dispensing organizations
-      doHSData.dispensingOrganization =
-        rawDoHSData?.dispensingOrganization?.ODSCode.toUpperCase() === odsCodes.dispensingOrganization?.toUpperCase()
-          ? rawDoHSData.dispensingOrganization
-          : null
-
-      // Logging Variables
-      const prescribingOrganization = doHSData.prescribingOrganization
-        ? doHSData.prescribingOrganization.OrganisationName
-        : "Not Found"
-
-      const nominatedPerformer = doHSData.nominatedPerformer
-        ? doHSData.nominatedPerformer.OrganisationName
-        : "Not Found"
-
-      const dispensingOrganization = doHSData.dispensingOrganization
-        ? doHSData.dispensingOrganization.OrganisationName
-        : "Not Found"
-
-      // Log results
-      logger.info("Mapped DoHS organizations", {
-        prescribingOrganization,
-        nominatedPerformer,
-        dispensingOrganization
-      })
-
-    } catch (error) {
-      logger.error("Failed to fetch DoHS API data", {error})
-      doHSData = {
-        prescribingOrganization: null,
-        nominatedPerformer: null,
-        dispensingOrganization: null
-      }
+  if (validOdsCodes.length === 0) {
+    return {
+      prescribingOrganization: null,
+      nominatedPerformer: null,
+      dispensingOrganization: null
     }
   }
 
-  return doHSData
+  try {
+    const orgs = await doHSClient(validOdsCodes)
+
+    if (orgs.length === 0) {
+      logger.warn("No organization data found in DoHS response")
+    }
+
+    const prescribingOrganization =
+      orgs.find((item: {ODSCode: string}) =>
+        item.ODSCode.toUpperCase() === odsCodes.prescribingOrganization?.toUpperCase()) ?? null
+
+    const nominatedPerformer =
+      orgs.find((item: {ODSCode: string}) =>
+        item.ODSCode.toUpperCase() === odsCodes.nominatedPerformer?.toUpperCase()) ?? null
+
+    const dispensingOrganization =
+      orgs.find((item: {ODSCode: string}) =>
+        item.ODSCode.toUpperCase() === odsCodes.dispensingOrganization?.toUpperCase()) ?? null
+
+    logger.info("Mapped DoHS organizations", {
+      prescribingOrganization: prescribingOrganization?.OrganisationName ?? "Not Found",
+      nominatedPerformer: nominatedPerformer?.OrganisationName ?? "Not Found",
+      dispensingOrganization: dispensingOrganization?.OrganisationName ?? "Not Found"
+    })
+
+    return {
+      prescribingOrganization,
+      nominatedPerformer,
+      dispensingOrganization
+    }
+  } catch (error) {
+    logger.error("Failed to fetch DoHS API data", {error})
+    return {
+      prescribingOrganization: null,
+      nominatedPerformer: null,
+      dispensingOrganization: null
+    }
+  }
 }
 
 /**

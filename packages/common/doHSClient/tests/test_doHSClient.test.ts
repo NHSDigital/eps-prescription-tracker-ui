@@ -27,10 +27,8 @@ describe("doHSClient", () => {
     }
   })
 
-  it("throws an error if no ODS codes are provided", async () => {
-    await expect(doHSClient({})).rejects.toThrow(
-      "At least one ODS Code is required for DoHS API request"
-    )
+  it("returns empty if no ODS codes are provided", async () => {
+    expect(await doHSClient([])).toEqual([])
   })
 
   it("throws an error if apigeeApiKey is not set", async () => {
@@ -42,7 +40,7 @@ describe("doHSClient", () => {
     jest.resetModules()
     const {doHSClient: freshDoHSClient} = await import("../src/doHSClient")
 
-    await expect(freshDoHSClient({prescribingOrganization: "ABC"})).rejects.toThrow(
+    await expect(freshDoHSClient(["ABC"])).rejects.toThrow(
       "Apigee API Key environment variable is not set"
     )
 
@@ -59,7 +57,7 @@ describe("doHSClient", () => {
     jest.resetModules()
     const {doHSClient: freshDoHSClient} = await import("../src/doHSClient")
 
-    await expect(freshDoHSClient({prescribingOrganization: "ABC"})).rejects.toThrow(
+    await expect(freshDoHSClient(["ABC"])).rejects.toThrow(
       "DoHS API endpoint environment variable is not set"
     )
 
@@ -68,11 +66,7 @@ describe("doHSClient", () => {
   })
 
   it("returns mapped data on successful axios request", async () => {
-    const odsCodes = {
-      prescribingOrganization: "ABC",
-      nominatedPerformer: "DEF",
-      dispensingOrganization: "XYZ"
-    }
+    const odsCodes = ["ABC", "DEF", "XYZ"]
 
     // Simulate an API response that returns data for only one of the ODS codes.
     const responseData = {
@@ -92,15 +86,11 @@ describe("doHSClient", () => {
 
     const result = await doHSClient(odsCodes)
 
-    expect(result).toEqual({
-      prescribingOrganization: {ODSCode: "ABC"},
-      nominatedPerformer: null,
-      dispensingOrganization: null
-    })
+    expect(result).toEqual([{ODSCode: "ABC"}])
   })
 
   it("handles HTTP errors and throws error", async () => {
-    const odsCodes = {prescribingOrganization: "ABC"}
+    const odsCodes = ["ABC"]
 
     // Set up nock to simulate an HTTP error
     const odsFilter = "ODSCode eq 'ABC'"
@@ -117,7 +107,7 @@ describe("doHSClient", () => {
   })
 
   it("handles network errors and throws error", async () => {
-    const odsCodes = {prescribingOrganization: "ABC"}
+    const odsCodes = ["ABC"]
 
     // Set up nock to simulate a network error
     const odsFilter = "ODSCode eq 'ABC'"

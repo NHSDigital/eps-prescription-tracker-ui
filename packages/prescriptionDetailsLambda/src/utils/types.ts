@@ -1,3 +1,4 @@
+import {DoHSOrg} from "@cpt-ui-common/doHSClient"
 import {Coding, Extension} from "fhir/r4"
 
 // Resource type for FHIR request group
@@ -52,29 +53,11 @@ export interface ExtensionWithNested extends Extension {
   }>
 }
 
-// Type for contact information in DoHS data
-export interface Contact {
-  ContactType: string
-  ContactAvailabilityType: string
-  ContactMethodType: string
-  ContactValue: string
-}
-
-// Type for organization information in DoHS data
-export interface DoHSValue {
-  OrganisationName: string
-  ODSCode: string
-  Address1: string
-  City: string
-  Postcode: string
-  Contacts: Array<Contact>
-}
-
 // Root type for DoHS response
 export interface DoHSData {
-  prescribingOrganization?: DoHSValue | null
-  nominatedPerformer?: DoHSValue | null
-  dispensingOrganization?: DoHSValue | null
+  prescribingOrganization?: DoHSOrg | null
+  nominatedPerformer?: DoHSOrg | null
+  dispensingOrganization?: DoHSOrg | null
 }
 
 // Defines the allowed prescription intent values based on FHIR standards.

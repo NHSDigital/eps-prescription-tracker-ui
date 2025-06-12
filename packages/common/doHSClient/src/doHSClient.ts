@@ -9,23 +9,27 @@ const apigeeApiKey = process.env["apigeeApiKey"] as string
 const apigeeDoHSEndpoint = process.env["apigeeDoHSEndpoint"] as string
 const apigeePtlDoHSApiKey = process.env["APIGEE_PTL_DOHS_API_KEY"] as string
 
-export const doHSClient = async (
-  odsCodes: {
-  prescribingOrganization?: string
-  nominatedPerformer?: string
-  dispensingOrganization?: string // Supports multiple dispensing orgs
-}) => {
+interface DoHSContact {
+  ContactType: string
+  ContactAvailabilityType: string
+  ContactMethodType: string
+  ContactValue: string
+}
+
+export interface DoHSOrg {
+  OrganisationName: string
+  ODSCode: string
+  Address1: string
+  City: string
+  Postcode: string
+  Contacts: Array<DoHSContact>
+}
+
+export const doHSClient = async (odsCodes: Array<string>): Promise<Array<DoHSOrg>> => {
   logger.info("Fetching DoHS API data for ODS codes", {odsCodes})
 
-  // Collect all valid ODS codes into an array
-  const validOdsCodes = [
-    odsCodes.prescribingOrganization,
-    odsCodes.nominatedPerformer,
-    odsCodes.dispensingOrganization // Spread array for multiple dispensing orgs
-  ].filter(Boolean) as Array<string>
-
-  if (validOdsCodes.length === 0) {
-    throw new Error("At least one ODS Code is required for DoHS API request")
+  if (odsCodes.length === 0) {
+    return []
   }
 
   // Use APIGEE_PTL_DOHS_API_KEY if available, otherwise fall back to apigeeApiKey
@@ -38,7 +42,7 @@ export const doHSClient = async (
   }
 
   // Construct filter query for multiple ODS codes
-  const odsFilter = validOdsCodes.map((code) => `ODSCode eq '${code}'`).join(" or ")
+  const odsFilter = odsCodes.map((code) => `ODSCode eq '${code}'`).join(" or ")
 
   const config: AxiosRequestConfig = {
     params: {
@@ -51,12 +55,5 @@ export const doHSClient = async (
   const response = await axios.get(apigeeDoHSEndpoint, config)
   logger.debug("Successfully fetched DoHS API response", {data: response.data})
 
-  return {
-    prescribingOrganization: response.data.value.find((item: {ODSCode: string}) =>
-      item.ODSCode === odsCodes.prescribingOrganization) ?? null,
-    nominatedPerformer: response.data.value.find((item: {ODSCode: string}) =>
-      item.ODSCode === odsCodes.nominatedPerformer) ?? null,
-    dispensingOrganization: response.data.value.find((item: {ODSCode: string}) =>
-      item.ODSCode === odsCodes.dispensingOrganization) ?? null
-  }
+  return response.data.value
 }

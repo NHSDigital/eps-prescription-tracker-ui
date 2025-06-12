@@ -7,7 +7,7 @@ import {
   MedicationRequest,
   MedicationDispense
 } from "fhir/r4"
-import {Contact, DoHSData, DoHSValue} from "./types"
+import {DoHSData} from "./types"
 import {
   mapPrescriptionOrigin,
   extractPatientDetails,
@@ -16,6 +16,8 @@ import {
   mapCourseOfTherapyType
 } from "./fhirMappers"
 import {findExtensionByKey, getBooleanFromNestedExtension, getIntegerFromNestedExtension} from "./extensionUtils"
+import {MessageHistory, OrganisationSummary} from "@cpt-ui-common/common-types"
+import {DoHSOrg} from "@cpt-ui-common/doHSClient"
 
 /**
  * Extracts a specific resource type from the FHIR Bundle
@@ -128,22 +130,11 @@ const extractDispensedItemsFromMedicationDispenses = (
 /**
  * Extracts message history from RequestGroup actions
  */
-const extractMessageHistory = (requestGroup: RequestGroup,
+const extractMessageHistory = (
+  requestGroup: RequestGroup,
   doHSData: DoHSData,
-  medicationDispenses: Array<MedicationDispense>):
-Array<{
-  messageCode: string
-  sentDateTime: string
-  organisationName: string
-  organisationODS: string
-  newStatusCode: string
-  dispenseNotification: Array<{
-    id: string
-    medicationName: string
-    quantity: string
-    dosageInstruction: string
-  }>
-}> => {
+  medicationDispenses: Array<MedicationDispense>
+): Array<MessageHistory> => {
   // find the specific "Prescription status transitions" action
   const historyAction = requestGroup.action?.find(action =>
     action.title === "Prescription status transitions"
@@ -161,7 +152,7 @@ Array<{
     const messageCodeDisplayName = action.title
     const messageCode = mapMessageHistoryTitleToMessageCode(messageCodeDisplayName ?? "")
 
-    let orgName = "Not found"
+    let orgName: string | undefined = undefined
 
     // Find organization name from DoHS data if ODS code is present
     if (organizationODS) {
@@ -192,7 +183,7 @@ Array<{
         const dispenseReference = subAction.resource?.reference
         if (dispenseReference) {
           // Find the referenced MedicationDispense resource
-          const referencedDispense = medicationDispenses.find(dispense => 
+          const referencedDispense = medicationDispenses.find(dispense =>
             dispenseReference.includes(dispense.id ?? "")
           )
 
@@ -228,19 +219,13 @@ Array<{
  * Creates organization summary from DoHS data
  */
 const createOrganizationSummary = (
-  doHSOrg: DoHSValue | null | undefined,
+  doHSOrg: DoHSOrg | null | undefined,
   prescribedFrom?: string,
   odsCodeFallback?: string
-): {
-  name: string
-  odsCode: string
-  address: string
-  telephone: string
-  prescribedFrom?: string
-} | undefined => {
+): OrganisationSummary | undefined => {
   // If we have an ODS code from either DoHS data or FHIR fallback, create a summary
   if (doHSOrg || odsCodeFallback) {
-    const telephone = doHSOrg?.Contacts?.find((c: Contact) =>
+    const telephone = doHSOrg?.Contacts?.find(c =>
       c.ContactMethodType === "Telephone"
     )?.ContactValue ?? "Not found"
 

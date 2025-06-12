@@ -1,10 +1,9 @@
 import {PrescriptionDetailsResponse} from "@cpt-ui-common/common-types"
+import {DoHSOrg} from "@cpt-ui-common/doHSClient"
 import {
   FhirAction,
   FhirParticipant,
   ExtensionWithNested,
-  Contact,
-  DoHSValue,
   DoHSData,
   PrescriptionIntent
 } from "../src/utils/types"
@@ -212,20 +211,18 @@ export const mockResource = {
   authoredOn: "2020-01-01T00:00:00Z"
 }
 
-export const mockContact: Contact = {
-  ContactType: "Primary",
-  ContactAvailabilityType: "9-5",
-  ContactMethodType: "phone",
-  ContactValue: "123-456-7890"
-}
-
-export const mockDoHSValue: DoHSValue = {
+export const mockDoHSValue: DoHSOrg = {
   OrganisationName: "NHS Test Organisation",
   ODSCode: "ODS123",
   Address1: "456 Health St",
   City: "TestCity",
   Postcode: "TS1 2AB",
-  Contacts: [mockContact]
+  Contacts: [{
+    ContactType: "Primary",
+    ContactAvailabilityType: "9-5",
+    ContactMethodType: "phone",
+    ContactValue: "123-456-7890"
+  }]
 }
 
 export const mockDoHSData: DoHSData = {
