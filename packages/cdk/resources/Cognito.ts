@@ -13,7 +13,7 @@ import {
   UserPoolIdentityProviderOidc
 } from "aws-cdk-lib/aws-cognito"
 import {ICertificate} from "aws-cdk-lib/aws-certificatemanager"
-import {RemovalPolicy} from "aws-cdk-lib"
+import {Duration, RemovalPolicy} from "aws-cdk-lib"
 import {
   AaaaRecord,
   ARecord,
@@ -227,8 +227,8 @@ export class Cognito extends Construct {
         ],
         callbackUrls: callbackUrls,
         logoutUrls: logoutUrls
-      } //,
-      //idTokenValidity: Duration.minutes(10)
+      },
+      idTokenValidity: Duration.minutes(10)
     })
 
     // ensure dependencies are set correctly so items are created in the correct order
