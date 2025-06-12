@@ -16,7 +16,7 @@ import {usePatientDetails} from "@/context/PatientDetailsProvider"
 import EpsSpinner from "@/components/EpsSpinner"
 import PrescriptionsListTabs from "@/components/prescriptionList/PrescriptionsListTab"
 import {TabHeader} from "@/components/EpsTabs"
-import PatientNotFoundMessage from "@/components/PrescriptionNotFoundMessage"
+import PrescriptionNotFoundMessage from "@/components/PrescriptionNotFoundMessage"
 
 import {PRESCRIPTION_LIST_TABS} from "@/constants/ui-strings/PrescriptionListTabStrings"
 import {PRESCRIPTION_LIST_PAGE_STRINGS} from "@/constants/ui-strings/PrescriptionListPageStrings"
@@ -154,9 +154,9 @@ export default function PrescriptionListPage() {
     )
   }
 
-  // Show PatientNotFoundMessage if no prescriptions found
+  // Show PrescriptionNotFoundMessage if no prescriptions found
   if (showNotFound) {
-    return <PatientNotFoundMessage />
+    return <PrescriptionNotFoundMessage />
   }
 
   return (

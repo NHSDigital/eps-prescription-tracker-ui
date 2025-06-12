@@ -9,7 +9,7 @@ import {
 import {SEARCH_STRINGS, STRINGS} from "@/constants/ui-strings/PrescriptionNotFoundMessageStrings"
 import {buildAltLink, buildBackLink, inferSearchType} from "@/helpers/prescriptionNotFoundLinks"
 
-export default function PatientNotFoundMessage() {
+export default function PrescriptionNotFoundMessage() {
   const [searchParams] = useSearchParams()
   const searchType = inferSearchType(searchParams)
   const content = SEARCH_STRINGS[searchType]
