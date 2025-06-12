@@ -1,4 +1,4 @@
-import {isUserLoggedIn} from "@/helpers/loginFunctions"
+import {isUserLoggedIn, getHomeLink} from "@/helpers/loginFunctions"
 
 describe("Auth Utility Functions", () => {
   describe("isUserLoggedIn", () => {
@@ -38,5 +38,24 @@ describe("Auth Utility Functions", () => {
       localStorage.setItem("auth", JSON.stringify(validAuth))
       expect(isUserLoggedIn()).toBe(true)
     })
+  })
+})
+
+describe("getHomeLink", () => {
+  beforeEach(() => {
+    localStorage.clear()
+  })
+  it("returns /login when user is not logged in", () => {
+    expect(getHomeLink()).toBe("/login")
+  })
+  it("returns /search-by-prescription-id when user is logged in", () => {
+    const validAuth = {
+      isSignedIn: true,
+      user: {username: "mockUser"},
+      idToken: {},
+      accessToken: {}
+    }
+    localStorage.setItem("auth", JSON.stringify(validAuth))
+    expect(getHomeLink()).toBe("/search-by-prescription-id")
   })
 })

@@ -1,13 +1,10 @@
 import React from "react"
 import {Link} from "react-router-dom"
 import {CookieStrings} from "@/constants/ui-strings/CookieStrings"
-import {isUserLoggedIn} from "@/helpers/loginFunctions"
+import {getHomeLink} from "@/helpers/loginFunctions"
 
 export default function CookieSettingsPage() {
 
-  const getHomeLink = () => {
-    return isUserLoggedIn() ? "/search-by-prescription-id" : "/login"
-  }
   return (
     <main className="nhsuk-width-container nhsuk-u-margin-top-4">
 

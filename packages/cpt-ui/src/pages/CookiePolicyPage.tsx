@@ -1,7 +1,7 @@
 import React, {useState, useEffect} from "react"
 import {Link, useNavigate} from "react-router-dom"
 import {CookieStrings} from "@/constants/ui-strings/CookieStrings"
-import {isUserLoggedIn} from "@/helpers/loginFunctions"
+import {getHomeLink} from "@/helpers/loginFunctions"
 import CookieTable, {Cookie} from "@/components/CookieTable"
 
 const CookiePolicyPage = () => {
@@ -63,10 +63,6 @@ const CookiePolicyPage = () => {
   const [hasInitialized, setHasInitialized] = useState(false)
 
   const navigate = useNavigate()
-
-  const getHomeLink = () => {
-    return isUserLoggedIn() ? "/search-by-prescription-id" : "/login"
-  }
 
   useEffect(() => {
     if (hasInitialized) {

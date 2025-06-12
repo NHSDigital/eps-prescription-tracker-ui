@@ -3,13 +3,9 @@ import {Link} from "react-router-dom"
 import {PrivacyNoticeStrings} from "@/constants/ui-strings/PrivacyNoticeStrings"
 import {createEmailLink, createPhoneLink} from "@/helpers/contactFunctions"
 import {contactInfo} from "@/helpers/contactInfo"
-import {isUserLoggedIn} from "@/helpers/loginFunctions"
+import {getHomeLink} from "@/helpers/loginFunctions"
 
 export default function PrivacyNoticePage() {
-
-  const getHomeLink = () => {
-    return isUserLoggedIn() ? "/search-by-prescription-id" : "/login"
-  }
 
   return (
     <main className="nhsuk-width-container nhsuk-u-margin-top-4">
