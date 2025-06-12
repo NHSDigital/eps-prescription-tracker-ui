@@ -88,6 +88,7 @@ export class StatelessResourcesStack extends Stack {
     const roleId: string = this.node.tryGetContext("roleId")
     const allowLocalhostAccess: boolean = this.node.tryGetContext("allowLocalhostAccess")
     const webAclAttributeArn = this.node.tryGetContext("webAclAttributeArn")
+    const vpcId = this.node.tryGetContext("vpcId")
 
     // Imports
     const baseImportPath = `${props.serviceName}-stateful-resources`
@@ -280,7 +281,8 @@ export class StatelessResourcesStack extends Stack {
       cloudwatchKmsKey: cloudwatchKmsKey,
       splunkDeliveryStream: splunkDeliveryStream,
       splunkSubscriptionFilterRole: splunkSubscriptionFilterRole,
-      userPool: userPool
+      userPool: userPool,
+      vpcId: vpcId
     })
 
     // OAuth2 endpoints get their own API Gateway (/oauth2/*)

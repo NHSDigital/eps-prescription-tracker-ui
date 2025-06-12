@@ -64,6 +64,10 @@ if [ "${DO_NOT_GET_AWS_EXPORT}" != "true" ]; then
     CF_US_EXPORTS=$(aws cloudformation list-exports --region us-east-1 --output json)
 fi
 
+if [ -z "${VPC_ID}" ]; then
+    VPC_ID=$(echo "$CF_LONDON_EXPORTS" | jq  -r '.Exports[] | select(.Name == "vpc-resources:VpcId") | .Value')
+fi
+
 if [ -z "${EPS_DOMAIN_NAME}" ]; then
     EPS_DOMAIN_NAME=$(echo "$CF_LONDON_EXPORTS" | jq  -r '.Exports[] | select(.Name == "eps-route53-resources:EPS-domain") | .Value')
 fi
@@ -201,7 +205,8 @@ elif [ "$CDK_APP_NAME" == "StatelessResourcesApp" ]; then
     fix_string_key primaryOidcjwksEndpoint "${PRIMARY_OIDC_JWKS_ENDPOINT}"
 
     fix_string_key webAclAttributeArn "${WEBACL_ATTRIBUTE_ARN}"
-
+    fix_string_key vpcId "${VPC_ID}"
+    
     if [ "$USE_MOCK_OIDC" == "true" ]; then
         fix_string_key mockOidcClientId "${MOCK_OIDC_CLIENT_ID}"
         fix_string_key mockOidcTokenEndpoint "${MOCK_OIDC_TOKEN_ENDPOINT}"
