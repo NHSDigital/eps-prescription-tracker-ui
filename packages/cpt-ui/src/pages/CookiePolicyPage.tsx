@@ -1,7 +1,7 @@
 import React, {useState, useEffect} from "react"
 import {Link, useNavigate} from "react-router-dom"
 import {CookieStrings} from "@/constants/ui-strings/CookieStrings"
-import {isUserLoggedIn} from "@/helpers/cookiesFunctions"
+import {isUserLoggedIn} from "@/helpers/loginFunctions"
 import CookieTable, {Cookie} from "@/components/CookieTable"
 
 const CookiePolicyPage = () => {
@@ -106,18 +106,10 @@ const CookiePolicyPage = () => {
     <div className="nhsuk-width-container nhsuk-u-margin-top-4">
       <main className="nhsuk-main-wrapper nhsuk-main-wrapper--s" id="main-content" role="main">
         <nav className="nhsuk-breadcrumb" aria-label="Breadcrumb">
-          <ol className="nhsuk-breadcrumb__list">
-            <li className="nhsuk-breadcrumb__item">
-              <Link className="nhsuk-breadcrumb__link" to={getHomeLink()}>{CookieStrings.home}</Link>
-            </li>
-          </ol>
-          <p className="nhsuk-breadcrumb__back">
-            <Link className="nhsuk-breadcrumb__backlink" to={getHomeLink()}>
-              <span className="nhsuk-u-visually-hidden">
-                {CookieStrings.breadcrumbBack.visuallyHidden}&nbsp;</span>
-              {CookieStrings.home}
-            </Link>
+          <p className="nhsuk-breadcrumb__item">
+            <Link className="nhsuk-breadcrumb__link" to={getHomeLink()}>{CookieStrings.home}</Link>
           </p>
+
         </nav>
         <h1 className="nhsuk-heading-xl">{CookieStrings.cptCookies}</h1>
         <p>

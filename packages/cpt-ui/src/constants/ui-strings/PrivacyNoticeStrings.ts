@@ -18,7 +18,7 @@ export const PrivacyNoticeStrings = {
     + " status of an electronic prescription to support patients' direct care."
   },
   dataCollected: {
-    header: "What Data We Collect",
+    header: "What data we collect",
     explanation: "We collect a range of personal data from our users, including",
     identifiable: "Identifiable data - Through signing in via ",
     cis2Link: "NHS CIS2 authentication",
@@ -42,9 +42,9 @@ export const PrivacyNoticeStrings = {
     + " our product and improve its functionality."
     + " To do this we put small files called 'analytic cookies' on to your device using a software called"
     + " Amazon CloudWatch RUM. These cookies are optional. The information collected includes:"
-    + "the type of device you used, your browser type, your operating system, the date and time"
+    + " the type of device you used, your browser type, your operating system, the date and time"
     + " you used the service and how you interacted with the service. For more information, please see our ",
-    cookie: "cookie policy.",
+    cookie: "cookie policy",
     audit: "audit and security - we collect activity logs of actions you have taken for monitoring and audit purposes."
     + " We process your authentication credentials, usage data and device information to ensure the security"
     + " of the service",
@@ -79,7 +79,7 @@ export const PrivacyNoticeStrings = {
      + " to law enforcement or other legal entities."
   },
   retention: {
-    header: "How Long We Keep Your Data For",
+    header: "How long we keep your data for",
     note: "We will retain your personal data for as long as necessary to fulfil the purposes for"
     + " which it was collected, including for legal or reporting requirements. Specific retention periods include:",
     account: "account data, which is: retained for 2 years",

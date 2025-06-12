@@ -1,4 +1,4 @@
-import {isUserLoggedIn} from "@/helpers/cookiesFunctions"
+import {isUserLoggedIn} from "@/helpers/loginFunctions"
 
 describe("Auth Utility Functions", () => {
   describe("isUserLoggedIn", () => {

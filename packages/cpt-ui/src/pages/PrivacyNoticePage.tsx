@@ -3,20 +3,20 @@ import {Link} from "react-router-dom"
 import {PrivacyNoticeStrings} from "@/constants/ui-strings/PrivacyNoticeStrings"
 import {createEmailLink, createPhoneLink} from "@/helpers/contactFunctions"
 import {contactInfo} from "@/helpers/contactInfo"
+import {isUserLoggedIn} from "@/helpers/loginFunctions"
 
 export default function PrivacyNoticePage() {
+
+  const getHomeLink = () => {
+    return isUserLoggedIn() ? "/search-by-prescription-id" : "/login"
+  }
 
   return (
     <main className="nhsuk-width-container nhsuk-u-margin-top-4">
       <nav className="nhsuk-breadcrumb" aria-label="Breadcrumb">
-        <ol className="nhsuk-breadcrumb__list">
-          <li className="nhsuk-breadcrumb__item">
-            <Link className="nhsuk-breadcrumb__link" to="/search">{PrivacyNoticeStrings.home}</Link>
-          </li>
-          <li className="nhsuk-breadcrumb__item">
-            <Link className="nhsuk-breadcrumb__link" to="/privacy">{PrivacyNoticeStrings.privacyNotice}</Link>
-          </li>
-        </ol>
+        <p className="nhsuk-breadcrumb__item">
+          <Link className="nhsuk-breadcrumb__link" to={getHomeLink()}>{PrivacyNoticeStrings.home}</Link>
+        </p>
       </nav>
 
       <div className="nhsuk-grid-row">
@@ -178,7 +178,7 @@ export default function PrivacyNoticePage() {
             {PrivacyNoticeStrings.contact.dpo}
             {createEmailLink(contactInfo.emails.dpo)}
           </p>
-          <p>
+          <p style={{marginBottom: "50px"}}>
             {PrivacyNoticeStrings.contact.ico}
             {createPhoneLink(contactInfo.phones.ico)}
             {PrivacyNoticeStrings.contact.or}

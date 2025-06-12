@@ -1,7 +1,7 @@
 import React from "react"
 import {Link} from "react-router-dom"
 import {CookieStrings} from "@/constants/ui-strings/CookieStrings"
-import {isUserLoggedIn} from "@/helpers/cookiesFunctions"
+import {isUserLoggedIn} from "@/helpers/loginFunctions"
 
 export default function CookieSettingsPage() {
 
