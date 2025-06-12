@@ -25,7 +25,6 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
       FRONTEND_PATHS.LOGOUT,
       FRONTEND_PATHS.COOKIES
     ]
-    console.log("in accessProvider ensureRoleSelected with this", {auth})
 
     if (!auth.isSignedIn && !auth.isSigningIn) {
       if (!allowed_no_role_paths.includes(normalizePath(location.pathname))) {
@@ -44,12 +43,9 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
   }
 
   useEffect(() => {
-    console.log("in accessProvider useEffect with this", {auth})
     const currentPath = window.location.pathname
-    console.log(`I think this is the path: ${currentPath}`, {currentPath})
     const onSelectYourRole = currentPath === `/site${FRONTEND_PATHS.SELECT_YOUR_ROLE}`
     if (auth.isSigningIn && onSelectYourRole) {
-      console.log("in sign in flow and on select your role so just returning")
       return
     }
     ensureRoleSelected()

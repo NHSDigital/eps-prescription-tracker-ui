@@ -16,7 +16,6 @@ http.interceptors.request.use(
     config.headers["X-request-id"] = uuidv4()
     config.headers["X-Correlation-id"] = uuidv4()
     const authSession = await fetchAuthSession()
-    console.log("authSession result", authSession)
     const idToken = authSession.tokens?.idToken
     if (idToken === undefined) {
       console.error("Could not get a token - aborting")

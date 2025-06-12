@@ -39,7 +39,7 @@ export default function PrescriptionListPage() {
   useEffect(() => {
     const runSearch = async () => {
       if (!auth?.isSignedIn) {
-        console.log("Auth token not ready, waiting...")
+        console.log("Not signed in, waiting...")
         return
       }
 
@@ -65,7 +65,6 @@ export default function PrescriptionListPage() {
         params: searchParams
       })
 
-      console.log("Response status", {status: response.status})
       if (response.status === 404) {
         console.error("No search results were returned")
         navigate(FRONTEND_PATHS.PRESCRIPTION_NOT_FOUND)

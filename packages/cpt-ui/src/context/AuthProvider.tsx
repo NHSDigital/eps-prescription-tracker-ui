@@ -96,7 +96,6 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
           console.log("Processing signedIn event")
           console.log("User %s logged in", payload.data.username)
           const trackerUserInfo = await getTrackerUserInfo()
-          console.log("got the following tracker user info", {trackerUserInfo})
           setRolesWithAccess(trackerUserInfo.rolesWithAccess)
           setRolesWithoutAccess(trackerUserInfo.rolesWithoutAccess)
           setHasNoAccess(trackerUserInfo.hasNoAccess)
@@ -154,7 +153,6 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
    * Reconfigure Amplify on initial state
    */
   useEffect(() => {
-    console.log(`Reconfiguring auth provider on a reload`)
     Amplify.configure(authConfig, {ssr: false})
   }, [])
 

@@ -19,7 +19,6 @@ export default function EpsCard({role, link}: EpsCardProps) {
 
   const handleSetSelectedRole = async (e: React.MouseEvent) => {
     e.preventDefault()
-    console.log("going to call updateSelectedRole")
     await authContext.updateSelectedRole(role)
 
     // Redirect to the appropriate page

@@ -89,7 +89,6 @@ export default function RoleSelectionPage({
   const [roleCardPropsWithoutAccess, setRoleCardPropsWithoutAccess] = useState<Array<RolesWithoutAccessProps>>([])
 
   useEffect(() => {
-    console.log("in EpsRoleSelectionPage useEffect 0 with this auth", {auth})
     // Transform roles data for display
     setRoleCardPropsWithAccess((!auth.hasNoAccess)
       ? auth.rolesWithAccess.map((role: RoleDetails, index) => ({
@@ -112,11 +111,7 @@ export default function RoleSelectionPage({
 
   // Handle auto-redirect for single role
   useEffect(() => {
-    console.log("in EpsRoleSelectionPage useEffect 1 with this auth", {auth})
-    console.log("in epsRoleSelectionPage with params",
-      {redirecting: redirecting.current})
     if (auth.isSigningIn) {
-      console.log("setting redirect to true")
       redirecting.current = true
       return
     } else {
@@ -132,7 +127,6 @@ export default function RoleSelectionPage({
 
   // Set login message when selected role is available
   useEffect(() => {
-    console.log("in EpsRoleSelectionPage useEffect 2 with this auth", {auth})
     if (!loginInfoMessage && auth.selectedRole) {
       setLoginInfoMessage(
         `You are currently logged in at ${auth.selectedRole.org_name || noOrgName} ` +

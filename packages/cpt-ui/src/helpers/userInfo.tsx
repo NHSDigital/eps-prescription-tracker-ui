@@ -22,7 +22,6 @@ export const getTrackerUserInfo = async (): Promise<TrackerUserInfoResult> => {
   let error: string | null = null
 
   try {
-    console.log("calling tracker user info endpoint")
     const response = await http.get(API_ENDPOINTS.TRACKER_USER_INFO)
 
     if (response.status !== 200) {
@@ -32,7 +31,6 @@ export const getTrackerUserInfo = async (): Promise<TrackerUserInfoResult> => {
     }
 
     const data = response.data
-    console.log("received this from tracker user info", {response})
 
     if (!data.userInfo) {
       throw new Error("Server response did not contain data")
@@ -92,13 +90,11 @@ export const getTrackerUserInfo = async (): Promise<TrackerUserInfoResult> => {
 export const updateRemoteSelectedRole = async (newRole: RoleDetails) => {
   try {
     // Update selected role in the backend via the selectedRoleLambda endpoint using axios
-    console.log("calling set selected role")
     const response = await http.put(
       API_ENDPOINTS.SELECTED_ROLE,
       {currently_selected_role: newRole}
     )
 
-    console.log("set the selected role")
     if (response.status !== 200) {
       throw new Error("Failed to update the selected role")
     }
