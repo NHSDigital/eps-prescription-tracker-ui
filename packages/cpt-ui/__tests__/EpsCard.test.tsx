@@ -2,7 +2,7 @@ import "@testing-library/jest-dom"
 import {render, screen, fireEvent} from "@testing-library/react"
 import {BrowserRouter} from "react-router-dom"
 import EpsCard from "@/components/EpsCard"
-import {AuthContext} from "@/context/AuthProvider"
+import {AuthContext, AuthContextType} from "@/context/AuthProvider"
 import {AccessContext} from "@/context/AccessProvider"
 
 // Mock the auth configuration
@@ -60,6 +60,10 @@ jest.mock("@/constants/environment", () => ({
   }
 }))
 
+jest.mock("@/helpers/userInfo", () => ({
+  updateSelectedRole: jest.fn()
+}))
+
 const mockRole = {
   role_id: "123",
   org_name: "Test Organization",
@@ -70,36 +74,31 @@ const mockRole = {
 
 const mockLink = "/role-detail"
 
+const mockUpdateSelectedRole = jest.fn()
+
 // Update default auth context with proper JWT
-const defaultAuthContext = {
+const defaultAuthContext: AuthContextType = {
   error: null,
   user: null,
   isSignedIn: true,
-  idToken: "mock-token",
-  accessToken: null,
-  cognitoSignIn: jest.fn(),
-  cognitoSignOut: jest.fn()
-}
-
-const defaultAccessContext = {
-  updateSelectedRole: jest.fn(),
-  noAccess: false,
-  singleAccess: false,
-  selectedRole: null,
+  isSigningIn: false,
+  rolesWithAccess: [],
+  rolesWithoutAccess: [],
+  hasNoAccess: true,
+  hasSingleRoleAccess: true,
+  selectedRole: undefined,
   userDetails: undefined,
-  setUserDetails: jest.fn(),
-  setNoAccess: jest.fn(),
-  setSingleAccess: jest.fn(),
-  clear: jest.fn()
+  cognitoSignIn: jest.fn(),
+  cognitoSignOut: jest.fn(),
+  clearAuthState: jest.fn(),
+  updateSelectedRole: mockUpdateSelectedRole
 }
 
 const renderWithProviders = (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   props: { role: any; link: string },
   // eslint-disable-next-line no-undef
-  authOverrides: Partial<React.ContextType<typeof AuthContext>> = {},
-  // eslint-disable-next-line no-undef
-  accessOverrides: Partial<React.ContextType<typeof AccessContext>> = {}
+  authOverrides: Partial<React.ContextType<typeof AuthContext>> = {}
 ) => {
   // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
   const authValue = {
@@ -107,16 +106,10 @@ const renderWithProviders = (
     ...authOverrides
   // eslint-disable-next-line no-undef
   } as React.ContextType<typeof AuthContext>
-  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-  const accessValue = {
-    ...defaultAccessContext,
-    ...accessOverrides
-  // eslint-disable-next-line no-undef
-  } as React.ContextType<typeof AccessContext>
 
   return render(
     <AuthContext.Provider value={authValue}>
-      <AccessContext.Provider value={accessValue}>
+      <AccessContext.Provider value={null}>
         <BrowserRouter>
           <EpsCard {...props} />
         </BrowserRouter>
@@ -165,17 +158,15 @@ describe("EpsCard Component", () => {
   })
 
   it("calls API and navigates on card click", async () => {
-    const mockSetSelectedRole = jest.fn()
     renderWithProviders(
       {role: mockRole, link: mockLink},
-      {},
-      {updateSelectedRole: mockSetSelectedRole}
+      {}
     )
 
     const cardLink = screen.getByRole("link", {name: /test organization/i})
     await fireEvent.click(cardLink)
 
-    expect(mockSetSelectedRole).toHaveBeenCalledWith(
+    expect(mockUpdateSelectedRole).toHaveBeenCalledWith(
       expect.objectContaining({
         role_id: "123",
         org_name: "Test Organization",
