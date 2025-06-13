@@ -180,7 +180,7 @@ jobs:
       JWT_KID: "eps-cpt-ui-qa"
       ROLE_ID: "555254242106"
       LOG_LEVEL: "DEBUG"
-      WAF_ALLOW_GA_RUNNER_CONNECTIVITY: false
+      WAF_ALLOW_GA_RUNNER_CONNECTIVITY: true
     secrets:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.QA_CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.QA_CLOUD_FORMATION_DEPLOY_ROLE }}
