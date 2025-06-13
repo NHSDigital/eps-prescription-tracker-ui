@@ -21,12 +21,13 @@ const serviceName = app.node.tryGetContext("serviceName")
 const version = app.node.tryGetContext("VERSION_NUMBER")
 const commit = app.node.tryGetContext("COMMIT_ID")
 const useCustomCognitoDomain = app.node.tryGetContext("useCustomCognitoDomain")
-let allowListIpv4 = app.node.tryGetContext("allowListIpv4")
-if (typeof allowListIpv4 === "string") {
-  allowListIpv4 = allowListIpv4.split(",")
-} else if (!Array.isArray(allowListIpv4)) {
-  allowListIpv4 = []
+let githubAllowListIpv4 = app.node.tryGetContext("githubAllowListIpv4")
+if (typeof githubAllowListIpv4 === "string") {
+  githubAllowListIpv4 = githubAllowListIpv4.split(",")
+} else if (!Array.isArray(githubAllowListIpv4)) {
+  githubAllowListIpv4 = []
 }
+const wafAllowGaRunnerConnectivity = app.node.tryGetContext("wafAllowGaRunnerConnectivity")
 
 // add cdk-nag to everything
 Aspects.of(app).add(new AwsSolutionsChecks({verbose: true}))
@@ -58,7 +59,8 @@ const UsCerts = new UsCertsStack(app, "UsCertsStack", {
   shortCloudfrontDomain: shortCloudfrontDomain,
   shortCognitoDomain: shortCognitoDomain,
   parentCognitoDomain: parentCognitoDomain,
-  allowListIpv4: allowListIpv4
+  githubAllowListIpv4: githubAllowListIpv4,
+  wafAllowGaRunnerConnectivity: wafAllowGaRunnerConnectivity
 })
 
 const StatefulResources = new StatefulResourcesStack(app, "StatefulStack", {

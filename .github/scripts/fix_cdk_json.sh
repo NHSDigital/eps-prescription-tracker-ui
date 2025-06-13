@@ -125,13 +125,6 @@ if [ -z "${RUM_APP_NAME}" ]; then
         -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
 fi
 
-if [ -z "${PRIMARY_OIDC_CLIENT_ID}" ]; then
-    PRIMARY_OIDC_CLIENT_ID=$(echo "$CF_LONDON_EXPORTS" | \
-        jq \
-        --arg EXPORT_NAME "${SERVICE_NAME}-stateful-resources:rum:local:primaryOidcClientId" \
-        -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
-fi
-
 # Acquire values externally
 ## Get GitHub Actions runner IPs for use against WAF
 if [ -z "${GITHUB_ACTIONS_RUNNER_IPV4}" ]; then
@@ -153,7 +146,8 @@ if [ "$CDK_APP_NAME" == "StatefulResourcesApp" ]; then
     fix_string_key primaryOidcTokenEndpoint "${PRIMARY_OIDC_TOKEN_ENDPOINT}"
     fix_string_key primaryOidcUserInfoEndpoint "${PRIMARY_OIDC_USERINFO_ENDPOINT}"
     fix_string_key primaryOidcjwksEndpoint "${PRIMARY_OIDC_JWKS_ENDPOINT}"
-    fix_list_key allowListIpv4 "${GITHUB_ACTIONS_RUNNER_IPV4}"
+    fix_list_key githubAllowListIpv4 "${GITHUB_ACTIONS_RUNNER_IPV4}"
+    fix_boolean_number_key wafAllowGaRunnerConnectivity "${WAF_ALLOW_GA_RUNNER_CONNECTIVITY}"
 
     fix_boolean_number_key useMockOidc "${USE_MOCK_OIDC}"
     if [ "$USE_MOCK_OIDC" == "true" ]; then

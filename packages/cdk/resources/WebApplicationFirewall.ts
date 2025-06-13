@@ -3,29 +3,39 @@ import * as wafv2 from "aws-cdk-lib/aws-wafv2"
 
 /**
  * WAF ACL and supporting resources
-
  */
-
 export interface WebACLProps {
   readonly serviceName: string
   readonly rateLimitTransactions: number // Total transactions limit within an evaluation window (seconds)
   readonly rateLimitWindowSeconds?: number // Minimum is 60 seconds, default is 60 seconds.
-  readonly allowListIpv4: Array<string>
-    }
+  readonly githubAllowListIpv4: Array<string>
+  readonly wafAllowGaRunnerConnectivity: boolean
+}
 
 export class WebACL extends Construct {
-  public readonly allowListIpv4: wafv2.CfnIPSet
+  public readonly githubAllowListIpv4: wafv2.CfnIPSet
+  public readonly wafAllowGaRunnerConnectivity: boolean
   public readonly webAcl: wafv2.CfnWebACL
-  public constructor(scope: Construct, id: string, props: { serviceName: string, rateLimitTransactions: number,
-    rateLimitWindowSeconds: number, allowListIpv4: Array<string> }) {
+
+  public constructor(
+    scope: Construct,
+    id: string,
+    props: {
+      serviceName: string
+      rateLimitTransactions: number
+      rateLimitWindowSeconds: number
+      githubAllowListIpv4: Array<string>
+      wafAllowGaRunnerConnectivity: boolean
+    }
+  ) {
     super(scope, id)
 
-    this.allowListIpv4 = new wafv2.CfnIPSet(this, "AllowListIPv4", {
-      addresses: props.allowListIpv4,
+    this.githubAllowListIpv4 = new wafv2.CfnIPSet(this, "githubAllowListIpv4", {
+      addresses: props.githubAllowListIpv4,
       ipAddressVersion: "IPV4",
       scope: "CLOUDFRONT",
       description: "Allow list IPs that may originate outside of the UK or Crown dependencies.",
-      name: `${props.serviceName}-PermittedOutsideUKandCrown`
+      name: `${props.serviceName}-PermittedGithubActionRunners`
     })
 
     this.webAcl = new wafv2.CfnWebACL(this, "CloudfrontWebAcl", {
@@ -40,25 +50,29 @@ export class WebACL extends Construct {
         metricName: `${props.serviceName}-WebAcl`
       },
       rules: [
-        {
-          name: `PermitOutsideUKandCrownAllowList`,
-          priority: 0,
-          action: {
-            allow: {}
-          },
-          statement: {
-            ipSetReferenceStatement: {
-              arn: this.allowListIpv4.attrArn
+        ...(props.wafAllowGaRunnerConnectivity
+          ? [
+            {
+              name: "PermitGithubActionsRunnersOutsideUKandCrown",
+              priority: 0,
+              action: {
+                allow: {}
+              },
+              statement: {
+                ipSetReferenceStatement: {
+                  arn: this.githubAllowListIpv4.attrArn
+                }
+              },
+              visibilityConfig: {
+                sampledRequestsEnabled: false,
+                cloudWatchMetricsEnabled: true,
+                metricName: `${props.serviceName}-PermitGithubActionsRunnersOutsideUKandCrown`
+              }
             }
-          },
-          visibilityConfig: {
-            sampledRequestsEnabled: false,
-            cloudWatchMetricsEnabled: true,
-            metricName: `${props.serviceName}-PermitOutsideUKandCrownAllowList`
-          }
-        },
+          ]
+          : []),
         {
-          name: `PermitUKandCrownDependentCountries`,
+          name: "PermitUKandCrownDependentCountries",
           priority: 1,
           action: {
             allow: {}
@@ -80,7 +94,7 @@ export class WebACL extends Construct {
           }
         },
         {
-          name: `BlockAllOtherCountries`,
+          name: "BlockAllOtherCountries",
           priority: 2,
           action: {
             block: {}
@@ -106,7 +120,7 @@ export class WebACL extends Construct {
           }
         },
         {
-          name: `RateLimitRule`,
+          name: "RateLimitRule",
           priority: 3,
           action: {
             block: {}
@@ -144,7 +158,8 @@ export class WebACL extends Construct {
         {
           key: "Name",
           value: `${props.serviceName}-WebAcl`
-        }]
+        }
+      ]
     })
   }
 }
