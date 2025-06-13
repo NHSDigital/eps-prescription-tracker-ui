@@ -5,12 +5,13 @@ export type RoleDetails = {
   org_name?: string;
   site_name?: string;
   site_address?: string;
-  uuid?: string;
 };
 
 export type UserDetails = {
   family_name: string;
   given_name: string;
+  sub?: string;
+  name?: string
 };
 
 export type TrackerUserInfo = {

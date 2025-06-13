@@ -14,6 +14,7 @@ import {
   fetchUserInfo
 } from "@cpt-ui-common/authFunctions"
 import {getTokenMapping, updateTokenMapping} from "@cpt-ui-common/dynamoFunctions"
+import {extractInboundEventValues, appendLoggerKeys} from "@cpt-ui-common/lambdaUtils"
 
 /*
 This is the lambda code to get user info
@@ -63,11 +64,8 @@ const errorResponseBody = {
 const middyErrorHandler = new MiddyErrorHandler(errorResponseBody)
 
 const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-  logger.appendKeys({"apigw-request-id": event.requestContext?.requestId})
-  const headers = event.headers ?? []
-  logger.appendKeys({"x-request-id": headers["x-request-id"]})
-  logger.info("Lambda handler invoked", {event})
-
+  const {loggerKeys} = extractInboundEventValues(event)
+  appendLoggerKeys(logger, loggerKeys)
   const username = getUsernameFromEvent(event)
 
   // First, try to use cached user info

@@ -9,12 +9,12 @@ import {
 import {Link} from "react-router-dom"
 
 import {YOUR_SELECTED_ROLE_STRINGS} from "@/constants/ui-strings/YourSelectedRoleStrings"
-import {useAccess} from "@/context/AccessProvider"
+import {useAuth} from "@/context/AuthProvider"
 import {Button} from "@/components/ReactRouterButton"
 import {FRONTEND_PATHS} from "@/constants/environment"
 
 export default function YourSelectedRolePage() {
-  const {selectedRole} = useAccess()
+  const {selectedRole} = useAuth()
 
   const [roleName, setRoleName] = useState<string>(YOUR_SELECTED_ROLE_STRINGS.noRoleName)
   const [orgName, setOrgName] = useState<string>(YOUR_SELECTED_ROLE_STRINGS.noOrgName)

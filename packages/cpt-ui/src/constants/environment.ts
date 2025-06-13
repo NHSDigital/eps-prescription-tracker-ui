@@ -67,9 +67,6 @@ export const FRONTEND_PATHS = {
   PRIVACY_NOTICE: "/privacy-notice"
 }
 
-// This needs to be provided in backend requests as a header
-export const NHS_REQUEST_URID = "555254242106"
-
 // Type for environment
 export type MockAuthEnvironment = "dev" | "dev-pr" | "ref" | "qa"
 

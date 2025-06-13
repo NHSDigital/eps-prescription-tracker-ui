@@ -9,7 +9,7 @@ import inputOutputLogger from "@middy/input-output-logger"
 import {parse} from "querystring"
 import {PrivateKey} from "jsonwebtoken"
 import {exchangeTokenForApigeeAccessToken, fetchUserInfo, initializeOidcConfig} from "@cpt-ui-common/authFunctions"
-import {updateTokenMapping, getSessionState} from "@cpt-ui-common/dynamoFunctions"
+import {insertTokenMapping, getSessionState} from "@cpt-ui-common/dynamoFunctions"
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 import {v4 as uuidv4} from "uuid"
 import jwt from "jsonwebtoken"
@@ -146,21 +146,18 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
   // as we now have all the user information including roles, and apigee tokens
   // store them in the token mapping table
-  await updateTokenMapping(
-    documentClient,
-    mockOidcConfig.tokenMappingTableName,
-    {
-      username: `Mock_${userInfoResponse.user_details.sub}`,
-      apigeeAccessToken: exchangeResult.accessToken,
-      apigeeRefreshToken: exchangeResult.refreshToken,
-      apigeeExpiresIn: exchangeResult.expiresIn,
-      rolesWithAccess: userInfoResponse.roles_with_access,
-      rolesWithoutAccess: userInfoResponse.roles_without_access,
-      currentlySelectedRole: userInfoResponse.currently_selected_role,
-      userDetails: userInfoResponse.user_details
-    },
-    logger
-  )
+
+  const tokenMappingItem = {
+    username: `Mock_${userInfoResponse.user_details.sub}`,
+    apigeeAccessToken: exchangeResult.accessToken,
+    apigeeRefreshToken: exchangeResult.refreshToken,
+    apigeeExpiresIn: exchangeResult.expiresIn,
+    rolesWithAccess: userInfoResponse.roles_with_access,
+    rolesWithoutAccess: userInfoResponse.roles_without_access,
+    currentlySelectedRole: userInfoResponse.currently_selected_role,
+    userDetails: userInfoResponse.user_details
+  }
+  await insertTokenMapping(documentClient, mockOidcConfig.tokenMappingTableName, tokenMappingItem, logger)
 
   // this is what gets returned to cognito
   // access token and refresh token are not used by cognito so its ok that they are unusud

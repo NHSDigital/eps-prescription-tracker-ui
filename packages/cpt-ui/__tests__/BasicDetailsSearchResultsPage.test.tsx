@@ -11,30 +11,25 @@ import {SearchResultsPageStrings} from "@/constants/ui-strings/BasicDetailsSearc
 import {FRONTEND_PATHS} from "@/constants/environment"
 import http from "@/helpers/axios"
 import {AuthContext, type AuthContextType} from "@/context/AuthProvider"
-import {JWT} from "aws-amplify/auth"
 
 // Mock the axios module
 jest.mock("@/helpers/axios")
 
-// Mock the auth context
-const mockIdToken: JWT = {
-  toString: () => "mock-id-token",
-  payload: {}
-}
-
-const mockAccessToken: JWT = {
-  toString: () => "mock-access-token",
-  payload: {}
-}
-
 const mockAuthContext: AuthContextType = {
-  idToken: mockIdToken,
   error: null,
   user: null,
   isSignedIn: true,
-  accessToken: mockAccessToken,
+  isSigningIn: false,
+  rolesWithAccess: [],
+  rolesWithoutAccess: [],
+  hasNoAccess: false,
+  hasSingleRoleAccess: false,
+  selectedRole: undefined,
+  userDetails: undefined,
   cognitoSignIn: jest.fn(),
-  cognitoSignOut: jest.fn()
+  cognitoSignOut: jest.fn(),
+  clearAuthState: jest.fn(),
+  updateSelectedRole: jest.fn()
 }
 
 const mockNavigate = jest.fn()
