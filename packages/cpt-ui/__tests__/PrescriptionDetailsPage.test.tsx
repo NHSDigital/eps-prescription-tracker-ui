@@ -23,7 +23,6 @@ jest.mock("@/helpers/axios", () => ({
   get: jest.fn()
 }))
 import http from "@/helpers/axios"
-import {JWT} from "aws-amplify/auth"
 
 jest.mock("react-router-dom", () => {
   const actual = jest.requireActual("react-router-dom")
@@ -39,27 +38,36 @@ const mockCognitoSignOut = jest.fn()
 
 const defaultAuthState: AuthContextType = {
   isSignedIn: false,
+  isSigningIn: false,
   user: null,
   error: null,
-  idToken: null,
-  accessToken: null,
+  rolesWithAccess: [],
+  rolesWithoutAccess: [],
+  hasNoAccess: false,
+  hasSingleRoleAccess: false,
+  selectedRole: undefined,
+  userDetails: undefined,
   cognitoSignIn: mockCognitoSignIn,
   cognitoSignOut: mockCognitoSignOut,
-  isAuthLoading: false
+  clearAuthState: jest.fn(),
+  updateSelectedRole: jest.fn()
 }
 
 const signedInAuthState: AuthContextType = {
   isSignedIn: true,
-  user: {
-    username: "testUser",
-    userId: "test-user-id"
-  },
+  isSigningIn: false,
+  user: "testUser",
   error: null,
-  idToken: {toString: () => "mockIdToken"} as unknown as JWT,
-  accessToken: {toString: () => "mockAccessToken"} as unknown as JWT,
-  isAuthLoading: false,
+  rolesWithAccess: [],
+  rolesWithoutAccess: [],
+  hasNoAccess: false,
+  hasSingleRoleAccess: false,
+  selectedRole: undefined,
+  userDetails: undefined,
   cognitoSignIn: mockCognitoSignIn,
-  cognitoSignOut: mockCognitoSignOut
+  cognitoSignOut: mockCognitoSignOut,
+  clearAuthState: jest.fn(),
+  updateSelectedRole: jest.fn()
 }
 
 // Auth provider mock
@@ -78,16 +86,9 @@ const MockAuthProvider = ({
       setAuthState((prev) => ({
         ...prev,
         isSignedIn: true,
-        user: {
-          username:
-            (input?.provider as { custom: string })?.custom || "mockUser",
-          userId: "mock-user-id"
-        },
-        error: null,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        idToken: {toString: () => "mockIdToken"} as any,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        accessToken: {toString: () => "mockAccessToken"} as any
+        user: (input?.provider as { custom: string })?.custom || "mockUser",
+        error: null
+
       }))
     },
     cognitoSignOut: async () => {

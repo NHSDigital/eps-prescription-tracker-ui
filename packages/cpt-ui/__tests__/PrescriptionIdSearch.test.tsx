@@ -13,16 +13,22 @@ import {FRONTEND_PATHS} from "@/constants/environment"
 import PrescriptionIdSearch from "@/components/prescriptionSearch/PrescriptionIdSearch"
 import {PRESCRIPTION_ID_SEARCH_STRINGS} from "@/constants/ui-strings/SearchForAPrescriptionStrings"
 import {AuthContext, AuthContextType} from "@/context/AuthProvider"
-import {JWT} from "aws-amplify/auth"
 
 const mockAuthContext: AuthContextType = {
   error: null,
   user: null,
   isSignedIn: true,
-  idToken: "mock-id-token" as unknown as JWT,
-  accessToken: "mock-access-token" as unknown as JWT,
+  isSigningIn: false,
+  rolesWithAccess: [],
+  rolesWithoutAccess: [],
+  hasNoAccess: false,
+  hasSingleRoleAccess: false,
+  selectedRole: undefined,
+  userDetails: undefined,
   cognitoSignIn: jest.fn(),
-  cognitoSignOut: jest.fn()
+  cognitoSignOut: jest.fn(),
+  clearAuthState: jest.fn(),
+  updateSelectedRole: jest.fn()
 }
 
 const LocationDisplay = () => {
