@@ -68,8 +68,8 @@ export const CookieStrings = {
   intro: {
     paragraph1:
     "NHS England uses cookies on the Prescription Tracker. " +
-     "For information about how we store your data, check our privacy policy for this service.",
-    privacyPolicyText: "privacy policy"
+     "For information about how we store your data, check our privacy notice for this service.",
+    privacyPolicyText: "privacy notice"
   },
 
   whatAreCookies: {

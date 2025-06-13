@@ -9,3 +9,7 @@ export const isUserLoggedIn = () => {
     return false
   }
 }
+
+export const getHomeLink = () => {
+  return isUserLoggedIn() ? "/site/search-by-prescription-id" : "/site/login"
+}
