@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from "react"
+import React, {useState, useEffect, useRef} from "react"
 import {useNavigate} from "react-router-dom"
 import {
   Container,
@@ -10,10 +10,10 @@ import {
   InsetText
 } from "nhsuk-react-components"
 
-import {useAccess} from "@/context/AccessProvider"
+import {useAuth} from "@/context/AuthProvider"
 import EpsCard from "@/components/EpsCard"
 import EpsSpinner from "@/components/EpsSpinner"
-import {RoleDetails} from "@/types/TrackerUserInfoTypes"
+import {RoleDetails} from "@cpt-ui-common/common-types"
 import {Button} from "./ReactRouterButton"
 import {FRONTEND_PATHS} from "@/constants/environment"
 
@@ -79,27 +79,19 @@ export default function RoleSelectionPage({
     errorDuringRoleSelection
   } = contentText
 
-  const {
-    noAccess,
-    selectedRole,
-    updateSelectedRole,
-    rolesWithAccess,
-    rolesWithoutAccess,
-    loading,
-    error
-  } = useAccess()
+  const auth = useAuth()
 
   const [loginInfoMessage, setLoginInfoMessage] = useState<string | null>(null)
-  const [redirecting, setRedirecting] = useState<boolean>(false)
   const navigate = useNavigate()
+  const redirecting = useRef(false)
 
   const [roleCardPropsWithAccess, setRoleCardPropsWithAccess] = useState<Array<RolesWithAccessProps>>([])
   const [roleCardPropsWithoutAccess, setRoleCardPropsWithoutAccess] = useState<Array<RolesWithoutAccessProps>>([])
 
   useEffect(() => {
     // Transform roles data for display
-    setRoleCardPropsWithAccess((!noAccess)
-      ? rolesWithAccess.map((role: RoleDetails, index) => ({
+    setRoleCardPropsWithAccess((!auth.hasNoAccess)
+      ? auth.rolesWithAccess.map((role: RoleDetails, index) => ({
         uuid: `role_with_access_${index}`,
         role,
         link: FRONTEND_PATHS.YOUR_SELECTED_ROLE
@@ -107,44 +99,44 @@ export default function RoleSelectionPage({
       : []
     )
 
-    setRoleCardPropsWithoutAccess(rolesWithoutAccess.map((role, index) => ({
+    setRoleCardPropsWithoutAccess(auth.rolesWithoutAccess.map((role, index) => ({
       uuid: `role_without_access_${index}`,
       roleName: role.role_name || noRoleName,
       orgName: role.org_name || noOrgName,
       odsCode: role.org_code || noODSCode
     })))
 
-    console.warn("RoleCardPropsWithAccess length: ", {roleCardPropsWithAccess, loading, error})
-  }, [rolesWithAccess, rolesWithoutAccess])
+    console.warn("RoleCardPropsWithAccess length: ", {roleCardPropsWithAccess, error: auth.error})
+  }, [auth.rolesWithAccess, auth.rolesWithoutAccess])
 
   // Handle auto-redirect for single role
   useEffect(() => {
-    if (rolesWithAccess.length === 1 && rolesWithoutAccess.length === 0) {
-      setRedirecting(true)
-      updateSelectedRole(rolesWithAccess[0])
-        .then(() => {
-          navigate(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
-        })
-        .catch((err) => {
-          console.error(err)
-        })
+    if (auth.isSigningIn) {
+      redirecting.current = true
+      return
+    } else {
+      redirecting.current = false
     }
-  }, [rolesWithAccess, rolesWithoutAccess, navigate])
+  }, [auth.isSigningIn])
+
+  useEffect(() => {
+    if (auth.hasSingleRoleAccess && auth.isSignedIn) {
+      navigate(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
+    }
+  }, [auth.hasSingleRoleAccess, auth.isSignedIn])
 
   // Set login message when selected role is available
   useEffect(() => {
-    if (loading) return
-
-    if (!loginInfoMessage && selectedRole) {
+    if (!loginInfoMessage && auth.selectedRole) {
       setLoginInfoMessage(
-        `You are currently logged in at ${selectedRole.org_name || noOrgName} ` +
-        `(ODS: ${selectedRole.org_code || noODSCode}) with ${selectedRole.role_name || noRoleName}.`
+        `You are currently logged in at ${auth.selectedRole.org_name || noOrgName} ` +
+        `(ODS: ${auth.selectedRole.org_code || noODSCode}) with ${auth.selectedRole.role_name || noRoleName}.`
       )
     }
-  }, [selectedRole, loginInfoMessage, noOrgName, noODSCode, noRoleName, loading])
+  }, [auth.selectedRole, loginInfoMessage])
 
   // Show spinner while loading or redirecting
-  if (loading || redirecting) {
+  if (redirecting.current) {
     return (
       <main id="main-content" className="nhsuk-main-wrapper">
         <Container>
@@ -159,7 +151,7 @@ export default function RoleSelectionPage({
   }
 
   // Show error if present
-  if (error) {
+  if (auth.error) {
     return (
       <main
         id="main-content"
@@ -174,7 +166,7 @@ export default function RoleSelectionPage({
               </ErrorSummary.Title>
               <ErrorSummary.List>
                 <ErrorSummary.Item href="PLACEHOLDER/contact/us">
-                  {error}
+                  {auth.error}
                 </ErrorSummary.Item>
               </ErrorSummary.List>
             </ErrorSummary>
@@ -196,17 +188,17 @@ export default function RoleSelectionPage({
             <h1 className="nhsuk-heading-xl">
               <span role="text" data-testid="eps_header_selectYourRole">
                 <span className="nhsuk-title">
-                  {noAccess ? titleNoAccess : title}
+                  {auth.hasNoAccess ? titleNoAccess : title}
                 </span>
                 <span className="nhsuk-caption-l nhsuk-caption--bottom">
                   <span className="nhsuk-u-visually-hidden"> - </span>
-                  {(!noAccess) && caption}
+                  {(!auth.hasNoAccess) && caption}
                 </span>
               </span>
             </h1>
 
-            {noAccess && <p>{captionNoAccess}</p>}
-            {selectedRole && (
+            {auth.hasNoAccess && <p>{captionNoAccess}</p>}
+            {auth.selectedRole && (
               <section aria-label="Login Information">
                 <InsetText data-testid="eps_select_your_role_pre_role_selected">
                   <span className="nhsuk-u-visually-hidden">
@@ -229,11 +221,11 @@ export default function RoleSelectionPage({
             )}
           </Col>
 
-          {(!noAccess) && (roleCardPropsWithAccess.length > 0) && (
+          {(!auth.hasNoAccess) && (roleCardPropsWithAccess.length > 0) && (
             <Col width="two-thirds">
               <div className="section">
                 {roleCardPropsWithAccess
-                  .filter((duplicateRole) => duplicateRole.role.role_id !== selectedRole?.role_id)
+                  .filter((duplicateRole) => duplicateRole.role.role_id !== auth.selectedRole?.role_id)
                   .map((roleCardProps: RolesWithAccessProps) => (
                     <EpsCard {...roleCardProps} key={roleCardProps.uuid} />
                   ))}

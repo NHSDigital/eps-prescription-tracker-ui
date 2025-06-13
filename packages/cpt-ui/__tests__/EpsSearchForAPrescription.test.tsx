@@ -5,34 +5,25 @@ import React from "react"
 
 import SearchForAPrescription from "@/pages/SearchPrescriptionPage"
 import {HERO_TEXT} from "@/constants/ui-strings/SearchForAPrescriptionStrings"
-import {AuthContext} from "@/context/AuthProvider"
-import {AccessContext, AccessContextType} from "@/context/AccessProvider"
+import {AuthContext, AuthContextType} from "@/context/AuthProvider"
+import {AccessContext} from "@/context/AccessProvider"
 
 // Default mock values for contexts
-const defaultAuthContext = {
+const defaultAuthContext: AuthContextType = {
   error: null,
   user: null,
   isSignedIn: false,
-  idToken: null,
-  accessToken: null,
-  cognitoSignIn: jest.fn(),
-  cognitoSignOut: jest.fn()
-}
-
-const defaultAccessContext: AccessContextType = {
-  noAccess: false,
-  singleAccess: false,
-  selectedRole: undefined,
+  isSigningIn: false,
   rolesWithAccess: [],
   rolesWithoutAccess: [],
-  loading: false,
-  error: null,
-  setNoAccess: jest.fn(),
-  setSingleAccess: jest.fn(),
-  updateSelectedRole: jest.fn(),
+  hasNoAccess: false,
+  hasSingleRoleAccess: false,
+  selectedRole: undefined,
   userDetails: undefined,
-  setUserDetails: jest.fn(),
-  clear: jest.fn()
+  cognitoSignIn: jest.fn(),
+  cognitoSignOut: jest.fn(),
+  clearAuthState: jest.fn(),
+  updateSelectedRole: jest.fn()
 }
 
 // Utility function to render with all required providers
@@ -40,7 +31,7 @@ const renderWithProviders = (
   ui: React.ReactElement,
   {
     authContext = defaultAuthContext,
-    accessContext = defaultAccessContext
+    accessContext = null
   } = {}
 ) => {
   return render(

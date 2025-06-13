@@ -1,200 +1,143 @@
-import "@testing-library/jest-dom"
-import {render, screen} from "@testing-library/react"
 import React from "react"
-import {JWT} from "aws-amplify/auth"
-
+import {render, screen} from "@testing-library/react"
 import RBACBanner from "@/components/RBACBanner"
+import {useAuth} from "@/context/AuthProvider"
 
-// Mock AccessProvider
-jest.mock("@/context/AccessProvider", () => {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports, no-undef
-  const React = require("react")
+// Mock the useAuth hook
+jest.mock("@/context/AuthProvider", () => ({
+  useAuth: jest.fn()
+}))
 
-  let mockContextValue = {
-    selectedRole: {
-      role_name: "Role Name",
-      role_id: "role-id",
-      org_code: "deadbeef",
-      org_name: "org name"
-    },
-    userDetails: {
-      given_name: "JaNe",
-      family_name: "DoE"
-    },
-    setUserDetails: jest.fn(),
-    setSelectedRole: jest.fn()
-  }
+const mockUseAuth = useAuth as jest.Mock
 
-  const MockAccessContext = React.createContext(mockContextValue)
-  const useAccess = () => React.useContext(MockAccessContext)
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const __setMockContextValue = (newValue: any) => {
-    mockContextValue = {...mockContextValue, ...newValue}
-    // Reassign the context’s defaultValue so subsequent consumers get new values
-    MockAccessContext._currentValue = mockContextValue
-    MockAccessContext._currentValue2 = mockContextValue
-  }
-
-  return {
-    __esModule: true,
-    AccessContext: MockAccessContext,
-    useAccess,
-    __setMockContextValue
-  }
-})
-// eslint-disable-next-line @typescript-eslint/no-require-imports, no-undef
-const {__setMockContextValue} = require("@/context/AccessProvider")
-
-// Mock an AuthContext
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const AuthContext = React.createContext<any>(null)
-
-// Default mock values for the `AuthContext` to simulate authentication state
-const defaultAuthContext = {
-  error: null,
-  user: null,
-  isSignedIn: true,
-  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-  idToken: {
-    toString: jest.fn().mockReturnValue("mock-id-token"),
-    payload: {}
-  } as JWT,
-  accessToken: null,
-  cognitoSignIn: jest.fn(),
-  cognitoSignOut: jest.fn()
-}
-
-export const renderWithAuth = (authOverrides = {}) => {
-  const authValue = {...defaultAuthContext, ...authOverrides}
-
-  return render(
-    <AuthContext.Provider value={authValue}>
-      <RBACBanner />
-    </AuthContext.Provider>
-  )
+// Constants from your RBAC_BANNER_STRINGS for easy reference in tests
+const RBAC_BANNER_STRINGS = {
+  CONFIDENTIAL_DATA:
+    "CONFIDENTIAL: PERSONAL PATIENT DATA accessed by {lastName}, {firstName} - {roleName} - {orgName} (ODS: {odsCode})",
+  LOCUM_NAME: "Locum pharmacy",
+  NO_ORG_NAME: "NO_ORG_NAME",
+  NO_FAMILY_NAME: "NO_FAMILY_NAME",
+  NO_GIVEN_NAME: "NO_GIVEN_NAME",
+  NO_ROLE_NAME: "NO_ROLE_NAME",
+  NO_ODS_CODE: "NO_ODS_CODE"
 }
 
 describe("RBACBanner", () => {
-  beforeEach(() => {
-    jest.clearAllMocks()
-    __setMockContextValue({
-      selectedRole: {
-        role_name: "Role Name",
-        role_id: "role-id",
-        org_code: "deadbeef",
-        org_name: "org name"
-      },
-      userDetails: {
-        family_name: "DOE",
-        given_name: "Jane"
-      }
-    })
+  afterEach(() => {
+    jest.resetAllMocks()
   })
 
   it("should render with the correct text when selectedRole and userDetails are set", () => {
-    renderWithAuth()
-
-    const bannerDiv = screen.getByTestId("rbac-banner-div")
-    const bannerText = screen.getByTestId("rbac-banner-text")
-
-    expect(bannerDiv).toBeInTheDocument()
-    expect(bannerText).toBeInTheDocument()
-
-    // Check that placeholders are properly replaced
-    // eslint-disable-next-line max-len
-    const expectedText = `CONFIDENTIAL: PERSONAL PATIENT DATA accessed by DOE, Jane - Role Name - org name (ODS: deadbeef)`
-    expect(bannerText).toHaveTextContent(expectedText)
-  })
-
-  it("should use LOCUM_NAME if org_code is FFFFF", () => {
-    __setMockContextValue({
+    mockUseAuth.mockReturnValue({
       selectedRole: {
-        role_name: "Role Name",
-        role_id: "role-id",
-        org_code: "FFFFF", // locum scenario
-        org_name: "ignored org name" // This should be overridden
+        org_code: "X12345",
+        org_name: "Some Org",
+        role_name: "Pharmacist"
       },
       userDetails: {
-        family_name: "DOE",
-        given_name: "Jane"
+        family_name: "Doe",
+        given_name: "John"
       }
     })
 
-    renderWithAuth()
+    render(<RBACBanner />)
 
-    const bannerText = screen.getByTestId("rbac-banner-text")
-    expect(bannerText).toHaveTextContent(
-      `CONFIDENTIAL: PERSONAL PATIENT DATA accessed by DOE, Jane - Role Name - Locum pharmacy (ODS: FFFFF)`
+    expect(screen.getByTestId("rbac-banner-text")).toHaveTextContent(
+      "CONFIDENTIAL: PERSONAL PATIENT DATA accessed by DOE, John - Pharmacist - Some Org (ODS: X12345)"
+    )
+  })
+
+  it("should use LOCUM_NAME if org_code is FFFFF", () => {
+    mockUseAuth.mockReturnValue({
+      selectedRole: {
+        org_code: "FFFFF",
+        org_name: "Ignored Org Name",
+        role_name: "Locum Pharmacist"
+      },
+      userDetails: {
+        family_name: "Smith",
+        given_name: "Anna"
+      }
+    })
+
+    render(<RBACBanner />)
+
+    expect(screen.getByTestId("rbac-banner-text")).toHaveTextContent(
+      // eslint-disable-next-line max-len
+      `CONFIDENTIAL: PERSONAL PATIENT DATA accessed by SMITH, Anna - Locum Pharmacist - ${RBAC_BANNER_STRINGS.LOCUM_NAME} (ODS: FFFFF)`
     )
   })
 
   it("should handle missing userDetails fields", () => {
-    __setMockContextValue({
+    mockUseAuth.mockReturnValue({
       selectedRole: {
-        role_name: "Role Name",
-        role_id: "role-id",
-        org_code: "deadbeef",
-        org_name: "org name"
+        org_code: "X99999",
+        org_name: "Some Org",
+        role_name: "Nurse"
       },
       userDetails: {
-        // No family_name or given_name
+        // missing family_name and given_name
       }
     })
 
-    renderWithAuth()
+    render(<RBACBanner />)
 
-    const bannerText = screen.getByTestId("rbac-banner-text")
-    expect(bannerText).toHaveTextContent(
+    expect(screen.getByTestId("rbac-banner-text")).toHaveTextContent(
       // eslint-disable-next-line max-len
-      `CONFIDENTIAL: PERSONAL PATIENT DATA accessed by NO_FAMILY_NAME, NO_GIVEN_NAME - Role Name - org name (ODS: deadbeef)`
+      `CONFIDENTIAL: PERSONAL PATIENT DATA accessed by ${RBAC_BANNER_STRINGS.NO_FAMILY_NAME}, ${RBAC_BANNER_STRINGS.NO_GIVEN_NAME} - Nurse - Some Org (ODS: X99999)`
     )
   })
 
   it("should handle missing selectedRole fields", () => {
-    __setMockContextValue({
+    mockUseAuth.mockReturnValue({
       selectedRole: {
-        // role_name, ODS code, and org_name are missing
-        role_id: "role-id"
+        // missing org_code, org_name, role_name
       },
       userDetails: {
-        family_name: "DOE",
-        given_name: "Jane"
+        family_name: "Brown",
+        given_name: "Charlie"
       }
     })
 
-    renderWithAuth()
+    render(<RBACBanner />)
 
-    const bannerText = screen.getByTestId("rbac-banner-text")
-    expect(bannerText).toHaveTextContent(
-      `CONFIDENTIAL: PERSONAL PATIENT DATA accessed by DOE, Jane - NO_ROLE_NAME - NO_ORG_NAME (ODS: NO_ODS_CODE)`
+    expect(screen.getByTestId("rbac-banner-text")).toHaveTextContent(
+      // eslint-disable-next-line max-len
+      `CONFIDENTIAL: PERSONAL PATIENT DATA accessed by BROWN, Charlie - ${RBAC_BANNER_STRINGS.NO_ROLE_NAME} - ${RBAC_BANNER_STRINGS.NO_ORG_NAME} (ODS: ${RBAC_BANNER_STRINGS.NO_ODS_CODE})`
     )
   })
 
   it("should fallback to NO_ORG_NAME if org_name is missing", () => {
-    __setMockContextValue({
+    mockUseAuth.mockReturnValue({
       selectedRole: {
-        role_name: "Role Name",
-        role_id: "role-id",
-        org_code: "deadbeef"
-        // org_name is missing
+        org_code: "X55555",
+        // missing org_name
+        role_name: "Technician"
       },
       userDetails: {
-        family_name: "DOE",
-        given_name: "Jane"
+        family_name: "Green",
+        given_name: "Emma"
       }
     })
 
-    renderWithAuth()
+    render(<RBACBanner />)
 
-    const bannerText = screen.getByTestId("rbac-banner-text")
-    expect(bannerText).toHaveTextContent(
-      `CONFIDENTIAL: PERSONAL PATIENT DATA accessed by DOE, Jane - Role Name - NO_ORG_NAME (ODS: deadbeef)`
+    expect(screen.getByTestId("rbac-banner-text")).toHaveTextContent(
+      // eslint-disable-next-line max-len
+      `CONFIDENTIAL: PERSONAL PATIENT DATA accessed by GREEN, Emma - Technician - ${RBAC_BANNER_STRINGS.NO_ORG_NAME} (ODS: X55555)`
     )
   })
 
-  // Example "dummy" test (remove or replace with real coverage as needed)
-  it("Dummy test", () => {
-    console.log("dummy test - no assertions")
+  it("should render null (nothing) when selectedRole is missing", () => {
+    mockUseAuth.mockReturnValue({
+      selectedRole: null,
+      userDetails: {
+        family_name: "Green",
+        given_name: "Emma"
+      }
+    })
+
+    const {container} = render(<RBACBanner />)
+    expect(container.firstChild).toBeNull()
   })
 })

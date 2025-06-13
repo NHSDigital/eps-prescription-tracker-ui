@@ -1,12 +1,12 @@
 import React from "react"
 import {Card, Col, Row} from "nhsuk-react-components"
 
-import {useAccess} from "@/context/AccessProvider"
 import {useNavigate} from "react-router-dom"
 
-import {RoleDetails} from "@/types/TrackerUserInfoTypes"
+import {RoleDetails} from "@cpt-ui-common/common-types"
 
 import {EPS_CARD_STRINGS} from "@/constants/ui-strings/CardStrings"
+import {useAuth} from "@/context/AuthProvider"
 
 export interface EpsCardProps {
   role: RoleDetails
@@ -15,11 +15,11 @@ export interface EpsCardProps {
 
 export default function EpsCard({role, link}: EpsCardProps) {
   const navigate = useNavigate()
-  const {updateSelectedRole} = useAccess()
+  const authContext = useAuth()
 
   const handleSetSelectedRole = async (e: React.MouseEvent) => {
     e.preventDefault()
-    await updateSelectedRole(role)
+    await authContext.updateSelectedRole(role)
 
     // Redirect to the appropriate page
     navigate(link)
@@ -33,7 +33,7 @@ export default function EpsCard({role, link}: EpsCardProps) {
   } = EPS_CARD_STRINGS
 
   return (
-    <Card clickable className="eps-card">
+    <Card clickable className="eps-card" data-testid="eps-card">
       <Card.Content>
         <Row className="nhsuk-grid-row eps-card__content">
 

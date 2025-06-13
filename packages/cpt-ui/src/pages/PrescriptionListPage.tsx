@@ -7,7 +7,6 @@ import {
   Row
 } from "nhsuk-react-components"
 import "../styles/PrescriptionTable.scss"
-import {v4 as uuidv4} from "uuid"
 
 import http from "@/helpers/axios"
 
@@ -39,13 +38,8 @@ export default function PrescriptionListPage() {
 
   useEffect(() => {
     const runSearch = async () => {
-      if (auth?.isAuthLoading) {
-        console.log("Auth still loading, waiting...")
-        return
-      }
-
-      if (!auth?.idToken) {
-        console.log("Auth token not ready, waiting...")
+      if (!auth?.isSignedIn) {
+        console.log("Not signed in, waiting...")
         return
       }
 
@@ -68,14 +62,9 @@ export default function PrescriptionListPage() {
       }
 
       const response = await http.get(API_ENDPOINTS.PRESCRIPTION_LIST, {
-        params: searchParams,
-        headers: {
-          Authorization: `Bearer ${auth?.idToken}`,
-          "X-Correlation-Id": uuidv4()
-        }
+        params: searchParams
       })
 
-      console.log("Response status", {status: response.status})
       if (response.status === 404) {
         console.error("No search results were returned")
         navigate(FRONTEND_PATHS.PRESCRIPTION_NOT_FOUND)
@@ -122,8 +111,17 @@ export default function PrescriptionListPage() {
     }
 
     setLoading(true)
-    runSearch().catch(() => navigate(backLinkTarget)).finally(() => setLoading(false))
-  }, [queryParams, auth?.idToken, auth?.isAuthLoading])
+    runSearch()
+      .catch((err) => {
+        console.error("Error during search", err)
+        if (err.message === "CanceledError: canceled") {
+          navigate(FRONTEND_PATHS.LOGIN)
+        } else {
+          navigate(backLinkTarget)
+        }
+      })
+      .finally(() => setLoading(false))
+  }, [queryParams, auth?.isSignedIn])
 
   if (loading) {
     return (
