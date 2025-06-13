@@ -18,13 +18,6 @@ install-hooks: install-python
 	poetry run pre-commit install --install-hooks --overwrite
 
 compile-node:
-	npm run compile --workspace packages/common/commonTypes
-	npm run compile --workspace packages/common/lambdaUtils
-	npm run compile --workspace packages/common/middyErrorHandler
-	npm run compile --workspace packages/common/dynamoFunctions
-	npm run compile --workspace packages/common/authFunctions
-	npm run compile --workspace packages/common/doHSClient
-	npm run compile --workspace packages/common/pdsClient
 	npx tsc --build tsconfig.build.json
 
 compile: compile-node
@@ -75,43 +68,45 @@ test: compile
 	npm run test --workspace packages/common/dynamoFunctions
 
 clean:
-	rm -rf packages/common/commonTypes/coverage
-	rm -rf packages/common/commonTypes/lib
-	rm -rf packages/cloudfrontFunctions/coverage
-	rm -rf packages/cloudfrontFunctions/lib
+	rm -rf packages/auth_demo/lib
 	rm -rf packages/cdk/coverage
 	rm -rf packages/cdk/lib
+	rm -rf packages/CIS2SignOutLambda/coverage
+	rm -rf packages/CIS2SignOutLambda/lib
+	rm -rf packages/cloudfrontFunctions/coverage
+	rm -rf packages/cloudfrontFunctions/lib
 	rm -rf packages/cognito/coverage
 	rm -rf packages/cognito/lib
-	rm -rf packages/prescriptionListLambda/coverage
-	rm -rf packages/prescriptionListLambda/lib
-	rm -rf packages/prescriptionDetailsLambda/coverage
-	rm -rf packages/prescriptionDetailsLambda/lib
+	rm -rf packages/cpt-ui/dist
+	rm -rf packages/cpt-ui/coverage
 	rm -rf packages/patientSearchLambda/coverage
 	rm -rf packages/patientSearchLambda/lib
-	rm -rf packages/common/middyErrorHandler/coverage
-	rm -rf packages/common/middyErrorHandler/lib
-	rm -rf packages/common/pdsClient/coverage
-	rm -rf packages/common/pdsClient/lib
-	rm -rf packages/common/lambdaUtils/coverage
-	rm -rf packages/common/lambdaUtils/lib
-	rm -rf cdk.out
-	rm -rf packages/cpt-ui/.next
-	rm -rf packages/auth_demo/build
-	rm -rf packages/trackerUserInfoLambda/coverage
-	rm -rf packages/trackerUserInfoLambda/lib
+	rm -rf packages/prescriptionDetailsLambda/coverage
+	rm -rf packages/prescriptionDetailsLambda/lib
+	rm -rf packages/prescriptionListLambda/coverage
+	rm -rf packages/prescriptionListLambda/lib
 	rm -rf packages/selectedRoleLambda/coverage
 	rm -rf packages/selectedRoleLambda/lib
+	rm -rf packages/trackerUserInfoLambda/coverage
+	rm -rf packages/trackerUserInfoLambda/lib
 	rm -rf packages/common/authFunctions/coverage
 	rm -rf packages/common/authFunctions/lib
+	rm -rf packages/common/commonTypes/coverage
+	rm -rf packages/common/commonTypes/lib
 	rm -rf packages/common/doHSClient/coverage
 	rm -rf packages/common/doHSClient/lib
 	rm -rf packages/common/dynamoFunctions/coverage
 	rm -rf packages/common/dynamoFunctions/lib
-	rm -rf packages/CIS2SignOutLambda/coverage
-	rm -rf packages/CIS2SignOutLambda/lib
-	rm -rf .local_config
+	rm -rf packages/common/lambdaUtils/coverage
+	rm -rf packages/common/lambdaUtils/lib
+	rm -rf packages/common/middyErrorHandler/coverage
+	rm -rf packages/common/middyErrorHandler/lib
+	rm -rf packages/common/pdsClient/coverage
+	rm -rf packages/common/pdsClient/lib
+	rm -rf packages/common/testing/coverage
+	rm -rf packages/common/testing/lib
 	rm -rf cdk.out
+	rm -rf .local_config
 	rm -rf cfn_guard_output
 
 deep-clean: clean
@@ -213,6 +208,7 @@ cdk-synth-stateful-resources-no-mock:
 	LOG_LEVEL=debug \
 	USE_CUSTOM_COGNITO_DOMAIN=true \
 	ALLOW_LOCALHOST_ACCESS=false \
+	WAF_ALLOW_GA_RUNNER_CONNECTIVITY=true \
 	DO_NOT_GET_AWS_EXPORT=true \
 		 ./.github/scripts/fix_cdk_json.sh .local_config/stateful_app.config.json
 	CONFIG_FILE_NAME=.local_config/stateful_app.config.json npx cdk synth \
@@ -255,6 +251,7 @@ cdk-synth-stateless-resources-no-mock:
 	JWT_KID=foo \
 	ROLE_ID=foo \
 	ALLOW_LOCALHOST_ACCESS=false \
+	WAF_ALLOW_GA_RUNNER_CONNECTIVITY=true \
 	CLOUDFRONT_CERT_ARN=arn:aws:acm:us-east-1:444455556666:certificate/certificate_ID \
 	DO_NOT_GET_AWS_EXPORT=true \
 		 ./.github/scripts/fix_cdk_json.sh .local_config/stateless_app.config.json
@@ -295,6 +292,7 @@ cdk-synth-stateful-resources-mock:
 	LOG_LEVEL=debug \
 	USE_CUSTOM_COGNITO_DOMAIN=true \
 	ALLOW_LOCALHOST_ACCESS=false \
+	WAF_ALLOW_GA_RUNNER_CONNECTIVITY=true \
 	DO_NOT_GET_AWS_EXPORT=true \
 		 ./.github/scripts/fix_cdk_json.sh .local_config/stateful_app.config.json
 	CONFIG_FILE_NAME=.local_config/stateful_app.config.json npx cdk synth \
@@ -345,6 +343,7 @@ cdk-synth-stateless-resources-mock:
 	ROLE_ID=foo \
 	ALLOW_LOCALHOST_ACCESS=false \
 	CLOUDFRONT_CERT_ARN=arn:aws:acm:us-east-1:444455556666:certificate/certificate_ID \
+	WAF_ALLOW_GA_RUNNER_CONNECTIVITY=true \
 	DO_NOT_GET_AWS_EXPORT=true \
 		 ./.github/scripts/fix_cdk_json.sh .local_config/stateless_app.config.json
 	CONFIG_FILE_NAME=.local_config/stateless_app.config.json npx cdk synth \

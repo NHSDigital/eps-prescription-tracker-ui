@@ -75,7 +75,9 @@ describe("Lambda Handler Tests", () => {
     mockGetUsernameFromEvent.mockReturnValue("test_user")
     mockAuthenticateRequest.mockImplementation(() => {
       return Promise.resolve({
-        apigeeAccessToken: "apigee_access_token"
+        apigeeAccessToken: "apigee_access_token",
+        roleId: "dummy_role",
+        orgCode: "dummy_org"
       })
     })
 
@@ -88,12 +90,29 @@ describe("Lambda Handler Tests", () => {
     expect(parsedBody).toStrictEqual(mockMergedResponse)
   })
 
-  // Note: this can be removed
-  it.skip("Throws error when using a mock user but MOCK_MODE_ENABLED is not 'true'", async () => {
-    // Disable mock mode
-    process.env.MOCK_MODE_ENABLED = "false"
+  it("Returns an error if no orgCode returned", async () => {
+    mockGetUsernameFromEvent.mockReturnValue("test_user")
+    mockAuthenticateRequest.mockImplementation(() => {
+      return Promise.resolve({
+        apigeeAccessToken: "apigee_access_token",
+        roleId: "dummy_role"
+      })
+    })
 
-    // getUsernameFromEvent already returns a username starting with "Mock_"
+    const response = await handler(event, context)
+
+    expect(response).toStrictEqual({message: "A system error has occurred"})
+  })
+
+  it("Returns an error if no roleId returned", async () => {
+    mockGetUsernameFromEvent.mockReturnValue("test_user")
+    mockAuthenticateRequest.mockImplementation(() => {
+      return Promise.resolve({
+        apigeeAccessToken: "apigee_access_token",
+        orgCode: "dummy_org"
+      })
+    })
+
     const response = await handler(event, context)
 
     expect(response).toStrictEqual({message: "A system error has occurred"})

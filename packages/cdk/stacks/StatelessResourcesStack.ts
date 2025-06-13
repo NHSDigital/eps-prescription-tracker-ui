@@ -88,6 +88,7 @@ export class StatelessResourcesStack extends Stack {
     const roleId: string = this.node.tryGetContext("roleId")
     const allowLocalhostAccess: boolean = this.node.tryGetContext("allowLocalhostAccess")
     const webAclAttributeArn = this.node.tryGetContext("webAclAttributeArn")
+    const wafAllowGaRunnerConnectivity: boolean = this.node.tryGetContext("wafAllowGaRunnerConnectivity")
     const vpcId = this.node.tryGetContext("vpcId")
 
     // Imports
@@ -411,7 +412,8 @@ export class StatelessResourcesStack extends Stack {
           ttl: Duration.seconds(10)
         }
       ],
-      webAclAttributeArn: webAclAttributeArn
+      webAclAttributeArn: webAclAttributeArn,
+      wafAllowGaRunnerConnectivity: wafAllowGaRunnerConnectivity
     })
 
     // Outputs

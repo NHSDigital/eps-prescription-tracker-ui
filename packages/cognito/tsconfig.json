@@ -3,11 +3,8 @@
   "compilerOptions": {
     "rootDir": ".",
     "outDir": "lib",
-    "paths": {
-      "@/*": [
-        "./src/*"
-      ]
-    }
+    "baseUrl": ".",
+    "tsBuildInfoFile": "lib/tsconfig.tsbuildinfo"
   },
   "include": [
     "src/**/*",
@@ -28,9 +25,6 @@
     },
     {
       "path": "../common/lambdaUtils"
-    },
-    {
-      "path": "../common/dynamoFunctions"
     }
   ]
 }

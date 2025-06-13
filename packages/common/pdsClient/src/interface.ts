@@ -1,6 +1,6 @@
 import {Logger} from "@aws-lambda-powertools/logger"
 import {AxiosInstance} from "axios"
-import {axios} from "index"
+import {axios} from "./index"
 import {URL} from "url"
 
 export interface Client{
