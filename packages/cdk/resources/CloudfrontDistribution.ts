@@ -28,7 +28,7 @@ export interface CloudfrontDistributionProps {
   readonly cloudfrontLoggingBucket: IBucket
   readonly cloudfrontCert: ICertificate
   readonly webAclAttributeArn: string
-
+  readonly wafAllowGaRunnerConnectivity: boolean
 }
 
 /**
@@ -58,7 +58,7 @@ export class CloudfrontDistribution extends Construct {
       additionalBehaviors: props.additionalBehaviors,
       errorResponses: props.errorResponses,
       geoRestriction: {
-        locations: ["GB", "JE", "GG", "IM", "US"],
+        locations: props.wafAllowGaRunnerConnectivity ? ["GB", "JE", "GG", "IM", "US"] : ["GB", "JE", "GG", "IM"],
         restrictionType: "whitelist"
       }
     })
