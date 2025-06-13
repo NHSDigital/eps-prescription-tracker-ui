@@ -46,7 +46,7 @@ describe("getHomeLink", () => {
     localStorage.clear()
   })
   it("returns /login when user is not logged in", () => {
-    expect(getHomeLink()).toBe("/login")
+    expect(getHomeLink()).toBe("/site/login")
   })
   it("returns /search-by-prescription-id when user is logged in", () => {
     const validAuth = {
@@ -56,6 +56,6 @@ describe("getHomeLink", () => {
       accessToken: {}
     }
     localStorage.setItem("auth", JSON.stringify(validAuth))
-    expect(getHomeLink()).toBe("/search-by-prescription-id")
+    expect(getHomeLink()).toBe("/site/search-by-prescription-id")
   })
 })

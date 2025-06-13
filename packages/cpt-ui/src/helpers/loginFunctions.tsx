@@ -11,5 +11,5 @@ export const isUserLoggedIn = () => {
 }
 
 export const getHomeLink = () => {
-  return isUserLoggedIn() ? "/search-by-prescription-id" : "/login"
+  return isUserLoggedIn() ? "/site/search-by-prescription-id" : "/site/login"
 }

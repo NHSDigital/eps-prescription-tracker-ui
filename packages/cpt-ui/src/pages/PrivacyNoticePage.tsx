@@ -4,16 +4,17 @@ import {PrivacyNoticeStrings} from "@/constants/ui-strings/PrivacyNoticeStrings"
 import {createEmailLink, createPhoneLink} from "@/helpers/contactFunctions"
 import {contactInfo} from "@/helpers/contactInfo"
 import {getHomeLink} from "@/helpers/loginFunctions"
+import {Breadcrumb, InsetText} from "nhsuk-react-components"
 
 export default function PrivacyNoticePage() {
 
   return (
     <main className="nhsuk-width-container nhsuk-u-margin-top-4">
-      <nav className="nhsuk-breadcrumb" aria-label="Breadcrumb">
-        <p className="nhsuk-breadcrumb__item">
-          <Link className="nhsuk-breadcrumb__link" to={getHomeLink()}>{PrivacyNoticeStrings.home}</Link>
-        </p>
-      </nav>
+      <Breadcrumb>
+        <Breadcrumb.Item href={getHomeLink()}>
+          {PrivacyNoticeStrings.home}
+        </Breadcrumb.Item>
+      </Breadcrumb>
 
       <div className="nhsuk-grid-row">
         <div className="nhsuk-grid-column-full" data-testid="privacy-notice-content">
@@ -148,12 +149,12 @@ export default function PrivacyNoticePage() {
             </li>
           </ol>
 
-          <div className="nhsuk-inset-text">
+          <InsetText className="nhsuk-inset-text">
             <span className="nhsuk-u-visually-hidden">Information: </span>
             <p> {PrivacyNoticeStrings.rights.method}
               {createEmailLink(contactInfo.emails.general)}
             </p>
-          </div>
+          </InsetText>
 
           <h2 className="nhsuk-heading-l">
             {PrivacyNoticeStrings.changes.header}
