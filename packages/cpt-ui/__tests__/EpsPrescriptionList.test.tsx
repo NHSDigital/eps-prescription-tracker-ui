@@ -241,21 +241,22 @@ describe("PrescriptionListPage", () => {
     })
   })
 
-  // it("redirects to the no prescription found page when no query parameters are present", async () => {
-  //   mockedAxios.get.mockResolvedValue({
-  //     // No content, but it just has to not be 200 to trigger
-  //     status: 204,
-  //     data: {}
-  //   })
+  it("logs an error when no query parameters are present", async () => {
+    const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {})
 
-  //   renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT)
-  //   expect(mockedAxios.get).not.toHaveBeenCalled()
+    mockedAxios.get.mockResolvedValue({
+      status: 200,
+      data: mockSearchResponse
+    })
 
-  //   await waitFor(() => {
-  //     const dummyTag = screen.getByTestId("dummy-no-prescription-page")
-  //     expect(dummyTag).toBeInTheDocument()
-  //   })
-  // })
+    renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT)
+
+    await waitFor(() => {
+      expect(consoleErrorSpy).toHaveBeenCalledWith("No query parameter provided.")
+    })
+
+    consoleErrorSpy.mockRestore()
+  })
 
   it("sets the back link to the prescription ID search when prescriptionId query parameter is present", async () => {
     mockedAxios.get.mockResolvedValue({
@@ -293,7 +294,7 @@ describe("PrescriptionListPage", () => {
   //     status: 204,
   //     data: {}
   //   })
-  //   renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT + "?prescriptionId=ABC123-ABC123-ABC123")
+  //   renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT + "?prescriptionId=002F5E-A83008-497F1Z")
   //   expect(mockedAxios.get).toHaveBeenCalledTimes(1)
 
   //   await waitFor(() => {

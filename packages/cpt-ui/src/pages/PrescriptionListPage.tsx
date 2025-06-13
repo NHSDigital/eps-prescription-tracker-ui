@@ -20,7 +20,7 @@ import PrescriptionNotFoundMessage from "@/components/PrescriptionNotFoundMessag
 
 import {PRESCRIPTION_LIST_TABS} from "@/constants/ui-strings/PrescriptionListTabStrings"
 import {PRESCRIPTION_LIST_PAGE_STRINGS} from "@/constants/ui-strings/PrescriptionListPageStrings"
-import {API_ENDPOINTS, FRONTEND_PATHS} from "@/constants/environment"
+import {API_ENDPOINTS} from "@/constants/environment"
 
 import {SearchResponse, PrescriptionSummary} from "@cpt-ui-common/common-types/src/prescriptionList"
 
@@ -68,7 +68,6 @@ export default function PrescriptionListPage() {
         searchParams = {nhsNumber}
       } else {
         console.error("No query parameter provided.")
-        navigate(FRONTEND_PATHS.PATIENT_NOT_FOUND)
         setLoading(false)
         return
       }
