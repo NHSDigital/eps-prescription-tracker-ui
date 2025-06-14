@@ -209,6 +209,7 @@ cdk-synth-stateful-resources-no-mock:
 	USE_CUSTOM_COGNITO_DOMAIN=true \
 	ALLOW_LOCALHOST_ACCESS=false \
 	DO_NOT_GET_AWS_EXPORT=true \
+	USE_BARE_DOMAIN=false \
 		 ./.github/scripts/fix_cdk_json.sh .local_config/stateful_app.config.json
 	CONFIG_FILE_NAME=.local_config/stateful_app.config.json npx cdk synth \
 		--quiet \
@@ -250,6 +251,7 @@ cdk-synth-stateless-resources-no-mock:
 	ALLOW_LOCALHOST_ACCESS=false \
 	CLOUDFRONT_CERT_ARN=arn:aws:acm:us-east-1:444455556666:certificate/certificate_ID \
 	DO_NOT_GET_AWS_EXPORT=true \
+	USE_BARE_DOMAIN=false \
 		 ./.github/scripts/fix_cdk_json.sh .local_config/stateless_app.config.json
 	CONFIG_FILE_NAME=.local_config/stateless_app.config.json npx cdk synth \
 		--quiet \
@@ -289,6 +291,7 @@ cdk-synth-stateful-resources-mock:
 	USE_CUSTOM_COGNITO_DOMAIN=true \
 	ALLOW_LOCALHOST_ACCESS=false \
 	DO_NOT_GET_AWS_EXPORT=true \
+	USE_BARE_DOMAIN=false \
 		 ./.github/scripts/fix_cdk_json.sh .local_config/stateful_app.config.json
 	CONFIG_FILE_NAME=.local_config/stateful_app.config.json npx cdk synth \
 		--quiet \
@@ -337,6 +340,7 @@ cdk-synth-stateless-resources-mock:
 	ALLOW_LOCALHOST_ACCESS=false \
 	CLOUDFRONT_CERT_ARN=arn:aws:acm:us-east-1:444455556666:certificate/certificate_ID \
 	DO_NOT_GET_AWS_EXPORT=true \
+	USE_BARE_DOMAIN=false \
 		 ./.github/scripts/fix_cdk_json.sh .local_config/stateless_app.config.json
 	CONFIG_FILE_NAME=.local_config/stateless_app.config.json npx cdk synth \
 		--quiet \
