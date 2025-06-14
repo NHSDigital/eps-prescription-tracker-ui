@@ -66,6 +66,8 @@ on:
         type: string
       CONFIG_FILE:
         type: string
+      WAF_ALLOW_GA_RUNNER_CONNECTIVITY:
+        type: boolean
     secrets:
       CLOUD_FORMATION_DEPLOY_ROLE:
         required: true
@@ -178,6 +180,7 @@ jobs:
           JWT_KID: ${{ inputs.JWT_KID }}
           ROLE_ID: ${{ inputs.ROLE_ID }}
           CDK_APP_NAME: ${{ inputs.CDK_APP_NAME }}
+          WAF_ALLOW_GA_RUNNER_CONNECTIVITY: ${{ inputs.WAF_ALLOW_GA_RUNNER_CONNECTIVITY }}
 
       - name: Show diff
         run: |
