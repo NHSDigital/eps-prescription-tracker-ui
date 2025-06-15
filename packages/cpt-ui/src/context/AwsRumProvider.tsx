@@ -21,9 +21,5 @@ export const AwsRumProvider: React.FC<AwsRumProviderProps> = ({children}) => {
 
 // Hook to access the AwsRum context
 export const useAwsRum = (): AwsRumContextType => {
-  const context = useContext(AwsRumContext)
-  if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider")
-  }
-  return context
+  return useContext(AwsRumContext)
 }
