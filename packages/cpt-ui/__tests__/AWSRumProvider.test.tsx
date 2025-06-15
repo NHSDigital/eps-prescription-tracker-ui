@@ -57,8 +57,8 @@ describe("AwsRumProvider", () => {
         allowCookies: RUM_CONFIG.ALLOW_COOKIES,
         enableXRay: RUM_CONFIG.ENABLE_XRAY,
         sessionAttributes: {
-          version: APP_CONFIG.VERSION_NUMBER,
-          commit: APP_CONFIG.COMMIT_ID
+          cptAppVersion: APP_CONFIG.VERSION_NUMBER,
+          cptAppCommit: APP_CONFIG.COMMIT_ID
         }
       }
     )

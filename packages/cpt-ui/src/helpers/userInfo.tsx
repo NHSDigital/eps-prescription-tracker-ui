@@ -1,6 +1,7 @@
 import {API_ENDPOINTS} from "@/constants/environment"
 import http from "./axios"
 import {RoleDetails, TrackerUserInfo, UserDetails} from "@cpt-ui-common/common-types"
+import {logger} from "./logger"
 
 export type TrackerUserInfoResult = {
   rolesWithAccess: Array<RoleDetails>,
@@ -74,7 +75,7 @@ export const getTrackerUserInfo = async (): Promise<TrackerUserInfoResult> => {
     error =
       err instanceof Error ? err.message : "Failed to fetch user info"
 
-    console.error("Error fetching tracker user info:", err)
+    logger.error("Error fetching tracker user info:", err)
   }
   return {
     rolesWithAccess,
@@ -100,6 +101,6 @@ export const updateRemoteSelectedRole = async (newRole: RoleDetails) => {
     }
 
   } catch (error) {
-    console.error("Error selecting role:", error)
+    logger.error("Error selecting role:", error)
   }
 }

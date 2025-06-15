@@ -1,6 +1,7 @@
 import axios, {InternalAxiosRequestConfig} from "axios"
 import {v4 as uuidv4} from "uuid"
 import {fetchAuthSession} from "aws-amplify/auth"
+import {logger} from "./logger"
 
 interface ExtendedAxiosRequestConfig extends InternalAxiosRequestConfig {
   __retryCount?: number;
@@ -18,7 +19,7 @@ http.interceptors.request.use(
     const authSession = await fetchAuthSession()
     const idToken = authSession.tokens?.idToken
     if (idToken === undefined) {
-      console.error("Could not get a token - aborting")
+      logger.error("Could not get a token - aborting")
       controller.abort()
     }
     config.headers.Authorization = `Bearer ${idToken?.toString()}`

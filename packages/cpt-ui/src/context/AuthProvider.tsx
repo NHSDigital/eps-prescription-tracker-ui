@@ -15,6 +15,7 @@ import {API_ENDPOINTS} from "@/constants/environment"
 import http from "@/helpers/axios"
 import {RoleDetails, UserDetails} from "@cpt-ui-common/common-types"
 import {getTrackerUserInfo, updateRemoteSelectedRole} from "@/helpers/userInfo"
+import {logger} from "@/helpers/logger"
 
 const CIS2SignOutEndpoint = API_ENDPOINTS.CIS2_SIGNOUT_ENDPOINT
 
@@ -89,12 +90,12 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
    */
   useEffect(() => {
     const unsubscribe = Hub.listen("auth", async ({payload}) => {
-      console.log("Auth event payload:", payload)
+      logger.info("Auth event payload:", payload)
       switch (payload.event) {
         // On successful signIn or token refresh, get the latest user state
         case "signedIn": {
-          console.log("Processing signedIn event")
-          console.log("User %s logged in", payload.data.username)
+          logger.info("Processing signedIn event")
+          logger.info("User %s logged in", payload.data.username)
           const trackerUserInfo = await getTrackerUserInfo()
           setRolesWithAccess(trackerUserInfo.rolesWithAccess)
           setRolesWithoutAccess(trackerUserInfo.rolesWithoutAccess)
@@ -107,38 +108,38 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
           setIsSignedIn(true)
           setIsSigningIn(false)
           setUser(payload.data.username)
-          console.log("Finished the signedIn event ")
+          logger.info("Finished the signedIn event ")
           break
         }
         case "tokenRefresh":
-          console.log("Processing tokenRefresh event")
+          logger.info("Processing tokenRefresh event")
           setError(null)
           break
         case "signInWithRedirect":
-          console.log("Processing signInWithRedirect event")
+          logger.info("Processing signInWithRedirect event")
           setError(null)
           break
 
         case "tokenRefresh_failure":
         case "signInWithRedirect_failure":
-          console.log("Processing tokenRefresh_failure or signInWithRedirect_failure event")
+          logger.info("Processing tokenRefresh_failure or signInWithRedirect_failure event")
           clearAuthState()
           setError("An error has occurred during the OAuth flow.")
           break
 
         case "customOAuthState":
-          console.log("Processing customOAuthState event")
-          console.log("Custom auth state!", payload)
+          logger.info("Processing customOAuthState event")
+          logger.info("Custom auth state!", payload)
           break
 
         case "signedOut":
-          console.log("Processing signedOut event")
+          logger.info("Processing signedOut event")
           clearAuthState()
           setError(null)
           break
 
         default:
-          console.log("Received unknown event", payload)
+          logger.info("Received unknown event", payload)
           // Other auth events? The type-defined cases are already handled above.
           break
       }
@@ -160,21 +161,21 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
    * Sign out process.
    */
   const cognitoSignOut = async () => {
-    console.log("Signing out in authProvider...")
+    logger.info("Signing out in authProvider...")
     try {
       // we need to sign out of cis2 first before signing out of cognito
       // as otherwise we may possibly not be authed to reach cis2 sign out endpoint
-      console.log(`calling ${CIS2SignOutEndpoint}`)
+      logger.info(`calling ${CIS2SignOutEndpoint}`)
       await http.get(CIS2SignOutEndpoint)
-      console.log("Backend CIS2 signout OK!")
-      console.log(`calling amplify logout`)
+      logger.info("Backend CIS2 signout OK!")
+      logger.info(`calling amplify logout`)
       // this triggers a signedOutEvent which is handled by the hub listener
       // we clear all state in there
       await signOut({global: true})
-      console.log("Frontend amplify signout OK!")
+      logger.info("Frontend amplify signout OK!")
 
     } catch (err) {
-      console.error("Failed to sign out:", err)
+      logger.error("Failed to sign out:", err)
       setError(String(err))
     }
   }
@@ -183,7 +184,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
    * Sign in process (redirect).
    */
   const cognitoSignIn = async (input?: SignInWithRedirectInput) => {
-    console.log("Initiating sign-in process...")
+    logger.info("Initiating sign-in process...")
     setIsSigningIn(true)
     return signInWithRedirect(input)
   }

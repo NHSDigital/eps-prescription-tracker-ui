@@ -25,7 +25,6 @@ export const AwsRumProvider: React.FC<AwsRumProviderProps> = ({children}) => {
       allowCookies: RUM_CONFIG.ALLOW_COOKIES,
       enableXRay: RUM_CONFIG.ENABLE_XRAY,
       releaseId: RUM_CONFIG.RELEASE_ID,
-      sessionEventLimit: 0,
       sessionAttributes: {
         cptAppVersion: APP_CONFIG.VERSION_NUMBER,
         cptAppCommit: APP_CONFIG.COMMIT_ID

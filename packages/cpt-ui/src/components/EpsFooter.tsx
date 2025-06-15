@@ -7,10 +7,11 @@ import {
   FOOTER_LINKS,
   VERSION_NUMBER
 } from "@/constants/ui-strings/FooterStrings"
+import {logger} from "@/helpers/logger"
 
 export default function EpsFooter() {
   useEffect(() => {
-    console.log("Viewing site version:", {COMMIT_ID, VERSION_NUMBER})
+    logger.info("Viewing site version:", {COMMIT_ID, VERSION_NUMBER})
   }, [])
 
   return (

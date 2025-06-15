@@ -29,6 +29,7 @@ import {PrescribedDispensedItemsCards} from "@/components/prescriptionDetails/Pr
 import {MessageHistoryCard} from "@/components/prescriptionDetails/MessageHistoryCard"
 
 import http from "@/helpers/axios"
+import {logger} from "@/helpers/logger"
 
 export default function PrescriptionDetailsPage() {
   const auth = useContext(AuthContext)
@@ -48,7 +49,7 @@ export default function PrescriptionDetailsPage() {
   const [messageHistory, setMessageHistory] = useState<Array<MessageHistory>>([])
 
   const getPrescriptionDetails = async (prescriptionId: string): Promise<PrescriptionDetailsResponse | undefined> => {
-    console.log("Prescription ID", prescriptionId)
+    logger.info("Prescription ID", prescriptionId)
     const url = `${API_ENDPOINTS.PRESCRIPTION_DETAILS}/${prescriptionId}`
 
     let payload: PrescriptionDetailsResponse | undefined
@@ -68,7 +69,7 @@ export default function PrescriptionDetailsPage() {
         throw new Error("No payload received from the API")
       }
     } catch (err) {
-      console.error("Failed to fetch prescription details", err)
+      logger.error("Failed to fetch prescription details", err)
       // Navigate to prescription not found when API call fails
       navigate(FRONTEND_PATHS.PRESCRIPTION_NOT_FOUND)
       return
@@ -101,7 +102,7 @@ export default function PrescriptionDetailsPage() {
     const runGetPrescriptionDetails = async () => {
       // Check if auth is ready
       if (!auth?.isSignedIn) {
-        console.log("Auth token not ready, waiting...")
+        logger.info("Auth token not ready, waiting...")
         return
       }
 
@@ -111,7 +112,7 @@ export default function PrescriptionDetailsPage() {
         return
       }
 
-      console.log("useEffect triggered for prescription:", prescriptionId)
+      logger.info("useEffect triggered for prescription:", prescriptionId)
       setLoading(true)
       await getPrescriptionDetails(prescriptionId)
     }

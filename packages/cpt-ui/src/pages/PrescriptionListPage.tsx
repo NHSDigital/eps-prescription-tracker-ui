@@ -21,6 +21,7 @@ import {PRESCRIPTION_LIST_PAGE_STRINGS} from "@/constants/ui-strings/Prescriptio
 import {API_ENDPOINTS, FRONTEND_PATHS} from "@/constants/environment"
 
 import {SearchResponse, PrescriptionSummary} from "@cpt-ui-common/common-types/src/prescriptionList"
+import {logger} from "@/helpers/logger"
 
 export default function PrescriptionListPage() {
   const auth = useContext(AuthContext)
@@ -39,7 +40,7 @@ export default function PrescriptionListPage() {
   useEffect(() => {
     const runSearch = async () => {
       if (!auth?.isSignedIn) {
-        console.log("Not signed in, waiting...")
+        logger.info("Not signed in, waiting...")
         return
       }
 
@@ -56,7 +57,7 @@ export default function PrescriptionListPage() {
         setBackLinkTarget(PRESCRIPTION_LIST_PAGE_STRINGS.NHS_NUMBER_SEARCH_TARGET)
         searchParams = {nhsNumber}
       } else {
-        console.error("No query parameter provided.")
+        logger.error("No query parameter provided.")
         navigate(FRONTEND_PATHS.PRESCRIPTION_NOT_FOUND)
         return
       }
@@ -66,7 +67,7 @@ export default function PrescriptionListPage() {
       })
 
       if (response.status === 404) {
-        console.error("No search results were returned")
+        logger.error("No search results were returned")
         navigate(FRONTEND_PATHS.PRESCRIPTION_NOT_FOUND)
         return
       } else if (response.status !== 200) {
@@ -80,7 +81,7 @@ export default function PrescriptionListPage() {
         && searchResults.pastPrescriptions.length === 0
         && searchResults.futurePrescriptions.length === 0
       ) {
-        console.error("A patient was returned, but they do not have any prescriptions.", searchResults)
+        logger.error("A patient was returned, but they do not have any prescriptions.", searchResults)
         navigate(FRONTEND_PATHS.PRESCRIPTION_NOT_FOUND)
         return
       }
@@ -113,7 +114,7 @@ export default function PrescriptionListPage() {
     setLoading(true)
     runSearch()
       .catch((err) => {
-        console.error("Error during search", err)
+        logger.error("Error during search", err)
         if (err.message === "CanceledError: canceled") {
           navigate(FRONTEND_PATHS.LOGIN)
         } else {

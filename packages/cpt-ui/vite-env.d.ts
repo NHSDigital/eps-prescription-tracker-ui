@@ -26,6 +26,8 @@ interface ImportMetaEnv {
   readonly VITE_RUM_ENABLE_XRAY: string;
   readonly VITE_RUM_SESSION_SAMPLE_RATE: string;
   readonly VITE_RUM_TELEMETRIES: string;
+
+  readonly VITE_REACT_LOG_LEVEL: string;
 }
 
 interface ImportMeta {
