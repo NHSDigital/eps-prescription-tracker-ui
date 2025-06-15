@@ -4,6 +4,7 @@ import {STRINGS} from "@/constants/ui-strings/PatientDetailsBannerStrings"
 import {usePatientDetails} from "@/context/PatientDetailsProvider"
 
 import {PatientDetailsAddress} from "@cpt-ui-common/common-types"
+import {logger} from "@/helpers/logger"
 
 export default function PatientDetailsBanner() {
   const [nameText, setNameText] = useState("")
@@ -38,7 +39,7 @@ export default function PatientDetailsBanner() {
 
   useEffect(() => {
     if (!patientDetails) {
-      console.log("No patient details - hiding patient detail banner.")
+      logger.info("No patient details - hiding patient detail banner.")
       setNameText("")
       setGenderText("")
       setNhsNumberText("")
@@ -46,7 +47,7 @@ export default function PatientDetailsBanner() {
       setAddressText("")
       return
     }
-    console.log("Patient details are present.", patientDetails)
+    logger.info("Patient details are present.", patientDetails)
 
     let allDetailsPresent = true
 

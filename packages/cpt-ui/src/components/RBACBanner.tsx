@@ -4,6 +4,7 @@ import {Row} from "nhsuk-react-components"
 
 import {RBAC_BANNER_STRINGS} from "@/constants/ui-strings/RBACBannerStrings"
 import {useAuth} from "@/context/AuthProvider"
+import {logger} from "@/helpers/logger"
 
 export default function RBACBanner() {
   const [bannerText, setBannerText] = useState<string>("")
@@ -11,11 +12,11 @@ export default function RBACBanner() {
 
   useEffect(() => {
     if (!selectedRole || !userDetails) {
-      console.log("No selected role or user details - hiding RBAC banner.")
+      logger.info("No selected role or user details - hiding RBAC banner.")
       setBannerText("")
       return
     }
-    console.log("Selected role is present, setting text: ", selectedRole)
+    logger.info("Selected role is present, setting text: ", selectedRole)
 
     /**
      * The RBAC (Role-Based Access Control) User Profile Banner follows these patterns:

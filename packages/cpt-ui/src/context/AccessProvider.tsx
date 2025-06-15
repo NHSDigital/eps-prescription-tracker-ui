@@ -10,6 +10,7 @@ import {normalizePath} from "@/helpers/utils"
 import {useAuth} from "./AuthProvider"
 
 import {FRONTEND_PATHS} from "@/constants/environment"
+import {logger} from "@/helpers/logger"
 
 export const AccessContext = createContext<Record<string, never> | null>(null)
 
@@ -28,14 +29,14 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
 
     if (!auth.isSignedIn && !auth.isSigningIn) {
       if (!allowed_no_role_paths.includes(normalizePath(location.pathname))) {
-        console.log("Not signed in - redirecting to login page")
+        logger.info("Not signed in - redirecting to login page")
         navigate(FRONTEND_PATHS.LOGIN)
       }
       return
     }
     if (!auth.selectedRole && !auth.isSigningIn) {
       if (!allowed_no_role_paths.includes(normalizePath(location.pathname))) {
-        console.log("No selected role - Redirecting from", location.pathname)
+        logger.info("No selected role - Redirecting from", location.pathname)
         navigate(FRONTEND_PATHS.SELECT_YOUR_ROLE)
       }
       return

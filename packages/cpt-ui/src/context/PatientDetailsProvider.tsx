@@ -10,6 +10,7 @@ import {useLocation} from "react-router-dom"
 import {PatientDetails} from "@cpt-ui-common/common-types"
 import {normalizePath} from "@/helpers/utils"
 import {FRONTEND_PATHS} from "@/constants/environment"
+import {logger} from "@/helpers/logger"
 
 export type PatientDetailsContextType = {
   patientDetails: PatientDetails | undefined
@@ -26,7 +27,7 @@ export const PatientDetailsProvider = ({children}: {children: ReactNode}) => {
   const [patientDetails, setPatientDetails] = useState<PatientDetails | undefined>(undefined)
 
   const clear = () => {
-    console.log("Clearing patient details context...")
+    logger.info("Clearing patient details context...")
     setPatientDetails(undefined)
   }
 
@@ -41,7 +42,7 @@ export const PatientDetailsProvider = ({children}: {children: ReactNode}) => {
 
     const path = normalizePath(location.pathname)
     if (!patientDetailsAllowedPaths.includes(path)) {
-      console.info("Clearing patient details.")
+      logger.info("Clearing patient details.")
       clear()
     }
   }, [location.pathname])
