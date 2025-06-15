@@ -1,24 +1,25 @@
 import {Routes, Route} from "react-router-dom"
+import {lazy} from "react"
 import {AuthProvider} from "@/context/AuthProvider"
 import {AccessProvider} from "@/context/AccessProvider"
 import {PatientDetailsProvider} from "./context/PatientDetailsProvider"
 import {PrescriptionInformationProvider} from "./context/PrescriptionInformationProvider"
 import Layout from "@/Layout"
 
-import LoginPage from "@/pages/LoginPage"
-import LogoutPage from "@/pages/LogoutPage"
-import SelectYourRolePage from "@/pages/SelectYourRolePage"
-import ChangeRolePage from "@/pages/ChangeRolePage"
-import SearchPrescriptionPage from "@/pages/SearchPrescriptionPage"
-import YourSelectedRolePage from "@/pages/YourSelectedRolePage"
-import NotFoundPage from "@/pages/NotFoundPage"
-import PrescriptionListPage from "@/pages/PrescriptionListPage"
-import PrescriptionNotFoundPage from "@/pages/PrescriptionNotFoundPage"
-import PrescriptionDetailsPage from "@/pages/PrescriptionDetailsPage"
-import EPSCookieBanner from "./components/EPSCookieBanner"
-import CookiePolicyPage from "./pages/CookiePolicyPage"
-import CookieSettingsPage from "./pages/CookieSettingsPage"
-import SearchResultsPage from "@/pages/BasicDetailsSearchResultsPage"
+const LoginPage = lazy(() => import("@/pages/LoginPage"))
+const LogoutPage = lazy(() => import("@/pages/LogoutPage"))
+const SelectYourRolePage = lazy(() => import("@/pages/SelectYourRolePage"))
+const ChangeRolePage = lazy(() => import("@/pages/ChangeRolePage"))
+const SearchPrescriptionPage= lazy(() => import("@/pages/SearchPrescriptionPage"))
+const YourSelectedRolePage = lazy(() => import("@/pages/YourSelectedRolePage"))
+const NotFoundPage = lazy(() => import( "@/pages/NotFoundPage"))
+const PrescriptionListPage = lazy(() => import( "@/pages/PrescriptionListPage"))
+const PrescriptionNotFoundPage = lazy(() => import( "@/pages/PrescriptionNotFoundPage"))
+const PrescriptionDetailsPage = lazy(() => import( "@/pages/PrescriptionDetailsPage"))
+const EPSCookieBanner = lazy(() => import( "./components/EPSCookieBanner"))
+const CookiePolicyPage = lazy(() => import( "./pages/CookiePolicyPage"))
+const CookieSettingsPage = lazy(() => import( "./pages/CookieSettingsPage"))
+const SearchResultsPage = lazy(() => import( "@/pages/BasicDetailsSearchResultsPage"))
 
 import {FRONTEND_PATHS} from "@/constants/environment"
 
