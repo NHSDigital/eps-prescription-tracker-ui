@@ -1,6 +1,6 @@
 import React, {createContext, useContext, ReactNode} from "react"
 import {AwsRum, AwsRumConfig} from "aws-rum-web"
-import {RUM_CONFIG} from "@/constants/environment"
+import {APP_CONFIG, RUM_CONFIG} from "@/constants/environment"
 
 // Define the context type
 export type AwsRumContextType = AwsRum | null
@@ -23,7 +23,11 @@ export const AwsRumProvider: React.FC<AwsRumProviderProps> = ({children}) => {
       telemetries: RUM_CONFIG.TELEMETRIES,
       allowCookies: RUM_CONFIG.ALLOW_COOKIES,
       enableXRay: RUM_CONFIG.ENABLE_XRAY,
-      releaseId: RUM_CONFIG.RELEASE_ID
+      releaseId: RUM_CONFIG.RELEASE_ID,
+      sessionAttributes: {
+        version: APP_CONFIG.VERSION_NUMBER,
+        commit: APP_CONFIG.COMMIT_ID
+      }
     }
     awsRum = new AwsRum(RUM_CONFIG.APPLICATION_ID, RUM_CONFIG.VERSION, RUM_CONFIG.REGION, config)
   } catch (error) {
