@@ -28,12 +28,19 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  componentDidCatch(error: Error, errorInfo: React.ErrorInfo): void {
+  async componentDidCatch(error: Error, errorInfo: React.ErrorInfo): Promise<void> {
     console.error("recordingError:", error)
 
     // Correctly access the context value
     if (this.context) {
-      (this.context as AwsRum).recordError(error)
+      console.log("sending to rum")
+      const rumContext = this.context as AwsRum
+      rumContext.recordError(error)
+      rumContext.dispatch()
+      console.log("sent to rum")
+      //      (this.context as AwsRum).recordError(error)
+    } else {
+      console.log("can not send to rum")
     }
   }
 
