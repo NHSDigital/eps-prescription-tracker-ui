@@ -45,7 +45,7 @@ class Logger {
   }
 
   public error(message: string, ...args: Array<unknown>): void {
-    if (this.rumContext) {
+    if (this.rumContext !== null) {
       this.rumContext.recordError(args)
     }
     this.logger.error(message, ...args)
