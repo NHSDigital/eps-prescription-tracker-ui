@@ -484,11 +484,11 @@ export class StatelessResourcesStack extends Stack {
       })
       new CfnOutput(this, "VERSION_NUMBER", {
         value: props.version,
-        exportName: `${props.stackName}:local:VERSION_NUMBER`
+        exportName: `${props.stackName}:local:VERSION-NUMBER`
       })
       new CfnOutput(this, "COMMIT_ID", {
         value: props.commit,
-        exportName: `${props.stackName}:local:COMMIT_ID`
+        exportName: `${props.stackName}:local:COMMIT-ID`
       })
     }
     nagSuppressions(this)
