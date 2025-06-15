@@ -29,8 +29,6 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo): void {
-    console.error("recordingError:", error)
-
     // Correctly access the context value
     if (this.context) {
       (this.context as AwsRum).recordError(error)
