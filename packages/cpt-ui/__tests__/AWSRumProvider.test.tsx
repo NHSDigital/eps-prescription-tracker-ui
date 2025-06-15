@@ -2,7 +2,7 @@ import React from "react"
 import {render} from "@testing-library/react"
 import {AwsRumProvider, useAwsRum} from "@/context/AwsRumProvider" // Adjust import path as needed
 import {AwsRum} from "aws-rum-web"
-import {RUM_CONFIG} from "@/constants/environment"
+import {APP_CONFIG, RUM_CONFIG} from "@/constants/environment"
 
 // Mock aws-rum-web and RUM_CONFIG
 jest.mock("aws-rum-web", () => ({
@@ -21,6 +21,10 @@ jest.mock("@/constants/environment", () => ({
     APPLICATION_ID: "test-app-id",
     VERSION: "1.0.0",
     REGION: "us-west-2"
+  },
+  APP_CONFIG: {
+    VERSION_NUMBER: "dummy_version_number",
+    COMMIT_ID: "dummy_commit_id"
   }
 }))
 
@@ -51,7 +55,11 @@ describe("AwsRumProvider", () => {
         endpoint: RUM_CONFIG.ENDPOINT,
         telemetries: RUM_CONFIG.TELEMETRIES,
         allowCookies: RUM_CONFIG.ALLOW_COOKIES,
-        enableXRay: RUM_CONFIG.ENABLE_XRAY
+        enableXRay: RUM_CONFIG.ENABLE_XRAY,
+        sessionAttributes: {
+          version: APP_CONFIG.VERSION_NUMBER,
+          commit: APP_CONFIG.COMMIT_ID
+        }
       }
     )
   })
