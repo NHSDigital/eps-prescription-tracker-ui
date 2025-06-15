@@ -1,6 +1,7 @@
 import React, {createContext, useContext, ReactNode} from "react"
 import {AwsRum, AwsRumConfig} from "aws-rum-web"
 import {APP_CONFIG, RUM_CONFIG} from "@/constants/environment"
+import {logger} from "@/helpers/logger"
 
 // Define the context type
 export type AwsRumContextType = AwsRum | null
@@ -24,14 +25,15 @@ export const AwsRumProvider: React.FC<AwsRumProviderProps> = ({children}) => {
       allowCookies: RUM_CONFIG.ALLOW_COOKIES,
       enableXRay: RUM_CONFIG.ENABLE_XRAY,
       releaseId: RUM_CONFIG.RELEASE_ID,
+      sessionEventLimit: 0,
       sessionAttributes: {
-        version: APP_CONFIG.VERSION_NUMBER,
-        commit: APP_CONFIG.COMMIT_ID
+        cptAppVersion: APP_CONFIG.VERSION_NUMBER,
+        cptAppCommit: APP_CONFIG.COMMIT_ID
       }
     }
     awsRum = new AwsRum(RUM_CONFIG.APPLICATION_ID, RUM_CONFIG.VERSION, RUM_CONFIG.REGION, config)
   } catch (error) {
-    console.error("AWS RUM initialization error:", error)
+    logger.error("AWS RUM initialization error:", error)
   }
   return (
     <AwsRumContext.Provider value={awsRum}>{children}</AwsRumContext.Provider>
