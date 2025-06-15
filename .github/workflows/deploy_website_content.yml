@@ -95,6 +95,7 @@ jobs:
           export VITE_redirectSignIn="https://${fullCloudfrontDomain}/site/select-your-role"
           export VITE_redirectSignOut="https://${fullCloudfrontDomain}/site/logout"
           export VITE_COMMIT_ID=${{ inputs.COMMIT_ID }}
+          export VITE_VERSION_NUMBER=${{ inputs.VERSION_NUMBER }}
           export VITE_TARGET_ENVIRONMENT=${{ inputs.TARGET_ENVIRONMENT }}
           export VITE_RUM_GUEST_ROLE_ARN=${rumUnauthenticatedRumRoleArn}
           export VITE_RUM_IDENTITY_POOL_ID=${rumIdentityPoolId}

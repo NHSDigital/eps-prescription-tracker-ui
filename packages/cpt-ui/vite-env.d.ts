@@ -17,6 +17,7 @@ interface ImportMetaEnv {
   readonly VITE_BASE_PATH: string;
   readonly VITE_LOCAL_DEV: string;
   readonly VITE_COMMIT_ID: string;
+  readonly VITE_VERSION_NUMBER: string;
 
   readonly VITE_RUM_GUEST_ROLE_ARN: string;
   readonly VITE_RUM_IDENTITY_POOL_ID: string;

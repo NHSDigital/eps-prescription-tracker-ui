@@ -1,11 +1,16 @@
 import React, {useEffect} from "react"
 import {Footer} from "nhsuk-react-components"
 
-import {FOOTER_COPYRIGHT, COMMIT_ID, FOOTER_LINKS} from "@/constants/ui-strings/FooterStrings"
+import {
+  FOOTER_COPYRIGHT,
+  COMMIT_ID,
+  FOOTER_LINKS,
+  VERSION_NUMBER
+} from "@/constants/ui-strings/FooterStrings"
 
 export default function EpsFooter() {
   useEffect(() => {
-    console.log("Viewing site version of commit ID:", COMMIT_ID)
+    console.log("Viewing site version:", {COMMIT_ID, VERSION_NUMBER})
   }, [])
 
   return (

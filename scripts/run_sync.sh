@@ -82,6 +82,7 @@ VITE_redirectSignIn=http://localhost:3000/site/select-your-role
 VITE_redirectSignOut=http://localhost:3000/site/logout
 
 VITE_COMMIT_ID="Local Development Server"
+VITE_VERSION_NUMBER="Local Development Server"
 
 REACT_APP_hostedLoginDomain=$VITE_hostedLoginDomain
 REACT_APP_userPoolClientId=$VITE_userPoolClientId
@@ -246,6 +247,7 @@ export VITE_hostedLoginDomain
 export VITE_redirectSignIn
 export VITE_redirectSignOut
 export VITE_COMMIT_ID
+export VITE_VERSION_NUMBER
 export REACT_APP_hostedLoginDomain
 export REACT_APP_userPoolClientId
 export REACT_APP_userPoolId
