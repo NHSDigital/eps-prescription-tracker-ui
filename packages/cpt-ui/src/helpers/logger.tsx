@@ -1,8 +1,7 @@
-import React from "react"
-import {AwsRumContext} from "../context/AwsRumProvider"
-import {AwsRum} from "aws-rum-web"
 import {APP_CONFIG} from "@/constants/environment"
 import pino from "pino"
+import {getAwsRum} from "./awsRum"
+import {AwsRum} from "aws-rum-web"
 const REACT_LOG_LEVEL = APP_CONFIG.REACT_LOG_LEVEL || "debug"
 
 /**
@@ -16,10 +15,11 @@ export const LOG_LEVEL_NAMES = ["trace", "debug", "info", "warn", "error", "sile
  */
 class Logger {
 
-  declare rumContext: React.ContextType<typeof AwsRumContext>
   logger: pino.Logger
+  rumContext: AwsRum | null
 
   constructor() {
+    this.rumContext = getAwsRum()
     this.logger = pino({
       level: REACT_LOG_LEVEL,
       browser: {
@@ -46,7 +46,7 @@ class Logger {
 
   public error(message: string, ...args: Array<unknown>): void {
     if (this.rumContext) {
-      (this.rumContext as AwsRum).recordError(args)
+      this.rumContext.recordError(args)
     }
     this.logger.error(message, ...args)
   }

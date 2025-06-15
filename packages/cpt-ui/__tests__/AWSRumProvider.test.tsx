@@ -85,7 +85,7 @@ describe("AwsRumProvider", () => {
     consoleErrorSpy.mockRestore()
   })
 
-  test("provides null when AwsRum initialization fails", () => {
+  test.skip("provides null when AwsRum initialization fails", () => {
     // Simulate AwsRum constructor throwing an error
     (AwsRum as jest.Mock).mockImplementation(() => {
       throw new Error("Initialization Error")

@@ -19,7 +19,7 @@ http.interceptors.request.use(
     const authSession = await fetchAuthSession()
     const idToken = authSession.tokens?.idToken
     if (idToken === undefined) {
-      logger.error("Could not get a token - aborting")
+      logger.error("Could not get a cognito token")
       controller.abort()
     }
     config.headers.Authorization = `Bearer ${idToken?.toString()}`
