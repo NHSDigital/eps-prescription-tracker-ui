@@ -4,7 +4,6 @@
     "src/**/*",
     "tests/**/*",
     "tests/**/*.json",
-    ".next/types/**/*.ts",
     "**/*.tsx",
     "vite-env.d.ts",
     "jest.config.ts",
