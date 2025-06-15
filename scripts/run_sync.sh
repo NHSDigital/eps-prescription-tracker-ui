@@ -81,8 +81,14 @@ VITE_hostedLoginDomain=${SERVICE_NAME}.auth.eu-west-2.amazoncognito.com
 VITE_redirectSignIn=http://localhost:3000/site/select-your-role
 VITE_redirectSignOut=http://localhost:3000/site/logout
 
-VITE_COMMIT_ID="Local Development Server"
-VITE_VERSION_NUMBER="Local Development Server"
+VITE_COMMIT_ID=$(echo "$CF_LONDON_EXPORTS" | \
+    jq \
+    --arg EXPORT_NAME "${SERVICE_NAME}-stateless-resources:local:COMMIT-ID" \
+    -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+VITE_VERSION_NUMBER=$(echo "$CF_LONDON_EXPORTS" | \
+    jq \
+    --arg EXPORT_NAME "${SERVICE_NAME}-stateless-resources:local:VERSION-NUMBER" \
+    -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
 
 REACT_APP_hostedLoginDomain=$VITE_hostedLoginDomain
 REACT_APP_userPoolClientId=$VITE_userPoolClientId
@@ -100,8 +106,14 @@ REACT_APP_RUM_TELEMETRIES=$VITE_RUM_TELEMETRIES
 
 
 # vars needed for cdk
-VERSION_NUMBER="PR-${PULL_REQUEST_ID}"
-COMMIT_ID=unknown
+VERSION_NUMBER=$(echo "$CF_LONDON_EXPORTS" | \
+    jq \
+    --arg EXPORT_NAME "${SERVICE_NAME}-stateless-resources:local:VERSION-NUMBER" \
+    -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+COMMIT_ID=$(echo "$CF_LONDON_EXPORTS" | \
+    jq \
+    --arg EXPORT_NAME "${SERVICE_NAME}-stateless-resources:local:COMMIT-ID" \
+    -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
 AUTO_DELETE_OBJECTS=true
 CLOUDFRONT_DISTRIBUTION_ID=$(echo "$CF_LONDON_EXPORTS" | \
     jq \
