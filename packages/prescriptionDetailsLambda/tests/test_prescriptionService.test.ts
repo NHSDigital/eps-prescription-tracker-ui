@@ -63,7 +63,6 @@ describe("prescriptionService", () => {
   afterEach(() => {
     // Verify that all nock interceptors were used
     if (!nock.isDone()) {
-      console.warn("Unused nock interceptors:", nock.pendingMocks())
       nock.cleanAll()
     }
   })

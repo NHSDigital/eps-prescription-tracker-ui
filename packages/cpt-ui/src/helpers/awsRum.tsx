@@ -24,6 +24,7 @@ export class CptAwsRum {
       this.awsRum = new AwsRum(RUM_CONFIG.APPLICATION_ID, RUM_CONFIG.VERSION, RUM_CONFIG.REGION, config)
     } catch (error) {
       // we use console log here as otherwise it would get sent to rum
+      // eslint-disable-next-line no-console
       console.error("AWS RUM initialization error:", error)
       this.awsRum = null
     }

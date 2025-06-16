@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import {PrescriptionDetailsResponse} from "@cpt-ui-common/common-types"
 import {
   FhirAction,

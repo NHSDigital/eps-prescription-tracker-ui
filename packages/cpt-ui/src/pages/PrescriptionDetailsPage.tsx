@@ -106,7 +106,7 @@ export default function PrescriptionDetailsPage() {
 
       const prescriptionId = queryParams.get("prescriptionId")
       if (!prescriptionId) {
-        console.error("No prescriptionId provided in query params.")
+        logger.error("No prescriptionId provided in query params.")
         return
       }
 
