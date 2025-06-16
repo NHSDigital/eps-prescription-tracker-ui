@@ -1,5 +1,6 @@
 import axios, {InternalAxiosRequestConfig} from "axios"
 import {v4 as uuidv4} from "uuid"
+import {fetchAuthSession} from "aws-amplify/auth"
 
 interface ExtendedAxiosRequestConfig extends InternalAxiosRequestConfig {
   __retryCount?: number;
@@ -9,15 +10,28 @@ const http = axios.create()
 
 // REQUEST INTERCEPTOR
 http.interceptors.request.use(
-  (config: ExtendedAxiosRequestConfig) => {
+  async (config: ExtendedAxiosRequestConfig) => {
+    const controller = new AbortController()
+
     config.headers["X-request-id"] = uuidv4()
+    config.headers["X-Correlation-id"] = uuidv4()
+    const authSession = await fetchAuthSession()
+    const idToken = authSession.tokens?.idToken
+    if (idToken === undefined) {
+      console.error("Could not get a token - aborting")
+      controller.abort()
+    }
+    config.headers.Authorization = `Bearer ${idToken?.toString()}`
 
     // Make sure we have a retry counter in config so we can track how many times we've retried
     if (!config.__retryCount) {
       config.__retryCount = 0
     }
 
-    return config
+    return {
+      ...config,
+      signal: controller.signal
+    }
   },
   (error) => {
     return Promise.reject(Error(error))

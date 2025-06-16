@@ -46,11 +46,11 @@ const {
   }
 })
 
-const mockUpdateTokenMapping = jest.fn()
+const mockInsertTokenMapping = jest.fn()
 const mockGetSessionState = jest.fn()
 jest.unstable_mockModule("@cpt-ui-common/dynamoFunctions", () => {
   return {
-    updateTokenMapping: mockUpdateTokenMapping,
+    insertTokenMapping: mockInsertTokenMapping,
     getSessionState: mockGetSessionState
   }
 })
@@ -171,7 +171,8 @@ describe("token mock handler", () => {
         currently_selected_role: {role_id: "555", org_code: "GHI", role_name: "MockRole_4"},
         user_details: {
           family_name: "foo",
-          given_name: "bar"
+          given_name: "bar",
+          sub: "user_details_sub"
         }
       })
     })
@@ -183,6 +184,28 @@ describe("token mock handler", () => {
       }
     }, dummyContext)
 
+    // check call
+    expect(mockInsertTokenMapping).toHaveBeenCalledWith(
+      expect.anything(), // documentClient
+      expect.anything(), // tableName
+      {
+        username: "Mock_user_details_sub",
+        apigeeAccessToken: "new-access-token",
+        apigeeRefreshToken: "new-refresh-token",
+        apigeeExpiresIn: 3600,
+        rolesWithAccess: [
+          {role_id: "123", org_code: "XYZ", role_name: "MockRole_1"}
+        ],
+        rolesWithoutAccess: [],
+        currentlySelectedRole: {role_id: "555", org_code: "GHI", role_name: "MockRole_4"},
+        userDetails: {
+          family_name: "foo",
+          given_name: "bar",
+          sub: "user_details_sub"
+        }
+      }, // item
+      expect.anything() // logger
+    )
     // Check response structure
     expect(response.statusCode).toBe(200)
     expect(response.body).toBeDefined()

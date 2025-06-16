@@ -4,7 +4,7 @@ import userEvent from "@testing-library/user-event"
 import React, {useState} from "react"
 import {BrowserRouter} from "react-router-dom"
 import {AuthContext, type AuthContextType} from "@/context/AuthProvider"
-import type {SignInWithRedirectInput, AuthUser, JWT} from "@aws-amplify/auth"
+import type {SignInWithRedirectInput, JWT} from "@aws-amplify/auth"
 import LoginPage from "@/pages/LoginPage"
 
 const mockCognitoSignIn = jest.fn()
@@ -65,12 +65,19 @@ jest.mock("@/context/configureAmplify", () => ({
 
 const defaultAuthState: AuthContextType = {
   isSignedIn: false,
+  isSigningIn: false,
   user: null,
   error: null,
-  idToken: null,
-  accessToken: null,
+  rolesWithAccess: [],
+  rolesWithoutAccess: [],
+  hasNoAccess: false,
+  hasSingleRoleAccess: false,
+  selectedRole: undefined,
+  userDetails: undefined,
   cognitoSignIn: mockCognitoSignIn,
-  cognitoSignOut: mockCognitoSignOut
+  cognitoSignOut: mockCognitoSignOut,
+  clearAuthState: jest.fn(),
+  updateSelectedRole: jest.fn()
 }
 
 const MockAuthProvider = ({
@@ -88,12 +95,8 @@ const MockAuthProvider = ({
       setAuthState((prev) => ({
         ...prev,
         isSignedIn: true,
-        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-        user: {
-          username:
-            (input?.provider as { custom: string })?.custom || "mockUser",
-          userId: "mock-user-id"
-        } as AuthUser,
+
+        user: (input?.provider as { custom: string })?.custom || "mockUser",
         error: null,
         // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
         idToken: {toString: () => "mockIdToken"} as JWT,
@@ -199,12 +202,9 @@ describe("LoginPage", () => {
     renderWithProviders(<LoginPage />, {
       ...defaultAuthState,
       isSignedIn: true,
-      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      user: {username: "testUser"} as AuthUser,
-      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      idToken: {toString: () => "mockIdToken"} as JWT,
-      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      accessToken: {toString: () => "mockAccessToken"} as JWT
+
+      user: "testUser"
+
     })
 
     const signOutBtn = screen.getByRole("button", {name: /Sign Out/i})
