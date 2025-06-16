@@ -291,52 +291,49 @@ describe("PrescriptionListPage", () => {
     })
   })
 
-  // it("navigates back to the prescription ID search when prescriptionId query fails", async () => {
-  //   mockedAxios.get.mockResolvedValue({
-  //     status: 204,
-  //     data: {}
-  //   })
-  //   renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT + "?prescriptionId=002F5E-A83008-497F1Z")
-  //   expect(mockedAxios.get).toHaveBeenCalledTimes(1)
+  it("renders the not found message when prescriptionId query returns no results", async () => {
+    const noResults: SearchResponse = {
+      patient: mockSearchResponse.patient,
+      currentPrescriptions: [],
+      pastPrescriptions: [],
+      futurePrescriptions: []
+    }
 
-  //   await waitFor(() => {
-  //     const dummyTag = screen.getByTestId("dummy-no-prescription-page")
-  //     expect(dummyTag).toBeInTheDocument()
-  //   })
-  // })
+    mockedAxios.get.mockResolvedValue({
+      status: 200,
+      data: noResults
+    })
 
-  // it("navigates back to the prescription ID search when prescriptionId query returns no results", async () => {
-  //   const noResults: SearchResponse = {
-  //     patient: mockSearchResponse.patient,
-  //     currentPrescriptions: [],
-  //     pastPrescriptions: [],
-  //     futurePrescriptions: []
-  //   }
-  //   mockedAxios.get.mockResolvedValue({
-  //     status: 200,
-  //     data: noResults
-  //   })
+    renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT + "?prescriptionId=ABC123-ABC123-ABC123")
+    expect(mockedAxios.get).toHaveBeenCalledTimes(1)
 
-  //   renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT + "?prescriptionId=ABC123-ABC123-ABC123")
-  //   expect(mockedAxios.get).toHaveBeenCalledTimes(1)
+    await waitFor(() => {
+      const heading = screen.getByTestId("presc-not-found-heading")
+      expect(heading).toHaveTextContent("No prescriptions found")
+    })
+  })
 
-  //   await waitFor(() => {
-  //     const dummyTag = screen.getByTestId("dummy-no-prescription-page")
-  //     expect(dummyTag).toBeInTheDocument()
-  //   })
-  // })
+  it("navigates back to the prescription ID search when prescriptionId query fails", async () => {
+    mockedAxios.get.mockRejectedValue(new Error("Server error"))
 
-  // it("navigates back to the NHS number search when nhsNumber query fails", async () => {
-  //   mockedAxios.get.mockResolvedValue({
-  //     status: 204,
-  //     data: {}
-  //   })
-  //   renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT + "?nhsNumber=32165649870")
-  //   expect(mockedAxios.get).toHaveBeenCalledTimes(1)
+    renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT + "?prescriptionId=002F5E-A83008-497F1Z")
+    expect(mockedAxios.get).toHaveBeenCalledTimes(1)
 
-  //   await waitFor(() => {
-  //     const dummyTag = screen.getByTestId("dummy-no-prescription-page")
-  //     expect(dummyTag).toBeInTheDocument()
-  //   })
-  // })
+    await waitFor(() => {
+      const dummyTag = screen.getByTestId("dummy-no-prescription-page")
+      expect(dummyTag).toBeInTheDocument()
+    })
+  })
+
+  it("navigates back to the NHS number search when nhsNumber query fails", async () => {
+    mockedAxios.get.mockRejectedValue(new Error("Server error"))
+
+    renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT + "?nhsNumber=32165649870")
+    expect(mockedAxios.get).toHaveBeenCalledTimes(1)
+
+    await waitFor(() => {
+      const dummyTag = screen.getByTestId("dummy-no-prescription-page")
+      expect(dummyTag).toBeInTheDocument()
+    })
+  })
 })
