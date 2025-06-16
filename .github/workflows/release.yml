@@ -142,6 +142,7 @@ jobs:
       JWT_KID: "eps-cpt-ui-dev"
       ROLE_ID: "555254242106"
       LOG_LEVEL: "DEBUG"
+      REACT_LOG_LEVEL: "debug"
     secrets:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.DEV_CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_DEPLOY_ROLE }}
@@ -197,6 +198,7 @@ jobs:
       JWT_KID: "eps-cpt-ui-ref"
       ROLE_ID: "555254242106"
       LOG_LEVEL: "DEBUG"
+      REACT_LOG_LEVEL: "debug"
     secrets:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.REF_CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.REF_CLOUD_FORMATION_DEPLOY_ROLE }}
@@ -238,6 +240,7 @@ jobs:
       JWT_KID: "eps-cpt-ui-qa"
       ROLE_ID: "555254242106"
       LOG_LEVEL: "DEBUG"
+      REACT_LOG_LEVEL: "debug"
     secrets:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.QA_CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.QA_CLOUD_FORMATION_DEPLOY_ROLE }}
@@ -274,6 +277,7 @@ jobs:
       ROLE_ID: "555254242106"
       LOG_LEVEL: "DEBUG"
       RUN_REGRESSION_TESTS: false
+      REACT_LOG_LEVEL: "debug" # should be set to silent before final release
     secrets:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.INT_CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.INT_CLOUD_FORMATION_DEPLOY_ROLE }}

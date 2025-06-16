@@ -15,6 +15,9 @@ on:
       COMMIT_ID:
         required: true
         type: string
+      REACT_LOG_LEVEL:
+        required: true
+        type: string
     secrets:
       CLOUD_FORMATION_DEPLOY_ROLE:
         required: true
@@ -104,6 +107,7 @@ jobs:
           export VITE_RUM_ENABLE_XRAY=${rumEnableXRay}
           export VITE_RUM_SESSION_SAMPLE_RATE=${rumSessionSampleRate}
           export VITE_RUM_TELEMETRIES=${rumTelemetries}
+          export VITE_REACT_LOG_LEVEL=${{ inputs.REACT_LOG_LEVEL }}
 
           cd .build
           make react-build
