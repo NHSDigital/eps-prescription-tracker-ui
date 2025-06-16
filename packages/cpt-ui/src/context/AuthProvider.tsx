@@ -1,181 +1,144 @@
-import React, {createContext, useEffect, useState} from "react"
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState
+} from "react"
 import {Amplify} from "aws-amplify"
 import {Hub} from "aws-amplify/utils"
-import {
-  signInWithRedirect,
-  signOut,
-  getCurrentUser,
-  AuthUser,
-  fetchAuthSession,
-  JWT,
-  SignInWithRedirectInput
-} from "aws-amplify/auth"
+import {signInWithRedirect, signOut, SignInWithRedirectInput} from "aws-amplify/auth"
 import {authConfig} from "./configureAmplify"
 
 import {useLocalStorageState} from "@/helpers/useLocalStorageState"
-import {normalizePath} from "@/helpers/utils"
-import {API_ENDPOINTS, FRONTEND_PATHS, NHS_REQUEST_URID} from "@/constants/environment"
-
-import {useNavigate, useLocation} from "react-router-dom"
+import {API_ENDPOINTS} from "@/constants/environment"
 
 import http from "@/helpers/axios"
+import {RoleDetails, UserDetails} from "@cpt-ui-common/common-types"
+import {getTrackerUserInfo, updateRemoteSelectedRole} from "@/helpers/userInfo"
 
 const CIS2SignOutEndpoint = API_ENDPOINTS.CIS2_SIGNOUT_ENDPOINT
 
 export interface AuthContextType {
   error: string | null
-  user: AuthUser | null
+  user: string | null
   isSignedIn: boolean
-  idToken: JWT | null
-  accessToken: JWT | null
-  isAuthLoading?: boolean
+  isSigningIn: boolean
+  rolesWithAccess: Array<RoleDetails>
+  rolesWithoutAccess: Array<RoleDetails>
+  hasNoAccess: boolean
+  hasSingleRoleAccess: boolean
+  selectedRole: RoleDetails | undefined
+  userDetails: UserDetails | undefined
   cognitoSignIn: (input?: SignInWithRedirectInput) => Promise<void>
   cognitoSignOut: () => Promise<void>
+  clearAuthState: () => void
+  updateSelectedRole: (value: RoleDetails) => Promise<void>
 }
 
 export const AuthContext = createContext<AuthContextType | null>(null)
 
 export const AuthProvider = ({children}: { children: React.ReactNode }) => {
   const [error, setError] = useState<string | null>(null)
-  const [user, setUser] = useLocalStorageState<AuthUser | null>("user", "auth", null)
-  const [isSignedIn, setIsSignedIn] = useLocalStorageState<boolean>("isSignedIn", "auth", false)
-  const [idToken, setIdToken] = useLocalStorageState<JWT | null>("idToken", "auth", null)
-  const [accessToken, setAccessToken] = useLocalStorageState<JWT | null>("accessToken", "auth", null)
-  const [isAuthLoading, setIsAuthLoading] = useState(true)
-
-  const navigate = useNavigate()
-  const location = useLocation()
-
+  const [user, setUser] = useLocalStorageState<string | null>("user", "user", null)
+  const [isSignedIn, setIsSignedIn] = useLocalStorageState<boolean>("isSignedIn", "isSignedIn", false)
+  const [isSigningIn, setIsSigningIn] = useLocalStorageState<boolean>("isSigningIn", "isSigningIn", false)
+  const [rolesWithAccess, setRolesWithAccess] = useLocalStorageState<Array<RoleDetails>>(
+    "rolesWithAccess", "rolesWithAccess", [])
+  const [rolesWithoutAccess, setRolesWithoutAccess] = useLocalStorageState<Array<RoleDetails>>(
+    "rolesWithoutAccess",
+    "rolesWithoutAccess",
+    [])
+  const [hasNoAccess, setHasNoAccess] = useLocalStorageState<boolean>(
+    "noAccess",
+    "noAccess",
+    true
+  )
+  const [selectedRole, setSelectedRole] = useLocalStorageState<RoleDetails | undefined>(
+    "selectedRole",
+    "selectedRole",
+    undefined
+  )
+  const [userDetails, setUserDetails] = useLocalStorageState<UserDetails | undefined>(
+    "userDetails",
+    "userDetails",
+    undefined
+  )
+  const [hasSingleRoleAccess, setHasSingleRoleAccess] = useLocalStorageState<boolean>(
+    "singleAccess",
+    "singleAccess",
+    false
+  )
   /**
-   * Fetch and update the user session state.
+   * Fetch and update the auth tokens
    */
-  const getUser = async () => {
-    console.log("Fetching user session...")
-    setIsAuthLoading(true)
-    try {
-      const authSession = await fetchAuthSession({forceRefresh: true})
-      const sessionIdToken = authSession.tokens?.idToken
-      const sessionAccessToken = authSession.tokens?.accessToken
 
-      console.log("Tokens: ", sessionIdToken, sessionAccessToken)
+  const clearAuthState = () => {
 
-      //users need to be able to access cookie info without being logged in.
-      // without these URLs added theyre returned to /login on refresh
-      if (!sessionIdToken || !sessionAccessToken) {
-        const noRedirectPaths = [
-          FRONTEND_PATHS.LOGIN,
-          FRONTEND_PATHS.LOGOUT,
-          "/cookies",
-          "/cookies-selected"
-        ]
-
-        if (!noRedirectPaths.includes(normalizePath(location.pathname))) {
-          console.warn("No login detected. Redirecting to the login page")
-          navigate(FRONTEND_PATHS.LOGIN)
-        }
-      }
-
-      if (sessionIdToken && sessionAccessToken) {
-        // Extract expiration times directly from the token payloads.
-        const currentTime = Math.floor(Date.now() / 1000)
-
-        // Check expiration of the access token
-        if (sessionAccessToken.payload?.exp && sessionAccessToken.payload.exp < currentTime) {
-          console.warn("Access token is expired. Consider refreshing the token.")
-          setIsSignedIn(false)
-          setUser(null)
-          setIdToken(null)
-          setAccessToken(null)
-          setError("Cognito access token expired")
-          setIsAuthLoading(false)
-          return
-        }
-
-        // Check expiration of the ID token
-        if (sessionIdToken.payload?.exp && sessionIdToken.payload.exp < currentTime) {
-          console.warn("ID token is expired. Consider refreshing the token.")
-          setIsSignedIn(false)
-          setUser(null)
-          setIdToken(null)
-          setAccessToken(null)
-          setError("Cognito ID token expired")
-          setIsAuthLoading(false)
-          return
-        }
-
-        // Tokens are valid and present, update state.
-        setAccessToken(sessionAccessToken)
-        setIdToken(sessionIdToken)
-        setIsSignedIn(true)
-
-        const currentUser = await getCurrentUser()
-        setUser(currentUser)
-        setError(null)
-        setIsAuthLoading(false)
-      } else {
-        console.warn("Missing access or ID token.")
-        setIsSignedIn(false)
-        setUser(null)
-        setIdToken(null)
-        setAccessToken(null)
-        setError("Missing access or ID token")
-        setIsAuthLoading(false)
-      }
-    } catch (fetchError) {
-      console.error("Error fetching user session:", fetchError)
-      // Reset user/session state on failure.
-      setUser(null)
-      setAccessToken(null)
-      setIdToken(null)
-      setIsSignedIn(false)
-      setError(String(fetchError))
-      setIsAuthLoading(false)
-    }
+    setHasNoAccess(true)
+    setHasSingleRoleAccess(false)
+    setSelectedRole(undefined)
+    setUserDetails(undefined)
+    setRolesWithAccess([])
+    setRolesWithoutAccess([])
+    setUser(null)
+    setIsSignedIn(false)
+    setIsSigningIn(false)
   }
-
   /**
-   * Set up Hub listener to react to auth events and refresh session state.
+   * Set up Hub listener to react to auth events
    */
   useEffect(() => {
-    const unsubscribe = Hub.listen("auth", ({payload}) => {
+    const unsubscribe = Hub.listen("auth", async ({payload}) => {
       console.log("Auth event payload:", payload)
       switch (payload.event) {
         // On successful signIn or token refresh, get the latest user state
-        case "signedIn":
+        case "signedIn": {
+          console.log("Processing signedIn event")
           console.log("User %s logged in", payload.data.username)
-          setError(null)
+          const trackerUserInfo = await getTrackerUserInfo()
+          setRolesWithAccess(trackerUserInfo.rolesWithAccess)
+          setRolesWithoutAccess(trackerUserInfo.rolesWithoutAccess)
+          setHasNoAccess(trackerUserInfo.hasNoAccess)
+          setSelectedRole(trackerUserInfo.selectedRole)
+          setUserDetails(trackerUserInfo.userDetails)
+          setHasSingleRoleAccess(trackerUserInfo.hasSingleRoleAccess)
+          setError(trackerUserInfo.error)
+
+          setIsSignedIn(true)
+          setIsSigningIn(false)
+          setUser(payload.data.username)
+          console.log("Finished the signedIn event ")
           break
+        }
         case "tokenRefresh":
-          console.log("Refreshing token")
+          console.log("Processing tokenRefresh event")
           setError(null)
           break
         case "signInWithRedirect":
+          console.log("Processing signInWithRedirect event")
           setError(null)
           break
 
         case "tokenRefresh_failure":
         case "signInWithRedirect_failure":
+          console.log("Processing tokenRefresh_failure or signInWithRedirect_failure event")
+          clearAuthState()
           setError("An error has occurred during the OAuth flow.")
-          setIsSignedIn(false)
-          setUser(null)
-          setIdToken(null)
-          setAccessToken(null)
           break
 
         case "customOAuthState":
+          console.log("Processing customOAuthState event")
           console.log("Custom auth state!", payload)
           break
 
         case "signedOut":
-          console.log("User signing out")
-          setIsSignedIn(false)
-          setUser(null)
-          setIdToken(null)
-          setAccessToken(null)
+          console.log("Processing signedOut event")
+          clearAuthState()
           setError(null)
           break
 
         default:
+          console.log("Received unknown event", payload)
           // Other auth events? The type-defined cases are already handled above.
           break
       }
@@ -187,49 +150,29 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
   }, [])
 
   /**
-   * Reconfigure Amplify on changes to authConfig, then update the user state.
+   * Reconfigure Amplify on initial state
    */
   useEffect(() => {
-    console.log("Configuring Amplify with authConfig:", authConfig)
-    Amplify.configure(authConfig, {ssr: true})
-    getUser()
-  }, [authConfig])
+    Amplify.configure(authConfig, {ssr: false})
+  }, [])
 
   /**
    * Sign out process.
    */
   const cognitoSignOut = async () => {
-    console.log("Signing out...")
+    console.log("Signing out in authProvider...")
     try {
-      const signOutPromise = signOut({global: true})
-        .then(() => {
-          console.log("Frontend Cognito signout OK!")
-        }).catch((err) => {
-          console.log("Failed to sign out of cognito", err)
-          throw err
-        })
-      const httpPromise = http
-        .get(CIS2SignOutEndpoint, {
-          headers: {
-            Authorization: `Bearer ${idToken}`,
-            "NHSD-Session-URID": NHS_REQUEST_URID
-          }
-        })
-        .then(() => {
-          console.log("Backend CIS2 signout OK")
-        })
-        .catch((err) => {
-          console.warn("Backend CIS2 sign-out API call failed", err)
-        })
+      // we need to sign out of cis2 first before signing out of cognito
+      // as otherwise we may possibly not be authed to reach cis2 sign out endpoint
+      console.log(`calling ${CIS2SignOutEndpoint}`)
+      await http.get(CIS2SignOutEndpoint)
+      console.log("Backend CIS2 signout OK!")
+      console.log(`calling amplify logout`)
+      // this triggers a signedOutEvent which is handled by the hub listener
+      // we clear all state in there
+      await signOut({global: true})
+      console.log("Frontend amplify signout OK!")
 
-      await Promise.all([signOutPromise, httpPromise])
-
-      // Immediately reset state to signed out.
-      setUser(null)
-      setAccessToken(null)
-      setIdToken(null)
-      setIsSignedIn(false)
-      setError(null)
     } catch (err) {
       console.error("Failed to sign out:", err)
       setError(String(err))
@@ -241,7 +184,13 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
    */
   const cognitoSignIn = async (input?: SignInWithRedirectInput) => {
     console.log("Initiating sign-in process...")
+    setIsSigningIn(true)
     return signInWithRedirect(input)
+  }
+
+  const updateSelectedRole = async(newRole: RoleDetails) => {
+    await updateRemoteSelectedRole(newRole)
+    setSelectedRole(newRole)
   }
 
   return (
@@ -249,13 +198,27 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
       error,
       user,
       isSignedIn,
-      idToken,
-      accessToken,
-      isAuthLoading,
+      isSigningIn,
+      rolesWithAccess,
+      rolesWithoutAccess,
+      hasNoAccess,
+      hasSingleRoleAccess,
+      selectedRole,
+      userDetails,
       cognitoSignIn,
-      cognitoSignOut
+      cognitoSignOut,
+      clearAuthState,
+      updateSelectedRole
     }}>
       {children}
     </AuthContext.Provider>
   )
+}
+
+export const useAuth = () => {
+  const context = useContext(AuthContext)
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthProvider")
+  }
+  return context
 }

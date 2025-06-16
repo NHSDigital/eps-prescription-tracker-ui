@@ -7,7 +7,6 @@ import {
   Row
 } from "nhsuk-react-components"
 import "../styles/PrescriptionTable.scss"
-import {v4 as uuidv4} from "uuid"
 
 import http from "@/helpers/axios"
 
@@ -20,7 +19,7 @@ import PrescriptionNotFoundMessage from "@/components/PrescriptionNotFoundMessag
 
 import {PRESCRIPTION_LIST_TABS} from "@/constants/ui-strings/PrescriptionListTabStrings"
 import {PRESCRIPTION_LIST_PAGE_STRINGS} from "@/constants/ui-strings/PrescriptionListPageStrings"
-import {API_ENDPOINTS} from "@/constants/environment"
+import {API_ENDPOINTS, FRONTEND_PATHS} from "@/constants/environment"
 
 import {SearchResponse, PrescriptionSummary} from "@cpt-ui-common/common-types/src/prescriptionList"
 
@@ -44,13 +43,9 @@ export default function PrescriptionListPage() {
       setLoading(true)
       setShowNotFound(false) // Reset when search changes
 
-      if (auth?.isAuthLoading) {
-        console.log("Auth still loading, waiting...")
-        return
-      }
+      if (!auth?.isSignedIn) {
+        console.log("Not signed in, waiting...")
 
-      if (!auth?.idToken) {
-        console.log("Auth token not ready, waiting...")
         return
       }
 
@@ -74,11 +69,7 @@ export default function PrescriptionListPage() {
 
       try {
         const response = await http.get(API_ENDPOINTS.PRESCRIPTION_LIST, {
-          params: searchParams,
-          headers: {
-            Authorization: `Bearer ${auth?.idToken}`,
-            "X-Correlation-Id": uuidv4()
-          }
+          params: searchParams
         })
 
         console.log("Response status", {status: response.status})
@@ -129,15 +120,20 @@ export default function PrescriptionListPage() {
           }
         ])
         setLoading(false)
-      } catch (error) {
-        console.error("Error fetching prescription list", error)
+      } catch (err) {
+        console.error("Error during search", err)
+        if (err.message === "CanceledError: canceled") {
+          navigate(FRONTEND_PATHS.LOGIN)
+        } else {
+          navigate(backLinkTarget)
+        }
         setShowNotFound(true)
         setLoading(false)
       }
     }
 
     runSearch()
-  }, [queryParams, auth?.idToken, auth?.isAuthLoading])
+  }, [queryParams, auth?.isSignedIn])
 
   if (loading) {
     return (

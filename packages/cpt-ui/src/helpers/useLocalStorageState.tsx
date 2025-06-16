@@ -25,28 +25,36 @@ export function useLocalStorageState<T>(
   group: string,
   defaultValue: T
 ): [T, Dispatch<SetStateAction<T>>] {
-  // get initial value from localStorage, or use provided default
   const [state, setState] = useState<T>(() => {
-    // We can’t call localStorage on the server, so skip it if `window` is undefined
-    if (typeof window === "undefined") {
-      return defaultValue
-    }
+    if (typeof window === "undefined") return defaultValue
 
     const itemGroup = readItemGroupFromLocalStorage(group)
-    if (itemGroup[key] !== undefined) {
-      return itemGroup[key]
-    }
-    return defaultValue
+    return itemGroup[key] !== undefined ? itemGroup[key] : defaultValue
   })
 
+  // Save to localStorage whenever state changes
   useEffect(() => {
-    // Run only in the browser
     if (typeof window !== "undefined") {
       const itemGroup = readItemGroupFromLocalStorage(group)
       itemGroup[key] = state
       window.localStorage.setItem(group, JSON.stringify(itemGroup))
     }
   }, [state, key, group])
+
+  // Sync state when another tab updates the same group in localStorage
+  useEffect(() => {
+    const handleStorage = (event: StorageEvent) => {
+      if (event.key === group && event.storageArea === localStorage) {
+        const newGroup = event.newValue ? JSON.parse(event.newValue) : {}
+        if (newGroup[key] !== undefined) {
+          setState(newGroup[key])
+        }
+      }
+    }
+
+    window.addEventListener("storage", handleStorage)
+    return () => window.removeEventListener("storage", handleStorage)
+  }, [key, group])
 
   return [state, setState]
 }

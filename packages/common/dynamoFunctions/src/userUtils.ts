@@ -1,23 +1,5 @@
 import {Logger} from "@aws-lambda-powertools/logger"
-
-// Types for outgoing data
-export type RoleDetails = {
-    role_name?: string
-    role_id?: string
-    org_code?: string
-    org_name?: string
-    site_name?: string
-    site_address?: string
-  }
-
-export type UserDetails = Pick<UserInfoResponse, "sub" | "name" | "family_name" | "given_name">
-
-export type TrackerUserInfo = {
-    roles_with_access: Array<RoleDetails>
-    roles_without_access: Array<RoleDetails>
-    currently_selected_role?: RoleDetails
-    user_details: UserDetails
-}
+import {RoleDetails, TrackerUserInfo, UserDetails} from "@cpt-ui-common/common-types"
 
 //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-//
 

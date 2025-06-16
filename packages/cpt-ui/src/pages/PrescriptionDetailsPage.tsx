@@ -21,7 +21,7 @@ import {AuthContext} from "@/context/AuthProvider"
 import {usePrescriptionInformation} from "@/context/PrescriptionInformationProvider"
 import {usePatientDetails} from "@/context/PatientDetailsProvider"
 
-import {API_ENDPOINTS, FRONTEND_PATHS, NHS_REQUEST_URID} from "@/constants/environment"
+import {API_ENDPOINTS, FRONTEND_PATHS} from "@/constants/environment"
 import {STRINGS} from "@/constants/ui-strings/PrescriptionDetailsPageStrings"
 
 import EpsSpinner from "@/components/EpsSpinner"
@@ -54,12 +54,7 @@ export default function PrescriptionDetailsPage() {
     let payload: PrescriptionDetailsResponse | undefined
     try {
       // Attempt to fetch live prescription details from the API
-      const response = await http.get(url, {
-        headers: {
-          Authorization: `Bearer ${auth?.idToken}`,
-          "NHSD-Session-URID": NHS_REQUEST_URID
-        }
-      })
+      const response = await http.get(url)
 
       // Validate HTTP response status
       if (response.status !== 200) {
@@ -103,12 +98,7 @@ export default function PrescriptionDetailsPage() {
   useEffect(() => {
     const runGetPrescriptionDetails = async () => {
       // Check if auth is ready
-      if (auth?.isAuthLoading) {
-        console.log("Auth still loading, waiting...")
-        return
-      }
-
-      if (!auth?.idToken) {
+      if (!auth?.isSignedIn) {
         console.log("Auth token not ready, waiting...")
         return
       }
@@ -125,7 +115,7 @@ export default function PrescriptionDetailsPage() {
     }
 
     runGetPrescriptionDetails()
-  }, [queryParams, auth?.idToken, auth?.isAuthLoading])
+  }, [queryParams, auth?.isSignedIn])
 
   if (loading) {
     return (

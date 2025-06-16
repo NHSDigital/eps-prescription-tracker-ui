@@ -19,23 +19,25 @@ const mockedAxios = axios as jest.Mocked<typeof axios>
 
 import PrescriptionListPage from "@/pages/PrescriptionListPage"
 import {AuthContextType, AuthContext} from "@/context/AuthProvider"
-import {JWT} from "aws-amplify/auth"
 
 const mockCognitoSignIn = jest.fn()
 const mockCognitoSignOut = jest.fn()
 
 const signedInAuthState: AuthContextType = {
   isSignedIn: true,
-  user: {
-    username: "testUser",
-    userId: "test-user-id"
-  },
+  isSigningIn: false,
+  user: "testUser",
   error: null,
-  idToken: {toString: () => "mockIdToken"} as unknown as JWT,
-  accessToken: {toString: () => "mockAccessToken"} as unknown as JWT,
-  isAuthLoading: false,
+  rolesWithAccess: [],
+  rolesWithoutAccess: [],
+  hasNoAccess: false,
+  hasSingleRoleAccess: false,
+  selectedRole: undefined,
+  userDetails: undefined,
   cognitoSignIn: mockCognitoSignIn,
-  cognitoSignOut: mockCognitoSignOut
+  cognitoSignOut: mockCognitoSignOut,
+  clearAuthState: jest.fn(),
+  updateSelectedRole: jest.fn()
 }
 
 const mockSearchResponse: SearchResponse = {
