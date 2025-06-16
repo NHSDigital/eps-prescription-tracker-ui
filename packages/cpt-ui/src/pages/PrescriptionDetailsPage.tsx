@@ -12,8 +12,9 @@ import {
   PrescriberOrganisationSummary,
   OrganisationSummary,
   PrescriptionDetailsResponse,
-  MessageHistory,
-  DispensedItemDetails
+  PrescribedItemDetails,
+  DispensedItemDetails,
+  MessageHistory
 } from "@cpt-ui-common/common-types"
 
 import {AuthContext} from "@/context/AuthProvider"
@@ -29,7 +30,6 @@ import {PrescribedDispensedItemsCards} from "@/components/prescriptionDetails/Pr
 import {MessageHistoryCard} from "@/components/prescriptionDetails/MessageHistoryCard"
 
 import http from "@/helpers/axios"
-import {PrescribedItemDetails} from "@cpt-ui-common/common-types/src"
 
 export default function PrescriptionDetailsPage() {
   const auth = useContext(AuthContext)

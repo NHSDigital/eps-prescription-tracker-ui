@@ -27,10 +27,8 @@ export const extractOdsCodes = (bundle: Bundle, logger: Logger) => {
 
   const dispensingOrganization = requestGroup?.action
     ?.find(a => a.title === "Prescription status transitions")
-    ?.action?.find(a => {
-      const odsCode = a.participant?.[0]?.extension?.[0]?.valueReference?.identifier?.value
-      return odsCode && odsCode !== prescribingOrganization
-    })?.participant?.[0]?.extension?.[0]?.valueReference?.identifier?.value
+    ?.action?.map(a => a?.participant?.[0]?.extension?.[0]?.valueReference?.identifier?.value)
+    .reverse().find(odsCode => odsCode && odsCode !== prescribingOrganization)
 
   logger.info("Extracted ODS codes", {prescribingOrganization, nominatedPerformer, dispensingOrganization})
 
