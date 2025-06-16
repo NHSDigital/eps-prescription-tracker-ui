@@ -4,7 +4,7 @@ import {useLocation} from "react-router-dom"
 import React from "react"
 import EpsHeader from "@/components/EpsHeader"
 import {AuthContext, type AuthContextType} from "@/context/AuthProvider"
-import {AccessContext, type AccessContextType} from "@/context/AccessProvider"
+import {AccessContext} from "@/context/AccessProvider"
 
 // Mock the strings module
 jest.mock("@/constants/ui-strings/HeaderStrings", () => ({
@@ -50,32 +50,22 @@ const defaultAuthContext: AuthContextType = {
   error: null,
   user: null,
   isSignedIn: false,
-  idToken: null,
-  accessToken: null,
-  cognitoSignIn: jest.fn(),
-  cognitoSignOut: jest.fn()
-}
-
-const defaultAccessContext: AccessContextType = {
-  noAccess: false,
-  singleAccess: false,
-  selectedRole: undefined,
-  userDetails: undefined,
-  setUserDetails: jest.fn(),
-  setNoAccess: jest.fn(),
-  setSingleAccess: jest.fn(),
-  updateSelectedRole: jest.fn(),
-  clear: jest.fn(),
+  isSigningIn: false,
   rolesWithAccess: [],
   rolesWithoutAccess: [],
-  loading: false,
-  error: null
+  hasNoAccess: false,
+  hasSingleRoleAccess: false,
+  selectedRole: undefined,
+  userDetails: undefined,
+  cognitoSignIn: jest.fn(),
+  cognitoSignOut: jest.fn(),
+  clearAuthState: jest.fn(),
+  updateSelectedRole: jest.fn()
 }
 
 const renderWithProviders = (
   pathname = "/",
-  authOverrides = {},
-  accessOverrides = {}
+  authOverrides = {}
 ) => {
   (useLocation as jest.Mock).mockReturnValue({
     pathname,
@@ -85,11 +75,10 @@ const renderWithProviders = (
   })
 
   const authValue = {...defaultAuthContext, ...authOverrides}
-  const accessValue = {...defaultAccessContext, ...accessOverrides}
 
   return render(
     <AuthContext.Provider value={authValue}>
-      <AccessContext.Provider value={accessValue}>
+      <AccessContext.Provider value={null}>
         <EpsHeader />
       </AccessContext.Provider>
     </AuthContext.Provider>
@@ -131,8 +120,7 @@ describe("EpsHeader", () => {
     beforeEach(() => {
       renderWithProviders(
         "/",
-        {isSignedIn: true},
-        {selectedRole: "", singleAccess: false}
+        {isSignedIn: true}
       )
     })
 
@@ -163,12 +151,7 @@ describe("EpsHeader", () => {
     it("shows 'Select your role' when user is signed in, route !== /select-your-role, and role not yet selected", () => {
       renderWithProviders(
         "/other-route",
-        {isSignedIn: true},
-        {
-          selectedRole: null,
-          singleAccess: false,
-          noAccess: false
-        }
+        {isSignedIn: true}
       )
 
       const link = screen.getByTestId("eps_header_selectYourRoleLink")
@@ -179,8 +162,7 @@ describe("EpsHeader", () => {
     it("does NOT show 'Select your role' when the route is /select-your-role", () => {
       renderWithProviders(
         "/select-your-role",
-        {isSignedIn: true},
-        {selectedRole: ""}
+        {isSignedIn: true}
       )
 
       expect(

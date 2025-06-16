@@ -1,7 +1,9 @@
 import {Logger} from "@aws-lambda-powertools/logger"
 import axios, {isAxiosError} from "axios"
 import {decodeToken, OidcConfig} from "./cis2"
-import {extractRoleInformation, TrackerUserInfo} from "@cpt-ui-common/dynamoFunctions"
+import {extractRoleInformation} from "@cpt-ui-common/dynamoFunctions"
+import {TrackerUserInfo} from "@cpt-ui-common/common-types"
+
 /**
  * **Fetches user information from the OIDC UserInfo endpoint.**
  *
