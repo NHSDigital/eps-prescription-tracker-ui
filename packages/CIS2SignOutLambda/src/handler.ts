@@ -6,11 +6,12 @@ import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
 
 import middy from "@middy/core"
 import inputOutputLogger from "@middy/input-output-logger"
+import httpHeaderNormalizer from "@middy/http-header-normalizer"
 
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 import {getUsernameFromEvent} from "@cpt-ui-common/authFunctions"
 import {deleteTokenMapping} from "@cpt-ui-common/dynamoFunctions"
-
+import {extractInboundEventValues, appendLoggerKeys} from "@cpt-ui-common/lambdaUtils"
 const logger = new Logger({serviceName: "CIS2SignOut"})
 
 const dynamoClient = new DynamoDBClient({})
@@ -24,8 +25,8 @@ const errorResponseBody = {message: "A system error has occurred"}
 const middyErrorHandler = new MiddyErrorHandler(errorResponseBody)
 
 const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-  logger.appendKeys({"apigw-request-id": event.requestContext?.requestId})
-  logger.info("Lambda handler invoked", {event})
+  const {loggerKeys} = extractInboundEventValues(event)
+  appendLoggerKeys(logger, loggerKeys)
 
   // Mock usernames start with "Mock_", and real requests use usernames starting with "Primary_"
   const username = getUsernameFromEvent(event)
@@ -49,6 +50,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
 export const handler = middy(lambdaHandler)
   .use(injectLambdaContext(logger, {clearState: true}))
+  .use(httpHeaderNormalizer())
   .use(
     inputOutputLogger({
       logger: (request) => {

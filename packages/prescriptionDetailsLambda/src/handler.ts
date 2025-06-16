@@ -10,7 +10,7 @@ import httpHeaderNormalizer from "@middy/http-header-normalizer"
 
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
 import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
-import {v4 as uuidv4} from "uuid"
+import {extractInboundEventValues, appendLoggerKeys} from "@cpt-ui-common/lambdaUtils"
 
 import {getUsernameFromEvent, authenticateRequest} from "@cpt-ui-common/authFunctions"
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
@@ -46,16 +46,8 @@ const lambdaHandler = async (
     apigeeCis2TokenEndpoint
   }: HandlerParameters
 ): Promise<APIGatewayProxyResult> => {
-  // Attach request ID for tracing
-  logger.appendKeys({"apigw-request-id": event.requestContext?.requestId})
-
-  // Handle x-request-id and x-correlation-id headers
-  const headers = event.headers ?? []
-  logger.appendKeys({"x-request-id": headers["x-request-id"]})
-
-  const correlationId = headers["x-correlation-id"] ?? uuidv4()
-
-  logger.info("Lambda handler invoked", {event})
+  const {loggerKeys, correlationId} = extractInboundEventValues(event)
+  appendLoggerKeys(logger, loggerKeys)
 
   // Use the authenticateRequest function for authentication
   const username = getUsernameFromEvent(event)

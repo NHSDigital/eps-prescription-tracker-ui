@@ -33,3 +33,9 @@ export * as PatientSummaryTypes from "./patientSearch"
 export type {
   BasicDetailsSearchType
 } from "./basicDetailsSearch"
+
+export type {
+  RoleDetails,
+  UserDetails,
+  TrackerUserInfo
+} from "./trackerUserInfo"
