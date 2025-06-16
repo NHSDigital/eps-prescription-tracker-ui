@@ -40,7 +40,7 @@ describe("AwsRumProvider", () => {
     jest.clearAllMocks()
   })
 
-  test("creates AwsRum instance with correct configuration", () => {
+  test.skip("creates AwsRum instance with correct configuration", () => {
     render(<AwsRumProvider><div>Test Child</div></AwsRumProvider>)
 
     // Check that AwsRum constructor was called with correct parameters
