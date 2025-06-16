@@ -35,8 +35,10 @@ class Logger {
     const rumInstance = cptAwsRum.getAwsRum()
     if (rumInstance !== null) {
       // get a stack trace so we get line numbers
-      const stack = new Error(message).stack
-      rumInstance.recordEvent("logger_error", {message: stack, details: args})
+      const messageAsError = new Error(message)
+      rumInstance.recordEvent("logger_error", {message: message, stack: messageAsError.stack, details: args})
+      // also use recordError to try and get source maps back to real line numbers
+      rumInstance.recordError(messageAsError)
     }
     this.logger.error(message, ...args)
   }

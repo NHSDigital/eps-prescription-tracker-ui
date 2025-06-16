@@ -1,5 +1,5 @@
 import React, {Component} from "react"
-import {render, fireEvent} from "@testing-library/react"
+import {render} from "@testing-library/react"
 import ErrorBoundary from "@/context/ErrorBoundary" // Adjust import path as needed
 import {AwsRum} from "aws-rum-web"
 import {AwsRumContext} from "@/context/AwsRumProvider" // Adjust import path as needed
@@ -22,7 +22,8 @@ describe("ErrorBoundary", () => {
 
   // Create a mock AwsRum instance
   const mockAwsRum = {
-    recordError: jest.fn()
+    recordError: jest.fn(),
+    recordEvent: jest.fn()
   } as unknown as AwsRum
 
   beforeEach(() => {
@@ -55,7 +56,7 @@ describe("ErrorBoundary", () => {
     )
 
     expect(getByText("Something went wrong.")).toBeInTheDocument()
-    expect(getByText("Clear Error")).toBeInTheDocument()
+    expect(getByText("Click here to return to the homepage")).toBeInTheDocument()
   })
 
   test("records error with AwsRum when available", () => {
@@ -63,6 +64,7 @@ describe("ErrorBoundary", () => {
 
     // Spy on the error being recorded
     const recordErrorSpy = jest.spyOn(mockAwsRum, "recordError")
+    const recordEventSpy = jest.spyOn(mockAwsRum, "recordEvent")
 
     render(
       <AwsRumContext.Provider value={mockAwsRum}>
@@ -74,6 +76,7 @@ describe("ErrorBoundary", () => {
 
     // Verify error was recorded with AwsRum
     expect(recordErrorSpy).toHaveBeenCalledWith(error)
+    expect(recordEventSpy).toHaveBeenCalled()
   })
 
   test("does not attempt to record error when AwsRum is not available", () => {
@@ -89,9 +92,8 @@ describe("ErrorBoundary", () => {
     expect(mockAwsRum.recordError).not.toHaveBeenCalled()
   })
 
-  test("clears error and redirects to home page when Clear Error button is clicked", () => {
+  test("Has a link to the homepage", () => {
     // Mock window.location.href
-    const originalLocation = window.location
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     delete (window as any).location;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -106,15 +108,8 @@ describe("ErrorBoundary", () => {
     )
 
     // Click the Clear Error button
-    const clearErrorButton = getByText("Clear Error")
-    fireEvent.click(clearErrorButton)
-
-    // Verify redirection to home page
-    expect(window.location.href).toBe("/");
-
-    // Restore window.location
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (window as any).location = originalLocation
+    const returnHomeLink = getByText("Click here to return to the homepage")
+    expect(returnHomeLink).not.toBeNull()
   })
 
 })
