@@ -2,6 +2,7 @@ import React, {useState, useEffect} from "react"
 import {Link, useLocation} from "react-router-dom"
 import "../styles/epscookies.scss"
 import {CookieStrings} from "@/constants/ui-strings/CookieStrings"
+import {cptAwsRum} from "@/helpers/awsRum"
 
 export default function EPSCookieBanner() {
   const [cookiesSet, setCookiesSet] = useState<"accepted" | "rejected" | null>(null)
@@ -13,6 +14,11 @@ export default function EPSCookieBanner() {
 
     if (storedChoice === "accepted" || storedChoice === "rejected") {
       setCookiesSet(storedChoice)
+      if (storedChoice === "accepted") {
+        cptAwsRum.enable()
+      } else {
+        cptAwsRum.disable()
+      }
 
       if (secondaryShown !== "true") {
         setShowSecondaryBanner(true)

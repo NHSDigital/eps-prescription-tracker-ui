@@ -12,7 +12,7 @@ class CptAwsRum {
         identityPoolId: RUM_CONFIG.IDENTITY_POOL_ID,
         endpoint: RUM_CONFIG.ENDPOINT,
         telemetries: RUM_CONFIG.TELEMETRIES,
-        allowCookies: RUM_CONFIG.ALLOW_COOKIES,
+        allowCookies: false, // assume no cookies unless they agree
         enableXRay: RUM_CONFIG.ENABLE_XRAY,
         releaseId: RUM_CONFIG.RELEASE_ID,
         sessionEventLimit: 0,
@@ -33,11 +33,11 @@ class CptAwsRum {
   }
 
   public disable() {
-    this.awsRum?.disable()
+    this.awsRum?.allowCookies(false)
   }
 
   public enable() {
-    this.awsRum?.enable()
+    this.awsRum?.allowCookies(true)
   }
 }
 

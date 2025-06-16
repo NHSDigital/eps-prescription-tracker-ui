@@ -74,7 +74,6 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
    */
 
   const clearAuthState = () => {
-
     setHasNoAccess(true)
     setHasSingleRoleAccess(false)
     setSelectedRole(undefined)
