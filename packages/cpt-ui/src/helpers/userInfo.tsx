@@ -40,16 +40,7 @@ export const getTrackerUserInfo = async (): Promise<TrackerUserInfoResult> => {
     const userInfo: TrackerUserInfo = data.userInfo
 
     if (userInfo) {
-      if (userInfo.roles_with_access) {
-        rolesWithAccess = userInfo.roles_with_access
-      } else {
-        const storedRolesWithAccess = localStorage.getItem("rolesWithAccess")
-        if (storedRolesWithAccess) {
-          rolesWithAccess = JSON.parse(storedRolesWithAccess)
-        } else {
-          rolesWithAccess = []
-        }
-      }
+      rolesWithAccess = userInfo.roles_with_access
     }
 
     // The current role may be either undefined, or an empty object. If it's empty, set it undefined.

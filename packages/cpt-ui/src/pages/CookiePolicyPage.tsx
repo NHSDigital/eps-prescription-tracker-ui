@@ -1,8 +1,10 @@
 import React, {useState, useEffect} from "react"
 import {Link, useNavigate} from "react-router-dom"
 import {CookieStrings} from "@/constants/ui-strings/CookieStrings"
-import {isUserLoggedIn} from "@/helpers/cookiesFunctions"
 import CookieTable, {Cookie} from "@/components/CookieTable"
+import {cptAwsRum} from "@/helpers/awsRum"
+import {useAuth} from "@/context/AuthProvider"
+import {FRONTEND_PATHS} from "@/constants/environment"
 
 const CookiePolicyPage = () => {
   const essentialCookies: Array<Cookie> = [
@@ -59,13 +61,22 @@ const CookiePolicyPage = () => {
   const [essentialCookiesOpen, setEssentialCookiesOpen] = useState<boolean>(false)
   const [analyticsCookiesOpen, setAnalyticsCookiesOpen] = useState<boolean>(false)
 
-  const [cookieChoice, setCookieChoice] = useState<"accepted" | "rejected">("rejected")
-  const [hasInitialized, setHasInitialized] = useState(false)
+  // values needed for local rendering
+  const [hasInitialized, setHasInitialized] = useState<boolean>(false)
+  const [localCookieChoice, setLocalCookieChoice] = useState<"accepted" | "rejected">("rejected")
+
+  // these are shared between this pag and the cookie banner
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [cookiesSet, setCookiesSet] = useState<boolean>(false)
+  const [epsCookieConsent, setEpsCookieConsent] = useState<"accepted" | "rejected" | null>(null)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [epsSecondaryBannerShown, setEpsSecondaryBannerShown] = useState(false)
 
   const navigate = useNavigate()
+  const auth = useAuth()
 
   const getHomeLink = () => {
-    return isUserLoggedIn() ? "/search" : "/login"
+    return auth.isSignedIn ? FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID : FRONTEND_PATHS.LOGIN
   }
 
   useEffect(() => {
@@ -73,33 +84,38 @@ const CookiePolicyPage = () => {
       return
     }
 
-    const storedChoice = localStorage.getItem("eps-cookie-consent")
-
-    if (storedChoice === "accepted" || storedChoice === "rejected") {
-      setCookieChoice(storedChoice)
+    if (epsCookieConsent === "accepted" || epsCookieConsent === "rejected") {
+      setLocalCookieChoice(epsCookieConsent)
     } else if (typeof window !== "undefined" && window.NHSCookieConsent?.getConsented()) {
       const hasAnalytics = window.NHSCookieConsent.getStatistics()
       const initialChoice = hasAnalytics ? "accepted" : "rejected"
-      setCookieChoice(initialChoice)
+      setLocalCookieChoice(initialChoice)
+      setEpsCookieConsent(initialChoice)
+      setCookiesSet(true)
     } else {
-      setCookieChoice("rejected")
+      setCookiesSet(false)
     }
 
     setHasInitialized(true)
   }, [hasInitialized])
 
-  const handleCookieChoice = (choice: "accepted" | "rejected") => {
-    setCookieChoice(choice)
-    localStorage.setItem("eps-cookie-consent", choice)
+  const handleCookieChoice = (choice: "accepted" | "rejected", saveState: boolean) => {
+    if (saveState) {
+      if (choice === "accepted") {
+        cptAwsRum.enable()
+      } else {
+        cptAwsRum.disable()
+      }
+      setCookiesSet(true)
+      setEpsCookieConsent(choice)
+      setEpsSecondaryBannerShown(true)
+      if (typeof window !== "undefined" && window.NHSCookieConsent) {
+        window.NHSCookieConsent.setStatistics(choice === "accepted")
+        window.NHSCookieConsent.setConsented(true)
+      }
 
-    if (typeof window !== "undefined" && window.NHSCookieConsent) {
-      window.NHSCookieConsent.setStatistics(choice === "accepted")
-      window.NHSCookieConsent.setConsented(true)
     }
-
-    localStorage.setItem("eps-secondary-banner-shown", "true")
-
-    window.dispatchEvent(new CustomEvent("cookieChoiceUpdated"))
+    setLocalCookieChoice(choice)
   }
 
   return (
@@ -172,8 +188,8 @@ const CookiePolicyPage = () => {
                   name="cookie-measure"
                   type="radio"
                   value="yes"
-                  checked={cookieChoice === "accepted"}
-                  onChange={() => handleCookieChoice("accepted")}
+                  checked={localCookieChoice === "accepted"}
+                  onChange={() => handleCookieChoice("accepted", false)}
                   data-testid="accept-analytics-cookies"
                 />
                 <label className="nhsuk-label nhsuk-radios__label" htmlFor="example-1">
@@ -187,8 +203,8 @@ const CookiePolicyPage = () => {
                   name="cookie-measure"
                   type="radio"
                   value="no"
-                  checked={cookieChoice === "rejected"}
-                  onChange={() => handleCookieChoice("rejected")}
+                  checked={localCookieChoice === "rejected"}
+                  onChange={() => handleCookieChoice("rejected", false)}
                   data-testid="reject-analytics-cookies"
                 />
                 <label
@@ -204,7 +220,7 @@ const CookiePolicyPage = () => {
         <button
           className="nhsuk-button"
           onClick={() => {
-            handleCookieChoice(cookieChoice)
+            handleCookieChoice(localCookieChoice, true)
             navigate("/cookies-selected")
           }}
           data-testid="save-cookie-preferences">

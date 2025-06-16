@@ -1,12 +1,14 @@
 import React from "react"
 import {Link} from "react-router-dom"
 import {CookieStrings} from "@/constants/ui-strings/CookieStrings"
-import {isUserLoggedIn} from "@/helpers/cookiesFunctions"
+import {useAuth} from "@/context/AuthProvider"
+import {FRONTEND_PATHS} from "@/constants/environment"
 
 export default function CookieSettingsPage() {
+  const auth = useAuth()
 
   const getHomeLink = () => {
-    return isUserLoggedIn() ? "/search" : "/login"
+    return auth.isSignedIn ? FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID : FRONTEND_PATHS.LOGIN
   }
   return (
     <main className="nhsuk-width-container nhsuk-u-margin-top-4">

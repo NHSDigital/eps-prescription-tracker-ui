@@ -5,57 +5,34 @@ import {CookieStrings} from "@/constants/ui-strings/CookieStrings"
 import {cptAwsRum} from "@/helpers/awsRum"
 
 export default function EPSCookieBanner() {
-  const [cookiesSet, setCookiesSet] = useState<"accepted" | "rejected" | null>(null)
+  const [cookiesSet, setCookiesSet] = useState<boolean>(false)
   const [showSecondaryBanner, setShowSecondaryBanner] = useState(false)
+  const [epsCookieConsent, setEpsCookieConsent] = useState<"accepted" | "rejected" | null>(null)
+  const [epsSecondaryBannerShown, setEpsSecondaryBannerShown] = useState<boolean>(false)
 
   const checkCookieConsent = () => {
-    const storedChoice = localStorage.getItem("eps-cookie-consent")
-    const secondaryShown = localStorage.getItem("eps-secondary-banner-shown")
 
-    if (storedChoice === "accepted" || storedChoice === "rejected") {
-      setCookiesSet(storedChoice)
-      if (storedChoice === "accepted") {
-        cptAwsRum.enable()
-      } else {
-        cptAwsRum.disable()
-      }
+    if (epsCookieConsent === "accepted" || epsCookieConsent === "rejected") {
+      setCookiesSet(true)
 
-      if (secondaryShown !== "true") {
+      if (!epsSecondaryBannerShown) {
         setShowSecondaryBanner(true)
-        localStorage.setItem("eps-secondary-banner-shown", "true")
+        setEpsSecondaryBannerShown(true)
       }
     } else if (typeof window !== "undefined" && window.NHSCookieConsent?.getConsented()) {
       const hasAnalytics = window.NHSCookieConsent.getStatistics()
       const initialChoice = hasAnalytics ? "accepted" : "rejected"
-      setCookiesSet(initialChoice)
-      localStorage.setItem("eps-cookie-consent", initialChoice)
+      setCookiesSet(true)
+      setEpsCookieConsent(initialChoice)
 
       setShowSecondaryBanner(true)
-      localStorage.setItem("eps-secondary-banner-shown", "true")
+      setEpsSecondaryBannerShown(true)
     }
   }
 
   useEffect(() => {
-    //checks cookies on load, and if theyre changed from the option on cookie settings page
+    //checks cookies on load, and if they are changed from the option on cookie settings page
     checkCookieConsent()
-
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === "eps-cookie-consent") {
-        checkCookieConsent()
-      }
-    }
-
-    const handleCookieUpdate = () => {
-      checkCookieConsent()
-    }
-
-    window.addEventListener("storage", handleStorageChange)
-    window.addEventListener("cookieChoiceUpdated", handleCookieUpdate)
-
-    return () => {
-      window.removeEventListener("storage", handleStorageChange)
-      window.removeEventListener("cookieChoiceUpdated", handleCookieUpdate)
-    }
   }, [])
 
   const location = useLocation()
@@ -66,8 +43,13 @@ export default function EPSCookieBanner() {
   }, [location.pathname])
 
   const handleCookieChoice = (choice: "accepted" | "rejected") => {
-    setCookiesSet(choice)
-    localStorage.setItem("eps-cookie-consent", choice)
+    setCookiesSet(true)
+    setEpsCookieConsent(choice)
+    if (choice === "accepted") {
+      cptAwsRum.enable()
+    } else {
+      cptAwsRum.disable()
+    }
 
     if (typeof window !== "undefined" && window.NHSCookieConsent) {
       window.NHSCookieConsent.setStatistics(choice === "accepted")
@@ -75,14 +57,12 @@ export default function EPSCookieBanner() {
     }
 
     setShowSecondaryBanner(true)
-    localStorage.setItem("eps-secondary-banner-shown", "true")
-
-    window.dispatchEvent(new CustomEvent("cookieChoiceUpdated"))
+    //setEpsSecondaryBannerShown(true)
   }
 
   return (
     <>
-      {cookiesSet === null && (
+      {!cookiesSet && (
         <div
           className="nhsuk-cookie-banner"
           data-testid="cookieBanner"
@@ -135,7 +115,7 @@ export default function EPSCookieBanner() {
         </div>
       )}
 
-      {showSecondaryBanner && (
+      {showSecondaryBanner && !epsSecondaryBannerShown && (
         <div
           className="chargeable-status-banner--green"
           id="chargeable-status-banner-id"
