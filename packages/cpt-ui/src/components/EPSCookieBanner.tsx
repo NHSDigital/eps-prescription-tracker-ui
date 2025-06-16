@@ -3,12 +3,18 @@ import {Link, useLocation} from "react-router-dom"
 import "../styles/epscookies.scss"
 import {CookieStrings} from "@/constants/ui-strings/CookieStrings"
 import {cptAwsRum} from "@/helpers/awsRum"
+import {useLocalStorageState} from "@/helpers/useLocalStorageState"
 
 export default function EPSCookieBanner() {
-  const [cookiesSet, setCookiesSet] = useState<boolean>(false)
+  // this is just local to this page so just use state
   const [showSecondaryBanner, setShowSecondaryBanner] = useState(false)
-  const [epsCookieConsent, setEpsCookieConsent] = useState<"accepted" | "rejected" | null>(null)
-  const [epsSecondaryBannerShown, setEpsSecondaryBannerShown] = useState<boolean>(false)
+
+  // this is shared between this component and cookiePolicyPage so use useLocalStorageState
+  const [cookiesSet, setCookiesSet] = useLocalStorageState<boolean>("setCookiesSet", "setCookiesSet", false)
+  const [epsCookieConsent, setEpsCookieConsent] = useLocalStorageState<"accepted" | "rejected" | null>(
+    "epsCookieConsent", "epsCookieConsent", null)
+  const [epsSecondaryBannerShown, setEpsSecondaryBannerShown] = useLocalStorageState<boolean>(
+    "epsSecondaryBannerShown", "epsSecondaryBannerShown", false)
 
   const checkCookieConsent = () => {
 

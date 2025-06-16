@@ -5,6 +5,7 @@ import CookieTable, {Cookie} from "@/components/CookieTable"
 import {cptAwsRum} from "@/helpers/awsRum"
 import {useAuth} from "@/context/AuthProvider"
 import {FRONTEND_PATHS} from "@/constants/environment"
+import {useLocalStorageState} from "@/helpers/useLocalStorageState"
 
 const CookiePolicyPage = () => {
   const essentialCookies: Array<Cookie> = CookieStrings.essential
@@ -18,12 +19,14 @@ const CookiePolicyPage = () => {
   const [hasInitialized, setHasInitialized] = useState<boolean>(false)
   const [localCookieChoice, setLocalCookieChoice] = useState<"accepted" | "rejected">("rejected")
 
-  // these are shared between this pag and the cookie banner
+  // these are shared between this page and the cookie banner component so use useLocalStorageState
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [cookiesSet, setCookiesSet] = useState<boolean>(false)
-  const [epsCookieConsent, setEpsCookieConsent] = useState<"accepted" | "rejected" | null>(null)
+  const [cookiesSet, setCookiesSet] = useLocalStorageState<boolean>("setCookiesSet", "setCookiesSet", false)
+  const [epsCookieConsent, setEpsCookieConsent] = useLocalStorageState<"accepted" | "rejected" | null>(
+    "epsCookieConsent", "epsCookieConsent", null)
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [epsSecondaryBannerShown, setEpsSecondaryBannerShown] = useState(false)
+  const [epsSecondaryBannerShown, setEpsSecondaryBannerShown] = useLocalStorageState<boolean>(
+    "epsSecondaryBannerShown", "epsSecondaryBannerShown", false)
 
   const navigate = useNavigate()
   const auth = useAuth()
