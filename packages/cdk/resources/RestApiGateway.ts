@@ -14,7 +14,6 @@ import {CfnSubscriptionFilter, LogGroup} from "aws-cdk-lib/aws-logs"
 import {Construct} from "constructs"
 import {accessLogFormat} from "./RestApiGateway/accessLogFormat"
 import {IUserPool} from "aws-cdk-lib/aws-cognito"
-import {PolicyStatement, Effect, AnyPrincipal} from "aws-cdk-lib/aws-iam"
 
 export interface RestApiGatewayProps {
   readonly serviceName: string
@@ -25,7 +24,6 @@ export interface RestApiGatewayProps {
   readonly splunkDeliveryStream: IStream
   readonly splunkSubscriptionFilterRole: IRole
   readonly userPool?: IUserPool
-  readonly vpcId: string
 }
 
 /**
@@ -41,6 +39,7 @@ export class RestApiGateway extends Construct {
   public readonly apiGateway: RestApi
   public readonly apiGatewayRole: Role
   public readonly authorizer?: CognitoUserPoolsAuthorizer
+  public readonly stageArn: string
   oauth2ApiGateway: RestApi
 
   public constructor(scope: Construct, id: string, props: RestApiGatewayProps) {
@@ -64,7 +63,7 @@ export class RestApiGateway extends Construct {
     const apiGateway = new RestApi(this, "ApiGateway", {
       restApiName: `${props.serviceName}-apigw-${id}`,
       endpointConfiguration: {
-        types: [EndpointType.PRIVATE]
+        types: [EndpointType.REGIONAL]
       },
       deploy: true,
       deployOptions: {
@@ -74,20 +73,6 @@ export class RestApiGateway extends Construct {
         metricsEnabled: true
       }
     })
-
-    apiGateway.addToResourcePolicy(
-      new PolicyStatement({
-        effect: Effect.DENY,
-        principals: [new AnyPrincipal()],
-        actions: ["execute-api:Invoke"],
-        resources: ["execute-api:/*"],
-        conditions: {
-          StringNotEquals: {
-            "aws:sourceVpc": `${props.vpcId}`
-          }
-        }
-      })
-    )
 
     const apiGatewayRole = new Role(this, "ApiGatewayRole", {
       assumedBy: new ServicePrincipal("apigateway.amazonaws.com"),
@@ -119,5 +104,6 @@ export class RestApiGateway extends Construct {
     this.apiGateway = apiGateway
     this.apiGatewayRole = apiGatewayRole
     this.authorizer = authorizer
+    this.stageArn = apiGateway.deploymentStage.stageArn
   }
 }

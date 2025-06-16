@@ -197,9 +197,8 @@ elif [ "$CDK_APP_NAME" == "StatelessResourcesApp" ]; then
     fix_string_key primaryOidcIssuer "${PRIMARY_OIDC_ISSUER}"
     fix_string_key primaryOidcUserInfoEndpoint "${PRIMARY_OIDC_USERINFO_ENDPOINT}"
     fix_string_key primaryOidcjwksEndpoint "${PRIMARY_OIDC_JWKS_ENDPOINT}"
-
     fix_string_key webAclAttributeArn "${WEBACL_ATTRIBUTE_ARN}"
-    fix_string_key vpcId "${VPC_ID}"
+    fix_list_key githubAllowListIpv4 "${GITHUB_ACTIONS_RUNNER_IPV4}"
     
     if [ "$USE_MOCK_OIDC" == "true" ]; then
         fix_string_key mockOidcClientId "${MOCK_OIDC_CLIENT_ID}"

@@ -10,12 +10,14 @@ export interface WebACLProps {
   readonly rateLimitWindowSeconds?: number // Minimum is 60 seconds, default is 60 seconds.
   readonly githubAllowListIpv4: Array<string>
   readonly wafAllowGaRunnerConnectivity: boolean
+  readonly scope: string
 }
 
 export class WebACL extends Construct {
   public readonly githubAllowListIpv4: wafv2.CfnIPSet
   public readonly wafAllowGaRunnerConnectivity: boolean
   public readonly webAcl: wafv2.CfnWebACL
+  public readonly attrArn: string
 
   public constructor(
     scope: Construct,
@@ -26,31 +28,34 @@ export class WebACL extends Construct {
       rateLimitWindowSeconds: number
       githubAllowListIpv4: Array<string>
       wafAllowGaRunnerConnectivity: boolean
+      scope: string
     }
   ) {
     super(scope, id)
 
-    this.githubAllowListIpv4 = new wafv2.CfnIPSet(this, "githubAllowListIpv4", {
-      addresses: props.githubAllowListIpv4,
-      ipAddressVersion: "IPV4",
-      scope: "CLOUDFRONT",
-      description: "Allow list IPs that may originate outside of the UK or Crown dependencies.",
-      name: `${props.serviceName}-PermittedGithubActionRunners`
-    })
+    if (props.wafAllowGaRunnerConnectivity && props.githubAllowListIpv4.length > 0) {
+      this.githubAllowListIpv4 = new wafv2.CfnIPSet(this, "githubAllowListIpv4", {
+        addresses: props.githubAllowListIpv4,
+        ipAddressVersion: "IPV4",
+        scope: props.scope,
+        description: "Allow list IPs that may originate outside of the UK or Crown dependencies.",
+        name: `${props.serviceName}-PermittedGithubActionRunners`
+      })
+    }
 
-    this.webAcl = new wafv2.CfnWebACL(this, "CloudfrontWebAcl", {
+    const webAcl = new wafv2.CfnWebACL(this, "CloudfrontWebAcl", {
       name: `${props.serviceName}-WebAcl`,
       defaultAction: {
         allow: {}
       },
-      scope: "CLOUDFRONT",
+      scope: props.scope,
       visibilityConfig: {
         sampledRequestsEnabled: false,
         cloudWatchMetricsEnabled: true,
         metricName: `${props.serviceName}-WebAcl`
       },
       rules: [
-        ...(props.wafAllowGaRunnerConnectivity
+        ...(props.wafAllowGaRunnerConnectivity && props.githubAllowListIpv4.length > 0
           ? [
             {
               name: "PermitGithubActionsRunnersOutsideUKandCrown",
@@ -161,5 +166,8 @@ export class WebACL extends Construct {
         }
       ]
     })
+
+    this.webAcl = webAcl
+    this.attrArn = webAcl.attrArn
   }
 }
