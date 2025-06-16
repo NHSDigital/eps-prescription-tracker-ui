@@ -30,13 +30,15 @@ export class WebACL extends Construct {
   ) {
     super(scope, id)
 
-    this.githubAllowListIpv4 = new wafv2.CfnIPSet(this, "githubAllowListIpv4", {
-      addresses: props.githubAllowListIpv4,
-      ipAddressVersion: "IPV4",
-      scope: "CLOUDFRONT",
-      description: "Allow list IPs that may originate outside of the UK or Crown dependencies.",
-      name: `${props.serviceName}-PermittedGithubActionRunners`
-    })
+    if (props.wafAllowGaRunnerConnectivity && props.githubAllowListIpv4.length > 0) {
+      this.githubAllowListIpv4 = new wafv2.CfnIPSet(this, "githubAllowListIpv4", {
+        addresses: props.githubAllowListIpv4,
+        ipAddressVersion: "IPV4",
+        scope: "CLOUDFRONT",
+        description: "Allow list IPs that may originate outside of the UK or Crown dependencies.",
+        name: `${props.serviceName}-PermittedGithubActionRunners`
+      })
+    }
 
     this.webAcl = new wafv2.CfnWebACL(this, "CloudfrontWebAcl", {
       name: `${props.serviceName}-WebAcl`,
@@ -50,7 +52,7 @@ export class WebACL extends Construct {
         metricName: `${props.serviceName}-WebAcl`
       },
       rules: [
-        ...(props.wafAllowGaRunnerConnectivity
+        ...(props.wafAllowGaRunnerConnectivity && props.githubAllowListIpv4.length > 0
           ? [
             {
               name: "PermitGithubActionsRunnersOutsideUKandCrown",
