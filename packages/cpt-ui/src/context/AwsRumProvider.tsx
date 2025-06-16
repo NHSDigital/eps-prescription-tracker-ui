@@ -1,6 +1,6 @@
 import React, {createContext, useContext, ReactNode} from "react"
 import {AwsRum} from "aws-rum-web"
-import {getAwsRum} from "@/helpers/awsRum"
+import {cptAwsRum} from "@/helpers/awsRum"
 
 // Define the context type
 export type AwsRumContextType = AwsRum | null
@@ -13,7 +13,7 @@ interface AwsRumProviderProps {
 }
 
 export const AwsRumProvider: React.FC<AwsRumProviderProps> = ({children}) => {
-  const awsRum= getAwsRum()
+  const awsRum= cptAwsRum.getAwsRum()
   return (
     <AwsRumContext.Provider value={awsRum}>{children}</AwsRumContext.Provider>
   )

@@ -1,6 +1,6 @@
 import {APP_CONFIG} from "@/constants/environment"
 import pino from "pino"
-import {getAwsRum} from "./awsRum"
+import {cptAwsRum} from "./awsRum"
 import {AwsRum} from "aws-rum-web"
 const REACT_LOG_LEVEL = APP_CONFIG.REACT_LOG_LEVEL || "debug"
 
@@ -19,7 +19,7 @@ class Logger {
   rumContext: AwsRum | null
 
   constructor() {
-    this.rumContext = getAwsRum()
+    this.rumContext = cptAwsRum.getAwsRum()
     this.logger = pino({
       level: REACT_LOG_LEVEL,
       browser: {
