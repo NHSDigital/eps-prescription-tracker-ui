@@ -64,7 +64,8 @@ export const FRONTEND_PATHS = {
   PRESCRIPTION_DETAILS_PAGE: "/prescription-details",
   PATIENT_SEARCH_RESULTS: "/patient-search-results",
   PATIENT_NOT_FOUND: "/patient-not-found",
-  PRIVACY_NOTICE: "/privacy-notice"
+  PRIVACY_NOTICE: "/privacy-notice",
+  COOKIES_SELECTED: "/cookies-selected"
 }
 
 // Type for environment
