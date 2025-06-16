@@ -1,25 +1,12 @@
 import {APP_CONFIG} from "@/constants/environment"
 import pino from "pino"
 import {cptAwsRum} from "./awsRum"
-import {AwsRum} from "aws-rum-web"
 const REACT_LOG_LEVEL = APP_CONFIG.REACT_LOG_LEVEL || "debug"
-
-/**
- * Supported logging levels by names, the index is the level number.
- */
-export const LOG_LEVEL_NAMES = ["trace", "debug", "info", "warn", "error", "silent"]
-
-/**
- * Lightweight logger with minimal log level restrictions
- * @class Log
- */
 class Logger {
 
   logger: pino.Logger
-  rumContext: AwsRum | null
 
   constructor() {
-    this.rumContext = cptAwsRum.getAwsRum()
     this.logger = pino({
       level: REACT_LOG_LEVEL,
       browser: {
@@ -45,8 +32,11 @@ class Logger {
   }
 
   public error(message: string, ...args: Array<unknown>): void {
-    if (this.rumContext !== null) {
-      this.rumContext.recordError(args)
+    const rumInstance = cptAwsRum.getAwsRum()
+    if (rumInstance !== null) {
+      // get a stack trace so we get line numbers
+      const stack = new Error(message).stack
+      rumInstance.recordEvent("logger_error", {message: stack, details: args})
     }
     this.logger.error(message, ...args)
   }
