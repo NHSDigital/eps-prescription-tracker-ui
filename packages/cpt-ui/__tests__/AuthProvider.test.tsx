@@ -15,6 +15,7 @@ import {AuthContext, AuthProvider} from "@/context/AuthProvider"
 
 import axios from "@/helpers/axios"
 import {getTrackerUserInfo} from "@/helpers/userInfo"
+import {logger} from "@/helpers/logger"
 jest.mock("@/helpers/axios")
 
 const currentlySelectedRole = {
@@ -165,8 +166,8 @@ describe("AuthProvider", () => {
 
   // Error Handling
 
-  it.skip("should log an error if signOut fails", async () => {
-    const consoleErrorSpy = jest.spyOn(console, "error")
+  it("should log an error if signOut fails", async () => {
+    const loggerErrorSpy = jest.spyOn(logger, "error")
     const signOutError = new Error("Sign out failed");
     (signOut as jest.Mock).mockRejectedValue(signOutError as never)
 
@@ -191,11 +192,11 @@ describe("AuthProvider", () => {
       await contextValue.cognitoSignOut()
     })
 
-    expect(consoleErrorSpy).toHaveBeenCalledWith(
+    expect(loggerErrorSpy).toHaveBeenCalledWith(
       "Failed to sign out:",
       signOutError
     )
-    consoleErrorSpy.mockRestore()
+    loggerErrorSpy.mockRestore()
   })
 
   // Token Handling

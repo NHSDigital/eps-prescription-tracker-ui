@@ -19,8 +19,6 @@ class ErrorThrowingComponent extends Component {
 const NormalComponent = () => <div>Normal Component</div>
 
 describe("ErrorBoundary", () => {
-  // Mock console.error to prevent actual error logging
-  const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {})
 
   // Create a mock AwsRum instance
   const mockAwsRum = {
@@ -33,8 +31,6 @@ describe("ErrorBoundary", () => {
   })
 
   afterAll(() => {
-    // Restore console.error
-    consoleErrorSpy.mockRestore()
   })
 
   test("renders children component when no error occurs", () => {
@@ -62,7 +58,7 @@ describe("ErrorBoundary", () => {
     expect(getByText("Clear Error")).toBeInTheDocument()
   })
 
-  test.skip("records error with AwsRum when available", () => {
+  test("records error with AwsRum when available", () => {
     const error = new Error("Test Error")
 
     // Spy on the error being recorded
@@ -121,18 +117,4 @@ describe("ErrorBoundary", () => {
     (window as any).location = originalLocation
   })
 
-  test.skip("logs error to console", () => {
-    const error = new Error("Test Error")
-
-    render(
-      <AwsRumContext.Provider value={null}>
-        <ErrorBoundary>
-          <ErrorThrowingComponent />
-        </ErrorBoundary>
-      </AwsRumContext.Provider>
-    )
-
-    // Verify error was logged to console
-    expect(consoleErrorSpy).toHaveBeenCalledWith("recordingError:", error)
-  })
 })

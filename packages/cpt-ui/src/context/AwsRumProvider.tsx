@@ -1,9 +1,4 @@
-import React, {
-  createContext,
-  useContext,
-  ReactNode,
-  useEffect
-} from "react"
+import React, {createContext, useContext, ReactNode} from "react"
 import {AwsRum} from "aws-rum-web"
 import {cptAwsRum} from "@/helpers/awsRum"
 
@@ -18,11 +13,7 @@ interface AwsRumProviderProps {
 }
 
 export const AwsRumProvider: React.FC<AwsRumProviderProps> = ({children}) => {
-  let awsRum = null
-
-  useEffect(() => {
-    awsRum = cptAwsRum.getAwsRum()
-  }, [])
+  const awsRum = cptAwsRum.getAwsRum()
 
   return (
     <AwsRumContext.Provider value={awsRum}>{children}</AwsRumContext.Provider>

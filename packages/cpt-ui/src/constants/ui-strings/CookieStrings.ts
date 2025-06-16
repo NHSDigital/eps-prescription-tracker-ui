@@ -17,52 +17,22 @@ export const CookieStrings = {
   reject_cookies: "Reject analytics cookies",
   text_linking_to_info_page: "You can change your cookie settings at any time using our ",
   cookies_page: "cookies page",
-  essential: {
-    name1: "prescription-tracker-cookie-consent",
-    purpose1: "Saves your cookie consent settings",
-    expiry1: "When you close the browser (if you do not use the banner) or 1 ar (if you use the banner)",
+  essential: [{
+    name: "nhsuk-cookie-consent",
+    purpose: "Saves your cookie consent settings",
+    expiry: "When you close the browser"
+  }],
 
-    name2: "CognitoIdentityServiceProvider.[unique ID].LastAuthUser",
-    purpose2:
-    "A security cookie used by Amazon Web Services (AWS). " +
-    "Stores authentication information about the user that has logged in for security purposes",
-    expiry2: "1 year",
-
-    name3: "CognitoIdentityServiceProvider.[unique ID].accessToken",
-    purpose3:
-    "A security cookie used by AWS. Makes the service work by allowing the user" +
-    " to access all parts of the service for security purposes",
-    expiry3: "1 year",
-
-    name4: "CognitoIdentityServiceProvider.[unique ID].clockDrift",
-    purpose4:
-    "A security cookie used by AWS. Makes the service to work by helping all parts " +
-    "of the service to stay in sync for security purposes",
-    expiry4: "1 year",
-
-    name5: "CognitoIdentityServiceProvider.[unique ID].idToken",
-    purpose5: "A security cookie used by AWS. Stores information about the er that has logged in for security purposes",
-    expiry5: "1 year",
-
-    name6: "CognitoIdentityServiceProvider.[unique ID].oauthMetadata",
-    purpose6: "A security cookie used by AWS. Stores authentication formation about the user for security purposes",
-    expiry6: "1 year",
-
-    name7: "CognitoIdentityServiceProvider.[unique ID].refreshToken",
-    purpose7: "A security cookie used by AWS. Keeps the user's session active r security purposes",
-    expiry7: "1 year"
-  },
-
-  analytics: {
-    name1: "cwr_s",
-    purpose1:
+  analytics: [{
+    name: "cwr_s",
+    purpose:
     "Used by Amazon CloudWatch RUM. Tells us how you use our website by ading the previous page you visited",
-    expiry1: "When you close the browser",
-
-    name2: "cwr_u",
-    purpose2: "Used by Amazon CloudWatch RUM. Tells us if you've used our website before",
-    expiry2: "When you close the browser"
-  },
+    expiry: "When you close the browser"
+  }, {
+    name: "cwr_u",
+    purpose: "Used by Amazon CloudWatch RUM. Tells us if you've used our website before",
+    expiry: "When you close the browser"
+  }],
   cookie_policy: "Cookie policy",
 
   intro: {
