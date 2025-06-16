@@ -3,11 +3,11 @@ import React, {useEffect, useState} from "react"
 import {Row} from "nhsuk-react-components"
 
 import {RBAC_BANNER_STRINGS} from "@/constants/ui-strings/RBACBannerStrings"
-import {useAccess} from "@/context/AccessProvider"
+import {useAuth} from "@/context/AuthProvider"
 
 export default function RBACBanner() {
   const [bannerText, setBannerText] = useState<string>("")
-  const {selectedRole, userDetails} = useAccess()
+  const {selectedRole, userDetails} = useAuth()
 
   useEffect(() => {
     if (!selectedRole || !userDetails) {

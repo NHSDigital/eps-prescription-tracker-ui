@@ -12,8 +12,17 @@ STATEFUL_LOG=".local_config/stateful_app.log"
 STATELESS_LOG=".local_config/stateless_app.log"
 WEBSITE_LOG=".local_config/website.log"
 
-echo "What is the pull request id?"
-read -r PULL_REQUEST_ID
+if [ -z "${PULL_REQUEST_ID}" ]; then
+    echo "What is the pull request id?"
+    read -r PULL_REQUEST_ID
+else
+    read -r -p "Getting exports for pull request id ${PULL_REQUEST_ID}. Is this correct?" yn
+    case $yn in
+        [Yy]* ) ;;
+        [Nn]* ) exit;;
+        * ) exit;;
+    esac
+fi
 
 SERVICE_NAME=cpt-ui-pr-$PULL_REQUEST_ID
 
