@@ -20,18 +20,19 @@ export const CookieStrings = {
   essential: [{
     name: "nhsuk-cookie-consent",
     purpose: "Saves your cookie consent settings",
-    expiry: "When you close the browser"
+    expiry: "When you close the browser (if you do not set a cookie preference) "
+    + "or 3 months (if you do set a cookie preference)"
   }],
 
   analytics: [{
     name: "cwr_s",
     purpose:
-    "Used by Amazon CloudWatch RUM. Tells us how you use our website by ading the previous page you visited",
-    expiry: "When you close the browser"
+    "Used by Amazon CloudWatch RUM. Tells us how you use our website by adding the previous page you visited",
+    expiry: "1 hour"
   }, {
     name: "cwr_u",
     purpose: "Used by Amazon CloudWatch RUM. Tells us if you've used our website before",
-    expiry: "When you close the browser"
+    expiry: "1 hour"
   }],
   cookie_policy: "Cookie policy",
 
