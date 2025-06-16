@@ -120,9 +120,9 @@ export default function PrescriptionListPage() {
           }
         ])
         setLoading(false)
-      } catch (err) {
-        console.error("Error during search", err)
-        if (err.message === "CanceledError: canceled") {
+      } catch (error) {
+        console.error("Error during search", error)
+        if (error.message === "CanceledError: canceled") {
           navigate(FRONTEND_PATHS.LOGIN)
         } else {
           navigate(backLinkTarget)
