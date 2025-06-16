@@ -1,7 +1,6 @@
 import React, {Component, ReactNode} from "react"
 import {AwsRum} from "aws-rum-web"
 import {AwsRumContext} from "./AwsRumProvider"
-import {APP_CONFIG} from "@/constants/environment"
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -33,12 +32,6 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
     // Correctly access the context value
     if (this.context) {
       const cptAwsRum = this.context as AwsRum
-      cptAwsRum.addSessionAttributes(
-        {
-          cptAppVersion: APP_CONFIG.VERSION_NUMBER,
-          cptAppCommit: APP_CONFIG.COMMIT_ID
-        }
-      )
       cptAwsRum.recordError(error)
     }
   }
