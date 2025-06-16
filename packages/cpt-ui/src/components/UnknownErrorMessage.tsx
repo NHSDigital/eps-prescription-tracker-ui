@@ -12,7 +12,7 @@ import {STRINGS} from "@/constants/ui-strings/UnknownErrorMessageStrings"
 export default function UnknownErrorMessage() {
   return (
     <Container
-      className="nhsuk-width-container-fluid unknown-error-container"
+      className="nhsuk-width-container-fluid patient-search-form-container"
       data-testid="unknown-error-message"
     >
       <nav
@@ -41,7 +41,7 @@ export default function UnknownErrorMessage() {
               data-testid="query-summary"
             >
               <h1
-                className="nhsuk-heading-l nhsuk-u-margin-bottom-3"
+                className="nhsuk-heading-xl nhsuk-u-margin-bottom-3"
                 id="results-header"
                 data-testid="unknown-error-heading"
               >
