@@ -3,6 +3,7 @@ import {FRONTEND_PATHS} from "@/constants/environment"
 export const PRESCRIPTION_LIST_PAGE_STRINGS = {
   PAGE_TITLE: "Prescriptions list",
   HEADING: "Prescriptions list",
+  LOADING_MESSAGE: "Loading search results",
   GO_BACK_LINK_TEXT: "Go back",
   RESULTS_PREFIX: "We found ",
   RESULTS_SUFFIX: " results",
