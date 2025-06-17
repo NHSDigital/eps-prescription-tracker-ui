@@ -26,10 +26,10 @@ export default function BasicDetailsSearch() {
 
   const [firstName, setFirstName] = useState("")
   const [lastName, setLastName] = useState("")
-  const [postcode, setPostcode] = useState("")
   const [dobDay, setDobDay] = useState("")
   const [dobMonth, setDobMonth] = useState("")
   const [dobYear, setDobYear] = useState("")
+  const [postcode, setPostcode] = useState("")
   const [errors, setErrors] = useState<Array<ErrorKey>>([])
   const [dobErrorFields, setDobErrorFields] = useState<Array<"day" | "month" | "year">>([])
   const [searchParams] = useSearchParams()

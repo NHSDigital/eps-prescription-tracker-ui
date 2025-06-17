@@ -1,5 +1,6 @@
 import {useContext, useEffect, useState} from "react"
-import {Link, useNavigate, useSearchParams} from "react-router-dom"
+import {Link, useSearchParams} from "react-router-dom"
+
 import {
   BackLink,
   Col,
@@ -32,7 +33,6 @@ import http from "@/helpers/axios"
 
 export default function PrescriptionDetailsPage() {
   const auth = useContext(AuthContext)
-  const navigate = useNavigate()
   const [queryParams] = useSearchParams()
 
   const [loading, setLoading] = useState(true)
@@ -69,8 +69,6 @@ export default function PrescriptionDetailsPage() {
       }
     } catch (err) {
       console.error("Failed to fetch prescription details", err)
-      // Navigate to prescription not found when API call fails
-      navigate(FRONTEND_PATHS.PRESCRIPTION_NOT_FOUND)
       return
     }
 
@@ -107,7 +105,7 @@ export default function PrescriptionDetailsPage() {
 
       const prescriptionId = queryParams.get("prescriptionId")
       if (!prescriptionId) {
-        navigate(FRONTEND_PATHS.PRESCRIPTION_NOT_FOUND)
+        console.error("No prescriptionId provided in query params.")
         return
       }
 
