@@ -90,7 +90,7 @@ export default function SearchResultsPage() {
     .toSorted((a, b) => (a.givenName?.[0] ?? "").localeCompare(b.givenName?.[0] ?? ""))
 
   if (error) {
-    return <UnknownErrorMessage />
+    return <UnknownErrorMessage search={location.search} />
   }
 
   if (loading) {
