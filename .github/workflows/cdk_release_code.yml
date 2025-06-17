@@ -184,6 +184,7 @@ jobs:
           CDK_APP_NAME: ${{ inputs.CDK_APP_NAME }}
           TARGET_ENVIRONMENT: ${{ inputs.TARGET_ENVIRONMENT }}
           USE_BARE_DOMAIN: ${{ inputs.useBareDomain }}
+          EPS_DOMAIN_NAME: ${{ inputs.ROUTE53_EXPORT_NAME }}
 
       - name: Show diff
         run: |
