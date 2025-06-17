@@ -27,6 +27,13 @@ if (typeof githubAllowListIpv4 === "string") {
 } else if (!Array.isArray(githubAllowListIpv4)) {
   githubAllowListIpv4 = []
 }
+
+let githubAllowListIpv6 = app.node.tryGetContext("githubAllowListIpv6")
+if (typeof githubAllowListIpv6 === "string") {
+  githubAllowListIpv6 = githubAllowListIpv6.split(",")
+} else if (!Array.isArray(githubAllowListIpv6)) {
+  githubAllowListIpv6 = []
+}
 const wafAllowGaRunnerConnectivity = app.node.tryGetContext("wafAllowGaRunnerConnectivity")
 
 // add cdk-nag to everything
@@ -60,6 +67,7 @@ const UsCerts = new UsCertsStack(app, "UsCertsStack", {
   shortCognitoDomain: shortCognitoDomain,
   parentCognitoDomain: parentCognitoDomain,
   githubAllowListIpv4: githubAllowListIpv4,
+  githubAllowListIpv6: githubAllowListIpv6,
   wafAllowGaRunnerConnectivity: wafAllowGaRunnerConnectivity
 })
 

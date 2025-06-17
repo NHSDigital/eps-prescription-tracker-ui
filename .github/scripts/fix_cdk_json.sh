@@ -132,6 +132,11 @@ if [ -z "${GITHUB_ACTIONS_RUNNER_IPV4}" ]; then
      jq '[.actions[] | select(test("^([0-9]{1,3}\\.){3}[0-9]{1,3}(/[0-9]{1,2})?$"))]')
 fi
 
+if [ -z "${GITHUB_ACTIONS_RUNNER_IPV6}" ]; then
+    GITHUB_ACTIONS_RUNNER_IPV6=$(curl -s https://api.github.com/meta | \
+    jq '[.actions[] | select(test("^[0-9a-fA-F:]+(/[0-9]{1,3})?$"))]')
+fi
+
 # go through all the key values we need to set
 fix_string_key serviceName "${SERVICE_NAME}"
 fix_string_key VERSION_NUMBER "${VERSION_NUMBER}"
@@ -147,6 +152,7 @@ if [ "$CDK_APP_NAME" == "StatefulResourcesApp" ]; then
     fix_string_key primaryOidcUserInfoEndpoint "${PRIMARY_OIDC_USERINFO_ENDPOINT}"
     fix_string_key primaryOidcjwksEndpoint "${PRIMARY_OIDC_JWKS_ENDPOINT}"
     fix_list_key githubAllowListIpv4 "${GITHUB_ACTIONS_RUNNER_IPV4}"
+    fix_list_key githubAllowListIpv6 "${GITHUB_ACTIONS_RUNNER_IPV6}"
     fix_boolean_number_key wafAllowGaRunnerConnectivity "${WAF_ALLOW_GA_RUNNER_CONNECTIVITY}"
 
     fix_boolean_number_key useMockOidc "${USE_MOCK_OIDC}"

@@ -9,11 +9,13 @@ export interface WebACLProps {
   readonly rateLimitTransactions: number // Total transactions limit within an evaluation window (seconds)
   readonly rateLimitWindowSeconds?: number // Minimum is 60 seconds, default is 60 seconds.
   readonly githubAllowListIpv4: Array<string>
+  readonly githubAllowListIpv6: Array<string>
   readonly wafAllowGaRunnerConnectivity: boolean
 }
 
 export class WebACL extends Construct {
   public readonly githubAllowListIpv4: wafv2.CfnIPSet
+  public readonly githubAllowListIpv6: wafv2.CfnIPSet
   public readonly wafAllowGaRunnerConnectivity: boolean
   public readonly webAcl: wafv2.CfnWebACL
 
@@ -25,6 +27,7 @@ export class WebACL extends Construct {
       rateLimitTransactions: number
       rateLimitWindowSeconds: number
       githubAllowListIpv4: Array<string>
+      githubAllowListIpv6: Array<string>
       wafAllowGaRunnerConnectivity: boolean
     }
   ) {
@@ -37,6 +40,16 @@ export class WebACL extends Construct {
         scope: "CLOUDFRONT",
         description: "Allow list IPs that may originate outside of the UK or Crown dependencies.",
         name: `${props.serviceName}-PermittedGithubActionRunners`
+      })
+    }
+
+    if (props.wafAllowGaRunnerConnectivity && props.githubAllowListIpv6.length > 0) {
+      this.githubAllowListIpv6 = new wafv2.CfnIPSet(this, "githubAllowListIpv6", {
+        addresses: props.githubAllowListIpv6,
+        ipAddressVersion: "IPV6",
+        scope: "CLOUDFRONT",
+        description: "Allow list IPs that may originate outside of the UK or Crown dependencies.",
+        name: `${props.serviceName}-PermittedGithubActionRunnersIPV6`
       })
     }
 
@@ -70,12 +83,31 @@ export class WebACL extends Construct {
                 cloudWatchMetricsEnabled: true,
                 metricName: `${props.serviceName}-PermitGithubActionsRunnersOutsideUKandCrown`
               }
-            }
-          ]
+            }]
+          : []),
+        ...(props.wafAllowGaRunnerConnectivity && props.githubAllowListIpv6.length > 0
+          ? [
+            {
+              name: "PermitGithubActionsRunnersOutsideUKandCrownIPv6",
+              priority: 1,
+              action: {
+                allow: {}
+              },
+              statement: {
+                ipSetReferenceStatement: {
+                  arn: this.githubAllowListIpv6.attrArn
+                }
+              },
+              visibilityConfig: {
+                sampledRequestsEnabled: false,
+                cloudWatchMetricsEnabled: true,
+                metricName: `${props.serviceName}-PermitGithubActionsRunnersOutsideUKandCrownIPv6`
+              }
+            }]
           : []),
         {
           name: "PermitUKandCrownDependentCountries",
-          priority: 1,
+          priority: 2,
           action: {
             allow: {}
           },
@@ -97,7 +129,7 @@ export class WebACL extends Construct {
         },
         {
           name: "BlockAllOtherCountries",
-          priority: 2,
+          priority: 3,
           action: {
             block: {}
           },
@@ -123,7 +155,7 @@ export class WebACL extends Construct {
         },
         {
           name: "RateLimitRule",
-          priority: 3,
+          priority: 4,
           action: {
             block: {}
           },

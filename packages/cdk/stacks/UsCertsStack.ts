@@ -18,6 +18,7 @@ export interface UsCertsStackProps extends StackProps {
   readonly shortCognitoDomain: string
   readonly parentCognitoDomain: string
   readonly githubAllowListIpv4: Array<string>
+  readonly githubAllowListIpv6: Array<string>
   readonly wafAllowGaRunnerConnectivity: boolean
 }
 
@@ -86,6 +87,7 @@ export class UsCertsStack extends Stack {
       rateLimitTransactions: 3000, // 50 TPS
       rateLimitWindowSeconds: 60, // Minimum is 60 seconds
       githubAllowListIpv4: props.githubAllowListIpv4,
+      githubAllowListIpv6: props.githubAllowListIpv6,
       wafAllowGaRunnerConnectivity: props.wafAllowGaRunnerConnectivity
     })
 
