@@ -68,6 +68,8 @@ on:
         type: string
       useBareDomain:
         type: boolean
+      ROUTE53_EXPORT_NAME:
+        type: string
     secrets:
       CLOUD_FORMATION_DEPLOY_ROLE:
         required: true

@@ -63,6 +63,8 @@ on:
         type: string
       useBareDomain:
         type: boolean
+      ROUTE53_EXPORT_NAME:
+        type: string
     secrets:
       CLOUD_FORMATION_DEPLOY_ROLE:
         required: true
@@ -144,6 +146,7 @@ jobs:
       ROLE_ID: ${{ inputs.ROLE_ID }}
       CONFIG_FILE: stateful_resources.json
       useBareDomain: ${{ inputs.useBareDomain }}
+      ROUTE53_EXPORT_NAME: ${{ inputs.ROUTE53_EXPORT_NAME }}
     secrets:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}
@@ -194,6 +197,7 @@ jobs:
       ROLE_ID: ${{ inputs.ROLE_ID }}
       CONFIG_FILE: stateless_resources.json
       useBareDomain: ${{ inputs.useBareDomain }}
+      ROUTE53_EXPORT_NAME: ${{ inputs.ROUTE53_EXPORT_NAME }}
     secrets:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}
@@ -302,6 +306,7 @@ jobs:
       JWT_KID: ${{ inputs.JWT_KID }}
       CONFIG_FILE: stateful_resources.json
       useBareDomain: ${{ inputs.useBareDomain }}
+      ROUTE53_EXPORT_NAME: ${{ inputs.ROUTE53_EXPORT_NAME }}
     secrets:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}
