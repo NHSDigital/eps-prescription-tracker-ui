@@ -313,10 +313,10 @@ export class StatelessResourcesStack extends Stack {
       webAclArn: webAcl.attrArn
     })
 
-    // new CfnWebACLAssociation(this, 'oauth2GatewayAssociation', {
-    //   resourceArn: apiGateway.apiGateway.restApiId,
-    //   webAclArn: webAcl.attrArn,
-    // });
+    new CfnWebACLAssociation(this, "oauth2GatewayAssociation", {
+      resourceArn: apiGateway.apiGateway.restApiId,
+      webAclArn: webAcl.attrArn
+    })
 
     // --- Methods & Resources
     // eslint-disable-next-line @typescript-eslint/no-unused-vars

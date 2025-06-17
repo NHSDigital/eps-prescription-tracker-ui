@@ -18,6 +18,7 @@ export class WebACL extends Construct {
   public readonly wafAllowGaRunnerConnectivity: boolean
   public readonly webAcl: wafv2.CfnWebACL
   public readonly attrArn: string
+  public readonly allowedHeaders?: Map<string, string>
 
   public constructor(
     scope: Construct,
@@ -28,6 +29,7 @@ export class WebACL extends Construct {
       rateLimitWindowSeconds: number
       githubAllowListIpv4: Array<string>
       wafAllowGaRunnerConnectivity: boolean
+      allowedHeaders?: Map<string, string>
       scope: string
     }
   ) {
@@ -43,45 +45,94 @@ export class WebACL extends Construct {
       })
     }
 
-    const webAcl = new wafv2.CfnWebACL(this, "CloudfrontWebAcl", {
-      name: `${props.serviceName}-WebAcl`,
-      defaultAction: {
-        allow: {}
+    const rules: Array<wafv2.CfnWebACL.RuleProperty> = []
+
+    // Permit GitHub Actions Runners rule
+    if (props.wafAllowGaRunnerConnectivity && props.githubAllowListIpv4.length > 0) {
+      rules.push({
+        name: "PermitGithubActionsRunnersOutsideUKandCrown",
+        priority: 0,
+        action: {allow: {}},
+        statement: {
+          ipSetReferenceStatement: {
+            arn: this.githubAllowListIpv4.attrArn
+          }
+        },
+        visibilityConfig: {
+          sampledRequestsEnabled: false,
+          cloudWatchMetricsEnabled: true,
+          metricName: `${props.serviceName}-PermitGithubActionsRunnersOutsideUKandCrown`
+        }
+      })
+    }
+
+    // Cause a change
+
+    // // Permit Allowed Headers Only rule (negated OR for each header)
+    // if (props.allowedHeaders && props.allowedHeaders.size > 0) {
+    //   let priority = 1
+    //   for (const [headerName, headerValue] of props.allowedHeaders.entries()) {
+    //     rules.push({
+    //       name: `BlockRequestsMissingOrIncorrectHeader-${headerName}`,
+    //       priority: priority++,
+    //       action: {block: {}},
+    //       statement: {
+    //         notStatement: {
+    //           statement: {
+    //             byteMatchStatement: {
+    //               searchString: headerValue,
+    //               fieldToMatch: {
+    //                 singleHeader: {Name: headerName}
+    //               },
+    //               positionalConstraint: "EXACTLY",
+    //               textTransformations: [
+    //                 {
+    //                   priority: 0,
+    //                   type: "NONE"
+    //                 }
+    //               ]
+    //             }
+    //           }
+    //         }
+    //       },
+    //       visibilityConfig: {
+    //         sampledRequestsEnabled: false,
+    //         cloudWatchMetricsEnabled: true,
+    //         metricName: `${props.serviceName}-BlockRequestsMissingOrIncorrectHeader-${headerName}`
+    //       }
+    //     })
+    //   }
+    // }
+
+    // Permit UK and Crown Dependent Countries
+    rules.push({
+      name: "PermitUKandCrownDependentCountries",
+      priority: rules.length,
+      action: {allow: {}},
+      statement: {
+        geoMatchStatement: {
+          countryCodes: [
+            "GB", // United Kingdom
+            "GG", // Guernsey
+            "JE", // Jersey
+            "IM" // Isle of Man
+          ]
+        }
       },
-      scope: props.scope,
       visibilityConfig: {
         sampledRequestsEnabled: false,
         cloudWatchMetricsEnabled: true,
-        metricName: `${props.serviceName}-WebAcl`
-      },
-      rules: [
-        ...(props.wafAllowGaRunnerConnectivity && props.githubAllowListIpv4.length > 0
-          ? [
-            {
-              name: "PermitGithubActionsRunnersOutsideUKandCrown",
-              priority: 0,
-              action: {
-                allow: {}
-              },
-              statement: {
-                ipSetReferenceStatement: {
-                  arn: this.githubAllowListIpv4.attrArn
-                }
-              },
-              visibilityConfig: {
-                sampledRequestsEnabled: false,
-                cloudWatchMetricsEnabled: true,
-                metricName: `${props.serviceName}-PermitGithubActionsRunnersOutsideUKandCrown`
-              }
-            }
-          ]
-          : []),
-        {
-          name: "PermitUKandCrownDependentCountries",
-          priority: 1,
-          action: {
-            allow: {}
-          },
+        metricName: `${props.serviceName}-PermitUKandCrownDependentCountries`
+      }
+    })
+
+    // Block All Other Countries
+    rules.push({
+      name: "BlockAllOtherCountries",
+      priority: rules.length,
+      action: {block: {}},
+      statement: {
+        notStatement: {
           statement: {
             geoMatchStatement: {
               countryCodes: [
@@ -91,74 +142,60 @@ export class WebACL extends Construct {
                 "IM" // Isle of Man
               ]
             }
-          },
-          visibilityConfig: {
-            sampledRequestsEnabled: false,
-            cloudWatchMetricsEnabled: true,
-            metricName: `${props.serviceName}-PermitUKandCrownDependentCountries`
-          }
-        },
-        {
-          name: "BlockAllOtherCountries",
-          priority: 2,
-          action: {
-            block: {}
-          },
-          statement: {
-            notStatement: {
-              statement: {
-                geoMatchStatement: {
-                  countryCodes: [
-                    "GB", // United Kingdom
-                    "GG", // Guernsey
-                    "JE", // Jersey
-                    "IM" // Isle of Man
-                  ]
-                }
-              }
-            }
-          },
-          visibilityConfig: {
-            sampledRequestsEnabled: false,
-            cloudWatchMetricsEnabled: true,
-            metricName: `${props.serviceName}-BlockAllOtherCountries`
-          }
-        },
-        {
-          name: "RateLimitRule",
-          priority: 3,
-          action: {
-            block: {}
-          },
-          statement: {
-            rateBasedStatement: {
-              limit: props.rateLimitTransactions,
-              evaluationWindowSec: props.rateLimitWindowSeconds,
-              aggregateKeyType: "IP",
-              scopeDownStatement: {
-                byteMatchStatement: {
-                  searchString: "site", // This is the CPT UI site path
-                  fieldToMatch: {
-                    uriPath: {}
-                  },
-                  positionalConstraint: "EXACTLY",
-                  textTransformations: [
-                    {
-                      priority: 0,
-                      type: "NONE"
-                    }
-                  ]
-                }
-              }
-            }
-          },
-          visibilityConfig: {
-            sampledRequestsEnabled: true,
-            cloudWatchMetricsEnabled: true,
-            metricName: `${props.serviceName}-RateLimitRule`
           }
         }
-      ],
+      },
+      visibilityConfig: {
+        sampledRequestsEnabled: false,
+        cloudWatchMetricsEnabled: true,
+        metricName: `${props.serviceName}-BlockAllOtherCountries`
+      }
+    })
+
+    // Rate Limit Rule
+    rules.push({
+      name: "RateLimitRule",
+      priority: rules.length,
+      action: {block: {}},
+      statement: {
+        rateBasedStatement: {
+          limit: props.rateLimitTransactions,
+          evaluationWindowSec: props.rateLimitWindowSeconds,
+          aggregateKeyType: "IP",
+          scopeDownStatement: {
+            byteMatchStatement: {
+              searchString: "site", // This is the CPT UI site path
+              fieldToMatch: {
+                uriPath: {}
+              },
+              positionalConstraint: "EXACTLY",
+              textTransformations: [
+                {
+                  priority: 0,
+                  type: "NONE"
+                }
+              ]
+            }
+          }
+        }
+      },
+      visibilityConfig: {
+        sampledRequestsEnabled: true,
+        cloudWatchMetricsEnabled: true,
+        metricName: `${props.serviceName}-RateLimitRule`
+      }
+    })
+
+    const webAcl = new wafv2.CfnWebACL(this, "CloudfrontWebAcl", {
+      name: `${props.serviceName}-WebAcl`,
+      defaultAction: {allow: {}},
+      scope: props.scope,
+      visibilityConfig: {
+        sampledRequestsEnabled: false,
+        cloudWatchMetricsEnabled: true,
+        metricName: `${props.serviceName}-WebAcl`
+      },
+      rules,
       tags: [
         {
           key: "Name",
