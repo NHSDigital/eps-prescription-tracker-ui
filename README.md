@@ -1,10 +1,10 @@
-# Electronic Prescription Service Clinical Prescription Tracker UI
+# Electronic Prescription Service Prescription Tracker UI
 
 ![Build](https://github.com/NHSDigital/eps-prescription-tracker-uii/workflows/release/badge.svg?branch=main)
 
-This is the code for the Clinical Prescription Tracker UI.
+This is the code for the Prescription Tracker UI.
 
-- `packages/cpt-ui` Client side react front end for clinical prescription tracker UI
+- `packages/cpt-ui` Client side react front end for Prescription Tracker UI
 - `packages/cdk/` Contains the cdk code used to define the stacks.
 - `packages/cloudfrontFunctions/` Functions used to modify the requests and responses in CloudFront.
 - `packages/staticContent/` Static content used by the website.
