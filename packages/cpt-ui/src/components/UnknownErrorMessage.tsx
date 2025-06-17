@@ -37,7 +37,7 @@ export default function UnknownErrorMessage() {
         data-testid="main-content"
       >
         <Row>
-          <Col width="two-thirds">
+          <Col width="full">
             <div
               className="query-results-header nhsuk-u-margin-left-2 nhsuk-u-margin-right-2"
               id="query-summary"
