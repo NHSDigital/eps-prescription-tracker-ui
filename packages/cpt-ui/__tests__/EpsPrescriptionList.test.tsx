@@ -313,27 +313,35 @@ describe("PrescriptionListPage", () => {
     })
   })
 
-  it("navigates back to the prescription ID search when prescriptionId query fails", async () => {
+  it("displays error page with correct back link to prescriptionId search when query fails", async () => {
     mockedAxios.get.mockRejectedValue(new Error("Server error"))
 
     renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT + "?prescriptionId=002F5E-A83008-497F1Z")
     expect(mockedAxios.get).toHaveBeenCalledTimes(1)
 
     await waitFor(() => {
-      const dummyTag = screen.getByTestId("dummy-no-prescription-page")
-      expect(dummyTag).toBeInTheDocument()
+      const errorHeading = screen.getByTestId("unknown-error-heading")
+      expect(errorHeading).toBeInTheDocument()
+      expect(errorHeading).toHaveTextContent("Sorry, there is a problem with this service")
+
+      const backLink = screen.getByTestId("go-back-link")
+      expect(backLink).toHaveAttribute("href", "/search-by-prescription-id?prescriptionId=002F5E-A83008-497F1Z")
     })
   })
 
-  it("navigates back to the NHS number search when nhsNumber query fails", async () => {
+  it("displays error page with correct back link to nhsNumber search when query fails", async () => {
     mockedAxios.get.mockRejectedValue(new Error("Server error"))
 
     renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT + "?nhsNumber=32165649870")
     expect(mockedAxios.get).toHaveBeenCalledTimes(1)
 
     await waitFor(() => {
-      const dummyTag = screen.getByTestId("dummy-no-prescription-page")
-      expect(dummyTag).toBeInTheDocument()
+      const errorHeading = screen.getByTestId("unknown-error-heading")
+      expect(errorHeading).toBeInTheDocument()
+      expect(errorHeading).toHaveTextContent("Sorry, there is a problem with this service")
+
+      const backLink = screen.getByTestId("go-back-link")
+      expect(backLink).toHaveAttribute("href", "/search-by-nhs-number?nhsNumber=32165649870")
     })
   })
 })
