@@ -49,11 +49,11 @@ describe("NhsNumSearch", () => {
       ; (useNavigate as jest.Mock).mockReturnValue(mockNavigate)
 
     renderWithRouter(<NhsNumSearch />)
-    await userEvent.type(screen.getByTestId("nhs-number-input"), "1234567890")
+    await userEvent.type(screen.getByTestId("nhs-number-input"), "9233739112")
     await userEvent.click(screen.getByTestId("find-patient-button"))
 
     expect(mockNavigate).toHaveBeenCalledWith(
-      `${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}?nhsNumber=1234567890`
+      `${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}?nhsNumber=9233739112`
     )
   })
 
