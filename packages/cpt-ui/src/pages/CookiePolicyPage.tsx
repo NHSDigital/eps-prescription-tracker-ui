@@ -4,6 +4,8 @@ import {CookieStrings} from "@/constants/ui-strings/CookieStrings"
 import {getHomeLink} from "@/helpers/loginFunctions"
 import CookieTable, {Cookie} from "@/components/CookieTable"
 import {Breadcrumb} from "nhsuk-react-components"
+import {FRONTEND_PATHS} from "@/constants/environment"
+import {useAuth} from "@/context/AuthProvider"
 
 const CookiePolicyPage = () => {
   const essentialCookies: Array<Cookie> = [
@@ -98,19 +100,20 @@ const CookiePolicyPage = () => {
 
     window.dispatchEvent(new CustomEvent("cookieChoiceUpdated"))
   }
+  const auth = useAuth()
 
   return (
     <div className="nhsuk-width-container nhsuk-u-margin-top-4">
       <main className="nhsuk-main-wrapper nhsuk-main-wrapper--s" id="main-content" role="main">
         <Breadcrumb>
-          <Breadcrumb.Item href={getHomeLink()}>
+          <Breadcrumb.Item href={getHomeLink(auth.isSignedIn)}>
             {CookieStrings.home}
           </Breadcrumb.Item>
         </Breadcrumb>
         <h1 className="nhsuk-heading-xl">{CookieStrings.cptCookies}</h1>
         <p>
           {CookieStrings.intro.paragraph1.split("privacy notice")[0]}
-          <a href="/site/privacy-notice">{CookieStrings.intro.privacyPolicyText}</a>
+          <a href={FRONTEND_PATHS.PRIVACY_NOTICE}>{CookieStrings.intro.privacyPolicyText}</a>
           {CookieStrings.intro.paragraph1.split("privacy notice")[1]}
         </p>
 

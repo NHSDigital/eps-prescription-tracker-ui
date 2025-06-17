@@ -5,13 +5,15 @@ import {createEmailLink, createPhoneLink} from "@/helpers/contactFunctions"
 import {contactInfo} from "@/helpers/contactInfo"
 import {getHomeLink} from "@/helpers/loginFunctions"
 import {Breadcrumb, InsetText} from "nhsuk-react-components"
+import {useAuth} from "@/context/AuthProvider"
 
 export default function PrivacyNoticePage() {
+  const auth = useAuth()
 
   return (
     <main className="nhsuk-width-container nhsuk-u-margin-top-4">
       <Breadcrumb>
-        <Breadcrumb.Item href={getHomeLink()}>
+        <Breadcrumb.Item href={getHomeLink(auth.isSignedIn)}>
           {PrivacyNoticeStrings.home}
         </Breadcrumb.Item>
       </Breadcrumb>

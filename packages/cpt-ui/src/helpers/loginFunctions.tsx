@@ -1,15 +1,5 @@
-export const isUserLoggedIn = () => {
-  //checks if user is logged in, as this affects redirect from home button
-  try {
-    const authData = localStorage.getItem("auth")
-    if (!authData) return false
-    const parsedAuth = JSON.parse(authData)
-    return parsedAuth?.isSignedIn === true && parsedAuth?.user !== null
-  } catch {
-    return false
-  }
-}
+import {FRONTEND_PATHS} from "@/constants/environment"
 
-export const getHomeLink = () => {
-  return isUserLoggedIn() ? "/site/search-by-prescription-id" : "/site/login"
+export const getHomeLink = (isSignedIn: boolean) => {
+  return isSignedIn ? FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID : FRONTEND_PATHS.LOGIN
 }
