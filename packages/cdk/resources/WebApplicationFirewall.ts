@@ -46,12 +46,13 @@ export class WebACL extends Construct {
     }
 
     const rules: Array<wafv2.CfnWebACL.RuleProperty> = []
+    let nextPriority = 0
 
     // Permit GitHub Actions Runners rule
     if (props.wafAllowGaRunnerConnectivity && props.githubAllowListIpv4.length > 0) {
       rules.push({
         name: "PermitGithubActionsRunnersOutsideUKandCrown",
-        priority: 0,
+        priority: nextPriority++,
         action: {allow: {}},
         statement: {
           ipSetReferenceStatement: {
@@ -68,11 +69,10 @@ export class WebACL extends Construct {
 
     // Permit Allowed Headers Only rule (negated OR for each header)
     if (props.allowedHeaders && props.allowedHeaders.size > 0) {
-      let priority = 1
       for (const [headerName, headerValue] of props.allowedHeaders.entries()) {
         rules.push({
           name: `BlockRequestsMissingOrIncorrectHeader-${headerName}`,
-          priority: priority++,
+          priority: nextPriority++,
           action: {block: {}},
           statement: {
             notStatement: {
@@ -105,7 +105,7 @@ export class WebACL extends Construct {
     // Permit UK and Crown Dependent Countries
     rules.push({
       name: "PermitUKandCrownDependentCountries",
-      priority: rules.length,
+      priority: nextPriority++,
       action: {allow: {}},
       statement: {
         geoMatchStatement: {
@@ -127,7 +127,7 @@ export class WebACL extends Construct {
     // Block All Other Countries
     rules.push({
       name: "BlockAllOtherCountries",
-      priority: rules.length,
+      priority: nextPriority++,
       action: {block: {}},
       statement: {
         notStatement: {
@@ -153,7 +153,7 @@ export class WebACL extends Construct {
     // Rate Limit Rule
     rules.push({
       name: "RateLimitRule",
-      priority: rules.length,
+      priority: nextPriority++,
       action: {block: {}},
       statement: {
         rateBasedStatement: {
