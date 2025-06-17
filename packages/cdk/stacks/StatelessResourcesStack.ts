@@ -88,7 +88,6 @@ export class StatelessResourcesStack extends Stack {
     const jwtKid: string = this.node.tryGetContext("jwtKid")
     const roleId: string = this.node.tryGetContext("roleId")
     const allowLocalhostAccess: boolean = this.node.tryGetContext("allowLocalhostAccess")
-    const useBareDomain: boolean = this.node.tryGetContext("useBareDomain")
 
     // Imports
     const baseImportPath = `${props.serviceName}-stateful-resources`
@@ -408,8 +407,7 @@ export class StatelessResourcesStack extends Stack {
           responsePagePath: "/404.html",
           ttl: Duration.seconds(10)
         }
-      ],
-      useBareDomain: useBareDomain
+      ]
     })
 
     // Outputs

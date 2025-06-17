@@ -10,7 +10,6 @@ import {
 import {
   AaaaRecord,
   ARecord,
-  CnameRecord,
   IHostedZone,
   RecordTarget
 } from "aws-cdk-lib/aws-route53"
@@ -34,7 +33,6 @@ export interface CloudfrontDistributionProps {
   readonly fullCloudfrontDomain: string
   readonly cloudfrontLoggingBucket: IBucket
   readonly cloudfrontCert: ICertificate
-  readonly useBareDomain: boolean
 }
 
 /**
@@ -65,23 +63,13 @@ export class CloudfrontDistribution extends Construct {
       errorResponses: props.errorResponses
     })
 
-    if (props.useBareDomain) {
-      new ARecord(this, "CloudfrontCnameRecord", {
-        zone: props.hostedZone,
-        target: RecordTarget.fromAlias(new CloudFrontTarget(cloudfrontDistribution))})
+    new ARecord(this, "CloudfrontCnameRecord", {
+      zone: props.hostedZone,
+      target: RecordTarget.fromAlias(new CloudFrontTarget(cloudfrontDistribution))})
 
-      new AaaaRecord(this, "CloudfrontCnameRecord", {
-        zone: props.hostedZone,
-        target: RecordTarget.fromAlias(new CloudFrontTarget(cloudfrontDistribution))})
-
-    } else {
-      new CnameRecord(this, "CloudfrontCnameRecord", {
-        recordName: props.shortCloudfrontDomain,
-        zone: props.hostedZone,
-        domainName: cloudfrontDistribution.distributionDomainName
-      })
-
-    }
+    new AaaaRecord(this, "CloudfrontCnameRecord", {
+      zone: props.hostedZone,
+      target: RecordTarget.fromAlias(new CloudFrontTarget(cloudfrontDistribution))})
 
     // Outputs
     this.distribution = cloudfrontDistribution
