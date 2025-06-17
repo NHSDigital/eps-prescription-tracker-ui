@@ -9,21 +9,25 @@ import {Link} from "react-router-dom"
 import {FRONTEND_PATHS} from "@/constants/environment"
 import {STRINGS} from "@/constants/ui-strings/UnknownErrorMessageStrings"
 
-export default function UnknownErrorMessage() {
+type UnknownErrorMessageProps = {
+  readonly search?: string
+}
+
+export default function UnknownErrorMessage({search = ""}: UnknownErrorMessageProps) {
+  console.log("UnknownErrorMessage rendered with search:", search)
   return (
     <Container
-      className="nhsuk-width-container-fluid patient-search-form-container"
+      className="nhsuk-width-container-fluid unknown-error-container"
       data-testid="unknown-error-message"
     >
       <nav
-        className="nhsuk-breadcrumb nhsuk-u-padding-bottom-0 nhsuk-u-padding-left-2"
+        className="nhsuk-breadcrumb nhsuk-u-padding-bottom-0 nhsuk-u-padding-left-2 unknown-error-breadcrumb"
         aria-label="Breadcrumb"
       >
         <BackLink
           data-testid="go-back-link"
           asElement={Link}
-          to={FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS}
-        >
+          to={FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS + (search || "")}>
           {STRINGS.goBackLink}
         </BackLink>
       </nav>
@@ -34,7 +38,7 @@ export default function UnknownErrorMessage() {
         data-testid="main-content"
       >
         <Row>
-          <Col width="full">
+          <Col width="three-quarters">
             <div
               className="query-results-header nhsuk-u-margin-left-2 nhsuk-u-margin-right-2"
               id="query-summary"
