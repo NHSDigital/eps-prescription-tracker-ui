@@ -35,7 +35,7 @@ Tags.of(app).add("cdkApp", "StatefulApp")
 let shortCloudfrontDomain
 let parentCognitoDomain
 if (useBareDomain) {
-  shortCloudfrontDomain = ""
+  shortCloudfrontDomain = "BARE_DOMAIN"
   parentCognitoDomain = "auth"
 } else {
   shortCloudfrontDomain = serviceName

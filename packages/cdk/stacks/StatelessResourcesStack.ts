@@ -56,7 +56,8 @@ export class StatelessResourcesStack extends Stack {
     const epsDomainName: string = this.node.tryGetContext("epsDomainName")
     const epsHostedZoneId: string = this.node.tryGetContext("epsHostedZoneId")
     const cloudfrontCertArn: string = this.node.tryGetContext("cloudfrontCertArn")
-    const shortCloudfrontDomain: string = this.node.tryGetContext("shortCloudfrontDomain")
+    const tempShortCloudfrontDomain: string = this.node.tryGetContext("shortCloudfrontDomain")
+    const shortCloudfrontDomain = tempShortCloudfrontDomain === "BARE_DOMAIN" ? "" : tempShortCloudfrontDomain
     const fullCloudfrontDomain: string = this.node.tryGetContext("fullCloudfrontDomain")
     const fullCognitoDomain: string = this.node.tryGetContext("fullCognitoDomain")
     const logRetentionInDays: number = Number(this.node.tryGetContext("logRetentionInDays"))
