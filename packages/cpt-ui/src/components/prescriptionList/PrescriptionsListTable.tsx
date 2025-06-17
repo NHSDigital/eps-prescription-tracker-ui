@@ -2,7 +2,6 @@
 import React from "react"
 import {Tag} from "nhsuk-react-components"
 import "../../styles/PrescriptionTable.scss"
-import EpsSpinner from "@/components/EpsSpinner"
 import {PrescriptionSummary} from "@cpt-ui-common/common-types/src"
 import {PrescriptionsListStrings} from "../../constants/ui-strings/PrescriptionListTabStrings"
 import {getStatusTagColour, getStatusDisplayText, formatDateForPrescriptions} from "@/helpers/statusMetadata"
@@ -44,12 +43,6 @@ const PrescriptionsListTable = ({
       [currentTabId]: newConfig
     }))
   }
-
-  const [loading, setLoading] = React.useState(true)
-  React.useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 2000)
-    return () => clearTimeout(timer)
-  }, [])
 
   const headings = [
     {key: "issueDate", label: "Issue date", width: "15%"},
@@ -191,14 +184,6 @@ const PrescriptionsListTable = ({
     })
 
     return sorted
-  }
-
-  if (loading) {
-    return (
-      <div className="eps-prescription-loading-modal" data-testid="eps-loading-spinner">
-        <EpsSpinner />
-      </div>
-    )
   }
 
   if (initialPrescriptions.length === 0) {

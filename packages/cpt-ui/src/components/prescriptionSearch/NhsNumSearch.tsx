@@ -1,5 +1,5 @@
 import React, {useEffect, useRef, useState} from "react"
-import {useNavigate} from "react-router-dom"
+import {useNavigate, useSearchParams} from "react-router-dom"
 import {
   Container,
   Row,
@@ -20,16 +20,13 @@ import {FRONTEND_PATHS} from "@/constants/environment"
 type ErrorKey = keyof typeof STRINGS.errors
 
 export default function NhsNumSearch() {
-  const [nhsNumber, setNhsNumber] = useState("")
+  const [searchParams] = useSearchParams()
+  const [nhsNumber, setNhsNumber] = useState(searchParams.get("nhsNumber") ?? "")
   const [errorTypes, setErrorTypes] = useState<Array<ErrorKey>>([])
   const errorRef = useRef<HTMLDivElement | null>(null)
   const navigate = useNavigate()
 
   const errorMessages = STRINGS.errors
-
-  useEffect(() => {
-    document.querySelector<HTMLInputElement>("#nhs-number-input")?.focus()
-  }, [])
 
   useEffect(() => {
     if (errorTypes.length > 0 && errorRef.current) {
@@ -39,7 +36,6 @@ export default function NhsNumSearch() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setNhsNumber(e.target.value)
-    setErrorTypes([])
   }
 
   const handleSubmit = (e: React.FormEvent) => {

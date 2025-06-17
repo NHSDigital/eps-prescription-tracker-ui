@@ -12,7 +12,7 @@ import {
   OrganisationSummary
 } from "@cpt-ui-common/common-types"
 
-import {FRONTEND_PATHS} from "@/constants/environment"
+// import {FRONTEND_PATHS} from "@/constants/environment"
 import {STRINGS} from "@/constants/ui-strings/PrescriptionDetailsPageStrings"
 
 import {AuthContext, AuthContextType} from "@/context/AuthProvider"
@@ -175,22 +175,28 @@ describe("PrescriptionDetailsPage", () => {
     expect(screen.getByTestId("eps-spinner")).toBeInTheDocument()
   })
 
-  it("navigates to prescription not found when prescriptionId is missing", async () => {
-    renderComponent("", signedInAuthState) // No query string
+  it("does not navigate when prescriptionId is missing", async () => {
+    renderComponent("", signedInAuthState)
 
     await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith(FRONTEND_PATHS.PRESCRIPTION_NOT_FOUND)
+      expect(mockNavigate).not.toHaveBeenCalled()
     })
+
+    // Verify that fallback UI renders
+    expect(screen.getByRole("heading", {name: STRINGS.HEADER})).toBeInTheDocument()
   })
 
-  it("navigates to prescription not found on unknown prescriptionId", async () => {
+  it("handles unknown prescriptionId without navigating", async () => {
     (http.get as jest.Mock).mockRejectedValue(new Error("HTTP error"))
 
     renderComponent("UNKNOWN_ID", signedInAuthState)
 
     await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith(FRONTEND_PATHS.PRESCRIPTION_NOT_FOUND)
+      expect(mockNavigate).not.toHaveBeenCalled()
     })
+
+    // Confirm fallback or empty UI still renders
+    expect(screen.getByRole("heading", {name: STRINGS.HEADER})).toBeInTheDocument()
   })
 
   it("renders SiteDetailsCards with correct data for a successful HTTP GET response", async () => {
@@ -218,26 +224,29 @@ describe("PrescriptionDetailsPage", () => {
   })
 
   it("displays loading message and spinner while fetching data", async () => {
+    let resolveRequest: () => void = () => {}
 
-    // let resolvePromise: (value) => void
-    // const promise = new Promise((resolve) => {
-    //   resolvePromise = resolve
-    // });
+    const payload = {
+      ...mockPrescriptionDetailsResponse
+    }
 
-    // (http.get as jest.Mock).mockImplementation(() => promise)
+    // Create a promise
+    const pendingPromise = new Promise((resolve) => {
+      resolveRequest = () => resolve({status: 200, data: payload})
+    })
+
+    ;(http.get as jest.Mock).mockReturnValue(pendingPromise)
+
     renderComponent("EC5ACF-A83008-733FD3", signedInAuthState)
 
-    // Check that the loading message is rendered
-    const loadingHeading = screen.getByRole("heading", {
-      name: STRINGS.LOADING_FULL_PRESCRIPTION
-    })
-    expect(loadingHeading).toBeInTheDocument()
+    // Spinner is shown while loading
+    expect(screen.getByRole("heading", {name: STRINGS.LOADING_FULL_PRESCRIPTION})).toBeInTheDocument()
+    expect(screen.getByTestId("eps-spinner")).toBeInTheDocument()
 
-    // Check that the spinner is rendered
-    const spinner = screen.getByTestId("eps-spinner")
-    expect(spinner).toBeInTheDocument()
+    // Resolve the API call
+    resolveRequest()
 
-    // Wait for loading to finish and spinner to disappear
+    // Spinner disappears once data is loaded
     await waitFor(() => {
       expect(screen.queryByTestId("eps-spinner")).not.toBeInTheDocument()
     })
