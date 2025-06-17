@@ -66,43 +66,41 @@ export class WebACL extends Construct {
       })
     }
 
-    // Cause a change
-
-    // // Permit Allowed Headers Only rule (negated OR for each header)
-    // if (props.allowedHeaders && props.allowedHeaders.size > 0) {
-    //   let priority = 1
-    //   for (const [headerName, headerValue] of props.allowedHeaders.entries()) {
-    //     rules.push({
-    //       name: `BlockRequestsMissingOrIncorrectHeader-${headerName}`,
-    //       priority: priority++,
-    //       action: {block: {}},
-    //       statement: {
-    //         notStatement: {
-    //           statement: {
-    //             byteMatchStatement: {
-    //               searchString: headerValue,
-    //               fieldToMatch: {
-    //                 singleHeader: {Name: headerName}
-    //               },
-    //               positionalConstraint: "EXACTLY",
-    //               textTransformations: [
-    //                 {
-    //                   priority: 0,
-    //                   type: "NONE"
-    //                 }
-    //               ]
-    //             }
-    //           }
-    //         }
-    //       },
-    //       visibilityConfig: {
-    //         sampledRequestsEnabled: false,
-    //         cloudWatchMetricsEnabled: true,
-    //         metricName: `${props.serviceName}-BlockRequestsMissingOrIncorrectHeader-${headerName}`
-    //       }
-    //     })
-    //   }
-    // }
+    // Permit Allowed Headers Only rule (negated OR for each header)
+    if (props.allowedHeaders && props.allowedHeaders.size > 0) {
+      let priority = 1
+      for (const [headerName, headerValue] of props.allowedHeaders.entries()) {
+        rules.push({
+          name: `BlockRequestsMissingOrIncorrectHeader-${headerName}`,
+          priority: priority++,
+          action: {block: {}},
+          statement: {
+            notStatement: {
+              statement: {
+                byteMatchStatement: {
+                  searchString: headerValue,
+                  fieldToMatch: {
+                    singleHeader: {Name: headerName}
+                  },
+                  positionalConstraint: "EXACTLY",
+                  textTransformations: [
+                    {
+                      priority: 0,
+                      type: "NONE"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          visibilityConfig: {
+            sampledRequestsEnabled: false,
+            cloudWatchMetricsEnabled: true,
+            metricName: `${props.serviceName}-BlockRequestsMissingOrIncorrectHeader-${headerName}`
+          }
+        })
+      }
+    }
 
     // Permit UK and Crown Dependent Countries
     rules.push({

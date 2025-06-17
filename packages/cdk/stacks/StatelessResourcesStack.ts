@@ -281,7 +281,10 @@ export class StatelessResourcesStack extends Stack {
       rateLimitWindowSeconds: 60, // Minimum is 60 seconds
       githubAllowListIpv4: githubAllowListIpv4,
       wafAllowGaRunnerConnectivity: wafAllowGaRunnerConnectivity,
-      scope: "REGIONAL"
+      scope: "REGIONAL",
+      allowedHeaders: new Map<string, string>([
+        ["waf-secret", "blah-blah-blah"]
+      ])
     })
 
     // - CPT backend API Gateway (/api/*)
@@ -314,7 +317,7 @@ export class StatelessResourcesStack extends Stack {
     })
 
     new CfnWebACLAssociation(this, "oauth2GatewayAssociation", {
-      resourceArn: apiGateway.apiGateway.restApiId,
+      resourceArn: oauth2Gateway.apiGateway.restApiId,
       webAclArn: webAcl.attrArn
     })
 
