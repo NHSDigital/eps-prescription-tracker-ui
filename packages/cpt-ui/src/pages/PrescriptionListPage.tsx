@@ -16,6 +16,7 @@ import EpsSpinner from "@/components/EpsSpinner"
 import PrescriptionsListTabs from "@/components/prescriptionList/PrescriptionsListTab"
 import {TabHeader} from "@/components/EpsTabs"
 import PrescriptionNotFoundMessage from "@/components/PrescriptionNotFoundMessage"
+import UnknownErrorMessage from "@/components/UnknownErrorMessage"
 
 import {PRESCRIPTION_LIST_TABS} from "@/constants/ui-strings/PrescriptionListTabStrings"
 import {PRESCRIPTION_LIST_PAGE_STRINGS} from "@/constants/ui-strings/PrescriptionListPageStrings"
@@ -37,6 +38,7 @@ export default function PrescriptionListPage() {
   const [backLinkTarget, setBackLinkTarget] = useState<string>(PRESCRIPTION_LIST_PAGE_STRINGS.DEFAULT_BACK_LINK_TARGET)
   const [loading, setLoading] = useState(true)
   const [showNotFound, setShowNotFound] = useState(false)
+  const [error, setError] = useState(false)
 
   useEffect(() => {
     const runSearch = async () => {
@@ -68,7 +70,7 @@ export default function PrescriptionListPage() {
       }
 
       try {
-        const response = await http.get(API_ENDPOINTS.PRESCRIPTION_LIST, {
+        const response = await http.get(API_ENDPOINTS, {
           params: searchParams
         })
 
@@ -125,7 +127,7 @@ export default function PrescriptionListPage() {
         if (err instanceof Error && err.message === "CanceledError: canceled") {
           navigate(FRONTEND_PATHS.LOGIN)
         } else {
-          navigate(backLinkTarget)
+          setError(true)
         }
         setShowNotFound(true)
         setLoading(false)
@@ -155,6 +157,10 @@ export default function PrescriptionListPage() {
         </Container>
       </main>
     )
+  }
+
+  if (error) {
+    return <UnknownErrorMessage />
   }
 
   // Show PrescriptionNotFoundMessage if no prescriptions found

@@ -5,16 +5,14 @@ import {
   Col,
   BackLink
 } from "nhsuk-react-components"
-import {Link} from "react-router-dom"
-import {FRONTEND_PATHS} from "@/constants/environment"
+import {Link, useSearchParams} from "react-router-dom"
 import {STRINGS} from "@/constants/ui-strings/UnknownErrorMessageStrings"
+import {buildBackLink, inferSearchType} from "@/helpers/prescriptionNotFoundLinks"
 
-type UnknownErrorMessageProps = {
-  readonly search?: string
-}
-
-export default function UnknownErrorMessage({search = ""}: UnknownErrorMessageProps) {
-  console.log("UnknownErrorMessage rendered with search:", search)
+export default function UnknownErrorMessage() {
+  const [searchParams] = useSearchParams()
+  const searchType = inferSearchType(searchParams)
+  const backLinkUrl = buildBackLink({searchType, searchParams})
   return (
     <Container
       className="nhsuk-width-container-fluid unknown-error-container"
@@ -27,7 +25,8 @@ export default function UnknownErrorMessage({search = ""}: UnknownErrorMessagePr
         <BackLink
           data-testid="go-back-link"
           asElement={Link}
-          to={FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS + (search || "")}>
+          to={backLinkUrl}
+        >
           {STRINGS.goBackLink}
         </BackLink>
       </nav>
@@ -38,7 +37,7 @@ export default function UnknownErrorMessage({search = ""}: UnknownErrorMessagePr
         data-testid="main-content"
       >
         <Row>
-          <Col width="three-quarters">
+          <Col width="two-thirds">
             <div
               className="query-results-header nhsuk-u-margin-left-2 nhsuk-u-margin-right-2"
               id="query-summary"
