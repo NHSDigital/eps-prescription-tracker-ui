@@ -63,11 +63,11 @@ export class CloudfrontDistribution extends Construct {
       errorResponses: props.errorResponses
     })
 
-    new ARecord(this, "CloudfrontCnameRecord", {
+    new ARecord(this, "CloudFrontAliasIpv4Record", {
       zone: props.hostedZone,
       target: RecordTarget.fromAlias(new CloudFrontTarget(cloudfrontDistribution))})
 
-    new AaaaRecord(this, "CloudfrontCnameRecord", {
+    new AaaaRecord(this, "CloudFrontAliasIpv6Record", {
       zone: props.hostedZone,
       target: RecordTarget.fromAlias(new CloudFrontTarget(cloudfrontDistribution))})
 
