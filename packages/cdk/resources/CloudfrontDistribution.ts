@@ -7,7 +7,14 @@ import {
   SecurityPolicyProtocol,
   SSLMethod
 } from "aws-cdk-lib/aws-cloudfront"
-import {CnameRecord, IHostedZone} from "aws-cdk-lib/aws-route53"
+import {
+  AaaaRecord,
+  ARecord,
+  CnameRecord,
+  IHostedZone,
+  RecordTarget
+} from "aws-cdk-lib/aws-route53"
+import {CloudFrontTarget} from "aws-cdk-lib/aws-route53-targets"
 import {IBucket} from "aws-cdk-lib/aws-s3"
 import {Construct} from "constructs"
 
@@ -27,6 +34,7 @@ export interface CloudfrontDistributionProps {
   readonly fullCloudfrontDomain: string
   readonly cloudfrontLoggingBucket: IBucket
   readonly cloudfrontCert: ICertificate
+  readonly useBareDomain: boolean
 }
 
 /**
@@ -57,11 +65,23 @@ export class CloudfrontDistribution extends Construct {
       errorResponses: props.errorResponses
     })
 
-    new CnameRecord(this, "CloudfrontCnameRecord", {
-      recordName: props.shortCloudfrontDomain,
-      zone: props.hostedZone,
-      domainName: cloudfrontDistribution.distributionDomainName
-    })
+    if (props.useBareDomain) {
+      new ARecord(this, "CloudfrontCnameRecord", {
+        zone: props.hostedZone,
+        target: RecordTarget.fromAlias(new CloudFrontTarget(cloudfrontDistribution))})
+
+      new AaaaRecord(this, "CloudfrontCnameRecord", {
+        zone: props.hostedZone,
+        target: RecordTarget.fromAlias(new CloudFrontTarget(cloudfrontDistribution))})
+
+    } else {
+      new CnameRecord(this, "CloudfrontCnameRecord", {
+        recordName: props.shortCloudfrontDomain,
+        zone: props.hostedZone,
+        domainName: cloudfrontDistribution.distributionDomainName
+      })
+
+    }
 
     // Outputs
     this.distribution = cloudfrontDistribution
