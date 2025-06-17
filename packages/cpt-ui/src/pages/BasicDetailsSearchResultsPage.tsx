@@ -32,7 +32,7 @@ export default function SearchResultsPage() {
   const getSearchResults = async () => {
     try{
     // Attempt to fetch live search results from the API
-      const response = await http.get(API_ENDPOINTS, {
+      const response = await http.get(API_ENDPOINTS.PATIENT_SEARCH, {
         params: {
           familyName: searchParams.get("lastName"),
           dateOfBirth: `${searchParams.get("dobYear")}-${searchParams.get("dobMonth")}-${searchParams.get("dobDay")}`,
@@ -90,7 +90,7 @@ export default function SearchResultsPage() {
     .toSorted((a, b) => (a.givenName?.[0] ?? "").localeCompare(b.givenName?.[0] ?? ""))
 
   if (error) {
-    return <UnknownErrorMessage search={location.search} />
+    return <UnknownErrorMessage />
   }
 
   if (loading) {
