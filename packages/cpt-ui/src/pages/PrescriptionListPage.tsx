@@ -70,7 +70,7 @@ export default function PrescriptionListPage() {
       }
 
       try {
-        const response = await http.get(API_ENDPOINTS, {
+        const response = await http.get(API_ENDPOINTS.PRESCRIPTION_LIST, {
           params: searchParams
         })
 
