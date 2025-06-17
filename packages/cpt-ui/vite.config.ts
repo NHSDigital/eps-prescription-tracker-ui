@@ -1,7 +1,6 @@
 import {defineConfig, loadEnv} from "vite"
 import react from "@vitejs/plugin-react-swc"
 import path from "path"
-import sourcemaps from "rollup-plugin-sourcemaps2"
 
 export default defineConfig(({mode}) => {
   // Load env file based on `mode` in the current working directory.
@@ -20,10 +19,7 @@ export default defineConfig(({mode}) => {
     base: process.env.BASE_PATH || "",
     plugins: [react()],
     build: {
-      sourcemap: true,
-      rollupOptions: {
-        plugins: [sourcemaps()]
-      }
+      sourcemap: true
     },
     resolve: {
       alias: {
