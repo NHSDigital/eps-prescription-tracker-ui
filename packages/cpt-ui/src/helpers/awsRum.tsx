@@ -1,17 +1,22 @@
 import {APP_CONFIG, RUM_CONFIG} from "@/constants/environment"
-import {AwsRum, AwsRumConfig} from "aws-rum-web"
+import {AwsRum, AwsRumConfig, Telemetry} from "aws-rum-web"
 
 export class CptAwsRum {
   awsRum: AwsRum | null
 
   constructor() {
     try {
+      let telemetries: Array<Telemetry> = RUM_CONFIG.TELEMETRIES
+      if (telemetries.includes("http")) {
+        telemetries = telemetries.filter(item => item !== "http")
+        telemetries.push(["http", {addXRayTraceIdHeader: true}])
+      }
       const config: AwsRumConfig = {
         sessionSampleRate: RUM_CONFIG.SESSION_SAMPLE_RATE,
         guestRoleArn: RUM_CONFIG.GUEST_ROLE_ARN,
         identityPoolId: RUM_CONFIG.IDENTITY_POOL_ID,
         endpoint: RUM_CONFIG.ENDPOINT,
-        telemetries: RUM_CONFIG.TELEMETRIES,
+        telemetries: telemetries,
         allowCookies: false, // assume no cookies unless they agree
         enableXRay: RUM_CONFIG.ENABLE_XRAY,
         releaseId: RUM_CONFIG.RELEASE_ID,

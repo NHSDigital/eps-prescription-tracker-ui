@@ -25,7 +25,7 @@ http.interceptors.request.use(
     }
     config.headers.Authorization = `Bearer ${idToken?.toString()}`
 
-    // Make sure we have a retry counter in config so we can track how many times we've retried
+    // Make sure we have a retry counter in headers so we can track how many times we've retried
     if (!config.headers[x_retry_header]) {
       config.headers[x_retry_header] = "0"
     }
@@ -55,30 +55,28 @@ http.interceptors.response.use(
 
       // If we have a response, attempt retries
       if (response && config) {
-      // Make sure __retryCount is set in the request config
-        let retryCount = parseInt(config.headers?.[x_retry_header] ?? "0")
-
-        // If we've retried fewer than 3 times, retry the request
-        if (retryCount < 3) {
-          config.headers[x_retry_header] = `${++retryCount}`
-          return http(config)
-        }
-        // we have reached here so log failed retry
         correlationHeaders = {
           "x-request-id": config.headers[x_request_id_header],
           "x-correlation-id": config.headers[x_correlation_id_header]
         }
-        rumInstance?.recordEvent("axios_error", {message: "failed retries in axios", correlationHeaders})
-      }
+        // get retry count from the header
+        let retryCount = parseInt(config.headers?.[x_retry_header] ?? "0")
 
+        // If we've retried fewer than 3 times, retry the request
+        if (retryCount < 3) {
+          rumInstance?.recordEvent("axios_error", {message: "failed request - retrying", correlationHeaders})
+          config.headers[x_retry_header] = `${++retryCount}`
+          return http(config)
+        }
+        // we have reached here so log failed retry
+        rumInstance?.recordEvent("axios_error", {message: "failed all retries in axios"})
+      }
     }
 
     // Either its not an axios error or its failed 3 retries
-    if (rumInstance) {
-      rumInstance.recordEvent("axios_error", {message: error.message, stack: error.stack, correlationHeaders})
-      // also use recordError to try and get source maps back to real line numbers
-      rumInstance.recordError(error)
-    }
+    rumInstance?.recordEvent("axios_error", {message: error.message, stack: error.stack, correlationHeaders})
+    // also use recordError to try and get source maps back to real line numbers
+    rumInstance?.recordError(error)
 
     return Promise.reject(error)
   }
