@@ -35,6 +35,7 @@ if (typeof githubAllowListIpv6 === "string") {
   githubAllowListIpv6 = []
 }
 const wafAllowGaRunnerConnectivity = app.node.tryGetContext("wafAllowGaRunnerConnectivity")
+const useZoneApex: boolean = app.node.tryGetContext("useZoneApex")
 
 // add cdk-nag to everything
 Aspects.of(app).add(new AwsSolutionsChecks({verbose: true}))
@@ -45,8 +46,16 @@ Tags.of(app).add("commit", commit)
 Tags.of(app).add("cdkApp", "StatefulApp")
 
 // define the host names we are going to use for everything
-const shortCloudfrontDomain = serviceName
-const parentCognitoDomain = `auth.${serviceName}`
+let shortCloudfrontDomain
+let parentCognitoDomain
+if (useZoneApex) {
+  shortCloudfrontDomain = "APEX_DOMAIN" // we need to set this to something for an export to work
+  parentCognitoDomain = "auth"
+} else {
+  shortCloudfrontDomain = serviceName
+  parentCognitoDomain = `auth.${serviceName}`
+}
+
 // shortCognitoDomain must be a subdomain of parentCognitoDomain
 let shortCognitoDomain
 if (useCustomCognitoDomain) {

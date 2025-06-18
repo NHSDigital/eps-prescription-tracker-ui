@@ -68,6 +68,10 @@ on:
         type: string
       WAF_ALLOW_GA_RUNNER_CONNECTIVITY:
         type: boolean
+      USE_ZONE_APEX:
+        type: boolean
+      ROUTE53_EXPORT_NAME:
+        type: string
     secrets:
       CLOUD_FORMATION_DEPLOY_ROLE:
         required: true
@@ -181,6 +185,8 @@ jobs:
           ROLE_ID: ${{ inputs.ROLE_ID }}
           CDK_APP_NAME: ${{ inputs.CDK_APP_NAME }}
           WAF_ALLOW_GA_RUNNER_CONNECTIVITY: ${{ inputs.WAF_ALLOW_GA_RUNNER_CONNECTIVITY }}
+          USE_ZONE_APEX: ${{ inputs.USE_ZONE_APEX }}
+          ROUTE53_EXPORT_NAME: ${{ inputs.ROUTE53_EXPORT_NAME }}
 
       - name: Show diff
         run: |

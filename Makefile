@@ -210,6 +210,7 @@ cdk-synth-stateful-resources-no-mock:
 	ALLOW_LOCALHOST_ACCESS=false \
 	WAF_ALLOW_GA_RUNNER_CONNECTIVITY=true \
 	DO_NOT_GET_AWS_EXPORT=true \
+	USE_ZONE_APEX=false \
 		 ./.github/scripts/fix_cdk_json.sh .local_config/stateful_app.config.json
 	CONFIG_FILE_NAME=.local_config/stateful_app.config.json npx cdk synth \
 		--quiet \
@@ -253,6 +254,7 @@ cdk-synth-stateless-resources-no-mock:
 	WAF_ALLOW_GA_RUNNER_CONNECTIVITY=true \
 	CLOUDFRONT_CERT_ARN=arn:aws:acm:us-east-1:444455556666:certificate/certificate_ID \
 	DO_NOT_GET_AWS_EXPORT=true \
+	USE_ZONE_APEX=false \
 		 ./.github/scripts/fix_cdk_json.sh .local_config/stateless_app.config.json
 	CONFIG_FILE_NAME=.local_config/stateless_app.config.json npx cdk synth \
 		--quiet \
@@ -293,6 +295,7 @@ cdk-synth-stateful-resources-mock:
 	ALLOW_LOCALHOST_ACCESS=false \
 	WAF_ALLOW_GA_RUNNER_CONNECTIVITY=true \
 	DO_NOT_GET_AWS_EXPORT=true \
+	USE_ZONE_APEX=false \
 		 ./.github/scripts/fix_cdk_json.sh .local_config/stateful_app.config.json
 	CONFIG_FILE_NAME=.local_config/stateful_app.config.json npx cdk synth \
 		--quiet \
@@ -343,6 +346,7 @@ cdk-synth-stateless-resources-mock:
 	CLOUDFRONT_CERT_ARN=arn:aws:acm:us-east-1:444455556666:certificate/certificate_ID \
 	WAF_ALLOW_GA_RUNNER_CONNECTIVITY=true \
 	DO_NOT_GET_AWS_EXPORT=true \
+	USE_ZONE_APEX=false \
 		 ./.github/scripts/fix_cdk_json.sh .local_config/stateless_app.config.json
 	CONFIG_FILE_NAME=.local_config/stateless_app.config.json npx cdk synth \
 		--quiet \
