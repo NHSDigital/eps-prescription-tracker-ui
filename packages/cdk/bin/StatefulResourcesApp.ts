@@ -1,7 +1,7 @@
 import {App, Aspects, Tags} from "aws-cdk-lib"
 import {AwsSolutionsChecks} from "cdk-nag"
 
-import {addCfnGuardMetadata, tagExclusions} from "./utils/appUtils"
+import {addCfnGuardMetadata} from "./utils/appUtils"
 import {UsCertsStack} from "../stacks/UsCertsStack"
 import {StatefulResourcesStack} from "../stacks/StatefulResourcesStack"
 import fs from "fs"
@@ -29,12 +29,8 @@ Aspects.of(app).add(new AwsSolutionsChecks({verbose: true}))
 // add tags to everything
 // exclude some resources that take a long time to update tags on
 Tags.of(app).add("serviceName", serviceName)
-Tags.of(app).add("version", version, {
-  excludeResourceTypes: tagExclusions
-})
-Tags.of(app).add("commit", commit, {
-  excludeResourceTypes: tagExclusions
-})
+Tags.of(app).add("version", version)
+Tags.of(app).add("commit", commit)
 Tags.of(app).add("cdkApp", "StatefulApp")
 
 // define the host names we are going to use for everything
