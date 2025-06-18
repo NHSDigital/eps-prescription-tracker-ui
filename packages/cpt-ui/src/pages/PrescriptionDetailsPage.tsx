@@ -12,8 +12,8 @@ import {
   PrescriberOrganisationSummary,
   OrganisationSummary,
   PrescriptionDetailsResponse,
-  DispensedItem,
-  PrescribedItem,
+  PrescribedItemDetails,
+  DispensedItemDetails,
   MessageHistory
 } from "@cpt-ui-common/common-types"
 
@@ -43,13 +43,17 @@ export default function PrescriptionDetailsPage() {
   const [prescriber, setPrescriber] = useState<PrescriberOrganisationSummary | undefined>()
   const [nominatedDispenser, setNominatedDispenser] = useState<OrganisationSummary | undefined>()
   const [dispenser, setDispenser] = useState<OrganisationSummary | undefined>()
-  const [prescribedItems, setPrescribedItems] = useState<Array<PrescribedItem>>([])
-  const [dispensedItems, setDispensedItems] = useState<Array<DispensedItem>>([])
+  const [prescribedItems, setPrescribedItems] = useState<Array<PrescribedItemDetails>>([])
+  const [dispensedItems, setDispensedItems] = useState<Array<DispensedItemDetails>>([])
   const [messageHistory, setMessageHistory] = useState<Array<MessageHistory>>([])
 
-  const getPrescriptionDetails = async (prescriptionId: string): Promise<PrescriptionDetailsResponse | undefined> => {
+  const getPrescriptionDetails = async (
+    prescriptionId: string,
+    prescriptionIssueNumber?: string | undefined
+  ): Promise<PrescriptionDetailsResponse | undefined> => {
     console.log("Prescription ID", prescriptionId)
-    const url = `${API_ENDPOINTS.PRESCRIPTION_DETAILS}/${prescriptionId}`
+    const issueNumber = prescriptionIssueNumber ?? "1"
+    const url = `${API_ENDPOINTS.PRESCRIPTION_DETAILS}/${prescriptionId}?issueNumber=${issueNumber}`
 
     let payload: PrescriptionDetailsResponse | undefined
     try {
@@ -77,19 +81,19 @@ export default function PrescriptionDetailsPage() {
     setPatientDetails(payload.patientDetails)
     setPrescribedItems(payload.prescribedItems)
     setDispensedItems(payload.dispensedItems)
-    setPrescriber(payload.prescriberOrganisation.organisationSummaryObjective)
+    setPrescriber(payload.prescriberOrganisation)
     setMessageHistory(payload.messageHistory)
 
     if (!payload.currentDispenser) {
       setDispenser(undefined)
     } else {
-      setDispenser(payload.currentDispenser[0].organisationSummaryObjective)
+      setDispenser(payload.currentDispenser)
     }
 
     if (!payload.nominatedDispenser) {
       setNominatedDispenser(undefined)
     } else {
-      setNominatedDispenser(payload.nominatedDispenser.organisationSummaryObjective)
+      setNominatedDispenser(payload.nominatedDispenser)
     }
 
     return payload
@@ -108,10 +112,11 @@ export default function PrescriptionDetailsPage() {
         console.error("No prescriptionId provided in query params.")
         return
       }
+      const prescriptionIssueNumber = queryParams.get("issueNumber")
 
       console.log("useEffect triggered for prescription:", prescriptionId)
       setLoading(true)
-      await getPrescriptionDetails(prescriptionId)
+      await getPrescriptionDetails(prescriptionId, prescriptionIssueNumber!)
     }
 
     runGetPrescriptionDetails()

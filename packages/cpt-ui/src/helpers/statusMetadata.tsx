@@ -111,12 +111,28 @@ export const formatDateForPrescriptions = (date: string) => {
     }
 
     const options: Intl.DateTimeFormatOptions = {
-      day: "2-digit",
+      day: "numeric",
       month: "short",
       year: "numeric"
     }
 
-    const dateObj = new Date(date)
+    let dateObj: Date
+
+    // Handle YYYYMMDDHHMMSS format (e.g., "20250603000000")
+    if (/^\d{14}$/.test(date)) {
+      const year = parseInt(date.substring(0, 4))
+      const month = parseInt(date.substring(4, 6)) - 1 // Month is 0-indexed in JS Date
+      const day = parseInt(date.substring(6, 8))
+      const hour = parseInt(date.substring(8, 10))
+      const minute = parseInt(date.substring(10, 12))
+      const second = parseInt(date.substring(12, 14))
+
+      dateObj = new Date(year, month, day, hour, minute, second)
+    } else {
+      // Handle standard date formats
+      dateObj = new Date(date)
+    }
+
     if (isNaN(dateObj.getTime())) {
       return "Invalid date"
     }
