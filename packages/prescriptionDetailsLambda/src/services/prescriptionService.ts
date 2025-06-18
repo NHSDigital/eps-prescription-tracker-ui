@@ -165,10 +165,21 @@ export async function processPrescriptionRequest(
       mergedResponse = {message: "Prescription details not found"}
     }
 
+    // return {
+    //   statusCode: 200,
+    //   body: JSON.stringify(mergedResponse),
+    //   headers: formatHeaders(apigeeResponse.headers)
+    // }
+    const responseHeaders = {
+      "Content-Type": "application/json",
+      "Cache-Control": "no-store",
+      ...apigeeResponse.headers as { [key: string]: string }
+    }
+
     return {
       statusCode: 200,
       body: JSON.stringify(mergedResponse),
-      headers: formatHeaders(apigeeResponse.headers)
+      headers: formatHeaders(responseHeaders)
     }
 
   } catch (error) {
