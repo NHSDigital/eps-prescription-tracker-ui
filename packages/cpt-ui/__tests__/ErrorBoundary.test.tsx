@@ -108,7 +108,7 @@ describe("ErrorBoundary", () => {
     )
 
     // Click the Clear Error button
-    const returnHomeLink = getByText("Click here to return to the homepage")
+    const returnHomeLink = getByText("Search for a prescription")
     expect(returnHomeLink).not.toBeNull()
   })
 
