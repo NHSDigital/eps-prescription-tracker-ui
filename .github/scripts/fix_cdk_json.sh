@@ -199,7 +199,7 @@ elif [ "$CDK_APP_NAME" == "StatelessResourcesApp" ]; then
     fix_string_key primaryOidcIssuer "${PRIMARY_OIDC_ISSUER}"
     fix_string_key primaryOidcUserInfoEndpoint "${PRIMARY_OIDC_USERINFO_ENDPOINT}"
     fix_string_key primaryOidcjwksEndpoint "${PRIMARY_OIDC_JWKS_ENDPOINT}"
-
+    fix_boolean_number_key wafAllowGaRunnerConnectivity "${WAF_ALLOW_GA_RUNNER_CONNECTIVITY}"
     fix_string_key webAclAttributeArn "${WEBACL_ATTRIBUTE_ARN}"
 
     if [ "$USE_MOCK_OIDC" == "true" ]; then
