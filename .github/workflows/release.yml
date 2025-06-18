@@ -143,6 +143,8 @@ jobs:
       ROLE_ID: "555254242106"
       LOG_LEVEL: "DEBUG"
       REACT_LOG_LEVEL: "debug"
+      USE_ZONE_APEX: false
+      ROUTE53_EXPORT_NAME: EPS
     secrets:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.DEV_CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_DEPLOY_ROLE }}
@@ -199,6 +201,8 @@ jobs:
       ROLE_ID: "555254242106"
       LOG_LEVEL: "DEBUG"
       REACT_LOG_LEVEL: "debug"
+      USE_ZONE_APEX: false
+      ROUTE53_EXPORT_NAME: EPS
     secrets:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.REF_CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.REF_CLOUD_FORMATION_DEPLOY_ROLE }}
@@ -241,6 +245,8 @@ jobs:
       ROLE_ID: "555254242106"
       LOG_LEVEL: "DEBUG"
       REACT_LOG_LEVEL: "debug"
+      USE_ZONE_APEX: false
+      ROUTE53_EXPORT_NAME: EPS
     secrets:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.QA_CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.QA_CLOUD_FORMATION_DEPLOY_ROLE }}
@@ -278,6 +284,8 @@ jobs:
       LOG_LEVEL: "DEBUG"
       RUN_REGRESSION_TESTS: false
       REACT_LOG_LEVEL: "debug" # should be set to silent before final release
+      USE_ZONE_APEX: true
+      ROUTE53_EXPORT_NAME: CPT
     secrets:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.INT_CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.INT_CLOUD_FORMATION_DEPLOY_ROLE }}
