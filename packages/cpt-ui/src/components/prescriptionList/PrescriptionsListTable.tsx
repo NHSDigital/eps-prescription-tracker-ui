@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 import React from "react"
 import {Tag} from "nhsuk-react-components"
 import "../../styles/PrescriptionTable.scss"
@@ -5,6 +6,8 @@ import {PrescriptionSummary} from "@cpt-ui-common/common-types/src"
 import {PrescriptionsListStrings} from "../../constants/ui-strings/PrescriptionListTabStrings"
 import {getStatusTagColour, getStatusDisplayText, formatDateForPrescriptions} from "@/helpers/statusMetadata"
 import {PRESCRIPTION_LIST_TABLE_TEXT} from "@/constants/ui-strings/PrescriptionListTableStrings"
+import {Link} from "react-router-dom"
+import {FRONTEND_PATHS} from "@/constants/environment"
 
 export interface PrescriptionsListTableProps {
   textContent: PrescriptionsListStrings;
@@ -50,7 +53,10 @@ const PrescriptionsListTable = ({
   ]
 
   const getPrescriptionTypeDisplayText = (
-    prescriptionType: string
+    prescriptionType: string,
+    repeatIssue: number = 1,
+    repeatMax?: number
+
   ): string => {
     switch (prescriptionType) {
       case "0001":
@@ -58,7 +64,7 @@ const PrescriptionsListTable = ({
       case "0002":
         return PRESCRIPTION_LIST_TABLE_TEXT.typeDisplayText.repeat
       case "0003":
-        return PRESCRIPTION_LIST_TABLE_TEXT.typeDisplayText.erd
+        return PRESCRIPTION_LIST_TABLE_TEXT.typeDisplayText.erd.replace("Y", repeatIssue?.toString()).replace("X", repeatMax!.toString())
       default:
         return PRESCRIPTION_LIST_TABLE_TEXT.typeDisplayText.unknown
     }
@@ -84,15 +90,13 @@ const PrescriptionsListTable = ({
           aria-label={PRESCRIPTION_LIST_TABLE_TEXT.sortLabel}
         >
           <span
-            className={`arrow up-arrow ${
-              isActive && direction !== "ascending" ? "hidden-arrow" : isActive ? "selected-arrow" : ""
+            className={`arrow up-arrow ${isActive && direction !== "ascending" ? "hidden-arrow" : isActive ? "selected-arrow" : ""
             }`}
           >
             ▲
           </span>
           <span
-            className={`arrow down-arrow ${
-              isActive && direction !== "descending" ? "hidden-arrow" : isActive ? "selected-arrow" : ""
+            className={`arrow down-arrow ${isActive && direction !== "descending" ? "hidden-arrow" : isActive ? "selected-arrow" : ""
             }`}
           >
             ▼
@@ -119,15 +123,24 @@ const PrescriptionsListTable = ({
     return Number.MIN_SAFE_INTEGER
   }
 
+  const constructLink = (
+    prescriptionId: string,
+    issueNumber?: number
+  ): string => {
+    const prescriptionParam = `prescriptionId=${prescriptionId}`
+    const issueNumberParam = issueNumber ? `&issueNumber=${issueNumber}` : ""
+    return `${FRONTEND_PATHS.PRESCRIPTION_DETAILS_PAGE}?${prescriptionParam}${issueNumberParam}`
+  }
+
   const getSortedItems = () => {
     const sorted = [...formatPrescriptionStatus(initialPrescriptions)]
 
     sorted.sort((a, b) => {
       if (sortConfig.key === "cancellationWarning") {
         const aHasWarning =
-            a.prescriptionPendingCancellation || a.itemsPendingCancellation
+          a.prescriptionPendingCancellation || a.itemsPendingCancellation
         const bHasWarning =
-            b.prescriptionPendingCancellation || b.itemsPendingCancellation
+          b.prescriptionPendingCancellation || b.itemsPendingCancellation
 
         if (aHasWarning === bHasWarning) {
           const aDateTimestamp = getValidDateTimestamp(a.issueDate)
@@ -144,7 +157,7 @@ const PrescriptionsListTable = ({
 
       if (
         sortConfig.key === "statusCode" &&
-            a.statusCode === b.statusCode
+        a.statusCode === b.statusCode
       ) {
         const aDateTimestamp = getValidDateTimestamp(a.issueDate)
         const bDateTimestamp = getValidDateTimestamp(b.issueDate)
@@ -182,7 +195,7 @@ const PrescriptionsListTable = ({
 
     const intro =
       PRESCRIPTION_LIST_TABLE_TEXT.caption[
-        testid as keyof typeof PRESCRIPTION_LIST_TABLE_TEXT.caption
+      testid as keyof typeof PRESCRIPTION_LIST_TABLE_TEXT.caption
       ]
     const sharedText = PRESCRIPTION_LIST_TABLE_TEXT.caption.sharedText
 
@@ -277,7 +290,9 @@ const PrescriptionsListTable = ({
                     >
                       <div>
                         {getPrescriptionTypeDisplayText(
-                          row.prescriptionTreatmentType
+                          row.prescriptionTreatmentType,
+                          row.issueNumber,
+                          row.maxRepeats
                         )}
                       </div>
                     </td>
@@ -334,13 +349,13 @@ const PrescriptionsListTable = ({
                         {row.prescriptionId}
                       </div>
                       <div>
-                        <a
-                          href={`/site/prescription-details?prescriptionId=${row.prescriptionId}`}
+                        <Link
+                          to={constructLink(row.prescriptionId, row.issueNumber)}
                           className="nhsuk-link"
                           data-testid={`view-prescription-link-${row.prescriptionId}`}
                         >
                           {PRESCRIPTION_LIST_TABLE_TEXT.viewPrescription}
-                        </a>
+                        </Link>
                       </div>
                     </td>
                   )
