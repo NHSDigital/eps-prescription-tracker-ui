@@ -13,6 +13,11 @@ jobs:
     outputs:
       commit_message: ${{ steps.commit_message.outputs.commit_message }}
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.BRANCH_NAME }}
+          fetch-depth: 0
       - name: Get Commit message
         id: commit_message
         run: |
