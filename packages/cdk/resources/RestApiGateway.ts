@@ -14,7 +14,7 @@ import {CfnSubscriptionFilter, LogGroup} from "aws-cdk-lib/aws-logs"
 import {Construct} from "constructs"
 import {accessLogFormat} from "./RestApiGateway/accessLogFormat"
 import {IUserPool} from "aws-cdk-lib/aws-cognito"
-// import * as iam from "aws-cdk-lib/aws-iam"
+import * as iam from "aws-cdk-lib/aws-iam"
 export interface RestApiGatewayProps {
   readonly serviceName: string
   readonly stackName: string
@@ -79,19 +79,19 @@ export class RestApiGateway extends Construct {
       managedPolicies: []
     })
 
-    // apiGateway.addToResourcePolicy(
-    //   new iam.PolicyStatement({
-    //     actions: ["execute-api:Invoke"],
-    //     effect: iam.Effect.ALLOW,
-    //     principals: [new iam.AnyPrincipal()],
-    //     resources: [apiGateway.deploymentStage.stageArn + "/*"],
-    //     conditions: {
-    //       StringEquals: {
-    //         "aws:SourceArn": `arn:${props.stackName}:execute-api:${apiGateway.restApiId}/*`
-    //       }
-    //     }
-    //   })
-    // )
+    apiGateway.addToResourcePolicy(
+      new iam.PolicyStatement({
+        actions: ["execute-api:Invoke"],
+        effect: iam.Effect.ALLOW,
+        principals: [new iam.AnyPrincipal()],
+        resources: [apiGateway.deploymentStage.stageArn + "/*"],
+        conditions: {
+          StringEquals: {
+            "aws:SourceArn": `arn:${props.stackName}:execute-api:${apiGateway.restApiId}/*`
+          }
+        }
+      })
+    )
 
     // An authorizer is only relevant for endpoints that need access control.
     // If the userPool is not passed, we know that these endpoints don't care about
