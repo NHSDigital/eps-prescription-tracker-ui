@@ -7,16 +7,20 @@ import {
   MethodLoggingLevel,
   RestApi
 } from "aws-cdk-lib/aws-apigateway"
-import {IRole, Role, ServicePrincipal} from "aws-cdk-lib/aws-iam"
+import {
+  IRole,
+  Role,
+  ServicePrincipal,
+  AnyPrincipal,
+  PolicyDocument,
+  PolicyStatement
+} from "aws-cdk-lib/aws-iam"
 import {IStream} from "aws-cdk-lib/aws-kinesis"
 import {IKey} from "aws-cdk-lib/aws-kms"
 import {CfnSubscriptionFilter, LogGroup} from "aws-cdk-lib/aws-logs"
 import {Construct} from "constructs"
 import {accessLogFormat} from "./RestApiGateway/accessLogFormat"
 import {IUserPool} from "aws-cdk-lib/aws-cognito"
-import {PolicyDocument, PolicyStatement} from "aws-cdk-lib/aws-iam"
-import {AnyPrincipal} from "@aws-cdk/aws-iam"
-import {Token} from "@aws-cdk/core"
 
 export interface RestApiGatewayProps {
   readonly serviceName: string
@@ -67,7 +71,7 @@ export class RestApiGateway extends Construct {
       statements: [
         new PolicyStatement({
           actions: ["execute-api:Invoke"],
-          resources: [`execute-api:${Token.asString(props.stackName)}:/*/prod/*`],
+          resources: [`execute-api:${props.stackName}:/*/prod/*`],
           principals: [new AnyPrincipal()]
         })
       ]
@@ -88,7 +92,8 @@ export class RestApiGateway extends Construct {
       policy: apiPolicy
     })
 
-    apiGateway.latestDeployment?.addLogicalId(Token.asAny(apiPolicy))
+    // apiGateway.latestDeployment?.addLogicalId(Token.asAny(apiPolicy))
+
     const apiGatewayRole = new Role(this, "ApiGatewayRole", {
       assumedBy: new ServicePrincipal("apigateway.amazonaws.com"),
       managedPolicies: []
