@@ -66,6 +66,10 @@ jobs:
 
   release_code:
     needs: [get_issue_number, package_code, get_commit_id]
+    if: |
+      always() &&
+      ! contains(needs.*.result, 'failure') &&
+      ! contains(needs.*.result, 'cancelled')
     uses: ./.github/workflows/release_all_stacks.yml
     with:
       SERVICE_NAME: cpt-ui-pr-${{needs.get_issue_number.outputs.issue_number}}
@@ -108,6 +112,10 @@ jobs:
       APIGEE_PTL_DOHS_API_KEY: ${{ secrets.APIGEE_PTL_DOHS_API_KEY }}
   report_deployed_url:
     needs: [release_code, get_issue_number]
+    if: |
+      always() &&
+      ! contains(needs.*.result, 'failure') &&
+      ! contains(needs.*.result, 'cancelled')
     runs-on: ubuntu-22.04
     steps:
       - name: Report Deployed URL
