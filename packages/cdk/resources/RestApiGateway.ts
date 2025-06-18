@@ -11,9 +11,7 @@ import {
   IRole,
   Role,
   ServicePrincipal,
-  AnyPrincipal,
-  PolicyDocument,
-  PolicyStatement
+  PolicyDocument
 } from "aws-cdk-lib/aws-iam"
 import {IStream} from "aws-cdk-lib/aws-kinesis"
 import {IKey} from "aws-cdk-lib/aws-kms"
@@ -31,6 +29,7 @@ export interface RestApiGatewayProps {
   readonly splunkDeliveryStream: IStream
   readonly splunkSubscriptionFilterRole: IRole
   readonly userPool?: IUserPool
+  readonly resourcePolicy?: PolicyDocument
 }
 
 /**
@@ -47,6 +46,7 @@ export class RestApiGateway extends Construct {
   public readonly apiGatewayRole: Role
   public readonly authorizer?: CognitoUserPoolsAuthorizer
   public readonly stageArn: string
+  public readonly resourcePolicy: PolicyDocument
   oauth2ApiGateway: RestApi
 
   public constructor(scope: Construct, id: string, props: RestApiGatewayProps) {
@@ -67,16 +67,6 @@ export class RestApiGateway extends Construct {
       roleArn: props.splunkSubscriptionFilterRole.roleArn
     })
 
-    const apiPolicy = new PolicyDocument({
-      statements: [
-        new PolicyStatement({
-          actions: ["execute-api:Invoke"],
-          resources: [`execute-api:${props.stackName}:/*/prod/*`],
-          principals: [new AnyPrincipal()]
-        })
-      ]
-    })
-
     const apiGateway = new RestApi(this, "ApiGateway", {
       restApiName: `${props.serviceName}-apigw-${id}`,
       endpointConfiguration: {
@@ -89,7 +79,7 @@ export class RestApiGateway extends Construct {
         loggingLevel: MethodLoggingLevel.INFO,
         metricsEnabled: true
       },
-      policy: apiPolicy
+      policy: props.resourcePolicy
     })
 
     // apiGateway.latestDeployment?.addLogicalId(Token.asAny(apiPolicy))

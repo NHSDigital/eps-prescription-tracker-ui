@@ -37,6 +37,7 @@ import {HostedZone} from "aws-cdk-lib/aws-route53"
 import {Certificate} from "aws-cdk-lib/aws-certificatemanager"
 import {WebACL} from "../resources/WebApplicationFirewall"
 import {CfnWebACLAssociation} from "aws-cdk-lib/aws-wafv2"
+
 export interface StatelessResourcesStackProps extends StackProps {
   readonly serviceName: string
   readonly stackName: string
@@ -366,13 +367,14 @@ export class StatelessResourcesStack extends Stack {
     const apiGatewayOrigin = new RestApiOrigin(apiGateway.apiGateway, {
       customHeaders: {
         "destination-api-apigw-id": apiGateway.apiGateway.restApiId, // for later apigw waf stuff
-        "waf-secret": "blah-blah-blah" // this is a placeholder, you can remove it if not needed
+        "waf-secret": "blah-blah-blah" // placeholder header
       }
     })
 
     const oauth2GatewayOrigin = new RestApiOrigin(oauth2Gateway.apiGateway, {
       customHeaders: {
-        "destination-oauth2-apigw-id": oauth2Gateway.apiGateway.restApiId // for later apigw waf stuff
+        "destination-oauth2-apigw-id": oauth2Gateway.apiGateway.restApiId, // for later apigw waf stuff
+        "waf-secret": "blah-blah-blah" // placeholder header
       }
     })
 
