@@ -63,7 +63,7 @@ export class CloudfrontDistribution extends Construct {
       errorResponses: props.errorResponses
     })
 
-    if (props.shortCloudfrontDomain === "") {
+    if (props.shortCloudfrontDomain === "APEX_DOMAIN") {
       new ARecord(this, "CloudFrontAliasIpv4Record", {
         zone: props.hostedZone,
         target: RecordTarget.fromAlias(new CloudFrontTarget(cloudfrontDistribution))})
