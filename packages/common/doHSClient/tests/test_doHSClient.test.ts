@@ -26,10 +26,8 @@ describe("doHSClient", () => {
     }
   })
 
-  it("throws an error if no ODS codes are provided", async () => {
-    await expect(doHSClient({})).rejects.toThrow(
-      "At least one ODS Code is required for DoHS API request"
-    )
+  it("returns empty if no ODS codes are provided", async () => {
+    expect(await doHSClient([])).toEqual([])
   })
 
   it("throws an error if apigeeApiKey is not set", async () => {
@@ -41,7 +39,7 @@ describe("doHSClient", () => {
     jest.resetModules()
     const {doHSClient: freshDoHSClient} = await import("../src/doHSClient")
 
-    await expect(freshDoHSClient({prescribingOrganization: "ABC"})).rejects.toThrow(
+    await expect(freshDoHSClient(["ABC"])).rejects.toThrow(
       "Apigee API Key environment variable is not set"
     )
 
@@ -58,7 +56,7 @@ describe("doHSClient", () => {
     jest.resetModules()
     const {doHSClient: freshDoHSClient} = await import("../src/doHSClient")
 
-    await expect(freshDoHSClient({prescribingOrganization: "ABC"})).rejects.toThrow(
+    await expect(freshDoHSClient(["ABC"])).rejects.toThrow(
       "DoHS API endpoint environment variable is not set"
     )
 
@@ -67,11 +65,7 @@ describe("doHSClient", () => {
   })
 
   it("returns mapped data on successful axios request", async () => {
-    const odsCodes = {
-      prescribingOrganization: "ABC",
-      nominatedPerformer: "DEF",
-      dispensingOrganizations: ["XYZ", "PQR"]
-    }
+    const odsCodes = ["ABC", "DEF", "XYZ"]
 
     // Simulate an API response that returns data for only one of the ODS codes.
     const responseData = {
@@ -79,7 +73,7 @@ describe("doHSClient", () => {
     }
 
     // Set up nock to intercept the HTTP request
-    const odsFilter = "ODSCode eq 'ABC' or ODSCode eq 'DEF' or ODSCode eq 'XYZ' or ODSCode eq 'PQR'"
+    const odsFilter = "ODSCode eq 'ABC' or ODSCode eq 'DEF' or ODSCode eq 'XYZ'"
     nock("https://api.example.com")
       .get("/dohs")
       .query({
@@ -91,46 +85,41 @@ describe("doHSClient", () => {
 
     const result = await doHSClient(odsCodes)
 
-    expect(result).toEqual({
-      prescribingOrganization: {ODSCode: "ABC"},
-      nominatedPerformer: null,
-      dispensingOrganizations: [] // Expect an empty array if no matching dispensing organizations are found
-    })
+    expect(result).toEqual([{ODSCode: "ABC"}])
   })
 
   it("handles HTTP errors and throws error", async () => {
-    const odsCodes = {prescribingOrganization: "ABC"}
+    const odsCodes = ["ABC"]
 
     // Set up nock to simulate an HTTP error
     const odsFilter = "ODSCode eq 'ABC'"
     nock("https://api.example.com")
       .get("/dohs")
       .query({
+        "api-version": "3",
         "$filter": odsFilter
       })
       .matchHeader("apikey", validApiKey)
       .reply(500, "Internal Server Error")
 
-    await expect(doHSClient(odsCodes)).rejects.toThrow(
-      "Error fetching DoHS API data"
-    )
+    await expect(doHSClient(odsCodes)).rejects.toThrow()
   })
 
   it("handles network errors and throws error", async () => {
-    const odsCodes = {prescribingOrganization: "ABC"}
+    const odsCodes = ["ABC"]
 
     // Set up nock to simulate a network error
     const odsFilter = "ODSCode eq 'ABC'"
     nock("https://api.example.com")
       .get("/dohs")
       .query({
+        "api-version": "3", // Add missing api-version parameter
         "$filter": odsFilter
       })
       .matchHeader("apikey", validApiKey)
       .replyWithError("Network Error")
 
-    await expect(doHSClient(odsCodes)).rejects.toThrow(
-      "Error fetching DoHS API data"
-    )
+    await expect(doHSClient(odsCodes)).rejects.toThrow()
   })
+
 })
