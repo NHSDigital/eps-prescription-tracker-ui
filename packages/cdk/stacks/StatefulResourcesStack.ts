@@ -20,7 +20,6 @@ export interface StatefulResourcesStackProps extends StackProps {
   readonly serviceName: string
   readonly stackName: string
   readonly version: string
-  readonly shortCloudfrontDomain: string
   readonly fullCloudfrontDomain: string
   readonly cognitoCertificate: Certificate
   readonly shortCognitoDomain: string
