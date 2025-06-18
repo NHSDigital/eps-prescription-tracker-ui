@@ -14,7 +14,10 @@ import {CfnSubscriptionFilter, LogGroup} from "aws-cdk-lib/aws-logs"
 import {Construct} from "constructs"
 import {accessLogFormat} from "./RestApiGateway/accessLogFormat"
 import {IUserPool} from "aws-cdk-lib/aws-cognito"
-import * as iam from "aws-cdk-lib/aws-iam"
+import {PolicyDocument, PolicyStatement} from "aws-cdk-lib/aws-iam"
+import {AnyPrincipal} from "@aws-cdk/aws-iam"
+import {Token} from "@aws-cdk/core"
+
 export interface RestApiGatewayProps {
   readonly serviceName: string
   readonly stackName: string
@@ -60,6 +63,16 @@ export class RestApiGateway extends Construct {
       roleArn: props.splunkSubscriptionFilterRole.roleArn
     })
 
+    const apiPolicy = new PolicyDocument({
+      statements: [
+        new PolicyStatement({
+          actions: ["execute-api:Invoke"],
+          resources: [`execute-api:${Token.asString(props.stackName)}:/*/prod/*`],
+          principals: [new AnyPrincipal()]
+        })
+      ]
+    })
+
     const apiGateway = new RestApi(this, "ApiGateway", {
       restApiName: `${props.serviceName}-apigw-${id}`,
       endpointConfiguration: {
@@ -71,27 +84,15 @@ export class RestApiGateway extends Construct {
         accessLogFormat: accessLogFormat(),
         loggingLevel: MethodLoggingLevel.INFO,
         metricsEnabled: true
-      }
+      },
+      policy: apiPolicy
     })
 
+    apiGateway.latestDeployment?.addLogicalId(Token.asAny(apiPolicy))
     const apiGatewayRole = new Role(this, "ApiGatewayRole", {
       assumedBy: new ServicePrincipal("apigateway.amazonaws.com"),
       managedPolicies: []
     })
-
-    apiGateway.addToResourcePolicy(
-      new iam.PolicyStatement({
-        actions: ["execute-api:Invoke"],
-        effect: iam.Effect.ALLOW,
-        principals: [new iam.AnyPrincipal()],
-        resources: [apiGateway.deploymentStage.stageArn + "/*"],
-        conditions: {
-          StringEquals: {
-            "aws:SourceArn": `arn:${props.stackName}:execute-api:${apiGateway.restApiId}/*`
-          }
-        }
-      })
-    )
 
     // An authorizer is only relevant for endpoints that need access control.
     // If the userPool is not passed, we know that these endpoints don't care about
