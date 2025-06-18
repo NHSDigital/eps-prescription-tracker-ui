@@ -7,7 +7,13 @@ import {
   SecurityPolicyProtocol,
   SSLMethod
 } from "aws-cdk-lib/aws-cloudfront"
-import {CnameRecord, IHostedZone} from "aws-cdk-lib/aws-route53"
+import {
+  AaaaRecord,
+  ARecord,
+  IHostedZone,
+  RecordTarget
+} from "aws-cdk-lib/aws-route53"
+import {CloudFrontTarget} from "aws-cdk-lib/aws-route53-targets"
 import {IBucket} from "aws-cdk-lib/aws-s3"
 import {Construct} from "constructs"
 
@@ -57,11 +63,25 @@ export class CloudfrontDistribution extends Construct {
       errorResponses: props.errorResponses
     })
 
-    new CnameRecord(this, "CloudfrontCnameRecord", {
-      recordName: props.shortCloudfrontDomain,
-      zone: props.hostedZone,
-      domainName: cloudfrontDistribution.distributionDomainName
-    })
+    if (props.shortCloudfrontDomain === "APEX_DOMAIN") {
+      new ARecord(this, "CloudFrontAliasIpv4Record", {
+        zone: props.hostedZone,
+        target: RecordTarget.fromAlias(new CloudFrontTarget(cloudfrontDistribution))})
+
+      new AaaaRecord(this, "CloudFrontAliasIpv6Record", {
+        zone: props.hostedZone,
+        target: RecordTarget.fromAlias(new CloudFrontTarget(cloudfrontDistribution))})
+    } else {
+      new ARecord(this, "CloudFrontAliasIpv4Record", {
+        zone: props.hostedZone,
+        recordName: props.shortCloudfrontDomain,
+        target: RecordTarget.fromAlias(new CloudFrontTarget(cloudfrontDistribution))})
+
+      new AaaaRecord(this, "CloudFrontAliasIpv6Record", {
+        zone: props.hostedZone,
+        recordName: props.shortCloudfrontDomain,
+        target: RecordTarget.fromAlias(new CloudFrontTarget(cloudfrontDistribution))})
+    }
 
     // Outputs
     this.distribution = cloudfrontDistribution

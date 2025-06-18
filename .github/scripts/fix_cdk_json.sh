@@ -50,10 +50,16 @@ if [ "${DO_NOT_GET_AWS_EXPORT}" != "true" ]; then
 fi
 
 if [ -z "${EPS_DOMAIN_NAME}" ]; then
-    EPS_DOMAIN_NAME=$(echo "$CF_LONDON_EXPORTS" | jq  -r '.Exports[] | select(.Name == "eps-route53-resources:EPS-domain") | .Value')
+    EPS_DOMAIN_NAME=$(echo "$CF_LONDON_EXPORTS" | \
+        jq \
+        --arg EXPORT_NAME "eps-route53-resources:${ROUTE53_EXPORT_NAME}-domain" \
+        -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
 fi
 if [ -z "${EPS_HOSTED_ZONE_ID}" ]; then
-    EPS_HOSTED_ZONE_ID=$(echo "$CF_LONDON_EXPORTS" | jq -r '.Exports[] | select(.Name == "eps-route53-resources:EPS-ZoneID") | .Value')
+    EPS_HOSTED_ZONE_ID=$(echo "$CF_LONDON_EXPORTS" | \
+        jq \
+        --arg EXPORT_NAME "eps-route53-resources:${ROUTE53_EXPORT_NAME}-ZoneID" \
+        -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
 fi
 if [ -z "${CLOUDFRONT_DISTRIBUTION_ID}" ]; then
     CLOUDFRONT_DISTRIBUTION_ID=$(echo "$CF_LONDON_EXPORTS" | \
@@ -132,7 +138,6 @@ if [ "$CDK_APP_NAME" == "StatefulResourcesApp" ]; then
 
     fix_string_key epsDomainName "${EPS_DOMAIN_NAME}"
     fix_string_key epsHostedZoneId "${EPS_HOSTED_ZONE_ID}"
-
     fix_boolean_number_key allowAutoDeleteObjects "${AUTO_DELETE_OBJECTS}"
     # we may not have cloudfront distribution id if its a first deployment
     if [ -n "${CLOUDFRONT_DISTRIBUTION_ID}" ]; then
@@ -148,6 +153,7 @@ if [ "$CDK_APP_NAME" == "StatefulResourcesApp" ]; then
         fix_string_key rumAppName "${RUM_APP_NAME}"
     fi
     fix_boolean_number_key allowLocalhostAccess "${ALLOW_LOCALHOST_ACCESS}"
+    fix_boolean_number_key useZoneApex "${USE_ZONE_APEX}"
 
 elif [ "$CDK_APP_NAME" == "StatelessResourcesApp" ]; then
     fix_string_key epsDomainName "${EPS_DOMAIN_NAME}"
