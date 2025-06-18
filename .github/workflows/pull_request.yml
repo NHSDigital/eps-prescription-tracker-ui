@@ -8,8 +8,19 @@ env:
   BRANCH_NAME: ${{ github.event.pull_request.head.ref }}
 
 jobs:
+  get_commit_message:
+    runs-on: ubuntu-22.04
+    outputs:
+      commit_message: ${{ steps.commit_message.outputs.commit_message }}
+    steps:
+      - name: Get Commit message
+        id: commit_message
+        run: |
+          echo "commit_message=$(git show -s --format=%s)" >> "$GITHUB_OUTPUT"
+  
   quality_checks:
-    if: ! (contains(github.event.head_commit.message, '#skip-qc'))
+    needs: [get_commit_message]
+    if: ${{ !contains(needs.get_commit_message.outputs.commit_message, '#skip-qc') }}
     uses: NHSDigital/eps-workflow-quality-checks/.github/workflows/quality-checks.yml@v4.0.5
     secrets:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
