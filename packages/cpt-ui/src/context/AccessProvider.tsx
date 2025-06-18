@@ -24,7 +24,9 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
     const allowed_no_role_paths = [
       FRONTEND_PATHS.LOGIN,
       FRONTEND_PATHS.LOGOUT,
-      FRONTEND_PATHS.COOKIES
+      FRONTEND_PATHS.COOKIES,
+      FRONTEND_PATHS.PRIVACY_NOTICE,
+      FRONTEND_PATHS.COOKIES_SELECTED
     ]
 
     if (!auth.isSignedIn && !auth.isSigningIn) {
