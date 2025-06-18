@@ -26,6 +26,8 @@ const useZoneApex: boolean = app.node.tryGetContext("useZoneApex")
 // add cdk-nag to everything
 Aspects.of(app).add(new AwsSolutionsChecks({verbose: true}))
 
+// add tags to everything
+// exclude some resources that take a long time to update tags on
 Tags.of(app).add("serviceName", serviceName)
 Tags.of(app).add("version", version, {
   excludeResourceTypes: [
@@ -35,7 +37,14 @@ Tags.of(app).add("version", version, {
     "AWS::IAM::Role"
   ]
 })
-Tags.of(app).add("commit", commit)
+Tags.of(app).add("commit", commit, {
+  excludeResourceTypes: [
+    "AWS::KMS::Key",
+    "AWS::S3::Bucket",
+    "AWS::DynamoDB::GlobalTable",
+    "AWS::IAM::Role"
+  ]
+})
 Tags.of(app).add("cdkApp", "StatefulApp")
 
 // define the host names we are going to use for everything
