@@ -1,20 +1,18 @@
 import React from "react"
 import {Link} from "react-router-dom"
 import {CookieStrings} from "@/constants/ui-strings/CookieStrings"
-import {isUserLoggedIn} from "@/helpers/cookiesFunctions"
+import {getHomeLink} from "@/helpers/loginFunctions"
+import {useAuth} from "@/context/AuthProvider"
 
 export default function CookieSettingsPage() {
-
-  const getHomeLink = () => {
-    return isUserLoggedIn() ? "/search" : "/login"
-  }
+  const auth = useAuth()
   return (
     <main className="nhsuk-width-container nhsuk-u-margin-top-4">
 
       <nav className="nhsuk-breadcrumb" aria-label="Breadcrumb">
         <ol className="nhsuk-breadcrumb__list">
           <li className="nhsuk-breadcrumb__item">
-            <Link className="nhsuk-breadcrumb__link" to={getHomeLink()}>{CookieStrings.home}</Link>
+            <Link className="nhsuk-breadcrumb__link" to={getHomeLink(auth.isSignedIn)}>{CookieStrings.home}</Link>
           </li>
           <li className="nhsuk-breadcrumb__item">
             <Link className="nhsuk-breadcrumb__link" to="/cookies">{CookieStrings.cookie_policy}</Link>

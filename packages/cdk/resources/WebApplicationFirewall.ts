@@ -9,12 +9,14 @@ export interface WebACLProps {
   readonly rateLimitTransactions: number // Total transactions limit within an evaluation window (seconds)
   readonly rateLimitWindowSeconds?: number // Minimum is 60 seconds, default is 60 seconds.
   readonly githubAllowListIpv4: Array<string>
+  readonly githubAllowListIpv6: Array<string>
   readonly wafAllowGaRunnerConnectivity: boolean
   readonly scope: string
 }
 
 export class WebACL extends Construct {
   public readonly githubAllowListIpv4: wafv2.CfnIPSet
+  public readonly githubAllowListIpv6: wafv2.CfnIPSet
   public readonly wafAllowGaRunnerConnectivity: boolean
   public readonly webAcl: wafv2.CfnWebACL
   public readonly attrArn: string
@@ -28,6 +30,7 @@ export class WebACL extends Construct {
       rateLimitTransactions: number
       rateLimitWindowSeconds: number
       githubAllowListIpv4: Array<string>
+      githubAllowListIpv6: Array<string>
       wafAllowGaRunnerConnectivity: boolean
       allowedHeaders?: Map<string, string>
       scope: string
@@ -45,10 +48,29 @@ export class WebACL extends Construct {
       })
     }
 
+    if (props.wafAllowGaRunnerConnectivity && props.githubAllowListIpv6.length > 0) {
+      this.githubAllowListIpv6 = new wafv2.CfnIPSet(this, "githubAllowListIpv6", {
+        addresses: props.githubAllowListIpv6,
+        ipAddressVersion: "IPV6",
+        scope: props.scope,
+        description: "Allow list IPs that may originate outside of the UK or Crown dependencies.",
+        name: `${props.serviceName}-PermittedGithubActionRunnersIPV6`
+      })
+    }
+
+    if (props.wafAllowGaRunnerConnectivity && props.githubAllowListIpv6.length > 0) {
+      this.githubAllowListIpv6 = new wafv2.CfnIPSet(this, "githubAllowListIpv6", {
+        addresses: props.githubAllowListIpv6,
+        ipAddressVersion: "IPV6",
+        scope: "CLOUDFRONT",
+        description: "Allow list IPs that may originate outside of the UK or Crown dependencies.",
+        name: `${props.serviceName}-PermittedGithubActionRunnersIPV6`
+      })
+    }
+
     const rules: Array<wafv2.CfnWebACL.RuleProperty> = []
     let nextPriority = 0
 
-    // Permit GitHub Actions Runners rule
     if (props.wafAllowGaRunnerConnectivity && props.githubAllowListIpv4.length > 0) {
       rules.push({
         name: "PermitGithubActionsRunnersOutsideUKandCrown",

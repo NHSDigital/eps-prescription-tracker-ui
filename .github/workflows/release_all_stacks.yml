@@ -63,6 +63,12 @@ on:
         type: string
       WAF_ALLOW_GA_RUNNER_CONNECTIVITY:
         type: boolean
+      USE_ZONE_APEX:
+        type: boolean
+        description: If this is set to true, then the website is deployed using name of the apex of the route 53 zone, otherwise it deploys at cpt-ui..
+      ROUTE53_EXPORT_NAME:
+        type: string
+        description: This is the part of the route53 export name to use to identify the route 53 zone where the domain names are created - can be either EPS (for *.national.nhs.uk) or CPT (for prescriptiontracker.nhs.uk)
     secrets:
       CLOUD_FORMATION_DEPLOY_ROLE:
         required: true
@@ -144,6 +150,8 @@ jobs:
       ROLE_ID: ${{ inputs.ROLE_ID }}
       CONFIG_FILE: stateful_resources.json
       WAF_ALLOW_GA_RUNNER_CONNECTIVITY: ${{ inputs.WAF_ALLOW_GA_RUNNER_CONNECTIVITY }}
+      USE_ZONE_APEX: ${{ inputs.USE_ZONE_APEX }}
+      ROUTE53_EXPORT_NAME: ${{ inputs.ROUTE53_EXPORT_NAME }}
     secrets:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}
@@ -193,6 +201,8 @@ jobs:
       JWT_KID: ${{ inputs.JWT_KID }}
       ROLE_ID: ${{ inputs.ROLE_ID }}
       CONFIG_FILE: stateless_resources.json
+      USE_ZONE_APEX: ${{ inputs.USE_ZONE_APEX }}
+      ROUTE53_EXPORT_NAME: ${{ inputs.ROUTE53_EXPORT_NAME }}
     secrets:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}
@@ -300,6 +310,8 @@ jobs:
       useCustomCognitoDomain: ${{ inputs.useCustomCognitoDomain }}
       JWT_KID: ${{ inputs.JWT_KID }}
       CONFIG_FILE: stateful_resources.json
+      USE_ZONE_APEX: ${{ inputs.USE_ZONE_APEX }}
+      ROUTE53_EXPORT_NAME: ${{ inputs.ROUTE53_EXPORT_NAME }}
     secrets:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}

@@ -1,8 +1,11 @@
 import React, {useState, useEffect} from "react"
-import {Link, useNavigate} from "react-router-dom"
+import {useNavigate} from "react-router-dom"
 import {CookieStrings} from "@/constants/ui-strings/CookieStrings"
-import {isUserLoggedIn} from "@/helpers/cookiesFunctions"
+import {getHomeLink} from "@/helpers/loginFunctions"
 import CookieTable, {Cookie} from "@/components/CookieTable"
+import {Breadcrumb} from "nhsuk-react-components"
+import {FRONTEND_PATHS} from "@/constants/environment"
+import {useAuth} from "@/context/AuthProvider"
 
 const CookiePolicyPage = () => {
   const essentialCookies: Array<Cookie> = [
@@ -64,10 +67,6 @@ const CookiePolicyPage = () => {
 
   const navigate = useNavigate()
 
-  const getHomeLink = () => {
-    return isUserLoggedIn() ? "/search" : "/login"
-  }
-
   useEffect(() => {
     if (hasInitialized) {
       return
@@ -101,29 +100,21 @@ const CookiePolicyPage = () => {
 
     window.dispatchEvent(new CustomEvent("cookieChoiceUpdated"))
   }
+  const auth = useAuth()
 
   return (
     <div className="nhsuk-width-container nhsuk-u-margin-top-4">
       <main className="nhsuk-main-wrapper nhsuk-main-wrapper--s" id="main-content" role="main">
-        <nav className="nhsuk-breadcrumb" aria-label="Breadcrumb">
-          <ol className="nhsuk-breadcrumb__list">
-            <li className="nhsuk-breadcrumb__item">
-              <Link className="nhsuk-breadcrumb__link" to={getHomeLink()}>{CookieStrings.home}</Link>
-            </li>
-          </ol>
-          <p className="nhsuk-breadcrumb__back">
-            <Link className="nhsuk-breadcrumb__backlink" to={getHomeLink()}>
-              <span className="nhsuk-u-visually-hidden">
-                {CookieStrings.breadcrumbBack.visuallyHidden}&nbsp;</span>
-              {CookieStrings.home}
-            </Link>
-          </p>
-        </nav>
+        <Breadcrumb>
+          <Breadcrumb.Item href={getHomeLink(auth.isSignedIn)}>
+            {CookieStrings.home}
+          </Breadcrumb.Item>
+        </Breadcrumb>
         <h1 className="nhsuk-heading-xl">{CookieStrings.cptCookies}</h1>
         <p>
-          {CookieStrings.intro.paragraph1.split("privacy policy")[0]}
-          <a href="#">{CookieStrings.intro.privacyPolicyText}</a>
-          {CookieStrings.intro.paragraph1.split("privacy policy")[1]}
+          {CookieStrings.intro.paragraph1.split("privacy notice")[0]}
+          <a href={FRONTEND_PATHS.PRIVACY_NOTICE}>{CookieStrings.intro.privacyPolicyText}</a>
+          {CookieStrings.intro.paragraph1.split("privacy notice")[1]}
         </p>
 
         <h2 className="nhsuk-heading-l">{CookieStrings.whatAreCookies.heading}
