@@ -22,8 +22,6 @@ const commit = app.node.tryGetContext("COMMIT_ID")
 // add cdk-nag to everything
 Aspects.of(app).add(new AwsSolutionsChecks({verbose: true}))
 
-// add tags to everything
-// exclude some resources that take a long time to update tags on
 Tags.of(app).add("serviceName", serviceName)
 Tags.of(app).add("version", version)
 Tags.of(app).add("commit", commit)
