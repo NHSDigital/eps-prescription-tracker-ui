@@ -75,7 +75,7 @@ jobs:
       SERVICE_NAME: cpt-ui-pr-${{needs.get_issue_number.outputs.issue_number}}
       TARGET_ENVIRONMENT: dev-pr
       VERSION_NUMBER: PR-${{ needs.get_issue_number.outputs.issue_number }}
-      COMMIT_ID: ${{ needs.get_commit_id.outputs.commit_id }}
+      COMMIT_ID: "static-pr-commit"
       useMockOidc: true
       primaryOidcIssuer: "https://am.nhsint.auth-ptl.cis2.spineservices.nhs.uk:443/openam/oauth2/realms/root/realms/NHSIdentity/realms/Healthcare"
       primaryOidcAuthorizeEndpoint: "https://am.nhsint.auth-ptl.cis2.spineservices.nhs.uk:443/openam/oauth2/realms/root/realms/NHSIdentity/realms/Healthcare/authorize"
