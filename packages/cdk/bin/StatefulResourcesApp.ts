@@ -21,7 +21,7 @@ const serviceName = app.node.tryGetContext("serviceName")
 const version = app.node.tryGetContext("VERSION_NUMBER")
 const commit = app.node.tryGetContext("COMMIT_ID")
 const useCustomCognitoDomain = app.node.tryGetContext("useCustomCognitoDomain")
-const useBareDomain: boolean = app.node.tryGetContext("useBareDomain")
+const useZoneApex: boolean = app.node.tryGetContext("useZoneApex")
 
 // add cdk-nag to everything
 Aspects.of(app).add(new AwsSolutionsChecks({verbose: true}))
@@ -34,8 +34,8 @@ Tags.of(app).add("cdkApp", "StatefulApp")
 // define the host names we are going to use for everything
 let shortCloudfrontDomain
 let parentCognitoDomain
-if (useBareDomain) {
-  shortCloudfrontDomain = "BARE_DOMAIN"
+if (useZoneApex) {
+  shortCloudfrontDomain = "APEX_DOMAIN" // we need to set this to something for an export to work
   parentCognitoDomain = "auth"
 } else {
   shortCloudfrontDomain = serviceName

@@ -123,7 +123,7 @@ jobs:
       JWT_KID: "eps-cpt-ui-dev"
       ROLE_ID: "555254242106"
       LOG_LEVEL: "DEBUG"
-      useBareDomain: false
+      USE_ZONE_APEX: false
       ROUTE53_EXPORT_NAME: EPS
     secrets:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.DEV_CDK_PULL_IMAGE_ROLE }}
@@ -181,7 +181,7 @@ jobs:
       JWT_KID: "eps-cpt-ui-qa"
       ROLE_ID: "555254242106"
       LOG_LEVEL: "DEBUG"
-      useBareDomain: false
+      USE_ZONE_APEX: false
       ROUTE53_EXPORT_NAME: EPS
     secrets:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.QA_CDK_PULL_IMAGE_ROLE }}

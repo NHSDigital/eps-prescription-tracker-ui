@@ -37,7 +37,7 @@ export class UsCertsStack extends Stack {
     const epsDomainName: string = this.node.tryGetContext("epsDomainName")
     const epsHostedZoneId: string = this.node.tryGetContext("epsHostedZoneId")
     const useCustomCognitoDomain: boolean = this.node.tryGetContext("useCustomCognitoDomain")
-    const useBareDomain: boolean = this.node.tryGetContext("useBareDomain")
+    const useZoneApex: boolean = this.node.tryGetContext("useZoneApex")
 
     // Coerce context and imports to relevant types
     const hostedZone = HostedZone.fromHostedZoneAttributes(this, "hostedZone", {
@@ -47,7 +47,7 @@ export class UsCertsStack extends Stack {
 
     // calculate full domain names
     let fullCloudfrontDomain
-    if (useBareDomain) {
+    if (useZoneApex) {
       fullCloudfrontDomain = epsDomainName
     } else {
       fullCloudfrontDomain = `${props.shortCloudfrontDomain}.${epsDomainName}`
