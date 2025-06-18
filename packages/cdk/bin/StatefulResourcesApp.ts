@@ -27,7 +27,14 @@ const useZoneApex: boolean = app.node.tryGetContext("useZoneApex")
 Aspects.of(app).add(new AwsSolutionsChecks({verbose: true}))
 
 Tags.of(app).add("serviceName", serviceName)
-Tags.of(app).add("version", version)
+Tags.of(app).add("version", version, {
+  excludeResourceTypes: [
+    "AWS::KMS::Key",
+    "AWS::S3::Bucket",
+    "AWS::DynamoDB::GlobalTable",
+    "AWS::IAM::Role"
+  ]
+})
 Tags.of(app).add("commit", commit)
 Tags.of(app).add("cdkApp", "StatefulApp")
 

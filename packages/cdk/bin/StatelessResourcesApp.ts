@@ -23,8 +23,15 @@ const commit = app.node.tryGetContext("COMMIT_ID")
 Aspects.of(app).add(new AwsSolutionsChecks({verbose: true}))
 
 Tags.of(app).add("serviceName", serviceName)
-Tags.of(app).add("version", version)
-Tags.of(app).add("commit", commit)
+Tags.of(app).add("version", version, {
+  excludeResourceTypes: [
+    "AWS::CloudFront::Distribution",
+    "AWS::KMS::Key"
+  ]
+})
+Tags.of(app).add("commit", commit, {
+  excludeResourceTypes: ["AWS::CloudFront::Distribution"]
+})
 Tags.of(app).add("cdkApp", "StatelessApp")
 
 new StatelessResourcesStack(app, "StatelessStack", {
