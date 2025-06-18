@@ -58,16 +58,6 @@ export class WebACL extends Construct {
       })
     }
 
-    if (props.wafAllowGaRunnerConnectivity && props.githubAllowListIpv6.length > 0) {
-      this.githubAllowListIpv6 = new wafv2.CfnIPSet(this, "githubAllowListIpv6", {
-        addresses: props.githubAllowListIpv6,
-        ipAddressVersion: "IPV6",
-        scope: "CLOUDFRONT",
-        description: "Allow list IPs that may originate outside of the UK or Crown dependencies.",
-        name: `${props.serviceName}-PermittedGithubActionRunnersIPV6`
-      })
-    }
-
     const rules: Array<wafv2.CfnWebACL.RuleProperty> = []
     let nextPriority = 0
 

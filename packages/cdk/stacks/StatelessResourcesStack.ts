@@ -92,6 +92,7 @@ export class StatelessResourcesStack extends Stack {
     const webAclAttributeArn = this.node.tryGetContext("webAclAttributeArn")
     const wafAllowGaRunnerConnectivity: boolean = this.node.tryGetContext("wafAllowGaRunnerConnectivity")
     const githubAllowListIpv4 = this.node.tryGetContext("githubAllowListIpv4")
+    const githubAllowListIpv6 = this.node.tryGetContext("githubAllowListIpv4")
 
     // Imports
     const baseImportPath = `${props.serviceName}-stateful-resources`
@@ -281,10 +282,11 @@ export class StatelessResourcesStack extends Stack {
       rateLimitTransactions: 3000, // 50 TPS
       rateLimitWindowSeconds: 60, // Minimum is 60 seconds
       githubAllowListIpv4: githubAllowListIpv4,
+      githubAllowListIpv6: githubAllowListIpv6,
       wafAllowGaRunnerConnectivity: wafAllowGaRunnerConnectivity,
       scope: "REGIONAL",
       allowedHeaders: new Map<string, string>([
-        ["waf-secret", "blah-blah-blah"]
+        ["waf-secret", "blah34"]
       ])
     })
 
@@ -317,10 +319,10 @@ export class StatelessResourcesStack extends Stack {
       webAclArn: webAcl.attrArn
     })
 
-    // new CfnWebACLAssociation(this, "oauth2GatewayAssociation", {
-    //   resourceArn: oauth2Gateway.stageArn,
-    //   webAclArn: webAcl.attrArn
-    // })
+    new CfnWebACLAssociation(this, "oauth2GatewayAssociation", {
+      resourceArn: oauth2Gateway.stageArn,
+      webAclArn: webAcl.attrArn
+    })
 
     // --- Methods & Resources
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -367,14 +369,14 @@ export class StatelessResourcesStack extends Stack {
     const apiGatewayOrigin = new RestApiOrigin(apiGateway.apiGateway, {
       customHeaders: {
         "destination-api-apigw-id": apiGateway.apiGateway.restApiId, // for later apigw waf stuff
-        "waf-secret": "blah-blah-blah" // placeholder header
+        "X-Cloudfront-Origin-Header": "blah34" // placeholder header
       }
     })
 
     const oauth2GatewayOrigin = new RestApiOrigin(oauth2Gateway.apiGateway, {
       customHeaders: {
         "destination-oauth2-apigw-id": oauth2Gateway.apiGateway.restApiId, // for later apigw waf stuff
-        "waf-secret": "blah-blah-blah" // placeholder header
+        "X-Cloudfront-Origin-Header": "blah34" // placeholder header
       }
     })
 
