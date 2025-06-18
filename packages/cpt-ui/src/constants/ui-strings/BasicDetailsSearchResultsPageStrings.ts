@@ -2,7 +2,7 @@ export const SearchResultsPageStrings = {
   GO_BACK: "Go back",
   TITLE: "Search Results",
   RESULTS_COUNT: "We found {count} results.",
-  LOADING: "Loading search results...",
+  LOADING: "Loading search results",
   TABLE: {
     NAME: "Name",
     GENDER: "Gender",

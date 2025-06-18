@@ -48,7 +48,6 @@ export const RUM_CONFIG = {
 
 // Web page paths
 export const FRONTEND_PATHS = {
-  PRESCRIPTION_NOT_FOUND: "/prescription-not-found",
   PRESCRIPTION_LIST_CURRENT: "/prescription-list-current",
   PRESCRIPTION_LIST_FUTURE: "/prescription-list-future",
   PRESCRIPTION_LIST_PAST: "/prescription-list-past",
@@ -63,7 +62,9 @@ export const FRONTEND_PATHS = {
   SEARCH_BY_BASIC_DETAILS: "/search-by-basic-details",
   PRESCRIPTION_DETAILS_PAGE: "/prescription-details",
   PATIENT_SEARCH_RESULTS: "/patient-search-results",
-  PATIENT_NOT_FOUND: "/patient-not-found"
+  PATIENT_NOT_FOUND: "/patient-not-found",
+  PRIVACY_NOTICE: "/privacy-notice",
+  COOKIES_SELECTED: "/cookies-selected"
 }
 
 // Type for environment

@@ -13,12 +13,12 @@ import SearchPrescriptionPage from "@/pages/SearchPrescriptionPage"
 import YourSelectedRolePage from "@/pages/YourSelectedRolePage"
 import NotFoundPage from "@/pages/NotFoundPage"
 import PrescriptionListPage from "@/pages/PrescriptionListPage"
-import PrescriptionNotFoundPage from "@/pages/PrescriptionNotFoundPage"
 import PrescriptionDetailsPage from "@/pages/PrescriptionDetailsPage"
 import EPSCookieBanner from "./components/EPSCookieBanner"
 import CookiePolicyPage from "./pages/CookiePolicyPage"
 import CookieSettingsPage from "./pages/CookieSettingsPage"
 import SearchResultsPage from "@/pages/BasicDetailsSearchResultsPage"
+import PrivacyNoticePage from "./pages/PrivacyNoticePage"
 
 import {FRONTEND_PATHS} from "@/constants/environment"
 
@@ -49,9 +49,9 @@ export default function App() {
                 <Route path={FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT} element={<PrescriptionListPage />} />
                 <Route path={FRONTEND_PATHS.PRESCRIPTION_LIST_FUTURE} element={<PrescriptionListPage />} />
                 <Route path={FRONTEND_PATHS.PRESCRIPTION_LIST_PAST} element={<PrescriptionListPage />} />
-                <Route path={FRONTEND_PATHS.PRESCRIPTION_NOT_FOUND} element={<PrescriptionNotFoundPage />} />
                 <Route path={FRONTEND_PATHS.PRESCRIPTION_DETAILS_PAGE} element={<PrescriptionDetailsPage />} />
                 <Route path={FRONTEND_PATHS.PATIENT_SEARCH_RESULTS} element={<SearchResultsPage />} />
+                <Route path={FRONTEND_PATHS.PRIVACY_NOTICE} element={<PrivacyNoticePage />} />
               </Route>
             </Routes>
           </PrescriptionInformationProvider>

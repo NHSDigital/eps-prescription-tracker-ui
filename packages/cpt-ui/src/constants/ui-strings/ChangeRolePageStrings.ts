@@ -3,10 +3,10 @@ import {FRONTEND_PATHS} from "@/constants/environment"
 export const CHANGE_YOUR_ROLE_PAGE_TEXT = {
   title: "Change your role",
   caption: "Select the role you wish to use to access the service.",
-  titleNoAccess: "No access to the clinical prescription tracking service",
+  titleNoAccess: "No access to the Prescription Tracker",
   captionNoAccess:
-    "None of the roles on your Smartcard or other authenticators allow you to access the clinical " +
-    "prescription tracking service. Contact your Registration Authority representative to obtain the correct code.",
+    "None of the roles on your Smartcard or other authenticators allow you to access the " +
+    "Prescription Tracker. Contact your Registration Authority representative to obtain the correct code.",
   insetText: {
     visuallyHidden: "Information: ",
     message:
@@ -20,7 +20,7 @@ export const CHANGE_YOUR_ROLE_PAGE_TEXT = {
   organisation: "Organisation",
   role: "Role",
   roles_without_access_table_title:
-    "View your roles without access to the clinical prescription tracking service.",
+    "View your roles without access to the Prescription Tracker",
   noOrgName: "NO ORG NAME",
   rolesWithoutAccessHeader: "Your roles without access",
   noODSCode: "No ODS code",
