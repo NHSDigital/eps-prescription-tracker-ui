@@ -11,7 +11,7 @@ export const PRESCRIPTION_LIST_TABLE_TEXT = {
   },
   typeDisplayText: {
     acute: "Acute",
-    repeat: "Repeat Y of X",
+    repeat: "Repeat",
     erd: "eRD Y of X",
     unknown: "Unknown"
   },
@@ -20,7 +20,7 @@ export const PRESCRIPTION_LIST_TABLE_TEXT = {
   sortBy: "Sort By",
   button: ", button",
   none: "None",
-  viewPrescription: "View Prescription",
+  viewPrescription: "View prescription",
   showing: "Showing",
   of: "of",
   sortLabel: "Sort"

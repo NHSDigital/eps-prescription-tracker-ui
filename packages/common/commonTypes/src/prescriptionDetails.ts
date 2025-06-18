@@ -40,10 +40,6 @@ export interface PrescribedItemDetails {
     cancellationReason?: string | null
 }
 
-export interface PrescribedItem {
-    itemDetails: PrescribedItemDetails
-}
-
 // Additional fields for Dispensed Items
 export interface InitiallyPrescribed {
     medicationName: string
@@ -57,13 +53,9 @@ export interface DispensedItemDetails extends PrescribedItemDetails {
     pharmacyStatus?: string | null
 }
 
-export interface DispensedItem {
-    itemDetails: DispensedItemDetails
-}
-
 // Message History and Notifications
 export interface DispenseNotification {
-    ID: string
+    id: string
     medicationName: string
     quantity: string
     dosageInstruction: string
@@ -72,7 +64,7 @@ export interface DispenseNotification {
 export interface MessageHistory {
     messageCode: string
     sentDateTime: string
-    organisationName: string
+    organisationName?: string
     organisationODS: string
     newStatusCode?: string
     dispenseNotification?: Array<DispenseNotification>
@@ -84,19 +76,12 @@ export interface OrganisationSummary {
     odsCode: string
     address?: string
     telephone?: string
+    prescribedFrom?: string
 }
 
 // The prescriber's organisation has an extra property
 export interface PrescriberOrganisationSummary extends OrganisationSummary {
     prescribedFrom?: string
-}
-
-export interface PrescriberOrganisation {
-    organisationSummaryObjective: PrescriberOrganisationSummary
-}
-
-export interface DispenserOrganisation {
-    organisationSummaryObjective: OrganisationSummary
 }
 
 // Complete response
@@ -113,10 +98,10 @@ export interface PrescriptionDetailsResponse {
     isERD?: boolean
     daysSupply: string
     prescriptionPendingCancellation: boolean
-    prescribedItems: Array<PrescribedItem>
-    dispensedItems: Array<DispensedItem>
+    prescribedItems: Array<PrescribedItemDetails>
+    dispensedItems: Array<DispensedItemDetails>
     messageHistory: Array<MessageHistory>
-    prescriberOrganisation: PrescriberOrganisation
-    nominatedDispenser?: DispenserOrganisation
-    currentDispenser?: Array<DispenserOrganisation>
+    prescriberOrganisation: PrescriberOrganisationSummary
+    nominatedDispenser?: OrganisationSummary
+    currentDispenser?: OrganisationSummary
 }
