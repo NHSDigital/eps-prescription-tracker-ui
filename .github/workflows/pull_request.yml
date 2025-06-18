@@ -88,8 +88,8 @@ jobs:
       JWT_KID: "eps-cpt-ui-dev"
       ROLE_ID: "555254242106"
       LOG_LEVEL: "DEBUG"
-      RUN_REGRESSION_TESTS: false
-      useBareDomain: true
+      RUN_REGRESSION_TESTS: true
+      useBareDomain: false
       ROUTE53_EXPORT_NAME: EPS
     secrets:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.DEV_CDK_PULL_IMAGE_ROLE }}
