@@ -2,8 +2,7 @@ import React, {useEffect, useState} from "react"
 
 import {STRINGS} from "@/constants/ui-strings/PatientDetailsBannerStrings"
 import {usePatientDetails} from "@/context/PatientDetailsProvider"
-
-import {PatientDetailsAddress} from "@cpt-ui-common/common-types"
+import {formatDobTextForDisplay} from "@/helpers/formatters"
 
 export default function PatientDetailsBanner() {
   const [nameText, setNameText] = useState("")
@@ -24,16 +23,6 @@ export default function PatientDetailsBanner() {
     // Convert from whatever format, to `XXX XXX XXXX`. remove whitespace first
     const cleaned = input.replace(/\s+/g, "")
     return `${cleaned.slice(0, 3)} ${cleaned.slice(3, 6)} ${cleaned.slice(6)}`
-  }
-
-  const constructAddress = (address: PatientDetailsAddress) => {
-    const units = [address.line1, address.line2, address.city, address.postcode]
-    return units
-      .filter((x) => {
-        return !!x
-      })
-      .join(", ")
-      .toLocaleUpperCase()
   }
 
   useEffect(() => {
@@ -69,7 +58,7 @@ export default function PatientDetailsBanner() {
     }
 
     if (patientDetails.address) {
-      setAddressText(constructAddress(patientDetails.address))
+      setAddressText(patientDetails.address as string)
     } else {
       setAddressText(STRINGS.UNKNOWN)
       allDetailsPresent = false
@@ -96,7 +85,7 @@ export default function PatientDetailsBanner() {
         <div style={{fontWeight: "bold", fontSize: "1.1rem"}}>{nameText}</div>
         <div>{STRINGS.GENDER}: {genderText}</div>
         <div>{STRINGS.NHS_NUMBER}: {nhsNumberText}</div>
-        <div>{STRINGS.DOB}: {dobText}</div>
+        <div>{STRINGS.DOB}: {formatDobTextForDisplay(dobText)}</div>
         <div>{STRINGS.ADDRESS}: {addressText}</div>
       </div>
       {

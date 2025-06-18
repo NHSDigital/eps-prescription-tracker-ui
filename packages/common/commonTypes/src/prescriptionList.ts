@@ -13,7 +13,7 @@ export interface PatientDetails {
   family: string;
   gender: string | null;
   dateOfBirth: string | null;
-  address: PatientDetailsAddress | null;
+  address: PatientDetailsAddress | null | string;
   supersededBy?: string;
 }
 

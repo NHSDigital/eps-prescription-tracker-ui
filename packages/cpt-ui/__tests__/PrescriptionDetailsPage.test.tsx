@@ -215,12 +215,12 @@ describe("PrescriptionDetailsPage", () => {
     const cards = screen.getByTestId("site-details-cards")
     const props = JSON.parse(cards.textContent || "{}")
 
-    expect(props.prescriber).toEqual(payload.prescriberOrganisation.organisationSummaryObjective)
+    expect(props.prescriber).toEqual(payload.prescriberOrganisation)
     if (!payload.currentDispenser || !payload.nominatedDispenser) {
       throw new Error("Expected the payload to be populated")
     }
-    expect(props.dispenser).toEqual(payload.currentDispenser[0].organisationSummaryObjective)
-    expect(props.nominatedDispenser).toEqual(payload.nominatedDispenser.organisationSummaryObjective)
+    expect(props.dispenser).toEqual(payload.currentDispenser)
+    expect(props.nominatedDispenser).toEqual(payload.nominatedDispenser)
   })
 
   it("displays loading message and spinner while fetching data", async () => {
