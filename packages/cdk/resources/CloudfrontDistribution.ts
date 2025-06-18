@@ -63,13 +63,25 @@ export class CloudfrontDistribution extends Construct {
       errorResponses: props.errorResponses
     })
 
-    new ARecord(this, "CloudFrontAliasIpv4Record", {
-      zone: props.hostedZone,
-      target: RecordTarget.fromAlias(new CloudFrontTarget(cloudfrontDistribution))})
+    if (props.shortCloudfrontDomain === "") {
+      new ARecord(this, "CloudFrontAliasIpv4Record", {
+        zone: props.hostedZone,
+        target: RecordTarget.fromAlias(new CloudFrontTarget(cloudfrontDistribution))})
 
-    new AaaaRecord(this, "CloudFrontAliasIpv6Record", {
-      zone: props.hostedZone,
-      target: RecordTarget.fromAlias(new CloudFrontTarget(cloudfrontDistribution))})
+      new AaaaRecord(this, "CloudFrontAliasIpv6Record", {
+        zone: props.hostedZone,
+        target: RecordTarget.fromAlias(new CloudFrontTarget(cloudfrontDistribution))})
+    } else {
+      new ARecord(this, "CloudFrontAliasIpv4Record", {
+        zone: props.hostedZone,
+        recordName: props.shortCloudfrontDomain,
+        target: RecordTarget.fromAlias(new CloudFrontTarget(cloudfrontDistribution))})
+
+      new AaaaRecord(this, "CloudFrontAliasIpv6Record", {
+        zone: props.hostedZone,
+        recordName: props.shortCloudfrontDomain,
+        target: RecordTarget.fromAlias(new CloudFrontTarget(cloudfrontDistribution))})
+    }
 
     // Outputs
     this.distribution = cloudfrontDistribution
