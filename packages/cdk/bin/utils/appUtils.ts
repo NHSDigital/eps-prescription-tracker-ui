@@ -35,3 +35,11 @@ export const addCfnGuardMetadata = (stack: Stack, path: string, childPath: strin
     )
   }
 }
+
+export const tagExclusions = [
+  "AWS::KMS::Key",
+  "AWS::S3::Bucket",
+  "AWS::DynamoDB::GlobalTable",
+  "AWS::IAM::Role",
+  "AWS::CloudFront::Distribution"
+]

@@ -1,7 +1,7 @@
 import {App, Aspects, Tags} from "aws-cdk-lib"
 import {AwsSolutionsChecks} from "cdk-nag"
 
-import {addCfnGuardMetadata} from "./utils/appUtils"
+import {addCfnGuardMetadata, tagExclusions} from "./utils/appUtils"
 import {UsCertsStack} from "../stacks/UsCertsStack"
 import {StatefulResourcesStack} from "../stacks/StatefulResourcesStack"
 import fs from "fs"
@@ -30,20 +30,10 @@ Aspects.of(app).add(new AwsSolutionsChecks({verbose: true}))
 // exclude some resources that take a long time to update tags on
 Tags.of(app).add("serviceName", serviceName)
 Tags.of(app).add("version", version, {
-  excludeResourceTypes: [
-    "AWS::KMS::Key",
-    "AWS::S3::Bucket",
-    "AWS::DynamoDB::GlobalTable",
-    "AWS::IAM::Role"
-  ]
+  excludeResourceTypes: tagExclusions
 })
 Tags.of(app).add("commit", commit, {
-  excludeResourceTypes: [
-    "AWS::KMS::Key",
-    "AWS::S3::Bucket",
-    "AWS::DynamoDB::GlobalTable",
-    "AWS::IAM::Role"
-  ]
+  excludeResourceTypes: tagExclusions
 })
 Tags.of(app).add("cdkApp", "StatefulApp")
 

@@ -3,6 +3,7 @@ import {AwsSolutionsChecks} from "cdk-nag"
 
 import {StatelessResourcesStack} from "../stacks/StatelessResourcesStack"
 import fs from "fs"
+import {tagExclusions} from "./utils/appUtils"
 
 // read the config in
 const configFileName = process.env["CONFIG_FILE_NAME"]
@@ -26,16 +27,10 @@ Aspects.of(app).add(new AwsSolutionsChecks({verbose: true}))
 // exclude some resources that take a long time to update tags on
 Tags.of(app).add("serviceName", serviceName)
 Tags.of(app).add("version", version, {
-  excludeResourceTypes: [
-    "AWS::CloudFront::Distribution",
-    "AWS::KMS::Key"
-  ]
+  excludeResourceTypes: tagExclusions
 })
 Tags.of(app).add("commit", commit, {
-  excludeResourceTypes: [
-    "AWS::CloudFront::Distribution",
-    "AWS::KMS::Key"
-  ]
+  excludeResourceTypes: tagExclusions
 })
 Tags.of(app).add("cdkApp", "StatelessApp")
 
