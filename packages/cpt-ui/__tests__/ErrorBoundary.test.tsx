@@ -55,8 +55,8 @@ describe("ErrorBoundary", () => {
       </AwsRumContext.Provider>
     )
 
-    expect(getByText("Something went wrong.")).toBeInTheDocument()
-    expect(getByText("Click here to return to the homepage")).toBeInTheDocument()
+    expect(getByText("Sorry, there is a problem")).toBeInTheDocument()
+    expect(getByText("Search for a prescription")).toBeInTheDocument()
   })
 
   test("records error with AwsRum when available", () => {
