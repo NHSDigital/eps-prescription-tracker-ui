@@ -226,3 +226,5 @@ else
     echo "unknown cdk app name"
     exit 1
 fi
+
+cat "$OUTPUT_FILE_NAME"
