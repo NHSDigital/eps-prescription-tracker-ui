@@ -31,7 +31,7 @@ export default function CookieSettingsPage() {
         <div className="nhsuk-grid-column-full">
           <h1 className="nhsuk-heading-xl">{CookieStrings.savedCookieSettings}</h1>
 
-          <p>{CookieStrings.saveSettings}.</p>
+          <p>{CookieStrings.saveSettings}</p>
           <p>{CookieStrings.questionSaveSettings}</p>
 
           <ul>
