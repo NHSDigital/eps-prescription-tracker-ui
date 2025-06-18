@@ -1,5 +1,5 @@
 # Electronic Prescription Service Prescription Tracker UI
-
+trigger build
 ![Build](https://github.com/NHSDigital/eps-prescription-tracker-uii/workflows/release/badge.svg?branch=main)
 
 This is the code for the Prescription Tracker UI.
