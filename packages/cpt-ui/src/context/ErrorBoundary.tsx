@@ -76,12 +76,12 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
     if (this.state.hasError) {
       // Something has gone wrong so we return some really simple HTML with the error reference on it
       const template = `
-          <h1>Something went wrong.</h1>
+          <h1>Sorry, there is a problem</h1>
           <p>
-          Please contact EPS support with this reference <<EPS_TRACE_ID>>
+          Contact our Live Services team at ssd.nationalservicedesk@nhs.net with the reference <<EPS_TRACE_ID>>
           </p>
           <p>
-          <a href="/">Click here to return to the homepage</a>
+          <a href="/">Search for a prescription</a>
           </p>
       `
       if (this.state.errorTraceId) {
