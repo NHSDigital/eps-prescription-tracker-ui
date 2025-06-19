@@ -53,7 +53,7 @@ export class CloudfrontDistribution extends Construct {
       domainNames: [props.fullCloudfrontDomain],
       certificate: props.cloudfrontCert,
       httpVersion: HttpVersion.HTTP2_AND_3,
-      minimumProtocolVersion: SecurityPolicyProtocol.TLS_V1_2_2018, // set to 2018 but we may want 2019 or 2021
+      minimumProtocolVersion: SecurityPolicyProtocol.TLS_V1_2_2021,
       sslSupportMethod: SSLMethod.SNI,
       publishAdditionalMetrics: true,
       enableLogging: true,
