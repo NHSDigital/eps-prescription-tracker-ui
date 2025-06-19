@@ -61,6 +61,8 @@ on:
         type: string
       ROLE_ID:
         type: string
+      WAF_ALLOW_GA_RUNNER_CONNECTIVITY:
+        type: boolean
       USE_ZONE_APEX:
         type: boolean
         description: If this is set to true, then the website is deployed using name of the apex of the route 53 zone, otherwise it deploys at cpt-ui..
@@ -504,7 +506,6 @@ jobs:
 
   update_github_pages:
     runs-on: ubuntu-22.04
-    environment: ${{ inputs.TARGET_ENVIRONMENT }}
     if: ${{ always() && !failure() && !cancelled() }}
     needs: [release_all_code]
     permissions:
