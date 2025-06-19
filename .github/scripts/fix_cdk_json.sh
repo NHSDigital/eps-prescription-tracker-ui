@@ -64,10 +64,6 @@ if [ "${DO_NOT_GET_AWS_EXPORT}" != "true" ]; then
     CF_US_EXPORTS=$(aws cloudformation list-exports --region us-east-1 --output json)
 fi
 
-if [ -z "${VPC_ID}" ]; then
-    VPC_ID=$(echo "$CF_LONDON_EXPORTS" | jq  -r '.Exports[] | select(.Name == "vpc-resources:VpcId") | .Value')
-fi
-
 if [ -z "${EPS_DOMAIN_NAME}" ]; then
     EPS_DOMAIN_NAME=$(echo "$CF_LONDON_EXPORTS" | jq  -r '.Exports[] | select(.Name == "eps-route53-resources:EPS-domain") | .Value')
 fi

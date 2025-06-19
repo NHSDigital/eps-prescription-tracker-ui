@@ -7,12 +7,7 @@ import {
   MethodLoggingLevel,
   RestApi
 } from "aws-cdk-lib/aws-apigateway"
-import {
-  IRole,
-  Role,
-  ServicePrincipal,
-  PolicyDocument
-} from "aws-cdk-lib/aws-iam"
+import {IRole, Role, ServicePrincipal} from "aws-cdk-lib/aws-iam"
 import {IStream} from "aws-cdk-lib/aws-kinesis"
 import {IKey} from "aws-cdk-lib/aws-kms"
 import {CfnSubscriptionFilter, LogGroup} from "aws-cdk-lib/aws-logs"
@@ -29,7 +24,6 @@ export interface RestApiGatewayProps {
   readonly splunkDeliveryStream: IStream
   readonly splunkSubscriptionFilterRole: IRole
   readonly userPool?: IUserPool
-  readonly resourcePolicy?: PolicyDocument
 }
 
 /**
@@ -46,7 +40,6 @@ export class RestApiGateway extends Construct {
   public readonly apiGatewayRole: Role
   public readonly authorizer?: CognitoUserPoolsAuthorizer
   public readonly stageArn: string
-  public readonly resourcePolicy: PolicyDocument
   oauth2ApiGateway: RestApi
 
   public constructor(scope: Construct, id: string, props: RestApiGatewayProps) {
@@ -78,8 +71,7 @@ export class RestApiGateway extends Construct {
         accessLogFormat: accessLogFormat(),
         loggingLevel: MethodLoggingLevel.INFO,
         metricsEnabled: true
-      },
-      policy: props.resourcePolicy
+      }
     })
 
     const apiGatewayRole = new Role(this, "ApiGatewayRole", {
