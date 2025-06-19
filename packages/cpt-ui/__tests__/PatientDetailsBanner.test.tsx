@@ -10,7 +10,6 @@ import {STRINGS} from "@/constants/ui-strings/PatientDetailsBannerStrings"
 
 import {MockPatientDetailsProvider} from "../__mocks__/MockPatientDetailsProvider"
 
-// Example patient data
 // Shared address mocks
 const fullAddress: PatientDetailsAddress = {
   line1: "55 Oak Street",
@@ -36,7 +35,6 @@ const basePatient: PatientDetails = {
   address: fullAddress
 }
 
-// Reuse with overrides
 const completeDetails = basePatient
 
 const minimumDetails = {
