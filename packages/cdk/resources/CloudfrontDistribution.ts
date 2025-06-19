@@ -33,6 +33,8 @@ export interface CloudfrontDistributionProps {
   readonly fullCloudfrontDomain: string
   readonly cloudfrontLoggingBucket: IBucket
   readonly cloudfrontCert: ICertificate
+  readonly webAclAttributeArn: string
+  readonly wafAllowGaRunnerConnectivity: boolean
 }
 
 /**
@@ -51,7 +53,7 @@ export class CloudfrontDistribution extends Construct {
       domainNames: [props.fullCloudfrontDomain],
       certificate: props.cloudfrontCert,
       httpVersion: HttpVersion.HTTP2_AND_3,
-      minimumProtocolVersion: SecurityPolicyProtocol.TLS_V1_2_2018, // set to 2018 but we may want 2019 or 2021
+      minimumProtocolVersion: SecurityPolicyProtocol.TLS_V1_2_2021,
       sslSupportMethod: SSLMethod.SNI,
       publishAdditionalMetrics: true,
       enableLogging: true,
@@ -60,7 +62,11 @@ export class CloudfrontDistribution extends Construct {
       logIncludesCookies: true, // may actually want to be false, don't know if it includes names of cookies or contents
       defaultBehavior: props.defaultBehavior,
       additionalBehaviors: props.additionalBehaviors,
-      errorResponses: props.errorResponses
+      errorResponses: props.errorResponses,
+      geoRestriction: {
+        locations: props.wafAllowGaRunnerConnectivity ? ["GB", "JE", "GG", "IM", "US"] : ["GB", "JE", "GG", "IM"],
+        restrictionType: "whitelist"
+      }
     })
 
     if (props.shortCloudfrontDomain === "APEX_DOMAIN") {

@@ -87,6 +87,8 @@ export class StatelessResourcesStack extends Stack {
     const jwtKid: string = this.node.tryGetContext("jwtKid")
     const roleId: string = this.node.tryGetContext("roleId")
     const allowLocalhostAccess: boolean = this.node.tryGetContext("allowLocalhostAccess")
+    const webAclAttributeArn = this.node.tryGetContext("webAclAttributeArn")
+    const wafAllowGaRunnerConnectivity: boolean = this.node.tryGetContext("wafAllowGaRunnerConnectivity")
 
     // Imports
     const baseImportPath = `${props.serviceName}-stateful-resources`
@@ -406,7 +408,9 @@ export class StatelessResourcesStack extends Stack {
           responsePagePath: "/404.html",
           ttl: Duration.seconds(10)
         }
-      ]
+      ],
+      webAclAttributeArn: webAclAttributeArn,
+      wafAllowGaRunnerConnectivity: wafAllowGaRunnerConnectivity
     })
 
     // Outputs
