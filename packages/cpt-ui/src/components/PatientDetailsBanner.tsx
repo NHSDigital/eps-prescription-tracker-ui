@@ -59,7 +59,15 @@ export default function PatientDetailsBanner() {
     }
 
     if (patientDetails.address) {
-      setAddressText(patientDetails.address as string)
+      if (typeof patientDetails.address === "string") {
+        setAddressText(patientDetails.address as string)
+      } else {
+        const address = patientDetails.address.line1 + ", " +
+          patientDetails.address.line2 + ", " +
+          patientDetails.address.city + ", " +
+          patientDetails.address.postcode
+        setAddressText(address)
+      }
     } else {
       setAddressText(STRINGS.UNKNOWN)
       allDetailsPresent = false
