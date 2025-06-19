@@ -64,6 +64,8 @@ on:
       REACT_LOG_LEVEL:
         required: true
         type: string
+      WAF_ALLOW_GA_RUNNER_CONNECTIVITY:
+        type: boolean
       USE_ZONE_APEX:
         type: boolean
         description: If this is set to true, then the website is deployed using name of the apex of the route 53 zone, otherwise it deploys at cpt-ui..
@@ -150,6 +152,7 @@ jobs:
       JWT_KID: ${{ inputs.JWT_KID }}
       ROLE_ID: ${{ inputs.ROLE_ID }}
       CONFIG_FILE: stateful_resources.json
+      WAF_ALLOW_GA_RUNNER_CONNECTIVITY: ${{ inputs.WAF_ALLOW_GA_RUNNER_CONNECTIVITY }}
       USE_ZONE_APEX: ${{ inputs.USE_ZONE_APEX }}
       ROUTE53_EXPORT_NAME: ${{ inputs.ROUTE53_EXPORT_NAME }}
     secrets:
@@ -202,6 +205,7 @@ jobs:
       JWT_KID: ${{ inputs.JWT_KID }}
       ROLE_ID: ${{ inputs.ROLE_ID }}
       CONFIG_FILE: stateless_resources.json
+      WAF_ALLOW_GA_RUNNER_CONNECTIVITY: ${{ inputs.WAF_ALLOW_GA_RUNNER_CONNECTIVITY }}
       USE_ZONE_APEX: ${{ inputs.USE_ZONE_APEX }}
       ROUTE53_EXPORT_NAME: ${{ inputs.ROUTE53_EXPORT_NAME }}
     secrets:
@@ -313,6 +317,7 @@ jobs:
       CONFIG_FILE: stateful_resources.json
       USE_ZONE_APEX: ${{ inputs.USE_ZONE_APEX }}
       ROUTE53_EXPORT_NAME: ${{ inputs.ROUTE53_EXPORT_NAME }}
+      WAF_ALLOW_GA_RUNNER_CONNECTIVITY: ${{ inputs.WAF_ALLOW_GA_RUNNER_CONNECTIVITY }}
     secrets:
       CDK_PULL_IMAGE_ROLE: ${{ secrets.CDK_PULL_IMAGE_ROLE }}
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}
@@ -321,7 +326,6 @@ jobs:
 
   update_github_pages:
     runs-on: ubuntu-22.04
-    environment: ${{ inputs.TARGET_ENVIRONMENT }}
     if: ${{ always() && !failure() && !cancelled() }}
     needs: [release_stateful_resources, release_stateless_resources, rerelease_stateful_resources, deploy_website_content, update_cloudfront_kvs]
     permissions:
