@@ -79,6 +79,24 @@ export class WebACL extends Construct {
       })
     }
 
+    if (props.wafAllowGaRunnerConnectivity && props.githubAllowListIpv6.length > 0) {
+      rules.push({
+        name: "PermitGithubActionsRunnersOutsideUKandCrownIPv6",
+        priority: nextPriority++,
+        action: {allow: {}},
+        statement: {
+          ipSetReferenceStatement: {
+            arn: this.githubAllowListIpv6.attrArn
+          }
+        },
+        visibilityConfig: {
+          sampledRequestsEnabled: false,
+          cloudWatchMetricsEnabled: true,
+          metricName: `${props.serviceName}-PermitGithubActionsRunnersOutsideUKandCrownIPv6`
+        }
+      })
+    }
+
     // Permit Allowed Headers Only rule (negated OR for each header)
     if (props.allowedHeaders && props.allowedHeaders.size > 0) {
       for (const [headerName, headerValue] of props.allowedHeaders.entries()) {
