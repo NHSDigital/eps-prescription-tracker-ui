@@ -123,5 +123,14 @@
 
 .nhsuk-header__transactional-service-name--link:hover {
   text-decoration: underline;
-  text-decoration-color: white;
+  text-decoration-color: #FFFFFF;
+}
+
+.combined-logo-and-service-name:hover .nhsuk-logo {
+  box-shadow: 0 0 0 4px #003d82;
+}
+
+.combined-logo-and-service-name:hover .nhsuk-header__transactional-service-name--link {
+  text-decoration: underline;
+  text-decoration-color: #FFFFFF;
 }

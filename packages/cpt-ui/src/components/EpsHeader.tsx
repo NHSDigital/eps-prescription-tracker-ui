@@ -95,6 +95,7 @@ export default function EpsHeader() {
           <Link
             to={FRONTEND_PATHS.LOGIN}
             onClick={redirectToLogin}
+            className="combined-logo-and-service-name"
             style={{
               display: "flex"
             }}
