@@ -156,11 +156,6 @@ export async function processPrescriptionRequest(
     try {
       const mergedResponse = mergePrescriptionDetails(apigeeResponse.data, doHSData)
 
-      // return {
-      //   statusCode: 200,
-      //   body: JSON.stringify(mergedResponse),
-      //   headers: formatHeaders(apigeeResponse.headers)
-      // }
       const responseHeaders = {
         "Content-Type": "application/json",
         "Cache-Control": "no-store",

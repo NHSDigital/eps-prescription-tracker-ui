@@ -12,13 +12,6 @@ export const INTERNAL_ERROR_RESPONSE_BODY = {
   message: "A system error has occurred"
 }
 
-// const code = (statusCode: number) => ({
-//   body: (body: object) => ({
-//     statusCode,
-//     body: JSON.stringify(body),
-//     headers: headerUtils.formatHeaders({"Content-Type": "application/json"})
-//   })
-// })
 const code = (statusCode: number) => ({
   body: (body: object) => ({
     statusCode,
