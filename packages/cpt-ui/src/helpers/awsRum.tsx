@@ -9,7 +9,10 @@ export class CptAwsRum {
       let telemetries: Array<Telemetry> = RUM_CONFIG.TELEMETRIES
       if (telemetries.includes("http")) {
         telemetries = telemetries.filter(item => item !== "http")
-        telemetries.push(["http", {addXRayTraceIdHeader: true}])
+        telemetries.push(["http", {
+          addXRayTraceIdHeader: true,
+          recordAllRequests: true
+        }])
       }
       const config: AwsRumConfig = {
         sessionSampleRate: RUM_CONFIG.SESSION_SAMPLE_RATE,
