@@ -58,8 +58,10 @@ export default function PatientDetailsBanner() {
     }
 
     if (patientDetails.address) {
-      setAddressText(patientDetails.address as string)
-    } else {
+      const {line1, line2, city, postcode} = patientDetails.address
+      const fullAddress = [line1, line2, city, postcode].filter(Boolean).join(", ")
+      setAddressText(fullAddress)
+    }else {
       setAddressText(STRINGS.UNKNOWN)
       allDetailsPresent = false
     }
