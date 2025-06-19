@@ -185,6 +185,7 @@ if [ "$CDK_APP_NAME" == "StatefulResourcesApp" ]; then
         fix_string_key rumAppName "${RUM_APP_NAME}"
     fi
     fix_boolean_number_key allowLocalhostAccess "${ALLOW_LOCALHOST_ACCESS}"
+    fix_boolean_number_key useZoneApex "${USE_ZONE_APEX}"
 
 elif [ "$CDK_APP_NAME" == "StatelessResourcesApp" ]; then
     fix_string_key epsDomainName "${EPS_DOMAIN_NAME}"
