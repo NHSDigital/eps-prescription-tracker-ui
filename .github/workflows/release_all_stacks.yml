@@ -91,6 +91,9 @@ jobs:
   release_all_code:
     runs-on: ubuntu-22.04
     environment: ${{ inputs.TARGET_ENVIRONMENT }}
+    permissions:
+      id-token: write
+      contents: write
     steps:
       - name: Checkout local github actions
         uses: actions/checkout@v4
