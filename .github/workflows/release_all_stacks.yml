@@ -309,8 +309,6 @@ jobs:
       - name: fix cdk.json for deployment for stateless stack
         run: |
           ./.github/scripts/fix_cdk_json.sh .build/stateless_resources.json
-          echo "******"
-          cat .build/stateless_resources.json
         env:
           SERVICE_NAME: ${{ inputs.SERVICE_NAME }}
           VERSION_NUMBER: "${{ inputs.VERSION_NUMBER }}"
@@ -436,8 +434,6 @@ jobs:
         if: ${{ steps.check_first_deployment.outputs.FIRST_DEPLOYMENT == 'true' }}
         run: |
           ./.github/scripts/fix_cdk_json.sh .build/stateful_resources.json
-          echo "******"
-          cat .build/stateful_resources.json
         env:
           SERVICE_NAME: ${{ inputs.SERVICE_NAME }}
           VERSION_NUMBER: "${{ inputs.VERSION_NUMBER }}"
