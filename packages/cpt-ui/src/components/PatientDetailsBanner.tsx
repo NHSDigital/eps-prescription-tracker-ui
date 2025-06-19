@@ -3,6 +3,7 @@ import React, {useEffect, useState} from "react"
 import {STRINGS} from "@/constants/ui-strings/PatientDetailsBannerStrings"
 import {usePatientDetails} from "@/context/PatientDetailsProvider"
 import {formatDobTextForDisplay} from "@/helpers/formatters"
+import {PatientDetailsAddress} from "@cpt-ui-common/common-types/src/prescriptionList"
 
 export default function PatientDetailsBanner() {
   const [nameText, setNameText] = useState("")
@@ -58,7 +59,7 @@ export default function PatientDetailsBanner() {
     }
 
     if (patientDetails.address) {
-      const {line1, line2, city, postcode} = patientDetails.address
+      const {line1, line2, city, postcode} = patientDetails.address as PatientDetailsAddress
       const fullAddress = [line1, line2, city, postcode].filter(Boolean).join(", ")
       setAddressText(fullAddress)
     }else {
