@@ -8,18 +8,11 @@ env:
   BRANCH_NAME: ${{ github.event.pull_request.head.ref }}
 
 jobs:
-  # quality_checks:
-  #   uses: NHSDigital/eps-workflow-quality-checks/.github/workflows/quality-checks.yml@v4.0.5
-  #   secrets:
-  #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
   quality_checks:
-    runs-on: ubuntu-22.04
-    steps:
-      - name: temp
-        run: |
-          echo "not running quality checks"
+    uses: NHSDigital/eps-workflow-quality-checks/.github/workflows/quality-checks.yml@v4.0.5
+    secrets:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
-  
   pr_title_format_check:
     uses: ./.github/workflows/pr_title_check.yml
 
@@ -95,7 +88,7 @@ jobs:
       JWT_KID: "eps-cpt-ui-dev"
       ROLE_ID: "555254242106"
       LOG_LEVEL: "DEBUG"
-      RUN_REGRESSION_TESTS: false
+      RUN_REGRESSION_TESTS: true
       WAF_ALLOW_GA_RUNNER_CONNECTIVITY: true
       USE_ZONE_APEX: false
       ROUTE53_EXPORT_NAME: EPS

@@ -82,8 +82,6 @@ export class RestApiGateway extends Construct {
       policy: props.resourcePolicy
     })
 
-    // apiGateway.latestDeployment?.addLogicalId(Token.asAny(apiPolicy))
-
     const apiGatewayRole = new Role(this, "ApiGatewayRole", {
       assumedBy: new ServicePrincipal("apigateway.amazonaws.com"),
       managedPolicies: []
