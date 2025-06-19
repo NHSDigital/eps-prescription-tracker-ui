@@ -21,6 +21,20 @@ const serviceName = app.node.tryGetContext("serviceName")
 const version = app.node.tryGetContext("VERSION_NUMBER")
 const commit = app.node.tryGetContext("COMMIT_ID")
 const useCustomCognitoDomain = app.node.tryGetContext("useCustomCognitoDomain")
+let githubAllowListIpv4 = app.node.tryGetContext("githubAllowListIpv4")
+if (typeof githubAllowListIpv4 === "string") {
+  githubAllowListIpv4 = githubAllowListIpv4.split(",")
+} else if (!Array.isArray(githubAllowListIpv4)) {
+  githubAllowListIpv4 = []
+}
+
+let githubAllowListIpv6 = app.node.tryGetContext("githubAllowListIpv6")
+if (typeof githubAllowListIpv6 === "string") {
+  githubAllowListIpv6 = githubAllowListIpv6.split(",")
+} else if (!Array.isArray(githubAllowListIpv6)) {
+  githubAllowListIpv6 = []
+}
+const wafAllowGaRunnerConnectivity = app.node.tryGetContext("wafAllowGaRunnerConnectivity")
 const useZoneApex: boolean = app.node.tryGetContext("useZoneApex")
 
 // add cdk-nag to everything
@@ -60,7 +74,10 @@ const UsCerts = new UsCertsStack(app, "UsCertsStack", {
   version: version,
   shortCloudfrontDomain: shortCloudfrontDomain,
   shortCognitoDomain: shortCognitoDomain,
-  parentCognitoDomain: parentCognitoDomain
+  parentCognitoDomain: parentCognitoDomain,
+  githubAllowListIpv4: githubAllowListIpv4,
+  githubAllowListIpv6: githubAllowListIpv6,
+  wafAllowGaRunnerConnectivity: wafAllowGaRunnerConnectivity
 })
 
 const StatefulResources = new StatefulResourcesStack(app, "StatefulStack", {
