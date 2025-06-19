@@ -228,6 +228,7 @@ ROLE_ID=$(echo "$CF_LONDON_EXPORTS" | \
     jq \
     --arg EXPORT_NAME "${SERVICE_NAME}-stateless-resources:local:roleId" \
     -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+USE_ZONE_APEX=false
 
 # export all the vars so they can be picked up by external programs
 export SERVICE_NAME
@@ -300,6 +301,7 @@ export APIGEE_PERSONAL_DEMOGRAPHICS_ENDPOINT
 export APIGEE_DOHS_ENDPOINT
 export JWT_KID
 export ROLE_ID
+export USE_ZONE_APEX
 
 # variables needed for StatefulResourcesApp
 CDK_APP_NAME=StatefulResourcesApp
