@@ -18,6 +18,7 @@ import EPSCookieBanner from "./components/EPSCookieBanner"
 import CookiePolicyPage from "./pages/CookiePolicyPage"
 import CookieSettingsPage from "./pages/CookieSettingsPage"
 import SearchResultsPage from "@/pages/BasicDetailsSearchResultsPage"
+import PrivacyNoticePage from "./pages/PrivacyNoticePage"
 
 import {FRONTEND_PATHS} from "@/constants/environment"
 
@@ -50,6 +51,7 @@ export default function App() {
                 <Route path={FRONTEND_PATHS.PRESCRIPTION_LIST_PAST} element={<PrescriptionListPage />} />
                 <Route path={FRONTEND_PATHS.PRESCRIPTION_DETAILS_PAGE} element={<PrescriptionDetailsPage />} />
                 <Route path={FRONTEND_PATHS.PATIENT_SEARCH_RESULTS} element={<SearchResultsPage />} />
+                <Route path={FRONTEND_PATHS.PRIVACY_NOTICE} element={<PrivacyNoticePage />} />
               </Route>
             </Routes>
           </PrescriptionInformationProvider>
