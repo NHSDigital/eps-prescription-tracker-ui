@@ -92,7 +92,7 @@ export class StatelessResourcesStack extends Stack {
     const webAclAttributeArn = this.node.tryGetContext("webAclAttributeArn")
     const wafAllowGaRunnerConnectivity: boolean = this.node.tryGetContext("wafAllowGaRunnerConnectivity")
     const githubAllowListIpv4 = this.node.tryGetContext("githubAllowListIpv4")
-    const githubAllowListIpv6 = this.node.tryGetContext("githubAllowListIpv4")
+    const githubAllowListIpv6 = this.node.tryGetContext("githubAllowListIpv6")
     const cloudfrontOriginCustomHeader = this.node.tryGetContext("cloudfrontOriginCustomHeader")
 
     // Imports
