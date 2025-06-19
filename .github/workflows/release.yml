@@ -155,6 +155,7 @@ jobs:
       APIGEE_API_KEY: ${{ secrets.APIGEE_DEV_API_KEY }}
       APIGEE_API_SECRET: ${{ secrets.APIGEE_DEV_API_SECRET }}
       APIGEE_PTL_DOHS_API_KEY: ${{ secrets.APIGEE_PTL_DOHS_API_KEY }}
+      CLOUDFRONT_ORIGIN_CUSTOM_HEADER: ${{ secrets.CLOUDFRONT_ORIGIN_CUSTOM_HEADER_WAF_CODE_PTL }}
 
   create_release_notes:
     needs: [tag_release, package_code, get_commit_id, release_dev]
@@ -213,6 +214,7 @@ jobs:
       APIGEE_API_KEY: ${{ secrets.APIGEE_REF_API_KEY }}
       APIGEE_API_SECRET: ${{ secrets.APIGEE_REF_API_SECRET }}
       APIGEE_PTL_DOHS_API_KEY: ${{ secrets.APIGEE_PTL_DOHS_API_KEY }}
+      CLOUDFRONT_ORIGIN_CUSTOM_HEADER: ${{ secrets.CLOUDFRONT_ORIGIN_CUSTOM_HEADER_WAF_CODE_PTL }}
 
 
   release_qa:
@@ -257,7 +259,8 @@ jobs:
       APIGEE_API_KEY: ${{ secrets.APIGEE_QA_API_KEY }}
       APIGEE_API_SECRET: ${{ secrets.APIGEE_QA_API_SECRET }}
       APIGEE_PTL_DOHS_API_KEY: ${{ secrets.APIGEE_PTL_DOHS_API_KEY }}
-  
+      CLOUDFRONT_ORIGIN_CUSTOM_HEADER: ${{ secrets.CLOUDFRONT_ORIGIN_CUSTOM_HEADER_WAF_CODE_PTL }}
+
   release_int:
     needs: [tag_release, package_code, get_commit_id, release_qa]
     uses: ./.github/workflows/release_all_stacks.yml
@@ -295,7 +298,7 @@ jobs:
       APIGEE_API_KEY: ${{ secrets.APIGEE_INT_API_KEY }}
       APIGEE_API_SECRET: ${{ secrets.APIGEE_INT_API_SECRET }}
       APIGEE_PTL_DOHS_API_KEY: ${{ secrets.APIGEE_PTL_DOHS_API_KEY }}
-      
+      CLOUDFRONT_ORIGIN_CUSTOM_HEADER: ${{ secrets.CLOUDFRONT_ORIGIN_CUSTOM_HEADER_WAF_CODE_PTL }}
 
   # release_prod:
   #   needs: [tag_release, package_code, get_commit_id, release_int]
@@ -313,3 +316,4 @@ jobs:
   #   secrets:
   #     CDK_PULL_IMAGE_ROLE: ${{ secrets.PROD_CDK_PULL_IMAGE_ROLE }}
   #     CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.PROD_CLOUD_FORMATION_DEPLOY_ROLE }}
+  #     CLOUDFRONT_ORIGIN_CUSTOM_HEADER: ${{ secrets.CLOUDFRONT_ORIGIN_CUSTOM_HEADER_WAF_CODE_PROD }}

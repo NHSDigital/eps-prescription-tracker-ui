@@ -87,6 +87,8 @@ on:
         required: false
       APIGEE_PTL_DOHS_API_KEY:
         required: false
+      CLOUDFRONT_ORIGIN_CUSTOM_HEADER:
+        required: true
 jobs:
   release_code:
     runs-on: ubuntu-22.04
@@ -187,6 +189,7 @@ jobs:
           WAF_ALLOW_GA_RUNNER_CONNECTIVITY: ${{ inputs.WAF_ALLOW_GA_RUNNER_CONNECTIVITY }}
           USE_ZONE_APEX: ${{ inputs.USE_ZONE_APEX }}
           ROUTE53_EXPORT_NAME: ${{ inputs.ROUTE53_EXPORT_NAME }}
+          CLOUDFRONT_ORIGIN_CUSTOM_HEADER: ${{ secrets.CLOUDFRONT_ORIGIN_CUSTOM_HEADER }}
 
       - name: Show diff
         run: |

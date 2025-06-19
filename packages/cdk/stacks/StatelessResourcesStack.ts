@@ -93,6 +93,7 @@ export class StatelessResourcesStack extends Stack {
     const wafAllowGaRunnerConnectivity: boolean = this.node.tryGetContext("wafAllowGaRunnerConnectivity")
     const githubAllowListIpv4 = this.node.tryGetContext("githubAllowListIpv4")
     const githubAllowListIpv6 = this.node.tryGetContext("githubAllowListIpv4")
+    const cloudfrontOriginCustomHeader = this.node.tryGetContext("cloudfrontOriginCustomHeader")
 
     // Imports
     const baseImportPath = `${props.serviceName}-stateful-resources`
@@ -286,7 +287,7 @@ export class StatelessResourcesStack extends Stack {
       wafAllowGaRunnerConnectivity: wafAllowGaRunnerConnectivity,
       scope: "REGIONAL",
       allowedHeaders: new Map<string, string>([
-        ["waf-secret", "blah34"]
+        ["X-Cloudfront-Origin-Secret", cloudfrontOriginCustomHeader]
       ])
     })
 
@@ -369,14 +370,14 @@ export class StatelessResourcesStack extends Stack {
     const apiGatewayOrigin = new RestApiOrigin(apiGateway.apiGateway, {
       customHeaders: {
         "destination-api-apigw-id": apiGateway.apiGateway.restApiId, // for later apigw waf stuff
-        "X-Cloudfront-Origin-Header": "blah34" // placeholder header
+        "X-Cloudfront-Origin-Secret": cloudfrontOriginCustomHeader // Sets custom header used by WAF
       }
     })
 
     const oauth2GatewayOrigin = new RestApiOrigin(oauth2Gateway.apiGateway, {
       customHeaders: {
         "destination-oauth2-apigw-id": oauth2Gateway.apiGateway.restApiId, // for later apigw waf stuff
-        "X-Cloudfront-Origin-Header": "blah34" // placeholder header
+        "X-Cloudfront-Origin-Secret": cloudfrontOriginCustomHeader // Sets custom header used by WAF
       }
     })
 
