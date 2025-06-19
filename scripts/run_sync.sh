@@ -185,6 +185,7 @@ LOG_RETENTION_IN_DAYS=30
 LOG_LEVEL=debug
 USE_CUSTOM_COGNITO_DOMAIN=false
 ALLOW_LOCALHOST_ACCESS=true
+WAF_ALLOW_GA_RUNNER_CONNECTIVITY=true
 APIGEE_API_KEY=$(echo "$CF_LONDON_EXPORTS" | \
     jq \
     --arg EXPORT_NAME "${SERVICE_NAME}-stateless-resources:local:apigeeApiKey" \
@@ -227,6 +228,7 @@ ROLE_ID=$(echo "$CF_LONDON_EXPORTS" | \
     jq \
     --arg EXPORT_NAME "${SERVICE_NAME}-stateless-resources:local:roleId" \
     -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+USE_ZONE_APEX=false
 
 # export all the vars so they can be picked up by external programs
 export SERVICE_NAME
@@ -288,6 +290,7 @@ export LOG_RETENTION_IN_DAYS
 export LOG_LEVEL
 export USE_CUSTOM_COGNITO_DOMAIN
 export ALLOW_LOCALHOST_ACCESS
+export WAF_ALLOW_GA_RUNNER_CONNECTIVITY
 export APIGEE_API_KEY
 export APIGEE_API_SECRET
 export APIGEE_PTL_DOHS_API_KEY
@@ -298,6 +301,7 @@ export APIGEE_PERSONAL_DEMOGRAPHICS_ENDPOINT
 export APIGEE_DOHS_ENDPOINT
 export JWT_KID
 export ROLE_ID
+export USE_ZONE_APEX
 
 # variables needed for StatefulResourcesApp
 CDK_APP_NAME=StatefulResourcesApp

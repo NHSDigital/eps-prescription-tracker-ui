@@ -33,6 +33,8 @@ export interface CloudfrontDistributionProps {
   readonly fullCloudfrontDomain: string
   readonly cloudfrontLoggingBucket: IBucket
   readonly cloudfrontCert: ICertificate
+  readonly webAclAttributeArn: string
+  readonly wafAllowGaRunnerConnectivity: boolean
 }
 
 /**
@@ -60,7 +62,11 @@ export class CloudfrontDistribution extends Construct {
       logIncludesCookies: true, // may actually want to be false, don't know if it includes names of cookies or contents
       defaultBehavior: props.defaultBehavior,
       additionalBehaviors: props.additionalBehaviors,
-      errorResponses: props.errorResponses
+      errorResponses: props.errorResponses,
+      geoRestriction: {
+        locations: props.wafAllowGaRunnerConnectivity ? ["GB", "JE", "GG", "IM", "US"] : ["GB", "JE", "GG", "IM"],
+        restrictionType: "whitelist"
+      }
     })
 
     if (props.shortCloudfrontDomain === "APEX_DOMAIN") {

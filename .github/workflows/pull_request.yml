@@ -89,6 +89,7 @@ jobs:
       ROLE_ID: "555254242106"
       LOG_LEVEL: "DEBUG"
       RUN_REGRESSION_TESTS: true
+      WAF_ALLOW_GA_RUNNER_CONNECTIVITY: true
       USE_ZONE_APEX: false
       ROUTE53_EXPORT_NAME: EPS
     secrets:
