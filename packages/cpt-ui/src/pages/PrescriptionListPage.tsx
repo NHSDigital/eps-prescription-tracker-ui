@@ -52,15 +52,15 @@ export default function PrescriptionListPage() {
       const prescriptionId = queryParams.get("prescriptionId")
       const nhsNumber = queryParams.get("nhsNumber")
 
-      let searchParams = {}
+      const searchParams = new URLSearchParams()
 
       // determine which search page to go back to based on query parameters
       if (prescriptionId) {
         setBackLinkTarget(PRESCRIPTION_LIST_PAGE_STRINGS.PRESCRIPTION_ID_SEARCH_TARGET)
-        searchParams = {prescriptionId}
+        searchParams.append("prescriptionId", encodeURIComponent(prescriptionId))
       } else if (nhsNumber) {
         setBackLinkTarget(PRESCRIPTION_LIST_PAGE_STRINGS.NHS_NUMBER_SEARCH_TARGET)
-        searchParams = {nhsNumber}
+        searchParams.append("nhsNumber", encodeURIComponent(nhsNumber))
       } else {
         console.error("No query parameter provided.")
         setLoading(false)
