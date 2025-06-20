@@ -27,7 +27,7 @@ export interface CloudfrontBehaviorsProps {
   readonly oauth2GatewayOrigin: RestApiOrigin
   readonly oauth2GatewayRequestPolicy: OriginRequestPolicy
   readonly staticContentBucketOrigin: IOrigin
-  readonly responseHeaderPolicy: string
+  readonly managedResponseHeaderPolicy: string
 }
 
 /**
@@ -41,6 +41,7 @@ export class CloudfrontBehaviors extends Construct{
   public readonly s3404ModifyStatusCodeFunction: CloudfrontFunction
   public readonly s3StaticContentUriRewriteFunction: CloudfrontFunction
   public readonly keyValueStore: KeyValueStore
+  public readonly responseHeaderPolicy: ResponseHeadersPolicy
 
   public constructor(scope: Construct, id: string, props: CloudfrontBehaviorsProps){
     super(scope, id)
@@ -285,8 +286,8 @@ export class CloudfrontBehaviors extends Construct{
       }
     }
 
-    const responseHeaderPolicy = new ResponseHeadersPolicy(this, "ResponseHeadersPolicy", {
-      responseHeadersPolicyName: responseHeaderPolicy
+    this.responseHeaderPolicy = new ResponseHeadersPolicy(this, "ResponseHeadersPolicy", {
+      responseHeadersPolicyName: props.managedResponseHeaderPolicy
     })
 
     //Outputs
