@@ -25,7 +25,7 @@ class TestErrorBoundary extends Component<{children: ReactNode}, {hasError: bool
 }
 
 // Simulate a component that crashes
-function ErrorThrowingComponent() {
+function ErrorThrowingComponent(): React.ReactElement {
   throw new Error("Simulated JS error for testing fallback")
 }
 
