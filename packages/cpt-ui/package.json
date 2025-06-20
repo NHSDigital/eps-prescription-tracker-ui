@@ -17,6 +17,7 @@
     "aws-amplify": "^6.15.0",
     "aws-rum-web": "^1.23.0",
     "axios": "^1.9.0",
+    "identity-obj-proxy": "^3.0.0",
     "nhsuk-frontend": "^9.6.2",
     "nhsuk-react-components": "^5.0.0",
     "react": "^18",
