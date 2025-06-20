@@ -75,6 +75,18 @@ on:
       LOG_RETENTION_IN_DAYS:
         type: string
         required: true
+      CREATE_INT_RELEASE_NOTES:
+        type: boolean
+        default: false
+      CREATE_PROD_RELEASE_NOTES:
+        type: boolean
+        default: false
+      MARK_JIRA_RELEASED:
+        type: boolean
+        default: false
+      CREATE_INT_RC_RELEASE_NOTES:
+        type: boolean
+        default: false
 jobs:
   release_all_code:
     runs-on: ubuntu-22.04
@@ -90,6 +102,18 @@ jobs:
           fetch-depth: 0
           sparse-checkout: |
             .github
+
+      - name: create_int_rc_release_notes
+        uses: ./.github/actions/update_confluence_jira
+        if: ${{ inputs.CREATE_INT_RC_RELEASE_NOTES == true }}
+        with:
+          TARGET_ENVIRONMENT: int
+          RELEASE_TAG: ${{ inputs.VERSION_NUMBER }}
+          CONFLUENCE_PAGE_ID: "899319592"
+          CREATE_RC_RELEASE_NOTES: true
+          DEV_CLOUD_FORMATION_CHECK_VERSION_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_CHECK_VERSION_ROLE }}
+          TARGET_CLOUD_FORMATION_CHECK_VERSION_ROLE: ${{ secrets.INT_CLOUD_FORMATION_CHECK_VERSION_ROLE }}
+          DEV_CLOUD_FORMATION_EXECUTE_LAMBDA_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_EXECUTE_LAMBDA_ROLE }}
       - name: Configure AWS Credentials
         id: connect_aws_pull_image
         uses: aws-actions/configure-aws-credentials@v4
@@ -493,6 +517,36 @@ jobs:
           -e CDK_APP_PATH="packages/cdk/bin/StatefulResourcesApp.ts" \
           cdk-utils-build-repo:latest
         shell: bash
+
+      - name: create_int_release_notes
+        uses: ./.github/actions/update_confluence_jira
+        if: ${{ inputs.CREATE_INT_RELEASE_NOTES == true && always() && !failure() && !cancelled() }}
+        with:
+          TARGET_ENVIRONMENT: int
+          CONFLUENCE_PAGE_ID: "899319595"
+          CREATE_RC_RELEASE_NOTES: false
+          DEV_CLOUD_FORMATION_CHECK_VERSION_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_CHECK_VERSION_ROLE }}
+          TARGET_CLOUD_FORMATION_CHECK_VERSION_ROLE: ${{ secrets.INT_CLOUD_FORMATION_CHECK_VERSION_ROLE }}
+          DEV_CLOUD_FORMATION_EXECUTE_LAMBDA_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_EXECUTE_LAMBDA_ROLE }}
+
+      - name: create_prod_release_notes
+        uses: ./.github/actions/update_confluence_jira
+        if: ${{ inputs.CREATE_PROD_RELEASE_NOTES == true && always() && !failure() && !cancelled() }}
+        with:
+          TARGET_ENVIRONMENT: prod
+          CONFLUENCE_PAGE_ID: "899319597"
+          CREATE_RC_RELEASE_NOTES: false
+          DEV_CLOUD_FORMATION_CHECK_VERSION_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_CHECK_VERSION_ROLE }}
+          TARGET_CLOUD_FORMATION_CHECK_VERSION_ROLE: ${{ secrets.PROD_CLOUD_FORMATION_CHECK_VERSION_ROLE }}
+          DEV_CLOUD_FORMATION_EXECUTE_LAMBDA_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_EXECUTE_LAMBDA_ROLE }}
+
+      - name: mark_released_in_jira
+        uses: ./.github/actions/mark_jira_released
+        if: ${{ inputs.MARK_JIRA_RELEASED == true && always() && !failure() && !cancelled() }}
+        with:
+          RELEASE_TAG: ${{ inputs.VERSION_NUMBER }}
+          DEV_CLOUD_FORMATION_EXECUTE_LAMBDA_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_EXECUTE_LAMBDA_ROLE }}
+
 
   update_github_pages:
     runs-on: ubuntu-22.04
