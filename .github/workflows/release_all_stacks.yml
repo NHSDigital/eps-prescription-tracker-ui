@@ -185,6 +185,7 @@ jobs:
           USE_ZONE_APEX: ${{ inputs.USE_ZONE_APEX }}
           ROUTE53_EXPORT_NAME: ${{ inputs.ROUTE53_EXPORT_NAME }}
           WAF_ALLOW_GA_RUNNER_CONNECTIVITY: ${{ inputs.WAF_ALLOW_GA_RUNNER_CONNECTIVITY }}
+          CLOUDFRONT_ORIGIN_CUSTOM_HEADER: ${{secrets.CLOUDFRONT_ORIGIN_CUSTOM_HEADER }}
 
       - name: Show diff for stateful stack
         run: |
@@ -333,6 +334,7 @@ jobs:
           USE_ZONE_APEX: ${{ inputs.USE_ZONE_APEX }}
           ROUTE53_EXPORT_NAME: ${{ inputs.ROUTE53_EXPORT_NAME }}
           WAF_ALLOW_GA_RUNNER_CONNECTIVITY: ${{ inputs.WAF_ALLOW_GA_RUNNER_CONNECTIVITY }}
+          CLOUDFRONT_ORIGIN_CUSTOM_HEADER: ${{secrets.CLOUDFRONT_ORIGIN_CUSTOM_HEADER }}
 
       - name: Show diff for stateless stack
         run: |
@@ -458,6 +460,7 @@ jobs:
           USE_ZONE_APEX: ${{ inputs.USE_ZONE_APEX }}
           ROUTE53_EXPORT_NAME: ${{ inputs.ROUTE53_EXPORT_NAME }}
           WAF_ALLOW_GA_RUNNER_CONNECTIVITY: ${{ inputs.WAF_ALLOW_GA_RUNNER_CONNECTIVITY }}
+          CLOUDFRONT_ORIGIN_CUSTOM_HEADER: ${{secrets.CLOUDFRONT_ORIGIN_CUSTOM_HEADER }}
 
       - name: Show diff for stateful stack redeployment
         if: ${{ steps.check_first_deployment.outputs.FIRST_DEPLOYMENT == 'true' }}
