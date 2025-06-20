@@ -77,6 +77,7 @@ set_environment_private_key_secret() {
 
 get_deploy_role() {
     environment=$1
+    # shellcheck disable=SC2016
     CLOUD_FORMATION_DEPLOY_ROLE=$(aws cloudformation list-exports \
         --profile prescription-"${environment}" \
         --query 'Exports[?Name==`ci-resources:CloudFormationDeployRole`].Value' \
@@ -87,6 +88,7 @@ get_deploy_role() {
 
 get_cdk_image_pull_role() {
     environment=$1
+    # shellcheck disable=SC2016
     CDK_PULL_IMAGE_ROLE=$(aws cloudformation list-exports \
     --profile prescription-"${environment}" \
     --query 'Exports[?Name==`ci-resources:CDKPullImageRole`].Value' \
