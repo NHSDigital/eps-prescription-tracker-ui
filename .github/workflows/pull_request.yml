@@ -29,7 +29,7 @@ jobs:
     uses: NHSDigital/eps-workflow-quality-checks/.github/workflows/quality-checks.yml@v4.0.5
     secrets:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-  
+
   pr_title_format_check:
     uses: ./.github/workflows/pr_title_check.yml
 
@@ -128,6 +128,7 @@ jobs:
       APIGEE_API_KEY: ${{ secrets.APIGEE_DEV_API_KEY }}
       APIGEE_API_SECRET: ${{ secrets.APIGEE_DEV_API_SECRET }}
       APIGEE_PTL_DOHS_API_KEY: ${{ secrets.APIGEE_PTL_DOHS_API_KEY }}
+      CLOUDFRONT_ORIGIN_CUSTOM_HEADER: ${{ secrets.CLOUDFRONT_ORIGIN_CUSTOM_HEADER_WAF_CODE_PTL }}
   report_deployed_url:
     needs: [release_code, get_issue_number]
     if: |

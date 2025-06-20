@@ -91,6 +91,8 @@ on:
         required: true
       APIGEE_PTL_DOHS_API_KEY:
         required: false
+      CLOUDFRONT_ORIGIN_CUSTOM_HEADER:
+        required: true
 
 jobs:
   check_first_deployment:
@@ -160,6 +162,7 @@ jobs:
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}
       primaryOidcClientId: ${{ secrets.primaryOidcClientId }}
       mockOidcClientId: ${{ secrets.mockOidcClientId }}
+      CLOUDFRONT_ORIGIN_CUSTOM_HEADER: ${{ secrets.CLOUDFRONT_ORIGIN_CUSTOM_HEADER }}
 
   deploy_website_content:
     uses: ./.github/workflows/deploy_website_content.yml
@@ -216,6 +219,7 @@ jobs:
       APIGEE_API_KEY: ${{ secrets.APIGEE_API_KEY }}
       APIGEE_API_SECRET: ${{ secrets.APIGEE_API_SECRET }}
       APIGEE_PTL_DOHS_API_KEY: ${{ secrets.APIGEE_PTL_DOHS_API_KEY }}
+      CLOUDFRONT_ORIGIN_CUSTOM_HEADER: ${{ secrets.CLOUDFRONT_ORIGIN_CUSTOM_HEADER }}
 
   update_cloudfront_kvs:
     runs-on: ubuntu-22.04
@@ -323,6 +327,7 @@ jobs:
       CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}
       primaryOidcClientId: ${{ secrets.primaryOidcClientId }}
       mockOidcClientId: ${{ secrets.mockOidcClientId }}
+      CLOUDFRONT_ORIGIN_CUSTOM_HEADER: ${{ secrets.CLOUDFRONT_ORIGIN_CUSTOM_HEADER }}
 
   update_github_pages:
     runs-on: ubuntu-22.04
