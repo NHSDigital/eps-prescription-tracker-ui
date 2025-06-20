@@ -91,7 +91,10 @@ const errorResponseBody = {
   message: "A system error has occurred"
 }
 
-const RESPONSE_HEADERS = {"Content-Type": "application/json"}
+const RESPONSE_HEADERS = {
+  "Content-Type": "application/json",
+  "Cache-Control": "no-store"
+}
 
 // Middleware error handler
 const middyErrorHandler = new MiddyErrorHandler(errorResponseBody)
