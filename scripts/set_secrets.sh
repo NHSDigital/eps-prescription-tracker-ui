@@ -136,6 +136,7 @@ set_environment_private_key_secret JWT_PRIVATE_KEY ".secrets/eps-cpt-ui-qa.pem" 
 set_environment_secret APIGEE_API_KEY "${APIGEE_QA_API_KEY}" qa
 set_environment_secret APIGEE_API_SECRET "${APIGEE_QA_API_SECRET}" qa
 set_environment_secret APIGEE_DOHS_API_KEY "${APIGEE_PTL_DOHS_API_KEY}" qa
+set_environment_secret CLOUDFRONT_ORIGIN_CUSTOM_HEADER "$(uuidgen)" qa
 set_environment_private_key_secret REGRESSION_TESTS_PEM ".secrets/eps-regression-testing.private-key.pem" qa
 
 REF_DEPLOY_ROLE=$(get_deploy_role ref)
@@ -148,6 +149,7 @@ set_environment_private_key_secret JWT_PRIVATE_KEY ".secrets/eps-cpt-ui-ref.pem"
 set_environment_secret APIGEE_API_KEY "${APIGEE_QA_API_KEY}" ref
 set_environment_secret APIGEE_API_SECRET "${APIGEE_QA_API_SECRET}" ref
 set_environment_secret APIGEE_DOHS_API_KEY "${APIGEE_PTL_DOHS_API_KEY}" ref
+set_environment_secret CLOUDFRONT_ORIGIN_CUSTOM_HEADER "$(uuidgen)" ref
 set_environment_private_key_secret REGRESSION_TESTS_PEM ".secrets/eps-regression-testing.private-key.pem" ref
 
 INT_DEPLOY_ROLE=$(get_deploy_role int)
@@ -160,6 +162,7 @@ set_environment_private_key_secret JWT_PRIVATE_KEY ".secrets/eps-cpt-ui-int.pem"
 set_environment_secret APIGEE_API_KEY "${APIGEE_INT_API_KEY}" int
 set_environment_secret APIGEE_API_SECRET "${APIGEE_INT_API_SECRET}" int
 set_environment_secret APIGEE_DOHS_API_KEY "${APIGEE_PTL_DOHS_API_KEY}" int
+set_environment_secret CLOUDFRONT_ORIGIN_CUSTOM_HEADER "$(uuidgen)" int
 set_environment_private_key_secret REGRESSION_TESTS_PEM ".secrets/eps-regression-testing.private-key.pem" int
 
 PROD_DEPLOY_ROLE=$(get_deploy_role prod)
@@ -172,4 +175,5 @@ set_environment_private_key_secret JWT_PRIVATE_KEY ".secrets/eps-cpt-ui-prod.pem
 set_environment_secret APIGEE_API_KEY "${APIGEE_PROD_API_KEY}" prod
 set_environment_secret APIGEE_API_SECRET "${APIGEE_PROD_API_SECRET}" prod
 set_environment_secret APIGEE_DOHS_API_KEY "${APIGEE_PROD_DOHS_API_KEY}" prod
+set_environment_secret CLOUDFRONT_ORIGIN_CUSTOM_HEADER "$(uuidgen)" prod
 set_environment_private_key_secret REGRESSION_TESTS_PEM ".secrets/eps-regression-testing.private-key.pem" prod
