@@ -13,7 +13,7 @@ import time
 from requests.auth import HTTPBasicAuth
 
 # This should be set to a known good version of regression test repo
-# REGRESSION_TESTS_REPO_TAG = "v2.39.4"
+# REGRESSION_TESTS_REPO_TAG = "v2.39.6"
 REGRESSION_TESTS_REPO_TAG = "check_for_rum_cookies"
 
 GITHUB_API_URL = "https://api.github.com/repos/NHSDigital/electronic-prescription-service-api-regression-tests/actions"
