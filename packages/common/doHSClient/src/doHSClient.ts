@@ -31,7 +31,7 @@ export const doHSClient = async (odsCodes: Array<string>): Promise<Array<DoHSOrg
     return []
   }
 
-  // Use APIGEE_PTL_DOHS_API_KEY if available, otherwise fall back to apigeeApiKey
+  // Throw errors if we dont have correct vars
   if (!apigeeDoHSApiKey) {
     throw new Error("Apigee API Key environment variable is not set")
   }
