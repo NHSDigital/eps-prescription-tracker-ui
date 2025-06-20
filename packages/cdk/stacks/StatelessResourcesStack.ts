@@ -14,7 +14,8 @@ import {
   OriginRequestHeaderBehavior,
   OriginRequestPolicy,
   OriginRequestQueryStringBehavior,
-  ViewerProtocolPolicy
+  ViewerProtocolPolicy,
+  ResponseHeadersPolicy
 } from "aws-cdk-lib/aws-cloudfront"
 import {RestApiOrigin, S3BucketOrigin} from "aws-cdk-lib/aws-cloudfront-origins"
 import {Bucket} from "aws-cdk-lib/aws-s3"
@@ -398,6 +399,10 @@ export class StatelessResourcesStack extends Stack {
     })
 
     // --- CloudfrontBehaviors
+    const responseHeaderPolicy = new ResponseHeadersPolicy(this, "ResponseHeadersPolicy", {
+      responseHeadersPolicyName: "SECURITY_HEADERS"
+    })
+
     const cloudfrontBehaviors = new CloudfrontBehaviors(this, "CloudfrontBehaviors", {
       serviceName: props.serviceName,
       stackName: props.stackName,
@@ -405,7 +410,8 @@ export class StatelessResourcesStack extends Stack {
       apiGatewayRequestPolicy: apiGatewayRequestPolicy,
       oauth2GatewayOrigin: oauth2GatewayOrigin,
       oauth2GatewayRequestPolicy: oauth2GatewayRequestPolicy,
-      staticContentBucketOrigin: staticContentBucketOrigin
+      staticContentBucketOrigin: staticContentBucketOrigin,
+      responseHeaderPolicy: responseHeaderPolicy
     })
 
     // --- Distribution
