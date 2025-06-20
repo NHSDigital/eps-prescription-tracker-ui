@@ -7,9 +7,9 @@ import {SEARCH_TYPES, AllowedSearchType} from "@/constants/ui-strings/Prescripti
  */
 export function inferSearchType(params: URLSearchParams): AllowedSearchType {
   // If both nhsNumber and prescriptionId are present, treat as PrescriptionListPage
-  // if (params.has("nhsNumber") && params.has("prescriptionId")) {
-  //   return "PrescriptionListPage"
-  // }
+  if (params.has("nhsNumber") && params.has("prescriptionId")) {
+    return "PrescriptionListPage"
+  }
 
   if (
     params.has("lastName") &&
@@ -31,8 +31,8 @@ export function inferSearchType(params: URLSearchParams): AllowedSearchType {
 export const searchTypeToPath: Record<AllowedSearchType, string> = {
   [SEARCH_TYPES.PRESCRIPTION_ID]: FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID,
   [SEARCH_TYPES.NHS_NUMBER]: FRONTEND_PATHS.SEARCH_BY_NHS_NUMBER,
-  [SEARCH_TYPES.BASIC_DETAILS]: FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS
-  // [SEARCH_TYPES.PRESCRIPTION_LIST]: FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT
+  [SEARCH_TYPES.BASIC_DETAILS]: FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS,
+  [SEARCH_TYPES.PRESCRIPTION_LIST]: FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT
 }
 
 // Defines which query params are relevant for each search type
@@ -46,7 +46,8 @@ export const searchTypeToParams: Record<AllowedSearchType, Array<string>> = {
     "dobMonth",
     "dobYear",
     "postcode"
-  ]
+  ],
+  [SEARCH_TYPES.PRESCRIPTION_LIST]: ["nhsNumber"]
 }
 
 type AltType = { to: string; label: string }
@@ -64,13 +65,24 @@ export function buildAltLink({alt}: { alt: AltType }) {
 }
 
 /**
- * Builds a "go back" link to the search form, preserving all current query params.
+ * Builds a "go back" link to the relevant search form, preserving only the relevant search params
+ *
+ * @param searchType - the type of search originally performed
+ * @param searchParams - the full URLSearchParams from the current page
+ * @returns a string URL path with the correct base path and filtered query string
  */
-export function buildBackLink(
-  searchType: AllowedSearchType,
-  searchParams: URLSearchParams
-): string {
+export function buildBackLink(searchType: AllowedSearchType, searchParams: URLSearchParams): string {
+  const filteredParams = new URLSearchParams()
+
+  // Only retain query parameters that are relevant to the given search type.
+  for (const key of searchTypeToParams[searchType]) {
+    const value = searchParams.get(key)
+    if (value) {
+      filteredParams.set(key, value)
+    }
+  }
+
   const path = searchTypeToPath[searchType]
-  const query = searchParams.toString()
+  const query = filteredParams.toString()
   return query ? `${path}?${query}` : path
 }
