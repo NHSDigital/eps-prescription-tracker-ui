@@ -117,16 +117,7 @@ jobs:
       WAF_ALLOW_GA_RUNNER_CONNECTIVITY: true
       USE_ZONE_APEX: false
       ROUTE53_EXPORT_NAME: EPS
-    secrets:
-      CDK_PULL_IMAGE_ROLE: ${{ secrets.DEV_CDK_PULL_IMAGE_ROLE }}
-      CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_DEPLOY_ROLE }}
-      primaryOidcClientId: ${{ secrets.DEV_CIS2_OIDC_CLIENT_ID }}
-      mockOidcClientId: ${{ secrets.DEV_MOCK_CLIENT_ID }}
-      CIS2_PRIVATE_KEY: ${{ secrets.DEV_JWT_PRIVATE_KEY }}
-      REGRESSION_TESTS_PEM: ${{ secrets.REGRESSION_TESTS_PEM }}
-      APIGEE_API_KEY: ${{ secrets.APIGEE_DEV_API_KEY }}
-      APIGEE_API_SECRET: ${{ secrets.APIGEE_DEV_API_SECRET }}
-      APIGEE_PTL_DOHS_API_KEY: ${{ secrets.APIGEE_PTL_DOHS_API_KEY }}
+    secrets: inherit
   report_deployed_url:
     needs: [release_code, get_issue_number]
     if: |

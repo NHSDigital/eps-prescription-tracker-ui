@@ -194,9 +194,9 @@ APIGEE_API_SECRET=$(echo "$CF_LONDON_EXPORTS" | \
     jq \
     --arg EXPORT_NAME "${SERVICE_NAME}-stateless-resources:local:apigeeApiSecret" \
     -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
-APIGEE_PTL_DOHS_API_KEY=$(echo "$CF_LONDON_EXPORTS" | \
+APIGEE_DOHS_API_KEY=$(echo "$CF_LONDON_EXPORTS" | \
     jq \
-    --arg EXPORT_NAME "${SERVICE_NAME}-stateless-resources:local:apigeePtlDoHSApiKey" \
+    --arg EXPORT_NAME "${SERVICE_NAME}-stateless-resources:local:apigeeDoHSApiKey" \
     -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
 APIGEE_DOHS_ENDPOINT=$(echo "$CF_LONDON_EXPORTS" | \
     jq \
@@ -293,7 +293,7 @@ export ALLOW_LOCALHOST_ACCESS
 export WAF_ALLOW_GA_RUNNER_CONNECTIVITY
 export APIGEE_API_KEY
 export APIGEE_API_SECRET
-export APIGEE_PTL_DOHS_API_KEY
+export APIGEE_DOHS_API_KEY
 export APIGEE_CIS2_TOKEN_ENDPOINT
 export APIGEE_MOCK_TOKEN_ENDPOINT
 export APIGEE_PRESCRIPTION_ENDPOINT

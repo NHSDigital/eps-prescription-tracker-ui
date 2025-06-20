@@ -69,25 +69,6 @@ on:
       ROUTE53_EXPORT_NAME:
         type: string
         description: This is the part of the route53 export name to use to identify the route 53 zone where the domain names are created - can be either EPS (for *.national.nhs.uk) or CPT (for prescriptiontracker.nhs.uk)
-    secrets:
-      CLOUD_FORMATION_DEPLOY_ROLE:
-        required: true
-      CDK_PULL_IMAGE_ROLE:
-        required: true
-      primaryOidcClientId:
-        required: false
-      mockOidcClientId:
-        required: false
-      CIS2_PRIVATE_KEY:
-        required: true
-      REGRESSION_TESTS_PEM:
-        required: true
-      APIGEE_API_KEY:
-        required: true
-      APIGEE_API_SECRET:
-        required: true
-      APIGEE_PTL_DOHS_API_KEY:
-        required: false
 
 jobs:
   release_all_code:
@@ -171,13 +152,13 @@ jobs:
           LOG_LEVEL: "${{ inputs.LOG_LEVEL }}"
           AUTO_DELETE_OBJECTS: "true"
           USE_MOCK_OIDC: "${{ inputs.useMockOidc }}"
-          PRIMARY_OIDC_CLIENT_ID: "${{ secrets.primaryOidcClientId }}"
+          PRIMARY_OIDC_CLIENT_ID: "${{ secrets.CIS2_OIDC_CLIENT_ID }}"
           PRIMARY_OIDC_ISSUER: "${{ inputs.primaryOidcIssuer }}"
           PRIMARY_OIDC_AUTHORIZE_ENDPOINT: "${{ inputs.primaryOidcAuthorizeEndpoint }}"
           PRIMARY_OIDC_TOKEN_ENDPOINT: "${{ inputs.primaryOidcTokenEndpoint }}"
           PRIMARY_OIDC_USERINFO_ENDPOINT: "${{ inputs.primaryOidcUserInfoEndpoint }}"
           PRIMARY_OIDC_JWKS_ENDPOINT: "${{ inputs.primaryOidcjwksEndpoint }}"
-          MOCK_OIDC_CLIENT_ID: "${{ secrets.mockOidcClientId }}"
+          MOCK_OIDC_CLIENT_ID: "${{ secrets.MOCK_OIDC_CLIENT_ID }}"
           MOCK_OIDC_ISSUER: "${{ inputs.mockOidcIssuer }}"
           MOCK_OIDC_AUTHORIZE_ENDPOINT: "${{ inputs.mockOidcAuthorizeEndpoint }}"
           MOCK_OIDC_TOKEN_ENDPOINT: "${{ inputs.mockOidcTokenEndpoint }}"
@@ -192,7 +173,7 @@ jobs:
           APIGEE_DOHS_ENDPOINT: ${{ inputs.APIGEE_DOHS_ENDPOINT }}
           APIGEE_API_KEY: ${{ secrets.APIGEE_API_KEY }}
           APIGEE_API_SECRET: ${{ secrets.APIGEE_API_SECRET }}
-          APIGEE_PTL_DOHS_API_KEY: ${{ secrets.APIGEE_PTL_DOHS_API_KEY }}
+          APIGEE_DOHS_API_KEY: ${{ secrets.APIGEE_DOHS_API_KEY }}
           JWT_KID: ${{ inputs.JWT_KID }}
           ROLE_ID: ${{ inputs.ROLE_ID }}
           CDK_APP_NAME: StatefulResourcesApp
@@ -317,13 +298,13 @@ jobs:
           LOG_LEVEL: "${{ inputs.LOG_LEVEL }}"
           AUTO_DELETE_OBJECTS: "true"
           USE_MOCK_OIDC: "${{ inputs.useMockOidc }}"
-          PRIMARY_OIDC_CLIENT_ID: "${{ secrets.primaryOidcClientId }}"
+          PRIMARY_OIDC_CLIENT_ID: "${{ secrets.CIS2_OIDC_CLIENT_ID }}"
           PRIMARY_OIDC_ISSUER: "${{ inputs.primaryOidcIssuer }}"
           PRIMARY_OIDC_AUTHORIZE_ENDPOINT: "${{ inputs.primaryOidcAuthorizeEndpoint }}"
           PRIMARY_OIDC_TOKEN_ENDPOINT: "${{ inputs.primaryOidcTokenEndpoint }}"
           PRIMARY_OIDC_USERINFO_ENDPOINT: "${{ inputs.primaryOidcUserInfoEndpoint }}"
           PRIMARY_OIDC_JWKS_ENDPOINT: "${{ inputs.primaryOidcjwksEndpoint }}"
-          MOCK_OIDC_CLIENT_ID: "${{ secrets.mockOidcClientId }}"
+          MOCK_OIDC_CLIENT_ID: "${{ secrets.MOCK_OIDC_CLIENT_ID }}"
           MOCK_OIDC_ISSUER: "${{ inputs.mockOidcIssuer }}"
           MOCK_OIDC_AUTHORIZE_ENDPOINT: "${{ inputs.mockOidcAuthorizeEndpoint }}"
           MOCK_OIDC_TOKEN_ENDPOINT: "${{ inputs.mockOidcTokenEndpoint }}"
@@ -338,7 +319,7 @@ jobs:
           APIGEE_DOHS_ENDPOINT: ${{ inputs.APIGEE_DOHS_ENDPOINT }}
           APIGEE_API_KEY: ${{ secrets.APIGEE_API_KEY }}
           APIGEE_API_SECRET: ${{ secrets.APIGEE_API_SECRET }}
-          APIGEE_PTL_DOHS_API_KEY: ${{ secrets.APIGEE_PTL_DOHS_API_KEY }}
+          APIGEE_DOHS_API_KEY: ${{ secrets.APIGEE_DOHS_API_KEY }}
           JWT_KID: ${{ inputs.JWT_KID }}
           ROLE_ID: ${{ inputs.ROLE_ID }}
           CDK_APP_NAME: StatelessResourcesApp
@@ -421,13 +402,13 @@ jobs:
           if [ -z "${primaryJwtPrivateKeyArn}" ]; then
             echo "primaryJwtPrivateKeyArn is unset or set to the empty string"
           else
-            aws secretsmanager put-secret-value --secret-id "${primaryJwtPrivateKeyArn}" --secret-string "${{ secrets.CIS2_PRIVATE_KEY }}"
+            aws secretsmanager put-secret-value --secret-id "${primaryJwtPrivateKeyArn}" --secret-string "${{ secrets.JWT_PRIVATE_KEY }}"
           fi
           # set the mockJwtPrivateKeyArn secret
           if [ -z "${mockJwtPrivateKeyArn}" ]; then
             echo "mockJwtPrivateKeyArn is unset or set to the empty string"
           else
-            aws secretsmanager put-secret-value --secret-id "${mockJwtPrivateKeyArn}" --secret-string "${{ secrets.CIS2_PRIVATE_KEY }}"
+            aws secretsmanager put-secret-value --secret-id "${mockJwtPrivateKeyArn}" --secret-string "${{ secrets.JWT_PRIVATE_KEY }}"
           fi
 
       - name: fix cdk.json for deployment for stateful stack redeployment
@@ -442,13 +423,13 @@ jobs:
           LOG_LEVEL: "${{ inputs.LOG_LEVEL }}"
           AUTO_DELETE_OBJECTS: "true"
           USE_MOCK_OIDC: "${{ inputs.useMockOidc }}"
-          PRIMARY_OIDC_CLIENT_ID: "${{ secrets.primaryOidcClientId }}"
+          PRIMARY_OIDC_CLIENT_ID: "${{ secrets.CIS2_OIDC_CLIENT_ID }}"
           PRIMARY_OIDC_ISSUER: "${{ inputs.primaryOidcIssuer }}"
           PRIMARY_OIDC_AUTHORIZE_ENDPOINT: "${{ inputs.primaryOidcAuthorizeEndpoint }}"
           PRIMARY_OIDC_TOKEN_ENDPOINT: "${{ inputs.primaryOidcTokenEndpoint }}"
           PRIMARY_OIDC_USERINFO_ENDPOINT: "${{ inputs.primaryOidcUserInfoEndpoint }}"
           PRIMARY_OIDC_JWKS_ENDPOINT: "${{ inputs.primaryOidcjwksEndpoint }}"
-          MOCK_OIDC_CLIENT_ID: "${{ secrets.mockOidcClientId }}"
+          MOCK_OIDC_CLIENT_ID: "${{ secrets.MOCK_OIDC_CLIENT_ID }}"
           MOCK_OIDC_ISSUER: "${{ inputs.mockOidcIssuer }}"
           MOCK_OIDC_AUTHORIZE_ENDPOINT: "${{ inputs.mockOidcAuthorizeEndpoint }}"
           MOCK_OIDC_TOKEN_ENDPOINT: "${{ inputs.mockOidcTokenEndpoint }}"
@@ -463,7 +444,7 @@ jobs:
           APIGEE_DOHS_ENDPOINT: ${{ inputs.APIGEE_DOHS_ENDPOINT }}
           APIGEE_API_KEY: ${{ secrets.APIGEE_API_KEY }}
           APIGEE_API_SECRET: ${{ secrets.APIGEE_API_SECRET }}
-          APIGEE_PTL_DOHS_API_KEY: ${{ secrets.APIGEE_PTL_DOHS_API_KEY }}
+          APIGEE_DOHS_API_KEY: ${{ secrets.APIGEE_DOHS_API_KEY }}
           JWT_KID: ${{ inputs.JWT_KID }}
           ROLE_ID: ${{ inputs.ROLE_ID }}
           CDK_APP_NAME: StatefulResourcesApp
