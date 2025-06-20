@@ -405,8 +405,7 @@ export class StatelessResourcesStack extends Stack {
       apiGatewayRequestPolicy: apiGatewayRequestPolicy,
       oauth2GatewayOrigin: oauth2GatewayOrigin,
       oauth2GatewayRequestPolicy: oauth2GatewayRequestPolicy,
-      staticContentBucketOrigin: staticContentBucketOrigin,
-      responseHeaderPolicy: "SECURITY_HEADERS"
+      staticContentBucketOrigin: staticContentBucketOrigin
     })
 
     // --- Distribution
