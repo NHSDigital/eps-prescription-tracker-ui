@@ -146,6 +146,7 @@ jobs:
       USE_ZONE_APEX: false
       ROUTE53_EXPORT_NAME: EPS
       REACT_LOG_LEVEL: "debug"
+      LOG_RETENTION_IN_DAYS: 30
     secrets: inherit
 
   create_release_notes:
@@ -196,6 +197,7 @@ jobs:
       USE_ZONE_APEX: false
       ROUTE53_EXPORT_NAME: EPS
       REACT_LOG_LEVEL: "debug"
+      LOG_RETENTION_IN_DAYS: 30
     secrets: inherit
 
 
@@ -232,6 +234,7 @@ jobs:
       USE_ZONE_APEX: false
       ROUTE53_EXPORT_NAME: EPS
       REACT_LOG_LEVEL: "debug"
+      LOG_RETENTION_IN_DAYS: 30
     secrets: inherit
   release_int:
     needs: [tag_release, package_code, get_commit_id, release_qa]
@@ -262,6 +265,7 @@ jobs:
       USE_ZONE_APEX: true
       ROUTE53_EXPORT_NAME: CPT
       REACT_LOG_LEVEL: "debug" # change this before pilot
+      LOG_RETENTION_IN_DAYS: 30
     secrets: inherit
       
 
@@ -294,4 +298,5 @@ jobs:
       USE_ZONE_APEX: true
       ROUTE53_EXPORT_NAME: CPT
       REACT_LOG_LEVEL: "debug" # change this before pilot
+      LOG_RETENTION_IN_DAYS: 731
     secrets: inherit

@@ -127,6 +127,7 @@ jobs:
       USE_ZONE_APEX: false
       ROUTE53_EXPORT_NAME: EPS
       REACT_LOG_LEVEL: "debug"
+      LOG_RETENTION_IN_DAYS: 30
     secrets: inherit
   
   create_release_notes:
@@ -178,4 +179,5 @@ jobs:
       USE_ZONE_APEX: false
       ROUTE53_EXPORT_NAME: EPS
       REACT_LOG_LEVEL: "debug"
+      LOG_RETENTION_IN_DAYS: 30
     secrets: inherit

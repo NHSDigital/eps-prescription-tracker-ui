@@ -118,6 +118,7 @@ jobs:
       USE_ZONE_APEX: false
       ROUTE53_EXPORT_NAME: EPS
       REACT_LOG_LEVEL: "debug"
+      LOG_RETENTION_IN_DAYS: 30
     secrets: inherit
   report_deployed_url:
     needs: [release_code, get_issue_number]
