@@ -99,7 +99,7 @@ get_cdk_image_pull_role() {
 
 check_gh_logged_in
 
-# dev
+# dev and dev-pr
 DEV_DEPLOY_ROLE=$(get_deploy_role dev)
 DEV_CDK_PULL_IMAGE_ROLE=$(get_cdk_image_pull_role dev)
 
