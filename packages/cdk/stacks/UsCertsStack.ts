@@ -95,7 +95,8 @@ export class UsCertsStack extends Stack {
       rateLimitWindowSeconds: 60, // Minimum is 60 seconds
       githubAllowListIpv4: props.githubAllowListIpv4,
       githubAllowListIpv6: props.githubAllowListIpv6,
-      wafAllowGaRunnerConnectivity: props.wafAllowGaRunnerConnectivity
+      wafAllowGaRunnerConnectivity: props.wafAllowGaRunnerConnectivity,
+      scope: "CLOUDFRONT"
     })
 
     // Outputs
