@@ -1,6 +1,7 @@
 import {API_ENDPOINTS} from "@/constants/environment"
 import http from "./axios"
 import {RoleDetails, TrackerUserInfo, UserDetails} from "@cpt-ui-common/common-types"
+import {logger} from "./logger"
 
 export type TrackerUserInfoResult = {
   rolesWithAccess: Array<RoleDetails>,
@@ -39,16 +40,7 @@ export const getTrackerUserInfo = async (): Promise<TrackerUserInfoResult> => {
     const userInfo: TrackerUserInfo = data.userInfo
 
     if (userInfo) {
-      if (userInfo.roles_with_access) {
-        rolesWithAccess = userInfo.roles_with_access
-      } else {
-        const storedRolesWithAccess = localStorage.getItem("rolesWithAccess")
-        if (storedRolesWithAccess) {
-          rolesWithAccess = JSON.parse(storedRolesWithAccess)
-        } else {
-          rolesWithAccess = []
-        }
-      }
+      rolesWithAccess = userInfo.roles_with_access
     }
 
     // The current role may be either undefined, or an empty object. If it's empty, set it undefined.
@@ -74,7 +66,7 @@ export const getTrackerUserInfo = async (): Promise<TrackerUserInfoResult> => {
     error =
       err instanceof Error ? err.message : "Failed to fetch user info"
 
-    console.error("Error fetching tracker user info:", err)
+    logger.error("Error fetching tracker user info:", err)
   }
   return {
     rolesWithAccess,
@@ -100,6 +92,6 @@ export const updateRemoteSelectedRole = async (newRole: RoleDetails) => {
     }
 
   } catch (error) {
-    console.error("Error selecting role:", error)
+    logger.error("Error selecting role:", error)
   }
 }

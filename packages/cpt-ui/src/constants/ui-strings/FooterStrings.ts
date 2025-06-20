@@ -1,5 +1,6 @@
 export const FOOTER_COPYRIGHT = "© NHS England"
 export const COMMIT_ID = import.meta.env.VITE_COMMIT_ID
+export const VERSION_NUMBER = import.meta.env.VITE_VERSION_NUMBER
 
 export const FOOTER_LINKS = [
   {

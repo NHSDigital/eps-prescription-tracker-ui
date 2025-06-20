@@ -42,6 +42,7 @@ export interface StatelessResourcesStackProps extends StackProps {
   readonly serviceName: string
   readonly stackName: string
   readonly version: string
+  readonly commit: string
 }
 
 /**
@@ -516,6 +517,14 @@ export class StatelessResourcesStack extends Stack {
       new CfnOutput(this, "roleId", {
         value: roleId,
         exportName: `${props.stackName}:local:roleId`
+      })
+      new CfnOutput(this, "VERSION_NUMBER", {
+        value: props.version,
+        exportName: `${props.stackName}:local:VERSION-NUMBER`
+      })
+      new CfnOutput(this, "COMMIT_ID", {
+        value: props.commit,
+        exportName: `${props.stackName}:local:COMMIT-ID`
       })
     }
     nagSuppressions(this)

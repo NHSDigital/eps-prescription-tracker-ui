@@ -33,5 +33,6 @@ new StatelessResourcesStack(app, "StatelessStack", {
   },
   serviceName: serviceName,
   stackName: `${serviceName}-stateless-resources`,
-  version: version
+  version: version,
+  commit: commit
 })

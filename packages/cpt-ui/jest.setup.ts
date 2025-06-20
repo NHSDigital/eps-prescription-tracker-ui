@@ -31,7 +31,8 @@ jest.mock("@/constants/environment", () => ({
   },
   APP_CONFIG: {
     SERVICE_NAME: "Clinical prescription tracking service",
-    COMMIT_ID: "test-commit-id"
+    COMMIT_ID: "test-commit-id",
+    VERSION_NUMBER: "test-version-number"
   },
   API_ENDPOINTS: {
     TRACKER_USER_INFO: "/api/tracker-user-info"

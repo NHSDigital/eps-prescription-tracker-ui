@@ -63,9 +63,6 @@ describe("prescriptionService", () => {
   afterEach(() => {
     // Verify that all nock interceptors were used
     if (!nock.isDone()) {
-      // Use a simpler logging approach to avoid circular reference issues
-      const pendingMocks = nock.pendingMocks()
-      console.warn("Unused nock interceptors:", pendingMocks.map(mock => typeof mock === "string" ? mock : "complex mock"))
       nock.cleanAll()
     }
   })

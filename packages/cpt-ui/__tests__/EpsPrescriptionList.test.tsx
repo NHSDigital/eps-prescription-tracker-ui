@@ -19,6 +19,7 @@ const mockedAxios = axios as jest.Mocked<typeof axios>
 
 import PrescriptionListPage from "@/pages/PrescriptionListPage"
 import {AuthContextType, AuthContext} from "@/context/AuthProvider"
+import {logger} from "@/helpers/logger"
 
 const mockCognitoSignIn = jest.fn()
 const mockCognitoSignOut = jest.fn()
@@ -244,7 +245,7 @@ describe("PrescriptionListPage", () => {
   })
 
   it("logs an error when no query parameters are present", async () => {
-    const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {})
+    const loggerErrorSpy = jest.spyOn(logger, "error").mockImplementation(() => {})
 
     mockedAxios.get.mockResolvedValue({
       status: 200,
@@ -254,10 +255,10 @@ describe("PrescriptionListPage", () => {
     renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT)
 
     await waitFor(() => {
-      expect(consoleErrorSpy).toHaveBeenCalledWith("No query parameter provided.")
+      expect(loggerErrorSpy).toHaveBeenCalledWith("No query parameter provided.")
     })
 
-    consoleErrorSpy.mockRestore()
+    loggerErrorSpy.mockRestore()
   })
 
   it("sets the back link to the prescription ID search when prescriptionId query parameter is present", async () => {
