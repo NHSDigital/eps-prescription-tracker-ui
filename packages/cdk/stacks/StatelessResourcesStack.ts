@@ -81,7 +81,7 @@ export class StatelessResourcesStack extends Stack {
     const useMockOidc: boolean = this.node.tryGetContext("useMockOidc")
     const apigeeApiKey = this.node.tryGetContext("apigeeApiKey")
     const apigeeApiSecret = this.node.tryGetContext("apigeeApiSecret")
-    const apigeePtlDoHSApiKey = this.node.tryGetContext("apigeePtlDoHSApiKey")
+    const apigeeDoHSApiKey = this.node.tryGetContext("apigeeDoHSApiKey")
     const apigeeCIS2TokenEndpoint = this.node.tryGetContext("apigeeCIS2TokenEndpoint")
     const apigeeMockTokenEndpoint = this.node.tryGetContext("apigeeMockTokenEndpoint")
     const apigeePrescriptionsEndpoint = this.node.tryGetContext("apigeePrescriptionsEndpoint")
@@ -270,7 +270,7 @@ export class StatelessResourcesStack extends Stack {
       apigeePrescriptionsEndpoint: apigeePrescriptionsEndpoint,
       apigeeDoHSEndpoint: apigeeDoHSEndpoint,
       apigeeApiKey: apigeeApiKey,
-      apigeePtlDoHSApiKey: apigeePtlDoHSApiKey,
+      apigeeDoHSApiKey: apigeeDoHSApiKey,
       apigeeApiSecret,
       jwtKid: jwtKid,
       roleId: roleId,
@@ -488,9 +488,9 @@ export class StatelessResourcesStack extends Stack {
         value: apigeeCIS2TokenEndpoint,
         exportName: `${props.stackName}:local:apigeeCIS2TokenEndpoint`
       })
-      new CfnOutput(this, "apigeePtlDoHSApiKey", {
-        value: apigeePtlDoHSApiKey,
-        exportName: `${props.stackName}:local:apigeePtlDoHSApiKey`
+      new CfnOutput(this, "apigeeDoHSApiKey", {
+        value: apigeeDoHSApiKey,
+        exportName: `${props.stackName}:local:apigeeDoHSApiKey`
       })
       if (useMockOidc) {
         new CfnOutput(this, "apigeeMockTokenEndpoint", {

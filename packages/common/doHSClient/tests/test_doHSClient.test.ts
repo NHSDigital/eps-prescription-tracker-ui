@@ -32,8 +32,8 @@ describe("doHSClient", () => {
 
   it("throws an error if apigeeApiKey is not set", async () => {
     // Temporarily unset the API key
-    const originalApiKey = process.env.apigeeApiKey
-    delete process.env.apigeeApiKey
+    const originalApiKey = process.env.APIGEE_DOHS_API_KEY
+    delete process.env.APIGEE_DOHS_API_KEY
 
     // Re-import the module to pick up the changed environment
     jest.resetModules()
@@ -44,7 +44,7 @@ describe("doHSClient", () => {
     )
 
     // Restore the API key
-    process.env.apigeeApiKey = originalApiKey
+    process.env.APIGEE_DOHS_API_KEY = originalApiKey
   })
 
   it("throws an error if apigeeDoHSEndpoint is not set", async () => {
