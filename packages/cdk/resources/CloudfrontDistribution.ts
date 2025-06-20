@@ -5,7 +5,9 @@ import {
   ErrorResponse,
   HttpVersion,
   SecurityPolicyProtocol,
-  SSLMethod
+  SSLMethod,
+  ResponseHeadersPolicy,
+  SECURITY_HEADERS
 } from "aws-cdk-lib/aws-cloudfront"
 import {
   AaaaRecord,
@@ -48,6 +50,10 @@ export class CloudfrontDistribution extends Construct {
   public constructor(scope: Construct, id: string, props: CloudfrontDistributionProps){
     super(scope, id)
 
+    const responseHeaderPolicy = new ResponseHeadersPolicy(this, "ResponseHeadersPolicy", {
+      responseHeadersPolicyId: SECURITY_HEADERS
+    })
+
     // Resources
     const cloudfrontDistribution = new Distribution(this, "CloudfrontDistribution", {
       domainNames: [props.fullCloudfrontDomain],
@@ -66,7 +72,8 @@ export class CloudfrontDistribution extends Construct {
       geoRestriction: {
         locations: props.wafAllowGaRunnerConnectivity ? ["GB", "JE", "GG", "IM", "US"] : ["GB", "JE", "GG", "IM"],
         restrictionType: "whitelist"
-      }
+      },
+      responseHeaderPolicy: responseHeaderPolicy
     })
 
     if (props.shortCloudfrontDomain === "APEX_DOMAIN") {
