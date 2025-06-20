@@ -114,6 +114,16 @@ set_environment_secret APIGEE_DOHS_API_KEY "${APIGEE_PTL_DOHS_API_KEY}" dev-pr
 set_environment_secret CLOUDFRONT_ORIGIN_CUSTOM_HEADER "$(uuidgen)" dev-pr
 set_environment_private_key_secret REGRESSION_TESTS_PEM ".secrets/eps-regression-testing.private-key.pem" dev-pr
 
+set_repository_secret CDK_PULL_IMAGE_ROLE "${DEV_CDK_PULL_IMAGE_ROLE}" dependabot
+set_repository_secret CLOUD_FORMATION_DEPLOY_ROLE "${DEV_DEPLOY_ROLE}" dependabot
+set_repository_secret CIS2_OIDC_CLIENT_ID "${DEV_CIS2_OIDC_CLIENT_ID}" dependabot
+set_repository_secret MOCK_OIDC_CLIENT_ID "${DEV_MOCK_CLIENT_ID}" dependabot
+set_repository_private_key_secret JWT_PRIVATE_KEY ".secrets/eps-cpt-ui-dev.pem" dependabot
+set_repository_secret APIGEE_API_KEY "${APIGEE_DEV_API_KEY}" dependabot
+set_repository_secret APIGEE_API_SECRET "${APIGEE_DEV_API_SECRET}" dependabot
+set_repository_secret APIGEE_DOHS_API_KEY "${APIGEE_PTL_DOHS_API_KEY}" dependabot
+set_repository_secret CLOUDFRONT_ORIGIN_CUSTOM_HEADER "$(uuidgen)" dependabot
+set_repository_private_key_secret REGRESSION_TESTS_PEM ".secrets/eps-regression-testing.private-key.pem" dependabot
 
 set_environment_secret CDK_PULL_IMAGE_ROLE "${DEV_CDK_PULL_IMAGE_ROLE}" dev
 set_environment_secret CLOUD_FORMATION_DEPLOY_ROLE "${DEV_DEPLOY_ROLE}" dev
