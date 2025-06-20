@@ -117,6 +117,7 @@ jobs:
       WAF_ALLOW_GA_RUNNER_CONNECTIVITY: true
       USE_ZONE_APEX: false
       ROUTE53_EXPORT_NAME: EPS
+      REACT_LOG_LEVEL: "debug"
     secrets: inherit
   report_deployed_url:
     needs: [release_code, get_issue_number]

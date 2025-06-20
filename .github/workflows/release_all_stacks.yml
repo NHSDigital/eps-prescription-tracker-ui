@@ -69,7 +69,9 @@ on:
       ROUTE53_EXPORT_NAME:
         type: string
         description: This is the part of the route53 export name to use to identify the route 53 zone where the domain names are created - can be either EPS (for *.national.nhs.uk) or CPT (for prescriptiontracker.nhs.uk)
-
+      REACT_LOG_LEVEL:
+        type: string
+        required: true
 jobs:
   release_all_code:
     runs-on: ubuntu-22.04
@@ -250,6 +252,7 @@ jobs:
           export VITE_redirectSignIn="https://${fullCloudfrontDomain}/site/select-your-role"
           export VITE_redirectSignOut="https://${fullCloudfrontDomain}/site/logout"
           export VITE_COMMIT_ID=${{ inputs.COMMIT_ID }}
+          export VITE_VERSION_NUMBER=${{ inputs.VERSION_NUMBER }}
           export VITE_TARGET_ENVIRONMENT=${{ inputs.TARGET_ENVIRONMENT }}
           export VITE_RUM_GUEST_ROLE_ARN=${rumUnauthenticatedRumRoleArn}
           export VITE_RUM_IDENTITY_POOL_ID=${rumIdentityPoolId}
@@ -258,6 +261,7 @@ jobs:
           export VITE_RUM_ENABLE_XRAY=${rumEnableXRay}
           export VITE_RUM_SESSION_SAMPLE_RATE=${rumSessionSampleRate}
           export VITE_RUM_TELEMETRIES=${rumTelemetries}
+          export VITE_REACT_LOG_LEVEL=${{ inputs.REACT_LOG_LEVEL }}
 
           cd .build
           make react-build

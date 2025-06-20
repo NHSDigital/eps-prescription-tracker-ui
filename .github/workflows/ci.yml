@@ -126,6 +126,7 @@ jobs:
       WAF_ALLOW_GA_RUNNER_CONNECTIVITY: true
       USE_ZONE_APEX: false
       ROUTE53_EXPORT_NAME: EPS
+      REACT_LOG_LEVEL: "debug"
     secrets: inherit
   
   create_release_notes:
@@ -176,4 +177,5 @@ jobs:
       WAF_ALLOW_GA_RUNNER_CONNECTIVITY: true
       USE_ZONE_APEX: false
       ROUTE53_EXPORT_NAME: EPS
+      REACT_LOG_LEVEL: "debug"
     secrets: inherit

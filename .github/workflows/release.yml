@@ -145,6 +145,7 @@ jobs:
       WAF_ALLOW_GA_RUNNER_CONNECTIVITY: true
       USE_ZONE_APEX: false
       ROUTE53_EXPORT_NAME: EPS
+      REACT_LOG_LEVEL: "debug"
     secrets: inherit
 
   create_release_notes:
@@ -194,6 +195,7 @@ jobs:
       WAF_ALLOW_GA_RUNNER_CONNECTIVITY: true
       USE_ZONE_APEX: false
       ROUTE53_EXPORT_NAME: EPS
+      REACT_LOG_LEVEL: "debug"
     secrets: inherit
 
 
@@ -229,6 +231,7 @@ jobs:
       WAF_ALLOW_GA_RUNNER_CONNECTIVITY: true
       USE_ZONE_APEX: false
       ROUTE53_EXPORT_NAME: EPS
+      REACT_LOG_LEVEL: "debug"
     secrets: inherit
   release_int:
     needs: [tag_release, package_code, get_commit_id, release_qa]
@@ -258,6 +261,7 @@ jobs:
       WAF_ALLOW_GA_RUNNER_CONNECTIVITY: false
       USE_ZONE_APEX: true
       ROUTE53_EXPORT_NAME: CPT
+      REACT_LOG_LEVEL: "debug" # change this before pilot
     secrets: inherit
       
 
@@ -289,4 +293,5 @@ jobs:
       WAF_ALLOW_GA_RUNNER_CONNECTIVITY: false
       USE_ZONE_APEX: true
       ROUTE53_EXPORT_NAME: CPT
+      REACT_LOG_LEVEL: "debug" # change this before pilot
     secrets: inherit
