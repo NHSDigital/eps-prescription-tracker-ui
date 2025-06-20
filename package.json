@@ -33,7 +33,6 @@
         "packages/common/lambdaUtils",
         "packages/common/authFunctions",
         "packages/common/dynamoFunctions",
-        "packages/auth_demo",
         "packages/trackerUserInfoLambda",
         "packages/CIS2SignOutLambda",
         "packages/selectedRoleLambda"
