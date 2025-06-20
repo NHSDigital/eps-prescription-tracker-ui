@@ -156,10 +156,16 @@ export async function processPrescriptionRequest(
     try {
       const mergedResponse = mergePrescriptionDetails(apigeeResponse.data, doHSData)
 
+      const responseHeaders = {
+        "Content-Type": "application/json",
+        "Cache-Control": "no-store",
+        ...apigeeResponse.headers as { [key: string]: string }
+      }
+
       return {
         statusCode: 200,
         body: JSON.stringify(mergedResponse),
-        headers: formatHeaders(apigeeResponse.headers)
+        headers: formatHeaders(responseHeaders)
       }
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {

@@ -66,6 +66,8 @@ on:
         type: string
       CONFIG_FILE:
         type: string
+      WAF_ALLOW_GA_RUNNER_CONNECTIVITY:
+        type: boolean
       USE_ZONE_APEX:
         type: boolean
       ROUTE53_EXPORT_NAME:
@@ -85,6 +87,8 @@ on:
         required: false
       APIGEE_PTL_DOHS_API_KEY:
         required: false
+      CLOUDFRONT_ORIGIN_CUSTOM_HEADER:
+        required: true
 jobs:
   release_code:
     runs-on: ubuntu-22.04
@@ -182,8 +186,10 @@ jobs:
           JWT_KID: ${{ inputs.JWT_KID }}
           ROLE_ID: ${{ inputs.ROLE_ID }}
           CDK_APP_NAME: ${{ inputs.CDK_APP_NAME }}
+          WAF_ALLOW_GA_RUNNER_CONNECTIVITY: ${{ inputs.WAF_ALLOW_GA_RUNNER_CONNECTIVITY }}
           USE_ZONE_APEX: ${{ inputs.USE_ZONE_APEX }}
           ROUTE53_EXPORT_NAME: ${{ inputs.ROUTE53_EXPORT_NAME }}
+          CLOUDFRONT_ORIGIN_CUSTOM_HEADER: ${{ secrets.CLOUDFRONT_ORIGIN_CUSTOM_HEADER }}
 
       - name: Show diff
         run: |

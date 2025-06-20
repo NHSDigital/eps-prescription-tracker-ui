@@ -35,6 +35,8 @@ import {OAuth2ApiGatewayMethods} from "../resources/RestApiGateway/OAuth2ApiGate
 import {CloudfrontBehaviors} from "../resources/CloudfrontBehaviors"
 import {HostedZone} from "aws-cdk-lib/aws-route53"
 import {Certificate} from "aws-cdk-lib/aws-certificatemanager"
+import {WebACL} from "../resources/WebApplicationFirewall"
+import {CfnWebACLAssociation} from "aws-cdk-lib/aws-wafv2"
 
 export interface StatelessResourcesStackProps extends StackProps {
   readonly serviceName: string
@@ -87,6 +89,11 @@ export class StatelessResourcesStack extends Stack {
     const jwtKid: string = this.node.tryGetContext("jwtKid")
     const roleId: string = this.node.tryGetContext("roleId")
     const allowLocalhostAccess: boolean = this.node.tryGetContext("allowLocalhostAccess")
+    const webAclAttributeArn = this.node.tryGetContext("webAclAttributeArn")
+    const wafAllowGaRunnerConnectivity: boolean = this.node.tryGetContext("wafAllowGaRunnerConnectivity")
+    const githubAllowListIpv4 = this.node.tryGetContext("githubAllowListIpv4")
+    const githubAllowListIpv6 = this.node.tryGetContext("githubAllowListIpv6")
+    const cloudfrontOriginCustomHeader = this.node.tryGetContext("cloudfrontOriginCustomHeader")
 
     // Imports
     const baseImportPath = `${props.serviceName}-stateful-resources`
@@ -270,6 +277,20 @@ export class StatelessResourcesStack extends Stack {
       fullCloudfrontDomain: fullCloudfrontDomain
     })
 
+    // API Gateway WAF Web ACL
+    const webAcl = new WebACL(this, "WebAclApiGateway", {
+      serviceName: props.serviceName,
+      rateLimitTransactions: 3000, // 50 TPS
+      rateLimitWindowSeconds: 60, // Minimum is 60 seconds
+      githubAllowListIpv4: githubAllowListIpv4,
+      githubAllowListIpv6: githubAllowListIpv6,
+      wafAllowGaRunnerConnectivity: wafAllowGaRunnerConnectivity,
+      scope: "REGIONAL",
+      allowedHeaders: new Map<string, string>([
+        ["X-Cloudfront-Origin-Secret", cloudfrontOriginCustomHeader]
+      ])
+    })
+
     // - CPT backend API Gateway (/api/*)
     const apiGateway = new RestApiGateway(this, "ApiGateway", {
       serviceName: props.serviceName,
@@ -291,6 +312,17 @@ export class StatelessResourcesStack extends Stack {
       cloudwatchKmsKey: cloudwatchKmsKey,
       splunkDeliveryStream: splunkDeliveryStream,
       splunkSubscriptionFilterRole: splunkSubscriptionFilterRole
+    })
+
+    // Associate API Gateways to the WAF
+    new CfnWebACLAssociation(this, "apiGatewayAssociation", {
+      resourceArn: apiGateway.stageArn,
+      webAclArn: webAcl.attrArn
+    })
+
+    new CfnWebACLAssociation(this, "oauth2GatewayAssociation", {
+      resourceArn: oauth2Gateway.stageArn,
+      webAclArn: webAcl.attrArn
     })
 
     // --- Methods & Resources
@@ -337,13 +369,15 @@ export class StatelessResourcesStack extends Stack {
 
     const apiGatewayOrigin = new RestApiOrigin(apiGateway.apiGateway, {
       customHeaders: {
-        "destination-api-apigw-id": apiGateway.apiGateway.restApiId // for later apigw waf stuff
+        "destination-api-apigw-id": apiGateway.apiGateway.restApiId, // for later apigw waf stuff
+        "X-Cloudfront-Origin-Secret": cloudfrontOriginCustomHeader // Sets custom header used by WAF
       }
     })
 
     const oauth2GatewayOrigin = new RestApiOrigin(oauth2Gateway.apiGateway, {
       customHeaders: {
-        "destination-oauth2-apigw-id": oauth2Gateway.apiGateway.restApiId // for later apigw waf stuff
+        "destination-oauth2-apigw-id": oauth2Gateway.apiGateway.restApiId, // for later apigw waf stuff
+        "X-Cloudfront-Origin-Secret": cloudfrontOriginCustomHeader // Sets custom header used by WAF
       }
     })
 
@@ -406,7 +440,9 @@ export class StatelessResourcesStack extends Stack {
           responsePagePath: "/404.html",
           ttl: Duration.seconds(10)
         }
-      ]
+      ],
+      webAclAttributeArn: webAclAttributeArn,
+      wafAllowGaRunnerConnectivity: wafAllowGaRunnerConnectivity
     })
 
     // Outputs

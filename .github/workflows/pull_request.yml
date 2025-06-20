@@ -8,11 +8,28 @@ env:
   BRANCH_NAME: ${{ github.event.pull_request.head.ref }}
 
 jobs:
+  get_commit_message:
+    runs-on: ubuntu-22.04
+    outputs:
+      commit_message: ${{ steps.commit_message.outputs.commit_message }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.BRANCH_NAME }}
+          fetch-depth: 0
+      - name: Get Commit message
+        id: commit_message
+        run: |
+          echo "commit_message=$(git show -s --format=%s)" >> "$GITHUB_OUTPUT"
+  
   quality_checks:
+    needs: [get_commit_message]
+    if: ${{ !contains(needs.get_commit_message.outputs.commit_message, '#skip-qc') }}
     uses: NHSDigital/eps-workflow-quality-checks/.github/workflows/quality-checks.yml@v4.0.5
     secrets:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-  
+
   pr_title_format_check:
     uses: ./.github/workflows/pr_title_check.yml
 
@@ -54,19 +71,27 @@ jobs:
 
   package_code:
     needs: [get_issue_number, get_commit_id, quality_checks]
+    if: |
+      always() &&
+      ! contains(needs.*.result, 'failure') &&
+      ! contains(needs.*.result, 'cancelled')
     uses: ./.github/workflows/cdk_package_code.yml
     with:
       VERSION_NUMBER: PR-${{ needs.get_issue_number.outputs.issue_number }}
       COMMIT_ID: ${{ needs.get_commit_id.outputs.commit_id }}
 
   release_code:
-    needs: [get_issue_number, package_code, get_commit_id, quality_checks]
+    needs: [get_issue_number, package_code, get_commit_id]
+    if: |
+      always() &&
+      ! contains(needs.*.result, 'failure') &&
+      ! contains(needs.*.result, 'cancelled')
     uses: ./.github/workflows/release_all_stacks.yml
     with:
       SERVICE_NAME: cpt-ui-pr-${{needs.get_issue_number.outputs.issue_number}}
       TARGET_ENVIRONMENT: dev-pr
       VERSION_NUMBER: PR-${{ needs.get_issue_number.outputs.issue_number }}
-      COMMIT_ID: ${{ needs.get_commit_id.outputs.commit_id }}
+      COMMIT_ID: "static-pr"
       useMockOidc: true
       primaryOidcIssuer: "https://am.nhsint.auth-ptl.cis2.spineservices.nhs.uk:443/openam/oauth2/realms/root/realms/NHSIdentity/realms/Healthcare"
       primaryOidcAuthorizeEndpoint: "https://am.nhsint.auth-ptl.cis2.spineservices.nhs.uk:443/openam/oauth2/realms/root/realms/NHSIdentity/realms/Healthcare/authorize"
@@ -89,6 +114,7 @@ jobs:
       ROLE_ID: "555254242106"
       LOG_LEVEL: "DEBUG"
       RUN_REGRESSION_TESTS: true
+      WAF_ALLOW_GA_RUNNER_CONNECTIVITY: true
       USE_ZONE_APEX: false
       ROUTE53_EXPORT_NAME: EPS
     secrets:
@@ -101,8 +127,13 @@ jobs:
       APIGEE_API_KEY: ${{ secrets.APIGEE_DEV_API_KEY }}
       APIGEE_API_SECRET: ${{ secrets.APIGEE_DEV_API_SECRET }}
       APIGEE_PTL_DOHS_API_KEY: ${{ secrets.APIGEE_PTL_DOHS_API_KEY }}
+      CLOUDFRONT_ORIGIN_CUSTOM_HEADER: ${{ secrets.CLOUDFRONT_ORIGIN_CUSTOM_HEADER_WAF_CODE_PTL }}
   report_deployed_url:
     needs: [release_code, get_issue_number]
+    if: |
+      always() &&
+      ! contains(needs.*.result, 'failure') &&
+      ! contains(needs.*.result, 'cancelled')
     runs-on: ubuntu-22.04
     steps:
       - name: Report Deployed URL

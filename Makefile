@@ -208,6 +208,8 @@ cdk-synth-stateful-resources-no-mock:
 	LOG_LEVEL=debug \
 	USE_CUSTOM_COGNITO_DOMAIN=true \
 	ALLOW_LOCALHOST_ACCESS=false \
+	WAF_ALLOW_GA_RUNNER_CONNECTIVITY=true \
+	CLOUDFRONT_ORIGIN_CUSTOM_HEADER=foo \
 	DO_NOT_GET_AWS_EXPORT=true \
 	USE_ZONE_APEX=false \
 		 ./.github/scripts/fix_cdk_json.sh .local_config/stateful_app.config.json
@@ -246,16 +248,23 @@ cdk-synth-stateless-resources-no-mock:
 	APIGEE_PRESCRIPTION_ENDPOINT=foo \
 	APIGEE_PERSONAL_DEMOGRAPHICS_ENDPOINT=foo \
 	APIGEE_DOHS_ENDPOINT=foo \
+	WEBACL_ATTRIBUTE_ARN=foo \
+	WEBACL_ATTRIBUTE_ARN=foo \
 	JWT_KID=foo \
 	ROLE_ID=foo \
 	ALLOW_LOCALHOST_ACCESS=false \
+	WAF_ALLOW_GA_RUNNER_CONNECTIVITY=true \
+	GITHUB_ACTIONS_RUNNER_IPV4='["127.0.0.1"]' \
+	GITHUB_ACTIONS_RUNNER_IPV6='["::1"]' \
 	CLOUDFRONT_CERT_ARN=arn:aws:acm:us-east-1:444455556666:certificate/certificate_ID \
 	DO_NOT_GET_AWS_EXPORT=true \
+	CLOUDFRONT_ORIGIN_CUSTOM_HEADER=foo \
 	USE_ZONE_APEX=false \
 		 ./.github/scripts/fix_cdk_json.sh .local_config/stateless_app.config.json
 	CONFIG_FILE_NAME=.local_config/stateless_app.config.json npx cdk synth \
 		--quiet \
-		--app "npx ts-node --prefer-ts-exts packages/cdk/bin/StatelessResourcesApp.ts" 
+		--app "npx ts-node --prefer-ts-exts packages/cdk/bin/StatelessResourcesApp.ts" \
+
 
 cdk-synth-stateful-resources-mock:
 	mkdir -p .local_config
@@ -290,6 +299,8 @@ cdk-synth-stateful-resources-mock:
 	LOG_LEVEL=debug \
 	USE_CUSTOM_COGNITO_DOMAIN=true \
 	ALLOW_LOCALHOST_ACCESS=false \
+	WAF_ALLOW_GA_RUNNER_CONNECTIVITY=true \
+	CLOUDFRONT_ORIGIN_CUSTOM_HEADER=foo \
 	DO_NOT_GET_AWS_EXPORT=true \
 	USE_ZONE_APEX=false \
 		 ./.github/scripts/fix_cdk_json.sh .local_config/stateful_app.config.json
@@ -327,6 +338,7 @@ cdk-synth-stateless-resources-mock:
 	MOCK_OIDC_USERINFO_ENDPOINT=undefined \
 	MOCK_OIDC_JWKS_ENDPOINT=undefined \
 	USE_MOCK_OIDC=true \
+	WEBACL_ATTRIBUTE_ARN=foo \
 	APIGEE_API_KEY=foo \
     APIGEE_API_SECRET=foo \
     APIGEE_PTL_DOHS_API_KEY=foo \
@@ -339,7 +351,11 @@ cdk-synth-stateless-resources-mock:
 	ROLE_ID=foo \
 	ALLOW_LOCALHOST_ACCESS=false \
 	CLOUDFRONT_CERT_ARN=arn:aws:acm:us-east-1:444455556666:certificate/certificate_ID \
+	WAF_ALLOW_GA_RUNNER_CONNECTIVITY=true \
+	GITHUB_ACTIONS_RUNNER_IPV4='["127.0.0.1"]' \
+	GITHUB_ACTIONS_RUNNER_IPV6='["::1"]' \
 	DO_NOT_GET_AWS_EXPORT=true \
+	CLOUDFRONT_ORIGIN_CUSTOM_HEADER=foo \
 	USE_ZONE_APEX=false \
 		 ./.github/scripts/fix_cdk_json.sh .local_config/stateless_app.config.json
 	CONFIG_FILE_NAME=.local_config/stateless_app.config.json npx cdk synth \
