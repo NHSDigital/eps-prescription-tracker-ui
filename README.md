@@ -214,3 +214,6 @@ Workflows are in the `.github/workflows` folder:
 - `release.yml` Creates a new release tag and deploys to all environments
 - `cdk_package_code.yml` Packages code into a docker image and uploads to a github artifact for later deployment.
 - `cdk_release_code.yml` Release code built by cdk_package_code.yml to an environment.
+
+
+Make a change to standup an environment
