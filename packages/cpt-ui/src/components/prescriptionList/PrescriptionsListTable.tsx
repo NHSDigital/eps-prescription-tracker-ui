@@ -187,7 +187,7 @@ const PrescriptionsListTable = ({
   }
 
   if (initialPrescriptions.length === 0) {
-    return <p className="nhsuk-body">{textContent.noPrescriptionsMessage}</p>
+    return <p className="nhsuk-body" data-testid="no-prescriptions-message">{textContent.noPrescriptionsMessage}</p>
   }
 
   const renderTableDescription = () => {
