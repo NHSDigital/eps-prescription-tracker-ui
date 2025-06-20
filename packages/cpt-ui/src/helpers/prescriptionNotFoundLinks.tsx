@@ -65,11 +65,8 @@ export function buildAltLink({alt}: { alt: AltType }) {
 }
 
 /**
- * Builds a "go back" link to the relevant search form, preserving only the relevant search params
- *
- * @param searchType - the type of search originally performed
- * @param searchParams - the full URLSearchParams from the current page
- * @returns a string URL path with the correct base path and filtered query string
+ * Builds a "go back" link to the relevant search form or results page,
+ * preserving only the relevant search parameters.
  */
 export function buildBackLink(searchType: AllowedSearchType, searchParams: URLSearchParams): string {
   const filteredParams = new URLSearchParams()
