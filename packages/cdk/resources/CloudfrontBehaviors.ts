@@ -9,7 +9,8 @@ import {
   IOrigin,
   KeyValueStore,
   OriginRequestPolicy,
-  ViewerProtocolPolicy
+  ViewerProtocolPolicy,
+  ResponseHeadersPolicy
 } from "aws-cdk-lib/aws-cloudfront"
 import {RestApiOrigin} from "aws-cdk-lib/aws-cloudfront-origins"
 
@@ -26,6 +27,7 @@ export interface CloudfrontBehaviorsProps {
   readonly oauth2GatewayOrigin: RestApiOrigin
   readonly oauth2GatewayRequestPolicy: OriginRequestPolicy
   readonly staticContentBucketOrigin: IOrigin
+  readonly responseHeaderPolicy: string
 }
 
 /**
@@ -282,6 +284,10 @@ export class CloudfrontBehaviors extends Construct{
         viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS
       }
     }
+
+    const responseHeaderPolicy = new ResponseHeadersPolicy(this, "ResponseHeadersPolicy", {
+      responseHeadersPolicyName: responseHeaderPolicy
+    })
 
     //Outputs
     this.additionalBehaviors = additionalBehaviors
