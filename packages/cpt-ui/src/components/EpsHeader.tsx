@@ -92,15 +92,20 @@ export default function EpsHeader() {
     <>
       <Header transactional className="masthead" id="eps-header">
         <Header.Container className="masthead-container">
-          <Header.Logo href="/" data-testid="eps_header_logoLink" />
-
-          <Header.ServiceName
-            href={FRONTEND_PATHS.LOGIN}
+          <Link
+            to={FRONTEND_PATHS.LOGIN}
             onClick={redirectToLogin}
-            data-testid="eps_header_serviceName"
+            className="combined-logo-and-service-name"
+            style={{
+              display: "flex"
+            }}
+            data-testid="eps_header_logoLink"
           >
-            {HEADER_SERVICE}
-          </Header.ServiceName>
+            <Header.Logo />
+            <Header.ServiceName data-testid="eps_header_serviceName">
+              {HEADER_SERVICE}
+            </Header.ServiceName>
+          </Link>
           <Header.Content />
         </Header.Container>
 
