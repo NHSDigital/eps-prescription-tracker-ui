@@ -39,6 +39,7 @@ export class RestApiGateway extends Construct {
   public readonly apiGateway: RestApi
   public readonly apiGatewayRole: Role
   public readonly authorizer?: CognitoUserPoolsAuthorizer
+  public readonly stageArn: string
   oauth2ApiGateway: RestApi
 
   public constructor(scope: Construct, id: string, props: RestApiGatewayProps) {
@@ -103,5 +104,6 @@ export class RestApiGateway extends Construct {
     this.apiGateway = apiGateway
     this.apiGatewayRole = apiGatewayRole
     this.authorizer = authorizer
+    this.stageArn = apiGateway.deploymentStage.stageArn
   }
 }
