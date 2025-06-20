@@ -12,7 +12,7 @@ import {buildBackLink, inferSearchType} from "@/helpers/prescriptionNotFoundLink
 export default function UnknownErrorMessage() {
   const [searchParams] = useSearchParams()
   const searchType = inferSearchType(searchParams)
-  const backLinkUrl = buildBackLink({searchType, searchParams})
+  const backLinkUrl = buildBackLink(searchType, searchParams)
   return (
     <Container
       className="nhsuk-width-container-fluid unknown-error-container"

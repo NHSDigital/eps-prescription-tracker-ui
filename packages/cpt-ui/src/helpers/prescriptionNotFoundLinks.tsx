@@ -3,9 +3,14 @@ import {FRONTEND_PATHS} from "@/constants/environment"
 import {SEARCH_TYPES, AllowedSearchType} from "@/constants/ui-strings/PrescriptionNotFoundMessageStrings"
 
 /**
- * Infers the type of search to display the correct "not found" message based on the URL parameters present.
+ * Determine the type of search based on the available URL parameters
  */
 export function inferSearchType(params: URLSearchParams): AllowedSearchType {
+  // If both nhsNumber and prescriptionId are present, treat as PrescriptionListPage
+  // if (params.has("nhsNumber") && params.has("prescriptionId")) {
+  //   return "PrescriptionListPage"
+  // }
+
   if (
     params.has("lastName") &&
     params.has("dobDay") &&
@@ -14,20 +19,23 @@ export function inferSearchType(params: URLSearchParams): AllowedSearchType {
   ) {
     return "BasicDetailsSearch"
   }
+
   if (params.has("prescriptionId")) return "PrescriptionIdSearch"
   if (params.has("nhsNumber")) return "NhsNumberSearch"
+
   // Fallback to BasicDetailsSearch if no other params match
   return "BasicDetailsSearch"
 }
 
-// Mapping for route paths
+// Maps search types to their corresponding frontend route
 export const searchTypeToPath: Record<AllowedSearchType, string> = {
   [SEARCH_TYPES.PRESCRIPTION_ID]: FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID,
   [SEARCH_TYPES.NHS_NUMBER]: FRONTEND_PATHS.SEARCH_BY_NHS_NUMBER,
   [SEARCH_TYPES.BASIC_DETAILS]: FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS
+  // [SEARCH_TYPES.PRESCRIPTION_LIST]: FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT
 }
 
-// Mapping for query params to keep
+// Defines which query params are relevant for each search type
 export const searchTypeToParams: Record<AllowedSearchType, Array<string>> = {
   [SEARCH_TYPES.PRESCRIPTION_ID]: ["prescriptionId"],
   [SEARCH_TYPES.NHS_NUMBER]: ["nhsNumber"],
@@ -43,12 +51,10 @@ export const searchTypeToParams: Record<AllowedSearchType, Array<string>> = {
 
 type AltType = { to: string; label: string }
 
-// Helper to build alternative search links
-export function buildAltLink({
-  alt
-}: {
-  alt: AltType
-}) {
+/**
+ * Builds an alternative search link (e.g., "Search using NHS number")
+ */
+export function buildAltLink({alt}: { alt: AltType }) {
   const altPath = FRONTEND_PATHS[alt.to as keyof typeof FRONTEND_PATHS]
   return (
     <Link key={alt.to} to={altPath}>
@@ -57,19 +63,14 @@ export function buildAltLink({
   )
 }
 
-// Helper to build the back link for the breadcrumb
-export function buildBackLink({
-  searchType,
-  searchParams
-}: {
-  searchType: AllowedSearchType
+/**
+ * Builds a "go back" link to the search form, preserving all current query params.
+ */
+export function buildBackLink(
+  searchType: AllowedSearchType,
   searchParams: URLSearchParams
-}) {
-  const paramsToKeep = searchTypeToParams[searchType]
-  const originalParams = new URLSearchParams()
-  paramsToKeep.forEach((key) => {
-    const val = searchParams.get(key)
-    if (val) originalParams.set(key, val)
-  })
-  return `${searchTypeToPath[searchType]}?${originalParams.toString()}`
+): string {
+  const path = searchTypeToPath[searchType]
+  const query = searchParams.toString()
+  return query ? `${path}?${query}` : path
 }

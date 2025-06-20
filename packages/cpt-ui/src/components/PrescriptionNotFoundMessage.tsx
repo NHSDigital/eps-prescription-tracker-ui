@@ -43,11 +43,11 @@ export default function PrescriptionNotFoundMessage() {
     return [
       <p key="first">{first}</p>,
       <p key="second">{parts}</p>,
-      ...rest.map((p, i) => <p key={i + 2}>{p}</p>)
+      ...rest.map((p: string, i: number) => <p key={i + 2}>{p}</p>)
     ]
   }
 
-  const backLinkUrl = buildBackLink({searchType, searchParams})
+  const backLinkUrl = buildBackLink(searchType, searchParams)
 
   return (
     <Container
