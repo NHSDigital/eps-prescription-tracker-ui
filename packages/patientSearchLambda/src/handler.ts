@@ -16,7 +16,10 @@ const code = (statusCode: number) => ({
   body: (body: object) => ({
     statusCode,
     body: JSON.stringify(body),
-    headers: headerUtils.formatHeaders({"Content-Type": "application/json"})
+    headers: headerUtils.formatHeaders({
+      "Content-Type": "application/json",
+      "Cache-Control": "no-store"
+    })
   })
 })
 
