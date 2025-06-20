@@ -6,8 +6,7 @@ import {
   HttpVersion,
   SecurityPolicyProtocol,
   SSLMethod,
-  ResponseHeadersPolicy,
-  SECURITY_HEADERS
+  ResponseHeadersPolicy
 } from "aws-cdk-lib/aws-cloudfront"
 import {
   AaaaRecord,
@@ -51,7 +50,7 @@ export class CloudfrontDistribution extends Construct {
     super(scope, id)
 
     const responseHeaderPolicy = new ResponseHeadersPolicy(this, "ResponseHeadersPolicy", {
-      responseHeadersPolicyId: SECURITY_HEADERS
+      responseHeadersPolicyId: "SECURITY_HEADERS"
     })
 
     // Resources
