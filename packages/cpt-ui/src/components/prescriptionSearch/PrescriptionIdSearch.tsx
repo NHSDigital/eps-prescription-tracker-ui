@@ -102,7 +102,7 @@ export default function PrescriptionIdSearch() {
               </ErrorSummary>
             )}
 
-            <FormGroup className={errorKey ? "nhsuk-form-group--error" : ""}>
+            <FormGroup data-testId="search-by-prescriptionid-box" className={errorKey ? "nhsuk-form-group--error" : ""}>
               <Label htmlFor="presc-id-input" id="presc-id-label">
                 <h2
                   className="nhsuk-heading-m nhsuk-u-margin-bottom-1 no-outline"

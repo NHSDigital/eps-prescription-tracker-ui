@@ -27,6 +27,15 @@ export default function EpsTabs({
 
   const navigate = useNavigate()
   const handleKeyDown = useCallback((event: KeyboardEvent) => {
+    const activeElement = document.activeElement
+
+    // Prevent tab switching if focus is in an input box
+    if (
+      activeElement &&
+      (activeElement.tagName === "INPUT" || activeElement.tagName === "TEXTAREA")
+    ) {
+      return
+    }
     const tabs = tabHeaderArray
     const currentTabIndex = tabs.findIndex(
       (tab) => tab.link.includes(activeTabPath)
