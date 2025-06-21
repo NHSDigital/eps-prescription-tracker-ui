@@ -14,7 +14,7 @@
   },
   "devDependencies": {
     "@aws-sdk/client-dynamodb": "^3.821.0",
-    "axios": "^1.9.0",
+    "axios": "^1.10.0",
     "mock-jwks": "3.2.2"
   },
   "dependencies": {
