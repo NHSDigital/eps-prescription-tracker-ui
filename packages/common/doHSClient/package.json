@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "@aws-lambda-powertools/logger": "^2.22.0",
-    "axios": "^1.7.8",
+    "axios": "^1.10.0",
     "axios-retry": "^4.5.0"
   },
   "devDependencies": {
