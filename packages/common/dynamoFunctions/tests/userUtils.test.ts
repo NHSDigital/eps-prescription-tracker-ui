@@ -167,6 +167,14 @@ describe("extractRoleInformation", () => {
           activity_codes: ["B0278"] // Also has access
         },
         {
+          org_code: "ORG2",
+          person_orgid: "PORG2",
+          person_roleid: "ROLE2",
+          role_code: "RC3",
+          role_name: "User Role",
+          activity_codes: ["B0401"] // Also has access
+        },
+        {
           org_code: "ORG3",
           person_orgid: "PORG3",
           person_roleid: "ROLE3",
@@ -194,8 +202,8 @@ describe("extractRoleInformation", () => {
     const selectedRoleId = ""
     const result = extractRoleInformation(mockUserInfo, selectedRoleId, mockLogger as Logger)
 
-    // Verify roles with access (should include both B0570 and B0278)
-    expect(result.roles_with_access).toHaveLength(2)
+    // Verify roles with access (should include B0570, B0278 and B0401)
+    expect(result.roles_with_access).toHaveLength(3)
     expect(result.roles_without_access).toHaveLength(1)
   })
 
