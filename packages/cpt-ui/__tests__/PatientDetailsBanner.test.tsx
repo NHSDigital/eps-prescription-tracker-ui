@@ -4,14 +4,27 @@ import React from "react"
 import "@testing-library/jest-dom"
 import {render, screen, waitFor} from "@testing-library/react"
 
-import {PatientDetails} from "@cpt-ui-common/common-types"
+import {PatientDetails, PatientDetailsAddress} from "@cpt-ui-common/common-types"
 
 import {STRINGS} from "@/constants/ui-strings/PatientDetailsBannerStrings"
 
 import {MockPatientDetailsProvider} from "../__mocks__/MockPatientDetailsProvider"
 
-// Example patient data
-const completeDetails: PatientDetails = {
+// Shared address mocks
+const fullAddress: PatientDetailsAddress = {
+  line1: "55 Oak Street",
+  line2: "OAK LANE",
+  city: "Leeds",
+  postcode: "LS1 1XX"
+}
+
+const partialAddress: PatientDetailsAddress = {
+  line1: "55 Oak Street",
+  city: "Leeds"
+}
+
+// Base patient template
+const basePatient: PatientDetails = {
   nhsNumber: "5900009890",
   prefix: "Mr",
   suffix: "",
@@ -19,29 +32,21 @@ const completeDetails: PatientDetails = {
   family: "Wolderton",
   gender: "male",
   dateOfBirth: "01-Nov-1988",
-  address: "55 OAK STREET, OAK LANE, Leeds, LS1 1XX"
+  address: fullAddress
 }
 
-const minimumDetails: PatientDetails = {
-  nhsNumber: "5900009890",
-  prefix: "Mr",
-  suffix: "",
-  given: "William",
-  family: "Wolderton",
+const completeDetails = basePatient
+
+const minimumDetails = {
+  ...basePatient,
   gender: null,
   dateOfBirth: null,
   address: null
 }
 
-const partialAddressDetails: PatientDetails = {
-  nhsNumber: "5900009890",
-  prefix: "Mr",
-  suffix: "",
-  given: "William",
-  family: "Wolderton",
-  gender: "male",
-  dateOfBirth: "01-Nov-1988",
-  address: "55 Oak Street, Leeds"
+const partialAddressDetails = {
+  ...basePatient,
+  address: partialAddress
 }
 
 import PatientDetailsBanner from "@/components/PatientDetailsBanner"

@@ -269,10 +269,12 @@ describe("PrescriptionListPage", () => {
     renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT + "?prescriptionId=ABC123-A83008-C2D93O")
     expect(mockedAxios.get).toHaveBeenCalledTimes(1)
 
-    // We need to wait for the useEffect to run
     await waitFor(() => {
-      const linkContainer = screen.getByTestId("go-back-link")
-      expect(linkContainer).toHaveAttribute("href", PRESCRIPTION_LIST_PAGE_STRINGS.PRESCRIPTION_ID_SEARCH_TARGET)
+      const backLink = screen.getByTestId("go-back-link")
+      expect(backLink).toHaveAttribute(
+        "href",
+        FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID + "?prescriptionId=ABC123-A83008-C2D93O"
+      )
     })
   })
 
@@ -284,10 +286,26 @@ describe("PrescriptionListPage", () => {
     renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT + "?nhsNumber=1234567890")
     expect(mockedAxios.get).toHaveBeenCalledTimes(1)
 
-    // We need to wait for the useEffect to run
     await waitFor(() => {
-      const linkContainer = screen.getByTestId("go-back-link")
-      expect(linkContainer).toHaveAttribute("href", PRESCRIPTION_LIST_PAGE_STRINGS.NHS_NUMBER_SEARCH_TARGET)
+      const backLink = screen.getByTestId("go-back-link")
+      expect(backLink).toHaveAttribute("href", FRONTEND_PATHS.SEARCH_BY_NHS_NUMBER + "?nhsNumber=1234567890")
+    })
+  })
+
+  it("sets back link to prescription list when both prescriptionId and nhsNumber are present", async () => {
+    mockedAxios.get.mockResolvedValue({
+      status: 200,
+      data: mockSearchResponse
+    })
+
+    const url = FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT + "?nhsNumber=1234567890&prescriptionId=ABC123-A83008-C2D93O"
+    renderWithRouter(url)
+
+    expect(mockedAxios.get).toHaveBeenCalledTimes(1)
+
+    await waitFor(() => {
+      const backLink = screen.getByTestId("go-back-link")
+      expect(backLink).toHaveAttribute("href", FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT + "?nhsNumber=1234567890")
     })
   })
 
@@ -313,27 +331,57 @@ describe("PrescriptionListPage", () => {
     })
   })
 
-  it("navigates back to the prescription ID search when prescriptionId query fails", async () => {
+  it("displays error page with correct back link to prescriptionId search when query fails", async () => {
     mockedAxios.get.mockRejectedValue(new Error("Server error"))
 
     renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT + "?prescriptionId=002F5E-A83008-497F1Z")
     expect(mockedAxios.get).toHaveBeenCalledTimes(1)
 
     await waitFor(() => {
-      const dummyTag = screen.getByTestId("dummy-no-prescription-page")
-      expect(dummyTag).toBeInTheDocument()
+      const errorHeading = screen.getByTestId("unknown-error-heading")
+      expect(errorHeading).toBeInTheDocument()
+      expect(errorHeading).toHaveTextContent("Sorry, there is a problem with this service")
+
+      const backLink = screen.getByTestId("go-back-link")
+      expect(backLink).toHaveAttribute(
+        "href",
+        FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID + "?prescriptionId=002F5E-A83008-497F1Z"
+      )
     })
   })
 
-  it("navigates back to the NHS number search when nhsNumber query fails", async () => {
+  it("displays error page with correct back link to nhsNumber search when query fails", async () => {
     mockedAxios.get.mockRejectedValue(new Error("Server error"))
 
     renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT + "?nhsNumber=32165649870")
     expect(mockedAxios.get).toHaveBeenCalledTimes(1)
 
     await waitFor(() => {
-      const dummyTag = screen.getByTestId("dummy-no-prescription-page")
-      expect(dummyTag).toBeInTheDocument()
+      const errorHeading = screen.getByTestId("unknown-error-heading")
+      expect(errorHeading).toBeInTheDocument()
+      expect(errorHeading).toHaveTextContent("Sorry, there is a problem with this service")
+
+      const backLink = screen.getByTestId("go-back-link")
+      expect(backLink).toHaveAttribute("href", FRONTEND_PATHS.SEARCH_BY_NHS_NUMBER + "?nhsNumber=32165649870")
+    })
+  })
+
+  it("displays error page with correct back link to Prescription List page when query fails", async () => {
+    mockedAxios.get.mockRejectedValue(new Error("Server error"))
+
+    renderWithRouter(
+      FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT +
+      "?nhsNumber=32165649870&prescriptionId=ABC123-A83008-C2D93O"
+    )
+    expect(mockedAxios.get).toHaveBeenCalledTimes(1)
+
+    await waitFor(() => {
+      const errorHeading = screen.getByTestId("unknown-error-heading")
+      expect(errorHeading).toBeInTheDocument()
+      expect(errorHeading).toHaveTextContent("Sorry, there is a problem with this service")
+
+      const backLink = screen.getByTestId("go-back-link")
+      expect(backLink).toHaveAttribute("href", FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT + "?nhsNumber=32165649870")
     })
   })
 })

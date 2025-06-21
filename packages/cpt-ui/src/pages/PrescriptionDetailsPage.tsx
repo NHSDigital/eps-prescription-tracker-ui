@@ -21,7 +21,7 @@ import {AuthContext} from "@/context/AuthProvider"
 import {usePrescriptionInformation} from "@/context/PrescriptionInformationProvider"
 import {usePatientDetails} from "@/context/PatientDetailsProvider"
 
-import {API_ENDPOINTS, FRONTEND_PATHS} from "@/constants/environment"
+import {API_ENDPOINTS} from "@/constants/environment"
 import {STRINGS} from "@/constants/ui-strings/PrescriptionDetailsPageStrings"
 
 import EpsSpinner from "@/components/EpsSpinner"
@@ -30,6 +30,7 @@ import {PrescribedDispensedItemsCards} from "@/components/prescriptionDetails/Pr
 import {MessageHistoryCard} from "@/components/prescriptionDetails/MessageHistoryCard"
 
 import http from "@/helpers/axios"
+import {buildBackLink, inferSearchType} from "@/helpers/prescriptionNotFoundLinks"
 
 export default function PrescriptionDetailsPage() {
   const auth = useContext(AuthContext)
@@ -46,6 +47,12 @@ export default function PrescriptionDetailsPage() {
   const [prescribedItems, setPrescribedItems] = useState<Array<PrescribedItemDetails>>([])
   const [dispensedItems, setDispensedItems] = useState<Array<DispensedItemDetails>>([])
   const [messageHistory, setMessageHistory] = useState<Array<MessageHistory>>([])
+
+  const searchType = inferSearchType(queryParams)
+  const backLinkUrl = buildBackLink(searchType, queryParams)
+
+  console.log("Prescription Details Page searchType:", searchType)
+  console.log("Prescription Details Page backLinkUrl:", backLinkUrl)
 
   const getPrescriptionDetails = async (
     prescriptionId: string,
@@ -152,7 +159,7 @@ export default function PrescriptionDetailsPage() {
             <BackLink
               data-testid="go-back-link"
               asElement={Link}
-              to={`${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}?${queryParams.toString()}`}
+              to={backLinkUrl}
             >
               {STRINGS.GO_BACK}
             </BackLink>

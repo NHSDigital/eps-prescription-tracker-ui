@@ -48,6 +48,11 @@ http.interceptors.response.use(
     // Destructure for readability
     const {config, response} = error
 
+    // Gracefully handle 404 errors
+    if (response && response.status === 404) {
+      return response
+    }
+
     // If we have a response and it’s a 401, attempt retries
     if (response && response.status !== 200) {
       // Make sure __retryCount is set in the request config

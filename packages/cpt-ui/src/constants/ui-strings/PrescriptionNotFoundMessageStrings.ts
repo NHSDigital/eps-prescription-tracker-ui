@@ -1,4 +1,8 @@
-export type AllowedSearchType = keyof typeof SEARCH_STRINGS
+export type AllowedSearchType =
+  | "PrescriptionIdSearch"
+  | "NhsNumberSearch"
+  | "BasicDetailsSearch"
+  | "PrescriptionListPage"
 
 export const SEARCH_STRINGS = {
   PrescriptionIdSearch: {
@@ -51,6 +55,10 @@ export const SEARCH_STRINGS = {
         label: "search using an NHS number"
       }
     ]
+  },
+  PrescriptionListPage: {
+    body: ["", "", ""],
+    alternatives: []
   }
 } as const
 
@@ -62,5 +70,6 @@ export const STRINGS = {
 export const SEARCH_TYPES = {
   PRESCRIPTION_ID: "PrescriptionIdSearch",
   NHS_NUMBER: "NhsNumberSearch",
-  BASIC_DETAILS: "BasicDetailsSearch"
+  BASIC_DETAILS: "BasicDetailsSearch",
+  PRESCRIPTION_LIST: "PrescriptionListPage"
 } as const
