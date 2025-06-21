@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
-declare -a arr=("auth_demo" 
-                "cdk"
+declare -a arr=("cdk"
                 "CIS2SignOutLambda"
                 "cognito"
                 "cpt-ui"

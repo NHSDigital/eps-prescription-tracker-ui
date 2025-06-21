@@ -82,6 +82,7 @@ VITE_redirectSignIn=http://localhost:3000/site/select-your-role
 VITE_redirectSignOut=http://localhost:3000/site/logout
 
 VITE_COMMIT_ID="Local Development Server"
+VITE_TARGET_ENVIRONMENT=dev
 
 REACT_APP_hostedLoginDomain=$VITE_hostedLoginDomain
 REACT_APP_userPoolClientId=$VITE_userPoolClientId
@@ -243,6 +244,7 @@ export VITE_RUM_ALLOW_COOKIES
 export VITE_RUM_ENABLE_XRAY
 export VITE_RUM_SESSION_SAMPLE_RATE
 export VITE_RUM_TELEMETRIES
+export VITE_TARGET_ENVIRONMENT
 export LOCAL_DEV
 export BASE_PATH
 export API_DOMAIN_OVERRIDE

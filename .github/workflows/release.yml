@@ -147,22 +147,11 @@ jobs:
       ROUTE53_EXPORT_NAME: EPS
       REACT_LOG_LEVEL: "debug"
       LOG_RETENTION_IN_DAYS: 30
-    secrets: inherit
-
-  create_release_notes:
-    needs: [tag_release, package_code, get_commit_id, release_dev]
-    uses: ./.github/workflows/create_release_notes.yml
-    with:
-      VERSION_NUMBER: ${{needs.tag_release.outputs.version_tag}}
       CREATE_INT_RELEASE_NOTES: true
-      CREATE_INT_RC_RELEASE_NOTES: false
       CREATE_PROD_RELEASE_NOTES: true
       MARK_JIRA_RELEASED: false
-    secrets:
-      DEV_CLOUD_FORMATION_EXECUTE_LAMBDA_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_EXECUTE_LAMBDA_ROLE }}
-      DEV_CLOUD_FORMATION_CHECK_VERSION_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_CHECK_VERSION_ROLE }}
-      INT_CLOUD_FORMATION_CHECK_VERSION_ROLE: ${{ secrets.INT_CLOUD_FORMATION_CHECK_VERSION_ROLE }}
-      PROD_CLOUD_FORMATION_CHECK_VERSION_ROLE: ${{ secrets.PROD_CLOUD_FORMATION_CHECK_VERSION_ROLE }}
+      CREATE_INT_RC_RELEASE_NOTES: false   
+    secrets: inherit
 
   release_ref:
     needs: [tag_release, package_code, get_commit_id, release_dev]
@@ -199,7 +188,6 @@ jobs:
       REACT_LOG_LEVEL: "debug"
       LOG_RETENTION_IN_DAYS: 30
     secrets: inherit
-
 
   release_qa:
     needs: [tag_release, package_code, get_commit_id, release_dev]
@@ -266,9 +254,11 @@ jobs:
       ROUTE53_EXPORT_NAME: CPT
       REACT_LOG_LEVEL: "debug" # change this before pilot
       LOG_RETENTION_IN_DAYS: 30
+      CREATE_INT_RELEASE_NOTES: true
+      CREATE_PROD_RELEASE_NOTES: true
+      MARK_JIRA_RELEASED: false
+      CREATE_INT_RC_RELEASE_NOTES: true   
     secrets: inherit
-      
-
   release_prod:
     needs: [tag_release, package_code, get_commit_id, release_int]
     uses: ./.github/workflows/release_all_stacks.yml
@@ -299,4 +289,8 @@ jobs:
       ROUTE53_EXPORT_NAME: CPT
       REACT_LOG_LEVEL: "debug" # change this before pilot
       LOG_RETENTION_IN_DAYS: 731
+      CREATE_INT_RELEASE_NOTES: true
+      CREATE_PROD_RELEASE_NOTES: true
+      MARK_JIRA_RELEASED: true
+      CREATE_INT_RC_RELEASE_NOTES: false   
     secrets: inherit
