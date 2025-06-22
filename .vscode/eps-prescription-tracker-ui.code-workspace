@@ -90,6 +90,7 @@
         "packages/common/commonTypes",
         "packages/staticContent"
       ],
+      "jest.useJest30": true,
       "python.testing.pytestEnabled": false,
       "files.exclude": {
         "packages/": true
