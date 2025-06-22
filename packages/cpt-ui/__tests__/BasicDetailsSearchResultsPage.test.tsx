@@ -129,7 +129,7 @@ describe("BasicDetailsSearchResultsPage", () => {
       expect(screen.getByText("Issac Wolderton-Rodriguez")).toBeInTheDocument()
       expect(screen.getAllByText("Male")[0]).toBeInTheDocument()
       expect(screen.getAllByText("6-May-2013")[0]).toBeInTheDocument()
-      expect(screen.getAllByText("123 Brundel Close, Headingley, Leeds, West Yorkshire, LS6 1JL&nbsp;")[0])
+      expect(screen.getAllByText("123 Brundel Close, Headingley, Leeds, West Yorkshire, LS6 1JL")[0])
         .toBeInTheDocument()
       expect(screen.getByText("972 691 9207")).toBeInTheDocument()
 
@@ -137,7 +137,7 @@ describe("BasicDetailsSearchResultsPage", () => {
       expect(screen.getByText("Steve Wolderton-Rodriguez")).toBeInTheDocument()
       expect(screen.getAllByText("Male")[1]).toBeInTheDocument()
       expect(screen.getAllByText("6-May-2013")[1]).toBeInTheDocument()
-      expect(screen.getAllByText("123 Brundel Close, Headingley, Leeds, West Yorkshire, LS6 1JL&nbsp;")[1])
+      expect(screen.getAllByText("123 Brundel Close, Headingley, Leeds, West Yorkshire, LS6 1JL")[1])
         .toBeInTheDocument()
       expect(screen.getByText("972 591 9207")).toBeInTheDocument()
     })
@@ -284,7 +284,7 @@ describe("BasicDetailsSearchResultsPage", () => {
       const dobCells = screen.getAllByText("6-May-2013")
       expect(dobCells[0].closest("td")).toHaveAttribute("headers", "header-dob")
 
-      const addressCells = screen.getAllByText("123 Brundel Close, Headingley, Leeds, West Yorkshire, LS6 1JL&nbsp;")
+      const addressCells = screen.getAllByText("123 Brundel Close, Headingley, Leeds, West Yorkshire, LS6 1JL")
       expect(addressCells[0].closest("td")).toHaveAttribute("headers", "header-address")
 
       const nhsCells = screen.getAllByText("972 691 9207")
