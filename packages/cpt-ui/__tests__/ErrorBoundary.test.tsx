@@ -114,7 +114,7 @@ describe("ErrorBoundary", () => {
     fireEvent.click(clearErrorButton)
 
     // Verify redirection to home page
-    expect(window.location.href).toBe("/");
+    expect(window.location.href).toBe("http://localhost/");
 
     // Restore window.location
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
