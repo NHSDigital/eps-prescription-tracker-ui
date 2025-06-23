@@ -17,6 +17,7 @@ import {RoleDetails} from "@cpt-ui-common/common-types"
 import {Button} from "./ReactRouterButton"
 import {FRONTEND_PATHS} from "@/constants/environment"
 import {getSearchParams} from "@/helpers/getSearchParams"
+import {logger} from "@/helpers/logger"
 
 // This is passed to the EPS card component.
 export type RolesWithAccessProps = {
@@ -107,7 +108,7 @@ export default function RoleSelectionPage({
       odsCode: role.org_code || noODSCode
     })))
 
-    console.warn("RoleCardPropsWithAccess length: ", {roleCardPropsWithAccess, error: auth.error})
+    logger.warn("RoleCardPropsWithAccess length: ", {roleCardPropsWithAccess, error: auth.error})
   }, [auth.rolesWithAccess, auth.rolesWithoutAccess])
 
   // Handle auto-redirect for single role

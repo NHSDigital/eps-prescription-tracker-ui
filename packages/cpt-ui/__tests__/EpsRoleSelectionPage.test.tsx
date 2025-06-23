@@ -270,7 +270,7 @@ describe("RoleSelectionPage", () => {
     // Step 1: isSigningIn = true, so spinner shows
     const authState = {
       isSigningIn: true,
-      isSignedIn: true,
+      isSignedIn: false,
       hasSingleRoleAccess: false,
       hasNoAccess: false,
       rolesWithAccess: [],
@@ -295,6 +295,7 @@ describe("RoleSelectionPage", () => {
     // Step 2: Simulate login complete and role assignment
     act(() => {
       authState.isSigningIn = false
+      authState.isSignedIn = true
       authState.hasSingleRoleAccess = true
       authState.isSignedIn = true
       mockUseAuth.mockReturnValue(authState)
