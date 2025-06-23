@@ -18,7 +18,9 @@ export const ENV_CONFIG = {
 // Application Configuration
 export const APP_CONFIG = {
   SERVICE_NAME: import.meta.env.VITE_SERVICE_NAME,
-  COMMIT_ID: import.meta.env.VITE_COMMIT_ID
+  COMMIT_ID: import.meta.env.VITE_COMMIT_ID,
+  VERSION_NUMBER: import.meta.env.VITE_VERSION_NUMBER,
+  REACT_LOG_LEVEL: import.meta.env.VITE_REACT_LOG_LEVEL
 } as const
 
 // API Endpoints

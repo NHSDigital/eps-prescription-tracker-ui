@@ -6,7 +6,7 @@
   "scripts": {
     "compile": "tsc --build",
     "dev": "vite --host",
-    "build": "tsc --build && vite build",
+    "build": "tsc --build && vite build --debug",
     "lint": "eslint  --max-warnings 0 --fix --config ../../eslint.config.mjs .",
     "start": "vite preview",
     "test": "NODE_NO_WARNINGS=1 jest --no-cache --coverage",
@@ -19,6 +19,7 @@
     "axios": "^1.10.0",
     "nhsuk-frontend": "^9.6.2",
     "nhsuk-react-components": "^5.0.0",
+    "pino": "^9.7.0",
     "react": "^18",
     "react-dom": "^18",
     "react-router-dom": "^6.22.3",
