@@ -103,20 +103,17 @@ export default function PrescriptionIdSearch() {
             )}
 
             <FormGroup className={errorKey ? "nhsuk-form-group--error" : ""}>
-              <h2
-                className="nhsuk-heading-m nhsuk-u-margin-bottom-1 no-outline"
-                data-testid="prescription-id-search-heading"
-              >
-                {PRESCRIPTION_ID_SEARCH_STRINGS.labelText}
-              </h2>
-
               <Label htmlFor="presc-id-input" id="presc-id-label">
-                {PRESCRIPTION_ID_SEARCH_STRINGS.labelText}
+                <h2
+                  className="nhsuk-heading-m nhsuk-u-margin-bottom-1 no-outline"
+                  data-testid="prescription-id-search-heading"
+                >
+                  {PRESCRIPTION_ID_SEARCH_STRINGS.labelText}
+                </h2>
+                <HintText id="presc-id-hint" data-testid="prescription-id-hint">
+                  {PRESCRIPTION_ID_SEARCH_STRINGS.hintText}
+                </HintText>
               </Label>
-
-              <HintText id="presc-id-hint" data-testid="prescription-id-hint">
-                {PRESCRIPTION_ID_SEARCH_STRINGS.hintText}
-              </HintText>
 
               <ErrorMessage id="presc-id-error" data-testid="prescription-id-error">
                 {errorKey ? displayedError : ""}
@@ -129,8 +126,8 @@ export default function PrescriptionIdSearch() {
                 onChange={handleInputChange}
                 className={errorKey ? "nhsuk-input nhsuk-input--error" : "nhsuk-input"}
                 autoComplete="off"
+                data-testid="prescription-id-input"
                 aria-describedby={errorKey ? "presc-id-error" : undefined}
-                data-testid="search-by-prescriptionid-box"
               />
             </FormGroup>
 
