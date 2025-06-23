@@ -126,11 +126,11 @@ export default function PrescriptionListPage() {
         setLoading(false)
       } catch (err) {
         console.error("Error during search", err)
-        if (err instanceof Error && err.message === "CanceledError: canceled") {
+        if (err instanceof Error && err.message === "canceled") {
           navigate(FRONTEND_PATHS.LOGIN)
           return
         }
-        if ((err as AxiosError)?.response?.status === 404) {
+        if ((err as AxiosError)?.response?.status === 404 || (err as AxiosError)?.response?.status === 502) {
           setShowNotFound(true)
         } else {
           setError(true)

@@ -125,6 +125,16 @@ const mockSearchResponse: SearchResponse = {
   ]
 }
 
+const emptyResultsMock = {
+  status: 200,
+  data: {
+    patient: {},
+    currentPrescriptions: [],
+    pastPrescriptions: [],
+    futurePrescriptions: []
+  }
+}
+
 function Dummy404() {
   return (
     <main>
@@ -332,7 +342,7 @@ describe("PrescriptionListPage", () => {
     })
   })
 
-  it("renders prescription not found with back link to prescriptionId search when query fails", async () => {
+  it("renders prescription not found message with back link to prescriptionId search when query fails", async () => {
     mockedAxios.get.mockRejectedValue({response: {status: 404}})
 
     renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT + "?prescriptionId=002F5E-A83008-497F1Z")
@@ -350,7 +360,7 @@ describe("PrescriptionListPage", () => {
     })
   })
 
-  it("renders not found with back link to NHS number search when query fails", async () => {
+  it("renders prescription not found message with back link to NHS number search when query fails", async () => {
     mockedAxios.get.mockRejectedValue({response: {status: 404}})
 
     renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT + "?nhsNumber=3814272730")
@@ -368,10 +378,10 @@ describe("PrescriptionListPage", () => {
     })
   })
 
-  it("renders not found with back link to NHS number search when query fails", async () => {
-    mockedAxios.get.mockRejectedValue({response: {status: 404}})
+  it("renders prescription not found message when API returns no prescriptions for a valid NHS number", async () => {
+    mockedAxios.get.mockResolvedValue(emptyResultsMock)
 
-    renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT + "?nhsNumber=3814272730")
+    renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT + "?nhsNumber=1234567890")
     expect(mockedAxios.get).toHaveBeenCalledTimes(1)
 
     await waitFor(() => {
@@ -381,13 +391,51 @@ describe("PrescriptionListPage", () => {
       const backLink = screen.getByTestId("go-back-link")
       expect(backLink).toHaveAttribute(
         "href",
-        FRONTEND_PATHS.SEARCH_BY_NHS_NUMBER + "?nhsNumber=3814272730"
+        FRONTEND_PATHS.SEARCH_BY_NHS_NUMBER + "?nhsNumber=1234567890"
       )
+    })
+  })
+
+  it("renders not found message when API returns 404", async () => {
+    mockedAxios.get.mockRejectedValue({
+      isAxiosError: true,
+      response: {status: 404}
+    })
+
+    renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT + "?nhsNumber=1234567890")
+
+    await waitFor(() => {
+      expect(screen.getByTestId("presc-not-found-heading")).toHaveTextContent(STRINGS.heading)
+    })
+  })
+
+  it("renders not found message when API returns 502", async () => {
+    mockedAxios.get.mockRejectedValue({
+      isAxiosError: true,
+      response: {status: 502}
+    })
+
+    renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT + "?nhsNumber=1234567890")
+
+    await waitFor(() => {
+      expect(screen.getByTestId("presc-not-found-heading")).toBeInTheDocument()
     })
   })
 
   it("displays UnknownErrorMessage for real network/server errors", async () => {
     mockedAxios.get.mockRejectedValue(new Error("AWS CloudFront issue"))
+
+    renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT + "?nhsNumber=1234567890")
+
+    await waitFor(() => {
+      const heading = screen.getByTestId("unknown-error-heading")
+      expect(heading).toBeInTheDocument()
+      expect(heading).toHaveTextContent("Sorry, there is a problem with this service")
+    })
+  })
+
+  it("renders UnknownErrorMessage when server responds with unexpected error", async () => {
+    mockedAxios.get.mockRejectedValue({response: {status: 500}})
 
     renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT + "?nhsNumber=1234567890")
 
