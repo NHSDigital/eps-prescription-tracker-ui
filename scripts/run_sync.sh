@@ -100,7 +100,7 @@ REACT_APP_RUM_TELEMETRIES=$VITE_RUM_TELEMETRIES
 
 # vars needed for cdk
 VERSION_NUMBER="PR-${PULL_REQUEST_ID}"
-COMMIT_ID=unknown
+COMMIT_ID=static-pr
 AUTO_DELETE_OBJECTS=true
 CLOUDFRONT_DISTRIBUTION_ID=$(echo "$CF_LONDON_EXPORTS" | \
     jq \
@@ -186,6 +186,8 @@ LOG_LEVEL=debug
 USE_CUSTOM_COGNITO_DOMAIN=false
 ALLOW_LOCALHOST_ACCESS=true
 WAF_ALLOW_GA_RUNNER_CONNECTIVITY=true
+CLOUDFRONT_ORIGIN_CUSTOM_HEADER=foo
+WAF_ALLOW_GA_RUNNER_CONNECTIVITY=true
 APIGEE_API_KEY=$(echo "$CF_LONDON_EXPORTS" | \
     jq \
     --arg EXPORT_NAME "${SERVICE_NAME}-stateless-resources:local:apigeeApiKey" \
@@ -194,9 +196,9 @@ APIGEE_API_SECRET=$(echo "$CF_LONDON_EXPORTS" | \
     jq \
     --arg EXPORT_NAME "${SERVICE_NAME}-stateless-resources:local:apigeeApiSecret" \
     -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
-APIGEE_PTL_DOHS_API_KEY=$(echo "$CF_LONDON_EXPORTS" | \
+APIGEE_DOHS_API_KEY=$(echo "$CF_LONDON_EXPORTS" | \
     jq \
-    --arg EXPORT_NAME "${SERVICE_NAME}-stateless-resources:local:apigeePtlDoHSApiKey" \
+    --arg EXPORT_NAME "${SERVICE_NAME}-stateless-resources:local:apigeeDoHSApiKey" \
     -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
 APIGEE_DOHS_ENDPOINT=$(echo "$CF_LONDON_EXPORTS" | \
     jq \
@@ -291,9 +293,11 @@ export LOG_LEVEL
 export USE_CUSTOM_COGNITO_DOMAIN
 export ALLOW_LOCALHOST_ACCESS
 export WAF_ALLOW_GA_RUNNER_CONNECTIVITY
+export CLOUDFRONT_ORIGIN_CUSTOM_HEADER
+export WAF_ALLOW_GA_RUNNER_CONNECTIVITY
 export APIGEE_API_KEY
 export APIGEE_API_SECRET
-export APIGEE_PTL_DOHS_API_KEY
+export APIGEE_DOHS_API_KEY
 export APIGEE_CIS2_TOKEN_ENDPOINT
 export APIGEE_MOCK_TOKEN_ENDPOINT
 export APIGEE_PRESCRIPTION_ENDPOINT

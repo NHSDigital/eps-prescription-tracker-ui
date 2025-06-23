@@ -6,6 +6,7 @@ import {contactInfo} from "@/helpers/contactInfo"
 import {getHomeLink} from "@/helpers/loginFunctions"
 import {Breadcrumb, InsetText} from "nhsuk-react-components"
 import {useAuth} from "@/context/AuthProvider"
+import {FRONTEND_PATHS} from "@/constants/environment"
 
 export default function PrivacyNoticePage() {
   const auth = useAuth()
@@ -13,8 +14,10 @@ export default function PrivacyNoticePage() {
   return (
     <main className="nhsuk-width-container nhsuk-u-margin-top-4">
       <Breadcrumb>
-        <Breadcrumb.Item href={getHomeLink(auth.isSignedIn)}>
-          {PrivacyNoticeStrings.home}
+        <Breadcrumb.Item>
+          <Link to={getHomeLink(auth.isSignedIn)}>
+            {PrivacyNoticeStrings.home}
+          </Link>
         </Breadcrumb.Item>
       </Breadcrumb>
 
@@ -57,7 +60,7 @@ export default function PrivacyNoticePage() {
             <li>{PrivacyNoticeStrings.usage.functionality}</li>
             <li>
               {PrivacyNoticeStrings.usage.serviceImprovement}
-              <Link to="/cookies">{PrivacyNoticeStrings.usage.cookie}</Link>
+              <Link to={FRONTEND_PATHS.COOKIES}>{PrivacyNoticeStrings.usage.cookie}</Link>
             </li>
             <li>{PrivacyNoticeStrings.usage.audit}</li>
             <li>{PrivacyNoticeStrings.usage.answer}</li>
