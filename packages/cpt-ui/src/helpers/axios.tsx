@@ -66,7 +66,7 @@ http.interceptors.response.use(
     }
 
     // If status isn't 401 or we've already retried 3 times, reject
-    return Promise.reject(Error(error))
+    return Promise.reject(error)
   }
 )
 
