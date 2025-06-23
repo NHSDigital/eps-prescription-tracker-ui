@@ -13,18 +13,18 @@
     "check-licenses": "license-checker --failOn GPL --failOn LGPL --start ../.."
   },
   "dependencies": {
-    "@aws-lambda-powertools/logger": "^2.20.0",
-    "@aws-lambda-powertools/parameters": "^2.20.0",
+    "@aws-lambda-powertools/logger": "^2.22.0",
+    "@aws-lambda-powertools/parameters": "^2.22.0",
     "@aws-sdk/client-dynamodb": "^3.826.0",
     "@aws-sdk/lib-dynamodb": "^3.828.0",
     "@cpt-ui-common/authFunctions": "^1.0.0",
     "@cpt-ui-common/dynamoFunctions": "^1.0.0",
     "@cpt-ui-common/lambdaUtils": "^1.0.0",
     "@cpt-ui-common/middyErrorHandler": "^1.0.0",
-    "@middy/core": "^6.3.1",
-    "@middy/input-output-logger": "^6.3.1",
+    "@middy/core": "^6.3.2",
+    "@middy/input-output-logger": "^6.3.2",
     "aws-lambda": "^1.0.7",
-    "axios": "^1.9.0",
+    "axios": "^1.10.0",
     "jsonwebtoken": "^9.0.2",
     "jwks-rsa": "^3.2.0",
     "uuid": "^11.1.0"

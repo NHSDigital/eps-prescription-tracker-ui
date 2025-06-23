@@ -65,10 +65,16 @@ if [ "${DO_NOT_GET_AWS_EXPORT}" != "true" ]; then
 fi
 
 if [ -z "${EPS_DOMAIN_NAME}" ]; then
-    EPS_DOMAIN_NAME=$(echo "$CF_LONDON_EXPORTS" | jq  -r '.Exports[] | select(.Name == "eps-route53-resources:EPS-domain") | .Value')
+    EPS_DOMAIN_NAME=$(echo "$CF_LONDON_EXPORTS" | \
+        jq \
+        --arg EXPORT_NAME "eps-route53-resources:${ROUTE53_EXPORT_NAME}-domain" \
+        -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
 fi
 if [ -z "${EPS_HOSTED_ZONE_ID}" ]; then
-    EPS_HOSTED_ZONE_ID=$(echo "$CF_LONDON_EXPORTS" | jq -r '.Exports[] | select(.Name == "eps-route53-resources:EPS-ZoneID") | .Value')
+    EPS_HOSTED_ZONE_ID=$(echo "$CF_LONDON_EXPORTS" | \
+        jq \
+        --arg EXPORT_NAME "eps-route53-resources:${ROUTE53_EXPORT_NAME}-ZoneID" \
+        -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
 fi
 if [ -z "${CLOUDFRONT_DISTRIBUTION_ID}" ]; then
     CLOUDFRONT_DISTRIBUTION_ID=$(echo "$CF_LONDON_EXPORTS" | \
@@ -202,7 +208,10 @@ elif [ "$CDK_APP_NAME" == "StatelessResourcesApp" ]; then
     fix_string_key primaryOidcjwksEndpoint "${PRIMARY_OIDC_JWKS_ENDPOINT}"
     fix_boolean_number_key wafAllowGaRunnerConnectivity "${WAF_ALLOW_GA_RUNNER_CONNECTIVITY}"
     fix_string_key webAclAttributeArn "${WEBACL_ATTRIBUTE_ARN}"
-
+    fix_list_key githubAllowListIpv4 "${GITHUB_ACTIONS_RUNNER_IPV4}"
+    fix_list_key githubAllowListIpv6 "${GITHUB_ACTIONS_RUNNER_IPV6}"
+    fix_string_key cloudfrontOriginCustomHeader "${CLOUDFRONT_ORIGIN_CUSTOM_HEADER}"
+    
     if [ "$USE_MOCK_OIDC" == "true" ]; then
         fix_string_key mockOidcClientId "${MOCK_OIDC_CLIENT_ID}"
         fix_string_key mockOidcTokenEndpoint "${MOCK_OIDC_TOKEN_ENDPOINT}"
@@ -215,7 +224,7 @@ elif [ "$CDK_APP_NAME" == "StatelessResourcesApp" ]; then
     fix_boolean_number_key useMockOidc "${USE_MOCK_OIDC}"
     fix_string_key apigeeApiKey "${APIGEE_API_KEY}"
     fix_string_key apigeeApiSecret "${APIGEE_API_SECRET}"
-    fix_string_key apigeePtlDoHSApiKey "${APIGEE_PTL_DOHS_API_KEY}"
+    fix_string_key apigeeDoHSApiKey "${APIGEE_DOHS_API_KEY}"
     fix_string_key apigeeCIS2TokenEndpoint "${APIGEE_CIS2_TOKEN_ENDPOINT}"
     fix_string_key apigeePrescriptionsEndpoint "${APIGEE_PRESCRIPTION_ENDPOINT}"
     fix_string_key apigeePersonalDemographicsEndpoint "${APIGEE_PERSONAL_DEMOGRAPHICS_ENDPOINT}"
