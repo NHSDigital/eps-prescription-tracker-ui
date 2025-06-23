@@ -1,7 +1,6 @@
 /* eslint-disable max-len */
 import React from "react"
 import {Tag} from "nhsuk-react-components"
-import "../../styles/PrescriptionTable.scss"
 import {PrescriptionSummary} from "@cpt-ui-common/common-types/src"
 import {PrescriptionsListStrings} from "../../constants/ui-strings/PrescriptionListTabStrings"
 import {getStatusTagColour, getStatusDisplayText, formatDateForPrescriptions} from "@/helpers/statusMetadata"
@@ -182,7 +181,6 @@ const PrescriptionsListTable = ({
       const bDateTimestamp = getValidDateTimestamp(b.issueDate)
       return bDateTimestamp - aDateTimestamp
     })
-
     return sorted
   }
 
@@ -349,13 +347,15 @@ const PrescriptionsListTable = ({
                         {row.prescriptionId}
                       </div>
                       <div>
-                        <Link
-                          to={constructLink(row.prescriptionId, row.issueNumber)}
-                          className="nhsuk-link"
-                          data-testid={`view-prescription-link-${row.prescriptionId}`}
-                        >
-                          {PRESCRIPTION_LIST_TABLE_TEXT.viewPrescription}
-                        </Link>
+                        {row.statusCode === "0005" ?PRESCRIPTION_LIST_TABLE_TEXT.unavailableText :
+                          <Link
+                            to={constructLink(row.prescriptionId, row.issueNumber)}
+                            className="nhsuk-link"
+                            data-testid={`view-prescription-link-${row.prescriptionId}`}
+                          >
+                            {PRESCRIPTION_LIST_TABLE_TEXT.viewPrescription}
+                          </Link>
+                        }
                       </div>
                     </td>
                   )
