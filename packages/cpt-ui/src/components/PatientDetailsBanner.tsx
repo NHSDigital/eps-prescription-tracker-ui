@@ -59,9 +59,15 @@ export default function PatientDetailsBanner() {
     }
 
     if (patientDetails.address) {
-      const {line1, line2, city, postcode} = patientDetails.address as PatientDetailsAddress
-      const fullAddress = [line1, line2, city, postcode].filter(Boolean).join(", ")
-      setAddressText(fullAddress)
+      if (typeof patientDetails.address === "string") {
+        // If it's a string, use it directly
+        setAddressText(patientDetails.address)
+      } else {
+        // If it's an object, build from fields
+        const {line1, line2, city, postcode} = patientDetails.address as PatientDetailsAddress
+        const fullAddress = [line1, line2, city, postcode].filter(Boolean).join(", ")
+        setAddressText(fullAddress)
+      }
     } else {
       setAddressText(STRINGS.UNKNOWN)
       allDetailsPresent = false

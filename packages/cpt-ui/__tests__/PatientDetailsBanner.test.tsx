@@ -174,4 +174,36 @@ describe("PatientDetailsBanner", () => {
     const bannerDiv = screen.getByTestId("patient-details-banner")
     expect(bannerDiv.className).not.toMatch(/patient-details-partial-data/)
   })
+
+  it("renders patient details when address is a plain string from Leeds", async () => {
+    const patientWithStringAddress = {
+      ...basePatient,
+      address: "10 Heathfield, Leeds, LS12 3AB"
+    }
+
+    render(
+      <MockPatientDetailsProvider patientDetails={patientWithStringAddress}>
+        <PatientDetailsBanner />
+      </MockPatientDetailsProvider>
+    )
+
+    await waitFor(() => {
+      expect(screen.getByTestId("patient-details-banner")).toBeInTheDocument()
+    })
+
+    // Basic field checks
+    expect(screen.getByText("William WOLDERTON")).toBeInTheDocument()
+    expect(screen.getByText(/Gender:\s*Male/i)).toBeInTheDocument()
+    expect(screen.getByText(/NHS number:\s*590 000 9890/i)).toBeInTheDocument()
+    expect(screen.getByText(/Date of birth:\s*01-Nov-1988/i)).toBeInTheDocument()
+
+    // Address string check
+    expect(screen.getByText(/Address:\s*10 Heathfield, Leeds, LS12 3AB/i)).toBeInTheDocument()
+
+    // Ensure no partial or missing data message
+    expect(screen.queryByText(STRINGS.MISSING_DATA)).toBeNull()
+    const bannerDiv = screen.getByTestId("patient-details-banner")
+    expect(bannerDiv.className).not.toMatch(/patient-details-partial-data/)
+  })
+
 })
