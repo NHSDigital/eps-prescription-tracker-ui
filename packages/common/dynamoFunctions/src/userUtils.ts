@@ -88,7 +88,7 @@ export const extractRoleInformation = (
   const rolesWithAccess: Array<RoleDetails> = []
   const rolesWithoutAccess: Array<RoleDetails> = []
   let currentlySelectedRole: RoleDetails | undefined = undefined
-  const accepted_access_codes = ["B0570", "B0278"]
+  const accepted_access_codes = ["B0570", "B0278", "B0401"]
 
   // Extract user details
   const userDetails: UserDetails = {
