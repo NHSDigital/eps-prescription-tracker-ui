@@ -52,22 +52,20 @@ const CookiePolicyPage = () => {
     setHasInitialized(true)
   }, [hasInitialized])
 
-  const handleCookieChoice = (choice: "accepted" | "rejected", saveState: boolean) => {
-    if (saveState) {
-      if (choice === "accepted") {
-        cptAwsRum.enable()
-      } else {
-        cptAwsRum.disable()
-      }
-      setCookiesSet(true)
-      setEpsCookieConsent(choice)
-      setEpsConfirmationBannerShown(true)
-      if (typeof window !== "undefined" && window.NHSCookieConsent) {
-        window.NHSCookieConsent.setStatistics(choice === "accepted")
-        window.NHSCookieConsent.setConsented(true)
-      }
-
+  const saveCookieChoice = (choice: "accepted" | "rejected") => {
+    if (choice === "accepted") {
+      cptAwsRum.enable()
+    } else {
+      cptAwsRum.disable()
     }
+    setCookiesSet(true)
+    setEpsCookieConsent(choice)
+    setEpsConfirmationBannerShown(true)
+    if (typeof window !== "undefined" && window.NHSCookieConsent) {
+      window.NHSCookieConsent.setStatistics(choice === "accepted")
+      window.NHSCookieConsent.setConsented(true)
+    }
+
     setLocalCookieChoice(choice)
   }
   const auth = useAuth()
@@ -136,7 +134,7 @@ const CookiePolicyPage = () => {
                   type="radio"
                   value="yes"
                   checked={localCookieChoice === "accepted"}
-                  onChange={() => handleCookieChoice("accepted", false)}
+                  onChange={() => setLocalCookieChoice("accepted")}
                   data-testid="accept-analytics-cookies"
                 />
                 <label className="nhsuk-label nhsuk-radios__label" htmlFor="example-1">
@@ -151,7 +149,7 @@ const CookiePolicyPage = () => {
                   type="radio"
                   value="no"
                   checked={localCookieChoice === "rejected"}
-                  onChange={() => handleCookieChoice("rejected", false)}
+                  onChange={() => setLocalCookieChoice("rejected")}
                   data-testid="reject-analytics-cookies"
                 />
                 <label
@@ -167,7 +165,7 @@ const CookiePolicyPage = () => {
         <button
           className="nhsuk-button"
           onClick={() => {
-            handleCookieChoice(localCookieChoice, true)
+            saveCookieChoice(localCookieChoice)
             navigate("/cookies-selected")
           }}
           data-testid="save-cookie-preferences">
