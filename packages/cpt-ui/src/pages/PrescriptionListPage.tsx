@@ -8,6 +8,7 @@ import {
 } from "nhsuk-react-components"
 import "../styles/PrescriptionTable.scss"
 
+import {AxiosError} from "axios"
 import http from "@/helpers/axios"
 
 import {AuthContext} from "@/context/AuthProvider"
@@ -129,7 +130,7 @@ export default function PrescriptionListPage() {
           navigate(FRONTEND_PATHS.LOGIN)
           return
         }
-        if (err.response?.status === 404) {
+        if ((err as AxiosError)?.response?.status === 404) {
           setShowNotFound(true)
         } else {
           setError(true)
