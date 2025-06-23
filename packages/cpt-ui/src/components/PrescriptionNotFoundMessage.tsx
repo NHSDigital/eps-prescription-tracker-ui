@@ -56,7 +56,7 @@ export default function PrescriptionNotFoundMessage() {
     >
       <nav className="nhsuk-breadcrumb nhsuk-u-padding-bottom-0 nhsuk-u-padding-left-2" aria-label="Breadcrumb">
         <BackLink
-          data-testid="presc-not-found-backlink"
+          data-testid="go-back-link"
           asElement={Link}
           to={backLinkUrl}>
           {STRINGS.goBackLink}
