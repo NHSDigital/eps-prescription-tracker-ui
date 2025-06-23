@@ -5,6 +5,7 @@ import {render, screen, waitFor} from "@testing-library/react"
 import "@testing-library/jest-dom"
 
 import {PRESCRIPTION_LIST_PAGE_STRINGS} from "@/constants/ui-strings/PrescriptionListPageStrings"
+import {STRINGS} from "@/constants/ui-strings/PrescriptionNotFoundMessageStrings"
 import {FRONTEND_PATHS} from "@/constants/environment"
 
 import {PrescriptionStatus, SearchResponse, TreatmentType} from "@cpt-ui-common/common-types"
@@ -331,16 +332,15 @@ describe("PrescriptionListPage", () => {
     })
   })
 
-  it("displays error page with correct back link to prescriptionId search when query fails", async () => {
-    mockedAxios.get.mockRejectedValue(new Error("Server error"))
+  it("renders prescription not found with back link to prescriptionId search when query fails", async () => {
+    mockedAxios.get.mockRejectedValue({response: {status: 404}})
 
     renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT + "?prescriptionId=002F5E-A83008-497F1Z")
     expect(mockedAxios.get).toHaveBeenCalledTimes(1)
 
     await waitFor(() => {
-      const errorHeading = screen.getByTestId("unknown-error-heading")
-      expect(errorHeading).toBeInTheDocument()
-      expect(errorHeading).toHaveTextContent("Sorry, there is a problem with this service")
+      const heading = screen.getByTestId("presc-not-found-heading")
+      expect(heading).toHaveTextContent(STRINGS.heading)
 
       const backLink = screen.getByTestId("go-back-link")
       expect(backLink).toHaveAttribute(
@@ -350,38 +350,51 @@ describe("PrescriptionListPage", () => {
     })
   })
 
-  it("displays error page with correct back link to nhsNumber search when query fails", async () => {
-    mockedAxios.get.mockRejectedValue(new Error("Server error"))
+  it("renders not found with back link to NHS number search when query fails", async () => {
+    mockedAxios.get.mockRejectedValue({response: {status: 404}})
 
     renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT + "?nhsNumber=32165649870")
     expect(mockedAxios.get).toHaveBeenCalledTimes(1)
 
     await waitFor(() => {
-      const errorHeading = screen.getByTestId("unknown-error-heading")
-      expect(errorHeading).toBeInTheDocument()
-      expect(errorHeading).toHaveTextContent("Sorry, there is a problem with this service")
+      const heading = screen.getByTestId("presc-not-found-heading")
+      expect(heading).toHaveTextContent(STRINGS.heading)
 
       const backLink = screen.getByTestId("go-back-link")
-      expect(backLink).toHaveAttribute("href", FRONTEND_PATHS.SEARCH_BY_NHS_NUMBER + "?nhsNumber=32165649870")
+      expect(backLink).toHaveAttribute(
+        "href",
+        FRONTEND_PATHS.SEARCH_BY_NHS_NUMBER + "?nhsNumber=32165649870"
+      )
     })
   })
 
-  it("displays error page with correct back link to Prescription List page when query fails", async () => {
-    mockedAxios.get.mockRejectedValue(new Error("Server error"))
+  it("renders not found with back link to NHS number search when query fails", async () => {
+    mockedAxios.get.mockRejectedValue({response: {status: 404}})
 
-    renderWithRouter(
-      FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT +
-      "?nhsNumber=32165649870&prescriptionId=ABC123-A83008-C2D93O"
-    )
+    renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT + "?nhsNumber=32165649870")
     expect(mockedAxios.get).toHaveBeenCalledTimes(1)
 
     await waitFor(() => {
-      const errorHeading = screen.getByTestId("unknown-error-heading")
-      expect(errorHeading).toBeInTheDocument()
-      expect(errorHeading).toHaveTextContent("Sorry, there is a problem with this service")
+      const heading = screen.getByTestId("presc-not-found-heading")
+      expect(heading).toHaveTextContent(STRINGS.heading)
 
       const backLink = screen.getByTestId("go-back-link")
-      expect(backLink).toHaveAttribute("href", FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT + "?nhsNumber=32165649870")
+      expect(backLink).toHaveAttribute(
+        "href",
+        FRONTEND_PATHS.SEARCH_BY_NHS_NUMBER + "?nhsNumber=32165649870"
+      )
+    })
+  })
+
+  it("displays UnknownErrorMessage for real network/server errors", async () => {
+    mockedAxios.get.mockRejectedValue(new Error("AWS CloudFront issue"))
+
+    renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT + "?nhsNumber=1234567890")
+
+    await waitFor(() => {
+      const heading = screen.getByTestId("unknown-error-heading")
+      expect(heading).toBeInTheDocument()
+      expect(heading).toHaveTextContent("Sorry, there is a problem with this service")
     })
   })
 })

@@ -127,10 +127,13 @@ export default function PrescriptionListPage() {
         console.error("Error during search", err)
         if (err instanceof Error && err.message === "CanceledError: canceled") {
           navigate(FRONTEND_PATHS.LOGIN)
+          return
+        }
+        if (err.response?.status === 404) {
+          setShowNotFound(true)
         } else {
           setError(true)
         }
-        setShowNotFound(true)
         setLoading(false)
       }
     }
