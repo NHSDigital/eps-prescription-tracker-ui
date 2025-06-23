@@ -353,7 +353,7 @@ describe("PrescriptionListPage", () => {
   it("renders not found with back link to NHS number search when query fails", async () => {
     mockedAxios.get.mockRejectedValue({response: {status: 404}})
 
-    renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT + "?nhsNumber=32165649870")
+    renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT + "?nhsNumber=3814272730")
     expect(mockedAxios.get).toHaveBeenCalledTimes(1)
 
     await waitFor(() => {
@@ -363,7 +363,7 @@ describe("PrescriptionListPage", () => {
       const backLink = screen.getByTestId("go-back-link")
       expect(backLink).toHaveAttribute(
         "href",
-        FRONTEND_PATHS.SEARCH_BY_NHS_NUMBER + "?nhsNumber=32165649870"
+        FRONTEND_PATHS.SEARCH_BY_NHS_NUMBER + "?nhsNumber=3814272730"
       )
     })
   })
@@ -371,7 +371,7 @@ describe("PrescriptionListPage", () => {
   it("renders not found with back link to NHS number search when query fails", async () => {
     mockedAxios.get.mockRejectedValue({response: {status: 404}})
 
-    renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT + "?nhsNumber=32165649870")
+    renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT + "?nhsNumber=3814272730")
     expect(mockedAxios.get).toHaveBeenCalledTimes(1)
 
     await waitFor(() => {
@@ -381,7 +381,7 @@ describe("PrescriptionListPage", () => {
       const backLink = screen.getByTestId("go-back-link")
       expect(backLink).toHaveAttribute(
         "href",
-        FRONTEND_PATHS.SEARCH_BY_NHS_NUMBER + "?nhsNumber=32165649870"
+        FRONTEND_PATHS.SEARCH_BY_NHS_NUMBER + "?nhsNumber=3814272730"
       )
     })
   })
