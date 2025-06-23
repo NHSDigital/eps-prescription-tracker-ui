@@ -9,14 +9,17 @@ import RoleSelectionPage from "@/components/EpsRoleSelectionPage"
 import {useAuth} from "@/context/AuthProvider"
 import {useNavigate} from "react-router-dom"
 import {FRONTEND_PATHS} from "@/constants/environment"
+import {getSearchParams} from "@/helpers/getSearchParams"
 
 jest.mock("@/context/AuthProvider")
+jest.mock("@/helpers/getSearchParams")
 jest.mock("react-router-dom", () => ({
   ...jest.requireActual("react-router-dom"),
   useNavigate: jest.fn()
 }))
 
 const mockUseAuth = useAuth as jest.Mock
+const mockGetSearchParams = getSearchParams as jest.Mock
 
 const defaultContentText = {
   title: "Select your role",
@@ -48,13 +51,17 @@ describe("RoleSelectionPage", () => {
   beforeAll(() => {
     jest.spyOn(console, "log").mockImplementation(() => {})
     jest.spyOn(console, "warn").mockImplementation(() => {})
+
   })
 
   beforeEach(() => {
     jest.clearAllMocks()
     jest.resetAllMocks()
     ;(useNavigate as jest.Mock).mockReturnValue(mockNavigate)
+  })
 
+  afterEach(() => {
+    //windowSpy.mockRestore()
   })
 
   it("renders loading spinner if redirecting during sign in", () => {
@@ -63,7 +70,12 @@ describe("RoleSelectionPage", () => {
       hasNoAccess: false,
       rolesWithAccess: [],
       rolesWithoutAccess: [],
-      error: null
+      error: null,
+      clearAuthState: jest.fn()
+    })
+    mockGetSearchParams.mockReturnValue({
+      codeParams: "foo",
+      stateParams: "bar"
     })
 
     render(<RoleSelectionPage contentText={defaultContentText} />)
@@ -98,12 +110,38 @@ describe("RoleSelectionPage", () => {
     expect(screen.getByText("Please contact support.")).toBeInTheDocument()
   })
 
-  it.skip("redirects if user hasSingleRoleAccess", () => {
+  it("redirects to login if logging in but not in callback", () => {
+    const navigateMock = jest.fn()
+    mockNavigate.mockReturnValue(navigateMock)
+
+    mockUseAuth.mockReturnValue({
+      isSigningIn: true,
+      isSignedIn: false,
+      hasSingleRoleAccess: true,
+      hasNoAccess: false,
+      rolesWithAccess: [],
+      rolesWithoutAccess: [],
+      selectedRole: null,
+      error: null,
+      clearAuthState: jest.fn()
+    })
+    mockGetSearchParams.mockReturnValue({
+      codeParams: undefined,
+      stateParams: undefined
+    })
+
+    render(<RoleSelectionPage contentText={defaultContentText} />)
+
+    expect(navigateMock).toHaveBeenCalledWith(FRONTEND_PATHS.LOGIN)
+  })
+
+  it("redirects if user hasSingleRoleAccess", () => {
     const navigateMock = jest.fn()
     mockNavigate.mockReturnValue(navigateMock)
 
     mockUseAuth.mockReturnValue({
       isSigningIn: false,
+      isSignedIn: true,
       hasSingleRoleAccess: true,
       hasNoAccess: false,
       rolesWithAccess: [],
@@ -228,19 +266,25 @@ describe("RoleSelectionPage", () => {
     expect(mockNavigate).toHaveBeenCalledWith("/continue")
   })
 
-  it.skip("transitions from spinner to success path", () => {
+  it("transitions from spinner to success path", () => {
     // Step 1: isSigningIn = true, so spinner shows
     const authState = {
       isSigningIn: true,
+      isSignedIn: true,
       hasSingleRoleAccess: false,
       hasNoAccess: false,
       rolesWithAccess: [],
       rolesWithoutAccess: [],
       selectedRole: null,
-      error: null
+      error: null,
+      clearAuthState: jest.fn()
     }
 
     mockUseAuth.mockReturnValue(authState)
+    mockGetSearchParams.mockReturnValue({
+      codeParams: "foo",
+      stateParams: "bar"
+    })
     const {rerender} = render(
       <RoleSelectionPage contentText={defaultContentText} />
     )
@@ -252,6 +296,7 @@ describe("RoleSelectionPage", () => {
     act(() => {
       authState.isSigningIn = false
       authState.hasSingleRoleAccess = true
+      authState.isSignedIn = true
       mockUseAuth.mockReturnValue(authState)
     })
 
