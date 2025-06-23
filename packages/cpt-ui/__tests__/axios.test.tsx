@@ -88,6 +88,6 @@ describe("HTTP Axios Instance", () => {
       .mockReturnValueOnce("not a token")
     mock.onGet("/test").reply(200)
 
-    await expect(http.get("/test")).rejects.toThrow("CanceledError: canceled")
+    await expect(http.get("/test")).rejects.toThrow("canceled")
   })
 })
