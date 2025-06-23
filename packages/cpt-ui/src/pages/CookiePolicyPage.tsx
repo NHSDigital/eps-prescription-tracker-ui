@@ -27,8 +27,8 @@ const CookiePolicyPage = () => {
   const [epsCookieConsent, setEpsCookieConsent] = useLocalStorageState<"accepted" | "rejected" | null>(
     "epsCookieConsent", "epsCookieConsent", null)
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [epsSecondaryBannerShown, setEpsSecondaryBannerShown] = useLocalStorageState<boolean>(
-    "epsSecondaryBannerShown", "epsSecondaryBannerShown", false)
+  const [epsConfirmationBannerShown, setEpsConfirmationBannerShown] = useLocalStorageState<boolean>(
+    "epsConfirmationBannerShown", "epsConfirmationBannerShown", false)
 
   const navigate = useNavigate()
 
@@ -61,7 +61,7 @@ const CookiePolicyPage = () => {
       }
       setCookiesSet(true)
       setEpsCookieConsent(choice)
-      setEpsSecondaryBannerShown(true)
+      setEpsConfirmationBannerShown(true)
       if (typeof window !== "undefined" && window.NHSCookieConsent) {
         window.NHSCookieConsent.setStatistics(choice === "accepted")
         window.NHSCookieConsent.setConsented(true)
