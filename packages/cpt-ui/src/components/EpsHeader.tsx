@@ -112,7 +112,7 @@ export default function EpsHeader() {
         <Header.Nav className="masthead-nav">
           {/* Select your role */}
           {shouldShowSelectRole && (
-            <li className="nhsuk-header__navigation-item">
+            <Header.NavItem className="nhsuk-header__navigation-item">
               <Link
                 className="nhsuk-header__navigation-link"
                 to={HEADER_SELECT_YOUR_ROLE_TARGET}
@@ -120,12 +120,12 @@ export default function EpsHeader() {
               >
                 {HEADER_SELECT_YOUR_ROLE_BUTTON}
               </Link>
-            </li>
+            </Header.NavItem>
           )}
 
           {/* Change role */}
           {shouldShowChangeRole && (
-            <li className="nhsuk-header__navigation-item">
+            <Header.NavItem className="nhsuk-header__navigation-item">
               <Link
                 className="nhsuk-header__navigation-link"
                 to={HEADER_CHANGE_ROLE_TARGET}
@@ -133,7 +133,7 @@ export default function EpsHeader() {
               >
                 {HEADER_CHANGE_ROLE_BUTTON}
               </Link>
-            </li>
+            </Header.NavItem>
           )}
 
           {/* Give feedback (opens in new tab) */}
@@ -148,7 +148,7 @@ export default function EpsHeader() {
 
           {/* Log out */}
           {shouldShowLogoutLink && (
-            <li className="nhsuk-header__navigation-item">
+            <Header.NavItem className="nhsuk-header__navigation-item">
               <Link
                 className="nhsuk-header__navigation-link"
                 to={FRONTEND_PATHS.LOGOUT}
@@ -157,12 +157,12 @@ export default function EpsHeader() {
               >
                 {HEADER_LOG_OUT_BUTTON}
               </Link>
-            </li>
+            </Header.NavItem>
           )}
 
           {/* Exit button */}
           {shouldShowExitButton && (
-            <li className="nhsuk-header__navigation-item">
+            <Header.NavItem className="nhsuk-header__navigation-item">
               <Link
                 className="nhsuk-header__navigation-link"
                 to={HEADER_EXIT_TARGET}
@@ -170,7 +170,7 @@ export default function EpsHeader() {
               >
                 {HEADER_EXIT_BUTTON}
               </Link>
-            </li>
+            </Header.NavItem>
           )}
 
           <Header.NavDropdownMenu dropdownText="Menu" />
