@@ -90,6 +90,9 @@ VITE_VERSION_NUMBER=$(echo "$CF_LONDON_EXPORTS" | \
     --arg EXPORT_NAME "${SERVICE_NAME}-stateless-resources:local:VERSION-NUMBER" \
     -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
 
+REACT_LOG_LEVEL=debug
+VITE_REACT_LOG_LEVEL=debug
+VITE_TARGET_ENVIRONMENT=dev
 REACT_APP_hostedLoginDomain=$VITE_hostedLoginDomain
 REACT_APP_userPoolClientId=$VITE_userPoolClientId
 REACT_APP_userPoolId=$VITE_userPoolId
@@ -271,6 +274,8 @@ export REACT_APP_RUM_ALLOW_COOKIES_ARN
 export REACT_APP_RUM_ENABLE_XRAY
 export REACT_APP_RUM_SESSION_SAMPLE_RATE
 export REACT_APP_RUM_TELEMETRIES
+export REACT_LOG_LEVEL
+export VITE_REACT_LOG_LEVEL
 
 export VERSION_NUMBER
 export COMMIT_ID
