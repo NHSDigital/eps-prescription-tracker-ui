@@ -30,8 +30,8 @@ describe("HTTP Axios Instance", () => {
     mock.onGet("/test").reply((config) => {
       // 'config.headers' is possibly 'undefined'.
       // Cannot invoke an object which is possibly 'undefined'.ts(2722)
-      expect(config.headers?.["X-request-id"]).toBe("test-x-request-id")
-      expect(config.headers?.["X-Correlation-id"]).toBe("test-x-correlation-id")
+      expect(config.headers?.["x-request-id"]).toBe("test-x-request-id")
+      expect(config.headers?.["x-correlation-id"]).toBe("test-x-correlation-id")
       return [200, {success: true}]
     })
 
@@ -60,7 +60,7 @@ describe("HTTP Axios Instance", () => {
       .onGet("/test")
       .replyOnce(401)
       .onGet("/test")
-      .replyOnce(502)
+      .replyOnce(500)
       .onGet("/test")
       .replyOnce(413)
       .onGet("/test")

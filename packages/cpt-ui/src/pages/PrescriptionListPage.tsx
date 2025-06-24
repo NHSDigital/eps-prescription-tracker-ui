@@ -8,7 +8,7 @@ import {
 } from "nhsuk-react-components"
 import "../styles/PrescriptionTable.scss"
 
-import {AxiosError} from "axios"
+import axios from "axios"
 import http from "@/helpers/axios"
 
 import {AuthContext} from "@/context/AuthProvider"
@@ -25,6 +25,7 @@ import {API_ENDPOINTS, FRONTEND_PATHS} from "@/constants/environment"
 
 import {SearchResponse, PrescriptionSummary} from "@cpt-ui-common/common-types/src/prescriptionList"
 import {buildBackLink, inferSearchType} from "@/helpers/prescriptionNotFoundLinks"
+import {logger} from "@/helpers/logger"
 
 export default function PrescriptionListPage() {
   const auth = useContext(AuthContext)
@@ -50,8 +51,7 @@ export default function PrescriptionListPage() {
       setShowNotFound(false) // Reset when search changes
 
       if (!auth?.isSignedIn) {
-        console.log("Not signed in, waiting...")
-
+        logger.info("Not signed in, waiting...")
         return
       }
 
@@ -66,7 +66,7 @@ export default function PrescriptionListPage() {
       } else if (nhsNumber) {
         searchParams.append("nhsNumber", encodeURIComponent(nhsNumber))
       } else {
-        console.error("No query parameter provided.")
+        logger.error("No query parameter provided.")
         setLoading(false)
         return
       }
@@ -76,9 +76,9 @@ export default function PrescriptionListPage() {
           params: searchParams
         })
 
-        console.log("Response status", {status: response.status})
-        if (response.status === 404) {
-          console.error("No search results were returned")
+        logger.info("Response status", {status: response.status})
+        if ((response.status === 404) || (response.status === 502)) {
+          logger.error("No search results were returned")
           setShowNotFound(true)
           setLoading(false)
           return
@@ -93,7 +93,7 @@ export default function PrescriptionListPage() {
           searchResults.pastPrescriptions.length === 0 &&
           searchResults.futurePrescriptions.length === 0
         ) {
-          console.error("A patient was returned, but they do not have any prescriptions.", searchResults)
+          logger.error("A patient was returned, but they do not have any prescriptions.", searchResults)
           setPatientDetails(searchResults.patient)
           setShowNotFound(true)
           setLoading(false)
@@ -125,13 +125,12 @@ export default function PrescriptionListPage() {
         ])
         setLoading(false)
       } catch (err) {
-        console.error("Error during search", err)
-        if (err instanceof Error && err.message === "canceled") {
+        logger.error("Error during search", err)
+        if (axios.isAxiosError(err) && (err.response?.status === 404 || err.response?.status === 502)) {
+          setShowNotFound(true)
+        } else if (err instanceof Error && err.message === "canceled") {
           navigate(FRONTEND_PATHS.LOGIN)
           return
-        }
-        if ((err as AxiosError)?.response?.status === 404 || (err as AxiosError)?.response?.status === 502) {
-          setShowNotFound(true)
         } else {
           setError(true)
         }

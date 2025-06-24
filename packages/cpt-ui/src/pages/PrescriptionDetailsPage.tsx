@@ -30,6 +30,7 @@ import {PrescribedDispensedItemsCards} from "@/components/prescriptionDetails/Pr
 import {MessageHistoryCard} from "@/components/prescriptionDetails/MessageHistoryCard"
 
 import http from "@/helpers/axios"
+import {logger} from "@/helpers/logger"
 import {buildBackLink, inferSearchType} from "@/helpers/prescriptionNotFoundLinks"
 
 export default function PrescriptionDetailsPage() {
@@ -51,14 +52,11 @@ export default function PrescriptionDetailsPage() {
   const searchType = inferSearchType(queryParams)
   const backLinkUrl = buildBackLink(searchType, queryParams)
 
-  console.log("Prescription Details Page searchType:", searchType)
-  console.log("Prescription Details Page backLinkUrl:", backLinkUrl)
-
   const getPrescriptionDetails = async (
     prescriptionId: string,
     prescriptionIssueNumber?: string | undefined
   ): Promise<PrescriptionDetailsResponse | undefined> => {
-    console.log("Prescription ID", prescriptionId)
+    logger.info("Prescription ID", prescriptionId)
     const issueNumber = prescriptionIssueNumber ?? "1"
     const url = `${API_ENDPOINTS.PRESCRIPTION_DETAILS}/${prescriptionId}?issueNumber=${issueNumber}`
 
@@ -79,7 +77,7 @@ export default function PrescriptionDetailsPage() {
         throw new Error("No payload received from the API")
       }
     } catch (err) {
-      console.error("Failed to fetch prescription details", err)
+      logger.error("Failed to fetch prescription details", err)
       return
     }
 
@@ -110,18 +108,18 @@ export default function PrescriptionDetailsPage() {
     const runGetPrescriptionDetails = async () => {
       // Check if auth is ready
       if (!auth?.isSignedIn) {
-        console.log("Auth token not ready, waiting...")
+        logger.info("Auth token not ready, waiting...")
         return
       }
 
       const prescriptionId = queryParams.get("prescriptionId")
       if (!prescriptionId) {
-        console.error("No prescriptionId provided in query params.")
+        logger.error("No prescriptionId provided in query params.")
         return
       }
       const prescriptionIssueNumber = queryParams.get("issueNumber")
 
-      console.log("useEffect triggered for prescription:", prescriptionId)
+      logger.info("useEffect triggered for prescription:", prescriptionId)
       setLoading(true)
       await getPrescriptionDetails(prescriptionId, prescriptionIssueNumber!)
     }

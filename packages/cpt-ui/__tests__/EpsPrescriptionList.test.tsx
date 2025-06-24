@@ -12,7 +12,10 @@ import {PrescriptionStatus, SearchResponse, TreatmentType} from "@cpt-ui-common/
 
 import {MockPatientDetailsProvider} from "../__mocks__/MockPatientDetailsProvider"
 
+import {AxiosError, AxiosRequestHeaders} from "axios"
+
 import axios from "@/helpers/axios"
+import {logger} from "@/helpers/logger"
 jest.mock("@/helpers/axios")
 
 // Tell TypeScript that axios is a mocked version.
@@ -162,6 +165,30 @@ const renderWithRouter = (route: string, authState: AuthContextType = signedInAu
   )
 }
 
+export function createAxiosError(status: number): AxiosError {
+  const axiosError = new Error("Mocked Axios error") as AxiosError
+
+  axiosError.isAxiosError = true
+  axiosError.config = {
+    url: "http://mock-api",
+    method: "get",
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+    headers: {} as AxiosRequestHeaders,
+    data: null
+  }
+
+  axiosError.response = {
+    status,
+    statusText: "",
+    headers: {},
+    config: axiosError.config,
+    data: {}
+  }
+
+  axiosError.toJSON = () => ({})
+  return axiosError
+}
+
 describe("PrescriptionListPage", () => {
   beforeEach(() => {
     jest.restoreAllMocks()
@@ -255,7 +282,7 @@ describe("PrescriptionListPage", () => {
   })
 
   it("logs an error when no query parameters are present", async () => {
-    const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {})
+    const loggerErrorSpy = jest.spyOn(logger, "error").mockImplementation(() => {})
 
     mockedAxios.get.mockResolvedValue({
       status: 200,
@@ -265,10 +292,10 @@ describe("PrescriptionListPage", () => {
     renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT)
 
     await waitFor(() => {
-      expect(consoleErrorSpy).toHaveBeenCalledWith("No query parameter provided.")
+      expect(loggerErrorSpy).toHaveBeenCalledWith("No query parameter provided.")
     })
 
-    consoleErrorSpy.mockRestore()
+    loggerErrorSpy.mockRestore()
   })
 
   it("sets the back link to the prescription ID search when prescriptionId query parameter is present", async () => {
@@ -320,7 +347,7 @@ describe("PrescriptionListPage", () => {
     })
   })
 
-  it("renders the not found message when prescriptionId query returns no results", async () => {
+  it("renders the prescription not found message when prescriptionId query returns no results", async () => {
     const noResults: SearchResponse = {
       patient: mockSearchResponse.patient,
       currentPrescriptions: [],
@@ -343,7 +370,7 @@ describe("PrescriptionListPage", () => {
   })
 
   it("renders prescription not found message with back link to prescriptionId search when query fails", async () => {
-    mockedAxios.get.mockRejectedValue({response: {status: 404}})
+    mockedAxios.get.mockRejectedValue(createAxiosError(404))
 
     renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT + "?prescriptionId=002F5E-A83008-497F1Z")
     expect(mockedAxios.get).toHaveBeenCalledTimes(1)
@@ -361,7 +388,7 @@ describe("PrescriptionListPage", () => {
   })
 
   it("renders prescription not found message with back link to NHS number search when query fails", async () => {
-    mockedAxios.get.mockRejectedValue({response: {status: 404}})
+    mockedAxios.get.mockRejectedValue(createAxiosError(404))
 
     renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT + "?nhsNumber=3814272730")
     expect(mockedAxios.get).toHaveBeenCalledTimes(1)
