@@ -38,6 +38,7 @@ export class CloudfrontBehaviors extends Construct{
   public readonly s3404UriRewriteFunction: CloudfrontFunction
   public readonly s3404ModifyStatusCodeFunction: CloudfrontFunction
   public readonly s3StaticContentUriRewriteFunction: CloudfrontFunction
+  public readonly s3StaticContentRootSlashRedirect: CloudfrontFunction
   public readonly keyValueStore: KeyValueStore
 
   public constructor(scope: Construct, id: string, props: CloudfrontBehaviorsProps){
@@ -203,6 +204,14 @@ export class CloudfrontBehaviors extends Construct{
     on how many can be created simultaneously */
     authDemoStaticContentUriRewriteFunction.node.addDependency(s3JwksUriRewriteFunction)
 
+    const s3StaticContentRootSlashRedirect = new CloudfrontFunction(this, "s3StaticContentRootSlashRedirect", {
+      functionName: `${props.serviceName}-s3StaticContentRootSlashRedirect`,
+      sourceFileName: "s3StaticContentRootSlashRedirect.js"
+    })
+    /* Add dependency on previous function to force them to build one by one to avoid aws limits
+    on how many can be created simultaneously */
+    authDemoStaticContentUriRewriteFunction.node.addDependency(authDemoStaticContentUriRewriteFunction)
+
     const additionalBehaviors = {
       "/site*": {
         origin: props.staticContentBucketOrigin,
@@ -263,7 +272,6 @@ export class CloudfrontBehaviors extends Construct{
           }
         ]
       },
-
       "/500.html": { // matches exactly <url>/500.html and will only serve the 500.html page (via cf function)
         origin: props.staticContentBucketOrigin,
         allowedMethods: AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
@@ -275,11 +283,21 @@ export class CloudfrontBehaviors extends Construct{
           }
         ]
       },
-
       "/404.css": {
         origin: props.staticContentBucketOrigin,
         allowedMethods: AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
         viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS
+      },
+      "/*": { // This rule must be the least priority, to ensure defined path matching can work.
+        origin: props.staticContentBucketOrigin,
+        allowedMethods: AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
+        viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+        functionAssociations: [
+          {
+            function: s3StaticContentRootSlashRedirect.function,
+            eventType: FunctionEventType.VIEWER_REQUEST
+          }
+        ]
       }
     }
 
@@ -288,6 +306,7 @@ export class CloudfrontBehaviors extends Construct{
     this.s3404UriRewriteFunction = s3404UriRewriteFunction
     this.s3404ModifyStatusCodeFunction = s3404ModifyStatusCodeFunction
     this.s3StaticContentUriRewriteFunction = s3StaticContentUriRewriteFunction
+    this.s3StaticContentRootSlashRedirect = s3StaticContentRootSlashRedirect
     this.keyValueStore = keyValueStore
   }
 }

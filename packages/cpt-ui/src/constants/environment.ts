@@ -11,7 +11,7 @@ export const AUTH_CONFIG = {
 export const ENV_CONFIG = {
   TARGET_ENVIRONMENT: import.meta.env.VITE_TARGET_ENVIRONMENT || "prod",
   API_DOMAIN_OVERRIDE: import.meta.env.VITE_API_DOMAIN_OVERRIDE,
-  BASE_PATH: import.meta.env.BASE_PATH || "/site",
+  BASE_PATH: import.meta.env.BASE_PATH || "site",
   LOCAL_DEV: import.meta.env.VITE_LOCAL_DEV === "true"
 } as const
 
@@ -48,23 +48,23 @@ export const RUM_CONFIG = {
 
 // Web page paths
 export const FRONTEND_PATHS = {
-  PRESCRIPTION_LIST_CURRENT: `${ENV_CONFIG.BASE_PATH}/prescription-list-current`,
-  PRESCRIPTION_LIST_FUTURE: `${ENV_CONFIG.BASE_PATH}/prescription-list-future`,
-  PRESCRIPTION_LIST_PAST: `${ENV_CONFIG.BASE_PATH}/prescription-list-past`,
-  COOKIES: `${ENV_CONFIG.BASE_PATH}/cookies`,
-  LOGIN: `${ENV_CONFIG.BASE_PATH}/login`,
-  LOGOUT: `${ENV_CONFIG.BASE_PATH}/logout`,
-  SELECT_YOUR_ROLE: `${ENV_CONFIG.BASE_PATH}/select-your-role`,
-  YOUR_SELECTED_ROLE: `${ENV_CONFIG.BASE_PATH}/your-selected-role`,
-  CHANGE_YOUR_ROLE: `${ENV_CONFIG.BASE_PATH}/change-your-role`,
-  SEARCH_BY_PRESCRIPTION_ID: `${ENV_CONFIG.BASE_PATH}/search-by-prescription-id`,
-  SEARCH_BY_NHS_NUMBER: `${ENV_CONFIG.BASE_PATH}/search-by-nhs-number`,
-  SEARCH_BY_BASIC_DETAILS: `${ENV_CONFIG.BASE_PATH}/search-by-basic-details`,
-  PRESCRIPTION_DETAILS_PAGE: `${ENV_CONFIG.BASE_PATH}/prescription-details`,
-  PATIENT_SEARCH_RESULTS: `${ENV_CONFIG.BASE_PATH}/patient-search-results`,
-  PATIENT_NOT_FOUND: `${ENV_CONFIG.BASE_PATH}/patient-not-found`,
-  PRIVACY_NOTICE: `${ENV_CONFIG.BASE_PATH}/privacy-notice`,
-  COOKIES_SELECTED: `${ENV_CONFIG.BASE_PATH}/cookies-selected`
+  PRESCRIPTION_LIST_CURRENT: "/prescription-list-current",
+  PRESCRIPTION_LIST_FUTURE: "/prescription-list-future",
+  PRESCRIPTION_LIST_PAST: "/prescription-list-past",
+  COOKIES: "/cookies",
+  LOGIN: "/login",
+  LOGOUT: "/logout",
+  SELECT_YOUR_ROLE: "/select-your-role",
+  YOUR_SELECTED_ROLE: "/your-selected-role",
+  CHANGE_YOUR_ROLE: "/change-your-role",
+  SEARCH_BY_PRESCRIPTION_ID: "/search-by-prescription-id",
+  SEARCH_BY_NHS_NUMBER: "/search-by-nhs-number",
+  SEARCH_BY_BASIC_DETAILS: "/search-by-basic-details",
+  PRESCRIPTION_DETAILS_PAGE: "/prescription-details",
+  PATIENT_SEARCH_RESULTS: "/patient-search-results",
+  PATIENT_NOT_FOUND: "/patient-not-found",
+  PRIVACY_NOTICE: "/privacy-notice",
+  COOKIES_SELECTED: "/cookies-selected"
 }
 
 // Type for environment
