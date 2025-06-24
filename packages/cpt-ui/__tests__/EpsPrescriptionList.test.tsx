@@ -170,7 +170,7 @@ export function createAxiosError(status: number): AxiosError {
 
   axiosError.isAxiosError = true
   axiosError.config = {
-    url: "http://mock-api",
+    url: "https://mock-api",
     method: "get",
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     headers: {} as AxiosRequestHeaders,
