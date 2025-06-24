@@ -7,11 +7,11 @@ import {
   BackLink
 } from "nhsuk-react-components"
 import {SEARCH_STRINGS, STRINGS} from "@/constants/ui-strings/PrescriptionNotFoundMessageStrings"
-import {buildAltLink, buildBackLink, inferSearchType} from "@/helpers/prescriptionNotFoundLinks"
+import {buildAltLink, buildBackLink, determineSearchType} from "@/helpers/prescriptionNotFoundLinks"
 
 export default function PrescriptionNotFoundMessage() {
   const [searchParams] = useSearchParams()
-  const searchType = inferSearchType(searchParams)
+  const searchType = determineSearchType(searchParams)
   const content = SEARCH_STRINGS[searchType]
 
   /**

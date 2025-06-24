@@ -31,7 +31,7 @@ import {MessageHistoryCard} from "@/components/prescriptionDetails/MessageHistor
 
 import http from "@/helpers/axios"
 import {logger} from "@/helpers/logger"
-import {buildBackLink, inferSearchType} from "@/helpers/prescriptionNotFoundLinks"
+import {buildBackLink, determineSearchType} from "@/helpers/prescriptionNotFoundLinks"
 
 export default function PrescriptionDetailsPage() {
   const auth = useContext(AuthContext)
@@ -49,7 +49,7 @@ export default function PrescriptionDetailsPage() {
   const [dispensedItems, setDispensedItems] = useState<Array<DispensedItemDetails>>([])
   const [messageHistory, setMessageHistory] = useState<Array<MessageHistory>>([])
 
-  const searchType = inferSearchType(queryParams)
+  const searchType = determineSearchType(queryParams)
   const backLinkUrl = buildBackLink(searchType, queryParams)
 
   const getPrescriptionDetails = async (

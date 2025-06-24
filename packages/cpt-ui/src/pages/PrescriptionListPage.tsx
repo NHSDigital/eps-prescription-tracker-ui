@@ -27,7 +27,7 @@ import {SearchResponse, PrescriptionSummary} from "@cpt-ui-common/common-types/s
 
 import http from "@/helpers/axios"
 import {logger} from "@/helpers/logger"
-import {buildBackLink, inferSearchType} from "@/helpers/prescriptionNotFoundLinks"
+import {buildBackLink, determineSearchType} from "@/helpers/prescriptionNotFoundLinks"
 
 export default function PrescriptionListPage() {
   const auth = useContext(AuthContext)
@@ -44,7 +44,7 @@ export default function PrescriptionListPage() {
   const [showNotFound, setShowNotFound] = useState(false)
   const [error, setError] = useState(false)
 
-  const searchType = inferSearchType(queryParams)
+  const searchType = determineSearchType(queryParams)
   const backLinkUrl = buildBackLink(searchType, queryParams)
 
   useEffect(() => {

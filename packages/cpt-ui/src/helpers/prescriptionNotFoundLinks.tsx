@@ -1,11 +1,12 @@
 import {Link} from "react-router-dom"
 import {FRONTEND_PATHS} from "@/constants/environment"
 import {SEARCH_TYPES, AllowedSearchType} from "@/constants/ui-strings/PrescriptionNotFoundMessageStrings"
+import {logger} from "./logger"
 
 /**
  * Determine the type of search based on the available URL parameters
  */
-export function inferSearchType(params: URLSearchParams): AllowedSearchType {
+export function determineSearchType (params: URLSearchParams): AllowedSearchType {
   // If both nhsNumber and prescriptionId are present, treat as PrescriptionListPage
   if (params.has("nhsNumber") && params.has("prescriptionId")) {
     return "PrescriptionListPage"
@@ -47,7 +48,7 @@ export const searchTypeToParams: Record<AllowedSearchType, Array<string>> = {
     "dobYear",
     "postcode"
   ],
-  [SEARCH_TYPES.PRESCRIPTION_LIST]: ["nhsNumber"]
+  [SEARCH_TYPES.PRESCRIPTION_LIST]: ["nhsNumber", "prescriptionId"]
 }
 
 type AltType = { to: string; label: string }
@@ -71,9 +72,29 @@ export function buildAltLink({alt}: { alt: AltType }) {
 export function buildBackLink(searchType: AllowedSearchType, searchParams: URLSearchParams): string {
   const filteredParams = new URLSearchParams()
 
-  // Only retain query parameters that are relevant to the given search type.
+  const nhsNumber = searchParams.get("nhsNumber")
+  const prescriptionId = searchParams.get("prescriptionId")
+
+  const searchNhsNumber = nhsNumber && nhsNumber !== "null"
+  const searchPrescriptionId = prescriptionId && prescriptionId !== "null"
+
+  // Iterate only over query parameters defined as relevant for this search type
   for (const key of searchTypeToParams[searchType]) {
     const value = searchParams.get(key)
+
+    logger.debug(`Processing key: ${key}, value: ${value}`)
+
+    // If nhsNumber is invalid ("null"), skip it
+    if (key === "nhsNumber" && !searchNhsNumber) {
+      continue
+    }
+
+    // If both nhsNumber and prescriptionId are valid, we only want to keep nhsNumber
+    if (key === "prescriptionId" && searchNhsNumber && searchPrescriptionId) {
+      continue
+    }
+
+    // Add the param if it has a usable value
     if (value) {
       filteredParams.set(key, value)
     }

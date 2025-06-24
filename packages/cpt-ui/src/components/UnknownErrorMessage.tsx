@@ -7,11 +7,11 @@ import {
 } from "nhsuk-react-components"
 import {Link, useSearchParams} from "react-router-dom"
 import {STRINGS} from "@/constants/ui-strings/UnknownErrorMessageStrings"
-import {buildBackLink, inferSearchType} from "@/helpers/prescriptionNotFoundLinks"
+import {buildBackLink, determineSearchType} from "@/helpers/prescriptionNotFoundLinks"
 
 export default function UnknownErrorMessage() {
   const [searchParams] = useSearchParams()
-  const searchType = inferSearchType(searchParams)
+  const searchType = determineSearchType(searchParams)
   const backLinkUrl = buildBackLink(searchType, searchParams)
   return (
     <Container
