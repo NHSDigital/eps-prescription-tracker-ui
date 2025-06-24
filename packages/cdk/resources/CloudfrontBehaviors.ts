@@ -176,34 +176,14 @@ export class CloudfrontBehaviors extends Construct{
     on how many can be created simultaneously */
     s3JwksUriRewriteFunction.node.addDependency(oauth2GatewayStripPathFunction)
 
-    // eslint-disable-next-line max-len
-    const authDemoStaticContentUriRewriteFunction = new CloudfrontFunction(this, "authDemoStaticContentUriRewriteFunction", {
-      functionName: `${props.serviceName}-authDemoStaticContentUriRewriteFunction`,
-      sourceFileName: "s3StaticContentUriRewrite.js",
-      keyValueStore: keyValueStore,
-      codeReplacements: [
-        {
-          valueToReplace: "BASEPATH_PLACEHOLDER",
-          replacementValue: "auth_demo_basePath"
-        },
-        {
-          valueToReplace: "VERSION_PLACEHOLDER",
-          replacementValue: "auth_demo_version"
-        }
-      ]
-    })
-    /* Add dependency on previous function to force them to build one by one to avoid aws limits
-    on how many can be created simultaneously */
-    authDemoStaticContentUriRewriteFunction.node.addDependency(s3JwksUriRewriteFunction)
-
     const s3StaticContentRootSlashRedirect = new CloudfrontFunction(this, "s3StaticContentRootSlashRedirect", {
       functionName: `${props.serviceName}-s3StaticContentRootSlashRedirect`,
       sourceFileName: "s3StaticContentRootSlashRedirect.js"
     })
-    
+
     /* Add dependency on previous function to force them to build one by one to avoid aws limits
     on how many can be created simultaneously */
-    authDemoStaticContentUriRewriteFunction.node.addDependency(authDemoStaticContentUriRewriteFunction)
+    s3StaticContentRootSlashRedirect.node.addDependency(s3JwksUriRewriteFunction)
 
     const additionalBehaviors = {
       "/site*": {
