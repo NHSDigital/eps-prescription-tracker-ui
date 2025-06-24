@@ -46,6 +46,7 @@ export class CloudfrontBehaviors extends Construct{
     // Resources
 
     const keyValueStore = new KeyValueStore(this, "FunctionsStore", {
+      comment: `${props.serviceName}-KeyValueStore`,
       source: ImportSource.fromInline(JSON.stringify({data: [
         {
           key: "404_rewrite",
