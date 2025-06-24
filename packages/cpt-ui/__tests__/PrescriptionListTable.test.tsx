@@ -340,4 +340,35 @@ describe("PrescriptionsListTable", () => {
 
     jest.useRealTimers()
   })
+
+  it("renders unavailable text when statusCode is 0005", async () => {
+    jest.useFakeTimers()
+
+    const unavailablePrescription = {
+      prescriptionId: "474201-A83008-40C08U",
+      statusCode: "0005",
+      issueDate: "2025-06-01",
+      prescriptionTreatmentType: TreatmentType.ACUTE,
+      issueNumber: 1,
+      maxRepeats: 1,
+      prescriptionPendingCancellation: false,
+      itemsPendingCancellation: false
+    }
+
+    renderWithRouter(
+      <PrescriptionsListTable
+        textContent={textContent}
+        prescriptions={[unavailablePrescription]}
+      />
+    )
+
+    jest.advanceTimersByTime(2000)
+
+    await waitFor(() => {
+      const unavailableElement = screen.getByTestId("unavailable-text-474201-A83008-40C08U")
+      expect(unavailableElement).toBeInTheDocument()
+    })
+
+    jest.useRealTimers()
+  })
 })
