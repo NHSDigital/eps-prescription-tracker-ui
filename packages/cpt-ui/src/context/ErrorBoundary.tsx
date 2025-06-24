@@ -8,15 +8,36 @@ interface ErrorBoundaryProps {
 
 interface ErrorBoundaryState {
   hasError: boolean;
+  errorTraceId: string | null;
 }
 
+function generateTimestampedString(): string {
+  const now = new Date()
+
+  const pad = (num: number) => num.toString().padStart(2, "0")
+
+  const timestamp =
+    now.getFullYear().toString() +
+    pad(now.getMonth() + 1) +
+    pad(now.getDate()) +
+    pad(now.getHours()) +
+    pad(now.getMinutes()) +
+    pad(now.getSeconds())
+
+  const randomString = Math.random().toString(36).substring(2, 6).toUpperCase()
+
+  return `${timestamp}_${randomString}`
+}
 class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   // Declare the context type
   declare context: React.ContextType<typeof AwsRumContext>
 
   constructor(props: ErrorBoundaryProps) {
     super(props)
-    this.state = {hasError: false}
+    this.state = {
+      hasError: false,
+      errorTraceId: null
+    }
   }
 
   // Specify the contextType
@@ -24,29 +45,56 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   static getDerivedStateFromError(error: Error): ErrorBoundaryState {
-    return {hasError: true}
+    // we use a vaguely readable trace id to cope with
+    // when somebody sends a screen shot rather than the reference as text
+    const errorTraceId = generateTimestampedString()
+    return {
+      hasError: true,
+      errorTraceId
+    }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo): void {
-    console.error("recordingError:", error)
-
     // Correctly access the context value
     if (this.context) {
-      (this.context as AwsRum).recordError(error)
+      const rumInstance: AwsRum = this.context
+      // modify the error we send to rum to include the trace id we show to user
+      // we use record event rather than record error so that session attributes are included
+      const customError = {
+        errorTraceId: this.state.errorTraceId,
+        message: error.message,
+        stack: error.stack,
+        errorInfo: errorInfo
+      }
+      rumInstance.recordEvent("errorBoundaryCatch", customError)
+      // but we also record an error to try and get get the real line numbers
+      rumInstance.recordError(error)
     }
   }
 
   render(): ReactNode {
     if (this.state.hasError) {
-      return (
-        <div>
-          <h1>Something went wrong.</h1>
-          <button onClick={() => (window.location.href = "/")}>
-            Clear Error
-          </button>
-        </div>
-      )
+      // Something has gone wrong so we return some really simple HTML with the error reference on it
+      const template = `
+          <h1>Sorry, there is a problem</h1>
+          <p>
+          Contact our Live Services team at ssd.nationalservicedesk@nhs.net with the reference <<EPS_TRACE_ID>>
+          </p>
+          <p>
+          <a href="/">Search for a prescription</a>
+          </p>
+      `
+      if (this.state.errorTraceId) {
+        let renderedTemplate = template.replace("<<EPS_TRACE_ID>>", this.state.errorTraceId)
+        return (
+          <div className="Container" dangerouslySetInnerHTML={{__html: renderedTemplate}}></div>
+        )
+      } else {
+        const renderedTemplate = template.replace(" <<EPS_TRACE_ID>>", "UNKNOWN")
+        return (
+          <div className="Container" dangerouslySetInnerHTML={{__html: renderedTemplate}}></div>
+        )
+      }
     }
     return this.props.children
   }

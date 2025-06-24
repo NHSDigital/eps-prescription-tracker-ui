@@ -81,7 +81,14 @@ VITE_hostedLoginDomain=${SERVICE_NAME}.auth.eu-west-2.amazoncognito.com
 VITE_redirectSignIn=http://localhost:3000/site/select-your-role
 VITE_redirectSignOut=http://localhost:3000/site/logout
 
-VITE_COMMIT_ID="Local Development Server"
+VITE_COMMIT_ID=$(echo "$CF_LONDON_EXPORTS" | \
+    jq \
+    --arg EXPORT_NAME "${SERVICE_NAME}-stateless-resources:local:COMMIT-ID" \
+    -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+VITE_VERSION_NUMBER=$(echo "$CF_LONDON_EXPORTS" | \
+    jq \
+    --arg EXPORT_NAME "${SERVICE_NAME}-stateless-resources:local:VERSION-NUMBER" \
+    -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
 
 REACT_APP_hostedLoginDomain=$VITE_hostedLoginDomain
 REACT_APP_userPoolClientId=$VITE_userPoolClientId
@@ -250,6 +257,7 @@ export VITE_hostedLoginDomain
 export VITE_redirectSignIn
 export VITE_redirectSignOut
 export VITE_COMMIT_ID
+export VITE_VERSION_NUMBER
 export REACT_APP_hostedLoginDomain
 export REACT_APP_userPoolClientId
 export REACT_APP_userPoolId

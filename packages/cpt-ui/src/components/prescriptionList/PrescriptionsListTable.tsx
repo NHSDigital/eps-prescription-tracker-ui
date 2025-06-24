@@ -347,7 +347,13 @@ const PrescriptionsListTable = ({
                         {row.prescriptionId}
                       </div>
                       <div>
-                        {row.statusCode === "0005" ?PRESCRIPTION_LIST_TABLE_TEXT.unavailableText :
+                        {row.statusCode === "0005" ? (
+                          <span
+                            data-testid={`unavailable-text-${row.prescriptionId}`}
+                          >
+                            {PRESCRIPTION_LIST_TABLE_TEXT.unavailableText}
+                          </span>
+                        ) : (
                           <Link
                             to={constructLink(row.prescriptionId, row.issueNumber)}
                             className="nhsuk-link"
@@ -355,7 +361,7 @@ const PrescriptionsListTable = ({
                           >
                             {PRESCRIPTION_LIST_TABLE_TEXT.viewPrescription}
                           </Link>
-                        }
+                        )}
                       </div>
                     </td>
                   )

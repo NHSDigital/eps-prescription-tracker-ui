@@ -98,13 +98,14 @@ describe("RoleSelectionPage", () => {
     expect(screen.getByText("Please contact support.")).toBeInTheDocument()
   })
 
-  it.skip("redirects if user hasSingleRoleAccess", () => {
+  it("redirects if user hasSingleRoleAccess", () => {
     const navigateMock = jest.fn()
     mockNavigate.mockReturnValue(navigateMock)
 
     mockUseAuth.mockReturnValue({
       isSigningIn: false,
       hasSingleRoleAccess: true,
+      isSignedIn: true,
       hasNoAccess: false,
       rolesWithAccess: [],
       rolesWithoutAccess: [],
@@ -228,10 +229,11 @@ describe("RoleSelectionPage", () => {
     expect(mockNavigate).toHaveBeenCalledWith("/continue")
   })
 
-  it.skip("transitions from spinner to success path", () => {
+  it("transitions from spinner to success path", () => {
     // Step 1: isSigningIn = true, so spinner shows
     const authState = {
       isSigningIn: true,
+      isSignedIn: false,
       hasSingleRoleAccess: false,
       hasNoAccess: false,
       rolesWithAccess: [],
@@ -251,6 +253,7 @@ describe("RoleSelectionPage", () => {
     // Step 2: Simulate login complete and role assignment
     act(() => {
       authState.isSigningIn = false
+      authState.isSignedIn = true
       authState.hasSingleRoleAccess = true
       mockUseAuth.mockReturnValue(authState)
     })
