@@ -81,8 +81,18 @@ VITE_hostedLoginDomain=${SERVICE_NAME}.auth.eu-west-2.amazoncognito.com
 VITE_redirectSignIn=http://localhost:3000/site/select-your-role
 VITE_redirectSignOut=http://localhost:3000/site/logout
 
-VITE_COMMIT_ID="Local Development Server"
+VITE_COMMIT_ID=$(echo "$CF_LONDON_EXPORTS" | \
+    jq \
+    --arg EXPORT_NAME "${SERVICE_NAME}-stateless-resources:local:COMMIT-ID" \
+    -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+VITE_VERSION_NUMBER=$(echo "$CF_LONDON_EXPORTS" | \
+    jq \
+    --arg EXPORT_NAME "${SERVICE_NAME}-stateless-resources:local:VERSION-NUMBER" \
+    -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
 
+REACT_LOG_LEVEL=debug
+VITE_REACT_LOG_LEVEL=debug
+VITE_TARGET_ENVIRONMENT=dev
 REACT_APP_hostedLoginDomain=$VITE_hostedLoginDomain
 REACT_APP_userPoolClientId=$VITE_userPoolClientId
 REACT_APP_userPoolId=$VITE_userPoolId
@@ -243,6 +253,7 @@ export VITE_RUM_ALLOW_COOKIES
 export VITE_RUM_ENABLE_XRAY
 export VITE_RUM_SESSION_SAMPLE_RATE
 export VITE_RUM_TELEMETRIES
+export VITE_TARGET_ENVIRONMENT
 export LOCAL_DEV
 export BASE_PATH
 export API_DOMAIN_OVERRIDE
@@ -250,6 +261,7 @@ export VITE_hostedLoginDomain
 export VITE_redirectSignIn
 export VITE_redirectSignOut
 export VITE_COMMIT_ID
+export VITE_VERSION_NUMBER
 export REACT_APP_hostedLoginDomain
 export REACT_APP_userPoolClientId
 export REACT_APP_userPoolId
@@ -262,6 +274,8 @@ export REACT_APP_RUM_ALLOW_COOKIES_ARN
 export REACT_APP_RUM_ENABLE_XRAY
 export REACT_APP_RUM_SESSION_SAMPLE_RATE
 export REACT_APP_RUM_TELEMETRIES
+export REACT_LOG_LEVEL
+export VITE_REACT_LOG_LEVEL
 
 export VERSION_NUMBER
 export COMMIT_ID

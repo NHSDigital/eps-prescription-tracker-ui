@@ -47,7 +47,7 @@ export class CloudfrontBehaviors extends Construct{
     // Resources
 
     const keyValueStore = new KeyValueStore(this, "FunctionsStore", {
-      keyValueStoreName: `${props.serviceName}-KeyValueStore`,
+      comment: `${props.serviceName}-KeyValueStore`,
       source: ImportSource.fromInline(JSON.stringify({data: [
         {
           key: "404_rewrite",
@@ -72,14 +72,6 @@ export class CloudfrontBehaviors extends Construct{
         {
           key: "jwks_rewrite",
           value: "jwks.json"
-        },
-        {
-          key: "auth_demo_version",
-          value: "auth_demo"
-        },
-        {
-          key: "auth_demo_basePath",
-          value: "/auth_demo"
         }
       ]}))
     })
@@ -208,6 +200,7 @@ export class CloudfrontBehaviors extends Construct{
       functionName: `${props.serviceName}-s3StaticContentRootSlashRedirect`,
       sourceFileName: "s3StaticContentRootSlashRedirect.js"
     })
+    
     /* Add dependency on previous function to force them to build one by one to avoid aws limits
     on how many can be created simultaneously */
     authDemoStaticContentUriRewriteFunction.node.addDependency(authDemoStaticContentUriRewriteFunction)
@@ -257,17 +250,6 @@ export class CloudfrontBehaviors extends Construct{
         functionAssociations: [
           {
             function: s3JwksUriRewriteFunction.function,
-            eventType: FunctionEventType.VIEWER_REQUEST
-          }
-        ]
-      },
-      "/auth_demo/*": {
-        origin: props.staticContentBucketOrigin,
-        allowedMethods: AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
-        viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-        functionAssociations: [
-          {
-            function: authDemoStaticContentUriRewriteFunction.function,
             eventType: FunctionEventType.VIEWER_REQUEST
           }
         ]
