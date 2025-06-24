@@ -34,16 +34,11 @@ class Logger {
   public error(message: string, ...args: Array<unknown>): void {
     const rumInstance = cptAwsRum.getAwsRum()
     if (rumInstance !== null) {
-      try {
-        // get a stack trace so we get line numbers
-        const messageAsError = new Error(message)
-        rumInstance.recordEvent("logger_error", {message: message, stack: messageAsError.stack, details: args})
-        // also use recordError to try and get source maps back to real line numbers
-        rumInstance.recordError(messageAsError)
-      } catch (error) {
-        // eslint-disable-next-line no-console
-        console.error("Failed to log error to AWS RUM:", error)
-      }
+      // get a stack trace so we get line numbers
+      const messageAsError = new Error(message)
+      rumInstance.recordEvent("logger_error", {message: message, stack: messageAsError.stack, details: args})
+      // also use recordError to try and get source maps back to real line numbers
+      rumInstance.recordError(messageAsError)
     }
     this.logger.error(message, ...args)
   }
