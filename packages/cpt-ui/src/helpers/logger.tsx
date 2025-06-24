@@ -40,8 +40,9 @@ class Logger {
         rumInstance.recordEvent("logger_error", {message: message, stack: messageAsError.stack, details: args})
         // also use recordError to try and get source maps back to real line numbers
         rumInstance.recordError(messageAsError)
-      } catch (e) {
-        console.error("Failed to log error to AWS RUM:", e)
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error("Failed to log error to AWS RUM:", error)
       }
     }
     this.logger.error(message, ...args)

@@ -60,7 +60,7 @@ http.interceptors.response.use(
           "x-correlation-id": config.headers[x_correlation_id_header]
         }
 
-        // Gracefully handle 404 errors
+        // Let the component handle known errors
         if (response.status === 404 || response.status === 502) {
           return Promise.reject(error)
         }

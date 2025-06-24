@@ -2,81 +2,83 @@ import React, {useState, useEffect} from "react"
 import {Link, useLocation} from "react-router-dom"
 import "../styles/epscookies.scss"
 import {CookieStrings} from "@/constants/ui-strings/CookieStrings"
+import {cptAwsRum} from "@/helpers/awsRum"
+import {useLocalStorageState} from "@/helpers/useLocalStorageState"
+
+// some explanation about this component
+// there are 2 banners in this component - the 'do you accept/reject cookies' banner
+// and the 'you have made a cookie selection' banner - the confirmation banner
+// you should only see the confirmation banner after you have selected a cookie preference
+// after that it should not be shown
+// if you click accept/reject on the main banner - we want to show the confirmation banner once
+// so we set showConfirmationBanner to true, and epsConfirmationBannerShown to true
+// but we can also set cookies on the cookie page
+// in which case we also do not want to show the confirmation banner
+// which is why it is checked and set in checkCookieConsent
 
 export default function EPSCookieBanner() {
-  const [cookiesSet, setCookiesSet] = useState<"accepted" | "rejected" | null>(null)
-  const [showSecondaryBanner, setShowSecondaryBanner] = useState(false)
+  // this is just local to this page so just use state
+  const [showConfirmationBanner, setShowConfirmationBanner] = useState(false)
+
+  // this is shared between this component and cookiePolicyPage so use useLocalStorageState
+  const [cookiesSet, setCookiesSet] = useLocalStorageState<boolean>("setCookiesSet", "setCookiesSet", false)
+  const [epsCookieConsent, setEpsCookieConsent] = useLocalStorageState<"accepted" | "rejected" | null>(
+    "epsCookieConsent", "epsCookieConsent", null)
+  const [epsConfirmationBannerShown, setEpsConfirmationBannerShown] = useLocalStorageState<boolean>(
+    "epsConfirmationBannerShown", "epsConfirmationBannerShown", false)
 
   const checkCookieConsent = () => {
-    const storedChoice = localStorage.getItem("eps-cookie-consent")
-    const secondaryShown = localStorage.getItem("eps-secondary-banner-shown")
 
-    if (storedChoice === "accepted" || storedChoice === "rejected") {
-      setCookiesSet(storedChoice)
+    if (epsCookieConsent === "accepted" || epsCookieConsent === "rejected") {
+      setCookiesSet(true)
 
-      if (secondaryShown !== "true") {
-        setShowSecondaryBanner(true)
-        localStorage.setItem("eps-secondary-banner-shown", "true")
+      if (!epsConfirmationBannerShown) {
+        setShowConfirmationBanner(true)
+        setEpsConfirmationBannerShown(true)
       }
     } else if (typeof window !== "undefined" && window.NHSCookieConsent?.getConsented()) {
       const hasAnalytics = window.NHSCookieConsent.getStatistics()
       const initialChoice = hasAnalytics ? "accepted" : "rejected"
-      setCookiesSet(initialChoice)
-      localStorage.setItem("eps-cookie-consent", initialChoice)
+      setCookiesSet(true)
+      setEpsCookieConsent(initialChoice)
 
-      setShowSecondaryBanner(true)
-      localStorage.setItem("eps-secondary-banner-shown", "true")
+      setShowConfirmationBanner(true)
+      setEpsConfirmationBannerShown(true)
     }
   }
 
   useEffect(() => {
-    //checks cookies on load, and if theyre changed from the option on cookie settings page
+    //checks cookies on load, and if they are changed from the option on cookie settings page
     checkCookieConsent()
-
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === "eps-cookie-consent") {
-        checkCookieConsent()
-      }
-    }
-
-    const handleCookieUpdate = () => {
-      checkCookieConsent()
-    }
-
-    window.addEventListener("storage", handleStorageChange)
-    window.addEventListener("cookieChoiceUpdated", handleCookieUpdate)
-
-    return () => {
-      window.removeEventListener("storage", handleStorageChange)
-      window.removeEventListener("cookieChoiceUpdated", handleCookieUpdate)
-    }
   }, [])
 
   const location = useLocation()
   useEffect(() => {
-    if (location.pathname === "/cookies" && showSecondaryBanner) {
-      setShowSecondaryBanner(false)
+    if (location.pathname === "/cookies" && showConfirmationBanner) {
+      setShowConfirmationBanner(false)
     }
   }, [location.pathname])
 
   const handleCookieChoice = (choice: "accepted" | "rejected") => {
-    setCookiesSet(choice)
-    localStorage.setItem("eps-cookie-consent", choice)
+    setCookiesSet(true)
+    setEpsCookieConsent(choice)
+    if (choice === "accepted") {
+      cptAwsRum.enable()
+    } else {
+      cptAwsRum.disable()
+    }
 
     if (typeof window !== "undefined" && window.NHSCookieConsent) {
       window.NHSCookieConsent.setStatistics(choice === "accepted")
       window.NHSCookieConsent.setConsented(true)
     }
 
-    setShowSecondaryBanner(true)
-    localStorage.setItem("eps-secondary-banner-shown", "true")
-
-    window.dispatchEvent(new CustomEvent("cookieChoiceUpdated"))
+    setShowConfirmationBanner(true)
   }
 
   return (
     <>
-      {cookiesSet === null && (
+      {!cookiesSet && (
         <div
           className="nhsuk-cookie-banner"
           data-testid="cookieBanner"
@@ -129,7 +131,7 @@ export default function EPSCookieBanner() {
         </div>
       )}
 
-      {showSecondaryBanner && (
+      {showConfirmationBanner && !epsConfirmationBannerShown && (
         <div
           className="chargeable-status-banner--green"
           id="chargeable-status-banner-id"

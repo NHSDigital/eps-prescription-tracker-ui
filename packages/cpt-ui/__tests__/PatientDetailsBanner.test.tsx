@@ -4,6 +4,8 @@ import React from "react"
 import "@testing-library/jest-dom"
 import {render, screen, waitFor} from "@testing-library/react"
 
+import PatientDetailsBanner from "@/components/PatientDetailsBanner"
+
 import {PatientDetails, PatientDetailsAddress} from "@cpt-ui-common/common-types"
 
 import {STRINGS} from "@/constants/ui-strings/PatientDetailsBannerStrings"
@@ -48,8 +50,6 @@ const partialAddressDetails = {
   ...basePatient,
   address: partialAddress
 }
-
-import PatientDetailsBanner from "@/components/PatientDetailsBanner"
 
 describe("PatientDetailsBanner", () => {
   beforeEach(() => {

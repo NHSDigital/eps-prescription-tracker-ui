@@ -12,6 +12,8 @@ import {SearchResultsPageStrings} from "@/constants/ui-strings/BasicDetailsSearc
 import {API_ENDPOINTS, FRONTEND_PATHS} from "@/constants/environment"
 import {PatientSummary} from "@cpt-ui-common/common-types/src"
 import http from "@/helpers/axios"
+import {logger} from "@/helpers/logger"
+
 import EpsSpinner from "@/components/EpsSpinner"
 import PatientNotFoundMessage from "@/components/PatientNotFoundMessage"
 import SearchResultsTooManyMessage from "@/components/SearchResultsTooManyMessage"
@@ -65,7 +67,7 @@ export default function SearchResultsPage() {
       setPatients(payload)
       setLoading(false)
     } catch (err) {
-      console.error("Error loading search results:", err)
+      logger.error("Error loading search results:", err)
       setLoading(false)
       setError(true)
     }
