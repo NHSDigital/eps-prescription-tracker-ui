@@ -23,6 +23,7 @@ export default function LoginPage() {
 
   const mockSignIn = async () => {
     logger.info("Signing in (Mock)", auth)
+    auth.clearAuthState()
     await auth?.cognitoSignIn({
       provider: {
         custom: "Mock"
@@ -32,6 +33,7 @@ export default function LoginPage() {
 
   const signIn = useCallback(async () => {
     logger.info("Signing in (Primary)", auth)
+    auth.clearAuthState()
     await auth?.cognitoSignIn({
       provider: {
         custom: "Primary"
