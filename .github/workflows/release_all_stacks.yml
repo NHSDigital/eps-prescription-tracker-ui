@@ -438,7 +438,7 @@ jobs:
           PRIMARY_OIDC_TOKEN_ENDPOINT: "${{ inputs.primaryOidcTokenEndpoint }}"
           PRIMARY_OIDC_USERINFO_ENDPOINT: "${{ inputs.primaryOidcUserInfoEndpoint }}"
           PRIMARY_OIDC_JWKS_ENDPOINT: "${{ inputs.primaryOidcjwksEndpoint }}"
-          MOCK_OIDC_CLIENT_ID: "${{ secrets.MOCK_OIDC_CLIENT_ID }}"
+          MOCK_OIDC_CLIENT_ID: "${{ secrets.QA_MOCK_CLIENT_ID }}"
           MOCK_OIDC_ISSUER: "${{ inputs.mockOidcIssuer }}"
           MOCK_OIDC_AUTHORIZE_ENDPOINT: "${{ inputs.mockOidcAuthorizeEndpoint }}"
           MOCK_OIDC_TOKEN_ENDPOINT: "${{ inputs.mockOidcTokenEndpoint }}"
@@ -451,9 +451,9 @@ jobs:
           APIGEE_PRESCRIPTION_ENDPOINT: ${{ inputs.APIGEE_PRESCRIPTIONS_ENDPOINT }}
           APIGEE_PERSONAL_DEMOGRAPHICS_ENDPOINT: ${{ inputs.APIGEE_PDS_ENDPOINT }}
           APIGEE_DOHS_ENDPOINT: ${{ inputs.APIGEE_DOHS_ENDPOINT }}
-          APIGEE_API_KEY: ${{ secrets.APIGEE_API_KEY }}
-          APIGEE_API_SECRET: ${{ secrets.APIGEE_API_SECRET }}
-          APIGEE_DOHS_API_KEY: ${{ secrets.APIGEE_DOHS_API_KEY }}
+          APIGEE_API_KEY: ${{ secrets.APIGEE_QA_API_KEY }}
+          APIGEE_API_SECRET: ${{ secrets.APIGEE_QA_API_SECRET }}
+          APIGEE_DOHS_API_KEY: ${{ secrets.APIGEE_PTL_DOHS_API_KEY }}
           JWT_KID: ${{ inputs.JWT_KID }}
           ROLE_ID: ${{ inputs.ROLE_ID }}
           CDK_APP_NAME: StatefulResourcesApp
@@ -461,6 +461,7 @@ jobs:
           ROUTE53_EXPORT_NAME: ${{ inputs.ROUTE53_EXPORT_NAME }}
           WAF_ALLOW_GA_RUNNER_CONNECTIVITY: ${{ inputs.WAF_ALLOW_GA_RUNNER_CONNECTIVITY }}
           CLOUDFRONT_ORIGIN_CUSTOM_HEADER: ${{secrets.CLOUDFRONT_ORIGIN_CUSTOM_HEADER }}
+          CIS2_PRIVATE_KEY: ${{ secrets.QA_JWT_PRIVATE_KEY }}
 
       - name: Show diff for stateful stack redeployment
         if: ${{ steps.check_first_deployment.outputs.FIRST_DEPLOYMENT == 'true' }}
