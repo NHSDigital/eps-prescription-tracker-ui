@@ -375,4 +375,23 @@ describe("PrescriptionsListTable", () => {
 
     jest.useRealTimers()
   })
+
+  it("responds to click on prescription id", async () => {
+    jest.useFakeTimers()
+
+    renderWithRouter(<PrescriptionsListTable textContent={textContent} prescriptions={prescriptions} />)
+
+    await waitFor(() => {
+      const prescriptionButton = screen.getByTestId("view-prescription-link-C0C757-A83008-C2D93O")
+
+      expect(prescriptionButton).toBeInTheDocument()
+
+      fireEvent.click(prescriptionButton)
+      expect(mockClearSearchParameters).toHaveBeenCalled()
+      expect(mockSetPrescriptionId).toHaveBeenCalledWith("C0C757-A83008-C2D93O")
+      expect(mockSetIssueNumber).toHaveBeenCalledWith("1")
+    })
+
+  })
+
 })
