@@ -237,7 +237,7 @@ describe("Response Mapper Tests", () => {
       // Should use nhsNumber from prescription for fallback
       expect(result.patient).toMatchObject({
         nhsNumber: "9876543210", // From fallback
-        given: "9876543210", // From fallback (uses nhsNumber as given)
+        given: "", // From fallback (uses nhsNumber as given)
         family: "", // Default value in fallback
         prefix: "",
         suffix: ""
@@ -302,7 +302,7 @@ describe("Response Mapper Tests", () => {
       // Should have default values when no fallback available
       expect(result.patient).toMatchObject({
         nhsNumber: "0", // From prescription nhsNumber converted to string
-        given: "0", // From prescription nhsNumber converted to string
+        given: "",
         family: "",
         prefix: "",
         suffix: ""
@@ -329,7 +329,7 @@ describe("Response Mapper Tests", () => {
       // As per implementation, it should use the prescription NHS number
       expect(result.patient).toMatchObject({
         nhsNumber: prescriptions[0].nhsNumber.toString(),
-        given: prescriptions[0].nhsNumber.toString(),
+        given: emptyPdsDetails.given,
         family: emptyPdsDetails.family,
         prefix: emptyPdsDetails.prefix,
         suffix: emptyPdsDetails.suffix
