@@ -1,5 +1,5 @@
 import {useContext, useEffect, useState} from "react"
-import {Link, useSearchParams} from "react-router-dom"
+import {Link} from "react-router-dom"
 
 import {
   BackLink,
@@ -34,7 +34,6 @@ import {logger} from "@/helpers/logger"
 
 export default function PrescriptionDetailsPage() {
   const auth = useContext(AuthContext)
-  const [queryParams] = useSearchParams()
 
   const [loading, setLoading] = useState(true)
 
@@ -47,6 +46,10 @@ export default function PrescriptionDetailsPage() {
   const [prescribedItems, setPrescribedItems] = useState<Array<PrescribedItemDetails>>([])
   const [dispensedItems, setDispensedItems] = useState<Array<DispensedItemDetails>>([])
   const [messageHistory, setMessageHistory] = useState<Array<MessageHistory>>([])
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [searchPrescriptionId, setSearchPrescriptionId] = useState<string>("")
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [searchIssueNumber, setSearchIssueNumber] = useState<number | undefined>(undefined)
 
   const getPrescriptionDetails = async (
     prescriptionId: string,
@@ -108,20 +111,20 @@ export default function PrescriptionDetailsPage() {
         return
       }
 
-      const prescriptionId = queryParams.get("prescriptionId")
+      const prescriptionId = searchPrescriptionId
       if (!prescriptionId) {
         logger.error("No prescriptionId provided in query params.")
         return
       }
-      const prescriptionIssueNumber = queryParams.get("issueNumber")
+      const prescriptionIssueNumber = searchIssueNumber
 
       logger.info("useEffect triggered for prescription:", prescriptionId)
       setLoading(true)
-      await getPrescriptionDetails(prescriptionId, prescriptionIssueNumber!)
+      await getPrescriptionDetails(prescriptionId, prescriptionIssueNumber?.toString())
     }
 
     runGetPrescriptionDetails()
-  }, [queryParams, auth?.isSignedIn])
+  }, [auth?.isSignedIn])
 
   if (loading) {
     return (
@@ -153,7 +156,7 @@ export default function PrescriptionDetailsPage() {
             <BackLink
               data-testid="go-back-link"
               asElement={Link}
-              to={`${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}?${queryParams.toString()}`}
+              to={`${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}`}
             >
               {STRINGS.GO_BACK}
             </BackLink>

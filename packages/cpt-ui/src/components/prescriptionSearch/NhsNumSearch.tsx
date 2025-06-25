@@ -1,5 +1,5 @@
 import React, {useEffect, useRef, useState} from "react"
-import {useNavigate, useSearchParams} from "react-router-dom"
+import {useNavigate} from "react-router-dom"
 import {
   Container,
   Row,
@@ -20,8 +20,7 @@ import {FRONTEND_PATHS} from "@/constants/environment"
 type ErrorKey = keyof typeof STRINGS.errors
 
 export default function NhsNumSearch() {
-  const [searchParams] = useSearchParams()
-  const [nhsNumber, setNhsNumber] = useState(searchParams.get("nhsNumber") ?? "")
+  const [nhsNumber, setNhsNumber] = useState<string>("")
   const [errorTypes, setErrorTypes] = useState<Array<ErrorKey>>([])
   const errorRef = useRef<HTMLDivElement | null>(null)
   const navigate = useNavigate()
@@ -55,8 +54,9 @@ export default function NhsNumSearch() {
       setErrorTypes(errors)
       return
     }
+    setNhsNumber(cleaned)
 
-    navigate(`${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}?nhsNumber=${cleaned}`)
+    navigate(`${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}`)
   }
 
   return (

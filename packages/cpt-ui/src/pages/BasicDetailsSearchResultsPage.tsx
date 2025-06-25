@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 import React, {useEffect, useState} from "react"
-import {useNavigate, useSearchParams, useLocation} from "react-router-dom"
+import {useNavigate, useLocation} from "react-router-dom"
 import {
   BackLink,
   Table,
@@ -19,9 +19,24 @@ import SearchResultsTooManyMessage from "@/components/SearchResultsTooManyMessag
 export default function SearchResultsPage() {
   const location = useLocation()
   const navigate = useNavigate()
-  const [searchParams] = useSearchParams()
   const [loading, setLoading] = useState(true)
   const [patients, setPatients] = useState<Array<PatientSummary>>([])
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [firstName, setFirstName] = useState("")
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [lastName, setLastName] = useState("")
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [dobDay, setDobDay] = useState("")
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [dobMonth, setDobMonth] = useState("")
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [dobYear, setDobYear] = useState("")
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [postcode, setPostcode] = useState("")
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [prescriptionId, setPrescriptionId] = useState<string>("")
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [nhsNumber, setNhsNumber] = useState<string>("")
 
   useEffect(() => {
     getSearchResults()
@@ -31,10 +46,10 @@ export default function SearchResultsPage() {
     // Attempt to fetch live search results from the API
     const response = await http.get(API_ENDPOINTS.PATIENT_SEARCH, {
       params: {
-        familyName: searchParams.get("lastName"),
-        dateOfBirth: `${searchParams.get("dobYear")}-${searchParams.get("dobMonth")}-${searchParams.get("dobDay")}`,
-        postcode: searchParams.get("postcode"),
-        givenName: searchParams.get("firstName") ?? undefined
+        familyName: lastName,
+        dateOfBirth: `${dobYear}-${dobMonth}-${dobDay}`,
+        postcode: postcode,
+        givenName: firstName ?? undefined
       }
     })
 
@@ -50,12 +65,8 @@ export default function SearchResultsPage() {
     }
 
     if (payload.length === 1) {
-      const baseParams = {
-        nhsNumber: payload[0].nhsNumber,
-        ...Object.fromEntries(searchParams.entries())
-      }
-      const queryString = new URLSearchParams(baseParams).toString()
-      navigate(`${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}?${queryString}`)
+      setNhsNumber(payload[0].nhsNumber)
+      navigate(`${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}`)
       return
     }
 
@@ -64,17 +75,13 @@ export default function SearchResultsPage() {
   }
 
   const handleRowClick = (nhsNumber: string) => {
-    const baseParams = {
-      nhsNumber,
-      ...Object.fromEntries(searchParams.entries())
-    }
-    const queryString = new URLSearchParams(baseParams).toString()
-    navigate(`${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}?${queryString}`)
+    setNhsNumber(nhsNumber)
+    navigate(`${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}`)
   }
 
   // Pass back the query string to keep filled form on return
   const handleGoBack = () => {
-    navigate(`${FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS}${location.search}`)
+    navigate(`${FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS}`)
   }
 
   // Sort by first name

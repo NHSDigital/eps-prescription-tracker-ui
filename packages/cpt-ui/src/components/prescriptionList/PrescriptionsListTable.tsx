@@ -1,5 +1,5 @@
 /* eslint-disable max-len */
-import React from "react"
+import React, {useState} from "react"
 import {Tag} from "nhsuk-react-components"
 import "../../styles/PrescriptionTable.scss"
 import {PrescriptionSummary} from "@cpt-ui-common/common-types/src"
@@ -23,6 +23,10 @@ const PrescriptionsListTable = ({
   prescriptions: initialPrescriptions
 }: PrescriptionsListTableProps) => {
   const initialSortConfig: SortConfig = {key: "issueDate", direction: null}
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [searchPrescriptionId, setSearchPrescriptionId] = useState<string>("")
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [searchIssueNumber, setSearchIssueNumber] = useState<number | undefined>(undefined)
 
   const currentTabId: TabId = textContent.testid as TabId
 
@@ -37,6 +41,10 @@ const PrescriptionsListTable = ({
 
   const sortConfig = allSortConfigs[currentTabId] || initialSortConfig
 
+  const setSearchPrescriptionState = (prescriptionId: string, issueNumber: number | undefined) => {
+    setSearchPrescriptionId(prescriptionId)
+    setSearchIssueNumber(issueNumber)
+  }
   const setSortConfigForTab = (newConfig: SortConfig) => {
     setAllSortConfigs((prev) => ({
       ...prev,
@@ -350,6 +358,7 @@ const PrescriptionsListTable = ({
                       </div>
                       <div>
                         <Link
+                          onClick={() => setSearchPrescriptionState(row.prescriptionId, row.issueNumber)}
                           to={constructLink(row.prescriptionId, row.issueNumber)}
                           className="nhsuk-link"
                           data-testid={`view-prescription-link-${row.prescriptionId}`}

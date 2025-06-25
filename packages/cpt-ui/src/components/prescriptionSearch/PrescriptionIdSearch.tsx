@@ -4,7 +4,7 @@ import React, {
   useRef,
   useMemo
 } from "react"
-import {useNavigate, useSearchParams} from "react-router-dom"
+import {useNavigate} from "react-router-dom"
 
 import {
   Container,
@@ -33,8 +33,7 @@ export default function PrescriptionIdSearch() {
   const navigate = useNavigate()
   const errorRef = useRef<HTMLDivElement | null>(null)
 
-  const [searchParams] = useSearchParams()
-  const [prescriptionId, setPrescriptionId] = useState<string>(searchParams.get("prescriptionId") ?? "")
+  const [prescriptionId, setPrescriptionId] = useState<string>("")
   const [errorKey, setErrorKey] = useState<PrescriptionValidationError | null>(null)
 
   const errorMessages = PRESCRIPTION_ID_SEARCH_STRINGS.errors

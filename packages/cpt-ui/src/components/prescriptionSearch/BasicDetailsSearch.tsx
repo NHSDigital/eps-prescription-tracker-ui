@@ -14,7 +14,7 @@ import {
   ErrorMessage,
   Fieldset
 } from "nhsuk-react-components"
-import {useNavigate, useSearchParams, createSearchParams} from "react-router-dom"
+import {useNavigate, createSearchParams} from "react-router-dom"
 import {validateBasicDetails, getInlineErrors} from "@/helpers/validateBasicDetails"
 import {errorFocusMap, ErrorKey, resolveDobInvalidFields} from "@/helpers/basicDetailsValidationMeta"
 import {STRINGS} from "@/constants/ui-strings/BasicDetailsSearchStrings"
@@ -32,7 +32,6 @@ export default function BasicDetailsSearch() {
   const [postcode, setPostcode] = useState("")
   const [errors, setErrors] = useState<Array<ErrorKey>>([])
   const [dobErrorFields, setDobErrorFields] = useState<Array<"day" | "month" | "year">>([])
-  const [searchParams] = useSearchParams()
 
   const inlineErrors = getInlineErrors(errors)
 
@@ -64,15 +63,6 @@ export default function BasicDetailsSearch() {
 
     document.addEventListener("click", handler)
     return () => document.removeEventListener("click", handler)
-  }, [])
-
-  useEffect(() => {
-    setFirstName(searchParams.get("firstName") ?? "")
-    setLastName(searchParams.get("lastName") ?? "")
-    setDobDay(searchParams.get("dobDay") ?? "")
-    setDobMonth(searchParams.get("dobMonth") ?? "")
-    setDobYear(searchParams.get("dobYear") ?? "")
-    setPostcode(searchParams.get("postcode") ?? "")
   }, [])
 
   // Returns true if the given DOB field had an error on the last submission.
