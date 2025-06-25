@@ -30,39 +30,33 @@ export default function App() {
         <PatientDetailsProvider>
           <EPSCookieBanner />
           <PrescriptionInformationProvider>
-            <Routes>
-              <Route path="/" element={<Layout />}>
-                {/* Public cookie routes */}
-                <Route path="cookies" element={<CookiePolicyPage />} />
-                <Route path="cookies-selected" element={<CookieSettingsPage />} />
+            <SearchProvider>
+              <Routes>
+                <Route path="/" element={<Layout />}>
+                  {/* Public cookie routes */}
+                  <Route path="cookies" element={<CookiePolicyPage />} />
+                  <Route path="cookies-selected" element={<CookieSettingsPage />} />
 
-                {/* Your existing routes */}
-                <Route index element={<NotFoundPage />} />
-                <Route path="*" element={<NotFoundPage />} />
-                <Route path={FRONTEND_PATHS.LOGIN} element={<LoginPage />} />
-                <Route path={FRONTEND_PATHS.LOGOUT} element={<LogoutPage />} />
-                <Route path={FRONTEND_PATHS.SELECT_YOUR_ROLE} element={<SelectYourRolePage />} />
-                <Route path={FRONTEND_PATHS.YOUR_SELECTED_ROLE} element={<YourSelectedRolePage />} />
-                <Route path={FRONTEND_PATHS.CHANGE_YOUR_ROLE} element={<ChangeRolePage />} />
-                <Route path={FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID}
-                  element={<SearchProvider><SearchPrescriptionPage /></SearchProvider>} />
-                <Route path={FRONTEND_PATHS.SEARCH_BY_NHS_NUMBER}
-                  element={<SearchProvider><SearchPrescriptionPage /></SearchProvider>} />
-                <Route path={FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS}
-                  element={<SearchProvider><SearchPrescriptionPage /></SearchProvider>} />
-                <Route path={FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}
-                  element={<SearchProvider><PrescriptionListPage /></SearchProvider>} />
-                <Route path={FRONTEND_PATHS.PRESCRIPTION_LIST_FUTURE}
-                  element={<SearchProvider><PrescriptionListPage /></SearchProvider>} />
-                <Route path={FRONTEND_PATHS.PRESCRIPTION_LIST_PAST}
-                  element={<SearchProvider><PrescriptionListPage /></SearchProvider>} />
-                <Route path={FRONTEND_PATHS.PRESCRIPTION_DETAILS_PAGE}
-                  element={<SearchProvider><PrescriptionDetailsPage /></SearchProvider>} />
-                <Route path={FRONTEND_PATHS.PATIENT_SEARCH_RESULTS}
-                  element={<SearchProvider><SearchResultsPage /></SearchProvider>} />
-                <Route path={FRONTEND_PATHS.PRIVACY_NOTICE} element={<PrivacyNoticePage />} />
-              </Route>
-            </Routes>
+                  {/* Your existing routes */}
+                  <Route index element={<NotFoundPage />} />
+                  <Route path="*" element={<NotFoundPage />} />
+                  <Route path={FRONTEND_PATHS.LOGIN} element={<LoginPage />} />
+                  <Route path={FRONTEND_PATHS.LOGOUT} element={<LogoutPage />} />
+                  <Route path={FRONTEND_PATHS.SELECT_YOUR_ROLE} element={<SelectYourRolePage />} />
+                  <Route path={FRONTEND_PATHS.YOUR_SELECTED_ROLE} element={<YourSelectedRolePage />} />
+                  <Route path={FRONTEND_PATHS.CHANGE_YOUR_ROLE} element={<ChangeRolePage />} />
+                  <Route path={FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID} element={<SearchPrescriptionPage />} />
+                  <Route path={FRONTEND_PATHS.SEARCH_BY_NHS_NUMBER} element={<SearchPrescriptionPage />} />
+                  <Route path={FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS} element={<SearchPrescriptionPage />} />
+                  <Route path={FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT} element={<PrescriptionListPage />} />
+                  <Route path={FRONTEND_PATHS.PRESCRIPTION_LIST_FUTURE} element={<PrescriptionListPage />} />
+                  <Route path={FRONTEND_PATHS.PRESCRIPTION_LIST_PAST} element={<PrescriptionListPage />} />
+                  <Route path={FRONTEND_PATHS.PRESCRIPTION_DETAILS_PAGE} element={<PrescriptionDetailsPage />} />
+                  <Route path={FRONTEND_PATHS.PATIENT_SEARCH_RESULTS} element={<SearchResultsPage />} />
+                  <Route path={FRONTEND_PATHS.PRIVACY_NOTICE} element={<PrivacyNoticePage />} />
+                </Route>
+              </Routes>
+            </SearchProvider>
           </PrescriptionInformationProvider>
         </PatientDetailsProvider>
       </AccessProvider>
