@@ -13,6 +13,7 @@ import {
 import NhsNumSearch from "@/components/prescriptionSearch/NhsNumSearch"
 import {STRINGS} from "@/constants/ui-strings/NhsNumSearchStrings"
 import {FRONTEND_PATHS} from "@/constants/environment"
+import {SearchContext, SearchProviderContextType} from "@/context/SearchProvider"
 
 jest.mock("react-router-dom", () => {
   const actual = jest.requireActual("react-router-dom")
@@ -23,6 +24,38 @@ jest.mock("react-router-dom", () => {
   }
 })
 
+const mockClearSearchParameters = jest.fn()
+const mockSetPrescriptionId = jest.fn()
+const mockSetIssueNumber = jest.fn()
+const mockSetFirstName = jest.fn()
+const mockSetLastName = jest.fn()
+const mockSetDobDay = jest.fn()
+const mockSetDobMonth = jest.fn()
+const mockSetDobYear = jest.fn()
+const mockSetPostcode =jest.fn()
+const mockSetNhsNumber = jest.fn()
+const defaultSearchState: SearchProviderContextType = {
+  prescriptionId: null,
+  issueNumber: undefined,
+  firstName: null,
+  lastName: null,
+  dobDay: null,
+  dobMonth: null,
+  dobYear: null,
+  postcode: null,
+  nhsNumber: null,
+  clearSearchParameters: mockClearSearchParameters,
+  setPrescriptionId: mockSetPrescriptionId,
+  setIssueNumber: mockSetIssueNumber,
+  setFirstName: mockSetFirstName,
+  setLastName: mockSetLastName,
+  setDobDay: mockSetDobDay,
+  setDobMonth: mockSetDobMonth,
+  setDobYear: mockSetDobYear,
+  setPostcode: mockSetPostcode,
+  setNhsNumber: mockSetNhsNumber
+}
+
 const LocationDisplay = () => {
   const location = useLocation()
   return <div data-testid="location-display">{location.pathname + location.search}</div>
@@ -30,12 +63,14 @@ const LocationDisplay = () => {
 
 const renderWithRouter = (ui: React.ReactElement) => {
   return render(
-    <MemoryRouter initialEntries={["/search"]}>
-      <Routes>
-        <Route path="/search" element={ui} />
-        <Route path="*" element={<LocationDisplay />} />
-      </Routes>
-    </MemoryRouter>
+    <SearchContext.Provider value={defaultSearchState}>
+      <MemoryRouter initialEntries={["/search"]}>
+        <Routes>
+          <Route path="/search" element={ui} />
+          <Route path="*" element={<LocationDisplay />} />
+        </Routes>
+      </MemoryRouter>
+    </SearchContext.Provider>
   )
 }
 
@@ -52,9 +87,7 @@ describe("NhsNumSearch", () => {
     await userEvent.type(screen.getByTestId("nhs-number-input"), "9233739112")
     await userEvent.click(screen.getByTestId("find-patient-button"))
 
-    expect(mockNavigate).toHaveBeenCalledWith(
-      `${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}?nhsNumber=9233739112`
-    )
+    expect(mockNavigate).toHaveBeenCalledWith(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT)
   })
 
   it("renders label, hint, and submit button", () => {

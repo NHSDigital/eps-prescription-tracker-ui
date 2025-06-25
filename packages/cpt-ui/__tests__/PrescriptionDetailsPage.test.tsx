@@ -1,5 +1,5 @@
 import React, {useState} from "react"
-import {MemoryRouter, useNavigate, useSearchParams} from "react-router-dom"
+import {MemoryRouter, useNavigate} from "react-router-dom"
 import {render, screen, waitFor} from "@testing-library/react"
 
 import {MockPatientDetailsProvider} from "../__mocks__/MockPatientDetailsProvider"
@@ -23,13 +23,13 @@ jest.mock("@/helpers/axios", () => ({
   get: jest.fn()
 }))
 import http from "@/helpers/axios"
+import {SearchContext, SearchProviderContextType} from "@/context/SearchProvider"
 
 jest.mock("react-router-dom", () => {
   const actual = jest.requireActual("react-router-dom")
   return {
     ...actual,
-    useNavigate: jest.fn(),
-    useSearchParams: jest.fn()
+    useNavigate: jest.fn()
   }
 })
 
@@ -111,6 +111,38 @@ const MockAuthProvider = ({
   )
 }
 
+const mockClearSearchParameters = jest.fn()
+const mockSetPrescriptionId = jest.fn()
+const mockSetIssueNumber = jest.fn()
+const mockSetFirstName = jest.fn()
+const mockSetLastName = jest.fn()
+const mockSetDobDay = jest.fn()
+const mockSetDobMonth = jest.fn()
+const mockSetDobYear = jest.fn()
+const mockSetPostcode =jest.fn()
+const mockSetNhsNumber = jest.fn()
+const defaultSearchState: SearchProviderContextType = {
+  prescriptionId: null,
+  issueNumber: undefined,
+  firstName: null,
+  lastName: null,
+  dobDay: null,
+  dobMonth: null,
+  dobYear: null,
+  postcode: null,
+  nhsNumber: null,
+  clearSearchParameters: mockClearSearchParameters,
+  setPrescriptionId: mockSetPrescriptionId,
+  setIssueNumber: mockSetIssueNumber,
+  setFirstName: mockSetFirstName,
+  setLastName: mockSetLastName,
+  setDobDay: mockSetDobDay,
+  setDobMonth: mockSetDobMonth,
+  setDobYear: mockSetDobYear,
+  setPostcode: mockSetPostcode,
+  setNhsNumber: mockSetNhsNumber
+}
+
 // Mock the spinner component.
 jest.mock("@/components/EpsSpinner", () => () => (
   <div data-testid="eps-spinner">Spinner</div>
@@ -138,20 +170,24 @@ const renderComponent = (
   prescriptionId: string,
   initialAuthState: AuthContextType = defaultAuthState
 ) => {
-  const queryString = prescriptionId ? `?prescriptionId=${prescriptionId}` : ""
-  const initialRoute = `/site/prescription-details${queryString}`
+  const initialRoute = `/site/prescription-details`
 
-    ; (useSearchParams as jest.Mock).mockReturnValue([new URLSearchParams(queryString)])
+  const searchState = {
+    ...defaultSearchState,
+    prescriptionId
+  }
 
   return render(
     <MockAuthProvider initialState={initialAuthState}>
-      <MockPatientDetailsProvider>
-        <MockPrescriptionInformationProvider>
-          <MemoryRouter initialEntries={[initialRoute]}>
-            <PrescriptionDetailsPage />
-          </MemoryRouter>
-        </MockPrescriptionInformationProvider>
-      </MockPatientDetailsProvider>
+      <SearchContext.Provider value={searchState}>
+        <MockPatientDetailsProvider>
+          <MockPrescriptionInformationProvider>
+            <MemoryRouter initialEntries={[initialRoute]}>
+              <PrescriptionDetailsPage />
+            </MemoryRouter>
+          </MockPrescriptionInformationProvider>
+        </MockPatientDetailsProvider>
+      </SearchContext.Provider>
     </MockAuthProvider>
   )
 }

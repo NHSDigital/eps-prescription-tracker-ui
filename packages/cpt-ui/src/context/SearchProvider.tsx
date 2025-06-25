@@ -1,15 +1,15 @@
 import React, {createContext, useContext, useState} from "react"
 
 export interface SearchProviderContextType {
-  prescriptionId: string | null
-  issueNumber: string | undefined
-  firstName: string | null
-  lastName: string | null
-  dobDay: string | null
-  dobMonth: string | null
-  dobYear: string | null
-  postcode: string | null
-  nhsNumber: string | null
+  prescriptionId?: string | null
+  issueNumber?: string | undefined
+  firstName?: string | null
+  lastName?: string | null
+  dobDay?: string | null
+  dobMonth?: string | null
+  dobYear?: string | null
+  postcode?: string | null
+  nhsNumber?: string | null
   clearSearchParameters: () => void
   setPrescriptionId: (prescriptionId: string) => void
   setIssueNumber: (issueNumber: string | undefined) => void

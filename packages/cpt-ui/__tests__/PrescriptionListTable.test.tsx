@@ -9,12 +9,45 @@ import PrescriptionsListTable from "@/components/prescriptionList/PrescriptionsL
 import {PrescriptionsListStrings} from "@/constants/ui-strings/PrescriptionListTabStrings"
 import {PrescriptionSummary, TreatmentType} from "@cpt-ui-common/common-types"
 import {MemoryRouter} from "react-router-dom"
+import {SearchContext, SearchProviderContextType} from "@/context/SearchProvider"
 
 jest.mock("@/helpers/statusMetadata", () => ({
   getStatusTagColour: jest.fn().mockReturnValue("blue"),
   getStatusDisplayText: jest.fn().mockReturnValue("Available to download"),
   formatDateForPrescriptions: jest.fn((date: string) => "Formatted: " + date)
 }))
+
+const mockClearSearchParameters = jest.fn()
+const mockSetPrescriptionId = jest.fn()
+const mockSetIssueNumber = jest.fn()
+const mockSetFirstName = jest.fn()
+const mockSetLastName = jest.fn()
+const mockSetDobDay = jest.fn()
+const mockSetDobMonth = jest.fn()
+const mockSetDobYear = jest.fn()
+const mockSetPostcode =jest.fn()
+const mockSetNhsNumber = jest.fn()
+const defaultSearchState: SearchProviderContextType = {
+  prescriptionId: null,
+  issueNumber: undefined,
+  firstName: null,
+  lastName: null,
+  dobDay: null,
+  dobMonth: null,
+  dobYear: null,
+  postcode: null,
+  nhsNumber: null,
+  clearSearchParameters: mockClearSearchParameters,
+  setPrescriptionId: mockSetPrescriptionId,
+  setIssueNumber: mockSetIssueNumber,
+  setFirstName: mockSetFirstName,
+  setLastName: mockSetLastName,
+  setDobDay: mockSetDobDay,
+  setDobMonth: mockSetDobMonth,
+  setDobYear: mockSetDobYear,
+  setPostcode: mockSetPostcode,
+  setNhsNumber: mockSetNhsNumber
+}
 
 describe("PrescriptionsListTable", () => {
   const textContent: PrescriptionsListStrings = {
@@ -60,9 +93,11 @@ describe("PrescriptionsListTable", () => {
 
   const renderWithRouter = (component: React.ReactElement) => {
     return render(
-      <MemoryRouter>
-        {component}
-      </MemoryRouter>
+      <SearchContext.Provider value={defaultSearchState}>
+        <MemoryRouter>
+          {component}
+        </MemoryRouter>
+      </SearchContext.Provider>
     )
   }
 
