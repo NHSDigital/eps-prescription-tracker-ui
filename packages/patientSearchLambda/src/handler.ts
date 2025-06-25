@@ -1,4 +1,4 @@
-import {APIGatewayProxyEvent, APIGatewayProxyEventQueryStringParameters, APIGatewayProxyResult} from "aws-lambda"
+import {APIGatewayProxyEventBase, APIGatewayProxyEventQueryStringParameters, APIGatewayProxyResult} from "aws-lambda"
 import {Logger} from "@aws-lambda-powertools/logger"
 import {
   headers as headerUtils,
@@ -7,6 +7,7 @@ import {
   appendLoggerKeys
 } from "@cpt-ui-common/lambdaUtils"
 import * as pds from "@cpt-ui-common/pdsClient"
+import {AuthResult} from "@cpt-ui-common/authFunctions"
 
 export const INTERNAL_ERROR_RESPONSE_BODY = {
   message: "A system error has occurred"
@@ -24,23 +25,15 @@ const code = (statusCode: number) => ({
 //  injected to be easier to mock out in unit tests
 export type HandlerParameters = {
   logger: Logger,
-  pdsClient: pds.Client,
-  usernameExtractor: (event: APIGatewayProxyEvent) => string,
-  authenticationFunction: (username: string) => Promise<{
-    apigeeAccessToken: string,
-    roleId: string | undefined,
-    orgCode: string | undefined
-  }>
+  pdsClient: pds.Client
 }
 
 // Lambda handler function
 export const lambdaHandler = async (
-  event: APIGatewayProxyEvent,
+  event: APIGatewayProxyEventBase<AuthResult>,
   {
     logger,
-    pdsClient,
-    usernameExtractor,
-    authenticationFunction
+    pdsClient
   }: HandlerParameters
 ): Promise<APIGatewayProxyResult> => {
   const {loggerKeys, correlationId} = extractInboundEventValues(event)
@@ -48,42 +41,12 @@ export const lambdaHandler = async (
 
   const searchStartTime = Date.now()
 
-  // Use the authenticateRequest function for authentication
-  let username: string
-  try{
-    username = usernameExtractor(event)
-  } catch {
-    logger.info("Unable to extract username from event", {event})
-    return code(400).body({
-      message: "Username not found in event"
-    })
-  }
+  let apigeeAccessToken = event.requestContext.authorizer.apigeeAccessToken
+  let roleId = event.requestContext.authorizer.roleId
+  let orgCode = event.requestContext.authorizer.orgCode
 
-  let apigeeAccessToken: string | undefined
-  let roleId: string | undefined
-  let orgCode: string | undefined
-  try{
-    const authResult = await authenticationFunction(username)
-
-    apigeeAccessToken = authResult.apigeeAccessToken
-    roleId = authResult.roleId
-    orgCode = authResult.orgCode
-    if (roleId === undefined) {
-      throw new Error("roleId is undefined")
-    }
-    if (orgCode === undefined) {
-      throw new Error("orgCode is undefined")
-    }
-  } catch (error) {
-    logger.error("Authentication failed", {error})
+  if (!roleId || !orgCode) {
     return code(401).body({
-      message: "Authentication failed"
-    })
-  }
-
-  if(!apigeeAccessToken){
-    logger.error("No valid Apigee access token found")
-    return code(500).body({
       message: "Authentication failed"
     })
   }

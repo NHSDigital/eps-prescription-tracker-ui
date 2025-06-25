@@ -1,6 +1,5 @@
-import {APIGatewayProxyEvent, APIGatewayProxyResult} from "aws-lambda"
+import {APIGatewayProxyEventBase, APIGatewayProxyResult} from "aws-lambda"
 
-import {getSecret} from "@aws-lambda-powertools/parameters/secrets"
 import {Logger} from "@aws-lambda-powertools/logger"
 import {injectLambdaContext} from "@aws-lambda-powertools/logger/middleware"
 
@@ -12,22 +11,20 @@ import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
 import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
 import {extractInboundEventValues, appendLoggerKeys} from "@cpt-ui-common/lambdaUtils"
 
-import {getUsernameFromEvent, authenticateRequest} from "@cpt-ui-common/authFunctions"
+import {
+  AuthenticateRequestOptions,
+  authenticationMiddleware,
+  authParametersFromEnv,
+  AuthResult
+} from "@cpt-ui-common/authFunctions"
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 
 import {processPrescriptionRequest} from "./services/prescriptionService"
+import axios, {AxiosInstance} from "axios"
 
 type HandlerParameters = {
   logger: Logger,
-  documentClient: DynamoDBDocumentClient,
-  apigeePrescriptionsEndpoint: string,
-  tokenMappingTableName: string,
-  jwtPrivateKeyArn: string,
-  apigeeApiKey: string,
-  apigeeApiSecret: string,
-  jwtKid: string,
-  apigeeMockTokenEndpoint: string,
-  apigeeCis2TokenEndpoint: string
+  apigeePrescriptionsEndpoint: string
 }
 
 export type HandlerInitialisationParameters = {
@@ -35,67 +32,23 @@ export type HandlerInitialisationParameters = {
   logger: Logger,
   documentClient: DynamoDBDocumentClient,
   apigeePrescriptionsEndpoint: string,
-  tokenMappingTableName: string,
-  jwtPrivateKeyArn: string,
-  apigeeApiKey: string,
-  apigeeApiSecret: string,
-  jwtKid: string,
-  apigeeMockTokenEndpoint: string,
-  apigeeCis2TokenEndpoint: string
+  authenticationParameters: AuthenticateRequestOptions,
+  axiosInstance: AxiosInstance
 }
 
 const lambdaHandler = async (
-  event: APIGatewayProxyEvent,
-  {
-    logger,
-    documentClient,
-    apigeePrescriptionsEndpoint,
-    tokenMappingTableName,
-    jwtPrivateKeyArn,
-    apigeeApiKey,
-    apigeeApiSecret,
-    jwtKid,
-    apigeeMockTokenEndpoint,
-    apigeeCis2TokenEndpoint
-  }: HandlerParameters
+  event: APIGatewayProxyEventBase<AuthResult>,
+  {logger, apigeePrescriptionsEndpoint}: HandlerParameters
 ): Promise<APIGatewayProxyResult> => {
   const {loggerKeys, correlationId} = extractInboundEventValues(event)
   appendLoggerKeys(logger, loggerKeys)
 
-  // Use the authenticateRequest function for authentication
-  const username = getUsernameFromEvent(event)
+  const {apigeeAccessToken, roleId, orgCode} = event.requestContext.authorizer
 
-  const {apigeeAccessToken, roleId, orgCode} = await authenticateRequest(username, documentClient, logger, {
-    tokenMappingTableName,
-    jwtPrivateKeyArn,
-    apigeeApiKey,
-    apigeeApiSecret,
-    jwtKid,
-    apigeeMockTokenEndpoint,
-    apigeeCis2TokenEndpoint
-  })
-
-  // Log the token for debugging (redacted for security)
-  logger.debug("Using Apigee access token and role", {
-    apigeeAccessToken: apigeeAccessToken,
-    roleId: roleId
-  })
-
-  // Fetch the private key for signing the client assertion
-  const jwtPrivateKey = await getSecret(jwtPrivateKeyArn)
-  if (!jwtPrivateKey || typeof jwtPrivateKey !== "string") {
-    throw new Error("Invalid or missing JWT private key")
-  }
-  logger.info("JWT private key retrieved successfully")
-
-  // ****************************************
-  // PROCESS REQUEST
-  // ****************************************
-
-  if (roleId === undefined) {
+  if (!roleId) {
     throw new Error("roleId is undefined")
   }
-  if (orgCode === undefined) {
+  if (!orgCode) {
     throw new Error("orgCode is undefined")
   }
   // Pass the gathered data in to the processor for the request
@@ -115,18 +68,16 @@ export const newHandler = (
 ) => {
   const params: HandlerParameters = {
     logger: initParams.logger,
-    documentClient: initParams.documentClient,
-    apigeePrescriptionsEndpoint: initParams.apigeePrescriptionsEndpoint,
-    tokenMappingTableName: initParams.tokenMappingTableName,
-    jwtPrivateKeyArn: initParams.jwtPrivateKeyArn,
-    apigeeApiKey: initParams.apigeeApiKey,
-    apigeeApiSecret: initParams.apigeeApiSecret,
-    jwtKid: initParams.jwtKid,
-    apigeeMockTokenEndpoint: initParams.apigeeMockTokenEndpoint,
-    apigeeCis2TokenEndpoint: initParams.apigeeCis2TokenEndpoint
+    apigeePrescriptionsEndpoint: initParams.apigeePrescriptionsEndpoint
   }
 
-  return middy((event: APIGatewayProxyEvent) => lambdaHandler(event, params))
+  return middy((event: APIGatewayProxyEventBase<AuthResult>) => lambdaHandler(event, params))
+    .use(authenticationMiddleware(
+      initParams.axiosInstance,
+      initParams.documentClient,
+      initParams.authenticationParameters,
+      initParams.logger
+    ))
     .use(injectLambdaContext(initParams.logger, {clearState: true}))
     .use(httpHeaderNormalizer())
     .use(
@@ -143,15 +94,8 @@ export const newHandler = (
 }
 
 // External endpoints and environment variables
-const apigeeCis2TokenEndpoint = process.env["apigeeCIS2TokenEndpoint"] as string
-const apigeeMockTokenEndpoint = process.env["apigeeMockTokenEndpoint"] as string
 const apigeePrescriptionsEndpoint = process.env["apigeePrescriptionsEndpoint"] as string
-// const apigeePrescriptionsEndpoint = "https://internal-dev.api.service.nhs.uk/clinical-prescription-tracker-pr-809/"
-const TokenMappingTableName = process.env["TokenMappingTableName"] as string
-const jwtPrivateKeyArn = process.env["jwtPrivateKeyArn"] as string
-const jwtKid = process.env["jwtKid"] as string
-const apigeeApiKey = process.env["apigeeApiKey"] as string
-const apigeeApiSecret= process.env["APIGEE_API_SECRET"] as string
+const authenticationParameters = authParametersFromEnv()
 
 // DynamoDB client setup
 const dynamoClient = new DynamoDBClient()
@@ -159,19 +103,15 @@ const documentClient = DynamoDBDocumentClient.from(dynamoClient)
 
 // Error response template
 const errorResponseBody = {message: "A system error has occurred"}
+const axiosInstance = axios.create()
 
 const DEFAULT_HANDLER_PARAMETERS: HandlerInitialisationParameters = {
   errorResponseBody,
   logger: new Logger({serviceName: "prescriptionDetails"}),
   documentClient,
   apigeePrescriptionsEndpoint,
-  tokenMappingTableName: TokenMappingTableName,
-  jwtPrivateKeyArn,
-  apigeeApiKey,
-  apigeeApiSecret,
-  jwtKid,
-  apigeeMockTokenEndpoint,
-  apigeeCis2TokenEndpoint
+  authenticationParameters,
+  axiosInstance
 }
 
 export const handler = newHandler(DEFAULT_HANDLER_PARAMETERS)

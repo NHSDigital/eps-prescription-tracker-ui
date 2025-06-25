@@ -21,7 +21,8 @@ interface TokenMappingItem {
     userDetails?: UserDetails,
     rolesWithAccess?: Array<RoleDetails>,
     rolesWithoutAccess?: Array<RoleDetails>
-    currentlySelectedRole?: RoleDetails
+    currentlySelectedRole?: RoleDetails,
+    lastActivityTime: number
   }
 
 export const insertTokenMapping = async (
@@ -76,7 +77,8 @@ export const updateTokenMapping = async (
       ["userDetails", tokenMappingItem.userDetails],
       ["rolesWithAccess", tokenMappingItem.rolesWithAccess],
       ["rolesWithoutAccess", tokenMappingItem.rolesWithoutAccess],
-      ["currentlySelectedRole", tokenMappingItem.currentlySelectedRole]
+      ["currentlySelectedRole", tokenMappingItem.currentlySelectedRole],
+      ["lastActivityTime", tokenMappingItem.lastActivityTime]
     ]
 
     for (const [key, value] of optionalFields) {
