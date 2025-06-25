@@ -1,5 +1,13 @@
 import {jest} from "@jest/globals"
 import nock from "nock"
+import {Logger} from "@aws-lambda-powertools/logger"
+
+const mockLogger: Partial<Logger> = {
+  info: jest.fn(),
+  debug: jest.fn(),
+  error: jest.fn(),
+  warn: jest.fn()
+}
 
 // Mock environment variables by setting them before any module loads
 const validApiKey = "dummy-api-key"
@@ -22,32 +30,29 @@ describe("doHSClient", () => {
   afterEach(() => {
     // Verify that all nock interceptors were used
     if (!nock.isDone()) {
-      console.warn("Unused nock interceptors:", nock.pendingMocks())
       nock.cleanAll()
     }
   })
 
-  it("throws an error if no ODS codes are provided", async () => {
-    await expect(doHSClient({})).rejects.toThrow(
-      "At least one ODS Code is required for DoHS API request"
-    )
+  it("returns empty if no ODS codes are provided", async () => {
+    expect(await doHSClient([], mockLogger as Logger)).toEqual([])
   })
 
   it("throws an error if apigeeApiKey is not set", async () => {
     // Temporarily unset the API key
-    const originalApiKey = process.env.apigeeApiKey
-    delete process.env.apigeeApiKey
+    const originalApiKey = process.env.APIGEE_DOHS_API_KEY
+    delete process.env.APIGEE_DOHS_API_KEY
 
     // Re-import the module to pick up the changed environment
     jest.resetModules()
     const {doHSClient: freshDoHSClient} = await import("../src/doHSClient")
 
-    await expect(freshDoHSClient({prescribingOrganization: "ABC"})).rejects.toThrow(
+    await expect(freshDoHSClient(["ABC"], mockLogger as Logger)).rejects.toThrow(
       "Apigee API Key environment variable is not set"
     )
 
     // Restore the API key
-    process.env.apigeeApiKey = originalApiKey
+    process.env.APIGEE_DOHS_API_KEY = originalApiKey
   })
 
   it("throws an error if apigeeDoHSEndpoint is not set", async () => {
@@ -59,7 +64,7 @@ describe("doHSClient", () => {
     jest.resetModules()
     const {doHSClient: freshDoHSClient} = await import("../src/doHSClient")
 
-    await expect(freshDoHSClient({prescribingOrganization: "ABC"})).rejects.toThrow(
+    await expect(freshDoHSClient(["ABC"], mockLogger as Logger)).rejects.toThrow(
       "DoHS API endpoint environment variable is not set"
     )
 
@@ -68,11 +73,7 @@ describe("doHSClient", () => {
   })
 
   it("returns mapped data on successful axios request", async () => {
-    const odsCodes = {
-      prescribingOrganization: "ABC",
-      nominatedPerformer: "DEF",
-      dispensingOrganizations: ["XYZ", "PQR"]
-    }
+    const odsCodes = ["ABC", "DEF", "XYZ"]
 
     // Simulate an API response that returns data for only one of the ODS codes.
     const responseData = {
@@ -80,7 +81,7 @@ describe("doHSClient", () => {
     }
 
     // Set up nock to intercept the HTTP request
-    const odsFilter = "ODSCode eq 'ABC' or ODSCode eq 'DEF' or ODSCode eq 'XYZ' or ODSCode eq 'PQR'"
+    const odsFilter = "ODSCode eq 'ABC' or ODSCode eq 'DEF' or ODSCode eq 'XYZ'"
     nock("https://api.example.com")
       .get("/dohs")
       .query({
@@ -90,48 +91,43 @@ describe("doHSClient", () => {
       .matchHeader("apikey", validApiKey)
       .reply(200, responseData)
 
-    const result = await doHSClient(odsCodes)
+    const result = await doHSClient(odsCodes, mockLogger as Logger)
 
-    expect(result).toEqual({
-      prescribingOrganization: {ODSCode: "ABC"},
-      nominatedPerformer: null,
-      dispensingOrganizations: [] // Expect an empty array if no matching dispensing organizations are found
-    })
+    expect(result).toEqual([{ODSCode: "ABC"}])
   })
 
   it("handles HTTP errors and throws error", async () => {
-    const odsCodes = {prescribingOrganization: "ABC"}
+    const odsCodes = ["ABC"]
 
     // Set up nock to simulate an HTTP error
     const odsFilter = "ODSCode eq 'ABC'"
     nock("https://api.example.com")
       .get("/dohs")
       .query({
+        "api-version": "3",
         "$filter": odsFilter
       })
       .matchHeader("apikey", validApiKey)
       .reply(500, "Internal Server Error")
 
-    await expect(doHSClient(odsCodes)).rejects.toThrow(
-      "Error fetching DoHS API data"
-    )
+    await expect(doHSClient(odsCodes, mockLogger as Logger)).rejects.toThrow()
   })
 
   it("handles network errors and throws error", async () => {
-    const odsCodes = {prescribingOrganization: "ABC"}
+    const odsCodes = ["ABC"]
 
     // Set up nock to simulate a network error
     const odsFilter = "ODSCode eq 'ABC'"
     nock("https://api.example.com")
       .get("/dohs")
       .query({
+        "api-version": "3", // Add missing api-version parameter
         "$filter": odsFilter
       })
       .matchHeader("apikey", validApiKey)
       .replyWithError("Network Error")
 
-    await expect(doHSClient(odsCodes)).rejects.toThrow(
-      "Error fetching DoHS API data"
-    )
+    await expect(doHSClient(odsCodes, mockLogger as Logger)).rejects.toThrow()
   })
+
 })

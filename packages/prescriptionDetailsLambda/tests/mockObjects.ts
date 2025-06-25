@@ -1,11 +1,10 @@
+/* eslint-disable no-console */
 import {PrescriptionDetailsResponse} from "@cpt-ui-common/common-types"
+import {DoHSOrg} from "@cpt-ui-common/doHSClient"
 import {
   FhirAction,
   FhirParticipant,
   ExtensionWithNested,
-  Resource,
-  Contact,
-  DoHSValue,
   DoHSData,
   PrescriptionIntent
 } from "../src/utils/types"
@@ -112,7 +111,7 @@ export const mockExtensionWithNested: ExtensionWithNested = {
   ]
 }
 
-export const mockResource: Resource = {
+export const mockResource = {
   resourceType: "MedicationRequest",
   intent: "order",
   status: "active",
@@ -209,26 +208,24 @@ export const mockResource: Resource = {
   authoredOn: "2020-01-01T00:00:00Z"
 }
 
-export const mockContact: Contact = {
-  ContactType: "Primary",
-  ContactAvailabilityType: "9-5",
-  ContactMethodType: "phone",
-  ContactValue: "123-456-7890"
-}
-
-export const mockDoHSValue: DoHSValue = {
+export const mockDoHSValue: DoHSOrg = {
   OrganisationName: "NHS Test Organisation",
   ODSCode: "ODS123",
   Address1: "456 Health St",
   City: "TestCity",
   Postcode: "TS1 2AB",
-  Contacts: [mockContact]
+  Contacts: [{
+    ContactType: "Primary",
+    ContactAvailabilityType: "9-5",
+    ContactMethodType: "phone",
+    ContactValue: "123-456-7890"
+  }]
 }
 
 export const mockDoHSData: DoHSData = {
   prescribingOrganization: mockDoHSValue,
   nominatedPerformer: mockDoHSValue,
-  dispensingOrganizations: [mockDoHSValue]
+  dispensingOrganization: mockDoHSValue
 }
 
 export const mockPrescriptionIntent: PrescriptionIntent = "order"
@@ -259,31 +256,27 @@ export const mockMergedResponse: PrescriptionDetailsResponse = {
   prescriptionPendingCancellation: false,
   prescribedItems: [
     {
-      itemDetails: {
-        medicationName: "Medication A",
-        quantity: "30 tablets",
-        dosageInstructions: "Take one tablet daily",
-        epsStatusCode: "EPS123",
-        itemPendingCancellation: false,
-        cancellationReason: null
-      }
+      medicationName: "Medication A",
+      quantity: "30 tablets",
+      dosageInstructions: "Take one tablet daily",
+      epsStatusCode: "EPS123",
+      itemPendingCancellation: false,
+      cancellationReason: null
     }
   ],
   dispensedItems: [
     {
-      itemDetails: {
+      medicationName: "Medication A",
+      quantity: "30 tablets",
+      dosageInstructions: "Take one tablet daily",
+      epsStatusCode: "EPS123",
+      itemPendingCancellation: false,
+      cancellationReason: null,
+      notDispensedReason: null,
+      initiallyPrescribed: {
         medicationName: "Medication A",
         quantity: "30 tablets",
-        dosageInstructions: "Take one tablet daily",
-        epsStatusCode: "EPS123",
-        itemPendingCancellation: false,
-        cancellationReason: null,
-        notDispensedReason: null,
-        initiallyPrescribed: {
-          medicationName: "Medication A",
-          quantity: "30 tablets",
-          dosageInstructions: "Take one tablet daily"
-        }
+        dosageInstructions: "Take one tablet daily"
       }
     }
   ],
@@ -296,7 +289,7 @@ export const mockMergedResponse: PrescriptionDetailsResponse = {
       newStatusCode: "processed",
       dispenseNotification: [
         {
-          ID: "DN001",
+          id: "DN001",
           medicationName: "Medication A",
           quantity: "30 tablets",
           dosageInstruction: "Take one tablet daily"
@@ -305,38 +298,23 @@ export const mockMergedResponse: PrescriptionDetailsResponse = {
     }
   ],
   prescriberOrganisation: {
-    organisationSummaryObjective: {
-      name: "NHS Prescriber Org",
-      odsCode: "ODS123",
-      address: "456 Health St, TestCity",
-      telephone: "123-456-7890",
-      prescribedFrom: "General Practice"
-    }
+    name: "NHS Prescriber Org",
+    odsCode: "ODS123",
+    address: "456 Health St, TestCity",
+    telephone: "123-456-7890",
+    prescribedFrom: "General Practice"
   },
   nominatedDispenser: {
-    organisationSummaryObjective: {
-      name: "NHS Nominated Dispenser",
-      odsCode: "ODS456",
-      address: "789 Pharmacy Rd, TestCity",
-      telephone: "098-765-4321"
-    }
+    name: "NHS Nominated Dispenser",
+    odsCode: "ODS456",
+    address: "789 Pharmacy Rd, TestCity",
+    telephone: "098-765-4321"
   },
-  currentDispenser: [
+  currentDispenser:
     {
-      organisationSummaryObjective: {
-        name: "NHS Current Dispenser One",
-        odsCode: "ODS789",
-        address: "101 Pharmacy Ave, TestCity",
-        telephone: "111-222-3333"
-      }
-    },
-    {
-      organisationSummaryObjective: {
-        name: "NHS Current Dispenser Two",
-        odsCode: "ODS912",
-        address: "202 Pharmacy Ave, TestCity",
-        telephone: "999-222-3333"
-      }
+      name: "NHS Current Dispenser One",
+      odsCode: "ODS789",
+      address: "101 Pharmacy Ave, TestCity",
+      telephone: "111-222-3333"
     }
-  ]
 }

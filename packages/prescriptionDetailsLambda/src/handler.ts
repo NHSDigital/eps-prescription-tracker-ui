@@ -64,7 +64,7 @@ const lambdaHandler = async (
 }
 
 export const newHandler = (
-  initParams: HandlerInitialisationParameters
+  initParams: HandlerParameters
 ) => {
   const params: HandlerParameters = {
     logger: initParams.logger,
@@ -105,7 +105,7 @@ const documentClient = DynamoDBDocumentClient.from(dynamoClient)
 const errorResponseBody = {message: "A system error has occurred"}
 const axiosInstance = axios.create()
 
-const DEFAULT_HANDLER_PARAMETERS: HandlerInitialisationParameters = {
+const DEFAULT_HANDLER_PARAMETERS: HandlerParameters = {
   errorResponseBody,
   logger: new Logger({serviceName: "prescriptionDetails"}),
   documentClient,

@@ -12,8 +12,8 @@ import {
   PrescriberOrganisationSummary,
   OrganisationSummary,
   PrescriptionDetailsResponse,
-  DispensedItem,
-  PrescribedItem,
+  PrescribedItemDetails,
+  DispensedItemDetails,
   MessageHistory
 } from "@cpt-ui-common/common-types"
 
@@ -30,6 +30,7 @@ import {PrescribedDispensedItemsCards} from "@/components/prescriptionDetails/Pr
 import {MessageHistoryCard} from "@/components/prescriptionDetails/MessageHistoryCard"
 
 import http from "@/helpers/axios"
+import {logger} from "@/helpers/logger"
 
 export default function PrescriptionDetailsPage() {
   const auth = useContext(AuthContext)
@@ -43,13 +44,17 @@ export default function PrescriptionDetailsPage() {
   const [prescriber, setPrescriber] = useState<PrescriberOrganisationSummary | undefined>()
   const [nominatedDispenser, setNominatedDispenser] = useState<OrganisationSummary | undefined>()
   const [dispenser, setDispenser] = useState<OrganisationSummary | undefined>()
-  const [prescribedItems, setPrescribedItems] = useState<Array<PrescribedItem>>([])
-  const [dispensedItems, setDispensedItems] = useState<Array<DispensedItem>>([])
+  const [prescribedItems, setPrescribedItems] = useState<Array<PrescribedItemDetails>>([])
+  const [dispensedItems, setDispensedItems] = useState<Array<DispensedItemDetails>>([])
   const [messageHistory, setMessageHistory] = useState<Array<MessageHistory>>([])
 
-  const getPrescriptionDetails = async (prescriptionId: string): Promise<PrescriptionDetailsResponse | undefined> => {
-    console.log("Prescription ID", prescriptionId)
-    const url = `${API_ENDPOINTS.PRESCRIPTION_DETAILS}/${prescriptionId}`
+  const getPrescriptionDetails = async (
+    prescriptionId: string,
+    prescriptionIssueNumber?: string | undefined
+  ): Promise<PrescriptionDetailsResponse | undefined> => {
+    logger.info("Prescription ID", prescriptionId)
+    const issueNumber = prescriptionIssueNumber ?? "1"
+    const url = `${API_ENDPOINTS.PRESCRIPTION_DETAILS}/${prescriptionId}?issueNumber=${issueNumber}`
 
     let payload: PrescriptionDetailsResponse | undefined
     try {
@@ -68,7 +73,7 @@ export default function PrescriptionDetailsPage() {
         throw new Error("No payload received from the API")
       }
     } catch (err) {
-      console.error("Failed to fetch prescription details", err)
+      logger.error("Failed to fetch prescription details", err)
       return
     }
 
@@ -77,19 +82,19 @@ export default function PrescriptionDetailsPage() {
     setPatientDetails(payload.patientDetails)
     setPrescribedItems(payload.prescribedItems)
     setDispensedItems(payload.dispensedItems)
-    setPrescriber(payload.prescriberOrganisation.organisationSummaryObjective)
+    setPrescriber(payload.prescriberOrganisation)
     setMessageHistory(payload.messageHistory)
 
     if (!payload.currentDispenser) {
       setDispenser(undefined)
     } else {
-      setDispenser(payload.currentDispenser[0].organisationSummaryObjective)
+      setDispenser(payload.currentDispenser)
     }
 
     if (!payload.nominatedDispenser) {
       setNominatedDispenser(undefined)
     } else {
-      setNominatedDispenser(payload.nominatedDispenser.organisationSummaryObjective)
+      setNominatedDispenser(payload.nominatedDispenser)
     }
 
     return payload
@@ -99,19 +104,20 @@ export default function PrescriptionDetailsPage() {
     const runGetPrescriptionDetails = async () => {
       // Check if auth is ready
       if (!auth?.isSignedIn) {
-        console.log("Auth token not ready, waiting...")
+        logger.info("Auth token not ready, waiting...")
         return
       }
 
       const prescriptionId = queryParams.get("prescriptionId")
       if (!prescriptionId) {
-        console.error("No prescriptionId provided in query params.")
+        logger.error("No prescriptionId provided in query params.")
         return
       }
+      const prescriptionIssueNumber = queryParams.get("issueNumber")
 
-      console.log("useEffect triggered for prescription:", prescriptionId)
+      logger.info("useEffect triggered for prescription:", prescriptionId)
       setLoading(true)
-      await getPrescriptionDetails(prescriptionId)
+      await getPrescriptionDetails(prescriptionId, prescriptionIssueNumber!)
     }
 
     runGetPrescriptionDetails()

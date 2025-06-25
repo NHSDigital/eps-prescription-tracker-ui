@@ -13,6 +13,7 @@ import {
   type MockAuthEnvironment
 } from "@/constants/environment"
 import {Button} from "@/components/ReactRouterButton"
+import {logger} from "@/helpers/logger"
 
 export default function LoginPage() {
   const auth = useAuth()
@@ -21,7 +22,8 @@ export default function LoginPage() {
     ENV_CONFIG.TARGET_ENVIRONMENT as Environment
 
   const mockSignIn = async () => {
-    console.log("Signing in (Mock)", auth)
+    logger.info("Signing in (Mock)", auth)
+    auth.clearAuthState()
     await auth?.cognitoSignIn({
       provider: {
         custom: "Mock"
@@ -30,23 +32,24 @@ export default function LoginPage() {
   }
 
   const signIn = useCallback(async () => {
-    console.log("Signing in (Primary)", auth)
+    logger.info("Signing in (Primary)", auth)
+    auth.clearAuthState()
     await auth?.cognitoSignIn({
       provider: {
         custom: "Primary"
       }
     })
-    console.log("Signed in: ", auth)
+    logger.info("Signed in: ", auth)
   }, [auth])
 
   const signOut = async () => {
-    console.log("Signing out", auth)
+    logger.info("Signing out", auth)
     await auth?.cognitoSignOut()
-    console.log("Signed out: ", auth)
+    logger.info("Signed out: ", auth)
   }
 
   useEffect(() => {
-    console.log(
+    logger.info(
       "Login page loaded. What environment are we in?",
       target_environment
     )
@@ -57,7 +60,7 @@ export default function LoginPage() {
       ) &&
       !auth?.isSignedIn
     ) {
-      console.log("User must sign in with Primary auth")
+      logger.info("User must sign in with Primary auth")
       signIn()
     }
   }, [auth, signIn, target_environment])

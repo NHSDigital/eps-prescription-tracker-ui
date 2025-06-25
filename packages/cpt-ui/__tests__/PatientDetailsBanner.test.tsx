@@ -19,12 +19,7 @@ const completeDetails: PatientDetails = {
   family: "Wolderton",
   gender: "male",
   dateOfBirth: "01-Nov-1988",
-  address: {
-    line1: "55 OAK STREET",
-    line2: "OAK LANE",
-    city: "Leeds",
-    postcode: "LS1 1XX"
-  }
+  address: "55 OAK STREET, OAK LANE, Leeds, LS1 1XX"
 }
 
 const minimumDetails: PatientDetails = {
@@ -46,12 +41,22 @@ const partialAddressDetails: PatientDetails = {
   family: "Wolderton",
   gender: "male",
   dateOfBirth: "01-Nov-1988",
-  // Only line1 and city are provided; line2 and postcode are missing.
+  address: "55 Oak Street, Leeds"
+}
+
+const completeDetailsWithAddressObject: PatientDetails = {
+  nhsNumber: "5900009890",
+  prefix: "Mr",
+  suffix: "",
+  given: "William",
+  family: "Wolderton",
+  gender: "male",
+  dateOfBirth: "01-Nov-1988",
   address: {
-    line1: "55 Oak Street",
-    // line2 is omitted
-    city: "Leeds"
-    // postcode is omitted
+    line1: "55 OAK STREET",
+    line2: "OAK LANE",
+    city:  "Leeds",
+    postcode: "LS1 1XX"
   }
 }
 
@@ -180,4 +185,45 @@ describe("PatientDetailsBanner", () => {
     const bannerDiv = screen.getByTestId("patient-details-banner")
     expect(bannerDiv.className).not.toMatch(/patient-details-partial-data/)
   })
+
+  it("renders complete patient details correctly when address is an object", async () => {
+    render(
+      <MockPatientDetailsProvider patientDetails={completeDetailsWithAddressObject}>
+        <PatientDetailsBanner />
+      </MockPatientDetailsProvider>
+    )
+    await waitFor(() => {
+      expect(screen.getByTestId("patient-details-banner")).toBeInTheDocument()
+    })
+
+    // Check that the patient's name is displayed correctly.
+    expect(screen.getByText("William WOLDERTON")).toBeInTheDocument()
+
+    // Check that the gender is capitalized (from "male" to "Male")
+    expect(
+      screen.getByText(new RegExp(`${STRINGS.GENDER}:\\s*Male`, "i"))
+    ).toBeInTheDocument()
+
+    // Verify NHS number and date of birth are shown as expected. NHS number should be XXX XXX XXXX
+    expect(
+      screen.getByText(new RegExp(`${STRINGS.NHS_NUMBER}:\\s*590 000 9890`, "i"))
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText(new RegExp(`${STRINGS.DOB}:\\s*01-Nov-1988`, "i"))
+    ).toBeInTheDocument()
+
+    // Construct the expected address string
+    const expectedAddress = "55 OAK STREET, OAK LANE, LEEDS, LS1 1XX"
+    expect(
+      screen.getByText(new RegExp(`${STRINGS.ADDRESS}:\\s*${expectedAddress}`, "i"))
+    ).toBeInTheDocument()
+
+    // Verify that the missing data message is not rendered
+    expect(screen.queryByText(STRINGS.MISSING_DATA)).toBeNull()
+
+    // Confirm the banner does not have the partial-data styling
+    const bannerDiv = screen.getByTestId("patient-details-banner")
+    expect(bannerDiv.className).not.toMatch(/patient-details-partial-data/)
+  })
+
 })

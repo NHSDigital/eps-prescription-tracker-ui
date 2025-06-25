@@ -1,44 +1,41 @@
-import {Extension} from "fhir/r4"
+/* eslint-disable max-len */
+
 import {
-  ApigeeDataResponse,
-  extensionUrlMappings,
-  FhirAction,
-  FhirParticipant
-} from "./types"
+  Bundle,
+  Extension,
+  MedicationRequest,
+  RequestGroup
+} from "fhir/r4"
+import {extensionUrlMappings} from "./types"
 import {Logger} from "@aws-lambda-powertools/logger"
 
-/**
- * Extract ODS codes from the Apigee response.
- */
-export function extractOdsCodes(apigeeData: ApigeeDataResponse, logger: Logger): {
-  prescribingOrganization: string | undefined
-  nominatedPerformer: string | undefined
-  dispensingOrganizations: Array<string> | undefined
-} {
-  const prescribingOrganization = apigeeData?.author?.identifier?.value ?? undefined
+export const extractOdsCodes = (bundle: Bundle, logger: Logger) => {
+  const requestGroup = bundle.entry?.find(e => e.resource?.resourceType === "RequestGroup")?.resource as RequestGroup
+  const medicationRequests = bundle.entry?.filter(e => e.resource?.resourceType === "MedicationRequest")?.map(e => e.resource as MedicationRequest) ?? []
 
-  const nominatedPerformer = apigeeData?.action
-    ?.find((action: FhirAction) =>
-      action.participant?.some((participant: FhirParticipant) =>
-        participant.identifier?.system === "https://fhir.nhs.uk/Id/ods-organization-code"
-      )
-    )?.participant?.[0]?.identifier?.value ?? undefined
+  const prescribingOrganization = requestGroup?.author?.identifier?.value
 
-  // Extract dispensing organizations' ODS codes
-  const dispensingOrganizations: Array<string> = apigeeData?.action
-    ?.flatMap((action: FhirAction) => action.action ?? []) // Flatten nested actions
-    ?.filter((nestedAction) =>
-      nestedAction.title === "Dispense notification successful" // Only select dispensing events
-    )
-    ?.map((dispenseAction: FhirAction) => dispenseAction.participant?.[0]?.identifier?.value ?? "")
-    ?.filter(odsCode => odsCode) ?? [] // Remove empty values
+  // Handle performer identifier as array or single object
+  let nominatedPerformer: string | undefined
+  const performerIdentifiers = medicationRequests[0]?.dispenseRequest?.performer?.identifier
+  if (Array.isArray(performerIdentifiers)) {
+    const odsIdentifier = performerIdentifiers.find(id => id.system === "https://fhir.nhs.uk/Id/ods-organization-code")
+    nominatedPerformer = odsIdentifier?.value
+  } else {
+    nominatedPerformer = performerIdentifiers?.value
+  }
 
-  logger.info("Extracted ODS codes from Apigee", {prescribingOrganization, nominatedPerformer, dispensingOrganizations})
+  const dispensingOrganization = requestGroup?.action
+    ?.find(a => a.title === "Prescription status transitions")
+    ?.action?.map(a => a?.participant?.[0]?.extension?.[0]?.valueReference?.identifier?.value)
+    .reverse().find(odsCode => odsCode && odsCode !== prescribingOrganization)
+
+  logger.info("Extracted ODS codes", {prescribingOrganization, nominatedPerformer, dispensingOrganization})
 
   return {
     prescribingOrganization,
     nominatedPerformer,
-    dispensingOrganizations: dispensingOrganizations.length ? dispensingOrganizations : undefined
+    dispensingOrganization
   }
 }
 

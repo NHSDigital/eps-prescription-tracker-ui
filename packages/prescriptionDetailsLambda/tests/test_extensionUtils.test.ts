@@ -1,4 +1,4 @@
-/* eslint-disable max-len */
+
 import {Extension} from "fhir/r4"
 import {
   findExtensionByKey,
@@ -13,7 +13,7 @@ describe("Extension Utilities", () => {
     it("should find an extension using the first URL in the mapping", () => {
       const extensions: Array<Extension> = [
         {
-          url: "https://fhir.nhs.uk/StructureDefinition/Extension-EPS-PendingCancellations",
+          url: "https://fhir.nhs.uk/StructureDefinition/Extension-PendingCancellation",
           extension: [
             {
               url: "prescriptionPendingCancellation",
@@ -39,7 +39,7 @@ describe("Extension Utilities", () => {
       // Either add this URL to extensionUrlMappings or update the test to use a URL that exists
       const extensions: Array<Extension> = [
         {
-          url: "https://fhir.nhs.uk/StructureDefinition/Extension-EPS-PendingCancellations", // Use the actual URL from the mappings
+          url: "https://fhir.nhs.uk/StructureDefinition/Extension-PendingCancellation",
           extension: [
             {
               url: "prescriptionPendingCancellation",

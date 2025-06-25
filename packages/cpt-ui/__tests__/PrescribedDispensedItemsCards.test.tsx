@@ -7,28 +7,24 @@ import {PrescribedDispensedItemsCards} from "@/components/prescriptionDetails/Pr
 describe("PrescribedDispensedItemsCards", () => {
   const dispensedItems = [
     {
-      itemDetails: {
-        medicationName: "Ibuprofen",
-        quantity: "20 tablets",
-        dosageInstructions: "Take one as needed",
-        epsStatusCode: "0001", // Item fully dispensed
-        pharmacyStatus: "Collected",
-        itemPendingCancellation: false
-      }
+      medicationName: "Ibuprofen",
+      quantity: "20 tablets",
+      dosageInstructions: "Take one as needed",
+      epsStatusCode: "0001", // Item fully dispensed
+      pharmacyStatus: "Collected",
+      itemPendingCancellation: false
     }
   ]
 
   const prescribedItems = [
     {
-      itemDetails: {
-        medicationName: "Amoxicillin",
-        quantity: "30 tablets",
-        dosageInstructions: "Take one three times a day",
-        epsStatusCode: "0004", // Item not dispensed - owing
-        pharmacyStatus: "With pharmacy",
-        itemPendingCancellation: false,
-        cancellationReason: null
-      }
+      medicationName: "Amoxicillin",
+      quantity: "30 tablets",
+      dosageInstructions: "Take one three times a day",
+      epsStatusCode: "0004", // Item not dispensed - owing
+      pharmacyStatus: "With pharmacy",
+      itemPendingCancellation: false,
+      cancellationReason: null
     }
   ]
 

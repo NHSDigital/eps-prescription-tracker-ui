@@ -7,7 +7,13 @@ import {
   SecurityPolicyProtocol,
   SSLMethod
 } from "aws-cdk-lib/aws-cloudfront"
-import {CnameRecord, IHostedZone} from "aws-cdk-lib/aws-route53"
+import {
+  AaaaRecord,
+  ARecord,
+  IHostedZone,
+  RecordTarget
+} from "aws-cdk-lib/aws-route53"
+import {CloudFrontTarget} from "aws-cdk-lib/aws-route53-targets"
 import {IBucket} from "aws-cdk-lib/aws-s3"
 import {Construct} from "constructs"
 
@@ -27,6 +33,8 @@ export interface CloudfrontDistributionProps {
   readonly fullCloudfrontDomain: string
   readonly cloudfrontLoggingBucket: IBucket
   readonly cloudfrontCert: ICertificate
+  readonly webAclAttributeArn: string
+  readonly wafAllowGaRunnerConnectivity: boolean
 }
 
 /**
@@ -45,7 +53,7 @@ export class CloudfrontDistribution extends Construct {
       domainNames: [props.fullCloudfrontDomain],
       certificate: props.cloudfrontCert,
       httpVersion: HttpVersion.HTTP2_AND_3,
-      minimumProtocolVersion: SecurityPolicyProtocol.TLS_V1_2_2018, // set to 2018 but we may want 2019 or 2021
+      minimumProtocolVersion: SecurityPolicyProtocol.TLS_V1_2_2021,
       sslSupportMethod: SSLMethod.SNI,
       publishAdditionalMetrics: true,
       enableLogging: true,
@@ -54,14 +62,32 @@ export class CloudfrontDistribution extends Construct {
       logIncludesCookies: true, // may actually want to be false, don't know if it includes names of cookies or contents
       defaultBehavior: props.defaultBehavior,
       additionalBehaviors: props.additionalBehaviors,
-      errorResponses: props.errorResponses
+      errorResponses: props.errorResponses,
+      geoRestriction: {
+        locations: props.wafAllowGaRunnerConnectivity ? ["GB", "JE", "GG", "IM", "US"] : ["GB", "JE", "GG", "IM"],
+        restrictionType: "whitelist"
+      }
     })
 
-    new CnameRecord(this, "CloudfrontCnameRecord", {
-      recordName: props.shortCloudfrontDomain,
-      zone: props.hostedZone,
-      domainName: cloudfrontDistribution.distributionDomainName
-    })
+    if (props.shortCloudfrontDomain === "APEX_DOMAIN") {
+      new ARecord(this, "CloudFrontAliasIpv4Record", {
+        zone: props.hostedZone,
+        target: RecordTarget.fromAlias(new CloudFrontTarget(cloudfrontDistribution))})
+
+      new AaaaRecord(this, "CloudFrontAliasIpv6Record", {
+        zone: props.hostedZone,
+        target: RecordTarget.fromAlias(new CloudFrontTarget(cloudfrontDistribution))})
+    } else {
+      new ARecord(this, "CloudFrontAliasIpv4Record", {
+        zone: props.hostedZone,
+        recordName: props.shortCloudfrontDomain,
+        target: RecordTarget.fromAlias(new CloudFrontTarget(cloudfrontDistribution))})
+
+      new AaaaRecord(this, "CloudFrontAliasIpv6Record", {
+        zone: props.hostedZone,
+        recordName: props.shortCloudfrontDomain,
+        target: RecordTarget.fromAlias(new CloudFrontTarget(cloudfrontDistribution))})
+    }
 
     // Outputs
     this.distribution = cloudfrontDistribution

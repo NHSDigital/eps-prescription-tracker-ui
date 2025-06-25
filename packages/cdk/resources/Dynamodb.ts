@@ -95,7 +95,9 @@ export class Dynamodb extends Construct {
       },
       tableName: `${props.stackName}-TokenMapping`,
       removalPolicy: RemovalPolicy.DESTROY,
-      pointInTimeRecovery: true,
+      pointInTimeRecoverySpecification: {
+        pointInTimeRecoveryEnabled: true
+      },
       encryption: TableEncryptionV2.customerManagedKey(tokensMappingKmsKey),
       billing: Billing.onDemand(),
       timeToLiveAttribute: "ExpiryTime"
@@ -206,7 +208,9 @@ export class Dynamodb extends Construct {
       },
       tableName: `${props.stackName}-StateMapping`,
       removalPolicy: RemovalPolicy.DESTROY,
-      pointInTimeRecovery: true,
+      pointInTimeRecoverySpecification: {
+        pointInTimeRecoveryEnabled: true
+      },
       encryption: TableEncryptionV2.customerManagedKey(stateMappingKmsKey),
       billing: Billing.onDemand(),
       timeToLiveAttribute: "ExpiryTime"
@@ -318,7 +322,9 @@ export class Dynamodb extends Construct {
       },
       tableName: `${props.stackName}-SessionStateMapping`,
       removalPolicy: RemovalPolicy.DESTROY,
-      pointInTimeRecovery: true,
+      pointInTimeRecoverySpecification: {
+        pointInTimeRecoveryEnabled: true
+      },
       encryption: TableEncryptionV2.customerManagedKey(stateMappingKmsKey),
       billing: Billing.onDemand(),
       timeToLiveAttribute: "ExpiryTime"

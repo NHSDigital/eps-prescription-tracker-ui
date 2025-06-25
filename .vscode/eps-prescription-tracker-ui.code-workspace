@@ -80,21 +80,17 @@
       {
         "name": "packages/common/dynamoFunctions",
         "path": "../packages/common/dynamoFunctions"
-      },
-      {
-        "name": "packages/auth_demo",
-        "path": "../packages/auth_demo"
       }
     ],
     "settings": {
       "jest.disabledWorkspaceFolders": [
         "eps-prescription-tracker-ui-monorepo",
         "packages/staticContent",
-        "packages/auth_demo",
         "packages/common/testing",
         "packages/common/commonTypes",
         "packages/staticContent"
       ],
+      "jest.useJest30": true,
       "python.testing.pytestEnabled": false,
       "files.exclude": {
         "packages/": true

@@ -159,8 +159,6 @@ describe("PrescriptionsListTabs", () => {
     const futureTabHeader = screen.getByText("Future Prescriptions")
     await userEvent.click(futureTabHeader)
 
-    console.log(screen.debug())
-
     expect(screen.getByTestId(`eps-tab-heading ${tabData[1].link}`)).toHaveTextContent(
       tabData[1].title
     )

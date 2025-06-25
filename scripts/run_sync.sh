@@ -81,8 +81,18 @@ VITE_hostedLoginDomain=${SERVICE_NAME}.auth.eu-west-2.amazoncognito.com
 VITE_redirectSignIn=http://localhost:3000/site/select-your-role
 VITE_redirectSignOut=http://localhost:3000/site/logout
 
-VITE_COMMIT_ID="Local Development Server"
+VITE_COMMIT_ID=$(echo "$CF_LONDON_EXPORTS" | \
+    jq \
+    --arg EXPORT_NAME "${SERVICE_NAME}-stateless-resources:local:COMMIT-ID" \
+    -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+VITE_VERSION_NUMBER=$(echo "$CF_LONDON_EXPORTS" | \
+    jq \
+    --arg EXPORT_NAME "${SERVICE_NAME}-stateless-resources:local:VERSION-NUMBER" \
+    -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
 
+REACT_LOG_LEVEL=debug
+VITE_REACT_LOG_LEVEL=debug
+VITE_TARGET_ENVIRONMENT=dev
 REACT_APP_hostedLoginDomain=$VITE_hostedLoginDomain
 REACT_APP_userPoolClientId=$VITE_userPoolClientId
 REACT_APP_userPoolId=$VITE_userPoolId
@@ -100,7 +110,7 @@ REACT_APP_RUM_TELEMETRIES=$VITE_RUM_TELEMETRIES
 
 # vars needed for cdk
 VERSION_NUMBER="PR-${PULL_REQUEST_ID}"
-COMMIT_ID=unknown
+COMMIT_ID=static-pr
 AUTO_DELETE_OBJECTS=true
 CLOUDFRONT_DISTRIBUTION_ID=$(echo "$CF_LONDON_EXPORTS" | \
     jq \
@@ -185,6 +195,9 @@ LOG_RETENTION_IN_DAYS=30
 LOG_LEVEL=debug
 USE_CUSTOM_COGNITO_DOMAIN=false
 ALLOW_LOCALHOST_ACCESS=true
+WAF_ALLOW_GA_RUNNER_CONNECTIVITY=true
+CLOUDFRONT_ORIGIN_CUSTOM_HEADER=foo
+WAF_ALLOW_GA_RUNNER_CONNECTIVITY=true
 APIGEE_API_KEY=$(echo "$CF_LONDON_EXPORTS" | \
     jq \
     --arg EXPORT_NAME "${SERVICE_NAME}-stateless-resources:local:apigeeApiKey" \
@@ -193,9 +206,9 @@ APIGEE_API_SECRET=$(echo "$CF_LONDON_EXPORTS" | \
     jq \
     --arg EXPORT_NAME "${SERVICE_NAME}-stateless-resources:local:apigeeApiSecret" \
     -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
-APIGEE_PTL_DOHS_API_KEY=$(echo "$CF_LONDON_EXPORTS" | \
+APIGEE_DOHS_API_KEY=$(echo "$CF_LONDON_EXPORTS" | \
     jq \
-    --arg EXPORT_NAME "${SERVICE_NAME}-stateless-resources:local:apigeePtlDoHSApiKey" \
+    --arg EXPORT_NAME "${SERVICE_NAME}-stateless-resources:local:apigeeDoHSApiKey" \
     -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
 APIGEE_DOHS_ENDPOINT=$(echo "$CF_LONDON_EXPORTS" | \
     jq \
@@ -227,6 +240,7 @@ ROLE_ID=$(echo "$CF_LONDON_EXPORTS" | \
     jq \
     --arg EXPORT_NAME "${SERVICE_NAME}-stateless-resources:local:roleId" \
     -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+USE_ZONE_APEX=false
 
 # export all the vars so they can be picked up by external programs
 export SERVICE_NAME
@@ -239,6 +253,7 @@ export VITE_RUM_ALLOW_COOKIES
 export VITE_RUM_ENABLE_XRAY
 export VITE_RUM_SESSION_SAMPLE_RATE
 export VITE_RUM_TELEMETRIES
+export VITE_TARGET_ENVIRONMENT
 export LOCAL_DEV
 export BASE_PATH
 export API_DOMAIN_OVERRIDE
@@ -246,6 +261,7 @@ export VITE_hostedLoginDomain
 export VITE_redirectSignIn
 export VITE_redirectSignOut
 export VITE_COMMIT_ID
+export VITE_VERSION_NUMBER
 export REACT_APP_hostedLoginDomain
 export REACT_APP_userPoolClientId
 export REACT_APP_userPoolId
@@ -258,6 +274,8 @@ export REACT_APP_RUM_ALLOW_COOKIES_ARN
 export REACT_APP_RUM_ENABLE_XRAY
 export REACT_APP_RUM_SESSION_SAMPLE_RATE
 export REACT_APP_RUM_TELEMETRIES
+export REACT_LOG_LEVEL
+export VITE_REACT_LOG_LEVEL
 
 export VERSION_NUMBER
 export COMMIT_ID
@@ -288,9 +306,12 @@ export LOG_RETENTION_IN_DAYS
 export LOG_LEVEL
 export USE_CUSTOM_COGNITO_DOMAIN
 export ALLOW_LOCALHOST_ACCESS
+export WAF_ALLOW_GA_RUNNER_CONNECTIVITY
+export CLOUDFRONT_ORIGIN_CUSTOM_HEADER
+export WAF_ALLOW_GA_RUNNER_CONNECTIVITY
 export APIGEE_API_KEY
 export APIGEE_API_SECRET
-export APIGEE_PTL_DOHS_API_KEY
+export APIGEE_DOHS_API_KEY
 export APIGEE_CIS2_TOKEN_ENDPOINT
 export APIGEE_MOCK_TOKEN_ENDPOINT
 export APIGEE_PRESCRIPTION_ENDPOINT
@@ -298,6 +319,7 @@ export APIGEE_PERSONAL_DEMOGRAPHICS_ENDPOINT
 export APIGEE_DOHS_ENDPOINT
 export JWT_KID
 export ROLE_ID
+export USE_ZONE_APEX
 
 # variables needed for StatefulResourcesApp
 CDK_APP_NAME=StatefulResourcesApp

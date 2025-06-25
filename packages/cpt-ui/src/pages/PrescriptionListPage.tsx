@@ -22,6 +22,7 @@ import {PRESCRIPTION_LIST_PAGE_STRINGS} from "@/constants/ui-strings/Prescriptio
 import {API_ENDPOINTS, FRONTEND_PATHS} from "@/constants/environment"
 
 import {SearchResponse, PrescriptionSummary} from "@cpt-ui-common/common-types/src/prescriptionList"
+import {logger} from "@/helpers/logger"
 
 export default function PrescriptionListPage() {
   const auth = useContext(AuthContext)
@@ -44,25 +45,24 @@ export default function PrescriptionListPage() {
       setShowNotFound(false) // Reset when search changes
 
       if (!auth?.isSignedIn) {
-        console.log("Not signed in, waiting...")
-
+        logger.info("Not signed in, waiting...")
         return
       }
 
       const prescriptionId = queryParams.get("prescriptionId")
       const nhsNumber = queryParams.get("nhsNumber")
 
-      let searchParams = {}
+      const searchParams = new URLSearchParams()
 
       // determine which search page to go back to based on query parameters
       if (prescriptionId) {
         setBackLinkTarget(PRESCRIPTION_LIST_PAGE_STRINGS.PRESCRIPTION_ID_SEARCH_TARGET)
-        searchParams = {prescriptionId}
+        searchParams.append("prescriptionId", encodeURIComponent(prescriptionId))
       } else if (nhsNumber) {
         setBackLinkTarget(PRESCRIPTION_LIST_PAGE_STRINGS.NHS_NUMBER_SEARCH_TARGET)
-        searchParams = {nhsNumber}
+        searchParams.append("nhsNumber", encodeURIComponent(nhsNumber))
       } else {
-        console.error("No query parameter provided.")
+        logger.error("No query parameter provided.")
         setLoading(false)
         return
       }
@@ -72,9 +72,9 @@ export default function PrescriptionListPage() {
           params: searchParams
         })
 
-        console.log("Response status", {status: response.status})
+        logger.info("Response status", {status: response.status})
         if (response.status === 404) {
-          console.error("No search results were returned")
+          logger.error("No search results were returned")
           setShowNotFound(true)
           setLoading(false)
           return
@@ -89,7 +89,7 @@ export default function PrescriptionListPage() {
           searchResults.pastPrescriptions.length === 0 &&
           searchResults.futurePrescriptions.length === 0
         ) {
-          console.error("A patient was returned, but they do not have any prescriptions.", searchResults)
+          logger.error("A patient was returned, but they do not have any prescriptions.", searchResults)
           setPatientDetails(searchResults.patient)
           setShowNotFound(true)
           setLoading(false)
@@ -121,7 +121,7 @@ export default function PrescriptionListPage() {
         ])
         setLoading(false)
       } catch (err) {
-        console.error("Error during search", err)
+        logger.error("Error during search", err)
         if (err instanceof Error && err.message === "CanceledError: canceled") {
           navigate(FRONTEND_PATHS.LOGIN)
         } else {
