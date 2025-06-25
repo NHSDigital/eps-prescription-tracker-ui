@@ -1,21 +1,22 @@
 import {Link} from "react-router-dom"
 import {FRONTEND_PATHS} from "@/constants/environment"
 import {SEARCH_TYPES, AllowedSearchType} from "@/constants/ui-strings/PrescriptionNotFoundMessageStrings"
+import {SearchProviderContextType} from "@/context/SearchProvider"
 
 /**
  * Infers the type of search to display the correct "not found" message based on the URL parameters present.
  */
-export function inferSearchType(params: URLSearchParams): AllowedSearchType {
+export function inferSearchType(searchContext: SearchProviderContextType): AllowedSearchType {
   if (
-    params.has("lastName") &&
-    params.has("dobDay") &&
-    params.has("dobMonth") &&
-    params.has("dobYear")
+    searchContext.lastName &&
+    searchContext.dobDay &&
+    searchContext.dobMonth &&
+    searchContext.dobYear
   ) {
     return "BasicDetailsSearch"
   }
-  if (params.has("prescriptionId")) return "PrescriptionIdSearch"
-  if (params.has("nhsNumber")) return "NhsNumberSearch"
+  if (searchContext.prescriptionId) return "PrescriptionIdSearch"
+  if (searchContext.nhsNumber) return "NhsNumberSearch"
   // Fallback to BasicDetailsSearch if no other params match
   return "BasicDetailsSearch"
 }
@@ -59,17 +60,9 @@ export function buildAltLink({
 
 // Helper to build the back link for the breadcrumb
 export function buildBackLink({
-  searchType,
-  searchParams
+  searchType
 }: {
   searchType: AllowedSearchType
-  searchParams: URLSearchParams
 }) {
-  const paramsToKeep = searchTypeToParams[searchType]
-  const originalParams = new URLSearchParams()
-  paramsToKeep.forEach((key) => {
-    const val = searchParams.get(key)
-    if (val) originalParams.set(key, val)
-  })
-  return `${searchTypeToPath[searchType]}?${originalParams.toString()}`
+  return searchTypeToPath[searchType]
 }
