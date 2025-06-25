@@ -167,7 +167,8 @@ export const mapResponseToPrescriptionSummary = (
     .map(entry => {
       const resource = entry.resource as RequestGroup
 
-      const status = resource.status || ""
+      // Extract status. Is either 'completed' when deleted, or 'active'
+      const isDeleted = resource.status === "completed"
 
       // Extract status code - fixed to match the structure
       const statusExtension = resource.extension?.find(ext =>
@@ -208,7 +209,7 @@ export const mapResponseToPrescriptionSummary = (
 
       return {
         prescriptionId: resource.identifier?.[0]?.value || "",
-        status,
+        isDeleted,
         statusCode,
         issueDate: resource.authoredOn || "",
         prescriptionTreatmentType: treatmentType,

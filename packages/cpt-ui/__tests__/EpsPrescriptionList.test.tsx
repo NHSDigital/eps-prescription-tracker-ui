@@ -60,7 +60,7 @@ const mockSearchResponse: SearchResponse = {
   currentPrescriptions: [
     {
       prescriptionId: "C0C757-A83008-C2D93O",
-      status: "active",
+      isDeleted: false,
       statusCode: PrescriptionStatus.TO_BE_DISPENSED,
       issueDate: "2025-03-01",
       prescriptionTreatmentType: TreatmentType.REPEAT,
@@ -71,7 +71,7 @@ const mockSearchResponse: SearchResponse = {
     },
     {
       prescriptionId: "209E3D-A83008-327F9F",
-      status: "active",
+      isDeleted: false,
       statusCode: PrescriptionStatus.WITH_DISPENSER,
       issueDate: "2025-02-15",
       prescriptionTreatmentType: TreatmentType.ACUTE,
@@ -82,7 +82,7 @@ const mockSearchResponse: SearchResponse = {
     },
     {
       prescriptionId: "RX003",
-      status: "active",
+      isDeleted: false,
       statusCode: PrescriptionStatus.WITH_DISPENSER_ACTIVE,
       issueDate: "2025-03-10",
       prescriptionTreatmentType: TreatmentType.ERD,
@@ -95,7 +95,7 @@ const mockSearchResponse: SearchResponse = {
   pastPrescriptions: [
     {
       prescriptionId: "RX004",
-      status: "active",
+      isDeleted: false,
       statusCode: PrescriptionStatus.DISPENSED,
       issueDate: "2025-01-15",
       prescriptionTreatmentType: TreatmentType.REPEAT,
@@ -106,7 +106,7 @@ const mockSearchResponse: SearchResponse = {
     },
     {
       prescriptionId: "RX005",
-      status: "active",
+      isDeleted: false,
       statusCode: PrescriptionStatus.NOT_DISPENSED,
       issueDate: "2024-12-20",
       prescriptionTreatmentType: TreatmentType.ACUTE,
@@ -119,7 +119,7 @@ const mockSearchResponse: SearchResponse = {
   futurePrescriptions: [
     {
       prescriptionId: "RX006",
-      status: "active",
+      isDeleted: false,
       statusCode: PrescriptionStatus.FUTURE_DATED_PRESCRIPTION,
       issueDate: "2025-04-01",
       prescriptionTreatmentType: TreatmentType.REPEAT,
