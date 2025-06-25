@@ -15,23 +15,23 @@ class Logger {
     })
   }
 
-  public trace(message: string, args: unknown): void {
+  public trace(message: string, args?: unknown): void {
     this.logger.trace(args, message)
   }
 
-  public debug(message: string, args: unknown): void {
+  public debug(message: string, args?: unknown): void {
     this.logger.debug(args, message)
   }
 
-  public info(message: string, args: unknown): void {
+  public info(message: string, args?: unknown): void {
     this.logger.debug(args, message)
   }
 
-  public warn(message: string, args: unknown): void {
+  public warn(message: string, args?: unknown): void {
     this.logger.warn(args, message)
   }
 
-  public error(message: string, args: unknown): void {
+  public error(message: string, args?: unknown): void {
     const rumInstance = cptAwsRum.getAwsRum()
     if (rumInstance !== null) {
       // get a stack trace so we get line numbers
