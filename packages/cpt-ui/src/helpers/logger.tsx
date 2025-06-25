@@ -15,23 +15,23 @@ class Logger {
     })
   }
 
-  public trace(message: string, ...args: Array<unknown>): void {
-    this.logger.trace(message, ...args)
+  public trace(message: string, args: unknown): void {
+    this.logger.trace(args, message)
   }
 
-  public debug(message: string, ...args: Array<unknown>): void {
-    this.logger.debug(message, ...args)
+  public debug(message: string, args: unknown): void {
+    this.logger.debug(args, message)
   }
 
-  public info(message: string, ...args: Array<unknown>): void {
-    this.logger.debug(message, ...args)
+  public info(message: string, args: unknown): void {
+    this.logger.debug(args, message)
   }
 
-  public warn(message: string, ...args: Array<unknown>): void {
-    this.logger.warn(message, ...args)
+  public warn(message: string, args: unknown): void {
+    this.logger.warn(args, message)
   }
 
-  public error(message: string, ...args: Array<unknown>): void {
+  public error(message: string, args: unknown): void {
     const rumInstance = cptAwsRum.getAwsRum()
     if (rumInstance !== null) {
       // get a stack trace so we get line numbers
@@ -40,7 +40,7 @@ class Logger {
       // also use recordError to try and get source maps back to real line numbers
       rumInstance.recordError(messageAsError)
     }
-    this.logger.error(message, ...args)
+    this.logger.error(args, message)
   }
 
 }
