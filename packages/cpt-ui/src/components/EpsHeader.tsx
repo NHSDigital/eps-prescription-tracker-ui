@@ -20,6 +20,9 @@ import {useAuth} from "@/context/AuthProvider"
 import {EpsLogoutModal} from "@/components/EpsLogoutModal"
 import {normalizePath} from "@/helpers/utils"
 import {FRONTEND_PATHS} from "@/constants/environment"
+import {getHomeLink} from "@/helpers/loginFunctions"
+
+const baseUrl = import.meta.env.BASE_URL
 
 export default function EpsHeader() {
   const navigate = useNavigate()
@@ -75,7 +78,7 @@ export default function EpsHeader() {
   const redirectToLogin = async (e: React.MouseEvent | React.KeyboardEvent) => {
     // Naked href don't respect the router, so this overrides that
     e.preventDefault()
-    navigate(FRONTEND_PATHS.LOGIN)
+    navigate(getHomeLink(auth?.isSignedIn || false))
   }
 
   const handleLogoutClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
@@ -92,9 +95,9 @@ export default function EpsHeader() {
     <>
       <Header transactional className="masthead" id="eps-header">
         <Header.Container className="masthead-container">
-          <Header.Logo href={FRONTEND_PATHS.LOGIN} />
+          <Header.Logo href={`${baseUrl}${getHomeLink(auth?.isSignedIn || false)}`} />
           <Link
-            to={FRONTEND_PATHS.LOGIN}
+            to={getHomeLink(auth?.isSignedIn || false)}
             onClick={redirectToLogin}
             className="combined-logo-and-service-name"
             style={{
@@ -103,7 +106,9 @@ export default function EpsHeader() {
             data-testid="eps_header_logoLink"
           >
           </Link>
-          <Header.ServiceName data-testid="eps_header_serviceName" href={FRONTEND_PATHS.LOGIN}>
+          <Header.ServiceName
+            data-testid="eps_header_serviceName"
+            href={`${baseUrl}${getHomeLink(auth?.isSignedIn || false)}`}>
             {HEADER_SERVICE}
           </Header.ServiceName>
           <Header.Content />
