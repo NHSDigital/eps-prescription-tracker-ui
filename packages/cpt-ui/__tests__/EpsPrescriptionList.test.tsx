@@ -436,19 +436,6 @@ describe("PrescriptionListPage", () => {
     })
   })
 
-  it("renders not found message when API returns 502", async () => {
-    mockedAxios.get.mockRejectedValue({
-      isAxiosError: true,
-      response: {status: 502}
-    })
-
-    renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT + "?nhsNumber=1234567890")
-
-    await waitFor(() => {
-      expect(screen.getByTestId("presc-not-found-heading")).toBeInTheDocument()
-    })
-  })
-
   it("displays UnknownErrorMessage for real network/server errors", async () => {
     mockedAxios.get.mockRejectedValue(new Error("AWS CloudFront issue"))
 

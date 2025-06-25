@@ -79,7 +79,7 @@ export default function PrescriptionListPage() {
         })
 
         logger.info("Response status", {status: response.status})
-        if ((response.status === 404) || (response.status === 502)) {
+        if ((response.status === 404)) {
           logger.error("No search results were returned")
           setShowNotFound(true)
           setLoading(false)
@@ -128,7 +128,7 @@ export default function PrescriptionListPage() {
         setLoading(false)
       } catch (err) {
         logger.error("Error during search", err)
-        if (axios.isAxiosError(err) && (err.response?.status === 404 || err.response?.status === 502)) {
+        if (axios.isAxiosError(err) && (err.response?.status === 404)) {
           setShowNotFound(true)
         } else if (err instanceof Error && err.message === "canceled") {
           navigate(FRONTEND_PATHS.LOGIN)
