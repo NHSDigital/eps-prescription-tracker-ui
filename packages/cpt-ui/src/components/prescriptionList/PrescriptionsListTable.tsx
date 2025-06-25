@@ -352,7 +352,7 @@ const PrescriptionsListTable = ({
                       </div>
                       <div>
                         <Link
-                          onClick={async () => await setSearchPrescriptionState(row.prescriptionId, row.issueNumber?.toString())}
+                          onClick={async () => setSearchPrescriptionState(row.prescriptionId, row.issueNumber?.toString())}
                           to={constructLink()}
                           className="nhsuk-link"
                           data-testid={`view-prescription-link-${row.prescriptionId}`}
