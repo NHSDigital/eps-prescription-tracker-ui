@@ -14,11 +14,12 @@ import {
   ErrorMessage,
   Fieldset
 } from "nhsuk-react-components"
-import {useNavigate, createSearchParams} from "react-router-dom"
+import {useNavigate} from "react-router-dom"
 import {validateBasicDetails, getInlineErrors} from "@/helpers/validateBasicDetails"
 import {errorFocusMap, ErrorKey, resolveDobInvalidFields} from "@/helpers/basicDetailsValidationMeta"
 import {STRINGS} from "@/constants/ui-strings/BasicDetailsSearchStrings"
 import {FRONTEND_PATHS} from "@/constants/environment"
+import {useSearchContext} from "@/context/SearchProvider"
 
 export default function BasicDetailsSearch() {
   const navigate = useNavigate()
@@ -34,6 +35,7 @@ export default function BasicDetailsSearch() {
   const [dobErrorFields, setDobErrorFields] = useState<Array<"day" | "month" | "year">>([])
 
   const inlineErrors = getInlineErrors(errors)
+  const searchContext = useSearchContext()
 
   // Inline error lookup: used to find the error message string for specific field(s)
   // Returns the first match found in the array of inline error tuples
@@ -115,16 +117,14 @@ export default function BasicDetailsSearch() {
       return
     }
 
-    const queryParams = {
-      firstName,
-      lastName,
-      dobDay,
-      dobMonth,
-      dobYear,
-      postcode
-    }
-    const queryString = createSearchParams(queryParams).toString()
-    navigate(`${FRONTEND_PATHS.PATIENT_SEARCH_RESULTS}?${queryString}`)
+    searchContext.clearSearchParameters()
+    searchContext.setFirstName(firstName)
+    searchContext.setLastName(lastName)
+    searchContext.setDobDay(dobDay)
+    searchContext.setDobMonth(dobMonth)
+    searchContext.setDobYear(dobYear)
+    searchContext.setPostcode(postcode)
+    navigate(FRONTEND_PATHS.PATIENT_SEARCH_RESULTS)
   }
 
   return (

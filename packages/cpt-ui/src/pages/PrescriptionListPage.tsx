@@ -23,10 +23,12 @@ import {API_ENDPOINTS, FRONTEND_PATHS} from "@/constants/environment"
 
 import {SearchResponse, PrescriptionSummary} from "@cpt-ui-common/common-types/src/prescriptionList"
 import {logger} from "@/helpers/logger"
+import {useSearchContext} from "@/context/SearchProvider"
 
 export default function PrescriptionListPage() {
   const auth = useContext(AuthContext)
   const {setPatientDetails} = usePatientDetails()
+  const searchContext = useSearchContext()
 
   const navigate = useNavigate()
   const [futurePrescriptions, setFuturePrescriptions] = useState<Array<PrescriptionSummary>>([])
@@ -37,10 +39,6 @@ export default function PrescriptionListPage() {
   const [backLinkTarget, setBackLinkTarget] = useState<string>(PRESCRIPTION_LIST_PAGE_STRINGS.DEFAULT_BACK_LINK_TARGET)
   const [loading, setLoading] = useState(true)
   const [showNotFound, setShowNotFound] = useState(false)
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [prescriptionId, setPrescriptionId] = useState<string>("")
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [nhsNumber, setNhsNumber] = useState<string>("")
 
   useEffect(() => {
     const runSearch = async () => {
@@ -55,12 +53,12 @@ export default function PrescriptionListPage() {
       const searchParams = new URLSearchParams()
 
       // determine which search page to go back to based on query parameters
-      if (prescriptionId) {
+      if (searchContext.prescriptionId) {
         setBackLinkTarget(PRESCRIPTION_LIST_PAGE_STRINGS.PRESCRIPTION_ID_SEARCH_TARGET)
-        searchParams.append("prescriptionId", encodeURIComponent(prescriptionId))
-      } else if (nhsNumber) {
+        searchParams.append("prescriptionId", encodeURIComponent(searchContext.prescriptionId))
+      } else if (searchContext.nhsNumber) {
         setBackLinkTarget(PRESCRIPTION_LIST_PAGE_STRINGS.NHS_NUMBER_SEARCH_TARGET)
-        searchParams.append("nhsNumber", encodeURIComponent(nhsNumber))
+        searchParams.append("nhsNumber", encodeURIComponent(searchContext.nhsNumber))
       } else {
         logger.error("No query parameter provided.")
         setLoading(false)

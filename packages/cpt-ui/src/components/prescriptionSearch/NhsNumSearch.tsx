@@ -16,6 +16,7 @@ import {
 
 import {STRINGS} from "@/constants/ui-strings/NhsNumSearchStrings"
 import {FRONTEND_PATHS} from "@/constants/environment"
+import {useSearchContext} from "@/context/SearchProvider"
 
 type ErrorKey = keyof typeof STRINGS.errors
 
@@ -24,6 +25,7 @@ export default function NhsNumSearch() {
   const [errorTypes, setErrorTypes] = useState<Array<ErrorKey>>([])
   const errorRef = useRef<HTMLDivElement | null>(null)
   const navigate = useNavigate()
+  const searchContext = useSearchContext()
 
   const errorMessages = STRINGS.errors
 
@@ -54,7 +56,8 @@ export default function NhsNumSearch() {
       setErrorTypes(errors)
       return
     }
-    setNhsNumber(cleaned)
+    searchContext.clearSearchParameters()
+    searchContext.setNhsNumber(cleaned)
 
     navigate(`${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}`)
   }

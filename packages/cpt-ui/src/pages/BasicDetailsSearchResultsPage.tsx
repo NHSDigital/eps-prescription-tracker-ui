@@ -15,28 +15,14 @@ import http from "@/helpers/axios"
 import EpsSpinner from "@/components/EpsSpinner"
 import PatientNotFoundMessage from "@/components/PatientNotFoundMessage"
 import SearchResultsTooManyMessage from "@/components/SearchResultsTooManyMessage"
+import {useSearchContext} from "@/context/SearchProvider"
 
 export default function SearchResultsPage() {
   const location = useLocation()
   const navigate = useNavigate()
   const [loading, setLoading] = useState(true)
   const [patients, setPatients] = useState<Array<PatientSummary>>([])
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [firstName, setFirstName] = useState("")
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [lastName, setLastName] = useState("")
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [dobDay, setDobDay] = useState("")
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [dobMonth, setDobMonth] = useState("")
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [dobYear, setDobYear] = useState("")
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [postcode, setPostcode] = useState("")
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [prescriptionId, setPrescriptionId] = useState<string>("")
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [nhsNumber, setNhsNumber] = useState<string>("")
+  const searchContext = useSearchContext()
 
   useEffect(() => {
     getSearchResults()
@@ -46,10 +32,10 @@ export default function SearchResultsPage() {
     // Attempt to fetch live search results from the API
     const response = await http.get(API_ENDPOINTS.PATIENT_SEARCH, {
       params: {
-        familyName: lastName,
-        dateOfBirth: `${dobYear}-${dobMonth}-${dobDay}`,
-        postcode: postcode,
-        givenName: firstName ?? undefined
+        familyName: searchContext.lastName,
+        dateOfBirth: `${searchContext.dobYear}-${searchContext.dobMonth}-${searchContext.dobDay}`,
+        postcode: searchContext.postcode,
+        givenName: searchContext.firstName ?? undefined
       }
     })
 
@@ -65,7 +51,8 @@ export default function SearchResultsPage() {
     }
 
     if (payload.length === 1) {
-      setNhsNumber(payload[0].nhsNumber)
+      searchContext.clearSearchParameters()
+      searchContext.setNhsNumber(payload[0].nhsNumber)
       navigate(`${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}`)
       return
     }
@@ -75,7 +62,8 @@ export default function SearchResultsPage() {
   }
 
   const handleRowClick = (nhsNumber: string) => {
-    setNhsNumber(nhsNumber)
+    searchContext.clearSearchParameters()
+    searchContext.setNhsNumber(nhsNumber)
     navigate(`${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}`)
   }
 

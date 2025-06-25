@@ -31,6 +31,7 @@ import {MessageHistoryCard} from "@/components/prescriptionDetails/MessageHistor
 
 import http from "@/helpers/axios"
 import {logger} from "@/helpers/logger"
+import {useSearchContext} from "@/context/SearchProvider"
 
 export default function PrescriptionDetailsPage() {
   const auth = useContext(AuthContext)
@@ -46,10 +47,7 @@ export default function PrescriptionDetailsPage() {
   const [prescribedItems, setPrescribedItems] = useState<Array<PrescribedItemDetails>>([])
   const [dispensedItems, setDispensedItems] = useState<Array<DispensedItemDetails>>([])
   const [messageHistory, setMessageHistory] = useState<Array<MessageHistory>>([])
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [searchPrescriptionId, setSearchPrescriptionId] = useState<string>("")
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [searchIssueNumber, setSearchIssueNumber] = useState<number | undefined>(undefined)
+  const searchContext = useSearchContext()
 
   const getPrescriptionDetails = async (
     prescriptionId: string,
@@ -111,16 +109,16 @@ export default function PrescriptionDetailsPage() {
         return
       }
 
-      const prescriptionId = searchPrescriptionId
+      const prescriptionId = searchContext.prescriptionId
       if (!prescriptionId) {
         logger.error("No prescriptionId provided in query params.")
         return
       }
-      const prescriptionIssueNumber = searchIssueNumber
+      const prescriptionIssueNumber = searchContext.issueNumber
 
       logger.info("useEffect triggered for prescription:", prescriptionId)
       setLoading(true)
-      await getPrescriptionDetails(prescriptionId, prescriptionIssueNumber?.toString())
+      await getPrescriptionDetails(prescriptionId, prescriptionIssueNumber)
     }
 
     runGetPrescriptionDetails()

@@ -1,5 +1,5 @@
 /* eslint-disable max-len */
-import React, {useState} from "react"
+import React from "react"
 import {Tag} from "nhsuk-react-components"
 import "../../styles/PrescriptionTable.scss"
 import {PrescriptionSummary} from "@cpt-ui-common/common-types/src"
@@ -8,6 +8,7 @@ import {getStatusTagColour, getStatusDisplayText, formatDateForPrescriptions} fr
 import {PRESCRIPTION_LIST_TABLE_TEXT} from "@/constants/ui-strings/PrescriptionListTableStrings"
 import {Link} from "react-router-dom"
 import {FRONTEND_PATHS} from "@/constants/environment"
+import {useSearchContext} from "@/context/SearchProvider"
 
 export interface PrescriptionsListTableProps {
   textContent: PrescriptionsListStrings;
@@ -23,12 +24,8 @@ const PrescriptionsListTable = ({
   prescriptions: initialPrescriptions
 }: PrescriptionsListTableProps) => {
   const initialSortConfig: SortConfig = {key: "issueDate", direction: null}
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [searchPrescriptionId, setSearchPrescriptionId] = useState<string>("")
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [searchIssueNumber, setSearchIssueNumber] = useState<number | undefined>(undefined)
-
   const currentTabId: TabId = textContent.testid as TabId
+  const searchContext = useSearchContext()
 
   // all tabs have own key in state object so each tab can be sorted individually
   const [allSortConfigs, setAllSortConfigs] = React.useState<
@@ -41,9 +38,10 @@ const PrescriptionsListTable = ({
 
   const sortConfig = allSortConfigs[currentTabId] || initialSortConfig
 
-  const setSearchPrescriptionState = (prescriptionId: string, issueNumber: number | undefined) => {
-    setSearchPrescriptionId(prescriptionId)
-    setSearchIssueNumber(issueNumber)
+  const setSearchPrescriptionState = (prescriptionId: string, issueNumber: string | undefined) => {
+    searchContext.clearSearchParameters()
+    searchContext.setPrescriptionId(prescriptionId)
+    searchContext.setIssueNumber(issueNumber)
   }
   const setSortConfigForTab = (newConfig: SortConfig) => {
     setAllSortConfigs((prev) => ({
@@ -132,12 +130,8 @@ const PrescriptionsListTable = ({
   }
 
   const constructLink = (
-    prescriptionId: string,
-    issueNumber?: number
   ): string => {
-    const prescriptionParam = `prescriptionId=${prescriptionId}`
-    const issueNumberParam = issueNumber ? `&issueNumber=${issueNumber}` : ""
-    return `${FRONTEND_PATHS.PRESCRIPTION_DETAILS_PAGE}?${prescriptionParam}${issueNumberParam}`
+    return `${FRONTEND_PATHS.PRESCRIPTION_DETAILS_PAGE}`
   }
 
   const getSortedItems = () => {
@@ -358,8 +352,8 @@ const PrescriptionsListTable = ({
                       </div>
                       <div>
                         <Link
-                          onClick={() => setSearchPrescriptionState(row.prescriptionId, row.issueNumber)}
-                          to={constructLink(row.prescriptionId, row.issueNumber)}
+                          onClick={async () => await setSearchPrescriptionState(row.prescriptionId, row.issueNumber?.toString())}
+                          to={constructLink()}
                           className="nhsuk-link"
                           data-testid={`view-prescription-link-${row.prescriptionId}`}
                         >

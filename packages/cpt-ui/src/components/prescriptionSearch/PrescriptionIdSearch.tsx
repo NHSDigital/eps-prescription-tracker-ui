@@ -28,10 +28,12 @@ import {
   getHighestPriorityError,
   PrescriptionValidationError
 } from "@/helpers/validatePrescriptionDetailsSearch"
+import {useSearchContext} from "@/context/SearchProvider"
 
 export default function PrescriptionIdSearch() {
   const navigate = useNavigate()
   const errorRef = useRef<HTMLDivElement | null>(null)
+  const searchContext = useSearchContext()
 
   const [prescriptionId, setPrescriptionId] = useState<string>("")
   const [errorKey, setErrorKey] = useState<PrescriptionValidationError | null>(null)
@@ -60,7 +62,7 @@ export default function PrescriptionIdSearch() {
   }
 
   // Form submit handler
-  const handlePrescriptionDetails = (e: React.FormEvent) => {
+  const handlePrescriptionDetails = async (e: React.FormEvent) => {
     e.preventDefault()
     const validationErrors = validatePrescriptionId(prescriptionId)
     const key = getHighestPriorityError(validationErrors)
@@ -72,7 +74,9 @@ export default function PrescriptionIdSearch() {
     setErrorKey(null) // Clear error on valid submit
 
     const formatted = normalizePrescriptionId(prescriptionId)
-    navigate(`${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}?prescriptionId=${formatted}`)
+    searchContext.clearSearchParameters()
+    searchContext.setPrescriptionId(formatted)
+    navigate(`${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}`)
   }
 
   return (
