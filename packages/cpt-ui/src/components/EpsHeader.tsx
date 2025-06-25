@@ -88,67 +88,6 @@ export default function EpsHeader() {
     navigate(FRONTEND_PATHS.LOGOUT)
   }
 
-  const getHeaderItems = () => {
-    const headerItems = []
-    if (shouldShowSelectRole) {
-      const item: React.JSX.Element = <div key="select-role">
-        <Header.NavItem
-          href={HEADER_SELECT_YOUR_ROLE_TARGET}
-          data-testid="eps_header_selectYourRoleLink"
-        >
-          {HEADER_SELECT_YOUR_ROLE_BUTTON}
-        </Header.NavItem>
-      </div>
-      headerItems.push(item)
-    }
-    if (shouldShowChangeRole) {
-      const item: React.JSX.Element = <div key="change-role">
-        <Header.NavItem
-          href={HEADER_CHANGE_ROLE_TARGET}
-          data-testid="eps_header_changeRoleLink"
-        >
-          {HEADER_CHANGE_ROLE_BUTTON}
-        </Header.NavItem>
-      </div>
-      headerItems.push(item)
-    }
-    const feedbackItem: React.JSX.Element = <div key="feedback">
-      <Header.NavItem
-        href={HEADER_FEEDBACK_TARGET}
-        target="_blank"
-        rel="noopener noreferrer"
-        data-testid="eps_header_feedbackLink"
-      >
-        {HEADER_FEEDBACK_BUTTON}
-      </Header.NavItem>
-    </div>
-    headerItems.push(feedbackItem)
-    if (shouldShowLogoutLink) {
-      const item: React.JSX.Element = <div key="logout">
-        <Header.NavItem
-          href={FRONTEND_PATHS.LOGOUT}
-          onClick={handleLogoutClick}
-          data-testid="eps_header_logout"
-        >
-          {HEADER_LOG_OUT_BUTTON}
-        </Header.NavItem>
-      </div>
-      headerItems.push(item)
-    }
-    if (shouldShowExitButton) {
-      const item: React.JSX.Element = <div key="exit">
-        <Header.NavItem
-          href={HEADER_EXIT_TARGET}
-          className="nhsuk-header__navigation-link"
-          data-testid="eps_header_exit"
-        >
-          {HEADER_EXIT_BUTTON}
-        </Header.NavItem>
-      </div>
-      headerItems.push(item)
-    }
-    return headerItems
-  }
   return (
     <>
       <Header transactional className="masthead" id="eps-header">
@@ -171,7 +110,79 @@ export default function EpsHeader() {
         </Header.Container>
 
         <Header.Nav className="masthead-nav">
-          {getHeaderItems().map(item => item)}
+          {/* Select your role */}
+          <div>
+            {shouldShowSelectRole && (
+              <li className="nhsuk-header__navigation-item">
+                <Link
+                  className="nhsuk-header__navigation-link"
+                  to={HEADER_SELECT_YOUR_ROLE_TARGET}
+                  data-testid="eps_header_selectYourRoleLink"
+                >
+                  {HEADER_SELECT_YOUR_ROLE_BUTTON}
+                </Link>
+              </li>
+            )}
+          </div>
+
+          {/* Change role */}
+          <div>
+            {shouldShowChangeRole && (
+              <li className="nhsuk-header__navigation-item">
+                <Link
+                  className="nhsuk-header__navigation-link"
+                  to={HEADER_CHANGE_ROLE_TARGET}
+                  data-testid="eps_header_changeRoleLink"
+                >
+                  {HEADER_CHANGE_ROLE_BUTTON}
+                </Link>
+              </li>
+            )}
+          </div>
+
+          {/* Give feedback (opens in new tab) */}
+          <div>
+            <Header.NavItem
+              href={HEADER_FEEDBACK_TARGET}
+              target="_blank"
+              rel="noopener noreferrer"
+              data-testid="eps_header_feedbackLink"
+            >
+              {HEADER_FEEDBACK_BUTTON}
+            </Header.NavItem>
+          </div>
+
+          {/* Log out */}
+          <div>
+            {shouldShowLogoutLink && (
+              <li className="nhsuk-header__navigation-item">
+                <Link
+                  className="nhsuk-header__navigation-link"
+                  to={FRONTEND_PATHS.LOGOUT}
+                  data-testid="eps_header_logout"
+                  onClick={handleLogoutClick}
+                >
+                  {HEADER_LOG_OUT_BUTTON}
+                </Link>
+              </li>
+            )}
+          </div>
+
+          {/* Exit button */}
+          <div>
+            {shouldShowExitButton && (
+              <li className="nhsuk-header__navigation-item">
+                <Link
+                  className="nhsuk-header__navigation-link"
+                  to={HEADER_EXIT_TARGET}
+                  data-testid="eps_header_exit"
+                >
+                  {HEADER_EXIT_BUTTON}
+                </Link>
+              </li>
+            )}
+          </div>
+
           <Header.NavDropdownMenu dropdownText="Menu" />
         </Header.Nav>
       </Header>
