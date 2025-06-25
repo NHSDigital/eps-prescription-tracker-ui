@@ -63,9 +63,7 @@ const lambdaHandler = async (
   )
 }
 
-export const newHandler = (
-  initParams: HandlerParameters
-) => {
+export const newHandler = (initParams: HandlerInitialisationParameters) => {
   const params: HandlerParameters = {
     logger: initParams.logger,
     apigeePrescriptionsEndpoint: initParams.apigeePrescriptionsEndpoint
@@ -105,7 +103,7 @@ const documentClient = DynamoDBDocumentClient.from(dynamoClient)
 const errorResponseBody = {message: "A system error has occurred"}
 const axiosInstance = axios.create()
 
-const DEFAULT_HANDLER_PARAMETERS: HandlerParameters = {
+const DEFAULT_HANDLER_PARAMETERS: HandlerInitialisationParameters = {
   errorResponseBody,
   logger: new Logger({serviceName: "prescriptionDetails"}),
   documentClient,
