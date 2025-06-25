@@ -19,10 +19,10 @@ import {useAuth} from "@/context/AuthProvider"
 
 import {EpsLogoutModal} from "@/components/EpsLogoutModal"
 import {normalizePath} from "@/helpers/utils"
-import {FRONTEND_PATHS} from "@/constants/environment"
+import {ENV_CONFIG, FRONTEND_PATHS} from "@/constants/environment"
 import {getHomeLink} from "@/helpers/loginFunctions"
 
-const baseUrl = import.meta.env.BASE_URL
+const baseUrl = ENV_CONFIG.BASE_URL
 
 export default function EpsHeader() {
   const navigate = useNavigate()

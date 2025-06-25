@@ -205,9 +205,7 @@ describe("LoginPage", () => {
     renderWithProviders(<LoginPage />, {
       ...defaultAuthState,
       isSignedIn: true,
-
       user: "testUser"
-
     })
 
     const signOutBtn = screen.getByRole("button", {name: /Sign Out/i})
@@ -229,7 +227,11 @@ describe("LoginPage", () => {
     }
 
     // Render the component with our providers
-    const {container} = renderWithProviders(<LoginPage />)
+    const {container} = renderWithProviders(<LoginPage />, {
+      ...defaultAuthState,
+      isSignedIn: false,
+      user: "testUser"
+    })
 
     await waitFor(() => {
       expect(

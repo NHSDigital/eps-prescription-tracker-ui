@@ -63,9 +63,10 @@ export default function LoginPage() {
       )
     ) {
       if (!auth?.isSignedIn) {
-        logger.info("User must sign in with Primary auth")
+        logger.info("Redirecting user to cis2 login")
         signIn()
       } else {
+        logger.info("User is already signed in - redirecting to search")
         navigate(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
       }
     }
