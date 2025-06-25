@@ -347,7 +347,7 @@ const PrescriptionsListTable = ({
                         {row.prescriptionId}
                       </div>
                       <div>
-                        {row.statusCode === "0005" ? (
+                        {row.status === "Completed" ? (
                           <span
                             data-testid={`unavailable-text-${row.prescriptionId}`}
                           >

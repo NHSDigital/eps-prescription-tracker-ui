@@ -167,6 +167,8 @@ export const mapResponseToPrescriptionSummary = (
     .map(entry => {
       const resource = entry.resource as RequestGroup
 
+      const status = resource.status || ""
+
       // Extract status code - fixed to match the structure
       const statusExtension = resource.extension?.find(ext =>
         ext.url === "https://fhir.nhs.uk/StructureDefinition/Extension-DM-PrescriptionStatusHistory"
@@ -206,6 +208,7 @@ export const mapResponseToPrescriptionSummary = (
 
       return {
         prescriptionId: resource.identifier?.[0]?.value || "",
+        status,
         statusCode,
         issueDate: resource.authoredOn || "",
         prescriptionTreatmentType: treatmentType,

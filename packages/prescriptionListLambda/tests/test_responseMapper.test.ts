@@ -223,6 +223,7 @@ describe("Response Mapper Tests", () => {
       // Using actual implementation which uses nhsNumber for fallback
       const prescriptions = [{
         prescriptionId: "335C70-A83008-84058A",
+        status: "active",
         statusCode: "0001",
         issueDate: "20250204000000",
         prescriptionTreatmentType: TreatmentType.ACUTE,
@@ -259,6 +260,7 @@ describe("Response Mapper Tests", () => {
 
       const prescriptions = [{
         prescriptionId: "335C70-A83008-84058A",
+        status: "active",
         statusCode: "0001",
         issueDate: "20250204000000",
         prescriptionTreatmentType: TreatmentType.ACUTE,
@@ -289,6 +291,7 @@ describe("Response Mapper Tests", () => {
       // Create prescription with nhsNumber
       const prescriptions = [{
         prescriptionId: "335C70-A83008-84058A",
+        status: "active",
         statusCode: "0001",
         issueDate: "20250204000000",
         prescriptionTreatmentType: TreatmentType.ACUTE,
@@ -316,6 +319,7 @@ describe("Response Mapper Tests", () => {
       // Prescription with NHS Number
       const prescriptions = [{
         prescriptionId: "335C70-A83008-84058A",
+        status: "active",
         statusCode: "0001",
         issueDate: "20250204000000",
         prescriptionTreatmentType: TreatmentType.ACUTE,

@@ -48,6 +48,7 @@ export interface SearchResponse {
 
 export interface PrescriptionSummary {
   prescriptionId: string;
+  status: string;
   statusCode: string;
   issueDate: string;
   prescriptionTreatmentType: TreatmentType;
