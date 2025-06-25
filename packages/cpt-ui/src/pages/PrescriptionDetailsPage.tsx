@@ -1,4 +1,4 @@
-import {useContext, useEffect, useState} from "react"
+import {useEffect, useState} from "react"
 import {Link} from "react-router-dom"
 
 import {
@@ -17,7 +17,6 @@ import {
   MessageHistory
 } from "@cpt-ui-common/common-types"
 
-import {AuthContext} from "@/context/AuthProvider"
 import {usePrescriptionInformation} from "@/context/PrescriptionInformationProvider"
 import {usePatientDetails} from "@/context/PatientDetailsProvider"
 
@@ -34,7 +33,6 @@ import {logger} from "@/helpers/logger"
 import {useSearchContext} from "@/context/SearchProvider"
 
 export default function PrescriptionDetailsPage() {
-  const auth = useContext(AuthContext)
 
   const [loading, setLoading] = useState(true)
 
@@ -103,11 +101,6 @@ export default function PrescriptionDetailsPage() {
 
   useEffect(() => {
     const runGetPrescriptionDetails = async () => {
-      // Check if auth is ready
-      if (!auth?.isSignedIn) {
-        logger.info("Auth token not ready, waiting...")
-        return
-      }
 
       const prescriptionId = searchContext.prescriptionId
       if (!prescriptionId) {
@@ -122,7 +115,7 @@ export default function PrescriptionDetailsPage() {
     }
 
     runGetPrescriptionDetails()
-  }, [auth?.isSignedIn])
+  }, [])
 
   if (loading) {
     return (

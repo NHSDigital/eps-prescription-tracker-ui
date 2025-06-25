@@ -1,4 +1,4 @@
-import React, {useContext, useEffect, useState} from "react"
+import React, {useEffect, useState} from "react"
 import {useNavigate} from "react-router-dom"
 import {
   BackLink,
@@ -10,7 +10,6 @@ import "../styles/PrescriptionTable.scss"
 
 import http from "@/helpers/axios"
 
-import {AuthContext} from "@/context/AuthProvider"
 import {usePatientDetails} from "@/context/PatientDetailsProvider"
 import EpsSpinner from "@/components/EpsSpinner"
 import PrescriptionsListTabs from "@/components/prescriptionList/PrescriptionsListTab"
@@ -26,7 +25,6 @@ import {logger} from "@/helpers/logger"
 import {useSearchContext} from "@/context/SearchProvider"
 
 export default function PrescriptionListPage() {
-  const auth = useContext(AuthContext)
   const {setPatientDetails} = usePatientDetails()
   const searchContext = useSearchContext()
 
@@ -44,11 +42,6 @@ export default function PrescriptionListPage() {
     const runSearch = async () => {
       setLoading(true)
       setShowNotFound(false) // Reset when search changes
-
-      if (!auth?.isSignedIn) {
-        logger.info("Not signed in, waiting...")
-        return
-      }
 
       const searchParams = new URLSearchParams()
 
@@ -131,7 +124,7 @@ export default function PrescriptionListPage() {
     }
 
     runSearch()
-  }, [auth?.isSignedIn])
+  }, [])
 
   if (loading) {
     return (
