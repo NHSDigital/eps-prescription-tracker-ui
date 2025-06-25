@@ -68,7 +68,6 @@ test: compile
 	npm run test --workspace packages/common/dynamoFunctions
 
 clean:
-	rm -rf packages/auth_demo/lib
 	rm -rf packages/cdk/coverage
 	rm -rf packages/cdk/lib
 	rm -rf packages/CIS2SignOutLambda/coverage
@@ -155,9 +154,6 @@ react-start:
 
 react-lint:
 	npm run lint --workspace packages/cpt-ui
-
-auth_demo_build:
-	export PUBLIC_URL="/auth_demo" && npm run build --workspace packages/auth_demo/
 
 cdk-deploy: guard-service_name guard-CDK_APP_NAME
 	REQUIRE_APPROVAL="$${REQUIRE_APPROVAL:-any-change}" && \

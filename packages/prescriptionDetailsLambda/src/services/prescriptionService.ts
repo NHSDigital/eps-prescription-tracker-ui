@@ -41,7 +41,7 @@ export async function getDoHSData(
   }
 
   try {
-    const orgs = await doHSClient(validOdsCodes)
+    const orgs = await doHSClient(validOdsCodes, logger)
 
     if (orgs.length === 0) {
       logger.warn("No organization data found in DoHS response")

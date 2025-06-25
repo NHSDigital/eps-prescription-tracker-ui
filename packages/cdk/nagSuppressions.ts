@@ -250,6 +250,7 @@ const safeAddNagSuppression = (stack: Stack, path: string, suppressions: Array<N
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (err) {
+    // eslint-disable-next-line no-console
     console.log(`Could not find path ${path}`)
   }
 }

@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 export const mockAPIGatewayProxyEvent = {
   httpMethod: "POST",
   body: "",

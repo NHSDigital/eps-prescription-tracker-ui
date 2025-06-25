@@ -1,5 +1,5 @@
 import React, {Component} from "react"
-import {render, fireEvent} from "@testing-library/react"
+import {render} from "@testing-library/react"
 import ErrorBoundary from "@/context/ErrorBoundary" // Adjust import path as needed
 import {AwsRum} from "aws-rum-web"
 import {AwsRumContext} from "@/context/AwsRumProvider" // Adjust import path as needed
@@ -19,12 +19,11 @@ class ErrorThrowingComponent extends Component {
 const NormalComponent = () => <div>Normal Component</div>
 
 describe("ErrorBoundary", () => {
-  // Mock console.error to prevent actual error logging
-  const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {})
 
   // Create a mock AwsRum instance
   const mockAwsRum = {
-    recordError: jest.fn()
+    recordError: jest.fn(),
+    recordEvent: jest.fn()
   } as unknown as AwsRum
 
   beforeEach(() => {
@@ -33,8 +32,6 @@ describe("ErrorBoundary", () => {
   })
 
   afterAll(() => {
-    // Restore console.error
-    consoleErrorSpy.mockRestore()
   })
 
   test("renders children component when no error occurs", () => {
@@ -58,8 +55,8 @@ describe("ErrorBoundary", () => {
       </AwsRumContext.Provider>
     )
 
-    expect(getByText("Something went wrong.")).toBeInTheDocument()
-    expect(getByText("Clear Error")).toBeInTheDocument()
+    expect(getByText("Sorry, there is a problem")).toBeInTheDocument()
+    expect(getByText("Search for a prescription")).toBeInTheDocument()
   })
 
   test("records error with AwsRum when available", () => {
@@ -67,6 +64,7 @@ describe("ErrorBoundary", () => {
 
     // Spy on the error being recorded
     const recordErrorSpy = jest.spyOn(mockAwsRum, "recordError")
+    const recordEventSpy = jest.spyOn(mockAwsRum, "recordEvent")
 
     render(
       <AwsRumContext.Provider value={mockAwsRum}>
@@ -78,6 +76,7 @@ describe("ErrorBoundary", () => {
 
     // Verify error was recorded with AwsRum
     expect(recordErrorSpy).toHaveBeenCalledWith(error)
+    expect(recordEventSpy).toHaveBeenCalled()
   })
 
   test("does not attempt to record error when AwsRum is not available", () => {
@@ -93,9 +92,8 @@ describe("ErrorBoundary", () => {
     expect(mockAwsRum.recordError).not.toHaveBeenCalled()
   })
 
-  test("clears error and redirects to home page when Clear Error button is clicked", () => {
+  test("Has a link to the homepage", () => {
     // Mock window.location.href
-    const originalLocation = window.location
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     delete (window as any).location;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -110,29 +108,8 @@ describe("ErrorBoundary", () => {
     )
 
     // Click the Clear Error button
-    const clearErrorButton = getByText("Clear Error")
-    fireEvent.click(clearErrorButton)
-
-    // Verify redirection to home page
-    expect(window.location.href).toBe("http://localhost/");
-
-    // Restore window.location
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (window as any).location = originalLocation
+    const returnHomeLink = getByText("Search for a prescription")
+    expect(returnHomeLink).not.toBeNull()
   })
 
-  test("logs error to console", () => {
-    const error = new Error("Test Error")
-
-    render(
-      <AwsRumContext.Provider value={null}>
-        <ErrorBoundary>
-          <ErrorThrowingComponent />
-        </ErrorBoundary>
-      </AwsRumContext.Provider>
-    )
-
-    // Verify error was logged to console
-    expect(consoleErrorSpy).toHaveBeenCalledWith("recordingError:", error)
-  })
 })
