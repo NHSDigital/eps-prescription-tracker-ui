@@ -40,10 +40,10 @@ const extractFallbackPatientDetails = (prescriptions: Array<PrescriptionAPIRespo
   // Return complete PatientDetails with fallback values
   return {
     nhsNumber: firstPrescription.nhsNumber?.toString() || "",
-    given: firstPrescription.given?.[0] || "",
+    given: firstPrescription.given || "",
     family: firstPrescription.family || "",
-    prefix: firstPrescription.prefix?.[0] || "",
-    suffix: firstPrescription.suffix?.[0] || "",
+    prefix: firstPrescription.prefix || "",
+    suffix: firstPrescription.suffix || "",
     gender: null,
     dateOfBirth: null,
     address: null
