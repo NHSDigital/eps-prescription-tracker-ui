@@ -66,4 +66,8 @@ export enum TreatmentType {
 
 export interface PrescriptionAPIResponse extends PrescriptionSummary {
   nhsNumber?: number
+  given?: string
+  family?: string
+  prefix?: string
+  suffix?: string
 }
