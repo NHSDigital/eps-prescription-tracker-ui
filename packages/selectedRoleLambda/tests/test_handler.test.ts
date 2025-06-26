@@ -3,46 +3,19 @@ import {mockContext, mockAPIGatewayProxyEvent} from "./mockObjects"
 import {Logger} from "@aws-lambda-powertools/logger"
 
 // Mocked functions from authFunctions
-const mockGetUsernameFromEvent = jest.fn()
-const mockInitializeOidcConfig = jest.fn()
 const mockUpdateTokenMapping = jest.fn()
 const mockGetTokenMapping = jest.fn()
 
-mockInitializeOidcConfig.mockImplementation( () => {
-  const cis2OidcConfig = {
-    oidcIssuer: process.env["CIS2_OIDC_ISSUER"] ?? "",
-    oidcClientID: process.env["CIS2_OIDC_CLIENT_ID"] ?? "",
-    oidcJwksEndpoint: process.env["CIS2_OIDCJWKS_ENDPOINT"] ?? "",
-    oidcUserInfoEndpoint: process.env["CIS2_USER_INFO_ENDPOINT"] ?? "",
-    userPoolIdp: process.env["CIS2_USER_POOL_IDP"] ?? "",
-    jwksClient: undefined,
-    tokenMappingTableName: process.env["TokenMappingTableName"] ?? "",
-    oidcTokenEndpoint: process.env["CIS2_TOKEN_ENDPOINT"] ?? ""
-  }
-  const mockOidcConfig = {
-    oidcIssuer: process.env["MOCK_OIDC_ISSUER"] ?? "",
-    oidcClientID: process.env["MOCK_OIDC_CLIENT_ID"] ?? "",
-    oidcJwksEndpoint: process.env["MOCK_OIDCJWKS_ENDPOINT"] ?? "",
-    oidcUserInfoEndpoint: process.env["MOCK_USER_INFO_ENDPOINT"] ?? "",
-    userPoolIdp: process.env["MOCK_USER_POOL_IDP"] ?? "",
-    jwksClient: undefined,
-    tokenMappingTableName: process.env["TokenMappingTableName"] ?? "",
-    oidcTokenEndpoint: process.env["MOCK_OIDC_TOKEN_ENDPOINT"] ?? ""
-  }
-
-  return {cis2OidcConfig, mockOidcConfig}
-})
-
 jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
-
   return {
-    getUsernameFromEvent: mockGetUsernameFromEvent,
-    initializeOidcConfig: mockInitializeOidcConfig
+    authParametersFromEnv: () => ({
+      tokenMappingTableName: "TokenMappingTable"
+    }),
+    authenticationMiddleware: () => ({before: () => {}})
   }
 })
 
 jest.unstable_mockModule("@cpt-ui-common/dynamoFunctions", () => {
-
   return {
     updateTokenMapping: mockUpdateTokenMapping,
     getTokenMapping: mockGetTokenMapping
@@ -69,7 +42,9 @@ describe("Lambda Handler Tests", () => {
   })
 
   it("should return a successful response when called", async () => {
-    mockGetUsernameFromEvent.mockReturnValue("JoeBlogs")
+    event.requestContext.authorizer = {
+      username: "JoeBlogs"
+    }
     const response = await handler(event, context)
     expect(mockUpdateTokenMapping).toHaveBeenCalled()
 
@@ -85,7 +60,9 @@ describe("Lambda Handler Tests", () => {
   it(
     "should call updateDynamoTable and move the selected role from rolesWithAccess to currentlySelectedRole",
     async () => {
-      mockGetUsernameFromEvent.mockReturnValue("Mock_JoeBloggs")
+      event.requestContext.authorizer = {
+        username: "Mock_JoeBloggs"
+      }
       mockGetTokenMapping.mockImplementation(() => {
         return {
           rolesWithAccess:  [
@@ -112,7 +89,6 @@ describe("Lambda Handler Tests", () => {
 
       const response = await handler(event, context)
 
-      expect(mockGetUsernameFromEvent).toHaveBeenCalled()
       expect(mockUpdateTokenMapping).toHaveBeenCalledWith(
         expect.anything(),
         expect.anything(),
@@ -120,7 +96,8 @@ describe("Lambda Handler Tests", () => {
           username: testUsername,
           currentlySelectedRole,
           rolesWithAccess,
-          selectedRoleId
+          selectedRoleId,
+          lastActivityTime: expect.any(Number)
         },
         expect.anything()
       )
@@ -150,7 +127,6 @@ describe("Lambda Handler Tests", () => {
   it(
     "should swap currentlySelectedRole with the new selected role and move the old one back to rolesWithAccess",
     async () => {
-      mockGetUsernameFromEvent.mockReturnValue("Mock_JoeBloggs")
       // Initial rolesWithAccess contains multiple roles, currentlySelectedRole is undefined
       mockGetTokenMapping.mockImplementation(() => {
         return {
@@ -172,7 +148,12 @@ describe("Lambda Handler Tests", () => {
             org_code: "XYZ",
             role_name: "MockRole_1"
           }
-        })
+        }),
+        requestContext: {
+          authorizer: {
+            username: "Mock_JoeBloggs"
+          }
+        }
       }
 
       let response = await handler(event, mockContext)
@@ -189,7 +170,7 @@ describe("Lambda Handler Tests", () => {
 
       // User selects "MockRole_2" (role_id: 456)
       event = {
-        ...mockAPIGatewayProxyEvent,
+        ...event,
         body: JSON.stringify({
           currently_selected_role: {
             role_id: "456",
@@ -213,7 +194,7 @@ describe("Lambda Handler Tests", () => {
 
       // User selects "MockRole_3" (role_id: 789)
       event = {
-        ...mockAPIGatewayProxyEvent,
+        ...event,
         body: JSON.stringify({
           currently_selected_role: {
             role_id: "789",
@@ -240,7 +221,6 @@ describe("Lambda Handler Tests", () => {
   it(
     "should swap initially selected role with the new selected role and move the old one back to rolesWithAccess",
     async () => {
-      mockGetUsernameFromEvent.mockReturnValue("Mock_JoeBloggs")
       // Initial database state with a previously selected role
       mockGetTokenMapping.mockImplementation(() => {
         return {
@@ -262,7 +242,12 @@ describe("Lambda Handler Tests", () => {
             org_code: "XYZ",
             role_name: "MockRole_1"
           }
-        })
+        }),
+        requestContext: {
+          authorizer: {
+            username: "Mock_JoeBloggs"
+          }
+        }
       }
 
       const firstResponse = await handler(firstEvent, mockContext)
@@ -283,7 +268,8 @@ describe("Lambda Handler Tests", () => {
             {role_id: "789", org_code: "DEF", role_name: "MockRole_3"},
             {role_id: "555", org_code: "GHI", role_name: "MockRole_4"} // Old role moved back
           ],
-          selectedRoleId: "123"
+          selectedRoleId: "123",
+          lastActivityTime: expect.any(Number)
         },
         expect.anything()
       )
@@ -299,7 +285,12 @@ describe("Lambda Handler Tests", () => {
             org_code: "DEF",
             role_name: "MockRole_3"
           }
-        })
+        }),
+        requestContext: {
+          authorizer: {
+            username: "Mock_JoeBloggs"
+          }
+        }
       }
 
       const secondResponse = await handler(secondEvent, mockContext)
@@ -324,7 +315,6 @@ describe("Lambda Handler Tests", () => {
     })
 
   it("should return 500 and log error when updateDynamoTable throws an error", async () => {
-    mockGetUsernameFromEvent.mockReturnValue("Mock_JoeBloggs")
     const error = new Error("Dynamo update failed")
     const loggerSpy = jest.spyOn(Logger.prototype, "error")
     mockUpdateTokenMapping.mockImplementation(() => {
@@ -342,7 +332,6 @@ describe("Lambda Handler Tests", () => {
   })
 
   it("should handle unexpected error types gracefully", async () => {
-    mockGetUsernameFromEvent.mockReturnValue("Mock_JoeBloggs")
     mockUpdateTokenMapping.mockImplementation(() => {
       throw new Error("Unexpected error string")
     })
@@ -359,7 +348,6 @@ describe("Lambda Handler Tests", () => {
   })
 
   it("should return 400 when request body is missing", async () => {
-    mockGetUsernameFromEvent.mockReturnValue("Mock_JoeBloggs")
     event.body = "" as unknown as string
     const response = await handler(event, context)
 
@@ -368,7 +356,6 @@ describe("Lambda Handler Tests", () => {
   })
 
   it("should return 400 when request body is invalid JSON", async () => {
-    mockGetUsernameFromEvent.mockReturnValue("Mock_JoeBloggs")
     event.body = "Invalid JSON"
     const response = await handler(event, context)
 
