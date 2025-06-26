@@ -420,7 +420,7 @@ export const mockPrescriptionBundle: Bundle = {
         },
         extension: [
           {
-            url: "https://fhir.nhs.uk/StructureDefinition/Extension-DM-PrescriptionStatusHistory",
+            url: "https://fhir.nhs.uk/StructureDefinition/Extension-EPS-PrescriptionStatusHistory",
             extension: [{
               url: "status",
               valueCoding: {
@@ -429,7 +429,7 @@ export const mockPrescriptionBundle: Bundle = {
             }]
           },
           {
-            url: "https://fhir.nhs.uk/StructureDefinition/Extension-DM-PendingCancellation",
+            url: "https://fhir.nhs.uk/StructureDefinition/Extension-PendingCancellation",
             extension: [
               {
                 url: "prescriptionPendingCancellation",

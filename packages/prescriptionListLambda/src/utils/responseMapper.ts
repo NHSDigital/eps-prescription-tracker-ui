@@ -201,7 +201,7 @@ export const mapResponseToPrescriptionSummary = (
 
       // Extract status code - fixed to match the structure
       const statusExtension = resource.extension?.find(ext =>
-        ext.url === "https://fhir.nhs.uk/StructureDefinition/Extension-DM-PrescriptionStatusHistory"
+        ext.url === "https://fhir.nhs.uk/StructureDefinition/Extension-EPS-PrescriptionStatusHistory"
       )
       const statusCode = statusExtension?.extension?.find(ext =>
         ext.url === "status"
@@ -225,7 +225,7 @@ export const mapResponseToPrescriptionSummary = (
 
       // Extract pending cancellation - fixed to match the structure
       const pendingCancellationExt = resource.extension?.find(ext =>
-        ext.url === "https://fhir.nhs.uk/StructureDefinition/Extension-DM-PendingCancellation"
+        ext.url === "https://fhir.nhs.uk/StructureDefinition/Extension-PendingCancellation"
       )
 
       const prescriptionPendingCancellation = pendingCancellationExt?.extension?.find(ext =>
