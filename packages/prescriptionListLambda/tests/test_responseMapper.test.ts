@@ -29,7 +29,7 @@ describe("Response Mapper Tests", () => {
         intent: "order", // Changed to match intentMap
         authoredOn: "20250204000000", // Added authoredOn for issueDate
         extension: [{
-          url: "https://fhir.nhs.uk/StructureDefinition/Extension-DM-PrescriptionStatusHistory",
+          url: "https://fhir.nhs.uk/StructureDefinition/Extension-EPS-PrescriptionStatusHistory",
           extension: [{
             url: "status",
             valueCoding: {
@@ -38,7 +38,7 @@ describe("Response Mapper Tests", () => {
           }]
         },
         {
-          url: "https://fhir.nhs.uk/StructureDefinition/Extension-DM-PendingCancellation",
+          url: "https://fhir.nhs.uk/StructureDefinition/Extension-PendingCancellation",
           extension: [{
             url: "prescriptionPendingCancellation", // Fixed extension name
             valueBoolean: false
@@ -53,7 +53,7 @@ describe("Response Mapper Tests", () => {
           cardinalityBehavior: "single",
           precheckBehavior: "no",
           extension: [{
-            url: "https://fhir.nhs.uk/StructureDefinition/Extension-DM-PendingCancellation",
+            url: "https://fhir.nhs.uk/StructureDefinition/Extension-PendingCancellation",
             extension: [{
               url: "pendingCancellation",
               valueBoolean: false
@@ -99,7 +99,7 @@ describe("Response Mapper Tests", () => {
     it("should find boolean extension value", () => {
       const extensions = [
         {
-          url: "https://fhir.nhs.uk/StructureDefinition/Extension-DM-PendingCancellation",
+          url: "https://fhir.nhs.uk/StructureDefinition/Extension-PendingCancellation",
           extension: [
             {
               url: "prescriptionPendingCancellation",
@@ -110,7 +110,7 @@ describe("Response Mapper Tests", () => {
       ]
 
       const result = findExtensionValue(extensions,
-        "https://fhir.nhs.uk/StructureDefinition/Extension-DM-PendingCancellation")
+        "https://fhir.nhs.uk/StructureDefinition/Extension-PendingCancellation")
       expect(result).toBe(false)
     })
 
