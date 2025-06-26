@@ -5,7 +5,7 @@ import {PrescriptionSummary} from "@cpt-ui-common/common-types/src"
 import {PrescriptionsListStrings} from "../../constants/ui-strings/PrescriptionListTabStrings"
 import {getStatusTagColour, getStatusDisplayText, formatDateForPrescriptions} from "@/helpers/statusMetadata"
 import {PRESCRIPTION_LIST_TABLE_TEXT} from "@/constants/ui-strings/PrescriptionListTableStrings"
-import {Link} from "react-router-dom"
+import {Link, useSearchParams} from "react-router-dom"
 import {FRONTEND_PATHS} from "@/constants/environment"
 
 export interface PrescriptionsListTableProps {
@@ -24,6 +24,9 @@ const PrescriptionsListTable = ({
   const initialSortConfig: SortConfig = {key: "issueDate", direction: null}
 
   const currentTabId: TabId = textContent.testid as TabId
+
+  const [queryParams] = useSearchParams()
+  const nhsNumber = queryParams.get("nhsNumber")
 
   // all tabs have own key in state object so each tab can be sorted individually
   const [allSortConfigs, setAllSortConfigs] = React.useState<
@@ -126,9 +129,10 @@ const PrescriptionsListTable = ({
     prescriptionId: string,
     issueNumber?: number
   ): string => {
-    const prescriptionParam = `prescriptionId=${prescriptionId}`
+    const nhsNumberParam = `nhsNumber=${nhsNumber}`
+    const prescriptionParam = `&prescriptionId=${prescriptionId}`
     const issueNumberParam = issueNumber ? `&issueNumber=${issueNumber}` : ""
-    return `${FRONTEND_PATHS.PRESCRIPTION_DETAILS_PAGE}?${prescriptionParam}${issueNumberParam}`
+    return `${FRONTEND_PATHS.PRESCRIPTION_DETAILS_PAGE}?${nhsNumberParam}${prescriptionParam}${issueNumberParam}`
   }
 
   const getSortedItems = () => {
