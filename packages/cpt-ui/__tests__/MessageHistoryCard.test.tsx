@@ -104,9 +104,11 @@ describe("MessageHistoryCard", () => {
     expect(screen.getByText(/10 tablets/)).toBeInTheDocument()
     expect(screen.getByText(/20 tablets/)).toBeInTheDocument()
 
+    /* Temporary remove dosage instructions from card until spine fix
     expect(screen.getAllByText(/Instructions/)).toHaveLength(2)
     expect(screen.getByText(/Take once daily/)).toBeInTheDocument()
     expect(screen.getByText(/Take twice daily/)).toBeInTheDocument()
+    */
   })
 
   it("renders nothing if empty messageHistory", () => {
