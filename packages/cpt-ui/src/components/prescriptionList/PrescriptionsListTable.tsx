@@ -219,16 +219,6 @@ const PrescriptionsListTable = ({
           ? (sortConfig.direction as "ascending" | "descending" | null) || "none"
           : "none"
       }
-      onClick={(e) => {
-        e.preventDefault()
-        requestSort(heading.key)
-      }}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault()
-          requestSort(heading.key)
-        }
-      }}
       data-testid={`eps-prescription-table-header-${heading.key}`}
     >
       <span
@@ -243,6 +233,16 @@ const PrescriptionsListTable = ({
     }
         `}
         data-testid={`eps-prescription-table-sort-${heading.key}`}
+        onClick={(e) => {
+          e.preventDefault()
+          requestSort(heading.key)
+        }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault()
+            requestSort(heading.key)
+          }
+        }}
       >
         <span className="sort-label-text">{heading.label}</span>
         <span className="nhsuk-u-visually-hidden">
@@ -366,7 +366,6 @@ const PrescriptionsListTable = ({
       data-testid="eps-prescription-table-container"
     >
       <Table
-        responsive
         className="eps-prescription-table"
         data-testid={`${textContent.testid}-prescriptions-results-table`}
       >

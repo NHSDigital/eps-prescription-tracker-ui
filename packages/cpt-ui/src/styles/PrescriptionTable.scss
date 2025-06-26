@@ -14,6 +14,52 @@
   font-family: Frutiger W01, Arial, Sans-serif;
 }
 
+// Override NHS UK Table component styles for headers
+.eps-prescription-table th,
+.eps-prescription-table .nhsuk-table__cell[role="columnheader"] {
+  position: sticky !important;
+  top: 0 !important;
+  padding: 1.25rem 1rem !important;
+  text-align: left !important;
+  font-weight: 700 !important;
+  font-size: 1.1rem !important;
+  border-bottom: 2px solid #b1b4b6 !important;
+  white-space: nowrap !important;
+  vertical-align: top !important;
+  height: 5rem !important; 
+  max-height: 5rem !important;
+  background-color: #fff !important;
+  z-index: 1 !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+}
+
+
+// Override NHS UK Table component styles for data cells
+.eps-prescription-table td,
+.eps-prescription-table .nhsuk-table__cell:not([role="columnheader"]) {
+  padding: 1rem !important;
+  text-align: left !important;
+  border-bottom: 1px solid #b1b4b6 !important;
+  color: #0b0c0c !important;
+  vertical-align: top !important;
+  word-wrap: break-word;
+  white-space: normal;
+}
+
+// Table footer styling
+.eps-prescription-table tfoot td,
+.eps-prescription-table .eps-prescription-table-summary-row {
+  font-size: inherit !important;
+  border-bottom: none !important;
+  border-top: 2px solid #b1b4b6 !important;
+  padding: 1rem !important;
+  text-align: left !important;
+  color: #0b0c0c !important;
+  background-color: #f8f8f8 !important;
+  font-weight: 600 !important;
+}
+
 .eps-prescription-table th.active-header .eps-prescription-table-sort-text {
   color: #000 !important;
   border: 0;
@@ -40,11 +86,29 @@
   -ms-user-select: none;
 }
 
+.eps-prescription-table-sort-text {
+  border-bottom: 2px solid #00000000;
+  color: #005ea5;
+  font-size: 1.2rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  text-align: left;
+  gap: 0.25rem;
+  width: auto;
+  white-space: nowrap;
+  padding: 0.5rem;
+  margin: -0.5rem; 
+  border-radius: 4px; 
+  transition: background-color 0.2s ease;
+}
+
 .eps-prescription-table-sort-text:focus {
   outline: none;
-  color: #000;
+  color: #000 !important;
   border: 0;
-  background-color: #ffdd00;
+  background-color: #ffdd00 !important;
   border-bottom: 2px solid #000;
   border-radius: 5px;
   box-shadow: 0 -2px #ffdd00, 0 4px #0b0c0c;
@@ -52,11 +116,11 @@
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
+  box-sizing: border-box; 
 }
 
-.eps-prescription-table th, .eps-prescription-table td {
-  word-wrap: break-word;
-  white-space: normal;
+.eps-prescription-table-sort-text:hover {
+  background-color: #f0f4f8;
 }
 
 // Specific cell styling overrides
@@ -82,34 +146,13 @@
   max-width: 12rem !important;
 }
 
-.eps-prescription-table .eps-prescription-table-summary-row {
-  font-size: inherit !important;
-  border-bottom: none !important;
-  padding: 1rem !important;
-  text-align: left !important;
-  color: #0b0c0c !important;
-}
-
-.eps-prescription-table-sort-text {
-  color: #005ea5;
-  font-size: 1.2rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  text-align: left;
-  gap: 0.25rem;
-  width: auto;
-  white-space: nowrap; /* Keep all sort text on one line initially */
-}
-
 .eps-prescription-table-sort-text.issueDate,
 .eps-prescription-table-sort-text.statusCode {
   white-space: nowrap;
 }
 
 /* Target the prescriptionId header text to wrap at a specific width */
-@media (max-width: 900px) { /* Adjust this pixel value as needed */
+@media (max-width: 900px) {
   .eps-prescription-table-sort-text.prescriptionId {
     white-space: normal;
   }
@@ -178,6 +221,17 @@
 
 @media (max-width: 1024px) {
   .eps-prescription-table th,
+  .eps-prescription-table .nhsuk-table__cell[role="columnheader"] {
+    padding: 0.8rem 0.5rem 1.3rem 0.5rem !important; /* Maintain extra bottom padding */
+    min-height: 4rem !important;
+  }
+
+  .eps-prescription-table td,
+  .eps-prescription-table .nhsuk-table__cell:not([role="columnheader"]) {
+    padding: 0.8rem 0.5rem !important;
+  }
+
+  .eps-prescription-table th,
   .eps-prescription-table td,
   .eps-prescription-table-sort-text {
     font-size: 1rem !important;
@@ -186,15 +240,20 @@
   .narrow-cancellation-column {
     width: 9rem !important;
   }
-
-  .eps-prescription-table th,
-  .eps-prescription-table td,
-  .eps-prescription-table .nhsuk-table__cell {
-    padding: 0.8rem 0.5rem !important;
-  }
 }
 
 @media (max-width: 768px) {
+  .eps-prescription-table th,
+  .eps-prescription-table .nhsuk-table__cell[role="columnheader"] {
+    padding: 0.8rem 0.5rem 1.3rem 0.5rem !important;
+    min-height: 3.5rem !important;
+  }
+
+  .eps-prescription-table td,
+  .eps-prescription-table .nhsuk-table__cell:not([role="columnheader"]) {
+    padding: 0.8rem 0.5rem !important;
+  }
+
   .eps-prescription-table th,
   .eps-prescription-table td,
   .eps-prescription-table-sort-text {
@@ -204,24 +263,23 @@
   .narrow-cancellation-column {
     width: 8rem !important;
   }
-
-  .eps-prescription-table th,
-  .eps-prescription-table td,
-  .eps-prescription-table .nhsuk-table__cell {
-    padding: 0.8rem 0.5rem !important;
-  }
 }
 
 @media (max-width: 480px) {
   .eps-prescription-table th,
+  .eps-prescription-table .nhsuk-table__cell[role="columnheader"] {
+    padding: 0.5rem 0.25rem 1rem 0.25rem !important;
+    min-height: 3rem !important;
+  }
+
   .eps-prescription-table td,
-  .eps-prescription-table-sort-text {
-    font-size: 0.85rem !important;
+  .eps-prescription-table .nhsuk-table__cell:not([role="columnheader"]) {
+    padding: 0.5rem 0.25rem !important;
   }
 
   .eps-prescription-table th,
   .eps-prescription-table td,
-  .eps-prescription-table .nhsuk-table__cell {
-    padding: 0.5rem 0.25rem !important;
+  .eps-prescription-table-sort-text {
+    font-size: 0.85rem !important;
   }
 }
