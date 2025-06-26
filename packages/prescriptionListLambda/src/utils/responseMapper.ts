@@ -40,10 +40,10 @@ const extractFallbackPatientDetails = (prescriptions: Array<PrescriptionAPIRespo
   // Return complete PatientDetails with fallback values
   return {
     nhsNumber: firstPrescription.nhsNumber?.toString() || "",
-    given: firstPrescription.given || "",
-    family: firstPrescription.family || "",
-    prefix: firstPrescription.prefix || "",
-    suffix: firstPrescription.suffix || "",
+    given: firstPrescription.given ?? "",
+    family: firstPrescription.family ?? "",
+    prefix: firstPrescription.prefix ?? "",
+    suffix: firstPrescription.suffix ?? "",
     gender: null,
     dateOfBirth: null,
     address: null
@@ -144,13 +144,13 @@ export const extractPatientNameField = (
 
   switch (field) {
     case "given":
-      return name.given?.join(" ") || ""
+      return name.given?.join(" ") ?? ""
     case "family":
-      return name.family || ""
+      return name.family ?? ""
     case "prefix":
-      return name.prefix?.join(" ") || ""
+      return name.prefix?.join(" ") ?? ""
     case "suffix":
-      return name.suffix?.join(" ") || ""
+      return name.suffix?.join(" ") ?? ""
     default:
       return ""
   }
