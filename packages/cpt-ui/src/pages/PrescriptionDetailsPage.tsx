@@ -31,6 +31,7 @@ import {MessageHistoryCard} from "@/components/prescriptionDetails/MessageHistor
 import http from "@/helpers/axios"
 import {logger} from "@/helpers/logger"
 import {useSearchContext} from "@/context/SearchProvider"
+import {buildBackLink, determineSearchType} from "@/helpers/prescriptionNotFoundLinks"
 
 export default function PrescriptionDetailsPage() {
 
@@ -47,6 +48,9 @@ export default function PrescriptionDetailsPage() {
   const [messageHistory, setMessageHistory] = useState<Array<MessageHistory>>([])
   const searchContext = useSearchContext()
   const navigate = useNavigate()
+
+  const searchType = determineSearchType(searchContext)
+  const backLinkUrl = buildBackLink(searchType)
 
   const getPrescriptionDetails = async (
     prescriptionId: string,
@@ -149,7 +153,7 @@ export default function PrescriptionDetailsPage() {
             <BackLink
               data-testid="go-back-link"
               asElement={Link}
-              to={`${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}`}
+              to={backLinkUrl}
             >
               {STRINGS.GO_BACK}
             </BackLink>

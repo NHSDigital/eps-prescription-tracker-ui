@@ -107,7 +107,7 @@ describe("PrescriptionNotFoundMessage", () => {
 
   it("renders the back link with correct text for basic details search", () => {
     setupRouter()
-    const link = screen.getByTestId("presc-not-found-backlink")
+    const link = screen.getByTestId("go-back-link")
     expect(link).toHaveTextContent(STRINGS.goBackLink)
     expect(link.getAttribute("href")).toContain(FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS)
   })
@@ -145,7 +145,7 @@ describe("PrescriptionNotFoundMessage", () => {
     setupRouter({
       nhsNumber: "9912003071"
     })
-    const link = screen.getByTestId("presc-not-found-backlink")
+    const link = screen.getByTestId("go-back-link")
     expect(link.getAttribute("href")).toContain(FRONTEND_PATHS.SEARCH_BY_NHS_NUMBER)
 
     const querySummary = screen.getByTestId("query-summary")
@@ -158,7 +158,7 @@ describe("PrescriptionNotFoundMessage", () => {
 
   it("renders correct navigation and content for Prescription ID search", () => {
     setupRouter({prescriptionId: "9000000001"})
-    const link = screen.getByTestId("presc-not-found-backlink")
+    const link = screen.getByTestId("go-back-link")
     expect(link.getAttribute("href")).toContain(FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS)
 
     const querySummary = screen.getByTestId("query-summary")

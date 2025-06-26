@@ -12,10 +12,13 @@ import {SearchResultsPageStrings} from "@/constants/ui-strings/BasicDetailsSearc
 import {API_ENDPOINTS, FRONTEND_PATHS} from "@/constants/environment"
 import {PatientSummary} from "@cpt-ui-common/common-types/src"
 import http from "@/helpers/axios"
+import {logger} from "@/helpers/logger"
+
 import EpsSpinner from "@/components/EpsSpinner"
 import PatientNotFoundMessage from "@/components/PatientNotFoundMessage"
 import SearchResultsTooManyMessage from "@/components/SearchResultsTooManyMessage"
 import {useSearchContext} from "@/context/SearchProvider"
+import UnknownErrorMessage from "@/components/UnknownErrorMessage"
 
 export default function SearchResultsPage() {
   const location = useLocation()
@@ -23,42 +26,49 @@ export default function SearchResultsPage() {
   const [loading, setLoading] = useState(true)
   const [patients, setPatients] = useState<Array<PatientSummary>>([])
   const searchContext = useSearchContext()
+  const [error, setError] = useState(false)
 
   useEffect(() => {
     getSearchResults()
   }, [])
 
   const getSearchResults = async () => {
+    try{
     // Attempt to fetch live search results from the API
-    const response = await http.get(API_ENDPOINTS.PATIENT_SEARCH, {
-      params: {
-        familyName: searchContext.lastName,
-        dateOfBirth: `${searchContext.dobYear}-${searchContext.dobMonth}-${searchContext.dobDay}`,
-        postcode: searchContext.postcode,
-        givenName: searchContext.firstName ?? undefined
+      const response = await http.get(API_ENDPOINTS.PATIENT_SEARCH, {
+        params: {
+          familyName: searchContext.lastName,
+          dateOfBirth: `${searchContext.dobYear}-${searchContext.dobMonth}-${searchContext.dobDay}`,
+          postcode: searchContext.postcode,
+          givenName: searchContext.firstName ?? undefined
+        }
+      })
+
+      // Validate HTTP response status
+      if (response.status !== 200) {
+        throw new Error(`Status Code: ${response.status}`)
       }
-    })
 
-    // Validate HTTP response status
-    if (response.status !== 200) {
-      throw new Error(`Status Code: ${response.status}`)
+      // Assign response payload or throw if none received
+      const payload: Array<PatientSummary> = response.data
+      if (!payload) {
+        throw new Error("No payload received from the API")
+      }
+
+      if (payload.length === 1) {
+        searchContext.clearSearchParameters()
+        searchContext.setNhsNumber(payload[0].nhsNumber)
+        navigate(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT)
+        return
+      }
+
+      setPatients(payload)
+      setLoading(false)
+    } catch (err) {
+      logger.error("Error loading search results:", err)
+      setLoading(false)
+      setError(true)
     }
-
-    // Assign response payload or throw if none received
-    const payload: Array<PatientSummary> = response.data
-    if (!payload) {
-      throw new Error("No payload received from the API")
-    }
-
-    if (payload.length === 1) {
-      searchContext.clearSearchParameters()
-      searchContext.setNhsNumber(payload[0].nhsNumber)
-      navigate(`${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}`)
-      return
-    }
-
-    setPatients(payload)
-    setLoading(false)
   }
 
   const handleRowClick = (nhsNumber: string) => {
@@ -90,6 +100,10 @@ export default function SearchResultsPage() {
         </Container>
       </main>
     )
+  }
+
+  if (error) {
+    return <UnknownErrorMessage />
   }
 
   // Show not found message if no valid patients

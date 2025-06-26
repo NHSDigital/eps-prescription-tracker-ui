@@ -349,4 +349,22 @@ describe("BasicDetailsSearchResultsPage", () => {
       expect(visuallyHiddenNhs).toHaveClass("nhsuk-u-visually-hidden")
     })
   })
+
+  it("renders the unknown error message when the API call fails", async () => {
+    (http.get as jest.Mock).mockRejectedValue(new Error("Something went wrong"))
+
+    render(
+      <MemoryRouter>
+        <AuthContext.Provider value={mockAuthContext}>
+          <BasicDetailsSearchResultsPage />
+        </AuthContext.Provider>
+      </MemoryRouter>
+    )
+
+    await waitFor(() => {
+      expect(screen.getByTestId("unknown-error-message")).toBeInTheDocument()
+      expect(screen.getByTestId("unknown-error-heading"))
+        .toHaveTextContent("Sorry, there is a problem with this service")
+    })
+  })
 })
