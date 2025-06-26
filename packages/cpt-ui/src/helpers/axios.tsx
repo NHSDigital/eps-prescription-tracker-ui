@@ -59,6 +59,12 @@ http.interceptors.response.use(
           "x-request-id": config.headers[x_request_id_header],
           "x-correlation-id": config.headers[x_correlation_id_header]
         }
+
+        // Let the component handle 404 error
+        if (response.status === 404) {
+          return Promise.reject(error)
+        }
+
         // get retry count from the header
         let retryCount = parseInt(config.headers?.[x_retry_header] ?? "0")
 
