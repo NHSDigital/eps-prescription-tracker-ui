@@ -4,14 +4,29 @@ import React from "react"
 import "@testing-library/jest-dom"
 import {render, screen, waitFor} from "@testing-library/react"
 
-import {PatientDetails} from "@cpt-ui-common/common-types"
+import PatientDetailsBanner from "@/components/PatientDetailsBanner"
+
+import {PatientDetails, PatientDetailsAddress} from "@cpt-ui-common/common-types"
 
 import {STRINGS} from "@/constants/ui-strings/PatientDetailsBannerStrings"
 
 import {MockPatientDetailsProvider} from "../__mocks__/MockPatientDetailsProvider"
 
-// Example patient data
-const completeDetails: PatientDetails = {
+// Shared address mocks
+const fullAddress: PatientDetailsAddress = {
+  line1: "55 Oak Street",
+  line2: "OAK LANE",
+  city: "Leeds",
+  postcode: "LS1 1XX"
+}
+
+const partialAddress: PatientDetailsAddress = {
+  line1: "55 Oak Street",
+  city: "Leeds"
+}
+
+// Base patient template
+const basePatient: PatientDetails = {
   nhsNumber: "5900009890",
   prefix: "Mr",
   suffix: "",
@@ -19,48 +34,22 @@ const completeDetails: PatientDetails = {
   family: "Wolderton",
   gender: "male",
   dateOfBirth: "01-Nov-1988",
-  address: "55 OAK STREET, OAK LANE, Leeds, LS1 1XX"
+  address: fullAddress
 }
 
-const minimumDetails: PatientDetails = {
-  nhsNumber: "5900009890",
-  prefix: "Mr",
-  suffix: "",
-  given: "William",
-  family: "Wolderton",
+const completeDetails = basePatient
+
+const minimumDetails = {
+  ...basePatient,
   gender: null,
   dateOfBirth: null,
   address: null
 }
 
-const partialAddressDetails: PatientDetails = {
-  nhsNumber: "5900009890",
-  prefix: "Mr",
-  suffix: "",
-  given: "William",
-  family: "Wolderton",
-  gender: "male",
-  dateOfBirth: "01-Nov-1988",
-  address: "55 Oak Street, Leeds"
+const partialAddressDetails = {
+  ...basePatient,
+  address: partialAddress
 }
-
-const completeDetailsWithAddressObject: PatientDetails = {
-  nhsNumber: "5900009890",
-  prefix: "Mr",
-  suffix: "",
-  given: "William",
-  family: "Wolderton",
-  gender: "male",
-  dateOfBirth: "01-Nov-1988",
-  address: {
-    line1: "55 OAK STREET",
-    line2: "OAK LANE",
-    city:  "Leeds",
-    postcode: "LS1 1XX"
-  }
-}
-
-import PatientDetailsBanner from "@/components/PatientDetailsBanner"
 
 describe("PatientDetailsBanner", () => {
   beforeEach(() => {
@@ -188,7 +177,7 @@ describe("PatientDetailsBanner", () => {
 
   it("renders complete patient details correctly when address is an object", async () => {
     render(
-      <MockPatientDetailsProvider patientDetails={completeDetailsWithAddressObject}>
+      <MockPatientDetailsProvider patientDetails={completeDetails}>
         <PatientDetailsBanner />
       </MockPatientDetailsProvider>
     )
@@ -226,4 +215,35 @@ describe("PatientDetailsBanner", () => {
     expect(bannerDiv.className).not.toMatch(/patient-details-partial-data/)
   })
 
+  it("renders patient details when address is a plain string", async () => {
+    const patientWithStringAddress = {
+      ...basePatient,
+      address: "10 Heathfield, Leeds, LS12 3AB"
+    }
+
+    render(
+      <MockPatientDetailsProvider patientDetails={patientWithStringAddress}>
+        <PatientDetailsBanner />
+      </MockPatientDetailsProvider>
+    )
+
+    await waitFor(() => {
+      expect(screen.getByTestId("patient-details-banner")).toBeInTheDocument()
+    })
+
+    // Basic field checks
+    expect(screen.getByText("William WOLDERTON")).toBeInTheDocument()
+    expect(screen.getByText(new RegExp(`${STRINGS.GENDER}:\\s*Male`, "i"))).toBeInTheDocument()
+    expect(screen.getByText(new RegExp(`${STRINGS.NHS_NUMBER}:\\s*590 000 9890`, "i"))).toBeInTheDocument()
+    expect(screen.getByText(new RegExp(`${STRINGS.DOB}:\\s*01-Nov-1988`, "i"))).toBeInTheDocument()
+
+    // Address string check
+    expect(screen.getByText(new RegExp(`${STRINGS.ADDRESS}:\\s*10 Heathfield, Leeds, LS12 3AB`, "i")))
+      .toBeInTheDocument()
+
+    // Ensure no partial or missing data message
+    expect(screen.queryByText(STRINGS.MISSING_DATA)).toBeNull()
+    const bannerDiv = screen.getByTestId("patient-details-banner")
+    expect(bannerDiv.className).not.toMatch(/patient-details-partial-data/)
+  })
 })
