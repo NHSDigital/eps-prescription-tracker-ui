@@ -187,8 +187,8 @@ export const mapResponseToPrescriptionSummary = (
   bundle: Bundle
 ): Array<PrescriptionAPIResponse> => {
   const nhsNumber = Number(extractNhsNumber(bundle))
-  const givenName = extractPatientNameField(bundle, "given")
-  const familyName = extractPatientNameField(bundle, "family")
+  const given = extractPatientNameField(bundle, "given")
+  const family = extractPatientNameField(bundle, "family")
   const prefix = extractPatientNameField(bundle, "prefix")
   const suffix = extractPatientNameField(bundle, "suffix")
 
@@ -246,8 +246,8 @@ export const mapResponseToPrescriptionSummary = (
         maxRepeats,
         issueNumber,
         nhsNumber,
-        givenName,
-        familyName,
+        given,
+        family,
         suffix,
         prefix
       }
