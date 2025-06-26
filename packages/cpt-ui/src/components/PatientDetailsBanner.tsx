@@ -60,13 +60,13 @@ export default function PatientDetailsBanner() {
 
     if (patientDetails.address) {
       if (typeof patientDetails.address === "string") {
+        // If it's a string, use it directly
         setAddressText(patientDetails.address as string)
       } else {
-        const address = patientDetails.address.line1 + ", " +
-          patientDetails.address.line2 + ", " +
-          patientDetails.address.city + ", " +
-          patientDetails.address.postcode
-        setAddressText(address)
+        // If it's an object, build from fields
+        const {line1, line2, city, postcode} = patientDetails.address
+        const fullAddress = [line1, line2, city, postcode].filter(Boolean).join(", ")
+        setAddressText(fullAddress)
       }
     } else {
       setAddressText(STRINGS.UNKNOWN)
