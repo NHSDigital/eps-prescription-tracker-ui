@@ -79,7 +79,7 @@ export default function PrescriptionListPage() {
         })
 
         logger.info("Response status", {status: response.status})
-        if ((response.status === 404)) {
+        if (response.status === 404) {
           logger.error("No search results were returned")
           setShowNotFound(true)
           setLoading(false)
