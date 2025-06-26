@@ -356,7 +356,9 @@ describe("BasicDetailsSearchResultsPage", () => {
     render(
       <MemoryRouter>
         <AuthContext.Provider value={mockAuthContext}>
-          <BasicDetailsSearchResultsPage />
+          <SearchContext.Provider value={defaultSearchState}>
+            <BasicDetailsSearchResultsPage />
+          </SearchContext.Provider>
         </AuthContext.Provider>
       </MemoryRouter>
     )

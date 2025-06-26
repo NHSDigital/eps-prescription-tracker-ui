@@ -156,8 +156,6 @@ describe("NhsNumSearch", () => {
     await userEvent.type(screen.getByTestId("nhs-number-input"), "923 373 9112")
     await userEvent.click(screen.getByTestId("find-patient-button"))
 
-    expect(mockNavigate).toHaveBeenCalledWith(
-      `${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}?nhsNumber=9233739112`
-    )
+    expect(mockNavigate).toHaveBeenCalledWith(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT )
   })
 })
