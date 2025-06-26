@@ -49,7 +49,7 @@ export class CloudfrontBehaviors extends Construct{
     // Resources
 
     const keyValueStore = new KeyValueStore(this, "FunctionsStore", {
-      keyValueStoreName: `${props.serviceName}-KeyValueStore`,
+      comment: `${props.serviceName}-KeyValueStore`,
       source: ImportSource.fromInline(JSON.stringify({data: [
         {
           key: "404_rewrite",
@@ -74,14 +74,6 @@ export class CloudfrontBehaviors extends Construct{
         {
           key: "jwks_rewrite",
           value: "jwks.json"
-        },
-        {
-          key: "auth_demo_version",
-          value: "auth_demo"
-        },
-        {
-          key: "auth_demo_basePath",
-          value: "/auth_demo"
         }
       ]}))
     })
@@ -186,26 +178,6 @@ export class CloudfrontBehaviors extends Construct{
     on how many can be created simultaneously */
     s3JwksUriRewriteFunction.node.addDependency(oauth2GatewayStripPathFunction)
 
-    // eslint-disable-next-line max-len
-    const authDemoStaticContentUriRewriteFunction = new CloudfrontFunction(this, "authDemoStaticContentUriRewriteFunction", {
-      functionName: `${props.serviceName}-authDemoStaticContentUriRewriteFunction`,
-      sourceFileName: "s3StaticContentUriRewrite.js",
-      keyValueStore: keyValueStore,
-      codeReplacements: [
-        {
-          valueToReplace: "BASEPATH_PLACEHOLDER",
-          replacementValue: "auth_demo_basePath"
-        },
-        {
-          valueToReplace: "VERSION_PLACEHOLDER",
-          replacementValue: "auth_demo_version"
-        }
-      ]
-    })
-    /* Add dependency on previous function to force them to build one by one to avoid aws limits
-    on how many can be created simultaneously */
-    authDemoStaticContentUriRewriteFunction.node.addDependency(s3JwksUriRewriteFunction)
-
     const additionalBehaviors = {
       "/site*": {
         origin: props.staticContentBucketOrigin,
@@ -259,19 +231,6 @@ export class CloudfrontBehaviors extends Construct{
         ],
         responseHeadersPolicy: this.responseHeadersPolicy
       },
-      "/auth_demo/*": {
-        origin: props.staticContentBucketOrigin,
-        allowedMethods: AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
-        viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-        functionAssociations: [
-          {
-            function: authDemoStaticContentUriRewriteFunction.function,
-            eventType: FunctionEventType.VIEWER_REQUEST
-          }
-        ],
-        responseHeadersPolicy: this.responseHeadersPolicy
-      },
-
       "/500.html": { // matches exactly <url>/500.html and will only serve the 500.html page (via cf function)
         origin: props.staticContentBucketOrigin,
         allowedMethods: AllowedMethods.ALLOW_GET_HEAD_OPTIONS,

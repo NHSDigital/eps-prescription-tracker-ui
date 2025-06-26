@@ -16,6 +16,8 @@ import EpsSpinner from "@/components/EpsSpinner"
 import {RoleDetails} from "@cpt-ui-common/common-types"
 import {Button} from "./ReactRouterButton"
 import {FRONTEND_PATHS} from "@/constants/environment"
+import {getSearchParams} from "@/helpers/getSearchParams"
+import {logger} from "@/helpers/logger"
 
 // This is passed to the EPS card component.
 export type RolesWithAccessProps = {
@@ -106,14 +108,22 @@ export default function RoleSelectionPage({
       odsCode: role.org_code || noODSCode
     })))
 
-    console.warn("RoleCardPropsWithAccess length: ", {roleCardPropsWithAccess, error: auth.error})
+    logger.warn("RoleCardPropsWithAccess length: ", {roleCardPropsWithAccess, error: auth.error})
   }, [auth.rolesWithAccess, auth.rolesWithoutAccess])
 
   // Handle auto-redirect for single role
   useEffect(() => {
     if (auth.isSigningIn) {
-      redirecting.current = true
-      return
+      const {codeParams, stateParams} = getSearchParams(window)
+      if (codeParams && stateParams) {
+        // we are in a redirect from login flow so carry on
+        redirecting.current = true
+        return
+      } else {
+        // something has gone wrong so go back to login
+        auth.clearAuthState()
+        navigate(FRONTEND_PATHS.LOGIN)
+      }
     } else {
       redirecting.current = false
     }

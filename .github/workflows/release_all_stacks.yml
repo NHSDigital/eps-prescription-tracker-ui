@@ -75,6 +75,18 @@ on:
       LOG_RETENTION_IN_DAYS:
         type: string
         required: true
+      CREATE_INT_RELEASE_NOTES:
+        type: boolean
+        default: false
+      CREATE_PROD_RELEASE_NOTES:
+        type: boolean
+        default: false
+      MARK_JIRA_RELEASED:
+        type: boolean
+        default: false
+      CREATE_INT_RC_RELEASE_NOTES:
+        type: boolean
+        default: false
 jobs:
   release_all_code:
     runs-on: ubuntu-22.04
@@ -90,6 +102,18 @@ jobs:
           fetch-depth: 0
           sparse-checkout: |
             .github
+
+      - name: create_int_rc_release_notes
+        uses: ./.github/actions/update_confluence_jira
+        if: ${{ inputs.CREATE_INT_RC_RELEASE_NOTES == true }}
+        with:
+          TARGET_ENVIRONMENT: int
+          RELEASE_TAG: ${{ inputs.VERSION_NUMBER }}
+          CONFLUENCE_PAGE_ID: "899319592"
+          CREATE_RC_RELEASE_NOTES: true
+          DEV_CLOUD_FORMATION_CHECK_VERSION_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_CHECK_VERSION_ROLE }}
+          TARGET_CLOUD_FORMATION_CHECK_VERSION_ROLE: ${{ secrets.INT_CLOUD_FORMATION_CHECK_VERSION_ROLE }}
+          DEV_CLOUD_FORMATION_EXECUTE_LAMBDA_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_EXECUTE_LAMBDA_ROLE }}
       - name: Configure AWS Credentials
         id: connect_aws_pull_image
         uses: aws-actions/configure-aws-credentials@v4
@@ -270,16 +294,6 @@ jobs:
           cd .build
           make react-build
 
-      - name: build auth_demo react app (temp step for testing)
-        run: |
-          export REACT_APP_hostedLoginDomain=${hostedLoginDomain}
-          export REACT_APP_userPoolClientId=${userPoolClientId}
-          export REACT_APP_userPoolId=${userPoolId}
-          export REACT_APP_redirectSignIn="https://${fullCloudfrontDomain}/auth_demo/"
-
-          cd .build
-          make auth_demo_build
-
       - name: deploy website
         run: |
           staticBucketName=$(aws cloudformation list-exports --query "Exports[?Name=='${{ inputs.SERVICE_NAME }}-stateful-resources:StaticContentBucket:Name'].Value" --output text)
@@ -289,11 +303,6 @@ jobs:
           aws s3 cp ".build/packages/staticContent/jwks/${{ inputs.TARGET_ENVIRONMENT }}/jwks.json" "s3://${staticBucketName}/jwks.json"
           aws s3 cp --recursive ".build/packages/cpt-ui/dist/" "s3://${staticBucketName}/${{ inputs.VERSION_NUMBER }}/"
           aws s3 cp  ".build/packages/cpt-ui/dist/assets/" "s3://${staticBucketName}/source_maps/${{ inputs.COMMIT_ID }}/site/assets/" --exclude "*" --include "*.map" --recursive
-
-      - name: deploy auth_demo website (temp for testing)
-        run: |
-          staticBucketName=$(aws cloudformation list-exports --query "Exports[?Name=='${{ inputs.SERVICE_NAME }}-stateful-resources:StaticContentBucket:Name'].Value" --output text)
-          aws s3 cp --recursive ".build/packages/auth_demo/build/" "s3://${staticBucketName}/auth_demo/"
 
       - name: fix cdk.json for deployment for stateless stack
         run: |
@@ -494,6 +503,36 @@ jobs:
           -e CDK_APP_PATH="packages/cdk/bin/StatefulResourcesApp.ts" \
           cdk-utils-build-repo:latest
         shell: bash
+
+      - name: create_int_release_notes
+        uses: ./.github/actions/update_confluence_jira
+        if: ${{ inputs.CREATE_INT_RELEASE_NOTES == true && always() && !failure() && !cancelled() }}
+        with:
+          TARGET_ENVIRONMENT: int
+          CONFLUENCE_PAGE_ID: "899319595"
+          CREATE_RC_RELEASE_NOTES: false
+          DEV_CLOUD_FORMATION_CHECK_VERSION_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_CHECK_VERSION_ROLE }}
+          TARGET_CLOUD_FORMATION_CHECK_VERSION_ROLE: ${{ secrets.INT_CLOUD_FORMATION_CHECK_VERSION_ROLE }}
+          DEV_CLOUD_FORMATION_EXECUTE_LAMBDA_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_EXECUTE_LAMBDA_ROLE }}
+
+      - name: create_prod_release_notes
+        uses: ./.github/actions/update_confluence_jira
+        if: ${{ inputs.CREATE_PROD_RELEASE_NOTES == true && always() && !failure() && !cancelled() }}
+        with:
+          TARGET_ENVIRONMENT: prod
+          CONFLUENCE_PAGE_ID: "899319597"
+          CREATE_RC_RELEASE_NOTES: false
+          DEV_CLOUD_FORMATION_CHECK_VERSION_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_CHECK_VERSION_ROLE }}
+          TARGET_CLOUD_FORMATION_CHECK_VERSION_ROLE: ${{ secrets.PROD_CLOUD_FORMATION_CHECK_VERSION_ROLE }}
+          DEV_CLOUD_FORMATION_EXECUTE_LAMBDA_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_EXECUTE_LAMBDA_ROLE }}
+
+      - name: mark_released_in_jira
+        uses: ./.github/actions/mark_jira_released
+        if: ${{ inputs.MARK_JIRA_RELEASED == true && always() && !failure() && !cancelled() }}
+        with:
+          RELEASE_TAG: ${{ inputs.VERSION_NUMBER }}
+          DEV_CLOUD_FORMATION_EXECUTE_LAMBDA_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_EXECUTE_LAMBDA_ROLE }}
+
 
   update_github_pages:
     runs-on: ubuntu-22.04

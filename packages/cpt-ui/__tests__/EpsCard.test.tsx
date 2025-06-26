@@ -57,6 +57,9 @@ jest.mock("@/constants/environment", () => ({
   API_ENDPOINTS: {
     TRACKER_USER_INFO: "/mock-endpoint",
     SELECTED_ROLE: "/mock-endpoint"
+  },
+  APP_CONFIG: {
+    REACT_LOG_LEVEL: "debug"
   }
 }))
 

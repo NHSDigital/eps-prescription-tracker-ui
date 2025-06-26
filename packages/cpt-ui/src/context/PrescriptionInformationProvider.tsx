@@ -10,6 +10,7 @@ import {useLocation} from "react-router-dom"
 import {normalizePath} from "@/helpers/utils"
 import {FRONTEND_PATHS} from "@/constants/environment"
 import {PrescriptionDetailsResponse} from "@cpt-ui-common/common-types"
+import {logger} from "@/helpers/logger"
 
 export type PrescriptionInformationContextType = {
   prescriptionInformation: PrescriptionDetailsResponse | undefined
@@ -27,7 +28,7 @@ export const PrescriptionInformationProvider = ({children}: {children: ReactNode
   ] = useState<PrescriptionDetailsResponse | undefined>(undefined)
 
   const clear = () => {
-    console.log("Clearing prescription information context...")
+    logger.info("Clearing prescription information context...")
     setPrescriptionInformation(undefined)
   }
 
@@ -38,7 +39,7 @@ export const PrescriptionInformationProvider = ({children}: {children: ReactNode
 
     const path = normalizePath(location.pathname)
     if (!prescriptionInfoAllowedPaths.includes(path)) {
-      console.info("Clearing prescription information.")
+      logger.info("Clearing prescription information.")
       clear()
     }
   }, [location.pathname])
