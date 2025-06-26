@@ -347,7 +347,7 @@ describe("PrescriptionsListTable", () => {
     jest.useRealTimers()
   })
 
-  it("renders unavailable text when status is 'completed' ie deleted", async () => {
+  it("renders unavailable text when prescription is deleted", async () => {
     jest.useFakeTimers()
 
     const deletedPrescription = {
