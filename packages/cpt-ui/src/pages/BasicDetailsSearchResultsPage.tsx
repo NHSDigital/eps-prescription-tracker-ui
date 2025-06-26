@@ -12,9 +12,12 @@ import {SearchResultsPageStrings} from "@/constants/ui-strings/BasicDetailsSearc
 import {API_ENDPOINTS, FRONTEND_PATHS} from "@/constants/environment"
 import {PatientSummary} from "@cpt-ui-common/common-types/src"
 import http from "@/helpers/axios"
+import {logger} from "@/helpers/logger"
+
 import EpsSpinner from "@/components/EpsSpinner"
 import PatientNotFoundMessage from "@/components/PatientNotFoundMessage"
 import SearchResultsTooManyMessage from "@/components/SearchResultsTooManyMessage"
+import UnknownErrorMessage from "@/components/UnknownErrorMessage"
 
 export default function SearchResultsPage() {
   const location = useLocation()
@@ -22,45 +25,52 @@ export default function SearchResultsPage() {
   const [searchParams] = useSearchParams()
   const [loading, setLoading] = useState(true)
   const [patients, setPatients] = useState<Array<PatientSummary>>([])
+  const [error, setError] = useState(false)
 
   useEffect(() => {
     getSearchResults()
   }, [])
 
   const getSearchResults = async () => {
+    try{
     // Attempt to fetch live search results from the API
-    const response = await http.get(API_ENDPOINTS.PATIENT_SEARCH, {
-      params: {
-        familyName: searchParams.get("lastName"),
-        dateOfBirth: `${searchParams.get("dobYear")}-${searchParams.get("dobMonth")}-${searchParams.get("dobDay")}`,
-        postcode: searchParams.get("postcode"),
-        givenName: searchParams.get("firstName") ?? undefined
+      const response = await http.get(API_ENDPOINTS.PATIENT_SEARCH, {
+        params: {
+          familyName: searchParams.get("lastName"),
+          dateOfBirth: `${searchParams.get("dobYear")}-${searchParams.get("dobMonth")}-${searchParams.get("dobDay")}`,
+          postcode: searchParams.get("postcode"),
+          givenName: searchParams.get("firstName") ?? undefined
+        }
+      })
+
+      // Validate HTTP response status
+      if (response.status !== 200) {
+        throw new Error(`Status Code: ${response.status}`)
       }
-    })
 
-    // Validate HTTP response status
-    if (response.status !== 200) {
-      throw new Error(`Status Code: ${response.status}`)
-    }
-
-    // Assign response payload or throw if none received
-    const payload: Array<PatientSummary> = response.data
-    if (!payload) {
-      throw new Error("No payload received from the API")
-    }
-
-    if (payload.length === 1) {
-      const baseParams = {
-        nhsNumber: payload[0].nhsNumber,
-        ...Object.fromEntries(searchParams.entries())
+      // Assign response payload or throw if none received
+      const payload: Array<PatientSummary> = response.data
+      if (!payload) {
+        throw new Error("No payload received from the API")
       }
-      const queryString = new URLSearchParams(baseParams).toString()
-      navigate(`${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}?${queryString}`)
-      return
-    }
 
-    setPatients(payload)
-    setLoading(false)
+      if (payload.length === 1) {
+        const baseParams = {
+          nhsNumber: payload[0].nhsNumber,
+          ...Object.fromEntries(searchParams.entries())
+        }
+        const queryString = new URLSearchParams(baseParams).toString()
+        navigate(`${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}?${queryString}`)
+        return
+      }
+
+      setPatients(payload)
+      setLoading(false)
+    } catch (err) {
+      logger.error("Error loading search results:", err)
+      setLoading(false)
+      setError(true)
+    }
   }
 
   const handleRowClick = (nhsNumber: string) => {
@@ -95,6 +105,10 @@ export default function SearchResultsPage() {
         </Container>
       </main>
     )
+  }
+
+  if (error) {
+    return <UnknownErrorMessage />
   }
 
   // Show not found message if no valid patients

@@ -58,9 +58,9 @@ describe("HTTP Axios Instance", () => {
   it("retries up to 3 times for mixed errors, then succeeds", async () => {
     mock
       .onGet("/test")
-      .replyOnce(404)
+      .replyOnce(401)
       .onGet("/test")
-      .replyOnce(502)
+      .replyOnce(500)
       .onGet("/test")
       .replyOnce(413)
       .onGet("/test")
