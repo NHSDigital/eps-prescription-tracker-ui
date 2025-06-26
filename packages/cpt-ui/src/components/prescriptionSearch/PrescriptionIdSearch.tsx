@@ -62,7 +62,7 @@ export default function PrescriptionIdSearch() {
   }
 
   // Form submit handler
-  const handlePrescriptionDetails = async (e: React.FormEvent) => {
+  const handlePrescriptionDetails = (e: React.FormEvent) => {
     e.preventDefault()
     const validationErrors = validatePrescriptionId(prescriptionId)
     const key = getHighestPriorityError(validationErrors)

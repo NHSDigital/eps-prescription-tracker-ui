@@ -67,6 +67,15 @@ export default function BasicDetailsSearch() {
     return () => document.removeEventListener("click", handler)
   }, [])
 
+  useEffect(() => {
+    setFirstName(searchContext.firstName ?? "")
+    setLastName(searchContext.lastName ?? "")
+    setDobDay(searchContext.dobDay ?? "")
+    setDobMonth(searchContext.dobMonth ?? "")
+    setDobYear(searchContext.dobYear ?? "")
+    setPostcode(searchContext.postcode ?? "")
+  }, [])
+
   // Returns true if the given DOB field had an error on the last submission.
   // Error styling persists until the user submits the form again.
   const hasDobFieldError = (field: "day" | "month" | "year"): boolean => {
