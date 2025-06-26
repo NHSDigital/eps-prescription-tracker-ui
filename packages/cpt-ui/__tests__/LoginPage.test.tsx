@@ -2,10 +2,17 @@ import "@testing-library/jest-dom"
 import {render, screen, waitFor} from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import React, {useState} from "react"
-import {BrowserRouter} from "react-router-dom"
+import {MemoryRouter, useNavigate} from "react-router-dom"
 import {AuthContext, type AuthContextType} from "@/context/AuthProvider"
-import type {SignInWithRedirectInput, JWT} from "@aws-amplify/auth"
 import LoginPage from "@/pages/LoginPage"
+
+jest.mock("react-router-dom", () => {
+  const actual = jest.requireActual("react-router-dom")
+  return {
+    ...actual,
+    useNavigate: jest.fn()
+  }
+})
 
 const mockCognitoSignIn = jest.fn()
 const mockCognitoSignOut = jest.fn()
@@ -32,6 +39,9 @@ jest.mock("@/constants/environment", () => ({
   },
   APP_CONFIG: {
     REACT_LOG_LEVEL: "debug"
+  },
+  FRONTEND_PATHS: {
+    SEARCH_BY_PRESCRIPTION_ID: "dummy_search_redirect"
   }
 }))
 
@@ -90,34 +100,11 @@ const MockAuthProvider = ({
   children: React.ReactNode;
   initialState?: AuthContextType;
 }) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [authState, setAuthState] = useState<AuthContextType>({
     ...initialState,
-    cognitoSignIn: async (input?: SignInWithRedirectInput) => {
-      mockCognitoSignIn(input)
-      // Simulate a sign-in update
-      setAuthState((prev) => ({
-        ...prev,
-        isSignedIn: true,
-
-        user: (input?.provider as { custom: string })?.custom || "mockUser",
-        error: null,
-        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-        idToken: {toString: () => "mockIdToken"} as JWT,
-        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-        accessToken: {toString: () => "mockAccessToken"} as JWT
-      }))
-    },
-    cognitoSignOut: async () => {
-      mockCognitoSignOut()
-      setAuthState((prev) => ({
-        ...prev,
-        isSignedIn: false,
-        user: null,
-        error: null,
-        idToken: null,
-        accessToken: null
-      }))
-    }
+    cognitoSignIn: mockCognitoSignIn,
+    cognitoSignOut: mockCognitoSignOut
   })
 
   return (
@@ -146,7 +133,7 @@ const renderWithProviders = (
 ) => {
   return render(
     <MockAuthProvider initialState={initialState}>
-      <BrowserRouter>{component}</BrowserRouter>
+      <MemoryRouter>{component}</MemoryRouter>
     </MockAuthProvider>
   )
 }
@@ -216,7 +203,7 @@ describe("LoginPage", () => {
     })
   })
 
-  it.skip("shows a spinner when not in a mock auth environment", async () => {
+  it("shows a spinner when not in a mock auth environment", async () => {
     // Get the mocked module
     const envModule = jest.requireMock("@/constants/environment")
 
@@ -241,5 +228,35 @@ describe("LoginPage", () => {
 
     const spinnerContainer = container.querySelector(".spinner-container")
     expect(spinnerContainer).toBeInTheDocument()
+    expect(mockCognitoSignIn).toHaveBeenCalled()
   })
+
+  it("redirects to search if logged in", async () => {
+    // Get the mocked module
+    const envModule = jest.requireMock("@/constants/environment")
+    const mockNavigate = jest.fn();
+    (useNavigate as jest.Mock).mockReturnValue(mockNavigate)
+
+    // Modify the environment config temporarily
+    envModule.ENV_CONFIG = {
+      ...envModule.ENV_CONFIG,
+      TARGET_ENVIRONMENT: "prod"
+    }
+
+    // Render the component with our providers
+    renderWithProviders(<LoginPage />, {
+      ...defaultAuthState,
+      isSignedIn: true,
+      user: "testUser"
+    })
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(/Redirecting to CIS2 login page/i)
+      ).toBeInTheDocument()
+    })
+
+    expect(mockNavigate).toHaveBeenCalledWith("dummy_search_redirect")
+  })
+
 })
