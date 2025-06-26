@@ -5,7 +5,6 @@ import {
   it,
   jest
 } from "@jest/globals"
-import {generateKeyPairSync} from "crypto"
 import nock from "nock"
 
 import {mockPdsPatient, mockPrescriptionBundle} from "./mockObjects"
@@ -13,35 +12,14 @@ import {mockPdsPatient, mockPrescriptionBundle} from "./mockObjects"
 const apigeePrescriptionsEndpoint = process.env.apigeePrescriptionsEndpoint as string ?? ""
 const apigeePersonalDemographicsEndpoint = process.env.apigeePersonalDemographicsEndpoint as string ?? ""
 
-const mockGetSecret = jest.fn()
-
-const {
-  privateKey
-} = generateKeyPairSync("rsa", {
-  modulusLength: 4096,
-  publicKeyEncoding: {
-    type: "spki",
-    format: "pem"
-  },
-  privateKeyEncoding: {
-    type: "pkcs8",
-    format: "pem"
-  }
-})
-
-jest.unstable_mockModule("@aws-lambda-powertools/parameters/secrets", () => {
-  const getSecret = mockGetSecret.mockImplementation(async () => {
-    return privateKey
-  })
-
-  return {
-    getSecret
-  }
-})
+// Needed to avoid issues with ESM imports in jest
+jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => ({
+  authParametersFromEnv: jest.fn(),
+  authenticationMiddleware: () => ({before: () => {}})
+}))
 
 // Import the handler after all mocks are set up
-const handlerModule = await import("../src/handler")
-const {handler} = handlerModule
+const {handler} = await import("../src/handler")
 
 // redefining readonly property of the performance object
 const dummyContext = {

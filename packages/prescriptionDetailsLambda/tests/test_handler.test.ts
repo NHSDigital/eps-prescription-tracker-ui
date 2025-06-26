@@ -20,6 +20,12 @@ jest.unstable_mockModule("../src/services/prescriptionService", () => {
   }
 })
 
+// Needed to avoid issues with ESM imports in jest
+jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => ({
+  authParametersFromEnv: jest.fn(),
+  authenticationMiddleware: () => ({before: () => {}})
+}))
+
 // Import the handler after the mocks have been defined.
 const {handler} = await import("../src/handler")
 
