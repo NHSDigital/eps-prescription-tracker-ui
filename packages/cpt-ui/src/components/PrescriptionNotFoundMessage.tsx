@@ -7,11 +7,11 @@ import {
   BackLink
 } from "nhsuk-react-components"
 import {SEARCH_STRINGS, STRINGS} from "@/constants/ui-strings/PrescriptionNotFoundMessageStrings"
-import {buildAltLink, buildBackLink, inferSearchType} from "@/helpers/prescriptionNotFoundLinks"
+import {buildAltLink, buildBackLink, determineSearchType} from "@/helpers/prescriptionNotFoundLinks"
 
 export default function PrescriptionNotFoundMessage() {
   const [searchParams] = useSearchParams()
-  const searchType = inferSearchType(searchParams)
+  const searchType = determineSearchType(searchParams)
   const content = SEARCH_STRINGS[searchType]
 
   /**
@@ -43,11 +43,11 @@ export default function PrescriptionNotFoundMessage() {
     return [
       <p key="first">{first}</p>,
       <p key="second">{parts}</p>,
-      ...rest.map((p, i) => <p key={i + 2}>{p}</p>)
+      ...rest.map((p: string, i: number) => <p key={i + 2}>{p}</p>)
     ]
   }
 
-  const backLinkUrl = buildBackLink({searchType, searchParams})
+  const backLinkUrl = buildBackLink(searchType, searchParams)
 
   return (
     <Container
@@ -56,7 +56,7 @@ export default function PrescriptionNotFoundMessage() {
     >
       <nav className="nhsuk-breadcrumb nhsuk-u-padding-bottom-0 nhsuk-u-padding-left-2" aria-label="Breadcrumb">
         <BackLink
-          data-testid="presc-not-found-backlink"
+          data-testid="go-back-link"
           asElement={Link}
           to={backLinkUrl}>
           {STRINGS.goBackLink}
