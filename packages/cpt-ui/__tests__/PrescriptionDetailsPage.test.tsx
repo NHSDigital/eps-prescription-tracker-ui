@@ -211,11 +211,11 @@ describe("PrescriptionDetailsPage", () => {
     expect(screen.getByTestId("eps-spinner")).toBeInTheDocument()
   })
 
-  it("does not navigate when prescriptionId is missing", async () => {
+  it("navigates to search page when prescriptionId is missing", async () => {
     renderComponent("", signedInAuthState)
 
     await waitFor(() => {
-      expect(mockNavigate).not.toHaveBeenCalled()
+      expect(mockNavigate).toHaveBeenCalledWith("/search-by-prescription-id")
     })
 
     // Verify that fallback UI renders

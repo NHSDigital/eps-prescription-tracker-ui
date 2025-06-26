@@ -1,5 +1,5 @@
 import {useEffect, useState} from "react"
-import {Link} from "react-router-dom"
+import {Link, useNavigate} from "react-router-dom"
 
 import {
   BackLink,
@@ -46,6 +46,7 @@ export default function PrescriptionDetailsPage() {
   const [dispensedItems, setDispensedItems] = useState<Array<DispensedItemDetails>>([])
   const [messageHistory, setMessageHistory] = useState<Array<MessageHistory>>([])
   const searchContext = useSearchContext()
+  const navigate = useNavigate()
 
   const getPrescriptionDetails = async (
     prescriptionId: string,
@@ -104,7 +105,8 @@ export default function PrescriptionDetailsPage() {
 
       const prescriptionId = searchContext.prescriptionId
       if (!prescriptionId) {
-        logger.error("No prescriptionId provided in query params.")
+        logger.error("No prescriptionId provided - redirecting to search")
+        navigate(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
         return
       }
       const prescriptionIssueNumber = searchContext.issueNumber
