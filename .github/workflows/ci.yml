@@ -99,7 +99,7 @@ jobs:
     uses: ./.github/workflows/release_all_stacks.yml
     with:
       SERVICE_NAME: cpt-ui
-      TARGET_ENVIRONMENT: dev
+      TARGET_ENVIRONMENT: qa
       VERSION_NUMBER: ${{needs.tag_release.outputs.version_tag}}
       COMMIT_ID: ${{needs.get_commit_id.outputs.commit_id}}
       useMockOidc: true
@@ -108,11 +108,11 @@ jobs:
       primaryOidcTokenEndpoint: "https://am.nhsint.auth-ptl.cis2.spineservices.nhs.uk:443/openam/oauth2/realms/root/realms/NHSIdentity/realms/Healthcare/access_token"
       primaryOidcUserInfoEndpoint: "https://am.nhsint.auth-ptl.cis2.spineservices.nhs.uk:443/openam/oauth2/realms/root/realms/NHSIdentity/realms/Healthcare/userinfo"
       primaryOidcjwksEndpoint: "https://am.nhsint.auth-ptl.cis2.spineservices.nhs.uk:443/openam/oauth2/realms/root/realms/NHSIdentity/realms/Healthcare/connect/jwk_uri"
-      mockOidcIssuer: "https://identity.ptl.api.platform.nhs.uk/realms/Cis2-mock-internal-dev"
-      mockOidcAuthorizeEndpoint: "https://internal-dev.api.service.nhs.uk/oauth2-mock/authorize"
-      mockOidcTokenEndpoint: "https://internal-dev.api.service.nhs.uk/oauth2-mock/token"
-      mockOidcUserInfoEndpoint: "https://internal-dev.api.service.nhs.uk/oauth2-mock/userinfo"
-      mockOidcjwksEndpoint: "https://identity.ptl.api.platform.nhs.uk/realms/Cis2-mock-internal-dev/protocol/openid-connect/certs"
+      mockOidcIssuer: "https://identity.ptl.api.platform.nhs.uk/realms/Cis2-mock-internal-qa"
+      mockOidcAuthorizeEndpoint: "https://internal-qa.api.service.nhs.uk/oauth2-mock/authorize"
+      mockOidcTokenEndpoint: "https://internal-qa.api.service.nhs.uk/oauth2-mock/token"
+      mockOidcUserInfoEndpoint: "https://internal-qa.api.service.nhs.uk/oauth2-mock/userinfo"
+      mockOidcjwksEndpoint: "https://identity.ptl.api.platform.nhs.uk/realms/Cis2-mock-internal-qa/protocol/openid-connect/certs"
       allowLocalhostAccess: false
       useCustomCognitoDomain: true
       APIGEE_CIS2_TOKEN_ENDPOINT: "https://internal-qa.api.service.nhs.uk/oauth2-int/token"
@@ -128,10 +128,6 @@ jobs:
       ROUTE53_EXPORT_NAME: EPS
       REACT_LOG_LEVEL: "debug"
       LOG_RETENTION_IN_DAYS: 30
-      CREATE_INT_RELEASE_NOTES: true
-      CREATE_PROD_RELEASE_NOTES: true
-      MARK_JIRA_RELEASED: false
-      CREATE_INT_RC_RELEASE_NOTES: false   
     secrets: inherit
   
   release_qa:
