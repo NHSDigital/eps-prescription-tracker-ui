@@ -347,7 +347,7 @@ const PrescriptionsListTable = ({
                         {row.prescriptionId}
                       </div>
                       <div>
-                        {!row.isDeleted ? (
+                        {row.isDeleted ? (
                           <span
                             data-testid={`unavailable-text-${row.prescriptionId}`}
                           >

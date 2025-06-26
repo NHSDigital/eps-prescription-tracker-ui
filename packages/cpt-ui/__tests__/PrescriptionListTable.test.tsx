@@ -350,9 +350,9 @@ describe("PrescriptionsListTable", () => {
   it("renders unavailable text when status is 'completed' ie deleted", async () => {
     jest.useFakeTimers()
 
-    const unavailablePrescription = {
+    const deletedPrescription = {
       prescriptionId: "51E09C-A83008-05DA33",
-      isDeleted: false,
+      isDeleted: true,
       statusCode: "0005",
       issueDate: "2025-06-01",
       prescriptionTreatmentType: TreatmentType.ACUTE,
@@ -365,7 +365,7 @@ describe("PrescriptionsListTable", () => {
     renderWithRouter(
       <PrescriptionsListTable
         textContent={textContent}
-        prescriptions={[unavailablePrescription]}
+        prescriptions={[deletedPrescription]}
       />
     )
 
