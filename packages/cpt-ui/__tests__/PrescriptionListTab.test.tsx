@@ -39,6 +39,7 @@ describe("PrescriptionsListTabs", () => {
   const currentPrescriptions: Array<PrescriptionSummary> = [
     {
       prescriptionId: "C0C757-A83008-C2D93O",
+      isDeleted: false,
       statusCode: "001",
       issueDate: "2025-03-01",
       prescriptionTreatmentType: TreatmentType.REPEAT,
@@ -49,6 +50,7 @@ describe("PrescriptionsListTabs", () => {
     },
     {
       prescriptionId: "209E3D-A83008-327F9F",
+      isDeleted: false,
       statusCode: "002",
       issueDate: "2025-03-02",
       prescriptionTreatmentType: TreatmentType.REPEAT,
@@ -62,6 +64,7 @@ describe("PrescriptionsListTabs", () => {
   const pastPrescriptions: Array<PrescriptionSummary> = [
     {
       prescriptionId: "RX003",
+      isDeleted: false,
       statusCode: "003",
       issueDate: "2025-01-01",
       prescriptionTreatmentType: TreatmentType.ACUTE,
@@ -75,6 +78,7 @@ describe("PrescriptionsListTabs", () => {
   const futurePrescriptions: Array<PrescriptionSummary> = [
     {
       prescriptionId: "RX004",
+      isDeleted: false,
       statusCode: "004",
       issueDate: "2025-04-01",
       prescriptionTreatmentType: TreatmentType.REPEAT,
@@ -85,6 +89,7 @@ describe("PrescriptionsListTabs", () => {
     },
     {
       prescriptionId: "RX005",
+      isDeleted: false,
       statusCode: "005",
       issueDate: "2025-04-02",
       prescriptionTreatmentType: TreatmentType.REPEAT,
@@ -95,6 +100,7 @@ describe("PrescriptionsListTabs", () => {
     },
     {
       prescriptionId: "RX006",
+      isDeleted: false,
       statusCode: "006",
       issueDate: "2025-04-03",
       prescriptionTreatmentType: TreatmentType.REPEAT,
