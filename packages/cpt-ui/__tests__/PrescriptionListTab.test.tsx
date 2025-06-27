@@ -3,7 +3,7 @@ import {render, screen} from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 
 import {
-  BrowserRouter,
+  MemoryRouter,
   Route,
   Routes,
   useLocation
@@ -129,11 +129,11 @@ describe("PrescriptionsListTabs", () => {
         pastPrescriptions={pastPrescriptions}
       />
     render(
-      <BrowserRouter>
+      <MemoryRouter>
         <Routes>
           <Route path="*" element={page} />
         </Routes>
-      </BrowserRouter>
+      </MemoryRouter>
     )
   })
 
@@ -158,8 +158,6 @@ describe("PrescriptionsListTabs", () => {
     // Click on the "Future" tab
     const futureTabHeader = screen.getByText("Future Prescriptions")
     await userEvent.click(futureTabHeader)
-
-    console.log(screen.debug())
 
     expect(screen.getByTestId(`eps-tab-heading ${tabData[1].link}`)).toHaveTextContent(
       tabData[1].title

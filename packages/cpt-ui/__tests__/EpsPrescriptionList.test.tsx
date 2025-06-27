@@ -5,13 +5,17 @@ import {render, screen, waitFor} from "@testing-library/react"
 import "@testing-library/jest-dom"
 
 import {PRESCRIPTION_LIST_PAGE_STRINGS} from "@/constants/ui-strings/PrescriptionListPageStrings"
+import {STRINGS} from "@/constants/ui-strings/PrescriptionNotFoundMessageStrings"
 import {FRONTEND_PATHS} from "@/constants/environment"
 
 import {PrescriptionStatus, SearchResponse, TreatmentType} from "@cpt-ui-common/common-types"
 
 import {MockPatientDetailsProvider} from "../__mocks__/MockPatientDetailsProvider"
 
+import {AxiosError, AxiosRequestHeaders} from "axios"
+
 import axios from "@/helpers/axios"
+import {logger} from "@/helpers/logger"
 jest.mock("@/helpers/axios")
 
 // Tell TypeScript that axios is a mocked version.
@@ -124,6 +128,16 @@ const mockSearchResponse: SearchResponse = {
   ]
 }
 
+const emptyResultsMock = {
+  status: 200,
+  data: {
+    patient: {},
+    currentPrescriptions: [],
+    pastPrescriptions: [],
+    futurePrescriptions: []
+  }
+}
+
 function Dummy404() {
   return (
     <main>
@@ -149,6 +163,30 @@ const renderWithRouter = (route: string, authState: AuthContextType = signedInAu
       </MockPatientDetailsProvider>
     </AuthContext.Provider>
   )
+}
+
+export function createAxiosError(status: number): AxiosError {
+  const axiosError = new Error("Mocked Axios error") as AxiosError
+
+  axiosError.isAxiosError = true
+  axiosError.config = {
+    url: "https://mock-api",
+    method: "get",
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+    headers: {} as AxiosRequestHeaders,
+    data: null
+  }
+
+  axiosError.response = {
+    status,
+    statusText: "",
+    headers: {},
+    config: axiosError.config,
+    data: {}
+  }
+
+  axiosError.toJSON = () => ({})
+  return axiosError
 }
 
 describe("PrescriptionListPage", () => {
@@ -244,7 +282,7 @@ describe("PrescriptionListPage", () => {
   })
 
   it("logs an error when no query parameters are present", async () => {
-    const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {})
+    const loggerErrorSpy = jest.spyOn(logger, "error").mockImplementation(() => {})
 
     mockedAxios.get.mockResolvedValue({
       status: 200,
@@ -254,10 +292,10 @@ describe("PrescriptionListPage", () => {
     renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT)
 
     await waitFor(() => {
-      expect(consoleErrorSpy).toHaveBeenCalledWith("No query parameter provided.")
+      expect(loggerErrorSpy).toHaveBeenCalledWith("No query parameter provided.")
     })
 
-    consoleErrorSpy.mockRestore()
+    loggerErrorSpy.mockRestore()
   })
 
   it("sets the back link to the prescription ID search when prescriptionId query parameter is present", async () => {
@@ -269,10 +307,12 @@ describe("PrescriptionListPage", () => {
     renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT + "?prescriptionId=ABC123-A83008-C2D93O")
     expect(mockedAxios.get).toHaveBeenCalledTimes(1)
 
-    // We need to wait for the useEffect to run
     await waitFor(() => {
-      const linkContainer = screen.getByTestId("go-back-link")
-      expect(linkContainer).toHaveAttribute("href", PRESCRIPTION_LIST_PAGE_STRINGS.PRESCRIPTION_ID_SEARCH_TARGET)
+      const backLink = screen.getByTestId("go-back-link")
+      expect(backLink).toHaveAttribute(
+        "href",
+        FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID + "?prescriptionId=ABC123-A83008-C2D93O"
+      )
     })
   })
 
@@ -284,14 +324,30 @@ describe("PrescriptionListPage", () => {
     renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT + "?nhsNumber=1234567890")
     expect(mockedAxios.get).toHaveBeenCalledTimes(1)
 
-    // We need to wait for the useEffect to run
     await waitFor(() => {
-      const linkContainer = screen.getByTestId("go-back-link")
-      expect(linkContainer).toHaveAttribute("href", PRESCRIPTION_LIST_PAGE_STRINGS.NHS_NUMBER_SEARCH_TARGET)
+      const backLink = screen.getByTestId("go-back-link")
+      expect(backLink).toHaveAttribute("href", FRONTEND_PATHS.SEARCH_BY_NHS_NUMBER + "?nhsNumber=1234567890")
     })
   })
 
-  it("renders the not found message when prescriptionId query returns no results", async () => {
+  it("sets back link to prescription list when both prescriptionId and nhsNumber are present", async () => {
+    mockedAxios.get.mockResolvedValue({
+      status: 200,
+      data: mockSearchResponse
+    })
+
+    const url = FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT + "?nhsNumber=1234567890&prescriptionId=ABC123-A83008-C2D93O"
+    renderWithRouter(url)
+
+    expect(mockedAxios.get).toHaveBeenCalledTimes(1)
+
+    await waitFor(() => {
+      const backLink = screen.getByTestId("go-back-link")
+      expect(backLink).toHaveAttribute("href", FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT + "?nhsNumber=1234567890")
+    })
+  })
+
+  it("renders the prescription not found message when prescriptionId query returns no results", async () => {
     const noResults: SearchResponse = {
       patient: mockSearchResponse.patient,
       currentPrescriptions: [],
@@ -313,27 +369,94 @@ describe("PrescriptionListPage", () => {
     })
   })
 
-  it("navigates back to the prescription ID search when prescriptionId query fails", async () => {
-    mockedAxios.get.mockRejectedValue(new Error("Server error"))
+  it("renders prescription not found message with back link to prescriptionId search when query fails", async () => {
+    mockedAxios.get.mockRejectedValue(createAxiosError(404))
 
     renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT + "?prescriptionId=002F5E-A83008-497F1Z")
     expect(mockedAxios.get).toHaveBeenCalledTimes(1)
 
     await waitFor(() => {
-      const dummyTag = screen.getByTestId("dummy-no-prescription-page")
-      expect(dummyTag).toBeInTheDocument()
+      const heading = screen.getByTestId("presc-not-found-heading")
+      expect(heading).toHaveTextContent(STRINGS.heading)
+
+      const backLink = screen.getByTestId("go-back-link")
+      expect(backLink).toHaveAttribute(
+        "href",
+        FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID + "?prescriptionId=002F5E-A83008-497F1Z"
+      )
     })
   })
 
-  it("navigates back to the NHS number search when nhsNumber query fails", async () => {
-    mockedAxios.get.mockRejectedValue(new Error("Server error"))
+  it("renders prescription not found message with back link to NHS number search when query fails", async () => {
+    mockedAxios.get.mockRejectedValue(createAxiosError(404))
 
-    renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT + "?nhsNumber=32165649870")
+    renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT + "?nhsNumber=3814272730")
     expect(mockedAxios.get).toHaveBeenCalledTimes(1)
 
     await waitFor(() => {
-      const dummyTag = screen.getByTestId("dummy-no-prescription-page")
-      expect(dummyTag).toBeInTheDocument()
+      const heading = screen.getByTestId("presc-not-found-heading")
+      expect(heading).toHaveTextContent(STRINGS.heading)
+
+      const backLink = screen.getByTestId("go-back-link")
+      expect(backLink).toHaveAttribute(
+        "href",
+        FRONTEND_PATHS.SEARCH_BY_NHS_NUMBER + "?nhsNumber=3814272730"
+      )
+    })
+  })
+
+  it("renders prescription not found message when API returns no prescriptions for a valid NHS number", async () => {
+    mockedAxios.get.mockResolvedValue(emptyResultsMock)
+
+    renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT + "?nhsNumber=1234567890")
+    expect(mockedAxios.get).toHaveBeenCalledTimes(1)
+
+    await waitFor(() => {
+      const heading = screen.getByTestId("presc-not-found-heading")
+      expect(heading).toHaveTextContent(STRINGS.heading)
+
+      const backLink = screen.getByTestId("go-back-link")
+      expect(backLink).toHaveAttribute(
+        "href",
+        FRONTEND_PATHS.SEARCH_BY_NHS_NUMBER + "?nhsNumber=1234567890"
+      )
+    })
+  })
+
+  it("renders not found message when API returns 404", async () => {
+    mockedAxios.get.mockRejectedValue({
+      isAxiosError: true,
+      response: {status: 404}
+    })
+
+    renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT + "?nhsNumber=1234567890")
+
+    await waitFor(() => {
+      expect(screen.getByTestId("presc-not-found-heading")).toHaveTextContent(STRINGS.heading)
+    })
+  })
+
+  it("displays UnknownErrorMessage for real network/server errors", async () => {
+    mockedAxios.get.mockRejectedValue(new Error("AWS CloudFront issue"))
+
+    renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT + "?nhsNumber=1234567890")
+
+    await waitFor(() => {
+      const heading = screen.getByTestId("unknown-error-heading")
+      expect(heading).toBeInTheDocument()
+      expect(heading).toHaveTextContent("Sorry, there is a problem with this service")
+    })
+  })
+
+  it("renders UnknownErrorMessage when server responds with unexpected error", async () => {
+    mockedAxios.get.mockRejectedValue({response: {status: 500}})
+
+    renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT + "?nhsNumber=1234567890")
+
+    await waitFor(() => {
+      const heading = screen.getByTestId("unknown-error-heading")
+      expect(heading).toBeInTheDocument()
+      expect(heading).toHaveTextContent("Sorry, there is a problem with this service")
     })
   })
 })

@@ -5,7 +5,7 @@ import {
   screen,
   act
 } from "@testing-library/react"
-import {BrowserRouter} from "react-router-dom"
+import {MemoryRouter} from "react-router-dom"
 
 import {Amplify} from "aws-amplify"
 import {Hub} from "aws-amplify/utils"
@@ -15,6 +15,7 @@ import {AuthContext, AuthProvider} from "@/context/AuthProvider"
 
 import axios from "@/helpers/axios"
 import {getTrackerUserInfo} from "@/helpers/userInfo"
+import {logger} from "@/helpers/logger"
 jest.mock("@/helpers/axios")
 
 const currentlySelectedRole = {
@@ -123,9 +124,9 @@ describe("AuthProvider", () => {
 
     await act(async () => {
       render(
-        <BrowserRouter>
+        <MemoryRouter>
           <AuthProvider>{TestComponent}</AuthProvider>
-        </BrowserRouter>
+        </MemoryRouter>
       )
     })
 
@@ -166,7 +167,7 @@ describe("AuthProvider", () => {
   // Error Handling
 
   it("should log an error if signOut fails", async () => {
-    const consoleErrorSpy = jest.spyOn(console, "error")
+    const loggerErrorSpy = jest.spyOn(logger, "error")
     const signOutError = new Error("Sign out failed");
     (signOut as jest.Mock).mockRejectedValue(signOutError as never)
 
@@ -179,11 +180,11 @@ describe("AuthProvider", () => {
 
     await act(async () => {
       render(
-        <BrowserRouter>
+        <MemoryRouter>
           <AuthProvider>
             <TestComponent />
           </AuthProvider>
-        </BrowserRouter>
+        </MemoryRouter>
       )
     })
 
@@ -191,11 +192,11 @@ describe("AuthProvider", () => {
       await contextValue.cognitoSignOut()
     })
 
-    expect(consoleErrorSpy).toHaveBeenCalledWith(
+    expect(loggerErrorSpy).toHaveBeenCalledWith(
       "Failed to sign out:",
       signOutError
     )
-    consoleErrorSpy.mockRestore()
+    loggerErrorSpy.mockRestore()
   })
 
   // Token Handling
@@ -305,11 +306,11 @@ describe("AuthProvider", () => {
 
     await act(async () => {
       render(
-        <BrowserRouter>
+        <MemoryRouter>
           <AuthProvider>
             <TestComponent />
           </AuthProvider>
-        </BrowserRouter>
+        </MemoryRouter>
       )
     })
 
@@ -330,11 +331,11 @@ describe("AuthProvider", () => {
 
     await act(async () => {
       render(
-        <BrowserRouter>
+        <MemoryRouter>
           <AuthProvider>
             <TestComponent />
           </AuthProvider>
-        </BrowserRouter>
+        </MemoryRouter>
       )
     })
 

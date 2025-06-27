@@ -3,6 +3,7 @@ import {Link} from "react-router-dom"
 import {CookieStrings} from "@/constants/ui-strings/CookieStrings"
 import {getHomeLink} from "@/helpers/loginFunctions"
 import {useAuth} from "@/context/AuthProvider"
+import {FRONTEND_PATHS} from "@/constants/environment"
 
 export default function CookieSettingsPage() {
   const auth = useAuth()
@@ -15,7 +16,7 @@ export default function CookieSettingsPage() {
             <Link className="nhsuk-breadcrumb__link" to={getHomeLink(auth.isSignedIn)}>{CookieStrings.home}</Link>
           </li>
           <li className="nhsuk-breadcrumb__item">
-            <Link className="nhsuk-breadcrumb__link" to="/cookies">{CookieStrings.cookie_policy}</Link>
+            <Link className="nhsuk-breadcrumb__link" to={FRONTEND_PATHS.COOKIES}>{CookieStrings.cookie_policy}</Link>
           </li>
         </ol>
         <p className="nhsuk-breadcrumb__back">
@@ -31,7 +32,7 @@ export default function CookieSettingsPage() {
         <div className="nhsuk-grid-column-full">
           <h1 className="nhsuk-heading-xl">{CookieStrings.savedCookieSettings}</h1>
 
-          <p>{CookieStrings.saveSettings}.</p>
+          <p>{CookieStrings.saveSettings}</p>
           <p>{CookieStrings.questionSaveSettings}</p>
 
           <ul>

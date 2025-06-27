@@ -21,7 +21,7 @@ import {AuthContext} from "@/context/AuthProvider"
 import {usePrescriptionInformation} from "@/context/PrescriptionInformationProvider"
 import {usePatientDetails} from "@/context/PatientDetailsProvider"
 
-import {API_ENDPOINTS, FRONTEND_PATHS} from "@/constants/environment"
+import {API_ENDPOINTS} from "@/constants/environment"
 import {STRINGS} from "@/constants/ui-strings/PrescriptionDetailsPageStrings"
 
 import EpsSpinner from "@/components/EpsSpinner"
@@ -30,6 +30,8 @@ import {PrescribedDispensedItemsCards} from "@/components/prescriptionDetails/Pr
 import {MessageHistoryCard} from "@/components/prescriptionDetails/MessageHistoryCard"
 
 import http from "@/helpers/axios"
+import {logger} from "@/helpers/logger"
+import {buildBackLink, determineSearchType} from "@/helpers/prescriptionNotFoundLinks"
 
 export default function PrescriptionDetailsPage() {
   const auth = useContext(AuthContext)
@@ -47,11 +49,14 @@ export default function PrescriptionDetailsPage() {
   const [dispensedItems, setDispensedItems] = useState<Array<DispensedItemDetails>>([])
   const [messageHistory, setMessageHistory] = useState<Array<MessageHistory>>([])
 
+  const searchType = determineSearchType(queryParams)
+  const backLinkUrl = buildBackLink(searchType, queryParams)
+
   const getPrescriptionDetails = async (
     prescriptionId: string,
     prescriptionIssueNumber?: string | undefined
   ): Promise<PrescriptionDetailsResponse | undefined> => {
-    console.log("Prescription ID", prescriptionId)
+    logger.info("Prescription ID", prescriptionId)
     const issueNumber = prescriptionIssueNumber ?? "1"
     const url = `${API_ENDPOINTS.PRESCRIPTION_DETAILS}/${prescriptionId}?issueNumber=${issueNumber}`
 
@@ -72,7 +77,7 @@ export default function PrescriptionDetailsPage() {
         throw new Error("No payload received from the API")
       }
     } catch (err) {
-      console.error("Failed to fetch prescription details", err)
+      logger.error("Failed to fetch prescription details", err)
       return
     }
 
@@ -103,18 +108,18 @@ export default function PrescriptionDetailsPage() {
     const runGetPrescriptionDetails = async () => {
       // Check if auth is ready
       if (!auth?.isSignedIn) {
-        console.log("Auth token not ready, waiting...")
+        logger.info("Auth token not ready, waiting...")
         return
       }
 
       const prescriptionId = queryParams.get("prescriptionId")
       if (!prescriptionId) {
-        console.error("No prescriptionId provided in query params.")
+        logger.error("No prescriptionId provided in query params.")
         return
       }
       const prescriptionIssueNumber = queryParams.get("issueNumber")
 
-      console.log("useEffect triggered for prescription:", prescriptionId)
+      logger.info("useEffect triggered for prescription:", prescriptionId)
       setLoading(true)
       await getPrescriptionDetails(prescriptionId, prescriptionIssueNumber!)
     }
@@ -152,7 +157,7 @@ export default function PrescriptionDetailsPage() {
             <BackLink
               data-testid="go-back-link"
               asElement={Link}
-              to={`${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}?${queryParams.toString()}`}
+              to={backLinkUrl}
             >
               {STRINGS.GO_BACK}
             </BackLink>

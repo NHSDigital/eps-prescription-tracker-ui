@@ -1,13 +1,9 @@
 import {Logger} from "@aws-lambda-powertools/logger"
 import axios, {AxiosRequestConfig} from "axios"
 
-// Initialize a logger for DoHS Client
-const logger = new Logger({serviceName: "doHSClient"})
-
 // Read the DoHS API Key from environment variables
-const apigeeApiKey = process.env["apigeeApiKey"] as string
 const apigeeDoHSEndpoint = process.env["apigeeDoHSEndpoint"] as string
-const apigeePtlDoHSApiKey = process.env["APIGEE_PTL_DOHS_API_KEY"] as string
+const apigeeDoHSApiKey = process.env["APIGEE_DOHS_API_KEY"] as string
 
 interface DoHSContact {
   ContactType: string
@@ -25,16 +21,15 @@ export interface DoHSOrg {
   Contacts: Array<DoHSContact>
 }
 
-export const doHSClient = async (odsCodes: Array<string>): Promise<Array<DoHSOrg>> => {
+export const doHSClient = async (odsCodes: Array<string>, logger: Logger): Promise<Array<DoHSOrg>> => {
   logger.info("Fetching DoHS API data for ODS codes", {odsCodes})
 
   if (odsCodes.length === 0) {
     return []
   }
 
-  // Use APIGEE_PTL_DOHS_API_KEY if available, otherwise fall back to apigeeApiKey
-  const effectiveApiKey = apigeePtlDoHSApiKey ?? apigeeApiKey
-  if (!effectiveApiKey) {
+  // Throw errors if we dont have correct vars
+  if (!apigeeDoHSApiKey) {
     throw new Error("Apigee API Key environment variable is not set")
   }
   if (!apigeeDoHSEndpoint) {
@@ -49,7 +44,7 @@ export const doHSClient = async (odsCodes: Array<string>): Promise<Array<DoHSOrg
       "api-version": "3",
       "$filter": odsFilter
     },
-    headers: {"apikey": `${effectiveApiKey}`}
+    headers: {"apikey": `${apigeeDoHSApiKey}`}
   }
 
   const response = await axios.get(apigeeDoHSEndpoint, config)

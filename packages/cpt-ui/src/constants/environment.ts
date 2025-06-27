@@ -12,13 +12,16 @@ export const ENV_CONFIG = {
   TARGET_ENVIRONMENT: import.meta.env.VITE_TARGET_ENVIRONMENT || "prod",
   API_DOMAIN_OVERRIDE: import.meta.env.VITE_API_DOMAIN_OVERRIDE,
   BASE_PATH: import.meta.env.BASE_PATH || "site",
-  LOCAL_DEV: import.meta.env.VITE_LOCAL_DEV === "true"
+  LOCAL_DEV: import.meta.env.VITE_LOCAL_DEV === "true",
+  BASE_URL: import.meta.env.BASE_URL
 } as const
 
 // Application Configuration
 export const APP_CONFIG = {
   SERVICE_NAME: import.meta.env.VITE_SERVICE_NAME,
-  COMMIT_ID: import.meta.env.VITE_COMMIT_ID
+  COMMIT_ID: import.meta.env.VITE_COMMIT_ID,
+  VERSION_NUMBER: import.meta.env.VITE_VERSION_NUMBER,
+  REACT_LOG_LEVEL: import.meta.env.VITE_REACT_LOG_LEVEL
 } as const
 
 // API Endpoints

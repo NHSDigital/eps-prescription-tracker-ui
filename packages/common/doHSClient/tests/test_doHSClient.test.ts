@@ -1,5 +1,13 @@
 import {jest} from "@jest/globals"
 import nock from "nock"
+import {Logger} from "@aws-lambda-powertools/logger"
+
+const mockLogger: Partial<Logger> = {
+  info: jest.fn(),
+  debug: jest.fn(),
+  error: jest.fn(),
+  warn: jest.fn()
+}
 
 // Mock environment variables by setting them before any module loads
 const validApiKey = "dummy-api-key"
@@ -22,30 +30,29 @@ describe("doHSClient", () => {
   afterEach(() => {
     // Verify that all nock interceptors were used
     if (!nock.isDone()) {
-      console.warn("Unused nock interceptors:", nock.pendingMocks())
       nock.cleanAll()
     }
   })
 
   it("returns empty if no ODS codes are provided", async () => {
-    expect(await doHSClient([])).toEqual([])
+    expect(await doHSClient([], mockLogger as Logger)).toEqual([])
   })
 
   it("throws an error if apigeeApiKey is not set", async () => {
     // Temporarily unset the API key
-    const originalApiKey = process.env.apigeeApiKey
-    delete process.env.apigeeApiKey
+    const originalApiKey = process.env.APIGEE_DOHS_API_KEY
+    delete process.env.APIGEE_DOHS_API_KEY
 
     // Re-import the module to pick up the changed environment
     jest.resetModules()
     const {doHSClient: freshDoHSClient} = await import("../src/doHSClient")
 
-    await expect(freshDoHSClient(["ABC"])).rejects.toThrow(
+    await expect(freshDoHSClient(["ABC"], mockLogger as Logger)).rejects.toThrow(
       "Apigee API Key environment variable is not set"
     )
 
     // Restore the API key
-    process.env.apigeeApiKey = originalApiKey
+    process.env.APIGEE_DOHS_API_KEY = originalApiKey
   })
 
   it("throws an error if apigeeDoHSEndpoint is not set", async () => {
@@ -57,7 +64,7 @@ describe("doHSClient", () => {
     jest.resetModules()
     const {doHSClient: freshDoHSClient} = await import("../src/doHSClient")
 
-    await expect(freshDoHSClient(["ABC"])).rejects.toThrow(
+    await expect(freshDoHSClient(["ABC"], mockLogger as Logger)).rejects.toThrow(
       "DoHS API endpoint environment variable is not set"
     )
 
@@ -84,7 +91,7 @@ describe("doHSClient", () => {
       .matchHeader("apikey", validApiKey)
       .reply(200, responseData)
 
-    const result = await doHSClient(odsCodes)
+    const result = await doHSClient(odsCodes, mockLogger as Logger)
 
     expect(result).toEqual([{ODSCode: "ABC"}])
   })
@@ -103,7 +110,7 @@ describe("doHSClient", () => {
       .matchHeader("apikey", validApiKey)
       .reply(500, "Internal Server Error")
 
-    await expect(doHSClient(odsCodes)).rejects.toThrow()
+    await expect(doHSClient(odsCodes, mockLogger as Logger)).rejects.toThrow()
   })
 
   it("handles network errors and throws error", async () => {
@@ -120,7 +127,7 @@ describe("doHSClient", () => {
       .matchHeader("apikey", validApiKey)
       .replyWithError("Network Error")
 
-    await expect(doHSClient(odsCodes)).rejects.toThrow()
+    await expect(doHSClient(odsCodes, mockLogger as Logger)).rejects.toThrow()
   })
 
 })

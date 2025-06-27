@@ -1,6 +1,6 @@
 import "@testing-library/jest-dom"
 import {render, screen, fireEvent} from "@testing-library/react"
-import {BrowserRouter} from "react-router-dom"
+import {MemoryRouter} from "react-router-dom"
 import EpsCard from "@/components/EpsCard"
 import {AuthContext, AuthContextType} from "@/context/AuthProvider"
 import {AccessContext} from "@/context/AccessProvider"
@@ -57,6 +57,9 @@ jest.mock("@/constants/environment", () => ({
   API_ENDPOINTS: {
     TRACKER_USER_INFO: "/mock-endpoint",
     SELECTED_ROLE: "/mock-endpoint"
+  },
+  APP_CONFIG: {
+    REACT_LOG_LEVEL: "debug"
   }
 }))
 
@@ -110,9 +113,9 @@ const renderWithProviders = (
   return render(
     <AuthContext.Provider value={authValue}>
       <AccessContext.Provider value={null}>
-        <BrowserRouter>
+        <MemoryRouter>
           <EpsCard {...props} />
-        </BrowserRouter>
+        </MemoryRouter>
       </AccessContext.Provider>
     </AuthContext.Provider>
   )

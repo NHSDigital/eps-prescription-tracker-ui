@@ -3,6 +3,7 @@ import React, {useEffect, useState} from "react"
 import {STRINGS} from "@/constants/ui-strings/PatientDetailsBannerStrings"
 import {usePatientDetails} from "@/context/PatientDetailsProvider"
 import {formatDobTextForDisplay} from "@/helpers/formatters"
+import {logger} from "@/helpers/logger"
 
 export default function PatientDetailsBanner() {
   const [nameText, setNameText] = useState("")
@@ -27,7 +28,7 @@ export default function PatientDetailsBanner() {
 
   useEffect(() => {
     if (!patientDetails) {
-      console.log("No patient details - hiding patient detail banner.")
+      logger.info("No patient details - hiding patient detail banner.")
       setNameText("")
       setGenderText("")
       setNhsNumberText("")
@@ -35,7 +36,7 @@ export default function PatientDetailsBanner() {
       setAddressText("")
       return
     }
-    console.log("Patient details are present.", patientDetails)
+    logger.info("Patient details are present.", patientDetails)
 
     let allDetailsPresent = true
 
@@ -58,7 +59,15 @@ export default function PatientDetailsBanner() {
     }
 
     if (patientDetails.address) {
-      setAddressText(patientDetails.address as string)
+      if (typeof patientDetails.address === "string") {
+        // If it's a string, use it directly
+        setAddressText(patientDetails.address as string)
+      } else {
+        // If it's an object, build from fields
+        const {line1, line2, city, postcode} = patientDetails.address
+        const fullAddress = [line1, line2, city, postcode].filter(Boolean).join(", ")
+        setAddressText(fullAddress)
+      }
     } else {
       setAddressText(STRINGS.UNKNOWN)
       allDetailsPresent = false

@@ -1,5 +1,5 @@
 import React, {useContext, useEffect, useState} from "react"
-import {useNavigate, useSearchParams} from "react-router-dom"
+import {Link, useNavigate, useSearchParams} from "react-router-dom"
 import {
   BackLink,
   Col,
@@ -8,20 +8,26 @@ import {
 } from "nhsuk-react-components"
 import "../styles/PrescriptionTable.scss"
 
-import http from "@/helpers/axios"
+import axios from "axios"
 
 import {AuthContext} from "@/context/AuthProvider"
 import {usePatientDetails} from "@/context/PatientDetailsProvider"
+
 import EpsSpinner from "@/components/EpsSpinner"
 import PrescriptionsListTabs from "@/components/prescriptionList/PrescriptionsListTab"
 import {TabHeader} from "@/components/EpsTabs"
 import PrescriptionNotFoundMessage from "@/components/PrescriptionNotFoundMessage"
+import UnknownErrorMessage from "@/components/UnknownErrorMessage"
 
 import {PRESCRIPTION_LIST_TABS} from "@/constants/ui-strings/PrescriptionListTabStrings"
 import {PRESCRIPTION_LIST_PAGE_STRINGS} from "@/constants/ui-strings/PrescriptionListPageStrings"
 import {API_ENDPOINTS, FRONTEND_PATHS} from "@/constants/environment"
 
 import {SearchResponse, PrescriptionSummary} from "@cpt-ui-common/common-types/src/prescriptionList"
+
+import http from "@/helpers/axios"
+import {logger} from "@/helpers/logger"
+import {buildBackLink, determineSearchType} from "@/helpers/prescriptionNotFoundLinks"
 
 export default function PrescriptionListPage() {
   const auth = useContext(AuthContext)
@@ -34,9 +40,12 @@ export default function PrescriptionListPage() {
   const [currentPrescriptions, setCurrentPrescriptions] = useState<Array<PrescriptionSummary>>([])
   const [prescriptionCount, setPrescriptionCount] = useState(0)
   const [tabData, setTabData] = useState<Array<TabHeader>>([])
-  const [backLinkTarget, setBackLinkTarget] = useState<string>(PRESCRIPTION_LIST_PAGE_STRINGS.DEFAULT_BACK_LINK_TARGET)
   const [loading, setLoading] = useState(true)
   const [showNotFound, setShowNotFound] = useState(false)
+  const [error, setError] = useState(false)
+
+  const searchType = determineSearchType(queryParams)
+  const backLinkUrl = buildBackLink(searchType, queryParams)
 
   useEffect(() => {
     const runSearch = async () => {
@@ -44,25 +53,22 @@ export default function PrescriptionListPage() {
       setShowNotFound(false) // Reset when search changes
 
       if (!auth?.isSignedIn) {
-        console.log("Not signed in, waiting...")
-
+        logger.info("Not signed in, waiting...")
         return
       }
 
       const prescriptionId = queryParams.get("prescriptionId")
       const nhsNumber = queryParams.get("nhsNumber")
 
-      let searchParams = {}
+      const searchParams = new URLSearchParams()
 
       // determine which search page to go back to based on query parameters
       if (prescriptionId) {
-        setBackLinkTarget(PRESCRIPTION_LIST_PAGE_STRINGS.PRESCRIPTION_ID_SEARCH_TARGET)
-        searchParams = {prescriptionId}
+        searchParams.append("prescriptionId", encodeURIComponent(prescriptionId))
       } else if (nhsNumber) {
-        setBackLinkTarget(PRESCRIPTION_LIST_PAGE_STRINGS.NHS_NUMBER_SEARCH_TARGET)
-        searchParams = {nhsNumber}
+        searchParams.append("nhsNumber", encodeURIComponent(nhsNumber))
       } else {
-        console.error("No query parameter provided.")
+        logger.error("No query parameter provided.")
         setLoading(false)
         return
       }
@@ -72,9 +78,9 @@ export default function PrescriptionListPage() {
           params: searchParams
         })
 
-        console.log("Response status", {status: response.status})
+        logger.info("Response status", {status: response.status})
         if (response.status === 404) {
-          console.error("No search results were returned")
+          logger.error("No search results were returned")
           setShowNotFound(true)
           setLoading(false)
           return
@@ -82,14 +88,14 @@ export default function PrescriptionListPage() {
           throw new Error(`Status Code: ${response.status}`)
         }
 
-        let searchResults: SearchResponse = response.data
+        const searchResults: SearchResponse = response.data
 
         if (
           searchResults.currentPrescriptions.length === 0 &&
           searchResults.pastPrescriptions.length === 0 &&
           searchResults.futurePrescriptions.length === 0
         ) {
-          console.error("A patient was returned, but they do not have any prescriptions.", searchResults)
+          logger.error("A patient was returned, but they do not have any prescriptions.", searchResults)
           setPatientDetails(searchResults.patient)
           setShowNotFound(true)
           setLoading(false)
@@ -121,13 +127,15 @@ export default function PrescriptionListPage() {
         ])
         setLoading(false)
       } catch (err) {
-        console.error("Error during search", err)
-        if (err instanceof Error && err.message === "CanceledError: canceled") {
+        logger.error("Error during search", err)
+        if (axios.isAxiosError(err) && (err.response?.status === 404)) {
+          setShowNotFound(true)
+        } else if (err instanceof Error && err.message === "canceled") {
           navigate(FRONTEND_PATHS.LOGIN)
+          return
         } else {
-          navigate(backLinkTarget)
+          setError(true)
         }
-        setShowNotFound(true)
         setLoading(false)
       }
     }
@@ -141,9 +149,7 @@ export default function PrescriptionListPage() {
         <Container>
           <Row>
             <Col width="full">
-              <h1
-                className="nhsuk-u-visually-hidden"
-              >
+              <h1 className="nhsuk-u-visually-hidden">
                 {PRESCRIPTION_LIST_PAGE_STRINGS.HEADING}
               </h1>
               <h2 data-testid="loading-message">
@@ -155,6 +161,10 @@ export default function PrescriptionListPage() {
         </Container>
       </main>
     )
+  }
+
+  if (error) {
+    return <UnknownErrorMessage />
   }
 
   // Show PrescriptionNotFoundMessage if no prescriptions found
@@ -172,12 +182,10 @@ export default function PrescriptionListPage() {
               <nav className="nhsuk-breadcrumb" aria-label="Breadcrumb" data-testid="prescription-list-nav">
                 <BackLink
                   data-testid="go-back-link"
-                  href={backLinkTarget}
-                  onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
-                    e.preventDefault()
-                    navigate(backLinkTarget)
-                  }}
-                >  {PRESCRIPTION_LIST_PAGE_STRINGS.GO_BACK_LINK_TEXT}
+                  asElement={Link}
+                  to={backLinkUrl}
+                >
+                  {PRESCRIPTION_LIST_PAGE_STRINGS.GO_BACK_LINK_TEXT}
                 </BackLink>
               </nav>
             </Col>

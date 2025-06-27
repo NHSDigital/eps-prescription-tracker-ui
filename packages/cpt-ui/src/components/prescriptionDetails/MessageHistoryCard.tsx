@@ -92,8 +92,10 @@ export function MessageHistoryCard({messageHistory}: MessageHistoryProps) {
                                 </Tag>
                                 <br />
                                 {STRINGS.QUANTITY} {item.quantity}
+                                {/* Temporary remove dosage instructions from card until spine fix
                                 <br />
                                 {STRINGS.INSTRUCTIONS} {item.dosageInstruction}
+                                */}
                               </li>
                             ))}
                           </ul>

@@ -13,6 +13,7 @@ const commonConfig = {
   },
   rules: {
     ...tsPlugin.configs.recommended.rules,
+    "no-console": "error",
     "@typescript-eslint/array-type": [
       "error",
       {

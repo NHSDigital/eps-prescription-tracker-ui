@@ -126,6 +126,9 @@ export class Rum extends Construct {
       deobfuscationConfiguration: deobfuscationConfiguration,
       appMonitorConfiguration: {
         ...baseAppMonitorConfiguration
+      },
+      customEvents: {
+        status: "ENABLED"
       }
     })
 

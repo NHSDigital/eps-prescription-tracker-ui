@@ -29,8 +29,6 @@ describe("rewriteRequestBody tests", () => {
       "dummy_kid"
     )
 
-    console.log(result)
-
     expect(result.client_assertion_type).toBe("urn:ietf:params:oauth:client-assertion-type:jwt-bearer")
     expect(result.client_assertion).toBe("mocked-jwt-token")
     expect(result.client_secret).toBeUndefined()
