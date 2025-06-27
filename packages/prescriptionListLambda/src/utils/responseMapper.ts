@@ -167,6 +167,9 @@ export const mapResponseToPrescriptionSummary = (
     .map(entry => {
       const resource = entry.resource as RequestGroup
 
+      // Extract status. Is either 'completed' when deleted, or 'active'
+      const isDeleted = resource.status === "completed"
+
       // Extract status code - fixed to match the structure
       const statusExtension = resource.extension?.find(ext =>
         ext.url === "https://fhir.nhs.uk/StructureDefinition/Extension-EPS-PrescriptionStatusHistory"
@@ -206,6 +209,7 @@ export const mapResponseToPrescriptionSummary = (
 
       return {
         prescriptionId: resource.identifier?.[0]?.value || "",
+        isDeleted,
         statusCode,
         issueDate: resource.authoredOn || "",
         prescriptionTreatmentType: treatmentType,

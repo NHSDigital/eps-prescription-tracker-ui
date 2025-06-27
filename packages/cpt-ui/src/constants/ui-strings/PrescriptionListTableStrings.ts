@@ -23,5 +23,6 @@ export const PRESCRIPTION_LIST_TABLE_TEXT = {
   viewPrescription: "View prescription",
   showing: "Showing",
   of: "of",
-  sortLabel: "Sort"
+  sortLabel: "Sort",
+  unavailableText: "Full prescription details not available"
 }

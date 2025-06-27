@@ -71,6 +71,7 @@ describe("Response Mapper Tests", () => {
       expect(result).toHaveLength(1)
       expect(result[0]).toEqual({
         prescriptionId: "335C70-A83008-84058A",
+        isDeleted: false,
         statusCode: "0001", // Changed to match actual implementation
         issueDate: "20250204000000",
         prescriptionTreatmentType: TreatmentType.ACUTE,
@@ -141,6 +142,7 @@ describe("Response Mapper Tests", () => {
         patient: mockPatientDetails,
         currentPrescriptions: [
           {
+            "isDeleted": false,
             "issueDate": "20250204000000",
             "issueNumber": undefined,
             "itemsPendingCancellation": false,
@@ -223,6 +225,7 @@ describe("Response Mapper Tests", () => {
       // Using actual implementation which uses nhsNumber for fallback
       const prescriptions = [{
         prescriptionId: "335C70-A83008-84058A",
+        isDeleted: false,
         statusCode: "0001",
         issueDate: "20250204000000",
         prescriptionTreatmentType: TreatmentType.ACUTE,
@@ -259,6 +262,7 @@ describe("Response Mapper Tests", () => {
 
       const prescriptions = [{
         prescriptionId: "335C70-A83008-84058A",
+        isDeleted: false,
         statusCode: "0001",
         issueDate: "20250204000000",
         prescriptionTreatmentType: TreatmentType.ACUTE,
@@ -289,6 +293,7 @@ describe("Response Mapper Tests", () => {
       // Create prescription with nhsNumber
       const prescriptions = [{
         prescriptionId: "335C70-A83008-84058A",
+        isDeleted: false,
         statusCode: "0001",
         issueDate: "20250204000000",
         prescriptionTreatmentType: TreatmentType.ACUTE,
@@ -316,6 +321,7 @@ describe("Response Mapper Tests", () => {
       // Prescription with NHS Number
       const prescriptions = [{
         prescriptionId: "335C70-A83008-84058A",
+        isDeleted: false,
         statusCode: "0001",
         issueDate: "20250204000000",
         prescriptionTreatmentType: TreatmentType.ACUTE,
