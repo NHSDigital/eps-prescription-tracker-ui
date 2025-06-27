@@ -170,6 +170,7 @@ const extractMessageHistory = (
       medicationName: string
       quantity: string
       dosageInstruction: string
+      statusCode: string
     }> = []
 
     // Only populate if this message type should have dispense notification
@@ -191,13 +192,15 @@ const extractMessageHistory = (
             const dispensedQuantityValue = referencedDispense.quantity?.value?.toString() ?? ""
             const dispensedQuantityUnit = referencedDispense.quantity?.unit ?? ""
             const dispensedQuantity = dispensedQuantityUnit ? `${dispensedQuantityValue} ${dispensedQuantityUnit}` : dispensedQuantityValue
+            const statusCode = referencedDispense?.type?.coding?.[0].code ?? "unknown"
 
             dispenseNotifications.push({
               id: notificationId,
               medicationName: referencedDispense.medicationCodeableConcept?.text ??
                              referencedDispense.medicationCodeableConcept?.coding?.[0]?.display ?? "",
               quantity: dispensedQuantity,
-              dosageInstruction: referencedDispense.dosageInstruction?.[0]?.text ?? ""
+              dosageInstruction: referencedDispense.dosageInstruction?.[0]?.text ?? "",
+              statusCode
             })
           }
         }
