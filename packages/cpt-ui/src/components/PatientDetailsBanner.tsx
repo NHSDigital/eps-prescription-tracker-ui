@@ -90,8 +90,8 @@ export default function PatientDetailsBanner() {
     >
       <div
         className={"patient-detail-banner-row"}
-      > {nameText &&
-        <div style={{fontWeight: "bold", fontSize: "1.1rem"}}>{nameText}</div> }
+      > {nameText ?
+          <div className = "patient-detail-name"> {nameText}</div> : null }
         <div>{STRINGS.GENDER}: {genderText}</div>
         <div>{STRINGS.NHS_NUMBER}: {nhsNumberText}</div>
         <div>{STRINGS.DOB}: {formatDobTextForDisplay(dobText)}</div>
