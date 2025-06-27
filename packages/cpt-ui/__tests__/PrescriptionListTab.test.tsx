@@ -10,10 +10,8 @@ import {
 } from "react-router-dom"
 
 import {PrescriptionsListStrings} from "@/constants/ui-strings/PrescriptionListTabStrings"
-
 import {PrescriptionSummary, TreatmentType} from "@cpt-ui-common/common-types"
 
-// This mock just displays the data. Nothing fancy!
 jest.mock("@/components/prescriptionList/PrescriptionsListTable", () => {
   return function DummyPrescriptionsList({
     textContent,
@@ -120,63 +118,95 @@ describe("PrescriptionsListTabs", () => {
     }
   ]
 
-  beforeEach(() => {
-    const page =
-      <PrescriptionsListTabs
-        tabData={tabData}
-        currentPrescriptions={currentPrescriptions}
-        futurePrescriptions={futurePrescriptions}
-        pastPrescriptions={pastPrescriptions}
-      />
-    render(
-      <MemoryRouter>
-        <Routes>
-          <Route path="*" element={page} />
-        </Routes>
-      </MemoryRouter>
-    )
-  })
+  describe("with default mock data", () => {
+    beforeEach(() => {
+      const page = (
+        <PrescriptionsListTabs
+          tabData={tabData}
+          currentPrescriptions={currentPrescriptions}
+          futurePrescriptions={futurePrescriptions}
+          pastPrescriptions={pastPrescriptions}
+        />
+      )
+      render(
+        <MemoryRouter>
+          <Routes>
+            <Route path="*" element={page} />
+          </Routes>
+        </MemoryRouter>
+      )
+    })
 
-  it("renders tab headers", () => {
-    tabData.forEach((tab) => {
-      expect(
-        screen.getByText(tab.title)
-      ).toBeInTheDocument()
+    it("renders tab headers", () => {
+      tabData.forEach((tab) => {
+        expect(screen.getByText(tab.title)).toBeInTheDocument()
+      })
+    })
+
+    it("displays the correct PrescriptionsList for the default active tab", () => {
+      const list = screen.getByTestId(`eps-tab-heading ${tabData[0].link}`)
+      expect(list).toHaveTextContent(tabData[0].title)
+      expect(screen.getByTestId("mock-prescription-data")).toHaveTextContent(
+        `Count: ${currentPrescriptions.length}`
+      )
+    })
+
+    it("switches to the future tab and displays correct content", async () => {
+      const futureTabHeader = screen.getByText("Future Prescriptions")
+      await userEvent.click(futureTabHeader)
+
+      expect(screen.getByTestId(`eps-tab-heading ${tabData[1].link}`)).toHaveTextContent(
+        tabData[1].title
+      )
+      expect(screen.getByTestId("mock-prescription-data")).toHaveTextContent(
+        `Count: ${futurePrescriptions.length}`
+      )
+    })
+
+    it("switches to the past tab and displays correct content", async () => {
+      const pastTabHeader = screen.getByText("Past Prescriptions")
+      await userEvent.click(pastTabHeader)
+
+      expect(screen.getByTestId(`eps-tab-heading ${tabData[2].link}`)).toHaveTextContent(
+        tabData[2].title
+      )
+      expect(screen.getByTestId("mock-prescription-data")).toHaveTextContent(
+        `Count: ${pastPrescriptions.length}`
+      )
     })
   })
 
-  it("displays the correct PrescriptionsList for the default active tab", () => {
-    // Click on nothing - should default to current prescriptions
-    const list = screen.getByTestId(`eps-tab-heading ${tabData[0].link}`)
-    expect(list).toHaveTextContent(tabData[0].title)
-    expect(screen.getByTestId("mock-prescription-data")).toHaveTextContent(
-      `Count: ${currentPrescriptions.length}`
-    )
-  })
+  it("shows dispensed prescriptions in the Current Prescriptions tab", () => {
+    const mockDispensedPrescription: PrescriptionSummary = {
+      prescriptionId: "MOCK-DISPENSED-TEST",
+      statusCode: "0006",
+      issueDate: "2025-06-15",
+      prescriptionTreatmentType: TreatmentType.REPEAT,
+      issueNumber: 1,
+      maxRepeats: 2,
+      prescriptionPendingCancellation: false,
+      itemsPendingCancellation: false
+    }
 
-  it("switches to the future tab and displays correct content", async () => {
-    // Click on the "Future" tab
-    const futureTabHeader = screen.getByText("Future Prescriptions")
-    await userEvent.click(futureTabHeader)
+    const testPage = (
+      <PrescriptionsListTabs
+        tabData={tabData}
+        currentPrescriptions={[mockDispensedPrescription]}
+        futurePrescriptions={[]}
+        pastPrescriptions={[]}
+      />
+    )
 
-    expect(screen.getByTestId(`eps-tab-heading ${tabData[1].link}`)).toHaveTextContent(
-      tabData[1].title
+    render(
+      <MemoryRouter initialEntries={["/prescription-list-current"]}>
+        <Routes>
+          <Route path="*" element={testPage} />
+        </Routes>
+      </MemoryRouter>
     )
-    expect(screen.getByTestId("mock-prescription-data")).toHaveTextContent(
-      `Count: ${futurePrescriptions.length}`
-    )
-  })
 
-  it("switches to the past tab and displays correct content", async () => {
-    // Click on the "Past" tab
-    const pastTabHeader = screen.getByText("Past Prescriptions")
-    await userEvent.click(pastTabHeader)
-
-    expect(screen.getByTestId(`eps-tab-heading ${tabData[2].link}`)).toHaveTextContent(
-      tabData[2].title
-    )
-    expect(screen.getByTestId("mock-prescription-data")).toHaveTextContent(
-      `Count: ${pastPrescriptions.length}`
-    )
+    const mockDataElements = screen.getAllByTestId("mock-prescription-data")
+    expect(mockDataElements.some(el => el.textContent?.includes("Count: 1"))).toBe(true)
+    expect(screen.getByText("Current Prescriptions")).toBeInTheDocument()
   })
 })
