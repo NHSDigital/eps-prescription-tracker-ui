@@ -13,6 +13,7 @@ import {FRONTEND_PATHS} from "@/constants/environment"
 import PrescriptionIdSearch from "@/components/prescriptionSearch/PrescriptionIdSearch"
 import {PRESCRIPTION_ID_SEARCH_STRINGS} from "@/constants/ui-strings/SearchForAPrescriptionStrings"
 import {AuthContext, AuthContextType} from "@/context/AuthProvider"
+import {SearchContext, SearchProviderContextType} from "@/context/SearchProvider"
 
 const mockAuthContext: AuthContextType = {
   error: null,
@@ -31,6 +32,42 @@ const mockAuthContext: AuthContextType = {
   updateSelectedRole: jest.fn()
 }
 
+const mockClearSearchParameters = jest.fn()
+const mockSetPrescriptionId = jest.fn()
+const mockSetIssueNumber = jest.fn()
+const mockSetFirstName = jest.fn()
+const mockSetLastName = jest.fn()
+const mockSetDobDay = jest.fn()
+const mockSetDobMonth = jest.fn()
+const mockSetDobYear = jest.fn()
+const mockSetPostcode =jest.fn()
+const mockSetNhsNumber = jest.fn()
+const mockGetAllSearchParameters = jest.fn()
+const mockSetAllSearchParameters = jest.fn()
+const defaultSearchState: SearchProviderContextType = {
+  prescriptionId: undefined,
+  issueNumber: undefined,
+  firstName: undefined,
+  lastName: undefined,
+  dobDay: undefined,
+  dobMonth: undefined,
+  dobYear: undefined,
+  postcode: undefined,
+  nhsNumber: undefined,
+  clearSearchParameters: mockClearSearchParameters,
+  setPrescriptionId: mockSetPrescriptionId,
+  setIssueNumber: mockSetIssueNumber,
+  setFirstName: mockSetFirstName,
+  setLastName: mockSetLastName,
+  setDobDay: mockSetDobDay,
+  setDobMonth: mockSetDobMonth,
+  setDobYear: mockSetDobYear,
+  setPostcode: mockSetPostcode,
+  setNhsNumber: mockSetNhsNumber,
+  getAllSearchParameters: mockGetAllSearchParameters,
+  setAllSearchParameters: mockSetAllSearchParameters
+}
+
 const LocationDisplay = () => {
   const location = useLocation()
   return <div data-testid="location-display">{location.pathname + location.search}</div>
@@ -40,10 +77,12 @@ const renderWithRouter = () =>
   render(
     <MemoryRouter initialEntries={["/search"]}>
       <AuthContext.Provider value={mockAuthContext}>
-        <Routes>
-          <Route path="/search" element={<PrescriptionIdSearch />} />
-          <Route path="*" element={<LocationDisplay />} />
-        </Routes>
+        <SearchContext.Provider value={defaultSearchState}>
+          <Routes>
+            <Route path="/search" element={<PrescriptionIdSearch />} />
+            <Route path="*" element={<LocationDisplay />} />
+          </Routes>
+        </SearchContext.Provider>
       </AuthContext.Provider>
     </MemoryRouter>
   )
