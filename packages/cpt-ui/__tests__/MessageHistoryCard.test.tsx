@@ -39,13 +39,15 @@ describe("MessageHistoryCard", () => {
           id: "abc123",
           medicationName: "Medication 1",
           quantity: "10 tablets",
-          dosageInstruction: "Take once daily"
+          dosageInstruction: "Take once daily",
+          statusCode: ""
         },
         {
           id: "abc123",
           medicationName: "Medication 2",
           quantity: "20 tablets",
-          dosageInstruction: "Take twice daily"
+          dosageInstruction: "Take twice daily",
+          statusCode: ""
         }
       ]
     },
@@ -152,7 +154,8 @@ describe("MessageHistoryCard", () => {
           id: "abc",
           medicationName: "Something",
           quantity: "1",
-          dosageInstruction: "Take it"
+          dosageInstruction: "Take it",
+          statusCode: ""
         }]
       }]} />
     )
