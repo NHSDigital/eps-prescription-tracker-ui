@@ -8,15 +8,18 @@ import {EpsLoginPageStrings} from "@/constants/ui-strings/EpsLoginPageStrings"
 
 import {
   ENV_CONFIG,
+  FRONTEND_PATHS,
   MOCK_AUTH_ALLOWED_ENVIRONMENTS,
   type Environment,
   type MockAuthEnvironment
 } from "@/constants/environment"
 import {Button} from "@/components/ReactRouterButton"
 import {logger} from "@/helpers/logger"
+import {useNavigate} from "react-router-dom"
 
 export default function LoginPage() {
   const auth = useAuth()
+  const navigate = useNavigate()
 
   const target_environment: string =
     ENV_CONFIG.TARGET_ENVIRONMENT as Environment
@@ -57,11 +60,15 @@ export default function LoginPage() {
     if (
       !MOCK_AUTH_ALLOWED_ENVIRONMENTS.includes(
         target_environment as MockAuthEnvironment
-      ) &&
-      !auth?.isSignedIn
+      )
     ) {
-      logger.info("User must sign in with Primary auth")
-      signIn()
+      if (!auth?.isSignedIn) {
+        logger.info("Redirecting user to cis2 login")
+        signIn()
+      } else {
+        logger.info("User is already signed in - redirecting to search")
+        navigate(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
+      }
     }
   }, [auth, signIn, target_environment])
 

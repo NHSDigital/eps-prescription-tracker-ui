@@ -3,7 +3,7 @@ import {render, screen} from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 
 import {
-  BrowserRouter,
+  MemoryRouter,
   Route,
   Routes,
   useLocation
@@ -129,11 +129,11 @@ describe("PrescriptionsListTabs", () => {
         pastPrescriptions={pastPrescriptions}
       />
     render(
-      <BrowserRouter>
+      <MemoryRouter>
         <Routes>
           <Route path="*" element={page} />
         </Routes>
-      </BrowserRouter>
+      </MemoryRouter>
     )
   })
 
