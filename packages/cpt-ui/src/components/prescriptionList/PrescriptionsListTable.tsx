@@ -186,7 +186,6 @@ const PrescriptionsListTable = ({
       const bDateTimestamp = getValidDateTimestamp(b.issueDate)
       return bDateTimestamp - aDateTimestamp
     })
-
     return sorted
   }
 
@@ -348,13 +347,21 @@ const PrescriptionsListTable = ({
             {row.prescriptionId}
           </div>
           <div>
-            <Link
-              to={constructLink(row.prescriptionId, row.issueNumber)}
-              className="nhsuk-link"
-              data-testid={`view-prescription-link-${row.prescriptionId}`}
-            >
-              {PRESCRIPTION_LIST_TABLE_TEXT.viewPrescription}
-            </Link>
+            {row.isDeleted ? (
+              <span
+                data-testid={`unavailable-text-${row.prescriptionId}`}
+              >
+                {PRESCRIPTION_LIST_TABLE_TEXT.unavailableText}
+              </span>
+            ) : (
+              <Link
+                to={constructLink(row.prescriptionId, row.issueNumber)}
+                className="nhsuk-link"
+                data-testid={`view-prescription-link-${row.prescriptionId}`}
+              >
+                {PRESCRIPTION_LIST_TABLE_TEXT.viewPrescription}
+              </Link>
+            )}
           </div>
         </Table.Cell>
       )

@@ -28,6 +28,7 @@ describe("PrescriptionsListTable", () => {
   const prescriptions: Array<PrescriptionSummary> = [
     {
       prescriptionId: "C0C757-A83008-C2D93O",
+      isDeleted: false,
       statusCode: "0001",
       issueDate: "2025-03-01",
       prescriptionTreatmentType: TreatmentType.ACUTE,
@@ -38,6 +39,7 @@ describe("PrescriptionsListTable", () => {
     },
     {
       prescriptionId: "209E3D-A83008-327F9F",
+      isDeleted: false,
       statusCode: "0002",
       issueDate: "2025-03-10",
       prescriptionTreatmentType: TreatmentType.REPEAT,
@@ -48,6 +50,7 @@ describe("PrescriptionsListTable", () => {
     },
     {
       prescriptionId: "209E3D-A83008-327FXZ",
+      isDeleted: false,
       statusCode: "0003",
       issueDate: "2025-02-15",
       prescriptionTreatmentType: TreatmentType.REPEAT,
@@ -268,6 +271,7 @@ describe("PrescriptionsListTable", () => {
     const testPrescriptions = [
       {
         prescriptionId: "88AAF5-A83008-3D404Q",
+        isDeleted: false,
         statusCode: "0002",
         issueDate: "2025-04-15",
         prescriptionTreatmentType: TreatmentType.REPEAT,
@@ -278,6 +282,7 @@ describe("PrescriptionsListTable", () => {
       },
       {
         prescriptionId: "7F1A4B-A83008-91DC2E",
+        isDeleted: false,
         statusCode: "0002",
         issueDate: "2025-04-10",
         prescriptionTreatmentType: TreatmentType.REPEAT,
@@ -288,6 +293,7 @@ describe("PrescriptionsListTable", () => {
       },
       {
         prescriptionId: "4D6F2C-A83008-A3E7D1",
+        isDeleted: false,
         statusCode: "0003",
         issueDate: "2025-04-01",
         prescriptionTreatmentType: TreatmentType.REPEAT,
@@ -336,6 +342,38 @@ describe("PrescriptionsListTable", () => {
       expect(rows[0]).toHaveTextContent("1")
       expect(rows[1]).toHaveTextContent("2")
       expect(rows[2]).toHaveTextContent("3")
+    })
+
+    jest.useRealTimers()
+  })
+
+  it("renders unavailable text when prescription is deleted", async () => {
+    jest.useFakeTimers()
+
+    const deletedPrescription = {
+      prescriptionId: "51E09C-A83008-05DA33",
+      isDeleted: true,
+      statusCode: "0005",
+      issueDate: "2025-06-01",
+      prescriptionTreatmentType: TreatmentType.ACUTE,
+      issueNumber: 1,
+      maxRepeats: 1,
+      prescriptionPendingCancellation: false,
+      itemsPendingCancellation: false
+    }
+
+    renderWithRouter(
+      <PrescriptionsListTable
+        textContent={textContent}
+        prescriptions={[deletedPrescription]}
+      />
+    )
+
+    jest.advanceTimersByTime(2000)
+
+    await waitFor(() => {
+      const unavailableElement = screen.getByTestId("unavailable-text-51E09C-A83008-05DA33")
+      expect(unavailableElement).toBeInTheDocument()
     })
 
     jest.useRealTimers()
