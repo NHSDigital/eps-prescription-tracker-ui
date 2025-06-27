@@ -217,7 +217,6 @@ const PrescriptionsListTable = ({
       key={heading.key}
       id={heading.headerId}
       width={heading.width}
-      role="columnheader"
       aria-sort={
         sortConfig.key === heading.key
           ? (sortConfig.direction as "ascending" | "descending" | null) || "none"
@@ -225,8 +224,8 @@ const PrescriptionsListTable = ({
       }
       data-testid={`eps-prescription-table-header-${heading.key}`}
     >
-      <span
-        role="button"
+      <button
+        type="button"
         tabIndex={0}
         className={`eps-prescription-table-sort-text ${heading.key}`}
         aria-label={`
@@ -253,7 +252,7 @@ const PrescriptionsListTable = ({
           {PRESCRIPTION_LIST_TABLE_TEXT.button}
         </span>
         {renderSortIcons(heading.key)}
-      </span>
+      </button>
     </Table.Cell>
   )
 
@@ -382,11 +381,16 @@ const PrescriptionsListTable = ({
         </Table.Head>
 
         <Table.Body>
-          {getSortedItems().map((row, index) => (
-            <Table.Row key={index} data-testid="eps-prescription-table-row">
-              {headings.map(({key}) => renderDataCell(row, key))}
-            </Table.Row>
-          ))}
+          {getSortedItems().map((row) => {
+            // creates unique key combining prescriptionId and issueNumber for ERD prescriptions
+            const uniqueKey = `${row.prescriptionId}-${row.issueNumber || 1}`
+
+            return (
+              <Table.Row key={uniqueKey} data-testid="eps-prescription-table-row">
+                {headings.map(({key}) => renderDataCell(row, key))}
+              </Table.Row>
+            )
+          })}
         </Table.Body>
 
         <tfoot>
