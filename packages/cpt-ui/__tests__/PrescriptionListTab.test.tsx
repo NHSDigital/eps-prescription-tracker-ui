@@ -180,7 +180,7 @@ describe("PrescriptionsListTabs", () => {
     )
   })
 
-  it("shows dispensed prescriptions in the Current Prescriptions tab", () => {
+  it("shows dispensed prescriptions in the Current prescriptions tab", () => {
     const mockDispensedPrescription: PrescriptionSummary = {
       prescriptionId: "MOCK-DISPENSED-TEST",
       statusCode: "0006",
