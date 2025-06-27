@@ -43,7 +43,6 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           result-encoding: json
           script: |
-            const core = require('@actions/core');
             const owner = context.repo.owner;
             const repo = context.repo.repo;
             const runId = context.runId;
