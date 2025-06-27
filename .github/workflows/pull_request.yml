@@ -40,12 +40,14 @@ jobs:
         if: ${{ ! contains(needs.get_commit_message.outputs.commit_message, '#skip-qc') }}
         uses: actions/github-script@v7
         with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          result-encoding: json
           script: |
+            const core = require('@actions/core');
             const owner = context.repo.owner;
             const repo = context.repo.repo;
             const runId = context.runId;
 
-            // helper to fetch the quality_checks job
             async function fetchQCJob() {
               const { data } = await github.rest.actions.listJobsForWorkflowRun({
                 owner, repo, run_id: runId
@@ -55,17 +57,19 @@ jobs:
 
             let qc = await fetchQCJob();
             // poll every 10s until the job completes
-            while (qc.status !== 'completed') {
+            while (!qc || qc.status !== 'completed') {
               await new Promise(r => setTimeout(r, 10000));
               qc = await fetchQCJob();
             }
-            // fail the gate if QC didn't pass
+
+            // if it ran but didn't pass, fail the gate
             if (qc.conclusion !== 'success') {
               core.setFailed(`Quality checks failed: ${qc.conclusion}`);
             }
+
       - name: Bypass QC wait
         if: ${{ contains(needs.get_commit_message.outputs.commit_message, '#skip-qc') }}
-        run: echo "Skipping quality-check gate as requested."
+        run: echo "Skipping QC gate per commit message."
 
   pr_title_format_check:
     uses: ./.github/workflows/pr_title_check.yml
