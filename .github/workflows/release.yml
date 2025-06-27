@@ -291,6 +291,6 @@ jobs:
       LOG_RETENTION_IN_DAYS: 731
       CREATE_INT_RELEASE_NOTES: true
       CREATE_PROD_RELEASE_NOTES: true
-      MARK_JIRA_RELEASED: true
+      MARK_JIRA_RELEASED: false
       CREATE_INT_RC_RELEASE_NOTES: false   
     secrets: inherit
