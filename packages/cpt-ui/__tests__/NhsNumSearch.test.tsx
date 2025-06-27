@@ -94,4 +94,37 @@ describe("NhsNumSearch", () => {
 
     expect(screen.getAllByText("NHS number must have 10 digits").length).toBeGreaterThan(1)
   })
+
+  it("shows error for 10-digit input with invalid checksum", async () => {
+    renderWithRouter(<NhsNumSearch />)
+    await userEvent.type(screen.getByTestId("nhs-number-input"), "1234567890")
+    await userEvent.click(screen.getByTestId("find-patient-button"))
+
+    expect(
+      screen.getAllByText("NHS number does not match a patient, enter another NHS number").length
+    ).toBeGreaterThan(1)
+  })
+
+  it("shows format error for 10-character alphanumeric input", async () => {
+    renderWithRouter(<NhsNumSearch />)
+    await userEvent.type(screen.getByTestId("nhs-number-input"), "12345abcde")
+    await userEvent.click(screen.getByTestId("find-patient-button"))
+
+    expect(
+      screen.getAllByText("Enter an NHS number in the correct format").length
+    ).toBeGreaterThan(1)
+  })
+
+  it("accepts spaced valid NHS number", async () => {
+    const mockNavigate = jest.fn()
+    ;(useNavigate as jest.Mock).mockReturnValue(mockNavigate)
+
+    renderWithRouter(<NhsNumSearch />)
+    await userEvent.type(screen.getByTestId("nhs-number-input"), "923 373 9112")
+    await userEvent.click(screen.getByTestId("find-patient-button"))
+
+    expect(mockNavigate).toHaveBeenCalledWith(
+      `${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}?nhsNumber=9233739112`
+    )
+  })
 })
