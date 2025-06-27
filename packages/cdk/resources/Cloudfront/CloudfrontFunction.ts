@@ -19,7 +19,7 @@ export interface CloudfrontFunctionProps {
   readonly functionName: string
   readonly sourceFileName: string
   readonly codeReplacements?: codeReplacements
-  readonly keyValueStore: KeyValueStore
+  readonly keyValueStore?: KeyValueStore
 }
 
 /**
@@ -29,7 +29,7 @@ export interface CloudfrontFunctionProps {
 
 export class CloudfrontFunction extends Construct {
   public readonly function: Function
-  public readonly functionStore: IKeyValueStore
+  public readonly functionStore?: IKeyValueStore
 
   public constructor(scope: Construct, id: string, props: CloudfrontFunctionProps){
     super(scope, id)
@@ -40,7 +40,9 @@ export class CloudfrontFunction extends Construct {
     and replace placeholder KVS ID if KVS is required */
     const codeReplacements: codeReplacements = [
       {valueToReplace: "export", replacementValue: ""},
-      {valueToReplace: "KVS_ID_PLACEHOLDER", replacementValue: props.keyValueStore.keyValueStoreId},
+      {valueToReplace: "KVS_ID_PLACEHOLDER", replacementValue: props.keyValueStore?.keyValueStoreId ?
+        props.keyValueStore?.keyValueStoreId : ""
+      },
       ...props.codeReplacements ?? []
     ]
     let functionCode = readFileSync(
