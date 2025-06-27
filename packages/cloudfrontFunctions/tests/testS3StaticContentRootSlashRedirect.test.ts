@@ -1,17 +1,17 @@
 import {handler} from "../src/s3StaticContentRootSlashRedirect"
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-describe("S3 Content URI Rewrite", () => {
+describe("S3 Content Root Slash Redirect", () => {
   const testCases = [
     {
       description: "Site root redirect",
       requestUri: "/",
-      expectedOriginUri: "/site/"
+      expectedRedirectUri: "/site"
     },
     {
       description: "Site root with URI redirect",
       requestUri: "/page",
-      expectedOriginUri: "/site/page"
+      expectedRedirectUri: "/site/page"
     },
     {
       description: "Site actual, no redirect",
@@ -24,13 +24,13 @@ describe("S3 Content URI Rewrite", () => {
       expectedOriginUri: "/site/page"
     },
     {
-      description: "Two segment URI no redirect",
+      description: "Two segment URI, no redirect",
       requestUri: "/foo/bar",
-      expectedOriginUri: "/404.html"
+      expectedOriginUri: "/foo/bar"
     }
   ]
 
-  testCases.forEach(({description, requestUri, expectedOriginUri}) => {
+  testCases.forEach(({description, requestUri, expectedRedirectUri, expectedOriginUri}) => {
     it(description, async() => {
       const mockEvent = {
         request: {
@@ -39,7 +39,12 @@ describe("S3 Content URI Rewrite", () => {
         }
       }
       const result: any = await handler(mockEvent)
-      expect(result.uri).toEqual(expectedOriginUri)
+
+      if (expectedRedirectUri) {
+        expect(result.headers.location.value).toEqual(expectedRedirectUri)
+      } else {
+        expect(result.uri).toEqual(expectedOriginUri)
+      }
     })
   })
 })

@@ -2,8 +2,13 @@ export async function handler(event) {
   const request = event.request
   const uri = request.uri
 
+  // Don't redirect /site specifically
+  if (uri.startsWith("/site")) {
+    return request
+  }
+
   // Redirect to /site if
-  if (uri === "/") {
+  if (uri === ("/")) {
     return {
       statusCode: 302,
       statusDescription: "Found",
@@ -30,6 +35,5 @@ export async function handler(event) {
   }
 
   // Handle the request by other behaviour if it's multi-segment ie. /foo/bar
-  request.uri = "/404.html"
   return request
 }
