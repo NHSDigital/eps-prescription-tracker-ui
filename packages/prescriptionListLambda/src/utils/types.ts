@@ -8,7 +8,7 @@ export const STATUS_CATEGORY_MAP: Record<PrescriptionStatus, PrescriptionStatusC
   [PrescriptionStatus.WITH_DISPENSER_ACTIVE]: PrescriptionStatusCategories.CURRENT,
   [PrescriptionStatus.EXPIRED]: PrescriptionStatusCategories.PAST,
   [PrescriptionStatus.CANCELLED]: PrescriptionStatusCategories.PAST,
-  [PrescriptionStatus.DISPENSED]: PrescriptionStatusCategories.PAST,
+  [PrescriptionStatus.DISPENSED]: PrescriptionStatusCategories.CURRENT,
   [PrescriptionStatus.NOT_DISPENSED]: PrescriptionStatusCategories.PAST,
   [PrescriptionStatus.CLAIMED]: PrescriptionStatusCategories.PAST,
   [PrescriptionStatus.NO_CLAIMED]: PrescriptionStatusCategories.PAST,
@@ -51,10 +51,10 @@ export const statusCodeMap: Record<string, string> = {
 }
 
 export interface SearchParams {
-    prescriptionId?: string;
-    nhsNumber?: string;
-  }
+  prescriptionId?: string
+  nhsNumber?: string
+}
 
 export interface IntentMap {
-    [key: string]: RequestGroup["intent"]
-  }
+  [key: string]: RequestGroup["intent"]
+}

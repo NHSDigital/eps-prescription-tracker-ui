@@ -11,7 +11,7 @@ import {
 
 import {PrescriptionsListStrings} from "@/constants/ui-strings/PrescriptionListTabStrings"
 
-import {PrescriptionSummary, TreatmentType} from "@cpt-ui-common/common-types"
+import {PrescriptionStatus, PrescriptionSummary, TreatmentType} from "@cpt-ui-common/common-types"
 
 // This mock just displays the data. Nothing fancy!
 jest.mock("@/components/prescriptionList/PrescriptionsListTable", () => {
@@ -39,6 +39,7 @@ describe("PrescriptionsListTabs", () => {
   const currentPrescriptions: Array<PrescriptionSummary> = [
     {
       prescriptionId: "C0C757-A83008-C2D93O",
+      isDeleted: false,
       statusCode: "001",
       issueDate: "2025-03-01",
       prescriptionTreatmentType: TreatmentType.REPEAT,
@@ -49,6 +50,7 @@ describe("PrescriptionsListTabs", () => {
     },
     {
       prescriptionId: "209E3D-A83008-327F9F",
+      isDeleted: false,
       statusCode: "002",
       issueDate: "2025-03-02",
       prescriptionTreatmentType: TreatmentType.REPEAT,
@@ -62,6 +64,7 @@ describe("PrescriptionsListTabs", () => {
   const pastPrescriptions: Array<PrescriptionSummary> = [
     {
       prescriptionId: "RX003",
+      isDeleted: false,
       statusCode: "003",
       issueDate: "2025-01-01",
       prescriptionTreatmentType: TreatmentType.ACUTE,
@@ -75,6 +78,7 @@ describe("PrescriptionsListTabs", () => {
   const futurePrescriptions: Array<PrescriptionSummary> = [
     {
       prescriptionId: "RX004",
+      isDeleted: false,
       statusCode: "004",
       issueDate: "2025-04-01",
       prescriptionTreatmentType: TreatmentType.REPEAT,
@@ -85,6 +89,7 @@ describe("PrescriptionsListTabs", () => {
     },
     {
       prescriptionId: "RX005",
+      isDeleted: false,
       statusCode: "005",
       issueDate: "2025-04-02",
       prescriptionTreatmentType: TreatmentType.REPEAT,
@@ -95,6 +100,7 @@ describe("PrescriptionsListTabs", () => {
     },
     {
       prescriptionId: "RX006",
+      isDeleted: false,
       statusCode: "006",
       issueDate: "2025-04-03",
       prescriptionTreatmentType: TreatmentType.REPEAT,
@@ -178,5 +184,42 @@ describe("PrescriptionsListTabs", () => {
     expect(screen.getByTestId("mock-prescription-data")).toHaveTextContent(
       `Count: ${pastPrescriptions.length}`
     )
+  })
+
+  it("shows dispensed prescriptions in the Current prescriptions tab", () => {
+    const mockDispensedPrescription: PrescriptionSummary = {
+      prescriptionId: "MOCK-DISPENSED-TEST",
+      isDeleted: false,
+      statusCode: PrescriptionStatus.DISPENSED,
+      issueDate: "2025-06-15",
+      prescriptionTreatmentType: TreatmentType.REPEAT,
+      issueNumber: 1,
+      maxRepeats: 2,
+      prescriptionPendingCancellation: false,
+      itemsPendingCancellation: false
+    }
+
+    const testPage = (
+      <PrescriptionsListTabs
+        tabData={tabData}
+        currentPrescriptions={[mockDispensedPrescription]}
+        futurePrescriptions={[]}
+        pastPrescriptions={[]}
+      />
+    )
+
+    render(
+      <MemoryRouter initialEntries={["/prescription-list-current"]}>
+        <Routes>
+          <Route path="*" element={testPage} />
+        </Routes>
+      </MemoryRouter>
+    )
+
+    const mockDataElements = screen.getAllByTestId("mock-prescription-data")
+    expect(mockDataElements.some(el => el.textContent?.includes("Count: 1"))).toBe(true)
+
+    const currentTabs = screen.getAllByText("Current Prescriptions")
+    expect(currentTabs.length).toBeGreaterThan(0)
   })
 })
