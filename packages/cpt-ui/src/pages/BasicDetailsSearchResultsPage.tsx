@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 import React, {useEffect, useState} from "react"
-import {useNavigate, useSearchParams, useLocation} from "react-router-dom"
+import {useNavigate, useLocation} from "react-router-dom"
 import {
   BackLink,
   Table,
@@ -17,14 +17,15 @@ import {logger} from "@/helpers/logger"
 import EpsSpinner from "@/components/EpsSpinner"
 import PatientNotFoundMessage from "@/components/PatientNotFoundMessage"
 import SearchResultsTooManyMessage from "@/components/SearchResultsTooManyMessage"
+import {useSearchContext} from "@/context/SearchProvider"
 import UnknownErrorMessage from "@/components/UnknownErrorMessage"
 
 export default function SearchResultsPage() {
   const location = useLocation()
   const navigate = useNavigate()
-  const [searchParams] = useSearchParams()
   const [loading, setLoading] = useState(true)
   const [patients, setPatients] = useState<Array<PatientSummary>>([])
+  const searchContext = useSearchContext()
   const [error, setError] = useState(false)
 
   useEffect(() => {
@@ -36,10 +37,10 @@ export default function SearchResultsPage() {
     // Attempt to fetch live search results from the API
       const response = await http.get(API_ENDPOINTS.PATIENT_SEARCH, {
         params: {
-          familyName: searchParams.get("lastName"),
-          dateOfBirth: `${searchParams.get("dobYear")}-${searchParams.get("dobMonth")}-${searchParams.get("dobDay")}`,
-          postcode: searchParams.get("postcode"),
-          givenName: searchParams.get("firstName") ?? undefined
+          familyName: searchContext.lastName,
+          dateOfBirth: `${searchContext.dobYear}-${searchContext.dobMonth}-${searchContext.dobDay}`,
+          postcode: searchContext.postcode,
+          givenName: searchContext.firstName ?? undefined
         }
       })
 
@@ -55,12 +56,9 @@ export default function SearchResultsPage() {
       }
 
       if (payload.length === 1) {
-        const baseParams = {
-          nhsNumber: payload[0].nhsNumber,
-          ...Object.fromEntries(searchParams.entries())
-        }
-        const queryString = new URLSearchParams(baseParams).toString()
-        navigate(`${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}?${queryString}`)
+        searchContext.clearSearchParameters()
+        searchContext.setNhsNumber(payload[0].nhsNumber)
+        navigate(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT)
         return
       }
 
@@ -74,17 +72,14 @@ export default function SearchResultsPage() {
   }
 
   const handleRowClick = (nhsNumber: string) => {
-    const baseParams = {
-      nhsNumber,
-      ...Object.fromEntries(searchParams.entries())
-    }
-    const queryString = new URLSearchParams(baseParams).toString()
-    navigate(`${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}?${queryString}`)
+    searchContext.clearSearchParameters()
+    searchContext.setNhsNumber(nhsNumber)
+    navigate(`${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}`)
   }
 
   // Pass back the query string to keep filled form on return
   const handleGoBack = () => {
-    navigate(`${FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS}${location.search}`)
+    navigate(`${FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS}`)
   }
 
   // Sort by first name

@@ -5,8 +5,9 @@ import {PrescriptionSummary} from "@cpt-ui-common/common-types/src"
 import {PrescriptionsListStrings} from "../../constants/ui-strings/PrescriptionListTabStrings"
 import {getStatusTagColour, getStatusDisplayText, formatDateForPrescriptions} from "@/helpers/statusMetadata"
 import {PRESCRIPTION_LIST_TABLE_TEXT} from "@/constants/ui-strings/PrescriptionListTableStrings"
-import {Link, useSearchParams} from "react-router-dom"
+import {Link} from "react-router-dom"
 import {FRONTEND_PATHS} from "@/constants/environment"
+import {useSearchContext} from "@/context/SearchProvider"
 
 export interface PrescriptionsListTableProps {
   textContent: PrescriptionsListStrings;
@@ -22,11 +23,8 @@ const PrescriptionsListTable = ({
   prescriptions: initialPrescriptions
 }: PrescriptionsListTableProps) => {
   const initialSortConfig: SortConfig = {key: "issueDate", direction: null}
-
   const currentTabId: TabId = textContent.testid as TabId
-
-  const [queryParams] = useSearchParams()
-  const nhsNumber = queryParams.get("nhsNumber")
+  const searchContext = useSearchContext()
 
   // all tabs have own key in state object so each tab can be sorted individually
   const [allSortConfigs, setAllSortConfigs] = React.useState<
@@ -39,6 +37,11 @@ const PrescriptionsListTable = ({
 
   const sortConfig = allSortConfigs[currentTabId] || initialSortConfig
 
+  const setSearchPrescriptionState = (prescriptionId: string, issueNumber: string | undefined) => {
+    searchContext.clearSearchParameters()
+    searchContext.setPrescriptionId(prescriptionId)
+    searchContext.setIssueNumber(issueNumber)
+  }
   const setSortConfigForTab = (newConfig: SortConfig) => {
     setAllSortConfigs((prev) => ({
       ...prev,
@@ -126,13 +129,8 @@ const PrescriptionsListTable = ({
   }
 
   const constructLink = (
-    prescriptionId: string,
-    issueNumber?: number
   ): string => {
-    const nhsNumberParam = `nhsNumber=${nhsNumber}`
-    const prescriptionParam = `&prescriptionId=${prescriptionId}`
-    const issueNumberParam = issueNumber ? `&issueNumber=${issueNumber}` : ""
-    return `${FRONTEND_PATHS.PRESCRIPTION_DETAILS_PAGE}?${nhsNumberParam}${prescriptionParam}${issueNumberParam}`
+    return `${FRONTEND_PATHS.PRESCRIPTION_DETAILS_PAGE}`
   }
 
   const getSortedItems = () => {
@@ -359,7 +357,8 @@ const PrescriptionsListTable = ({
                           </span>
                         ) : (
                           <Link
-                            to={constructLink(row.prescriptionId, row.issueNumber)}
+                            onClick={async () => setSearchPrescriptionState(row.prescriptionId, row.issueNumber?.toString())}
+                            to={constructLink()}
                             className="nhsuk-link"
                             data-testid={`view-prescription-link-${row.prescriptionId}`}
                           >

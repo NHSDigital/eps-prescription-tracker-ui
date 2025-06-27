@@ -5,14 +5,15 @@ import {
   Col,
   BackLink
 } from "nhsuk-react-components"
-import {Link, useSearchParams} from "react-router-dom"
+import {Link} from "react-router-dom"
 import {STRINGS} from "@/constants/ui-strings/UnknownErrorMessageStrings"
 import {buildBackLink, determineSearchType} from "@/helpers/prescriptionNotFoundLinks"
+import {useSearchContext} from "@/context/SearchProvider"
 
 export default function UnknownErrorMessage() {
-  const [searchParams] = useSearchParams()
-  const searchType = determineSearchType(searchParams)
-  const backLinkUrl = buildBackLink(searchType, searchParams)
+  const searchContext = useSearchContext()
+  const searchType = determineSearchType(searchContext)
+  const backLinkUrl = buildBackLink(searchType, searchContext)
   return (
     <Container
       className="nhsuk-width-container-fluid unknown-error-container"
