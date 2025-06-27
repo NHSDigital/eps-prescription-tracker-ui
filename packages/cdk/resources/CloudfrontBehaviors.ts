@@ -9,8 +9,7 @@ import {
   IOrigin,
   KeyValueStore,
   OriginRequestPolicy,
-  ViewerProtocolPolicy,
-  ResponseHeadersPolicy
+  ViewerProtocolPolicy
 } from "aws-cdk-lib/aws-cloudfront"
 import {RestApiOrigin} from "aws-cdk-lib/aws-cloudfront-origins"
 
@@ -27,7 +26,6 @@ export interface CloudfrontBehaviorsProps {
   readonly oauth2GatewayOrigin: RestApiOrigin
   readonly oauth2GatewayRequestPolicy: OriginRequestPolicy
   readonly staticContentBucketOrigin: IOrigin
-  readonly responseHeadersPolicy: ResponseHeadersPolicy
 }
 
 /**
@@ -41,7 +39,6 @@ export class CloudfrontBehaviors extends Construct{
   public readonly s3404ModifyStatusCodeFunction: CloudfrontFunction
   public readonly s3StaticContentUriRewriteFunction: CloudfrontFunction
   public readonly keyValueStore: KeyValueStore
-  public readonly responseHeadersPolicy: ResponseHeadersPolicy
 
   public constructor(scope: Construct, id: string, props: CloudfrontBehaviorsProps){
     super(scope, id)
@@ -188,8 +185,7 @@ export class CloudfrontBehaviors extends Construct{
             function: s3StaticContentUriRewriteFunction.function,
             eventType: FunctionEventType.VIEWER_REQUEST
           }
-        ],
-        responseHeadersPolicy: this.responseHeadersPolicy
+        ]
       },
       "/api/*": {
         origin: props.apiGatewayOrigin,
@@ -202,8 +198,7 @@ export class CloudfrontBehaviors extends Construct{
             function: apiGatewayStripPathFunction.function,
             eventType: FunctionEventType.VIEWER_REQUEST
           }
-        ],
-        responseHeadersPolicy: this.responseHeadersPolicy
+        ]
       },
       "/oauth2/*": {
         origin: props.oauth2GatewayOrigin,
@@ -216,8 +211,7 @@ export class CloudfrontBehaviors extends Construct{
             function: oauth2GatewayStripPathFunction.function,
             eventType: FunctionEventType.VIEWER_REQUEST
           }
-        ],
-        responseHeadersPolicy: this.responseHeadersPolicy
+        ]
       },
       "/jwks/": {/* matches exactly <url>/jwks and will only serve the jwks json (via cf function) */
         origin: props.staticContentBucketOrigin,
@@ -228,8 +222,7 @@ export class CloudfrontBehaviors extends Construct{
             function: s3JwksUriRewriteFunction.function,
             eventType: FunctionEventType.VIEWER_REQUEST
           }
-        ],
-        responseHeadersPolicy: this.responseHeadersPolicy
+        ]
       },
       "/500.html": { // matches exactly <url>/500.html and will only serve the 500.html page (via cf function)
         origin: props.staticContentBucketOrigin,
@@ -240,15 +233,13 @@ export class CloudfrontBehaviors extends Construct{
             function: s3500UriRewriteFunction.function,
             eventType: FunctionEventType.VIEWER_REQUEST
           }
-        ],
-        responseHeadersPolicy: this.responseHeadersPolicy
+        ]
       },
 
       "/404.css": {
         origin: props.staticContentBucketOrigin,
         allowedMethods: AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
-        viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-        responseHeadersPolicy: this.responseHeadersPolicy
+        viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS
       }
     }
 
