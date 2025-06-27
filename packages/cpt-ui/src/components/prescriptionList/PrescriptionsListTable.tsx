@@ -390,7 +390,7 @@ const PrescriptionsListTable = ({
         <Table.Body>
           {getSortedItems().map((row) => {
             // creates unique key combining prescriptionId and issueNumber for ERD prescriptions
-            const uniqueKey = `${row.prescriptionId}-${row.issueNumber || 1}`
+            const uniqueKey = `${row.prescriptionId}-${row.issueNumber ?? 1}`
 
             return (
               <Table.Row key={uniqueKey} data-testid="eps-prescription-table-row">

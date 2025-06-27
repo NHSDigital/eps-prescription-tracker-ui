@@ -138,12 +138,6 @@
   word-wrap: break-word !important;
 }
 
-.eps-prescription-id {
-  white-space: nowrap !important;
-  word-wrap: break-word !important;
-  max-width: 12rem !important;
-}
-
 .eps-prescription-table-sort-text.issueDate,
 .eps-prescription-table-sort-text.statusCode {
   white-space: nowrap;
@@ -223,7 +217,7 @@
 }
 
 @media (max-width: 1024px) {
-  
+
   .eps-prescription-table th,
   .eps-prescription-table .nhsuk-table__cell[role="columnheader"] {
     padding: 0.8rem 0.5rem 1.3rem 0.5rem !important; /* Maintain extra bottom padding */
