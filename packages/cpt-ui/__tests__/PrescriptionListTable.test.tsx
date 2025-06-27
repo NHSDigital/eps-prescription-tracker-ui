@@ -27,16 +27,18 @@ const mockSetDobMonth = jest.fn()
 const mockSetDobYear = jest.fn()
 const mockSetPostcode =jest.fn()
 const mockSetNhsNumber = jest.fn()
+const mockGetAllSearchParameters = jest.fn()
+const mockSetAllSearchParameters = jest.fn()
 const defaultSearchState: SearchProviderContextType = {
-  prescriptionId: null,
+  prescriptionId: undefined,
   issueNumber: undefined,
-  firstName: null,
-  lastName: null,
-  dobDay: null,
-  dobMonth: null,
-  dobYear: null,
-  postcode: null,
-  nhsNumber: null,
+  firstName: undefined,
+  lastName: undefined,
+  dobDay: undefined,
+  dobMonth: undefined,
+  dobYear: undefined,
+  postcode: undefined,
+  nhsNumber: undefined,
   clearSearchParameters: mockClearSearchParameters,
   setPrescriptionId: mockSetPrescriptionId,
   setIssueNumber: mockSetIssueNumber,
@@ -46,7 +48,9 @@ const defaultSearchState: SearchProviderContextType = {
   setDobMonth: mockSetDobMonth,
   setDobYear: mockSetDobYear,
   setPostcode: mockSetPostcode,
-  setNhsNumber: mockSetNhsNumber
+  setNhsNumber: mockSetNhsNumber,
+  getAllSearchParameters: mockGetAllSearchParameters,
+  setAllSearchParameters: mockSetAllSearchParameters
 }
 
 describe("PrescriptionsListTable", () => {

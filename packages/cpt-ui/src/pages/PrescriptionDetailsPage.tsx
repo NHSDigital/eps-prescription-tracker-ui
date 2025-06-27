@@ -50,7 +50,7 @@ export default function PrescriptionDetailsPage() {
   const navigate = useNavigate()
 
   const searchType = determineSearchType(searchContext)
-  const backLinkUrl = buildBackLink(searchType)
+  const backLinkUrl = buildBackLink(searchType, searchContext)
 
   const getPrescriptionDetails = async (
     prescriptionId: string,

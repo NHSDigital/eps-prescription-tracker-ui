@@ -44,7 +44,7 @@ export default function PrescriptionListPage() {
   const [error, setError] = useState(false)
 
   const searchType = determineSearchType(searchContext)
-  const backLinkUrl = buildBackLink(searchType)
+  const backLinkUrl = buildBackLink(searchType, searchContext)
 
   useEffect(() => {
     const runSearch = async () => {

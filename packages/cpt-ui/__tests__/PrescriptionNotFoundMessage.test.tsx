@@ -17,16 +17,18 @@ const mockSetDobMonth = jest.fn()
 const mockSetDobYear = jest.fn()
 const mockSetPostcode =jest.fn()
 const mockSetNhsNumber = jest.fn()
+const mockGetAllSearchParameters = jest.fn()
+const mockSetAllSearchParameters = jest.fn()
 const defaultSearchState: SearchProviderContextType = {
-  prescriptionId: null,
+  prescriptionId: undefined,
   issueNumber: undefined,
-  firstName: null,
-  lastName: null,
-  dobDay: null,
-  dobMonth: null,
-  dobYear: null,
-  postcode: null,
-  nhsNumber: null,
+  firstName: undefined,
+  lastName: undefined,
+  dobDay: undefined,
+  dobMonth: undefined,
+  dobYear: undefined,
+  postcode: undefined,
+  nhsNumber: undefined,
   clearSearchParameters: mockClearSearchParameters,
   setPrescriptionId: mockSetPrescriptionId,
   setIssueNumber: mockSetIssueNumber,
@@ -36,21 +38,23 @@ const defaultSearchState: SearchProviderContextType = {
   setDobMonth: mockSetDobMonth,
   setDobYear: mockSetDobYear,
   setPostcode: mockSetPostcode,
-  setNhsNumber: mockSetNhsNumber
+  setNhsNumber: mockSetNhsNumber,
+  getAllSearchParameters: mockGetAllSearchParameters,
+  setAllSearchParameters: mockSetAllSearchParameters
 }
 
 const DummyPage = ({label}: {label: string}) => <div data-testid="dummy-page">{label}</div>
 
 interface searchParams {
-  prescriptionId?: string | null
-  issueNumber?: string | undefined
-  firstName?: string | null
-  lastName?: string | null
-  dobDay?: string | null
-  dobMonth?: string | null
-  dobYear?: string | null
-  postcode?: string | null
-  nhsNumber?: string | null
+  prescriptionId?: string
+  issueNumber?: string
+  firstName?: string
+  lastName?: string
+  dobDay?: string
+  dobMonth?: string
+  dobYear?: string
+  postcode?: string
+  nhsNumber?: string
 }
 const defaultSearchParams: searchParams = {
   firstName:"Zoe",
@@ -142,6 +146,9 @@ describe("PrescriptionNotFoundMessage", () => {
   })
 
   it("renders correct navigation and content for NHS number search", () => {
+    mockGetAllSearchParameters.mockReturnValue({
+      nhsNumber: "9912003071"
+    })
     setupRouter({
       nhsNumber: "9912003071"
     })

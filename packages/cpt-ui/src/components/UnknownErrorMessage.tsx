@@ -13,7 +13,7 @@ import {useSearchContext} from "@/context/SearchProvider"
 export default function UnknownErrorMessage() {
   const searchContext = useSearchContext()
   const searchType = determineSearchType(searchContext)
-  const backLinkUrl = buildBackLink(searchType)
+  const backLinkUrl = buildBackLink(searchType, searchContext)
   return (
     <Container
       className="nhsuk-width-container-fluid unknown-error-container"

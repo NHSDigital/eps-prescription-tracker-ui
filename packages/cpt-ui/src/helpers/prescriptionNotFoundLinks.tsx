@@ -1,7 +1,7 @@
 import {Link} from "react-router-dom"
 import {FRONTEND_PATHS} from "@/constants/environment"
 import {SEARCH_TYPES, AllowedSearchType} from "@/constants/ui-strings/PrescriptionNotFoundMessageStrings"
-import {SearchProviderContextType} from "@/context/SearchProvider"
+import {SearchParameters, SearchProviderContextType} from "@/context/SearchProvider"
 
 /**
  * Determine the type of search based on the available URL parameters
@@ -65,7 +65,23 @@ export function buildAltLink({alt}: { alt: AltType }) {
 
 // Helper to build the back link for the breadcrumb
 export function buildBackLink(
-  searchType: AllowedSearchType
+  searchType: AllowedSearchType,
+  searchContext: SearchProviderContextType
 ) {
-  return searchTypeToPath[searchType]
+  const searchParams = searchContext.getAllSearchParameters()
+  const allowedKeys = searchTypeToParams[searchType]
+
+  if (searchParams) {
+    const filteredParams = Object.fromEntries(
+      Object.entries(searchParams).filter(([key]) =>
+        allowedKeys.includes(key)
+      )
+    ) as SearchParameters
+    searchContext.clearSearchParameters()
+    searchContext.setAllSearchParameters(filteredParams)
+    return searchTypeToPath[searchType]
+
+  }
+  // default to basic details search
+  return searchTypeToPath[SEARCH_TYPES.BASIC_DETAILS]
 }

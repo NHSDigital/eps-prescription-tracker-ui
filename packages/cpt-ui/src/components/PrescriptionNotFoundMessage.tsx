@@ -48,7 +48,7 @@ export default function PrescriptionNotFoundMessage() {
     ]
   }
 
-  const backLinkUrl = buildBackLink(searchType)
+  const backLinkUrl = buildBackLink(searchType, searchContext)
 
   return (
     <Container
