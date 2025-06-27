@@ -1,7 +1,7 @@
 import React from "react"
 import "@testing-library/jest-dom"
 import {fireEvent, render, waitFor} from "@testing-library/react"
-import {BrowserRouter} from "react-router-dom"
+import {MemoryRouter} from "react-router-dom"
 
 import {FRONTEND_PATHS} from "@/constants/environment"
 
@@ -27,14 +27,14 @@ global.ResizeObserver = jest.fn().mockImplementation(function () {
 describe("The tabs component", () => {
   it("Switches between tabs when links are clicked", async () => {
     const {container} = render(
-      <BrowserRouter>
+      <MemoryRouter>
         <EpsTabs
           activeTabPath="/search-by-prescription-id"
           tabHeaderArray={exampleTabs}
         >
           <div data-testid="tab-content">Tab Content</div>
         </EpsTabs>
-      </BrowserRouter>
+      </MemoryRouter>
     )
 
     // Get the tab links for each search type

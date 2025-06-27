@@ -9,12 +9,49 @@ import PrescriptionsListTable from "@/components/prescriptionList/PrescriptionsL
 import {PrescriptionsListStrings} from "@/constants/ui-strings/PrescriptionListTabStrings"
 import {PrescriptionSummary, TreatmentType} from "@cpt-ui-common/common-types"
 import {MemoryRouter} from "react-router-dom"
+import {SearchContext, SearchProviderContextType} from "@/context/SearchProvider"
 
 jest.mock("@/helpers/statusMetadata", () => ({
   getStatusTagColour: jest.fn().mockReturnValue("blue"),
   getStatusDisplayText: jest.fn().mockReturnValue("Available to download"),
   formatDateForPrescriptions: jest.fn((date: string) => "Formatted: " + date)
 }))
+
+const mockClearSearchParameters = jest.fn()
+const mockSetPrescriptionId = jest.fn()
+const mockSetIssueNumber = jest.fn()
+const mockSetFirstName = jest.fn()
+const mockSetLastName = jest.fn()
+const mockSetDobDay = jest.fn()
+const mockSetDobMonth = jest.fn()
+const mockSetDobYear = jest.fn()
+const mockSetPostcode =jest.fn()
+const mockSetNhsNumber = jest.fn()
+const mockGetAllSearchParameters = jest.fn()
+const mockSetAllSearchParameters = jest.fn()
+const defaultSearchState: SearchProviderContextType = {
+  prescriptionId: undefined,
+  issueNumber: undefined,
+  firstName: undefined,
+  lastName: undefined,
+  dobDay: undefined,
+  dobMonth: undefined,
+  dobYear: undefined,
+  postcode: undefined,
+  nhsNumber: undefined,
+  clearSearchParameters: mockClearSearchParameters,
+  setPrescriptionId: mockSetPrescriptionId,
+  setIssueNumber: mockSetIssueNumber,
+  setFirstName: mockSetFirstName,
+  setLastName: mockSetLastName,
+  setDobDay: mockSetDobDay,
+  setDobMonth: mockSetDobMonth,
+  setDobYear: mockSetDobYear,
+  setPostcode: mockSetPostcode,
+  setNhsNumber: mockSetNhsNumber,
+  getAllSearchParameters: mockGetAllSearchParameters,
+  setAllSearchParameters: mockSetAllSearchParameters
+}
 
 describe("PrescriptionsListTable", () => {
   const textContent: PrescriptionsListStrings = {
@@ -28,6 +65,7 @@ describe("PrescriptionsListTable", () => {
   const prescriptions: Array<PrescriptionSummary> = [
     {
       prescriptionId: "C0C757-A83008-C2D93O",
+      isDeleted: false,
       statusCode: "0001",
       issueDate: "2025-03-01",
       prescriptionTreatmentType: TreatmentType.ACUTE,
@@ -38,6 +76,7 @@ describe("PrescriptionsListTable", () => {
     },
     {
       prescriptionId: "209E3D-A83008-327F9F",
+      isDeleted: false,
       statusCode: "0002",
       issueDate: "2025-03-10",
       prescriptionTreatmentType: TreatmentType.REPEAT,
@@ -48,6 +87,7 @@ describe("PrescriptionsListTable", () => {
     },
     {
       prescriptionId: "209E3D-A83008-327FXZ",
+      isDeleted: false,
       statusCode: "0003",
       issueDate: "2025-02-15",
       prescriptionTreatmentType: TreatmentType.REPEAT,
@@ -60,9 +100,11 @@ describe("PrescriptionsListTable", () => {
 
   const renderWithRouter = (component: React.ReactElement) => {
     return render(
-      <MemoryRouter>
-        {component}
-      </MemoryRouter>
+      <SearchContext.Provider value={defaultSearchState}>
+        <MemoryRouter>
+          {component}
+        </MemoryRouter>
+      </SearchContext.Provider>
     )
   }
 
@@ -268,6 +310,7 @@ describe("PrescriptionsListTable", () => {
     const testPrescriptions = [
       {
         prescriptionId: "88AAF5-A83008-3D404Q",
+        isDeleted: false,
         statusCode: "0002",
         issueDate: "2025-04-15",
         prescriptionTreatmentType: TreatmentType.REPEAT,
@@ -278,6 +321,7 @@ describe("PrescriptionsListTable", () => {
       },
       {
         prescriptionId: "7F1A4B-A83008-91DC2E",
+        isDeleted: false,
         statusCode: "0002",
         issueDate: "2025-04-10",
         prescriptionTreatmentType: TreatmentType.REPEAT,
@@ -288,6 +332,7 @@ describe("PrescriptionsListTable", () => {
       },
       {
         prescriptionId: "4D6F2C-A83008-A3E7D1",
+        isDeleted: false,
         statusCode: "0003",
         issueDate: "2025-04-01",
         prescriptionTreatmentType: TreatmentType.REPEAT,
@@ -336,6 +381,56 @@ describe("PrescriptionsListTable", () => {
       expect(rows[0]).toHaveTextContent("1")
       expect(rows[1]).toHaveTextContent("2")
       expect(rows[2]).toHaveTextContent("3")
+    })
+
+    jest.useRealTimers()
+  })
+
+  it("responds to click on prescription id", async () => {
+    jest.useFakeTimers()
+
+    renderWithRouter(<PrescriptionsListTable textContent={textContent} prescriptions={prescriptions} />)
+
+    await waitFor(() => {
+      const prescriptionButton = screen.getByTestId("view-prescription-link-C0C757-A83008-C2D93O")
+
+      expect(prescriptionButton).toBeInTheDocument()
+
+      fireEvent.click(prescriptionButton)
+      expect(mockClearSearchParameters).toHaveBeenCalled()
+      expect(mockSetPrescriptionId).toHaveBeenCalledWith("C0C757-A83008-C2D93O")
+      expect(mockSetIssueNumber).toHaveBeenCalledWith("1")
+    })
+
+  })
+
+  it("renders unavailable text when prescription is deleted", async () => {
+    jest.useFakeTimers()
+
+    const deletedPrescription = {
+      prescriptionId: "51E09C-A83008-05DA33",
+      isDeleted: true,
+      statusCode: "0005",
+      issueDate: "2025-06-01",
+      prescriptionTreatmentType: TreatmentType.ACUTE,
+      issueNumber: 1,
+      maxRepeats: 1,
+      prescriptionPendingCancellation: false,
+      itemsPendingCancellation: false
+    }
+
+    renderWithRouter(
+      <PrescriptionsListTable
+        textContent={textContent}
+        prescriptions={[deletedPrescription]}
+      />
+    )
+
+    jest.advanceTimersByTime(2000)
+
+    await waitFor(() => {
+      const unavailableElement = screen.getByTestId("unavailable-text-51E09C-A83008-05DA33")
+      expect(unavailableElement).toBeInTheDocument()
     })
 
     jest.useRealTimers()

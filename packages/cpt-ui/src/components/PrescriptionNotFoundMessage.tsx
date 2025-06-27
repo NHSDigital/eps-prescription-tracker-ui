@@ -1,5 +1,5 @@
 import React from "react"
-import {Link, useSearchParams} from "react-router-dom"
+import {Link} from "react-router-dom"
 import {
   Container,
   Row,
@@ -8,10 +8,11 @@ import {
 } from "nhsuk-react-components"
 import {SEARCH_STRINGS, STRINGS} from "@/constants/ui-strings/PrescriptionNotFoundMessageStrings"
 import {buildAltLink, buildBackLink, determineSearchType} from "@/helpers/prescriptionNotFoundLinks"
+import {useSearchContext} from "@/context/SearchProvider"
 
 export default function PrescriptionNotFoundMessage() {
-  const [searchParams] = useSearchParams()
-  const searchType = determineSearchType(searchParams)
+  const searchContext = useSearchContext()
+  const searchType = determineSearchType(searchContext)
   const content = SEARCH_STRINGS[searchType]
 
   /**
@@ -47,7 +48,7 @@ export default function PrescriptionNotFoundMessage() {
     ]
   }
 
-  const backLinkUrl = buildBackLink(searchType, searchParams)
+  const backLinkUrl = buildBackLink(searchType, searchContext)
 
   return (
     <Container

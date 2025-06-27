@@ -23,6 +23,7 @@ const mockedAxios = axios as jest.Mocked<typeof axios>
 
 import PrescriptionListPage from "@/pages/PrescriptionListPage"
 import {AuthContextType, AuthContext} from "@/context/AuthProvider"
+import {SearchContext, SearchProviderContextType} from "@/context/SearchProvider"
 
 const mockCognitoSignIn = jest.fn()
 const mockCognitoSignOut = jest.fn()
@@ -44,6 +45,42 @@ const signedInAuthState: AuthContextType = {
   updateSelectedRole: jest.fn()
 }
 
+const mockClearSearchParameters = jest.fn()
+const mockSetPrescriptionId = jest.fn()
+const mockSetIssueNumber = jest.fn()
+const mockSetFirstName = jest.fn()
+const mockSetLastName = jest.fn()
+const mockSetDobDay = jest.fn()
+const mockSetDobMonth = jest.fn()
+const mockSetDobYear = jest.fn()
+const mockSetPostcode =jest.fn()
+const mockSetNhsNumber = jest.fn()
+const mockGetAllSearchParameters = jest.fn()
+const mockSetAllSearchParameters = jest.fn()
+const defaultSearchState: SearchProviderContextType = {
+  prescriptionId: undefined,
+  issueNumber: undefined,
+  firstName: undefined,
+  lastName: undefined,
+  dobDay: undefined,
+  dobMonth: undefined,
+  dobYear: undefined,
+  postcode: undefined,
+  nhsNumber: undefined,
+  clearSearchParameters: mockClearSearchParameters,
+  setPrescriptionId: mockSetPrescriptionId,
+  setIssueNumber: mockSetIssueNumber,
+  setFirstName: mockSetFirstName,
+  setLastName: mockSetLastName,
+  setDobDay: mockSetDobDay,
+  setDobMonth: mockSetDobMonth,
+  setDobYear: mockSetDobYear,
+  setPostcode: mockSetPostcode,
+  setNhsNumber: mockSetNhsNumber,
+  getAllSearchParameters: mockGetAllSearchParameters,
+  setAllSearchParameters: mockSetAllSearchParameters
+}
+
 const mockSearchResponse: SearchResponse = {
   patient: {
     nhsNumber: "5900009890",
@@ -63,6 +100,7 @@ const mockSearchResponse: SearchResponse = {
   currentPrescriptions: [
     {
       prescriptionId: "C0C757-A83008-C2D93O",
+      isDeleted: false,
       statusCode: PrescriptionStatus.TO_BE_DISPENSED,
       issueDate: "2025-03-01",
       prescriptionTreatmentType: TreatmentType.REPEAT,
@@ -73,6 +111,7 @@ const mockSearchResponse: SearchResponse = {
     },
     {
       prescriptionId: "209E3D-A83008-327F9F",
+      isDeleted: false,
       statusCode: PrescriptionStatus.WITH_DISPENSER,
       issueDate: "2025-02-15",
       prescriptionTreatmentType: TreatmentType.ACUTE,
@@ -83,6 +122,7 @@ const mockSearchResponse: SearchResponse = {
     },
     {
       prescriptionId: "RX003",
+      isDeleted: false,
       statusCode: PrescriptionStatus.WITH_DISPENSER_ACTIVE,
       issueDate: "2025-03-10",
       prescriptionTreatmentType: TreatmentType.ERD,
@@ -95,6 +135,7 @@ const mockSearchResponse: SearchResponse = {
   pastPrescriptions: [
     {
       prescriptionId: "RX004",
+      isDeleted: false,
       statusCode: PrescriptionStatus.DISPENSED,
       issueDate: "2025-01-15",
       prescriptionTreatmentType: TreatmentType.REPEAT,
@@ -105,6 +146,7 @@ const mockSearchResponse: SearchResponse = {
     },
     {
       prescriptionId: "RX005",
+      isDeleted: false,
       statusCode: PrescriptionStatus.NOT_DISPENSED,
       issueDate: "2024-12-20",
       prescriptionTreatmentType: TreatmentType.ACUTE,
@@ -117,6 +159,7 @@ const mockSearchResponse: SearchResponse = {
   futurePrescriptions: [
     {
       prescriptionId: "RX006",
+      isDeleted: false,
       statusCode: PrescriptionStatus.FUTURE_DATED_PRESCRIPTION,
       issueDate: "2025-04-01",
       prescriptionTreatmentType: TreatmentType.REPEAT,
@@ -148,19 +191,25 @@ function Dummy404() {
   )
 }
 
-const renderWithRouter = (route: string, authState: AuthContextType = signedInAuthState) => {
+const renderWithRouter = (
+  route: string,
+  authState: AuthContextType = signedInAuthState,
+  searchState: SearchProviderContextType = defaultSearchState
+) => {
   return render(
     <AuthContext.Provider value={authState}>
-      <MockPatientDetailsProvider>
-        <MemoryRouter initialEntries={[route]}>
-          <Routes>
-            <Route path="*" element={<Dummy404 />} />
-            <Route path={FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT} element={<PrescriptionListPage />} />
-            <Route path={FRONTEND_PATHS.PRESCRIPTION_LIST_PAST} element={<PrescriptionListPage />} />
-            <Route path={FRONTEND_PATHS.PRESCRIPTION_LIST_FUTURE} element={<PrescriptionListPage />} />
-          </Routes>
-        </MemoryRouter>
-      </MockPatientDetailsProvider>
+      <SearchContext.Provider value={searchState}>
+        <MockPatientDetailsProvider>
+          <MemoryRouter initialEntries={[route]}>
+            <Routes>
+              <Route path="*" element={<Dummy404 />} />
+              <Route path={FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT} element={<PrescriptionListPage />} />
+              <Route path={FRONTEND_PATHS.PRESCRIPTION_LIST_PAST} element={<PrescriptionListPage />} />
+              <Route path={FRONTEND_PATHS.PRESCRIPTION_LIST_FUTURE} element={<PrescriptionListPage />} />
+            </Routes>
+          </MemoryRouter>
+        </MockPatientDetailsProvider>
+      </SearchContext.Provider>
     </AuthContext.Provider>
   )
 }
@@ -200,7 +249,12 @@ describe("PrescriptionListPage", () => {
     mockedAxios.get.mockReturnValue(pendingPromise)
 
     renderWithRouter(
-      FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT + "?prescriptionId=ABC123-A83008-C2D93O"
+      FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT,
+      signedInAuthState,
+      {
+        ...defaultSearchState,
+        prescriptionId: "ABC123-A83008-C2D93O"
+      }
     )
 
     expect(screen.getByText("Loading...")).toBeVisible()
@@ -212,7 +266,14 @@ describe("PrescriptionListPage", () => {
       data: mockSearchResponse
     })
 
-    renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT + "?prescriptionId=C0C757-A83008-C2D93O")
+    renderWithRouter(
+      FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT,
+      signedInAuthState,
+      {
+        ...defaultSearchState,
+        prescriptionId: "C0C757-A83008-C2D93O"
+      }
+    )
     expect(mockedAxios.get).toHaveBeenCalledTimes(1)
 
     await waitFor(() => {
@@ -235,7 +296,15 @@ describe("PrescriptionListPage", () => {
       data: mockSearchResponse
     })
 
-    renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT + "?prescriptionId=C0C757-A83008-C2D93O")
+    renderWithRouter(
+      FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT,
+      signedInAuthState,
+      {
+        ...defaultSearchState,
+        prescriptionId: "C0C757-A83008-C2D93O"
+      }
+    )
+
     expect(mockedAxios.get).toHaveBeenCalledTimes(1)
 
     await waitFor(() => {
@@ -258,7 +327,14 @@ describe("PrescriptionListPage", () => {
       data: noResults
     })
 
-    renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT + "?prescriptionId=C0C757-A83008-C2D93O")
+    renderWithRouter(
+      FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT,
+      signedInAuthState,
+      {
+        ...defaultSearchState,
+        prescriptionId: "C0C757-A83008-C2D93O"
+      }
+    )
     expect(mockedAxios.get).toHaveBeenCalledTimes(1)
 
     await waitFor(() => {
@@ -268,15 +344,15 @@ describe("PrescriptionListPage", () => {
       )
 
       const tabCurrentHeading = screen
-        .getByTestId(`eps-tab-heading ${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}?prescriptionId=C0C757-A83008-C2D93O`)
+        .getByTestId(`eps-tab-heading ${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}`)
 
       expect(tabCurrentHeading).toHaveTextContent("(3)")
       const tabPastHeading = screen
-        .getByTestId(`eps-tab-heading ${FRONTEND_PATHS.PRESCRIPTION_LIST_PAST}?prescriptionId=C0C757-A83008-C2D93O`)
+        .getByTestId(`eps-tab-heading ${FRONTEND_PATHS.PRESCRIPTION_LIST_PAST}`)
       expect(tabPastHeading).toHaveTextContent("(0)")
 
       const tabFutureHeading = screen
-        .getByTestId(`eps-tab-heading ${FRONTEND_PATHS.PRESCRIPTION_LIST_FUTURE}?prescriptionId=C0C757-A83008-C2D93O`)
+        .getByTestId(`eps-tab-heading ${FRONTEND_PATHS.PRESCRIPTION_LIST_FUTURE}`)
       expect(tabFutureHeading).toHaveTextContent("(0)")
     })
   })
@@ -303,15 +379,25 @@ describe("PrescriptionListPage", () => {
       status: 200,
       data: mockSearchResponse
     })
+    mockGetAllSearchParameters.mockReturnValue({
+      prescriptionId: "ABC123-A83008-C2D93O"
+    })
 
-    renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT + "?prescriptionId=ABC123-A83008-C2D93O")
+    renderWithRouter(
+      FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT,
+      signedInAuthState,
+      {
+        ...defaultSearchState,
+        prescriptionId: "ABC123-A83008-C2D93O"
+      }
+    )
     expect(mockedAxios.get).toHaveBeenCalledTimes(1)
 
     await waitFor(() => {
       const backLink = screen.getByTestId("go-back-link")
       expect(backLink).toHaveAttribute(
         "href",
-        FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID + "?prescriptionId=ABC123-A83008-C2D93O"
+        FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID
       )
     })
   })
@@ -321,12 +407,20 @@ describe("PrescriptionListPage", () => {
       status: 200,
       data: mockSearchResponse
     })
-    renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT + "?nhsNumber=1234567890")
+    renderWithRouter(
+      FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT,
+      signedInAuthState,
+      {
+        ...defaultSearchState,
+        nhsNumber: "1234567890"
+      }
+    )
+
     expect(mockedAxios.get).toHaveBeenCalledTimes(1)
 
     await waitFor(() => {
       const backLink = screen.getByTestId("go-back-link")
-      expect(backLink).toHaveAttribute("href", FRONTEND_PATHS.SEARCH_BY_NHS_NUMBER + "?nhsNumber=1234567890")
+      expect(backLink).toHaveAttribute("href", FRONTEND_PATHS.SEARCH_BY_NHS_NUMBER)
     })
   })
 
@@ -336,14 +430,23 @@ describe("PrescriptionListPage", () => {
       data: mockSearchResponse
     })
 
-    const url = FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT + "?nhsNumber=1234567890&prescriptionId=ABC123-A83008-C2D93O"
-    renderWithRouter(url)
+    const url = FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT
+    renderWithRouter(
+      url,
+      signedInAuthState,
+      {
+        ...defaultSearchState,
+        nhsNumber: "1234567890",
+        prescriptionId: "ABC123-A83008-C2D93O"
+      }
+
+    )
 
     expect(mockedAxios.get).toHaveBeenCalledTimes(1)
 
     await waitFor(() => {
       const backLink = screen.getByTestId("go-back-link")
-      expect(backLink).toHaveAttribute("href", FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT + "?nhsNumber=1234567890")
+      expect(backLink).toHaveAttribute("href", FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT)
     })
   })
 
@@ -360,7 +463,15 @@ describe("PrescriptionListPage", () => {
       data: noResults
     })
 
-    renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT + "?prescriptionId=ABC123-ABC123-ABC123")
+    renderWithRouter(
+      FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT,
+      signedInAuthState,
+      {
+        ...defaultSearchState,
+        prescriptionId: "ABC123-ABC123-ABC123"
+      }
+    )
+
     expect(mockedAxios.get).toHaveBeenCalledTimes(1)
 
     await waitFor(() => {
@@ -372,7 +483,14 @@ describe("PrescriptionListPage", () => {
   it("renders prescription not found message with back link to prescriptionId search when query fails", async () => {
     mockedAxios.get.mockRejectedValue(createAxiosError(404))
 
-    renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT + "?prescriptionId=002F5E-A83008-497F1Z")
+    renderWithRouter(
+      FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT,
+      signedInAuthState,
+      {
+        ...defaultSearchState,
+        prescriptionId: "002F5E-A83008-497F1Z"
+      }
+    )
     expect(mockedAxios.get).toHaveBeenCalledTimes(1)
 
     await waitFor(() => {
@@ -382,7 +500,7 @@ describe("PrescriptionListPage", () => {
       const backLink = screen.getByTestId("go-back-link")
       expect(backLink).toHaveAttribute(
         "href",
-        FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID + "?prescriptionId=002F5E-A83008-497F1Z"
+        FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID
       )
     })
   })
@@ -390,7 +508,15 @@ describe("PrescriptionListPage", () => {
   it("renders prescription not found message with back link to NHS number search when query fails", async () => {
     mockedAxios.get.mockRejectedValue(createAxiosError(404))
 
-    renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT + "?nhsNumber=3814272730")
+    renderWithRouter(
+      FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT,
+      signedInAuthState,
+      {
+        ...defaultSearchState,
+        nhsNumber: "32165649870"
+      }
+    )
+
     expect(mockedAxios.get).toHaveBeenCalledTimes(1)
 
     await waitFor(() => {
@@ -400,7 +526,7 @@ describe("PrescriptionListPage", () => {
       const backLink = screen.getByTestId("go-back-link")
       expect(backLink).toHaveAttribute(
         "href",
-        FRONTEND_PATHS.SEARCH_BY_NHS_NUMBER + "?nhsNumber=3814272730"
+        FRONTEND_PATHS.SEARCH_BY_NHS_NUMBER
       )
     })
   })
@@ -408,7 +534,14 @@ describe("PrescriptionListPage", () => {
   it("renders prescription not found message when API returns no prescriptions for a valid NHS number", async () => {
     mockedAxios.get.mockResolvedValue(emptyResultsMock)
 
-    renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT + "?nhsNumber=1234567890")
+    renderWithRouter(
+      FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT,
+      signedInAuthState,
+      {
+        ...defaultSearchState,
+        nhsNumber: "32165649870"
+      }
+    )
     expect(mockedAxios.get).toHaveBeenCalledTimes(1)
 
     await waitFor(() => {
@@ -418,7 +551,7 @@ describe("PrescriptionListPage", () => {
       const backLink = screen.getByTestId("go-back-link")
       expect(backLink).toHaveAttribute(
         "href",
-        FRONTEND_PATHS.SEARCH_BY_NHS_NUMBER + "?nhsNumber=1234567890"
+        FRONTEND_PATHS.SEARCH_BY_NHS_NUMBER
       )
     })
   })
@@ -429,7 +562,15 @@ describe("PrescriptionListPage", () => {
       response: {status: 404}
     })
 
-    renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT + "?nhsNumber=1234567890")
+    renderWithRouter(
+      FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT,
+      signedInAuthState,
+      {
+        ...defaultSearchState,
+        nhsNumber: "32165649870"
+      }
+
+    )
 
     await waitFor(() => {
       expect(screen.getByTestId("presc-not-found-heading")).toHaveTextContent(STRINGS.heading)
@@ -439,7 +580,14 @@ describe("PrescriptionListPage", () => {
   it("displays UnknownErrorMessage for real network/server errors", async () => {
     mockedAxios.get.mockRejectedValue(new Error("AWS CloudFront issue"))
 
-    renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT + "?nhsNumber=1234567890")
+    renderWithRouter(
+      FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT,
+      signedInAuthState,
+      {
+        ...defaultSearchState,
+        nhsNumber: "32165649870"
+      }
+    )
 
     await waitFor(() => {
       const heading = screen.getByTestId("unknown-error-heading")
@@ -451,7 +599,14 @@ describe("PrescriptionListPage", () => {
   it("renders UnknownErrorMessage when server responds with unexpected error", async () => {
     mockedAxios.get.mockRejectedValue({response: {status: 500}})
 
-    renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT + "?nhsNumber=1234567890")
+    renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT,
+      signedInAuthState,
+      {
+        ...defaultSearchState,
+        nhsNumber: "32165649870"
+      }
+
+    )
 
     await waitFor(() => {
       const heading = screen.getByTestId("unknown-error-heading")

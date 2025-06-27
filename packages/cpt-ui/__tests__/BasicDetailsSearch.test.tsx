@@ -20,27 +20,7 @@ import {BasicDetailsSearchType} from "@cpt-ui-common/common-types"
 import {STRINGS} from "@/constants/ui-strings/BasicDetailsSearchStrings"
 import {FRONTEND_PATHS} from "@/constants/environment"
 import {AuthContext, AuthContextType} from "@/context/AuthProvider"
-
-// Utility function to create a query string from form data
-function makeQueryString(
-  formData: Record<string, string>,
-  flags: Record<string, string> = {}
-): string {
-  const params = new URLSearchParams(
-    Object.fromEntries(
-      Object.entries({
-        firstName: formData.firstName ?? "",
-        lastName: formData.lastName ?? "",
-        dobDay: formData.dobDay ?? "",
-        dobMonth: formData.dobMonth ?? "",
-        dobYear: formData.dobYear ?? "",
-        postcode: formData.postcode ?? "",
-        ...flags
-      })
-    )
-  )
-  return params.toString()
-}
+import {SearchContext, SearchProviderContextType} from "@/context/SearchProvider"
 
 jest.mock("react-router-dom", () => {
   const actual = jest.requireActual("react-router-dom")
@@ -73,20 +53,58 @@ const signedInAuthState: AuthContextType = {
   updateSelectedRole: jest.fn()
 }
 
+const mockClearSearchParameters = jest.fn()
+const mockSetPrescriptionId = jest.fn()
+const mockSetIssueNumber = jest.fn()
+const mockSetFirstName = jest.fn()
+const mockSetLastName = jest.fn()
+const mockSetDobDay = jest.fn()
+const mockSetDobMonth = jest.fn()
+const mockSetDobYear = jest.fn()
+const mockSetPostcode =jest.fn()
+const mockSetNhsNumber = jest.fn()
+const mockGetAllSearchParameters = jest.fn()
+const mockSetAllSearchParameters = jest.fn()
+const defaultSearchState: SearchProviderContextType = {
+  prescriptionId: undefined,
+  issueNumber: undefined,
+  firstName: undefined,
+  lastName: undefined,
+  dobDay: undefined,
+  dobMonth: undefined,
+  dobYear: undefined,
+  postcode: undefined,
+  nhsNumber: undefined,
+  clearSearchParameters: mockClearSearchParameters,
+  setPrescriptionId: mockSetPrescriptionId,
+  setIssueNumber: mockSetIssueNumber,
+  setFirstName: mockSetFirstName,
+  setLastName: mockSetLastName,
+  setDobDay: mockSetDobDay,
+  setDobMonth: mockSetDobMonth,
+  setDobYear: mockSetDobYear,
+  setPostcode: mockSetPostcode,
+  setNhsNumber: mockSetNhsNumber,
+  getAllSearchParameters: mockGetAllSearchParameters,
+  setAllSearchParameters: mockSetAllSearchParameters
+}
+
 const LocationDisplay = () => {
   const location = useLocation()
   return <div data-testid="location-display">{location.pathname + location.search}</div>
 }
 
-const renderWithRouter = (ui: React.ReactElement) => {
+const renderWithRouter = (ui: React.ReactElement, searchState: SearchProviderContextType) => {
   return render(
     <AuthContext.Provider value={signedInAuthState}>
-      <MemoryRouter initialEntries={["/search"]}>
-        <Routes>
-          <Route path="/search" element={ui} />
-          <Route path="*" element={<LocationDisplay />} />
-        </Routes>
-      </MemoryRouter>
+      <SearchContext.Provider value={searchState}>
+        <MemoryRouter initialEntries={["/search"]}>
+          <Routes>
+            <Route path="/search" element={ui} />
+            <Route path="*" element={<LocationDisplay />} />
+          </Routes>
+        </MemoryRouter>
+      </SearchContext.Provider>
     </AuthContext.Provider>
   )
 }
@@ -142,7 +160,7 @@ describe("BasicDetailsSearch", () => {
     const mockNavigate = jest.fn();
     (useNavigate as jest.Mock).mockReturnValue(mockNavigate)
 
-    renderWithRouter(<BasicDetailsSearch />)
+    renderWithRouter(<BasicDetailsSearch />, defaultSearchState)
 
     const formData = {
       firstName: "",
@@ -157,10 +175,14 @@ describe("BasicDetailsSearch", () => {
     await submitForm()
 
     await waitFor(() => {
-      const queryString = makeQueryString(formData)
-      expect(mockNavigate).toHaveBeenCalledWith(
-        `${FRONTEND_PATHS.PATIENT_SEARCH_RESULTS}?${queryString}`
-      )
+      expect(mockNavigate).toHaveBeenCalledWith(FRONTEND_PATHS.PATIENT_SEARCH_RESULTS)
+      expect(mockClearSearchParameters).toHaveBeenCalled()
+      expect(mockSetFirstName).toHaveBeenCalledWith(formData.firstName)
+      expect(mockSetLastName).toHaveBeenCalledWith(formData.lastName)
+      expect(mockSetDobDay).toHaveBeenCalledWith(formData.dobDay)
+      expect(mockSetDobMonth).toHaveBeenCalledWith(formData.dobMonth)
+      expect(mockSetDobYear).toHaveBeenCalledWith(formData.dobYear)
+      expect(mockSetPostcode).toHaveBeenCalledWith(formData.postcode)
     })
   })
 
@@ -209,7 +231,7 @@ describe("BasicDetailsSearch", () => {
 
   testCases.forEach(({title, input, expectedError}) => {
     it(title, async () => {
-      renderWithRouter(<BasicDetailsSearch />)
+      renderWithRouter(<BasicDetailsSearch />, defaultSearchState)
       await fillForm(input)
       await submitForm()
       expectInlineAndSummaryError(expectedError)
@@ -238,7 +260,7 @@ describe("BasicDetailsSearch", () => {
     it.each(dobCases)(
       "shows correct DOB error for %j",
       async (partialDob, expectedError) => {
-        renderWithRouter(<BasicDetailsSearch />)
+        renderWithRouter(<BasicDetailsSearch />, defaultSearchState)
         await fillForm({lastName: "Smith", ...partialDob})
         await submitForm()
         expect(screen.getAllByText(expectedError)).toHaveLength(2)
@@ -247,14 +269,14 @@ describe("BasicDetailsSearch", () => {
   })
 
   it("shows error for DOB in the future", async () => {
-    renderWithRouter(<BasicDetailsSearch />)
+    renderWithRouter(<BasicDetailsSearch />, defaultSearchState)
     await fillForm({lastName: "Smith", dobDay: "01", dobMonth: "01", dobYear: `${new Date().getFullYear() + 1}`})
     await submitForm()
     expectInlineAndSummaryError(STRINGS.errors.dobFutureDate)
   })
 
   it("applies error class only to invalid DOB fields", async () => {
-    renderWithRouter(<BasicDetailsSearch />)
+    renderWithRouter(<BasicDetailsSearch />, defaultSearchState)
     await fillForm({lastName: "Smith", dobDay: "ab", dobMonth: "", dobYear: "2014"})
     await submitForm()
     expectFieldHasErrorClass("dob-day-input")
@@ -263,7 +285,7 @@ describe("BasicDetailsSearch", () => {
   })
 
   it("applies error to all DOB fields if dobRequired", async () => {
-    renderWithRouter(<BasicDetailsSearch />)
+    renderWithRouter(<BasicDetailsSearch />, defaultSearchState)
     await fillForm({lastName: "Smith"})
     await submitForm()
     expectFieldHasErrorClass("dob-day-input")
@@ -272,14 +294,14 @@ describe("BasicDetailsSearch", () => {
   })
 
   it("adds error to year when dobFutureDate", async () => {
-    renderWithRouter(<BasicDetailsSearch />)
+    renderWithRouter(<BasicDetailsSearch />, defaultSearchState)
     await fillForm({lastName: "Smith", dobDay: "01", dobMonth: "01", dobYear: `${new Date().getFullYear() + 1}`})
     await submitForm()
     expectFieldHasErrorClass("dob-year-input")
   })
 
   it("focuses month field if it's invalid (e.g., 45)", async () => {
-    renderWithRouter(<BasicDetailsSearch />)
+    renderWithRouter(<BasicDetailsSearch />, defaultSearchState)
     await fillForm({lastName: "Smith", dobDay: "01", dobMonth: "45", dobYear: "2014"})
     await submitForm()
     const monthInput = screen.getByTestId("dob-month-input")
@@ -288,7 +310,7 @@ describe("BasicDetailsSearch", () => {
   })
 
   it("adds error to day/month when both out of range", async () => {
-    renderWithRouter(<BasicDetailsSearch />)
+    renderWithRouter(<BasicDetailsSearch />, defaultSearchState)
     await fillForm({lastName: "Smith", dobDay: "79", dobMonth: "45", dobYear: "2014"})
     await submitForm()
     expectFieldHasErrorClass("dob-day-input")
@@ -297,7 +319,7 @@ describe("BasicDetailsSearch", () => {
   })
 
   it("focuses day input when dobInvalidDate is due to day and month", async () => {
-    renderWithRouter(<BasicDetailsSearch />)
+    renderWithRouter(<BasicDetailsSearch />, defaultSearchState)
     await fillForm({lastName: "Smith", dobDay: "79", dobMonth: "45", dobYear: "2014"})
     await submitForm()
     const link = screen.getAllByText(STRINGS.errors.dobInvalidDate).find(el => el.tagName === "A")!
@@ -306,7 +328,7 @@ describe("BasicDetailsSearch", () => {
   })
 
   it("adds error class to all DOB fields and focuses day if all invalid", async () => {
-    renderWithRouter(<BasicDetailsSearch />)
+    renderWithRouter(<BasicDetailsSearch />, defaultSearchState)
     await fillForm({lastName: "Smith", dobDay: "78", dobMonth: "75", dobYear: ""})
     await submitForm()
     expectFieldHasErrorClass("dob-day-input")
@@ -318,7 +340,7 @@ describe("BasicDetailsSearch", () => {
   })
 
   it("adds error class to all DOB fields and focuses day for all-zero DOB input", async () => {
-    renderWithRouter(<BasicDetailsSearch />)
+    renderWithRouter(<BasicDetailsSearch />, defaultSearchState)
     await fillForm({lastName: "Smith", dobDay: "00", dobMonth: "00", dobYear: "0000"})
     await submitForm()
     expectFieldHasErrorClass("dob-day-input")
@@ -330,7 +352,7 @@ describe("BasicDetailsSearch", () => {
   })
 
   it("adds error class to all DOB fields and focuses day for invalid calendar dates", async () => {
-    renderWithRouter(<BasicDetailsSearch />)
+    renderWithRouter(<BasicDetailsSearch />, defaultSearchState)
     await fillForm({lastName: "Smith", dobDay: "31", dobMonth: "11", dobYear: "2015"})
     await submitForm()
     expectFieldHasErrorClass("dob-day-input")
@@ -342,7 +364,7 @@ describe("BasicDetailsSearch", () => {
   })
 
   it("keeps all DOB fields with error class after correction until resubmission", async () => {
-    renderWithRouter(<BasicDetailsSearch />)
+    renderWithRouter(<BasicDetailsSearch />, defaultSearchState)
 
     // Step 1: submit invalid input
     await fillForm({lastName: "Smith", dobDay: "!", dobMonth: "!", dobYear: "!"})
