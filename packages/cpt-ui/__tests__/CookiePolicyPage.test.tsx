@@ -3,7 +3,7 @@ import {render, screen, fireEvent} from "@testing-library/react"
 import CookiePolicyPage from "@/pages/CookiePolicyPage"
 import {useAuth} from "@/context/AuthProvider"
 import {cptAwsRum} from "@/helpers/awsRum"
-import {BrowserRouter} from "react-router-dom"
+import {MemoryRouter} from "react-router-dom"
 
 // Mocks
 jest.mock("@/context/AuthProvider", () => ({
@@ -103,9 +103,9 @@ jest.mock("@/constants/ui-strings/CookieStrings", () => ({
 
 const renderWithRouter = () =>
   render(
-    <BrowserRouter>
+    <MemoryRouter>
       <CookiePolicyPage />
-    </BrowserRouter>
+    </MemoryRouter>
   )
 
 describe("CookiePolicyPage", () => {
