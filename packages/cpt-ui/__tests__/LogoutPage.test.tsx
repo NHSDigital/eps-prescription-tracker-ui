@@ -1,6 +1,6 @@
 import "@testing-library/jest-dom"
 import {render, screen} from "@testing-library/react"
-import {BrowserRouter} from "react-router-dom"
+import {MemoryRouter} from "react-router-dom"
 import React from "react"
 import LogoutPage from "@/pages/LogoutPage"
 import {AuthContext, type AuthContextType} from "@/context/AuthProvider"
@@ -35,11 +35,11 @@ const MockAuthProvider = ({
   } as AuthContextType
 
   return (
-    <BrowserRouter>
+    <MemoryRouter>
       <AuthContext.Provider value={authContextValue}>
         <AccessProvider>{children}</AccessProvider>
       </AuthContext.Provider>
-    </BrowserRouter>
+    </MemoryRouter>
   )
 }
 
