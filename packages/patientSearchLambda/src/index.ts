@@ -1,4 +1,4 @@
-import {APIGatewayProxyEvent} from "aws-lambda"
+import {APIGatewayProxyEventBase} from "aws-lambda"
 import {Logger} from "@aws-lambda-powertools/logger"
 import {injectLambdaContext} from "@aws-lambda-powertools/logger/middleware"
 import middy from "@middy/core"
@@ -8,7 +8,7 @@ import httpHeaderNormalizer from "@middy/http-header-normalizer"
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
 import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
-import {authenticateRequest, AuthenticateRequestOptions, getUsernameFromEvent} from "@cpt-ui-common/authFunctions"
+import {authenticationMiddleware, authParametersFromEnv, AuthResult} from "@cpt-ui-common/authFunctions"
 import * as pds from "@cpt-ui-common/pdsClient"
 import {INTERNAL_ERROR_RESPONSE_BODY, HandlerParameters, lambdaHandler} from "./handler"
 import {URL} from "url"
@@ -25,21 +25,9 @@ The following environment variables are expected to be set:
   jwtKid
   apigeeMockTokenEndpoint
   apigeeCIS2TokenEndpoint
+  FULL_CLOUDFRONT_DOMAIN
   apigeePersonalDemographicsEndpoint
 */
-
-// External endpoints and environment variables
-const authParametersFromEnv = (): AuthenticateRequestOptions => {
-  return {
-    tokenMappingTableName: process.env["TokenMappingTableName"] as string,
-    jwtPrivateKeyArn: process.env["jwtPrivateKeyArn"] as string,
-    apigeeApiKey: process.env["APIGEE_API_KEY"] as string,
-    apigeeApiSecret: process.env["APIGEE_API_SECRET"] as string,
-    jwtKid: process.env["jwtKid"] as string,
-    apigeeMockTokenEndpoint: process.env["apigeeMockTokenEndpoint"] as string,
-    apigeeCis2TokenEndpoint: process.env["apigeeCIS2TokenEndpoint"] as string
-  }
-}
 
 // Logger
 const logger = new Logger({serviceName: "patientSearchLambda"})
@@ -59,23 +47,16 @@ const documentClient = DynamoDBDocumentClient.from(dynamoClient)
 
 const authenticationParameters = authParametersFromEnv()
 
-const authenticationFunction = async (username: string) => {
-  return await authenticateRequest(username, documentClient, logger, {
-    ...authenticationParameters
-  })
-}
-
 const handlerParams: HandlerParameters = {
   logger,
-  pdsClient,
-  usernameExtractor: getUsernameFromEvent,
-  authenticationFunction
+  pdsClient
 }
 
 const middyErrorHandler = new MiddyErrorHandler(INTERNAL_ERROR_RESPONSE_BODY)
   .errorHandler({logger})
 
-export const handler = middy((event: APIGatewayProxyEvent) => lambdaHandler(event, handlerParams))
+export const handler = middy((event: APIGatewayProxyEventBase<AuthResult>) => lambdaHandler(event, handlerParams))
+  .use(authenticationMiddleware(axiosInstance, documentClient, authenticationParameters, logger))
   .use(injectLambdaContext(logger, {clearState: true}))
   .use(httpHeaderNormalizer())
   .use(

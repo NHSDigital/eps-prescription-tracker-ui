@@ -15,9 +15,16 @@ import {
   buildApigeeHeaders
 } from "./apigee"
 
-import {authenticateRequest, AuthenticateRequestOptions} from "./authenticateRequest"
+import {
+  authenticateRequest,
+  AuthResult,
+  authParametersFromEnv,
+  AuthenticateRequestOptions
+} from "./authenticateRequest"
 
 import {fetchUserInfo} from "./userInfoHelpers"
+
+import {authenticationMiddleware} from "./authenticationMiddleware"
 
 export {
   getUsernameFromEvent,
@@ -31,6 +38,9 @@ export {
   refreshApigeeAccessToken,
   buildApigeeHeaders,
   authenticateRequest,
+  AuthResult,
+  authParametersFromEnv,
   AuthenticateRequestOptions,
-  fetchUserInfo
+  fetchUserInfo,
+  authenticationMiddleware
 }

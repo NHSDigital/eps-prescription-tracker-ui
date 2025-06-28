@@ -203,7 +203,8 @@ describe("token mock handler", () => {
           family_name: "foo",
           given_name: "bar",
           sub: "user_details_sub"
-        }
+        },
+        lastActivityTime: expect.any(Number)
       }, // item
       expect.anything() // logger
     )

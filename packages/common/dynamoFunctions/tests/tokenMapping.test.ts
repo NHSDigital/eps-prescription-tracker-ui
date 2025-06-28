@@ -41,7 +41,8 @@ describe("insert tokenMapping", () => {
       mockDocumentClient,
       mockTableName,
       {
-        username: mockUsername
+        username: mockUsername,
+        lastActivityTime: 0
       },
         mockLogger as Logger
     )
@@ -62,7 +63,8 @@ describe("insert tokenMapping", () => {
         mockDocumentClient,
         mockTableName,
         {
-          username: mockUsername
+          username: mockUsername,
+          lastActivityTime: 0
         },
             mockLogger as Logger
       )
@@ -104,7 +106,8 @@ describe("update tokenMapping", () => {
         username: mockUsername,
         apigeeAccessToken: mockAccessToken,
         apigeeRefreshToken: mockRefreshToken,
-        apigeeExpiresIn: mockExpiresIn
+        apigeeExpiresIn: mockExpiresIn,
+        lastActivityTime: 0
       },
         mockLogger as Logger
     )
@@ -147,7 +150,8 @@ describe("update tokenMapping", () => {
           username: mockUsername,
           apigeeAccessToken: mockAccessToken,
           apigeeRefreshToken: mockRefreshToken,
-          apigeeExpiresIn: mockExpiresIn
+          apigeeExpiresIn: mockExpiresIn,
+          lastActivityTime: 0
         },
           mockLogger as Logger
       )

@@ -1,4 +1,4 @@
-import {APIGatewayProxyEvent, APIGatewayProxyResult} from "aws-lambda"
+import {APIGatewayProxyEventBase, APIGatewayProxyResult} from "aws-lambda"
 import {Logger} from "@aws-lambda-powertools/logger"
 import {injectLambdaContext} from "@aws-lambda-powertools/logger/middleware"
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
@@ -8,13 +8,15 @@ import inputOutputLogger from "@middy/input-output-logger"
 import httpHeaderNormalizer from "@middy/http-header-normalizer"
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 import {
-  getUsernameFromEvent,
   initializeOidcConfig,
-  authenticateRequest,
-  fetchUserInfo
+  fetchUserInfo,
+  authParametersFromEnv,
+  authenticationMiddleware,
+  AuthResult
 } from "@cpt-ui-common/authFunctions"
 import {getTokenMapping, updateTokenMapping} from "@cpt-ui-common/dynamoFunctions"
 import {extractInboundEventValues, appendLoggerKeys} from "@cpt-ui-common/lambdaUtils"
+import axios from "axios"
 
 /*
 This is the lambda code to get user info
@@ -44,18 +46,14 @@ const documentClient = DynamoDBDocumentClient.from(dynamoClient, {
     removeUndefinedValues: true
   }})
 
+const axiosInstance = axios.create()
+
 // Create a config for cis2 and mock
 // this is outside functions so it can be re-used and caching works
 const {mockOidcConfig, cis2OidcConfig} = initializeOidcConfig()
 
-// External endpoints and environment variables
-const apigeeCis2TokenEndpoint = process.env["apigeeCIS2TokenEndpoint"] as string
-const apigeeMockTokenEndpoint = process.env["apigeeMockTokenEndpoint"] as string
-const tokenMappingTableName = process.env["TokenMappingTableName"] ?? ""
-const jwtPrivateKeyArn = process.env["jwtPrivateKeyArn"] as string
-const apigeeApiKey = process.env["APIGEE_API_KEY"] as string
-const apigeeApiSecret = process.env["APIGEE_API_SECRET"] as string
-const jwtKid = process.env["jwtKid"] as string
+const authenticationParameters = authParametersFromEnv()
+const tokenMappingTableName = authenticationParameters.tokenMappingTableName
 
 const errorResponseBody = {
   message: "A system error has occurred"
@@ -63,10 +61,10 @@ const errorResponseBody = {
 
 const middyErrorHandler = new MiddyErrorHandler(errorResponseBody)
 
-const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+const lambdaHandler = async (event: APIGatewayProxyEventBase<AuthResult>): Promise<APIGatewayProxyResult> => {
   const {loggerKeys} = extractInboundEventValues(event)
   appendLoggerKeys(logger, loggerKeys)
-  const username = getUsernameFromEvent(event)
+  const username = event.requestContext.authorizer.username
 
   // First, try to use cached user info
   const tokenMappingItem = await getTokenMapping(documentClient, tokenMappingTableName, username, logger)
@@ -93,23 +91,14 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
   logger.info("No valid cached user info found. Authenticating and calling userinfo endpoint...")
   const isMockToken = username.startsWith("Mock_")
-  const authResult = await authenticateRequest(username, documentClient, logger, {
-    tokenMappingTableName,
-    jwtPrivateKeyArn,
-    apigeeApiKey,
-    apigeeApiSecret,
-    jwtKid,
-    apigeeMockTokenEndpoint,
-    apigeeCis2TokenEndpoint
-  })
+  const apigeeAccessToken = event.requestContext.authorizer.apigeeAccessToken
 
-  logger.debug("auth result", {authResult})
   if (isMockToken) {
-    if (!authResult.apigeeAccessToken) {
+    if (!apigeeAccessToken) {
       throw new Error("Authentication failed for mock: missing tokens")
     }
   } else {
-    if (!authResult.apigeeAccessToken
+    if (!apigeeAccessToken
         || !tokenMappingItem.cis2IdToken
         || !tokenMappingItem.cis2AccessToken
     ) {
@@ -120,7 +109,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   const userInfoResponse = await fetchUserInfo(
     tokenMappingItem.cis2AccessToken || "",
     tokenMappingItem.cis2IdToken || "",
-    authResult.apigeeAccessToken || "",
+    apigeeAccessToken || "",
     isMockToken,
     logger,
     isMockToken ? mockOidcConfig : cis2OidcConfig
@@ -132,7 +121,8 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     rolesWithAccess: userInfoResponse.roles_with_access,
     rolesWithoutAccess: userInfoResponse.roles_without_access,
     currentlySelectedRole: userInfoResponse.currently_selected_role,
-    userDetails: userInfoResponse.user_details
+    userDetails: userInfoResponse.user_details,
+    lastActivityTime: Date.now()
   }
   await updateTokenMapping(documentClient, tokenMappingTableName, item, logger)
 
@@ -146,6 +136,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 }
 
 export const handler = middy(lambdaHandler)
+  .use(authenticationMiddleware(axiosInstance, documentClient, authenticationParameters, logger))
   .use(injectLambdaContext(logger, {clearState: true}))
   .use(httpHeaderNormalizer())
   .use(

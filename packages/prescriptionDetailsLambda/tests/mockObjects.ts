@@ -28,11 +28,7 @@ export const mockAPIGatewayProxyEvent = {
   requestContext: {
     accountId: "123456789012",
     apiId: "1234",
-    authorizer: {
-      claims: {
-        "cognito:username": "Mock_JoeBloggs"
-      }
-    },
+    authorizer: {},
     httpMethod: "POST",
     identity: {
       accessKey: "",

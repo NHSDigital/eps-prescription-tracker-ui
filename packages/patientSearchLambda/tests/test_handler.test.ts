@@ -4,11 +4,12 @@ import {
   it,
   jest
 } from "@jest/globals"
-import {APIGatewayProxyEvent} from "aws-lambda"
+import {APIGatewayProxyEventBase} from "aws-lambda"
 import {mockPatientSummary, mockLogger} from "@cpt-ui-common/testing"
 import {lambdaHandler, HandlerParameters, INTERNAL_ERROR_RESPONSE_BODY} from "../src/handler"
 
 import * as pds from "@cpt-ui-common/pdsClient"
+import {AuthResult} from "@cpt-ui-common/authFunctions"
 const patientSearchOutcomeType = pds.patientSearch.OutcomeType
 type patientSearchOutcome = pds.patientSearch.Outcome
 const mockPdsClient = () => {
@@ -23,7 +24,7 @@ const mockPdsClient = () => {
 
 describe("lambda handler unit tests", () => {
   let handlerParams: HandlerParameters
-  let mockEvent: APIGatewayProxyEvent
+  let mockEvent: APIGatewayProxyEventBase<AuthResult>
 
   beforeEach(() => {
     mockEvent = {
@@ -33,61 +34,24 @@ describe("lambda handler unit tests", () => {
         dateOfBirth: "1990-01-01",
         postcode: "12345"
       },
-      headers: {}
-    } as unknown as APIGatewayProxyEvent
+      headers: {},
+      requestContext: {
+        authorizer: {apigeeAccessToken: "test-access-token", roleId: "test-role-id", orgCode: "test-org-code"}
+      }
+    } as unknown as APIGatewayProxyEventBase<AuthResult>
 
     handlerParams = {
       logger: mockLogger(),
-      pdsClient: mockPdsClient(),
-      usernameExtractor: () => "test-username",
-      authenticationFunction: async () => {
-        return {apigeeAccessToken: "test-access-token", roleId: "test-role-id", orgCode: "test-org-code"}
-      }
+      pdsClient: mockPdsClient()
     }
-  })
-
-  it("should return an error if username cannot be extracted from event", async () => {
-    handlerParams.usernameExtractor = () => {
-      throw new Error("Username not found")
-    }
-
-    const response = await lambdaHandler(mockEvent, handlerParams)
-
-    expect(response.statusCode).toBe(400)
-    expect(JSON.parse(response.body)).toEqual({
-      message: "Username not found in event"
-    })
-  })
-
-  it("should return an error if authentication fails", async () => {
-    handlerParams.authenticationFunction = () => {
-      throw new Error("Authentication failed")
-    }
-
-    const response = await lambdaHandler(mockEvent, handlerParams)
-
-    expect(response.statusCode).toBe(401)
-    expect(JSON.parse(response.body)).toEqual({
-      message: "Authentication failed"
-    })
-  })
-
-  it("should return an error if no Apigee access token is found", async () => {
-    handlerParams.authenticationFunction = async () => {
-      return {apigeeAccessToken: "", roleId: "test-role-id", orgCode: "test-org-code"}
-    }
-
-    const response = await lambdaHandler(mockEvent, handlerParams)
-
-    expect(response.statusCode).toBe(500)
-    expect(JSON.parse(response.body)).toEqual({
-      message: "Authentication failed"
-    })
   })
 
   it("should return an error if no role id is found", async () => {
-    handlerParams.authenticationFunction = async () => {
-      return {apigeeAccessToken: "mock-access-token", roleId: undefined, orgCode: "test-org-code"}
+    mockEvent.requestContext.authorizer = {
+      username: "test-user",
+      apigeeAccessToken: "mock-access-token",
+      roleId: undefined,
+      orgCode: "test-org-code"
     }
 
     const response = await lambdaHandler(mockEvent, handlerParams)
@@ -99,8 +63,11 @@ describe("lambda handler unit tests", () => {
   })
 
   it("should return an error if no oreCode access token is found", async () => {
-    handlerParams.authenticationFunction = async () => {
-      return {apigeeAccessToken: "mock-access-token", roleId: "test-role-id", orgCode: undefined}
+    mockEvent.requestContext.authorizer = {
+      username: "test-user",
+      apigeeAccessToken: "mock-access-token",
+      roleId: "test-role-id",
+      orgCode: undefined
     }
 
     const response = await lambdaHandler(mockEvent, handlerParams)
