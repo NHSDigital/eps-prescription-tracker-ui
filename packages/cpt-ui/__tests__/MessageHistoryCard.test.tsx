@@ -40,14 +40,14 @@ describe("MessageHistoryCard", () => {
           medicationName: "Medication 1",
           quantity: "10 tablets",
           dosageInstruction: "Take once daily",
-          statusCode: ""
+          statusCode: "0001"
         },
         {
           id: "abc123",
           medicationName: "Medication 2",
           quantity: "20 tablets",
           dosageInstruction: "Take twice daily",
-          statusCode: ""
+          statusCode: "0003"
         }
       ]
     },
@@ -100,6 +100,8 @@ describe("MessageHistoryCard", () => {
     expect(screen.getByText((content) => content.includes("Medication 1"))).toBeInTheDocument()
     expect(screen.getByText((content) => content.includes("Medication 2"))).toBeInTheDocument()
     expect(screen.getAllByText(/Item status/)).toHaveLength(2)
+    expect(screen.getByText(/Item status 0001/)).toBeInTheDocument()
+    expect(screen.getByText(/Item status 0003/)).toBeInTheDocument()
 
     // Quantity and instructions (multiple times)
     expect(screen.getAllByText(/Quantity/)).toHaveLength(2)
