@@ -14,7 +14,10 @@ import {
   OriginRequestHeaderBehavior,
   OriginRequestPolicy,
   OriginRequestQueryStringBehavior,
-  ViewerProtocolPolicy
+  ViewerProtocolPolicy,
+  ResponseHeadersPolicy,
+  HeadersReferrerPolicy,
+  HeadersFrameOption
 } from "aws-cdk-lib/aws-cloudfront"
 import {RestApiOrigin, S3BucketOrigin} from "aws-cdk-lib/aws-cloudfront-origins"
 import {Bucket} from "aws-cdk-lib/aws-s3"
@@ -399,6 +402,49 @@ export class StatelessResourcesStack extends Stack {
     })
 
     // --- CloudfrontBehaviors
+    const responseHeadersPolicy = new ResponseHeadersPolicy(this, "CustomSecurityHeadersPolicy", {
+      responseHeadersPolicyName: `${props.serviceName}-CustomSecurityHeaders`,
+      comment: "Security headers policy with inclusion of CSP",
+      securityHeadersBehavior: {
+        contentSecurityPolicy: {
+          contentSecurityPolicy: "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; \
+          object-src 'none'; base-uri 'self'; frame-ancestors 'none';",
+          override: true
+        },
+        strictTransportSecurity: {
+          accessControlMaxAge: Duration.days(365),
+          includeSubdomains: true,
+          preload: true,
+          override: true
+        },
+        contentTypeOptions: {
+          override: true
+        },
+        frameOptions: {
+          frameOption: HeadersFrameOption.DENY,
+          override: true
+        },
+        referrerPolicy: {
+          referrerPolicy: HeadersReferrerPolicy.NO_REFERRER,
+          override: true
+        },
+        xssProtection: {
+          protection: true,
+          modeBlock: true,
+          override: true
+        }
+      },
+      customHeadersBehavior: {
+        customHeaders: [
+          {
+            header: "Permissions-Policy",
+            value: "camera=(), microphone=(), geolocation=()",
+            override: true
+          }
+        ]
+      }
+    })
+
     const cloudfrontBehaviors = new CloudfrontBehaviors(this, "CloudfrontBehaviors", {
       serviceName: props.serviceName,
       stackName: props.stackName,
@@ -406,7 +452,8 @@ export class StatelessResourcesStack extends Stack {
       apiGatewayRequestPolicy: apiGatewayRequestPolicy,
       oauth2GatewayOrigin: oauth2GatewayOrigin,
       oauth2GatewayRequestPolicy: oauth2GatewayRequestPolicy,
-      staticContentBucketOrigin: staticContentBucketOrigin
+      staticContentBucketOrigin: staticContentBucketOrigin,
+      responseHeadersPolicy: responseHeadersPolicy
     })
 
     // --- Distribution
@@ -431,7 +478,8 @@ export class StatelessResourcesStack extends Stack {
             function: cloudfrontBehaviors.s3404ModifyStatusCodeFunction.function,
             eventType: FunctionEventType.VIEWER_RESPONSE
           }
-        ]
+        ],
+        responseHeadersPolicy: responseHeadersPolicy
       },
       additionalBehaviors: cloudfrontBehaviors.additionalBehaviors,
       errorResponses: [
