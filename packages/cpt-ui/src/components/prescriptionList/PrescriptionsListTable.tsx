@@ -1,6 +1,7 @@
 /* eslint-disable max-len */
 import React from "react"
 import {Tag, Table} from "nhsuk-react-components"
+import "../../styles/PrescriptionTable.scss"
 import {PrescriptionSummary} from "@cpt-ui-common/common-types/src"
 import {PrescriptionsListStrings} from "../../constants/ui-strings/PrescriptionListTabStrings"
 import {getStatusTagColour, getStatusDisplayText, formatDateForPrescriptions} from "@/helpers/statusMetadata"
@@ -37,11 +38,6 @@ const PrescriptionsListTable = ({
 
   const sortConfig = allSortConfigs[currentTabId] || initialSortConfig
 
-  const setSearchPrescriptionState = (prescriptionId: string, issueNumber: string | undefined) => {
-    searchContext.clearSearchParameters()
-    searchContext.setPrescriptionId(prescriptionId)
-    searchContext.setIssueNumber(issueNumber)
-  }
   const setSortConfigForTab = (newConfig: SortConfig) => {
     setAllSortConfigs((prev) => ({
       ...prev,
@@ -128,9 +124,14 @@ const PrescriptionsListTable = ({
     return Number.MIN_SAFE_INTEGER
   }
 
-  const constructLink = (
-  ): string => {
+  const constructLink = (): string => {
     return `${FRONTEND_PATHS.PRESCRIPTION_DETAILS_PAGE}`
+  }
+
+  const setSearchPrescriptionState = (prescriptionId: string, issueNumber: string | undefined) => {
+    searchContext.clearSearchParameters()
+    searchContext.setPrescriptionId(prescriptionId)
+    searchContext.setIssueNumber(issueNumber)
   }
 
   const getSortedItems = () => {
@@ -352,7 +353,6 @@ const PrescriptionsListTable = ({
               </span>
             ) : (
               <Link
-                onClick={async () => setSearchPrescriptionState(row.prescriptionId, row.issueNumber?.toString())}
                 to={constructLink()}
                 className="nhsuk-link"
                 data-testid={`view-prescription-link-${row.prescriptionId}`}
