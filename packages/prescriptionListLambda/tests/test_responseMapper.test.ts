@@ -39,7 +39,6 @@ describe("Response Mapper Tests", () => {
           system: "https://fhir.nhs.uk/Id/prescription-order-number",
           value: "335C70-A83008-84058A"
         }],
-        // Remove the name field from here - it doesn't belong on RequestGroup
         subject: {
           reference: "Patient/PATIENT-123-567-890"
         },
