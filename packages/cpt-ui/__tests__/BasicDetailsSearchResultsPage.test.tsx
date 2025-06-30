@@ -5,7 +5,7 @@ import {
   fireEvent,
   waitFor
 } from "@testing-library/react"
-import {MemoryRouter} from "react-router-dom"
+import {MemoryRouter, Routes, Route} from "react-router-dom"
 import BasicDetailsSearchResultsPage from "@/pages/BasicDetailsSearchResultsPage"
 import {SearchResultsPageStrings} from "@/constants/ui-strings/BasicDetailsSearchResultsPageStrings"
 import {FRONTEND_PATHS} from "@/constants/environment"
@@ -14,6 +14,7 @@ import {AuthContext, type AuthContextType} from "@/context/AuthProvider"
 
 // Mock the axios module
 jest.mock("@/helpers/axios")
+const mockAxiosGet = http.get as jest.MockedFunction<typeof http.get>
 
 const mockAuthContext: AuthContextType = {
   error: null,
@@ -58,24 +59,32 @@ const mockPatients = [
   }
 ]
 
+function renderWithRouter() {
+  return render(
+    <AuthContext.Provider value={mockAuthContext}>
+      <MemoryRouter initialEntries={["/patient-search-results"]}>
+        <Routes>
+          <Route path="/patient-search-results" element={<BasicDetailsSearchResultsPage />} />
+          <Route path="/login" element={<div data-testid="login-page-shown" />} />
+          <Route path="/prescription-list-current" element={<div data-testid="prescription-list-shown" />} />
+        </Routes>
+      </MemoryRouter>
+    </AuthContext.Provider>
+  )
+}
+
 describe("BasicDetailsSearchResultsPage", () => {
   beforeEach(() => {
     mockNavigate.mockClear()
     // Mock successful API response
-    ; (http.get as jest.Mock).mockResolvedValue({
+    mockAxiosGet.mockResolvedValue({
       status: 200,
       data: mockPatients
     })
   })
 
   it("shows loading state initially", () => {
-    render(
-      <MemoryRouter>
-        <AuthContext.Provider value={mockAuthContext}>
-          <BasicDetailsSearchResultsPage />
-        </AuthContext.Provider>
-      </MemoryRouter>
-    )
+    renderWithRouter()
 
     expect(screen.getByText(SearchResultsPageStrings.LOADING)).toBeInTheDocument()
   })
@@ -144,7 +153,7 @@ describe("BasicDetailsSearchResultsPage", () => {
   })
 
   it("navigates to prescription list when there is only one result", async () => {
-    (http.get as jest.Mock).mockResolvedValue({
+    mockAxiosGet.mockResolvedValue({
       status: 200,
       data: [mockPatients[0]]
     })
@@ -297,7 +306,7 @@ describe("BasicDetailsSearchResultsPage", () => {
   })
 
   it("renders the unknown error message when the API call fails", async () => {
-    (http.get as jest.Mock).mockRejectedValue(new Error("Something went wrong"))
+    mockAxiosGet.mockRejectedValue(new Error("Something went wrong"))
 
     render(
       <MemoryRouter>

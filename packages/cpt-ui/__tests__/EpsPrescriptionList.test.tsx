@@ -12,7 +12,7 @@ import {PrescriptionStatus, SearchResponse, TreatmentType} from "@cpt-ui-common/
 
 import {MockPatientDetailsProvider} from "../__mocks__/MockPatientDetailsProvider"
 
-import {AxiosError, AxiosRequestHeaders} from "axios"
+import {AxiosError, AxiosHeaders, AxiosRequestHeaders} from "axios"
 
 import axios from "@/helpers/axios"
 import {logger} from "@/helpers/logger"
@@ -155,6 +155,7 @@ const renderWithRouter = (route: string, authState: AuthContextType = signedInAu
         <MemoryRouter initialEntries={[route]}>
           <Routes>
             <Route path="*" element={<Dummy404 />} />
+            <Route path={FRONTEND_PATHS.LOGIN} element={<div data-testid="login-page-shown" />} />
             <Route path={FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT} element={<PrescriptionListPage />} />
             <Route path={FRONTEND_PATHS.PRESCRIPTION_LIST_PAST} element={<PrescriptionListPage />} />
             <Route path={FRONTEND_PATHS.PRESCRIPTION_LIST_FUTURE} element={<PrescriptionListPage />} />
@@ -226,6 +227,25 @@ describe("PrescriptionListPage", () => {
       // Check that the component renders the prescription results list container
       const resultsListContainer = screen.getByTestId("prescription-results-list")
       expect(resultsListContainer).toBeInTheDocument()
+    })
+  })
+
+  it("handles expired session be redirecting to login page", async () => {
+    const headers = new AxiosHeaders({})
+    mockedAxios.get.mockRejectedValue(new AxiosError(undefined, undefined, undefined, undefined,
+      {
+        status: 401,
+        statusText: "Unauthorized",
+        headers,
+        config: {headers},
+        data: {message: "Session expired or invalid. Please log in again.", restartLogin: true}
+      }
+    ))
+
+    renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT + "?prescriptionId=unused")
+
+    await waitFor(() => {
+      expect(screen.getByTestId("login-page-shown")).toBeInTheDocument()
     })
   })
 

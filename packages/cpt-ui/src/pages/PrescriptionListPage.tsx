@@ -128,8 +128,13 @@ export default function PrescriptionListPage() {
         setLoading(false)
       } catch (err) {
         logger.error("Error during search", err)
-        if (axios.isAxiosError(err) && (err.response?.status === 404)) {
-          setShowNotFound(true)
+        if (axios.isAxiosError(err)) {
+          if ((err.response?.status === 401) && err.response.data?.restartLogin) {
+            navigate(FRONTEND_PATHS.LOGIN)
+            return
+          } else if (err.response?.status === 404) {
+            setShowNotFound(true)
+          }
         } else if (err instanceof Error && err.message === "canceled") {
           navigate(FRONTEND_PATHS.LOGIN)
           return

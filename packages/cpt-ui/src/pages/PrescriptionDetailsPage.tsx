@@ -1,5 +1,5 @@
 import {useContext, useEffect, useState} from "react"
-import {Link, useSearchParams} from "react-router-dom"
+import {Link, useNavigate, useSearchParams} from "react-router-dom"
 
 import {
   BackLink,
@@ -21,7 +21,7 @@ import {AuthContext} from "@/context/AuthProvider"
 import {usePrescriptionInformation} from "@/context/PrescriptionInformationProvider"
 import {usePatientDetails} from "@/context/PatientDetailsProvider"
 
-import {API_ENDPOINTS} from "@/constants/environment"
+import {API_ENDPOINTS, FRONTEND_PATHS} from "@/constants/environment"
 import {STRINGS} from "@/constants/ui-strings/PrescriptionDetailsPageStrings"
 
 import EpsSpinner from "@/components/EpsSpinner"
@@ -32,12 +32,15 @@ import {MessageHistoryCard} from "@/components/prescriptionDetails/MessageHistor
 import http from "@/helpers/axios"
 import {logger} from "@/helpers/logger"
 import {buildBackLink, determineSearchType} from "@/helpers/prescriptionNotFoundLinks"
+import axios from "axios"
 
 export default function PrescriptionDetailsPage() {
   const auth = useContext(AuthContext)
   const [queryParams] = useSearchParams()
 
   const [loading, setLoading] = useState(true)
+
+  const navigate = useNavigate()
 
   const {setPrescriptionInformation} = usePrescriptionInformation()
   const {setPatientDetails} = usePatientDetails()
@@ -77,6 +80,10 @@ export default function PrescriptionDetailsPage() {
         throw new Error("No payload received from the API")
       }
     } catch (err) {
+      if (axios.isAxiosError(err) && (err.response?.status === 401) && err.response.data?.restartLogin) {
+        navigate(FRONTEND_PATHS.LOGIN)
+        return
+      }
       logger.error("Failed to fetch prescription details", err)
       return
     }
