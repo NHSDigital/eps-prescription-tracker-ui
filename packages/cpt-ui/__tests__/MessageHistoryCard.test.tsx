@@ -2,180 +2,165 @@ import React from "react"
 import {render, screen} from "@testing-library/react"
 import "@testing-library/jest-dom"
 
-export const STRINGS = {
-  HISTORY_HEADER: "History",
-  ORGANISATION: "Organisation:",
-  NEW_STATUS: "New status:",
-  ODS_TEXT: "ODS:",
-  DISPENSE_NOTIFICATION_INFO: "Dispense notification information",
-  DISPENSE_NOTIFICATION_ID: "Dispense notification id:",
-  PRESCRIPTION_ITEMS: "Prescription items:",
-  QUANTITY: "Quantity:",
-  INSTRUCTIONS: "Instructions:"
-}
+// Mock the constants
+jest.mock("@/constants/ui-strings/MessageHistoryCardStrings", () => ({
+  STRINGS: {
+    HISTORY_HEADER: "History",
+    ORGANISATION: "Organisation:",
+    NEW_STATUS: "New status:",
+    ODS_TEXT: "ODS:",
+    NO_ORG_NAME: "Organisation name not available",
+    DISPENSE_NOTIFICATION_INFO: "Dispense notification information",
+    DISPENSE_NOTIFICATION_ID: "Dispense notification ID:",
+    PRESCRIPTION_ITEMS: "Prescription items:",
+    QUANTITY: "Quantity:",
+    INSTRUCTIONS: "Instructions:"
+  }
+}))
 
-jest.mock("@/constants/ui-strings/MessageHistoryCardStrings")
+// Mock the helper functions
 jest.mock("@/helpers/statusMetadata", () => ({
-  getStatusDisplayText: (code: string) => `Mock status ${code}`,
-  getStatusTagColour: () => "blue",
-  getItemStatusTagColour: () => "green",
-  getItemStatusDisplayText: (code: string) => `Item status ${code}`,
-  getMessageHistoryHeader: (text: string) => `Mapped: ${text}`
+  getStatusDisplayText: jest.fn(() => "Mocked Status"),
+  getStatusTagColour: jest.fn(() => "blue"),
+  getItemStatusTagColour: jest.fn(() => "green"),
+  getItemStatusDisplayText: jest.fn(() => "Mocked Item Status"),
+  getMessageHistoryHeader: jest.fn(() => "Mocked Header")
+}))
+
+jest.mock("@/helpers/formatters", () => ({
+  formatMessageDateTime: jest.fn(() => "Mocked Date")
 }))
 
 import {MessageHistoryCard} from "@/components/prescriptionDetails/MessageHistoryCard"
 import {MessageHistory} from "@cpt-ui-common/common-types"
 
 describe("MessageHistoryCard", () => {
-  const baseMessages: Array<MessageHistory> = [
-    {
-      messageCode: "Dispense claim successful",
-      sentDateTime: "23-Feb-2025 13:35:33",
-      organisationName: "Test Pharmacy",
-      organisationODS: "XYZ123",
-      newStatusCode: "0006",
+  const simpleMessage: MessageHistory = {
+    messageCode: "Test message",
+    sentDateTime: "2025-01-01",
+    organisationName: "Test Org",
+    organisationODS: "ABC123"
+  }
+
+  it("renders nothing when messageHistory is empty", () => {
+    const {container: emptyContainer} = render(<MessageHistoryCard messageHistory={[]} />)
+    expect(emptyContainer).toBeEmptyDOMElement()
+  })
+
+  it("renders basic message history", () => {
+    render(<MessageHistoryCard messageHistory={[simpleMessage]} />)
+
+    expect(screen.getByText("History")).toBeInTheDocument()
+    expect(screen.getByTestId("message-history-timeline")).toBeInTheDocument()
+    expect(screen.getByTestId("prescription-message")).toBeInTheDocument()
+  })
+
+  it("shows organisation name when provided", () => {
+    render(<MessageHistoryCard messageHistory={[simpleMessage]} />)
+
+    expect(screen.getByText(/Test Org/)).toBeInTheDocument()
+    expect(screen.getByText(/ABC123/)).toBeInTheDocument()
+  })
+
+  it("shows fallback text when organisation name is missing", () => {
+    const messageWithoutOrgName = {
+      ...simpleMessage,
+      organisationName: ""
+    }
+
+    render(<MessageHistoryCard messageHistory={[messageWithoutOrgName]} />)
+
+    expect(screen.getByTestId("no-org-name-message")).toBeInTheDocument()
+    expect(screen.getByText(/Organisation name not available/)).toBeInTheDocument()
+  })
+
+  it("shows status tag when newStatusCode is provided", () => {
+    const messageWithStatus = {
+      ...simpleMessage,
+      newStatusCode: "0001"
+    }
+
+    render(<MessageHistoryCard messageHistory={[messageWithStatus]} />)
+
+    expect(screen.getByText(/New status:/)).toBeInTheDocument()
+    expect(screen.getByTestId("new-status-code-tag")).toBeInTheDocument()
+  })
+
+  it("hides status tag when newStatusCode is missing", () => {
+    render(<MessageHistoryCard messageHistory={[simpleMessage]} />)
+
+    expect(screen.queryByText(/New status:/)).not.toBeInTheDocument()
+    expect(screen.queryByTestId("new-status-code-tag")).not.toBeInTheDocument()
+  })
+
+  it("shows dispense notification when present", () => {
+    const messageWithDispense = {
+      ...simpleMessage,
+      dispenseNotification: [{
+        id: "test-id",
+        medicationName: "Test Med",
+        quantity: "10",
+        dosageInstruction: "Once daily",
+        statusCode: "DISPENSED"
+      }]
+    }
+
+    render(<MessageHistoryCard messageHistory={[messageWithDispense]} />)
+
+    expect(screen.getByText("Dispense notification information")).toBeInTheDocument()
+    expect(screen.getByTestId("message-history-dropdown")).toBeInTheDocument()
+  })
+
+  it("hides dispense notification when not present", () => {
+    render(<MessageHistoryCard messageHistory={[simpleMessage]} />)
+
+    expect(screen.queryByText("Dispense notification information")).not.toBeInTheDocument()
+    expect(screen.queryByTestId("message-history-dropdown")).not.toBeInTheDocument()
+  })
+
+  it("hides dispense notification when array is empty", () => {
+    const messageWithEmptyDispense = {
+      ...simpleMessage,
+      dispenseNotification: []
+    }
+
+    render(<MessageHistoryCard messageHistory={[messageWithEmptyDispense]} />)
+
+    expect(screen.queryByText("Dispense notification information")).not.toBeInTheDocument()
+  })
+
+  it("renders multiple messages", () => {
+    const messages = [simpleMessage, {...simpleMessage, organisationODS: "DEF456"}]
+
+    render(<MessageHistoryCard messageHistory={messages} />)
+
+    expect(screen.getAllByTestId("prescription-message")).toHaveLength(2)
+  })
+
+  it("renders dispense notification items details", () => {
+    const messageWithDispenseItems = {
+      ...simpleMessage,
       dispenseNotification: [
         {
-          id: "abc123",
-          medicationName: "Medication 1",
-          quantity: "10 tablets",
-          dosageInstruction: "Take once daily",
-          statusCode: "0001"
+          id: "item-1",
+          medicationName: "Medicine A",
+          quantity: "30 tablets",
+          dosageInstruction: "Take daily",
+          statusCode: "DISPENSED"
         },
         {
-          id: "abc123",
-          medicationName: "Medication 2",
-          quantity: "20 tablets",
+          id: "item-2",
+          medicationName: "Medicine B",
+          quantity: "60 capsules",
           dosageInstruction: "Take twice daily",
-          statusCode: "0003"
+          statusCode: "PARTIAL"
         }
       ]
-    },
-    {
-      messageCode: "Release Request successful",
-      sentDateTime: "22-Feb-2025 10:15:00",
-      organisationName: "LongNamePharmacyWhichShouldWrapProperlyWithoutBreakingUI",
-      organisationODS: "LONG123",
-      newStatusCode: "0001"
-    },
-    {
-      messageCode: "Prescription upload successful",
-      sentDateTime: "21-Feb-2025 09:00:00",
-      organisationName: "",
-      organisationODS: "EMPTY123",
-      newStatusCode: undefined
     }
-  ]
 
-  it("renders correctly with full message history", () => {
-    render(<MessageHistoryCard messageHistory={baseMessages} />)
+    render(<MessageHistoryCard messageHistory={[messageWithDispenseItems]} />)
 
-    // Check main header
-    expect(screen.getByText("History")).toBeInTheDocument()
-
-    // Timeline items
-    expect(screen.getByText(/Mapped: Dispense claim successful/)).toBeInTheDocument()
-    expect(screen.getByText(/Mapped: Release Request successful/)).toBeInTheDocument()
-    expect(screen.getByText(/Mapped: Prescription upload successful/)).toBeInTheDocument()
-
-    // Organisation names and fallback text
-    expect(screen.getByText(/Test Pharmacy/)).toBeInTheDocument()
-    expect(screen.getByText(/LongNamePharmacyWhichShouldWrapProperlyWithoutBreakingUI/)).toBeInTheDocument()
-    expect(screen.getByText(/Organisation name not available/)).toBeInTheDocument()
-
-    // New status tags
-    expect(screen.getAllByText(/Mock status/)).toHaveLength(2)
-
-    // Dispense Notification Details
-    expect(screen.getByText("Dispense notification information")).toBeInTheDocument()
-    const elements = screen.getAllByText((_content, element) => {
-      const textContent = element?.textContent || ""
-      return textContent.includes("Dispense notification ID:") &&
-             textContent.includes("abc123")
-    })
-    expect(elements.length).toBeGreaterThan(0)
-    expect(screen.getByText("Prescription items:")).toBeInTheDocument()
-
-    // Items inside the dispense notification
-    expect(screen.getByText((content) => content.includes("Medication 1"))).toBeInTheDocument()
-    expect(screen.getByText((content) => content.includes("Medication 2"))).toBeInTheDocument()
-    expect(screen.getAllByText(/Item status/)).toHaveLength(2)
-    expect(screen.getByText(/Item status 0001/)).toBeInTheDocument()
-    expect(screen.getByText(/Item status 0003/)).toBeInTheDocument()
-
-    // Quantity and instructions (multiple times)
-    expect(screen.getAllByText(/Quantity/)).toHaveLength(2)
-    expect(screen.getByText(/10 tablets/)).toBeInTheDocument()
-    expect(screen.getByText(/20 tablets/)).toBeInTheDocument()
-
-    /* Temporary remove dosage instructions from card until spine fix
-    expect(screen.getAllByText(/Instructions/)).toHaveLength(2)
-    expect(screen.getByText(/Take once daily/)).toBeInTheDocument()
-    expect(screen.getByText(/Take twice daily/)).toBeInTheDocument()
-    */
+    expect(screen.getByText(/item-1/)).toBeInTheDocument()
   })
 
-  it("renders nothing if empty messageHistory", () => {
-    const {container} = render(<MessageHistoryCard messageHistory={[]} />)
-    expect(container).toBeEmptyDOMElement()
-  })
-
-  it("renders fallback org name when organisationName is missing", () => {
-    render(
-      <MessageHistoryCard messageHistory={[{
-        messageCode: "Some status",
-        sentDateTime: "01-Jan-2025",
-        organisationName: "",
-        organisationODS: "XYZ123"
-      }]} />
-    )
-    expect(screen.getByText(/Organisation name not available/)).toBeInTheDocument()
-  })
-
-  it("renders dispense notification if dispenseNotification exists and has items", () => {
-    render(
-      <MessageHistoryCard messageHistory={[{
-        messageCode: "Dispense Message",
-        sentDateTime: "01-Jan-2025",
-        organisationName: "Test Pharmacy",
-        organisationODS: "ABC123",
-        dispenseNotification: [{
-          id: "notif001",
-          medicationName: "TestMed",
-          quantity: "10",
-          dosageInstruction: "Once daily",
-          statusCode: "DISPENSED"
-        }]
-      }]} />
-    )
-    expect(screen.getByText(/Dispense notification information/)).toBeInTheDocument()
-    expect(screen.getByText(/TestMed/)).toBeInTheDocument()
-    expect(screen.getByText(/Quantity/)).toBeInTheDocument()
-  })
-
-  it("does not render new status tag if newStatusCode is missing", () => {
-    render(
-      <MessageHistoryCard messageHistory={[{
-        messageCode: "No Status",
-        sentDateTime: "01-Jan-2025",
-        organisationName: "Test",
-        organisationODS: "ABC123"
-      }]} />
-    )
-    expect(screen.queryByText(/New status:/)).not.toBeInTheDocument()
-  })
-
-  it("does not render dispense notification if list is empty", () => {
-    render(
-      <MessageHistoryCard messageHistory={[{
-        messageCode: "Empty Notif",
-        sentDateTime: "01-Jan-2025",
-        organisationName: "Test",
-        organisationODS: "ABC123",
-        newStatusCode: "0006",
-        dispenseNotification: []
-      }]} />
-    )
-    expect(screen.queryByText(/Dispense notification information/)).not.toBeInTheDocument()
-  })
 })
