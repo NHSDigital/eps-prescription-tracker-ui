@@ -47,6 +47,10 @@ jobs:
             const repo = context.repo.repo;
             const runId = context.runId;
 
+            // How many times to poll
+            const maxRetries = 30;
+            let attempts = 0;
+
             async function fetchQCJob() {
               const { data } = await github.rest.actions.listJobsForWorkflowRun({
                 owner, repo, run_id: runId
@@ -55,18 +59,37 @@ jobs:
             }
 
             let qc = await fetchQCJob();
-            // poll every 10s until the job completes
-            while (!qc || qc.status !== 'completed') {
+            while ((!qc || qc.status !== 'completed') && attempts < maxRetries) {
+              attempts++;
+              console.log(`Attempt #${attempts}: ` +
+                (qc
+                  ? `found job “${qc.name}” with status=${qc.status}`
+                  : 'no matching quality_checks job yet'));
               await new Promise(r => setTimeout(r, 10000));
               qc = await fetchQCJob();
             }
 
-            // if it ran but didn't pass, fail the gate
-            if (qc.conclusion !== 'success') {
-              core.setFailed(`Quality checks failed: ${qc.conclusion}`);
+            if (!qc) {
+              core.setFailed(
+                `Timed out waiting for a “quality_checks” job (after ${attempts} polls).`
+              );
+              return;
             }
 
-      - name: Bypass QC wait
+            if (qc.status !== 'completed') {
+              core.setFailed(
+                `Quality checks job never completed (last status=${qc.status}).`
+              );
+              return;
+            }
+
+            if (qc.conclusion !== 'success') {
+              core.setFailed(
+                `Quality checks failed (conclusion=${qc.conclusion}).`
+              );
+            }
+
+      - name: Bypass QC gate
         if: ${{ contains(needs.get_commit_message.outputs.commit_message, '#skip-qc') }}
         run: echo "Skipping QC gate per commit message."
 
