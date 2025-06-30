@@ -9,12 +9,49 @@ import PrescriptionsListTable from "@/components/prescriptionList/PrescriptionsL
 import {PrescriptionsListStrings} from "@/constants/ui-strings/PrescriptionListTabStrings"
 import {PrescriptionSummary, TreatmentType} from "@cpt-ui-common/common-types"
 import {MemoryRouter} from "react-router-dom"
+import {SearchContext, SearchProviderContextType} from "@/context/SearchProvider"
 
 jest.mock("@/helpers/statusMetadata", () => ({
   getStatusTagColour: jest.fn().mockReturnValue("blue"),
   getStatusDisplayText: jest.fn().mockReturnValue("Available to download"),
   formatDateForPrescriptions: jest.fn((date: string) => "Formatted: " + date)
 }))
+
+const mockClearSearchParameters = jest.fn()
+const mockSetPrescriptionId = jest.fn()
+const mockSetIssueNumber = jest.fn()
+const mockSetFirstName = jest.fn()
+const mockSetLastName = jest.fn()
+const mockSetDobDay = jest.fn()
+const mockSetDobMonth = jest.fn()
+const mockSetDobYear = jest.fn()
+const mockSetPostcode =jest.fn()
+const mockSetNhsNumber = jest.fn()
+const mockGetAllSearchParameters = jest.fn()
+const mockSetAllSearchParameters = jest.fn()
+const defaultSearchState: SearchProviderContextType = {
+  prescriptionId: undefined,
+  issueNumber: undefined,
+  firstName: undefined,
+  lastName: undefined,
+  dobDay: undefined,
+  dobMonth: undefined,
+  dobYear: undefined,
+  postcode: undefined,
+  nhsNumber: undefined,
+  clearSearchParameters: mockClearSearchParameters,
+  setPrescriptionId: mockSetPrescriptionId,
+  setIssueNumber: mockSetIssueNumber,
+  setFirstName: mockSetFirstName,
+  setLastName: mockSetLastName,
+  setDobDay: mockSetDobDay,
+  setDobMonth: mockSetDobMonth,
+  setDobYear: mockSetDobYear,
+  setPostcode: mockSetPostcode,
+  setNhsNumber: mockSetNhsNumber,
+  getAllSearchParameters: mockGetAllSearchParameters,
+  setAllSearchParameters: mockSetAllSearchParameters
+}
 
 describe("PrescriptionsListTable", () => {
   const textContent: PrescriptionsListStrings = {
@@ -63,9 +100,11 @@ describe("PrescriptionsListTable", () => {
 
   const renderWithRouter = (component: React.ReactElement) => {
     return render(
-      <MemoryRouter>
-        {component}
-      </MemoryRouter>
+      <SearchContext.Provider value={defaultSearchState}>
+        <MemoryRouter>
+          {component}
+        </MemoryRouter>
+      </SearchContext.Provider>
     )
   }
 
@@ -345,6 +384,24 @@ describe("PrescriptionsListTable", () => {
     })
 
     jest.useRealTimers()
+  })
+
+  it("responds to click on prescription id", async () => {
+    jest.useFakeTimers()
+
+    renderWithRouter(<PrescriptionsListTable textContent={textContent} prescriptions={prescriptions} />)
+
+    await waitFor(() => {
+      const prescriptionButton = screen.getByTestId("view-prescription-link-C0C757-A83008-C2D93O")
+
+      expect(prescriptionButton).toBeInTheDocument()
+
+      fireEvent.click(prescriptionButton)
+      expect(mockClearSearchParameters).toHaveBeenCalled()
+      expect(mockSetPrescriptionId).toHaveBeenCalledWith("C0C757-A83008-C2D93O")
+      expect(mockSetIssueNumber).toHaveBeenCalledWith("1")
+    })
+
   })
 
   it("renders unavailable text when prescription is deleted", async () => {
