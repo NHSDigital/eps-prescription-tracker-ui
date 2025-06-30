@@ -165,8 +165,6 @@ const renderComponent = (
   prescriptionId: string,
   initialAuthState: AuthContextType = defaultAuthState
 ) => {
-  const initialRoute = `/prescription-details`
-
   const searchState = {
     ...defaultSearchState,
     prescriptionId
@@ -177,10 +175,11 @@ const renderComponent = (
       <SearchContext.Provider value={searchState}>
         <MockPatientDetailsProvider>
           <MockPrescriptionInformationProvider>
-            <MemoryRouter initialEntries={[initialRoute]}>
+            <MemoryRouter initialEntries={["/prescription-details"]}>
               <Routes>
                 <Route path="/prescription-details" element={<PrescriptionDetailsPage />} />
                 <Route path="/login" element={<div data-testid="login-page-shown" />} />
+                <Route path="/search-by-prescription-id" element={<div data-testid="search-page-shown" />} />
               </Routes>
             </MemoryRouter>
           </MockPrescriptionInformationProvider>
@@ -212,8 +211,9 @@ describe("PrescriptionDetailsPage", () => {
   it("navigates to search page when prescriptionId is missing", async () => {
     renderComponent("", signedInAuthState)
 
-    // Verify that fallback UI renders
-    expect(screen.getByRole("heading", {name: STRINGS.HEADER})).toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByTestId("search-page-shown")).toBeInTheDocument()
+    })
   })
 
   it("handles unknown prescriptionId without navigating", async () => {
@@ -225,7 +225,7 @@ describe("PrescriptionDetailsPage", () => {
     expect(screen.getByRole("heading", {name: STRINGS.HEADER})).toBeInTheDocument()
   })
 
-  it("handles expired session be redirecting to login page", async () => {
+  it("handles expired session by redirecting to login page", async () => {
     const headers = new AxiosHeaders({})
     jest.spyOn(http, "get").mockRejectedValue(new AxiosError(undefined, undefined, undefined, undefined,
       {
@@ -295,11 +295,6 @@ describe("PrescriptionDetailsPage", () => {
     await waitFor(() => {
       expect(screen.queryByTestId("eps-spinner")).not.toBeInTheDocument()
     })
-  })
-
-  it("renders the page with heading", () => {
-    renderComponent("")
-    expect(screen.getByRole("heading", {name: "Prescription details"})).toBeInTheDocument()
   })
 
   it("sets context when the prescription get resolves", async () => {

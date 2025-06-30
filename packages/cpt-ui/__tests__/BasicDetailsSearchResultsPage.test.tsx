@@ -8,10 +8,10 @@ import {
 import {MemoryRouter, Routes, Route} from "react-router-dom"
 import BasicDetailsSearchResultsPage from "@/pages/BasicDetailsSearchResultsPage"
 import {SearchResultsPageStrings} from "@/constants/ui-strings/BasicDetailsSearchResultsPageStrings"
-import {FRONTEND_PATHS} from "@/constants/environment"
 import http from "@/helpers/axios"
 import {AuthContext, type AuthContextType} from "@/context/AuthProvider"
 import {SearchContext, SearchProviderContextType} from "@/context/SearchProvider"
+import {AxiosError, AxiosHeaders} from "axios"
 
 // Mock the axios module
 jest.mock("@/helpers/axios")
@@ -70,12 +70,6 @@ const defaultSearchState: SearchProviderContextType = {
   setAllSearchParameters: mockSetAllSearchParameters
 }
 
-const mockNavigate = jest.fn()
-jest.mock("react-router-dom", () => ({
-  ...jest.requireActual("react-router-dom"),
-  useNavigate: () => mockNavigate
-}))
-
 const mockPatients = [
   {
     nhsNumber: "9726919207",
@@ -98,20 +92,22 @@ const mockPatients = [
 function renderWithRouter() {
   return render(
     <AuthContext.Provider value={mockAuthContext}>
-      <MemoryRouter initialEntries={["/patient-search-results"]}>
-        <Routes>
-          <Route path="/patient-search-results" element={<BasicDetailsSearchResultsPage />} />
-          <Route path="/login" element={<div data-testid="login-page-shown" />} />
-          <Route path="/prescription-list-current" element={<div data-testid="prescription-list-shown" />} />
-        </Routes>
-      </MemoryRouter>
+      <SearchContext.Provider value={defaultSearchState}>
+        <MemoryRouter initialEntries={["/patient-search-results"]}>
+          <Routes>
+            <Route path="/patient-search-results" element={<BasicDetailsSearchResultsPage />} />
+            <Route path="/login" element={<div data-testid="login-page-shown" />} />
+            <Route path="/prescription-list-current" element={<div data-testid="prescription-list-shown" />} />
+            <Route path="/search-by-basic-details" element={<div data-testid="search-page-shown" />} />
+          </Routes>
+        </MemoryRouter>
+      </SearchContext.Provider>
     </AuthContext.Provider>
   )
 }
 
 describe("BasicDetailsSearchResultsPage", () => {
   beforeEach(() => {
-    mockNavigate.mockClear()
     // Mock successful API response
     mockAxiosGet.mockResolvedValue({
       status: 200,
@@ -125,16 +121,27 @@ describe("BasicDetailsSearchResultsPage", () => {
     expect(screen.getByText(SearchResultsPageStrings.LOADING)).toBeInTheDocument()
   })
 
+  it("handles expired session by redirecting to login page", async () => {
+    const headers = new AxiosHeaders({})
+    mockAxiosGet.mockRejectedValue(new AxiosError(undefined, undefined, undefined, undefined,
+      {
+        status: 401,
+        statusText: "Unauthorized",
+        headers,
+        config: {headers},
+        data: {message: "Session expired or invalid. Please log in again.", restartLogin: true}
+      }
+    ))
+
+    renderWithRouter()
+
+    await waitFor(() => {
+      expect(screen.getByTestId("login-page-shown")).toBeInTheDocument()
+    })
+  })
+
   it("renders the page title and results count", async () => {
-    render(
-      <MemoryRouter>
-        <AuthContext.Provider value={mockAuthContext}>
-          <SearchContext.Provider value={defaultSearchState}>
-            <BasicDetailsSearchResultsPage />
-          </SearchContext.Provider>
-        </AuthContext.Provider>
-      </MemoryRouter>
-    )
+    renderWithRouter()
 
     await waitFor(() => {
       expect(screen.getByText(SearchResultsPageStrings.TITLE)).toBeInTheDocument()
@@ -143,15 +150,7 @@ describe("BasicDetailsSearchResultsPage", () => {
   })
 
   it("renders the table headers correctly", async () => {
-    render(
-      <MemoryRouter>
-        <AuthContext.Provider value={mockAuthContext}>
-          <SearchContext.Provider value={defaultSearchState}>
-            <BasicDetailsSearchResultsPage />
-          </SearchContext.Provider>
-        </AuthContext.Provider>
-      </MemoryRouter>
-    )
+    renderWithRouter()
 
     await waitFor(() => {
       const tableHeaders = screen.getAllByRole("columnheader")
@@ -165,15 +164,7 @@ describe("BasicDetailsSearchResultsPage", () => {
   })
 
   it("renders patient data correctly", async () => {
-    render(
-      <MemoryRouter>
-        <AuthContext.Provider value={mockAuthContext}>
-          <SearchContext.Provider value={defaultSearchState}>
-            <BasicDetailsSearchResultsPage />
-          </SearchContext.Provider>
-        </AuthContext.Provider>
-      </MemoryRouter>
-    )
+    renderWithRouter()
 
     await waitFor(() => {
       // Check first patient
@@ -199,127 +190,79 @@ describe("BasicDetailsSearchResultsPage", () => {
       status: 200,
       data: [mockPatients[0]]
     })
-    render(
-      <MemoryRouter>
-        <AuthContext.Provider value={mockAuthContext}>
-          <SearchContext.Provider value={defaultSearchState}>
-            <BasicDetailsSearchResultsPage />
-          </SearchContext.Provider>
-        </AuthContext.Provider>
-      </MemoryRouter>
-    )
+    renderWithRouter()
 
     await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT)
+      expect(screen.getByTestId("prescription-list-shown")).toBeInTheDocument()
       expect(mockClearSearchParameters).toHaveBeenCalled()
       expect(mockSetNhsNumber).toHaveBeenCalledWith("9726919207")
     })
   })
 
   it("navigates to prescription list when clicking a patient row", async () => {
-    render(
-      <MemoryRouter>
-        <AuthContext.Provider value={mockAuthContext}>
-          <SearchContext.Provider value={defaultSearchState}>
-            <BasicDetailsSearchResultsPage />
-          </SearchContext.Provider>
-        </AuthContext.Provider>
-      </MemoryRouter>
-    )
-
+    renderWithRouter()
     await waitFor(() => {
       const firstPatientRow = screen.getByText("Issac Wolderton-Rodriguez").closest("tr")
       fireEvent.click(firstPatientRow!)
 
-      expect(mockNavigate).toHaveBeenCalledWith(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT)
+      expect(screen.getByTestId("prescription-list-shown")).toBeInTheDocument()
       expect(mockClearSearchParameters).toHaveBeenCalled()
       expect(mockSetNhsNumber).toHaveBeenCalledWith("9726919207")
     })
   })
 
   it("navigates to prescription list when clicking a patient name link", async () => {
-    render(
-      <MemoryRouter>
-        <AuthContext.Provider value={mockAuthContext}>
-          <SearchContext.Provider value={defaultSearchState}>
-            <BasicDetailsSearchResultsPage />
-          </SearchContext.Provider>
-        </AuthContext.Provider>
-      </MemoryRouter>
-    )
+    renderWithRouter()
 
     await waitFor(() => {
       const patientNameLink = screen.getByText("Issac Wolderton-Rodriguez")
       fireEvent.click(patientNameLink)
 
-      expect(mockNavigate).toHaveBeenCalledWith(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT)
+      expect(screen.getByTestId("prescription-list-shown")).toBeInTheDocument()
       expect(mockClearSearchParameters).toHaveBeenCalled()
       expect(mockSetNhsNumber).toHaveBeenCalledWith("9726919207")
     })
   })
 
   it("navigates back when clicking the back link", async () => {
-    render(
-      <MemoryRouter>
-        <AuthContext.Provider value={mockAuthContext}>
-          <SearchContext.Provider value={defaultSearchState}>
-            <BasicDetailsSearchResultsPage />
-          </SearchContext.Provider>
-        </AuthContext.Provider>
-      </MemoryRouter>
-    )
+    renderWithRouter()
 
     await waitFor(() => {
       const backLink = screen.getByText(SearchResultsPageStrings.GO_BACK)
       fireEvent.click(backLink)
 
-      expect(mockNavigate).toHaveBeenCalledWith(
-        `${FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS}`
-      )
+      expect(screen.getByTestId("search-page-shown")).toBeInTheDocument()
     })
   })
 
-  it("handles keyboard navigation for patient rows", async () => {
-    render(
-      <MemoryRouter>
-        <AuthContext.Provider value={mockAuthContext}>
-          <SearchContext.Provider value={defaultSearchState}>
-            <BasicDetailsSearchResultsPage />
-          </SearchContext.Provider>
-        </AuthContext.Provider>
-      </MemoryRouter>
-    )
+  it("handles enter key navigation for patient rows", async () => {
+    renderWithRouter()
 
     await waitFor(() => {
       const firstPatientRow = screen.getByText("Issac Wolderton-Rodriguez").closest("tr")
-
-      // Test Enter key
       fireEvent.keyDown(firstPatientRow!, {key: "Enter"})
-      expect(mockNavigate).toHaveBeenCalledWith(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT)
+
+      expect(screen.getByTestId("prescription-list-shown")).toBeInTheDocument()
       expect(mockClearSearchParameters).toHaveBeenCalled()
       expect(mockSetNhsNumber).toHaveBeenCalledWith("9726919207")
+    })
+  })
 
-      // Reset mock
-      mockNavigate.mockClear()
+  it("handles space key navigation for patient rows", async () => {
+    renderWithRouter()
 
-      // Test Space key
+    await waitFor(() => {
+      const firstPatientRow = screen.getByText("Issac Wolderton-Rodriguez").closest("tr")
       fireEvent.keyDown(firstPatientRow!, {key: " "})
-      expect(mockNavigate).toHaveBeenCalledWith(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT)
+
+      expect(screen.getByTestId("prescription-list-shown")).toBeInTheDocument()
       expect(mockClearSearchParameters).toHaveBeenCalled()
       expect(mockSetNhsNumber).toHaveBeenCalledWith("9726919207")
     })
   })
 
   it("formats NHS numbers correctly with spaces", async () => {
-    render(
-      <MemoryRouter>
-        <AuthContext.Provider value={mockAuthContext}>
-          <SearchContext.Provider value={defaultSearchState}>
-            <BasicDetailsSearchResultsPage />
-          </SearchContext.Provider>
-        </AuthContext.Provider>
-      </MemoryRouter>
-    )
+    renderWithRouter()
 
     await waitFor(() => {
       expect(screen.getByText("972 691 9207")).toBeInTheDocument()
@@ -328,15 +271,7 @@ describe("BasicDetailsSearchResultsPage", () => {
   })
 
   it("provides correct accessibility implementation for table cells", async () => {
-    render(
-      <MemoryRouter>
-        <AuthContext.Provider value={mockAuthContext}>
-          <SearchContext.Provider value={defaultSearchState}>
-            <BasicDetailsSearchResultsPage />
-          </SearchContext.Provider>
-        </AuthContext.Provider>
-      </MemoryRouter>
-    )
+    renderWithRouter()
 
     await waitFor(() => {
       // Check that table cells have the correct headers attribute
@@ -364,15 +299,7 @@ describe("BasicDetailsSearchResultsPage", () => {
   it("renders the unknown error message when the API call fails", async () => {
     mockAxiosGet.mockRejectedValue(new Error("Something went wrong"))
 
-    render(
-      <MemoryRouter>
-        <AuthContext.Provider value={mockAuthContext}>
-          <SearchContext.Provider value={defaultSearchState}>
-            <BasicDetailsSearchResultsPage />
-          </SearchContext.Provider>
-        </AuthContext.Provider>
-      </MemoryRouter>
-    )
+    renderWithRouter()
 
     await waitFor(() => {
       expect(screen.getByTestId("unknown-error-message")).toBeInTheDocument()

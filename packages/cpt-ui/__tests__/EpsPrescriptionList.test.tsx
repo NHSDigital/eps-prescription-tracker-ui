@@ -291,7 +291,7 @@ describe("PrescriptionListPage", () => {
     })
   })
 
-  it("handles expired session be redirecting to login page", async () => {
+  it("handles expired session by redirecting to login page", async () => {
     const headers = new AxiosHeaders({})
     mockedAxios.get.mockRejectedValue(new AxiosError(undefined, undefined, undefined, undefined,
       {
@@ -303,7 +303,14 @@ describe("PrescriptionListPage", () => {
       }
     ))
 
-    renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT + "?prescriptionId=unused")
+    renderWithRouter(
+      FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT,
+      signedInAuthState,
+      {
+        ...defaultSearchState,
+        prescriptionId: "C0C757-A83008-C2D93O"
+      }
+    )
 
     await waitFor(() => {
       expect(screen.getByTestId("login-page-shown")).toBeInTheDocument()
