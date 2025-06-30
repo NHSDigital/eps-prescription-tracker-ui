@@ -48,7 +48,8 @@ jobs:
             const runId = context.runId;
 
             // How many times to poll
-            const maxRetries = 30;
+            const pollTime = 10000; // 10 seconds
+            const maxRetries = 120; // 20 minutes at 10 seconds each
             let attempts = 0;
 
             async function fetchQCJob() {
@@ -65,7 +66,7 @@ jobs:
                 (qc
                   ? `found job “${qc.name}” with status=${qc.status}`
                   : 'no matching quality_checks job yet'));
-              await new Promise(r => setTimeout(r, 10000));
+              await new Promise(r => setTimeout(r, pollTime));
               qc = await fetchQCJob();
             }
 
