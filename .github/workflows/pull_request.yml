@@ -31,7 +31,6 @@ jobs:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
   quality_gate:
-    # gate after commit_message, but not explicitly waiting on quality_checks
     needs: get_commit_message
     runs-on: ubuntu-22.04
     if: always()
