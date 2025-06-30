@@ -1,29 +1,27 @@
 import {Link} from "react-router-dom"
 import {FRONTEND_PATHS} from "@/constants/environment"
 import {SEARCH_TYPES, AllowedSearchType} from "@/constants/ui-strings/PrescriptionNotFoundMessageStrings"
-import {logger} from "./logger"
+import {SearchParameters, SearchProviderContextType} from "@/context/SearchProvider"
 
 /**
  * Determine the type of search based on the available URL parameters
  */
-export function determineSearchType (params: URLSearchParams): AllowedSearchType {
+export function determineSearchType(searchContext: SearchProviderContextType): AllowedSearchType {
   // If both nhsNumber and prescriptionId are present, treat as PrescriptionListPage
-  if (params.has("nhsNumber") && params.has("prescriptionId")) {
+  if (searchContext.nhsNumber && searchContext.prescriptionId) {
     return "PrescriptionListPage"
   }
 
   if (
-    params.has("lastName") &&
-    params.has("dobDay") &&
-    params.has("dobMonth") &&
-    params.has("dobYear")
+    searchContext.lastName &&
+    searchContext.dobDay &&
+    searchContext.dobMonth &&
+    searchContext.dobYear
   ) {
     return "BasicDetailsSearch"
   }
-
-  if (params.has("prescriptionId")) return "PrescriptionIdSearch"
-  if (params.has("nhsNumber")) return "NhsNumberSearch"
-
+  if (searchContext.prescriptionId) return "PrescriptionIdSearch"
+  if (searchContext.nhsNumber) return "NhsNumberSearch"
   // Fallback to BasicDetailsSearch if no other params match
   return "BasicDetailsSearch"
 }
@@ -65,42 +63,25 @@ export function buildAltLink({alt}: { alt: AltType }) {
   )
 }
 
-/**
- * Builds a "go back" link to the relevant search form or results page,
- * preserving only the relevant search parameters.
- */
-export function buildBackLink(searchType: AllowedSearchType, searchParams: URLSearchParams): string {
-  const filteredParams = new URLSearchParams()
+// Helper to build the back link for the breadcrumb
+export function buildBackLink(
+  searchType: AllowedSearchType,
+  searchContext: SearchProviderContextType
+) {
+  const searchParams = searchContext.getAllSearchParameters()
+  const allowedKeys = searchTypeToParams[searchType]
 
-  const nhsNumber = searchParams.get("nhsNumber")
-  const prescriptionId = searchParams.get("prescriptionId")
+  if (searchParams) {
+    const filteredParams = Object.fromEntries(
+      Object.entries(searchParams).filter(([key]) =>
+        allowedKeys.includes(key)
+      )
+    ) as SearchParameters
+    searchContext.clearSearchParameters()
+    searchContext.setAllSearchParameters(filteredParams)
+    return searchTypeToPath[searchType]
 
-  const searchNhsNumber = nhsNumber && nhsNumber !== "null"
-  const searchPrescriptionId = prescriptionId && prescriptionId !== "null"
-
-  // Iterate only over query parameters defined as relevant for this search type
-  for (const key of searchTypeToParams[searchType]) {
-    const value = searchParams.get(key)
-
-    logger.debug(`Processing key: ${key}, value: ${value}`)
-
-    // If nhsNumber is invalid ("null"), skip it
-    if (key === "nhsNumber" && !searchNhsNumber) {
-      continue
-    }
-
-    // If both nhsNumber and prescriptionId are valid, we only want to keep nhsNumber
-    if (key === "prescriptionId" && searchNhsNumber && searchPrescriptionId) {
-      continue
-    }
-
-    // Add the param if it has a usable value
-    if (value) {
-      filteredParams.set(key, value)
-    }
   }
-
-  const path = searchTypeToPath[searchType]
-  const query = filteredParams.toString()
-  return query ? `${path}?${query}` : path
+  // default to basic details search
+  return searchTypeToPath[SEARCH_TYPES.BASIC_DETAILS]
 }
