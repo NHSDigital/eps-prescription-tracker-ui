@@ -8,6 +8,7 @@ import {getStatusTagColour, getStatusDisplayText, formatDateForPrescriptions} fr
 import {PRESCRIPTION_LIST_TABLE_TEXT} from "@/constants/ui-strings/PrescriptionListTableStrings"
 import {Link, useSearchParams} from "react-router-dom"
 import {FRONTEND_PATHS} from "@/constants/environment"
+import {useSearchContext} from "@/context/SearchProvider"
 
 export interface PrescriptionsListTableProps {
   textContent: PrescriptionsListStrings;
@@ -28,6 +29,7 @@ const PrescriptionsListTable = ({
 
   const [queryParams] = useSearchParams()
   const nhsNumber = queryParams.get("nhsNumber")
+  const searchContext = useSearchContext()
 
   // all tabs have own key in state object so each tab can be sorted individually
   const [allSortConfigs, setAllSortConfigs] = React.useState<
@@ -134,6 +136,12 @@ const PrescriptionsListTable = ({
     const prescriptionParam = `&prescriptionId=${prescriptionId}`
     const issueNumberParam = issueNumber ? `&issueNumber=${issueNumber}` : ""
     return `${FRONTEND_PATHS.PRESCRIPTION_DETAILS_PAGE}?${nhsNumberParam}${prescriptionParam}${issueNumberParam}`
+  }
+
+  const setSearchPrescriptionState = (prescriptionId: string, issueNumber: string | undefined) => {
+    searchContext.clearSearchParameters()
+    searchContext.setPrescriptionId(prescriptionId)
+    searchContext.setIssueNumber(issueNumber)
   }
 
   const getSortedItems = () => {
@@ -358,6 +366,7 @@ const PrescriptionsListTable = ({
                 to={constructLink(row.prescriptionId, row.issueNumber)}
                 className="nhsuk-link"
                 data-testid={`view-prescription-link-${row.prescriptionId}`}
+                onClick={() => setSearchPrescriptionState(row.prescriptionId, row.issueNumber?.toString())}
               >
                 {PRESCRIPTION_LIST_TABLE_TEXT.viewPrescription}
               </Link>
