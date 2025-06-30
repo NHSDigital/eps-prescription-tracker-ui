@@ -55,11 +55,6 @@ jobs:
               const { data } = await github.rest.actions.listJobsForWorkflowRun({
                 owner, repo, run_id: runId
               });
-              console.log(`Fetched jobs for run ${runId}: ` +
-                `${data.jobs.length} jobs found.`);
-              data.jobs.forEach(job => {
-                console.log(`Job: ${job.name}, Status: ${job.status}, Conclusion: ${job.conclusion}`);
-              });
               return data.jobs.find(job => job.name === 'quality_checks / quality_checks');
             }
 
