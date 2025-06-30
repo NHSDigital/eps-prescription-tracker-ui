@@ -60,7 +60,7 @@ jobs:
               data.jobs.forEach(job => {
                 console.log(`Job: ${job.name}, Status: ${job.status}, Conclusion: ${job.conclusion}`);
               });
-              return data.jobs.find(job => job.name === 'quality_checks');
+              return data.jobs.find(job => job.name === 'quality_checks / quality_checks');
             }
 
             let qc = await fetchQCJob();
