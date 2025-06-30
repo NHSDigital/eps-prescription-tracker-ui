@@ -59,6 +59,7 @@ export interface DispenseNotification {
     medicationName: string
     quantity: string
     dosageInstruction: string
+    statusCode: string
 }
 
 export interface MessageHistory {

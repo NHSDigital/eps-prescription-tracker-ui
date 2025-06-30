@@ -296,7 +296,8 @@ export const mockMergedResponse: PrescriptionDetailsResponse = {
           id: "DN001",
           medicationName: "Medication A",
           quantity: "30 tablets",
-          dosageInstruction: "Take one tablet daily"
+          dosageInstruction: "Take one tablet daily",
+          statusCode: ""
         }
       ]
     }

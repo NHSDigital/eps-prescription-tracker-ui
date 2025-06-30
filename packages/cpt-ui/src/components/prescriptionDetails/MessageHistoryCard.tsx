@@ -65,7 +65,7 @@ export function MessageHistoryCard({messageHistory}: MessageHistoryProps) {
                   )}
 
                   {/* Dispense notification information */}
-                  {msg.newStatusCode === "0006" && msg.dispenseNotification && msg.dispenseNotification.length > 0 && (
+                  {msg.dispenseNotification && msg.dispenseNotification.length > 0 && (
                     <Details className="nhsuk-u-padding-top-2 nhsuk-u-margin-bottom-0"
                       data-testid="message-history-dropdown">
                       <Details.Summary>
@@ -87,8 +87,8 @@ export function MessageHistoryCard({messageHistory}: MessageHistoryProps) {
                               <li key={item.id} className="nhsuk-u-font-size-16">
                                 {item.medicationName}
                                 <br />
-                                <Tag color={getItemStatusTagColour("0001")}>
-                                  {getItemStatusDisplayText("0001")}
+                                <Tag color={getItemStatusTagColour(item.statusCode)}>
+                                  {getItemStatusDisplayText(item.statusCode)}
                                 </Tag>
                                 <br />
                                 {STRINGS.QUANTITY} {item.quantity}
