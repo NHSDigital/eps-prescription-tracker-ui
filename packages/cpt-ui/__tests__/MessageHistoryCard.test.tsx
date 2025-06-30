@@ -130,6 +130,27 @@ describe("MessageHistoryCard", () => {
     expect(screen.getByText(/Organisation name not available/)).toBeInTheDocument()
   })
 
+  it("renders dispense notification if dispenseNotification exists and has items", () => {
+    render(
+      <MessageHistoryCard messageHistory={[{
+        messageCode: "Dispense Message",
+        sentDateTime: "01-Jan-2025",
+        organisationName: "Test Pharmacy",
+        organisationODS: "ABC123",
+        dispenseNotification: [{
+          id: "notif001",
+          medicationName: "TestMed",
+          quantity: "10",
+          dosageInstruction: "Once daily",
+          statusCode: "DISPENSED"
+        }]
+      }]} />
+    )
+    expect(screen.getByText(/Dispense notification information/)).toBeInTheDocument()
+    expect(screen.getByText(/TestMed/)).toBeInTheDocument()
+    expect(screen.getByText(/Quantity/)).toBeInTheDocument()
+  })
+
   it("does not render new status tag if newStatusCode is missing", () => {
     render(
       <MessageHistoryCard messageHistory={[{
@@ -140,26 +161,6 @@ describe("MessageHistoryCard", () => {
       }]} />
     )
     expect(screen.queryByText(/New status:/)).not.toBeInTheDocument()
-  })
-
-  it("does not render dispense notification if status !== '0006'", () => {
-    render(
-      <MessageHistoryCard messageHistory={[{
-        messageCode: "Not Dispensed",
-        sentDateTime: "01-Jan-2025",
-        organisationName: "Test",
-        organisationODS: "ABC123",
-        newStatusCode: "0002",
-        dispenseNotification: [{
-          id: "abc",
-          medicationName: "Something",
-          quantity: "1",
-          dosageInstruction: "Take it",
-          statusCode: ""
-        }]
-      }]} />
-    )
-    expect(screen.queryByText(/Dispense notification information/)).not.toBeInTheDocument()
   })
 
   it("does not render dispense notification if list is empty", () => {
