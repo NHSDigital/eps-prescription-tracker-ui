@@ -1,5 +1,5 @@
-import React, {useContext, useEffect, useState} from "react"
-import {Link, useNavigate, useSearchParams} from "react-router-dom"
+import React, {useEffect, useState} from "react"
+import {Link, useNavigate} from "react-router-dom"
 import {
   BackLink,
   Col,
@@ -10,7 +10,6 @@ import "../styles/PrescriptionTable.scss"
 
 import axios from "axios"
 
-import {AuthContext} from "@/context/AuthProvider"
 import {usePatientDetails} from "@/context/PatientDetailsProvider"
 
 import EpsSpinner from "@/components/EpsSpinner"
@@ -27,14 +26,14 @@ import {SearchResponse, PrescriptionSummary} from "@cpt-ui-common/common-types/s
 
 import http from "@/helpers/axios"
 import {logger} from "@/helpers/logger"
+import {useSearchContext} from "@/context/SearchProvider"
 import {buildBackLink, determineSearchType} from "@/helpers/prescriptionNotFoundLinks"
 
 export default function PrescriptionListPage() {
-  const auth = useContext(AuthContext)
   const {setPatientDetails} = usePatientDetails()
+  const searchContext = useSearchContext()
 
   const navigate = useNavigate()
-  const [queryParams] = useSearchParams()
   const [futurePrescriptions, setFuturePrescriptions] = useState<Array<PrescriptionSummary>>([])
   const [pastPrescriptions, setPastPrescriptions] = useState<Array<PrescriptionSummary>>([])
   const [currentPrescriptions, setCurrentPrescriptions] = useState<Array<PrescriptionSummary>>([])
@@ -44,29 +43,21 @@ export default function PrescriptionListPage() {
   const [showNotFound, setShowNotFound] = useState(false)
   const [error, setError] = useState(false)
 
-  const searchType = determineSearchType(queryParams)
-  const backLinkUrl = buildBackLink(searchType, queryParams)
+  const searchType = determineSearchType(searchContext)
+  const backLinkUrl = buildBackLink(searchType, searchContext)
 
   useEffect(() => {
     const runSearch = async () => {
       setLoading(true)
       setShowNotFound(false) // Reset when search changes
 
-      if (!auth?.isSignedIn) {
-        logger.info("Not signed in, waiting...")
-        return
-      }
-
-      const prescriptionId = queryParams.get("prescriptionId")
-      const nhsNumber = queryParams.get("nhsNumber")
-
       const searchParams = new URLSearchParams()
 
       // determine which search page to go back to based on query parameters
-      if (prescriptionId) {
-        searchParams.append("prescriptionId", encodeURIComponent(prescriptionId))
-      } else if (nhsNumber) {
-        searchParams.append("nhsNumber", encodeURIComponent(nhsNumber))
+      if (searchContext.prescriptionId) {
+        searchParams.append("prescriptionId", encodeURIComponent(searchContext.prescriptionId))
+      } else if (searchContext.nhsNumber) {
+        searchParams.append("nhsNumber", encodeURIComponent(searchContext.nhsNumber))
       } else {
         logger.error("No query parameter provided.")
         setLoading(false)
@@ -113,15 +104,15 @@ export default function PrescriptionListPage() {
         )
         setTabData([
           {
-            link: PRESCRIPTION_LIST_TABS.current.link(queryParams.toString()),
+            link: PRESCRIPTION_LIST_TABS.current.link(),
             title: PRESCRIPTION_LIST_TABS.current.title(searchResults.currentPrescriptions.length)
           },
           {
-            link: PRESCRIPTION_LIST_TABS.future.link(queryParams.toString()),
+            link: PRESCRIPTION_LIST_TABS.future.link(),
             title: PRESCRIPTION_LIST_TABS.future.title(searchResults.futurePrescriptions.length)
           },
           {
-            link: PRESCRIPTION_LIST_TABS.past.link(queryParams.toString()),
+            link: PRESCRIPTION_LIST_TABS.past.link(),
             title: PRESCRIPTION_LIST_TABS.past.title(searchResults.pastPrescriptions.length)
           }
         ])
@@ -146,7 +137,7 @@ export default function PrescriptionListPage() {
     }
 
     runSearch()
-  }, [queryParams, auth?.isSignedIn])
+  }, [])
 
   if (loading) {
     return (

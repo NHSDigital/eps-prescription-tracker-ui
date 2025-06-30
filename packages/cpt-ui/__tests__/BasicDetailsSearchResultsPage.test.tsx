@@ -11,6 +11,7 @@ import {SearchResultsPageStrings} from "@/constants/ui-strings/BasicDetailsSearc
 import {FRONTEND_PATHS} from "@/constants/environment"
 import http from "@/helpers/axios"
 import {AuthContext, type AuthContextType} from "@/context/AuthProvider"
+import {SearchContext, SearchProviderContextType} from "@/context/SearchProvider"
 
 // Mock the axios module
 jest.mock("@/helpers/axios")
@@ -33,11 +34,46 @@ const mockAuthContext: AuthContextType = {
   updateSelectedRole: jest.fn()
 }
 
+const mockClearSearchParameters = jest.fn()
+const mockSetPrescriptionId = jest.fn()
+const mockSetIssueNumber = jest.fn()
+const mockSetFirstName = jest.fn()
+const mockSetLastName = jest.fn()
+const mockSetDobDay = jest.fn()
+const mockSetDobMonth = jest.fn()
+const mockSetDobYear = jest.fn()
+const mockSetPostcode =jest.fn()
+const mockSetNhsNumber = jest.fn()
+const mockGetAllSearchParameters = jest.fn()
+const mockSetAllSearchParameters = jest.fn()
+const defaultSearchState: SearchProviderContextType = {
+  prescriptionId: undefined,
+  issueNumber: undefined,
+  firstName: undefined,
+  lastName: undefined,
+  dobDay: undefined,
+  dobMonth: undefined,
+  dobYear: undefined,
+  postcode: undefined,
+  nhsNumber: undefined,
+  clearSearchParameters: mockClearSearchParameters,
+  setPrescriptionId: mockSetPrescriptionId,
+  setIssueNumber: mockSetIssueNumber,
+  setFirstName: mockSetFirstName,
+  setLastName: mockSetLastName,
+  setDobDay: mockSetDobDay,
+  setDobMonth: mockSetDobMonth,
+  setDobYear: mockSetDobYear,
+  setPostcode: mockSetPostcode,
+  setNhsNumber: mockSetNhsNumber,
+  getAllSearchParameters: mockGetAllSearchParameters,
+  setAllSearchParameters: mockSetAllSearchParameters
+}
+
 const mockNavigate = jest.fn()
 jest.mock("react-router-dom", () => ({
   ...jest.requireActual("react-router-dom"),
-  useNavigate: () => mockNavigate,
-  useSearchParams: () => [new URLSearchParams()]
+  useNavigate: () => mockNavigate
 }))
 
 const mockPatients = [
@@ -93,7 +129,9 @@ describe("BasicDetailsSearchResultsPage", () => {
     render(
       <MemoryRouter>
         <AuthContext.Provider value={mockAuthContext}>
-          <BasicDetailsSearchResultsPage />
+          <SearchContext.Provider value={defaultSearchState}>
+            <BasicDetailsSearchResultsPage />
+          </SearchContext.Provider>
         </AuthContext.Provider>
       </MemoryRouter>
     )
@@ -108,7 +146,9 @@ describe("BasicDetailsSearchResultsPage", () => {
     render(
       <MemoryRouter>
         <AuthContext.Provider value={mockAuthContext}>
-          <BasicDetailsSearchResultsPage />
+          <SearchContext.Provider value={defaultSearchState}>
+            <BasicDetailsSearchResultsPage />
+          </SearchContext.Provider>
         </AuthContext.Provider>
       </MemoryRouter>
     )
@@ -128,7 +168,9 @@ describe("BasicDetailsSearchResultsPage", () => {
     render(
       <MemoryRouter>
         <AuthContext.Provider value={mockAuthContext}>
-          <BasicDetailsSearchResultsPage />
+          <SearchContext.Provider value={defaultSearchState}>
+            <BasicDetailsSearchResultsPage />
+          </SearchContext.Provider>
         </AuthContext.Provider>
       </MemoryRouter>
     )
@@ -160,15 +202,17 @@ describe("BasicDetailsSearchResultsPage", () => {
     render(
       <MemoryRouter>
         <AuthContext.Provider value={mockAuthContext}>
-          <BasicDetailsSearchResultsPage />
+          <SearchContext.Provider value={defaultSearchState}>
+            <BasicDetailsSearchResultsPage />
+          </SearchContext.Provider>
         </AuthContext.Provider>
       </MemoryRouter>
     )
 
     await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith(
-        `${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}?nhsNumber=9726919207`
-      )
+      expect(mockNavigate).toHaveBeenCalledWith(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT)
+      expect(mockClearSearchParameters).toHaveBeenCalled()
+      expect(mockSetNhsNumber).toHaveBeenCalledWith("9726919207")
     })
   })
 
@@ -176,7 +220,9 @@ describe("BasicDetailsSearchResultsPage", () => {
     render(
       <MemoryRouter>
         <AuthContext.Provider value={mockAuthContext}>
-          <BasicDetailsSearchResultsPage />
+          <SearchContext.Provider value={defaultSearchState}>
+            <BasicDetailsSearchResultsPage />
+          </SearchContext.Provider>
         </AuthContext.Provider>
       </MemoryRouter>
     )
@@ -185,9 +231,9 @@ describe("BasicDetailsSearchResultsPage", () => {
       const firstPatientRow = screen.getByText("Issac Wolderton-Rodriguez").closest("tr")
       fireEvent.click(firstPatientRow!)
 
-      expect(mockNavigate).toHaveBeenCalledWith(
-        `${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}?nhsNumber=9726919207`
-      )
+      expect(mockNavigate).toHaveBeenCalledWith(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT)
+      expect(mockClearSearchParameters).toHaveBeenCalled()
+      expect(mockSetNhsNumber).toHaveBeenCalledWith("9726919207")
     })
   })
 
@@ -195,7 +241,9 @@ describe("BasicDetailsSearchResultsPage", () => {
     render(
       <MemoryRouter>
         <AuthContext.Provider value={mockAuthContext}>
-          <BasicDetailsSearchResultsPage />
+          <SearchContext.Provider value={defaultSearchState}>
+            <BasicDetailsSearchResultsPage />
+          </SearchContext.Provider>
         </AuthContext.Provider>
       </MemoryRouter>
     )
@@ -204,9 +252,9 @@ describe("BasicDetailsSearchResultsPage", () => {
       const patientNameLink = screen.getByText("Issac Wolderton-Rodriguez")
       fireEvent.click(patientNameLink)
 
-      expect(mockNavigate).toHaveBeenCalledWith(
-        `${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}?nhsNumber=9726919207`
-      )
+      expect(mockNavigate).toHaveBeenCalledWith(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT)
+      expect(mockClearSearchParameters).toHaveBeenCalled()
+      expect(mockSetNhsNumber).toHaveBeenCalledWith("9726919207")
     })
   })
 
@@ -214,7 +262,9 @@ describe("BasicDetailsSearchResultsPage", () => {
     render(
       <MemoryRouter>
         <AuthContext.Provider value={mockAuthContext}>
-          <BasicDetailsSearchResultsPage />
+          <SearchContext.Provider value={defaultSearchState}>
+            <BasicDetailsSearchResultsPage />
+          </SearchContext.Provider>
         </AuthContext.Provider>
       </MemoryRouter>
     )
@@ -233,7 +283,9 @@ describe("BasicDetailsSearchResultsPage", () => {
     render(
       <MemoryRouter>
         <AuthContext.Provider value={mockAuthContext}>
-          <BasicDetailsSearchResultsPage />
+          <SearchContext.Provider value={defaultSearchState}>
+            <BasicDetailsSearchResultsPage />
+          </SearchContext.Provider>
         </AuthContext.Provider>
       </MemoryRouter>
     )
@@ -243,18 +295,18 @@ describe("BasicDetailsSearchResultsPage", () => {
 
       // Test Enter key
       fireEvent.keyDown(firstPatientRow!, {key: "Enter"})
-      expect(mockNavigate).toHaveBeenCalledWith(
-        `${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}?nhsNumber=9726919207`
-      )
+      expect(mockNavigate).toHaveBeenCalledWith(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT)
+      expect(mockClearSearchParameters).toHaveBeenCalled()
+      expect(mockSetNhsNumber).toHaveBeenCalledWith("9726919207")
 
       // Reset mock
       mockNavigate.mockClear()
 
       // Test Space key
       fireEvent.keyDown(firstPatientRow!, {key: " "})
-      expect(mockNavigate).toHaveBeenCalledWith(
-        `${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}?nhsNumber=9726919207`
-      )
+      expect(mockNavigate).toHaveBeenCalledWith(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT)
+      expect(mockClearSearchParameters).toHaveBeenCalled()
+      expect(mockSetNhsNumber).toHaveBeenCalledWith("9726919207")
     })
   })
 
@@ -262,7 +314,9 @@ describe("BasicDetailsSearchResultsPage", () => {
     render(
       <MemoryRouter>
         <AuthContext.Provider value={mockAuthContext}>
-          <BasicDetailsSearchResultsPage />
+          <SearchContext.Provider value={defaultSearchState}>
+            <BasicDetailsSearchResultsPage />
+          </SearchContext.Provider>
         </AuthContext.Provider>
       </MemoryRouter>
     )
@@ -277,7 +331,9 @@ describe("BasicDetailsSearchResultsPage", () => {
     render(
       <MemoryRouter>
         <AuthContext.Provider value={mockAuthContext}>
-          <BasicDetailsSearchResultsPage />
+          <SearchContext.Provider value={defaultSearchState}>
+            <BasicDetailsSearchResultsPage />
+          </SearchContext.Provider>
         </AuthContext.Provider>
       </MemoryRouter>
     )
@@ -311,7 +367,9 @@ describe("BasicDetailsSearchResultsPage", () => {
     render(
       <MemoryRouter>
         <AuthContext.Provider value={mockAuthContext}>
-          <BasicDetailsSearchResultsPage />
+          <SearchContext.Provider value={defaultSearchState}>
+            <BasicDetailsSearchResultsPage />
+          </SearchContext.Provider>
         </AuthContext.Provider>
       </MemoryRouter>
     )

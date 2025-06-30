@@ -1,5 +1,5 @@
-import {useContext, useEffect, useState} from "react"
-import {Link, useNavigate, useSearchParams} from "react-router-dom"
+import {useEffect, useState} from "react"
+import {Link, useNavigate} from "react-router-dom"
 
 import {
   BackLink,
@@ -17,7 +17,6 @@ import {
   MessageHistory
 } from "@cpt-ui-common/common-types"
 
-import {AuthContext} from "@/context/AuthProvider"
 import {usePrescriptionInformation} from "@/context/PrescriptionInformationProvider"
 import {usePatientDetails} from "@/context/PatientDetailsProvider"
 
@@ -31,16 +30,13 @@ import {MessageHistoryCard} from "@/components/prescriptionDetails/MessageHistor
 
 import http from "@/helpers/axios"
 import {logger} from "@/helpers/logger"
+import {useSearchContext} from "@/context/SearchProvider"
 import {buildBackLink, determineSearchType} from "@/helpers/prescriptionNotFoundLinks"
 import axios from "axios"
 
 export default function PrescriptionDetailsPage() {
-  const auth = useContext(AuthContext)
-  const [queryParams] = useSearchParams()
 
   const [loading, setLoading] = useState(true)
-
-  const navigate = useNavigate()
 
   const {setPrescriptionInformation} = usePrescriptionInformation()
   const {setPatientDetails} = usePatientDetails()
@@ -51,9 +47,11 @@ export default function PrescriptionDetailsPage() {
   const [prescribedItems, setPrescribedItems] = useState<Array<PrescribedItemDetails>>([])
   const [dispensedItems, setDispensedItems] = useState<Array<DispensedItemDetails>>([])
   const [messageHistory, setMessageHistory] = useState<Array<MessageHistory>>([])
+  const searchContext = useSearchContext()
+  const navigate = useNavigate()
 
-  const searchType = determineSearchType(queryParams)
-  const backLinkUrl = buildBackLink(searchType, queryParams)
+  const searchType = determineSearchType(searchContext)
+  const backLinkUrl = buildBackLink(searchType, searchContext)
 
   const getPrescriptionDetails = async (
     prescriptionId: string,
@@ -113,26 +111,22 @@ export default function PrescriptionDetailsPage() {
 
   useEffect(() => {
     const runGetPrescriptionDetails = async () => {
-      // Check if auth is ready
-      if (!auth?.isSignedIn) {
-        logger.info("Auth token not ready, waiting...")
-        return
-      }
 
-      const prescriptionId = queryParams.get("prescriptionId")
+      const prescriptionId = searchContext.prescriptionId
       if (!prescriptionId) {
-        logger.error("No prescriptionId provided in query params.")
+        logger.error("No prescriptionId provided - redirecting to search")
+        navigate(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
         return
       }
-      const prescriptionIssueNumber = queryParams.get("issueNumber")
+      const prescriptionIssueNumber = searchContext.issueNumber
 
       logger.info("useEffect triggered for prescription:", prescriptionId)
       setLoading(true)
-      await getPrescriptionDetails(prescriptionId, prescriptionIssueNumber!)
+      await getPrescriptionDetails(prescriptionId, prescriptionIssueNumber)
     }
 
     runGetPrescriptionDetails()
-  }, [queryParams, auth?.isSignedIn])
+  }, [])
 
   if (loading) {
     return (

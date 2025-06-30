@@ -1,10 +1,10 @@
 import React, {
   useEffect,
+  useMemo,
   useRef,
-  useState,
-  useMemo
+  useState
 } from "react"
-import {useNavigate, useSearchParams} from "react-router-dom"
+import {useNavigate} from "react-router-dom"
 import {
   Container,
   Row,
@@ -21,14 +21,15 @@ import {
 
 import {STRINGS} from "@/constants/ui-strings/NhsNumSearchStrings"
 import {FRONTEND_PATHS} from "@/constants/environment"
+import {useSearchContext} from "@/context/SearchProvider"
 import {validateNhsNumber, normalizeNhsNumber, NhsNumberValidationError} from "@/helpers/validateNhsNumber"
 
 export default function NhsNumSearch() {
-  const [searchParams] = useSearchParams()
-  const [nhsNumber, setNhsNumber] = useState(searchParams.get("nhsNumber") ?? "")
+  const [nhsNumber, setNhsNumber] = useState<string>("")
   const [errorKey, setErrorKey] = useState<NhsNumberValidationError | null>(null)
   const errorRef = useRef<HTMLDivElement | null>(null)
   const navigate = useNavigate()
+  const searchContext = useSearchContext()
 
   const errorMessages = STRINGS.errors
 
@@ -52,10 +53,12 @@ export default function NhsNumSearch() {
       setErrorKey(validationError)
       return
     }
-
     setErrorKey(null)
     const normalized = normalizeNhsNumber(nhsNumber)
-    navigate(`${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}?nhsNumber=${normalized}`)
+    searchContext.clearSearchParameters()
+    searchContext.setNhsNumber(normalized)
+
+    navigate(`${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}`)
   }
 
   return (

@@ -14,11 +14,12 @@ import {
   ErrorMessage,
   Fieldset
 } from "nhsuk-react-components"
-import {useNavigate, useSearchParams, createSearchParams} from "react-router-dom"
+import {useNavigate} from "react-router-dom"
 import {validateBasicDetails, getInlineErrors} from "@/helpers/validateBasicDetails"
 import {errorFocusMap, ErrorKey, resolveDobInvalidFields} from "@/helpers/basicDetailsValidationMeta"
 import {STRINGS} from "@/constants/ui-strings/BasicDetailsSearchStrings"
 import {FRONTEND_PATHS} from "@/constants/environment"
+import {useSearchContext} from "@/context/SearchProvider"
 
 export default function BasicDetailsSearch() {
   const navigate = useNavigate()
@@ -32,9 +33,9 @@ export default function BasicDetailsSearch() {
   const [postcode, setPostcode] = useState("")
   const [errors, setErrors] = useState<Array<ErrorKey>>([])
   const [dobErrorFields, setDobErrorFields] = useState<Array<"day" | "month" | "year">>([])
-  const [searchParams] = useSearchParams()
 
   const inlineErrors = getInlineErrors(errors)
+  const searchContext = useSearchContext()
 
   // Inline error lookup: used to find the error message string for specific field(s)
   // Returns the first match found in the array of inline error tuples
@@ -67,12 +68,12 @@ export default function BasicDetailsSearch() {
   }, [])
 
   useEffect(() => {
-    setFirstName(searchParams.get("firstName") ?? "")
-    setLastName(searchParams.get("lastName") ?? "")
-    setDobDay(searchParams.get("dobDay") ?? "")
-    setDobMonth(searchParams.get("dobMonth") ?? "")
-    setDobYear(searchParams.get("dobYear") ?? "")
-    setPostcode(searchParams.get("postcode") ?? "")
+    setFirstName(searchContext.firstName ?? "")
+    setLastName(searchContext.lastName ?? "")
+    setDobDay(searchContext.dobDay ?? "")
+    setDobMonth(searchContext.dobMonth ?? "")
+    setDobYear(searchContext.dobYear ?? "")
+    setPostcode(searchContext.postcode ?? "")
   }, [])
 
   // Returns true if the given DOB field had an error on the last submission.
@@ -125,16 +126,14 @@ export default function BasicDetailsSearch() {
       return
     }
 
-    const queryParams = {
-      firstName,
-      lastName,
-      dobDay,
-      dobMonth,
-      dobYear,
-      postcode
-    }
-    const queryString = createSearchParams(queryParams).toString()
-    navigate(`${FRONTEND_PATHS.PATIENT_SEARCH_RESULTS}?${queryString}`)
+    searchContext.clearSearchParameters()
+    searchContext.setFirstName(firstName)
+    searchContext.setLastName(lastName)
+    searchContext.setDobDay(dobDay)
+    searchContext.setDobMonth(dobMonth)
+    searchContext.setDobYear(dobYear)
+    searchContext.setPostcode(postcode)
+    navigate(FRONTEND_PATHS.PATIENT_SEARCH_RESULTS)
   }
 
   return (

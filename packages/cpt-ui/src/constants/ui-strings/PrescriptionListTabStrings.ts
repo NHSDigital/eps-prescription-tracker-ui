@@ -4,24 +4,24 @@ import {FRONTEND_PATHS} from "../environment"
 export interface FormattableTabHeader {
   title: (count: number) => string;
   // The link needs to preserve the query string that we came in with
-  link: (query: string) => string;
+  link: () => string;
 }
 
 export const PRESCRIPTION_LIST_TABS: Record<string, FormattableTabHeader> = {
   current: {
     title: (count: number) => `Current prescriptions (${count})`,
-    link: (query?: string) =>
-      FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT + (query ? "?" + query : "")
+    link: () =>
+      FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT
   },
   future: {
     title: (count: number) => `Future-dated prescriptions (${count})`,
-    link: (query?: string) =>
-      FRONTEND_PATHS.PRESCRIPTION_LIST_FUTURE + (query ? "?" + query : "")
+    link: () =>
+      FRONTEND_PATHS.PRESCRIPTION_LIST_FUTURE
   },
   past: {
     title: (count: number) => `Claimed and expired prescriptions (${count})`,
-    link: (query?: string) =>
-      FRONTEND_PATHS.PRESCRIPTION_LIST_PAST + (query ? "?" + query : "")
+    link: () =>
+      FRONTEND_PATHS.PRESCRIPTION_LIST_PAST
   }
 }
 export interface PrescriptionsListStrings {

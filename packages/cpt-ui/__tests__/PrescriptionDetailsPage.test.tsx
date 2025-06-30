@@ -20,6 +20,7 @@ import {AuthContext, AuthContextType} from "@/context/AuthProvider"
 import PrescriptionDetailsPage from "@/pages/PrescriptionDetailsPage"
 
 import http from "@/helpers/axios"
+import {SearchContext, SearchProviderContextType} from "@/context/SearchProvider"
 
 import {AxiosError, AxiosHeaders} from "axios"
 
@@ -101,6 +102,42 @@ const MockAuthProvider = ({
   )
 }
 
+const mockClearSearchParameters = jest.fn()
+const mockSetPrescriptionId = jest.fn()
+const mockSetIssueNumber = jest.fn()
+const mockSetFirstName = jest.fn()
+const mockSetLastName = jest.fn()
+const mockSetDobDay = jest.fn()
+const mockSetDobMonth = jest.fn()
+const mockSetDobYear = jest.fn()
+const mockSetPostcode =jest.fn()
+const mockSetNhsNumber = jest.fn()
+const mockGetAllSearchParameters = jest.fn()
+const mockSetAllSearchParameters = jest.fn()
+const defaultSearchState: SearchProviderContextType = {
+  prescriptionId: undefined,
+  issueNumber: undefined,
+  firstName: undefined,
+  lastName: undefined,
+  dobDay: undefined,
+  dobMonth: undefined,
+  dobYear: undefined,
+  postcode: undefined,
+  nhsNumber: undefined,
+  clearSearchParameters: mockClearSearchParameters,
+  setPrescriptionId: mockSetPrescriptionId,
+  setIssueNumber: mockSetIssueNumber,
+  setFirstName: mockSetFirstName,
+  setLastName: mockSetLastName,
+  setDobDay: mockSetDobDay,
+  setDobMonth: mockSetDobMonth,
+  setDobYear: mockSetDobYear,
+  setPostcode: mockSetPostcode,
+  setNhsNumber: mockSetNhsNumber,
+  getAllSearchParameters: mockGetAllSearchParameters,
+  setAllSearchParameters: mockSetAllSearchParameters
+}
+
 // Mock the spinner component.
 jest.mock("@/components/EpsSpinner", () => () => (
   <div data-testid="eps-spinner">Spinner</div>
@@ -128,21 +165,27 @@ const renderComponent = (
   prescriptionId: string,
   initialAuthState: AuthContextType = defaultAuthState
 ) => {
-  const queryString = prescriptionId ? `?prescriptionId=${prescriptionId}` : ""
-  const initialRoute = `/prescription-details${queryString}`
+  const initialRoute = `/prescription-details`
+
+  const searchState = {
+    ...defaultSearchState,
+    prescriptionId
+  }
 
   return render(
     <MockAuthProvider initialState={initialAuthState}>
-      <MockPatientDetailsProvider>
-        <MockPrescriptionInformationProvider>
-          <MemoryRouter initialEntries={[initialRoute]}>
-            <Routes>
-              <Route path="/prescription-details" element={<PrescriptionDetailsPage />} />
-              <Route path="/login" element={<div data-testid="login-page-shown" />} />
-            </Routes>
-          </MemoryRouter>
-        </MockPrescriptionInformationProvider>
-      </MockPatientDetailsProvider>
+      <SearchContext.Provider value={searchState}>
+        <MockPatientDetailsProvider>
+          <MockPrescriptionInformationProvider>
+            <MemoryRouter initialEntries={[initialRoute]}>
+              <Routes>
+                <Route path="/prescription-details" element={<PrescriptionDetailsPage />} />
+                <Route path="/login" element={<div data-testid="login-page-shown" />} />
+              </Routes>
+            </MemoryRouter>
+          </MockPrescriptionInformationProvider>
+        </MockPatientDetailsProvider>
+      </SearchContext.Provider>
     </MockAuthProvider>
   )
 }
@@ -166,7 +209,7 @@ describe("PrescriptionDetailsPage", () => {
     expect(screen.getByTestId("eps-spinner")).toBeInTheDocument()
   })
 
-  it("does not navigate when prescriptionId is missing", async () => {
+  it("navigates to search page when prescriptionId is missing", async () => {
     renderComponent("", signedInAuthState)
 
     // Verify that fallback UI renders
