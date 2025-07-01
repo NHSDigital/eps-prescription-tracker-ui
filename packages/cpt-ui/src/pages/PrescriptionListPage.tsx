@@ -125,6 +125,8 @@ export default function PrescriptionListPage() {
             return
           } else if (err.response?.status === 404) {
             setShowNotFound(true)
+          } else {
+            setError(true)
           }
         } else if (err instanceof Error && err.message === "canceled") {
           navigate(FRONTEND_PATHS.LOGIN)
