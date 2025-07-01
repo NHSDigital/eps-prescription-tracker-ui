@@ -98,7 +98,8 @@ const defaultAuthContext: AuthContextType = {
   cognitoSignIn: jest.fn(),
   cognitoSignOut: jest.fn(),
   clearAuthState: jest.fn(),
-  updateSelectedRole: mockUpdateSelectedRole
+  updateSelectedRole: mockUpdateSelectedRole,
+  forceCognitoLogout: jest.fn()
 }
 
 const renderWithProviders = (props: { role: RoleDetails; link: string }) => {
