@@ -255,7 +255,7 @@ export class CloudfrontBehaviors extends Construct{
       },
       "/404.css": {
         origin: props.staticContentBucketOrigin,
-        allowedMethods: AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
+        allowedMethods: AllowedMethods.ALLOW_GET_HEAD_OPTIONS
       },
       "/*": { // This rule must be the least priority, to ensure defined path matching can work.
         origin: props.staticContentBucketOrigin,
@@ -266,6 +266,7 @@ export class CloudfrontBehaviors extends Construct{
             function: s3StaticContentRootSlashRedirect.function,
             eventType: FunctionEventType.VIEWER_REQUEST
           }
+        ]
       }
     }
 
