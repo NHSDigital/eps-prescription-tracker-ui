@@ -7,7 +7,7 @@ export const STATUS_CATEGORY_MAP: Record<PrescriptionStatus, PrescriptionStatusC
   [PrescriptionStatus.WITH_DISPENSER]: PrescriptionStatusCategories.CURRENT,
   [PrescriptionStatus.WITH_DISPENSER_ACTIVE]: PrescriptionStatusCategories.CURRENT,
   [PrescriptionStatus.EXPIRED]: PrescriptionStatusCategories.PAST,
-  [PrescriptionStatus.CANCELLED]: PrescriptionStatusCategories.PAST,
+  [PrescriptionStatus.CANCELLED]: PrescriptionStatusCategories.CURRENT,
   [PrescriptionStatus.DISPENSED]: PrescriptionStatusCategories.CURRENT,
   [PrescriptionStatus.NOT_DISPENSED]: PrescriptionStatusCategories.PAST,
   [PrescriptionStatus.CLAIMED]: PrescriptionStatusCategories.PAST,
