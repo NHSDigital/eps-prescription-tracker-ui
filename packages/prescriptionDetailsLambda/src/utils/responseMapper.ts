@@ -35,6 +35,7 @@ const extractDispensedItemsFromMedicationDispenses = (
   medicationDispenses: Array<MedicationDispense>,
   medicationRequests: Array<MedicationRequest>
 ): Array<{
+    authorizingPrescription: object | undefined
     medicationName: string
     quantity: string
     dosageInstructions: string
@@ -53,6 +54,8 @@ const extractDispensedItemsFromMedicationDispenses = (
     // Extract EPS status from Extension-EPS-TaskBusinessStatus (not nested)
     const businessStatusExt = findExtensionByKey(dispense.extension, "TASK_BUSINESS_STATUS")
     const epsStatusCode = businessStatusExt?.valueCoding?.code ?? "unknown"
+
+    const authorizingPrescription = dispense.authorizingPrescription
 
     // Extract notDispensedReason from extension
     const notDispensedReasonExt = findExtensionByKey(dispense.extension, "NON_DISPENSING_REASON")
@@ -114,6 +117,7 @@ const extractDispensedItemsFromMedicationDispenses = (
     }
 
     return {
+      authorizingPrescription,
       medicationName: dispensedMedicationName,
       quantity: dispensedQuantity,
       dosageInstructions: dispensedDosageInstructions,
@@ -336,8 +340,8 @@ export const mergePrescriptionDetails = (
 
   // extract and format all the data
   const patientDetails = extractPatientDetails(patient)
-  const prescribedItems = extractPrescribedItems(medicationRequests)
   const dispensedItems = extractDispensedItemsFromMedicationDispenses(medicationDispenses, medicationRequests)
+  const prescribedItems = extractPrescribedItems(medicationRequests, dispensedItems)
   const messageHistory = extractMessageHistory(requestGroup, doHSData, medicationDispenses)
 
   // TODO: extract NHS App status from dispensing information extension
