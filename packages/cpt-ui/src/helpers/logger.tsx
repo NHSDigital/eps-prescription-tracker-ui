@@ -59,7 +59,7 @@ class Logger {
     if (args) {
       this.logger.error(args, message)
     } else {
-      this.logger.error(args, message)
+      this.logger.error(message)
     }
   }
 
