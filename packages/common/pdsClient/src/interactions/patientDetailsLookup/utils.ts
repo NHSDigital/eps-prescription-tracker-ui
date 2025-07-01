@@ -9,10 +9,10 @@ import path from "path"
 export const mapPdsResponseToPatientDetails = (pdsData: PDSResponse): PatientDetails => {
   return {
     nhsNumber: pdsData.id || "",
-    given: pdsData.name?.[0]?.given?.[0] ?? "",
+    given: pdsData.name?.[0]?.given?.join(" ") ?? "",
     family: pdsData.name?.[0]?.family ?? "",
-    prefix: pdsData.name?.[0]?.prefix?.[0] ?? "",
-    suffix: pdsData.name?.[0]?.suffix?.[0] ?? "",
+    prefix: pdsData.name?.[0]?.prefix?.join(" ") ?? "",
+    suffix: pdsData.name?.[0]?.suffix?.join(" ") ?? "",
     gender: pdsData.gender ?? null,
     dateOfBirth: pdsData.birthDate ?? null,
     address: pdsData.address?.[0] ? {
