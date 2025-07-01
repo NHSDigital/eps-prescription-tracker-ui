@@ -16,7 +16,12 @@ export const authenticationMiddleware = (
     const {event} = request
     const username = getUsernameFromEvent(event)
 
-    const authResult = await authenticateRequest(username, axiosInstance, ddbClient, logger, authOptions)
+    let authResult: AuthResult | null = null
+    try {
+      authResult = await authenticateRequest(username, axiosInstance, ddbClient, logger, authOptions)
+    } catch (error) {
+      logger.error("Authentication failed returning restart login prompt", {error})
+    }
     if (!authResult) {
       request.earlyResponse = {
         statusCode: 401,

@@ -3,7 +3,6 @@ import {Logger} from "@aws-lambda-powertools/logger"
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
 import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
 import {AxiosInstance} from "axios"
-// import * as parameterSecrets from "@aws-lambda-powertools/parameters/secrets"
 
 // Mock the jwt module
 jest.mock("jsonwebtoken", () => ({
