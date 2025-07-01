@@ -5,9 +5,15 @@ import {
   findExtensionValue,
   extractNhsNumber,
   extractSubjectReference,
-  createMinimalPatientDetails
+  createMinimalPatientDetails,
+  extractPatientNameField
 } from "../src/utils/responseMapper"
-import {Bundle, BundleEntry, RequestGroup} from "fhir/r4"
+import {
+  Bundle,
+  BundleEntry,
+  RequestGroup,
+  Patient
+} from "fhir/r4"
 import {PatientDetails, TreatmentType} from "@cpt-ui-common/common-types"
 
 describe("Response Mapper Tests", () => {
@@ -15,6 +21,17 @@ describe("Response Mapper Tests", () => {
     resourceType: "Bundle",
     type: "searchset",
     entry: [{
+      fullUrl: "urn:uuid:PATIENT-123-567-890",
+      resource: {
+        resourceType: "Patient",
+        name: [{
+          given: [],
+          family: "",
+          prefix: [],
+          suffix: []
+        }]
+      }
+    }, {
       fullUrl: "urn:uuid:PRESCRIPTION-111-111-111",
       resource: {
         resourceType: "RequestGroup",
@@ -23,11 +40,11 @@ describe("Response Mapper Tests", () => {
           value: "335C70-A83008-84058A"
         }],
         subject: {
-          reference: "Patient/PATIENT-123-567-890" // Fixed reference format
+          reference: "Patient/PATIENT-123-567-890"
         },
         status: "active",
-        intent: "order", // Changed to match intentMap
-        authoredOn: "20250204000000", // Added authoredOn for issueDate
+        intent: "order",
+        authoredOn: "20250204000000",
         extension: [{
           url: "https://fhir.nhs.uk/StructureDefinition/Extension-EPS-PrescriptionStatusHistory",
           extension: [{
@@ -40,11 +57,11 @@ describe("Response Mapper Tests", () => {
         {
           url: "https://fhir.nhs.uk/StructureDefinition/Extension-PendingCancellation",
           extension: [{
-            url: "prescriptionPendingCancellation", // Fixed extension name
+            url: "prescriptionPendingCancellation",
             valueBoolean: false
           },
           {
-            url: "lineItemPendingCancellation", // Added to match expected structure
+            url: "lineItemPendingCancellation",
             valueBoolean: false
           }]
         }],
@@ -78,6 +95,10 @@ describe("Response Mapper Tests", () => {
         prescriptionPendingCancellation: false,
         itemsPendingCancellation: false,
         nhsNumber: 0, // The mock doesn't have an NHS number, so it defaults to 0
+        given: "",
+        family: "",
+        prefix: "",
+        suffix: "",
         issueNumber: undefined,
         maxRepeats: undefined
       })
@@ -148,6 +169,10 @@ describe("Response Mapper Tests", () => {
             "itemsPendingCancellation": false,
             "maxRepeats": undefined,
             "nhsNumber": 0,
+            given: "",
+            family: "",
+            prefix: "",
+            suffix: "",
             "prescriptionId": "335C70-A83008-84058A",
             "prescriptionPendingCancellation": false,
             "prescriptionTreatmentType": "0001",
@@ -212,6 +237,84 @@ describe("Response Mapper Tests", () => {
     })
   })
 
+  describe("extractPatientNameField", () => {
+    it("should extract given name correctly, including concatanation", () => {
+      const bundleWithPatientName: Bundle = {
+        resourceType: "Bundle",
+        type: "searchset",
+        entry: [{
+          fullUrl: "urn:uuid:PATIENT-123-567-890",
+          search: {
+            mode: "include"
+          },
+          resource: {
+            resourceType: "Patient",
+            identifier: [{
+              system: "https://fhir.nhs.uk/Id/nhs-number",
+              value: "9732730684"
+            }],
+            name: [{
+              prefix: ["MISS"],
+              suffix: ["OBE"],
+              given: ["ETTA", "LOUISE"],
+              family: "CORY"
+            }]
+          } satisfies Patient
+        }]
+      }
+
+      const result = extractPatientNameField(bundleWithPatientName, "given")
+      expect(result).toBe("ETTA LOUISE")
+    })
+
+    it("should return empty string if given name is not found", () => {
+      const bundleWithoutGivenName: Bundle = {
+        resourceType: "Bundle",
+        type: "searchset",
+        entry: [{
+          fullUrl: "urn:uuid:PATIENT-123-567-890",
+          resource: {
+            resourceType: "Patient",
+            name: [{
+              family: "CORY"
+            }]
+          } satisfies Patient
+        }]
+      }
+
+      const result = extractPatientNameField(bundleWithoutGivenName, "given")
+      expect(result).toBe("")
+    })
+
+    it("should return empty string if patient resource is missing", () => {
+      const bundleWithoutPatientResource: Bundle = {
+        resourceType: "Bundle",
+        type: "searchset",
+        entry: []
+      }
+
+      const result = extractPatientNameField(bundleWithoutPatientResource, "given")
+      expect(result).toBe("")
+    })
+
+    it("should return empty string if name array is empty", () => {
+      const bundleWithEmptyNameArray: Bundle = {
+        resourceType: "Bundle",
+        type: "searchset",
+        entry: [{
+          fullUrl: "urn:uuid:PATIENT-123-567-890",
+          resource: {
+            resourceType: "Patient",
+            name: []
+          } satisfies Patient
+        }]
+      }
+
+      const result = extractPatientNameField(bundleWithEmptyNameArray, "given")
+      expect(result).toBe("")
+    })
+  })
+
   describe("Fallback Logic Tests", () => {
     it("should use fallback when PDS data is incomplete", () => {
       // Create incomplete PDS response with _pdsError flag
@@ -240,7 +343,7 @@ describe("Response Mapper Tests", () => {
       // Should use nhsNumber from prescription for fallback
       expect(result.patient).toMatchObject({
         nhsNumber: "9876543210", // From fallback
-        given: "9876543210", // From fallback (uses nhsNumber as given)
+        given: "", // From fallback (uses nhsNumber as given)
         family: "", // Default value in fallback
         prefix: "",
         suffix: ""
@@ -307,7 +410,7 @@ describe("Response Mapper Tests", () => {
       // Should have default values when no fallback available
       expect(result.patient).toMatchObject({
         nhsNumber: "0", // From prescription nhsNumber converted to string
-        given: "0", // From prescription nhsNumber converted to string
+        given: "",
         family: "",
         prefix: "",
         suffix: ""
@@ -335,7 +438,7 @@ describe("Response Mapper Tests", () => {
       // As per implementation, it should use the prescription NHS number
       expect(result.patient).toMatchObject({
         nhsNumber: prescriptions[0].nhsNumber.toString(),
-        given: prescriptions[0].nhsNumber.toString(),
+        given: emptyPdsDetails.given,
         family: emptyPdsDetails.family,
         prefix: emptyPdsDetails.prefix,
         suffix: emptyPdsDetails.suffix
