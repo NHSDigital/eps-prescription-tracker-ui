@@ -13,7 +13,6 @@ import {
   OrganisationSummary,
   PrescriptionDetailsResponse,
   PrescribedItemDetails,
-  DispensedItemDetails,
   MessageHistory
 } from "@cpt-ui-common/common-types"
 
@@ -44,7 +43,6 @@ export default function PrescriptionDetailsPage() {
   const [nominatedDispenser, setNominatedDispenser] = useState<OrganisationSummary | undefined>()
   const [dispenser, setDispenser] = useState<OrganisationSummary | undefined>()
   const [prescribedItems, setPrescribedItems] = useState<Array<PrescribedItemDetails>>([])
-  const [dispensedItems, setDispensedItems] = useState<Array<DispensedItemDetails>>([])
   const [messageHistory, setMessageHistory] = useState<Array<MessageHistory>>([])
   const searchContext = useSearchContext()
   const navigate = useNavigate()
@@ -85,7 +83,6 @@ export default function PrescriptionDetailsPage() {
     setPrescriptionInformation(payload)
     setPatientDetails(payload.patientDetails)
     setPrescribedItems(payload.prescribedItems)
-    setDispensedItems(payload.dispensedItems)
     setPrescriber(payload.prescriberOrganisation)
     setMessageHistory(payload.messageHistory)
 
@@ -169,7 +166,7 @@ export default function PrescriptionDetailsPage() {
           {/* Prescribed/Dispensed items */}
           <PrescribedDispensedItemsCards
             prescribedItems={prescribedItems}
-            dispensedItems={dispensedItems}
+            // dispensedItems={dispensedItems}
           />
           {/* Prescriber and dispenser information */}
           <Col width="one-third">

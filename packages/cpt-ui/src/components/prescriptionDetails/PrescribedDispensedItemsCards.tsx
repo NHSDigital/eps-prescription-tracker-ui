@@ -8,16 +8,12 @@ import {
 import {DispensedItemDetails, PrescribedItemDetails} from "@cpt-ui-common/common-types/src/prescriptionDetails"
 import {getItemStatusTagColour, getItemStatusDisplayText} from "@/helpers/statusMetadata"
 import {STRINGS} from "@/constants/ui-strings/PrescribedDispensedItemsCardsStrings"
-
 interface PrescribedDispensedItemsProps {
   prescribedItems: Array<PrescribedItemDetails>
-  dispensedItems: Array<DispensedItemDetails>
 }
 
-// Reusable component for rendering both prescribed and dispensed item cards
 export function PrescribedDispensedItemsCards({
-  prescribedItems,
-  dispensedItems
+  prescribedItems
 }: PrescribedDispensedItemsProps) {
 
   // Utility to determine if an item is a DispensedItem (and not just PrescribedItem)
@@ -143,20 +139,10 @@ export function PrescribedDispensedItemsCards({
 
   return (
     <Col width="one-third">
-      {/* Dispensed Section */}
-      {dispensedItems.length > 0 && (
-        <>
-          <h2 className="nhsuk-heading-xs nhsuk-u-margin-bottom-2">
-            {STRINGS.DISPENSED_ITEMS_HEADER}
-          </h2>
-          {dispensedItems.map(renderCard)}
-        </>
-      )}
-      {/* Prescribed Section */}
       {prescribedItems.length > 0 && (
         <>
           <h2 className="nhsuk-heading-xs nhsuk-u-margin-bottom-2">
-            {STRINGS.PRESCRIBED_ITEMS_HEADER}
+            {STRINGS.ITEMS_HEADER}
           </h2>
           {prescribedItems.map(renderCard)}
         </>
