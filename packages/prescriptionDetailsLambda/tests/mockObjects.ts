@@ -296,7 +296,8 @@ export const mockMergedResponse: PrescriptionDetailsResponse = {
           id: "DN001",
           medicationName: "Medication A",
           quantity: "30 tablets",
-          dosageInstruction: "Take one tablet daily"
+          dosageInstruction: "Take one tablet daily",
+          statusCode: "0001"
         }
       ]
     }
@@ -315,10 +316,10 @@ export const mockMergedResponse: PrescriptionDetailsResponse = {
     telephone: "098-765-4321"
   },
   currentDispenser:
-    {
-      name: "NHS Current Dispenser One",
-      odsCode: "ODS789",
-      address: "101 Pharmacy Ave, TestCity",
-      telephone: "111-222-3333"
-    }
+  {
+    name: "NHS Current Dispenser One",
+    odsCode: "ODS789",
+    address: "101 Pharmacy Ave, TestCity",
+    telephone: "111-222-3333"
+  }
 }

@@ -201,21 +201,21 @@ describe("mergePrescriptionDetails", () => {
         ]
       },
       dispensingOrganization:
-        {
-          OrganisationName: "Dispensing Org One",
-          ODSCode: "ODS789",
-          Address1: "3 Dispense Rd",
-          City: "Dispense City",
-          Postcode: "PC789",
-          Contacts: [
-            {
-              ContactMethodType: "Telephone",
-              ContactValue: "1112223333",
-              ContactAvailabilityType: "9-5",
-              ContactType: "home"
-            }
-          ]
-        }
+      {
+        OrganisationName: "Dispensing Org One",
+        ODSCode: "ODS789",
+        Address1: "3 Dispense Rd",
+        City: "Dispense City",
+        Postcode: "PC789",
+        Contacts: [
+          {
+            ContactMethodType: "Telephone",
+            ContactValue: "1112223333",
+            ContactAvailabilityType: "9-5",
+            ContactType: "home"
+          }
+        ]
+      }
     }
 
     const result = mergePrescriptionDetails(prescriptionDetails, doHSData)
@@ -579,7 +579,16 @@ describe("mergePrescriptionDetails", () => {
             medicationCodeableConcept: {text: "Medication A"},
             quantity: {value: 10, unit: "tablets"},
             dosageInstruction: [{text: "Take one daily"}],
-            status: "completed"
+            status: "completed",
+            type: {
+              coding: [
+                {
+                  system: "https://fhir.nhs.uk/CodeSystem/medicationdispense-type",
+                  code: "0001",
+                  display: "Item fully dispensed"
+                }
+              ]
+            }
           }
         },
         {
@@ -589,7 +598,16 @@ describe("mergePrescriptionDetails", () => {
             medicationCodeableConcept: {text: "Medication B"},
             quantity: {value: 20, unit: "capsules"},
             dosageInstruction: [{text: "Take two daily"}],
-            status: "completed"
+            status: "completed",
+            type: {
+              coding: [
+                {
+                  system: "https://fhir.nhs.uk/CodeSystem/medicationdispense-type",
+                  code: "0003",
+                  display: "Item dispensed - partial"
+                }
+              ]
+            }
           }
         }
       ]
@@ -626,7 +644,22 @@ describe("mergePrescriptionDetails", () => {
         dosageInstruction: "Take one daily",
         id: "notification-id-123",
         medicationName: "Medication A",
-        quantity: "10 tablets"
+        quantity: "10 tablets",
+        statusCode: "0001"
+      }]
+    })
+    expect(result.messageHistory[1]).toEqual({
+      messageCode: "dispense-notified",
+      sentDateTime: "2025-02-21T11:42:06.000Z",
+      organisationName: undefined,
+      organisationODS: "FA565",
+      newStatusCode: "0003",
+      dispenseNotification: [{
+        dosageInstruction: "Take two daily",
+        id: "notification-id-456",
+        medicationName: "Medication B",
+        quantity: "20 capsules",
+        statusCode: "0003"
       }]
     })
   })
