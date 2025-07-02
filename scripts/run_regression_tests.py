@@ -223,6 +223,7 @@ if __name__ == "__main__":
     )
 
     workflow_id = find_workflow(auth_header)
+    print(f"See {GITHUB_RUN_URL}/{workflow_id}/ for run details)")
     job_status = check_job(auth_header)
     if job_status != "success":
         if arguments.pr_label:
@@ -231,7 +232,6 @@ if __name__ == "__main__":
         else:
             env = arguments.env.upper()
         print("The regressions test step failed! There are likely test failures.")
-        print(f"See {GITHUB_RUN_URL}/{workflow_id}/ for run details)")
         print(f"See https://nhsdigital.github.io/eps-test-reports/{arguments.product}/{env}/ for allure report")
         raise Exception("Regression test failed")
 
