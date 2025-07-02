@@ -223,7 +223,7 @@ if __name__ == "__main__":
     )
 
     workflow_id = find_workflow(auth_header)
-    print(f"See {GITHUB_RUN_URL}/{workflow_id}/ for run details)")
+    print(f"See {GITHUB_RUN_URL}/{workflow_id}/ for run details")
     job_status = check_job(auth_header)
     if job_status != "success":
         if arguments.pr_label:
