@@ -163,7 +163,6 @@ def check_job(auth_header):
     current_attempt = 0
 
     print("Checking job status, please wait...")
-    print("Current status:", end=" ")
     job = get_upload_result_job(auth_header)
     job_status = job["status"]
 
