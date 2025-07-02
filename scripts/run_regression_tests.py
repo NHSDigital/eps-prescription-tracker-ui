@@ -154,7 +154,7 @@ def get_upload_result_job(auth_header):
     )
     jobs = job_response.json()["jobs"]
     upload_result_job = next((job for job in jobs if job["name"] == "upload_results"),
-                             {"status": "can not find upload results job"})
+                             {"status": "can not find upload results job - tests are likely still running"})
     return upload_result_job
 
 
