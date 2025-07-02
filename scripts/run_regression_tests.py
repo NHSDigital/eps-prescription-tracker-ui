@@ -120,7 +120,7 @@ def find_workflow(auth_header):
             list_of_jobs = get_jobs_for_workflow(jobs_url, auth_header)
 
             if list_of_jobs:
-                job = list_of_jobs[0]
+                job = list_of_jobs[0]  # this is fine to get the first job
                 steps = job["steps"]
 
                 if len(steps) >= 2:
