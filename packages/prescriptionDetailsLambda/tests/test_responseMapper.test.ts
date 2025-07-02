@@ -8,6 +8,12 @@ import {mergePrescriptionDetails} from "../src/utils/responseMapper"
 import {Logger} from "@aws-lambda-powertools/logger"
 
 const logger: Logger = new Logger({serviceName: "responseMapper"})
+const mockLogger = {
+  warn: jest.fn(),
+  info: jest.fn(),
+  error: jest.fn(),
+  debug: jest.fn()
+} as unknown as Logger
 
 // Stub out the mapper function so we can verify the mapped value
 jest.mock("../src/utils/fhirMappers", () => ({
@@ -1013,4 +1019,443 @@ describe("mergePrescriptionDetails", () => {
       initiallyPrescribed: undefined
     })
   })
+
+  it("should handle MedRequest and MedDispense resource filtering based on \
+    MedDispense statusCode not meeting required values and returning only prescribedItems", () => {
+    const prescriptionDetails: Bundle<FhirResource> = {
+      resourceType: "Bundle",
+      type: "collection",
+      entry: [
+        {
+          resource: {
+            resourceType: "RequestGroup",
+            intent: "order",
+            status: "draft",
+            identifier: [{value: "RX123"}],
+            authoredOn: "2020-01-01T00:00:00Z",
+            extension: [
+              {
+                url: "https://fhir.nhs.uk/StructureDefinition/Extension-DM-PrescriptionType",
+                valueCoding: {code: "01"}
+              },
+              {
+                url: "https://fhir.nhs.uk/StructureDefinition/Extension-EPS-RepeatInformation",
+                extension: [
+                  {url: "numberOfRepeatsIssued", valueInteger: 2},
+                  {url: "numberOfRepeatsAllowed", valueInteger: 5}
+                ]
+              },
+              {
+                url: "https://fhir.nhs.uk/StructureDefinition/Extension-PendingCancellation",
+                extension: [
+                  {url: "prescriptionPendingCancellation", valueBoolean: true}
+                ]
+              }
+            ],
+            action: [
+              {
+                title: "Prescription Line Items(Medications)",
+                timingTiming: {
+                  repeat: {
+                    period: 28
+                  }
+                }
+              },
+              {
+                title: "Prescription status transitions",
+                action: [
+                  {
+                    title: "Prescription upload successful",
+                    code: [
+                      {
+                        coding: [
+                          {
+                            system: "https://fhir.nhs.uk/CodeSystem/EPS-task-business-status",
+                            code: "MSG001",
+                            display: "Sent"
+                          }
+                        ]
+                      }
+                    ],
+                    timingDateTime: "2020-01-02T00:00:00Z",
+                    participant: [
+                      {
+                        extension: [
+                          {
+                            valueReference: {
+                              identifier: {
+                                value: "ODS456"
+                              }
+                            },
+                            url: ""
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          resource: {
+            resourceType: "Patient",
+            identifier: [{value: "P123"}],
+            name: [{prefix: ["Mr."], given: ["John"], family: "Doe", suffix: ["Jr."]}],
+            gender: "male",
+            birthDate: "1980-01-01",
+            address: [{
+              text: "123 Main St, Anytown, 12345",
+              line: ["123 Main St"],
+              city: "Anytown",
+              district: "AnyDistrict",
+              postalCode: "12345",
+              type: "physical",
+              use: "home"
+            }]
+          }
+        },
+        {
+          resource: {
+            resourceType: "MedicationRequest",
+            id: "med-req-1",
+            medicationCodeableConcept: {text: "Drug A"},
+            courseOfTherapyType: {coding: [{code: "Acute"}]},
+            dispenseRequest: {quantity: {value: 20}},
+            dosageInstruction: [{text: "Take two daily"}],
+            status: "active",
+            intent: "order",
+            subject: {},
+            extension: [
+              {
+                url: "https://fhir.nhs.uk/StructureDefinition/Extension-EPS-DispensingInformation",
+                extension: [
+                  {url: "dispenseStatus", valueCoding: {code: "0007", display: "Item to be dispensed"}}
+                ]
+              },
+              {
+                url: "https://fhir.nhs.uk/StructureDefinition/Extension-PendingCancellation",
+                extension: [
+                  {url: "lineItemPendingCancellation", valueBoolean: false},
+                  {url: "cancellationReason", valueCoding: {display: "None"}}
+                ]
+              }
+            ]
+          }
+        },
+        {
+          resource: {
+            resourceType: "MedicationDispense",
+            id: "dispense-1",
+            medicationCodeableConcept: {text: "Drug B"},
+            quantity: {value: 20},
+            dosageInstruction: [{text: "Take two daily"}],
+            status: "in-progress",
+            authorizingPrescription: [{
+              reference: "MedicationRequest/med-req-1"
+            }],
+            type: {
+              coding: [
+                {
+                  system: "https://fhir.nhs.uk/CodeSystem/medicationdispense-type",
+                  code: "0004",
+                  display: "Item fully dispensed"
+                }
+              ]
+            },
+            extension: [
+              {
+                url: "https://fhir.nhs.uk/StructureDefinition/Extension-DM-PrescriptionNonDispensingReason",
+                valueCoding: {display: "Not available"}
+              }
+            ]
+          }
+        }
+      ]
+    }
+
+    const doHSData: DoHSData = {
+      prescribingOrganization: {
+        OrganisationName: "Prescriber Org",
+        ODSCode: "ODS123",
+        Address1: "1 Prescriber Rd",
+        City: "Presc City",
+        Postcode: "PC123",
+        Contacts: [
+          {
+            ContactMethodType: "Telephone",
+            ContactValue: "0123456789",
+            ContactAvailabilityType: "9-5",
+            ContactType: "home"
+          }
+        ]
+      },
+      nominatedPerformer: {
+        OrganisationName: "Nominated Performer Org",
+        ODSCode: "ODS456",
+        Address1: "2 Performer Rd",
+        City: "Perform City",
+        Postcode: "PC456",
+        Contacts: [
+          {
+            ContactMethodType: "Telephone",
+            ContactValue: "0987654321",
+            ContactAvailabilityType: "9-5",
+            ContactType: "home"
+          }
+        ]
+      },
+      dispensingOrganization:
+      {
+        OrganisationName: "Dispensing Org One",
+        ODSCode: "ODS789",
+        Address1: "3 Dispense Rd",
+        City: "Dispense City",
+        Postcode: "PC789",
+        Contacts: [
+          {
+            ContactMethodType: "Telephone",
+            ContactValue: "1112223333",
+            ContactAvailabilityType: "9-5",
+            ContactType: "home"
+          }
+        ]
+      }
+    }
+
+    const result = mergePrescriptionDetails(prescriptionDetails, doHSData, logger)
+
+    expect(result.prescribedItems).toHaveLength(1)
+    expect(result.dispensedItems).toHaveLength(0)
+    expect(result.prescribedItems[0]).toEqual({
+      medicationName: "Drug A",
+      quantity: "20",
+      dosageInstructions: "Take two daily",
+      epsStatusCode: "0007",
+      nhsAppStatus: undefined,
+      itemPendingCancellation: false,
+      cancellationReason: null
+    })
+  })
+
+  it("should handle MedRequest and MedDispense resource filtering based on \
+    MedDispense statusCode meeting required values but not matching MedRequest statuscode \
+    and returning dispensedItems that use MedRequest status code", () => {
+    const prescriptionDetails: Bundle<FhirResource> = {
+      resourceType: "Bundle",
+      type: "collection",
+      entry: [
+        {
+          resource: {
+            resourceType: "RequestGroup",
+            intent: "order",
+            status: "draft",
+            identifier: [{value: "RX123"}],
+            authoredOn: "2020-01-01T00:00:00Z",
+            extension: [
+              {
+                url: "https://fhir.nhs.uk/StructureDefinition/Extension-DM-PrescriptionType",
+                valueCoding: {code: "01"}
+              },
+              {
+                url: "https://fhir.nhs.uk/StructureDefinition/Extension-EPS-RepeatInformation",
+                extension: [
+                  {url: "numberOfRepeatsIssued", valueInteger: 2},
+                  {url: "numberOfRepeatsAllowed", valueInteger: 5}
+                ]
+              },
+              {
+                url: "https://fhir.nhs.uk/StructureDefinition/Extension-PendingCancellation",
+                extension: [
+                  {url: "prescriptionPendingCancellation", valueBoolean: true}
+                ]
+              }
+            ],
+            action: [
+              {
+                title: "Prescription Line Items(Medications)",
+                timingTiming: {
+                  repeat: {
+                    period: 28
+                  }
+                }
+              },
+              {
+                title: "Prescription status transitions",
+                action: [
+                  {
+                    title: "Prescription upload successful",
+                    code: [
+                      {
+                        coding: [
+                          {
+                            system: "https://fhir.nhs.uk/CodeSystem/EPS-task-business-status",
+                            code: "MSG001",
+                            display: "Sent"
+                          }
+                        ]
+                      }
+                    ],
+                    timingDateTime: "2020-01-02T00:00:00Z",
+                    participant: [
+                      {
+                        extension: [
+                          {
+                            valueReference: {
+                              identifier: {
+                                value: "ODS456"
+                              }
+                            },
+                            url: ""
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          resource: {
+            resourceType: "Patient",
+            identifier: [{value: "P123"}],
+            name: [{prefix: ["Mr."], given: ["John"], family: "Doe", suffix: ["Jr."]}],
+            gender: "male",
+            birthDate: "1980-01-01",
+            address: [{
+              text: "123 Main St, Anytown, 12345",
+              line: ["123 Main St"],
+              city: "Anytown",
+              district: "AnyDistrict",
+              postalCode: "12345",
+              type: "physical",
+              use: "home"
+            }]
+          }
+        },
+        {
+          resource: {
+            resourceType: "MedicationRequest",
+            id: "med-req-1",
+            medicationCodeableConcept: {text: "Drug A"},
+            courseOfTherapyType: {coding: [{code: "Acute"}]},
+            dispenseRequest: {quantity: {value: 20}},
+            dosageInstruction: [{text: "Take two daily"}],
+            status: "active",
+            intent: "order",
+            subject: {},
+            extension: [
+              {
+                url: "https://fhir.nhs.uk/StructureDefinition/Extension-EPS-DispensingInformation",
+                extension: [
+                  {url: "dispenseStatus", valueCoding: {code: "0007", display: "Item to be dispensed"}}
+                ]
+              },
+              {
+                url: "https://fhir.nhs.uk/StructureDefinition/Extension-PendingCancellation",
+                extension: [
+                  {url: "lineItemPendingCancellation", valueBoolean: false},
+                  {url: "cancellationReason", valueCoding: {display: "None"}}
+                ]
+              }
+            ]
+          }
+        },
+        {
+          resource: {
+            resourceType: "MedicationDispense",
+            id: "med-req-1",
+            medicationCodeableConcept: {text: "Drug A"},
+            quantity: {value: 20},
+            dosageInstruction: [{text: "Take two daily"}],
+            status: "in-progress",
+            authorizingPrescription: [{
+              reference: "med-req-1"
+            }],
+            type: {
+              coding: [
+                {
+                  system: "https://fhir.nhs.uk/CodeSystem/medicationdispense-type",
+                  code: "0003",
+                  display: "Item fully dispensed"
+                }
+              ]
+            },
+            extension: []
+          }
+        }
+      ]
+    }
+
+    const doHSData: DoHSData = {
+      prescribingOrganization: {
+        OrganisationName: "Prescriber Org",
+        ODSCode: "ODS123",
+        Address1: "1 Prescriber Rd",
+        City: "Presc City",
+        Postcode: "PC123",
+        Contacts: [
+          {
+            ContactMethodType: "Telephone",
+            ContactValue: "0123456789",
+            ContactAvailabilityType: "9-5",
+            ContactType: "home"
+          }
+        ]
+      },
+      nominatedPerformer: {
+        OrganisationName: "Nominated Performer Org",
+        ODSCode: "ODS456",
+        Address1: "2 Performer Rd",
+        City: "Perform City",
+        Postcode: "PC456",
+        Contacts: [
+          {
+            ContactMethodType: "Telephone",
+            ContactValue: "0987654321",
+            ContactAvailabilityType: "9-5",
+            ContactType: "home"
+          }
+        ]
+      },
+      dispensingOrganization:
+      {
+        OrganisationName: "Dispensing Org One",
+        ODSCode: "ODS789",
+        Address1: "3 Dispense Rd",
+        City: "Dispense City",
+        Postcode: "PC789",
+        Contacts: [
+          {
+            ContactMethodType: "Telephone",
+            ContactValue: "1112223333",
+            ContactAvailabilityType: "9-5",
+            ContactType: "home"
+          }
+        ]
+      }
+    }
+
+    const result = mergePrescriptionDetails(prescriptionDetails, doHSData, mockLogger)
+
+    expect(result.prescribedItems).toHaveLength(0)
+    expect(result.dispensedItems).toHaveLength(1)
+    expect(result.dispensedItems[0]).toEqual({
+      medicationName: "Drug A",
+      quantity: "20",
+      dosageInstructions: "Take two daily",
+      epsStatusCode: "0007",
+      nhsAppStatus: undefined,
+      itemPendingCancellation: false,
+      cancellationReason: null
+    })
+
+    expect(mockLogger.warn).toHaveBeenCalledWith(
+      "Warning: MedicationResponse statusCode differs from MedicationRequest"
+    )
+  })
+
 })
