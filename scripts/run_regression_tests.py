@@ -145,7 +145,7 @@ def get_auth_header(is_called_from_github, token, user):
         return HTTPBasicAuth(user_credentials[0], user_credentials[1])
 
 
-def get_job(auth_header):
+def get_jobs(auth_header):
     job_request_url = f"{GITHUB_API_URL}/runs/{workflow_id}/jobs"
     job_response = requests.get(
         job_request_url,
@@ -153,22 +153,22 @@ def get_job(auth_header):
         auth=auth_header,
     )
 
-    return job_response.json()["jobs"][0]
+    return job_response.json()["jobs"]
 
 
 def check_job(auth_header):
     print("Checking job status, please wait...")
     print("Current status:", end=" ")
-    job = get_job(auth_header)
-    job_status = job["status"]
+    jobs = get_jobs(auth_header)
+    all_job_status = [job["status"] for job in jobs]
 
-    while job_status != "completed":
+    while len(all_job_status) == all_job_status.count("completed"):
         print(job_status)
         time.sleep(10)
-        job = get_job(auth_header)
-        job_status = job["status"]
+        jobs = get_jobs(auth_header)
+        all_job_status = [job["status"] for job in jobs]
 
-    return job["conclusion"]
+    return jobs[-1]["conclusion"]
 
 
 if __name__ == "__main__":
