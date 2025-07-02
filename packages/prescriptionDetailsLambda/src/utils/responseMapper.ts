@@ -15,9 +15,15 @@ import {
   mapMessageHistoryTitleToMessageCode,
   mapCourseOfTherapyType
 } from "./fhirMappers"
-import {findExtensionByKey, getBooleanFromNestedExtension, getIntegerFromNestedExtension} from "./extensionUtils"
+import {
+  findExtensionByKey,
+  getBooleanFromNestedExtension,
+  getCodeFromNestedExtension,
+  getIntegerFromNestedExtension
+} from "./extensionUtils"
 import {MessageHistory, OrganisationSummary} from "@cpt-ui-common/common-types"
 import {DoHSOrg} from "@cpt-ui-common/doHSClient"
+import {Logger} from "@aws-lambda-powertools/logger"
 
 /**
  * Extracts a specific resource type from the FHIR Bundle
@@ -33,9 +39,9 @@ const extractResourcesFromBundle = <T>(bundle: Bundle, resourceType: string): Ar
  */
 const extractDispensedItemsFromMedicationDispenses = (
   medicationDispenses: Array<MedicationDispense>,
-  medicationRequests: Array<MedicationRequest>
+  medicationRequests: Array<MedicationRequest>,
+  logger: Logger
 ): Array<{
-    // authorizingPrescription: object | undefined
     medicationName: string
     quantity: string
     dosageInstructions: string
@@ -52,8 +58,7 @@ const extractDispensedItemsFromMedicationDispenses = (
 }> => {
   return medicationDispenses
     .map(dispense => {
-      const businessStatusExt = findExtensionByKey(dispense.extension, "TASK_BUSINESS_STATUS")
-      const epsStatusCode = businessStatusExt?.valueCoding?.code ?? "unknown"
+      const epsStatusCode = dispense?.type?.coding?.[0].code ?? "unknown"
       return {dispense, epsStatusCode}
     })
     .filter(({dispense, epsStatusCode}) => dispense.status === "in-progress" && ["0001", "0002", "0003"].includes(epsStatusCode))
@@ -92,6 +97,14 @@ const extractDispensedItemsFromMedicationDispenses = (
         correspondingRequest.statusReason?.coding?.[0]?.display ??
         null
 
+        const businessStatusExt = findExtensionByKey(correspondingRequest.extension, "DISPENSING_INFORMATION")
+        const prescriptionStatusCode = getCodeFromNestedExtension(businessStatusExt, "dispenseStatus") ?? "unknown"
+
+        if(prescriptionStatusCode !== epsStatusCode){
+          logger.warn("Warning: MedicationResponse statusCode differs from MedicationRequest")
+          epsStatusCode = prescriptionStatusCode
+        }
+
         // Get dosage instructions from the corresponding MedicationRequest since MedicationDispense doesn't have them
         dispensedDosageInstructions = correspondingRequest.dosageInstruction?.[0]?.text ?? "Unknown"
 
@@ -116,6 +129,7 @@ const extractDispensedItemsFromMedicationDispenses = (
         }
 
         medicationRequests.splice(correspondingRequestIndex, 1)
+
       }
 
       return {
@@ -295,7 +309,8 @@ const extractOrganizationCodes = (
  */
 export const mergePrescriptionDetails = (
   bundle: Bundle,
-  doHSData: DoHSData = {}
+  doHSData: DoHSData = {},
+  logger: Logger
 ) => {
   if (!bundle?.entry) {
     throw new Error("Prescription bundle contained no entries")
@@ -341,7 +356,7 @@ export const mergePrescriptionDetails = (
 
   // extract and format all the data
   const patientDetails = extractPatientDetails(patient)
-  const dispensedItems = extractDispensedItemsFromMedicationDispenses(medicationDispenses, medicationRequests)
+  const dispensedItems = extractDispensedItemsFromMedicationDispenses(medicationDispenses, medicationRequests, logger)
   const prescribedItems = extractPrescribedItems(medicationRequests)
   const messageHistory = extractMessageHistory(requestGroup, doHSData, medicationDispenses)
 
