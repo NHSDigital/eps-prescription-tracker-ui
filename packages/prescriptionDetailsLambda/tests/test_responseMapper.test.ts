@@ -9,10 +9,7 @@ import {Logger} from "@aws-lambda-powertools/logger"
 
 const logger: Logger = new Logger({serviceName: "responseMapper"})
 const mockLogger = {
-  warn: jest.fn(),
-  info: jest.fn(),
-  error: jest.fn(),
-  debug: jest.fn()
+  warn: jest.fn()
 } as unknown as Logger
 
 // Stub out the mapper function so we can verify the mapped value
