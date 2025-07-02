@@ -101,10 +101,10 @@ export const extractPatientDetails = (patient: Patient | undefined): Omit<Patien
  * Extracts prescribed items from FHIR MedicationRequest resources
  */
 export const extractPrescribedItems = (medicationRequests: Array<MedicationRequest>) => {
-
   return medicationRequests.map(request => {
     const pendingCancellationExt = findExtensionByKey(request.extension, "PENDING_CANCELLATION")
     const dispensingInfoExt = findExtensionByKey(request.extension, "DISPENSING_INFORMATION")
+
     const epsStatusCode = getCodeFromNestedExtension(dispensingInfoExt, "dispenseStatus") ?? "unknown"
 
     const quantityValue = request.dispenseRequest?.quantity?.value?.toString() ?? "Unknown"
