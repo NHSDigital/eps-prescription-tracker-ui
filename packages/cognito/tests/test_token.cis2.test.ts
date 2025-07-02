@@ -188,7 +188,8 @@ describe("cis2 token handler", () => {
         cis2IdToken: token,
         cis2ExpiresIn: "100",
         cis2AccessToken: "access_token_reply",
-        selectedRoleId: undefined
+        selectedRoleId: undefined,
+        lastActivityTime: expect.any(Number)
       },
       expect.anything()
     )

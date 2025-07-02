@@ -32,6 +32,7 @@ import http from "@/helpers/axios"
 import {logger} from "@/helpers/logger"
 import {useSearchContext} from "@/context/SearchProvider"
 import {buildBackLink, determineSearchType} from "@/helpers/prescriptionNotFoundLinks"
+import axios from "axios"
 
 export default function PrescriptionDetailsPage() {
 
@@ -77,6 +78,10 @@ export default function PrescriptionDetailsPage() {
         throw new Error("No payload received from the API")
       }
     } catch (err) {
+      if (axios.isAxiosError(err) && (err.response?.status === 401) && err.response.data?.restartLogin) {
+        navigate(FRONTEND_PATHS.LOGIN)
+        return
+      }
       logger.error("Failed to fetch prescription details", err)
       return
     }

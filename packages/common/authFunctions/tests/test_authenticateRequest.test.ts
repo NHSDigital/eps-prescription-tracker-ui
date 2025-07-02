@@ -2,7 +2,7 @@ import {jest} from "@jest/globals"
 import {Logger} from "@aws-lambda-powertools/logger"
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
 import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
-// import * as parameterSecrets from "@aws-lambda-powertools/parameters/secrets"
+import {AxiosInstance} from "axios"
 
 // Mock the jwt module
 jest.mock("jsonwebtoken", () => ({
@@ -37,21 +37,19 @@ const mockDecodeToken = jest.fn()
 const mockVerifyIdToken = jest.fn()
 const dynamoClient = new DynamoDBClient()
 const documentClient = DynamoDBDocumentClient.from(dynamoClient)
-// Mock the axios module
-jest.mock("axios", () => ({
-  create: jest.fn().mockReturnValue({
-    post: jest.fn().mockReturnValue({data: {}}),
-    get: jest.fn().mockReturnValue({data: {}})
-  })
-}))
+const axiosInstance = {
+  post: jest.fn().mockReturnValue({data: {}}),
+  get: jest.fn().mockReturnValue({data: {}})
+} as unknown as AxiosInstance
 
 const mockUpdateTokenMapping = jest.fn()
 const mockGetTokenMapping = jest.fn()
+const mockDeleteTokenMapping = jest.fn()
 jest.unstable_mockModule("@cpt-ui-common/dynamoFunctions", () => {
-
   return {
     updateTokenMapping: mockUpdateTokenMapping,
-    getTokenMapping: mockGetTokenMapping
+    getTokenMapping: mockGetTokenMapping,
+    deleteTokenMapping: mockDeleteTokenMapping
   }
 })
 
@@ -85,7 +83,8 @@ describe("authenticateRequest", () => {
     jwtKid: "test-kid",
     apigeeApiSecret: "test-api-secret",
     apigeeMockTokenEndpoint: "mock-token-endpoint",
-    apigeeCis2TokenEndpoint: "cis2-token-endpoint"
+    apigeeCis2TokenEndpoint: "cis2-token-endpoint",
+    cloudfrontDomain: "test-cloudfront-domain"
   }
 
   beforeEach(() => {
@@ -119,6 +118,7 @@ describe("authenticateRequest", () => {
 
     const result = await authenticateRequest(
       "test-user",
+      axiosInstance,
       documentClient,
       mockLogger,
       mockOptions
@@ -127,11 +127,51 @@ describe("authenticateRequest", () => {
     expect(result).toEqual({
       apigeeAccessToken: "existing-token",
       roleId: "existing-role-id",
-      orgCode: "existing_org"
+      orgCode: "existing_org",
+      username: "test-user"
     })
+
+    expect(mockUpdateTokenMapping).toHaveBeenCalledWith(
+      documentClient,
+      mockOptions.tokenMappingTableName,
+      {username: "test-user", lastActivityTime: expect.any(Number)},
+      mockLogger
+    )
 
     // Verify that token refresh functions were not called
     expect(mockRefreshApigeeAccessToken).not.toHaveBeenCalled()
+  })
+
+  it("should return null if record was inactive for more than 15 minutes", async () => {
+    mockGetTokenMapping.mockImplementationOnce(() => Promise.resolve( {
+      username: "test-user",
+      apigeeAccessToken: "existing-token",
+      cis2IdToken: "existing-cis2-token",
+      cis2AccessToken: "existing-cis2-access-token",
+      apigeeExpiresIn: Math.floor(Date.now() / 1000) + 1000,
+      currentlySelectedRole: {
+        role_id: "existing-role-id",
+        org_code: "existing_org"
+      },
+      lastActivityTime: Date.now() - 16 * 60 * 1000 // 16 minutes ago
+    }))
+
+    const result = await authenticateRequest(
+      "test-user",
+      axiosInstance,
+      documentClient,
+      mockLogger,
+      mockOptions
+    )
+
+    expect(result).toBeNull()
+
+    expect(mockDeleteTokenMapping).toHaveBeenCalledWith(
+      documentClient,
+      mockOptions.tokenMappingTableName,
+      "test-user",
+      mockLogger
+    )
   })
 
   it("should refresh token when it's about to expire", async () => {
@@ -158,6 +198,7 @@ describe("authenticateRequest", () => {
 
     const result = await authenticateRequest(
       "test-user",
+      axiosInstance,
       documentClient,
       mockLogger,
       mockOptions
@@ -166,17 +207,18 @@ describe("authenticateRequest", () => {
     expect(result).toEqual({
       apigeeAccessToken: "refreshed-token",
       roleId: "existing-role-id",
-      orgCode: "existing_org"
+      orgCode: "existing_org",
+      username: "test-user"
     })
 
     // Verify refresh was called with correct params
     expect(mockRefreshApigeeAccessToken).toHaveBeenCalledWith(
-      expect.anything(), // axios instance
+      axiosInstance,
       mockOptions.apigeeCis2TokenEndpoint, // Use the one from options
       "expiring-refresh-token",
       mockOptions.apigeeApiKey,
       "test-api-secret", // API secret from env var
-      expect.anything() // logger
+      mockLogger
     )
 
     // Verify token was updated in DB
@@ -187,9 +229,10 @@ describe("authenticateRequest", () => {
         "apigeeAccessToken": "refreshed-token",
         "apigeeExpiresIn": 3600,
         "apigeeRefreshToken": "refreshed-refresh-token",
-        "username": "test-user"
+        "username": "test-user",
+        "lastActivityTime": expect.any(Number)
       },
-      expect.anything() // logger
+      mockLogger
     )
   })
 
@@ -216,6 +259,7 @@ describe("authenticateRequest", () => {
 
     const result = await authenticateRequest(
       "test-user",
+      axiosInstance,
       documentClient,
       mockLogger,
       mockOptions
@@ -224,7 +268,8 @@ describe("authenticateRequest", () => {
     expect(result).toEqual({
       apigeeAccessToken: "new-access-token",
       roleId: "test-role-id",
-      orgCode: "existing_org"
+      orgCode: "existing_org",
+      username: "test-user"
     })
 
     // Verify new token acquisition flow
@@ -256,6 +301,7 @@ describe("authenticateRequest", () => {
 
     const result = await authenticateRequest(
       "Mock_test-user",
+      axiosInstance,
       documentClient,
       mockLogger,
       mockOptions
@@ -264,7 +310,8 @@ describe("authenticateRequest", () => {
     expect(result).toEqual({
       apigeeAccessToken: "new-access-token",
       roleId: "test-role-id",
-      orgCode: "existing_org"
+      orgCode: "existing_org",
+      username: "Mock_test-user"
     })
 
     // Verify new token acquisition flow
@@ -296,6 +343,7 @@ describe("authenticateRequest", () => {
 
     const result = await authenticateRequest(
       "Mock_user",
+      axiosInstance,
       documentClient,
       mockLogger,
       mockOptions
@@ -304,7 +352,8 @@ describe("authenticateRequest", () => {
     expect(result).toEqual({
       apigeeAccessToken: "new-access-token",
       roleId: "test-role-id",
-      orgCode: "existing_org"
+      orgCode: "existing_org",
+      username: "Mock_user"
     })
 
     // Verify new token acquisition flow
@@ -342,6 +391,7 @@ describe("authenticateRequest", () => {
 
     const result = await authenticateRequest(
       "test-user",
+      axiosInstance,
       documentClient,
       mockLogger,
       mockOptions
@@ -351,7 +401,8 @@ describe("authenticateRequest", () => {
     expect(result).toEqual({
       apigeeAccessToken: "fallback-access-token",
       roleId: "test-role-id",
-      orgCode: "existing_org"
+      orgCode: "existing_org",
+      username: "test-user"
     })
 
     // Verify both refresh and fallback were attempted
@@ -386,6 +437,7 @@ describe("authenticateRequest", () => {
 
     const result = await authenticateRequest(
       "test-user",
+      axiosInstance,
       documentClient,
       mockLogger,
       mockOptions
@@ -395,7 +447,8 @@ describe("authenticateRequest", () => {
     expect(result).toEqual({
       apigeeAccessToken: "fallback-access-token",
       roleId: "test-role-id",
-      orgCode: "existing_org"
+      orgCode: "existing_org",
+      username: "test-user"
     })
 
     // Verify both refresh and fallback were attempted
@@ -404,29 +457,6 @@ describe("authenticateRequest", () => {
       expect.stringContaining("Token refresh failed"),
       expect.anything()
     )
-  })
-
-  it("should throw an error when no selected role", async () => {
-    // Set up mock implementation for this test
-
-    mockGetTokenMapping.mockImplementationOnce(() => Promise.resolve( {
-      username: "test-user",
-      apigeeAccessToken: "existing-token",
-      cis2IdToken: "existing-cis2-token",
-      cis2AccessToken: "existing-cis2-access-token",
-      apigeeExpiresIn: Math.floor(Date.now() / 1000) + 1000
-    }))
-
-    await expect(authenticateRequest(
-      "test-user",
-      documentClient,
-      mockLogger,
-      mockOptions
-    )
-    ).rejects.toThrow(new Error("No currently selected role"))
-
-    // Verify that token refresh functions were not called
-    expect(mockRefreshApigeeAccessToken).not.toHaveBeenCalled()
   })
 
   it("should throw an error when missing apigee expires in", async () => {
@@ -445,11 +475,11 @@ describe("authenticateRequest", () => {
 
     await expect(authenticateRequest(
       "test-user",
+      axiosInstance,
       documentClient,
       mockLogger,
       mockOptions
-    )
-    ).rejects.toThrow(new Error("Missing apigee expires in time"))
+    )).rejects.toThrow(new Error("Missing apigee expires in time"))
 
     // Verify that token refresh functions were not called
     expect(mockRefreshApigeeAccessToken).not.toHaveBeenCalled()
@@ -477,11 +507,11 @@ describe("authenticateRequest", () => {
 
     await expect(authenticateRequest(
       "test-user",
+      axiosInstance,
       documentClient,
       mockLogger,
       mockOptions
-    )
-    ).rejects.toThrow(new Error("Missing cis2IdToken"))
+    )).rejects.toThrow(new Error("Missing cis2IdToken"))
   })
 
   it("should throw an error when exchange token does not return access token", async () => {
@@ -505,11 +535,11 @@ describe("authenticateRequest", () => {
     mockGetSecret.mockReturnValue("test-private-key")
     await expect(authenticateRequest(
       "test-user",
+      axiosInstance,
       documentClient,
       mockLogger,
       mockOptions
-    )
-    ).rejects.toThrow(new Error("Failed to obtain required tokens after authentication flow"))
+    )).rejects.toThrow(new Error("Failed to obtain required tokens after authentication flow"))
   })
 
 })

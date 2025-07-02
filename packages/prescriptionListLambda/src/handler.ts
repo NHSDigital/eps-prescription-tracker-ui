@@ -1,4 +1,4 @@
-import {APIGatewayProxyEvent, APIGatewayProxyResult} from "aws-lambda"
+import {APIGatewayProxyEventBase, APIGatewayProxyResult} from "aws-lambda"
 import {Logger} from "@aws-lambda-powertools/logger"
 import {injectLambdaContext} from "@aws-lambda-powertools/logger/middleware"
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
@@ -14,7 +14,7 @@ import {PatientDetails, SearchResponse} from "@cpt-ui-common/common-types"
 import {createMinimalPatientDetails, mapSearchResponse} from "./utils/responseMapper"
 import * as pds from "@cpt-ui-common/pdsClient"
 import httpHeaderNormalizer from "@middy/http-header-normalizer"
-import {authenticateRequest, getUsernameFromEvent} from "@cpt-ui-common/authFunctions"
+import {authenticationMiddleware, authParametersFromEnv, AuthResult} from "@cpt-ui-common/authFunctions"
 import {PrescriptionError, PDSError} from "./utils/errors"
 import {URL} from "url"
 
@@ -61,30 +61,13 @@ const logger = new Logger({serviceName: "prescriptionList"})
 // External endpoints and environment variables
 const apigeePrescriptionsEndpoint = process.env["apigeePrescriptionsEndpoint"] as string
 const apigeePersonalDemographicsEndpoint = new URL(process.env["apigeePersonalDemographicsEndpoint"] as string)
-const TokenMappingTableName = process.env["TokenMappingTableName"] as string
-const jwtPrivateKeyArn = process.env["jwtPrivateKeyArn"] as string
-const apigeeApiKey = process.env["APIGEE_API_KEY"] as string
-const apigeeApiSecret = process.env["APIGEE_API_SECRET"] as string
-const jwtKid = process.env["jwtKid"] as string
-let roleId = process.env["roleId"] as string
-const apigeeCis2TokenEndpoint = process.env["apigeeCIS2TokenEndpoint"] as string
-const apigeeMockTokenEndpoint = process.env["apigeeMockTokenEndpoint"] as string
 
 // DynamoDB client setup
 const dynamoClient = new DynamoDBClient()
 const documentClient = DynamoDBDocumentClient.from(dynamoClient)
 
-logger.info("env vars", {
-  TokenMappingTableName,
-  jwtPrivateKeyArn,
-  apigeeApiKey,
-  jwtKid,
-  roleId,
-  apigeePrescriptionsEndpoint,
-  apigeePersonalDemographicsEndpoint,
-  apigeeCis2TokenEndpoint,
-  apigeeMockTokenEndpoint
-})
+const axiosInstance = axios.create()
+const authenticationParameters = authParametersFromEnv()
 
 // Error response template
 const errorResponseBody = {
@@ -99,12 +82,13 @@ const RESPONSE_HEADERS = {
 // Middleware error handler
 const middyErrorHandler = new MiddyErrorHandler(errorResponseBody)
 
-const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+const lambdaHandler = async (event: APIGatewayProxyEventBase<AuthResult>): Promise<APIGatewayProxyResult> => {
   const {loggerKeys, correlationId} = extractInboundEventValues(event)
   appendLoggerKeys(logger, loggerKeys)
 
+  const {apigeeAccessToken, roleId, orgCode} = event.requestContext.authorizer
+
   const searchStartTime = Date.now()
-  const axiosInstance = axios.create()
 
   try {
     // Extract and validate search parameters
@@ -114,19 +98,6 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     }
 
     validateSearchParams(searchParams)
-
-    // Use the authenticateRequest function for authentication
-    const username = getUsernameFromEvent(event)
-
-    const {apigeeAccessToken, roleId, orgCode} = await authenticateRequest(username, documentClient, logger, {
-      tokenMappingTableName: TokenMappingTableName,
-      jwtPrivateKeyArn,
-      apigeeApiKey,
-      apigeeApiSecret,
-      jwtKid,
-      apigeeMockTokenEndpoint,
-      apigeeCis2TokenEndpoint
-    })
 
     // Log the token for debugging (redacted for security)
     logger.debug("Using Apigee access token and role", {
@@ -403,6 +374,7 @@ const handleValidationError = (
 
 // Export the Lambda function with middleware applied
 export const handler = middy(lambdaHandler)
+  .use(authenticationMiddleware(axiosInstance, documentClient, authenticationParameters, logger))
   .use(injectLambdaContext(logger, {clearState: true}))
   .use(httpHeaderNormalizer())
   .use(

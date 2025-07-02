@@ -1,9 +1,17 @@
 import "@testing-library/jest-dom"
-import {render, screen, fireEvent} from "@testing-library/react"
-import {MemoryRouter} from "react-router-dom"
+import {
+  render,
+  screen,
+  fireEvent,
+  act,
+  waitFor
+} from "@testing-library/react"
+import {MemoryRouter, Route, Routes} from "react-router-dom"
 import EpsCard from "@/components/EpsCard"
 import {AuthContext, AuthContextType} from "@/context/AuthProvider"
 import {AccessContext} from "@/context/AccessProvider"
+import {AxiosError, AxiosHeaders} from "axios"
+import {RoleDetails} from "@cpt-ui-common/common-types"
 
 // Mock the auth configuration
 jest.mock("@/context/configureAmplify", () => ({
@@ -36,13 +44,6 @@ jest.mock("@/context/configureAmplify", () => ({
   }
 }))
 
-// Mock useNavigate
-const mockNavigate = jest.fn()
-jest.mock("react-router-dom", () => ({
-  ...jest.requireActual("react-router-dom"),
-  useNavigate: () => mockNavigate
-}))
-
 // Mock EPS_CARD_STRINGS
 jest.mock("@/constants/ui-strings/CardStrings", () => ({
   EPS_CARD_STRINGS: {
@@ -60,6 +61,9 @@ jest.mock("@/constants/environment", () => ({
   },
   APP_CONFIG: {
     REACT_LOG_LEVEL: "debug"
+  },
+  FRONTEND_PATHS: {
+    LOGIN: "/login"
   }
 }))
 
@@ -94,27 +98,20 @@ const defaultAuthContext: AuthContextType = {
   cognitoSignIn: jest.fn(),
   cognitoSignOut: jest.fn(),
   clearAuthState: jest.fn(),
-  updateSelectedRole: mockUpdateSelectedRole
+  updateSelectedRole: mockUpdateSelectedRole,
+  forceCognitoLogout: jest.fn()
 }
 
-const renderWithProviders = (
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  props: { role: any; link: string },
-  // eslint-disable-next-line no-undef
-  authOverrides: Partial<React.ContextType<typeof AuthContext>> = {}
-) => {
-  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-  const authValue = {
-    ...defaultAuthContext,
-    ...authOverrides
-  // eslint-disable-next-line no-undef
-  } as React.ContextType<typeof AuthContext>
-
+const renderWithProviders = (props: { role: RoleDetails; link: string }) => {
   return render(
-    <AuthContext.Provider value={authValue}>
+    <AuthContext.Provider value={defaultAuthContext}>
       <AccessContext.Provider value={null}>
-        <MemoryRouter>
-          <EpsCard {...props} />
+        <MemoryRouter initialEntries={["/eps-card"]}>
+          <Routes>
+            <Route path="/eps-card" element={<EpsCard {...props} />} />
+            <Route path="/login" element={<div data-testid="login-page-shown" />} />
+            <Route path="/role-detail" element={<div data-testid="role-detail-page" />} />
+          </Routes>
         </MemoryRouter>
       </AccessContext.Provider>
     </AuthContext.Provider>
@@ -161,23 +158,48 @@ describe("EpsCard Component", () => {
   })
 
   it("calls API and navigates on card click", async () => {
-    renderWithProviders(
-      {role: mockRole, link: mockLink},
-      {}
-    )
+    renderWithProviders({role: mockRole, link: mockLink})
 
-    const cardLink = screen.getByRole("link", {name: /test organization/i})
-    await fireEvent.click(cardLink)
+    act(() => {
+      const cardLink = screen.getByRole("link", {name: /test organization/i})
+      fireEvent.click(cardLink)
+    })
 
-    expect(mockUpdateSelectedRole).toHaveBeenCalledWith(
-      expect.objectContaining({
-        role_id: "123",
-        org_name: "Test Organization",
-        org_code: "XYZ123",
-        role_name: "Pharmacist"
-      })
-    )
+    await waitFor(() => {
+      expect(mockUpdateSelectedRole).toHaveBeenCalledWith(
+        expect.objectContaining({
+          role_id: "123",
+          org_name: "Test Organization",
+          org_code: "XYZ123",
+          role_name: "Pharmacist"
+        })
+      )
 
-    expect(mockNavigate).toHaveBeenCalledWith(mockLink)
+      expect(screen.getByTestId("role-detail-page")).toBeInTheDocument()
+    })
+  })
+
+  it("handles expired session by redirecting to login page", async () => {
+    const headers = new AxiosHeaders({})
+    mockUpdateSelectedRole.mockRejectedValue(new AxiosError(undefined, undefined, undefined, undefined,
+      {
+        status: 401,
+        statusText: "Unauthorized",
+        headers,
+        config: {headers},
+        data: {message: "Session expired or invalid. Please log in again.", restartLogin: true}
+      }
+    ))
+
+    renderWithProviders({role: mockRole, link: mockLink})
+
+    act(() => {
+      const cardLink = screen.getByRole("link", {name: /test organization/i})
+      fireEvent.click(cardLink)
+    })
+
+    await waitFor(() => {
+      expect(screen.getByTestId("login-page-shown")).toBeInTheDocument()
+    })
   })
 })
