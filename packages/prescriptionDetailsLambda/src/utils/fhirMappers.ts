@@ -100,20 +100,16 @@ export const extractPatientDetails = (patient: Patient | undefined): Omit<Patien
 /**
  * Extracts prescribed items from FHIR MedicationRequest resources
  */
-export const extractPrescribedItems = (medicationRequests: Array<MedicationRequest>, dispensedItems: object) => {
+export const extractPrescribedItems = (medicationRequests: Array<MedicationRequest>) => {
 
   return medicationRequests.map(request => {
     const pendingCancellationExt = findExtensionByKey(request.extension, "PENDING_CANCELLATION")
     const dispensingInfoExt = findExtensionByKey(request.extension, "DISPENSING_INFORMATION")
-    const medicationRequestId = request.id
     const epsStatusCode = getCodeFromNestedExtension(dispensingInfoExt, "dispenseStatus") ?? "unknown"
 
     const quantityValue = request.dispenseRequest?.quantity?.value?.toString() ?? "Unknown"
     const quantityUnit = request.dispenseRequest?.quantity?.unit ?? ""
     const quantity = quantityUnit ? `${quantityValue} ${quantityUnit}` : quantityValue
-    //urn:uuid: to be removed from authorizingPrescriptionId
-
-    // const x = request.
 
     return {
       medicationName: request.medicationCodeableConcept?.text ??
