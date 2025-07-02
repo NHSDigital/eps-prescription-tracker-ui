@@ -168,14 +168,14 @@ def check_job(auth_header):
 
     while current_attempt < max_attempts:
         while job_status != "completed":
-            print(f"current job status : {job_status} after {current_attempt} attempts")
+            print(f"Current upload results job status : {job_status} after {current_attempt} attempts")
             time.sleep(10)
             current_attempt = current_attempt + 1
             job = get_upload_result_job(auth_header)
             job_status = job["status"]
 
         return job["conclusion"]
-    raise Exception("Regression test job not completed")
+    raise Exception(f"Regression test job not completed after {current_attempt} attempts")
 
 
 if __name__ == "__main__":
