@@ -145,30 +145,32 @@ def get_auth_header(is_called_from_github, token, user):
         return HTTPBasicAuth(user_credentials[0], user_credentials[1])
 
 
-def get_jobs(auth_header):
+def get_upload_result_job(auth_header):
     job_request_url = f"{GITHUB_API_URL}/runs/{workflow_id}/jobs"
     job_response = requests.get(
         job_request_url,
         headers=get_headers(),
         auth=auth_header,
     )
-
-    return job_response.json()["jobs"]
+    jobs = job_response.json()["jobs"]
+    upload_result_job = next((job for job in jobs if job["name"] == "upload_results"),
+                             {"status": "can not find upload results job"})
+    return upload_result_job
 
 
 def check_job(auth_header):
     print("Checking job status, please wait...")
     print("Current status:", end=" ")
-    jobs = get_jobs(auth_header)
-    all_job_status = [job["status"] for job in jobs]
+    job = get_upload_result_job(auth_header)
+    job_status = job["status"]
 
-    while len(all_job_status) == all_job_status.count("completed"):
+    while job_status != "completed":
         print(job_status)
         time.sleep(10)
-        jobs = get_jobs(auth_header)
-        all_job_status = [job["status"] for job in jobs]
+        job = get_upload_result_job(auth_header)
+        job_status = job["status"]
 
-    return jobs[-1]["conclusion"]
+    return job["conclusion"]
 
 
 if __name__ == "__main__":
