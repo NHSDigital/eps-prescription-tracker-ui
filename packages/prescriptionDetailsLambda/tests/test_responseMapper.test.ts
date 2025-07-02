@@ -5,6 +5,10 @@ import {DoHSData} from "../src/utils/types"
 
 import {mergePrescriptionDetails} from "../src/utils/responseMapper"
 
+import {Logger} from "@aws-lambda-powertools/logger"
+
+const logger: Logger = new Logger({serviceName: "responseMapper"})
+
 // Stub out the mapper function so we can verify the mapped value
 jest.mock("../src/utils/fhirMappers", () => ({
   mapIntentToPrescriptionTreatmentType: jest.fn((intent: string) => `mapped-${intent}`)
@@ -17,7 +21,7 @@ describe("mergePrescriptionDetails", () => {
       type: "collection",
       entry: []
     }
-    expect(() => mergePrescriptionDetails(mockBundle)).toThrow("Prescription details not found")
+    expect(() => mergePrescriptionDetails(mockBundle, {}, logger)).toThrow("Prescription details not found")
   })
 
   it("should merge full prescription details and DoHS data correctly", () => {
@@ -150,15 +154,20 @@ describe("mergePrescriptionDetails", () => {
             medicationCodeableConcept: {text: "Drug B"},
             quantity: {value: 20},
             dosageInstruction: [{text: "Take two daily"}],
-            status: "completed",
+            status: "in-progress",
             authorizingPrescription: [{
               reference: "MedicationRequest/med-req-1"
             }],
+            type: {
+              coding: [
+                {
+                  system: "https://fhir.nhs.uk/CodeSystem/medicationdispense-type",
+                  code: "0001",
+                  display: "Item fully dispensed"
+                }
+              ]
+            },
             extension: [
-              {
-                url: "https://fhir.nhs.uk/StructureDefinition/Extension-EPS-TaskBusinessStatus",
-                valueCoding: {code: "0001", display: "Item fully dispensed"}
-              },
               {
                 url: "https://fhir.nhs.uk/StructureDefinition/Extension-DM-PrescriptionNonDispensingReason",
                 valueCoding: {display: "Not available"}
@@ -218,7 +227,7 @@ describe("mergePrescriptionDetails", () => {
       }
     }
 
-    const result = mergePrescriptionDetails(prescriptionDetails, doHSData)
+    const result = mergePrescriptionDetails(prescriptionDetails, doHSData, logger)
 
     // Check patient details
     expect(result.patientDetails).toEqual({
@@ -242,16 +251,7 @@ describe("mergePrescriptionDetails", () => {
     expect(result.prescriptionPendingCancellation).toBe(true)
 
     // Check prescribed items
-    expect(result.prescribedItems).toHaveLength(1)
-    expect(result.prescribedItems[0]).toEqual({
-      medicationName: "Drug A",
-      quantity: "20",
-      dosageInstructions: "Take two daily",
-      epsStatusCode: "0007",
-      nhsAppStatus: undefined,
-      itemPendingCancellation: false,
-      cancellationReason: null
-    })
+    expect(result.prescribedItems).toHaveLength(0)
 
     // Check dispensed items
     expect(result.dispensedItems).toHaveLength(1)
@@ -259,7 +259,7 @@ describe("mergePrescriptionDetails", () => {
       medicationName: "Drug B",
       quantity: "20",
       dosageInstructions: "Take two daily",
-      epsStatusCode: "0001",
+      epsStatusCode: "0007",
       nhsAppStatus: undefined,
       itemPendingCancellation: false,
       cancellationReason: null,
@@ -324,7 +324,7 @@ describe("mergePrescriptionDetails", () => {
       ]
     }
 
-    const result = mergePrescriptionDetails(mockBundle)
+    const result = mergePrescriptionDetails(mockBundle, {}, logger)
     expect(result.patientDetails).toEqual({
       nhsNumber: "Unknown",
       prefix: "",
@@ -371,7 +371,7 @@ describe("mergePrescriptionDetails", () => {
       ]
     }
 
-    const result = mergePrescriptionDetails(mockBundle)
+    const result = mergePrescriptionDetails(mockBundle, {}, logger)
     expect(result.prescribedItems).toEqual([])
     expect(result.dispensedItems).toEqual([])
     expect(result.messageHistory).toEqual([])
@@ -395,7 +395,7 @@ describe("mergePrescriptionDetails", () => {
       ]
     }
 
-    const result = mergePrescriptionDetails(mockBundle)
+    const result = mergePrescriptionDetails(mockBundle, {}, logger)
 
     expect(result.typeCode).toBe("Unknown")
     expect(result.instanceNumber).toBe(1) // Default from the implementation
@@ -454,7 +454,7 @@ describe("mergePrescriptionDetails", () => {
       ]
     }
 
-    const result = mergePrescriptionDetails(mockBundle)
+    const result = mergePrescriptionDetails(mockBundle, {}, logger)
 
     // Should use patient1 details
     expect(result.patientDetails).toEqual({
@@ -631,7 +631,7 @@ describe("mergePrescriptionDetails", () => {
       }
     }
 
-    const result = mergePrescriptionDetails(mockBundle, doHSData)
+    const result = mergePrescriptionDetails(mockBundle, doHSData, logger)
 
     expect(result.messageHistory).toHaveLength(2)
     expect(result.messageHistory[0]).toEqual({
@@ -701,7 +701,7 @@ describe("mergePrescriptionDetails", () => {
       // nominatedPerformer and dispensingOrganization are missing
     }
 
-    const result = mergePrescriptionDetails(mockBundle, partialDoHSData)
+    const result = mergePrescriptionDetails(mockBundle, partialDoHSData, logger)
 
     expect(result.prescriberOrganisation).toEqual({
       name: "Only Prescriber Org",
@@ -731,6 +731,7 @@ describe("mergePrescriptionDetails", () => {
         {
           resource: {
             resourceType: "MedicationRequest",
+            id: "med-req-x",
             medicationCodeableConcept: {text: "Drug X"},
             dispenseRequest: {quantity: {value: 10}},
             dosageInstruction: [{text: "Once daily"}],
@@ -789,37 +790,31 @@ describe("mergePrescriptionDetails", () => {
             id: "dispense-x",
             medicationCodeableConcept: {text: "Drug Z"},
             quantity: {value: 15},
-            status: "completed",
+            status: "in-progress",
             authorizingPrescription: [{
-              reference: "MedicationRequest/med-req-x"
+              reference: "med-req-x"
             }],
             statusReasonCodeableConcept: {
               text: "Not available"
             },
-            extension: [
-              {
-                url: "https://fhir.nhs.uk/StructureDefinition/Extension-EPS-TaskBusinessStatus",
-                valueCoding: {code: "0001", display: "Item fully dispensed"}
-              }
-            ]
+            type: {
+              coding: [
+                {
+                  system: "https://fhir.nhs.uk/CodeSystem/medicationdispense-type",
+                  code: "0001",
+                  display: "Item fully dispensed"
+                }
+              ]
+            }
           }
         }
       ]
     }
 
-    const result = mergePrescriptionDetails(mockBundle)
+    const result = mergePrescriptionDetails(mockBundle, {}, logger)
 
-    expect(result.prescribedItems).toHaveLength(2)
+    expect(result.prescribedItems).toHaveLength(1)
     expect(result.prescribedItems[0]).toEqual({
-      medicationName: "Drug X",
-      quantity: "10",
-      dosageInstructions: "Once daily",
-      epsStatusCode: "0007",
-      nhsAppStatus: undefined,
-      itemPendingCancellation: true,
-      cancellationReason: "Reason X"
-    })
-    expect(result.prescribedItems[1]).toEqual({
       medicationName: "Drug Y",
       quantity: "20",
       dosageInstructions: "Twice daily",
@@ -834,7 +829,7 @@ describe("mergePrescriptionDetails", () => {
       medicationName: "Drug Z",
       quantity: "15",
       dosageInstructions: "Once daily",
-      epsStatusCode: "0001",
+      epsStatusCode: "0007",
       nhsAppStatus: undefined,
       itemPendingCancellation: true,
       cancellationReason: "Reason X",
@@ -891,7 +886,7 @@ describe("mergePrescriptionDetails", () => {
       }
     }
 
-    const resultWales = mergePrescriptionDetails(mockBundleWales, doHSDataWales)
+    const resultWales = mergePrescriptionDetails(mockBundleWales, doHSDataWales, logger)
     expect(resultWales.prescriberOrganisation?.prescribedFrom).toBe("Wales")
 
     // Test with typeCode "03" should yield "Unknown"
@@ -936,7 +931,7 @@ describe("mergePrescriptionDetails", () => {
       }
     }
 
-    const resultUnknown = mergePrescriptionDetails(mockBundleUnknown, doHSDataUnknown)
+    const resultUnknown = mergePrescriptionDetails(mockBundleUnknown, doHSDataUnknown, logger)
     expect(resultUnknown.prescriberOrganisation?.prescribedFrom).toBe("Unknown")
   })
 
@@ -976,14 +971,23 @@ describe("mergePrescriptionDetails", () => {
           resource: {
             resourceType: "MedicationDispense",
             // missing medicationCodeableConcept, quantity, dosageInstruction
-            status: "entered-in-error"
+            status: "in-progress",
             // no extension for non-dispensing reason
+            type: {
+              coding: [
+                {
+                  system: "https://fhir.nhs.uk/CodeSystem/medicationdispense-type",
+                  code: "0001",
+                  display: "Item fully dispensed"
+                }
+              ]
+            }
           }
         }
       ]
     }
 
-    const result = mergePrescriptionDetails(mockBundle)
+    const result = mergePrescriptionDetails(mockBundle, {}, logger)
 
     expect(result.prescribedItems).toHaveLength(1)
     expect(result.prescribedItems[0]).toEqual({
@@ -1001,7 +1005,7 @@ describe("mergePrescriptionDetails", () => {
       medicationName: "Unknown",
       quantity: "Unknown",
       dosageInstructions: "Unknown",
-      epsStatusCode: "unknown",
+      epsStatusCode: "0001",
       nhsAppStatus: undefined,
       itemPendingCancellation: false,
       cancellationReason: null,
