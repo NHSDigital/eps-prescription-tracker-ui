@@ -5,6 +5,7 @@ export const mockAPIGatewayProxyEvent = {
     Authorization: "Bearer testToken"
   },
   requestContext: {
+    authorizer: {},
     requestId: "test-request-id",
     stage: "test"
   },

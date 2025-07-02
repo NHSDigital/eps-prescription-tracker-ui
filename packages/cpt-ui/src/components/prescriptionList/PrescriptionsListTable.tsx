@@ -6,7 +6,7 @@ import {PrescriptionSummary} from "@cpt-ui-common/common-types/src"
 import {PrescriptionsListStrings} from "../../constants/ui-strings/PrescriptionListTabStrings"
 import {getStatusTagColour, getStatusDisplayText, formatDateForPrescriptions} from "@/helpers/statusMetadata"
 import {PRESCRIPTION_LIST_TABLE_TEXT} from "@/constants/ui-strings/PrescriptionListTableStrings"
-import {Link, useSearchParams} from "react-router-dom"
+import {Link} from "react-router-dom"
 import {FRONTEND_PATHS} from "@/constants/environment"
 import {useSearchContext} from "@/context/SearchProvider"
 
@@ -24,11 +24,7 @@ const PrescriptionsListTable = ({
   prescriptions: initialPrescriptions
 }: PrescriptionsListTableProps) => {
   const initialSortConfig: SortConfig = {key: "issueDate", direction: null}
-
   const currentTabId: TabId = textContent.testid as TabId
-
-  const [queryParams] = useSearchParams()
-  const nhsNumber = queryParams.get("nhsNumber")
   const searchContext = useSearchContext()
 
   // all tabs have own key in state object so each tab can be sorted individually
@@ -128,14 +124,8 @@ const PrescriptionsListTable = ({
     return Number.MIN_SAFE_INTEGER
   }
 
-  const constructLink = (
-    prescriptionId: string,
-    issueNumber?: number
-  ): string => {
-    const nhsNumberParam = `nhsNumber=${nhsNumber}`
-    const prescriptionParam = `&prescriptionId=${prescriptionId}`
-    const issueNumberParam = issueNumber ? `&issueNumber=${issueNumber}` : ""
-    return `${FRONTEND_PATHS.PRESCRIPTION_DETAILS_PAGE}?${nhsNumberParam}${prescriptionParam}${issueNumberParam}`
+  const constructLink = (): string => {
+    return `${FRONTEND_PATHS.PRESCRIPTION_DETAILS_PAGE}`
   }
 
   const setSearchPrescriptionState = (prescriptionId: string, issueNumber: string | undefined) => {
@@ -363,7 +353,7 @@ const PrescriptionsListTable = ({
               </span>
             ) : (
               <Link
-                to={constructLink(row.prescriptionId, row.issueNumber)}
+                to={constructLink()}
                 className="nhsuk-link"
                 data-testid={`view-prescription-link-${row.prescriptionId}`}
                 onClick={() => setSearchPrescriptionState(row.prescriptionId, row.issueNumber?.toString())}
