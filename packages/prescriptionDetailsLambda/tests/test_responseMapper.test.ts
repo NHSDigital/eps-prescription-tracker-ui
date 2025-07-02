@@ -150,7 +150,7 @@ describe("mergePrescriptionDetails", () => {
             medicationCodeableConcept: {text: "Drug B"},
             quantity: {value: 20},
             dosageInstruction: [{text: "Take two daily"}],
-            status: "completed",
+            status: "in-progress",
             authorizingPrescription: [{
               reference: "MedicationRequest/med-req-1"
             }],
@@ -242,16 +242,7 @@ describe("mergePrescriptionDetails", () => {
     expect(result.prescriptionPendingCancellation).toBe(true)
 
     // Check prescribed items
-    expect(result.prescribedItems).toHaveLength(1)
-    expect(result.prescribedItems[0]).toEqual({
-      medicationName: "Drug A",
-      quantity: "20",
-      dosageInstructions: "Take two daily",
-      epsStatusCode: "0007",
-      nhsAppStatus: undefined,
-      itemPendingCancellation: false,
-      cancellationReason: null
-    })
+    expect(result.prescribedItems).toHaveLength(0)
 
     // Check dispensed items
     expect(result.dispensedItems).toHaveLength(1)
@@ -731,6 +722,7 @@ describe("mergePrescriptionDetails", () => {
         {
           resource: {
             resourceType: "MedicationRequest",
+            id: "med-req-x",
             medicationCodeableConcept: {text: "Drug X"},
             dispenseRequest: {quantity: {value: 10}},
             dosageInstruction: [{text: "Once daily"}],
@@ -789,9 +781,9 @@ describe("mergePrescriptionDetails", () => {
             id: "dispense-x",
             medicationCodeableConcept: {text: "Drug Z"},
             quantity: {value: 15},
-            status: "completed",
+            status: "in-progress",
             authorizingPrescription: [{
-              reference: "MedicationRequest/med-req-x"
+              reference: "med-req-x"
             }],
             statusReasonCodeableConcept: {
               text: "Not available"
@@ -809,7 +801,7 @@ describe("mergePrescriptionDetails", () => {
 
     const result = mergePrescriptionDetails(mockBundle)
 
-    expect(result.prescribedItems).toHaveLength(2)
+    expect(result.prescribedItems).toHaveLength(1)
     expect(result.prescribedItems[0]).toEqual({
       medicationName: "Drug X",
       quantity: "10",
@@ -976,7 +968,7 @@ describe("mergePrescriptionDetails", () => {
           resource: {
             resourceType: "MedicationDispense",
             // missing medicationCodeableConcept, quantity, dosageInstruction
-            status: "entered-in-error"
+            status: "in-progress"
             // no extension for non-dispensing reason
           }
         }
