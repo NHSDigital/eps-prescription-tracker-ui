@@ -13,7 +13,8 @@ import time
 from requests.auth import HTTPBasicAuth
 
 # This should be set to a known good version of regression test repo
-REGRESSION_TESTS_REPO_TAG = "v2.41.0"
+# REGRESSION_TESTS_REPO_TAG = "v2.41.0"
+REGRESSION_TESTS_REPO_TAG = "parallel_test"
 GITHUB_API_URL = "https://api.github.com/repos/NHSDigital/electronic-prescription-service-api-regression-tests/actions"
 GITHUB_RUN_URL = "https://github.com/NHSDigital/electronic-prescription-service-api-regression-tests/actions/runs"
 
@@ -55,7 +56,7 @@ def generate_timestamp():
 
 def trigger_test_run(env, pr_label, product, auth_header):
     body = {
-        "ref": "main",
+        "ref": "parallel_test",
         "inputs": {
             "id": run_id,
             "tags": "@regression",
