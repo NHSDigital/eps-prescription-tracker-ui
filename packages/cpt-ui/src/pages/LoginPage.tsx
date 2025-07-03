@@ -74,7 +74,7 @@ export default function LoginPage() {
         navigate(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
       }
     }
-  }, [auth, signIn, target_environment])
+  }, [auth.isSignedIn])
 
   if (AUTO_LOGIN_ENVIRONMENTS.map(x=>x.environment).includes(target_environment)) {
     return (
