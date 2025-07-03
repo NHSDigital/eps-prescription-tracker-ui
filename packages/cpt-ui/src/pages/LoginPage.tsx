@@ -1,4 +1,4 @@
-import React, {useEffect, useCallback} from "react"
+import React, {useEffect} from "react"
 import {Container, Col, Row} from "nhsuk-react-components"
 
 import {useAuth} from "@/context/AuthProvider"
@@ -34,7 +34,7 @@ export default function LoginPage() {
     })
   }
 
-  const signIn = useCallback(async () => {
+  const cis2SignIn = async () => {
     logger.info("Signing in (Primary)", auth)
     auth.clearAuthState()
     await auth.forceCognitoLogout()
@@ -44,7 +44,7 @@ export default function LoginPage() {
       }
     })
     logger.info("Signed in: ", auth)
-  }, [auth])
+  }
 
   const signOut = async () => {
     logger.info("Signing out", auth)
@@ -64,7 +64,7 @@ export default function LoginPage() {
         const autoLoginDetails = AUTO_LOGIN_ENVIRONMENTS.find(x=>x.environment===target_environment)
         if (autoLoginDetails?.loginMethod === "cis2") {
           logger.info("Redirecting user to cis2 login")
-          signIn()
+          cis2SignIn()
         } else {
           logger.info("Redirecting user to mock login")
           mockSignIn()
@@ -117,7 +117,7 @@ export default function LoginPage() {
 
         <Row>
           <Col width="full">
-            <Button id="primary-signin" style={{margin: "8px"}} onClick={signIn}>Log in with PTL CIS2</Button>
+            <Button id="primary-signin" style={{margin: "8px"}} onClick={cis2SignIn}>Log in with PTL CIS2</Button>
             <Button id="mock-signin" style={{margin: "8px"}} onClick={mockSignIn}>Log in with mock CIS2</Button>
             <Button id="signout" style={{margin: "8px"}} onClick={signOut}>Sign Out</Button>
 
