@@ -32,6 +32,12 @@ jest.mock("@/constants/environment", () => ({
     REDIRECT_SIGN_IN: "mock-signin",
     REDIRECT_SIGN_OUT: "mock-signout"
   },
+  AUTO_LOGIN_ENVIRONMENTS: [
+    {environment: "dev", loginMethod: "mock"},
+    {environment: "dev-pr", loginMethod: "mock"},
+    {environment: "int", loginMethod: "cis2"},
+    {environment: "prod", loginMethod: "cis2"}
+  ],
   API_ENDPOINTS: {
     TRACKER_USER_INFO: "/api/tracker-user-info",
     SELECTED_ROLE: "/api/selected-role"
@@ -144,6 +150,14 @@ describe("LoginPage", () => {
   })
 
   it("renders the page and the main buttons", () => {
+    // Get the mocked module
+    const envModule = jest.requireMock("@/constants/environment")
+
+    // Modify the environment config temporarily
+    envModule.ENV_CONFIG = {
+      ...envModule.ENV_CONFIG,
+      TARGET_ENVIRONMENT: "qa"
+    }
     const {container} = renderWithProviders(<LoginPage />)
 
     const heading = screen.getByRole("heading", {level: 1})
@@ -159,6 +173,14 @@ describe("LoginPage", () => {
   })
 
   it("calls cognitoSignIn with 'Primary' when the primary login button is clicked", async () => {
+    // Get the mocked module
+    const envModule = jest.requireMock("@/constants/environment")
+
+    // Modify the environment config temporarily
+    envModule.ENV_CONFIG = {
+      ...envModule.ENV_CONFIG,
+      TARGET_ENVIRONMENT: "qa"
+    }
     renderWithProviders(<LoginPage />)
 
     const primaryLogin = screen.getByRole("button", {
@@ -174,6 +196,14 @@ describe("LoginPage", () => {
   })
 
   it("calls cognitoSignIn with 'Mock' when the mock login button is clicked", async () => {
+    // Get the mocked module
+    const envModule = jest.requireMock("@/constants/environment")
+
+    // Modify the environment config temporarily
+    envModule.ENV_CONFIG = {
+      ...envModule.ENV_CONFIG,
+      TARGET_ENVIRONMENT: "qa"
+    }
     renderWithProviders(<LoginPage />)
 
     const mockLogin = screen.getByRole("button", {
@@ -203,7 +233,7 @@ describe("LoginPage", () => {
     })
   })
 
-  it("shows a spinner when not in a mock auth environment", async () => {
+  it("shows a spinner when not in a auto login auth environment", async () => {
     // Get the mocked module
     const envModule = jest.requireMock("@/constants/environment")
 
