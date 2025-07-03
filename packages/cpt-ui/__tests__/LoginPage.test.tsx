@@ -233,7 +233,7 @@ describe("LoginPage", () => {
     })
   })
 
-  it("shows a spinner when not in a auto login auth environment", async () => {
+  it("shows a spinner when in prod environment", async () => {
     // Get the mocked module
     const envModule = jest.requireMock("@/constants/environment")
 
@@ -258,7 +258,36 @@ describe("LoginPage", () => {
 
     const spinnerContainer = container.querySelector(".spinner-container")
     expect(spinnerContainer).toBeInTheDocument()
-    expect(mockCognitoSignIn).toHaveBeenCalled()
+    expect(mockCognitoSignIn).toHaveBeenCalledWith({"provider": {"custom": "Primary"}}
+    )
+  })
+
+  it("shows a spinner when in dev environment", async () => {
+    // Get the mocked module
+    const envModule = jest.requireMock("@/constants/environment")
+
+    // Modify the environment config temporarily
+    envModule.ENV_CONFIG = {
+      ...envModule.ENV_CONFIG,
+      TARGET_ENVIRONMENT: "dev"
+    }
+
+    // Render the component with our providers
+    const {container} = renderWithProviders(<LoginPage />, {
+      ...defaultAuthState,
+      isSignedIn: false,
+      user: "testUser"
+    })
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(/Redirecting to CIS2 login page/i)
+      ).toBeInTheDocument()
+    })
+
+    const spinnerContainer = container.querySelector(".spinner-container")
+    expect(spinnerContainer).toBeInTheDocument()
+    expect(mockCognitoSignIn).toHaveBeenCalledWith({"provider": {"custom": "Mock"}})
   })
 
   it("redirects to search if logged in", async () => {
