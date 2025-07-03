@@ -32,7 +32,6 @@ jest.mock("@/constants/environment", () => ({
     REDIRECT_SIGN_IN: "mock-signin",
     REDIRECT_SIGN_OUT: "mock-signout"
   },
-  MOCK_AUTH_ALLOWED_ENVIRONMENTS: ["dev", "dev-pr", "int", "qa"],
   API_ENDPOINTS: {
     TRACKER_USER_INFO: "/api/tracker-user-info",
     SELECTED_ROLE: "/api/selected-role"

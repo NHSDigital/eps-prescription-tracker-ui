@@ -7,11 +7,10 @@ import EpsSpinner from "@/components/EpsSpinner"
 import {EpsLoginPageStrings} from "@/constants/ui-strings/EpsLoginPageStrings"
 
 import {
+  AUTO_LOGIN_ENVIRONMENTS,
   ENV_CONFIG,
   FRONTEND_PATHS,
-  MOCK_AUTH_ALLOWED_ENVIRONMENTS,
-  type Environment,
-  type MockAuthEnvironment
+  type Environment
 } from "@/constants/environment"
 import {Button} from "@/components/ReactRouterButton"
 import {logger} from "@/helpers/logger"
@@ -59,14 +58,17 @@ export default function LoginPage() {
       target_environment
     )
 
-    if (
-      !MOCK_AUTH_ALLOWED_ENVIRONMENTS.includes(
-        target_environment as MockAuthEnvironment
-      )
-    ) {
+    if (AUTO_LOGIN_ENVIRONMENTS.map(x=>x.environment).includes(target_environment)) {
+      logger.info("performing auto login")
       if (!auth?.isSignedIn) {
-        logger.info("Redirecting user to cis2 login")
-        signIn()
+        const autoLoginDetails = AUTO_LOGIN_ENVIRONMENTS.find(x=>x.environment===target_environment)
+        if (autoLoginDetails?.loginMethod === "cis2") {
+          logger.info("Redirecting user to cis2 login")
+          signIn()
+        } else {
+          logger.info("Redirecting user to mock login")
+          mockSignIn()
+        }
       } else {
         logger.info("User is already signed in - redirecting to search")
         navigate(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
@@ -74,11 +76,7 @@ export default function LoginPage() {
     }
   }, [auth, signIn, target_environment])
 
-  if (
-    !MOCK_AUTH_ALLOWED_ENVIRONMENTS.includes(
-      target_environment as MockAuthEnvironment
-    )
-  ) {
+  if (AUTO_LOGIN_ENVIRONMENTS.map(x=>x.environment).includes(target_environment)) {
     return (
       <main className="nhsuk-main-wrapper">
         <Container>
