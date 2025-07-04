@@ -22,6 +22,7 @@ export default function LoginPage() {
 
   const target_environment: string =
     ENV_CONFIG.TARGET_ENVIRONMENT as Environment
+  const isAutoLoginEnvironment = AUTO_LOGIN_ENVIRONMENTS.map(x=>x.environment).includes(target_environment)
 
   const mockSignIn = async () => {
     logger.info("Signing in (Mock)", auth)
@@ -58,7 +59,7 @@ export default function LoginPage() {
       target_environment
     )
 
-    if (AUTO_LOGIN_ENVIRONMENTS.map(x=>x.environment).includes(target_environment)) {
+    if (isAutoLoginEnvironment) {
       logger.info("performing auto login")
       if (!auth?.isSignedIn) {
         const autoLoginDetails = AUTO_LOGIN_ENVIRONMENTS.find(x=>x.environment===target_environment)
@@ -76,7 +77,7 @@ export default function LoginPage() {
     }
   }, [auth.isSignedIn])
 
-  if (AUTO_LOGIN_ENVIRONMENTS.map(x=>x.environment).includes(target_environment)) {
+  if (isAutoLoginEnvironment) {
     return (
       <main className="nhsuk-main-wrapper">
         <Container>
