@@ -134,7 +134,8 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     cis2AccessToken: accessToken,
     cis2IdToken: idToken,
     cis2ExpiresIn: decodedIdToken.exp.toString(),
-    selectedRoleId: decodedIdToken.selected_roleid
+    selectedRoleId: decodedIdToken.selected_roleid,
+    lastActivityTime: Date.now()
   }
   await insertTokenMapping(documentClient, cis2OidcConfig.tokenMappingTableName, tokenMappingItem, logger)
 

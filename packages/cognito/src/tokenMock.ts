@@ -155,7 +155,8 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     rolesWithAccess: userInfoResponse.roles_with_access,
     rolesWithoutAccess: userInfoResponse.roles_without_access,
     currentlySelectedRole: userInfoResponse.currently_selected_role,
-    userDetails: userInfoResponse.user_details
+    userDetails: userInfoResponse.user_details,
+    lastActivityTime: Date.now()
   }
   await insertTokenMapping(documentClient, mockOidcConfig.tokenMappingTableName, tokenMappingItem, logger)
 

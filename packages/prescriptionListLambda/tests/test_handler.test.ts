@@ -5,54 +5,21 @@ import {
   it,
   jest
 } from "@jest/globals"
-import {generateKeyPairSync} from "crypto"
 import nock from "nock"
 
-import {Logger} from "@aws-lambda-powertools/logger"
 import {mockPdsPatient, mockPrescriptionBundle} from "./mockObjects"
 
 const apigeePrescriptionsEndpoint = process.env.apigeePrescriptionsEndpoint as string ?? ""
 const apigeePersonalDemographicsEndpoint = process.env.apigeePersonalDemographicsEndpoint as string ?? ""
 
-process.env.MOCK_MODE_ENABLED = "false"
-const mockAuthenticateRequest = jest.fn()
-const mockGetUsernameFromEvent = jest.fn()
-const mockGetSecret = jest.fn()
-
-const {
-  privateKey
-} = generateKeyPairSync("rsa", {
-  modulusLength: 4096,
-  publicKeyEncoding: {
-    type: "spki",
-    format: "pem"
-  },
-  privateKeyEncoding: {
-    type: "pkcs8",
-    format: "pem"
-  }
-})
-// Mock all the modules first
-jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
-  return {
-    authenticateRequest: mockAuthenticateRequest,
-    getUsernameFromEvent: mockGetUsernameFromEvent
-  }
-})
-
-jest.unstable_mockModule("@aws-lambda-powertools/parameters/secrets", () => {
-  const getSecret = mockGetSecret.mockImplementation(async () => {
-    return privateKey
-  })
-
-  return {
-    getSecret
-  }
-})
+// Needed to avoid issues with ESM imports in jest
+jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => ({
+  authParametersFromEnv: jest.fn(),
+  authenticationMiddleware: () => ({before: () => {}})
+}))
 
 // Import the handler after all mocks are set up
-const handlerModule = await import("../src/handler")
-const {handler} = handlerModule
+const {handler} = await import("../src/handler")
 
 // redefining readonly property of the performance object
 const dummyContext = {
@@ -107,23 +74,15 @@ describe("handler tests with cis2 auth", () => {
   })
 
   it("responds with success on nhs number flow", async () => {
-    mockGetUsernameFromEvent.mockReturnValue("test_user")
-    mockAuthenticateRequest.mockImplementation(() => {
-      return Promise.resolve({
-        apigeeAccessToken: "apigee_access_token",
-        roleId: "dummy_role",
-        orgCode: "dummy_org"
-      })
-    })
     const event = {
       queryStringParameters: {
         nhsNumber: "9000000009"
       },
       requestContext: {
         authorizer: {
-          claims: {
-            "cognito:username": "Mock_JoeBloggs"
-          }
+          apigeeAccessToken: "apigee_access_token",
+          roleId: "dummy_role",
+          orgCode: "dummy_org"
         }
       },
       headers: {}
@@ -166,23 +125,15 @@ describe("handler tests with cis2 auth", () => {
   })
 
   it("responds with success on prescription ID flow", async () => {
-    mockGetUsernameFromEvent.mockReturnValue("test_user")
-    mockAuthenticateRequest.mockImplementation(() => {
-      return Promise.resolve({
-        apigeeAccessToken: "apigee_access_token",
-        roleId: "dummy_role",
-        orgCode: "dummy_org"
-      })
-    })
     const event = {
       queryStringParameters: {
         prescriptionId: "01ABC123"
       },
       requestContext: {
         authorizer: {
-          claims: {
-            "cognito:username": "Mock_JoeBloggs"
-          }
+          apigeeAccessToken: "apigee_access_token",
+          roleId: "dummy_role",
+          orgCode: "dummy_org"
         }
       },
       headers: {}
@@ -213,23 +164,15 @@ describe("handler tests with cis2 auth", () => {
   })
 
   it("Returns a 404 if prescription is not found", async () => {
-    mockGetUsernameFromEvent.mockReturnValue("test_user")
-    mockAuthenticateRequest.mockImplementation(() => {
-      return Promise.resolve({
-        apigeeAccessToken: "apigee_access_token",
-        roleId: "dummy_role",
-        orgCode: "dummy_org"
-      })
-    })
     const event = {
       queryStringParameters: {
         prescriptionId: "123-ABC"
       },
       requestContext: {
         authorizer: {
-          claims: {
-            "cognito:username": "Mock_JoeBloggs"
-          }
+          apigeeAccessToken: "apigee_access_token",
+          roleId: "dummy_role",
+          orgCode: "dummy_org"
         }
       },
       headers: {}
@@ -247,46 +190,17 @@ describe("handler tests with cis2 auth", () => {
     })
   })
 
-  it("throw error when auth fails", async () => {
-    // Make the authenticateRequest mock throw an error for this test
-    mockAuthenticateRequest.mockImplementationOnce(() => {
-      throw new Error("Error in auth")
-    })
-
-    const loggerSpy = jest.spyOn(Logger.prototype, "error")
-
-    const response = await handler({
-      queryStringParameters: {
-        nhsNumber: "9999999999"
-      },
-      requestContext: {},
-      headers: {}
-    }, dummyContext)
-
-    // Update the assertion to match the actual response format
-    expect(response).toMatchObject({
-      message: "A system error has occurred"
-    })
-
-    expect(loggerSpy).toHaveBeenCalledWith(
-      expect.any(Object),
-      "Error: Error in auth"
-    )
-  })
-
   it("throw error when no roleId returned", async () => {
-    mockAuthenticateRequest.mockImplementation(() => {
-      return Promise.resolve({
-        apigeeAccessToken: "apigee_access_token",
-        orgCode: "dummy_org"
-      })
-    })
-
     const response = await handler({
       queryStringParameters: {
         nhsNumber: "9999999999"
       },
-      requestContext: {},
+      requestContext: {
+        authorizer: {
+          apigeeAccessToken: "apigee_access_token",
+          orgCode: "dummy_org"
+        }
+      },
       headers: {}
     }, dummyContext)
 
@@ -297,18 +211,16 @@ describe("handler tests with cis2 auth", () => {
   })
 
   it("throw error when no orgCode returned", async () => {
-    mockAuthenticateRequest.mockImplementation(() => {
-      return Promise.resolve({
-        apigeeAccessToken: "apigee_access_token",
-        roleId: "dummy_role"
-      })
-    })
-
     const response = await handler({
       queryStringParameters: {
         nhsNumber: "9999999999"
       },
-      requestContext: {},
+      requestContext: {
+        authorizer: {
+          apigeeAccessToken: "apigee_access_token",
+          roleId: "dummy_role"
+        }
+      },
       headers: {}
     }, dummyContext)
 

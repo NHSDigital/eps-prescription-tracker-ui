@@ -90,4 +90,12 @@ describe("HTTP Axios Instance", () => {
 
     await expect(http.get("/test")).rejects.toThrow("canceled")
   })
+
+  it("Does not retry if response says to restart login", async () => {
+    mock.onGet("/test").reply(401, {restartLogin: true})
+
+    await expect(http.get("/test")).rejects.toThrow()
+
+    expect(mock.history.get.length).toBe(1)
+  })
 })

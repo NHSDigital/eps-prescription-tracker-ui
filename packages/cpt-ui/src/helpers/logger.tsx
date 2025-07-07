@@ -16,19 +16,35 @@ class Logger {
   }
 
   public trace(message: string, args?: unknown): void {
-    this.logger.trace(args, message)
+    if (args) {
+      this.logger.trace(args, message)
+    } else {
+      this.logger.trace(message)
+    }
   }
 
   public debug(message: string, args?: unknown): void {
-    this.logger.debug(args, message)
+    if (args) {
+      this.logger.debug(args, message)
+    } else {
+      this.logger.debug(message)
+    }
   }
 
   public info(message: string, args?: unknown): void {
-    this.logger.debug(args, message)
+    if (args) {
+      this.logger.info(args, message)
+    } else {
+      this.logger.info(message)
+    }
   }
 
   public warn(message: string, args?: unknown): void {
-    this.logger.warn(args, message)
+    if (args) {
+      this.logger.warn(args, message)
+    } else {
+      this.logger.warn(message)
+    }
   }
 
   public error(message: string, args?: unknown): void {
@@ -40,7 +56,11 @@ class Logger {
       // also use recordError to try and get source maps back to real line numbers
       rumInstance.recordError(messageAsError)
     }
-    this.logger.error(args, message)
+    if (args) {
+      this.logger.error(args, message)
+    } else {
+      this.logger.error(message)
+    }
   }
 
 }

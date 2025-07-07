@@ -3,37 +3,12 @@ import {Logger} from "@aws-lambda-powertools/logger"
 import {mockContext, mockAPIGatewayProxyEvent} from "./mockObjects"
 
 // Mocked functions from authFunctions
-const mockGetUsernameFromEvent = jest.fn()
-const mockAuthenticateRequest = jest.fn()
 const mockGetTokenMapping = jest.fn()
 const mockInitializeOidcConfig = jest.fn()
 const mockUpdateTokenMapping = jest.fn()
 const mockFetchUserInfo = jest.fn()
 
-mockInitializeOidcConfig.mockImplementation( () => {
-  const cis2OidcConfig = {
-    oidcIssuer: process.env["CIS2_OIDC_ISSUER"] ?? "",
-    oidcClientID: process.env["CIS2_OIDC_CLIENT_ID"] ?? "",
-    oidcJwksEndpoint: process.env["CIS2_OIDCJWKS_ENDPOINT"] ?? "",
-    oidcUserInfoEndpoint: process.env["CIS2_USER_INFO_ENDPOINT"] ?? "",
-    userPoolIdp: process.env["CIS2_USER_POOL_IDP"] ?? "",
-    jwksClient: undefined,
-    tokenMappingTableName: process.env["TokenMappingTableName"] ?? "",
-    oidcTokenEndpoint: process.env["CIS2_TOKEN_ENDPOINT"] ?? ""
-  }
-  const mockOidcConfig = {
-    oidcIssuer: process.env["MOCK_OIDC_ISSUER"] ?? "",
-    oidcClientID: process.env["MOCK_OIDC_CLIENT_ID"] ?? "",
-    oidcJwksEndpoint: process.env["MOCK_OIDCJWKS_ENDPOINT"] ?? "",
-    oidcUserInfoEndpoint: process.env["MOCK_USER_INFO_ENDPOINT"] ?? "",
-    userPoolIdp: process.env["MOCK_USER_POOL_IDP"] ?? "",
-    jwksClient: undefined,
-    tokenMappingTableName: process.env["TokenMappingTableName"] ?? "",
-    oidcTokenEndpoint: process.env["MOCK_OIDC_TOKEN_ENDPOINT"] ?? ""
-  }
-
-  return {cis2OidcConfig, mockOidcConfig}
-})
+mockInitializeOidcConfig.mockImplementation(() => ({cis2OidcConfig: {}, mockOidcConfig: {}}))
 
 jest.unstable_mockModule("@cpt-ui-common/dynamoFunctions", () => {
   return {
@@ -43,8 +18,10 @@ jest.unstable_mockModule("@cpt-ui-common/dynamoFunctions", () => {
 })
 jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
   return {
-    getUsernameFromEvent: mockGetUsernameFromEvent,
-    authenticateRequest: mockAuthenticateRequest,
+    authParametersFromEnv: () => ({
+      tokenMappingTableName: "TokenMappingTable"
+    }),
+    authenticationMiddleware: () => ({before: () => {}}),
     initializeOidcConfig: mockInitializeOidcConfig,
     fetchUserInfo: mockFetchUserInfo
   }
@@ -76,8 +53,6 @@ describe("Lambda Handler Tests with mock disabled", () => {
     })
     const response = await handler(event, context)
 
-    expect(mockAuthenticateRequest).not.toHaveBeenCalled()
-
     expect(response).toBeDefined()
     expect(response).toHaveProperty("statusCode", 200)
     expect(response).toHaveProperty("body")
@@ -98,12 +73,10 @@ describe("Lambda Handler Tests with mock disabled", () => {
         cis2AccessToken: "cis2_access_token"
       }
     })
-    mockGetUsernameFromEvent.mockReturnValue("test_user")
-    mockAuthenticateRequest.mockImplementation(() => {
-      return Promise.resolve({
-        apigeeAccessToken: "apigee_access_token"
-      })
-    })
+    event.requestContext.authorizer = {
+      username: "test_user",
+      apigeeAccessToken: "apigee_access_token"
+    }
     mockFetchUserInfo.mockImplementation(() => {
       return Promise.resolve({
         roles_with_access: [
@@ -118,8 +91,6 @@ describe("Lambda Handler Tests with mock disabled", () => {
       })
     })
     const response = await handler(event, context)
-
-    expect(mockAuthenticateRequest).toHaveBeenCalled()
 
     expect(response).toBeDefined()
     expect(response).toHaveProperty("statusCode", 200)
@@ -144,10 +115,9 @@ describe("Lambda Handler Tests with mock disabled", () => {
         cis2AccessToken: "cis2_access_token"
       }
     })
-    mockGetUsernameFromEvent.mockReturnValue("Mock_test_user")
-    mockAuthenticateRequest.mockImplementation(() => {
-      return Promise.resolve({})
-    })
+    event.requestContext.authorizer = {
+      username: "Mock_test_user"
+    }
 
     const response = await handler(event, context)
 
@@ -174,12 +144,10 @@ describe("Lambda Handler Tests with mock disabled", () => {
         cis2AccessToken: "cis2_access_token"
       }
     })
-    mockGetUsernameFromEvent.mockReturnValue("test_user")
-    mockAuthenticateRequest.mockImplementation(() => {
-      return Promise.resolve({
-        apigeeAccessToken: "apigee_access_token"
-      })
-    })
+    event.requestContext.authorizer = {
+      username: "test_user",
+      apigeeAccessToken: "apigee_access_token"
+    }
 
     const response = await handler(event, context)
 
@@ -191,28 +159,6 @@ describe("Lambda Handler Tests with mock disabled", () => {
     expect(loggerSpy).toHaveBeenCalledWith(
       expect.any(Object),
       "Error: Authentication failed for cis2: missing tokens"
-    )
-  })
-
-  it("should return error when authenticateRequest throws an error", async () => {
-    const error = new Error("Token verification failed")
-    const loggerSpy = jest.spyOn(Logger.prototype, "error")
-
-    mockGetUsernameFromEvent.mockReturnValue("test_user")
-    mockAuthenticateRequest.mockImplementationOnce(() => {
-      throw error
-    })
-
-    const response = await handler(event, context)
-
-    // Check response format matches what the middleware produces
-    expect(response).toMatchObject({
-      message: "A system error has occurred"
-    })
-
-    expect(loggerSpy).toHaveBeenCalledWith(
-      expect.any(Object),
-      "Error: Token verification failed"
     )
   })
 

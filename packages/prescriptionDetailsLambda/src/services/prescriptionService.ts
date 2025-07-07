@@ -154,7 +154,7 @@ export async function processPrescriptionRequest(
     })
 
     try {
-      const mergedResponse = mergePrescriptionDetails(apigeeResponse.data, doHSData)
+      const mergedResponse = mergePrescriptionDetails(apigeeResponse.data, doHSData, logger)
 
       const responseHeaders = {
         "Content-Type": "application/json",

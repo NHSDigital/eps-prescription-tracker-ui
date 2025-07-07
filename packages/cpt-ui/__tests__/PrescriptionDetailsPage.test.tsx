@@ -1,5 +1,5 @@
 import React, {useState} from "react"
-import {MemoryRouter, useNavigate} from "react-router-dom"
+import {MemoryRouter, Route, Routes} from "react-router-dom"
 import {render, screen, waitFor} from "@testing-library/react"
 
 import {MockPatientDetailsProvider} from "../__mocks__/MockPatientDetailsProvider"
@@ -19,19 +19,10 @@ import {AuthContext, AuthContextType} from "@/context/AuthProvider"
 
 import PrescriptionDetailsPage from "@/pages/PrescriptionDetailsPage"
 
-jest.mock("@/helpers/axios", () => ({
-  get: jest.fn()
-}))
 import http from "@/helpers/axios"
 import {SearchContext, SearchProviderContextType} from "@/context/SearchProvider"
 
-jest.mock("react-router-dom", () => {
-  const actual = jest.requireActual("react-router-dom")
-  return {
-    ...actual,
-    useNavigate: jest.fn()
-  }
-})
+import {AxiosError, AxiosHeaders} from "axios"
 
 const mockCognitoSignIn = jest.fn()
 const mockCognitoSignOut = jest.fn()
@@ -50,7 +41,9 @@ const defaultAuthState: AuthContextType = {
   cognitoSignIn: mockCognitoSignIn,
   cognitoSignOut: mockCognitoSignOut,
   clearAuthState: jest.fn(),
-  updateSelectedRole: jest.fn()
+  updateSelectedRole: jest.fn(),
+  forceCognitoLogout: jest.fn()
+
 }
 
 const signedInAuthState: AuthContextType = {
@@ -67,7 +60,8 @@ const signedInAuthState: AuthContextType = {
   cognitoSignIn: mockCognitoSignIn,
   cognitoSignOut: mockCognitoSignOut,
   clearAuthState: jest.fn(),
-  updateSelectedRole: jest.fn()
+  updateSelectedRole: jest.fn(),
+  forceCognitoLogout: jest.fn()
 }
 
 // Auth provider mock
@@ -174,8 +168,6 @@ const renderComponent = (
   prescriptionId: string,
   initialAuthState: AuthContextType = defaultAuthState
 ) => {
-  const initialRoute = `/site/prescription-details`
-
   const searchState = {
     ...defaultSearchState,
     prescriptionId
@@ -186,8 +178,12 @@ const renderComponent = (
       <SearchContext.Provider value={searchState}>
         <MockPatientDetailsProvider>
           <MockPrescriptionInformationProvider>
-            <MemoryRouter initialEntries={[initialRoute]}>
-              <PrescriptionDetailsPage />
+            <MemoryRouter initialEntries={["/prescription-details"]}>
+              <Routes>
+                <Route path="/prescription-details" element={<PrescriptionDetailsPage />} />
+                <Route path="/login" element={<div data-testid="login-page-shown" />} />
+                <Route path="/search-by-prescription-id" element={<div data-testid="search-page-shown" />} />
+              </Routes>
             </MemoryRouter>
           </MockPrescriptionInformationProvider>
         </MockPatientDetailsProvider>
@@ -197,19 +193,19 @@ const renderComponent = (
 }
 
 describe("PrescriptionDetailsPage", () => {
-  const mockNavigate = jest.fn()
 
   beforeEach(() => {
-    mockNavigate.mockClear();
-    (useNavigate as jest.Mock).mockReturnValue(mockNavigate)
-
     delete window.__mockedPatientDetails
     delete window.__mockedPrescriptionInformation
   })
 
+  afterEach(() => {
+    jest.clearAllMocks()
+  })
+
   it("renders spinner while loading", async () => {
     // pending HTTP request.
-    (http.get as jest.Mock).mockImplementation(() => new Promise(() => { }))
+    jest.spyOn(http, "get").mockImplementation(() => new Promise(() => { }))
     renderComponent("C0C757-A83008-C2D93L")
 
     expect(screen.getByTestId("eps-spinner")).toBeInTheDocument()
@@ -219,32 +215,44 @@ describe("PrescriptionDetailsPage", () => {
     renderComponent("", signedInAuthState)
 
     await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith("/search-by-prescription-id")
+      expect(screen.getByTestId("search-page-shown")).toBeInTheDocument()
     })
-
-    // Verify that fallback UI renders
-    expect(screen.getByRole("heading", {name: STRINGS.HEADER})).toBeInTheDocument()
   })
 
   it("handles unknown prescriptionId without navigating", async () => {
-    (http.get as jest.Mock).mockRejectedValue(new Error("HTTP error"))
+    jest.spyOn(http, "get").mockRejectedValue(new Error("HTTP error"))
 
     renderComponent("UNKNOWN_ID", signedInAuthState)
-
-    await waitFor(() => {
-      expect(mockNavigate).not.toHaveBeenCalled()
-    })
 
     // Confirm fallback or empty UI still renders
     expect(screen.getByRole("heading", {name: STRINGS.HEADER})).toBeInTheDocument()
   })
 
+  it("handles expired session by redirecting to login page", async () => {
+    const headers = new AxiosHeaders({})
+    jest.spyOn(http, "get").mockRejectedValue(new AxiosError(undefined, undefined, undefined, undefined,
+      {
+        status: 401,
+        statusText: "Unauthorized",
+        headers,
+        config: {headers},
+        data: {message: "Session expired or invalid. Please log in again.", restartLogin: true}
+      }
+    ))
+
+    renderComponent("ANY_ID", signedInAuthState)
+
+    await waitFor(() => {
+      expect(screen.getByTestId("login-page-shown")).toBeInTheDocument()
+    })
+  })
+
   it("renders SiteDetailsCards with correct data for a successful HTTP GET response", async () => {
     const payload: PrescriptionDetailsResponse = {
       ...mockPrescriptionDetailsResponse
-    };
+    }
 
-    (http.get as jest.Mock).mockResolvedValue({status: 200, data: payload})
+    jest.spyOn(http, "get").mockResolvedValue({status: 200, data: payload})
 
     renderComponent("SUCCESS_ID", signedInAuthState)
 
@@ -275,7 +283,7 @@ describe("PrescriptionDetailsPage", () => {
       resolveRequest = () => resolve({status: 200, data: payload})
     })
 
-    ;(http.get as jest.Mock).mockReturnValue(pendingPromise)
+    jest.spyOn(http, "get").mockReturnValue(pendingPromise)
 
     renderComponent("EC5ACF-A83008-733FD3", signedInAuthState)
 
@@ -292,17 +300,12 @@ describe("PrescriptionDetailsPage", () => {
     })
   })
 
-  it("renders the page with heading", () => {
-    renderComponent("")
-    expect(screen.getByRole("heading", {name: "Prescription details"})).toBeInTheDocument()
-  })
-
   it("sets context when the prescription get resolves", async () => {
     const payload = {
       ...mockPrescriptionDetailsResponse
     }
 
-      ; (http.get as jest.Mock).mockResolvedValue({status: 200, data: payload})
+    jest.spyOn(http, "get").mockResolvedValue({status: 200, data: payload})
 
     renderComponent("SUCCESS_ID", signedInAuthState)
 

@@ -19,6 +19,7 @@ import PatientNotFoundMessage from "@/components/PatientNotFoundMessage"
 import SearchResultsTooManyMessage from "@/components/SearchResultsTooManyMessage"
 import {useSearchContext} from "@/context/SearchProvider"
 import UnknownErrorMessage from "@/components/UnknownErrorMessage"
+import axios from "axios"
 
 export default function SearchResultsPage() {
   const location = useLocation()
@@ -65,6 +66,10 @@ export default function SearchResultsPage() {
       setPatients(payload)
       setLoading(false)
     } catch (err) {
+      if (axios.isAxiosError(err) && (err.response?.status === 401) && err.response.data?.restartLogin) {
+        navigate(FRONTEND_PATHS.LOGIN)
+        return
+      }
       logger.error("Error loading search results:", err)
       setLoading(false)
       setError(true)

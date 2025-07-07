@@ -80,18 +80,13 @@ export const getTrackerUserInfo = async (): Promise<TrackerUserInfoResult> => {
 }
 
 export const updateRemoteSelectedRole = async (newRole: RoleDetails) => {
-  try {
-    // Update selected role in the backend via the selectedRoleLambda endpoint using axios
-    const response = await http.put(
-      API_ENDPOINTS.SELECTED_ROLE,
-      {currently_selected_role: newRole}
-    )
+  // Update selected role in the backend via the selectedRoleLambda endpoint using axios
+  const response = await http.put(
+    API_ENDPOINTS.SELECTED_ROLE,
+    {currently_selected_role: newRole}
+  )
 
-    if (response.status !== 200) {
-      throw new Error("Failed to update the selected role")
-    }
-
-  } catch (error) {
-    logger.error("Error selecting role:", error)
+  if (response.status !== 200) {
+    throw new Error("Failed to update the selected role")
   }
 }
