@@ -828,7 +828,7 @@ describe("mergePrescriptionDetails", () => {
     expect(result.dispensedItems[0]).toEqual({
       medicationName: "Drug Z",
       quantity: "15",
-      dosageInstructions: "Once daily",
+      dosageInstructions: "Unknown",
       epsStatusCode: "0007",
       nhsAppStatus: undefined,
       itemPendingCancellation: true,
@@ -1011,6 +1011,164 @@ describe("mergePrescriptionDetails", () => {
       cancellationReason: null,
       notDispensedReason: undefined,
       initiallyPrescribed: undefined
+    })
+  })
+
+  it("should return dispenseInstructions from MedicationDispense when available", () => {
+    const mockBundle: Bundle<FhirResource> = {
+      resourceType: "Bundle",
+      type: "collection",
+      entry: [
+        {
+          resource: {
+            resourceType: "RequestGroup",
+            intent: "order",
+            status: "active",
+            identifier: [{value: "RXIncomplete"}],
+            authoredOn: "2023-07-07T00:00:00Z"
+          }
+        },
+        {
+          resource: {
+            resourceType: "MedicationRequest",
+            id: "med-req-1",
+            medicationCodeableConcept: {text: "Drug A"},
+            courseOfTherapyType: {coding: [{code: "Acute"}]},
+            dispenseRequest: {quantity: {value: 20}},
+            dosageInstruction: [{text: "Take two daily"}],
+            status: "active",
+            intent: "order",
+            subject: {},
+            extension: [
+              {
+                url: "https://fhir.nhs.uk/StructureDefinition/Extension-PendingCancellation"
+              }
+            ]
+          }
+        },
+        {
+          resource: {
+            resourceType: "MedicationDispense",
+            id: "dispense-1",
+            medicationCodeableConcept: {text: "Drug A"},
+            quantity: {value: 10},
+            dosageInstruction: [{text: "Take one daily"}],
+            status: "in-progress",
+            authorizingPrescription: [{
+              reference: "med-req-1"
+            }],
+            type: {
+              coding: [
+                {
+                  system: "https://fhir.nhs.uk/CodeSystem/medicationdispense-type",
+                  code: "0001",
+                  display: "Item fully dispensed"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+
+    const result = mergePrescriptionDetails(mockBundle, {}, logger)
+
+    expect(result.prescribedItems).toHaveLength(0)
+    expect(result.dispensedItems).toHaveLength(1)
+    expect(result.dispensedItems[0]).toEqual({
+      medicationName: "Drug A",
+      quantity: "10",
+      dosageInstructions: "Take one daily",
+      epsStatusCode: "unknown",
+      nhsAppStatus: undefined,
+      itemPendingCancellation: false,
+      cancellationReason: null,
+      notDispensedReason: undefined,
+      initiallyPrescribed: {
+        dosageInstructions: "Take two daily",
+        medicationName: "Drug A",
+        quantity: "20"
+      }
+    })
+  })
+
+  it("should return Unknown when missing dispenseInstructions from MedicationDispense,", () => {
+    const mockBundle: Bundle<FhirResource> = {
+      resourceType: "Bundle",
+      type: "collection",
+      entry: [
+        {
+          resource: {
+            resourceType: "RequestGroup",
+            intent: "order",
+            status: "active",
+            identifier: [{value: "RXIncomplete"}],
+            authoredOn: "2023-07-07T00:00:00Z"
+          }
+        },
+        {
+          resource: {
+            resourceType: "MedicationRequest",
+            id: "med-req-1",
+            medicationCodeableConcept: {text: "Drug A"},
+            courseOfTherapyType: {coding: [{code: "Acute"}]},
+            dispenseRequest: {quantity: {value: 20}},
+            dosageInstruction: [{text: "Take two daily"}],
+            status: "active",
+            intent: "order",
+            subject: {},
+            extension: [
+              {
+                url: "https://fhir.nhs.uk/StructureDefinition/Extension-PendingCancellation",
+                extension: [
+                  {url: "lineItemPendingCancellation", valueBoolean: false}
+                  // missing cancellationReason
+                ]
+              }
+            ]
+          }
+        },
+        {
+          resource: {
+            resourceType: "MedicationDispense",
+            id: "dispense-1",
+            medicationCodeableConcept: {text: "Drug A"},
+            status: "in-progress",
+            authorizingPrescription: [{
+              reference: "med-req-1"
+            }],
+            type: {
+              coding: [
+                {
+                  system: "https://fhir.nhs.uk/CodeSystem/medicationdispense-type",
+                  code: "0001",
+                  display: "Item fully dispensed"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+
+    const result = mergePrescriptionDetails(mockBundle, {}, logger)
+
+    expect(result.prescribedItems).toHaveLength(0)
+    expect(result.dispensedItems).toHaveLength(1)
+    expect(result.dispensedItems[0]).toEqual({
+      medicationName: "Drug A",
+      dosageInstructions: "Unknown",
+      quantity: "Unknown",
+      epsStatusCode: "unknown",
+      nhsAppStatus: undefined,
+      itemPendingCancellation: false,
+      cancellationReason: null,
+      notDispensedReason: undefined,
+      initiallyPrescribed: {
+        dosageInstructions: "Take two daily",
+        medicationName: "Drug A",
+        quantity: "20"
+      }
     })
   })
 })
