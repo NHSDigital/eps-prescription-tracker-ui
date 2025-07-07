@@ -91,14 +91,16 @@ export function PrescribedDispensedItemsCards({
               </SummaryList.Row>
 
               {/* Dosage instructions */}
-              <SummaryList.Row>
-                <SummaryList.Key>{STRINGS.INSTRUCTIONS_LABEL}</SummaryList.Key>
-                <SummaryList.Value>
-                  <span className="data-field__content data-field__content--address">
-                    {dosageInstructions}
-                  </span>
-                </SummaryList.Value>
-              </SummaryList.Row>
+              {dosageInstructions !== "Unknown" && (
+                <SummaryList.Row>
+                  <SummaryList.Key>{STRINGS.INSTRUCTIONS_LABEL}</SummaryList.Key>
+                  <SummaryList.Value>
+                    <span className="data-field__content data-field__content--address">
+                      {dosageInstructions}
+                    </span>
+                  </SummaryList.Value>
+                </SummaryList.Row>
+              )}
 
               {/* Optional pharmacy status */}
               {pharmacyStatus && (
