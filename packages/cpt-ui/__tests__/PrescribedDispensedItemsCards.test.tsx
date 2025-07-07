@@ -60,4 +60,40 @@ describe("PrescribedDispensedItemsCards", () => {
     expect(screen.getByText("Collected")).toBeInTheDocument()
     expect(screen.getByText("With pharmacy")).toBeInTheDocument()
   })
+
+  it("renders dispensed with no instructions, if 'unknown' dosageInstructions returned", () => {
+    dispensedItems[0].dosageInstructions = "Unknown"
+    // dispensedItems[0].quantity = "Unknown"
+
+    render(
+      <PrescribedDispensedItemsCards
+        prescribedItems={prescribedItems}
+        dispensedItems={dispensedItems}
+      />
+    )
+
+    // Section headers
+    expect(screen.getByText("Dispensed items")).toBeInTheDocument()
+    expect(screen.getByText("Prescribed items")).toBeInTheDocument()
+
+    // Medications
+    expect(screen.getByText("Ibuprofen")).toBeInTheDocument()
+    expect(screen.getByText("Amoxicillin")).toBeInTheDocument()
+
+    // Tag status labels
+    expect(screen.getByText("Item fully dispensed")).toBeInTheDocument()
+    expect(screen.getByText("Item not dispensed - owing")).toBeInTheDocument()
+
+    // Quantities
+    expect(screen.getByText("20 tablets")).toBeInTheDocument()
+    expect(screen.getByText("30 tablets")).toBeInTheDocument()
+
+    // Dosage instructions
+    expect(screen.queryByText("Take one as needed")).not.toBeInTheDocument()
+    expect(screen.getByText("Take one three times a day")).toBeInTheDocument()
+
+    // Pharmacy statuses
+    expect(screen.getByText("Collected")).toBeInTheDocument()
+    expect(screen.getByText("With pharmacy")).toBeInTheDocument()
+  })
 })
