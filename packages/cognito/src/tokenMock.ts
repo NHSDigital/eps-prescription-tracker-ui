@@ -3,7 +3,7 @@ import {Logger} from "@aws-lambda-powertools/logger"
 import {injectLambdaContext} from "@aws-lambda-powertools/logger/middleware"
 import {getSecret} from "@aws-lambda-powertools/parameters/secrets"
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
-import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
+import {DynamoDBDocumentClient, GetCommand} from "@aws-sdk/lib-dynamodb"
 import middy from "@middy/core"
 import inputOutputLogger from "@middy/input-output-logger"
 import {parse} from "querystring"
@@ -147,8 +147,25 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   // as we now have all the user information including roles, and apigee tokens
   // store them in the token mapping table
 
+  // check if user already exists in the token mapping table
+  let username = `Mock_${userInfoResponse.user_details.sub}`
+
+  const existingTokenMapping = await documentClient.send(
+    new GetCommand({
+      TableName: mockOidcConfig.tokenMappingTableName,
+      Key: {username: username}
+    })
+  )
+
+  if (existingTokenMapping.Item) {
+    username = `Draft_${userInfoResponse.user_details.sub}`
+    logger.info("User already exists in token mapping table, using draft username", {username})
+  }
+  logger.info("JTI", {jti: jwtClaims.jti})
+
   const tokenMappingItem = {
-    username: `Mock_${userInfoResponse.user_details.sub}`,
+    username: username,
+    sessionId: jwtClaims.jti,
     apigeeAccessToken: exchangeResult.accessToken,
     apigeeRefreshToken: exchangeResult.refreshToken,
     apigeeExpiresIn: exchangeResult.expiresIn,
