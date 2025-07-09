@@ -128,7 +128,9 @@ export const nagSuppressions = (stack: Stack) => {
         "/StatelessStack/OAuth2Gateway/ApiGateway/Default/callback/GET/Resource",
         "/StatelessStack/OAuth2Gateway/ApiGateway/Default/mock-callback/GET/Resource",
         "/StatelessStack/OAuth2Gateway/ApiGateway/Default/token/POST/Resource",
-        "/StatelessStack/OAuth2Gateway/ApiGateway/Default/mock-token/POST/Resource"
+        "/StatelessStack/OAuth2Gateway/ApiGateway/Default/mock-token/POST/Resource",
+        "/StatelessStack/OAuth2Gateway/ApiGateway/Default/PostAuthentication/GET/Resource",
+        "/StatelessStack/OAuth2Gateway/ApiGateway/Default/PostAuthentication/POST/Resource"
       ],
       [
         {
@@ -166,7 +168,8 @@ export const nagSuppressions = (stack: Stack) => {
         "/StatelessStack/OAuth2Functions/CallbackLambdaResources/LambdaPutLogsManagedPolicy/Resource",
         "/StatelessStack/OAuth2Functions/MockCallbackLambdaResources/LambdaPutLogsManagedPolicy/Resource",
         "/StatelessStack/OAuth2Functions/MockAuthorizeLambdaResources/LambdaPutLogsManagedPolicy/Resource",
-        "/StatelessStack/OAuth2Functions/MockIDPResponseLambdaResources/LambdaPutLogsManagedPolicy/Resource"
+        "/StatelessStack/OAuth2Functions/MockIDPResponseLambdaResources/LambdaPutLogsManagedPolicy/Resource",
+        "/StatelessStack/OAuth2Functions/PostAuthentication/LambdaPutLogsManagedPolicy/Resource"
       ],
       [
         {

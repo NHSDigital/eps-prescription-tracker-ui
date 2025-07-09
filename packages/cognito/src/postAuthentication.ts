@@ -1,11 +1,21 @@
 import {Logger} from "@aws-lambda-powertools/logger"
+import {APIGatewayProxyEvent, APIGatewayProxyResult} from "aws-lambda"
 
-const handler = async (event) => {
+const handler = async (
+  event: APIGatewayProxyEvent):
+Promise<APIGatewayProxyResult> => {
   const logger = new Logger({serviceName: "postAuthentication"})
 
-  logger.info(event)
+  logger.appendKeys({
+    "apigw-request-id": event.requestContext?.requestId
+  })
+  logger.debug("event", event.body as string)
 
-  return event
+  return {
+    statusCode: 200,
+    isBase64Encoded: false,
+    body: event.body as string
+  }
 }
 
 export {handler}

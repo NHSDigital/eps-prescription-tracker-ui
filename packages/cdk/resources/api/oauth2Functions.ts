@@ -68,6 +68,7 @@ export class OAuth2Functions extends Construct {
   public readonly mockCallbackLambda: NodejsFunction
   public readonly tokenLambda: NodejsFunction
   public readonly mockTokenLambda: NodejsFunction
+  public readonly PostAuthenticationLambda: NodejsFunction
 
   public constructor(scope: Construct, id: string, props: OAuth2FunctionsProps) {
     super(scope, id)
@@ -285,10 +286,41 @@ export class OAuth2Functions extends Construct {
         mockCallbackLambda.executeLambdaManagedPolicy
       )
 
+      const PostAuthenticationLambda = new LambdaFunction(this, "PostAuthentication", {
+        serviceName: props.serviceName,
+        stackName: props.stackName,
+        lambdaName: `${props.stackName}-post-auth`,
+        additionalPolicies: [
+          props.stateMappingTableWritePolicy,
+          props.stateMappingTableReadPolicy,
+          props.useStateMappingKmsKeyPolicy,
+          props.sessionStateMappingTableReadPolicy,
+          props.sessionStateMappingTableWritePolicy,
+          props.useSessionStateMappingKmsKeyPolicy
+        ],
+        logRetentionInDays: props.logRetentionInDays,
+        logLevel: props.logLevel,
+        packageBasePath: "packages/cognito",
+        entryPoint: "src/PostAuthentication.ts",
+        lambdaEnvironmentVariables: {
+          StateMappingTableName: props.stateMappingTable.tableName,
+          SessionStateMappingTableName: props.sessionStateMappingTable.tableName,
+          COGNITO_CLIENT_ID: props.userPoolClientId,
+          COGNITO_DOMAIN: props.fullCognitoDomain,
+          MOCK_OIDC_ISSUER: mockOidcIssuer,
+          PRIMARY_OIDC_ISSUER: props.primaryOidcIssuer
+        }
+      })
+
+      oauth2Policies.push(
+        PostAuthenticationLambda.executeLambdaManagedPolicy
+      )
+
       // Output
       this.mockAuthorizeLambda = mockAuthorizeLambda.lambda
       this.mockTokenLambda = mockTokenLambda.lambda
       this.mockCallbackLambda = mockCallbackLambda.lambda
+      this.PostAuthenticationLambda = PostAuthenticationLambda.lambda
     }
 
     // Outputs
