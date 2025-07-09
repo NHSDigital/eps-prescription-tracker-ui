@@ -106,7 +106,7 @@ const extractDispensedItemsFromMedicationDispenses = (
         }
 
         // Get dosage instructions from the corresponding MedicationRequest since MedicationDispense doesn't have them
-        dispensedDosageInstructions = correspondingRequest.dosageInstruction?.[0]?.text ?? "Unknown"
+        dispensedDosageInstructions = dispense.dosageInstruction?.[0]?.text ?? "Unknown"
 
         const originalMedicationName = correspondingRequest.medicationCodeableConcept?.text ??
                                     correspondingRequest.medicationCodeableConcept?.coding?.[0]?.display ?? "Unknown"
