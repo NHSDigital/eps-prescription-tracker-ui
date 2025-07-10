@@ -9,7 +9,7 @@ Promise<APIGatewayProxyResult> => {
   logger.appendKeys({
     "apigw-request-id": event.requestContext?.requestId
   })
-  logger.debug("event", event.body as string)
+  logger.debug(`event ${event.body}`)
 
   return {
     statusCode: 200,
