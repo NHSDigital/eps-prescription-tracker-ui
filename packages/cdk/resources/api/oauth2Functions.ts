@@ -289,7 +289,7 @@ export class OAuth2Functions extends Construct {
       const PreTokenisationLambda = new LambdaFunction(this, "PreTokenisation", {
         serviceName: props.serviceName,
         stackName: props.stackName,
-        lambdaName: `${props.stackName}-post-auth`,
+        lambdaName: `${props.stackName}-pre-auth`,
         additionalPolicies: [
           props.stateMappingTableWritePolicy,
           props.stateMappingTableReadPolicy,
