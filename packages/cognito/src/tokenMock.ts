@@ -147,8 +147,24 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   // as we now have all the user information including roles, and apigee tokens
   // store them in the token mapping table
 
+  // check if user already exists in the token mapping table
+  let username = `Mock_${userInfoResponse.user_details.sub}`
+
+  // const existingTokenMapping = await documentClient.send(
+  //   new GetCommand({
+  //     TableName: mockOidcConfig.tokenMappingTableName,
+  //     Key: {username: username}
+  //   })
+  // )
+
+  // if (existingTokenMapping.Item) {
+  //   username = `Draft_${userInfoResponse.user_details.sub}`
+  //   logger.info("User already exists in token mapping table, using draft username", {username})
+  // }
+  // logger.info("JTI", {jti: jwtClaims.jti})
+
   const tokenMappingItem = {
-    username: `Mock_${userInfoResponse.user_details.sub}`,
+    username: username,
     apigeeAccessToken: exchangeResult.accessToken,
     apigeeRefreshToken: exchangeResult.refreshToken,
     apigeeExpiresIn: exchangeResult.expiresIn,
