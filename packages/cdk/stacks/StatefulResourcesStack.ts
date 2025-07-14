@@ -190,6 +190,24 @@ export class StatefulResourcesStack extends Stack {
       exportName: `${props.stackName}:useTokensMappingKmsKeyPolicy:Arn`
     })
 
+    // Session management table
+    new CfnOutput(this, "sessionManagementTableArn", {
+      value: dynamodb.sessionManagementTable.tableArn,
+      exportName: `${props.stackName}:sessionManagementTable:Arn`
+    })
+    new CfnOutput(this, "sessionManagementTableReadPolicyArn", {
+      value: dynamodb.sessionManagementTableReadPolicy.managedPolicyArn,
+      exportName: `${props.stackName}:sessionManagementTableReadPolicy:Arn`
+    })
+    new CfnOutput(this, "sessionManagementTableWritePolicyArn", {
+      value: dynamodb.sessionManagementTableWritePolicy.managedPolicyArn,
+      exportName: `${props.stackName}:sessionManagementTableWritePolicy:Arn`
+    })
+    new CfnOutput(this, "useSessionManagementTableKmsKeyPolicyArn", {
+      value: dynamodb.useSessionManagementTableKmsKeyPolicy.managedPolicyArn,
+      exportName: `${props.stackName}:useSessionManagementTableKmsKeyPolicy:Arn`
+    })
+
     // State mapping table
     new CfnOutput(this, "stateMappingTableArn", {
       value: dynamodb.stateMappingTable.tableArn,

@@ -10,7 +10,8 @@ import {
   UserPoolClient,
   UserPoolClientIdentityProvider,
   UserPoolDomain,
-  UserPoolIdentityProviderOidc
+  UserPoolIdentityProviderOidc,
+  StringAttribute
 } from "aws-cdk-lib/aws-cognito"
 import {ICertificate} from "aws-cdk-lib/aws-certificatemanager"
 import {RemovalPolicy} from "aws-cdk-lib"
@@ -71,29 +72,29 @@ export class Cognito extends Construct {
     super(scope, id)
 
     // Must be created in Stateful stack as it's a Cognito dependency.
-    const preTokenisationLambda = new LambdaFunction(this, "PreTokenisation", {
-      serviceName: props.serviceName,
-      stackName: props.stackName,
-      lambdaName: `${props.stackName}-pre-token`,
-      additionalPolicies: [
-        props.tokenMappingTableWritePolicy,
-        props.tokenMappingTableReadPolicy,
-        props.useTokenMappingKmsKeyPolicy
-      ],
-      logRetentionInDays: props.logRetentionInDays,
-      logLevel: props.logLevel,
-      packageBasePath: "packages/cognito",
-      entryPoint: "src/preTokenisationTrigger.ts",
-      lambdaEnvironmentVariables: {
-        StateMappingTableName: props.tokenMappingTable.tableName
-      }
-    })
+    // const preTokenisationLambda = new LambdaFunction(this, "PreTokenisation", {
+    //   serviceName: props.serviceName,
+    //   stackName: props.stackName,
+    //   lambdaName: `${props.stackName}-pre-token`,
+    //   additionalPolicies: [
+    //     props.tokenMappingTableWritePolicy,
+    //     props.tokenMappingTableReadPolicy,
+    //     props.useTokenMappingKmsKeyPolicy
+    //   ],
+    //   logRetentionInDays: props.logRetentionInDays,
+    //   logLevel: props.logLevel,
+    //   packageBasePath: "packages/cognito",
+    //   entryPoint: "src/preTokenisationTrigger.ts",
+    //   lambdaEnvironmentVariables: {
+    //     StateMappingTableName: props.tokenMappingTable.tableName
+    //   }
+    // })
 
     // Resources
     const userPool = new UserPool(this, "UserPool", {
       removalPolicy: RemovalPolicy.DESTROY,
-      lambdaTriggers: {
-        preTokenGeneration: preTokenisationLambda.lambda
+      customAttributes: {
+        "session_id": new StringAttribute({minLen: 36, maxLen: 36, mutable: true})
       }
     })
 
@@ -202,7 +203,8 @@ export class Cognito extends Construct {
         name: "name",
         given_name: "given_name",
         family_name: "family_name",
-        email: "email"
+        email: "email",
+        "custom:session_id": "session_id"
       }
     }
 
@@ -273,6 +275,6 @@ export class Cognito extends Construct {
     this.userPoolDomain = userPoolDomain
     this.primaryPoolIdentityProvider = primaryPoolIdentityProvider
     this.mockPoolIdentityProvider = mockPoolIdentityProvider!
-    this.preTokenisationLambda = preTokenisationLambda
+    // this.preTokenisationLambda = preTokenisationLambda
   }
 }

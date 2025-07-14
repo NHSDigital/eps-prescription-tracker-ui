@@ -10,6 +10,7 @@ import {RoleDetails, UserDetails} from "@cpt-ui-common/common-types"
 
 interface TokenMappingItem {
     username: string,
+    sessionId?: string,
     cis2AccessToken?: string,
     cis2RefreshToken?: string,
     cis2ExpiresIn?: string,
@@ -27,22 +28,22 @@ interface TokenMappingItem {
 
 export const insertTokenMapping = async (
   documentClient: DynamoDBDocumentClient,
-  tokenMappingTableName: string,
+  tableName: string,
   item: TokenMappingItem,
   logger: Logger
 ): Promise<void> => {
-  logger.debug("Inserting into tokenMapping", {item, tokenMappingTableName})
+  logger.debug("Inserting into table", {item, tableName})
   try {
     await documentClient.send(
       new PutCommand({
-        TableName: tokenMappingTableName,
+        TableName: tableName,
         Item: item
       })
     )
-    logger.debug("Successfully inserted into tokenMapping", {tokenMappingTableName})
+    logger.debug("Successfully inserted into table", {tableName})
   } catch(error) {
-    logger.error("Error inserting into tokenMapping", {error})
-    throw new Error("Error inserting into tokenMapping")
+    logger.error("Error inserting into table", {error}, {tableName})
+    throw new Error(`Error inserting into table ${tableName}`)
   }
 }
 

@@ -110,6 +110,14 @@ export class StatelessResourcesStack extends Stack {
     const tokenMappingTableWritePolicyImport = Fn.importValue(`${baseImportPath}:tokenMappingTableWritePolicy:Arn`)
     const useTokensMappingKmsKeyPolicyImport = Fn.importValue(`${baseImportPath}:useTokensMappingKmsKeyPolicy:Arn`)
 
+    // Session management user info table
+    const sessionManagementTableImport = Fn.importValue(`${baseImportPath}:sessionManagementTable:Arn`)
+    const sessionManagementReadPolicyImport = Fn.importValue(`${baseImportPath}:sessionManagementTableReadPolicy:Arn`)
+    const sessionManagementTableWritePolicyImport =
+    Fn.importValue(`${baseImportPath}:sessionManagementTableWritePolicy:Arn`)
+    const useSessionManagementKmsKeyPolicyImport =
+    Fn.importValue(`${baseImportPath}:useSessionManagementTableKmsKeyPolicy:Arn`)
+
     // Login proxy state cache
     const stateMappingTableImport = Fn.importValue(`${baseImportPath}:stateMappingTable:Arn`)
     const stateMappingTableReadPolicyImport = Fn.importValue(`${baseImportPath}:stateMappingTableReadPolicy:Arn`)
@@ -140,6 +148,7 @@ export class StatelessResourcesStack extends Stack {
     // Coerce context and imports to relevant types
     const staticContentBucket = Bucket.fromBucketArn(this, "StaticContentBucket", staticContentBucketImport)
 
+    // Token mapping table
     const tokenMappingTable = TableV2.fromTableArn(this, "tokenMappingTable", tokenMappingTableImport)
     const tokenMappingTableReadPolicy = ManagedPolicy.fromManagedPolicyArn(
       this, "tokenMappingTableReadPolicy", tokenMappingTableReadPolicyImport)
@@ -148,6 +157,18 @@ export class StatelessResourcesStack extends Stack {
     const useTokensMappingKmsKeyPolicy = ManagedPolicy.fromManagedPolicyArn(
       this, "useTokensMappingKmsKeyPolicy", useTokensMappingKmsKeyPolicyImport)
 
+    // Session management table
+    const sessionManagementTable = TableV2.fromTableArn(this, "sessionManagementTable", sessionManagementTableImport)
+    const sessionManagementTableReadPolicy = ManagedPolicy.fromManagedPolicyArn(
+      this, "sessionManagementTableReadPolicy", sessionManagementReadPolicyImport)
+
+    const sessionManagementTableWritePolicy = ManagedPolicy.fromManagedPolicyArn(
+      this, "sessionManagementTableWritePolicy", sessionManagementTableWritePolicyImport)
+
+    const useSessionManagementKmsKeyPolicy = ManagedPolicy.fromManagedPolicyArn(
+      this, "useSessionManagementTableKmsKeyPolicy", useSessionManagementKmsKeyPolicyImport)
+
+    // State mapping table
     const stateMappingTable = TableV2.fromTableArn(this, "stateMappingTable", stateMappingTableImport)
     const stateMappingTableReadPolicy = ManagedPolicy.fromManagedPolicyArn(
       this, "stateMappingTableReadPolicy", stateMappingTableReadPolicyImport)
@@ -156,6 +177,7 @@ export class StatelessResourcesStack extends Stack {
     const useStateMappingKmsKeyPolicy = ManagedPolicy.fromManagedPolicyArn(
       this, "useStateMappingKmsKeyPolicy", useStateMappingKmsKeyPolicyImport)
 
+    // Session state mapping table
     const sessionStateMappingTable = TableV2.fromTableArn(
       this, "sessionStateMappingTable", sessionStateMappingTableImport)
     const sessionStateMappingTableReadPolicy = ManagedPolicy.fromManagedPolicyArn(
@@ -224,6 +246,11 @@ export class StatelessResourcesStack extends Stack {
       tokenMappingTableWritePolicy,
       tokenMappingTableReadPolicy,
       useTokensMappingKmsKeyPolicy,
+
+      sessionManagementTable,
+      sessionManagementTableWritePolicy,
+      sessionManagementTableReadPolicy,
+      useSessionManagementKmsKeyPolicy,
 
       stateMappingTable,
       stateMappingTableWritePolicy,

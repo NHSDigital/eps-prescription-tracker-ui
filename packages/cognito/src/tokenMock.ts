@@ -3,7 +3,7 @@ import {Logger} from "@aws-lambda-powertools/logger"
 import {injectLambdaContext} from "@aws-lambda-powertools/logger/middleware"
 import {getSecret} from "@aws-lambda-powertools/parameters/secrets"
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
-import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
+import {DynamoDBDocumentClient, GetCommand} from "@aws-sdk/lib-dynamodb"
 import middy from "@middy/core"
 import inputOutputLogger from "@middy/input-output-logger"
 import {parse} from "querystring"
@@ -14,6 +14,7 @@ import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 import {v4 as uuidv4} from "uuid"
 import jwt from "jsonwebtoken"
 import axios from "axios"
+
 /*
 This is the lambda code that is used to intercept calls to token endpoint as part of the cognito login flow
 It expects the following environment variables to be set
@@ -50,6 +51,7 @@ const cloudfrontDomain= process.env["FULL_CLOUDFRONT_DOMAIN"] as string
 const jwtPrivateKeyArn= process.env["jwtPrivateKeyArn"] as string
 const jwtKid= process.env["jwtKid"] as string
 const SessionStateMappingTableName = process.env["SessionStateMappingTableName"] as string
+const SessionManagementTableName = process.env["SessionManagementTableName"] as string
 const idpTokenPath= process.env["MOCK_IDP_TOKEN_PATH"] as string
 const apigeeApiKey = process.env["APIGEE_API_KEY"] as string
 const apigeeApiSecret = process.env["APIGEE_API_SECRET"] as string
@@ -120,6 +122,8 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
   const current_time = Math.floor(Date.now() / 1000)
   const expirationTime = current_time + 600
+  const sessionId = uuidv4()
+  const baseUsername = userInfoResponse.user_details.sub
 
   const jwtClaims = {
     exp: expirationTime,
@@ -139,33 +143,24 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     name: userInfoResponse.user_details.name,
     authentication_assurance_level: "3",
     given_name: userInfoResponse.user_details.given_name,
-    family_name: userInfoResponse.user_details.family_name
+    family_name: userInfoResponse.user_details.family_name,
+    session_id: sessionId
   }
 
   const jwtToken = await createSignedJwt(jwtClaims)
 
   // as we now have all the user information including roles, and apigee tokens
   // store them in the token mapping table
-
-  // check if user already exists in the token mapping table
-  let username = `Mock_${userInfoResponse.user_details.sub}`
-
-  // TODO: REMOVE IF NOT NECESSARY CONNOR
-  // const existingTokenMapping = await documentClient.send(
-  //   new GetCommand({
-  //     TableName: mockOidcConfig.tokenMappingTableName,
-  //     Key: {username: username}
-  //   })
-  // )
-
-  // if (existingTokenMapping.Item) {
-  //   username = `Draft_${userInfoResponse.user_details.sub}`
-  //   logger.info("User already exists in token mapping table, using draft username", {username})
-  // }
-  // logger.info("JTI", {jti: jwtClaims.jti})
+  const existingTokenMapping = await documentClient.send(
+    new GetCommand({
+      TableName: mockOidcConfig.tokenMappingTableName,
+      Key: {username: `Mock_${baseUsername}`}
+    })
+  )
 
   const tokenMappingItem = {
-    username: username,
+    username: `Mock_${baseUsername}`,
+    sessionId: sessionId,
     apigeeAccessToken: exchangeResult.accessToken,
     apigeeRefreshToken: exchangeResult.refreshToken,
     apigeeExpiresIn: exchangeResult.expiresIn,
@@ -175,7 +170,19 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     userDetails: userInfoResponse.user_details,
     lastActivityTime: Date.now()
   }
-  await insertTokenMapping(documentClient, mockOidcConfig.tokenMappingTableName, tokenMappingItem, logger)
+
+  if (existingTokenMapping.Item) {
+    const sessionUsername = `Draft_${baseUsername}`
+    logger.info("User already exists in token mapping table, creating draft session",
+      {sessionUsername}, {SessionManagementTableName})
+
+    let draftTokenMappingItem = tokenMappingItem
+    draftTokenMappingItem.username = sessionUsername
+    await insertTokenMapping(documentClient, SessionManagementTableName, draftTokenMappingItem, logger)
+  } else {
+    logger.info("No user token already exists")
+    await insertTokenMapping(documentClient, mockOidcConfig.tokenMappingTableName, tokenMappingItem, logger)
+  }
 
   // this is what gets returned to cognito
   // access token and refresh token are not used by cognito so its ok that they are unusud

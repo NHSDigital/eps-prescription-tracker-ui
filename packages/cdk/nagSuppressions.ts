@@ -72,7 +72,9 @@ export const nagSuppressions = (stack: Stack) => {
         "/StatefulStack/DynamoDB/StateTableReadManagedPolicy/Resource",
         "/StatefulStack/DynamoDB/StateTableWriteManagedPolicy/Resource",
         "/StatefulStack/DynamoDB/SessionStateTableReadManagedPolicy/Resource",
-        "/StatefulStack/DynamoDB/SessionStateTableWriteManagedPolicy/Resource"
+        "/StatefulStack/DynamoDB/SessionStateTableWriteManagedPolicy/Resource",
+        "/StatefulStack/DynamoDB/SessionManagementReadManagedPolicy/Resource",
+        "/StatefulStack/DynamoDB/SessionManagementWriteManagedPolicy/Resource"
       ],
       [
         {
