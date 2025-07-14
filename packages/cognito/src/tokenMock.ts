@@ -150,6 +150,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   // check if user already exists in the token mapping table
   let username = `Mock_${userInfoResponse.user_details.sub}`
 
+  // TODO: REMOVE IF NOT NECESSARY CONNOR
   // const existingTokenMapping = await documentClient.send(
   //   new GetCommand({
   //     TableName: mockOidcConfig.tokenMappingTableName,

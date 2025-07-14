@@ -22,6 +22,17 @@ export const nagSuppressions = (stack: Stack) => {
 
     safeAddNagSuppression(
       stack,
+      "/StatefulStack/Cognito/PreTokenisation/LambdaPutLogsManagedPolicy/Resource",
+      [
+        {
+          id: "AwsSolutions-IAM5",
+          reason: "Suppress error for wildcards in policy. This policy is to allow access to all indexes so needs a wildcard"
+        }
+      ]
+    )
+
+    safeAddNagSuppression(
+      stack,
       "/StatefulStack/Cognito/UserPoolDomain/CloudFrontDomainName/CustomResourcePolicy/Resource",
       [
         {
@@ -128,9 +139,7 @@ export const nagSuppressions = (stack: Stack) => {
         "/StatelessStack/OAuth2Gateway/ApiGateway/Default/callback/GET/Resource",
         "/StatelessStack/OAuth2Gateway/ApiGateway/Default/mock-callback/GET/Resource",
         "/StatelessStack/OAuth2Gateway/ApiGateway/Default/token/POST/Resource",
-        "/StatelessStack/OAuth2Gateway/ApiGateway/Default/mock-token/POST/Resource",
-        "/StatelessStack/OAuth2Gateway/ApiGateway/Default/PreTokenisation/GET/Resource",
-        "/StatelessStack/OAuth2Gateway/ApiGateway/Default/PreTokenisation/POST/Resource"
+        "/StatelessStack/OAuth2Gateway/ApiGateway/Default/mock-token/POST/Resource"
       ],
       [
         {
