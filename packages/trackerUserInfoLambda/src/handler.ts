@@ -14,9 +14,11 @@ import {
   authenticationMiddleware,
   AuthResult
 } from "@cpt-ui-common/authFunctions"
-import {getTokenMapping, updateTokenMapping} from "@cpt-ui-common/dynamoFunctions"
+import {getTokenMapping, getSessionManagementStatus, updateTokenMapping} from "@cpt-ui-common/dynamoFunctions"
 import {extractInboundEventValues, appendLoggerKeys} from "@cpt-ui-common/lambdaUtils"
 import axios from "axios"
+import jwt from "jsonwebtoken"
+import {RoleDetails} from "@cpt-ui-common/common-types"
 
 /*
 This is the lambda code to get user info
@@ -54,6 +56,7 @@ const {mockOidcConfig, cis2OidcConfig} = initializeOidcConfig()
 
 const authenticationParameters = authParametersFromEnv()
 const tokenMappingTableName = authenticationParameters.tokenMappingTableName
+const sessionManagementTableName = authenticationParameters.sessionManagementTableName
 
 const errorResponseBody = {
   message: "A system error has occurred"
@@ -61,18 +64,64 @@ const errorResponseBody = {
 
 const middyErrorHandler = new MiddyErrorHandler(errorResponseBody)
 
+function decodeJWT(bearer_token: string | undefined) {
+  if (bearer_token) {
+    const token = jwt.decode(bearer_token, {complete: true})
+    const payload = token?.payload
+    return [payload["custom:session_id"]]
+  }
+}
+
 const lambdaHandler = async (event: APIGatewayProxyEventBase<AuthResult>): Promise<APIGatewayProxyResult> => {
   const {loggerKeys} = extractInboundEventValues(event)
   appendLoggerKeys(logger, loggerKeys)
+
+  const bearer = event.headers.authorization?.replace("Bearer ", "")
+  const [session_id] = decodeJWT(bearer)
+
   const username = event.requestContext.authorizer.username
+  const draft_username = username.replace("Mock_", "Draft_")
 
   // First, try to use cached user info
   const tokenMappingItem = await getTokenMapping(documentClient, tokenMappingTableName, username, logger)
-  const cachedUserInfo = {
+  const sessionManagementItem = await getSessionManagementStatus(documentClient, sessionManagementTableName,
+    draft_username, logger)
+
+  type CachedUserInfo = {
+    roles_with_access: Array<RoleDetails> | [],
+    roles_without_access: Array<RoleDetails> | [],
+    currently_selected_role?: RoleDetails | undefined,
+    user_details: {
+      family_name: string,
+      given_name: string
+    },
+    multiple_sessions?: boolean,
+    is_concurrent_session?: boolean
+  }
+
+  const cachedUserInfo: CachedUserInfo = {
     roles_with_access: tokenMappingItem?.rolesWithAccess || [],
     roles_without_access: tokenMappingItem?.rolesWithoutAccess || [],
     currently_selected_role: tokenMappingItem?.currentlySelectedRole || undefined,
-    user_details: tokenMappingItem?.userDetails || {family_name: "", given_name: ""}
+    user_details: tokenMappingItem?.userDetails || {family_name: "", given_name: ""},
+    multiple_sessions: undefined,
+    is_concurrent_session: undefined
+  }
+
+  if (sessionManagementItem) {
+    if (sessionManagementItem.sessionId === session_id) {
+      cachedUserInfo.multiple_sessions = true
+      cachedUserInfo.is_concurrent_session = true
+      logger.info("Setting session parameters",
+        `${cachedUserInfo.multiple_sessions}`,
+        `${cachedUserInfo.is_concurrent_session}`)
+    } else {
+      cachedUserInfo.multiple_sessions = true
+      cachedUserInfo.is_concurrent_session = true
+      logger.info("Setting session parameters",
+        `${cachedUserInfo.multiple_sessions}`,
+        `${cachedUserInfo.is_concurrent_session}`)
+    }
   }
 
   if (

@@ -112,7 +112,8 @@ export class StatelessResourcesStack extends Stack {
 
     // Session management user info table
     const sessionManagementTableImport = Fn.importValue(`${baseImportPath}:sessionManagementTable:Arn`)
-    const sessionManagementReadPolicyImport = Fn.importValue(`${baseImportPath}:sessionManagementTableReadPolicy:Arn`)
+    const sessionManagementTableReadPolicyImport =
+    Fn.importValue(`${baseImportPath}:sessionManagementTableReadPolicy:Arn`)
     const sessionManagementTableWritePolicyImport =
     Fn.importValue(`${baseImportPath}:sessionManagementTableWritePolicy:Arn`)
     const useSessionManagementKmsKeyPolicyImport =
@@ -160,7 +161,7 @@ export class StatelessResourcesStack extends Stack {
     // Session management table
     const sessionManagementTable = TableV2.fromTableArn(this, "sessionManagementTable", sessionManagementTableImport)
     const sessionManagementTableReadPolicy = ManagedPolicy.fromManagedPolicyArn(
-      this, "sessionManagementTableReadPolicy", sessionManagementReadPolicyImport)
+      this, "sessionManagementTableReadPolicy", sessionManagementTableReadPolicyImport)
 
     const sessionManagementTableWritePolicy = ManagedPolicy.fromManagedPolicyArn(
       this, "sessionManagementTableWritePolicy", sessionManagementTableWritePolicyImport)
@@ -289,7 +290,11 @@ export class StatelessResourcesStack extends Stack {
       tokenMappingTable: tokenMappingTable,
       tokenMappingTableWritePolicy: tokenMappingTableWritePolicy,
       tokenMappingTableReadPolicy: tokenMappingTableReadPolicy,
+      sessionManagementTable: sessionManagementTable,
+      sessionManagementTableWritePolicy: sessionManagementTableWritePolicy,
+      sessionManagementTableReadPolicy: sessionManagementTableReadPolicy,
       useTokensMappingKmsKeyPolicy: useTokensMappingKmsKeyPolicy,
+      useSessionManagementKmsKeyPolicy: useSessionManagementKmsKeyPolicy,
       primaryPoolIdentityProviderName: primaryPoolIdentityProviderName,
       mockPoolIdentityProviderName: mockPoolIdentityProviderName,
       logRetentionInDays: logRetentionInDays,
