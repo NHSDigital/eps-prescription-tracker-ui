@@ -10,6 +10,8 @@ export type TrackerUserInfoResult = {
   selectedRole: RoleDetails | undefined,
   userDetails: UserDetails | undefined,
   hasSingleRoleAccess: boolean,
+  isConcurrentSession: boolean,
+  multipleSessions: boolean,
   error: string | null
 }
 
@@ -19,7 +21,9 @@ export const getTrackerUserInfo = async (): Promise<TrackerUserInfoResult> => {
   let hasNoAccess: boolean = true
   let selectedRole: RoleDetails | undefined = undefined
   let userDetails: UserDetails | undefined = undefined
-  let hasSingleRoleAccess: boolean = false
+  let hasSingleRoleAccess: boolean
+  let isConcurrentSession: boolean
+  let multipleSessions: boolean = false
   let error: string | null = null
 
   try {
@@ -57,6 +61,10 @@ export const getTrackerUserInfo = async (): Promise<TrackerUserInfoResult> => {
     selectedRole = currentlySelectedRole
     userDetails = userInfo.user_details
     hasSingleRoleAccess = userInfo.roles_with_access.length === 1
+
+    isConcurrentSession = userInfo.is_concurrent_session
+    multipleSessions = userInfo.multiple_sessions
+
     if (userInfo.roles_with_access.length === 1 && userInfo.roles_without_access.length === 0) {
       await updateRemoteSelectedRole(userInfo.roles_with_access[0])
       selectedRole = userInfo.roles_with_access[0]
@@ -75,6 +83,8 @@ export const getTrackerUserInfo = async (): Promise<TrackerUserInfoResult> => {
     selectedRole,
     userDetails,
     hasSingleRoleAccess,
+    isConcurrentSession,
+    multipleSessions,
     error
   }
 }

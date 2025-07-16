@@ -17,7 +17,7 @@ import {
 import {getTokenMapping, getSessionManagementStatus, updateTokenMapping} from "@cpt-ui-common/dynamoFunctions"
 import {extractInboundEventValues, appendLoggerKeys} from "@cpt-ui-common/lambdaUtils"
 import axios from "axios"
-import jwt from "jsonwebtoken"
+import jwt, {JwtPayload} from "jsonwebtoken"
 import {RoleDetails} from "@cpt-ui-common/common-types"
 
 /*
@@ -64,12 +64,16 @@ const errorResponseBody = {
 
 const middyErrorHandler = new MiddyErrorHandler(errorResponseBody)
 
-function decodeJWT(bearer_token: string | undefined) {
+function decodeJWT(bearer_token: string | undefined): Array<string> {
   if (bearer_token) {
-    const token = jwt.decode(bearer_token, {complete: true})
-    const payload = token?.payload
-    return [payload["custom:session_id"]]
+    const token = jwt.decode(bearer_token, {complete: true}) as { payload: JwtPayload }
+    const payload = token?.payload as JwtPayload
+
+    const sessionId = (payload["custom:session_id"] as string | undefined)?.toString()
+    return sessionId ? [sessionId] : []
   }
+
+  return []
 }
 
 const lambdaHandler = async (event: APIGatewayProxyEventBase<AuthResult>): Promise<APIGatewayProxyResult> => {
@@ -112,15 +116,13 @@ const lambdaHandler = async (event: APIGatewayProxyEventBase<AuthResult>): Promi
     if (sessionManagementItem.sessionId === session_id) {
       cachedUserInfo.multiple_sessions = true
       cachedUserInfo.is_concurrent_session = true
-      logger.info("Setting session parameters",
-        `${cachedUserInfo.multiple_sessions}`,
-        `${cachedUserInfo.is_concurrent_session}`)
+      logger.info(`Setting session parameters 
+        ${cachedUserInfo.multiple_sessions} ${cachedUserInfo.is_concurrent_session}`)
     } else {
       cachedUserInfo.multiple_sessions = true
       cachedUserInfo.is_concurrent_session = true
-      logger.info("Setting session parameters",
-        `${cachedUserInfo.multiple_sessions}`,
-        `${cachedUserInfo.is_concurrent_session}`)
+      logger.info(`Setting session parameters 
+        ${cachedUserInfo.multiple_sessions} ${cachedUserInfo.is_concurrent_session}`)
     }
   }
 

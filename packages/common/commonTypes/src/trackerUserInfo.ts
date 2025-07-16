@@ -11,7 +11,7 @@ export type UserDetails = {
   family_name: string;
   given_name: string;
   sub?: string;
-  name?: string
+  name?: string;
 };
 
 export type TrackerUserInfo = {
@@ -19,4 +19,6 @@ export type TrackerUserInfo = {
   roles_without_access: Array<RoleDetails>;
   currently_selected_role?: RoleDetails;
   user_details: UserDetails;
+  multiple_sessions: boolean;
+  is_concurrent_session: boolean;
 };
