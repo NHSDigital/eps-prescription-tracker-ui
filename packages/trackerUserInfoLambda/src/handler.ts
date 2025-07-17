@@ -14,7 +14,7 @@ import {
   authenticationMiddleware,
   AuthResult
 } from "@cpt-ui-common/authFunctions"
-import {getTokenMapping, getSessionManagementStatus, updateTokenMapping} from "@cpt-ui-common/dynamoFunctions"
+import {getTokenMapping, updateTokenMapping} from "@cpt-ui-common/dynamoFunctions"
 import {extractInboundEventValues, appendLoggerKeys} from "@cpt-ui-common/lambdaUtils"
 import axios from "axios"
 import jwt, {JwtPayload} from "jsonwebtoken"
@@ -88,8 +88,8 @@ const lambdaHandler = async (event: APIGatewayProxyEventBase<AuthResult>): Promi
 
   // First, try to use cached user info
   const tokenMappingItem = await getTokenMapping(documentClient, tokenMappingTableName, username, logger)
-  const sessionManagementItem = await getSessionManagementStatus(documentClient, sessionManagementTableName,
-    draft_username, logger)
+  const sessionManagementItem = await getTokenMapping(documentClient, sessionManagementTableName,
+    draft_username, logger, true)
 
   type CachedUserInfo = {
     roles_with_access: Array<RoleDetails> | [],
@@ -108,8 +108,8 @@ const lambdaHandler = async (event: APIGatewayProxyEventBase<AuthResult>): Promi
     roles_without_access: tokenMappingItem?.rolesWithoutAccess || [],
     currently_selected_role: tokenMappingItem?.currentlySelectedRole || undefined,
     user_details: tokenMappingItem?.userDetails || {family_name: "", given_name: ""},
-    multiple_sessions: undefined,
-    is_concurrent_session: undefined
+    multiple_sessions: false,
+    is_concurrent_session: false
   }
 
   if (sessionManagementItem) {

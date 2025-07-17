@@ -22,7 +22,6 @@ import {
   RecordTarget
 } from "aws-cdk-lib/aws-route53"
 import {UserPoolDomainTarget} from "aws-cdk-lib/aws-route53-targets"
-import {LambdaFunction} from "./LambdaFunction"
 import {ITableV2} from "aws-cdk-lib/aws-dynamodb"
 import {IManagedPolicy} from "aws-cdk-lib/aws-iam"
 
@@ -66,29 +65,9 @@ export class Cognito extends Construct {
   public readonly userPoolDomain: UserPoolDomain
   public readonly primaryPoolIdentityProvider: UserPoolIdentityProviderOidc
   public readonly mockPoolIdentityProvider: UserPoolIdentityProviderOidc
-  public readonly preTokenisationLambda: LambdaFunction
 
   public constructor(scope: Construct, id: string, props: CognitoProps) {
     super(scope, id)
-
-    // Must be created in Stateful stack as it's a Cognito dependency.
-    // const preTokenisationLambda = new LambdaFunction(this, "PreTokenisation", {
-    //   serviceName: props.serviceName,
-    //   stackName: props.stackName,
-    //   lambdaName: `${props.stackName}-pre-token`,
-    //   additionalPolicies: [
-    //     props.tokenMappingTableWritePolicy,
-    //     props.tokenMappingTableReadPolicy,
-    //     props.useTokenMappingKmsKeyPolicy
-    //   ],
-    //   logRetentionInDays: props.logRetentionInDays,
-    //   logLevel: props.logLevel,
-    //   packageBasePath: "packages/cognito",
-    //   entryPoint: "src/preTokenisationTrigger.ts",
-    //   lambdaEnvironmentVariables: {
-    //     StateMappingTableName: props.tokenMappingTable.tableName
-    //   }
-    // })
 
     // Resources
     const userPool = new UserPool(this, "UserPool", {
@@ -275,6 +254,5 @@ export class Cognito extends Construct {
     this.userPoolDomain = userPoolDomain
     this.primaryPoolIdentityProvider = primaryPoolIdentityProvider
     this.mockPoolIdentityProvider = mockPoolIdentityProvider!
-    // this.preTokenisationLambda = preTokenisationLambda
   }
 }

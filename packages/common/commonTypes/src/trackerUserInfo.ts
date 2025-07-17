@@ -19,6 +19,6 @@ export type TrackerUserInfo = {
   roles_without_access: Array<RoleDetails>;
   currently_selected_role?: RoleDetails;
   user_details: UserDetails;
-  multiple_sessions: boolean;
-  is_concurrent_session: boolean;
+  multiple_sessions?: boolean;
+  is_concurrent_session?: boolean;
 };

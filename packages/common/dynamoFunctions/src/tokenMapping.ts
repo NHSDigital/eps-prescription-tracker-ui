@@ -137,9 +137,10 @@ export const getTokenMapping = async (
   documentClient: DynamoDBDocumentClient,
   tableName: string,
   username: string,
-  logger: Logger
-): Promise<TokenMappingItem> => {
-  logger.debug("Going to get from tokenMapping", {username, tableName})
+  logger: Logger,
+  allowNullResult: boolean = false
+): Promise<TokenMappingItem | null> => {
+  logger.debug("Going to get from table", {username, tableName})
   try {
     const getResult = await documentClient.send(
       new GetCommand({
@@ -148,48 +149,17 @@ export const getTokenMapping = async (
       })
     )
 
-    if (!getResult.Item) {
+    if (!getResult.Item && allowNullResult === false) {
       logger.error("username not found in DynamoDB", {username, getResult})
       throw new Error("username not found in DynamoDB")
-    }
-    const tokenMappingItem = getResult.Item as TokenMappingItem
-    logger.debug("Successfully retrieved data from tokenMapping", {tableName, tokenMappingItem})
-    return tokenMappingItem
-  } catch(error) {
-    logger.error("Error retrieving data from tokenMapping", {error})
-    throw new Error("Error retrieving data from tokenMapping")
-  }
-}
-
-// Session management get - Don't fail if no record is found, a record should only exist
-// in the event that the user is trying to start a concurrent session
-export const getSessionManagementStatus = async (
-  documentClient: DynamoDBDocumentClient,
-  tableName: string,
-  username: string,
-  logger: Logger
-): Promise<TokenMappingItem | null> => {
-  // const modified_username = username.strip("Mock_")
-  // const draft_username = modified_username.padStart("Draft_")
-
-  logger.debug("Going to get from sessionManagement, with modified draft username", {username, tableName})
-  try {
-    const getResult = await documentClient.send(
-      new GetCommand({
-        TableName: tableName,
-        Key: {username}
-      })
-    )
-
-    if (!getResult.Item) {
-      logger.error("Username not found in DynamoDB", {username, getResult})
+    } else if (!getResult.Item && allowNullResult === true) {
       return null
     }
-    const sessionManagementItem = getResult.Item as TokenMappingItem
-    logger.debug("Successfully retrieved data from sessionManagement", {tableName, sessionManagementItem})
-    return sessionManagementItem
+    const tokenMappingItem = getResult.Item as TokenMappingItem
+    logger.debug("Successfully retrieved data from table", {tableName, tokenMappingItem})
+    return tokenMappingItem
   } catch(error) {
-    logger.error("Error retrieving data from sessionManagement", {error})
-    throw new Error("Error retrieving data from sessionManagement")
+    logger.error("Error retrieving data from table", {error})
+    throw new Error("Error retrieving data from table")
   }
 }
