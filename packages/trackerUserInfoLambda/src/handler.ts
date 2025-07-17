@@ -113,14 +113,13 @@ const lambdaHandler = async (event: APIGatewayProxyEventBase<AuthResult>): Promi
   }
 
   if (sessionManagementItem) {
+    cachedUserInfo.multiple_sessions = true
     if (sessionManagementItem.sessionId === session_id) {
-      cachedUserInfo.multiple_sessions = true
       cachedUserInfo.is_concurrent_session = true
       logger.info(`Setting session parameters 
         ${cachedUserInfo.multiple_sessions} ${cachedUserInfo.is_concurrent_session}`)
     } else {
-      cachedUserInfo.multiple_sessions = true
-      cachedUserInfo.is_concurrent_session = true
+      cachedUserInfo.is_concurrent_session = false
       logger.info(`Setting session parameters 
         ${cachedUserInfo.multiple_sessions} ${cachedUserInfo.is_concurrent_session}`)
     }
