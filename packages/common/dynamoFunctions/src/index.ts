@@ -4,6 +4,7 @@ export {
   deleteTokenMapping,
   insertTokenMapping,
   getTokenMapping,
+  checkTokenMappingForUser,
   getSessionManagementStatus} from "./tokenMapping"
 export {extractRoleInformation, UserInfoResponse} from "./userUtils"
 export {insertStateMapping, deleteStateMapping, getStateMapping} from "./stateMapping"

@@ -161,6 +161,35 @@ export const getTokenMapping = async (
   }
 }
 
+export async function checkTokenMappingForUser(
+  documentClient: DynamoDBDocumentClient,
+  tableName: string,
+  username: string,
+  logger: Logger
+): Promise<TokenMappingItem | undefined> {
+  try {
+    logger.info(`Trying to find a record for ${username} in ${tableName}`)
+    const result = await documentClient.send(
+      new GetCommand({
+        TableName: tableName,
+        Key: {username: username}
+      })
+    )
+
+    if (!result.Item) {
+      logger.error("No record found", {username, result})
+      return undefined
+    }
+
+    const item = result.Item as TokenMappingItem
+    logger.info(`Item found for ${username} in ${tableName}`, {username, tableName})
+    return item
+  } catch(error) {
+    logger.info(`Found no record for ${username} in ${tableName}`, {error})
+    throw new Error(`Error retrieving data from ${tableName}`)
+  }
+}
+
 // Session management get - Don't fail if no record is found, a record should only exist
 // in the event that the user is trying to start a concurrent session
 export const getSessionManagementStatus = async (

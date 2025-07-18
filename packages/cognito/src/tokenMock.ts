@@ -9,12 +9,7 @@ import inputOutputLogger from "@middy/input-output-logger"
 import {parse} from "querystring"
 import {PrivateKey} from "jsonwebtoken"
 import {exchangeTokenForApigeeAccessToken, fetchUserInfo, initializeOidcConfig} from "@cpt-ui-common/authFunctions"
-import {
-  insertTokenMapping,
-  getTokenMapping,
-  TokenMappingItem,
-  getSessionState
-} from "@cpt-ui-common/dynamoFunctions"
+import {insertTokenMapping, getSessionState, checkTokenMappingForUser} from "@cpt-ui-common/dynamoFunctions"
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 import {v4 as uuidv4} from "uuid"
 import jwt from "jsonwebtoken"
@@ -160,14 +155,11 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
   // as we now have all the user information including roles, and apigee tokens
   // store them in the token mapping table
-  // const existingTokenMapping = await documentClient.send(
-  //   new GetCommand({
-  //     TableName: mockOidcConfig.tokenMappingTableName,
-  //     Key: {username: `Mock_${baseUsername}`}
-  //   })
-  // )
-  const existingTokenMapping =
-  await getTokenMapping(documentClient, mockOidcConfig.tokenMappingTableName, `Mock_${baseUsername}`, logger)
+  const existingTokenMapping = await checkTokenMappingForUser(documentClient,
+    mockOidcConfig.tokenMappingTableName,
+    `Mock_${baseUsername}`,
+    logger
+  )
 
   const tokenMappingItem = {
     username: `Mock_${baseUsername}`,
@@ -182,7 +174,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     lastActivityTime: Date.now()
   }
 
-  if (existingTokenMapping as TokenMappingItem) {
+  if (existingTokenMapping !== undefined) {
     const sessionUsername = `Draft_${baseUsername}`
     logger.info("User already exists in token mapping table, creating draft session",
       {sessionUsername}, {SessionManagementTableName})

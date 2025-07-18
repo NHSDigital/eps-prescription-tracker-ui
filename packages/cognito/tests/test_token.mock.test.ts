@@ -11,6 +11,19 @@ import {generateKeyPairSync} from "crypto"
 import jwksClient from "jwks-rsa"
 import {OidcConfig} from "@cpt-ui-common/authFunctions"
 
+process.env.MOCK_USER_INFO_ENDPOINT = "https://dummy_mock_auth.com/userinfo"
+process.env.MOCK_OIDC_ISSUER = "https://dummy_mock_auth.com"
+process.env.MOCK_OIDC_CLIENT_ID = "test-client-id"
+process.env.MOCK_USER_POOL_IDP = "test-idp"
+process.env.TokenMappingTableName = "test-token-mapping-table"
+process.env.SessionManagementTableName = "test-session-management-table"
+process.env.SessionStateMappingTableName = "test-session-state-table"
+process.env.FULL_CLOUDFRONT_DOMAIN = "test.cloudfront.net"
+process.env.jwtPrivateKeyArn = "test-private-key-arn"
+process.env.jwtKid = "test-kid"
+process.env.APIGEE_API_KEY = "test-api-key"
+process.env.APIGEE_API_SECRET = "test-api-secret"
+
 // redefining readonly property of the performance object
 const dummyContext = {
   callbackWaitsForEmptyEventLoop: true,
@@ -49,13 +62,13 @@ const {
 
 const mockInsertTokenMapping = jest.fn().mockName("mockInsertTokenMapping")
 const mockGetSessionState = jest.fn().mockName("mockGetSessionState")
-const mockGetTokenMapping = jest.fn().mockName("mockGetTokenMapping")
+const mockCheckTokenMappingForUser = jest.fn().mockName("mockCheckTokenMappingForUser")
 
 jest.unstable_mockModule("@cpt-ui-common/dynamoFunctions", () => {
   return {
     insertTokenMapping: mockInsertTokenMapping,
     getSessionState: mockGetSessionState,
-    getTokenMapping: mockGetTokenMapping
+    checkTokenMappingForUser: mockCheckTokenMappingForUser
   }
 })
 
@@ -132,19 +145,6 @@ describe("token mock handler", () => {
     jest.resetModules()
     jest.clearAllMocks()
     jwks.start()
-    // Set up required environment variables
-    process.env.MOCK_USER_INFO_ENDPOINT = "https://dummy_mock_auth.com/userinfo"
-    process.env.MOCK_OIDC_ISSUER = "https://dummy_mock_auth.com"
-    process.env.MOCK_OIDC_CLIENT_ID = "test-client-id"
-    process.env.MOCK_USER_POOL_IDP = "test-idp"
-    process.env.TokenMappingTableName = "test-token-mapping-table"
-    process.env.SessionManagementTableName = "test-session-management-table"
-    process.env.SessionStateMappingTableName = "test-session-state-table"
-    process.env.FULL_CLOUDFRONT_DOMAIN = "test.cloudfront.net"
-    process.env.jwtPrivateKeyArn = "test-private-key-arn"
-    process.env.jwtKid = "test-kid"
-    process.env.APIGEE_API_KEY = "test-api-key"
-    process.env.APIGEE_API_SECRET = "test-api-secret"
   })
 
   afterEach(() => {
@@ -234,21 +234,15 @@ describe("token mock handler", () => {
 
   it("inserts concurrent session details into sessionManagement dynamo table", async () => {
     // return some valid data for the get command
-    // (generateUUID as jest.Mock).mockReturnValue('mock-uuid')make
+    mockCheckTokenMappingForUser.mockReturnValue({
+      username: "Mock_user_details_sub"
+    })
 
     mockGetSessionState.mockImplementationOnce(() => {
       return Promise.resolve({
         LocalCode: "test-code",
         ApigeeCode: "apigee-code",
         SessionState: "test-session-state"
-      })
-    })
-
-    mockGetTokenMapping.mockImplementationOnce(() => {
-      return Promise.resolve({
-        Item: {
-          username: "Mock_user_details_sub"
-        }
       })
     })
 
@@ -285,7 +279,7 @@ describe("token mock handler", () => {
     // check call
     expect(mockInsertTokenMapping).toHaveBeenCalledWith(
       expect.anything(), // documentClient
-      expect.anything(), // tableName
+      "test-session-management-table", // tableName
       {
         username: "Draft_user_details_sub",
         apigeeAccessToken: "new-access-token",
