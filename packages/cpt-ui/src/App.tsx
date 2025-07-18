@@ -1,5 +1,5 @@
-import {Routes, Route} from "react-router-dom"
-import {AuthProvider} from "@/context/AuthProvider"
+import {Routes, Route, Navigate} from "react-router-dom"
+import {AuthProvider, useAuth} from "@/context/AuthProvider"
 import {AccessProvider} from "@/context/AccessProvider"
 import {SearchProvider} from "@/context/SearchProvider"
 import {PatientDetailsProvider} from "./context/PatientDetailsProvider"
@@ -23,6 +23,14 @@ import PrivacyNoticePage from "./pages/PrivacyNoticePage"
 
 import {FRONTEND_PATHS} from "@/constants/environment"
 
+const RootRoute = () => {
+  const {isSignedIn} = useAuth()
+
+  return isSignedIn
+    ? <Navigate to={FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID} replace />
+    : <NotFoundPage />
+}
+
 export default function App() {
   return (
     <AuthProvider>
@@ -38,7 +46,7 @@ export default function App() {
                   <Route path="cookies-selected" element={<CookieSettingsPage />} />
 
                   {/* Your existing routes */}
-                  <Route index element={<NotFoundPage />} />
+                  <Route index element={<RootRoute />} />
                   <Route path="*" element={<NotFoundPage />} />
                   <Route path={FRONTEND_PATHS.LOGIN} element={<LoginPage />} />
                   <Route path={FRONTEND_PATHS.LOGOUT} element={<LogoutPage />} />

@@ -8,7 +8,7 @@ import {
 } from "@aws-sdk/lib-dynamodb"
 import {RoleDetails, UserDetails} from "@cpt-ui-common/common-types"
 
-interface TokenMappingItem {
+export interface TokenMappingItem {
     username: string,
     sessionId?: string,
     cis2AccessToken?: string,
@@ -158,6 +158,35 @@ export const getTokenMapping = async (
   } catch(error) {
     logger.error("Error retrieving data from tokenMapping", {error})
     throw new Error("Error retrieving data from tokenMapping")
+  }
+}
+
+export async function checkTokenMappingForUser(
+  documentClient: DynamoDBDocumentClient,
+  tableName: string,
+  username: string,
+  logger: Logger
+): Promise<TokenMappingItem | undefined> {
+  try {
+    logger.info(`Trying to find a record for ${username} in ${tableName}`)
+    const result = await documentClient.send(
+      new GetCommand({
+        TableName: tableName,
+        Key: {username: username}
+      })
+    )
+
+    if (!result.Item) {
+      logger.error("No record found", {username, result})
+      return undefined
+    }
+
+    const item = result.Item as TokenMappingItem
+    logger.info(`Item found for ${username} in ${tableName}`, {username, tableName})
+    return item
+  } catch(error) {
+    logger.info(`Found no record for ${username} in ${tableName}`, {error})
+    throw new Error(`Error retrieving data from ${tableName}`)
   }
 }
 
