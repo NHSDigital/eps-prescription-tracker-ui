@@ -35,6 +35,7 @@ lint-node: compile-node
 	npm run lint --workspace packages/common/pdsClient
 	npm run lint --workspace packages/common/lambdaUtils
 	npm run lint --workspace packages/trackerUserInfoLambda
+	npm run lint --workspace packages/sessionManagementLambda
 	npm run lint --workspace packages/selectedRoleLambda
 	npm run lint --workspace packages/CIS2SignOutLambda
 	npm run lint --workspace packages/common/authFunctions
@@ -61,6 +62,7 @@ test: compile
 	npm run test --workspace packages/common/pdsClient
 	npm run test --workspace packages/common/lambdaUtils
 	npm run test --workspace packages/trackerUserInfoLambda
+	npm run test --workspace packages/sessionManagementLambda
 	npm run test --workspace packages/selectedRoleLambda
 	npm run test --workspace packages/CIS2SignOutLambda
 	npm run test --workspace packages/common/authFunctions
@@ -88,6 +90,8 @@ clean:
 	rm -rf packages/selectedRoleLambda/lib
 	rm -rf packages/trackerUserInfoLambda/coverage
 	rm -rf packages/trackerUserInfoLambda/lib
+	rm -rf packages/sessionManagementLambda/coverage
+	rm -rf packages/sessionManagementLambda/lib
 	rm -rf packages/common/authFunctions/coverage
 	rm -rf packages/common/authFunctions/lib
 	rm -rf packages/common/commonTypes/coverage
@@ -128,6 +132,7 @@ check-licenses-node:
 	npm run check-licenses --workspace packages/prescriptionDetailsLambda
 	npm run check-licenses --workspace packages/patientSearchLambda
 	npm run check-licenses --workspace packages/trackerUserInfoLambda
+	npm run check-licenses --workspace packages/sessionManagementLambda
 	npm run check-licenses --workspace packages/selectedRoleLambda
 	npm run check-licenses --workspace packages/CIS2SignOutLambda
 
