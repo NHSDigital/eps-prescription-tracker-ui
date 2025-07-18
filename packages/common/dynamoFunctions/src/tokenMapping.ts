@@ -8,7 +8,7 @@ import {
 } from "@aws-sdk/lib-dynamodb"
 import {RoleDetails, UserDetails} from "@cpt-ui-common/common-types"
 
-interface TokenMappingItem {
+export interface TokenMappingItem {
     username: string,
     sessionId?: string,
     cis2AccessToken?: string,
