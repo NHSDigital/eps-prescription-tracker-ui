@@ -9,11 +9,12 @@ import inputOutputLogger from "@middy/input-output-logger"
 import {parse} from "querystring"
 import {PrivateKey} from "jsonwebtoken"
 import {exchangeTokenForApigeeAccessToken, fetchUserInfo, initializeOidcConfig} from "@cpt-ui-common/authFunctions"
-import {insertTokenMapping, getSessionState} from "@cpt-ui-common/dynamoFunctions"
+import {insertTokenMapping, getSessionState, checkTokenMappingForUser} from "@cpt-ui-common/dynamoFunctions"
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 import {v4 as uuidv4} from "uuid"
 import jwt from "jsonwebtoken"
 import axios from "axios"
+
 /*
 This is the lambda code that is used to intercept calls to token endpoint as part of the cognito login flow
 It expects the following environment variables to be set
@@ -50,6 +51,7 @@ const cloudfrontDomain= process.env["FULL_CLOUDFRONT_DOMAIN"] as string
 const jwtPrivateKeyArn= process.env["jwtPrivateKeyArn"] as string
 const jwtKid= process.env["jwtKid"] as string
 const SessionStateMappingTableName = process.env["SessionStateMappingTableName"] as string
+const SessionManagementTableName = process.env["SessionManagementTableName"] as string
 const idpTokenPath= process.env["MOCK_IDP_TOKEN_PATH"] as string
 const apigeeApiKey = process.env["APIGEE_API_KEY"] as string
 const apigeeApiSecret = process.env["APIGEE_API_SECRET"] as string
@@ -71,6 +73,10 @@ async function createSignedJwt(claims: Record<string, unknown>) {
     algorithm: "RS512",
     keyid: jwtKid
   })
+}
+
+export function generateUUID(): string {
+  return uuidv4()
 }
 
 const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
@@ -120,6 +126,8 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
   const current_time = Math.floor(Date.now() / 1000)
   const expirationTime = current_time + 600
+  const baseUsername = userInfoResponse.user_details.sub
+  const sessionId = generateUUID()
 
   const jwtClaims = {
     exp: expirationTime,
@@ -139,16 +147,23 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     name: userInfoResponse.user_details.name,
     authentication_assurance_level: "3",
     given_name: userInfoResponse.user_details.given_name,
-    family_name: userInfoResponse.user_details.family_name
+    family_name: userInfoResponse.user_details.family_name,
+    session_id: sessionId
   }
 
   const jwtToken = await createSignedJwt(jwtClaims)
 
   // as we now have all the user information including roles, and apigee tokens
   // store them in the token mapping table
+  const existingTokenMapping = await checkTokenMappingForUser(documentClient,
+    mockOidcConfig.tokenMappingTableName,
+    `Mock_${baseUsername}`,
+    logger
+  )
 
   const tokenMappingItem = {
-    username: `Mock_${userInfoResponse.user_details.sub}`,
+    username: `Mock_${baseUsername}`,
+    sessionId: sessionId,
     apigeeAccessToken: exchangeResult.accessToken,
     apigeeRefreshToken: exchangeResult.refreshToken,
     apigeeExpiresIn: exchangeResult.expiresIn,
@@ -158,7 +173,19 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     userDetails: userInfoResponse.user_details,
     lastActivityTime: Date.now()
   }
-  await insertTokenMapping(documentClient, mockOidcConfig.tokenMappingTableName, tokenMappingItem, logger)
+
+  if (existingTokenMapping !== undefined) {
+    const sessionUsername = `Draft_${baseUsername}`
+    logger.info("User already exists in token mapping table, creating draft session",
+      {sessionUsername}, {SessionManagementTableName})
+
+    let draftTokenMappingItem = tokenMappingItem
+    draftTokenMappingItem.username = sessionUsername
+    await insertTokenMapping(documentClient, SessionManagementTableName, draftTokenMappingItem, logger)
+  } else {
+    logger.info("No user token already exists")
+    await insertTokenMapping(documentClient, mockOidcConfig.tokenMappingTableName, tokenMappingItem, logger)
+  }
 
   // this is what gets returned to cognito
   // access token and refresh token are not used by cognito so its ok that they are unusud

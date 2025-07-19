@@ -25,7 +25,11 @@ export interface ApiFunctionsProps {
   readonly tokenMappingTable: ITableV2
   readonly tokenMappingTableWritePolicy: IManagedPolicy
   readonly tokenMappingTableReadPolicy: IManagedPolicy
+  readonly sessionManagementTable: ITableV2
+  readonly sessionManagementTableWritePolicy: IManagedPolicy
+  readonly sessionManagementTableReadPolicy: IManagedPolicy
   readonly useTokensMappingKmsKeyPolicy: IManagedPolicy
+  readonly useSessionManagementKmsKeyPolicy: IManagedPolicy
   readonly primaryPoolIdentityProviderName: string
   readonly mockPoolIdentityProviderName: string
   readonly logRetentionInDays: number
@@ -68,6 +72,9 @@ export class ApiFunctions extends Construct {
       props.tokenMappingTableWritePolicy,
       props.tokenMappingTableReadPolicy,
       props.useTokensMappingKmsKeyPolicy,
+      props.sessionManagementTableWritePolicy,
+      props.sessionManagementTableReadPolicy,
+      props.useSessionManagementKmsKeyPolicy,
       props.sharedSecrets.useJwtKmsKeyPolicy,
       props.sharedSecrets.getPrimaryJwtPrivateKeyPolicy
     ]
@@ -80,6 +87,7 @@ export class ApiFunctions extends Construct {
     // We pass in both sets of endpoints and keys. The Lambda code determines at runtime which to use.
     const commonLambdaEnv: {[key: string]: string} = {
       TokenMappingTableName: props.tokenMappingTable.tableName,
+      SessionManagementTableName: props.sessionManagementTable.tableName,
 
       // Real endpoints/credentials
       CIS2_USER_INFO_ENDPOINT: props.primaryOidcUserInfoEndpoint,

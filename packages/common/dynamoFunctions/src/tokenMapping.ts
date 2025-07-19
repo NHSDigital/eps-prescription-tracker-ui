@@ -8,8 +8,9 @@ import {
 } from "@aws-sdk/lib-dynamodb"
 import {RoleDetails, UserDetails} from "@cpt-ui-common/common-types"
 
-interface TokenMappingItem {
+export interface TokenMappingItem {
     username: string,
+    sessionId?: string,
     cis2AccessToken?: string,
     cis2RefreshToken?: string,
     cis2ExpiresIn?: string,
@@ -27,22 +28,22 @@ interface TokenMappingItem {
 
 export const insertTokenMapping = async (
   documentClient: DynamoDBDocumentClient,
-  tokenMappingTableName: string,
+  tableName: string,
   item: TokenMappingItem,
   logger: Logger
 ): Promise<void> => {
-  logger.debug("Inserting into tokenMapping", {item, tokenMappingTableName})
+  logger.debug("Inserting into table", {item, tableName})
   try {
     await documentClient.send(
       new PutCommand({
-        TableName: tokenMappingTableName,
+        TableName: tableName,
         Item: item
       })
     )
-    logger.debug("Successfully inserted into tokenMapping", {tokenMappingTableName})
+    logger.debug("Successfully inserted into table", {tableName})
   } catch(error) {
-    logger.error("Error inserting into tokenMapping", {error})
-    throw new Error("Error inserting into tokenMapping")
+    logger.error("Error inserting into table", {error}, {tableName})
+    throw new Error(`Error inserting into table ${tableName}`)
   }
 }
 
@@ -134,15 +135,15 @@ export const deleteTokenMapping = async (
 
 export const getTokenMapping = async (
   documentClient: DynamoDBDocumentClient,
-  tokenMappingTableName: string,
+  tableName: string,
   username: string,
   logger: Logger
 ): Promise<TokenMappingItem> => {
-  logger.debug("Going to get from tokenMapping", {username, tokenMappingTableName})
+  logger.debug("Going to get from tokenMapping", {username, tableName})
   try {
     const getResult = await documentClient.send(
       new GetCommand({
-        TableName: tokenMappingTableName,
+        TableName: tableName,
         Key: {username}
       })
     )
@@ -152,10 +153,70 @@ export const getTokenMapping = async (
       throw new Error("username not found in DynamoDB")
     }
     const tokenMappingItem = getResult.Item as TokenMappingItem
-    logger.debug("Successfully retrieved data from tokenMapping", {tokenMappingTableName, tokenMappingItem})
+    logger.debug("Successfully retrieved data from tokenMapping", {tableName, tokenMappingItem})
     return tokenMappingItem
   } catch(error) {
     logger.error("Error retrieving data from tokenMapping", {error})
     throw new Error("Error retrieving data from tokenMapping")
+  }
+}
+
+export async function checkTokenMappingForUser(
+  documentClient: DynamoDBDocumentClient,
+  tableName: string,
+  username: string,
+  logger: Logger
+): Promise<TokenMappingItem | undefined> {
+  try {
+    logger.info(`Trying to find a record for ${username} in ${tableName}`)
+    const result = await documentClient.send(
+      new GetCommand({
+        TableName: tableName,
+        Key: {username: username}
+      })
+    )
+
+    if (!result.Item) {
+      logger.error("No record found", {username, result})
+      return undefined
+    }
+
+    const item = result.Item as TokenMappingItem
+    logger.info(`Item found for ${username} in ${tableName}`, {username, tableName})
+    return item
+  } catch(error) {
+    logger.info(`Found no record for ${username} in ${tableName}`, {error})
+    throw new Error(`Error retrieving data from ${tableName}`)
+  }
+}
+
+// Session management get - Don't fail if no record is found, a record should only exist
+// in the event that the user is trying to start a concurrent session
+export const getSessionManagementStatus = async (
+  documentClient: DynamoDBDocumentClient,
+  tableName: string,
+  username: string,
+  logger: Logger
+): Promise<TokenMappingItem | null> => {
+
+  logger.debug("Going to get from sessionManagement, with modified draft username", {username, tableName})
+  try {
+    const getResult = await documentClient.send(
+      new GetCommand({
+        TableName: tableName,
+        Key: {username}
+      })
+    )
+
+    if (!getResult.Item) {
+      logger.error("Username not found in DynamoDB", {username, getResult})
+      return null
+    }
+    const sessionManagementItem = getResult.Item as TokenMappingItem
+    logger.debug("Successfully retrieved data from sessionManagement", {tableName, sessionManagementItem})
+    return sessionManagementItem
+  } catch(error) {
+    logger.error("Error retrieving data from sessionManagement", {error})
+    throw new Error("Error retrieving data from sessionManagement")
   }
 }
