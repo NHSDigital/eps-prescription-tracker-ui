@@ -161,12 +161,12 @@ export const getTokenMapping = async (
   }
 }
 
-export async function checkTokenMappingForUser(
+export const checkTokenMappingForUser = async (
   documentClient: DynamoDBDocumentClient,
   tableName: string,
   username: string,
   logger: Logger
-): Promise<TokenMappingItem | undefined> {
+): Promise<TokenMappingItem | undefined> => {
   try {
     logger.info(`Trying to find a record for ${username} in ${tableName}`)
     const result = await documentClient.send(
