@@ -78,6 +78,7 @@ describe("authenticateRequest", () => {
 
   const mockOptions = {
     tokenMappingTableName: "test-table",
+    sessionManagementTableName: "test-session-table",
     jwtPrivateKeyArn: "test-key-arn",
     apigeeApiKey: "test-api-key",
     jwtKid: "test-kid",

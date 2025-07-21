@@ -42,7 +42,7 @@ export const insertTokenMapping = async (
     )
     logger.debug("Successfully inserted into table", {tableName})
   } catch(error) {
-    logger.error("Error inserting into table", {error}, {tableName})
+    logger.error("Error inserting into table", {error, tableName})
     throw new Error(`Error inserting into table ${tableName}`)
   }
 }

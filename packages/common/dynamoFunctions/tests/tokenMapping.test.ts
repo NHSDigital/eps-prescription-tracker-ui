@@ -68,11 +68,11 @@ describe("insert tokenMapping", () => {
         },
             mockLogger as Logger
       )
-    ).rejects.toThrow("Error inserting into tokenMapping")
+    ).rejects.toThrow(`Error inserting into table ${mockTableName}`)
 
     expect(mockLogger.error).toHaveBeenCalledWith(
-      "Error inserting into tokenMapping",
-      {error: mockError}
+      "Error inserting into table",
+      {error: mockError, tableName: mockTableName}
     )
     expect(mockDocumentClient.send).toHaveBeenCalledTimes(1)
 
