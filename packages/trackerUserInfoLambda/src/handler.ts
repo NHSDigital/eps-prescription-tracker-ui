@@ -14,7 +14,7 @@ import {
   authenticationMiddleware,
   AuthResult
 } from "@cpt-ui-common/authFunctions"
-import {getTokenMapping, getSessionManagementStatus, updateTokenMapping} from "@cpt-ui-common/dynamoFunctions"
+import {getTokenMapping, checkTokenMappingForUser, updateTokenMapping} from "@cpt-ui-common/dynamoFunctions"
 import {extractInboundEventValues, appendLoggerKeys} from "@cpt-ui-common/lambdaUtils"
 import axios from "axios"
 import jwt, {JwtPayload} from "jsonwebtoken"
@@ -88,7 +88,7 @@ const lambdaHandler = async (event: APIGatewayProxyEventBase<AuthResult>): Promi
 
   // First, try to use cached user info
   const tokenMappingItem = await getTokenMapping(documentClient, tokenMappingTableName, username, logger)
-  const sessionManagementItem = await getSessionManagementStatus(documentClient, sessionManagementTableName,
+  const sessionManagementItem = await checkTokenMappingForUser(documentClient, sessionManagementTableName,
     draft_username, logger)
 
   type CachedUserInfo = {

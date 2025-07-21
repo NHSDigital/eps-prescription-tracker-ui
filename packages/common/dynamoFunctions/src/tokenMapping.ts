@@ -189,34 +189,3 @@ export const checkTokenMappingForUser = async (
     throw new Error(`Error retrieving data from ${tableName}`)
   }
 }
-
-// Session management get - Don't fail if no record is found, a record should only exist
-// in the event that the user is trying to start a concurrent session
-export const getSessionManagementStatus = async (
-  documentClient: DynamoDBDocumentClient,
-  tableName: string,
-  username: string,
-  logger: Logger
-): Promise<TokenMappingItem | null> => {
-
-  logger.debug("Going to get from sessionManagement, with modified draft username", {username, tableName})
-  try {
-    const getResult = await documentClient.send(
-      new GetCommand({
-        TableName: tableName,
-        Key: {username}
-      })
-    )
-
-    if (!getResult.Item) {
-      logger.error("Username not found in DynamoDB", {username, getResult})
-      return null
-    }
-    const sessionManagementItem = getResult.Item as TokenMappingItem
-    logger.debug("Successfully retrieved data from sessionManagement", {tableName, sessionManagementItem})
-    return sessionManagementItem
-  } catch(error) {
-    logger.error("Error retrieving data from sessionManagement", {error})
-    throw new Error("Error retrieving data from sessionManagement")
-  }
-}

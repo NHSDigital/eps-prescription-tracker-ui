@@ -3,17 +3,19 @@ import {Logger} from "@aws-lambda-powertools/logger"
 import {mockContext, mockAPIGatewayProxyEvent} from "./mockObjects"
 
 // Mocked functions from authFunctions
-const mockGetTokenMapping = jest.fn()
-const mockInitializeOidcConfig = jest.fn()
-const mockUpdateTokenMapping = jest.fn()
-const mockFetchUserInfo = jest.fn()
+const mockGetTokenMapping = jest.fn().mockName("mockGetTokenMapping")
+const mockInitializeOidcConfig = jest.fn().mockName("mockInitializeOidcConfig")
+const mockUpdateTokenMapping = jest.fn().mockName("mockUpdateTokenMapping")
+const mockFetchUserInfo = jest.fn().mockName("mockFetchUserInfo")
+const mockCheckTokenMappingForUser = jest.fn().mockName("mockCheckTokenMappingForUser")
 
 mockInitializeOidcConfig.mockImplementation(() => ({cis2OidcConfig: {}, mockOidcConfig: {}}))
 
 jest.unstable_mockModule("@cpt-ui-common/dynamoFunctions", () => {
   return {
     getTokenMapping: mockGetTokenMapping,
-    updateTokenMapping: mockUpdateTokenMapping
+    updateTokenMapping: mockUpdateTokenMapping,
+    checkTokenMappingForUser: mockCheckTokenMappingForUser
   }
 })
 jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
@@ -51,6 +53,7 @@ describe("Lambda Handler Tests with mock disabled", () => {
         }
       }
     })
+
     const response = await handler(event, context)
 
     expect(response).toBeDefined()
@@ -189,8 +192,10 @@ describe("Lambda Handler Tests with mock disabled", () => {
         {role_id: "123", org_code: "XYZ", role_name: "MockRole_1"}
       ],
       "roles_without_access": [],
-      "user_details": {"family_name": "Doe", "given_name": "John"}}
-    )
+      "user_details": {"family_name": "Doe", "given_name": "John"},
+      "multiple_sessions": false,
+      "is_concurrent_session": false
+    })
   })
 
   it("should return user info if roles_without_access is not empty", async () => {
@@ -224,7 +229,9 @@ describe("Lambda Handler Tests with mock disabled", () => {
       "roles_without_access": [
         {role_name: "Receptionist", role_id: "456", org_code: "DEF", org_name: "Test Hospital"}
       ],
-      "user_details": {"family_name": "Doe", "given_name": "John"}}
+      "user_details": {"family_name": "Doe", "given_name": "John"},
+      "multiple_sessions": false,
+      "is_concurrent_session": false}
     )
   })
 
@@ -258,7 +265,9 @@ describe("Lambda Handler Tests with mock disabled", () => {
       "roles_without_access": [
         {role_name: "Receptionist", role_id: "456", org_code: "DEF", org_name: "Test Hospital"}
       ],
-      "user_details": {"family_name": "Doe", "given_name": "John"}}
+      "user_details": {"family_name": "Doe", "given_name": "John"},
+      "multiple_sessions": false,
+      "is_concurrent_session": false}
     )
   })
 
