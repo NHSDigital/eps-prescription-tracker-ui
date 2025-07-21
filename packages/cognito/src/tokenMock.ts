@@ -157,7 +157,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     logger
   )
 
-  const tokenMappingItem = {
+  let tokenMappingItem = {
     username: `Mock_${baseUsername}`,
     sessionId: sessionId,
     apigeeAccessToken: exchangeResult.accessToken,
@@ -175,9 +175,8 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     logger.info("User already exists in token mapping table, creating draft session",
       {sessionUsername}, {SessionManagementTableName})
 
-    let draftTokenMappingItem = tokenMappingItem
-    draftTokenMappingItem.username = sessionUsername
-    await insertTokenMapping(documentClient, SessionManagementTableName, draftTokenMappingItem, logger)
+    tokenMappingItem.username = sessionUsername
+    await insertTokenMapping(documentClient, SessionManagementTableName, tokenMappingItem, logger)
   } else {
     logger.info("No user token already exists")
     await insertTokenMapping(documentClient, mockOidcConfig.tokenMappingTableName, tokenMappingItem, logger)
