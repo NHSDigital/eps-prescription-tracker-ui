@@ -133,6 +133,37 @@ export const deleteTokenMapping = async (
   }
 }
 
+export const deleteSessionManagementRecord = async (
+  documentClient: DynamoDBDocumentClient,
+  tableName: string,
+  username: string,
+  sessionId: string,
+  logger: Logger
+): Promise<void> => {
+  logger.debug(`Deleting from ${tableName}`, {username, sessionId, tableName})
+  try {
+    const response = await documentClient.send(
+      new DeleteCommand({
+        TableName: tableName,
+        Key: {username},
+        ConditionExpression: "sessionId = :sid",
+        ExpressionAttributeValues: {
+          ":sid": sessionId
+        }
+      })
+    )
+    if (response.$metadata.httpStatusCode !== 200) {
+      logger.error(`Failed to delete from ${tableName}`, {response})
+      throw new Error(`Failed to delete from ${tableName}`)
+    }
+    logger.debug(`Successfully deleted from ${tableName}`, {tableName})
+
+  } catch(error) {
+    logger.error(`Error deleting data from ${tableName}`, {error})
+    throw new Error(`Error deleting data from ${tableName}`)
+  }
+}
+
 export const getTokenMapping = async (
   documentClient: DynamoDBDocumentClient,
   tableName: string,
