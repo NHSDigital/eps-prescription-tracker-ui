@@ -14,10 +14,9 @@ import {
   authenticationMiddleware,
   AuthResult
 } from "@cpt-ui-common/authFunctions"
-import {getTokenMapping, getSessionManagementStatus, updateTokenMapping} from "@cpt-ui-common/dynamoFunctions"
+import {getTokenMapping, checkTokenMappingForUser, updateTokenMapping} from "@cpt-ui-common/dynamoFunctions"
 import {extractInboundEventValues, appendLoggerKeys} from "@cpt-ui-common/lambdaUtils"
 import axios from "axios"
-import jwt, {JwtPayload} from "jsonwebtoken"
 import {RoleDetails} from "@cpt-ui-common/common-types"
 
 /*
@@ -64,31 +63,17 @@ const errorResponseBody = {
 
 const middyErrorHandler = new MiddyErrorHandler(errorResponseBody)
 
-function decodeJWT(bearer_token: string | undefined): Array<string> {
-  if (bearer_token) {
-    const token = jwt.decode(bearer_token, {complete: true}) as { payload: JwtPayload }
-    const payload = token?.payload as JwtPayload
-
-    const sessionId = (payload["custom:session_id"] as string | undefined)?.toString()
-    return sessionId ? [sessionId] : []
-  }
-
-  return []
-}
-
 const lambdaHandler = async (event: APIGatewayProxyEventBase<AuthResult>): Promise<APIGatewayProxyResult> => {
   const {loggerKeys} = extractInboundEventValues(event)
   appendLoggerKeys(logger, loggerKeys)
 
-  const bearer = event.headers.authorization?.replace("Bearer ", "")
-  const [session_id] = decodeJWT(bearer)
-
+  const sessionId = event.requestContext.authorizer.sessionId
   const username = event.requestContext.authorizer.username
-  const draft_username = username.replace("Mock_", "Draft_")
+  const draft_username = username.startsWith("Mock_") ? username.replace("Mock_", "Draft_") : "Draft_" + username
 
   // First, try to use cached user info
   const tokenMappingItem = await getTokenMapping(documentClient, tokenMappingTableName, username, logger)
-  const sessionManagementItem = await getSessionManagementStatus(documentClient, sessionManagementTableName,
+  const sessionManagementItem = await checkTokenMappingForUser(documentClient, sessionManagementTableName,
     draft_username, logger)
 
   type CachedUserInfo = {
@@ -113,12 +98,14 @@ const lambdaHandler = async (event: APIGatewayProxyEventBase<AuthResult>): Promi
   }
 
   if (sessionManagementItem) {
+    logger.info("Setting appropriate concurrency properties for sessionId", {sessionId})
     cachedUserInfo.multiple_sessions = true
-    if (sessionManagementItem.sessionId === session_id) {
+    if (sessionId === sessionManagementItem.sessionId) {
+      logger.info("Draft sessionId matches bearer token sessionId", {sessionId})
       cachedUserInfo.is_concurrent_session = true
-      logger.info(`Setting session parameters 
-        ${cachedUserInfo.multiple_sessions} ${cachedUserInfo.is_concurrent_session}`)
     }
+    logger.info(`Setting session parameters 
+      ${cachedUserInfo.multiple_sessions} ${cachedUserInfo.is_concurrent_session}`)
   }
 
   if (

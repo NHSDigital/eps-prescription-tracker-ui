@@ -26,6 +26,7 @@ export interface AuthResult {
   apigeeAccessToken: string
   roleId?: string
   orgCode?: string
+  sessionId?: string
 }
 
 /**
