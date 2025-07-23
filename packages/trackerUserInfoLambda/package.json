@@ -23,7 +23,7 @@
     "@middy/http-header-normalizer": "^6.3.1",
     "@middy/input-output-logger": "^6.3.2",
     "aws-lambda": "^1.0.7",
-    "axios": "^1.10.0",
+    "axios": "^1.11.0",
     "jwks-rsa": "^3.2.0"
   },
   "devDependencies": {
