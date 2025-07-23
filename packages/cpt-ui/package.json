@@ -16,7 +16,7 @@
     "@cpt-ui-common/common-types": "^1.0.0",
     "aws-amplify": "^6.15.3",
     "aws-rum-web": "^1.23.0",
-    "axios": "^1.10.0",
+    "axios": "^1.11.0",
     "identity-obj-proxy": "^3.0.0",
     "nhsuk-frontend": "^9.6.4",
     "nhsuk-react-components": "^5.0.0",
