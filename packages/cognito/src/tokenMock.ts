@@ -122,7 +122,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
   const current_time = Math.floor(Date.now() / 1000)
   const expirationTime = current_time + 600
-  const baseUsername = userInfoResponse.user_details.sub
+  const username = `Mock_${userInfoResponse.user_details.sub}`
   const sessionId = uuidv4()
 
   const jwtClaims = {
@@ -153,12 +153,12 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   // store them in the token mapping table
   const existingTokenMapping = await checkTokenMappingForUser(documentClient,
     mockOidcConfig.tokenMappingTableName,
-    `Mock_${baseUsername}`,
+    username,
     logger
   )
 
   let tokenMappingItem = {
-    username: `Mock_${baseUsername}`,
+    username: username,
     sessionId: sessionId,
     apigeeAccessToken: exchangeResult.accessToken,
     apigeeRefreshToken: exchangeResult.refreshToken,
@@ -171,11 +171,9 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   }
 
   if (existingTokenMapping !== undefined) {
-    const sessionUsername = `Draft_${baseUsername}`
     logger.info("User already exists in token mapping table, creating draft session",
-      {sessionUsername}, {SessionManagementTableName})
+      {username}, {SessionManagementTableName})
 
-    tokenMappingItem.username = sessionUsername
     await insertTokenMapping(documentClient, SessionManagementTableName, tokenMappingItem, logger)
   } else {
     logger.info("No user token already exists")

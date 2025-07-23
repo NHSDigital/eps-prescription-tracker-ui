@@ -2,8 +2,21 @@
   "extends": "../../tsconfig.defaults.json",
   "compilerOptions": {
     "rootDir": ".",
-    "outDir": "lib"
+    "outDir": "lib",
+    "baseUrl": ".",
+    "tsBuildInfoFile": "lib/tsconfig.tsbuildinfo"
   },
   "include": ["src/**/*", "tests/**/*"],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules"],
+  "references": [
+    {
+      "path": "../common/authFunctions"
+    },
+    {
+      "path": "../common/middyErrorHandler"
+    },
+    {
+      "path": "../common/dynamoFunctions"
+    }
+  ]
 }

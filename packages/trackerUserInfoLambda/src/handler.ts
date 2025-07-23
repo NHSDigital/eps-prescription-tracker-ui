@@ -69,12 +69,11 @@ const lambdaHandler = async (event: APIGatewayProxyEventBase<AuthResult>): Promi
 
   const sessionId = event.requestContext.authorizer.sessionId
   const username = event.requestContext.authorizer.username
-  const draft_username = username.startsWith("Mock_") ? username.replace("Mock_", "Draft_") : "Draft_" + username
 
   // First, try to use cached user info
   const tokenMappingItem = await getTokenMapping(documentClient, tokenMappingTableName, username, logger)
   const sessionManagementItem = await checkTokenMappingForUser(documentClient, sessionManagementTableName,
-    draft_username, logger)
+    username, logger)
 
   type CachedUserInfo = {
     roles_with_access: Array<RoleDetails> | [],

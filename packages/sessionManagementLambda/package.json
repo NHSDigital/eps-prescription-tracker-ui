@@ -1,8 +1,8 @@
 {
-  "name": "status",
+  "name": "session-management-lambda",
   "version": "1.0.0",
   "description": "Session Management Lambda",
-  "main": "status.js",
+  "main": "lib/src/handler.js",
   "author": "NHS Digital",
   "license": "MIT",
   "scripts": {

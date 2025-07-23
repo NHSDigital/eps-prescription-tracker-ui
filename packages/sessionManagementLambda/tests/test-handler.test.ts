@@ -1,234 +1,336 @@
-// import {APIGatewayProxyResult} from "aws-lambda"
-// import {handler} from "../src/handler"
-// import {
-//   jest,
-//   expect,
-//   describe,
-//   it
-// } from "@jest/globals"
-// import {Logger} from "@aws-lambda-powertools/logger"
-// import MockAdapter from "axios-mock-adapter"
-// import axios from "axios"
-// import {mockAPIGatewayProxyEvent, helloworldContext} from "@clinicaltracker_common/testing"
+import {
+  jest,
+  expect,
+  describe,
+  it
+} from "@jest/globals"
+import {Logger} from "@aws-lambda-powertools/logger"
+import {mockContext, mockAPIGatewayProxyEvent} from "./mockObjects"
+import {TokenMappingItem} from "@cpt-ui-common/dynamoFunctions"
 
-// const mock = new MockAdapter(axios)
+const mockGetTokenMapping = jest.fn().mockName("mockGetTokenMapping")
+const mockUpdateTokenMapping = jest.fn().mockName("mockUpdateTokenMapping")
+const mockCheckTokenMappingForUser = jest.fn().mockName("mockCheckTokenMappingForUser")
+const mockDeleteSessionManagementRecord = jest.fn().mockName("mockDeleteSessionManagementRecord")
 
-// const dummyContext = helloworldContext
+const mockInitializeOidcConfig = jest.fn().mockName("mockInitializeOidcConfig")
+const mockFetchUserInfo = jest.fn().mockName("mockFetchUserInfo")
+mockInitializeOidcConfig.mockImplementation(() => ({cis2OidcConfig: {}, mockOidcConfig: {}}))
 
-// describe("Unit test for status check", function () {
-//   let originalEnv: {[key: string]: string | undefined} = process.env
-//   afterEach(() => {
-//     process.env = {...originalEnv}
-//     mock.reset()
-//   })
+jest.unstable_mockModule("@cpt-ui-common/dynamoFunctions", () => {
+  return {
+    getTokenMapping: mockGetTokenMapping,
+    updateTokenMapping: mockUpdateTokenMapping,
+    checkTokenMappingForUser: mockCheckTokenMappingForUser,
+    deleteSessionManagementRecord: mockDeleteSessionManagementRecord
+  }
+})
+jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
+  return {
+    authParametersFromEnv: () => ({
+      tokenMappingTableName: "TokenMappingTable",
+      sessionManagementTableName: "SessionManagementTable"
+    }),
+    authenticationMiddleware: () => ({before: () => {}}),
+    initializeOidcConfig: mockInitializeOidcConfig,
+    fetchUserInfo: mockFetchUserInfo
+  }
+})
 
-//   it("returns commit id from environment", async () => {
-//     process.env.COMMIT_ID = "test_commit_id"
-//     process.env.TargetSpineServer = "sandbox"
+const {handler} = await import("../src/handler")
 
-//     const result: APIGatewayProxyResult = (await handler(
-//       mockAPIGatewayProxyEvent,
-//       dummyContext
-//     ))
+describe("Unit test for session management lambda", function () {
+  let event = {...mockAPIGatewayProxyEvent}
+  let context = {...mockContext}
 
-//     expect(result.statusCode).toEqual(200)
-//     expect(JSON.parse(result.body)).toMatchObject({
-//       commitId: "test_commit_id"
-//     })
-//   })
+  beforeEach(() => {
+    jest.resetAllMocks()
+  })
 
-//   it("returns version number from environment", async () => {
-//     process.env.VERSION_NUMBER = "test_version_number"
-//     process.env.TargetSpineServer = "sandbox"
+  it("should update token mapping table if set-session action used", async () => {
+    const sessionManagementItem: TokenMappingItem = {
+      username: "blah",
+      rolesWithAccess: [
+        {role_id: "123", org_code: "XYZ", role_name: "MockRole_1"}
+      ],
+      rolesWithoutAccess: [],
+      currentlySelectedRole: {role_id: "555", org_code: "GHI", role_name: "MockRole_4"},
+      lastActivityTime: 123456,
+      userDetails: {
+        family_name: "foo",
+        given_name: "bar"
+      },
+      sessionId: "sessionid123"
+    }
 
-//     const result: APIGatewayProxyResult = (await handler(
-//       mockAPIGatewayProxyEvent,
-//       dummyContext
-//     ))
+    mockCheckTokenMappingForUser.mockImplementation(() => {
+      return sessionManagementItem
+    })
 
-//     expect(result.statusCode).toEqual(200)
-//     expect(JSON.parse(result.body)).toMatchObject({
-//       versionNumber: "test_version_number"
-//     })
-//   })
+    event.requestContext.authorizer = {
+      username: "test-user",
+      sessionId: "sessionid123"
+    }
 
-//   it("appends trace id's to the logger", async () => {
-//     const mockAppendKeys = jest.spyOn(Logger.prototype, "appendKeys")
+    event.body = JSON.stringify({action: "Set-Session"})
 
-//     await handler(mockAPIGatewayProxyEvent, dummyContext)
+    const response = await handler(event, context)
 
-//     expect(mockAppendKeys).toHaveBeenCalledWith({
-//       "nhsd-correlation-id": "test-request-id.test-correlation-id.rrt-5789322914740101037-b-aet2-20145-482635-2",
-//       "x-request-id": "test-request-id",
-//       "nhsd-request-id": "test-request-id",
-//       "x-correlation-id": "test-correlation-id",
-//       "apigw-request-id": "c6af9ac6-7b61-11e6-9a41-93e8deadbeef"
-//     })
-//   })
+    expect(response).toBeDefined()
+    expect(response).toHaveProperty("statusCode", 202)
+    expect(response).toHaveProperty("body")
 
-//   it("returns no-cache Cache-Control header", async () => {
-//     process.env.COMMIT_ID = "test_commit_id"
-//     process.env.TargetSpineServer = "sandbox"
+    const body = JSON.parse(response.body)
+    expect(body).toEqual({
+      "message": "Session set",
+      "status": "Active"
+    })
+    expect(mockCheckTokenMappingForUser).toHaveBeenCalled()
+    expect(mockUpdateTokenMapping).toHaveBeenCalledWith(
+      expect.anything(),
+      "TokenMappingTable",
+      sessionManagementItem,
+      expect.anything()
+    )
+    expect(mockDeleteSessionManagementRecord).toHaveBeenCalledWith(
+      expect.anything(),
+      "SessionManagementTable",
+      "test-user",
+      "sessionid123",
+      expect.anything()
+    )
+  })
 
-//     const result: APIGatewayProxyResult = (await handler(
-//       mockAPIGatewayProxyEvent,
-//       dummyContext
-//     ))
+  it("should remove concurrent session if remove-session action used", async () => {
+    const sessionManagementItem: TokenMappingItem = {
+      username: "test-user",
+      rolesWithAccess: [
+        {role_id: "123", org_code: "XYZ", role_name: "MockRole_1"}
+      ],
+      rolesWithoutAccess: [],
+      currentlySelectedRole: {role_id: "555", org_code: "GHI", role_name: "MockRole_4"},
+      lastActivityTime: 123456,
+      userDetails: {
+        family_name: "foo",
+        given_name: "bar"
+      },
+      sessionId: "sessionid123"
+    }
 
-//     const headers = result.headers
+    mockCheckTokenMappingForUser.mockImplementation(() => {
+      return sessionManagementItem
+    })
 
-//     expect(headers).toMatchObject({
-//       "Cache-Control": "no-cache"
-//     })
-//   })
+    event.requestContext.authorizer = {
+      username: "test-user",
+      sessionId: "sessionid123"
+    }
 
-//   it("checks if the certificate is always configured for the Spine sandbox", async () => {
-//     process.env.TargetSpineServer = "sandbox"
-//     process.env.SpinePublicCertificate = "ChangeMe"
-//     process.env.SpinePrivateKey = "ChangeMe"
-//     process.env.SpineCAChain = "ChangeMe"
+    event.body = JSON.stringify({action: "Remove-Session"})
 
-//     const result: APIGatewayProxyResult = await handler(mockAPIGatewayProxyEvent, dummyContext)
+    const response = await handler(event, context)
 
-//     expect(result.statusCode).toEqual(200)
-//     const result_body = JSON.parse(result.body)
-//     expect(result_body).not.toHaveProperty("message")
-//   })
+    expect(response).toBeDefined()
+    expect(response).toHaveProperty("statusCode", 200)
+    expect(response).toHaveProperty("body")
 
-//   it("returns success when spine check succeeds", async () => {
-//     mock.onGet("https://live/healthcheck").reply(200, {})
-//     process.env.TargetSpineServer = "live"
+    const body = JSON.parse(response.body)
+    expect(body).toEqual({
+      "message": "Session removed",
+      "status": "Expired"
+    })
+    expect(mockCheckTokenMappingForUser).toHaveBeenCalled()
+    expect(mockDeleteSessionManagementRecord).toHaveBeenCalledWith(
+      expect.anything(),
+      "SessionManagementTable",
+      "test-user",
+      "sessionid123",
+      expect.anything()
+    )
+  })
 
-//     const result: APIGatewayProxyResult = (await handler(
-//       mockAPIGatewayProxyEvent,
-//       dummyContext
-//     ))
+  it("should fail if no action supplied in payload body", async () => {
+    const sessionManagementItem: TokenMappingItem = {
+      username: "test-user",
+      rolesWithAccess: [
+        {role_id: "123", org_code: "XYZ", role_name: "MockRole_1"}
+      ],
+      rolesWithoutAccess: [],
+      currentlySelectedRole: {role_id: "555", org_code: "GHI", role_name: "MockRole_4"},
+      lastActivityTime: 123456,
+      userDetails: {
+        family_name: "foo",
+        given_name: "bar"
+      },
+      sessionId: "sessionid123"
+    }
 
-//     expect(result.statusCode).toEqual(200)
-//     const result_body = JSON.parse(result.body)
-//     expect(result_body.status).toEqual("pass")
-//     expect(result_body.spineStatus.status).toEqual("pass")
-//     expect(result_body.spineStatus.timeout).toEqual("false")
-//     expect(result_body.spineStatus.responseCode).toEqual(200)
-//   })
+    mockCheckTokenMappingForUser.mockImplementation(() => {
+      return sessionManagementItem
+    })
 
-//   it("returns failure when spine check fails", async () => {
-//     mock.onGet("https://live/healthcheck").reply(500, {})
-//     process.env.TargetSpineServer = "live"
+    event.requestContext.authorizer = {
+      username: "test-user",
+      sessionId: "sessionid123"
+    }
 
-//     const result: APIGatewayProxyResult = (await handler(
-//       mockAPIGatewayProxyEvent,
-//       dummyContext
-//     ))
+    event.body = JSON.stringify({})
 
-//     expect(result.statusCode).toEqual(200)
-//     const result_body = JSON.parse(result.body)
-//     expect(result_body.status).toEqual("error")
-//     expect(result_body.spineStatus.status).toEqual("error")
-//     expect(result_body.spineStatus.timeout).toEqual("false")
-//     expect(result_body.spineStatus.responseCode).toEqual(500)
-//   })
+    const response = await handler(event, context)
 
-//   it("returns failure when spine check has network error", async () => {
-//     mock.onGet("https://live/healthcheck").networkError()
-//     process.env.TargetSpineServer = "live"
+    expect(response).toBeDefined()
+    expect(response).toHaveProperty("statusCode", 500)
+    expect(response).toHaveProperty("body")
 
-//     const result: APIGatewayProxyResult = (await handler(
-//       mockAPIGatewayProxyEvent,
-//       dummyContext
-//     ))
+    const body = JSON.parse(response.body)
+    expect(body).toEqual({
+      "message": "No action specified"
+    })
+    expect(mockCheckTokenMappingForUser).toHaveBeenCalled()
+  })
 
-//     expect(result.statusCode).toEqual(200)
-//     const result_body = JSON.parse(result.body)
-//     expect(result_body.status).toEqual("error")
-//     expect(result_body.spineStatus.status).toEqual("error")
-//     expect(result_body.spineStatus.timeout).toEqual("false")
-//     expect(result_body.spineStatus.responseCode).toEqual(500)
-//   })
+  it("should error if no username supplied", async () => {
+    const sessionManagementItem: TokenMappingItem = {
+      username: "test-user",
+      rolesWithAccess: [
+        {role_id: "123", org_code: "XYZ", role_name: "MockRole_1"}
+      ],
+      rolesWithoutAccess: [],
+      currentlySelectedRole: {role_id: "555", org_code: "GHI", role_name: "MockRole_4"},
+      lastActivityTime: 123456,
+      userDetails: {
+        family_name: "foo",
+        given_name: "bar"
+      },
+      sessionId: "sessionid123"
+    }
 
-//   it("returns failure when spine check has timeout", async () => {
-//     mock.onGet("https://live/healthcheck").timeout()
-//     process.env.TargetSpineServer = "live"
+    mockCheckTokenMappingForUser.mockImplementation(() => {
+      return sessionManagementItem
+    })
 
-//     const result: APIGatewayProxyResult = (await handler(
-//       mockAPIGatewayProxyEvent,
-//       dummyContext
-//     ))
+    event.requestContext.authorizer = {
+      sessionId: "sessionid123"
+    }
 
-//     expect(result.statusCode).toEqual(200)
-//     const result_body = JSON.parse(result.body)
-//     expect(result_body.status).toEqual("error")
-//     expect(result_body.spineStatus.status).toEqual("error")
-//     expect(result_body.spineStatus.timeout).toEqual("true")
-//     expect(result_body.spineStatus.responseCode).toEqual(500)
-//   })
+    event.body = JSON.stringify({})
 
-//   it("returns success when Spine check succeeds and the certificate is not configured", async () => {
-//     mock.onGet("https://live/healthcheck").reply(200, {})
-//     process.env.TargetSpineServer = "live"
-//     process.env.SpinePublicCertificate = "ChangeMe"
-//     process.env.SpinePrivateKey = "ChangeMe"
-//     process.env.SpineCAChain = "ChangeMe"
+    const response = await handler(event, context)
+    expect(response).toEqual({
+      "message": "A system error has occurred"
+    })
+    expect(mockCheckTokenMappingForUser).not.toHaveBeenCalled()
+  })
 
-//     const result: APIGatewayProxyResult = await handler(mockAPIGatewayProxyEvent, dummyContext)
+  it("should error if no username supplied", async () => {
+    const sessionManagementItem: TokenMappingItem = {
+      username: "test-user",
+      rolesWithAccess: [
+        {role_id: "123", org_code: "XYZ", role_name: "MockRole_1"}
+      ],
+      rolesWithoutAccess: [],
+      currentlySelectedRole: {role_id: "555", org_code: "GHI", role_name: "MockRole_4"},
+      lastActivityTime: 123456,
+      userDetails: {
+        family_name: "foo",
+        given_name: "bar"
+      },
+      sessionId: "sessionid123"
+    }
 
-//     expect(result.statusCode).toEqual(200)
-//     const result_body = JSON.parse(result.body)
-//     expect(result_body.status).toEqual("pass")
-//     expect(result_body.message).toEqual("Spine certificate is not configured")
-//   })
+    mockCheckTokenMappingForUser.mockImplementation(() => {
+      return sessionManagementItem
+    })
 
-//   it("returns success when Spine check succeeds without SpinePublicCertificate", async () => {
-//     mock.onGet("https://live/healthcheck").reply(200, {})
-//     process.env.TargetSpineServer = "live"
-//     process.env.SpinePublicCertificate = "ChangeMe"
+    event.requestContext.authorizer = {
+      username: "username"
+    }
 
-//     const result: APIGatewayProxyResult = await handler(mockAPIGatewayProxyEvent, dummyContext)
+    event.body = JSON.stringify({})
 
-//     expect(result.statusCode).toEqual(200)
-//     const result_body = JSON.parse(result.body)
-//     expect(result_body.status).toEqual("pass")
-//     expect(result_body.message).toEqual("Spine certificate is not configured")
-//   })
+    const response = await handler(event, context)
+    expect(response).toEqual({
+      "message": "A system error has occurred"
+    })
+    expect(mockCheckTokenMappingForUser).not.toHaveBeenCalled()
+  })
 
-//   it("returns success when Spine check succeeds without SpinePrivateKey", async () => {
-//     mock.onGet("https://live/healthcheck").reply(200, {})
-//     process.env.TargetSpineServer = "live"
-//     process.env.SpinePrivateKey = "ChangeMe"
+  it("should error if payload body is not json", async () => {
+    const sessionManagementItem: TokenMappingItem = {
+      username: "test-user",
+      rolesWithAccess: [
+        {role_id: "123", org_code: "XYZ", role_name: "MockRole_1"}
+      ],
+      rolesWithoutAccess: [],
+      currentlySelectedRole: {role_id: "555", org_code: "GHI", role_name: "MockRole_4"},
+      lastActivityTime: 123456,
+      userDetails: {
+        family_name: "foo",
+        given_name: "bar"
+      },
+      sessionId: "sessionid123"
+    }
 
-//     const result: APIGatewayProxyResult = await handler(mockAPIGatewayProxyEvent, dummyContext)
+    mockCheckTokenMappingForUser.mockImplementation(() => {
+      return sessionManagementItem
+    })
 
-//     expect(result.statusCode).toEqual(200)
-//     const result_body = JSON.parse(result.body)
-//     expect(result_body.status).toEqual("pass")
-//     expect(result_body.message).toEqual("Spine certificate is not configured")
-//   })
+    const loggerSpy = jest.spyOn(Logger.prototype, "error")
 
-//   it("returns success when Spine check succeeds without SpineCAChain", async () => {
-//     mock.onGet("https://live/healthcheck").reply(200, {})
-//     process.env.TargetSpineServer = "live"
-//     process.env.SpineCAChain = "ChangeMe"
+    event.requestContext.authorizer = {
+      username: "username",
+      sessionId: "12345"
+    }
 
-//     const result: APIGatewayProxyResult = await handler(mockAPIGatewayProxyEvent, dummyContext)
+    event.body = btoa("I'm not JSON")
 
-//     expect(result.statusCode).toEqual(200)
-//     const result_body = JSON.parse(result.body)
-//     expect(result_body.status).toEqual("pass")
-//     expect(result_body.message).toEqual("Spine certificate is not configured")
-//   })
+    const response = await handler(event, context)
+    expect(response).toEqual({
+      "message": "A system error has occurred"
+    })
+    expect(mockCheckTokenMappingForUser).not.toHaveBeenCalled()
+    expect(loggerSpy).toHaveBeenCalledWith("Failed to parse request body", expect.anything())
+  })
 
-//   it("returns failure when Spine check fails and the certificate is configured", async () => {
-//     mock.onGet("https://live/healthcheck").reply(500, {})
-//     process.env.TargetSpineServer = "live"
+  it("should error if sessionId doesn't match an item in the database", async () => {
+    const sessionManagementItem: TokenMappingItem = {
+      username: "test-user",
+      rolesWithAccess: [
+        {role_id: "123", org_code: "XYZ", role_name: "MockRole_1"}
+      ],
+      rolesWithoutAccess: [],
+      currentlySelectedRole: {role_id: "555", org_code: "GHI", role_name: "MockRole_4"},
+      lastActivityTime: 123456,
+      userDetails: {
+        family_name: "foo",
+        given_name: "bar"
+      },
+      sessionId: "sessionid123"
+    }
 
-//     const result: APIGatewayProxyResult = await handler(mockAPIGatewayProxyEvent, dummyContext)
+    mockCheckTokenMappingForUser.mockImplementation(() => {
+      return sessionManagementItem
+    })
+    const loggerSpy = jest.spyOn(Logger.prototype, "error")
 
-//     expect(result.statusCode).toEqual(200)
-//     const result_body = JSON.parse(result.body)
-//     expect(result_body).not.toHaveProperty("message")
-//     expect(result_body.status).toEqual("error")
-//     expect(result_body.spineStatus.status).toEqual("error")
-//     expect(result_body.spineStatus.timeout).toEqual("false")
-//     expect(result_body.spineStatus.responseCode).toEqual(500)
-//   })
-// })
+    event.requestContext.authorizer = {
+      username: "username",
+      sessionId: "12345"
+    }
+
+    event.body = JSON.stringify({})
+
+    const response = await handler(event, context)
+
+    expect(response).toBeDefined()
+    expect(response).toHaveProperty("statusCode", 500)
+    expect(response).toHaveProperty("body")
+    const body = JSON.parse(response.body)
+    expect(body).toEqual({
+      "message": "A system error has occurred"
+    })
+    expect(mockCheckTokenMappingForUser).toHaveBeenCalled()
+    expect(loggerSpy).toHaveBeenCalledWith("Request doesn't match an action case, \
+      or session ID doesn't match an item in sessionManagement table.")
+  })
+})

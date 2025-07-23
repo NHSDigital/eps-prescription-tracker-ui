@@ -12,7 +12,6 @@ import {authenticationMiddleware, authParametersFromEnv} from "@cpt-ui-common/au
 import axios from "axios"
 
 import {
-  getTokenMapping,
   checkTokenMappingForUser,
   updateTokenMapping,
   deleteSessionManagementRecord
@@ -68,17 +67,9 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   const sessionId = event.requestContext.authorizer?.sessionId
   const username = event.requestContext.authorizer?.username
 
-  // For authorizer request context username fetch token mapping
-  const tokenMappingItem = await getTokenMapping(documentClient, tokenMappingTableName, username, logger)
-  // Check authorizer session ID == token mapping ID (we are working with active session)
-
-  if (tokenMappingItem && tokenMappingItem.sessionId === sessionId) {
-    // We are working with the active session.
-    if (sanitisedBody.action === "Clean-Sessions") {
-      // Log out of all sessions
-    } else {
-      return payloadValue({"status": "Active"})
-    }
+  if (sessionId === undefined || username === undefined) {
+    logger.error("Session ID or Username is undefined", {sessionId, username})
+    throw new Error("Session ID or Username is undefined")
   }
 
   // Fetch draft session for session ID if one exists
@@ -94,7 +85,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
         updateTokenMapping(documentClient, tokenMappingTableName, sessionManagementItem, logger)
         deleteSessionManagementRecord(documentClient, sessionManagementTableName, username, sessionId, logger)
-        return payloadValue({"response": "Session set", "status": "Active"}, 202)
+        return payloadValue({"message": "Session set", "status": "Active"}, 202)
 
       case "Remove-Session":
         // Remove session from draft session table to ensure user isn't presented with option anymore
@@ -102,16 +93,16 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
           logger.info("Current session has an active and draft session record for the same session ID.")
           deleteSessionManagementRecord(documentClient, sessionManagementTableName, username, sessionId, logger)
         }
-
-        return payloadValue({"response": "Session removed", "status": "Expired"})
+        return payloadValue({"message": "Session removed", "status": "Expired"})
       default:
-        return payloadValue({"response": "No action specified"})
+        return payloadValue({"message": "No action specified"}, 500)
     }
   }
 
+  logger.error("Request doesn't match an action case, or session ID doesn't match an item in sessionManagement table.")
   return {
     statusCode: 500,
-    body: JSON.stringify({}),
+    body: JSON.stringify({"message": "A system error has occurred"}),
     headers: {
       "Content-Type": "application/json",
       "Cache-Control": "no-cache"
