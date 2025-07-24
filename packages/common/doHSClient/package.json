@@ -13,12 +13,12 @@
     "check-licenses": "license-checker --failOn GPL --failOn LGPL --start ../.."
   },
   "dependencies": {
-    "@aws-lambda-powertools/logger": "^2.23.0",
+    "@aws-lambda-powertools/logger": "^2.24.0",
     "axios": "^1.11.0",
     "axios-retry": "^4.5.0"
   },
   "devDependencies": {
     "axios-mock-adapter": "^2.1.0",
-    "nock": "^14.0.4"
+    "nock": "^14.0.6"
   }
 }
