@@ -19,7 +19,7 @@
   },
   "dependencies": {
     "@aws-lambda-powertools/logger": "^2.24.0",
-    "@aws-lambda-powertools/parameters": "^2.23.0",
+    "@aws-lambda-powertools/parameters": "^2.24.0",
     "@aws-sdk/lib-dynamodb": "^3.850.0",
     "@cpt-ui-common/dynamoFunctions": "^1.0.0",
     "@middy/core": "^6.4.1",
