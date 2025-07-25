@@ -139,6 +139,12 @@ export async function authenticateRequest(
   //Get the existing saved Apigee token from DynamoDB
   const userRecord = await getTokenMapping(documentClient, tokenMappingTableName, username, logger)
 
+  // Get potential draft session and check if request sessionId matches that of draft session.
+  // For majority of lambdas kill the authorize. For session management lambda, authorise against draft session.
+  if (userRecord !== undefined) {
+    logger.info("A user session exists within token mapping table, a concurrent session attempted.")
+  }
+
   if (Date.now() - userRecord.lastActivityTime > fifteenMinutes) {
     logger.info("Last activity was more than 15 minutes ago, clearing user record")
     await deleteTokenMapping(

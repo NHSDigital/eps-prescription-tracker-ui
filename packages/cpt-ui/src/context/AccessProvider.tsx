@@ -36,6 +36,12 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
       }
       return
     }
+    if (auth.isConcurrentSession && auth.isSignedIn) {
+      if (!allowed_no_role_paths.includes(normalizePath(location.pathname))) {
+        logger.info("Concurrent session found - redirecting to session selection")
+        navigate(FRONTEND_PATHS.SESSION_SELECTION)
+      }
+    }
     if (!auth.selectedRole && !auth.isSigningIn) {
       if (!allowed_no_role_paths.includes(normalizePath(location.pathname))) {
         logger.info("No selected role - Redirecting from", location.pathname)

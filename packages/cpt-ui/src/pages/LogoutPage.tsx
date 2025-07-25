@@ -55,4 +55,24 @@ export default function LogoutPage() {
       </Container>
     </main>
   )
+
+  // TODO: Create a state value to represent forceful logout, then render this return instead
+  // return (
+  //   <main id="main-content" className="nhsuk-main-wrapper">
+  //     <Container>
+  //       {!auth?.isSignedIn ? (
+  //         <>
+  //           <h1>{EpsLogoutConcurrentSessionStrings.title}</h1>
+  //           <p>{EpsLogoutConcurrentSessionStrings.body}</p>
+  //           <Link to="/login">{EpsLogoutConcurrentSessionStrings.login_link}</Link>
+  //         </>
+  //       ) : (
+  //         <>
+  //           <h1>{EpsLogoutConcurrentSessionStrings.loading}</h1>
+  //           <EpsSpinner />
+  //         </>
+  //       )}
+  //     </Container>
+  //   </main>
+  // )
 }
