@@ -1,6 +1,6 @@
 import {MiddlewareObj} from "@middy/core"
 import {APIGatewayProxyEventBase, APIGatewayProxyResult} from "aws-lambda"
-import {getUsernameFromEvent} from "./event"
+import {getUsernameFromEvent, getSessionIdFromEvent} from "./event"
 import {authenticateRequest, AuthenticateRequestOptions, AuthResult} from "./authenticateRequest"
 import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
 import {Logger} from "@aws-lambda-powertools/logger"
@@ -15,6 +15,7 @@ export const authenticationMiddleware = (
   before: async (request) => {
     const {event} = request
     const username = getUsernameFromEvent(event)
+    const sessionId = getSessionIdFromEvent(event)
 
     let authResult: AuthResult | null = null
     try {
@@ -32,6 +33,6 @@ export const authenticationMiddleware = (
       }
       return request.earlyResponse
     }
-    event.requestContext.authorizer = authResult
+    event.requestContext.authorizer = {...authResult, sessionId}
   }
 } satisfies MiddlewareObj<APIGatewayProxyEventBase<AuthResult>, APIGatewayProxyResult, Error>)

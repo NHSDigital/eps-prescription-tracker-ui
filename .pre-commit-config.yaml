@@ -123,6 +123,15 @@ repos:
         types_or: [ts, tsx, javascript, jsx, json]
         pass_filenames: false
 
+      - id: lint-sessionManagementLambda
+        name: Lint sessionManagementLambda
+        entry: npm
+        args: ["run", "--prefix=packages/sessionManagementLambda", "lint"]
+        language: system
+        files: ^packages\/sessionManagementLambda
+        types_or: [ts, tsx, javascript, jsx, json]
+        pass_filenames: false
+
       - id: lint-CIS2SignOutLambda
         name: Lint CIS2SignOutLambda
         entry: npm

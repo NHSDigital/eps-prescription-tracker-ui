@@ -20,6 +20,7 @@ import CookiePolicyPage from "./pages/CookiePolicyPage"
 import CookieSettingsPage from "./pages/CookieSettingsPage"
 import SearchResultsPage from "@/pages/BasicDetailsSearchResultsPage"
 import PrivacyNoticePage from "./pages/PrivacyNoticePage"
+import SessionSelectionPage from "./pages/SessionSelection"
 
 import {FRONTEND_PATHS} from "@/constants/environment"
 
@@ -48,6 +49,7 @@ export default function App() {
                   {/* Your existing routes */}
                   <Route index element={<RootRoute />} />
                   <Route path="*" element={<NotFoundPage />} />
+                  <Route path={FRONTEND_PATHS.SESSION_SELECTION} element={<SessionSelectionPage />} />
                   <Route path={FRONTEND_PATHS.LOGIN} element={<LoginPage />} />
                   <Route path={FRONTEND_PATHS.LOGOUT} element={<LogoutPage />} />
                   <Route path={FRONTEND_PATHS.SELECT_YOUR_ROLE} element={<SelectYourRolePage />} />
