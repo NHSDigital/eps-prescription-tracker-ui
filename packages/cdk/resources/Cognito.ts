@@ -10,7 +10,8 @@ import {
   UserPoolClient,
   UserPoolClientIdentityProvider,
   UserPoolDomain,
-  UserPoolIdentityProviderOidc
+  UserPoolIdentityProviderOidc,
+  StringAttribute
 } from "aws-cdk-lib/aws-cognito"
 import {ICertificate} from "aws-cdk-lib/aws-certificatemanager"
 import {RemovalPolicy} from "aws-cdk-lib"
@@ -21,8 +22,14 @@ import {
   RecordTarget
 } from "aws-cdk-lib/aws-route53"
 import {UserPoolDomainTarget} from "aws-cdk-lib/aws-route53-targets"
+import {ITableV2} from "aws-cdk-lib/aws-dynamodb"
+import {IManagedPolicy} from "aws-cdk-lib/aws-iam"
 
 export interface CognitoProps {
+  readonly serviceName: string
+  readonly stackName: string
+  readonly logRetentionInDays: number
+  readonly logLevel: string
   readonly primaryOidcClientId: string
   readonly primaryOidcIssuer: string
   readonly primaryOidcAuthorizeEndpoint: string
@@ -43,6 +50,10 @@ export interface CognitoProps {
   readonly hostedZone: IHostedZone
   readonly allowLocalhostAccess: boolean
   readonly useCustomCognitoDomain: boolean
+  readonly tokenMappingTable: ITableV2
+  readonly tokenMappingTableWritePolicy: IManagedPolicy
+  readonly tokenMappingTableReadPolicy: IManagedPolicy
+  readonly useTokenMappingKmsKeyPolicy: IManagedPolicy
 }
 
 /**
@@ -60,7 +71,10 @@ export class Cognito extends Construct {
 
     // Resources
     const userPool = new UserPool(this, "UserPool", {
-      removalPolicy: RemovalPolicy.DESTROY
+      removalPolicy: RemovalPolicy.DESTROY,
+      customAttributes: {
+        "session_id": new StringAttribute({minLen: 36, maxLen: 36, mutable: true})
+      }
     })
 
     let userPoolDomain: UserPoolDomain
@@ -168,7 +182,8 @@ export class Cognito extends Construct {
         name: "name",
         given_name: "given_name",
         family_name: "family_name",
-        email: "email"
+        email: "email",
+        "custom:session_id": "session_id"
       }
     }
 
