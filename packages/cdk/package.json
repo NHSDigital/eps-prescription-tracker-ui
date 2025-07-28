@@ -7,11 +7,11 @@
     "check-licenses": "license-checker --failOn GPL --failOn LGPL --start ../.."
   },
   "dependencies": {
-    "aws-cdk-lib": "^2.206.0",
-    "cdk-nag": "^2.36.44",
+    "aws-cdk-lib": "^2.207.0",
+    "cdk-nag": "^2.36.45",
     "constructs": "^10.4.2"
   },
   "devDependencies": {
-    "aws-cdk": "^2.1021.0"
+    "aws-cdk": "^2.1022.0"
   }
 }
