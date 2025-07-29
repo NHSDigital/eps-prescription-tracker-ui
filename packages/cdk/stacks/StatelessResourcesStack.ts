@@ -373,6 +373,7 @@ export class StatelessResourcesStack extends Stack {
       prescriptionListLambda: apiFunctions.prescriptionListLambda,
       prescriptionDetailsLambda: apiFunctions.prescriptionDetailsLambda,
       trackerUserInfoLambda: apiFunctions.trackerUserInfoLambda,
+      sessionManagementLambda: apiFunctions.sessionManagementLambda,
       selectedRoleLambda: apiFunctions.selectedRoleLambda,
       patientSearchLambda: apiFunctions.patientSearchLambda,
       authorizer: apiGateway.authorizer

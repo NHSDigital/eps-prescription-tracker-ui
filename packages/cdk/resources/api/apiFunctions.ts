@@ -57,6 +57,7 @@ export class ApiFunctions extends Construct {
   public readonly prescriptionListLambda: NodejsFunction
   public readonly prescriptionDetailsLambda: NodejsFunction
   public readonly trackerUserInfoLambda: NodejsFunction
+  public readonly sessionManagementLambda: NodejsFunction
   public readonly selectedRoleLambda: NodejsFunction
   public readonly patientSearchLambda: NodejsFunction
   public readonly primaryJwtPrivateKey: Secret
@@ -151,6 +152,24 @@ export class ApiFunctions extends Construct {
 
     // Add the policy to apiFunctionsPolicies
     apiFunctionsPolicies.push(trackerUserInfoLambda.executeLambdaManagedPolicy)
+
+    // Single Lambda for both real and mock scenarios
+    const sessionManagementLambda = new LambdaFunction(this, "SessionMgmt", {
+      serviceName: props.serviceName,
+      stackName: props.stackName,
+      lambdaName: `${props.stackName}-SessionMgmt`,
+      additionalPolicies: additionalPolicies,
+      logRetentionInDays: props.logRetentionInDays,
+      logLevel: props.logLevel,
+      packageBasePath: "packages/sessionManagementLambda",
+      entryPoint: "src/handler.ts",
+      lambdaEnvironmentVariables: {
+        ...commonLambdaEnv
+      }
+    })
+
+    // Add the policy to apiFunctionsPolicies
+    apiFunctionsPolicies.push(sessionManagementLambda.executeLambdaManagedPolicy)
 
     // Selected Role Lambda Function
     const selectedRoleLambda = new LambdaFunction(this, "SelectedRole", {
@@ -281,6 +300,7 @@ export class ApiFunctions extends Construct {
     this.prescriptionListLambda = prescriptionListLambda.lambda
     this.prescriptionDetailsLambda = prescriptionDetailsLambda.lambda
     this.trackerUserInfoLambda = trackerUserInfoLambda.lambda
+    this.sessionManagementLambda = sessionManagementLambda.lambda
     this.selectedRoleLambda = selectedRoleLambda.lambda
     this.patientSearchLambda = patientSearchLambda.lambda
   }

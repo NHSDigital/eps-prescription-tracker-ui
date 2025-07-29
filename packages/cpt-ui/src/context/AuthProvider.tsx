@@ -42,6 +42,7 @@ export interface AuthContextType {
   clearAuthState: () => void
   updateSelectedRole: (value: RoleDetails) => Promise<void>
   forceCognitoLogout: () => Promise<void>
+  updateTrackerUserInfo: () => Promise<void>
 }
 
 export const AuthContext = createContext<AuthContextType | null>(null)
@@ -99,6 +100,20 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
     setMultipleSessions(false)
   }
 
+  const updateTrackerUserInfo = async() => {
+    const trackerUserInfo = await getTrackerUserInfo()
+    setRolesWithAccess(trackerUserInfo.rolesWithAccess)
+    setRolesWithoutAccess(trackerUserInfo.rolesWithoutAccess)
+    setHasNoAccess(trackerUserInfo.hasNoAccess)
+    setSelectedRole(trackerUserInfo.selectedRole)
+    setUserDetails(trackerUserInfo.userDetails)
+    setHasSingleRoleAccess(trackerUserInfo.hasSingleRoleAccess)
+    setError(trackerUserInfo.error)
+
+    setIsConcurrentSession(trackerUserInfo.isConcurrentSession)
+    setMultipleSessions(trackerUserInfo.multipleSessions)
+  }
+
   const forceCognitoLogout = async () => {
     try {
       logger.info("forcing cognito logout")
@@ -120,18 +135,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
         case "signedIn": {
           logger.info("Processing signedIn event")
           logger.info("User %s logged in", payload.data.username)
-          const trackerUserInfo = await getTrackerUserInfo()
-          setRolesWithAccess(trackerUserInfo.rolesWithAccess)
-          setRolesWithoutAccess(trackerUserInfo.rolesWithoutAccess)
-          setHasNoAccess(trackerUserInfo.hasNoAccess)
-          setSelectedRole(trackerUserInfo.selectedRole)
-          setUserDetails(trackerUserInfo.userDetails)
-          setHasSingleRoleAccess(trackerUserInfo.hasSingleRoleAccess)
-          setError(trackerUserInfo.error)
-
-          setIsConcurrentSession(trackerUserInfo.isConcurrentSession)
-          setMultipleSessions(trackerUserInfo.multipleSessions)
-
+          updateTrackerUserInfo()
           setIsSignedIn(true)
           setIsSigningIn(false)
           setUser(payload.data.username)
@@ -193,7 +197,11 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
       // we need to sign out of cis2 first before signing out of cognito
       // as otherwise we may possibly not be authed to reach cis2 sign out endpoint
       logger.info(`calling ${CIS2SignOutEndpoint}`)
-      await http.get(CIS2SignOutEndpoint)
+      await http.get(CIS2SignOutEndpoint, {
+        headers: {
+          "concurrent-session": isConcurrentSession
+        }
+      })
       logger.info("Backend CIS2 signout OK!")
       logger.info(`calling amplify logout`)
       // this triggers a signedOutEvent which is handled by the hub listener
@@ -239,7 +247,8 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
       cognitoSignOut,
       clearAuthState,
       updateSelectedRole,
-      forceCognitoLogout
+      forceCognitoLogout,
+      updateTrackerUserInfo
     }}>
       {children}
     </AuthContext.Provider>

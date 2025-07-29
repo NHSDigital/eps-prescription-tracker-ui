@@ -159,8 +159,13 @@ export const deleteSessionManagementRecord = async (
     logger.debug(`Successfully deleted from ${tableName}`, {tableName})
 
   } catch(error) {
-    logger.error(`Error deleting data from ${tableName}`, {error})
-    throw new Error(`Error deleting data from ${tableName}`)
+    if (error.name === "ConditionalCheckFailedException") {
+      logger.info(`No item found to delete in the ${tableName} table. \
+        Continuing as if it was deleted.`, {tableName, sessionId})
+    } else {
+      logger.error(`Error deleting data from ${tableName}`, {error})
+      throw new Error(`Error deleting data from ${tableName}`)
+    }
   }
 }
 

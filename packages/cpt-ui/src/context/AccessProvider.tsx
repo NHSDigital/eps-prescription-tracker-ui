@@ -26,7 +26,8 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
       FRONTEND_PATHS.LOGOUT,
       FRONTEND_PATHS.COOKIES,
       FRONTEND_PATHS.PRIVACY_NOTICE,
-      FRONTEND_PATHS.COOKIES_SELECTED
+      FRONTEND_PATHS.COOKIES_SELECTED,
+      FRONTEND_PATHS.SESSION_SELECTION
     ]
 
     if (!auth.isSignedIn && !auth.isSigningIn) {

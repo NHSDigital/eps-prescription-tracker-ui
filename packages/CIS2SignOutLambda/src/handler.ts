@@ -10,7 +10,7 @@ import httpHeaderNormalizer from "@middy/http-header-normalizer"
 
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 import {getUsernameFromEvent} from "@cpt-ui-common/authFunctions"
-import {deleteTokenMapping} from "@cpt-ui-common/dynamoFunctions"
+import {deleteTokenMapping, deleteSessionManagementRecord} from "@cpt-ui-common/dynamoFunctions"
 import {extractInboundEventValues, appendLoggerKeys} from "@cpt-ui-common/lambdaUtils"
 const logger = new Logger({serviceName: "CIS2SignOut"})
 
@@ -19,6 +19,7 @@ const documentClient = DynamoDBDocumentClient.from(dynamoClient)
 
 const MOCK_MODE_ENABLED = process.env["MOCK_MODE_ENABLED"]
 const tokenMappingTableName = process.env["TokenMappingTableName"] ?? ""
+const sessionManagementTableName = process.env["SessionManagementTableName"] ?? ""
 
 const errorResponseBody = {message: "A system error has occurred"}
 
@@ -27,6 +28,8 @@ const middyErrorHandler = new MiddyErrorHandler(errorResponseBody)
 const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   const {loggerKeys} = extractInboundEventValues(event)
   appendLoggerKeys(logger, loggerKeys)
+
+  const sessionId = event.requestContext.authorizer?.claims["custom:session_id"]
 
   // Mock usernames start with "Mock_", and real requests use usernames starting with "Primary_"
   const username = getUsernameFromEvent(event)
@@ -38,7 +41,13 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     throw new Error("Trying to use a mock user when mock mode is disabled")
   }
 
-  await deleteTokenMapping(documentClient, tokenMappingTableName, username, logger)
+  if (!event.headers["concurrent-session"]) {
+    logger.info("Active session logout", sessionId)
+    await deleteTokenMapping(documentClient, tokenMappingTableName, username, logger)
+  } else {
+    logger.info("Concurrent session logout", sessionId)
+    await deleteSessionManagementRecord(documentClient, sessionManagementTableName, username, sessionId, logger)
+  }
 
   return {
     statusCode: 200,
