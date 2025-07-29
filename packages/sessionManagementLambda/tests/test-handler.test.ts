@@ -330,7 +330,6 @@ describe("Unit test for session management lambda", function () {
       "message": "A system error has occurred"
     })
     expect(mockCheckTokenMappingForUser).toHaveBeenCalled()
-    expect(loggerSpy).toHaveBeenCalledWith("Request doesn't match an action case, \
-      or session ID doesn't match an item in sessionManagement table.")
+    expect(loggerSpy).toHaveBeenCalledWith("Request doesn't match an action case, or session ID doesn't match an item in sessionManagement table.") // eslint-disable-line max-len
   })
 })
