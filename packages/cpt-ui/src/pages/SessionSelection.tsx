@@ -13,8 +13,12 @@ export default function SessionSelectionPage() {
     navigate(FRONTEND_PATHS.LOGOUT)
   }
 
+  const redirectUser = () => {
+    navigate(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
+  }
+
   const setSession = async () => {
-    await postSessionManagementUpdate(auth)
+    await postSessionManagementUpdate(auth, redirectUser)
   }
 
   return (

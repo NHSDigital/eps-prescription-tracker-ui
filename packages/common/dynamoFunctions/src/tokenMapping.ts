@@ -156,7 +156,7 @@ export const deleteSessionManagementRecord = async (
       logger.error(`Failed to delete from ${tableName}`, {response})
       throw new Error(`Failed to delete from ${tableName}`)
     }
-    logger.debug(`Successfully deleted from ${tableName}`, {tableName})
+    logger.info(`Successfully deleted from ${tableName}`, {tableName})
   /* eslint-disable @typescript-eslint/no-explicit-any */
   } catch(error: any) {
     if (error.code === "ConditionalCheckFailedException") {
