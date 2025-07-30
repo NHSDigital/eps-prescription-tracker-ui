@@ -25,7 +25,7 @@ export const authenticationMiddleware = (
     // to ensure we're authenticating the request correctly
 
     try {
-      sessionManagementItem = checkTokenMappingForUser(
+      sessionManagementItem = await checkTokenMappingForUser(
         ddbClient,
         authOptions.sessionManagementTableName,
         username,
@@ -38,7 +38,7 @@ export const authenticationMiddleware = (
     }
 
     try {
-      tokenMappingItem = getTokenMapping(
+      tokenMappingItem = await getTokenMapping(
         ddbClient,
         authOptions.tokenMappingTableName,
         username,
