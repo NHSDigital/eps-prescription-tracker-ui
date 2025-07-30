@@ -61,7 +61,7 @@ export const authParametersFromEnv = (): AuthenticateRequestOptions => {
 const refreshTokenFlow = async (
   axiosInstance: AxiosInstance,
   documentClient: DynamoDBDocumentClient,
-  tokenMappingTableName: string,
+  specifiedTokenTable: string,
   username: string,
   existingToken: ApigeeTokenResponse,
   logger: Logger,
@@ -89,7 +89,7 @@ const refreshTokenFlow = async (
   // Update DynamoDB with the new tokens
   await updateTokenMapping(
     documentClient,
-    tokenMappingTableName,
+    specifiedTokenTable,
     {
       username,
       apigeeAccessToken: refreshResult.accessToken,

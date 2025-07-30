@@ -29,12 +29,12 @@ jest.unstable_mockModule("@aws-lambda-powertools/parameters/secrets", () => ({
 }))
 
 // Create mocks for the functions from the index module
-const mockGetUsernameFromEvent = jest.fn()
-const mockRefreshApigeeAccessToken = jest.fn()
-const mockExchangeTokenForApigeeAccessToken = jest.fn()
-const mockConstructSignedJWTBody = jest.fn()
-const mockDecodeToken = jest.fn()
-const mockVerifyIdToken = jest.fn()
+const mockGetUsernameFromEvent = jest.fn().mockName("mockGetUsernameFromEvent")
+const mockRefreshApigeeAccessToken = jest.fn().mockName("mockRefreshApigeeAccessToken")
+const mockExchangeTokenForApigeeAccessToken = jest.fn().mockName("mockExchangeTokenForApigeeAccessToken")
+const mockConstructSignedJWTBody = jest.fn().mockName("mockConstructSignedJWTBody")
+const mockDecodeToken = jest.fn().mockName("mockDecodeToken")
+const mockVerifyIdToken = jest.fn().mockName("mockVerifyIdToken")
 const dynamoClient = new DynamoDBClient()
 const documentClient = DynamoDBDocumentClient.from(dynamoClient)
 const axiosInstance = {
