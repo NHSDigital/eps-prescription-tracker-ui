@@ -122,7 +122,8 @@ describe("authenticateRequest", () => {
       axiosInstance,
       documentClient,
       mockLogger,
-      mockOptions
+      mockOptions,
+      mockOptions.tokenMappingTableName
     )
 
     expect(result).toEqual({
@@ -162,7 +163,8 @@ describe("authenticateRequest", () => {
       axiosInstance,
       documentClient,
       mockLogger,
-      mockOptions
+      mockOptions,
+      mockOptions.tokenMappingTableName
     )
 
     expect(result).toBeNull()
@@ -202,7 +204,8 @@ describe("authenticateRequest", () => {
       axiosInstance,
       documentClient,
       mockLogger,
-      mockOptions
+      mockOptions,
+      mockOptions.tokenMappingTableName
     )
 
     expect(result).toEqual({
@@ -263,7 +266,8 @@ describe("authenticateRequest", () => {
       axiosInstance,
       documentClient,
       mockLogger,
-      mockOptions
+      mockOptions,
+      mockOptions.tokenMappingTableName
     )
 
     expect(result).toEqual({
@@ -305,7 +309,8 @@ describe("authenticateRequest", () => {
       axiosInstance,
       documentClient,
       mockLogger,
-      mockOptions
+      mockOptions,
+      mockOptions.tokenMappingTableName
     )
 
     expect(result).toEqual({
@@ -347,7 +352,8 @@ describe("authenticateRequest", () => {
       axiosInstance,
       documentClient,
       mockLogger,
-      mockOptions
+      mockOptions,
+      mockOptions.tokenMappingTableName
     )
 
     expect(result).toEqual({
@@ -395,7 +401,8 @@ describe("authenticateRequest", () => {
       axiosInstance,
       documentClient,
       mockLogger,
-      mockOptions
+      mockOptions,
+      mockOptions.tokenMappingTableName
     )
 
     // Should fall back to new token acquisition
@@ -441,7 +448,8 @@ describe("authenticateRequest", () => {
       axiosInstance,
       documentClient,
       mockLogger,
-      mockOptions
+      mockOptions,
+      mockOptions.tokenMappingTableName
     )
 
     // Should fall back to new token acquisition
@@ -479,7 +487,8 @@ describe("authenticateRequest", () => {
       axiosInstance,
       documentClient,
       mockLogger,
-      mockOptions
+      mockOptions,
+      mockOptions.tokenMappingTableName
     )).rejects.toThrow(new Error("Missing apigee expires in time"))
 
     // Verify that token refresh functions were not called
@@ -511,7 +520,8 @@ describe("authenticateRequest", () => {
       axiosInstance,
       documentClient,
       mockLogger,
-      mockOptions
+      mockOptions,
+      mockOptions.tokenMappingTableName
     )).rejects.toThrow(new Error("Missing cis2IdToken"))
   })
 
@@ -539,7 +549,8 @@ describe("authenticateRequest", () => {
       axiosInstance,
       documentClient,
       mockLogger,
-      mockOptions
+      mockOptions,
+      mockOptions.tokenMappingTableName
     )).rejects.toThrow(new Error("Failed to obtain required tokens after authentication flow"))
   })
 
