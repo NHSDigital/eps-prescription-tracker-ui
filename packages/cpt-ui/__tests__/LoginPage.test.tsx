@@ -290,33 +290,4 @@ describe("LoginPage", () => {
     expect(mockCognitoSignIn).toHaveBeenCalledWith({"provider": {"custom": "Mock"}})
   })
 
-  //TODO: remove if issue is solved
-  // it("redirects to search if logged in", async () => {
-  //   // Get the mocked module
-  //   const envModule = jest.requireMock("@/constants/environment")
-  //   const mockNavigate = jest.fn();
-  //   (useNavigate as jest.Mock).mockReturnValue(mockNavigate)
-
-  //   // Modify the environment config temporarily
-  //   envModule.ENV_CONFIG = {
-  //     ...envModule.ENV_CONFIG,
-  //     TARGET_ENVIRONMENT: "prod"
-  //   }
-
-  //   // Render the component with our providers
-  //   renderWithProviders(<LoginPage />, {
-  //     ...defaultAuthState,
-  //     isSignedIn: true,
-  //     user: "testUser"
-  //   })
-
-  //   await waitFor(() => {
-  //     expect(
-  //       screen.getByText(/Redirecting to CIS2 login page/i)
-  //     ).toBeInTheDocument()
-  //   })
-
-  //   expect(mockNavigate).toHaveBeenCalledWith("dummy_search_redirect")
-  // })
-
 })

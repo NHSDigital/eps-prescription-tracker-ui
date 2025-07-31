@@ -15,7 +15,7 @@ export default function LoginPage() {
 
   const target_environment: string =
     ENV_CONFIG.TARGET_ENVIRONMENT as Environment
-  const isAutoLoginEnvironment = AUTO_LOGIN_ENVIRONMENTS.map(x=>x.environment).includes(target_environment)
+  const isAutoLoginEnvironment = AUTO_LOGIN_ENVIRONMENTS.map(x => x.environment).includes(target_environment)
 
   const mockSignIn = async () => {
     logger.info("Signing in (Mock)", auth)
@@ -55,7 +55,7 @@ export default function LoginPage() {
     if (isAutoLoginEnvironment) {
       logger.info("performing auto login")
       if (!auth?.isSignedIn) {
-        const autoLoginDetails = AUTO_LOGIN_ENVIRONMENTS.find(x=>x.environment===target_environment)
+        const autoLoginDetails = AUTO_LOGIN_ENVIRONMENTS.find(x => x.environment === target_environment)
         if (autoLoginDetails?.loginMethod === "cis2") {
           logger.info("Redirecting user to cis2 login")
           cis2SignIn()
@@ -64,11 +64,6 @@ export default function LoginPage() {
           mockSignIn()
         }
       }
-      // TODO: this logic overwrites login page redirects if client gets 401 error from apis due to timeout
-      // else {
-      //   logger.info("User is already signed in - redirecting to search")
-      //   navigate(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
-      // }
     }
   }, [auth.isSignedIn])
 
