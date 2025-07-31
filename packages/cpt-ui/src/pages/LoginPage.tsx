@@ -6,19 +6,12 @@ import {useAuth} from "@/context/AuthProvider"
 import EpsSpinner from "@/components/EpsSpinner"
 import {EpsLoginPageStrings} from "@/constants/ui-strings/EpsLoginPageStrings"
 
-import {
-  AUTO_LOGIN_ENVIRONMENTS,
-  ENV_CONFIG,
-  FRONTEND_PATHS,
-  type Environment
-} from "@/constants/environment"
+import {AUTO_LOGIN_ENVIRONMENTS, ENV_CONFIG, type Environment} from "@/constants/environment"
 import {Button} from "@/components/ReactRouterButton"
 import {logger} from "@/helpers/logger"
-import {useNavigate} from "react-router-dom"
 
 export default function LoginPage() {
   const auth = useAuth()
-  const navigate = useNavigate()
 
   const target_environment: string =
     ENV_CONFIG.TARGET_ENVIRONMENT as Environment
@@ -70,10 +63,12 @@ export default function LoginPage() {
           logger.info("Redirecting user to mock login")
           mockSignIn()
         }
-      } else {
-        logger.info("User is already signed in - redirecting to search")
-        navigate(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
       }
+      // TODO: this logic overwrites login page redirects if client gets 401 error from apis due to timeout
+      // else {
+      //   logger.info("User is already signed in - redirecting to search")
+      //   navigate(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
+      // }
     }
   }, [auth.isSignedIn])
 
