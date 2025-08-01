@@ -20,6 +20,7 @@ const app = new App({context: configDetails})
 const serviceName = app.node.tryGetContext("serviceName")
 const version = app.node.tryGetContext("VERSION_NUMBER")
 const commit = app.node.tryGetContext("COMMIT_ID")
+const cfnDriftDetectionGroup = app.node.tryGetContext("cfnDriftDetectionGroup")
 const useCustomCognitoDomain = app.node.tryGetContext("useCustomCognitoDomain")
 let githubAllowListIpv4 = app.node.tryGetContext("githubAllowListIpv4")
 if (typeof githubAllowListIpv4 === "string") {
@@ -44,6 +45,8 @@ Tags.of(app).add("serviceName", serviceName)
 Tags.of(app).add("version", version)
 Tags.of(app).add("commit", commit)
 Tags.of(app).add("cdkApp", "StatefulApp")
+Tags.of(app).add("repo", "eps-prescription-tracker-ui")
+Tags.of(app).add("cfnDriftDetectionGroup", cfnDriftDetectionGroup)
 
 // define the host names we are going to use for everything
 let shortCloudfrontDomain
