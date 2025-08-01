@@ -144,7 +144,7 @@ if [ -z "${GITHUB_ACTIONS_RUNNER_IPV6}" ]; then
 fi
 
 CFN_DRIFT_DETECTION_GROUP="cpt-ui"
-if [[ "$STACK_NAME" =~ -pr-[0-9]+$ ]]; then
+if [[ "$SERVICE_NAME" =~ -pr-[0-9]+$ ]]; then
   CFN_DRIFT_DETECTION_GROUP="cpt-ui-pull-request"
 fi
 
