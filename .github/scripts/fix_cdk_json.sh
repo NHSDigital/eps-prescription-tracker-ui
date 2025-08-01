@@ -143,12 +143,18 @@ if [ -z "${GITHUB_ACTIONS_RUNNER_IPV6}" ]; then
     jq '[.actions[] | select(test("^[0-9a-fA-F:]+(/[0-9]{1,3})?$"))]')
 fi
 
+CFN_DRIFT_DETECTION_GROUP="cpt-ui"
+if [[ "$STACK_NAME" =~ -pr-[0-9]+$ ]]; then
+  CFN_DRIFT_DETECTION_GROUP="cpt-ui-pull-request"
+fi
+
 # go through all the key values we need to set
 fix_string_key serviceName "${SERVICE_NAME}"
 fix_string_key VERSION_NUMBER "${VERSION_NUMBER}"
 fix_string_key COMMIT_ID "${COMMIT_ID}"
 fix_string_key logRetentionInDays "${LOG_RETENTION_IN_DAYS}"
 fix_string_key logLevel "${LOG_LEVEL}"
+fix_string_key cfnDriftDetectionGroup "${CFN_DRIFT_DETECTION_GROUP}"
 
 if [ "$CDK_APP_NAME" == "StatefulResourcesApp" ]; then
     fix_string_key primaryOidcClientId "${PRIMARY_OIDC_CLIENT_ID}"
