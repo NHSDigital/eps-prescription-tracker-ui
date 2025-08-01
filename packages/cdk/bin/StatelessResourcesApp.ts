@@ -18,6 +18,7 @@ const app = new App({context: configDetails})
 const serviceName = app.node.tryGetContext("serviceName")
 const version = app.node.tryGetContext("VERSION_NUMBER")
 const commit = app.node.tryGetContext("COMMIT_ID")
+const cfnDriftDetectionGroup = app.node.tryGetContext("cfnDriftDetectionGroup")
 
 // add cdk-nag to everything
 Aspects.of(app).add(new AwsSolutionsChecks({verbose: true}))
@@ -26,6 +27,8 @@ Tags.of(app).add("serviceName", serviceName)
 Tags.of(app).add("version", version)
 Tags.of(app).add("commit", commit)
 Tags.of(app).add("cdkApp", "StatelessApp")
+Tags.of(app).add("repo", "eps-prescription-tracker-ui")
+Tags.of(app).add("cfnDriftDetectionGroup", cfnDriftDetectionGroup)
 
 new StatelessResourcesStack(app, "StatelessStack", {
   env: {
