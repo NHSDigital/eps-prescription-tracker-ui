@@ -8,24 +8,17 @@ import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
 import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
 import {extractInboundEventValues, appendLoggerKeys} from "@cpt-ui-common/lambdaUtils"
-import axios from "axios"
 
 import {
   deleteRecordAllowFailures
 } from "@cpt-ui-common/dynamoFunctions"
 
 const logger = new Logger({serviceName: "status"})
-// GET FROM ENV VARS
-// const tokenMappingTableName = authenticationParameters.tokenMappingTableName
-// const sessionManagementTableName = authenticationParameters.sessionManagementTableName
-
 const dynamoClient = new DynamoDBClient({})
 const documentClient = DynamoDBDocumentClient.from(dynamoClient, {
   marshallOptions: {
     removeUndefinedValues: true
   }})
-
-const axiosInstance = axios.create()
 
 const errorResponseBody = {
   message: "A system error has occurred"
