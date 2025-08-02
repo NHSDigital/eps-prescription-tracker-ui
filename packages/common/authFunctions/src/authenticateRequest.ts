@@ -26,6 +26,7 @@ export interface AuthResult {
   apigeeAccessToken: string
   roleId?: string
   orgCode?: string
+  sessionId?: string
 }
 
 /**
@@ -33,6 +34,7 @@ export interface AuthResult {
  */
 export interface AuthenticateRequestOptions {
   tokenMappingTableName: string
+  sessionManagementTableName: string
   jwtPrivateKeyArn: string
   apigeeApiKey: string
   apigeeApiSecret: string
@@ -45,6 +47,7 @@ export interface AuthenticateRequestOptions {
 export const authParametersFromEnv = (): AuthenticateRequestOptions => {
   return {
     tokenMappingTableName: process.env["TokenMappingTableName"] as string,
+    sessionManagementTableName: process.env["SessionManagementTableName"] as string,
     jwtPrivateKeyArn: process.env["jwtPrivateKeyArn"] as string,
     apigeeApiKey: process.env["APIGEE_API_KEY"] as string,
     apigeeApiSecret: process.env["APIGEE_API_SECRET"] as string,
