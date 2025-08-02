@@ -32,6 +32,6 @@
   "devDependencies": {
     "@types/aws-lambda": "^8.10.152",
     "mock-jwks": "3.2.2",
-    "nock": "^14.0.6"
+    "nock": "^14.0.8"
   }
 }

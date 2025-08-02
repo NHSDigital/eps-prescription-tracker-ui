@@ -19,6 +19,6 @@
   },
   "devDependencies": {
     "axios-mock-adapter": "^2.1.0",
-    "nock": "^14.0.6"
+    "nock": "^14.0.8"
   }
 }
