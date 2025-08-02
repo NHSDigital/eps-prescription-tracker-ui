@@ -4,10 +4,12 @@ import {mockAPIGatewayProxyEvent, mockContext} from "./mockObjects"
 // Mocked functions
 const mockGetUsernameFromEvent = jest.fn()
 const mockDeleteTokenMappingMock = jest.fn()
+const mockDeleteSessionManagementRecord = jest.fn()
 
 jest.unstable_mockModule("@cpt-ui-common/dynamoFunctions", () => {
   return {
-    deleteTokenMapping: mockDeleteTokenMappingMock
+    deleteTokenMapping: mockDeleteTokenMappingMock,
+    deleteSessionManagementRecord: mockDeleteSessionManagementRecord
   }
 })
 jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
@@ -39,6 +41,27 @@ describe("Lambda Handler", () => {
       "test_user",
       expect.anything()
     )
+  })
+
+  it("should return 200 and success message on successful deletion of concurrent session", async () => {
+    mockGetUsernameFromEvent.mockReturnValue("test_user")
+
+    mockAPIGatewayProxyEvent.headers["concurrent-session"] = true
+    const response = await handler(mockAPIGatewayProxyEvent, mockContext)
+
+    expect(response.statusCode).toBe(200)
+    const body = JSON.parse(response.body)
+    expect(body.message).toBe("CIS2 logout completed")
+
+    // Verify that DeleteCommand was called with the expected parameters
+    expect(mockDeleteSessionManagementRecord).toHaveBeenCalledWith(
+      expect.anything(),
+      process.env.SessionManagementTableName,
+      "test_user",
+      "123456",
+      expect.anything()
+    )
+    mockAPIGatewayProxyEvent.headers["concurrent-session"] = false
   })
 
   it("should return error message if deletion is unsuccessful", async () => {

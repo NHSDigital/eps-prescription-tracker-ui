@@ -1,4 +1,4 @@
-import {getUsernameFromEvent} from "./event"
+import {getUsernameFromEvent, getSessionIdFromEvent} from "./event"
 import {initializeOidcConfig} from "./initialization"
 
 import {
@@ -28,6 +28,7 @@ import {authenticationMiddleware} from "./authenticationMiddleware"
 
 export {
   getUsernameFromEvent,
+  getSessionIdFromEvent,
   getSigningKey,
   verifyIdToken,
   constructSignedJWTBody,

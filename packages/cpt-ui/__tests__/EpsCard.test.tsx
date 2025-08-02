@@ -95,11 +95,14 @@ const defaultAuthContext: AuthContextType = {
   hasSingleRoleAccess: true,
   selectedRole: undefined,
   userDetails: undefined,
+  isConcurrentSession: false,
+  multipleSessions: false,
   cognitoSignIn: jest.fn(),
   cognitoSignOut: jest.fn(),
   clearAuthState: jest.fn(),
   updateSelectedRole: mockUpdateSelectedRole,
-  forceCognitoLogout: jest.fn()
+  forceCognitoLogout: jest.fn(),
+  updateTrackerUserInfo: jest.fn()
 }
 
 const renderWithProviders = (props: { role: RoleDetails; link: string }) => {

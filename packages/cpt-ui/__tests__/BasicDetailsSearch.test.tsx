@@ -47,11 +47,14 @@ const signedInAuthState: AuthContextType = {
   hasSingleRoleAccess: false,
   selectedRole: undefined,
   userDetails: undefined,
+  isConcurrentSession: false,
+  multipleSessions: false,
   cognitoSignIn: mockCognitoSignIn,
   cognitoSignOut: mockCognitoSignOut,
   clearAuthState: mockClearAuthState,
   updateSelectedRole: jest.fn(),
-  forceCognitoLogout: jest.fn()
+  forceCognitoLogout: jest.fn(),
+  updateTrackerUserInfo: jest.fn()
 }
 
 const mockClearSearchParameters = jest.fn()

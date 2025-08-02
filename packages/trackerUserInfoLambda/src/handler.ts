@@ -14,9 +14,10 @@ import {
   authenticationMiddleware,
   AuthResult
 } from "@cpt-ui-common/authFunctions"
-import {getTokenMapping, updateTokenMapping} from "@cpt-ui-common/dynamoFunctions"
+import {getTokenMapping, checkTokenMappingForUser, updateTokenMapping} from "@cpt-ui-common/dynamoFunctions"
 import {extractInboundEventValues, appendLoggerKeys} from "@cpt-ui-common/lambdaUtils"
 import axios from "axios"
+import {RoleDetails} from "@cpt-ui-common/common-types"
 
 /*
 This is the lambda code to get user info
@@ -54,6 +55,7 @@ const {mockOidcConfig, cis2OidcConfig} = initializeOidcConfig()
 
 const authenticationParameters = authParametersFromEnv()
 const tokenMappingTableName = authenticationParameters.tokenMappingTableName
+const sessionManagementTableName = authenticationParameters.sessionManagementTableName
 
 const errorResponseBody = {
   message: "A system error has occurred"
@@ -64,15 +66,45 @@ const middyErrorHandler = new MiddyErrorHandler(errorResponseBody)
 const lambdaHandler = async (event: APIGatewayProxyEventBase<AuthResult>): Promise<APIGatewayProxyResult> => {
   const {loggerKeys} = extractInboundEventValues(event)
   appendLoggerKeys(logger, loggerKeys)
+
+  const sessionId = event.requestContext.authorizer.sessionId
   const username = event.requestContext.authorizer.username
 
   // First, try to use cached user info
   const tokenMappingItem = await getTokenMapping(documentClient, tokenMappingTableName, username, logger)
-  const cachedUserInfo = {
+  const sessionManagementItem = await checkTokenMappingForUser(documentClient, sessionManagementTableName,
+    username, logger)
+
+  type CachedUserInfo = {
+    roles_with_access: Array<RoleDetails> | [],
+    roles_without_access: Array<RoleDetails> | [],
+    currently_selected_role?: RoleDetails | undefined,
+    user_details: {
+      family_name: string,
+      given_name: string
+    },
+    multiple_sessions?: boolean,
+    is_concurrent_session?: boolean
+  }
+
+  const cachedUserInfo: CachedUserInfo = {
     roles_with_access: tokenMappingItem?.rolesWithAccess || [],
     roles_without_access: tokenMappingItem?.rolesWithoutAccess || [],
     currently_selected_role: tokenMappingItem?.currentlySelectedRole || undefined,
-    user_details: tokenMappingItem?.userDetails || {family_name: "", given_name: ""}
+    user_details: tokenMappingItem?.userDetails || {family_name: "", given_name: ""},
+    multiple_sessions: false,
+    is_concurrent_session: false
+  }
+
+  if (sessionManagementItem) {
+    logger.info("Setting appropriate concurrency properties for sessionId", {sessionId})
+    cachedUserInfo.multiple_sessions = true
+    if (sessionId === sessionManagementItem.sessionId) {
+      logger.info("Draft sessionId matches bearer token sessionId", {sessionId})
+      cachedUserInfo.is_concurrent_session = true
+    }
+    logger.info(`Setting session parameters 
+      ${cachedUserInfo.multiple_sessions} ${cachedUserInfo.is_concurrent_session}`)
   }
 
   if (

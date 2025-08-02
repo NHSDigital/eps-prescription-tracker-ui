@@ -29,12 +29,12 @@ jest.unstable_mockModule("@aws-lambda-powertools/parameters/secrets", () => ({
 }))
 
 // Create mocks for the functions from the index module
-const mockGetUsernameFromEvent = jest.fn()
-const mockRefreshApigeeAccessToken = jest.fn()
-const mockExchangeTokenForApigeeAccessToken = jest.fn()
-const mockConstructSignedJWTBody = jest.fn()
-const mockDecodeToken = jest.fn()
-const mockVerifyIdToken = jest.fn()
+const mockGetUsernameFromEvent = jest.fn().mockName("mockGetUsernameFromEvent")
+const mockRefreshApigeeAccessToken = jest.fn().mockName("mockRefreshApigeeAccessToken")
+const mockExchangeTokenForApigeeAccessToken = jest.fn().mockName("mockExchangeTokenForApigeeAccessToken")
+const mockConstructSignedJWTBody = jest.fn().mockName("mockConstructSignedJWTBody")
+const mockDecodeToken = jest.fn().mockName("mockDecodeToken")
+const mockVerifyIdToken = jest.fn().mockName("mockVerifyIdToken")
 const dynamoClient = new DynamoDBClient()
 const documentClient = DynamoDBDocumentClient.from(dynamoClient)
 const axiosInstance = {
@@ -78,6 +78,7 @@ describe("authenticateRequest", () => {
 
   const mockOptions = {
     tokenMappingTableName: "test-table",
+    sessionManagementTableName: "test-session-table",
     jwtPrivateKeyArn: "test-key-arn",
     apigeeApiKey: "test-api-key",
     jwtKid: "test-kid",
@@ -121,7 +122,8 @@ describe("authenticateRequest", () => {
       axiosInstance,
       documentClient,
       mockLogger,
-      mockOptions
+      mockOptions,
+      mockOptions.tokenMappingTableName
     )
 
     expect(result).toEqual({
@@ -161,7 +163,8 @@ describe("authenticateRequest", () => {
       axiosInstance,
       documentClient,
       mockLogger,
-      mockOptions
+      mockOptions,
+      mockOptions.tokenMappingTableName
     )
 
     expect(result).toBeNull()
@@ -201,7 +204,8 @@ describe("authenticateRequest", () => {
       axiosInstance,
       documentClient,
       mockLogger,
-      mockOptions
+      mockOptions,
+      mockOptions.tokenMappingTableName
     )
 
     expect(result).toEqual({
@@ -262,7 +266,8 @@ describe("authenticateRequest", () => {
       axiosInstance,
       documentClient,
       mockLogger,
-      mockOptions
+      mockOptions,
+      mockOptions.tokenMappingTableName
     )
 
     expect(result).toEqual({
@@ -304,7 +309,8 @@ describe("authenticateRequest", () => {
       axiosInstance,
       documentClient,
       mockLogger,
-      mockOptions
+      mockOptions,
+      mockOptions.tokenMappingTableName
     )
 
     expect(result).toEqual({
@@ -346,7 +352,8 @@ describe("authenticateRequest", () => {
       axiosInstance,
       documentClient,
       mockLogger,
-      mockOptions
+      mockOptions,
+      mockOptions.tokenMappingTableName
     )
 
     expect(result).toEqual({
@@ -394,7 +401,8 @@ describe("authenticateRequest", () => {
       axiosInstance,
       documentClient,
       mockLogger,
-      mockOptions
+      mockOptions,
+      mockOptions.tokenMappingTableName
     )
 
     // Should fall back to new token acquisition
@@ -440,7 +448,8 @@ describe("authenticateRequest", () => {
       axiosInstance,
       documentClient,
       mockLogger,
-      mockOptions
+      mockOptions,
+      mockOptions.tokenMappingTableName
     )
 
     // Should fall back to new token acquisition
@@ -478,7 +487,8 @@ describe("authenticateRequest", () => {
       axiosInstance,
       documentClient,
       mockLogger,
-      mockOptions
+      mockOptions,
+      mockOptions.tokenMappingTableName
     )).rejects.toThrow(new Error("Missing apigee expires in time"))
 
     // Verify that token refresh functions were not called
@@ -510,7 +520,8 @@ describe("authenticateRequest", () => {
       axiosInstance,
       documentClient,
       mockLogger,
-      mockOptions
+      mockOptions,
+      mockOptions.tokenMappingTableName
     )).rejects.toThrow(new Error("Missing cis2IdToken"))
   })
 
@@ -538,7 +549,8 @@ describe("authenticateRequest", () => {
       axiosInstance,
       documentClient,
       mockLogger,
-      mockOptions
+      mockOptions,
+      mockOptions.tokenMappingTableName
     )).rejects.toThrow(new Error("Failed to obtain required tokens after authentication flow"))
   })
 
