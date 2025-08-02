@@ -6,23 +6,16 @@ import {useAuth} from "@/context/AuthProvider"
 import EpsSpinner from "@/components/EpsSpinner"
 import {EpsLoginPageStrings} from "@/constants/ui-strings/EpsLoginPageStrings"
 
-import {
-  AUTO_LOGIN_ENVIRONMENTS,
-  ENV_CONFIG,
-  FRONTEND_PATHS,
-  type Environment
-} from "@/constants/environment"
+import {AUTO_LOGIN_ENVIRONMENTS, ENV_CONFIG, type Environment} from "@/constants/environment"
 import {Button} from "@/components/ReactRouterButton"
 import {logger} from "@/helpers/logger"
-import {useNavigate} from "react-router-dom"
 
 export default function LoginPage() {
   const auth = useAuth()
-  const navigate = useNavigate()
 
   const target_environment: string =
     ENV_CONFIG.TARGET_ENVIRONMENT as Environment
-  const isAutoLoginEnvironment = AUTO_LOGIN_ENVIRONMENTS.map(x=>x.environment).includes(target_environment)
+  const isAutoLoginEnvironment = AUTO_LOGIN_ENVIRONMENTS.map(x => x.environment).includes(target_environment)
 
   const mockSignIn = async () => {
     logger.info("Signing in (Mock)", auth)
@@ -62,7 +55,7 @@ export default function LoginPage() {
     if (isAutoLoginEnvironment) {
       logger.info("performing auto login")
       if (!auth?.isSignedIn) {
-        const autoLoginDetails = AUTO_LOGIN_ENVIRONMENTS.find(x=>x.environment===target_environment)
+        const autoLoginDetails = AUTO_LOGIN_ENVIRONMENTS.find(x => x.environment === target_environment)
         if (autoLoginDetails?.loginMethod === "cis2") {
           logger.info("Redirecting user to cis2 login")
           cis2SignIn()
@@ -70,9 +63,6 @@ export default function LoginPage() {
           logger.info("Redirecting user to mock login")
           mockSignIn()
         }
-      } else {
-        logger.info("User is already signed in - redirecting to search")
-        navigate(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
       }
     }
   }, [auth.isSignedIn])
