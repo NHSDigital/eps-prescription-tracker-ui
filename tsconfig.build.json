@@ -22,7 +22,7 @@
       {"path": "packages/prescriptionListLambda"},
       {"path": "packages/selectedRoleLambda"},
       {"path": "packages/trackerUserInfoLambda"},
-      {"path": "packages/testingSupport"},
+      {"path": "packages/testingSupport/clearActiveSessions"},
     ]
   }
   

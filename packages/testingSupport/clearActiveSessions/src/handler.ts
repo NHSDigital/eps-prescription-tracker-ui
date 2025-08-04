@@ -9,9 +9,7 @@ import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
 import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
 import {extractInboundEventValues, appendLoggerKeys} from "@cpt-ui-common/lambdaUtils"
 
-import {
-  deleteRecordAllowFailures
-} from "@cpt-ui-common/dynamoFunctions"
+import {deleteRecordAllowFailures} from "@cpt-ui-common/dynamoFunctions"
 
 const logger = new Logger({serviceName: "status"})
 const dynamoClient = new DynamoDBClient({})
@@ -48,17 +46,26 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   const {loggerKeys} = extractInboundEventValues(event)
   appendLoggerKeys(logger, loggerKeys)
 
-  const body = JSON.parse(event.body)
+  const body = JSON.parse(event.body? event.body : "{}")
+
+  if (!body || !body.username) {
+    logger.error("Invalid request body", {body})
+    return payloadValue({"message": "Invalid request body"}, 400)
+  }
   const username = body.username
 
   try {
-    deleteRecordAllowFailures(documentClient, tokenMappingTableName, username, logger)
-    deleteRecordAllowFailures(documentClient, sessionManagementTableName, username, logger)
+    logger.info("Deleting token mapping and session state for user", {username})
+    await deleteRecordAllowFailures(documentClient, tokenMappingTableName, username, logger)
+    await deleteRecordAllowFailures(documentClient, sessionManagementTableName, username, logger)
+    logger.info("Successfully deleted token mapping and session state for user", {username})
+    return payloadValue({"message": "Success"})
   } catch (error) {
     logger.error("Error attempting to delete an item.", {username, error})
   }
 
-  payloadValue({"message": "Success"})
+  // If we reach here, something went wrong
+  logger.error("An error occurred while processing the request", {username})
 
   return {
     statusCode: 500,
