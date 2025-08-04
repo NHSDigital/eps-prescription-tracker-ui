@@ -277,7 +277,7 @@ export class ApiFunctions extends Construct {
       const clearActiveSessionLambda = new LambdaFunction(this, "ClearActiveSessions", {
         serviceName: props.serviceName,
         stackName: props.stackName,
-        lambdaName: `${props.stackName}-test-support-clear-active-sessions`,
+        lambdaName: `${props.stackName}-clear-active-sessions`,
         additionalPolicies: [
           props.tokenMappingTableWritePolicy,
           props.tokenMappingTableReadPolicy,
