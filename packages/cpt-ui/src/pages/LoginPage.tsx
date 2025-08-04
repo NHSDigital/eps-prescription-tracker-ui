@@ -54,18 +54,16 @@ export default function LoginPage() {
 
     if (isAutoLoginEnvironment) {
       logger.info("performing auto login")
-      if (!auth?.isSignedIn) {
-        const autoLoginDetails = AUTO_LOGIN_ENVIRONMENTS.find(x => x.environment === target_environment)
-        if (autoLoginDetails?.loginMethod === "cis2") {
-          logger.info("Redirecting user to cis2 login")
-          cis2SignIn()
-        } else {
-          logger.info("Redirecting user to mock login")
-          mockSignIn()
-        }
+      const autoLoginDetails = AUTO_LOGIN_ENVIRONMENTS.find(x => x.environment === target_environment)
+      if (autoLoginDetails?.loginMethod === "cis2") {
+        logger.info("Redirecting user to cis2 login")
+        cis2SignIn()
+      } else {
+        logger.info("Redirecting user to mock login")
+        mockSignIn()
       }
     }
-  }, [auth.isSignedIn])
+  }, [])
 
   if (isAutoLoginEnvironment) {
     return (
