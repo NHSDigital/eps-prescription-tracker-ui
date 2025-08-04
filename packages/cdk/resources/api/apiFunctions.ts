@@ -287,7 +287,7 @@ export class ApiFunctions extends Construct {
         ],
         logRetentionInDays: props.logRetentionInDays,
         logLevel: props.logLevel,
-        packageBasePath: "packages/testingSupport/clear-active-sessions",
+        packageBasePath: "packages/testingSupport/clearActiveSessions",
         entryPoint: "src/index.ts",
         lambdaEnvironmentVariables: {
           ...commonLambdaEnv,
