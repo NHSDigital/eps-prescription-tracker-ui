@@ -12,7 +12,7 @@ import {Certificate} from "aws-cdk-lib/aws-certificatemanager"
 import {Cognito} from "../resources/Cognito"
 import {Dynamodb} from "../resources/Dynamodb"
 import {Bucket} from "aws-cdk-lib/aws-s3"
-import {Role, ManagedPolicy} from "aws-cdk-lib/aws-iam"
+import {Role} from "aws-cdk-lib/aws-iam"
 import {HostedZone} from "aws-cdk-lib/aws-route53"
 import {Rum} from "../resources/Rum"
 
@@ -63,7 +63,6 @@ export class StatefulResourcesStack extends Stack {
 
     const allowLocalhostAccess: boolean = this.node.tryGetContext("allowLocalhostAccess")
     const logRetentionInDays: number = Number(this.node.tryGetContext("logRetentionInDays"))
-    const logLevel: string = this.node.tryGetContext("logLevel")
     const rumCloudwatchLogEnabled: boolean = this.node.tryGetContext("rumCloudwatchLogEnabled")
     const rumAppName: string = this.node.tryGetContext("rumAppName")
 
@@ -99,19 +98,8 @@ export class StatefulResourcesStack extends Stack {
       region: this.region
     })
 
-    const sessionTokenMappingTableReadPolicy = ManagedPolicy.fromManagedPolicyArn(
-      this, "tokenMappingTableReadPolicy", dynamodb.tokenMappingTableReadPolicy.managedPolicyArn)
-    const sessionTokenMappingTableWritePolicy = ManagedPolicy.fromManagedPolicyArn(
-      this, "tokenMappingTableWritePolicy", dynamodb.tokenMappingTableWritePolicy.managedPolicyArn)
-    const useTokenStateMappingKmsKeyPolicy = ManagedPolicy.fromManagedPolicyArn(
-      this, "useTokensMappingKmsKeyPolicy", dynamodb.useTokensMappingKmsKeyPolicy.managedPolicyArn)
-
     // - Cognito resources
     const cognito = new Cognito(this, "Cognito", {
-      serviceName: props.serviceName,
-      stackName: props.stackName,
-      logRetentionInDays: logRetentionInDays,
-      logLevel: logLevel,
       primaryOidcClientId: primaryOidcClientId!,
       primaryOidcIssuer: primaryOidcIssuer,
       primaryOidcAuthorizeEndpoint: primaryOidcAuthorizeEndpoint,
@@ -131,11 +119,7 @@ export class StatefulResourcesStack extends Stack {
       cognitoCertificate: props.cognitoCertificate,
       hostedZone: hostedZone,
       allowLocalhostAccess: allowLocalhostAccess,
-      useCustomCognitoDomain: useCustomCognitoDomain,
-      tokenMappingTable: dynamodb.tokenMappingTable,
-      tokenMappingTableReadPolicy: sessionTokenMappingTableReadPolicy,
-      tokenMappingTableWritePolicy: sessionTokenMappingTableWritePolicy,
-      useTokenMappingKmsKeyPolicy: useTokenStateMappingKmsKeyPolicy
+      useCustomCognitoDomain: useCustomCognitoDomain
     })
 
     // need to make sure the app monitor name is not too long

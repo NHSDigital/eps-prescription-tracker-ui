@@ -102,7 +102,7 @@ export class RestApiGatewayMethods extends Construct {
     if (props.useMockOidc) {
       // testing-support-clear-active-sessions
       const clearActiveSessionResource = props.restApiGateway.root.addResource("test-support-clear-active-session")
-      clearActiveSessionResource.addMethod("GET", new LambdaIntegration(props.clearActiveSessionLambda, {
+      clearActiveSessionResource.addMethod("POST", new LambdaIntegration(props.clearActiveSessionLambda, {
         credentialsRole: props.restAPiGatewayRole
       }), {})
     }

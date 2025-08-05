@@ -25,8 +25,8 @@ const errorResponseBody = {
 const middyErrorHandler = new MiddyErrorHandler(errorResponseBody)
 
 // Env vars
-const tokenMappingTableName = process.env["TOKEN_MAPPING_TABLE_NAME"] as string
-const sessionManagementTableName = process.env["SESSION_MANAGEMENT_TABLE_NAME"] as string
+const tokenMappingTableName = process.env["TokenMappingTableName"] as string
+const sessionManagementTableName = process.env["SessionManagementTableName"] as string
 
 function payloadValue(
   body: object,
@@ -55,7 +55,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   const username = body.username
 
   try {
-    logger.info("Deleting token mapping and session state for user", {username})
+    logger.info("Deleting token mapping and session management data for user", {username})
     await deleteRecordAllowFailures(documentClient, tokenMappingTableName, username, logger)
     await deleteRecordAllowFailures(documentClient, sessionManagementTableName, username, logger)
     logger.info("Successfully deleted token mapping and session state for user", {username})

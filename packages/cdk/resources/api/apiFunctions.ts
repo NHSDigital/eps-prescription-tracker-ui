@@ -25,10 +25,11 @@ export interface ApiFunctionsProps {
   readonly tokenMappingTable: ITableV2
   readonly tokenMappingTableWritePolicy: IManagedPolicy
   readonly tokenMappingTableReadPolicy: IManagedPolicy
+  readonly useTokensMappingKmsKeyPolicy: IManagedPolicy
   readonly sessionManagementTable: ITableV2
   readonly sessionManagementTableWritePolicy: IManagedPolicy
   readonly sessionManagementTableReadPolicy: IManagedPolicy
-  readonly useTokensMappingKmsKeyPolicy: IManagedPolicy
+  readonly useSessionManagementKmsKeyPolicy: IManagedPolicy
   readonly primaryPoolIdentityProviderName: string
   readonly mockPoolIdentityProviderName: string
   readonly logRetentionInDays: number
@@ -78,8 +79,7 @@ export class ApiFunctions extends Construct {
       props.sharedSecrets.useJwtKmsKeyPolicy,
       props.sharedSecrets.getPrimaryJwtPrivateKeyPolicy,
       props.sessionManagementTableWritePolicy,
-      props.sessionManagementTableReadPolicy,
-      props.useSessionManagementKmsKeyPolicy
+      props.sessionManagementTableReadPolicy
     ]
 
     if (props.useMockOidc && props.sharedSecrets.getMockJwtPrivateKeyPolicy) {
@@ -285,6 +285,9 @@ export class ApiFunctions extends Construct {
           props.tokenMappingTableWritePolicy,
           props.tokenMappingTableReadPolicy,
           props.useTokensMappingKmsKeyPolicy,
+          props.sessionManagementTableWritePolicy,
+          props.sessionManagementTableReadPolicy,
+          props.useSessionManagementKmsKeyPolicy,
           props.sharedSecrets.useJwtKmsKeyPolicy,
           props.sharedSecrets.getPrimaryJwtPrivateKeyPolicy
         ],

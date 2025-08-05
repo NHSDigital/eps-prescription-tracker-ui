@@ -22,14 +22,8 @@ import {
   RecordTarget
 } from "aws-cdk-lib/aws-route53"
 import {UserPoolDomainTarget} from "aws-cdk-lib/aws-route53-targets"
-import {ITableV2} from "aws-cdk-lib/aws-dynamodb"
-import {IManagedPolicy} from "aws-cdk-lib/aws-iam"
 
 export interface CognitoProps {
-  readonly serviceName: string
-  readonly stackName: string
-  readonly logRetentionInDays: number
-  readonly logLevel: string
   readonly primaryOidcClientId: string
   readonly primaryOidcIssuer: string
   readonly primaryOidcAuthorizeEndpoint: string
@@ -50,10 +44,6 @@ export interface CognitoProps {
   readonly hostedZone: IHostedZone
   readonly allowLocalhostAccess: boolean
   readonly useCustomCognitoDomain: boolean
-  readonly tokenMappingTable: ITableV2
-  readonly tokenMappingTableWritePolicy: IManagedPolicy
-  readonly tokenMappingTableReadPolicy: IManagedPolicy
-  readonly useTokenMappingKmsKeyPolicy: IManagedPolicy
 }
 
 /**

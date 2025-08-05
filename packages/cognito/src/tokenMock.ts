@@ -171,11 +171,9 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   }
 
   if (existingTokenMapping !== undefined) {
-    const sessionUsername = `Draft_${baseUsername}`
+    const username = tokenMappingItem.username
     logger.info("User already exists in token mapping table, creating draft session",
-      {sessionUsername}, {SessionManagementTableName})
-
-    tokenMappingItem.username = sessionUsername
+      {username}, {SessionManagementTableName})
     await insertTokenMapping(documentClient, SessionManagementTableName, tokenMappingItem, logger)
   } else {
     logger.info("No user token already exists")

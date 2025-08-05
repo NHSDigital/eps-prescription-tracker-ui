@@ -281,7 +281,7 @@ describe("token mock handler", () => {
       expect.anything(), // documentClient
       "test-session-management-table", // tableName
       {
-        username: "Draft_user_details_sub",
+        username: "user_details_sub",
         apigeeAccessToken: "new-access-token",
         apigeeRefreshToken: "new-refresh-token",
         apigeeExpiresIn: 3600,
