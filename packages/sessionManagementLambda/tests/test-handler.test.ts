@@ -101,54 +101,6 @@ describe("Unit test for session management lambda", function () {
     )
   })
 
-  it("should remove concurrent session if remove-session action used", async () => {
-    const sessionManagementItem: TokenMappingItem = {
-      username: "test-user",
-      rolesWithAccess: [
-        {role_id: "123", org_code: "XYZ", role_name: "MockRole_1"}
-      ],
-      rolesWithoutAccess: [],
-      currentlySelectedRole: {role_id: "555", org_code: "GHI", role_name: "MockRole_4"},
-      lastActivityTime: 123456,
-      userDetails: {
-        family_name: "foo",
-        given_name: "bar"
-      },
-      sessionId: "sessionid123"
-    }
-
-    mockCheckTokenMappingForUser.mockImplementation(() => {
-      return sessionManagementItem
-    })
-
-    event.requestContext.authorizer = {
-      username: "test-user",
-      sessionId: "sessionid123"
-    }
-
-    event.body = JSON.stringify({action: "Remove-Session"})
-
-    const response = await handler(event, context)
-
-    expect(response).toBeDefined()
-    expect(response).toHaveProperty("statusCode", 200)
-    expect(response).toHaveProperty("body")
-
-    const body = JSON.parse(response.body)
-    expect(body).toEqual({
-      "message": "Session removed",
-      "status": "Expired"
-    })
-    expect(mockCheckTokenMappingForUser).toHaveBeenCalled()
-    expect(mockDeleteSessionManagementRecord).toHaveBeenCalledWith(
-      expect.anything(),
-      "SessionManagementTable",
-      "test-user",
-      "sessionid123",
-      expect.anything()
-    )
-  })
-
   it("should fail if no action supplied in payload body", async () => {
     const sessionManagementItem: TokenMappingItem = {
       username: "test-user",

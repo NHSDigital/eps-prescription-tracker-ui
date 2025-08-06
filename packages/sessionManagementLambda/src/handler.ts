@@ -11,11 +11,7 @@ import {extractInboundEventValues, appendLoggerKeys} from "@cpt-ui-common/lambda
 import {authenticationMiddleware, authParametersFromEnv} from "@cpt-ui-common/authFunctions"
 import axios from "axios"
 
-import {
-  checkTokenMappingForUser,
-  updateTokenMapping,
-  deleteSessionManagementRecord
-} from "@cpt-ui-common/dynamoFunctions"
+import {checkTokenMappingForUser, updateTokenMapping, deleteRecordAllowFailures} from "@cpt-ui-common/dynamoFunctions"
 
 const logger = new Logger({serviceName: "status"})
 const authenticationParameters = authParametersFromEnv()
@@ -86,16 +82,9 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
         // Delete draft session matching session ID
 
         updateTokenMapping(documentClient, tokenMappingTableName, sessionManagementItem, logger)
-        deleteSessionManagementRecord(documentClient, sessionManagementTableName, username, sessionId, logger)
+        deleteRecordAllowFailures(documentClient, sessionManagementTableName, username, logger)
         return payloadValue({"message": "Session set", "status": "Active"}, 202)
 
-      case "Remove-Session":
-        // Remove session from draft session table to ensure user isn't presented with option anymore
-        if (sessionId === sessionManagementItem.sessionId) {
-          logger.info("Current session has an active and draft session record for the same session ID.")
-          deleteSessionManagementRecord(documentClient, sessionManagementTableName, username, sessionId, logger)
-        }
-        return payloadValue({"message": "Session removed", "status": "Expired"})
       default:
         return payloadValue({"message": "No action specified"}, 500)
     }

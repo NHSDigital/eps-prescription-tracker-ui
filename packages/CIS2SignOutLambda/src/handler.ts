@@ -10,7 +10,7 @@ import httpHeaderNormalizer from "@middy/http-header-normalizer"
 
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 import {getUsernameFromEvent} from "@cpt-ui-common/authFunctions"
-import {deleteTokenMapping, deleteSessionManagementRecord} from "@cpt-ui-common/dynamoFunctions"
+import {deleteTokenMapping, deleteRecordAllowFailures} from "@cpt-ui-common/dynamoFunctions"
 import {extractInboundEventValues, appendLoggerKeys} from "@cpt-ui-common/lambdaUtils"
 const logger = new Logger({serviceName: "CIS2SignOut"})
 
@@ -46,7 +46,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     await deleteTokenMapping(documentClient, tokenMappingTableName, username, logger)
   } else {
     logger.info("Concurrent session logout", sessionId)
-    await deleteSessionManagementRecord(documentClient, sessionManagementTableName, username, sessionId, logger)
+    await deleteRecordAllowFailures(documentClient, sessionManagementTableName, username, logger)
   }
 
   return {
