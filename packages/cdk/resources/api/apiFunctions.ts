@@ -26,6 +26,10 @@ export interface ApiFunctionsProps {
   readonly tokenMappingTableWritePolicy: IManagedPolicy
   readonly tokenMappingTableReadPolicy: IManagedPolicy
   readonly useTokensMappingKmsKeyPolicy: IManagedPolicy
+  readonly sessionManagementTable: ITableV2
+  readonly sessionManagementTableWritePolicy: IManagedPolicy
+  readonly sessionManagementTableReadPolicy: IManagedPolicy
+  readonly useSessionManagementKmsKeyPolicy: IManagedPolicy
   readonly primaryPoolIdentityProviderName: string
   readonly mockPoolIdentityProviderName: string
   readonly logRetentionInDays: number
@@ -53,9 +57,11 @@ export class ApiFunctions extends Construct {
   public readonly prescriptionListLambda: NodejsFunction
   public readonly prescriptionDetailsLambda: NodejsFunction
   public readonly trackerUserInfoLambda: NodejsFunction
+  public readonly sessionManagementLambda: NodejsFunction
   public readonly selectedRoleLambda: NodejsFunction
   public readonly patientSearchLambda: NodejsFunction
   public readonly primaryJwtPrivateKey: Secret
+  public readonly clearActiveSessionLambda: NodejsFunction
 
   public constructor(scope: Construct, id: string, props: ApiFunctionsProps) {
     super(scope, id)
@@ -68,6 +74,9 @@ export class ApiFunctions extends Construct {
       props.tokenMappingTableWritePolicy,
       props.tokenMappingTableReadPolicy,
       props.useTokensMappingKmsKeyPolicy,
+      props.sessionManagementTableWritePolicy,
+      props.sessionManagementTableReadPolicy,
+      props.useSessionManagementKmsKeyPolicy,
       props.sharedSecrets.useJwtKmsKeyPolicy,
       props.sharedSecrets.getPrimaryJwtPrivateKeyPolicy
     ]
@@ -80,6 +89,7 @@ export class ApiFunctions extends Construct {
     // We pass in both sets of endpoints and keys. The Lambda code determines at runtime which to use.
     const commonLambdaEnv: {[key: string]: string} = {
       TokenMappingTableName: props.tokenMappingTable.tableName,
+      SessionManagementTableName: props.sessionManagementTable.tableName,
 
       // Real endpoints/credentials
       CIS2_USER_INFO_ENDPOINT: props.primaryOidcUserInfoEndpoint,
@@ -143,6 +153,24 @@ export class ApiFunctions extends Construct {
 
     // Add the policy to apiFunctionsPolicies
     apiFunctionsPolicies.push(trackerUserInfoLambda.executeLambdaManagedPolicy)
+
+    // Single Lambda for both real and mock scenarios
+    const sessionManagementLambda = new LambdaFunction(this, "SessionMgmt", {
+      serviceName: props.serviceName,
+      stackName: props.stackName,
+      lambdaName: `${props.stackName}-SessionMgmt`,
+      additionalPolicies: additionalPolicies,
+      logRetentionInDays: props.logRetentionInDays,
+      logLevel: props.logLevel,
+      packageBasePath: "packages/sessionManagementLambda",
+      entryPoint: "src/handler.ts",
+      lambdaEnvironmentVariables: {
+        ...commonLambdaEnv
+      }
+    })
+
+    // Add the policy to apiFunctionsPolicies
+    apiFunctionsPolicies.push(sessionManagementLambda.executeLambdaManagedPolicy)
 
     // Selected Role Lambda Function
     const selectedRoleLambda = new LambdaFunction(this, "SelectedRole", {
@@ -265,6 +293,38 @@ export class ApiFunctions extends Construct {
     // Add the policy to apiFunctionsPolicies
     apiFunctionsPolicies.push(prescriptionDetailsLambda.executeLambdaManagedPolicy)
 
+    if (props.useMockOidc) {
+      const clearActiveSessionLambda = new LambdaFunction(this, "ClearActiveSessions", {
+        serviceName: props.serviceName,
+        stackName: props.stackName,
+        lambdaName: `${props.stackName}-clr-active`,
+        additionalPolicies: [
+          props.tokenMappingTableWritePolicy,
+          props.tokenMappingTableReadPolicy,
+          props.useTokensMappingKmsKeyPolicy,
+          props.sessionManagementTableWritePolicy,
+          props.sessionManagementTableReadPolicy,
+          props.useSessionManagementKmsKeyPolicy,
+          props.sharedSecrets.useJwtKmsKeyPolicy,
+          props.sharedSecrets.getPrimaryJwtPrivateKeyPolicy
+        ],
+        logRetentionInDays: props.logRetentionInDays,
+        logLevel: props.logLevel,
+        packageBasePath: "packages/testingSupport/clearActiveSessions",
+        entryPoint: "src/handler.ts",
+        lambdaEnvironmentVariables: {
+          ...commonLambdaEnv,
+          TokenMappingTableName: props.tokenMappingTable.tableName,
+          SessionManagementTableName: props.sessionManagementTable.tableName
+        }
+      })
+
+      // Add the policy to apiFunctionsPolicies
+      apiFunctionsPolicies.push(clearActiveSessionLambda.executeLambdaManagedPolicy)
+
+      this.clearActiveSessionLambda = clearActiveSessionLambda.lambda
+    }
+
     // Outputs
     this.apiFunctionsPolicies = apiFunctionsPolicies
     this.primaryJwtPrivateKey = props.sharedSecrets.primaryJwtPrivateKey
@@ -273,6 +333,7 @@ export class ApiFunctions extends Construct {
     this.prescriptionListLambda = prescriptionListLambda.lambda
     this.prescriptionDetailsLambda = prescriptionDetailsLambda.lambda
     this.trackerUserInfoLambda = trackerUserInfoLambda.lambda
+    this.sessionManagementLambda = sessionManagementLambda.lambda
     this.selectedRoleLambda = selectedRoleLambda.lambda
     this.patientSearchLambda = patientSearchLambda.lambda
   }

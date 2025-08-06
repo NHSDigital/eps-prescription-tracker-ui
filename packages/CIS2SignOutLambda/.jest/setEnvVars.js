@@ -1,4 +1,6 @@
 process.env.TokenMappingTableName = "dummyTable"
+process.env.SessionManagementTableName = "sessionTable"
+
 process.env["MOCK_MODE_ENABLED"] = "true"
 
 process.env.CIS2_OIDC_ISSUER = "valid_cis2_iss"
