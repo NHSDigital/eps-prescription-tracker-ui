@@ -100,7 +100,7 @@ const lambdaHandler = async (event: APIGatewayProxyEventBase<AuthResult>): Promi
     logger.info("Setting appropriate concurrency properties for sessionId", {sessionId})
     cachedUserInfo.multiple_sessions = true
     if (sessionId === sessionManagementItem.sessionId) {
-      logger.info("Draft sessionId matches bearer token sessionId", {sessionId})
+      logger.info("Concurrent sessionId matches bearer token sessionId", {sessionId})
       cachedUserInfo.is_concurrent_session = true
     }
     logger.info(`Setting session parameters 
