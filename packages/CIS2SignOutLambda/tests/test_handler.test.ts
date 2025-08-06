@@ -4,12 +4,12 @@ import {mockAPIGatewayProxyEvent, mockContext} from "./mockObjects"
 // Mocked functions
 const mockGetUsernameFromEvent = jest.fn()
 const mockDeleteTokenMappingMock = jest.fn()
-const mockDeleteSessionManagementRecord = jest.fn()
+const mockDeleteRecordAllowFailures = jest.fn()
 
 jest.unstable_mockModule("@cpt-ui-common/dynamoFunctions", () => {
   return {
     deleteTokenMapping: mockDeleteTokenMappingMock,
-    deleteSessionManagementRecord: mockDeleteSessionManagementRecord
+    deleteRecordAllowFailures: mockDeleteRecordAllowFailures
   }
 })
 jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
@@ -54,11 +54,10 @@ describe("Lambda Handler", () => {
     expect(body.message).toBe("CIS2 logout completed")
 
     // Verify that DeleteCommand was called with the expected parameters
-    expect(mockDeleteSessionManagementRecord).toHaveBeenCalledWith(
+    expect(mockDeleteRecordAllowFailures).toHaveBeenCalledWith(
       expect.anything(),
       process.env.SessionManagementTableName,
       "test_user",
-      "123456",
       expect.anything()
     )
     mockAPIGatewayProxyEvent.headers["concurrent-session"] = false
