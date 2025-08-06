@@ -84,7 +84,7 @@ jobs:
 
                 if [[ "$REGRESSION_TEST_REPO_TAG" != "$REGRESSION_TEST_WORKFLOW_TAG" ]]; then
                   echo "Version IDs differ, going to use $REGRESSION_TEST_REPO_TAG for regression tests"
-                  curl "https://raw.githubusercontent.com/NHSDigital/electronic-prescription-service-api-regression-tests/refs/heads/${REGRESSION_TEST_WORKFLOW_TAG}/scripts/run_regression_tests.py" -o run_regression_tests.py
+                  curl "https://raw.githubusercontent.com/NHSDigital/electronic-prescription-service-api-regression-tests/refs/heads/${REGRESSION_TEST_REPO_TAG}/scripts/run_regression_tests.py" -o run_regression_tests.py
                 else
                   echo "Version IDs match, going to use version tag for regression tests"
                   curl "https://raw.githubusercontent.com/NHSDigital/electronic-prescription-service-api-regression-tests/refs/tags/${REGRESSION_TEST_WORKFLOW_TAG}/scripts/run_regression_tests.py" -o run_regression_tests.py
