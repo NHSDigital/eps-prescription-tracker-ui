@@ -20,6 +20,8 @@ export interface RestApiGatewayMethodsProps {
   readonly selectedRoleLambda: NodejsFunction
   readonly patientSearchLambda: NodejsFunction
   readonly authorizer?: CognitoUserPoolsAuthorizer
+  readonly clearActiveSessionLambda: NodejsFunction
+  readonly useMockOidc: boolean
 }
 
 /**
@@ -106,6 +108,14 @@ export class RestApiGatewayMethods extends Construct {
       authorizationType: AuthorizationType.COGNITO,
       authorizer: props.authorizer
     })
+
+    if (props.useMockOidc) {
+      // testing-support-clear-active-sessions
+      const clearActiveSessionResource = props.restApiGateway.root.addResource("test-support-clear-active-session")
+      clearActiveSessionResource.addMethod("POST", new LambdaIntegration(props.clearActiveSessionLambda, {
+        credentialsRole: props.restAPiGatewayRole
+      }), {})
+    }
 
     //Outputs
   }

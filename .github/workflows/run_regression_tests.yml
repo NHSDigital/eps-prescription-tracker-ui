@@ -74,9 +74,16 @@ jobs:
 
                 # this should be the tag of the regression test workflow you want to run
                 # This will normally be the same as REGRESSION_TEST_REPO_TAG
-                REGRESSION_TEST_WORKFLOW_TAG=v3.1.0
+                REGRESSION_TEST_WORKFLOW_TAG=concurrent-session-logout-tool
 
-                curl https://raw.githubusercontent.com/NHSDigital/electronic-prescription-service-api-regression-tests/refs/tags/${REGRESSION_TEST_WORKFLOW_TAG}/scripts/run_regression_tests.py -o run_regression_tests.py
+                # HELPER IF STATEMENT - It will automatically determine the correct Git URL to use based on the REGRESSION_TEST_WORKFLOW_TAG value
+                if [[ "$REGRESSION_TEST_REPO_TAG" != "$REGRESSION_TEST_WORKFLOW_TAG" ]]; then
+                  echo "REGRESSION_TEST_REPO_TAG and REGRESSION_TEST_WORKFLOW_TAG should be the same, but they are not. Exiting."
+                  curl https://raw.githubusercontent.com/NHSDigital/electronic-prescription-service-api-regression-tests/refs/heads/${REGRESSION_TEST_WORKFLOW_TAG}/scripts/run_regression_tests.py -o run_regression_tests.py            
+                else
+                  curl https://raw.githubusercontent.com/NHSDigital/electronic-prescription-service-api-regression-tests/refs/tags/${REGRESSION_TEST_WORKFLOW_TAG}/scripts/run_regression_tests.py -o run_regression_tests.py
+                fi
+
                 poetry install
                 echo Running regression tests in the "$TARGET_ENVIRONMENT" environment
                 poetry run python -u run_regression_tests.py \

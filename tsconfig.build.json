@@ -23,6 +23,7 @@
       {"path": "packages/selectedRoleLambda"},
       {"path": "packages/trackerUserInfoLambda"},
       {"path": "packages/sessionManagementLambda"},
+      {"path": "packages/testingSupport/clearActiveSessions"},
     ]
   }
   

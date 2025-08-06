@@ -38,7 +38,10 @@
         ],
         "@/cpt-ui-common/testing": [
           "./packages/common/testing/src/*"
-        ]
+        ],
+        "@/cpt-ui-testing-support/clearActiveSessions": [
+          "./packages/testingSupport/clearActiveSessions/src/*"
+        ],
       }
       }
   }

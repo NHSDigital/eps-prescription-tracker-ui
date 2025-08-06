@@ -133,23 +133,18 @@ export const deleteTokenMapping = async (
   }
 }
 
-export const deleteSessionManagementRecord = async (
+export const deleteRecordAllowFailures = async (
   documentClient: DynamoDBDocumentClient,
   tableName: string,
   username: string,
-  sessionId: string,
   logger: Logger
 ): Promise<void> => {
-  logger.debug(`Deleting from ${tableName}`, {username, sessionId, tableName})
+  logger.debug(`Deleting from ${tableName}`, {username, tableName})
   try {
     const response = await documentClient.send(
       new DeleteCommand({
         TableName: tableName,
-        Key: {username},
-        ConditionExpression: "sessionId = :sid",
-        ExpressionAttributeValues: {
-          ":sid": sessionId
-        }
+        Key: {username}
       })
     )
     if (response.$metadata.httpStatusCode !== 200) {
@@ -161,7 +156,7 @@ export const deleteSessionManagementRecord = async (
   } catch(error: any) {
     if (error.code === "ConditionalCheckFailedException") {
       logger.info(`No item found to delete in the ${tableName} table. \
-        Continuing as if it was deleted.`, {tableName, sessionId})
+        Continuing as if it was deleted.`, {tableName})
     } else {
       logger.error(`Error deleting data from ${tableName}`, {error})
       throw new Error(`Error deleting data from ${tableName}`)
