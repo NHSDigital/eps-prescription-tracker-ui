@@ -77,9 +77,7 @@ export class ApiFunctions extends Construct {
       props.sessionManagementTableReadPolicy,
       props.useSessionManagementKmsKeyPolicy,
       props.sharedSecrets.useJwtKmsKeyPolicy,
-      props.sharedSecrets.getPrimaryJwtPrivateKeyPolicy,
-      props.sessionManagementTableWritePolicy,
-      props.sessionManagementTableReadPolicy
+      props.sharedSecrets.getPrimaryJwtPrivateKeyPolicy
     ]
 
     if (props.useMockOidc && props.sharedSecrets.getMockJwtPrivateKeyPolicy) {

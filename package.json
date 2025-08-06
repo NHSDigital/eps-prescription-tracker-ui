@@ -34,7 +34,6 @@
         "packages/common/authFunctions",
         "packages/common/dynamoFunctions",
         "packages/trackerUserInfoLambda",
-        "packages/common/testingSupport/clearActiveSessions",
         "packages/CIS2SignOutLambda",
         "packages/selectedRoleLambda",
         "packages/testingSupport/clearActiveSessions"
