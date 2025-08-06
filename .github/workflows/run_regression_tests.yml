@@ -86,7 +86,13 @@ jobs:
                   echo "Version IDs differ, going to use $REGRESSION_TEST_REPO_TAG for regression tests"
                   curl "https://raw.githubusercontent.com/NHSDigital/electronic-prescription-service-api-regression-tests/refs/heads/${REGRESSION_TEST_WORKFLOW_TAG}/scripts/run_regression_tests.py" -o run_regression_tests.py
                 else
+                  echo "Version IDs match, going to use version tag for regression tests"
                   curl "https://raw.githubusercontent.com/NHSDigital/electronic-prescription-service-api-regression-tests/refs/tags/${REGRESSION_TEST_WORKFLOW_TAG}/scripts/run_regression_tests.py" -o run_regression_tests.py
+                fi
+
+                if [[ ! -f run_regression_tests.py ]]; then
+                  echo "Error: run_regression_tests.py not found" >&2
+                  exit 1
                 fi
 
                 poetry install
