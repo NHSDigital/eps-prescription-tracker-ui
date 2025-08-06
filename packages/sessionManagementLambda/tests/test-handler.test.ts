@@ -11,7 +11,7 @@ import {TokenMappingItem} from "@cpt-ui-common/dynamoFunctions"
 const mockGetTokenMapping = jest.fn().mockName("mockGetTokenMapping")
 const mockUpdateTokenMapping = jest.fn().mockName("mockUpdateTokenMapping")
 const mockCheckTokenMappingForUser = jest.fn().mockName("mockCheckTokenMappingForUser")
-const mockDeleteSessionManagementRecord = jest.fn().mockName("mockDeleteSessionManagementRecord")
+const mockDeleteRecordAllowFailures = jest.fn().mockName("mockDeleteRecordAllowFailures")
 
 const mockInitializeOidcConfig = jest.fn().mockName("mockInitializeOidcConfig")
 const mockFetchUserInfo = jest.fn().mockName("mockFetchUserInfo")
@@ -22,7 +22,7 @@ jest.unstable_mockModule("@cpt-ui-common/dynamoFunctions", () => {
     getTokenMapping: mockGetTokenMapping,
     updateTokenMapping: mockUpdateTokenMapping,
     checkTokenMappingForUser: mockCheckTokenMappingForUser,
-    deleteSessionManagementRecord: mockDeleteSessionManagementRecord
+    deleteRecordAllowFailures: mockDeleteRecordAllowFailures
   }
 })
 jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
@@ -92,11 +92,10 @@ describe("Unit test for session management lambda", function () {
       sessionManagementItem,
       expect.anything()
     )
-    expect(mockDeleteSessionManagementRecord).toHaveBeenCalledWith(
+    expect(mockDeleteRecordAllowFailures).toHaveBeenCalledWith(
       expect.anything(),
       "SessionManagementTable",
       "test-user",
-      "sessionid123",
       expect.anything()
     )
   })
