@@ -78,7 +78,7 @@ jobs:
 
                 # HELPER IF STATEMENT - It will automatically determine the correct Git URL to use based on the REGRESSION_TEST_WORKFLOW_TAG value
                 if [[ "$REGRESSION_TEST_REPO_TAG" != "$REGRESSION_TEST_WORKFLOW_TAG" ]]; then
-                  echo "Version IDs differ, going to use ${REGRESSION_TEST_REPO_TAG} for regression tests"
+                  echo "Version IDs differ, going to use $REGRESSION_TEST_REPO_TAG for regression tests"
                   curl https://raw.githubusercontent.com/NHSDigital/electronic-prescription-service-api-regression-tests/refs/heads/${REGRESSION_TEST_WORKFLOW_TAG}/scripts/run_regression_tests.py -o run_regression_tests.py            
                 else
                   curl https://raw.githubusercontent.com/NHSDigital/electronic-prescription-service-api-regression-tests/refs/tags/${REGRESSION_TEST_WORKFLOW_TAG}/scripts/run_regression_tests.py -o run_regression_tests.py
