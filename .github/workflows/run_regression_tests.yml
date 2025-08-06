@@ -69,16 +69,16 @@ jobs:
           GITHUB-TOKEN: ${{ steps.generate-token.outputs.token }}
         run: |
               if [[ "$TARGET_ENVIRONMENT" != "prod" && "$TARGET_ENVIRONMENT" != "ref" ]]; then
-                # this should be the tag of the tests you want to run
-                REGRESSION_TEST_REPO_TAG=v3.1.0
+                # Change REGRESSION_TEST_REPO_TAG if you've got branched changes you wish to test. Else it should be the same as REGRESSION_TEST_WORKFLOW_TAG
+                REGRESSION_TEST_REPO_TAG=concurrent-session-logout-tool
 
                 # this should be the tag of the regression test workflow you want to run
                 # This will normally be the same as REGRESSION_TEST_REPO_TAG
-                REGRESSION_TEST_WORKFLOW_TAG=concurrent-session-logout-tool
+                REGRESSION_TEST_WORKFLOW_TAG=v3.1.0
 
                 # HELPER IF STATEMENT - It will automatically determine the correct Git URL to use based on the REGRESSION_TEST_WORKFLOW_TAG value
                 if [[ "$REGRESSION_TEST_REPO_TAG" != "$REGRESSION_TEST_WORKFLOW_TAG" ]]; then
-                  echo "REGRESSION_TEST_REPO_TAG and REGRESSION_TEST_WORKFLOW_TAG should be the same, but they are not. Exiting."
+                  echo "Version IDs differ, going to use ${REGRESSION_TEST_REPO_TAG} for regression tests"
                   curl https://raw.githubusercontent.com/NHSDigital/electronic-prescription-service-api-regression-tests/refs/heads/${REGRESSION_TEST_WORKFLOW_TAG}/scripts/run_regression_tests.py -o run_regression_tests.py            
                 else
                   curl https://raw.githubusercontent.com/NHSDigital/electronic-prescription-service-api-regression-tests/refs/tags/${REGRESSION_TEST_WORKFLOW_TAG}/scripts/run_regression_tests.py -o run_regression_tests.py
