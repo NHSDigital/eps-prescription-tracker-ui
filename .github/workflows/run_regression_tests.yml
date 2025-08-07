@@ -76,13 +76,13 @@ jobs:
                   echo "Error: One or both tag variables are not set" >&2
                   exit 1
                 fi
-                
+
                 # HELPER IF STATEMENT - It will automatically determine the correct Git URL to use based on the REGRESSION_TEST_WORKFLOW_TAG value
                 if [[ "$REGRESSION_TEST_WORKFLOW_TAG" =~ ^v([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
-                  echo "Version IDs match, going to use version tag for regression tests"
+                  echo "REGRESSION_TEST_WORKFLOW_TAG is a version tag, using tag link"
                   curl "https://raw.githubusercontent.com/NHSDigital/electronic-prescription-service-api-regression-tests/refs/tags/${REGRESSION_TEST_WORKFLOW_TAG}/scripts/run_regression_tests.py" -o run_regression_tests.py
                 else
-                  echo "Version IDs differ, going to use $REGRESSION_TEST_REPO_TAG for regression tests"
+                  echo "REGRESSION_TEST_WORKFLOW_TAG doesn't look like a version tag, using branch link"
                   curl "https://raw.githubusercontent.com/NHSDigital/electronic-prescription-service-api-regression-tests/refs/heads/${REGRESSION_TEST_REPO_TAG}/scripts/run_regression_tests.py" -o run_regression_tests.py
                 fi
 
