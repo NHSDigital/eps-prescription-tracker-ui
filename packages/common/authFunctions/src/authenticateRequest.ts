@@ -61,7 +61,7 @@ export const authParametersFromEnv = (): AuthenticateRequestOptions => {
 const refreshTokenFlow = async (
   axiosInstance: AxiosInstance,
   documentClient: DynamoDBDocumentClient,
-  tokenMappingTableName: string,
+  specifiedTokenTable: string,
   username: string,
   existingToken: ApigeeTokenResponse,
   logger: Logger,
@@ -89,7 +89,7 @@ const refreshTokenFlow = async (
   // Update DynamoDB with the new tokens
   await updateTokenMapping(
     documentClient,
-    tokenMappingTableName,
+    specifiedTokenTable,
     {
       username,
       apigeeAccessToken: refreshResult.accessToken,
@@ -121,7 +121,6 @@ export async function authenticateRequest(
   documentClient: DynamoDBDocumentClient,
   logger: Logger,
   {
-    tokenMappingTableName,
     jwtPrivateKeyArn,
     apigeeApiKey,
     apigeeApiSecret,
@@ -129,7 +128,8 @@ export async function authenticateRequest(
     apigeeMockTokenEndpoint,
     apigeeCis2TokenEndpoint,
     cloudfrontDomain
-  }: AuthenticateRequestOptions
+  }: AuthenticateRequestOptions,
+  specifiedTokenTable: string
 ): Promise<AuthResult | null> {
   logger.info("Starting authentication flow")
 
@@ -137,13 +137,19 @@ export async function authenticateRequest(
   const isMockRequest = username.startsWith("Mock_")
 
   //Get the existing saved Apigee token from DynamoDB
-  const userRecord = await getTokenMapping(documentClient, tokenMappingTableName, username, logger)
+  const userRecord = await getTokenMapping(documentClient, specifiedTokenTable, username, logger)
+
+  // Get potential draft session and check if request sessionId matches that of draft session.
+  // For majority of lambdas kill the authorize. For session management lambda, authorise against draft session.
+  if (userRecord !== undefined) {
+    logger.info("A user session exists within token mapping table, a concurrent session attempted.")
+  }
 
   if (Date.now() - userRecord.lastActivityTime > fifteenMinutes) {
     logger.info("Last activity was more than 15 minutes ago, clearing user record")
     await deleteTokenMapping(
       documentClient,
-      tokenMappingTableName,
+      specifiedTokenTable,
       username,
       logger
     )
@@ -166,7 +172,7 @@ export async function authenticateRequest(
         const refreshedToken = await refreshTokenFlow(
           axiosInstance,
           documentClient,
-          tokenMappingTableName,
+          specifiedTokenTable,
           username,
           {
             accessToken: userRecord.apigeeAccessToken,
@@ -203,7 +209,7 @@ export async function authenticateRequest(
 
       await updateTokenMapping(
         documentClient,
-        tokenMappingTableName,
+        specifiedTokenTable,
         {username, lastActivityTime: Date.now()},
         logger
       )
@@ -278,7 +284,7 @@ export async function authenticateRequest(
   // Update DynamoDB with the new Apigee access token
   await updateTokenMapping(
     documentClient,
-    tokenMappingTableName,
+    specifiedTokenTable,
     {
       username,
       apigeeAccessToken: exchangeResult.accessToken,
