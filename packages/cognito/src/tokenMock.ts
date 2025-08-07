@@ -172,7 +172,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
   const fifteenMinutes = 15 * 60 * 1000
 
-  if (existingTokenMapping !== undefined && !(tokenMappingItem.lastActivityTime > fifteenMinutes)) {
+  if (existingTokenMapping !== undefined && existingTokenMapping.lastActivityTime > Date.now() - fifteenMinutes) {
     const username = tokenMappingItem.username
     logger.info("User already exists in token mapping table, creating draft session",
       {username}, {SessionManagementTableName})
