@@ -234,8 +234,99 @@ describe("token mock handler", () => {
 
   it("inserts concurrent session details into sessionManagement dynamo table", async () => {
     // return some valid data for the get command
-    mockCheckTokenMappingForUser.mockReturnValue({
-      username: "Mock_user_details_sub"
+    mockCheckTokenMappingForUser.mockImplementation(() => {
+      return Promise.resolve({
+        username: "Mock_user_details_sub",
+        lastActivityTime: Date.now()
+      })
+    })
+
+    mockGetSessionState.mockImplementationOnce(() => {
+      return Promise.resolve({
+        LocalCode: "test-code",
+        ApigeeCode: "apigee-code",
+        SessionState: "test-session-state"
+      })
+    })
+
+    mockExchangeTokenForApigeeAccessToken.mockReturnValue({
+      accessToken: "new-access-token",
+      refreshToken: "new-refresh-token",
+      expiresIn: 3600
+    })
+
+    mockFetchUserInfo.mockImplementation(() => {
+      return Promise.resolve({
+        roles_with_access: [
+          {role_id: "123", org_code: "XYZ", role_name: "MockRole_1"}
+        ],
+        roles_without_access: [],
+        currently_selected_role: {role_id: "555", org_code: "GHI", role_name: "MockRole_4"},
+        user_details: {
+          family_name: "foo",
+          given_name: "bar",
+          sub: "user_details_sub"
+        },
+        sessionId: "mock-uuid"
+      })
+    })
+
+    const response = await handler({
+      body: "code=test-code",
+      headers: {},
+      requestContext: {
+        requestId: "test-id"
+      }
+    }, dummyContext)
+
+    // check call
+    expect(mockInsertTokenMapping).toHaveBeenCalledWith(
+      expect.anything(), // documentClient
+      "test-session-management-table", // tableName
+      {
+        username: "Mock_user_details_sub",
+        apigeeAccessToken: "new-access-token",
+        apigeeRefreshToken: "new-refresh-token",
+        apigeeExpiresIn: 3600,
+        rolesWithAccess: [
+          {role_id: "123", org_code: "XYZ", role_name: "MockRole_1"}
+        ],
+        rolesWithoutAccess: [],
+        currentlySelectedRole: {role_id: "555", org_code: "GHI", role_name: "MockRole_4"},
+        userDetails: {
+          family_name: "foo",
+          given_name: "bar",
+          sub: "user_details_sub"
+        },
+        lastActivityTime: expect.any(Number),
+        sessionId: expect.any(String)
+      }, // item
+      expect.anything() // logger
+    )
+    // Check response structure
+    expect(response.statusCode).toBe(200)
+    expect(response.body).toBeDefined()
+    const parsedBody = JSON.parse(response.body)
+    expect(parsedBody).toStrictEqual({
+      access_token: "unused",
+      expires_in: 3600,
+      id_token: expect.anything(),
+      "not-before-policy": expect.anything(),
+      refresh_expires_in: 600,
+      refresh_token: "unused",
+      scope: "openid associatedorgs profile nationalrbacaccess nhsperson",
+      session_state: "test-session-state",
+      token_type: "Bearer"
+    })
+  })
+
+  it("inserts session details into token mapping table if lastActivityTime > 15 mins", async () => {
+    // return some valid data for the get command
+    mockCheckTokenMappingForUser.mockImplementation(() => {
+      return Promise.resolve({
+        username: "Mock_user_details_sub",
+        lastActivityTime: Date.now() - (16 * 60 * 1000) // 16 minutes ago
+      })
     })
 
     mockGetSessionState.mockImplementationOnce(() => {
