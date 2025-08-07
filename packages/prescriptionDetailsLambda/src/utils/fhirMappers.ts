@@ -32,15 +32,6 @@ export const mapMessageHistoryTitleToMessageCode = (title: string): string => {
 }
 
 /**
- * Maps course of therapy type codes to display values
- */
-export const mapCourseOfTherapyType = (coding: Array<Coding> | undefined): string => {
-  if (!coding || coding.length === 0) return "Unknown"
-
-  return coding[0].code ?? "unknown"
-}
-
-/**
  * Determines prescription origin based on prescription type code
  */
 export const mapPrescriptionOrigin = (typeCode: string): string => {
@@ -53,21 +44,7 @@ export const mapPrescriptionOrigin = (typeCode: string): string => {
 /**
  * Extracts patient details from FHIR Patient resource
  */
-export const extractPatientDetails = (patient: Patient | undefined): Omit<PatientDetails, "address"> & {address: string | null
-} => {
-  if (!patient) {
-    return {
-      nhsNumber: "Unknown",
-      prefix: "",
-      suffix: "",
-      given: "Unknown",
-      family: "Unknown",
-      gender: null,
-      dateOfBirth: null,
-      address: null
-    }
-  }
-
+export const extractPatientDetails = (patient: Patient): PatientDetails => {
   // Extract NHS number from identifiers
   const nhsNumber = patient.identifier?.[0]?.value ?? "Unknown"
 
@@ -80,9 +57,9 @@ export const extractPatientDetails = (patient: Patient | undefined): Omit<Patien
 
   // Extract address components
   const patientAddress = patient.address?.[0]
-  let address = null
+  let address = "Not Found"
   if (patientAddress) {
-    address = patientAddress.text ?? "Not Found"
+    address = patientAddress.text!
   }
 
   return {

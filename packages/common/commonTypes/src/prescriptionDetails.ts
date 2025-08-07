@@ -67,7 +67,7 @@ export interface MessageHistory {
     sentDateTime: string
     organisationName?: string
     organisationODS: string
-    newStatusCode?: string
+    newStatusCode: string
     dispenseNotification?: Array<DispenseNotification>
 }
 

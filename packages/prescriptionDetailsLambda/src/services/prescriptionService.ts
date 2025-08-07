@@ -1,18 +1,17 @@
 
 import axios from "axios"
 
-import {APIGatewayProxyEvent, APIGatewayProxyResult} from "aws-lambda"
 import {Logger} from "@aws-lambda-powertools/logger"
 
 import {doHSClient} from "@cpt-ui-common/doHSClient"
 
 import {mergePrescriptionDetails} from "../utils/responseMapper"
-import {formatHeaders} from "../utils/headerUtils"
 
 import {DoHSData} from "../utils/types"
 import {buildApigeeHeaders} from "@cpt-ui-common/authFunctions"
 import path from "path"
 import {extractOdsCodes} from "../utils/extensionUtils"
+import {PrescriptionDetailsResponse} from "@cpt-ui-common/common-types"
 
 /**
  * Fetch DoHS data and map it to the expected structure.
@@ -85,29 +84,15 @@ export async function getDoHSData(
  * Returns the complete response for the lambda handler to give back.
  */
 export async function processPrescriptionRequest(
-  event: APIGatewayProxyEvent,
+  prescriptionId: string,
+  issueNumber: string,
   apigeePrescriptionsEndpoint: string,
   apigeeAccessToken: string,
   roleId: string,
   orgCode: string,
   correlationId: string,
   logger: Logger
-): Promise<APIGatewayProxyResult> {
-  const prescriptionId = event.pathParameters?.prescriptionId
-  if (!prescriptionId) {
-    logger.warn("No prescription ID provided in request", {event})
-    return {
-      statusCode: 400,
-      body: JSON.stringify({
-        message: "Missing prescription ID in request",
-        prescriptionId: null
-      })
-    }
-  }
-
-  // Extract issueNumber from query parameters, default to "1" if not provided
-  const issueNumber = event.queryStringParameters?.issueNumber || "1"
-
+): Promise<PrescriptionDetailsResponse> {
   logger.info("Fetching prescription details from Apigee", {
     prescriptionId,
     issueNumber
@@ -133,76 +118,24 @@ export async function processPrescriptionRequest(
     issueNumber
   })
 
-  try {
-    const apigeeResponse = await axios.get(endpoint.href, {headers})
-    logger.info("Apigee response received successfully", {
-      status: apigeeResponse.status,
-      statusText: apigeeResponse.statusText,
-      dataKeys: Object.keys(apigeeResponse.data || {}),
-      prescriptionId,
-      issueNumber
-    })
+  const apigeeResponse = await axios.get(endpoint.href, {headers})
+  logger.info("Apigee response received successfully", {
+    status: apigeeResponse.status,
+    statusText: apigeeResponse.statusText,
+    dataKeys: Object.keys(apigeeResponse.data || {}),
+    prescriptionId,
+    issueNumber
+  })
 
-    const odsCodes = extractOdsCodes(apigeeResponse.data, logger)
-    const doHSData = await getDoHSData(odsCodes, logger)
+  const odsCodes = extractOdsCodes(apigeeResponse.data, logger)
+  const doHSData = await getDoHSData(odsCodes, logger)
 
-    logger.info("Merging prescription details fetched from Apigee with data from DoHS", {
-      prescriptionDetails: apigeeResponse.data,
-      doHSData,
-      prescriptionId,
-      issueNumber
-    })
+  logger.info("Merging prescription details fetched from Apigee with data from DoHS", {
+    prescriptionDetails: apigeeResponse.data,
+    doHSData,
+    prescriptionId,
+    issueNumber
+  })
 
-    try {
-      const mergedResponse = mergePrescriptionDetails(apigeeResponse.data, doHSData, logger)
-
-      const responseHeaders = {
-        "Content-Type": "application/json",
-        "Cache-Control": "no-store",
-        ...apigeeResponse.headers as { [key: string]: string }
-      }
-
-      return {
-        statusCode: 200,
-        body: JSON.stringify(mergedResponse),
-        headers: formatHeaders(responseHeaders)
-      }
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (error) {
-      logger.warn("Prescription details not found")
-      return {
-        statusCode: 200,
-        body: JSON.stringify({message: "Prescription details not found"})
-      }
-    }
-
-  } catch (error) {
-    // Enhanced error logging for axios errors, then re-throw to let middy handle
-    if (axios.isAxiosError(error)) {
-      logger.error("Axios request failed", {
-        url: endpoint.href,
-        method: "GET",
-        status: error.response?.status,
-        statusText: error.response?.statusText,
-        responseData: error.response?.data,
-        responseHeaders: error.response?.headers,
-        requestHeaders: {
-          ...headers,
-          Authorization: headers.Authorization ? "[REDACTED]" : undefined
-        },
-        errorMessage: error.message,
-        prescriptionId,
-        issueNumber
-      })
-    } else {
-      logger.error("Unexpected error in prescription service", {
-        error: error instanceof Error ? error.message : error,
-        stack: error instanceof Error ? error.stack : undefined,
-        prescriptionId,
-        issueNumber
-      })
-    }
-
-    throw error
-  }
+  return mergePrescriptionDetails(apigeeResponse.data, doHSData, logger)
 }
