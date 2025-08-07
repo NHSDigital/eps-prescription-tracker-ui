@@ -83,7 +83,6 @@ const lambdaHandler = async (event: APIGatewayProxyEventBase<AuthResult>): Promi
       family_name: string,
       given_name: string
     },
-    multiple_sessions?: boolean,
     is_concurrent_session?: boolean
   }
 
@@ -92,19 +91,13 @@ const lambdaHandler = async (event: APIGatewayProxyEventBase<AuthResult>): Promi
     roles_without_access: tokenMappingItem?.rolesWithoutAccess || [],
     currently_selected_role: tokenMappingItem?.currentlySelectedRole || undefined,
     user_details: tokenMappingItem?.userDetails || {family_name: "", given_name: ""},
-    multiple_sessions: false,
     is_concurrent_session: false
   }
 
-  if (sessionManagementItem) {
-    logger.info("Setting appropriate concurrency properties for sessionId", {sessionId})
-    cachedUserInfo.multiple_sessions = true
-    if (sessionId === sessionManagementItem.sessionId) {
-      logger.info("Concurrent sessionId matches bearer token sessionId", {sessionId})
-      cachedUserInfo.is_concurrent_session = true
-    }
-    logger.info(`Setting session parameters 
-      ${cachedUserInfo.multiple_sessions} ${cachedUserInfo.is_concurrent_session}`)
+  if (sessionManagementItem !== undefined && sessionId === sessionManagementItem.sessionId) {
+    logger.info("Concurrent sessionId matches bearer token sessionId", {sessionId})
+    cachedUserInfo.is_concurrent_session = true
+    logger.info(`Set session concurrency value: ${cachedUserInfo.is_concurrent_session}`)
   }
 
   if (

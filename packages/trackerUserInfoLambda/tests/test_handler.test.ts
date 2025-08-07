@@ -196,7 +196,6 @@ describe("Lambda Handler Tests with mock disabled", () => {
       ],
       "roles_without_access": [],
       "user_details": {"family_name": "Doe", "given_name": "John"},
-      "multiple_sessions": false,
       "is_concurrent_session": false
     })
   })
@@ -233,7 +232,6 @@ describe("Lambda Handler Tests with mock disabled", () => {
         {role_name: "Receptionist", role_id: "456", org_code: "DEF", org_name: "Test Hospital"}
       ],
       "user_details": {"family_name": "Doe", "given_name": "John"},
-      "multiple_sessions": false,
       "is_concurrent_session": false}
     )
   })
@@ -269,7 +267,6 @@ describe("Lambda Handler Tests with mock disabled", () => {
         {role_name: "Receptionist", role_id: "456", org_code: "DEF", org_name: "Test Hospital"}
       ],
       "user_details": {"family_name": "Doe", "given_name": "John"},
-      "multiple_sessions": false,
       "is_concurrent_session": false}
     )
   })
@@ -331,7 +328,6 @@ describe("Lambda Handler Tests with mock disabled", () => {
       ],
       "roles_without_access": [],
       "user_details": {"family_name": "foo", "given_name": "bar"},
-      "multiple_sessions": true,
       "is_concurrent_session": true
     })
 
