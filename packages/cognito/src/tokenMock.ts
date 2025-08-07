@@ -156,6 +156,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     `Mock_${baseUsername}`,
     logger
   )
+  logger.info("Existing token mapping for user", {existingTokenMapping})
 
   let tokenMappingItem = {
     username: `Mock_${baseUsername}`,

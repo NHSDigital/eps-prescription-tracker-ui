@@ -370,7 +370,7 @@ describe("token mock handler", () => {
     // check call
     expect(mockInsertTokenMapping).toHaveBeenCalledWith(
       expect.anything(), // documentClient
-      "test-session-management-table", // tableName
+      "test-token-mapping-table", // tableName
       {
         username: "Mock_user_details_sub",
         apigeeAccessToken: "new-access-token",
