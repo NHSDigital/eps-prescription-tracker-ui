@@ -8,7 +8,7 @@ import {
   constructSignedJWTBody,
   exchangeTokenForApigeeAccessToken
 } from "./index"
-import {deleteTokenMapping, getTokenMapping, updateTokenMapping} from "@cpt-ui-common/dynamoFunctions"
+import {deleteTokenMapping, updateTokenMapping, TokenMappingItem} from "@cpt-ui-common/dynamoFunctions"
 
 // Define the ApigeeTokenResponse type
 interface ApigeeTokenResponse {
@@ -129,21 +129,13 @@ export async function authenticateRequest(
     apigeeCis2TokenEndpoint,
     cloudfrontDomain
   }: AuthenticateRequestOptions,
+  userRecord: TokenMappingItem,
   specifiedTokenTable: string
 ): Promise<AuthResult | null> {
   logger.info("Starting authentication flow")
 
   // Extract username and determine if this is a mock request
   const isMockRequest = username.startsWith("Mock_")
-
-  //Get the existing saved Apigee token from DynamoDB
-  const userRecord = await getTokenMapping(documentClient, specifiedTokenTable, username, logger)
-
-  // Get potential draft session and check if request sessionId matches that of draft session.
-  // For majority of lambdas kill the authorize. For session management lambda, authorise against draft session.
-  if (userRecord !== undefined) {
-    logger.info("A user session exists within token mapping table, a concurrent session attempted.")
-  }
 
   if (Date.now() - userRecord.lastActivityTime > fifteenMinutes) {
     logger.info("Last activity was more than 15 minutes ago, clearing user record")

@@ -11,7 +11,7 @@ import {
   initializeOidcConfig,
   fetchUserInfo,
   authParametersFromEnv,
-  authenticationMiddleware,
+  authenticationConcurrentAwareMiddleware,
   AuthResult
 } from "@cpt-ui-common/authFunctions"
 import {getTokenMapping, checkTokenMappingForUser, updateTokenMapping} from "@cpt-ui-common/dynamoFunctions"
@@ -161,7 +161,7 @@ const lambdaHandler = async (event: APIGatewayProxyEventBase<AuthResult>): Promi
 }
 
 export const handler = middy(lambdaHandler)
-  .use(authenticationMiddleware(axiosInstance, documentClient, authenticationParameters, logger))
+  .use(authenticationConcurrentAwareMiddleware(axiosInstance, documentClient, authenticationParameters, logger))
   .use(injectLambdaContext(logger, {clearState: true}))
   .use(httpHeaderNormalizer())
   .use(

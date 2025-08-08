@@ -25,6 +25,7 @@ import {
 import {fetchUserInfo} from "./userInfoHelpers"
 
 import {authenticationMiddleware} from "./authenticationMiddleware"
+import {authenticationConcurrentAwareMiddleware} from "./authenticationConcurrentAwareMiddleware"
 
 export {
   getUsernameFromEvent,
@@ -43,5 +44,6 @@ export {
   authParametersFromEnv,
   AuthenticateRequestOptions,
   fetchUserInfo,
-  authenticationMiddleware
+  authenticationMiddleware,
+  authenticationConcurrentAwareMiddleware
 }

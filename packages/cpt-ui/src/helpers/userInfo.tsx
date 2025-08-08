@@ -70,6 +70,9 @@ export const getTrackerUserInfo = async (): Promise<TrackerUserInfoResult> => {
       selectedRole = userInfo.roles_with_access[0]
     }
 
+    if (isConcurrentSession === true) {
+      logger.info("This is a concurrent session")
+    }
   } catch (err) {
     error =
       err instanceof Error ? err.message : "Failed to fetch user info"
