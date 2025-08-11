@@ -262,10 +262,10 @@ describe("get tokenMapping", () => {
         mockUsername,
         mockLogger as Logger
       )
-    ).rejects.toThrow("Error retrieving data from tokenMapping")
+    ).rejects.toThrow(`Error retrieving data from ${mockTableName}`)
 
     expect(mockLogger.error).toHaveBeenCalledWith(
-      "Error retrieving data from tokenMapping",
+      `Error retrieving data from ${mockTableName}`,
       {error: mockError}
     )
     expect(mockDocumentClient.send).toHaveBeenCalledTimes(1)
