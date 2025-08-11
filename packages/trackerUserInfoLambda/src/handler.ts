@@ -14,7 +14,12 @@ import {
   authenticationConcurrentAwareMiddleware,
   AuthResult
 } from "@cpt-ui-common/authFunctions"
-import {getTokenMapping, checkTokenMappingForUser, updateTokenMapping} from "@cpt-ui-common/dynamoFunctions"
+import {
+  getTokenMapping,
+  checkTokenMappingForUser,
+  updateTokenMapping,
+  TokenMappingItem
+} from "@cpt-ui-common/dynamoFunctions"
 import {extractInboundEventValues, appendLoggerKeys} from "@cpt-ui-common/lambdaUtils"
 import axios from "axios"
 import {RoleDetails} from "@cpt-ui-common/common-types"
@@ -69,11 +74,17 @@ const lambdaHandler = async (event: APIGatewayProxyEventBase<AuthResult>): Promi
 
   const sessionId = event.requestContext.authorizer.sessionId
   const username = event.requestContext.authorizer.username
+  const isConcurrentSession = event.requestContext.authorizer.isConcurrentSession
 
-  // First, try to use cached user info
-  const tokenMappingItem = await getTokenMapping(documentClient, tokenMappingTableName, username, logger)
-  const sessionManagementItem = await checkTokenMappingForUser(documentClient, sessionManagementTableName,
-    username, logger)
+  let tokenDetails: TokenMappingItem | undefined = undefined
+  if (isConcurrentSession) {
+    logger.info(`Gaining concurrent session details, for sessionId ${sessionId}`)
+    tokenDetails = await checkTokenMappingForUser(documentClient, sessionManagementTableName,
+      username, logger)
+  } else {
+    logger.info(`Gaining primary session details, for sessionId ${sessionId}`)
+    tokenDetails = await getTokenMapping(documentClient, tokenMappingTableName, username, logger)
+  }
 
   type CachedUserInfo = {
     roles_with_access: Array<RoleDetails> | [],
@@ -87,17 +98,11 @@ const lambdaHandler = async (event: APIGatewayProxyEventBase<AuthResult>): Promi
   }
 
   const cachedUserInfo: CachedUserInfo = {
-    roles_with_access: tokenMappingItem?.rolesWithAccess || [],
-    roles_without_access: tokenMappingItem?.rolesWithoutAccess || [],
-    currently_selected_role: tokenMappingItem?.currentlySelectedRole || undefined,
-    user_details: tokenMappingItem?.userDetails || {family_name: "", given_name: ""},
-    is_concurrent_session: false
-  }
-
-  if (sessionManagementItem !== undefined && sessionId === sessionManagementItem.sessionId) {
-    logger.info("Concurrent sessionId matches bearer token sessionId", {sessionId})
-    cachedUserInfo.is_concurrent_session = true
-    logger.info(`Set session concurrency value: ${cachedUserInfo.is_concurrent_session}`)
+    roles_with_access: tokenDetails?.rolesWithAccess || [],
+    roles_without_access: tokenDetails?.rolesWithoutAccess || [],
+    currently_selected_role: tokenDetails?.currentlySelectedRole || undefined,
+    user_details: tokenDetails?.userDetails || {family_name: "", given_name: ""},
+    is_concurrent_session: isConcurrentSession
   }
 
   if (
@@ -124,16 +129,16 @@ const lambdaHandler = async (event: APIGatewayProxyEventBase<AuthResult>): Promi
     }
   } else {
     if (!apigeeAccessToken
-        || !tokenMappingItem.cis2IdToken
-        || !tokenMappingItem.cis2AccessToken
+        || !tokenDetails.cis2IdToken
+        || !tokenDetails.cis2AccessToken
     ) {
       throw new Error("Authentication failed for cis2: missing tokens")
     }
   }
 
   const userInfoResponse = await fetchUserInfo(
-    tokenMappingItem.cis2AccessToken || "",
-    tokenMappingItem.cis2IdToken || "",
+    tokenDetails.cis2AccessToken || "",
+    tokenDetails.cis2IdToken || "",
     apigeeAccessToken || "",
     isMockToken,
     logger,

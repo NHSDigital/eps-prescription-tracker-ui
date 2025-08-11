@@ -27,6 +27,7 @@ export interface AuthResult {
   roleId?: string
   orgCode?: string
   sessionId?: string
+  isConcurrentSession?: boolean
 }
 
 /**

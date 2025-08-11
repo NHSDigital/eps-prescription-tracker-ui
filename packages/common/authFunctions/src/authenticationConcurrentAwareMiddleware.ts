@@ -50,11 +50,13 @@ export const authenticationConcurrentAwareMiddleware = (
     }
 
     let authResult: AuthResult | null = null
+    let isConcurrentSession: boolean = false
 
     // Ensure we're dealing with the correct token item, or kill the authentication.
     try {
       if (sessionManagementItem !== undefined && sessionManagementItem?.sessionId === sessionId) {
         logger.debug("Session ID matches the session management item, proceeding with authentication")
+        isConcurrentSession = true
         authResult = await authenticateRequest(username, axiosInstance, ddbClient, logger,
           authOptions, sessionManagementItem, authOptions.sessionManagementTableName)
 
@@ -80,6 +82,6 @@ export const authenticationConcurrentAwareMiddleware = (
       }
       return request.earlyResponse
     }
-    event.requestContext.authorizer = {...authResult, sessionId}
+    event.requestContext.authorizer = {...authResult, sessionId, isConcurrentSession}
   }
 } satisfies MiddlewareObj<APIGatewayProxyEventBase<AuthResult>, APIGatewayProxyResult, Error>)
