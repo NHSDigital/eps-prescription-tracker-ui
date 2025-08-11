@@ -129,16 +129,16 @@ const lambdaHandler = async (event: APIGatewayProxyEventBase<AuthResult>): Promi
     }
   } else {
     if (!apigeeAccessToken
-        || !tokenDetails.cis2IdToken
-        || !tokenDetails.cis2AccessToken
+        || !tokenDetails?.cis2IdToken
+        || !tokenDetails?.cis2AccessToken
     ) {
       throw new Error("Authentication failed for cis2: missing tokens")
     }
   }
 
   const userInfoResponse = await fetchUserInfo(
-    tokenDetails.cis2AccessToken || "",
-    tokenDetails.cis2IdToken || "",
+    tokenDetails?.cis2AccessToken || "",
+    tokenDetails?.cis2IdToken || "",
     apigeeAccessToken || "",
     isMockToken,
     logger,

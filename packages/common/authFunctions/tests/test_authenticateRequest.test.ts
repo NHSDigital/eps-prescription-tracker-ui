@@ -105,7 +105,7 @@ describe("authenticateRequest", () => {
   it("should use existing valid token when available", async () => {
     // Set up mock implementation for this test
 
-    mockGetTokenMapping.mockImplementationOnce(() => Promise.resolve( {
+    const token = {
       username: "test-user",
       apigeeAccessToken: "existing-token",
       cis2IdToken: "existing-cis2-token",
@@ -114,8 +114,10 @@ describe("authenticateRequest", () => {
       currentlySelectedRole: {
         role_id: "existing-role-id",
         org_code: "existing_org"
-      }
-    }))
+      },
+      lastActivityTime: Date.now()
+    }
+    mockGetTokenMapping.mockImplementationOnce(() => Promise.resolve(token))
 
     const result = await authenticateRequest(
       "test-user",
@@ -123,6 +125,7 @@ describe("authenticateRequest", () => {
       documentClient,
       mockLogger,
       mockOptions,
+      token,
       mockOptions.tokenMappingTableName
     )
 
@@ -145,7 +148,7 @@ describe("authenticateRequest", () => {
   })
 
   it("should return null if record was inactive for more than 15 minutes", async () => {
-    mockGetTokenMapping.mockImplementationOnce(() => Promise.resolve( {
+    const token = {
       username: "test-user",
       apigeeAccessToken: "existing-token",
       cis2IdToken: "existing-cis2-token",
@@ -156,7 +159,9 @@ describe("authenticateRequest", () => {
         org_code: "existing_org"
       },
       lastActivityTime: Date.now() - 16 * 60 * 1000 // 16 minutes ago
-    }))
+    }
+
+    mockGetTokenMapping.mockImplementationOnce(() => Promise.resolve(token))
 
     const result = await authenticateRequest(
       "test-user",
@@ -164,6 +169,7 @@ describe("authenticateRequest", () => {
       documentClient,
       mockLogger,
       mockOptions,
+      token,
       mockOptions.tokenMappingTableName
     )
 
@@ -179,7 +185,7 @@ describe("authenticateRequest", () => {
 
   it("should refresh token when it's about to expire", async () => {
     // Set up mock implementations for this test
-    mockGetTokenMapping.mockImplementationOnce(() => Promise.resolve( {
+    const token = {
       username: "test-user",
       apigeeAccessToken: "expiring-token",
       cis2IdToken: "expiring-cis2-token",
@@ -189,8 +195,10 @@ describe("authenticateRequest", () => {
       currentlySelectedRole: {
         role_id: "existing-role-id",
         org_code: "existing_org"
-      }
-    }))
+      },
+      lastActivityTime: Date.now()
+    }
+    mockGetTokenMapping.mockImplementationOnce(() => Promise.resolve(token))
 
     mockRefreshApigeeAccessToken.mockReturnValue({
       accessToken: "refreshed-token",
@@ -205,6 +213,7 @@ describe("authenticateRequest", () => {
       documentClient,
       mockLogger,
       mockOptions,
+      token,
       mockOptions.tokenMappingTableName
     )
 
@@ -249,15 +258,18 @@ describe("authenticateRequest", () => {
       expiresIn: 3600
     })
 
-    mockGetTokenMapping.mockImplementationOnce(() => Promise.resolve( {
+    const token = {
       username: "test-user",
       cis2IdToken: "existing-cis2-token",
       cis2AccessToken: "existing-cis2-access-token",
       currentlySelectedRole: {
         role_id: "test-role-id",
         org_code: "existing_org"
-      }
-    }))
+      },
+      lastActivityTime: Date.now()
+    }
+
+    mockGetTokenMapping.mockImplementationOnce(() => Promise.resolve(token))
     // Make sure the getSecret mock is properly setup
     mockGetSecret.mockReturnValue("test-private-key")
 
@@ -267,6 +279,7 @@ describe("authenticateRequest", () => {
       documentClient,
       mockLogger,
       mockOptions,
+      token,
       mockOptions.tokenMappingTableName
     )
 
@@ -294,15 +307,17 @@ describe("authenticateRequest", () => {
       expiresIn: 3600
     })
 
-    mockGetTokenMapping.mockImplementationOnce(() => Promise.resolve( {
+    const token = {
       username: "Mock_test-user",
       cis2IdToken: "existing-cis2-token",
       cis2AccessToken: "existing-cis2-access-token",
       currentlySelectedRole: {
         role_id: "test-role-id",
         org_code: "existing_org"
-      }
-    }))
+      },
+      lastActivityTime: Date.now()
+    }
+    mockGetTokenMapping.mockImplementationOnce(() => Promise.resolve(token))
 
     const result = await authenticateRequest(
       "Mock_test-user",
@@ -310,6 +325,7 @@ describe("authenticateRequest", () => {
       documentClient,
       mockLogger,
       mockOptions,
+      token,
       mockOptions.tokenMappingTableName
     )
 
@@ -330,14 +346,16 @@ describe("authenticateRequest", () => {
 
   it("should acquire new token when no token exists for mocked user", async () => {
     // Set up mock implementations for this test
-    mockGetTokenMapping.mockImplementationOnce(() => Promise.resolve( {
+    const token = {
       username: "Mock_user",
       apigeeCode: "apigee-code",
       currentlySelectedRole: {
         role_id: "test-role-id",
         org_code: "existing_org"
-      }
-    }))
+      },
+      lastActivityTime: Date.now()
+    }
+    mockGetTokenMapping.mockImplementationOnce(() => Promise.resolve(token))
     mockExchangeTokenForApigeeAccessToken.mockReturnValue({
       accessToken: "new-access-token",
       refreshToken: "new-refresh-token",
@@ -353,6 +371,7 @@ describe("authenticateRequest", () => {
       documentClient,
       mockLogger,
       mockOptions,
+      token,
       mockOptions.tokenMappingTableName
     )
 
@@ -372,8 +391,7 @@ describe("authenticateRequest", () => {
 
   it("should handle token refresh failure gracefully", async () => {
     // Set up mock implementations for this test
-
-    mockGetTokenMapping.mockImplementationOnce(() => Promise.resolve( {
+    const token = {
       username: "test-user",
       apigeeAccessToken: "expiring-token",
       cis2IdToken: "expiring-cis2-token",
@@ -383,8 +401,10 @@ describe("authenticateRequest", () => {
         org_code: "existing_org"
       },
       apigeeRefreshToken: "expiring-refresh-token",
-      apigeeExpiresIn: Math.floor(Date.now() / 1000) + 30 // expires in 30 seconds
-    }))
+      apigeeExpiresIn: Math.floor(Date.now() / 1000) + 30, // expires in 30 seconds
+      lastActivityTime: Date.now()
+    }
+    mockGetTokenMapping.mockImplementationOnce(() => Promise.resolve(token))
 
     // IMPORTANT FIX: Properly mock rejection instead of returning an Error object
     mockRefreshApigeeAccessToken.mockRejectedValue(new Error("Refresh failed") as never)
@@ -402,6 +422,7 @@ describe("authenticateRequest", () => {
       documentClient,
       mockLogger,
       mockOptions,
+      token,
       mockOptions.tokenMappingTableName
     )
 
@@ -424,7 +445,7 @@ describe("authenticateRequest", () => {
   it("should handle missing refresh token gracefully", async () => {
     // Set up mock implementations for this test
 
-    mockGetTokenMapping.mockImplementationOnce(() => Promise.resolve( {
+    const token = {
       username: "test-user",
       apigeeAccessToken: "expiring-token",
       cis2IdToken: "expiring-cis2-token",
@@ -433,8 +454,10 @@ describe("authenticateRequest", () => {
         role_id: "test-role-id",
         org_code: "existing_org"
       },
-      apigeeExpiresIn: Math.floor(Date.now() / 1000) + 30 // expires in 30 seconds
-    }))
+      apigeeExpiresIn: Math.floor(Date.now() / 1000) + 30, // expires in 30 seconds
+      lastActivityTime: Date.now()
+    }
+    mockGetTokenMapping.mockImplementationOnce(() => Promise.resolve(token))
 
     // Mock successful token exchange as the fallback after refresh failure
     mockExchangeTokenForApigeeAccessToken.mockReturnValue({
@@ -449,6 +472,7 @@ describe("authenticateRequest", () => {
       documentClient,
       mockLogger,
       mockOptions,
+      token,
       mockOptions.tokenMappingTableName
     )
 
@@ -470,8 +494,7 @@ describe("authenticateRequest", () => {
 
   it("should throw an error when missing apigee expires in", async () => {
     // Set up mock implementation for this test
-
-    mockGetTokenMapping.mockImplementationOnce(() => Promise.resolve( {
+    const token = {
       username: "test-user",
       apigeeAccessToken: "existing-token",
       cis2IdToken: "existing-cis2-token",
@@ -479,8 +502,10 @@ describe("authenticateRequest", () => {
       currentlySelectedRole: {
         role_id: "existing-role-id",
         org_code: "existing_org"
-      }
-    }))
+      },
+      lastActivityTime: Date.now()
+    }
+    mockGetTokenMapping.mockImplementationOnce(() => Promise.resolve(token))
 
     await expect(authenticateRequest(
       "test-user",
@@ -488,6 +513,7 @@ describe("authenticateRequest", () => {
       documentClient,
       mockLogger,
       mockOptions,
+      token,
       mockOptions.tokenMappingTableName
     )).rejects.toThrow(new Error("Missing apigee expires in time"))
 
@@ -504,14 +530,16 @@ describe("authenticateRequest", () => {
       expiresIn: 3600
     })
 
-    mockGetTokenMapping.mockImplementationOnce(() => Promise.resolve( {
+    const token = {
       username: "test-user",
       cis2AccessToken: "existing-cis2-access-token",
       currentlySelectedRole: {
         role_id: "test-role-id",
         org_code: "existing_org"
-      }
-    }))
+      },
+      lastActivityTime: Date.now()
+    }
+    mockGetTokenMapping.mockImplementationOnce(() => Promise.resolve(token))
     // Make sure the getSecret mock is properly setup
     mockGetSecret.mockReturnValue("test-private-key")
 
@@ -521,6 +549,7 @@ describe("authenticateRequest", () => {
       documentClient,
       mockLogger,
       mockOptions,
+      token,
       mockOptions.tokenMappingTableName
     )).rejects.toThrow(new Error("Missing cis2IdToken"))
   })
@@ -533,15 +562,17 @@ describe("authenticateRequest", () => {
       expiresIn: 3600
     })
 
-    mockGetTokenMapping.mockImplementationOnce(() => Promise.resolve( {
+    const token = {
       username: "test-user",
       cis2IdToken: "existing-cis2-token",
       cis2AccessToken: "existing-cis2-access-token",
       currentlySelectedRole: {
         role_id: "test-role-id",
         org_code: "existing_org"
-      }
-    }))
+      },
+      lastActivityTime: Date.now()
+    }
+    mockGetTokenMapping.mockImplementationOnce(() => Promise.resolve(token))
     // Make sure the getSecret mock is properly setup
     mockGetSecret.mockReturnValue("test-private-key")
     await expect(authenticateRequest(
@@ -550,6 +581,7 @@ describe("authenticateRequest", () => {
       documentClient,
       mockLogger,
       mockOptions,
+      token,
       mockOptions.tokenMappingTableName
     )).rejects.toThrow(new Error("Failed to obtain required tokens after authentication flow"))
   })
