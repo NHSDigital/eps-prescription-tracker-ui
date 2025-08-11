@@ -179,7 +179,7 @@ describe("extractPrescribedItems", () => {
     expect(result[0]).toEqual({
       medicationName: "Unknown",
       quantity: "Unknown",
-      dosageInstructions: "Unknown",
+      dosageInstructions: undefined,
       epsStatusCode: "unknown",
       nhsAppStatus: undefined,
       itemPendingCancellation: false,
