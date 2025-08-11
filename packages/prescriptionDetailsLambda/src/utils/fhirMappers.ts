@@ -1,7 +1,6 @@
-/* eslint-disable max-len */
-import {Patient, MedicationRequest, Coding} from "fhir/r4"
+import {MedicationDispense, MedicationRequest, Patient} from "fhir/r4"
+import {ItemDetails, PatientDetails} from "@cpt-ui-common/common-types"
 import {findExtensionByKey, getBooleanFromNestedExtension, getCodeFromNestedExtension} from "./extensionUtils"
-import {PatientDetails} from "@cpt-ui-common/common-types"
 
 /**
  *  Maps message history titles names to semantic message codes
@@ -19,7 +18,8 @@ export const mapMessageHistoryTitleToMessageCode = (title: string): string => {
     "Administrative Action Update Successful": "admin-action-updated",
     "Prescription Reset request successful": "prescription-reset",
     "Prescription/item was cancelled": "prescription-cancelled",
-    "Prescription/item was not cancelled. With dispenser. Marked for cancellation": "prescription-marked-for-cancellation",
+    "Prescription/item was not cancelled. With dispenser. Marked for cancellation":
+      "prescription-marked-for-cancellation",
     "Subsequent cancellation": "subsequent-cancellation",
     "Rebuild Dispense History successful": "dispense-history-rebuilt",
     "Updated by Urgent Admin Batch worker": "urgent-batch-updated",
@@ -75,30 +75,46 @@ export const extractPatientDetails = (patient: Patient): PatientDetails => {
 }
 
 /**
- * Extracts prescribed items from FHIR MedicationRequest resources
+ * Extracts dispensed items from FHIR MedicationDispense resources
  */
-export const extractPrescribedItems = (medicationRequests: Array<MedicationRequest>) => {
-  return medicationRequests.map(request => {
+export const extractItems = (
+  medicationRequests: Array<MedicationRequest>,
+  medicationDispenses: Array<MedicationDispense>
+): Array<ItemDetails> => {
+  return medicationRequests.map((request) => {
+    // find the corresponding medication request for initial prescription details and cancellation info
+    const correspondingDispense = medicationDispenses.find(dispense =>
+      request.id
+      && dispense.authorizingPrescription?.[0]?.reference?.includes(request.id)
+      && dispense.status === "in-progress"
+    )
+    // Extract notDispensedReason from extension
+    const notDispensedReason = correspondingDispense?.statusReasonCodeableConcept?.coding?.[0]?.code
+
+    // determine if initiallyPrescribed should be included (only if different from dispensed)
     const pendingCancellationExt = findExtensionByKey(request.extension, "PENDING_CANCELLATION")
-    const dispensingInfoExt = findExtensionByKey(request.extension, "DISPENSING_INFORMATION")
+    const itemPendingCancellation = getBooleanFromNestedExtension(pendingCancellationExt, "lineItemPendingCancellation")
+    const cancellationReason = request.statusReason?.text ?? request.statusReason?.coding?.[0]?.display
 
-    const epsStatusCode = getCodeFromNestedExtension(dispensingInfoExt, "dispenseStatus") ?? "unknown"
+    const businessStatusExt = findExtensionByKey(request.extension, "DISPENSING_INFORMATION")
+    const epsStatusCode = getCodeFromNestedExtension(businessStatusExt, "dispenseStatus", "unknown")
 
-    const quantityValue = request.dispenseRequest?.quantity?.value?.toString() ?? "Unknown"
-    const quantityUnit = request.dispenseRequest?.quantity?.unit ?? ""
-    const quantity = quantityUnit ? `${quantityValue} ${quantityUnit}` : quantityValue
+    const medicationName = request.medicationCodeableConcept?.text ??
+                                    request.medicationCodeableConcept?.coding?.[0]?.display ?? "Unknown"
+    const originalQuantityValue = request.dispenseRequest?.quantity?.value?.toString() ?? "Unknown"
+    const originalQuantityUnit = request.dispenseRequest?.quantity?.unit ?? ""
+    const quantity = originalQuantityUnit ? `${originalQuantityValue} ${originalQuantityUnit}` : originalQuantityValue
+    const dosageInstructions = request.dosageInstruction?.[0]?.text
 
     return {
-      medicationName: request.medicationCodeableConcept?.text ??
-        request.medicationCodeableConcept?.coding?.[0]?.display ?? "Unknown",
+      medicationName,
       quantity,
-      dosageInstructions: request.dosageInstruction?.[0]?.text ?? "Unknown",
+      dosageInstructions,
       epsStatusCode,
-      nhsAppStatus: undefined, // Optional field
-      itemPendingCancellation: getBooleanFromNestedExtension(pendingCancellationExt, "lineItemPendingCancellation") ?? false,
-      cancellationReason: request.statusReason?.text ??
-        request.statusReason?.coding?.[0]?.display ??
-        null
+      nhsAppStatus: undefined, //TODO: investigate what this needs to be.
+      itemPendingCancellation,
+      cancellationReason,
+      notDispensedReason
     }
   })
 }

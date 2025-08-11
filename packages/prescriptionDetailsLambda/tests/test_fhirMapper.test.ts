@@ -1,9 +1,9 @@
 import {MedicationRequest, Patient} from "fhir/r4"
 import {
   extractPatientDetails,
-  extractPrescribedItems,
   mapMessageHistoryTitleToMessageCode,
-  mapPrescriptionOrigin
+  mapPrescriptionOrigin,
+  extractItems
 } from "../src/utils/fhirMappers"
 
 describe("mapMessageHistoryTitleToMessageCode", () => {
@@ -146,7 +146,7 @@ describe("extractPrescribedItems", () => {
       }
     ]
 
-    const result = extractPrescribedItems(medicationRequests)
+    const result = extractItems(medicationRequests, [])
     expect(result).toHaveLength(1)
     expect(result[0]).toEqual({
       medicationName: "Medication A",
@@ -155,12 +155,13 @@ describe("extractPrescribedItems", () => {
       epsStatusCode: "unknown",
       nhsAppStatus: undefined,
       itemPendingCancellation: false,
-      cancellationReason: null
+      cancellationReason: undefined,
+      notDispensedReason: undefined
     })
   })
 
   it("should handle empty medication requests array", () => {
-    const result = extractPrescribedItems([])
+    const result = extractItems([], [])
     expect(result).toEqual([])
   })
 
@@ -174,7 +175,7 @@ describe("extractPrescribedItems", () => {
       }
     ]
 
-    const result = extractPrescribedItems(medicationRequests)
+    const result = extractItems(medicationRequests, [])
     expect(result[0]).toEqual({
       medicationName: "Unknown",
       quantity: "Unknown",
@@ -182,7 +183,8 @@ describe("extractPrescribedItems", () => {
       epsStatusCode: "unknown",
       nhsAppStatus: undefined,
       itemPendingCancellation: false,
-      cancellationReason: null
+      cancellationReason: undefined,
+      notDispensedReason: undefined
     })
   })
 
@@ -211,7 +213,7 @@ describe("extractPrescribedItems", () => {
       }
     ]
 
-    const result = extractPrescribedItems(medicationRequests)
+    const result = extractItems(medicationRequests, [])
     expect(result[0].itemPendingCancellation).toBe(true)
     expect(result[0].cancellationReason).toBe("Medication error")
   })
@@ -234,7 +236,7 @@ describe("extractPrescribedItems", () => {
       }
     ]
 
-    const result = extractPrescribedItems(medicationRequests)
+    const result = extractItems(medicationRequests, [])
     expect(result[0].epsStatusCode).toBe("0001")
   })
 })

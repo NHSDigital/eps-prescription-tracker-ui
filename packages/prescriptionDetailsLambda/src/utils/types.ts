@@ -60,9 +60,6 @@ export interface DoHSData {
   dispensingOrganization?: DoHSOrg | null
 }
 
-// Defines the allowed prescription intent values based on FHIR standards.
-export type PrescriptionIntent = "order" | "instance-order" | "reflex-order"
-
 /**
  * Map of canonical extension keys to their possible URLs.
  * This helps handle inconsistencies between different FHIR implementations.

@@ -1,78 +1,38 @@
-// export interface PersonName {
-//     prefix?: string;
-//     given: string;
-//     family: string;
-//     suffix?: string;
-// }
-
-// export interface Address {
-//     // Following a conversation with Sean,
-//     // I'm reluctant to assume ANYTHING is required for an address
-//     text?: string;
-//     line?: string;
-//     city?: string;
-//     district?: string;
-//     postalCode?: string;
-//     type: string;
-//     use: string;
-// }
-
-// export interface PatientDetails {
-//     identifier: string;
-//     name: PersonName;
-//     gender?: string;
-//     birthDate?: string;
-//     address?: Address;
-// }
-
-// TODO: These types were defined in PR 417, but are now duplicated in the prescriptionList lambda.
-// Since they represent the same data, we've moved the definitions to the common-types package.
-// When continuing work on PR 417, update the details lambda to use the shared types.
 import {PatientDetails} from "./prescriptionList"
 
-export interface PrescribedItemDetails {
+export interface ItemDetails {
     medicationName: string
     quantity: string
-    dosageInstructions: string
+    dosageInstructions?: string
     epsStatusCode?: string
-    pharmacyStatus?: string | null
+    pharmacyStatus?: string
     itemPendingCancellation: boolean
-    cancellationReason?: string | null
+    cancellationReason?: string
+    notDispensedReason?: string
 }
 
-// Additional fields for Dispensed Items
-export interface InitiallyPrescribed {
+export interface DispenseNotificationItemComponent {
     medicationName: string
     quantity: string
-    dosageInstructions: string
+    dosageInstruction?: string
 }
 
-export interface DispensedItemDetails extends PrescribedItemDetails {
-    notDispensedReason?: string | null
-    initiallyPrescribed?: InitiallyPrescribed
-    pharmacyStatus?: string | null
-}
-
-// Message History and Notifications
-export interface DispenseNotification {
-    id: string
-    medicationName: string
-    quantity: string
-    dosageInstruction: string
+export interface DispenseNotificationItem {
     statusCode: string
+    components: Array<DispenseNotificationItemComponent>
 }
 
 export interface MessageHistory {
     messageCode: string
     sentDateTime: string
-    organisationName?: string
-    organisationODS: string
+    orgName?: string
+    orgODS: string
     newStatusCode: string
-    dispenseNotification?: Array<DispenseNotification>
+    dispenseNotificationItems?: Array<DispenseNotificationItem>
 }
 
-// Organisation Details
-export interface OrganisationSummary {
+// Organization Details
+export interface OrgSummary {
     name?: string
     odsCode: string
     address?: string
@@ -80,8 +40,8 @@ export interface OrganisationSummary {
     prescribedFrom?: string
 }
 
-// The prescriber's organisation has an extra property
-export interface PrescriberOrganisationSummary extends OrganisationSummary {
+// The prescriber's organization has an extra property
+export interface PrescriberOrgSummary extends OrgSummary {
     prescribedFrom?: string
 }
 
@@ -89,20 +49,16 @@ export interface PrescriberOrganisationSummary extends OrganisationSummary {
 export interface PrescriptionDetailsResponse {
     patientDetails: PatientDetails
     prescriptionId: string
-    typeCode: string
+    typeCode: "acute" | "continuous" | "continuous-repeat-dispensing"
     statusCode: string
     issueDate: string
-    instanceNumber: number | string
-    maxRepeats: number | string
-    // FIXME: This was added in https://github.com/NHSDigital/eps-prescription-tracker-ui/pull/670
-    // and needs to be handled by https://github.com/NHSDigital/eps-prescription-tracker-ui/pull/417
-    isERD?: boolean
-    daysSupply: string
+    instanceNumber: number
+    maxRepeats?: number
+    daysSupply?: string
     prescriptionPendingCancellation: boolean
-    prescribedItems: Array<PrescribedItemDetails>
-    dispensedItems: Array<DispensedItemDetails>
+    items: Array<ItemDetails>
     messageHistory: Array<MessageHistory>
-    prescriberOrganisation: PrescriberOrganisationSummary
-    nominatedDispenser?: OrganisationSummary
-    currentDispenser?: OrganisationSummary
+    prescriberOrg: PrescriberOrgSummary
+    nominatedDispenser?: OrgSummary
+    currentDispenser?: OrgSummary
 }

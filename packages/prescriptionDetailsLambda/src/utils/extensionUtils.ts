@@ -73,11 +73,11 @@ export const getBooleanFromNestedExtension = (
 /**
  * Extracts an integer value from a nested extension.
  */
-export const getIntegerFromNestedExtension = (
+export const getIntegerFromNestedExtension = <T = undefined>(
   extension: Extension | undefined,
   subUrl: string,
-  defaultValue: number | string = "Not found"
-): number | string => {
+  defaultValue: T = undefined as T
+): number | T => {
   if (!extension || !extension.extension || extension.extension.length === 0) {
     return defaultValue
   }
@@ -105,11 +105,11 @@ export const getDisplayFromNestedExtension = (
 /**
  * Extracts a code value from a coding in a nested extension.
  */
-export const getCodeFromNestedExtension = (
+export const getCodeFromNestedExtension = <T = undefined>(
   extension: Extension | undefined,
   subUrl: string,
-  defaultValue: string | undefined = undefined
-): string | undefined => {
+  defaultValue: T = undefined as T
+): string | T => {
   if (!extension || !extension.extension || extension.extension.length === 0) {
     return defaultValue
   }

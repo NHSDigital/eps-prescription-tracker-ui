@@ -1,5 +1,3 @@
-import {jest} from "@jest/globals"
-
 import {
   Bundle,
   FhirResource,
@@ -13,16 +11,9 @@ import {DoHSData} from "../src/utils/types"
 
 import {mergePrescriptionDetails} from "../src/utils/responseMapper"
 
-import {Logger} from "@aws-lambda-powertools/logger"
-
-const logger: Logger = new Logger({serviceName: "responseMapper"})
-
-// Stub out the mapper function so we can verify the mapped value
-jest.mock("../src/utils/fhirMappers", () => ({
-  mapIntentToPrescriptionTreatmentType: jest.fn((intent: string) => `mapped-${intent}`)
-}))
-
 describe("mergePrescriptionDetails", () => {
+  const participantExtensionUrl =
+    "http://hl7.org/fhir/5.0/StructureDefinition/extension-RequestOrchestration.action.participant.typeReference"
   let historyAction: RequestGroupAction
   let requestGroup: RequestGroup
   let patient: Patient
@@ -36,32 +27,48 @@ describe("mergePrescriptionDetails", () => {
       action: [
         {
           title: "Prescription upload successful",
-          code: [
-            {
-              coding: [
-                {
-                  system: "https://fhir.nhs.uk/CodeSystem/EPS-task-business-status",
-                  code: "MSG001",
-                  display: "Sent"
-                }
-              ]
-            }
-          ],
+          code: [{
+            coding: [{
+              system: "https://fhir.nhs.uk/CodeSystem/EPS-task-business-status",
+              code: "0001"
+            }]
+          }],
           timingDateTime: "2020-01-02T00:00:00Z",
-          participant: [
-            {
-              extension: [
-                {
-                  valueReference: {
-                    identifier: {
-                      value: "ODS456"
-                    }
-                  },
-                  url: ""
+          participant: [{
+            extension: [{
+              valueReference: {
+                identifier: {
+                  system: "https://fhir.nhs.uk/Id/ods-organization-code",
+                  value: "ODS123"
                 }
-              ]
-            }
-          ]
+              },
+              url: participantExtensionUrl
+            }]
+          }]
+        },
+        {
+          title: "Dispense notification successful",
+          code: [{
+            coding: [{
+              system: "https://fhir.nhs.uk/CodeSystem/EPS-task-business-status",
+              code: "0006"
+            }]
+          }],
+          timingDateTime: "2020-01-03T00:00:00Z",
+          participant: [{
+            extension: [{
+              valueReference: {
+                identifier: {
+                  system: "https://fhir.nhs.uk/Id/ods-organization-code",
+                  value: "ODS789"
+                }
+              },
+              url: participantExtensionUrl
+            }]
+          }],
+          action: [{
+            resource: {reference: "urn:uuid:00000000-0000-0000-000000000001"}
+          }]
         }
       ]
     }
@@ -155,7 +162,7 @@ describe("mergePrescriptionDetails", () => {
     }
     medicationDispense = {
       resourceType: "MedicationDispense",
-      id: "dispense-1",
+      id: "00000000-0000-0000-000000000001",
       medicationCodeableConcept: {text: "Drug B"},
       quantity: {value: 20},
       dosageInstruction: [{text: "Take two daily"}],
@@ -171,13 +178,7 @@ describe("mergePrescriptionDetails", () => {
             display: "Item fully dispensed"
           }
         ]
-      },
-      extension: [
-        {
-          url: "https://fhir.nhs.uk/StructureDefinition/Extension-DM-PrescriptionNonDispensingReason",
-          valueCoding: {display: "Not available"}
-        }
-      ]
+      }
     }
     prescriptionBundle = {
       resourceType: "Bundle",
@@ -247,7 +248,7 @@ describe("mergePrescriptionDetails", () => {
   })
 
   it("should merge full prescription details and DoHS data correctly", () => {
-    const result = mergePrescriptionDetails(prescriptionBundle, doHSData, logger)
+    const result = mergePrescriptionDetails(prescriptionBundle, doHSData)
 
     // Check patient details
     expect(result).toEqual({
@@ -263,37 +264,45 @@ describe("mergePrescriptionDetails", () => {
       },
       prescriptionId: "RX123",
       typeCode: "Acute",
-      statusCode: "MSG001",
+      statusCode: "0006",
       issueDate: "2020-01-01T00:00:00Z",
       instanceNumber: 2,
       maxRepeats: 5,
       daysSupply: "28",
       prescriptionPendingCancellation: true,
-      prescribedItems: [],
-      dispensedItems: [{
-        medicationName: "Drug B",
+      items: [{
+        medicationName: "Drug A",
         quantity: "20",
         dosageInstructions: "Take two daily",
         epsStatusCode: "0007",
         nhsAppStatus: undefined,
         itemPendingCancellation: false,
-        cancellationReason: null,
-        notDispensedReason: "Not available",
-        initiallyPrescribed: {
-          dosageInstructions: "Take two daily",
-          medicationName: "Drug A",
-          quantity: "20"
-        }
+        cancellationReason: undefined,
+        notDispensedReason: undefined
       }],
       messageHistory: [{
         messageCode: "prescription-uploaded",
         sentDateTime: "2020-01-02T00:00:00Z",
-        organisationName: "Nominated Performer Org",
-        organisationODS: "ODS456",
-        newStatusCode: "MSG001",
-        dispenseNotification: []
+        orgName: "Prescriber Org",
+        orgODS: "ODS123",
+        newStatusCode: "0001",
+        dispenseNotificationItems: undefined
+      }, {
+        messageCode: "dispense-notified",
+        sentDateTime: "2020-01-03T00:00:00Z",
+        orgName: "Dispensing Org One",
+        orgODS: "ODS789",
+        newStatusCode: "0006",
+        dispenseNotificationItems: [{
+          statusCode: "0001",
+          components: [{
+            medicationName: "Drug B",
+            quantity: "20",
+            dosageInstruction: "Take two daily"
+          }]
+        }]
       }],
-      prescriberOrganisation: {
+      prescriberOrg: {
         name: "Prescriber Org",
         odsCode: "ODS123",
         address: "1 Prescriber Rd, Presc City, PC123",
@@ -319,7 +328,7 @@ describe("mergePrescriptionDetails", () => {
     delete patient.name
     delete patient.address
 
-    const result = mergePrescriptionDetails(prescriptionBundle, {}, logger)
+    const result = mergePrescriptionDetails(prescriptionBundle, {})
     expect(result.patientDetails).toEqual({
       nhsNumber: "P123",
       prefix: "",
@@ -337,8 +346,7 @@ describe("mergePrescriptionDetails", () => {
       .filter(entry => entry.resource!.resourceType !== "MedicationDispense")
     historyAction.action = []
 
-    const result = mergePrescriptionDetails(prescriptionBundle, {}, logger)
-    expect(result.dispensedItems).toEqual([])
+    const result = mergePrescriptionDetails(prescriptionBundle, {})
     expect(result.messageHistory).toEqual([])
   })
 
@@ -350,11 +358,11 @@ describe("mergePrescriptionDetails", () => {
       }
     ]
 
-    const result = mergePrescriptionDetails(prescriptionBundle, {}, logger)
+    const result = mergePrescriptionDetails(prescriptionBundle, {})
 
-    expect(result.instanceNumber).toBe(1) // Default from the implementation
-    expect(result.maxRepeats).toBe(0) // Default from the implementation
-    expect(result.prescriptionPendingCancellation).toBeFalsy() // Default undefined or false
+    expect(result.instanceNumber).toBe(1)
+    expect(result.maxRepeats).toBeUndefined()
+    expect(result.prescriptionPendingCancellation).toBe(false)
   })
 
   it("should use the first patient when multiple patient resources are present", () => {
@@ -377,7 +385,7 @@ describe("mergePrescriptionDetails", () => {
       }
     })
 
-    const result = mergePrescriptionDetails(prescriptionBundle, {}, logger)
+    const result = mergePrescriptionDetails(prescriptionBundle, {})
 
     // Should use patient1 details
     expect(result.patientDetails).toEqual({
@@ -392,176 +400,13 @@ describe("mergePrescriptionDetails", () => {
     })
   })
 
-  it("should correctly map nested dispense notifications in message history", () => {
-    historyAction.action!.push({
-      title: "Dispense notification successful",
-      timingDateTime: "2022-02-03T00:00:00Z",
-      code: [
-        {
-          coding: [
-            {
-              system: "https://tools.ietf.org/html/rfc4122",
-              code: "notification-id-123"
-            }
-          ]
-        },
-        {
-          coding: [
-            {
-              system: "https://fhir.nhs.uk/CodeSystem/EPS-task-business-status",
-              code: "0003"
-            }
-          ]
-        }
-      ],
-      participant: [
-        {
-          extension: [
-            {
-              valueReference: {
-                identifier: {
-                  value: "ODS789"
-                }
-              },
-              url: ""
-            }
-          ]
-        }
-      ],
-      action: [
-        {
-          resource: {reference: "MedicationDispense/123"}
-        }
-      ]
-    })
-    historyAction.action!.push({
-      title: "Dispense notification successful",
-      timingDateTime: "2025-02-21T11:42:06.000Z",
-      code: [
-        {
-          coding: [
-            {
-              system: "https://tools.ietf.org/html/rfc4122",
-              code: "notification-id-456"
-            }
-          ]
-        },
-        {
-          coding: [
-            {
-              system: "https://fhir.nhs.uk/CodeSystem/EPS-task-business-status",
-              code: "0003"
-            }
-          ]
-        }
-      ],
-      participant: [
-        {
-          extension: [
-            {
-              valueReference: {
-                identifier: {
-                  value: "FA565"
-                }
-              },
-              url: ""
-            }
-          ]
-        }
-      ],
-      action: [
-        {
-          resource: {reference: "MedicationDispense/789"}
-        }
-      ]
-    })
-    prescriptionBundle.entry!.push({
-      resource: {
-        resourceType: "MedicationDispense",
-        id: "123",
-        medicationCodeableConcept: {text: "Medication A"},
-        quantity: {value: 10, unit: "tablets"},
-        dosageInstruction: [{text: "Take one daily"}],
-        status: "completed",
-        type: {
-          coding: [
-            {
-              system: "https://fhir.nhs.uk/CodeSystem/medicationdispense-type",
-              code: "0001",
-              display: "Item fully dispensed"
-            }
-          ]
-        }
-      }
-    })
-    prescriptionBundle.entry!.push({
-      resource: {
-        resourceType: "MedicationDispense",
-        id: "789",
-        medicationCodeableConcept: {text: "Medication B"},
-        quantity: {value: 20, unit: "capsules"},
-        dosageInstruction: [{text: "Take two daily"}],
-        status: "completed",
-        type: {
-          coding: [
-            {
-              system: "https://fhir.nhs.uk/CodeSystem/medicationdispense-type",
-              code: "0003",
-              display: "Item dispensed - partial"
-            }
-          ]
-        }
-      }
-    })
-
-    const result = mergePrescriptionDetails(prescriptionBundle, doHSData, logger)
-
-    expect(result.messageHistory).toEqual([
-      {
-        dispenseNotification: [],
-        messageCode: "prescription-uploaded",
-        newStatusCode: "MSG001",
-        organisationName: "Nominated Performer Org",
-        organisationODS: "ODS456",
-        sentDateTime: "2020-01-02T00:00:00Z"
-      },
-      {
-        messageCode: "dispense-notified",
-        sentDateTime: "2022-02-03T00:00:00Z",
-        organisationName: "Dispensing Org One",
-        organisationODS: "ODS789",
-        newStatusCode: "0003",
-        dispenseNotification: [{
-          dosageInstruction: "Take one daily",
-          id: "notification-id-123",
-          medicationName: "Medication A",
-          quantity: "10 tablets",
-          statusCode: "0001"
-        }]
-      },
-      {
-        messageCode: "dispense-notified",
-        sentDateTime: "2025-02-21T11:42:06.000Z",
-        organisationName: undefined,
-        organisationODS: "FA565",
-        newStatusCode: "0003",
-        dispenseNotification: [{
-          dosageInstruction: "Take two daily",
-          id: "notification-id-456",
-          medicationName: "Medication B",
-          quantity: "20 capsules",
-          statusCode: "0003"
-        }]
-      }])
-  })
-
   it("should handle partial doHSData object gracefully", () => {
     delete doHSData.nominatedPerformer
     delete doHSData.dispensingOrganization
 
-    const result = mergePrescriptionDetails(prescriptionBundle, doHSData, logger)
+    const result = mergePrescriptionDetails(prescriptionBundle, doHSData)
 
-    expect(result.prescriberOrganisation).toEqual({
+    expect(result.prescriberOrg).toEqual({
       name: "Prescriber Org",
       odsCode: "ODS123",
       address: "1 Prescriber Rd, Presc City, PC123",
@@ -577,12 +422,12 @@ describe("mergePrescriptionDetails", () => {
     expect(result.currentDispenser).toEqual({
       address: "Not found",
       name: "",
-      odsCode: "ODS456",
+      odsCode: "ODS789",
       telephone: "Not found"
     })
   })
 
-  it("should correctly process multiple MedicationRequest and MedicationDispense resources", () => {
+  it("should correctly process multiple MedicationRequest resources", () => {
     prescriptionBundle.entry!.push({
       resource: {
         resourceType: "MedicationRequest",
@@ -609,33 +454,161 @@ describe("mergePrescriptionDetails", () => {
         ]
       }
     })
-    const result = mergePrescriptionDetails(prescriptionBundle, {}, logger)
+    const result = mergePrescriptionDetails(prescriptionBundle, {})
 
-    expect(result.prescribedItems).toEqual([{
+    expect(result.items).toEqual([{
+      medicationName: "Drug A",
+      quantity: "20",
+      dosageInstructions: "Take two daily",
+      epsStatusCode: "0007",
+      nhsAppStatus: undefined,
+      itemPendingCancellation: false,
+      cancellationReason: undefined,
+      notDispensedReason: undefined
+    },
+    {
       medicationName: "Drug C",
       quantity: "20",
       dosageInstructions: "Twice daily",
       epsStatusCode: "0001",
       nhsAppStatus: undefined,
       itemPendingCancellation: false,
-      cancellationReason: null
+      cancellationReason: undefined,
+      notDispensedReason: undefined
     }])
+  })
 
-    expect(result.dispensedItems).toEqual([{
-      medicationName: "Drug B",
-      quantity: "20",
-      dosageInstructions: "Take two daily",
-      epsStatusCode: "0007",
-      nhsAppStatus: undefined,
-      itemPendingCancellation: false,
-      cancellationReason: null,
-      notDispensedReason: "Not available",
-      initiallyPrescribed: {
-        dosageInstructions: "Take two daily",
-        medicationName: "Drug A",
-        quantity: "20"
+  it("should correctly process multiple MedicationDispenses on the same DN", () => {
+    prescriptionBundle.entry!.push({
+      resource: {
+        resourceType: "MedicationDispense",
+        id: "00000000-0000-0000-000000000002",
+        medicationCodeableConcept: {text: "Drug C"},
+        quantity: {value: 20},
+        dosageInstruction: [{text: "Take four daily"}],
+        status: "in-progress",
+        authorizingPrescription: [{
+          reference: "MedicationRequest/med-req-1"
+        }],
+        type: {
+          coding: [
+            {
+              system: "https://fhir.nhs.uk/CodeSystem/medicationdispense-type",
+              code: "0001",
+              display: "Item fully dispensed"
+            }
+          ]
+        }
       }
-    }])
+    })
+    historyAction.action![1].action!.push({
+      resource: {reference: "urn:uuid:00000000-0000-0000-000000000002"}
+    })
+    const result = mergePrescriptionDetails(prescriptionBundle, doHSData)
+
+    expect(result.messageHistory[1]).toEqual({
+      messageCode: "dispense-notified",
+      sentDateTime: "2020-01-03T00:00:00Z",
+      orgName: "Dispensing Org One",
+      orgODS: "ODS789",
+      newStatusCode: "0006",
+      dispenseNotificationItems: [{
+        statusCode: "0001",
+        components: [{
+          medicationName: "Drug B",
+          quantity: "20",
+          dosageInstruction: "Take two daily"
+        }, {
+          medicationName: "Drug C",
+          quantity: "20",
+          dosageInstruction: "Take four daily"
+        }]
+      }]
+    })
+  })
+
+  it("should correctly process multiple MedicationDispenses on different DNs", () => {
+    prescriptionBundle.entry!.push({
+      resource: {
+        resourceType: "MedicationDispense",
+        id: "00000000-0000-0000-000000000002",
+        medicationCodeableConcept: {text: "Drug B"},
+        quantity: {value: 10},
+        dosageInstruction: [{text: "Take two daily"}],
+        status: "in-progress",
+        authorizingPrescription: [{
+          reference: "MedicationRequest/med-req-1"
+        }],
+        type: {
+          coding: [
+            {
+              system: "https://fhir.nhs.uk/CodeSystem/medicationdispense-type",
+              code: "0003",
+              display: "Item dispensed - partial"
+            }
+          ]
+        }
+      }
+    })
+    historyAction.action!.push({
+      title: "Dispense notification successful",
+      code: [{
+        coding: [{
+          system: "https://fhir.nhs.uk/CodeSystem/EPS-task-business-status",
+          code: "0002"
+        }]
+      }],
+      timingDateTime: "2020-01-02T16:00:00Z",
+      participant: [{
+        extension: [{
+          valueReference: {
+            identifier: {
+              system: "https://fhir.nhs.uk/Id/ods-organization-code",
+              value: "ODS789"
+            }
+          },
+          url: participantExtensionUrl
+        }]
+      }],
+      action: [{
+        resource: {reference: "urn:uuid:00000000-0000-0000-000000000002"}
+      }]
+    })
+    const result = mergePrescriptionDetails(prescriptionBundle, doHSData)
+
+    expect(result.messageHistory).toEqual([
+      expect.anything(), // Don't care about prescription upload message here
+      {
+        messageCode: "dispense-notified",
+        sentDateTime: "2020-01-03T00:00:00Z",
+        orgName: "Dispensing Org One",
+        orgODS: "ODS789",
+        newStatusCode: "0006",
+        dispenseNotificationItems: [{
+          statusCode: "0001",
+          components: [{
+            medicationName: "Drug B",
+            quantity: "20",
+            dosageInstruction: "Take two daily"
+          }]
+        }]
+      },
+      {
+        messageCode: "dispense-notified",
+        sentDateTime: "2020-01-02T16:00:00Z",
+        orgName: "Dispensing Org One",
+        orgODS: "ODS789",
+        newStatusCode: "0002",
+        dispenseNotificationItems: [{
+          statusCode: "0003",
+          components: [{
+            medicationName: "Drug B",
+            quantity: "10",
+            dosageInstruction: "Take two daily"
+          }]
+        }]
+      }
+    ])
   })
 
   it("should handle wales typeCode value for prescriber organisation mapping", () => {
@@ -647,8 +620,8 @@ describe("mergePrescriptionDetails", () => {
       }
     ]
 
-    const resultWales = mergePrescriptionDetails(prescriptionBundle, doHSData, logger)
-    expect(resultWales.prescriberOrganisation?.prescribedFrom).toBe("Wales")
+    const resultWales = mergePrescriptionDetails(prescriptionBundle, doHSData)
+    expect(resultWales.prescriberOrg?.prescribedFrom).toBe("Wales")
   })
 
   it("should handle unknown typeCode value for prescriber organisation mapping", () => {
@@ -660,8 +633,8 @@ describe("mergePrescriptionDetails", () => {
       }
     ]
 
-    const resultWales = mergePrescriptionDetails(prescriptionBundle, doHSData, logger)
-    expect(resultWales.prescriberOrganisation?.prescribedFrom).toBe("Unknown")
+    const resultWales = mergePrescriptionDetails(prescriptionBundle, doHSData)
+    expect(resultWales.prescriberOrg?.prescribedFrom).toBe("Unknown")
   })
 
   it("should handle MedicationRequest and MedicationDispense resources with missing fields gracefully", () => {
@@ -675,22 +648,17 @@ describe("mergePrescriptionDetails", () => {
     medicationDispense.quantity!.unit = ""
     delete medicationDispense.dosageInstruction
 
-    const result = mergePrescriptionDetails(prescriptionBundle, {}, logger)
+    const result = mergePrescriptionDetails(prescriptionBundle, {})
 
-    expect(result.dispensedItems).toEqual([{
+    expect(result.items).toEqual([{
       medicationName: "",
       quantity: "0",
-      dosageInstructions: "Unknown",
+      dosageInstructions: "",
       epsStatusCode: "0007",
       nhsAppStatus: undefined,
       itemPendingCancellation: false,
-      cancellationReason: null,
-      notDispensedReason: "Not available",
-      initiallyPrescribed: {
-        dosageInstructions: "",
-        medicationName: "",
-        quantity: "0"
-      }
+      cancellationReason: undefined,
+      notDispensedReason: undefined
     }])
   })
 })

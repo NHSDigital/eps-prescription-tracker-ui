@@ -1,6 +1,6 @@
 import {Card, Col, Row} from "nhsuk-react-components"
 
-import {PrescriberOrganisationSummary, OrganisationSummary} from "@cpt-ui-common/common-types"
+import {PrescriberOrgSummary, OrgSummary} from "@cpt-ui-common/common-types"
 
 import {
   HEADING,
@@ -18,16 +18,16 @@ import {
   IOM
 } from "@/constants/ui-strings/SiteDetailsCardsStrings"
 
-export type SiteDetailsCardProps = OrganisationSummary & {
+export type SiteDetailsCardProps = OrgSummary & {
   heading: string
   // This is a bit of a kludge, but its cleaner than defining two new prop types
   prescribedFrom?: string
 }
 
 export type SiteDetailsCardsProps = {
-  prescriber: PrescriberOrganisationSummary
-  dispenser?: OrganisationSummary
-  nominatedDispenser?: OrganisationSummary
+  prescriber: PrescriberOrgSummary
+  dispenser?: OrgSummary
+  nominatedDispenser?: OrgSummary
 }
 
 export function SiteDetailsCard({

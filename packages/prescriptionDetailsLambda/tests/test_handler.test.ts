@@ -26,6 +26,8 @@ describe("Lambda Handler Tests", () => {
   // Create copy of the event for testing.
   let logger = new Logger({serviceName: "prescriptionDetailsLambda"})
   logger.warn = jest.fn()
+  logger.error = jest.fn()
+  logger.info = jest.fn()
   const handler = newHandler({
     errorResponseBody: {message: "A system error has occurred"},
     logger: logger,

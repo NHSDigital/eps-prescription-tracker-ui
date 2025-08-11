@@ -6,11 +6,7 @@ import {MockPatientDetailsProvider} from "../__mocks__/MockPatientDetailsProvide
 import {MockPrescriptionInformationProvider} from "../__mocks__/MockPrescriptionInformationProvider"
 import {mockPrescriptionDetailsResponse} from "../__mocks__/MockPrescriptionDetailsResponse"
 
-import {
-  PrescriptionDetailsResponse,
-  PrescriberOrganisationSummary,
-  OrganisationSummary
-} from "@cpt-ui-common/common-types"
+import {PrescriptionDetailsResponse, PrescriberOrgSummary, OrgSummary} from "@cpt-ui-common/common-types"
 
 // import {FRONTEND_PATHS} from "@/constants/environment"
 import {STRINGS} from "@/constants/ui-strings/PrescriptionDetailsPageStrings"
@@ -147,9 +143,9 @@ jest.mock("@/components/EpsSpinner", () => () => (
 ))
 
 type SiteDetailsCardsProps = {
-  prescriber: PrescriberOrganisationSummary
-  dispenser?: OrganisationSummary
-  nominatedDispenser?: OrganisationSummary
+  prescriber: PrescriberOrgSummary
+  dispenser?: OrgSummary
+  nominatedDispenser?: OrgSummary
 }
 
 // simple mock for SiteDetailsCards so we can inspect the props.
@@ -263,7 +259,7 @@ describe("PrescriptionDetailsPage", () => {
     const cards = screen.getByTestId("site-details-cards")
     const props = JSON.parse(cards.textContent || "{}")
 
-    expect(props.prescriber).toEqual(payload.prescriberOrganisation)
+    expect(props.prescriber).toEqual(payload.prescriberOrg)
     if (!payload.currentDispenser || !payload.nominatedDispenser) {
       throw new Error("Expected the payload to be populated")
     }

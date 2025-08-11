@@ -9,11 +9,10 @@ import {
 } from "nhsuk-react-components"
 
 import {
-  PrescriberOrganisationSummary,
-  OrganisationSummary,
+  PrescriberOrgSummary,
+  OrgSummary,
   PrescriptionDetailsResponse,
-  PrescribedItemDetails,
-  DispensedItemDetails,
+  ItemDetails,
   MessageHistory
 } from "@cpt-ui-common/common-types"
 
@@ -25,7 +24,7 @@ import {STRINGS} from "@/constants/ui-strings/PrescriptionDetailsPageStrings"
 
 import EpsSpinner from "@/components/EpsSpinner"
 import {SiteDetailsCards} from "@/components/prescriptionDetails/SiteDetailsCards"
-import {PrescribedDispensedItemsCards} from "@/components/prescriptionDetails/PrescribedDispensedItemsCards"
+import {ItemsCards} from "@/components/prescriptionDetails/ItemsCards"
 import {MessageHistoryCard} from "@/components/prescriptionDetails/MessageHistoryCard"
 
 import http from "@/helpers/axios"
@@ -41,11 +40,10 @@ export default function PrescriptionDetailsPage() {
   const {setPrescriptionInformation} = usePrescriptionInformation()
   const {setPatientDetails} = usePatientDetails()
 
-  const [prescriber, setPrescriber] = useState<PrescriberOrganisationSummary | undefined>()
-  const [nominatedDispenser, setNominatedDispenser] = useState<OrganisationSummary | undefined>()
-  const [dispenser, setDispenser] = useState<OrganisationSummary | undefined>()
-  const [prescribedItems, setPrescribedItems] = useState<Array<PrescribedItemDetails>>([])
-  const [dispensedItems, setDispensedItems] = useState<Array<DispensedItemDetails>>([])
+  const [prescriber, setPrescriber] = useState<PrescriberOrgSummary | undefined>()
+  const [nominatedDispenser, setNominatedDispenser] = useState<OrgSummary | undefined>()
+  const [dispenser, setDispenser] = useState<OrgSummary | undefined>()
+  const [items, setItems] = useState<Array<ItemDetails>>([])
   const [messageHistory, setMessageHistory] = useState<Array<MessageHistory>>([])
   const searchContext = useSearchContext()
   const navigate = useNavigate()
@@ -89,9 +87,8 @@ export default function PrescriptionDetailsPage() {
     // Use the populated payload (retrieved live or from mock fallback)
     setPrescriptionInformation(payload)
     setPatientDetails(payload.patientDetails)
-    setPrescribedItems(payload.prescribedItems)
-    setDispensedItems(payload.dispensedItems)
-    setPrescriber(payload.prescriberOrganisation)
+    setItems(payload.items)
+    setPrescriber(payload.prescriberOrg)
     setMessageHistory(payload.messageHistory)
 
     if (!payload.currentDispenser) {
@@ -171,11 +168,7 @@ export default function PrescriptionDetailsPage() {
         </Row>
         {/* === Main Grid Layout === */}
         <Row>
-          {/* Prescribed/Dispensed items */}
-          <PrescribedDispensedItemsCards
-            prescribedItems={prescribedItems}
-            dispensedItems={dispensedItems}
-          />
+          <ItemsCards items={items} />
           {/* Prescriber and dispenser information */}
           <Col width="one-third">
             <SiteDetailsCards
