@@ -122,7 +122,7 @@ jobs:
           role-to-assume: ${{ secrets.CDK_PULL_IMAGE_ROLE }}
           role-session-name: prescription-clinical-tracker-ui-pull-image
       - name: build_artifact download
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: build_artifact
 
