@@ -29,7 +29,6 @@ export interface AuthContextType {
   user: string | null
   isSignedIn: boolean
   isSigningIn: boolean
-  multipleSessions: boolean
   isConcurrentSession: boolean
   rolesWithAccess: Array<RoleDetails>
   rolesWithoutAccess: Array<RoleDetails>
@@ -53,8 +52,6 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
   const [isSigningIn, setIsSigningIn] = useLocalStorageState<boolean>("isSigningIn", "isSigningIn", false)
   const [isConcurrentSession, setIsConcurrentSession] = useLocalStorageState<boolean>(
     "isConcurrentSession", "isConcurrentSession", false)
-  const [multipleSessions, setMultipleSessions] = useLocalStorageState<boolean>(
-    "multipleSessions", "multipleSessions", false)
   const [rolesWithAccess, setRolesWithAccess] = useLocalStorageState<Array<RoleDetails>>(
     "rolesWithAccess", "rolesWithAccess", [])
   const [rolesWithoutAccess, setRolesWithoutAccess] = useLocalStorageState<Array<RoleDetails>>(
@@ -96,7 +93,6 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
     setIsSignedIn(false)
     setIsSigningIn(false)
     setIsConcurrentSession(false)
-    setMultipleSessions(false)
   }
 
   const forceCognitoLogout = async () => {
@@ -130,7 +126,6 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
           setError(trackerUserInfo.error)
 
           setIsConcurrentSession(trackerUserInfo.isConcurrentSession)
-          setMultipleSessions(trackerUserInfo.multipleSessions)
 
           setIsSignedIn(true)
           setIsSigningIn(false)
@@ -234,7 +229,6 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
       selectedRole,
       userDetails,
       isConcurrentSession,
-      multipleSessions,
       cognitoSignIn,
       cognitoSignOut,
       clearAuthState,
