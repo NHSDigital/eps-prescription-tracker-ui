@@ -10,18 +10,14 @@ import {mergePrescriptionDetails} from "../utils/responseMapper"
 import {DoHSData} from "../utils/types"
 import {buildApigeeHeaders} from "@cpt-ui-common/authFunctions"
 import path from "path"
-import {extractOdsCodes} from "../utils/extensionUtils"
+import {extractOdsCodes, PrescriptionOdsCodes} from "../utils/extensionUtils"
 import {PrescriptionDetailsResponse} from "@cpt-ui-common/common-types"
 
 /**
  * Fetch DoHS data and map it to the expected structure.
  */
 export async function getDoHSData(
-  odsCodes: {
-    prescribingOrganization: string | undefined
-    nominatedPerformer: string | undefined
-    dispensingOrganization: string | undefined
-  },
+  odsCodes: PrescriptionOdsCodes,
   logger: Logger
 ): Promise<DoHSData> {
   // Collect all valid ODS codes into an array
@@ -137,5 +133,5 @@ export async function processPrescriptionRequest(
     issueNumber
   })
 
-  return mergePrescriptionDetails(apigeeResponse.data, doHSData)
+  return mergePrescriptionDetails(apigeeResponse.data, doHSData, odsCodes)
 }

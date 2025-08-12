@@ -15,7 +15,12 @@ import {
   mapMessageHistoryTitleToMessageCode,
   extractItems
 } from "./fhirMappers"
-import {findExtensionByKey, getBooleanFromNestedExtension, getIntegerFromNestedExtension} from "./extensionUtils"
+import {
+  findExtensionByKey,
+  getBooleanFromNestedExtension,
+  getIntegerFromNestedExtension,
+  PrescriptionOdsCodes
+} from "./extensionUtils"
 import {
   MessageHistory,
   DispenseNotificationItem,
@@ -149,43 +154,16 @@ const createOrganizationSummary = (
 }
 
 /**
- * Extracts organization codes from FHIR Bundle as fallbacks
- */
-const extractOrganizationCodes = (requestGroup: RequestGroup, firstMedicationRequest: MedicationRequest) => {
-  // Get prescribing organization from RequestGroup author
-  const prescribingODSCode = requestGroup.author!.identifier!.value!
-
-  // Get nominated performer from first MedicationRequest
-  const nominatedPerformerODSCode = firstMedicationRequest.dispenseRequest!.performer?.identifier!.value
-
-  // Get dispensing organizations from message history
-  let dispensingODSCode: string | undefined
-  const historyAction = requestGroup.action?.find(action =>
-    action.title === "Prescription status transitions"
-  )
-
-  if (historyAction?.action) {
-    historyAction.action.forEach(action => {
-      const orgODS = action.participant?.[0]?.extension?.[0]?.valueReference?.identifier?.value
-      if (orgODS && dispensingODSCode !== (orgODS) && orgODS !== prescribingODSCode) {
-        dispensingODSCode = orgODS
-      }
-    })
-  }
-
-  return {
-    prescribingODSCode,
-    nominatedPerformerODSCode,
-    dispensingODSCode
-  }
-}
-
-/**
  * Main function to merge FHIR Bundle data with DoHS data into the required response format
  */
 export const mergePrescriptionDetails = (
   bundle: Bundle,
-  doHSData: DoHSData = {}
+  doHSData: DoHSData,
+  {
+    prescribingOrganization,
+    nominatedPerformer,
+    dispensingOrganization
+  }: PrescriptionOdsCodes
 ): PrescriptionDetailsResponse => {
   // Extract resources from bundle
   const requestGroup = extractResourcesFromBundle<RequestGroup>(bundle, "RequestGroup")[0]
@@ -230,28 +208,21 @@ export const mergePrescriptionDetails = (
     ? messageHistory[messageHistory.length - 1].newStatusCode
     : requestGroup.status ?? "unknown"
 
-  // Extract organization codes from FHIR as fallbacks
-  const {
-    prescribingODSCode,
-    nominatedPerformerODSCode,
-    dispensingODSCode
-  } = extractOrganizationCodes(requestGroup, firstMedicationRequest)
-
   // create organization summaries
   const prescriptionTypeCode = prescriptionTypeExt?.valueCoding?.code ?? "Unknown"
 
   const prescriberOrg = createOrganizationSummary(
     doHSData.prescribingOrganization,
-    prescribingODSCode,
+    prescribingOrganization,
     mapPrescriptionOrigin(prescriptionTypeCode)
   )
 
-  const nominatedDispenser = nominatedPerformerODSCode
-    ? createOrganizationSummary(doHSData.nominatedPerformer, nominatedPerformerODSCode)
+  const nominatedDispenser = nominatedPerformer
+    ? createOrganizationSummary(doHSData.nominatedPerformer, nominatedPerformer)
     : undefined
 
-  const currentDispenser = dispensingODSCode
-    ? createOrganizationSummary(doHSData.dispensingOrganization, dispensingODSCode)
+  const currentDispenser = dispensingOrganization
+    ? createOrganizationSummary(doHSData.dispensingOrganization, dispensingOrganization)
     : undefined
 
   return {

@@ -90,18 +90,8 @@ export default function PrescriptionDetailsPage() {
     setItems(payload.items)
     setPrescriber(payload.prescriberOrg)
     setMessageHistory(payload.messageHistory)
-
-    if (!payload.currentDispenser) {
-      setDispenser(undefined)
-    } else {
-      setDispenser(payload.currentDispenser)
-    }
-
-    if (!payload.nominatedDispenser) {
-      setNominatedDispenser(undefined)
-    } else {
-      setNominatedDispenser(payload.nominatedDispenser)
-    }
+    setDispenser(payload.currentDispenser)
+    setNominatedDispenser(payload.nominatedDispenser)
 
     return payload
   }

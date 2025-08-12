@@ -28,6 +28,7 @@ jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => ({
 
 // Import some mock objects to use in our tests.
 import {Bundle, FhirResource} from "fhir/r4"
+import {PrescriptionOdsCodes} from "../src/utils/extensionUtils"
 
 const {
   getDoHSData,
@@ -132,24 +133,6 @@ describe("prescriptionService", () => {
         })
       )
     })
-
-    it("should handle missing data gracefully", () => {
-      const apigeeData = {} as unknown as Bundle<FhirResource>
-      const result = extractOdsCodes(apigeeData, logger)
-      expect(result.prescribingOrganization).toBeUndefined()
-      expect(result.nominatedPerformer).toBeUndefined()
-      expect(result.dispensingOrganization).toBeUndefined()
-
-      // Even though no data is present, the logger should receive an empty array for dispensingOrganization.
-      expect(logger.info).toHaveBeenCalledWith(
-        "Extracted ODS codes",
-        expect.objectContaining({
-          prescribingOrganization: undefined,
-          nominatedPerformer: undefined,
-          dispensingOrganization: undefined
-        })
-      )
-    })
   })
 
   describe("getDoHSData", () => {
@@ -165,7 +148,7 @@ describe("prescriptionService", () => {
         prescribingOrganization: undefined,
         nominatedPerformer: undefined,
         dispensingOrganization: undefined
-      }
+      } as unknown as PrescriptionOdsCodes
 
       const result = await getDoHSData(emptyOdsCodes, logger)
       expect(result).toEqual({
@@ -265,33 +248,55 @@ describe("prescriptionService", () => {
     const apigeePrescriptionsEndpoint = "https://api.example.com/"
     const apigeeAccessToken = "sampleToken"
     const roleId = "sampleRole"
-
-    it("should process and return merged response when successful", async () => {
-      const prescriptionId = "RX123"
-
-      // Create a fake Apigee response with necessary fields.
-      const fakeApigeeData = {
-        author: {
-          identifier: {
-            value: "ODS_AUTHOR"
-          }
-        },
-        action: [
-          {
-            participant: [
-              {identifier: {system: "https://fhir.nhs.uk/Id/ods-organization-code", value: "ODS123456"}}
-            ]
-          },
-          {
+    // Create a fake Apigee response with necessary fields.
+    const participantExtensionUrl =
+    "http://hl7.org/fhir/5.0/StructureDefinition/extension-RequestOrchestration.action.participant.typeReference"
+    const fakeApigeeData = {
+      resourceType: "Bundle",
+      type: "collection",
+      entry: [
+        {
+          resource: {
+            resourceType: "RequestGroup",
+            author: {
+              identifier: {
+                system: "https://fhir.nhs.uk/Id/ods-organization-code",
+                value: "ODS123"
+              }
+            },
             action: [
               {
-                title: "Dispense notification successful",
-                participant: [{identifier: {value: "ODS_DISPENSE"}}]
+                title: "Prescription status transitions",
+                action: [{
+                  participant: [{
+                    extension: [{
+                      valueReference: {
+                        identifier: {
+                          system: "https://fhir.nhs.uk/Id/ods-organization-code",
+                          value: "ODS789"
+                        }
+                      },
+                      url: participantExtensionUrl
+                    }]
+                  }]
+                }]
               }
             ]
           }
-        ]
-      }
+        },
+        {
+          resource: {
+            resourceType: "MedicationRequest",
+            dispenseRequest: {
+              performer: {identifier: {value: "ODS456"}}
+            }
+          }
+        }
+      ]
+    }
+
+    it("should process and return merged response when successful", async () => {
+      const prescriptionId = "RX123"
 
       mockBuildApigeeHeaders.mockReturnValue({
         "authorization": `Bearer ${apigeeAccessToken}`,
@@ -302,8 +307,6 @@ describe("prescriptionService", () => {
         "nhsd-organization-uuid": "",
         "x-correlation-id": ""
       })
-
-      const fakeApigeeHeaders = {"content-type": "application/json"}
 
       // Set up nock to intercept the HTTP request - note the RequestGroup path
       nock(apigeePrescriptionsEndpoint)
@@ -317,7 +320,7 @@ describe("prescriptionService", () => {
         // Note: nhsd-organization-uuid and x-correlation-id are empty strings in the test
         .matchHeader("nhsd-organization-uuid", "")
         .matchHeader("x-correlation-id", "")
-        .reply(200, fakeApigeeData, fakeApigeeHeaders)
+        .reply(200, fakeApigeeData, {"content-type": "application/json"})
 
       // Setup the doHSClient mock so that getDoHSData returns mapped data.
       const mockDoHSResponse = [
@@ -349,30 +352,6 @@ describe("prescriptionService", () => {
     it("should handle prescription IDs ending with + character correctly", async () => {
       const prescriptionId = "RX123+"
 
-      // Create a fake Apigee response with necessary fields.
-      const fakeApigeeData = {
-        author: {
-          identifier: {
-            value: "ODS_AUTHOR"
-          }
-        },
-        action: [
-          {
-            participant: [
-              {identifier: {system: "https://fhir.nhs.uk/Id/ods-organization-code", value: "ODS123456"}}
-            ]
-          },
-          {
-            action: [
-              {
-                title: "Dispense notification successful",
-                participant: [{identifier: {value: "ODS_DISPENSE"}}]
-              }
-            ]
-          }
-        ]
-      }
-
       mockBuildApigeeHeaders.mockReturnValue({
         "authorization": `Bearer ${apigeeAccessToken}`,
         "nhsd-session-urid": roleId,
@@ -382,8 +361,6 @@ describe("prescriptionService", () => {
         "nhsd-organization-uuid": "",
         "x-correlation-id": ""
       })
-
-      const fakeApigeeHeaders = {"content-type": "application/json"}
 
       // Set up nock to intercept the HTTP request - the + should be properly URL encoded as %2B
       nock(apigeePrescriptionsEndpoint)
@@ -396,7 +373,7 @@ describe("prescriptionService", () => {
         .matchHeader("x-request-id", "test-uuid")
         .matchHeader("nhsd-organization-uuid", "")
         .matchHeader("x-correlation-id", "")
-        .reply(200, fakeApigeeData, fakeApigeeHeaders)
+        .reply(200, fakeApigeeData, {"content-type": "application/json"})
 
       // Setup the doHSClient mock so that getDoHSData returns mapped data.
       const mockDoHSResponse = [

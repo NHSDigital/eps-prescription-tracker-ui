@@ -18,10 +18,8 @@ import {
   IOM
 } from "@/constants/ui-strings/SiteDetailsCardsStrings"
 
-export type SiteDetailsCardProps = OrgSummary & {
+export type SiteDetailsCardProps = (OrgSummary | PrescriberOrgSummary) & {
   heading: string
-  // This is a bit of a kludge, but its cleaner than defining two new prop types
-  prescribedFrom?: string
 }
 
 export type SiteDetailsCardsProps = {

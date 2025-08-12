@@ -10,6 +10,7 @@ import {
 import {DoHSData} from "../src/utils/types"
 
 import {mergePrescriptionDetails} from "../src/utils/responseMapper"
+import {PrescriptionOdsCodes} from "src/utils/extensionUtils"
 
 describe("mergePrescriptionDetails", () => {
   const participantExtensionUrl =
@@ -21,6 +22,7 @@ describe("mergePrescriptionDetails", () => {
   let medicationDispense: MedicationDispense
   let prescriptionBundle: Bundle<FhirResource>
   let doHSData: DoHSData
+  let odsCodes: PrescriptionOdsCodes
   beforeEach(() => {
     historyAction = {
       title: "Prescription status transitions",
@@ -245,10 +247,15 @@ describe("mergePrescriptionDetails", () => {
         ]
       }
     }
+    odsCodes = {
+      prescribingOrganization: "ODS123",
+      nominatedPerformer: "ODS456",
+      dispensingOrganization: "ODS789"
+    }
   })
 
   it("should merge full prescription details and DoHS data correctly", () => {
-    const result = mergePrescriptionDetails(prescriptionBundle, doHSData)
+    const result = mergePrescriptionDetails(prescriptionBundle, doHSData, odsCodes)
 
     // Check patient details
     expect(result).toEqual({
@@ -328,7 +335,7 @@ describe("mergePrescriptionDetails", () => {
     delete patient.name
     delete patient.address
 
-    const result = mergePrescriptionDetails(prescriptionBundle, {})
+    const result = mergePrescriptionDetails(prescriptionBundle, {}, odsCodes)
     expect(result.patientDetails).toEqual({
       nhsNumber: "P123",
       prefix: "",
@@ -346,7 +353,7 @@ describe("mergePrescriptionDetails", () => {
       .filter(entry => entry.resource!.resourceType !== "MedicationDispense")
     historyAction.action = []
 
-    const result = mergePrescriptionDetails(prescriptionBundle, {})
+    const result = mergePrescriptionDetails(prescriptionBundle, {}, odsCodes)
     expect(result.messageHistory).toEqual([])
   })
 
@@ -358,7 +365,7 @@ describe("mergePrescriptionDetails", () => {
       }
     ]
 
-    const result = mergePrescriptionDetails(prescriptionBundle, {})
+    const result = mergePrescriptionDetails(prescriptionBundle, {}, odsCodes)
 
     expect(result.instanceNumber).toBe(1)
     expect(result.maxRepeats).toBeUndefined()
@@ -385,7 +392,7 @@ describe("mergePrescriptionDetails", () => {
       }
     })
 
-    const result = mergePrescriptionDetails(prescriptionBundle, {})
+    const result = mergePrescriptionDetails(prescriptionBundle, {}, odsCodes)
 
     // Should use patient1 details
     expect(result.patientDetails).toEqual({
@@ -404,7 +411,7 @@ describe("mergePrescriptionDetails", () => {
     delete doHSData.nominatedPerformer
     delete doHSData.dispensingOrganization
 
-    const result = mergePrescriptionDetails(prescriptionBundle, doHSData)
+    const result = mergePrescriptionDetails(prescriptionBundle, doHSData, odsCodes)
 
     expect(result.prescriberOrg).toEqual({
       name: "Prescriber Org",
@@ -454,7 +461,7 @@ describe("mergePrescriptionDetails", () => {
         ]
       }
     })
-    const result = mergePrescriptionDetails(prescriptionBundle, {})
+    const result = mergePrescriptionDetails(prescriptionBundle, {}, odsCodes)
 
     expect(result.items).toEqual([{
       medicationName: "Drug A",
@@ -504,7 +511,7 @@ describe("mergePrescriptionDetails", () => {
     historyAction.action![1].action!.push({
       resource: {reference: "urn:uuid:00000000-0000-0000-000000000002"}
     })
-    const result = mergePrescriptionDetails(prescriptionBundle, doHSData)
+    const result = mergePrescriptionDetails(prescriptionBundle, doHSData, odsCodes)
 
     expect(result.messageHistory[1]).toEqual({
       messageCode: "dispense-notified",
@@ -574,7 +581,7 @@ describe("mergePrescriptionDetails", () => {
         resource: {reference: "urn:uuid:00000000-0000-0000-000000000002"}
       }]
     })
-    const result = mergePrescriptionDetails(prescriptionBundle, doHSData)
+    const result = mergePrescriptionDetails(prescriptionBundle, doHSData, odsCodes)
 
     expect(result.messageHistory).toEqual([
       expect.anything(), // Don't care about prescription upload message here
@@ -620,7 +627,7 @@ describe("mergePrescriptionDetails", () => {
       }
     ]
 
-    const resultWales = mergePrescriptionDetails(prescriptionBundle, doHSData)
+    const resultWales = mergePrescriptionDetails(prescriptionBundle, doHSData, odsCodes)
     expect(resultWales.prescriberOrg?.prescribedFrom).toBe("Wales")
   })
 
@@ -633,7 +640,7 @@ describe("mergePrescriptionDetails", () => {
       }
     ]
 
-    const resultWales = mergePrescriptionDetails(prescriptionBundle, doHSData)
+    const resultWales = mergePrescriptionDetails(prescriptionBundle, doHSData, odsCodes)
     expect(resultWales.prescriberOrg?.prescribedFrom).toBe("Unknown")
   })
 
@@ -648,7 +655,7 @@ describe("mergePrescriptionDetails", () => {
     medicationDispense.quantity!.unit = ""
     delete medicationDispense.dosageInstruction
 
-    const result = mergePrescriptionDetails(prescriptionBundle, {})
+    const result = mergePrescriptionDetails(prescriptionBundle, {}, odsCodes)
 
     expect(result.items).toEqual([{
       medicationName: "",

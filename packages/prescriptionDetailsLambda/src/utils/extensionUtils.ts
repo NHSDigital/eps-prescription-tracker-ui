@@ -9,15 +9,21 @@ import {
 import {extensionUrlMappings} from "./types"
 import {Logger} from "@aws-lambda-powertools/logger"
 
-export const extractOdsCodes = (bundle: Bundle, logger: Logger) => {
-  const requestGroup = bundle.entry?.find(e => e.resource?.resourceType === "RequestGroup")?.resource as RequestGroup
-  const medicationRequests = bundle.entry?.filter(e => e.resource?.resourceType === "MedicationRequest")?.map(e => e.resource as MedicationRequest) ?? []
+export type PrescriptionOdsCodes = {
+  prescribingOrganization: string
+  nominatedPerformer: string | undefined
+  dispensingOrganization: string | undefined
+}
 
-  const prescribingOrganization = requestGroup?.author?.identifier?.value
+export const extractOdsCodes = (bundle: Bundle, logger: Logger): PrescriptionOdsCodes => {
+  const requestGroup = bundle.entry!.find(e => e.resource!.resourceType === "RequestGroup")!.resource as RequestGroup
+  const medicationRequests = bundle.entry!.filter(e => e.resource!.resourceType === "MedicationRequest").map(e => e.resource as MedicationRequest)
+
+  const prescribingOrganization = requestGroup.author!.identifier!.value!
 
   // Handle performer identifier as array or single object
   let nominatedPerformer: string | undefined
-  const performerIdentifiers = medicationRequests[0]?.dispenseRequest?.performer?.identifier
+  const performerIdentifiers = medicationRequests[0].dispenseRequest!.performer?.identifier
   if (Array.isArray(performerIdentifiers)) {
     const odsIdentifier = performerIdentifiers.find(id => id.system === "https://fhir.nhs.uk/Id/ods-organization-code")
     nominatedPerformer = odsIdentifier?.value
@@ -25,8 +31,8 @@ export const extractOdsCodes = (bundle: Bundle, logger: Logger) => {
     nominatedPerformer = performerIdentifiers?.value
   }
 
-  const dispensingOrganization = requestGroup?.action
-    ?.find(a => a.title === "Prescription status transitions")
+  const dispensingOrganization = requestGroup.action!
+    .find(a => a.title === "Prescription status transitions")
     ?.action?.map(a => a?.participant?.[0]?.extension?.[0]?.valueReference?.identifier?.value)
     .reverse().find(odsCode => odsCode && odsCode !== prescribingOrganization)
 
