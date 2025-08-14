@@ -16,6 +16,7 @@ jest.unstable_mockModule("../src/services/prescriptionService", () => {
 // Needed to avoid issues with ESM imports in jest
 jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => ({
   authParametersFromEnv: jest.fn(),
+  buildApigeeHeaders: jest.fn(),
   authenticationMiddleware: () => ({before: () => {}})
 }))
 
