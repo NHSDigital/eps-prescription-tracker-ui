@@ -99,6 +99,21 @@ get_cdk_image_pull_role() {
 
 check_gh_logged_in
 
+# recovery
+DEV_DEPLOY_ROLE=$(get_deploy_role recovery)
+DEV_CDK_PULL_IMAGE_ROLE=$(get_cdk_image_pull_role recovery)
+
+set_environment_secret CDK_PULL_IMAGE_ROLE "${DEV_CDK_PULL_IMAGE_ROLE}" recovery
+set_environment_secret CLOUD_FORMATION_DEPLOY_ROLE "${DEV_DEPLOY_ROLE}" recovery
+set_environment_secret CIS2_OIDC_CLIENT_ID "${DEV_CIS2_OIDC_CLIENT_ID}" recovery
+set_environment_secret MOCK_OIDC_CLIENT_ID "${DEV_MOCK_CLIENT_ID}" recovery
+set_environment_private_key_secret JWT_PRIVATE_KEY ".secrets/eps-cpt-ui-dev.pem" recovery
+set_environment_secret APIGEE_API_KEY "${APIGEE_RECOVERY_API_KEY}" recovery
+set_environment_secret APIGEE_API_SECRET "${APIGEE_RECOVERY_API_SECRET}" recovery
+set_environment_secret APIGEE_DOHS_API_KEY "${APIGEE_PTL_DOHS_API_KEY}" recovery
+set_environment_secret CLOUDFRONT_ORIGIN_CUSTOM_HEADER "$(uuidgen)" recovery
+set_environment_private_key_secret REGRESSION_TESTS_PEM ".secrets/eps-regression-testing.private-key.pem" recovery
+
 # dev and dev-pr
 DEV_DEPLOY_ROLE=$(get_deploy_role dev)
 DEV_CDK_PULL_IMAGE_ROLE=$(get_cdk_image_pull_role dev)

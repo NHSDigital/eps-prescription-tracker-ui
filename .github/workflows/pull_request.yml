@@ -143,7 +143,7 @@ jobs:
       VERSION_NUMBER: PR-${{ needs.get_issue_number.outputs.issue_number }}
       COMMIT_ID: ${{ needs.get_commit_id.outputs.commit_id }}
 
-  release_code:
+  release_recovery:
     needs: [get_issue_number, package_code, get_commit_id]
     if: |
       always() &&
@@ -151,9 +151,9 @@ jobs:
       ! contains(needs.*.result, 'cancelled')
     uses: ./.github/workflows/release_all_stacks.yml
     with:
-      SERVICE_NAME: cpt-ui-pr-${{needs.get_issue_number.outputs.issue_number}}
-      TARGET_ENVIRONMENT: dev-pr
-      VERSION_NUMBER: PR-${{ needs.get_issue_number.outputs.issue_number }}
+      SERVICE_NAME: cpt-ui
+      TARGET_ENVIRONMENT: recovery
+      VERSION_NUMBER: ${{ needs.get_issue_number.outputs.issue_number }}
       COMMIT_ID: "static-pr"
       useMockOidc: true
       primaryOidcIssuer: "https://am.nhsint.auth-ptl.cis2.spineservices.nhs.uk:443/openam/oauth2/realms/root/realms/NHSIdentity/realms/Healthcare"
@@ -167,7 +167,7 @@ jobs:
       mockOidcUserInfoEndpoint: "https://internal-dev.api.service.nhs.uk/oauth2-mock/userinfo"
       mockOidcjwksEndpoint: "https://identity.ptl.api.platform.nhs.uk/realms/Cis2-mock-internal-dev/protocol/openid-connect/certs"
       allowLocalhostAccess: true
-      useCustomCognitoDomain: false
+      useCustomCognitoDomain: true
       APIGEE_CIS2_TOKEN_ENDPOINT: "https://internal-dev.api.service.nhs.uk/oauth2/token"
       APIGEE_MOCK_TOKEN_ENDPOINT: "https://internal-dev.api.service.nhs.uk/oauth2-mock/token"
       APIGEE_PRESCRIPTIONS_ENDPOINT: "https://internal-dev.api.service.nhs.uk/clinical-prescription-tracker/"
@@ -184,7 +184,7 @@ jobs:
       LOG_RETENTION_IN_DAYS: 30
     secrets: inherit
   report_deployed_url:
-    needs: [release_code, get_issue_number]
+    needs: [release_recovery, get_issue_number]
     if: |
       always() &&
       ! contains(needs.*.result, 'failure') &&
