@@ -5,7 +5,7 @@ import {authenticateRequest, AuthenticateRequestOptions, AuthResult} from "./aut
 import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
 import {Logger} from "@aws-lambda-powertools/logger"
 import {AxiosInstance} from "axios"
-import {TokenMappingItem, checkTokenMappingForUser} from "@cpt-ui-common/dynamoFunctions"
+import {getTokenMapping, TokenMappingItem} from "@cpt-ui-common/dynamoFunctions"
 
 export const authenticationMiddleware = (
   axiosInstance: AxiosInstance,
@@ -18,48 +18,27 @@ export const authenticationMiddleware = (
     const username = getUsernameFromEvent(event)
     const sessionId = getSessionIdFromEvent(event)
 
-    // let tokenMappingItem: TokenMappingItem
-    let sessionManagementItem: TokenMappingItem | undefined = undefined
+    logger.info("Using standard authentication middleware")
 
-    // Capture mapping items from token mapping and session management
-    // to ensure we're authenticating the request correctly
-
+    let authResult: AuthResult | null = null
     try {
-      sessionManagementItem = await checkTokenMappingForUser(
+      // Fetch the token mapping item for the user
+      const tokenMappingItem: TokenMappingItem = await getTokenMapping(
         ddbClient,
-        authOptions.sessionManagementTableName,
+        authOptions.tokenMappingTableName,
         username,
         logger
       )
-    } catch (error) {
-      logger.error("Failed to query session management table.", {error})
-      throw new Error("Failed to query session management table, \
-        will be unable to determine which session instantiated the call.")
-    }
 
-    // try {
-    //   tokenMappingItem = await getTokenMapping(
-    //     ddbClient,
-    //     authOptions.tokenMappingTableName,
-    //     username,
-    //     logger
-    //   )
-    // } catch (error) {
-    //   logger.error("Failed to query token mapping table.", {error})
-    //   throw new Error("Failed to query token mapping table, \
-    //     will be unable to determine which session instantiated the call.")
-    // }
-
-    let authResult: AuthResult | null = null
-
-    // Ensure we're dealing with the correct token item, or kill the authentication.
-    try {
-      if (sessionManagementItem !== null && sessionManagementItem?.sessionId === sessionId) {
-        authResult = await authenticateRequest(username, axiosInstance, ddbClient, logger,
-          authOptions, authOptions.sessionManagementTableName)
+      if (tokenMappingItem !== undefined && tokenMappingItem.sessionId === sessionId) {
+        logger.info(`sessionid ${sessionId}`)
+        // Feed the token mapping item to authenticateRequest
+        logger.info("Session ID matches the token mapping item, proceeding with authentication")
+        authResult = await authenticateRequest(username, axiosInstance, ddbClient, logger, authOptions,
+          tokenMappingItem, authOptions.tokenMappingTableName)
       } else {
-        authResult = await authenticateRequest(username, axiosInstance, ddbClient, logger,
-          authOptions, authOptions.tokenMappingTableName)
+        logger.error("Session ID does not match the token mapping item, treating as invalid session")
+        return null
       }
     } catch (error) {
       logger.error("Authentication failed returning restart login prompt", {error})
@@ -74,6 +53,6 @@ export const authenticationMiddleware = (
       }
       return request.earlyResponse
     }
-    event.requestContext.authorizer = {...authResult, sessionId}
+    event.requestContext.authorizer = authResult
   }
 } satisfies MiddlewareObj<APIGatewayProxyEventBase<AuthResult>, APIGatewayProxyResult, Error>)

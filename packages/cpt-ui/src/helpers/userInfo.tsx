@@ -11,7 +11,6 @@ export type TrackerUserInfoResult = {
   userDetails: UserDetails | undefined,
   hasSingleRoleAccess: boolean,
   isConcurrentSession: boolean,
-  multipleSessions: boolean,
   error: string | null
 }
 
@@ -23,7 +22,6 @@ export const getTrackerUserInfo = async (): Promise<TrackerUserInfoResult> => {
   let userDetails: UserDetails | undefined = undefined
   let hasSingleRoleAccess: boolean = false
   let isConcurrentSession: boolean = false
-  let multipleSessions: boolean = false
   let error: string | null = null
 
   try {
@@ -63,13 +61,15 @@ export const getTrackerUserInfo = async (): Promise<TrackerUserInfoResult> => {
     hasSingleRoleAccess = userInfo.roles_with_access.length === 1
 
     isConcurrentSession = userInfo.is_concurrent_session || false
-    multipleSessions = userInfo.multiple_sessions || false
 
     if (userInfo.roles_with_access.length === 1 && userInfo.roles_without_access.length === 0) {
       await updateRemoteSelectedRole(userInfo.roles_with_access[0])
       selectedRole = userInfo.roles_with_access[0]
     }
 
+    if (isConcurrentSession === true) {
+      logger.info("This is a concurrent session")
+    }
   } catch (err) {
     error =
       err instanceof Error ? err.message : "Failed to fetch user info"
@@ -84,7 +84,6 @@ export const getTrackerUserInfo = async (): Promise<TrackerUserInfoResult> => {
     userDetails,
     hasSingleRoleAccess,
     isConcurrentSession,
-    multipleSessions,
     error
   }
 }

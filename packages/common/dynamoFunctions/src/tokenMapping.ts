@@ -170,7 +170,7 @@ export const getTokenMapping = async (
   username: string,
   logger: Logger
 ): Promise<TokenMappingItem> => {
-  logger.debug("Going to get from tokenMapping", {username, tableName})
+  logger.debug(`Going to get ${tableName}`, {username, tableName})
   try {
     const getResult = await documentClient.send(
       new GetCommand({
@@ -184,11 +184,11 @@ export const getTokenMapping = async (
       throw new Error("username not found in DynamoDB")
     }
     const tokenMappingItem = getResult.Item as TokenMappingItem
-    logger.debug("Successfully retrieved data from tokenMapping", {tableName, tokenMappingItem})
+    logger.debug(`Successfully retrieved data from ${tableName}`, {tableName, tokenMappingItem})
     return tokenMappingItem
   } catch(error) {
-    logger.error("Error retrieving data from tokenMapping", {error})
-    throw new Error("Error retrieving data from tokenMapping")
+    logger.error(`Error retrieving data from ${tableName}`, {error})
+    throw new Error(`Error retrieving data from ${tableName}`)
   }
 }
 
@@ -213,7 +213,7 @@ export const checkTokenMappingForUser = async (
     }
 
     const item = result.Item as TokenMappingItem
-    logger.info(`Item found for ${username} in ${tableName}`, {username, tableName})
+    logger.info(`Item found for ${username} in ${tableName}`, {username, tableName, item})
     return item
   } catch(error) {
     logger.info(`Found no record for ${username} in ${tableName}`, {error})

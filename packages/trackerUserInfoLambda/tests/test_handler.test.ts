@@ -22,7 +22,7 @@ jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
     authParametersFromEnv: () => ({
       tokenMappingTableName: "TokenMappingTable"
     }),
-    authenticationMiddleware: () => ({before: () => {}}),
+    authenticationConcurrentAwareMiddleware: () => ({before: () => {}}),
     initializeOidcConfig: mockInitializeOidcConfig,
     fetchUserInfo: mockFetchUserInfo
   }
@@ -54,7 +54,8 @@ describe("Lambda Handler Tests with mock disabled", () => {
     })
 
     event.requestContext.authorizer = {
-      username: "test_user"
+      username: "test_user",
+      isConcurrentSession: false
     }
 
     const response = await handler(event, context)
@@ -81,7 +82,8 @@ describe("Lambda Handler Tests with mock disabled", () => {
     })
     event.requestContext.authorizer = {
       username: "test_user",
-      apigeeAccessToken: "apigee_access_token"
+      apigeeAccessToken: "apigee_access_token",
+      isConcurrentSession: false
     }
     mockFetchUserInfo.mockImplementation(() => {
       return Promise.resolve({
@@ -122,7 +124,8 @@ describe("Lambda Handler Tests with mock disabled", () => {
       }
     })
     event.requestContext.authorizer = {
-      username: "Mock_test_user"
+      username: "Mock_test_user",
+      isConcurrentSession: false
     }
 
     const response = await handler(event, context)
@@ -152,7 +155,8 @@ describe("Lambda Handler Tests with mock disabled", () => {
     })
     event.requestContext.authorizer = {
       username: "test_user",
-      apigeeAccessToken: "apigee_access_token"
+      apigeeAccessToken: "apigee_access_token",
+      isConcurrentSession: false
     }
 
     const response = await handler(event, context)
@@ -179,7 +183,8 @@ describe("Lambda Handler Tests with mock disabled", () => {
         userDetails: {
           family_name: "Doe",
           given_name: "John"
-        }
+        },
+        is_concurrent_session: false
       }
     })
 
@@ -196,7 +201,6 @@ describe("Lambda Handler Tests with mock disabled", () => {
       ],
       "roles_without_access": [],
       "user_details": {"family_name": "Doe", "given_name": "John"},
-      "multiple_sessions": false,
       "is_concurrent_session": false
     })
   })
@@ -214,7 +218,8 @@ describe("Lambda Handler Tests with mock disabled", () => {
         userDetails: {
           family_name: "Doe",
           given_name: "John"
-        }
+        },
+        is_concurrent_session: false
       }
     })
 
@@ -233,7 +238,6 @@ describe("Lambda Handler Tests with mock disabled", () => {
         {role_name: "Receptionist", role_id: "456", org_code: "DEF", org_name: "Test Hospital"}
       ],
       "user_details": {"family_name": "Doe", "given_name": "John"},
-      "multiple_sessions": false,
       "is_concurrent_session": false}
     )
   })
@@ -251,7 +255,8 @@ describe("Lambda Handler Tests with mock disabled", () => {
         userDetails: {
           family_name: "Doe",
           given_name: "John"
-        }
+        },
+        is_concurrent_session: false
       }
     })
     const response = await handler(event, context)
@@ -269,27 +274,12 @@ describe("Lambda Handler Tests with mock disabled", () => {
         {role_name: "Receptionist", role_id: "456", org_code: "DEF", org_name: "Test Hospital"}
       ],
       "user_details": {"family_name": "Doe", "given_name": "John"},
-      "multiple_sessions": false,
       "is_concurrent_session": false}
     )
   })
 
   it("should return a successful response with concurrency values set, \
     when cached details returned and token session found with matching ID", async () => {
-    mockGetTokenMapping.mockImplementation(() => {
-      return {
-        rolesWithAccess: [
-          {role_id: "123", org_code: "XYZ", role_name: "MockRole_1"}
-        ],
-        rolesWithoutAccess: [],
-        currentlySelectedRole: {role_id: "555", org_code: "GHI", role_name: "MockRole_4"},
-        userDetails: {
-          family_name: "foo",
-          given_name: "bar"
-        }
-      }
-    })
-
     mockCheckTokenMappingForUser.mockImplementation(() => {
       return {
         rolesWithAccess: [
@@ -307,7 +297,8 @@ describe("Lambda Handler Tests with mock disabled", () => {
 
     event.requestContext.authorizer = {
       username: "Mock_test_user",
-      sessionId: "mock-session-id"
+      sessionId: "mock-session-id",
+      isConcurrentSession: true
     }
 
     const response = await handler(event, context)
@@ -331,11 +322,11 @@ describe("Lambda Handler Tests with mock disabled", () => {
       ],
       "roles_without_access": [],
       "user_details": {"family_name": "foo", "given_name": "bar"},
-      "multiple_sessions": true,
       "is_concurrent_session": true
     })
 
     expect(body).toHaveProperty("message", "UserInfo fetched successfully from DynamoDB")
     expect(body).toHaveProperty("userInfo")
+    expect(mockGetTokenMapping).not.toHaveBeenCalled()
   })
 })

@@ -156,6 +156,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     username,
     logger
   )
+  logger.info("Existing token mapping for user", {existingTokenMapping})
 
   let tokenMappingItem = {
     username: username,
@@ -170,13 +171,15 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     lastActivityTime: Date.now()
   }
 
-  if (existingTokenMapping !== undefined) {
+  const fifteenMinutes = 15 * 60 * 1000
+
+  if (existingTokenMapping !== undefined && existingTokenMapping.lastActivityTime > Date.now() - fifteenMinutes) {
     const username = tokenMappingItem.username
     logger.info("User already exists in token mapping table, creating draft session",
       {username}, {SessionManagementTableName})
     await insertTokenMapping(documentClient, SessionManagementTableName, tokenMappingItem, logger)
   } else {
-    logger.info("No user token already exists")
+    logger.info("No user token already exists or last activity was more than 15 minutes ago", {tokenMappingItem})
     await insertTokenMapping(documentClient, mockOidcConfig.tokenMappingTableName, tokenMappingItem, logger)
   }
 

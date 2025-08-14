@@ -29,7 +29,6 @@ export interface AuthContextType {
   user: string | null
   isSignedIn: boolean
   isSigningIn: boolean
-  multipleSessions: boolean
   isConcurrentSession: boolean
   rolesWithAccess: Array<RoleDetails>
   rolesWithoutAccess: Array<RoleDetails>
@@ -54,8 +53,6 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
   const [isSigningIn, setIsSigningIn] = useLocalStorageState<boolean>("isSigningIn", "isSigningIn", false)
   const [isConcurrentSession, setIsConcurrentSession] = useLocalStorageState<boolean>(
     "isConcurrentSession", "isConcurrentSession", false)
-  const [multipleSessions, setMultipleSessions] = useLocalStorageState<boolean>(
-    "multipleSessions", "multipleSessions", false)
   const [rolesWithAccess, setRolesWithAccess] = useLocalStorageState<Array<RoleDetails>>(
     "rolesWithAccess", "rolesWithAccess", [])
   const [rolesWithoutAccess, setRolesWithoutAccess] = useLocalStorageState<Array<RoleDetails>>(
@@ -97,7 +94,6 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
     setIsSignedIn(false)
     setIsSigningIn(false)
     setIsConcurrentSession(false)
-    setMultipleSessions(false)
   }
 
   const updateTrackerUserInfo = async() => {
@@ -111,7 +107,6 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
     setError(trackerUserInfo.error)
 
     setIsConcurrentSession(trackerUserInfo.isConcurrentSession)
-    setMultipleSessions(trackerUserInfo.multipleSessions)
   }
 
   const forceCognitoLogout = async () => {
@@ -135,7 +130,17 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
         case "signedIn": {
           logger.info("Processing signedIn event")
           logger.info("User %s logged in", payload.data.username)
-          updateTrackerUserInfo()
+          const trackerUserInfo = await getTrackerUserInfo()
+          setRolesWithAccess(trackerUserInfo.rolesWithAccess)
+          setRolesWithoutAccess(trackerUserInfo.rolesWithoutAccess)
+          setHasNoAccess(trackerUserInfo.hasNoAccess)
+          setSelectedRole(trackerUserInfo.selectedRole)
+          setUserDetails(trackerUserInfo.userDetails)
+          setHasSingleRoleAccess(trackerUserInfo.hasSingleRoleAccess)
+          setError(trackerUserInfo.error)
+
+          setIsConcurrentSession(trackerUserInfo.isConcurrentSession)
+
           setIsSignedIn(true)
           setIsSigningIn(false)
           setUser(payload.data.username)
@@ -242,7 +247,6 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
       selectedRole,
       userDetails,
       isConcurrentSession,
-      multipleSessions,
       cognitoSignIn,
       cognitoSignOut,
       clearAuthState,

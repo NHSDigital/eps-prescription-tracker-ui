@@ -48,7 +48,6 @@ const signedInAuthState: AuthContextType = {
   selectedRole: undefined,
   userDetails: undefined,
   isConcurrentSession: false,
-  multipleSessions: false,
   cognitoSignIn: mockCognitoSignIn,
   cognitoSignOut: mockCognitoSignOut,
   clearAuthState: mockClearAuthState,

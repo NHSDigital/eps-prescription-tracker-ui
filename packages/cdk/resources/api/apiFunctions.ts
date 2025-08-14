@@ -197,13 +197,7 @@ export class ApiFunctions extends Construct {
       serviceName: props.serviceName,
       stackName: props.stackName,
       lambdaName: `${props.stackName}-prescList`,
-      additionalPolicies: [
-        props.tokenMappingTableWritePolicy,
-        props.tokenMappingTableReadPolicy,
-        props.useTokensMappingKmsKeyPolicy,
-        props.sharedSecrets.useJwtKmsKeyPolicy,
-        props.sharedSecrets.getPrimaryJwtPrivateKeyPolicy
-      ],
+      additionalPolicies: additionalPolicies,
       logRetentionInDays: props.logRetentionInDays,
       logLevel: props.logLevel,
       packageBasePath: "packages/prescriptionListLambda",
@@ -227,13 +221,7 @@ export class ApiFunctions extends Construct {
       serviceName: props.serviceName,
       stackName: props.stackName,
       lambdaName: `${props.stackName}-patientSearch`,
-      additionalPolicies: [
-        props.tokenMappingTableWritePolicy,
-        props.tokenMappingTableReadPolicy,
-        props.useTokensMappingKmsKeyPolicy,
-        props.sharedSecrets.useJwtKmsKeyPolicy,
-        props.sharedSecrets.getPrimaryJwtPrivateKeyPolicy
-      ],
+      additionalPolicies: additionalPolicies,
       logRetentionInDays: props.logRetentionInDays,
       logLevel: props.logLevel,
       packageBasePath: "packages/patientSearchLambda",
@@ -265,13 +253,7 @@ export class ApiFunctions extends Construct {
       serviceName: props.serviceName,
       stackName: props.stackName,
       lambdaName: `${props.stackName}-prescDetails`,
-      additionalPolicies: [
-        props.tokenMappingTableWritePolicy,
-        props.tokenMappingTableReadPolicy,
-        props.useTokensMappingKmsKeyPolicy,
-        props.sharedSecrets.useJwtKmsKeyPolicy,
-        props.sharedSecrets.getPrimaryJwtPrivateKeyPolicy
-      ],
+      additionalPolicies: additionalPolicies,
       logRetentionInDays: props.logRetentionInDays,
       logLevel: props.logLevel,
       packageBasePath: "packages/prescriptionDetailsLambda",
@@ -298,16 +280,7 @@ export class ApiFunctions extends Construct {
         serviceName: props.serviceName,
         stackName: props.stackName,
         lambdaName: `${props.stackName}-clr-active`,
-        additionalPolicies: [
-          props.tokenMappingTableWritePolicy,
-          props.tokenMappingTableReadPolicy,
-          props.useTokensMappingKmsKeyPolicy,
-          props.sessionManagementTableWritePolicy,
-          props.sessionManagementTableReadPolicy,
-          props.useSessionManagementKmsKeyPolicy,
-          props.sharedSecrets.useJwtKmsKeyPolicy,
-          props.sharedSecrets.getPrimaryJwtPrivateKeyPolicy
-        ],
+        additionalPolicies: additionalPolicies,
         logRetentionInDays: props.logRetentionInDays,
         logLevel: props.logLevel,
         packageBasePath: "packages/testingSupport/clearActiveSessions",
