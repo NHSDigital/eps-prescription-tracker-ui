@@ -7,14 +7,14 @@ const mockGetTokenMapping = jest.fn().mockName("mockGetTokenMapping")
 const mockInitializeOidcConfig = jest.fn().mockName("mockInitializeOidcConfig")
 const mockUpdateTokenMapping = jest.fn().mockName("mockUpdateTokenMapping")
 const mockFetchUserInfo = jest.fn().mockName("mockFetchUserInfo")
-const mockCheckTokenMappingForUser = jest.fn().mockName("mockCheckTokenMappingForUser")
+const mockGetSessionTokenCredentialsForUser = jest.fn().mockName("mockGetSessionTokenCredentialsForUser")
 mockInitializeOidcConfig.mockImplementation(() => ({cis2OidcConfig: {}, mockOidcConfig: {}}))
 
 jest.unstable_mockModule("@cpt-ui-common/dynamoFunctions", () => {
   return {
     getTokenMapping: mockGetTokenMapping,
     updateTokenMapping: mockUpdateTokenMapping,
-    checkTokenMappingForUser: mockCheckTokenMappingForUser
+    getSessionTokenCredentialsForUser: mockGetSessionTokenCredentialsForUser
   }
 })
 jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
@@ -280,7 +280,7 @@ describe("Lambda Handler Tests with mock disabled", () => {
 
   it("should return a successful response with concurrency values set, \
     when cached details returned and token session found with matching ID", async () => {
-    mockCheckTokenMappingForUser.mockImplementation(() => {
+    mockGetSessionTokenCredentialsForUser.mockImplementation(() => {
       return {
         rolesWithAccess: [
           {role_id: "123", org_code: "XYZ", role_name: "MockRole_1"}

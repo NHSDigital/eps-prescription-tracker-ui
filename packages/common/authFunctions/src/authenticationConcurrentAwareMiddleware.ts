@@ -5,7 +5,7 @@ import {authenticateRequest, AuthenticateRequestOptions, AuthResult} from "./aut
 import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
 import {Logger} from "@aws-lambda-powertools/logger"
 import {AxiosInstance} from "axios"
-import {TokenMappingItem, checkTokenMappingForUser} from "@cpt-ui-common/dynamoFunctions"
+import {TokenMappingItem, getSessionTokenCredentialsForUser} from "@cpt-ui-common/dynamoFunctions"
 
 export const authenticationConcurrentAwareMiddleware = (
   axiosInstance: AxiosInstance,
@@ -23,30 +23,24 @@ export const authenticationConcurrentAwareMiddleware = (
 
     // Capture sessionManagement item to determine if the sessionId is concurrent session
     logger.info("Using concurrent aware authentication middleware")
-    try {
-      sessionManagementItem = await checkTokenMappingForUser(
-        ddbClient,
-        authOptions.sessionManagementTableName,
-        username,
-        logger
-      )
-    } catch (error) {
-      logger.error("Failed to query session management table.", {error})
-      throw new Error("Failed to query session management table, \
-        will be unable to determine which session instantiated the call.")
+    sessionManagementItem = await getSessionTokenCredentialsForUser(
+      ddbClient,
+      authOptions.sessionManagementTableName,
+      username,
+      logger
+    )
+    if (!sessionManagementItem) {
+      logger.error("No session management item found for user")
     }
 
-    try {
-      tokenMappingItem = await checkTokenMappingForUser(
-        ddbClient,
-        authOptions.tokenMappingTableName,
-        username,
-        logger
-      )
-    } catch (error) {
-      logger.error("Failed to query token mapping table.", {error})
-      throw new Error("Failed to query token mapping table, \
-        will be unable to determine which session instantiated the call.")
+    tokenMappingItem = await getSessionTokenCredentialsForUser(
+      ddbClient,
+      authOptions.tokenMappingTableName,
+      username,
+      logger
+    )
+    if (!tokenMappingItem) {
+      logger.error("No token mapping item found for user")
     }
 
     let authResult: AuthResult | null = null

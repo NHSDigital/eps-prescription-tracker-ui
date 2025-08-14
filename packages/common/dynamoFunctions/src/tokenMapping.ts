@@ -154,13 +154,8 @@ export const deleteRecordAllowFailures = async (
     logger.info(`Successfully deleted from ${tableName}`, {tableName})
   /* eslint-disable @typescript-eslint/no-explicit-any */
   } catch(error: any) {
-    if (error.code === "ConditionalCheckFailedException") {
-      logger.info(`No item found to delete in the ${tableName} table. \
-        Continuing as if it was deleted.`, {tableName})
-    } else {
-      logger.error(`Error deleting data from ${tableName}`, {error})
-      throw new Error(`Error deleting data from ${tableName}`)
-    }
+    logger.error(`Error deleting data from ${tableName}`, {error})
+    throw new Error(`Error deleting data from ${tableName}`)
   }
 }
 
@@ -192,7 +187,7 @@ export const getTokenMapping = async (
   }
 }
 
-export const checkTokenMappingForUser = async (
+export const getSessionTokenCredentialsForUser = async (
   documentClient: DynamoDBDocumentClient,
   tableName: string,
   username: string,
@@ -208,7 +203,7 @@ export const checkTokenMappingForUser = async (
     )
 
     if (!result.Item) {
-      logger.error("No record found", {username, result})
+      logger.debug("No record found", {tableName, username, result})
       return undefined
     }
 
