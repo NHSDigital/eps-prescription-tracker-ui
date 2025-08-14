@@ -149,7 +149,6 @@ export const deleteRecordAllowFailures = async (
     )
     if (response.$metadata.httpStatusCode !== 200) {
       logger.error(`Failed to delete from ${tableName}`, {response})
-      throw new Error(`Failed to delete from ${tableName}`)
     }
     logger.info(`Successfully deleted from ${tableName}`, {tableName})
   /* eslint-disable @typescript-eslint/no-explicit-any */
