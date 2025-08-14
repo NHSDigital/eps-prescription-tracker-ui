@@ -16,9 +16,12 @@ export interface RestApiGatewayMethodsProps {
   readonly prescriptionListLambda: NodejsFunction
   readonly prescriptionDetailsLambda: NodejsFunction
   readonly trackerUserInfoLambda: NodejsFunction
+  readonly sessionManagementLambda: NodejsFunction
   readonly selectedRoleLambda: NodejsFunction
   readonly patientSearchLambda: NodejsFunction
   readonly authorizer?: CognitoUserPoolsAuthorizer
+  readonly clearActiveSessionLambda: NodejsFunction
+  readonly useMockOidc: boolean
 }
 
 /**
@@ -79,6 +82,15 @@ export class RestApiGatewayMethods extends Construct {
       authorizer: props.authorizer
     })
 
+    // session-management endpoint
+    const sessionManagementLambdaResource = props.restApiGateway.root.addResource("session-management")
+    sessionManagementLambdaResource.addMethod("POST", new LambdaIntegration(props.sessionManagementLambda, {
+      credentialsRole: props.restAPiGatewayRole
+    }), {
+      authorizationType: AuthorizationType.COGNITO,
+      authorizer: props.authorizer
+    })
+
     // selected-role endpoint
     const selectedRoleLambdaResource = props.restApiGateway.root.addResource("selected-role")
     selectedRoleLambdaResource.addMethod("PUT", new LambdaIntegration(props.selectedRoleLambda, {
@@ -96,6 +108,14 @@ export class RestApiGatewayMethods extends Construct {
       authorizationType: AuthorizationType.COGNITO,
       authorizer: props.authorizer
     })
+
+    if (props.useMockOidc) {
+      // testing-support-clear-active-sessions
+      const clearActiveSessionResource = props.restApiGateway.root.addResource("test-support-clear-active-session")
+      clearActiveSessionResource.addMethod("POST", new LambdaIntegration(props.clearActiveSessionLambda, {
+        credentialsRole: props.restAPiGatewayRole
+      }), {})
+    }
 
     //Outputs
   }

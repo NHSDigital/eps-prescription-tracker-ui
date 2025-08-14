@@ -91,6 +91,13 @@ export class StatefulResourcesStack extends Stack {
       region: this.region
     })
 
+    // - Dynamodb table for user state
+    const dynamodb = new Dynamodb(this, "DynamoDB", {
+      stackName: props.stackName,
+      account: this.account,
+      region: this.region
+    })
+
     // - Cognito resources
     const cognito = new Cognito(this, "Cognito", {
       primaryOidcClientId: primaryOidcClientId!,
@@ -113,13 +120,6 @@ export class StatefulResourcesStack extends Stack {
       hostedZone: hostedZone,
       allowLocalhostAccess: allowLocalhostAccess,
       useCustomCognitoDomain: useCustomCognitoDomain
-    })
-
-    // - Dynamodb table for user state
-    const dynamodb = new Dynamodb(this, "DynamoDB", {
-      stackName: props.stackName,
-      account: this.account,
-      region: this.region
     })
 
     // need to make sure the app monitor name is not too long
@@ -172,6 +172,24 @@ export class StatefulResourcesStack extends Stack {
     new CfnOutput(this, "useTokensMappingKmsKeyPolicyArn", {
       value: dynamodb.useTokensMappingKmsKeyPolicy.managedPolicyArn,
       exportName: `${props.stackName}:useTokensMappingKmsKeyPolicy:Arn`
+    })
+
+    // Session management table
+    new CfnOutput(this, "sessionManagementTableArn", {
+      value: dynamodb.sessionManagementTable.tableArn,
+      exportName: `${props.stackName}:sessionManagementTable:Arn`
+    })
+    new CfnOutput(this, "sessionManagementTableReadPolicyArn", {
+      value: dynamodb.sessionManagementTableReadPolicy.managedPolicyArn,
+      exportName: `${props.stackName}:sessionManagementTableReadPolicy:Arn`
+    })
+    new CfnOutput(this, "sessionManagementTableWritePolicyArn", {
+      value: dynamodb.sessionManagementTableWritePolicy.managedPolicyArn,
+      exportName: `${props.stackName}:sessionManagementTableWritePolicy:Arn`
+    })
+    new CfnOutput(this, "useSessionManagementTableKmsKeyPolicyArn", {
+      value: dynamodb.useSessionManagementTableKmsKeyPolicy.managedPolicyArn,
+      exportName: `${props.stackName}:useSessionManagementTableKmsKeyPolicy:Arn`
     })
 
     // State mapping table

@@ -31,7 +31,8 @@ export const API_ENDPOINTS = {
   PRESCRIPTION_LIST: "/api/prescription-list",
   CIS2_SIGNOUT_ENDPOINT: "/api/cis2-signout",
   PRESCRIPTION_DETAILS: "/api/prescription-details",
-  PATIENT_SEARCH: "/api/patient-search"
+  PATIENT_SEARCH: "/api/patient-search",
+  SESSION_MANAGEMENT: "/api/session-management"
 } as const
 
 // RUM CONFIG
@@ -67,7 +68,8 @@ export const FRONTEND_PATHS = {
   PATIENT_SEARCH_RESULTS: "/patient-search-results",
   PATIENT_NOT_FOUND: "/patient-not-found",
   PRIVACY_NOTICE: "/privacy-notice",
-  COOKIES_SELECTED: "/cookies-selected"
+  COOKIES_SELECTED: "/cookies-selected",
+  SESSION_SELECTION: "/select-active-session"
 }
 
 // Type for environment
