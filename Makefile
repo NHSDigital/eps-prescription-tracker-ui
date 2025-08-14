@@ -40,6 +40,7 @@ lint-node: compile-node
 	npm run lint --workspace packages/common/authFunctions
 	npm run lint --workspace packages/common/doHSClient
 	npm run lint --workspace packages/common/dynamoFunctions
+	npm run lint --workspace packages/testingSupport/clearActiveSessions
 
 lint-githubactions:
 	actionlint
@@ -66,6 +67,7 @@ test: compile
 	npm run test --workspace packages/common/authFunctions
 	npm run test --workspace packages/common/doHSClient
 	npm run test --workspace packages/common/dynamoFunctions
+	npm run test --workspace packages/testingSupport/clearActiveSessions
 
 clean:
 	rm -rf packages/cdk/coverage

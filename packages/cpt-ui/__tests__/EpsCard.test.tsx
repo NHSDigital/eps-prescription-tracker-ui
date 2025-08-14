@@ -95,6 +95,7 @@ const defaultAuthContext: AuthContextType = {
   hasSingleRoleAccess: true,
   selectedRole: undefined,
   userDetails: undefined,
+  isConcurrentSession: false,
   cognitoSignIn: jest.fn(),
   cognitoSignOut: jest.fn(),
   clearAuthState: jest.fn(),
