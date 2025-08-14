@@ -35,7 +35,7 @@ export function ItemsCards({items}: ItemsProps) {
           <Card.Content className="nhsuk-u-padding-top-3 nhsuk-u-padding-bottom-1
                                  nhsuk-u-padding-right-3 nhsuk-u-padding-left-3">
             <Card.Heading headingLevel="H3" className="nhsuk-heading-xs nhsuk-u-margin-bottom-1">
-              <span>{medicationName}</span>
+              <span>{`${index + 1}. ${medicationName}`}</span>
             </Card.Heading>
 
             {/* Display EPS status as NHS Tag */}

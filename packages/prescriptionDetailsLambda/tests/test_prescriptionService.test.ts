@@ -21,11 +21,6 @@ jest.unstable_mockModule("../src/utils/responseMapper", () => ({
   mergePrescriptionDetails: mockMergePrescriptionDetails
 }))
 
-const mockBuildApigeeHeaders = jest.fn()
-jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => ({
-  buildApigeeHeaders: mockBuildApigeeHeaders
-}))
-
 // Import some mock objects to use in our tests.
 import {Bundle, FhirResource} from "fhir/r4"
 import {PrescriptionOdsCodes} from "../src/utils/extensionUtils"
@@ -246,8 +241,6 @@ describe("prescriptionService", () => {
 
   describe("processPrescriptionRequest", () => {
     const apigeePrescriptionsEndpoint = "https://api.example.com/"
-    const apigeeAccessToken = "sampleToken"
-    const roleId = "sampleRole"
     // Create a fake Apigee response with necessary fields.
     const participantExtensionUrl =
     "http://hl7.org/fhir/5.0/StructureDefinition/extension-RequestOrchestration.action.participant.typeReference"
@@ -298,28 +291,11 @@ describe("prescriptionService", () => {
     it("should process and return merged response when successful", async () => {
       const prescriptionId = "RX123"
 
-      mockBuildApigeeHeaders.mockReturnValue({
-        "authorization": `Bearer ${apigeeAccessToken}`,
-        "nhsd-session-urid": roleId,
-        "nhsd-identity-uuid": roleId,
-        "nhsd-session-jobrole": roleId,
-        "x-request-id": "test-uuid",
-        "nhsd-organization-uuid": "",
-        "x-correlation-id": ""
-      })
-
       // Set up nock to intercept the HTTP request - note the RequestGroup path
       nock(apigeePrescriptionsEndpoint)
         .get(`/RequestGroup/${prescriptionId}`)
         .query({issueNumber: "1"})
-        .matchHeader("authorization", `Bearer ${apigeeAccessToken}`)
-        .matchHeader("nhsd-session-urid", roleId)
-        .matchHeader("nhsd-identity-uuid", roleId)
-        .matchHeader("nhsd-session-jobrole", roleId)
-        .matchHeader("x-request-id", "test-uuid")
-        // Note: nhsd-organization-uuid and x-correlation-id are empty strings in the test
-        .matchHeader("nhsd-organization-uuid", "")
-        .matchHeader("x-correlation-id", "")
+        .matchHeader("a-header", `a-value`)
         .reply(200, fakeApigeeData, {"content-type": "application/json"})
 
       // Setup the doHSClient mock so that getDoHSData returns mapped data.
@@ -338,10 +314,7 @@ describe("prescriptionService", () => {
         prescriptionId,
         "1",
         apigeePrescriptionsEndpoint,
-        apigeeAccessToken,
-        roleId,
-        "",
-        "",
+        {"a-header": "a-value"},
         logger
       )
 
@@ -352,27 +325,11 @@ describe("prescriptionService", () => {
     it("should handle prescription IDs ending with + character correctly", async () => {
       const prescriptionId = "RX123+"
 
-      mockBuildApigeeHeaders.mockReturnValue({
-        "authorization": `Bearer ${apigeeAccessToken}`,
-        "nhsd-session-urid": roleId,
-        "nhsd-identity-uuid": roleId,
-        "nhsd-session-jobrole": roleId,
-        "x-request-id": "test-uuid",
-        "nhsd-organization-uuid": "",
-        "x-correlation-id": ""
-      })
-
       // Set up nock to intercept the HTTP request - the + should be properly URL encoded as %2B
       nock(apigeePrescriptionsEndpoint)
         .get("/RequestGroup/RX123%2B") // + gets URL encoded to %2B
         .query({issueNumber: "1"}) // Add the query parameter that the service includes
-        .matchHeader("authorization", `Bearer ${apigeeAccessToken}`)
-        .matchHeader("nhsd-session-urid", roleId)
-        .matchHeader("nhsd-identity-uuid", roleId)
-        .matchHeader("nhsd-session-jobrole", roleId)
-        .matchHeader("x-request-id", "test-uuid")
-        .matchHeader("nhsd-organization-uuid", "")
-        .matchHeader("x-correlation-id", "")
+        .matchHeader("a-header", `a-value`)
         .reply(200, fakeApigeeData, {"content-type": "application/json"})
 
       // Setup the doHSClient mock so that getDoHSData returns mapped data.
@@ -391,10 +348,7 @@ describe("prescriptionService", () => {
         prescriptionId,
         "1",
         apigeePrescriptionsEndpoint,
-        apigeeAccessToken,
-        roleId,
-        "",
-        "",
+        {"a-header": "a-value"},
         logger
       )
 

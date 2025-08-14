@@ -31,8 +31,8 @@ describe("ItemsCards", () => {
     expect(screen.getByText("Items")).toBeInTheDocument()
 
     // Medications
-    expect(screen.getByText("Ibuprofen")).toBeInTheDocument()
-    expect(screen.getByText("Amoxicillin")).toBeInTheDocument()
+    expect(screen.getByText("1. Amoxicillin")).toBeInTheDocument()
+    expect(screen.getByText("2. Ibuprofen")).toBeInTheDocument()
 
     // Tag status labels
     expect(screen.getByText("Item fully dispensed")).toBeInTheDocument()
@@ -60,8 +60,8 @@ describe("ItemsCards", () => {
     expect(screen.getByText("Items")).toBeInTheDocument()
 
     // Medications
-    expect(screen.getByText("Ibuprofen")).toBeInTheDocument()
-    expect(screen.getByText("Amoxicillin")).toBeInTheDocument()
+    expect(screen.getByText("1. Amoxicillin")).toBeInTheDocument()
+    expect(screen.getByText("2. Ibuprofen")).toBeInTheDocument()
 
     // Tag status labels
     expect(screen.getByText("Item fully dispensed")).toBeInTheDocument()
