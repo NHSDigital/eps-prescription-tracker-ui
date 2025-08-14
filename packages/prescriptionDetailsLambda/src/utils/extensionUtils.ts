@@ -60,6 +60,18 @@ export const findExtensionByKey = (
   return extensions.find(ext => possibleUrls.includes(ext.url))
 }
 
+export const findExtensionsByKey = (
+  extensions: Array<Extension> | undefined,
+  extensionKey: keyof typeof extensionUrlMappings
+): Array<Extension> => {
+  if (!extensions || extensions.length === 0) {
+    return []
+  }
+
+  const possibleUrls = extensionUrlMappings[extensionKey]
+  return extensions.filter(ext => possibleUrls.includes(ext.url))
+}
+
 /**
  * Extracts a boolean value from a nested extension.
  */

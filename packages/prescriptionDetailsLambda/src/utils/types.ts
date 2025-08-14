@@ -82,5 +82,8 @@ export const extensionUrlMappings = {
   ],
   TASK_BUSINESS_STATUS: [
     "https://fhir.nhs.uk/StructureDefinition/Extension-EPS-TaskBusinessStatus"
+  ],
+  PRESCRIPTION_STATUS_HISTORY: [
+    "https://fhir.nhs.uk/StructureDefinition/Extension-EPS-PrescriptionStatusHistory"
   ]
 } satisfies Record<string, Array<string>>

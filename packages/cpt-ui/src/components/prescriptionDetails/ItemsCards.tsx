@@ -9,7 +9,7 @@ import {getItemStatusTagColour, getItemStatusDisplayText} from "@/helpers/status
 import {STRINGS} from "@/constants/ui-strings/PrescribedDispensedItemsCardsStrings"
 
 interface ItemsProps {
-  items: Array<ItemDetails>
+  readonly items: Array<ItemDetails>
 }
 
 // Reusable component for rendering both prescribed and dispensed item cards

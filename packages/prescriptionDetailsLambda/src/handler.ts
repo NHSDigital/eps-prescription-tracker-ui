@@ -15,7 +15,8 @@ import {
   AuthenticateRequestOptions,
   authenticationMiddleware,
   authParametersFromEnv,
-  AuthResult
+  AuthResult,
+  buildApigeeHeaders
 } from "@cpt-ui-common/authFunctions"
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 
@@ -68,15 +69,14 @@ const lambdaHandler = async (
   // Extract issueNumber from query parameters, default to "1" if not provided
   const issueNumber = event.queryStringParameters?.issueNumber || "1"
 
+  const headers = buildApigeeHeaders(apigeeAccessToken, roleId, orgCode, correlationId)
+
   // Pass the gathered data in to the processor for the request
   const response = await processPrescriptionRequest(
     prescriptionId,
     issueNumber,
     apigeePrescriptionsEndpoint,
-    apigeeAccessToken,
-    roleId,
-    orgCode,
-    correlationId,
+    headers,
     logger
   )
 

@@ -83,8 +83,8 @@ export function MessageHistoryCard({messageHistory}: MessageHistoryProps) {
                                 <Tag color={getItemStatusTagColour(item.statusCode)}>
                                   {getItemStatusDisplayText(item.statusCode)}
                                 </Tag>
-                                {item.components.map((component, compIndex) => (
-                                  <div key={compIndex}>
+                                {item.components.map((component) => (
+                                  <div key={component.medicationName}>
                                     {component.medicationName}
                                     <br />
                                     {STRINGS.QUANTITY} {component.quantity}

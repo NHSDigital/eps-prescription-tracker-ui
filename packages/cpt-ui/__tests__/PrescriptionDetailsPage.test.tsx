@@ -1,4 +1,3 @@
-import React, {useState} from "react"
 import {MemoryRouter, Route, Routes} from "react-router-dom"
 import {render, screen, waitFor} from "@testing-library/react"
 
@@ -6,9 +5,8 @@ import {MockPatientDetailsProvider} from "../__mocks__/MockPatientDetailsProvide
 import {MockPrescriptionInformationProvider} from "../__mocks__/MockPrescriptionInformationProvider"
 import {mockPrescriptionDetailsResponse} from "../__mocks__/MockPrescriptionDetailsResponse"
 
-import {PrescriptionDetailsResponse, PrescriberOrgSummary, OrgSummary} from "@cpt-ui-common/common-types"
+import {PrescriptionDetailsResponse} from "@cpt-ui-common/common-types"
 
-// import {FRONTEND_PATHS} from "@/constants/environment"
 import {STRINGS} from "@/constants/ui-strings/PrescriptionDetailsPageStrings"
 
 import {AuthContext, AuthContextType} from "@/context/AuthProvider"
@@ -19,9 +17,6 @@ import http from "@/helpers/axios"
 import {SearchContext, SearchProviderContextType} from "@/context/SearchProvider"
 
 import {AxiosError, AxiosHeaders} from "axios"
-
-const mockCognitoSignIn = jest.fn()
-const mockCognitoSignOut = jest.fn()
 
 const defaultAuthState: AuthContextType = {
   isSignedIn: false,
@@ -34,85 +29,19 @@ const defaultAuthState: AuthContextType = {
   hasSingleRoleAccess: false,
   selectedRole: undefined,
   userDetails: undefined,
-  cognitoSignIn: mockCognitoSignIn,
-  cognitoSignOut: mockCognitoSignOut,
+  cognitoSignIn: jest.fn(),
+  cognitoSignOut: jest.fn(),
   clearAuthState: jest.fn(),
   updateSelectedRole: jest.fn(),
   forceCognitoLogout: jest.fn()
-
 }
 
 const signedInAuthState: AuthContextType = {
+  ...defaultAuthState,
   isSignedIn: true,
-  isSigningIn: false,
-  user: "testUser",
-  error: null,
-  rolesWithAccess: [],
-  rolesWithoutAccess: [],
-  hasNoAccess: false,
-  hasSingleRoleAccess: false,
-  selectedRole: undefined,
-  userDetails: undefined,
-  cognitoSignIn: mockCognitoSignIn,
-  cognitoSignOut: mockCognitoSignOut,
-  clearAuthState: jest.fn(),
-  updateSelectedRole: jest.fn(),
-  forceCognitoLogout: jest.fn()
+  user: "testUser"
 }
 
-// Auth provider mock
-const MockAuthProvider = ({
-  children,
-  initialState = defaultAuthState
-}: {
-  children: React.ReactNode
-  initialState?: AuthContextType
-}) => {
-  const [authState, setAuthState] = useState<AuthContextType>({
-    ...initialState,
-    cognitoSignIn: async (input) => {
-      mockCognitoSignIn(input)
-      // Simulate a sign-in update
-      setAuthState((prev) => ({
-        ...prev,
-        isSignedIn: true,
-        user: (input?.provider as { custom: string })?.custom || "mockUser",
-        error: null
-
-      }))
-    },
-    cognitoSignOut: async () => {
-      mockCognitoSignOut()
-      setAuthState((prev) => ({
-        ...prev,
-        isSignedIn: false,
-        user: null,
-        error: null,
-        idToken: null,
-        accessToken: null
-      }))
-    }
-  })
-
-  return (
-    <AuthContext.Provider value={authState}>
-      {children}
-    </AuthContext.Provider>
-  )
-}
-
-const mockClearSearchParameters = jest.fn()
-const mockSetPrescriptionId = jest.fn()
-const mockSetIssueNumber = jest.fn()
-const mockSetFirstName = jest.fn()
-const mockSetLastName = jest.fn()
-const mockSetDobDay = jest.fn()
-const mockSetDobMonth = jest.fn()
-const mockSetDobYear = jest.fn()
-const mockSetPostcode =jest.fn()
-const mockSetNhsNumber = jest.fn()
-const mockGetAllSearchParameters = jest.fn()
-const mockSetAllSearchParameters = jest.fn()
 const defaultSearchState: SearchProviderContextType = {
   prescriptionId: undefined,
   issueNumber: undefined,
@@ -123,18 +52,18 @@ const defaultSearchState: SearchProviderContextType = {
   dobYear: undefined,
   postcode: undefined,
   nhsNumber: undefined,
-  clearSearchParameters: mockClearSearchParameters,
-  setPrescriptionId: mockSetPrescriptionId,
-  setIssueNumber: mockSetIssueNumber,
-  setFirstName: mockSetFirstName,
-  setLastName: mockSetLastName,
-  setDobDay: mockSetDobDay,
-  setDobMonth: mockSetDobMonth,
-  setDobYear: mockSetDobYear,
-  setPostcode: mockSetPostcode,
-  setNhsNumber: mockSetNhsNumber,
-  getAllSearchParameters: mockGetAllSearchParameters,
-  setAllSearchParameters: mockSetAllSearchParameters
+  clearSearchParameters: jest.fn(),
+  setPrescriptionId: jest.fn(),
+  setIssueNumber: jest.fn(),
+  setFirstName: jest.fn(),
+  setLastName: jest.fn(),
+  setDobDay: jest.fn(),
+  setDobMonth: jest.fn(),
+  setDobYear: jest.fn(),
+  setPostcode: jest.fn(),
+  setNhsNumber: jest.fn(),
+  getAllSearchParameters: jest.fn(),
+  setAllSearchParameters: jest.fn()
 }
 
 // Mock the spinner component.
@@ -142,16 +71,9 @@ jest.mock("@/components/EpsSpinner", () => () => (
   <div data-testid="eps-spinner">Spinner</div>
 ))
 
-type SiteDetailsCardsProps = {
-  prescriber: PrescriberOrgSummary
-  dispenser?: OrgSummary
-  nominatedDispenser?: OrgSummary
-}
-
 // simple mock for SiteDetailsCards so we can inspect the props.
 jest.mock("@/components/prescriptionDetails/SiteDetailsCards", () => ({
-
-  SiteDetailsCards: (props: SiteDetailsCardsProps) => {
+  SiteDetailsCards: (props: unknown) => {
     return (
       <div data-testid="site-details-cards">
         {JSON.stringify(props)}
@@ -170,7 +92,7 @@ const renderComponent = (
   }
 
   return render(
-    <MockAuthProvider initialState={initialAuthState}>
+    <AuthContext.Provider value={initialAuthState}>
       <SearchContext.Provider value={searchState}>
         <MockPatientDetailsProvider>
           <MockPrescriptionInformationProvider>
@@ -184,7 +106,7 @@ const renderComponent = (
           </MockPrescriptionInformationProvider>
         </MockPatientDetailsProvider>
       </SearchContext.Provider>
-    </MockAuthProvider>
+    </AuthContext.Provider>
   )
 }
 

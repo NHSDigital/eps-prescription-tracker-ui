@@ -8,7 +8,6 @@ import {doHSClient} from "@cpt-ui-common/doHSClient"
 import {mergePrescriptionDetails} from "../utils/responseMapper"
 
 import {DoHSData} from "../utils/types"
-import {buildApigeeHeaders} from "@cpt-ui-common/authFunctions"
 import path from "path"
 import {extractOdsCodes, PrescriptionOdsCodes} from "../utils/extensionUtils"
 import {PrescriptionDetailsResponse} from "@cpt-ui-common/common-types"
@@ -83,10 +82,7 @@ export async function processPrescriptionRequest(
   prescriptionId: string,
   issueNumber: string,
   apigeePrescriptionsEndpoint: string,
-  apigeeAccessToken: string,
-  roleId: string,
-  orgCode: string,
-  correlationId: string,
+  apigeeHeaders: Record<string, string>,
   logger: Logger
 ): Promise<PrescriptionDetailsResponse> {
   logger.info("Fetching prescription details from Apigee", {
@@ -100,21 +96,19 @@ export async function processPrescriptionRequest(
   // Add issueNumber as a query parameter to the Apigee request
   endpoint.searchParams.set("issueNumber", issueNumber)
 
-  const headers = buildApigeeHeaders(apigeeAccessToken, roleId, orgCode, correlationId)
-
   // Add detailed logging before making the request
   logger.info("Making request to Apigee", {
     url: endpoint.href,
     method: "GET",
     headers: {
-      ...headers,
-      Authorization: headers.Authorization ? "[REDACTED]" : undefined
+      ...apigeeHeaders,
+      Authorization: apigeeHeaders.Authorization ? "[REDACTED]" : undefined
     },
     prescriptionId,
     issueNumber
   })
 
-  const apigeeResponse = await axios.get(endpoint.href, {headers})
+  const apigeeResponse = await axios.get(endpoint.href, {headers: apigeeHeaders})
   logger.info("Apigee response received successfully", {
     status: apigeeResponse.status,
     statusText: apigeeResponse.statusText,

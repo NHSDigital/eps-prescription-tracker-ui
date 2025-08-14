@@ -88,6 +88,15 @@ describe("mergePrescriptionDetails", () => {
       authoredOn: "2020-01-01T00:00:00Z",
       extension: [
         {
+          url: "https://fhir.nhs.uk/StructureDefinition/Extension-EPS-PrescriptionStatusHistory",
+          extension: [
+            {url: "status", valueCoding: {
+              system: "https://fhir.nhs.uk/CodeSystem/EPS-task-business-status",
+              code: "0006"
+            }}
+          ]
+        },
+        {
           url: "https://fhir.nhs.uk/StructureDefinition/Extension-DM-PrescriptionType",
           valueCoding: {code: "01"}
         },

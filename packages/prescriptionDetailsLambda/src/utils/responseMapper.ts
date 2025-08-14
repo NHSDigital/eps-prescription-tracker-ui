@@ -1,12 +1,11 @@
-/* eslint-disable max-len */
-
 import {
   Bundle,
   FhirResource,
   RequestGroup,
   Patient,
   MedicationRequest,
-  MedicationDispense
+  MedicationDispense,
+  RequestGroupAction
 } from "fhir/r4"
 import {DoHSData} from "./types"
 import {
@@ -17,6 +16,7 @@ import {
 } from "./fhirMappers"
 import {
   findExtensionByKey,
+  findExtensionsByKey,
   getBooleanFromNestedExtension,
   getIntegerFromNestedExtension,
   PrescriptionOdsCodes
@@ -32,10 +32,50 @@ import {DoHSOrg} from "@cpt-ui-common/doHSClient"
 /**
  * Extracts a specific resource type from the FHIR Bundle
  */
-const extractResourcesFromBundle = <T extends FhirResource>(bundle: Bundle, resourceType: T["resourceType"]): Array<T> => {
+const extractResourcesFromBundle = <T extends FhirResource>(
+  bundle: Bundle,
+  resourceType: T["resourceType"]
+): Array<T> => {
   return bundle.entry!
     .filter(entry => entry.resource!.resourceType === resourceType)
     .map(entry => entry.resource as T)
+}
+
+const extractDispenseNotificationItem = (
+  request: MedicationRequest,
+  action: RequestGroupAction,
+  medicationDispenses: Array<MedicationDispense>
+) => {
+  let dispenses: Array<MedicationDispense> = []
+  const requestId = request.id
+  if (requestId && action.action) {
+    dispenses = action.action.map(a => {
+      const dispenseReference = a.resource?.reference
+      if (!dispenseReference) return undefined
+
+      return medicationDispenses.find(dispense =>
+        dispense.id && dispenseReference.includes(dispense.id)
+              && dispense.authorizingPrescription?.[0]?.reference?.includes(requestId)
+      )
+    }).filter(d => d !== undefined)
+  }
+
+  return {
+    statusCode: dispenses[0]?.type?.coding?.[0].code ?? "unknown",
+    components: dispenses.map(dispense => {
+      const medicationName = dispense.medicationCodeableConcept?.text
+      if (!medicationName) return undefined
+
+      const quantityValue = dispense.quantity?.value?.toString() ?? ""
+      const quantityUnit = dispense.quantity?.unit
+      const quantity = quantityUnit ? `${quantityValue} ${quantityUnit}` : quantityValue
+      return {
+        medicationName,
+        quantity,
+        dosageInstruction: dispense.dosageInstruction?.[0]?.text
+      }
+    }).filter(c => c !== undefined)
+  }
 }
 
 /**
@@ -79,38 +119,8 @@ const extractMessageHistory = (
 
     // Only populate if this message type should have dispense notification
     if (messageCode === "dispense-notified" && action.action && action.action.length > 0) {
-      // Iterate through all action items to collect all dispense notifications
       dispenseNotificationItems = medicationRequests.map(request => {
-        let dispenses: Array<MedicationDispense> = []
-        const requestId = request.id
-        if (requestId && action.action) {
-          dispenses = action.action.map(a => {
-            const dispenseReference = a.resource?.reference
-            if (!dispenseReference) return undefined
-
-            return medicationDispenses.find(dispense =>
-              dispense.id && dispenseReference.includes(dispense.id)
-              && dispense.authorizingPrescription?.[0]?.reference?.includes(requestId)
-            )
-          }).filter(d => d !== undefined)
-        }
-
-        return {
-          statusCode: dispenses[0]?.type?.coding?.[0].code ?? "unknown",
-          components: dispenses.map(dispense => {
-            const medicationName = dispense.medicationCodeableConcept?.text
-            if (!medicationName) return undefined
-
-            const quantityValue = dispense.quantity?.value?.toString() ?? ""
-            const quantityUnit = dispense.quantity?.unit
-            const quantity = quantityUnit ? `${quantityValue} ${quantityUnit}` : quantityValue
-            return {
-              medicationName,
-              quantity,
-              dosageInstruction: dispense.dosageInstruction?.[0]?.text
-            }
-          }).filter(c => c !== undefined)
-        }
+        return extractDispenseNotificationItem(request, action, medicationDispenses)
       })
     }
 
@@ -177,7 +187,10 @@ export const mergePrescriptionDetails = (
 
   // get prescription type and treatment type
   const prescriptionTypeExt = findExtensionByKey(requestGroup.extension, "PRESCRIPTION_TYPE")
-  const typeCode = firstMedicationRequest.courseOfTherapyType!.coding![0].code! as PrescriptionDetailsResponse["typeCode"]
+  const typeCode = firstMedicationRequest
+    .courseOfTherapyType!
+    .coding![0]
+    .code! as PrescriptionDetailsResponse["typeCode"]
 
   const issueDate = requestGroup.authoredOn!
 
@@ -193,8 +206,10 @@ export const mergePrescriptionDetails = (
   const daysSupply = lineItemsAction.timingTiming?.repeat!.period!.toString() ?? "Not applicable"
 
   // get pending cancellation status
-  const pendingCancellationExt = findExtensionByKey(requestGroup.extension, "PENDING_CANCELLATION")
-  const prescriptionPendingCancellation = getBooleanFromNestedExtension(pendingCancellationExt, "prescriptionPendingCancellation")
+  const prescriptionPendingCancellation = getBooleanFromNestedExtension(
+    findExtensionByKey(requestGroup.extension, "PENDING_CANCELLATION"),
+    "prescriptionPendingCancellation"
+  )
 
   // extract and format all the data
   const patientDetails = extractPatientDetails(patient)
@@ -204,9 +219,9 @@ export const mergePrescriptionDetails = (
   // TODO: extract NHS App status from dispensing information extension
   // const dispensingInfoExt = findExtensionByKey(dispense.extension, "DISPENSING_INFORMATION")
 
-  const statusCode = messageHistory.length > 0
-    ? messageHistory[messageHistory.length - 1].newStatusCode
-    : requestGroup.status ?? "unknown"
+  const statusExt = findExtensionsByKey(requestGroup.extension, "PRESCRIPTION_STATUS_HISTORY")
+    .find(ext => ext.extension?.[0].valueCoding?.system === "https://fhir.nhs.uk/CodeSystem/EPS-task-business-status")
+  const statusCode = statusExt?.extension?.[0].valueCoding?.code ?? "unknown"
 
   // create organization summaries
   const prescriptionTypeCode = prescriptionTypeExt?.valueCoding?.code ?? "Unknown"
