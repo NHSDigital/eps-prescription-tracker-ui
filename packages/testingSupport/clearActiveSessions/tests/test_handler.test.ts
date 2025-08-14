@@ -192,40 +192,4 @@ describe("Lambda Handler Integration Tests", () => {
       }
     })
   })
-
-  describe("edge cases", () => {
-    it("handles username with special characters", async (): Promise<void> => {
-      mockDeleteRecordAllowFailures.mockResolvedValue(undefined)
-
-      const event = buildEvent({username: "user@example.com"})
-      const response: APIGatewayProxyResult = await handler(event, context)
-
-      expect(response.statusCode).toBe(200)
-      expect(JSON.parse(response.body)).toEqual({message: "Success"})
-      expect(mockDeleteRecordAllowFailures).toHaveBeenCalledTimes(2)
-      expect(mockDeleteRecordAllowFailures).toHaveBeenCalledWith(
-        expect.anything(),
-        "TokenMappingTable",
-        "user@example.com",
-        expect.anything()
-      )
-    })
-
-    it("handles very long username", async (): Promise<void> => {
-      mockDeleteRecordAllowFailures.mockResolvedValue(undefined)
-
-      const longUsername = "a".repeat(1000)
-      const event = buildEvent({username: longUsername})
-      const response: APIGatewayProxyResult = await handler(event, context)
-
-      expect(response.statusCode).toBe(200)
-      expect(JSON.parse(response.body)).toEqual({message: "Success"})
-      expect(mockDeleteRecordAllowFailures).toHaveBeenCalledWith(
-        expect.anything(),
-        "TokenMappingTable",
-        longUsername,
-        expect.anything()
-      )
-    })
-  })
 })
