@@ -84,7 +84,7 @@ export const AUTO_LOGIN_ENVIRONMENTS = [
 
 // Validation helper
 const validateEnvironment = (env: string): env is Environment => {
-  return ["dev", "dev-pr", "int", "qa", "prod", "ref", "test"].includes(env)
+  return ["dev", "dev-pr", "int", "qa", "prod", "ref", "test", "recovery"].includes(env)
 }
 
 // Ensure environment is valid
