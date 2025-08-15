@@ -2,10 +2,18 @@ import React from "react"
 import {render, screen} from "@testing-library/react"
 import "@testing-library/jest-dom"
 
-import {PrescribedDispensedItemsCards} from "@/components/prescriptionDetails/PrescribedDispensedItemsCards"
+import {ItemsCards} from "@/components/prescriptionDetails/ItemsCards"
 
-describe("PrescribedDispensedItemsCards", () => {
-  const dispensedItems = [
+describe("ItemsCards", () => {
+  const items = [
+    {
+      medicationName: "Amoxicillin",
+      quantity: "30 tablets",
+      dosageInstructions: "Take one three times a day",
+      epsStatusCode: "0004", // Item not dispensed - owing
+      pharmacyStatus: "With pharmacy",
+      itemPendingCancellation: false
+    },
     {
       medicationName: "Ibuprofen",
       quantity: "20 tablets",
@@ -16,33 +24,15 @@ describe("PrescribedDispensedItemsCards", () => {
     }
   ]
 
-  const prescribedItems = [
-    {
-      medicationName: "Amoxicillin",
-      quantity: "30 tablets",
-      dosageInstructions: "Take one three times a day",
-      epsStatusCode: "0004", // Item not dispensed - owing
-      pharmacyStatus: "With pharmacy",
-      itemPendingCancellation: false,
-      cancellationReason: null
-    }
-  ]
-
   it("renders dispensed and prescribed sections with items and status tags", () => {
-    render(
-      <PrescribedDispensedItemsCards
-        prescribedItems={prescribedItems}
-        dispensedItems={dispensedItems}
-      />
-    )
+    render(<ItemsCards items={items} />)
 
-    // Section headers
-    expect(screen.getByText("Dispensed items")).toBeInTheDocument()
-    expect(screen.getByText("Prescribed items")).toBeInTheDocument()
+    // Section header
+    expect(screen.getByText("Items")).toBeInTheDocument()
 
     // Medications
-    expect(screen.getByText("Ibuprofen")).toBeInTheDocument()
-    expect(screen.getByText("Amoxicillin")).toBeInTheDocument()
+    expect(screen.getByText("1. Amoxicillin")).toBeInTheDocument()
+    expect(screen.getByText("2. Ibuprofen")).toBeInTheDocument()
 
     // Tag status labels
     expect(screen.getByText("Item fully dispensed")).toBeInTheDocument()
@@ -62,23 +52,16 @@ describe("PrescribedDispensedItemsCards", () => {
   })
 
   it("renders dispensed with no instructions, if 'unknown' dosageInstructions returned", () => {
-    dispensedItems[0].dosageInstructions = "Unknown"
-    // dispensedItems[0].quantity = "Unknown"
+    items[1].dosageInstructions = "Unknown"
 
-    render(
-      <PrescribedDispensedItemsCards
-        prescribedItems={prescribedItems}
-        dispensedItems={dispensedItems}
-      />
-    )
+    render(<ItemsCards items={items} />)
 
-    // Section headers
-    expect(screen.getByText("Dispensed items")).toBeInTheDocument()
-    expect(screen.getByText("Prescribed items")).toBeInTheDocument()
+    // Section header
+    expect(screen.getByText("Items")).toBeInTheDocument()
 
     // Medications
-    expect(screen.getByText("Ibuprofen")).toBeInTheDocument()
-    expect(screen.getByText("Amoxicillin")).toBeInTheDocument()
+    expect(screen.getByText("1. Amoxicillin")).toBeInTheDocument()
+    expect(screen.getByText("2. Ibuprofen")).toBeInTheDocument()
 
     // Tag status labels
     expect(screen.getByText("Item fully dispensed")).toBeInTheDocument()

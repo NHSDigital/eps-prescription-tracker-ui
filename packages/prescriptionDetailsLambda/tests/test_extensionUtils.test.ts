@@ -124,7 +124,7 @@ describe("Extension Utilities", () => {
       }
 
       const result = getIntegerFromNestedExtension(extension, "nonExistentProperty")
-      expect(result).toBe("Not found") // Default is "Not found"
+      expect(result).toBeUndefined() // Default is undefined
 
       const result2 = getIntegerFromNestedExtension(extension, "nonExistentProperty", 0)
       expect(result2).toBe(0) // Using specified default value
@@ -188,7 +188,7 @@ describe("Extension Utilities", () => {
       }
 
       const result = getIntegerFromNestedExtension(extension, "nonExistentProperty")
-      expect(result).toBe("Not found") // Default is "Not found"
+      expect(result).toBeUndefined() // Default is undefined
 
       const result2 = getIntegerFromNestedExtension(extension, "nonExistentProperty", 0)
       expect(result2).toBe(0) // Using specified default value
@@ -196,7 +196,7 @@ describe("Extension Utilities", () => {
 
     it("should return the default value when extension is undefined", () => {
       const result = getIntegerFromNestedExtension(undefined, "anyProperty")
-      expect(result).toBe("Not found")
+      expect(result).toBeUndefined()
 
       const result2 = getIntegerFromNestedExtension(undefined, "anyProperty", 42)
       expect(result2).toBe(42)

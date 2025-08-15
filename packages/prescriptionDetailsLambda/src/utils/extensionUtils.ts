@@ -9,15 +9,21 @@ import {
 import {extensionUrlMappings} from "./types"
 import {Logger} from "@aws-lambda-powertools/logger"
 
-export const extractOdsCodes = (bundle: Bundle, logger: Logger) => {
-  const requestGroup = bundle.entry?.find(e => e.resource?.resourceType === "RequestGroup")?.resource as RequestGroup
-  const medicationRequests = bundle.entry?.filter(e => e.resource?.resourceType === "MedicationRequest")?.map(e => e.resource as MedicationRequest) ?? []
+export type PrescriptionOdsCodes = {
+  prescribingOrganization: string
+  nominatedPerformer: string | undefined
+  dispensingOrganization: string | undefined
+}
 
-  const prescribingOrganization = requestGroup?.author?.identifier?.value
+export const extractOdsCodes = (bundle: Bundle, logger: Logger): PrescriptionOdsCodes => {
+  const requestGroup = bundle.entry!.find(e => e.resource!.resourceType === "RequestGroup")!.resource as RequestGroup
+  const medicationRequests = bundle.entry!.filter(e => e.resource!.resourceType === "MedicationRequest").map(e => e.resource as MedicationRequest)
+
+  const prescribingOrganization = requestGroup.author!.identifier!.value!
 
   // Handle performer identifier as array or single object
   let nominatedPerformer: string | undefined
-  const performerIdentifiers = medicationRequests[0]?.dispenseRequest?.performer?.identifier
+  const performerIdentifiers = medicationRequests[0].dispenseRequest!.performer?.identifier
   if (Array.isArray(performerIdentifiers)) {
     const odsIdentifier = performerIdentifiers.find(id => id.system === "https://fhir.nhs.uk/Id/ods-organization-code")
     nominatedPerformer = odsIdentifier?.value
@@ -25,8 +31,8 @@ export const extractOdsCodes = (bundle: Bundle, logger: Logger) => {
     nominatedPerformer = performerIdentifiers?.value
   }
 
-  const dispensingOrganization = requestGroup?.action
-    ?.find(a => a.title === "Prescription status transitions")
+  const dispensingOrganization = requestGroup.action!
+    .find(a => a.title === "Prescription status transitions")
     ?.action?.map(a => a?.participant?.[0]?.extension?.[0]?.valueReference?.identifier?.value)
     .reverse().find(odsCode => odsCode && odsCode !== prescribingOrganization)
 
@@ -54,6 +60,18 @@ export const findExtensionByKey = (
   return extensions.find(ext => possibleUrls.includes(ext.url))
 }
 
+export const findExtensionsByKey = (
+  extensions: Array<Extension> | undefined,
+  extensionKey: keyof typeof extensionUrlMappings
+): Array<Extension> => {
+  if (!extensions || extensions.length === 0) {
+    return []
+  }
+
+  const possibleUrls = extensionUrlMappings[extensionKey]
+  return extensions.filter(ext => possibleUrls.includes(ext.url))
+}
+
 /**
  * Extracts a boolean value from a nested extension.
  */
@@ -73,11 +91,11 @@ export const getBooleanFromNestedExtension = (
 /**
  * Extracts an integer value from a nested extension.
  */
-export const getIntegerFromNestedExtension = (
+export const getIntegerFromNestedExtension = <T = undefined>(
   extension: Extension | undefined,
   subUrl: string,
-  defaultValue: number | string = "Not found"
-): number | string => {
+  defaultValue: T = undefined as T
+): number | T => {
   if (!extension || !extension.extension || extension.extension.length === 0) {
     return defaultValue
   }
@@ -105,11 +123,11 @@ export const getDisplayFromNestedExtension = (
 /**
  * Extracts a code value from a coding in a nested extension.
  */
-export const getCodeFromNestedExtension = (
+export const getCodeFromNestedExtension = <T = undefined>(
   extension: Extension | undefined,
   subUrl: string,
-  defaultValue: string | undefined = undefined
-): string | undefined => {
+  defaultValue: T = undefined as T
+): string | T => {
   if (!extension || !extension.extension || extension.extension.length === 0) {
     return defaultValue
   }

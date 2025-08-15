@@ -15,12 +15,14 @@ import {
   AuthenticateRequestOptions,
   authenticationMiddleware,
   authParametersFromEnv,
-  AuthResult
+  AuthResult,
+  buildApigeeHeaders
 } from "@cpt-ui-common/authFunctions"
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 
 import {processPrescriptionRequest} from "./services/prescriptionService"
 import axios, {AxiosInstance} from "axios"
+import {formatHeaders} from "@cpt-ui-common/lambdaUtils/lib/src/headers"
 
 type HandlerParameters = {
   logger: Logger,
@@ -51,16 +53,41 @@ const lambdaHandler = async (
   if (!orgCode) {
     throw new Error("orgCode is undefined")
   }
+
+  const prescriptionId = event.pathParameters?.prescriptionId
+  if (!prescriptionId) {
+    logger.warn("No prescription ID provided in request", {event})
+    return {
+      statusCode: 400,
+      body: JSON.stringify({
+        message: "Missing prescription ID in request",
+        prescriptionId: null
+      })
+    }
+  }
+
+  // Extract issueNumber from query parameters, default to "1" if not provided
+  const issueNumber = event.queryStringParameters?.issueNumber || "1"
+
+  const headers = buildApigeeHeaders(apigeeAccessToken, roleId, orgCode, correlationId)
+
   // Pass the gathered data in to the processor for the request
-  return await processPrescriptionRequest(
-    event,
+  const response = await processPrescriptionRequest(
+    prescriptionId,
+    issueNumber,
     apigeePrescriptionsEndpoint,
-    apigeeAccessToken,
-    roleId,
-    orgCode,
-    correlationId,
+    headers,
     logger
   )
+
+  return {
+    statusCode: 200,
+    body: JSON.stringify(response),
+    headers: formatHeaders({
+      "Content-Type": "application/json",
+      "Cache-Control": "no-store"
+    })
+  }
 }
 
 export const newHandler = (initParams: HandlerInitialisationParameters) => {

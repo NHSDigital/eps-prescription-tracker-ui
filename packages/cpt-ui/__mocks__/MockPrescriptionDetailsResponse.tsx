@@ -17,17 +17,16 @@ export const mockPrescriptionDetailsResponse: PrescriptionDetailsResponse = {
     }
   },
   prescriptionId: "SUCCESS_ID",
-  typeCode: "type",
+  typeCode: "acute",
   statusCode: "status",
   issueDate: "2020-01-01",
   instanceNumber: 1,
   maxRepeats: 0,
   daysSupply: "30",
   prescriptionPendingCancellation: false,
-  prescribedItems: [],
-  dispensedItems: [],
+  items: [],
   messageHistory: [],
-  prescriberOrganisation: {
+  prescriberOrg: {
     name: "Fiji surgery",
     odsCode: "FI05964",
     address: "90 YARROW LANE, FINNSBURY, E45 T46",

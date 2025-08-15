@@ -1,6 +1,5 @@
 export const STRINGS = {
-  DISPENSED_ITEMS_HEADER: "Dispensed items",
-  PRESCRIBED_ITEMS_HEADER: "Prescribed items",
+  ITEMS_HEADER: "Items",
   INITIALLY_PRESCRIBED_DETAILS: "What was initially prescribed",
   INITIALLY_PRESCRIBED_ITEM: "Item",
   INITIALLY_PRESCRIBED_QUANTITY: "Quantity",

@@ -5,8 +5,7 @@ import {
   FhirAction,
   FhirParticipant,
   ExtensionWithNested,
-  DoHSData,
-  PrescriptionIntent
+  DoHSData
 } from "../src/utils/types"
 
 export const mockAPIGatewayProxyEvent = {
@@ -228,8 +227,6 @@ export const mockDoHSData: DoHSData = {
   dispensingOrganization: mockDoHSValue
 }
 
-export const mockPrescriptionIntent: PrescriptionIntent = "order"
-
 export const mockMergedResponse: PrescriptionDetailsResponse = {
   patientDetails: {
     nhsNumber: "123",
@@ -247,58 +244,42 @@ export const mockMergedResponse: PrescriptionDetailsResponse = {
     }
   },
   prescriptionId: "RX-123456",
-  typeCode: "order",
+  typeCode: "acute",
   statusCode: "active",
   issueDate: "2020-01-01",
   instanceNumber: 1,
   maxRepeats: 3,
   daysSupply: "30",
   prescriptionPendingCancellation: false,
-  prescribedItems: [
+  items: [
     {
       medicationName: "Medication A",
       quantity: "30 tablets",
       dosageInstructions: "Take one tablet daily",
       epsStatusCode: "EPS123",
-      itemPendingCancellation: false,
-      cancellationReason: null
-    }
-  ],
-  dispensedItems: [
-    {
-      medicationName: "Medication A",
-      quantity: "30 tablets",
-      dosageInstructions: "Take one tablet daily",
-      epsStatusCode: "EPS123",
-      itemPendingCancellation: false,
-      cancellationReason: null,
-      notDispensedReason: null,
-      initiallyPrescribed: {
-        medicationName: "Medication A",
-        quantity: "30 tablets",
-        dosageInstructions: "Take one tablet daily"
-      }
+      itemPendingCancellation: false
     }
   ],
   messageHistory: [
     {
       messageCode: "MSG001",
       sentDateTime: "2020-01-02T00:00:00Z",
-      organisationName: "NHS Test Organisation",
-      organisationODS: "ODS123",
+      orgName: "NHS Test Organisation",
+      orgODS: "ODS123",
       newStatusCode: "processed",
-      dispenseNotification: [
+      dispenseNotificationItems: [
         {
-          id: "DN001",
-          medicationName: "Medication A",
-          quantity: "30 tablets",
-          dosageInstruction: "Take one tablet daily",
-          statusCode: "0001"
+          statusCode: "0001",
+          components: [{
+            medicationName: "Medication A",
+            quantity: "30 tablets",
+            dosageInstruction: "Take one tablet daily"
+          }]
         }
       ]
     }
   ],
-  prescriberOrganisation: {
+  prescriberOrg: {
     name: "NHS Prescriber Org",
     odsCode: "ODS123",
     address: "456 Health St, TestCity",

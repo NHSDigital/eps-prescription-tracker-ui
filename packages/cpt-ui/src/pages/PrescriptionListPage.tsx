@@ -55,9 +55,9 @@ export default function PrescriptionListPage() {
 
       // determine which search page to go back to based on query parameters
       if (searchContext.prescriptionId) {
-        searchParams.append("prescriptionId", encodeURIComponent(searchContext.prescriptionId))
+        searchParams.append("prescriptionId", searchContext.prescriptionId)
       } else if (searchContext.nhsNumber) {
-        searchParams.append("nhsNumber", encodeURIComponent(searchContext.nhsNumber))
+        searchParams.append("nhsNumber", searchContext.nhsNumber)
       } else {
         logger.error("No query parameter provided.")
         setLoading(false)

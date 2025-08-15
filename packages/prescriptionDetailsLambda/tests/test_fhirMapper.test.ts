@@ -1,10 +1,9 @@
-import {Coding, MedicationRequest, Patient} from "fhir/r4"
+import {MedicationRequest, Patient} from "fhir/r4"
 import {
   extractPatientDetails,
-  extractPrescribedItems,
-  mapCourseOfTherapyType,
   mapMessageHistoryTitleToMessageCode,
-  mapPrescriptionOrigin
+  mapPrescriptionOrigin,
+  extractItems
 } from "../src/utils/fhirMappers"
 
 describe("mapMessageHistoryTitleToMessageCode", () => {
@@ -21,30 +20,6 @@ describe("mapMessageHistoryTitleToMessageCode", () => {
 
   it("should handle undefined message titles gracefully", () => {
     expect(mapMessageHistoryTitleToMessageCode("")).toBeUndefined()
-  })
-})
-
-describe("mapCourseOfTherapyType", () => {
-  it("should extract code from coding array", () => {
-    const coding: Array<Coding> = [
-      {code: "acute", display: "Acute"}
-    ]
-    expect(mapCourseOfTherapyType(coding)).toBe("acute")
-  })
-
-  it("should return 'Unknown' for empty coding array", () => {
-    expect(mapCourseOfTherapyType([])).toBe("Unknown")
-  })
-
-  it("should return 'Unknown' for undefined coding", () => {
-    expect(mapCourseOfTherapyType(undefined)).toBe("Unknown")
-  })
-
-  it("should handle coding without code property", () => {
-    const coding: Array<Coding> = [
-        {display: "Acute"} satisfies Coding
-    ]
-    expect(mapCourseOfTherapyType(coding)).toBe("unknown")
   })
 })
 
@@ -130,21 +105,7 @@ describe("extractPatientDetails", () => {
       family: "Doe",
       gender: null,
       dateOfBirth: null,
-      address: null
-    })
-  })
-
-  it("should handle undefined patient", () => {
-    const result = extractPatientDetails(undefined)
-    expect(result).toEqual({
-      nhsNumber: "Unknown",
-      prefix: "",
-      suffix: "",
-      given: "Unknown",
-      family: "Unknown",
-      gender: null,
-      dateOfBirth: null,
-      address: null
+      address: "Not Found"
     })
   })
 
@@ -157,7 +118,7 @@ describe("extractPatientDetails", () => {
     }
 
     const result = extractPatientDetails(patient)
-    expect(result.address).toBeNull()
+    expect(result.address).toBe("Not Found")
   })
 
   it("should join multiple given names", () => {
@@ -185,7 +146,7 @@ describe("extractPrescribedItems", () => {
       }
     ]
 
-    const result = extractPrescribedItems(medicationRequests)
+    const result = extractItems(medicationRequests, [])
     expect(result).toHaveLength(1)
     expect(result[0]).toEqual({
       medicationName: "Medication A",
@@ -194,12 +155,13 @@ describe("extractPrescribedItems", () => {
       epsStatusCode: "unknown",
       nhsAppStatus: undefined,
       itemPendingCancellation: false,
-      cancellationReason: null
+      cancellationReason: undefined,
+      notDispensedReason: undefined
     })
   })
 
   it("should handle empty medication requests array", () => {
-    const result = extractPrescribedItems([])
+    const result = extractItems([], [])
     expect(result).toEqual([])
   })
 
@@ -213,15 +175,16 @@ describe("extractPrescribedItems", () => {
       }
     ]
 
-    const result = extractPrescribedItems(medicationRequests)
+    const result = extractItems(medicationRequests, [])
     expect(result[0]).toEqual({
       medicationName: "Unknown",
       quantity: "Unknown",
-      dosageInstructions: "Unknown",
+      dosageInstructions: undefined,
       epsStatusCode: "unknown",
       nhsAppStatus: undefined,
       itemPendingCancellation: false,
-      cancellationReason: null
+      cancellationReason: undefined,
+      notDispensedReason: undefined
     })
   })
 
@@ -250,7 +213,7 @@ describe("extractPrescribedItems", () => {
       }
     ]
 
-    const result = extractPrescribedItems(medicationRequests)
+    const result = extractItems(medicationRequests, [])
     expect(result[0].itemPendingCancellation).toBe(true)
     expect(result[0].cancellationReason).toBe("Medication error")
   })
@@ -273,7 +236,7 @@ describe("extractPrescribedItems", () => {
       }
     ]
 
-    const result = extractPrescribedItems(medicationRequests)
+    const result = extractItems(medicationRequests, [])
     expect(result[0].epsStatusCode).toBe("0001")
   })
 })

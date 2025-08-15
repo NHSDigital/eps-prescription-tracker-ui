@@ -10,6 +10,7 @@ import {MemoryRouter, useNavigate, Link} from "react-router-dom"
 import {mockPrescriptionDetailsResponse} from "../__mocks__/MockPrescriptionDetailsResponse"
 
 import {PrescriptionInformationProvider, usePrescriptionInformation} from "@/context/PrescriptionInformationProvider"
+import {PrescriptionDetailsResponse} from "@cpt-ui-common/common-types"
 
 describe("PrescriptionInformationContext", () => {
   it("throws an error when usePrescriptionInformation is used outside the provider", () => {
@@ -49,12 +50,12 @@ describe("PrescriptionInformationContext", () => {
       const {prescriptionInformation, setPrescriptionInformation} =
         usePrescriptionInformation()
 
-      const setData = {
+      const setData: PrescriptionDetailsResponse = {
         ...mockPrescriptionDetailsResponse,
         prescriptionId: "123",
         issueDate: "2024-01-01",
         statusCode: "Pending",
-        typeCode: "Acute"
+        typeCode: "acute"
       }
 
       return (
@@ -90,12 +91,12 @@ describe("PrescriptionInformationContext", () => {
       const {prescriptionInformation, setPrescriptionInformation, clear} =
         usePrescriptionInformation()
 
-      const setData = {
+      const setData: PrescriptionDetailsResponse = {
         ...mockPrescriptionDetailsResponse,
         prescriptionId: "456",
         issueDate: "2024-02-02",
         statusCode: "Dispensed",
-        typeCode: "Repeat"
+        typeCode: "continuous"
       }
 
       return (
@@ -136,12 +137,12 @@ describe("PrescriptionInformationContext", () => {
       const {prescriptionInformation, setPrescriptionInformation} =
         usePrescriptionInformation()
 
-      const setData = {
+      const setData: PrescriptionDetailsResponse = {
         ...mockPrescriptionDetailsResponse,
         prescriptionId: "789",
         issueDate: "2024-03-03",
         statusCode: "With Dispenser",
-        typeCode: "eRD"
+        typeCode: "continuous-repeat-dispensing"
       }
 
       return (
@@ -184,12 +185,12 @@ describe("PrescriptionInformationContext", () => {
       const {prescriptionInformation, setPrescriptionInformation} =
         usePrescriptionInformation()
 
-      const setData = {
+      const setData: PrescriptionDetailsResponse = {
         ...mockPrescriptionDetailsResponse,
         prescriptionId: "999",
         issueDate: "2024-04-04",
         statusCode: "Pending",
-        typeCode: "Repeat"
+        typeCode: "continuous"
       }
 
       return (
