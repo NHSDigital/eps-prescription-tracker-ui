@@ -57,12 +57,14 @@ export default function PrescriptionDetailsPage() {
   ): Promise<PrescriptionDetailsResponse | undefined> => {
     logger.info("Prescription ID", prescriptionId)
     const issueNumber = prescriptionIssueNumber ?? "1"
-    const url = `${API_ENDPOINTS.PRESCRIPTION_DETAILS}/${prescriptionId}?issueNumber=${issueNumber}`
+    const searchParams = new URLSearchParams()
+    searchParams.append("issueNumber", issueNumber)
+    const url = `${API_ENDPOINTS.PRESCRIPTION_DETAILS}/${encodeURIComponent(prescriptionId)}`
 
     let payload: PrescriptionDetailsResponse | undefined
     try {
       // Attempt to fetch live prescription details from the API
-      const response = await http.get(url)
+      const response = await http.get(url, {params: searchParams})
 
       // Validate HTTP response status
       if (response.status !== 200) {
