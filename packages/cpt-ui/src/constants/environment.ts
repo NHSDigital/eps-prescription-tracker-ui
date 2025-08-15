@@ -78,6 +78,7 @@ export type Environment = MockAuthEnvironment | "prod" | "test" | "int"
 export const AUTO_LOGIN_ENVIRONMENTS = [
   {environment: "dev", loginMethod: "mock"},
   {environment: "dev-pr", loginMethod: "mock"},
+  {environment: "recovery", loginMethod: "mock"},
   {environment: "int", loginMethod: "cis2"},
   {environment: "prod", loginMethod: "cis2"}
 ]
