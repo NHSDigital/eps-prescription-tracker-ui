@@ -96,7 +96,7 @@ jobs:
       contents: write
     steps:
       - name: Checkout local github actions
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: ${{ env.BRANCH_NAME }}
           fetch-depth: 0
@@ -543,7 +543,7 @@ jobs:
     steps:
       - name: Checkout gh-pages
         if: ${{ !startsWith(inputs.SERVICE_NAME, 'cpt-ui-pr-') }}
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: gh-pages
           path: gh-pages
