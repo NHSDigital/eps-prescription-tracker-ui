@@ -14,12 +14,7 @@ import {
   authenticationConcurrentAwareMiddleware,
   AuthResult
 } from "@cpt-ui-common/authFunctions"
-import {
-  getTokenMapping,
-  tryGetTokenMapping,
-  updateTokenMapping,
-  TokenMappingItem
-} from "@cpt-ui-common/dynamoFunctions"
+import {getTokenMapping, updateTokenMapping, TokenMappingItem} from "@cpt-ui-common/dynamoFunctions"
 import {extractInboundEventValues, appendLoggerKeys} from "@cpt-ui-common/lambdaUtils"
 import axios from "axios"
 import {RoleDetails} from "@cpt-ui-common/common-types"
@@ -79,7 +74,7 @@ const lambdaHandler = async (event: APIGatewayProxyEventBase<AuthResult>): Promi
   let tokenDetails: TokenMappingItem | undefined = undefined
   if (isConcurrentSession) {
     logger.info(`Gaining concurrent session details, for sessionId ${sessionId}`)
-    tokenDetails = await tryGetTokenMapping(documentClient, sessionManagementTableName,
+    tokenDetails = await getTokenMapping(documentClient, sessionManagementTableName,
       username, logger)
   } else {
     logger.info(`Gaining primary session details, for sessionId ${sessionId}`)

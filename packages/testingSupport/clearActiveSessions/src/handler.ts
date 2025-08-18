@@ -54,36 +54,20 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   }
   const username = body.username
 
-  try {
-    logger.info("Deleting token mapping and session management data for user", {username})
-    const results = await Promise.allSettled([
-      deleteRecordAllowFailures(documentClient, tokenMappingTableName, username, logger),
-      deleteRecordAllowFailures(documentClient, sessionManagementTableName, username, logger)
-    ])
+  logger.info("Deleting token mapping and session management data for user", {username})
+  const results = await Promise.allSettled([
+    deleteRecordAllowFailures(documentClient, tokenMappingTableName, username, logger),
+    deleteRecordAllowFailures(documentClient, sessionManagementTableName, username, logger)
+  ])
 
-    for (const result of results) {
-      if (result.status === "rejected") {
-        throw result.reason
-      }
-    }
-
-    logger.info("Successfully conducted deletions where a record exists for user", {username})
-    return payloadValue({"message": "Success"})
-  } catch (error) {
-    logger.error("Error attempting to delete an item.", {username, error})
-  }
-
-  // If we reach here, something went wrong
-  logger.error("An error occurred while processing the request", {username})
-
-  return {
-    statusCode: 500,
-    body: JSON.stringify({"message": "A system error has occurred"}),
-    headers: {
-      "Content-Type": "application/json",
-      "Cache-Control": "no-cache"
+  for (const result of results) {
+    if (result.status === "rejected") {
+      throw result.reason
     }
   }
+
+  logger.info("Successfully conducted deletions where a record exists for user", {username})
+  return payloadValue({"message": "Success"})
 }
 
 export const handler = middy(lambdaHandler)

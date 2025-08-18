@@ -1,4 +1,5 @@
 process.env.TokenMappingTableName = "dummyTable"
+process.env.SessionManagementTableName = "dummySessionTable"
 
 process.env.CIS2_OIDC_ISSUER = "valid_cis2_iss"
 process.env.CIS2_OIDC_CLIENT_ID = "valid_cis2_aud"

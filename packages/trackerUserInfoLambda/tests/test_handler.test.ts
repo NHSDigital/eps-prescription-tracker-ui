@@ -7,20 +7,19 @@ const mockGetTokenMapping = jest.fn().mockName("mockGetTokenMapping")
 const mockInitializeOidcConfig = jest.fn().mockName("mockInitializeOidcConfig")
 const mockUpdateTokenMapping = jest.fn().mockName("mockUpdateTokenMapping")
 const mockFetchUserInfo = jest.fn().mockName("mockFetchUserInfo")
-const mockTryGetTokenMapping = jest.fn().mockName("mockTryGetTokenMapping")
 mockInitializeOidcConfig.mockImplementation(() => ({cis2OidcConfig: {}, mockOidcConfig: {}}))
 
 jest.unstable_mockModule("@cpt-ui-common/dynamoFunctions", () => {
   return {
     getTokenMapping: mockGetTokenMapping,
-    updateTokenMapping: mockUpdateTokenMapping,
-    tryGetTokenMapping: mockTryGetTokenMapping
+    updateTokenMapping: mockUpdateTokenMapping
   }
 })
 jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
   return {
     authParametersFromEnv: () => ({
-      tokenMappingTableName: "TokenMappingTable"
+      tokenMappingTableName: "TokenMappingTable",
+      sessionManagementTableName: "SessionManagementTable"
     }),
     authenticationConcurrentAwareMiddleware: () => ({before: () => {}}),
     initializeOidcConfig: mockInitializeOidcConfig,
@@ -31,7 +30,16 @@ jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
 const {handler} = await import("../src/handler")
 
 describe("Lambda Handler Tests with mock disabled", () => {
-  let event = {...mockAPIGatewayProxyEvent}
+  let event: typeof mockAPIGatewayProxyEvent & {
+    requestContext: {
+      authorizer: {
+        username?: string
+        sessionId?: string
+        apigeeAccessToken?: string
+        isConcurrentSession?: boolean
+      }
+    }
+  } = {...mockAPIGatewayProxyEvent}
   let context = {...mockContext}
 
   beforeEach(() => {
@@ -280,7 +288,7 @@ describe("Lambda Handler Tests with mock disabled", () => {
 
   it("should return a successful response with concurrency values set, \
     when cached details returned and token session found with matching ID", async () => {
-    mockTryGetTokenMapping.mockImplementation(() => {
+    mockGetTokenMapping.mockImplementation(() => {
       return {
         rolesWithAccess: [
           {role_id: "123", org_code: "XYZ", role_name: "MockRole_1"}
@@ -303,6 +311,9 @@ describe("Lambda Handler Tests with mock disabled", () => {
 
     const response = await handler(event, context)
 
+    expect(mockGetTokenMapping).toHaveBeenCalledWith(expect.anything(),
+      "SessionManagementTable",
+      event.requestContext.authorizer.username, expect.anything())
     expect(response).toBeDefined()
     expect(response).toHaveProperty("statusCode", 200)
     expect(response).toHaveProperty("body")
@@ -327,6 +338,5 @@ describe("Lambda Handler Tests with mock disabled", () => {
 
     expect(body).toHaveProperty("message", "UserInfo fetched successfully from DynamoDB")
     expect(body).toHaveProperty("userInfo")
-    expect(mockGetTokenMapping).not.toHaveBeenCalled()
   })
 })
