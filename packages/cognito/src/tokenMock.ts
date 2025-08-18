@@ -9,7 +9,7 @@ import inputOutputLogger from "@middy/input-output-logger"
 import {parse} from "querystring"
 import {PrivateKey} from "jsonwebtoken"
 import {exchangeTokenForApigeeAccessToken, fetchUserInfo, initializeOidcConfig} from "@cpt-ui-common/authFunctions"
-import {insertTokenMapping, getSessionState, getSessionTokenCredentialsForUser} from "@cpt-ui-common/dynamoFunctions"
+import {insertTokenMapping, getSessionState, tryGetTokenMapping} from "@cpt-ui-common/dynamoFunctions"
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 import {v4 as uuidv4} from "uuid"
 import jwt from "jsonwebtoken"
@@ -151,7 +151,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
   // as we now have all the user information including roles, and apigee tokens
   // store them in the token mapping table
-  const existingTokenMapping = await getSessionTokenCredentialsForUser(documentClient,
+  const existingTokenMapping = await tryGetTokenMapping(documentClient,
     mockOidcConfig.tokenMappingTableName,
     `Mock_${baseUsername}`,
     logger

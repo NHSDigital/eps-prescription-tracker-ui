@@ -16,7 +16,7 @@ import {
 } from "@cpt-ui-common/authFunctions"
 import {
   getTokenMapping,
-  getSessionTokenCredentialsForUser,
+  tryGetTokenMapping,
   updateTokenMapping,
   TokenMappingItem
 } from "@cpt-ui-common/dynamoFunctions"
@@ -79,7 +79,7 @@ const lambdaHandler = async (event: APIGatewayProxyEventBase<AuthResult>): Promi
   let tokenDetails: TokenMappingItem | undefined = undefined
   if (isConcurrentSession) {
     logger.info(`Gaining concurrent session details, for sessionId ${sessionId}`)
-    tokenDetails = await getSessionTokenCredentialsForUser(documentClient, sessionManagementTableName,
+    tokenDetails = await tryGetTokenMapping(documentClient, sessionManagementTableName,
       username, logger)
   } else {
     logger.info(`Gaining primary session details, for sessionId ${sessionId}`)

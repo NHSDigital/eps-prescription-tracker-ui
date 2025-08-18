@@ -5,7 +5,7 @@ import {authenticateRequest, AuthenticateRequestOptions, AuthResult} from "./aut
 import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
 import {Logger} from "@aws-lambda-powertools/logger"
 import {AxiosInstance} from "axios"
-import {TokenMappingItem, getSessionTokenCredentialsForUser} from "@cpt-ui-common/dynamoFunctions"
+import {TokenMappingItem, tryGetTokenMapping} from "@cpt-ui-common/dynamoFunctions"
 
 export const authenticationConcurrentAwareMiddleware = (
   axiosInstance: AxiosInstance,
@@ -23,14 +23,14 @@ export const authenticationConcurrentAwareMiddleware = (
 
     // Capture sessionManagement item to determine if the sessionId is concurrent session
     logger.info("Using concurrent aware authentication middleware")
-    sessionManagementItem = await getSessionTokenCredentialsForUser(
+    sessionManagementItem = await tryGetTokenMapping(
       ddbClient,
       authOptions.sessionManagementTableName,
       username,
       logger
     )
 
-    tokenMappingItem = await getSessionTokenCredentialsForUser(
+    tokenMappingItem = await tryGetTokenMapping(
       ddbClient,
       authOptions.tokenMappingTableName,
       username,

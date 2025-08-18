@@ -169,28 +169,16 @@ export const getTokenMapping = async (
   logger: Logger
 ): Promise<TokenMappingItem> => {
   logger.debug(`Going to get ${tableName}`, {username, tableName})
-  try {
-    const getResult = await documentClient.send(
-      new GetCommand({
-        TableName: tableName,
-        Key: {username}
-      })
-    )
+  const result = await getTokenMapping(documentClient, tableName, username, logger)
 
-    if (!getResult.Item) {
-      logger.error("username not found in DynamoDB", {username, getResult})
-      throw new Error("username not found in DynamoDB")
-    }
-    const tokenMappingItem = getResult.Item as TokenMappingItem
-    logger.debug(`Successfully retrieved data from ${tableName}`, {tableName, tokenMappingItem})
-    return tokenMappingItem
-  } catch(error) {
-    logger.error(`Error retrieving data from ${tableName}`, {error})
-    throw new Error(`Error retrieving data from ${tableName}`)
+  if (result === undefined) {
+    logger.debug("No record found for required token mapping", {tableName, username})
+    throw new Error(`Failed to retrieve record for specified username: ${username} in ${tableName}`)
   }
+  return result as TokenMappingItem
 }
 
-export const getSessionTokenCredentialsForUser = async (
+export const tryGetTokenMapping = async (
   documentClient: DynamoDBDocumentClient,
   tableName: string,
   username: string,
