@@ -56,10 +56,17 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
   try {
     logger.info("Deleting token mapping and session management data for user", {username})
-    await Promise.allSettled([
+    const results = await Promise.allSettled([
       deleteRecordAllowFailures(documentClient, tokenMappingTableName, username, logger),
       deleteRecordAllowFailures(documentClient, sessionManagementTableName, username, logger)
     ])
+
+    for (const result of results) {
+      if (result.status === "rejected") {
+        throw result.reason
+      }
+    }
+
     logger.info("Successfully conducted deletions where a record exists for user", {username})
     return payloadValue({"message": "Success"})
   } catch (error) {

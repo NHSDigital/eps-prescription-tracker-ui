@@ -147,10 +147,14 @@ export const deleteRecordAllowFailures = async (
         Key: {username}
       })
     )
-    if (response.$metadata.httpStatusCode !== 200) {
-      logger.error(`Failed to delete from ${tableName}`, {response})
-    }
-    logger.info(`Successfully deleted from ${tableName}`, {tableName})
+
+    // DynamoDB returns 200 even if the item doesn't exist - this is expected behavior
+    // Only log success/info, don't throw errors for non-200 status codes
+    logger.info(`Delete operation completed for ${tableName}`, {
+      tableName,
+      username,
+      statusCode: response.$metadata.httpStatusCode
+    })
   /* eslint-disable @typescript-eslint/no-explicit-any */
   } catch(error: any) {
     logger.error(`Error deleting data from ${tableName}`, {error})
