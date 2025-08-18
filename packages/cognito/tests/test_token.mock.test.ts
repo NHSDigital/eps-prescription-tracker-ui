@@ -68,7 +68,7 @@ jest.unstable_mockModule("@cpt-ui-common/dynamoFunctions", () => {
   return {
     insertTokenMapping: mockInsertTokenMapping,
     getSessionState: mockGetSessionState,
-    tryGetTokenMappingTokenCredentialsForUser: mockTryGetTokenMapping
+    tryGetTokenMapping: mockTryGetTokenMapping
   }
 })
 
