@@ -38,6 +38,12 @@ describe("authenticationConcurrentAwareMiddleware", () => {
   beforeEach(() => {
     jest.clearAllMocks()
 
+    // Reset all mock implementations and return values
+    mockGetUsernameFromEvent.mockReset()
+    mockGetSessionIdFromEvent.mockReset()
+    mockAuthenticateRequest.mockReset()
+    mockTryGetTokenMapping.mockReset()
+
     logger = new Logger({serviceName: "test"})
     logger.info = jest.fn()
     logger.debug = jest.fn()

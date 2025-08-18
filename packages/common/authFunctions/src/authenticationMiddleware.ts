@@ -15,13 +15,13 @@ export const authenticationMiddleware = (
 ) => ({
   before: async (request) => {
     const {event} = request
-    const username = getUsernameFromEvent(event)
-    const sessionId = getSessionIdFromEvent(event)
 
     logger.info("Using standard authentication middleware")
 
     let authResult: AuthResult | null = null
     try {
+      const username = getUsernameFromEvent(event)
+      const sessionId = getSessionIdFromEvent(event)
       // Fetch the token mapping item for the user
       const tokenMappingItem: TokenMappingItem = await getTokenMapping(
         ddbClient,
