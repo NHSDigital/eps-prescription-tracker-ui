@@ -78,13 +78,14 @@ export type Environment = MockAuthEnvironment | "prod" | "test" | "int"
 export const AUTO_LOGIN_ENVIRONMENTS = [
   {environment: "dev", loginMethod: "mock"},
   {environment: "dev-pr", loginMethod: "mock"},
+  {environment: "recovery", loginMethod: "mock"},
   {environment: "int", loginMethod: "cis2"},
   {environment: "prod", loginMethod: "cis2"}
 ]
 
 // Validation helper
 const validateEnvironment = (env: string): env is Environment => {
-  return ["dev", "dev-pr", "int", "qa", "prod", "ref", "test"].includes(env)
+  return ["dev", "dev-pr", "int", "qa", "prod", "ref", "test", "recovery"].includes(env)
 }
 
 // Ensure environment is valid
