@@ -29,9 +29,6 @@ export const authenticationConcurrentAwareMiddleware = (
       username,
       logger
     )
-    if (!sessionManagementItem) {
-      logger.error("No session management item found for user")
-    }
 
     tokenMappingItem = await getSessionTokenCredentialsForUser(
       ddbClient,
@@ -39,29 +36,29 @@ export const authenticationConcurrentAwareMiddleware = (
       username,
       logger
     )
-    if (!tokenMappingItem) {
-      logger.error("No token mapping item found for user")
-    }
+
+    const sessionManagementSessionId = sessionManagementItem?.sessionId
+    const tokenMappingSessionId = tokenMappingItem?.sessionId
 
     let authResult: AuthResult | null = null
     let isConcurrentSession: boolean = false
 
     // Ensure we're dealing with the correct token item, or kill the authentication.
     try {
-      if (sessionManagementItem !== undefined && sessionManagementItem?.sessionId === sessionId) {
+      if (sessionManagementItem !== undefined && sessionManagementSessionId === sessionId) {
         logger.debug("Session ID matches the session management item, proceeding with authentication")
         isConcurrentSession = true
         authResult = await authenticateRequest(username, axiosInstance, ddbClient, logger,
           authOptions, sessionManagementItem, authOptions.sessionManagementTableName)
 
-      } else if (tokenMappingItem !== undefined && tokenMappingItem?.sessionId === sessionId) {
+      } else if (tokenMappingItem !== undefined && tokenMappingSessionId === sessionId) {
         logger.debug("Session ID matches the token mapping item, proceeding with authentication")
         authResult = await authenticateRequest(username, axiosInstance, ddbClient, logger,
           authOptions, tokenMappingItem, authOptions.tokenMappingTableName)
 
       } else {
         logger.error("Request token doesn't match any sessionId in the token mapping or session management table, \
-          treating as invalid session")
+          treating as invalid session", {tokenMappingSessionId, sessionManagementSessionId})
       }
     } catch (error) {
       logger.error("Authentication failed returning restart login prompt", {error})
