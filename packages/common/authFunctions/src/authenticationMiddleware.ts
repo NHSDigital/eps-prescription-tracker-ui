@@ -38,7 +38,7 @@ export const authenticationMiddleware = (
           tokenMappingItem, authOptions.tokenMappingTableName)
       } else {
         logger.error("Session ID does not match the token mapping item, treating as invalid session")
-        return null
+        authResult = null
       }
     } catch (error) {
       logger.error("Authentication failed returning restart login prompt", {error})
