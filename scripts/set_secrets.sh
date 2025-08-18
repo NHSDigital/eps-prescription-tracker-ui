@@ -100,11 +100,11 @@ get_cdk_image_pull_role() {
 check_gh_logged_in
 
 # recovery
-DEV_DEPLOY_ROLE=$(get_deploy_role recovery)
-DEV_CDK_PULL_IMAGE_ROLE=$(get_cdk_image_pull_role recovery)
+RECOVERY_DEPLOY_ROLE=$(get_deploy_role recovery)
+RECOVERY_CDK_PULL_IMAGE_ROLE=$(get_cdk_image_pull_role recovery)
 
-set_environment_secret CDK_PULL_IMAGE_ROLE "${DEV_CDK_PULL_IMAGE_ROLE}" recovery
-set_environment_secret CLOUD_FORMATION_DEPLOY_ROLE "${DEV_DEPLOY_ROLE}" recovery
+set_environment_secret CDK_PULL_IMAGE_ROLE "${RECOVERY_CDK_PULL_IMAGE_ROLE}" recovery
+set_environment_secret CLOUD_FORMATION_DEPLOY_ROLE "${RECOVERY_DEPLOY_ROLE}" recovery
 set_environment_secret CIS2_OIDC_CLIENT_ID "${DEV_CIS2_OIDC_CLIENT_ID}" recovery
 set_environment_secret MOCK_OIDC_CLIENT_ID "${DEV_MOCK_CLIENT_ID}" recovery
 set_environment_private_key_secret JWT_PRIVATE_KEY ".secrets/eps-cpt-ui-dev.pem" recovery
