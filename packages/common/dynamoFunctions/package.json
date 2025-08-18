@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "@aws-lambda-powertools/logger": "^2.24.1",
-    "@aws-sdk/lib-dynamodb": "^3.859.0",
+    "@aws-sdk/lib-dynamodb": "^3.868.0",
     "@cpt-ui-common/common-types": "^1.0.0"
   }
 }
