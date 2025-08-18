@@ -68,20 +68,6 @@ describe("Lambda Handler Integration Tests", () => {
       )
     })
 
-    it("handles successful deletion with Promise.allSettled behavior", async (): Promise<void> => {
-      // Mock one deletion to fail, one to succeed (simulating real Promise.allSettled behavior)
-      mockDeleteRecordAllowFailures
-        .mockRejectedValueOnce(new Error("Token mapping deletion failed"))
-        .mockResolvedValueOnce(undefined)
-
-      const event = buildEvent({username: "partial-success-user"})
-      const response: APIGatewayProxyResult = await handler(event, context)
-
-      // Handler should still return 200 because Promise.allSettled doesn't throw
-      expect(response.statusCode).toBe(200)
-      expect(JSON.parse(response.body)).toEqual({message: "Success"})
-      expect(mockDeleteRecordAllowFailures).toHaveBeenCalledTimes(2)
-    })
   })
 
   describe("validation error scenarios", () => {
@@ -125,14 +111,29 @@ describe("Lambda Handler Integration Tests", () => {
   })
 
   describe("system error scenarios", () => {
-    it("returns 200 even if deleteRecordAllowFailures throws (Promise.allSettled)", async (): Promise<void> => {
+    it("returns 500 when deleteRecordAllowFailures throws (Promise.allSettled)", async (): Promise<void> => {
       mockDeleteRecordAllowFailures.mockRejectedValue(new Error("Simulated delete failure"))
 
       const event = buildEvent({username: "fail-user"})
       const response: APIGatewayProxyResult = await handler(event, context)
 
-      expect(response.statusCode).toBe(200)
-      expect(JSON.parse(response.body)).toEqual({message: "Success"})
+      expect(response.statusCode).toBe(500)
+      expect(JSON.parse(response.body)).toEqual({message: "A system error has occurred"})
+      expect(mockDeleteRecordAllowFailures).toHaveBeenCalledTimes(2)
+    })
+
+    it("returns 500 when one deletion fails (partial failure)", async (): Promise<void> => {
+      // Mock one deletion to fail, one to succeed (simulating real Promise.allSettled behavior)
+      mockDeleteRecordAllowFailures
+        .mockRejectedValueOnce(new Error("Token mapping deletion failed"))
+        .mockResolvedValueOnce(undefined)
+
+      const event = buildEvent({username: "partial-success-user"})
+      const response: APIGatewayProxyResult = await handler(event, context)
+
+      // Handler returns 500 because it checks Promise.allSettled results and throws on rejection
+      expect(response.statusCode).toBe(500)
+      expect(JSON.parse(response.body)).toEqual({message: "A system error has occurred"})
       expect(mockDeleteRecordAllowFailures).toHaveBeenCalledTimes(2)
     })
 
