@@ -31,7 +31,6 @@ export const authenticationMiddleware = (
       )
 
       if (tokenMappingItem !== undefined && tokenMappingItem.sessionId === sessionId) {
-        logger.info(`sessionid ${sessionId}`)
         // Feed the token mapping item to authenticateRequest
         logger.info("Session ID matches the token mapping item, proceeding with authentication")
         authResult = await authenticateRequest(username, axiosInstance, ddbClient, logger, authOptions,
