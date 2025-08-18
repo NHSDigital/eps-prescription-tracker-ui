@@ -12,7 +12,8 @@ import {
   insertTokenMapping,
   updateTokenMapping,
   deleteTokenMapping,
-  getTokenMapping
+  getTokenMapping,
+  tryGetTokenMapping
 } from "../src/tokenMapping"
 
 const mockLogger: Partial<Logger> = {
@@ -52,7 +53,7 @@ describe("insert tokenMapping", () => {
     )
   })
 
-  it("should log and throw an error on failure", async () => {
+  it("should log and throw an error on failure when inserting into table", async () => {
     const mockError = new Error("DynamoDB error") as never
 
     mockDocumentClient.send.mockRejectedValueOnce(mockError)
@@ -131,7 +132,7 @@ describe("update tokenMapping", () => {
     expect(calledAttributeValues?.[":rolesWithoutAccess"]).toBeUndefined()
   })
 
-  it("should log and throw an error on failure", async () => {
+  it("should log and throw an error on failure when updating item in table", async () => {
     const mockError = new Error("DynamoDB error") as never
 
     mockDocumentClient.send.mockRejectedValueOnce(mockError)
@@ -193,7 +194,7 @@ describe("delete tokenMapping", () => {
     )
   })
 
-  it("should log and throw an error on failure", async () => {
+  it("should log and throw an error on failure when deleting item from table", async () => {
     const mockError = new Error("DynamoDB error") as never
 
     mockDocumentClient.send.mockRejectedValueOnce(mockError)
@@ -249,7 +250,7 @@ describe("get tokenMapping", () => {
     expect(result).toBe(mockItem)
   })
 
-  it("should log and throw an error on failure", async () => {
+  it("should log and throw an error on failure when retrieving item from table", async () => {
     const mockError = new Error("DynamoDB error") as never
 
     mockDocumentClient.send.mockRejectedValueOnce(mockError)
@@ -265,9 +266,157 @@ describe("get tokenMapping", () => {
     ).rejects.toThrow(`Error retrieving data from ${mockTableName}`)
 
     expect(mockLogger.error).toHaveBeenCalledWith(
-      `Error retrieving data from ${mockTableName}`,
+      `Found no record for ${mockUsername} in ${mockTableName}`,
       {error: mockError}
     )
     expect(mockDocumentClient.send).toHaveBeenCalledTimes(1)
+  })
+
+  it("should return item when tryGetTokenMapping finds record", async () => {
+    const mockItem = {
+      username: "testUser",
+      cis2AccessToken: "token123",
+      lastActivityTime: 0
+    }
+
+    // Mock successful DynamoDB response
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+    mockDocumentClient.send.mockResolvedValueOnce({Item: mockItem} as never)
+
+    const mockUsername = "testUser"
+    const mockTableName = "mockTable"
+    const result = await getTokenMapping(
+      mockDocumentClient,
+      mockTableName,
+      mockUsername,
+      mockLogger as Logger
+    )
+
+    expect(mockDocumentClient.send).toHaveBeenCalledWith(
+      expect.any(GetCommand)
+    )
+    expect(result).toBe(mockItem)
+    expect(mockLogger.info).toHaveBeenCalledWith(
+      `Item found for ${mockUsername} in ${mockTableName}`,
+      {username: mockUsername, tableName: mockTableName, item: mockItem}
+    )
+  })
+
+  it("should throw error when tryGetTokenMapping finds no record", async () => {
+    // Mock DynamoDB response with no Item (undefined)
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+    mockDocumentClient.send.mockResolvedValueOnce({} as never)
+
+    const mockUsername = "testUser"
+    const mockTableName = "mockTable"
+
+    await expect(
+      getTokenMapping(
+        mockDocumentClient,
+        mockTableName,
+        mockUsername,
+        mockLogger as Logger
+      )
+    ).rejects.toThrow(`Error retrieving data from ${mockTableName} for user: ${mockUsername}`)
+
+    expect(mockDocumentClient.send).toHaveBeenCalledWith(
+      expect.any(GetCommand)
+    )
+    expect(mockLogger.debug).toHaveBeenCalledWith(
+      "No record found",
+      {tableName: mockTableName, username: mockUsername, result: {}}
+    )
+    expect(mockLogger.error).toHaveBeenCalledWith(
+      `Error retrieving data from ${mockTableName} for user: ${mockUsername}`,
+      {tableName: mockTableName, username: mockUsername}
+    )
+  })
+})
+
+describe("tryGetTokenMapping", () => {
+  let mockDocumentClient: jest.Mocked<DynamoDBDocumentClient>
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+    mockDocumentClient = {
+      send: jest.fn()
+    } as unknown as jest.Mocked<DynamoDBDocumentClient>
+  })
+
+  it("should return item when found in DynamoDB", async () => {
+    const mockItem = {
+      username: "testUser",
+      cis2AccessToken: "token123",
+      lastActivityTime: 0
+    }
+
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+    mockDocumentClient.send.mockResolvedValueOnce({Item: mockItem} as never)
+
+    const mockUsername = "testUser"
+    const mockTableName = "mockTable"
+    const result = await tryGetTokenMapping(
+      mockDocumentClient,
+      mockTableName,
+      mockUsername,
+      mockLogger as Logger
+    )
+
+    expect(mockDocumentClient.send).toHaveBeenCalledWith(
+      expect.any(GetCommand)
+    )
+    expect(result).toBe(mockItem)
+    expect(mockLogger.info).toHaveBeenCalledWith(
+      `Item found for ${mockUsername} in ${mockTableName}`,
+      {username: mockUsername, tableName: mockTableName, item: mockItem}
+    )
+  })
+
+  it("should return undefined when no item found in DynamoDB", async () => {
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+    mockDocumentClient.send.mockResolvedValueOnce({} as never)
+
+    const mockUsername = "testUser"
+    const mockTableName = "mockTable"
+    const result = await tryGetTokenMapping(
+      mockDocumentClient,
+      mockTableName,
+      mockUsername,
+      mockLogger as Logger
+    )
+
+    expect(mockDocumentClient.send).toHaveBeenCalledWith(
+      expect.any(GetCommand)
+    )
+    expect(result).toBeUndefined()
+    expect(mockLogger.debug).toHaveBeenCalledWith(
+      "No record found",
+      {tableName: mockTableName, username: mockUsername, result: {}}
+    )
+  })
+
+  it("should log and throw error on DynamoDB failure", async () => {
+    const mockError = new Error("DynamoDB error") as never
+    mockDocumentClient.send.mockRejectedValueOnce(mockError)
+
+    const mockUsername = "testUser"
+    const mockTableName = "mockTable"
+
+    await expect(
+      tryGetTokenMapping(
+        mockDocumentClient,
+        mockTableName,
+        mockUsername,
+        mockLogger as Logger
+      )
+    ).rejects.toThrow(`Error retrieving data from ${mockTableName}`)
+
+    expect(mockDocumentClient.send).toHaveBeenCalledWith(
+      expect.any(GetCommand)
+    )
+    expect(mockLogger.error).toHaveBeenCalledWith(
+      `Found no record for ${mockUsername} in ${mockTableName}`,
+      {error: mockError}
+    )
   })
 })

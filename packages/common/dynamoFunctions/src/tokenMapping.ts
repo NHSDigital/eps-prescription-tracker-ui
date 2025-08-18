@@ -169,11 +169,11 @@ export const getTokenMapping = async (
   logger: Logger
 ): Promise<TokenMappingItem> => {
   logger.debug(`Going to get ${tableName}`, {username, tableName})
-  const result = await getTokenMapping(documentClient, tableName, username, logger)
+  const result = await tryGetTokenMapping(documentClient, tableName, username, logger)
 
   if (result === undefined) {
-    logger.debug("No record found for required token mapping", {tableName, username})
-    throw new Error(`Failed to retrieve record for specified username: ${username} in ${tableName}`)
+    logger.error(`Error retrieving data from ${tableName} for user: ${username}`, {tableName, username})
+    throw new Error(`Error retrieving data from ${tableName} for user: ${username}`)
   }
   return result as TokenMappingItem
 }
@@ -202,7 +202,7 @@ export const tryGetTokenMapping = async (
     logger.info(`Item found for ${username} in ${tableName}`, {username, tableName, item})
     return item
   } catch(error) {
-    logger.info(`Found no record for ${username} in ${tableName}`, {error})
+    logger.error(`Found no record for ${username} in ${tableName}`, {error})
     throw new Error(`Error retrieving data from ${tableName}`)
   }
 }
