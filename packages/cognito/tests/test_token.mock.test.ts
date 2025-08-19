@@ -62,13 +62,13 @@ const {
 
 const mockInsertTokenMapping = jest.fn().mockName("mockInsertTokenMapping")
 const mockGetSessionState = jest.fn().mockName("mockGetSessionState")
-const mockCheckTokenMappingForUser = jest.fn().mockName("mockCheckTokenMappingForUser")
+const mockTryGetTokenMapping = jest.fn().mockName("mockTryGetTokenMapping")
 
 jest.unstable_mockModule("@cpt-ui-common/dynamoFunctions", () => {
   return {
     insertTokenMapping: mockInsertTokenMapping,
     getSessionState: mockGetSessionState,
-    checkTokenMappingForUser: mockCheckTokenMappingForUser
+    tryGetTokenMapping: mockTryGetTokenMapping
   }
 })
 
@@ -234,7 +234,7 @@ describe("token mock handler", () => {
 
   it("inserts concurrent session details into sessionManagement dynamo table", async () => {
     // return some valid data for the get command
-    mockCheckTokenMappingForUser.mockImplementation(() => {
+    mockTryGetTokenMapping.mockImplementation(() => {
       return Promise.resolve({
         username: "Mock_user_details_sub",
         lastActivityTime: Date.now()
@@ -322,7 +322,7 @@ describe("token mock handler", () => {
 
   it("inserts session details into token mapping table if lastActivityTime > 15 mins", async () => {
     // return some valid data for the get command
-    mockCheckTokenMappingForUser.mockImplementation(() => {
+    mockTryGetTokenMapping.mockImplementation(() => {
       return Promise.resolve({
         username: "Mock_user_details_sub",
         lastActivityTime: Date.now() - (16 * 60 * 1000) // 16 minutes ago

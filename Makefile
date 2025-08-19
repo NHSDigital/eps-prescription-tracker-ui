@@ -69,6 +69,7 @@ test: compile
 	npm run test --workspace packages/common/authFunctions
 	npm run test --workspace packages/common/doHSClient
 	npm run test --workspace packages/common/dynamoFunctions
+	npm run test --workspace packages/testingSupport/clearActiveSessions
 
 clean:
 	rm -rf packages/cdk/coverage

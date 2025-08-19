@@ -15,13 +15,13 @@ export const authenticationMiddleware = (
 ) => ({
   before: async (request) => {
     const {event} = request
-    const username = getUsernameFromEvent(event)
-    const sessionId = getSessionIdFromEvent(event)
 
     logger.info("Using standard authentication middleware")
 
     let authResult: AuthResult | null = null
     try {
+      const username = getUsernameFromEvent(event)
+      const sessionId = getSessionIdFromEvent(event)
       // Fetch the token mapping item for the user
       const tokenMappingItem: TokenMappingItem = await getTokenMapping(
         ddbClient,
@@ -31,14 +31,13 @@ export const authenticationMiddleware = (
       )
 
       if (tokenMappingItem !== undefined && tokenMappingItem.sessionId === sessionId) {
-        logger.info(`sessionid ${sessionId}`)
         // Feed the token mapping item to authenticateRequest
         logger.info("Session ID matches the token mapping item, proceeding with authentication")
         authResult = await authenticateRequest(username, axiosInstance, ddbClient, logger, authOptions,
           tokenMappingItem, authOptions.tokenMappingTableName)
       } else {
         logger.error("Session ID does not match the token mapping item, treating as invalid session")
-        return null
+        authResult = null
       }
     } catch (error) {
       logger.error("Authentication failed returning restart login prompt", {error})

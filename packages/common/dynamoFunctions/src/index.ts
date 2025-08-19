@@ -5,7 +5,7 @@ export {
   insertTokenMapping,
   getTokenMapping,
   deleteRecordAllowFailures,
-  checkTokenMappingForUser
+  tryGetTokenMapping as tryGetTokenMapping
 } from "./tokenMapping"
 export {extractRoleInformation, UserInfoResponse} from "./userUtils"
 export {insertStateMapping, deleteStateMapping, getStateMapping} from "./stateMapping"

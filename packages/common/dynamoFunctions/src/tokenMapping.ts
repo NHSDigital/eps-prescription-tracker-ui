@@ -147,20 +147,27 @@ export const deleteRecordAllowFailures = async (
         Key: {username}
       })
     )
-    if (response.$metadata.httpStatusCode !== 200) {
-      logger.error(`Failed to delete from ${tableName}`, {response})
-      throw new Error(`Failed to delete from ${tableName}`)
+
+    if (response.$metadata.httpStatusCode === 200) {
+      logger.info(`Delete operation completed for ${tableName}`, {
+        tableName,
+        username,
+        statusCode: response.$metadata.httpStatusCode
+      })
     }
-    logger.info(`Successfully deleted from ${tableName}`, {tableName})
+
+    if (response.$metadata.httpStatusCode !== 200) {
+      logger.warn(`Delete operation returned non-200 status code for ${tableName}`, {
+        tableName,
+        username,
+        statusCode: response.$metadata.httpStatusCode
+      })
+    }
+
   /* eslint-disable @typescript-eslint/no-explicit-any */
   } catch(error: any) {
-    if (error.code === "ConditionalCheckFailedException") {
-      logger.info(`No item found to delete in the ${tableName} table. \
-        Continuing as if it was deleted.`, {tableName})
-    } else {
-      logger.error(`Error deleting data from ${tableName}`, {error})
-      throw new Error(`Error deleting data from ${tableName}`)
-    }
+    logger.error(`Error deleting data from ${tableName}`, {error})
+    throw new Error(`Error deleting data from ${tableName}`)
   }
 }
 
@@ -171,28 +178,16 @@ export const getTokenMapping = async (
   logger: Logger
 ): Promise<TokenMappingItem> => {
   logger.debug(`Going to get ${tableName}`, {username, tableName})
-  try {
-    const getResult = await documentClient.send(
-      new GetCommand({
-        TableName: tableName,
-        Key: {username}
-      })
-    )
+  const result = await tryGetTokenMapping(documentClient, tableName, username, logger)
 
-    if (!getResult.Item) {
-      logger.error("username not found in DynamoDB", {username, getResult})
-      throw new Error("username not found in DynamoDB")
-    }
-    const tokenMappingItem = getResult.Item as TokenMappingItem
-    logger.debug(`Successfully retrieved data from ${tableName}`, {tableName, tokenMappingItem})
-    return tokenMappingItem
-  } catch(error) {
-    logger.error(`Error retrieving data from ${tableName}`, {error})
-    throw new Error(`Error retrieving data from ${tableName}`)
+  if (result === undefined) {
+    logger.error(`Error retrieving data from ${tableName} for user: ${username}`, {tableName, username})
+    throw new Error(`Error retrieving data from ${tableName} for user: ${username}`)
   }
+  return result as TokenMappingItem
 }
 
-export const checkTokenMappingForUser = async (
+export const tryGetTokenMapping = async (
   documentClient: DynamoDBDocumentClient,
   tableName: string,
   username: string,
@@ -208,7 +203,7 @@ export const checkTokenMappingForUser = async (
     )
 
     if (!result.Item) {
-      logger.error("No record found", {username, result})
+      logger.debug("No record found", {tableName, username, result})
       return undefined
     }
 
@@ -216,7 +211,7 @@ export const checkTokenMappingForUser = async (
     logger.info(`Item found for ${username} in ${tableName}`, {username, tableName, item})
     return item
   } catch(error) {
-    logger.info(`Found no record for ${username} in ${tableName}`, {error})
+    logger.error(`Found no record for ${username} in ${tableName}`, {error})
     throw new Error(`Error retrieving data from ${tableName}`)
   }
 }
