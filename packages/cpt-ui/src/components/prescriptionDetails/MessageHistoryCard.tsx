@@ -76,15 +76,15 @@ export function MessageHistoryCard({messageHistory}: MessageHistoryProps) {
                       <Details.Text>
                         {/* Items List */}
                         <div className="nhs-screening-whole-timeline__description">
-                          {STRINGS.PRESCRIPTION_ITEMS}
-                          <ol className="nhsuk-u-padding-top-2">
+                          {STRINGS.DISPENSED_ITEMS}
+                          <ol className="nhsuk-u-padding-top-2 nhsuk-u-margin-bottom-0">
                             {msg.dispenseNotificationItems.map((item, index) => (
                               <li key={index} className="nhsuk-u-font-size-16">
                                 <Tag color={getItemStatusTagColour(item.statusCode)}>
                                   {getItemStatusDisplayText(item.statusCode)}
                                 </Tag>
                                 {item.components.map((component) => (
-                                  <div key={component.medicationName}>
+                                  <div key={component.medicationName} className="nhsuk-u-margin-top-2">
                                     {component.medicationName}
                                     <br />
                                     {STRINGS.QUANTITY} {component.quantity}

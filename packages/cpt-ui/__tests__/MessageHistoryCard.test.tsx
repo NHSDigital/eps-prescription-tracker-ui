@@ -2,22 +2,6 @@ import React from "react"
 import {render, screen} from "@testing-library/react"
 import "@testing-library/jest-dom"
 
-// Mock the constants
-jest.mock("@/constants/ui-strings/MessageHistoryCardStrings", () => ({
-  STRINGS: {
-    HISTORY_HEADER: "History",
-    ORGANISATION: "Organisation:",
-    NEW_STATUS: "New status:",
-    ODS_TEXT: "ODS:",
-    NO_ORG_NAME: "Organisation name not available",
-    DISPENSE_NOTIFICATION_INFO: "Dispense notification information",
-    DISPENSE_NOTIFICATION_ID: "Dispense notification ID:",
-    PRESCRIPTION_ITEMS: "Prescription items:",
-    QUANTITY: "Quantity:",
-    INSTRUCTIONS: "Instructions:"
-  }
-}))
-
 // Mock the helper functions
 jest.mock("@/helpers/statusMetadata", () => ({
   getStatusDisplayText: jest.fn(() => "Mocked Status"),
