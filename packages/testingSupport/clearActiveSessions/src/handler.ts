@@ -53,8 +53,9 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     return payloadValue({"message": "Invalid request body"}, 400)
   }
   const username = body.username
+  const requestId = body.request_id
 
-  logger.info("Deleting token mapping and session management data for user", {username})
+  logger.info("Deleting token mapping and session management data for user", {username, requestId})
   const results = await Promise.allSettled([
     deleteRecordAllowFailures(documentClient, tokenMappingTableName, username, logger),
     deleteRecordAllowFailures(documentClient, sessionManagementTableName, username, logger)
@@ -66,7 +67,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     }
   }
 
-  logger.info("Successfully conducted deletions where a record exists for user", {username})
+  logger.info("Successfully conducted deletions where a record exists for user", {username, requestId})
   return payloadValue({"message": "Success"})
 }
 
