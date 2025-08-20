@@ -68,8 +68,6 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     throw new Error("Session ID or Username is undefined")
   }
 
-  // TODO: Check if the session is the active session - Return error on call.
-
   // Fetch draft session for session ID if one exists
   var sessionManagementItem = await tryGetTokenMapping(documentClient,
     sessionManagementTableName, username, logger)
@@ -81,8 +79,8 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
         // Update token mapping to content of draft session for the session ID in request
         // Delete draft session matching session ID
 
-        updateTokenMapping(documentClient, tokenMappingTableName, sessionManagementItem, logger)
-        deleteTokenMapping(documentClient, sessionManagementTableName, username, logger)
+        await updateTokenMapping(documentClient, tokenMappingTableName, sessionManagementItem, logger)
+        await deleteTokenMapping(documentClient, sessionManagementTableName, username, logger)
         return payloadValue({"message": "Session set", "status": "Active"}, 202)
 
       default:

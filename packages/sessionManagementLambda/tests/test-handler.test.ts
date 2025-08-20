@@ -8,10 +8,10 @@ import {Logger} from "@aws-lambda-powertools/logger"
 import {mockContext, mockAPIGatewayProxyEvent} from "./mockObjects"
 import {TokenMappingItem} from "@cpt-ui-common/dynamoFunctions"
 
-const mockGetTokenMapping = jest.fn().mockName("mockGetTokenMapping")
+const mockTryGetTokenMapping = jest.fn().mockName("mockGetTokenMapping")
 const mockUpdateTokenMapping = jest.fn().mockName("mockUpdateTokenMapping")
 const mockCheckTokenMappingForUser = jest.fn().mockName("mockCheckTokenMappingForUser")
-const mockDeleteRecordAllowFailures = jest.fn().mockName("mockDeleteRecordAllowFailures")
+const mockDeleteTokenMapping = jest.fn().mockName("mockDeleteTokenMapping")
 
 const mockInitializeOidcConfig = jest.fn().mockName("mockInitializeOidcConfig")
 const mockFetchUserInfo = jest.fn().mockName("mockFetchUserInfo")
@@ -19,10 +19,10 @@ mockInitializeOidcConfig.mockImplementation(() => ({cis2OidcConfig: {}, mockOidc
 
 jest.unstable_mockModule("@cpt-ui-common/dynamoFunctions", () => {
   return {
-    getTokenMapping: mockGetTokenMapping,
+    tryGetTokenMapping: mockTryGetTokenMapping,
     updateTokenMapping: mockUpdateTokenMapping,
     checkTokenMappingForUser: mockCheckTokenMappingForUser,
-    deleteRecordAllowFailures: mockDeleteRecordAllowFailures
+    deleteTokenMapping: mockDeleteTokenMapping
   }
 })
 jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
@@ -31,7 +31,7 @@ jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
       tokenMappingTableName: "TokenMappingTable",
       sessionManagementTableName: "SessionManagementTable"
     }),
-    authenticationMiddleware: () => ({before: () => {}}),
+    authenticationConcurrentAwareMiddleware: () => ({before: () => {}}),
     initializeOidcConfig: mockInitializeOidcConfig,
     fetchUserInfo: mockFetchUserInfo
   }
@@ -92,7 +92,7 @@ describe("Unit test for session management lambda", function () {
       sessionManagementItem,
       expect.anything()
     )
-    expect(mockDeleteRecordAllowFailures).toHaveBeenCalledWith(
+    expect(mockDeleteTokenMapping).toHaveBeenCalledWith(
       expect.anything(),
       "SessionManagementTable",
       "test-user",

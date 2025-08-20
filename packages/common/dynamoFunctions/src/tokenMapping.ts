@@ -115,12 +115,15 @@ export const deleteTokenMapping = async (
 ): Promise<void> => {
   logger.debug(`Deleting from ${tableName}`, {username})
   try {
+    logger.debug(`Attempting deletion from ${tableName}`, {username})
     const response = await documentClient.send(
       new DeleteCommand({
         TableName: tableName,
         Key: {username}
       })
     )
+
+    logger.info(`Delete operation completed for ${tableName}`, {response})
     if (response.$metadata.httpStatusCode !== 200) {
       logger.error(`Failed to delete from ${tableName}`, {response})
       throw new Error(`Failed to delete from ${tableName}`)
