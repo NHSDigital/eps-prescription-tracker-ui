@@ -94,6 +94,7 @@ const lambdaHandler = async (
   }
 
   await insertStateMapping(documentClient, stateMappingTableName, item, logger)
+  logger.debug("State mapping inserted", {item})
 
   // Build the redirect parameters for CIS2
   const responseParameters = {

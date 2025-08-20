@@ -1,8 +1,12 @@
 export {
+  TokenMappingItem,
   updateTokenMapping,
   deleteTokenMapping,
   insertTokenMapping,
-  getTokenMapping} from "./tokenMapping"
+  getTokenMapping,
+  deleteRecordAllowFailures,
+  tryGetTokenMapping as tryGetTokenMapping
+} from "./tokenMapping"
 export {extractRoleInformation, UserInfoResponse} from "./userUtils"
 export {insertStateMapping, deleteStateMapping, getStateMapping} from "./stateMapping"
 export {insertSessionState, getSessionState} from "./sessionState"

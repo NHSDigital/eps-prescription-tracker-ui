@@ -8,7 +8,7 @@ import {
   constructSignedJWTBody,
   exchangeTokenForApigeeAccessToken
 } from "./index"
-import {deleteTokenMapping, getTokenMapping, updateTokenMapping} from "@cpt-ui-common/dynamoFunctions"
+import {deleteTokenMapping, updateTokenMapping, TokenMappingItem} from "@cpt-ui-common/dynamoFunctions"
 
 // Define the ApigeeTokenResponse type
 interface ApigeeTokenResponse {
@@ -26,6 +26,8 @@ export interface AuthResult {
   apigeeAccessToken: string
   roleId?: string
   orgCode?: string
+  sessionId?: string
+  isConcurrentSession?: boolean
 }
 
 /**
@@ -33,6 +35,7 @@ export interface AuthResult {
  */
 export interface AuthenticateRequestOptions {
   tokenMappingTableName: string
+  sessionManagementTableName: string
   jwtPrivateKeyArn: string
   apigeeApiKey: string
   apigeeApiSecret: string
@@ -45,6 +48,7 @@ export interface AuthenticateRequestOptions {
 export const authParametersFromEnv = (): AuthenticateRequestOptions => {
   return {
     tokenMappingTableName: process.env["TokenMappingTableName"] as string,
+    sessionManagementTableName: process.env["SessionManagementTableName"] as string,
     jwtPrivateKeyArn: process.env["jwtPrivateKeyArn"] as string,
     apigeeApiKey: process.env["APIGEE_API_KEY"] as string,
     apigeeApiSecret: process.env["APIGEE_API_SECRET"] as string,
@@ -58,7 +62,7 @@ export const authParametersFromEnv = (): AuthenticateRequestOptions => {
 const refreshTokenFlow = async (
   axiosInstance: AxiosInstance,
   documentClient: DynamoDBDocumentClient,
-  tokenMappingTableName: string,
+  specifiedTokenTable: string,
   username: string,
   existingToken: ApigeeTokenResponse,
   logger: Logger,
@@ -86,7 +90,7 @@ const refreshTokenFlow = async (
   // Update DynamoDB with the new tokens
   await updateTokenMapping(
     documentClient,
-    tokenMappingTableName,
+    specifiedTokenTable,
     {
       username,
       apigeeAccessToken: refreshResult.accessToken,
@@ -118,7 +122,6 @@ export async function authenticateRequest(
   documentClient: DynamoDBDocumentClient,
   logger: Logger,
   {
-    tokenMappingTableName,
     jwtPrivateKeyArn,
     apigeeApiKey,
     apigeeApiSecret,
@@ -126,21 +129,20 @@ export async function authenticateRequest(
     apigeeMockTokenEndpoint,
     apigeeCis2TokenEndpoint,
     cloudfrontDomain
-  }: AuthenticateRequestOptions
+  }: AuthenticateRequestOptions,
+  userRecord: TokenMappingItem,
+  specifiedTokenTable: string
 ): Promise<AuthResult | null> {
   logger.info("Starting authentication flow")
 
   // Extract username and determine if this is a mock request
   const isMockRequest = username.startsWith("Mock_")
 
-  //Get the existing saved Apigee token from DynamoDB
-  const userRecord = await getTokenMapping(documentClient, tokenMappingTableName, username, logger)
-
   if (Date.now() - userRecord.lastActivityTime > fifteenMinutes) {
     logger.info("Last activity was more than 15 minutes ago, clearing user record")
     await deleteTokenMapping(
       documentClient,
-      tokenMappingTableName,
+      specifiedTokenTable,
       username,
       logger
     )
@@ -163,7 +165,7 @@ export async function authenticateRequest(
         const refreshedToken = await refreshTokenFlow(
           axiosInstance,
           documentClient,
-          tokenMappingTableName,
+          specifiedTokenTable,
           username,
           {
             accessToken: userRecord.apigeeAccessToken,
@@ -200,7 +202,7 @@ export async function authenticateRequest(
 
       await updateTokenMapping(
         documentClient,
-        tokenMappingTableName,
+        specifiedTokenTable,
         {username, lastActivityTime: Date.now()},
         logger
       )
@@ -275,7 +277,7 @@ export async function authenticateRequest(
   // Update DynamoDB with the new Apigee access token
   await updateTokenMapping(
     documentClient,
-    tokenMappingTableName,
+    specifiedTokenTable,
     {
       username,
       apigeeAccessToken: exchangeResult.accessToken,

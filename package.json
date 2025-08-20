@@ -35,7 +35,8 @@
         "packages/common/dynamoFunctions",
         "packages/trackerUserInfoLambda",
         "packages/CIS2SignOutLambda",
-        "packages/selectedRoleLambda"
+        "packages/selectedRoleLambda",
+        "packages/testingSupport/clearActiveSessions"
     ],
     "devDependencies": {
         "@eslint/js": "^9.30.1",
@@ -58,13 +59,13 @@
         "jest-junit": "^16.0.0",
         "license-checker": "^25.0.1",
         "semantic-release": "^24.2.7",
-        "ts-jest": "^29.4.0",
+        "ts-jest": "^29.4.1",
         "ts-node": "^10.9.2",
         "typescript": "^5.8.3",
-        "typescript-eslint": "^8.39.0"
+        "typescript-eslint": "^8.39.1"
     },
     "dependencies": {
         "conventional-changelog-eslint": "^6.0.0",
-        "esbuild": "^0.25.8"
+        "esbuild": "^0.25.9"
     }
 }

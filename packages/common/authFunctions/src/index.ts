@@ -1,4 +1,4 @@
-import {getUsernameFromEvent} from "./event"
+import {getUsernameFromEvent, getSessionIdFromEvent} from "./event"
 import {initializeOidcConfig} from "./initialization"
 
 import {
@@ -25,9 +25,11 @@ import {
 import {fetchUserInfo} from "./userInfoHelpers"
 
 import {authenticationMiddleware} from "./authenticationMiddleware"
+import {authenticationConcurrentAwareMiddleware} from "./authenticationConcurrentAwareMiddleware"
 
 export {
   getUsernameFromEvent,
+  getSessionIdFromEvent,
   getSigningKey,
   verifyIdToken,
   constructSignedJWTBody,
@@ -42,5 +44,6 @@ export {
   authParametersFromEnv,
   AuthenticateRequestOptions,
   fetchUserInfo,
-  authenticationMiddleware
+  authenticationMiddleware,
+  authenticationConcurrentAwareMiddleware
 }
