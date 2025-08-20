@@ -61,7 +61,9 @@ export const nagSuppressions = (stack: Stack) => {
         "/StatefulStack/DynamoDB/StateTableReadManagedPolicy/Resource",
         "/StatefulStack/DynamoDB/StateTableWriteManagedPolicy/Resource",
         "/StatefulStack/DynamoDB/SessionStateTableReadManagedPolicy/Resource",
-        "/StatefulStack/DynamoDB/SessionStateTableWriteManagedPolicy/Resource"
+        "/StatefulStack/DynamoDB/SessionStateTableWriteManagedPolicy/Resource",
+        "/StatefulStack/DynamoDB/SessionManagementReadManagedPolicy/Resource",
+        "/StatefulStack/DynamoDB/SessionManagementWriteManagedPolicy/Resource"
       ],
       [
         {
@@ -128,7 +130,8 @@ export const nagSuppressions = (stack: Stack) => {
         "/StatelessStack/OAuth2Gateway/ApiGateway/Default/callback/GET/Resource",
         "/StatelessStack/OAuth2Gateway/ApiGateway/Default/mock-callback/GET/Resource",
         "/StatelessStack/OAuth2Gateway/ApiGateway/Default/token/POST/Resource",
-        "/StatelessStack/OAuth2Gateway/ApiGateway/Default/mock-token/POST/Resource"
+        "/StatelessStack/OAuth2Gateway/ApiGateway/Default/mock-token/POST/Resource",
+        "/StatelessStack/ApiGateway/ApiGateway/Default/test-support-clear-active-session/POST/Resource"
       ],
       [
         {
@@ -160,6 +163,7 @@ export const nagSuppressions = (stack: Stack) => {
         "/StatelessStack/ApiFunctions/MockTrackerUserInfo/LambdaPutLogsManagedPolicy/Resource",
         "/StatelessStack/ApiFunctions/SelectedRole/LambdaPutLogsManagedPolicy/Resource",
         "/StatelessStack/ApiFunctions/PatientSearch/LambdaPutLogsManagedPolicy/Resource",
+        "/StatelessStack/ApiFunctions/ClearActiveSessions/LambdaPutLogsManagedPolicy/Resource",
         "/StatelessStack/OAuth2Functions/TokenResources/LambdaPutLogsManagedPolicy/Resource",
         "/StatelessStack/OAuth2Functions/MockTokenResources/LambdaPutLogsManagedPolicy/Resource",
         "/StatelessStack/OAuth2Functions/AuthorizeLambdaResources/LambdaPutLogsManagedPolicy/Resource",

@@ -37,6 +37,11 @@ export interface OAuth2FunctionsProps {
   readonly tokenMappingTableReadPolicy: IManagedPolicy
   readonly useTokensMappingKmsKeyPolicy: IManagedPolicy
 
+  readonly sessionManagementTable: ITableV2
+  readonly sessionManagementTableWritePolicy: IManagedPolicy
+  readonly sessionManagementTableReadPolicy: IManagedPolicy
+  readonly useSessionManagementKmsKeyPolicy: IManagedPolicy
+
   readonly stateMappingTable: ITableV2
   readonly stateMappingTableWritePolicy: IManagedPolicy
   readonly stateMappingTableReadPolicy: IManagedPolicy
@@ -95,7 +100,10 @@ export class OAuth2Functions extends Construct {
         props.tokenMappingTableReadPolicy,
         props.useTokensMappingKmsKeyPolicy,
         props.sharedSecrets.useJwtKmsKeyPolicy,
-        props.sharedSecrets.getPrimaryJwtPrivateKeyPolicy
+        props.sharedSecrets.getPrimaryJwtPrivateKeyPolicy,
+        props.sessionManagementTableWritePolicy,
+        props.sessionManagementTableReadPolicy,
+        props.useSessionManagementKmsKeyPolicy
       ],
       logRetentionInDays: props.logRetentionInDays,
       logLevel: props.logLevel,
@@ -103,6 +111,7 @@ export class OAuth2Functions extends Construct {
       entryPoint: "src/token.ts",
       lambdaEnvironmentVariables: {
         TokenMappingTableName: props.tokenMappingTable.tableName,
+        SessionManagementTableName: props.sessionManagementTable.tableName,
         CIS2_IDP_TOKEN_PATH: props.primaryOidcTokenEndpoint,
         CIS2_USER_POOL_IDP: props.primaryPoolIdentityProviderName,
         CIS2_OIDCJWKS_ENDPOINT: props.primaryOidcjwksEndpoint,
@@ -219,6 +228,9 @@ export class OAuth2Functions extends Construct {
           props.tokenMappingTableWritePolicy,
           props.tokenMappingTableReadPolicy,
           props.useTokensMappingKmsKeyPolicy,
+          props.sessionManagementTableWritePolicy,
+          props.sessionManagementTableReadPolicy,
+          props.useSessionManagementKmsKeyPolicy,
           props.stateMappingTableReadPolicy,
           props.stateMappingTableWritePolicy,
           props.useStateMappingKmsKeyPolicy,
@@ -234,6 +246,7 @@ export class OAuth2Functions extends Construct {
         entryPoint: "src/tokenMock.ts",
         lambdaEnvironmentVariables: {
           TokenMappingTableName: props.tokenMappingTable.tableName,
+          SessionManagementTableName: props.sessionManagementTable.tableName,
           SessionStateMappingTableName: props.sessionStateMappingTable.tableName,
           StateMappingTableName: props.stateMappingTable.tableName,
           MOCK_IDP_TOKEN_PATH: props.mockOidcTokenEndpoint,
