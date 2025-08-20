@@ -4,7 +4,7 @@ export interface ItemDetails {
     medicationName: string
     quantity: string
     dosageInstructions?: string
-    epsStatusCode?: string
+    epsStatusCode: string
     pharmacyStatus?: string
     itemPendingCancellation: boolean
     cancellationReason?: string
@@ -40,11 +40,6 @@ export interface OrgSummary {
     prescribedFrom?: string
 }
 
-// The prescriber's organization has an extra property
-export interface PrescriberOrgSummary extends OrgSummary {
-    prescribedFrom?: string
-}
-
 // Complete response
 export interface PrescriptionDetailsResponse {
     patientDetails: PatientDetails
@@ -58,7 +53,7 @@ export interface PrescriptionDetailsResponse {
     prescriptionPendingCancellation: boolean
     items: Array<ItemDetails>
     messageHistory: Array<MessageHistory>
-    prescriberOrg: PrescriberOrgSummary
+    prescriberOrg: OrgSummary
     nominatedDispenser?: OrgSummary
     currentDispenser?: OrgSummary
 }

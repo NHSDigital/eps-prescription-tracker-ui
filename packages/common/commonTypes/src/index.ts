@@ -20,7 +20,6 @@ export type {
   MessageHistory,
   DispenseNotificationItem,
   OrgSummary,
-  PrescriberOrgSummary,
   PrescriptionDetailsResponse
 } from "./prescriptionDetails"
 

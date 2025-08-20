@@ -29,11 +29,11 @@ const defaultAuthState: AuthContextType = {
   hasSingleRoleAccess: false,
   selectedRole: undefined,
   userDetails: undefined,
-  cognitoSignIn: jest.fn(),
-  cognitoSignOut: jest.fn(),
-  clearAuthState: jest.fn(),
-  updateSelectedRole: jest.fn(),
-  forceCognitoLogout: jest.fn()
+  cognitoSignIn: jest.fn().mockName("cognitoSignIn"),
+  cognitoSignOut: jest.fn().mockName("cognitoSignOut"),
+  clearAuthState: jest.fn().mockName("clearAuthState"),
+  updateSelectedRole: jest.fn().mockName("updateSelectedRole"),
+  forceCognitoLogout: jest.fn().mockName("forceCognitoLogout")
 }
 
 const signedInAuthState: AuthContextType = {
@@ -52,18 +52,18 @@ const defaultSearchState: SearchProviderContextType = {
   dobYear: undefined,
   postcode: undefined,
   nhsNumber: undefined,
-  clearSearchParameters: jest.fn(),
-  setPrescriptionId: jest.fn(),
-  setIssueNumber: jest.fn(),
-  setFirstName: jest.fn(),
-  setLastName: jest.fn(),
-  setDobDay: jest.fn(),
-  setDobMonth: jest.fn(),
-  setDobYear: jest.fn(),
-  setPostcode: jest.fn(),
-  setNhsNumber: jest.fn(),
-  getAllSearchParameters: jest.fn(),
-  setAllSearchParameters: jest.fn()
+  clearSearchParameters: jest.fn().mockName("clearSearchParameters"),
+  setPrescriptionId: jest.fn().mockName("setPrescriptionId"),
+  setIssueNumber: jest.fn().mockName("setIssueNumber"),
+  setFirstName: jest.fn().mockName("setFirstName"),
+  setLastName: jest.fn().mockName("setLastName"),
+  setDobDay: jest.fn().mockName("setDobDay"),
+  setDobMonth: jest.fn().mockName("setDobMonth"),
+  setDobYear: jest.fn().mockName("setDobYear"),
+  setPostcode: jest.fn().mockName("setPostcode"),
+  setNhsNumber: jest.fn().mockName("setNhsNumber"),
+  getAllSearchParameters: jest.fn().mockName("getAllSearchParameters"),
+  setAllSearchParameters: jest.fn().mockName("setAllSearchParameters")
 }
 
 // Mock the spinner component.

@@ -9,7 +9,6 @@ import {
 } from "nhsuk-react-components"
 
 import {
-  PrescriberOrgSummary,
   OrgSummary,
   PrescriptionDetailsResponse,
   ItemDetails,
@@ -40,7 +39,7 @@ export default function PrescriptionDetailsPage() {
   const {setPrescriptionInformation} = usePrescriptionInformation()
   const {setPatientDetails} = usePatientDetails()
 
-  const [prescriber, setPrescriber] = useState<PrescriberOrgSummary | undefined>()
+  const [prescriber, setPrescriber] = useState<OrgSummary | undefined>()
   const [nominatedDispenser, setNominatedDispenser] = useState<OrgSummary | undefined>()
   const [dispenser, setDispenser] = useState<OrgSummary | undefined>()
   const [items, setItems] = useState<Array<ItemDetails>>([])
@@ -56,9 +55,10 @@ export default function PrescriptionDetailsPage() {
     prescriptionIssueNumber?: string | undefined
   ): Promise<PrescriptionDetailsResponse | undefined> => {
     logger.info("Prescription ID", prescriptionId)
-    const issueNumber = prescriptionIssueNumber ?? "1"
     const searchParams = new URLSearchParams()
-    searchParams.append("issueNumber", issueNumber)
+    if (prescriptionIssueNumber) {
+      searchParams.append("issueNumber", prescriptionIssueNumber)
+    }
     const url = `${API_ENDPOINTS.PRESCRIPTION_DETAILS}/${encodeURIComponent(prescriptionId)}`
 
     let payload: PrescriptionDetailsResponse | undefined

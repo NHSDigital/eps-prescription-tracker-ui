@@ -1,6 +1,6 @@
 import {Card, Col, Row} from "nhsuk-react-components"
 
-import {PrescriberOrgSummary, OrgSummary} from "@cpt-ui-common/common-types"
+import {OrgSummary} from "@cpt-ui-common/common-types"
 
 import {
   HEADING,
@@ -18,12 +18,12 @@ import {
   IOM
 } from "@/constants/ui-strings/SiteDetailsCardsStrings"
 
-export type SiteDetailsCardProps = (OrgSummary | PrescriberOrgSummary) & {
+export type SiteDetailsCardProps = OrgSummary & {
   heading: string
 }
 
 export type SiteDetailsCardsProps = {
-  prescriber: PrescriberOrgSummary
+  prescriber: OrgSummary
   dispenser?: OrgSummary
   nominatedDispenser?: OrgSummary
 }

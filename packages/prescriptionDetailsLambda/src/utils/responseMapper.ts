@@ -49,15 +49,15 @@ const extractDispenseNotificationItem = (
   let dispenses: Array<MedicationDispense> = []
   const requestId = request.id
   if (requestId && action.action) {
-    dispenses = action.action.map(a => {
-      const dispenseReference = a.resource?.reference
+    dispenses = action.action.map(action => {
+      const dispenseReference = action.resource?.reference
       if (!dispenseReference) return undefined
 
       return medicationDispenses.find(dispense =>
         dispense.id && dispenseReference.includes(dispense.id)
               && dispense.authorizingPrescription?.[0]?.reference?.includes(requestId)
       )
-    }).filter(d => d !== undefined)
+    }).filter(dispense => dispense !== undefined)
   }
 
   return {

@@ -39,13 +39,11 @@ export function ItemsCards({items}: ItemsProps) {
             </Card.Heading>
 
             {/* Display EPS status as NHS Tag */}
-            {epsStatusCode && (
-              <p className="nhsuk-u-margin-bottom-2" data-testid="eps-status-tag">
-                <Tag color={getItemStatusTagColour(epsStatusCode)}>
-                  {getItemStatusDisplayText(epsStatusCode)}
-                </Tag>
-              </p>
-            )}
+            <p className="nhsuk-u-margin-bottom-2" data-testid="eps-status-tag">
+              <Tag color={getItemStatusTagColour(epsStatusCode)}>
+                {getItemStatusDisplayText(epsStatusCode)}
+              </Tag>
+            </p>
 
             {/* Cancellation warning if applicable */}
             {itemPendingCancellation && (
