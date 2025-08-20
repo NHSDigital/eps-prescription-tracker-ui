@@ -8,8 +8,9 @@ import {
 } from "@aws-sdk/lib-dynamodb"
 import {RoleDetails, UserDetails} from "@cpt-ui-common/common-types"
 
-interface TokenMappingItem {
+export interface TokenMappingItem {
     username: string,
+    sessionId?: string,
     cis2AccessToken?: string,
     cis2RefreshToken?: string,
     cis2ExpiresIn?: string,
@@ -27,22 +28,22 @@ interface TokenMappingItem {
 
 export const insertTokenMapping = async (
   documentClient: DynamoDBDocumentClient,
-  tokenMappingTableName: string,
+  tableName: string,
   item: TokenMappingItem,
   logger: Logger
 ): Promise<void> => {
-  logger.debug("Inserting into tokenMapping", {item, tokenMappingTableName})
+  logger.debug("Inserting into table", {item, tableName})
   try {
     await documentClient.send(
       new PutCommand({
-        TableName: tokenMappingTableName,
+        TableName: tableName,
         Item: item
       })
     )
-    logger.debug("Successfully inserted into tokenMapping", {tokenMappingTableName})
+    logger.debug("Successfully inserted into table", {tableName})
   } catch(error) {
-    logger.error("Error inserting into tokenMapping", {error})
-    throw new Error("Error inserting into tokenMapping")
+    logger.error("Error inserting into table", {error, tableName})
+    throw new Error(`Error inserting into table ${tableName}`)
   }
 }
 
@@ -132,30 +133,85 @@ export const deleteTokenMapping = async (
   }
 }
 
-export const getTokenMapping = async (
+export const deleteRecordAllowFailures = async (
   documentClient: DynamoDBDocumentClient,
-  tokenMappingTableName: string,
+  tableName: string,
   username: string,
   logger: Logger
-): Promise<TokenMappingItem> => {
-  logger.debug("Going to get from tokenMapping", {username, tokenMappingTableName})
+): Promise<void> => {
+  logger.debug(`Deleting from ${tableName}`, {username, tableName})
   try {
-    const getResult = await documentClient.send(
-      new GetCommand({
-        TableName: tokenMappingTableName,
+    const response = await documentClient.send(
+      new DeleteCommand({
+        TableName: tableName,
         Key: {username}
       })
     )
 
-    if (!getResult.Item) {
-      logger.error("username not found in DynamoDB", {username, getResult})
-      throw new Error("username not found in DynamoDB")
+    if (response.$metadata.httpStatusCode === 200) {
+      logger.info(`Delete operation completed for ${tableName}`, {
+        tableName,
+        username,
+        statusCode: response.$metadata.httpStatusCode
+      })
     }
-    const tokenMappingItem = getResult.Item as TokenMappingItem
-    logger.debug("Successfully retrieved data from tokenMapping", {tokenMappingTableName, tokenMappingItem})
-    return tokenMappingItem
+
+    if (response.$metadata.httpStatusCode !== 200) {
+      logger.warn(`Delete operation returned non-200 status code for ${tableName}`, {
+        tableName,
+        username,
+        statusCode: response.$metadata.httpStatusCode
+      })
+    }
+
+  /* eslint-disable @typescript-eslint/no-explicit-any */
+  } catch(error: any) {
+    logger.error(`Error deleting data from ${tableName}`, {error})
+    throw new Error(`Error deleting data from ${tableName}`)
+  }
+}
+
+export const getTokenMapping = async (
+  documentClient: DynamoDBDocumentClient,
+  tableName: string,
+  username: string,
+  logger: Logger
+): Promise<TokenMappingItem> => {
+  logger.debug(`Going to get ${tableName}`, {username, tableName})
+  const result = await tryGetTokenMapping(documentClient, tableName, username, logger)
+
+  if (result === undefined) {
+    logger.error(`Error retrieving data from ${tableName} for user: ${username}`, {tableName, username})
+    throw new Error(`Error retrieving data from ${tableName} for user: ${username}`)
+  }
+  return result as TokenMappingItem
+}
+
+export const tryGetTokenMapping = async (
+  documentClient: DynamoDBDocumentClient,
+  tableName: string,
+  username: string,
+  logger: Logger
+): Promise<TokenMappingItem | undefined> => {
+  try {
+    logger.info(`Trying to find a record for ${username} in ${tableName}`)
+    const result = await documentClient.send(
+      new GetCommand({
+        TableName: tableName,
+        Key: {username: username}
+      })
+    )
+
+    if (!result.Item) {
+      logger.debug("No record found", {tableName, username, result})
+      return undefined
+    }
+
+    const item = result.Item as TokenMappingItem
+    logger.info(`Item found for ${username} in ${tableName}`, {username, tableName, item})
+    return item
   } catch(error) {
-    logger.error("Error retrieving data from tokenMapping", {error})
-    throw new Error("Error retrieving data from tokenMapping")
+    logger.error(`Found no record for ${username} in ${tableName}`, {error})
+    throw new Error(`Error retrieving data from ${tableName}`)
   }
 }

@@ -11,12 +11,13 @@ import {
   initializeOidcConfig,
   fetchUserInfo,
   authParametersFromEnv,
-  authenticationMiddleware,
+  authenticationConcurrentAwareMiddleware,
   AuthResult
 } from "@cpt-ui-common/authFunctions"
-import {getTokenMapping, updateTokenMapping} from "@cpt-ui-common/dynamoFunctions"
+import {getTokenMapping, updateTokenMapping, TokenMappingItem} from "@cpt-ui-common/dynamoFunctions"
 import {extractInboundEventValues, appendLoggerKeys} from "@cpt-ui-common/lambdaUtils"
 import axios from "axios"
+import {RoleDetails} from "@cpt-ui-common/common-types"
 
 /*
 This is the lambda code to get user info
@@ -54,6 +55,7 @@ const {mockOidcConfig, cis2OidcConfig} = initializeOidcConfig()
 
 const authenticationParameters = authParametersFromEnv()
 const tokenMappingTableName = authenticationParameters.tokenMappingTableName
+const sessionManagementTableName = authenticationParameters.sessionManagementTableName
 
 const errorResponseBody = {
   message: "A system error has occurred"
@@ -64,15 +66,38 @@ const middyErrorHandler = new MiddyErrorHandler(errorResponseBody)
 const lambdaHandler = async (event: APIGatewayProxyEventBase<AuthResult>): Promise<APIGatewayProxyResult> => {
   const {loggerKeys} = extractInboundEventValues(event)
   appendLoggerKeys(logger, loggerKeys)
-  const username = event.requestContext.authorizer.username
 
-  // First, try to use cached user info
-  const tokenMappingItem = await getTokenMapping(documentClient, tokenMappingTableName, username, logger)
-  const cachedUserInfo = {
-    roles_with_access: tokenMappingItem?.rolesWithAccess || [],
-    roles_without_access: tokenMappingItem?.rolesWithoutAccess || [],
-    currently_selected_role: tokenMappingItem?.currentlySelectedRole || undefined,
-    user_details: tokenMappingItem?.userDetails || {family_name: "", given_name: ""}
+  const sessionId = event.requestContext.authorizer.sessionId
+  const username = event.requestContext.authorizer.username
+  const isConcurrentSession = event.requestContext.authorizer.isConcurrentSession
+
+  let tokenDetails: TokenMappingItem | undefined = undefined
+  if (isConcurrentSession) {
+    logger.info(`Gaining concurrent session details, for sessionId ${sessionId}`)
+    tokenDetails = await getTokenMapping(documentClient, sessionManagementTableName,
+      username, logger)
+  } else {
+    logger.info(`Gaining primary session details, for sessionId ${sessionId}`)
+    tokenDetails = await getTokenMapping(documentClient, tokenMappingTableName, username, logger)
+  }
+
+  type CachedUserInfo = {
+    roles_with_access: Array<RoleDetails> | [],
+    roles_without_access: Array<RoleDetails> | [],
+    currently_selected_role: RoleDetails | undefined,
+    user_details: {
+      family_name: string,
+      given_name: string
+    },
+    is_concurrent_session?: boolean
+  }
+
+  const cachedUserInfo: CachedUserInfo = {
+    roles_with_access: tokenDetails?.rolesWithAccess || [],
+    roles_without_access: tokenDetails?.rolesWithoutAccess || [],
+    currently_selected_role: tokenDetails?.currentlySelectedRole || undefined,
+    user_details: tokenDetails?.userDetails || {family_name: "", given_name: ""},
+    is_concurrent_session: isConcurrentSession
   }
 
   if (
@@ -99,16 +124,16 @@ const lambdaHandler = async (event: APIGatewayProxyEventBase<AuthResult>): Promi
     }
   } else {
     if (!apigeeAccessToken
-        || !tokenMappingItem.cis2IdToken
-        || !tokenMappingItem.cis2AccessToken
+        || !tokenDetails?.cis2IdToken
+        || !tokenDetails?.cis2AccessToken
     ) {
       throw new Error("Authentication failed for cis2: missing tokens")
     }
   }
 
   const userInfoResponse = await fetchUserInfo(
-    tokenMappingItem.cis2AccessToken || "",
-    tokenMappingItem.cis2IdToken || "",
+    tokenDetails?.cis2AccessToken || "",
+    tokenDetails?.cis2IdToken || "",
     apigeeAccessToken || "",
     isMockToken,
     logger,
@@ -136,7 +161,7 @@ const lambdaHandler = async (event: APIGatewayProxyEventBase<AuthResult>): Promi
 }
 
 export const handler = middy(lambdaHandler)
-  .use(authenticationMiddleware(axiosInstance, documentClient, authenticationParameters, logger))
+  .use(authenticationConcurrentAwareMiddleware(axiosInstance, documentClient, authenticationParameters, logger))
   .use(injectLambdaContext(logger, {clearState: true}))
   .use(httpHeaderNormalizer())
   .use(

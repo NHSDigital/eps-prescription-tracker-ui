@@ -80,6 +80,10 @@
       {
         "name": "packages/common/dynamoFunctions",
         "path": "../packages/common/dynamoFunctions"
+      },
+      {
+        "name": "packages/testingSupport",
+        "path": "../packages/testingSupport"
       }
     ],
     "settings": {

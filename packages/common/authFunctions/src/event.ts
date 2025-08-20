@@ -13,3 +13,11 @@ export const getUsernameFromEvent = (event: APIGatewayProxyEvent): string => {
   }
   return username
 }
+
+export const getSessionIdFromEvent = (event: APIGatewayProxyEvent): string => {
+  const sessionId = event.requestContext.authorizer?.claims["custom:session_id"]
+  if (!sessionId) {
+    throw new Error("Unable to extract sessionId from ID token")
+  }
+  return sessionId
+}
