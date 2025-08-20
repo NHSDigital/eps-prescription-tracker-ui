@@ -122,7 +122,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
   const current_time = Math.floor(Date.now() / 1000)
   const expirationTime = current_time + 600
-  const username = `Mock_${userInfoResponse.user_details.sub}`
+  const baseUsername = userInfoResponse.user_details.sub
   const sessionId = uuidv4()
 
   const jwtClaims = {
@@ -153,13 +153,13 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   // store them in the token mapping table
   const existingTokenMapping = await tryGetTokenMapping(documentClient,
     mockOidcConfig.tokenMappingTableName,
-    username,
+    `Mock_${baseUsername}`,
     logger
   )
   logger.info("Existing token mapping for user", {existingTokenMapping})
 
   let tokenMappingItem = {
-    username: username,
+    username: `Mock_${baseUsername}`,
     sessionId: sessionId,
     apigeeAccessToken: exchangeResult.accessToken,
     apigeeRefreshToken: exchangeResult.refreshToken,

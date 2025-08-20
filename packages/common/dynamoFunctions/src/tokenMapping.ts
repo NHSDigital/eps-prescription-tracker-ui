@@ -128,8 +128,8 @@ export const deleteTokenMapping = async (
     logger.debug(`Successfully deleted from ${tableName}`)
 
   } catch(error) {
-    logger.error(`Error deleting data from ${tableName}`, {error})
-    throw new Error(`Error deleting data from ${tableName}`)
+    logger.error("Error deleting data from tokenMapping", {error})
+    throw new Error("Error deleting data from tokenMapping")
   }
 }
 
