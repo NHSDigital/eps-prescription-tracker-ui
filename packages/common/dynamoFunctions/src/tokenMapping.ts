@@ -109,27 +109,27 @@ export const updateTokenMapping = async (
 
 export const deleteTokenMapping = async (
   documentClient: DynamoDBDocumentClient,
-  tokenMappingTableName: string,
+  tableName: string,
   username: string,
   logger: Logger
 ): Promise<void> => {
-  logger.debug("Deleting from tokenMapping", {username, tokenMappingTableName})
+  logger.debug(`Deleting from ${tableName}`, {username})
   try {
     const response = await documentClient.send(
       new DeleteCommand({
-        TableName: tokenMappingTableName,
+        TableName: tableName,
         Key: {username}
       })
     )
     if (response.$metadata.httpStatusCode !== 200) {
-      logger.error("Failed to delete from tokenMapping", {response})
-      throw new Error("Failed to delete from tokenMapping")
+      logger.error(`Failed to delete from ${tableName}`, {response})
+      throw new Error(`Failed to delete from ${tableName}`)
     }
-    logger.debug("Successfully deleted from stateMapping", {tokenMappingTableName})
+    logger.debug(`Successfully deleted from ${tableName}`)
 
   } catch(error) {
-    logger.error("Error deleting data from tokenMapping", {error})
-    throw new Error("Error deleting data from tokenMapping")
+    logger.error(`Error deleting data from ${tableName}`, {error})
+    throw new Error(`Error deleting data from ${tableName}`)
   }
 }
 

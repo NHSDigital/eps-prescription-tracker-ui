@@ -42,6 +42,7 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
         logger.info("Concurrent session found - redirecting to session selection")
         navigate(FRONTEND_PATHS.SESSION_SELECTION)
       }
+      return
     }
     if (!auth.selectedRole && !auth.isSigningIn) {
       if (!allowed_no_role_paths.includes(normalizePath(location.pathname))) {

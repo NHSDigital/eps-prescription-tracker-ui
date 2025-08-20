@@ -8,10 +8,10 @@ import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
 import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
 import {extractInboundEventValues, appendLoggerKeys} from "@cpt-ui-common/lambdaUtils"
-import {authenticationMiddleware, authParametersFromEnv} from "@cpt-ui-common/authFunctions"
+import {authenticationConcurrentAwareMiddleware, authParametersFromEnv} from "@cpt-ui-common/authFunctions"
 import axios from "axios"
 
-import {checkTokenMappingForUser, updateTokenMapping, deleteRecordAllowFailures} from "@cpt-ui-common/dynamoFunctions"
+import {tryGetTokenMapping, updateTokenMapping, deleteTokenMapping} from "@cpt-ui-common/dynamoFunctions"
 
 const logger = new Logger({serviceName: "status"})
 const authenticationParameters = authParametersFromEnv()
@@ -71,7 +71,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   // TODO: Check if the session is the active session - Return error on call.
 
   // Fetch draft session for session ID if one exists
-  var sessionManagementItem = await checkTokenMappingForUser(documentClient,
+  var sessionManagementItem = await tryGetTokenMapping(documentClient,
     sessionManagementTableName, username, logger)
 
   if (sessionManagementItem !== undefined && sessionManagementItem.sessionId === sessionId) {
@@ -82,7 +82,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
         // Delete draft session matching session ID
 
         updateTokenMapping(documentClient, tokenMappingTableName, sessionManagementItem, logger)
-        deleteRecordAllowFailures(documentClient, sessionManagementTableName, username, logger)
+        deleteTokenMapping(documentClient, sessionManagementTableName, username, logger)
         return payloadValue({"message": "Session set", "status": "Active"}, 202)
 
       default:
@@ -102,7 +102,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 }
 
 export const handler = middy(lambdaHandler)
-  .use(authenticationMiddleware(axiosInstance, documentClient, authenticationParameters, logger))
+  .use(authenticationConcurrentAwareMiddleware(axiosInstance, documentClient, authenticationParameters, logger))
   .use(injectLambdaContext(logger, {clearState: true}))
   .use(httpHeaderNormalizer())
   .use(
