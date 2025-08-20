@@ -59,7 +59,7 @@ export default function PrescriptionDetailsPage() {
     if (prescriptionIssueNumber) {
       searchParams.append("issueNumber", prescriptionIssueNumber)
     }
-    const url = `${API_ENDPOINTS.PRESCRIPTION_DETAILS}/${encodeURIComponent(prescriptionId)}`
+    const url = `${API_ENDPOINTS.PRESCRIPTION_DETAILS}/${prescriptionId}`
 
     let payload: PrescriptionDetailsResponse | undefined
     try {
