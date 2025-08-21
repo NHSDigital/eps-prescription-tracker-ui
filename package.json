@@ -35,7 +35,8 @@
         "packages/common/dynamoFunctions",
         "packages/trackerUserInfoLambda",
         "packages/CIS2SignOutLambda",
-        "packages/selectedRoleLambda"
+        "packages/selectedRoleLambda",
+        "packages/testingSupport/clearActiveSessions"
     ],
     "devDependencies": {
         "@eslint/js": "^9.30.1",

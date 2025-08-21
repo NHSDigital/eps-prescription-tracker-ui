@@ -10,7 +10,8 @@ import {
   UserPoolClient,
   UserPoolClientIdentityProvider,
   UserPoolDomain,
-  UserPoolIdentityProviderOidc
+  UserPoolIdentityProviderOidc,
+  StringAttribute
 } from "aws-cdk-lib/aws-cognito"
 import {ICertificate} from "aws-cdk-lib/aws-certificatemanager"
 import {RemovalPolicy} from "aws-cdk-lib"
@@ -60,7 +61,10 @@ export class Cognito extends Construct {
 
     // Resources
     const userPool = new UserPool(this, "UserPool", {
-      removalPolicy: RemovalPolicy.DESTROY
+      removalPolicy: RemovalPolicy.DESTROY,
+      customAttributes: {
+        "session_id": new StringAttribute({minLen: 36, maxLen: 36, mutable: true})
+      }
     })
 
     let userPoolDomain: UserPoolDomain
@@ -168,7 +172,8 @@ export class Cognito extends Construct {
         name: "name",
         given_name: "given_name",
         family_name: "family_name",
-        email: "email"
+        email: "email",
+        "custom:session_id": "session_id"
       }
     }
 
