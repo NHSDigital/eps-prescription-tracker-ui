@@ -9,11 +9,9 @@ import {
 } from "nhsuk-react-components"
 
 import {
-  PrescriberOrganisationSummary,
-  OrganisationSummary,
+  OrgSummary,
   PrescriptionDetailsResponse,
-  PrescribedItemDetails,
-  DispensedItemDetails,
+  ItemDetails,
   MessageHistory
 } from "@cpt-ui-common/common-types"
 
@@ -25,7 +23,7 @@ import {STRINGS} from "@/constants/ui-strings/PrescriptionDetailsPageStrings"
 
 import EpsSpinner from "@/components/EpsSpinner"
 import {SiteDetailsCards} from "@/components/prescriptionDetails/SiteDetailsCards"
-import {PrescribedDispensedItemsCards} from "@/components/prescriptionDetails/PrescribedDispensedItemsCards"
+import {ItemsCards} from "@/components/prescriptionDetails/ItemsCards"
 import {MessageHistoryCard} from "@/components/prescriptionDetails/MessageHistoryCard"
 
 import http from "@/helpers/axios"
@@ -41,11 +39,10 @@ export default function PrescriptionDetailsPage() {
   const {setPrescriptionInformation} = usePrescriptionInformation()
   const {setPatientDetails} = usePatientDetails()
 
-  const [prescriber, setPrescriber] = useState<PrescriberOrganisationSummary | undefined>()
-  const [nominatedDispenser, setNominatedDispenser] = useState<OrganisationSummary | undefined>()
-  const [dispenser, setDispenser] = useState<OrganisationSummary | undefined>()
-  const [prescribedItems, setPrescribedItems] = useState<Array<PrescribedItemDetails>>([])
-  const [dispensedItems, setDispensedItems] = useState<Array<DispensedItemDetails>>([])
+  const [prescriber, setPrescriber] = useState<OrgSummary | undefined>()
+  const [nominatedDispenser, setNominatedDispenser] = useState<OrgSummary | undefined>()
+  const [dispenser, setDispenser] = useState<OrgSummary | undefined>()
+  const [items, setItems] = useState<Array<ItemDetails>>([])
   const [messageHistory, setMessageHistory] = useState<Array<MessageHistory>>([])
   const searchContext = useSearchContext()
   const navigate = useNavigate()
@@ -58,13 +55,16 @@ export default function PrescriptionDetailsPage() {
     prescriptionIssueNumber?: string | undefined
   ): Promise<PrescriptionDetailsResponse | undefined> => {
     logger.info("Prescription ID", prescriptionId)
-    const issueNumber = prescriptionIssueNumber ?? "1"
-    const url = `${API_ENDPOINTS.PRESCRIPTION_DETAILS}/${prescriptionId}?issueNumber=${issueNumber}`
+    const searchParams = new URLSearchParams()
+    if (prescriptionIssueNumber) {
+      searchParams.append("issueNumber", prescriptionIssueNumber)
+    }
+    const url = `${API_ENDPOINTS.PRESCRIPTION_DETAILS}/${prescriptionId}`
 
     let payload: PrescriptionDetailsResponse | undefined
     try {
       // Attempt to fetch live prescription details from the API
-      const response = await http.get(url)
+      const response = await http.get(url, {params: searchParams})
 
       // Validate HTTP response status
       if (response.status !== 200) {
@@ -89,22 +89,11 @@ export default function PrescriptionDetailsPage() {
     // Use the populated payload (retrieved live or from mock fallback)
     setPrescriptionInformation(payload)
     setPatientDetails(payload.patientDetails)
-    setPrescribedItems(payload.prescribedItems)
-    setDispensedItems(payload.dispensedItems)
-    setPrescriber(payload.prescriberOrganisation)
+    setItems(payload.items)
+    setPrescriber(payload.prescriberOrg)
     setMessageHistory(payload.messageHistory)
-
-    if (!payload.currentDispenser) {
-      setDispenser(undefined)
-    } else {
-      setDispenser(payload.currentDispenser)
-    }
-
-    if (!payload.nominatedDispenser) {
-      setNominatedDispenser(undefined)
-    } else {
-      setNominatedDispenser(payload.nominatedDispenser)
-    }
+    setDispenser(payload.currentDispenser)
+    setNominatedDispenser(payload.nominatedDispenser)
 
     return payload
   }
@@ -171,11 +160,7 @@ export default function PrescriptionDetailsPage() {
         </Row>
         {/* === Main Grid Layout === */}
         <Row>
-          {/* Prescribed/Dispensed items */}
-          <PrescribedDispensedItemsCards
-            prescribedItems={prescribedItems}
-            dispensedItems={dispensedItems}
-          />
+          <ItemsCards items={items} />
           {/* Prescriber and dispenser information */}
           <Col width="one-third">
             <SiteDetailsCards

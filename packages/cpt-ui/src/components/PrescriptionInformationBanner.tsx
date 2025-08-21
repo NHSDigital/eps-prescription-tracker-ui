@@ -18,29 +18,16 @@ const PrescriptionInformationBanner: React.FC = () => {
   }
 
   const renderType = () => {
+    const baseText = STRINGS.PRESCRIPTION_TYPES[prescription.typeCode]
     // ERD prescriptions - show "eRD X of Y" format
-    if ((prescription.typeCode === "continuous-repeat-dispensing" || prescription.isERD === true) &&
-      prescription.instanceNumber !== undefined &&
-      prescription.maxRepeats !== undefined) {
-      return `eRD ${prescription.instanceNumber} of ${prescription.maxRepeats}`
+    if (prescription.typeCode === "continuous-repeat-dispensing" &&
+      prescription.instanceNumber &&
+      prescription.maxRepeats) {
+      return `${baseText} ${prescription.instanceNumber} of ${prescription.maxRepeats}`
     }
 
-    // Map specific type codes to display names
-    switch (prescription.typeCode) {
-      case "continuous-repeat-dispensing":
-        return "eRD"
-      case "continuous":
-        return "Repeat"
-      case "acute":
-        return "Acute"
-      default:
-        return prescription.typeCode
-    }
-  }
-
-  const isERDPrescription = () => {
-    return prescription.typeCode === "continuous-repeat-dispensing" ||
-      prescription.isERD === true
+    // For other types, just use the base text
+    return baseText || prescription.typeCode
   }
 
   return (
@@ -81,7 +68,7 @@ const PrescriptionInformationBanner: React.FC = () => {
             {STRINGS.TYPE}: {renderType()}
           </span>
         </div>
-        {isERDPrescription() && prescription.daysSupply !== undefined && (
+        {prescription.daysSupply && (
           <div className="patient-summary__block" id="summary-erd-days">
             <span className="patient-summary__info">
               {STRINGS.DAYS_SUPPLY}: {prescription.daysSupply} days
