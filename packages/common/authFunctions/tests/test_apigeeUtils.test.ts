@@ -75,7 +75,7 @@ describe("apigeeUtils", () => {
       expect(mockAxiosPost).toHaveBeenCalledWith(
         "https://mock-endpoint",
         expect.any(String), // Request body as URL-encoded string
-        {headers: {"Content-Type": "application/x-www-form-urlencoded"}}
+        {headers: {"Content-Type": "application/x-www-form-urlencoded"}, timeout: 2000}
       )
     })
 
