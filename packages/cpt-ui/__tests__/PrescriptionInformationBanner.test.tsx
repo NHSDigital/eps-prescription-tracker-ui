@@ -43,7 +43,7 @@ describe("PrescriptionInformationBanner", () => {
       prescriptionId: "C0C757-A83008-C2D93O",
       issueDate: "18-Jan-2024",
       statusCode,
-      typeCode: "Acute"
+      typeCode: "acute"
     }
 
     renderWithContext(data)
@@ -58,7 +58,7 @@ describe("PrescriptionInformationBanner", () => {
     expect(banner.querySelector("#summary-status"))
       .toHaveTextContent(`${STRINGS.STATUS}: ${getStatusDisplayText(statusCode)}`)
     expect(banner.querySelector("#summary-type"))
-      .toHaveTextContent(`${STRINGS.TYPE}: ${data.typeCode}`)
+      .toHaveTextContent(`${STRINGS.TYPE}: Acute`)
 
     const tag = screen.getByText(getStatusDisplayText(statusCode))
     expect(tag).toHaveClass(`nhsuk-tag--${getStatusTagColour(statusCode)}`)
@@ -71,8 +71,7 @@ describe("PrescriptionInformationBanner", () => {
       prescriptionId: "EC5ACF-A83008-733FD3",
       issueDate: "18-Jan-2024",
       statusCode,
-      typeCode: "eRD",
-      isERD: true,
+      typeCode: "continuous-repeat-dispensing",
       instanceNumber: 2,
       maxRepeats: 6,
       daysSupply: "28"
@@ -83,7 +82,7 @@ describe("PrescriptionInformationBanner", () => {
     expect(screen.getByTestId("prescription-information-banner")).toBeInTheDocument()
     expect(
       screen.getByText(
-        `${STRINGS.TYPE}: ${data.typeCode} ${data.instanceNumber} of ${data.maxRepeats}`
+        `${STRINGS.TYPE}: eRD ${data.instanceNumber} of ${data.maxRepeats}`
       )
     ).toBeInTheDocument()
     expect(screen.getByText(`${STRINGS.DAYS_SUPPLY}: ${data.daysSupply} days`)).toBeInTheDocument()
@@ -98,7 +97,7 @@ describe("PrescriptionInformationBanner", () => {
       prescriptionId: "COPYME123",
       issueDate: "01-Apr-2024",
       statusCode: "0002", // Downloaded by dispenser
-      typeCode: "Repeat"
+      typeCode: "continuous"
     }
 
     const mockWriteText = jest.fn()
@@ -125,7 +124,7 @@ describe("PrescriptionInformationBanner", () => {
       prescriptionId: "TAGCOLOURTEST",
       issueDate: "01-Apr-2024",
       statusCode,
-      typeCode: "Acute"
+      typeCode: "acute"
     }
 
     renderWithContext(data)

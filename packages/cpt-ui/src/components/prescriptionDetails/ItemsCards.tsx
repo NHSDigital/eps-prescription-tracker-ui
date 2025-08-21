@@ -2,31 +2,21 @@ import {
   Card,
   Col,
   Tag,
-  Details,
   SummaryList
 } from "nhsuk-react-components"
-import {DispensedItemDetails, PrescribedItemDetails} from "@cpt-ui-common/common-types/src/prescriptionDetails"
+import {ItemDetails} from "@cpt-ui-common/common-types"
 import {getItemStatusTagColour, getItemStatusDisplayText} from "@/helpers/statusMetadata"
 import {STRINGS} from "@/constants/ui-strings/PrescribedDispensedItemsCardsStrings"
 
-interface PrescribedDispensedItemsProps {
-  prescribedItems: Array<PrescribedItemDetails>
-  dispensedItems: Array<DispensedItemDetails>
+interface ItemsProps {
+  readonly items: Array<ItemDetails>
 }
 
 // Reusable component for rendering both prescribed and dispensed item cards
-export function PrescribedDispensedItemsCards({
-  prescribedItems,
-  dispensedItems
-}: PrescribedDispensedItemsProps) {
-
-  // Utility to determine if an item is a DispensedItem (and not just PrescribedItem)
-  // This enables us to access 'initiallyPrescribed' property safely
-  const isDispensedItem = (itm: DispensedItemDetails | PrescribedItemDetails): itm is DispensedItemDetails =>
-    "initiallyPrescribed" in itm
+export function ItemsCards({items}: ItemsProps) {
 
   const renderCard = (
-    item: DispensedItemDetails | PrescribedItemDetails,
+    item: ItemDetails,
     index: number
   ) => {
     const {
@@ -39,26 +29,21 @@ export function PrescribedDispensedItemsCards({
       cancellationReason
     } = item
 
-    // Check if we should render the "Initially Prescribed" expandable section
-    const hasInitial = isDispensedItem(item) && item.initiallyPrescribed
-
     return (
       <div key={`item-${index}`} className="data-panel__wrapper no-outline" tabIndex={-1}>
         <Card className="nhsuk-u-margin-bottom-3" style={{boxShadow: "none"}}>
           <Card.Content className="nhsuk-u-padding-top-3 nhsuk-u-padding-bottom-1
                                  nhsuk-u-padding-right-3 nhsuk-u-padding-left-3">
             <Card.Heading headingLevel="H3" className="nhsuk-heading-xs nhsuk-u-margin-bottom-1">
-              <span>{medicationName}</span>
+              <span>{`${index + 1}. ${medicationName}`}</span>
             </Card.Heading>
 
             {/* Display EPS status as NHS Tag */}
-            {epsStatusCode && (
-              <p className="nhsuk-u-margin-bottom-2" data-testid="eps-status-tag">
-                <Tag color={getItemStatusTagColour(epsStatusCode)}>
-                  {getItemStatusDisplayText(epsStatusCode)}
-                </Tag>
-              </p>
-            )}
+            <p className="nhsuk-u-margin-bottom-2" data-testid="eps-status-tag">
+              <Tag color={getItemStatusTagColour(epsStatusCode)}>
+                {getItemStatusDisplayText(epsStatusCode)}
+              </Tag>
+            </p>
 
             {/* Cancellation warning if applicable */}
             {itemPendingCancellation && (
@@ -114,29 +99,6 @@ export function PrescribedDispensedItemsCards({
                 </SummaryList.Row>
               )}
             </SummaryList>
-
-            {/* Expandable details for initially prescribed info, only for dispensed items */}
-            {hasInitial && (
-              <Details data-testid="initial-prescription-details">
-                <Details.Summary>{STRINGS.INITIALLY_PRESCRIBED_DETAILS}</Details.Summary>
-                <Details.Text>
-                  <SummaryList data-testid="initial-prescription-summary-list">
-                    <SummaryList.Row>
-                      <SummaryList.Key>{STRINGS.INITIALLY_PRESCRIBED_ITEM}</SummaryList.Key>
-                      <SummaryList.Value>{item.initiallyPrescribed!.medicationName}</SummaryList.Value>
-                    </SummaryList.Row>
-                    <SummaryList.Row>
-                      <SummaryList.Key>{STRINGS.INITIALLY_PRESCRIBED_QUANTITY}</SummaryList.Key>
-                      <SummaryList.Value>{item.initiallyPrescribed!.quantity}</SummaryList.Value>
-                    </SummaryList.Row>
-                    <SummaryList.Row>
-                      <SummaryList.Key>{STRINGS.INITIALLY_PRESCRIBED_INSTRUCTION}</SummaryList.Key>
-                      <SummaryList.Value>{item.initiallyPrescribed!.dosageInstructions}</SummaryList.Value>
-                    </SummaryList.Row>
-                  </SummaryList>
-                </Details.Text>
-              </Details>
-            )}
           </Card.Content>
         </Card>
       </div>
@@ -145,24 +107,10 @@ export function PrescribedDispensedItemsCards({
 
   return (
     <Col width="one-third">
-      {/* Dispensed Section */}
-      {dispensedItems.length > 0 && (
-        <>
-          <h2 className="nhsuk-heading-xs nhsuk-u-margin-bottom-2">
-            {STRINGS.DISPENSED_ITEMS_HEADER}
-          </h2>
-          {dispensedItems.map(renderCard)}
-        </>
-      )}
-      {/* Prescribed Section */}
-      {prescribedItems.length > 0 && (
-        <>
-          <h2 className="nhsuk-heading-xs nhsuk-u-margin-bottom-2">
-            {STRINGS.PRESCRIBED_ITEMS_HEADER}
-          </h2>
-          {prescribedItems.map(renderCard)}
-        </>
-      )}
+      <h2 className="nhsuk-heading-xs nhsuk-u-margin-bottom-2">
+        {STRINGS.ITEMS_HEADER}
+      </h2>
+      {items.map(renderCard)}
     </Col>
   )
 }
