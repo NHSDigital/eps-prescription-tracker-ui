@@ -43,8 +43,8 @@ const defaultAuthState: AuthContextType = {
   cognitoSignOut: mockCognitoSignOut,
   clearAuthState: jest.fn(),
   updateSelectedRole: jest.fn(),
-  forceCognitoLogout: jest.fn()
-
+  forceCognitoLogout: jest.fn(),
+  updateTrackerUserInfo: jest.fn()
 }
 
 const signedInAuthState: AuthContextType = {
@@ -63,7 +63,8 @@ const signedInAuthState: AuthContextType = {
   cognitoSignOut: mockCognitoSignOut,
   clearAuthState: jest.fn(),
   updateSelectedRole: jest.fn(),
-  forceCognitoLogout: jest.fn()
+  forceCognitoLogout: jest.fn(),
+  updateTrackerUserInfo: jest.fn()
 }
 
 // Auth provider mock

@@ -46,6 +46,7 @@ export default function EpsHeader() {
 
     // Show "Select your role" link
     setShouldShowSelectRole(
+      path !== FRONTEND_PATHS.SESSION_SELECTION &&
       path !== FRONTEND_PATHS.SELECT_YOUR_ROLE &&
       path !== FRONTEND_PATHS.CHANGE_YOUR_ROLE &&
       path !== FRONTEND_PATHS.LOGOUT &&
@@ -56,6 +57,7 @@ export default function EpsHeader() {
 
     // Show "Change role" link (if not single access)
     setShouldShowChangeRole(
+      path !== FRONTEND_PATHS.SESSION_SELECTION &&
       path !== FRONTEND_PATHS.SELECT_YOUR_ROLE &&
       path !== FRONTEND_PATHS.CHANGE_YOUR_ROLE &&
       path !== FRONTEND_PATHS.LOGOUT &&
