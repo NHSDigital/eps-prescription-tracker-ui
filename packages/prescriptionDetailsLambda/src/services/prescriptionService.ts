@@ -91,7 +91,7 @@ export async function processPrescriptionRequest(
   })
 
   const endpoint = new URL(apigeePrescriptionsEndpoint)
-  endpoint.pathname = path.join(endpoint.pathname, `/RequestGroup/${encodeURIComponent(prescriptionId)}`)
+  endpoint.pathname = path.join(endpoint.pathname, `/RequestGroup/${prescriptionId}`)
 
   // Add issueNumber as a query parameter to the Apigee request
   endpoint.searchParams.set("issueNumber", issueNumber)
