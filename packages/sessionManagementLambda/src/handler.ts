@@ -13,7 +13,7 @@ import axios from "axios"
 
 import {tryGetTokenMapping, updateTokenMapping, deleteTokenMapping} from "@cpt-ui-common/dynamoFunctions"
 
-const logger = new Logger({serviceName: "status"})
+const logger = new Logger({serviceName: "sesssion-management"})
 const authenticationParameters = authParametersFromEnv()
 const tokenMappingTableName = authenticationParameters.tokenMappingTableName
 const sessionManagementTableName = authenticationParameters.sessionManagementTableName

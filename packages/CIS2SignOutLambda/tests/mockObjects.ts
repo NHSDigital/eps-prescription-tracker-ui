@@ -21,7 +21,7 @@ export const mockAPIGatewayProxyEvent = {
     apiId: "1234",
     authorizer: {
       claims: {
-        "cognito:username": "Mock_JoeBloggs",
+        "cognito:username": "username234",
         "custom:session_id": "123456"
       }
     },
