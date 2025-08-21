@@ -325,9 +325,9 @@ describe("prescriptionService", () => {
     it("should handle prescription IDs ending with + character correctly", async () => {
       const prescriptionId = "RX123+"
 
-      // Set up nock to intercept the HTTP request - the + should be properly URL encoded as %2B
+      // Set up nock to intercept the HTTP request - the + should be left as is
       nock(apigeePrescriptionsEndpoint)
-        .get("/RequestGroup/RX123%2B") // + gets URL encoded to %2B
+        .get("/RequestGroup/RX123+")
         .query({issueNumber: "1"}) // Add the query parameter that the service includes
         .matchHeader("a-header", `a-value`)
         .reply(200, fakeApigeeData, {"content-type": "application/json"})
