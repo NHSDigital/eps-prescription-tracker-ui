@@ -105,7 +105,6 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
     setUserDetails(trackerUserInfo.userDetails)
     setHasSingleRoleAccess(trackerUserInfo.hasSingleRoleAccess)
     setError(trackerUserInfo.error)
-
     setIsConcurrentSession(trackerUserInfo.isConcurrentSession)
   }
 
@@ -130,17 +129,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
         case "signedIn": {
           logger.info("Processing signedIn event")
           logger.info("User %s logged in", payload.data.username)
-          const trackerUserInfo = await getTrackerUserInfo()
-          setRolesWithAccess(trackerUserInfo.rolesWithAccess)
-          setRolesWithoutAccess(trackerUserInfo.rolesWithoutAccess)
-          setHasNoAccess(trackerUserInfo.hasNoAccess)
-          setSelectedRole(trackerUserInfo.selectedRole)
-          setUserDetails(trackerUserInfo.userDetails)
-          setHasSingleRoleAccess(trackerUserInfo.hasSingleRoleAccess)
-          setError(trackerUserInfo.error)
-
-          setIsConcurrentSession(trackerUserInfo.isConcurrentSession)
-
+          await updateTrackerUserInfo()
           setIsSignedIn(true)
           setIsSigningIn(false)
           setUser(payload.data.username)
@@ -202,11 +191,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
       // we need to sign out of cis2 first before signing out of cognito
       // as otherwise we may possibly not be authed to reach cis2 sign out endpoint
       logger.info(`calling ${CIS2SignOutEndpoint}`)
-      await http.get(CIS2SignOutEndpoint, {
-        headers: {
-          "concurrent-session": isConcurrentSession
-        }
-      })
+      await http.get(CIS2SignOutEndpoint)
       logger.info("Backend CIS2 signout OK!")
       logger.info(`calling amplify logout`)
       // this triggers a signedOutEvent which is handled by the hub listener
