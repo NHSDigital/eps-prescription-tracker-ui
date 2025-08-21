@@ -10,7 +10,6 @@ import {TokenMappingItem} from "@cpt-ui-common/dynamoFunctions"
 
 const mockTryGetTokenMapping = jest.fn().mockName("mockGetTokenMapping")
 const mockUpdateTokenMapping = jest.fn().mockName("mockUpdateTokenMapping")
-const mockCheckTokenMappingForUser = jest.fn().mockName("mockCheckTokenMappingForUser")
 const mockDeleteTokenMapping = jest.fn().mockName("mockDeleteTokenMapping")
 
 const mockInitializeOidcConfig = jest.fn().mockName("mockInitializeOidcConfig")
@@ -21,7 +20,6 @@ jest.unstable_mockModule("@cpt-ui-common/dynamoFunctions", () => {
   return {
     tryGetTokenMapping: mockTryGetTokenMapping,
     updateTokenMapping: mockUpdateTokenMapping,
-    checkTokenMappingForUser: mockCheckTokenMappingForUser,
     deleteTokenMapping: mockDeleteTokenMapping
   }
 })
@@ -63,7 +61,7 @@ describe("Unit test for session management lambda", function () {
       sessionId: "sessionid123"
     }
 
-    mockCheckTokenMappingForUser.mockImplementation(() => {
+    mockTryGetTokenMapping.mockImplementation(() => {
       return sessionManagementItem
     })
 
@@ -85,7 +83,7 @@ describe("Unit test for session management lambda", function () {
       "message": "Session set",
       "status": "Active"
     })
-    expect(mockCheckTokenMappingForUser).toHaveBeenCalled()
+    expect(mockTryGetTokenMapping).toHaveBeenCalled()
     expect(mockUpdateTokenMapping).toHaveBeenCalledWith(
       expect.anything(),
       "TokenMappingTable",
@@ -116,7 +114,7 @@ describe("Unit test for session management lambda", function () {
       sessionId: "sessionid123"
     }
 
-    mockCheckTokenMappingForUser.mockImplementation(() => {
+    mockTryGetTokenMapping.mockImplementation(() => {
       return sessionManagementItem
     })
 
@@ -126,7 +124,8 @@ describe("Unit test for session management lambda", function () {
     }
 
     event.body = JSON.stringify({})
-
+    // eslint-disable-next-line no-console
+    console.log(event)
     const response = await handler(event, context)
 
     expect(response).toBeDefined()
@@ -137,7 +136,7 @@ describe("Unit test for session management lambda", function () {
     expect(body).toEqual({
       "message": "No action specified"
     })
-    expect(mockCheckTokenMappingForUser).toHaveBeenCalled()
+    expect(mockTryGetTokenMapping).toHaveBeenCalled()
   })
 
   it("should error if no username supplied", async () => {
@@ -156,7 +155,7 @@ describe("Unit test for session management lambda", function () {
       sessionId: "sessionid123"
     }
 
-    mockCheckTokenMappingForUser.mockImplementation(() => {
+    mockTryGetTokenMapping.mockImplementation(() => {
       return sessionManagementItem
     })
 
@@ -170,10 +169,10 @@ describe("Unit test for session management lambda", function () {
     expect(response).toEqual({
       "message": "A system error has occurred"
     })
-    expect(mockCheckTokenMappingForUser).not.toHaveBeenCalled()
+    expect(mockTryGetTokenMapping).not.toHaveBeenCalled()
   })
 
-  it("should error if no username supplied", async () => {
+  it("should error if no sessionid supplied", async () => {
     const sessionManagementItem: TokenMappingItem = {
       username: "test-user",
       rolesWithAccess: [
@@ -189,7 +188,7 @@ describe("Unit test for session management lambda", function () {
       sessionId: "sessionid123"
     }
 
-    mockCheckTokenMappingForUser.mockImplementation(() => {
+    mockTryGetTokenMapping.mockImplementation(() => {
       return sessionManagementItem
     })
 
@@ -203,7 +202,7 @@ describe("Unit test for session management lambda", function () {
     expect(response).toEqual({
       "message": "A system error has occurred"
     })
-    expect(mockCheckTokenMappingForUser).not.toHaveBeenCalled()
+    expect(mockTryGetTokenMapping).not.toHaveBeenCalled()
   })
 
   it("should error if payload body is not json", async () => {
@@ -222,7 +221,7 @@ describe("Unit test for session management lambda", function () {
       sessionId: "sessionid123"
     }
 
-    mockCheckTokenMappingForUser.mockImplementation(() => {
+    mockTryGetTokenMapping.mockImplementation(() => {
       return sessionManagementItem
     })
 
@@ -239,7 +238,7 @@ describe("Unit test for session management lambda", function () {
     expect(response).toEqual({
       "message": "A system error has occurred"
     })
-    expect(mockCheckTokenMappingForUser).not.toHaveBeenCalled()
+    expect(mockTryGetTokenMapping).not.toHaveBeenCalled()
     expect(loggerSpy).toHaveBeenCalledWith("Failed to parse request body", expect.anything())
   })
 
@@ -259,7 +258,7 @@ describe("Unit test for session management lambda", function () {
       sessionId: "sessionid123"
     }
 
-    mockCheckTokenMappingForUser.mockImplementation(() => {
+    mockTryGetTokenMapping.mockImplementation(() => {
       return sessionManagementItem
     })
     const loggerSpy = jest.spyOn(Logger.prototype, "error")
@@ -280,7 +279,7 @@ describe("Unit test for session management lambda", function () {
     expect(body).toEqual({
       "message": "A system error has occurred"
     })
-    expect(mockCheckTokenMappingForUser).toHaveBeenCalled()
+    expect(mockTryGetTokenMapping).toHaveBeenCalled()
     expect(loggerSpy).toHaveBeenCalledWith("Request doesn't match an action case, or session ID doesn't match an item in sessionManagement table.") // eslint-disable-line max-len
   })
 })
