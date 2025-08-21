@@ -19,6 +19,8 @@ export const postSessionManagementUpdate = async (auth: AuthContextType, redirec
 
     if (response.data.status === "Active") {
       logger.info("Session is now active.")
+      // Refresh tracker user info, so that all state items reflect any actions
+      // completed on the concurrent session. Such as isConcurrentSession becoming false
       await auth.updateTrackerUserInfo()
       logger.info("Updated tracker info, redirecting user")
       redirect()

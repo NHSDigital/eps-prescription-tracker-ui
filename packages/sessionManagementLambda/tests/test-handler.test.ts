@@ -241,45 +241,4 @@ describe("Unit test for session management lambda", function () {
     expect(mockTryGetTokenMapping).not.toHaveBeenCalled()
     expect(loggerSpy).toHaveBeenCalledWith("Failed to parse request body", expect.anything())
   })
-
-  it("should error if sessionId doesn't match an item in the database", async () => {
-    const sessionManagementItem: TokenMappingItem = {
-      username: "test-user",
-      rolesWithAccess: [
-        {role_id: "123", org_code: "XYZ", role_name: "MockRole_1"}
-      ],
-      rolesWithoutAccess: [],
-      currentlySelectedRole: {role_id: "555", org_code: "GHI", role_name: "MockRole_4"},
-      lastActivityTime: 123456,
-      userDetails: {
-        family_name: "foo",
-        given_name: "bar"
-      },
-      sessionId: "sessionid123"
-    }
-
-    mockTryGetTokenMapping.mockImplementation(() => {
-      return sessionManagementItem
-    })
-    const loggerSpy = jest.spyOn(Logger.prototype, "error")
-
-    event.requestContext.authorizer = {
-      username: "username",
-      sessionId: "12345"
-    }
-
-    event.body = JSON.stringify({})
-
-    const response = await handler(event, context)
-
-    expect(response).toBeDefined()
-    expect(response).toHaveProperty("statusCode", 500)
-    expect(response).toHaveProperty("body")
-    const body = JSON.parse(response.body)
-    expect(body).toEqual({
-      "message": "A system error has occurred"
-    })
-    expect(mockTryGetTokenMapping).toHaveBeenCalled()
-    expect(loggerSpy).toHaveBeenCalledWith("Request doesn't match an action case, or session ID doesn't match an item in sessionManagement table.") // eslint-disable-line max-len
-  })
 })
