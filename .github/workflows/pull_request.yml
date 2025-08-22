@@ -26,7 +26,7 @@ jobs:
   quality_checks:
     # always run, but only block in the non-skip case
     needs: [get_commit_message]
-    uses: NHSDigital/eps-workflow-quality-checks/.github/workflows/quality-checks.yml@v4.0.5
+    uses: NHSDigital/eps-workflow-quality-checks/.github/workflows/quality-checks.yml@v4.1.0
     secrets:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
