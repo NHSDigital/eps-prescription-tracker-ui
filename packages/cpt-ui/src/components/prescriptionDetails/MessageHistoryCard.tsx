@@ -30,7 +30,7 @@ export function MessageHistoryCard({messageHistory}: MessageHistoryProps) {
           <Card.Content className="nhsuk-u-padding-4">
             <div className="nhs-screening-whole-timeline" data-testid="message-history-timeline">
               {messageHistory.slice().reverse().map((msg) => (
-                <div key={`${msg.sentDateTime}-${msg.organisationODS}`}
+                <div key={`${msg.sentDateTime}-${msg.orgODS}`}
                   className="nhsuk-u-margin-bottom-4 nhs-screening-whole-timeline__item"
                   data-testid="prescription-message">
 
@@ -42,14 +42,14 @@ export function MessageHistoryCard({messageHistory}: MessageHistoryProps) {
                   </Card.Heading>
 
                   {/* Organisation info */}
-                  {msg.organisationName ? (
+                  {msg.orgName ? (
                     <p className="nhsuk-body-s nhsuk-u-margin-bottom-2 break-word">
-                      {STRINGS.ORGANISATION} {msg.organisationName} ({STRINGS.ODS_TEXT}{msg.organisationODS})
+                      {STRINGS.ORGANISATION} {msg.orgName} ({STRINGS.ODS_TEXT}{msg.orgODS})
                     </p>
                   ) : (
                     <p className="nhsuk-body-s nhsuk-u-margin-bottom-2 break-word"
                       data-testid="no-org-name-message">
-                      {STRINGS.NO_ORG_NAME} ({STRINGS.ODS_TEXT}{msg.organisationODS})
+                      {STRINGS.NO_ORG_NAME} ({STRINGS.ODS_TEXT}{msg.orgODS})
                     </p>
                   )}
 
@@ -65,7 +65,7 @@ export function MessageHistoryCard({messageHistory}: MessageHistoryProps) {
                   )}
 
                   {/* Dispense notification information */}
-                  {msg.dispenseNotification && msg.dispenseNotification.length > 0 && (
+                  {msg.dispenseNotificationItems && msg.dispenseNotificationItems.length > 0 && (
                     <Details className="nhsuk-u-padding-top-2 nhsuk-u-margin-bottom-0"
                       data-testid="message-history-dropdown">
                       <Details.Summary>
@@ -74,31 +74,27 @@ export function MessageHistoryCard({messageHistory}: MessageHistoryProps) {
                         </span>
                       </Details.Summary>
                       <Details.Text>
-                        {/* Notification ID */}
-                        <div className="nhs-screening-whole-timeline__description">
-                          {STRINGS.DISPENSE_NOTIFICATION_ID} {msg.dispenseNotification[0].id}
-                        </div>
-
                         {/* Items List */}
                         <div className="nhs-screening-whole-timeline__description">
-                          {STRINGS.PRESCRIPTION_ITEMS}
-                          <ul className="nhsuk-u-padding-top-2">
-                            {msg.dispenseNotification.map((item) => (
-                              <li key={item.id} className="nhsuk-u-font-size-16">
-                                {item.medicationName}
-                                <br />
+                          {STRINGS.DISPENSED_ITEMS}
+                          <ol className="nhsuk-u-padding-top-2 nhsuk-u-margin-bottom-0">
+                            {msg.dispenseNotificationItems.map((item, index) => (
+                              <li key={index} className="nhsuk-u-font-size-16">
                                 <Tag color={getItemStatusTagColour(item.statusCode)}>
                                   {getItemStatusDisplayText(item.statusCode)}
                                 </Tag>
-                                <br />
-                                {STRINGS.QUANTITY} {item.quantity}
-                                {/* Temporary remove dosage instructions from card until spine fix
-                                <br />
-                                {STRINGS.INSTRUCTIONS} {item.dosageInstruction}
-                                */}
+                                {item.components.map((component) => (
+                                  <div key={component.medicationName} className="nhsuk-u-margin-top-2">
+                                    {component.medicationName}
+                                    <br />
+                                    {STRINGS.QUANTITY} {component.quantity}
+                                    <br />
+                                    {STRINGS.INSTRUCTIONS} {component.dosageInstruction}
+                                  </div>
+                                ))}
                               </li>
                             ))}
-                          </ul>
+                          </ol>
                         </div>
                       </Details.Text>
                     </Details>
