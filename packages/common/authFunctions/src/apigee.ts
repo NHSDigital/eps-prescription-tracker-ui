@@ -97,7 +97,11 @@ export const exchangeTokenForApigeeAccessToken = async (
 
   try {
     const response = await axiosInstance.post(apigeeTokenEndpoint, stringify(requestBody), {
-      headers: {"Content-Type": "application/x-www-form-urlencoded"}
+      headers: {"Content-Type": "application/x-www-form-urlencoded"},
+      timeout: 2000
+      // Cognito will timeout after 5 seconds and leave the token lambda running
+      // this will leave behind an orphaned session triggering the concurrent session handling
+      // so timeout early to avoid this issue
     })
 
     if (!response.data?.access_token || !response.data?.expires_in) {

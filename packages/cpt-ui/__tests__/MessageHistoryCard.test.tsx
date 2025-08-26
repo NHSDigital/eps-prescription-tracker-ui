@@ -2,22 +2,6 @@ import React from "react"
 import {render, screen} from "@testing-library/react"
 import "@testing-library/jest-dom"
 
-// Mock the constants
-jest.mock("@/constants/ui-strings/MessageHistoryCardStrings", () => ({
-  STRINGS: {
-    HISTORY_HEADER: "History",
-    ORGANISATION: "Organisation:",
-    NEW_STATUS: "New status:",
-    ODS_TEXT: "ODS:",
-    NO_ORG_NAME: "Organisation name not available",
-    DISPENSE_NOTIFICATION_INFO: "Dispense notification information",
-    DISPENSE_NOTIFICATION_ID: "Dispense notification ID:",
-    PRESCRIPTION_ITEMS: "Prescription items:",
-    QUANTITY: "Quantity:",
-    INSTRUCTIONS: "Instructions:"
-  }
-}))
-
 // Mock the helper functions
 jest.mock("@/helpers/statusMetadata", () => ({
   getStatusDisplayText: jest.fn(() => "Mocked Status"),
@@ -38,8 +22,9 @@ describe("MessageHistoryCard", () => {
   const simpleMessage: MessageHistory = {
     messageCode: "Test message",
     sentDateTime: "2025-01-01",
-    organisationName: "Test Org",
-    organisationODS: "ABC123"
+    orgName: "Test Org",
+    orgODS: "ABC123",
+    newStatusCode: "0001"
   }
 
   it("renders nothing when messageHistory is empty", () => {
@@ -65,7 +50,7 @@ describe("MessageHistoryCard", () => {
   it("shows fallback text when organisation name is missing", () => {
     const messageWithoutOrgName = {
       ...simpleMessage,
-      organisationName: ""
+      orgName: ""
     }
 
     render(<MessageHistoryCard messageHistory={[messageWithoutOrgName]} />)
@@ -74,34 +59,23 @@ describe("MessageHistoryCard", () => {
     expect(screen.getByText(/Organisation name not available/)).toBeInTheDocument()
   })
 
-  it("shows status tag when newStatusCode is provided", () => {
-    const messageWithStatus = {
-      ...simpleMessage,
-      newStatusCode: "0001"
-    }
-
-    render(<MessageHistoryCard messageHistory={[messageWithStatus]} />)
+  it("shows status tag", () => {
+    render(<MessageHistoryCard messageHistory={[simpleMessage]} />)
 
     expect(screen.getByText(/New status:/)).toBeInTheDocument()
     expect(screen.getByTestId("new-status-code-tag")).toBeInTheDocument()
   })
 
-  it("hides status tag when newStatusCode is missing", () => {
-    render(<MessageHistoryCard messageHistory={[simpleMessage]} />)
-
-    expect(screen.queryByText(/New status:/)).not.toBeInTheDocument()
-    expect(screen.queryByTestId("new-status-code-tag")).not.toBeInTheDocument()
-  })
-
   it("shows dispense notification when present", () => {
     const messageWithDispense = {
       ...simpleMessage,
-      dispenseNotification: [{
-        id: "test-id",
-        medicationName: "Test Med",
-        quantity: "10",
-        dosageInstruction: "Once daily",
-        statusCode: "DISPENSED"
+      dispenseNotificationItems: [{
+        statusCode: "0001",
+        components: [{
+          medicationName: "Test Med",
+          quantity: "10",
+          dosageInstruction: "Once daily"
+        }]
       }]
     }
 
@@ -121,7 +95,7 @@ describe("MessageHistoryCard", () => {
   it("hides dispense notification when array is empty", () => {
     const messageWithEmptyDispense = {
       ...simpleMessage,
-      dispenseNotification: []
+      dispenseNotificationItems: []
     }
 
     render(<MessageHistoryCard messageHistory={[messageWithEmptyDispense]} />)
@@ -130,7 +104,7 @@ describe("MessageHistoryCard", () => {
   })
 
   it("renders multiple messages", () => {
-    const messages = [simpleMessage, {...simpleMessage, organisationODS: "DEF456"}]
+    const messages = [simpleMessage, {...simpleMessage, orgODS: "DEF456"}]
 
     render(<MessageHistoryCard messageHistory={messages} />)
 
@@ -140,27 +114,29 @@ describe("MessageHistoryCard", () => {
   it("renders dispense notification items details", () => {
     const messageWithDispenseItems = {
       ...simpleMessage,
-      dispenseNotification: [
+      dispenseNotificationItems: [
         {
-          id: "item-1",
-          medicationName: "Medicine A",
-          quantity: "30 tablets",
-          dosageInstruction: "Take daily",
-          statusCode: "DISPENSED"
+          statusCode: "0001",
+          components: [{
+            medicationName: "Medicine A",
+            quantity: "30 tablets",
+            dosageInstruction: "Take daily"
+          }]
         },
         {
-          id: "item-2",
-          medicationName: "Medicine B",
-          quantity: "60 capsules",
-          dosageInstruction: "Take twice daily",
-          statusCode: "PARTIAL"
+          statusCode: "0003",
+          components: [{
+            medicationName: "Medicine B",
+            quantity: "60 capsules",
+            dosageInstruction: "Take twice daily"
+          }]
         }
       ]
     }
 
     render(<MessageHistoryCard messageHistory={[messageWithDispenseItems]} />)
 
-    expect(screen.getByText(/item-1/)).toBeInTheDocument()
+    expect(screen.getByText(/Medicine A/)).toBeInTheDocument()
+    expect(screen.getByText(/Medicine B/)).toBeInTheDocument()
   })
-
 })
