@@ -131,6 +131,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   }
   const tokenMappingItem = {
     username: username,
+    sessionId: decodedIdToken.jti,
     cis2AccessToken: accessToken,
     cis2IdToken: idToken,
     cis2ExpiresIn: decodedIdToken.exp.toString(),

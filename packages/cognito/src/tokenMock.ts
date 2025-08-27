@@ -128,7 +128,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   const jwtClaims = {
     exp: expirationTime,
     iat: current_time,
-    jti: uuidv4(),
+    jti: sessionId,
     iss: mockOidcConfig.oidcIssuer,
     aud: mockOidcConfig.oidcClientID,
     sub: userInfoResponse.user_details.sub,
