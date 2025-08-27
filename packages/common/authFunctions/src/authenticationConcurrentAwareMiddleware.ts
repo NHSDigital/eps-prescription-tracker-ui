@@ -20,6 +20,8 @@ export const authenticationConcurrentAwareMiddleware = (
       const username = getUsernameFromEvent(event)
       const sessionId = getSessionIdFromEvent(event)
 
+      const isMockToken = username.startsWith("Mock_")
+
       let sessionManagementItem: TokenMappingItem | undefined = undefined
       let tokenMappingItem: TokenMappingItem | undefined = undefined
 
@@ -45,8 +47,10 @@ export const authenticationConcurrentAwareMiddleware = (
       let authResult: AuthResult | null = null
       let isConcurrentSession: boolean = false
 
-      // Ensure we're dealing with the correct token item, or kill the authentication.
-      try {
+      // Temporarily differentiate between mock and non-mock tokens until session ID
+      // is gained from CIS2 token & concurrency protections are productionised
+      if (isMockToken) {
+        // Ensure we're dealing with the correct token item, or kill the authentication.
         if (sessionManagementItem !== undefined && sessionManagementSessionId === sessionId) {
           logger.debug("Session ID matches the session management item, proceeding with authentication")
           isConcurrentSession = true
@@ -63,8 +67,14 @@ export const authenticationConcurrentAwareMiddleware = (
           logger.error("Request token doesn't match any sessionId in the token mapping or session management table, \
           treating as invalid session", {tokenMappingSessionId, sessionManagementSessionId})
         }
-      } catch (error) {
-        logger.error("Authentication failed returning restart login prompt", {error})
+      } else {
+        logger.info("Non-mock token detected, proceeding with standard authentication")
+        if (tokenMappingItem !== undefined) {
+          authResult = await authenticateRequest(username, axiosInstance, ddbClient, logger,
+            authOptions, tokenMappingItem, authOptions.tokenMappingTableName)
+        } else {
+          logger.error("Token mapping item is undefined for non-mock token, treating as invalid session")
+        }
       }
 
       if (!authResult) {

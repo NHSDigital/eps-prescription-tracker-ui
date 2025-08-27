@@ -6,10 +6,10 @@ import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
 import {AxiosInstance} from "axios"
 
 // Mock dependencies
-const mockGetUsernameFromEvent = jest.fn() as jest.MockedFunction<any>
-const mockGetSessionIdFromEvent = jest.fn() as jest.MockedFunction<any>
-const mockAuthenticateRequest = jest.fn() as jest.MockedFunction<any>
-const mockTryGetTokenMapping = jest.fn() as jest.MockedFunction<any>
+const mockGetUsernameFromEvent = jest.fn().mockName("mockGetUsernameFromEvent") as jest.MockedFunction<any>
+const mockGetSessionIdFromEvent = jest.fn().mockName("mockGetSessionIdFromEvent") as jest.MockedFunction<any>
+const mockAuthenticateRequest = jest.fn().mockName("mockAuthenticateRequest") as jest.MockedFunction<any>
+const mockTryGetTokenMapping = jest.fn().mockName("mockTryGetTokenMapping") as jest.MockedFunction<any>
 
 jest.unstable_mockModule("../src/event", () => ({
   getUsernameFromEvent: mockGetUsernameFromEvent,
@@ -73,7 +73,7 @@ describe("authenticationConcurrentAwareMiddleware", () => {
       requestContext: {
         authorizer: {
           claims: {
-            "cognito:username": "test-user",
+            "cognito:username": "Mock_testuser",
             "custom:session_id": "test-session-id"
           }
         }
@@ -88,7 +88,7 @@ describe("authenticationConcurrentAwareMiddleware", () => {
   describe("concurrent session authentication flow", () => {
     it("should authenticate via session management table when session ID matches", async () => {
       // Arrange
-      const username = "test-user"
+      const username = "Mock_testuser"
       const sessionId = "test-session-id"
       const sessionManagementItem = {
         username: username,
@@ -159,7 +159,7 @@ describe("authenticationConcurrentAwareMiddleware", () => {
 
     it("should authenticate via token mapping table when only token mapping session ID matches", async () => {
       // Arrange
-      const username = "test-user"
+      const username = "Mock_testuser"
       const sessionId = "test-session-id"
       const sessionManagementItem = {
         username: username,
@@ -214,7 +214,7 @@ describe("authenticationConcurrentAwareMiddleware", () => {
 
     it("should use session management table over token mapping table if both sessionId match", async () => {
       // Arrange
-      const username = "test-user"
+      const username = "Mock_testuser"
       const sessionId = "test-session-id"
       const sessionManagementItem = {
         username: username,
@@ -263,7 +263,7 @@ describe("authenticationConcurrentAwareMiddleware", () => {
   describe("authentication failure scenarios", () => {
     it("should return 401 when neither session management or token mapping session ID matches", async () => {
       // Arrange
-      const username = "test-user"
+      const username = "Mock_testuser"
       const sessionId = "test-session-id"
       const sessionManagementItem = {
         username: username,
@@ -309,7 +309,7 @@ describe("authenticationConcurrentAwareMiddleware", () => {
 
     it("should return 401 when session management item is undefined and token mapping item is undefined", async () => {
       // Arrange
-      const username = "test-user"
+      const username = "Mock_testuser"
       const sessionId = "test-session-id"
 
       mockGetUsernameFromEvent.mockReturnValue(username)
@@ -338,7 +338,7 @@ describe("authenticationConcurrentAwareMiddleware", () => {
     it("should return 401 when session management item is undefined and token mapping session ID doesn't match",
       async () => {
       // Arrange
-        const username = "test-user"
+        const username = "Mock_testuser"
         const sessionId = "test-session-id"
         const tokenMappingItem = {
           username: username,
@@ -371,7 +371,7 @@ describe("authenticationConcurrentAwareMiddleware", () => {
 
     it("should return 401 when authenticateRequest returns null", async () => {
       // Arrange
-      const username = "test-user"
+      const username = "Mock_testuser"
       const sessionId = "test-session-id"
       const sessionManagementItem = {
         username: username,
@@ -392,7 +392,15 @@ describe("authenticationConcurrentAwareMiddleware", () => {
       const result = await middleware.before(mockRequest)
 
       // Assert
-      expect(mockAuthenticateRequest).toHaveBeenCalled()
+      expect(mockAuthenticateRequest).toHaveBeenCalledWith(
+        username,
+        expect.anything(),
+        expect.anything(),
+        expect.anything(),
+        authOptions,
+        sessionManagementItem,
+        authOptions.sessionManagementTableName
+      )
       expect(mockRequest.earlyResponse).toEqual({
         statusCode: 401,
         body: JSON.stringify({
@@ -405,7 +413,7 @@ describe("authenticationConcurrentAwareMiddleware", () => {
 
     it("should return 401 when authenticateRequest throws an error", async () => {
       // Arrange
-      const username = "test-user"
+      const username = "Mock_testuser"
       const sessionId = "test-session-id"
       const sessionManagementItem = {
         username: username,
@@ -475,7 +483,7 @@ describe("authenticationConcurrentAwareMiddleware", () => {
 
     it("should return 401 when getSessionIdFromEvent throws an error", async () => {
       // Arrange
-      const username = "test-user"
+      const username = "Mock_testuser"
 
       mockGetUsernameFromEvent.mockReturnValue(username)
       mockGetSessionIdFromEvent.mockImplementation(() => {
@@ -510,7 +518,7 @@ describe("authenticationConcurrentAwareMiddleware", () => {
   describe("database operation failures", () => {
     it("should return 401 when tryGetTokenMapping fails for session management table", async () => {
       // Arrange
-      const username = "test-user"
+      const username = "Mock_testuser"
       const sessionId = "test-session-id"
       const dbError = new Error("DynamoDB error")
 
@@ -542,7 +550,7 @@ describe("authenticationConcurrentAwareMiddleware", () => {
 
     it("should return 401 when tryGetTokenMapping fails for token mapping table", async () => {
       // Arrange
-      const username = "test-user"
+      const username = "Mock_testuser"
       const sessionId = "test-session-id"
       const dbError = new Error("DynamoDB error")
 
@@ -576,7 +584,7 @@ describe("authenticationConcurrentAwareMiddleware", () => {
   describe("edge cases", () => {
     it("should handle session management item with null sessionId", async () => {
       // Arrange
-      const username = "test-user"
+      const username = "Mock_testuser"
       const sessionId = "test-session-id"
       const sessionManagementItem = {
         username: username,
@@ -614,7 +622,7 @@ describe("authenticationConcurrentAwareMiddleware", () => {
 
     it("should handle token mapping item with empty string sessionId", async () => {
       // Arrange
-      const username = "test-user"
+      const username = "Mock_testuser"
       const sessionId = "test-session-id"
       const sessionManagementItem = {
         username: username,
@@ -654,7 +662,7 @@ describe("authenticationConcurrentAwareMiddleware", () => {
   describe("middleware integration", () => {
     it("should properly set authorizer with concurrent session flag when authentication succeeds", async () => {
       // Arrange
-      const username = "test-user"
+      const username = "Mock_testuser"
       const sessionId = "test-session-id"
       const sessionManagementItem = {
         username: username,
@@ -689,7 +697,7 @@ describe("authenticationConcurrentAwareMiddleware", () => {
 
     it("should properly set authorizer with non-concurrent session flag when using token mapping", async () => {
       // Arrange
-      const username = "test-user"
+      const username = "Mock_testuser"
       const sessionId = "test-session-id"
       const tokenMappingItem = {
         username: username,
@@ -720,6 +728,182 @@ describe("authenticationConcurrentAwareMiddleware", () => {
         sessionId: sessionId,
         isConcurrentSession: false
       })
+    })
+  })
+
+  // Temporary test cases, while concurrency protections are not yet implemented for cis2
+  describe("temporary cis2 login measures", () => {
+    it("should authenticate against a cis2 token by verifying the username \
+      and not verifying missing sessionId", async () => {
+      // Arrange
+      const username = "test-user"
+      const sessionManagementItem = {
+        username: username,
+        accessToken: "test-session-access-token",
+        refreshToken: "test-session-refresh-token",
+        expiresAt: Date.now() + 3600000
+      }
+      const tokenMappingItem = {
+        username: username,
+        accessToken: "test-token-access-token",
+        refreshToken: "test-token-refresh-token",
+        expiresAt: Date.now() + 3600000
+      }
+      const authResult = {
+        username: username,
+        apigeeAccessToken: "test-apigee-token",
+        roleId: "test-role"
+      }
+
+      mockGetUsernameFromEvent.mockReturnValue(username)
+      mockTryGetTokenMapping
+        .mockResolvedValueOnce(sessionManagementItem) // session management table
+        .mockResolvedValueOnce(tokenMappingItem) // token mapping table
+      mockAuthenticateRequest.mockResolvedValue(authResult)
+
+      const middleware = authenticationConcurrentAwareMiddleware(axiosInstance, ddbClient, authOptions, logger)
+
+      // Act
+      await middleware.before(mockRequest)
+
+      // Assert
+      expect(mockTryGetTokenMapping).toHaveBeenCalledTimes(2)
+      expect(mockTryGetTokenMapping).toHaveBeenNthCalledWith(1,
+        ddbClient,
+        authOptions.sessionManagementTableName,
+        username,
+        logger
+      )
+      expect(mockTryGetTokenMapping).toHaveBeenNthCalledWith(2,
+        ddbClient,
+        authOptions.tokenMappingTableName,
+        username,
+        logger
+      )
+      expect(mockAuthenticateRequest).toHaveBeenCalledWith(
+        username,
+        axiosInstance,
+        ddbClient,
+        logger,
+        authOptions,
+        tokenMappingItem,
+        authOptions.tokenMappingTableName
+      )
+      expect(mockEvent.requestContext.authorizer).toEqual({
+        ...authResult,
+        isConcurrentSession: false
+      })
+      expect(mockRequest.earlyResponse).toBeUndefined()
+      expect(logger.info).toHaveBeenCalledWith("Using concurrent aware authentication middleware")
+      expect(logger.info).toHaveBeenCalledWith("Non-mock token detected, proceeding with standard authentication")
+    })
+
+    it("should error against a cis2 token appropriately", async () => {
+      // Arrange
+      const username = "test-user"
+      const sessionManagementItem = {
+        username: username,
+        accessToken: "test-session-access-token",
+        refreshToken: "test-session-refresh-token",
+        expiresAt: Date.now() + 3600000
+      }
+      const tokenMappingItem = {
+        username: username,
+        accessToken: "test-token-access-token",
+        refreshToken: "test-token-refresh-token",
+        expiresAt: Date.now() + 3600000
+      }
+
+      mockGetUsernameFromEvent.mockReturnValue(username)
+      mockTryGetTokenMapping
+        .mockResolvedValueOnce(sessionManagementItem)
+        .mockResolvedValueOnce(tokenMappingItem)
+      mockAuthenticateRequest.mockResolvedValue(null)
+
+      const middleware = authenticationConcurrentAwareMiddleware(axiosInstance, ddbClient, authOptions, logger)
+
+      // Act
+      await middleware.before(mockRequest)
+
+      // Assert
+      expect(mockTryGetTokenMapping).toHaveBeenCalledTimes(2)
+      expect(mockTryGetTokenMapping).toHaveBeenNthCalledWith(1,
+        ddbClient,
+        authOptions.sessionManagementTableName,
+        username,
+        logger
+      )
+      expect(mockTryGetTokenMapping).toHaveBeenNthCalledWith(2,
+        ddbClient,
+        authOptions.tokenMappingTableName,
+        username,
+        logger
+      )
+      expect(mockAuthenticateRequest).toHaveBeenCalledWith(
+        username,
+        axiosInstance,
+        ddbClient,
+        logger,
+        authOptions,
+        tokenMappingItem,
+        authOptions.tokenMappingTableName
+      )
+      expect(mockRequest.earlyResponse).toEqual({
+        statusCode: 401,
+        body: JSON.stringify({
+          message: "Session expired or invalid. Please log in again.",
+          restartLogin: true
+        })
+      })
+      expect(logger.info).toHaveBeenCalledWith("Using concurrent aware authentication middleware")
+      expect(logger.info).toHaveBeenCalledWith("Non-mock token detected, proceeding with standard authentication")
+    })
+
+    it("should return invalid session against a cis2 token \
+      if no token mapping item exists", async () => {
+      // Arrange
+      const username = "test-user"
+      const sessionManagementItem = undefined
+      const tokenMappingItem = undefined
+
+      mockGetUsernameFromEvent.mockReturnValue(username)
+      mockTryGetTokenMapping
+        .mockResolvedValueOnce(sessionManagementItem)
+        .mockResolvedValueOnce(tokenMappingItem)
+      mockAuthenticateRequest.mockResolvedValue(null)
+
+      const middleware = authenticationConcurrentAwareMiddleware(axiosInstance, ddbClient, authOptions, logger)
+
+      // Act
+      await middleware.before(mockRequest)
+
+      // Assert
+      expect(mockTryGetTokenMapping).toHaveBeenCalledTimes(2)
+      expect(mockTryGetTokenMapping).toHaveBeenNthCalledWith(1,
+        ddbClient,
+        authOptions.sessionManagementTableName,
+        username,
+        logger
+      )
+      expect(mockTryGetTokenMapping).toHaveBeenNthCalledWith(2,
+        ddbClient,
+        authOptions.tokenMappingTableName,
+        username,
+        logger
+      )
+      expect(mockAuthenticateRequest).not.toHaveBeenCalled()
+      expect(mockRequest.earlyResponse).toEqual({
+        statusCode: 401,
+        body: JSON.stringify({
+          message: "Session expired or invalid. Please log in again.",
+          restartLogin: true
+        })
+      })
+      expect(logger.info).toHaveBeenCalledWith("Using concurrent aware authentication middleware")
+      expect(logger.info).toHaveBeenCalledWith("Non-mock token detected, proceeding with standard authentication")
+      expect(logger.error).toHaveBeenCalledWith(
+        "Token mapping item is undefined for non-mock token, treating as invalid session"
+      )
     })
   })
 })
