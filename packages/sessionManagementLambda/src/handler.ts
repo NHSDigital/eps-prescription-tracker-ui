@@ -78,7 +78,6 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
       case "Set-Session":
         // Update token mapping to content of draft session for the session ID in request
         // Delete draft session matching username - to ensure no 'concurrent' sessions exist
-
         await updateTokenMapping(documentClient, tokenMappingTableName, sessionManagementItem, logger)
         await deleteTokenMapping(documentClient, sessionManagementTableName, username, logger)
         return payloadValue({"message": "Session set", "status": "Active"}, 202)
