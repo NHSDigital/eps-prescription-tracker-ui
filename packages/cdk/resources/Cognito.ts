@@ -187,7 +187,7 @@ export class Cognito extends Construct {
       given_name: "given_name",
       family_name: "family_name",
       email: "email",
-      "custom:session_id": "jti"
+      "custom:session_id": "auditTrackingId"
     }
 
     const callbackUrls = [
