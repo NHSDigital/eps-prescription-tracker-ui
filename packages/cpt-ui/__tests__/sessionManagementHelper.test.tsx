@@ -81,7 +81,7 @@ describe("postSessionManagementUpdate", () => {
     })
 
     expect(logger.error).toHaveBeenCalledWith(
-      "Error calling session management",
+      "Error calling session management or updating user info",
       "Server error, unable to set active session 500"
     )
     expect(mockAuth.updateTrackerUserInfo).not.toHaveBeenCalled()
@@ -98,7 +98,7 @@ describe("postSessionManagementUpdate", () => {
       action: "Set-Session"
     })
     expect(logger.error).toHaveBeenCalledWith(
-      "Error calling session management",
+      "Error calling session management or updating user info",
       "Network error"
     )
     expect(mockAuth.updateTrackerUserInfo).not.toHaveBeenCalled()
@@ -115,8 +115,8 @@ describe("postSessionManagementUpdate", () => {
       action: "Set-Session"
     })
     expect(logger.error).toHaveBeenCalledWith(
-      "Error calling session management",
-      "Error calling session management"
+      "Error calling session management or updating user info",
+      "Error calling session management or updating user info"
     )
     expect(mockAuth.updateTrackerUserInfo).not.toHaveBeenCalled()
     expect(redirect).not.toHaveBeenCalled()
@@ -139,7 +139,7 @@ describe("postSessionManagementUpdate", () => {
     expect(logger.info).toHaveBeenCalledWith("Session is now active.")
     expect(mockAuth.updateTrackerUserInfo).toHaveBeenCalled()
     expect(logger.error).toHaveBeenCalledWith(
-      "Error calling session management",
+      "Error calling session management or updating user info",
       "Update failed"
     )
     expect(redirect).not.toHaveBeenCalled()
