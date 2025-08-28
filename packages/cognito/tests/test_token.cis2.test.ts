@@ -75,7 +75,8 @@ jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
   const verifyIdToken = mockVerifyIdToken.mockImplementation(async () => {
     return {
       sub: "foo",
-      exp: 100
+      exp: 100,
+      auditTrackingId: "session-id"
     }
   })
 
@@ -185,6 +186,7 @@ describe("cis2 token handler", () => {
       expect.anything(),
       {
         username: `${CIS2_USER_POOL_IDP}_foo`,
+        sessionId: "session-id",
         cis2IdToken: token,
         cis2ExpiresIn: "100",
         cis2AccessToken: "access_token_reply",
