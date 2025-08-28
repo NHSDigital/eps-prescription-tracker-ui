@@ -18,6 +18,7 @@ import {headers} from "@cpt-ui-common/lambdaUtils"
 
 import {rewriteRequestBody} from "./helpers"
 import {insertTokenMapping} from "@cpt-ui-common/dynamoFunctions"
+
 /*
 This is the lambda code that is used to intercept calls to token endpoint as part of the cognito login flow
 It expects the following environment variables to be set
@@ -129,9 +130,10 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   if (!decodedIdToken.exp) {
     throw new Error("Can not get expiry time from decoded token")
   }
+
   const tokenMappingItem = {
     username: username,
-    sessionId: decodedIdToken.jti,
+    sessionId: rewrittenObjectBodyParameters.jti as string,
     cis2AccessToken: accessToken,
     cis2IdToken: idToken,
     cis2ExpiresIn: decodedIdToken.exp.toString(),
