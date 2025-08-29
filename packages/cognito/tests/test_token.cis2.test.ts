@@ -65,10 +65,12 @@ const {
 
 const mockInsertTokenMapping = jest.fn()
 const mockGetTokenMapping = jest.fn()
+const mockTryGetTokenMapping = jest.fn()
 jest.unstable_mockModule("@cpt-ui-common/dynamoFunctions", () => {
   return {
     insertTokenMapping: mockInsertTokenMapping,
-    getTokenMapping: mockGetTokenMapping
+    getTokenMapping: mockGetTokenMapping,
+    tryGetTokenMapping: mockTryGetTokenMapping
   }
 })
 jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
@@ -99,6 +101,7 @@ jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
       userPoolIdp: process.env["CIS2_USER_POOL_IDP"] ?? "",
       jwksClient: cis2JwksClient,
       tokenMappingTableName: process.env["TokenMappingTableName"] ?? "",
+      sessionManagementTableName: process.env["SessionManagementTableName"] ?? "",
       oidcTokenEndpoint: process.env["CIS2_TOKEN_ENDPOINT"] ?? ""
     }
 
@@ -118,6 +121,7 @@ jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
       userPoolIdp: process.env["MOCK_USER_POOL_IDP"] ?? "",
       jwksClient: mockJwksClient,
       tokenMappingTableName: process.env["TokenMappingTableName"] ?? "",
+      sessionManagementTableName: process.env["SessionManagementTableName"] ?? "",
       oidcTokenEndpoint: process.env["MOCK_OIDC_TOKEN_ENDPOINT"] ?? ""
     }
 
@@ -141,6 +145,8 @@ jest.unstable_mockModule("@aws-lambda-powertools/parameters/secrets", () => {
 })
 
 process.env.useMock = "false"
+process.env.TokenMappingTableName = "test-token-mapping-table"
+process.env.SessionManagementTableName = "test-session-management-table"
 const {handler} = await import("../src/token")
 
 describe("cis2 token handler", () => {
@@ -195,5 +201,205 @@ describe("cis2 token handler", () => {
       },
       expect.anything()
     )
+  })
+
+  it("creates concurrent session when user exists and last activity < 15 minutes", async () => {
+    // Mock tryGetTokenMapping to return existing user with recent activity
+    mockTryGetTokenMapping.mockImplementationOnce(() => {
+      return Promise.resolve({
+        username: `${CIS2_USER_POOL_IDP}_foo`,
+        lastActivityTime: Date.now() - (10 * 60 * 1000) // 10 minutes ago (less than 15)
+      })
+    })
+
+    const expiryDate = Date.now() + 1000
+    const token = jwks.token({
+      iss: CIS2_OIDC_ISSUER,
+      aud: CIS2_OIDC_CLIENT_ID,
+      sub: "foo",
+      exp: expiryDate
+    })
+    nock(CIS2_OIDC_HOST)
+      .post("/token")
+      .reply(200, {
+        id_token: token,
+        access_token: "access_token_reply"
+      })
+
+    const response = await handler({
+      body: {
+        foo: "bar"
+      }
+    }, dummyContext)
+
+    expect(response.body).toMatch(JSON.stringify({
+      id_token: token,
+      access_token: "access_token_reply"
+    }))
+
+    // Should insert into session management table (concurrent session)
+    expect(mockInsertTokenMapping).toHaveBeenCalledWith(
+      expect.anything(),
+      "test-session-management-table", // session management table
+      {
+        username: `${CIS2_USER_POOL_IDP}_foo`,
+        sessionId: "session-id",
+        cis2IdToken: token,
+        cis2ExpiresIn: "100",
+        cis2AccessToken: "access_token_reply",
+        selectedRoleId: undefined,
+        lastActivityTime: expect.any(Number)
+      },
+      expect.anything()
+    )
+  })
+
+  it("inserts into token mapping table when user exists but last activity > 15 minutes", async () => {
+    // Mock tryGetTokenMapping to return existing user with old activity
+    mockTryGetTokenMapping.mockImplementationOnce(() => {
+      return Promise.resolve({
+        username: `${CIS2_USER_POOL_IDP}_foo`,
+        lastActivityTime: Date.now() - (20 * 60 * 1000) // 20 minutes ago (more than 15)
+      })
+    })
+
+    const expiryDate = Date.now() + 1000
+    const token = jwks.token({
+      iss: CIS2_OIDC_ISSUER,
+      aud: CIS2_OIDC_CLIENT_ID,
+      sub: "foo",
+      exp: expiryDate
+    })
+    nock(CIS2_OIDC_HOST)
+      .post("/token")
+      .reply(200, {
+        id_token: token,
+        access_token: "access_token_reply"
+      })
+
+    const response = await handler({
+      body: {
+        foo: "bar"
+      }
+    }, dummyContext)
+
+    expect(response.body).toMatch(JSON.stringify({
+      id_token: token,
+      access_token: "access_token_reply"
+    }))
+
+    // Should insert into token mapping table (not concurrent session)
+    expect(mockInsertTokenMapping).toHaveBeenCalledWith(
+      expect.anything(),
+      "test-token-mapping-table", // token mapping table
+      {
+        username: `${CIS2_USER_POOL_IDP}_foo`,
+        sessionId: "session-id",
+        cis2IdToken: token,
+        cis2ExpiresIn: "100",
+        cis2AccessToken: "access_token_reply",
+        selectedRoleId: undefined,
+        lastActivityTime: expect.any(Number)
+      },
+      expect.anything()
+    )
+  })
+
+  it("inserts into token mapping table when no existing user token mapping", async () => {
+    // Mock tryGetTokenMapping to return undefined (no existing mapping)
+    mockTryGetTokenMapping.mockImplementationOnce(() => {
+      return Promise.resolve(undefined)
+    })
+
+    const expiryDate = Date.now() + 1000
+    const token = jwks.token({
+      iss: CIS2_OIDC_ISSUER,
+      aud: CIS2_OIDC_CLIENT_ID,
+      sub: "foo",
+      exp: expiryDate
+    })
+    nock(CIS2_OIDC_HOST)
+      .post("/token")
+      .reply(200, {
+        id_token: token,
+        access_token: "access_token_reply"
+      })
+
+    const response = await handler({
+      body: {
+        foo: "bar"
+      }
+    }, dummyContext)
+
+    expect(response.body).toMatch(JSON.stringify({
+      id_token: token,
+      access_token: "access_token_reply"
+    }))
+
+    // Should insert into token mapping table (new user)
+    expect(mockInsertTokenMapping).toHaveBeenCalledWith(
+      expect.anything(),
+      "test-token-mapping-table", // token mapping table
+      {
+        username: `${CIS2_USER_POOL_IDP}_foo`,
+        sessionId: "session-id",
+        cis2IdToken: token,
+        cis2ExpiresIn: "100",
+        cis2AccessToken: "access_token_reply",
+        selectedRoleId: undefined,
+        lastActivityTime: expect.any(Number)
+      },
+      expect.anything()
+    )
+  })
+
+  it("creates concurrent session when user exists and last activity exactly at 15 minute boundary", async () => {
+    // Mock Date.now() to ensure consistent timing for boundary test
+    const fixedTime = 1000000000000 // Fixed timestamp
+    const dateNowSpy = jest.spyOn(Date, "now").mockReturnValue(fixedTime)
+
+    const fifteenMinutes = 15 * 60 * 1000
+    mockTryGetTokenMapping.mockImplementationOnce(() => {
+      return Promise.resolve({
+        username: `${CIS2_USER_POOL_IDP}_foo`,
+        lastActivityTime: fixedTime - fifteenMinutes + 1 // Just barely within 15 minute window
+      })
+    })
+
+    const expiryDate = Date.now() + 1000
+    const token = jwks.token({
+      iss: CIS2_OIDC_ISSUER,
+      aud: CIS2_OIDC_CLIENT_ID,
+      sub: "foo",
+      exp: expiryDate
+    })
+    nock(CIS2_OIDC_HOST)
+      .post("/token")
+      .reply(200, {
+        id_token: token,
+        access_token: "access_token_reply"
+      })
+
+    const response = await handler({
+      body: {
+        foo: "bar"
+      }
+    }, dummyContext)
+
+    expect(response.body).toMatch(JSON.stringify({
+      id_token: token,
+      access_token: "access_token_reply"
+    }))
+
+    // Should insert into session management table (concurrent session)
+    expect(mockInsertTokenMapping).toHaveBeenCalledWith(
+      expect.anything(),
+      "test-session-management-table", // session management table
+      expect.anything(),
+      expect.anything()
+    )
+
+    // Restore Date.now
+    dateNowSpy.mockRestore()
   })
 })

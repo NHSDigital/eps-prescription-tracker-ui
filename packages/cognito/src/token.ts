@@ -17,7 +17,7 @@ import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 import {headers} from "@cpt-ui-common/lambdaUtils"
 
 import {rewriteRequestBody} from "./helpers"
-import {insertTokenMapping} from "@cpt-ui-common/dynamoFunctions"
+import {insertTokenMapping, tryGetTokenMapping} from "@cpt-ui-common/dynamoFunctions"
 
 /*
 This is the lambda code that is used to intercept calls to token endpoint as part of the cognito login flow
@@ -140,7 +140,24 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     selectedRoleId: decodedIdToken.selected_roleid,
     lastActivityTime: Date.now()
   }
-  await insertTokenMapping(documentClient, cis2OidcConfig.tokenMappingTableName, tokenMappingItem, logger)
+
+  const existingTokenMapping = await tryGetTokenMapping(documentClient,
+    cis2OidcConfig.tokenMappingTableName,
+    username,
+    logger
+  )
+
+  const fifteenMinutes = 15 * 60 * 1000
+  const sessionManagementTableName = cis2OidcConfig.sessionManagementTableName
+
+  if (existingTokenMapping !== undefined && existingTokenMapping.lastActivityTime > Date.now() - fifteenMinutes) {
+    logger.info("User already exists in token mapping table, creating draft session",
+      {username}, {sessionManagementTableName})
+    await insertTokenMapping(documentClient, sessionManagementTableName, tokenMappingItem, logger)
+  } else {
+    logger.info("No user token already exists or last activity was more than 15 minutes ago", {tokenMappingItem})
+    await insertTokenMapping(documentClient, cis2OidcConfig.tokenMappingTableName, tokenMappingItem, logger)
+  }
 
   // return status code and body from request to downstream idp
   return {
