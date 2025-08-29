@@ -17,7 +17,28 @@ jest.mock("react-router-dom", () => {
   }
 })
 
+jest.mock("@/helpers/awsRum")
+jest.mock("@/helpers/logger")
+jest.mock("@/helpers/axios")
+jest.mock("@/context/configureAmplify")
+jest.mock("@/helpers/sessionManagement", () => ({
+  postSessionManagementUpdate: jest.fn()
+}))
+const mockUpdateTrackerUserInfo = jest.fn()
+const mockPostSessionManagementUpdate =
+    postSessionManagementUpdate as jest.MockedFunction<typeof postSessionManagementUpdate>
+
 jest.mock("@/constants/environment", () => ({
+  AUTH_CONFIG: {
+    USER_POOL_ID: "test-pool-id",
+    USER_POOL_CLIENT_ID: "test-client-id",
+    HOSTED_LOGIN_DOMAIN: "test.domain",
+    REDIRECT_SIGN_IN: "http://localhost:3000",
+    REDIRECT_SIGN_OUT: "http://localhost:3000/logout"
+  },
+  APP_CONFIG: {
+    REACT_LOG_LEVEL: "debug"
+  },
   FRONTEND_PATHS: {
     LOGOUT: "/logout",
     SEARCH_BY_PRESCRIPTION_ID: "/search-by-prescription-id"
@@ -26,15 +47,6 @@ jest.mock("@/constants/environment", () => ({
     SESSION_MANAGEMENT: "/api/session-management"
   }
 }))
-
-jest.mock("@/helpers/sessionManagement", () => ({
-  postSessionManagementUpdate: jest.fn()
-}))
-
-const mockPostSessionManagementUpdate =
-    postSessionManagementUpdate as jest.MockedFunction<typeof postSessionManagementUpdate>
-
-const mockUpdateTrackerUserInfo = jest.fn()
 
 const defaultAuthState: AuthContextType = {
   isSignedIn: true,
@@ -194,7 +206,6 @@ describe("SessionSelectionPage", () => {
       expect(mockPostSessionManagementUpdate).toHaveBeenCalled()
     })
 
-    // Execute the captured redirect function
     expect(capturedRedirectFunction).toBeDefined()
     capturedRedirectFunction!()
 
@@ -204,8 +215,8 @@ describe("SessionSelectionPage", () => {
   it("has correct button IDs for accessibility", () => {
     renderWithProviders(<SessionSelectionPage />)
 
-    expect(screen.getByRole("button", {name: "Start a new session"})).toHaveAttribute("id", "new-session")
-    expect(screen.getByRole("button", {name: "Close this window"})).toHaveAttribute("id", "close-session")
+    expect(screen.getByRole("button", {name: "Start a new session"})).toHaveAttribute("id", "create-a-new-session")
+    expect(screen.getByRole("button", {name: "Close this window"})).toHaveAttribute("id", "close-this-window")
   })
 
   it("uses proper NHS UK styling and layout", () => {

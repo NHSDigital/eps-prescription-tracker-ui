@@ -34,9 +34,9 @@ export default function SessionSelectionPage() {
 
         <Row>
           <Col width="full">
-            <Button id="new-session" style={{margin: "8px"}} className="nhsuk-button"
+            <Button id="create-a-new-session" style={{margin: "8px"}} className="nhsuk-button"
               onClick={setSession}>Start a new session</Button>
-            <Button id="close-session" style={{margin: "8px"}} className="nhsuk-button nhsuk-button--secondary"
+            <Button id="close-this-window" style={{margin: "8px"}} className="nhsuk-button nhsuk-button--secondary"
               onClick={signOut}>Close this window</Button>
           </Col>
         </Row>
