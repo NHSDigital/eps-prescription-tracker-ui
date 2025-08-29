@@ -63,7 +63,7 @@ export class Cognito extends Construct {
     const userPool = new UserPool(this, "UserPool", {
       removalPolicy: RemovalPolicy.DESTROY,
       customAttributes: {
-        "session_id": new StringAttribute({minLen: 36, maxLen: 36, mutable: true})
+        "session_id": new StringAttribute({minLen: 36, maxLen: 72, mutable: true})
       }
     })
 
