@@ -438,11 +438,11 @@ export class StatelessResourcesStack extends Stack {
     // --- CloudfrontBehaviors
     const responseHeadersPolicy = new ResponseHeadersPolicy(this, "CustomSecurityHeadersPolicy", {
       responseHeadersPolicyName: `${props.serviceName}-CustomSecurityHeaders`,
-      comment: "Security headers policy with inclusion of CSP",
+      comment: "Security headers policy with inclusion of CSP and cache control",
       securityHeadersBehavior: {
         contentSecurityPolicy: {
           contentSecurityPolicy: "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; \
-          object-src 'none'; base-uri 'self'; frame-ancestors 'none';",
+      object-src 'none'; base-uri 'self'; frame-ancestors 'none';",
           override: true
         },
         strictTransportSecurity: {
@@ -473,6 +473,21 @@ export class StatelessResourcesStack extends Stack {
           {
             header: "Permissions-Policy",
             value: "camera=(), microphone=(), geolocation=()",
+            override: true
+          },
+          {
+            header: "Cache-Control",
+            value: "no-cache, no-store, must-revalidate",
+            override: true
+          },
+          {
+            header: "Pragma",
+            value: "no-cache",
+            override: true
+          },
+          {
+            header: "Expires",
+            value: "0",
             override: true
           }
         ]
