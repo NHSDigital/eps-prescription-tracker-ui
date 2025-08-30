@@ -23,6 +23,7 @@ process.env.jwtPrivateKeyArn = "test-private-key-arn"
 process.env.jwtKid = "test-kid"
 process.env.APIGEE_API_KEY = "test-api-key"
 process.env.APIGEE_API_SECRET = "test-api-secret"
+process.env.MOCK_OIDC_TOKEN_ENDPOINT = "https://internal-dev.api.service.nhs.uk/oauth2-mock/token"
 
 // redefining readonly property of the performance object
 const dummyContext = {
@@ -94,6 +95,7 @@ jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
       userPoolIdp: process.env["CIS2_USER_POOL_IDP"] ?? "",
       jwksClient: cis2JwksClient,
       tokenMappingTableName: process.env["TokenMappingTableName"] ?? "",
+      sessionManagementTableName: process.env["SessionManagementTableName"] ?? "",
       oidcTokenEndpoint: process.env["CIS2_TOKEN_ENDPOINT"] ?? ""
     }
 
@@ -113,6 +115,7 @@ jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
       userPoolIdp: process.env["MOCK_USER_POOL_IDP"] ?? "",
       jwksClient: mockJwksClient,
       tokenMappingTableName: process.env["TokenMappingTableName"] ?? "",
+      sessionManagementTableName: process.env["SessionManagementTableName"] ?? "",
       oidcTokenEndpoint: MOCK_OIDC_TOKEN_ENDPOINT
     }
 
@@ -406,5 +409,136 @@ describe("token mock handler", () => {
       session_state: "test-session-state",
       token_type: "Bearer"
     })
+  })
+
+  it("returns error response when code parameter is missing from body", async () => {
+    const result = await handler({
+      body: "", // empty body
+      headers: {},
+      requestContext: {
+        requestId: "test-id"
+      }
+    }, dummyContext)
+
+    expect(result).toEqual({
+      message: "A system error has occurred"
+    })
+  })
+
+  it("returns error response when code parameter is missing entirely", async () => {
+    const result = await handler({
+      body: "other=value", // no code parameter
+      headers: {},
+      requestContext: {
+        requestId: "test-id"
+      }
+    }, dummyContext)
+
+    expect(result).toEqual({
+      message: "A system error has occurred"
+    })
+  })
+
+  it("handles PR domain correctly by replacing pull request segments", async () => {
+    // Set up a PR domain
+    const originalDomain = process.env["FULL_CLOUDFRONT_DOMAIN"]
+    process.env["FULL_CLOUDFRONT_DOMAIN"] = "test-pr-123.cloudfront.net"
+
+    mockGetSessionState.mockImplementationOnce(() => {
+      return Promise.resolve({
+        LocalCode: "test-code",
+        ApigeeCode: "apigee-code",
+        SessionState: "test-session-state"
+      })
+    })
+
+    mockExchangeTokenForApigeeAccessToken.mockReturnValue({
+      accessToken: "new-access-token",
+      refreshToken: "new-refresh-token",
+      expiresIn: 3600
+    })
+
+    mockFetchUserInfo.mockImplementation(() => {
+      return Promise.resolve({
+        roles_with_access: [],
+        roles_without_access: [],
+        currently_selected_role: null,
+        user_details: {
+          family_name: "foo",
+          given_name: "bar",
+          sub: "user_details_sub"
+        }
+      })
+    })
+
+    await handler({
+      body: "code=test-code",
+      headers: {},
+      requestContext: {
+        requestId: "test-id"
+      }
+    }, dummyContext)
+
+    // Verify that exchangeTokenForApigeeAccessToken was called with the base domain (without PR segment)
+    expect(mockExchangeTokenForApigeeAccessToken).toHaveBeenCalledWith(
+      expect.anything(),
+      "https://internal-dev.api.service.nhs.uk/oauth2-mock/token",
+      expect.objectContaining({
+        redirect_uri: "https://test.cloudfront.net/oauth2/mock-callback" // PR part removed
+      }),
+      expect.anything()
+    )
+
+    // Restore original domain
+    process.env["FULL_CLOUDFRONT_DOMAIN"] = originalDomain
+  })
+
+  it("handles undefined existingTokenMapping correctly", async () => {
+    mockTryGetTokenMapping.mockImplementation(() => {
+      return Promise.resolve(undefined) // No existing mapping
+    })
+
+    mockGetSessionState.mockImplementationOnce(() => {
+      return Promise.resolve({
+        LocalCode: "test-code",
+        ApigeeCode: "apigee-code",
+        SessionState: "test-session-state"
+      })
+    })
+
+    mockExchangeTokenForApigeeAccessToken.mockReturnValue({
+      accessToken: "new-access-token",
+      refreshToken: "new-refresh-token",
+      expiresIn: 3600
+    })
+
+    mockFetchUserInfo.mockImplementation(() => {
+      return Promise.resolve({
+        roles_with_access: [],
+        roles_without_access: [],
+        currently_selected_role: null,
+        user_details: {
+          family_name: "foo",
+          given_name: "bar",
+          sub: "user_details_sub"
+        }
+      })
+    })
+
+    await handler({
+      body: "code=test-code",
+      headers: {},
+      requestContext: {
+        requestId: "test-id"
+      }
+    }, dummyContext)
+
+    // Should insert into token mapping table (not session management table)
+    expect(mockInsertTokenMapping).toHaveBeenCalledWith(
+      expect.anything(),
+      "test-token-mapping-table", // Should use token mapping table
+      expect.anything(),
+      expect.anything()
+    )
   })
 })

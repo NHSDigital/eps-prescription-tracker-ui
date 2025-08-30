@@ -47,10 +47,12 @@ const {
 })
 const mockInsertTokenMapping = jest.fn()
 const mockGetTokenMapping = jest.fn()
+const mockTryGetTokenMapping = jest.fn()
 jest.unstable_mockModule("@cpt-ui-common/dynamoFunctions", () => {
   return {
     insertTokenMapping: mockInsertTokenMapping,
-    getTokenMapping: mockGetTokenMapping
+    getTokenMapping: mockGetTokenMapping,
+    tryGetTokenMapping: mockTryGetTokenMapping
   }
 })
 jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
@@ -80,6 +82,7 @@ jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
       userPoolIdp: process.env["CIS2_USER_POOL_IDP"] ?? "",
       jwksClient: cis2JwksClient,
       tokenMappingTableName: process.env["TokenMappingTableName"] ?? "",
+      sessionManagementTableName: process.env["SessionManagementTableName"] ?? "",
       oidcTokenEndpoint: process.env["CIS2_TOKEN_ENDPOINT"] ?? ""
     }
 
@@ -99,6 +102,7 @@ jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
       userPoolIdp: process.env["MOCK_USER_POOL_IDP"] ?? "",
       jwksClient: mockJwksClient,
       tokenMappingTableName: process.env["TokenMappingTableName"] ?? "",
+      sessionManagementTableName: process.env["SessionManagementTableName"] ?? "",
       oidcTokenEndpoint: process.env["MOCK_OIDC_TOKEN_ENDPOINT"] ?? ""
     }
 
