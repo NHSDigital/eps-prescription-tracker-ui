@@ -6,10 +6,11 @@ import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
 import {AxiosInstance} from "axios"
 
 // Mock dependencies
-const mockGetUsernameFromEvent = jest.fn() as jest.MockedFunction<any>
-const mockGetSessionIdFromEvent = jest.fn() as jest.MockedFunction<any>
-const mockAuthenticateRequest = jest.fn() as jest.MockedFunction<any>
-const mockGetTokenMapping = jest.fn() as jest.MockedFunction<any>
+const mockGetUsernameFromEvent = jest.fn().mockName("mockGetUsernameFromEvent") as jest.MockedFunction<any>
+const mockGetSessionIdFromEvent = jest.fn().mockName("mockGetSessionIdFromEvent") as jest.MockedFunction<any>
+const mockAuthenticateRequest = jest.fn().mockName("mockAuthenticateRequest") as jest.MockedFunction<any>
+const mockGetTokenMapping = jest.fn().mockName("mockGetTokenMapping") as jest.MockedFunction<any>
+const mockTryGetTokenMapping = jest.fn().mockName("mockTryGetTokenMapping") as jest.MockedFunction<any>
 
 jest.unstable_mockModule("../src/event", () => ({
   getUsernameFromEvent: mockGetUsernameFromEvent,
@@ -21,7 +22,8 @@ jest.unstable_mockModule("../src/authenticateRequest", () => ({
 }))
 
 jest.unstable_mockModule("@cpt-ui-common/dynamoFunctions", () => ({
-  getTokenMapping: mockGetTokenMapping
+  getTokenMapping: mockGetTokenMapping,
+  tryGetTokenMapping: mockTryGetTokenMapping
 }))
 
 // Import the middleware after mocking
@@ -66,7 +68,7 @@ describe("authenticationMiddleware", () => {
       requestContext: {
         authorizer: {
           claims: {
-            "cognito:username": "test-user",
+            "cognito:username": "Mock_test-user",
             "custom:session_id": "test-session-id"
           }
         }
@@ -81,7 +83,7 @@ describe("authenticationMiddleware", () => {
   describe("successful authentication flow", () => {
     it("should authenticate successfully when session ID matches token mapping", async () => {
       // Arrange
-      const username = "test-user"
+      const username = "Mock_test-user"
       const sessionId = "test-session-id"
       const tokenMappingItem = {
         username: username,
@@ -137,7 +139,7 @@ describe("authenticationMiddleware", () => {
   describe("authentication failure scenarios", () => {
     it("should return 401 when session ID does not match token mapping", async () => {
       // Arrange
-      const username = "test-user"
+      const username = "Mock_test-user"
       const sessionId = "test-session-id"
       const tokenMappingItem = {
         username: username,
@@ -173,7 +175,7 @@ describe("authenticationMiddleware", () => {
 
     it("should return 401 when token mapping is undefined", async () => {
       // Arrange
-      const username = "test-user"
+      const username = "Mock_test-user"
       const sessionId = "test-session-id"
 
       mockGetUsernameFromEvent.mockReturnValue(username)
@@ -199,7 +201,7 @@ describe("authenticationMiddleware", () => {
 
     it("should return 401 when getTokenMapping throws an error", async () => {
       // Arrange
-      const username = "test-user"
+      const username = "Mock_test-user"
       const sessionId = "test-session-id"
       const error = new Error("DynamoDB error")
 
@@ -229,7 +231,7 @@ describe("authenticationMiddleware", () => {
 
     it("should return 401 when authenticateRequest returns null", async () => {
       // Arrange
-      const username = "test-user"
+      const username = "Mock_test-user"
       const sessionId = "test-session-id"
       const tokenMappingItem = {
         username: username,
@@ -250,7 +252,15 @@ describe("authenticationMiddleware", () => {
       const result = await middleware.before(mockRequest)
 
       // Assert
-      expect(mockAuthenticateRequest).toHaveBeenCalled()
+      expect(mockAuthenticateRequest).toHaveBeenCalledWith(
+        username,
+        expect.anything(),
+        expect.anything(),
+        expect.anything(),
+        authOptions,
+        tokenMappingItem,
+        authOptions.tokenMappingTableName
+      )
       expect(mockRequest.earlyResponse).toEqual({
         statusCode: 401,
         body: JSON.stringify({
@@ -263,7 +273,7 @@ describe("authenticationMiddleware", () => {
 
     it("should return 401 when authenticateRequest throws an error", async () => {
       // Arrange
-      const username = "test-user"
+      const username = "Mock_test-user"
       const sessionId = "test-session-id"
       const tokenMappingItem = {
         username: username,
@@ -333,7 +343,7 @@ describe("authenticationMiddleware", () => {
 
     it("should return 401 when getSessionIdFromEvent throws an error", async () => {
       // Arrange
-      const username = "test-user"
+      const username = "Mock_test-user"
 
       mockGetUsernameFromEvent.mockReturnValue(username)
       mockGetSessionIdFromEvent.mockImplementation(() => {
@@ -368,7 +378,7 @@ describe("authenticationMiddleware", () => {
   describe("edge cases", () => {
     it("should handle token mapping with null sessionId", async () => {
       // Arrange
-      const username = "test-user"
+      const username = "Mock_test-user"
       const sessionId = "test-session-id"
       const tokenMappingItem = {
         username: username,
@@ -404,7 +414,7 @@ describe("authenticationMiddleware", () => {
 
     it("should handle empty string session ID in token mapping", async () => {
       // Arrange
-      const username = "test-user"
+      const username = "Mock_test-user"
       const sessionId = "test-session-id"
       const tokenMappingItem = {
         username: username,
@@ -439,7 +449,7 @@ describe("authenticationMiddleware", () => {
   describe("middleware integration", () => {
     it("should properly set authorizer in event when authentication succeeds", async () => {
       // Arrange
-      const username = "test-user"
+      const username = "Mock_test-user"
       const sessionId = "test-session-id"
       const tokenMappingItem = {
         username: username,
@@ -466,6 +476,147 @@ describe("authenticationMiddleware", () => {
 
       // Assert
       expect(mockEvent.requestContext.authorizer).toBe(authResult)
+    })
+  })
+
+  describe("temporary cis2 login measures", () => {
+    it("should authenticate againt a cis2 token by verifying the username\
+      and not verify missing sessionId", async () => {
+      // Arrange
+      const username = "test-user" // validates against username to detect cis2 user
+      const tokenMappingItem = {
+        username: username,
+        accessToken: "test-access-token",
+        refreshToken: "test-refresh-token",
+        expiresAt: Date.now() + 3600000
+      }
+      const authResult = {
+        username: username,
+        apigeeAccessToken: "test-apigee-token",
+        roleId: "test-role"
+      }
+
+      mockGetUsernameFromEvent.mockReturnValue(username)
+      mockGetTokenMapping.mockResolvedValue(tokenMappingItem)
+      mockAuthenticateRequest.mockResolvedValue(authResult)
+
+      const middleware = authenticationMiddleware(axiosInstance, ddbClient, authOptions, logger)
+
+      // Act
+      await middleware.before(mockRequest)
+
+      // Assert
+      expect(mockGetUsernameFromEvent).toHaveBeenCalledWith(mockEvent)
+      expect(mockGetSessionIdFromEvent).toHaveBeenCalledWith(mockEvent)
+      expect(mockGetTokenMapping).toHaveBeenCalledWith(
+        ddbClient,
+        authOptions.tokenMappingTableName,
+        username,
+        logger
+      )
+      expect(mockAuthenticateRequest).toHaveBeenCalledWith(
+        username,
+        axiosInstance,
+        ddbClient,
+        logger,
+        authOptions,
+        tokenMappingItem,
+        authOptions.tokenMappingTableName
+      )
+      expect(mockEvent.requestContext.authorizer).toEqual(authResult)
+      expect(mockRequest.earlyResponse).toBeUndefined()
+      expect(logger.info).toHaveBeenCalledWith("Using standard authentication middleware")
+      expect(logger.info).toHaveBeenCalledWith(
+        "Non-mock token detected, proceeding with standard authentication"
+      )
+    })
+
+    it("should error against a cis2 token appropriately", async () => {
+      // Arrange
+      const username = "test-user" // validates against username to detect cis2 user
+      const tokenMappingItem = {
+        username: username,
+        accessToken: "test-access-token",
+        refreshToken: "test-refresh-token",
+        expiresAt: Date.now() + 3600000
+      }
+
+      mockGetUsernameFromEvent.mockReturnValue(username)
+      mockGetTokenMapping.mockResolvedValue(tokenMappingItem)
+      mockAuthenticateRequest.mockResolvedValue(null) // simulate auth failure
+
+      const middleware = authenticationMiddleware(axiosInstance, ddbClient, authOptions, logger)
+
+      // Act
+      await middleware.before(mockRequest)
+
+      // Assert
+      expect(mockGetUsernameFromEvent).toHaveBeenCalledWith(mockEvent)
+      expect(mockGetSessionIdFromEvent).toHaveBeenCalledWith(mockEvent)
+      expect(mockGetTokenMapping).toHaveBeenCalledWith(
+        ddbClient,
+        authOptions.tokenMappingTableName,
+        username,
+        logger
+      )
+      expect(mockAuthenticateRequest).toHaveBeenCalledWith(
+        username,
+        axiosInstance,
+        ddbClient,
+        logger,
+        authOptions,
+        tokenMappingItem,
+        authOptions.tokenMappingTableName
+      )
+      expect(mockRequest.earlyResponse).toEqual({
+        statusCode: 401,
+        body: JSON.stringify({
+          message: "Session expired or invalid. Please log in again.",
+          restartLogin: true
+        })
+      })
+      expect(logger.info).toHaveBeenCalledWith("Using standard authentication middleware")
+      expect(logger.info).toHaveBeenCalledWith(
+        "Non-mock token detected, proceeding with standard authentication"
+      )
+    })
+
+    it("should return invalid session against a cis2 token \
+      if no token mapping item exists", async () => {
+      // Arrange
+      const username = "test-user" // validates against username to detect cis2 user
+
+      mockGetUsernameFromEvent.mockReturnValue(username)
+      mockGetTokenMapping.mockImplementation(() => {
+        throw new Error("Simulated getTokenMapping failure")
+      }) // Cause getTokenMapping to raise undefined error as if tryGetTokenMapping was undefined
+
+      const middleware = authenticationMiddleware(axiosInstance, ddbClient, authOptions, logger)
+
+      // Act
+      await middleware.before(mockRequest)
+
+      // Assert
+      expect(mockGetUsernameFromEvent).toHaveBeenCalledWith(mockEvent)
+      expect(mockGetSessionIdFromEvent).toHaveBeenCalledWith(mockEvent)
+      expect(mockGetTokenMapping).toHaveBeenCalledWith(
+        ddbClient,
+        authOptions.tokenMappingTableName,
+        username,
+        logger
+      )
+      expect(mockAuthenticateRequest).not.toHaveBeenCalled()
+      expect(mockRequest.earlyResponse).toEqual({
+        statusCode: 401,
+        body: JSON.stringify({
+          message: "Session expired or invalid. Please log in again.",
+          restartLogin: true
+        })
+      })
+      expect(logger.info).toHaveBeenCalledWith("Using standard authentication middleware")
+      expect(logger.error).toHaveBeenCalledWith(
+        "Authentication failed returning restart login prompt", expect.anything()
+      )
     })
   })
 })

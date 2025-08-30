@@ -22,6 +22,9 @@ export const authenticationMiddleware = (
     try {
       const username = getUsernameFromEvent(event)
       const sessionId = getSessionIdFromEvent(event)
+
+      const isMockToken = username.startsWith("Mock_")
+
       // Fetch the token mapping item for the user
       const tokenMappingItem: TokenMappingItem = await getTokenMapping(
         ddbClient,
@@ -30,18 +33,27 @@ export const authenticationMiddleware = (
         logger
       )
 
-      if (tokenMappingItem !== undefined && tokenMappingItem.sessionId === sessionId) {
-        // Feed the token mapping item to authenticateRequest
-        logger.info("Session ID matches the token mapping item, proceeding with authentication")
+      // Temporarily differentiate between mock and non-mock tokens until session ID
+      // is gained from CIS2 token & concurrency protections are productionised
+      if (isMockToken) {
+        if (tokenMappingItem !== undefined && tokenMappingItem.sessionId === sessionId) {
+          // Feed the token mapping item to authenticateRequest
+          logger.info("Session ID matches the token mapping item, proceeding with authentication")
+          authResult = await authenticateRequest(username, axiosInstance, ddbClient, logger, authOptions,
+            tokenMappingItem, authOptions.tokenMappingTableName)
+        } else {
+          logger.error("Session ID does not match the token mapping item, treating as invalid session")
+          authResult = null
+        }
+      } else {
+        logger.info("Non-mock token detected, proceeding with standard authentication")
         authResult = await authenticateRequest(username, axiosInstance, ddbClient, logger, authOptions,
           tokenMappingItem, authOptions.tokenMappingTableName)
-      } else {
-        logger.error("Session ID does not match the token mapping item, treating as invalid session")
-        authResult = null
       }
     } catch (error) {
       logger.error("Authentication failed returning restart login prompt", {error})
     }
+
     if (!authResult) {
       request.earlyResponse = {
         statusCode: 401,
