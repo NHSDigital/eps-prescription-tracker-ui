@@ -41,6 +41,7 @@ export interface AuthContextType {
   clearAuthState: () => void
   updateSelectedRole: (value: RoleDetails) => Promise<void>
   forceCognitoLogout: () => Promise<void>
+  updateTrackerUserInfo: () => Promise<void>
 }
 
 export const AuthContext = createContext<AuthContextType | null>(null)
@@ -95,6 +96,18 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
     setIsConcurrentSession(false)
   }
 
+  const updateTrackerUserInfo = async() => {
+    const trackerUserInfo = await getTrackerUserInfo()
+    setRolesWithAccess(trackerUserInfo.rolesWithAccess)
+    setRolesWithoutAccess(trackerUserInfo.rolesWithoutAccess)
+    setHasNoAccess(trackerUserInfo.hasNoAccess)
+    setSelectedRole(trackerUserInfo.selectedRole)
+    setUserDetails(trackerUserInfo.userDetails)
+    setHasSingleRoleAccess(trackerUserInfo.hasSingleRoleAccess)
+    setError(trackerUserInfo.error)
+    setIsConcurrentSession(trackerUserInfo.isConcurrentSession)
+  }
+
   const forceCognitoLogout = async () => {
     try {
       logger.info("forcing cognito logout")
@@ -116,17 +129,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
         case "signedIn": {
           logger.info("Processing signedIn event")
           logger.info("User %s logged in", payload.data.username)
-          const trackerUserInfo = await getTrackerUserInfo()
-          setRolesWithAccess(trackerUserInfo.rolesWithAccess)
-          setRolesWithoutAccess(trackerUserInfo.rolesWithoutAccess)
-          setHasNoAccess(trackerUserInfo.hasNoAccess)
-          setSelectedRole(trackerUserInfo.selectedRole)
-          setUserDetails(trackerUserInfo.userDetails)
-          setHasSingleRoleAccess(trackerUserInfo.hasSingleRoleAccess)
-          setError(trackerUserInfo.error)
-
-          setIsConcurrentSession(trackerUserInfo.isConcurrentSession)
-
+          await updateTrackerUserInfo()
           setIsSignedIn(true)
           setIsSigningIn(false)
           setUser(payload.data.username)
@@ -233,7 +236,8 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
       cognitoSignOut,
       clearAuthState,
       updateSelectedRole,
-      forceCognitoLogout
+      forceCognitoLogout,
+      updateTrackerUserInfo
     }}>
       {children}
     </AuthContext.Provider>

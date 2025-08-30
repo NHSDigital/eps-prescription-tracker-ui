@@ -1,7 +1,4 @@
 process.env.TokenMappingTableName = "dummyTable"
-process.env.SessionManagementTableName = "sessionTable"
-
-process.env["MOCK_MODE_ENABLED"] = "true"
 
 process.env.CIS2_OIDC_ISSUER = "valid_cis2_iss"
 process.env.CIS2_OIDC_CLIENT_ID = "valid_cis2_aud"
@@ -18,3 +15,5 @@ process.env.MOCK_OIDCJWKS_ENDPOINT = `${process.env.MOCK_OIDC_HOST}/.well-known/
 process.env.MOCK_USER_INFO_ENDPOINT = `${process.env.MOCK_OIDC_HOST}/userinfo`
 process.env.MOCK_USER_POOL_IDP = "MockDummyPoolIdentityProvider"
 process.env.MOCK_IDP_TOKEN_PATH = `${process.env.MOCK_OIDC_HOST}/token`
+
+process.env.apigeeApiSecret = "dummy_apigee_api_secret"

@@ -37,6 +37,10 @@
         "path": "../packages/prescriptionDetailsLambda"
       },
       {
+        "name": "packages/sessionManagementLambda",
+        "path": "../packages/sessionManagementLambda"
+      },
+      {
         "name": "packages/trackerUserInfoLambda",
         "path": "../packages/trackerUserInfoLambda"
       },

@@ -62,11 +62,6 @@ export const getTrackerUserInfo = async (): Promise<TrackerUserInfoResult> => {
 
     isConcurrentSession = userInfo.is_concurrent_session || false
 
-    if (userInfo.roles_with_access.length === 1 && userInfo.roles_without_access.length === 0) {
-      await updateRemoteSelectedRole(userInfo.roles_with_access[0])
-      selectedRole = userInfo.roles_with_access[0]
-    }
-
     if (isConcurrentSession === true) {
       logger.info("This is a concurrent session")
     }
