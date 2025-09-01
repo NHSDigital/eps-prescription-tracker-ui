@@ -78,7 +78,7 @@ jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
     return {
       sub: "foo",
       exp: 100,
-      auditTrackingId: "session-id"
+      at_hash: "session-id"
     }
   })
 
