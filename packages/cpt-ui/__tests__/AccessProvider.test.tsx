@@ -53,9 +53,7 @@ describe("AccessProvider", () => {
 
     renderWithProvider()
 
-    expect(navigate).toHaveBeenCalledWith(FRONTEND_PATHS.LOGIN, {
-      replace: true
-    })
+    expect(navigate).toHaveBeenCalledWith(FRONTEND_PATHS.LOGIN)
   })
 
   it("redirects to select role if signed in but no role is selected", () => {
@@ -70,9 +68,7 @@ describe("AccessProvider", () => {
 
     renderWithProvider()
 
-    expect(navigate).toHaveBeenCalledWith(FRONTEND_PATHS.SELECT_YOUR_ROLE, {
-      replace: true
-    })
+    expect(navigate).toHaveBeenCalledWith(FRONTEND_PATHS.SELECT_YOUR_ROLE)
   })
 
   it("does not redirect if signed in and role is selected", () => {

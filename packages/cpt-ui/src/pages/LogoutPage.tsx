@@ -15,26 +15,21 @@ export default function LogoutPage() {
 
   // Log out on page load
   useEffect(() => {
-
     const signOut = async () => {
-      if (hasSignedOut.current) return // Prevent double execution
+      if (hasSignedOut.current) return
       logger.info("Signing out from logout page", auth)
       hasSignedOut.current = true
 
-      await auth?.cognitoSignOut()
+      // clear state immediately regardless of sign-in status
+      auth.clearAuthState()
 
+      if (auth?.isSignedIn) {
+        await auth?.cognitoSignOut()
+      }
       logger.info("Signed out")
     }
 
-    if (auth?.isSignedIn && !hasSignedOut.current) {
-      signOut()
-    } else {
-      logger.info("Cannot sign out - not signed in")
-      if (!hasSignedOut.current) {
-        auth.clearAuthState() // Clear data even if not signed in
-      }
-    }
-
+    signOut() // always run signOut, even if not signed in
   }, [])
 
   return (
