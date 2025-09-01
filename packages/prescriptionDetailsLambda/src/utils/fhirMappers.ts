@@ -106,12 +106,15 @@ export const extractItems = (
     const quantity = originalQuantityUnit ? `${originalQuantityValue} ${originalQuantityUnit}` : originalQuantityValue
     const dosageInstructions = request.dosageInstruction?.[0]?.text
 
+    //eslint-disable-next-line max-len
+    const psuStatus = findExtensionByKey(request.extension, "DM_PRESCRIPTION_STATUS_UPDATE_HISTORY")?.extension?.[0].valueCoding?.code
+
     return {
       medicationName,
       quantity,
       dosageInstructions,
       epsStatusCode,
-      nhsAppStatus: undefined, //TODO: investigate what this needs to be.
+      psuStatus,
       itemPendingCancellation,
       cancellationReason,
       notDispensedReason
