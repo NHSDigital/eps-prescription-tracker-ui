@@ -13,8 +13,8 @@
     "check-licenses": "license-checker --failOn GPL --failOn LGPL --start ../.."
   },
   "dependencies": {
-    "@aws-lambda-powertools/logger": "^2.24.1",
-    "@aws-sdk/lib-dynamodb": "^3.873.0",
+    "@aws-lambda-powertools/logger": "^2.25.2",
+    "@aws-sdk/lib-dynamodb": "^3.879.0",
     "@cpt-ui-common/common-types": "^1.0.0"
   }
 }
