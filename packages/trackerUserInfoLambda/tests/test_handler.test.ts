@@ -339,4 +339,78 @@ describe("Lambda Handler Tests with mock disabled", () => {
     expect(body).toHaveProperty("message", "UserInfo fetched successfully from DynamoDB")
     expect(body).toHaveProperty("userInfo")
   })
+
+  it("should return a successful response with concurrency values set, \
+    when user details returned and token session found with matching ID", async () => {
+    const cis2_id = "cis2_id_token"
+    const cis2_a_t = "cis2_access_token"
+    mockGetTokenMapping.mockImplementation(() => {
+      return {
+        userDetails: {
+          family_name: "foo",
+          given_name: "bar"
+        },
+        cis2IdToken: cis2_id,
+        cis2AccessToken: cis2_a_t
+      }
+    })
+
+    mockFetchUserInfo.mockImplementation(() => {
+      return Promise.resolve({
+        roles_with_access: [
+          {role_id: "123", org_code: "XYZ", role_name: "MockRole_1"}
+        ],
+        roles_without_access: [],
+        currently_selected_role: {role_id: "555", org_code: "GHI", role_name: "MockRole_4"},
+        user_details: {
+          family_name: "foo",
+          given_name: "bar"
+        }
+      })
+    })
+    event.requestContext.authorizer = {
+      username: "test_user",
+      sessionId: "mock-session-id",
+      apigeeAccessToken: "mock",
+      isConcurrentSession: true
+    }
+
+    const response = await handler(event, context)
+
+    expect(mockGetTokenMapping).toHaveBeenCalledWith(expect.anything(),
+      "SessionManagementTable",
+      event.requestContext.authorizer.username, expect.anything())
+    expect(mockFetchUserInfo).toHaveBeenCalledWith(
+      cis2_a_t,
+      cis2_id,
+      event.requestContext.authorizer.apigeeAccessToken,
+      false,
+      expect.anything(),
+      {} // oidc
+    )
+    expect(response).toBeDefined()
+    expect(response).toHaveProperty("statusCode", 200)
+    expect(response).toHaveProperty("body")
+
+    const body = JSON.parse(response.body)
+    expect(body.userInfo).toEqual({
+      "currently_selected_role":  {
+        "org_code": "GHI",
+        "role_id": "555",
+        "role_name": "MockRole_4"
+      },
+      "roles_with_access": [
+        {"org_code": "XYZ",
+          "role_id": "123",
+          "role_name": "MockRole_1"
+        }
+      ],
+      "roles_without_access": [],
+      "user_details": {"family_name": "foo", "given_name": "bar"},
+      "is_concurrent_session": true
+    })
+
+    expect(body).toHaveProperty("message", "UserInfo fetched successfully from the OIDC endpoint")
+    expect(body).toHaveProperty("userInfo")
+  })
 })
