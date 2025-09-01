@@ -103,21 +103,12 @@ describe("SessionSelectionPage", () => {
 
     expect(screen.getByRole("main")).toBeInTheDocument()
     expect(screen.getByText("You are already logged in to the Prescription Tracker")).toBeInTheDocument()
-  })
-
-  it("displays the concurrent session warning message", () => {
-    renderWithProviders(<SessionSelectionPage />)
-
     expect(screen.getByText(
       "There is a session using these login details in another browser, window or device."
     )).toBeInTheDocument()
     expect(screen.getByText(
       "You can continue to start a new session in this window, but this will end the other session."
     )).toBeInTheDocument()
-  })
-
-  it("displays both action buttons", () => {
-    renderWithProviders(<SessionSelectionPage />)
 
     const newSessionButton = screen.getByRole("button", {name: "Start a new session"})
     const closeSessionButton = screen.getByRole("button", {name: "Close this window"})
