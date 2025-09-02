@@ -1,4 +1,4 @@
-import React, {useEffect, useRef} from "react"
+import React, {useEffect} from "react"
 import {Container} from "nhsuk-react-components"
 import {Link} from "react-router-dom"
 
@@ -10,22 +10,13 @@ import {logger} from "@/helpers/logger"
 export default function LogoutPage() {
   const auth = useAuth()
 
-  // use ref to prevent double execution
-  const hasSignedOut = useRef(false)
-
   // Log out on page load
   useEffect(() => {
     const signOut = async () => {
-      if (hasSignedOut.current) return
       logger.info("Signing out from logout page", auth)
-      hasSignedOut.current = true
 
-      // clear state immediately regardless of sign-in status
-      auth.clearAuthState()
+      auth?.clearAuthState()
 
-      if (auth?.isSignedIn) {
-        await auth?.cognitoSignOut()
-      }
       logger.info("Signed out")
     }
 
