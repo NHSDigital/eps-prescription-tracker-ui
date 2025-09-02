@@ -52,7 +52,8 @@ export interface OidcConfig {
   oidcTokenEndpoint: string
   userPoolIdp: string
   jwksClient: jwksClient.JwksClient,
-  tokenMappingTableName: string
+  tokenMappingTableName: string,
+  sessionManagementTableName: string
 }
 
 export const decodeToken = (token: string): JwtPayload => {
