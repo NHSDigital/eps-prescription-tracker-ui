@@ -4,7 +4,7 @@ import RBACBanner from "@/components/RBACBanner"
 import EpsFooter from "@/components/EpsFooter"
 import PatientDetailsBanner from "@/components/PatientDetailsBanner"
 import PrescriptionInformationBanner from "@/components/PrescriptionInformationBanner"
-import {FRONTEND_PATHS} from "./constants/environment"
+import {FRONTEND_PATHS, PUBLIC_PATHS} from "./constants/environment"
 import {useAuth} from "./context/AuthProvider"
 import {normalizePath} from "./helpers/utils"
 
@@ -14,18 +14,9 @@ export default function Layout() {
 
   // render guard - prevents authenticated UI from showing when not signed in
   const currentPath = normalizePath(location.pathname)
-  const publicPaths = [
-    FRONTEND_PATHS.LOGIN,
-    FRONTEND_PATHS.LOGOUT,
-    FRONTEND_PATHS.COOKIES,
-    FRONTEND_PATHS.PRIVACY_NOTICE,
-    FRONTEND_PATHS.COOKIES_SELECTED,
-    "/",
-    "/notfound"
-  ]
 
   // if not authorised and trying to access protected content, redirect
-  if (!auth.isSignedIn && !auth.isSigningIn && !publicPaths.includes(currentPath)) {
+  if (!auth.isSignedIn && !auth.isSigningIn && !PUBLIC_PATHS.includes(currentPath)) {
     return <Navigate to={FRONTEND_PATHS.LOGIN} replace />
   }
 

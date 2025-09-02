@@ -70,10 +70,21 @@ export const FRONTEND_PATHS = {
   COOKIES_SELECTED: "/cookies-selected"
 }
 
-// Type for environment
-export type MockAuthEnvironment = "dev" | "dev-pr" | "ref" | "qa"
+// Public paths that don't require authentication
+export const PUBLIC_PATHS = [
+  FRONTEND_PATHS.LOGIN,
+  FRONTEND_PATHS.LOGOUT,
+  FRONTEND_PATHS.COOKIES,
+  FRONTEND_PATHS.PRIVACY_NOTICE,
+  FRONTEND_PATHS.COOKIES_SELECTED,
+  "/",
+  "/notfound"
+] as const
 
-export type Environment = MockAuthEnvironment | "prod" | "test" | "int"
+// Type for environment
+export type MockAuthEnvironment = "dev" | "dev-pr" | "ref" | "qa";
+
+export type Environment = MockAuthEnvironment | "prod" | "test" | "int";
 
 export const AUTO_LOGIN_ENVIRONMENTS = [
   {environment: "dev", loginMethod: "mock"},
