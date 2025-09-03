@@ -51,7 +51,6 @@ const cloudfrontDomain= process.env["FULL_CLOUDFRONT_DOMAIN"] as string
 const jwtPrivateKeyArn= process.env["jwtPrivateKeyArn"] as string
 const jwtKid= process.env["jwtKid"] as string
 const SessionStateMappingTableName = process.env["SessionStateMappingTableName"] as string
-const SessionManagementTableName = process.env["SessionManagementTableName"] as string
 const idpTokenPath= process.env["MOCK_IDP_TOKEN_PATH"] as string
 const apigeeApiKey = process.env["APIGEE_API_KEY"] as string
 const apigeeApiSecret = process.env["APIGEE_API_SECRET"] as string
@@ -128,7 +127,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   const jwtClaims = {
     exp: expirationTime,
     iat: current_time,
-    jti: uuidv4(),
+    jti: sessionId,
     iss: mockOidcConfig.oidcIssuer,
     aud: mockOidcConfig.oidcClientID,
     sub: userInfoResponse.user_details.sub,
@@ -173,11 +172,13 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
   const fifteenMinutes = 15 * 60 * 1000
 
+  const sessionManagementTableName = mockOidcConfig.sessionManagementTableName
+
   if (existingTokenMapping !== undefined && existingTokenMapping.lastActivityTime > Date.now() - fifteenMinutes) {
     const username = tokenMappingItem.username
     logger.info("User already exists in token mapping table, creating draft session",
-      {username}, {SessionManagementTableName})
-    await insertTokenMapping(documentClient, SessionManagementTableName, tokenMappingItem, logger)
+      {username}, {sessionManagementTableName})
+    await insertTokenMapping(documentClient, sessionManagementTableName, tokenMappingItem, logger)
   } else {
     logger.info("No user token already exists or last activity was more than 15 minutes ago", {tokenMappingItem})
     await insertTokenMapping(documentClient, mockOidcConfig.tokenMappingTableName, tokenMappingItem, logger)
