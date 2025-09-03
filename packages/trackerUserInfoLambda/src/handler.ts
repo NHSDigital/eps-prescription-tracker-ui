@@ -155,7 +155,10 @@ const lambdaHandler = async (event: APIGatewayProxyEventBase<AuthResult>): Promi
     statusCode: 200,
     body: JSON.stringify({
       message: "UserInfo fetched successfully from the OIDC endpoint",
-      userInfo: userInfoResponse
+      userInfo: {
+        ...userInfoResponse,
+        is_concurrent_session: isConcurrentSession
+      }
     })
   }
 }
