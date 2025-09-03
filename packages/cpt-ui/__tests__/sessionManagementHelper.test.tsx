@@ -38,16 +38,15 @@ describe("postSessionManagementUpdate", () => {
       data: {status: "Active"}
     })
 
-    const result = await postSessionManagementUpdate(mockAuth, redirect)
+    const result = await postSessionManagementUpdate(mockAuth)
 
     expect(mockedAxios.post).toHaveBeenCalledWith("/api/session-management", {
       action: "Set-Session"
     })
 
     expect(logger.info).toHaveBeenCalledWith("Session is now active.")
-    expect(logger.info).toHaveBeenCalledWith("Updated tracker info, redirecting user")
+    expect(logger.info).toHaveBeenCalledWith("Updated tracker info")
     expect(mockAuth.updateTrackerUserInfo).toHaveBeenCalled()
-    expect(redirect).toHaveBeenCalled()
     expect(result).toBe(true)
   })
 
@@ -57,7 +56,7 @@ describe("postSessionManagementUpdate", () => {
       data: {status: "Inactive"}
     })
 
-    const result = await postSessionManagementUpdate(mockAuth, redirect)
+    const result = await postSessionManagementUpdate(mockAuth)
 
     expect(mockedAxios.post).toHaveBeenCalledWith("/api/session-management", {
       action: "Set-Session"
@@ -74,15 +73,14 @@ describe("postSessionManagementUpdate", () => {
       data: {status: "Active"}
     })
 
-    const result = await postSessionManagementUpdate(mockAuth, redirect)
+    const result = await postSessionManagementUpdate(mockAuth)
 
     expect(mockedAxios.post).toHaveBeenCalledWith("/api/session-management", {
       action: "Set-Session"
     })
 
     expect(logger.error).toHaveBeenCalledWith(
-      "Error calling session management or updating user info",
-      "Server error, unable to set active session 500"
+      "Error calling session management or updating user info"
     )
     expect(mockAuth.updateTrackerUserInfo).not.toHaveBeenCalled()
     expect(redirect).not.toHaveBeenCalled()
@@ -92,7 +90,7 @@ describe("postSessionManagementUpdate", () => {
   it("handles http.post throwing an exception", async () => {
     mockedAxios.post.mockRejectedValue(new Error("Network error"))
 
-    const result = await postSessionManagementUpdate(mockAuth, redirect)
+    const result = await postSessionManagementUpdate(mockAuth)
 
     expect(mockedAxios.post).toHaveBeenCalledWith("/api/session-management", {
       action: "Set-Session"
@@ -109,7 +107,7 @@ describe("postSessionManagementUpdate", () => {
   it("handles unexpected error types", async () => {
     mockedAxios.post.mockRejectedValue("Something went wrong")
 
-    const result = await postSessionManagementUpdate(mockAuth, redirect)
+    const result = await postSessionManagementUpdate(mockAuth)
 
     expect(mockedAxios.post).toHaveBeenCalledWith("/api/session-management", {
       action: "Set-Session"
@@ -130,7 +128,7 @@ describe("postSessionManagementUpdate", () => {
     })
     mockAuth.updateTrackerUserInfo.mockRejectedValue(new Error("Update failed"))
 
-    const result = await postSessionManagementUpdate(mockAuth, redirect)
+    const result = await postSessionManagementUpdate(mockAuth)
 
     expect(mockedAxios.post).toHaveBeenCalledWith("/api/session-management", {
       action: "Set-Session"

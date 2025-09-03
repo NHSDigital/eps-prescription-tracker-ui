@@ -41,6 +41,7 @@ jest.mock("@/constants/environment", () => ({
   },
   FRONTEND_PATHS: {
     LOGOUT: "/logout",
+    LOGIN: "/login",
     SEARCH_BY_PRESCRIPTION_ID: "/search-by-prescription-id"
   },
   API_ENDPOINTS: {
@@ -142,15 +143,13 @@ describe("SessionSelectionPage", () => {
           isSignedIn: true,
           user: "testUser",
           isConcurrentSession: true
-        }),
-        expect.any(Function)
+        })
       )
     })
   })
 
   it("redirects to search page when session management succeeds", async () => {
-    mockPostSessionManagementUpdate.mockImplementation(async (_auth: AuthContextType, redirectCallback: () => void) => {
-      redirectCallback()
+    mockPostSessionManagementUpdate.mockImplementation(async () => {
       return true
     })
 
@@ -178,29 +177,7 @@ describe("SessionSelectionPage", () => {
 
     // Should not navigate if session management fails
     expect(mockNavigate).not.toHaveBeenCalledWith("/search-by-prescription-id")
-  })
-
-  it("passes the correct redirect function to postSessionManagementUpdate", async () => {
-    let capturedRedirectFunction: (() => void) | undefined
-
-    mockPostSessionManagementUpdate.mockImplementation(async (_auth: AuthContextType, redirectCallback: () => void) => {
-      capturedRedirectFunction = redirectCallback
-      return true
-    })
-
-    renderWithProviders(<SessionSelectionPage />)
-
-    const newSessionButton = screen.getByRole("button", {name: "Start a new session"})
-    await userEvent.click(newSessionButton)
-
-    await waitFor(() => {
-      expect(mockPostSessionManagementUpdate).toHaveBeenCalled()
-    })
-
-    expect(capturedRedirectFunction).toBeDefined()
-    capturedRedirectFunction!()
-
-    expect(mockNavigate).toHaveBeenCalledWith("/search-by-prescription-id")
+    expect(mockNavigate).toHaveBeenCalledWith("/login")
   })
 
   it("has correct button IDs for accessibility", () => {

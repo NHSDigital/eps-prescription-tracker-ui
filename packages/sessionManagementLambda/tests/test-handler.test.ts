@@ -4,7 +4,6 @@ import {
   describe,
   it
 } from "@jest/globals"
-import {Logger} from "@aws-lambda-powertools/logger"
 import {mockContext, mockAPIGatewayProxyEvent} from "./mockObjects"
 import {TokenMappingItem} from "@cpt-ui-common/dynamoFunctions"
 
@@ -225,8 +224,6 @@ describe("Unit test for session management lambda", function () {
       return sessionManagementItem
     })
 
-    const loggerSpy = jest.spyOn(Logger.prototype, "error")
-
     event.requestContext.authorizer = {
       username: "username",
       sessionId: "12345"
@@ -239,6 +236,5 @@ describe("Unit test for session management lambda", function () {
       "message": "A system error has occurred"
     })
     expect(mockTryGetTokenMapping).not.toHaveBeenCalled()
-    expect(loggerSpy).toHaveBeenCalledWith("Failed to parse request body", expect.anything())
   })
 })

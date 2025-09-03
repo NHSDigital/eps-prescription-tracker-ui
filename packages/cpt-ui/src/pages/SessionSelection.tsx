@@ -4,6 +4,7 @@ import {useNavigate} from "react-router-dom"
 import {FRONTEND_PATHS} from "@/constants/environment"
 import {postSessionManagementUpdate} from "@/helpers/sessionManagement"
 import {useAuth} from "@/context/AuthProvider"
+import {logger} from "@/helpers/logger"
 
 export default function SessionSelectionPage() {
   const navigate = useNavigate()
@@ -13,12 +14,19 @@ export default function SessionSelectionPage() {
     navigate(FRONTEND_PATHS.LOGOUT)
   }
 
-  const redirectUser = () => {
-    navigate(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
+  const redirectUser = (destination: string) => {
+    navigate(destination)
   }
 
   const setSession = async () => {
-    await postSessionManagementUpdate(auth, redirectUser)
+    const status = await postSessionManagementUpdate(auth)
+    if (status === true) {
+      logger.info("Redirecting user to search by prescription ID")
+      redirectUser(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
+    } else {
+      logger.info("Redirecting user to login")
+      redirectUser(FRONTEND_PATHS.LOGIN)
+    }
   }
 
   return (

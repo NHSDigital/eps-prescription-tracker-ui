@@ -50,16 +50,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   const {loggerKeys} = extractInboundEventValues(event)
   appendLoggerKeys(logger, loggerKeys)
 
-  var sanitisedBody = undefined
-  if (event.body) {
-    try {
-      sanitisedBody = JSON.parse(event.body)
-    } catch (error) {
-      logger.error("Failed to parse request body", {error})
-      throw new Error("Failed to parse request body")
-    }
-  }
-
+  const sanitisedBody = event.body ? JSON.parse(event.body) : {}
   const sessionId = event.requestContext.authorizer?.sessionId
   const username = event.requestContext.authorizer?.username
 
@@ -88,14 +79,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   }
 
   logger.error("Request doesn't match an action case, or session ID doesn't match an item in sessionManagement table.")
-  return {
-    statusCode: 500,
-    body: JSON.stringify({"message": "A system error has occurred"}),
-    headers: {
-      "Content-Type": "application/json",
-      "Cache-Control": "no-cache"
-    }
-  }
+  return payloadValue({"message": "Session expired or invalid. Please log in again.", restartLogin: true}, 401)
 }
 
 export const handler = middy(lambdaHandler)
