@@ -35,36 +35,37 @@
         "packages/common/dynamoFunctions",
         "packages/trackerUserInfoLambda",
         "packages/CIS2SignOutLambda",
-        "packages/selectedRoleLambda"
+        "packages/selectedRoleLambda",
+        "packages/testingSupport/clearActiveSessions"
     ],
     "devDependencies": {
-        "@eslint/js": "^9.30.1",
-        "@jest/globals": "^30.0.4",
+        "@eslint/js": "^9.34.0",
+        "@jest/globals": "^30.1.1",
         "@semantic-release/changelog": "^6.0.3",
         "@semantic-release/release-notes-generator": "^14.0.3",
         "@types/jest": "^30.0.0",
-        "@types/node": "^24.0.10",
-        "@typescript-eslint/eslint-plugin": "^8.34.0",
-        "@typescript-eslint/parser": "^8.35.0",
+        "@types/node": "^24.3.0",
+        "@typescript-eslint/eslint-plugin": "^8.40.0",
+        "@typescript-eslint/parser": "^8.40.0",
         "aws-sdk-client-mock": "^4.1.0",
-        "eslint": "^9.30.1",
-        "eslint-config-prettier": "^10.1.5",
+        "eslint": "^9.34.0",
+        "eslint-config-prettier": "^10.1.8",
         "eslint-plugin-import-newlines": "^1.3.4",
-        "eslint-plugin-prettier": "^5.5.1",
+        "eslint-plugin-prettier": "^5.5.4",
         "eslint-plugin-react": "^7.37.5",
         "globals": "^16.3.0",
-        "jest": "^30.0.4",
-        "jest-environment-jsdom": "^30.0.4",
+        "jest": "^30.1.1",
+        "jest-environment-jsdom": "^30.0.5",
         "jest-junit": "^16.0.0",
         "license-checker": "^25.0.1",
-        "semantic-release": "^24.2.6",
-        "ts-jest": "^29.4.0",
+        "semantic-release": "^24.2.7",
+        "ts-jest": "^29.4.1",
         "ts-node": "^10.9.2",
         "typescript": "^5.8.3",
-        "typescript-eslint": "^8.35.1"
+        "typescript-eslint": "^8.41.0"
     },
     "dependencies": {
         "conventional-changelog-eslint": "^6.0.0",
-        "esbuild": "^0.25.5"
+        "esbuild": "^0.25.9"
     }
 }

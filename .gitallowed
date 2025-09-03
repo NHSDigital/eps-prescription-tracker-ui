@@ -22,3 +22,5 @@ token: `.*{props\.cloudfrontDomain}\/api\/token`
 packages\/auth_demo\/src\/App.tsx:150
 \(token: string\)
 packages/common/authFunctions/src/cis2\.ts:.*decodeToken
+const token = jwt.decode(bearer_token, {complete: true})
+packages\/trackerUserInfoLambda\/src\/handler.ts:69

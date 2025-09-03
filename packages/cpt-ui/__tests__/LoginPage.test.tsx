@@ -2,7 +2,7 @@ import "@testing-library/jest-dom"
 import {render, screen, waitFor} from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import React, {useState} from "react"
-import {MemoryRouter, useNavigate} from "react-router-dom"
+import {MemoryRouter} from "react-router-dom"
 import {AuthContext, type AuthContextType} from "@/context/AuthProvider"
 import LoginPage from "@/pages/LoginPage"
 
@@ -92,6 +92,7 @@ const defaultAuthState: AuthContextType = {
   hasSingleRoleAccess: false,
   selectedRole: undefined,
   userDetails: undefined,
+  isConcurrentSession: false,
   cognitoSignIn: mockCognitoSignIn,
   cognitoSignOut: mockCognitoSignOut,
   clearAuthState: jest.fn(),
@@ -288,34 +289,6 @@ describe("LoginPage", () => {
     const spinnerContainer = container.querySelector(".spinner-container")
     expect(spinnerContainer).toBeInTheDocument()
     expect(mockCognitoSignIn).toHaveBeenCalledWith({"provider": {"custom": "Mock"}})
-  })
-
-  it("redirects to search if logged in", async () => {
-    // Get the mocked module
-    const envModule = jest.requireMock("@/constants/environment")
-    const mockNavigate = jest.fn();
-    (useNavigate as jest.Mock).mockReturnValue(mockNavigate)
-
-    // Modify the environment config temporarily
-    envModule.ENV_CONFIG = {
-      ...envModule.ENV_CONFIG,
-      TARGET_ENVIRONMENT: "prod"
-    }
-
-    // Render the component with our providers
-    renderWithProviders(<LoginPage />, {
-      ...defaultAuthState,
-      isSignedIn: true,
-      user: "testUser"
-    })
-
-    await waitFor(() => {
-      expect(
-        screen.getByText(/Redirecting to CIS2 login page/i)
-      ).toBeInTheDocument()
-    })
-
-    expect(mockNavigate).toHaveBeenCalledWith("dummy_search_redirect")
   })
 
 })

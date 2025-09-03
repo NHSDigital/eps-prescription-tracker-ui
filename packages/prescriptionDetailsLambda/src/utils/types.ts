@@ -60,22 +60,11 @@ export interface DoHSData {
   dispensingOrganization?: DoHSOrg | null
 }
 
-// Defines the allowed prescription intent values based on FHIR standards.
-export type PrescriptionIntent = "order" | "instance-order" | "reflex-order"
-
-/**
- * Interface to define URL mappings for FHIR extensions.
- * This helps with handling different URL formats for the same extension.
- */
-interface ExtensionUrlMappings {
-  [key: string]: Array<string>
-}
-
 /**
  * Map of canonical extension keys to their possible URLs.
  * This helps handle inconsistencies between different FHIR implementations.
  */
-export const extensionUrlMappings: ExtensionUrlMappings = {
+export const extensionUrlMappings = {
   PENDING_CANCELLATION: [
     "https://fhir.nhs.uk/StructureDefinition/Extension-PendingCancellation"
   ],
@@ -93,5 +82,8 @@ export const extensionUrlMappings: ExtensionUrlMappings = {
   ],
   TASK_BUSINESS_STATUS: [
     "https://fhir.nhs.uk/StructureDefinition/Extension-EPS-TaskBusinessStatus"
+  ],
+  PRESCRIPTION_STATUS_HISTORY: [
+    "https://fhir.nhs.uk/StructureDefinition/Extension-EPS-PrescriptionStatusHistory"
   ]
-}
+} satisfies Record<string, Array<string>>
