@@ -69,6 +69,7 @@ describe("fetchUserInfo", () => {
     oidcUserInfoEndpoint: "https://dummyauth.com/userinfo",
     userPoolIdp: "DummyPoolIdentityProvider",
     tokenMappingTableName: "dummyTable",
+    sessionManagementTableName: "dummysessiontable",
     jwksClient: client,
     oidcTokenEndpoint: "https://dummyauth.com/token"
   }
