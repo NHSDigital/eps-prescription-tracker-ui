@@ -10,6 +10,7 @@ export type TrackerUserInfoResult = {
   selectedRole: RoleDetails | undefined,
   userDetails: UserDetails | undefined,
   hasSingleRoleAccess: boolean,
+  isConcurrentSession: boolean,
   error: string | null
 }
 
@@ -20,6 +21,7 @@ export const getTrackerUserInfo = async (): Promise<TrackerUserInfoResult> => {
   let selectedRole: RoleDetails | undefined = undefined
   let userDetails: UserDetails | undefined = undefined
   let hasSingleRoleAccess: boolean = false
+  let isConcurrentSession: boolean = false
   let error: string | null = null
 
   try {
@@ -57,11 +59,17 @@ export const getTrackerUserInfo = async (): Promise<TrackerUserInfoResult> => {
     selectedRole = currentlySelectedRole
     userDetails = userInfo.user_details
     hasSingleRoleAccess = userInfo.roles_with_access.length === 1
+
+    isConcurrentSession = userInfo.is_concurrent_session || false
+
     if (userInfo.roles_with_access.length === 1 && userInfo.roles_without_access.length === 0) {
       await updateRemoteSelectedRole(userInfo.roles_with_access[0])
       selectedRole = userInfo.roles_with_access[0]
     }
 
+    if (isConcurrentSession === true) {
+      logger.info("This is a concurrent session")
+    }
   } catch (err) {
     error =
       err instanceof Error ? err.message : "Failed to fetch user info"
@@ -75,23 +83,19 @@ export const getTrackerUserInfo = async (): Promise<TrackerUserInfoResult> => {
     selectedRole,
     userDetails,
     hasSingleRoleAccess,
+    isConcurrentSession,
     error
   }
 }
 
 export const updateRemoteSelectedRole = async (newRole: RoleDetails) => {
-  try {
-    // Update selected role in the backend via the selectedRoleLambda endpoint using axios
-    const response = await http.put(
-      API_ENDPOINTS.SELECTED_ROLE,
-      {currently_selected_role: newRole}
-    )
+  // Update selected role in the backend via the selectedRoleLambda endpoint using axios
+  const response = await http.put(
+    API_ENDPOINTS.SELECTED_ROLE,
+    {currently_selected_role: newRole}
+  )
 
-    if (response.status !== 200) {
-      throw new Error("Failed to update the selected role")
-    }
-
-  } catch (error) {
-    logger.error("Error selecting role:", error)
+  if (response.status !== 200) {
+    throw new Error("Failed to update the selected role")
   }
 }

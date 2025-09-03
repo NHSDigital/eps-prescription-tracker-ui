@@ -1,6 +1,7 @@
 /* eslint-disable max-len */
 import React from "react"
-import {Tag} from "nhsuk-react-components"
+import {Tag, Table} from "nhsuk-react-components"
+import "../../styles/PrescriptionTable.scss"
 import {PrescriptionSummary} from "@cpt-ui-common/common-types/src"
 import {PrescriptionsListStrings} from "../../constants/ui-strings/PrescriptionListTabStrings"
 import {getStatusTagColour, getStatusDisplayText, formatDateForPrescriptions} from "@/helpers/statusMetadata"
@@ -37,11 +38,6 @@ const PrescriptionsListTable = ({
 
   const sortConfig = allSortConfigs[currentTabId] || initialSortConfig
 
-  const setSearchPrescriptionState = (prescriptionId: string, issueNumber: string | undefined) => {
-    searchContext.clearSearchParameters()
-    searchContext.setPrescriptionId(prescriptionId)
-    searchContext.setIssueNumber(issueNumber)
-  }
   const setSortConfigForTab = (newConfig: SortConfig) => {
     setAllSortConfigs((prev) => ({
       ...prev,
@@ -50,11 +46,11 @@ const PrescriptionsListTable = ({
   }
 
   const headings = [
-    {key: "issueDate", label: "Issue date", width: "15%"},
-    {key: "prescriptionTreatmentType", label: "Prescription type", width: "20%"},
-    {key: "statusCode", label: "Status", width: "20%"},
-    {key: "cancellationWarning", label: "Pending cancellation", width: "20%"},
-    {key: "prescriptionId", label: "Prescription ID", width: "25%"}
+    {key: "issueDate", label: "Issue date", width: "12%", headerId: "header-issue-date"},
+    {key: "prescriptionTreatmentType", label: "Prescription type", width: "20%", headerId: "header-prescription-type"},
+    {key: "statusCode", label: "Status", width: "18%", headerId: "header-status"},
+    {key: "cancellationWarning", label: "Pending cancellation", width: "20%", headerId: "header-cancellation"},
+    {key: "prescriptionId", label: "Prescription ID", width: "30%", headerId: "header-prescription-id"}
   ]
 
   const getPrescriptionTypeDisplayText = (
@@ -128,9 +124,14 @@ const PrescriptionsListTable = ({
     return Number.MIN_SAFE_INTEGER
   }
 
-  const constructLink = (
-  ): string => {
+  const constructLink = (): string => {
     return `${FRONTEND_PATHS.PRESCRIPTION_DETAILS_PAGE}`
+  }
+
+  const setSearchPrescriptionState = (prescriptionId: string, issueNumber: string | undefined) => {
+    searchContext.clearSearchParameters()
+    searchContext.setPrescriptionId(prescriptionId)
+    searchContext.setIssueNumber(issueNumber)
   }
 
   const getSortedItems = () => {
@@ -190,7 +191,7 @@ const PrescriptionsListTable = ({
     return <p className="nhsuk-body" data-testid="no-prescriptions-message">{textContent.noPrescriptionsMessage}</p>
   }
 
-  const renderTableDescription = () => {
+  const renderTableCaption = () => {
     const {testid} = textContent
 
     const intro =
@@ -206,174 +207,199 @@ const PrescriptionsListTable = ({
     )
   }
 
+  const renderHeaderCell = (heading: typeof headings[0]) => (
+    <Table.Cell
+      as="th"
+      scope="col"
+      key={heading.key}
+      id={heading.headerId}
+      width={heading.width}
+      aria-sort={
+        sortConfig.key === heading.key
+          ? (sortConfig.direction as "ascending" | "descending" | null) || "none"
+          : "none"
+      }
+      data-testid={`eps-prescription-table-header-${heading.key}`}
+    >
+      <button
+        type="button"
+        tabIndex={0}
+        className={`eps-prescription-table-sort-text ${heading.key}`}
+        aria-label={`
+          ${PRESCRIPTION_LIST_TABLE_TEXT.sortBy} ${heading.label}
+          ${sortConfig.key === heading.key && sortConfig.direction === "ascending"
+      ? "descending"
+      : "ascending"
+    }
+        `}
+        data-testid={`eps-prescription-table-sort-${heading.key}`}
+        onClick={(e) => {
+          e.preventDefault()
+          requestSort(heading.key)
+        }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault()
+            requestSort(heading.key)
+          }
+        }}
+      >
+        <span className="sort-label-text">{heading.label}</span>
+        <span className="nhsuk-u-visually-hidden">
+          {PRESCRIPTION_LIST_TABLE_TEXT.button}
+        </span>
+        {renderSortIcons(heading.key)}
+      </button>
+    </Table.Cell>
+  )
+
+  const renderDataCell = (row: PrescriptionSummary & { statusLabel: string }, key: string) => {
+    const heading = headings.find(h => h.key === key)
+    const headerId = heading?.headerId
+
+    if (key === "issueDate") {
+      return (
+        <Table.Cell
+          key={key}
+          headers={headerId}
+          className="eps-prescription-table-rows nowrap-cell"
+          data-testid="issue-date-column"
+        >
+          <div>{formatDateForPrescriptions(row.issueDate)}</div>
+        </Table.Cell>
+      )
+    }
+
+    if (key === "prescriptionTreatmentType") {
+      return (
+        <Table.Cell
+          key={key}
+          headers={headerId}
+          className="eps-prescription-table-rows prescription-type-cell"
+          data-testid="prescription-type-column"
+        >
+          <div>
+            {getPrescriptionTypeDisplayText(
+              row.prescriptionTreatmentType,
+              row.issueNumber,
+              row.maxRepeats
+            )}
+          </div>
+        </Table.Cell>
+      )
+    }
+
+    if (key === "statusCode") {
+      return (
+        <Table.Cell
+          key={key}
+          headers={headerId}
+          className="eps-prescription-table-rows"
+          data-testid="status-code-column"
+        >
+          <Tag color={getStatusTagColour(row.statusCode)}>
+            {row.statusLabel}
+          </Tag>
+        </Table.Cell>
+      )
+    }
+
+    if (key === "cancellationWarning") {
+      const showWarning =
+        row.prescriptionPendingCancellation ||
+        row.itemsPendingCancellation
+      return (
+        <Table.Cell
+          key={key}
+          headers={headerId}
+          className="eps-prescription-table-rows narrow-cancellation-column"
+          data-testid="cancellation-warning-column"
+        >
+          {showWarning ? (
+            <span>
+              <span
+                aria-hidden="true"
+                role="img"
+                className="warning-icon"
+                aria-label={PRESCRIPTION_LIST_TABLE_TEXT.warning}
+              >
+                ⚠️
+              </span>
+              {PRESCRIPTION_LIST_TABLE_TEXT.pendingCancellationItems}
+            </span>
+          ) : (
+            PRESCRIPTION_LIST_TABLE_TEXT.none
+          )}
+        </Table.Cell>
+      )
+    }
+
+    if (key === "prescriptionId") {
+      return (
+        <Table.Cell
+          key={key}
+          headers={headerId}
+          className="eps-prescription-table-rows"
+        >
+          <div className="eps-prescription-id">
+            {row.prescriptionId}
+          </div>
+          <div>
+            {row.isDeleted ? (
+              <span
+                data-testid={`unavailable-text-${row.prescriptionId}`}
+              >
+                {PRESCRIPTION_LIST_TABLE_TEXT.unavailableText}
+              </span>
+            ) : (
+              <Link
+                to={constructLink()}
+                className="nhsuk-link"
+                data-testid={`view-prescription-link-${row.prescriptionId}`}
+                onClick={() => setSearchPrescriptionState(row.prescriptionId, row.issueNumber?.toString())}
+              >
+                {PRESCRIPTION_LIST_TABLE_TEXT.viewPrescription}
+              </Link>
+            )}
+          </div>
+        </Table.Cell>
+      )
+    }
+
+    return null
+  }
+
   return (
     <div
       className="eps-prescription-table-container"
       data-testid="eps-prescription-table-container"
     >
-      <table
+      <Table
         className="eps-prescription-table"
         data-testid={`${textContent.testid}-prescriptions-results-table`}
       >
-        {renderTableDescription()}
+        {renderTableCaption()}
 
-        <thead>
-          <tr>
-            {headings.map((heading) => (
-              <th
-                key={heading.key}
-                role="columnheader"
-                aria-sort={
-                  sortConfig.key === heading.key
-                    ? (sortConfig.direction as "ascending" | "descending" | null) || "none"
-                    : "none"
-                }
-                onClick={(e) => {
-                  e.preventDefault()
-                  requestSort(heading.key)
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault()
-                    requestSort(heading.key)
-                  }
-                }}
-                data-testid={`eps-prescription-table-header-${heading.key}`}
-                style={{width: heading.width}}
-              >
-                <span
-                  role="button"
-                  tabIndex={0}
-                  className={`eps-prescription-table-sort-text ${heading.key}`}
-                  aria-label={`
-                    ${PRESCRIPTION_LIST_TABLE_TEXT.sortBy} ${heading.label}
-                    ${sortConfig.key === heading.key && sortConfig.direction === "ascending"
-                ? "descending"
-                : "ascending"
-              }
-                  `}
-                  data-testid={`eps-prescription-table-sort-${heading.key}`}
-                >
-                  <span className="sort-label-text">{heading.label}</span>
-                  <span className="nhsuk-u-visually-hidden">
-                    {PRESCRIPTION_LIST_TABLE_TEXT.button}
-                  </span>
-                  {renderSortIcons(heading.key)}
-                </span>
-              </th>
-            ))}
-          </tr>
-        </thead>
+        <Table.Head>
+          <Table.Row>
+            {headings.map(renderHeaderCell)}
+          </Table.Row>
+        </Table.Head>
 
-        <tbody>
-          {getSortedItems().map((row, index) => (
-            <tr key={index} data-testid="eps-prescription-table-row">
-              {headings.map(({key}) => {
-                if (key === "issueDate") {
-                  return (
-                    <td
-                      key={key}
-                      className="eps-prescription-table-rows nowrap-cell"
-                      data-testid="issue-date-column"
-                    >
-                      <div>{formatDateForPrescriptions(row.issueDate)}</div>
-                    </td>
-                  )
-                }
+        <Table.Body>
+          {getSortedItems().map((row) => {
+            // creates unique key combining prescriptionId and issueNumber for ERD prescriptions
+            const uniqueKey = `${row.prescriptionId}-${row.issueNumber ?? 1}`
 
-                if (key === "prescriptionTreatmentType") {
-                  return (
-                    <td
-                      key={key}
-                      className="eps-prescription-table-rows"
-                      data-testid="prescription-type-column"
-                    >
-                      <div>
-                        {getPrescriptionTypeDisplayText(
-                          row.prescriptionTreatmentType,
-                          row.issueNumber,
-                          row.maxRepeats
-                        )}
-                      </div>
-                    </td>
-                  )
-                }
+            return (
+              <Table.Row key={uniqueKey} data-testid="eps-prescription-table-row">
+                {headings.map(({key}) => renderDataCell(row, key))}
+              </Table.Row>
+            )
+          })}
+        </Table.Body>
 
-                if (key === "statusCode") {
-                  return (
-                    <td
-                      key={key}
-                      className="eps-prescription-table-rows"
-                      data-testid="status-code-column"
-                    >
-                      <Tag color={getStatusTagColour(row.statusCode)}>
-                        {row.statusLabel}
-                      </Tag>
-                    </td>
-                  )
-                }
-
-                if (key === "cancellationWarning") {
-                  const showWarning =
-                    row.prescriptionPendingCancellation ||
-                    row.itemsPendingCancellation
-                  return (
-                    <td
-                      key={key}
-                      className="eps-prescription-table-rows narrow-cancellation-column"
-                      data-testid="cancellation-warning-column"
-                    >
-                      {showWarning ? (
-                        <span>
-                          <span
-                            aria-hidden="true"
-                            role="img"
-                            className="warning-icon"
-                            aria-label={PRESCRIPTION_LIST_TABLE_TEXT.warning}
-                          >
-                            ⚠️
-                          </span>
-                          {PRESCRIPTION_LIST_TABLE_TEXT.pendingCancellationItems}
-                        </span>
-                      ) : (
-                        PRESCRIPTION_LIST_TABLE_TEXT.none
-                      )}
-                    </td>
-                  )
-                }
-
-                if (key === "prescriptionId") {
-                  return (
-                    <td key={key} className="eps-prescription-table-rows">
-                      <div className="eps-prescription-id">
-                        {row.prescriptionId}
-                      </div>
-                      <div>
-                        {row.isDeleted ? (
-                          <span
-                            data-testid={`unavailable-text-${row.prescriptionId}`}
-                          >
-                            {PRESCRIPTION_LIST_TABLE_TEXT.unavailableText}
-                          </span>
-                        ) : (
-                          <Link
-                            onClick={async () => setSearchPrescriptionState(row.prescriptionId, row.issueNumber?.toString())}
-                            to={constructLink()}
-                            className="nhsuk-link"
-                            data-testid={`view-prescription-link-${row.prescriptionId}`}
-                          >
-                            {PRESCRIPTION_LIST_TABLE_TEXT.viewPrescription}
-                          </Link>
-                        )}
-                      </div>
-                    </td>
-                  )
-                }
-
-                return null
-              })}
-            </tr>
-          ))}
+        <tfoot>
           <tr>
             <td
               colSpan={headings.length}
@@ -385,8 +411,8 @@ const PrescriptionsListTable = ({
               {PRESCRIPTION_LIST_TABLE_TEXT.of} {initialPrescriptions.length}
             </td>
           </tr>
-        </tbody>
-      </table>
+        </tfoot>
+      </Table>
     </div>
   )
 }

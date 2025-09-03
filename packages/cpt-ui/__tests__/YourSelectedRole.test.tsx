@@ -36,10 +36,12 @@ describe("YourSelectedRolePage", () => {
       hasNoAccess: false,
       hasSingleRoleAccess: false,
       userDetails: undefined,
+      isConcurrentSession: false,
       cognitoSignIn: jest.fn(),
       cognitoSignOut: jest.fn(),
       clearAuthState: jest.fn(),
-      updateSelectedRole: jest.fn()
+      updateSelectedRole: jest.fn(),
+      forceCognitoLogout: jest.fn()
     })
 
     renderComponent()
@@ -65,10 +67,12 @@ describe("YourSelectedRolePage", () => {
       hasNoAccess: false,
       hasSingleRoleAccess: false,
       userDetails: undefined,
+      isConcurrentSession: false,
       cognitoSignIn: jest.fn(),
       cognitoSignOut: jest.fn(),
       clearAuthState: jest.fn(),
-      updateSelectedRole: jest.fn()
+      updateSelectedRole: jest.fn(),
+      forceCognitoLogout: jest.fn()
     })
 
     renderComponent()
@@ -89,10 +93,12 @@ describe("YourSelectedRolePage", () => {
       hasNoAccess: false,
       hasSingleRoleAccess: false,
       userDetails: undefined,
+      isConcurrentSession: false,
       cognitoSignIn: jest.fn(),
       cognitoSignOut: jest.fn(),
       clearAuthState: jest.fn(),
-      updateSelectedRole: jest.fn()
+      updateSelectedRole: jest.fn(),
+      forceCognitoLogout: jest.fn()
     })
 
     renderComponent()
@@ -113,10 +119,12 @@ describe("YourSelectedRolePage", () => {
       hasNoAccess: false,
       hasSingleRoleAccess: false,
       userDetails: undefined,
+      isConcurrentSession: false,
       cognitoSignIn: jest.fn(),
       cognitoSignOut: jest.fn(),
       clearAuthState: jest.fn(),
-      updateSelectedRole: jest.fn()
+      updateSelectedRole: jest.fn(),
+      forceCognitoLogout: jest.fn()
     })
 
     renderComponent()
@@ -140,10 +148,12 @@ describe("YourSelectedRolePage", () => {
       hasNoAccess: false,
       hasSingleRoleAccess: false,
       userDetails: undefined,
+      isConcurrentSession: false,
       cognitoSignIn: jest.fn(),
       cognitoSignOut: jest.fn(),
       clearAuthState: jest.fn(),
-      updateSelectedRole: jest.fn()
+      updateSelectedRole: jest.fn(),
+      forceCognitoLogout: jest.fn()
     })
 
     // Setup MemoryRouter with initial entry at the page, and a dummy route for /search-by-prescription-id
@@ -175,10 +185,12 @@ describe("YourSelectedRolePage", () => {
       hasNoAccess: false,
       hasSingleRoleAccess: false,
       userDetails: undefined,
+      isConcurrentSession: false,
       cognitoSignIn: jest.fn(),
       cognitoSignOut: jest.fn(),
       clearAuthState: jest.fn(),
-      updateSelectedRole: jest.fn()
+      updateSelectedRole: jest.fn(),
+      forceCognitoLogout: jest.fn()
     })
 
     renderComponent()

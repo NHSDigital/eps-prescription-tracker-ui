@@ -55,9 +55,9 @@ export default function PrescriptionListPage() {
 
       // determine which search page to go back to based on query parameters
       if (searchContext.prescriptionId) {
-        searchParams.append("prescriptionId", encodeURIComponent(searchContext.prescriptionId))
+        searchParams.append("prescriptionId", searchContext.prescriptionId)
       } else if (searchContext.nhsNumber) {
-        searchParams.append("nhsNumber", encodeURIComponent(searchContext.nhsNumber))
+        searchParams.append("nhsNumber", searchContext.nhsNumber)
       } else {
         logger.error("No query parameter provided.")
         setLoading(false)
@@ -119,8 +119,15 @@ export default function PrescriptionListPage() {
         setLoading(false)
       } catch (err) {
         logger.error("Error during search", err)
-        if (axios.isAxiosError(err) && (err.response?.status === 404)) {
-          setShowNotFound(true)
+        if (axios.isAxiosError(err)) {
+          if ((err.response?.status === 401) && err.response.data?.restartLogin) {
+            navigate(FRONTEND_PATHS.LOGIN)
+            return
+          } else if (err.response?.status === 404) {
+            setShowNotFound(true)
+          } else {
+            setError(true)
+          }
         } else if (err instanceof Error && err.message === "canceled") {
           navigate(FRONTEND_PATHS.LOGIN)
           return

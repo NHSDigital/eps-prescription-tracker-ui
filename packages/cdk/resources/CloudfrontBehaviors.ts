@@ -9,7 +9,8 @@ import {
   IOrigin,
   KeyValueStore,
   OriginRequestPolicy,
-  ViewerProtocolPolicy
+  ViewerProtocolPolicy,
+  ResponseHeadersPolicy
 } from "aws-cdk-lib/aws-cloudfront"
 import {RestApiOrigin} from "aws-cdk-lib/aws-cloudfront-origins"
 
@@ -26,6 +27,7 @@ export interface CloudfrontBehaviorsProps {
   readonly oauth2GatewayOrigin: RestApiOrigin
   readonly oauth2GatewayRequestPolicy: OriginRequestPolicy
   readonly staticContentBucketOrigin: IOrigin
+  readonly responseHeadersPolicy: ResponseHeadersPolicy
 }
 
 /**
@@ -38,7 +40,9 @@ export class CloudfrontBehaviors extends Construct{
   public readonly s3404UriRewriteFunction: CloudfrontFunction
   public readonly s3404ModifyStatusCodeFunction: CloudfrontFunction
   public readonly s3StaticContentUriRewriteFunction: CloudfrontFunction
+  public readonly s3StaticContentRootSlashRedirect: CloudfrontFunction
   public readonly keyValueStore: KeyValueStore
+  public readonly responseHeadersPolicy: ResponseHeadersPolicy
 
   public constructor(scope: Construct, id: string, props: CloudfrontBehaviorsProps){
     super(scope, id)
@@ -175,6 +179,15 @@ export class CloudfrontBehaviors extends Construct{
     on how many can be created simultaneously */
     s3JwksUriRewriteFunction.node.addDependency(oauth2GatewayStripPathFunction)
 
+    const s3StaticContentRootSlashRedirect = new CloudfrontFunction(this, "s3StaticContentRootSlashRedirect", {
+      functionName: `${props.serviceName}-s3StaticContentRootSlashRedirect`,
+      sourceFileName: "s3StaticContentRootSlashRedirect.js"
+    })
+
+    /* Add dependency on previous function to force them to build one by one to avoid aws limits
+    on how many can be created simultaneously */
+    s3StaticContentRootSlashRedirect.node.addDependency(s3JwksUriRewriteFunction)
+
     const additionalBehaviors = {
       "/site*": {
         origin: props.staticContentBucketOrigin,
@@ -185,7 +198,8 @@ export class CloudfrontBehaviors extends Construct{
             function: s3StaticContentUriRewriteFunction.function,
             eventType: FunctionEventType.VIEWER_REQUEST
           }
-        ]
+        ],
+        responseHeadersPolicy: this.responseHeadersPolicy
       },
       "/api/*": {
         origin: props.apiGatewayOrigin,
@@ -198,7 +212,8 @@ export class CloudfrontBehaviors extends Construct{
             function: apiGatewayStripPathFunction.function,
             eventType: FunctionEventType.VIEWER_REQUEST
           }
-        ]
+        ],
+        responseHeadersPolicy: this.responseHeadersPolicy
       },
       "/oauth2/*": {
         origin: props.oauth2GatewayOrigin,
@@ -211,7 +226,8 @@ export class CloudfrontBehaviors extends Construct{
             function: oauth2GatewayStripPathFunction.function,
             eventType: FunctionEventType.VIEWER_REQUEST
           }
-        ]
+        ],
+        responseHeadersPolicy: this.responseHeadersPolicy
       },
       "/jwks/": {/* matches exactly <url>/jwks and will only serve the jwks json (via cf function) */
         origin: props.staticContentBucketOrigin,
@@ -222,7 +238,8 @@ export class CloudfrontBehaviors extends Construct{
             function: s3JwksUriRewriteFunction.function,
             eventType: FunctionEventType.VIEWER_REQUEST
           }
-        ]
+        ],
+        responseHeadersPolicy: this.responseHeadersPolicy
       },
       "/500.html": { // matches exactly <url>/500.html and will only serve the 500.html page (via cf function)
         origin: props.staticContentBucketOrigin,
@@ -233,13 +250,23 @@ export class CloudfrontBehaviors extends Construct{
             function: s3500UriRewriteFunction.function,
             eventType: FunctionEventType.VIEWER_REQUEST
           }
-        ]
+        ],
+        responseHeadersPolicy: this.responseHeadersPolicy
       },
-
       "/404.css": {
         origin: props.staticContentBucketOrigin,
+        allowedMethods: AllowedMethods.ALLOW_GET_HEAD_OPTIONS
+      },
+      "/*": { // This rule must be the least priority, to ensure defined path matching can work.
+        origin: props.staticContentBucketOrigin,
         allowedMethods: AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
-        viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS
+        viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+        functionAssociations: [
+          {
+            function: s3StaticContentRootSlashRedirect.function,
+            eventType: FunctionEventType.VIEWER_REQUEST
+          }
+        ]
       }
     }
 
@@ -248,6 +275,7 @@ export class CloudfrontBehaviors extends Construct{
     this.s3404UriRewriteFunction = s3404UriRewriteFunction
     this.s3404ModifyStatusCodeFunction = s3404ModifyStatusCodeFunction
     this.s3StaticContentUriRewriteFunction = s3StaticContentUriRewriteFunction
+    this.s3StaticContentRootSlashRedirect = s3StaticContentRootSlashRedirect
     this.keyValueStore = keyValueStore
   }
 }

@@ -6,7 +6,12 @@ import React, {
 } from "react"
 import {Amplify} from "aws-amplify"
 import {Hub} from "aws-amplify/utils"
-import {signInWithRedirect, signOut, SignInWithRedirectInput} from "aws-amplify/auth"
+import {
+  signInWithRedirect,
+  signOut,
+  SignInWithRedirectInput,
+  deleteUser
+} from "aws-amplify/auth"
 import {authConfig} from "./configureAmplify"
 
 import {useLocalStorageState} from "@/helpers/useLocalStorageState"
@@ -24,6 +29,7 @@ export interface AuthContextType {
   user: string | null
   isSignedIn: boolean
   isSigningIn: boolean
+  isConcurrentSession: boolean
   rolesWithAccess: Array<RoleDetails>
   rolesWithoutAccess: Array<RoleDetails>
   hasNoAccess: boolean
@@ -34,6 +40,7 @@ export interface AuthContextType {
   cognitoSignOut: () => Promise<void>
   clearAuthState: () => void
   updateSelectedRole: (value: RoleDetails) => Promise<void>
+  forceCognitoLogout: () => Promise<void>
 }
 
 export const AuthContext = createContext<AuthContextType | null>(null)
@@ -43,6 +50,8 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
   const [user, setUser] = useLocalStorageState<string | null>("user", "user", null)
   const [isSignedIn, setIsSignedIn] = useLocalStorageState<boolean>("isSignedIn", "isSignedIn", false)
   const [isSigningIn, setIsSigningIn] = useLocalStorageState<boolean>("isSigningIn", "isSigningIn", false)
+  const [isConcurrentSession, setIsConcurrentSession] = useLocalStorageState<boolean>(
+    "isConcurrentSession", "isConcurrentSession", false)
   const [rolesWithAccess, setRolesWithAccess] = useLocalStorageState<Array<RoleDetails>>(
     "rolesWithAccess", "rolesWithAccess", [])
   const [rolesWithoutAccess, setRolesWithoutAccess] = useLocalStorageState<Array<RoleDetails>>(
@@ -83,7 +92,19 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
     setUser(null)
     setIsSignedIn(false)
     setIsSigningIn(false)
+    setIsConcurrentSession(false)
   }
+
+  const forceCognitoLogout = async () => {
+    try {
+      logger.info("forcing cognito logout")
+      await deleteUser()
+    } catch (err) {
+      logger.error("Error in cognito signout", {err})
+    }
+    logger.info("completed signout")
+  }
+
   /**
    * Set up Hub listener to react to auth events
    */
@@ -103,6 +124,8 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
           setUserDetails(trackerUserInfo.userDetails)
           setHasSingleRoleAccess(trackerUserInfo.hasSingleRoleAccess)
           setError(trackerUserInfo.error)
+
+          setIsConcurrentSession(trackerUserInfo.isConcurrentSession)
 
           setIsSignedIn(true)
           setIsSigningIn(false)
@@ -205,10 +228,12 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
       hasSingleRoleAccess,
       selectedRole,
       userDetails,
+      isConcurrentSession,
       cognitoSignIn,
       cognitoSignOut,
       clearAuthState,
-      updateSelectedRole
+      updateSelectedRole,
+      forceCognitoLogout
     }}>
       {children}
     </AuthContext.Provider>

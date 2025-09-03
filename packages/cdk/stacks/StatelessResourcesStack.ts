@@ -14,7 +14,10 @@ import {
   OriginRequestHeaderBehavior,
   OriginRequestPolicy,
   OriginRequestQueryStringBehavior,
-  ViewerProtocolPolicy
+  ViewerProtocolPolicy,
+  ResponseHeadersPolicy,
+  HeadersReferrerPolicy,
+  HeadersFrameOption
 } from "aws-cdk-lib/aws-cloudfront"
 import {RestApiOrigin, S3BucketOrigin} from "aws-cdk-lib/aws-cloudfront-origins"
 import {Bucket} from "aws-cdk-lib/aws-s3"
@@ -107,6 +110,15 @@ export class StatelessResourcesStack extends Stack {
     const tokenMappingTableWritePolicyImport = Fn.importValue(`${baseImportPath}:tokenMappingTableWritePolicy:Arn`)
     const useTokensMappingKmsKeyPolicyImport = Fn.importValue(`${baseImportPath}:useTokensMappingKmsKeyPolicy:Arn`)
 
+    // Session management user info table
+    const sessionManagementTableImport = Fn.importValue(`${baseImportPath}:sessionManagementTable:Arn`)
+    const sessionManagementTableReadPolicyImport =
+    Fn.importValue(`${baseImportPath}:sessionManagementTableReadPolicy:Arn`)
+    const sessionManagementTableWritePolicyImport =
+    Fn.importValue(`${baseImportPath}:sessionManagementTableWritePolicy:Arn`)
+    const useSessionManagementKmsKeyPolicyImport =
+    Fn.importValue(`${baseImportPath}:useSessionManagementTableKmsKeyPolicy:Arn`)
+
     // Login proxy state cache
     const stateMappingTableImport = Fn.importValue(`${baseImportPath}:stateMappingTable:Arn`)
     const stateMappingTableReadPolicyImport = Fn.importValue(`${baseImportPath}:stateMappingTableReadPolicy:Arn`)
@@ -137,6 +149,7 @@ export class StatelessResourcesStack extends Stack {
     // Coerce context and imports to relevant types
     const staticContentBucket = Bucket.fromBucketArn(this, "StaticContentBucket", staticContentBucketImport)
 
+    // Token mapping table
     const tokenMappingTable = TableV2.fromTableArn(this, "tokenMappingTable", tokenMappingTableImport)
     const tokenMappingTableReadPolicy = ManagedPolicy.fromManagedPolicyArn(
       this, "tokenMappingTableReadPolicy", tokenMappingTableReadPolicyImport)
@@ -145,6 +158,18 @@ export class StatelessResourcesStack extends Stack {
     const useTokensMappingKmsKeyPolicy = ManagedPolicy.fromManagedPolicyArn(
       this, "useTokensMappingKmsKeyPolicy", useTokensMappingKmsKeyPolicyImport)
 
+    // Session management table
+    const sessionManagementTable = TableV2.fromTableArn(this, "sessionManagementTable", sessionManagementTableImport)
+    const sessionManagementTableReadPolicy = ManagedPolicy.fromManagedPolicyArn(
+      this, "sessionManagementTableReadPolicy", sessionManagementTableReadPolicyImport)
+
+    const sessionManagementTableWritePolicy = ManagedPolicy.fromManagedPolicyArn(
+      this, "sessionManagementTableWritePolicy", sessionManagementTableWritePolicyImport)
+
+    const useSessionManagementKmsKeyPolicy = ManagedPolicy.fromManagedPolicyArn(
+      this, "useSessionManagementTableKmsKeyPolicy", useSessionManagementKmsKeyPolicyImport)
+
+    // State mapping table
     const stateMappingTable = TableV2.fromTableArn(this, "stateMappingTable", stateMappingTableImport)
     const stateMappingTableReadPolicy = ManagedPolicy.fromManagedPolicyArn(
       this, "stateMappingTableReadPolicy", stateMappingTableReadPolicyImport)
@@ -153,6 +178,7 @@ export class StatelessResourcesStack extends Stack {
     const useStateMappingKmsKeyPolicy = ManagedPolicy.fromManagedPolicyArn(
       this, "useStateMappingKmsKeyPolicy", useStateMappingKmsKeyPolicyImport)
 
+    // Session state mapping table
     const sessionStateMappingTable = TableV2.fromTableArn(
       this, "sessionStateMappingTable", sessionStateMappingTableImport)
     const sessionStateMappingTableReadPolicy = ManagedPolicy.fromManagedPolicyArn(
@@ -222,6 +248,11 @@ export class StatelessResourcesStack extends Stack {
       tokenMappingTableReadPolicy,
       useTokensMappingKmsKeyPolicy,
 
+      sessionManagementTable,
+      sessionManagementTableWritePolicy,
+      sessionManagementTableReadPolicy,
+      useSessionManagementKmsKeyPolicy,
+
       stateMappingTable,
       stateMappingTableWritePolicy,
       stateMappingTableReadPolicy,
@@ -259,7 +290,11 @@ export class StatelessResourcesStack extends Stack {
       tokenMappingTable: tokenMappingTable,
       tokenMappingTableWritePolicy: tokenMappingTableWritePolicy,
       tokenMappingTableReadPolicy: tokenMappingTableReadPolicy,
+      sessionManagementTable: sessionManagementTable,
+      sessionManagementTableWritePolicy: sessionManagementTableWritePolicy,
+      sessionManagementTableReadPolicy: sessionManagementTableReadPolicy,
       useTokensMappingKmsKeyPolicy: useTokensMappingKmsKeyPolicy,
+      useSessionManagementKmsKeyPolicy: useSessionManagementKmsKeyPolicy,
       primaryPoolIdentityProviderName: primaryPoolIdentityProviderName,
       mockPoolIdentityProviderName: mockPoolIdentityProviderName,
       logRetentionInDays: logRetentionInDays,
@@ -340,7 +375,9 @@ export class StatelessResourcesStack extends Stack {
       trackerUserInfoLambda: apiFunctions.trackerUserInfoLambda,
       selectedRoleLambda: apiFunctions.selectedRoleLambda,
       patientSearchLambda: apiFunctions.patientSearchLambda,
-      authorizer: apiGateway.authorizer
+      authorizer: apiGateway.authorizer,
+      clearActiveSessionLambda: apiFunctions.clearActiveSessionLambda,
+      useMockOidc: useMockOidc
     })
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -399,6 +436,49 @@ export class StatelessResourcesStack extends Stack {
     })
 
     // --- CloudfrontBehaviors
+    const responseHeadersPolicy = new ResponseHeadersPolicy(this, "CustomSecurityHeadersPolicy", {
+      responseHeadersPolicyName: `${props.serviceName}-CustomSecurityHeaders`,
+      comment: "Security headers policy with inclusion of CSP",
+      securityHeadersBehavior: {
+        contentSecurityPolicy: {
+          contentSecurityPolicy: "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; \
+          object-src 'none'; base-uri 'self'; frame-ancestors 'none';",
+          override: true
+        },
+        strictTransportSecurity: {
+          accessControlMaxAge: Duration.days(365),
+          includeSubdomains: true,
+          preload: true,
+          override: true
+        },
+        contentTypeOptions: {
+          override: true
+        },
+        frameOptions: {
+          frameOption: HeadersFrameOption.DENY,
+          override: true
+        },
+        referrerPolicy: {
+          referrerPolicy: HeadersReferrerPolicy.NO_REFERRER,
+          override: true
+        },
+        xssProtection: {
+          protection: true,
+          modeBlock: true,
+          override: true
+        }
+      },
+      customHeadersBehavior: {
+        customHeaders: [
+          {
+            header: "Permissions-Policy",
+            value: "camera=(), microphone=(), geolocation=()",
+            override: true
+          }
+        ]
+      }
+    })
+
     const cloudfrontBehaviors = new CloudfrontBehaviors(this, "CloudfrontBehaviors", {
       serviceName: props.serviceName,
       stackName: props.stackName,
@@ -406,7 +486,8 @@ export class StatelessResourcesStack extends Stack {
       apiGatewayRequestPolicy: apiGatewayRequestPolicy,
       oauth2GatewayOrigin: oauth2GatewayOrigin,
       oauth2GatewayRequestPolicy: oauth2GatewayRequestPolicy,
-      staticContentBucketOrigin: staticContentBucketOrigin
+      staticContentBucketOrigin: staticContentBucketOrigin,
+      responseHeadersPolicy: responseHeadersPolicy
     })
 
     // --- Distribution
@@ -431,7 +512,8 @@ export class StatelessResourcesStack extends Stack {
             function: cloudfrontBehaviors.s3404ModifyStatusCodeFunction.function,
             eventType: FunctionEventType.VIEWER_RESPONSE
           }
-        ]
+        ],
+        responseHeadersPolicy: responseHeadersPolicy
       },
       additionalBehaviors: cloudfrontBehaviors.additionalBehaviors,
       errorResponses: [

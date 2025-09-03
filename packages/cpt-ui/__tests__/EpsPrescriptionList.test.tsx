@@ -12,7 +12,7 @@ import {PrescriptionStatus, SearchResponse, TreatmentType} from "@cpt-ui-common/
 
 import {MockPatientDetailsProvider} from "../__mocks__/MockPatientDetailsProvider"
 
-import {AxiosError, AxiosRequestHeaders} from "axios"
+import {AxiosError, AxiosHeaders, AxiosRequestHeaders} from "axios"
 
 import axios from "@/helpers/axios"
 import {logger} from "@/helpers/logger"
@@ -39,10 +39,12 @@ const signedInAuthState: AuthContextType = {
   hasSingleRoleAccess: false,
   selectedRole: undefined,
   userDetails: undefined,
+  isConcurrentSession: false,
   cognitoSignIn: mockCognitoSignIn,
   cognitoSignOut: mockCognitoSignOut,
   clearAuthState: jest.fn(),
-  updateSelectedRole: jest.fn()
+  updateSelectedRole: jest.fn(),
+  forceCognitoLogout: jest.fn()
 }
 
 const mockClearSearchParameters = jest.fn()
@@ -203,6 +205,7 @@ const renderWithRouter = (
           <MemoryRouter initialEntries={[route]}>
             <Routes>
               <Route path="*" element={<Dummy404 />} />
+              <Route path={FRONTEND_PATHS.LOGIN} element={<div data-testid="login-page-shown" />} />
               <Route path={FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT} element={<PrescriptionListPage />} />
               <Route path={FRONTEND_PATHS.PRESCRIPTION_LIST_PAST} element={<PrescriptionListPage />} />
               <Route path={FRONTEND_PATHS.PRESCRIPTION_LIST_FUTURE} element={<PrescriptionListPage />} />
@@ -287,6 +290,32 @@ describe("PrescriptionListPage", () => {
       // Check that the component renders the prescription results list container
       const resultsListContainer = screen.getByTestId("prescription-results-list")
       expect(resultsListContainer).toBeInTheDocument()
+    })
+  })
+
+  it("handles expired session by redirecting to login page", async () => {
+    const headers = new AxiosHeaders({})
+    mockedAxios.get.mockRejectedValue(new AxiosError(undefined, undefined, undefined, undefined,
+      {
+        status: 401,
+        statusText: "Unauthorized",
+        headers,
+        config: {headers},
+        data: {message: "Session expired or invalid. Please log in again.", restartLogin: true}
+      }
+    ))
+
+    renderWithRouter(
+      FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT,
+      signedInAuthState,
+      {
+        ...defaultSearchState,
+        prescriptionId: "C0C757-A83008-C2D93O"
+      }
+    )
+
+    await waitFor(() => {
+      expect(screen.getByTestId("login-page-shown")).toBeInTheDocument()
     })
   })
 

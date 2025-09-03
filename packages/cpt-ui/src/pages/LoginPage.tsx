@@ -1,4 +1,4 @@
-import React, {useEffect, useCallback} from "react"
+import React, {useEffect} from "react"
 import {Container, Col, Row} from "nhsuk-react-components"
 
 import {useAuth} from "@/context/AuthProvider"
@@ -6,27 +6,21 @@ import {useAuth} from "@/context/AuthProvider"
 import EpsSpinner from "@/components/EpsSpinner"
 import {EpsLoginPageStrings} from "@/constants/ui-strings/EpsLoginPageStrings"
 
-import {
-  ENV_CONFIG,
-  FRONTEND_PATHS,
-  MOCK_AUTH_ALLOWED_ENVIRONMENTS,
-  type Environment,
-  type MockAuthEnvironment
-} from "@/constants/environment"
+import {AUTO_LOGIN_ENVIRONMENTS, ENV_CONFIG, type Environment} from "@/constants/environment"
 import {Button} from "@/components/ReactRouterButton"
 import {logger} from "@/helpers/logger"
-import {useNavigate} from "react-router-dom"
 
 export default function LoginPage() {
   const auth = useAuth()
-  const navigate = useNavigate()
 
   const target_environment: string =
     ENV_CONFIG.TARGET_ENVIRONMENT as Environment
+  const isAutoLoginEnvironment = AUTO_LOGIN_ENVIRONMENTS.map(x => x.environment).includes(target_environment)
 
   const mockSignIn = async () => {
     logger.info("Signing in (Mock)", auth)
     auth.clearAuthState()
+    await auth.forceCognitoLogout()
     await auth?.cognitoSignIn({
       provider: {
         custom: "Mock"
@@ -34,16 +28,17 @@ export default function LoginPage() {
     })
   }
 
-  const signIn = useCallback(async () => {
+  const cis2SignIn = async () => {
     logger.info("Signing in (Primary)", auth)
     auth.clearAuthState()
+    await auth.forceCognitoLogout()
     await auth?.cognitoSignIn({
       provider: {
         custom: "Primary"
       }
     })
     logger.info("Signed in: ", auth)
-  }, [auth])
+  }
 
   const signOut = async () => {
     logger.info("Signing out", auth)
@@ -57,26 +52,20 @@ export default function LoginPage() {
       target_environment
     )
 
-    if (
-      !MOCK_AUTH_ALLOWED_ENVIRONMENTS.includes(
-        target_environment as MockAuthEnvironment
-      )
-    ) {
-      if (!auth?.isSignedIn) {
+    if (isAutoLoginEnvironment) {
+      logger.info("performing auto login")
+      const autoLoginDetails = AUTO_LOGIN_ENVIRONMENTS.find(x => x.environment === target_environment)
+      if (autoLoginDetails?.loginMethod === "cis2") {
         logger.info("Redirecting user to cis2 login")
-        signIn()
+        cis2SignIn()
       } else {
-        logger.info("User is already signed in - redirecting to search")
-        navigate(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
+        logger.info("Redirecting user to mock login")
+        mockSignIn()
       }
     }
-  }, [auth, signIn, target_environment])
+  }, [])
 
-  if (
-    !MOCK_AUTH_ALLOWED_ENVIRONMENTS.includes(
-      target_environment as MockAuthEnvironment
-    )
-  ) {
+  if (isAutoLoginEnvironment) {
     return (
       <main className="nhsuk-main-wrapper">
         <Container>
@@ -117,7 +106,7 @@ export default function LoginPage() {
 
         <Row>
           <Col width="full">
-            <Button id="primary-signin" style={{margin: "8px"}} onClick={signIn}>Log in with PTL CIS2</Button>
+            <Button id="primary-signin" style={{margin: "8px"}} onClick={cis2SignIn}>Log in with PTL CIS2</Button>
             <Button id="mock-signin" style={{margin: "8px"}} onClick={mockSignIn}>Log in with mock CIS2</Button>
             <Button id="signout" style={{margin: "8px"}} onClick={signOut}>Sign Out</Button>
 

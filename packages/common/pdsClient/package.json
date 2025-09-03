@@ -14,17 +14,17 @@
     "check-licenses": "license-checker --failOn GPL --failOn LGPL --start ../.."
   },
   "dependencies": {
-    "@aws-lambda-powertools/logger": "^2.22.0",
+    "@aws-lambda-powertools/logger": "^2.25.2",
     "@cpt-ui-common/common-types": "^1.0.0",
     "@cpt-ui-common/lambdaUtils": "^1.0.0",
     "ajv": "^8.17.1",
-    "axios": "^1.10.0",
+    "axios": "^1.11.0",
     "json-schema-to-ts": "^3.1.1",
     "uuid": "^11.1.0"
   },
   "devDependencies": {
     "@cpt-ui-common/testing": "^1.0.0",
     "fhir": "^4.12.0",
-    "nock": "^14.0.5"
+    "nock": "^14.0.10"
   }
 }

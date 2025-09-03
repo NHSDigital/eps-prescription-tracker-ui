@@ -1,4 +1,4 @@
-import {getUsernameFromEvent} from "./event"
+import {getUsernameFromEvent, getSessionIdFromEvent} from "./event"
 import {initializeOidcConfig} from "./initialization"
 
 import {
@@ -15,12 +15,21 @@ import {
   buildApigeeHeaders
 } from "./apigee"
 
-import {authenticateRequest, AuthenticateRequestOptions} from "./authenticateRequest"
+import {
+  authenticateRequest,
+  AuthResult,
+  authParametersFromEnv,
+  AuthenticateRequestOptions
+} from "./authenticateRequest"
 
 import {fetchUserInfo} from "./userInfoHelpers"
 
+import {authenticationMiddleware} from "./authenticationMiddleware"
+import {authenticationConcurrentAwareMiddleware} from "./authenticationConcurrentAwareMiddleware"
+
 export {
   getUsernameFromEvent,
+  getSessionIdFromEvent,
   getSigningKey,
   verifyIdToken,
   constructSignedJWTBody,
@@ -31,6 +40,10 @@ export {
   refreshApigeeAccessToken,
   buildApigeeHeaders,
   authenticateRequest,
+  AuthResult,
+  authParametersFromEnv,
   AuthenticateRequestOptions,
-  fetchUserInfo
+  fetchUserInfo,
+  authenticationMiddleware,
+  authenticationConcurrentAwareMiddleware
 }

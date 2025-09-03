@@ -2,7 +2,7 @@ import "@testing-library/jest-dom"
 import {render, screen, waitFor} from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import React, {useState} from "react"
-import {MemoryRouter, useNavigate} from "react-router-dom"
+import {MemoryRouter} from "react-router-dom"
 import {AuthContext, type AuthContextType} from "@/context/AuthProvider"
 import LoginPage from "@/pages/LoginPage"
 
@@ -32,7 +32,12 @@ jest.mock("@/constants/environment", () => ({
     REDIRECT_SIGN_IN: "mock-signin",
     REDIRECT_SIGN_OUT: "mock-signout"
   },
-  MOCK_AUTH_ALLOWED_ENVIRONMENTS: ["dev", "dev-pr", "int", "qa"],
+  AUTO_LOGIN_ENVIRONMENTS: [
+    {environment: "dev", loginMethod: "mock"},
+    {environment: "dev-pr", loginMethod: "mock"},
+    {environment: "int", loginMethod: "cis2"},
+    {environment: "prod", loginMethod: "cis2"}
+  ],
   API_ENDPOINTS: {
     TRACKER_USER_INFO: "/api/tracker-user-info",
     SELECTED_ROLE: "/api/selected-role"
@@ -87,10 +92,12 @@ const defaultAuthState: AuthContextType = {
   hasSingleRoleAccess: false,
   selectedRole: undefined,
   userDetails: undefined,
+  isConcurrentSession: false,
   cognitoSignIn: mockCognitoSignIn,
   cognitoSignOut: mockCognitoSignOut,
   clearAuthState: jest.fn(),
-  updateSelectedRole: jest.fn()
+  updateSelectedRole: jest.fn(),
+  forceCognitoLogout: jest.fn()
 }
 
 const MockAuthProvider = ({
@@ -144,6 +151,14 @@ describe("LoginPage", () => {
   })
 
   it("renders the page and the main buttons", () => {
+    // Get the mocked module
+    const envModule = jest.requireMock("@/constants/environment")
+
+    // Modify the environment config temporarily
+    envModule.ENV_CONFIG = {
+      ...envModule.ENV_CONFIG,
+      TARGET_ENVIRONMENT: "qa"
+    }
     const {container} = renderWithProviders(<LoginPage />)
 
     const heading = screen.getByRole("heading", {level: 1})
@@ -159,6 +174,14 @@ describe("LoginPage", () => {
   })
 
   it("calls cognitoSignIn with 'Primary' when the primary login button is clicked", async () => {
+    // Get the mocked module
+    const envModule = jest.requireMock("@/constants/environment")
+
+    // Modify the environment config temporarily
+    envModule.ENV_CONFIG = {
+      ...envModule.ENV_CONFIG,
+      TARGET_ENVIRONMENT: "qa"
+    }
     renderWithProviders(<LoginPage />)
 
     const primaryLogin = screen.getByRole("button", {
@@ -174,6 +197,14 @@ describe("LoginPage", () => {
   })
 
   it("calls cognitoSignIn with 'Mock' when the mock login button is clicked", async () => {
+    // Get the mocked module
+    const envModule = jest.requireMock("@/constants/environment")
+
+    // Modify the environment config temporarily
+    envModule.ENV_CONFIG = {
+      ...envModule.ENV_CONFIG,
+      TARGET_ENVIRONMENT: "qa"
+    }
     renderWithProviders(<LoginPage />)
 
     const mockLogin = screen.getByRole("button", {
@@ -203,7 +234,7 @@ describe("LoginPage", () => {
     })
   })
 
-  it("shows a spinner when not in a mock auth environment", async () => {
+  it("shows a spinner when in prod environment", async () => {
     // Get the mocked module
     const envModule = jest.requireMock("@/constants/environment")
 
@@ -228,25 +259,24 @@ describe("LoginPage", () => {
 
     const spinnerContainer = container.querySelector(".spinner-container")
     expect(spinnerContainer).toBeInTheDocument()
-    expect(mockCognitoSignIn).toHaveBeenCalled()
+    expect(mockCognitoSignIn).toHaveBeenCalledWith({"provider": {"custom": "Primary"}}
+    )
   })
 
-  it("redirects to search if logged in", async () => {
+  it("shows a spinner when in dev environment", async () => {
     // Get the mocked module
     const envModule = jest.requireMock("@/constants/environment")
-    const mockNavigate = jest.fn();
-    (useNavigate as jest.Mock).mockReturnValue(mockNavigate)
 
     // Modify the environment config temporarily
     envModule.ENV_CONFIG = {
       ...envModule.ENV_CONFIG,
-      TARGET_ENVIRONMENT: "prod"
+      TARGET_ENVIRONMENT: "dev"
     }
 
     // Render the component with our providers
-    renderWithProviders(<LoginPage />, {
+    const {container} = renderWithProviders(<LoginPage />, {
       ...defaultAuthState,
-      isSignedIn: true,
+      isSignedIn: false,
       user: "testUser"
     })
 
@@ -256,7 +286,9 @@ describe("LoginPage", () => {
       ).toBeInTheDocument()
     })
 
-    expect(mockNavigate).toHaveBeenCalledWith("dummy_search_redirect")
+    const spinnerContainer = container.querySelector(".spinner-container")
+    expect(spinnerContainer).toBeInTheDocument()
+    expect(mockCognitoSignIn).toHaveBeenCalledWith({"provider": {"custom": "Mock"}})
   })
 
 })

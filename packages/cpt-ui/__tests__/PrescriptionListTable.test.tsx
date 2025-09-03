@@ -292,7 +292,7 @@ describe("PrescriptionsListTable", () => {
       const sortButton = screen.getByTestId("eps-prescription-table-sort-issueDate")
 
       expect(sortButton).toBeInTheDocument()
-      expect(sortButton).toHaveAttribute("role", "button")
+      expect(sortButton).toHaveAttribute("type", "button")
       expect(sortButton).toHaveAttribute("tabIndex", "0")
 
       fireEvent.click(sortButton)

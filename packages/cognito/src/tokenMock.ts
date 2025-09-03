@@ -9,11 +9,12 @@ import inputOutputLogger from "@middy/input-output-logger"
 import {parse} from "querystring"
 import {PrivateKey} from "jsonwebtoken"
 import {exchangeTokenForApigeeAccessToken, fetchUserInfo, initializeOidcConfig} from "@cpt-ui-common/authFunctions"
-import {insertTokenMapping, getSessionState} from "@cpt-ui-common/dynamoFunctions"
+import {insertTokenMapping, getSessionState, tryGetTokenMapping} from "@cpt-ui-common/dynamoFunctions"
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 import {v4 as uuidv4} from "uuid"
 import jwt from "jsonwebtoken"
 import axios from "axios"
+
 /*
 This is the lambda code that is used to intercept calls to token endpoint as part of the cognito login flow
 It expects the following environment variables to be set
@@ -50,6 +51,7 @@ const cloudfrontDomain= process.env["FULL_CLOUDFRONT_DOMAIN"] as string
 const jwtPrivateKeyArn= process.env["jwtPrivateKeyArn"] as string
 const jwtKid= process.env["jwtKid"] as string
 const SessionStateMappingTableName = process.env["SessionStateMappingTableName"] as string
+const SessionManagementTableName = process.env["SessionManagementTableName"] as string
 const idpTokenPath= process.env["MOCK_IDP_TOKEN_PATH"] as string
 const apigeeApiKey = process.env["APIGEE_API_KEY"] as string
 const apigeeApiSecret = process.env["APIGEE_API_SECRET"] as string
@@ -120,6 +122,8 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
   const current_time = Math.floor(Date.now() / 1000)
   const expirationTime = current_time + 600
+  const baseUsername = userInfoResponse.user_details.sub
+  const sessionId = uuidv4()
 
   const jwtClaims = {
     exp: expirationTime,
@@ -139,25 +143,45 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     name: userInfoResponse.user_details.name,
     authentication_assurance_level: "3",
     given_name: userInfoResponse.user_details.given_name,
-    family_name: userInfoResponse.user_details.family_name
+    family_name: userInfoResponse.user_details.family_name,
+    session_id: sessionId
   }
 
   const jwtToken = await createSignedJwt(jwtClaims)
 
   // as we now have all the user information including roles, and apigee tokens
   // store them in the token mapping table
+  const existingTokenMapping = await tryGetTokenMapping(documentClient,
+    mockOidcConfig.tokenMappingTableName,
+    `Mock_${baseUsername}`,
+    logger
+  )
+  logger.info("Existing token mapping for user", {existingTokenMapping})
 
-  const tokenMappingItem = {
-    username: `Mock_${userInfoResponse.user_details.sub}`,
+  let tokenMappingItem = {
+    username: `Mock_${baseUsername}`,
+    sessionId: sessionId,
     apigeeAccessToken: exchangeResult.accessToken,
     apigeeRefreshToken: exchangeResult.refreshToken,
     apigeeExpiresIn: exchangeResult.expiresIn,
     rolesWithAccess: userInfoResponse.roles_with_access,
     rolesWithoutAccess: userInfoResponse.roles_without_access,
     currentlySelectedRole: userInfoResponse.currently_selected_role,
-    userDetails: userInfoResponse.user_details
+    userDetails: userInfoResponse.user_details,
+    lastActivityTime: Date.now()
   }
-  await insertTokenMapping(documentClient, mockOidcConfig.tokenMappingTableName, tokenMappingItem, logger)
+
+  const fifteenMinutes = 15 * 60 * 1000
+
+  if (existingTokenMapping !== undefined && existingTokenMapping.lastActivityTime > Date.now() - fifteenMinutes) {
+    const username = tokenMappingItem.username
+    logger.info("User already exists in token mapping table, creating draft session",
+      {username}, {SessionManagementTableName})
+    await insertTokenMapping(documentClient, SessionManagementTableName, tokenMappingItem, logger)
+  } else {
+    logger.info("No user token already exists or last activity was more than 15 minutes ago", {tokenMappingItem})
+    await insertTokenMapping(documentClient, mockOidcConfig.tokenMappingTableName, tokenMappingItem, logger)
+  }
 
   // this is what gets returned to cognito
   // access token and refresh token are not used by cognito so its ok that they are unusud

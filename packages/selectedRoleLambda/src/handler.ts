@@ -1,13 +1,14 @@
-import {APIGatewayProxyEvent, APIGatewayProxyResult} from "aws-lambda"
+import {APIGatewayProxyEventBase, APIGatewayProxyResult} from "aws-lambda"
 import {Logger} from "@aws-lambda-powertools/logger"
 import {injectLambdaContext} from "@aws-lambda-powertools/logger/middleware"
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
 import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
 import middy from "@middy/core"
+import axios from "axios"
 import inputOutputLogger from "@middy/input-output-logger"
 import httpHeaderNormalizer from "@middy/http-header-normalizer"
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
-import {getUsernameFromEvent} from "@cpt-ui-common/authFunctions"
+import {authenticationMiddleware, authParametersFromEnv, AuthResult} from "@cpt-ui-common/authFunctions"
 import {getTokenMapping, updateTokenMapping} from "@cpt-ui-common/dynamoFunctions"
 import {extractInboundEventValues, appendLoggerKeys} from "@cpt-ui-common/lambdaUtils"
 
@@ -17,47 +18,30 @@ import {extractInboundEventValues, appendLoggerKeys} from "@cpt-ui-common/lambda
  * parses the request body, and updates the user's role in the database.
  */
 
-const tokenMappingTableName = process.env["TokenMappingTableName"] ?? ""
-const MOCK_MODE_ENABLED = process.env["MOCK_MODE_ENABLED"]
-const jwtPrivateKeyArn = process.env["jwtPrivateKeyArn"] as string
-const apigeeApiKey = process.env["APIGEE_API_KEY"] as string
-const jwtKid = process.env["jwtKid"] as string
-const apigeeApiSecret= process.env["APIGEE_API_SECRET"] as string
-const apigeeCis2TokenEndpoint = process.env["apigeeCIS2TokenEndpoint"] as string
-const apigeeMockTokenEndpoint = process.env["apigeeMockTokenEndpoint"] as string
-
 // Create a DynamoDB client and document client for interacting with the database
 const dynamoClient = new DynamoDBClient({})
 const documentClient = DynamoDBDocumentClient.from(dynamoClient)
+
+const axiosInstance = axios.create()
 
 const errorResponseBody = {message: "A system error has occurred"}
 const middyErrorHandler = new MiddyErrorHandler(errorResponseBody)
 
 const logger = new Logger({serviceName: "selectedRole"})
 
+const authenticationParameters = authParametersFromEnv()
+const tokenMappingTableName = authenticationParameters.tokenMappingTableName
+
 /**
  * Lambda function handler for updating a user's selected role.
  */
-const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+const lambdaHandler = async (event: APIGatewayProxyEventBase<AuthResult>): Promise<APIGatewayProxyResult> => {
   const {loggerKeys} = extractInboundEventValues(event)
   appendLoggerKeys(logger, loggerKeys)
-  logger.debug("Environment variables", {env: {
-    tokenMappingTableName,
-    MOCK_MODE_ENABLED,
-    jwtPrivateKeyArn,
-    apigeeApiKey,
-    jwtKid,
-    apigeeApiSecret,
-    apigeeCis2TokenEndpoint,
-    apigeeMockTokenEndpoint
-  }})
-
-  // Use the authenticateRequest function for authentication
-  const username = getUsernameFromEvent(event)
 
   // Validate the presence of request body
   if (!event.body) {
-    logger.warn("Request body is missing", {username})
+    logger.warn("Request body is missing")
     return {
       statusCode: 400,
       body: JSON.stringify({message: "Request body is required"})
@@ -76,15 +60,11 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     }
   }
 
+  const username = event.requestContext.authorizer.username
+
   logger.info("Received role selection request", {
     username,
     selectedRoleFromRequest: userInfoSelectedRole.currently_selected_role ?? "No role provided"
-  })
-
-  // Fetch current roles and selected role from DynamoDB
-  logger.info("Fetching user roles from DynamoDB", {
-    username,
-    tableName: tokenMappingTableName
   })
 
   const tokenMappingItem = await getTokenMapping(
@@ -103,7 +83,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   const newSelectedRole = rolesWithAccess.find(role => role.role_id === userSelectedRoleId)
 
   // Log extracted role details
-  logger.info("Extracted role data", {
+  logger.debug("Extracted role data", {
     username: username,
     rolesWithAccessCount: rolesWithAccess.length,
     rolesWithAccess: rolesWithAccess.map(role => ({
@@ -137,7 +117,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
       : [])
   ]
 
-  logger.info("Updated roles list before database update", {
+  logger.debug("Updated roles list before database update", {
     username: username,
     newSelectedRole: newSelectedRole
       ? {
@@ -178,7 +158,8 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     username: username,
     currentlySelectedRole: updatedUserInfo.currentlySelectedRole || {},
     rolesWithAccess: updatedUserInfo.rolesWithAccess || [],
-    selectedRoleId: updatedUserInfo.selectedRoleId || ""
+    selectedRoleId: updatedUserInfo.selectedRoleId || "",
+    lastActivityTime: Date.now()
   }
   await updateTokenMapping(documentClient, tokenMappingTableName, item, logger)
 
@@ -192,6 +173,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 }
 
 export const handler = middy(lambdaHandler)
+  .use(authenticationMiddleware(axiosInstance, documentClient, authenticationParameters, logger))
   .use(injectLambdaContext(logger, {clearState: true}))
   .use(httpHeaderNormalizer())
   .use(

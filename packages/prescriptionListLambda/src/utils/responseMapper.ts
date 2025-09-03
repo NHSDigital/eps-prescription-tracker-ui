@@ -40,10 +40,10 @@ const extractFallbackPatientDetails = (prescriptions: Array<PrescriptionAPIRespo
   // Return complete PatientDetails with fallback values
   return {
     nhsNumber: firstPrescription.nhsNumber?.toString() || "",
-    given: firstPrescription.nhsNumber?.toString() || "", // Using NHS number as fallback for given name
-    family: "",
-    prefix: "",
-    suffix: "",
+    given: firstPrescription.given ?? "",
+    family: firstPrescription.family ?? "",
+    prefix: firstPrescription.prefix ?? "",
+    suffix: firstPrescription.suffix ?? "",
     gender: null,
     dateOfBirth: null,
     address: null
@@ -128,6 +128,34 @@ export const extractSubjectReference = (bundle: Bundle): string | undefined => {
 }
 
 /**
+ * Extracts patient name details from Patient resource in the bundle.
+ * given, suffix and prefix are arrays and can have more than one value, family is just a string
+ */
+export const extractPatientNameField = (
+  bundle: Bundle,
+  field: "given" | "family" | "prefix" | "suffix"
+): string => {
+  const patientEntry = bundle.entry?.find(entry =>
+    entry.resource?.resourceType === "Patient"
+  ) as BundleEntry<Patient> | undefined
+
+  const name = patientEntry?.resource?.name?.[0]
+  if (!name) return ""
+
+  switch (field) {
+    case "given":
+      return name.given?.join(" ") ?? ""
+    case "family":
+      return name.family ?? ""
+    case "prefix":
+      return name.prefix?.join(" ") ?? ""
+    case "suffix":
+      return name.suffix?.join(" ") ?? ""
+    default:
+      return ""
+  }
+}
+/**
    * Extracts value from a nested extension by URL
    */
 export const findExtensionValue = (
@@ -159,6 +187,10 @@ export const mapResponseToPrescriptionSummary = (
   bundle: Bundle
 ): Array<PrescriptionAPIResponse> => {
   const nhsNumber = Number(extractNhsNumber(bundle))
+  const given = extractPatientNameField(bundle, "given")
+  const family = extractPatientNameField(bundle, "family")
+  const prefix = extractPatientNameField(bundle, "prefix")
+  const suffix = extractPatientNameField(bundle, "suffix")
 
   return bundle.entry
     ?.filter((entry): entry is BundleEntry<RequestGroup> =>
@@ -217,7 +249,11 @@ export const mapResponseToPrescriptionSummary = (
         itemsPendingCancellation,
         maxRepeats,
         issueNumber,
-        nhsNumber
+        nhsNumber,
+        given,
+        family,
+        suffix,
+        prefix
       }
     }) || []
 }

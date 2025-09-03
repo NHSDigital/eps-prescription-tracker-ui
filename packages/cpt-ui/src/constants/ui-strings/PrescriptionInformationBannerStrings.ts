@@ -1,3 +1,5 @@
+import {PrescriptionDetailsResponse} from "@cpt-ui-common/common-types"
+
 export const STRINGS = {
   PRESCRIPTION_ID: "Prescription ID",
   COPY_BUTTON_ARIA_LABEL: "Copy this prescription ID to the clipboard",
@@ -5,5 +7,10 @@ export const STRINGS = {
   ISSUE_DATE: "Issue date",
   STATUS: "Status",
   TYPE: "Type",
-  DAYS_SUPPLY: "Days supply"
+  DAYS_SUPPLY: "Days supply",
+  PRESCRIPTION_TYPES: {
+    "acute": "Acute",
+    "continuous": "Continuous",
+    "continuous-repeat-dispensing": "eRD"
+  } satisfies Record<PrescriptionDetailsResponse["typeCode"], string>
 }

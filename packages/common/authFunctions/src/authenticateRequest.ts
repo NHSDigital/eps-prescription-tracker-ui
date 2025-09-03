@@ -1,16 +1,14 @@
 import {Logger} from "@aws-lambda-powertools/logger"
 import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
 import {getSecret} from "@aws-lambda-powertools/parameters/secrets"
-import axios from "axios"
+import {AxiosInstance} from "axios"
 import {
   refreshApigeeAccessToken,
   verifyIdToken,
   constructSignedJWTBody,
   exchangeTokenForApigeeAccessToken
 } from "./index"
-import {getTokenMapping, updateTokenMapping} from "@cpt-ui-common/dynamoFunctions"
-
-const cloudfrontDomain= process.env["FULL_CLOUDFRONT_DOMAIN"] as string
+import {deleteTokenMapping, updateTokenMapping, TokenMappingItem} from "@cpt-ui-common/dynamoFunctions"
 
 // Define the ApigeeTokenResponse type
 interface ApigeeTokenResponse {
@@ -20,18 +18,16 @@ interface ApigeeTokenResponse {
   expiresIn: number
 }
 
-// Create axios instance
-const axiosInstance = axios.create()
-
 /**
  * Represents the result of a successful authentication
  */
 export interface AuthResult {
   username: string
   apigeeAccessToken: string
-  cis2IdToken: string
   roleId?: string
-  isMockRequest: boolean
+  orgCode?: string
+  sessionId?: string
+  isConcurrentSession?: boolean
 }
 
 /**
@@ -39,17 +35,34 @@ export interface AuthResult {
  */
 export interface AuthenticateRequestOptions {
   tokenMappingTableName: string
+  sessionManagementTableName: string
   jwtPrivateKeyArn: string
   apigeeApiKey: string
   apigeeApiSecret: string
   jwtKid: string
   apigeeCis2TokenEndpoint: string
   apigeeMockTokenEndpoint: string
+  cloudfrontDomain: string
+}
+
+export const authParametersFromEnv = (): AuthenticateRequestOptions => {
+  return {
+    tokenMappingTableName: process.env["TokenMappingTableName"] as string,
+    sessionManagementTableName: process.env["SessionManagementTableName"] as string,
+    jwtPrivateKeyArn: process.env["jwtPrivateKeyArn"] as string,
+    apigeeApiKey: process.env["APIGEE_API_KEY"] as string,
+    apigeeApiSecret: process.env["APIGEE_API_SECRET"] as string,
+    jwtKid: process.env["jwtKid"] as string,
+    apigeeMockTokenEndpoint: process.env["apigeeMockTokenEndpoint"] as string,
+    apigeeCis2TokenEndpoint: process.env["apigeeCIS2TokenEndpoint"] as string,
+    cloudfrontDomain: process.env["FULL_CLOUDFRONT_DOMAIN"] as string
+  }
 }
 
 const refreshTokenFlow = async (
+  axiosInstance: AxiosInstance,
   documentClient: DynamoDBDocumentClient,
-  tokenMappingTableName: string,
+  specifiedTokenTable: string,
   username: string,
   existingToken: ApigeeTokenResponse,
   logger: Logger,
@@ -62,39 +75,37 @@ const refreshTokenFlow = async (
     apigeeTokenEndpoint: string
   }
 ): Promise<ApigeeTokenResponse> => {
-  try {
-    if (existingToken.refreshToken === undefined) {
-      throw new Error("Missing refresh token")
-    }
-    const refreshResult = await refreshApigeeAccessToken(
-      axiosInstance,
-      config.apigeeTokenEndpoint,
-      existingToken.refreshToken,
-      config.apigeeApiKey,
-      config.apigeeApiSecret,
-      logger
-    )
-
-    // Update DynamoDB with the new tokens
-    await updateTokenMapping(
-      documentClient,
-      tokenMappingTableName,
-      {
-        username,
-        apigeeAccessToken: refreshResult.accessToken,
-        apigeeExpiresIn: refreshResult.expiresIn,
-        apigeeRefreshToken: refreshResult.refreshToken
-      },
-      logger
-    )
-
-    logger.info("Successfully refreshed tokens")
-    return refreshResult
-  } catch (error) {
-    logger.warn("Token refresh failed", {error})
-    throw error
+  if (existingToken.refreshToken === undefined) {
+    throw new Error("Missing refresh token")
   }
+  const refreshResult = await refreshApigeeAccessToken(
+    axiosInstance,
+    config.apigeeTokenEndpoint,
+    existingToken.refreshToken,
+    config.apigeeApiKey,
+    config.apigeeApiSecret,
+    logger
+  )
+
+  // Update DynamoDB with the new tokens
+  await updateTokenMapping(
+    documentClient,
+    specifiedTokenTable,
+    {
+      username,
+      apigeeAccessToken: refreshResult.accessToken,
+      apigeeExpiresIn: refreshResult.expiresIn,
+      apigeeRefreshToken: refreshResult.refreshToken,
+      lastActivityTime: Date.now()
+    },
+    logger
+  )
+
+  logger.info("Successfully refreshed tokens")
+  return refreshResult
 }
+
+const fifteenMinutes = 15 * 60 * 1000
 
 /**
  * Authenticates a request and handles the entire authentication flow including token refresh.
@@ -107,39 +118,40 @@ const refreshTokenFlow = async (
  */
 export async function authenticateRequest(
   username: string,
+  axiosInstance: AxiosInstance,
   documentClient: DynamoDBDocumentClient,
   logger: Logger,
-  options: AuthenticateRequestOptions
-): Promise<{
-  apigeeAccessToken: string
-  roleId: string | undefined,
-  orgCode: string | undefined
-}> {
-  const {
-    tokenMappingTableName,
+  {
     jwtPrivateKeyArn,
     apigeeApiKey,
     apigeeApiSecret,
     jwtKid,
     apigeeMockTokenEndpoint,
-    apigeeCis2TokenEndpoint
-  } = options
-
+    apigeeCis2TokenEndpoint,
+    cloudfrontDomain
+  }: AuthenticateRequestOptions,
+  userRecord: TokenMappingItem,
+  specifiedTokenTable: string
+): Promise<AuthResult | null> {
   logger.info("Starting authentication flow")
 
   // Extract username and determine if this is a mock request
   const isMockRequest = username.startsWith("Mock_")
 
-  //Get the existing saved Apigee token from DynamoDB
-  const userRecord = await getTokenMapping(documentClient, tokenMappingTableName, username, logger)
+  if (Date.now() - userRecord.lastActivityTime > fifteenMinutes) {
+    logger.info("Last activity was more than 15 minutes ago, clearing user record")
+    await deleteTokenMapping(
+      documentClient,
+      specifiedTokenTable,
+      username,
+      logger
+    )
+
+    return null
+  }
 
   // If token exists, check if we need to refresh it
-  if (userRecord?.apigeeAccessToken) {
-    if (!userRecord.currentlySelectedRole?.role_id || !userRecord.currentlySelectedRole.org_code) {
-      // we throw an error here if we have an apigee access token but no selected role
-      // as we need the role information for all apigee calls
-      throw new Error("No currently selected role")
-    }
+  if (userRecord.apigeeAccessToken) {
     const currentTime = Math.floor(Date.now() / 1000)
     if (userRecord.apigeeExpiresIn === undefined) {
       throw new Error("Missing apigee expires in time")
@@ -151,8 +163,9 @@ export async function authenticateRequest(
       logger.info("Token needs refresh, initiating token refresh flow")
       try {
         const refreshedToken = await refreshTokenFlow(
+          axiosInstance,
           documentClient,
-          tokenMappingTableName,
+          specifiedTokenTable,
           username,
           {
             accessToken: userRecord.apigeeAccessToken,
@@ -171,9 +184,10 @@ export async function authenticateRequest(
         )
 
         return {
+          username,
           apigeeAccessToken: refreshedToken.accessToken,
-          roleId: userRecord.currentlySelectedRole.role_id,
-          orgCode: userRecord.currentlySelectedRole.org_code
+          roleId: userRecord.currentlySelectedRole?.role_id,
+          orgCode: userRecord.currentlySelectedRole?.org_code
         }
       } catch (error) {
         logger.warn("Token refresh failed, will proceed with new token acquisition", {error})
@@ -186,10 +200,18 @@ export async function authenticateRequest(
         isMockRequest
       })
 
+      await updateTokenMapping(
+        documentClient,
+        specifiedTokenTable,
+        {username, lastActivityTime: Date.now()},
+        logger
+      )
+
       return {
+        username,
         apigeeAccessToken: userRecord.apigeeAccessToken,
-        roleId: userRecord.currentlySelectedRole.role_id || "",
-        orgCode: userRecord.currentlySelectedRole.org_code
+        roleId: userRecord.currentlySelectedRole?.role_id,
+        orgCode: userRecord.currentlySelectedRole?.org_code
       }
     }
   }
@@ -214,7 +236,7 @@ export async function authenticateRequest(
     }
     exchangeResult = await exchangeTokenForApigeeAccessToken(
       axiosInstance,
-      options.apigeeMockTokenEndpoint,
+      apigeeMockTokenEndpoint,
       tokenExchangeBody,
       logger
     )
@@ -235,7 +257,7 @@ export async function authenticateRequest(
     // Construct a new body with the signed JWT client assertion
     const requestBody = constructSignedJWTBody(
       logger,
-      options.apigeeCis2TokenEndpoint,
+      apigeeCis2TokenEndpoint,
       jwtPrivateKey,
       apigeeApiKey,
       jwtKid,
@@ -245,7 +267,7 @@ export async function authenticateRequest(
     // Exchange token with Apigee
     exchangeResult = await exchangeTokenForApigeeAccessToken(
       axiosInstance,
-      options.apigeeCis2TokenEndpoint,
+      apigeeCis2TokenEndpoint,
       requestBody,
       logger
     )
@@ -255,12 +277,13 @@ export async function authenticateRequest(
   // Update DynamoDB with the new Apigee access token
   await updateTokenMapping(
     documentClient,
-    tokenMappingTableName,
+    specifiedTokenTable,
     {
       username,
       apigeeAccessToken: exchangeResult.accessToken,
       apigeeRefreshToken: exchangeResult.refreshToken,
-      apigeeExpiresIn: exchangeResult.expiresIn
+      apigeeExpiresIn: exchangeResult.expiresIn,
+      lastActivityTime: Date.now()
     },
     logger
   )
@@ -281,6 +304,7 @@ export async function authenticateRequest(
 
   // at this point we may or may not have a selected role
   return {
+    username,
     apigeeAccessToken: exchangeResult.accessToken,
     roleId: userRecord.currentlySelectedRole?.role_id,
     orgCode: userRecord.currentlySelectedRole?.org_code
