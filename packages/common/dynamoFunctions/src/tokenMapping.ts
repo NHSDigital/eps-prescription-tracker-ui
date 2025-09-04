@@ -55,7 +55,7 @@ export const updateTokenMapping = async (
 ): Promise<void> => {
   const currentTime = Math.floor(Date.now() / 1000)
 
-  logger.debug("Updating data in tokenMapping", {tokenMappingItem, tokenMappingTableName})
+  logger.info("Updating data in tokenMapping", {tokenMappingItem, tokenMappingTableName})
 
   try {
     let expiryTimestamp
@@ -79,7 +79,8 @@ export const updateTokenMapping = async (
       ["rolesWithAccess", tokenMappingItem.rolesWithAccess],
       ["rolesWithoutAccess", tokenMappingItem.rolesWithoutAccess],
       ["currentlySelectedRole", tokenMappingItem.currentlySelectedRole],
-      ["lastActivityTime", tokenMappingItem.lastActivityTime]
+      ["lastActivityTime", tokenMappingItem.lastActivityTime],
+      ["sessionId", tokenMappingItem.sessionId]
     ]
 
     for (const [key, value] of optionalFields) {
@@ -100,7 +101,7 @@ export const updateTokenMapping = async (
       })
     )
 
-    logger.debug("Successfully updated data in tokenMapping")
+    logger.info("Successfully updated data in tokenMapping")
   } catch (error) {
     logger.error("Error updating data in tokenMapping", {error})
     throw new Error("Error updating data in tokenMapping")

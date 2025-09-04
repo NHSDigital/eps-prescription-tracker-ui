@@ -29,6 +29,8 @@ export default function SessionSelectionPage() {
     }
   }
 
+  // TODO: In the future, if error state from session management API,
+  // draw banner item or full page content to describe to user.
   return (
     <main id="main-content" className="nhsuk-main-wrapper">
       <Container>
