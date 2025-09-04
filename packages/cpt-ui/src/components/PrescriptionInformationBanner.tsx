@@ -1,5 +1,5 @@
 import React from "react"
-import {Button, Tag} from "nhsuk-react-components"
+import {Button} from "nhsuk-react-components"
 
 import {usePrescriptionInformation} from "@/context/PrescriptionInformationProvider"
 
@@ -7,6 +7,8 @@ import {STRINGS} from "@/constants/ui-strings/PrescriptionInformationBannerStrin
 
 import {getStatusTagColour, getStatusDisplayText} from "@/helpers/statusMetadata"
 import {formatIssueDate} from "@/helpers/formatters"
+import {BannerField} from "@/components/PrescriptionInformationBanner/BannerField"
+import {CANCELLATION_REASON_MAP, NON_DISPENSING_REASON_MAP} from "@/constants/ui-strings/StatusReasonStrings"
 
 const PrescriptionInformationBanner: React.FC = () => {
   const {prescriptionInformation: prescription} = usePrescriptionInformation()
@@ -50,30 +52,30 @@ const PrescriptionInformationBanner: React.FC = () => {
             </Button>
           </span>
         </div>
-        <div className="patient-summary__block" id="summary-issue-date">
-          <span className="patient-summary__info">
-            {STRINGS.ISSUE_DATE}: {formatIssueDate(prescription.issueDate)}
-          </span>
-        </div>
-        <div className="patient-summary__block" id="summary-status">
-          <span className="patient-summary__info">
-            {STRINGS.STATUS}:{" "}
-            <Tag color={getStatusTagColour(prescription.statusCode)}>
-              {getStatusDisplayText(prescription.statusCode)}
-            </Tag>
-          </span>
-        </div>
-        <div className="patient-summary__block" id="summary-type">
-          <span className="patient-summary__info">
-            {STRINGS.TYPE}: {renderType()}
-          </span>
-        </div>
+        <BannerField name="issue-date" label={STRINGS.ISSUE_DATE} value={formatIssueDate(prescription.issueDate)}/>
+        <BannerField
+          name="status"
+          label={STRINGS.STATUS}
+          value={" "}
+          tagColour={getStatusTagColour(prescription.statusCode)}
+          tagValue={getStatusDisplayText(prescription.statusCode)}
+        />
+        {prescription.cancellationReason && (
+          <BannerField
+            name="cancellation-reason"
+            label={STRINGS.CANCELLATION_REASON}
+            value={CANCELLATION_REASON_MAP[prescription.cancellationReason]}
+          />
+        )}
+        {prescription.nonDispensingReason && (
+          <BannerField
+            name="not-dispensed-reason"
+            label={STRINGS.NOT_DISPENSED_REASON}
+            value={NON_DISPENSING_REASON_MAP[prescription.nonDispensingReason]}/>
+        )}
+        <BannerField name="type" label={STRINGS.TYPE} value={renderType()}/>
         {prescription.daysSupply && (
-          <div className="patient-summary__block" id="summary-erd-days">
-            <span className="patient-summary__info">
-              {STRINGS.DAYS_SUPPLY}: {prescription.daysSupply} days
-            </span>
-          </div>
+          <BannerField name="erd-days" label={STRINGS.DAYS_SUPPLY} value={`${prescription.daysSupply} days`}/>
         )}
       </div>
       <div id="patientview-sentinel" style={{height: "1px", backgroundColor: "transparent"}} />
