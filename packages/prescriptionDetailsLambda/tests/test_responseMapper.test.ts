@@ -291,7 +291,7 @@ describe("mergePrescriptionDetails", () => {
         quantity: "20",
         dosageInstructions: "Take two daily",
         epsStatusCode: "0007",
-        nhsAppStatus: undefined,
+        psuStatus: undefined,
         itemPendingCancellation: false,
         cancellationReason: undefined,
         notDispensedReason: undefined
@@ -477,7 +477,7 @@ describe("mergePrescriptionDetails", () => {
       quantity: "20",
       dosageInstructions: "Take two daily",
       epsStatusCode: "0007",
-      nhsAppStatus: undefined,
+      psuStatus: undefined,
       itemPendingCancellation: false,
       cancellationReason: undefined,
       notDispensedReason: undefined
@@ -487,7 +487,7 @@ describe("mergePrescriptionDetails", () => {
       quantity: "20",
       dosageInstructions: "Twice daily",
       epsStatusCode: "0001",
-      nhsAppStatus: undefined,
+      psuStatus: undefined,
       itemPendingCancellation: false,
       cancellationReason: undefined,
       notDispensedReason: undefined
@@ -671,7 +671,7 @@ describe("mergePrescriptionDetails", () => {
       quantity: "0",
       dosageInstructions: "",
       epsStatusCode: "0007",
-      nhsAppStatus: undefined,
+      psuStatus: undefined,
       itemPendingCancellation: false,
       cancellationReason: undefined,
       notDispensedReason: undefined
