@@ -99,6 +99,7 @@ describe("update tokenMapping", () => {
     const mockAccessToken = "testToken"
     const mockRefreshToken = "testRefreshToken"
     const mockExpiresIn = 3600
+    const sessionId = "id123"
 
     await updateTokenMapping(
       mockDocumentClient,
@@ -108,7 +109,8 @@ describe("update tokenMapping", () => {
         apigeeAccessToken: mockAccessToken,
         apigeeRefreshToken: mockRefreshToken,
         apigeeExpiresIn: mockExpiresIn,
-        lastActivityTime: 0
+        lastActivityTime: 0,
+        sessionId: sessionId
       },
         mockLogger as Logger
     )
@@ -130,6 +132,7 @@ describe("update tokenMapping", () => {
     expect(calledAttributeValues?.[":userDetails"]).toBeUndefined()
     expect(calledAttributeValues?.[":rolesWithAccess"]).toBeUndefined()
     expect(calledAttributeValues?.[":rolesWithoutAccess"]).toBeUndefined()
+    expect(calledAttributeValues?.[":sessionId"]).toBe(sessionId)
   })
 
   it("should log and throw an error on failure when updating item in table", async () => {
