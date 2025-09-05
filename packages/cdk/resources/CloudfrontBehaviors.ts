@@ -261,6 +261,7 @@ export class CloudfrontBehaviors extends Construct{
         origin: props.staticContentBucketOrigin,
         allowedMethods: AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
         viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+        responseHeadersPolicy: this.responseHeadersPolicy,
         functionAssociations: [
           {
             function: s3StaticContentRootSlashRedirect.function,
