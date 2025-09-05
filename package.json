@@ -36,7 +36,8 @@
         "packages/trackerUserInfoLambda",
         "packages/CIS2SignOutLambda",
         "packages/selectedRoleLambda",
-        "packages/testingSupport/clearActiveSessions"
+        "packages/testingSupport/clearActiveSessions",
+        "packages/sessionManagementLambda"
     ],
     "devDependencies": {
         "@eslint/js": "^9.34.0",

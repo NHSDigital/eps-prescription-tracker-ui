@@ -26,13 +26,21 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
       FRONTEND_PATHS.LOGOUT,
       FRONTEND_PATHS.COOKIES,
       FRONTEND_PATHS.PRIVACY_NOTICE,
-      FRONTEND_PATHS.COOKIES_SELECTED
+      FRONTEND_PATHS.COOKIES_SELECTED,
+      FRONTEND_PATHS.SESSION_SELECTION
     ]
 
     if (!auth.isSignedIn && !auth.isSigningIn) {
       if (!allowed_no_role_paths.includes(normalizePath(location.pathname))) {
         logger.info("Not signed in - redirecting to login page")
         navigate(FRONTEND_PATHS.LOGIN)
+      }
+      return
+    }
+    if (auth.isConcurrentSession && auth.isSignedIn) {
+      if (!allowed_no_role_paths.includes(normalizePath(location.pathname))) {
+        logger.info("Concurrent session found - redirecting to session selection")
+        navigate(FRONTEND_PATHS.SESSION_SELECTION)
       }
       return
     }

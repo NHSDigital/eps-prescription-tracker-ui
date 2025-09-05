@@ -50,7 +50,7 @@ describe("getTrackerUserInfo", () => {
       expected: {
         hasNoAccess: false,
         hasSingleRoleAccess: true,
-        numberOfCallsToUpdateSelectedRole: 1
+        numberOfCallsToUpdateSelectedRole: 0
       }
     },
     {

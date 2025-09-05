@@ -16,6 +16,7 @@ export interface RestApiGatewayMethodsProps {
   readonly prescriptionListLambda: NodejsFunction
   readonly prescriptionDetailsLambda: NodejsFunction
   readonly trackerUserInfoLambda: NodejsFunction
+  readonly sessionManagementLambda: NodejsFunction
   readonly selectedRoleLambda: NodejsFunction
   readonly patientSearchLambda: NodejsFunction
   readonly authorizer?: CognitoUserPoolsAuthorizer
@@ -75,6 +76,15 @@ export class RestApiGatewayMethods extends Construct {
     // tracker-user-info endpoint
     const trackerUserInfoLambdaResource = props.restApiGateway.root.addResource("tracker-user-info")
     trackerUserInfoLambdaResource.addMethod("GET", new LambdaIntegration(props.trackerUserInfoLambda, {
+      credentialsRole: props.restAPiGatewayRole
+    }), {
+      authorizationType: AuthorizationType.COGNITO,
+      authorizer: props.authorizer
+    })
+
+    // session-management endpoint
+    const sessionManagementLambdaResource = props.restApiGateway.root.addResource("session-management")
+    sessionManagementLambdaResource.addMethod("POST", new LambdaIntegration(props.sessionManagementLambda, {
       credentialsRole: props.restAPiGatewayRole
     }), {
       authorizationType: AuthorizationType.COGNITO,

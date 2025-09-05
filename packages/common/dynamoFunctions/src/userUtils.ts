@@ -147,6 +147,11 @@ export const extractRoleInformation = (
     }
   })
 
+  // Default selected role to single available role so UI defaults without second API call
+  if (rolesWithAccess.length === 1 && rolesWithoutAccess.length === 0 && !currentlySelectedRole) {
+    currentlySelectedRole = rolesWithAccess[0]
+  }
+
   const result: TrackerUserInfo = {
     roles_with_access: rolesWithAccess,
     roles_without_access: rolesWithoutAccess,
