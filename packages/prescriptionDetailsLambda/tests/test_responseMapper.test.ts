@@ -112,6 +112,24 @@ describe("mergePrescriptionDetails", () => {
           extension: [
             {url: "prescriptionPendingCancellation", valueBoolean: true}
           ]
+        },
+        {
+          url: "https://fhir.nhs.uk/StructureDefinition/Extension-EPS-PrescriptionStatusHistory",
+          extension: [
+            {url: "cancellationReason", valueCoding: {
+              system: "https://fhir.nhs.uk/CodeSystem/medicationrequest-status-reason",
+              code: "0001",
+              display: "Prescribing Error"
+            }}
+          ]
+        },
+        {
+          url: "https://fhir.nhs.uk/StructureDefinition/Extension-DM-PrescriptionNonDispensingReason",
+          valueCoding: {
+            system: "https://fhir.nhs.uk/CodeSystem/medicationdispense-status-reason",
+            code: "0002",
+            display: "Clinically unsuitable"
+          }
         }
       ],
       action: [
@@ -286,6 +304,8 @@ describe("mergePrescriptionDetails", () => {
       maxRepeats: 5,
       daysSupply: "28",
       prescriptionPendingCancellation: true,
+      cancellationReason: "0001",
+      nonDispensingReason: "0002",
       items: [{
         medicationName: "Drug A",
         quantity: "20",

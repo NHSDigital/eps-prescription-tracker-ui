@@ -94,7 +94,7 @@ export const extractItems = (
     // determine if initiallyPrescribed should be included (only if different from dispensed)
     const pendingCancellationExt = findExtensionByKey(request.extension, "PENDING_CANCELLATION")
     const itemPendingCancellation = getBooleanFromNestedExtension(pendingCancellationExt, "lineItemPendingCancellation")
-    const cancellationReason = request.statusReason?.text ?? request.statusReason?.coding?.[0]?.display
+    const cancellationReason = request.statusReason?.text ?? request.statusReason?.coding?.[0]?.code
 
     const businessStatusExt = findExtensionByKey(request.extension, "DISPENSING_INFORMATION")
     const epsStatusCode = getCodeFromNestedExtension(businessStatusExt, "dispenseStatus", "unknown")

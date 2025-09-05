@@ -219,9 +219,22 @@ export const mergePrescriptionDetails = (
   // TODO: extract NHS App status from dispensing information extension
   // const dispensingInfoExt = findExtensionByKey(dispense.extension, "DISPENSING_INFORMATION")
 
+  let statusCode
+  let cancellationReason
   const statusExt = findExtensionsByKey(requestGroup.extension, "PRESCRIPTION_STATUS_HISTORY")
-    .find(ext => ext.extension?.[0].valueCoding?.system === "https://fhir.nhs.uk/CodeSystem/EPS-task-business-status")
-  const statusCode = statusExt?.extension?.[0].valueCoding?.code ?? "unknown"
+  for (const ext of statusExt){
+    const url = ext.extension?.[0].url
+    const system = ext.extension?.[0].valueCoding?.system
+    if (url === "status" && system === "https://fhir.nhs.uk/CodeSystem/EPS-task-business-status"){
+      statusCode = ext?.extension?.[0].valueCoding?.code
+    }
+    if (url === "cancellationReason" && system === "https://fhir.nhs.uk/CodeSystem/medicationrequest-status-reason"){
+      cancellationReason = ext?.extension?.[0].valueCoding?.code
+    }
+  }
+
+  const nonDispensingExt = findExtensionByKey(requestGroup.extension, "NON_DISPENSING_REASON")
+  const nonDispensingReason = nonDispensingExt?.valueCoding?.code
 
   // create organization summaries
   const prescriptionTypeCode = prescriptionTypeExt?.valueCoding?.code ?? "Unknown"
@@ -244,7 +257,7 @@ export const mergePrescriptionDetails = (
     patientDetails,
     prescriptionId,
     typeCode,
-    statusCode,
+    ...(statusCode ? {statusCode} : {statusCode: "unknown"}),
     issueDate,
     instanceNumber,
     maxRepeats,
@@ -254,6 +267,8 @@ export const mergePrescriptionDetails = (
     messageHistory,
     prescriberOrg,
     nominatedDispenser,
-    currentDispenser
+    currentDispenser,
+    cancellationReason,
+    nonDispensingReason
   }
 }

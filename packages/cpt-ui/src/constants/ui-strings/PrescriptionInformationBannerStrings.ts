@@ -12,5 +12,7 @@ export const STRINGS = {
     "acute": "Acute",
     "continuous": "Continuous",
     "continuous-repeat-dispensing": "eRD"
-  } satisfies Record<PrescriptionDetailsResponse["typeCode"], string>
+  } satisfies Record<PrescriptionDetailsResponse["typeCode"], string>,
+  CANCELLATION_REASON: "Cancellation reason",
+  NOT_DISPENSED_REASON: "Not dispensed reason"
 }
