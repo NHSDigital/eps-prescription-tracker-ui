@@ -53,6 +53,20 @@ describe("AccessProvider", () => {
     expect(navigate).toHaveBeenCalledWith(FRONTEND_PATHS.LOGIN)
   })
 
+  it("redirects to session selection if signed in and concurrent session", () => {
+    (mockUseAuth as jest.Mock).mockReturnValue({
+      isSignedIn: true,
+      isConcurrentSession: true,
+      isSigningIn: false
+    })
+    ;(useLocation as jest.Mock).mockReturnValue({pathname: "/some-protected-path"})
+    ;(mockNormalizePath as jest.Mock).mockReturnValue("/some-protected-path")
+
+    renderWithProvider()
+
+    expect(navigate).toHaveBeenCalledWith(FRONTEND_PATHS.SESSION_SELECTION)
+  })
+
   it("redirects to select role if signed in but no role is selected", () => {
     (mockUseAuth as jest.Mock).mockReturnValue({
       isSignedIn: true,

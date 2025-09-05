@@ -19,8 +19,9 @@ export default function LoginPage() {
 
   const mockSignIn = async () => {
     logger.info("Signing in (Mock)", auth)
-    auth.clearAuthState()
     await auth.forceCognitoLogout()
+    // Clear auth state only after logging out - Otherwise no tokens present to action the request
+    auth.clearAuthState()
     await auth?.cognitoSignIn({
       provider: {
         custom: "Mock"
@@ -30,8 +31,9 @@ export default function LoginPage() {
 
   const cis2SignIn = async () => {
     logger.info("Signing in (Primary)", auth)
-    auth.clearAuthState()
     await auth.forceCognitoLogout()
+    // Clear auth state only after logging out - Otherwise no tokens present to action the request
+    auth.clearAuthState()
     await auth?.cognitoSignIn({
       provider: {
         custom: "Primary"
