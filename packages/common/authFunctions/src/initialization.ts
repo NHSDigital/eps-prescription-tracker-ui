@@ -20,7 +20,8 @@ export function initializeOidcConfig() {
     oidcTokenEndpoint: process.env["CIS2_TOKEN_ENDPOINT"] ?? "",
     userPoolIdp: process.env["CIS2_USER_POOL_IDP"] ?? "",
     jwksClient: cis2JwksClient,
-    tokenMappingTableName: process.env["TokenMappingTableName"] ?? ""
+    tokenMappingTableName: process.env["TokenMappingTableName"] ?? "",
+    sessionManagementTableName: process.env["SessionManagementTableName"] ?? ""
   }
 
   const mockJwksUri = process.env["MOCK_OIDCJWKS_ENDPOINT"] as string
@@ -39,7 +40,8 @@ export function initializeOidcConfig() {
     oidcTokenEndpoint: process.env["MOCK_OIDC_TOKEN_ENDPOINT"] ?? "",
     userPoolIdp: process.env["MOCK_USER_POOL_IDP"] ?? "",
     jwksClient: mockJwksClient,
-    tokenMappingTableName: process.env["TokenMappingTableName"] ?? ""
+    tokenMappingTableName: process.env["TokenMappingTableName"] ?? "",
+    sessionManagementTableName: process.env["SessionManagementTableName"] ?? ""
   }
 
   return {cis2OidcConfig, mockOidcConfig}
