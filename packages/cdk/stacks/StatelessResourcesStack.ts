@@ -526,7 +526,8 @@ export class StatelessResourcesStack extends Stack {
         }
       ],
       webAclAttributeArn: webAclAttributeArn,
-      wafAllowGaRunnerConnectivity: wafAllowGaRunnerConnectivity
+      wafAllowGaRunnerConnectivity: wafAllowGaRunnerConnectivity,
+      logRetentionInDays: logRetentionInDays
     })
 
     // Outputs

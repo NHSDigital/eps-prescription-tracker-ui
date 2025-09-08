@@ -1,3 +1,4 @@
+import {Fn, Names, RemovalPolicy} from "aws-cdk-lib"
 import {ICertificate} from "aws-cdk-lib/aws-certificatemanager"
 import {
   BehaviorOptions,
@@ -7,6 +8,17 @@ import {
   SecurityPolicyProtocol,
   SSLMethod
 } from "aws-cdk-lib/aws-cloudfront"
+import {PolicyStatement, Role, ServicePrincipal} from "aws-cdk-lib/aws-iam"
+import {Stream} from "aws-cdk-lib/aws-kinesis"
+import {Key} from "aws-cdk-lib/aws-kms"
+import {
+  CfnDelivery,
+  CfnDeliveryDestination,
+CfnDeliverySource,
+CfnLogGroup,
+CfnSubscriptionFilter,
+LogGroup
+} from "aws-cdk-lib/aws-logs"
 import {
   AaaaRecord,
   ARecord,
@@ -35,6 +47,7 @@ export interface CloudfrontDistributionProps {
   readonly cloudfrontCert: ICertificate
   readonly webAclAttributeArn: string
   readonly wafAllowGaRunnerConnectivity: boolean
+  readonly logRetentionInDays: number
 }
 
 /**
@@ -47,6 +60,16 @@ export class CloudfrontDistribution extends Construct {
 
   public constructor(scope: Construct, id: string, props: CloudfrontDistributionProps){
     super(scope, id)
+
+    // Imports
+    const cloudWatchLogsKmsKey = Key.fromKeyArn(
+      this, "cloudWatchLogsKmsKey", Fn.importValue("account-resources:CloudwatchLogsKmsKeyArn"))
+
+    const splunkDeliveryStream = Stream.fromStreamArn(
+      this, "SplunkDeliveryStream", Fn.importValue("lambda-resources:SplunkDeliveryStream"))
+
+    const splunkSubscriptionFilterRole = Role.fromRoleArn(
+      this, "splunkSubscriptionFilterRole", Fn.importValue("lambda-resources:SplunkSubscriptionFilterRole"))
 
     // Resources
     const cloudfrontDistribution = new Distribution(this, "CloudfrontDistribution", {
@@ -88,6 +111,63 @@ export class CloudfrontDistribution extends Construct {
         recordName: props.shortCloudfrontDomain,
         target: RecordTarget.fromAlias(new CloudFrontTarget(cloudfrontDistribution))})
     }
+
+    // send logs to cloudwatch
+    const cloudfrontLogGroup = new LogGroup(this, "CloudFrontLogGroup", {
+      encryptionKey: cloudWatchLogsKmsKey,
+      logGroupName: `/aws/cloudfront/${props.stackName}`,
+      retention: props.logRetentionInDays,
+      removalPolicy: RemovalPolicy.DESTROY
+    })
+
+    const cfnCloudfrontLogGroup = cloudfrontLogGroup.node.defaultChild as CfnLogGroup
+    cfnCloudfrontLogGroup.cfnOptions.metadata = {
+      guard: {
+        SuppressedRules: [
+          "CW_LOGGROUP_RETENTION_PERIOD_CHECK"
+        ]
+      }
+    }
+
+    const cloudfrontLogGroupPolicy = new PolicyStatement({
+      principals: [new ServicePrincipal("delivery.logs.amazonaws.com")],
+      actions: [
+        "logs:CreateLogStream",
+        "logs:PutLogEvents"
+      ],
+      resources: [
+        cloudfrontLogGroup.logGroupArn,
+        `${cloudfrontLogGroup.logGroupArn}:log-stream:*`
+      ]
+    })
+
+    cloudfrontLogGroup.addToResourcePolicy(cloudfrontLogGroupPolicy)
+
+    new CfnSubscriptionFilter(this, "CoordinatorSplunkSubscriptionFilter", {
+      destinationArn: splunkDeliveryStream.streamArn,
+      filterPattern: "",
+      logGroupName: cloudfrontLogGroup.logGroupName,
+      roleArn: splunkSubscriptionFilterRole.roleArn
+    })
+
+    const distDeliverySource = new CfnDeliverySource(this, "DistributionDeliverySource", {
+        name: `${Names.uniqueResourceName(this, {maxLength:55})}-src`,
+        logType: "ACCESS_LOGS",
+        resourceArn: cloudfrontDistribution.distributionArn
+    })
+
+    const distDeliveryDestination = new CfnDeliveryDestination(this, "DistributionDeliveryDestination", {
+      name: `${Names.uniqueResourceName(this, {maxLength:55})}-dest`,
+      destinationResourceArn: cloudfrontLogGroup.logGroupArn,
+      outputFormat: "json"
+    })
+
+    const delivery = new CfnDelivery(this, "DistributionDelivery", {
+        deliverySourceName: distDeliverySource.name,
+        deliveryDestinationArn: distDeliveryDestination.attrArn
+    })
+    delivery.node.addDependency(distDeliverySource)
+    delivery.node.addDependency(distDeliveryDestination)
 
     // Outputs
     this.distribution = cloudfrontDistribution
