@@ -7,6 +7,8 @@ import {
 import {ItemDetails} from "@cpt-ui-common/common-types"
 import {getItemStatusTagColour, getItemStatusDisplayText} from "@/helpers/statusMetadata"
 import {STRINGS} from "@/constants/ui-strings/PrescribedDispensedItemsCardsStrings"
+import {SummaryListRow} from "@/components/prescriptionDetails/ItemsCards/SummaryListRow"
+import {CANCELLATION_REASON_MAP, NON_DISPENSING_REASON_MAP} from "@/constants/ui-strings/StatusReasonStrings"
 
 interface ItemsProps {
   readonly items: Array<ItemDetails>
@@ -26,7 +28,8 @@ export function ItemsCards({items}: ItemsProps) {
       epsStatusCode,
       pharmacyStatus,
       itemPendingCancellation,
-      cancellationReason
+      cancellationReason,
+      notDispensedReason
     } = item
 
     return (
@@ -48,55 +51,33 @@ export function ItemsCards({items}: ItemsProps) {
             {/* Cancellation warning if applicable */}
             {itemPendingCancellation && (
               <p className="nhsuk-u-margin-bottom-2" data-testid="cancellation-warning">
-                <span role="img" aria-label="Warning">⚠️</span> {STRINGS.CANCELLATION_REASON_MESSAGE}
+                <span role="img" aria-label="Warning">⚠️</span> {STRINGS.PENDING_CANCELLATION}
               </p>
             )}
 
             <SummaryList className="nhsuk-u-margin-bottom-2" data-testid="prescription-summary-list">
-              {/* Optional cancellation reason */}
               {cancellationReason && (
-                <SummaryList.Row>
-                  <SummaryList.Key>{STRINGS.CANCELLATION_REASON}</SummaryList.Key>
-                  <SummaryList.Value>
-                    <span className="data-field__content data-field__content--address">
-                      {cancellationReason}
-                    </span>
-                  </SummaryList.Value>
-                </SummaryList.Row>
+                <SummaryListRow
+                  label={STRINGS.CANCELLATION_REASON}
+                  value={CANCELLATION_REASON_MAP[cancellationReason]}
+                />
               )}
 
-              {/* Quantity */}
-              <SummaryList.Row>
-                <SummaryList.Key>{STRINGS.QUANTITY_LABEL}</SummaryList.Key>
-                <SummaryList.Value>
-                  <span className="data-field__content data-field__content--address">
-                    {quantity}
-                  </span>
-                </SummaryList.Value>
-              </SummaryList.Row>
-
-              {/* Dosage instructions */}
-              {dosageInstructions !== "Unknown" && (
-                <SummaryList.Row>
-                  <SummaryList.Key>{STRINGS.INSTRUCTIONS_LABEL}</SummaryList.Key>
-                  <SummaryList.Value>
-                    <span className="data-field__content data-field__content--address">
-                      {dosageInstructions}
-                    </span>
-                  </SummaryList.Value>
-                </SummaryList.Row>
+              {notDispensedReason && (
+                <SummaryListRow
+                  label={STRINGS.NOT_DISPENSED_REASON}
+                  value={NON_DISPENSING_REASON_MAP[notDispensedReason]}
+                />
               )}
 
-              {/* Optional pharmacy status */}
+              <SummaryListRow label={STRINGS.QUANTITY_LABEL} value={quantity}/>
+
+              {dosageInstructions && (
+                <SummaryListRow label={STRINGS.INSTRUCTIONS_LABEL} value={dosageInstructions}/>
+              )}
+
               {pharmacyStatus && (
-                <SummaryList.Row>
-                  <SummaryList.Key>{STRINGS.PHARMACY_STATUS_LABEL}</SummaryList.Key>
-                  <SummaryList.Value>
-                    <span className="data-field__content data-field__content--address">
-                      <Tag>{pharmacyStatus}</Tag>
-                    </span>
-                  </SummaryList.Value>
-                </SummaryList.Row>
+                <SummaryListRow label={STRINGS.PHARMACY_STATUS_LABEL} value={pharmacyStatus}/>
               )}
             </SummaryList>
           </Card.Content>

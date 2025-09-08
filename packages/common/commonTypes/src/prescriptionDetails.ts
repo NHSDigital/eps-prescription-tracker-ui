@@ -57,4 +57,6 @@ export interface PrescriptionDetailsResponse {
     prescriberOrg: OrgSummary
     nominatedDispenser?: OrgSummary
     currentDispenser?: OrgSummary
+    cancellationReason?: string,
+    nonDispensingReason?: string
 }
