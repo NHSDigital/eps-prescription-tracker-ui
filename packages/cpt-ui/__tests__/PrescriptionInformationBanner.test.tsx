@@ -133,4 +133,38 @@ describe("PrescriptionInformationBanner", () => {
     expect(tag).toBeInTheDocument()
     expect(tag).toHaveClass(`nhsuk-tag--${getStatusTagColour(statusCode)}`)
   })
+
+  it("renders cancellation reason, when item contains a cancellation reason", () => {
+    const data: PrescriptionDetailsResponse = {
+      ...mockPrescriptionDetailsResponse,
+      statusCode: "0005",
+      cancellationReason: "0001"
+    }
+    renderWithContext(data)
+
+    const banner = screen.getByTestId("prescription-information-banner")
+    expect(banner.querySelector("#summary-cancellation-reason"))
+      .toHaveTextContent("Cancellation reason: Prescribing Error")
+  })
+
+  it("renders not dispensed reason, when item contains a non-dispensing reason", () => {
+    const data: PrescriptionDetailsResponse = {
+      ...mockPrescriptionDetailsResponse,
+      statusCode: "0007",
+      nonDispensingReason: "0001"
+    }
+    renderWithContext(data)
+
+    const banner = screen.getByTestId("prescription-information-banner")
+    expect(banner.querySelector("#summary-not-dispensed-reason"))
+      .toHaveTextContent("Not dispensed reason: Not required as instructed by the patient")
+  })
+
+  it("does not render any status reasons, when item does not contain a cancellation or non-dispensing reason", () => {
+    renderWithContext(mockPrescriptionDetailsResponse)
+
+    const banner = screen.getByTestId("prescription-information-banner")
+    expect(banner.querySelector("#summary-cancellation-reason")).not.toBeInTheDocument()
+    expect(banner.querySelector("#summary-not-dispensed-reason")).not.toBeInTheDocument()
+  })
 })
