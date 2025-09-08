@@ -2,12 +2,21 @@ import {
   App,
   CfnOutput,
   Environment,
+  RemovalPolicy,
   Stack,
   StackProps
 } from "aws-cdk-lib"
 import {ARecord, HostedZone, RecordTarget} from "aws-cdk-lib/aws-route53"
 import {Certificate, CertificateValidation} from "aws-cdk-lib/aws-certificatemanager"
 import {WebACL} from "../resources/WebApplicationFirewall"
+import {
+CfnLogGroup,
+CfnSubscriptionFilter,
+LogGroup,
+RetentionDays
+} from "aws-cdk-lib/aws-logs"
+import {PolicyStatement, ServicePrincipal} from "aws-cdk-lib/aws-iam"
+import {Key} from "aws-cdk-lib/aws-kms"
 
 export interface UsCertsStackProps extends StackProps {
   readonly env: Environment
@@ -43,6 +52,8 @@ export class UsCertsStack extends Stack {
     const epsHostedZoneId: string = this.node.tryGetContext("epsHostedZoneId")
     const useCustomCognitoDomain: boolean = this.node.tryGetContext("useCustomCognitoDomain")
     const useZoneApex: boolean = this.node.tryGetContext("useZoneApex")
+    const splunkDeliveryStream: string = this.node.tryGetContext("splunkDeliveryStream")
+    const splunkSubscriptionFilterRole: string = this.node.tryGetContext("splunkSubscriptionFilterRole")
 
     // Coerce context and imports to relevant types
     const hostedZone = HostedZone.fromHostedZoneAttributes(this, "hostedZone", {
@@ -99,6 +110,48 @@ export class UsCertsStack extends Stack {
       scope: "CLOUDFRONT"
     })
 
+    // cloudfront log group - needs to be in us-east-1 region
+    const cloudWatchLogsKmsKey = new Key(this, "cloudWatchLogsKmsKey", {
+      enableKeyRotation: true,
+      alias: "cloudWatchLogsKmsKey"
+    })
+    const cloudfrontLogGroup = new LogGroup(this, "CloudFrontLogGroup", {
+      encryptionKey: cloudWatchLogsKmsKey,
+      logGroupName: `/aws/cloudfront/${props.stackName}`,
+      retention: RetentionDays.ONE_WEEK,
+      removalPolicy: RemovalPolicy.DESTROY
+    })
+
+    const cfnCloudfrontLogGroup = cloudfrontLogGroup.node.defaultChild as CfnLogGroup
+    cfnCloudfrontLogGroup.cfnOptions.metadata = {
+      guard: {
+        SuppressedRules: [
+          "CW_LOGGROUP_RETENTION_PERIOD_CHECK"
+        ]
+      }
+    }
+
+    const cloudfrontLogGroupPolicy = new PolicyStatement({
+      principals: [new ServicePrincipal("delivery.logs.amazonaws.com")],
+      actions: [
+        "logs:CreateLogStream",
+        "logs:PutLogEvents"
+      ],
+      resources: [
+        cloudfrontLogGroup.logGroupArn,
+        `${cloudfrontLogGroup.logGroupArn}:log-stream:*`
+      ]
+    })
+
+    cloudfrontLogGroup.addToResourcePolicy(cloudfrontLogGroupPolicy)
+
+    new CfnSubscriptionFilter(this, "CloudFrontSplunkSubscriptionFilter", {
+      destinationArn: splunkDeliveryStream,
+      filterPattern: "",
+      logGroupName: cloudfrontLogGroup.logGroupName,
+      roleArn: splunkSubscriptionFilterRole
+    })
+
     // Outputs
 
     // Exports
@@ -126,6 +179,11 @@ export class UsCertsStack extends Stack {
     new CfnOutput(this, "fullCognitoDomain", {
       value: fullCognitoDomain,
       exportName: `${props.stackName}:fullCognitoDomain:Name`
+    })
+
+    new CfnOutput(this, "CloudFrontLogGroupArn", {
+      value: cloudfrontLogGroup.logGroupArn,
+      exportName: `${props.stackName}:CloudFrontLogGroup:Arn`
     })
 
     this.fullCloudfrontDomain = fullCloudfrontDomain

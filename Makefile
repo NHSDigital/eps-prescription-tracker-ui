@@ -213,6 +213,8 @@ cdk-synth-stateful-resources-no-mock:
 	ALLOW_LOCALHOST_ACCESS=false \
 	WAF_ALLOW_GA_RUNNER_CONNECTIVITY=true \
 	CLOUDFRONT_ORIGIN_CUSTOM_HEADER=foo \
+	SPLUNK_DELIVERY_STREAM=foo \
+	SPLUNK_SUBSCRIPTION_FILTER_ROLE=foo \
 	DO_NOT_GET_AWS_EXPORT=true \
 	USE_ZONE_APEX=false \
 		 ./.github/scripts/fix_cdk_json.sh .local_config/stateful_app.config.json
@@ -262,6 +264,7 @@ cdk-synth-stateless-resources-no-mock:
 	CLOUDFRONT_CERT_ARN=arn:aws:acm:us-east-1:444455556666:certificate/certificate_ID \
 	DO_NOT_GET_AWS_EXPORT=true \
 	CLOUDFRONT_ORIGIN_CUSTOM_HEADER=foo \
+	CLOUDFRONT_LOG_GROUP=arn:aws:logs:eu-west-2:444455556666:log-group:/dummy-log-group:* \
 	USE_ZONE_APEX=false \
 		 ./.github/scripts/fix_cdk_json.sh .local_config/stateless_app.config.json
 	CONFIG_FILE_NAME=.local_config/stateless_app.config.json npx cdk synth \
@@ -304,6 +307,8 @@ cdk-synth-stateful-resources-mock:
 	ALLOW_LOCALHOST_ACCESS=false \
 	WAF_ALLOW_GA_RUNNER_CONNECTIVITY=true \
 	CLOUDFRONT_ORIGIN_CUSTOM_HEADER=foo \
+	SPLUNK_DELIVERY_STREAM=foo \
+	SPLUNK_SUBSCRIPTION_FILTER_ROLE=foo \
 	DO_NOT_GET_AWS_EXPORT=true \
 	USE_ZONE_APEX=false \
 		 ./.github/scripts/fix_cdk_json.sh .local_config/stateful_app.config.json
@@ -359,6 +364,7 @@ cdk-synth-stateless-resources-mock:
 	GITHUB_ACTIONS_RUNNER_IPV6='["::1"]' \
 	DO_NOT_GET_AWS_EXPORT=true \
 	CLOUDFRONT_ORIGIN_CUSTOM_HEADER=foo \
+	CLOUDFRONT_LOG_GROUP=arn:aws:logs:eu-west-2:444455556666:log-group:/dummy-log-group:* \
 	USE_ZONE_APEX=false \
 		 ./.github/scripts/fix_cdk_json.sh .local_config/stateless_app.config.json
 	CONFIG_FILE_NAME=.local_config/stateless_app.config.json npx cdk synth \
