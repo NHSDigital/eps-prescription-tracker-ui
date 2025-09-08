@@ -145,10 +145,10 @@ if [ -z "${SPLUNK_SUBSCRIPTION_FILTER_ROLE}" ]; then
         -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
 fi
 
-if [ -z "${CLOUDFRONT_LOG_GROUP}" ]; then
-    CLOUDFRONT_LOG_GROUP=$(echo "$CF_US_EXPORTS" | \
+if [ -z "${CLOUDFRONT_LOG_DELIVERY_DESTINATION_ARN}" ]; then
+    CLOUDFRONT_LOG_DELIVERY_DESTINATION_ARN=$(echo "$CF_US_EXPORTS" | \
         jq \
-        --arg EXPORT_NAME "${SERVICE_NAME}-us-certs:CloudFrontLogGroup:Arn" \
+        --arg EXPORT_NAME "${SERVICE_NAME}-us-certs:CloudFrontLogDeliveryDestination:Arn" \
         -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
 fi
 
@@ -241,7 +241,7 @@ elif [ "$CDK_APP_NAME" == "StatelessResourcesApp" ]; then
     fix_list_key githubAllowListIpv4 "${GITHUB_ACTIONS_RUNNER_IPV4}"
     fix_list_key githubAllowListIpv6 "${GITHUB_ACTIONS_RUNNER_IPV6}"
     fix_string_key cloudfrontOriginCustomHeader "${CLOUDFRONT_ORIGIN_CUSTOM_HEADER}"
-    fix_string_key cloudfrontLogGroup "${CLOUDFRONT_LOG_GROUP}"
+    fix_string_key cloudFrontLogDeliveryDestinationArn "${CLOUDFRONT_LOG_DELIVERY_DESTINATION_ARN}"
     
     if [ "$USE_MOCK_OIDC" == "true" ]; then
         fix_string_key mockOidcClientId "${MOCK_OIDC_CLIENT_ID}"

@@ -3,6 +3,7 @@ import {
   CfnOutput,
   Duration,
   Environment,
+  Names,
   RemovalPolicy,
   Stack,
   StackProps
@@ -11,6 +12,7 @@ import {ARecord, HostedZone, RecordTarget} from "aws-cdk-lib/aws-route53"
 import {Certificate, CertificateValidation} from "aws-cdk-lib/aws-certificatemanager"
 import {WebACL} from "../resources/WebApplicationFirewall"
 import {
+  CfnDeliveryDestination,
 CfnLogGroup,
 CfnSubscriptionFilter,
 LogGroup,
@@ -216,6 +218,12 @@ export class UsCertsStack extends Stack {
       roleArn: splunkSubscriptionFilterRole
     })
 
+    const distDeliveryDestination = new CfnDeliveryDestination(this, "DistributionDeliveryDestination", {
+      name: `${Names.uniqueResourceName(this, {maxLength:55})}-dest`,
+      destinationResourceArn: cloudfrontLogGroup.logGroupArn,
+      outputFormat: "json"
+    })
+
     // Outputs
 
     // Exports
@@ -245,9 +253,9 @@ export class UsCertsStack extends Stack {
       exportName: `${props.stackName}:fullCognitoDomain:Name`
     })
 
-    new CfnOutput(this, "CloudFrontLogGroupArn", {
-      value: cloudfrontLogGroup.logGroupArn,
-      exportName: `${props.stackName}:CloudFrontLogGroup:Arn`
+    new CfnOutput(this, "distDeliveryDestination", {
+      value: distDeliveryDestination.attrArn,
+      exportName: `${props.stackName}:CloudFrontLogDeliveryDestination:Arn`
     })
 
     this.fullCloudfrontDomain = fullCloudfrontDomain

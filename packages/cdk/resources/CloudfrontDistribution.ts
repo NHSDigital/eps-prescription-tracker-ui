@@ -8,12 +8,7 @@ import {
   SecurityPolicyProtocol,
   SSLMethod
 } from "aws-cdk-lib/aws-cloudfront"
-import {
-  CfnDelivery,
-  CfnDeliveryDestination,
-  CfnDeliverySource,
-  ILogGroup
-} from "aws-cdk-lib/aws-logs"
+import {CfnDelivery, CfnDeliverySource} from "aws-cdk-lib/aws-logs"
 import {
   AaaaRecord,
   ARecord,
@@ -42,7 +37,7 @@ export interface CloudfrontDistributionProps {
   readonly cloudfrontCert: ICertificate
   readonly webAclAttributeArn: string
   readonly wafAllowGaRunnerConnectivity: boolean
-  readonly cloudfrontLogGroup: ILogGroup
+  readonly cloudFrontLogDeliveryDestinationArn: string
 }
 
 /**
@@ -103,18 +98,11 @@ export class CloudfrontDistribution extends Construct {
         resourceArn: cloudfrontDistribution.distributionArn
     })
 
-    const distDeliveryDestination = new CfnDeliveryDestination(this, "DistributionDeliveryDestination", {
-      name: `${Names.uniqueResourceName(this, {maxLength:55})}-dest`,
-      destinationResourceArn: props.cloudfrontLogGroup.logGroupArn,
-      outputFormat: "json"
-    })
-
     const delivery = new CfnDelivery(this, "DistributionDelivery", {
         deliverySourceName: distDeliverySource.name,
-        deliveryDestinationArn: distDeliveryDestination.attrArn
+        deliveryDestinationArn: props.cloudFrontLogDeliveryDestinationArn
     })
     delivery.node.addDependency(distDeliverySource)
-    delivery.node.addDependency(distDeliveryDestination)
 
     // Outputs
     this.distribution = cloudfrontDistribution

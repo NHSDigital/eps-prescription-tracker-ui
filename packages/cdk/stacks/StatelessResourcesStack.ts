@@ -40,7 +40,6 @@ import {HostedZone} from "aws-cdk-lib/aws-route53"
 import {Certificate} from "aws-cdk-lib/aws-certificatemanager"
 import {WebACL} from "../resources/WebApplicationFirewall"
 import {CfnWebACLAssociation} from "aws-cdk-lib/aws-wafv2"
-import {LogGroup} from "aws-cdk-lib/aws-logs"
 
 export interface StatelessResourcesStackProps extends StackProps {
   readonly serviceName: string
@@ -99,7 +98,7 @@ export class StatelessResourcesStack extends Stack {
     const githubAllowListIpv4 = this.node.tryGetContext("githubAllowListIpv4")
     const githubAllowListIpv6 = this.node.tryGetContext("githubAllowListIpv6")
     const cloudfrontOriginCustomHeader = this.node.tryGetContext("cloudfrontOriginCustomHeader")
-    const cloudfrontLogGroupImport: string = this.node.tryGetContext("cloudfrontLogGroup")
+    const cloudFrontLogDeliveryDestinationArn: string = this.node.tryGetContext("cloudFrontLogDeliveryDestinationArn")
 
     // Imports
     const baseImportPath = `${props.serviceName}-stateful-resources`
@@ -208,8 +207,6 @@ export class StatelessResourcesStack extends Stack {
     })
     const cloudfrontCert = Certificate.fromCertificateArn(this, "CloudfrontCert", cloudfrontCertArn)
     const deploymentRole = Role.fromRoleArn(this, "deploymentRole", deploymentRoleImport)
-
-    const cloudfrontLogGroup = LogGroup.fromLogGroupArn(this, "cloudfrontLogGroup", cloudfrontLogGroupImport)
 
     // Resources
 
@@ -531,7 +528,7 @@ export class StatelessResourcesStack extends Stack {
       ],
       webAclAttributeArn: webAclAttributeArn,
       wafAllowGaRunnerConnectivity: wafAllowGaRunnerConnectivity,
-      cloudfrontLogGroup: cloudfrontLogGroup
+      cloudFrontLogDeliveryDestinationArn: cloudFrontLogDeliveryDestinationArn
     })
 
     // Outputs
