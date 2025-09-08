@@ -54,8 +54,8 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
   }
 
   useEffect(() => {
-    const currentPath = window.location.pathname
-    const onSelectYourRole = currentPath === `/site${FRONTEND_PATHS.SELECT_YOUR_ROLE}`
+    const currentPath = location.pathname
+    const onSelectYourRole = currentPath === FRONTEND_PATHS.SELECT_YOUR_ROLE
     if (auth.isSigningIn && onSelectYourRole) {
       return
     }
