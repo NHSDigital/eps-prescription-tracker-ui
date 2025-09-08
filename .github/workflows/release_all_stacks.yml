@@ -157,15 +157,46 @@ jobs:
       - name: check first deployment
         id: check_first_deployment
         run: |
-          # shellcheck disable=SC2140
-          cloudfrontDistributionId=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='"${{ inputs.SERVICE_NAME }}-stateless-resources:cloudfrontDistribution:Id"'].Value" --output text)
-          if [ -z "${cloudfrontDistributionId}" ]; then
+          CF_LONDON_EXPORTS=$(aws cloudformation list-exports --region eu-west-2 --output json)
+          CLOUDFRONT_DISTRIBUTION_ID=$(echo "$CF_LONDON_EXPORTS" | \
+              jq \
+              --arg EXPORT_NAME "${SERVICE_NAME}-stateless-resources:cloudfrontDistribution:Id" \
+              -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+          CLOUDFRONT_DISTRIBUTION_ARN=$(echo "$CF_LONDON_EXPORTS" | \
+              jq \
+              --arg EXPORT_NAME "${SERVICE_NAME}-stateless-resources:cloudfrontDistribution:Arn" \
+              -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+          RUM_LOG_GROUP_ARN=$(echo "$CF_LONDON_EXPORTS" | \
+              jq \
+              --arg EXPORT_NAME "${SERVICE_NAME}-stateful-resources:rum:logGroup:arn" \
+              -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+          RUM_APP_NAME=$(echo "$CF_LONDON_EXPORTS" | \
+              jq \
+              --arg EXPORT_NAME "${SERVICE_NAME}-stateful-resources:rum:rumApp:Name" \
+              -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+          FIRST_DEPLOYMENT="false"
+
+          if [ -z "${CLOUDFRONT_DISTRIBUTION_ID}" ]; then
+            echo "CLOUDFRONT_DISTRIBUTION_ID not found - setting first deployment to true"
             FIRST_DEPLOYMENT="true"
-            echo "This is the first deployment"
-          else
-            FIRST_DEPLOYMENT="false"
-            echo "This is not the first deployment"
           fi
+          if [ -z "${CLOUDFRONT_DISTRIBUTION_ARN}" ]; then
+            echo "CLOUDFRONT_DISTRIBUTION_ARN not found - setting first deployment to true"
+            FIRST_DEPLOYMENT="true"
+          fi
+          if [ -z "${RUM_LOG_GROUP_ARN}" ]; then
+            echo "RUM_LOG_GROUP_ARN not found - setting first deployment to true"
+            FIRST_DEPLOYMENT="true"
+          fi
+          if [ -z "${RUM_APP_NAME}" ]; then
+            echo "RUM_APP_NAME not found - setting first deployment to true"
+            FIRST_DEPLOYMENT="true"
+          fi
+
+          if [ "${FIRST_DEPLOYMENT}" == "false" ]; then
+            echo "Everything already set - setting first deployment to false"
+          fi
+
           echo "FIRST_DEPLOYMENT=$FIRST_DEPLOYMENT" >> "$GITHUB_OUTPUT"
         shell: bash
 
