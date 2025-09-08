@@ -1,4 +1,3 @@
-import {Names} from "aws-cdk-lib"
 import {ICertificate} from "aws-cdk-lib/aws-certificatemanager"
 import {
   BehaviorOptions,
@@ -8,7 +7,6 @@ import {
   SecurityPolicyProtocol,
   SSLMethod
 } from "aws-cdk-lib/aws-cloudfront"
-import {CfnDelivery, CfnDeliverySource} from "aws-cdk-lib/aws-logs"
 import {
   AaaaRecord,
   ARecord,
@@ -91,18 +89,6 @@ export class CloudfrontDistribution extends Construct {
         recordName: props.shortCloudfrontDomain,
         target: RecordTarget.fromAlias(new CloudFrontTarget(cloudfrontDistribution))})
     }
-
-    const distDeliverySource = new CfnDeliverySource(this, "DistributionDeliverySource", {
-        name: `${Names.uniqueResourceName(this, {maxLength:55})}-src`,
-        logType: "ACCESS_LOGS",
-        resourceArn: cloudfrontDistribution.distributionArn
-    })
-
-    const delivery = new CfnDelivery(this, "DistributionDelivery", {
-        deliverySourceName: distDeliverySource.name,
-        deliveryDestinationArn: props.cloudFrontLogDeliveryDestinationArn
-    })
-    delivery.node.addDependency(distDeliverySource)
 
     // Outputs
     this.distribution = cloudfrontDistribution

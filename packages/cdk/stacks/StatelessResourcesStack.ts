@@ -538,6 +538,10 @@ export class StatelessResourcesStack extends Stack {
       value: cloudfrontDistribution.distribution.distributionId,
       exportName: `${props.stackName}:cloudfrontDistribution:Id`
     })
+    new CfnOutput(this, "CloudfrontDistributionArn", {
+      value: cloudfrontDistribution.distribution.distributionArn,
+      exportName: `${props.stackName}:cloudfrontDistribution:Arn`
+    })
     new CfnOutput(this, "KeyValueStoreArn", {
       value: cloudfrontBehaviors.keyValueStore.keyValueStoreArn,
       exportName: `${props.stackName}:KeyValueStore:Arn`

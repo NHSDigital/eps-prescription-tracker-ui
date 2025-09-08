@@ -144,11 +144,10 @@ if [ -z "${SPLUNK_SUBSCRIPTION_FILTER_ROLE}" ]; then
         --arg EXPORT_NAME "lambda-resources:SplunkSubscriptionFilterRole" \
         -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
 fi
-
-if [ -z "${CLOUDFRONT_LOG_DELIVERY_DESTINATION_ARN}" ]; then
-    CLOUDFRONT_LOG_DELIVERY_DESTINATION_ARN=$(echo "$CF_US_EXPORTS" | \
+if [ -z "${CLOUDFRONT_DISTRIBUTION_ARN}" ]; then
+    CLOUDFRONT_DISTRIBUTION_ARN=$(echo "$CF_LONDON_EXPORTS" | \
         jq \
-        --arg EXPORT_NAME "${SERVICE_NAME}-us-certs:CloudFrontLogDeliveryDestination:Arn" \
+        --arg EXPORT_NAME "${SERVICE_NAME}-stateless-resources:cloudfrontDistribution:Arn" \
         -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
 fi
 
@@ -207,9 +206,12 @@ if [ "$CDK_APP_NAME" == "StatefulResourcesApp" ]; then
     fix_string_key epsHostedZoneId "${EPS_HOSTED_ZONE_ID}"
 
     fix_boolean_number_key allowAutoDeleteObjects "${AUTO_DELETE_OBJECTS}"
-    # we may not have cloudfront distribution id if its a first deployment
+    # we may not have cloudfront distribution details if its a first deployment
     if [ -n "${CLOUDFRONT_DISTRIBUTION_ID}" ]; then
         fix_string_key cloudfrontDistributionId "${CLOUDFRONT_DISTRIBUTION_ID}"
+    fi
+    if [ -n "${CLOUDFRONT_DISTRIBUTION_ARN}" ]; then
+        fix_string_key cloudfrontDistributionArn "${CLOUDFRONT_DISTRIBUTION_ARN}"
     fi
     # if we have a rum log group arn, then we can set cwLogEnabled on the rum app
     if [ -n "${RUM_LOG_GROUP_ARN}" ]; then
@@ -241,7 +243,6 @@ elif [ "$CDK_APP_NAME" == "StatelessResourcesApp" ]; then
     fix_list_key githubAllowListIpv4 "${GITHUB_ACTIONS_RUNNER_IPV4}"
     fix_list_key githubAllowListIpv6 "${GITHUB_ACTIONS_RUNNER_IPV6}"
     fix_string_key cloudfrontOriginCustomHeader "${CLOUDFRONT_ORIGIN_CUSTOM_HEADER}"
-    fix_string_key cloudFrontLogDeliveryDestinationArn "${CLOUDFRONT_LOG_DELIVERY_DESTINATION_ARN}"
     
     if [ "$USE_MOCK_OIDC" == "true" ]; then
         fix_string_key mockOidcClientId "${MOCK_OIDC_CLIENT_ID}"

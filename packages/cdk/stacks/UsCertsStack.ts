@@ -12,7 +12,9 @@ import {ARecord, HostedZone, RecordTarget} from "aws-cdk-lib/aws-route53"
 import {Certificate, CertificateValidation} from "aws-cdk-lib/aws-certificatemanager"
 import {WebACL} from "../resources/WebApplicationFirewall"
 import {
+  CfnDelivery,
   CfnDeliveryDestination,
+  CfnDeliverySource,
 CfnLogGroup,
 CfnSubscriptionFilter,
 LogGroup,
@@ -64,6 +66,7 @@ export class UsCertsStack extends Stack {
     const useZoneApex: boolean = this.node.tryGetContext("useZoneApex")
     const splunkDeliveryStream: string = this.node.tryGetContext("splunkDeliveryStream")
     const splunkSubscriptionFilterRole: string = this.node.tryGetContext("splunkSubscriptionFilterRole")
+    const cloudfrontDistributionArn: string = this.node.tryGetContext("cloudfrontDistributionArn")
 
     // Coerce context and imports to relevant types
     const hostedZone = HostedZone.fromHostedZoneAttributes(this, "hostedZone", {
@@ -224,6 +227,21 @@ export class UsCertsStack extends Stack {
       outputFormat: "json"
     })
 
+    if (cloudfrontDistributionArn){
+      const distDeliverySource = new CfnDeliverySource(this, "DistributionDeliverySource", {
+          name: `${Names.uniqueResourceName(this, {maxLength:55})}-src`,
+          logType: "ACCESS_LOGS",
+          resourceArn: cloudfrontDistributionArn
+      })
+
+      const delivery = new CfnDelivery(this, "DistributionDelivery", {
+          deliverySourceName: distDeliverySource.name,
+          deliveryDestinationArn: distDeliveryDestination.attrArn
+      })
+      delivery.node.addDependency(distDeliverySource)
+
+    }
+
     // Outputs
 
     // Exports
@@ -251,11 +269,6 @@ export class UsCertsStack extends Stack {
     new CfnOutput(this, "fullCognitoDomain", {
       value: fullCognitoDomain,
       exportName: `${props.stackName}:fullCognitoDomain:Name`
-    })
-
-    new CfnOutput(this, "distDeliveryDestination", {
-      value: distDeliveryDestination.attrArn,
-      exportName: `${props.stackName}:CloudFrontLogDeliveryDestination:Arn`
     })
 
     this.fullCloudfrontDomain = fullCloudfrontDomain
