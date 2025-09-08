@@ -35,7 +35,6 @@ export interface CloudfrontDistributionProps {
   readonly cloudfrontCert: ICertificate
   readonly webAclAttributeArn: string
   readonly wafAllowGaRunnerConnectivity: boolean
-  readonly cloudFrontLogDeliveryDestinationArn: string
 }
 
 /**

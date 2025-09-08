@@ -98,7 +98,6 @@ export class StatelessResourcesStack extends Stack {
     const githubAllowListIpv4 = this.node.tryGetContext("githubAllowListIpv4")
     const githubAllowListIpv6 = this.node.tryGetContext("githubAllowListIpv6")
     const cloudfrontOriginCustomHeader = this.node.tryGetContext("cloudfrontOriginCustomHeader")
-    const cloudFrontLogDeliveryDestinationArn: string = this.node.tryGetContext("cloudFrontLogDeliveryDestinationArn")
 
     // Imports
     const baseImportPath = `${props.serviceName}-stateful-resources`
@@ -527,8 +526,7 @@ export class StatelessResourcesStack extends Stack {
         }
       ],
       webAclAttributeArn: webAclAttributeArn,
-      wafAllowGaRunnerConnectivity: wafAllowGaRunnerConnectivity,
-      cloudFrontLogDeliveryDestinationArn: cloudFrontLogDeliveryDestinationArn
+      wafAllowGaRunnerConnectivity: wafAllowGaRunnerConnectivity
     })
 
     // Outputs
