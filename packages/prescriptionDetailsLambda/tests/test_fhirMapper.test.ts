@@ -153,7 +153,7 @@ describe("extractPrescribedItems", () => {
       quantity: "30",
       dosageInstructions: "Take once daily",
       epsStatusCode: "unknown",
-      nhsAppStatus: undefined,
+      psuStatus: undefined,
       itemPendingCancellation: false,
       cancellationReason: undefined,
       notDispensedReason: undefined
@@ -181,7 +181,7 @@ describe("extractPrescribedItems", () => {
       quantity: "Unknown",
       dosageInstructions: undefined,
       epsStatusCode: "unknown",
-      nhsAppStatus: undefined,
+      psuStatus: undefined,
       itemPendingCancellation: false,
       cancellationReason: undefined,
       notDispensedReason: undefined
@@ -238,5 +238,41 @@ describe("extractPrescribedItems", () => {
 
     const result = extractItems(medicationRequests, [])
     expect(result[0].epsStatusCode).toBe("0001")
+  })
+
+  it("should extract psuStatus from DM prescription status update extension", () => {
+    const medicationRequests: Array<MedicationRequest> = [
+      {
+        resourceType: "MedicationRequest",
+        status: "active",
+        intent: "order",
+        subject: {},
+        extension: [
+          {
+            url: "https://fhir.nhs.uk/StructureDefinition/Extension-DM-PrescriptionStatusHistory",
+            extension: [
+              {url: "status", valueCoding: {code: "Dispatched"}}
+            ]
+          }
+        ]
+      }
+    ]
+    const result = extractItems(medicationRequests, [])
+    expect(result[0].psuStatus).toBe("Dispatched")
+  })
+
+  it("should return undefined psuStatus if DM extension is missing", () => {
+    const medicationRequests: Array<MedicationRequest> = [
+      {
+        resourceType: "MedicationRequest",
+        status: "active",
+        intent: "order",
+        subject: {},
+        extension: []
+      }
+    ]
+
+    const result = extractItems(medicationRequests, [])
+    expect(result[0].psuStatus).toBeUndefined()
   })
 })
