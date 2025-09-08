@@ -11,7 +11,8 @@ export const authenticationConcurrentAwareMiddleware = (
   axiosInstance: AxiosInstance,
   ddbClient: DynamoDBDocumentClient,
   authOptions: AuthenticateRequestOptions,
-  logger: Logger
+  logger: Logger,
+  disableTokenRefresh: boolean = false
 ) => ({
   before: async (request) => {
     const {event} = request
@@ -51,13 +52,13 @@ export const authenticationConcurrentAwareMiddleware = (
           logger.debug("Session ID matches the session management item, proceeding with authentication")
           isConcurrentSession = true
           authResult = await authenticateRequest(username, axiosInstance, ddbClient, logger,
-            authOptions, sessionManagementItem, authOptions.sessionManagementTableName)
+            authOptions, sessionManagementItem, authOptions.sessionManagementTableName, disableTokenRefresh)
 
         } else if (tokenMappingItem !== undefined && tokenMappingSessionId === sessionId) {
           logger.debug("Session ID matches the token mapping item, proceeding with authentication")
           isConcurrentSession = false
           authResult = await authenticateRequest(username, axiosInstance, ddbClient, logger,
-            authOptions, tokenMappingItem, authOptions.tokenMappingTableName)
+            authOptions, tokenMappingItem, authOptions.tokenMappingTableName, disableTokenRefresh)
 
         } else {
           logger.error("Request token doesn't match any sessionId in the token mapping or session management table, \

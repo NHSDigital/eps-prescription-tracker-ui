@@ -73,7 +73,8 @@ const refreshTokenFlow = async (
     apigeeApiSecret: string
     jwtKid: string
     apigeeTokenEndpoint: string
-  }
+  },
+  lastActivityTime: number
 ): Promise<ApigeeTokenResponse> => {
   if (existingToken.refreshToken === undefined) {
     throw new Error("Missing refresh token")
@@ -96,7 +97,7 @@ const refreshTokenFlow = async (
       apigeeAccessToken: refreshResult.accessToken,
       apigeeExpiresIn: refreshResult.expiresIn,
       apigeeRefreshToken: refreshResult.refreshToken,
-      lastActivityTime: Date.now()
+      lastActivityTime: lastActivityTime
     },
     logger
   )
@@ -131,12 +132,16 @@ export async function authenticateRequest(
     cloudfrontDomain
   }: AuthenticateRequestOptions,
   userRecord: TokenMappingItem,
-  specifiedTokenTable: string
+  specifiedTokenTable: string,
+  disableLastActivityUpdate: boolean
 ): Promise<AuthResult | null> {
   logger.info("Starting authentication flow")
 
   // Extract username and determine if this is a mock request
   const isMockRequest = username.startsWith("Mock_")
+
+  // If disableTokenRefresh is true, we won't update lastActivityTime
+  const lastActivityTime = disableLastActivityUpdate ? userRecord.lastActivityTime : Date.now()
 
   if (Date.now() - userRecord.lastActivityTime > fifteenMinutes) {
     logger.info("Last activity was more than 15 minutes ago, clearing user record")
@@ -180,7 +185,8 @@ export async function authenticateRequest(
             apigeeApiSecret,
             jwtKid,
             apigeeTokenEndpoint: isMockRequest ? apigeeMockTokenEndpoint : apigeeCis2TokenEndpoint
-          }
+          },
+          lastActivityTime
         )
 
         return {
@@ -200,12 +206,13 @@ export async function authenticateRequest(
         isMockRequest
       })
 
+      // Don't update last activity time if token refresh is disabled
       await updateTokenMapping(
-        documentClient,
-        specifiedTokenTable,
-        {username, lastActivityTime: Date.now()},
-        logger
-      )
+          documentClient,
+          specifiedTokenTable,
+          {username, lastActivityTime: lastActivityTime},
+          logger
+        )
 
       return {
         username,
@@ -283,7 +290,7 @@ export async function authenticateRequest(
       apigeeAccessToken: exchangeResult.accessToken,
       apigeeRefreshToken: exchangeResult.refreshToken,
       apigeeExpiresIn: exchangeResult.expiresIn,
-      lastActivityTime: Date.now()
+      lastActivityTime: lastActivityTime
     },
     logger
   )

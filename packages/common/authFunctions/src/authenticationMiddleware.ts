@@ -34,7 +34,7 @@ export const authenticationMiddleware = (
         // Feed the token mapping item to authenticateRequest
         logger.info("Session ID matches the token mapping item, proceeding with authentication")
         authResult = await authenticateRequest(username, axiosInstance, ddbClient, logger, authOptions,
-          tokenMappingItem, authOptions.tokenMappingTableName)
+          tokenMappingItem, authOptions.tokenMappingTableName, false)
       } else {
         logger.error("Session ID does not match the token mapping item, treating as invalid session")
         authResult = null

@@ -143,7 +143,8 @@ describe("authenticationConcurrentAwareMiddleware", () => {
         logger,
         authOptions,
         sessionManagementItem,
-        authOptions.sessionManagementTableName
+        authOptions.sessionManagementTableName,
+        false
       )
       expect(mockEvent.requestContext.authorizer).toEqual({
         ...authResult,
@@ -199,7 +200,8 @@ describe("authenticationConcurrentAwareMiddleware", () => {
         logger,
         authOptions,
         tokenMappingItem,
-        authOptions.tokenMappingTableName
+        authOptions.tokenMappingTableName,
+        false
       )
       expect(mockEvent.requestContext.authorizer).toEqual({
         ...authResult,
@@ -251,7 +253,8 @@ describe("authenticationConcurrentAwareMiddleware", () => {
         logger,
         authOptions,
         sessionManagementItem,
-        authOptions.sessionManagementTableName
+        authOptions.sessionManagementTableName,
+        false
       )
       expect(mockEvent.requestContext.authorizer.isConcurrentSession).toBe(true)
       expect(logger.debug).toHaveBeenCalledWith(
