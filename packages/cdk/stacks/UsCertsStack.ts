@@ -1,6 +1,7 @@
 import {
   App,
   CfnOutput,
+  Duration,
   Environment,
   RemovalPolicy,
   Stack,
@@ -15,7 +16,14 @@ CfnSubscriptionFilter,
 LogGroup,
 RetentionDays
 } from "aws-cdk-lib/aws-logs"
-import {PolicyStatement, ServicePrincipal} from "aws-cdk-lib/aws-iam"
+import {
+AccountRootPrincipal,
+ArnPrincipal,
+Effect,
+PolicyDocument,
+PolicyStatement,
+ServicePrincipal
+} from "aws-cdk-lib/aws-iam"
 import {Key} from "aws-cdk-lib/aws-kms"
 
 export interface UsCertsStackProps extends StackProps {
@@ -112,9 +120,65 @@ export class UsCertsStack extends Stack {
 
     // cloudfront log group - needs to be in us-east-1 region
     const cloudWatchLogsKmsKey = new Key(this, "cloudWatchLogsKmsKey", {
+      removalPolicy: RemovalPolicy.DESTROY,
+      pendingWindow: Duration.days(7),
+      alias: `${props.stackName}-TokensMappingKMSKey`,
+      description: `${props.stackName}-TokensMappingKMSKey`,
       enableKeyRotation: true,
-      alias: "cloudWatchLogsKmsKey"
+      policy: new PolicyDocument({
+        statements: [
+          new PolicyStatement({
+            sid: "Enable IAM User Permissions",
+            effect: Effect.ALLOW,
+            actions: [
+              "kms:*"
+            ],
+            principals: [
+              new AccountRootPrincipal
+            ],
+            resources: ["*"]
+          }),
+          new PolicyStatement({
+            sid: "Allow service logging",
+            effect: Effect.ALLOW,
+            actions: [
+              "kms:Encrypt*",
+              "kms:Decrypt*",
+              "kms:ReEncrypt*",
+              "kms:GenerateDataKey*",
+              "kms:Describe*"
+            ],
+            principals: [
+              new ServicePrincipal(`logs.${this.region}.amazonaws.com`)
+            ],
+            resources: ["*"],
+            conditions: {
+              "ArnEquals": {
+                "kms:EncryptionContext:aws:logs:arn": [
+                  `arn:aws:logs:${this.region}:${this.account}:log-group:/aws/cloudfront/*`
+                ]
+              }
+            }
+          }),
+          new PolicyStatement({
+            sid: "Enable deployment role",
+            effect: Effect.ALLOW,
+            actions: [
+              "kms:DescribeKey",
+              "kms:GenerateDataKey*",
+              "kms:Encrypt",
+              "kms:ReEncrypt*"
+            ],
+            principals: [
+              // eslint-disable-next-line max-len
+              new ArnPrincipal(`arn:aws:iam::${this.account}:role/cdk-hnb659fds-cfn-exec-role-${this.account}-${this.region}`)
+            ],
+            resources: ["*"]
+          })
+        ]
+      })
     })
+
     const cloudfrontLogGroup = new LogGroup(this, "CloudFrontLogGroup", {
       encryptionKey: cloudWatchLogsKmsKey,
       logGroupName: `/aws/cloudfront/${props.stackName}`,
