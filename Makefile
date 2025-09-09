@@ -213,6 +213,8 @@ cdk-synth-stateful-resources-no-mock:
 	ALLOW_LOCALHOST_ACCESS=false \
 	WAF_ALLOW_GA_RUNNER_CONNECTIVITY=true \
 	CLOUDFRONT_ORIGIN_CUSTOM_HEADER=foo \
+	SPLUNK_DELIVERY_STREAM=foo \
+	SPLUNK_SUBSCRIPTION_FILTER_ROLE=foo \
 	DO_NOT_GET_AWS_EXPORT=true \
 	USE_ZONE_APEX=false \
 		 ./.github/scripts/fix_cdk_json.sh .local_config/stateful_app.config.json
@@ -304,6 +306,8 @@ cdk-synth-stateful-resources-mock:
 	ALLOW_LOCALHOST_ACCESS=false \
 	WAF_ALLOW_GA_RUNNER_CONNECTIVITY=true \
 	CLOUDFRONT_ORIGIN_CUSTOM_HEADER=foo \
+	SPLUNK_DELIVERY_STREAM=foo \
+	SPLUNK_SUBSCRIPTION_FILTER_ROLE=foo \
 	DO_NOT_GET_AWS_EXPORT=true \
 	USE_ZONE_APEX=false \
 		 ./.github/scripts/fix_cdk_json.sh .local_config/stateful_app.config.json
