@@ -11,7 +11,8 @@ import {
   signInWithRedirect,
   signOut,
   SignInWithRedirectInput,
-  deleteUser
+  deleteUser,
+  fetchAuthSession
 } from "aws-amplify/auth"
 import {authConfig} from "./configureAmplify"
 
@@ -100,7 +101,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
     setIsConcurrentSession(false)
   }
 
-  const updateTrackerUserInfo = async() => {
+  const updateTrackerUserInfo = async () => {
     const trackerUserInfo = await getTrackerUserInfo()
     setRolesWithAccess(trackerUserInfo.rolesWithAccess)
     setRolesWithoutAccess(trackerUserInfo.rolesWithoutAccess)
@@ -229,25 +230,48 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
     return signInWithRedirect(input)
   }
 
-  const updateSelectedRole = async(newRole: RoleDetails) => {
+  const updateSelectedRole = async (newRole: RoleDetails) => {
     await updateRemoteSelectedRole(newRole)
     setSelectedRole(newRole)
   }
 
-  // if not authorised and trying to access protected content, redirect
   useEffect(() => {
-    // Don't redirect during OAuth callback flow
-    const urlParams = new URLSearchParams(window.location.search)
-    const isOAuthCallback = urlParams.has("code") && urlParams.has("state")
+    const validateInitialSession = async () => {
+      try {
+        logger.info("Validating initial session state...")
+        const authSession = await fetchAuthSession()
+        const hasValidSession = authSession.tokens?.idToken !== undefined
 
-    if (isOAuthCallback) {
-      logger.info("OAuth callback detected, skipping auth guard redirect")
-      return
+        // check if localStorage and actual session are in sync
+        if (isSignedIn && !hasValidSession) {
+          logger.warn("localStorage indicates signed in but no valid Amplify session found - clearing auth state")
+          clearAuthState()
+        } else if (!isSignedIn && hasValidSession) {
+          logger.info("Valid Amplify session found but localStorage indicates signed out - updating auth state")
+          // we have a valid session but localStorage is wrong
+          setIsSignedIn(true)
+          // also fetch user info since we have a valid session
+          await updateTrackerUserInfo()
+        }
+
+        logger.info("Session validation complete")
+      } catch (error) {
+        logger.warn("Error validating initial session state:", error)
+        // if we can't validate the session and localStorage says we're signed in,
+        // be conservative and clear the state
+        if (isSignedIn) {
+          logger.info("Clearing auth state due to session validation error")
+          clearAuthState()
+        }
+      }
     }
 
-    // Normalize path by removing /site prefix
-    const currentPath = normalizePath(location.pathname)
+    validateInitialSession()
+  }, [])
 
+  // if not authorised and trying to access protected content, redirect
+  useEffect(() => {
+    const currentPath = normalizePath(location.pathname)
     if (!isSignedIn && !isSigningIn && !PUBLIC_PATHS.includes(currentPath)) {
       logger.info(`Redirecting unauthenticated user from ${currentPath} to login`)
       navigate(FRONTEND_PATHS.LOGIN, {replace: true})

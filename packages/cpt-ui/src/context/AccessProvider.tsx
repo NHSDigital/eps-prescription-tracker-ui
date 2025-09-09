@@ -1,8 +1,8 @@
 import React, {
-createContext,
-useContext,
-useEffect,
-ReactNode
+  createContext,
+  useContext,
+  useEffect,
+  ReactNode
 } from "react"
 import {useLocation, useNavigate} from "react-router-dom"
 

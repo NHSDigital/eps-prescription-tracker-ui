@@ -205,42 +205,29 @@ describe("Layout", () => {
     })
 
     describe("on protected paths", () => {
-      it("should redirect to login on prescription search path", () => {
+      it("should render normal layout components (auth handled by AuthProvider)", () => {
         renderLayout("/search-by-prescription-id")
 
-        const navigateElement = screen.getByTestId("navigate")
-        expect(navigateElement).toBeInTheDocument()
-        expect(navigateElement).toHaveAttribute(
-          "data-to",
-          FRONTEND_PATHS.LOGIN
-        )
-        expect(navigateElement).toHaveAttribute("data-replace", "true")
+        expect(screen.getByTestId("eps-header")).toBeInTheDocument()
+        expect(screen.getByTestId("patient-banner")).toBeInTheDocument()
+        expect(screen.getByTestId("prescription-banner")).toBeInTheDocument()
+        expect(screen.getByTestId("outlet")).toBeInTheDocument()
+        expect(screen.getByTestId("rbac-banner")).toBeInTheDocument()
+        expect(screen.getByTestId("eps-footer")).toBeInTheDocument()
       })
 
-      it("should redirect to login on prescription details path", () => {
+      it("should not handle redirects (delegated to AuthProvider)", () => {
         renderLayout("/prescription-details")
 
-        const navigateElement = screen.getByTestId("navigate")
-        expect(navigateElement).toBeInTheDocument()
-        expect(navigateElement).toHaveAttribute(
-          "data-to",
-          FRONTEND_PATHS.LOGIN
-        )
-      })
-
-      it("should not render layout components on protected path", () => {
-        renderLayout("/search-by-prescription-id")
-
-        // should only see Navigate, not layout components
-        expect(screen.queryByTestId("eps-header")).not.toBeInTheDocument()
-        expect(screen.queryByTestId("outlet")).not.toBeInTheDocument()
-        expect(screen.queryByTestId("eps-footer")).not.toBeInTheDocument()
+        // Layout should render normally, auth redirects handled elsewhere
+        expect(screen.getByTestId("eps-header")).toBeInTheDocument()
+        expect(screen.queryByTestId("navigate")).not.toBeInTheDocument()
       })
     })
   })
 
-  describe("render guard security", () => {
-    it("should prevent authenticated UI from showing before redirect", () => {
+  describe("layout rendering", () => {
+    it("should always render layout components (auth handled by AuthProvider)", () => {
       mockUseAuth.mockReturnValue({
         isSignedIn: false,
         isSigningIn: false
@@ -248,14 +235,12 @@ describe("Layout", () => {
 
       renderLayout("/search-by-prescription-id")
 
-      // navigate should be rendered immediately, no layout components
-      expect(screen.getByTestId("navigate")).toBeInTheDocument()
-      expect(screen.queryByTestId("eps-header")).not.toBeInTheDocument()
-      expect(screen.queryByTestId("patient-banner")).not.toBeInTheDocument()
-      expect(
-        screen.queryByTestId("prescription-banner")
-      ).not.toBeInTheDocument()
-      expect(screen.queryByTestId("outlet")).not.toBeInTheDocument()
+      // Layout renders components regardless of auth state
+      expect(screen.getByTestId("eps-header")).toBeInTheDocument()
+      expect(screen.getByTestId("patient-banner")).toBeInTheDocument()
+      expect(screen.getByTestId("prescription-banner")).toBeInTheDocument()
+      expect(screen.getByTestId("outlet")).toBeInTheDocument()
+      expect(screen.queryByTestId("navigate")).not.toBeInTheDocument()
     })
   })
 })

@@ -19,6 +19,33 @@ jest.mock("@/context/AuthProvider", () => ({
   useAuth: jest.fn()
 }))
 
+jest.mock("@/constants/environment", () => ({
+  FRONTEND_PATHS: {
+    LOGIN: "/login",
+    LOGOUT: "/logout",
+    SELECT_YOUR_ROLE: "/select-your-role",
+    SESSION_SELECTION: "/select-active-session",
+    COOKIES: "/cookies",
+    PRIVACY_NOTICE: "/privacy-notice",
+    COOKIES_SELECTED: "/cookies-selected"
+  },
+  ALLOWED_NO_ROLE_PATHS: [
+    "/login",
+    "/logout",
+    "/cookies",
+    "/privacy-notice",
+    "/cookies-selected",
+    "/",
+    "/select-active-session"
+  ]
+}))
+
+jest.mock("@/helpers/logger", () => ({
+  logger: {
+    info: jest.fn()
+  }
+}))
+
 const TestComponent = () => {
   useAccess() // Just to test the context
   return <div>Test Component</div>

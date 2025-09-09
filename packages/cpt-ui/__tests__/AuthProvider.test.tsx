@@ -52,6 +52,48 @@ jest.mock("@/helpers/userInfo", () => ({
   getTrackerUserInfo: jest.fn()
 }))
 
+// Mock constants
+jest.mock("@/constants/environment", () => ({
+  PUBLIC_PATHS: [
+    "/login",
+    "/logout",
+    "/cookies",
+    "/privacy-notice",
+    "/cookies-selected",
+    "/"
+  ],
+  FRONTEND_PATHS: {
+    LOGIN: "/login",
+    LOGOUT: "/logout",
+    SELECT_YOUR_ROLE: "/select-your-role"
+  },
+  API_ENDPOINTS: {
+    CIS2_SIGNOUT_ENDPOINT: "/api/cis2-signout"
+  },
+  AUTH_CONFIG: {
+    USER_POOL_ID: "mock-pool-id",
+    USER_POOL_CLIENT_ID: "mock-client-id",
+    HOSTED_LOGIN_DOMAIN: "mock-domain",
+    REDIRECT_SIGN_IN: "mock-signin",
+    REDIRECT_SIGN_OUT: "mock-signout"
+  },
+  APP_CONFIG: {
+    REACT_LOG_LEVEL: "info"
+  }
+}))
+
+// Mock utils
+jest.mock("@/helpers/utils", () => ({
+  normalizePath: jest.fn((path) => path)
+}))
+
+// Mock react-router-dom
+jest.mock("react-router-dom", () => ({
+  ...jest.requireActual("react-router-dom"),
+  useLocation: jest.fn(() => ({pathname: "/"})),
+  useNavigate: jest.fn(() => jest.fn())
+}))
+
 // Tell TypeScript that axios is a mocked version.
 const mockedAxios = axios as jest.Mocked<typeof axios>
 
@@ -121,7 +163,6 @@ describe("AuthProvider", () => {
   const renderWithProvider = async ({
     TestComponent = <TestConsumer />
   }: RenderWithProviderOptions = {}) => {
-
     await act(async () => {
       render(
         <MemoryRouter>
@@ -344,5 +385,4 @@ describe("AuthProvider", () => {
     })
     expect(signOut).toHaveBeenCalled()
   })
-
 })
