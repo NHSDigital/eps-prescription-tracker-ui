@@ -16,6 +16,7 @@ import {
 import {CloudFrontTarget} from "aws-cdk-lib/aws-route53-targets"
 import {IBucket} from "aws-cdk-lib/aws-s3"
 import {Construct} from "constructs"
+import {CfnWebACLAssociation} from "aws-cdk-lib/aws-wafv2"
 
 /**
  * Cloudfront distribution and supporting resources
@@ -88,6 +89,11 @@ export class CloudfrontDistribution extends Construct {
         recordName: props.shortCloudfrontDomain,
         target: RecordTarget.fromAlias(new CloudFrontTarget(cloudfrontDistribution))})
     }
+
+    new CfnWebACLAssociation(this, "cloudfrontAssociation", {
+      resourceArn: cloudfrontDistribution.distributionArn,
+      webAclArn: props.webAclAttributeArn
+    })
 
     // Outputs
     this.distribution = cloudfrontDistribution
