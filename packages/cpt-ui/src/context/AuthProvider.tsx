@@ -18,7 +18,7 @@ import {useLocalStorageState} from "@/helpers/useLocalStorageState"
 import {API_ENDPOINTS} from "@/constants/environment"
 
 import http from "@/helpers/axios"
-import {RoleDetails, TrackerUserInfo, UserDetails} from "@cpt-ui-common/common-types"
+import {RoleDetails, TrackerUserInfoResult, UserDetails} from "@cpt-ui-common/common-types"
 import {getTrackerUserInfo, updateRemoteSelectedRole} from "@/helpers/userInfo"
 import {logger} from "@/helpers/logger"
 
@@ -30,6 +30,7 @@ export interface AuthContextType {
   isSignedIn: boolean
   isSigningIn: boolean
   isConcurrentSession: boolean
+  invalidSessionCause: string | undefined
   rolesWithAccess: Array<RoleDetails>
   rolesWithoutAccess: Array<RoleDetails>
   hasNoAccess: boolean
@@ -37,11 +38,11 @@ export interface AuthContextType {
   selectedRole: RoleDetails | undefined
   userDetails: UserDetails | undefined
   cognitoSignIn: (input?: SignInWithRedirectInput) => Promise<void>
-  cognitoSignOut: () => Promise<void>
+  cognitoSignOut: (redirectUrl?: string) => Promise<void>
   clearAuthState: () => void
   updateSelectedRole: (value: RoleDetails) => Promise<void>
   forceCognitoLogout: () => Promise<void>
-  updateTrackerUserInfo: () => Promise<TrackerUserInfo>
+  updateTrackerUserInfo: () => Promise<TrackerUserInfoResult>
 }
 
 export const AuthContext = createContext<AuthContextType | null>(null)
@@ -53,6 +54,8 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
   const [isSigningIn, setIsSigningIn] = useLocalStorageState<boolean>("isSigningIn", "isSigningIn", false)
   const [isConcurrentSession, setIsConcurrentSession] = useLocalStorageState<boolean>(
     "isConcurrentSession", "isConcurrentSession", false)
+  const [invalidSessionCause, setInvalidSessionCause] = useLocalStorageState<string | undefined>(
+    "invalidSessionCause", "invalidSessionCause", undefined)
   const [rolesWithAccess, setRolesWithAccess] = useLocalStorageState<Array<RoleDetails>>(
     "rolesWithAccess", "rolesWithAccess", [])
   const [rolesWithoutAccess, setRolesWithoutAccess] = useLocalStorageState<Array<RoleDetails>>(
@@ -94,6 +97,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
     setIsSignedIn(false)
     setIsSigningIn(false)
     setIsConcurrentSession(false)
+    setInvalidSessionCause(undefined)
   }
 
   const updateTrackerUserInfo = async() => {
@@ -106,6 +110,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
     setHasSingleRoleAccess(trackerUserInfo.hasSingleRoleAccess)
     setError(trackerUserInfo.error)
     setIsConcurrentSession(trackerUserInfo.isConcurrentSession)
+    setInvalidSessionCause(trackerUserInfo.invalidSessionCause)
     return trackerUserInfo
   }
 
@@ -186,7 +191,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
   /**
    * Sign out process.
    */
-  const cognitoSignOut = async () => {
+  const cognitoSignOut = async (redirectUrl?: string | null) => {
     logger.info("Signing out in authProvider...")
     try {
       // we need to sign out of cis2 first before signing out of cognito
@@ -197,7 +202,13 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
       logger.info(`calling amplify logout`)
       // this triggers a signedOutEvent which is handled by the hub listener
       // we clear all state in there
-      await signOut({global: true})
+      if (redirectUrl) {
+        logger.info("Setting amplify redirect", redirectUrl)
+        await signOut({global: true, oauth: {redirectUrl: redirectUrl}})
+      } else {
+        logger.info("Using default amplify redirect")
+        await signOut({global: true})
+      }
       logger.info("Frontend amplify signout OK!")
 
     } catch (err) {
@@ -233,6 +244,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
       selectedRole,
       userDetails,
       isConcurrentSession,
+      invalidSessionCause,
       cognitoSignIn,
       cognitoSignOut,
       clearAuthState,

@@ -22,6 +22,7 @@ const MockAuthProvider = ({
     user: defaultIsSignedIn ? {username: "testUser"} : null,
     isSignedIn: defaultIsSignedIn,
     isSigningIn: false,
+    invalidSessionCause: undefined,
     rolesWithAccess: [],
     rolesWithoutAccess: [],
     hasNoAccess: false,

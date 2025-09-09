@@ -2,17 +2,7 @@ import {API_ENDPOINTS} from "@/constants/environment"
 import http from "./axios"
 import {RoleDetails, TrackerUserInfo, UserDetails} from "@cpt-ui-common/common-types"
 import {logger} from "./logger"
-
-export type TrackerUserInfoResult = {
-  rolesWithAccess: Array<RoleDetails>,
-  rolesWithoutAccess: Array<RoleDetails>,
-  hasNoAccess: boolean
-  selectedRole: RoleDetails | undefined,
-  userDetails: UserDetails | undefined,
-  hasSingleRoleAccess: boolean,
-  isConcurrentSession: boolean,
-  error: string | null
-}
+import {TrackerUserInfoResult} from "@cpt-ui-common/common-types"
 
 export const getTrackerUserInfo = async (): Promise<TrackerUserInfoResult> => {
   let rolesWithAccess: Array<RoleDetails> = []
@@ -22,12 +12,16 @@ export const getTrackerUserInfo = async (): Promise<TrackerUserInfoResult> => {
   let userDetails: UserDetails | undefined = undefined
   let hasSingleRoleAccess: boolean = false
   let isConcurrentSession: boolean = false
+  let invalidSessionCause: string | undefined = undefined
   let error: string | null = null
 
   try {
     const response = await http.get(API_ENDPOINTS.TRACKER_USER_INFO)
 
     if (response.status !== 200) {
+      if (response.data.invalidSessionCause) {
+        invalidSessionCause = response.data.invalidSessionCause
+      }
       throw new Error(
         `Server did not return user info, response ${response.status}`
       )
@@ -79,6 +73,7 @@ export const getTrackerUserInfo = async (): Promise<TrackerUserInfoResult> => {
     userDetails,
     hasSingleRoleAccess,
     isConcurrentSession,
+    invalidSessionCause,
     error
   }
 }

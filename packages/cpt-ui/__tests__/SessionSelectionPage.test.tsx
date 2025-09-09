@@ -52,6 +52,7 @@ jest.mock("@/constants/environment", () => ({
 const defaultAuthState: AuthContextType = {
   isSignedIn: true,
   isSigningIn: false,
+  invalidSessionCause: undefined,
   user: "testUser",
   error: null,
   rolesWithAccess: [],

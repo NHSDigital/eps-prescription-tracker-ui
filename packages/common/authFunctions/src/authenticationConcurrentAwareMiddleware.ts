@@ -17,6 +17,8 @@ export const authenticationConcurrentAwareMiddleware = (
   before: async (request) => {
     const {event} = request
 
+    let invalidSessionCause: string | undefined = undefined
+
     try {
       const username = getUsernameFromEvent(event)
       const sessionId = getSessionIdFromEvent(event)
@@ -48,21 +50,49 @@ export const authenticationConcurrentAwareMiddleware = (
 
       // Ensure we're dealing with the correct token item, or kill the authentication.
       try {
-        if (sessionManagementItem !== undefined && sessionManagementSessionId === sessionId) {
-          logger.debug("Session ID matches the session management item, proceeding with authentication")
-          isConcurrentSession = true
-          authResult = await authenticateRequest(username, axiosInstance, ddbClient, logger,
-            authOptions, sessionManagementItem, authOptions.sessionManagementTableName, disableTokenRefresh)
+        switch (true) {
+          case sessionManagementItem !== undefined && sessionManagementSessionId === sessionId:
+            logger.debug("Session ID matches the session management item, proceeding with authentication")
+            isConcurrentSession = true
+            authResult = await authenticateRequest(
+              username,
+              axiosInstance,
+              ddbClient,
+              logger,
+              authOptions,
+              sessionManagementItem,
+              authOptions.sessionManagementTableName,
+              disableTokenRefresh
+            )
+            break
 
-        } else if (tokenMappingItem !== undefined && tokenMappingSessionId === sessionId) {
-          logger.debug("Session ID matches the token mapping item, proceeding with authentication")
-          isConcurrentSession = false
-          authResult = await authenticateRequest(username, axiosInstance, ddbClient, logger,
-            authOptions, tokenMappingItem, authOptions.tokenMappingTableName, disableTokenRefresh)
+          case tokenMappingItem !== undefined && tokenMappingSessionId === sessionId:
+            logger.debug("Session ID matches the token mapping item, proceeding with authentication")
+            isConcurrentSession = false
+            authResult = await authenticateRequest(
+              username,
+              axiosInstance,
+              ddbClient,
+              logger,
+              authOptions,
+              tokenMappingItem,
+              authOptions.tokenMappingTableName,
+              disableTokenRefresh
+            )
+            break
 
-        } else {
-          logger.error("Request token doesn't match any sessionId in the token mapping or session management table, \
-          treating as invalid session", {tokenMappingSessionId, sessionManagementSessionId})
+          case tokenMappingItem !== undefined:
+            logger.info("A session is active but does not match the requestors sessionId", {username, sessionId})
+            invalidSessionCause = "ConcurrentSession"
+            break
+
+          default:
+            logger.error("Request token invalid. No matching session found.", {
+              tokenMappingSessionId,
+              sessionManagementSessionId
+            })
+            invalidSessionCause = "InvalidSession"
+            break
         }
       } catch (error) {
         logger.error("Authentication failed returning restart login prompt", {error})
@@ -73,7 +103,10 @@ export const authenticationConcurrentAwareMiddleware = (
           statusCode: 401,
           body: JSON.stringify({
             message: "Session expired or invalid. Please log in again.",
-            restartLogin: true
+            restartLogin: true,
+            ...(invalidSessionCause && {
+            invalidSessionCause: invalidSessionCause
+            })
           })
         }
         return request.earlyResponse
@@ -85,7 +118,10 @@ export const authenticationConcurrentAwareMiddleware = (
         statusCode: 401,
         body: JSON.stringify({
           message: "Session expired or invalid. Please log in again.",
-          restartLogin: true
+          restartLogin: true,
+          ...(invalidSessionCause && {
+          invalidSessionCause: invalidSessionCause
+          })
         })
       }
       return request.earlyResponse
