@@ -323,7 +323,7 @@ export class StatelessResourcesStack extends Stack {
 
     const wafLogGroup = new LogGroup(this, "wafLogGroup", {
       encryptionKey: cloudwatchKmsKey,
-      logGroupName: `/aws/waf/${props.serviceName}-apigw`,
+      logGroupName: `aws-waf-logs-${props.serviceName}-apigw`,
       retention: logRetentionInDays,
       removalPolicy: RemovalPolicy.DESTROY
     })

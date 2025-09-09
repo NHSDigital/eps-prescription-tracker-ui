@@ -66,7 +66,7 @@ export class usRegionLogGroups extends Construct {
               "ArnEquals": {
                 "kms:EncryptionContext:aws:logs:arn": [
                   `arn:aws:logs:${props.region}:${props.account}:log-group:/aws/cloudfront/*`,
-                  `arn:aws:logs:${props.region}:${props.account}:log-group:/aws/waf/*`
+                  `arn:aws:logs:${props.region}:${props.account}:log-group:aws-waf-logs-*`
                 ]
               }
             }
@@ -129,7 +129,7 @@ export class usRegionLogGroups extends Construct {
 
     const wafLogGroup = new LogGroup(this, "WafLogGroup", {
       encryptionKey: cloudwatchLogsKmsKey,
-      logGroupName: `/aws/waf/${props.wafLogGroupName}`,
+      logGroupName: `${props.wafLogGroupName}`,
       retention: props.logRetentionInDays,
       removalPolicy: RemovalPolicy.DESTROY
     })

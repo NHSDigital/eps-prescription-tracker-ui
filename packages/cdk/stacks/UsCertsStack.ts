@@ -98,7 +98,7 @@ export class UsCertsStack extends Stack {
     // log groups in US region
     const logGroups = new usRegionLogGroups(this, "cloudfrontLogGroups", {
       cloudfrontLogGroupName: props.serviceName,
-      wafLogGroupName: `${props.serviceName}-cloudfront`,
+      wafLogGroupName: `aws-waf-logs-${props.serviceName}-cloudfront`,
       logRetentionInDays: logRetentionInDays,
       stackName: props.stackName,
       region: this.region,
