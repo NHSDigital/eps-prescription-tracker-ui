@@ -142,7 +142,6 @@ export class StatelessResourcesStack extends Stack {
     const userPoolClientId = Fn.importValue(`${baseImportPath}:userPoolClient:userPoolClientId`)
 
     // Logging
-    const cloudfrontLoggingBucketImport = Fn.importValue("account-resources:CloudfrontLoggingBucket")
     const cloudwatchKmsKeyImport = Fn.importValue("account-resources:CloudwatchLogsKmsKeyArn")
     const splunkDeliveryStreamImport = Fn.importValue("lambda-resources:SplunkDeliveryStream")
     const splunkSubscriptionFilterRoleImport = Fn.importValue("lambda-resources:SplunkSubscriptionFilterRole")
@@ -193,8 +192,6 @@ export class StatelessResourcesStack extends Stack {
     const userPool = UserPool.fromUserPoolArn(
       this, "userPool", userPoolImport)
 
-    const cloudfrontLoggingBucket = Bucket.fromBucketArn(
-      this, "CloudfrontLoggingBucket", cloudfrontLoggingBucketImport)
     const cloudwatchKmsKey = Key.fromKeyArn(
       this, "cloudwatchKmsKey", cloudwatchKmsKeyImport)
     const splunkDeliveryStream = Stream.fromStreamArn(
@@ -518,7 +515,6 @@ export class StatelessResourcesStack extends Stack {
       cloudfrontCert: cloudfrontCert,
       shortCloudfrontDomain: shortCloudfrontDomain,
       fullCloudfrontDomain: fullCloudfrontDomain,
-      cloudfrontLoggingBucket: cloudfrontLoggingBucket,
       defaultBehavior: {
         origin: staticContentBucketOrigin,
         allowedMethods: AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
