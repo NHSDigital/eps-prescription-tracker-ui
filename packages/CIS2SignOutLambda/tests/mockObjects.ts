@@ -7,7 +7,8 @@ export const mockAPIGatewayProxyEvent = {
     "nhsd-correlation-id": "test-request-id.test-correlation-id.rrt-5789322914740101037-b-aet2-20145-482635-2",
     "x-request-id": "test-request-id",
     "nhsd-request-id": "test-request-id",
-    "x-correlation-id": "test-correlation-id"
+    "x-correlation-id": "test-correlation-id",
+    "concurrent-session": false
   },
   isBase64Encoded: false,
   multiValueHeaders: {},
@@ -20,7 +21,8 @@ export const mockAPIGatewayProxyEvent = {
     apiId: "1234",
     authorizer: {
       claims: {
-        "cognito:username": "Mock_JoeBloggs"
+        "cognito:username": "username234",
+        "custom:session_id": "123456"
       }
     },
     httpMethod: "POST",

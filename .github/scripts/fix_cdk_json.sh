@@ -131,6 +131,27 @@ if [ -z "${RUM_APP_NAME}" ]; then
         -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
 fi
 
+if [ -z "${SPLUNK_DELIVERY_STREAM}" ]; then
+    SPLUNK_DELIVERY_STREAM=$(echo "$CF_LONDON_EXPORTS" | \
+        jq \
+        --arg EXPORT_NAME "lambda-resources:SplunkDeliveryStream" \
+        -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+fi
+
+if [ -z "${SPLUNK_SUBSCRIPTION_FILTER_ROLE}" ]; then
+    SPLUNK_SUBSCRIPTION_FILTER_ROLE=$(echo "$CF_LONDON_EXPORTS" | \
+        jq \
+        --arg EXPORT_NAME "lambda-resources:SplunkSubscriptionFilterRole" \
+        -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+fi
+if [ -z "${CLOUDFRONT_DISTRIBUTION_ARN}" ]; then
+    CLOUDFRONT_DISTRIBUTION_ARN=$(echo "$CF_LONDON_EXPORTS" | \
+        jq \
+        --arg EXPORT_NAME "${SERVICE_NAME}-stateless-resources:cloudfrontDistribution:Arn" \
+        -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+fi
+
+
 # Acquire values externally
 ## Get GitHub Actions runner IPs for use against WAF
 if [ -z "${GITHUB_ACTIONS_RUNNER_IPV4}" ]; then
@@ -166,6 +187,8 @@ if [ "$CDK_APP_NAME" == "StatefulResourcesApp" ]; then
     fix_list_key githubAllowListIpv4 "${GITHUB_ACTIONS_RUNNER_IPV4}"
     fix_list_key githubAllowListIpv6 "${GITHUB_ACTIONS_RUNNER_IPV6}"
     fix_boolean_number_key wafAllowGaRunnerConnectivity "${WAF_ALLOW_GA_RUNNER_CONNECTIVITY}"
+    fix_string_key splunkDeliveryStream "${SPLUNK_DELIVERY_STREAM}"
+    fix_string_key splunkSubscriptionFilterRole "${SPLUNK_SUBSCRIPTION_FILTER_ROLE}"
 
     fix_boolean_number_key useMockOidc "${USE_MOCK_OIDC}"
     if [ "$USE_MOCK_OIDC" == "true" ]; then
@@ -183,9 +206,12 @@ if [ "$CDK_APP_NAME" == "StatefulResourcesApp" ]; then
     fix_string_key epsHostedZoneId "${EPS_HOSTED_ZONE_ID}"
 
     fix_boolean_number_key allowAutoDeleteObjects "${AUTO_DELETE_OBJECTS}"
-    # we may not have cloudfront distribution id if its a first deployment
+    # we may not have cloudfront distribution details if its a first deployment
     if [ -n "${CLOUDFRONT_DISTRIBUTION_ID}" ]; then
         fix_string_key cloudfrontDistributionId "${CLOUDFRONT_DISTRIBUTION_ID}"
+    fi
+    if [ -n "${CLOUDFRONT_DISTRIBUTION_ARN}" ]; then
+        fix_string_key cloudfrontDistributionArn "${CLOUDFRONT_DISTRIBUTION_ARN}"
     fi
     # if we have a rum log group arn, then we can set cwLogEnabled on the rum app
     if [ -n "${RUM_LOG_GROUP_ARN}" ]; then

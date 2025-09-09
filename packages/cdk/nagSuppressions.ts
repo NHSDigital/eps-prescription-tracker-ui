@@ -164,6 +164,7 @@ export const nagSuppressions = (stack: Stack) => {
         "/StatelessStack/ApiFunctions/SelectedRole/LambdaPutLogsManagedPolicy/Resource",
         "/StatelessStack/ApiFunctions/PatientSearch/LambdaPutLogsManagedPolicy/Resource",
         "/StatelessStack/ApiFunctions/ClearActiveSessions/LambdaPutLogsManagedPolicy/Resource",
+        "/StatelessStack/ApiFunctions/SessionMgmt/LambdaPutLogsManagedPolicy/Resource",
         "/StatelessStack/OAuth2Functions/TokenResources/LambdaPutLogsManagedPolicy/Resource",
         "/StatelessStack/OAuth2Functions/MockTokenResources/LambdaPutLogsManagedPolicy/Resource",
         "/StatelessStack/OAuth2Functions/AuthorizeLambdaResources/LambdaPutLogsManagedPolicy/Resource",
@@ -245,7 +246,20 @@ export const nagSuppressions = (stack: Stack) => {
         }
       ]
     )
+
+    safeAddNagSuppression(
+      stack,
+      "/StatelessStack/CloudfrontDistribution/CloudfrontDistribution/Resource",
+      [
+        {
+          id: "AwsSolutions-CFR3",
+          reason: "Suppress error for not having access logging. We send logs to cloudwatch instead of S3"
+        }
+      ]
+    )
+
   }
+
 }
 
 const safeAddNagSuppression = (stack: Stack, path: string, suppressions: Array<NagPackSuppression>) => {

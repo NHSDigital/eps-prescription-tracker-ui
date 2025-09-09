@@ -94,7 +94,7 @@ export const extractItems = (
     // determine if initiallyPrescribed should be included (only if different from dispensed)
     const pendingCancellationExt = findExtensionByKey(request.extension, "PENDING_CANCELLATION")
     const itemPendingCancellation = getBooleanFromNestedExtension(pendingCancellationExt, "lineItemPendingCancellation")
-    const cancellationReason = request.statusReason?.text ?? request.statusReason?.coding?.[0]?.display
+    const cancellationReason = request.statusReason?.text ?? request.statusReason?.coding?.[0]?.code
 
     const businessStatusExt = findExtensionByKey(request.extension, "DISPENSING_INFORMATION")
     const epsStatusCode = getCodeFromNestedExtension(businessStatusExt, "dispenseStatus", "unknown")
@@ -106,12 +106,17 @@ export const extractItems = (
     const quantity = originalQuantityUnit ? `${originalQuantityValue} ${originalQuantityUnit}` : originalQuantityValue
     const dosageInstructions = request.dosageInstruction?.[0]?.text
 
+    const psuStatus = findExtensionByKey(
+      request.extension,
+      "DM_PRESCRIPTION_STATUS_UPDATE_HISTORY")
+      ?.extension?.[0].valueCoding?.code
+
     return {
       medicationName,
       quantity,
       dosageInstructions,
       epsStatusCode,
-      nhsAppStatus: undefined, //TODO: investigate what this needs to be.
+      psuStatus,
       itemPendingCancellation,
       cancellationReason,
       notDispensedReason

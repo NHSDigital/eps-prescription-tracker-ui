@@ -5,6 +5,7 @@ export interface ItemDetails {
     quantity: string
     dosageInstructions?: string
     epsStatusCode: string
+    psuStatus?: string
     pharmacyStatus?: string
     itemPendingCancellation: boolean
     cancellationReason?: string
@@ -56,4 +57,6 @@ export interface PrescriptionDetailsResponse {
     prescriberOrg: OrgSummary
     nominatedDispenser?: OrgSummary
     currentDispenser?: OrgSummary
+    cancellationReason?: string,
+    nonDispensingReason?: string
 }
