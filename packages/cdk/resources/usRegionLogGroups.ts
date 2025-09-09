@@ -150,8 +150,8 @@ export class usRegionLogGroups extends Construct {
         "logs:PutLogEvents"
       ],
       resources: [
-        cloudfrontLogGroup.logGroupArn,
-        `${cloudfrontLogGroup.logGroupArn}:log-stream:*`
+        wafLogGroup.logGroupArn,
+        `${wafLogGroup.logGroupArn}:log-stream:*`
       ]
     })
 
