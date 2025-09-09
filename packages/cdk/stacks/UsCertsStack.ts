@@ -1,34 +1,16 @@
 import {
   App,
+  ArnFormat,
   CfnOutput,
-  Duration,
   Environment,
-  Names,
-  RemovalPolicy,
   Stack,
   StackProps
 } from "aws-cdk-lib"
 import {ARecord, HostedZone, RecordTarget} from "aws-cdk-lib/aws-route53"
 import {Certificate, CertificateValidation} from "aws-cdk-lib/aws-certificatemanager"
 import {WebACL} from "../resources/WebApplicationFirewall"
-import {
-  CfnDelivery,
-  CfnDeliveryDestination,
-  CfnDeliverySource,
-CfnLogGroup,
-CfnSubscriptionFilter,
-LogGroup,
-RetentionDays
-} from "aws-cdk-lib/aws-logs"
-import {
-AccountRootPrincipal,
-ArnPrincipal,
-Effect,
-PolicyDocument,
-PolicyStatement,
-ServicePrincipal
-} from "aws-cdk-lib/aws-iam"
-import {Key} from "aws-cdk-lib/aws-kms"
+import {CloudfrontLogDelivery} from "../resources/CloudfrontLogDelivery"
+import {usRegionLogGroups} from "../resources/usRegionLogGroups"
 
 export interface UsCertsStackProps extends StackProps {
   readonly env: Environment
@@ -67,6 +49,7 @@ export class UsCertsStack extends Stack {
     const splunkDeliveryStream: string = this.node.tryGetContext("splunkDeliveryStream")
     const splunkSubscriptionFilterRole: string = this.node.tryGetContext("splunkSubscriptionFilterRole")
     const cloudfrontDistributionArn: string = this.node.tryGetContext("cloudfrontDistributionArn")
+    const logRetentionInDays: number = Number(this.node.tryGetContext("logRetentionInDays"))
 
     // Coerce context and imports to relevant types
     const hostedZone = HostedZone.fromHostedZoneAttributes(this, "hostedZone", {
@@ -112,6 +95,18 @@ export class UsCertsStack extends Stack {
       fullCognitoDomain = `${props.shortCognitoDomain}.auth.eu-west-2.amazoncognito.com`
     }
 
+    // log groups in US region
+    const logGroups = new usRegionLogGroups(this, "cloudfrontLogGroups", {
+      cloudfrontLogGroupName: props.serviceName,
+      wafLogGroupName: `${props.serviceName}-cloudfront`,
+      logRetentionInDays: logRetentionInDays,
+      stackName: props.stackName,
+      region: this.region,
+      account: this.account,
+      splunkDeliveryStream: splunkDeliveryStream,
+      splunkSubscriptionFilterRole: splunkSubscriptionFilterRole
+    })
+
     // WAF Web ACL
     const webAcl = new WebACL(this, "WebAclCF", {
       serviceName: props.serviceName,
@@ -120,127 +115,22 @@ export class UsCertsStack extends Stack {
       githubAllowListIpv4: props.githubAllowListIpv4,
       githubAllowListIpv6: props.githubAllowListIpv6,
       wafAllowGaRunnerConnectivity: props.wafAllowGaRunnerConnectivity,
-      scope: "CLOUDFRONT"
+      scope: "CLOUDFRONT",
+      // waf log destination must not have :* at the end
+      // see https://stackoverflow.com/a/73372989/9294145
+      wafLogGroupName: Stack.of(this).formatArn({
+        arnFormat: ArnFormat.COLON_RESOURCE_NAME,
+        service: "logs",
+        resource: "log-group",
+        resourceName: logGroups.wafLogGroup.logGroupName
+      })
     })
 
     // cloudfront log group - needs to be in us-east-1 region
-    const cloudWatchLogsKmsKey = new Key(this, "cloudWatchLogsKmsKey", {
-      removalPolicy: RemovalPolicy.DESTROY,
-      pendingWindow: Duration.days(7),
-      alias: `${props.stackName}-TokensMappingKMSKey`,
-      description: `${props.stackName}-TokensMappingKMSKey`,
-      enableKeyRotation: true,
-      policy: new PolicyDocument({
-        statements: [
-          new PolicyStatement({
-            sid: "Enable IAM User Permissions",
-            effect: Effect.ALLOW,
-            actions: [
-              "kms:*"
-            ],
-            principals: [
-              new AccountRootPrincipal
-            ],
-            resources: ["*"]
-          }),
-          new PolicyStatement({
-            sid: "Allow service logging",
-            effect: Effect.ALLOW,
-            actions: [
-              "kms:Encrypt*",
-              "kms:Decrypt*",
-              "kms:ReEncrypt*",
-              "kms:GenerateDataKey*",
-              "kms:Describe*"
-            ],
-            principals: [
-              new ServicePrincipal(`logs.${this.region}.amazonaws.com`)
-            ],
-            resources: ["*"],
-            conditions: {
-              "ArnEquals": {
-                "kms:EncryptionContext:aws:logs:arn": [
-                  `arn:aws:logs:${this.region}:${this.account}:log-group:/aws/cloudfront/*`
-                ]
-              }
-            }
-          }),
-          new PolicyStatement({
-            sid: "Enable deployment role",
-            effect: Effect.ALLOW,
-            actions: [
-              "kms:DescribeKey",
-              "kms:GenerateDataKey*",
-              "kms:Encrypt",
-              "kms:ReEncrypt*"
-            ],
-            principals: [
-              // eslint-disable-next-line max-len
-              new ArnPrincipal(`arn:aws:iam::${this.account}:role/cdk-hnb659fds-cfn-exec-role-${this.account}-${this.region}`)
-            ],
-            resources: ["*"]
-          })
-        ]
-      })
+    new CloudfrontLogDelivery(this, "cloudfrontLogDelivery", {
+      cloudfrontLogGroup: logGroups.cloudfrontLogGroup,
+      cloudfrontDistributionArn: cloudfrontDistributionArn
     })
-
-    const cloudfrontLogGroup = new LogGroup(this, "CloudFrontLogGroup", {
-      encryptionKey: cloudWatchLogsKmsKey,
-      logGroupName: `/aws/cloudfront/${props.stackName}`,
-      retention: RetentionDays.ONE_WEEK,
-      removalPolicy: RemovalPolicy.DESTROY
-    })
-
-    const cfnCloudfrontLogGroup = cloudfrontLogGroup.node.defaultChild as CfnLogGroup
-    cfnCloudfrontLogGroup.cfnOptions.metadata = {
-      guard: {
-        SuppressedRules: [
-          "CW_LOGGROUP_RETENTION_PERIOD_CHECK"
-        ]
-      }
-    }
-
-    const cloudfrontLogGroupPolicy = new PolicyStatement({
-      principals: [new ServicePrincipal("delivery.logs.amazonaws.com")],
-      actions: [
-        "logs:CreateLogStream",
-        "logs:PutLogEvents"
-      ],
-      resources: [
-        cloudfrontLogGroup.logGroupArn,
-        `${cloudfrontLogGroup.logGroupArn}:log-stream:*`
-      ]
-    })
-
-    cloudfrontLogGroup.addToResourcePolicy(cloudfrontLogGroupPolicy)
-
-    new CfnSubscriptionFilter(this, "CloudFrontSplunkSubscriptionFilter", {
-      destinationArn: splunkDeliveryStream,
-      filterPattern: "",
-      logGroupName: cloudfrontLogGroup.logGroupName,
-      roleArn: splunkSubscriptionFilterRole
-    })
-
-    const distDeliveryDestination = new CfnDeliveryDestination(this, "DistributionDeliveryDestination", {
-      name: `${Names.uniqueResourceName(this, {maxLength:55})}-dest`,
-      destinationResourceArn: cloudfrontLogGroup.logGroupArn,
-      outputFormat: "json"
-    })
-
-    if (cloudfrontDistributionArn){
-      const distDeliverySource = new CfnDeliverySource(this, "DistributionDeliverySource", {
-          name: `${Names.uniqueResourceName(this, {maxLength:55})}-src`,
-          logType: "ACCESS_LOGS",
-          resourceArn: cloudfrontDistributionArn
-      })
-
-      const delivery = new CfnDelivery(this, "DistributionDelivery", {
-          deliverySourceName: distDeliverySource.name,
-          deliveryDestinationArn: distDeliveryDestination.attrArn
-      })
-      delivery.node.addDependency(distDeliverySource)
-
-    }
 
     // Outputs
 
