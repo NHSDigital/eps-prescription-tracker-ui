@@ -11,7 +11,7 @@ import {extractInboundEventValues, appendLoggerKeys} from "@cpt-ui-common/lambda
 import {authenticationConcurrentAwareMiddleware, authParametersFromEnv} from "@cpt-ui-common/authFunctions"
 import axios from "axios"
 
-import {tryGetTokenMapping, updateTokenMapping, deleteTokenMapping} from "@cpt-ui-common/dynamoFunctions"
+import {tryGetTokenMapping, insertTokenMapping, deleteTokenMapping} from "@cpt-ui-common/dynamoFunctions"
 
 const logger = new Logger({serviceName: "sesssion-management"})
 const authenticationParameters = authParametersFromEnv()
@@ -70,7 +70,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
         logger.info("Going to update token mapping table item, with concurrent session item details")
         // Update token mapping to content of draft session for the session ID in request
         // Delete draft session matching username - to ensure no 'concurrent' sessions exist
-        await updateTokenMapping(documentClient, tokenMappingTableName, sessionManagementItem, logger)
+        await insertTokenMapping(documentClient, tokenMappingTableName, sessionManagementItem, logger)
         await deleteTokenMapping(documentClient, sessionManagementTableName, username, logger)
         return payloadValue({"message": "Session set", "status": "Active"}, 202)
 
