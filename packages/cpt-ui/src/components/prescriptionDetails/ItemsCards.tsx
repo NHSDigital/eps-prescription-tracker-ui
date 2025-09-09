@@ -9,6 +9,7 @@ import {getItemStatusTagColour, getItemStatusDisplayText} from "@/helpers/status
 import {STRINGS} from "@/constants/ui-strings/PrescribedDispensedItemsCardsStrings"
 import {SummaryListRow} from "@/components/prescriptionDetails/ItemsCards/SummaryListRow"
 import {CANCELLATION_REASON_MAP, NON_DISPENSING_REASON_MAP} from "@/constants/ui-strings/StatusReasonStrings"
+/* eslint-disable no-console */
 
 interface ItemsProps {
   readonly items: Array<ItemDetails>
@@ -31,6 +32,8 @@ export function ItemsCards({items}: ItemsProps) {
       cancellationReason,
       notDispensedReason
     } = item
+
+    console.log(item, "&&&&")
 
     return (
       <div key={`item-${index}`} className="data-panel__wrapper no-outline" tabIndex={-1}>
@@ -56,7 +59,6 @@ export function ItemsCards({items}: ItemsProps) {
             )}
 
             <SummaryList className="nhsuk-u-margin-bottom-2" data-testid="prescription-summary-list">
-              <SummaryListRow label="DEBUG - Raw Item" value={JSON.stringify(item)} />
               {cancellationReason && (
                 <SummaryListRow
                   label={STRINGS.CANCELLATION_REASON}
@@ -80,6 +82,7 @@ export function ItemsCards({items}: ItemsProps) {
               {psuStatus && (
                 <SummaryListRow label={STRINGS.PSU_STATUS_LABEL} value={psuStatus}/>
               )}
+              <SummaryListRow label={STRINGS.PSU_STATUS_LABEL} value={"Collected"}/>
             </SummaryList>
           </Card.Content>
         </Card>
