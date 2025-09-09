@@ -246,7 +246,20 @@ export const nagSuppressions = (stack: Stack) => {
         }
       ]
     )
+
+    safeAddNagSuppression(
+      stack,
+      "/StatelessStack/CloudfrontDistribution/CloudfrontDistribution/Resource",
+      [
+        {
+          id: "AwsSolutions-CFR3",
+          reason: "Suppress error for not having access logging. We send logs to cloudwatch instead of S3"
+        }
+      ]
+    )
+
   }
+
 }
 
 const safeAddNagSuppression = (stack: Stack, path: string, suppressions: Array<NagPackSuppression>) => {
