@@ -21,4 +21,5 @@ export type TrackerUserInfo = {
   user_details: UserDetails;
   multiple_sessions?: boolean;
   is_concurrent_session?: boolean;
+  error?: string | null;
 };

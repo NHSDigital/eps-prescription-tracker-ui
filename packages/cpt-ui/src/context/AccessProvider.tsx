@@ -62,6 +62,22 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
     ensureRoleSelected()
   }, [auth.isSignedIn, auth.isSigningIn, auth.selectedRole])
 
+  useEffect(() => {
+  // If user is signedIn, every 5 minutes call tracker user info. If it fails, sign the user out.
+  const internalId = setInterval(() => {
+    logger.info("Periodic user info refresh")
+    if (auth.isSignedIn) {
+      auth.updateTrackerUserInfo().then((response) => {
+        if (response.error) {
+          navigate(FRONTEND_PATHS.SESSION_LOGGED_OUT)
+        }
+      })
+    }
+  }, 30000) // 300000 ms = 5 minutes
+
+  return () => clearInterval(internalId)
+  }, [auth.isSignedIn, auth.isSigningIn])
+
   return (
     <AccessContext.Provider value={{}}>
       {children}

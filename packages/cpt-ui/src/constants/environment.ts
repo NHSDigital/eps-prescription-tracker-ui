@@ -58,6 +58,7 @@ export const FRONTEND_PATHS = {
   COOKIES: "/cookies",
   LOGIN: "/login",
   LOGOUT: "/logout",
+  SESSION_LOGGED_OUT: "/session-logged-out",
   SELECT_YOUR_ROLE: "/select-your-role",
   YOUR_SELECTED_ROLE: "/your-selected-role",
   CHANGE_YOUR_ROLE: "/change-your-role",

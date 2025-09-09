@@ -18,7 +18,7 @@ import {useLocalStorageState} from "@/helpers/useLocalStorageState"
 import {API_ENDPOINTS} from "@/constants/environment"
 
 import http from "@/helpers/axios"
-import {RoleDetails, UserDetails} from "@cpt-ui-common/common-types"
+import {RoleDetails, TrackerUserInfo, UserDetails} from "@cpt-ui-common/common-types"
 import {getTrackerUserInfo, updateRemoteSelectedRole} from "@/helpers/userInfo"
 import {logger} from "@/helpers/logger"
 
@@ -41,7 +41,7 @@ export interface AuthContextType {
   clearAuthState: () => void
   updateSelectedRole: (value: RoleDetails) => Promise<void>
   forceCognitoLogout: () => Promise<void>
-  updateTrackerUserInfo: () => Promise<void>
+  updateTrackerUserInfo: () => Promise<TrackerUserInfo>
 }
 
 export const AuthContext = createContext<AuthContextType | null>(null)
@@ -106,6 +106,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
     setHasSingleRoleAccess(trackerUserInfo.hasSingleRoleAccess)
     setError(trackerUserInfo.error)
     setIsConcurrentSession(trackerUserInfo.isConcurrentSession)
+    return trackerUserInfo
   }
 
   const forceCognitoLogout = async () => {
