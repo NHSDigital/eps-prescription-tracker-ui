@@ -11,6 +11,11 @@ describe("mapMessageHistoryTitleToMessageCode", () => {
     expect(mapMessageHistoryTitleToMessageCode("Prescription upload successful")).toBe("prescription-uploaded")
     expect(mapMessageHistoryTitleToMessageCode("Release Request successful")).toBe("release-requested")
     expect(mapMessageHistoryTitleToMessageCode("Dispense notification successful")).toBe("dispense-notified")
+    expect(
+    mapMessageHistoryTitleToMessageCode(
+    "Prescription/item was not cancelled. With dispenser active. Marked for cancellation"
+  )
+).toBe("prescription-marked-for-cancellation")
   })
 
   it("should return undefined for unrecognized message titles", () => {
