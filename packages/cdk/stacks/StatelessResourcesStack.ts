@@ -5,7 +5,6 @@ import {
   Fn,
   CfnOutput,
   Duration,
-  RemovalPolicy,
   ArnFormat
 } from "aws-cdk-lib"
 import {
@@ -28,12 +27,7 @@ import {RestApiGateway} from "../resources/RestApiGateway"
 import {CloudfrontDistribution} from "../resources/CloudfrontDistribution"
 import {nagSuppressions} from "../nagSuppressions"
 import {TableV2} from "aws-cdk-lib/aws-dynamodb"
-import {
-ManagedPolicy,
-PolicyStatement,
-Role,
-ServicePrincipal
-} from "aws-cdk-lib/aws-iam"
+import {ManagedPolicy, Role} from "aws-cdk-lib/aws-iam"
 import {SharedSecrets} from "../resources/SharedSecrets"
 import {OAuth2Functions} from "../resources/api/oauth2Functions"
 import {ApiFunctions} from "../resources/api/apiFunctions"
@@ -47,7 +41,7 @@ import {HostedZone} from "aws-cdk-lib/aws-route53"
 import {Certificate} from "aws-cdk-lib/aws-certificatemanager"
 import {WebACL} from "../resources/WebApplicationFirewall"
 import {CfnWebACLAssociation} from "aws-cdk-lib/aws-wafv2"
-import {CfnLogGroup, CfnSubscriptionFilter, LogGroup} from "aws-cdk-lib/aws-logs"
+import {ukRegionLogGroups} from "../resources/ukRegionLogGroups"
 
 export interface StatelessResourcesStackProps extends StackProps {
   readonly serviceName: string
@@ -321,41 +315,13 @@ export class StatelessResourcesStack extends Stack {
       fullCloudfrontDomain: fullCloudfrontDomain
     })
 
-    const wafLogGroup = new LogGroup(this, "wafLogGroup", {
-      encryptionKey: cloudwatchKmsKey,
-      logGroupName: `aws-waf-logs-${props.serviceName}-apigw`,
-      retention: logRetentionInDays,
-      removalPolicy: RemovalPolicy.DESTROY
-    })
-
-    const cfnWafLogGroup = wafLogGroup.node.defaultChild as CfnLogGroup
-    cfnWafLogGroup.cfnOptions.metadata = {
-      guard: {
-        SuppressedRules: [
-          "CW_LOGGROUP_RETENTION_PERIOD_CHECK"
-        ]
-      }
-    }
-
-    const wafLogGroupPolicy = new PolicyStatement({
-      principals: [new ServicePrincipal("delivery.logs.amazonaws.com")],
-      actions: [
-        "logs:CreateLogStream",
-        "logs:PutLogEvents"
-      ],
-      resources: [
-        wafLogGroup.logGroupArn,
-        `${wafLogGroup.logGroupArn}:log-stream:*`
-      ]
-    })
-
-    wafLogGroup.addToResourcePolicy(wafLogGroupPolicy)
-
-    new CfnSubscriptionFilter(this, "WafSplunkSubscriptionFilter", {
-      destinationArn: splunkDeliveryStream.streamArn,
-      filterPattern: "",
-      logGroupName: wafLogGroup.logGroupName,
-      roleArn: splunkSubscriptionFilterRole.roleArn
+    const logGroups = new ukRegionLogGroups(this, "ukRegionLogGroups", {
+      cloudwatchKmsKey: cloudwatchKmsKey,
+      logRetentionInDays: logRetentionInDays,
+      splunkDeliveryStream: splunkDeliveryStream,
+      splunkSubscriptionFilterRole: splunkSubscriptionFilterRole,
+      // waf log groups must start with aws-waf-logs-
+      wafLogGroupName: `aws-waf-logs-${props.serviceName}-apigw`
     })
 
     // API Gateway WAF Web ACL
@@ -370,11 +336,13 @@ export class StatelessResourcesStack extends Stack {
       allowedHeaders: new Map<string, string>([
         ["X-Cloudfront-Origin-Secret", cloudfrontOriginCustomHeader]
       ]),
+      // waf log destination must not have :* at the end
+      // see https://stackoverflow.com/a/73372989/9294145
       wafLogGroupName: Stack.of(this).formatArn({
         arnFormat: ArnFormat.COLON_RESOURCE_NAME,
         service: "logs",
         resource: "log-group",
-        resourceName: wafLogGroup.logGroupName
+        resourceName: logGroups.wafLogGroup.logGroupName
       })
     })
 
