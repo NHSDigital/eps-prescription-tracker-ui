@@ -60,7 +60,14 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
       return
     }
     ensureRoleSelected()
-  }, [auth.isSignedIn, auth.isSigningIn, auth.selectedRole, auth.isConcurrentSession, location.pathname])
+  }, [
+    auth.isSignedIn,
+    auth.isSigningIn,
+    auth.selectedRole,
+    auth.isConcurrentSession,
+    location.pathname,
+    location.search
+  ])
 
   return (
     <AccessContext.Provider value={{}}>
