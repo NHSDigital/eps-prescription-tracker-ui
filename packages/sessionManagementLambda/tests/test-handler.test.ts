@@ -8,7 +8,7 @@ import {mockContext, mockAPIGatewayProxyEvent} from "./mockObjects"
 import {TokenMappingItem} from "@cpt-ui-common/dynamoFunctions"
 
 const mockTryGetTokenMapping = jest.fn().mockName("mockGetTokenMapping")
-const mockUpdateTokenMapping = jest.fn().mockName("mockUpdateTokenMapping")
+const mockInsertTokenMapping = jest.fn().mockName("mockInsertTokenMapping")
 const mockDeleteTokenMapping = jest.fn().mockName("mockDeleteTokenMapping")
 
 const mockInitializeOidcConfig = jest.fn().mockName("mockInitializeOidcConfig")
@@ -18,7 +18,7 @@ mockInitializeOidcConfig.mockImplementation(() => ({cis2OidcConfig: {}, mockOidc
 jest.unstable_mockModule("@cpt-ui-common/dynamoFunctions", () => {
   return {
     tryGetTokenMapping: mockTryGetTokenMapping,
-    updateTokenMapping: mockUpdateTokenMapping,
+    insertTokenMapping: mockInsertTokenMapping,
     deleteTokenMapping: mockDeleteTokenMapping
   }
 })
@@ -83,7 +83,7 @@ describe("Unit test for session management lambda", function () {
       "status": "Active"
     })
     expect(mockTryGetTokenMapping).toHaveBeenCalled()
-    expect(mockUpdateTokenMapping).toHaveBeenCalledWith(
+    expect(mockInsertTokenMapping).toHaveBeenCalledWith(
       expect.anything(),
       "TokenMappingTable",
       sessionManagementItem,
