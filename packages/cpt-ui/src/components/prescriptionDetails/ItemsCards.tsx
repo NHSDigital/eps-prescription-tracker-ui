@@ -26,7 +26,7 @@ export function ItemsCards({items}: ItemsProps) {
       quantity,
       dosageInstructions,
       epsStatusCode,
-      pharmacyStatus,
+      psuStatus,
       itemPendingCancellation,
       cancellationReason,
       notDispensedReason
@@ -56,6 +56,7 @@ export function ItemsCards({items}: ItemsProps) {
             )}
 
             <SummaryList className="nhsuk-u-margin-bottom-2" data-testid="prescription-summary-list">
+              <SummaryListRow label="DEBUG - Raw Item" value={JSON.stringify(item)} />
               {cancellationReason && (
                 <SummaryListRow
                   label={STRINGS.CANCELLATION_REASON}
@@ -76,8 +77,8 @@ export function ItemsCards({items}: ItemsProps) {
                 <SummaryListRow label={STRINGS.INSTRUCTIONS_LABEL} value={dosageInstructions}/>
               )}
 
-              {pharmacyStatus && (
-                <SummaryListRow label={STRINGS.PHARMACY_STATUS_LABEL} value={pharmacyStatus}/>
+              {psuStatus && (
+                <SummaryListRow label={STRINGS.PSU_STATUS_LABEL} value={psuStatus}/>
               )}
             </SummaryList>
           </Card.Content>

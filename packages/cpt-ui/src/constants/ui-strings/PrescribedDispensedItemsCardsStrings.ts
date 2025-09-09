@@ -9,5 +9,5 @@ export const STRINGS = {
   PENDING_CANCELLATION: "This item is pending cancellation.",
   QUANTITY_LABEL: "Quantity",
   INSTRUCTIONS_LABEL: "Instructions",
-  PHARMACY_STATUS_LABEL: "Pharmacy status"
+  PSU_STATUS_LABEL: "PSU status"
 }
