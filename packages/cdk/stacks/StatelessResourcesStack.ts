@@ -318,7 +318,8 @@ export class StatelessResourcesStack extends Stack {
       splunkDeliveryStream: splunkDeliveryStream,
       splunkSubscriptionFilterRole: splunkSubscriptionFilterRole,
       // waf log groups must start with aws-waf-logs-
-      wafLogGroupName: `aws-waf-logs-${props.serviceName}-apigw`
+      wafLogGroupName: `aws-waf-logs-${props.serviceName}-apigw`,
+      stackName: this.stackName
     })
 
     // API Gateway WAF Web ACL
