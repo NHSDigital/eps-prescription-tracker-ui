@@ -160,19 +160,19 @@ jobs:
           CF_LONDON_EXPORTS=$(aws cloudformation list-exports --region eu-west-2 --output json)
           CLOUDFRONT_DISTRIBUTION_ID=$(echo "$CF_LONDON_EXPORTS" | \
               jq \
-              --arg EXPORT_NAME "${inputs.SERVICE_NAME}-stateless-resources:cloudfrontDistribution:Id" \
+              --arg EXPORT_NAME "${{ inputs.SERVICE_NAME }}-stateless-resources:cloudfrontDistribution:Id" \
               -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
           CLOUDFRONT_DISTRIBUTION_ARN=$(echo "$CF_LONDON_EXPORTS" | \
               jq \
-              --arg EXPORT_NAME "${inputs.SERVICE_NAME}-stateless-resources:cloudfrontDistribution:Arn" \
+              --arg EXPORT_NAME "${{ inputs.SERVICE_NAME }}-stateless-resources:cloudfrontDistribution:Arn" \
               -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
           RUM_LOG_GROUP_ARN=$(echo "$CF_LONDON_EXPORTS" | \
               jq \
-              --arg EXPORT_NAME "${inputs.SERVICE_NAME}-stateful-resources:rum:logGroup:arn" \
+              --arg EXPORT_NAME "${{ inputs.SERVICE_NAME }}-stateful-resources:rum:logGroup:arn" \
               -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
           RUM_APP_NAME=$(echo "$CF_LONDON_EXPORTS" | \
               jq \
-              --arg EXPORT_NAME "${inputs.SERVICE_NAME}-stateful-resources:rum:rumApp:Name" \
+              --arg EXPORT_NAME "${{ inputs.SERVICE_NAME }}-stateful-resources:rum:rumApp:Name" \
               -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
           FIRST_DEPLOYMENT="false"
 
