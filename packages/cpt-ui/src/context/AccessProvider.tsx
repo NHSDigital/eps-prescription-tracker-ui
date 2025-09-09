@@ -1,8 +1,8 @@
 import React, {
-  createContext,
-  useContext,
-  useEffect,
-  ReactNode
+createContext,
+useContext,
+useEffect,
+ReactNode
 } from "react"
 import {useLocation, useNavigate} from "react-router-dom"
 
@@ -15,13 +15,11 @@ import {logger} from "@/helpers/logger"
 export const AccessContext = createContext<Record<string, never> | null>(null)
 
 export const AccessProvider = ({children}: { children: ReactNode }) => {
-
   const auth = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
 
   const ensureRoleSelected = () => {
-
     if (!auth.isSignedIn && !auth.isSigningIn) {
       if (!ALLOWED_NO_ROLE_PATHS.includes(normalizePath(location.pathname))) {
         logger.info("Not signed in - redirecting to login page")
@@ -31,7 +29,9 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
     }
     if (auth.isConcurrentSession && auth.isSignedIn) {
       if (!ALLOWED_NO_ROLE_PATHS.includes(normalizePath(location.pathname))) {
-        logger.info("Concurrent session found - redirecting to session selection")
+        logger.info(
+          "Concurrent session found - redirecting to session selection"
+        )
         navigate(FRONTEND_PATHS.SESSION_SELECTION)
       }
       return
@@ -46,20 +46,21 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
   }
 
   useEffect(() => {
-
     const currentPath = location.pathname
     const onSelectYourRole = currentPath === FRONTEND_PATHS.SELECT_YOUR_ROLE
     if (auth.isSigningIn && onSelectYourRole) {
       return
     }
     ensureRoleSelected()
-  }, [auth.isSignedIn, auth.isSigningIn, auth.selectedRole, auth.isConcurrentSession, location.pathname])
+  }, [
+    auth.isSignedIn,
+    auth.isSigningIn,
+    auth.selectedRole,
+    auth.isConcurrentSession,
+    location.pathname
+  ])
 
-  return (
-    <AccessContext.Provider value={{}}>
-      {children}
-    </AccessContext.Provider>
-  )
+  return <AccessContext.Provider value={{}}>{children}</AccessContext.Provider>
 }
 
 export const useAccess = () => {

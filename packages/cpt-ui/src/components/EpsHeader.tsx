@@ -90,7 +90,7 @@ export default function EpsHeader() {
 
   const handleConfirmLogout = async () => {
     setShowLogoutModal(false)
-    navigate(FRONTEND_PATHS.LOGOUT)
+    navigate(FRONTEND_PATHS.LOGOUT, {replace: true})
   }
 
   return (

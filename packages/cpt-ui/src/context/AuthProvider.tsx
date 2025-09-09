@@ -4,6 +4,7 @@ import React, {
   useEffect,
   useState
 } from "react"
+import {useLocation, useNavigate} from "react-router-dom"
 import {Amplify} from "aws-amplify"
 import {Hub} from "aws-amplify/utils"
 import {
@@ -15,12 +16,13 @@ import {
 import {authConfig} from "./configureAmplify"
 
 import {useLocalStorageState} from "@/helpers/useLocalStorageState"
-import {API_ENDPOINTS} from "@/constants/environment"
+import {API_ENDPOINTS, FRONTEND_PATHS, PUBLIC_PATHS} from "@/constants/environment"
 
 import http from "@/helpers/axios"
 import {RoleDetails, UserDetails} from "@cpt-ui-common/common-types"
 import {getTrackerUserInfo, updateRemoteSelectedRole} from "@/helpers/userInfo"
 import {logger} from "@/helpers/logger"
+import {normalizePath} from "@/helpers/utils"
 
 const CIS2SignOutEndpoint = API_ENDPOINTS.CIS2_SIGNOUT_ENDPOINT
 
@@ -47,6 +49,8 @@ export interface AuthContextType {
 export const AuthContext = createContext<AuthContextType | null>(null)
 
 export const AuthProvider = ({children}: { children: React.ReactNode }) => {
+  const location = useLocation()
+  const navigate = useNavigate()
   const [error, setError] = useState<string | null>(null)
   const [user, setUser] = useLocalStorageState<string | null>("user", "user", null)
   const [isSignedIn, setIsSignedIn] = useLocalStorageState<boolean>("isSignedIn", "isSignedIn", false)
@@ -130,6 +134,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
           logger.info("Processing signedIn event")
           logger.info("User %s logged in", payload.data.username)
           await updateTrackerUserInfo()
+
           setIsSignedIn(true)
           setIsSigningIn(false)
           setUser(payload.data.username)
@@ -172,6 +177,16 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
 
     return () => {
       unsubscribe()
+    }
+  }, [])
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search)
+    const isOAuthCallback = urlParams.has("code") && urlParams.has("state")
+
+    if (isOAuthCallback && !isSigningIn && !isSignedIn) {
+      logger.info("Detected OAuth callback on page load, setting isSigningIn")
+      setIsSigningIn(true)
     }
   }, [])
 
@@ -218,6 +233,26 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
     await updateRemoteSelectedRole(newRole)
     setSelectedRole(newRole)
   }
+
+  // if not authorised and trying to access protected content, redirect
+  useEffect(() => {
+    // Don't redirect during OAuth callback flow
+    const urlParams = new URLSearchParams(window.location.search)
+    const isOAuthCallback = urlParams.has("code") && urlParams.has("state")
+
+    if (isOAuthCallback) {
+      logger.info("OAuth callback detected, skipping auth guard redirect")
+      return
+    }
+
+    // Normalize path by removing /site prefix
+    const currentPath = normalizePath(location.pathname)
+
+    if (!isSignedIn && !isSigningIn && !PUBLIC_PATHS.includes(currentPath)) {
+      logger.info(`Redirecting unauthenticated user from ${currentPath} to login`)
+      navigate(FRONTEND_PATHS.LOGIN, {replace: true})
+    }
+  }, [isSignedIn, isSigningIn, location.pathname, navigate])
 
   return (
     <AuthContext.Provider value={{
