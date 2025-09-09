@@ -154,19 +154,50 @@ jobs:
           role-session-name: prescription-clinical-tracker-ui-deployment
           output-credentials: true
   
-      - name: check first deployment
-        id: check_first_deployment
+      - name: check redeploy stateful stack
+        id: check_redeploy_stateful_stack
         run: |
-          # shellcheck disable=SC2140
-          cloudfrontDistributionId=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='"${{ inputs.SERVICE_NAME }}-stateless-resources:cloudfrontDistribution:Id"'].Value" --output text)
-          if [ -z "${cloudfrontDistributionId}" ]; then
-            FIRST_DEPLOYMENT="true"
-            echo "This is the first deployment"
-          else
-            FIRST_DEPLOYMENT="false"
-            echo "This is not the first deployment"
+          CF_LONDON_EXPORTS=$(aws cloudformation list-exports --region eu-west-2 --output json)
+          CLOUDFRONT_DISTRIBUTION_ID=$(echo "$CF_LONDON_EXPORTS" | \
+              jq \
+              --arg EXPORT_NAME "${{ inputs.SERVICE_NAME }}-stateless-resources:cloudfrontDistribution:Id" \
+              -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+          CLOUDFRONT_DISTRIBUTION_ARN=$(echo "$CF_LONDON_EXPORTS" | \
+              jq \
+              --arg EXPORT_NAME "${{ inputs.SERVICE_NAME }}-stateless-resources:cloudfrontDistribution:Arn" \
+              -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+          RUM_LOG_GROUP_ARN=$(echo "$CF_LONDON_EXPORTS" | \
+              jq \
+              --arg EXPORT_NAME "${{ inputs.SERVICE_NAME }}-stateful-resources:rum:logGroup:arn" \
+              -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+          RUM_APP_NAME=$(echo "$CF_LONDON_EXPORTS" | \
+              jq \
+              --arg EXPORT_NAME "${{ inputs.SERVICE_NAME }}-stateful-resources:rum:rumApp:Name" \
+              -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+          REDEPLOY_STATEFUL_STACK="false"
+
+          if [ -z "${CLOUDFRONT_DISTRIBUTION_ID}" ]; then
+            echo "CLOUDFRONT_DISTRIBUTION_ID not found - setting redeploy stateful stack to true"
+            REDEPLOY_STATEFUL_STACK="true"
           fi
-          echo "FIRST_DEPLOYMENT=$FIRST_DEPLOYMENT" >> "$GITHUB_OUTPUT"
+          if [ -z "${CLOUDFRONT_DISTRIBUTION_ARN}" ]; then
+            echo "CLOUDFRONT_DISTRIBUTION_ARN not found - setting redeploy stateful stack to true"
+            REDEPLOY_STATEFUL_STACK="true"
+          fi
+          if [ -z "${RUM_LOG_GROUP_ARN}" ]; then
+            echo "RUM_LOG_GROUP_ARN not found - setting redeploy stateful stack to true"
+            REDEPLOY_STATEFUL_STACK="true"
+          fi
+          if [ -z "${RUM_APP_NAME}" ]; then
+            echo "RUM_APP_NAME not found - setting redeploy stateful stack to true"
+            REDEPLOY_STATEFUL_STACK="true"
+          fi
+
+          if [ "${REDEPLOY_STATEFUL_STACK}" == "false" ]; then
+            echo "Everything already set - setting redeploy stateful stack to false"
+          fi
+
+          echo "REDEPLOY_STATEFUL_STACK=$REDEPLOY_STATEFUL_STACK" >> "$GITHUB_OUTPUT"
         shell: bash
 
       - name: fix cdk.json for deployment stateful stack
@@ -430,7 +461,7 @@ jobs:
           fi
 
       - name: fix cdk.json for deployment for stateful stack redeployment
-        if: ${{ steps.check_first_deployment.outputs.FIRST_DEPLOYMENT == 'true' }}
+        if: ${{ steps.check_redeploy_stateful_stack.outputs.REDEPLOY_STATEFUL_STACK == 'true' }}
         run: |
           ./.github/scripts/fix_cdk_json.sh .build/stateful_resources.json
         env:
@@ -472,7 +503,7 @@ jobs:
           CLOUDFRONT_ORIGIN_CUSTOM_HEADER: ${{secrets.CLOUDFRONT_ORIGIN_CUSTOM_HEADER }}
 
       - name: Show diff for stateful stack redeployment
-        if: ${{ steps.check_first_deployment.outputs.FIRST_DEPLOYMENT == 'true' }}
+        if: ${{ steps.check_redeploy_stateful_stack.outputs.REDEPLOY_STATEFUL_STACK == 'true' }}
         run: |
           docker run \
           -v "$(pwd)/.build":/home/cdkuser/workspace/ \
@@ -488,7 +519,7 @@ jobs:
         shell: bash
 
       - name: Deploy code for stateful stack redeployment
-        if: ${{ steps.check_first_deployment.outputs.FIRST_DEPLOYMENT == 'true' }}
+        if: ${{ steps.check_redeploy_stateful_stack.outputs.REDEPLOY_STATEFUL_STACK == 'true' }}
         run: |
           docker run \
           -v "$(pwd)/.build":/home/cdkuser/workspace/ \

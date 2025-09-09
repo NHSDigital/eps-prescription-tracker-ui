@@ -14,7 +14,6 @@ import {
   RecordTarget
 } from "aws-cdk-lib/aws-route53"
 import {CloudFrontTarget} from "aws-cdk-lib/aws-route53-targets"
-import {IBucket} from "aws-cdk-lib/aws-s3"
 import {Construct} from "constructs"
 
 /**
@@ -31,7 +30,6 @@ export interface CloudfrontDistributionProps {
   readonly hostedZone: IHostedZone
   readonly shortCloudfrontDomain: string
   readonly fullCloudfrontDomain: string
-  readonly cloudfrontLoggingBucket: IBucket
   readonly cloudfrontCert: ICertificate
   readonly webAclAttributeArn: string
   readonly wafAllowGaRunnerConnectivity: boolean
@@ -56,9 +54,7 @@ export class CloudfrontDistribution extends Construct {
       minimumProtocolVersion: SecurityPolicyProtocol.TLS_V1_2_2021,
       sslSupportMethod: SSLMethod.SNI,
       publishAdditionalMetrics: true,
-      enableLogging: true,
-      logBucket: props.cloudfrontLoggingBucket,
-      logFilePrefix: `${props.stackName}/`,
+      enableLogging: false,
       logIncludesCookies: true, // may actually want to be false, don't know if it includes names of cookies or contents
       defaultBehavior: props.defaultBehavior,
       additionalBehaviors: props.additionalBehaviors,
@@ -66,7 +62,8 @@ export class CloudfrontDistribution extends Construct {
       geoRestriction: {
         locations: props.wafAllowGaRunnerConnectivity ? ["GB", "JE", "GG", "IM", "US"] : ["GB", "JE", "GG", "IM"],
         restrictionType: "whitelist"
-      }
+      },
+      webAclId: props.webAclAttributeArn
     })
 
     if (props.shortCloudfrontDomain === "APEX_DOMAIN") {
