@@ -4,26 +4,23 @@ import React, {
   useEffect,
   useState
 } from "react"
-import {useLocation, useNavigate} from "react-router-dom"
 import {Amplify} from "aws-amplify"
 import {Hub} from "aws-amplify/utils"
 import {
   signInWithRedirect,
   signOut,
   SignInWithRedirectInput,
-  deleteUser,
-  fetchAuthSession
+  deleteUser
 } from "aws-amplify/auth"
 import {authConfig} from "./configureAmplify"
 
 import {useLocalStorageState} from "@/helpers/useLocalStorageState"
-import {API_ENDPOINTS, FRONTEND_PATHS, PUBLIC_PATHS} from "@/constants/environment"
+import {API_ENDPOINTS} from "@/constants/environment"
 
 import http from "@/helpers/axios"
 import {RoleDetails, UserDetails} from "@cpt-ui-common/common-types"
 import {getTrackerUserInfo, updateRemoteSelectedRole} from "@/helpers/userInfo"
 import {logger} from "@/helpers/logger"
-import {normalizePath} from "@/helpers/utils"
 
 const CIS2SignOutEndpoint = API_ENDPOINTS.CIS2_SIGNOUT_ENDPOINT
 
@@ -50,8 +47,6 @@ export interface AuthContextType {
 export const AuthContext = createContext<AuthContextType | null>(null)
 
 export const AuthProvider = ({children}: { children: React.ReactNode }) => {
-  const location = useLocation()
-  const navigate = useNavigate()
   const [error, setError] = useState<string | null>(null)
   const [user, setUser] = useLocalStorageState<string | null>("user", "user", null)
   const [isSignedIn, setIsSignedIn] = useLocalStorageState<boolean>("isSignedIn", "isSignedIn", false)
@@ -181,16 +176,6 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
     }
   }, [])
 
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search)
-    const isOAuthCallback = urlParams.has("code") && urlParams.has("state")
-
-    if (isOAuthCallback && !isSigningIn && !isSignedIn) {
-      logger.info("Detected OAuth callback on page load, setting isSigningIn")
-      setIsSigningIn(true)
-    }
-  }, [])
-
   /**
    * Reconfigure Amplify on initial state
    */
@@ -234,49 +219,6 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
     await updateRemoteSelectedRole(newRole)
     setSelectedRole(newRole)
   }
-
-  useEffect(() => {
-    const validateInitialSession = async () => {
-      try {
-        logger.info("Validating initial session state...")
-        const authSession = await fetchAuthSession()
-        const hasValidSession = authSession.tokens?.idToken !== undefined
-
-        // check if localStorage and actual session are in sync
-        if (isSignedIn && !hasValidSession) {
-          logger.warn("localStorage indicates signed in but no valid Amplify session found - clearing auth state")
-          clearAuthState()
-        } else if (!isSignedIn && hasValidSession) {
-          logger.info("Valid Amplify session found but localStorage indicates signed out - updating auth state")
-          // we have a valid session but localStorage is wrong
-          setIsSignedIn(true)
-          // also fetch user info since we have a valid session
-          await updateTrackerUserInfo()
-        }
-
-        logger.info("Session validation complete")
-      } catch (error) {
-        logger.warn("Error validating initial session state:", error)
-        // if we can't validate the session and localStorage says we're signed in,
-        // be conservative and clear the state
-        if (isSignedIn) {
-          logger.info("Clearing auth state due to session validation error")
-          clearAuthState()
-        }
-      }
-    }
-
-    validateInitialSession()
-  }, [])
-
-  // if not authorised and trying to access protected content, redirect
-  useEffect(() => {
-    const currentPath = normalizePath(location.pathname)
-    if (!isSignedIn && !isSigningIn && !PUBLIC_PATHS.includes(currentPath)) {
-      logger.info(`Redirecting unauthenticated user from ${currentPath} to login`)
-      navigate(FRONTEND_PATHS.LOGIN, {replace: true})
-    }
-  }, [isSignedIn, isSigningIn, location.pathname, navigate])
 
   return (
     <AuthContext.Provider value={{

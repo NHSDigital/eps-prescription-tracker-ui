@@ -20,16 +20,19 @@ export default function LogoutPage() {
       logger.info("Signing out from logout page", auth)
       hasSignedOut.current = true
 
-      if (auth?.isSignedIn) {
-        await auth?.cognitoSignOut()
-      }
-
-      // always clear auth state, regardless of cognito signout success/failure
-      auth.clearAuthState()
-      logger.info("Auth state cleared")
+      await auth?.cognitoSignOut()
+      logger.info("Signed out")
     }
 
-    signOut()
+    if (auth?.isSignedIn && !hasSignedOut.current) {
+      signOut()
+    } else {
+      logger.info("Cannot sign out - not signed in")
+      if (!hasSignedOut.current) {
+        auth.clearAuthState() // Clear data even if not signed in
+      }
+    }
+
   }, [])
 
   return (
