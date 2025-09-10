@@ -266,7 +266,8 @@ export class CloudfrontBehaviors extends Construct{
             function: s3StaticContentRootSlashRedirect.function,
             eventType: FunctionEventType.VIEWER_REQUEST
           }
-        ]
+        ],
+        responseHeadersPolicy: this.responseHeadersPolicy
       }
     }
 
