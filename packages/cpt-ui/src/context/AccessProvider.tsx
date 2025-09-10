@@ -55,13 +55,13 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
   }
 
   useEffect(() => {
-    const currentPath = window.location.pathname
-    const onSelectYourRole = currentPath === `/site${FRONTEND_PATHS.SELECT_YOUR_ROLE}`
+    const currentPath = location.pathname
+    const onSelectYourRole = currentPath === FRONTEND_PATHS.SELECT_YOUR_ROLE
     if (auth.isSigningIn && onSelectYourRole) {
       return
     }
     ensureRoleSelected()
-  }, [auth.isSignedIn, auth.isSigningIn, auth.selectedRole])
+  }, [auth.isSignedIn, auth.isSigningIn, auth.selectedRole, auth.isConcurrentSession, location.pathname])
 
   useEffect(() => {
   // If user is signedIn, every 5 minutes call tracker user info. If it fails, sign the user out.

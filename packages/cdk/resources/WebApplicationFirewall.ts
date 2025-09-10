@@ -1,5 +1,5 @@
 import {Construct} from "constructs"
-import * as wafv2 from "aws-cdk-lib/aws-wafv2"
+import {CfnIPSet, CfnLoggingConfiguration, CfnWebACL} from "aws-cdk-lib/aws-wafv2"
 
 /**
  * WAF ACL and supporting resources
@@ -11,35 +11,28 @@ export interface WebACLProps {
   readonly githubAllowListIpv4: Array<string>
   readonly githubAllowListIpv6: Array<string>
   readonly wafAllowGaRunnerConnectivity: boolean
+  readonly allowedHeaders?: Map<string, string>
   readonly scope: string
+  readonly wafLogGroupName: string
 }
 
 export class WebACL extends Construct {
-  public readonly githubAllowListIpv4: wafv2.CfnIPSet
-  public readonly githubAllowListIpv6: wafv2.CfnIPSet
+  public readonly githubAllowListIpv4: CfnIPSet
+  public readonly githubAllowListIpv6: CfnIPSet
   public readonly wafAllowGaRunnerConnectivity: boolean
-  public readonly webAcl: wafv2.CfnWebACL
+  public readonly webAcl: CfnWebACL
   public readonly attrArn: string
   public readonly allowedHeaders?: Map<string, string>
 
   public constructor(
     scope: Construct,
     id: string,
-    props: {
-      serviceName: string
-      rateLimitTransactions: number
-      rateLimitWindowSeconds: number
-      githubAllowListIpv4: Array<string>
-      githubAllowListIpv6: Array<string>
-      wafAllowGaRunnerConnectivity: boolean
-      allowedHeaders?: Map<string, string>
-      scope: string
-    }
+    props: WebACLProps
   ) {
     super(scope, id)
 
     if (props.wafAllowGaRunnerConnectivity && props.githubAllowListIpv4.length > 0) {
-      this.githubAllowListIpv4 = new wafv2.CfnIPSet(this, "githubAllowListIpv4", {
+      this.githubAllowListIpv4 = new CfnIPSet(this, "githubAllowListIpv4", {
         addresses: props.githubAllowListIpv4,
         ipAddressVersion: "IPV4",
         scope: props.scope,
@@ -49,7 +42,7 @@ export class WebACL extends Construct {
     }
 
     if (props.wafAllowGaRunnerConnectivity && props.githubAllowListIpv6.length > 0) {
-      this.githubAllowListIpv6 = new wafv2.CfnIPSet(this, "githubAllowListIpv6", {
+      this.githubAllowListIpv6 = new CfnIPSet(this, "githubAllowListIpv6", {
         addresses: props.githubAllowListIpv6,
         ipAddressVersion: "IPV6",
         scope: props.scope,
@@ -58,7 +51,7 @@ export class WebACL extends Construct {
       })
     }
 
-    const rules: Array<wafv2.CfnWebACL.RuleProperty> = []
+    const rules: Array<CfnWebACL.RuleProperty> = []
     let nextPriority = 0
 
     if (props.wafAllowGaRunnerConnectivity && props.githubAllowListIpv4.length > 0) {
@@ -214,7 +207,7 @@ export class WebACL extends Construct {
       }
     })
 
-    const webAcl = new wafv2.CfnWebACL(this, "CloudfrontWebAcl", {
+    const webAcl = new CfnWebACL(this, "CloudfrontWebAcl", {
       name: `${props.serviceName}-WebAcl`,
       defaultAction: {allow: {}},
       scope: props.scope,
@@ -230,6 +223,11 @@ export class WebACL extends Construct {
           value: `${props.serviceName}-WebAcl`
         }
       ]
+    })
+
+    new CfnLoggingConfiguration(scope, "webAclLoggingConfiguration", {
+      logDestinationConfigs: [ props.wafLogGroupName ],
+      resourceArn: webAcl.attrArn // Arn of Acl
     })
 
     this.webAcl = webAcl

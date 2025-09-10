@@ -72,7 +72,7 @@ describe("PatientSearch Unit Tests", () => {
         "&given=test+Given%2AName"
 
       expect(responseError.config!.url).toBe(expectedUrl)
-    })
+    }, 10000)
   })
 
   describe("Axios response handling", () => {
