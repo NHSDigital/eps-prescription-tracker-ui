@@ -1,8 +1,13 @@
 import {RemovalPolicy} from "aws-cdk-lib"
-import {IRole, PolicyStatement, ServicePrincipal} from "aws-cdk-lib/aws-iam"
+import {IRole} from "aws-cdk-lib/aws-iam"
 import {IStream} from "aws-cdk-lib/aws-kinesis"
 import {IKey} from "aws-cdk-lib/aws-kms"
-import {CfnLogGroup, CfnSubscriptionFilter, LogGroup} from "aws-cdk-lib/aws-logs"
+import {
+CfnLogGroup,
+CfnResourcePolicy,
+CfnSubscriptionFilter,
+LogGroup
+} from "aws-cdk-lib/aws-logs"
 import {Construct} from "constructs"
 
 export interface ukRegionLogGroupsProps {
@@ -11,6 +16,7 @@ export interface ukRegionLogGroupsProps {
   readonly splunkDeliveryStream: IStream
   readonly splunkSubscriptionFilterRole: IRole
   readonly wafLogGroupName: string
+  readonly stackName: string
 }
 
 export class ukRegionLogGroups extends Construct {
@@ -35,19 +41,24 @@ export class ukRegionLogGroups extends Construct {
       }
     }
 
-    const wafLogGroupPolicy = new PolicyStatement({
-      principals: [new ServicePrincipal("delivery.logs.amazonaws.com")],
-      actions: [
-        "logs:CreateLogStream",
-        "logs:PutLogEvents"
-      ],
-      resources: [
-        wafLogGroup.logGroupArn,
-        `${wafLogGroup.logGroupArn}:log-stream:*`
-      ]
+    const serviceLogPolicy = {
+        Version: "2012-10-17",
+        Statement: [
+          {
+            Effect: "Allow",
+            Principal: {Service: "delivery.logs.amazonaws.com"},
+            Action: ["logs:CreateLogStream", "logs:PutLogEvents"],
+            Resource: [
+              wafLogGroup.logGroupArn,
+              `${wafLogGroup.logGroupArn}:log-stream:*`
+            ]
+          }
+        ]
+      }
+    new CfnResourcePolicy(this, "CloudFrontResourcePolicy", {
+      policyName: `${props.stackName}LogServicePolicy`,
+      policyDocument: JSON.stringify(serviceLogPolicy)
     })
-
-    wafLogGroup.addToResourcePolicy(wafLogGroupPolicy)
 
     new CfnSubscriptionFilter(this, "WafSplunkSubscriptionFilter", {
       destinationArn: props.splunkDeliveryStream.streamArn,
