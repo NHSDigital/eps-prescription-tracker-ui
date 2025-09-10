@@ -107,48 +107,17 @@ export const extractItems = (
     const quantity = originalQuantityUnit ? `${originalQuantityValue} ${originalQuantityUnit}` : originalQuantityValue
     const dosageInstructions = request.dosageInstruction?.[0]?.text
 
-    // const psuStatus = findExtensionByKey(
-    //   request.extension,
-    //   "DM_PRESCRIPTION_STATUS_UPDATE_HISTORY")
-    //   ?.extension?.[0].valueCoding?.code
-// Step 1: Find the top-level extension
-const prescriptionStatusUpdateHistory = findExtensionByKey(
-  request.extension,
-  "DM_PRESCRIPTION_STATUS_UPDATE_HISTORY"
-)
-console.log("Prescription Status Update History:", prescriptionStatusUpdateHistory)
-
-// Step 2: Access its 'extension' array
-const historyExtensions = prescriptionStatusUpdateHistory?.extension
-console.log("History Extensions:", historyExtensions)
-
-// Step 3: Take the first element of the array
-const firstHistoryExtension = historyExtensions?.[0]
-console.log("First History Extension:", firstHistoryExtension)
-
-// Step 4: Access the valueCoding property
-const valueCoding = firstHistoryExtension?.valueCoding
-console.log("Value Coding:", valueCoding)
-
-// Step 5: Assign the final psuStatus
-const psuStatus = valueCoding?.code
-console.log("PSU Status Code:", psuStatus)
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const fullUrl = "https://fhir.nhs.uk/StructureDefinition/DM_PRESCRIPTION_STATUS_UPDATE_HISTORY" as any
-
-const prescriptionStatusUpdateHistory2 =
-  findExtensionByKey(request.extension, "DM_PRESCRIPTION_STATUS_UPDATE_HISTORY")
-  || findExtensionByKey(request.extension, fullUrl)
-
-console.log("Prescription Status Update History (key or full URL):", prescriptionStatusUpdateHistory2)
+    const pharmacyStatus = findExtensionByKey(
+      request.extension,
+      "DM_PRESCRIPTION_STATUS_UPDATE_HISTORY")
+      ?.extension?.[0].valueCoding?.code
 
     return {
       medicationName,
       quantity,
       dosageInstructions,
       epsStatusCode,
-      psuStatus,
+      pharmacyStatus,
       itemPendingCancellation,
       cancellationReason,
       notDispensedReason

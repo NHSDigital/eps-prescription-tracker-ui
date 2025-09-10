@@ -11,7 +11,7 @@ describe("ItemsCards", () => {
       quantity: "30 tablets",
       dosageInstructions: "Take one three times a day",
       epsStatusCode: "0004", // Item not dispensed - owing
-      psuStatus: "With pharmacy",
+      pharmacyStatus: "With pharmacy",
       itemPendingCancellation: false
     },
     {
@@ -19,7 +19,7 @@ describe("ItemsCards", () => {
       quantity: "20 tablets",
       dosageInstructions: "Take one as needed",
       epsStatusCode: "0001", // Item fully dispensed
-      psuStatus: "Collected",
+      pharmacyStatus: "Collected",
       itemPendingCancellation: false
     }
   ]
@@ -46,7 +46,7 @@ describe("ItemsCards", () => {
     expect(screen.getByText("Take one as needed")).toBeInTheDocument()
     expect(screen.getByText("Take one three times a day")).toBeInTheDocument()
 
-    // PSU statuses
+    // Pharmacy statuses
     expect(screen.getByText("Collected")).toBeInTheDocument()
     expect(screen.getByText("With pharmacy")).toBeInTheDocument()
   })
@@ -75,7 +75,7 @@ describe("ItemsCards", () => {
     expect(screen.queryByText("Take one as needed")).not.toBeInTheDocument()
     expect(screen.getByText("Take one three times a day")).toBeInTheDocument()
 
-    // PSU statuses
+    // Pharmacy statuses
     expect(screen.getByText("Collected")).toBeInTheDocument()
     expect(screen.getByText("With pharmacy")).toBeInTheDocument()
   })

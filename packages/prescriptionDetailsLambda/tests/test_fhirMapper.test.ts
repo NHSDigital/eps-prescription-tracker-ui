@@ -153,7 +153,7 @@ describe("extractPrescribedItems", () => {
       quantity: "30",
       dosageInstructions: "Take once daily",
       epsStatusCode: "unknown",
-      psuStatus: undefined,
+      pharmacyStatus: undefined,
       itemPendingCancellation: false,
       cancellationReason: undefined,
       notDispensedReason: undefined
@@ -181,7 +181,7 @@ describe("extractPrescribedItems", () => {
       quantity: "Unknown",
       dosageInstructions: undefined,
       epsStatusCode: "unknown",
-      psuStatus: undefined,
+      pharmacyStatus: undefined,
       itemPendingCancellation: false,
       cancellationReason: undefined,
       notDispensedReason: undefined
@@ -283,7 +283,7 @@ describe("extractPrescribedItems", () => {
     expect(result[0].epsStatusCode).toBe("0001")
   })
 
-  it("should extract psuStatus from DM prescription status update extension", () => {
+  it("should extract pharmacyStatus from DM prescription status update extension", () => {
     const medicationRequests: Array<MedicationRequest> = [
       {
         resourceType: "MedicationRequest",
@@ -301,10 +301,10 @@ describe("extractPrescribedItems", () => {
       }
     ]
     const result = extractItems(medicationRequests, [])
-    expect(result[0].psuStatus).toBe("Dispatched")
+    expect(result[0].pharmacyStatus).toBe("Dispatched")
   })
 
-  it("should return undefined psuStatus if DM extension is missing", () => {
+  it("should return undefined pharmacyStatus if DM extension is missing", () => {
     const medicationRequests: Array<MedicationRequest> = [
       {
         resourceType: "MedicationRequest",
@@ -316,6 +316,6 @@ describe("extractPrescribedItems", () => {
     ]
 
     const result = extractItems(medicationRequests, [])
-    expect(result[0].psuStatus).toBeUndefined()
+    expect(result[0].pharmacyStatus).toBeUndefined()
   })
 })

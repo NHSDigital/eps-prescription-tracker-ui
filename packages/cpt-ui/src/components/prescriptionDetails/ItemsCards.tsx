@@ -9,7 +9,6 @@ import {getItemStatusTagColour, getItemStatusDisplayText} from "@/helpers/status
 import {STRINGS} from "@/constants/ui-strings/PrescribedDispensedItemsCardsStrings"
 import {SummaryListRow} from "@/components/prescriptionDetails/ItemsCards/SummaryListRow"
 import {CANCELLATION_REASON_MAP, NON_DISPENSING_REASON_MAP} from "@/constants/ui-strings/StatusReasonStrings"
-/* eslint-disable no-console */
 
 interface ItemsProps {
   readonly items: Array<ItemDetails>
@@ -27,13 +26,11 @@ export function ItemsCards({items}: ItemsProps) {
       quantity,
       dosageInstructions,
       epsStatusCode,
-      psuStatus,
+      pharmacyStatus,
       itemPendingCancellation,
       cancellationReason,
       notDispensedReason
     } = item
-
-    console.log(item, "&&&&")
 
     return (
       <div key={`item-${index}`} className="data-panel__wrapper no-outline" tabIndex={-1}>
@@ -78,11 +75,18 @@ export function ItemsCards({items}: ItemsProps) {
               {dosageInstructions && (
                 <SummaryListRow label={STRINGS.INSTRUCTIONS_LABEL} value={dosageInstructions}/>
               )}
-
-              {psuStatus && (
-                <SummaryListRow label={STRINGS.PSU_STATUS_LABEL} value={psuStatus}/>
-              )}
-              <SummaryListRow label={STRINGS.PSU_STATUS_LABEL} value={"Collected"}/>
+{pharmacyStatus && (
+  <SummaryListRow
+    label={STRINGS.PSU_STATUS_LABEL}
+    value={
+      <p className="nhsuk-u-margin-bottom-2" data-testid="psu-status-tag">
+        <strong className="nhsuk-tag nhsuk-tag">
+          {pharmacyStatus}
+        </strong>
+      </p>
+    }
+  />
+)}
             </SummaryList>
           </Card.Content>
         </Card>

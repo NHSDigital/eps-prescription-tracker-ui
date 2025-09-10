@@ -1,8 +1,9 @@
 import {SummaryList} from "nhsuk-react-components"
+import React from "react"
 
 interface SummaryListRowProps {
   readonly label: string
-  readonly value: string
+  readonly value: React.ReactNode
 }
 
 export const SummaryListRow = ({label, value}: SummaryListRowProps) => {
