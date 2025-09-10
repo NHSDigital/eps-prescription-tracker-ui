@@ -457,6 +457,9 @@ export class StatelessResourcesStack extends Stack {
     const responseHeadersPolicy = new ResponseHeadersPolicy(this, "CustomSecurityHeadersPolicy", {
       responseHeadersPolicyName: `${props.serviceName}-CustomSecurityHeaders`,
       comment: "Security headers policy with inclusion of CSP",
+      removeHeaders: ["x-amz-server-side-encryption",
+        "x-amz-server-side-encryption-aws-kms-key-id",
+        "x-amz-server-side-encryption-bucket-key-enabled"],
       securityHeadersBehavior: {
         contentSecurityPolicy: {
           contentSecurityPolicy: "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; \
