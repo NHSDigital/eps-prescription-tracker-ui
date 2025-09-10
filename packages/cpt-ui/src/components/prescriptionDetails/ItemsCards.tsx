@@ -75,18 +75,18 @@ export function ItemsCards({items}: ItemsProps) {
               {dosageInstructions && (
                 <SummaryListRow label={STRINGS.INSTRUCTIONS_LABEL} value={dosageInstructions}/>
               )}
-{pharmacyStatus && (
-  <SummaryListRow
-    label={STRINGS.PSU_STATUS_LABEL}
-    value={
-      <p className="nhsuk-u-margin-bottom-2" data-testid="psu-status-tag">
-        <strong className="nhsuk-tag nhsuk-tag">
-          {pharmacyStatus}
-        </strong>
-      </p>
-    }
-  />
-)}
+              {pharmacyStatus && (
+                <SummaryListRow
+                  label={STRINGS.PSU_STATUS_LABEL}
+                  value={
+                    <p className="nhsuk-u-margin-bottom-2" data-testid="psu-status-tag">
+                      <strong className="nhsuk-tag nhsuk-tag">
+                        {pharmacyStatus}
+                      </strong>
+                    </p>
+                  }
+                />
+              )}
             </SummaryList>
           </Card.Content>
         </Card>
