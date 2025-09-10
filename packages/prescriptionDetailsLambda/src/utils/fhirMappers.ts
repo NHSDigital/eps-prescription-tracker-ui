@@ -1,7 +1,6 @@
 import {MedicationDispense, MedicationRequest, Patient} from "fhir/r4"
 import {ItemDetails, PatientDetails} from "@cpt-ui-common/common-types"
 import {findExtensionByKey, getBooleanFromNestedExtension, getCodeFromNestedExtension} from "./extensionUtils"
-/* eslint-disable no-console */
 
 /**
  *  Maps message history titles names to semantic message codes

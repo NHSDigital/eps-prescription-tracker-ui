@@ -214,7 +214,6 @@ export const mergePrescriptionDetails = (
   // extract and format all the data
   const patientDetails = extractPatientDetails(patient)
   const items = extractItems(medicationRequests, medicationDispenses)
-  console.log(items, '!!!!!!!')
   const messageHistory = extractMessageHistory(requestGroup, doHSData, medicationRequests, medicationDispenses)
 
   // TODO: extract NHS App status from dispensing information extension
