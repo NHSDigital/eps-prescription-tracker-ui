@@ -2,7 +2,7 @@ import React, {useEffect, useRef} from "react"
 import {useAuth} from "@/context/AuthProvider"
 import {Container, Col, Row} from "nhsuk-react-components"
 import {signOut} from "@/helpers/logout"
-import {FRONTEND_PATHS} from "@/constants/environment"
+import {ENV_CONFIG, FRONTEND_PATHS} from "@/constants/environment"
 import {Link} from "react-router-dom"
 import {EpsLogoutStrings} from "@/constants/ui-strings/EpsLogoutPageStrings"
 
@@ -14,7 +14,8 @@ export default function SessionLoggedOutPage() {
 
   // Log out on page load
   useEffect(() => {
-    signOut(auth, hasSignedOut, FRONTEND_PATHS.SESSION_LOGGED_OUT)
+    signOut(auth, hasSignedOut, `${ENV_CONFIG.BASE_URL_PATH}/${FRONTEND_PATHS.SESSION_LOGGED_OUT}`
+    )
   }, [])
 
   if (auth.invalidSessionCause === "ConcurrentSession") {

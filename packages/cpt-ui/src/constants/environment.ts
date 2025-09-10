@@ -4,7 +4,8 @@ export const AUTH_CONFIG = {
   USER_POOL_CLIENT_ID: import.meta.env.VITE_userPoolClientId,
   HOSTED_LOGIN_DOMAIN: import.meta.env.VITE_hostedLoginDomain,
   REDIRECT_SIGN_IN: import.meta.env.VITE_redirectSignIn,
-  REDIRECT_SIGN_OUT: import.meta.env.VITE_redirectSignOut
+  REDIRECT_SIGN_OUT: import.meta.env.VITE_redirectSignOut,
+  REDIRECT_SESSION_SIGN_OUT: import.meta.env.VITE_redirectSessionSignOut
 } as const
 
 // Environment Configuration
@@ -13,7 +14,8 @@ export const ENV_CONFIG = {
   API_DOMAIN_OVERRIDE: import.meta.env.VITE_API_DOMAIN_OVERRIDE,
   BASE_PATH: import.meta.env.BASE_PATH || "site",
   LOCAL_DEV: import.meta.env.VITE_LOCAL_DEV === "true",
-  BASE_URL: import.meta.env.BASE_URL
+  BASE_URL: import.meta.env.BASE_URL,
+  BASE_URL_PATH: `${import.meta.env.BASE_URL}/${import.meta.env.BASE_PATH || "site"}/`
 } as const
 
 // Application Configuration
