@@ -65,8 +65,7 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
     auth.isSigningIn,
     auth.selectedRole,
     auth.isConcurrentSession,
-    location.pathname,
-    location.search
+    location.pathname
   ])
 
   return (
