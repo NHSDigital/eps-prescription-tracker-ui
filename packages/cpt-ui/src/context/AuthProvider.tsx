@@ -217,7 +217,6 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
   const updateSelectedRole = async (newRole: RoleDetails) => {
     const selectedRole = await updateRemoteSelectedRole(newRole)
     setRolesWithAccess(selectedRole.rolesWithAccess)
-    setRolesWithoutAccess(selectedRole.rolesWithoutAccess)
     setSelectedRole(newRole)
   }
 
