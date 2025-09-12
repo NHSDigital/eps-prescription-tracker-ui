@@ -99,6 +99,7 @@ REACT_APP_userPoolClientId=$VITE_userPoolClientId
 REACT_APP_userPoolId=$VITE_userPoolId
 REACT_APP_redirectSignIn=$VITE_redirectSignIn
 REACT_APP_redirectSignOut=$VITE_redirectSignOut
+REACT_APP_redirectSessionSignOut=$VITE_redirectSessionSignOut
 
 REACT_APP_RUM_GUEST_ROLE_ARN=$VITE_RUM_GUEST_ROLE_ARN
 REACT_APP_RUM_IDENTITY_POOL_ID=$VITE_RUM_IDENTITY_POOL_ID
@@ -261,6 +262,7 @@ export API_DOMAIN_OVERRIDE
 export VITE_hostedLoginDomain
 export VITE_redirectSignIn
 export VITE_redirectSignOut
+export VITE_redirectSessionSignOut
 export VITE_COMMIT_ID
 export VITE_VERSION_NUMBER
 export REACT_APP_hostedLoginDomain

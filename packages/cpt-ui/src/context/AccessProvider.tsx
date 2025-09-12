@@ -64,24 +64,24 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
 
   useEffect(() => {
   // If user is signedIn, every 5 minutes call tracker user info. If it fails, sign the user out.
-  const internalId = setInterval(() => {
-    const currentPath = window.location.pathname
+    const internalId = setInterval(() => {
+      const currentPath = window.location.pathname
 
-    if (auth.isSigningIn === true || allowed_no_role_paths.includes(currentPath)) {
-      logger.debug(`Not checking user info, isSigningIn: ${auth.isSignedIn}`, {currentPath})
-      return
-    }
+      if (auth.isSigningIn === true || allowed_no_role_paths.includes(currentPath)) {
+        logger.debug(`Not checking user info, isSigningIn: ${auth.isSignedIn}`, {currentPath})
+        return
+      }
 
-    logger.info("Periodic user info check")
-    if (auth.isSignedIn) {
-      logger.info("Refreshing user info")
-      auth.updateTrackerUserInfo().then((response) => {
-        if (response.error) {
-          navigate(FRONTEND_PATHS.SESSION_LOGGED_OUT)
-        }
-      })
-    }
-  }, 300000) // 300000 ms = 5 minutes
+      logger.info("Periodic user info check")
+      if (auth.isSignedIn) {
+        logger.info("Refreshing user info")
+        auth.updateTrackerUserInfo().then((response) => {
+          if (response.error) {
+            navigate(FRONTEND_PATHS.SESSION_LOGGED_OUT)
+          }
+        })
+      }
+    }, 15000) // 300000 ms = 5 minutes
 
   return () => clearInterval(internalId)
   }, [auth.isSignedIn, auth.isSigningIn])

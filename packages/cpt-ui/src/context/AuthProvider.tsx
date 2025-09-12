@@ -97,7 +97,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
     setIsSignedIn(false)
     setIsSigningIn(false)
     setIsConcurrentSession(false)
-    // setInvalidSessionCause(undefined)
+    setInvalidSessionCause(undefined)
   }
 
   const updateTrackerUserInfo = async () => {
