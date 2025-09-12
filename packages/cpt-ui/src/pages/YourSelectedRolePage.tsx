@@ -4,7 +4,7 @@ import {
   Container,
   Col,
   Row,
-  Table
+  SummaryList
 } from "nhsuk-react-components"
 import {Link} from "react-router-dom"
 
@@ -65,40 +65,44 @@ export default function YourSelectedRolePage() {
           {/* Roles without access Section */}
           <Col width="two-thirds">
             <h2>{tableTitle}</h2>
-            <Table>
-              <Table.Body>
-                <Table.Row key="role-row">
-                  <Table.Cell data-testid="role-label">
-                    <b>{roleLabel}</b>
-                  </Table.Cell>
-                  <Table.Cell data-testid="role-text">
-                    {roleName}
-                  </Table.Cell>
-                  <Table.Cell data-testid="role-change-role-cell">
-                    <Link
-                      to={FRONTEND_PATHS.CHANGE_YOUR_ROLE}
-                    >
-                      {changeLinkText}
-                    </Link>
-                  </Table.Cell>
-                </Table.Row>
-                <Table.Row key="org-row">
-                  <Table.Cell data-testid="org-label">
-                    <b>{orgLabel}</b>
-                  </Table.Cell>
-                  <Table.Cell data-testid="org-text">
-                    {orgName} (ODS: {odsCode})
-                  </Table.Cell>
-                  <Table.Cell data-testid="org-change-role-cell">
-                    <Link
-                      to={FRONTEND_PATHS.CHANGE_YOUR_ROLE}
-                    >
-                      {changeLinkText}
-                    </Link>
-                  </Table.Cell>
-                </Table.Row>
-              </Table.Body>
-            </Table>
+            <SummaryList>
+              <SummaryList.Row key="role-row">
+                <SummaryList.Key data-testid="role-label">
+                  <b>{roleLabel}</b>
+                </SummaryList.Key>
+                <SummaryList.Value data-testid="role-text">
+                  {roleName}
+                </SummaryList.Value>
+                <SummaryList.Actions data-testid="role-change-role-cell">
+                  <Link
+                    to={FRONTEND_PATHS.CHANGE_YOUR_ROLE}
+                  >
+                    {changeLinkText}
+                    <span className="nhsuk-u-visually-hidden">
+                      {" "}role
+                    </span>
+                  </Link>
+                </SummaryList.Actions>
+              </SummaryList.Row>
+              <SummaryList.Row key="org-row">
+                <SummaryList.Key data-testid="org-label">
+                  <b>{orgLabel}</b>
+                </SummaryList.Key>
+                <SummaryList.Value data-testid="org-text">
+                  {orgName} (ODS: {odsCode})
+                </SummaryList.Value>
+                <SummaryList.Actions data-testid="org-change-role-cell">
+                  <Link
+                    to={FRONTEND_PATHS.CHANGE_YOUR_ROLE}
+                  >
+                    {changeLinkText}
+                    <span className="nhsuk-u-visually-hidden">
+                      {" "}organisation
+                    </span>
+                  </Link>
+                </SummaryList.Actions>
+              </SummaryList.Row>
+            </SummaryList>
           </Col>
         </Row>
 
