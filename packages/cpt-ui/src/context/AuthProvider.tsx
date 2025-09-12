@@ -38,7 +38,7 @@ export interface AuthContextType {
   selectedRole: RoleDetails | undefined
   userDetails: UserDetails | undefined
   cognitoSignIn: (input?: SignInWithRedirectInput) => Promise<void>
-  cognitoSignOut: (redirectUrl?: string) => Promise<void>
+  cognitoSignOut: () => Promise<boolean>
   clearAuthState: () => void
   updateSelectedRole: (value: RoleDetails) => Promise<void>
   forceCognitoLogout: () => Promise<void>
@@ -191,7 +191,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
   /**
    * Sign out process.
    */
-  const cognitoSignOut = async (redirectUrl?: string | null) => {
+  const cognitoSignOut = async (): Promise<boolean> => {
     logger.info("Signing out in authProvider...")
     try {
       // we need to sign out of cis2 first before signing out of cognito
@@ -202,18 +202,14 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
       logger.info(`calling amplify logout`)
       // this triggers a signedOutEvent which is handled by the hub listener
       // we clear all state in there
-      if (redirectUrl) {
-        logger.info("Setting amplify redirect", redirectUrl)
-        await signOut({global: true, oauth: {redirectUrl: redirectUrl}})
-      } else {
-        logger.info("Using default amplify redirect")
-        await signOut({global: true})
-      }
+      logger.info("Using default amplify redirect")
+      await signOut()
       logger.info("Frontend amplify signout OK!")
-
+      return true
     } catch (err) {
       logger.error("Failed to sign out:", err)
       setError(String(err))
+      return false
     }
   }
 

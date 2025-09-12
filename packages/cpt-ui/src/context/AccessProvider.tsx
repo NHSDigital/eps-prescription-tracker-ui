@@ -65,11 +65,10 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
   useEffect(() => {
   // If user is signedIn, every 5 minutes call tracker user info. If it fails, sign the user out.
   const internalId = setInterval(() => {
-    const signingIn = auth.isSignedIn
     const currentPath = window.location.pathname
 
-    if (signingIn || allowed_no_role_paths.includes(currentPath)) {
-      logger.debug("Not checking user info", {signingIn, currentPath})
+    if (auth.isSigningIn === true || allowed_no_role_paths.includes(currentPath)) {
+      logger.debug(`Not checking user info, isSigningIn: ${auth.isSignedIn}`, {currentPath})
       return
     }
 
@@ -82,7 +81,7 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
         }
       })
     }
-  }, 30000) // 300000 ms = 5 minutes
+  }, 300000) // 300000 ms = 5 minutes
 
   return () => clearInterval(internalId)
   }, [auth.isSignedIn, auth.isSigningIn])

@@ -1,4 +1,4 @@
-import React, {useEffect, useRef} from "react"
+import React, {useEffect} from "react"
 import {Container} from "nhsuk-react-components"
 import {Link} from "react-router-dom"
 
@@ -10,12 +10,9 @@ import {signOut} from "@/helpers/logout"
 export default function LogoutPage() {
   const auth = useAuth()
 
-  // use ref to prevent double execution
-  const hasSignedOut = useRef(false)
-
   // Log out on page load
   useEffect(() => {
-    signOut(auth, hasSignedOut)
+    signOut(auth)
   }, [])
 
   return (
