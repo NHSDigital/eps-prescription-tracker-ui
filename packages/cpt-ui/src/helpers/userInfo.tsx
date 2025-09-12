@@ -46,7 +46,7 @@ export const getTrackerUserInfo = async (): Promise<TrackerUserInfoResult> => {
     let currentlySelectedRole = userInfo.currently_selected_role
     if (
       !currentlySelectedRole ||
-        Object.keys(currentlySelectedRole).length === 0
+      Object.keys(currentlySelectedRole).length === 0
     ) {
       currentlySelectedRole = undefined
     }
@@ -92,6 +92,7 @@ export const getTrackerUserInfo = async (): Promise<TrackerUserInfoResult> => {
 
 export const updateRemoteSelectedRole = async (newRole: RoleDetails) => {
   // Update selected role in the backend via the selectedRoleLambda endpoint using axios
+  //  and return the updated roles with access array
   const response = await http.put(
     API_ENDPOINTS.SELECTED_ROLE,
     {currently_selected_role: newRole}
@@ -99,5 +100,9 @@ export const updateRemoteSelectedRole = async (newRole: RoleDetails) => {
 
   if (response.status !== 200) {
     throw new Error("Failed to update the selected role")
+  }
+
+  return {
+    rolesWithAccess: response.data.userInfo.rolesWithAccess || []
   }
 }
