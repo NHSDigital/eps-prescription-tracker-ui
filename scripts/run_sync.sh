@@ -270,6 +270,7 @@ export REACT_APP_userPoolClientId
 export REACT_APP_userPoolId
 export REACT_APP_redirectSignIn
 export REACT_APP_redirectSignOut
+export REACT_APP_redirectSessionSignOut
 export REACT_APP_RUM_GUEST_ROLE_ARN
 export REACT_APP_RUM_IDENTITY_POOL_ID
 export REACT_APP_RUM_APPLICATION_ID
