@@ -68,7 +68,7 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
       const currentPath = window.location.pathname
 
       if (auth.isSigningIn === true || allowed_no_role_paths.includes(currentPath)) {
-        logger.debug(`Not checking user info, isSigningIn: ${auth.isSignedIn}`, {currentPath})
+        logger.debug("Not checking user info")
         return
       }
 

@@ -24,7 +24,6 @@ jest.mock("@/context/configureAmplify")
 jest.mock("@/helpers/sessionManagement", () => ({
   postSessionManagementUpdate: jest.fn()
 }))
-const mockUpdateTrackerUserInfo = jest.fn()
 const mockPostSessionManagementUpdate =
     postSessionManagementUpdate as jest.MockedFunction<typeof postSessionManagementUpdate>
 
@@ -49,7 +48,9 @@ jest.mock("@/constants/environment", () => ({
   }
 }))
 
-const defaultAuthState: AuthContextType = {
+const mockUpdateTrackerUserInfo = jest.fn()
+
+export const defaultAuthState: AuthContextType = {
   isSignedIn: true,
   isSigningIn: false,
   invalidSessionCause: undefined,
