@@ -25,11 +25,17 @@ import SessionSelectionPage from "./pages/SessionSelection"
 import {FRONTEND_PATHS} from "@/constants/environment"
 
 const RootRoute = () => {
-  const {isSignedIn} = useAuth()
+  const {isSignedIn, selectedRole, hasSingleRoleAccess} = useAuth()
 
-  return isSignedIn
-    ? <Navigate to={FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID} replace />
-    : <NotFoundPage />
+  if (!isSignedIn) {
+    return <NotFoundPage />
+  }
+
+  if (!selectedRole && !hasSingleRoleAccess) {
+    return <Navigate to={FRONTEND_PATHS.SELECT_YOUR_ROLE} replace />
+  }
+
+  return <Navigate to={FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID} replace />
 }
 
 export default function App() {
