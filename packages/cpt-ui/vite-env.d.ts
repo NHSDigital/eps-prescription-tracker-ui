@@ -7,6 +7,7 @@ interface ImportMetaEnv {
   readonly VITE_hostedLoginDomain: string;
   readonly VITE_redirectSignIn: string;
   readonly VITE_redirectSignOut: string;
+  readonly VITE_redirectSessionSignOut: string;
 
   // Environment Configuration
   readonly VITE_TARGET_ENVIRONMENT: "dev" | "dev-pr" | "int" | "qa" | "prod";

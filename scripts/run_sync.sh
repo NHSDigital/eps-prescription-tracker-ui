@@ -80,6 +80,7 @@ API_DOMAIN_OVERRIDE=https://${SERVICE_NAME}.dev.eps.national.nhs.uk/
 VITE_hostedLoginDomain=${SERVICE_NAME}.auth.eu-west-2.amazoncognito.com
 VITE_redirectSignIn=http://localhost:3000/site/select-your-role
 VITE_redirectSignOut=http://localhost:3000/site/logout
+VITE_redirectSessionSignOut=http://localhost:3000/site/session-logged-out
 
 VITE_COMMIT_ID=$(echo "$CF_LONDON_EXPORTS" | \
     jq \
@@ -98,6 +99,7 @@ REACT_APP_userPoolClientId=$VITE_userPoolClientId
 REACT_APP_userPoolId=$VITE_userPoolId
 REACT_APP_redirectSignIn=$VITE_redirectSignIn
 REACT_APP_redirectSignOut=$VITE_redirectSignOut
+REACT_APP_redirectSessionSignOut=$VITE_redirectSessionSignOut
 
 REACT_APP_RUM_GUEST_ROLE_ARN=$VITE_RUM_GUEST_ROLE_ARN
 REACT_APP_RUM_IDENTITY_POOL_ID=$VITE_RUM_IDENTITY_POOL_ID
@@ -260,6 +262,7 @@ export API_DOMAIN_OVERRIDE
 export VITE_hostedLoginDomain
 export VITE_redirectSignIn
 export VITE_redirectSignOut
+export VITE_redirectSessionSignOut
 export VITE_COMMIT_ID
 export VITE_VERSION_NUMBER
 export REACT_APP_hostedLoginDomain
@@ -267,6 +270,7 @@ export REACT_APP_userPoolClientId
 export REACT_APP_userPoolId
 export REACT_APP_redirectSignIn
 export REACT_APP_redirectSignOut
+export REACT_APP_redirectSessionSignOut
 export REACT_APP_RUM_GUEST_ROLE_ARN
 export REACT_APP_RUM_IDENTITY_POOL_ID
 export REACT_APP_RUM_APPLICATION_ID

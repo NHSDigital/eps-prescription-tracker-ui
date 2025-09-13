@@ -198,7 +198,9 @@ export class Cognito extends Construct {
 
     const logoutUrls = [
       `https://${props.fullCloudfrontDomain}/site/logout`,
-      `https://${props.fullCloudfrontDomain}/site/logout.html`
+      `https://${props.fullCloudfrontDomain}/site/logout.html`,
+      `https://${props.fullCloudfrontDomain}/site/session-logged-out`,
+      `https://${props.fullCloudfrontDomain}/site/session-logged-out.html`
     ]
 
     if (props.allowLocalhostAccess) {
@@ -208,6 +210,8 @@ export class Cognito extends Construct {
       // Local, with base path set to /site
       logoutUrls.push("http://localhost:3000/site/logout")
       callbackUrls.push("http://localhost:3000/site/select-your-role")
+      logoutUrls.push("http://localhost:3000/site/session-logged-out")
+      logoutUrls.push("http://localhost:3000/session-logged-out")
       // Auth demo stuff
       callbackUrls.push("http://localhost:3000/auth/")
       // Root path, just in case

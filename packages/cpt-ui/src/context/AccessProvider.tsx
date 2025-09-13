@@ -19,17 +19,17 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
   const auth = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
+  const allowed_no_role_paths = [
+    FRONTEND_PATHS.LOGIN,
+    FRONTEND_PATHS.LOGOUT,
+    FRONTEND_PATHS.SESSION_LOGGED_OUT,
+    FRONTEND_PATHS.COOKIES,
+    FRONTEND_PATHS.PRIVACY_NOTICE,
+    FRONTEND_PATHS.COOKIES_SELECTED,
+    FRONTEND_PATHS.SESSION_SELECTION
+  ]
 
   const ensureRoleSelected = () => {
-    const allowed_no_role_paths = [
-      FRONTEND_PATHS.LOGIN,
-      FRONTEND_PATHS.LOGOUT,
-      FRONTEND_PATHS.COOKIES,
-      FRONTEND_PATHS.PRIVACY_NOTICE,
-      FRONTEND_PATHS.COOKIES_SELECTED,
-      FRONTEND_PATHS.SESSION_SELECTION
-    ]
-
     if (!auth.isSignedIn && !auth.isSigningIn) {
       if (!allowed_no_role_paths.includes(normalizePath(location.pathname))) {
         logger.info("Not signed in - redirecting to login page")
@@ -61,6 +61,30 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
     }
     ensureRoleSelected()
   }, [auth.isSignedIn, auth.isSigningIn, auth.selectedRole, auth.isConcurrentSession, location.pathname])
+
+  useEffect(() => {
+  // If user is signedIn, every 5 minutes call tracker user info. If it fails, sign the user out.
+    const internalId = setInterval(() => {
+      const currentPath = window.location.pathname
+
+      if (auth.isSigningIn === true || allowed_no_role_paths.includes(currentPath)) {
+        logger.debug("Not checking user info")
+        return
+      }
+
+      logger.info("Periodic user info check")
+      if (auth.isSignedIn) {
+        logger.info("Refreshing user info")
+        auth.updateTrackerUserInfo().then((response) => {
+          if (response.error) {
+            navigate(FRONTEND_PATHS.SESSION_LOGGED_OUT)
+          }
+        })
+      }
+    }, 15000) // 300000 ms = 5 minutes
+
+  return () => clearInterval(internalId)
+  }, [auth.isSignedIn, auth.isSigningIn])
 
   return (
     <AccessContext.Provider value={{}}>

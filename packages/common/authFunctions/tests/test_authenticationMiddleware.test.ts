@@ -123,7 +123,8 @@ describe("authenticationMiddleware", () => {
         logger,
         authOptions,
         tokenMappingItem,
-        authOptions.tokenMappingTableName
+        authOptions.tokenMappingTableName,
+        false
       )
       expect(mockEvent.requestContext.authorizer).toEqual(authResult)
       expect(mockRequest.earlyResponse).toBeUndefined()

@@ -21,6 +21,7 @@ import {AxiosError, AxiosHeaders} from "axios"
 const defaultAuthState: AuthContextType = {
   isSignedIn: false,
   isSigningIn: false,
+  invalidSessionCause: undefined,
   user: null,
   error: null,
   rolesWithAccess: [],

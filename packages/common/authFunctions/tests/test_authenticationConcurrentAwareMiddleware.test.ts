@@ -143,7 +143,8 @@ describe("authenticationConcurrentAwareMiddleware", () => {
         logger,
         authOptions,
         sessionManagementItem,
-        authOptions.sessionManagementTableName
+        authOptions.sessionManagementTableName,
+        false
       )
       expect(mockEvent.requestContext.authorizer).toEqual({
         ...authResult,
@@ -199,7 +200,8 @@ describe("authenticationConcurrentAwareMiddleware", () => {
         logger,
         authOptions,
         tokenMappingItem,
-        authOptions.tokenMappingTableName
+        authOptions.tokenMappingTableName,
+        false
       )
       expect(mockEvent.requestContext.authorizer).toEqual({
         ...authResult,
@@ -251,7 +253,8 @@ describe("authenticationConcurrentAwareMiddleware", () => {
         logger,
         authOptions,
         sessionManagementItem,
-        authOptions.sessionManagementTableName
+        authOptions.sessionManagementTableName,
+        false
       )
       expect(mockEvent.requestContext.authorizer.isConcurrentSession).toBe(true)
       expect(logger.debug).toHaveBeenCalledWith(
@@ -293,16 +296,16 @@ describe("authenticationConcurrentAwareMiddleware", () => {
         statusCode: 401,
         body: JSON.stringify({
           message: "Session expired or invalid. Please log in again.",
-          restartLogin: true
+          restartLogin: true,
+          invalidSessionCause: "ConcurrentSession"
         })
       })
       expect(result).toEqual(mockRequest.earlyResponse)
-      expect(logger.error).toHaveBeenCalledWith(
-        "Request token doesn't match any sessionId in the token mapping or session management table, \
-          treating as invalid session",
+      expect(logger.info).toHaveBeenCalledWith(
+        "A session is active but does not match the requestors sessionId",
         {
-          tokenMappingSessionId: "different-session-id-2",
-          sessionManagementSessionId: "different-session-id-1"
+          username: username,
+          sessionId: sessionId
         }
       )
     })
@@ -329,7 +332,8 @@ describe("authenticationConcurrentAwareMiddleware", () => {
         statusCode: 401,
         body: JSON.stringify({
           message: "Session expired or invalid. Please log in again.",
-          restartLogin: true
+          restartLogin: true,
+          invalidSessionCause: "InvalidSession"
         })
       })
       expect(result).toEqual(mockRequest.earlyResponse)
@@ -363,7 +367,8 @@ describe("authenticationConcurrentAwareMiddleware", () => {
           statusCode: 401,
           body: JSON.stringify({
             message: "Session expired or invalid. Please log in again.",
-            restartLogin: true
+            restartLogin: true,
+            invalidSessionCause: "ConcurrentSession"
           })
         })
         expect(result).toEqual(mockRequest.earlyResponse)
@@ -606,7 +611,8 @@ describe("authenticationConcurrentAwareMiddleware", () => {
         statusCode: 401,
         body: JSON.stringify({
           message: "Session expired or invalid. Please log in again.",
-          restartLogin: true
+          restartLogin: true,
+          invalidSessionCause: "ConcurrentSession"
         })
       })
       expect(result).toEqual(mockRequest.earlyResponse)
@@ -644,7 +650,8 @@ describe("authenticationConcurrentAwareMiddleware", () => {
         statusCode: 401,
         body: JSON.stringify({
           message: "Session expired or invalid. Please log in again.",
-          restartLogin: true
+          restartLogin: true,
+          invalidSessionCause: "ConcurrentSession"
         })
       })
       expect(result).toEqual(mockRequest.earlyResponse)

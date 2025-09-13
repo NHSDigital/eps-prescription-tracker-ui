@@ -18,7 +18,7 @@ export const authConfig: ResourcesConfig = {
             "aws.cognito.signin.user.admin"
           ],
           redirectSignIn: [AUTH_CONFIG.REDIRECT_SIGN_IN!],
-          redirectSignOut: [AUTH_CONFIG.REDIRECT_SIGN_OUT!],
+          redirectSignOut: [AUTH_CONFIG.REDIRECT_SIGN_OUT!, AUTH_CONFIG.REDIRECT_SESSION_SIGN_OUT!],
           responseType: "code"
         },
         username: true,
