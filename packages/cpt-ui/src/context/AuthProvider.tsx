@@ -96,7 +96,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
     setIsConcurrentSession(false)
   }
 
-  const updateTrackerUserInfo = async() => {
+  const updateTrackerUserInfo = async () => {
     const trackerUserInfo = await getTrackerUserInfo()
     setRolesWithAccess(trackerUserInfo.rolesWithAccess)
     setRolesWithoutAccess(trackerUserInfo.rolesWithoutAccess)
@@ -214,8 +214,9 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
     return signInWithRedirect(input)
   }
 
-  const updateSelectedRole = async(newRole: RoleDetails) => {
-    await updateRemoteSelectedRole(newRole)
+  const updateSelectedRole = async (newRole: RoleDetails) => {
+    const selectedRole = await updateRemoteSelectedRole(newRole)
+    setRolesWithAccess(selectedRole.rolesWithAccess)
     setSelectedRole(newRole)
   }
 
