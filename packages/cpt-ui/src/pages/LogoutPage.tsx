@@ -15,14 +15,12 @@ export default function LogoutPage() {
 
   // Log out on page load
   useEffect(() => {
-
     const signOut = async () => {
       if (hasSignedOut.current) return // Prevent double execution
       logger.info("Signing out from logout page", auth)
       hasSignedOut.current = true
 
       await auth?.cognitoSignOut()
-
       logger.info("Signed out")
     }
 
