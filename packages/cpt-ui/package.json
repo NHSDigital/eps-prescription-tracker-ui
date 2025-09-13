@@ -28,7 +28,7 @@
     "uuid": "^11.1.0"
   },
   "devDependencies": {
-    "@aws-amplify/auth": "^6.15.0",
+    "@aws-amplify/auth": "^6.15.1",
     "@swc/jest": "^0.2.39",
     "@testing-library/jest-dom": "^6.8.0",
     "@testing-library/react": "^16.3.0",
