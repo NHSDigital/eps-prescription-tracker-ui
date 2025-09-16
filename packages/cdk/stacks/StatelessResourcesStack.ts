@@ -492,21 +492,6 @@ export class StatelessResourcesStack extends Stack {
             header: "Permissions-Policy",
             value: "camera=(), microphone=(), geolocation=()",
             override: true
-          },
-          {
-            header: "Cache-Control",
-            value: "no-cache, no-store, must-revalidate",
-            override: true
-          },
-          {
-            header: "Pragma",
-            value: "no-cache",
-            override: true
-          },
-          {
-            header: "Expires",
-            value: "0",
-            override: true
           }
         ]
       }
