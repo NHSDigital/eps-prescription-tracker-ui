@@ -4,12 +4,12 @@ import {AUTH_CONFIG} from "@/constants/environment"
 export const authConfig: ResourcesConfig = {
   Auth: {
     Cognito: {
-      userPoolClientId: AUTH_CONFIG.USER_POOL_CLIENT_ID!,
-      userPoolId: AUTH_CONFIG.USER_POOL_ID!,
+      userPoolClientId: AUTH_CONFIG.USER_POOL_CLIENT_ID,
+      userPoolId: AUTH_CONFIG.USER_POOL_ID,
       loginWith: {
         // Optional
         oauth: {
-          domain: AUTH_CONFIG.HOSTED_LOGIN_DOMAIN!,
+          domain: AUTH_CONFIG.HOSTED_LOGIN_DOMAIN,
           scopes: [
             "openid",
             "email",
@@ -17,8 +17,8 @@ export const authConfig: ResourcesConfig = {
             "profile",
             "aws.cognito.signin.user.admin"
           ],
-          redirectSignIn: [AUTH_CONFIG.REDIRECT_SIGN_IN!],
-          redirectSignOut: [AUTH_CONFIG.REDIRECT_SIGN_OUT!, AUTH_CONFIG.REDIRECT_SESSION_SIGN_OUT!],
+          redirectSignIn: [AUTH_CONFIG.REDIRECT_SIGN_IN],
+          redirectSignOut: [AUTH_CONFIG.REDIRECT_SIGN_OUT, AUTH_CONFIG.REDIRECT_SESSION_SIGN_OUT],
           responseType: "code"
         },
         username: true,
