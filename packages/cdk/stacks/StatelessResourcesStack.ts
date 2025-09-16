@@ -456,11 +456,11 @@ export class StatelessResourcesStack extends Stack {
     // --- CloudfrontBehaviors
     const responseHeadersPolicy = new ResponseHeadersPolicy(this, "CustomSecurityHeadersPolicy", {
       responseHeadersPolicyName: `${props.serviceName}-CustomSecurityHeaders`,
-      comment: "Security headers policy with inclusion of CSP and cache control",
+      comment: "Security headers policy with inclusion of CSP",
       securityHeadersBehavior: {
         contentSecurityPolicy: {
-          contentSecurityPolicy: "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; \
-      object-src 'none'; base-uri 'self'; frame-ancestors 'none';",
+          contentSecurityPolicy: "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; " +
+          "object-src 'none'; base-uri 'self'; frame-ancestors 'none';",
           override: true
         },
         strictTransportSecurity: {
