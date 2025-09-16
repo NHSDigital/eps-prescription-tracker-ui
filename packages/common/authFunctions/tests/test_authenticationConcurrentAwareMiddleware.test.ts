@@ -117,7 +117,7 @@ describe("authenticationConcurrentAwareMiddleware", () => {
         .mockResolvedValueOnce(tokenMappingItem) // token mapping table
       mockAuthenticateRequest.mockResolvedValue(authResult)
 
-      const middleware = authenticationConcurrentAwareMiddleware(axiosInstance, ddbClient, authOptions, logger)
+      const middleware = authenticationConcurrentAwareMiddleware({axiosInstance, ddbClient, authOptions, logger})
 
       // Act
       await middleware.before(mockRequest)
@@ -187,7 +187,7 @@ describe("authenticationConcurrentAwareMiddleware", () => {
         .mockResolvedValueOnce(tokenMappingItem)
       mockAuthenticateRequest.mockResolvedValue(authResult)
 
-      const middleware = authenticationConcurrentAwareMiddleware(axiosInstance, ddbClient, authOptions, logger)
+      const middleware = authenticationConcurrentAwareMiddleware({axiosInstance, ddbClient, authOptions, logger})
 
       // Act
       await middleware.before(mockRequest)
@@ -240,7 +240,7 @@ describe("authenticationConcurrentAwareMiddleware", () => {
         .mockResolvedValueOnce(tokenMappingItem)
       mockAuthenticateRequest.mockResolvedValue(authResult)
 
-      const middleware = authenticationConcurrentAwareMiddleware(axiosInstance, ddbClient, authOptions, logger)
+      const middleware = authenticationConcurrentAwareMiddleware({axiosInstance, ddbClient, authOptions, logger})
 
       // Act
       await middleware.before(mockRequest)
@@ -285,7 +285,7 @@ describe("authenticationConcurrentAwareMiddleware", () => {
         .mockResolvedValueOnce(sessionManagementItem)
         .mockResolvedValueOnce(tokenMappingItem)
 
-      const middleware = authenticationConcurrentAwareMiddleware(axiosInstance, ddbClient, authOptions, logger)
+      const middleware = authenticationConcurrentAwareMiddleware({axiosInstance, ddbClient, authOptions, logger})
 
       // Act
       const result = await middleware.before(mockRequest)
@@ -321,7 +321,7 @@ describe("authenticationConcurrentAwareMiddleware", () => {
         .mockResolvedValueOnce(undefined) // session management
         .mockResolvedValueOnce(undefined) // token mapping
 
-      const middleware = authenticationConcurrentAwareMiddleware(axiosInstance, ddbClient, authOptions, logger)
+      const middleware = authenticationConcurrentAwareMiddleware({axiosInstance, ddbClient, authOptions, logger})
 
       // Act
       const result = await middleware.before(mockRequest)
@@ -356,7 +356,7 @@ describe("authenticationConcurrentAwareMiddleware", () => {
           .mockResolvedValueOnce(undefined) // session management
           .mockResolvedValueOnce(tokenMappingItem) // token mapping
 
-        const middleware = authenticationConcurrentAwareMiddleware(axiosInstance, ddbClient, authOptions, logger)
+        const middleware = authenticationConcurrentAwareMiddleware({axiosInstance, ddbClient, authOptions, logger})
 
         // Act
         const result = await middleware.before(mockRequest)
@@ -391,7 +391,7 @@ describe("authenticationConcurrentAwareMiddleware", () => {
         .mockResolvedValueOnce(undefined)
       mockAuthenticateRequest.mockResolvedValue(null)
 
-      const middleware = authenticationConcurrentAwareMiddleware(axiosInstance, ddbClient, authOptions, logger)
+      const middleware = authenticationConcurrentAwareMiddleware({axiosInstance, ddbClient, authOptions, logger})
 
       // Act
       const result = await middleware.before(mockRequest)
@@ -426,7 +426,7 @@ describe("authenticationConcurrentAwareMiddleware", () => {
         .mockResolvedValueOnce(undefined)
       mockAuthenticateRequest.mockRejectedValue(authError)
 
-      const middleware = authenticationConcurrentAwareMiddleware(axiosInstance, ddbClient, authOptions, logger)
+      const middleware = authenticationConcurrentAwareMiddleware({axiosInstance, ddbClient, authOptions, logger})
 
       // Act
       const result = await middleware.before(mockRequest)
@@ -453,7 +453,7 @@ describe("authenticationConcurrentAwareMiddleware", () => {
         throw new Error("Unable to extract username from ID token")
       })
 
-      const middleware = authenticationConcurrentAwareMiddleware(axiosInstance, ddbClient, authOptions, logger)
+      const middleware = authenticationConcurrentAwareMiddleware({axiosInstance, ddbClient, authOptions, logger})
 
       // Act
       const result = await middleware.before(mockRequest)
@@ -487,7 +487,7 @@ describe("authenticationConcurrentAwareMiddleware", () => {
         throw new Error("Unable to extract sessionId from ID token")
       })
 
-      const middleware = authenticationConcurrentAwareMiddleware(axiosInstance, ddbClient, authOptions, logger)
+      const middleware = authenticationConcurrentAwareMiddleware({axiosInstance, ddbClient, authOptions, logger})
 
       // Act
       const result = await middleware.before(mockRequest)
@@ -525,7 +525,7 @@ describe("authenticationConcurrentAwareMiddleware", () => {
         .mockRejectedValueOnce(dbError) // session management fails
         .mockResolvedValueOnce(undefined) // token mapping succeeds
 
-      const middleware = authenticationConcurrentAwareMiddleware(axiosInstance, ddbClient, authOptions, logger)
+      const middleware = authenticationConcurrentAwareMiddleware({axiosInstance, ddbClient, authOptions, logger})
 
       // Act
       const result = await middleware.before(mockRequest)
@@ -557,7 +557,7 @@ describe("authenticationConcurrentAwareMiddleware", () => {
         .mockResolvedValueOnce(undefined) // session management succeeds
         .mockRejectedValueOnce(dbError) // token mapping fails
 
-      const middleware = authenticationConcurrentAwareMiddleware(axiosInstance, ddbClient, authOptions, logger)
+      const middleware = authenticationConcurrentAwareMiddleware({axiosInstance, ddbClient, authOptions, logger})
 
       // Act
       const result = await middleware.before(mockRequest)
@@ -600,7 +600,7 @@ describe("authenticationConcurrentAwareMiddleware", () => {
         .mockResolvedValueOnce(sessionManagementItem)
         .mockResolvedValueOnce(tokenMappingItem)
 
-      const middleware = authenticationConcurrentAwareMiddleware(axiosInstance, ddbClient, authOptions, logger)
+      const middleware = authenticationConcurrentAwareMiddleware({axiosInstance, ddbClient, authOptions, logger})
 
       // Act
       const result = await middleware.before(mockRequest)
@@ -639,7 +639,7 @@ describe("authenticationConcurrentAwareMiddleware", () => {
         .mockResolvedValueOnce(sessionManagementItem)
         .mockResolvedValueOnce(tokenMappingItem)
 
-      const middleware = authenticationConcurrentAwareMiddleware(axiosInstance, ddbClient, authOptions, logger)
+      const middleware = authenticationConcurrentAwareMiddleware({axiosInstance, ddbClient, authOptions, logger})
 
       // Act
       const result = await middleware.before(mockRequest)
@@ -681,7 +681,7 @@ describe("authenticationConcurrentAwareMiddleware", () => {
         .mockResolvedValueOnce(undefined)
       mockAuthenticateRequest.mockResolvedValue(authResult)
 
-      const middleware = authenticationConcurrentAwareMiddleware(axiosInstance, ddbClient, authOptions, logger)
+      const middleware = authenticationConcurrentAwareMiddleware({axiosInstance, ddbClient, authOptions, logger})
 
       // Act
       await middleware.before(mockRequest)
@@ -716,7 +716,7 @@ describe("authenticationConcurrentAwareMiddleware", () => {
         .mockResolvedValueOnce(tokenMappingItem) // token mapping
       mockAuthenticateRequest.mockResolvedValue(authResult)
 
-      const middleware = authenticationConcurrentAwareMiddleware(axiosInstance, ddbClient, authOptions, logger)
+      const middleware = authenticationConcurrentAwareMiddleware({axiosInstance, ddbClient, authOptions, logger})
 
       // Act
       await middleware.before(mockRequest)

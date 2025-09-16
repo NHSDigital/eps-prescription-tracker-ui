@@ -102,7 +102,7 @@ describe("authenticationMiddleware", () => {
       mockGetTokenMapping.mockResolvedValue(tokenMappingItem)
       mockAuthenticateRequest.mockResolvedValue(authResult)
 
-      const middleware = authenticationMiddleware(axiosInstance, ddbClient, authOptions, logger)
+      const middleware = authenticationMiddleware({axiosInstance, ddbClient, authOptions, logger})
 
       // Act
       await middleware.before(mockRequest)
@@ -152,7 +152,7 @@ describe("authenticationMiddleware", () => {
       mockGetSessionIdFromEvent.mockReturnValue(sessionId)
       mockGetTokenMapping.mockResolvedValue(tokenMappingItem)
 
-      const middleware = authenticationMiddleware(axiosInstance, ddbClient, authOptions, logger)
+      const middleware = authenticationMiddleware({axiosInstance, ddbClient, authOptions, logger})
 
       // Act
       const result = await middleware.before(mockRequest)
@@ -181,7 +181,7 @@ describe("authenticationMiddleware", () => {
       mockGetSessionIdFromEvent.mockReturnValue(sessionId)
       mockGetTokenMapping.mockResolvedValue(undefined)
 
-      const middleware = authenticationMiddleware(axiosInstance, ddbClient, authOptions, logger)
+      const middleware = authenticationMiddleware({axiosInstance, ddbClient, authOptions, logger})
 
       // Act
       const result = await middleware.before(mockRequest)
@@ -208,7 +208,7 @@ describe("authenticationMiddleware", () => {
       mockGetSessionIdFromEvent.mockReturnValue(sessionId)
       mockGetTokenMapping.mockRejectedValue(error)
 
-      const middleware = authenticationMiddleware(axiosInstance, ddbClient, authOptions, logger)
+      const middleware = authenticationMiddleware({axiosInstance, ddbClient, authOptions, logger})
 
       // Act
       const result = await middleware.before(mockRequest)
@@ -245,7 +245,7 @@ describe("authenticationMiddleware", () => {
       mockGetTokenMapping.mockResolvedValue(tokenMappingItem)
       mockAuthenticateRequest.mockResolvedValue(null)
 
-      const middleware = authenticationMiddleware(axiosInstance, ddbClient, authOptions, logger)
+      const middleware = authenticationMiddleware({axiosInstance, ddbClient, authOptions, logger})
 
       // Act
       const result = await middleware.before(mockRequest)
@@ -280,7 +280,7 @@ describe("authenticationMiddleware", () => {
       mockGetTokenMapping.mockResolvedValue(tokenMappingItem)
       mockAuthenticateRequest.mockRejectedValue(authError)
 
-      const middleware = authenticationMiddleware(axiosInstance, ddbClient, authOptions, logger)
+      const middleware = authenticationMiddleware({axiosInstance, ddbClient, authOptions, logger})
 
       // Act
       const result = await middleware.before(mockRequest)
@@ -307,7 +307,7 @@ describe("authenticationMiddleware", () => {
         throw new Error("Unable to extract username from ID token")
       })
 
-      const middleware = authenticationMiddleware(axiosInstance, ddbClient, authOptions, logger)
+      const middleware = authenticationMiddleware({axiosInstance, ddbClient, authOptions, logger})
 
       // Act
       const result = await middleware.before(mockRequest)
@@ -341,7 +341,7 @@ describe("authenticationMiddleware", () => {
         throw new Error("Unable to extract sessionId from ID token")
       })
 
-      const middleware = authenticationMiddleware(axiosInstance, ddbClient, authOptions, logger)
+      const middleware = authenticationMiddleware({axiosInstance, ddbClient, authOptions, logger})
 
       // Act
       const result = await middleware.before(mockRequest)
@@ -383,7 +383,7 @@ describe("authenticationMiddleware", () => {
       mockGetSessionIdFromEvent.mockReturnValue(sessionId)
       mockGetTokenMapping.mockResolvedValue(tokenMappingItem)
 
-      const middleware = authenticationMiddleware(axiosInstance, ddbClient, authOptions, logger)
+      const middleware = authenticationMiddleware({axiosInstance, ddbClient, authOptions, logger})
 
       // Act
       const result = await middleware.before(mockRequest)
@@ -419,7 +419,7 @@ describe("authenticationMiddleware", () => {
       mockGetSessionIdFromEvent.mockReturnValue(sessionId)
       mockGetTokenMapping.mockResolvedValue(tokenMappingItem)
 
-      const middleware = authenticationMiddleware(axiosInstance, ddbClient, authOptions, logger)
+      const middleware = authenticationMiddleware({axiosInstance, ddbClient, authOptions, logger})
 
       // Act
       const result = await middleware.before(mockRequest)
@@ -460,7 +460,7 @@ describe("authenticationMiddleware", () => {
       mockGetTokenMapping.mockResolvedValue(tokenMappingItem)
       mockAuthenticateRequest.mockResolvedValue(authResult)
 
-      const middleware = authenticationMiddleware(axiosInstance, ddbClient, authOptions, logger)
+      const middleware = authenticationMiddleware({axiosInstance, ddbClient, authOptions, logger})
 
       // Act
       await middleware.before(mockRequest)
