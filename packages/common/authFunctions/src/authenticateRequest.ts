@@ -45,6 +45,13 @@ export interface AuthenticateRequestOptions {
   cloudfrontDomain: string
 }
 
+export type AuthDependencies = {
+  axiosInstance: AxiosInstance
+  ddbClient: DynamoDBDocumentClient
+  authOptions: AuthenticateRequestOptions
+  logger: Logger
+}
+
 export const authParametersFromEnv = (): AuthenticateRequestOptions => {
   return {
     tokenMappingTableName: process.env["TokenMappingTableName"] as string,
@@ -119,18 +126,20 @@ const fifteenMinutes = 15 * 60 * 1000
  */
 export async function authenticateRequest(
   username: string,
-  axiosInstance: AxiosInstance,
-  documentClient: DynamoDBDocumentClient,
-  logger: Logger,
   {
-    jwtPrivateKeyArn,
-    apigeeApiKey,
-    apigeeApiSecret,
-    jwtKid,
-    apigeeMockTokenEndpoint,
-    apigeeCis2TokenEndpoint,
-    cloudfrontDomain
-  }: AuthenticateRequestOptions,
+    axiosInstance,
+    ddbClient,
+    authOptions: {
+      jwtPrivateKeyArn,
+      apigeeApiKey,
+      apigeeApiSecret,
+      jwtKid,
+      apigeeMockTokenEndpoint,
+      apigeeCis2TokenEndpoint,
+      cloudfrontDomain
+    },
+    logger
+  }: AuthDependencies,
   userRecord: TokenMappingItem,
   specifiedTokenTable: string,
   disableLastActivityUpdate: boolean
@@ -146,7 +155,7 @@ export async function authenticateRequest(
   if (Date.now() - userRecord.lastActivityTime > fifteenMinutes) {
     logger.info("Last activity was more than 15 minutes ago, clearing user record")
     await deleteTokenMapping(
-      documentClient,
+      ddbClient,
       specifiedTokenTable,
       username,
       logger
@@ -169,7 +178,7 @@ export async function authenticateRequest(
       try {
         const refreshedToken = await refreshTokenFlow(
           axiosInstance,
-          documentClient,
+          ddbClient,
           specifiedTokenTable,
           username,
           {
@@ -208,11 +217,11 @@ export async function authenticateRequest(
 
       // Don't update last activity time if token refresh is disabled
       await updateTokenMapping(
-          documentClient,
-          specifiedTokenTable,
-          {username, lastActivityTime: lastActivityTime},
-          logger
-        )
+        ddbClient,
+        specifiedTokenTable,
+        {username, lastActivityTime: lastActivityTime},
+        logger
+      )
 
       return {
         username,
@@ -283,7 +292,7 @@ export async function authenticateRequest(
 
   // Update DynamoDB with the new Apigee access token
   await updateTokenMapping(
-    documentClient,
+    ddbClient,
     specifiedTokenTable,
     {
       username,

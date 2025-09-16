@@ -1,8 +1,12 @@
 import {API_ENDPOINTS} from "@/constants/environment"
 import http from "./axios"
-import {RoleDetails, TrackerUserInfo, UserDetails} from "@cpt-ui-common/common-types"
+import {
+  RoleDetails,
+  TrackerUserInfo,
+  TrackerUserInfoResult,
+  UserDetails
+} from "@cpt-ui-common/common-types"
 import {logger} from "./logger"
-import {TrackerUserInfoResult} from "@cpt-ui-common/common-types"
 import {AxiosError} from "axios"
 
 type AuthErrorResponse = {

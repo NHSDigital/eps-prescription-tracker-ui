@@ -88,6 +88,13 @@ describe("authenticateRequest", () => {
     cloudfrontDomain: "test-cloudfront-domain"
   }
 
+  const dependencies = {
+    axiosInstance,
+    ddbClient: documentClient,
+    logger: mockLogger,
+    authOptions: mockOptions
+  }
+
   beforeEach(() => {
     // Clear all mock implementations
     jest.clearAllMocks()
@@ -121,10 +128,7 @@ describe("authenticateRequest", () => {
 
     const result = await authenticateRequest(
       "test-user",
-      axiosInstance,
-      documentClient,
-      mockLogger,
-      mockOptions,
+      dependencies,
       token,
       mockOptions.tokenMappingTableName,
       false
@@ -166,10 +170,7 @@ describe("authenticateRequest", () => {
 
     const result = await authenticateRequest(
       "test-user",
-      axiosInstance,
-      documentClient,
-      mockLogger,
-      mockOptions,
+      dependencies,
       token,
       mockOptions.tokenMappingTableName,
       false
@@ -211,10 +212,7 @@ describe("authenticateRequest", () => {
 
     const result = await authenticateRequest(
       "test-user",
-      axiosInstance,
-      documentClient,
-      mockLogger,
-      mockOptions,
+      dependencies,
       token,
       mockOptions.tokenMappingTableName,
       false
@@ -280,10 +278,7 @@ describe("authenticateRequest", () => {
 
     const result = await authenticateRequest(
       "test-user",
-      axiosInstance,
-      documentClient,
-      mockLogger,
-      mockOptions,
+      dependencies,
       token,
       mockOptions.tokenMappingTableName,
       true
@@ -347,10 +342,7 @@ describe("authenticateRequest", () => {
 
     const result = await authenticateRequest(
       "test-user",
-      axiosInstance,
-      documentClient,
-      mockLogger,
-      mockOptions,
+      dependencies,
       token,
       mockOptions.tokenMappingTableName,
       false
@@ -394,10 +386,7 @@ describe("authenticateRequest", () => {
 
     const result = await authenticateRequest(
       "Mock_test-user",
-      axiosInstance,
-      documentClient,
-      mockLogger,
-      mockOptions,
+      dependencies,
       token,
       mockOptions.tokenMappingTableName,
       false
@@ -441,10 +430,7 @@ describe("authenticateRequest", () => {
 
     const result = await authenticateRequest(
       "Mock_user",
-      axiosInstance,
-      documentClient,
-      mockLogger,
-      mockOptions,
+      dependencies,
       token,
       mockOptions.tokenMappingTableName,
       false
@@ -493,10 +479,7 @@ describe("authenticateRequest", () => {
 
     const result = await authenticateRequest(
       "test-user",
-      axiosInstance,
-      documentClient,
-      mockLogger,
-      mockOptions,
+      dependencies,
       token,
       mockOptions.tokenMappingTableName,
       false
@@ -544,10 +527,7 @@ describe("authenticateRequest", () => {
 
     const result = await authenticateRequest(
       "test-user",
-      axiosInstance,
-      documentClient,
-      mockLogger,
-      mockOptions,
+      dependencies,
       token,
       mockOptions.tokenMappingTableName,
       false
@@ -586,10 +566,7 @@ describe("authenticateRequest", () => {
 
     await expect(authenticateRequest(
       "test-user",
-      axiosInstance,
-      documentClient,
-      mockLogger,
-      mockOptions,
+      dependencies,
       token,
       mockOptions.tokenMappingTableName,
       false
@@ -623,10 +600,7 @@ describe("authenticateRequest", () => {
 
     await expect(authenticateRequest(
       "test-user",
-      axiosInstance,
-      documentClient,
-      mockLogger,
-      mockOptions,
+      dependencies,
       token,
       mockOptions.tokenMappingTableName,
       false
@@ -656,10 +630,7 @@ describe("authenticateRequest", () => {
     mockGetSecret.mockReturnValue("test-private-key")
     await expect(authenticateRequest(
       "test-user",
-      axiosInstance,
-      documentClient,
-      mockLogger,
-      mockOptions,
+      dependencies,
       token,
       mockOptions.tokenMappingTableName,
       false

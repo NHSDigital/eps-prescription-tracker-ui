@@ -1,18 +1,15 @@
 import {MiddlewareObj} from "@middy/core"
 import {APIGatewayProxyEventBase, APIGatewayProxyResult} from "aws-lambda"
 import {getUsernameFromEvent, getSessionIdFromEvent} from "./event"
-import {authenticateRequest, AuthenticateRequestOptions, AuthResult} from "./authenticateRequest"
-import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
-import {Logger} from "@aws-lambda-powertools/logger"
-import {AxiosInstance} from "axios"
+import {authenticateRequest, AuthDependencies, AuthResult} from "./authenticateRequest"
 import {getTokenMapping, TokenMappingItem} from "@cpt-ui-common/dynamoFunctions"
 
-export const authenticationMiddleware = (
-  axiosInstance: AxiosInstance,
-  ddbClient: DynamoDBDocumentClient,
-  authOptions: AuthenticateRequestOptions,
-  logger: Logger
-) => ({
+export const authenticationMiddleware = ({
+  axiosInstance,
+  ddbClient,
+  authOptions,
+  logger
+}: AuthDependencies) => ({
   before: async (request) => {
     const {event} = request
 
@@ -33,8 +30,13 @@ export const authenticationMiddleware = (
       if (tokenMappingItem !== undefined && tokenMappingItem.sessionId === sessionId) {
         // Feed the token mapping item to authenticateRequest
         logger.info("Session ID matches the token mapping item, proceeding with authentication")
-        authResult = await authenticateRequest(username, axiosInstance, ddbClient, logger, authOptions,
-          tokenMappingItem, authOptions.tokenMappingTableName, false)
+        authResult = await authenticateRequest(
+          username,
+          {axiosInstance, ddbClient, logger, authOptions},
+          tokenMappingItem,
+          authOptions.tokenMappingTableName,
+          false
+        )
       } else {
         logger.error("Session ID does not match the token mapping item, treating as invalid session")
         authResult = null
