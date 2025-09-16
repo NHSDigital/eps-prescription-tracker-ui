@@ -1,5 +1,5 @@
-import {Routes, Route, Navigate} from "react-router-dom"
-import {AuthProvider, useAuth} from "@/context/AuthProvider"
+import {Routes, Route} from "react-router-dom"
+import {AuthProvider} from "@/context/AuthProvider"
 import {AccessProvider} from "@/context/AccessProvider"
 import {SearchProvider} from "@/context/SearchProvider"
 import {PatientDetailsProvider} from "./context/PatientDetailsProvider"
@@ -24,20 +24,6 @@ import SessionSelectionPage from "./pages/SessionSelection"
 
 import {FRONTEND_PATHS} from "@/constants/environment"
 
-const RootRoute = () => {
-  const {isSignedIn, selectedRole, hasSingleRoleAccess} = useAuth()
-
-  if (!isSignedIn) {
-    return <NotFoundPage />
-  }
-
-  if (!selectedRole && !hasSingleRoleAccess) {
-    return <Navigate to={FRONTEND_PATHS.SELECT_YOUR_ROLE} replace />
-  }
-
-  return <Navigate to={FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID} replace />
-}
-
 export default function App() {
   return (
     <AuthProvider>
@@ -53,7 +39,6 @@ export default function App() {
                   <Route path="cookies-selected" element={<CookieSettingsPage />} />
 
                   {/* Your existing routes */}
-                  <Route index element={<RootRoute />} />
                   <Route path="*" element={<NotFoundPage />} />
                   <Route path={FRONTEND_PATHS.SESSION_SELECTION} element={<SessionSelectionPage />} />
                   <Route path={FRONTEND_PATHS.LOGIN} element={<LoginPage />} />

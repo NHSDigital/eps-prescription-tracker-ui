@@ -126,6 +126,76 @@ describe("AccessProvider", () => {
       return null
     }
 
-    expect(() => render(<BrokenComponent />)).toThrow("useAccess must be used within an AccessProvider")
+    expect(() => render(<BrokenComponent />)).toThrow(
+      "useAccess must be used within an AccessProvider"
+    )
+  })
+
+  describe("shouldBlockChildren", () => {
+    it("blocks children when concurrent session exists and user is on protected path", () => {
+      (mockUseAuth as jest.Mock).mockReturnValue({
+        isSignedIn: true,
+        isConcurrentSession: true,
+        isSigningIn: false
+      });
+      (useLocation as jest.Mock).mockReturnValue({
+        pathname: "/some-protected-path"
+      });
+      (mockNormalizePath as jest.Mock).mockReturnValue("/some-protected-path")
+
+      const {container} = render(
+        <AccessProvider>
+          <TestComponent />
+        </AccessProvider>
+      )
+
+      // Should render nothing (children blocked)
+      expect(container).toBeEmptyDOMElement()
+    })
+
+    it("allows children when concurrent session exists but user is on session selection page", () => {
+      (mockUseAuth as jest.Mock).mockReturnValue({
+        isSignedIn: true,
+        isConcurrentSession: true,
+        isSigningIn: false
+      });
+      (useLocation as jest.Mock).mockReturnValue({
+        pathname: FRONTEND_PATHS.SESSION_SELECTION
+      });
+      (mockNormalizePath as jest.Mock).mockReturnValue(
+        FRONTEND_PATHS.SESSION_SELECTION
+      )
+
+      const {container} = render(
+        <AccessProvider>
+          <TestComponent />
+        </AccessProvider>
+      )
+
+      // Should render children (not blocked on allowed path)
+      expect(container).not.toBeEmptyDOMElement()
+      expect(container).toHaveTextContent("Test Component")
+    })
+
+    it("blocks children when no role selected and user is on protected path", () => {
+      (mockUseAuth as jest.Mock).mockReturnValue({
+        isSignedIn: true,
+        isSigningIn: false,
+        selectedRole: null
+      });
+      (useLocation as jest.Mock).mockReturnValue({
+        pathname: "/some-protected-path"
+      });
+      (mockNormalizePath as jest.Mock).mockReturnValue("/some-protected-path")
+
+      const {container} = render(
+        <AccessProvider>
+          <TestComponent />
+        </AccessProvider>
+      )
+
+      // Should render nothing (children blocked)
+      expect(container).toBeEmptyDOMElement()
+    })
   })
 })
