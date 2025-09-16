@@ -53,10 +53,14 @@ const TestComponent = () => {
 
 describe("AccessProvider", () => {
   const navigate = jest.fn()
+  const mockNavigateHook = useNavigate as jest.Mock
+  const mockLocationHook = useLocation as jest.Mock
+  const mockAuthHook = mockUseAuth as jest.Mock
+  const mockNormalizePathFn = mockNormalizePath as jest.Mock
 
   beforeEach(() => {
-    jest.clearAllMocks();
-    (useNavigate as jest.Mock).mockReturnValue(navigate)
+    jest.clearAllMocks()
+    mockNavigateHook.mockReturnValue(navigate)
   })
 
   const renderWithProvider = () => {
@@ -68,15 +72,15 @@ describe("AccessProvider", () => {
   }
 
   it("redirects to login if not signed in and not on allowed path", () => {
-    (mockUseAuth as jest.Mock).mockReturnValue({
+    mockAuthHook.mockReturnValue({
       isSignedIn: false,
       isSigningIn: false,
       clearAuthState: jest.fn()
-    });
-    (useLocation as jest.Mock).mockReturnValue({
+    })
+    mockLocationHook.mockReturnValue({
       pathname: "/some-protected-path"
-    });
-    (mockNormalizePath as jest.Mock).mockReturnValue("/some-protected-path")
+    })
+    mockNormalizePathFn.mockReturnValue("/some-protected-path")
 
     renderWithProvider()
 
@@ -84,13 +88,13 @@ describe("AccessProvider", () => {
   })
 
   it("redirects to session selection if signed in and concurrent session", () => {
-    (mockUseAuth as jest.Mock).mockReturnValue({
+    mockAuthHook.mockReturnValue({
       isSignedIn: true,
       isConcurrentSession: true,
       isSigningIn: false
     })
-    ;(useLocation as jest.Mock).mockReturnValue({pathname: "/some-protected-path"})
-    ;(mockNormalizePath as jest.Mock).mockReturnValue("/some-protected-path")
+    mockLocationHook.mockReturnValue({pathname: "/some-protected-path"})
+    mockNormalizePathFn.mockReturnValue("/some-protected-path")
 
     renderWithProvider()
 
@@ -98,14 +102,14 @@ describe("AccessProvider", () => {
   })
 
   it("redirects to select role if signed in but no role is selected", () => {
-    (mockUseAuth as jest.Mock).mockReturnValue({
+    mockAuthHook.mockReturnValue({
       isSignedIn: true,
       isSigningIn: false,
       selectedRole: null,
       clearAuthState: jest.fn()
-    });
-    (useLocation as jest.Mock).mockReturnValue({pathname: "/dashboard"});
-    (mockNormalizePath as jest.Mock).mockReturnValue("/dashboard")
+    })
+    mockLocationHook.mockReturnValue({pathname: "/dashboard"})
+    mockNormalizePathFn.mockReturnValue("/dashboard")
 
     renderWithProvider()
 
@@ -113,14 +117,14 @@ describe("AccessProvider", () => {
   })
 
   it("does not redirect if signed in and role is selected", () => {
-    (mockUseAuth as jest.Mock).mockReturnValue({
+    mockAuthHook.mockReturnValue({
       isSignedIn: true,
       isSigningIn: false,
       selectedRole: {name: "someRole"},
       clearAuthState: jest.fn()
-    });
-    (useLocation as jest.Mock).mockReturnValue({pathname: "/dashboard"});
-    (mockNormalizePath as jest.Mock).mockReturnValue("/dashboard")
+    })
+    mockLocationHook.mockReturnValue({pathname: "/dashboard"})
+    mockNormalizePathFn.mockReturnValue("/dashboard")
 
     renderWithProvider()
 
@@ -128,7 +132,7 @@ describe("AccessProvider", () => {
   })
 
   it("skips redirection logic when signing in and on select-your-role path", () => {
-    (mockUseAuth as jest.Mock).mockReturnValue({
+    mockAuthHook.mockReturnValue({
       isSignedIn: false,
       isSigningIn: true,
       clearAuthState: jest.fn()
@@ -141,14 +145,12 @@ describe("AccessProvider", () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (window as any).location = {
       pathname: `/site${FRONTEND_PATHS.SELECT_YOUR_ROLE}`
-    };
+    }
 
-    (useLocation as jest.Mock).mockReturnValue({
+    mockLocationHook.mockReturnValue({
       pathname: FRONTEND_PATHS.SELECT_YOUR_ROLE
-    });
-    (mockNormalizePath as jest.Mock).mockReturnValue(
-      FRONTEND_PATHS.SELECT_YOUR_ROLE
-    )
+    })
+    mockNormalizePathFn.mockReturnValue(FRONTEND_PATHS.SELECT_YOUR_ROLE)
 
     renderWithProvider()
 
