@@ -118,10 +118,12 @@ describe("authenticationMiddleware", () => {
       )
       expect(mockAuthenticateRequest).toHaveBeenCalledWith(
         username,
-        axiosInstance,
-        ddbClient,
-        logger,
-        authOptions,
+        {
+          axiosInstance,
+          ddbClient,
+          logger,
+          authOptions
+        },
         tokenMappingItem,
         authOptions.tokenMappingTableName,
         false

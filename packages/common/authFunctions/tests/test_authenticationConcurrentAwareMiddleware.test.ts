@@ -138,10 +138,12 @@ describe("authenticationConcurrentAwareMiddleware", () => {
       )
       expect(mockAuthenticateRequest).toHaveBeenCalledWith(
         username,
-        axiosInstance,
-        ddbClient,
-        logger,
-        authOptions,
+        {
+          axiosInstance,
+          ddbClient,
+          logger,
+          authOptions
+        },
         sessionManagementItem,
         authOptions.sessionManagementTableName,
         false
@@ -195,10 +197,12 @@ describe("authenticationConcurrentAwareMiddleware", () => {
       // Assert
       expect(mockAuthenticateRequest).toHaveBeenCalledWith(
         username,
-        axiosInstance,
-        ddbClient,
-        logger,
-        authOptions,
+        {
+          axiosInstance,
+          ddbClient,
+          logger,
+          authOptions
+        },
         tokenMappingItem,
         authOptions.tokenMappingTableName,
         false
@@ -248,10 +252,12 @@ describe("authenticationConcurrentAwareMiddleware", () => {
       // Assert
       expect(mockAuthenticateRequest).toHaveBeenCalledWith(
         username,
-        axiosInstance,
-        ddbClient,
-        logger,
-        authOptions,
+        {
+          axiosInstance,
+          ddbClient,
+          logger,
+          authOptions
+        },
         sessionManagementItem,
         authOptions.sessionManagementTableName,
         false
