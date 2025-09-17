@@ -130,6 +130,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
           logger.info("Processing signedIn event")
           logger.info("User %s logged in", payload.data.username)
           await updateTrackerUserInfo()
+
           setIsSignedIn(true)
           setIsSigningIn(false)
           setUser(payload.data.username)
