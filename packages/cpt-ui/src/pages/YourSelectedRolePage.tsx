@@ -75,7 +75,7 @@ export default function YourSelectedRolePage() {
                 </SummaryList.Value>
                 <SummaryList.Actions>
                   <Link
-                   data-testid="role-change-role-cell"
+                    data-testid="role-change-role-cell"
                     to={FRONTEND_PATHS.CHANGE_YOUR_ROLE}
                   >
                     {changeLinkText}
