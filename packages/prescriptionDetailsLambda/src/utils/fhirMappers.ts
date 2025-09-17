@@ -18,7 +18,7 @@ export const mapMessageHistoryTitleToMessageCode = (title: string): string => {
     "Administrative Action Update Successful": "admin-action-updated",
     "Prescription Reset request successful": "prescription-reset",
     "Prescription/item was cancelled": "prescription-cancelled",
-    "Prescription/item was not cancelled. With dispenser. Marked for cancellation":
+    "Prescription/item was not cancelled. With dispenser active. Marked for cancellation":
       "prescription-marked-for-cancellation",
     "Subsequent cancellation": "subsequent-cancellation",
     "Rebuild Dispense History successful": "dispense-history-rebuilt",
