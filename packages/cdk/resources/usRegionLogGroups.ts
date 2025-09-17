@@ -158,10 +158,13 @@ export class usRegionLogGroups extends Construct {
           }
         ]
       }
-    new CfnResourcePolicy(this, "CloudFrontResourcePolicy", {
-      policyName: `${props.stackName}LogServicePolicy`,
-      policyDocument: JSON.stringify(serviceLogPolicy)
-    })
+    // Don't deploy to PR stacks as there is a limit of 10 resource policies per region
+    if (!props.stackName.startsWith("cpt-ui-pr-")) {
+      new CfnResourcePolicy(this, "CloudFrontResourcePolicy", {
+        policyName: `${props.stackName}LogServicePolicy`,
+        policyDocument: JSON.stringify(serviceLogPolicy)
+      })
+    }
 
     this.cloudfrontLogGroup = cloudfrontLogGroup
     this.wafLogGroup = wafLogGroup
