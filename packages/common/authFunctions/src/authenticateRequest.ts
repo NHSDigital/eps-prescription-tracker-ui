@@ -67,20 +67,16 @@ export const authParametersFromEnv = (): AuthenticateRequestOptions => {
 }
 
 const refreshTokenFlow = async (
-  axiosInstance: AxiosInstance,
-  documentClient: DynamoDBDocumentClient,
+  {
+    axiosInstance,
+    ddbClient,
+    authOptions,
+    logger
+  }: AuthDependencies,
+  apigeeTokenEndpoint: string,
   specifiedTokenTable: string,
   username: string,
   existingToken: ApigeeTokenResponse,
-  logger: Logger,
-  config: {
-    isMockRequest: boolean,
-    jwtPrivateKeyArn: string
-    apigeeApiKey: string
-    apigeeApiSecret: string
-    jwtKid: string
-    apigeeTokenEndpoint: string
-  },
   lastActivityTime: number
 ): Promise<ApigeeTokenResponse> => {
   if (existingToken.refreshToken === undefined) {
@@ -88,16 +84,16 @@ const refreshTokenFlow = async (
   }
   const refreshResult = await refreshApigeeAccessToken(
     axiosInstance,
-    config.apigeeTokenEndpoint,
+    apigeeTokenEndpoint,
     existingToken.refreshToken,
-    config.apigeeApiKey,
-    config.apigeeApiSecret,
+    authOptions.apigeeApiKey,
+    authOptions.apigeeApiSecret,
     logger
   )
 
   // Update DynamoDB with the new tokens
   await updateTokenMapping(
-    documentClient,
+    ddbClient,
     specifiedTokenTable,
     {
       username,
@@ -129,21 +125,22 @@ export async function authenticateRequest(
   {
     axiosInstance,
     ddbClient,
-    authOptions: {
-      jwtPrivateKeyArn,
-      apigeeApiKey,
-      apigeeApiSecret,
-      jwtKid,
-      apigeeMockTokenEndpoint,
-      apigeeCis2TokenEndpoint,
-      cloudfrontDomain
-    },
+    authOptions,
     logger
   }: AuthDependencies,
   userRecord: TokenMappingItem,
   specifiedTokenTable: string,
   disableLastActivityUpdate: boolean
 ): Promise<AuthResult | null> {
+  const {
+    jwtPrivateKeyArn,
+    apigeeApiKey,
+    apigeeApiSecret,
+    jwtKid,
+    apigeeMockTokenEndpoint,
+    apigeeCis2TokenEndpoint,
+    cloudfrontDomain
+  } = authOptions
   logger.info("Starting authentication flow")
 
   // Extract username and determine if this is a mock request
@@ -177,23 +174,19 @@ export async function authenticateRequest(
       logger.info("Token needs refresh, initiating token refresh flow")
       try {
         const refreshedToken = await refreshTokenFlow(
-          axiosInstance,
-          ddbClient,
+          {
+            axiosInstance,
+            ddbClient,
+            authOptions,
+            logger
+          },
+          isMockRequest ? apigeeMockTokenEndpoint : apigeeCis2TokenEndpoint,
           specifiedTokenTable,
           username,
           {
             accessToken: userRecord.apigeeAccessToken,
             refreshToken: userRecord.apigeeRefreshToken,
             expiresIn: userRecord.apigeeExpiresIn
-          },
-          logger,
-          {
-            isMockRequest,
-            jwtPrivateKeyArn,
-            apigeeApiKey,
-            apigeeApiSecret,
-            jwtKid,
-            apigeeTokenEndpoint: isMockRequest ? apigeeMockTokenEndpoint : apigeeCis2TokenEndpoint
           },
           lastActivityTime
         )
