@@ -19,25 +19,16 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
   const navigate = useNavigate()
   const location = useLocation()
 
-  const allowed_no_role_paths = [
-    FRONTEND_PATHS.LOGIN,
-    FRONTEND_PATHS.LOGOUT,
-    FRONTEND_PATHS.COOKIES,
-    FRONTEND_PATHS.PRIVACY_NOTICE,
-    FRONTEND_PATHS.COOKIES_SELECTED,
-    FRONTEND_PATHS.SESSION_SELECTION
-  ]
-
   const shouldBlockChildren = () => {
     // block if concurrent session needs resolution
     if (auth.isConcurrentSession && auth.isSignedIn) {
-      return !allowed_no_role_paths.includes(normalizePath(location.pathname))
+      return !ALLOWED_NO_ROLE_PATHS.includes(normalizePath(location.pathname))
     }
 
     // block if user needs to select a role (but allow specific paths)
     if (!auth.selectedRole && !auth.isSigningIn && auth.isSignedIn) {
       return (
-        ![...allowed_no_role_paths, FRONTEND_PATHS.SELECT_YOUR_ROLE].includes(normalizePath(location.pathname))
+        ![...ALLOWED_NO_ROLE_PATHS, FRONTEND_PATHS.SELECT_YOUR_ROLE].includes(normalizePath(location.pathname))
       )
     }
 
