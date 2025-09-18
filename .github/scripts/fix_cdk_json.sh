@@ -176,6 +176,7 @@ fix_string_key COMMIT_ID "${COMMIT_ID}"
 fix_string_key logRetentionInDays "${LOG_RETENTION_IN_DAYS}"
 fix_string_key logLevel "${LOG_LEVEL}"
 fix_string_key cfnDriftDetectionGroup "${CFN_DRIFT_DETECTION_GROUP}"
+fix_boolean_number_key isPullRequest "${IS_PULL_REQUEST}"
 
 if [ "$CDK_APP_NAME" == "StatefulResourcesApp" ]; then
     fix_string_key primaryOidcClientId "${PRIMARY_OIDC_CLIENT_ID}"
