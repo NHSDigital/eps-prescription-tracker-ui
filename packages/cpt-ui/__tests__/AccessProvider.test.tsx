@@ -194,7 +194,8 @@ describe("AccessProvider", () => {
       (mockUseAuth as jest.Mock).mockReturnValue({
         isSignedIn: true,
         isConcurrentSession: true,
-        isSigningIn: false
+        isSigningIn: false,
+        updateTrackerUserInfo: jest.fn().mockResolvedValue({error: null})
       });
       (useLocation as jest.Mock).mockReturnValue({
         pathname: "/some-protected-path"
@@ -239,7 +240,8 @@ describe("AccessProvider", () => {
       (mockUseAuth as jest.Mock).mockReturnValue({
         isSignedIn: true,
         isSigningIn: false,
-        selectedRole: null
+        selectedRole: null,
+        updateTrackerUserInfo: jest.fn().mockResolvedValue({error: null})
       });
       (useLocation as jest.Mock).mockReturnValue({
         pathname: "/some-protected-path"
