@@ -164,7 +164,7 @@ describe("AccessProvider", () => {
 
       renderWithProvider()
 
-      expect(setIntervalSpy).toHaveBeenCalledWith(expect.any(Function), 15000)
+      expect(setIntervalSpy).toHaveBeenCalledWith(expect.any(Function), 300000)
       setIntervalSpy.mockRestore()
     })
 
@@ -201,7 +201,7 @@ describe("AccessProvider", () => {
       renderWithProvider()
 
       act(() => {
-        jest.advanceTimersByTime(15001)
+        jest.advanceTimersByTime(300001)
       })
 
       expect(logger.debug).toHaveBeenCalledWith(
