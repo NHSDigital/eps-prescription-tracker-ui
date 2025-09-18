@@ -459,8 +459,8 @@ export class StatelessResourcesStack extends Stack {
       comment: "Security headers policy with inclusion of CSP",
       securityHeadersBehavior: {
         contentSecurityPolicy: {
-          contentSecurityPolicy: "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; \
-          object-src 'none'; base-uri 'self'; frame-ancestors 'none';",
+          contentSecurityPolicy: "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; " +
+          "object-src 'none'; base-uri 'self'; frame-ancestors 'none';",
           override: true
         },
         strictTransportSecurity: {
