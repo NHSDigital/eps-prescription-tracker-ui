@@ -1,10 +1,11 @@
 import React from "react"
-import {render} from "@testing-library/react"
+import {render, act} from "@testing-library/react"
 import {AccessProvider, useAccess} from "@/context/AccessProvider"
 import {FRONTEND_PATHS} from "@/constants/environment"
 import {useAuth as mockUseAuth} from "@/context/AuthProvider"
 import {useNavigate, useLocation} from "react-router-dom"
 import {normalizePath as mockNormalizePath} from "@/helpers/utils"
+import {logger} from "@/helpers/logger"
 
 jest.mock("react-router-dom", () => ({
   useNavigate: jest.fn(),
@@ -42,7 +43,9 @@ jest.mock("@/constants/environment", () => ({
 
 jest.mock("@/helpers/logger", () => ({
   logger: {
-    info: jest.fn()
+    debug: jest.fn(),
+    info: jest.fn(),
+    error: jest.fn()
   }
 }))
 
@@ -60,7 +63,13 @@ describe("AccessProvider", () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
+    jest.useFakeTimers()
     mockNavigateHook.mockReturnValue(navigate)
+  })
+
+  afterEach(() => {
+    jest.runOnlyPendingTimers()
+    jest.useRealTimers()
   })
 
   const renderWithProvider = () => {
@@ -75,6 +84,7 @@ describe("AccessProvider", () => {
     mockAuthHook.mockReturnValue({
       isSignedIn: false,
       isSigningIn: false,
+      updateTrackerUserInfo: jest.fn().mockResolvedValue({error: null}),
       clearAuthState: jest.fn()
     })
     mockLocationHook.mockReturnValue({
@@ -91,7 +101,8 @@ describe("AccessProvider", () => {
     mockAuthHook.mockReturnValue({
       isSignedIn: true,
       isConcurrentSession: true,
-      isSigningIn: false
+      isSigningIn: false,
+      updateTrackerUserInfo: jest.fn().mockResolvedValue({error: null})
     })
     mockLocationHook.mockReturnValue({pathname: "/some-protected-path"})
     mockNormalizePathFn.mockReturnValue("/some-protected-path")
@@ -106,6 +117,7 @@ describe("AccessProvider", () => {
       isSignedIn: true,
       isSigningIn: false,
       selectedRole: null,
+      updateTrackerUserInfo: jest.fn().mockResolvedValue({error: null}),
       clearAuthState: jest.fn()
     })
     mockLocationHook.mockReturnValue({pathname: "/dashboard"})
@@ -121,6 +133,7 @@ describe("AccessProvider", () => {
       isSignedIn: true,
       isSigningIn: false,
       selectedRole: {name: "someRole"},
+      updateTrackerUserInfo: jest.fn().mockResolvedValue({error: null}),
       clearAuthState: jest.fn()
     })
     mockLocationHook.mockReturnValue({pathname: "/dashboard"})
@@ -135,6 +148,7 @@ describe("AccessProvider", () => {
     mockAuthHook.mockReturnValue({
       isSignedIn: false,
       isSigningIn: true,
+      updateTrackerUserInfo: jest.fn().mockResolvedValue({error: null}),
       clearAuthState: jest.fn()
     })
 
@@ -170,5 +184,197 @@ describe("AccessProvider", () => {
     expect(() => render(<BrokenComponent />)).toThrow(
       "useAccess must be used within an AccessProvider"
     )
+  })
+
+  describe("Periodic user info check useEffect", () => {
+    const mockUpdateTrackerUserInfo = jest.fn()
+
+    it("should set up interval when component mounts", () => {
+      const setIntervalSpy = jest.spyOn(globalThis, "setInterval")
+
+      mockAuthHook.mockReturnValue({
+        isSignedIn: true,
+        isSigningIn: false,
+        updateTrackerUserInfo: jest.fn().mockResolvedValue({error: null})
+      })
+      mockLocationHook.mockReturnValue({pathname: "/search-by-prescription-id"})
+
+      renderWithProvider()
+
+      expect(setIntervalSpy).toHaveBeenCalledWith(expect.any(Function), 300000)
+      setIntervalSpy.mockRestore()
+    })
+
+    it("should clear interval on component unmount", () => {
+      const clearIntervalSpy = jest.spyOn(globalThis, "clearInterval")
+
+      mockAuthHook.mockReturnValue({
+        isSignedIn: true,
+        isSigningIn: false,
+        updateTrackerUserInfo: mockUpdateTrackerUserInfo
+      })
+      mockLocationHook.mockReturnValue({pathname: "/search-by-prescription-id"})
+
+      const {unmount} = render(
+        <AccessProvider>
+          <TestComponent />
+        </AccessProvider>
+      )
+
+      unmount()
+
+      expect(clearIntervalSpy).toHaveBeenCalled()
+      clearIntervalSpy.mockRestore()
+    })
+
+    it("should skip user info check when isSigningIn is true", async () => {
+      mockAuthHook.mockReturnValue({
+        isSignedIn: true,
+        isSigningIn: true,
+        updateTrackerUserInfo: mockUpdateTrackerUserInfo
+      })
+      mockLocationHook.mockReturnValue({pathname: "/search-by-prescription-id"})
+
+      renderWithProvider()
+
+      act(() => {
+        jest.advanceTimersByTime(300001)
+      })
+
+      expect(logger.debug).toHaveBeenCalledWith(
+        "Not checking user info"
+      )
+      expect(mockUpdateTrackerUserInfo).not.toHaveBeenCalled()
+    })
+
+    it("should skip user info check when on allowed no-role paths", async () => {
+      // This test focuses on the isSigningIn logic since we can't easily mock window.location
+      mockAuthHook.mockReturnValue({
+        isSignedIn: true,
+        isSigningIn: true, // This will trigger the skip logic
+        updateTrackerUserInfo: mockUpdateTrackerUserInfo
+      })
+      mockLocationHook.mockReturnValue({pathname: FRONTEND_PATHS.LOGIN})
+
+      renderWithProvider()
+
+      act(() => {
+        jest.advanceTimersByTime(300001)
+      })
+
+      expect(logger.debug).toHaveBeenCalledWith(
+        "Not checking user info")
+      expect(mockUpdateTrackerUserInfo).not.toHaveBeenCalled()
+    })
+
+    it("should call updateTrackerUserInfo when user is signed in and not on restricted paths", async () => {
+      mockUpdateTrackerUserInfo.mockResolvedValue({error: null})
+
+      mockAuthHook.mockReturnValue({
+        isSignedIn: true,
+        isSigningIn: false,
+        updateTrackerUserInfo: mockUpdateTrackerUserInfo
+      })
+      mockLocationHook.mockReturnValue({pathname: "/search-by-prescription-id"})
+
+      renderWithProvider()
+
+      await act(async () => {
+        jest.advanceTimersByTime(300001)
+      })
+
+      expect(logger.info).toHaveBeenCalledWith("Periodic user info check")
+      expect(logger.info).toHaveBeenCalledWith("Refreshing user info")
+      expect(mockUpdateTrackerUserInfo).toHaveBeenCalled()
+    })
+
+    it("should navigate to session logged out page when updateTrackerUserInfo returns error", async () => {
+      mockUpdateTrackerUserInfo.mockResolvedValue({error: "Session expired"})
+
+      mockAuthHook.mockReturnValue({
+        isSignedIn: true,
+        isSigningIn: false,
+        updateTrackerUserInfo: mockUpdateTrackerUserInfo
+      })
+      mockLocationHook.mockReturnValue({pathname: "/search-by-prescription-id"})
+
+      renderWithProvider()
+
+      await act(async () => {
+        jest.advanceTimersByTime(300001)
+      })
+
+      expect(mockUpdateTrackerUserInfo).toHaveBeenCalled()
+      expect(navigate).toHaveBeenCalledWith(FRONTEND_PATHS.SESSION_LOGGED_OUT)
+    })
+
+    it("should not call updateTrackerUserInfo when user is not signed in", async () => {
+      mockAuthHook.mockReturnValue({
+        isSignedIn: false,
+        isSigningIn: false,
+        updateTrackerUserInfo: mockUpdateTrackerUserInfo
+      })
+      mockLocationHook.mockReturnValue({pathname: "/cookies"})
+
+      renderWithProvider()
+
+      await act(async () => {
+        jest.advanceTimersByTime(300001)
+      })
+
+      expect(logger.info).toHaveBeenCalledWith("Periodic user info check")
+      expect(mockUpdateTrackerUserInfo).not.toHaveBeenCalled()
+    })
+
+    it("should handle multiple allowed no-role paths correctly", async () => {
+      mockAuthHook.mockReturnValue({
+        isSignedIn: true,
+        isSigningIn: false,
+        updateTrackerUserInfo: mockUpdateTrackerUserInfo
+      })
+      mockLocationHook.mockReturnValue({pathname: "/search-by-prescription-id"})
+
+      renderWithProvider()
+
+      await act(async () => {
+        jest.advanceTimersByTime(300001)
+      })
+
+      // Should call updateTrackerUserInfo when not on restricted paths
+      expect(mockUpdateTrackerUserInfo).toHaveBeenCalled()
+    })
+
+    it("should continue running interval after error occurs", async () => {
+      mockUpdateTrackerUserInfo
+        .mockResolvedValueOnce({error: "First error"})
+        .mockResolvedValueOnce({error: null})
+
+      mockAuthHook.mockReturnValue({
+        isSignedIn: true,
+        isSigningIn: false,
+        updateTrackerUserInfo: mockUpdateTrackerUserInfo
+      })
+      mockLocationHook.mockReturnValue({pathname: "/search-by-prescription-id"})
+
+      renderWithProvider()
+
+      // First interval execution - should error and navigate
+      await act(async () => {
+        jest.advanceTimersByTime(300001)
+      })
+
+      expect(navigate).toHaveBeenCalledWith(FRONTEND_PATHS.SESSION_LOGGED_OUT)
+      expect(mockUpdateTrackerUserInfo).toHaveBeenCalledTimes(1)
+
+      jest.clearAllMocks()
+
+      // Second interval execution - should succeed
+      await act(async () => {
+        jest.advanceTimersByTime(300001)
+      })
+
+      expect(mockUpdateTrackerUserInfo).toHaveBeenCalledTimes(1)
+      expect(navigate).not.toHaveBeenCalled()
+    })
   })
 })

@@ -97,12 +97,12 @@ export const newHandler = (initParams: HandlerInitialisationParameters) => {
   }
 
   return middy((event: APIGatewayProxyEventBase<AuthResult>) => lambdaHandler(event, params))
-    .use(authenticationMiddleware(
-      initParams.axiosInstance,
-      initParams.documentClient,
-      initParams.authenticationParameters,
-      initParams.logger
-    ))
+    .use(authenticationMiddleware({
+      axiosInstance: initParams.axiosInstance,
+      ddbClient: initParams.documentClient,
+      authOptions: initParams.authenticationParameters,
+      logger: initParams.logger
+    }))
     .use(injectLambdaContext(initParams.logger, {clearState: true}))
     .use(httpHeaderNormalizer())
     .use(

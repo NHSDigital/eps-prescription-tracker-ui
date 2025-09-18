@@ -55,6 +55,7 @@ export default function EpsHeader() {
       path !== FRONTEND_PATHS.SELECT_YOUR_ROLE &&
       path !== FRONTEND_PATHS.CHANGE_YOUR_ROLE &&
       path !== FRONTEND_PATHS.LOGOUT &&
+      path !== FRONTEND_PATHS.SESSION_LOGGED_OUT &&
       isSignedIn &&
       !authContext.hasSingleRoleAccess &&
       !authContext.selectedRole

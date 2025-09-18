@@ -45,6 +45,13 @@ export interface AuthenticateRequestOptions {
   cloudfrontDomain: string
 }
 
+export type AuthDependencies = {
+  axiosInstance: AxiosInstance
+  ddbClient: DynamoDBDocumentClient
+  authOptions: AuthenticateRequestOptions
+  logger: Logger
+}
+
 export const authParametersFromEnv = (): AuthenticateRequestOptions => {
   return {
     tokenMappingTableName: process.env["TokenMappingTableName"] as string,
@@ -60,43 +67,40 @@ export const authParametersFromEnv = (): AuthenticateRequestOptions => {
 }
 
 const refreshTokenFlow = async (
-  axiosInstance: AxiosInstance,
-  documentClient: DynamoDBDocumentClient,
+  {
+    axiosInstance,
+    ddbClient,
+    authOptions,
+    logger
+  }: AuthDependencies,
+  apigeeTokenEndpoint: string,
   specifiedTokenTable: string,
   username: string,
   existingToken: ApigeeTokenResponse,
-  logger: Logger,
-  config: {
-    isMockRequest: boolean,
-    jwtPrivateKeyArn: string
-    apigeeApiKey: string
-    apigeeApiSecret: string
-    jwtKid: string
-    apigeeTokenEndpoint: string
-  }
+  lastActivityTime: number
 ): Promise<ApigeeTokenResponse> => {
   if (existingToken.refreshToken === undefined) {
     throw new Error("Missing refresh token")
   }
   const refreshResult = await refreshApigeeAccessToken(
     axiosInstance,
-    config.apigeeTokenEndpoint,
+    apigeeTokenEndpoint,
     existingToken.refreshToken,
-    config.apigeeApiKey,
-    config.apigeeApiSecret,
+    authOptions.apigeeApiKey,
+    authOptions.apigeeApiSecret,
     logger
   )
 
   // Update DynamoDB with the new tokens
   await updateTokenMapping(
-    documentClient,
+    ddbClient,
     specifiedTokenTable,
     {
       username,
       apigeeAccessToken: refreshResult.accessToken,
       apigeeExpiresIn: refreshResult.expiresIn,
       apigeeRefreshToken: refreshResult.refreshToken,
-      lastActivityTime: Date.now()
+      lastActivityTime: lastActivityTime
     },
     logger
   )
@@ -118,10 +122,17 @@ const fifteenMinutes = 15 * 60 * 1000
  */
 export async function authenticateRequest(
   username: string,
-  axiosInstance: AxiosInstance,
-  documentClient: DynamoDBDocumentClient,
-  logger: Logger,
   {
+    axiosInstance,
+    ddbClient,
+    authOptions,
+    logger
+  }: AuthDependencies,
+  userRecord: TokenMappingItem,
+  specifiedTokenTable: string,
+  disableLastActivityUpdate: boolean
+): Promise<AuthResult | null> {
+  const {
     jwtPrivateKeyArn,
     apigeeApiKey,
     apigeeApiSecret,
@@ -129,19 +140,19 @@ export async function authenticateRequest(
     apigeeMockTokenEndpoint,
     apigeeCis2TokenEndpoint,
     cloudfrontDomain
-  }: AuthenticateRequestOptions,
-  userRecord: TokenMappingItem,
-  specifiedTokenTable: string
-): Promise<AuthResult | null> {
+  } = authOptions
   logger.info("Starting authentication flow")
 
   // Extract username and determine if this is a mock request
   const isMockRequest = username.startsWith("Mock_")
 
+  // If disableTokenRefresh is true, we won't update lastActivityTime
+  const lastActivityTime = disableLastActivityUpdate ? userRecord.lastActivityTime : Date.now()
+
   if (Date.now() - userRecord.lastActivityTime > fifteenMinutes) {
     logger.info("Last activity was more than 15 minutes ago, clearing user record")
     await deleteTokenMapping(
-      documentClient,
+      ddbClient,
       specifiedTokenTable,
       username,
       logger
@@ -163,8 +174,13 @@ export async function authenticateRequest(
       logger.info("Token needs refresh, initiating token refresh flow")
       try {
         const refreshedToken = await refreshTokenFlow(
-          axiosInstance,
-          documentClient,
+          {
+            axiosInstance,
+            ddbClient,
+            authOptions,
+            logger
+          },
+          isMockRequest ? apigeeMockTokenEndpoint : apigeeCis2TokenEndpoint,
           specifiedTokenTable,
           username,
           {
@@ -172,15 +188,7 @@ export async function authenticateRequest(
             refreshToken: userRecord.apigeeRefreshToken,
             expiresIn: userRecord.apigeeExpiresIn
           },
-          logger,
-          {
-            isMockRequest,
-            jwtPrivateKeyArn,
-            apigeeApiKey,
-            apigeeApiSecret,
-            jwtKid,
-            apigeeTokenEndpoint: isMockRequest ? apigeeMockTokenEndpoint : apigeeCis2TokenEndpoint
-          }
+          lastActivityTime
         )
 
         return {
@@ -200,10 +208,11 @@ export async function authenticateRequest(
         isMockRequest
       })
 
+      // Don't update last activity time if token refresh is disabled
       await updateTokenMapping(
-        documentClient,
+        ddbClient,
         specifiedTokenTable,
-        {username, lastActivityTime: Date.now()},
+        {username, lastActivityTime: lastActivityTime},
         logger
       )
 
@@ -276,14 +285,14 @@ export async function authenticateRequest(
 
   // Update DynamoDB with the new Apigee access token
   await updateTokenMapping(
-    documentClient,
+    ddbClient,
     specifiedTokenTable,
     {
       username,
       apigeeAccessToken: exchangeResult.accessToken,
       apigeeRefreshToken: exchangeResult.refreshToken,
       apigeeExpiresIn: exchangeResult.expiresIn,
-      lastActivityTime: Date.now()
+      lastActivityTime: lastActivityTime
     },
     logger
   )
