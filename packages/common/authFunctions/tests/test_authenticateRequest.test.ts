@@ -88,6 +88,13 @@ describe("authenticateRequest", () => {
     cloudfrontDomain: "test-cloudfront-domain"
   }
 
+  const dependencies = {
+    axiosInstance,
+    ddbClient: documentClient,
+    logger: mockLogger,
+    authOptions: mockOptions
+  }
+
   beforeEach(() => {
     // Clear all mock implementations
     jest.clearAllMocks()
@@ -121,12 +128,10 @@ describe("authenticateRequest", () => {
 
     const result = await authenticateRequest(
       "test-user",
-      axiosInstance,
-      documentClient,
-      mockLogger,
-      mockOptions,
+      dependencies,
       token,
-      mockOptions.tokenMappingTableName
+      mockOptions.tokenMappingTableName,
+      false
     )
 
     expect(result).toEqual({
@@ -165,12 +170,10 @@ describe("authenticateRequest", () => {
 
     const result = await authenticateRequest(
       "test-user",
-      axiosInstance,
-      documentClient,
-      mockLogger,
-      mockOptions,
+      dependencies,
       token,
-      mockOptions.tokenMappingTableName
+      mockOptions.tokenMappingTableName,
+      false
     )
 
     expect(result).toBeNull()
@@ -209,12 +212,10 @@ describe("authenticateRequest", () => {
 
     const result = await authenticateRequest(
       "test-user",
-      axiosInstance,
-      documentClient,
-      mockLogger,
-      mockOptions,
+      dependencies,
       token,
-      mockOptions.tokenMappingTableName
+      mockOptions.tokenMappingTableName,
+      false
     )
 
     expect(result).toEqual({
@@ -249,6 +250,72 @@ describe("authenticateRequest", () => {
     )
   })
 
+  it("shouldn't update lastActivityTime if disableLastActivityUpdate is true", async () => {
+    // Set up mock implementations for this test
+    const lastActivityTime = Date.now() - 14 * 60 * 1000 // 5 minutes ago
+
+    const token = {
+      username: "test-user",
+      apigeeAccessToken: "expiring-token",
+      cis2IdToken: "expiring-cis2-token",
+      cis2AccessToken: "expiring-cis2-access-token",
+      apigeeRefreshToken: "expiring-refresh-token",
+      apigeeExpiresIn: Math.floor(Date.now() / 1000) + 30, // expires in 30 seconds
+      currentlySelectedRole: {
+        role_id: "existing-role-id",
+        org_code: "existing_org"
+      },
+      lastActivityTime: lastActivityTime
+    }
+    mockGetTokenMapping.mockImplementationOnce(() => Promise.resolve(token))
+
+    mockRefreshApigeeAccessToken.mockReturnValue({
+      accessToken: "refreshed-token",
+      idToken: "refreshed-cis2-token",
+      refreshToken: "refreshed-refresh-token",
+      expiresIn: 3600
+    })
+
+    const result = await authenticateRequest(
+      "test-user",
+      dependencies,
+      token,
+      mockOptions.tokenMappingTableName,
+      true
+    )
+
+    expect(result).toEqual({
+      apigeeAccessToken: "refreshed-token",
+      roleId: "existing-role-id",
+      orgCode: "existing_org",
+      username: "test-user"
+    })
+
+    // Verify refresh was called with correct params
+    expect(mockRefreshApigeeAccessToken).toHaveBeenCalledWith(
+      axiosInstance,
+      mockOptions.apigeeCis2TokenEndpoint, // Use the one from options
+      "expiring-refresh-token",
+      mockOptions.apigeeApiKey,
+      "test-api-secret", // API secret from env var
+      mockLogger
+    )
+
+    // Verify token was updated in DB
+    expect(mockUpdateTokenMapping).toHaveBeenCalledWith(
+      documentClient,
+      mockOptions.tokenMappingTableName,
+      {
+        "apigeeAccessToken": "refreshed-token",
+        "apigeeExpiresIn": 3600,
+        "apigeeRefreshToken": "refreshed-refresh-token",
+        "username": "test-user",
+        "lastActivityTime": lastActivityTime
+      },
+      mockLogger
+    )
+  })
+
   it("should acquire new token when no token exists for non mocked user", async () => {
     // Set up mock implementations for this test
 
@@ -275,12 +342,10 @@ describe("authenticateRequest", () => {
 
     const result = await authenticateRequest(
       "test-user",
-      axiosInstance,
-      documentClient,
-      mockLogger,
-      mockOptions,
+      dependencies,
       token,
-      mockOptions.tokenMappingTableName
+      mockOptions.tokenMappingTableName,
+      false
     )
 
     expect(result).toEqual({
@@ -321,12 +386,10 @@ describe("authenticateRequest", () => {
 
     const result = await authenticateRequest(
       "Mock_test-user",
-      axiosInstance,
-      documentClient,
-      mockLogger,
-      mockOptions,
+      dependencies,
       token,
-      mockOptions.tokenMappingTableName
+      mockOptions.tokenMappingTableName,
+      false
     )
 
     expect(result).toEqual({
@@ -367,12 +430,10 @@ describe("authenticateRequest", () => {
 
     const result = await authenticateRequest(
       "Mock_user",
-      axiosInstance,
-      documentClient,
-      mockLogger,
-      mockOptions,
+      dependencies,
       token,
-      mockOptions.tokenMappingTableName
+      mockOptions.tokenMappingTableName,
+      false
     )
 
     expect(result).toEqual({
@@ -418,12 +479,10 @@ describe("authenticateRequest", () => {
 
     const result = await authenticateRequest(
       "test-user",
-      axiosInstance,
-      documentClient,
-      mockLogger,
-      mockOptions,
+      dependencies,
       token,
-      mockOptions.tokenMappingTableName
+      mockOptions.tokenMappingTableName,
+      false
     )
 
     // Should fall back to new token acquisition
@@ -468,12 +527,10 @@ describe("authenticateRequest", () => {
 
     const result = await authenticateRequest(
       "test-user",
-      axiosInstance,
-      documentClient,
-      mockLogger,
-      mockOptions,
+      dependencies,
       token,
-      mockOptions.tokenMappingTableName
+      mockOptions.tokenMappingTableName,
+      false
     )
 
     // Should fall back to new token acquisition
@@ -509,12 +566,10 @@ describe("authenticateRequest", () => {
 
     await expect(authenticateRequest(
       "test-user",
-      axiosInstance,
-      documentClient,
-      mockLogger,
-      mockOptions,
+      dependencies,
       token,
-      mockOptions.tokenMappingTableName
+      mockOptions.tokenMappingTableName,
+      false
     )).rejects.toThrow(new Error("Missing apigee expires in time"))
 
     // Verify that token refresh functions were not called
@@ -545,12 +600,10 @@ describe("authenticateRequest", () => {
 
     await expect(authenticateRequest(
       "test-user",
-      axiosInstance,
-      documentClient,
-      mockLogger,
-      mockOptions,
+      dependencies,
       token,
-      mockOptions.tokenMappingTableName
+      mockOptions.tokenMappingTableName,
+      false
     )).rejects.toThrow(new Error("Missing cis2IdToken"))
   })
 
@@ -577,12 +630,10 @@ describe("authenticateRequest", () => {
     mockGetSecret.mockReturnValue("test-private-key")
     await expect(authenticateRequest(
       "test-user",
-      axiosInstance,
-      documentClient,
-      mockLogger,
-      mockOptions,
+      dependencies,
       token,
-      mockOptions.tokenMappingTableName
+      mockOptions.tokenMappingTableName,
+      false
     )).rejects.toThrow(new Error("Failed to obtain required tokens after authentication flow"))
   })
 

@@ -1,17 +1,18 @@
 import {API_ENDPOINTS} from "@/constants/environment"
 import http from "./axios"
-import {RoleDetails, TrackerUserInfo, UserDetails} from "@cpt-ui-common/common-types"
+import {
+  RoleDetails,
+  TrackerUserInfo,
+  TrackerUserInfoResult,
+  UserDetails
+} from "@cpt-ui-common/common-types"
 import {logger} from "./logger"
+import {AxiosError} from "axios"
 
-export type TrackerUserInfoResult = {
-  rolesWithAccess: Array<RoleDetails>,
-  rolesWithoutAccess: Array<RoleDetails>,
-  hasNoAccess: boolean
-  selectedRole: RoleDetails | undefined,
-  userDetails: UserDetails | undefined,
-  hasSingleRoleAccess: boolean,
-  isConcurrentSession: boolean,
-  error: string | null
+type AuthErrorResponse = {
+  invalidSessionCause?: string
+  /* eslint-disable  @typescript-eslint/no-explicit-any */
+  [key: string]: any
 }
 
 export const getTrackerUserInfo = async (): Promise<TrackerUserInfoResult> => {
@@ -22,18 +23,18 @@ export const getTrackerUserInfo = async (): Promise<TrackerUserInfoResult> => {
   let userDetails: UserDetails | undefined = undefined
   let hasSingleRoleAccess: boolean = false
   let isConcurrentSession: boolean = false
+  let invalidSessionCause: string | undefined = undefined
   let error: string | null = null
 
   try {
     const response = await http.get(API_ENDPOINTS.TRACKER_USER_INFO)
+    const data = response.data
 
     if (response.status !== 200) {
       throw new Error(
         `Server did not return user info, response ${response.status}`
       )
     }
-
-    const data = response.data
 
     if (!data.userInfo) {
       throw new Error("Server response did not contain data")
@@ -66,9 +67,18 @@ export const getTrackerUserInfo = async (): Promise<TrackerUserInfoResult> => {
       logger.info("This is a concurrent session")
     }
   } catch (err) {
-    error =
-      err instanceof Error ? err.message : "Failed to fetch user info"
+    if (err instanceof AxiosError) {
+      const axiosErr = err as AxiosError<AuthErrorResponse>
 
+      if (axiosErr.response?.status === 401 && axiosErr.response.data?.invalidSessionCause) {
+        invalidSessionCause = axiosErr.response.data.invalidSessionCause
+      }
+      error = axiosErr.message
+    } else if (err instanceof Error) {
+      error = err.message
+    } else {
+      error = "Failed to fetch user info"
+    }
     logger.error("Error fetching tracker user info:", err)
   }
   return {
@@ -79,6 +89,7 @@ export const getTrackerUserInfo = async (): Promise<TrackerUserInfoResult> => {
     userDetails,
     hasSingleRoleAccess,
     isConcurrentSession,
+    invalidSessionCause,
     error
   }
 }
