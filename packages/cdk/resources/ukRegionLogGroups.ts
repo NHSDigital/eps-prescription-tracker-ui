@@ -3,10 +3,10 @@ import {IRole} from "aws-cdk-lib/aws-iam"
 import {IStream} from "aws-cdk-lib/aws-kinesis"
 import {IKey} from "aws-cdk-lib/aws-kms"
 import {
-CfnLogGroup,
-CfnResourcePolicy,
-CfnSubscriptionFilter,
-LogGroup
+  CfnLogGroup,
+  CfnResourcePolicy,
+  CfnSubscriptionFilter,
+  LogGroup
 } from "aws-cdk-lib/aws-logs"
 import {Construct} from "constructs"
 
@@ -42,19 +42,19 @@ export class ukRegionLogGroups extends Construct {
     }
 
     const serviceLogPolicy = {
-        Version: "2012-10-17",
-        Statement: [
-          {
-            Effect: "Allow",
-            Principal: {Service: "delivery.logs.amazonaws.com"},
-            Action: ["logs:CreateLogStream", "logs:PutLogEvents"],
-            Resource: [
-              wafLogGroup.logGroupArn,
-              `${wafLogGroup.logGroupArn}:log-stream:*`
-            ]
-          }
-        ]
-      }
+      Version: "2012-10-17",
+      Statement: [
+        {
+          Effect: "Allow",
+          Principal: {Service: "delivery.logs.amazonaws.com"},
+          Action: ["logs:CreateLogStream", "logs:PutLogEvents"],
+          Resource: [
+            wafLogGroup.logGroupArn,
+            `${wafLogGroup.logGroupArn}:log-stream:*`
+          ]
+        }
+      ]
+    }
     new CfnResourcePolicy(this, "CloudFrontResourcePolicy", {
       policyName: `${props.stackName}LogServicePolicy`,
       policyDocument: JSON.stringify(serviceLogPolicy)
