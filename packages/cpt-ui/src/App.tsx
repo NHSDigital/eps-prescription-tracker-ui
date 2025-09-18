@@ -23,6 +23,7 @@ import PrivacyNoticePage from "./pages/PrivacyNoticePage"
 import SessionSelectionPage from "./pages/SessionSelection"
 
 import {FRONTEND_PATHS} from "@/constants/environment"
+import SessionLoggedOutPage from "./pages/SessionLoggedOut"
 
 export default function App() {
   return (
@@ -43,6 +44,7 @@ export default function App() {
                   <Route path={FRONTEND_PATHS.SESSION_SELECTION} element={<SessionSelectionPage />} />
                   <Route path={FRONTEND_PATHS.LOGIN} element={<LoginPage />} />
                   <Route path={FRONTEND_PATHS.LOGOUT} element={<LogoutPage />} />
+                  <Route path={FRONTEND_PATHS.SESSION_LOGGED_OUT} element={<SessionLoggedOutPage />} />
                   <Route path={FRONTEND_PATHS.SELECT_YOUR_ROLE} element={<SelectYourRolePage />} />
                   <Route path={FRONTEND_PATHS.YOUR_SELECTED_ROLE} element={<YourSelectedRolePage />} />
                   <Route path={FRONTEND_PATHS.CHANGE_YOUR_ROLE} element={<ChangeRolePage />} />

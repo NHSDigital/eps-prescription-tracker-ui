@@ -117,7 +117,7 @@ describe("authenticationConcurrentAwareMiddleware", () => {
         .mockResolvedValueOnce(tokenMappingItem) // token mapping table
       mockAuthenticateRequest.mockResolvedValue(authResult)
 
-      const middleware = authenticationConcurrentAwareMiddleware(axiosInstance, ddbClient, authOptions, logger)
+      const middleware = authenticationConcurrentAwareMiddleware({axiosInstance, ddbClient, authOptions, logger})
 
       // Act
       await middleware.before(mockRequest)
@@ -138,12 +138,15 @@ describe("authenticationConcurrentAwareMiddleware", () => {
       )
       expect(mockAuthenticateRequest).toHaveBeenCalledWith(
         username,
-        axiosInstance,
-        ddbClient,
-        logger,
-        authOptions,
+        {
+          axiosInstance,
+          ddbClient,
+          logger,
+          authOptions
+        },
         sessionManagementItem,
-        authOptions.sessionManagementTableName
+        authOptions.sessionManagementTableName,
+        false
       )
       expect(mockEvent.requestContext.authorizer).toEqual({
         ...authResult,
@@ -186,7 +189,7 @@ describe("authenticationConcurrentAwareMiddleware", () => {
         .mockResolvedValueOnce(tokenMappingItem)
       mockAuthenticateRequest.mockResolvedValue(authResult)
 
-      const middleware = authenticationConcurrentAwareMiddleware(axiosInstance, ddbClient, authOptions, logger)
+      const middleware = authenticationConcurrentAwareMiddleware({axiosInstance, ddbClient, authOptions, logger})
 
       // Act
       await middleware.before(mockRequest)
@@ -194,12 +197,15 @@ describe("authenticationConcurrentAwareMiddleware", () => {
       // Assert
       expect(mockAuthenticateRequest).toHaveBeenCalledWith(
         username,
-        axiosInstance,
-        ddbClient,
-        logger,
-        authOptions,
+        {
+          axiosInstance,
+          ddbClient,
+          logger,
+          authOptions
+        },
         tokenMappingItem,
-        authOptions.tokenMappingTableName
+        authOptions.tokenMappingTableName,
+        false
       )
       expect(mockEvent.requestContext.authorizer).toEqual({
         ...authResult,
@@ -238,7 +244,7 @@ describe("authenticationConcurrentAwareMiddleware", () => {
         .mockResolvedValueOnce(tokenMappingItem)
       mockAuthenticateRequest.mockResolvedValue(authResult)
 
-      const middleware = authenticationConcurrentAwareMiddleware(axiosInstance, ddbClient, authOptions, logger)
+      const middleware = authenticationConcurrentAwareMiddleware({axiosInstance, ddbClient, authOptions, logger})
 
       // Act
       await middleware.before(mockRequest)
@@ -246,12 +252,15 @@ describe("authenticationConcurrentAwareMiddleware", () => {
       // Assert
       expect(mockAuthenticateRequest).toHaveBeenCalledWith(
         username,
-        axiosInstance,
-        ddbClient,
-        logger,
-        authOptions,
+        {
+          axiosInstance,
+          ddbClient,
+          logger,
+          authOptions
+        },
         sessionManagementItem,
-        authOptions.sessionManagementTableName
+        authOptions.sessionManagementTableName,
+        false
       )
       expect(mockEvent.requestContext.authorizer.isConcurrentSession).toBe(true)
       expect(logger.debug).toHaveBeenCalledWith(
@@ -282,7 +291,7 @@ describe("authenticationConcurrentAwareMiddleware", () => {
         .mockResolvedValueOnce(sessionManagementItem)
         .mockResolvedValueOnce(tokenMappingItem)
 
-      const middleware = authenticationConcurrentAwareMiddleware(axiosInstance, ddbClient, authOptions, logger)
+      const middleware = authenticationConcurrentAwareMiddleware({axiosInstance, ddbClient, authOptions, logger})
 
       // Act
       const result = await middleware.before(mockRequest)
@@ -293,16 +302,16 @@ describe("authenticationConcurrentAwareMiddleware", () => {
         statusCode: 401,
         body: JSON.stringify({
           message: "Session expired or invalid. Please log in again.",
-          restartLogin: true
+          restartLogin: true,
+          invalidSessionCause: "ConcurrentSession"
         })
       })
       expect(result).toEqual(mockRequest.earlyResponse)
-      expect(logger.error).toHaveBeenCalledWith(
-        "Request token doesn't match any sessionId in the token mapping or session management table, \
-          treating as invalid session",
+      expect(logger.info).toHaveBeenCalledWith(
+        "A session is active but does not match the requestors sessionId",
         {
-          tokenMappingSessionId: "different-session-id-2",
-          sessionManagementSessionId: "different-session-id-1"
+          username: username,
+          sessionId: sessionId
         }
       )
     })
@@ -318,7 +327,7 @@ describe("authenticationConcurrentAwareMiddleware", () => {
         .mockResolvedValueOnce(undefined) // session management
         .mockResolvedValueOnce(undefined) // token mapping
 
-      const middleware = authenticationConcurrentAwareMiddleware(axiosInstance, ddbClient, authOptions, logger)
+      const middleware = authenticationConcurrentAwareMiddleware({axiosInstance, ddbClient, authOptions, logger})
 
       // Act
       const result = await middleware.before(mockRequest)
@@ -329,7 +338,8 @@ describe("authenticationConcurrentAwareMiddleware", () => {
         statusCode: 401,
         body: JSON.stringify({
           message: "Session expired or invalid. Please log in again.",
-          restartLogin: true
+          restartLogin: true,
+          invalidSessionCause: "InvalidSession"
         })
       })
       expect(result).toEqual(mockRequest.earlyResponse)
@@ -352,7 +362,7 @@ describe("authenticationConcurrentAwareMiddleware", () => {
           .mockResolvedValueOnce(undefined) // session management
           .mockResolvedValueOnce(tokenMappingItem) // token mapping
 
-        const middleware = authenticationConcurrentAwareMiddleware(axiosInstance, ddbClient, authOptions, logger)
+        const middleware = authenticationConcurrentAwareMiddleware({axiosInstance, ddbClient, authOptions, logger})
 
         // Act
         const result = await middleware.before(mockRequest)
@@ -363,7 +373,8 @@ describe("authenticationConcurrentAwareMiddleware", () => {
           statusCode: 401,
           body: JSON.stringify({
             message: "Session expired or invalid. Please log in again.",
-            restartLogin: true
+            restartLogin: true,
+            invalidSessionCause: "ConcurrentSession"
           })
         })
         expect(result).toEqual(mockRequest.earlyResponse)
@@ -386,7 +397,7 @@ describe("authenticationConcurrentAwareMiddleware", () => {
         .mockResolvedValueOnce(undefined)
       mockAuthenticateRequest.mockResolvedValue(null)
 
-      const middleware = authenticationConcurrentAwareMiddleware(axiosInstance, ddbClient, authOptions, logger)
+      const middleware = authenticationConcurrentAwareMiddleware({axiosInstance, ddbClient, authOptions, logger})
 
       // Act
       const result = await middleware.before(mockRequest)
@@ -421,7 +432,7 @@ describe("authenticationConcurrentAwareMiddleware", () => {
         .mockResolvedValueOnce(undefined)
       mockAuthenticateRequest.mockRejectedValue(authError)
 
-      const middleware = authenticationConcurrentAwareMiddleware(axiosInstance, ddbClient, authOptions, logger)
+      const middleware = authenticationConcurrentAwareMiddleware({axiosInstance, ddbClient, authOptions, logger})
 
       // Act
       const result = await middleware.before(mockRequest)
@@ -448,7 +459,7 @@ describe("authenticationConcurrentAwareMiddleware", () => {
         throw new Error("Unable to extract username from ID token")
       })
 
-      const middleware = authenticationConcurrentAwareMiddleware(axiosInstance, ddbClient, authOptions, logger)
+      const middleware = authenticationConcurrentAwareMiddleware({axiosInstance, ddbClient, authOptions, logger})
 
       // Act
       const result = await middleware.before(mockRequest)
@@ -482,7 +493,7 @@ describe("authenticationConcurrentAwareMiddleware", () => {
         throw new Error("Unable to extract sessionId from ID token")
       })
 
-      const middleware = authenticationConcurrentAwareMiddleware(axiosInstance, ddbClient, authOptions, logger)
+      const middleware = authenticationConcurrentAwareMiddleware({axiosInstance, ddbClient, authOptions, logger})
 
       // Act
       const result = await middleware.before(mockRequest)
@@ -520,7 +531,7 @@ describe("authenticationConcurrentAwareMiddleware", () => {
         .mockRejectedValueOnce(dbError) // session management fails
         .mockResolvedValueOnce(undefined) // token mapping succeeds
 
-      const middleware = authenticationConcurrentAwareMiddleware(axiosInstance, ddbClient, authOptions, logger)
+      const middleware = authenticationConcurrentAwareMiddleware({axiosInstance, ddbClient, authOptions, logger})
 
       // Act
       const result = await middleware.before(mockRequest)
@@ -552,7 +563,7 @@ describe("authenticationConcurrentAwareMiddleware", () => {
         .mockResolvedValueOnce(undefined) // session management succeeds
         .mockRejectedValueOnce(dbError) // token mapping fails
 
-      const middleware = authenticationConcurrentAwareMiddleware(axiosInstance, ddbClient, authOptions, logger)
+      const middleware = authenticationConcurrentAwareMiddleware({axiosInstance, ddbClient, authOptions, logger})
 
       // Act
       const result = await middleware.before(mockRequest)
@@ -595,7 +606,7 @@ describe("authenticationConcurrentAwareMiddleware", () => {
         .mockResolvedValueOnce(sessionManagementItem)
         .mockResolvedValueOnce(tokenMappingItem)
 
-      const middleware = authenticationConcurrentAwareMiddleware(axiosInstance, ddbClient, authOptions, logger)
+      const middleware = authenticationConcurrentAwareMiddleware({axiosInstance, ddbClient, authOptions, logger})
 
       // Act
       const result = await middleware.before(mockRequest)
@@ -606,7 +617,8 @@ describe("authenticationConcurrentAwareMiddleware", () => {
         statusCode: 401,
         body: JSON.stringify({
           message: "Session expired or invalid. Please log in again.",
-          restartLogin: true
+          restartLogin: true,
+          invalidSessionCause: "ConcurrentSession"
         })
       })
       expect(result).toEqual(mockRequest.earlyResponse)
@@ -633,7 +645,7 @@ describe("authenticationConcurrentAwareMiddleware", () => {
         .mockResolvedValueOnce(sessionManagementItem)
         .mockResolvedValueOnce(tokenMappingItem)
 
-      const middleware = authenticationConcurrentAwareMiddleware(axiosInstance, ddbClient, authOptions, logger)
+      const middleware = authenticationConcurrentAwareMiddleware({axiosInstance, ddbClient, authOptions, logger})
 
       // Act
       const result = await middleware.before(mockRequest)
@@ -644,7 +656,8 @@ describe("authenticationConcurrentAwareMiddleware", () => {
         statusCode: 401,
         body: JSON.stringify({
           message: "Session expired or invalid. Please log in again.",
-          restartLogin: true
+          restartLogin: true,
+          invalidSessionCause: "ConcurrentSession"
         })
       })
       expect(result).toEqual(mockRequest.earlyResponse)
@@ -674,7 +687,7 @@ describe("authenticationConcurrentAwareMiddleware", () => {
         .mockResolvedValueOnce(undefined)
       mockAuthenticateRequest.mockResolvedValue(authResult)
 
-      const middleware = authenticationConcurrentAwareMiddleware(axiosInstance, ddbClient, authOptions, logger)
+      const middleware = authenticationConcurrentAwareMiddleware({axiosInstance, ddbClient, authOptions, logger})
 
       // Act
       await middleware.before(mockRequest)
@@ -709,7 +722,7 @@ describe("authenticationConcurrentAwareMiddleware", () => {
         .mockResolvedValueOnce(tokenMappingItem) // token mapping
       mockAuthenticateRequest.mockResolvedValue(authResult)
 
-      const middleware = authenticationConcurrentAwareMiddleware(axiosInstance, ddbClient, authOptions, logger)
+      const middleware = authenticationConcurrentAwareMiddleware({axiosInstance, ddbClient, authOptions, logger})
 
       // Act
       await middleware.before(mockRequest)
