@@ -76,10 +76,6 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
     location.pathname
   ])
 
-  if (shouldBlockChildren()) {
-    return null
-  }
-
   useEffect(() => {
     // If user is signedIn, every 5 minutes call tracker user info. If it fails, sign the user out.
     const internalId = setInterval(() => {
@@ -103,6 +99,10 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
 
     return () => clearInterval(internalId)
   }, [auth.isSignedIn, auth.isSigningIn])
+
+  if (shouldBlockChildren()) {
+    return null
+  }
 
   return (
     <AccessContext.Provider value={{}}>
