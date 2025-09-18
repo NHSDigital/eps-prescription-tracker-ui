@@ -18,15 +18,6 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
   const auth = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
-  const allowed_no_role_paths = [
-    FRONTEND_PATHS.LOGIN,
-    FRONTEND_PATHS.LOGOUT,
-    FRONTEND_PATHS.SESSION_LOGGED_OUT,
-    FRONTEND_PATHS.COOKIES,
-    FRONTEND_PATHS.PRIVACY_NOTICE,
-    FRONTEND_PATHS.COOKIES_SELECTED,
-    FRONTEND_PATHS.SESSION_SELECTION
-  ]
 
   const shouldBlockChildren = () => {
     // block if concurrent session needs resolution
@@ -90,11 +81,11 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
   }
 
   useEffect(() => {
-  // If user is signedIn, every 5 minutes call tracker user info. If it fails, sign the user out.
+    // If user is signedIn, every 5 minutes call tracker user info. If it fails, sign the user out.
     const internalId = setInterval(() => {
-      const currentPath = window.location.pathname
+      const currentPath = location.pathname
 
-      if (auth.isSigningIn === true || allowed_no_role_paths.includes(currentPath)) {
+      if (auth.isSigningIn === true || ALLOWED_NO_ROLE_PATHS.includes(currentPath)) {
         logger.debug("Not checking user info")
         return
       }
@@ -110,7 +101,7 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
       }
     }, 300000) // 300000 ms = 5 minutes
 
-  return () => clearInterval(internalId)
+    return () => clearInterval(internalId)
   }, [auth.isSignedIn, auth.isSigningIn])
 
   return (

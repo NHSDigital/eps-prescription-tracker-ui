@@ -393,8 +393,8 @@ describe("AccessProvider", () => {
         updateTrackerUserInfo: mockUpdateTrackerUserInfo
       })
       // Put user on an allowed path so redirect doesn't happen
-      mockLocationHook.mockReturnValue({pathname: "/"})
-      mockNormalizePathFn.mockReturnValue("/")
+      mockLocationHook.mockReturnValue({pathname: "/login"})
+      mockNormalizePathFn.mockReturnValue("/login")
 
       renderWithProvider()
 
@@ -402,7 +402,7 @@ describe("AccessProvider", () => {
         jest.advanceTimersByTime(300001)
       })
 
-      expect(logger.info).toHaveBeenCalledWith("Periodic user info check")
+      expect(logger.debug).toHaveBeenCalledWith("Not checking user info")
       expect(mockUpdateTrackerUserInfo).not.toHaveBeenCalled()
     })
 
