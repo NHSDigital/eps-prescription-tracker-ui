@@ -20,6 +20,27 @@ jest.mock("@/context/AuthProvider", () => ({
   useAuth: jest.fn()
 }))
 
+jest.mock("@/constants/environment", () => ({
+  FRONTEND_PATHS: {
+    LOGIN: "/login",
+    LOGOUT: "/logout",
+    SELECT_YOUR_ROLE: "/select-your-role",
+    SESSION_SELECTION: "/select-active-session",
+    COOKIES: "/cookies",
+    PRIVACY_NOTICE: "/privacy-notice",
+    COOKIES_SELECTED: "/cookies-selected"
+  },
+  ALLOWED_NO_ROLE_PATHS: [
+    "/login",
+    "/logout",
+    "/cookies",
+    "/privacy-notice",
+    "/cookies-selected",
+    "/",
+    "/select-active-session"
+  ]
+}))
+
 jest.mock("@/helpers/logger", () => ({
   logger: {
     debug: jest.fn(),
@@ -35,11 +56,15 @@ const TestComponent = () => {
 
 describe("AccessProvider", () => {
   const navigate = jest.fn()
+  const mockNavigateHook = useNavigate as jest.Mock
+  const mockLocationHook = useLocation as jest.Mock
+  const mockAuthHook = mockUseAuth as jest.Mock
+  const mockNormalizePathFn = mockNormalizePath as jest.Mock
 
   beforeEach(() => {
     jest.clearAllMocks()
     jest.useFakeTimers()
-    ;(useNavigate as jest.Mock).mockReturnValue(navigate)
+    mockNavigateHook.mockReturnValue(navigate)
   })
 
   afterEach(() => {
@@ -56,13 +81,16 @@ describe("AccessProvider", () => {
   }
 
   it("redirects to login if not signed in and not on allowed path", () => {
-    (mockUseAuth as jest.Mock).mockReturnValue({
+    mockAuthHook.mockReturnValue({
       isSignedIn: false,
       isSigningIn: false,
-      updateTrackerUserInfo: jest.fn().mockResolvedValue({error: null})
+      updateTrackerUserInfo: jest.fn().mockResolvedValue({error: null}),
+      clearAuthState: jest.fn()
     })
-    ;(useLocation as jest.Mock).mockReturnValue({pathname: "/some-protected-path"})
-    ;(mockNormalizePath as jest.Mock).mockReturnValue("/some-protected-path")
+    mockLocationHook.mockReturnValue({
+      pathname: "/some-protected-path"
+    })
+    mockNormalizePathFn.mockReturnValue("/some-protected-path")
 
     renderWithProvider()
 
@@ -70,14 +98,14 @@ describe("AccessProvider", () => {
   })
 
   it("redirects to session selection if signed in and concurrent session", () => {
-    (mockUseAuth as jest.Mock).mockReturnValue({
+    mockAuthHook.mockReturnValue({
       isSignedIn: true,
       isConcurrentSession: true,
       isSigningIn: false,
       updateTrackerUserInfo: jest.fn().mockResolvedValue({error: null})
     })
-    ;(useLocation as jest.Mock).mockReturnValue({pathname: "/some-protected-path"})
-    ;(mockNormalizePath as jest.Mock).mockReturnValue("/some-protected-path")
+    mockLocationHook.mockReturnValue({pathname: "/some-protected-path"})
+    mockNormalizePathFn.mockReturnValue("/some-protected-path")
 
     renderWithProvider()
 
@@ -85,14 +113,15 @@ describe("AccessProvider", () => {
   })
 
   it("redirects to select role if signed in but no role is selected", () => {
-    (mockUseAuth as jest.Mock).mockReturnValue({
+    mockAuthHook.mockReturnValue({
       isSignedIn: true,
       isSigningIn: false,
       selectedRole: null,
-      updateTrackerUserInfo: jest.fn().mockResolvedValue({error: null})
+      updateTrackerUserInfo: jest.fn().mockResolvedValue({error: null}),
+      clearAuthState: jest.fn()
     })
-    ;(useLocation as jest.Mock).mockReturnValue({pathname: "/dashboard"})
-    ;(mockNormalizePath as jest.Mock).mockReturnValue("/dashboard")
+    mockLocationHook.mockReturnValue({pathname: "/dashboard"})
+    mockNormalizePathFn.mockReturnValue("/dashboard")
 
     renderWithProvider()
 
@@ -100,14 +129,15 @@ describe("AccessProvider", () => {
   })
 
   it("does not redirect if signed in and role is selected", () => {
-    (mockUseAuth as jest.Mock).mockReturnValue({
+    mockAuthHook.mockReturnValue({
       isSignedIn: true,
       isSigningIn: false,
       selectedRole: {name: "someRole"},
-      updateTrackerUserInfo: jest.fn().mockResolvedValue({error: null})
+      updateTrackerUserInfo: jest.fn().mockResolvedValue({error: null}),
+      clearAuthState: jest.fn()
     })
-    ;(useLocation as jest.Mock).mockReturnValue({pathname: "/dashboard"})
-    ;(mockNormalizePath as jest.Mock).mockReturnValue("/dashboard")
+    mockLocationHook.mockReturnValue({pathname: "/dashboard"})
+    mockNormalizePathFn.mockReturnValue("/dashboard")
 
     renderWithProvider()
 
@@ -115,29 +145,34 @@ describe("AccessProvider", () => {
   })
 
   it("skips redirection logic when signing in and on select-your-role path", () => {
-    (mockUseAuth as jest.Mock).mockReturnValue({
+    mockAuthHook.mockReturnValue({
       isSignedIn: false,
       isSigningIn: true,
-      updateTrackerUserInfo: jest.fn().mockResolvedValue({error: null})
+      updateTrackerUserInfo: jest.fn().mockResolvedValue({error: null}),
+      clearAuthState: jest.fn()
     })
 
     // Emulate `window.location.pathname` as this is directly accessed
     const originalLocation = window.location
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    delete (window as any).location
+    delete (window as any).location;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ;(window as any).location = {pathname: `/site${FRONTEND_PATHS.SELECT_YOUR_ROLE}`}
+    (window as any).location = {
+      pathname: `/site${FRONTEND_PATHS.SELECT_YOUR_ROLE}`
+    }
 
-    ;(useLocation as jest.Mock).mockReturnValue({pathname: FRONTEND_PATHS.SELECT_YOUR_ROLE})
-    ;(mockNormalizePath as jest.Mock).mockReturnValue(FRONTEND_PATHS.SELECT_YOUR_ROLE)
+    mockLocationHook.mockReturnValue({
+      pathname: FRONTEND_PATHS.SELECT_YOUR_ROLE
+    })
+    mockNormalizePathFn.mockReturnValue(FRONTEND_PATHS.SELECT_YOUR_ROLE)
 
     renderWithProvider()
 
-    expect(navigate).not.toHaveBeenCalled()
+    expect(navigate).not.toHaveBeenCalled();
 
     // Restore original location
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ;(window as any).location = originalLocation
+    (window as any).location = originalLocation
   })
 
   it("throws error if useAccess is used outside provider", () => {
@@ -146,7 +181,9 @@ describe("AccessProvider", () => {
       return null
     }
 
-    expect(() => render(<BrokenComponent />)).toThrow("useAccess must be used within an AccessProvider")
+    expect(() => render(<BrokenComponent />)).toThrow(
+      "useAccess must be used within an AccessProvider"
+    )
   })
 
   describe("Periodic user info check useEffect", () => {
@@ -155,12 +192,12 @@ describe("AccessProvider", () => {
     it("should set up interval when component mounts", () => {
       const setIntervalSpy = jest.spyOn(globalThis, "setInterval")
 
-      ;(mockUseAuth as jest.Mock).mockReturnValue({
+      mockAuthHook.mockReturnValue({
         isSignedIn: true,
         isSigningIn: false,
         updateTrackerUserInfo: jest.fn().mockResolvedValue({error: null})
       })
-      ;(useLocation as jest.Mock).mockReturnValue({pathname: "/search-by-prescription-id"})
+      mockLocationHook.mockReturnValue({pathname: "/search-by-prescription-id"})
 
       renderWithProvider()
 
@@ -171,12 +208,12 @@ describe("AccessProvider", () => {
     it("should clear interval on component unmount", () => {
       const clearIntervalSpy = jest.spyOn(globalThis, "clearInterval")
 
-      ;(mockUseAuth as jest.Mock).mockReturnValue({
+      mockAuthHook.mockReturnValue({
         isSignedIn: true,
         isSigningIn: false,
         updateTrackerUserInfo: mockUpdateTrackerUserInfo
       })
-      ;(useLocation as jest.Mock).mockReturnValue({pathname: "/search-by-prescription-id"})
+      mockLocationHook.mockReturnValue({pathname: "/search-by-prescription-id"})
 
       const {unmount} = render(
         <AccessProvider>
@@ -191,12 +228,12 @@ describe("AccessProvider", () => {
     })
 
     it("should skip user info check when isSigningIn is true", async () => {
-      ;(mockUseAuth as jest.Mock).mockReturnValue({
+      mockAuthHook.mockReturnValue({
         isSignedIn: true,
         isSigningIn: true,
         updateTrackerUserInfo: mockUpdateTrackerUserInfo
       })
-      ;(useLocation as jest.Mock).mockReturnValue({pathname: "/search-by-prescription-id"})
+      mockLocationHook.mockReturnValue({pathname: "/search-by-prescription-id"})
 
       renderWithProvider()
 
@@ -212,17 +249,17 @@ describe("AccessProvider", () => {
 
     it("should skip user info check when on allowed no-role paths", async () => {
       // This test focuses on the isSigningIn logic since we can't easily mock window.location
-      ;(mockUseAuth as jest.Mock).mockReturnValue({
+      mockAuthHook.mockReturnValue({
         isSignedIn: true,
         isSigningIn: true, // This will trigger the skip logic
         updateTrackerUserInfo: mockUpdateTrackerUserInfo
       })
-      ;(useLocation as jest.Mock).mockReturnValue({pathname: FRONTEND_PATHS.LOGIN})
+      mockLocationHook.mockReturnValue({pathname: FRONTEND_PATHS.LOGIN})
 
       renderWithProvider()
 
       act(() => {
-        jest.advanceTimersByTime(15001)
+        jest.advanceTimersByTime(300001)
       })
 
       expect(logger.debug).toHaveBeenCalledWith(
@@ -233,17 +270,17 @@ describe("AccessProvider", () => {
     it("should call updateTrackerUserInfo when user is signed in and not on restricted paths", async () => {
       mockUpdateTrackerUserInfo.mockResolvedValue({error: null})
 
-      ;(mockUseAuth as jest.Mock).mockReturnValue({
+      mockAuthHook.mockReturnValue({
         isSignedIn: true,
         isSigningIn: false,
         updateTrackerUserInfo: mockUpdateTrackerUserInfo
       })
-      ;(useLocation as jest.Mock).mockReturnValue({pathname: "/search-by-prescription-id"})
+      mockLocationHook.mockReturnValue({pathname: "/search-by-prescription-id"})
 
       renderWithProvider()
 
       await act(async () => {
-        jest.advanceTimersByTime(15001)
+        jest.advanceTimersByTime(300001)
       })
 
       expect(logger.info).toHaveBeenCalledWith("Periodic user info check")
@@ -254,17 +291,17 @@ describe("AccessProvider", () => {
     it("should navigate to session logged out page when updateTrackerUserInfo returns error", async () => {
       mockUpdateTrackerUserInfo.mockResolvedValue({error: "Session expired"})
 
-      ;(mockUseAuth as jest.Mock).mockReturnValue({
+      mockAuthHook.mockReturnValue({
         isSignedIn: true,
         isSigningIn: false,
         updateTrackerUserInfo: mockUpdateTrackerUserInfo
       })
-      ;(useLocation as jest.Mock).mockReturnValue({pathname: "/search-by-prescription-id"})
+      mockLocationHook.mockReturnValue({pathname: "/search-by-prescription-id"})
 
       renderWithProvider()
 
       await act(async () => {
-        jest.advanceTimersByTime(15001)
+        jest.advanceTimersByTime(300001)
       })
 
       expect(mockUpdateTrackerUserInfo).toHaveBeenCalled()
@@ -272,17 +309,17 @@ describe("AccessProvider", () => {
     })
 
     it("should not call updateTrackerUserInfo when user is not signed in", async () => {
-      ;(mockUseAuth as jest.Mock).mockReturnValue({
+      mockAuthHook.mockReturnValue({
         isSignedIn: false,
         isSigningIn: false,
         updateTrackerUserInfo: mockUpdateTrackerUserInfo
       })
-      ;(useLocation as jest.Mock).mockReturnValue({pathname: "/cookies"})
+      mockLocationHook.mockReturnValue({pathname: "/cookies"})
 
       renderWithProvider()
 
       await act(async () => {
-        jest.advanceTimersByTime(15001)
+        jest.advanceTimersByTime(300001)
       })
 
       expect(logger.info).toHaveBeenCalledWith("Periodic user info check")
@@ -290,17 +327,17 @@ describe("AccessProvider", () => {
     })
 
     it("should handle multiple allowed no-role paths correctly", async () => {
-      ;(mockUseAuth as jest.Mock).mockReturnValue({
+      mockAuthHook.mockReturnValue({
         isSignedIn: true,
         isSigningIn: false,
         updateTrackerUserInfo: mockUpdateTrackerUserInfo
       })
-      ;(useLocation as jest.Mock).mockReturnValue({pathname: "/search-by-prescription-id"})
+      mockLocationHook.mockReturnValue({pathname: "/search-by-prescription-id"})
 
       renderWithProvider()
 
       await act(async () => {
-        jest.advanceTimersByTime(15001)
+        jest.advanceTimersByTime(300001)
       })
 
       // Should call updateTrackerUserInfo when not on restricted paths
@@ -312,18 +349,18 @@ describe("AccessProvider", () => {
         .mockResolvedValueOnce({error: "First error"})
         .mockResolvedValueOnce({error: null})
 
-      ;(mockUseAuth as jest.Mock).mockReturnValue({
+      mockAuthHook.mockReturnValue({
         isSignedIn: true,
         isSigningIn: false,
         updateTrackerUserInfo: mockUpdateTrackerUserInfo
       })
-      ;(useLocation as jest.Mock).mockReturnValue({pathname: "/search-by-prescription-id"})
+      mockLocationHook.mockReturnValue({pathname: "/search-by-prescription-id"})
 
       renderWithProvider()
 
       // First interval execution - should error and navigate
       await act(async () => {
-        jest.advanceTimersByTime(15001)
+        jest.advanceTimersByTime(300001)
       })
 
       expect(navigate).toHaveBeenCalledWith(FRONTEND_PATHS.SESSION_LOGGED_OUT)
@@ -333,7 +370,7 @@ describe("AccessProvider", () => {
 
       // Second interval execution - should succeed
       await act(async () => {
-        jest.advanceTimersByTime(15001)
+        jest.advanceTimersByTime(300001)
       })
 
       expect(mockUpdateTrackerUserInfo).toHaveBeenCalledTimes(1)

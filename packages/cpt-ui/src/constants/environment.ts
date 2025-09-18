@@ -72,8 +72,25 @@ export const FRONTEND_PATHS = {
   PATIENT_NOT_FOUND: "/patient-not-found",
   PRIVACY_NOTICE: "/privacy-notice",
   COOKIES_SELECTED: "/cookies-selected",
-  SESSION_SELECTION: "/select-active-session"
+  SESSION_SELECTION: "/select-active-session",
+  NOT_FOUND: "/notfound"
 }
+
+// Public paths that don't require authentication
+export const PUBLIC_PATHS = [
+  FRONTEND_PATHS.LOGIN,
+  FRONTEND_PATHS.LOGOUT,
+  FRONTEND_PATHS.COOKIES,
+  FRONTEND_PATHS.PRIVACY_NOTICE,
+  FRONTEND_PATHS.COOKIES_SELECTED,
+  FRONTEND_PATHS.NOT_FOUND,
+  "/"
+] as const
+
+export const ALLOWED_NO_ROLE_PATHS = [
+  ...PUBLIC_PATHS,
+  FRONTEND_PATHS.SESSION_SELECTION
+] as const
 
 // Type for environment
 export type MockAuthEnvironment = "dev" | "dev-pr" | "ref" | "qa"
