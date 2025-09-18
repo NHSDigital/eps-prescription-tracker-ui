@@ -51,6 +51,7 @@ const defaultAuthContext: AuthContextType = {
   user: null,
   isSignedIn: false,
   isSigningIn: false,
+  invalidSessionCause: undefined,
   rolesWithAccess: [],
   rolesWithoutAccess: [],
   hasNoAccess: false,

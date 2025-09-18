@@ -3,7 +3,6 @@ import {describe, it, expect} from "@jest/globals"
 import {mockLogger, mockAxiosInstance, mockAxiosErrorInstance} from "@cpt-ui-common/testing"
 import * as examples from "./examples/index"
 import {URL} from "url"
-import axios, {AxiosError} from "axios"
 
 import * as pds from "../../src"
 const OutcomeType = pds.patientSearch.OutcomeType
@@ -56,23 +55,20 @@ describe("PatientSearch Unit Tests", () => {
 
   describe("Query parameter encoding", () => {
     it("Should encode query parameters correctly", async () => {
-      const axiosInstance = axios.create()
+      const axiosInstance = mockAxiosInstance(200, undefined)
 
       const client = new pds.Client(axiosInstance, mockEndpoint, mockLogger())
-      const response = await client.patientSearch("test Family*Name", "1234-01-01", "test Postcode*", "test Given*Name")
+      await client.patientSearch("test Family*Name", "1234-01-01", "test Postcode*", "test Given*Name")
 
-      // Expect an axios error from example.com
-      expect(response.type).toBe(OutcomeType.AXIOS_ERROR)
-      const responseError = (response as any).error as AxiosError
-
-      const expectedUrl = "https://example.com/FHIR/R4/Patient" +
-        "?family=test+Family%2AName"+
-        "&birthdate=eq1234-01-01"+
-        "&address-postalcode=test+Postcode%2A"+
-        "&given=test+Given%2AName"
-
-      expect(responseError.config!.url).toBe(expectedUrl)
-    }, 10000)
+      expect(axiosInstance.get).toHaveBeenCalledWith(
+        "https://example.com/FHIR/R4/Patient" +
+        "?family=test+Family%2AName" +
+        "&birthdate=eq1234-01-01" +
+        "&address-postalcode=test+Postcode%2A" +
+        "&given=test+Given%2AName",
+        expect.any(Object)
+      )
+    })
   })
 
   describe("Axios response handling", () => {
