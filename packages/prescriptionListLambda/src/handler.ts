@@ -374,7 +374,12 @@ const handleValidationError = (
 
 // Export the Lambda function with middleware applied
 export const handler = middy(lambdaHandler)
-  .use(authenticationMiddleware(axiosInstance, documentClient, authenticationParameters, logger))
+  .use(authenticationMiddleware({
+    axiosInstance,
+    ddbClient: documentClient,
+    authOptions: authenticationParameters,
+    logger
+  }))
   .use(injectLambdaContext(logger, {clearState: true}))
   .use(httpHeaderNormalizer())
   .use(

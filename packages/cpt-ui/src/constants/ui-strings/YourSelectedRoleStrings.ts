@@ -8,5 +8,8 @@ export const YOUR_SELECTED_ROLE_STRINGS = {
   confirmButtonText: "Continue to find a prescription",
   noODSCode: "NO ODS CODE",
   noRoleName: "NO ROLE NAME",
-  noOrgName: "NO ORG NAME"
+  noOrgName: "NO ORG NAME",
+  odsCode: "ODS",
+  organisation: " organisation",
+  role: " role"
 }
