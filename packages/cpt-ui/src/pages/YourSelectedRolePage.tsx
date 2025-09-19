@@ -73,13 +73,14 @@ export default function YourSelectedRolePage() {
                 <SummaryList.Value data-testid="role-text">
                   {roleName}
                 </SummaryList.Value>
-                <SummaryList.Actions data-testid="role-change-role-cell">
+                <SummaryList.Actions>
                   <Link
+                    data-testid="role-change-role-cell"
                     to={FRONTEND_PATHS.CHANGE_YOUR_ROLE}
                   >
                     {changeLinkText}
                     <span className="nhsuk-u-visually-hidden">
-                      {" "}role
+                      {YOUR_SELECTED_ROLE_STRINGS.role}
                     </span>
                   </Link>
                 </SummaryList.Actions>
@@ -89,15 +90,16 @@ export default function YourSelectedRolePage() {
                   <b>{orgLabel}</b>
                 </SummaryList.Key>
                 <SummaryList.Value data-testid="org-text">
-                  {orgName} (ODS: {odsCode})
+                  {orgName} ({YOUR_SELECTED_ROLE_STRINGS.odsCode}: {odsCode})
                 </SummaryList.Value>
                 <SummaryList.Actions data-testid="org-change-role-cell">
                   <Link
+                    data-testid="org-change-role-cell"
                     to={FRONTEND_PATHS.CHANGE_YOUR_ROLE}
                   >
                     {changeLinkText}
                     <span className="nhsuk-u-visually-hidden">
-                      {" "}organisation
+                      {YOUR_SELECTED_ROLE_STRINGS.organisation}
                     </span>
                   </Link>
                 </SummaryList.Actions>
