@@ -40,7 +40,7 @@ export class CustomSecurityHeadersPolicy extends Construct {
           override: true
         },
         referrerPolicy: {
-          referrerPolicy: HeadersReferrerPolicy.NO_REFERRER,
+          referrerPolicy: HeadersReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN,
           override: true
         },
         xssProtection: {
