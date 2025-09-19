@@ -59,6 +59,12 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
       }
       return
     }
+
+    if (auth.isSignedIn && auth.selectedRole && location.pathname === "/") {
+      logger.info("Authenticated user on root path - redirecting to search")
+      navigate(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
+      return
+    }
   }
 
   useEffect(() => {

@@ -189,6 +189,23 @@ describe("AccessProvider", () => {
     )
   })
 
+  it("redirects authenticated user with role from root path to search page", () => {
+    mockAuthHook.mockReturnValue({
+      isSignedIn: true,
+      isSigningIn: false,
+      selectedRole: {name: "TestRole"},
+      updateTrackerUserInfo: jest.fn().mockResolvedValue({error: null}),
+      clearAuthState: jest.fn()
+    })
+    mockLocationHook.mockReturnValue({pathname: "/"})
+    mockNormalizePathFn.mockReturnValue("/")
+
+    renderWithProvider()
+
+    expect(navigate).toHaveBeenCalledWith(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
+    expect(logger.info).toHaveBeenCalledWith("Authenticated user on root path - redirecting to search")
+  })
+
   describe("shouldBlockChildren", () => {
     it("blocks children when concurrent session exists and user is on protected path", () => {
       (mockUseAuth as jest.Mock).mockReturnValue({
