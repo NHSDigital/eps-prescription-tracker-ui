@@ -106,7 +106,7 @@ export const extractItems = (
     const quantity = originalQuantityUnit ? `${originalQuantityValue} ${originalQuantityUnit}` : originalQuantityValue
     const dosageInstructions = request.dosageInstruction?.[0]?.text
 
-    const psuStatus = findExtensionByKey(
+    const pharmacyStatus = findExtensionByKey(
       request.extension,
       "DM_PRESCRIPTION_STATUS_UPDATE_HISTORY")
       ?.extension?.[0].valueCoding?.code
@@ -116,7 +116,7 @@ export const extractItems = (
       quantity,
       dosageInstructions,
       epsStatusCode,
-      psuStatus,
+      pharmacyStatus,
       itemPendingCancellation,
       cancellationReason,
       notDispensedReason
