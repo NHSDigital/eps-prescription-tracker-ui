@@ -5,7 +5,6 @@ export interface ItemDetails {
     quantity: string
     dosageInstructions?: string
     epsStatusCode: string
-    psuStatus?: string
     pharmacyStatus?: string
     itemPendingCancellation: boolean
     cancellationReason?: string
