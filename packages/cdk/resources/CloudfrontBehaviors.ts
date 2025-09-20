@@ -13,12 +13,10 @@ import {
   ResponseHeadersPolicy
 } from "aws-cdk-lib/aws-cloudfront"
 import {RestApiOrigin} from "aws-cdk-lib/aws-cloudfront-origins"
-
+import {CustomSecurityHeadersPolicy} from "./Cloudfront/CustomSecurityHeadersPolicy"
 /**
  * Resources for cloudfront behaviors
-
  */
-
 export interface CloudfrontBehaviorsProps {
   readonly serviceName: string
   readonly stackName: string
@@ -27,14 +25,11 @@ export interface CloudfrontBehaviorsProps {
   readonly oauth2GatewayOrigin: RestApiOrigin
   readonly oauth2GatewayRequestPolicy: OriginRequestPolicy
   readonly staticContentBucketOrigin: IOrigin
-  readonly responseHeadersPolicy: ResponseHeadersPolicy
 }
-
 /**
  * Resources for a Cloudfront Behaviors and functions
  * Any rewrites for cloudfront requests should go here
  */
-
 export class CloudfrontBehaviors extends Construct{
   public readonly additionalBehaviors: Record<string, BehaviorOptions>
   public readonly s3404UriRewriteFunction: CloudfrontFunction
@@ -43,12 +38,9 @@ export class CloudfrontBehaviors extends Construct{
   public readonly s3StaticContentRootSlashRedirect: CloudfrontFunction
   public readonly keyValueStore: KeyValueStore
   public readonly responseHeadersPolicy: ResponseHeadersPolicy
-
   public constructor(scope: Construct, id: string, props: CloudfrontBehaviorsProps){
     super(scope, id)
-
     // Resources
-
     const keyValueStore = new KeyValueStore(this, "FunctionsStore", {
       comment: `${props.serviceName}-KeyValueStore`,
       source: ImportSource.fromInline(JSON.stringify({data: [
@@ -78,7 +70,6 @@ export class CloudfrontBehaviors extends Construct{
         }
       ]}))
     })
-
     const s3404UriRewriteFunction = new CloudfrontFunction(this, "S3404UriRewriteFunction", {
       functionName: `${props.serviceName}-S3404UriRewriteFunction`,
       sourceFileName: "genericS3FixedObjectUriRewrite.js",
@@ -90,7 +81,6 @@ export class CloudfrontBehaviors extends Construct{
         }
       ]
     })
-
     const s3404ModifyStatusCodeFunction = new CloudfrontFunction(this, "S3404ModifyStatusCodeFunction", {
       functionName: `${props.serviceName}-S3404ModifyStatusCodeFunction`,
       sourceFileName: "s3404ModifyStatusCode.js",
@@ -99,7 +89,6 @@ export class CloudfrontBehaviors extends Construct{
     /* Add dependency on previous function to force them to build one by one to avoid aws limits
     on how many can be created simultaneously */
     s3404ModifyStatusCodeFunction.node.addDependency(s3404UriRewriteFunction)
-
     const s3500UriRewriteFunction = new CloudfrontFunction(this, "S3500UriRewriteFunction", {
       functionName: `${props.serviceName}-S3500UriRewriteFunction`,
       sourceFileName: "genericS3FixedObjectUriRewrite.js",
@@ -114,7 +103,6 @@ export class CloudfrontBehaviors extends Construct{
     /* Add dependency on previous function to force them to build one by one to avoid aws limits
     on how many can be created simultaneously */
     s3500UriRewriteFunction.node.addDependency(s3404ModifyStatusCodeFunction)
-
     const s3StaticContentUriRewriteFunction = new CloudfrontFunction(this, "S3StaticContentUriRewriteFunction", {
       functionName: `${props.serviceName}-S3StaticContentUriRewriteFunction`,
       sourceFileName: "s3StaticContentUriRewrite.js",
@@ -133,7 +121,6 @@ export class CloudfrontBehaviors extends Construct{
     /* Add dependency on previous function to force them to build one by one to avoid aws limits
     on how many can be created simultaneously */
     s3StaticContentUriRewriteFunction.node.addDependency(s3500UriRewriteFunction)
-
     const apiGatewayStripPathFunction = new CloudfrontFunction(this, "ApiGatewayStripPathFunction", {
       functionName: `${props.serviceName}-ApiGatewayStripPathFunction`,
       sourceFileName: "genericStripPathUriRewrite.js",
@@ -148,7 +135,6 @@ export class CloudfrontBehaviors extends Construct{
     /* Add dependency on previous function to force them to build one by one to avoid aws limits
     on how many can be created simultaneously */
     apiGatewayStripPathFunction.node.addDependency(s3StaticContentUriRewriteFunction)
-
     const oauth2GatewayStripPathFunction = new CloudfrontFunction(this, "OAuth2GatewayStripPathFunction", {
       functionName: `${props.serviceName}-OAuth2GatewayStripPathFunction`,
       sourceFileName: "genericStripPathUriRewrite.js",
@@ -163,7 +149,6 @@ export class CloudfrontBehaviors extends Construct{
     /* Add dependency on previous function to force them to build one by one to avoid aws limits
     on how many can be created simultaneously */
     oauth2GatewayStripPathFunction.node.addDependency(apiGatewayStripPathFunction)
-
     const s3JwksUriRewriteFunction = new CloudfrontFunction(this, "s3JwksUriRewriteFunction", {
       functionName: `${props.serviceName}-s3JwksUriRewriteFunction`,
       sourceFileName: "genericS3FixedObjectUriRewrite.js",
@@ -178,16 +163,16 @@ export class CloudfrontBehaviors extends Construct{
     /* Add dependency on previous function to force them to build one by one to avoid aws limits
     on how many can be created simultaneously */
     s3JwksUriRewriteFunction.node.addDependency(oauth2GatewayStripPathFunction)
-
     const s3StaticContentRootSlashRedirect = new CloudfrontFunction(this, "s3StaticContentRootSlashRedirect", {
       functionName: `${props.serviceName}-s3StaticContentRootSlashRedirect`,
       sourceFileName: "s3StaticContentRootSlashRedirect.js"
     })
-
     /* Add dependency on previous function to force them to build one by one to avoid aws limits
     on how many can be created simultaneously */
     s3StaticContentRootSlashRedirect.node.addDependency(s3JwksUriRewriteFunction)
-
+    const headersPolicy = new CustomSecurityHeadersPolicy(this, "AdditionalBehavioursHeadersPolicy", {
+      policyName: `${props.serviceName}-AdditionalBehavioursCustomSecurityHeaders`
+  })
     const additionalBehaviors = {
       "/site*": {
         origin: props.staticContentBucketOrigin,
@@ -199,7 +184,7 @@ export class CloudfrontBehaviors extends Construct{
             eventType: FunctionEventType.VIEWER_REQUEST
           }
         ],
-        responseHeadersPolicy: this.responseHeadersPolicy
+        responseHeadersPolicy: headersPolicy.policy
       },
       "/api/*": {
         origin: props.apiGatewayOrigin,
@@ -213,7 +198,7 @@ export class CloudfrontBehaviors extends Construct{
             eventType: FunctionEventType.VIEWER_REQUEST
           }
         ],
-        responseHeadersPolicy: this.responseHeadersPolicy
+        responseHeadersPolicy: headersPolicy.policy
       },
       "/oauth2/*": {
         origin: props.oauth2GatewayOrigin,
@@ -227,7 +212,7 @@ export class CloudfrontBehaviors extends Construct{
             eventType: FunctionEventType.VIEWER_REQUEST
           }
         ],
-        responseHeadersPolicy: this.responseHeadersPolicy
+        responseHeadersPolicy: headersPolicy.policy
       },
       "/jwks/": {/* matches exactly <url>/jwks and will only serve the jwks json (via cf function) */
         origin: props.staticContentBucketOrigin,
@@ -239,7 +224,7 @@ export class CloudfrontBehaviors extends Construct{
             eventType: FunctionEventType.VIEWER_REQUEST
           }
         ],
-        responseHeadersPolicy: this.responseHeadersPolicy
+        responseHeadersPolicy: headersPolicy.policy
       },
       "/500.html": { // matches exactly <url>/500.html and will only serve the 500.html page (via cf function)
         origin: props.staticContentBucketOrigin,
@@ -251,7 +236,7 @@ export class CloudfrontBehaviors extends Construct{
             eventType: FunctionEventType.VIEWER_REQUEST
           }
         ],
-        responseHeadersPolicy: this.responseHeadersPolicy
+        responseHeadersPolicy: headersPolicy.policy
       },
       "/404.css": {
         origin: props.staticContentBucketOrigin,
@@ -266,10 +251,10 @@ export class CloudfrontBehaviors extends Construct{
             function: s3StaticContentRootSlashRedirect.function,
             eventType: FunctionEventType.VIEWER_REQUEST
           }
-        ]
+        ],
+        responseHeadersPolicy: headersPolicy.policy
       }
     }
-
     //Outputs
     this.additionalBehaviors = additionalBehaviors
     this.s3404UriRewriteFunction = s3404UriRewriteFunction
