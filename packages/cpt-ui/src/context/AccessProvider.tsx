@@ -18,15 +18,22 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
   const auth = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
-  const allowed_no_role_paths = [
-    FRONTEND_PATHS.LOGIN,
-    FRONTEND_PATHS.LOGOUT,
-    FRONTEND_PATHS.SESSION_LOGGED_OUT,
-    FRONTEND_PATHS.COOKIES,
-    FRONTEND_PATHS.PRIVACY_NOTICE,
-    FRONTEND_PATHS.COOKIES_SELECTED,
-    FRONTEND_PATHS.SESSION_SELECTION
-  ]
+
+  const shouldBlockChildren = () => {
+    // block if concurrent session needs resolution
+    if (auth.isConcurrentSession && auth.isSignedIn) {
+      return !ALLOWED_NO_ROLE_PATHS.includes(normalizePath(location.pathname))
+    }
+
+    // block if user needs to select a role (but allow specific paths)
+    if (!auth.selectedRole && !auth.isSigningIn && auth.isSignedIn) {
+      return (
+        ![...ALLOWED_NO_ROLE_PATHS, FRONTEND_PATHS.SELECT_YOUR_ROLE].includes(normalizePath(location.pathname))
+      )
+    }
+
+    return false
+  }
 
   const ensureRoleSelected = () => {
     if (!auth.isSignedIn && !auth.isSigningIn) {
@@ -52,6 +59,12 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
       }
       return
     }
+
+    if (auth.isSignedIn && auth.selectedRole && location.pathname === "/") {
+      logger.info("Authenticated user on root path - redirecting to search")
+      navigate(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
+      return
+    }
   }
 
   useEffect(() => {
@@ -61,14 +74,20 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
       return
     }
     ensureRoleSelected()
-  }, [auth.isSignedIn, auth.isSigningIn, auth.selectedRole, auth.isConcurrentSession, location.pathname])
+  }, [
+    auth.isSignedIn,
+    auth.isSigningIn,
+    auth.selectedRole,
+    auth.isConcurrentSession,
+    location.pathname
+  ])
 
   useEffect(() => {
-  // If user is signedIn, every 5 minutes call tracker user info. If it fails, sign the user out.
+    // If user is signedIn, every 5 minutes call tracker user info. If it fails, sign the user out.
     const internalId = setInterval(() => {
-      const currentPath = window.location.pathname
+      const currentPath = location.pathname
 
-      if (auth.isSigningIn === true || allowed_no_role_paths.includes(currentPath)) {
+      if (auth.isSigningIn === true || ALLOWED_NO_ROLE_PATHS.includes(currentPath)) {
         logger.debug("Not checking user info")
         return
       }
@@ -84,8 +103,12 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
       }
     }, 300000) // 300000 ms = 5 minutes
 
-  return () => clearInterval(internalId)
+    return () => clearInterval(internalId)
   }, [auth.isSignedIn, auth.isSigningIn])
+
+  if (shouldBlockChildren()) {
+    return null
+  }
 
   return (
     <AccessContext.Provider value={{}}>
