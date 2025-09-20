@@ -35,17 +35,17 @@ export default function SessionLoggedOutPage() {
     )
   }
   return (
-      <main id="main-content" className="nhsuk-main-wrapper">
-        <Container>
-          <Row>
-            <Col width="full">
-              <h1>For your security, we have logged you out</h1>
-              <p>We have logged you out because you did not do anything for 15 minutes.</p>
-              <p>This is to protect patient information.</p>
-              <Link to="/login">{EpsLogoutStrings.login_link}</Link>
-            </Col>
-          </Row>
-        </Container>
-      </main>
-    )
-  }
+    <main id="main-content" className="nhsuk-main-wrapper">
+      <Container>
+        <Row>
+          <Col width="full">
+            <h1>For your security, we have logged you out</h1>
+            <p>We have logged you out because you did not do anything for 15 minutes.</p>
+            <p>This is to protect patient information.</p>
+            <Link to="/login">{EpsLogoutStrings.login_link}</Link>
+          </Col>
+        </Row>
+      </Container>
+    </main>
+  )
+}

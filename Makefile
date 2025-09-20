@@ -216,6 +216,7 @@ cdk-synth-stateful-resources-no-mock:
 	SPLUNK_DELIVERY_STREAM=foo \
 	SPLUNK_SUBSCRIPTION_FILTER_ROLE=foo \
 	DO_NOT_GET_AWS_EXPORT=true \
+	IS_PULL_REQUEST=false \
 	USE_ZONE_APEX=false \
 		 ./.github/scripts/fix_cdk_json.sh .local_config/stateful_app.config.json
 	CONFIG_FILE_NAME=.local_config/stateful_app.config.json npx cdk synth \
@@ -264,6 +265,7 @@ cdk-synth-stateless-resources-no-mock:
 	CLOUDFRONT_CERT_ARN=arn:aws:acm:us-east-1:444455556666:certificate/certificate_ID \
 	DO_NOT_GET_AWS_EXPORT=true \
 	CLOUDFRONT_ORIGIN_CUSTOM_HEADER=foo \
+	IS_PULL_REQUEST=false \
 	USE_ZONE_APEX=false \
 		 ./.github/scripts/fix_cdk_json.sh .local_config/stateless_app.config.json
 	CONFIG_FILE_NAME=.local_config/stateless_app.config.json npx cdk synth \
@@ -309,6 +311,7 @@ cdk-synth-stateful-resources-mock:
 	SPLUNK_DELIVERY_STREAM=foo \
 	SPLUNK_SUBSCRIPTION_FILTER_ROLE=foo \
 	DO_NOT_GET_AWS_EXPORT=true \
+	IS_PULL_REQUEST=false \
 	USE_ZONE_APEX=false \
 		 ./.github/scripts/fix_cdk_json.sh .local_config/stateful_app.config.json
 	CONFIG_FILE_NAME=.local_config/stateful_app.config.json npx cdk synth \
@@ -363,6 +366,7 @@ cdk-synth-stateless-resources-mock:
 	GITHUB_ACTIONS_RUNNER_IPV6='["::1"]' \
 	DO_NOT_GET_AWS_EXPORT=true \
 	CLOUDFRONT_ORIGIN_CUSTOM_HEADER=foo \
+	IS_PULL_REQUEST=false \
 	USE_ZONE_APEX=false \
 		 ./.github/scripts/fix_cdk_json.sh .local_config/stateless_app.config.json
 	CONFIG_FILE_NAME=.local_config/stateless_app.config.json npx cdk synth \

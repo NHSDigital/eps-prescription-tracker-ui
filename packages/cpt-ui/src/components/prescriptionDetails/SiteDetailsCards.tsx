@@ -17,6 +17,7 @@ import {
   WALES,
   IOM
 } from "@/constants/ui-strings/SiteDetailsCardsStrings"
+import {Fragment} from "react"
 
 export type SiteDetailsCardProps = OrgSummary & {
   heading: string
@@ -89,14 +90,14 @@ export function SiteDetailsCard({
             </p>
 
             {prescribedFrom && (
-              <>
+              <Fragment>
                 <Card.Heading headingLevel="H3" className="nhsuk-heading-xs nhsuk-u-margin-bottom-1">
                   {PRESCRIBED_FROM}
                 </Card.Heading>
                 <p className="nhsuk-u-margin-bottom-1" data-testid="site-card-prescribed-from">
                   {humanReadablePrescribedFrom}
                 </p>
-              </>
+              </Fragment>
             )}
           </Card.Description>
         </Card.Content>

@@ -131,7 +131,8 @@ jobs:
       CREATE_INT_RELEASE_NOTES: true
       CREATE_PROD_RELEASE_NOTES: true
       MARK_JIRA_RELEASED: false
-      CREATE_INT_RC_RELEASE_NOTES: false   
+      CREATE_INT_RC_RELEASE_NOTES: false
+      IS_PULL_REQUEST: false
     secrets: inherit
   
   release_qa:
@@ -168,4 +169,5 @@ jobs:
       ROUTE53_EXPORT_NAME: EPS
       REACT_LOG_LEVEL: "debug"
       LOG_RETENTION_IN_DAYS: 30
+      IS_PULL_REQUEST: false
     secrets: inherit

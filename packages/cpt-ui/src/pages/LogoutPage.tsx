@@ -1,4 +1,4 @@
-import React, {useEffect} from "react"
+import React, {Fragment, useEffect} from "react"
 import {Container} from "nhsuk-react-components"
 import {Link} from "react-router-dom"
 
@@ -19,16 +19,16 @@ export default function LogoutPage() {
     <main id="main-content" className="nhsuk-main-wrapper">
       <Container>
         {!auth?.isSignedIn ? (
-          <>
+          <Fragment>
             <h1>{EpsLogoutStrings.title}</h1>
             <p>{EpsLogoutStrings.body}</p>
             <Link to="/login">{EpsLogoutStrings.login_link}</Link>
-          </>
+          </Fragment>
         ) : (
-          <>
+          <Fragment>
             <h1>{EpsLogoutStrings.loading}</h1>
             <EpsSpinner />
-          </>
+          </Fragment>
         )}
       </Container>
     </main>

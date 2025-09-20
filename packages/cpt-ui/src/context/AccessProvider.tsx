@@ -84,7 +84,7 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
       }
     }, 300000) // 300000 ms = 5 minutes
 
-  return () => clearInterval(internalId)
+    return () => clearInterval(internalId)
   }, [auth.isSignedIn, auth.isSigningIn])
 
   return (

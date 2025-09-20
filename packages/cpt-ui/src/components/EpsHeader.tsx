@@ -1,4 +1,9 @@
-import React, {useContext, useEffect, useState} from "react"
+import React, {
+  Fragment,
+  useContext,
+  useEffect,
+  useState
+} from "react"
 import {Link, useNavigate, useLocation} from "react-router-dom"
 import {Header} from "nhsuk-react-components"
 import {
@@ -95,7 +100,7 @@ export default function EpsHeader() {
   }
 
   return (
-    <>
+    <Fragment>
       <Header transactional className="masthead" id="eps-header">
         <Header.Container className="masthead-container">
           <Header.Logo href={`${baseUrl}${getHomeLink(auth?.isSignedIn || false)}`} />
@@ -200,6 +205,6 @@ export default function EpsHeader() {
         onClose={() => setShowLogoutModal(false)}
         onConfirm={handleConfirmLogout}
       />
-    </>
+    </Fragment>
   )
 }

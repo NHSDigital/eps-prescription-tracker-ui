@@ -28,14 +28,14 @@ export class CloudfrontLogDelivery extends Construct {
     // this can only be done once the cloudfront distribution is created in the stateless stack
     if (props.cloudfrontDistributionArn) {
       const distDeliverySource = new CfnDeliverySource(this, "DistributionDeliverySource", {
-          name: `${Names.uniqueResourceName(this, {maxLength:55})}-src`,
-          logType: "ACCESS_LOGS",
-          resourceArn: props.cloudfrontDistributionArn
+        name: `${Names.uniqueResourceName(this, {maxLength:55})}-src`,
+        logType: "ACCESS_LOGS",
+        resourceArn: props.cloudfrontDistributionArn
       })
 
       const delivery = new CfnDelivery(this, "DistributionDelivery", {
-          deliverySourceName: distDeliverySource.name,
-          deliveryDestinationArn: distDeliveryDestination.attrArn
+        deliverySourceName: distDeliverySource.name,
+        deliveryDestinationArn: distDeliveryDestination.attrArn
       })
       delivery.node.addDependency(distDeliverySource)
 

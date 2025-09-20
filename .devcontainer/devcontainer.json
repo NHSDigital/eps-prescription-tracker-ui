@@ -67,7 +67,9 @@
           "cSpell.words": ["fhir", "Formik", "pino", "serialisation"],
           "editor.defaultFormatter": "dbaeumer.vscode-eslint"
   
-        }
+        },
+        "eslint.useFlatConfig": true,
+        "eslint.format.enable": true
       }
     },
     "postCreateCommand": "rm -f ~/.docker/config.json; git config --global --add safe.directory /workspaces/eps-prescription-tracker-ui; make install; direnv allow ."

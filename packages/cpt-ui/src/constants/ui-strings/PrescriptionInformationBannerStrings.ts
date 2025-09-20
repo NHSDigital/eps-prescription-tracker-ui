@@ -10,7 +10,7 @@ export const STRINGS = {
   DAYS_SUPPLY: "Days supply",
   PRESCRIPTION_TYPES: {
     "acute": "Acute",
-    "continuous": "Continuous",
+    "continuous": "Repeat",
     "continuous-repeat-dispensing": "eRD"
   } satisfies Record<PrescriptionDetailsResponse["typeCode"], string>,
   CANCELLATION_REASON: "Cancellation reason",
