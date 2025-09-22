@@ -6,10 +6,38 @@ import {cptAwsRum} from "./awsRum"
 
 const x_request_id_header = "x-request-id"
 const x_correlation_id_header = "x-correlation-id"
+const x_session_id_header = "x-sessionId"
 const x_retry_header = "x-retry-id"
 
 const http = axios.create()
 
+function getCookie(name: string): string | null {
+  const value = `; ${document.cookie}`
+  const parts = value.split(`; ${name}=`)
+  if (parts.length === 2) {
+    const last = parts.pop() // string | undefined
+    if (!last) return null
+    return last.split(";").shift() ?? null
+  }
+  return null
+}
+
+function getSessionIdFromCookie() {
+  const rumInstance = cptAwsRum.getAwsRum()
+
+  const raw = getCookie("cwr_s")
+  if (!raw) return null
+
+  try {
+    const decoded = atob(raw) // base64 decode
+    const parsed = JSON.parse(decoded) // parse JSON
+    return parsed.sessionId || null // get property
+  } catch (error) {
+    rumInstance?.recordEvent("axios_error", {error: error})
+    // cant get the session id so just return nothing
+    return null
+  }
+}
 // REQUEST INTERCEPTOR
 http.interceptors.request.use(
   async (config: InternalAxiosRequestConfig) => {
@@ -17,6 +45,8 @@ http.interceptors.request.use(
 
     config.headers[x_request_id_header] = uuidv4()
     config.headers[x_correlation_id_header] = uuidv4()
+    config.headers[x_session_id_header] = getSessionIdFromCookie()
+
     const authSession = await fetchAuthSession()
     const idToken = authSession.tokens?.idToken
     if (idToken === undefined) {
@@ -57,7 +87,8 @@ http.interceptors.response.use(
       if (response && config) {
         correlationHeaders = {
           "x-request-id": config.headers[x_request_id_header],
-          "x-correlation-id": config.headers[x_correlation_id_header]
+          "x-correlation-id": config.headers[x_correlation_id_header],
+          "x-session-id": config.headers[x_session_id_header]
         }
 
         if (response.status === 401 && response.data?.restartLogin) {
