@@ -1,4 +1,4 @@
-import React from "react"
+import React, {Fragment} from "react"
 import {
   Col,
   Container,
@@ -30,7 +30,7 @@ export default function SearchPrescriptionPage() {
   const content = pathContent[pathname] || <PrescriptionIdSearch />
 
   return (
-    <>
+    <Fragment>
       <title>Search for a prescription</title>
       <main id="search-for-a-prescription" data-testid="search-for-a-prescription">
         <Container className="hero-container" data-testid="search-hero-container">
@@ -58,6 +58,6 @@ export default function SearchPrescriptionPage() {
           </Row>
         </Container>
       </main>
-    </>
+    </Fragment>
   )
 }

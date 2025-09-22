@@ -64,6 +64,31 @@ describe("PrescriptionInformationBanner", () => {
     expect(tag).toHaveClass(`nhsuk-tag--${getStatusTagColour(statusCode)}`)
   })
 
+  it("displays a Repeat prescription information correctly when rendered", () => {
+    const data: PrescriptionDetailsResponse = {
+      ...mockPrescriptionDetailsResponse,
+      prescriptionId: "EA1CBC-A83008-F1F8A8",
+      issueDate: "18-Jan-2024",
+      statusCode: "0006",
+      typeCode: "continuous"
+    }
+
+    renderWithContext(data)
+
+    const banner = screen.getByTestId("prescription-information-banner")
+    expect(banner).toBeInTheDocument()
+
+    expect(banner.querySelector("#prescription-id")).toHaveTextContent(`${STRINGS.PRESCRIPTION_ID}:`)
+    expect(banner.querySelector("#copyText")).toHaveTextContent(data.prescriptionId)
+    expect(banner.querySelector("#summary-issue-date"))
+      .toHaveTextContent(`${STRINGS.ISSUE_DATE}: ${data.issueDate}`)
+    expect(banner.querySelector("#summary-status"))
+      .toHaveTextContent(`${STRINGS.STATUS}: ${getStatusDisplayText(data.statusCode)}`)
+    expect(banner.querySelector("#summary-type"))
+      .toHaveTextContent(`${STRINGS.TYPE}: Repeat`)
+
+  })
+
   it("renders eRD prescription information with repeat and days supply", () => {
     const statusCode = "0006" // All items dispensed
     const data: PrescriptionDetailsResponse = {
