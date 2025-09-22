@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from "react"
+import React, {useState, useEffect, Fragment} from "react"
 import {Link, useLocation} from "react-router-dom"
 import "../styles/epscookies.scss"
 import {CookieStrings} from "@/constants/ui-strings/CookieStrings"
@@ -77,7 +77,7 @@ export default function EPSCookieBanner() {
   }
 
   return (
-    <>
+    <Fragment>
       {!cookiesSet && (
         <div
           className="nhsuk-cookie-banner"
@@ -150,6 +150,6 @@ export default function EPSCookieBanner() {
           </div>
         </div>
       )}
-    </>
+    </Fragment>
   )
 }
