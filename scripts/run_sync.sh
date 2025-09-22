@@ -25,6 +25,7 @@ else
 fi
 
 SERVICE_NAME=cpt-ui-pr-$PULL_REQUEST_ID
+IS_PULL_REQUEST=true
 
 echo "Getting exports from stacks ${SERVICE_NAME}"
 
@@ -246,6 +247,7 @@ USE_ZONE_APEX=false
 
 # export all the vars so they can be picked up by external programs
 export SERVICE_NAME
+export IS_PULL_REQUEST
 export VITE_userPoolClientId
 export VITE_userPoolId
 export VITE_RUM_GUEST_ROLE_ARN
