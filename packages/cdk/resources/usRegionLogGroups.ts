@@ -9,10 +9,10 @@ import {
 } from "aws-cdk-lib/aws-iam"
 import {Key} from "aws-cdk-lib/aws-kms"
 import {
-CfnLogGroup,
-CfnResourcePolicy,
-CfnSubscriptionFilter,
-LogGroup
+  CfnLogGroup,
+  CfnResourcePolicy,
+  CfnSubscriptionFilter,
+  LogGroup
 } from "aws-cdk-lib/aws-logs"
 import {Construct} from "constructs"
 
@@ -25,6 +25,7 @@ export interface usRegionLogGroupsProps {
   readonly account: string
   readonly splunkDeliveryStream: string
   readonly splunkSubscriptionFilterRole: string
+  readonly isPullRequest: boolean
 }
 
 export class usRegionLogGroups extends Construct {
@@ -143,25 +144,28 @@ export class usRegionLogGroups extends Construct {
 
     // create a service policy here so we can specify a name and avoid clashes
     const serviceLogPolicy = {
-        Version: "2012-10-17",
-        Statement: [
-          {
-            Effect: "Allow",
-            Principal: {Service: "delivery.logs.amazonaws.com"},
-            Action: ["logs:CreateLogStream", "logs:PutLogEvents"],
-            Resource: [
-              cloudfrontLogGroup.logGroupArn,
-              `${cloudfrontLogGroup.logGroupArn}:log-stream:*`,
-              wafLogGroup.logGroupArn,
-              `${wafLogGroup.logGroupArn}:log-stream:*`
-            ]
-          }
-        ]
-      }
-    new CfnResourcePolicy(this, "CloudFrontResourcePolicy", {
-      policyName: `${props.stackName}LogServicePolicy`,
-      policyDocument: JSON.stringify(serviceLogPolicy)
-    })
+      Version: "2012-10-17",
+      Statement: [
+        {
+          Effect: "Allow",
+          Principal: {Service: "delivery.logs.amazonaws.com"},
+          Action: ["logs:CreateLogStream", "logs:PutLogEvents"],
+          Resource: [
+            cloudfrontLogGroup.logGroupArn,
+            `${cloudfrontLogGroup.logGroupArn}:log-stream:*`,
+            wafLogGroup.logGroupArn,
+            `${wafLogGroup.logGroupArn}:log-stream:*`
+          ]
+        }
+      ]
+    }
+    // Don't deploy to PR stacks as there is a limit of 10 resource policies per region
+    if (!props.isPullRequest) {
+      new CfnResourcePolicy(this, "CloudFrontResourcePolicy", {
+        policyName: `${props.stackName}LogServicePolicy`,
+        policyDocument: JSON.stringify(serviceLogPolicy)
+      })
+    }
 
     this.cloudfrontLogGroup = cloudfrontLogGroup
     this.wafLogGroup = wafLogGroup
