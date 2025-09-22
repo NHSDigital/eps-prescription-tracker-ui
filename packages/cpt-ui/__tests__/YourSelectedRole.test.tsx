@@ -136,10 +136,13 @@ describe("YourSelectedRolePage", () => {
     })
 
     renderComponent()
-
-    const roleChangeLink = screen.getByTestId("role-change-role-cell").querySelector("a")
-    const orgChangeLink = screen.getByTestId("org-change-role-cell").querySelector("a")
-
+    const changeLinks = screen.getAllByRole("link")
+    const roleChangeLink = changeLinks.find(link =>
+      link.closest('[data-testid="role-change-role-cell"]')
+    )
+    const orgChangeLink = changeLinks.find(link =>
+      link.closest('[data-testid="org-change-role-cell"]')
+    )
     expect(roleChangeLink).toHaveAttribute("href", "/change-your-role")
     expect(orgChangeLink).toHaveAttribute("href", "/change-your-role")
   })

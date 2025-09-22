@@ -9,6 +9,7 @@ import {getItemStatusTagColour, getItemStatusDisplayText} from "@/helpers/status
 import {STRINGS} from "@/constants/ui-strings/PrescribedDispensedItemsCardsStrings"
 import {SummaryListRow} from "@/components/prescriptionDetails/ItemsCards/SummaryListRow"
 import {CANCELLATION_REASON_MAP, NON_DISPENSING_REASON_MAP} from "@/constants/ui-strings/StatusReasonStrings"
+import "../../styles/summarylist.scss"
 
 interface ItemsProps {
   readonly items: Array<ItemDetails>
@@ -75,9 +76,11 @@ export function ItemsCards({items}: ItemsProps) {
               {dosageInstructions && (
                 <SummaryListRow label={STRINGS.INSTRUCTIONS_LABEL} value={dosageInstructions}/>
               )}
-
               {pharmacyStatus && (
-                <SummaryListRow label={STRINGS.PHARMACY_STATUS_LABEL} value={pharmacyStatus}/>
+                <SummaryListRow
+                  label={STRINGS.PHARMACY_STATUS_LABEL}
+                  tagValue={pharmacyStatus}
+                  />
               )}
             </SummaryList>
           </Card.Content>
