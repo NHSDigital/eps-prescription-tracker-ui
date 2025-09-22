@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react"
+import React, {Fragment, useEffect, useState} from "react"
 import {Link, useNavigate} from "react-router-dom"
 import {
   BackLink,
@@ -171,7 +171,7 @@ export default function PrescriptionListPage() {
   }
 
   return (
-    <>
+    <Fragment>
       <title>{PRESCRIPTION_LIST_PAGE_STRINGS.PAGE_TITLE}</title>
       <main id="prescription-list" data-testid="prescription-list-page">
         <Container className="hero-container" data-testid="prescription-list-hero-container">
@@ -214,6 +214,6 @@ export default function PrescriptionListPage() {
           </div>
         </Container>
       </main>
-    </>
+    </Fragment>
   )
 }
