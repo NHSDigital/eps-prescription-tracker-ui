@@ -1,0 +1,5 @@
+export enum Headers {
+  x_request_id = "x-request-id",
+  x_correlation_id = "x-correlation-id",
+  x_session_id = "x-session-id"
+}

@@ -41,6 +41,20 @@ describe("HTTP Axios Instance", () => {
     expect(response.data).toEqual({success: true})
   })
 
+  it("does add x-session-id header when cwr_s cookie does exist", async () => {
+    mock.onGet("/test").reply((config) => {
+      // 'config.headers' is possibly 'undefined'.
+      // Cannot invoke an object which is possibly 'undefined'.ts(2722)
+      expect(config.headers?.["x-session-id"]).toBe("my_session_id")
+      return [200, {success: true}]
+    })
+
+    const response = await http.get("/test")
+
+    expect(response.status).toBe(200)
+    expect(response.data).toEqual({success: true})
+  })
+
   it("adds Authorization header on every request", async () => {
     mock.onGet("/test").reply((config) => {
       // 'config.headers' is possibly 'undefined'.

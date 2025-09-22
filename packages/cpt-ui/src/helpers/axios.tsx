@@ -3,10 +3,8 @@ import {v4 as uuidv4} from "uuid"
 import {fetchAuthSession} from "aws-amplify/auth"
 import {logger} from "./logger"
 import {cptAwsRum} from "./awsRum"
+import {Headers} from "@cpt-ui-common/common-types"
 
-const x_request_id_header = "x-request-id"
-const x_correlation_id_header = "x-correlation-id"
-const x_session_id_header = "x-sessionId"
 const x_retry_header = "x-retry-id"
 
 const http = axios.create()
@@ -43,9 +41,9 @@ http.interceptors.request.use(
   async (config: InternalAxiosRequestConfig) => {
     const controller = new AbortController()
 
-    config.headers[x_request_id_header] = uuidv4()
-    config.headers[x_correlation_id_header] = uuidv4()
-    config.headers[x_session_id_header] = getSessionIdFromCookie()
+    config.headers[Headers.x_request_id] = uuidv4()
+    config.headers[Headers.x_correlation_id] = uuidv4()
+    config.headers[Headers.x_session_id] = getSessionIdFromCookie()
 
     const authSession = await fetchAuthSession()
     const idToken = authSession.tokens?.idToken
@@ -86,9 +84,9 @@ http.interceptors.response.use(
       // If we have a response, attempt retries
       if (response && config) {
         correlationHeaders = {
-          "x-request-id": config.headers[x_request_id_header],
-          "x-correlation-id": config.headers[x_correlation_id_header],
-          "x-session-id": config.headers[x_session_id_header]
+          "x-request-id": config.headers[Headers.x_request_id],
+          "x-correlation-id": config.headers[Headers.x_correlation_id],
+          "x-session-id": config.headers[Headers.x_session_id]
         }
 
         if (response.status === 401 && response.data?.restartLogin) {
