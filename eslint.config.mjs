@@ -1,8 +1,8 @@
-import globals from "globals";
-import tsPlugin from "@typescript-eslint/eslint-plugin";
-import eslintJsPlugin from "@eslint/js";
-import importNewlines from "eslint-plugin-import-newlines";
-import typescriptParser from "@typescript-eslint/parser";
+import globals from "globals"
+import tsPlugin from "@typescript-eslint/eslint-plugin"
+import eslintJsPlugin from "@eslint/js"
+import importNewlines from "eslint-plugin-import-newlines"
+import typescriptParser from "@typescript-eslint/parser"
 import react from "eslint-plugin-react"
 
 const commonConfig = {
@@ -17,16 +17,16 @@ const commonConfig = {
     "@typescript-eslint/array-type": [
       "error",
       {
-        default: "generic",
-      },
+        default: "generic"
+      }
     ],
 
     "@typescript-eslint/consistent-type-assertions": [
       "error",
       {
         assertionStyle: "as",
-        objectLiteralTypeAssertions: "never",
-      },
+        objectLiteralTypeAssertions: "never"
+      }
     ],
 
     "block-spacing": "error",
@@ -37,8 +37,8 @@ const commonConfig = {
       "error",
       {
         before: false,
-        after: true,
-      },
+        after: true
+      }
     ],
 
     "dot-location": ["error", "property"],
@@ -50,8 +50,8 @@ const commonConfig = {
       "error",
       "declaration",
       {
-        allowArrowFunctions: true,
-      },
+        allowArrowFunctions: true
+      }
     ],
 
     "import-newlines/enforce": [
@@ -59,19 +59,21 @@ const commonConfig = {
       {
         items: 3,
         "max-len": 120,
-        semi: false,
-      },
+        semi: false
+      }
     ],
 
     // TEMPORARY: Disabled due to ESLint indent rule stack overflow bug with Layout.tsx
     // Issue tracked across ESLint 8.x and 9.x versions - re-enable when fixed upstream
-    // "indent": [
-    //   "error",
-    //   2,
-    //   {
-    //     SwitchCase: 1,
-    //   },
-    // ],
+    //see: https://github.com/eslint-stylistic/eslint-stylistic/issues/915
+    // Re-enabled for now, issue is still present but can be avoided by using explicit react <Fragment> elements
+    "indent": [
+      "error",
+      2,
+      {
+        SwitchCase: 1
+      }
+    ],
 
     "max-len": ["error", 120],
     "no-multi-spaces": "error",
@@ -79,8 +81,8 @@ const commonConfig = {
     "no-multiple-empty-lines": [
       "error",
       {
-        max: 1,
-      },
+        max: 1
+      }
     ],
 
     "no-trailing-spaces": "error",
@@ -91,13 +93,13 @@ const commonConfig = {
       "double",
       {
         allowTemplateLiterals: true,
-        avoidEscape: true,
-      },
+        avoidEscape: true
+      }
     ],
 
-    semi: ["error", "never"],
-  },
-};
+    semi: ["error", "never"]
+  }
+}
 
 export default [
   {
@@ -109,10 +111,10 @@ export default [
       "**/node_modules/**",
       "**/.next/**",
       "**/.tsconfig.tsbuildinfo/**"
-    ],
+    ]
   },
   {
-    rules: eslintJsPlugin.configs.recommended.rules,
+    rules: eslintJsPlugin.configs.recommended.rules
   },
   {
     files: ["**/*.ts"],
@@ -120,20 +122,20 @@ export default [
     languageOptions: {
       parser: typescriptParser,
       globals: {
-        ...globals.node,
-      },
+        ...globals.node
+      }
     },
-    ...commonConfig,
+    ...commonConfig
   },
   {
-    files: ["**/*.js",],
+    files: ["**/*.js"],
 
     languageOptions: {
       globals: {
-        ...globals.node,
-      },
+        ...globals.node
+      }
     },
-    ...commonConfig,
+    ...commonConfig
   },
   {
     files: [ "**/*.{jsx,mjs,cjs,ts,tsx}" ],
@@ -144,14 +146,14 @@ export default [
       parser: typescriptParser,
       parserOptions: {
         ecmaFeatures: {
-          jsx: true,
-        },
-     },
-     globals: {
-        ...globals.browser,
+          jsx: true
+        }
       },
+      globals: {
+        ...globals.browser
+      }
     },
-    ...commonConfig,
+    ...commonConfig
   },
   {
     files: [ "**/__tests__/*.{jsx,mjs,cjs,ts,tsx}" ],
@@ -162,15 +164,15 @@ export default [
       parser: typescriptParser,
       parserOptions: {
         ecmaFeatures: {
-          jsx: true,
-        },
-     },
-     globals: {
+          jsx: true
+        }
+      },
+      globals: {
         ...globals.browser,
         ...globals.jest
-      },
+      }
     },
-    ...commonConfig,
+    ...commonConfig
   },
   {
     files: ["**/tests/**/*.ts"],
@@ -179,9 +181,9 @@ export default [
       parser: typescriptParser,
       globals: {
         ...globals.jest,
-        ...globals.node,
-      },
+        ...globals.node
+      }
     },
-    ...commonConfig,
-  },
-];
+    ...commonConfig
+  }
+]
