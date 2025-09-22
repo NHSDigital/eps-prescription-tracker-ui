@@ -17,6 +17,7 @@ export interface ukRegionLogGroupsProps {
   readonly splunkSubscriptionFilterRole: IRole
   readonly wafLogGroupName: string
   readonly stackName: string
+  readonly isPullRequest: boolean
 }
 
 export class ukRegionLogGroups extends Construct {
@@ -55,11 +56,13 @@ export class ukRegionLogGroups extends Construct {
         }
       ]
     }
-    new CfnResourcePolicy(this, "CloudFrontResourcePolicy", {
-      policyName: `${props.stackName}LogServicePolicy`,
-      policyDocument: JSON.stringify(serviceLogPolicy)
-    })
-
+    // Don't deploy to PR stacks as there is a limit of 10 resource policies per region
+    if (!props.isPullRequest) {
+      new CfnResourcePolicy(this, "CloudFrontResourcePolicy", {
+        policyName: `${props.stackName}LogServicePolicy`,
+        policyDocument: JSON.stringify(serviceLogPolicy)
+      })
+    }
     new CfnSubscriptionFilter(this, "WafSplunkSubscriptionFilter", {
       destinationArn: props.splunkDeliveryStream.streamArn,
       filterPattern: "",

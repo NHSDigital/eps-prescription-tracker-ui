@@ -100,6 +100,7 @@ export class StatelessResourcesStack extends Stack {
     const githubAllowListIpv4 = this.node.tryGetContext("githubAllowListIpv4")
     const githubAllowListIpv6 = this.node.tryGetContext("githubAllowListIpv6")
     const cloudfrontOriginCustomHeader = this.node.tryGetContext("cloudfrontOriginCustomHeader")
+    const isPullRequest: boolean = this.node.tryGetContext("isPullRequest")
 
     // Imports
     const baseImportPath = `${props.serviceName}-stateful-resources`
@@ -319,7 +320,8 @@ export class StatelessResourcesStack extends Stack {
       splunkSubscriptionFilterRole: splunkSubscriptionFilterRole,
       // waf log groups must start with aws-waf-logs-
       wafLogGroupName: `aws-waf-logs-${props.serviceName}-apigw`,
-      stackName: this.stackName
+      stackName: this.stackName,
+      isPullRequest: isPullRequest
     })
 
     // API Gateway WAF Web ACL
