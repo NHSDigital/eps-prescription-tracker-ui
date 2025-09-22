@@ -1,9 +1,9 @@
 import React, {useContext} from "react"
 import {
-render,
-waitFor,
-screen,
-act
+  render,
+  waitFor,
+  screen,
+  act
 } from "@testing-library/react"
 import {MemoryRouter} from "react-router-dom"
 
@@ -390,50 +390,50 @@ describe("AuthProvider", () => {
   it(
     "should call updateRemoteSelectedRole and update selectedRole state when updateSelectedRole is called",
     async () => {
-    const newRole = {
-      role_id: "ROLE456",
-      role_name: "Admin",
-      org_name: "Admin Org",
-      org_code: "ORG456",
-      site_address: "456 Admin Street"
-    };
+      const newRole = {
+        role_id: "ROLE456",
+        role_name: "Admin",
+        org_name: "Admin Org",
+        org_code: "ORG456",
+        site_address: "456 Admin Street"
+      };
 
-    (updateRemoteSelectedRole as jest.Mock).mockResolvedValue({
-      rolesWithAccess: [newRole]
-    })
+      (updateRemoteSelectedRole as jest.Mock).mockResolvedValue({
+        rolesWithAccess: [newRole]
+      })
 
-    let contextValue: AuthContextType | null
-    const TestComponent = () => {
-      contextValue = useContext(AuthContext)
-      return (
-        <div>
-          <div data-testid="selectedRole">
-            {JSON.stringify(contextValue?.selectedRole, null, 2)}
+      let contextValue: AuthContextType | null
+      const TestComponent = () => {
+        contextValue = useContext(AuthContext)
+        return (
+          <div>
+            <div data-testid="selectedRole">
+              {JSON.stringify(contextValue?.selectedRole, null, 2)}
+            </div>
           </div>
-        </div>
-      )
-    }
+        )
+      }
 
-    await act(async () => {
-      render(
-        <MemoryRouter>
-          <AuthProvider>
-            <TestComponent />
-          </AuthProvider>
-        </MemoryRouter>
-      )
+      await act(async () => {
+        render(
+          <MemoryRouter>
+            <AuthProvider>
+              <TestComponent />
+            </AuthProvider>
+          </MemoryRouter>
+        )
+      })
+
+      await act(async () => {
+        await contextValue?.updateSelectedRole(newRole)
+      })
+
+      expect(updateRemoteSelectedRole).toHaveBeenCalledWith(newRole)
+
+      await waitFor(() => {
+        expect(screen.getByTestId("selectedRole").textContent).toBe(
+          JSON.stringify(newRole, null, 2)
+        )
+      })
     })
-
-    await act(async () => {
-      await contextValue?.updateSelectedRole(newRole)
-    })
-
-    expect(updateRemoteSelectedRole).toHaveBeenCalledWith(newRole)
-
-    await waitFor(() => {
-      expect(screen.getByTestId("selectedRole").textContent).toBe(
-        JSON.stringify(newRole, null, 2)
-      )
-    })
-  })
 })
