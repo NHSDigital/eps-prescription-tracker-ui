@@ -42,7 +42,6 @@ describe("YourSelectedRolePage", () => {
       cognitoSignOut: jest.fn(),
       clearAuthState: jest.fn(),
       updateSelectedRole: jest.fn(),
-      forceCognitoLogout: jest.fn(),
       updateTrackerUserInfo: jest.fn()
     })
 
@@ -75,7 +74,6 @@ describe("YourSelectedRolePage", () => {
       cognitoSignOut: jest.fn(),
       clearAuthState: jest.fn(),
       updateSelectedRole: jest.fn(),
-      forceCognitoLogout: jest.fn(),
       updateTrackerUserInfo: jest.fn()
     })
 
@@ -103,7 +101,6 @@ describe("YourSelectedRolePage", () => {
       cognitoSignOut: jest.fn(),
       clearAuthState: jest.fn(),
       updateSelectedRole: jest.fn(),
-      forceCognitoLogout: jest.fn(),
       updateTrackerUserInfo: jest.fn()
     })
 
@@ -131,7 +128,6 @@ describe("YourSelectedRolePage", () => {
       cognitoSignOut: jest.fn(),
       clearAuthState: jest.fn(),
       updateSelectedRole: jest.fn(),
-      forceCognitoLogout: jest.fn(),
       updateTrackerUserInfo: jest.fn()
     })
 
@@ -165,7 +161,6 @@ describe("YourSelectedRolePage", () => {
       cognitoSignOut: jest.fn(),
       clearAuthState: jest.fn(),
       updateSelectedRole: jest.fn(),
-      forceCognitoLogout: jest.fn(),
       updateTrackerUserInfo: jest.fn()
     })
 
@@ -204,7 +199,6 @@ describe("YourSelectedRolePage", () => {
       cognitoSignOut: jest.fn(),
       clearAuthState: jest.fn(),
       updateSelectedRole: jest.fn(),
-      forceCognitoLogout: jest.fn(),
       updateTrackerUserInfo: jest.fn()
     })
 

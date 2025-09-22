@@ -6,12 +6,7 @@ import React, {
 } from "react"
 import {Amplify} from "aws-amplify"
 import {Hub} from "aws-amplify/utils"
-import {
-  signInWithRedirect,
-  signOut,
-  SignInWithRedirectInput,
-  deleteUser
-} from "aws-amplify/auth"
+import {signInWithRedirect, signOut, SignInWithRedirectInput} from "aws-amplify/auth"
 import {authConfig} from "./configureAmplify"
 
 import {useLocalStorageState} from "@/helpers/useLocalStorageState"
@@ -41,7 +36,6 @@ export interface AuthContextType {
   cognitoSignOut: () => Promise<boolean>
   clearAuthState: () => void
   updateSelectedRole: (value: RoleDetails) => Promise<void>
-  forceCognitoLogout: () => Promise<void>
   updateTrackerUserInfo: () => Promise<TrackerUserInfoResult>
 }
 
@@ -112,16 +106,6 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
     setIsConcurrentSession(trackerUserInfo.isConcurrentSession)
     setInvalidSessionCause(trackerUserInfo.invalidSessionCause)
     return trackerUserInfo
-  }
-
-  const forceCognitoLogout = async () => {
-    try {
-      logger.info("forcing cognito logout")
-      await deleteUser()
-    } catch (err) {
-      logger.error("Error in cognito signout", {err})
-    }
-    logger.info("completed signout")
   }
 
   /**
@@ -247,7 +231,6 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
       cognitoSignOut,
       clearAuthState,
       updateSelectedRole,
-      forceCognitoLogout,
       updateTrackerUserInfo
     }}>
       {children}
