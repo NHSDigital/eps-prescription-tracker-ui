@@ -53,7 +53,6 @@ const signedInAuthState: AuthContextType = {
   cognitoSignOut: mockCognitoSignOut,
   clearAuthState: mockClearAuthState,
   updateSelectedRole: jest.fn(),
-  forceCognitoLogout: jest.fn(),
   updateTrackerUserInfo: jest.fn()
 }
 
