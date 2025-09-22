@@ -22,8 +22,19 @@ export class CustomSecurityHeadersPolicy extends Construct {
       ],
       securityHeadersBehavior: {
         contentSecurityPolicy: {
-          contentSecurityPolicy: "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; \
-          object-src 'none'; base-uri 'self'; frame-ancestors 'none';",
+          contentSecurityPolicy: `
+            default-src 'self';
+            script-src 'self' https://assets.nhs.uk;
+            style-src 'self' 'unsafe-inline' https://assets.nhs.uk;
+            font-src 'self' https://assets.nhs.uk;
+            img-src 'self' data: https://assets.nhs.uk;
+            connect-src 'self' 
+                https://*.amazonaws.com 
+                https://*.amazoncognito.com;
+            object-src 'none';
+            base-uri 'self';
+            frame-ancestors 'none';
+          `.replace(/\s+/g, " ").trim(),
           override: true
         },
         strictTransportSecurity: {
