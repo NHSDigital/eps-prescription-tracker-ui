@@ -55,7 +55,7 @@ export const updateTokenMapping = async (
 ): Promise<void> => {
   const currentTime = Math.floor(Date.now() / 1000)
 
-  logger.debug("Updating data in tokenMapping", {tokenMappingItem, tokenMappingTableName})
+  logger.info("Updating data in tokenMapping", {tokenMappingItem, tokenMappingTableName})
 
   try {
     let expiryTimestamp
@@ -79,7 +79,8 @@ export const updateTokenMapping = async (
       ["rolesWithAccess", tokenMappingItem.rolesWithAccess],
       ["rolesWithoutAccess", tokenMappingItem.rolesWithoutAccess],
       ["currentlySelectedRole", tokenMappingItem.currentlySelectedRole],
-      ["lastActivityTime", tokenMappingItem.lastActivityTime]
+      ["lastActivityTime", tokenMappingItem.lastActivityTime],
+      ["sessionId", tokenMappingItem.sessionId]
     ]
 
     for (const [key, value] of optionalFields) {
@@ -100,7 +101,7 @@ export const updateTokenMapping = async (
       })
     )
 
-    logger.debug("Successfully updated data in tokenMapping")
+    logger.info("Successfully updated data in tokenMapping")
   } catch (error) {
     logger.error("Error updating data in tokenMapping", {error})
     throw new Error("Error updating data in tokenMapping")
@@ -109,23 +110,26 @@ export const updateTokenMapping = async (
 
 export const deleteTokenMapping = async (
   documentClient: DynamoDBDocumentClient,
-  tokenMappingTableName: string,
+  tableName: string,
   username: string,
   logger: Logger
 ): Promise<void> => {
-  logger.debug("Deleting from tokenMapping", {username, tokenMappingTableName})
+  logger.debug(`Deleting from ${tableName}`, {username})
   try {
+    logger.debug(`Attempting deletion from ${tableName}`, {username})
     const response = await documentClient.send(
       new DeleteCommand({
-        TableName: tokenMappingTableName,
+        TableName: tableName,
         Key: {username}
       })
     )
+
+    logger.info(`Delete operation completed for ${tableName}`, {response})
     if (response.$metadata.httpStatusCode !== 200) {
-      logger.error("Failed to delete from tokenMapping", {response})
-      throw new Error("Failed to delete from tokenMapping")
+      logger.error(`Failed to delete from ${tableName}`, {response})
+      throw new Error(`Failed to delete from ${tableName}`)
     }
-    logger.debug("Successfully deleted from stateMapping", {tokenMappingTableName})
+    logger.debug(`Successfully deleted from ${tableName}`)
 
   } catch(error) {
     logger.error("Error deleting data from tokenMapping", {error})

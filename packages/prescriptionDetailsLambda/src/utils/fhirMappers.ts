@@ -18,7 +18,7 @@ export const mapMessageHistoryTitleToMessageCode = (title: string): string => {
     "Administrative Action Update Successful": "admin-action-updated",
     "Prescription Reset request successful": "prescription-reset",
     "Prescription/item was cancelled": "prescription-cancelled",
-    "Prescription/item was not cancelled. With dispenser. Marked for cancellation":
+    "Prescription/item was not cancelled. With dispenser active. Marked for cancellation":
       "prescription-marked-for-cancellation",
     "Subsequent cancellation": "subsequent-cancellation",
     "Rebuild Dispense History successful": "dispense-history-rebuilt",
@@ -94,7 +94,7 @@ export const extractItems = (
     // determine if initiallyPrescribed should be included (only if different from dispensed)
     const pendingCancellationExt = findExtensionByKey(request.extension, "PENDING_CANCELLATION")
     const itemPendingCancellation = getBooleanFromNestedExtension(pendingCancellationExt, "lineItemPendingCancellation")
-    const cancellationReason = request.statusReason?.text ?? request.statusReason?.coding?.[0]?.display
+    const cancellationReason = request.statusReason?.text ?? request.statusReason?.coding?.[0]?.code
 
     const businessStatusExt = findExtensionByKey(request.extension, "DISPENSING_INFORMATION")
     const epsStatusCode = getCodeFromNestedExtension(businessStatusExt, "dispenseStatus", "unknown")
@@ -106,7 +106,7 @@ export const extractItems = (
     const quantity = originalQuantityUnit ? `${originalQuantityValue} ${originalQuantityUnit}` : originalQuantityValue
     const dosageInstructions = request.dosageInstruction?.[0]?.text
 
-    const psuStatus = findExtensionByKey(
+    const pharmacyStatus = findExtensionByKey(
       request.extension,
       "DM_PRESCRIPTION_STATUS_UPDATE_HISTORY")
       ?.extension?.[0].valueCoding?.code
@@ -116,7 +116,7 @@ export const extractItems = (
       quantity,
       dosageInstructions,
       epsStatusCode,
-      psuStatus,
+      pharmacyStatus,
       itemPendingCancellation,
       cancellationReason,
       notDispensedReason

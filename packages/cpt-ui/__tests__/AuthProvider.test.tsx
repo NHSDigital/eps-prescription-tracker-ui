@@ -1,9 +1,9 @@
 import React, {useContext} from "react"
 import {
-  render,
-  waitFor,
-  screen,
-  act
+render,
+waitFor,
+screen,
+act
 } from "@testing-library/react"
 import {MemoryRouter} from "react-router-dom"
 
@@ -11,10 +11,10 @@ import {Amplify} from "aws-amplify"
 import {Hub} from "aws-amplify/utils"
 import {signInWithRedirect, signOut} from "aws-amplify/auth"
 
-import {AuthContext, AuthProvider} from "@/context/AuthProvider"
+import {AuthContext, AuthContextType, AuthProvider} from "@/context/AuthProvider"
 
 import axios from "@/helpers/axios"
-import {getTrackerUserInfo} from "@/helpers/userInfo"
+import {getTrackerUserInfo, updateRemoteSelectedRole} from "@/helpers/userInfo"
 import {logger} from "@/helpers/logger"
 jest.mock("@/helpers/axios")
 
@@ -49,7 +49,50 @@ const mockUserInfo = {
 }
 
 jest.mock("@/helpers/userInfo", () => ({
-  getTrackerUserInfo: jest.fn()
+  getTrackerUserInfo: jest.fn(),
+  updateRemoteSelectedRole: jest.fn()
+}))
+
+// Mock constants
+jest.mock("@/constants/environment", () => ({
+  PUBLIC_PATHS: [
+    "/login",
+    "/logout",
+    "/cookies",
+    "/privacy-notice",
+    "/cookies-selected",
+    "/"
+  ],
+  FRONTEND_PATHS: {
+    LOGIN: "/login",
+    LOGOUT: "/logout",
+    SELECT_YOUR_ROLE: "/select-your-role"
+  },
+  API_ENDPOINTS: {
+    CIS2_SIGNOUT_ENDPOINT: "/api/cis2-signout"
+  },
+  AUTH_CONFIG: {
+    USER_POOL_ID: "mock-pool-id",
+    USER_POOL_CLIENT_ID: "mock-client-id",
+    HOSTED_LOGIN_DOMAIN: "mock-domain",
+    REDIRECT_SIGN_IN: "mock-signin",
+    REDIRECT_SIGN_OUT: "mock-signout"
+  },
+  APP_CONFIG: {
+    REACT_LOG_LEVEL: "info"
+  }
+}))
+
+// Mock utils
+jest.mock("@/helpers/utils", () => ({
+  normalizePath: jest.fn((path) => path)
+}))
+
+// Mock react-router-dom
+jest.mock("react-router-dom", () => ({
+  ...jest.requireActual("react-router-dom"),
+  useLocation: jest.fn(() => ({pathname: "/"})),
+  useNavigate: jest.fn(() => jest.fn())
 }))
 
 // Tell TypeScript that axios is a mocked version.
@@ -121,7 +164,6 @@ describe("AuthProvider", () => {
   const renderWithProvider = async ({
     TestComponent = <TestConsumer />
   }: RenderWithProviderOptions = {}) => {
-
     await act(async () => {
       render(
         <MemoryRouter>
@@ -345,4 +387,53 @@ describe("AuthProvider", () => {
     expect(signOut).toHaveBeenCalled()
   })
 
+  it(
+    "should call updateRemoteSelectedRole and update selectedRole state when updateSelectedRole is called",
+    async () => {
+    const newRole = {
+      role_id: "ROLE456",
+      role_name: "Admin",
+      org_name: "Admin Org",
+      org_code: "ORG456",
+      site_address: "456 Admin Street"
+    };
+
+    (updateRemoteSelectedRole as jest.Mock).mockResolvedValue({
+      rolesWithAccess: [newRole]
+    })
+
+    let contextValue: AuthContextType | null
+    const TestComponent = () => {
+      contextValue = useContext(AuthContext)
+      return (
+        <div>
+          <div data-testid="selectedRole">
+            {JSON.stringify(contextValue?.selectedRole, null, 2)}
+          </div>
+        </div>
+      )
+    }
+
+    await act(async () => {
+      render(
+        <MemoryRouter>
+          <AuthProvider>
+            <TestComponent />
+          </AuthProvider>
+        </MemoryRouter>
+      )
+    })
+
+    await act(async () => {
+      await contextValue?.updateSelectedRole(newRole)
+    })
+
+    expect(updateRemoteSelectedRole).toHaveBeenCalledWith(newRole)
+
+    await waitFor(() => {
+      expect(screen.getByTestId("selectedRole").textContent).toBe(
+        JSON.stringify(newRole, null, 2)
+      )
+    })
+  })
 })

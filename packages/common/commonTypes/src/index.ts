@@ -34,5 +34,6 @@ export type {
 export type {
   RoleDetails,
   UserDetails,
-  TrackerUserInfo
+  TrackerUserInfo,
+  TrackerUserInfoResult
 } from "./trackerUserInfo"

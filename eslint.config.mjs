@@ -63,13 +63,15 @@ const commonConfig = {
       },
     ],
 
-    indent: [
-      "error",
-      2,
-      {
-        SwitchCase: 1,
-      },
-    ],
+    // TEMPORARY: Disabled due to ESLint indent rule stack overflow bug with Layout.tsx
+    // Issue tracked across ESLint 8.x and 9.x versions - re-enable when fixed upstream
+    // "indent": [
+    //   "error",
+    //   2,
+    //   {
+    //     SwitchCase: 1,
+    //   },
+    // ],
 
     "max-len": ["error", 120],
     "no-multi-spaces": "error",

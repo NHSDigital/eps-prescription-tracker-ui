@@ -1,4 +1,4 @@
-import {getTrackerUserInfo} from "@/helpers/userInfo"
+import {getTrackerUserInfo, updateRemoteSelectedRole} from "@/helpers/userInfo"
 import {RoleDetails, UserDetails} from "@cpt-ui-common/common-types"
 import axios from "@/helpers/axios"
 jest.mock("@/helpers/axios")
@@ -50,7 +50,7 @@ describe("getTrackerUserInfo", () => {
       expected: {
         hasNoAccess: false,
         hasSingleRoleAccess: true,
-        numberOfCallsToUpdateSelectedRole: 1
+        numberOfCallsToUpdateSelectedRole: 0
       }
     },
     {
@@ -147,4 +147,58 @@ describe("getTrackerUserInfo", () => {
       expect(mockedAxios.put).toHaveBeenCalledTimes(expected.numberOfCallsToUpdateSelectedRole)
     }
   )
+
+  describe("updateRemoteSelectedRole", () => {
+    it("should successfully update selected role and return rolesWithAccess", async () => {
+      const newRole = {
+        role_id: "ROLE456",
+        role_name: "Admin",
+        org_name: "Admin Org",
+        org_code: "ORG456",
+        site_address: "456 Admin Street"
+      }
+
+      const expectedRolesWithAccess = [
+        {
+          role_id: "ROLE456",
+          role_name: "Admin",
+          org_name: "Admin Org",
+          org_code: "ORG456",
+          site_address: "456 Admin Street"
+        }
+      ]
+
+      mockedAxios.put.mockResolvedValue({
+        status: 200,
+        data: {
+          userInfo: {
+            rolesWithAccess: expectedRolesWithAccess
+          }
+        }
+      })
+
+      const result = await updateRemoteSelectedRole(newRole)
+
+      expect(result.rolesWithAccess).toEqual(expectedRolesWithAccess)
+    })
+
+    it("should throw error when server returns non-200 status", async () => {
+      const newRole = {
+        role_id: "ROLE456",
+        role_name: "Admin",
+        org_name: "Admin Org",
+        org_code: "ORG456",
+        site_address: "456 Admin Street"
+      }
+
+      mockedAxios.put.mockResolvedValue({
+        status: 500,
+        data: {}
+      })
+
+      await expect(updateRemoteSelectedRole(newRole)).rejects.toThrow(
+        "Failed to update the selected role"
+      )
+    })
+  })
 })

@@ -20,8 +20,10 @@ import CookiePolicyPage from "./pages/CookiePolicyPage"
 import CookieSettingsPage from "./pages/CookieSettingsPage"
 import SearchResultsPage from "@/pages/BasicDetailsSearchResultsPage"
 import PrivacyNoticePage from "./pages/PrivacyNoticePage"
+import SessionSelectionPage from "./pages/SessionSelection"
 
 import {FRONTEND_PATHS} from "@/constants/environment"
+import SessionLoggedOutPage from "./pages/SessionLoggedOut"
 
 const RootRoute = () => {
   const {isSignedIn} = useAuth()
@@ -48,8 +50,10 @@ export default function App() {
                   {/* Your existing routes */}
                   <Route index element={<RootRoute />} />
                   <Route path="*" element={<NotFoundPage />} />
+                  <Route path={FRONTEND_PATHS.SESSION_SELECTION} element={<SessionSelectionPage />} />
                   <Route path={FRONTEND_PATHS.LOGIN} element={<LoginPage />} />
                   <Route path={FRONTEND_PATHS.LOGOUT} element={<LogoutPage />} />
+                  <Route path={FRONTEND_PATHS.SESSION_LOGGED_OUT} element={<SessionLoggedOutPage />} />
                   <Route path={FRONTEND_PATHS.SELECT_YOUR_ROLE} element={<SelectYourRolePage />} />
                   <Route path={FRONTEND_PATHS.YOUR_SELECTED_ROLE} element={<YourSelectedRolePage />} />
                   <Route path={FRONTEND_PATHS.CHANGE_YOUR_ROLE} element={<ChangeRolePage />} />

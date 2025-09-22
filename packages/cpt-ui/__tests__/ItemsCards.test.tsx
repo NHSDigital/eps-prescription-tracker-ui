@@ -79,4 +79,48 @@ describe("ItemsCards", () => {
     expect(screen.getByText("Collected")).toBeInTheDocument()
     expect(screen.getByText("With pharmacy")).toBeInTheDocument()
   })
+
+  it("renders cancellation reason, when item contains a cancellation reason", () => {
+    const items= [{
+      medicationName: "Ibuprofen",
+      quantity: "20 tablets",
+      dosageInstructions: "Take one as needed",
+      epsStatusCode: "0005",
+      itemPendingCancellation: false,
+      cancellationReason: "0001"
+    }]
+    render(<ItemsCards items={items}/>)
+
+    expect(screen.getByText("Cancellation reason")).toBeInTheDocument()
+    expect(screen.getByText("Prescribing Error")).toBeInTheDocument()
+  })
+
+  it("renders not dispensed reason, when item contains a non-dispensing reason", () => {
+    const items= [{
+      medicationName: "Ibuprofen",
+      quantity: "20 tablets",
+      dosageInstructions: "Take one as needed",
+      epsStatusCode: "0002",
+      itemPendingCancellation: false,
+      notDispensedReason: "0001"
+    }]
+    render(<ItemsCards items={items}/>)
+
+    expect(screen.getByText("Not dispensed reason")).toBeInTheDocument()
+    expect(screen.getByText("Not required as instructed by the patient")).toBeInTheDocument()
+  })
+
+  it("does not render any status reasons, when item does not contain a cancellation or non-dispensing reason", () => {
+    const items= [{
+      medicationName: "Ibuprofen",
+      quantity: "20 tablets",
+      dosageInstructions: "Take one as needed",
+      epsStatusCode: "0001",
+      itemPendingCancellation: false
+    }]
+    render(<ItemsCards items={items}/>)
+
+    expect(screen.queryByText("Not dispensed reason")).not.toBeInTheDocument()
+    expect(screen.queryByText("Cancellation reason")).not.toBeInTheDocument()
+  })
 })

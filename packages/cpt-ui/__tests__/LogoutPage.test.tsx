@@ -6,6 +6,50 @@ import LogoutPage from "@/pages/LogoutPage"
 import {AuthContext, type AuthContextType} from "@/context/AuthProvider"
 import {AccessProvider} from "@/context/AccessProvider"
 
+// Mock constants
+jest.mock("@/constants/environment", () => ({
+  FRONTEND_PATHS: {
+    LOGIN: "/login",
+    LOGOUT: "/logout",
+    SELECT_YOUR_ROLE: "/select-your-role",
+    SESSION_SELECTION: "/select-active-session",
+    COOKIES: "/cookies",
+    PRIVACY_NOTICE: "/privacy-notice",
+    COOKIES_SELECTED: "/cookies-selected"
+  },
+  ALLOWED_NO_ROLE_PATHS: [
+    "/login",
+    "/logout",
+    "/cookies",
+    "/privacy-notice",
+    "/cookies-selected",
+    "/",
+    "/select-active-session"
+  ],
+  AUTH_CONFIG: {
+    USER_POOL_ID: "mock-pool-id",
+    USER_POOL_CLIENT_ID: "mock-client-id",
+    HOSTED_LOGIN_DOMAIN: "mock-domain",
+    REDIRECT_SIGN_IN: "mock-signin",
+    REDIRECT_SIGN_OUT: "mock-signout"
+  },
+  API_ENDPOINTS: {
+    CIS2_SIGNOUT_ENDPOINT: "/api/cis2-signout"
+  }
+}))
+
+// Mock utils
+jest.mock("@/helpers/utils", () => ({
+  normalizePath: jest.fn((path) => path)
+}))
+
+// Mock logger
+jest.mock("@/helpers/logger", () => ({
+  logger: {
+    info: jest.fn()
+  }
+}))
+
 // Create a mock AuthProvider component
 const MockAuthProvider = ({
   children,
@@ -22,6 +66,7 @@ const MockAuthProvider = ({
     user: defaultIsSignedIn ? {username: "testUser"} : null,
     isSignedIn: defaultIsSignedIn,
     isSigningIn: false,
+    invalidSessionCause: undefined,
     rolesWithAccess: [],
     rolesWithoutAccess: [],
     hasNoAccess: false,
@@ -33,7 +78,8 @@ const MockAuthProvider = ({
     cognitoSignOut: mockCognitoSignOut,
     clearAuthState: jest.fn(),
     updateSelectedRole: jest.fn(),
-    forceCognitoLogout: jest.fn()
+    forceCognitoLogout: jest.fn(),
+    updateTrackerUserInfo: jest.fn()
   } as AuthContextType
 
   return (

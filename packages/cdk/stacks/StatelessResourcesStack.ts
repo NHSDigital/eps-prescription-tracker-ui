@@ -4,7 +4,8 @@ import {
   App,
   Fn,
   CfnOutput,
-  Duration
+  Duration,
+  ArnFormat
 } from "aws-cdk-lib"
 import {
   AccessLevel,
@@ -40,6 +41,7 @@ import {HostedZone} from "aws-cdk-lib/aws-route53"
 import {Certificate} from "aws-cdk-lib/aws-certificatemanager"
 import {WebACL} from "../resources/WebApplicationFirewall"
 import {CfnWebACLAssociation} from "aws-cdk-lib/aws-wafv2"
+import {ukRegionLogGroups} from "../resources/ukRegionLogGroups"
 
 export interface StatelessResourcesStackProps extends StackProps {
   readonly serviceName: string
@@ -140,7 +142,6 @@ export class StatelessResourcesStack extends Stack {
     const userPoolClientId = Fn.importValue(`${baseImportPath}:userPoolClient:userPoolClientId`)
 
     // Logging
-    const cloudfrontLoggingBucketImport = Fn.importValue("account-resources:CloudfrontLoggingBucket")
     const cloudwatchKmsKeyImport = Fn.importValue("account-resources:CloudwatchLogsKmsKeyArn")
     const splunkDeliveryStreamImport = Fn.importValue("lambda-resources:SplunkDeliveryStream")
     const splunkSubscriptionFilterRoleImport = Fn.importValue("lambda-resources:SplunkSubscriptionFilterRole")
@@ -191,8 +192,6 @@ export class StatelessResourcesStack extends Stack {
     const userPool = UserPool.fromUserPoolArn(
       this, "userPool", userPoolImport)
 
-    const cloudfrontLoggingBucket = Bucket.fromBucketArn(
-      this, "CloudfrontLoggingBucket", cloudfrontLoggingBucketImport)
     const cloudwatchKmsKey = Key.fromKeyArn(
       this, "cloudwatchKmsKey", cloudwatchKmsKeyImport)
     const splunkDeliveryStream = Stream.fromStreamArn(
@@ -313,6 +312,16 @@ export class StatelessResourcesStack extends Stack {
       fullCloudfrontDomain: fullCloudfrontDomain
     })
 
+    const logGroups = new ukRegionLogGroups(this, "ukRegionLogGroups", {
+      cloudwatchKmsKey: cloudwatchKmsKey,
+      logRetentionInDays: logRetentionInDays,
+      splunkDeliveryStream: splunkDeliveryStream,
+      splunkSubscriptionFilterRole: splunkSubscriptionFilterRole,
+      // waf log groups must start with aws-waf-logs-
+      wafLogGroupName: `aws-waf-logs-${props.serviceName}-apigw`,
+      stackName: this.stackName
+    })
+
     // API Gateway WAF Web ACL
     const webAcl = new WebACL(this, "WebAclApiGateway", {
       serviceName: props.serviceName,
@@ -324,7 +333,15 @@ export class StatelessResourcesStack extends Stack {
       scope: "REGIONAL",
       allowedHeaders: new Map<string, string>([
         ["X-Cloudfront-Origin-Secret", cloudfrontOriginCustomHeader]
-      ])
+      ]),
+      // waf log destination must not have :* at the end
+      // see https://stackoverflow.com/a/73372989/9294145
+      wafLogGroupName: Stack.of(this).formatArn({
+        arnFormat: ArnFormat.COLON_RESOURCE_NAME,
+        service: "logs",
+        resource: "log-group",
+        resourceName: logGroups.wafLogGroup.logGroupName
+      })
     })
 
     // - CPT backend API Gateway (/api/*)
@@ -373,6 +390,7 @@ export class StatelessResourcesStack extends Stack {
       prescriptionListLambda: apiFunctions.prescriptionListLambda,
       prescriptionDetailsLambda: apiFunctions.prescriptionDetailsLambda,
       trackerUserInfoLambda: apiFunctions.trackerUserInfoLambda,
+      sessionManagementLambda: apiFunctions.sessionManagementLambda,
       selectedRoleLambda: apiFunctions.selectedRoleLambda,
       patientSearchLambda: apiFunctions.patientSearchLambda,
       authorizer: apiGateway.authorizer,
@@ -441,8 +459,8 @@ export class StatelessResourcesStack extends Stack {
       comment: "Security headers policy with inclusion of CSP",
       securityHeadersBehavior: {
         contentSecurityPolicy: {
-          contentSecurityPolicy: "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; \
-          object-src 'none'; base-uri 'self'; frame-ancestors 'none';",
+          contentSecurityPolicy: "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; " +
+          "object-src 'none'; base-uri 'self'; frame-ancestors 'none';",
           override: true
         },
         strictTransportSecurity: {
@@ -506,7 +524,6 @@ export class StatelessResourcesStack extends Stack {
       cloudfrontCert: cloudfrontCert,
       shortCloudfrontDomain: shortCloudfrontDomain,
       fullCloudfrontDomain: fullCloudfrontDomain,
-      cloudfrontLoggingBucket: cloudfrontLoggingBucket,
       defaultBehavior: {
         origin: staticContentBucketOrigin,
         allowedMethods: AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
@@ -542,6 +559,10 @@ export class StatelessResourcesStack extends Stack {
     new CfnOutput(this, "CloudfrontDistributionId", {
       value: cloudfrontDistribution.distribution.distributionId,
       exportName: `${props.stackName}:cloudfrontDistribution:Id`
+    })
+    new CfnOutput(this, "CloudfrontDistributionArn", {
+      value: cloudfrontDistribution.distribution.distributionArn,
+      exportName: `${props.stackName}:cloudfrontDistribution:Arn`
     })
     new CfnOutput(this, "KeyValueStoreArn", {
       value: cloudfrontBehaviors.keyValueStore.keyValueStoreArn,

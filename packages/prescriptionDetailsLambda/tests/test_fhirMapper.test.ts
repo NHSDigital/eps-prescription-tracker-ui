@@ -1,4 +1,4 @@
-import {MedicationRequest, Patient} from "fhir/r4"
+import {MedicationDispense, MedicationRequest, Patient} from "fhir/r4"
 import {
   extractPatientDetails,
   mapMessageHistoryTitleToMessageCode,
@@ -11,6 +11,11 @@ describe("mapMessageHistoryTitleToMessageCode", () => {
     expect(mapMessageHistoryTitleToMessageCode("Prescription upload successful")).toBe("prescription-uploaded")
     expect(mapMessageHistoryTitleToMessageCode("Release Request successful")).toBe("release-requested")
     expect(mapMessageHistoryTitleToMessageCode("Dispense notification successful")).toBe("dispense-notified")
+    expect(
+    mapMessageHistoryTitleToMessageCode(
+    "Prescription/item was not cancelled. With dispenser active. Marked for cancellation"
+  )
+).toBe("prescription-marked-for-cancellation")
   })
 
   it("should return undefined for unrecognized message titles", () => {
@@ -153,7 +158,7 @@ describe("extractPrescribedItems", () => {
       quantity: "30",
       dosageInstructions: "Take once daily",
       epsStatusCode: "unknown",
-      psuStatus: undefined,
+      pharmacyStatus: undefined,
       itemPendingCancellation: false,
       cancellationReason: undefined,
       notDispensedReason: undefined
@@ -181,27 +186,20 @@ describe("extractPrescribedItems", () => {
       quantity: "Unknown",
       dosageInstructions: undefined,
       epsStatusCode: "unknown",
-      psuStatus: undefined,
+      pharmacyStatus: undefined,
       itemPendingCancellation: false,
       cancellationReason: undefined,
       notDispensedReason: undefined
     })
   })
 
-  it("should extract pending cancellation information from extensions", () => {
+  it("should extract pending cancellation status from extensions", () => {
     const medicationRequests: Array<MedicationRequest> = [
       {
         resourceType: "MedicationRequest",
         status: "active",
         intent: "order",
         subject: {},
-        statusReason: {
-          coding: [{
-            system: "https://fhir.nhs.uk/CodeSystem/medicationrequest-status-reason",
-            code: "",
-            display: "Medication error"
-          }]
-        },
         extension: [
           {
             url: "https://fhir.nhs.uk/StructureDefinition/Extension-PendingCancellation",
@@ -215,7 +213,57 @@ describe("extractPrescribedItems", () => {
 
     const result = extractItems(medicationRequests, [])
     expect(result[0].itemPendingCancellation).toBe(true)
-    expect(result[0].cancellationReason).toBe("Medication error")
+  })
+
+  it("should extract the cancellation reason when present", () => {
+    const medicationRequests: Array<MedicationRequest> = [
+      {
+        resourceType: "MedicationRequest",
+        status: "active",
+        intent: "order",
+        subject: {},
+        statusReason: {
+          coding: [{
+            system: "https://fhir.nhs.uk/CodeSystem/medicationrequest-status-reason",
+            code: "0001",
+            display: "Prescribing Error"
+          }]
+        },
+        extension: [
+        ]
+      }
+    ]
+    const result = extractItems(medicationRequests, [])
+    expect(result[0].cancellationReason).toBe("0001")
+  })
+
+  it("should extract the non-dispensing reason when present", () => {
+    const medicationRequests: Array<MedicationRequest> = [{
+      resourceType: "MedicationRequest",
+      id: "MED-REQ-1234",
+      status: "active",
+      intent: "order",
+      subject: {},
+      extension: [
+      ]
+    }]
+    const medicationDispenses: Array<MedicationDispense> = [{
+      resourceType: "MedicationDispense",
+      id: "MED-DIS-1234",
+      status: "in-progress",
+      statusReasonCodeableConcept: {
+        coding: [{
+          system: "https://fhir.nhs.uk/CodeSystem/medicationdispense-status-reason",
+          code: "0002",
+          display: "Clinically unsuitable"
+        }]
+      },
+      authorizingPrescription: [{
+        reference: "urn:uuid:MED-REQ-1234"
+      }]
+    }]
+    const result = extractItems(medicationRequests, medicationDispenses)
+    expect(result[0].notDispensedReason).toBe("0002")
   })
 
   it("should extract dispensing status from extensions", () => {
@@ -240,7 +288,7 @@ describe("extractPrescribedItems", () => {
     expect(result[0].epsStatusCode).toBe("0001")
   })
 
-  it("should extract psuStatus from DM prescription status update extension", () => {
+  it("should extract pharmacyStatus from DM prescription status update extension", () => {
     const medicationRequests: Array<MedicationRequest> = [
       {
         resourceType: "MedicationRequest",
@@ -258,10 +306,10 @@ describe("extractPrescribedItems", () => {
       }
     ]
     const result = extractItems(medicationRequests, [])
-    expect(result[0].psuStatus).toBe("Dispatched")
+    expect(result[0].pharmacyStatus).toBe("Dispatched")
   })
 
-  it("should return undefined psuStatus if DM extension is missing", () => {
+  it("should return undefined pharmacyStatus if DM extension is missing", () => {
     const medicationRequests: Array<MedicationRequest> = [
       {
         resourceType: "MedicationRequest",
@@ -273,6 +321,6 @@ describe("extractPrescribedItems", () => {
     ]
 
     const result = extractItems(medicationRequests, [])
-    expect(result[0].psuStatus).toBeUndefined()
+    expect(result[0].pharmacyStatus).toBeUndefined()
   })
 })

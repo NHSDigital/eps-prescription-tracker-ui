@@ -51,6 +51,7 @@ const defaultAuthContext: AuthContextType = {
   user: null,
   isSignedIn: false,
   isSigningIn: false,
+  invalidSessionCause: undefined,
   rolesWithAccess: [],
   rolesWithoutAccess: [],
   hasNoAccess: false,
@@ -62,7 +63,8 @@ const defaultAuthContext: AuthContextType = {
   cognitoSignOut: jest.fn(),
   clearAuthState: jest.fn(),
   updateSelectedRole: jest.fn(),
-  forceCognitoLogout: jest.fn()
+  forceCognitoLogout: jest.fn(),
+  updateTrackerUserInfo: jest.fn()
 }
 
 const renderWithProviders = (

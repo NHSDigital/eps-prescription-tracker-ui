@@ -1,5 +1,6 @@
 import {
   App,
+  ArnFormat,
   CfnOutput,
   Environment,
   Stack,
@@ -8,6 +9,8 @@ import {
 import {ARecord, HostedZone, RecordTarget} from "aws-cdk-lib/aws-route53"
 import {Certificate, CertificateValidation} from "aws-cdk-lib/aws-certificatemanager"
 import {WebACL} from "../resources/WebApplicationFirewall"
+import {CloudfrontLogDelivery} from "../resources/CloudfrontLogDelivery"
+import {usRegionLogGroups} from "../resources/usRegionLogGroups"
 
 export interface UsCertsStackProps extends StackProps {
   readonly env: Environment
@@ -43,6 +46,10 @@ export class UsCertsStack extends Stack {
     const epsHostedZoneId: string = this.node.tryGetContext("epsHostedZoneId")
     const useCustomCognitoDomain: boolean = this.node.tryGetContext("useCustomCognitoDomain")
     const useZoneApex: boolean = this.node.tryGetContext("useZoneApex")
+    const splunkDeliveryStream: string = this.node.tryGetContext("splunkDeliveryStream")
+    const splunkSubscriptionFilterRole: string = this.node.tryGetContext("splunkSubscriptionFilterRole")
+    const cloudfrontDistributionArn: string = this.node.tryGetContext("cloudfrontDistributionArn")
+    const logRetentionInDays: number = Number(this.node.tryGetContext("logRetentionInDays"))
 
     // Coerce context and imports to relevant types
     const hostedZone = HostedZone.fromHostedZoneAttributes(this, "hostedZone", {
@@ -88,6 +95,19 @@ export class UsCertsStack extends Stack {
       fullCognitoDomain = `${props.shortCognitoDomain}.auth.eu-west-2.amazoncognito.com`
     }
 
+    // log groups in US region
+    const logGroups = new usRegionLogGroups(this, "usRegionLogGroups", {
+      cloudfrontLogGroupName: props.serviceName,
+      // waf log groups must start with aws-waf-logs-
+      wafLogGroupName: `aws-waf-logs-${props.serviceName}-cloudfront`,
+      logRetentionInDays: logRetentionInDays,
+      stackName: props.stackName,
+      region: this.region,
+      account: this.account,
+      splunkDeliveryStream: splunkDeliveryStream,
+      splunkSubscriptionFilterRole: splunkSubscriptionFilterRole
+    })
+
     // WAF Web ACL
     const webAcl = new WebACL(this, "WebAclCF", {
       serviceName: props.serviceName,
@@ -96,7 +116,21 @@ export class UsCertsStack extends Stack {
       githubAllowListIpv4: props.githubAllowListIpv4,
       githubAllowListIpv6: props.githubAllowListIpv6,
       wafAllowGaRunnerConnectivity: props.wafAllowGaRunnerConnectivity,
-      scope: "CLOUDFRONT"
+      scope: "CLOUDFRONT",
+      // waf log destination must not have :* at the end
+      // see https://stackoverflow.com/a/73372989/9294145
+      wafLogGroupName: Stack.of(this).formatArn({
+        arnFormat: ArnFormat.COLON_RESOURCE_NAME,
+        service: "logs",
+        resource: "log-group",
+        resourceName: logGroups.wafLogGroup.logGroupName
+      })
+    })
+
+    // cloudfront log group - needs to be in us-east-1 region
+    new CloudfrontLogDelivery(this, "cloudfrontLogDelivery", {
+      cloudfrontLogGroup: logGroups.cloudfrontLogGroup,
+      cloudfrontDistributionArn: cloudfrontDistributionArn
     })
 
     // Outputs

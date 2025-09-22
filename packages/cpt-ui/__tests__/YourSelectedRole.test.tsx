@@ -31,6 +31,7 @@ describe("YourSelectedRolePage", () => {
       user: null,
       isSignedIn: false,
       isSigningIn: false,
+      invalidSessionCause: undefined,
       rolesWithAccess: [],
       rolesWithoutAccess: [],
       hasNoAccess: false,
@@ -41,7 +42,8 @@ describe("YourSelectedRolePage", () => {
       cognitoSignOut: jest.fn(),
       clearAuthState: jest.fn(),
       updateSelectedRole: jest.fn(),
-      forceCognitoLogout: jest.fn()
+      forceCognitoLogout: jest.fn(),
+      updateTrackerUserInfo: jest.fn()
     })
 
     renderComponent()
@@ -62,6 +64,7 @@ describe("YourSelectedRolePage", () => {
       user: null,
       isSignedIn: false,
       isSigningIn: false,
+      invalidSessionCause: undefined,
       rolesWithAccess: [],
       rolesWithoutAccess: [],
       hasNoAccess: false,
@@ -72,7 +75,8 @@ describe("YourSelectedRolePage", () => {
       cognitoSignOut: jest.fn(),
       clearAuthState: jest.fn(),
       updateSelectedRole: jest.fn(),
-      forceCognitoLogout: jest.fn()
+      forceCognitoLogout: jest.fn(),
+      updateTrackerUserInfo: jest.fn()
     })
 
     renderComponent()
@@ -88,6 +92,7 @@ describe("YourSelectedRolePage", () => {
       user: null,
       isSignedIn: false,
       isSigningIn: false,
+      invalidSessionCause: undefined,
       rolesWithAccess: [],
       rolesWithoutAccess: [],
       hasNoAccess: false,
@@ -98,7 +103,8 @@ describe("YourSelectedRolePage", () => {
       cognitoSignOut: jest.fn(),
       clearAuthState: jest.fn(),
       updateSelectedRole: jest.fn(),
-      forceCognitoLogout: jest.fn()
+      forceCognitoLogout: jest.fn(),
+      updateTrackerUserInfo: jest.fn()
     })
 
     renderComponent()
@@ -114,6 +120,7 @@ describe("YourSelectedRolePage", () => {
       user: null,
       isSignedIn: false,
       isSigningIn: false,
+      invalidSessionCause: undefined,
       rolesWithAccess: [],
       rolesWithoutAccess: [],
       hasNoAccess: false,
@@ -124,14 +131,18 @@ describe("YourSelectedRolePage", () => {
       cognitoSignOut: jest.fn(),
       clearAuthState: jest.fn(),
       updateSelectedRole: jest.fn(),
-      forceCognitoLogout: jest.fn()
+      forceCognitoLogout: jest.fn(),
+      updateTrackerUserInfo: jest.fn()
     })
 
     renderComponent()
-
-    const roleChangeLink = screen.getByTestId("role-change-role-cell").querySelector("a")
-    const orgChangeLink = screen.getByTestId("org-change-role-cell").querySelector("a")
-
+    const changeLinks = screen.getAllByRole("link")
+    const roleChangeLink = changeLinks.find(link =>
+      link.closest('[data-testid="role-change-role-cell"]')
+    )
+    const orgChangeLink = changeLinks.find(link =>
+      link.closest('[data-testid="org-change-role-cell"]')
+    )
     expect(roleChangeLink).toHaveAttribute("href", "/change-your-role")
     expect(orgChangeLink).toHaveAttribute("href", "/change-your-role")
   })
@@ -143,6 +154,7 @@ describe("YourSelectedRolePage", () => {
       user: null,
       isSignedIn: false,
       isSigningIn: false,
+      invalidSessionCause: undefined,
       rolesWithAccess: [],
       rolesWithoutAccess: [],
       hasNoAccess: false,
@@ -153,7 +165,8 @@ describe("YourSelectedRolePage", () => {
       cognitoSignOut: jest.fn(),
       clearAuthState: jest.fn(),
       updateSelectedRole: jest.fn(),
-      forceCognitoLogout: jest.fn()
+      forceCognitoLogout: jest.fn(),
+      updateTrackerUserInfo: jest.fn()
     })
 
     // Setup MemoryRouter with initial entry at the page, and a dummy route for /search-by-prescription-id
@@ -180,6 +193,7 @@ describe("YourSelectedRolePage", () => {
       user: null,
       isSignedIn: false,
       isSigningIn: false,
+      invalidSessionCause: undefined,
       rolesWithAccess: [],
       rolesWithoutAccess: [],
       hasNoAccess: false,
@@ -190,7 +204,8 @@ describe("YourSelectedRolePage", () => {
       cognitoSignOut: jest.fn(),
       clearAuthState: jest.fn(),
       updateSelectedRole: jest.fn(),
-      forceCognitoLogout: jest.fn()
+      forceCognitoLogout: jest.fn(),
+      updateTrackerUserInfo: jest.fn()
     })
 
     renderComponent()
