@@ -9,8 +9,7 @@ import {
   IOrigin,
   KeyValueStore,
   OriginRequestPolicy,
-  ViewerProtocolPolicy,
-  ResponseHeadersPolicy
+  ViewerProtocolPolicy
 } from "aws-cdk-lib/aws-cloudfront"
 import {RestApiOrigin} from "aws-cdk-lib/aws-cloudfront-origins"
 import {CustomSecurityHeadersPolicy} from "./Cloudfront/CustomSecurityHeaders"
@@ -41,7 +40,6 @@ export class CloudfrontBehaviors extends Construct{
   public readonly s3StaticContentUriRewriteFunction: CloudfrontFunction
   public readonly s3StaticContentRootSlashRedirect: CloudfrontFunction
   public readonly keyValueStore: KeyValueStore
-  public readonly responseHeadersPolicy: ResponseHeadersPolicy
 
   public constructor(scope: Construct, id: string, props: CloudfrontBehaviorsProps){
     super(scope, id)
@@ -264,13 +262,13 @@ export class CloudfrontBehaviors extends Construct{
         origin: props.staticContentBucketOrigin,
         allowedMethods: AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
         viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+        responseHeadersPolicy: headersPolicy.policy,
         functionAssociations: [
           {
             function: s3StaticContentRootSlashRedirect.function,
             eventType: FunctionEventType.VIEWER_REQUEST
           }
-        ],
-        responseHeadersPolicy: headersPolicy.policy
+        ]
       }
     }
 
