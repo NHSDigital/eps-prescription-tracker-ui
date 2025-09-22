@@ -101,7 +101,6 @@ const defaultAuthContext: AuthContextType = {
   cognitoSignOut: jest.fn(),
   clearAuthState: jest.fn(),
   updateSelectedRole: mockUpdateSelectedRole,
-  forceCognitoLogout: jest.fn(),
   updateTrackerUserInfo: jest.fn()
 }
 
