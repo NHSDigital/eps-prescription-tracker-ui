@@ -33,7 +33,7 @@ export default function LoginPage() {
     logger.info("Signing in (Primary)", auth)
     await auth.cognitoSignOut()
     // Clear auth state only after logging out - Otherwise no tokens present to action the request
-    auth.clearAuthState()
+    auth.clearAuthState(true)
     await auth?.cognitoSignIn({
       provider: {
         custom: "Primary"

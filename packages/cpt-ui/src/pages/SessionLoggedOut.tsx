@@ -28,6 +28,7 @@ export default function SessionLoggedOutPage() {
                 </a>{" "}
                 if you did not start another session in another window or browser.
               </p>
+              <Link to="/login">Log back in</Link>
             </Col>
           </Row>
         </Container>

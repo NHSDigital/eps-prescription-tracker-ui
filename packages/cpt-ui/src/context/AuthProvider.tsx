@@ -34,7 +34,7 @@ export interface AuthContextType {
   userDetails: UserDetails | undefined
   cognitoSignIn: (input?: SignInWithRedirectInput) => Promise<void>
   cognitoSignOut: () => Promise<boolean>
-  clearAuthState: () => void
+  clearAuthState: (loggingIn: boolean) => void
   updateSelectedRole: (value: RoleDetails) => Promise<void>
   updateTrackerUserInfo: () => Promise<TrackerUserInfoResult>
 }
@@ -80,7 +80,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
    * Fetch and update the auth tokens
    */
 
-  const clearAuthState = () => {
+  const clearAuthState = (loggingIn?: boolean) => {
     setHasNoAccess(true)
     setHasSingleRoleAccess(false)
     setSelectedRole(undefined)
@@ -91,7 +91,9 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
     setIsSignedIn(false)
     setIsSigningIn(false)
     setIsConcurrentSession(false)
-    setInvalidSessionCause(undefined)
+    if (loggingIn) {
+      setInvalidSessionCause(undefined)
+    }
   }
 
   const updateTrackerUserInfo = async () => {
