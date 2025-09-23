@@ -194,9 +194,11 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
       logger.info("Using default amplify redirect")
       await signOut()
       logger.info("Frontend amplify signout OK!")
+      return true
     } catch (err) {
       logger.error("Failed to sign out:", err)
       setError(String(err))
+      return false
     }
   }
 
