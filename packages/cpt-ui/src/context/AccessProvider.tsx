@@ -20,15 +20,23 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
   const location = useLocation()
 
   const shouldBlockChildren = () => {
+
+    const path = normalizePath(location.pathname)
+
+    // not signed in → block on protected paths
+    if (!auth.isSignedIn && !auth.isSigningIn) {
+      return !ALLOWED_NO_ROLE_PATHS.includes(path)
+    }
+
     // block if concurrent session needs resolution
     if (auth.isConcurrentSession && auth.isSignedIn) {
-      return !ALLOWED_NO_ROLE_PATHS.includes(normalizePath(location.pathname))
+      return !ALLOWED_NO_ROLE_PATHS.includes(normalizePath(path))
     }
 
     // block if user needs to select a role (but allow specific paths)
     if (!auth.selectedRole && !auth.isSigningIn && auth.isSignedIn) {
       return (
-        ![...ALLOWED_NO_ROLE_PATHS, FRONTEND_PATHS.SELECT_YOUR_ROLE].includes(normalizePath(location.pathname))
+        ![...ALLOWED_NO_ROLE_PATHS, FRONTEND_PATHS.SELECT_YOUR_ROLE].includes(normalizePath(path))
       )
     }
 
@@ -36,34 +44,41 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
   }
 
   const ensureRoleSelected = () => {
-    if (!auth.isSignedIn && !auth.isSigningIn) {
-      if (!ALLOWED_NO_ROLE_PATHS.includes(normalizePath(location.pathname))) {
-        logger.info("Not signed in - redirecting to login page")
-        navigate(FRONTEND_PATHS.LOGIN)
-      }
-      return
-    }
-    if (auth.isConcurrentSession && auth.isSignedIn) {
-      if (!ALLOWED_NO_ROLE_PATHS.includes(normalizePath(location.pathname))) {
-        logger.info(
-          "Concurrent session found - redirecting to session selection"
-        )
-        navigate(FRONTEND_PATHS.SESSION_SELECTION)
-      }
-      return
-    }
-    if (!auth.selectedRole && !auth.isSigningIn) {
-      if (!ALLOWED_NO_ROLE_PATHS.includes(normalizePath(location.pathname))) {
-        logger.info("No selected role - Redirecting from", location.pathname)
-        navigate(FRONTEND_PATHS.SELECT_YOUR_ROLE)
-      }
-      return
+    const path = normalizePath(location.pathname)
+    const inNoRoleAllowed = ALLOWED_NO_ROLE_PATHS.includes(path)
+    const atRoot = path === "/"
+
+    const redirect = (to: string, msg: string) => {
+      logger.info(msg)
+      navigate(to)
     }
 
-    if (auth.isSignedIn && auth.selectedRole && location.pathname === "/") {
-      logger.info("Authenticated user on root path - redirecting to search")
-      navigate(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
-      return
+    const loggedOut = !auth.isSignedIn && !auth.isSigningIn
+    const concurrent = auth.isSignedIn && auth.isConcurrentSession
+    const noRole = auth.isSignedIn && !auth.isSigningIn && !auth.selectedRole
+    const authedAtRoot = auth.isSignedIn && !!auth.selectedRole && atRoot
+
+    if (loggedOut && !inNoRoleAllowed) {
+      return redirect(FRONTEND_PATHS.LOGIN, "Not signed in - redirecting to login page")
+    }
+
+    if (concurrent && !inNoRoleAllowed) {
+      return redirect(FRONTEND_PATHS.SESSION_SELECTION, "Concurrent session found - redirecting to session selection")
+    }
+
+    if (noRole && !inNoRoleAllowed) {
+      return redirect(FRONTEND_PATHS.SELECT_YOUR_ROLE, `No selected role - Redirecting from ${path}`)
+    }
+
+    if (authedAtRoot) {
+      return redirect(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID,
+        "Authenticated user on root path - redirecting to search")
+    }
+
+    if (atRoot) {
+      return loggedOut ?
+        redirect(FRONTEND_PATHS.LOGIN, "Not signed in - redirecting to login page") :
+        redirect(FRONTEND_PATHS.SELECT_YOUR_ROLE, `No selected role - Redirecting from ${path}`)
     }
   }
 
@@ -79,7 +94,8 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
     auth.isSigningIn,
     auth.selectedRole,
     auth.isConcurrentSession,
-    location.pathname
+    location.pathname,
+    navigate
   ])
 
   useEffect(() => {
