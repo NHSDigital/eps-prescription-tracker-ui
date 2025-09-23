@@ -26,6 +26,7 @@ export interface CloudfrontBehaviorsProps {
   readonly oauth2GatewayOrigin: RestApiOrigin
   readonly oauth2GatewayRequestPolicy: OriginRequestPolicy
   readonly staticContentBucketOrigin: IOrigin
+  readonly fullCognitoDomain: string
 }
 
 /**
@@ -40,6 +41,7 @@ export class CloudfrontBehaviors extends Construct{
   public readonly s3StaticContentUriRewriteFunction: CloudfrontFunction
   public readonly s3StaticContentRootSlashRedirect: CloudfrontFunction
   public readonly keyValueStore: KeyValueStore
+  public readonly fullCognitoDomain: string
 
   public constructor(scope: Construct, id: string, props: CloudfrontBehaviorsProps){
     super(scope, id)
@@ -186,7 +188,8 @@ export class CloudfrontBehaviors extends Construct{
     s3StaticContentRootSlashRedirect.node.addDependency(s3JwksUriRewriteFunction)
 
     const headersPolicy = new CustomSecurityHeadersPolicy(this, "AdditionalBehavioursHeadersPolicy", {
-      policyName: `${props.serviceName}-AdditionalBehavioursCustomSecurityHeaders`
+      policyName: `${props.serviceName}-AdditionalBehavioursCustomSecurityHeaders`,
+      fullCognitoDomain: props.fullCognitoDomain
     })
 
     const additionalBehaviors = {
