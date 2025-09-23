@@ -157,7 +157,8 @@ const lambdaHandler = async (event: APIGatewayProxyEventBase<AuthResult>): Promi
       message: "UserInfo fetched successfully from the OIDC endpoint",
       userInfo: {
         ...userInfoResponse,
-        is_concurrent_session: isConcurrentSession
+        is_concurrent_session: isConcurrentSession,
+        sessionId: sessionId
       }
     })
   }

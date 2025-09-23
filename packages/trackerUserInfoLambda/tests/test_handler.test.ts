@@ -407,7 +407,8 @@ describe("Lambda Handler Tests with mock disabled", () => {
       ],
       "roles_without_access": [],
       "user_details": {"family_name": "foo", "given_name": "bar"},
-      "is_concurrent_session": true
+      "is_concurrent_session": true,
+      "sessionId": "mock-session-id"
     })
 
     expect(body).toHaveProperty("message", "UserInfo fetched successfully from the OIDC endpoint")

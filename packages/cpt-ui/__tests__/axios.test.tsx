@@ -45,7 +45,7 @@ describe("HTTP Axios Instance", () => {
     mock.onGet("/test").reply((config) => {
       // 'config.headers' is possibly 'undefined'.
       // Cannot invoke an object which is possibly 'undefined'.ts(2722)
-      expect(config.headers?.["x-session-id"]).toBe("my_session_id")
+      expect(config.headers?.["x-rum-session-id"]).toBe("my_session_id")
       return [200, {success: true}]
     })
 

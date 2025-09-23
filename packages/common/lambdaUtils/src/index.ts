@@ -10,6 +10,7 @@ export type LoggerKeys = {
   "apigw-request-id"?: string,
   "x-request-id"?: string,
   "x-correlation-id"?: string
+  "x-rum-session-id"?: string
   "x-session-id"?: string
 }
 export type InboundEventValues = {
@@ -23,7 +24,8 @@ export const extractInboundEventValues = (event: APIGatewayProxyEvent): InboundE
       "apigw-request-id": event.requestContext?.requestId,
       "x-request-id": event.headers[Headers.x_request_id],
       "x-correlation-id": correlationId,
-      "x-session-id": event.headers[Headers.x_session_id]
+      "x-session-id": event.headers[Headers.x_session_id],
+      "x-rum-session-id": event.headers[Headers.x_rum_session_id]
     },
     correlationId
   }

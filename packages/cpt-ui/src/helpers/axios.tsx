@@ -4,6 +4,7 @@ import {fetchAuthSession} from "aws-amplify/auth"
 import {logger} from "./logger"
 import {cptAwsRum} from "./awsRum"
 import {Headers} from "@cpt-ui-common/common-types"
+import {AuthContextType, useAuth} from "@/context/AuthProvider"
 
 const x_retry_header = "x-retry-id"
 
@@ -20,9 +21,7 @@ function getCookie(name: string): string | null {
   return null
 }
 
-function getSessionIdFromCookie() {
-  const rumInstance = cptAwsRum.getAwsRum()
-
+function getRumSessionIdFromCookie() {
   const raw = getCookie("cwr_s")
   if (!raw) return null
 
@@ -31,7 +30,7 @@ function getSessionIdFromCookie() {
     const parsed = JSON.parse(decoded) // parse JSON
     return parsed.sessionId || null // get property
   } catch (error) {
-    rumInstance?.recordEvent("axios_error", {error: error})
+    logger.error("Could not get rum session id from cookie", error)
     // cant get the session id so just return nothing
     return null
   }
@@ -43,7 +42,16 @@ http.interceptors.request.use(
 
     config.headers[Headers.x_request_id] = uuidv4()
     config.headers[Headers.x_correlation_id] = uuidv4()
-    config.headers[Headers.x_session_id] = getSessionIdFromCookie()
+    config.headers[Headers.x_rum_session_id] = getRumSessionIdFromCookie()
+    try {
+      const auth = useAuth()
+      // if we have a session id from auth context then add it to the header
+      if (auth && (auth as AuthContextType).sessionId) {
+        config.headers[Headers.x_session_id] = (auth as AuthContextType).sessionId
+      }
+    } catch (error) {
+      logger.error("Could not get session id from storage", error)
+    }
 
     const authSession = await fetchAuthSession()
     const idToken = authSession.tokens?.idToken
