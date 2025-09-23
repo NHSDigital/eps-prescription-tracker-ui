@@ -1,7 +1,7 @@
 /* eslint-disable no-undef */
 
 import "@testing-library/jest-dom"
-const cwr_cookie_value_string = JSON.stringify({"sessionId":"my_session_id"})
+const cwr_cookie_value_string = JSON.stringify({"sessionId":"my_rum_session_id"})
 const cwr_cookie_value_encoded = Buffer.from(cwr_cookie_value_string, "utf-8").toString("base64")
 
 Object.defineProperty(document, "cookie", {

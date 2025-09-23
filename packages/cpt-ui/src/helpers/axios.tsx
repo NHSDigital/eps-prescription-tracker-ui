@@ -4,7 +4,7 @@ import {fetchAuthSession} from "aws-amplify/auth"
 import {logger} from "./logger"
 import {cptAwsRum} from "./awsRum"
 import {Headers} from "@cpt-ui-common/common-types"
-import {AuthContextType, useAuth} from "@/context/AuthProvider"
+import {readItemGroupFromLocalStorage} from "./useLocalStorageState"
 
 const x_retry_header = "x-retry-id"
 
@@ -44,10 +44,10 @@ http.interceptors.request.use(
     config.headers[Headers.x_correlation_id] = uuidv4()
     config.headers[Headers.x_rum_session_id] = getRumSessionIdFromCookie()
     try {
-      const auth = useAuth()
+      const sessionGroup = readItemGroupFromLocalStorage("sessionId")
       // if we have a session id from auth context then add it to the header
-      if (auth && (auth as AuthContextType).sessionId) {
-        config.headers[Headers.x_session_id] = (auth as AuthContextType).sessionId
+      if (sessionGroup["sessionId"]) {
+        config.headers[Headers.x_session_id] = sessionGroup["sessionId"]
       }
     } catch (error) {
       logger.error("Could not get session id from storage", error)
@@ -85,17 +85,16 @@ http.interceptors.response.use(
 
   async (error: AxiosError | Error) => {
     const rumInstance = cptAwsRum.getAwsRum()
-    let correlationHeaders
+    let correlationHeaders: Record<string, string | undefined> = {}
     if (isAxiosError(error)) {
       const {config, response} = error
 
       // If we have a response, attempt retries
       if (response && config) {
-        correlationHeaders = {
-          "x-request-id": config.headers[Headers.x_request_id],
-          "x-correlation-id": config.headers[Headers.x_correlation_id],
-          "x-session-id": config.headers[Headers.x_session_id]
-        }
+        correlationHeaders[Headers.x_request_id] = config.headers[Headers.x_request_id]
+        correlationHeaders[Headers.x_correlation_id] = config.headers[Headers.x_correlation_id]
+        correlationHeaders[Headers.x_session_id] = config.headers[Headers.x_session_id]
+        correlationHeaders[Headers.x_rum_session_id] = config.headers[Headers.x_rum_session_id]
 
         if (response.status === 401 && response.data?.restartLogin) {
           return Promise.reject(error)
