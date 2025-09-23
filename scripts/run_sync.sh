@@ -25,6 +25,7 @@ else
 fi
 
 SERVICE_NAME=cpt-ui-pr-$PULL_REQUEST_ID
+IS_PULL_REQUEST=true
 
 echo "Getting exports from stacks ${SERVICE_NAME}"
 
@@ -324,6 +325,7 @@ export APIGEE_DOHS_ENDPOINT
 export JWT_KID
 export ROLE_ID
 export USE_ZONE_APEX
+export IS_PULL_REQUEST
 
 # variables needed for StatefulResourcesApp
 CDK_APP_NAME=StatefulResourcesApp
