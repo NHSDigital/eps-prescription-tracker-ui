@@ -34,7 +34,7 @@ export class CustomSecurityHeadersPolicy extends Construct {
             connect-src 'self' 
                 https://*.amazonaws.com 
                 https://*.amazoncognito.com
-                https://${props.fullCognitoDomain}/oauth2/token;
+                https://${props.fullCognitoDomain};
             object-src 'none';
             base-uri 'self';
             frame-ancestors 'none';
