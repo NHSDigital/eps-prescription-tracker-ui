@@ -4,10 +4,13 @@ import {ResponseHeadersPolicy, HeadersFrameOption, HeadersReferrerPolicy} from "
 
 export interface CustomResponseHeadersPolicyProps {
   policyName: string
+  fullCognitoDomain: string
 }
 
 export class CustomSecurityHeadersPolicy extends Construct {
   public readonly policy: ResponseHeadersPolicy
+  public readonly policyName: string
+  public readonly fullCognitoDomain: string
 
   constructor(scope: Construct, id: string, props: CustomResponseHeadersPolicyProps) {
     super(scope, id)
@@ -30,7 +33,8 @@ export class CustomSecurityHeadersPolicy extends Construct {
             img-src 'self' data: https://assets.nhs.uk;
             connect-src 'self' 
                 https://*.amazonaws.com 
-                https://*.amazoncognito.com;
+                https://*.amazoncognito.com
+                https://${props.fullCognitoDomain}/oauth2/token;
             object-src 'none';
             base-uri 'self';
             frame-ancestors 'none';
