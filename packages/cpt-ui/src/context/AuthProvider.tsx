@@ -34,7 +34,7 @@ export interface AuthContextType {
   userDetails: UserDetails | undefined
   cognitoSignIn: (input?: SignInWithRedirectInput) => Promise<void>
   cognitoSignOut: () => Promise<boolean>
-  clearAuthState: (loggingIn: boolean) => void
+  clearAuthState: (loggingIn?: boolean) => void
   updateSelectedRole: (value: RoleDetails) => Promise<void>
   updateTrackerUserInfo: () => Promise<TrackerUserInfoResult>
 }
@@ -194,7 +194,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
       // this triggers a signedOutEvent which is handled by the hub listener
       // we clear all state in there
       logger.info("Using default amplify redirect")
-      await signOut()
+      await signOut({global: true})
       logger.info("Frontend amplify signout OK!")
       return true
     } catch (err) {

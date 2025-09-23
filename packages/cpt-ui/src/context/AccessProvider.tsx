@@ -34,7 +34,7 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
 
   const ensureRoleSelected = () => {
     if (!auth.isSignedIn && !auth.isSigningIn &&
-      !allowed_no_redirect_paths.includes(normalizePath(FRONTEND_PATHS.SESSION_LOGGED_OUT))
+      !allowed_no_redirect_paths.includes(normalizePath(location.pathname))
     ) {
       // Don't redirect on session logged out page - As user message must be seen
       if (!ALLOWED_NO_ROLE_PATHS.includes(normalizePath(location.pathname))) {
@@ -53,7 +53,7 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
       return
     }
     if (!auth.selectedRole && !auth.isSigningIn &&
-      !allowed_no_redirect_paths.includes(normalizePath(FRONTEND_PATHS.SESSION_LOGGED_OUT))
+      !allowed_no_redirect_paths.includes(normalizePath(location.pathname))
     ) {
       if (!ALLOWED_NO_ROLE_PATHS.includes(normalizePath(location.pathname))) {
         logger.info("No selected role - Redirecting from", location.pathname)
