@@ -14,10 +14,10 @@ export const SummaryListRow = ({label, value, tagValue, tagColour}: SummaryListR
         <span className="data-field__content data-field__content--address">
           {value}
           {tagValue && (
-          <Tag color={tagColour}>
-            {tagValue}
-          </Tag>
-        )}
+            <Tag color={tagColour}>
+              {tagValue}
+            </Tag>
+          )}
         </span>
       </SummaryList.Value>
     </SummaryList.Row>
