@@ -167,7 +167,7 @@ jobs:
       mockOidcUserInfoEndpoint: "https://internal-dev.api.service.nhs.uk/oauth2-mock/userinfo"
       mockOidcjwksEndpoint: "https://identity.ptl.api.platform.nhs.uk/realms/Cis2-mock-internal-dev/protocol/openid-connect/certs"
       allowLocalhostAccess: true
-      useCustomCognitoDomain: false
+      useCustomCognitoDomain: true
       APIGEE_CIS2_TOKEN_ENDPOINT: "https://internal-dev.api.service.nhs.uk/oauth2/token"
       APIGEE_MOCK_TOKEN_ENDPOINT: "https://internal-dev.api.service.nhs.uk/oauth2-mock/token"
       APIGEE_PRESCRIPTIONS_ENDPOINT: "https://internal-dev.api.service.nhs.uk/clinical-prescription-tracker/"
