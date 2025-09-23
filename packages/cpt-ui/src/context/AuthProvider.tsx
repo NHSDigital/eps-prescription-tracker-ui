@@ -181,20 +181,22 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
     try {
       // we need to sign out of cis2 first before signing out of cognito
       // as otherwise we may possibly not be authed to reach cis2 sign out endpoint
-      logger.info(`calling ${CIS2SignOutEndpoint}`)
-      await http.get(CIS2SignOutEndpoint)
-      logger.info("Backend CIS2 signout OK!")
-      logger.info(`calling amplify logout`)
+      logger.info(`Attempting CIS2 logout using: ${CIS2SignOutEndpoint}`)
+      try {
+        await http.get(CIS2SignOutEndpoint)
+        logger.info("Backend CIS2 signout OK!")
+      } catch (err) {
+        logger.error("Failed to sign out of CIS2:", err)
+        // proceed with cognito signout anyway
+      }
       // this triggers a signedOutEvent which is handled by the hub listener
       // we clear all state in there
       logger.info("Using default amplify redirect")
       await signOut()
       logger.info("Frontend amplify signout OK!")
-      return true
     } catch (err) {
       logger.error("Failed to sign out:", err)
       setError(String(err))
-      return false
     }
   }
 
