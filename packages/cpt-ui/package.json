@@ -24,8 +24,7 @@
     "react": "^18",
     "react-dom": "^18",
     "react-router-dom": "^6.22.3",
-    "sass": "^1.92.1",
-    "uuid": "^11.1.0"
+    "sass": "^1.92.1"
   },
   "devDependencies": {
     "@aws-amplify/auth": "^6.15.1",

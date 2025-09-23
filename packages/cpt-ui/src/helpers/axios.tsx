@@ -1,5 +1,4 @@
 import axios, {AxiosError, InternalAxiosRequestConfig, isAxiosError} from "axios"
-import {v4 as uuidv4} from "uuid"
 import {fetchAuthSession} from "aws-amplify/auth"
 import {logger} from "./logger"
 import {cptAwsRum} from "./awsRum"
@@ -15,8 +14,8 @@ http.interceptors.request.use(
   async (config: InternalAxiosRequestConfig) => {
     const controller = new AbortController()
 
-    config.headers[x_request_id_header] = uuidv4()
-    config.headers[x_correlation_id_header] = uuidv4()
+    config.headers[x_request_id_header] = crypto.randomUUID()
+    config.headers[x_correlation_id_header] = crypto.randomUUID()
     const authSession = await fetchAuthSession()
     const idToken = authSession.tokens?.idToken
     if (idToken === undefined) {
