@@ -18,39 +18,67 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
   const auth = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
-  const allowed_no_role_paths = [
-    FRONTEND_PATHS.LOGIN,
-    FRONTEND_PATHS.LOGOUT,
-    FRONTEND_PATHS.SESSION_LOGGED_OUT,
-    FRONTEND_PATHS.COOKIES,
-    FRONTEND_PATHS.PRIVACY_NOTICE,
-    FRONTEND_PATHS.COOKIES_SELECTED,
-    FRONTEND_PATHS.SESSION_SELECTION
-  ]
+
+  const shouldBlockChildren = () => {
+
+    const path = normalizePath(location.pathname)
+
+    // not signed in → block on protected paths
+    if (!auth.isSignedIn && !auth.isSigningIn) {
+      return !ALLOWED_NO_ROLE_PATHS.includes(path)
+    }
+
+    // block if concurrent session needs resolution
+    if (auth.isConcurrentSession && auth.isSignedIn) {
+      return !ALLOWED_NO_ROLE_PATHS.includes(normalizePath(path))
+    }
+
+    // block if user needs to select a role (but allow specific paths)
+    if (!auth.selectedRole && !auth.isSigningIn && auth.isSignedIn) {
+      return (
+        ![...ALLOWED_NO_ROLE_PATHS, FRONTEND_PATHS.SELECT_YOUR_ROLE].includes(normalizePath(path))
+      )
+    }
+
+    return false
+  }
 
   const ensureRoleSelected = () => {
-    if (!auth.isSignedIn && !auth.isSigningIn) {
-      if (!ALLOWED_NO_ROLE_PATHS.includes(normalizePath(location.pathname))) {
-        logger.info("Not signed in - redirecting to login page")
-        navigate(FRONTEND_PATHS.LOGIN)
-      }
-      return
+    const path = normalizePath(location.pathname)
+    const inNoRoleAllowed = ALLOWED_NO_ROLE_PATHS.includes(path)
+    const atRoot = path === "/"
+
+    const redirect = (to: string, msg: string) => {
+      logger.info(msg)
+      navigate(to)
     }
-    if (auth.isConcurrentSession && auth.isSignedIn) {
-      if (!ALLOWED_NO_ROLE_PATHS.includes(normalizePath(location.pathname))) {
-        logger.info(
-          "Concurrent session found - redirecting to session selection"
-        )
-        navigate(FRONTEND_PATHS.SESSION_SELECTION)
-      }
-      return
+
+    const loggedOut = !auth.isSignedIn && !auth.isSigningIn
+    const concurrent = auth.isSignedIn && auth.isConcurrentSession
+    const noRole = auth.isSignedIn && !auth.isSigningIn && !auth.selectedRole
+    const authedAtRoot = auth.isSignedIn && !!auth.selectedRole && atRoot
+
+    if (loggedOut && !inNoRoleAllowed) {
+      return redirect(FRONTEND_PATHS.LOGIN, "Not signed in - redirecting to login page")
     }
-    if (!auth.selectedRole && !auth.isSigningIn) {
-      if (!ALLOWED_NO_ROLE_PATHS.includes(normalizePath(location.pathname))) {
-        logger.info("No selected role - Redirecting from", location.pathname)
-        navigate(FRONTEND_PATHS.SELECT_YOUR_ROLE)
-      }
-      return
+
+    if (concurrent && !inNoRoleAllowed) {
+      return redirect(FRONTEND_PATHS.SESSION_SELECTION, "Concurrent session found - redirecting to session selection")
+    }
+
+    if (noRole && !inNoRoleAllowed) {
+      return redirect(FRONTEND_PATHS.SELECT_YOUR_ROLE, `No selected role - Redirecting from ${path}`)
+    }
+
+    if (authedAtRoot) {
+      return redirect(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID,
+        "Authenticated user on root path - redirecting to search")
+    }
+
+    if (atRoot) {
+      return loggedOut ?
+        redirect(FRONTEND_PATHS.LOGIN, "Not signed in - redirecting to login page") :
+        redirect(FRONTEND_PATHS.SELECT_YOUR_ROLE, `No selected role - Redirecting from ${path}`)
     }
   }
 
@@ -61,14 +89,21 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
       return
     }
     ensureRoleSelected()
-  }, [auth.isSignedIn, auth.isSigningIn, auth.selectedRole, auth.isConcurrentSession, location.pathname])
+  }, [
+    auth.isSignedIn,
+    auth.isSigningIn,
+    auth.selectedRole,
+    auth.isConcurrentSession,
+    location.pathname,
+    navigate
+  ])
 
   useEffect(() => {
-  // If user is signedIn, every 5 minutes call tracker user info. If it fails, sign the user out.
+    // If user is signedIn, every 5 minutes call tracker user info. If it fails, sign the user out.
     const internalId = setInterval(() => {
-      const currentPath = window.location.pathname
+      const currentPath = location.pathname
 
-      if (auth.isSigningIn === true || allowed_no_role_paths.includes(currentPath)) {
+      if (auth.isSigningIn === true || ALLOWED_NO_ROLE_PATHS.includes(currentPath)) {
         logger.debug("Not checking user info")
         return
       }
@@ -85,7 +120,11 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
     }, 300000) // 300000 ms = 5 minutes
 
     return () => clearInterval(internalId)
-  }, [auth.isSignedIn, auth.isSigningIn])
+  }, [auth.isSignedIn, auth.isSigningIn, location.pathname])
+
+  if (shouldBlockChildren()) {
+    return null
+  }
 
   return (
     <AccessContext.Provider value={{}}>
