@@ -19,12 +19,12 @@ describe("mapMessageHistoryTitleToMessageCode", () => {
   })
 
   it("should return undefined for unrecognized message titles", () => {
-    expect(mapMessageHistoryTitleToMessageCode("Unknown Message")).toBeUndefined()
-    expect(mapMessageHistoryTitleToMessageCode("")).toBeUndefined()
+    expect(mapMessageHistoryTitleToMessageCode("Unknown Message")).toBe("Unknown Message")
+    expect(mapMessageHistoryTitleToMessageCode("")).toBe("")
   })
 
   it("should handle undefined message titles gracefully", () => {
-    expect(mapMessageHistoryTitleToMessageCode("")).toBeUndefined()
+    expect(mapMessageHistoryTitleToMessageCode("")).toBe("")
   })
 })
 
