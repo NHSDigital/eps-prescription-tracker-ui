@@ -26,7 +26,8 @@ const defaultAuthContext: AuthContextType = {
   cognitoSignOut: jest.fn(),
   clearAuthState: jest.fn(),
   updateSelectedRole: jest.fn(),
-  updateTrackerUserInfo: jest.fn()
+  updateTrackerUserInfo: jest.fn(),
+  updateInvalidSessionCause: jest.fn()
 }
 
 // Utility function to render with all required providers

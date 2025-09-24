@@ -55,7 +55,8 @@ export const defaultAuthState: AuthContextType = {
   cognitoSignOut: jest.fn(),
   clearAuthState: jest.fn(),
   updateSelectedRole: jest.fn(),
-  updateTrackerUserInfo: mockUpdateTrackerUserInfo
+  updateTrackerUserInfo: mockUpdateTrackerUserInfo,
+  updateInvalidSessionCause: jest.fn()
 }
 
 const MockAuthProvider = ({

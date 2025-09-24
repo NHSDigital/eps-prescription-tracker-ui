@@ -11,6 +11,27 @@ jest.mock("@/context/AuthProvider")
 
 const mockedUseAuth = useAuth as jest.MockedFunction<typeof useAuth>
 
+const mockUseAuthReturnValue = {
+  selectedRole: undefined,
+  error: null,
+  user: null,
+  isSignedIn: false,
+  isSigningIn: false,
+  invalidSessionCause: undefined,
+  rolesWithAccess: [],
+  rolesWithoutAccess: [],
+  hasNoAccess: false,
+  hasSingleRoleAccess: false,
+  userDetails: undefined,
+  isConcurrentSession: false,
+  cognitoSignIn: jest.fn(),
+  cognitoSignOut: jest.fn(),
+  clearAuthState: jest.fn(),
+  updateSelectedRole: jest.fn(),
+  updateTrackerUserInfo: jest.fn(),
+  updateInvalidSessionCause: jest.fn()
+}
+
 describe("YourSelectedRolePage", () => {
   beforeEach(() => {
     jest.resetAllMocks()
@@ -25,25 +46,7 @@ describe("YourSelectedRolePage", () => {
   }
 
   it("renders heading and subheading correctly", () => {
-    mockedUseAuth.mockReturnValue({
-      selectedRole: undefined,
-      error: null,
-      user: null,
-      isSignedIn: false,
-      isSigningIn: false,
-      invalidSessionCause: undefined,
-      rolesWithAccess: [],
-      rolesWithoutAccess: [],
-      hasNoAccess: false,
-      hasSingleRoleAccess: false,
-      userDetails: undefined,
-      isConcurrentSession: false,
-      cognitoSignIn: jest.fn(),
-      cognitoSignOut: jest.fn(),
-      clearAuthState: jest.fn(),
-      updateSelectedRole: jest.fn(),
-      updateTrackerUserInfo: jest.fn()
-    })
+    mockedUseAuth.mockReturnValue(mockUseAuthReturnValue)
 
     renderComponent()
 
@@ -57,25 +60,7 @@ describe("YourSelectedRolePage", () => {
       org_name: "Great Pharmacy",
       org_code: "GP123"
     }
-    mockedUseAuth.mockReturnValue({
-      selectedRole,
-      error: null,
-      user: null,
-      isSignedIn: false,
-      isSigningIn: false,
-      invalidSessionCause: undefined,
-      rolesWithAccess: [],
-      rolesWithoutAccess: [],
-      hasNoAccess: false,
-      hasSingleRoleAccess: false,
-      userDetails: undefined,
-      isConcurrentSession: false,
-      cognitoSignIn: jest.fn(),
-      cognitoSignOut: jest.fn(),
-      clearAuthState: jest.fn(),
-      updateSelectedRole: jest.fn(),
-      updateTrackerUserInfo: jest.fn()
-    })
+    mockedUseAuth.mockReturnValue({...mockUseAuthReturnValue, ...selectedRole})
 
     renderComponent()
 
@@ -84,25 +69,7 @@ describe("YourSelectedRolePage", () => {
   })
 
   it("renders confirm button with correct text", () => {
-    mockedUseAuth.mockReturnValue({
-      selectedRole: undefined,
-      error: null,
-      user: null,
-      isSignedIn: false,
-      isSigningIn: false,
-      invalidSessionCause: undefined,
-      rolesWithAccess: [],
-      rolesWithoutAccess: [],
-      hasNoAccess: false,
-      hasSingleRoleAccess: false,
-      userDetails: undefined,
-      isConcurrentSession: false,
-      cognitoSignIn: jest.fn(),
-      cognitoSignOut: jest.fn(),
-      clearAuthState: jest.fn(),
-      updateSelectedRole: jest.fn(),
-      updateTrackerUserInfo: jest.fn()
-    })
+    mockedUseAuth.mockReturnValue(mockUseAuthReturnValue)
 
     renderComponent()
 
@@ -111,25 +78,7 @@ describe("YourSelectedRolePage", () => {
   })
 
   it("renders change role links correctly", () => {
-    mockedUseAuth.mockReturnValue({
-      selectedRole: undefined,
-      error: null,
-      user: null,
-      isSignedIn: false,
-      isSigningIn: false,
-      invalidSessionCause: undefined,
-      rolesWithAccess: [],
-      rolesWithoutAccess: [],
-      hasNoAccess: false,
-      hasSingleRoleAccess: false,
-      userDetails: undefined,
-      isConcurrentSession: false,
-      cognitoSignIn: jest.fn(),
-      cognitoSignOut: jest.fn(),
-      clearAuthState: jest.fn(),
-      updateSelectedRole: jest.fn(),
-      updateTrackerUserInfo: jest.fn()
-    })
+    mockedUseAuth.mockReturnValue(mockUseAuthReturnValue)
 
     renderComponent()
     const changeLinks = screen.getAllByRole("link")
@@ -144,24 +93,9 @@ describe("YourSelectedRolePage", () => {
   })
 
   it("navigates to /search-by-prescription-id when confirm button is clicked", async () => {
+    const selectedRole = {role_name: "Pharmacist", org_name: "Org", org_code: "ORG1"}
     mockedUseAuth.mockReturnValue({
-      selectedRole: {role_name: "Pharmacist", org_name: "Org", org_code: "ORG1"},
-      error: null,
-      user: null,
-      isSignedIn: false,
-      isSigningIn: false,
-      invalidSessionCause: undefined,
-      rolesWithAccess: [],
-      rolesWithoutAccess: [],
-      hasNoAccess: false,
-      hasSingleRoleAccess: false,
-      userDetails: undefined,
-      isConcurrentSession: false,
-      cognitoSignIn: jest.fn(),
-      cognitoSignOut: jest.fn(),
-      clearAuthState: jest.fn(),
-      updateSelectedRole: jest.fn(),
-      updateTrackerUserInfo: jest.fn()
+      ...mockUseAuthReturnValue, ...selectedRole
     })
 
     // Setup MemoryRouter with initial entry at the page, and a dummy route for /search-by-prescription-id
@@ -182,25 +116,7 @@ describe("YourSelectedRolePage", () => {
   })
 
   it("does not crash if selectedRole is undefined", () => {
-    mockedUseAuth.mockReturnValue({
-      selectedRole: undefined,
-      error: null,
-      user: null,
-      isSignedIn: false,
-      isSigningIn: false,
-      invalidSessionCause: undefined,
-      rolesWithAccess: [],
-      rolesWithoutAccess: [],
-      hasNoAccess: false,
-      hasSingleRoleAccess: false,
-      userDetails: undefined,
-      isConcurrentSession: false,
-      cognitoSignIn: jest.fn(),
-      cognitoSignOut: jest.fn(),
-      clearAuthState: jest.fn(),
-      updateSelectedRole: jest.fn(),
-      updateTrackerUserInfo: jest.fn()
-    })
+    mockedUseAuth.mockReturnValue(mockUseAuthReturnValue)
 
     renderComponent()
 

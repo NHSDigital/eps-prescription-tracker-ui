@@ -27,7 +27,7 @@ export default function EpsCard({role, link}: EpsCardProps) {
       await authContext.updateSelectedRole(role)
     } catch (err) {
       if (axios.isAxiosError(err) && (err.response?.status === 401)) {
-        handleRestartLogin(err)
+        handleRestartLogin(authContext, err)
         return
       }
 

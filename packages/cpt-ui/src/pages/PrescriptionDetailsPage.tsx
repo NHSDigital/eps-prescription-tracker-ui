@@ -31,8 +31,9 @@ import {logger} from "@/helpers/logger"
 import {useSearchContext} from "@/context/SearchProvider"
 import {buildBackLink, determineSearchType} from "@/helpers/prescriptionNotFoundLinks"
 import axios from "axios"
-import { AUTH_CONFIG } from "@/constants/environment"
-import { useAuth } from "@/context/AuthProvider"
+import {handleRestartLogin} from "@/helpers/logout"
+import {useAuth} from "@/context/AuthProvider"
+
 
 export default function PrescriptionDetailsPage() {
 

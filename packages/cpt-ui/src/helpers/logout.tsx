@@ -8,8 +8,6 @@ import { AxiosError } from "axios"
 ** Used on the LogoutPage & SessionLoggedOutPage for a consistent sign out process
 */
 
-const auth = useAuth()
-
 export const signOut = async (authParam: AuthContextType, redirectUri?: string) => {
   const location = window.location.pathname
   logger.info(`Called signOut helper from ${location}`)
@@ -29,7 +27,7 @@ type RestartLoginData = {
   [key: string]: unknown
 }
 
-export const handleRestartLogin = async (errorResponse: AxiosError) => {
+export const handleRestartLogin = async (auth: AuthContextType, errorResponse: AxiosError) => {
   logger.info("Handling restart login instruction from backend")
   const data = errorResponse.response?.data as RestartLoginData | undefined
 
