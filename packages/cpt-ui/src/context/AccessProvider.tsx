@@ -58,10 +58,6 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
     const noRole = auth.isSignedIn && !auth.isSigningIn && !auth.selectedRole
     const authedAtRoot = auth.isSignedIn && !!auth.selectedRole && atRoot
 
-    if (loggedOut && !inNoRoleAllowed) {
-      return redirect(FRONTEND_PATHS.LOGIN, "Not signed in - redirecting to login page")
-    }
-
     if (concurrent && !inNoRoleAllowed) {
       return redirect(FRONTEND_PATHS.SESSION_SELECTION, "Concurrent session found - redirecting to session selection")
     }

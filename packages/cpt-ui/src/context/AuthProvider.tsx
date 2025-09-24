@@ -91,7 +91,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
     setIsSignedIn(false)
     setIsSigningIn(false)
     setIsConcurrentSession(false)
-    setInvalidSessionCause(undefined)
+    // updateTrackerUserInfo will set InvalidSessionCause to undefined
   }
 
   const updateTrackerUserInfo = async () => {
@@ -182,13 +182,19 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
       // we need to sign out of cis2 first before signing out of cognito
       // as otherwise we may possibly not be authed to reach cis2 sign out endpoint
       logger.info(`calling ${CIS2SignOutEndpoint}`)
-      await http.get(CIS2SignOutEndpoint)
-      logger.info("Backend CIS2 signout OK!")
+      try {
+        await http.get(CIS2SignOutEndpoint)
+        logger.info("Backend CIS2 signout OK!")
+      } catch (err) {
+        logger.error("Failed to sign out of CIS2:", err)
+        // we continue regardless of error here as we still want to sign out of cognito
+      }
+
       logger.info(`calling amplify logout`)
       // this triggers a signedOutEvent which is handled by the hub listener
       // we clear all state in there
       logger.info("Using default amplify redirect")
-      await signOut()
+      await signOut({global: true})
       logger.info("Frontend amplify signout OK!")
       return true
     } catch (err) {
