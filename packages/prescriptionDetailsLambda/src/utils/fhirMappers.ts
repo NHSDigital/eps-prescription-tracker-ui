@@ -60,7 +60,7 @@ export const mapMessageHistoryTitleToMessageCode = (title: string, logger?: Logg
   const mapped = titleToCodeMap[title]
 
   if (!mapped) {
-    logger?.warn(`missing mapping for title: "${title}"`)
+    logger?.warn("missing mapping for Spine message title", {missingTitle: title})
     // fallback: show raw Spine message in UI
     return title
   }
