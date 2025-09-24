@@ -452,7 +452,8 @@ export class StatelessResourcesStack extends Stack {
 
     // --- CloudfrontBehaviors
     const headersPolicy = new CustomSecurityHeadersPolicy(this, "DefaultBehaviourHeadersPolicy", {
-      policyName: `${props.serviceName}-CustomSecurityHeaders`
+      policyName: `${props.serviceName}-CustomSecurityHeaders`,
+      fullCognitoDomain: fullCognitoDomain
     })
 
     const cloudfrontBehaviors = new CloudfrontBehaviors(this, "CloudfrontBehaviors", {
@@ -462,7 +463,8 @@ export class StatelessResourcesStack extends Stack {
       apiGatewayRequestPolicy: apiGatewayRequestPolicy,
       oauth2GatewayOrigin: oauth2GatewayOrigin,
       oauth2GatewayRequestPolicy: oauth2GatewayRequestPolicy,
-      staticContentBucketOrigin: staticContentBucketOrigin
+      staticContentBucketOrigin: staticContentBucketOrigin,
+      fullCognitoDomain: fullCognitoDomain
     })
 
     // --- Distribution
