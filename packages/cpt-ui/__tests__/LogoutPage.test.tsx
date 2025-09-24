@@ -82,7 +82,7 @@ const MockAuthProvider = ({
   } as AuthContextType
 
   return (
-    <MemoryRouter>
+    <MemoryRouter initialEntries={["/logout"]}>
       <AuthContext.Provider value={authContextValue}>
         <AccessProvider>{children}</AccessProvider>
       </AuthContext.Provider>
