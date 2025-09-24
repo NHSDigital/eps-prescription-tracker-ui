@@ -9,7 +9,7 @@ import {
   Col
 } from "nhsuk-react-components"
 import {SearchResultsPageStrings} from "@/constants/ui-strings/BasicDetailsSearchResultsPageStrings"
-import {API_ENDPOINTS, FRONTEND_PATHS} from "@/constants/environment"
+import {API_ENDPOINTS, AUTH_CONFIG, FRONTEND_PATHS} from "@/constants/environment"
 import {PatientSummary} from "@cpt-ui-common/common-types/src"
 import http from "@/helpers/axios"
 import {logger} from "@/helpers/logger"
@@ -20,6 +20,8 @@ import SearchResultsTooManyMessage from "@/components/SearchResultsTooManyMessag
 import {useSearchContext} from "@/context/SearchProvider"
 import UnknownErrorMessage from "@/components/UnknownErrorMessage"
 import axios from "axios"
+import {useAuth} from "@/context/AuthProvider"
+import {handleRestartLogin} from "@/helpers/logout"
 
 export default function SearchResultsPage() {
   const location = useLocation()
@@ -66,8 +68,9 @@ export default function SearchResultsPage() {
       setPatients(payload)
       setLoading(false)
     } catch (err) {
-      if (axios.isAxiosError(err) && (err.response?.status === 401) && err.response.data?.restartLogin) {
-        navigate(FRONTEND_PATHS.LOGIN)
+      const auth = useAuth()
+      if (axios.isAxiosError(err) && (err.response?.status === 401) {
+        handleRestartLogin(auth, err)
         return
       }
       logger.error("Error loading search results:", err)

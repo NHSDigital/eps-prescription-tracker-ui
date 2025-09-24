@@ -8,8 +8,9 @@ import {RoleDetails} from "@cpt-ui-common/common-types"
 import {EPS_CARD_STRINGS} from "@/constants/ui-strings/CardStrings"
 import {useAuth} from "@/context/AuthProvider"
 import axios from "axios"
-import {FRONTEND_PATHS} from "@/constants/environment"
+import {AUTH_CONFIG} from "@/constants/environment"
 import {logger} from "@/helpers/logger"
+import {handleRestartLogin} from "@/helpers/logout"
 
 export interface EpsCardProps {
   role: RoleDetails
@@ -25,8 +26,8 @@ export default function EpsCard({role, link}: EpsCardProps) {
     try {
       await authContext.updateSelectedRole(role)
     } catch (err) {
-      if (axios.isAxiosError(err) && (err.response?.status === 401) && err.response.data?.restartLogin) {
-        navigate(FRONTEND_PATHS.LOGIN)
+      if (axios.isAxiosError(err) && (err.response?.status === 401)) {
+        handleRestartLogin(err)
         return
       }
 

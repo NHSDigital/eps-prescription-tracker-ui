@@ -9,8 +9,9 @@ import {useLocation, useNavigate} from "react-router-dom"
 import {normalizePath} from "@/helpers/utils"
 import {useAuth} from "./AuthProvider"
 
-import {ALLOWED_NO_ROLE_PATHS, ALLOWED_NO_REDIRECT_PATHS, FRONTEND_PATHS} from "@/constants/environment"
+import {ALLOWED_NO_ROLE_PATHS, FRONTEND_PATHS, AUTH_CONFIG} from "@/constants/environment"
 import {logger} from "@/helpers/logger"
+import {signOut} from "@/helpers/logout"
 
 export const AccessContext = createContext<Record<string, never> | null>(null)
 
@@ -46,7 +47,6 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
   const ensureRoleSelected = () => {
     const path = normalizePath(location.pathname)
     const inNoRoleAllowed = ALLOWED_NO_ROLE_PATHS.includes(path)
-    const inNoRedirectRequired = ALLOWED_NO_REDIRECT_PATHS.includes(path)
     const atRoot = path === "/"
 
     const redirect = (to: string, msg: string) => {
@@ -58,6 +58,10 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
     const concurrent = auth.isSignedIn && auth.isConcurrentSession
     const noRole = auth.isSignedIn && !auth.isSigningIn && !auth.selectedRole
     const authedAtRoot = auth.isSignedIn && !!auth.selectedRole && atRoot
+
+    if (!loggedOut && path === FRONTEND_PATHS.LOGIN) {
+      return redirect(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID, "Already signed in - redirecting to search")
+    }
 
     if (concurrent && !inNoRoleAllowed) {
       return redirect(FRONTEND_PATHS.SESSION_SELECTION, "Concurrent session found - redirecting to session selection")

@@ -28,6 +28,9 @@ import http from "@/helpers/axios"
 import {logger} from "@/helpers/logger"
 import {useSearchContext} from "@/context/SearchProvider"
 import {buildBackLink, determineSearchType} from "@/helpers/prescriptionNotFoundLinks"
+import { handleRestartLogin } from "@/helpers/logout"
+import { AUTH_CONFIG } from "@/constants/environment"
+import { useAuth } from "@/context/AuthProvider"
 
 export default function PrescriptionListPage() {
   const {setPatientDetails} = usePatientDetails()
@@ -118,10 +121,11 @@ export default function PrescriptionListPage() {
         ])
         setLoading(false)
       } catch (err) {
+        const auth = useAuth()
         logger.error("Error during search", err)
         if (axios.isAxiosError(err)) {
           if ((err.response?.status === 401) && err.response.data?.restartLogin) {
-            navigate(FRONTEND_PATHS.LOGIN)
+            handleRestartLogin(auth, err)
             return
           } else if (err.response?.status === 404) {
             setShowNotFound(true)
