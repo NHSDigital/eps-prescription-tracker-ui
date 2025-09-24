@@ -9,11 +9,10 @@ import {
   IOrigin,
   KeyValueStore,
   OriginRequestPolicy,
-  ViewerProtocolPolicy,
-  ResponseHeadersPolicy
+  ViewerProtocolPolicy
 } from "aws-cdk-lib/aws-cloudfront"
 import {RestApiOrigin} from "aws-cdk-lib/aws-cloudfront-origins"
-
+import {CustomSecurityHeadersPolicy} from "./Cloudfront/CustomSecurityHeaders"
 /**
  * Resources for cloudfront behaviors
 
@@ -27,7 +26,7 @@ export interface CloudfrontBehaviorsProps {
   readonly oauth2GatewayOrigin: RestApiOrigin
   readonly oauth2GatewayRequestPolicy: OriginRequestPolicy
   readonly staticContentBucketOrigin: IOrigin
-  readonly responseHeadersPolicy: ResponseHeadersPolicy
+  readonly fullCognitoDomain: string
 }
 
 /**
@@ -42,7 +41,7 @@ export class CloudfrontBehaviors extends Construct{
   public readonly s3StaticContentUriRewriteFunction: CloudfrontFunction
   public readonly s3StaticContentRootSlashRedirect: CloudfrontFunction
   public readonly keyValueStore: KeyValueStore
-  public readonly responseHeadersPolicy: ResponseHeadersPolicy
+  public readonly fullCognitoDomain: string
 
   public constructor(scope: Construct, id: string, props: CloudfrontBehaviorsProps){
     super(scope, id)
@@ -188,6 +187,11 @@ export class CloudfrontBehaviors extends Construct{
     on how many can be created simultaneously */
     s3StaticContentRootSlashRedirect.node.addDependency(s3JwksUriRewriteFunction)
 
+    const headersPolicy = new CustomSecurityHeadersPolicy(this, "AdditionalBehavioursHeadersPolicy", {
+      policyName: `${props.serviceName}-AdditionalBehavioursCustomSecurityHeaders`,
+      fullCognitoDomain: props.fullCognitoDomain
+    })
+
     const additionalBehaviors = {
       "/site*": {
         origin: props.staticContentBucketOrigin,
@@ -199,7 +203,7 @@ export class CloudfrontBehaviors extends Construct{
             eventType: FunctionEventType.VIEWER_REQUEST
           }
         ],
-        responseHeadersPolicy: this.responseHeadersPolicy
+        responseHeadersPolicy: headersPolicy.policy
       },
       "/api/*": {
         origin: props.apiGatewayOrigin,
@@ -213,7 +217,7 @@ export class CloudfrontBehaviors extends Construct{
             eventType: FunctionEventType.VIEWER_REQUEST
           }
         ],
-        responseHeadersPolicy: this.responseHeadersPolicy
+        responseHeadersPolicy: headersPolicy.policy
       },
       "/oauth2/*": {
         origin: props.oauth2GatewayOrigin,
@@ -227,7 +231,7 @@ export class CloudfrontBehaviors extends Construct{
             eventType: FunctionEventType.VIEWER_REQUEST
           }
         ],
-        responseHeadersPolicy: this.responseHeadersPolicy
+        responseHeadersPolicy: headersPolicy.policy
       },
       "/jwks/": {/* matches exactly <url>/jwks and will only serve the jwks json (via cf function) */
         origin: props.staticContentBucketOrigin,
@@ -239,7 +243,7 @@ export class CloudfrontBehaviors extends Construct{
             eventType: FunctionEventType.VIEWER_REQUEST
           }
         ],
-        responseHeadersPolicy: this.responseHeadersPolicy
+        responseHeadersPolicy: headersPolicy.policy
       },
       "/500.html": { // matches exactly <url>/500.html and will only serve the 500.html page (via cf function)
         origin: props.staticContentBucketOrigin,
@@ -251,7 +255,7 @@ export class CloudfrontBehaviors extends Construct{
             eventType: FunctionEventType.VIEWER_REQUEST
           }
         ],
-        responseHeadersPolicy: this.responseHeadersPolicy
+        responseHeadersPolicy: headersPolicy.policy
       },
       "/404.css": {
         origin: props.staticContentBucketOrigin,
@@ -261,6 +265,7 @@ export class CloudfrontBehaviors extends Construct{
         origin: props.staticContentBucketOrigin,
         allowedMethods: AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
         viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+        responseHeadersPolicy: headersPolicy.policy,
         functionAssociations: [
           {
             function: s3StaticContentRootSlashRedirect.function,

@@ -80,7 +80,7 @@ export function ItemsCards({items}: ItemsProps) {
                 <SummaryListRow
                   label={STRINGS.PHARMACY_STATUS_LABEL}
                   tagValue={pharmacyStatus}
-                  />
+                />
               )}
             </SummaryList>
           </Card.Content>

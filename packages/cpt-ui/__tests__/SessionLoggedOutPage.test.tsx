@@ -55,7 +55,6 @@ export const defaultAuthState: AuthContextType = {
   cognitoSignOut: jest.fn(),
   clearAuthState: jest.fn(),
   updateSelectedRole: jest.fn(),
-  forceCognitoLogout: jest.fn(),
   updateTrackerUserInfo: mockUpdateTrackerUserInfo
 }
 
@@ -115,7 +114,7 @@ describe("SessionLoggedOutPage", () => {
     expect(
       screen.getByText((content, element) =>
         element?.textContent ===
-      // eslint-disable-next-line max-len
+        // eslint-disable-next-line max-len
         "Contact the NHS national service desk at ssd.nationalservicedesk@nhs.net if you did not start another session in another window or browser."
       )
     ).toBeInTheDocument()

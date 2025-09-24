@@ -1,4 +1,4 @@
-import React, {useEffect} from "react"
+import React, {Fragment, useEffect} from "react"
 import {Container, Col, Row} from "nhsuk-react-components"
 
 import {useAuth} from "@/context/AuthProvider"
@@ -19,7 +19,7 @@ export default function LoginPage() {
 
   const mockSignIn = async () => {
     logger.info("Signing in (Mock)", auth)
-    await auth.forceCognitoLogout()
+    await auth.cognitoSignOut()
     // Clear auth state only after logging out - Otherwise no tokens present to action the request
     auth.clearAuthState()
     await auth?.cognitoSignIn({
@@ -31,7 +31,7 @@ export default function LoginPage() {
 
   const cis2SignIn = async () => {
     logger.info("Signing in (Primary)", auth)
-    await auth.forceCognitoLogout()
+    await auth.cognitoSignOut()
     // Clear auth state only after logging out - Otherwise no tokens present to action the request
     auth.clearAuthState()
     await auth?.cognitoSignIn({
@@ -45,6 +45,7 @@ export default function LoginPage() {
   const signOut = async () => {
     logger.info("Signing out", auth)
     await auth?.cognitoSignOut()
+    auth.clearAuthState()
     logger.info("Signed out: ", auth)
   }
 
@@ -113,12 +114,12 @@ export default function LoginPage() {
             <Button id="signout" style={{margin: "8px"}} onClick={signOut}>Sign Out</Button>
 
             {auth && (
-              <>
+              <Fragment>
                 <div>username: {auth.user}</div>
                 <div>isSignedIn: {auth.isSignedIn} </div>
                 <h2>Auth Context</h2>
                 <pre>{JSON.stringify(auth, null, 2)}</pre>
-              </>
+              </Fragment>
             )}
           </Col>
         </Row>

@@ -87,6 +87,9 @@ on:
       CREATE_INT_RC_RELEASE_NOTES:
         type: boolean
         default: false
+      IS_PULL_REQUEST:
+        type: boolean
+        required: true
 jobs:
   release_all_code:
     runs-on: ubuntu-22.04
@@ -241,6 +244,7 @@ jobs:
           ROUTE53_EXPORT_NAME: ${{ inputs.ROUTE53_EXPORT_NAME }}
           WAF_ALLOW_GA_RUNNER_CONNECTIVITY: ${{ inputs.WAF_ALLOW_GA_RUNNER_CONNECTIVITY }}
           CLOUDFRONT_ORIGIN_CUSTOM_HEADER: ${{secrets.CLOUDFRONT_ORIGIN_CUSTOM_HEADER }}
+          IS_PULL_REQUEST: ${{inputs.IS_PULL_REQUEST}}
 
       - name: Show diff for stateful stack
         run: |
@@ -310,6 +314,7 @@ jobs:
           export VITE_userPoolId=${userPoolId}
           export VITE_redirectSignIn="https://${fullCloudfrontDomain}/site/select-your-role"
           export VITE_redirectSignOut="https://${fullCloudfrontDomain}/site/logout"
+          export VITE_redirectSessionSignOut="https://${fullCloudfrontDomain}/site/session-logged-out"
           export VITE_COMMIT_ID=${{ inputs.COMMIT_ID }}
           export VITE_VERSION_NUMBER=${{ inputs.VERSION_NUMBER }}
           export VITE_TARGET_ENVIRONMENT=${{ inputs.TARGET_ENVIRONMENT }}
@@ -375,6 +380,7 @@ jobs:
           ROUTE53_EXPORT_NAME: ${{ inputs.ROUTE53_EXPORT_NAME }}
           WAF_ALLOW_GA_RUNNER_CONNECTIVITY: ${{ inputs.WAF_ALLOW_GA_RUNNER_CONNECTIVITY }}
           CLOUDFRONT_ORIGIN_CUSTOM_HEADER: ${{secrets.CLOUDFRONT_ORIGIN_CUSTOM_HEADER }}
+          IS_PULL_REQUEST: ${{inputs.IS_PULL_REQUEST}}
 
       - name: Show diff for stateless stack
         run: |
@@ -501,6 +507,7 @@ jobs:
           ROUTE53_EXPORT_NAME: ${{ inputs.ROUTE53_EXPORT_NAME }}
           WAF_ALLOW_GA_RUNNER_CONNECTIVITY: ${{ inputs.WAF_ALLOW_GA_RUNNER_CONNECTIVITY }}
           CLOUDFRONT_ORIGIN_CUSTOM_HEADER: ${{secrets.CLOUDFRONT_ORIGIN_CUSTOM_HEADER }}
+          IS_PULL_REQUEST: ${{inputs.IS_PULL_REQUEST}}
 
       - name: Show diff for stateful stack redeployment
         if: ${{ steps.check_redeploy_stateful_stack.outputs.REDEPLOY_STATEFUL_STACK == 'true' }}
@@ -573,14 +580,14 @@ jobs:
       contents: write
     steps:
       - name: Checkout gh-pages
-        if: ${{ !startsWith(inputs.SERVICE_NAME, 'cpt-ui-pr-') }}
+        if: ${{ inputs.IS_PULL_REQUEST == false }}
         uses: actions/checkout@v5
         with:
           ref: gh-pages
           path: gh-pages
 
       - name: update release tag in github pages
-        if: ${{ !startsWith(inputs.SERVICE_NAME, 'cpt-ui-pr-') }}
+        if: ${{ inputs.IS_PULL_REQUEST == false }}
         run: |
           cd gh-pages
           NOW=$(date +'%Y-%m-%dT%H:%M:%S')
