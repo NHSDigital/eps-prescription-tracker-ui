@@ -2,7 +2,6 @@ import {RequestGroup} from "fhir/r4"
 import {PrescriptionStatus, PrescriptionStatusCategories} from "@cpt-ui-common/common-types"
 
 export const STATUS_CATEGORY_MAP: Record<PrescriptionStatus, PrescriptionStatusCategories> = {
-  [PrescriptionStatus.AWAITING_RELEASE_READY]: PrescriptionStatusCategories.CURRENT,
   [PrescriptionStatus.TO_BE_DISPENSED]: PrescriptionStatusCategories.CURRENT,
   [PrescriptionStatus.WITH_DISPENSER]: PrescriptionStatusCategories.CURRENT,
   [PrescriptionStatus.WITH_DISPENSER_ACTIVE]: PrescriptionStatusCategories.CURRENT,
@@ -12,13 +11,14 @@ export const STATUS_CATEGORY_MAP: Record<PrescriptionStatus, PrescriptionStatusC
   [PrescriptionStatus.NOT_DISPENSED]: PrescriptionStatusCategories.PAST,
   [PrescriptionStatus.CLAIMED]: PrescriptionStatusCategories.PAST,
   [PrescriptionStatus.NO_CLAIMED]: PrescriptionStatusCategories.PAST,
+  [PrescriptionStatus.AWAITING_RELEASE_READY]: PrescriptionStatusCategories.FUTURE,
   [PrescriptionStatus.REPEAT_DISPENSE_FUTURE_INSTANCE]: PrescriptionStatusCategories.FUTURE,
   [PrescriptionStatus.FUTURE_DATED_PRESCRIPTION]: PrescriptionStatusCategories.FUTURE,
   [PrescriptionStatus.PENDING_CANCELLATION]: PrescriptionStatusCategories.FUTURE
 }
 
 export const PRESCRIPTION_DISPLAY_LOOKUP: Record<PrescriptionStatus, string> = {
-  [PrescriptionStatus.AWAITING_RELEASE_READY]: "Awaiting Release Ready",
+  [PrescriptionStatus.AWAITING_RELEASE_READY]: "Available to download when due",
   [PrescriptionStatus.TO_BE_DISPENSED]: "To Be Dispensed",
   [PrescriptionStatus.WITH_DISPENSER]: "With Dispenser",
   [PrescriptionStatus.WITH_DISPENSER_ACTIVE]: "With Dispenser - Active",
@@ -29,7 +29,7 @@ export const PRESCRIPTION_DISPLAY_LOOKUP: Record<PrescriptionStatus, string> = {
   [PrescriptionStatus.CLAIMED]: "Claimed",
   [PrescriptionStatus.NO_CLAIMED]: "No-Claimed",
   [PrescriptionStatus.REPEAT_DISPENSE_FUTURE_INSTANCE]: "Repeat Dispense future instance",
-  [PrescriptionStatus.FUTURE_DATED_PRESCRIPTION]: "Prescription future instance",
+  [PrescriptionStatus.FUTURE_DATED_PRESCRIPTION]: "To dispense in the future",
   [PrescriptionStatus.PENDING_CANCELLATION]: "Cancelled future instance"
 }
 
