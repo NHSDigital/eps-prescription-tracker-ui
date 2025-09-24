@@ -81,7 +81,7 @@ export default function PrescriptionDetailsPage() {
       }
     } catch (err) {
       const auth = useAuth()
-      if (axios.isAxiosError(err) && (err.response?.status === 401) {
+      if (axios.isAxiosError(err) && (err.response?.status === 401)) {
         handleRestartLogin(auth, err)
         return
       }
