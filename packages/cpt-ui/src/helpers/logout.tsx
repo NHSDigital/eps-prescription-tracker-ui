@@ -7,5 +7,5 @@ import {AuthContextType} from "@/context/AuthProvider"
 
 export const signOut = async (auth: AuthContextType) => {
   await auth?.cognitoSignOut()
-  // Allow status hub to handle clearing of auth state
+  // Status hub will clear auth state
 }
