@@ -28,6 +28,7 @@ import {
   PrescriptionDetailsResponse
 } from "@cpt-ui-common/common-types"
 import {DoHSOrg} from "@cpt-ui-common/doHSClient"
+import {Logger} from "@aws-lambda-powertools/logger"
 
 /**
  * Extracts a specific resource type from the FHIR Bundle
@@ -85,7 +86,8 @@ const extractMessageHistory = (
   requestGroup: RequestGroup,
   doHSData: DoHSData,
   medicationRequests: Array<MedicationRequest>,
-  medicationDispenses: Array<MedicationDispense>
+  medicationDispenses: Array<MedicationDispense>,
+  logger?: Logger
 ): Array<MessageHistory> => {
   // find the specific "Prescription status transitions" action
   const historyAction = requestGroup.action?.find(action =>
@@ -102,7 +104,7 @@ const extractMessageHistory = (
 
     const orgODS = action.participant![0].extension![0].valueReference!.identifier!.value!
     const messageCodeDisplayName = action.title!
-    const messageCode = mapMessageHistoryTitleToMessageCode(messageCodeDisplayName)
+    const messageCode = mapMessageHistoryTitleToMessageCode(messageCodeDisplayName, logger)
 
     let orgName: string | undefined = undefined
 
@@ -173,7 +175,8 @@ export const mergePrescriptionDetails = (
     prescribingOrganization,
     nominatedPerformer,
     dispensingOrganization
-  }: PrescriptionOdsCodes
+  }: PrescriptionOdsCodes,
+  logger?: Logger
 ): PrescriptionDetailsResponse => {
   // Extract resources from bundle
   const requestGroup = extractResourcesFromBundle<RequestGroup>(bundle, "RequestGroup")[0]
@@ -214,7 +217,7 @@ export const mergePrescriptionDetails = (
   // extract and format all the data
   const patientDetails = extractPatientDetails(patient)
   const items = extractItems(medicationRequests, medicationDispenses)
-  const messageHistory = extractMessageHistory(requestGroup, doHSData, medicationRequests, medicationDispenses)
+  const messageHistory = extractMessageHistory(requestGroup, doHSData, medicationRequests, medicationDispenses, logger)
 
   // TODO: extract NHS App status from dispensing information extension
   // const dispensingInfoExt = findExtensionByKey(dispense.extension, "DISPENSING_INFORMATION")
