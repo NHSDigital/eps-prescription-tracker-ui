@@ -73,15 +73,12 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
         return redirect(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID, "User already logged in. Role already selected.")
       }
     }
-    // if (loggedOut && !inNoRoleAllowed) {
-    //   return redirect(FRONTEND_PATHS.LOGIN, "Not signed in - redirecting to login page")
-    // }
 
     if (concurrent && !inNoRoleAllowed) {
       return redirect(FRONTEND_PATHS.SESSION_SELECTION, "Concurrent session found - redirecting to session selection")
     }
 
-    if (noRole && !inNoRoleAllowed) {
+    if (noRole && (!inNoRoleAllowed || atRoot)) {
       return redirect(FRONTEND_PATHS.SELECT_YOUR_ROLE, `No selected role - Redirecting from ${path}`)
     }
 
@@ -90,13 +87,8 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
         "Authenticated user on root path - redirecting to search")
     }
 
-    if (atRoot && loggedOut) {
+    if (loggedOut && (!inNoRoleAllowed || atRoot)) {
       return redirect(FRONTEND_PATHS.LOGIN, "Not signed in at root - redirecting to login page")
-    }
-
-    if (atRoot && !loggedOut && !auth.selectedRole) {
-      return redirect(FRONTEND_PATHS.SELECT_YOUR_ROLE, `No selected role - Redirecting from ${path}`
-      )
     }
   }
 
