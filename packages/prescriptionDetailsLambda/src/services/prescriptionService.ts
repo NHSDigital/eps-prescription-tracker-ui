@@ -127,5 +127,5 @@ export async function processPrescriptionRequest(
     issueNumber
   })
 
-  return mergePrescriptionDetails(apigeeResponse.data, doHSData, odsCodes)
+  return mergePrescriptionDetails(apigeeResponse.data, doHSData, odsCodes, logger)
 }
