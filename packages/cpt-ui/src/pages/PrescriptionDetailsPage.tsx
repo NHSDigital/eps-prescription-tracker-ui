@@ -35,6 +35,7 @@ import {handleRestartLogin} from "@/helpers/logout"
 import {useAuth} from "@/context/AuthProvider"
 
 export default function PrescriptionDetailsPage() {
+  const auth = useAuth()
 
   const [loading, setLoading] = useState(true)
 
@@ -80,7 +81,6 @@ export default function PrescriptionDetailsPage() {
         throw new Error("No payload received from the API")
       }
     } catch (err) {
-      const auth = useAuth()
       if (axios.isAxiosError(err) && (err.response?.status === 401)) {
         const invalidSessionCause = err.response?.data?.invalidSessionCause
         handleRestartLogin(auth, invalidSessionCause)

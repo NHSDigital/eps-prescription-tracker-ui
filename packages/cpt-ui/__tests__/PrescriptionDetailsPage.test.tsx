@@ -164,7 +164,7 @@ describe("PrescriptionDetailsPage", () => {
     renderComponent("ANY_ID", signedInAuthState)
 
     await waitFor(() => {
-      expect(screen.getByTestId("login-page-shown")).toBeInTheDocument()
+      expect(defaultAuthState.cognitoSignOut).toHaveBeenCalled()
     })
   })
 

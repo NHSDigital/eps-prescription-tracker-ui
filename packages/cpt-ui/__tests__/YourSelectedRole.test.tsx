@@ -60,7 +60,7 @@ describe("YourSelectedRolePage", () => {
       org_name: "Great Pharmacy",
       org_code: "GP123"
     }
-    mockedUseAuth.mockReturnValue({...mockUseAuthReturnValue, ...selectedRole})
+    mockedUseAuth.mockReturnValue({...mockUseAuthReturnValue, selectedRole})
 
     renderComponent()
 
@@ -95,7 +95,7 @@ describe("YourSelectedRolePage", () => {
   it("navigates to /search-by-prescription-id when confirm button is clicked", async () => {
     const selectedRole = {role_name: "Pharmacist", org_name: "Org", org_code: "ORG1"}
     mockedUseAuth.mockReturnValue({
-      ...mockUseAuthReturnValue, ...selectedRole
+      ...mockUseAuthReturnValue, selectedRole
     })
 
     // Setup MemoryRouter with initial entry at the page, and a dummy route for /search-by-prescription-id

@@ -48,6 +48,8 @@ export default function PrescriptionListPage() {
   const searchType = determineSearchType(searchContext)
   const backLinkUrl = buildBackLink(searchType, searchContext)
 
+  const auth = useAuth()
+
   useEffect(() => {
     const runSearch = async () => {
       setLoading(true)
@@ -120,7 +122,6 @@ export default function PrescriptionListPage() {
         ])
         setLoading(false)
       } catch (err) {
-        const auth = useAuth()
         logger.error("Error during search", err)
         if (axios.isAxiosError(err)) {
           if ((err.response?.status === 401) && err.response.data?.restartLogin) {

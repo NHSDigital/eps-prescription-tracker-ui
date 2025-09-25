@@ -5,14 +5,12 @@ import {MemoryRouter} from "react-router-dom"
 import {AuthContext, type AuthContextType} from "@/context/AuthProvider"
 import SessionSelectionPage from "@/pages/SessionSelection"
 import SessionLoggedOutPage from "@/pages/SessionLoggedOut"
-import {signOut} from "@/helpers/logout"
 
 jest.mock("@/helpers/awsRum")
 jest.mock("@/context/configureAmplify")
 jest.mock("@/helpers/logout", () => ({
   signOut: jest.fn()
 }))
-const mockSignOut = signOut as jest.MockedFunction<typeof signOut>
 
 jest.mock("@/constants/environment", () => ({
   AUTH_CONFIG: {
@@ -119,12 +117,6 @@ describe("SessionLoggedOutPage", () => {
         "Contact the NHS national service desk at ssd.nationalservicedesk@nhs.net if you did not start another session in another window or browser."
       )
     ).toBeInTheDocument()
-  })
-
-  it("calls signOut function on page load", async () => {
-    renderWithProviders(<SessionLoggedOutPage />)
-
-    expect(mockSignOut).toHaveBeenCalledWith(defaultAuthState)
   })
 
   it("uses proper NHS UK styling and layout", () => {

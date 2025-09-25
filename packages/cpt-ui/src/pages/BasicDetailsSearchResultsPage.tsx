@@ -31,6 +31,8 @@ export default function SearchResultsPage() {
   const searchContext = useSearchContext()
   const [error, setError] = useState(false)
 
+  const auth = useAuth()
+
   useEffect(() => {
     getSearchResults()
   }, [])
@@ -68,7 +70,6 @@ export default function SearchResultsPage() {
       setPatients(payload)
       setLoading(false)
     } catch (err) {
-      const auth = useAuth()
       if (axios.isAxiosError(err) && (err.response?.status === 401)) {
         const invalidSessionCause = err.response?.data?.invalidSessionCause
         handleRestartLogin(auth, invalidSessionCause)

@@ -33,6 +33,8 @@ const baseUrl = ENV_CONFIG.BASE_URL
 export default function EpsHeader() {
   const navigate = useNavigate()
   const location = useLocation()
+  // TODO: REFACTOR REQUIRED
+  // We should only useAuth instead of useContext...
   const auth = useContext(AuthContext)
   const authContext = useAuth()
 

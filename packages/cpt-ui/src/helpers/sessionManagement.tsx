@@ -11,7 +11,7 @@ export const postSessionManagementUpdate = async (auth: AuthContextType): Promis
     })
     logger.info(`Called session management, ${response.data}`)
 
-    if (response.status !== 202) {
+    if (response.status === 401) {
       logger.error("Session expired or invalid. Restarting login.")
       return false
     }

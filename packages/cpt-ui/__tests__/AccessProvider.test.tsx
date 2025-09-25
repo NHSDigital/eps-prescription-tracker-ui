@@ -6,6 +6,7 @@ import {useAuth as mockUseAuth} from "@/context/AuthProvider"
 import {useNavigate, useLocation} from "react-router-dom"
 import {normalizePath as mockNormalizePath} from "@/helpers/utils"
 import {logger} from "@/helpers/logger"
+import {handleRestartLogin} from "@/helpers/logout"
 
 jest.mock("react-router-dom", () => ({
   useNavigate: jest.fn(),
@@ -49,6 +50,11 @@ jest.mock("@/helpers/logger", () => ({
     info: jest.fn(),
     error: jest.fn()
   }
+}))
+
+jest.mock("@/helpers/logout", () => ({
+  handleRestartLogin: jest.fn(),
+  signOut: jest.fn()
 }))
 
 const TestComponent = () => {
@@ -385,14 +391,15 @@ describe("AccessProvider", () => {
     })
 
     it("should navigate to session logged out page when updateTrackerUserInfo returns error", async () => {
-      mockUpdateTrackerUserInfo.mockResolvedValue({error: "Session expired"})
+      mockUpdateTrackerUserInfo.mockResolvedValue({error: "Session expired", invalidSessionCause: "InvalidSession"})
 
-      mockAuthHook.mockReturnValue({
+      const authContext = {
         isSignedIn: true,
         isSigningIn: false,
         selectedRole: {name: "TestRole"},
         updateTrackerUserInfo: mockUpdateTrackerUserInfo
-      })
+      }
+      mockAuthHook.mockReturnValue(authContext)
       mockLocationHook.mockReturnValue({pathname: "/search-by-prescription-id"})
 
       renderWithProvider()
@@ -402,7 +409,7 @@ describe("AccessProvider", () => {
       })
 
       expect(mockUpdateTrackerUserInfo).toHaveBeenCalled()
-      expect(navigate).toHaveBeenCalledWith(FRONTEND_PATHS.SESSION_LOGGED_OUT)
+      expect(handleRestartLogin).toHaveBeenCalledWith(authContext, "InvalidSession")
     })
 
     it("should not call updateTrackerUserInfo when user is not signed in", async () => {
@@ -446,15 +453,16 @@ describe("AccessProvider", () => {
 
     it("should continue running interval after error occurs", async () => {
       mockUpdateTrackerUserInfo
-        .mockResolvedValueOnce({error: "First error"})
+        .mockResolvedValueOnce({error: "First error", invalidSessionCause: "InvalidSession"})
         .mockResolvedValueOnce({error: null})
 
-      mockAuthHook.mockReturnValue({
+      const authContext = {
         isSignedIn: true,
         isSigningIn: false,
         selectedRole: {name: "TestRole"},
         updateTrackerUserInfo: mockUpdateTrackerUserInfo
-      })
+      }
+      mockAuthHook.mockReturnValue(authContext)
       mockLocationHook.mockReturnValue({pathname: "/search-by-prescription-id"})
 
       renderWithProvider()
@@ -464,7 +472,7 @@ describe("AccessProvider", () => {
         jest.advanceTimersByTime(300001)
       })
 
-      expect(navigate).toHaveBeenCalledWith(FRONTEND_PATHS.SESSION_LOGGED_OUT)
+      expect(handleRestartLogin).toHaveBeenCalledWith(authContext, "InvalidSession")
       expect(mockUpdateTrackerUserInfo).toHaveBeenCalledTimes(1)
 
       jest.clearAllMocks()
@@ -475,7 +483,7 @@ describe("AccessProvider", () => {
       })
 
       expect(mockUpdateTrackerUserInfo).toHaveBeenCalledTimes(1)
-      expect(navigate).not.toHaveBeenCalled()
+      expect(handleRestartLogin).not.toHaveBeenCalled()
     })
   })
 })

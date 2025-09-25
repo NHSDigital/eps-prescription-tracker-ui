@@ -140,7 +140,7 @@ describe("BasicDetailsSearchResultsPage", () => {
     renderWithRouter()
 
     await waitFor(() => {
-      expect(screen.getByTestId("login-page-shown")).toBeInTheDocument()
+      expect(mockAuthContext.cognitoSignOut).toHaveBeenCalled()
     })
   })
 

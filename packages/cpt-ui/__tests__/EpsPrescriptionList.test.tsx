@@ -317,7 +317,7 @@ describe("PrescriptionListPage", () => {
     )
 
     await waitFor(() => {
-      expect(screen.getByTestId("login-page-shown")).toBeInTheDocument()
+      expect(mockCognitoSignOut).toHaveBeenCalled()
     })
   })
 
