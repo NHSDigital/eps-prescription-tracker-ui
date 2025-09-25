@@ -294,12 +294,12 @@ describe("Lambda Handler Tests with mock disabled", () => {
           {role_id: "123", org_code: "XYZ", role_name: "MockRole_1"}
         ],
         rolesWithoutAccess: [],
+        sessionId: "mock-session-id",
         currentlySelectedRole: {role_id: "555", org_code: "GHI", role_name: "MockRole_4"},
         userDetails: {
           family_name: "foo",
           given_name: "bar"
-        },
-        sessionId: "mock-session-id"
+        }
       }
     })
 
@@ -332,6 +332,7 @@ describe("Lambda Handler Tests with mock disabled", () => {
         }
       ],
       "roles_without_access": [],
+      "sessionId": "mock-session-id",
       "user_details": {"family_name": "foo", "given_name": "bar"},
       "is_concurrent_session": true
     })
@@ -407,7 +408,8 @@ describe("Lambda Handler Tests with mock disabled", () => {
       ],
       "roles_without_access": [],
       "user_details": {"family_name": "foo", "given_name": "bar"},
-      "is_concurrent_session": true
+      "is_concurrent_session": true,
+      "sessionId": "mock-session-id"
     })
 
     expect(body).toHaveProperty("message", "UserInfo fetched successfully from the OIDC endpoint")

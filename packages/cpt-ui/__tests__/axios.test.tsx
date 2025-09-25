@@ -2,6 +2,7 @@ import http from "@/helpers/axios"
 import {fetchAuthSession} from "aws-amplify/auth"
 import MockAdapter from "axios-mock-adapter"
 import {v4 as uuidv4} from "uuid"
+import {readItemGroupFromLocalStorage} from "@/helpers/useLocalStorageState"
 
 jest.mock("uuid", () => ({
   // Always return the same UUID so we can test it
@@ -12,6 +13,11 @@ jest.mock("aws-amplify/auth", () => ({
   // Always return the same UUID so we can test it
   fetchAuthSession: jest.fn().mockReturnValue({tokens: {idToken: "mock_auth_token"}})
 }))
+
+jest.mock("@/helpers/useLocalStorageState", () => ({
+  readItemGroupFromLocalStorage: jest.fn()
+}))
+
 describe("HTTP Axios Instance", () => {
   let mock: MockAdapter
 
@@ -32,6 +38,47 @@ describe("HTTP Axios Instance", () => {
       // Cannot invoke an object which is possibly 'undefined'.ts(2722)
       expect(config.headers?.["x-request-id"]).toBe("test-x-request-id")
       expect(config.headers?.["x-correlation-id"]).toBe("test-x-correlation-id")
+      return [200, {success: true}]
+    })
+
+    const response = await http.get("/test")
+
+    expect(response.status).toBe(200)
+    expect(response.data).toEqual({success: true})
+  })
+
+  it("does add x-rum-session-id header when cwr_s cookie does exist", async () => {
+    // global value for cwr_s cookie is set in jest.setup.ts
+    mock.onGet("/test").reply((config) => {
+      expect(config.headers?.["x-rum-session-id"]).toBe("my_rum_session_id")
+      return [200, {success: true}]
+    })
+
+    const response = await http.get("/test")
+
+    expect(response.status).toBe(200)
+    expect(response.data).toEqual({success: true})
+  })
+
+  it("does add x-session-id header when it can read sessionId from local storage", async () => {
+    (readItemGroupFromLocalStorage as jest.Mock)
+      .mockReturnValueOnce({"sessionId": "my_session_id"})
+    mock.onGet("/test").reply((config) => {
+      expect(config.headers?.["x-session-id"]).toBe("my_session_id")
+      return [200, {success: true}]
+    })
+
+    const response = await http.get("/test")
+
+    expect(response.status).toBe(200)
+    expect(response.data).toEqual({success: true})
+  })
+
+  it("does not add x-session-id header when it can not read sessionId from local storage", async () => {
+    (readItemGroupFromLocalStorage as jest.Mock)
+      .mockReturnValueOnce({})
+    mock.onGet("/test").reply((config) => {
+      expect(config.headers?.["x-session-id"]).toBeUndefined()
       return [200, {success: true}]
     })
 

@@ -37,3 +37,5 @@ export type {
   TrackerUserInfo,
   TrackerUserInfoResult
 } from "./trackerUserInfo"
+
+export {Headers} from "./headers"

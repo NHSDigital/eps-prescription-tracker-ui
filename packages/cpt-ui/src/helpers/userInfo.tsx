@@ -25,6 +25,7 @@ export const getTrackerUserInfo = async (): Promise<TrackerUserInfoResult> => {
   let isConcurrentSession: boolean = false
   let invalidSessionCause: string | undefined = undefined
   let error: string | null = null
+  let sessionId: string | undefined = undefined
 
   try {
     const response = await http.get(API_ENDPOINTS.TRACKER_USER_INFO)
@@ -62,6 +63,7 @@ export const getTrackerUserInfo = async (): Promise<TrackerUserInfoResult> => {
     hasSingleRoleAccess = userInfo.roles_with_access.length === 1
 
     isConcurrentSession = userInfo.is_concurrent_session || false
+    sessionId = userInfo.sessionId
 
     if (isConcurrentSession === true) {
       logger.info("This is a concurrent session")
@@ -90,6 +92,7 @@ export const getTrackerUserInfo = async (): Promise<TrackerUserInfoResult> => {
     hasSingleRoleAccess,
     isConcurrentSession,
     invalidSessionCause,
+    sessionId,
     error
   }
 }

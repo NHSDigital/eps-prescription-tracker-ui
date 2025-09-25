@@ -74,6 +74,7 @@ const MockAuthProvider = ({
     selectedRole: undefined,
     userDetails: undefined,
     isConcurrentSession: false,
+    sessionId: undefined,
     cognitoSignIn: jest.fn(),
     cognitoSignOut: mockCognitoSignOut,
     clearAuthState: jest.fn(),

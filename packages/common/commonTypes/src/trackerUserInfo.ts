@@ -21,6 +21,7 @@ export type TrackerUserInfo = {
   user_details: UserDetails;
   multiple_sessions?: boolean;
   is_concurrent_session?: boolean;
+  sessionId?: string;
   error?: string | null;
 };
 
@@ -33,5 +34,6 @@ export type TrackerUserInfoResult = {
   hasSingleRoleAccess: boolean,
   isConcurrentSession: boolean,
   invalidSessionCause: string | undefined,
+  sessionId: string | undefined,
   error: string | null
 }

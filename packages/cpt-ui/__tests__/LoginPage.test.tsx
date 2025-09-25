@@ -94,6 +94,7 @@ const defaultAuthState: AuthContextType = {
   selectedRole: undefined,
   userDetails: undefined,
   isConcurrentSession: false,
+  sessionId: undefined,
   cognitoSignIn: mockCognitoSignIn,
   cognitoSignOut: mockCognitoSignOut,
   clearAuthState: jest.fn(),

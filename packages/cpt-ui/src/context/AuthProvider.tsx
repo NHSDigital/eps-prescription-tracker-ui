@@ -26,6 +26,7 @@ export interface AuthContextType {
   isSigningIn: boolean
   isConcurrentSession: boolean
   invalidSessionCause: string | undefined
+  sessionId: string | undefined
   rolesWithAccess: Array<RoleDetails>
   rolesWithoutAccess: Array<RoleDetails>
   hasNoAccess: boolean
@@ -48,6 +49,8 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
   const [isSigningIn, setIsSigningIn] = useLocalStorageState<boolean>("isSigningIn", "isSigningIn", false)
   const [isConcurrentSession, setIsConcurrentSession] = useLocalStorageState<boolean>(
     "isConcurrentSession", "isConcurrentSession", false)
+  const [sessionId, setSessionId] = useLocalStorageState<string | undefined>(
+    "sessionId", "sessionId", undefined)
   const [invalidSessionCause, setInvalidSessionCause] = useLocalStorageState<string | undefined>(
     "invalidSessionCause", "invalidSessionCause", undefined)
   const [rolesWithAccess, setRolesWithAccess] = useLocalStorageState<Array<RoleDetails>>(
@@ -105,6 +108,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
     setError(trackerUserInfo.error)
     setIsConcurrentSession(trackerUserInfo.isConcurrentSession)
     setInvalidSessionCause(trackerUserInfo.invalidSessionCause)
+    setSessionId(trackerUserInfo.sessionId)
     return trackerUserInfo
   }
 
@@ -227,6 +231,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
       userDetails,
       isConcurrentSession,
       invalidSessionCause,
+      sessionId,
       cognitoSignIn,
       cognitoSignOut,
       clearAuthState,

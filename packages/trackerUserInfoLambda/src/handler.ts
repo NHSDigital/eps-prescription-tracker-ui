@@ -89,7 +89,8 @@ const lambdaHandler = async (event: APIGatewayProxyEventBase<AuthResult>): Promi
       family_name: string,
       given_name: string
     },
-    is_concurrent_session?: boolean
+    is_concurrent_session?: boolean,
+    sessionId?: string
   }
 
   const cachedUserInfo: CachedUserInfo = {
@@ -97,7 +98,8 @@ const lambdaHandler = async (event: APIGatewayProxyEventBase<AuthResult>): Promi
     roles_without_access: tokenDetails?.rolesWithoutAccess || [],
     currently_selected_role: tokenDetails?.currentlySelectedRole || undefined,
     user_details: tokenDetails?.userDetails || {family_name: "", given_name: ""},
-    is_concurrent_session: isConcurrentSession
+    is_concurrent_session: isConcurrentSession,
+    sessionId: sessionId
   }
 
   if (
@@ -157,7 +159,8 @@ const lambdaHandler = async (event: APIGatewayProxyEventBase<AuthResult>): Promi
       message: "UserInfo fetched successfully from the OIDC endpoint",
       userInfo: {
         ...userInfoResponse,
-        is_concurrent_session: isConcurrentSession
+        is_concurrent_session: isConcurrentSession,
+        sessionId: sessionId
       }
     })
   }
