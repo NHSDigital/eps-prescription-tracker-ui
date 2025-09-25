@@ -106,7 +106,7 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
     navigate
   ])
 
-  useEffect(() => {
+  useEffect(async () => {
     // If user is signedIn, every 5 minutes call tracker user info. If it fails, sign the user out.
     const internalId = setInterval(() => {
       const currentPath = location.pathname
@@ -119,11 +119,10 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
       logger.info("Periodic user info check")
       if (auth.isSignedIn) {
         logger.info("Refreshing user info")
-        auth.updateTrackerUserInfo().then(async (response) => {
-          if (response.error) {
-            await handleRestartLogin(auth, response.error)
-          }
-        })
+        const response = await auth.updateTrackerUserInfo()
+        if (response.error) {
+          await handleRestartLogin(auth, response.error)
+        }
       }
     }, 30000) // 300000 ms = 5 minutes
 
