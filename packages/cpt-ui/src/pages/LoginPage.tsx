@@ -21,7 +21,6 @@ export default function LoginPage() {
 
   const mockSignIn = async () => {
     logger.info("Signing in (Mock)", auth)
-    auth.clearAuthState()
     await auth?.cognitoSignIn({
       provider: {
         custom: "Mock"
@@ -31,7 +30,6 @@ export default function LoginPage() {
 
   const cis2SignIn = async () => {
     logger.info("Signing in (Primary)", auth)
-    auth.clearAuthState()
     await auth?.cognitoSignIn({
       provider: {
         custom: "Primary"
@@ -43,7 +41,6 @@ export default function LoginPage() {
   const logout = async () => {
     logger.info("Signing out", auth)
     await signOut(auth, AUTH_CONFIG.REDIRECT_SIGN_OUT)
-    auth.clearAuthState()
     logger.info("Signed out: ", auth)
   }
 

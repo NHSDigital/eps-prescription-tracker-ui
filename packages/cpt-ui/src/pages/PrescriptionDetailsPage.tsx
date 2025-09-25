@@ -34,7 +34,6 @@ import axios from "axios"
 import {handleRestartLogin} from "@/helpers/logout"
 import {useAuth} from "@/context/AuthProvider"
 
-
 export default function PrescriptionDetailsPage() {
 
   const [loading, setLoading] = useState(true)
@@ -83,7 +82,8 @@ export default function PrescriptionDetailsPage() {
     } catch (err) {
       const auth = useAuth()
       if (axios.isAxiosError(err) && (err.response?.status === 401)) {
-        handleRestartLogin(auth, err)
+        const invalidSessionCause = err.response?.data?.invalidSessionCause
+        handleRestartLogin(auth, invalidSessionCause)
         return
       }
       logger.error("Failed to fetch prescription details", err)

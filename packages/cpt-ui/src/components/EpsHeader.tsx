@@ -97,7 +97,7 @@ export default function EpsHeader() {
 
   const handleConfirmLogout = async () => {
     setShowLogoutModal(false)
-    signOut(auth, AUTH_CONFIG.REDIRECT_SIGN_OUT)
+    signOut(authContext, AUTH_CONFIG.REDIRECT_SIGN_OUT)
   }
 
   return (

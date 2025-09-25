@@ -12,7 +12,7 @@ export default function LogoutPage() {
   const auth = useAuth()
 
   useEffect(() => {
-    if (auth.isSignedIn) {
+    if (auth.isSignedIn || auth.isSigningIn) {
       signOut(auth, AUTH_CONFIG.REDIRECT_SIGN_OUT)
     }
   }, [])
@@ -20,7 +20,7 @@ export default function LogoutPage() {
   return (
     <main id="main-content" className="nhsuk-main-wrapper">
       <Container>
-        {!auth?.isSignedIn ? (
+        {!auth?.isSignedIn && !auth.isSigningIn ? (
           <Fragment>
             <h1>{EpsLogoutStrings.title}</h1>
             <p>{EpsLogoutStrings.body}</p>

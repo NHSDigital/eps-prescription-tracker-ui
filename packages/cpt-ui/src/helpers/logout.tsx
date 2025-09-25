@@ -1,7 +1,6 @@
-import {AuthContextType, useAuth} from "@/context/AuthProvider"
+import {AuthContextType} from "@/context/AuthProvider"
 import {logger} from "./logger"
 import {AUTH_CONFIG} from "@/constants/environment"
-import { AxiosError } from "axios"
 
 /*
 ** Universal sign out helper functions
@@ -22,21 +21,12 @@ export const signOut = async (authParam: AuthContextType, redirectUri?: string) 
   // Status hub will clear auth state
 }
 
-type RestartLoginData = {
-  restartLogin?: boolean
-  invalidSessionCause?: string
-  [key: string]: unknown
-}
+export const handleRestartLogin = async (auth: AuthContextType, invalidSessionCause: string | undefined) => {
+  logger.info("Handling restart login instruction from backend", invalidSessionCause)
 
-export const handleRestartLogin = async (auth: AuthContextType, errorResponse: AxiosError) => {
-  logger.info("Handling restart login instruction from backend")
-  const data = errorResponse.response?.data as RestartLoginData | undefined
-
-  logger.info(errorResponse)
-
-  if (data?.restartLogin && data?.invalidSessionCause) {
-    logger.info(`Invalid session cause supplied, ${data.invalidSessionCause}`)
-    await auth.updateInvalidSessionCause(data.invalidSessionCause)
+  if (invalidSessionCause) {
+    logger.info(`Invalid session cause supplied, ${invalidSessionCause}`)
+    await auth.updateInvalidSessionCause(invalidSessionCause)
     await signOut(auth, AUTH_CONFIG.REDIRECT_SESSION_SIGN_OUT)
     return
   }

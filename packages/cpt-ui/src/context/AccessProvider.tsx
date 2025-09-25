@@ -9,7 +9,7 @@ import {useLocation, useNavigate} from "react-router-dom"
 import {normalizePath} from "@/helpers/utils"
 import {useAuth} from "./AuthProvider"
 
-import {ALLOWED_NO_ROLE_PATHS, FRONTEND_PATHS, AUTH_CONFIG} from "@/constants/environment"
+import {ALLOWED_NO_ROLE_PATHS, FRONTEND_PATHS} from "@/constants/environment"
 import {logger} from "@/helpers/logger"
 import {handleRestartLogin} from "@/helpers/logout"
 
@@ -21,6 +21,8 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
   const location = useLocation()
 
   const shouldBlockChildren = () => {
+    // TODO: Investigate moving 'ensureRoleSelected' functionality into this blockChildren
+    // This could potentially stop amplify re-trying login on a pre-existing session
 
     const path = normalizePath(location.pathname)
 
@@ -63,9 +65,17 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
     const noRole = auth.isSignedIn && !auth.isSigningIn && !auth.selectedRole
     const authedAtRoot = auth.isSignedIn && !!auth.selectedRole && atRoot
 
-    if (loggedOut && !inNoRoleAllowed) {
-      return redirect(FRONTEND_PATHS.LOGIN, "Not signed in - redirecting to login page")
+    logger.info(path)
+    if (auth.isSignedIn && path === FRONTEND_PATHS.LOGIN) {
+      if (!auth.selectedRole) {
+        return redirect(FRONTEND_PATHS.SELECT_YOUR_ROLE, "User already logged in. No role selected.")
+      } else {
+        return redirect(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID, "User already logged in. Role already selected.")
+      }
     }
+    // if (loggedOut && !inNoRoleAllowed) {
+    //   return redirect(FRONTEND_PATHS.LOGIN, "Not signed in - redirecting to login page")
+    // }
 
     if (concurrent && !inNoRoleAllowed) {
       return redirect(FRONTEND_PATHS.SESSION_SELECTION, "Concurrent session found - redirecting to session selection")
@@ -106,7 +116,7 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
     navigate
   ])
 
-  useEffect(async () => {
+  useEffect(() => {
     // If user is signedIn, every 5 minutes call tracker user info. If it fails, sign the user out.
     const internalId = setInterval(() => {
       const currentPath = location.pathname
@@ -119,10 +129,11 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
       logger.info("Periodic user info check")
       if (auth.isSignedIn) {
         logger.info("Refreshing user info")
-        const response = await auth.updateTrackerUserInfo()
-        if (response.error) {
-          await handleRestartLogin(auth, response.error)
-        }
+        auth.updateTrackerUserInfo().then((response) => {
+          if (response.error) {
+            handleRestartLogin(auth, response.invalidSessionCause)
+          }
+        })
       }
     }, 30000) // 300000 ms = 5 minutes
 

@@ -177,7 +177,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
   /**
    * Sign out process.
    */
-  const cognitoSignOut = async (signoutRedirectUri?: string): Promise<boolean> => {
+  const cognitoSignOut = async (signoutRedirectUrl?: string): Promise<boolean> => {
     logger.info("Signing out in authProvider...")
     try {
       // Call CIS2 signout first, this ensures a session remains on Amplify side.
@@ -189,12 +189,13 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
         logger.error("Failed to sign out of CIS2:", err)
       }
 
-      if (signoutRedirectUri) {
-        logger.info("Calling Amplify Signout, with redirect URL", signoutRedirectUri)
+      if (signoutRedirectUrl) {
+        logger.info("Calling Amplify Signout, with redirect URL", signoutRedirectUrl)
         await signOut({
           global: true,
-          ...(signoutRedirectUri ? {customState: {redirectUri: signoutRedirectUri}} : {})
+          oauth: {redirectUrl: signoutRedirectUrl}
         })
+
       } else {
         logger.info("Calling Amplify Signout, no redirect URL")
         await signOut({global: true})

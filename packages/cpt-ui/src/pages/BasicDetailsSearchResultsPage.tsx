@@ -9,7 +9,7 @@ import {
   Col
 } from "nhsuk-react-components"
 import {SearchResultsPageStrings} from "@/constants/ui-strings/BasicDetailsSearchResultsPageStrings"
-import {API_ENDPOINTS, AUTH_CONFIG, FRONTEND_PATHS} from "@/constants/environment"
+import {API_ENDPOINTS, FRONTEND_PATHS} from "@/constants/environment"
 import {PatientSummary} from "@cpt-ui-common/common-types/src"
 import http from "@/helpers/axios"
 import {logger} from "@/helpers/logger"
@@ -70,7 +70,8 @@ export default function SearchResultsPage() {
     } catch (err) {
       const auth = useAuth()
       if (axios.isAxiosError(err) && (err.response?.status === 401)) {
-        handleRestartLogin(auth, err)
+        const invalidSessionCause = err.response?.data?.invalidSessionCause
+        handleRestartLogin(auth, invalidSessionCause)
         return
       }
       logger.error("Error loading search results:", err)
