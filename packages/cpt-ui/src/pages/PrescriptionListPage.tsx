@@ -132,7 +132,7 @@ export default function PrescriptionListPage() {
             setError(true)
           }
         } else if (err instanceof Error && err.message === "canceled") {
-          signOut(auth, FRONTEND_PATHS.LOGIN)
+          signOut(auth, AUTH_CONFIG.REDIRECT_SIGN_OUT)
           return
         } else {
           setError(true)
