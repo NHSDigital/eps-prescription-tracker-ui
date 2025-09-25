@@ -70,10 +70,10 @@ export const getTrackerUserInfo = async (): Promise<TrackerUserInfoResult> => {
     if (err instanceof AxiosError) {
       const axiosErr = err as AxiosError<AuthErrorResponse>
 
-      if (axiosErr.response?.status === 401 && axiosErr.response.data?.invalidSessionCause) {
+      if (axiosErr.response?.status === 401 && axiosErr.response.data?.restartLogin) {
         invalidSessionCause = axiosErr.response.data.invalidSessionCause
       }
-      error = axiosErr.message
+      error = axiosErr.response
     } else if (err instanceof Error) {
       error = err.message
     } else {

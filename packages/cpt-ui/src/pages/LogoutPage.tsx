@@ -6,13 +6,15 @@ import {useAuth} from "@/context/AuthProvider"
 import EpsSpinner from "@/components/EpsSpinner"
 import {EpsLogoutStrings} from "@/constants/ui-strings/EpsLogoutPageStrings"
 import {signOut} from "@/helpers/logout"
+import {AUTH_CONFIG} from "@/constants/environment"
 
 export default function LogoutPage() {
   const auth = useAuth()
 
-  // Log out on page load
   useEffect(() => {
-    signOut(auth)
+    if (auth.isSignedIn) {
+      signOut(auth, AUTH_CONFIG.REDIRECT_SIGN_OUT)
+    }
   }, [])
 
   return (

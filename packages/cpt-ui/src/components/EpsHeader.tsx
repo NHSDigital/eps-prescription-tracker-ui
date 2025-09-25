@@ -24,8 +24,9 @@ import {useAuth} from "@/context/AuthProvider"
 
 import {EpsLogoutModal} from "@/components/EpsLogoutModal"
 import {normalizePath} from "@/helpers/utils"
-import {ENV_CONFIG, FRONTEND_PATHS} from "@/constants/environment"
+import {ENV_CONFIG, FRONTEND_PATHS, AUTH_CONFIG} from "@/constants/environment"
 import {getHomeLink} from "@/helpers/loginFunctions"
+import {signOut} from "@/helpers/logout"
 
 const baseUrl = ENV_CONFIG.BASE_URL
 
@@ -96,7 +97,7 @@ export default function EpsHeader() {
 
   const handleConfirmLogout = async () => {
     setShowLogoutModal(false)
-    navigate(FRONTEND_PATHS.LOGOUT)
+    signOut(auth, AUTH_CONFIG.REDIRECT_SIGN_OUT)
   }
 
   return (

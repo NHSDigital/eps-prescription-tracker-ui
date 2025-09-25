@@ -10,8 +10,9 @@ import { AxiosError } from "axios"
 
 export const signOut = async (authParam: AuthContextType, redirectUri?: string) => {
   const location = window.location.pathname
-  logger.info(`Called signOut helper from ${location}`)
+  logger.info(`Called signOut helper from ${location} with redirect of ${redirectUri}`)
   if (redirectUri) {
+    logger.info("Signing out with specified redirect path", redirectUri)
     await authParam?.cognitoSignOut(redirectUri)
   } else {
     const defaultUri = AUTH_CONFIG.REDIRECT_SIGN_OUT
@@ -31,10 +32,13 @@ export const handleRestartLogin = async (auth: AuthContextType, errorResponse: A
   logger.info("Handling restart login instruction from backend")
   const data = errorResponse.response?.data as RestartLoginData | undefined
 
+  logger.info(errorResponse)
+
   if (data?.restartLogin && data?.invalidSessionCause) {
+    logger.info(`Invalid session cause supplied, ${data.invalidSessionCause}`)
     await auth.updateInvalidSessionCause(data.invalidSessionCause)
     await signOut(auth, AUTH_CONFIG.REDIRECT_SESSION_SIGN_OUT)
     return
   }
-  await signOut(auth, AUTH_CONFIG.REDIRECT_SIGN_IN)
+  await signOut(auth, AUTH_CONFIG.REDIRECT_SIGN_OUT)
 }

@@ -28,7 +28,7 @@ import http from "@/helpers/axios"
 import {logger} from "@/helpers/logger"
 import {useSearchContext} from "@/context/SearchProvider"
 import {buildBackLink, determineSearchType} from "@/helpers/prescriptionNotFoundLinks"
-import { handleRestartLogin } from "@/helpers/logout"
+import { handleRestartLogin, signOut } from "@/helpers/logout"
 import {useAuth} from "@/context/AuthProvider"
 
 export default function PrescriptionListPage() {
@@ -132,7 +132,7 @@ export default function PrescriptionListPage() {
             setError(true)
           }
         } else if (err instanceof Error && err.message === "canceled") {
-          navigate(FRONTEND_PATHS.LOGIN)
+          signOut(auth, FRONTEND_PATHS.LOGIN)
           return
         } else {
           setError(true)

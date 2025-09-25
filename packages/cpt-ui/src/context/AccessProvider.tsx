@@ -11,7 +11,7 @@ import {useAuth} from "./AuthProvider"
 
 import {ALLOWED_NO_ROLE_PATHS, FRONTEND_PATHS, AUTH_CONFIG} from "@/constants/environment"
 import {logger} from "@/helpers/logger"
-import {signOut} from "@/helpers/logout"
+import {handleRestartLogin} from "@/helpers/logout"
 
 export const AccessContext = createContext<Record<string, never> | null>(null)
 
@@ -24,8 +24,12 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
 
     const path = normalizePath(location.pathname)
 
-    // not signed in → block on protected paths
+    // not signed in → block on protected paths, and also block root path to prevent flash
     if (!auth.isSignedIn && !auth.isSigningIn) {
+      if (path === "/") {
+        logger.info("At root path and not signed in - blocking render")
+        return true
+      }
       return !ALLOWED_NO_ROLE_PATHS.includes(path)
     }
 
@@ -59,8 +63,8 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
     const noRole = auth.isSignedIn && !auth.isSigningIn && !auth.selectedRole
     const authedAtRoot = auth.isSignedIn && !!auth.selectedRole && atRoot
 
-    if (!loggedOut && path === FRONTEND_PATHS.LOGIN) {
-      return redirect(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID, "Already signed in - redirecting to search")
+    if (loggedOut && !inNoRoleAllowed) {
+      return redirect(FRONTEND_PATHS.LOGIN, "Not signed in - redirecting to login page")
     }
 
     if (concurrent && !inNoRoleAllowed) {
@@ -76,10 +80,13 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
         "Authenticated user on root path - redirecting to search")
     }
 
-    if (atRoot) {
-      return loggedOut ?
-        redirect(FRONTEND_PATHS.LOGIN, "Not signed in - redirecting to login page") :
-        redirect(FRONTEND_PATHS.SELECT_YOUR_ROLE, `No selected role - Redirecting from ${path}`)
+    if (atRoot && loggedOut) {
+      return redirect(FRONTEND_PATHS.LOGIN, "Not signed in at root - redirecting to login page")
+    }
+
+    if (atRoot && !loggedOut && !auth.selectedRole) {
+      return redirect(FRONTEND_PATHS.SELECT_YOUR_ROLE, `No selected role - Redirecting from ${path}`
+      )
     }
   }
 
@@ -112,19 +119,19 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
       logger.info("Periodic user info check")
       if (auth.isSignedIn) {
         logger.info("Refreshing user info")
-        auth.updateTrackerUserInfo().then((response) => {
+        auth.updateTrackerUserInfo().then(async (response) => {
           if (response.error) {
-            navigate(FRONTEND_PATHS.SESSION_LOGGED_OUT)
+            await handleRestartLogin(auth, response.error)
           }
         })
       }
-    }, 300000) // 300000 ms = 5 minutes
+    }, 30000) // 300000 ms = 5 minutes
 
     return () => clearInterval(internalId)
   }, [auth.isSignedIn, auth.isSigningIn, location.pathname])
 
   if (shouldBlockChildren()) {
-    return null
+    return <></>
   }
 
   return (
