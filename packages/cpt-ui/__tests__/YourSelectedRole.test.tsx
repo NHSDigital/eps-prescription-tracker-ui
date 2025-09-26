@@ -2,7 +2,7 @@ import React from "react"
 import {render, screen} from "@testing-library/react"
 import {MemoryRouter, Route, Routes} from "react-router-dom"
 import YourSelectedRolePage from "@/pages/YourSelectedRolePage"
-import {useAuth} from "@/context/AuthProvider"
+import {AuthContextType, useAuth} from "@/context/AuthProvider"
 import {YOUR_SELECTED_ROLE_STRINGS} from "@/constants/ui-strings/YourSelectedRoleStrings"
 import userEvent from "@testing-library/user-event"
 
@@ -11,7 +11,8 @@ jest.mock("@/context/AuthProvider")
 
 const mockedUseAuth = useAuth as jest.MockedFunction<typeof useAuth>
 
-const mockUseAuthReturnValue = {
+const mockUseAuthReturnValue: AuthContextType = {
+  authConfigured: true,
   selectedRole: undefined,
   error: null,
   user: null,
