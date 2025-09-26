@@ -1,11 +1,12 @@
 import {MedicationDispense, MedicationRequest, Patient} from "fhir/r4"
 import {ItemDetails, PatientDetails} from "@cpt-ui-common/common-types"
 import {findExtensionByKey, getBooleanFromNestedExtension, getCodeFromNestedExtension} from "./extensionUtils"
+import {Logger} from "@aws-lambda-powertools/logger"
 
 /**
  *  Maps message history titles names to semantic message codes
  */
-export const mapMessageHistoryTitleToMessageCode = (title: string): string => {
+export const mapMessageHistoryTitleToMessageCode = (title: string, logger?: Logger): string => {
   const titleToCodeMap: Record<string, string> = {
     "Prescription upload successful": "prescription-uploaded",
     "Release Request successful": "release-requested",
@@ -17,9 +18,37 @@ export const mapMessageHistoryTitleToMessageCode = (title: string): string => {
     "Administrative update successful": "admin-updated",
     "Administrative Action Update Successful": "admin-action-updated",
     "Prescription Reset request successful": "prescription-reset",
+    "Prescription/Item was cancelled": "prescription-cancelled",
     "Prescription/item was cancelled": "prescription-cancelled",
+
+    "Prescription/item was not cancelled. With dispenser. Marked for cancellation":
+      "prescription-marked-for-cancellation",
     "Prescription/item was not cancelled. With dispenser active. Marked for cancellation":
       "prescription-marked-for-cancellation",
+
+    "Prescription or item was not cancelled. Prescription has been dispensed.":
+      "prescription-not-cancelled-dispensed",
+
+    "Prescription or item had expired.": "prescription-expired",
+
+    "Prescription or item had already been cancelled.": "prescription-already-cancelled",
+
+    "Prescription or item cancellation requested by another prescriber.":
+      "prescription-cancellation-requested-other",
+
+    "Prescription or item was not cancelled. Prescription has been not dispensed.":
+      "prescription-not-cancelled-not-dispensed",
+
+    "Prescription or item not found.": "prescription-or-item-not-found",
+    "Unable to process message due to invalid information within the cancel request.":
+      "cancel-request-invalid",
+    // eslint-disable-next-line max-len
+    "The item has been partially collected / received by the patient in a less quantity than was requested by the prescriber.":
+      "item-partially-collected",
+    // eslint-disable-next-line max-len
+    "The item has been partially collected or received by the patient, in less quantity than was requested by prescriber.":
+      "item-partially-collected",
+
     "Subsequent cancellation": "subsequent-cancellation",
     "Rebuild Dispense History successful": "dispense-history-rebuilt",
     "Updated by Urgent Admin Batch worker": "urgent-batch-updated",
@@ -28,7 +57,15 @@ export const mapMessageHistoryTitleToMessageCode = (title: string): string => {
     "Updated by Document Batch worker": "document-batch-updated"
   }
 
-  return titleToCodeMap[title]
+  const mapped = titleToCodeMap[title]
+
+  if (!mapped) {
+    logger?.warn("missing mapping for Spine message title", {missingTitle: title})
+    // fallback: show raw Spine message in UI
+    return title
+  }
+
+  return mapped
 }
 
 /**

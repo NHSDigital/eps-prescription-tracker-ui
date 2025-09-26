@@ -90,7 +90,13 @@ export const PUBLIC_PATHS = [
 
 export const ALLOWED_NO_ROLE_PATHS = [
   ...PUBLIC_PATHS,
+  FRONTEND_PATHS.SELECT_YOUR_ROLE,
   FRONTEND_PATHS.SESSION_SELECTION
+] as const
+
+export const ALLOWED_NO_REDIRECT_PATHS = [
+  ...PUBLIC_PATHS,
+  FRONTEND_PATHS.SESSION_LOGGED_OUT
 ] as const
 
 // Type for environment

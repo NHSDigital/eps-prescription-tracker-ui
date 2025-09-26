@@ -31,8 +31,11 @@ import {logger} from "@/helpers/logger"
 import {useSearchContext} from "@/context/SearchProvider"
 import {buildBackLink, determineSearchType} from "@/helpers/prescriptionNotFoundLinks"
 import axios from "axios"
+import {handleRestartLogin} from "@/helpers/logout"
+import {useAuth} from "@/context/AuthProvider"
 
 export default function PrescriptionDetailsPage() {
+  const auth = useAuth()
 
   const [loading, setLoading] = useState(true)
 
@@ -78,8 +81,9 @@ export default function PrescriptionDetailsPage() {
         throw new Error("No payload received from the API")
       }
     } catch (err) {
-      if (axios.isAxiosError(err) && (err.response?.status === 401) && err.response.data?.restartLogin) {
-        navigate(FRONTEND_PATHS.LOGIN)
+      if (axios.isAxiosError(err) && (err.response?.status === 401)) {
+        const invalidSessionCause = err.response?.data?.invalidSessionCause
+        handleRestartLogin(auth, invalidSessionCause)
         return
       }
       logger.error("Failed to fetch prescription details", err)
