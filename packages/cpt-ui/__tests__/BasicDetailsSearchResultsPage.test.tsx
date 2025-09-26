@@ -18,6 +18,7 @@ jest.mock("@/helpers/axios")
 const mockAxiosGet = http.get as jest.MockedFunction<typeof http.get>
 
 const mockAuthContext: AuthContextType = {
+  authConfigured: true,
   error: null,
   user: null,
   isSignedIn: true,

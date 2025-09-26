@@ -51,6 +51,7 @@ jest.mock("@/constants/environment", () => ({
 const mockUpdateTrackerUserInfo = jest.fn()
 
 export const defaultAuthState: AuthContextType = {
+  authConfigured: true,
   isSignedIn: true,
   isSigningIn: false,
   invalidSessionCause: undefined,

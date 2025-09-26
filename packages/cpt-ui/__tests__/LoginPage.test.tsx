@@ -82,6 +82,7 @@ jest.mock("@/context/configureAmplify", () => ({
 }))
 
 const defaultAuthState: AuthContextType = {
+  authConfigured: true,
   isSignedIn: false,
   isSigningIn: false,
   invalidSessionCause: undefined,

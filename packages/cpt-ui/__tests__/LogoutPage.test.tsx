@@ -62,6 +62,7 @@ const MockAuthProvider = ({
 
   // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
   const authContextValue: AuthContextType = {
+    authConfigured: true,
     error: null,
     user: defaultIsSignedIn ? {username: "testUser"} : null,
     isSignedIn: defaultIsSignedIn,

@@ -10,6 +10,7 @@ import {AccessContext} from "@/context/AccessProvider"
 
 // Default mock values for contexts
 const defaultAuthContext: AuthContextType = {
+  authConfigured: true,
   error: null,
   user: null,
   isSignedIn: false,

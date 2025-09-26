@@ -47,6 +47,7 @@ jest.mock("react-router-dom", () => ({
 
 // Default context values
 const defaultAuthContext: AuthContextType = {
+  authConfigured: true,
   error: null,
   user: null,
   isSignedIn: false,
