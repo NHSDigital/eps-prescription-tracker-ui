@@ -19,7 +19,6 @@ import {SearchContext, SearchProviderContextType} from "@/context/SearchProvider
 import {AxiosError, AxiosHeaders} from "axios"
 
 const defaultAuthState: AuthContextType = {
-  authConfigured: true,
   isSignedIn: false,
   isSigningIn: false,
   invalidSessionCause: undefined,

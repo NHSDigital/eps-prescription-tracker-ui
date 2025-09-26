@@ -20,7 +20,6 @@ import {logger} from "@/helpers/logger"
 const CIS2SignOutEndpoint = API_ENDPOINTS.CIS2_SIGNOUT_ENDPOINT
 
 export interface AuthContextType {
-  authConfigured: boolean
   error: string | null
   user: string | null
   isSignedIn: boolean
@@ -42,9 +41,9 @@ export interface AuthContextType {
 }
 
 export const AuthContext = createContext<AuthContextType | null>(null)
+Amplify.configure(authConfig, {ssr: false})
 
 export const AuthProvider = ({children}: { children: React.ReactNode }) => {
-  const [authConfigured, setAuthConfigured] = useState<boolean>(false)
   const [error, setError] = useState<string | null>(null)
   const [user, setUser] = useLocalStorageState<string | null>("user", "user", null)
   const [isSignedIn, setIsSignedIn] = useLocalStorageState<boolean>("isSignedIn", "isSignedIn", false)
@@ -170,14 +169,6 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
   }, [])
 
   /**
-   * Reconfigure Amplify on initial state
-   */
-  useEffect(() => {
-    Amplify.configure(authConfig, {ssr: false})
-    setAuthConfigured(true)
-  }, [])
-
-  /**
    * Sign out process.
    */
   const cognitoSignOut = async (signoutRedirectUrl?: string): Promise<boolean> => {
@@ -234,7 +225,6 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
 
   return (
     <AuthContext.Provider value={{
-      authConfigured,
       error,
       user,
       isSignedIn,

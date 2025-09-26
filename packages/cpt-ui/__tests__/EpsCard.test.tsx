@@ -89,7 +89,6 @@ const mockUpdateSelectedRole = jest.fn()
 
 // Update default auth context with proper JWT
 const defaultAuthContext: AuthContextType = {
-  authConfigured: true,
   error: null,
   user: null,
   isSignedIn: true,

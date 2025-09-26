@@ -12,7 +12,6 @@ jest.mock("@/context/AuthProvider")
 const mockedUseAuth = useAuth as jest.MockedFunction<typeof useAuth>
 
 const mockUseAuthReturnValue: AuthContextType = {
-  authConfigured: true,
   selectedRole: undefined,
   error: null,
   user: null,

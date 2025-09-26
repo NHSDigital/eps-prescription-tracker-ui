@@ -16,7 +16,6 @@ import {AuthContext, AuthContextType} from "@/context/AuthProvider"
 import {SearchContext, SearchProviderContextType} from "@/context/SearchProvider"
 
 const mockAuthContext: AuthContextType = {
-  authConfigured: true,
   error: null,
   user: null,
   isSignedIn: true,

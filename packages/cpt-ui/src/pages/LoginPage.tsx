@@ -45,10 +45,6 @@ export default function LoginPage() {
   }
 
   useEffect(() => {
-    if (!auth.authConfigured) {
-      logger.info("auth not yet loaded")
-      return
-    }
     logger.info(
       "Login page loaded. What environment are we in?",
       target_environment
