@@ -6,9 +6,6 @@ import {Logger} from "@aws-lambda-powertools/logger"
 
 jest.mock("axios")
 jest.mock("jsonwebtoken")
-jest.unstable_mockModule("uuid", () => ({
-  v4: jest.fn(() => "test-uuid")
-}))
 
 const mockGetTokenMapping = jest.fn()
 const mockUpdateTokenMapping = jest.fn()
@@ -33,7 +30,13 @@ const {exchangeTokenForApigeeAccessToken,
 describe("apigeeUtils", () => {
   const mockAxiosPost = jest.fn();
   (axios.post as unknown as jest.Mock) = mockAxiosPost
+  beforeAll(() => {
+    jest.spyOn(global.crypto, "randomUUID").mockReturnValue("test-uuid-in-uuid-format")
+  })
 
+  afterAll(() => {
+    jest.restoreAllMocks()
+  })
   beforeEach(() => {
     jest.clearAllMocks()
   })
@@ -52,7 +55,7 @@ describe("apigeeUtils", () => {
         "nhsd-identity-uuid": roleId,
         "nhsd-session-jobrole": roleId,
         "x-correlation-id": correlationId,
-        "x-request-id": "test-uuid"
+        "x-request-id": "test-uuid-in-uuid-format"
       }
 
       const headers = buildApigeeHeaders(apigeeAccessToken, roleId, orgCode, correlationId)

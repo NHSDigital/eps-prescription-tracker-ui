@@ -11,7 +11,6 @@ import {PrivateKey} from "jsonwebtoken"
 import {exchangeTokenForApigeeAccessToken, fetchUserInfo, initializeOidcConfig} from "@cpt-ui-common/authFunctions"
 import {insertTokenMapping, getSessionState, tryGetTokenMapping} from "@cpt-ui-common/dynamoFunctions"
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
-import {v4 as uuidv4} from "uuid"
 import jwt from "jsonwebtoken"
 import axios from "axios"
 
@@ -122,7 +121,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   const current_time = Math.floor(Date.now() / 1000)
   const expirationTime = current_time + 600
   const baseUsername = userInfoResponse.user_details.sub
-  const sessionId = uuidv4()
+  const sessionId = crypto.randomUUID()
 
   const jwtClaims = {
     exp: expirationTime,

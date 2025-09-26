@@ -1,7 +1,6 @@
 import {Logger} from "@aws-lambda-powertools/logger"
 import jwt from "jsonwebtoken"
 import {ParsedUrlQuery} from "querystring"
-import {v4 as uuidv4} from "uuid"
 
 export function rewriteRequestBody(
   logger: Logger,
@@ -23,7 +22,7 @@ export function rewriteRequestBody(
     "aud": idpTokenPath,
     "iat": current_time,
     "exp": expiration_time,
-    "jti": uuidv4()
+    "jti": crypto.randomUUID()
   }
 
   const signOptions: jwt.SignOptions = {

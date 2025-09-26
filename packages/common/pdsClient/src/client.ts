@@ -1,5 +1,4 @@
 import {AxiosInstance} from "axios"
-import {v4 as uuidv4} from "uuid"
 import {Logger} from "@aws-lambda-powertools/logger"
 
 import {patientDetailsLookup, patientSearch, axios} from "."
@@ -41,7 +40,7 @@ export class Client implements clientInterface, patientDetailsLookup.Interface, 
       Authorization: `Bearer ${this.apigeeAccessToken}`,
       "NHSD-End-User-Organisation-ODS": this.orgCode!,
       "NHSD-Session-URID": this.roleId!,
-      "x-Request-ID": uuidv4(),
+      "x-Request-ID": crypto.randomUUID(),
       "X-Correlation-ID": this.correlationId!
     }
   }

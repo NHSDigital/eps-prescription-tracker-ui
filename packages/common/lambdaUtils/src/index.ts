@@ -1,5 +1,4 @@
 import {APIGatewayProxyEvent} from "aws-lambda"
-import {v4 as uuidv4} from "uuid"
 import {Logger} from "@aws-lambda-powertools/logger"
 
 export * as headers from "./headers"
@@ -15,7 +14,7 @@ export type InboundEventValues = {
   correlationId: string
 }
 export const extractInboundEventValues = (event: APIGatewayProxyEvent): InboundEventValues => {
-  const correlationId = event.headers["x-correlation-id"] || uuidv4()
+  const correlationId = event.headers["x-correlation-id"] || crypto.randomUUID()
   return {
     loggerKeys: {
       "apigw-request-id": event.requestContext?.requestId,
