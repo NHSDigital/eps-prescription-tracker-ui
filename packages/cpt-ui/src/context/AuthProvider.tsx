@@ -24,6 +24,7 @@ export interface AuthContextType {
   user: string | null
   isSignedIn: boolean
   isSigningIn: boolean
+  isSigningOut: boolean
   isConcurrentSession: boolean
   invalidSessionCause: string | undefined
   rolesWithAccess: Array<RoleDetails>
@@ -38,6 +39,7 @@ export interface AuthContextType {
   updateSelectedRole: (value: RoleDetails) => Promise<void>
   updateTrackerUserInfo: () => Promise<TrackerUserInfoResult>
   updateInvalidSessionCause: (cause: string) => void
+  setIsSigningOut: (value: boolean) => void
 }
 
 export const AuthContext = createContext<AuthContextType | null>(null)
@@ -48,6 +50,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
   const [user, setUser] = useLocalStorageState<string | null>("user", "user", null)
   const [isSignedIn, setIsSignedIn] = useLocalStorageState<boolean>("isSignedIn", "isSignedIn", false)
   const [isSigningIn, setIsSigningIn] = useLocalStorageState<boolean>("isSigningIn", "isSigningIn", false)
+  const [isSigningOut, setIsSigningOut] = useLocalStorageState<boolean>("isSigningOut", "isSigningOut", false)
   const [isConcurrentSession, setIsConcurrentSession] = useLocalStorageState<boolean>(
     "isConcurrentSession", "isConcurrentSession", false)
   const [invalidSessionCause, setInvalidSessionCause] = useLocalStorageState<string | undefined>(
@@ -195,6 +198,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
         await signOut({global: true})
       }
 
+      setIsSigningOut(true)
       logger.info("Frontend amplify signout OK!")
       return true
     } catch (err) {
@@ -229,6 +233,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
       user,
       isSignedIn,
       isSigningIn,
+      isSigningOut,
       rolesWithAccess,
       rolesWithoutAccess,
       hasNoAccess,
@@ -242,7 +247,8 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
       clearAuthState,
       updateSelectedRole,
       updateTrackerUserInfo,
-      updateInvalidSessionCause
+      updateInvalidSessionCause,
+      setIsSigningOut
     }}>
       {children}
     </AuthContext.Provider>

@@ -106,7 +106,9 @@ const defaultAuthContext: AuthContextType = {
   clearAuthState: jest.fn(),
   updateSelectedRole: mockUpdateSelectedRole,
   updateTrackerUserInfo: jest.fn(),
-  updateInvalidSessionCause: jest.fn()
+  updateInvalidSessionCause: jest.fn(),
+  isSigningOut: false,
+  setIsSigningOut: jest.fn()
 }
 
 const renderWithProviders = (props: { role: RoleDetails; link: string }) => {

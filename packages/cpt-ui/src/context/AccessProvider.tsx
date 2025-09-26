@@ -60,7 +60,7 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
       navigate(to)
     }
 
-    const loggedOut = !auth.isSignedIn
+    const loggedOut = !auth.isSignedIn// && !auth.isSigningOut
     const concurrent = auth.isSignedIn && auth.isConcurrentSession
     const noRole = auth.isSignedIn && !auth.isSigningIn && !auth.selectedRole
     const authedAtRoot = auth.isSignedIn && !!auth.selectedRole && atRoot
@@ -73,7 +73,7 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
         return redirect(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID, "User already logged in. Role already selected.")
       }
     }
- 
+
     if (concurrent && !(PUBLIC_PATHS.includes(path) || path === FRONTEND_PATHS.SESSION_SELECTION)) {
       return redirect(FRONTEND_PATHS.SESSION_SELECTION, "Concurrent session found - redirecting to session selection")
     }

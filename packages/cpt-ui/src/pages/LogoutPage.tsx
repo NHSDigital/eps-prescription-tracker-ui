@@ -14,8 +14,10 @@ export default function LogoutPage() {
   useEffect(() => {
     if (auth.isSignedIn || auth.isSigningIn) {
       signOut(auth, AUTH_CONFIG.REDIRECT_SIGN_OUT)
+    } else if (auth.isSigningOut) {
+      auth.setIsSigningOut(false)
     }
-  }, [])
+  }, [auth.isSignedIn, auth.isSigningIn])
 
   return (
     <main id="main-content" className="nhsuk-main-wrapper">

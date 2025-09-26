@@ -33,7 +33,9 @@ const mockAuthContext: AuthContextType = {
   clearAuthState: jest.fn(),
   updateSelectedRole: jest.fn(),
   updateTrackerUserInfo: jest.fn(),
-  updateInvalidSessionCause: jest.fn()
+  updateInvalidSessionCause: jest.fn(),
+  isSigningOut: false,
+  setIsSigningOut: jest.fn()
 }
 
 const mockClearSearchParameters = jest.fn()
