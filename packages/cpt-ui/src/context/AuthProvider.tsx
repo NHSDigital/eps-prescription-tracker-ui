@@ -41,9 +41,9 @@ export interface AuthContextType {
 }
 
 export const AuthContext = createContext<AuthContextType | null>(null)
-Amplify.configure(authConfig, {ssr: false})
 
 export const AuthProvider = ({children}: { children: React.ReactNode }) => {
+  Amplify.configure(authConfig, {ssr: false})
   const [error, setError] = useState<string | null>(null)
   const [user, setUser] = useLocalStorageState<string | null>("user", "user", null)
   const [isSignedIn, setIsSignedIn] = useLocalStorageState<boolean>("isSignedIn", "isSignedIn", false)
