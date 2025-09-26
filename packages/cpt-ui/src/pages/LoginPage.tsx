@@ -61,7 +61,7 @@ export default function LoginPage() {
         mockSignIn()
       }
     }
-  }, [auth.authConfigured])
+  }, [])
 
   if (isAutoLoginEnvironment) {
     return (
