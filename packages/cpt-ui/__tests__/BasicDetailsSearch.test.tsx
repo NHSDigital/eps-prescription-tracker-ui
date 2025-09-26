@@ -53,7 +53,10 @@ const signedInAuthState: AuthContextType = {
   cognitoSignOut: mockCognitoSignOut,
   clearAuthState: mockClearAuthState,
   updateSelectedRole: jest.fn(),
-  updateTrackerUserInfo: jest.fn()
+  updateTrackerUserInfo: jest.fn(),
+  updateInvalidSessionCause: jest.fn(),
+  isSigningOut: false,
+  setIsSigningOut: jest.fn()
 }
 
 const mockClearSearchParameters = jest.fn()

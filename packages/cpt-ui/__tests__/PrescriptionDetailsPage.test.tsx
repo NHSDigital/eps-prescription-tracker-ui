@@ -35,7 +35,10 @@ const defaultAuthState: AuthContextType = {
   cognitoSignOut: jest.fn().mockName("cognitoSignOut"),
   clearAuthState: jest.fn().mockName("clearAuthState"),
   updateSelectedRole: jest.fn().mockName("updateSelectedRole"),
-  updateTrackerUserInfo: jest.fn().mockName("updateTrackerUserInfo")
+  updateTrackerUserInfo: jest.fn().mockName("updateTrackerUserInfo"),
+  updateInvalidSessionCause: jest.fn().mockName("updateInvalidSessionCause"),
+  isSigningOut: false,
+  setIsSigningOut: jest.fn()
 }
 
 const signedInAuthState: AuthContextType = {
@@ -163,7 +166,7 @@ describe("PrescriptionDetailsPage", () => {
     renderComponent("ANY_ID", signedInAuthState)
 
     await waitFor(() => {
-      expect(screen.getByTestId("login-page-shown")).toBeInTheDocument()
+      expect(defaultAuthState.cognitoSignOut).toHaveBeenCalled()
     })
   })
 

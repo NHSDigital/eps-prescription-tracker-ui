@@ -64,6 +64,10 @@ jest.mock("@/constants/environment", () => ({
   },
   FRONTEND_PATHS: {
     LOGIN: "/login"
+  },
+  AUTH_CONFIG: {
+    REDIRECT_SIGN_OUT: "/logout",
+    REDIRECT_SESSION_SIGNOUT: "/session-logged-out"
   }
 }))
 
@@ -101,7 +105,10 @@ const defaultAuthContext: AuthContextType = {
   cognitoSignOut: jest.fn(),
   clearAuthState: jest.fn(),
   updateSelectedRole: mockUpdateSelectedRole,
-  updateTrackerUserInfo: jest.fn()
+  updateTrackerUserInfo: jest.fn(),
+  updateInvalidSessionCause: jest.fn(),
+  isSigningOut: false,
+  setIsSigningOut: jest.fn()
 }
 
 const renderWithProviders = (props: { role: RoleDetails; link: string }) => {
@@ -201,7 +208,7 @@ describe("EpsCard Component", () => {
     })
 
     await waitFor(() => {
-      expect(screen.getByTestId("login-page-shown")).toBeInTheDocument()
+      expect(defaultAuthContext.cognitoSignOut).toHaveBeenCalled()
     })
   })
 })

@@ -15,7 +15,9 @@ export const authenticationMiddleware = ({
 
     logger.info("Using standard authentication middleware")
 
+    let invalidSessionCause: string | undefined = undefined
     let authResult: AuthResult | null = null
+
     try {
       const username = getUsernameFromEvent(event)
       const sessionId = getSessionIdFromEvent(event)
@@ -27,7 +29,9 @@ export const authenticationMiddleware = ({
         logger
       )
 
-      if (tokenMappingItem !== undefined && tokenMappingItem.sessionId === sessionId) {
+      const tokenMappingSessionId = tokenMappingItem?.sessionId
+
+      if (tokenMappingItem !== undefined && tokenMappingSessionId === sessionId) {
         // Feed the token mapping item to authenticateRequest
         logger.info("Session ID matches the token mapping item, proceeding with authentication")
         authResult = await authenticateRequest(
@@ -37,9 +41,14 @@ export const authenticationMiddleware = ({
           authOptions.tokenMappingTableName,
           false
         )
+      } else if (tokenMappingItem !== undefined) {
+        logger.info("A session is active but does not match the requestors sessionId", {username, sessionId})
+        invalidSessionCause = "ConcurrentSession"
       } else {
-        logger.error("Session ID does not match the token mapping item, treating as invalid session")
-        authResult = null
+        logger.error("Request token invalid. No matching session found.", {
+          tokenMappingSessionId
+        })
+        invalidSessionCause = "InvalidSession"
       }
     } catch (error) {
       logger.error("Authentication failed returning restart login prompt", {error})
@@ -49,7 +58,8 @@ export const authenticationMiddleware = ({
         statusCode: 401,
         body: JSON.stringify({
           message: "Session expired or invalid. Please log in again.",
-          restartLogin: true
+          restartLogin: true,
+          ...(invalidSessionCause && {invalidSessionCause})
         })
       }
       return request.earlyResponse

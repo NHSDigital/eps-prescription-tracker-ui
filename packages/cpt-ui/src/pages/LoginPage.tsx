@@ -9,6 +9,8 @@ import {EpsLoginPageStrings} from "@/constants/ui-strings/EpsLoginPageStrings"
 import {AUTO_LOGIN_ENVIRONMENTS, ENV_CONFIG, type Environment} from "@/constants/environment"
 import {Button} from "@/components/ReactRouterButton"
 import {logger} from "@/helpers/logger"
+import {AUTH_CONFIG} from "@/constants/environment"
+import {signOut} from "@/helpers/logout"
 
 export default function LoginPage() {
   const auth = useAuth()
@@ -19,9 +21,6 @@ export default function LoginPage() {
 
   const mockSignIn = async () => {
     logger.info("Signing in (Mock)", auth)
-    await auth.cognitoSignOut()
-    // Clear auth state only after logging out - Otherwise no tokens present to action the request
-    auth.clearAuthState()
     await auth?.cognitoSignIn({
       provider: {
         custom: "Mock"
@@ -31,9 +30,6 @@ export default function LoginPage() {
 
   const cis2SignIn = async () => {
     logger.info("Signing in (Primary)", auth)
-    await auth.cognitoSignOut()
-    // Clear auth state only after logging out - Otherwise no tokens present to action the request
-    auth.clearAuthState()
     await auth?.cognitoSignIn({
       provider: {
         custom: "Primary"
@@ -42,10 +38,9 @@ export default function LoginPage() {
     logger.info("Signed in: ", auth)
   }
 
-  const signOut = async () => {
+  const logout = async () => {
     logger.info("Signing out", auth)
-    await auth?.cognitoSignOut()
-    auth.clearAuthState()
+    await signOut(auth, AUTH_CONFIG.REDIRECT_SIGN_OUT)
     logger.info("Signed out: ", auth)
   }
 
@@ -111,7 +106,7 @@ export default function LoginPage() {
           <Col width="full">
             <Button id="primary-signin" style={{margin: "8px"}} onClick={cis2SignIn}>Log in with PTL CIS2</Button>
             <Button id="mock-signin" style={{margin: "8px"}} onClick={mockSignIn}>Log in with mock CIS2</Button>
-            <Button id="signout" style={{margin: "8px"}} onClick={signOut}>Sign Out</Button>
+            <Button id="signout" style={{margin: "8px"}} onClick={logout}>Sign Out</Button>
 
             {auth && (
               <Fragment>
