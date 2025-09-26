@@ -9,7 +9,7 @@ import {useLocation, useNavigate} from "react-router-dom"
 import {normalizePath} from "@/helpers/utils"
 import {useAuth} from "./AuthProvider"
 
-import {ALLOWED_NO_ROLE_PATHS, FRONTEND_PATHS} from "@/constants/environment"
+import {ALLOWED_NO_ROLE_PATHS, FRONTEND_PATHS, PUBLIC_PATHS} from "@/constants/environment"
 import {logger} from "@/helpers/logger"
 import {handleRestartLogin} from "@/helpers/logout"
 
@@ -73,8 +73,8 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
         return redirect(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID, "User already logged in. Role already selected.")
       }
     }
-
-    if (concurrent && !inNoRoleAllowed) {
+ 
+    if (concurrent && !(PUBLIC_PATHS.includes(path) || path === FRONTEND_PATHS.SESSION_SELECTION)) {
       return redirect(FRONTEND_PATHS.SESSION_SELECTION, "Concurrent session found - redirecting to session selection")
     }
 
