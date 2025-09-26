@@ -60,7 +60,7 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
       navigate(to)
     }
 
-    const loggedOut = !auth.isSignedIn && !auth.isSigningIn
+    const loggedOut = !auth.isSignedIn
     const concurrent = auth.isSignedIn && auth.isConcurrentSession
     const noRole = auth.isSignedIn && !auth.isSigningIn && !auth.selectedRole
     const authedAtRoot = auth.isSignedIn && !!auth.selectedRole && atRoot
