@@ -1,17 +1,20 @@
 import {Container, Col, Row} from "nhsuk-react-components"
 import {Button} from "@/components/ReactRouterButton"
 import {useNavigate} from "react-router-dom"
-import {FRONTEND_PATHS} from "@/constants/environment"
+import {AUTH_CONFIG, FRONTEND_PATHS} from "@/constants/environment"
 import {postSessionManagementUpdate} from "@/helpers/sessionManagement"
 import {useAuth} from "@/context/AuthProvider"
 import {logger} from "@/helpers/logger"
+import {signOut} from "@/helpers/logout"
+import {useState} from "react"
 
 export default function SessionSelectionPage() {
+  const [startNewSessionClicked, setStartNewSessionClicked] = useState<boolean>(false)
   const navigate = useNavigate()
   const auth = useAuth()
 
-  const signOut = async () => {
-    navigate(FRONTEND_PATHS.LOGOUT)
+  const logout = async () => {
+    signOut(auth, AUTH_CONFIG.REDIRECT_SIGN_OUT)
   }
 
   const redirectUser = (destination: string) => {
@@ -19,13 +22,18 @@ export default function SessionSelectionPage() {
   }
 
   const setSession = async () => {
+    if (startNewSessionClicked) {
+      return
+    }
+
+    setStartNewSessionClicked(true)
     const status = await postSessionManagementUpdate(auth)
     if (status === true) {
       logger.info("Redirecting user to search by prescription ID")
       redirectUser(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
     } else {
       logger.info("Redirecting user to login")
-      redirectUser(FRONTEND_PATHS.LOGIN)
+      signOut(auth, AUTH_CONFIG.REDIRECT_SIGN_OUT)
     }
   }
 
@@ -45,9 +53,9 @@ export default function SessionSelectionPage() {
         <Row>
           <Col width="full">
             <Button id="create-a-new-session" style={{margin: "8px"}} className="nhsuk-button"
-              onClick={setSession}>Start a new session</Button>
+              onClick={setSession} disabled={startNewSessionClicked}>Start a new session</Button>
             <Button id="close-this-window" style={{margin: "8px"}} className="nhsuk-button nhsuk-button--secondary"
-              onClick={signOut}>Close this window</Button>
+              onClick={logout}>Close this window</Button>
           </Col>
         </Row>
       </Container>
