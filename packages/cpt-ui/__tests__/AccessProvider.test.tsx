@@ -41,6 +41,14 @@ jest.mock("@/constants/environment", () => ({
     "/cookies-selected",
     "/",
     "/select-active-session"
+  ],
+  PUBLIC_PATHS: [
+    "/login",
+    "/logout",
+    "/cookies",
+    "/privacy-notice",
+    "/cookies-selected",
+    "/"
   ]
 }))
 
