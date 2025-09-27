@@ -15,7 +15,7 @@
   "dependencies": {
     "@aws-lambda-powertools/commons": "^2.26.1",
     "@aws-lambda-powertools/logger": "^2.25.2",
-    "@aws-lambda-powertools/parameters": "^2.25.1",
+    "@aws-lambda-powertools/parameters": "^2.27.0",
     "@aws-sdk/client-dynamodb": "^3.896.0",
     "@aws-sdk/client-lambda": "^3.896.0",
     "@aws-sdk/client-secrets-manager": "^3.893.0",
