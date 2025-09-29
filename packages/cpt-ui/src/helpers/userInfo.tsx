@@ -60,7 +60,7 @@ export const getTrackerUserInfo = async (): Promise<TrackerUserInfoResult> => {
     rolesWithoutAccess = userInfo.roles_without_access || []
     selectedRole = currentlySelectedRole
     userDetails = userInfo.user_details
-    hasSingleRoleAccess = userInfo.roles_with_access.length === 1
+    hasSingleRoleAccess = userInfo.roles_with_access.length === 1 && userInfo.roles_without_access.length === 0
 
     isConcurrentSession = userInfo.is_concurrent_session || false
     sessionId = userInfo.sessionId
@@ -72,7 +72,7 @@ export const getTrackerUserInfo = async (): Promise<TrackerUserInfoResult> => {
     if (err instanceof AxiosError) {
       const axiosErr = err as AxiosError<AuthErrorResponse>
 
-      if (axiosErr.response?.status === 401 && axiosErr.response.data?.invalidSessionCause) {
+      if (axiosErr.response?.status === 401 && axiosErr.response.data?.restartLogin) {
         invalidSessionCause = axiosErr.response.data.invalidSessionCause
       }
       error = axiosErr.message

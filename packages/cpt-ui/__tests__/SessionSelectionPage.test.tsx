@@ -68,7 +68,10 @@ export const defaultAuthState: AuthContextType = {
   cognitoSignOut: jest.fn(),
   clearAuthState: jest.fn(),
   updateSelectedRole: jest.fn(),
-  updateTrackerUserInfo: mockUpdateTrackerUserInfo
+  updateInvalidSessionCause: jest.fn(),
+  updateTrackerUserInfo: mockUpdateTrackerUserInfo,
+  isSigningOut: false,
+  setIsSigningOut: jest.fn()
 }
 
 const MockAuthProvider = ({
@@ -128,7 +131,7 @@ describe("SessionSelectionPage", () => {
     const closeSessionButton = screen.getByRole("button", {name: "Close this window"})
     await userEvent.click(closeSessionButton)
 
-    expect(mockNavigate).toHaveBeenCalledWith("/logout")
+    expect(defaultAuthState.cognitoSignOut).toHaveBeenCalled()
   })
 
   it("calls setSession function when 'Start a new session' is clicked", async () => {
@@ -179,7 +182,7 @@ describe("SessionSelectionPage", () => {
 
     // Should not navigate if session management fails
     expect(mockNavigate).not.toHaveBeenCalledWith("/search-by-prescription-id")
-    expect(mockNavigate).toHaveBeenCalledWith("/login")
+    expect(defaultAuthState.cognitoSignOut).toHaveBeenCalled()
   })
 
   it("has correct button IDs for accessibility", () => {

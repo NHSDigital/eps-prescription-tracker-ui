@@ -20,6 +20,8 @@ import SearchResultsTooManyMessage from "@/components/SearchResultsTooManyMessag
 import {useSearchContext} from "@/context/SearchProvider"
 import UnknownErrorMessage from "@/components/UnknownErrorMessage"
 import axios from "axios"
+import {useAuth} from "@/context/AuthProvider"
+import {handleRestartLogin} from "@/helpers/logout"
 
 export default function SearchResultsPage() {
   const location = useLocation()
@@ -28,6 +30,8 @@ export default function SearchResultsPage() {
   const [patients, setPatients] = useState<Array<PatientSummary>>([])
   const searchContext = useSearchContext()
   const [error, setError] = useState(false)
+
+  const auth = useAuth()
 
   useEffect(() => {
     getSearchResults()
@@ -66,8 +70,9 @@ export default function SearchResultsPage() {
       setPatients(payload)
       setLoading(false)
     } catch (err) {
-      if (axios.isAxiosError(err) && (err.response?.status === 401) && err.response.data?.restartLogin) {
-        navigate(FRONTEND_PATHS.LOGIN)
+      if (axios.isAxiosError(err) && (err.response?.status === 401)) {
+        const invalidSessionCause = err.response?.data?.invalidSessionCause
+        handleRestartLogin(auth, invalidSessionCause)
         return
       }
       logger.error("Error loading search results:", err)

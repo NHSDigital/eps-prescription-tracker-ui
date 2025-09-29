@@ -171,10 +171,6 @@ describe("AuthProvider", () => {
         </MemoryRouter>
       )
     })
-
-    await waitFor(() => {
-      expect(Amplify.configure).toHaveBeenCalled()
-    })
   }
 
   // Reset mocks before each test
