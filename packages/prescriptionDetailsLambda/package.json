@@ -30,7 +30,7 @@
     "axios": "^1.12.2",
     "jsonwebtoken": "^9.0.2",
     "jwks-rsa": "^3.1.0",
-    "uuid": "^11.0.5"
+    "uuid": "11.1.0"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.152",

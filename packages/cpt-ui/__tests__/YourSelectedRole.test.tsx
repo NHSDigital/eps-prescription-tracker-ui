@@ -18,6 +18,7 @@ const mockUseAuthReturnValue: AuthContextType = {
   isSignedIn: false,
   isSigningIn: false,
   invalidSessionCause: undefined,
+  sessionId: undefined,
   rolesWithAccess: [],
   rolesWithoutAccess: [],
   hasNoAccess: false,
