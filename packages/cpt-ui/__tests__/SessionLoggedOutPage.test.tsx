@@ -49,6 +49,7 @@ export const defaultAuthState: AuthContextType = {
   selectedRole: undefined,
   userDetails: undefined,
   isConcurrentSession: true,
+  sessionId: "test-session-id",
   cognitoSignIn: jest.fn(),
   cognitoSignOut: jest.fn(),
   clearAuthState: jest.fn(),

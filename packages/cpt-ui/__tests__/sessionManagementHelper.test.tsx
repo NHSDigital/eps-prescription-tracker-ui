@@ -16,6 +16,13 @@ jest.mock("@/helpers/logger", () => ({
 jest.mock("@/constants/environment", () => ({
   API_ENDPOINTS: {
     SESSION_MANAGEMENT: "/api/session-management"
+  },
+  AUTH_CONFIG: {
+    USER_POOL_ID: "mock-pool-id",
+    USER_POOL_CLIENT_ID: "mock-client-id",
+    HOSTED_LOGIN_DOMAIN: "mock-domain",
+    REDIRECT_SIGN_IN: "mock-signin",
+    REDIRECT_SIGN_OUT: "mock-signout"
   }
 }))
 
