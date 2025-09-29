@@ -24,8 +24,10 @@ export interface AuthContextType {
   user: string | null
   isSignedIn: boolean
   isSigningIn: boolean
+  isSigningOut: boolean
   isConcurrentSession: boolean
   invalidSessionCause: string | undefined
+  sessionId: string | undefined
   rolesWithAccess: Array<RoleDetails>
   rolesWithoutAccess: Array<RoleDetails>
   hasNoAccess: boolean
@@ -33,21 +35,27 @@ export interface AuthContextType {
   selectedRole: RoleDetails | undefined
   userDetails: UserDetails | undefined
   cognitoSignIn: (input?: SignInWithRedirectInput) => Promise<void>
-  cognitoSignOut: () => Promise<boolean>
+  cognitoSignOut: (redirectUri?: string) => Promise<boolean>
   clearAuthState: () => void
   updateSelectedRole: (value: RoleDetails) => Promise<void>
   updateTrackerUserInfo: () => Promise<TrackerUserInfoResult>
+  updateInvalidSessionCause: (cause: string) => void
+  setIsSigningOut: (value: boolean) => void
 }
 
 export const AuthContext = createContext<AuthContextType | null>(null)
 
 export const AuthProvider = ({children}: { children: React.ReactNode }) => {
+  Amplify.configure(authConfig, {ssr: false})
   const [error, setError] = useState<string | null>(null)
   const [user, setUser] = useLocalStorageState<string | null>("user", "user", null)
   const [isSignedIn, setIsSignedIn] = useLocalStorageState<boolean>("isSignedIn", "isSignedIn", false)
   const [isSigningIn, setIsSigningIn] = useLocalStorageState<boolean>("isSigningIn", "isSigningIn", false)
+  const [isSigningOut, setIsSigningOut] = useLocalStorageState<boolean>("isSigningOut", "isSigningOut", false)
   const [isConcurrentSession, setIsConcurrentSession] = useLocalStorageState<boolean>(
     "isConcurrentSession", "isConcurrentSession", false)
+  const [sessionId, setSessionId] = useLocalStorageState<string | undefined>(
+    "sessionId", "sessionId", undefined)
   const [invalidSessionCause, setInvalidSessionCause] = useLocalStorageState<string | undefined>(
     "invalidSessionCause", "invalidSessionCause", undefined)
   const [rolesWithAccess, setRolesWithAccess] = useLocalStorageState<Array<RoleDetails>>(
@@ -91,7 +99,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
     setIsSignedIn(false)
     setIsSigningIn(false)
     setIsConcurrentSession(false)
-    setInvalidSessionCause(undefined)
+    // updateTrackerUserInfo will set InvalidSessionCause to undefined
   }
 
   const updateTrackerUserInfo = async () => {
@@ -105,6 +113,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
     setError(trackerUserInfo.error)
     setIsConcurrentSession(trackerUserInfo.isConcurrentSession)
     setInvalidSessionCause(trackerUserInfo.invalidSessionCause)
+    setSessionId(trackerUserInfo.sessionId)
     return trackerUserInfo
   }
 
@@ -167,28 +176,33 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
   }, [])
 
   /**
-   * Reconfigure Amplify on initial state
-   */
-  useEffect(() => {
-    Amplify.configure(authConfig, {ssr: false})
-  }, [])
-
-  /**
    * Sign out process.
    */
-  const cognitoSignOut = async (): Promise<boolean> => {
+  const cognitoSignOut = async (signoutRedirectUrl?: string): Promise<boolean> => {
     logger.info("Signing out in authProvider...")
     try {
-      // we need to sign out of cis2 first before signing out of cognito
-      // as otherwise we may possibly not be authed to reach cis2 sign out endpoint
-      logger.info(`calling ${CIS2SignOutEndpoint}`)
-      await http.get(CIS2SignOutEndpoint)
-      logger.info("Backend CIS2 signout OK!")
-      logger.info(`calling amplify logout`)
-      // this triggers a signedOutEvent which is handled by the hub listener
-      // we clear all state in there
-      logger.info("Using default amplify redirect")
-      await signOut()
+      // Call CIS2 signout first, this ensures a session remains on Amplify side.
+      logger.info(`Calling CIS2 Signout ${CIS2SignOutEndpoint}`)
+      try {
+        await http.get(CIS2SignOutEndpoint)
+        logger.info("Successfully signed out of CIS2")
+      } catch (err) {
+        logger.error("Failed to sign out of CIS2:", err)
+      }
+
+      if (signoutRedirectUrl) {
+        logger.info("Calling Amplify Signout, with redirect URL", signoutRedirectUrl)
+        await signOut({
+          global: true,
+          oauth: {redirectUrl: signoutRedirectUrl}
+        })
+
+      } else {
+        logger.info("Calling Amplify Signout, no redirect URL")
+        await signOut({global: true})
+      }
+
+      setIsSigningOut(true)
       logger.info("Frontend amplify signout OK!")
       return true
     } catch (err) {
@@ -203,8 +217,8 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
    */
   const cognitoSignIn = async (input?: SignInWithRedirectInput) => {
     logger.info("Initiating sign-in process...")
+    await signInWithRedirect(input)
     setIsSigningIn(true)
-    return signInWithRedirect(input)
   }
 
   const updateSelectedRole = async (newRole: RoleDetails) => {
@@ -213,12 +227,17 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
     setSelectedRole(newRole)
   }
 
+  const updateInvalidSessionCause = (cause: string | undefined) => {
+    setInvalidSessionCause(cause)
+  }
+
   return (
     <AuthContext.Provider value={{
       error,
       user,
       isSignedIn,
       isSigningIn,
+      isSigningOut,
       rolesWithAccess,
       rolesWithoutAccess,
       hasNoAccess,
@@ -227,11 +246,14 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
       userDetails,
       isConcurrentSession,
       invalidSessionCause,
+      sessionId,
       cognitoSignIn,
       cognitoSignOut,
       clearAuthState,
       updateSelectedRole,
-      updateTrackerUserInfo
+      updateTrackerUserInfo,
+      updateInvalidSessionCause,
+      setIsSigningOut
     }}>
       {children}
     </AuthContext.Provider>

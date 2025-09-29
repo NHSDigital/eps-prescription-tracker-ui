@@ -165,13 +165,11 @@ describe("authenticationMiddleware", () => {
         statusCode: 401,
         body: JSON.stringify({
           message: "Session expired or invalid. Please log in again.",
-          restartLogin: true
+          restartLogin: true,
+          invalidSessionCause: "ConcurrentSession"
         })
       })
       expect(result).toEqual(mockRequest.earlyResponse)
-      expect(logger.error).toHaveBeenCalledWith(
-        "Session ID does not match the token mapping item, treating as invalid session"
-      )
     })
 
     it("should return 401 when token mapping is undefined", async () => {
@@ -194,7 +192,8 @@ describe("authenticationMiddleware", () => {
         statusCode: 401,
         body: JSON.stringify({
           message: "Session expired or invalid. Please log in again.",
-          restartLogin: true
+          restartLogin: true,
+          invalidSessionCause: "InvalidSession"
         })
       })
       expect(result).toEqual(mockRequest.earlyResponse)
@@ -396,12 +395,14 @@ describe("authenticationMiddleware", () => {
         statusCode: 401,
         body: JSON.stringify({
           message: "Session expired or invalid. Please log in again.",
-          restartLogin: true
+          restartLogin: true,
+          invalidSessionCause: "ConcurrentSession"
         })
       })
       expect(result).toEqual(mockRequest.earlyResponse)
-      expect(logger.error).toHaveBeenCalledWith(
-        "Session ID does not match the token mapping item, treating as invalid session"
+      expect(logger.info).toHaveBeenCalledWith(
+        "A session is active but does not match the requestors sessionId",
+        {username, sessionId}
       )
     })
 
@@ -432,7 +433,8 @@ describe("authenticationMiddleware", () => {
         statusCode: 401,
         body: JSON.stringify({
           message: "Session expired or invalid. Please log in again.",
-          restartLogin: true
+          restartLogin: true,
+          invalidSessionCause: "ConcurrentSession"
         })
       })
       expect(result).toEqual(mockRequest.earlyResponse)

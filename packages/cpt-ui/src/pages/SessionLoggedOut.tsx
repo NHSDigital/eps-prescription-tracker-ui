@@ -1,17 +1,11 @@
-import React, {useEffect} from "react"
+import React from "react"
 import {useAuth} from "@/context/AuthProvider"
 import {Container, Col, Row} from "nhsuk-react-components"
-import {signOut} from "@/helpers/logout"
 import {Link} from "react-router-dom"
 import {EpsLogoutStrings} from "@/constants/ui-strings/EpsLogoutPageStrings"
 
 export default function SessionLoggedOutPage() {
   const auth = useAuth()
-
-  // Log out on page load
-  useEffect(() => {
-    signOut(auth)
-  }, [])
 
   if (auth.invalidSessionCause === "ConcurrentSession") {
     return (
@@ -28,6 +22,7 @@ export default function SessionLoggedOutPage() {
                 </a>{" "}
                 if you did not start another session in another window or browser.
               </p>
+              <Link to="/login">{EpsLogoutStrings.login_link}</Link>
             </Col>
           </Row>
         </Container>

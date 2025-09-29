@@ -1,5 +1,5 @@
 import React, {Fragment, useEffect, useState} from "react"
-import {Link, useNavigate} from "react-router-dom"
+import {Link} from "react-router-dom"
 import {
   BackLink,
   Col,
@@ -20,7 +20,7 @@ import UnknownErrorMessage from "@/components/UnknownErrorMessage"
 
 import {PRESCRIPTION_LIST_TABS} from "@/constants/ui-strings/PrescriptionListTabStrings"
 import {PRESCRIPTION_LIST_PAGE_STRINGS} from "@/constants/ui-strings/PrescriptionListPageStrings"
-import {API_ENDPOINTS, FRONTEND_PATHS} from "@/constants/environment"
+import {API_ENDPOINTS} from "@/constants/environment"
 
 import {SearchResponse, PrescriptionSummary} from "@cpt-ui-common/common-types/src/prescriptionList"
 
@@ -28,12 +28,14 @@ import http from "@/helpers/axios"
 import {logger} from "@/helpers/logger"
 import {useSearchContext} from "@/context/SearchProvider"
 import {buildBackLink, determineSearchType} from "@/helpers/prescriptionNotFoundLinks"
+import {handleRestartLogin, signOut} from "@/helpers/logout"
+import {useAuth} from "@/context/AuthProvider"
+import {AUTH_CONFIG} from "@/constants/environment"
 
 export default function PrescriptionListPage() {
   const {setPatientDetails} = usePatientDetails()
   const searchContext = useSearchContext()
 
-  const navigate = useNavigate()
   const [futurePrescriptions, setFuturePrescriptions] = useState<Array<PrescriptionSummary>>([])
   const [pastPrescriptions, setPastPrescriptions] = useState<Array<PrescriptionSummary>>([])
   const [currentPrescriptions, setCurrentPrescriptions] = useState<Array<PrescriptionSummary>>([])
@@ -45,6 +47,8 @@ export default function PrescriptionListPage() {
 
   const searchType = determineSearchType(searchContext)
   const backLinkUrl = buildBackLink(searchType, searchContext)
+
+  const auth = useAuth()
 
   useEffect(() => {
     const runSearch = async () => {
@@ -121,7 +125,8 @@ export default function PrescriptionListPage() {
         logger.error("Error during search", err)
         if (axios.isAxiosError(err)) {
           if ((err.response?.status === 401) && err.response.data?.restartLogin) {
-            navigate(FRONTEND_PATHS.LOGIN)
+            const invalidSessionCause = err.response?.data?.invalidSessionCause
+            handleRestartLogin(auth, invalidSessionCause)
             return
           } else if (err.response?.status === 404) {
             setShowNotFound(true)
@@ -129,7 +134,7 @@ export default function PrescriptionListPage() {
             setError(true)
           }
         } else if (err instanceof Error && err.message === "canceled") {
-          navigate(FRONTEND_PATHS.LOGIN)
+          signOut(auth, AUTH_CONFIG.REDIRECT_SIGN_OUT)
           return
         } else {
           setError(true)

@@ -6,19 +6,23 @@ import {useAuth} from "@/context/AuthProvider"
 import EpsSpinner from "@/components/EpsSpinner"
 import {EpsLogoutStrings} from "@/constants/ui-strings/EpsLogoutPageStrings"
 import {signOut} from "@/helpers/logout"
+import {AUTH_CONFIG} from "@/constants/environment"
 
 export default function LogoutPage() {
   const auth = useAuth()
 
-  // Log out on page load
   useEffect(() => {
-    signOut(auth)
-  }, [])
+    if (auth.isSignedIn || auth.isSigningIn) {
+      signOut(auth, AUTH_CONFIG.REDIRECT_SIGN_OUT)
+    } else if (auth.isSigningOut) {
+      auth.setIsSigningOut(false)
+    }
+  }, [auth.isSignedIn, auth.isSigningIn])
 
   return (
     <main id="main-content" className="nhsuk-main-wrapper">
       <Container>
-        {!auth?.isSignedIn ? (
+        {!auth?.isSignedIn && !auth.isSigningIn ? (
           <Fragment>
             <h1>{EpsLogoutStrings.title}</h1>
             <p>{EpsLogoutStrings.body}</p>
