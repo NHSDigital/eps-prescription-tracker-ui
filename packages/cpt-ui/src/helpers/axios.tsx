@@ -1,5 +1,4 @@
 import axios, {AxiosError, InternalAxiosRequestConfig, isAxiosError} from "axios"
-import {v4 as uuidv4} from "uuid"
 import {fetchAuthSession} from "aws-amplify/auth"
 import {logger} from "./logger"
 import {cptAwsRum} from "./awsRum"
@@ -40,8 +39,8 @@ http.interceptors.request.use(
   async (config: InternalAxiosRequestConfig) => {
     const controller = new AbortController()
 
-    config.headers[Headers.x_request_id] = uuidv4()
-    config.headers[Headers.x_correlation_id] = uuidv4()
+    config.headers[Headers.x_request_id] = crypto.randomUUID()
+    config.headers[Headers.x_correlation_id] = crypto.randomUUID()
     config.headers[Headers.x_rum_session_id] = getRumSessionIdFromCookie()
     try {
       const sessionGroup = readItemGroupFromLocalStorage("sessionId")
