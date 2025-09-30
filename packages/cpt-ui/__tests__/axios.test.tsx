@@ -1,7 +1,6 @@
 import http from "@/helpers/axios"
 import {fetchAuthSession} from "aws-amplify/auth"
 import MockAdapter from "axios-mock-adapter"
-import {v4 as uuidv4} from "uuid"
 import {readItemGroupFromLocalStorage} from "@/helpers/useLocalStorageState"
 
 jest.mock("uuid", () => ({
@@ -30,14 +29,15 @@ describe("HTTP Axios Instance", () => {
   })
 
   it("adds X-request-id and x-correlation-id header with a UUID on every request", async () => {
-    (uuidv4 as jest.Mock)
-      .mockReturnValueOnce("test-x-request-id")
-      .mockReturnValueOnce("test-x-correlation-id")
+    // eslint-disable-next-line no-undef
+    jest.spyOn(global.crypto, "randomUUID")
+      .mockReturnValueOnce("test-x-request-id-1")
+      .mockReturnValueOnce("test-x-correlation-id-1")
     mock.onGet("/test").reply((config) => {
       // 'config.headers' is possibly 'undefined'.
       // Cannot invoke an object which is possibly 'undefined'.ts(2722)
-      expect(config.headers?.["x-request-id"]).toBe("test-x-request-id")
-      expect(config.headers?.["x-correlation-id"]).toBe("test-x-correlation-id")
+      expect(config.headers?.["x-request-id"]).toBe("test-x-request-id-1")
+      expect(config.headers?.["x-correlation-id"]).toBe("test-x-correlation-id-1")
       return [200, {success: true}]
     })
 
