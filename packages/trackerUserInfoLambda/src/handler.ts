@@ -167,13 +167,13 @@ const lambdaHandler = async (event: APIGatewayProxyEventBase<AuthResult>): Promi
 }
 
 export const handler = middy(lambdaHandler)
+  .use(injectLambdaContext(logger, {clearState: true}))
   .use(authenticationConcurrentAwareMiddleware({
     axiosInstance,
     ddbClient: documentClient,
     authOptions: authenticationParameters,
     logger
   }, true))
-  .use(injectLambdaContext(logger, {clearState: true}))
   .use(httpHeaderNormalizer())
   .use(
     inputOutputLogger({

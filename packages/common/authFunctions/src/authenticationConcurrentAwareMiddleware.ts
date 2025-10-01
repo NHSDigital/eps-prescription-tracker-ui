@@ -3,6 +3,7 @@ import {APIGatewayProxyEventBase, APIGatewayProxyResult} from "aws-lambda"
 import {getUsernameFromEvent, getSessionIdFromEvent} from "./event"
 import {authenticateRequest, AuthDependencies, AuthResult} from "./authenticateRequest"
 import {TokenMappingItem, tryGetTokenMapping} from "@cpt-ui-common/dynamoFunctions"
+import {extractInboundEventValues, appendLoggerKeys} from "@cpt-ui-common/lambdaUtils"
 
 export const authenticationConcurrentAwareMiddleware = (
   {
@@ -15,6 +16,9 @@ export const authenticationConcurrentAwareMiddleware = (
 ) => ({
   before: async (request) => {
     const {event} = request
+    const {loggerKeys} = extractInboundEventValues(event)
+    appendLoggerKeys(logger, loggerKeys)
+    logger.debug("dumping the request object", {request})
 
     let invalidSessionCause: string | undefined = undefined
     let authResult: AuthResult | null = null

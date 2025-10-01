@@ -77,7 +77,8 @@ describe("authenticationConcurrentAwareMiddleware", () => {
             "custom:session_id": "test-session-id"
           }
         }
-      }
+      },
+      headers: {}
     }
 
     mockRequest = {
