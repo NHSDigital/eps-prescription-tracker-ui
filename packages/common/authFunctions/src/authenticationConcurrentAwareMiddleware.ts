@@ -18,7 +18,6 @@ export const authenticationConcurrentAwareMiddleware = (
     const {event} = request
     const {loggerKeys} = extractInboundEventValues(event)
     appendLoggerKeys(logger, loggerKeys)
-    logger.debug("dumping the request object", {request})
 
     let invalidSessionCause: string | undefined = undefined
     let authResult: AuthResult | null = null

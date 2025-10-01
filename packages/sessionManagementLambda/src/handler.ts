@@ -83,15 +83,18 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   return payloadValue({"message": "Session expired or invalid. Please log in again.", restartLogin: true}, 401)
 }
 
+// the order of middleware is important here
+// injectLambdaContext and httpHeaderNormalizer should be first to ensure logging is set up
+// and headers are normalized which is needed for logging
 export const handler = middy(lambdaHandler)
   .use(injectLambdaContext(logger, {clearState: true}))
+  .use(httpHeaderNormalizer())
   .use(authenticationConcurrentAwareMiddleware({
     axiosInstance,
     ddbClient: documentClient,
     authOptions: authenticationParameters,
     logger
   }))
-  .use(httpHeaderNormalizer())
   .use(
     inputOutputLogger({
       logger: (request) => {

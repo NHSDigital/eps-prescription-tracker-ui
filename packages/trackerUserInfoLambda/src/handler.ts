@@ -166,15 +166,18 @@ const lambdaHandler = async (event: APIGatewayProxyEventBase<AuthResult>): Promi
   }
 }
 
+// the order of middleware is important here
+// injectLambdaContext and httpHeaderNormalizer should be first to ensure logging is set up
+// and headers are normalized, which is needed for logging
 export const handler = middy(lambdaHandler)
   .use(injectLambdaContext(logger, {clearState: true}))
+  .use(httpHeaderNormalizer())
   .use(authenticationConcurrentAwareMiddleware({
     axiosInstance,
     ddbClient: documentClient,
     authOptions: authenticationParameters,
     logger
   }, true))
-  .use(httpHeaderNormalizer())
   .use(
     inputOutputLogger({
       logger: (request) => {
