@@ -1,22 +1,57 @@
 import axios, {AxiosError, InternalAxiosRequestConfig, isAxiosError} from "axios"
-import {v4 as uuidv4} from "uuid"
 import {fetchAuthSession} from "aws-amplify/auth"
 import {logger} from "./logger"
 import {cptAwsRum} from "./awsRum"
+import {Headers} from "@cpt-ui-common/common-types"
+import {readItemGroupFromLocalStorage} from "./useLocalStorageState"
 
-const x_request_id_header = "x-request-id"
-const x_correlation_id_header = "x-correlation-id"
 const x_retry_header = "x-retry-id"
 
 const http = axios.create()
 
+function getCookie(name: string): string | null {
+  const value = `; ${document.cookie}`
+  const parts = value.split(`; ${name}=`)
+  if (parts.length === 2) {
+    const last = parts.pop() // string | undefined
+    if (!last) return null
+    return last.split(";").shift() ?? null
+  }
+  return null
+}
+
+function getRumSessionIdFromCookie() {
+  const raw = getCookie("cwr_s")
+  if (!raw) return null
+
+  try {
+    const decoded = atob(raw) // base64 decode
+    const parsed = JSON.parse(decoded) // parse JSON
+    return parsed.sessionId || null // get property
+  } catch (error) {
+    logger.error("Could not get rum session id from cookie", error)
+    // cant get the session id so just return nothing
+    return null
+  }
+}
 // REQUEST INTERCEPTOR
 http.interceptors.request.use(
   async (config: InternalAxiosRequestConfig) => {
     const controller = new AbortController()
 
-    config.headers[x_request_id_header] = uuidv4()
-    config.headers[x_correlation_id_header] = uuidv4()
+    config.headers[Headers.x_request_id] = crypto.randomUUID()
+    config.headers[Headers.x_correlation_id] = crypto.randomUUID()
+    config.headers[Headers.x_rum_session_id] = getRumSessionIdFromCookie()
+    try {
+      const sessionGroup = readItemGroupFromLocalStorage("sessionId")
+      // if we have a session id from auth context then add it to the header
+      if (sessionGroup["sessionId"]) {
+        config.headers[Headers.x_session_id] = sessionGroup["sessionId"]
+      }
+    } catch (error) {
+      logger.error("Could not get session id from storage", error)
+    }
+
     const authSession = await fetchAuthSession()
     const idToken = authSession.tokens?.idToken
     if (idToken === undefined) {
@@ -49,16 +84,16 @@ http.interceptors.response.use(
 
   async (error: AxiosError | Error) => {
     const rumInstance = cptAwsRum.getAwsRum()
-    let correlationHeaders
+    let correlationHeaders: Record<string, string | undefined> = {}
     if (isAxiosError(error)) {
       const {config, response} = error
 
       // If we have a response, attempt retries
       if (response && config) {
-        correlationHeaders = {
-          "x-request-id": config.headers[x_request_id_header],
-          "x-correlation-id": config.headers[x_correlation_id_header]
-        }
+        correlationHeaders[Headers.x_request_id] = config.headers[Headers.x_request_id]
+        correlationHeaders[Headers.x_correlation_id] = config.headers[Headers.x_correlation_id]
+        correlationHeaders[Headers.x_session_id] = config.headers[Headers.x_session_id]
+        correlationHeaders[Headers.x_rum_session_id] = config.headers[Headers.x_rum_session_id]
 
         if (response.status === 401 && response.data?.restartLogin) {
           return Promise.reject(error)

@@ -1,6 +1,5 @@
 import {Logger} from "@aws-lambda-powertools/logger"
 import jwt from "jsonwebtoken"
-import {v4 as uuidv4} from "uuid"
 import axios, {AxiosInstance} from "axios"
 import {ParsedUrlQuery, stringify} from "querystring"
 import {handleAxiosError} from "./errorUtils"
@@ -13,7 +12,7 @@ export function buildApigeeHeaders(apigeeAccessToken: string, roleId: string, or
   return {
     Authorization: `Bearer ${apigeeAccessToken}`,
     "nhsd-session-urid": roleId,
-    "x-request-id": uuidv4(),
+    "x-request-id": crypto.randomUUID(),
     "nhsd-session-jobrole": roleId,
     "nhsd-identity-uuid": roleId, //TODO potentially remove this line
     "nhsd-organization-uuid": orgCode,
@@ -50,7 +49,7 @@ export function constructSignedJWTBody(
     aud: idpTokenPath,
     iat: current_time,
     exp: expiration_time,
-    jti: uuidv4()
+    jti: crypto.randomUUID()
   }
 
   const signOptions: jwt.SignOptions = {

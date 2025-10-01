@@ -1,5 +1,4 @@
 import {AxiosInstance} from "axios"
-import {v4 as uuidv4} from "uuid"
 import {PrescriptionAPIResponse} from "@cpt-ui-common/common-types"
 import {Logger} from "@aws-lambda-powertools/logger"
 import {mapResponseToPrescriptionSummary} from "../utils/responseMapper"
@@ -39,7 +38,7 @@ export const getPrescriptions = async (
         Accept: "application/fhir+json",
         Authorization: `Bearer ${apigeeAccessToken}`,
         "nhsd-session-urid": roleId,
-        "x-request-id": uuidv4(),
+        "x-request-id": crypto.randomUUID(),
         "nhsd-session-jobrole": roleId,
         "nhsd-identity-uuid": roleId,
         "nhsd-organization-uuid": orgCode,
