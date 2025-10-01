@@ -40,22 +40,25 @@ export default function SessionSelectionPage() {
   // TODO: In the future, if error state from session management API,
   // draw banner item or full page content to describe to user.
   return (
-    <main id="main-content" className="nhsuk-main-wrapper">
+    <main id="main-content" className="nhsuk-main-wrapper" data-testid="session-selection-page">
       <Container>
         <Row>
           <Col width="full">
-            <h1>You are already logged in to the Prescription Tracker</h1>
-            <p>There is a session using these login details in another browser, window or device.</p>
-            <p>You can continue to start a new session in this window, but this will end the other session.</p>
+            <h1 data-testid="title">You are already logged in to the Prescription Tracker</h1>
+            <p data-testid="description">
+              There is a session using these login details in another browser, window or device.</p>
+            <p data-testid="instructions">
+              You can continue to start a new session in this window, but this will end the other session.</p>
           </Col>
         </Row>
 
         <Row>
           <Col width="full">
             <Button id="create-a-new-session" style={{margin: "8px"}} className="nhsuk-button"
-              onClick={setSession} disabled={startNewSessionClicked}>Start a new session</Button>
+              onClick={setSession} disabled={startNewSessionClicked} data-testid="new-session-button">
+                Start a new session</Button>
             <Button id="close-this-window" style={{margin: "8px"}} className="nhsuk-button nhsuk-button--secondary"
-              onClick={logout}>Close this window</Button>
+              onClick={logout} data-testid="close-window-button">Close this window</Button>
           </Col>
         </Row>
       </Container>
