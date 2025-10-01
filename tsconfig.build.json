@@ -4,9 +4,9 @@
     "files": [],
     // Building this project will build all of the following:
     "references": [
+      {"path": "packages/common/commonTypes"},
       {"path": "packages/common/lambdaUtils"},
       {"path": "packages/common/authFunctions"},
-      {"path": "packages/common/commonTypes"},
       {"path": "packages/common/doHSClient"},
       {"path": "packages/common/dynamoFunctions"},
       {"path": "packages/common/middyErrorHandler"},

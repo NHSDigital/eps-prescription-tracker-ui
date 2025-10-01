@@ -15,14 +15,14 @@
       "resolveJsonModule": true,
       "allowJs": true,
       "paths": {
+        "@/cpt-ui-common/commonTypes": [
+          "./packages/common/commonTypes/src/*"
+        ],
         "@/cpt-ui-common/lambdaUtils": [
           "./packages/common/lambdaUtils/src/*"
         ],
         "@/cpt-ui-common/authFunctions": [
           "./packages/common/authFunctions/src/*"
-        ],
-        "@/cpt-ui-common/commonTypes": [
-          "./packages/common/commonTypes/src/*"
         ],
         "@/cpt-ui-common/doHSClient": [
           "./packages/common/doHSClient/src/*"
