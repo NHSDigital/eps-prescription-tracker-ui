@@ -7,11 +7,13 @@ import {useAuth} from "@/context/AuthProvider"
 import {logger} from "@/helpers/logger"
 import {signOut} from "@/helpers/logout"
 import {useState} from "react"
+import {cptAwsRum} from "@/helpers/awsRum"
 
 export default function SessionSelectionPage() {
   const [startNewSessionClicked, setStartNewSessionClicked] = useState<boolean>(false)
   const navigate = useNavigate()
   const auth = useAuth()
+  cptAwsRum.recordPageView()
 
   const logout = async () => {
     signOut(auth, AUTH_CONFIG.REDIRECT_SIGN_OUT)

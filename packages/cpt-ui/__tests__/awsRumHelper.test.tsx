@@ -57,6 +57,7 @@ describe("AwsRumHelper", () => {
         allowCookies: false,
         enableXRay: RUM_CONFIG.ENABLE_XRAY,
         releaseId: RUM_CONFIG.RELEASE_ID,
+        disableAutoPageView: true,
         sessionEventLimit: 0,
         sessionAttributes: {
           cptAppVersion: APP_CONFIG.VERSION_NUMBER,

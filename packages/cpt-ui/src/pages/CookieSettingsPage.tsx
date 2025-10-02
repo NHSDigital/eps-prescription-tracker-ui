@@ -4,9 +4,11 @@ import {CookieStrings} from "@/constants/ui-strings/CookieStrings"
 import {getHomeLink} from "@/helpers/loginFunctions"
 import {useAuth} from "@/context/AuthProvider"
 import {FRONTEND_PATHS} from "@/constants/environment"
+import {cptAwsRum} from "@/helpers/awsRum"
 
 export default function CookieSettingsPage() {
   const auth = useAuth()
+  cptAwsRum.recordPageView()
   return (
     <main className="nhsuk-width-container nhsuk-u-margin-top-4">
 

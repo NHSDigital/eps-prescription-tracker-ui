@@ -14,6 +14,7 @@ import BasicDetailsSearch from "@/components/prescriptionSearch/BasicDetailsSear
 
 import {HERO_TEXT} from "@/constants/ui-strings/SearchForAPrescriptionStrings"
 import {PRESCRIPTION_SEARCH_TABS} from "@/constants/ui-strings/SearchTabStrings"
+import {cptAwsRum} from "@/helpers/awsRum"
 
 export default function SearchPrescriptionPage() {
   const location = useLocation()
@@ -28,6 +29,7 @@ export default function SearchPrescriptionPage() {
 
   // Default to prescription ID search if path not found
   const content = pathContent[pathname] || <PrescriptionIdSearch />
+  cptAwsRum.recordPageView()
 
   return (
     <Fragment>
