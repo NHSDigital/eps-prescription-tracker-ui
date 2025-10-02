@@ -9,7 +9,7 @@ import httpHeaderNormalizer from "@middy/http-header-normalizer"
 
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
 import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
-import {extractInboundEventValues, appendLoggerKeys} from "@cpt-ui-common/lambdaUtils"
+import {injectCorrelationLoggerMiddleware} from "@cpt-ui-common/lambdaUtils"
 
 import {
   AuthenticateRequestOptions,
@@ -42,8 +42,7 @@ const lambdaHandler = async (
   event: APIGatewayProxyEventBase<AuthResult>,
   {logger, apigeePrescriptionsEndpoint}: HandlerParameters
 ): Promise<APIGatewayProxyResult> => {
-  const {loggerKeys, correlationId} = extractInboundEventValues(event)
-  appendLoggerKeys(logger, loggerKeys)
+  const correlationId = event.headers["x-correlation-id"] || crypto.randomUUID()
 
   const {apigeeAccessToken, roleId, orgCode} = event.requestContext.authorizer
 
@@ -97,14 +96,9 @@ export const newHandler = (initParams: HandlerInitialisationParameters) => {
   }
 
   return middy((event: APIGatewayProxyEventBase<AuthResult>) => lambdaHandler(event, params))
-    .use(authenticationMiddleware({
-      axiosInstance: initParams.axiosInstance,
-      ddbClient: initParams.documentClient,
-      authOptions: initParams.authenticationParameters,
-      logger: initParams.logger
-    }))
     .use(injectLambdaContext(initParams.logger, {clearState: true}))
     .use(httpHeaderNormalizer())
+    .use(injectCorrelationLoggerMiddleware(initParams.logger))
     .use(
       inputOutputLogger({
         logger: (request) => {
@@ -112,6 +106,12 @@ export const newHandler = (initParams: HandlerInitialisationParameters) => {
         }
       })
     )
+    .use(authenticationMiddleware({
+      axiosInstance: initParams.axiosInstance,
+      ddbClient: initParams.documentClient,
+      authOptions: initParams.authenticationParameters,
+      logger: initParams.logger
+    }))
     .use(
       new MiddyErrorHandler(initParams.errorResponseBody)
         .errorHandler({logger: initParams.logger})

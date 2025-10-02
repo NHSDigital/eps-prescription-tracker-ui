@@ -15,7 +15,7 @@ import {
   AuthResult
 } from "@cpt-ui-common/authFunctions"
 import {getTokenMapping, updateTokenMapping, TokenMappingItem} from "@cpt-ui-common/dynamoFunctions"
-import {extractInboundEventValues, appendLoggerKeys} from "@cpt-ui-common/lambdaUtils"
+import {injectCorrelationLoggerMiddleware} from "@cpt-ui-common/lambdaUtils"
 import axios from "axios"
 import {RoleDetails} from "@cpt-ui-common/common-types"
 
@@ -64,9 +64,6 @@ const errorResponseBody = {
 const middyErrorHandler = new MiddyErrorHandler(errorResponseBody)
 
 const lambdaHandler = async (event: APIGatewayProxyEventBase<AuthResult>): Promise<APIGatewayProxyResult> => {
-  const {loggerKeys} = extractInboundEventValues(event)
-  appendLoggerKeys(logger, loggerKeys)
-
   const sessionId = event.requestContext.authorizer.sessionId
   const username = event.requestContext.authorizer.username
   const isConcurrentSession = event.requestContext.authorizer.isConcurrentSession
@@ -172,12 +169,7 @@ const lambdaHandler = async (event: APIGatewayProxyEventBase<AuthResult>): Promi
 export const handler = middy(lambdaHandler)
   .use(injectLambdaContext(logger, {clearState: true}))
   .use(httpHeaderNormalizer())
-  .use(authenticationConcurrentAwareMiddleware({
-    axiosInstance,
-    ddbClient: documentClient,
-    authOptions: authenticationParameters,
-    logger
-  }, true))
+  .use(injectCorrelationLoggerMiddleware(logger))
   .use(
     inputOutputLogger({
       logger: (request) => {
@@ -185,4 +177,10 @@ export const handler = middy(lambdaHandler)
       }
     })
   )
+  .use(authenticationConcurrentAwareMiddleware({
+    axiosInstance,
+    ddbClient: documentClient,
+    authOptions: authenticationParameters,
+    logger
+  }, true))
   .use(middyErrorHandler.errorHandler({logger: logger}))

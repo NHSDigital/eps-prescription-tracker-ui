@@ -7,7 +7,7 @@ import httpHeaderNormalizer from "@middy/http-header-normalizer"
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
 import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
-import {extractInboundEventValues, appendLoggerKeys} from "@cpt-ui-common/lambdaUtils"
+import {injectCorrelationLoggerMiddleware} from "@cpt-ui-common/lambdaUtils"
 import {authenticationConcurrentAwareMiddleware, authParametersFromEnv} from "@cpt-ui-common/authFunctions"
 import axios from "axios"
 
@@ -47,9 +47,6 @@ function payloadValue(
 }
 
 const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-  const {loggerKeys} = extractInboundEventValues(event)
-  appendLoggerKeys(logger, loggerKeys)
-
   const sanitisedBody = event.body ? JSON.parse(event.body) : {}
   const sessionId = event.requestContext.authorizer?.sessionId
   const username = event.requestContext.authorizer?.username
@@ -89,12 +86,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 export const handler = middy(lambdaHandler)
   .use(injectLambdaContext(logger, {clearState: true}))
   .use(httpHeaderNormalizer())
-  .use(authenticationConcurrentAwareMiddleware({
-    axiosInstance,
-    ddbClient: documentClient,
-    authOptions: authenticationParameters,
-    logger
-  }))
+  .use(injectCorrelationLoggerMiddleware(logger))
   .use(
     inputOutputLogger({
       logger: (request) => {
@@ -102,4 +94,10 @@ export const handler = middy(lambdaHandler)
       }
     })
   )
+  .use(authenticationConcurrentAwareMiddleware({
+    axiosInstance,
+    ddbClient: documentClient,
+    authOptions: authenticationParameters,
+    logger
+  }))
   .use(middyErrorHandler.errorHandler({logger: logger}))
