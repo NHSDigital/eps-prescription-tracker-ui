@@ -46,6 +46,10 @@ export class CptAwsRum {
     this.awsRum?.allowCookies(true)
   }
 
+  public dispatchRumEvent() {
+    this.awsRum?.dispatch()
+  }
+
   public recordPageView() {
     const location = useLocation()
     useEffect(() => {

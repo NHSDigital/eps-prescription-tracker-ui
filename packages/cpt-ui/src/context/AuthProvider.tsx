@@ -16,6 +16,7 @@ import http from "@/helpers/axios"
 import {RoleDetails, TrackerUserInfoResult, UserDetails} from "@cpt-ui-common/common-types"
 import {getTrackerUserInfo, updateRemoteSelectedRole} from "@/helpers/userInfo"
 import {logger} from "@/helpers/logger"
+import {cptAwsRum} from "@/helpers/awsRum"
 
 const CIS2SignOutEndpoint = API_ENDPOINTS.CIS2_SIGNOUT_ENDPOINT
 
@@ -217,6 +218,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
    */
   const cognitoSignIn = async (input?: SignInWithRedirectInput) => {
     logger.info("Initiating sign-in process...")
+    cptAwsRum.dispatchRumEvent()
     await signInWithRedirect(input)
     setIsSigningIn(true)
   }

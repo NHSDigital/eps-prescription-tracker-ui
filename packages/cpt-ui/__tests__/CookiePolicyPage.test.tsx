@@ -14,7 +14,8 @@ jest.mock("@/helpers/awsRum", () => ({
   cptAwsRum: {
     enable: jest.fn(),
     disable: jest.fn(),
-    recordPageView: jest.fn()
+    recordPageView: jest.fn(),
+    dispatchEvent: jest.fn()
   }
 }))
 
