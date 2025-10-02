@@ -56,7 +56,7 @@ export class StaticContentBucket extends Construct{
       accessControl: BucketAccessControl.PRIVATE,
       objectOwnership: ObjectOwnership.BUCKET_OWNER_ENFORCED,
       serverAccessLogsBucket: props.auditLoggingBucket,
-      serverAccessLogsPrefix: "/static-content",
+      serverAccessLogsPrefix: "static-content/",
       removalPolicy: RemovalPolicy.DESTROY,
       autoDeleteObjects: props.allowAutoDeleteObjects // if true forces a deletion even if bucket is not empty
     })
