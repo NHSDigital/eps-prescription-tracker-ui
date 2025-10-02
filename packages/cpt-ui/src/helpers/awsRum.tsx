@@ -1,4 +1,4 @@
-import {APP_CONFIG, RUM_CONFIG} from "@/constants/environment"
+import {RUM_CONFIG} from "@/constants/environment"
 import {AwsRum, AwsRumConfig, Telemetry} from "aws-rum-web"
 import {useEffect} from "react"
 import {useLocation} from "react-router-dom"
@@ -23,11 +23,7 @@ export class CptAwsRum {
         enableXRay: RUM_CONFIG.ENABLE_XRAY,
         releaseId: RUM_CONFIG.RELEASE_ID,
         disableAutoPageView: true,
-        sessionEventLimit: 0,
-        sessionAttributes: {
-          cptAppVersion: APP_CONFIG.VERSION_NUMBER,
-          cptAppCommit: APP_CONFIG.COMMIT_ID
-        }
+        sessionEventLimit: 0
       }
       this.awsRum = new AwsRum(RUM_CONFIG.APPLICATION_ID, RUM_CONFIG.VERSION, RUM_CONFIG.REGION, config)
     } catch (error) {
