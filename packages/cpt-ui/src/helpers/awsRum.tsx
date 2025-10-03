@@ -12,11 +12,18 @@ export class CptAwsRum {
     return this.awsRum
   }
 
+  // rum client does not work properly when enabling or disabling cookies
+  // for now we re-create the client on settings change
+  // but when the issue/pull request below are resolved, then we should not need to
+  // https://github.com/aws-observability/aws-rum-web/issues/699
+  // https://github.com/aws-observability/aws-rum-web/pull/698
   public disable() {
+    //this.awsRum?.allowCookies(false)
     this.awsRum = this.initRum(false) // re-initialize with cookies disabled
   }
 
   public enable() {
+    //this.awsRum?.allowCookies(true)
     this.awsRum = this.initRum(true) // re-initialize with cookies enabled
   }
 
