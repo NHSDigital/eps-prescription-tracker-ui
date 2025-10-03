@@ -19,13 +19,15 @@ export class CptAwsRum {
         identityPoolId: RUM_CONFIG.IDENTITY_POOL_ID,
         endpoint: RUM_CONFIG.ENDPOINT,
         telemetries: telemetries,
-        allowCookies: true, // assume no cookies unless they agree
+        allowCookies: true, // allow cookies initially, but will be disabled after initialization
         enableXRay: RUM_CONFIG.ENABLE_XRAY,
         releaseId: RUM_CONFIG.RELEASE_ID,
         disableAutoPageView: true,
-        sessionEventLimit: 0
+        sessionEventLimit: 0,
+        cookieAttributes: {secure: true, sameSite: "strict"}
       }
       this.awsRum = new AwsRum(RUM_CONFIG.APPLICATION_ID, RUM_CONFIG.VERSION, RUM_CONFIG.REGION, config)
+      this.awsRum?.allowCookies(false) // start with cookies disabled
     } catch (error) {
       // we use console log here as otherwise it would get sent to rum
       // eslint-disable-next-line no-console
