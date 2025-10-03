@@ -7,11 +7,9 @@ import EpsSpinner from "@/components/EpsSpinner"
 import {EpsLogoutStrings} from "@/constants/ui-strings/EpsLogoutPageStrings"
 import {signOut} from "@/helpers/logout"
 import {AUTH_CONFIG} from "@/constants/environment"
-import {cptAwsRum} from "@/helpers/awsRum"
 
 export default function LogoutPage() {
   const auth = useAuth()
-  cptAwsRum.recordPageView()
 
   useEffect(() => {
     if (auth.isSignedIn || auth.isSigningIn) {

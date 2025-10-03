@@ -11,11 +11,9 @@ import {Button} from "@/components/ReactRouterButton"
 import {logger} from "@/helpers/logger"
 import {AUTH_CONFIG} from "@/constants/environment"
 import {signOut} from "@/helpers/logout"
-import {cptAwsRum} from "@/helpers/awsRum"
 
 export default function LoginPage() {
   const auth = useAuth()
-  cptAwsRum.recordPageView()
 
   const target_environment: string =
     ENV_CONFIG.TARGET_ENVIRONMENT as Environment

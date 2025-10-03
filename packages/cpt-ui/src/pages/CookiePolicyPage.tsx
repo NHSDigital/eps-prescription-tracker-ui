@@ -31,7 +31,6 @@ const CookiePolicyPage = () => {
     "epsConfirmationBannerShown", "epsConfirmationBannerShown", false)
 
   const navigate = useNavigate()
-  cptAwsRum.recordPageView()
 
   useEffect(() => {
     if (hasInitialized) {

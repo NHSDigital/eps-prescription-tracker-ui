@@ -7,11 +7,9 @@ import {getHomeLink} from "@/helpers/loginFunctions"
 import {Breadcrumb, InsetText} from "nhsuk-react-components"
 import {useAuth} from "@/context/AuthProvider"
 import {FRONTEND_PATHS} from "@/constants/environment"
-import {cptAwsRum} from "@/helpers/awsRum"
 
 export default function PrivacyNoticePage() {
   const auth = useAuth()
-  cptAwsRum.recordPageView()
 
   return (
     <main className="nhsuk-width-container nhsuk-u-margin-top-4">

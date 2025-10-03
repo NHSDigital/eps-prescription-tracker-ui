@@ -33,7 +33,6 @@ import {buildBackLink, determineSearchType} from "@/helpers/prescriptionNotFound
 import axios from "axios"
 import {handleRestartLogin} from "@/helpers/logout"
 import {useAuth} from "@/context/AuthProvider"
-import {cptAwsRum} from "@/helpers/awsRum"
 
 export default function PrescriptionDetailsPage() {
   const auth = useAuth()
@@ -53,7 +52,6 @@ export default function PrescriptionDetailsPage() {
 
   const searchType = determineSearchType(searchContext)
   const backLinkUrl = buildBackLink(searchType, searchContext)
-  cptAwsRum.recordPageView()
 
   const getPrescriptionDetails = async (
     prescriptionId: string,

@@ -3,11 +3,9 @@ import {useAuth} from "@/context/AuthProvider"
 import {Container, Col, Row} from "nhsuk-react-components"
 import {Link} from "react-router-dom"
 import {EpsLogoutStrings} from "@/constants/ui-strings/EpsLogoutPageStrings"
-import {cptAwsRum} from "@/helpers/awsRum"
 
 export default function SessionLoggedOutPage() {
   const auth = useAuth()
-  cptAwsRum.recordPageView()
 
   if (auth.invalidSessionCause === "ConcurrentSession") {
     return (

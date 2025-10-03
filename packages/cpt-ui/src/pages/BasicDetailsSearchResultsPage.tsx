@@ -22,7 +22,6 @@ import UnknownErrorMessage from "@/components/UnknownErrorMessage"
 import axios from "axios"
 import {useAuth} from "@/context/AuthProvider"
 import {handleRestartLogin} from "@/helpers/logout"
-import {cptAwsRum} from "@/helpers/awsRum"
 
 export default function SearchResultsPage() {
   const location = useLocation()
@@ -33,7 +32,6 @@ export default function SearchResultsPage() {
   const [error, setError] = useState(false)
 
   const auth = useAuth()
-  cptAwsRum.recordPageView()
 
   useEffect(() => {
     getSearchResults()

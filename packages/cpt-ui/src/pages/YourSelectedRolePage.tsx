@@ -12,7 +12,6 @@ import {YOUR_SELECTED_ROLE_STRINGS} from "@/constants/ui-strings/YourSelectedRol
 import {useAuth} from "@/context/AuthProvider"
 import {Button} from "@/components/ReactRouterButton"
 import {FRONTEND_PATHS} from "@/constants/environment"
-import {cptAwsRum} from "@/helpers/awsRum"
 
 export default function YourSelectedRolePage() {
   const {selectedRole} = useAuth()
@@ -20,7 +19,6 @@ export default function YourSelectedRolePage() {
   const [roleName, setRoleName] = useState<string>(YOUR_SELECTED_ROLE_STRINGS.noRoleName)
   const [orgName, setOrgName] = useState<string>(YOUR_SELECTED_ROLE_STRINGS.noOrgName)
   const [odsCode, setOdsCode] = useState<string>(YOUR_SELECTED_ROLE_STRINGS.noODSCode)
-  cptAwsRum.recordPageView()
 
   useEffect(() => {
     if (!selectedRole) {

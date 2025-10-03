@@ -31,7 +31,6 @@ import {buildBackLink, determineSearchType} from "@/helpers/prescriptionNotFound
 import {handleRestartLogin, signOut} from "@/helpers/logout"
 import {useAuth} from "@/context/AuthProvider"
 import {AUTH_CONFIG} from "@/constants/environment"
-import {cptAwsRum} from "@/helpers/awsRum"
 
 export default function PrescriptionListPage() {
   const {setPatientDetails} = usePatientDetails()
@@ -50,7 +49,6 @@ export default function PrescriptionListPage() {
   const backLinkUrl = buildBackLink(searchType, searchContext)
 
   const auth = useAuth()
-  cptAwsRum.recordPageView()
 
   useEffect(() => {
     const runSearch = async () => {
