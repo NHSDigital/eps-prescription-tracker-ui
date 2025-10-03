@@ -14,6 +14,23 @@ import PrescriptionIdSearch from "@/components/prescriptionSearch/PrescriptionId
 import {PRESCRIPTION_ID_SEARCH_STRINGS} from "@/constants/ui-strings/SearchForAPrescriptionStrings"
 import {AuthContext, AuthContextType} from "@/context/AuthProvider"
 import {SearchContext, SearchProviderContextType} from "@/context/SearchProvider"
+import {NavigationProvider} from "@/context/NavigationProvider"
+
+const mockNavigationContext = {
+  pushNavigation: jest.fn(),
+  goBack: jest.fn(),
+  getBackPath: jest.fn(),
+  setOriginalSearchPage: jest.fn(),
+  captureOriginalSearchParameters: jest.fn(),
+  getOriginalSearchParameters: jest.fn(),
+  getRelevantSearchParameters: jest.fn(),
+  startNewNavigationSession: jest.fn()
+}
+
+jest.mock("@/context/NavigationProvider", () => ({
+  ...jest.requireActual("@/context/NavigationProvider"),
+  useNavigationContext: () => mockNavigationContext
+}))
 
 const mockAuthContext: AuthContextType = {
   error: null,
@@ -47,10 +64,11 @@ const mockSetLastName = jest.fn()
 const mockSetDobDay = jest.fn()
 const mockSetDobMonth = jest.fn()
 const mockSetDobYear = jest.fn()
-const mockSetPostcode =jest.fn()
+const mockSetPostcode = jest.fn()
 const mockSetNhsNumber = jest.fn()
 const mockGetAllSearchParameters = jest.fn()
 const mockSetAllSearchParameters = jest.fn()
+const mockSetSearchType = jest.fn()
 const defaultSearchState: SearchProviderContextType = {
   prescriptionId: undefined,
   issueNumber: undefined,
@@ -61,6 +79,7 @@ const defaultSearchState: SearchProviderContextType = {
   dobYear: undefined,
   postcode: undefined,
   nhsNumber: undefined,
+  searchType: undefined,
   clearSearchParameters: mockClearSearchParameters,
   setPrescriptionId: mockSetPrescriptionId,
   setIssueNumber: mockSetIssueNumber,
@@ -72,7 +91,8 @@ const defaultSearchState: SearchProviderContextType = {
   setPostcode: mockSetPostcode,
   setNhsNumber: mockSetNhsNumber,
   getAllSearchParameters: mockGetAllSearchParameters,
-  setAllSearchParameters: mockSetAllSearchParameters
+  setAllSearchParameters: mockSetAllSearchParameters,
+  setSearchType: mockSetSearchType
 }
 
 const LocationDisplay = () => {
@@ -85,10 +105,12 @@ const renderWithRouter = () =>
     <MemoryRouter initialEntries={["/search"]}>
       <AuthContext.Provider value={mockAuthContext}>
         <SearchContext.Provider value={defaultSearchState}>
-          <Routes>
-            <Route path="/search" element={<PrescriptionIdSearch />} />
-            <Route path="*" element={<LocationDisplay />} />
-          </Routes>
+          <NavigationProvider>
+            <Routes>
+              <Route path="/search" element={<PrescriptionIdSearch />} />
+              <Route path="*" element={<LocationDisplay />} />
+            </Routes>
+          </NavigationProvider>
         </SearchContext.Provider>
       </AuthContext.Provider>
     </MemoryRouter>
@@ -104,7 +126,10 @@ const setup = async (input: string) => {
 }
 
 describe("PrescriptionIdSearch", () => {
-  beforeEach(() => jest.resetAllMocks())
+  beforeEach(() => {
+    jest.resetAllMocks()
+    jest.clearAllMocks()
+  })
 
   it("renders label, hint, and button", () => {
     renderWithRouter()

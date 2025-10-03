@@ -14,6 +14,23 @@ import NhsNumSearch from "@/components/prescriptionSearch/NhsNumSearch"
 import {STRINGS} from "@/constants/ui-strings/NhsNumSearchStrings"
 import {FRONTEND_PATHS} from "@/constants/environment"
 import {SearchContext, SearchProviderContextType} from "@/context/SearchProvider"
+import {NavigationProvider} from "@/context/NavigationProvider"
+
+const mockNavigationContext = {
+  pushNavigation: jest.fn(),
+  goBack: jest.fn(),
+  getBackPath: jest.fn(),
+  setOriginalSearchPage: jest.fn(),
+  captureOriginalSearchParameters: jest.fn(),
+  getOriginalSearchParameters: jest.fn(),
+  getRelevantSearchParameters: jest.fn(),
+  startNewNavigationSession: jest.fn()
+}
+
+jest.mock("@/context/NavigationProvider", () => ({
+  ...jest.requireActual("@/context/NavigationProvider"),
+  useNavigationContext: () => mockNavigationContext
+}))
 
 jest.mock("react-router-dom", () => {
   const actual = jest.requireActual("react-router-dom")
@@ -32,10 +49,12 @@ const mockSetLastName = jest.fn()
 const mockSetDobDay = jest.fn()
 const mockSetDobMonth = jest.fn()
 const mockSetDobYear = jest.fn()
-const mockSetPostcode =jest.fn()
+const mockSetPostcode = jest.fn()
 const mockSetNhsNumber = jest.fn()
 const mockGetAllSearchParameters = jest.fn()
 const mockSetAllSearchParameters = jest.fn()
+const mockSetSearchType = jest.fn()
+
 const defaultSearchState: SearchProviderContextType = {
   prescriptionId: undefined,
   issueNumber: undefined,
@@ -46,6 +65,7 @@ const defaultSearchState: SearchProviderContextType = {
   dobYear: undefined,
   postcode: undefined,
   nhsNumber: undefined,
+  searchType: undefined,
   clearSearchParameters: mockClearSearchParameters,
   setPrescriptionId: mockSetPrescriptionId,
   setIssueNumber: mockSetIssueNumber,
@@ -57,22 +77,29 @@ const defaultSearchState: SearchProviderContextType = {
   setPostcode: mockSetPostcode,
   setNhsNumber: mockSetNhsNumber,
   getAllSearchParameters: mockGetAllSearchParameters,
-  setAllSearchParameters: mockSetAllSearchParameters
+  setAllSearchParameters: mockSetAllSearchParameters,
+  setSearchType: mockSetSearchType
 }
 
 const LocationDisplay = () => {
   const location = useLocation()
-  return <div data-testid="location-display">{location.pathname + location.search}</div>
+  return (
+    <div data-testid="location-display">
+      {location.pathname + location.search}
+    </div>
+  )
 }
 
 const renderWithRouter = (ui: React.ReactElement) => {
   return render(
     <SearchContext.Provider value={defaultSearchState}>
       <MemoryRouter initialEntries={["/search"]}>
-        <Routes>
-          <Route path="/search" element={ui} />
-          <Route path="*" element={<LocationDisplay />} />
-        </Routes>
+        <NavigationProvider>
+          <Routes>
+            <Route path="/search" element={ui} />
+            <Route path="*" element={<LocationDisplay />} />
+          </Routes>
+        </NavigationProvider>
       </MemoryRouter>
     </SearchContext.Provider>
   )

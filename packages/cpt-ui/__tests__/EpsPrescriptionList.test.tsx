@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 import React from "react"
 import {MemoryRouter, Route, Routes} from "react-router-dom"
 
@@ -18,12 +19,112 @@ import axios from "@/helpers/axios"
 import {logger} from "@/helpers/logger"
 jest.mock("@/helpers/axios")
 
+jest.mock("@/constants/environment", () => ({
+  AUTH_CONFIG: {
+    USER_POOL_ID: "test-user-pool-id",
+    USER_POOL_CLIENT_ID: "test-client-id",
+    HOSTED_LOGIN_DOMAIN: "test-domain",
+    REDIRECT_SIGN_IN: "http://localhost/",
+    REDIRECT_SIGN_OUT: "http://localhost/",
+    REDIRECT_SESSION_SIGN_OUT: "http://localhost/"
+  },
+  ENV_CONFIG: {
+    TARGET_ENVIRONMENT: "test",
+    API_DOMAIN_OVERRIDE: undefined,
+    BASE_PATH: "site",
+    LOCAL_DEV: false,
+    BASE_URL: "http://localhost",
+    BASE_URL_PATH: "http://localhost/site/"
+  },
+  APP_CONFIG: {
+    SERVICE_NAME: "test-service",
+    COMMIT_ID: "test-commit",
+    VERSION_NUMBER: "1.0.0",
+    REACT_LOG_LEVEL: "debug"
+  },
+  API_ENDPOINTS: {
+    TRACKER_USER_INFO: "/api/tracker-user-info",
+    SELECTED_ROLE: "/api/selected-role",
+    PRESCRIPTION_LIST: "/api/prescription-list",
+    CIS2_SIGNOUT_ENDPOINT: "/api/cis2-signout",
+    PRESCRIPTION_DETAILS: "/api/prescription-details",
+    PATIENT_SEARCH: "/api/patient-search",
+    SESSION_MANAGEMENT: "/api/session-management"
+  },
+  RUM_CONFIG: {
+    GUEST_ROLE_ARN: "test-guest-role-arn",
+    IDENTITY_POOL_ID: "test-identity-pool",
+    ENDPOINT: "https://dataplane.rum.eu-west-2.amazonaws.com",
+    APPLICATION_ID: "test-app-id",
+    REGION: "eu-west-2",
+    VERSION: "1.0.0",
+    ALLOW_COOKIES: true,
+    ENABLE_XRAY: false,
+    SESSION_SAMPLE_RATE: 1,
+    TELEMETRIES: [],
+    RELEASE_ID: "test-commit"
+  },
+  FRONTEND_PATHS: {
+    PRESCRIPTION_LIST_CURRENT: "/prescription-list-current",
+    PRESCRIPTION_LIST_FUTURE: "/prescription-list-future",
+    PRESCRIPTION_LIST_PAST: "/prescription-list-past",
+    COOKIES: "/cookies",
+    LOGIN: "/login",
+    LOGOUT: "/logout",
+    SESSION_LOGGED_OUT: "/session-logged-out",
+    SELECT_YOUR_ROLE: "/select-your-role",
+    YOUR_SELECTED_ROLE: "/your-selected-role",
+    CHANGE_YOUR_ROLE: "/change-your-role",
+    SEARCH_BY_PRESCRIPTION_ID: "/search-by-prescription-id",
+    SEARCH_BY_NHS_NUMBER: "/search-by-nhs-number",
+    SEARCH_BY_BASIC_DETAILS: "/search-by-basic-details",
+    PRESCRIPTION_DETAILS_PAGE: "/prescription-details",
+    PATIENT_SEARCH_RESULTS: "/patient-search-results",
+    PATIENT_NOT_FOUND: "/patient-not-found",
+    PRIVACY_NOTICE: "/privacy-notice",
+    COOKIES_SELECTED: "/cookies-selected",
+    SESSION_SELECTION: "/select-active-session",
+    NOT_FOUND: "/notfound"
+  },
+  PUBLIC_PATHS: ["/login", "/cookies", "/privacy-notice"]
+}))
+
 // Tell TypeScript that axios is a mocked version.
 const mockedAxios = axios as jest.Mocked<typeof axios>
 
 import PrescriptionListPage from "@/pages/PrescriptionListPage"
 import {AuthContextType, AuthContext} from "@/context/AuthProvider"
 import {SearchContext, SearchProviderContextType} from "@/context/SearchProvider"
+import {NavigationProvider} from "@/context/NavigationProvider"
+
+const mockGetBackPath = jest.fn()
+const mockSetOriginalSearchPage = jest.fn()
+const mockCaptureOriginalSearchParameters = jest.fn()
+const mockGetRelevantSearchParameters = jest.fn()
+const mockNavigationContext = {
+  pushNavigation: jest.fn(),
+  goBack: jest.fn(),
+  getBackPath: mockGetBackPath,
+  setOriginalSearchPage: mockSetOriginalSearchPage,
+  captureOriginalSearchParameters: mockCaptureOriginalSearchParameters,
+  getOriginalSearchParameters: jest.fn(),
+  getRelevantSearchParameters: mockGetRelevantSearchParameters,
+  startNewNavigationSession: jest.fn()
+}
+
+jest.mock("@/context/NavigationProvider", () => ({
+  ...jest.requireActual("@/context/NavigationProvider"),
+  useNavigationContext: () => mockNavigationContext
+}))
+
+const mockGetBackLink = jest.fn()
+const mockGoBack = jest.fn()
+jest.mock("@/hooks/useBackNavigation", () => ({
+  useBackNavigation: () => ({
+    getBackLink: mockGetBackLink,
+    goBack: mockGoBack
+  })
+}))
 
 const mockCognitoSignIn = jest.fn()
 const mockCognitoSignOut = jest.fn()
@@ -60,10 +161,11 @@ const mockSetLastName = jest.fn()
 const mockSetDobDay = jest.fn()
 const mockSetDobMonth = jest.fn()
 const mockSetDobYear = jest.fn()
-const mockSetPostcode =jest.fn()
+const mockSetPostcode = jest.fn()
 const mockSetNhsNumber = jest.fn()
 const mockGetAllSearchParameters = jest.fn()
 const mockSetAllSearchParameters = jest.fn()
+const mockSetSearchType = jest.fn()
 const defaultSearchState: SearchProviderContextType = {
   prescriptionId: undefined,
   issueNumber: undefined,
@@ -74,6 +176,7 @@ const defaultSearchState: SearchProviderContextType = {
   dobYear: undefined,
   postcode: undefined,
   nhsNumber: undefined,
+  searchType: undefined,
   clearSearchParameters: mockClearSearchParameters,
   setPrescriptionId: mockSetPrescriptionId,
   setIssueNumber: mockSetIssueNumber,
@@ -85,7 +188,8 @@ const defaultSearchState: SearchProviderContextType = {
   setPostcode: mockSetPostcode,
   setNhsNumber: mockSetNhsNumber,
   getAllSearchParameters: mockGetAllSearchParameters,
-  setAllSearchParameters: mockSetAllSearchParameters
+  setAllSearchParameters: mockSetAllSearchParameters,
+  setSearchType: mockSetSearchType
 }
 
 const mockSearchResponse: SearchResponse = {
@@ -208,13 +312,15 @@ const renderWithRouter = (
       <SearchContext.Provider value={searchState}>
         <MockPatientDetailsProvider>
           <MemoryRouter initialEntries={[route]}>
-            <Routes>
-              <Route path="*" element={<Dummy404 />} />
-              <Route path={FRONTEND_PATHS.LOGIN} element={<div data-testid="login-page-shown" />} />
-              <Route path={FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT} element={<PrescriptionListPage />} />
-              <Route path={FRONTEND_PATHS.PRESCRIPTION_LIST_PAST} element={<PrescriptionListPage />} />
-              <Route path={FRONTEND_PATHS.PRESCRIPTION_LIST_FUTURE} element={<PrescriptionListPage />} />
-            </Routes>
+            <NavigationProvider>
+              <Routes>
+                <Route path="*" element={<Dummy404 />} />
+                <Route path={FRONTEND_PATHS.LOGIN} element={<div data-testid="login-page-shown" />} />
+                <Route path={FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT} element={<PrescriptionListPage />} />
+                <Route path={FRONTEND_PATHS.PRESCRIPTION_LIST_PAST} element={<PrescriptionListPage />} />
+                <Route path={FRONTEND_PATHS.PRESCRIPTION_LIST_FUTURE} element={<PrescriptionListPage />} />
+              </Routes>
+            </NavigationProvider>
           </MemoryRouter>
         </MockPatientDetailsProvider>
       </SearchContext.Provider>
@@ -249,6 +355,17 @@ export function createAxiosError(status: number): AxiosError {
 describe("PrescriptionListPage", () => {
   beforeEach(() => {
     jest.restoreAllMocks()
+    jest.clearAllMocks()
+
+    mockGetBackPath.mockReturnValue(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
+    mockGetRelevantSearchParameters.mockReturnValue({})
+
+    mockGetBackLink.mockReturnValue(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
+  })
+
+  afterEach(() => {
+    // cleans up DOM
+    document.body.innerHTML = ""
   })
 
   it("renders the loading spinner before the request resolves", () => {
@@ -392,7 +509,7 @@ describe("PrescriptionListPage", () => {
   })
 
   it("logs an error when no query parameters are present", async () => {
-    const loggerErrorSpy = jest.spyOn(logger, "error").mockImplementation(() => {})
+    const loggerErrorSpy = jest.spyOn(logger, "error").mockImplementation(() => { })
 
     mockedAxios.get.mockResolvedValue({
       status: 200,
@@ -413,9 +530,7 @@ describe("PrescriptionListPage", () => {
       status: 200,
       data: mockSearchResponse
     })
-    mockGetAllSearchParameters.mockReturnValue({
-      prescriptionId: "ABC123-A83008-C2D93O"
-    })
+    mockGetBackLink.mockReturnValue(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
 
     renderWithRouter(
       FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT,
@@ -441,6 +556,8 @@ describe("PrescriptionListPage", () => {
       status: 200,
       data: mockSearchResponse
     })
+    mockGetBackLink.mockReturnValue(FRONTEND_PATHS.SEARCH_BY_NHS_NUMBER)
+
     renderWithRouter(
       FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT,
       signedInAuthState,
@@ -449,38 +566,105 @@ describe("PrescriptionListPage", () => {
         nhsNumber: "1234567890"
       }
     )
-
     expect(mockedAxios.get).toHaveBeenCalledTimes(1)
 
     await waitFor(() => {
       const backLink = screen.getByTestId("go-back-link")
-      expect(backLink).toHaveAttribute("href", FRONTEND_PATHS.SEARCH_BY_NHS_NUMBER)
+      expect(backLink).toHaveAttribute(
+        "href",
+        FRONTEND_PATHS.SEARCH_BY_NHS_NUMBER
+      )
     })
   })
 
-  it("sets back link to prescription list when both prescriptionId and nhsNumber are present", async () => {
+  it("sets back link to prescription ID search when both prescriptionId and nhsNumber are present on prescription list page", async () => {
+    mockedAxios.get.mockResolvedValue({
+      status: 200,
+      data: mockSearchResponse
+    })
+    mockGetBackLink.mockReturnValue(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
+
+    const url = FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT
+    renderWithRouter(url, signedInAuthState, {
+      ...defaultSearchState,
+      prescriptionId: "ABC123-A83008-C2D93O",
+      nhsNumber: "1234567890"
+    })
+    expect(mockedAxios.get).toHaveBeenCalledTimes(1)
+
+    await waitFor(() => {
+      const backLink = screen.getByTestId("go-back-link")
+      expect(backLink).toHaveAttribute(
+        "href",
+        FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID
+      )
+    })
+  })
+
+  it("uses nhsNumber for API call when both prescriptionId and nhsNumber are present", async () => {
     mockedAxios.get.mockResolvedValue({
       status: 200,
       data: mockSearchResponse
     })
 
     const url = FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT
+    renderWithRouter(url, signedInAuthState, {
+      ...defaultSearchState,
+      prescriptionId: "ABC123-A83008-C2D93O",
+      nhsNumber: "1234567890"
+    })
+
+    await waitFor(() => {
+      expect(mockedAxios.get).toHaveBeenCalledWith("/api/prescription-list", {
+        params: new URLSearchParams([["nhsNumber", "1234567890"]])
+      })
+    })
+  })
+
+  it("sets back link to prescription ID search when navigating to future prescriptions tab", async () => {
+    mockedAxios.get.mockResolvedValue({
+      status: 200,
+      data: mockSearchResponse
+    })
+    mockGetBackLink.mockReturnValue(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
+
     renderWithRouter(
-      url,
+      FRONTEND_PATHS.PRESCRIPTION_LIST_FUTURE,
       signedInAuthState,
       {
         ...defaultSearchState,
-        nhsNumber: "1234567890",
         prescriptionId: "ABC123-A83008-C2D93O"
       }
-
     )
-
     expect(mockedAxios.get).toHaveBeenCalledTimes(1)
 
     await waitFor(() => {
       const backLink = screen.getByTestId("go-back-link")
-      expect(backLink).toHaveAttribute("href", FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT)
+      expect(backLink).toHaveAttribute(
+        "href",
+        FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID
+      )
+    })
+  })
+
+  it("sets back link to NHS number search when navigating to past prescriptions tab", async () => {
+    mockedAxios.get.mockResolvedValue({
+      status: 200,
+      data: mockSearchResponse
+    })
+    mockGetBackLink.mockReturnValue(FRONTEND_PATHS.SEARCH_BY_NHS_NUMBER)
+
+    renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_LIST_PAST, signedInAuthState, {
+      ...defaultSearchState,
+      nhsNumber: "1234567890"
+    })
+
+    await waitFor(() => {
+      const backLink = screen.getByTestId("go-back-link")
+      expect(backLink).toHaveAttribute(
+        "href",
+        FRONTEND_PATHS.SEARCH_BY_NHS_NUMBER
+      )
     })
   })
 
@@ -541,6 +725,7 @@ describe("PrescriptionListPage", () => {
 
   it("renders prescription not found message with back link to NHS number search when query fails", async () => {
     mockedAxios.get.mockRejectedValue(createAxiosError(404))
+    mockGetBackLink.mockReturnValue(FRONTEND_PATHS.SEARCH_BY_NHS_NUMBER)
 
     renderWithRouter(
       FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT,
@@ -567,6 +752,7 @@ describe("PrescriptionListPage", () => {
 
   it("renders prescription not found message when API returns no prescriptions for a valid NHS number", async () => {
     mockedAxios.get.mockResolvedValue(emptyResultsMock)
+    mockGetBackLink.mockReturnValue(FRONTEND_PATHS.SEARCH_BY_NHS_NUMBER)
 
     renderWithRouter(
       FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT,
@@ -576,7 +762,6 @@ describe("PrescriptionListPage", () => {
         nhsNumber: "32165649870"
       }
     )
-    expect(mockedAxios.get).toHaveBeenCalledTimes(1)
 
     await waitFor(() => {
       const heading = screen.getByTestId("presc-not-found-heading")
@@ -607,7 +792,9 @@ describe("PrescriptionListPage", () => {
     )
 
     await waitFor(() => {
-      expect(screen.getByTestId("presc-not-found-heading")).toHaveTextContent(STRINGS.heading)
+      expect(screen.getByTestId("presc-not-found-heading")).toHaveTextContent(
+        STRINGS.heading
+      )
     })
   })
 
