@@ -1,12 +1,31 @@
 import {RUM_CONFIG} from "@/constants/environment"
 import {AwsRum, AwsRumConfig, Telemetry} from "aws-rum-web"
-import {useEffect} from "react"
-import {useLocation} from "react-router-dom"
 
 export class CptAwsRum {
   awsRum: AwsRum | null
 
   constructor() {
+    this.awsRum = this.initRum(false) // initialize with cookies disabled
+  }
+
+  public getAwsRum() {
+    return this.awsRum
+  }
+
+  public disable() {
+    this.awsRum = this.initRum(false) // re-initialize with cookies disabled
+  }
+
+  public enable() {
+    this.awsRum = this.initRum(true) // re-initialize with cookies enabled
+  }
+
+  public dispatchRumEvent() {
+    this.awsRum?.dispatch()
+  }
+
+  private initRum(allowCookies: boolean) {
+    let awsRum: AwsRum | null = null
     try {
       let telemetries: Array<Telemetry> = RUM_CONFIG.TELEMETRIES
       if (telemetries.includes("http")) {
@@ -19,44 +38,21 @@ export class CptAwsRum {
         identityPoolId: RUM_CONFIG.IDENTITY_POOL_ID,
         endpoint: RUM_CONFIG.ENDPOINT,
         telemetries: telemetries,
-        allowCookies: true, // allow cookies initially, but will be disabled after initialization
+        allowCookies: allowCookies,
         enableXRay: RUM_CONFIG.ENABLE_XRAY,
         releaseId: RUM_CONFIG.RELEASE_ID,
         disableAutoPageView: true,
         sessionEventLimit: 0,
         cookieAttributes: {secure: true, sameSite: "strict"}
       }
-      this.awsRum = new AwsRum(RUM_CONFIG.APPLICATION_ID, RUM_CONFIG.VERSION, RUM_CONFIG.REGION, config)
-      this.awsRum?.allowCookies(false) // start with cookies disabled
+      awsRum = new AwsRum(RUM_CONFIG.APPLICATION_ID, RUM_CONFIG.VERSION, RUM_CONFIG.REGION, config)
     } catch (error) {
       // we use console log here as otherwise it would get sent to rum
       // eslint-disable-next-line no-console
       console.error("AWS RUM initialization error:", error)
-      this.awsRum = null
+      awsRum = null
     }
-  }
-
-  public getAwsRum() {
-    return this.awsRum
-  }
-
-  public disable() {
-    this.awsRum?.allowCookies(false)
-  }
-
-  public enable() {
-    this.awsRum?.allowCookies(true)
-  }
-
-  public dispatchRumEvent() {
-    this.awsRum?.dispatch()
-  }
-
-  public recordPageView() {
-    const location = useLocation()
-    useEffect(() => {
-      this.awsRum?.recordPageView(location.pathname)
-    }, [location])
+    return awsRum
   }
 }
 
