@@ -27,7 +27,7 @@
     "sass": "^1.93.2"
   },
   "devDependencies": {
-    "@aws-amplify/auth": "^6.15.1",
+    "@aws-amplify/auth": "^6.16.0",
     "@swc/jest": "^0.2.39",
     "@testing-library/jest-dom": "^6.8.0",
     "@testing-library/react": "^16.3.0",
