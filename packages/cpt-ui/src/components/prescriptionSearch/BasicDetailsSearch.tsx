@@ -20,6 +20,7 @@ import {errorFocusMap, ErrorKey, resolveDobInvalidFields} from "@/helpers/basicD
 import {STRINGS} from "@/constants/ui-strings/BasicDetailsSearchStrings"
 import {FRONTEND_PATHS} from "@/constants/environment"
 import {useSearchContext} from "@/context/SearchProvider"
+import {useNavigationContext} from "@/context/NavigationProvider"
 
 export default function BasicDetailsSearch() {
   const navigate = useNavigate()
@@ -36,6 +37,7 @@ export default function BasicDetailsSearch() {
 
   const inlineErrors = getInlineErrors(errors)
   const searchContext = useSearchContext()
+  const navigationContext = useNavigationContext()
 
   // Inline error lookup: used to find the error message string for specific field(s)
   // Returns the first match found in the array of inline error tuples
@@ -48,6 +50,19 @@ export default function BasicDetailsSearch() {
       errorRef.current.focus()
     }
   }, [errors])
+
+  // restore original search parameters when available
+  useEffect(() => {
+    const originalParams = navigationContext.getOriginalSearchParameters()
+    if (originalParams) {
+      setFirstName(originalParams.firstName || "")
+      setLastName(originalParams.lastName || "")
+      setDobDay(originalParams.dobDay || "")
+      setDobMonth(originalParams.dobMonth || "")
+      setDobYear(originalParams.dobYear || "")
+      setPostcode(originalParams.postcode || "")
+    }
+  }, [navigationContext])
 
   useEffect(() => {
     // Allows keyboard/screen-reader users to jump to field when clicking summary links
@@ -115,16 +130,37 @@ export default function BasicDetailsSearch() {
         "dobFutureDate"
       ])
 
-      const hasDobRelatedError = newErrors.some(error => dobErrorKeys.has(error))
+      const hasDobRelatedError = newErrors.some((error) =>
+        dobErrorKeys.has(error)
+      )
 
       if (hasDobRelatedError) {
-        setDobErrorFields(resolveDobInvalidFields({dobDay, dobMonth, dobYear}))
+        setDobErrorFields(
+          resolveDobInvalidFields({dobDay, dobMonth, dobYear})
+        )
       } else {
         setDobErrorFields([])
       }
 
       return
     }
+
+    //clear any previous search navigation context
+    navigationContext.startNewNavigationSession()
+
+    // capture original search parameters before clearing
+    const originalParams = {
+      firstName,
+      lastName,
+      dobDay,
+      dobMonth,
+      dobYear,
+      postcode
+    }
+    navigationContext.captureOriginalSearchParameters(
+      "basicDetails",
+      originalParams
+    )
 
     searchContext.clearSearchParameters()
     searchContext.setFirstName(firstName)
@@ -133,6 +169,7 @@ export default function BasicDetailsSearch() {
     searchContext.setDobMonth(dobMonth)
     searchContext.setDobYear(dobYear)
     searchContext.setPostcode(postcode)
+    searchContext.setSearchType("basicDetails")
     navigate(FRONTEND_PATHS.PATIENT_SEARCH_RESULTS)
   }
 
