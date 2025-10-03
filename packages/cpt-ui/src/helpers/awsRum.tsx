@@ -19,7 +19,7 @@ export class CptAwsRum {
         identityPoolId: RUM_CONFIG.IDENTITY_POOL_ID,
         endpoint: RUM_CONFIG.ENDPOINT,
         telemetries: telemetries,
-        allowCookies: false, // assume no cookies unless they agree
+        allowCookies: true, // assume no cookies unless they agree
         enableXRay: RUM_CONFIG.ENABLE_XRAY,
         releaseId: RUM_CONFIG.RELEASE_ID,
         disableAutoPageView: true,
