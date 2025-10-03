@@ -1,4 +1,4 @@
-import {RUM_CONFIG} from "@/constants/environment"
+import {APP_CONFIG, RUM_CONFIG} from "@/constants/environment"
 import {AwsRum, AwsRumConfig, Telemetry} from "aws-rum-web"
 
 export class CptAwsRum {
@@ -41,9 +41,12 @@ export class CptAwsRum {
         allowCookies: allowCookies,
         enableXRay: RUM_CONFIG.ENABLE_XRAY,
         releaseId: RUM_CONFIG.RELEASE_ID,
-        disableAutoPageView: true,
         sessionEventLimit: 0,
-        cookieAttributes: {secure: true, sameSite: "strict"}
+        cookieAttributes: {secure: true, sameSite: "strict"},
+        sessionAttributes: {
+          cptAppVersion: APP_CONFIG.VERSION_NUMBER,
+          cptAppCommit: APP_CONFIG.COMMIT_ID
+        }
       }
       awsRum = new AwsRum(RUM_CONFIG.APPLICATION_ID, RUM_CONFIG.VERSION, RUM_CONFIG.REGION, config)
     } catch (error) {

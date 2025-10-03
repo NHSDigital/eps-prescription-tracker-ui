@@ -61,7 +61,8 @@ describe("AwsRumHelper", () => {
         sessionAttributes: {
           cptAppVersion: APP_CONFIG.VERSION_NUMBER,
           cptAppCommit: APP_CONFIG.COMMIT_ID
-        }
+        },
+        cookieAttributes: {secure: true, sameSite: "strict"}
       }
     )
     expect(rum.getAwsRum()).not.toBeNull()
@@ -81,19 +82,57 @@ describe("AwsRumHelper", () => {
   it("should call allowCookies(true) on enable", () => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports, no-undef
     const rum = new (require("@/helpers/awsRum").CptAwsRum)()
-    const awsRumInstance = rum.getAwsRum()
     rum.enable()
 
-    expect(awsRumInstance?.allowCookies).toHaveBeenCalledWith(true)
+    expect(AwsRum).toHaveBeenCalledWith(
+      RUM_CONFIG.APPLICATION_ID,
+      RUM_CONFIG.VERSION,
+      RUM_CONFIG.REGION,
+      {
+        sessionSampleRate: RUM_CONFIG.SESSION_SAMPLE_RATE,
+        guestRoleArn: RUM_CONFIG.GUEST_ROLE_ARN,
+        identityPoolId: RUM_CONFIG.IDENTITY_POOL_ID,
+        endpoint: RUM_CONFIG.ENDPOINT,
+        telemetries: RUM_CONFIG.TELEMETRIES,
+        allowCookies: true,
+        enableXRay: RUM_CONFIG.ENABLE_XRAY,
+        releaseId: RUM_CONFIG.RELEASE_ID,
+        sessionEventLimit: 0,
+        sessionAttributes: {
+          cptAppVersion: APP_CONFIG.VERSION_NUMBER,
+          cptAppCommit: APP_CONFIG.COMMIT_ID
+        },
+        cookieAttributes: {secure: true, sameSite: "strict"}
+      }
+    )
   })
 
   it("should call allowCookies(false) on disable", () => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports, no-undef
     const rum = new (require("@/helpers/awsRum").CptAwsRum)()
-    const awsRumInstance = rum.getAwsRum()
     rum.disable()
 
-    expect(awsRumInstance?.allowCookies).toHaveBeenCalledWith(false)
+    expect(AwsRum).toHaveBeenCalledWith(
+      RUM_CONFIG.APPLICATION_ID,
+      RUM_CONFIG.VERSION,
+      RUM_CONFIG.REGION,
+      {
+        sessionSampleRate: RUM_CONFIG.SESSION_SAMPLE_RATE,
+        guestRoleArn: RUM_CONFIG.GUEST_ROLE_ARN,
+        identityPoolId: RUM_CONFIG.IDENTITY_POOL_ID,
+        endpoint: RUM_CONFIG.ENDPOINT,
+        telemetries: RUM_CONFIG.TELEMETRIES,
+        allowCookies: false,
+        enableXRay: RUM_CONFIG.ENABLE_XRAY,
+        releaseId: RUM_CONFIG.RELEASE_ID,
+        sessionEventLimit: 0,
+        sessionAttributes: {
+          cptAppVersion: APP_CONFIG.VERSION_NUMBER,
+          cptAppCommit: APP_CONFIG.COMMIT_ID
+        },
+        cookieAttributes: {secure: true, sameSite: "strict"}
+      }
+    )
   })
 })
 
