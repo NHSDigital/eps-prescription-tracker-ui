@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "@cpt-ui-common/common-types": "^1.0.0",
-    "aws-amplify": "^6.15.6",
+    "aws-amplify": "^6.15.7",
     "aws-rum-web": "^1.25.0",
     "axios": "^1.12.2",
     "identity-obj-proxy": "^3.0.0",
