@@ -29,7 +29,7 @@
     "jwks-rsa": "^3.2.0"
   },
   "devDependencies": {
-    "@types/aws-lambda": "^8.10.152",
+    "@types/aws-lambda": "^8.10.155",
     "mock-jwks": "3.2.2",
     "nock": "^14.0.10"
   }
