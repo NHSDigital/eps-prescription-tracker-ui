@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "@cpt-ui-common/common-types": "^1.0.0",
-    "aws-amplify": "^6.15.6",
+    "aws-amplify": "^6.15.7",
     "aws-rum-web": "^1.25.0",
     "axios": "^1.12.2",
     "identity-obj-proxy": "^3.0.0",
@@ -27,9 +27,9 @@
     "sass": "^1.93.2"
   },
   "devDependencies": {
-    "@aws-amplify/auth": "^6.15.1",
+    "@aws-amplify/auth": "^6.16.0",
     "@swc/jest": "^0.2.39",
-    "@testing-library/jest-dom": "^6.8.0",
+    "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^14.5.2",
     "@types/govuk-frontend": "^5.11.0",
@@ -38,6 +38,6 @@
     "@vitejs/plugin-react-swc": "^4.0.1",
     "axios-mock-adapter": "^2.1.0",
     "sass": "^1.93.2",
-    "vite": "^7.1.6"
+    "vite": "^7.1.9"
   }
 }
