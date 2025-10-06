@@ -11,7 +11,7 @@ import httpHeaderNormalizer from "@middy/http-header-normalizer"
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 import {getUsernameFromEvent, getSessionIdFromEvent} from "@cpt-ui-common/authFunctions"
 import {deleteTokenMapping, deleteRecordAllowFailures, tryGetTokenMapping} from "@cpt-ui-common/dynamoFunctions"
-import {extractInboundEventValues, appendLoggerKeys} from "@cpt-ui-common/lambdaUtils"
+import {injectCorrelationLoggerMiddleware} from "@cpt-ui-common/lambdaUtils"
 const logger = new Logger({serviceName: "CIS2SignOut"})
 
 const dynamoClient = new DynamoDBClient({})
@@ -26,9 +26,6 @@ const errorResponseBody = {message: "A system error has occurred"}
 const middyErrorHandler = new MiddyErrorHandler(errorResponseBody)
 
 const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-  const {loggerKeys} = extractInboundEventValues(event)
-  appendLoggerKeys(logger, loggerKeys)
-
   // Mock usernames start with "Mock_", and real requests use usernames starting with "Primary_"
   const username = getUsernameFromEvent(event)
   const sessionId = getSessionIdFromEvent(event)
@@ -62,6 +59,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 export const handler = middy(lambdaHandler)
   .use(injectLambdaContext(logger, {clearState: true}))
   .use(httpHeaderNormalizer())
+  .use(injectCorrelationLoggerMiddleware(logger))
   .use(
     inputOutputLogger({
       logger: (request) => {

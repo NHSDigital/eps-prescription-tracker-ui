@@ -1,11 +1,6 @@
 import {APIGatewayProxyEventBase, APIGatewayProxyEventQueryStringParameters, APIGatewayProxyResult} from "aws-lambda"
 import {Logger} from "@aws-lambda-powertools/logger"
-import {
-  headers as headerUtils,
-  exhaustive_switch_guard,
-  extractInboundEventValues,
-  appendLoggerKeys
-} from "@cpt-ui-common/lambdaUtils"
+import {headers as headerUtils, exhaustive_switch_guard} from "@cpt-ui-common/lambdaUtils"
 import * as pds from "@cpt-ui-common/pdsClient"
 import {AuthResult} from "@cpt-ui-common/authFunctions"
 
@@ -39,8 +34,7 @@ export const lambdaHandler = async (
     pdsClient
   }: HandlerParameters
 ): Promise<APIGatewayProxyResult> => {
-  const {loggerKeys, correlationId} = extractInboundEventValues(event)
-  appendLoggerKeys(logger, loggerKeys)
+  const correlationId = event.headers["x-correlation-id"] || crypto.randomUUID()
 
   const searchStartTime = Date.now()
 
