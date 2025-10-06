@@ -46,7 +46,7 @@ on:
       useCustomCognitoDomain:
         type: boolean
       LOG_LEVEL:
-          type: string
+        type: string
       APIGEE_CIS2_TOKEN_ENDPOINT:
         type: string
       APIGEE_MOCK_TOKEN_ENDPOINT:
@@ -156,7 +156,7 @@ jobs:
           role-to-assume: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}
           role-session-name: prescription-clinical-tracker-ui-deployment
           output-credentials: true
-  
+
       - name: check redeploy stateful stack
         id: check_redeploy_stateful_stack
         run: |
@@ -277,6 +277,8 @@ jobs:
         shell: bash
       - name: Set Environment Variables for website deployment
         id: setup_env_website_deployment
+        env:
+          AWS_MAX_ATTEMPTS: 20
         run: |
           CF_LONDON_EXPORTS=$(aws cloudformation list-exports --region eu-west-2 --output json)
           CF_US_EXPORTS=$(aws cloudformation list-exports --region us-east-1 --output json)
@@ -569,7 +571,6 @@ jobs:
         with:
           RELEASE_TAG: ${{ inputs.VERSION_NUMBER }}
           DEV_CLOUD_FORMATION_EXECUTE_LAMBDA_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_EXECUTE_LAMBDA_ROLE }}
-
 
   update_github_pages:
     runs-on: ubuntu-22.04

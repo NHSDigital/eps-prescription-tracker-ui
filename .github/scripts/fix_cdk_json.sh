@@ -3,6 +3,10 @@ set -e
 
 # script used to set context key values in cdk.json pre deployment from environment variables
 
+# set retry on aws commands
+AWS_MAX_ATTEMPTS=20
+export AWS_MAX_ATTEMPTS
+
 # helper function to set string values
 fix_string_key() {
     KEY_NAME=$1

@@ -21,7 +21,8 @@ export default function EPSCookieBanner() {
   const [showConfirmationBanner, setShowConfirmationBanner] = useState(false)
 
   // this is shared between this component and cookiePolicyPage so use useLocalStorageState
-  const [cookiesSet, setCookiesSet] = useLocalStorageState<boolean>("setCookiesSet", "setCookiesSet", false)
+  const [cookiePreferencesSaved, setCookiePreferencesSaved] =
+    useLocalStorageState<boolean>("cookiePreferencesSaved", "cookiePreferencesSaved", false)
   const [epsCookieConsent, setEpsCookieConsent] = useLocalStorageState<"accepted" | "rejected" | null>(
     "epsCookieConsent", "epsCookieConsent", null)
   const [epsConfirmationBannerShown, setEpsConfirmationBannerShown] = useLocalStorageState<boolean>(
@@ -30,7 +31,7 @@ export default function EPSCookieBanner() {
   const checkCookieConsent = () => {
 
     if (epsCookieConsent === "accepted" || epsCookieConsent === "rejected") {
-      setCookiesSet(true)
+      setCookiePreferencesSaved(true)
 
       if (!epsConfirmationBannerShown) {
         setShowConfirmationBanner(true)
@@ -39,7 +40,7 @@ export default function EPSCookieBanner() {
     } else if (typeof window !== "undefined" && window.NHSCookieConsent?.getConsented()) {
       const hasAnalytics = window.NHSCookieConsent.getStatistics()
       const initialChoice = hasAnalytics ? "accepted" : "rejected"
-      setCookiesSet(true)
+      setCookiePreferencesSaved(true)
       setEpsCookieConsent(initialChoice)
 
       setShowConfirmationBanner(true)
@@ -60,7 +61,7 @@ export default function EPSCookieBanner() {
   }, [location.pathname])
 
   const handleCookieChoice = (choice: "accepted" | "rejected") => {
-    setCookiesSet(true)
+    setCookiePreferencesSaved(true)
     setEpsCookieConsent(choice)
     if (choice === "accepted") {
       cptAwsRum.enable()
@@ -78,7 +79,7 @@ export default function EPSCookieBanner() {
 
   return (
     <Fragment>
-      {!cookiesSet && (
+      {!cookiePreferencesSaved && (
         <div
           className="nhsuk-cookie-banner"
           data-testid="cookieBanner"
