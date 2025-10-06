@@ -1,11 +1,14 @@
 import {APP_CONFIG, RUM_CONFIG} from "@/constants/environment"
 import {AwsRum, AwsRumConfig, Telemetry} from "aws-rum-web"
+import {readItemGroupFromLocalStorage} from "./useLocalStorageState"
 
 export class CptAwsRum {
   awsRum: AwsRum | null
 
   constructor() {
-    this.awsRum = this.initRum(false) // initialize with cookies disabled
+    const {epsCookieConsent: consent} = readItemGroupFromLocalStorage("epsCookieConsent") || {}
+    const allowCookies = consent ? consent === "accepted" : false
+    this.awsRum = this.initRum(allowCookies) // initialize with cookies disabled
   }
 
   public getAwsRum() {
@@ -33,6 +36,7 @@ export class CptAwsRum {
 
   private initRum(allowCookies: boolean) {
     let awsRum: AwsRum | null = null
+    // see if we have already accepted cookies
     try {
       let telemetries: Array<Telemetry> = RUM_CONFIG.TELEMETRIES
       if (telemetries.includes("http")) {
