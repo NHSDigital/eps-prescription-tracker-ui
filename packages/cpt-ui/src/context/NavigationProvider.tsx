@@ -26,7 +26,7 @@ export interface NavigationContextType {
     searchType: "prescriptionId" | "nhsNumber" | "basicDetails",
     searchParams: Record<string, string | undefined>,
   ) => void;
-  getOriginalSearchParameters: () => Record<string, string> | null;
+  getOriginalSearchParameters: () => Record<string, string | undefined> | null;
   getRelevantSearchParameters: (
     searchType: "prescriptionId" | "nhsNumber" | "basicDetails",
   ) => Record<string, string>;
@@ -178,7 +178,7 @@ export const NavigationProvider: React.FC<NavigationProviderProps> = ({
       }
 
       const keys = relevantKeys[searchType] || []
-      const relevantParams: Record<string, string> = {}
+      const relevantParams: Record<string, string | undefined> = {}
 
       keys.forEach((key) => {
         if (originalSearchParameters.params[key] !== undefined) {
