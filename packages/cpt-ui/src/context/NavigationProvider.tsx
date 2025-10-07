@@ -60,7 +60,7 @@ export const NavigationProvider: React.FC<NavigationProviderProps> = ({
   const [originalSearchPage, setOriginalSearchPageState] = useState<{ path: string} | null>(null)
   const [originalSearchParameters, setOriginalSearchParameters] = useState<{
     searchType: "prescriptionId" | "nhsNumber" | "basicDetails";
-    params: Record<string, string>
+    params: Record<string, string | undefined>
   } | null>(null)
 
   // prescription list pages that should be treated as one logical unit
