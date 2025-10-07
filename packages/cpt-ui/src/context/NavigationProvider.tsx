@@ -13,7 +13,7 @@ export type NavigationEntry = {
   path: string;
 };
 
-interface NavigationContextType {
+export interface NavigationContextType {
   pushNavigation: (path: string) => void;
   goBack: () => void;
   getBackPath: () => string | null;
