@@ -24,7 +24,7 @@ export interface NavigationContextType {
 
   captureOriginalSearchParameters: (
     searchType: "prescriptionId" | "nhsNumber" | "basicDetails",
-    searchParams: Record<string, string>,
+    searchParams: Record<string, string | undefined>,
   ) => void;
   getOriginalSearchParameters: () => Record<string, string> | null;
   getRelevantSearchParameters: (
