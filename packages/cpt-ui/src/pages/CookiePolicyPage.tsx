@@ -23,7 +23,8 @@ const CookiePolicyPage = () => {
 
   // these are shared between this page and the cookie banner component so use useLocalStorageState
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [cookiesSet, setCookiesSet] = useLocalStorageState<boolean>("setCookiesSet", "setCookiesSet", false)
+  const [cookiePreferencesSaved, setCookiePreferencesSaved] =
+    useLocalStorageState<boolean>("cookiePreferencesSaved", "cookiePreferencesSaved", false)
   const [epsCookieConsent, setEpsCookieConsent] = useLocalStorageState<"accepted" | "rejected" | null>(
     "epsCookieConsent", "epsCookieConsent", null)
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -44,23 +45,23 @@ const CookiePolicyPage = () => {
       const initialChoice = hasAnalytics ? "accepted" : "rejected"
       setLocalCookieChoice(initialChoice)
       setEpsCookieConsent(initialChoice)
-      setCookiesSet(true)
+      setCookiePreferencesSaved(true)
     } else {
-      setCookiesSet(false)
+      setCookiePreferencesSaved(false)
     }
 
     setHasInitialized(true)
   }, [hasInitialized])
 
   const saveCookieChoice = (choice: "accepted" | "rejected") => {
+    setCookiePreferencesSaved(true)
+    setEpsCookieConsent(choice)
+    setEpsConfirmationBannerShown(true)
     if (choice === "accepted") {
       cptAwsRum.enable()
     } else {
       cptAwsRum.disable()
     }
-    setCookiesSet(true)
-    setEpsCookieConsent(choice)
-    setEpsConfirmationBannerShown(true)
     if (typeof window !== "undefined" && window.NHSCookieConsent) {
       window.NHSCookieConsent.setStatistics(choice === "accepted")
       window.NHSCookieConsent.setConsented(true)

@@ -10,7 +10,7 @@ import httpHeaderNormalizer from "@middy/http-header-normalizer"
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 import {authenticationMiddleware, authParametersFromEnv, AuthResult} from "@cpt-ui-common/authFunctions"
 import {getTokenMapping, updateTokenMapping} from "@cpt-ui-common/dynamoFunctions"
-import {extractInboundEventValues, appendLoggerKeys} from "@cpt-ui-common/lambdaUtils"
+import {injectCorrelationLoggerMiddleware} from "@cpt-ui-common/lambdaUtils"
 
 /**
  * Lambda function for updating the selected role in the DynamoDB table.
@@ -36,9 +36,6 @@ const tokenMappingTableName = authenticationParameters.tokenMappingTableName
  * Lambda function handler for updating a user's selected role.
  */
 const lambdaHandler = async (event: APIGatewayProxyEventBase<AuthResult>): Promise<APIGatewayProxyResult> => {
-  const {loggerKeys} = extractInboundEventValues(event)
-  appendLoggerKeys(logger, loggerKeys)
-
   // Validate the presence of request body
   if (!event.body) {
     logger.warn("Request body is missing")
@@ -173,14 +170,9 @@ const lambdaHandler = async (event: APIGatewayProxyEventBase<AuthResult>): Promi
 }
 
 export const handler = middy(lambdaHandler)
-  .use(authenticationMiddleware({
-    axiosInstance,
-    ddbClient: documentClient,
-    authOptions: authenticationParameters,
-    logger
-  }))
   .use(injectLambdaContext(logger, {clearState: true}))
   .use(httpHeaderNormalizer())
+  .use(injectCorrelationLoggerMiddleware(logger))
   .use(
     inputOutputLogger({
       logger: (request) => {
@@ -188,4 +180,10 @@ export const handler = middy(lambdaHandler)
       }
     })
   )
+  .use(authenticationMiddleware({
+    axiosInstance,
+    ddbClient: documentClient,
+    authOptions: authenticationParameters,
+    logger
+  }))
   .use(middyErrorHandler.errorHandler({logger: logger}))

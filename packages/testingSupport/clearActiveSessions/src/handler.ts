@@ -7,7 +7,7 @@ import httpHeaderNormalizer from "@middy/http-header-normalizer"
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
 import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
-import {extractInboundEventValues, appendLoggerKeys} from "@cpt-ui-common/lambdaUtils"
+import {injectCorrelationLoggerMiddleware} from "@cpt-ui-common/lambdaUtils"
 
 import {deleteRecordAllowFailures} from "@cpt-ui-common/dynamoFunctions"
 
@@ -43,8 +43,6 @@ function payloadValue(
 }
 
 const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-  const {loggerKeys} = extractInboundEventValues(event)
-  appendLoggerKeys(logger, loggerKeys)
 
   const body = JSON.parse(event.body? event.body : "{}")
 
@@ -74,6 +72,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 export const handler = middy(lambdaHandler)
   .use(injectLambdaContext(logger, {clearState: true}))
   .use(httpHeaderNormalizer())
+  .use(injectCorrelationLoggerMiddleware(logger))
   .use(
     inputOutputLogger({
       logger: (request) => {

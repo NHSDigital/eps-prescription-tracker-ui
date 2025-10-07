@@ -3,6 +3,11 @@ import {render} from "@testing-library/react"
 import {AwsRumProvider} from "@/context/AwsRumProvider" // Adjust import path as needed
 import {AwsRum} from "aws-rum-web"
 import {APP_CONFIG, RUM_CONFIG} from "@/constants/environment"
+import {readItemGroupFromLocalStorage} from "@/helpers/useLocalStorageState"
+
+jest.mock("@/helpers/useLocalStorageState", () => ({
+  readItemGroupFromLocalStorage: jest.fn()
+}))
 
 // Mock aws-rum-web and RUM_CONFIG
 jest.mock("aws-rum-web", () => {
@@ -39,7 +44,10 @@ describe("AwsRumHelper", () => {
     jest.clearAllMocks()
   })
 
-  it("should initialize AwsRum with correct config", () => {
+  it("should initialize AwsRum with correct config when cookie consent not set", () => {
+    (readItemGroupFromLocalStorage as jest.Mock)
+      .mockReturnValueOnce({})
+
     // eslint-disable-next-line @typescript-eslint/no-require-imports, no-undef
     const rum = new (require("@/helpers/awsRum").CptAwsRum)()
 
@@ -61,7 +69,72 @@ describe("AwsRumHelper", () => {
         sessionAttributes: {
           cptAppVersion: APP_CONFIG.VERSION_NUMBER,
           cptAppCommit: APP_CONFIG.COMMIT_ID
-        }
+        },
+        cookieAttributes: {secure: true, sameSite: "strict"}
+      }
+    )
+    expect(rum.getAwsRum()).not.toBeNull()
+  })
+
+  it("should initialize AwsRum with correct config when cookie consent set to accepted", () => {
+    (readItemGroupFromLocalStorage as jest.Mock)
+      .mockReturnValueOnce({"epsCookieConsent": "accepted"})
+
+    // eslint-disable-next-line @typescript-eslint/no-require-imports, no-undef
+    const rum = new (require("@/helpers/awsRum").CptAwsRum)()
+
+    // Check that AwsRum constructor was called with correct parameters
+    expect(AwsRum).toHaveBeenCalledWith(
+      RUM_CONFIG.APPLICATION_ID,
+      RUM_CONFIG.VERSION,
+      RUM_CONFIG.REGION,
+      {
+        sessionSampleRate: RUM_CONFIG.SESSION_SAMPLE_RATE,
+        guestRoleArn: RUM_CONFIG.GUEST_ROLE_ARN,
+        identityPoolId: RUM_CONFIG.IDENTITY_POOL_ID,
+        endpoint: RUM_CONFIG.ENDPOINT,
+        telemetries: RUM_CONFIG.TELEMETRIES,
+        allowCookies: true,
+        enableXRay: RUM_CONFIG.ENABLE_XRAY,
+        releaseId: RUM_CONFIG.RELEASE_ID,
+        sessionEventLimit: 0,
+        sessionAttributes: {
+          cptAppVersion: APP_CONFIG.VERSION_NUMBER,
+          cptAppCommit: APP_CONFIG.COMMIT_ID
+        },
+        cookieAttributes: {secure: true, sameSite: "strict"}
+      }
+    )
+    expect(rum.getAwsRum()).not.toBeNull()
+  })
+
+  it("should initialize AwsRum with correct config when cookie consent set to rejected", () => {
+    (readItemGroupFromLocalStorage as jest.Mock)
+      .mockReturnValueOnce({"epsCookieConsent": "rejected"})
+
+    // eslint-disable-next-line @typescript-eslint/no-require-imports, no-undef
+    const rum = new (require("@/helpers/awsRum").CptAwsRum)()
+
+    // Check that AwsRum constructor was called with correct parameters
+    expect(AwsRum).toHaveBeenCalledWith(
+      RUM_CONFIG.APPLICATION_ID,
+      RUM_CONFIG.VERSION,
+      RUM_CONFIG.REGION,
+      {
+        sessionSampleRate: RUM_CONFIG.SESSION_SAMPLE_RATE,
+        guestRoleArn: RUM_CONFIG.GUEST_ROLE_ARN,
+        identityPoolId: RUM_CONFIG.IDENTITY_POOL_ID,
+        endpoint: RUM_CONFIG.ENDPOINT,
+        telemetries: RUM_CONFIG.TELEMETRIES,
+        allowCookies: false,
+        enableXRay: RUM_CONFIG.ENABLE_XRAY,
+        releaseId: RUM_CONFIG.RELEASE_ID,
+        sessionEventLimit: 0,
+        sessionAttributes: {
+          cptAppVersion: APP_CONFIG.VERSION_NUMBER,
+          cptAppCommit: APP_CONFIG.COMMIT_ID
+        },
+        cookieAttributes: {secure: true, sameSite: "strict"}
       }
     )
     expect(rum.getAwsRum()).not.toBeNull()
@@ -81,19 +154,57 @@ describe("AwsRumHelper", () => {
   it("should call allowCookies(true) on enable", () => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports, no-undef
     const rum = new (require("@/helpers/awsRum").CptAwsRum)()
-    const awsRumInstance = rum.getAwsRum()
     rum.enable()
 
-    expect(awsRumInstance?.allowCookies).toHaveBeenCalledWith(true)
+    expect(AwsRum).toHaveBeenCalledWith(
+      RUM_CONFIG.APPLICATION_ID,
+      RUM_CONFIG.VERSION,
+      RUM_CONFIG.REGION,
+      {
+        sessionSampleRate: RUM_CONFIG.SESSION_SAMPLE_RATE,
+        guestRoleArn: RUM_CONFIG.GUEST_ROLE_ARN,
+        identityPoolId: RUM_CONFIG.IDENTITY_POOL_ID,
+        endpoint: RUM_CONFIG.ENDPOINT,
+        telemetries: RUM_CONFIG.TELEMETRIES,
+        allowCookies: true,
+        enableXRay: RUM_CONFIG.ENABLE_XRAY,
+        releaseId: RUM_CONFIG.RELEASE_ID,
+        sessionEventLimit: 0,
+        sessionAttributes: {
+          cptAppVersion: APP_CONFIG.VERSION_NUMBER,
+          cptAppCommit: APP_CONFIG.COMMIT_ID
+        },
+        cookieAttributes: {secure: true, sameSite: "strict"}
+      }
+    )
   })
 
   it("should call allowCookies(false) on disable", () => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports, no-undef
     const rum = new (require("@/helpers/awsRum").CptAwsRum)()
-    const awsRumInstance = rum.getAwsRum()
     rum.disable()
 
-    expect(awsRumInstance?.allowCookies).toHaveBeenCalledWith(false)
+    expect(AwsRum).toHaveBeenCalledWith(
+      RUM_CONFIG.APPLICATION_ID,
+      RUM_CONFIG.VERSION,
+      RUM_CONFIG.REGION,
+      {
+        sessionSampleRate: RUM_CONFIG.SESSION_SAMPLE_RATE,
+        guestRoleArn: RUM_CONFIG.GUEST_ROLE_ARN,
+        identityPoolId: RUM_CONFIG.IDENTITY_POOL_ID,
+        endpoint: RUM_CONFIG.ENDPOINT,
+        telemetries: RUM_CONFIG.TELEMETRIES,
+        allowCookies: false,
+        enableXRay: RUM_CONFIG.ENABLE_XRAY,
+        releaseId: RUM_CONFIG.RELEASE_ID,
+        sessionEventLimit: 0,
+        sessionAttributes: {
+          cptAppVersion: APP_CONFIG.VERSION_NUMBER,
+          cptAppCommit: APP_CONFIG.COMMIT_ID
+        },
+        cookieAttributes: {secure: true, sameSite: "strict"}
+      }
+    )
   })
 })
 
