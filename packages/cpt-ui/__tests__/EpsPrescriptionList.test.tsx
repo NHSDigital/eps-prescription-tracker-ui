@@ -8,7 +8,7 @@ import {PRESCRIPTION_LIST_PAGE_STRINGS} from "@/constants/ui-strings/Prescriptio
 import {STRINGS} from "@/constants/ui-strings/PrescriptionNotFoundMessageStrings"
 import {FRONTEND_PATHS} from "@/constants/environment"
 
-import {SearchResponse, TreatmentType} from "@cpt-ui-common/common-types"
+import {PrescriptionStatus, SearchResponse, TreatmentType} from "@cpt-ui-common/common-types"
 
 import {MockPatientDetailsProvider} from "../__mocks__/MockPatientDetailsProvider"
 
@@ -108,7 +108,7 @@ const mockSearchResponse: SearchResponse = {
     {
       prescriptionId: "C0C757-A83008-C2D93O",
       isDeleted: false,
-      statusCode: "0000",
+      statusCode: PrescriptionStatus.TO_BE_DISPENSED,
       issueDate: "2025-03-01",
       prescriptionTreatmentType: TreatmentType.REPEAT,
       issueNumber: 1,
@@ -119,7 +119,7 @@ const mockSearchResponse: SearchResponse = {
     {
       prescriptionId: "209E3D-A83008-327F9F",
       isDeleted: false,
-      statusCode: "0001",
+      statusCode: PrescriptionStatus.WITH_DISPENSER,
       issueDate: "2025-02-15",
       prescriptionTreatmentType: TreatmentType.ACUTE,
       issueNumber: 2,
@@ -130,7 +130,7 @@ const mockSearchResponse: SearchResponse = {
     {
       prescriptionId: "RX003",
       isDeleted: false,
-      statusCode: "0001",
+      statusCode: PrescriptionStatus.AWAITING_RELEASE_READY,
       issueDate: "2025-03-10",
       prescriptionTreatmentType: TreatmentType.ERD,
       issueNumber: 3,
@@ -143,7 +143,7 @@ const mockSearchResponse: SearchResponse = {
     {
       prescriptionId: "RX004",
       isDeleted: false,
-      statusCode: "0007",
+      statusCode: PrescriptionStatus.NOT_DISPENSED,
       issueDate: "2025-01-15",
       prescriptionTreatmentType: TreatmentType.REPEAT,
       issueNumber: 1,
@@ -154,7 +154,7 @@ const mockSearchResponse: SearchResponse = {
     {
       prescriptionId: "RX005",
       isDeleted: false,
-      statusCode: "0008",
+      statusCode:PrescriptionStatus.CLAIMED,
       issueDate: "2024-12-20",
       prescriptionTreatmentType: TreatmentType.ACUTE,
       issueNumber: 1,
@@ -167,7 +167,7 @@ const mockSearchResponse: SearchResponse = {
     {
       prescriptionId: "RX006",
       isDeleted: false,
-      statusCode: "9001",
+      statusCode: PrescriptionStatus.FUTURE_DATED_PRESCRIPTION,
       issueDate: "2025-04-01",
       prescriptionTreatmentType: TreatmentType.REPEAT,
       issueNumber: 1,
@@ -667,7 +667,7 @@ describe("PrescriptionListPage", () => {
     const statusLabel = await screen.findByText("Available to download when due")
     expect(statusLabel).toBeInTheDocument()
   })
-  it.only("renders correct message for a past prescription", async () => {
+  it("renders correct message for a past prescription", async () => {
     mockedAxios.get.mockResolvedValue({
       status: 200,
       data: mockSearchResponse
