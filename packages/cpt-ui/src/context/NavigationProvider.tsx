@@ -132,7 +132,7 @@ export const NavigationProvider: React.FC<NavigationProviderProps> = ({
   const captureOriginalSearchParameters = useCallback(
     (
       searchType: "prescriptionId" | "nhsNumber" | "basicDetails",
-      searchParams: Record<string, string>
+      searchParams: Record<string, string | undefined>
     ) => {
       logger.info("Navigation: Capturing original search parameters", {
         searchType,
