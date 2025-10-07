@@ -29,7 +29,7 @@ export interface NavigationContextType {
   getOriginalSearchParameters: () => Record<string, string | undefined> | null;
   getRelevantSearchParameters: (
     searchType: "prescriptionId" | "nhsNumber" | "basicDetails",
-  ) => Record<string, string>;
+  ) => Record<string, string | undefined>;
 
   startNewNavigationSession: () => void;
 }
