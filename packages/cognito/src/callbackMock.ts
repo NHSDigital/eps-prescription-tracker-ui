@@ -1,18 +1,13 @@
 import {Logger} from "@aws-lambda-powertools/logger"
 import {APIGatewayProxyEvent, APIGatewayProxyResult} from "aws-lambda"
 import {injectLambdaContext} from "@aws-lambda-powertools/logger/middleware"
-import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
-import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 import middy from "@middy/core"
 import inputOutputLogger from "@middy/input-output-logger"
-import {createHash, randomBytes} from "crypto"
-import {deleteStateMapping, getStateMapping, insertSessionState} from "@cpt-ui-common/dynamoFunctions"
 
 /*
  * Expects the following environment variables to be set:
  *
- * StateMappingTableName
  * COGNITO_CLIENT_ID
  * COGNITO_DOMAIN
  * MOCK_OIDC_ISSUER
@@ -25,12 +20,7 @@ const errorResponseBody = {message: "A system error has occurred"}
 const middyErrorHandler = new MiddyErrorHandler(errorResponseBody)
 
 // Environment variables
-const stateMappingTableName = process.env["StateMappingTableName"] as string
-const SessionStateMappingTableName = process.env["SessionStateMappingTableName"] as string
 const fullCognitoDomain = process.env["COGNITO_DOMAIN"] as string
-
-const dynamoClient = new DynamoDBClient()
-const documentClient = DynamoDBDocumentClient.from(dynamoClient)
 
 const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   logger.appendKeys({"apigw-request-id": event.requestContext?.requestId})
@@ -72,43 +62,11 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     // Continue with regular flow
   }
 
-  // TODO: remove session state mapping we can just use the state mapping
-  //TODO: make sure to update the logic that currently points to the session state mapping table
-  // If not a PR redirect, continue with the standard Cognito flow
-  // Get the original Cognito state from DynamoDB
-  logger.debug("trying to get data from session state table", {
-    stateMappingTableName,
-    state
-  })
-  const cognitoStateItem = await getStateMapping(documentClient, stateMappingTableName, state, logger)
-  await deleteStateMapping(documentClient, stateMappingTableName, state, logger)
-
-  // we need to generate a session state param and store it along with code returned
-  // as that will be used in the token lambda
-  // Generate the hashed state value
-  const sessionState = createHash("sha256").update(state).digest("hex")
-  const localCode = randomBytes(20).toString("hex")
-
-  const sessionStateExpiryTime = Math.floor(Date.now() / 1000) + 300
-
-  const item = {
-    LocalCode: localCode,
-    SessionState: sessionState,
-    ApigeeCode: code,
-    ExpiryTime: sessionStateExpiryTime
-  }
-
-  logger.debug("going to insert into session state mapping table", {
-    SessionStateMappingTableName,
-    item
-  })
-  await insertSessionState(documentClient, SessionStateMappingTableName, item, logger)
-
   // Build response parameters for redirection
   const responseParams = {
-    state: cognitoStateItem.CognitoState,
-    session_state: sessionState,
-    code: localCode
+    state,
+    session_state: session_state || "",
+    code
   }
 
   const redirectUri = `https://${fullCognitoDomain}/oauth2/idpresponse` +
