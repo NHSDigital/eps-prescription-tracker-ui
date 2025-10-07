@@ -126,7 +126,7 @@ export default function PrescriptionListPage() {
         if (axios.isAxiosError(err)) {
           if ((err.response?.status === 401) && err.response.data?.restartLogin) {
             const invalidSessionCause = err.response?.data?.invalidSessionCause
-            logger.warn("prescriptionDetails triggered restart login due to:", invalidSessionCause)
+            logger.warn("prescriptionList triggered restart login due to:", invalidSessionCause)
             handleRestartLogin(auth, invalidSessionCause)
             return
           } else if (err.response?.status === 404) {
