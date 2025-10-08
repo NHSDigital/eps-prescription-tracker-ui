@@ -4,6 +4,7 @@ import {injectLambdaContext} from "@aws-lambda-powertools/logger/middleware"
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 import middy from "@middy/core"
 import inputOutputLogger from "@middy/input-output-logger"
+import {buildCallbackRedirect} from "./helpers"
 
 /*
  * Expects the following environment variables to be set:
@@ -25,7 +26,6 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   logger.appendKeys({"apigw-request-id": event.requestContext?.requestId})
 
   // Destructure and validate required query parameters
-  // TODO: investigate if session_state is needed at all for this function
   const {state, code, session_state} = event.queryStringParameters || {}
   if (!state || !code) {
     logger.error(
@@ -36,24 +36,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   }
   logger.info("Incoming query parameters", {state, code})
 
-  // Build response parameters for redirection
-  const responseParams = {
-    state,
-    session_state: session_state || "",
-    code
-  }
-
-  const redirectUri = `https://${fullCognitoDomain}/oauth2/idpresponse` +
-    `?${new URLSearchParams(responseParams).toString()}`
-
-  logger.info("Redirecting to Cognito", {redirectUri})
-
-  return {
-    statusCode: 302,
-    headers: {Location: redirectUri},
-    isBase64Encoded: false,
-    body: JSON.stringify({})
-  }
+  return buildCallbackRedirect(logger, state, code, session_state, fullCognitoDomain)
 }
 
 export const handler = middy(lambdaHandler)
