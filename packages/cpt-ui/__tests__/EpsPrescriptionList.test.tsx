@@ -130,7 +130,7 @@ const mockSearchResponse: SearchResponse = {
     {
       prescriptionId: "RX003",
       isDeleted: false,
-      statusCode: PrescriptionStatus.WITH_DISPENSER_ACTIVE,
+      statusCode: PrescriptionStatus.AWAITING_RELEASE_READY,
       issueDate: "2025-03-10",
       prescriptionTreatmentType: TreatmentType.ERD,
       issueNumber: 3,
@@ -143,7 +143,7 @@ const mockSearchResponse: SearchResponse = {
     {
       prescriptionId: "RX004",
       isDeleted: false,
-      statusCode: PrescriptionStatus.DISPENSED,
+      statusCode: PrescriptionStatus.NOT_DISPENSED,
       issueDate: "2025-01-15",
       prescriptionTreatmentType: TreatmentType.REPEAT,
       issueNumber: 1,
@@ -154,7 +154,7 @@ const mockSearchResponse: SearchResponse = {
     {
       prescriptionId: "RX005",
       isDeleted: false,
-      statusCode: PrescriptionStatus.NOT_DISPENSED,
+      statusCode:PrescriptionStatus.CLAIMED,
       issueDate: "2024-12-20",
       prescriptionTreatmentType: TreatmentType.ACUTE,
       issueNumber: 1,
@@ -647,5 +647,62 @@ describe("PrescriptionListPage", () => {
       expect(heading).toBeInTheDocument()
       expect(heading).toHaveTextContent("Sorry, there is a problem with this service")
     })
+  })
+  it("renders correct message for a current prescription", async () => {
+    mockedAxios.get.mockResolvedValue({
+      status: 200,
+      data: mockSearchResponse
+    })
+
+    renderWithRouter(
+      FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT,
+      signedInAuthState,
+      {
+        ...defaultSearchState,
+        prescriptionId: "C0C757-A83008-C2D93O"
+      }
+    )
+    expect(mockedAxios.get).toHaveBeenCalledTimes(1)
+
+    const statusLabel = await screen.findByText("Available to download when due")
+    expect(statusLabel).toBeInTheDocument()
+  })
+  it("renders correct message for a past prescription", async () => {
+    mockedAxios.get.mockResolvedValue({
+      status: 200,
+      data: mockSearchResponse
+    })
+
+    renderWithRouter(
+      FRONTEND_PATHS.PRESCRIPTION_LIST_PAST,
+      signedInAuthState,
+      {
+        ...defaultSearchState,
+        prescriptionId: "C0C757-A83008-C2D93O"
+      }
+    )
+    expect(mockedAxios.get).toHaveBeenCalledTimes(1)
+
+    const statusLabel = await screen.findByText("Not dispensed")
+    expect(statusLabel).toBeInTheDocument()
+  })
+  it("renders correct message for a future prescription", async () => {
+    mockedAxios.get.mockResolvedValue({
+      status: 200,
+      data: mockSearchResponse
+    })
+
+    renderWithRouter(
+      FRONTEND_PATHS.PRESCRIPTION_LIST_FUTURE,
+      signedInAuthState,
+      {
+        ...defaultSearchState,
+        prescriptionId: "C0C757-A83008-C2D93O"
+      }
+    )
+    expect(mockedAxios.get).toHaveBeenCalledTimes(1)
+
+    const statusLabel = await screen.findByText("To dispense in the future")
+    expect(statusLabel).toBeInTheDocument()
   })
 })
