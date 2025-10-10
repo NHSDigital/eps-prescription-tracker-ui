@@ -1,6 +1,6 @@
 export const STATUS_LABELS = {
   prescription: {
-    "0000": "Next repeat ready to download",
+    "0000": "Available to download when due",
     "0001": "Available to download",
     "0002": "Downloaded by a dispenser",
     "0003": "Some items dispensed",
@@ -11,7 +11,7 @@ export const STATUS_LABELS = {
     "0008": "Claimed",
     "0009": "Not claimed",
     "9000": "Future eRD issue",
-    "9001": "Future issue date dispense",
+    "9001": "To dispense in the future",
     "9005": "Future prescription cancelled"
   },
   item: {
