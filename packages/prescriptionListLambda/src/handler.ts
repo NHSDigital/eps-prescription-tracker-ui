@@ -18,12 +18,7 @@ import {authenticationMiddleware, authParametersFromEnv, AuthResult} from "@cpt-
 import {PrescriptionError, PDSError} from "./utils/errors"
 import {URL} from "url"
 
-import {
-  headers,
-  exhaustive_switch_guard,
-  extractInboundEventValues,
-  appendLoggerKeys
-} from "@cpt-ui-common/lambdaUtils"
+import {headers, exhaustive_switch_guard, injectCorrelationLoggerMiddleware} from "@cpt-ui-common/lambdaUtils"
 const formatHeaders = headers.formatHeaders
 
 /*
@@ -83,9 +78,7 @@ const RESPONSE_HEADERS = {
 const middyErrorHandler = new MiddyErrorHandler(errorResponseBody)
 
 const lambdaHandler = async (event: APIGatewayProxyEventBase<AuthResult>): Promise<APIGatewayProxyResult> => {
-  const {loggerKeys, correlationId} = extractInboundEventValues(event)
-  appendLoggerKeys(logger, loggerKeys)
-
+  const correlationId = event.headers["x-correlation-id"] || crypto.randomUUID()
   const {apigeeAccessToken, roleId, orgCode} = event.requestContext.authorizer
 
   const searchStartTime = Date.now()
@@ -374,14 +367,9 @@ const handleValidationError = (
 
 // Export the Lambda function with middleware applied
 export const handler = middy(lambdaHandler)
-  .use(authenticationMiddleware({
-    axiosInstance,
-    ddbClient: documentClient,
-    authOptions: authenticationParameters,
-    logger
-  }))
   .use(injectLambdaContext(logger, {clearState: true}))
   .use(httpHeaderNormalizer())
+  .use(injectCorrelationLoggerMiddleware(logger))
   .use(
     inputOutputLogger({
       logger: (request) => {
@@ -389,4 +377,10 @@ export const handler = middy(lambdaHandler)
       }
     })
   )
+  .use(authenticationMiddleware({
+    axiosInstance,
+    ddbClient: documentClient,
+    authOptions: authenticationParameters,
+    logger
+  }))
   .use(middyErrorHandler.errorHandler({logger: logger}))

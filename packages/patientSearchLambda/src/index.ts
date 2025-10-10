@@ -12,6 +12,7 @@ import {authenticationMiddleware, authParametersFromEnv, AuthResult} from "@cpt-
 import * as pds from "@cpt-ui-common/pdsClient"
 import {INTERNAL_ERROR_RESPONSE_BODY, HandlerParameters, lambdaHandler} from "./handler"
 import {URL} from "url"
+import {injectCorrelationLoggerMiddleware} from "@cpt-ui-common/lambdaUtils"
 
 /*
 This file initialises dependencies and a lambda from the environment.
@@ -56,14 +57,9 @@ const middyErrorHandler = new MiddyErrorHandler(INTERNAL_ERROR_RESPONSE_BODY)
   .errorHandler({logger})
 
 export const handler = middy((event: APIGatewayProxyEventBase<AuthResult>) => lambdaHandler(event, handlerParams))
-  .use(authenticationMiddleware({
-    axiosInstance,
-    ddbClient: documentClient,
-    authOptions: authenticationParameters,
-    logger
-  }))
   .use(injectLambdaContext(logger, {clearState: true}))
   .use(httpHeaderNormalizer())
+  .use(injectCorrelationLoggerMiddleware(logger))
   .use(
     inputOutputLogger({
       logger: (request) => {
@@ -71,4 +67,10 @@ export const handler = middy((event: APIGatewayProxyEventBase<AuthResult>) => la
       }
     })
   )
+  .use(authenticationMiddleware({
+    axiosInstance,
+    ddbClient: documentClient,
+    authOptions: authenticationParameters,
+    logger
+  }))
   .use(middyErrorHandler)
