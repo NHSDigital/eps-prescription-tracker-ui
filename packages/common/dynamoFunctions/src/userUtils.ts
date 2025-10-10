@@ -87,7 +87,7 @@ interface AllowedAccessCodes {
   }
 }
 
-const checkRoleAccess = (roleCode: string, activityCodes: Array<string>): boolean => {
+const checkRoleAccess = (roleCode: string, activityCodes: Array<string>, logger: Logger): boolean => {
   // Allowed Role & Activity codes - structure more for documentation/maintainability reasons
   const allowedAccessCodes: AllowedAccessCodes = {
     B0570: { // Perform Pharmacy Activities
@@ -134,10 +134,14 @@ const checkRoleAccess = (roleCode: string, activityCodes: Array<string>): boolea
   }
   allAcceptedRoleCodes = [...new Set(allAcceptedRoleCodes)]
   allAcceptedActivityCodes = [...new Set(allAcceptedActivityCodes)]
+  logger.debug("all accepted roles", {allAcceptedRoleCodes})
+  logger.debug("all accepted activities", {allAcceptedActivityCodes})
 
   // Check for access
   const roleHasAccess = allAcceptedRoleCodes.includes(roleCode)
+  logger.debug("Role Access", {roleHasAccess})
   const activitiesHaveAccess = activityCodes.some((code: string) => allAcceptedActivityCodes.includes(code))
+  logger.debug("Activities Access", {activitiesHaveAccess})
 
   return roleHasAccess || activitiesHaveAccess
 }
@@ -192,7 +196,7 @@ export const extractRoleInformation = (
       return
     }
 
-    const hasAccess = checkRoleAccess(roleInfo.role_code, roleInfo.activity_codes)
+    const hasAccess = checkRoleAccess(roleInfo.role_code, roleInfo.activity_codes, logger)
     if (hasAccess) {
       if (selectedRoleId && roleInfo.role_id === selectedRoleId) {
         // If the role has access and matches the selectedRoleId, set it as currently selected
