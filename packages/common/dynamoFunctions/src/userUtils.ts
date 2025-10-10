@@ -182,7 +182,7 @@ export const extractRoleInformation = (
     const roleInfo: RoleDetails = {
       role_name: removeRoleCategories(role.role_name),
       role_id: role.person_roleid,
-      role_code: role.role_code,
+      role_code: removeRoleCategories(role.role_code),
       activity_codes: role.activity_codes || [],
       org_code: role.org_code,
       org_name: getOrgNameFromOrgCode(data, role.org_code)

@@ -55,7 +55,7 @@ describe("extractRoleInformation", () => {
           org_code: "ORG1",
           person_orgid: "PORG1",
           person_roleid: "ROLE1",
-          role_code: "RC1", // Role code does not have access
+          role_code: "S000:G000:RC1", // Role code does not have access
           role_name: "Perform Pharmacy Activities Role",
           activity_codes: ["B0570"] // Parent activity code has access
         }
@@ -96,7 +96,7 @@ describe("extractRoleInformation", () => {
           org_code: "ORG1",
           person_orgid: "PORG1",
           person_roleid: "ROLE1",
-          role_code: "RC1", // Role code does not have access
+          role_code: "S000:G000:RC1", // Role code does not have access
           role_name: "Perform Pharmacy Activities Role",
           activity_codes: ["B0572"] // Child activity code of B0570, has access
         }
@@ -137,7 +137,7 @@ describe("extractRoleInformation", () => {
           org_code: "ORG1",
           person_orgid: "PORG1",
           person_roleid: "ROLE1",
-          role_code: "R6300", // Baseline role code has access
+          role_code: "S000:G000:R6300", // Baseline role code has access
           role_name: "Perform Pharmacy Activities Role",
           activity_codes: ["AC1"] // activity code does not have access
         }
@@ -179,7 +179,7 @@ describe("extractRoleInformation", () => {
           org_code: "ORG1",
           person_orgid: "PORG1",
           person_roleid: "ROLE1",
-          role_code: "RC1",
+          role_code: "S000:G000:RC1",
           role_name: "Admin Role",
           activity_codes: ["B0570"] // Has access
         },
@@ -187,7 +187,7 @@ describe("extractRoleInformation", () => {
           org_code: "ORG2",
           person_orgid: "PORG2",
           person_roleid: "ROLE2",
-          role_code: "RC2",
+          role_code: "S000:G000:RC2",
           role_name: "User Role",
           activity_codes: ["OTHER"] // No access
         }
@@ -241,7 +241,7 @@ describe("extractRoleInformation", () => {
           org_code: "ORG1",
           person_orgid: "PORG1",
           person_roleid: "ROLE1",
-          role_code: "RC1",
+          role_code: "S000:G000:RC1",
           role_name: "Admin Role",
           activity_codes: ["B0570"] // Has access
         }
@@ -277,7 +277,7 @@ describe("extractRoleInformation", () => {
           org_code: "ORG1",
           person_orgid: "PORG1",
           person_roleid: "ROLE1",
-          role_code: "RC1",
+          role_code: "S000:G000:RC1",
           role_name: "Admin Role",
           activity_codes: ["B0570"] // Has access
         },
@@ -285,7 +285,7 @@ describe("extractRoleInformation", () => {
           org_code: "ORG2",
           person_orgid: "PORG2",
           person_roleid: "ROLE2",
-          role_code: "RC2",
+          role_code: "S000:G000:RC2",
           role_name: "User Role",
           activity_codes: ["B0278"] // Also has access
         },
@@ -293,7 +293,7 @@ describe("extractRoleInformation", () => {
           org_code: "ORG2",
           person_orgid: "PORG2",
           person_roleid: "ROLE2",
-          role_code: "RC3",
+          role_code: "S000:G000:RC3",
           role_name: "User Role",
           activity_codes: ["B0401"] // Also has access
         },
@@ -301,7 +301,7 @@ describe("extractRoleInformation", () => {
           org_code: "ORG3",
           person_orgid: "PORG3",
           person_roleid: "ROLE3",
-          role_code: "RC3",
+          role_code: "S000:G000:RC3",
           role_name: "Guest Role",
           activity_codes: ["OTHER"] // No access
         }
@@ -371,7 +371,7 @@ describe("extractRoleInformation", () => {
           org_code: "ORG1",
           person_orgid: "PORG1",
           person_roleid: "ROLE1",
-          role_code: "RC1",
+          role_code: "S000:G000:RC1",
           role_name: "Admin Role",
           activity_codes: ["B0570"]
         }
@@ -409,7 +409,7 @@ describe("extractRoleInformation", () => {
           org_code: "ORG2",
           person_orgid: "PORG2",
           person_roleid: "ROLE2",
-          role_code: "RC2",
+          role_code: "S000:G000:RC2",
           role_name: "Valid Role",
           activity_codes: ["B0570"]
         }
@@ -445,7 +445,7 @@ describe("extractRoleInformation", () => {
           org_code: "ORG1",
           person_orgid: "PORG1",
           person_roleid: "ROLE1",
-          role_code: "RC1",
+          role_code: "S000:G000:RC1",
           role_name: '"Admin":"Level1":"Super Admin"',
           activity_codes: ["B0570"]
         }
