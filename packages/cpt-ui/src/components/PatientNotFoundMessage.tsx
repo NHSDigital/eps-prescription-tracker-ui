@@ -1,31 +1,20 @@
 import React from "react"
-import {
-  Container,
-  Row,
-  Col,
-  BackLink
-} from "nhsuk-react-components"
+import {Container, Row, Col} from "nhsuk-react-components"
 import {Link} from "react-router-dom"
 import {FRONTEND_PATHS} from "@/constants/environment"
 import {STRINGS} from "@/constants/ui-strings/PatientNotFoundMessageStrings"
+import EpsBackLink from "@/components/EpsBackLink"
 
-type PatientNotFoundMessageProps = {
-  readonly search?: string
-}
-
-export default function PatientNotFoundMessage({search = ""}: PatientNotFoundMessageProps) {
+export default function PatientNotFoundMessage() {
   return (
     <Container
       className="nhsuk-width-container-fluid patient-not-found-container"
       data-testid="patient-not-found-message"
     >
       <nav className="nhsuk-breadcrumb nhsuk-u-padding-bottom-0 nhsuk-u-padding-left-2" aria-label="Breadcrumb">
-        <BackLink
-          data-testid="go-back-link"
-          asElement={Link}
-          to={FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS + (search || "")}>
+        <EpsBackLink data-testid="go-back-link">
           {STRINGS.goBackLink}
-        </BackLink>
+        </EpsBackLink>
       </nav>
       <main
         className="nhsuk-main-wrapper nhsuk-main-wrapper--s patient-not-found-main-wrapper"

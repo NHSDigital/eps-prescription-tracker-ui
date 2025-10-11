@@ -1,4 +1,3 @@
-/* eslint-disable max-len */
 import React from "react"
 import {Tag, Table} from "nhsuk-react-components"
 import "../../styles/PrescriptionTable.scss"
@@ -9,6 +8,7 @@ import {PRESCRIPTION_LIST_TABLE_TEXT} from "@/constants/ui-strings/PrescriptionL
 import {Link} from "react-router-dom"
 import {FRONTEND_PATHS} from "@/constants/environment"
 import {useSearchContext} from "@/context/SearchProvider"
+import {useNavigationContext} from "@/context/NavigationProvider"
 
 export interface PrescriptionsListTableProps {
   textContent: PrescriptionsListStrings;
@@ -26,6 +26,7 @@ const PrescriptionsListTable = ({
   const initialSortConfig: SortConfig = {key: "issueDate", direction: null}
   const currentTabId: TabId = textContent.testid as TabId
   const searchContext = useSearchContext()
+  const navigationContext = useNavigationContext()
 
   // all tabs have own key in state object so each tab can be sorted individually
   const [allSortConfigs, setAllSortConfigs] = React.useState<
@@ -57,7 +58,6 @@ const PrescriptionsListTable = ({
     prescriptionType: string,
     repeatIssue: number = 1,
     repeatMax?: number
-
   ): string => {
     switch (prescriptionType) {
       case "0001":
@@ -65,7 +65,9 @@ const PrescriptionsListTable = ({
       case "0002":
         return PRESCRIPTION_LIST_TABLE_TEXT.typeDisplayText.repeat
       case "0003":
-        return PRESCRIPTION_LIST_TABLE_TEXT.typeDisplayText.erd.replace("Y", repeatIssue?.toString()).replace("X", repeatMax!.toString())
+        return PRESCRIPTION_LIST_TABLE_TEXT.typeDisplayText.erd
+          .replace("Y", repeatIssue?.toString())
+          .replace("X", repeatMax!.toString())
       default:
         return PRESCRIPTION_LIST_TABLE_TEXT.typeDisplayText.unknown
     }
@@ -91,13 +93,23 @@ const PrescriptionsListTable = ({
           aria-label={PRESCRIPTION_LIST_TABLE_TEXT.sortLabel}
         >
           <span
-            className={`arrow up-arrow ${isActive && direction !== "ascending" ? "hidden-arrow" : isActive ? "selected-arrow" : ""
+            className={`arrow up-arrow ${
+              isActive && direction !== "ascending"
+                ? "hidden-arrow"
+                : isActive
+                  ? "selected-arrow"
+                  : ""
             }`}
           >
             ▲
           </span>
           <span
-            className={`arrow down-arrow ${isActive && direction !== "descending" ? "hidden-arrow" : isActive ? "selected-arrow" : ""
+            className={`arrow down-arrow ${
+              isActive && direction !== "descending"
+                ? "hidden-arrow"
+                : isActive
+                  ? "selected-arrow"
+                  : ""
             }`}
           >
             ▼
@@ -128,10 +140,36 @@ const PrescriptionsListTable = ({
     return `${FRONTEND_PATHS.PRESCRIPTION_DETAILS_PAGE}`
   }
 
-  const setSearchPrescriptionState = (prescriptionId: string, issueNumber: string | undefined) => {
-    searchContext.clearSearchParameters()
-    searchContext.setPrescriptionId(prescriptionId)
-    searchContext.setIssueNumber(issueNumber)
+  const setSearchPrescriptionState = (
+    prescriptionId: string,
+    issueNumber: string | undefined
+  ) => {
+    const originalSearchParams =
+      navigationContext.getOriginalSearchParameters()
+
+    let relevantParams = {}
+    if (originalSearchParams) {
+      if (originalSearchParams.prescriptionId) {
+        relevantParams =
+          navigationContext.getRelevantSearchParameters("prescriptionId")
+      } else if (originalSearchParams.nhsNumber) {
+        relevantParams =
+          navigationContext.getRelevantSearchParameters("nhsNumber")
+      } else if (
+        originalSearchParams.firstName ||
+        originalSearchParams.lastName
+      ) {
+        relevantParams =
+          navigationContext.getRelevantSearchParameters("basicDetails")
+      }
+    }
+
+    // only preserve relevant search parameters and add prescription-specific ones
+    searchContext.setAllSearchParameters({
+      ...relevantParams,
+      prescriptionId,
+      issueNumber
+    })
   }
 
   const getSortedItems = () => {
@@ -196,7 +234,7 @@ const PrescriptionsListTable = ({
 
     const intro =
       PRESCRIPTION_LIST_TABLE_TEXT.caption[
-      testid as keyof typeof PRESCRIPTION_LIST_TABLE_TEXT.caption
+        testid as keyof typeof PRESCRIPTION_LIST_TABLE_TEXT.caption
       ]
     const sharedText = PRESCRIPTION_LIST_TABLE_TEXT.caption.sharedText
 

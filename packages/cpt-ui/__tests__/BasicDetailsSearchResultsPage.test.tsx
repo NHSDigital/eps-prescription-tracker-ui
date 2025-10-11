@@ -11,11 +11,36 @@ import {SearchResultsPageStrings} from "@/constants/ui-strings/BasicDetailsSearc
 import http from "@/helpers/axios"
 import {AuthContext, type AuthContextType} from "@/context/AuthProvider"
 import {SearchContext, SearchProviderContextType} from "@/context/SearchProvider"
+import {NavigationProvider} from "@/context/NavigationProvider"
 import {AxiosError, AxiosHeaders} from "axios"
 
 // Mock the axios module
 jest.mock("@/helpers/axios")
 const mockAxiosGet = http.get as jest.MockedFunction<typeof http.get>
+
+const mockGetRelevantSearchParameters = jest.fn()
+const mockGetBackPath = jest.fn()
+const mockGoBack = jest.fn()
+const mockNavigationContext = {
+  pushNavigation: jest.fn(),
+  goBack: mockGoBack,
+  getBackPath: mockGetBackPath,
+  clearNavigation: jest.fn(),
+  getCurrentEntry: jest.fn(),
+  getNavigationStack: jest.fn(),
+  canGoBack: jest.fn(),
+  setOriginalSearchPage: jest.fn(),
+  getOriginalSearchPage: jest.fn(),
+  captureOriginalSearchParameters: jest.fn(),
+  getOriginalSearchParameters: jest.fn(),
+  getRelevantSearchParameters: mockGetRelevantSearchParameters,
+  startNewNavigationSession: jest.fn()
+}
+
+jest.mock("@/context/NavigationProvider", () => ({
+  ...jest.requireActual("@/context/NavigationProvider"),
+  useNavigationContext: () => mockNavigationContext
+}))
 
 const mockAuthContext: AuthContextType = {
   error: null,
@@ -49,7 +74,7 @@ const mockSetLastName = jest.fn()
 const mockSetDobDay = jest.fn()
 const mockSetDobMonth = jest.fn()
 const mockSetDobYear = jest.fn()
-const mockSetPostcode =jest.fn()
+const mockSetPostcode = jest.fn()
 const mockSetNhsNumber = jest.fn()
 const mockGetAllSearchParameters = jest.fn()
 const mockSetAllSearchParameters = jest.fn()
@@ -63,6 +88,7 @@ const defaultSearchState: SearchProviderContextType = {
   dobYear: undefined,
   postcode: undefined,
   nhsNumber: undefined,
+  searchType: undefined,
   clearSearchParameters: mockClearSearchParameters,
   setPrescriptionId: mockSetPrescriptionId,
   setIssueNumber: mockSetIssueNumber,
@@ -73,6 +99,7 @@ const defaultSearchState: SearchProviderContextType = {
   setDobYear: mockSetDobYear,
   setPostcode: mockSetPostcode,
   setNhsNumber: mockSetNhsNumber,
+  setSearchType: jest.fn(),
   getAllSearchParameters: mockGetAllSearchParameters,
   setAllSearchParameters: mockSetAllSearchParameters
 }
@@ -96,17 +123,20 @@ const mockPatients = [
   }
 ]
 
-function renderWithRouter() {
+function renderWithRouter(initialEntries = ["/patient-search-results"]) {
   return render(
     <AuthContext.Provider value={mockAuthContext}>
       <SearchContext.Provider value={defaultSearchState}>
-        <MemoryRouter initialEntries={["/patient-search-results"]}>
-          <Routes>
-            <Route path="/patient-search-results" element={<BasicDetailsSearchResultsPage />} />
-            <Route path="/login" element={<div data-testid="login-page-shown" />} />
-            <Route path="/prescription-list-current" element={<div data-testid="prescription-list-shown" />} />
-            <Route path="/search-by-basic-details" element={<div data-testid="search-page-shown" />} />
-          </Routes>
+        <MemoryRouter initialEntries={initialEntries}>
+          <NavigationProvider>
+            <Routes>
+              <Route path="/patient-search-results" element={<BasicDetailsSearchResultsPage />} />
+              <Route path="/login" element={<div data-testid="login-page-shown" />} />
+              <Route path="/prescription-list-current" element={<div data-testid="prescription-list-shown" />} />
+              <Route path="/search-by-basic-details" element={<div data-testid="search-page-shown" />} />
+              <Route path="/search-by-prescription-id" element={<div data-testid="search-page-shown" />} />
+            </Routes>
+          </NavigationProvider>
         </MemoryRouter>
       </SearchContext.Provider>
     </AuthContext.Provider>
@@ -115,11 +145,24 @@ function renderWithRouter() {
 
 describe("BasicDetailsSearchResultsPage", () => {
   beforeEach(() => {
+    jest.clearAllMocks()
+
     // Mock successful API response
     mockAxiosGet.mockResolvedValue({
       status: 200,
       data: mockPatients
     })
+
+    mockGetRelevantSearchParameters.mockReturnValue({
+      firstName: "John",
+      lastName: "Doe",
+      dobDay: "01",
+      dobMonth: "01",
+      dobYear: "1990",
+      postcode: "SW1A 1AA"
+    })
+
+    mockGetBackPath.mockReturnValue("/search-by-basic-details")
   })
 
   it("shows loading state initially", () => {
@@ -201,20 +244,42 @@ describe("BasicDetailsSearchResultsPage", () => {
 
     await waitFor(() => {
       expect(screen.getByTestId("prescription-list-shown")).toBeInTheDocument()
-      expect(mockClearSearchParameters).toHaveBeenCalled()
-      expect(mockSetNhsNumber).toHaveBeenCalledWith("9726919207")
+      expect(mockGetRelevantSearchParameters).toHaveBeenCalledWith(
+        "basicDetails"
+      )
+      expect(mockSetAllSearchParameters).toHaveBeenCalledWith({
+        firstName: "John",
+        lastName: "Doe",
+        dobDay: "01",
+        dobMonth: "01",
+        dobYear: "1990",
+        postcode: "SW1A 1AA",
+        nhsNumber: "9726919207"
+      })
     })
   })
 
   it("navigates to prescription list when clicking a patient row", async () => {
     renderWithRouter()
     await waitFor(() => {
-      const firstPatientRow = screen.getByText("Issac Wolderton-Rodriguez").closest("tr")
+      const firstPatientRow = screen
+        .getByText("Issac Wolderton-Rodriguez")
+        .closest("tr")
       fireEvent.click(firstPatientRow!)
 
       expect(screen.getByTestId("prescription-list-shown")).toBeInTheDocument()
-      expect(mockClearSearchParameters).toHaveBeenCalled()
-      expect(mockSetNhsNumber).toHaveBeenCalledWith("9726919207")
+      expect(mockGetRelevantSearchParameters).toHaveBeenCalledWith(
+        "basicDetails"
+      )
+      expect(mockSetAllSearchParameters).toHaveBeenCalledWith({
+        firstName: "John",
+        lastName: "Doe",
+        dobDay: "01",
+        dobMonth: "01",
+        dobYear: "1990",
+        postcode: "SW1A 1AA",
+        nhsNumber: "9726919207"
+      })
     })
   })
 
@@ -226,8 +291,18 @@ describe("BasicDetailsSearchResultsPage", () => {
       fireEvent.click(patientNameLink)
 
       expect(screen.getByTestId("prescription-list-shown")).toBeInTheDocument()
-      expect(mockClearSearchParameters).toHaveBeenCalled()
-      expect(mockSetNhsNumber).toHaveBeenCalledWith("9726919207")
+      expect(mockGetRelevantSearchParameters).toHaveBeenCalledWith(
+        "basicDetails"
+      )
+      expect(mockSetAllSearchParameters).toHaveBeenCalledWith({
+        firstName: "John",
+        lastName: "Doe",
+        dobDay: "01",
+        dobMonth: "01",
+        dobYear: "1990",
+        postcode: "SW1A 1AA",
+        nhsNumber: "9726919207"
+      })
     })
   })
 
@@ -235,11 +310,16 @@ describe("BasicDetailsSearchResultsPage", () => {
     renderWithRouter()
 
     await waitFor(() => {
-      const backLink = screen.getByText(SearchResultsPageStrings.GO_BACK)
-      fireEvent.click(backLink)
-
-      expect(screen.getByTestId("search-page-shown")).toBeInTheDocument()
+      expect(
+        screen.getByText(SearchResultsPageStrings.GO_BACK)
+      ).toBeInTheDocument()
     })
+
+    const backLink = screen.getByText(SearchResultsPageStrings.GO_BACK)
+    fireEvent.click(backLink)
+
+    expect(mockGoBack).toHaveBeenCalled()
+    expect(mockGetBackPath).toHaveBeenCalled()
   })
 
   it("handles enter key navigation for patient rows", async () => {
@@ -250,8 +330,18 @@ describe("BasicDetailsSearchResultsPage", () => {
       fireEvent.keyDown(firstPatientRow!, {key: "Enter"})
 
       expect(screen.getByTestId("prescription-list-shown")).toBeInTheDocument()
-      expect(mockClearSearchParameters).toHaveBeenCalled()
-      expect(mockSetNhsNumber).toHaveBeenCalledWith("9726919207")
+      expect(mockGetRelevantSearchParameters).toHaveBeenCalledWith(
+        "basicDetails"
+      )
+      expect(mockSetAllSearchParameters).toHaveBeenCalledWith({
+        firstName: "John",
+        lastName: "Doe",
+        dobDay: "01",
+        dobMonth: "01",
+        dobYear: "1990",
+        postcode: "SW1A 1AA",
+        nhsNumber: "9726919207"
+      })
     })
   })
 
@@ -263,8 +353,18 @@ describe("BasicDetailsSearchResultsPage", () => {
       fireEvent.keyDown(firstPatientRow!, {key: " "})
 
       expect(screen.getByTestId("prescription-list-shown")).toBeInTheDocument()
-      expect(mockClearSearchParameters).toHaveBeenCalled()
-      expect(mockSetNhsNumber).toHaveBeenCalledWith("9726919207")
+      expect(mockGetRelevantSearchParameters).toHaveBeenCalledWith(
+        "basicDetails"
+      )
+      expect(mockSetAllSearchParameters).toHaveBeenCalledWith({
+        firstName: "John",
+        lastName: "Doe",
+        dobDay: "01",
+        dobMonth: "01",
+        dobYear: "1990",
+        postcode: "SW1A 1AA",
+        nhsNumber: "9726919207"
+      })
     })
   })
 

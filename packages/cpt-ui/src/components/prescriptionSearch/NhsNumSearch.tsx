@@ -22,18 +22,37 @@ import {
 import {STRINGS} from "@/constants/ui-strings/NhsNumSearchStrings"
 import {FRONTEND_PATHS} from "@/constants/environment"
 import {useSearchContext} from "@/context/SearchProvider"
+import {useNavigationContext} from "@/context/NavigationProvider"
 import {validateNhsNumber, normalizeNhsNumber, NhsNumberValidationError} from "@/helpers/validateNhsNumber"
 
 export default function NhsNumSearch() {
-  const [nhsNumber, setNhsNumber] = useState<string>("")
-  const [errorKey, setErrorKey] = useState<NhsNumberValidationError | null>(null)
-  const errorRef = useRef<HTMLDivElement | null>(null)
   const navigate = useNavigate()
   const searchContext = useSearchContext()
+  const navigationContext = useNavigationContext()
+  const [nhsNumber, setNhsNumber] = useState<string>(
+    searchContext.nhsNumber || ""
+  )
+  const [errorKey, setErrorKey] = useState<NhsNumberValidationError | null>(
+    null
+  )
+  const errorRef = useRef<HTMLDivElement | null>(null)
 
   const errorMessages = STRINGS.errors
 
   const displayedError = useMemo(() => errorKey ? errorMessages[errorKey] : "", [errorKey])
+
+  useEffect(() => {
+    if (searchContext.nhsNumber && searchContext.searchType === "nhs") {
+      setNhsNumber(searchContext.nhsNumber)
+    }
+  }, [searchContext.nhsNumber, searchContext.searchType])
+
+  useEffect(() => {
+    const originalParams = navigationContext.getOriginalSearchParameters()
+    if (originalParams && originalParams.nhsNumber) {
+      setNhsNumber(originalParams.nhsNumber || "")
+    }
+  }, [navigationContext])
 
   useEffect(() => {
     if (errorKey && errorRef.current) {
@@ -55,8 +74,21 @@ export default function NhsNumSearch() {
     }
     setErrorKey(null)
     const normalized = normalizeNhsNumber(nhsNumber)
+
+    // clear any previous search context
+    navigationContext.startNewNavigationSession()
+
+    const originalParams = {
+      nhsNumber: normalized || ""
+    }
+    navigationContext.captureOriginalSearchParameters(
+      "nhsNumber",
+      originalParams
+    )
+
     searchContext.clearSearchParameters()
-    searchContext.setNhsNumber(normalized)
+    searchContext.setNhsNumber(normalized || "")
+    searchContext.setSearchType("nhs")
 
     navigate(`${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}`)
   }

@@ -10,6 +10,7 @@ export interface SearchParameters {
   dobYear?: string
   postcode?: string
   nhsNumber?: string
+  searchType?: "nhs" | "prescriptionId" | "basicDetails"
 }
 
 export interface SearchProviderContextType {
@@ -22,6 +23,7 @@ export interface SearchProviderContextType {
   dobYear?: string
   postcode?: string
   nhsNumber?: string
+  searchType?: "nhs" | "prescriptionId" | "basicDetails"
   clearSearchParameters: () => void
   setPrescriptionId: (prescriptionId: string | undefined) => void
   setIssueNumber: (issueNumber: string | undefined) => void
@@ -32,6 +34,9 @@ export interface SearchProviderContextType {
   setDobYear: (dobYear: string | undefined) => void
   setPostcode: (postCode: string | undefined) => void
   setNhsNumber: (nhsNumber: string | undefined) => void
+  setSearchType: (
+    searchType: "nhs" | "prescriptionId" | "basicDetails" | undefined,
+  ) => void
   getAllSearchParameters: () => SearchParameters
   setAllSearchParameters: (searchParameters: SearchParameters) => void
 }
@@ -48,6 +53,9 @@ export const SearchProvider = ({children}: { children: React.ReactNode }) => {
   const [dobYear, setDobYear] = useState<string | undefined>(undefined)
   const [postcode, setPostcode] = useState<string | undefined>(undefined)
   const [nhsNumber, setNhsNumber] = useState<string | undefined>(undefined)
+  const [searchType, setSearchType] = useState<
+    "nhs" | "prescriptionId" | "basicDetails" | undefined
+  >(undefined)
 
   const clearSearchParameters = () => {
     setPrescriptionId(undefined)
@@ -59,6 +67,7 @@ export const SearchProvider = ({children}: { children: React.ReactNode }) => {
     setDobYear(undefined)
     setPostcode(undefined)
     setNhsNumber(undefined)
+    setSearchType(undefined)
   }
 
   const setAllSearchParameters = (searchParameters: SearchParameters) => {
@@ -71,6 +80,7 @@ export const SearchProvider = ({children}: { children: React.ReactNode }) => {
     setDobYear(searchParameters.dobYear)
     setPostcode(searchParameters.postcode)
     setNhsNumber(searchParameters.nhsNumber)
+    setSearchType(searchParameters.searchType)
   }
 
   const getAllSearchParameters = () => {
@@ -83,33 +93,39 @@ export const SearchProvider = ({children}: { children: React.ReactNode }) => {
       dobMonth,
       dobYear,
       postcode,
-      nhsNumber
+      nhsNumber,
+      searchType
     }
   }
+
   return (
-    <SearchContext.Provider value={{
-      prescriptionId,
-      issueNumber,
-      firstName,
-      lastName,
-      dobDay,
-      dobMonth,
-      dobYear,
-      postcode,
-      nhsNumber,
-      clearSearchParameters,
-      setPrescriptionId,
-      setIssueNumber,
-      setFirstName,
-      setLastName,
-      setDobDay,
-      setDobMonth,
-      setDobYear,
-      setPostcode,
-      setNhsNumber,
-      getAllSearchParameters,
-      setAllSearchParameters
-    }}>
+    <SearchContext.Provider
+      value={{
+        prescriptionId,
+        issueNumber,
+        firstName,
+        lastName,
+        dobDay,
+        dobMonth,
+        dobYear,
+        postcode,
+        nhsNumber,
+        searchType,
+        clearSearchParameters,
+        setPrescriptionId,
+        setIssueNumber,
+        setFirstName,
+        setLastName,
+        setDobDay,
+        setDobMonth,
+        setDobYear,
+        setPostcode,
+        setNhsNumber,
+        setSearchType,
+        getAllSearchParameters,
+        setAllSearchParameters
+      }}
+    >
       {children}
     </SearchContext.Provider>
   )

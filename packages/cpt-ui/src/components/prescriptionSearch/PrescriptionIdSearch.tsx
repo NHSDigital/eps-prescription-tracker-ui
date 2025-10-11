@@ -29,20 +29,31 @@ import {
   PrescriptionValidationError
 } from "@/helpers/validatePrescriptionDetailsSearch"
 import {useSearchContext} from "@/context/SearchProvider"
+import {useNavigationContext} from "@/context/NavigationProvider"
 
 export default function PrescriptionIdSearch() {
   const navigate = useNavigate()
   const errorRef = useRef<HTMLDivElement | null>(null)
   const searchContext = useSearchContext()
+  const navigationContext = useNavigationContext()
 
-  const [prescriptionId, setPrescriptionId] = useState<string>("")
+  const [prescriptionId, setPrescriptionId] = useState<string>(searchContext.prescriptionId || "")
   const [errorKey, setErrorKey] = useState<PrescriptionValidationError | null>(null)
 
   const errorMessages = PRESCRIPTION_ID_SEARCH_STRINGS.errors
 
+  useEffect(() => {
+    const originalParams = navigationContext.getOriginalSearchParameters()
+    if (originalParams && originalParams.prescriptionId) {
+      setPrescriptionId(originalParams.prescriptionId || "")
+    }
+  }, [navigationContext])
+
   // Maps a validation error key to the corresponding user-facing message.
   // Treats "checksum" as "noMatch" to simplify the error display logic.
-  const getDisplayedErrorMessage = (key: PrescriptionValidationError | null): string => {
+  const getDisplayedErrorMessage = (
+    key: PrescriptionValidationError | null
+  ): string => {
     if (!key) return ""
     if (key === "noMatch") return errorMessages.noMatch
     return errorMessages[key] || errorMessages.noMatch
@@ -50,6 +61,15 @@ export default function PrescriptionIdSearch() {
 
   // Memoised error message for display
   const displayedError = useMemo(() => getDisplayedErrorMessage(errorKey), [errorKey])
+
+  useEffect(() => {
+    if (
+      searchContext.prescriptionId &&
+      searchContext.searchType === "prescriptionId"
+    ) {
+      setPrescriptionId(searchContext.prescriptionId)
+    }
+  }, [searchContext.prescriptionId, searchContext.searchType])
 
   // When error is set, focus error summary
   useEffect(() => {
@@ -74,8 +94,21 @@ export default function PrescriptionIdSearch() {
     setErrorKey(null) // Clear error on valid submit
 
     const formatted = normalizePrescriptionId(prescriptionId)
+
+    //clear previous search context
+    navigationContext.startNewNavigationSession()
+
+    const originalParams = {
+      prescriptionId: formatted
+    }
+    navigationContext.captureOriginalSearchParameters(
+      "prescriptionId",
+      originalParams
+    )
+
     searchContext.clearSearchParameters()
     searchContext.setPrescriptionId(formatted)
+    searchContext.setSearchType("prescriptionId")
     navigate(`${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}`)
   }
 

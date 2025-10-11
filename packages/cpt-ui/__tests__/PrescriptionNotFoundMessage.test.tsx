@@ -6,6 +6,30 @@ import PrescriptionNotFoundMessage from "@/components/PrescriptionNotFoundMessag
 import {STRINGS, SEARCH_STRINGS, SEARCH_TYPES} from "@/constants/ui-strings/PrescriptionNotFoundMessageStrings"
 import {FRONTEND_PATHS} from "@/constants/environment"
 import {SearchContext, SearchProviderContextType} from "@/context/SearchProvider"
+import {NavigationProvider} from "@/context/NavigationProvider"
+
+const mockGetBackPath = jest.fn()
+const mockGoBack = jest.fn()
+const mockNavigationContext = {
+  pushNavigation: jest.fn(),
+  goBack: mockGoBack,
+  getBackPath: mockGetBackPath,
+  clearNavigation: jest.fn(),
+  getCurrentEntry: jest.fn(),
+  getNavigationStack: jest.fn(),
+  canGoBack: jest.fn(),
+  setOriginalSearchPage: jest.fn(),
+  getOriginalSearchPage: jest.fn(),
+  captureOriginalSearchParameters: jest.fn(),
+  getOriginalSearchParameters: jest.fn(),
+  getRelevantSearchParameters: jest.fn(),
+  startNewNavigationSession: jest.fn()
+}
+
+jest.mock("@/context/NavigationProvider", () => ({
+  ...jest.requireActual("@/context/NavigationProvider"),
+  useNavigationContext: () => mockNavigationContext
+}))
 
 const mockClearSearchParameters = jest.fn()
 const mockSetPrescriptionId = jest.fn()
@@ -15,10 +39,12 @@ const mockSetLastName = jest.fn()
 const mockSetDobDay = jest.fn()
 const mockSetDobMonth = jest.fn()
 const mockSetDobYear = jest.fn()
-const mockSetPostcode =jest.fn()
+const mockSetPostcode = jest.fn()
 const mockSetNhsNumber = jest.fn()
 const mockGetAllSearchParameters = jest.fn()
 const mockSetAllSearchParameters = jest.fn()
+const mockSetSearchType = jest.fn()
+
 const defaultSearchState: SearchProviderContextType = {
   prescriptionId: undefined,
   issueNumber: undefined,
@@ -29,6 +55,7 @@ const defaultSearchState: SearchProviderContextType = {
   dobYear: undefined,
   postcode: undefined,
   nhsNumber: undefined,
+  searchType: undefined,
   clearSearchParameters: mockClearSearchParameters,
   setPrescriptionId: mockSetPrescriptionId,
   setIssueNumber: mockSetIssueNumber,
@@ -40,24 +67,27 @@ const defaultSearchState: SearchProviderContextType = {
   setPostcode: mockSetPostcode,
   setNhsNumber: mockSetNhsNumber,
   getAllSearchParameters: mockGetAllSearchParameters,
-  setAllSearchParameters: mockSetAllSearchParameters
+  setAllSearchParameters: mockSetAllSearchParameters,
+  setSearchType: mockSetSearchType
 }
 
-const DummyPage = ({label}: {label: string}) => <div data-testid="dummy-page">{label}</div>
+const DummyPage = ({label}: { label: string }) => (
+  <div data-testid="dummy-page">{label}</div>
+)
 
 interface searchParams {
-  prescriptionId?: string
-  issueNumber?: string
-  firstName?: string
-  lastName?: string
-  dobDay?: string
-  dobMonth?: string
-  dobYear?: string
-  postcode?: string
-  nhsNumber?: string
+  prescriptionId?: string;
+  issueNumber?: string;
+  firstName?: string;
+  lastName?: string;
+  dobDay?: string;
+  dobMonth?: string;
+  dobYear?: string;
+  postcode?: string;
+  nhsNumber?: string;
 }
 const defaultSearchParams: searchParams = {
-  firstName:"Zoe",
+  firstName: "Zoe",
   lastName: "Zero",
   dobDay: "31",
   dobMonth: "12",
@@ -66,11 +96,20 @@ const defaultSearchParams: searchParams = {
 }
 
 // Helper to DRY test setup for different query params
-function setupRouter(
-  searchParams: searchParams = defaultSearchParams
-) {
+function setupRouter(searchParams: searchParams = {}) {
+  let backPath = FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS
+  if (searchParams.prescriptionId) {
+    backPath = FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID
+  } else if (searchParams.nhsNumber) {
+    backPath = FRONTEND_PATHS.SEARCH_BY_NHS_NUMBER
+  } else if (searchParams.firstName || searchParams.lastName) {
+    backPath = FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS
+  }
+  mockGetBackPath.mockReturnValue(backPath)
   const searchState = {
     ...defaultSearchState,
+    prescriptionId: searchParams.prescriptionId,
+    issueNumber: searchParams.issueNumber,
     firstName: searchParams.firstName,
     lastName: searchParams.lastName,
     dobDay: searchParams.dobDay,
@@ -82,27 +121,32 @@ function setupRouter(
   render(
     <SearchContext.Provider value={searchState}>
       <MemoryRouter initialEntries={["/not-found"]}>
-        <Routes>
-          <Route path="/not-found" element={<PrescriptionNotFoundMessage />} />
-          <Route path={FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS} element={<DummyPage label="Basic Details Search" />} />
-          <Route path={FRONTEND_PATHS.SEARCH_BY_NHS_NUMBER} element={<DummyPage label="NHS Number Search" />} />
-          <Route path={FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID} element={
-            <DummyPage label="Prescription ID Search" />} />
-        </Routes>
+        <NavigationProvider>
+          <Routes>
+            <Route path="/not-found" element={<PrescriptionNotFoundMessage />} />
+            <Route path={FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS} element={<DummyPage label="Basic Details Search" />} />
+            <Route path={FRONTEND_PATHS.SEARCH_BY_NHS_NUMBER} element={<DummyPage label="NHS Number Search" />} />
+            <Route path={FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID} element={
+              <DummyPage label="Prescription ID Search" />} />
+          </Routes>
+        </NavigationProvider>
       </MemoryRouter>
     </SearchContext.Provider>
   )
 }
 
 describe("PrescriptionNotFoundMessage", () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
   it("renders the main heading and static content for basic details search", () => {
-    setupRouter()
+    setupRouter(defaultSearchParams)
     const headings = screen.getAllByTestId("presc-not-found-heading")
     expect(headings[0]).toHaveTextContent(STRINGS.heading)
   })
 
   it("renders the main container with correct id and class", () => {
-    setupRouter()
+    setupRouter(defaultSearchParams)
     const mainElement = screen.getByRole("main")
     expect(mainElement).toBeInTheDocument()
     expect(mainElement).toHaveAttribute("id", "main-content")
@@ -110,14 +154,14 @@ describe("PrescriptionNotFoundMessage", () => {
   })
 
   it("renders the back link with correct text for basic details search", () => {
-    setupRouter()
+    setupRouter(defaultSearchParams)
     const link = screen.getByTestId("go-back-link")
     expect(link).toHaveTextContent(STRINGS.goBackLink)
     expect(link.getAttribute("href")).toContain(FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS)
   })
 
   it("renders all body paragraphs and alternative links for basic details search", () => {
-    setupRouter()
+    setupRouter(defaultSearchParams)
     const querySummary = screen.getByTestId("query-summary")
 
     // First paragraph
@@ -136,7 +180,7 @@ describe("PrescriptionNotFoundMessage", () => {
 
     // Middle paragraph: two links
     const links = within(querySummary).getAllByRole("link")
-    const altLabels = links.map(link => link.textContent)
+    const altLabels = links.map((link) => link.textContent)
     expect(altLabels).toEqual(
       expect.arrayContaining([
         "search using a prescription ID",
@@ -153,26 +197,60 @@ describe("PrescriptionNotFoundMessage", () => {
       nhsNumber: "9912003071"
     })
     const link = screen.getByTestId("go-back-link")
-    expect(link.getAttribute("href")).toContain(FRONTEND_PATHS.SEARCH_BY_NHS_NUMBER)
+    expect(link.getAttribute("href")).toContain(
+      FRONTEND_PATHS.SEARCH_BY_NHS_NUMBER
+    )
 
     const querySummary = screen.getByTestId("query-summary")
 
+    // should show the NHS number search body text
+    expect(querySummary).toHaveTextContent(
+      "We could not find any prescriptions using the NHS number you searched for."
+    )
+
     // Should offer prescription ID and basic details as alternative links
-    const altLinks = within(querySummary).getAllByRole("link").map(l => l.textContent)
-    const nhsNumberAltLabels = SEARCH_STRINGS[SEARCH_TYPES.NHS_NUMBER].alternatives.map(a => a.label)
+    const altLinks = within(querySummary)
+      .getAllByRole("link")
+      .map((l) => l.textContent)
+    const nhsNumberAltLabels = SEARCH_STRINGS[
+      SEARCH_TYPES.NHS_NUMBER
+    ].alternatives.map((a) => a.label)
     expect(altLinks).toEqual(expect.arrayContaining(nhsNumberAltLabels))
+  })
+
+  it("renders correct navigation for NHS number search with different context", () => {
+    mockGetAllSearchParameters.mockReturnValue({
+      nhsNumber: "9912003071"
+    })
+    setupRouter({
+      nhsNumber: "9912003071"
+    })
+    const link = screen.getByTestId("go-back-link")
+    expect(link.getAttribute("href")).toContain(
+      FRONTEND_PATHS.SEARCH_BY_NHS_NUMBER
+    )
   })
 
   it("renders correct navigation and content for Prescription ID search", () => {
     setupRouter({prescriptionId: "9000000001"})
     const link = screen.getByTestId("go-back-link")
-    expect(link.getAttribute("href")).toContain(FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS)
+    expect(link.getAttribute("href")).toContain(
+      FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID
+    )
 
     const querySummary = screen.getByTestId("query-summary")
 
     // Should offer NHS number and basic details as alternative links
     const altLinks = within(querySummary).getAllByRole("link").map(l => l.textContent)
-    const expectedAltLabels = SEARCH_STRINGS[SEARCH_TYPES.BASIC_DETAILS].alternatives.map(a => a.label)
+    const expectedAltLabels = SEARCH_STRINGS[SEARCH_TYPES.PRESCRIPTION_ID].alternatives.map(a => a.label)
     expect(altLinks).toEqual(expect.arrayContaining(expectedAltLabels))
+  })
+
+  it("renders correct navigation for NHS number search", () => {
+    setupRouter({nhsNumber: "9912003071"})
+    const link = screen.getByTestId("go-back-link")
+    expect(link.getAttribute("href")).toContain(
+      FRONTEND_PATHS.SEARCH_BY_NHS_NUMBER
+    )
   })
 })

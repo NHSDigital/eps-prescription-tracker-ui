@@ -4,6 +4,30 @@ import {MemoryRouter, Routes, Route} from "react-router-dom"
 import UnknownErrorMessage from "@/components/UnknownErrorMessage"
 import {FRONTEND_PATHS} from "@/constants/environment"
 import {SearchContext, SearchProviderContextType} from "@/context/SearchProvider"
+import {NavigationProvider} from "@/context/NavigationProvider"
+
+const mockGetBackPath = jest.fn()
+const mockGoBack = jest.fn()
+const mockNavigationContext = {
+  pushNavigation: jest.fn(),
+  goBack: mockGoBack,
+  getBackPath: mockGetBackPath,
+  clearNavigation: jest.fn(),
+  getCurrentEntry: jest.fn(),
+  getNavigationStack: jest.fn(),
+  canGoBack: jest.fn(),
+  setOriginalSearchPage: jest.fn(),
+  getOriginalSearchPage: jest.fn(),
+  captureOriginalSearchParameters: jest.fn(),
+  getOriginalSearchParameters: jest.fn(),
+  getRelevantSearchParameters: jest.fn(),
+  startNewNavigationSession: jest.fn()
+}
+
+jest.mock("@/context/NavigationProvider", () => ({
+  ...jest.requireActual("@/context/NavigationProvider"),
+  useNavigationContext: () => mockNavigationContext
+}))
 
 const mockClearSearchParameters = jest.fn()
 const mockSetPrescriptionId = jest.fn()
@@ -13,10 +37,12 @@ const mockSetLastName = jest.fn()
 const mockSetDobDay = jest.fn()
 const mockSetDobMonth = jest.fn()
 const mockSetDobYear = jest.fn()
-const mockSetPostcode =jest.fn()
+const mockSetPostcode = jest.fn()
 const mockSetNhsNumber = jest.fn()
 const mockGetAllSearchParameters = jest.fn()
 const mockSetAllSearchParameters = jest.fn()
+const mockSetSearchType = jest.fn()
+
 const defaultSearchState: SearchProviderContextType = {
   prescriptionId: undefined,
   issueNumber: undefined,
@@ -27,6 +53,7 @@ const defaultSearchState: SearchProviderContextType = {
   dobYear: undefined,
   postcode: undefined,
   nhsNumber: undefined,
+  searchType: undefined,
   clearSearchParameters: mockClearSearchParameters,
   setPrescriptionId: mockSetPrescriptionId,
   setIssueNumber: mockSetIssueNumber,
@@ -38,7 +65,8 @@ const defaultSearchState: SearchProviderContextType = {
   setPostcode: mockSetPostcode,
   setNhsNumber: mockSetNhsNumber,
   getAllSearchParameters: mockGetAllSearchParameters,
-  setAllSearchParameters: mockSetAllSearchParameters
+  setAllSearchParameters: mockSetAllSearchParameters,
+  setSearchType: mockSetSearchType
 }
 
 // A simple error boundary for testing purposes
@@ -67,16 +95,23 @@ function ErrorThrowingComponent(): React.ReactElement {
 }
 
 describe("UnknownErrorMessage", () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+    mockGetBackPath.mockReturnValue(FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS)
+  })
+
   it("renders fallback UI when an unexpected error occurs", () => {
     render(
       <MemoryRouter initialEntries={["/simulate-error"]}>
-        <SearchContext.Provider value={defaultSearchState}>
-          <TestErrorBoundary>
-            <Routes>
-              <Route path="/simulate-error" element={<ErrorThrowingComponent />} />
-            </Routes>
-          </TestErrorBoundary>
-        </SearchContext.Provider>
+        <NavigationProvider>
+          <SearchContext.Provider value={defaultSearchState}>
+            <TestErrorBoundary>
+              <Routes>
+                <Route path="/simulate-error" element={<ErrorThrowingComponent />} />
+              </Routes>
+            </TestErrorBoundary>
+          </SearchContext.Provider>
+        </NavigationProvider>
       </MemoryRouter>
     )
 

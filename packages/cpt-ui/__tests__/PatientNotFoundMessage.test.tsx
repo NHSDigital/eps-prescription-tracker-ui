@@ -1,3 +1,5 @@
+/* eslint-disable max-len */
+
 import "@testing-library/jest-dom"
 import {render, screen, fireEvent} from "@testing-library/react"
 import {MemoryRouter, Routes, Route} from "react-router-dom"
@@ -6,25 +8,57 @@ import React from "react"
 import PatientNotFoundMessage from "@/components/PatientNotFoundMessage"
 import {STRINGS} from "@/constants/ui-strings/PatientNotFoundMessageStrings"
 import {FRONTEND_PATHS} from "@/constants/environment"
+import {NavigationProvider} from "@/context/NavigationProvider"
 
-const DummyPage = ({label}: {label: string}) => <div data-testid="dummy-page">{label}</div>
+const mockGetBackPath = jest.fn()
+const mockGoBack = jest.fn()
+const mockNavigationContext = {
+  pushNavigation: jest.fn(),
+  goBack: mockGoBack,
+  getBackPath: mockGetBackPath,
+  clearNavigation: jest.fn(),
+  getCurrentEntry: jest.fn(),
+  getNavigationStack: jest.fn(),
+  canGoBack: jest.fn(),
+  setOriginalSearchPage: jest.fn(),
+  getOriginalSearchPage: jest.fn(),
+  captureOriginalSearchParameters: jest.fn(),
+  getOriginalSearchParameters: jest.fn(),
+  getRelevantSearchParameters: jest.fn(),
+  startNewNavigationSession: jest.fn()
+}
+
+jest.mock("@/context/NavigationProvider", () => ({
+  ...jest.requireActual("@/context/NavigationProvider"),
+  useNavigationContext: () => mockNavigationContext
+}))
+
+const DummyPage = ({label}: { label: string }) => (
+  <div data-testid="dummy-page">{label}</div>
+)
 
 function setupRouter(
   search = "?firstName=Zoe&lastName=Zero&dobDay=31&dobMonth=12&dobYear=2021&postcode=AB1%202CD"
 ) {
   render(
     <MemoryRouter initialEntries={["/not-found" + search]}>
-      <Routes>
-        <Route path="/not-found" element={<PatientNotFoundMessage search={search} />} />
-        <Route path={FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS} element={<DummyPage label="Basic Details Search" />} />
-        <Route path={FRONTEND_PATHS.SEARCH_BY_NHS_NUMBER} element={<DummyPage label="NHS Number Search" />} />
-        <Route path={FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID} element={<DummyPage label="Prescription ID Search" />} />
-      </Routes>
+      <NavigationProvider>
+        <Routes>
+          <Route path="/not-found" element={<PatientNotFoundMessage />} />
+          <Route path={FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS} element={<DummyPage label="Basic Details Search" />} />
+          <Route path={FRONTEND_PATHS.SEARCH_BY_NHS_NUMBER} element={<DummyPage label="NHS Number Search" />} />
+          <Route path={FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID} element={<DummyPage label="Prescription ID Search" />} />
+        </Routes>
+      </NavigationProvider>
     </MemoryRouter>
   )
 }
 
 describe("PatientNotFoundMessage", () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
   it("renders the main heading and static content", () => {
     setupRouter()
     expect(screen.getByTestId("patient-not-found-heading")).toHaveTextContent(STRINGS.heading)
@@ -35,6 +69,10 @@ describe("PatientNotFoundMessage", () => {
 
   it("renders the go-back link with search query, and navigates to Basic Details Search", () => {
     const search = "?firstName=Zoe&lastName=Zero&dobDay=31&dobMonth=12&dobYear=2021&postcode=AB1%202CD"
+    mockGetBackPath.mockReturnValue(
+      FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS + search
+    )
+
     setupRouter(search)
     const backLink = screen.getByTestId("go-back-link")
     expect(backLink).toHaveAttribute(
@@ -42,10 +80,12 @@ describe("PatientNotFoundMessage", () => {
       FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS + search
     )
     fireEvent.click(backLink)
-    expect(screen.getByTestId("dummy-page")).toHaveTextContent("Basic Details Search")
+    expect(mockGoBack).toHaveBeenCalled()
   })
 
   it("navigates to NHS Number Search when alternate link is clicked", () => {
+    mockGetBackPath.mockReturnValue(FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS)
+
     setupRouter()
     const nhsNumberLink = screen.getByTestId("patient-not-found-nhs-number-link")
     expect(nhsNumberLink).toHaveAttribute("href", FRONTEND_PATHS.SEARCH_BY_NHS_NUMBER)
@@ -54,6 +94,8 @@ describe("PatientNotFoundMessage", () => {
   })
 
   it("navigates to Prescription ID Search when alternate link is clicked", () => {
+    mockGetBackPath.mockReturnValue(FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS)
+
     setupRouter()
     const prescriptionIdLink = screen.getByTestId("patient-not-found-prescription-id-link")
     expect(prescriptionIdLink).toHaveAttribute("href", FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
@@ -62,10 +104,12 @@ describe("PatientNotFoundMessage", () => {
   })
 
   it("renders correctly even with empty or no search parameter", () => {
+    mockGetBackPath.mockReturnValue(FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS)
+
     setupRouter("") // Empty search
     const backLink = screen.getByTestId("go-back-link")
     expect(backLink).toHaveAttribute("href", FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS)
     fireEvent.click(backLink)
-    expect(screen.getByTestId("dummy-page")).toHaveTextContent("Basic Details Search")
+    expect(mockGoBack).toHaveBeenCalled()
   })
 })

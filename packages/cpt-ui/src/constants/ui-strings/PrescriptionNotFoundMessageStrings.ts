@@ -64,7 +64,7 @@ export const SEARCH_STRINGS = {
 
 export const STRINGS = {
   heading: "No prescriptions found",
-  goBackLink: "Go back"
+  goBackLink: "Back"
 } as const
 
 export const SEARCH_TYPES = {

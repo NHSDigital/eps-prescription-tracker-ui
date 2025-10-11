@@ -1,8 +1,6 @@
-/* eslint-disable max-len */
-import React, {useEffect, useState} from "react"
+import React, {Fragment, useEffect, useState} from "react"
 import {useNavigate, useLocation} from "react-router-dom"
 import {
-  BackLink,
   Table,
   Container,
   Row,
@@ -18,6 +16,8 @@ import EpsSpinner from "@/components/EpsSpinner"
 import PatientNotFoundMessage from "@/components/PatientNotFoundMessage"
 import SearchResultsTooManyMessage from "@/components/SearchResultsTooManyMessage"
 import {useSearchContext} from "@/context/SearchProvider"
+import {useNavigationContext} from "@/context/NavigationProvider"
+import EpsBackLink from "@/components/EpsBackLink"
 import UnknownErrorMessage from "@/components/UnknownErrorMessage"
 import axios from "axios"
 import {useAuth} from "@/context/AuthProvider"
@@ -29,6 +29,8 @@ export default function SearchResultsPage() {
   const [loading, setLoading] = useState(true)
   const [patients, setPatients] = useState<Array<PatientSummary>>([])
   const searchContext = useSearchContext()
+  const navigationContext = useNavigationContext()
+
   const [error, setError] = useState(false)
 
   const auth = useAuth()
@@ -38,8 +40,8 @@ export default function SearchResultsPage() {
   }, [])
 
   const getSearchResults = async () => {
-    try{
-    // Attempt to fetch live search results from the API
+    try {
+      // Attempt to fetch live search results from the API
       const response = await http.get(API_ENDPOINTS.PATIENT_SEARCH, {
         params: {
           familyName: searchContext.lastName,
@@ -61,8 +63,12 @@ export default function SearchResultsPage() {
       }
 
       if (payload.length === 1) {
-        searchContext.clearSearchParameters()
-        searchContext.setNhsNumber(payload[0].nhsNumber)
+        const relevantParams =
+          navigationContext.getRelevantSearchParameters("basicDetails")
+        searchContext.setAllSearchParameters({
+          ...relevantParams,
+          nhsNumber: payload[0].nhsNumber
+        })
         navigate(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT)
         return
       }
@@ -70,7 +76,7 @@ export default function SearchResultsPage() {
       setPatients(payload)
       setLoading(false)
     } catch (err) {
-      if (axios.isAxiosError(err) && (err.response?.status === 401)) {
+      if (axios.isAxiosError(err) && err.response?.status === 401) {
         const invalidSessionCause = err.response?.data?.invalidSessionCause
         handleRestartLogin(auth, invalidSessionCause)
         return
@@ -82,14 +88,14 @@ export default function SearchResultsPage() {
   }
 
   const handleRowClick = (nhsNumber: string) => {
-    searchContext.clearSearchParameters()
-    searchContext.setNhsNumber(nhsNumber)
+    // only preserve relevant search parameters and add NHS number
+    const relevantParams =
+      navigationContext.getRelevantSearchParameters("basicDetails")
+    searchContext.setAllSearchParameters({
+      ...relevantParams,
+      nhsNumber: nhsNumber
+    })
     navigate(`${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}`)
-  }
-
-  // Pass back the query string to keep filled form on return
-  const handleGoBack = () => {
-    navigate(`${FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS}`)
   }
 
   // Sort by first name
@@ -118,7 +124,7 @@ export default function SearchResultsPage() {
 
   // Show not found message if no valid patients
   if (patients.length === 0) {
-    return <PatientNotFoundMessage search={location.search} />
+    return <PatientNotFoundMessage />
   }
 
   // Show too many results message if search returns too many patients
@@ -127,72 +133,82 @@ export default function SearchResultsPage() {
   }
 
   return (
-    <main className="nhsuk-main-wrapper" id="main-content" role="main">
-      <Container>
-        <Row>
-          <Col width="full">
-            <BackLink
-              onClick={handleGoBack}
-              tabIndex={0}
-              onKeyDown={(e) => e.key === "Enter" && handleGoBack()}
-            >
-              {SearchResultsPageStrings.GO_BACK}
-            </BackLink>
-          </Col>
-        </Row>
-        <Row>
-          <Col width="full">
-            <h1 className="nhsuk-u-margin-bottom-3 nhsuk-heading-m" id="results-header">
-              {SearchResultsPageStrings.TITLE}
-            </h1>
-            <h2 className="nhsuk-heading-xs" id="results-count">
-              {SearchResultsPageStrings.RESULTS_COUNT.replace("{count}", sortedPatients.length.toString())}
-            </h2>
-            <Table responsive id='results-table'>
-              <Table.Head>
-                <Table.Row>
-                  <Table.Cell as="th" scope="col" id="header-name" width="25%">{SearchResultsPageStrings.TABLE.NAME}</Table.Cell>
-                  <Table.Cell as="th" scope="col" id="header-gender" width="8.3%">{SearchResultsPageStrings.TABLE.GENDER}</Table.Cell>
-                  <Table.Cell as="th" scope="col" id="header-dob" width="16.67%">{SearchResultsPageStrings.TABLE.DOB}</Table.Cell>
-                  <Table.Cell as="th" scope="col" id="header-address" width="33%">{SearchResultsPageStrings.TABLE.ADDRESS}</Table.Cell>
-                  <Table.Cell as="th" scope="col" id="header-nhs" width="16.67%">{SearchResultsPageStrings.TABLE.NHS_NUMBER}</Table.Cell>
-                </Table.Row>
-              </Table.Head>
-              <Table.Body className="patients">
-                {sortedPatients.map((patient) => (
-                  <Table.Row
-                    id={`patient-row-${patient.nhsNumber}`}
-                    key={patient.nhsNumber}
-                    onClick={() => handleRowClick(patient.nhsNumber)}
-                    onKeyDown={e => (e.key === "Enter" || e.key === " ") && handleRowClick(patient.nhsNumber)}
-                  >
-                    <Table.Cell headers="header-name">
-                      <a
-                        href={`${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}?nhsNumber=${patient.nhsNumber}`}
-                        onClick={(e) => {
-                          e.preventDefault()
-                          handleRowClick(patient.nhsNumber)
-                        }}
-                      >
-                        {patient.givenName?.[0] ?? ""} {patient.familyName}
-                        <span id={`patient-details-${patient.nhsNumber}`} className="nhsuk-u-visually-hidden">
-                          {`NHS number ${patient.nhsNumber.replace(/(\d{3})(\d{3})(\d{4})/, "$1 $2 $3")}`}
-                        </span>
-                      </a>
+    <Fragment>
+      <Container className="hero-container">
+        <nav className="nhsuk-breadcrumb" aria-label="Breadcrumb" data-testid="prescription-list-nav"
+        >
+          <EpsBackLink>{SearchResultsPageStrings.GO_BACK}</EpsBackLink>
+        </nav>
+      </Container>
+      <main id="main-content" role="main">
+        <Container>
+          <Row>
+            <Col width="full"></Col>
+          </Row>
+          <Row>
+            <Col width="full">
+              <h1 className="nhsuk-u-margin-bottom-3 nhsuk-heading-m" id="results-header">
+                {SearchResultsPageStrings.TITLE}
+              </h1>
+              <h2 className="nhsuk-heading-xs" id="results-count">
+                {SearchResultsPageStrings.RESULTS_COUNT.replace("{count}", sortedPatients.length.toString())}
+              </h2>
+              <Table responsive id="results-table">
+                <Table.Head>
+                  <Table.Row>
+                    <Table.Cell as="th" scope="col" id="header-name" width="25%">
+                      {SearchResultsPageStrings.TABLE.NAME}
                     </Table.Cell>
-                    <Table.Cell headers="header-gender">{patient.gender}</Table.Cell>
-                    <Table.Cell headers="header-dob">{patient.dateOfBirth}</Table.Cell>
-                    <Table.Cell headers="header-address">{patient.address?.join(", ")}</Table.Cell>
-                    <Table.Cell headers="header-nhs">
-                      {patient.nhsNumber.replace(/(\d{3})(\d{3})(\d{4})/, "$1 $2 $3")}
+                    <Table.Cell as="th" scope="col" id="header-gender" width="8.3%">
+                      {SearchResultsPageStrings.TABLE.GENDER}
+                    </Table.Cell>
+                    <Table.Cell as="th" scope="col" id="header-dob" width="16.67%">
+                      {SearchResultsPageStrings.TABLE.DOB}
+                    </Table.Cell>
+                    <Table.Cell as="th" scope="col" id="header-address" width="33%">
+                      {SearchResultsPageStrings.TABLE.ADDRESS}
+                    </Table.Cell>
+                    <Table.Cell as="th" scope="col" id="header-nhs" width="16.67%">
+                      {SearchResultsPageStrings.TABLE.NHS_NUMBER}
                     </Table.Cell>
                   </Table.Row>
-                ))}
-              </Table.Body>
-            </Table>
-          </Col>
-        </Row>
-      </Container>
-    </main>
+                </Table.Head>
+                <Table.Body className="patients">
+                  {sortedPatients.map((patient) => (
+                    <Table.Row
+                      id={`patient-row-${patient.nhsNumber}`}
+                      key={patient.nhsNumber}
+                      onClick={() => handleRowClick(patient.nhsNumber)}
+                      onKeyDown={e => (e.key === "Enter" || e.key === " ") && handleRowClick(patient.nhsNumber)}
+                    >
+                      <Table.Cell headers="header-name">
+                        <a
+                          href={`${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}?nhsNumber=${patient.nhsNumber}`}
+                          onClick={(e) => {
+                            e.preventDefault()
+                            handleRowClick(patient.nhsNumber)
+                          }}
+                        >
+                          {patient.givenName?.[0] ?? ""} {patient.familyName}
+                          <span id={`patient-details-${patient.nhsNumber}`} className="nhsuk-u-visually-hidden">
+                            {`NHS number ${patient.nhsNumber.replace(/(\d{3})(\d{3})(\d{4})/, "$1 $2 $3")}`}
+                          </span>
+                        </a>
+                      </Table.Cell>
+                      <Table.Cell headers="header-gender">{patient.gender}</Table.Cell>
+                      <Table.Cell headers="header-dob">{patient.dateOfBirth}</Table.Cell>
+                      <Table.Cell headers="header-address">{patient.address?.join(", ")}</Table.Cell>
+                      <Table.Cell headers="header-nhs">
+                        {patient.nhsNumber.replace(/(\d{3})(\d{3})(\d{4})/, "$1 $2 $3")}
+                      </Table.Cell>
+                    </Table.Row>
+                  ))}
+                </Table.Body>
+              </Table>
+            </Col>
+          </Row>
+        </Container>
+      </main>
+    </Fragment>
   )
 }

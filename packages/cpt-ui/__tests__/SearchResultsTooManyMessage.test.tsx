@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 import "@testing-library/jest-dom"
 import {render, screen, fireEvent} from "@testing-library/react"
 import {
@@ -11,9 +12,34 @@ import React from "react"
 import SearchResultsTooManyMessage from "@/components/SearchResultsTooManyMessage"
 import {STRINGS} from "@/constants/ui-strings/SearchResultsTooManyStrings"
 import {FRONTEND_PATHS} from "@/constants/environment"
+import {NavigationProvider} from "@/context/NavigationProvider"
+
+// Mock the navigation context
+const mockGetBackPath = jest.fn()
+const mockGoBack = jest.fn()
+const mockNavigationContext = {
+  pushNavigation: jest.fn(),
+  goBack: mockGoBack,
+  getBackPath: mockGetBackPath,
+  clearNavigation: jest.fn(),
+  getCurrentEntry: jest.fn(),
+  getNavigationStack: jest.fn(),
+  canGoBack: jest.fn(),
+  setOriginalSearchPage: jest.fn(),
+  getOriginalSearchPage: jest.fn(),
+  captureOriginalSearchParameters: jest.fn(),
+  getOriginalSearchParameters: jest.fn(),
+  getRelevantSearchParameters: jest.fn(),
+  startNewNavigationSession: jest.fn()
+}
+
+jest.mock("@/context/NavigationProvider", () => ({
+  ...jest.requireActual("@/context/NavigationProvider"),
+  useNavigationContext: () => mockNavigationContext
+}))
 
 // Dummy component to receive navigation
-const DummyPage = ({label}: {label: string}) => <div data-testid="dummy-page">{label}</div>
+const DummyPage = ({label}: { label: string }) => <div data-testid="dummy-page">{label}</div>
 
 // useLocation wrapper to pass .search to the component
 function TestWrapper() {
@@ -34,17 +60,23 @@ const renderWithRouter = (
   const search = makeQuery(queryParams)
   return render(
     <MemoryRouter initialEntries={[initialPath + search]}>
-      <Routes>
-        <Route path="/search-too-many" element={<TestWrapper />} />
-        <Route path={FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS} element={<DummyPage label="Basic Details Search" />} />
-        <Route path={FRONTEND_PATHS.SEARCH_BY_NHS_NUMBER} element={<DummyPage label="NHS Number Search" />} />
-        <Route path={FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID} element={<DummyPage label="Prescription ID Search" />} />
-      </Routes>
+      <NavigationProvider>
+        <Routes>
+          <Route path="/search-too-many" element={<TestWrapper />} />
+          <Route path={FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS} element={<DummyPage label="Basic Details Search" />} />
+          <Route path={FRONTEND_PATHS.SEARCH_BY_NHS_NUMBER} element={<DummyPage label="NHS Number Search" />} />
+          <Route path={FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID} element={<DummyPage label="Prescription ID Search" />} />
+        </Routes>
+      </NavigationProvider>
     </MemoryRouter>
   )
 }
 
 describe("SearchResultsTooManyMessage", () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+    mockGetBackPath.mockReturnValue(FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS)
+  })
   it("renders static text content", () => {
     renderWithRouter()
     expect(screen.getByTestId("too-many-results-heading")).toHaveTextContent(STRINGS.heading)
@@ -79,7 +111,11 @@ describe("SearchResultsTooManyMessage", () => {
 
   it("navigates to the basic details search when the go back link is clicked", () => {
     renderWithRouter()
-    fireEvent.click(screen.getByTestId("go-back-link"))
-    expect(screen.getByTestId("dummy-page")).toHaveTextContent("Basic Details Search")
+    const backLink = screen.getByTestId("go-back-link")
+    expect(backLink.getAttribute("href")).toContain(
+      FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS
+    )
+    fireEvent.click(backLink)
+    expect(mockGoBack).toHaveBeenCalled()
   })
 })

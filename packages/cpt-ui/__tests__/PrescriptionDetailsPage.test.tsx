@@ -15,6 +15,7 @@ import PrescriptionDetailsPage from "@/pages/PrescriptionDetailsPage"
 
 import http from "@/helpers/axios"
 import {SearchContext, SearchProviderContextType} from "@/context/SearchProvider"
+import {NavigationProvider} from "@/context/NavigationProvider"
 
 import {AxiosError, AxiosHeaders} from "axios"
 
@@ -58,6 +59,7 @@ const defaultSearchState: SearchProviderContextType = {
   dobYear: undefined,
   postcode: undefined,
   nhsNumber: undefined,
+  searchType: undefined,
   clearSearchParameters: jest.fn().mockName("clearSearchParameters"),
   setPrescriptionId: jest.fn().mockName("setPrescriptionId"),
   setIssueNumber: jest.fn().mockName("setIssueNumber"),
@@ -69,7 +71,8 @@ const defaultSearchState: SearchProviderContextType = {
   setPostcode: jest.fn().mockName("setPostcode"),
   setNhsNumber: jest.fn().mockName("setNhsNumber"),
   getAllSearchParameters: jest.fn().mockName("getAllSearchParameters"),
-  setAllSearchParameters: jest.fn().mockName("setAllSearchParameters")
+  setAllSearchParameters: jest.fn().mockName("setAllSearchParameters"),
+  setSearchType: jest.fn().mockName("setSearchType")
 }
 
 // Mock the spinner component.
@@ -103,11 +106,13 @@ const renderComponent = (
         <MockPatientDetailsProvider>
           <MockPrescriptionInformationProvider>
             <MemoryRouter initialEntries={["/prescription-details"]}>
-              <Routes>
-                <Route path="/prescription-details" element={<PrescriptionDetailsPage />} />
-                <Route path="/login" element={<div data-testid="login-page-shown" />} />
-                <Route path="/search-by-prescription-id" element={<div data-testid="search-page-shown" />} />
-              </Routes>
+              <NavigationProvider>
+                <Routes>
+                  <Route path="/prescription-details" element={<PrescriptionDetailsPage />} />
+                  <Route path="/login" element={<div data-testid="login-page-shown" />} />
+                  <Route path="/search-by-prescription-id" element={<div data-testid="search-page-shown" />} />
+                </Routes>
+              </NavigationProvider>
             </MemoryRouter>
           </MockPrescriptionInformationProvider>
         </MockPatientDetailsProvider>

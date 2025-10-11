@@ -1,6 +1,6 @@
 export const SearchResultsPageStrings = {
-  GO_BACK: "Go back",
-  TITLE: "Search Results",
+  GO_BACK: "Back",
+  TITLE: "Search results",
   RESULTS_COUNT: "We found {count} results.",
   LOADING: "Loading search results",
   TABLE: {
