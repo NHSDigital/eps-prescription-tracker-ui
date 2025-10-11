@@ -17,7 +17,6 @@ process.env.MOCK_OIDC_CLIENT_ID = "test-client-id"
 process.env.MOCK_USER_POOL_IDP = "test-idp"
 process.env.TokenMappingTableName = "test-token-mapping-table"
 process.env.SessionManagementTableName = "test-session-management-table"
-process.env.SessionStateMappingTableName = "test-session-state-table"
 process.env.FULL_CLOUDFRONT_DOMAIN = "test.cloudfront.net"
 process.env.jwtPrivateKeyArn = "test-private-key-arn"
 process.env.jwtKid = "test-kid"
@@ -62,13 +61,11 @@ const {
 })
 
 const mockInsertTokenMapping = jest.fn().mockName("mockInsertTokenMapping")
-const mockGetSessionState = jest.fn().mockName("mockGetSessionState")
 const mockTryGetTokenMapping = jest.fn().mockName("mockTryGetTokenMapping")
 
 jest.unstable_mockModule("@cpt-ui-common/dynamoFunctions", () => {
   return {
     insertTokenMapping: mockInsertTokenMapping,
-    getSessionState: mockGetSessionState,
     tryGetTokenMapping: mockTryGetTokenMapping
   }
 })
@@ -155,16 +152,6 @@ describe("token mock handler", () => {
   })
 
   it("inserts correct details into dynamo table", async () => {
-    // return some valid data for the get command
-
-    mockGetSessionState.mockImplementationOnce(() => {
-      return Promise.resolve({
-        LocalCode: "test-code",
-        ApigeeCode: "apigee-code",
-        SessionState: "test-session-state"
-      })
-    })
-
     mockExchangeTokenForApigeeAccessToken.mockReturnValue({
       accessToken: "new-access-token",
       refreshToken: "new-refresh-token",
@@ -187,7 +174,7 @@ describe("token mock handler", () => {
     })
 
     const response = await handler({
-      body: "code=test-code",
+      body: "code=test-code&session_state=test-session-state",
       headers: {},
       requestContext: {
         requestId: "test-id"
@@ -244,14 +231,6 @@ describe("token mock handler", () => {
       })
     })
 
-    mockGetSessionState.mockImplementationOnce(() => {
-      return Promise.resolve({
-        LocalCode: "test-code",
-        ApigeeCode: "apigee-code",
-        SessionState: "test-session-state"
-      })
-    })
-
     mockExchangeTokenForApigeeAccessToken.mockReturnValue({
       accessToken: "new-access-token",
       refreshToken: "new-refresh-token",
@@ -275,7 +254,7 @@ describe("token mock handler", () => {
     })
 
     const response = await handler({
-      body: "code=test-code",
+      body: "code=test-code&session_state=test-session-state",
       headers: {},
       requestContext: {
         requestId: "test-id"
@@ -332,14 +311,6 @@ describe("token mock handler", () => {
       })
     })
 
-    mockGetSessionState.mockImplementationOnce(() => {
-      return Promise.resolve({
-        LocalCode: "test-code",
-        ApigeeCode: "apigee-code",
-        SessionState: "test-session-state"
-      })
-    })
-
     mockExchangeTokenForApigeeAccessToken.mockReturnValue({
       accessToken: "new-access-token",
       refreshToken: "new-refresh-token",
@@ -363,7 +334,7 @@ describe("token mock handler", () => {
     })
 
     const response = await handler({
-      body: "code=test-code",
+      body: "code=test-code&session_state=test-session-state",
       headers: {},
       requestContext: {
         requestId: "test-id"
@@ -444,14 +415,6 @@ describe("token mock handler", () => {
     const originalDomain = process.env["FULL_CLOUDFRONT_DOMAIN"]
     process.env["FULL_CLOUDFRONT_DOMAIN"] = "test-pr-123.cloudfront.net"
 
-    mockGetSessionState.mockImplementationOnce(() => {
-      return Promise.resolve({
-        LocalCode: "test-code",
-        ApigeeCode: "apigee-code",
-        SessionState: "test-session-state"
-      })
-    })
-
     mockExchangeTokenForApigeeAccessToken.mockReturnValue({
       accessToken: "new-access-token",
       refreshToken: "new-refresh-token",
@@ -472,7 +435,7 @@ describe("token mock handler", () => {
     })
 
     await handler({
-      body: "code=test-code",
+      body: "code=test-code&session_state=test-session-state",
       headers: {},
       requestContext: {
         requestId: "test-id"
@@ -498,14 +461,6 @@ describe("token mock handler", () => {
       return Promise.resolve(undefined) // No existing mapping
     })
 
-    mockGetSessionState.mockImplementationOnce(() => {
-      return Promise.resolve({
-        LocalCode: "test-code",
-        ApigeeCode: "apigee-code",
-        SessionState: "test-session-state"
-      })
-    })
-
     mockExchangeTokenForApigeeAccessToken.mockReturnValue({
       accessToken: "new-access-token",
       refreshToken: "new-refresh-token",
@@ -526,7 +481,7 @@ describe("token mock handler", () => {
     })
 
     await handler({
-      body: "code=test-code",
+      body: "code=test-code&session_state=test-session-state",
       headers: {},
       requestContext: {
         requestId: "test-id"
