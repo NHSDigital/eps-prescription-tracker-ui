@@ -9,7 +9,8 @@ const mockedAxios = axios as jest.Mocked<typeof axios>
 jest.mock("@/helpers/logger", () => ({
   logger: {
     info: jest.fn(),
-    error: jest.fn()
+    error: jest.fn(),
+    warn: jest.fn()
   }
 }))
 
@@ -87,7 +88,8 @@ describe("postSessionManagementUpdate", () => {
     })
 
     expect(logger.error).toHaveBeenCalledWith(
-      "Error calling session management or updating user info"
+      "Error calling session management or updating user info",
+      {"data": {"status": "Active"}, "status": 500}
     )
     expect(mockAuth.updateTrackerUserInfo).not.toHaveBeenCalled()
     expect(redirect).not.toHaveBeenCalled()
@@ -95,17 +97,15 @@ describe("postSessionManagementUpdate", () => {
   })
 
   it("handles http.post throwing an exception", async () => {
-    mockedAxios.post.mockRejectedValue(new Error("Network error"))
+    const error = new Error("Network error")
+    mockedAxios.post.mockRejectedValue(error)
 
     const result = await postSessionManagementUpdate(mockAuth)
 
     expect(mockedAxios.post).toHaveBeenCalledWith("/api/session-management", {
       action: "Set-Session"
     })
-    expect(logger.error).toHaveBeenCalledWith(
-      "Error calling session management or updating user info",
-      "Network error"
-    )
+    expect(logger.error).toHaveBeenCalledWith("Error calling session management or updating user info", error)
     expect(mockAuth.updateTrackerUserInfo).not.toHaveBeenCalled()
     expect(redirect).not.toHaveBeenCalled()
     expect(result).toBe(false)
@@ -121,7 +121,7 @@ describe("postSessionManagementUpdate", () => {
     })
     expect(logger.error).toHaveBeenCalledWith(
       "Error calling session management or updating user info",
-      "Error calling session management or updating user info"
+      "Something went wrong"
     )
     expect(mockAuth.updateTrackerUserInfo).not.toHaveBeenCalled()
     expect(redirect).not.toHaveBeenCalled()
@@ -133,7 +133,8 @@ describe("postSessionManagementUpdate", () => {
       status: 202,
       data: {status: "Active"}
     })
-    mockAuth.updateTrackerUserInfo.mockRejectedValue(new Error("Update failed"))
+    const error = new Error("Update failed")
+    mockAuth.updateTrackerUserInfo.mockRejectedValue(error)
 
     const result = await postSessionManagementUpdate(mockAuth)
 
@@ -143,10 +144,7 @@ describe("postSessionManagementUpdate", () => {
 
     expect(logger.info).toHaveBeenCalledWith("Session is now active.")
     expect(mockAuth.updateTrackerUserInfo).toHaveBeenCalled()
-    expect(logger.error).toHaveBeenCalledWith(
-      "Error calling session management or updating user info",
-      "Update failed"
-    )
+    expect(logger.error).toHaveBeenCalledWith("Error calling session management or updating user info", error)
     expect(redirect).not.toHaveBeenCalled()
     expect(result).toBe(false)
   })

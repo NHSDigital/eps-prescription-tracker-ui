@@ -83,6 +83,7 @@ export default function PrescriptionDetailsPage() {
     } catch (err) {
       if (axios.isAxiosError(err) && (err.response?.status === 401)) {
         const invalidSessionCause = err.response?.data?.invalidSessionCause
+        logger.warn("prescriptionDetails triggered restart login due to:", invalidSessionCause)
         handleRestartLogin(auth, invalidSessionCause)
         return
       }
@@ -107,7 +108,7 @@ export default function PrescriptionDetailsPage() {
 
       const prescriptionId = searchContext.prescriptionId
       if (!prescriptionId) {
-        logger.error("No prescriptionId provided - redirecting to search")
+        logger.info("No prescriptionId provided - redirecting to search")
         navigate(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
         return
       }

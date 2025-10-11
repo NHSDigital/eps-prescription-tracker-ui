@@ -81,7 +81,12 @@ export const getTrackerUserInfo = async (): Promise<TrackerUserInfoResult> => {
     } else {
       error = "Failed to fetch user info"
     }
-    logger.error("Error fetching tracker user info:", err)
+
+    if (!invalidSessionCause) {
+      logger.error("Error fetching tracker user info:", err)
+    } else {
+      logger.warn("trackerUserInfo triggered restart login due to:", invalidSessionCause)
+    }
   }
   return {
     rolesWithAccess,
