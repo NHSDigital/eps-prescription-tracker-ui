@@ -12,7 +12,7 @@ export const postSessionManagementUpdate = async (auth: AuthContextType): Promis
     logger.info(`Called session management, ${response.data}`)
 
     if (response.status === 401) {
-      logger.error("Session expired or invalid. Restarting login.")
+      logger.warn("Session expired or invalid. Restarting login.")
       return false
     }
 
@@ -24,12 +24,11 @@ export const postSessionManagementUpdate = async (auth: AuthContextType): Promis
       logger.info("Updated tracker info")
       return true
     }
-    logger.error("Error calling session management or updating user info")
+    logger.error("Error calling session management or updating user info", response)
     return false
 
   } catch (err) {
-    const error = err instanceof Error ? err.message : "Error calling session management or updating user info"
-    logger.error("Error calling session management or updating user info", error)
+    logger.error("Error calling session management or updating user info", err)
     return false
   }
 }
