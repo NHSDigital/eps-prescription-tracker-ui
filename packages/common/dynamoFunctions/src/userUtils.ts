@@ -1,5 +1,6 @@
 import {Logger} from "@aws-lambda-powertools/logger"
 import {RoleDetails, TrackerUserInfo, UserDetails} from "@cpt-ui-common/common-types"
+import {extractAccessCodesFromHierarchy, rbacHierarchy} from "./rbacHierarchy"
 
 //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-//
 
@@ -80,60 +81,9 @@ function getOrgNameFromOrgCode(data: UserInfoResponse, org_code: string): string
   return org ? org.org_name : undefined
 }
 
-interface AllowedAccessCodes {
-  [key: string]: {
-    baselineRoleCodes: Array<string>,
-    childActivityCodes: Array<string>
-  }
-}
-
 const checkRoleAccess = (roleCode: string, activityCodes: Array<string>, logger: Logger): boolean => {
-  // Allowed Role & Activity codes - structure more for documentation/maintainability reasons
-  const allowedAccessCodes: AllowedAccessCodes = {
-    B0570: { // Perform Pharmacy Activities
-      baselineRoleCodes: [
-        "R0260", "R0270", "R6200", "R6300", "R0370", "R0380", "R0390", "R0400", "R0410", "R6400",
-        "R0600", "R0620", "R0630", "R0690", "R0700", "R0680", "R0018", "R0750", "R0760", "R0770",
-        "R0780", "R0790", "R0800", "R0810", "R0820", "R0950", "R0960", "R0970", "R0980", "R0110",
-        "R1120", "R1130", "R1140", "R0955", "R0965", "R0975", "R0985", "R1290", "R1540", "R1543",
-        "R1547", "R1720", "R1730", "R1740", "R1760", "R1770"
-      ],
-      childActivityCodes: [
-        "B0571", "B0572"
-      ]
-    },
-    B0278: { // Perform Prescription Preparation
-      baselineRoleCodes: [
-        "R0260", "R0270", "R6200", "R6300", "R1547", "R8001", "R8002", "R0011", "R1380", "R1390",
-        "R1400", "R1410", "R1420", "R0019", "R1430", "R1440", "R1540", "R1543", "R1560", "R1600",
-        "R1570", "R1450", "R1580", "R1550", "R0002", "R1690", "R1700", "R1710", "R1480", "R1490",
-        "R1590", "R1460", "R1470", "R1520", "R1530", "R1980", "R1500", "R1510", "R1610", "R1620",
-        "R1630", "R1640", "R1650", "R1660", "R1670", "R1680", "R0007", "R0008", "R0021", "R0022",
-        "R0023", "R1720", "R1730", "R1740", "R1750", "R1751", "R1760"
-      ],
-      childActivityCodes: [
-        "B0058", "B0420", "B0440"
-      ]
-    },
-    B0401: { // View Patient Medication
-      baselineRoleCodes: [
-        "R8004"
-      ],
-      childActivityCodes: [
-        "B0360", "B0069", "B0422", "B0468", "B0429"
-      ]
-    }
-  }
-
-  // Build full deduped lists of codes
-  let allAcceptedRoleCodes = []
-  let allAcceptedActivityCodes = []
-  for (const [parentActivityCode, additionalCodes] of Object.entries(allowedAccessCodes)){
-    allAcceptedActivityCodes.push(parentActivityCode, ...additionalCodes.childActivityCodes)
-    allAcceptedRoleCodes.push(...additionalCodes.baselineRoleCodes)
-  }
-  allAcceptedRoleCodes = [...new Set(allAcceptedRoleCodes)]
-  allAcceptedActivityCodes = [...new Set(allAcceptedActivityCodes)]
+  // Build full deduped lists of access codes
+  const [allAcceptedRoleCodes, allAcceptedActivityCodes] = extractAccessCodesFromHierarchy(rbacHierarchy)
   logger.debug("all accepted roles", {allAcceptedRoleCodes})
   logger.debug("all accepted activities", {allAcceptedActivityCodes})
 
@@ -155,7 +105,6 @@ export const extractRoleInformation = (
   const rolesWithAccess: Array<RoleDetails> = []
   const rolesWithoutAccess: Array<RoleDetails> = []
   let currentlySelectedRole: RoleDetails | undefined = undefined
-  // const accepted_access_codes = getAcceptedActivityCodes()
 
   // Extract user details
   const userDetails: UserDetails = {
