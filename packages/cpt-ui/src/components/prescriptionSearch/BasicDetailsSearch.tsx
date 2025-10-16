@@ -82,10 +82,6 @@ export default function BasicDetailsSearch() {
     return dobErrorFields.includes(field)
   }
 
-  //API requires a 2 digit format i.e. 06 instead of 6 for June
-  const formattedDobDay = dobDay.padStart(2, "0")
-  const formattedDobMonth = dobMonth.padStart(2, "0")
-
   // Handles form submission logic
   // Performs validation, sends API request, handles errors, and navigates appropriately
   const handleSubmit = async (e: React.FormEvent) => {
@@ -95,8 +91,8 @@ export default function BasicDetailsSearch() {
     const newErrors = validateBasicDetails({
       firstName,
       lastName,
-      dobDay: formattedDobDay,
-      dobMonth: formattedDobMonth,
+      dobDay,
+      dobMonth,
       dobYear,
       postcode
     })
@@ -129,6 +125,10 @@ export default function BasicDetailsSearch() {
 
       return
     }
+
+    //API requires a 2 digit format i.e. 06 instead of 6 for June
+    const formattedDobDay = dobDay.padStart(2, "0")
+    const formattedDobMonth = dobMonth.padStart(2, "0")
 
     searchContext.clearSearchParameters()
     searchContext.setFirstName(firstName)
