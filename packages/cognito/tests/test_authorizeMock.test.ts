@@ -1,21 +1,11 @@
 import {jest} from "@jest/globals"
 
-import {createHash} from "crypto"
-
 // Set environment variables before importing the handler.
 process.env.IDP_AUTHORIZE_PATH = "https://example.com/authorize"
 process.env.OIDC_CLIENT_ID = "cis2Client123"
 process.env.useMock = "true"
 process.env.COGNITO_CLIENT_ID = "userPoolClient123"
 process.env.FULL_CLOUDFRONT_DOMAIN = "cpt-ui-pr-854.dev.eps.national.nhs.uk"
-process.env.StateMappingTableName = "stateMappingTest"
-
-const mockInsertStateMapping = jest.fn()
-jest.unstable_mockModule("@cpt-ui-common/dynamoFunctions", () => {
-  return {
-    insertStateMapping: mockInsertStateMapping
-  }
-})
 
 // Import the handler after setting the env variables and mocks.
 import {mockAPIGatewayProxyEvent, mockContext} from "./mockObjects"
@@ -47,14 +37,10 @@ describe("authorize mock handler", () => {
     expect(params.get("response_type")).toBe("code")
     expect(params.get("client_id")).toBe("apigee_api_key")
 
-    // Verify that the state parameter is hashed correctly.
-    const expectedHash = createHash("sha256")
-      .update("test-state")
-      .digest("hex")
     const expectedStateJson = {
       isPullRequest: true,
       redirectUri: `https://${process.env.FULL_CLOUDFRONT_DOMAIN}/oauth2/mock-callback`,
-      originalState: expectedHash
+      originalState: "test-state"
     }
     const expectedState = Buffer.from(JSON.stringify(expectedStateJson)).toString("base64")
 
@@ -64,9 +50,6 @@ describe("authorize mock handler", () => {
       "https://cpt-ui.dev.eps.national.nhs.uk/oauth2/mock-callback"
     )
     expect(params.get("prompt")).toBe(null)
-
-    // Ensure the DynamoDB put command was called.
-    expect(mockInsertStateMapping).toHaveBeenCalledTimes(1)
   })
 
   it("should throw error if missing state parameter", async () => {

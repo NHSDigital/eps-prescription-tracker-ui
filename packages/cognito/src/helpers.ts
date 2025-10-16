@@ -39,3 +39,29 @@ export function rewriteRequestBody(
   delete objectBodyParameters.client_secret
   return objectBodyParameters
 }
+
+export function buildCallbackRedirect(
+  logger: Logger,
+  state: string,
+  code: string,
+  session_state: string | undefined,
+  fullCognitoDomain: string
+) {
+  const responseParams = {
+    state,
+    session_state: session_state || "",
+    code
+  }
+
+  const redirectUri = `https://${fullCognitoDomain}/oauth2/idpresponse` +
+    `?${new URLSearchParams(responseParams).toString()}`
+
+  logger.info("Redirecting to Cognito", {redirectUri})
+
+  return {
+    statusCode: 302,
+    headers: {Location: redirectUri},
+    isBase64Encoded: false,
+    body: JSON.stringify({})
+  }
+}
