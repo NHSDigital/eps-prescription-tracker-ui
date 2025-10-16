@@ -1,5 +1,6 @@
 import {Logger} from "@aws-lambda-powertools/logger"
 import {RoleDetails, TrackerUserInfo, UserDetails} from "@cpt-ui-common/common-types"
+import {extractAccessCodesFromHierarchy, rbacHierarchy} from "./rbacHierarchy"
 
 //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-//
 
@@ -79,6 +80,22 @@ function getOrgNameFromOrgCode(data: UserInfoResponse, org_code: string): string
   const org = orgs.find((o) => o.org_code === org_code)
   return org ? org.org_name : undefined
 }
+
+const checkRoleAccess = (roleCode: string, activityCodes: Array<string>, logger: Logger): boolean => {
+  // Build full deduped lists of access codes
+  const [allAcceptedRoleCodes, allAcceptedActivityCodes] = extractAccessCodesFromHierarchy(rbacHierarchy)
+  logger.debug("all accepted roles", {allAcceptedRoleCodes})
+  logger.debug("all accepted activities", {allAcceptedActivityCodes})
+
+  // Check for access
+  const roleHasAccess = allAcceptedRoleCodes.includes(roleCode)
+  logger.debug("Role Access", {roleHasAccess})
+  const activitiesHaveAccess = activityCodes.some((code: string) => allAcceptedActivityCodes.includes(code))
+  logger.debug("Activities Access", {activitiesHaveAccess})
+
+  return roleHasAccess || activitiesHaveAccess
+}
+
 export const extractRoleInformation = (
   data: UserInfoResponse,
   selectedRoleId: string,
@@ -88,7 +105,6 @@ export const extractRoleInformation = (
   const rolesWithAccess: Array<RoleDetails> = []
   const rolesWithoutAccess: Array<RoleDetails> = []
   let currentlySelectedRole: RoleDetails | undefined = undefined
-  const accepted_access_codes = ["B0570", "B0278", "B0401"]
 
   // Extract user details
   const userDetails: UserDetails = {
@@ -112,26 +128,26 @@ export const extractRoleInformation = (
   roles.forEach((role) => {
     logger.debug("Processing role", {role})
 
-    // Extract activity codes and check if any match the accepted access codes
-    const activityCodes = role.activity_codes || []
-    const hasAccess = activityCodes.some((code: string) => accepted_access_codes.includes(code))
-
     const roleInfo: RoleDetails = {
       role_name: removeRoleCategories(role.role_name),
       role_id: role.person_roleid,
+      role_code: removeRoleCategories(role.role_code),
+      activity_codes: role.activity_codes || [],
       org_code: role.org_code,
       org_name: getOrgNameFromOrgCode(data, role.org_code)
     }
 
-    // Ensure the role has at least one of the required fields to be processed
-    if (!(roleInfo.role_name || roleInfo.role_id || roleInfo.org_code || roleInfo.org_name)) {
+    // Ensure the role has the minimum required fields to be processed
+    if (!(roleInfo.role_name || roleInfo.role_id || roleInfo.org_code || roleInfo.org_name)
+      || !roleInfo.role_code || !roleInfo.activity_codes) {
       // Skip roles that don't meet the minimum field requirements
       logger.warn("Role does not meet minimum field requirements", {roleInfo})
       return
     }
 
+    const hasAccess = checkRoleAccess(roleInfo.role_code, roleInfo.activity_codes, logger)
     if (hasAccess) {
-      if (selectedRoleId && role.person_roleid === selectedRoleId) {
+      if (selectedRoleId && roleInfo.role_id === selectedRoleId) {
         // If the role has access and matches the selectedRoleId, set it as currently selected
         logger.debug("Role has access and matches selectedRoleId; setting as currently selected", {roleInfo})
         currentlySelectedRole = roleInfo
