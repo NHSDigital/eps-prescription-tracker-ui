@@ -75,7 +75,7 @@ const lambdaHandler = async (
   const newStateJson = {
     isPullRequest: true,
     redirectUri: realCallbackUri,
-    originalState: originalState
+    originalState
   }
   const newState = Buffer.from(JSON.stringify(newStateJson)).toString("base64")
 
