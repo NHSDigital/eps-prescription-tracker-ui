@@ -126,11 +126,15 @@ export default function BasicDetailsSearch() {
       return
     }
 
+    //API requires a 2 digit format i.e. 06 instead of 6 for June
+    const formattedDobDay = dobDay.padStart(2, "0")
+    const formattedDobMonth = dobMonth.padStart(2, "0")
+
     searchContext.clearSearchParameters()
     searchContext.setFirstName(firstName)
     searchContext.setLastName(lastName)
-    searchContext.setDobDay(dobDay)
-    searchContext.setDobMonth(dobMonth)
+    searchContext.setDobDay(formattedDobDay)
+    searchContext.setDobMonth(formattedDobMonth)
     searchContext.setDobYear(dobYear)
     searchContext.setPostcode(postcode)
     navigate(FRONTEND_PATHS.PATIENT_SEARCH_RESULTS)

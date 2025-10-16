@@ -273,6 +273,26 @@ describe("BasicDetailsSearch", () => {
         expect(screen.getAllByText(expectedError)).toHaveLength(2)
       }
     )
+
+    it("accepts valid DOB when day and month are single digits (e.g., 1-1-2000", async () => {
+      const mockNavigate = jest.fn()
+    ;(useNavigate as jest.Mock).mockReturnValue(mockNavigate)
+
+      renderWithRouter(<BasicDetailsSearch />, defaultSearchState)
+
+      await fillForm({
+        lastName: "Keary",
+        dobDay: "1",
+        dobMonth: "1",
+        dobYear: "2012",
+        postcode: "LS6 1JL"
+      })
+      await submitForm()
+
+      await waitFor(() => {
+        expect(mockNavigate).toHaveBeenCalledWith(FRONTEND_PATHS.PATIENT_SEARCH_RESULTS)
+      })
+    })
   })
 
   it("shows error for DOB in the future", async () => {
