@@ -1,14 +1,9 @@
 import React from "react"
-import {Link} from "react-router-dom"
-import {
-  Container,
-  Row,
-  Col,
-  BackLink
-} from "nhsuk-react-components"
+import {Container, Row, Col} from "nhsuk-react-components"
 import {SEARCH_STRINGS, STRINGS} from "@/constants/ui-strings/PrescriptionNotFoundMessageStrings"
-import {buildAltLink, buildBackLink, determineSearchType} from "@/helpers/prescriptionNotFoundLinks"
+import {buildAltLink, determineSearchType} from "@/helpers/prescriptionNotFoundLinks"
 import {useSearchContext} from "@/context/SearchProvider"
+import EpsBackLink from "@/components/EpsBackLink"
 
 export default function PrescriptionNotFoundMessage() {
   const searchContext = useSearchContext()
@@ -16,9 +11,9 @@ export default function PrescriptionNotFoundMessage() {
   const content = SEARCH_STRINGS[searchType]
 
   /**
- * Renders the not-found message body, replacing {0}, {1} tokens
- * with the corresponding React links from `content.alternatives`.
- */
+   * Renders the not-found message body, replacing {0}, {1} tokens
+   * with the corresponding React links from `content.alternatives`.
+   */
   function renderBodyWithLinks() {
     const [first, second, ...rest] = content.body
     const regex = /\{(\d+)\}/g
@@ -48,20 +43,15 @@ export default function PrescriptionNotFoundMessage() {
     ]
   }
 
-  const backLinkUrl = buildBackLink(searchType, searchContext)
-
   return (
     <Container
       className="nhsuk-width-container-fluid patient-not-found-container"
       data-testid="presc-not-found-message"
     >
       <nav className="nhsuk-breadcrumb nhsuk-u-padding-bottom-0 nhsuk-u-padding-left-2" aria-label="Breadcrumb">
-        <BackLink
-          data-testid="go-back-link"
-          asElement={Link}
-          to={backLinkUrl}>
+        <EpsBackLink data-testid="go-back-link">
           {STRINGS.goBackLink}
-        </BackLink>
+        </EpsBackLink>
       </nav>
       <main
         className="nhsuk-main-wrapper nhsuk-main-wrapper--s patient-not-found-main-wrapper"

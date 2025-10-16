@@ -10,11 +10,37 @@ import {PrescriptionsListStrings} from "@/constants/ui-strings/PrescriptionListT
 import {PrescriptionSummary, TreatmentType} from "@cpt-ui-common/common-types"
 import {MemoryRouter} from "react-router-dom"
 import {SearchContext, SearchProviderContextType} from "@/context/SearchProvider"
+import {NavigationProvider} from "@/context/NavigationProvider"
 
 jest.mock("@/helpers/statusMetadata", () => ({
   getStatusTagColour: jest.fn().mockReturnValue("blue"),
   getStatusDisplayText: jest.fn().mockReturnValue("Available to download"),
   formatDateForPrescriptions: jest.fn((date: string) => "Formatted: " + date)
+}))
+
+// Mock the navigation context
+const mockGetRelevantSearchParameters = jest.fn()
+const mockGetOriginalSearchParameters = jest.fn()
+const mockGoBack = jest.fn()
+const mockNavigationContext = {
+  pushNavigation: jest.fn(),
+  goBack: mockGoBack,
+  getBackPath: jest.fn(),
+  clearNavigation: jest.fn(),
+  getCurrentEntry: jest.fn(),
+  getNavigationStack: jest.fn(),
+  canGoBack: jest.fn(),
+  setOriginalSearchPage: jest.fn(),
+  getOriginalSearchPage: jest.fn(),
+  captureOriginalSearchParameters: jest.fn(),
+  getOriginalSearchParameters: mockGetOriginalSearchParameters,
+  getRelevantSearchParameters: mockGetRelevantSearchParameters,
+  startNewNavigationSession: jest.fn()
+}
+
+jest.mock("@/context/NavigationProvider", () => ({
+  ...jest.requireActual("@/context/NavigationProvider"),
+  useNavigationContext: () => mockNavigationContext
 }))
 
 const mockClearSearchParameters = jest.fn()
@@ -25,10 +51,12 @@ const mockSetLastName = jest.fn()
 const mockSetDobDay = jest.fn()
 const mockSetDobMonth = jest.fn()
 const mockSetDobYear = jest.fn()
-const mockSetPostcode =jest.fn()
+const mockSetPostcode = jest.fn()
 const mockSetNhsNumber = jest.fn()
 const mockGetAllSearchParameters = jest.fn()
 const mockSetAllSearchParameters = jest.fn()
+const mockSetSearchType = jest.fn()
+
 const defaultSearchState: SearchProviderContextType = {
   prescriptionId: undefined,
   issueNumber: undefined,
@@ -39,6 +67,7 @@ const defaultSearchState: SearchProviderContextType = {
   dobYear: undefined,
   postcode: undefined,
   nhsNumber: undefined,
+  searchType: undefined,
   clearSearchParameters: mockClearSearchParameters,
   setPrescriptionId: mockSetPrescriptionId,
   setIssueNumber: mockSetIssueNumber,
@@ -50,7 +79,8 @@ const defaultSearchState: SearchProviderContextType = {
   setPostcode: mockSetPostcode,
   setNhsNumber: mockSetNhsNumber,
   getAllSearchParameters: mockGetAllSearchParameters,
-  setAllSearchParameters: mockSetAllSearchParameters
+  setAllSearchParameters: mockSetAllSearchParameters,
+  setSearchType: mockSetSearchType
 }
 
 describe("PrescriptionsListTable", () => {
@@ -102,7 +132,7 @@ describe("PrescriptionsListTable", () => {
     return render(
       <SearchContext.Provider value={defaultSearchState}>
         <MemoryRouter>
-          {component}
+          <NavigationProvider>{component}</NavigationProvider>
         </MemoryRouter>
       </SearchContext.Provider>
     )
@@ -110,6 +140,10 @@ describe("PrescriptionsListTable", () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
+
+    // reset navigation context mocks
+    mockGetRelevantSearchParameters.mockReturnValue({})
+    mockGetOriginalSearchParameters.mockReturnValue({})
   })
 
   it("renders the full table container, table, and table head when prescriptions exist", async () => {
@@ -397,9 +431,10 @@ describe("PrescriptionsListTable", () => {
       expect(prescriptionButton).toBeInTheDocument()
 
       fireEvent.click(prescriptionButton)
-      expect(mockClearSearchParameters).toHaveBeenCalled()
-      expect(mockSetPrescriptionId).toHaveBeenCalledWith("C0C757-A83008-C2D93O")
-      expect(mockSetIssueNumber).toHaveBeenCalledWith("1")
+      expect(mockSetAllSearchParameters).toHaveBeenCalledWith({
+        prescriptionId: "C0C757-A83008-C2D93O",
+        issueNumber: "1"
+      })
     })
 
   })

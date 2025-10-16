@@ -9,5 +9,5 @@ export const STRINGS = {
   orText: " or ",
   prescriptionIdLinkText: "search using a prescription ID",
   endPunctuation: ".",
-  goBackLink: "Go back"
+  goBackLink: "Back"
 }

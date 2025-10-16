@@ -7,5 +7,5 @@ export const STRINGS = {
   orText: " or ",
   nhsNumberLinkText: "search using an NHS number",
   endPunctuation: ".",
-  goBackLink: "Go back"
+  goBackLink: "Back"
 }

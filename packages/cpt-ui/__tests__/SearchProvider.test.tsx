@@ -1,5 +1,6 @@
 import React from "react"
 import {render, screen} from "@testing-library/react"
+import {MemoryRouter} from "react-router-dom"
 import {SearchProvider, useSearchContext} from "@/context/SearchProvider"
 import userEvent from "@testing-library/user-event"
 
@@ -27,9 +28,11 @@ const TestComponent = () => {
 describe("SearchProvider", () => {
   it("provides default values", () => {
     render(
-      <SearchProvider>
-        <TestComponent />
-      </SearchProvider>
+      <MemoryRouter>
+        <SearchProvider>
+          <TestComponent />
+        </SearchProvider>
+      </MemoryRouter>
     )
 
     expect(screen.getByText(/Prescription ID: null/)).toBeInTheDocument()
@@ -38,9 +41,11 @@ describe("SearchProvider", () => {
 
   it("sets values correctly", async () => {
     render(
-      <SearchProvider>
-        <TestComponent />
-      </SearchProvider>
+      <MemoryRouter>
+        <SearchProvider>
+          <TestComponent />
+        </SearchProvider>
+      </MemoryRouter>
     )
 
     const user = userEvent.setup()
@@ -53,9 +58,11 @@ describe("SearchProvider", () => {
 
   it("clears values with clearSearchParameters", async () => {
     render(
-      <SearchProvider>
-        <TestComponent />
-      </SearchProvider>
+      <MemoryRouter>
+        <SearchProvider>
+          <TestComponent />
+        </SearchProvider>
+      </MemoryRouter>
     )
 
     const user = userEvent.setup()

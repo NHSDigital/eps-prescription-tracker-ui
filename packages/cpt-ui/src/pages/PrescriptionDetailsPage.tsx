@@ -1,12 +1,7 @@
 import {useEffect, useState} from "react"
-import {Link, useNavigate} from "react-router-dom"
+import {useNavigate} from "react-router-dom"
 
-import {
-  BackLink,
-  Col,
-  Container,
-  Row
-} from "nhsuk-react-components"
+import {Col, Container, Row} from "nhsuk-react-components"
 
 import {
   OrgSummary,
@@ -25,11 +20,11 @@ import EpsSpinner from "@/components/EpsSpinner"
 import {SiteDetailsCards} from "@/components/prescriptionDetails/SiteDetailsCards"
 import {ItemsCards} from "@/components/prescriptionDetails/ItemsCards"
 import {MessageHistoryCard} from "@/components/prescriptionDetails/MessageHistoryCard"
+import EpsBackLink from "@/components/EpsBackLink"
 
 import http from "@/helpers/axios"
 import {logger} from "@/helpers/logger"
 import {useSearchContext} from "@/context/SearchProvider"
-import {buildBackLink, determineSearchType} from "@/helpers/prescriptionNotFoundLinks"
 import axios from "axios"
 import {handleRestartLogin} from "@/helpers/logout"
 import {useAuth} from "@/context/AuthProvider"
@@ -49,9 +44,6 @@ export default function PrescriptionDetailsPage() {
   const [messageHistory, setMessageHistory] = useState<Array<MessageHistory>>([])
   const searchContext = useSearchContext()
   const navigate = useNavigate()
-
-  const searchType = determineSearchType(searchContext)
-  const backLinkUrl = buildBackLink(searchType, searchContext)
 
   const getPrescriptionDetails = async (
     prescriptionId: string,
@@ -105,7 +97,6 @@ export default function PrescriptionDetailsPage() {
 
   useEffect(() => {
     const runGetPrescriptionDetails = async () => {
-
       const prescriptionId = searchContext.prescriptionId
       if (!prescriptionId) {
         logger.info("No prescriptionId provided - redirecting to search")
@@ -124,15 +115,14 @@ export default function PrescriptionDetailsPage() {
 
   if (loading) {
     return (
-      <main id="main-content" className="nhsuk-main-wrapper nhsuk-main-wrapper--s">
+      <main
+        id="main-content"
+        className="nhsuk-main-wrapper nhsuk-main-wrapper--s"
+      >
         <Container width="full" fluid={true} className="container-details-page">
           <Row>
             <Col width="full">
-              <h1
-                className="nhsuk-u-visually-hidden"
-              >
-                {STRINGS.HEADER}
-              </h1>
+              <h1 className="nhsuk-u-visually-hidden">{STRINGS.HEADER}</h1>
               <h2 data-testid="loading-message">
                 {STRINGS.LOADING_FULL_PRESCRIPTION}
               </h2>
@@ -145,19 +135,13 @@ export default function PrescriptionDetailsPage() {
   }
 
   return (
-    <main id="main-content" className="nhsuk-main-wrapper nhsuk-main-wrapper--s">
-      <Container width="full" fluid={true} className="container-details-page">
-        <Row>
-          <Col width="full">
-            <BackLink
-              data-testid="go-back-link"
-              asElement={Link}
-              to={backLinkUrl}
-            >
-              {STRINGS.GO_BACK}
-            </BackLink>
-          </Col>
-        </Row>
+    <Container width="full" fluid={true} className="container-details-page">
+      <nav className="nhsuk-breadcrumb">
+        <EpsBackLink data-testid="go-back-link">{STRINGS.GO_BACK}</EpsBackLink>
+      </nav>
+      <main
+        id="main-content"
+      >
         <Row>
           <Col width="full">
             <h1 className="nhsuk-u-visually-hidden">{STRINGS.HEADER}</h1>
@@ -177,7 +161,7 @@ export default function PrescriptionDetailsPage() {
           {/* Message history timeline */}
           <MessageHistoryCard messageHistory={messageHistory} />
         </Row>
-      </Container>
-    </main>
+      </main >
+    </Container>
   )
 }

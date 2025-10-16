@@ -1,11 +1,6 @@
 import React, {Fragment, useEffect, useState} from "react"
-import {Link, useNavigate} from "react-router-dom"
-import {
-  BackLink,
-  Col,
-  Container,
-  Row
-} from "nhsuk-react-components"
+import {useNavigate} from "react-router-dom"
+import {Col, Container, Row} from "nhsuk-react-components"
 import "../styles/PrescriptionTable.scss"
 
 import axios from "axios"
@@ -17,6 +12,7 @@ import PrescriptionsListTabs from "@/components/prescriptionList/PrescriptionsLi
 import {TabHeader} from "@/components/EpsTabs"
 import PrescriptionNotFoundMessage from "@/components/PrescriptionNotFoundMessage"
 import UnknownErrorMessage from "@/components/UnknownErrorMessage"
+import EpsBackLink from "@/components/EpsBackLink"
 
 import {PRESCRIPTION_LIST_TABS} from "@/constants/ui-strings/PrescriptionListTabStrings"
 import {PRESCRIPTION_LIST_PAGE_STRINGS} from "@/constants/ui-strings/PrescriptionListPageStrings"
@@ -27,7 +23,6 @@ import {SearchResponse, PrescriptionSummary} from "@cpt-ui-common/common-types/s
 import http from "@/helpers/axios"
 import {logger} from "@/helpers/logger"
 import {useSearchContext} from "@/context/SearchProvider"
-import {buildBackLink, determineSearchType} from "@/helpers/prescriptionNotFoundLinks"
 import {handleRestartLogin, signOut} from "@/helpers/logout"
 import {useAuth} from "@/context/AuthProvider"
 import {AUTH_CONFIG} from "@/constants/environment"
@@ -45,9 +40,6 @@ export default function PrescriptionListPage() {
   const [showNotFound, setShowNotFound] = useState(false)
   const [error, setError] = useState(false)
 
-  const searchType = determineSearchType(searchContext)
-  const backLinkUrl = buildBackLink(searchType, searchContext)
-
   const auth = useAuth()
   const navigate = useNavigate()
 
@@ -59,10 +51,10 @@ export default function PrescriptionListPage() {
       const searchParams = new URLSearchParams()
 
       // determine which search page to go back to based on query parameters
-      if (searchContext.prescriptionId) {
-        searchParams.append("prescriptionId", searchContext.prescriptionId)
-      } else if (searchContext.nhsNumber) {
+      if (searchContext.nhsNumber) {
         searchParams.append("nhsNumber", searchContext.nhsNumber)
+      } else if (searchContext.prescriptionId) {
+        searchParams.append("prescriptionId", searchContext.prescriptionId)
       } else {
         logger.info("No search parameter provided - redirecting to prescription ID search")
         navigate(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
@@ -91,7 +83,10 @@ export default function PrescriptionListPage() {
           searchResults.pastPrescriptions.length === 0 &&
           searchResults.futurePrescriptions.length === 0
         ) {
-          logger.warn("A patient was returned, but they do not have any prescriptions.", searchResults)
+          logger.error(
+            "A patient was returned, but they do not have any prescriptions.",
+            searchResults
+          )
           setPatientDetails(searchResults.patient)
           setShowNotFound(true)
           setLoading(false)
@@ -182,22 +177,16 @@ export default function PrescriptionListPage() {
 
   return (
     <Fragment>
-      <title>{PRESCRIPTION_LIST_PAGE_STRINGS.PAGE_TITLE}</title>
+      <Container className="hero-container">
+        <title>{PRESCRIPTION_LIST_PAGE_STRINGS.PAGE_TITLE}</title>
+        <nav className="nhsuk-breadcrumb" aria-label="Breadcrumb" data-testid="prescription-list-nav">
+          <EpsBackLink data-testid="go-back-link">
+            {PRESCRIPTION_LIST_PAGE_STRINGS.GO_BACK_LINK_TEXT}
+          </EpsBackLink>
+        </nav>
+      </Container>
       <main id="prescription-list" data-testid="prescription-list-page">
         <Container className="hero-container" data-testid="prescription-list-hero-container">
-          <Row>
-            <Col width="full">
-              <nav className="nhsuk-breadcrumb" aria-label="Breadcrumb" data-testid="prescription-list-nav">
-                <BackLink
-                  data-testid="go-back-link"
-                  asElement={Link}
-                  to={backLinkUrl}
-                >
-                  {PRESCRIPTION_LIST_PAGE_STRINGS.GO_BACK_LINK_TEXT}
-                </BackLink>
-              </nav>
-            </Col>
-          </Row>
           <Row>
             <Col width="full">
               <h1 className="nhsuk-heading-l" data-testid="prescription-list-heading">

@@ -1,19 +1,9 @@
 import React from "react"
-import {
-  Container,
-  Row,
-  Col,
-  BackLink
-} from "nhsuk-react-components"
-import {Link} from "react-router-dom"
+import {Container, Row, Col} from "nhsuk-react-components"
 import {STRINGS} from "@/constants/ui-strings/UnknownErrorMessageStrings"
-import {buildBackLink, determineSearchType} from "@/helpers/prescriptionNotFoundLinks"
-import {useSearchContext} from "@/context/SearchProvider"
+import EpsBackLink from "@/components/EpsBackLink"
 
 export default function UnknownErrorMessage() {
-  const searchContext = useSearchContext()
-  const searchType = determineSearchType(searchContext)
-  const backLinkUrl = buildBackLink(searchType, searchContext)
   return (
     <Container
       className="nhsuk-width-container-fluid unknown-error-container"
@@ -23,13 +13,9 @@ export default function UnknownErrorMessage() {
         className="nhsuk-breadcrumb nhsuk-u-padding-bottom-0 nhsuk-u-padding-left-2 unknown-error-breadcrumb"
         aria-label="Breadcrumb"
       >
-        <BackLink
-          data-testid="go-back-link"
-          asElement={Link}
-          to={backLinkUrl}
-        >
+        <EpsBackLink data-testid="go-back-link">
           {STRINGS.goBackLink}
-        </BackLink>
+        </EpsBackLink>
       </nav>
       <main
         className="nhsuk-main-wrapper nhsuk-main-wrapper--s unknown-error-main-wrapper"

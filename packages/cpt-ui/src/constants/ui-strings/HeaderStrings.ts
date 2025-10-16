@@ -2,7 +2,7 @@ import {FRONTEND_PATHS} from "@/constants/environment"
 
 // HEADER strings
 export const HEADER_SERVICE = "Prescription Tracker (pilot)"
-export const HEADER_CHANGE_ROLE_BUTTON = "Change Role"
+export const HEADER_CHANGE_ROLE_BUTTON = "Change role"
 export const HEADER_CHANGE_ROLE_TARGET = FRONTEND_PATHS.CHANGE_YOUR_ROLE
 export const HEADER_SELECT_YOUR_ROLE_BUTTON = "Select Your Role"
 export const HEADER_SELECT_YOUR_ROLE_TARGET = FRONTEND_PATHS.SELECT_YOUR_ROLE
