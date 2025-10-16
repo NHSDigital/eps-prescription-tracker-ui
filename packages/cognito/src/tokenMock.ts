@@ -9,7 +9,7 @@ import inputOutputLogger from "@middy/input-output-logger"
 import {parse} from "querystring"
 import {PrivateKey} from "jsonwebtoken"
 import {exchangeTokenForApigeeAccessToken, fetchUserInfo, initializeOidcConfig} from "@cpt-ui-common/authFunctions"
-import {insertTokenMapping, getSessionState, tryGetTokenMapping} from "@cpt-ui-common/dynamoFunctions"
+import {insertTokenMapping, tryGetTokenMapping} from "@cpt-ui-common/dynamoFunctions"
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 import jwt from "jsonwebtoken"
 import axios from "axios"
@@ -49,7 +49,6 @@ const {mockOidcConfig} = initializeOidcConfig()
 const cloudfrontDomain= process.env["FULL_CLOUDFRONT_DOMAIN"] as string
 const jwtPrivateKeyArn= process.env["jwtPrivateKeyArn"] as string
 const jwtKid= process.env["jwtKid"] as string
-const SessionStateMappingTableName = process.env["SessionStateMappingTableName"] as string
 const idpTokenPath= process.env["MOCK_IDP_TOKEN_PATH"] as string
 const apigeeApiKey = process.env["APIGEE_API_KEY"] as string
 const apigeeApiSecret = process.env["APIGEE_API_SECRET"] as string
@@ -85,14 +84,11 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     tokenMappingTable: mockOidcConfig.tokenMappingTableName,
     jwtPrivateKeyArn,
     jwtKid,
-    SessionStateMappingTableName,
     idpTokenPath
   })
 
-  const {code} = parse(event.body || "")
+  const {code, session_state} = parse(event.body || "")
   if (!code) throw new Error("Code parameter is missing")
-
-  const sessionState = await getSessionState(documentClient, SessionStateMappingTableName, code as string, logger)
 
   const callbackUri = `https://${baseEnvironmentDomain}/oauth2/mock-callback`
   const tokenExchangeBody = {
@@ -100,7 +96,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     client_id: apigeeApiKey,
     client_secret: apigeeApiSecret,
     redirect_uri: callbackUri,
-    code: sessionState.ApigeeCode
+    code
   }
   const exchangeResult = await exchangeTokenForApigeeAccessToken(
     axiosInstance,
@@ -132,9 +128,9 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     sub: userInfoResponse.user_details.sub,
     typ: "ID",
     azp: mockOidcConfig.oidcClientID,
-    sessionState: sessionState.SessionState,
+    sessionState: session_state || "",
     acr: "AAL3_ANY",
-    sid: sessionState.SessionState,
+    sid: session_state || "",
     id_assurance_level: "3",
     uid: userInfoResponse.user_details.sub,
     amr: ["N3_SMARTCARD"],
@@ -195,7 +191,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
       refresh_expires_in: 600,
       refresh_token: "unused",
       scope: "openid associatedorgs profile nationalrbacaccess nhsperson",
-      session_state: sessionState.SessionState,
+      session_state,
       token_type: "Bearer"
     })
   }
