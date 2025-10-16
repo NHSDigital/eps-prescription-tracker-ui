@@ -508,8 +508,8 @@ describe("PrescriptionListPage", () => {
     })
   })
 
-  it("logs an error when no query parameters are present", async () => {
-    const loggerErrorSpy = jest.spyOn(logger, "error").mockImplementation(() => { })
+  it("logs when no query parameters are present", async () => {
+    const loggerInfoSpy = jest.spyOn(logger, "info").mockImplementation(() => {})
 
     mockedAxios.get.mockResolvedValue({
       status: 200,
@@ -519,10 +519,12 @@ describe("PrescriptionListPage", () => {
     renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT)
 
     await waitFor(() => {
-      expect(loggerErrorSpy).toHaveBeenCalledWith("No query parameter provided.")
+      expect(loggerInfoSpy).toHaveBeenCalledWith(
+        "No search parameter provided - redirecting to prescription ID search"
+      )
     })
 
-    loggerErrorSpy.mockRestore()
+    loggerInfoSpy.mockRestore()
   })
 
   it("sets the back link to the prescription ID search when prescriptionId query parameter is present", async () => {

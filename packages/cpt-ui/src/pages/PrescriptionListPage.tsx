@@ -1,4 +1,5 @@
 import React, {Fragment, useEffect, useState} from "react"
+import {useNavigate} from "react-router-dom"
 import {Col, Container, Row} from "nhsuk-react-components"
 import "../styles/PrescriptionTable.scss"
 
@@ -15,7 +16,7 @@ import EpsBackLink from "@/components/EpsBackLink"
 
 import {PRESCRIPTION_LIST_TABS} from "@/constants/ui-strings/PrescriptionListTabStrings"
 import {PRESCRIPTION_LIST_PAGE_STRINGS} from "@/constants/ui-strings/PrescriptionListPageStrings"
-import {API_ENDPOINTS} from "@/constants/environment"
+import {API_ENDPOINTS, FRONTEND_PATHS} from "@/constants/environment"
 
 import {SearchResponse, PrescriptionSummary} from "@cpt-ui-common/common-types/src/prescriptionList"
 
@@ -40,6 +41,7 @@ export default function PrescriptionListPage() {
   const [error, setError] = useState(false)
 
   const auth = useAuth()
+  const navigate = useNavigate()
 
   useEffect(() => {
     const runSearch = async () => {
@@ -54,8 +56,8 @@ export default function PrescriptionListPage() {
       } else if (searchContext.prescriptionId) {
         searchParams.append("prescriptionId", searchContext.prescriptionId)
       } else {
-        logger.error("No query parameter provided.")
-        setLoading(false)
+        logger.info("No search parameter provided - redirecting to prescription ID search")
+        navigate(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
         return
       }
 
@@ -66,7 +68,7 @@ export default function PrescriptionListPage() {
 
         logger.info("Response status", {status: response.status})
         if (response.status === 404) {
-          logger.error("No search results were returned")
+          logger.warn("No search results were returned")
           setShowNotFound(true)
           setLoading(false)
           return
@@ -116,22 +118,26 @@ export default function PrescriptionListPage() {
         ])
         setLoading(false)
       } catch (err) {
-        logger.error("Error during search", err)
         if (axios.isAxiosError(err)) {
           if ((err.response?.status === 401) && err.response.data?.restartLogin) {
             const invalidSessionCause = err.response?.data?.invalidSessionCause
+            logger.warn("prescriptionList triggered restart login due to:", invalidSessionCause)
             handleRestartLogin(auth, invalidSessionCause)
             return
           } else if (err.response?.status === 404) {
+            logger.warn("No search results were returned", err)
             setShowNotFound(true)
           } else {
             setError(true)
+            logger.error("Error during search", err)
           }
         } else if (err instanceof Error && err.message === "canceled") {
+          logger.warn("Signing out due to request cancellation")
           signOut(auth, AUTH_CONFIG.REDIRECT_SIGN_OUT)
           return
         } else {
           setError(true)
+          logger.error("Error during search", err)
         }
         setLoading(false)
       }
