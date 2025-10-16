@@ -274,7 +274,7 @@ describe("BasicDetailsSearch", () => {
       }
     )
 
-    it.only("accepts valid DOB when day and month are single digits (e.g., 1-1-2000", async () => {
+    it("accepts valid DOB when day and month are single digits (e.g., 1-1-2000", async () => {
       const mockNavigate = jest.fn()
     ;(useNavigate as jest.Mock).mockReturnValue(mockNavigate)
 
