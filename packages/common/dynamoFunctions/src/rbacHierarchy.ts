@@ -226,6 +226,7 @@ const B0429: ActivityCode = {
   childActivityCodes: {}
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const B0401: ActivityCode = {
   baselineRoleCodes: [
     "R0260", "R0270", "R6200", "R6300", "R0370",
@@ -245,7 +246,7 @@ const B0401: ActivityCode = {
   }
 }
 
-export const rbacHierarchy: RBACHierarchy = {B0570, B0278, B0401}
+export const rbacHierarchy: RBACHierarchy = {B0570, B0278/*, B0401*/} // temp disable all of B0401
 
 const extractAccessCodes = (activityCode: ActivityCode): Array<Array<string>> => {
   let acceptedRoleCodes: Array<string> = []

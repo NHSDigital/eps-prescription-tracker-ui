@@ -289,14 +289,15 @@ describe("extractRoleInformation", () => {
           role_name: "User Role",
           activity_codes: ["B0278"] // Also has access
         },
-        {
-          org_code: "ORG2",
-          person_orgid: "PORG2",
-          person_roleid: "ROLE2",
-          role_code: "S000:G000:RC3",
-          role_name: "User Role",
-          activity_codes: ["B0401"] // Also has access
-        },
+        //TODO: remove or reinstate depending on decision on B0401
+        // {
+        //   org_code: "ORG2",
+        //   person_orgid: "PORG2",
+        //   person_roleid: "ROLE2",
+        //   role_code: "S000:G000:RC3",
+        //   role_name: "User Role",
+        //   activity_codes: ["B0401"] // Also has access
+        // },
         {
           org_code: "ORG3",
           person_orgid: "PORG3",
@@ -326,7 +327,8 @@ describe("extractRoleInformation", () => {
     const result = extractRoleInformation(mockUserInfo, selectedRoleId, mockLogger as Logger)
 
     // Verify roles with access (should include B0570, B0278 and B0401)
-    expect(result.roles_with_access).toHaveLength(3)
+    // expect(result.roles_with_access).toHaveLength(3) //TODO: remove or reinstate depending on decision on B0401
+    expect(result.roles_with_access).toHaveLength(2)
     expect(result.roles_without_access).toHaveLength(1)
   })
 
