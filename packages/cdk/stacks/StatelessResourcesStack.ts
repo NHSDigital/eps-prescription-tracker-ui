@@ -97,7 +97,9 @@ export class StatelessResourcesStack extends Stack {
     const githubAllowListIpv4 = this.node.tryGetContext("githubAllowListIpv4")
     const githubAllowListIpv6 = this.node.tryGetContext("githubAllowListIpv6")
     const cloudfrontOriginCustomHeader = this.node.tryGetContext("cloudfrontOriginCustomHeader")
-    const csocWafDestination: string = this.node.tryGetContext("csocWafDestination")
+    const csocUKWafDestination: string = this.node.tryGetContext("csocUKWafDestination")
+    // const csocApiGatewayDestination: string = this.node.tryGetContext("csocApiGatewayDestination")
+    const forwardCsocLogs: boolean = this.node.tryGetContext("forwardCsocLogs")
 
     // Imports
     const baseImportPath = `${props.serviceName}-stateful-resources`
@@ -318,7 +320,8 @@ export class StatelessResourcesStack extends Stack {
       // waf log groups must start with aws-waf-logs-
       wafLogGroupName: `aws-waf-logs-${props.serviceName}-apigw`,
       stackName: this.stackName,
-      csocWafDestination: csocWafDestination
+      csocUKWafDestination: csocUKWafDestination,
+      forwardCsocLogs: forwardCsocLogs
     })
 
     // API Gateway WAF Web ACL

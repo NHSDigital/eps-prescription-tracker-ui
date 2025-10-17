@@ -181,7 +181,10 @@ fix_string_key logRetentionInDays "${LOG_RETENTION_IN_DAYS}"
 fix_string_key logLevel "${LOG_LEVEL}"
 fix_string_key cfnDriftDetectionGroup "${CFN_DRIFT_DETECTION_GROUP}"
 fix_boolean_number_key isPullRequest "${IS_PULL_REQUEST}"
-fix_string_key csocWafDestination "arn:aws:logs:eu-west-2:693466633220:destination:waf_log_destination" # CSOC WAF log destination - do not change
+fix_string_key csocUKWafDestination "arn:aws:logs:eu-west-2:693466633220:destination:waf_log_destination" # CSOC WAF log destination - do not change
+fix_string_key csocUSWafDestination "arn:aws:logs:us-east-1:693466633220:destination:waf_log_destination_virginia" # CSOC WAF log destination - do not change
+fix_string_key csocApiGatewayDestination "arn:aws:logs:eu-west-2:693466633220:destination:api_gateway_log_destination" # CSOC API Gateway log destination - do not change
+fix_boolean_number_key forwardCsocLogs "${FORWARD_CSOC_LOGS}"
 
 if [ "$CDK_APP_NAME" == "StatefulResourcesApp" ]; then
     fix_string_key primaryOidcClientId "${PRIMARY_OIDC_CLIENT_ID}"

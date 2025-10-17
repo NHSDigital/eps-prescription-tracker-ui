@@ -26,7 +26,8 @@ export interface usRegionLogGroupsProps {
   readonly splunkDeliveryStream: string
   readonly splunkSubscriptionFilterRole: string
   readonly isPullRequest: boolean
-  readonly csocWafDestination: string
+  readonly csocUSWafDestination: string
+  readonly forwardCsocLogs: boolean
 }
 
 export class usRegionLogGroups extends Construct {
@@ -127,12 +128,14 @@ export class usRegionLogGroups extends Construct {
       removalPolicy: RemovalPolicy.DESTROY
     })
 
-    new CfnSubscriptionFilter(this, "CsocWafSplunkSubscriptionFilter", {
-      destinationArn: props.csocWafDestination,
-      filterPattern: "",
-      logGroupName: wafLogGroup.logGroupName,
-      roleArn: props.splunkSubscriptionFilterRole
-    })
+    if (props.forwardCsocLogs) {
+      new CfnSubscriptionFilter(this, "CsocWafSplunkSubscriptionFilter", {
+        destinationArn: props.csocUSWafDestination,
+        filterPattern: "",
+        logGroupName: wafLogGroup.logGroupName,
+        roleArn: props.splunkSubscriptionFilterRole
+      })
+    }
 
     const cfnWafLogGroup = wafLogGroup.node.defaultChild as CfnLogGroup
     cfnWafLogGroup.cfnOptions.metadata = {

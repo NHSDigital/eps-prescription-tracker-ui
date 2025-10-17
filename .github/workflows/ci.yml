@@ -40,7 +40,7 @@ jobs:
         uses: asdf-vm/actions/setup@1902764435ca0dd2f3388eea723a4f92a4eb8302
         with:
           asdf_branch: v0.14.1
-  
+
       - name: Cache asdf
         uses: actions/cache@v4
         with:
@@ -133,8 +133,9 @@ jobs:
       MARK_JIRA_RELEASED: false
       CREATE_INT_RC_RELEASE_NOTES: false
       IS_PULL_REQUEST: false
+      FORWARD_CSOC_LOGS: false
     secrets: inherit
-  
+
   release_qa:
     needs: [tag_release, release_dev, package_code, get_commit_id]
     uses: ./.github/workflows/release_all_stacks.yml
@@ -170,4 +171,5 @@ jobs:
       REACT_LOG_LEVEL: "debug"
       LOG_RETENTION_IN_DAYS: 30
       IS_PULL_REQUEST: false
+      FORWARD_CSOC_LOGS: false
     secrets: inherit
