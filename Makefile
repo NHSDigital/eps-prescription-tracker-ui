@@ -218,6 +218,7 @@ cdk-synth-stateful-resources-no-mock:
 	DO_NOT_GET_AWS_EXPORT=true \
 	IS_PULL_REQUEST=false \
 	USE_ZONE_APEX=false \
+	FORWARD_CSOC_LOGS=true \
 		 ./.github/scripts/fix_cdk_json.sh .local_config/stateful_app.config.json
 	CONFIG_FILE_NAME=.local_config/stateful_app.config.json npx cdk synth \
 		--quiet \
@@ -267,6 +268,7 @@ cdk-synth-stateless-resources-no-mock:
 	CLOUDFRONT_ORIGIN_CUSTOM_HEADER=foo \
 	IS_PULL_REQUEST=false \
 	USE_ZONE_APEX=false \
+	FORWARD_CSOC_LOGS=true \
 		 ./.github/scripts/fix_cdk_json.sh .local_config/stateless_app.config.json
 	CONFIG_FILE_NAME=.local_config/stateless_app.config.json npx cdk synth \
 		--quiet \
@@ -313,6 +315,7 @@ cdk-synth-stateful-resources-mock:
 	DO_NOT_GET_AWS_EXPORT=true \
 	IS_PULL_REQUEST=false \
 	USE_ZONE_APEX=false \
+	FORWARD_CSOC_LOGS=true \
 		 ./.github/scripts/fix_cdk_json.sh .local_config/stateful_app.config.json
 	CONFIG_FILE_NAME=.local_config/stateful_app.config.json npx cdk synth \
 		--quiet \
@@ -368,6 +371,7 @@ cdk-synth-stateless-resources-mock:
 	CLOUDFRONT_ORIGIN_CUSTOM_HEADER=foo \
 	IS_PULL_REQUEST=false \
 	USE_ZONE_APEX=false \
+	FORWARD_CSOC_LOGS=true \
 		 ./.github/scripts/fix_cdk_json.sh .local_config/stateless_app.config.json
 	CONFIG_FILE_NAME=.local_config/stateless_app.config.json npx cdk synth \
 		--quiet \

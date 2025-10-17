@@ -98,7 +98,6 @@ export class StatelessResourcesStack extends Stack {
     const githubAllowListIpv6 = this.node.tryGetContext("githubAllowListIpv6")
     const cloudfrontOriginCustomHeader = this.node.tryGetContext("cloudfrontOriginCustomHeader")
     const csocUKWafDestination: string = this.node.tryGetContext("csocUKWafDestination")
-    // const csocApiGatewayDestination: string = this.node.tryGetContext("csocApiGatewayDestination")
     const forwardCsocLogs: boolean = this.node.tryGetContext("forwardCsocLogs")
 
     // Imports
