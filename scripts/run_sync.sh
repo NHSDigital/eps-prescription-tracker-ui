@@ -244,6 +244,7 @@ ROLE_ID=$(echo "$CF_LONDON_EXPORTS" | \
     --arg EXPORT_NAME "${SERVICE_NAME}-stateless-resources:local:roleId" \
     -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
 USE_ZONE_APEX=false
+FORWARD_CSOC_LOGS=false
 
 # export all the vars so they can be picked up by external programs
 export SERVICE_NAME
@@ -326,6 +327,7 @@ export JWT_KID
 export ROLE_ID
 export USE_ZONE_APEX
 export IS_PULL_REQUEST
+export FORWARD_CSOC_LOGS
 
 # variables needed for StatefulResourcesApp
 CDK_APP_NAME=StatefulResourcesApp

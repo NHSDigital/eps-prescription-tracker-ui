@@ -90,6 +90,9 @@ on:
       IS_PULL_REQUEST:
         type: boolean
         required: true
+      FORWARD_CSOC_LOGS:
+        type: boolean
+        required: true
 jobs:
   release_all_code:
     runs-on: ubuntu-22.04
@@ -245,6 +248,7 @@ jobs:
           WAF_ALLOW_GA_RUNNER_CONNECTIVITY: ${{ inputs.WAF_ALLOW_GA_RUNNER_CONNECTIVITY }}
           CLOUDFRONT_ORIGIN_CUSTOM_HEADER: ${{secrets.CLOUDFRONT_ORIGIN_CUSTOM_HEADER }}
           IS_PULL_REQUEST: ${{inputs.IS_PULL_REQUEST}}
+          FORWARD_CSOC_LOGS: ${{ inputs.FORWARD_CSOC_LOGS }}
 
       - name: Show diff for stateful stack
         run: |
@@ -383,6 +387,7 @@ jobs:
           WAF_ALLOW_GA_RUNNER_CONNECTIVITY: ${{ inputs.WAF_ALLOW_GA_RUNNER_CONNECTIVITY }}
           CLOUDFRONT_ORIGIN_CUSTOM_HEADER: ${{secrets.CLOUDFRONT_ORIGIN_CUSTOM_HEADER }}
           IS_PULL_REQUEST: ${{inputs.IS_PULL_REQUEST}}
+          FORWARD_CSOC_LOGS: ${{ inputs.FORWARD_CSOC_LOGS }}
 
       - name: Show diff for stateless stack
         run: |
@@ -510,6 +515,7 @@ jobs:
           WAF_ALLOW_GA_RUNNER_CONNECTIVITY: ${{ inputs.WAF_ALLOW_GA_RUNNER_CONNECTIVITY }}
           CLOUDFRONT_ORIGIN_CUSTOM_HEADER: ${{secrets.CLOUDFRONT_ORIGIN_CUSTOM_HEADER }}
           IS_PULL_REQUEST: ${{inputs.IS_PULL_REQUEST}}
+          FORWARD_CSOC_LOGS: ${{ inputs.FORWARD_CSOC_LOGS }}
 
       - name: Show diff for stateful stack redeployment
         if: ${{ steps.check_redeploy_stateful_stack.outputs.REDEPLOY_STATEFUL_STACK == 'true' }}
