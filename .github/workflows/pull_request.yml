@@ -94,7 +94,7 @@ jobs:
         run: echo "Skipping QC gate per commit message."
 
   pr_title_format_check:
-    uses: ./.github/workflows/pr_title_check.yml
+    uses: NHSDigital/eps-workflow-semantic-release/.github/workflows/pr_title_check.yml@7abf2a3233d1b08d6566570dbde34b85daa47859
 
   get_issue_number:
     runs-on: ubuntu-22.04
