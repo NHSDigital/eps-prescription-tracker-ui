@@ -2,6 +2,9 @@ FROM mcr.microsoft.com/devcontainers/base:ubuntu
 ARG TARGETARCH
 ENV TARGETARCH=${TARGETARCH}
 
+ARG ASDF_VERSION
+COPY .tool-versions.asdf /tmp/.tool-versions.asdf
+
 # Add amd64 architecture if on arm64
 RUN if [ "$TARGETARCH" == "arm64" ] || [ "$TARGETARCH" == "aarch64" ]; then dpkg --add-architecture amd64; fi
 
@@ -27,18 +30,21 @@ RUN if [ "$TARGETARCH" = "arm64" ] || [ "$TARGETARCH" == "aarch64" ]; then \
     /tmp/aws-cli/aws/install && \
     rm /tmp/awscliv2.zip && rm -rf /tmp/aws-cli
 
+# Install ASDF
+RUN ASDF_VERSION=$(awk '!/^#/ && NF {print $1; exit}' /tmp/.tool-versions.asdf) && \
+    wget -O /tmp/asdf.tar.gz https://github.com/asdf-vm/asdf/releases/download/v${ASDF_VERSION}/asdf-v${ASDF_VERSION}-linux-amd64.tar.gz; \
+    tar -xvzf /tmp/asdf.tar.gz; \
+    mv asdf /usr/bin
+
 USER vscode
 
-# Install ASDF
-RUN git clone https://github.com/asdf-vm/asdf.git ~/.asdf --branch v0.11.3; \
-    echo '. $HOME/.asdf/asdf.sh' >> ~/.bashrc; \
-    echo '. $HOME/.asdf/completions/asdf.bash' >> ~/.bashrc; \
+ENV PATH="/home/vscode/.asdf/shims/:$PATH"
+RUN \
+    echo 'PATH="/home/vscode/.asdf/shims/:$PATH"' >> ~/.bashrc; \
+    echo '. <(asdf completion bash)' >> ~/.bashrc; \
     echo '# Install Ruby Gems to ~/gems' >> ~/.bashrc; \
     echo 'export GEM_HOME="$HOME/gems"' >> ~/.bashrc; \
     echo 'export PATH="$HOME/gems/bin:$PATH"' >> ~/.bashrc;
-
-ENV PATH="$PATH:/home/vscode/.asdf/bin/:/workspaces/eps-prescription-tracker-ui/node_modules/.bin"
-
 
 # Install ASDF plugins
 RUN asdf plugin add python; \
@@ -54,8 +60,6 @@ WORKDIR /workspaces/eps-prescription-tracker-ui
 ADD .tool-versions /workspaces/eps-prescription-tracker-ui/.tool-versions
 ADD .tool-versions /home/vscode/.tool-versions
 
-RUN asdf install; \
-    asdf reshim python; \
-    asdf reshim poetry; \
-    asdf reshim nodejs; \
-    asdf direnv setup --shell bash --version 2.32.2;
+# install python before poetry to ensure correct python version is used
+RUN asdf install python; \
+    asdf install
