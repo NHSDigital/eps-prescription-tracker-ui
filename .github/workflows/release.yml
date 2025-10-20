@@ -42,7 +42,7 @@ jobs:
       asdfVersion: ${{ needs.get_asdf_version.outputs.asdf_version }}
       branch_name: main
       publish_package: false
-      tag_format: "v${version}"
+      tag_format: "v${version}-beta"
     secrets: inherit
 
   package_code:
