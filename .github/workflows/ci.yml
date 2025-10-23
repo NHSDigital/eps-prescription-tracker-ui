@@ -98,6 +98,7 @@ jobs:
       MARK_JIRA_RELEASED: false
       CREATE_INT_RC_RELEASE_NOTES: false
       IS_PULL_REQUEST: false
+      FORWARD_CSOC_LOGS: false
     secrets: inherit
 
   release_qa:
@@ -135,4 +136,5 @@ jobs:
       REACT_LOG_LEVEL: "debug"
       LOG_RETENTION_IN_DAYS: 30
       IS_PULL_REQUEST: false
+      FORWARD_CSOC_LOGS: false
     secrets: inherit

@@ -97,6 +97,7 @@ jobs:
       MARK_JIRA_RELEASED: false
       CREATE_INT_RC_RELEASE_NOTES: false
       IS_PULL_REQUEST: false
+      FORWARD_CSOC_LOGS: false
     secrets: inherit
 
   release_ref:
@@ -134,6 +135,7 @@ jobs:
       REACT_LOG_LEVEL: "debug"
       LOG_RETENTION_IN_DAYS: 30
       IS_PULL_REQUEST: false
+      FORWARD_CSOC_LOGS: false
     secrets: inherit
 
   release_qa:
@@ -171,6 +173,7 @@ jobs:
       REACT_LOG_LEVEL: "debug"
       LOG_RETENTION_IN_DAYS: 30
       IS_PULL_REQUEST: false
+      FORWARD_CSOC_LOGS: false
     secrets: inherit
   release_int:
     needs: [tag_release, package_code, get_commit_id, release_qa]
@@ -207,6 +210,7 @@ jobs:
       MARK_JIRA_RELEASED: false
       CREATE_INT_RC_RELEASE_NOTES: true
       IS_PULL_REQUEST: false
+      FORWARD_CSOC_LOGS: false
     secrets: inherit
   release_prod:
     needs: [tag_release, package_code, get_commit_id, release_int]
@@ -243,4 +247,5 @@ jobs:
       MARK_JIRA_RELEASED: false
       CREATE_INT_RC_RELEASE_NOTES: false
       IS_PULL_REQUEST: false
+      FORWARD_CSOC_LOGS: true
     secrets: inherit

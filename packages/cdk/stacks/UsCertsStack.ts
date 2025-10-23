@@ -51,6 +51,8 @@ export class UsCertsStack extends Stack {
     const cloudfrontDistributionArn: string = this.node.tryGetContext("cloudfrontDistributionArn")
     const logRetentionInDays: number = Number(this.node.tryGetContext("logRetentionInDays"))
     const isPullRequest: boolean = this.node.tryGetContext("isPullRequest")
+    const csocUSWafDestination: string = this.node.tryGetContext("csocUSWafDestination")
+    const forwardCsocLogs: boolean = this.node.tryGetContext("forwardCsocLogs")
 
     // Coerce context and imports to relevant types
     const hostedZone = HostedZone.fromHostedZoneAttributes(this, "hostedZone", {
@@ -107,7 +109,9 @@ export class UsCertsStack extends Stack {
       account: this.account,
       splunkDeliveryStream: splunkDeliveryStream,
       splunkSubscriptionFilterRole: splunkSubscriptionFilterRole,
-      isPullRequest: isPullRequest
+      isPullRequest: isPullRequest,
+      csocUSWafDestination: csocUSWafDestination,
+      forwardCsocLogs: forwardCsocLogs
     })
 
     // WAF Web ACL

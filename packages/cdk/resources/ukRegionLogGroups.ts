@@ -12,6 +12,8 @@ export interface ukRegionLogGroupsProps {
   readonly splunkSubscriptionFilterRole: IRole
   readonly wafLogGroupName: string
   readonly stackName: string
+  readonly csocUKWafDestination: string
+  readonly forwardCsocLogs: boolean
 }
 
 export class ukRegionLogGroups extends Construct {
@@ -42,6 +44,15 @@ export class ukRegionLogGroups extends Construct {
       logGroupName: wafLogGroup.logGroupName,
       roleArn: props.splunkSubscriptionFilterRole.roleArn
     })
+
+    if (props.forwardCsocLogs) {
+      new CfnSubscriptionFilter(this, "CsocWafSplunkSubscriptionFilter", {
+        destinationArn: props.csocUKWafDestination,
+        filterPattern: "",
+        logGroupName: wafLogGroup.logGroupName,
+        roleArn: props.splunkSubscriptionFilterRole.roleArn
+      })
+    }
 
     this.wafLogGroup = wafLogGroup
   }
