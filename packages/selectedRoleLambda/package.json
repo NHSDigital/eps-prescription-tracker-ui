@@ -13,7 +13,7 @@
     "check-licenses": "license-checker --failOn GPL --failOn LGPL --start ../.."
   },
   "dependencies": {
-    "@aws-lambda-powertools/logger": "^2.27.0",
+    "@aws-lambda-powertools/logger": "^2.28.1",
     "@aws-sdk/client-dynamodb": "^3.908.0",
     "@aws-sdk/lib-dynamodb": "^3.916.0",
     "@cpt-ui-common/authFunctions": "^1.0.0",
