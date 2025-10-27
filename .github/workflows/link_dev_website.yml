@@ -1,43 +1,45 @@
 name: Link Dev Website
-on: 
+on:
   pull_request:
     types: [opened]
 jobs:
-    get_issue_number:
-        runs-on: ubuntu-22.04
-        outputs:
-          issue_number: ${{steps.get_issue_number.outputs.result}}
-    
-        steps:
-          - uses: actions/github-script@v8
-            name: get issue number
-            id: get_issue_number
-            with:
-              script: |
-                if (context.issue.number) {
-                  // Return issue number if present
-                  return context.issue.number;
-                } else {
-                  // Otherwise return issue number from commit
-                  return (
-                    await github.rest.repos.listPullRequestsAssociatedWithCommit({
-                      commit_sha: context.sha,
-                      owner: context.repo.owner,
-                      repo: context.repo.repo,
-                    })
-                  ).data[0].number;
-                }
-              result-encoding: string
-    
-    link-dev-website:
-        needs: [get_issue_number]
-        runs-on: ubuntu-22.04
-        continue-on-error: true
-        steps:
-              - name: Link Dev Website
-                env:
-                    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-                uses: unsplash/comment-on-pr@b5610c6125a7197eaec80072ea35ef53e1fc6035
-                with:
-                    msg: |
-                        Deployed URL: https://cpt-ui-pr-${{ needs.get_issue_number.outputs.issue_number }}.dev.eps.national.nhs.uk/site
+  get_issue_number:
+    runs-on: ubuntu-22.04
+    if: github.actor != 'dependabot[bot]'
+    outputs:
+      issue_number: ${{steps.get_issue_number.outputs.result}}
+
+    steps:
+      - uses: actions/github-script@v8
+        name: get issue number
+        id: get_issue_number
+        with:
+          script: |
+            if (context.issue.number) {
+              // Return issue number if present
+              return context.issue.number;
+            } else {
+              // Otherwise return issue number from commit
+              return (
+                await github.rest.repos.listPullRequestsAssociatedWithCommit({
+                  commit_sha: context.sha,
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                })
+              ).data[0].number;
+            }
+          result-encoding: string
+
+  link-dev-website:
+    needs: [get_issue_number]
+    runs-on: ubuntu-22.04
+    if: github.actor != 'dependabot[bot]'
+    continue-on-error: true
+    steps:
+      - name: Link Dev Website
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: unsplash/comment-on-pr@b5610c6125a7197eaec80072ea35ef53e1fc6035
+        with:
+          msg: |
+            Deployed URL: https://cpt-ui-pr-${{ needs.get_issue_number.outputs.issue_number }}.dev.eps.national.nhs.uk/site
