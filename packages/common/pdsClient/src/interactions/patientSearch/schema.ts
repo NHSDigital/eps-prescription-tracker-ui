@@ -108,7 +108,7 @@ const UnrestrictedPatientResourceSchema = {
       minItems: 1
     }
   },
-  required: ["meta", "id", "name", "gender", "birthDate", "address"]
+  required: ["meta", "id"/*, "name, "gender", "birthDate", "address"*/]
 } as const satisfies JSONSchema
 
 type UnrestrictedPatientResource = FromSchema<typeof UnrestrictedPatientResourceSchema>

@@ -6,10 +6,10 @@ export enum PatientSummaryGender {
 }
 
 export interface PatientSummary {
-  familyName: string
+  familyName?: string
   givenName?: Array<string>
-  gender: PatientSummaryGender
-  dateOfBirth: string
+  gender?: PatientSummaryGender
+  dateOfBirth?: string
   address?: Array<string>
   postcode?: string
   nhsNumber: string

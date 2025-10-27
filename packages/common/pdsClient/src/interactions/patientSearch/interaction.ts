@@ -236,17 +236,23 @@ const validatePostcode = (
 const parseResource = (resource: UnrestrictedPatientResource): PatientSummary => {
   const nhsNumber = resource.id
   const gender = resource.gender
-  const dateOfBirth = resource.birthDate
+  const dateOfBirth = resource?.birthDate
 
   // Find the usual name (validated in the schema to be present)
-  const usualName = resource.name.find((name) => name.use === PatientNameUse.USUAL)!
-  const familyName = usualName.family
-  const givenName = usualName.given
+  const usualName = resource?.name?.find((name) => name.use === PatientNameUse.USUAL)
+  let familyName, givenName
+  if(usualName){
+    familyName = usualName.family
+    givenName = usualName.given
+  }
 
   // Find the home address (validated in the schema to be present)
-  const homeAddress = resource.address.find((address) => address.use === PatientAddressUse.HOME)!
-  const address = homeAddress.line
-  const postcode = homeAddress.postalCode
+  const homeAddress = resource?.address?.find((address) => address.use === PatientAddressUse.HOME)
+  let address, postcode
+  if (homeAddress){
+    address = homeAddress.line
+    postcode = homeAddress.postalCode
+  }
 
   return {
     nhsNumber,
