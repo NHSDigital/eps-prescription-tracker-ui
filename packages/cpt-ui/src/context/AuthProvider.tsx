@@ -6,7 +6,13 @@ import React, {
 } from "react"
 import {Amplify} from "aws-amplify"
 import {Hub} from "aws-amplify/utils"
-import {signInWithRedirect, signOut, SignInWithRedirectInput} from "aws-amplify/auth"
+import {
+  signInWithRedirect,
+  signOut,
+  SignInWithRedirectInput,
+  getCurrentUser,
+  fetchAuthSession
+} from "aws-amplify/auth"
 import {authConfig} from "./configureAmplify"
 
 import {useLocalStorageState} from "@/helpers/useLocalStorageState"
@@ -37,6 +43,7 @@ export interface AuthContextType {
   cognitoSignIn: (input?: SignInWithRedirectInput) => Promise<void>
   cognitoSignOut: (redirectUri?: string) => Promise<boolean>
   clearAuthState: () => void
+  clearStorageCompletely: () => number
   updateSelectedRole: (value: RoleDetails) => Promise<void>
   updateTrackerUserInfo: () => Promise<TrackerUserInfoResult>
   updateInvalidSessionCause: (cause: string) => void
@@ -102,6 +109,27 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
     // updateTrackerUserInfo will set InvalidSessionCause to undefined
   }
 
+  const clearStorageCompletely = () => {
+    logger.info("Performing complete storage cleanup")
+    try {
+      // Clear Cognito and Amplify localStorage
+      const cognitoKeys = Object.keys(localStorage).filter(
+        key => key.includes("CognitoIdentityServiceProvider") ||
+               key.includes("amplify")
+      )
+      cognitoKeys.forEach(key => localStorage.removeItem(key))
+
+      // Clear all sessionStorage
+      sessionStorage.clear()
+
+      logger.info(`Cleared ${cognitoKeys.length} Cognito keys from localStorage and all sessionStorage`)
+      return cognitoKeys.length
+    } catch (storageError) {
+      logger.error("Error during complete storage cleanup", storageError)
+      return 0
+    }
+  }
+
   const updateTrackerUserInfo = async () => {
     const trackerUserInfo = await getTrackerUserInfo()
     setRolesWithAccess(trackerUserInfo.rolesWithAccess)
@@ -124,33 +152,80 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
     const unsubscribe = Hub.listen("auth", async ({payload}) => {
       logger.info("Auth event payload:", payload)
       switch (payload.event) {
-        // On successful signIn or token refresh, get the latest user state
         case "signedIn": {
           logger.info("Processing signedIn event")
           logger.info("User %s logged in", payload.data.username)
-          await updateTrackerUserInfo()
 
-          setIsSignedIn(true)
-          setIsSigningIn(false)
-          setUser(payload.data.username)
-          logger.info("Finished the signedIn event ")
+          try {
+            await updateTrackerUserInfo()
+            setIsSignedIn(true)
+            setIsSigningIn(false)
+            setUser(payload.data.username)
+            logger.info("Finished the signedIn event")
+          } catch (error: unknown) {
+            logger.error("Error during signedIn processing", error)
+            setError("Failed to complete sign-in process")
+          }
           break
         }
+
         case "tokenRefresh":
           logger.info("Processing tokenRefresh event")
           setError(null)
           break
+
         case "signInWithRedirect":
           logger.info("Processing signInWithRedirect event")
           setError(null)
           break
 
         case "tokenRefresh_failure":
-        case "signInWithRedirect_failure":
-          logger.info("Processing tokenRefresh_failure or signInWithRedirect_failure event")
+          logger.info("Processing tokenRefresh_failure event")
           clearAuthState()
-          setError("An error has occurred during the OAuth flow.")
+          setError("Token refresh failed. Please sign in again.")
           break
+
+        case "signInWithRedirect_failure": {
+          logger.info("Processing signInWithRedirect_failure event", payload)
+
+          // Check if this is the UserAlreadyAuthenticatedException
+          const errorMessage = payload.data?.error?.message || ""
+          const errorName = payload.data?.error?.name || ""
+          const isUserAlreadyAuthError =
+            errorMessage.includes("already a signed in user") ||
+            errorName === "UserAlreadyAuthenticatedException"
+
+          if (isUserAlreadyAuthError) {
+            logger.error("UserAlreadyAuthenticatedException during OAuth callback")
+
+            // Clear all auth state
+            clearAuthState()
+
+            // Clear Cognito localStorage
+            try {
+              const cognitoKeys = Object.keys(localStorage).filter(
+                key => key.includes("CognitoIdentityServiceProvider") ||
+                       key.includes("amplify")
+              )
+              logger.info(`Clearing ${cognitoKeys.length} Cognito keys from localStorage`)
+              cognitoKeys.forEach(key => localStorage.removeItem(key))
+            } catch (storageError) {
+              logger.error("Error clearing localStorage", storageError)
+            }
+
+            // Show user-friendly error
+            setError("Session conflict detected. Redirecting to login...")
+
+            // Redirect to login page after a brief delay
+            setTimeout(() => {
+              window.location.href = window.location.origin + "/login"
+            }, 2000)
+          } else {
+            clearAuthState()
+            setError("An error has occurred during the OAuth flow.")
+          }
+          break
+        }
 
         case "customOAuthState":
           logger.info("Processing customOAuthState event")
@@ -165,7 +240,6 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
 
         default:
           logger.info("Received unknown event", payload)
-          // Other auth events? The type-defined cases are already handled above.
           break
       }
     })
@@ -202,6 +276,9 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
         await signOut({global: true})
       }
 
+      // Thorough cleanup for security (especially important on shared computers)
+      clearStorageCompletely()
+
       setIsSigningOut(true)
       logger.info("Frontend amplify signout OK!")
       return true
@@ -217,8 +294,64 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
    */
   const cognitoSignIn = async (input?: SignInWithRedirectInput) => {
     logger.info("Initiating sign-in process...")
-    await signInWithRedirect(input)
-    setIsSigningIn(true)
+
+    try {
+      // Check if there's already an active session
+      try {
+        const currentUser = await getCurrentUser()
+
+        if (currentUser) {
+          logger.info("Existing session detected before sign-in redirect")
+
+          // Check if session is valid
+          try {
+            await fetchAuthSession({forceRefresh: true})
+            logger.info("Existing session is valid - clearing before new sign-in")
+          } catch {
+            logger.info("Existing session is invalid - will clear")
+          }
+
+          // Clear the existing session before redirecting to new sign-in
+          logger.info("Signing out existing session before new sign-in redirect")
+          await signOut({global: false}) // Local signout only, don't redirect
+
+          // Small delay to ensure cleanup completes
+          await new Promise(resolve => setTimeout(resolve, 300))
+        }
+      } catch {
+        // No existing user - proceed with sign-in
+        logger.info("No existing session, proceeding with sign-in redirect")
+      }
+
+      // Now initiate the redirect
+      await signInWithRedirect(input)
+      setIsSigningIn(true)
+
+    } catch (error: unknown) {
+      logger.error("Error during sign-in redirect initiation", error)
+
+      if (error && typeof error === "object" && "name" in error && error.name === "UserAlreadyAuthenticatedException") {
+        logger.error("UserAlreadyAuthenticatedException before redirect - clearing session")
+
+        // Clear Cognito localStorage
+        try {
+          const cognitoKeys = Object.keys(localStorage).filter(
+            key => key.includes("CognitoIdentityServiceProvider") ||
+                   key.includes("amplify")
+          )
+          cognitoKeys.forEach(key => localStorage.removeItem(key))
+        } catch (storageError) {
+          logger.error("Error clearing localStorage", storageError)
+        }
+
+        // Retry the redirect
+        logger.info("Retrying sign-in redirect after clearing session")
+        await signInWithRedirect(input)
+        setIsSigningIn(true)
+      } else {
+        throw error
+      }
+    }
   }
 
   const updateSelectedRole = async (newRole: RoleDetails) => {
@@ -250,6 +383,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
       cognitoSignIn,
       cognitoSignOut,
       clearAuthState,
+      clearStorageCompletely,
       updateSelectedRole,
       updateTrackerUserInfo,
       updateInvalidSessionCause,
