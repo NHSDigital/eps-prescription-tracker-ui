@@ -22,7 +22,7 @@ import {
   UnrestrictedPatientResource
 } from "./schema"
 import {ErrorObject} from "ajv"
-import {PatientSummary} from "@cpt-ui-common/common-types"
+import {NOT_AVAILABLE, PatientSummary} from "@cpt-ui-common/common-types"
 import {exhaustive_switch_guard} from "@cpt-ui-common/lambdaUtils"
 
 enum PatientSearchOutcomeType {
@@ -233,26 +233,26 @@ const validatePostcode = (
   return [postcode, validationErrors]
 }
 
+// TODO: AEA-5926 - this should probably be pulled out and made common, used here and patientDetails
+// TODO: AEA-5926 - this doesnt check for an active temp address which we should be
+// TODO: AEA-5926 - is "n/a" is the right thing to be returning here?
 const parseResource = (resource: UnrestrictedPatientResource): PatientSummary => {
+  /* Return "n/a" for any missing fields on a returned patient record, so that the UI can
+  correctly display that those fields are truly not present on the returned record and are
+  not unavailable due to not finding the patient or having some issue calling PDS */
   const nhsNumber = resource.id
-  const gender = resource.gender
-  const dateOfBirth = resource?.birthDate
+  const gender = resource?.gender ?? NOT_AVAILABLE
+  const dateOfBirth = resource?.birthDate ?? NOT_AVAILABLE
 
-  // Find the usual name (validated in the schema to be present)
+  // Find the usual name (a patient record should contain one, but it is not guaranteed)
   const usualName = resource?.name?.find((name) => name.use === PatientNameUse.USUAL)
-  let familyName, givenName
-  if(usualName){
-    familyName = usualName.family
-    givenName = usualName.given
-  }
+  const familyName = usualName?.family ?? NOT_AVAILABLE
+  const givenName = usualName?.given ?? NOT_AVAILABLE
 
-  // Find the home address (validated in the schema to be present)
+  // Find the home address (a patient record should contain one, but it is not guaranteed)
   const homeAddress = resource?.address?.find((address) => address.use === PatientAddressUse.HOME)
-  let address, postcode
-  if (homeAddress){
-    address = homeAddress.line
-    postcode = homeAddress.postalCode
-  }
+  const address = homeAddress?.line ?? NOT_AVAILABLE
+  const postcode = homeAddress?.postalCode ?? NOT_AVAILABLE
 
   return {
     nhsNumber,

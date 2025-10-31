@@ -19,6 +19,9 @@ import {
 /**
  * Extract patient details from RequestGroup if PDS data is incomplete
  */
+
+// TODO: AEA-5926 - rework this, fall back should only be on pds failure,
+// result should not be a mismatch between both sources
 const extractFallbackPatientDetails = (prescriptions: Array<PrescriptionAPIResponse>): PatientDetails => {
   if (!prescriptions || prescriptions.length === 0) {
     // Return complete PatientDetails with default values

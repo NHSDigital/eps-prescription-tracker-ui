@@ -64,6 +64,8 @@ export default function PatientDetailsBanner() {
         setAddressText(patientDetails.address as string)
       } else {
         // If it's an object, build from fields
+        // TODO: AEA-5926 - address field should not assume a structure, its a list of lines,
+        // also needs postcode from postcode field
         const {line1, line2, city, postcode} = patientDetails.address
         const fullAddress = [line1, line2, city, postcode].filter(Boolean).join(", ")
         setAddressText(fullAddress)
@@ -83,6 +85,7 @@ export default function PatientDetailsBanner() {
     return null
   }
 
+  // TODO: AEA-5926 - needs content and logic to handle PDS ok and fields n/a scenarios
   return (
     <div
       className={`patient-details-banner ${!successfulDetails ? "patient-details-partial-data" : ""}`}

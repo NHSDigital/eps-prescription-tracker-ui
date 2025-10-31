@@ -1,6 +1,8 @@
 import {FromSchema, JSONSchema} from "json-schema-to-ts"
 import Ajv, {ErrorObject, ValidateFunction} from "ajv"
-import {PatientSummaryTypes} from "@cpt-ui-common/common-types"
+import {PatientSummaryGender} from "@cpt-ui-common/common-types"
+
+// TODO: AEA-5926 - give all this another once over and can any of this be shared with the other interaction?
 
 enum PatientMetaCode {
   UNRESTRICTED = "U",
@@ -17,7 +19,7 @@ enum PatientNameUse {
 }
 
 // Use patient summary gender as value is mapped 1:1
-const PatientGender = PatientSummaryTypes.PatientSummaryGender
+const PatientGender = PatientSummaryGender
 
 enum PatientAddressUse {
   HOME = "home",
@@ -41,7 +43,7 @@ const PatientNameSchema = {
     },
     family: {type: "string"}
   },
-  required: ["use", "family"]
+  required: ["use"]
 } as const satisfies JSONSchema
 
 const PatientAddressSchema = {
@@ -54,7 +56,7 @@ const PatientAddressSchema = {
     },
     postalCode: {type: "string"}
   },
-  required: ["use", "line"]
+  required: ["use"]
 } as const satisfies JSONSchema
 
 const UnrestrictedPatientResourceSchema = {
@@ -82,33 +84,16 @@ const UnrestrictedPatientResourceSchema = {
     id: {type: "string"},
     name: {
       type: "array",
-      items: PatientNameSchema,
-      // PDS response will always contain a usual name
-      contains: {
-        type: "object",
-        properties: {
-          use: {const: PatientNameUse.USUAL}
-        }
-      },
-      minItems: 1
+      items: PatientNameSchema
     },
     gender: {enum: Object.values(PatientGender)},
     birthDate: {type: "string"},
     address: {
       type: "array",
-      items: PatientAddressSchema,
-      // PDS response will always contain a home address
-      contains: {
-        type: "object",
-        properties: {
-          use: {const: PatientAddressUse.HOME}
-        },
-        required: ["use"]
-      },
-      minItems: 1
+      items: PatientAddressSchema
     }
   },
-  required: ["meta", "id"/*, "name, "gender", "birthDate", "address"*/]
+  required: ["meta", "id"]
 } as const satisfies JSONSchema
 
 type UnrestrictedPatientResource = FromSchema<typeof UnrestrictedPatientResourceSchema>

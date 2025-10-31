@@ -1,7 +1,6 @@
 // Types from prescriptionList
 export type {
   PatientDetails,
-  PatientDetailsAddress,
   PrescriptionAPIResponse,
   PrescriptionSummary,
   SearchResponse
@@ -24,7 +23,7 @@ export type {
 } from "./prescriptionDetails"
 
 export type {PatientSummary} from "./patientSearch"
-export * as PatientSummaryTypes from "./patientSearch"
+export {PatientSummaryGender, NOT_AVAILABLE} from "./patientSearch"
 
 // Types from basicDetailsSearch
 export type {

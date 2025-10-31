@@ -1,26 +1,25 @@
 import {PDSResponse} from "./types"
-import {PatientDetails} from "@cpt-ui-common/common-types"
+import {NOT_AVAILABLE, PatientDetails} from "@cpt-ui-common/common-types"
 import {URL} from "url"
 import path from "path"
+import {PatientAddressUse, PatientNameUse} from "../patientSearch/schema"
 
-/**
- * Maps PDS response to patient details without any fallback logic
- */
+// TODO: AEA-5926 - should probably be common logic between both interactions
 export const mapPdsResponseToPatientDetails = (pdsData: PDSResponse): PatientDetails => {
+  /* Return "n/a" for any missing fields on a returned patient record, so that the UI can
+  correctly display that those fields are truly not present on the returned record and are
+  not unavailable due to not finding the patient or having some issue calling PDS */
+  const usualName = pdsData?.name?.find((name) => name.use === PatientNameUse.USUAL)
+  const homeAddress = pdsData?.address?.find((address) => address.use === PatientAddressUse.HOME)
+
   return {
-    nhsNumber: pdsData.id || "",
-    given: pdsData.name?.[0]?.given?.join(" ") ?? "",
-    family: pdsData.name?.[0]?.family ?? "",
-    prefix: pdsData.name?.[0]?.prefix?.join(" ") ?? "",
-    suffix: pdsData.name?.[0]?.suffix?.join(" ") ?? "",
-    gender: pdsData.gender ?? null,
-    dateOfBirth: pdsData.birthDate ?? null,
-    address: pdsData.address?.[0] ? {
-      line1: pdsData.address[0].line?.[0],
-      line2: pdsData.address[0].line?.[1],
-      city: pdsData.address[0].line?.[3],
-      postcode: pdsData.address[0].postalCode
-    } : null
+    nhsNumber: pdsData.id,
+    gender: pdsData?.gender ?? NOT_AVAILABLE,
+    dateOfBirth: pdsData?.birthDate ?? NOT_AVAILABLE,
+    familyName: usualName?.family ?? NOT_AVAILABLE,
+    givenName: usualName?.given ?? NOT_AVAILABLE,
+    address: homeAddress?.line ?? NOT_AVAILABLE,
+    postcode: homeAddress?.postalCode ?? NOT_AVAILABLE
   }
 }
 

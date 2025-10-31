@@ -26,11 +26,13 @@ type ValidatePatientDetailsOutcome =
     | ValidatePatientDetailsOutcomeValid
     | ValidatePatientDetailsInvalidOutcomes
 
+// TODO: AEA-5926 - this needs reworking, only nhsnumber is really required,
+// not sure we need the optional fields check, should be consistent between both interactions
 const validate = (details: PatientDetails): ValidatePatientDetailsOutcome => {
   const requiredFields = [
-    {field: "nhsNumber", value: details.nhsNumber},
-    {field: "given", value: details.given},
-    {field: "family", value: details.family}
+    {field: "nhsNumber", value: details.nhsNumber}
+    // {field: "given", value: details.given},
+    // {field: "family", value: details.family}
   ]
 
   const missingFields = requiredFields

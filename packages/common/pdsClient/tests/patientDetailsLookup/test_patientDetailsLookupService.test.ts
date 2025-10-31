@@ -38,6 +38,7 @@ describe("Patient Details Lookup Service Tests", () => {
     jest.clearAllMocks()
   })
 
+  // TODO: AEA-5926 - fix test
   it("should successfully fetch and map patient details", async () => {
     nock( mockEndpoint, {
       reqheaders: {

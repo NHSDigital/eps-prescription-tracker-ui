@@ -5,7 +5,12 @@ import * as examples from "./examples/index"
 import {URL} from "url"
 
 import * as pds from "../../src"
-import {SuccessfulResponse} from "../../src/interactions/patientSearch/schema"
+import {
+  PatientAddressUse,
+  PatientNameUse,
+  SuccessfulResponse,
+  UnrestrictedPatientResource
+} from "../../src/interactions/patientSearch/schema"
 const OutcomeType = pds.patientSearch.OutcomeType
 
 describe("PatientSearch Unit Tests", () => {
@@ -195,94 +200,300 @@ describe("PatientSearch Unit Tests", () => {
 
       expect(outcome.type).toBe(OutcomeType.SUCCESS)
       expect((outcome as any).patients).toEqual([{
-        "address": [
+        nhsNumber: "9000000009",
+        gender: "female",
+        dateOfBirth: "2010-10-22",
+        familyName: "Smith",
+        givenName: [
+          "Jane"
+        ],
+        address: [
           "1 Trevelyan Square",
           "Boar Lane",
           "City Centre",
           "Leeds",
           "West Yorkshire"
         ],
-        "dateOfBirth": "2010-10-22",
-        "familyName": "Smith",
-        "gender": "female",
-        "givenName": [
-          "Jane"
-        ],
-        "nhsNumber": "9000000009",
-        "postcode": "LS1 6AE"
+        postcode: "LS1 6AE"
       }])
 
     })
 
-    it("should handle a patient without an address", async () =>{
-      const mockPatient = structuredClone(examples.single_patient) as unknown as SuccessfulResponse
-      delete mockPatient.entry[0].resource.address
+    it("should handle a patient with a missing address field", async () =>{
+      const mockPatient = structuredClone(examples.single_patient)
+      const resource = mockPatient.entry[0].resource as UnrestrictedPatientResource
+      delete resource.address
       const _mockAxiosInstance = mockAxiosInstance(200, mockPatient)
 
       const client = new pds.Client(_mockAxiosInstance, mockEndpoint, mockLogger())
       const outcome = await client.patientSearch("testFamilyName", "1234-01-01", "testPostcode")
 
       expect((outcome as any).patients).toEqual([{
-        "nhsNumber": "9000000009",
-        "familyName": "Smith",
-        "givenName":  [
+        nhsNumber: "9000000009",
+        gender: "female",
+        dateOfBirth: "2010-10-22",
+        familyName: "Smith",
+        givenName:  [
           "Jane"
         ],
-        "gender": "female",
-        "dateOfBirth": "2010-10-22"
+        address: "n/a",
+        postcode: "n/a"
       }])
     })
 
-    it("should handle a patient without a name", async () =>{
-      const mockPatient = structuredClone(examples.single_patient) as unknown as SuccessfulResponse
-      delete mockPatient.entry[0].resource.name
+    it("should handle a patient with an empty address field", async () =>{
+      const mockPatient = structuredClone(examples.single_patient)
+      mockPatient.entry[0].resource.address = []
       const _mockAxiosInstance = mockAxiosInstance(200, mockPatient)
 
       const client = new pds.Client(_mockAxiosInstance, mockEndpoint, mockLogger())
       const outcome = await client.patientSearch("testFamilyName", "1234-01-01", "testPostcode")
 
       expect((outcome as any).patients).toEqual([{
-        "nhsNumber": "9000000009",
-        "gender": "female",
-        "dateOfBirth": "2010-10-22",
-        "address":  [
+        nhsNumber: "9000000009",
+        gender: "female",
+        dateOfBirth: "2010-10-22",
+        familyName: "Smith",
+        givenName:  [
+          "Jane"
+        ],
+        address: "n/a",
+        postcode: "n/a"
+      }])
+    })
+
+    // TODO: AEA-5926 - tests for temp addresses, both active and inactive
+
+    it("should handle a patient without a home address", async () =>{
+      const mockPatient = structuredClone(examples.single_patient)
+      mockPatient.entry[0].resource.address[0].use = PatientAddressUse.TEMP
+      const _mockAxiosInstance = mockAxiosInstance(200, mockPatient)
+
+      const client = new pds.Client(_mockAxiosInstance, mockEndpoint, mockLogger())
+      const outcome = await client.patientSearch("testFamilyName", "1234-01-01", "testPostcode")
+
+      expect((outcome as any).patients).toEqual([{
+        nhsNumber: "9000000009",
+        gender: "female",
+        dateOfBirth: "2010-10-22",
+        familyName: "Smith",
+        givenName:  [
+          "Jane"
+        ],
+        address: "n/a",
+        postcode: "n/a"
+      }])
+    })
+
+    it("should handle a patient with a missing address line", async () =>{
+      const mockPatient = structuredClone(examples.single_patient)
+      const resource = mockPatient.entry[0].resource as UnrestrictedPatientResource
+      delete resource?.address?.[0].line
+      const _mockAxiosInstance = mockAxiosInstance(200, mockPatient)
+
+      const client = new pds.Client(_mockAxiosInstance, mockEndpoint, mockLogger())
+      const outcome = await client.patientSearch("testFamilyName", "1234-01-01", "testPostcode")
+
+      expect((outcome as any).patients).toEqual([{
+        nhsNumber: "9000000009",
+        gender: "female",
+        dateOfBirth: "2010-10-22",
+        familyName: "Smith",
+        givenName:  [
+          "Jane"
+        ],
+        address: "n/a",
+        postcode: "LS1 6AE"
+      }])
+    })
+
+    it("should handle a patient with a missing postcode", async () =>{
+      const mockPatient = structuredClone(examples.single_patient)
+      const resource = mockPatient.entry[0].resource as UnrestrictedPatientResource
+      delete resource?.address?.[0].postalCode
+      const _mockAxiosInstance = mockAxiosInstance(200, mockPatient)
+
+      const client = new pds.Client(_mockAxiosInstance, mockEndpoint, mockLogger())
+      const outcome = await client.patientSearch("testFamilyName", "1234-01-01", "testPostcode")
+
+      expect((outcome as any).patients).toEqual([{
+        nhsNumber: "9000000009",
+        gender: "female",
+        dateOfBirth: "2010-10-22",
+        familyName: "Smith",
+        givenName:  [
+          "Jane"
+        ],
+        address:  [
           "1 Trevelyan Square",
           "Boar Lane",
           "City Centre",
           "Leeds",
           "West Yorkshire"
         ],
-        "postcode": "LS1 6AE"
+        postcode: "n/a"
       }])
     })
 
-    it("should handle a patient without a dob", async () => {
-      const mockPatient = structuredClone(examples.single_patient) as unknown as SuccessfulResponse
-      delete mockPatient.entry[0].resource.birthDate
+    it("should handle a patient with as missing name field", async () =>{
+      const mockPatient = structuredClone(examples.single_patient)
+      const resource = mockPatient.entry[0].resource as unknown as UnrestrictedPatientResource
+      delete resource.name
       const _mockAxiosInstance = mockAxiosInstance(200, mockPatient)
 
       const client = new pds.Client(_mockAxiosInstance, mockEndpoint, mockLogger())
       const outcome = await client.patientSearch("testFamilyName", "1234-01-01", "testPostcode")
 
       expect((outcome as any).patients).toEqual([{
-        "nhsNumber": "9000000009",
-        "familyName": "Smith",
-        "givenName":  [
-          "Jane"
-        ],
-        "gender": "female",
-        "address":  [
+        nhsNumber: "9000000009",
+        gender: "female",
+        dateOfBirth: "2010-10-22",
+        familyName: "n/a",
+        givenName: "n/a",
+        address:  [
           "1 Trevelyan Square",
           "Boar Lane",
           "City Centre",
           "Leeds",
           "West Yorkshire"
         ],
-        "postcode": "LS1 6AE"
+        postcode: "LS1 6AE"
       }])
     })
 
-    it("should handle a patient without a gender", async () => {
+    it("should handle a patient with an empty name field", async () =>{
+      const mockPatient = structuredClone(examples.single_patient)
+      mockPatient.entry[0].resource.name = []
+      const _mockAxiosInstance = mockAxiosInstance(200, mockPatient)
+
+      const client = new pds.Client(_mockAxiosInstance, mockEndpoint, mockLogger())
+      const outcome = await client.patientSearch("testFamilyName", "1234-01-01", "testPostcode")
+
+      expect((outcome as any).patients).toEqual([{
+        nhsNumber: "9000000009",
+        gender: "female",
+        dateOfBirth: "2010-10-22",
+        familyName: "n/a",
+        givenName: "n/a",
+        address:  [
+          "1 Trevelyan Square",
+          "Boar Lane",
+          "City Centre",
+          "Leeds",
+          "West Yorkshire"
+        ],
+        postcode: "LS1 6AE"
+      }])
+    })
+
+    it("should handle a patient without a usual name", async () =>{
+      const mockPatient = structuredClone(examples.single_patient)
+      mockPatient.entry[0].resource.name[0].use = PatientNameUse.TEMP
+      const _mockAxiosInstance = mockAxiosInstance(200, mockPatient)
+
+      const client = new pds.Client(_mockAxiosInstance, mockEndpoint, mockLogger())
+      const outcome = await client.patientSearch("testFamilyName", "1234-01-01", "testPostcode")
+
+      expect((outcome as any).patients).toEqual([{
+        nhsNumber: "9000000009",
+        gender: "female",
+        dateOfBirth: "2010-10-22",
+        familyName: "n/a",
+        givenName: "n/a",
+        address:  [
+          "1 Trevelyan Square",
+          "Boar Lane",
+          "City Centre",
+          "Leeds",
+          "West Yorkshire"
+        ],
+        postcode: "LS1 6AE"
+      }])
+    })
+
+    it("should handle a patient with a missing family name", async () =>{
+      const mockPatient = structuredClone(examples.single_patient)
+      const resource = mockPatient.entry[0].resource as unknown as UnrestrictedPatientResource
+      delete resource?.name?.[0].family
+      const _mockAxiosInstance = mockAxiosInstance(200, mockPatient)
+
+      const client = new pds.Client(_mockAxiosInstance, mockEndpoint, mockLogger())
+      const outcome = await client.patientSearch("testFamilyName", "1234-01-01", "testPostcode")
+
+      expect((outcome as any).patients).toEqual([{
+        nhsNumber: "9000000009",
+        gender: "female",
+        dateOfBirth: "2010-10-22",
+        familyName: "n/a",
+        givenName:  [
+          "Jane"
+        ],
+        address:  [
+          "1 Trevelyan Square",
+          "Boar Lane",
+          "City Centre",
+          "Leeds",
+          "West Yorkshire"
+        ],
+        postcode: "LS1 6AE"
+      }])
+    })
+
+    it("should handle a patient with a missing given name", async () =>{
+      const mockPatient = structuredClone(examples.single_patient)
+      const resource = mockPatient.entry[0].resource as unknown as UnrestrictedPatientResource
+      delete resource?.name?.[0].given
+      const _mockAxiosInstance = mockAxiosInstance(200, mockPatient)
+
+      const client = new pds.Client(_mockAxiosInstance, mockEndpoint, mockLogger())
+      const outcome = await client.patientSearch("testFamilyName", "1234-01-01", "testPostcode")
+
+      expect((outcome as any).patients).toEqual([{
+        nhsNumber: "9000000009",
+        gender: "female",
+        dateOfBirth: "2010-10-22",
+        familyName: "Smith",
+        givenName: "n/a",
+        address:  [
+          "1 Trevelyan Square",
+          "Boar Lane",
+          "City Centre",
+          "Leeds",
+          "West Yorkshire"
+        ],
+        postcode: "LS1 6AE"
+      }])
+    })
+
+    it("should handle a patient with a missing dob", async () => {
+      const mockPatient = structuredClone(examples.single_patient)
+      const resource = mockPatient.entry[0].resource as unknown as UnrestrictedPatientResource
+      delete resource.birthDate
+      const _mockAxiosInstance = mockAxiosInstance(200, mockPatient)
+
+      const client = new pds.Client(_mockAxiosInstance, mockEndpoint, mockLogger())
+      const outcome = await client.patientSearch("testFamilyName", "1234-01-01", "testPostcode")
+
+      expect((outcome as any).patients).toEqual([{
+        nhsNumber: "9000000009",
+        gender: "female",
+        dateOfBirth: "n/a",
+        familyName: "Smith",
+        givenName:  [
+          "Jane"
+        ],
+        address:  [
+          "1 Trevelyan Square",
+          "Boar Lane",
+          "City Centre",
+          "Leeds",
+          "West Yorkshire"
+        ],
+        postcode: "LS1 6AE"
+      }])
+    })
+
+    it("should handle a patient with a missing gender", async () => {
       const mockPatient = structuredClone(examples.single_patient) as unknown as SuccessfulResponse
       delete mockPatient.entry[0].resource.gender
       const _mockAxiosInstance = mockAxiosInstance(200, mockPatient)
@@ -291,20 +502,21 @@ describe("PatientSearch Unit Tests", () => {
       const outcome = await client.patientSearch("testFamilyName", "1234-01-01", "testPostcode")
 
       expect((outcome as any).patients).toEqual([{
-        "nhsNumber": "9000000009",
-        "familyName": "Smith",
-        "givenName":  [
+        nhsNumber: "9000000009",
+        gender: "n/a",
+        dateOfBirth: "2010-10-22",
+        familyName: "Smith",
+        givenName:  [
           "Jane"
         ],
-        "dateOfBirth": "2010-10-22",
-        "address":  [
+        address:  [
           "1 Trevelyan Square",
           "Boar Lane",
           "City Centre",
           "Leeds",
           "West Yorkshire"
         ],
-        "postcode": "LS1 6AE"
+        postcode: "LS1 6AE"
       }])
     })
   })

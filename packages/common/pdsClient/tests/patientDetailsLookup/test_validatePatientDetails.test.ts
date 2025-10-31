@@ -6,6 +6,8 @@ import * as pds from "../../src"
 const validatePatientDetails = pds.patientDetailsLookup.ValidatePatientDetails.validate
 const OutcomeType = pds.patientDetailsLookup.ValidatePatientDetails.OutcomeType
 
+// TODO: AEA-5926 - fix tests
+
 describe("validatePatientDetails", () => {
   it("should validate complete patient details", () => {
     const patientDetails: PatientDetails = {

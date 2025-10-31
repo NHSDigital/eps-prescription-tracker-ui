@@ -132,6 +132,7 @@ export default function SearchResultsPage() {
     return <SearchResultsTooManyMessage search={location.search} />
   }
 
+  // TODO: AEA-5926 - needs content and logic to handle pds OK, data n/a scenarios
   return (
     <Fragment>
       <Container className="hero-container">
@@ -197,7 +198,9 @@ export default function SearchResultsPage() {
                       </Table.Cell>
                       <Table.Cell headers="header-gender">{patient.gender}</Table.Cell>
                       <Table.Cell headers="header-dob">{patient.dateOfBirth}</Table.Cell>
-                      <Table.Cell headers="header-address">{patient.address?.join(", ")}</Table.Cell>
+                      {/* TODO: AEA-5926 - currently looks to be missing postcode from postcode field*/}
+                      <Table.Cell headers="header-address">{
+                        patient.address !== "n/a"? patient.address?.join(", ") : ""}</Table.Cell>
                       <Table.Cell headers="header-nhs">
                         {patient.nhsNumber.replace(/(\d{3})(\d{3})(\d{4})/, "$1 $2 $3")}
                       </Table.Cell>

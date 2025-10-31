@@ -1,20 +1,6 @@
-export interface PatientDetailsAddress {
-    line1?: string;
-    line2?: string;
-    city?: string;
-    postcode?: string;
-}
-
-export interface PatientDetails {
-  nhsNumber: string;
-  prefix: string;
-  suffix: string;
-  given: string;
-  family: string;
-  gender: string | null;
-  dateOfBirth: string | null;
-  address?: PatientDetailsAddress | null | string;
-  supersededBy?: string;
+import {PatientSummary} from "./patientSearch"
+export interface PatientDetails extends PatientSummary {
+  supersededBy?: string
 }
 
 export enum PrescriptionStatusCategories {
@@ -40,22 +26,22 @@ export enum PrescriptionStatus {
 }
 
 export interface SearchResponse {
-  patient: PatientDetails;
-  currentPrescriptions: Array<PrescriptionSummary>;
-  futurePrescriptions: Array<PrescriptionSummary>;
-  pastPrescriptions: Array<PrescriptionSummary>;
+  patient: PatientDetails
+  currentPrescriptions: Array<PrescriptionSummary>
+  futurePrescriptions: Array<PrescriptionSummary>
+  pastPrescriptions: Array<PrescriptionSummary>
 }
 
 export interface PrescriptionSummary {
-  prescriptionId: string;
-  isDeleted: boolean;
-  statusCode: string;
-  issueDate: string;
-  prescriptionTreatmentType: TreatmentType;
-  issueNumber?: number;
-  maxRepeats?: number;
-  prescriptionPendingCancellation: boolean;
-  itemsPendingCancellation: boolean;
+  prescriptionId: string
+  isDeleted: boolean
+  statusCode: string
+  issueDate: string
+  prescriptionTreatmentType: TreatmentType
+  issueNumber?: number
+  maxRepeats?: number
+  prescriptionPendingCancellation: boolean
+  itemsPendingCancellation: boolean
   // nhsNumber?: number
 }
 

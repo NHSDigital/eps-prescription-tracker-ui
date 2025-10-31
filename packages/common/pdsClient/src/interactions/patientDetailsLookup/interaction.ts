@@ -50,6 +50,8 @@ async function getPatientDetails(
     return {type: PatientDetailsLookupOutcomeType.PATIENT_NOT_FOUND, nhsNumber}
   }
 
+  // TODO: AEA-5926 - check all this still lines up
+
   // Log the data structure to help debug mapping issues
   client.logger.debug("PDS response data structure", {
     resourceType: data.resourceType,
