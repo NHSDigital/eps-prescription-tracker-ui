@@ -20,7 +20,7 @@ export default function EpsCard({role, link}: EpsCardProps) {
   const navigate = useNavigate()
   const authContext = useAuth()
 
-  const handleSetSelectedRole = async (e: React.MouseEvent) => {
+  const handleSetSelectedRole = async (e: React.MouseEvent | React.KeyboardEvent) => {
     e.preventDefault()
     try {
       await authContext.updateSelectedRole(role)
@@ -42,25 +42,35 @@ export default function EpsCard({role, link}: EpsCardProps) {
     noODSCode,
     noOrgName,
     noRoleName,
-    noAddress
+    noAddress,
+    odsLabel
   } = EPS_CARD_STRINGS
 
   return (
     <Card clickable className="eps-card" data-testid="eps-card">
       <Card.Content>
         <Row className="nhsuk-grid-row eps-card__content">
-
           <Col width='one-half'>
-            <Card.Link
-              href={link}
-              onClick={handleSetSelectedRole}
+            <div
+              className="eps-card__org-focus-area"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault()
+                  handleSetSelectedRole(e)
+                }
+              }}
+              onClick={(e) => {
+                e.stopPropagation()
+                handleSetSelectedRole(e)
+              }}
             >
-              <Card.Heading className="nhsuk-heading-s">
-                {role.org_name || noOrgName}
-                <br />
-                (ODS: {role.org_code || noODSCode})
-              </Card.Heading>
-            </Card.Link>
+              <div className="eps-card__org-name">
+                <Card.Heading className="nhsuk-heading-s">
+                  {role.org_name || noOrgName} ({odsLabel}: {role.org_code || noODSCode})
+                </Card.Heading>
+              </div>
+            </div>
             <Card.Description className="eps-card__roleName">
               {role.role_name || noRoleName}
             </Card.Description>
