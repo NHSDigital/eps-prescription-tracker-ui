@@ -47,11 +47,11 @@
 
     &__org-name {
         color: #005eb8;
-        text-decoration: underline;
         cursor: pointer;
         
         .nhsuk-heading-s {
             font-size: 1.1875rem;
+            text-decoration: underline;
         }
     }
 
