@@ -21,8 +21,18 @@
         &:focus {
             outline: 3px solid #ffeb3b;
             outline-offset: 0;
-            box-shadow: inset 0 -4px 0 0 #212b32;
             background-color: #ffeb3b;
+            position: relative;
+            
+            &::after {
+                content: "";
+                position: absolute;
+                bottom: -4px;
+                left: -4px;
+                right: -4px;
+                height: 4px;
+                background-color: #212b32;
+            }
             
             .eps-card__org-name {
                 text-decoration: none !important;
