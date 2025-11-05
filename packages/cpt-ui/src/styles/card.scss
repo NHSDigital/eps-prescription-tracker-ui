@@ -1,5 +1,5 @@
 .eps-card {
-    margin-bottom: 1rem;
+    margin-bottom: 0rem;
     padding: 0rem;
 
     &__content {
@@ -39,6 +39,10 @@
         color: #005eb8;
         text-decoration: underline;
         cursor: pointer;
+        
+        .nhsuk-heading-s {
+            font-size: 1.1875rem;
+        }
     }
 
     &__roleName {
@@ -142,4 +146,18 @@
 
 .error-message-stack .nhsuk-error-message:not(:last-child) {
     margin-bottom: 2px;
+}
+
+@media (max-width: 640px) {
+    .eps-card {
+        &__org-name {
+            .nhsuk-heading-s {
+                font-size: 1rem;
+            }
+        }
+        
+        &__content {
+            flex-direction: column;
+        }
+    }
 }
