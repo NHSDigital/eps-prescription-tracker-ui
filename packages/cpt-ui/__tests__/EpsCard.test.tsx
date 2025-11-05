@@ -50,7 +50,8 @@ jest.mock("@/constants/ui-strings/CardStrings", () => ({
     noODSCode: "No ODS code",
     noOrgName: "NO ORG NAME",
     noRoleName: "No role name",
-    noAddress: "Address not found"
+    noAddress: "Address not found",
+    odsLabel: "ODS"
   }
 }))
 
@@ -171,8 +172,8 @@ describe("EpsCard Component", () => {
     renderWithProviders({role: mockRole, link: mockLink})
 
     act(() => {
-      const cardLink = screen.getByRole("link", {name: /test organization/i})
-      fireEvent.click(cardLink)
+      const focusArea = screen.getByText("Test Organization (ODS: XYZ123)").closest(".eps-card__org-focus-area")
+      fireEvent.click(focusArea!)
     })
 
     await waitFor(() => {
@@ -204,8 +205,8 @@ describe("EpsCard Component", () => {
     renderWithProviders({role: mockRole, link: mockLink})
 
     act(() => {
-      const cardLink = screen.getByRole("link", {name: /test organization/i})
-      fireEvent.click(cardLink)
+      const focusArea = screen.getByText("Test Organization (ODS: XYZ123)").closest(".eps-card__org-focus-area")
+      fireEvent.click(focusArea!)
     })
 
     await waitFor(() => {
