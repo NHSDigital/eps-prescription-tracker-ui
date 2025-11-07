@@ -8,8 +8,23 @@
         align-items: flex-start;
     }
 
+    &__layout {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+    }
+
+    &__address {
+        text-align: right;
+        margin-left: 20px;
+    }
+
     &__org-focus-area {
         outline: none;
+        color: #005eb8;
+        cursor: pointer;
+        position: relative;
+        display: block;
         
         &:hover {
             .eps-card__org-name {
@@ -28,14 +43,21 @@
                 content: "";
                 position: absolute;
                 bottom: -4px;
-                left: -4px;
-                right: -4px;
+
                 height: 4px;
                 background-color: #212b32;
             }
             
+            .eps-card__org-name .nhsuk-heading-s {
+                text-decoration: underline !important;
+                text-decoration-color: #212b32 !important;
+                text-decoration-thickness: 2px !important;
+            }
+            
             .eps-card__org-name {
-                text-decoration: none !important;
+                text-decoration: underline !important;
+                text-decoration-color: #212b32 !important;
+                text-decoration-thickness: 2px !important;
             }
             
             .nhsuk-heading-s {
@@ -48,10 +70,15 @@
     &__org-name {
         color: #005eb8;
         cursor: pointer;
+        text-decoration: underline !important;
+        text-decoration-thickness: 2px !important;
+        text-underline-offset: 2px !important;
         
         .nhsuk-heading-s {
             font-size: 1.1875rem;
-            text-decoration: underline;
+            text-decoration: underline !important;
+            text-decoration-thickness: 2px !important;
+            text-underline-offset: 2px !important;
         }
     }
 
