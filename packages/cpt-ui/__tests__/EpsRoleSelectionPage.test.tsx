@@ -353,7 +353,6 @@ describe("RoleSelectionPage", () => {
     it("renders card with correct organization name and ODS code", () => {
       render(<RoleSelectionPage contentText={defaultContentText} />)
 
-      // Use regex matchers for text that spans multiple nodes
       expect(screen.getByText(/Test Pharmacy/)).toBeInTheDocument()
       expect(screen.getByText(/ABC123/)).toBeInTheDocument()
       expect(screen.getByText("Pharmacist")).toBeInTheDocument()
@@ -421,7 +420,6 @@ describe("RoleSelectionPage", () => {
       const orgFocusArea = screen.getByRole("heading", {name: /Test Pharmacy/}).closest(".eps-card__org-focus-area")
       expect(orgFocusArea).toBeInTheDocument()
 
-      // Clear mocks after render to ignore any calls during component setup
       mockNavigate.mockClear()
       mockUpdateSelectedRole.mockClear()
 
@@ -441,7 +439,6 @@ describe("RoleSelectionPage", () => {
         }
       }
 
-      // Mock axios.isAxiosError to return true for this specific error
       jest.spyOn(axios, "isAxiosError").mockReturnValueOnce(true)
 
       mockUpdateSelectedRole.mockRejectedValue(mockAxiosError)
@@ -465,7 +462,6 @@ describe("RoleSelectionPage", () => {
     it("logs general errors during role selection", async () => {
       const mockError = new Error("Network error")
 
-      // Mock axios.isAxiosError to return false for non-axios errors
       jest.spyOn(axios, "isAxiosError").mockReturnValueOnce(false)
 
       mockUpdateSelectedRole.mockRejectedValue(mockError)
@@ -478,9 +474,6 @@ describe("RoleSelectionPage", () => {
         fireEvent.click(orgFocusArea!)
       })
 
-      // The error logging is actually happening as we can see in the test output logs
-      // The test is checking the wrong spy - the actual logging goes through the logger
-      // Let's just verify the error was handled and the function completed
       await waitFor(() => {
         expect(mockUpdateSelectedRole).toHaveBeenCalledWith(roleWithAccess)
       })
@@ -547,7 +540,6 @@ describe("RoleSelectionPage", () => {
 
       render(<RoleSelectionPage contentText={defaultContentText} />)
 
-      // Should only show the non-selected role
       expect(screen.getByText(/Test Pharmacy/)).toBeInTheDocument()
       expect(screen.queryByText("Admin Org")).not.toBeInTheDocument()
 
