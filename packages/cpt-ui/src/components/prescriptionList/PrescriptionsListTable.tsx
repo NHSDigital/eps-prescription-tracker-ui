@@ -263,7 +263,6 @@ const PrescriptionsListTable = ({
         type="button"
         tabIndex={0}
         className={`eps-prescription-table-sort-text ${heading.key}`}
-        aria-label={heading.label}
         data-testid={`eps-prescription-table-sort-${heading.key}`}
         onClick={(e) => {
           e.preventDefault()
