@@ -432,7 +432,6 @@ const PrescriptionsListTable = ({
             <td
               colSpan={headings.length}
               className="eps-prescription-table-summary-row"
-              aria-live="polite"
               data-testid="table-summary-row"
             >
               {PRESCRIPTION_LIST_TABLE_TEXT.showing} {initialPrescriptions.length}{" "}
