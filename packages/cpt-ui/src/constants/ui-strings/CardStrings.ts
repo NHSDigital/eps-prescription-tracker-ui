@@ -33,5 +33,6 @@ export const EPS_CARD_STRINGS = {
   noOrgName: "NO ORG NAME",
   noODSCode: "No ODS code",
   noRoleName: "No role name",
-  noAddress: "Address not found"
+  noAddress: "Address not found",
+  odsLabel: "ODS"
 }
