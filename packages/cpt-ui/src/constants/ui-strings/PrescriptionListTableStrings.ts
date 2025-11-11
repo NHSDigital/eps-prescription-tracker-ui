@@ -4,6 +4,7 @@ export const PRESCRIPTION_LIST_TABLE_TEXT = {
     future: "A sortable table showing future-dated prescriptions matching the search criteria.",
     claimedExpired: "A sortable table showing claimed and expired prescriptions matching the search criteria.",
     sharedText:
+          " Column headers with buttons are sortable. " +
           "Column one shows the date the prescription was issued. Columns two and three " +
           "show the type and status of the prescription. Column four shows whether the " +
           "prescription is pending cancellation. Column five shows the prescription ID " +
