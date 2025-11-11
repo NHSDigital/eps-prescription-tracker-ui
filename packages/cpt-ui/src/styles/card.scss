@@ -34,35 +34,28 @@
         }
         
         &:focus {
-            outline: 3px solid #ffeb3b;
-            outline-offset: 0;
-            background-color: #ffeb3b;
-            position: relative;
-            
-            &::after {
-                content: "";
-                position: absolute;
-                bottom: -4px;
-
-                height: 4px;
-                background-color: #212b32;
-            }
-            
-            .eps-card__org-name .nhsuk-heading-s {
-                text-decoration: underline !important;
-                text-decoration-color: #212b32 !important;
-                text-decoration-thickness: 2px !important;
-            }
-            
+            outline: none;
+            background-color: transparent;
+            // black border on bottom, plus increased yellow on top to cover the border when text doesnt overhang
             .eps-card__org-name {
-                text-decoration: underline !important;
-                text-decoration-color: #212b32 !important;
-                text-decoration-thickness: 2px !important;
-            }
-            
-            .nhsuk-heading-s {
+                outline: 3px solid transparent;
+                background-color: #ffeb3b;
+                box-shadow: 0 -4px #ffeb3b, 0 4px #212b32;
+                text-decoration: none !important;
+                text-underline-offset: 0 !important;
                 color: #212b32;
-                text-decoration: none;
+                display: inline;
+                
+                // Responsive: add 1px more padding on smaller screens
+                @media (max-width: 768px) {
+                    box-shadow: 0 -5px #ffeb3b, 0 5px #212b32;
+                }
+                
+                .nhsuk-heading-s {
+                    color: #212b32;
+                    text-decoration: none !important;
+                    text-underline-offset: 0 !important;
+                }
             }
         }
     }
