@@ -28,7 +28,7 @@
   },
   "devDependencies": {
     "@cpt-ui-common/common-types": "^1.0.0",
-    "@types/aws-lambda": "^8.10.156",
+    "@types/aws-lambda": "^8.10.158",
     "@types/fhir": "^0.0.41",
     "fhir": "^4.12.0",
     "nock": "^14.0.10"
