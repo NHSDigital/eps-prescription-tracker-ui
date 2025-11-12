@@ -263,13 +263,6 @@ const PrescriptionsListTable = ({
         type="button"
         tabIndex={0}
         className={`eps-prescription-table-sort-text ${heading.key}`}
-        aria-label={`
-          ${PRESCRIPTION_LIST_TABLE_TEXT.sortBy} ${heading.label}
-          ${sortConfig.key === heading.key && sortConfig.direction === "ascending"
-      ? "descending"
-      : "ascending"
-    }
-        `}
         data-testid={`eps-prescription-table-sort-${heading.key}`}
         onClick={(e) => {
           e.preventDefault()
@@ -282,10 +275,7 @@ const PrescriptionsListTable = ({
           }
         }}
       >
-        <span className="sort-label-text">{heading.label}</span>
-        <span className="nhsuk-u-visually-hidden">
-          {PRESCRIPTION_LIST_TABLE_TEXT.button}
-        </span>
+        {heading.label}
         {renderSortIcons(heading.key)}
       </button>
     </Table.Cell>
@@ -442,7 +432,6 @@ const PrescriptionsListTable = ({
             <td
               colSpan={headings.length}
               className="eps-prescription-table-summary-row"
-              aria-live="polite"
               data-testid="table-summary-row"
             >
               {PRESCRIPTION_LIST_TABLE_TEXT.showing} {initialPrescriptions.length}{" "}

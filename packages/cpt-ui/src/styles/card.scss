@@ -1,11 +1,78 @@
 .eps-card {
-    margin-bottom: 1.5rem;
+    margin-bottom: 0rem;
     padding: 0rem;
 
     &__content {
         display: flex;
         padding: 0rem;
         align-items: flex-start;
+    }
+
+    &__layout {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+    }
+
+    &__address {
+        text-align: right;
+        margin-left: 20px;
+    }
+
+    &__org-focus-area {
+        outline: none;
+        color: #005eb8;
+        cursor: pointer;
+        position: relative;
+        display: block;
+        
+        &:hover {
+            .eps-card__org-name {
+                color: #7c2d12 !important;
+                text-decoration: none !important;
+            }
+        }
+        
+        &:focus {
+            outline: none;
+            background-color: transparent;
+            // black border on bottom, plus increased yellow on top to cover the border when text doesnt overhang
+            .eps-card__org-name {
+                outline: 3px solid transparent;
+                background-color: #ffeb3b;
+                box-shadow: 0 -4px #ffeb3b, 0 4px #212b32;
+                text-decoration: none !important;
+                text-underline-offset: 0 !important;
+                color: #212b32;
+                display: inline;
+                
+                // Responsive: add 1px more padding on smaller screens
+                @media (max-width: 768px) {
+                    box-shadow: 0 -5px #ffeb3b, 0 5px #212b32;
+                }
+                
+                .nhsuk-heading-s {
+                    color: #212b32;
+                    text-decoration: none !important;
+                    text-underline-offset: 0 !important;
+                }
+            }
+        }
+    }
+
+    &__org-name {
+        color: #005eb8;
+        cursor: pointer;
+        text-decoration: underline !important;
+        text-decoration-thickness: 2px !important;
+        text-underline-offset: 2px !important;
+        
+        .nhsuk-heading-s {
+            font-size: 1.1875rem;
+            text-decoration: underline !important;
+            text-decoration-thickness: 2px !important;
+            text-underline-offset: 2px !important;
+        }
     }
 
     &__roleName {
@@ -28,6 +95,8 @@
             display: block;
         }
     }
+
+
 
     &__link {
         background-color: #ffffff;
@@ -107,4 +176,18 @@
 
 .error-message-stack .nhsuk-error-message:not(:last-child) {
     margin-bottom: 2px;
+}
+
+@media (max-width: 640px) {
+    .eps-card {
+        &__org-name {
+            .nhsuk-heading-s {
+                font-size: 1rem;
+            }
+        }
+        
+        &__content {
+            flex-direction: column;
+        }
+    }
 }
