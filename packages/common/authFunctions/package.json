@@ -13,7 +13,7 @@
     "check-licenses": "license-checker --failOn GPL --failOn LGPL --start ../.."
   },
   "devDependencies": {
-    "@aws-sdk/client-dynamodb": "^3.917.0",
+    "@aws-sdk/client-dynamodb": "^3.929.0",
     "axios": "^1.13.1",
     "mock-jwks": "3.2.2"
   },
