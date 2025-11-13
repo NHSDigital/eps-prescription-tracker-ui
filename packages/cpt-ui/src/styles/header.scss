@@ -1,4 +1,31 @@
 .nhsuk-header.masthead {
+  .nhsuk-skip-link {
+    left: -9999px;
+    padding: 8px 16px;
+    position: absolute;
+    background-color: #ffeb3b;
+    color: #212b32;
+    text-decoration: none;
+    z-index: 999;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 1.5;
+    border: 0;
+  }
+
+  .nhsuk-skip-link:active,
+  .nhsuk-skip-link:focus {
+    left: 16px;
+    top: 16px;
+    z-index: 999;
+    outline: 3px solid #ffeb3b;
+    outline-offset: 0;
+  }
+
+  .nhsuk-skip-link:visited {
+    color: #212b32;
+  }
+
   .nhsuk-width-container.nhsuk-header__container.masthead-container {
     min-width: 100%;
     padding-left: 24px;
@@ -85,6 +112,10 @@
 
     .nhsuk-width-container.nhsuk-header__container.masthead-container {
       padding-left: 10px;
+      min-height: 80px; /* Increased height to accommodate stacked logo and service name */
+      display: flex;
+      align-items: flex-start;
+      padding-top: 16px;
     }
 
     .nhsuk-navigation {
@@ -102,7 +133,7 @@
       width: 100%;
       justify-content: flex-start;
       left: 0;
-      top: 64px;
+      top: 80px; /* Adjusted to account for increased masthead height */
       padding-left: 0;
       min-width: 100vw;
       margin-left: 0;
@@ -112,6 +143,21 @@
     .nhsuk-navigation-container {
       min-width: 100vw;
       right: unset;
+    }
+
+    .nhsuk-navigation-container {
+      position: relative;
+      top: -16px; /* Adjusted positioning for mobile */
+      width: 100%;
+      right: 0;
+    }
+
+    /* Ensure menu button is visible on mobile */
+    button.nhsuk-header__menu-toggle.nhsuk-header__navigation-link {
+      display: block !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+      z-index: 10;
     }
   }
 }
@@ -139,4 +185,28 @@
 .combined-logo-and-service-name:active .nhsuk-header__transactional-service-name--link {
   color: #212b32;
   text-decoration: none
+}
+
+.nhsuk-header__service-name {
+  white-space: nowrap;
+}
+
+.nhsuk-header__link--service {
+  display: flex !important;
+  align-items: center !important;
+  text-decoration: none !important;
+  flex-wrap: nowrap;
+}
+
+@media (max-width: 640px) {
+  .nhsuk-header__link--service {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+  }
+  
+  .nhsuk-header__service-name {
+    margin-top: 8px;
+    margin-left: 0 !important;
+    white-space: nowrap;
+  }
 }

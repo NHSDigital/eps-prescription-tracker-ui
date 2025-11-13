@@ -107,7 +107,7 @@ describe("EpsHeader", () => {
     })
 
     it("displays the correct service name in the header", () => {
-      expect(screen.getByTestId("eps_header_serviceName")).toHaveTextContent(
+      expect(screen.getByTestId("eps_header_logoServiceLink")).toHaveTextContent(
         "Prescription Tracker"
       )
     })
@@ -136,7 +136,7 @@ describe("EpsHeader", () => {
     })
 
     it("displays the correct service name in the header", () => {
-      expect(screen.getByTestId("eps_header_serviceName")).toHaveTextContent(
+      expect(screen.getByTestId("eps_header_logoServiceLink")).toHaveTextContent(
         "Prescription Tracker"
       )
     })

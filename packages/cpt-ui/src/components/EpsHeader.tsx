@@ -24,11 +24,16 @@ import {useAuth} from "@/context/AuthProvider"
 
 import {EpsLogoutModal} from "@/components/EpsLogoutModal"
 import {normalizePath} from "@/helpers/utils"
-import {ENV_CONFIG, FRONTEND_PATHS, AUTH_CONFIG} from "@/constants/environment"
+import {FRONTEND_PATHS, AUTH_CONFIG} from "@/constants/environment"
 import {getHomeLink} from "@/helpers/loginFunctions"
 import {signOut} from "@/helpers/logout"
 
-const baseUrl = ENV_CONFIG.BASE_URL
+const NHS_LOGO_PATH =
+  "M3.9 1.5h4.4l2.6 9h.1l1.8-9h3.3l-2.8 13H9l-2.7-9h-.1l-1.8 9H1.1" +
+  "M17.3 1.5h3.6l-1 4.9h4L25 1.5h3.5l-2.7 13h-3.5l1.1-5.6h-4.1l-1.2 5.6h-3.4" +
+  "M37.7 4.4c-.7-.3-1.6-.6-2.9-.6-1.4 0-2.5.2-2.5 1.3 0 1.8 5.1 1.2 5.1 5.1 0 " +
+  "3.6-3.3 4.5-6.4 4.5-1.3 0-2.9-.3-4-.7l.8-2.7c.7.4 2.1.7 3.2.7s2.8-.2 " +
+  "2.8-1.5c0-2.1-5.1-1.3-5.1-5 0-3.4 2.9-4.4 5.8-4.4 1.6 0 3.1.2 4 .6"
 
 export default function EpsHeader() {
   const navigate = useNavigate()
@@ -105,99 +110,95 @@ export default function EpsHeader() {
   return (
     <Fragment>
       <Header transactional className="masthead" id="eps-header">
+        <a
+          href="#main-content"
+          className="nhsuk-skip-link"
+          data-testid="eps_header_skipLink"
+        >
+          Skip to main content
+        </a>
         <Header.Container className="masthead-container">
-          <Header.Logo href={`${baseUrl}${getHomeLink(auth?.isSignedIn || false)}`} />
+          {/* Combined logo and service name in a single link for accessibility */}
           <Link
             to={getHomeLink(auth?.isSignedIn || false)}
             onClick={redirectToLogin}
-            className="combined-logo-and-service-name"
-            style={{
-              display: "flex"
-            }}
-            data-testid="eps_header_logoLink"
+            className="nhsuk-header__link nhsuk-header__link--service"
+            data-testid="eps_header_logoServiceLink"
+            aria-label={`${HEADER_SERVICE} - Go to homepage`}
           >
+            <span className="nhsuk-header__logo">
+              <svg
+                className="nhsuk-logo nhsuk-logo--white"
+                xmlns="http://www.w3.org/2000/svg"
+                role="presentation"
+                focusable="false"
+                viewBox="0 0 40 16"
+              >
+                <path fill="#fff" d="M0 0h40v16H0z"/>
+                <path
+                  fill="#005eb8"
+                  d={NHS_LOGO_PATH}
+                />
+              </svg>
+            </span>
+            <span className="nhsuk-header__service-name">
+              {HEADER_SERVICE}
+            </span>
           </Link>
-          <Header.ServiceName
-            data-testid="eps_header_serviceName"
-            href={`${baseUrl}${getHomeLink(auth?.isSignedIn || false)}`}>
-            {HEADER_SERVICE}
-          </Header.ServiceName>
           <Header.Content />
         </Header.Container>
 
         <Header.Nav className="masthead-nav">
           {/* Select your role */}
-          <div>
-            {shouldShowSelectRole && (
-              <li className="nhsuk-header__navigation-item">
-                <Link
-                  className="nhsuk-header__navigation-link"
-                  to={HEADER_SELECT_YOUR_ROLE_TARGET}
-                  data-testid="eps_header_selectYourRoleLink"
-                >
-                  {HEADER_SELECT_YOUR_ROLE_BUTTON}
-                </Link>
-              </li>
-            )}
-          </div>
+          {shouldShowSelectRole && (
+            <Header.NavItem
+              to={HEADER_SELECT_YOUR_ROLE_TARGET}
+              data-testid="eps_header_selectYourRoleLink"
+            >
+              {HEADER_SELECT_YOUR_ROLE_BUTTON}
+            </Header.NavItem>
+          )}
 
           {/* Change role */}
-          <div>
-            {shouldShowChangeRole && (
-              <li className="nhsuk-header__navigation-item">
-                <Link
-                  className="nhsuk-header__navigation-link"
-                  to={HEADER_CHANGE_ROLE_TARGET}
-                  data-testid="eps_header_changeRoleLink"
-                >
-                  {HEADER_CHANGE_ROLE_BUTTON}
-                </Link>
-              </li>
-            )}
-          </div>
+          {shouldShowChangeRole && (
+            <Header.NavItem
+              to={HEADER_CHANGE_ROLE_TARGET}
+              data-testid="eps_header_changeRoleLink"
+            >
+              {HEADER_CHANGE_ROLE_BUTTON}
+            </Header.NavItem>
+          )}
 
           {/* Give feedback (opens in new tab) */}
-          <div>
-            <Header.NavItem
-              href={HEADER_FEEDBACK_TARGET}
-              target="_blank"
-              rel="noopener noreferrer"
-              data-testid="eps_header_feedbackLink"
-            >
-              {HEADER_FEEDBACK_BUTTON}
-            </Header.NavItem>
-          </div>
+          <Header.NavItem
+            href={HEADER_FEEDBACK_TARGET}
+            target="_blank"
+            rel="noopener noreferrer"
+            data-testid="eps_header_feedbackLink"
+          >
+            {HEADER_FEEDBACK_BUTTON}
+          </Header.NavItem>
 
           {/* Log out */}
-          <div>
-            {shouldShowLogoutLink && (
-              <li className="nhsuk-header__navigation-item">
-                <Link
-                  className="nhsuk-header__navigation-link"
-                  to={FRONTEND_PATHS.LOGOUT}
-                  data-testid="eps_header_logout"
-                  onClick={handleLogoutClick}
-                >
-                  {HEADER_LOG_OUT_BUTTON}
-                </Link>
-              </li>
-            )}
-          </div>
+          {shouldShowLogoutLink && (
+            <Header.NavItem
+              to={FRONTEND_PATHS.LOGOUT}
+              data-testid="eps_header_logout"
+              onClick={handleLogoutClick}
+            >
+              {HEADER_LOG_OUT_BUTTON}
+            </Header.NavItem>
+          )}
 
           {/* Exit button */}
-          <div>
-            {shouldShowExitButton && (
-              <li className="nhsuk-header__navigation-item">
-                <Link
-                  className="nhsuk-header__navigation-link"
-                  to={HEADER_EXIT_TARGET}
-                  data-testid="eps_header_exit"
-                >
-                  {HEADER_EXIT_BUTTON}
-                </Link>
-              </li>
-            )}
-          </div>
+          {shouldShowExitButton && (
+            <Header.NavItem
+              to={HEADER_EXIT_TARGET}
+              data-testid="eps_header_exit"
+            >
+              {HEADER_EXIT_BUTTON}
+            </Header.NavItem>
+          )}
 
           <Header.NavDropdownMenu dropdownText="Menu" />
         </Header.Nav>
