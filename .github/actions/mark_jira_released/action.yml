@@ -12,7 +12,7 @@ runs:
   using: "composite"
   steps:
     - name: connect to dev account
-      uses: aws-actions/configure-aws-credentials@v4
+      uses: aws-actions/configure-aws-credentials@00943011d9042930efac3dcd3a170e4273319bc8
       with:
         aws-region: eu-west-2
         role-to-assume: ${{ inputs.DEV_CLOUD_FORMATION_EXECUTE_LAMBDA_ROLE }}
