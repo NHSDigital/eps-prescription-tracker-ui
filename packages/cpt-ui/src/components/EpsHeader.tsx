@@ -35,6 +35,9 @@ const NHS_LOGO_PATH =
   "3.6-3.3 4.5-6.4 4.5-1.3 0-2.9-.3-4-.7l.8-2.7c.7.4 2.1.7 3.2.7s2.8-.2 " +
   "2.8-1.5c0-2.1-5.1-1.3-5.1-5 0-3.4 2.9-4.4 5.8-4.4 1.6 0 3.1.2 4 .6"
 
+const CHEVRON_PATH =
+  "M15.5 12a1 1 0 0 1-.29.71l-5 5a1 1 0 0 1-1.42-1.42l4.3-4.29-4.3-4.29a1 1 0 0 1 1.42-1.42l5 5a1 1 0 0 1 .29.71z"
+
 export default function EpsHeader() {
   const navigate = useNavigate()
   const location = useLocation()
@@ -49,7 +52,8 @@ export default function EpsHeader() {
   const [shouldShowLogoutLink, setShouldShowLogoutLink] = useState(false)
   const [shouldShowExitButton, setShouldShowExitButton] = useState(false)
 
-  const [showLogoutModal, setShowLogoutModal] = useState(false)
+  const [showLogoutModal, setShowLogoutModal] = useState<boolean>(false)
+  const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false)
 
   // Move all conditional logic into one place
   useEffect(() => {
@@ -107,6 +111,10 @@ export default function EpsHeader() {
     signOut(authContext, AUTH_CONFIG.REDIRECT_SIGN_OUT)
   }
 
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen)
+  }
+
   return (
     <Fragment>
       <Header transactional className="masthead" id="eps-header">
@@ -118,90 +126,119 @@ export default function EpsHeader() {
           Skip to main content
         </a>
         <Header.Container className="masthead-container">
-          {/* Combined logo and service name in a single link for accessibility */}
-          <Link
-            to={getHomeLink(auth?.isSignedIn || false)}
-            onClick={redirectToLogin}
-            className="nhsuk-header__link nhsuk-header__link--service"
-            data-testid="eps_header_logoServiceLink"
-            aria-label={`${HEADER_SERVICE} - Go to homepage`}
-          >
-            <span className="nhsuk-header__logo">
-              <svg
-                className="nhsuk-logo nhsuk-logo--white"
-                xmlns="http://www.w3.org/2000/svg"
-                role="presentation"
-                focusable="false"
-                viewBox="0 0 40 16"
+          {/* Logo, Service Name, and Dropdown in same wrapper */}
+          <div className="nhsuk-header__logo-service-wrapper">
+            <Link
+              to={getHomeLink(auth?.isSignedIn || false)}
+              onClick={redirectToLogin}
+              className="nhsuk-header__link nhsuk-header__link--service"
+              data-testid="eps_header_logoServiceLink"
+              aria-label={`${HEADER_SERVICE} - Go to homepage`}
+            >
+              <span className="nhsuk-header__logo-small">
+                <svg
+                  className="nhsuk-logo nhsuk-logo--white nhsuk-logo--small"
+                  xmlns="http://www.w3.org/2000/svg"
+                  role="presentation"
+                  focusable="false"
+                  viewBox="0 0 40 16"
+                >
+                  <path fill="#fff" d="M0 0h40v16H0z"/>
+                  <path
+                    fill="#005eb8"
+                    d={NHS_LOGO_PATH}
+                  />
+                </svg>
+              </span>
+              <span className="nhsuk-header__service-name-multiline">
+                Prescription Tracker (Pilot)
+              </span>
+            </Link>
+
+            {/* Dropdown Menu - moved inside wrapper */}
+            <div className="nhsuk-header__nav-dropdown">
+              <button
+                className="nhsuk-header__nav-dropdown-toggle"
+                aria-controls="header-nav-dropdown"
+                aria-expanded={isMenuOpen}
+                onClick={toggleMenu}
               >
-                <path fill="#fff" d="M0 0h40v16H0z"/>
-                <path
-                  fill="#005eb8"
-                  d={NHS_LOGO_PATH}
-                />
-              </svg>
-            </span>
-            <span className="nhsuk-header__service-name">
-              {HEADER_SERVICE}
-            </span>
-          </Link>
-          <Header.Content />
+              More
+                <svg
+                  className="nhsuk-icon nhsuk-icon__chevron-down"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                  focusable="false"
+                >
+                  <path d={CHEVRON_PATH} />
+                </svg>
+              </button>
+
+              {isMenuOpen && (
+                <div className="nhsuk-header__nav-dropdown-menu" id="header-nav-dropdown">
+                  <ul className="nhsuk-header__nav-dropdown-list">
+                    <li>
+                      <a href="#" onClick={(e) => e.preventDefault()}>
+                      Option 1
+                      </a>
+                    </li>
+                    <li>
+                      <a href="#" onClick={(e) => e.preventDefault()}>
+                      Option 2
+                      </a>
+                    </li>
+
+                    {shouldShowSelectRole && (
+                      <li>
+                        <Link to={HEADER_SELECT_YOUR_ROLE_TARGET}>
+                          {HEADER_SELECT_YOUR_ROLE_BUTTON}
+                        </Link>
+                      </li>
+                    )}
+
+                    {shouldShowChangeRole && (
+                      <li>
+                        <Link to={HEADER_CHANGE_ROLE_TARGET}>
+                          {HEADER_CHANGE_ROLE_BUTTON}
+                        </Link>
+                      </li>
+                    )}
+
+                    <li>
+                      <a
+                        href={HEADER_FEEDBACK_TARGET}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {HEADER_FEEDBACK_BUTTON}
+                      </a>
+                    </li>
+
+                    {shouldShowLogoutLink && (
+                      <li>
+                        <Link
+                          to={FRONTEND_PATHS.LOGOUT}
+                          onClick={handleLogoutClick}
+                        >
+                          {HEADER_LOG_OUT_BUTTON}
+                        </Link>
+                      </li>
+                    )}
+
+                    {shouldShowExitButton && (
+                      <li>
+                        <Link to={HEADER_EXIT_TARGET}>
+                          {HEADER_EXIT_BUTTON}
+                        </Link>
+                      </li>
+                    )}
+                  </ul>
+                </div>
+              )}
+            </div>
+          </div>
         </Header.Container>
-
-        <Header.Nav className="masthead-nav">
-          {/* Select your role */}
-          {shouldShowSelectRole && (
-            <Header.NavItem
-              to={HEADER_SELECT_YOUR_ROLE_TARGET}
-              data-testid="eps_header_selectYourRoleLink"
-            >
-              {HEADER_SELECT_YOUR_ROLE_BUTTON}
-            </Header.NavItem>
-          )}
-
-          {/* Change role */}
-          {shouldShowChangeRole && (
-            <Header.NavItem
-              to={HEADER_CHANGE_ROLE_TARGET}
-              data-testid="eps_header_changeRoleLink"
-            >
-              {HEADER_CHANGE_ROLE_BUTTON}
-            </Header.NavItem>
-          )}
-
-          {/* Give feedback (opens in new tab) */}
-          <Header.NavItem
-            href={HEADER_FEEDBACK_TARGET}
-            target="_blank"
-            rel="noopener noreferrer"
-            data-testid="eps_header_feedbackLink"
-          >
-            {HEADER_FEEDBACK_BUTTON}
-          </Header.NavItem>
-
-          {/* Log out */}
-          {shouldShowLogoutLink && (
-            <Header.NavItem
-              to={FRONTEND_PATHS.LOGOUT}
-              data-testid="eps_header_logout"
-              onClick={handleLogoutClick}
-            >
-              {HEADER_LOG_OUT_BUTTON}
-            </Header.NavItem>
-          )}
-
-          {/* Exit button */}
-          {shouldShowExitButton && (
-            <Header.NavItem
-              to={HEADER_EXIT_TARGET}
-              data-testid="eps_header_exit"
-            >
-              {HEADER_EXIT_BUTTON}
-            </Header.NavItem>
-          )}
-
-          <Header.NavDropdownMenu dropdownText="Menu" />
-        </Header.Nav>
       </Header>
 
       <EpsLogoutModal
