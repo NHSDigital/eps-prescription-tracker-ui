@@ -7,17 +7,19 @@ import {
   Details,
   Table,
   ErrorSummary,
-  InsetText
+  InsetText,
+  Card
 } from "nhsuk-react-components"
 
 import {useAuth} from "@/context/AuthProvider"
-import EpsCard from "@/components/EpsCard"
 import EpsSpinner from "@/components/EpsSpinner"
 import {RoleDetails} from "@cpt-ui-common/common-types"
 import {Button} from "./ReactRouterButton"
 import {FRONTEND_PATHS} from "@/constants/environment"
 import {getSearchParams} from "@/helpers/getSearchParams"
 import {logger} from "@/helpers/logger"
+import axios from "axios"
+import {handleRestartLogin} from "@/helpers/logout"
 
 // This is passed to the EPS card component.
 export type RolesWithAccessProps = {
@@ -89,6 +91,24 @@ export default function RoleSelectionPage({
 
   const [roleCardPropsWithAccess, setRoleCardPropsWithAccess] = useState<Array<RolesWithAccessProps>>([])
   const [roleCardPropsWithoutAccess, setRoleCardPropsWithoutAccess] = useState<Array<RolesWithoutAccessProps>>([])
+
+  const handleSetSelectedRole = async (
+    e: React.MouseEvent | React.KeyboardEvent,
+    roleCardProps: RolesWithAccessProps
+  ) => {
+    e.preventDefault()
+    try {
+      await auth.updateSelectedRole(roleCardProps.role)
+      navigate(roleCardProps.link)
+    } catch (err) {
+      if (axios.isAxiosError(err) && (err.response?.status === 401)) {
+        const invalidSessionCause = err.response?.data?.invalidSessionCause
+        handleRestartLogin(auth, invalidSessionCause)
+        return
+      }
+      logger.error("Error selecting role:", err)
+    }
+  }
 
   useEffect(() => {
     // Transform roles data for display
@@ -237,7 +257,53 @@ export default function RoleSelectionPage({
                 {roleCardPropsWithAccess
                   .filter((duplicateRole) => duplicateRole.role.role_id !== auth.selectedRole?.role_id)
                   .map((roleCardProps: RolesWithAccessProps) => (
-                    <EpsCard {...roleCardProps} key={roleCardProps.uuid} />
+                    <Card
+                      key={roleCardProps.uuid}
+                      data-testid="eps-card"
+                      className="nhsuk-card nhsuk-card--primary nhsuk-u-margin-bottom-4"
+                    >
+                      <Card.Content>
+                        <div className="eps-card__layout">
+                          <div>
+                            <div
+                              tabIndex={0}
+                              className="eps-card__org-focus-area"
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter" || e.key === " ") {
+                                  e.preventDefault()
+                                  handleSetSelectedRole(e, roleCardProps)
+                                }
+                              }}
+                              onClick={(e) => {
+                                e.preventDefault()
+                                handleSetSelectedRole(e, roleCardProps)
+                              }}
+                            >
+                              <Card.Heading className="nhsuk-heading-s eps-card__org-name">
+                                {roleCardProps.role.org_name || noOrgName}
+                                <br />
+                                (ODS: {roleCardProps.role.org_code || noODSCode})
+                              </Card.Heading>
+                            </div>
+                            <Card.Description className="nhsuk-u-margin-top-2">
+                              {roleCardProps.role.role_name || noRoleName}
+                            </Card.Description>
+                          </div>
+                          <div className="eps-card__address">
+                            <Card.Description>
+                              {(roleCardProps.role.site_address || contentText.noAddress)
+                                .split("\n")
+                                .map((line: string, index: number) => (
+                                  <span key={index}>
+                                    {line}
+                                    <br />
+                                  </span>
+                                ))}
+                            </Card.Description>
+                          </div>
+                        </div>
+                      </Card.Content>
+                    </Card>
                   ))}
               </div>
             </Col>
