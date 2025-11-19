@@ -57,7 +57,24 @@ export default function AppHeader() {
           <span className="text">{HEADER_LOG_OUT_BUTTON}</span>
         </HeaderWithLogo.NavItem>
 
-        <HeaderWithLogo.NavDropdownMenu dropdownText="More" />
+        <HeaderWithLogo.NavDropdownMenu dropdownText="More">
+          <HeaderWithLogo.NavItem
+            href={HEADER_FEEDBACK_TARGET}
+            target="_blank"
+            rel="noopener noreferrer"
+            data-testid="eps_header_feedbackLink_mobile"
+          >
+            <span className="text">{HEADER_FEEDBACK_BUTTON}</span>
+          </HeaderWithLogo.NavItem>
+          <HeaderWithLogo.NavItem
+            tabIndex={0}
+            role="button"
+            onClick={() => window.location.href = FRONTEND_PATHS.LOGOUT}
+            data-testid="eps_header_logout_mobile"
+          >
+            <span className="text">{HEADER_LOG_OUT_BUTTON}</span>
+          </HeaderWithLogo.NavItem>
+        </HeaderWithLogo.NavDropdownMenu>
       </HeaderWithLogo.Nav>
     </HeaderWithLogo>
   )
