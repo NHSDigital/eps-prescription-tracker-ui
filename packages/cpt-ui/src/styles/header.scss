@@ -220,71 +220,22 @@
         }
     }
 
-    .nhsuk-mobile-menu-container {
-        // position: relative !important;
-    }
 
     .nhsuk-header__drop-down {
-        // position: fixed !important;
-        // z-index: 999999 !important;
-        // top: 46px !important;
-        // right: 10px !important;
         left: auto;
-        // width: 220px !important;
-        // padding: 0 !important;
         margin: 0;
-        // border: 1px solid #4d8ecd !important;
-        // background-color: #005eb8 !important;
-        // box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
-        // visibility: visible !important;
-        // opacity: 1 !important;
-        // transform: none !important;
-        // clip: auto !important;
-        // overflow: visible !important;
 
         li, .nhsuk-header__navigation-item {
-            display: block !important;
-            visibility: visible !important;
-            opacity: 1 !important;
-            background: #005eb8 !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            border-bottom: 1px solid #4d8ecd !important;
-            list-style: none !important;
-
-            &:last-child {
-                border-bottom: none !important;
-            }
+            border-bottom: 1px solid #4d8ecd;
 
             a, button, .nhsuk-header__navigation-link {
-                display: block !important;
-                visibility: visible !important;
-                opacity: 1 !important;
-                color: #ffffff !important;
-                background: #005eb8 !important;
-                font-size: 16px !important;
-                font-weight: 400 !important;
-                padding: 12px 16px !important;
-                margin: 0 !important;
-                border: none !important;
-                text-decoration: none !important;
-                width: 100% !important;
-                text-align: right !important;
-                cursor: pointer !important;
-                box-sizing: border-box !important;
-
-                &:hover, &:focus {
-                    background-color: #004799 !important;
-                    color: #ffffff !important;
-                }
-
-                .text, span {
-                    display: inline !important;
-                    color: inherit !important;
-                    background: transparent !important;
-                    font-size: inherit !important;
-                    font-weight: inherit !important;
-                }
+                // might want padding
+                // padding: 12px 16px !important;
+                background: #005eb8;
+                margin: 0;
+                border: none;
+                width: 100%;
+                cursor: pointer;
             }
         }
     }
