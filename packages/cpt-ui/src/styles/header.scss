@@ -225,23 +225,22 @@
     }
 
     .nhsuk-header__drop-down {
-        position: fixed !important;
-        z-index: 999999 !important;
-        top: 46px !important;
-        right: 10px !important;
-        left: auto !important;
-        width: 220px !important;
-        height: auto !important;
-        padding: 0 !important;
-        margin: 0 !important;
-        border: 1px solid #4d8ecd !important;
-        background-color: #005eb8 !important;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
-        visibility: visible !important;
-        opacity: 1 !important;
-        transform: none !important;
-        clip: auto !important;
-        overflow: visible !important;
+        // position: fixed !important;
+        // z-index: 999999 !important;
+        // top: 46px !important;
+        // right: 10px !important;
+        left: auto;
+        // width: 220px !important;
+        // padding: 0 !important;
+        margin: 0;
+        // border: 1px solid #4d8ecd !important;
+        // background-color: #005eb8 !important;
+        // box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
+        // visibility: visible !important;
+        // opacity: 1 !important;
+        // transform: none !important;
+        // clip: auto !important;
+        // overflow: visible !important;
 
         li, .nhsuk-header__navigation-item {
             display: block !important;
