@@ -220,13 +220,20 @@
             }
 
             &:focus {
-                border-width: 4px 0 !important;
-                border-color: transparent transparent #212b32;
+                border: 2px solid #ffeb3b !important;
+                background-color: #ffeb3b !important;
+                border-radius: 6px;
+                color: #212b32 !important;
+                outline: none !important;
+                
+                .nhsuk-icon {
+                    fill: #212b32 !important;
+                }
             }
 
-            &:hover {
-                background: transparent !important;
-            }
+            // &:hover {
+            //     background: transparent !important;
+            // }
         }
     }
 
