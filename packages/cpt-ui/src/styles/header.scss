@@ -1,42 +1,13 @@
 /* stylelint-disable selector-max-id */
 /* stylelint-disable declaration-no-important */
 
-/* TARGET THE EXACT MORE BUTTON FROM HTML */
-.nhsuk-header__menu-toggle.nhsuk-header__navigation-link {
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    background: transparent !important;
-    color: #ffffff !important;
-    border: none !important;
-    z-index: 9999 !important;
-    position: relative !important;
-    font-size: 16px !important;
-    font-weight: 400 !important;
-    padding: 8px 12px !important;
-}
 
 .nhsuk-mobile-menu-container {
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
+    display: block;
 }
 
 .nhsuk-mobile-menu-container .nhsuk-header__menu-toggle {
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    background: transparent !important;
-    color: #ffffff !important;
-    border: none !important;
-}
-
-/* Logoout screen */
-.masthead-wrapper {
-    position: sticky;
-    z-index: 1000;
-    top: 0;
-    width: 100%;
+    visibility: visible;
 }
 
 .nhsuk-skip-link:focus {
@@ -44,7 +15,7 @@
 }
 
 .masthead-container {
-    max-width: 100%;
+    // max-width: 100%;
     flex-grow: 1;
     margin: 0;
 }
@@ -229,8 +200,6 @@
             border-bottom: 1px solid #4d8ecd;
 
             a, button, .nhsuk-header__navigation-link {
-                // might want padding
-                // padding: 12px 16px !important;
                 background: #005eb8;
                 margin: 0;
                 border: none;
