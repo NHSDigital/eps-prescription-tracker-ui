@@ -14,6 +14,13 @@ import {FRONTEND_PATHS} from "@/constants/environment"
 export default function AppHeader() {
   return (
     <HeaderWithLogo>
+      <a
+        href="#main-content"
+        className="nhsuk-skip-link"
+        data-testid="eps_header_skipLink"
+      >
+        Skip to main content
+      </a>
       <HeaderWithLogo.Logo href="/" />
       <HeaderWithLogo.ServiceName href="/">
         Prescription Tracker (Pilot)
