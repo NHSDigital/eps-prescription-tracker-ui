@@ -100,7 +100,7 @@ export class usRegionLogGroups extends Construct {
 
     const cloudfrontLogGroup = new LogGroup(this, "CloudFrontLogGroup", {
       encryptionKey: cloudwatchLogsKmsKey,
-      logGroupName: `/aws/cloudfront/${props.cloudfrontLogGroupName}`,
+      logGroupName: `/aws/vendedlogs/${props.cloudfrontLogGroupName}`,
       retention: props.logRetentionInDays,
       removalPolicy: RemovalPolicy.DESTROY
     })
