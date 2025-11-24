@@ -10,7 +10,6 @@
 }
 
 .masthead-container {
-    // max-width: 100%;
     flex-grow: 1;
     margin: 0;
 }
@@ -45,6 +44,33 @@
     }
 }
 
+.combined-logo-and-service-name {
+    text-decoration: none !important;
+    margin-right: auto !important;
+    flex-shrink: 0 !important;
+    
+    &:hover {
+        text-decoration: none !important;
+        
+        .nhsuk-header__transactional-service-name,
+        .nhsuk-header__transactional-service-name--link {
+            text-decoration: underline !important;
+        }
+    }
+    
+    &:focus {
+        .nhsuk-header__transactional-service-name,
+        .nhsuk-header__transactional-service-name--link {
+            color: #212b32 !important;
+        }
+    }
+    
+    .nhsuk-header__transactional-service-name,
+    .nhsuk-header__transactional-service-name--link {
+        text-decoration: none !important;
+    }
+}
+
 .nhsuk-header__transactional-service-name {
     width: auto;
     max-width: 40vw;
@@ -72,7 +98,6 @@
     align-items: center;
     justify-content: flex-end;
     overflow: visible;
-
 
     .nhsuk-navigation {
         width: 100%;

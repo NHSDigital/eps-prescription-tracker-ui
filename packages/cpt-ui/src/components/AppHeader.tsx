@@ -17,11 +17,9 @@ import {useAuth} from "@/context/AuthProvider"
 
 import {EpsLogoutModal} from "@/components/EpsLogoutModal"
 import {normalizePath} from "@/helpers/utils"
-import {ENV_CONFIG, FRONTEND_PATHS, AUTH_CONFIG} from "@/constants/environment"
+import {FRONTEND_PATHS, AUTH_CONFIG} from "@/constants/environment"
 import {getHomeLink} from "@/helpers/loginFunctions"
 import {signOut} from "@/helpers/logout"
-
-const baseUrl = ENV_CONFIG.BASE_URL
 
 export default function AppHeader() {
   const navigate = useNavigate()
@@ -103,20 +101,18 @@ export default function AppHeader() {
         >
           {HEADER_SKIP_TO_MAIN_CONTENT}
         </a>
-        <HeaderWithLogo.Logo href={`${baseUrl}${getHomeLink(auth?.isSignedIn || false)}`} />
         <Link
           to={getHomeLink(auth?.isSignedIn || false)}
           onClick={redirectToLogin}
           className="combined-logo-and-service-name"
-          style={{display: "flex"}}
+          style={{display: "flex", alignItems: "center"}}
           data-testid="eps_header_logoLink"
         >
+          <HeaderWithLogo.Logo />
+          <HeaderWithLogo.ServiceName>
+            {HEADER_SERVICE}
+          </HeaderWithLogo.ServiceName>
         </Link>
-        <HeaderWithLogo.ServiceName
-          href={`${baseUrl}${getHomeLink(auth?.isSignedIn || false)}`}
-        >
-          {HEADER_SERVICE}
-        </HeaderWithLogo.ServiceName>
         <HeaderWithLogo.Nav id="header-navigation">
           {shouldShowSelectRole && (
             <HeaderWithLogo.NavItem
