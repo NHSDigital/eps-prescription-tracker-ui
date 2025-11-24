@@ -9,8 +9,7 @@ import {
   HEADER_SELECT_YOUR_ROLE_BUTTON,
   HEADER_SELECT_YOUR_ROLE_TARGET,
   HEADER_LOG_OUT_BUTTON,
-  HEADER_SERVICE,
-  HEADER_SKIP_TO_MAIN_CONTENT
+  HEADER_SERVICE
 } from "@/constants/ui-strings/HeaderStrings"
 import {AuthContext} from "@/context/AuthProvider"
 import {useAuth} from "@/context/AuthProvider"
@@ -93,13 +92,6 @@ export default function AppHeader() {
   }
   return (
     <>
-      <a
-        href="#main-content"
-        className="nhsuk-skip-link"
-        data-testid="eps_header_skipLink"
-      >
-        {HEADER_SKIP_TO_MAIN_CONTENT}
-      </a>
       <HeaderWithLogo>
         <Link
           to={getHomeLink(auth?.isSignedIn || false)}

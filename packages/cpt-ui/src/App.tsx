@@ -31,6 +31,13 @@ export default function App() {
     <AuthProvider>
       <AccessProvider>
         <PatientDetailsProvider>
+          <a
+            href="#main-content"
+            className="nhsuk-skip-link"
+            data-testid="eps_header_skipLink"
+          >
+            Skip to main content
+          </a>
           <EPSCookieBanner />
           <PrescriptionInformationProvider>
             <SearchProvider>
