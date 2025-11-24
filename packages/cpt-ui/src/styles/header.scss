@@ -208,3 +208,22 @@
         display: none !important;
     }
 }
+
+
+#header-navigation {
+    .nhsuk-header__menu-toggle,
+    button[class*="menu-toggle"],
+    button[aria-controls],
+    .nhsuk-header__navigation-item:last-child {
+        display: none !important;
+    }
+
+    @media (max-width: 48.0525em) {
+        .nhsuk-header__menu-toggle,
+        button[class*="menu-toggle"],
+        button[aria-controls],
+        .nhsuk-header__navigation-item:last-child {
+            display: flex !important;
+        }
+    }
+}
