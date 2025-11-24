@@ -93,14 +93,14 @@ export default function AppHeader() {
   }
   return (
     <>
+      <a
+        href="#main-content"
+        className="nhsuk-skip-link"
+        data-testid="eps_header_skipLink"
+      >
+        {HEADER_SKIP_TO_MAIN_CONTENT}
+      </a>
       <HeaderWithLogo>
-        <a
-          href="#main-content"
-          className="nhsuk-skip-link"
-          data-testid="eps_header_skipLink"
-        >
-          {HEADER_SKIP_TO_MAIN_CONTENT}
-        </a>
         <Link
           to={getHomeLink(auth?.isSignedIn || false)}
           onClick={redirectToLogin}
