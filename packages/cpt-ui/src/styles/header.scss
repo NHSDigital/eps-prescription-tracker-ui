@@ -184,6 +184,10 @@
             display: flex !important;
             top: 4px;
 
+            @media (min-width: 48.0626em) and (max-width: 50em) {
+                top: 0px;
+            }
+
             .nhsuk-icon {
                 position: static;
                 width: 24px;
@@ -215,6 +219,11 @@
     .nhsuk-header__drop-down {
         left: auto;
         margin: 0;
+        top: calc(100% + 4px);
+
+        @media (min-width: 48.0626em) and (max-width: 50em) {
+            top: 100%;
+        }
 
         li, .nhsuk-header__navigation-item {
             border-bottom: 1px solid #4d8ecd;
@@ -243,7 +252,7 @@
         display: none !important;
     }
 
-    @media (max-width: 48.0525em) {
+    @media (max-width: 50em) {
         .nhsuk-header__menu-toggle,
         button[class*="menu-toggle"],
         button[aria-controls],
