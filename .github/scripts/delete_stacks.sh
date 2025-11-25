@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+# retry aws commands
+AWS_MAX_ATTEMPTS=20
+export AWS_MAX_ATTEMPTS
+
 # generic script for removing cloudformation stacks and proxygen deployed apis where the pull request is closed
 
 # set the repo name to be the name of the repo this is running in
