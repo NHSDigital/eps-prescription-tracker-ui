@@ -271,6 +271,12 @@
     }
 }
 
+// Override NHS framework navigation border
+@media (min-width: 40.0625em) {
+    .nhsuk-navigation {
+        border-top: none;
+    }
+}
 
 #header-navigation {
     .nhsuk-header__menu-toggle,
