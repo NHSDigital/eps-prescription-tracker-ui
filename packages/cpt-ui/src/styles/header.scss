@@ -214,6 +214,7 @@
             background-color: #ffeb3b;
             color: #212b32;
             fill: #212b32;
+            border-radius: 0;
 
             .nhsuk-icon,
             .nhsuk-icon path {
@@ -247,7 +248,8 @@
             &:focus {
                 background-color: #ffeb3b !important;
                 color: #212b32 !important;
-                border-radius: 4px !important;
+                border-radius: 0 !important;
+                border-bottom: 2px solid #212b32 !important;
                 
                 .nhsuk-icon {
                     fill: #212b32 !important;
