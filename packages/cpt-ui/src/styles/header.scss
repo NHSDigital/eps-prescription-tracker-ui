@@ -120,13 +120,13 @@
     float: initial;
 
     .nhsuk-header__transactional-service-name--link {
-        display: inline-block;
-        margin-top: 0;
-        margin-bottom: 0;
+        // display: inline-block;
+        // margin-top: 0;
+        // margin-bottom: 0;
         font-size: 16px;
-        font-weight: 500;
-        line-height: 1em;
-        vertical-align: middle;
+        // font-weight: 500;
+        // line-height: 1em;
+        // vertical-align: middle;
     }
 }
 
@@ -260,7 +260,7 @@
     .nhsuk-header__drop-down {
         left: auto;
         margin: 0;
-        top: calc(100% + 10px);
+        top: calc(100% + 11px);
 
         @media (min-width: 48.0626em) and (max-width: 50em) {
             top: 100%;
@@ -304,7 +304,7 @@
         display: none !important;
     }
 
-    @media (max-width: 50em) {
+    @media (max-width: 59.375em) {
         .nhsuk-header__menu-toggle,
         button[class*="menu-toggle"],
         button[aria-controls],
