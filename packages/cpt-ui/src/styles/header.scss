@@ -28,8 +28,6 @@
 
 .nhsuk-header__logo {
     flex-shrink: 0;
-    transform: translateY(-5%) translateX(-1.5rem);
-    margin-left: 1rem;
 
     .nhsuk-header__link {
         display: block;
@@ -47,10 +45,12 @@
 .combined-logo-and-service-name {
     text-decoration: none;
     margin-right: auto;
-    // flex-shrink: 0;
+    flex-shrink: 1;
     display: flex;
     align-items: center;
-    // gap: 8px;
+    box-sizing: content-box;
+    gap: 8px;
+    min-width: fit-content;
     
     &:hover {
         text-decoration: none;
