@@ -357,41 +357,7 @@
         display: none !important;
     }
 
-    // Hide navigation items progressively as screen gets smaller
-    @media (max-width: 75em) {
-        // Start hiding items at 1200px
-        .nhsuk-header__navigation-item:nth-last-child(2) {
-            display: none !important;
-        }
-    }
-
-    @media (max-width: 68.75em) {
-        // Hide more items at 1100px
-        .nhsuk-header__navigation-item:nth-last-child(3) {
-            display: none !important;
-        }
-    }
-
-    @media (max-width: 62.5em) {
-        // Hide more items at 1000px and show "More" button
-        .nhsuk-header__navigation-item:nth-last-child(4) {
-            display: none !important;
-        }
-        
-        .nhsuk-header__menu-toggle,
-        button[class*="menu-toggle"],
-        button[aria-controls],
-        .nhsuk-header__navigation-item:last-child {
-            display: flex !important;
-        }
-    }
-
     @media (max-width: 59.375em) {
-        // Hide remaining items at 950px
-        .nhsuk-header__navigation-item:not(:last-child) {
-            display: none !important;
-        }
-        
         .nhsuk-header__menu-toggle,
         button[class*="menu-toggle"],
         button[aria-controls],
