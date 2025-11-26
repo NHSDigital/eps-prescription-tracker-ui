@@ -1,6 +1,7 @@
 import React, {Component, ReactNode} from "react"
 import {AwsRum} from "aws-rum-web"
 import {AwsRumContext} from "./AwsRumProvider"
+import {logger} from "@/helpers/logger"
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -32,6 +33,9 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   // Declare the context type
   declare context: React.ContextType<typeof AwsRumContext>
 
+  // Prevent multiple cleanup attempts
+  private isCleaningUp = false
+
   constructor(props: ErrorBoundaryProps) {
     super(props)
     this.state = {
@@ -58,17 +62,70 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
     // Correctly access the context value
     if (this.context) {
       const rumInstance: AwsRum = this.context
+
+      // Enhanced detection for authentication errors
+      const isAuthError =
+        error.name === "UserAlreadyAuthenticatedException" ||
+        error.message?.includes("already a signed in user") ||
+        error.message?.includes("User already authenticated") ||
+        (error as unknown as {code?: string})?.code === "UserAlreadyAuthenticatedException"
+
       // modify the error we send to rum to include the trace id we show to user
       // we use record event rather than record error so that session attributes are included
       const customError = {
         errorTraceId: this.state.errorTraceId,
         message: error.message,
         stack: error.stack,
-        errorInfo: errorInfo
+        errorInfo: errorInfo,
+        errorType: error.name,
+        isUserAlreadyAuthenticatedException: isAuthError
       }
       rumInstance.recordEvent("errorBoundaryCatch", customError)
       // but we also record an error to try and get get the real line numbers
       rumInstance.recordError(error)
+
+      // Handle authentication errors with thorough cleanup
+      if (isAuthError && !this.isCleaningUp) {
+        this.isCleaningUp = true
+        logger.warn("UserAlreadyAuthenticatedException reached error boundary - clearing session")
+
+        try {
+          // Check if we're in a browser environment and clear localStorage
+          if (typeof window !== "undefined" && typeof localStorage !== "undefined") {
+            const cognitoKeys = Object.keys(localStorage).filter(
+              key => key.includes("CognitoIdentityServiceProvider") ||
+                     key.includes("amplify")
+            )
+            cognitoKeys.forEach(key => localStorage.removeItem(key))
+
+            rumInstance.recordEvent("errorBoundary_clearedCognitoSession", {
+              clearedKeys: cognitoKeys.length,
+              timestamp: new Date().toISOString()
+            })
+          }
+
+          // Clear sessionStorage
+          if (typeof sessionStorage !== "undefined") {
+            sessionStorage.clear()
+          }
+
+          // Redirect to login after cleanup
+          setTimeout(() => {
+            if (typeof window !== "undefined") {
+              window.location.href = window.location.origin + "/login"
+            }
+          }, 1000)
+
+        } catch (storageError) {
+          logger.error("Error clearing storage in error boundary", storageError)
+          rumInstance.recordError(storageError as Error)
+        }
+
+        // Reset cleanup flag after a delay
+        setTimeout(() => {
+          this.isCleaningUp = false
+        }, 5000)
+      }
     }
   }
 
