@@ -357,7 +357,9 @@
         display: none !important;
     }
 
-    @media (max-width: 59.375em) {
+    // Only show "More" button when navigation items start to overflow
+    // This accounts for the typical navigation items + available space
+    @media (max-width: 52em) {
         .nhsuk-header__menu-toggle,
         button[class*="menu-toggle"],
         button[aria-controls],
