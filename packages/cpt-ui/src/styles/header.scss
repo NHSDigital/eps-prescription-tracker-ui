@@ -24,7 +24,7 @@
     overflow: visible;
     padding-left: 24px;
     padding-right: 24px;
-    padding-bottom: 10px;
+    // padding-bottom: 10px;
 }
 
 .nhsuk-header__logo {
@@ -140,12 +140,16 @@
     align-items: center;
     justify-content: flex-end;
     overflow: visible;
+    height: 100%;
 
     .nhsuk-navigation {
         width: 100%;
         max-width: 100%;
         flex-shrink: 1;
         margin-bottom: 0 !important;
+        height: 100%;
+        display: flex;
+        align-items: stretch;
     }
 }
 
@@ -160,6 +164,7 @@
 .nhsuk-header__navigation-list {
     display: flex;
     width: 100%;
+    height: 100%;
     align-items: right;
     justify-content: right;
     padding-left: 0;
@@ -171,6 +176,7 @@
     .nhsuk-header__navigation-item {
         position: relative;
         display: flex;
+        height: 100%;
         border-top: none;
         margin-bottom: 0;
         list-style-type: none;
@@ -225,13 +231,18 @@
 
         &.nhsuk-header__menu-toggle {
             display: flex !important;
-            top: 0;
+            top: 8px;
             height: 100%;
             align-items: center;
-            padding: 0 16px;
+            padding: 14px 16px;
 
             @media (min-width: 48.0626em) and (max-width: 50em) {
                 top: 0px;
+                align-items: stretch;
+            }
+
+            @media (min-width: 50em) {
+                align-items: stretch;
             }
 
             .nhsuk-icon {
@@ -255,7 +266,8 @@
                 color: #212b32 !important;
                 border-radius: 0 !important;
                 border-bottom: 2px solid #212b32 !important;
-                z-index: 999 !important;
+                // height: 100%;
+                // z-index: 999 !important;
                 
                 &::after {
                     content: '';
