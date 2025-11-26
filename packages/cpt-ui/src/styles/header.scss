@@ -289,8 +289,12 @@
 
 
     .nhsuk-header__drop-down {
-        left: auto;
+        right: 0;
         margin: 0;
+        border-top: none;
+        border-bottom: none;
+        background-color: transparent;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         // margin-top: 38px;
         // margin-top: 20px;
         // top: calc(100% + 15px);
