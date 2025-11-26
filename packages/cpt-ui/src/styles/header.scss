@@ -134,13 +134,17 @@
 .nhsuk-navigation-container {
     // display: flex;
     width: auto;
-    max-width: 50%;
+    max-width: 60%;
     flex-grow: 1;
     flex-shrink: 1;
     align-items: center;
     justify-content: flex-end;
     overflow: visible;
     height: 100%;
+
+    @media (max-width: 59.375em) {
+        max-width: 70%;
+    }
 
     .nhsuk-navigation {
         width: 100%;
@@ -231,17 +235,20 @@
 
         &.nhsuk-header__menu-toggle {
             display: flex !important;
-            top: 8px;
+            top: 0;
             height: 100%;
             align-items: center;
-            padding: 14px 16px;
+            padding: 0 16px;
 
-            @media (min-width: 48.0626em) and (max-width: 50em) {
-                top: 0px;
+            @media (max-width: 48.0625em) {
+                top: 8px;
+            }
+
+            @media (min-width: 48.0626em) and (max-width: 53.125em) {
                 align-items: stretch;
             }
 
-            @media (min-width: 50em) {
+            @media (min-width: 53.125em) {
                 align-items: stretch;
             }
 
@@ -289,18 +296,27 @@
 
 
     .nhsuk-header__drop-down {
-        right: 0;
+        position: absolute;
+        left: auto;
+        right: -10px;
         margin: 0;
         border-top: none;
         border-bottom: none;
         background-color: transparent;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        min-width: 150px;
+        width: auto;
         // margin-top: 38px;
         // margin-top: 20px;
         // top: calc(100% + 15px);
 
-        @media (min-width: 48.0626em) and (max-width: 50em) {
+        @media (min-width: 48.0626em) and (max-width: 53.125em) {
             top: 100%;
+        }
+
+        @media (max-width: 48.0625em) {
+            right: -10px;
+            left: auto;
         }
 
         li, .nhsuk-header__navigation-item {
@@ -341,7 +357,41 @@
         display: none !important;
     }
 
+    // Hide navigation items progressively as screen gets smaller
+    @media (max-width: 75em) {
+        // Start hiding items at 1200px
+        .nhsuk-header__navigation-item:nth-last-child(2) {
+            display: none !important;
+        }
+    }
+
+    @media (max-width: 68.75em) {
+        // Hide more items at 1100px
+        .nhsuk-header__navigation-item:nth-last-child(3) {
+            display: none !important;
+        }
+    }
+
+    @media (max-width: 62.5em) {
+        // Hide more items at 1000px and show "More" button
+        .nhsuk-header__navigation-item:nth-last-child(4) {
+            display: none !important;
+        }
+        
+        .nhsuk-header__menu-toggle,
+        button[class*="menu-toggle"],
+        button[aria-controls],
+        .nhsuk-header__navigation-item:last-child {
+            display: flex !important;
+        }
+    }
+
     @media (max-width: 59.375em) {
+        // Hide remaining items at 950px
+        .nhsuk-header__navigation-item:not(:last-child) {
+            display: none !important;
+        }
+        
         .nhsuk-header__menu-toggle,
         button[class*="menu-toggle"],
         button[aria-controls],
