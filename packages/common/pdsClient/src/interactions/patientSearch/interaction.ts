@@ -12,18 +12,16 @@ import {
 } from "./types"
 import * as axios from "../../axios_wrapper"
 import {AxiosResponse} from "axios"
-import {
-  PatientAddressUse,
-  PatientMetaCode,
-  PatientNameUse,
-  ResponseType,
-  ResponseValidator,
-  SuccessfulResponse,
-  UnrestrictedPatientResource
-} from "./schema"
+import {PDSPatientSearchResponse, pdsPatientSearchResponseSchema, SuccessfulResponse} from "./schema"
 import {ErrorObject} from "ajv"
 import {NOT_AVAILABLE, PatientSummary} from "@cpt-ui-common/common-types"
 import {exhaustive_switch_guard} from "@cpt-ui-common/lambdaUtils"
+import {isFuture, isPast} from "date-fns"
+import {ResponseValidator} from "../../schema/responseValidator"
+import {ResourceType} from "../../schema/elements"
+import {PatientMetaCode, UnrestrictedPatient} from "../../schema/patient"
+import {PatientNameUse} from "../../schema/name"
+import {PatientAddressUse} from "../../schema/address"
 
 enum PatientSearchOutcomeType {
   SUCCESS = "SUCCESS",
@@ -106,7 +104,7 @@ async function patientSearch(
     }
   }
 
-  const responseValidator = new ResponseValidator()
+  const responseValidator = new ResponseValidator<PDSPatientSearchResponse>(pdsPatientSearchResponseSchema)
   const isValidResponse = responseValidator.validate(data)
   if (!isValidResponse) {
     return {
@@ -119,7 +117,7 @@ async function patientSearch(
   // (Response is a 200, and the body is an OperationOutcome.
   // Response body is either a bundle or a
   // too many matches operation outcome as verified by the schema)
-  if(data.resourceType === ResponseType.OPERATION_OUTCOME){
+  if(data.resourceType === ResourceType.OPERATION_OUTCOME){
     return {
       type: PatientSearchOutcomeType.TOO_MANY_MATCHES,
       searchParameters
@@ -139,7 +137,7 @@ async function patientSearch(
     .entry
     // Filter out restricted/redacted patients
     .filter((entry) => entry.resource.meta.security[0].code === PatientMetaCode.UNRESTRICTED)
-    .map((entry) => entry.resource as UnrestrictedPatientResource)
+    .map((entry) => entry.resource as UnrestrictedPatient)
     .map(parseResource)
 
   return {
@@ -236,13 +234,27 @@ const validatePostcode = (
 // TODO: AEA-5926 - this should probably be pulled out and made common, used here and patientDetails
 // TODO: AEA-5926 - this doesnt check for an active temp address which we should be
 // TODO: AEA-5926 - is "n/a" is the right thing to be returning here?
-const parseResource = (resource: UnrestrictedPatientResource): PatientSummary => {
+
+interface ActiveAddress {
+    line?: Array<string>,
+    postcode?: string,
+    period?: {
+      start: string
+      end?: string
+    }
+  }
+interface ActiveAddresses {
+  home: Array<ActiveAddress>
+  temp: Array<ActiveAddress>
+}
+
+const parseResource = (resource: UnrestrictedPatient): PatientSummary => {
   /* Return "n/a" for any missing fields on a returned patient record, so that the UI can
   correctly display that those fields are truly not present on the returned record and are
   not unavailable due to not finding the patient or having some issue calling PDS */
   const nhsNumber = resource.id
-  const gender = resource?.gender ?? NOT_AVAILABLE
-  const dateOfBirth = resource?.birthDate ?? NOT_AVAILABLE
+  const gender = resource.gender ?? NOT_AVAILABLE
+  const dateOfBirth = resource.birthDate ?? NOT_AVAILABLE
 
   // Find the usual name (a patient record should contain one, but it is not guaranteed)
   const usualName = resource?.name?.find((name) => name.use === PatientNameUse.USUAL)
@@ -250,9 +262,53 @@ const parseResource = (resource: UnrestrictedPatientResource): PatientSummary =>
   const givenName = usualName?.given ?? NOT_AVAILABLE
 
   // Find the home address (a patient record should contain one, but it is not guaranteed)
-  const homeAddress = resource?.address?.find((address) => address.use === PatientAddressUse.HOME)
-  const address = homeAddress?.line ?? NOT_AVAILABLE
-  const postcode = homeAddress?.postalCode ?? NOT_AVAILABLE
+  const activeAddresses: ActiveAddresses = {
+    home: [],
+    temp: []
+  }
+
+  /*
+    Get all active addresses, they are classed as possibly active if:
+      - Has no period
+      - Has a period start date in the past and no end date
+      - Has a period start date in the past and an end date in the future
+  */
+
+  // TODO: this needs massively cleaning up and probably breaking into common logic so we can do the same for names
+  if(resource.address){
+    for(const address of resource.address){
+      if (!(address.use === PatientAddressUse.HOME || address.use === PatientAddressUse.TEMP)){
+        continue
+      }
+      if (address.period){
+        if (isPast(address.period.start) && (!address.period.end || isFuture(address.period.end))){
+          activeAddresses[address.use].push({line:address?.line, postcode: address.postalCode, period: address.period})
+        }
+      } else {
+        activeAddresses[address.use].push({line: address?.line, postcode: address?.postalCode})
+      }
+    }
+  }
+
+  /*
+    - If there are any temp active addresses these trump any possible active home addresses
+    - If there are multiple active addresses in the active category (home/temp), determine the most likely correct
+      active by comparing start dates if available and choosing the one with the most recent start date.If they
+      all have no period, pick the first?
+  */
+  if (activeAddresses.temp.length){
+    // set active temp
+  } else {
+    // set active home
+  }
+
+  // const homeAddress = resource?.address?.find((address) => address.use === PatientAddressUse.HOME)
+  // const address = homeAddress?.line ?? NOT_AVAILABLE
+  // const postcode = homeAddress?.postalCode ?? NOT_AVAILABLE
+
+  // TODO: TEMP
+  const address = [""]
+  const postcode = ""
 
   return {
     nhsNumber,

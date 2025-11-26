@@ -2,7 +2,8 @@ import {PDSResponse} from "./types"
 import {NOT_AVAILABLE, PatientDetails} from "@cpt-ui-common/common-types"
 import {URL} from "url"
 import path from "path"
-import {PatientAddressUse, PatientNameUse} from "../patientSearch/schema"
+import {PatientAddressUse} from "../../schema/address"
+import {PatientNameUse} from "../../schema/name"
 
 // TODO: AEA-5926 - should probably be common logic between both interactions
 export const mapPdsResponseToPatientDetails = (pdsData: PDSResponse): PatientDetails => {

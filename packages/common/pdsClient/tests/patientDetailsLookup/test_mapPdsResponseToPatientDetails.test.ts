@@ -1,7 +1,7 @@
 import {PatientSummaryGender} from "@cpt-ui-common/common-types"
 import {PDSResponse} from "../../src/interactions/patientDetailsLookup/types"
 import {mapPdsResponseToPatientDetails} from "../../src/interactions/patientDetailsLookup/utils"
-import {PatientAddressUse} from "../../src/interactions/patientSearch/schema"
+import {PatientAddressUse} from "../../src/schema/address"
 
 const mockPdsResponse: PDSResponse = {
   id: "9999999999",

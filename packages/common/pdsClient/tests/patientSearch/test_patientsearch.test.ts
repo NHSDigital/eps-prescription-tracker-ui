@@ -1,16 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {describe, it, expect} from "@jest/globals"
+import {add, sub, format} from "date-fns"
 import {mockLogger, mockAxiosInstance, mockAxiosErrorInstance} from "@cpt-ui-common/testing"
 import * as examples from "./examples/index"
 import {URL} from "url"
 
 import * as pds from "../../src"
-import {
-  PatientAddressUse,
-  PatientNameUse,
-  SuccessfulResponse,
-  UnrestrictedPatientResource
-} from "../../src/interactions/patientSearch/schema"
+import {PatientAddressUse} from "../../src/schema/address"
+import {PatientNameUse} from "../../src/schema/name"
+import {UnrestrictedPatient} from "../../src/schema/patient"
+import {SuccessfulResponse} from "../../src/interactions/patientSearch/schema"
 const OutcomeType = pds.patientSearch.OutcomeType
 
 describe("PatientSearch Unit Tests", () => {
@@ -221,7 +220,7 @@ describe("PatientSearch Unit Tests", () => {
 
     it("should handle a patient with a missing address field", async () =>{
       const mockPatient = structuredClone(examples.single_patient)
-      const resource = mockPatient.entry[0].resource as UnrestrictedPatientResource
+      const resource = mockPatient.entry[0].resource as UnrestrictedPatient
       delete resource.address
       const _mockAxiosInstance = mockAxiosInstance(200, mockPatient)
 
@@ -285,9 +284,45 @@ describe("PatientSearch Unit Tests", () => {
       }])
     })
 
+    it("should handle a patient with an active temp address", async () => {
+      const mockPatient = structuredClone(examples.single_patient)
+      const mockTempAddress = structuredClone(mockPatient.entry[0].resource.address[0])
+      mockTempAddress.use = PatientAddressUse.TEMP
+      mockTempAddress.line = ["1 Temp street", "Temp line 2", "Temp City", "Temp County"]
+      mockTempAddress.postalCode = "TE0 0MP"
+      const dateNow = new Date()
+      const datePast = format(sub(dateNow, {years: 1}), "yyyy-MM-dd")
+      const dateFuture = format(add(dateNow, {years: 1}), "yyyy-MM-dd")
+      mockTempAddress.period = {
+        start: datePast,
+        end: dateFuture
+      }
+      mockPatient.entry[0].resource.address.push(mockTempAddress)
+
+      const _mockAxiosInstance = mockAxiosInstance(200, mockPatient)
+      const client = new pds.Client(_mockAxiosInstance, mockEndpoint, mockLogger())
+      const outcome = await client.patientSearch("testFamilyName", "1234-01-01", "testPostcode")
+
+      expect((outcome as any).patients).toEqual([{
+        nhsNumber: "9000000009",
+        gender: "female",
+        dateOfBirth: "2010-10-22",
+        familyName: "Smith",
+        givenName:  [
+          "Jane"
+        ],
+        address:  [
+          "1 Temp line 1",
+          "Temp line 2",
+          "Temp City",
+          "Temp County"],
+        postcode: "TE0 0MP"
+      }])
+    })
+
     it("should handle a patient with a missing address line", async () =>{
       const mockPatient = structuredClone(examples.single_patient)
-      const resource = mockPatient.entry[0].resource as UnrestrictedPatientResource
+      const resource = mockPatient.entry[0].resource as UnrestrictedPatient
       delete resource?.address?.[0].line
       const _mockAxiosInstance = mockAxiosInstance(200, mockPatient)
 
@@ -309,7 +344,7 @@ describe("PatientSearch Unit Tests", () => {
 
     it("should handle a patient with a missing postcode", async () =>{
       const mockPatient = structuredClone(examples.single_patient)
-      const resource = mockPatient.entry[0].resource as UnrestrictedPatientResource
+      const resource = mockPatient.entry[0].resource as UnrestrictedPatient
       delete resource?.address?.[0].postalCode
       const _mockAxiosInstance = mockAxiosInstance(200, mockPatient)
 
@@ -337,7 +372,7 @@ describe("PatientSearch Unit Tests", () => {
 
     it("should handle a patient with as missing name field", async () =>{
       const mockPatient = structuredClone(examples.single_patient)
-      const resource = mockPatient.entry[0].resource as unknown as UnrestrictedPatientResource
+      const resource = mockPatient.entry[0].resource as unknown as UnrestrictedPatient
       delete resource.name
       const _mockAxiosInstance = mockAxiosInstance(200, mockPatient)
 
@@ -413,7 +448,7 @@ describe("PatientSearch Unit Tests", () => {
 
     it("should handle a patient with a missing family name", async () =>{
       const mockPatient = structuredClone(examples.single_patient)
-      const resource = mockPatient.entry[0].resource as unknown as UnrestrictedPatientResource
+      const resource = mockPatient.entry[0].resource as unknown as UnrestrictedPatient
       delete resource?.name?.[0].family
       const _mockAxiosInstance = mockAxiosInstance(200, mockPatient)
 
@@ -441,7 +476,7 @@ describe("PatientSearch Unit Tests", () => {
 
     it("should handle a patient with a missing given name", async () =>{
       const mockPatient = structuredClone(examples.single_patient)
-      const resource = mockPatient.entry[0].resource as unknown as UnrestrictedPatientResource
+      const resource = mockPatient.entry[0].resource as unknown as UnrestrictedPatient
       delete resource?.name?.[0].given
       const _mockAxiosInstance = mockAxiosInstance(200, mockPatient)
 
@@ -467,7 +502,7 @@ describe("PatientSearch Unit Tests", () => {
 
     it("should handle a patient with a missing dob", async () => {
       const mockPatient = structuredClone(examples.single_patient)
-      const resource = mockPatient.entry[0].resource as unknown as UnrestrictedPatientResource
+      const resource = mockPatient.entry[0].resource as unknown as UnrestrictedPatient
       delete resource.birthDate
       const _mockAxiosInstance = mockAxiosInstance(200, mockPatient)
 

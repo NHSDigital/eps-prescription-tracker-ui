@@ -1,5 +1,6 @@
 import {PatientSummaryGender} from "@cpt-ui-common/common-types"
-import {PatientAddressUse, PatientNameUse} from "../patientSearch/schema"
+import {PatientAddressUse} from "../../schema/address"
+import {PatientNameUse} from "src/schema/name"
 
 // TODO: AEA-5926 - see if theres any commonality with response fom other interaction
 export interface PDSResponse {
