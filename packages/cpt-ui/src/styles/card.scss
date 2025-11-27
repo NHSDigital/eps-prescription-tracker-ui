@@ -28,8 +28,8 @@
         
         &:hover {
             .eps-card__org-name {
-                color: #7c2d12 !important;
-                text-decoration: none !important;
+                color: #7c2d12;
+                text-decoration: none;
             }
         }
         
@@ -55,6 +55,16 @@
                     color: #212b32;
                     text-decoration: none !important;
                     text-underline-offset: 0 !important;
+                }
+            }
+        }
+        
+        &:focus:hover {
+            .eps-card__org-name {
+                color: #212b32 !important;
+                
+                .nhsuk-heading-s {
+                    color: #212b32;
                 }
             }
         }
@@ -219,12 +229,22 @@
 
 .nhsuk-card[tabindex]:hover {
     .eps-card__org-name {
-        color: #7c2d12 !important;
-        text-decoration: none !important;
+        color: #7c2d12;
+        text-decoration: none;
         
         .nhsuk-heading-s {
-            color: #7c2d12 !important;
-            text-decoration: none !important;
+            color: #7c2d12;
+            text-decoration: none;
+        }
+    }
+}
+
+.nhsuk-card[tabindex]:focus:hover {
+    .eps-card__org-name {
+        color: #212b32;
+        
+        .nhsuk-heading-s {
+            color: #212b32;
         }
     }
 }
