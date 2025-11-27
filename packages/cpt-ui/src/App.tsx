@@ -25,7 +25,7 @@ import SessionSelectionPage from "./pages/SessionSelection"
 
 import {FRONTEND_PATHS} from "@/constants/environment"
 import SessionLoggedOutPage from "./pages/SessionLoggedOut"
-import ConditionalSkipLink from "@/components/ConditionalSkipLink"
+import {HEADER_SKIP_TO_MAIN_CONTENT} from "@/constants/ui-strings/HeaderStrings"
 
 export default function App() {
   return (
@@ -33,7 +33,13 @@ export default function App() {
       <AccessProvider>
         <PatientDetailsProvider>
           <EPSCookieBanner />
-          <ConditionalSkipLink />
+          <a
+            href="#patient-details-banner"
+            className="nhsuk-skip-link"
+            data-testid="eps_header_skipLink"
+          >
+            {HEADER_SKIP_TO_MAIN_CONTENT}
+          </a>
           <PrescriptionInformationProvider>
             <SearchProvider>
               <NavigationProvider>
