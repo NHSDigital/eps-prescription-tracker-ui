@@ -337,9 +337,10 @@
         }
 
         @media (max-width: 48.0625em) {
-            top: 60px;
+            // top: 60px;
             right: 24px;
             left: auto;
+            border: 1px solid red;
         }
 
         li, .nhsuk-header__navigation-item {
@@ -381,7 +382,6 @@
     }
 
     // Only show "More" button when navigation items start to overflow
-    // This accounts for the typical navigation items + available space
     @media (max-width: 52em) {
         .nhsuk-header__menu-toggle,
         button[class*="menu-toggle"],
