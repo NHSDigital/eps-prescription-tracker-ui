@@ -6,6 +6,13 @@
     height: 46px;
 }
 
+@media (min-width: 48.0625em) {
+  .nhsuk-mobile-menu-container {
+    /*! padding: 0 16px; */
+    margin-right: 40px;
+  }
+}
+
 .nhsuk-mobile-menu-container .nhsuk-header__menu-toggle {
     visibility: visible;
 }
@@ -335,13 +342,15 @@
 
         @media (min-width: 48.0626em) and (max-width: 53.125em) {
             top: 100%;
+            right: 20px;
+            // right: 40px;
         }
 
         @media (max-width: 48.0625em) {
             top: 100%;
             right: 40px;
             left: auto;
-            border: 1px solid red;
+            
         }
 
         li, .nhsuk-header__navigation-item {
