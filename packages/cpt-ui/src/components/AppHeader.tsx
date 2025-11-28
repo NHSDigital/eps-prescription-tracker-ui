@@ -99,8 +99,12 @@ export default function AppHeader() {
           className="combined-logo-and-service-name"
           style={{display: "flex", alignItems: "center"}}
           data-testid="eps_header_logoLink"
+          id="prescription-tracker-header-link"
         >
-          <HeaderWithLogo.Logo />
+          <HeaderWithLogo.Logo
+            aria-label="Prescription Tracker (Pilot)"
+            aria-labelledby="prescription-tracker-header-link"
+          />
           <HeaderWithLogo.ServiceName>
             {HEADER_SERVICE}
           </HeaderWithLogo.ServiceName>
