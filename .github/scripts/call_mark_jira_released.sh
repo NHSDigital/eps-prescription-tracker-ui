@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+# retry aws commands
+AWS_MAX_ATTEMPTS=20
+export AWS_MAX_ATTEMPTS
+
 echo "calling mark jira released"
 
 cat <<EOF > payload.json
