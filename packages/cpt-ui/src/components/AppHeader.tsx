@@ -75,6 +75,105 @@ export default function AppHeader() {
     )
   }, [location, auth, authContext])
 
+  // Force navigation recalculation after component mounts to fix mobile layout
+  useEffect(() => {
+    const forceNavRecalculation = () => {
+      // eslint-disable-next-line no-console
+      console.log("🔧 AppHeader: Forcing navigation recalculation...")
+
+      const headerEl = document.querySelector(".nhsuk-header") as HTMLElement
+      const mobileMenuEl = document.querySelector(".nhsuk-mobile-menu-container") as HTMLElement
+      const navEl = document.querySelector(".nhsuk-header__navigation") as HTMLElement
+
+      // eslint-disable-next-line no-console
+      console.log("🔍 Elements found:", {
+        header: !!headerEl,
+        mobileMenu: !!mobileMenuEl,
+        nav: !!navEl
+      })
+
+      // eslint-disable-next-line no-console
+      console.log("🔍 All nav elements:", {
+        "nhsuk-header__navigation": !!document.querySelector(".nhsuk-header__navigation"),
+        "nhsuk-header__navigation-list": !!document.querySelector(".nhsuk-header__navigation-list"),
+        "nhsuk-header__navigation-item": document.querySelectorAll(".nhsuk-header__navigation-item").length,
+        "header-navigation": !!document.querySelector("#header-navigation"),
+        "nhsuk-header__drop-down": !!document.querySelector(".nhsuk-header__drop-down")
+      })
+
+      // Force reflow first
+      if (mobileMenuEl) {
+        // eslint-disable-next-line no-console
+        console.log("🎯 Forcing reflow on mobile menu element")
+        const display = mobileMenuEl.style.display
+        mobileMenuEl.style.display = "none"
+        void mobileMenuEl.offsetHeight
+        mobileMenuEl.style.display = display
+      }
+
+      // Then trigger a single gentle resize event after a delay
+      setTimeout(() => {
+        // eslint-disable-next-line no-console
+        console.log("📏 Triggering delayed resize event")
+        window.dispatchEvent(new Event("resize"))
+      }, 5)
+
+      // eslint-disable-next-line no-console
+      console.log("✅ AppHeader: Navigation recalculation complete")
+    }
+
+    // eslint-disable-next-line no-console
+    console.log("🚀 AppHeader: Setting up navigation recalculation timer")
+
+    // Wait for DOM to be fully ready, then trigger
+    const timer = setTimeout(() => {
+      // eslint-disable-next-line no-console
+      console.log("⏰ Timer (800ms): Running navigation recalculation")
+      forceNavRecalculation()
+    }, 800)
+
+    return () => {
+      // eslint-disable-next-line no-console
+      console.log("🧹 AppHeader: Cleaning up navigation recalculation timer")
+      clearTimeout(timer)
+    }
+  }, [])
+
+  // Also trigger recalculation on actual window resize
+  useEffect(() => {
+    let resizeTimeout: ReturnType<typeof setTimeout>
+
+    const handleWindowResize = () => {
+      // eslint-disable-next-line no-console
+      console.log("📏 Window resized, triggering navigation recalculation...")
+
+      // Debounce to avoid too many rapid calls
+      clearTimeout(resizeTimeout)
+      resizeTimeout = setTimeout(() => {
+        // Very minimal approach - just force layout recalculation
+        const mobileMenuEl = document.querySelector(".nhsuk-mobile-menu-container") as HTMLElement
+
+        if (mobileMenuEl) {
+          const display = mobileMenuEl.style.display
+          mobileMenuEl.style.display = "none"
+          void mobileMenuEl.offsetHeight
+          mobileMenuEl.style.display = display
+
+          // Single gentle trigger - don't overwhelm the NHS component
+          window.dispatchEvent(new CustomEvent("nhsuk.header.ready"))
+        }
+      }, 100) // Small debounce delay
+    }
+
+    // Listen for actual window resize events
+    window.addEventListener("resize", handleWindowResize)
+
+    return () => {
+      window.removeEventListener("resize", handleWindowResize)
+      clearTimeout(resizeTimeout)
+    }
+  }, [])
+
   const redirectToLogin = async (e: React.MouseEvent | React.KeyboardEvent) => {
     // Naked href don't respect the router, so this overrides that
     e.preventDefault()
@@ -109,7 +208,7 @@ export default function AppHeader() {
             {HEADER_SERVICE}
           </HeaderWithLogo.ServiceName>
         </Link>
-        <HeaderWithLogo.Nav id="header-navigation">
+        <HeaderWithLogo.Nav id="header-navigation" className="nhsuk-header__navigation">
           {shouldShowSelectRole && (
             <HeaderWithLogo.NavItem
               as="a"
