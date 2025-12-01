@@ -11,6 +11,9 @@ export const parsePatient = (patient: UnrestrictedPatient): PatientSummary => {
     patient.name, {main: PatientNameUse.USUAL, temp: PatientNameUse.TEMP})
   const address = getMostAppropriateValue<PatientAddress>(
     patient.address, {main: PatientAddressUse.HOME, temp: PatientAddressUse.TEMP})
+  /* Filter any potential empty strings from the address lines so that we can return a cleaner address in the response,
+   but mostly so that we return a proper n/a response for address if all the lines are empty strings for some reason */
+  const addressLines = address?.line?.filter(Boolean)
 
   /* Return values or "n/a" if not available or empty on the pds record */
   return {
@@ -19,17 +22,11 @@ export const parsePatient = (patient: UnrestrictedPatient): PatientSummary => {
     dateOfBirth: patient?.birthDate ? patient.birthDate : NOT_AVAILABLE,
     givenName: name?.given?.length ? name.given : NOT_AVAILABLE,
     familyName: name?.family ? name.family : NOT_AVAILABLE,
-    address: address?.line?.length ? address.line : NOT_AVAILABLE,
+    address: addressLines?.length ? addressLines : NOT_AVAILABLE,
     postcode: address?.postalCode ? address.postalCode: NOT_AVAILABLE
   }
 }
 
-/* Gets the correct active Name/Address, using the following rules:
-  - Active Temp trumps active Home/Usual
-  - If there are multiple possible active details, chose the one with the most recent start date
-  - If there are no active addresses but a number of future dated ones, choose the one with the closest start date
-  - If there are multiple possible active details but none have any dates, chose the first
-*/
 interface UseKeys {
   main: PatientAddressUse.HOME | PatientNameUse.USUAL
   temp: PatientAddressUse.TEMP | PatientNameUse.TEMP
@@ -56,85 +53,105 @@ interface GroupedValues<T> {
   }
 }
 
+/* Gets the most appropriate Name or Address using the following rules:
+  - Active/Current values are any with no period, or have a start date in the past and no end date,
+    or an end date in the past
+  - Future dated values are any with a start date in the future
+  - Past dated values are any with both a start and end date in the past
+  - If there are any active/current values choose from these first
+    - If there are any temp values with a period, choose the one with the closest start date
+    - Else if there are any home/usual values with a period, choose the one with the closest start date
+    - Else if there are any temp values without a period chose the first
+    - Else choose the first home/usual value without a period
+  - Else if there are any future dated values, choose from these
+    - If the temp value with the closest start and the home value with the closest start date have an equally close
+      start date, then choose the temp value
+    - Else choose the value temp or home/usual that has the closest start date
+  - Else if there are any past dated values, choose from these
+    - If the temp value with the closest end date and the home value with the closest end date have an equally close
+      end date, then choose the temp value
+    - Else choose the value temp or home/usual that has the closest start date
+*/
 const getMostAppropriateValue = <T extends PatientAddress | PatientName>(
   values: Array<T> | undefined, useKeys: UseKeys): T | undefined => {
   if (!values){
     return
   }
 
+  /* group values by period & use */
   const groupedValues: GroupedValues<T> = groupValues<T>(values, useKeys)
 
-  // First deal with actives ----------------------------------------------------------------------
-  // if any active temps with a period then return the one with the closest start date
+  /* -- First deal with any active/current values ------------------------------------------------------------------- */
+  /* if there are any active temp values with a period, then return the one with the closest start date */
   if (groupedValues.active.temp.withPeriod.length){
     return getClosestToNow<T>(groupedValues.active.temp.withPeriod, PeriodKey.START)
   }
 
-  // else if any active home/usuals with a period then return the one with the closest start date
+  /* else if there are any active home/usual values with a period, then return the one with the closest start date */
   if (groupedValues.active.main.withPeriod.length){
     return getClosestToNow<T>(groupedValues.active.main.withPeriod, PeriodKey.START)
   }
 
-  // else if any active temps without a period then return the first
+  /* else if there are any active temp values without a period, then return the first */
   if (groupedValues.active.temp.withoutPeriod.length){
     return groupedValues.active.temp.withoutPeriod[0]
   }
 
-  // else if any active home/usuals without a period then return the first
+  // else if there are any active home/usual values without a period, then return the first
   if (groupedValues.active.main.withoutPeriod.length){
     return groupedValues.active.main.withoutPeriod[0]
   }
 
-  // Else deal with future dated  ----------------------------------------------------------------------
-  // values grouped as future dated will always contain at least a start date
+  /* -- Next deal with any future dated values -----------------------------------------------------------------------*/
+  /* values grouped as future dated will always contain at least a start date */
   let closestFutureMain, closestFutureTemp
 
-  // if any future dated home/usuals then get the one with the closest start date
+  /* if there are any future dated home/usual values, then get the one with the closest start date */
   if (groupedValues.future.main.length) {
     closestFutureMain = getClosestToNow<T>(groupedValues.future.main, PeriodKey.START)
   }
 
-  // if any future dated temps then get the one with the closest start date
+  /* if there are any future dated temp values, then get the one with the closest start date */
   if (groupedValues.future.temp.length){
     closestFutureTemp = getClosestToNow<T>(groupedValues.future.temp, PeriodKey.START)
   }
 
-  // if any future dated values
+  /* if there are any future dated values */
   if (closestFutureMain || closestFutureTemp) {
-    // if the closest home/usual and temp values have an equally close start date then return the temp
+    /* if the closest home/usual and temp values have an equally close start date, then return the temp */
     if (closestFutureMain?.period?.start === closestFutureTemp?.period?.start){
       return closestFutureTemp
     }
 
-    // else return the value with the closest start date from the closest home/usual and closest temp
+    /* else return the value with the closest start date from the closest home/usual and closest temp */
     return getClosestToNow([
       ...(closestFutureMain ? [closestFutureMain] : []),
       ...(closestFutureTemp ? [closestFutureTemp] : [])
     ], PeriodKey.START)
   }
 
-  // Else deal with past dated -------------------------------------------------------------------------
-  // values grouped as past dated will always contain a start and end date
+  /* -- Finally deal with any past dated values --------------------------------------------------------------------- */
+  /* values grouped as past dated will always contain a start and end date */
   let closestPastMain, closestPastTemp
 
-  // if any past dated home/usuals the get the one with the closest end date
+  /* if there are any past dated home/usual values, then get the one with the closest end date */
   if (groupedValues.past.main.length) {
     closestPastMain = getClosestToNow<T>(groupedValues.past.main, PeriodKey.END)
   }
 
-  // if any past dated temps then get the one with the closest end date
+  /* if there are any past dated temp values, then get the one with the closest end date */
   if (groupedValues.past.temp.length) {
     closestPastTemp = getClosestToNow<T>(groupedValues.past.temp, PeriodKey.END)
   }
 
-  // if any past dated values
+  /* if there are any past dated values */
   if (closestPastMain || closestPastTemp) {
-    // if the closest home/usual and temp values have an equally close end date then return the temp
+    /* if the closest home/usual and temp values have an equally close end date, then return the temp */
     if (closestPastMain?.period?.end === closestPastTemp?.period?.end) {
       return closestPastTemp
     }
 
-    // else return the value with the closest end date from the closest home/usual and closest temp
+    /* else return the value with the closest end date from the closest home/usual and closest temp */
     return getClosestToNow<T>([
       ...(closestPastMain ? [closestPastMain] : []),
       ...(closestPastTemp ? [closestPastTemp] : [])
@@ -142,6 +159,7 @@ const getMostAppropriateValue = <T extends PatientAddress | PatientName>(
   }
 }
 
+/* Groups values by timing and use */
 const groupValues = <T extends PatientAddress | PatientName>(values: Array<T>, useKeys: UseKeys): GroupedValues<T> => {
   const groupedValues: GroupedValues<T> = {
     active: {
@@ -164,36 +182,35 @@ const groupValues = <T extends PatientAddress | PatientName>(values: Array<T>, u
     }
   }
 
-  // Group values by timing(Past/Present(Active)/Future) and use
   for (const value of values){
-    // If not Home/Usual or Temp then ignore
+    /* If the values use is not Home/Usual or Temp then ignore it */
     if (!(value.use === useKeys.main || value.use === useKeys.temp)){
       continue
     }
     const use = value.use === useKeys.main ? "main" : "temp"
 
-    // If it has no period, class as active
+    /* If the value has no period, then group it as active */
     if (!value.period){
       groupedValues.active[use].withoutPeriod.push(value)
     }
 
-    //If the period start date is in the past
+    /* If the values period start date is in the past */
     if (value.period && isPast(value.period.start)){
-      // and it has no end date, class as active
+      /* and if it has no end date, then group it as active */
       if (!value.period.end){
         groupedValues.active[use].withPeriod.push(value)
       }
-      // and it has an end date in the future, class as active
+      /* else if it has an end date in the future, then group it as active */
       if (value.period.end && isFuture(value.period.end)){
         groupedValues.active[use].withPeriod.push(value)
       }
-      // and it has an end date in the past, class as past
+      /* else if it has an end date in the past, then group it as past dated */
       if (value.period.end && isPast(value.period.end)){
         groupedValues.past[use].push(value)
       }
     }
 
-    // If period start date is in the future, class as future
+    /* If the values period start date is in the future, then group it as future dated */
     if (value.period && isFuture(value.period.start)){
       groupedValues.future[use].push(value)
     }
@@ -210,11 +227,11 @@ const getClosestToNow = <T extends PatientAddress | PatientName>(
   values: Array<T>, periodKey: PeriodKey): T => {
   const now = Date.now()
 
-  // get list of start/end dates to compare
+  /* get a list of start/end dates to compare */
   const datesToCompare = values.map((value: T) => value.period?.[periodKey] as string)
-  // get the index of the date closest to now
+  /* get the index of the date closest to now */
   const closestDateIndex = closestIndexTo(now, datesToCompare) as number
 
-  // return value with the most recent start date
+  /* return the value with the most recent start date */
   return values[closestDateIndex]
 }

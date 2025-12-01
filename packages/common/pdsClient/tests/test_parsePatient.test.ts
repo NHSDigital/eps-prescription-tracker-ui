@@ -2790,6 +2790,22 @@ describe("Patient FHIR resource parsing unit tests", () => {
       expect(result.postcode).toEqual("HO1 2ME")
     })
 
+    it("returns a partial address when the most appropriate address has an empty address array with only empty strings", async () => {
+      const mockPatient = structuredClone(single_patient).entry[0].resource as UnrestrictedPatient
+      mockPatient.address = [{
+        use: PatientAddressUse.HOME,
+        period: {
+          start: "2010-01-01"
+        },
+        line: ["", "", ""],
+        postalCode: "HO1 2ME"
+      }]
+
+      const result = parsePatient(mockPatient)
+      expect(result.address).toEqual(NOT_AVAILABLE)
+      expect(result.postcode).toEqual("HO1 2ME")
+    })
+
     it("returns a partial address when the most appropriate address has no post code field", async () => {
       const mockPatient = structuredClone(single_patient).entry[0].resource as UnrestrictedPatient
       mockPatient.address = [{
