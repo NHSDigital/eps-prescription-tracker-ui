@@ -77,100 +77,152 @@ export default function AppHeader() {
 
   // Force navigation recalculation after component mounts to fix mobile layout
   useEffect(() => {
-    const forceNavRecalculation = () => {
+    const setupNavigation = () => {
       // eslint-disable-next-line no-console
-      console.log("🔧 AppHeader: Forcing navigation recalculation...")
+      console.log("🔧 AppHeader: Setting up navigation for current viewport...")
 
-      const headerEl = document.querySelector(".nhsuk-header") as HTMLElement
-      const mobileMenuEl = document.querySelector(".nhsuk-mobile-menu-container") as HTMLElement
-      const navEl = document.querySelector(".nhsuk-header__navigation") as HTMLElement
+      const isMobile = window.innerWidth <= 832
+      const dropdown = document.querySelector(".nhsuk-header__drop-down") as HTMLElement
+      const navigationList = document.querySelector(".nhsuk-header__navigation-list") as HTMLElement
 
-      // eslint-disable-next-line no-console
-      console.log("🔍 Elements found:", {
-        header: !!headerEl,
-        mobileMenu: !!mobileMenuEl,
-        nav: !!navEl
-      })
-
-      // eslint-disable-next-line no-console
-      console.log("🔍 All nav elements:", {
-        "nhsuk-header__navigation": !!document.querySelector(".nhsuk-header__navigation"),
-        "nhsuk-header__navigation-list": !!document.querySelector(".nhsuk-header__navigation-list"),
-        "nhsuk-header__navigation-item": document.querySelectorAll(".nhsuk-header__navigation-item").length,
-        "header-navigation": !!document.querySelector("#header-navigation"),
-        "nhsuk-header__drop-down": !!document.querySelector(".nhsuk-header__drop-down")
-      })
-
-      // Force reflow first
-      if (mobileMenuEl) {
+      if (!dropdown || !navigationList) {
         // eslint-disable-next-line no-console
-        console.log("🎯 Forcing reflow on mobile menu element")
-        const display = mobileMenuEl.style.display
-        mobileMenuEl.style.display = "none"
-        void mobileMenuEl.offsetHeight
-        mobileMenuEl.style.display = display
+        console.log("❌ Missing dropdown or navigation elements")
+        return
       }
 
-      // Then trigger a single gentle resize event after a delay
-      setTimeout(() => {
-        // eslint-disable-next-line no-console
-        console.log("📏 Triggering delayed resize event")
-        window.dispatchEvent(new Event("resize"))
-      }, 5)
+      if (isMobile) {
+        // MOBILE: Move items to dropdown
+        const navItems = navigationList.querySelectorAll(
+          ".nhsuk-header__navigation-item:not(.nhsuk-mobile-menu-container)"
+        )
+        const dropdownItems = dropdown.querySelectorAll(".nhsuk-header__navigation-item")
+        const visibleNavItems = Array.from(navItems).filter(
+          item => (item as HTMLElement).style.display !== "none"
+        )
 
-      // eslint-disable-next-line no-console
-      console.log("✅ AppHeader: Navigation recalculation complete")
+        // eslint-disable-next-line no-console
+        console.log(`📱 Mobile mode: ${visibleNavItems.length} visible nav items, ${dropdownItems.length} in dropdown`)
+
+        // Only populate dropdown if it's empty AND there are visible nav items to move
+        if (dropdownItems.length === 0 && visibleNavItems.length > 0) {
+          // eslint-disable-next-line no-console
+          console.log("📦 Moving navigation items to dropdown...")
+
+          dropdown.innerHTML = ""
+          visibleNavItems.forEach((item) => {
+            const clonedItem = item.cloneNode(true) as HTMLElement
+            dropdown.appendChild(clonedItem)
+            ;(item as HTMLElement).style.display = "none"
+          })
+          dropdown.classList.add("nhsuk-header__drop-down--hidden")
+        }
+      } else {
+        // DESKTOP: Move items back to main navigation, clear dropdown
+        const dropdownItems = dropdown.querySelectorAll(".nhsuk-header__navigation-item")
+        const hiddenNavItems = navigationList.querySelectorAll(
+          ".nhsuk-header__navigation-item:not(.nhsuk-mobile-menu-container)"
+        )
+
+        // eslint-disable-next-line no-console
+        console.log(`🖥️ Desktop mode: ${dropdownItems.length} in dropdown, ${hiddenNavItems.length} hidden nav items`)
+
+        if (dropdownItems.length > 0) {
+          // eslint-disable-next-line no-console
+          console.log("🔄 Restoring navigation items to main navigation...")
+
+          // Show hidden nav items
+          hiddenNavItems.forEach((item) => {
+            ;(item as HTMLElement).style.display = ""
+          })
+
+          // Clear dropdown
+          dropdown.innerHTML = ""
+          dropdown.classList.add("nhsuk-header__drop-down--hidden")
+        }
+      }
     }
 
     // eslint-disable-next-line no-console
-    console.log("🚀 AppHeader: Setting up navigation recalculation timer")
+    console.log("🚀 AppHeader: Setting up navigation timer")
 
-    // Wait for DOM to be fully ready, then trigger
     const timer = setTimeout(() => {
       // eslint-disable-next-line no-console
-      console.log("⏰ Timer (800ms): Running navigation recalculation")
-      forceNavRecalculation()
+      console.log("⏰ Timer: Running navigation setup")
+      setupNavigation()
     }, 800)
 
     return () => {
-      // eslint-disable-next-line no-console
-      console.log("🧹 AppHeader: Cleaning up navigation recalculation timer")
       clearTimeout(timer)
     }
-  }, [])
+  }, [shouldShowSelectRole, shouldShowChangeRole, shouldShowLogoutLink, shouldShowExitButton])
 
-  // Also trigger recalculation on actual window resize
+  // Monitor viewport changes and handle navigation structure for both mobile and desktop
   useEffect(() => {
-    let resizeTimeout: ReturnType<typeof setTimeout>
+    let resizeTimer: number
 
-    const handleWindowResize = () => {
-      // eslint-disable-next-line no-console
-      console.log("📏 Window resized, triggering navigation recalculation...")
+    const handleResize = () => {
+      // Debounce resize events
+      clearTimeout(resizeTimer)
+      resizeTimer = window.setTimeout(() => {
+        const isMobile = window.innerWidth <= 832
+        const dropdown = document.querySelector(".nhsuk-header__drop-down") as HTMLElement
+        const navigationList = document.querySelector(".nhsuk-header__navigation-list") as HTMLElement
 
-      // Debounce to avoid too many rapid calls
-      clearTimeout(resizeTimeout)
-      resizeTimeout = setTimeout(() => {
-        // Very minimal approach - just force layout recalculation
-        const mobileMenuEl = document.querySelector(".nhsuk-mobile-menu-container") as HTMLElement
+        if (!dropdown || !navigationList) return
 
-        if (mobileMenuEl) {
-          const display = mobileMenuEl.style.display
-          mobileMenuEl.style.display = "none"
-          void mobileMenuEl.offsetHeight
-          mobileMenuEl.style.display = display
+        if (isMobile) {
+          // MOBILE: Check if dropdown needs population
+          const dropdownItems = dropdown.querySelectorAll(".nhsuk-header__navigation-item")
+          const navItems = navigationList.querySelectorAll(
+            ".nhsuk-header__navigation-item:not(.nhsuk-mobile-menu-container)"
+          )
+          const visibleNavItems = Array.from(navItems).filter(
+            item => (item as HTMLElement).style.display !== "none"
+          )
 
-          // Single gentle trigger - don't overwhelm the NHS component
-          window.dispatchEvent(new CustomEvent("nhsuk.header.ready"))
+          // Only populate dropdown if it's empty AND there are visible nav items to move
+          if (dropdownItems.length === 0 && visibleNavItems.length > 0) {
+            // eslint-disable-next-line no-console
+            console.log("📱 Resized to mobile - moving visible nav items to dropdown")
+
+            dropdown.innerHTML = ""
+            visibleNavItems.forEach((item) => {
+              const clonedItem = item.cloneNode(true) as HTMLElement
+              dropdown.appendChild(clonedItem)
+              ;(item as HTMLElement).style.display = "none"
+            })
+            dropdown.classList.add("nhsuk-header__drop-down--hidden")
+          }
+        } else {
+          // DESKTOP: Restore main navigation, clear dropdown
+          const dropdownItems = dropdown.querySelectorAll(".nhsuk-header__navigation-item")
+          const hiddenNavItems = navigationList.querySelectorAll(
+            ".nhsuk-header__navigation-item:not(.nhsuk-mobile-menu-container)"
+          )
+
+          if (dropdownItems.length > 0) {
+            // eslint-disable-next-line no-console
+            console.log("🖥️ Resized to desktop - restoring main navigation")
+
+            // Show hidden nav items
+            hiddenNavItems.forEach((item) => {
+              ;(item as HTMLElement).style.display = ""
+            })
+
+            // Clear dropdown
+            dropdown.innerHTML = ""
+            dropdown.classList.add("nhsuk-header__drop-down--hidden")
+          }
         }
-      }, 100) // Small debounce delay
+      }, 100)
     }
 
-    // Listen for actual window resize events
-    window.addEventListener("resize", handleWindowResize)
+    window.addEventListener("resize", handleResize)
 
     return () => {
-      window.removeEventListener("resize", handleWindowResize)
-      clearTimeout(resizeTimeout)
+      window.removeEventListener("resize", handleResize)
+      clearTimeout(resizeTimer)
     }
   }, [])
 
