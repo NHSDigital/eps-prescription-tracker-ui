@@ -150,7 +150,7 @@ export default function AppHeader() {
       // eslint-disable-next-line no-console
       console.log("⏰ Timer: Running navigation setup")
       setupNavigation()
-    }, 800)
+    }, 100) // Reduced from 800ms to 400ms for faster mobile dropdown
 
     return () => {
       clearTimeout(timer)
