@@ -75,74 +75,95 @@ export default function AppHeader() {
     )
   }, [location, auth, authContext])
 
-  // Force navigation recalculation after component mounts to fix mobile layout
-  useEffect(() => {
-    const setupNavigation = () => {
+  // Navigation setup function that can be called on load and resize
+  const setupNavigation = () => {
+    // eslint-disable-next-line no-console
+    console.log("🔧 AppHeader: Setting up navigation for current viewport...")
+
+    const currentWidth = window.innerWidth
+    const isMobile = currentWidth <= 768 // Standard mobile/tablet breakpoint
+    const dropdown = document.querySelector(".nhsuk-header__drop-down") as HTMLElement
+    const navigationList = document.querySelector(".nhsuk-header__navigation-list") as HTMLElement
+
+    // eslint-disable-next-line no-console
+    console.log(`📏 Current width: ${currentWidth}px, isMobile: ${isMobile} (breakpoint: 768px)`)
+
+    if (!dropdown || !navigationList) {
       // eslint-disable-next-line no-console
-      console.log("🔧 AppHeader: Setting up navigation for current viewport...")
-
-      const isMobile = window.innerWidth <= 832
-      const dropdown = document.querySelector(".nhsuk-header__drop-down") as HTMLElement
-      const navigationList = document.querySelector(".nhsuk-header__navigation-list") as HTMLElement
-
-      if (!dropdown || !navigationList) {
-        // eslint-disable-next-line no-console
-        console.log("❌ Missing dropdown or navigation elements")
-        return
-      }
-
-      if (isMobile) {
-        // MOBILE: Move items to dropdown
-        const navItems = navigationList.querySelectorAll(
-          ".nhsuk-header__navigation-item:not(.nhsuk-mobile-menu-container)"
-        )
-        const dropdownItems = dropdown.querySelectorAll(".nhsuk-header__navigation-item")
-        const visibleNavItems = Array.from(navItems).filter(
-          item => (item as HTMLElement).style.display !== "none"
-        )
-
-        // eslint-disable-next-line no-console
-        console.log(`📱 Mobile mode: ${visibleNavItems.length} visible nav items, ${dropdownItems.length} in dropdown`)
-
-        // Only populate dropdown if it's empty AND there are visible nav items to move
-        if (dropdownItems.length === 0 && visibleNavItems.length > 0) {
-          // eslint-disable-next-line no-console
-          console.log("📦 Moving navigation items to dropdown...")
-
-          dropdown.innerHTML = ""
-          visibleNavItems.forEach((item) => {
-            const clonedItem = item.cloneNode(true) as HTMLElement
-            dropdown.appendChild(clonedItem)
-            ;(item as HTMLElement).style.display = "none"
-          })
-          dropdown.classList.add("nhsuk-header__drop-down--hidden")
-        }
-      } else {
-        // DESKTOP: Move items back to main navigation, clear dropdown
-        const dropdownItems = dropdown.querySelectorAll(".nhsuk-header__navigation-item")
-        const hiddenNavItems = navigationList.querySelectorAll(
-          ".nhsuk-header__navigation-item:not(.nhsuk-mobile-menu-container)"
-        )
-
-        // eslint-disable-next-line no-console
-        console.log(`🖥️ Desktop mode: ${dropdownItems.length} in dropdown, ${hiddenNavItems.length} hidden nav items`)
-
-        if (dropdownItems.length > 0) {
-          // eslint-disable-next-line no-console
-          console.log("🔄 Restoring navigation items to main navigation...")
-
-          // Show hidden nav items
-          hiddenNavItems.forEach((item) => {
-            ;(item as HTMLElement).style.display = ""
-          })
-
-          // Clear dropdown
-          dropdown.innerHTML = ""
-          dropdown.classList.add("nhsuk-header__drop-down--hidden")
-        }
-      }
+      console.log("❌ Missing dropdown or navigation elements")
+      return
     }
 
+    if (isMobile) {
+      // MOBILE: Always show dropdown regardless of measured overflow
+      // because the NHS component's own JS interferes with accurate measurement
+      const navItems = navigationList.querySelectorAll(
+        ".nhsuk-header__navigation-item:not(.nhsuk-mobile-menu-container)"
+      )
+      const moreButton = document.querySelector(".nhsuk-header__menu-toggle") as HTMLElement
+
+      // eslint-disable-next-line no-console
+      console.log(`📱 Mobile: Found ${navItems.length} nav items - always moving to dropdown`)
+
+      if (navItems.length > 0) {
+        // Always move items to dropdown on mobile
+        // eslint-disable-next-line no-console
+        console.log("📦 Moving all navigation items to dropdown (mobile mode)")
+
+        dropdown.innerHTML = ""
+        navItems.forEach((item) => {
+          const clonedItem = item.cloneNode(true) as HTMLElement
+          dropdown.appendChild(clonedItem)
+          ;(item as HTMLElement).style.display = "none"
+        })
+        dropdown.classList.add("nhsuk-header__drop-down--hidden")
+
+        // Always show the More button on mobile
+        if (moreButton) {
+          moreButton.style.setProperty("display", "flex", "important")
+          // eslint-disable-next-line no-console
+          console.log("📱 More button shown (mobile mode)")
+        } else {
+          // eslint-disable-next-line no-console
+          console.log("❌ More button not found")
+        }
+      }
+    } else {
+      // DESKTOP: Always restore items and hide dropdown/More button
+      const dropdownItems = dropdown.querySelectorAll(".nhsuk-header__navigation-item")
+      const hiddenNavItems = navigationList.querySelectorAll(
+        ".nhsuk-header__navigation-item:not(.nhsuk-mobile-menu-container)"
+      )
+
+      // eslint-disable-next-line no-console
+      console.log(`🖥️ Desktop mode: ${dropdownItems.length} in dropdown, ${hiddenNavItems.length} hidden nav items`)
+
+      if (dropdownItems.length > 0) {
+        // eslint-disable-next-line no-console
+        console.log("🔄 Restoring navigation items to main navigation...")
+
+        // Show hidden nav items
+        hiddenNavItems.forEach((item) => {
+          ;(item as HTMLElement).style.display = ""
+        })
+
+        // Clear dropdown
+        dropdown.innerHTML = ""
+        dropdown.classList.add("nhsuk-header__drop-down--hidden")
+      }
+
+      // Always hide More button on desktop
+      const moreButton = document.querySelector(".nhsuk-header__menu-toggle") as HTMLElement
+      if (moreButton) {
+        moreButton.style.setProperty("display", "none", "important")
+        // eslint-disable-next-line no-console
+        console.log("🔒 Desktop: More button hidden with !important")
+      }
+    }
+  }
+
+  // Force navigation recalculation after component mounts to fix mobile layout
+  useEffect(() => {
     // eslint-disable-next-line no-console
     console.log("🚀 AppHeader: Setting up navigation timer")
 
@@ -150,7 +171,7 @@ export default function AppHeader() {
       // eslint-disable-next-line no-console
       console.log("⏰ Timer: Running navigation setup")
       setupNavigation()
-    }, 100) // Reduced from 800ms to 400ms for faster mobile dropdown
+    }, 100)
 
     return () => {
       clearTimeout(timer)
@@ -162,60 +183,17 @@ export default function AppHeader() {
     let resizeTimer: number
 
     const handleResize = () => {
-      // Debounce resize events
+      // Debounce resize events with slightly longer delay for layout settling
       clearTimeout(resizeTimer)
       resizeTimer = window.setTimeout(() => {
-        const isMobile = window.innerWidth <= 832
-        const dropdown = document.querySelector(".nhsuk-header__drop-down") as HTMLElement
-        const navigationList = document.querySelector(".nhsuk-header__navigation-list") as HTMLElement
+        // eslint-disable-next-line no-console
+        console.log("🔄 Window resized - running navigation setup")
 
-        if (!dropdown || !navigationList) return
-
-        if (isMobile) {
-          // MOBILE: Check if dropdown needs population
-          const dropdownItems = dropdown.querySelectorAll(".nhsuk-header__navigation-item")
-          const navItems = navigationList.querySelectorAll(
-            ".nhsuk-header__navigation-item:not(.nhsuk-mobile-menu-container)"
-          )
-          const visibleNavItems = Array.from(navItems).filter(
-            item => (item as HTMLElement).style.display !== "none"
-          )
-
-          // Only populate dropdown if it's empty AND there are visible nav items to move
-          if (dropdownItems.length === 0 && visibleNavItems.length > 0) {
-            // eslint-disable-next-line no-console
-            console.log("📱 Resized to mobile - moving visible nav items to dropdown")
-
-            dropdown.innerHTML = ""
-            visibleNavItems.forEach((item) => {
-              const clonedItem = item.cloneNode(true) as HTMLElement
-              dropdown.appendChild(clonedItem)
-              ;(item as HTMLElement).style.display = "none"
-            })
-            dropdown.classList.add("nhsuk-header__drop-down--hidden")
-          }
-        } else {
-          // DESKTOP: Restore main navigation, clear dropdown
-          const dropdownItems = dropdown.querySelectorAll(".nhsuk-header__navigation-item")
-          const hiddenNavItems = navigationList.querySelectorAll(
-            ".nhsuk-header__navigation-item:not(.nhsuk-mobile-menu-container)"
-          )
-
-          if (dropdownItems.length > 0) {
-            // eslint-disable-next-line no-console
-            console.log("🖥️ Resized to desktop - restoring main navigation")
-
-            // Show hidden nav items
-            hiddenNavItems.forEach((item) => {
-              ;(item as HTMLElement).style.display = ""
-            })
-
-            // Clear dropdown
-            dropdown.innerHTML = ""
-            dropdown.classList.add("nhsuk-header__drop-down--hidden")
-          }
-        }
-      }, 100)
+        // Give the browser a moment to recalculate layout after resize
+        requestAnimationFrame(() => {
+          setupNavigation()
+        })
+      }, 200) // Increased delay for better layout settling
     }
 
     window.addEventListener("resize", handleResize)
@@ -256,6 +234,7 @@ export default function AppHeader() {
             aria-label="Prescription Tracker (Pilot)"
             aria-labelledby="prescription-tracker-header-link"
           />
+
           <HeaderWithLogo.ServiceName>
             {HEADER_SERVICE}
           </HeaderWithLogo.ServiceName>
