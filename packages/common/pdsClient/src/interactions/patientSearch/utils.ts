@@ -1,7 +1,7 @@
 import {URL} from "url"
 import {PatientSearchParameters} from "./types"
 
-export function PATIENT_DETAILS_PATH(
+export function PATIENT_SEARCH_PATH(
   pds_base: URL,
   searchParameters: PatientSearchParameters
 ): URL {

@@ -41,6 +41,7 @@ export const restrictedPatientResourceSchema = {
   },
   required: ["resourceType", "meta"]
 } as const satisfies JSONSchema
+export type RestrictedPatient = FromSchema<typeof restrictedPatientResourceSchema>
 
 export const unrestrictedPatientResourceSchema = {
   type: "object",

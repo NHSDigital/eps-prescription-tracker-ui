@@ -1,8 +1,8 @@
 import {NOT_AVAILABLE, PatientSummary} from "@cpt-ui-common/common-types"
+import {closestIndexTo, isFuture, isPast} from "date-fns"
 import {PatientAddress, PatientAddressUse} from "./schema/address"
 import {PatientName, PatientNameUse} from "./schema/name"
 import {UnrestrictedPatient} from "./schema/patient"
-import {closestIndexTo, isFuture, isPast} from "date-fns"
 
 /* Parse Patient FHIR resource */
 export const parsePatient = (patient: UnrestrictedPatient): PatientSummary => {
@@ -55,7 +55,7 @@ interface GroupedValues<T> {
 
 /* Gets the most appropriate Name or Address using the following rules:
   - Active/Current values are any with no period, or have a start date in the past and no end date,
-    or an end date in the past
+    or an end date in the future
   - Future dated values are any with a start date in the future
   - Past dated values are any with both a start and end date in the past
   - If there are any active/current values choose from these first

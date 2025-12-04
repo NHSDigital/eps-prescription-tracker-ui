@@ -3047,3 +3047,5 @@ describe("Patient FHIR resource parsing unit tests", () => {
     })
   })
 })
+
+// TODO: test for if there only closest temp or home

@@ -1,10 +1,10 @@
 import {AxiosInstance} from "axios"
 import {Logger} from "@aws-lambda-powertools/logger"
 
-import {patientDetailsLookup, patientSearch, axios} from "."
+import {patientDetails, patientSearch, axios} from "."
 import {Client as clientInterface} from "./interface"
 
-export class Client implements clientInterface, patientDetailsLookup.Interface, patientSearch.Interface {
+export class Client implements clientInterface, patientDetails.Interface, patientSearch.Interface {
   // Client interface
   readonly axiosInstance: AxiosInstance
   readonly pdsEndpoint: URL
@@ -67,14 +67,14 @@ export class Client implements clientInterface, patientDetailsLookup.Interface, 
 
   // PatientDetailsLookup interface
   patientDetailsPath = (nhsNumber: string) =>
-    patientDetailsLookup.utils.PATIENT_DETAILS_PATH(this.pdsEndpoint, nhsNumber)
-  getPatientDetails = (nhsNumber: string) => patientDetailsLookup.interaction(this, nhsNumber)
+    patientDetails.utils.PATIENT_DETAILS_PATH(this.pdsEndpoint, nhsNumber)
+  getPatientDetails = (nhsNumber: string) => patientDetails.interaction(this, nhsNumber)
 
   // PatientSearch interface
   patientSearchPath = (
     searchParameters: patientSearch.types.PatientSearchParameters
   ) =>
-    patientSearch.utils.PATIENT_DETAILS_PATH(this.pdsEndpoint, searchParameters)
+    patientSearch.utils.PATIENT_SEARCH_PATH(this.pdsEndpoint, searchParameters)
   patientSearch = (
     familyName: string,
     dateOfBirth: string,

@@ -1,25 +1,25 @@
 
-import {Client} from "../../client"
-import {
-  Name,
-  NameFromStringOutcomeType,
-  DateOfBirth,
-  DateOfBirthFromStringOutcomeType,
-  Postcode,
-  PostcodeFromStringOutcomeType,
-  ValidatedParameter,
-  PatientSearchParameters
-} from "./types"
-import * as axios from "../../axios_wrapper"
-import {AxiosResponse} from "axios"
-import {PDSPatientSearchResponse, pdsPatientSearchResponseSchema, SuccessfulResponse} from "./schema"
-import {ErrorObject} from "ajv"
 import {PatientSummary} from "@cpt-ui-common/common-types"
 import {exhaustive_switch_guard} from "@cpt-ui-common/lambdaUtils"
-import {ResponseValidator} from "../../schema/responseValidator"
+import {ErrorObject} from "ajv"
+import {AxiosResponse} from "axios"
+import * as axios from "../../axios_wrapper"
+import {Client} from "../../client"
+import {parsePatient} from "../../parsePatient"
 import {ResourceType} from "../../schema/elements"
 import {PatientMetaCode, UnrestrictedPatient} from "../../schema/patient"
-import {parsePatient} from "../../parsePatient"
+import {ResponseValidator} from "../../schema/responseValidator"
+import {PDSPatientSearchResponse, pdsPatientSearchResponseSchema, SuccessfulResponse} from "./schema"
+import {
+  DateOfBirth,
+  DateOfBirthFromStringOutcomeType,
+  Name,
+  NameFromStringOutcomeType,
+  PatientSearchParameters,
+  Postcode,
+  PostcodeFromStringOutcomeType,
+  ValidatedParameter
+} from "./types"
 
 enum PatientSearchOutcomeType {
   SUCCESS = "SUCCESS",

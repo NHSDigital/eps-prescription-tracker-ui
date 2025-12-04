@@ -1,4 +1,4 @@
-import {PatientDetails} from "./prescriptionList"
+import {PatientSummary} from "./patientSearch"
 
 export interface ItemDetails {
     medicationName: string
@@ -42,7 +42,7 @@ export interface OrgSummary {
 
 // Complete response
 export interface PrescriptionDetailsResponse {
-    patientDetails: PatientDetails
+    patientDetails: PatientSummary
     prescriptionId: string
     typeCode: "acute" | "continuous" | "continuous-repeat-dispensing"
     statusCode: string

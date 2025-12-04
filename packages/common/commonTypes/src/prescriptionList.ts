@@ -1,7 +1,4 @@
 import {PatientSummary} from "./patientSearch"
-export interface PatientDetails extends PatientSummary {
-  supersededBy?: string
-}
 
 export enum PrescriptionStatusCategories {
   CURRENT = "active",
@@ -26,7 +23,7 @@ export enum PrescriptionStatus {
 }
 
 export interface SearchResponse {
-  patient: PatientDetails
+  patient: PatientSummary | undefined
   currentPrescriptions: Array<PrescriptionSummary>
   futurePrescriptions: Array<PrescriptionSummary>
   pastPrescriptions: Array<PrescriptionSummary>
@@ -52,7 +49,7 @@ export enum TreatmentType {
 }
 
 export interface PrescriptionAPIResponse extends PrescriptionSummary {
-  nhsNumber?: number
+  nhsNumber: number
   given?: string
   family?: string
   prefix?: string

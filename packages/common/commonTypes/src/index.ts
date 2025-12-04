@@ -1,6 +1,5 @@
 // Types from prescriptionList
 export type {
-  PatientDetails,
   PrescriptionAPIResponse,
   PrescriptionSummary,
   SearchResponse
