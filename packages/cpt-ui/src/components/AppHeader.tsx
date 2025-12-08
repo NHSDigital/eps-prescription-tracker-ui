@@ -90,6 +90,19 @@ export default function AppHeader() {
     setShowLogoutModal(false)
     signOut(authContext, AUTH_CONFIG.REDIRECT_SIGN_OUT)
   }
+
+  // Trigger resize event on mobile to make the header library recalculate overflow
+  useEffect(() => {
+    const isMobile = window.innerWidth <= 900
+    if (isMobile) {
+      const timer = setTimeout(() => {
+        window.dispatchEvent(new Event("resize"))
+      }, 50)
+
+      return () => clearTimeout(timer)
+    }
+  }, [])
+
   return (
     <>
       <HeaderWithLogo>
