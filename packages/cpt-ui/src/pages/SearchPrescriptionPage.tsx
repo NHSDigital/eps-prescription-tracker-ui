@@ -44,6 +44,37 @@ export default function SearchPrescriptionPage() {
   const handleTabClick = (tabIndex: number) => {
     setActiveTab(tabIndex)
     navigate(PRESCRIPTION_SEARCH_TABS[tabIndex].link)
+
+    // Focus on the search input after navigation
+    setTimeout(() => {
+      let inputId: string | null = null
+
+      switch (tabIndex) {
+        case 0:
+          inputId = "presc-id-input"
+          break
+        case 1:
+          inputId = "nhs-number-input"
+          break
+        case 2: {
+          // Remove focus from the tab after navigation for basic details
+          const activeElement = document.activeElement as HTMLElement
+          if (activeElement && activeElement.blur) {
+            activeElement.blur()
+          }
+          break
+        }
+        default:
+          break
+      }
+
+      if (inputId) {
+        const inputElement = document.getElementById(inputId) as HTMLInputElement
+        if (inputElement) {
+          inputElement.focus()
+        }
+      }
+    }, 100)
   }
 
   // Default to prescription ID search if path not found
