@@ -13,7 +13,7 @@ $nhsukext-link-color: #005eb8 !default; // NHS blue
   background-color: $nhsukext-content-background-color;
   justify-content: space-between;
   border: $nhsukext-tab-border-width solid $nhsukext-content-background-color;
-  border-bottom: $nhsukext-tab-border-width solid $nhsukext-border-color;
+  border-bottom: none;
 
   &__tab {
     margin-top: 16px;
@@ -23,6 +23,7 @@ $nhsukext-link-color: #005eb8 !default; // NHS blue
     border: $nhsukext-tab-border-width solid $nhsukext-content-background-color;
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;
+    border-radius: 5px;
 
     text-align: center;
     display: block;

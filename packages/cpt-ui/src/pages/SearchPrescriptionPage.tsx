@@ -78,6 +78,18 @@ export default function SearchPrescriptionPage() {
                   </TabSet.Tab>
                 ))}
               </TabSet>
+            </Col>
+          </Row>
+        </Container>
+        <div style={{
+          width: "100vw",
+          marginLeft: "calc(-50vw + 50%)",
+          borderBottom: "1px solid #d8dde0",
+          height: "1px"
+        }}></div>
+        <Container>
+          <Row>
+            <Col width="full">
               <div style={{padding: "2rem", backgroundColor: "#f0f4f5"}}>
                 {content}
               </div>
