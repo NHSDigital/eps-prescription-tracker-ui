@@ -3,13 +3,13 @@ import RBACBanner from "@/components/RBACBanner"
 import EpsFooter from "@/components/EpsFooter"
 import PatientDetailsBanner from "@/components/PatientDetailsBanner"
 import PrescriptionInformationBanner from "@/components/PrescriptionInformationBanner"
-import AppHeader from "@/components/AppHeader"
 import {Fragment} from "react"
+import EpsHeader from "./components/EpsHeader"
 
 export default function Layout() {
   return (
     <Fragment>
-      <AppHeader />
+      <EpsHeader />
       <PatientDetailsBanner />
       <PrescriptionInformationBanner />
       <Outlet />

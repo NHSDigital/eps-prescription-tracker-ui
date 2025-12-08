@@ -140,7 +140,6 @@
     justify-content: flex-end;
     overflow: visible;
     height: 46px;
-    // height: 100%;
 
     @media (max-width: 48.0625em) {
         max-width: 80%;
@@ -358,20 +357,17 @@
     }
 }
 
-// Override NHS framework navigation border
 @media (min-width: 40.0625em) {
     .nhsuk-navigation {
         border-top: none;
     }
 }
 
-// Override NHS framework service link negative margin
 .nhsuk-header__link--service {
     margin-bottom: 0;
 }
 
 #header-navigation {
-    // Default: hide the More button
     .nhsuk-header__menu-toggle,
     button[class*="menu-toggle"],
     button[aria-controls],
@@ -379,7 +375,6 @@
         display: none !important;
     }
 
-    // Show "More" button on smaller screens where nav items would overflow
     @media (max-width: 900px) {
         .nhsuk-header__menu-toggle,
         button[class*="menu-toggle"],
