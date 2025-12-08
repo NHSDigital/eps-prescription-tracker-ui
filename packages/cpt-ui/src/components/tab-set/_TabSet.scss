@@ -21,9 +21,10 @@ $nhsukext-link-color: #005eb8 !default; // NHS blue
     font-size: 19px;
     background-color: $nhsukext-content-background-color;
     border: $nhsukext-tab-border-width solid $nhsukext-content-background-color;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;
-    border-radius: 5px;
 
     text-align: center;
     display: block;

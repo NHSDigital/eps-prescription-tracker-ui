@@ -52,7 +52,7 @@ export default function SearchPrescriptionPage() {
   return (
     <Fragment>
       <title>Search for a prescription</title>
-      <main id="search-for-a-prescription" data-testid="search-for-a-prescription">
+      <main id="search-for-a-prescription" data-testid="search-for-a-prescription" style={{backgroundColor: "white"}}>
         <Container className="hero-container" data-testid="search-hero-container">
           <Row>
             <Col width="full">
@@ -85,17 +85,25 @@ export default function SearchPrescriptionPage() {
           width: "100vw",
           marginLeft: "calc(-50vw + 50%)",
           borderBottom: "1px solid #d8dde0",
-          height: "1px"
+          height: "1px",
+          backgroundColor: "white"
         }}></div>
-        <Container>
-          <Row>
-            <Col width="full">
-              <div style={{padding: "2rem", backgroundColor: "#f0f4f5"}}>
-                {content}
-              </div>
-            </Col>
-          </Row>
-        </Container>
+        <div style={{
+          width: "100vw",
+          marginLeft: "calc(-50vw + 50%)",
+          backgroundColor: "#F0F4F5",
+          minHeight: "calc(100vh - 300px)"
+        }}>
+          <Container>
+            <Row>
+              <Col width="full">
+                <div style={{padding: "2rem"}}>
+                  {content}
+                </div>
+              </Col>
+            </Row>
+          </Container>
+        </div>
       </main>
     </Fragment>
   )
