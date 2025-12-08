@@ -1,0 +1,82 @@
+// NHS UK inspired colors without framework dependency
+$nhsukext-tab-border-width: 1px !default;
+$nhsukext-disabled-text-color: #768692 !default; // grey-3
+$nhsukext-body-background-color: #f0f4f5 !default; // NHS light grey
+$nhsukext-content-background-color: #ffffff !default; // white
+$nhsukext-border-color: #d8dde0 !default; // NHS border grey
+$nhsukext-secondary-text-color: #4c6272 !default; // NHS secondary text
+$nhsukext-link-color: #005eb8 !default; // NHS blue
+
+.nhsuk-tab-set {
+  display: flex;
+  width: 100%;
+  background-color: $nhsukext-content-background-color;
+  justify-content: space-between;
+  border: $nhsukext-tab-border-width solid $nhsukext-content-background-color;
+  border-bottom: $nhsukext-tab-border-width solid $nhsukext-border-color;
+
+  &__tab {
+    margin-top: 16px;
+    padding: 16px 16px;
+    font-size: 19px;
+    background-color: $nhsukext-content-background-color;
+    border: $nhsukext-tab-border-width solid $nhsukext-content-background-color;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+
+    text-align: center;
+    display: block;
+    flex: 1;
+    color: $nhsukext-secondary-text-color;
+    cursor: pointer;
+    text-decoration: none;
+
+    &--active {
+      cursor: auto;
+      
+      &:hover {
+        text-decoration: none;
+      }
+
+      color: $nhsukext-link-color;
+      margin-bottom: -1px;
+      background-color: $nhsukext-body-background-color;
+      border: $nhsukext-tab-border-width solid $nhsukext-border-color;
+      border-bottom: 0;
+    }
+
+    &--disabled {
+      border: $nhsukext-tab-border-width solid $nhsukext-content-background-color;
+      border-bottom: 0;
+      cursor: not-allowed;
+      text-decoration: line-through;
+      color: $nhsukext-disabled-text-color;
+
+      &:hover {
+        border: $nhsukext-tab-border-width solid $nhsukext-content-background-color;
+        border-bottom: 0;
+        text-decoration: line-through;
+        color: $nhsukext-disabled-text-color;
+      }
+    }
+
+    &--empty {
+      display: none;
+    }
+
+    &:hover {
+      border: $nhsukext-tab-border-width solid $nhsukext-border-color;
+      border-bottom: 1px transparent;
+      text-decoration: underline;
+      color: $nhsukext-link-color;
+      outline: none;
+    }
+
+    &:focus {
+      background-color: #ffeb3b;
+      outline: 4px solid #ffeb3b;
+      outline-offset: 0;
+      box-shadow: 0 -2px #ffeb3b, 0 4px #212b32;
+    }
+  }
+}
