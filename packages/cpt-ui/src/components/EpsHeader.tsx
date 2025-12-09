@@ -118,7 +118,8 @@ export default function AppHeader() {
             aria-label="Prescription Tracker (Pilot)"
             aria-labelledby="prescription-tracker-header-link"
           />
-          <HeaderWithLogo.ServiceName>
+          <HeaderWithLogo.ServiceName
+            data-testid="eps_header_serviceName">
             {HEADER_SERVICE}
           </HeaderWithLogo.ServiceName>
         </Link>
