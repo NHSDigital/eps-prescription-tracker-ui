@@ -180,7 +180,7 @@ export default function BasicDetailsSearch() {
     <Container className="nhsuk-width-container-fluid" data-testid="basic-details-search-form-container">
       <Row className="patient-search-form">
         <Col width="three-quarters">
-          <Form onSubmit={handleSubmit} noValidate data-testid="basic-details-form">
+          <Form onSubmit={handleSubmit} noValidate autoComplete="off" data-testid="basic-details-form">
             {inlineErrors.length > 0 && (
               <ErrorSummary ref={errorRef} data-testid="error-summary">
                 <ErrorSummary.Title>{STRINGS.errorSummaryHeading}</ErrorSummary.Title>
