@@ -13,9 +13,9 @@
     "check-licenses": "license-checker --failOn GPL --failOn LGPL --start ../.."
   },
   "dependencies": {
-    "@aws-lambda-powertools/logger": "^2.28.1",
-    "@aws-sdk/client-dynamodb": "^3.931.0",
-    "@aws-sdk/lib-dynamodb": "^3.932.0",
+    "@aws-lambda-powertools/logger": "^2.29.0",
+    "@aws-sdk/client-dynamodb": "^3.940.0",
+    "@aws-sdk/lib-dynamodb": "^3.943.0",
     "@cpt-ui-common/authFunctions": "^1.0.0",
     "@cpt-ui-common/lambdaUtils": "^1.0.0",
     "@cpt-ui-common/middyErrorHandler": "^1.0.0",
@@ -28,7 +28,7 @@
   },
   "devDependencies": {
     "@cpt-ui-common/testing": "^1.0.0",
-    "@types/aws-lambda": "^8.10.158",
+    "@types/aws-lambda": "^8.10.159",
     "@types/fhir": "^0.0.41"
   }
 }

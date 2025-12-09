@@ -25,14 +25,14 @@ jobs:
 
     steps:
       - name: Checkout local github actions
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8
         with:
           ref: ${{ env.BRANCH_NAME }}
           fetch-depth: 0
 
       - name: Generate a token to authenticate regression testing
         id: generate-token
-        uses: actions/create-github-app-token@67018539274d69449ef7c02e8e71183d1719ab42
+        uses: actions/create-github-app-token@7e473efe3cb98aa54f8d4bac15400b15fad77d94
         with:
           app-id: ${{ vars.REGRESSION_TESTS_APP_ID }}
           private-key: ${{ secrets.REGRESSION_TESTS_PEM }}
@@ -45,7 +45,7 @@ jobs:
 
       # using git commit sha for version of action to ensure we have stable version
       - name: Install asdf
-        uses: asdf-vm/actions/setup@1902764435ca0dd2f3388eea723a4f92a4eb8302
+        uses: asdf-vm/actions/setup@b7bcd026f18772e44fe1026d729e1611cc435d47
         with:
           asdf_version: ${{ steps.asdf-version.outputs.version }}
 
@@ -59,7 +59,7 @@ jobs:
             ${{ runner.os }}-asdf-${{ hashFiles('**/.tool-versions') }}-${{ steps.asdf-version.outputs.version }}
 
       - name: Install asdf dependencies in .tool-versions
-        uses: asdf-vm/actions/install@1902764435ca0dd2f3388eea723a4f92a4eb8302
+        uses: asdf-vm/actions/install@b7bcd026f18772e44fe1026d729e1611cc435d47
         with:
           asdf_version: ${{ steps.asdf-version.outputs.version }}
         env:
@@ -73,8 +73,8 @@ jobs:
           GITHUB-TOKEN: ${{ steps.generate-token.outputs.token }}
         run: |
           if [[ "$TARGET_ENVIRONMENT" != "prod" && "$TARGET_ENVIRONMENT" != "ref" ]]; then
-            REGRESSION_TEST_REPO_TAG="v3.4.35" # This is the tag or branch of the regression test code to run, usually a version tag like v3.1.0 or a branch name
-            REGRESSION_TEST_WORKFLOW_TAG="v3.4.24" # This is the tag of the github workflow to run, usually the same as REGRESSION_TEST_REPO_TAG
+            REGRESSION_TEST_REPO_TAG="v3.5.10" # This is the tag or branch of the regression test code to run, usually a version tag like v3.1.0 or a branch name
+            REGRESSION_TEST_WORKFLOW_TAG="v3.5.10" # This is the tag of the github workflow to run, usually the same as REGRESSION_TEST_REPO_TAG
 
             if [[ -z "$REGRESSION_TEST_REPO_TAG" || -z "$REGRESSION_TEST_WORKFLOW_TAG" ]]; then
               echo "Error: One or both tag variables are not set" >&2
