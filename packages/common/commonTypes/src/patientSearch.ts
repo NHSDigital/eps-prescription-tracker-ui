@@ -5,11 +5,13 @@ export enum PatientSummaryGender {
   UNKNOWN = "unknown"
 }
 
+type PatientSummaryGenderUnion = `${PatientSummaryGender}`
+
 export const NOT_AVAILABLE = "n/a"
 
 export interface PatientSummary {
   nhsNumber: string
-  gender?: PatientSummaryGender | typeof NOT_AVAILABLE
+  gender?: PatientSummaryGenderUnion | typeof NOT_AVAILABLE
   dateOfBirth?: string
   familyName?: string
   givenName?: Array<string> | typeof NOT_AVAILABLE

@@ -39,7 +39,7 @@ export interface PrescriptionSummary {
   maxRepeats?: number
   prescriptionPendingCancellation: boolean
   itemsPendingCancellation: boolean
-  // nhsNumber?: number
+  nhsNumber?: string
 }
 
 export enum TreatmentType {
@@ -49,9 +49,9 @@ export enum TreatmentType {
 }
 
 export interface PrescriptionAPIResponse extends PrescriptionSummary {
-  nhsNumber: number
-  given?: string
-  family?: string
-  prefix?: string
-  suffix?: string
+  nhsNumber: string
+  given?: Array<string>
+  family?: string,
+  prefix?: Array<string>
+  suffix?: Array<string>
 }
