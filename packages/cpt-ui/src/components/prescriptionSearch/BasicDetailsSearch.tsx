@@ -53,14 +53,14 @@ export default function BasicDetailsSearch() {
 
   // restore original search parameters when available
   useEffect(() => {
-    const originalParams = navigationContext.getOriginalSearchParameters()
-    if (originalParams) {
-      setFirstName(originalParams.firstName || "")
-      setLastName(originalParams.lastName || "")
-      setDobDay(originalParams.dobDay || "")
-      setDobMonth(originalParams.dobMonth || "")
-      setDobYear(originalParams.dobYear || "")
-      setPostcode(originalParams.postcode || "")
+    const relevantParams = navigationContext.getRelevantSearchParameters("basicDetails")
+    if (relevantParams) {
+      setFirstName(relevantParams.firstName || "")
+      setLastName(relevantParams.lastName || "")
+      setDobDay(relevantParams.dobDay || "")
+      setDobMonth(relevantParams.dobMonth || "")
+      setDobYear(relevantParams.dobYear || "")
+      setPostcode(relevantParams.postcode || "")
     }
   }, [navigationContext])
 

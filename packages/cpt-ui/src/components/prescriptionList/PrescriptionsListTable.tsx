@@ -8,7 +8,6 @@ import {PRESCRIPTION_LIST_TABLE_TEXT} from "@/constants/ui-strings/PrescriptionL
 import {Link} from "react-router-dom"
 import {FRONTEND_PATHS} from "@/constants/environment"
 import {useSearchContext} from "@/context/SearchProvider"
-import {useNavigationContext} from "@/context/NavigationProvider"
 
 export interface PrescriptionsListTableProps {
   textContent: PrescriptionsListStrings;
@@ -26,7 +25,6 @@ const PrescriptionsListTable = ({
   const initialSortConfig: SortConfig = {key: "issueDate", direction: null}
   const currentTabId: TabId = textContent.testid as TabId
   const searchContext = useSearchContext()
-  const navigationContext = useNavigationContext()
 
   // all tabs have own key in state object so each tab can be sorted individually
   const [allSortConfigs, setAllSortConfigs] = React.useState<
@@ -144,32 +142,12 @@ const PrescriptionsListTable = ({
     prescriptionId: string,
     issueNumber: string | undefined
   ) => {
-    const originalSearchParams =
-      navigationContext.getOriginalSearchParameters()
-
-    let relevantParams = {}
-    if (originalSearchParams) {
-      if (originalSearchParams.prescriptionId) {
-        relevantParams =
-          navigationContext.getRelevantSearchParameters("prescriptionId")
-      } else if (originalSearchParams.nhsNumber) {
-        relevantParams =
-          navigationContext.getRelevantSearchParameters("nhsNumber")
-      } else if (
-        originalSearchParams.firstName ||
-        originalSearchParams.lastName
-      ) {
-        relevantParams =
-          navigationContext.getRelevantSearchParameters("basicDetails")
-      }
+    // Only set the prescription-specific parameters needed for the details page
+    // Don't modify or mix with the original search parameters to avoid cross-contamination
+    searchContext.setPrescriptionId(prescriptionId)
+    if (issueNumber) {
+      searchContext.setIssueNumber(issueNumber)
     }
-
-    // only preserve relevant search parameters and add prescription-specific ones
-    searchContext.setAllSearchParameters({
-      ...relevantParams,
-      prescriptionId,
-      issueNumber
-    })
   }
 
   const getSortedItems = () => {
