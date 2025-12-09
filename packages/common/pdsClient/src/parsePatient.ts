@@ -1,7 +1,12 @@
-import {NOT_AVAILABLE, PatientSummary} from "@cpt-ui-common/common-types"
+import {
+  NOT_AVAILABLE,
+  PatientAddressUse,
+  PatientNameUse,
+  PatientSummary
+} from "@cpt-ui-common/common-types"
 import {closestIndexTo, isFuture, isPast} from "date-fns"
-import {PatientAddress, PatientAddressUse} from "./schema/address"
-import {PatientName, PatientNameUse} from "./schema/name"
+import {PatientAddress} from "./schema/address"
+import {PatientName} from "./schema/name"
 import {UnrestrictedPatient} from "./schema/patient"
 
 /* Parse Patient FHIR resource */
@@ -22,8 +27,10 @@ export const parsePatient = (patient: UnrestrictedPatient): PatientSummary => {
     dateOfBirth: patient?.birthDate ? patient.birthDate : NOT_AVAILABLE,
     givenName: name?.given?.length ? name.given : NOT_AVAILABLE,
     familyName: name?.family ? name.family : NOT_AVAILABLE,
+    nameUse: name?.use ? name.use: NOT_AVAILABLE,
     address: addressLines?.length ? addressLines : NOT_AVAILABLE,
-    postcode: address?.postalCode ? address.postalCode: NOT_AVAILABLE
+    postcode: address?.postalCode ? address.postalCode : NOT_AVAILABLE,
+    addressUse: address?.use ? address.use : NOT_AVAILABLE
   }
 }
 

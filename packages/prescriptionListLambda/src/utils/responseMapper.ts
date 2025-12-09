@@ -21,7 +21,9 @@ export const mapSearchResponse = (
 
   /* only fall back to details from the first prescription if we fail to get response from PDS */
   let patient = patientDetails
+  let patientFallback = false
   if (!patient && prescriptions.length > 0){
+    patientFallback = true
     patient = {
       nhsNumber:  prescriptions[0].nhsNumber,
       gender: undefined,
@@ -45,6 +47,7 @@ export const mapSearchResponse = (
 
   return {
     patient,
+    patientFallback,
     currentPrescriptions: sortedPrescriptions.active,
     futurePrescriptions: sortedPrescriptions.future,
     pastPrescriptions: sortedPrescriptions.past

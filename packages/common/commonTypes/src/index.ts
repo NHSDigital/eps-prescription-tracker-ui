@@ -22,7 +22,7 @@ export type {
 } from "./prescriptionDetails"
 
 export type {PatientSummary} from "./patientSearch"
-export {PatientSummaryGender, NOT_AVAILABLE} from "./patientSearch"
+export {PatientSummaryGender, PatientNameUse, PatientAddressUse, NOT_AVAILABLE} from "./patientSearch"
 
 // Types from basicDetailsSearch
 export type {

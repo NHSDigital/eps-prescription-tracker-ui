@@ -2,6 +2,8 @@ import {describe, expect, it} from "@jest/globals"
 import {mapSearchResponse, mapResponseToPrescriptionSummary} from "../src/utils/responseMapper"
 import {Bundle} from "fhir/r4"
 import {
+  PatientAddressUse,
+  PatientNameUse,
   PatientSummary,
   PatientSummaryGender,
   PrescriptionAPIResponse,
@@ -17,8 +19,10 @@ describe("Response Mapper Tests", () => {
         dateOfBirth: "1990-01-01",
         familyName: "Doe",
         givenName: ["John"],
+        nameUse: PatientNameUse.USUAL,
         address: ["1 Trevelyan Square", "Boar Lane", "City Centre", "Leeds", "West Yorkshire"],
-        postcode: "LS1 6AE"
+        postcode: "LS1 6AE",
+        addressUse: PatientAddressUse.HOME
       }
 
       const result = mapSearchResponse(mockPatient, [])
@@ -30,9 +34,12 @@ describe("Response Mapper Tests", () => {
           dateOfBirth: "1990-01-01",
           familyName: "Doe",
           givenName: ["John"],
+          nameUse: PatientNameUse.USUAL,
           address: ["1 Trevelyan Square", "Boar Lane", "City Centre", "Leeds", "West Yorkshire"],
-          postcode: "LS1 6AE"
+          postcode: "LS1 6AE",
+          addressUse: PatientAddressUse.HOME
         },
+        patientFallback: false,
         currentPrescriptions: [],
         futurePrescriptions: [],
         pastPrescriptions: []
@@ -61,6 +68,7 @@ describe("Response Mapper Tests", () => {
           familyName: "Back",
           givenName: ["Fall"]
         },
+        patientFallback: true,
         currentPrescriptions: [{
           prescriptionId: "335C70-A83008-84058A",
           isDeleted: false,
@@ -85,8 +93,10 @@ describe("Response Mapper Tests", () => {
         dateOfBirth: "n/a",
         familyName: "n/a",
         givenName: "n/a",
+        nameUse: "n/a",
         address: "n/a",
-        postcode: "n/a"
+        postcode: "n/a",
+        addressUse: "n/a"
       }
 
       const result = mapSearchResponse(mockPatient, [])
@@ -98,9 +108,12 @@ describe("Response Mapper Tests", () => {
           dateOfBirth: "n/a",
           familyName: "n/a",
           givenName: "n/a",
+          nameUse: "n/a",
           address: "n/a",
-          postcode: "n/a"
+          postcode: "n/a",
+          addressUse: "n/a"
         },
+        patientFallback: false,
         currentPrescriptions: [],
         futurePrescriptions: [],
         pastPrescriptions: []
@@ -114,8 +127,10 @@ describe("Response Mapper Tests", () => {
         dateOfBirth: "1990-01-01",
         familyName: "Doe",
         givenName: ["John"],
+        nameUse: PatientNameUse.USUAL,
         address: ["1 Trevelyan Square", "Boar Lane", "City Centre", "Leeds", "West Yorkshire"],
-        postcode: "LS1 6AE"
+        postcode: "LS1 6AE",
+        addressUse: PatientAddressUse.HOME
       }
 
       const mockPrescriptions: Array<PrescriptionAPIResponse> = [
@@ -166,9 +181,12 @@ describe("Response Mapper Tests", () => {
           dateOfBirth: "1990-01-01",
           familyName: "Doe",
           givenName: ["John"],
+          nameUse: PatientNameUse.USUAL,
           address: ["1 Trevelyan Square", "Boar Lane", "City Centre", "Leeds", "West Yorkshire"],
-          postcode: "LS1 6AE"
+          postcode: "LS1 6AE",
+          addressUse: PatientAddressUse.HOME
         },
+        patientFallback: false,
         currentPrescriptions: [{
           prescriptionId: "335C70-A83008-84058A",
           isDeleted: false,
@@ -386,256 +404,4 @@ describe("Response Mapper Tests", () => {
       expect(result).toEqual([])
     })
   })
-
-  // describe("findExtensionValue", () => {
-  //   it("should find boolean extension value", () => {
-  //     const extensions = [
-  //       {
-  //         url: "https://fhir.nhs.uk/StructureDefinition/Extension-PendingCancellation",
-  //         extension: [
-  //           {
-  //             url: "prescriptionPendingCancellation",
-  //             valueBoolean: false
-  //           }
-  //         ]
-  //       }
-  //     ]
-
-  //     const result = findExtensionValue(extensions,
-  //       "https://fhir.nhs.uk/StructureDefinition/Extension-PendingCancellation")
-  //     expect(result).toBe(false)
-  //   })
-
-  //   it("should return undefined for non-existent extension", () => {
-  //     const requestGroup = mockBundle.entry?.[0].resource as RequestGroup
-  //     const result = findExtensionValue(requestGroup.extension, "non-existent-url")
-  //     expect(result).toBeUndefined()
-  //   })
-  // })
-
-  // describe("extractNhsNumber", () => {
-  //   it("should extract NHS number from bundle", () => {
-  //     const bundleWithPatient: Bundle = {
-  //       ...mockBundle,
-  //       entry: [
-  //         {
-  //           resource: {
-  //             resourceType: "Patient",
-  //             identifier: [{
-  //               system: "https://fhir.nhs.uk/Id/nhs-number",
-  //               value: "9999999999"
-  //             }]
-  //           }
-  //         },
-  //         ...mockBundle.entry!
-  //       ]
-  //     }
-
-  //     const result = extractNhsNumber(bundleWithPatient)
-  //     expect(result).toBe("9999999999")
-  //   })
-
-  //   it("should return empty string if no NHS number found", () => {
-  //     const result = extractNhsNumber(mockBundle)
-  //     expect(result).toBe("")
-  //   })
-  // })
-
-  // describe("extractPatientNameField", () => {
-  //   it("should extract given name correctly, including concatanation", () => {
-  //     const bundleWithPatientName: Bundle = {
-  //       resourceType: "Bundle",
-  //       type: "searchset",
-  //       entry: [{
-  //         fullUrl: "urn:uuid:PATIENT-123-567-890",
-  //         search: {
-  //           mode: "include"
-  //         },
-  //         resource: {
-  //           resourceType: "Patient",
-  //           identifier: [{
-  //             system: "https://fhir.nhs.uk/Id/nhs-number",
-  //             value: "9732730684"
-  //           }],
-  //           name: [{
-  //             prefix: ["MISS"],
-  //             suffix: ["OBE"],
-  //             given: ["ETTA", "LOUISE"],
-  //             family: "CORY"
-  //           }]
-  //         } satisfies Patient
-  //       }]
-  //     }
-
-  //     const result = extractPatientNameField(bundleWithPatientName, "given")
-  //     expect(result).toBe("ETTA LOUISE")
-  //   })
-
-  //   it("should return empty string if given name is not found", () => {
-  //     const bundleWithoutGivenName: Bundle = {
-  //       resourceType: "Bundle",
-  //       type: "searchset",
-  //       entry: [{
-  //         fullUrl: "urn:uuid:PATIENT-123-567-890",
-  //         resource: {
-  //           resourceType: "Patient",
-  //           name: [{
-  //             family: "CORY"
-  //           }]
-  //         } satisfies Patient
-  //       }]
-  //     }
-
-  //     const result = extractPatientNameField(bundleWithoutGivenName, "given")
-  //     expect(result).toBe("")
-  //   })
-
-  //   it("should return empty string if patient resource is missing", () => {
-  //     const bundleWithoutPatientResource: Bundle = {
-  //       resourceType: "Bundle",
-  //       type: "searchset",
-  //       entry: []
-  //     }
-
-  //     const result = extractPatientNameField(bundleWithoutPatientResource, "given")
-  //     expect(result).toBe("")
-  //   })
-
-  //   it("should return empty string if name array is empty", () => {
-  //     const bundleWithEmptyNameArray: Bundle = {
-  //       resourceType: "Bundle",
-  //       type: "searchset",
-  //       entry: [{
-  //         fullUrl: "urn:uuid:PATIENT-123-567-890",
-  //         resource: {
-  //           resourceType: "Patient",
-  //           name: []
-  //         } satisfies Patient
-  //       }]
-  //     }
-
-  //     const result = extractPatientNameField(bundleWithEmptyNameArray, "given")
-  //     expect(result).toBe("")
-  //   })
-  // })
-
-  // describe("Fallback Logic Tests", () => {
-  // //   it("should use fallback when PDS data is incomplete", () => {
-  // //     // Create incomplete PDS response with _pdsError flag
-  // //     const incompletePdsDetails = {
-  // //       ...createMinimalPatientSummary(),
-  // //       nhsNumber: "9999999999",
-  // //       family: "Doe",
-  // //       _pdsError: new Error("Test PDS error")
-  // //     }
-
-  //   //     // Using actual implementation which uses nhsNumber for fallback
-  //   //     const prescriptions = [{
-  //   //       prescriptionId: "335C70-A83008-84058A",
-  //   //       isDeleted: false,
-  //   //       statusCode: "0001",
-  //   //       issueDate: "20250204000000",
-  //   //       prescriptionTreatmentType: TreatmentType.ACUTE,
-  //   //       prescriptionPendingCancellation: false,
-  //   //       itemsPendingCancellation: false,
-  //   //       nhsNumber: 9876543210
-  //   //     }]
-
-  //   //     // Test the search response with fallback
-  //   //     const result = mapSearchResponse(incompletePdsDetails, prescriptions)
-
-  //   //     // Should use nhsNumber from prescription for fallback
-  //   //     expect(result.patient).toMatchObject({
-  //   //       nhsNumber: "9876543210", // From fallback
-  //   //       given: "", // From fallback (uses nhsNumber as given)
-  //   //       family: "", // Default value in fallback
-  //   //       prefix: "",
-  //   //       suffix: ""
-  //   //     })
-  //   //   })
-
-  //   //   it("should prefer PDS data when available over fallback", () => {
-  //   //     // Create complete PDS response
-  //   //     const completePdsDetails = {
-  //   //       nhsNumber: "9999999999",
-  //   //       given: "John",
-  //   //       family: "Doe",
-  //   //       prefix: "Mr",
-  //   //       suffix: "Jr",
-  //   //       gender: "male",
-  //   //       dateOfBirth: "1990-01-01",
-  //   //       address: null
-  //   //     }
-
-  //   //     const prescriptions = [{
-  //   //       prescriptionId: "335C70-A83008-84058A",
-  //   //       isDeleted: false,
-  //   //       statusCode: "0001",
-  //   //       issueDate: "20250204000000",
-  //   //       prescriptionTreatmentType: TreatmentType.ACUTE,
-  //   //       prescriptionPendingCancellation: false,
-  //   //       itemsPendingCancellation: false,
-  //   //       nhsNumber: 9876543210
-  //   //     }]
-
-  //   //     const result = mapSearchResponse(completePdsDetails, prescriptions)
-
-  //   //     // Should use PDS data
-  //   //     expect(result.patient).toMatchObject({
-  //   //       nhsNumber: "9999999999", // From PDS
-  //   //       given: "John", // From PDS
-  //   //       family: "Doe", // From PDS
-  //   //       prefix: "Mr", // From PDS
-  //   //       suffix: "Jr" // From PDS
-  //   //     })
-  //   //   })
-
-  //   it("should handle missing patient resource in bundle for fallback", () => {
-  //     // Create incomplete PDS data with _pdsError
-  //     // const incompletePdsDetails = {
-  //     //   undefined,
-  //     //   _pdsError: new Error("Test PDS error")
-  //     // }
-
-  //     // Create prescription with nhsNumber
-  //     const prescriptions = [{
-  //       prescriptionId: "335C70-A83008-84058A",
-  //       isDeleted: false,
-  //       statusCode: "0001",
-  //       issueDate: "20250204000000",
-  //       prescriptionTreatmentType: TreatmentType.ACUTE,
-  //       prescriptionPendingCancellation: false,
-  //       itemsPendingCancellation: false,
-  //       nhsNumber: "0" // No NHS Number
-  //     }]
-
-  //     const result = mapSearchResponse(undefined, prescriptions)
-
-  //     // Should have default values when no fallback available
-  //     expect(result.patient).toEqual({
-  //       nhsNumber: "0", // From prescription nhsNumber converted to string
-  //       given: "",
-  //       family: ""
-  //     })
-  //   })
-
-  //   it("should handle completely missing data in all sources", () => {
-  //     // Prescription with NHS Number
-  //     const prescriptions = [{
-  //       prescriptionId: "335C70-A83008-84058A",
-  //       isDeleted: false,
-  //       statusCode: "0001",
-  //       issueDate: "20250204000000",
-  //       prescriptionTreatmentType: TreatmentType.ACUTE,
-  //       prescriptionPendingCancellation: false,
-  //       itemsPendingCancellation: false,
-  //       nhsNumber: "9876543210"
-  //     }]
-
-  //     const result = mapSearchResponse(undefined, prescriptions)
-  //     expect(result.patient).toEqual({
-  //       nhsNumber: "9876543210"//,
-  //     })
-  //   })
-  // })
 })

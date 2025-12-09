@@ -1,12 +1,6 @@
 import {FromSchema, JSONSchema} from "json-schema-to-ts"
 import {period} from "./elements"
-
-export enum PatientAddressUse {
-  HOME = "home",
-  TEMP = "temp",
-  BILLING = "billing",
-  WORK = "work"
-}
+import {PatientAddressUse} from "@cpt-ui-common/common-types"
 
 export const patientAddressSchema = {
   type: "object",

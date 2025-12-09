@@ -3,10 +3,14 @@ import {jest} from "@jest/globals"
 import {single_patient} from "./patientSearch/examples/index"
 
 import {parsePatient} from "../src/parsePatient"
-import {PatientAddress, PatientAddressUse} from "../src/schema/address"
+import {PatientAddress} from "../src/schema/address"
 import {UnrestrictedPatient} from "../src/schema/patient"
-import {NOT_AVAILABLE, PatientSummaryGender} from "@cpt-ui-common/common-types"
-import {PatientNameUse} from "../src/schema/name"
+import {
+  NOT_AVAILABLE,
+  PatientAddressUse,
+  PatientNameUse,
+  PatientSummaryGender
+} from "@cpt-ui-common/common-types"
 
 interface ValueCombinationTestCase {
   description: Array<string>

@@ -8,6 +8,7 @@ import {
 import nock from "nock"
 
 import {mockPdsPatient, mockPrescriptionBundle} from "./mockObjects"
+import {PatientAddressUse, PatientNameUse} from "@cpt-ui-common/common-types"
 
 const apigeePrescriptionsEndpoint = process.env.apigeePrescriptionsEndpoint as string ?? ""
 const apigeePersonalDemographicsEndpoint = process.env.apigeePersonalDemographicsEndpoint as string ?? ""
@@ -114,9 +115,13 @@ describe("handler tests with cis2 auth", () => {
         dateOfBirth: "2010-10-22",
         familyName: "Smith",
         givenName: ["Jane"],
+        nameUse: PatientNameUse.USUAL,
         address: ["1 Trevelyan Square", "Boar Lane", "City Centre", "Leeds", "West Yorkshire"],
-        postcode: "LS1 6AE"
-      }})
+        postcode: "LS1 6AE",
+        addressUse: PatientAddressUse.TEMP
+      },
+      patientFallback: false
+    })
   })
 
   it("responds with success on prescription ID flow", async () => {
@@ -141,8 +146,9 @@ describe("handler tests with cis2 auth", () => {
       statusCode: 200
     })
 
-    expect(responseBody).toMatchObject({
+    expect(responseBody).toEqual({
       currentPrescriptions: [{
+        isDeleted: false,
         issueDate: "2023-01-01",
         itemsPendingCancellation: false,
         nhsNumber: "9999999999",
@@ -155,7 +161,9 @@ describe("handler tests with cis2 auth", () => {
       pastPrescriptions: [],
       patient: {
         nhsNumber: "9999999999"
-      }})
+      },
+      patientFallback: true
+    })
   })
 
   it("Returns a 404 if prescription is not found", async () => {

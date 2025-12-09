@@ -24,6 +24,7 @@ export enum PrescriptionStatus {
 
 export interface SearchResponse {
   patient: PatientSummary | undefined
+  patientFallback: boolean
   currentPrescriptions: Array<PrescriptionSummary>
   futurePrescriptions: Array<PrescriptionSummary>
   pastPrescriptions: Array<PrescriptionSummary>

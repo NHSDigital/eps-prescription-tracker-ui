@@ -11,6 +11,7 @@ import {mockPdsPatient} from "./mockObjects"
 
 import * as pds from "../../src"
 import {PatientMetaCode, RestrictedPatient, UnrestrictedPatient} from "../../src/schema/patient"
+import {PatientAddressUse, PatientNameUse} from "@cpt-ui-common/common-types"
 const OutcomeType = pds.patientDetails.OutcomeType
 
 describe("Patient Details Lookup Service Tests", () => {
@@ -31,6 +32,7 @@ describe("Patient Details Lookup Service Tests", () => {
       nhsNumber: "9000000009",
       familyName: "Smith",
       givenName: ["Jane"],
+      nameUse: PatientNameUse.USUAL,
       gender: "female",
       dateOfBirth: "2010-10-22",
       address: [
@@ -40,7 +42,8 @@ describe("Patient Details Lookup Service Tests", () => {
         "Leeds",
         "West Yorkshire"
       ],
-      postcode: "LS1 6AE"
+      postcode: "LS1 6AE",
+      addressUse: PatientAddressUse.TEMP
     })
   })
 
@@ -95,6 +98,7 @@ describe("Patient Details Lookup Service Tests", () => {
       nhsNumber: "8888888888",
       familyName: "Smith",
       givenName: ["Jane"],
+      nameUse: PatientNameUse.USUAL,
       gender: "female",
       dateOfBirth: "2010-10-22",
       address: [
@@ -104,7 +108,8 @@ describe("Patient Details Lookup Service Tests", () => {
         "Leeds",
         "West Yorkshire"
       ],
-      postcode: "LS1 6AE"
+      postcode: "LS1 6AE",
+      addressUse: PatientAddressUse.TEMP
     })
   })
 
