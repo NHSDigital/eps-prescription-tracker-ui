@@ -122,8 +122,7 @@ export default function SearchPrescriptionPage() {
         <div style={{
           width: "100vw",
           marginLeft: "calc(-50vw + 50%)",
-          backgroundColor: "#F0F4F5",
-          minHeight: "calc(100vh - 300px)"
+          backgroundColor: "#F0F4F5"
         }}>
           <Container>
             <Row>
