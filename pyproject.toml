@@ -1,6 +1,7 @@
 
 [project]
 python = "^3.12"
+name = "eps-clinical-prescription-tracker-ui"
 
 [tool.poetry]
 name = "eps-clinical-prescription-tracker-ui"
