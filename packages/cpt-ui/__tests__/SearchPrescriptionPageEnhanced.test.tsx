@@ -297,7 +297,7 @@ describe("SearchForAPrescription", () => {
           const tabIndex = 999
           let inputId: string | null = null
 
-          switch (tabIndex) {
+          switch (tabIndex as number) {
             case 0:
               inputId = "presc-id-input"
               break

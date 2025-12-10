@@ -38,6 +38,7 @@ const defaultAuthContext: AuthContextType = {
   user: null,
   isSignedIn: false,
   isSigningIn: false,
+  isSigningOut: false,
   invalidSessionCause: undefined,
   rolesWithAccess: [],
   rolesWithoutAccess: [],
@@ -49,31 +50,39 @@ const defaultAuthContext: AuthContextType = {
   sessionId: undefined,
   cognitoSignIn: jest.fn(),
   cognitoSignOut: jest.fn(),
-  refreshAccessToken: jest.fn(),
-  clearErrorState: jest.fn(),
-  clearSigningInState: jest.fn(),
-  handlePostSignOut: jest.fn(),
-  clearInvalidSessionCause: jest.fn(),
-  setRoleSelection: jest.fn(),
-  selectedAccessOption: undefined,
-  setSelectedAccessOption: jest.fn(),
-  hasSelectedRole: false,
-  multipleRoles: false
+  clearAuthState: jest.fn(),
+  updateSelectedRole: jest.fn(),
+  updateTrackerUserInfo: jest.fn(),
+  updateInvalidSessionCause: jest.fn(),
+  setIsSigningOut: jest.fn()
 }
 
 const defaultAccessContext = {}
 
 const defaultSearchContext: SearchProviderContextType = {
-  searchQuery: "",
-  setSearchQuery: jest.fn(),
-  searchResults: [],
-  setSearchResults: jest.fn(),
-  isLoading: false,
-  setIsLoading: jest.fn(),
+  prescriptionId: undefined,
+  issueNumber: undefined,
+  firstName: undefined,
+  lastName: undefined,
+  dobDay: undefined,
+  dobMonth: undefined,
+  dobYear: undefined,
+  postcode: undefined,
+  nhsNumber: undefined,
   searchType: "prescriptionId",
+  clearSearchParameters: jest.fn(),
+  setPrescriptionId: jest.fn(),
+  setIssueNumber: jest.fn(),
+  setFirstName: jest.fn(),
+  setLastName: jest.fn(),
+  setDobDay: jest.fn(),
+  setDobMonth: jest.fn(),
+  setDobYear: jest.fn(),
+  setPostcode: jest.fn(),
+  setNhsNumber: jest.fn(),
   setSearchType: jest.fn(),
-  error: null,
-  setError: jest.fn()
+  getAllSearchParameters: jest.fn(),
+  setAllSearchParameters: jest.fn()
 }
 
 const renderWithProviders = (
