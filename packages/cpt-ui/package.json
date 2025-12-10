@@ -39,6 +39,6 @@
     "@vitejs/plugin-react-swc": "^4.2.2",
     "axios-mock-adapter": "^2.1.0",
     "sass": "^1.94.2",
-    "vite": "^7.2.4"
+    "vite": "^7.2.6"
   }
 }
