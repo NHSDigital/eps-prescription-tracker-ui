@@ -2,81 +2,72 @@ import React, {useEffect, useState} from "react"
 
 import {STRINGS} from "@/constants/ui-strings/PatientDetailsBannerStrings"
 import {usePatientDetails} from "@/context/PatientDetailsProvider"
-import {formatDobTextForDisplay} from "@/helpers/formatters"
 import {logger} from "@/helpers/logger"
+import {NOT_AVAILABLE, PatientAddressUse, PatientNameUse} from "@cpt-ui-common/common-types"
+import {format} from "date-fns"
+import {DOB_FORMAT, NHS_NUMBER_FORMAT_REGEX} from "@/constants/misc"
 
 export default function PatientDetailsBanner() {
-  const [nameText, setNameText] = useState("")
-  const [genderText, setGenderText] = useState("")
-  const [nhsNumberText, setNhsNumberText] = useState("")
-  const [dobText, setDobText] = useState("")
-  const [addressText, setAddressText] = useState("")
-
-  const [successfulDetails, setSuccessfulDetails] = useState(true)
-
-  const {patientDetails} = usePatientDetails()
-
-  const capitalize = (input: string) => {
-    return input[0].toLocaleUpperCase() + input.slice(1)
+  const emptyPatientDetailsText = {
+    name: STRINGS.UNKNOWN,
+    gender: STRINGS.UNKNOWN,
+    nhsNumber: "",
+    dob: STRINGS.UNKNOWN,
+    address: STRINGS.UNKNOWN
   }
 
-  const formatNhsNumber = (input: string) => {
-    // Convert from whatever format, to `XXX XXX XXXX`. remove whitespace first
-    const cleaned = input.replace(/\s+/g, "")
-    return `${cleaned.slice(0, 3)} ${cleaned.slice(3, 6)} ${cleaned.slice(6)}`
-  }
+  const [patientDetailsText, setPatientDetailsText] = useState(emptyPatientDetailsText)
+  const {patientDetails, patientFallback} = usePatientDetails()
 
   useEffect(() => {
     if (!patientDetails) {
       logger.info("No patient details - hiding patient detail banner.")
-      setNameText("")
-      setGenderText("")
-      setNhsNumberText("")
-      setDobText("")
-      setAddressText("")
+      setPatientDetailsText(emptyPatientDetailsText)
       return
     }
+
     logger.info("Patient details are present.", patientDetails)
 
-    let allDetailsPresent = true
-
-    setNameText(`${patientDetails.given} ${patientDetails.family.toLocaleUpperCase()}`)
-
-    setNhsNumberText(formatNhsNumber(patientDetails.nhsNumber))
+    const patientDetailsText = structuredClone(emptyPatientDetailsText)
+    if (patientDetails.givenName && patientDetails.familyName) {
+      if (patientDetails.givenName === NOT_AVAILABLE || patientDetails.familyName === NOT_AVAILABLE) {
+        patientDetailsText.name = STRINGS.NAME_NOT_AVAILABLE
+      } else {
+        patientDetailsText.name =
+          `${patientDetails.givenName.filter(Boolean).join(" ")} ${patientDetails.familyName.toLocaleUpperCase()}${
+            patientDetails.nameUse === PatientNameUse.TEMP ? STRINGS.TEMPORARY : ""}`
+      }
+    }
 
     if (patientDetails.gender) {
-      setGenderText(capitalize(patientDetails.gender))
-    } else {
-      setGenderText(STRINGS.UNKNOWN)
-      allDetailsPresent = false
+      patientDetailsText.gender = patientDetails.gender === NOT_AVAILABLE ? STRINGS.NOT_AVAILABLE :
+        `${patientDetails.gender.charAt(0).toUpperCase()}${patientDetails.gender.slice(1)}`
     }
+
+    patientDetailsText.nhsNumber = patientDetails.nhsNumber.replace(NHS_NUMBER_FORMAT_REGEX, "$1 $2 $3")
 
     if (patientDetails.dateOfBirth) {
-      setDobText(patientDetails.dateOfBirth)
-    } else {
-      setDobText(STRINGS.UNKNOWN)
-      allDetailsPresent = false
+      patientDetailsText.dob = patientDetails.dateOfBirth === NOT_AVAILABLE ? STRINGS.NOT_AVAILABLE :
+        format(new Date(patientDetails.dateOfBirth), DOB_FORMAT)
     }
 
-    if (patientDetails.address) {
-      if (typeof patientDetails.address === "string") {
-        // If it's a string, use it directly
-        setAddressText(patientDetails.address as string)
+    if (patientDetails.address && patientDetails.postcode) {
+      if (patientDetails.address === NOT_AVAILABLE && patientDetails.postcode === NOT_AVAILABLE) {
+        patientDetailsText.address = STRINGS.NOT_AVAILABLE
       } else {
-        // If it's an object, build from fields
-        // TODO: AEA-5926 - address field should not assume a structure, its a list of lines,
-        // also needs postcode from postcode field
-        const {line1, line2, city, postcode} = patientDetails.address
-        const fullAddress = [line1, line2, city, postcode].filter(Boolean).join(", ")
-        setAddressText(fullAddress)
+        const addressParts: Array<string> = []
+        if (patientDetails.address !== NOT_AVAILABLE){
+          addressParts.push(...patientDetails.address)
+        }
+        if(patientDetails.postcode !== NOT_AVAILABLE){
+          addressParts.push(patientDetails.postcode)
+        }
+        patientDetailsText.address = `${addressParts.filter(Boolean).join(", ")}${
+          patientDetails.addressUse === PatientAddressUse.TEMP ? STRINGS.TEMPORARY : ""}`
       }
-    } else {
-      setAddressText(STRINGS.UNKNOWN)
-      allDetailsPresent = false
     }
-
-    setSuccessfulDetails(allDetailsPresent)
-  }, [patientDetails])
+    setPatientDetailsText(patientDetailsText)
+  }, [patientDetails, patientFallback])
 
   /**
     * Hide the banner if the patient details are missing.
@@ -85,28 +76,27 @@ export default function PatientDetailsBanner() {
     return null
   }
 
-  // TODO: AEA-5926 - needs content and logic to handle PDS ok and fields n/a scenarios
   return (
     <div
-      className={`patient-details-banner ${!successfulDetails ? "patient-details-partial-data" : ""}`}
-      data-testid="patient-details-banner"
-    >
-      <div
-        className={"patient-detail-banner-row"}
-      > {nameText ?
-          <div className = "patient-detail-name"> {nameText}</div> : null }
-        <div>{STRINGS.GENDER}: {genderText}</div>
-        <div>{STRINGS.NHS_NUMBER}: {nhsNumberText}</div>
-        <div>{STRINGS.DOB}: {formatDobTextForDisplay(dobText)}</div>
-        <div>{STRINGS.ADDRESS}: {addressText}</div>
+      className={`patient-details-banner ${patientFallback ? "patient-details-partial-data" : ""}`}
+      data-testid="patient-details-banner">
+      <div className={"patient-detail-banner-row"}>
+        <div
+          className="patient-detail-name"
+          data-testid="patient-details-banner-name">
+          {patientDetailsText.name}
+        </div>
+        <div data-testid="patient-details-banner-gender">{STRINGS.GENDER}: {patientDetailsText.gender}</div>
+        <div data-testid="patient-details-banner-nhsNumber">{STRINGS.NHS_NUMBER}: {patientDetailsText.nhsNumber}</div>
+        <div data-testid="patient-details-banner-dob">{STRINGS.DOB}: {patientDetailsText.dob}</div>
+        <div data-testid="patient-details-banner-address">{STRINGS.ADDRESS}: {patientDetailsText.address}</div>
       </div>
       {
         // Places the missing data message on the next line
-        !successfulDetails && (
+        patientFallback && (
           <div
             className="patient-detail-banner-row"
-            data-testid="patient-detail-banner-incomplete"
-          >
+            data-testid="patient-detail-banner-incomplete">
             <div>{STRINGS.MISSING_DATA}</div>
           </div>
         )

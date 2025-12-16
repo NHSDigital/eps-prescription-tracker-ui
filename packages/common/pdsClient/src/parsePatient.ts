@@ -242,5 +242,3 @@ const getClosestToNow = <T extends PatientAddress | PatientName>(
   /* return the value with the most recent start date */
   return values[closestDateIndex]
 }
-
-// TODO: Pass back the use, wire it all the way through

@@ -35,7 +35,7 @@ export default function PrescriptionDetailsPage() {
   const [loading, setLoading] = useState(true)
 
   const {setPrescriptionInformation} = usePrescriptionInformation()
-  const {setPatientDetails} = usePatientDetails()
+  const {patientFallback, setPatientDetails} = usePatientDetails()
 
   const [prescriber, setPrescriber] = useState<OrgSummary | undefined>()
   const [nominatedDispenser, setNominatedDispenser] = useState<OrgSummary | undefined>()
@@ -83,14 +83,18 @@ export default function PrescriptionDetailsPage() {
       return
     }
 
-    // Use the populated payload (retrieved live or from mock fallback)
+    // Use the populated payload
     setPrescriptionInformation(payload)
-    setPatientDetails(payload.patientDetails)
     setItems(payload.items)
     setPrescriber(payload.prescriberOrg)
     setMessageHistory(payload.messageHistory)
     setDispenser(payload.currentDispenser)
     setNominatedDispenser(payload.nominatedDispenser)
+
+    // Only update patient details if using prescription fallback
+    if (patientFallback){
+      setPatientDetails(payload.patientDetails)
+    }
 
     return payload
   }

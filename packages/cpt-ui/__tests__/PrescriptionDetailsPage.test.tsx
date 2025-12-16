@@ -5,7 +5,7 @@ import {MockPatientDetailsProvider} from "../__mocks__/MockPatientDetailsProvide
 import {MockPrescriptionInformationProvider} from "../__mocks__/MockPrescriptionInformationProvider"
 import {mockPrescriptionDetailsResponse} from "../__mocks__/MockPrescriptionDetailsResponse"
 
-import {PrescriptionDetailsResponse} from "@cpt-ui-common/common-types"
+import {PatientSummary, PatientSummaryGender, PrescriptionDetailsResponse} from "@cpt-ui-common/common-types"
 
 import {STRINGS} from "@/constants/ui-strings/PrescriptionDetailsPageStrings"
 
@@ -91,9 +91,20 @@ jest.mock("@/components/prescriptionDetails/SiteDetailsCards", () => ({
   }
 }))
 
+const mockPdsPatientDetails: PatientSummary = {
+  nhsNumber: "123",
+  givenName: ["From"],
+  familyName: "PDS",
+  gender: PatientSummaryGender.MALE,
+  dateOfBirth: "1980-01-01",
+  address: ["Some address", "123 Street", "City"],
+  postcode: "LS11TW"
+}
+
 const renderComponent = (
   prescriptionId: string,
-  initialAuthState: AuthContextType = defaultAuthState
+  initialAuthState: AuthContextType = defaultAuthState,
+  patientFallback: boolean = false
 ) => {
   const searchState = {
     ...defaultSearchState,
@@ -103,7 +114,7 @@ const renderComponent = (
   return render(
     <AuthContext.Provider value={initialAuthState}>
       <SearchContext.Provider value={searchState}>
-        <MockPatientDetailsProvider>
+        <MockPatientDetailsProvider patientDetails={mockPdsPatientDetails} patientFallback={patientFallback}>
           <MockPrescriptionInformationProvider>
             <MemoryRouter initialEntries={["/prescription-details"]}>
               <NavigationProvider>
@@ -124,7 +135,7 @@ const renderComponent = (
 describe("PrescriptionDetailsPage", () => {
 
   beforeEach(() => {
-    delete window.__mockedPatientDetails
+    window.__mockedPatientDetails = mockPdsPatientDetails
     delete window.__mockedPrescriptionInformation
   })
 
@@ -240,6 +251,33 @@ describe("PrescriptionDetailsPage", () => {
 
     await waitFor(() => {
       expect(window.__mockedPrescriptionInformation).toEqual(payload)
+    })
+  })
+
+  it("does not set patient details when details from pds were successful", async () => {
+    const payload = {
+      ...mockPrescriptionDetailsResponse
+    }
+
+    jest.spyOn(http, "get").mockResolvedValue({status: 200, data: payload})
+
+    renderComponent("SUCCESS_ID", signedInAuthState, false)
+
+    await waitFor(() => {
+      expect(window.__mockedPatientDetails).toEqual(mockPdsPatientDetails)
+    })
+  })
+
+  it("sets patient details when details from pds were unsuccessful", async () => {
+    const payload = {
+      ...mockPrescriptionDetailsResponse
+    }
+
+    jest.spyOn(http, "get").mockResolvedValue({status: 200, data: payload})
+
+    renderComponent("SUCCESS_ID", signedInAuthState, true)
+
+    await waitFor(() => {
       expect(window.__mockedPatientDetails).toEqual(payload.patientDetails)
     })
   })
@@ -247,6 +285,6 @@ describe("PrescriptionDetailsPage", () => {
   it("does not set context if no prescriptionId is provided", () => {
     renderComponent("")
     expect(window.__mockedPrescriptionInformation).toBeUndefined()
-    expect(window.__mockedPatientDetails).toBeUndefined()
   })
+
 })
