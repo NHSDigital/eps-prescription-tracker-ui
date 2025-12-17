@@ -108,7 +108,7 @@ describe("functionConstruct works correctly", () => {
   test("it has the correct lambda", () => {
     template.hasResourceProperties("AWS::Lambda::Function", {
       Handler: "index.handler",
-      Runtime: "nodejs22.x",
+      Runtime: "nodejs24.x",
       FunctionName: "testServiceName-testLambda",
       MemorySize: 256,
       Architectures: ["x86_64"],
@@ -159,7 +159,7 @@ describe("functionConstruct works correctly with environment variables", () => {
 
   test("environment variables are added correctly", () => {
     template.hasResourceProperties("AWS::Lambda::Function", {
-      Runtime: "nodejs22.x",
+      Runtime: "nodejs24.x",
       FunctionName: "testServiceName-testLambda",
       Environment: {Variables: {foo: "bar"}}
     })
