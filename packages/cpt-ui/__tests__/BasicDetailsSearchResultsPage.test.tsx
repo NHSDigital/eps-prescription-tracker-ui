@@ -328,8 +328,8 @@ describe("BasicDetailsSearchResultsPage", () => {
     renderWithRouter()
 
     await waitFor(() => {
-      expect(screen.getAllByText(STRINGS.NOT_AVAILABLE)[0]).toBeInTheDocument()
-      expect(screen.getAllByText(STRINGS.NOT_AVAILABLE)[1]).toBeInTheDocument()
+      expect(screen.getAllByText(STRINGS.NOT_ON_RECORD)[0]).toBeInTheDocument()
+      expect(screen.getAllByText(STRINGS.NOT_ON_RECORD)[1]).toBeInTheDocument()
       expect(screen.getByText("123 Brundel Close, Headingley, Leeds, West Yorkshire")).toBeInTheDocument()
       expect(screen.getByText("LS6 1JL")).toBeInTheDocument()
     })
@@ -364,7 +364,7 @@ describe("BasicDetailsSearchResultsPage", () => {
     renderWithRouter()
 
     await waitFor(() => {
-      expect(screen.getAllByText(STRINGS.NOT_AVAILABLE)).toHaveLength(4)
+      expect(screen.getAllByText(STRINGS.NOT_ON_RECORD)).toHaveLength(4)
     })
   })
 

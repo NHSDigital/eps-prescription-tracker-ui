@@ -9,11 +9,11 @@ import {DOB_FORMAT, NHS_NUMBER_FORMAT_REGEX} from "@/constants/misc"
 
 export default function PatientDetailsBanner() {
   const emptyPatientDetailsText = {
-    name: STRINGS.UNKNOWN,
-    gender: STRINGS.UNKNOWN,
+    name: STRINGS.NOT_AVAILABLE,
+    gender: STRINGS.NOT_AVAILABLE,
     nhsNumber: "",
-    dob: STRINGS.UNKNOWN,
-    address: STRINGS.UNKNOWN
+    dob: STRINGS.NOT_AVAILABLE,
+    address: STRINGS.NOT_AVAILABLE
   }
 
   const [patientDetailsText, setPatientDetailsText] = useState(emptyPatientDetailsText)
@@ -31,7 +31,7 @@ export default function PatientDetailsBanner() {
     const patientDetailsText = structuredClone(emptyPatientDetailsText)
     if (patientDetails.givenName && patientDetails.familyName) {
       if (patientDetails.givenName === NOT_AVAILABLE || patientDetails.familyName === NOT_AVAILABLE) {
-        patientDetailsText.name = STRINGS.NAME_NOT_AVAILABLE
+        patientDetailsText.name = STRINGS.NAME_NOT_ON_RECORD
       } else {
         patientDetailsText.name =
           `${patientDetails.givenName.filter(Boolean).join(" ")} ${patientDetails.familyName.toLocaleUpperCase()}${
@@ -40,20 +40,20 @@ export default function PatientDetailsBanner() {
     }
 
     if (patientDetails.gender) {
-      patientDetailsText.gender = patientDetails.gender === NOT_AVAILABLE ? STRINGS.NOT_AVAILABLE :
+      patientDetailsText.gender = patientDetails.gender === NOT_AVAILABLE ? STRINGS.NOT_ON_RECORD :
         `${patientDetails.gender.charAt(0).toUpperCase()}${patientDetails.gender.slice(1)}`
     }
 
     patientDetailsText.nhsNumber = patientDetails.nhsNumber.replace(NHS_NUMBER_FORMAT_REGEX, "$1 $2 $3")
 
     if (patientDetails.dateOfBirth) {
-      patientDetailsText.dob = patientDetails.dateOfBirth === NOT_AVAILABLE ? STRINGS.NOT_AVAILABLE :
+      patientDetailsText.dob = patientDetails.dateOfBirth === NOT_AVAILABLE ? STRINGS.NOT_ON_RECORD :
         format(new Date(patientDetails.dateOfBirth), DOB_FORMAT)
     }
 
     if (patientDetails.address && patientDetails.postcode) {
       if (patientDetails.address === NOT_AVAILABLE && patientDetails.postcode === NOT_AVAILABLE) {
-        patientDetailsText.address = STRINGS.NOT_AVAILABLE
+        patientDetailsText.address = STRINGS.NOT_ON_RECORD
       } else {
         const addressParts: Array<string> = []
         if (patientDetails.address !== NOT_AVAILABLE){
@@ -78,7 +78,7 @@ export default function PatientDetailsBanner() {
 
   return (
     <div
-      className={`patient-details-banner ${patientFallback ? "patient-details-partial-data" : ""}`}
+      className={"patient-details-banner"}
       data-testid="patient-details-banner">
       <div className={"patient-detail-banner-row"}>
         <div
@@ -93,7 +93,7 @@ export default function PatientDetailsBanner() {
       </div>
       {
         // Places the missing data message on the next line
-        patientFallback && (
+        (patientFallback && Object.values(patientDetailsText).some((v) => v === STRINGS.NOT_AVAILABLE)) && (
           <div
             className="patient-detail-banner-row"
             data-testid="patient-detail-banner-incomplete">

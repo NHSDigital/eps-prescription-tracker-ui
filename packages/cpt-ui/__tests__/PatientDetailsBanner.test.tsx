@@ -67,7 +67,7 @@ describe("PatientDetailsBanner", () => {
     expect(screen.getByTestId("patient-details-banner").className).not.toMatch(/patient-details-partial-data/)
   })
 
-  it("renders partial patient details with missing data message", async () => {
+  it("renders partial patient details with missing data message when pds call fails", async () => {
     render(
       <MockPatientDetailsProvider patientDetails={{nhsNumber: "5900009890"}} patientFallback={true}>
         <PatientDetailsBanner />
@@ -79,22 +79,44 @@ describe("PatientDetailsBanner", () => {
     })
 
     // Minimum details returned is just NHS Number
-    expect(screen.getByTestId("patient-details-banner-name")).toHaveTextContent(STRINGS.UNKNOWN)
-    expect(
-      screen.getByTestId("patient-details-banner-gender")).toHaveTextContent(`${STRINGS.GENDER}: ${STRINGS.UNKNOWN}`)
-    expect(
-      screen.getByTestId("patient-details-banner-nhsNumber")).toHaveTextContent(`${STRINGS.NHS_NUMBER}: 590 000 9890`)
-    expect(
-      screen.getByTestId("patient-details-banner-dob")).toHaveTextContent(`${STRINGS.DOB}: ${STRINGS.UNKNOWN}`)
-    expect(
-      screen.getByTestId("patient-details-banner-address")).toHaveTextContent(`${STRINGS.ADDRESS}: ${STRINGS.UNKNOWN}`)
+    expect(screen.getByTestId("patient-details-banner-name")).toHaveTextContent(STRINGS.NOT_AVAILABLE)
+    expect(screen.getByTestId("patient-details-banner-gender")).toHaveTextContent(
+      `${STRINGS.GENDER}: ${STRINGS.NOT_AVAILABLE}`)
+    expect(screen.getByTestId("patient-details-banner-nhsNumber")).toHaveTextContent(
+      `${STRINGS.NHS_NUMBER}: 590 000 9890`)
+    expect(screen.getByTestId("patient-details-banner-dob")).toHaveTextContent(
+      `${STRINGS.DOB}: ${STRINGS.NOT_AVAILABLE}`)
+    expect(screen.getByTestId("patient-details-banner-address")).toHaveTextContent(
+      `${STRINGS.ADDRESS}: ${STRINGS.NOT_AVAILABLE}`)
 
     // The missing data message should be rendered.
     expect(screen.getByTestId("patient-detail-banner-incomplete")).toBeInTheDocument()
     expect(screen.getByTestId("patient-detail-banner-incomplete")).toHaveTextContent(STRINGS.MISSING_DATA)
+  })
 
-    // The banner should now have the class for partial data.
-    expect(screen.getByTestId("patient-details-banner").className).toMatch(/patient-details-partial-data/)
+  // eslint-disable-next-line max-len
+  it("does not render the missing data message when details are completed from prescription details after a pds failure", async () => {
+    render(
+      <MockPatientDetailsProvider
+        patientDetails={{
+          nhsNumber: "5900009890",
+          givenName: ["William"],
+          familyName: "Wolderton",
+          gender: "male",
+          dateOfBirth: "1988-11-01",
+          address: ["55 Oak Street", "OAK LANE", "Leeds"],
+          postcode: "LS1 1XX"
+        }}
+        patientFallback={true}>
+        <PatientDetailsBanner />
+      </MockPatientDetailsProvider>
+    )
+
+    await waitFor(() => {
+      expect(screen.getByTestId("patient-details-banner")).toBeInTheDocument()
+    })
+
+    expect(screen.queryByTestId("patient-detail-banner-incomplete")).not.toBeInTheDocument()
   })
 
   it("renders not available content for fields when pds record has missing data", async () => {
@@ -116,15 +138,15 @@ describe("PatientDetailsBanner", () => {
       expect(screen.getByTestId("patient-details-banner")).toBeInTheDocument()
     })
 
-    expect(screen.getByTestId("patient-details-banner-name")).toHaveTextContent(STRINGS.NAME_NOT_AVAILABLE)
+    expect(screen.getByTestId("patient-details-banner-name")).toHaveTextContent(STRINGS.NAME_NOT_ON_RECORD)
     expect(screen.getByTestId("patient-details-banner-gender")).toHaveTextContent(
-      `${STRINGS.GENDER}: ${STRINGS.NOT_AVAILABLE}`)
+      `${STRINGS.GENDER}: ${STRINGS.NOT_ON_RECORD}`)
     expect(screen.getByTestId("patient-details-banner-nhsNumber")).toHaveTextContent(
       `${STRINGS.NHS_NUMBER}: 590 000 9890`)
     expect(screen.getByTestId("patient-details-banner-dob")).toHaveTextContent(
-      `${STRINGS.DOB}: ${STRINGS.NOT_AVAILABLE}`)
+      `${STRINGS.DOB}: ${STRINGS.NOT_ON_RECORD}`)
     expect(screen.getByTestId("patient-details-banner-address")).toHaveTextContent(
-      `${STRINGS.ADDRESS}: ${STRINGS.NOT_AVAILABLE}`)
+      `${STRINGS.ADDRESS}: ${STRINGS.NOT_ON_RECORD}`)
 
     // // Verify that the missing data message is not rendered
     expect(screen.queryByTestId("patient-detail-banner-incomplete")).not.toBeInTheDocument()
@@ -152,7 +174,7 @@ describe("PatientDetailsBanner", () => {
       expect(screen.getByTestId("patient-details-banner")).toBeInTheDocument()
     })
 
-    expect(screen.getByTestId("patient-details-banner-name")).toHaveTextContent(STRINGS.NAME_NOT_AVAILABLE)
+    expect(screen.getByTestId("patient-details-banner-name")).toHaveTextContent(STRINGS.NAME_NOT_ON_RECORD)
   })
 
   it("renders patient details correctly when family name is missing from the pds record", async () => {
@@ -174,7 +196,7 @@ describe("PatientDetailsBanner", () => {
       expect(screen.getByTestId("patient-details-banner")).toBeInTheDocument()
     })
 
-    expect(screen.getByTestId("patient-details-banner-name")).toHaveTextContent(STRINGS.NAME_NOT_AVAILABLE)
+    expect(screen.getByTestId("patient-details-banner-name")).toHaveTextContent(STRINGS.NAME_NOT_ON_RECORD)
   })
 
   it("renders patient details correctly when name is temporary", async () => {

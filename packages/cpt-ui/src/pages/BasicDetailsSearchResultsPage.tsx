@@ -39,7 +39,7 @@ const TableResultsRow = ({patient}: TableResultsRowProps) => {
   const searchContext = useSearchContext()
   const navigationContext = useNavigationContext()
 
-  let nameText = STRINGS.NOT_AVAILABLE
+  let nameText = STRINGS.NOT_ON_RECORD
   if (patient.givenName !== NOT_AVAILABLE && patient.familyName !== NOT_AVAILABLE) {
     nameText = `${patient.givenName?.filter(Boolean).join(" ")} ${patient.familyName}${
       patient.nameUse === PatientNameUse.TEMP ? STRINGS.TEMPORARY : ""}`
@@ -47,15 +47,15 @@ const TableResultsRow = ({patient}: TableResultsRowProps) => {
 
   const nhsNumberText = patient.nhsNumber.replace(NHS_NUMBER_FORMAT_REGEX, "$1 $2 $3")
 
-  const genderText = patient.gender === NOT_AVAILABLE ? STRINGS.NOT_AVAILABLE :
+  const genderText = patient.gender === NOT_AVAILABLE ? STRINGS.NOT_ON_RECORD :
     `${patient.gender?.charAt(0).toUpperCase()}${patient.gender?.slice(1)}`
 
-  const dobText = patient.dateOfBirth === NOT_AVAILABLE ? STRINGS.NOT_AVAILABLE :
+  const dobText = patient.dateOfBirth === NOT_AVAILABLE ? STRINGS.NOT_ON_RECORD :
     format(new Date(patient.dateOfBirth as string), DOB_FORMAT)
 
   let addressText
   if (patient.address === NOT_AVAILABLE && patient.postcode === NOT_AVAILABLE) {
-    addressText = STRINGS.NOT_AVAILABLE
+    addressText = STRINGS.NOT_ON_RECORD
   } else {
     const addressParts: Array<string> = []
     if (patient.address !== NOT_AVAILABLE){
