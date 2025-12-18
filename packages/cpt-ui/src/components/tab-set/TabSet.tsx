@@ -8,7 +8,12 @@ interface TabSetComponent extends React.FC<React.HTMLProps<HTMLDivElement>> {
 }
 
 const TabSet: TabSetComponent = ({className, ...rest}) => (
-  <div className={classNames("nhsuk-tab-set", className)} {...rest} />
+  <div
+    className={classNames("nhsuk-tab-set", className)}
+    role="tablist"
+    aria-label="Search options"
+    {...rest}
+  />
 )
 
 TabSet.Tab = Tab

@@ -5,6 +5,8 @@ export type TabProps = React.HTMLProps<HTMLButtonElement> & {
   active?: boolean;
   empty?: boolean;
   type?: "button" | "submit" | "reset";
+  controls?: string;
+  label?: string;
 };
 
 const Tab: React.FC<TabProps> = ({
@@ -14,6 +16,9 @@ const Tab: React.FC<TabProps> = ({
   empty,
   type = "button",
   tabIndex,
+  controls,
+  label,
+  children,
   ...rest
 }) => (
   <button
@@ -25,9 +30,15 @@ const Tab: React.FC<TabProps> = ({
       className
     )}
     type={type}
-    tabIndex={disabled === true && tabIndex === undefined ? -1 : tabIndex}
+    role="tab"
+    aria-selected={active ? "true" : "false"}
+    aria-controls={controls}
+    aria-label={label}
+    tabIndex={disabled === true && tabIndex === undefined ? -1 : (active ? 0 : -1)}
     {...rest}
-  />
+  >
+    {children}
+  </button>
 )
 
 export default Tab

@@ -22,6 +22,7 @@ export default function SearchPrescriptionPage() {
   const pathname = location.pathname
 
   const [activeTab, setActiveTab] = useState(0)
+  const [ariaLiveMessage, setAriaLiveMessage] = useState("")
 
   const pathToIndex: Record<string, number> = {
     "/search-by-prescription-id": 0,
@@ -44,7 +45,6 @@ export default function SearchPrescriptionPage() {
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      // Only handle arrow keys when not focused on an input element
       const activeElement = document.activeElement
       const isInputFocused = activeElement && (
         activeElement.tagName === "INPUT" ||
@@ -60,11 +60,11 @@ export default function SearchPrescriptionPage() {
       if (event.key === "ArrowLeft") {
         event.preventDefault()
         const newIndex = activeTab > 0 ? activeTab - 1 : PRESCRIPTION_SEARCH_TABS.length - 1
-        handleTabClick(newIndex, true) // true indicates keyboard navigation
+        handleTabClick(newIndex, true)
       } else if (event.key === "ArrowRight") {
         event.preventDefault()
         const newIndex = activeTab < PRESCRIPTION_SEARCH_TABS.length - 1 ? activeTab + 1 : 0
-        handleTabClick(newIndex, true) // true indicates keyboard navigation
+        handleTabClick(newIndex, true)
       }
     }
 
@@ -75,18 +75,57 @@ export default function SearchPrescriptionPage() {
   }, [activeTab])
 
   const handleTabClick = (tabIndex: number, fromKeyboard: boolean = false) => {
+
+    const hasInputText = checkForInputText(activeTab)
+
     setActiveTab(tabIndex)
     navigate(PRESCRIPTION_SEARCH_TABS[tabIndex].link)
 
-    // Focus the tab button when navigating via keyboard
+    if (hasInputText && tabIndex !== activeTab) {
+      setAriaLiveMessage("Switched between tabs, input text was cleared")
+      setTimeout(() => setAriaLiveMessage(""), 2000)
+    }
+
     if (fromKeyboard) {
       setTimeout(() => {
-        const tabButton = document.querySelector(`.nhsuk-tab-set__tab:nth-child(${tabIndex + 1})`) as HTMLButtonElement
-        if (tabButton) {
-          tabButton.focus()
+
+        const tabButtons = document.querySelectorAll(".nhsuk-tab-set__tab")
+        const targetTab = tabButtons[tabIndex] as HTMLButtonElement
+        if (targetTab) {
+          targetTab.focus()
         }
       }, 100)
     }
+  }
+
+  const checkForInputText = (currentTabIndex: number): boolean => {
+    let inputSelector = ""
+    const basicInputs = [
+      "#first-name-input",
+      "#last-name-input",
+      "#dob-day-input",
+      "#dob-month-input",
+      "#dob-year-input",
+      "#postcode-input"
+    ]
+    switch (currentTabIndex) {
+      case 0:
+        inputSelector = "#presc-id-input"
+        break
+      case 1:
+        inputSelector = "#nhs-number-input"
+        break
+      case 2:
+        return basicInputs.some(selector => {
+          const input = document.querySelector(selector) as HTMLInputElement
+          return input && input.value.trim() !== ""
+        })
+      default:
+        return false
+    }
+
+    const input = document.querySelector(inputSelector) as HTMLInputElement
+    return input && input.value.trim() !== ""
   }
 
   // Default to prescription ID search if path not found
@@ -115,6 +154,7 @@ export default function SearchPrescriptionPage() {
                   <TabSet.Tab
                     key={tab.link}
                     active={activeTab === index}
+                    controls={`search-panel-${index}`}
                     onClick={() => handleTabClick(index)}
                   >
                     {tab.title}
@@ -129,12 +169,25 @@ export default function SearchPrescriptionPage() {
           <Container>
             <Row>
               <Col width="full">
-                <div className="content-padding">
+                <div
+                  className="content-padding"
+                  role="tabpanel"
+                  id={`search-panel-${activeTab}`}
+                  aria-labelledby={`tab-${activeTab}`}
+                >
                   {content}
                 </div>
               </Col>
             </Row>
           </Container>
+        </div>
+        {/* Aria-live region for announcing tab switch events */}
+        <div
+          aria-live="polite"
+          aria-atomic="true"
+          className="sr-only"
+        >
+          {ariaLiveMessage}
         </div>
       </main>
     </Fragment>
