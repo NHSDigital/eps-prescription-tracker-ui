@@ -110,6 +110,18 @@ export default function RoleSelectionPage({
     }
   }
 
+  const handleCardKeyDown = (e: React.KeyboardEvent, roleCardProps: RolesWithAccessProps) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault()
+      handleSetSelectedRole(e, roleCardProps)
+    }
+  }
+
+  const handleCardClick = (e: React.MouseEvent, roleCardProps: RolesWithAccessProps) => {
+    e.preventDefault()
+    handleSetSelectedRole(e, roleCardProps)
+  }
+
   useEffect(() => {
     // Transform roles data for display
     setRoleCardPropsWithAccess((!auth.hasNoAccess)
@@ -261,30 +273,19 @@ export default function RoleSelectionPage({
                       key={roleCardProps.uuid}
                       data-testid="eps-card"
                       className="nhsuk-card nhsuk-card--primary nhsuk-u-margin-bottom-4"
+                      tabIndex={0}
+                      onKeyDown={(e) => handleCardKeyDown(e, roleCardProps)}
+                      onClick={(e) => handleCardClick(e, roleCardProps)}
+                      style={{cursor: "pointer"}}
                     >
                       <Card.Content>
                         <div className="eps-card__layout">
                           <div>
-                            <div
-                              tabIndex={0}
-                              className="eps-card__org-focus-area"
-                              onKeyDown={(e) => {
-                                if (e.key === "Enter" || e.key === " ") {
-                                  e.preventDefault()
-                                  handleSetSelectedRole(e, roleCardProps)
-                                }
-                              }}
-                              onClick={(e) => {
-                                e.preventDefault()
-                                handleSetSelectedRole(e, roleCardProps)
-                              }}
-                            >
-                              <Card.Heading className="nhsuk-heading-s eps-card__org-name">
-                                {roleCardProps.role.org_name || noOrgName}
-                                <br />
-                                (ODS: {roleCardProps.role.org_code || noODSCode})
-                              </Card.Heading>
-                            </div>
+                            <Card.Heading className="nhsuk-heading-s eps-card__org-name">
+                              {roleCardProps.role.org_name || noOrgName}
+                              <br />
+                              (ODS: {roleCardProps.role.org_code || noODSCode})
+                            </Card.Heading>
                             <Card.Description className="nhsuk-u-margin-top-2">
                               {roleCardProps.role.role_name || noRoleName}
                             </Card.Description>

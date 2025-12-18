@@ -79,7 +79,8 @@ export default function PatientDetailsBanner() {
   return (
     <div
       className={"patient-details-banner"}
-      data-testid="patient-details-banner">
+      data-testid="patient-details-banner"
+      id="patient-details-banner">
       <div className={"patient-detail-banner-row"}>
         <div
           className="patient-detail-name"
