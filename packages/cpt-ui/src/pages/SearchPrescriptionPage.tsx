@@ -95,6 +95,36 @@ export default function SearchPrescriptionPage() {
           targetTab.focus()
         }
       }, 100)
+    } else {
+      // Handle focus management for regular clicks (non-keyboard)
+      setTimeout(() => {
+        let inputId: string | null = null
+
+        switch (tabIndex) {
+          case 0:
+            inputId = "presc-id-input"
+            break
+          case 1:
+            inputId = "nhs-number-input"
+            break
+          case 2: {
+            const activeElement = document.activeElement as HTMLElement
+            if (activeElement && activeElement.blur) {
+              activeElement.blur()
+            }
+            break
+          }
+          default:
+            break
+        }
+
+        if (inputId) {
+          const inputElement = document.getElementById(inputId)
+          if (inputElement) {
+            (inputElement as HTMLInputElement).focus()
+          }
+        }
+      }, 100)
     }
   }
 
