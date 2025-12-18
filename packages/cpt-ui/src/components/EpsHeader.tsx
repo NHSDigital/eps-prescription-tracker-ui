@@ -1,36 +1,26 @@
-import React, {
-  Fragment,
-  useContext,
-  useEffect,
-  useState
-} from "react"
+import React, {useContext, useEffect, useState} from "react"
 import {Link, useNavigate, useLocation} from "react-router-dom"
-import {Header} from "nhsuk-react-components"
+import {HeaderWithLogo} from "nhsuk-react-components-extensions"
 import {
-  HEADER_SERVICE,
-  HEADER_EXIT_BUTTON,
-  HEADER_EXIT_TARGET,
-  HEADER_CHANGE_ROLE_BUTTON,
-  HEADER_CHANGE_ROLE_TARGET,
-  HEADER_SELECT_YOUR_ROLE_TARGET,
-  HEADER_SELECT_YOUR_ROLE_BUTTON,
   HEADER_FEEDBACK_BUTTON,
   HEADER_FEEDBACK_TARGET,
-  HEADER_LOG_OUT_BUTTON
+  HEADER_CHANGE_ROLE_BUTTON,
+  HEADER_CHANGE_ROLE_TARGET,
+  HEADER_SELECT_YOUR_ROLE_BUTTON,
+  HEADER_SELECT_YOUR_ROLE_TARGET,
+  HEADER_LOG_OUT_BUTTON,
+  HEADER_SERVICE
 } from "@/constants/ui-strings/HeaderStrings"
-
 import {AuthContext} from "@/context/AuthProvider"
 import {useAuth} from "@/context/AuthProvider"
 
 import {EpsLogoutModal} from "@/components/EpsLogoutModal"
 import {normalizePath} from "@/helpers/utils"
-import {ENV_CONFIG, FRONTEND_PATHS, AUTH_CONFIG} from "@/constants/environment"
+import {FRONTEND_PATHS, AUTH_CONFIG} from "@/constants/environment"
 import {getHomeLink} from "@/helpers/loginFunctions"
 import {signOut} from "@/helpers/logout"
 
-const baseUrl = ENV_CONFIG.BASE_URL
-
-export default function EpsHeader() {
+export default function AppHeader() {
   const navigate = useNavigate()
   const location = useLocation()
   // TODO: REFACTOR REQUIRED
@@ -43,7 +33,6 @@ export default function EpsHeader() {
   const [shouldShowChangeRole, setShouldShowChangeRole] = useState(false)
   const [shouldShowLogoutLink, setShouldShowLogoutLink] = useState(false)
   const [shouldShowExitButton, setShouldShowExitButton] = useState(false)
-
   const [showLogoutModal, setShowLogoutModal] = useState(false)
 
   // Move all conditional logic into one place
@@ -102,112 +91,110 @@ export default function EpsHeader() {
     signOut(authContext, AUTH_CONFIG.REDIRECT_SIGN_OUT)
   }
 
+  // Trigger resize event on mobile to make the header library recalculate overflow
+  useEffect(() => {
+    const isMobile = window.innerWidth <= 900
+    if (isMobile) {
+      const timer = setTimeout(() => {
+        window.dispatchEvent(new Event("resize"))
+      }, 50)
+
+      return () => clearTimeout(timer)
+    }
+  }, [])
+
   return (
-    <Fragment>
-      <Header transactional className="masthead" id="eps-header">
-        <Header.Container className="masthead-container">
-          <Header.Logo href={`${baseUrl}${getHomeLink(auth?.isSignedIn || false)}`} />
-          <Link
-            to={getHomeLink(auth?.isSignedIn || false)}
-            onClick={redirectToLogin}
-            className="combined-logo-and-service-name"
-            style={{
-              display: "flex"
-            }}
-            data-testid="eps_header_logoLink"
-          >
-          </Link>
-          <Header.ServiceName
-            data-testid="eps_header_serviceName"
-            href={`${baseUrl}${getHomeLink(auth?.isSignedIn || false)}`}>
+    <>
+      <HeaderWithLogo>
+        <Link
+          to={getHomeLink(auth?.isSignedIn || false)}
+          onClick={redirectToLogin}
+          className="combined-logo-and-service-name"
+          style={{display: "flex", alignItems: "center"}}
+          data-testid="eps_header_logoLink"
+          id="prescription-tracker-header-link"
+        >
+          <HeaderWithLogo.Logo
+            aria-label="Prescription Tracker (Pilot)"
+            aria-labelledby="prescription-tracker-header-link"
+          />
+          <HeaderWithLogo.ServiceName
+            data-testid="eps_header_serviceName">
             {HEADER_SERVICE}
-          </Header.ServiceName>
-          <Header.Content />
-        </Header.Container>
-
-        <Header.Nav className="masthead-nav">
-          {/* Select your role */}
-          <div>
-            {shouldShowSelectRole && (
-              <li className="nhsuk-header__navigation-item">
-                <Link
-                  className="nhsuk-header__navigation-link"
-                  to={HEADER_SELECT_YOUR_ROLE_TARGET}
-                  data-testid="eps_header_selectYourRoleLink"
-                >
-                  {HEADER_SELECT_YOUR_ROLE_BUTTON}
-                </Link>
-              </li>
-            )}
-          </div>
-
-          {/* Change role */}
-          <div>
-            {shouldShowChangeRole && (
-              <li className="nhsuk-header__navigation-item">
-                <Link
-                  className="nhsuk-header__navigation-link"
-                  to={HEADER_CHANGE_ROLE_TARGET}
-                  data-testid="eps_header_changeRoleLink"
-                >
-                  {HEADER_CHANGE_ROLE_BUTTON}
-                </Link>
-              </li>
-            )}
-          </div>
-
-          {/* Give feedback (opens in new tab) */}
-          <div>
-            <Header.NavItem
-              href={HEADER_FEEDBACK_TARGET}
-              target="_blank"
-              rel="noopener noreferrer"
-              data-testid="eps_header_feedbackLink"
+          </HeaderWithLogo.ServiceName>
+        </Link>
+        <HeaderWithLogo.Nav id="header-navigation">
+          {shouldShowSelectRole && (
+            <HeaderWithLogo.NavItem
+              as="a"
+              href="#"
+              onClick={(e: React.MouseEvent) => {
+                e.preventDefault()
+                navigate(HEADER_SELECT_YOUR_ROLE_TARGET)
+              }}
+              data-testid="eps_header_selectYourRoleLink"
             >
-              {HEADER_FEEDBACK_BUTTON}
-            </Header.NavItem>
-          </div>
+              <span className="text">{HEADER_SELECT_YOUR_ROLE_BUTTON}</span>
+            </HeaderWithLogo.NavItem>
+          )}
 
-          {/* Log out */}
-          <div>
-            {shouldShowLogoutLink && (
-              <li className="nhsuk-header__navigation-item">
-                <Link
-                  className="nhsuk-header__navigation-link"
-                  to={FRONTEND_PATHS.LOGOUT}
-                  data-testid="eps_header_logout"
-                  onClick={handleLogoutClick}
-                >
-                  {HEADER_LOG_OUT_BUTTON}
-                </Link>
-              </li>
-            )}
-          </div>
+          {shouldShowChangeRole && (
+            <HeaderWithLogo.NavItem
+              as="a"
+              href="#"
+              onClick={(e: React.MouseEvent) => {
+                e.preventDefault()
+                navigate(HEADER_CHANGE_ROLE_TARGET)
+              }}
+              data-testid="eps_header_changeRoleLink"
+            >
+              <span className="text">{HEADER_CHANGE_ROLE_BUTTON}</span>
+            </HeaderWithLogo.NavItem>
+          )}
 
-          {/* Exit button */}
-          <div>
-            {shouldShowExitButton && (
-              <li className="nhsuk-header__navigation-item">
-                <Link
-                  className="nhsuk-header__navigation-link"
-                  to={HEADER_EXIT_TARGET}
-                  data-testid="eps_header_exit"
-                >
-                  {HEADER_EXIT_BUTTON}
-                </Link>
-              </li>
-            )}
-          </div>
+          <HeaderWithLogo.NavItem
+            href={HEADER_FEEDBACK_TARGET}
+            target="_blank"
+            rel="noopener noreferrer"
+            data-testid="eps_header_feedbackLink"
+          >
+            <span className="text">{HEADER_FEEDBACK_BUTTON}</span>
+          </HeaderWithLogo.NavItem>
 
-          <Header.NavDropdownMenu dropdownText="Menu" />
-        </Header.Nav>
-      </Header>
+          {shouldShowLogoutLink && (
+            <HeaderWithLogo.NavItem
+              as="a"
+              href="#"
+              onClick={handleLogoutClick}
+              data-testid="eps_header_logout"
+            >
+              <span className="text">{HEADER_LOG_OUT_BUTTON}</span>
+            </HeaderWithLogo.NavItem>
+          )}
+
+          {shouldShowExitButton && (
+            <HeaderWithLogo.NavItem
+              as="a"
+              href="#"
+              onClick={(e: React.MouseEvent) => {
+                e.preventDefault()
+                navigate(getHomeLink(false))
+              }}
+              data-testid="eps_header_exit"
+            >
+              <span className="text">Exit</span>
+            </HeaderWithLogo.NavItem>
+          )}
+
+          <HeaderWithLogo.NavDropdownMenu dropdownText="More" />
+        </HeaderWithLogo.Nav>
+      </HeaderWithLogo>
 
       <EpsLogoutModal
         isOpen={showLogoutModal}
         onClose={() => setShowLogoutModal(false)}
         onConfirm={handleConfirmLogout}
       />
-    </Fragment>
+    </>
   )
 }
