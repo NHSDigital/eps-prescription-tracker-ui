@@ -60,11 +60,11 @@ export default function SearchPrescriptionPage() {
       if (event.key === "ArrowLeft") {
         event.preventDefault()
         const newIndex = activeTab > 0 ? activeTab - 1 : PRESCRIPTION_SEARCH_TABS.length - 1
-        handleTabClick(newIndex)
+        handleTabClick(newIndex, true) // true indicates keyboard navigation
       } else if (event.key === "ArrowRight") {
         event.preventDefault()
         const newIndex = activeTab < PRESCRIPTION_SEARCH_TABS.length - 1 ? activeTab + 1 : 0
-        handleTabClick(newIndex)
+        handleTabClick(newIndex, true) // true indicates keyboard navigation
       }
     }
 
@@ -74,9 +74,19 @@ export default function SearchPrescriptionPage() {
     }
   }, [activeTab])
 
-  const handleTabClick = (tabIndex: number) => {
+  const handleTabClick = (tabIndex: number, fromKeyboard: boolean = false) => {
     setActiveTab(tabIndex)
     navigate(PRESCRIPTION_SEARCH_TABS[tabIndex].link)
+
+    // Focus the tab button when navigating via keyboard
+    if (fromKeyboard) {
+      setTimeout(() => {
+        const tabButton = document.querySelector(`.nhsuk-tab-set__tab:nth-child(${tabIndex + 1})`) as HTMLButtonElement
+        if (tabButton) {
+          tabButton.focus()
+        }
+      }, 100)
+    }
   }
 
   // Default to prescription ID search if path not found
