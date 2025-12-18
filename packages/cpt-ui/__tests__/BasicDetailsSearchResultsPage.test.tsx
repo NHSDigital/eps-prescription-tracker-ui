@@ -50,8 +50,6 @@ const mockAuthContext: AuthContextType = {
   invalidSessionCause: undefined,
   rolesWithAccess: [],
   rolesWithoutAccess: [],
-  hasNoAccess: false,
-  hasSingleRoleAccess: false,
   selectedRole: undefined,
   userDetails: undefined,
   isConcurrentSession: false,

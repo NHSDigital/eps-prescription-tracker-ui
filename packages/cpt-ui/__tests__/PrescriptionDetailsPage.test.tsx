@@ -27,8 +27,6 @@ const defaultAuthState: AuthContextType = {
   error: null,
   rolesWithAccess: [],
   rolesWithoutAccess: [],
-  hasNoAccess: false,
-  hasSingleRoleAccess: false,
   selectedRole: undefined,
   userDetails: undefined,
   isConcurrentSession: false,

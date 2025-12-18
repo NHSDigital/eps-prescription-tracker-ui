@@ -21,8 +21,6 @@ const mockUseAuthReturnValue: AuthContextType = {
   sessionId: undefined,
   rolesWithAccess: [],
   rolesWithoutAccess: [],
-  hasNoAccess: false,
-  hasSingleRoleAccess: false,
   userDetails: undefined,
   isConcurrentSession: false,
   cognitoSignIn: jest.fn(),
