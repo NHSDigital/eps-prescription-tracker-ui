@@ -35,7 +35,7 @@ export default function PrescriptionDetailsPage() {
   const [loading, setLoading] = useState(true)
 
   const {setPrescriptionInformation} = usePrescriptionInformation()
-  const {patientFallback, setPatientDetails} = usePatientDetails()
+  const {/*patientFallback,*/ setPatientDetails} = usePatientDetails()
 
   const [prescriber, setPrescriber] = useState<OrgSummary | undefined>()
   const [nominatedDispenser, setNominatedDispenser] = useState<OrgSummary | undefined>()
@@ -92,9 +92,10 @@ export default function PrescriptionDetailsPage() {
     setNominatedDispenser(payload.nominatedDispenser)
 
     // Only update patient details if using prescription fallback
-    if (patientFallback){
-      setPatientDetails(payload.patientDetails)
-    }
+    //TODO: revisit in AEA-5821, once prescription details is doing a pds lookup
+    // if (patientFallback){
+    setPatientDetails(payload.patientDetails)
+    // }
 
     return payload
   }

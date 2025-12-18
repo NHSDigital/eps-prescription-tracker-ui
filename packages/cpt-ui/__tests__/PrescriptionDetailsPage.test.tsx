@@ -135,7 +135,7 @@ const renderComponent = (
 describe("PrescriptionDetailsPage", () => {
 
   beforeEach(() => {
-    window.__mockedPatientDetails = mockPdsPatientDetails
+    window.__mockedPatientDetails = structuredClone(mockPdsPatientDetails)
     delete window.__mockedPrescriptionInformation
   })
 
@@ -254,20 +254,22 @@ describe("PrescriptionDetailsPage", () => {
     })
   })
 
-  it("does not set patient details when details from pds were successful", async () => {
-    const payload = {
-      ...mockPrescriptionDetailsResponse
-    }
+  //TODO: revisit in AEA-5821, once prescription details is doing a pds lookup
+  // it("does not set patient details when details from pds were successful", async () => {
+  //   const payload = {
+  //     ...mockPrescriptionDetailsResponse
+  //   }
 
-    jest.spyOn(http, "get").mockResolvedValue({status: 200, data: payload})
+  //   jest.spyOn(http, "get").mockResolvedValue({status: 200, data: payload})
 
-    renderComponent("SUCCESS_ID", signedInAuthState, false)
+  //   renderComponent("SUCCESS_ID", signedInAuthState, false)
 
-    await waitFor(() => {
-      expect(window.__mockedPatientDetails).toEqual(mockPdsPatientDetails)
-    })
-  })
+  //   await waitFor(() => {
+  //     expect(window.__mockedPatientDetails).toEqual(mockPdsPatientDetails)
+  //   })
+  // })
 
+  //TODO: revisit in AEA-5821, once prescription details is doing a pds lookup
   it("sets patient details when details from pds were unsuccessful", async () => {
     const payload = {
       ...mockPrescriptionDetailsResponse
