@@ -17,28 +17,6 @@ install-node:
 install-hooks: install-python
 	poetry run pre-commit install --install-hooks --overwrite
 
-compile-common:
-	npm run compile --workspace packages/common/commonTypes
-	npm run compile --workspace packages/common/testing
-	npm run compile --workspace packages/common/middyErrorHandler
-	npm run compile --workspace packages/common/pdsClient
-	npm run compile --workspace packages/common/lambdaUtils
-	npm run compile --workspace packages/common/authFunctions
-	npm run compile --workspace packages/common/doHSClient
-	npm run compile --workspace packages/common/dynamoFunctions
-
-compile-backend:
-	npm run lint --workspace packages/cloudfrontFunctions
-	npm run lint --workspace packages/cognito
-	npm run lint --workspace packages/prescriptionListLambda
-	npm run lint --workspace packages/prescriptionDetailsLambda
-	npm run lint --workspace packages/patientSearchLambda
-	npm run lint --workspace packages/trackerUserInfoLambda
-	npm run lint --workspace packages/sessionManagementLambda
-	npm run lint --workspace packages/selectedRoleLambda
-	npm run lint --workspace packages/CIS2SignOutLambda
-	npm run lint --workspace packages/testingSupport/clearActiveSessions
-
 compile-node:
 	npx tsc --build tsconfig.build.json
 
@@ -92,27 +70,6 @@ test: compile
 	npm run test --workspace packages/common/doHSClient
 	npm run test --workspace packages/common/dynamoFunctions
 	npm run test --workspace packages/testingSupport/clearActiveSessions
-
-test-common: compile-common
-	npm run test --workspace packages/common/middyErrorHandler
-	npm run test --workspace packages/common/pdsClient
-	npm run test --workspace packages/common/lambdaUtils
-	npm run test --workspace packages/common/authFunctions
-	npm run test --workspace packages/common/doHSClient
-	npm run test --workspace packages/common/dynamoFunctions
-
-test-backend: compile-backend
-	npm run test --workspace packages/cloudfrontFunctions
-	npm run test --workspace packages/cognito
-	npm run test --workspace packages/prescriptionListLambda
-	npm run test --workspace packages/prescriptionDetailsLambda
-	npm run test --workspace packages/patientSearchLambda
-	npm run test --workspace packages/trackerUserInfoLambda
-	npm run test --workspace packages/sessionManagementLambda
-	npm run test --workspace packages/selectedRoleLambda
-	npm run test --workspace packages/CIS2SignOutLambda
-	npm run test --workspace packages/testingSupport/clearActiveSessions
-
 
 clean:
 	rm -rf packages/cdk/coverage
