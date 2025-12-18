@@ -14,6 +14,7 @@ import BasicDetailsSearch from "@/components/prescriptionSearch/BasicDetailsSear
 
 import {HERO_TEXT} from "@/constants/ui-strings/SearchForAPrescriptionStrings"
 import {PRESCRIPTION_SEARCH_TABS} from "@/constants/ui-strings/SearchTabStrings"
+import "@/styles/searchforaprescription.scss"
 
 export default function SearchPrescriptionPage() {
   const location = useLocation()
@@ -41,40 +42,41 @@ export default function SearchPrescriptionPage() {
     setActiveTab(tabIndex)
   }, [pathname])
 
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Only handle arrow keys when not focused on an input element
+      const activeElement = document.activeElement
+      const isInputFocused = activeElement && (
+        activeElement.tagName === "INPUT" ||
+        activeElement.tagName === "TEXTAREA" ||
+        activeElement.tagName === "SELECT" ||
+        activeElement.hasAttribute("contenteditable")
+      )
+
+      if (isInputFocused) {
+        return
+      }
+
+      if (event.key === "ArrowLeft") {
+        event.preventDefault()
+        const newIndex = activeTab > 0 ? activeTab - 1 : PRESCRIPTION_SEARCH_TABS.length - 1
+        handleTabClick(newIndex)
+      } else if (event.key === "ArrowRight") {
+        event.preventDefault()
+        const newIndex = activeTab < PRESCRIPTION_SEARCH_TABS.length - 1 ? activeTab + 1 : 0
+        handleTabClick(newIndex)
+      }
+    }
+
+    document.addEventListener("keydown", handleKeyDown)
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown)
+    }
+  }, [activeTab])
+
   const handleTabClick = (tabIndex: number) => {
     setActiveTab(tabIndex)
     navigate(PRESCRIPTION_SEARCH_TABS[tabIndex].link)
-
-    // Focus on the search input after navigation
-    setTimeout(() => {
-      let inputId: string | null = null
-
-      switch (tabIndex) {
-        case 0:
-          inputId = "presc-id-input"
-          break
-        case 1:
-          inputId = "nhs-number-input"
-          break
-        case 2: {
-          // Remove focus from the tab after navigation for basic details
-          const activeElement = document.activeElement as HTMLElement
-          if (activeElement && activeElement.blur) {
-            activeElement.blur()
-          }
-          break
-        }
-        default:
-          break
-      }
-
-      if (inputId) {
-        const inputElement = document.getElementById(inputId) as HTMLInputElement
-        if (inputElement) {
-          inputElement.focus()
-        }
-      }
-    }, 100)
   }
 
   // Default to prescription ID search if path not found
@@ -82,7 +84,7 @@ export default function SearchPrescriptionPage() {
 
   return (
     <Fragment>
-      <title>Search for a prescription</title>
+      <title>{HERO_TEXT}</title>
       <main id="search-for-a-prescription" data-testid="search-for-a-prescription">
         <Container className="hero-container" data-testid="search-hero-container">
           <Row>
@@ -112,22 +114,12 @@ export default function SearchPrescriptionPage() {
             </Col>
           </Row>
         </Container>
-        <div style={{
-          width: "100vw",
-          marginLeft: "calc(-50vw + 50%)",
-          borderBottom: "1px solid #d8dde0",
-          height: "1px",
-          backgroundColor: "white"
-        }}></div>
-        <div style={{
-          width: "100vw",
-          marginLeft: "calc(-50vw + 50%)",
-          backgroundColor: "#F0F4F5"
-        }}>
+        <div className="tab-divider"></div>
+        <div className="content-wrapper">
           <Container>
             <Row>
               <Col width="full">
-                <div style={{padding: "2rem"}}>
+                <div className="content-padding">
                   {content}
                 </div>
               </Col>

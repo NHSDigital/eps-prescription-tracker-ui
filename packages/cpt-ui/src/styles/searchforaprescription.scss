@@ -22,3 +22,25 @@
     margin: 0 16px;
     max-width: 960px;
 }
+
+.nhsuk-tab-set {
+    text-decoration: underline;
+}
+
+.tab-divider {
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+    border-bottom: 1px solid #d8dde0;
+    height: 1px;
+    background-color: white;
+}
+
+.content-wrapper {
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+    background-color: #F0F4F5;
+}
+
+.content-padding {
+    padding: 2rem;
+}
