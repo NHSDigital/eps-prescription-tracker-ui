@@ -369,11 +369,11 @@ describe("RoleSelectionPage", () => {
     it("handles click on role card", async () => {
       render(<RoleSelectionPage contentText={defaultContentText} />)
 
-      const orgFocusArea = screen.getByRole("heading", {name: /Test Pharmacy/}).closest(".eps-card__org-focus-area")
-      expect(orgFocusArea).toBeInTheDocument()
+      const card = screen.getByTestId("eps-card")
+      expect(card).toBeInTheDocument()
 
       await act(async () => {
-        fireEvent.click(orgFocusArea!)
+        fireEvent.click(card)
       })
 
       await waitFor(() => {
@@ -385,11 +385,11 @@ describe("RoleSelectionPage", () => {
     it("handles Enter key press on role card", async () => {
       render(<RoleSelectionPage contentText={defaultContentText} />)
 
-      const orgFocusArea = screen.getByRole("heading", {name: /Test Pharmacy/}).closest(".eps-card__org-focus-area")
-      expect(orgFocusArea).toBeInTheDocument()
+      const card = screen.getByTestId("eps-card")
+      expect(card).toBeInTheDocument()
 
       await act(async () => {
-        fireEvent.keyDown(orgFocusArea!, {key: "Enter"})
+        fireEvent.keyDown(card, {key: "Enter"})
       })
 
       await waitFor(() => {
@@ -401,11 +401,11 @@ describe("RoleSelectionPage", () => {
     it("handles Space key press on role card", async () => {
       render(<RoleSelectionPage contentText={defaultContentText} />)
 
-      const orgFocusArea = screen.getByRole("heading", {name: /Test Pharmacy/}).closest(".eps-card__org-focus-area")
-      expect(orgFocusArea).toBeInTheDocument()
+      const card = screen.getByTestId("eps-card")
+      expect(card).toBeInTheDocument()
 
       await act(async () => {
-        fireEvent.keyDown(orgFocusArea!, {key: " "})
+        fireEvent.keyDown(card, {key: " "})
       })
 
       await waitFor(() => {
@@ -417,14 +417,14 @@ describe("RoleSelectionPage", () => {
     it("ignores other key presses on role card", async () => {
       render(<RoleSelectionPage contentText={defaultContentText} />)
 
-      const orgFocusArea = screen.getByRole("heading", {name: /Test Pharmacy/}).closest(".eps-card__org-focus-area")
-      expect(orgFocusArea).toBeInTheDocument()
+      const card = screen.getByTestId("eps-card")
+      expect(card).toBeInTheDocument()
 
       mockNavigate.mockClear()
       mockUpdateSelectedRole.mockClear()
 
       await act(async () => {
-        fireEvent.keyDown(orgFocusArea!, {key: "Tab"})
+        fireEvent.keyDown(card, {key: "Tab"})
       })
 
       expect(mockUpdateSelectedRole).not.toHaveBeenCalled()
@@ -445,10 +445,10 @@ describe("RoleSelectionPage", () => {
 
       render(<RoleSelectionPage contentText={defaultContentText} />)
 
-      const orgFocusArea = screen.getByRole("heading", {name: /Test Pharmacy/}).closest(".eps-card__org-focus-area")
+      const card = screen.getByTestId("eps-card")
 
       await act(async () => {
-        fireEvent.click(orgFocusArea!)
+        fireEvent.click(card)
       })
 
       await waitFor(() => {
@@ -468,10 +468,10 @@ describe("RoleSelectionPage", () => {
 
       render(<RoleSelectionPage contentText={defaultContentText} />)
 
-      const orgFocusArea = screen.getByRole("heading", {name: /Test Pharmacy/}).closest(".eps-card__org-focus-area")
+      const card = screen.getByTestId("eps-card")
 
       await act(async () => {
-        fireEvent.click(orgFocusArea!)
+        fireEvent.click(card)
       })
 
       await waitFor(() => {
@@ -484,10 +484,7 @@ describe("RoleSelectionPage", () => {
 
       const card = screen.getByTestId("eps-card")
       expect(card).toHaveClass("nhsuk-card", "nhsuk-card--primary", "nhsuk-u-margin-bottom-4")
-
-      const orgFocusArea = screen.getByRole("heading", {name: /Test Pharmacy/}).closest(".eps-card__org-focus-area")
-      expect(orgFocusArea).toHaveClass("eps-card__org-focus-area")
-      expect(orgFocusArea).toHaveAttribute("tabIndex", "0")
+      expect(card).toHaveAttribute("tabIndex", "0")
 
       const heading = screen.getByRole("heading", {name: /Test Pharmacy/})
       expect(heading).toHaveClass("nhsuk-heading-s", "eps-card__org-name")

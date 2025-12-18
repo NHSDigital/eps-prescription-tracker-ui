@@ -28,8 +28,8 @@
         
         &:hover {
             .eps-card__org-name {
-                color: #7c2d12 !important;
-                text-decoration: none !important;
+                color: #7c2d12;
+                text-decoration: none;
             }
         }
         
@@ -55,6 +55,16 @@
                     color: #212b32;
                     text-decoration: none !important;
                     text-underline-offset: 0 !important;
+                }
+            }
+        }
+        
+        &:focus:hover {
+            .eps-card__org-name {
+                color: #212b32 !important;
+                
+                .nhsuk-heading-s {
+                    color: #212b32;
                 }
             }
         }
@@ -188,6 +198,53 @@
         
         &__content {
             flex-direction: column;
+        }
+    }
+}
+
+.nhsuk-card[tabindex]:focus {
+    outline: none;
+    background-color: transparent;
+    
+    .eps-card__org-name {
+        outline: 3px solid transparent;
+        background-color: #ffeb3b;
+        box-shadow: 0 -4px #ffeb3b, 0 4px #212b32;
+        text-decoration: none !important;
+        text-underline-offset: 0 !important;
+        color: #212b32;
+        display: inline;
+        
+        @media (max-width: 768px) {
+            box-shadow: 0 -5px #ffeb3b, 0 5px #212b32;
+        }
+        
+        .nhsuk-heading-s {
+            color: #212b32;
+            text-decoration: none !important;
+            text-underline-offset: 0 !important;
+        }
+    }
+}
+
+.nhsuk-card[tabindex]:hover {
+    .eps-card__org-name {
+        color: #7c2d12;
+        text-decoration: none;
+        
+        .nhsuk-heading-s {
+            color: #7c2d12;
+            text-decoration: none;
+        }
+    }
+}
+
+.nhsuk-card[tabindex]:focus:hover {
+    .eps-card__org-name {
+        color: #212b32;
+        
+        .nhsuk-heading-s {
+            color: #212b32;
         }
     }
 }
