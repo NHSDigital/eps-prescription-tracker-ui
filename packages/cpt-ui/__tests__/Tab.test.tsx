@@ -1,330 +1,163 @@
 import "@testing-library/jest-dom"
-import {render, screen, act} from "@testing-library/react"
-import {MemoryRouter} from "react-router-dom"
+import {render} from "@testing-library/react"
 import React from "react"
 
-import SearchForAPrescription from "@/pages/SearchPrescriptionPage"
-import {HERO_TEXT} from "@/constants/ui-strings/SearchForAPrescriptionStrings"
-import {AuthContext, AuthContextType} from "@/context/AuthProvider"
-import {AccessContext} from "@/context/AccessProvider"
-import {SearchContext, SearchProviderContextType} from "@/context/SearchProvider"
-import {NavigationProvider} from "@/context/NavigationProvider"
+import Tab from "@/components/tab-set/components/Tab"
 
-// Mock the NavigationProvider's useNavigationContext hook
-const mockNavigationContext = {
-  pushNavigation: jest.fn(),
-  goBack: jest.fn(),
-  getBackPath: jest.fn(),
-  setOriginalSearchPage: jest.fn(),
-  captureOriginalSearchParameters: jest.fn(),
-  getOriginalSearchParameters: jest.fn(),
-  getRelevantSearchParameters: jest.fn(),
-  startNewNavigationSession: jest.fn()
-}
+describe("Tab Component", () => {
+  it("renders basic tab", () => {
+    const {container} = render(<Tab>Test Tab</Tab>)
 
-jest.mock("@/context/NavigationProvider", () => ({
-  ...jest.requireActual("@/context/NavigationProvider"),
-  useNavigationContext: () => mockNavigationContext
-}))
-
-// Default mock values for contexts
-const defaultAuthContext: AuthContextType = {
-  error: null,
-  user: null,
-  isSignedIn: false,
-  isSigningIn: false,
-  invalidSessionCause: undefined,
-  rolesWithAccess: [],
-  rolesWithoutAccess: [],
-  hasNoAccess: false,
-  hasSingleRoleAccess: false,
-  selectedRole: undefined,
-  userDetails: undefined,
-  isConcurrentSession: false,
-  sessionId: undefined,
-  cognitoSignIn: jest.fn(),
-  cognitoSignOut: jest.fn(),
-  clearAuthState: jest.fn(),
-  updateSelectedRole: jest.fn(),
-  updateTrackerUserInfo: jest.fn(),
-  updateInvalidSessionCause: jest.fn(),
-  isSigningOut: false,
-  setIsSigningOut: jest.fn()
-}
-
-// Default mock values for SearchProvider
-const defaultSearchContext: SearchProviderContextType = {
-  prescriptionId: undefined,
-  issueNumber: undefined,
-  firstName: undefined,
-  lastName: undefined,
-  dobDay: undefined,
-  dobMonth: undefined,
-  dobYear: undefined,
-  postcode: undefined,
-  nhsNumber: undefined,
-  searchType: undefined,
-  clearSearchParameters: jest.fn(),
-  setPrescriptionId: jest.fn(),
-  setIssueNumber: jest.fn(),
-  setFirstName: jest.fn(),
-  setLastName: jest.fn(),
-  setDobDay: jest.fn(),
-  setDobMonth: jest.fn(),
-  setDobYear: jest.fn(),
-  setPostcode: jest.fn(),
-  setNhsNumber: jest.fn(),
-  getAllSearchParameters: jest.fn(),
-  setAllSearchParameters: jest.fn(),
-  setSearchType: jest.fn()
-}
-
-// Utility function to render with all required providers
-const renderWithProviders = (
-  ui: React.ReactElement,
-  {
-    authContext = defaultAuthContext,
-    accessContext = null,
-    searchContext = defaultSearchContext,
-    initialEntries = ["/search-by-prescription-id"]
-  } = {}
-) => {
-  return render(
-    <MemoryRouter initialEntries={initialEntries}>
-      <AuthContext.Provider value={authContext}>
-        <AccessContext.Provider value={accessContext}>
-          <SearchContext.Provider value={searchContext}>
-            <NavigationProvider>
-              {ui}
-            </NavigationProvider>
-          </SearchContext.Provider>
-        </AccessContext.Provider>
-      </AuthContext.Provider>
-    </MemoryRouter>
-  )
-}
-
-jest.mock("@/components/EpsTabs", () => {
-  return {
-    __esModule: true,
-    default: () => <div data-testid="eps-tabs">Mocked EpsTabs</div>
-  }
-})
-
-// Mock DOM methods
-const mockFocus = jest.fn()
-const mockBlur = jest.fn()
-const mockGetElementById = jest.fn()
-
-Object.defineProperty(document, "getElementById", {
-  value: mockGetElementById,
-  writable: true
-})
-
-Object.defineProperty(document, "activeElement", {
-  value: {blur: mockBlur},
-  writable: true,
-  configurable: true
-})
-
-describe("SearchForAPrescription", () => {
-  beforeEach(() => {
-    jest.clearAllMocks()
-    jest.useFakeTimers()
+    const button = container.querySelector("button")
+    expect(button).toBeInTheDocument()
+    expect(button).toHaveTextContent("Test Tab")
+    expect(button).toHaveClass("nhsuk-tab-set__tab")
+    expect(button).toHaveAttribute("type", "button")
+    expect(button).toHaveAttribute("role", "tab")
   })
 
-  afterEach(() => {
-    jest.useRealTimers()
+  it("renders active tab", () => {
+    const {container} = render(<Tab active>Active Tab</Tab>)
+
+    const button = container.querySelector("button")
+    expect(button).toHaveClass("nhsuk-tab-set__tab--active")
+    expect(button).toHaveAttribute("aria-selected", "true")
+    expect(button).toHaveAttribute("tabindex", "0")
   })
 
-  it("renders the hero banner", () => {
-    renderWithProviders(<SearchForAPrescription />)
-    const heroBanner = screen.getByRole("heading", {name: /Search for a prescription/i})
-    expect(heroBanner).toBeInTheDocument()
+  it("renders inactive tab", () => {
+    const {container} = render(<Tab active={false}>Inactive Tab</Tab>)
+
+    const button = container.querySelector("button")
+    expect(button).not.toHaveClass("nhsuk-tab-set__tab--active")
+    expect(button).toHaveAttribute("aria-selected", "false")
+    expect(button).toHaveAttribute("tabindex", "-1")
   })
 
-  it(`contains the text '${HERO_TEXT}'`, () => {
-    renderWithProviders(<SearchForAPrescription />)
-    const heroHeading = screen.getByRole("heading", {name: /Search for a prescription/i})
-    expect(heroHeading).toHaveTextContent(HERO_TEXT)
+  it("renders disabled tab", () => {
+    const {container} = render(<Tab disabled>Disabled Tab</Tab>)
+
+    const button = container.querySelector("button")
+    expect(button).toHaveClass("nhsuk-tab-set__tab--disabled")
+    expect(button).toBeDisabled()
   })
 
-  it("renders with search-for-a-prescription testid", () => {
-    renderWithProviders(<SearchForAPrescription />)
-    expect(screen.getByTestId("search-for-a-prescription")).toBeInTheDocument()
+  it("renders empty tab", () => {
+    const {container} = render(<Tab empty>Empty Tab</Tab>)
+
+    const button = container.querySelector("button")
+    expect(button).toHaveClass("nhsuk-tab-set__tab--empty")
   })
 
-  it("renders hero container with proper styling", () => {
-    renderWithProviders(<SearchForAPrescription />)
-    const heroContainer = screen.getByTestId("search-hero-container")
-    expect(heroContainer).toBeInTheDocument()
-    expect(heroContainer).toHaveClass("hero-container")
+  it("renders with custom className", () => {
+    const {container} = render(<Tab className="custom-class">Custom Tab</Tab>)
+
+    const button = container.querySelector("button")
+    expect(button).toHaveClass("nhsuk-tab-set__tab")
+    expect(button).toHaveClass("custom-class")
   })
 
-  it("renders search tabs container", () => {
-    renderWithProviders(<SearchForAPrescription />)
-    const tabsContainer = screen.getByTestId("search-tabs-container")
-    expect(tabsContainer).toBeInTheDocument()
+  it("renders with custom type", () => {
+    const {container} = render(<Tab type="submit">Submit Tab</Tab>)
+
+    const button = container.querySelector("button")
+    expect(button).toHaveAttribute("type", "submit")
   })
 
-  it("sets active tab based on pathname - NHS number", () => {
-    renderWithProviders(<SearchForAPrescription />, {
-      initialEntries: ["/search-by-nhs-number"]
-    })
-    expect(screen.getByTestId("search-for-a-prescription")).toBeInTheDocument()
+  it("renders with controls attribute", () => {
+    const {container} = render(<Tab controls="panel-1">Controlled Tab</Tab>)
+
+    const button = container.querySelector("button")
+    expect(button).toHaveAttribute("aria-controls", "panel-1")
   })
 
-  it("sets active tab based on pathname - basic details", () => {
-    renderWithProviders(<SearchForAPrescription />, {
-      initialEntries: ["/search-by-basic-details"]
-    })
-    expect(screen.getByTestId("search-for-a-prescription")).toBeInTheDocument()
+  it("renders with label attribute", () => {
+    const {container} = render(<Tab label="Custom Label">Labeled Tab</Tab>)
+
+    const button = container.querySelector("button")
+    expect(button).toHaveAttribute("aria-label", "Custom Label")
   })
 
-  it("defaults to prescription ID search for unknown paths", () => {
-    renderWithProviders(<SearchForAPrescription />, {
-      initialEntries: ["/unknown-path"]
-    })
-    expect(screen.getByTestId("search-for-a-prescription")).toBeInTheDocument()
+  it("handles disabled tab with undefined tabIndex", () => {
+    const {container} = render(<Tab disabled>Disabled Tab</Tab>)
+
+    const button = container.querySelector("button")
+    expect(button).toHaveAttribute("tabindex", "-1")
   })
 
-  describe("handleTabClick functionality", () => {
-    it("simulates prescription ID input focus (case 0)", () => {
-      const mockInputElement = {focus: mockFocus}
-      mockGetElementById.mockReturnValue(mockInputElement)
+  it("handles disabled tab with explicit tabIndex", () => {
+    const {container} = render(<Tab disabled tabIndex={5}>Disabled Tab with Custom TabIndex</Tab>)
 
-      renderWithProviders(<SearchForAPrescription />)
+    const button = container.querySelector("button")
+    expect(button).toHaveAttribute("tabindex", "5")
+  })
 
-      // Simulate the handleTabClick logic for case 0
-      act(() => {
-        setTimeout(() => {
-          const inputElement = document.getElementById("presc-id-input")
-          if (inputElement) {
-            ;(inputElement as HTMLInputElement).focus()
-          }
-        }, 100)
+  it("renders active tab with custom tabIndex", () => {
+    const {container} = render(<Tab active tabIndex={3}>Active Tab with Custom TabIndex</Tab>)
 
-        jest.advanceTimersByTime(100)
-      })
+    const button = container.querySelector("button")
+    expect(button).toHaveAttribute("tabindex", "0") // Should be 0 for active tab regardless of custom tabIndex
+  })
 
-      expect(mockGetElementById).toHaveBeenCalledWith("presc-id-input")
-      expect(mockFocus).toHaveBeenCalled()
-    })
+  it("renders inactive tab with custom tabIndex", () => {
+    const {container} = render(<Tab active={false} tabIndex={3}>Inactive Tab with Custom TabIndex</Tab>)
 
-    it("simulates NHS number input focus (case 1)", () => {
-      const mockInputElement = {focus: mockFocus}
-      mockGetElementById.mockReturnValue(mockInputElement)
+    const button = container.querySelector("button")
+    expect(button).toHaveAttribute("tabindex", "-1") // Should be -1 for inactive tab regardless of custom tabIndex
+  })
 
-      renderWithProviders(<SearchForAPrescription />)
+  it("passes through additional props", () => {
+    const {container} = render(
+      <Tab data-testid="test-tab" id="custom-id">
+        Tab with Props
+      </Tab>
+    )
 
-      act(() => {
-        setTimeout(() => {
-          const inputElement = document.getElementById("nhs-number-input")
-          if (inputElement) {
-            ;(inputElement as HTMLInputElement).focus()
-          }
-        }, 100)
+    const button = container.querySelector("button")
+    expect(button).toHaveAttribute("data-testid", "test-tab")
+    expect(button).toHaveAttribute("id", "custom-id")
+  })
 
-        jest.advanceTimersByTime(100)
-      })
+  it("handles all boolean props together", () => {
+    const {container} = render(
+      <Tab active disabled empty className="multi-class">
+        Multi-State Tab
+      </Tab>
+    )
 
-      expect(mockGetElementById).toHaveBeenCalledWith("nhs-number-input")
-      expect(mockFocus).toHaveBeenCalled()
-    })
+    const button = container.querySelector("button")
+    expect(button).toHaveClass("nhsuk-tab-set__tab--active")
+    expect(button).toHaveClass("nhsuk-tab-set__tab--disabled")
+    expect(button).toHaveClass("nhsuk-tab-set__tab--empty")
+    expect(button).toHaveClass("multi-class")
+  })
 
-    it("simulates basic details blur behavior (case 2)", () => {
-      renderWithProviders(<SearchForAPrescription />)
+  it("handles tabIndex logic when disabled is false", () => {
+    const {container} = render(<Tab disabled={false} active={false}>Normal Tab</Tab>)
 
-      act(() => {
-        setTimeout(() => {
-          const activeElement = document.activeElement as HTMLElement
-          if (activeElement && activeElement.blur) {
-            activeElement.blur()
-          }
-        }, 100)
+    const button = container.querySelector("button")
+    expect(button).toHaveAttribute("tabindex", "-1") // inactive tab gets -1
+  })
 
-        jest.advanceTimersByTime(100)
-      })
+  it("handles tabIndex logic when disabled is true and tabIndex is defined", () => {
+    const {container} = render(<Tab disabled={true} tabIndex={2}>Disabled with TabIndex</Tab>)
 
-      expect(mockBlur).toHaveBeenCalled()
-    })
+    const button = container.querySelector("button")
+    // should use provided tabIndex when disabled=true but tabIndex is defined
+    expect(button).toHaveAttribute("tabindex", "2")
+  })
 
-    it("handles case when element is not found", () => {
-      mockGetElementById.mockReturnValue(null)
+  it("renders without controls attribute when not provided", () => {
+    const {container} = render(<Tab>No Controls Tab</Tab>)
 
-      renderWithProviders(<SearchForAPrescription />)
+    const button = container.querySelector("button")
+    expect(button).not.toHaveAttribute("aria-controls")
+  })
 
-      act(() => {
-        setTimeout(() => {
-          const inputElement = document.getElementById("presc-id-input")
-          if (inputElement) {
-            ;(inputElement as HTMLInputElement).focus()
-          }
-        }, 100)
+  it("renders without label attribute when not provided", () => {
+    const {container} = render(<Tab>No Label Tab</Tab>)
 
-        jest.advanceTimersByTime(100)
-      })
-
-      expect(mockGetElementById).toHaveBeenCalledWith("presc-id-input")
-      expect(mockFocus).not.toHaveBeenCalled()
-    })
-
-    it("handles case when activeElement has no blur method", () => {
-      Object.defineProperty(document, "activeElement", {
-        value: {},
-        configurable: true
-      })
-
-      renderWithProviders(<SearchForAPrescription />)
-
-      act(() => {
-        setTimeout(() => {
-          const activeElement = document.activeElement as HTMLElement
-          if (activeElement && activeElement.blur) {
-            activeElement.blur()
-          }
-        }, 100)
-
-        jest.advanceTimersByTime(100)
-      })
-    })
-
-    it("covers default case in switch statement", () => {
-      renderWithProviders(<SearchForAPrescription />)
-
-      act(() => {
-        setTimeout(() => {
-          const tabIndex = 999
-          let inputId: string | null = null
-
-          switch (tabIndex as number) {
-            case 0:
-              inputId = "presc-id-input"
-              break
-            case 1:
-              inputId = "nhs-number-input"
-              break
-            case 2: {
-              const activeElement = document.activeElement as HTMLElement
-              if (activeElement && activeElement.blur) {
-                activeElement.blur()
-              }
-              break
-            }
-            default:
-              break
-          }
-
-          if (inputId) {
-            const inputElement = document.getElementById(inputId)
-            if (inputElement) {
-              ;(inputElement as HTMLInputElement).focus()
-            }
-          }
-        }, 100)
-
-        jest.advanceTimersByTime(100)
-      })
-    })
+    const button = container.querySelector("button")
+    expect(button).not.toHaveAttribute("aria-label")
   })
 })

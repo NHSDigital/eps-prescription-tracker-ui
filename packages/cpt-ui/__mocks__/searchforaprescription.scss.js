@@ -1,2 +1,5 @@
 // Mock SCSS file for testing
-module.exports = {}
+// This module exports an empty object to mock SCSS imports during testing
+const mockStyles = {}
+
+module.exports = mockStyles
