@@ -110,11 +110,7 @@ export default function RoleSelectionPage({
   }
 
   // Handle auto-redirect for single role
-  if (auth.rolesWithAccess.length === 1
-    && auth.rolesWithoutAccess.length === 0
-    && auth.isSignedIn
-    && auth.selectedRole !== undefined
-  ) {
+  if (auth.hasSingleRoleAccess() && auth.isSignedIn && auth.selectedRole !== undefined) {
     navigate(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
     return
   }

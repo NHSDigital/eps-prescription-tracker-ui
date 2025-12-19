@@ -35,6 +35,7 @@ export interface AuthContextType {
   cognitoSignIn: (input?: SignInWithRedirectInput) => Promise<void>
   cognitoSignOut: (redirectUri?: string) => Promise<boolean>
   clearAuthState: () => void
+  hasSingleRoleAccess: () => boolean
   updateSelectedRole: (value: RoleDetails) => Promise<void>
   updateTrackerUserInfo: () => Promise<TrackerUserInfoResult>
   updateInvalidSessionCause: (cause: string) => void
@@ -214,6 +215,10 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
     setInvalidSessionCause(cause)
   }
 
+  const hasSingleRoleAccess = () => {
+    return rolesWithAccess.length === 1 && rolesWithoutAccess.length === 0
+  }
+
   return (
     <AuthContext.Provider value={{
       error,
@@ -231,6 +236,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
       cognitoSignIn,
       cognitoSignOut,
       clearAuthState,
+      hasSingleRoleAccess,
       updateSelectedRole,
       updateTrackerUserInfo,
       updateInvalidSessionCause,

@@ -26,6 +26,7 @@ const mockUseAuthReturnValue: AuthContextType = {
   cognitoSignIn: jest.fn(),
   cognitoSignOut: jest.fn(),
   clearAuthState: jest.fn(),
+  hasSingleRoleAccess: jest.fn().mockReturnValue(false),
   updateSelectedRole: jest.fn(),
   updateTrackerUserInfo: jest.fn(),
   updateInvalidSessionCause: jest.fn(),
