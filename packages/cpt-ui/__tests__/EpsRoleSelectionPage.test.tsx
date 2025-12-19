@@ -93,7 +93,8 @@ describe("RoleSelectionPage", () => {
       rolesWithAccess: [],
       rolesWithoutAccess: [],
       error: null,
-      clearAuthState: jest.fn()
+      clearAuthState: jest.fn(),
+      hasSingleRoleAccess: jest.fn().mockReturnValue(false)
     })
     mockGetSearchParams.mockReturnValue({
       codeParams: "foo",
@@ -109,7 +110,8 @@ describe("RoleSelectionPage", () => {
       isSigningIn: false,
       rolesWithAccess: [],
       rolesWithoutAccess: [],
-      error: "Something went wrong"
+      error: "Something went wrong",
+      hasSingleRoleAccess: jest.fn().mockReturnValue(false)
     })
 
     render(<RoleSelectionPage contentText={defaultContentText} />)
@@ -122,7 +124,8 @@ describe("RoleSelectionPage", () => {
       isSigningIn: false,
       rolesWithAccess: [],
       rolesWithoutAccess: [],
-      error: null
+      error: null,
+      hasSingleRoleAccess: jest.fn().mockReturnValue(false)
     })
 
     render(<RoleSelectionPage contentText={defaultContentText} />)
@@ -141,7 +144,8 @@ describe("RoleSelectionPage", () => {
       rolesWithoutAccess: [],
       selectedRole: null,
       error: null,
-      clearAuthState: jest.fn()
+      clearAuthState: jest.fn(),
+      hasSingleRoleAccess: jest.fn().mockReturnValue(false)
     })
     mockGetSearchParams.mockReturnValue({
       codeParams: undefined,
@@ -170,7 +174,8 @@ describe("RoleSelectionPage", () => {
       ],
       rolesWithoutAccess: [],
       selectedRole: null,
-      error: null
+      error: null,
+      hasSingleRoleAccess: jest.fn().mockReturnValue(true)
     })
 
     render(<RoleSelectionPage contentText={defaultContentText} />)
@@ -189,7 +194,8 @@ describe("RoleSelectionPage", () => {
       },
       rolesWithAccess: [],
       rolesWithoutAccess: [],
-      error: null
+      error: null,
+      hasSingleRoleAccess: jest.fn().mockReturnValue(false)
     })
 
     render(<RoleSelectionPage contentText={defaultContentText} />)
@@ -209,7 +215,8 @@ describe("RoleSelectionPage", () => {
           org_code: "NO123"
         }
       ],
-      error: null
+      error: null,
+      hasSingleRoleAccess: jest.fn().mockReturnValue(false)
     })
 
     render(<RoleSelectionPage contentText={defaultContentText} />)
@@ -246,7 +253,8 @@ describe("RoleSelectionPage", () => {
         }
       ],
       rolesWithoutAccess: [],
-      error: null
+      error: null,
+      hasSingleRoleAccess: jest.fn().mockReturnValue(false)
     })
 
     render(<RoleSelectionPage contentText={defaultContentText} />)
@@ -270,7 +278,8 @@ describe("RoleSelectionPage", () => {
       },
       rolesWithAccess: [],
       rolesWithoutAccess: [],
-      error: null
+      error: null,
+      hasSingleRoleAccess: jest.fn().mockReturnValue(false)
     })
 
     render(<RoleSelectionPage contentText={defaultContentText} />)
@@ -292,7 +301,8 @@ describe("RoleSelectionPage", () => {
       rolesWithoutAccess: [],
       selectedRole: undefined as RoleDetails | undefined,
       error: null,
-      clearAuthState: jest.fn()
+      clearAuthState: jest.fn(),
+      hasSingleRoleAccess: jest.fn().mockReturnValue(false)
     }
 
     mockUseAuth.mockReturnValue(authState)
@@ -320,6 +330,7 @@ describe("RoleSelectionPage", () => {
       authState.selectedRole = role
       authState.isSignedIn = true
       mockUseAuth.mockReturnValue(authState)
+      authState.hasSingleRoleAccess = jest.fn().mockReturnValue(true)
     })
 
     rerender(<RoleSelectionPage contentText={defaultContentText} />)
@@ -345,7 +356,8 @@ describe("RoleSelectionPage", () => {
         rolesWithAccess: [roleWithAccess],
         rolesWithoutAccess: [],
         error: null,
-        updateSelectedRole: mockUpdateSelectedRole
+        updateSelectedRole: mockUpdateSelectedRole,
+        hasSingleRoleAccess: jest.fn().mockReturnValue(false)
       })
     })
 
@@ -505,7 +517,8 @@ describe("RoleSelectionPage", () => {
         rolesWithAccess: [incompleteRole],
         rolesWithoutAccess: [],
         error: null,
-        updateSelectedRole: mockUpdateSelectedRole
+        updateSelectedRole: mockUpdateSelectedRole,
+        hasSingleRoleAccess: jest.fn().mockReturnValue(false)
       })
 
       render(<RoleSelectionPage contentText={defaultContentText} />)
@@ -531,7 +544,8 @@ describe("RoleSelectionPage", () => {
         rolesWithAccess: [selectedRole, roleWithAccess],
         rolesWithoutAccess: [],
         error: null,
-        updateSelectedRole: mockUpdateSelectedRole
+        updateSelectedRole: mockUpdateSelectedRole,
+        hasSingleRoleAccess: jest.fn().mockReturnValue(false)
       })
 
       render(<RoleSelectionPage contentText={defaultContentText} />)
