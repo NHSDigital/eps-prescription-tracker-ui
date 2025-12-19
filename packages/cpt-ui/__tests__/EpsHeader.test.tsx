@@ -9,7 +9,7 @@ import {AccessContext} from "@/context/AccessProvider"
 
 // Mock the strings module
 jest.mock("@/constants/ui-strings/HeaderStrings", () => ({
-  HEADER_SERVICE: "Prescription Tracker",
+  HEADER_SERVICE: "Prescription Tracker (Pilot)",
   HEADER_EXIT_BUTTON: "Exit",
   HEADER_EXIT_TARGET: "/exit",
   HEADER_CHANGE_ROLE_BUTTON: "Change role",
@@ -109,7 +109,7 @@ describe("EpsHeader", () => {
 
     it("displays the correct service name in the header", () => {
       expect(screen.getByTestId("eps_header_serviceName")).toHaveTextContent(
-        "Prescription Tracker"
+        "Prescription Tracker (Pilot)"
       )
     })
 
@@ -138,7 +138,7 @@ describe("EpsHeader", () => {
 
     it("displays the correct service name in the header", () => {
       expect(screen.getByTestId("eps_header_serviceName")).toHaveTextContent(
-        "Prescription Tracker"
+        "Prescription Tracker (Pilot)"
       )
     })
 

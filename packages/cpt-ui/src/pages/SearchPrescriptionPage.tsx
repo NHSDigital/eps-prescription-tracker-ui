@@ -82,7 +82,9 @@ export default function SearchPrescriptionPage() {
     navigate(PRESCRIPTION_SEARCH_TABS[tabIndex].link)
 
     if (hasInputText && tabIndex !== activeTab) {
-      setAriaLiveMessage("Switched between tabs, input text was cleared")
+      const isFromBasicDetails = activeTab === 2
+      const inputText = isFromBasicDetails ? "inputs" : "input"
+      setAriaLiveMessage(`Switched to a new tab, cleared ${inputText} on the previous tab`)
       setTimeout(() => setAriaLiveMessage(""), 2000)
     }
 
