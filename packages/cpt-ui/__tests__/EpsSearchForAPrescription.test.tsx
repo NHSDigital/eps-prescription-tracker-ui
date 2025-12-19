@@ -7,6 +7,7 @@ import SearchForAPrescription from "@/pages/SearchPrescriptionPage"
 import {HERO_TEXT} from "@/constants/ui-strings/SearchForAPrescriptionStrings"
 import {AuthContext, AuthContextType} from "@/context/AuthProvider"
 import {AccessContext} from "@/context/AccessProvider"
+import {SearchProvider} from "@/context/SearchProvider"
 
 // Default mock values for contexts
 const defaultAuthContext: AuthContextType = {
@@ -45,7 +46,9 @@ const renderWithProviders = (
     <MemoryRouter>
       <AuthContext.Provider value={authContext}>
         <AccessContext.Provider value={accessContext}>
-          {ui}
+          <SearchProvider>
+            {ui}
+          </SearchProvider>
         </AccessContext.Provider>
       </AuthContext.Provider>
     </MemoryRouter>
