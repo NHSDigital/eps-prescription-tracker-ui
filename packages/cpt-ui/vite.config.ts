@@ -40,6 +40,13 @@ export default defineConfig(({mode}) => {
         }
       }
     },
-    define: envWithProcessPrefix
+    define: {
+      ...envWithProcessPrefix,
+      "global": "globalThis"
+    },
+    optimizeDeps: {
+      include: ["react-input-mask"],
+      exclude: []
+    }
   }
 })
