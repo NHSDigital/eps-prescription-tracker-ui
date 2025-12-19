@@ -1,7 +1,7 @@
 import React from "react"
 import classNames from "classnames"
 
-export type TabProps = React.HTMLProps<HTMLButtonElement> & {
+export type TabProps = Omit<React.HTMLProps<HTMLButtonElement>, "controls"> & {
   active?: boolean;
   empty?: boolean;
   type?: "button" | "submit" | "reset";
