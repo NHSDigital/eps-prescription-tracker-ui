@@ -32,7 +32,7 @@ jobs:
 
       - name: Generate a token to authenticate regression testing
         id: generate-token
-        uses: actions/create-github-app-token@7e473efe3cb98aa54f8d4bac15400b15fad77d94
+        uses: actions/create-github-app-token@29824e69f54612133e76f7eaac726eef6c875baf
         with:
           app-id: ${{ vars.REGRESSION_TESTS_APP_ID }}
           private-key: ${{ secrets.REGRESSION_TESTS_PEM }}
@@ -50,7 +50,7 @@ jobs:
           asdf_version: ${{ steps.asdf-version.outputs.version }}
 
       - name: Cache asdf
-        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
+        uses: actions/cache@9255dc7a253b0ccc959486e2bca901246202afeb
         with:
           path: |
             ~/.asdf
@@ -73,7 +73,7 @@ jobs:
           GITHUB-TOKEN: ${{ steps.generate-token.outputs.token }}
         run: |
           if [[ "$TARGET_ENVIRONMENT" != "prod" && "$TARGET_ENVIRONMENT" != "ref" ]]; then
-            REGRESSION_TEST_REPO_TAG="v3.5.10" # This is the tag or branch of the regression test code to run, usually a version tag like v3.1.0 or a branch name
+            REGRESSION_TEST_REPO_TAG="v3.6.1" # This is the tag or branch of the regression test code to run, usually a version tag like v3.1.0 or a branch name
             REGRESSION_TEST_WORKFLOW_TAG="v3.5.10" # This is the tag of the github workflow to run, usually the same as REGRESSION_TEST_REPO_TAG
 
             if [[ -z "$REGRESSION_TEST_REPO_TAG" || -z "$REGRESSION_TEST_WORKFLOW_TAG" ]]; then
