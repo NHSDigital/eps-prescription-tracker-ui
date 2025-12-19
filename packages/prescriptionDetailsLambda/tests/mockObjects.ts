@@ -230,18 +230,12 @@ export const mockDoHSData: DoHSData = {
 export const mockMergedResponse: PrescriptionDetailsResponse = {
   patientDetails: {
     nhsNumber: "123",
-    prefix: "Mr.",
-    given: "John",
-    family: "Doe",
-    suffix: "",
+    givenName: ["John"],
+    familyName: "Doe",
     gender: "male",
     dateOfBirth: "1970-01-01",
-    address: {
-      line1: "123 Main St, CityName, Country",
-      line2: "123 Main St",
-      city: "CityName",
-      postcode: "12345"
-    }
+    address: ["123 Main St", "CityName", "Country"],
+    postcode: "12345"
   },
   prescriptionId: "RX-123456",
   typeCode: "acute",

@@ -8,6 +8,7 @@ import {
 import nock from "nock"
 
 import {mockPdsPatient, mockPrescriptionBundle} from "./mockObjects"
+import {PatientAddressUse, PatientNameUse} from "@cpt-ui-common/common-types"
 
 const apigeePrescriptionsEndpoint = process.env.apigeePrescriptionsEndpoint as string ?? ""
 const apigeePersonalDemographicsEndpoint = process.env.apigeePersonalDemographicsEndpoint as string ?? ""
@@ -95,33 +96,32 @@ describe("handler tests with cis2 auth", () => {
       statusCode: 200
     })
 
-    expect(responseBody).toMatchObject({
-      "currentPrescriptions": [{
-        "issueDate": "2023-01-01",
-        "itemsPendingCancellation": false,
-        "nhsNumber": 9999999999,
-        "prescriptionId": "01ABC123",
-        "prescriptionPendingCancellation": false,
-        "prescriptionTreatmentType": "0001",
-        "statusCode": "0001"
+    expect(responseBody).toEqual({
+      currentPrescriptions: [{
+        issueDate: "2023-01-01",
+        itemsPendingCancellation: false,
+        nhsNumber: "9999999999",
+        prescriptionId: "01ABC123",
+        prescriptionPendingCancellation: false,
+        prescriptionTreatmentType: "0001",
+        statusCode: "0001",
+        isDeleted: false
       }],
-      "futurePrescriptions": [],
-      "pastPrescriptions": [],
-      "patient": {
-        "address": {
-          "city": "Leeds",
-          "line1": "1 Trevelyan Square",
-          "line2": "Boar Lane",
-          "postcode": "LS1 6AE"
-        },
-        "dateOfBirth": "2010-10-22",
-        "family": "Smith",
-        "gender": "female",
-        "given": "Jane",
-        "nhsNumber": "9000000009",
-        "prefix": "Mrs",
-        "suffix": ""
-      }})
+      futurePrescriptions: [],
+      pastPrescriptions: [],
+      patient: {
+        nhsNumber: "9000000009",
+        gender: "female",
+        dateOfBirth: "2010-10-22",
+        familyName: "Smith",
+        givenName: ["Jane"],
+        nameUse: PatientNameUse.USUAL,
+        address: ["1 Trevelyan Square", "Boar Lane", "City Centre", "Leeds", "West Yorkshire"],
+        postcode: "LS1 6AE",
+        addressUse: PatientAddressUse.TEMP
+      },
+      patientFallback: false
+    })
   })
 
   it("responds with success on prescription ID flow", async () => {
@@ -146,21 +146,24 @@ describe("handler tests with cis2 auth", () => {
       statusCode: 200
     })
 
-    expect(responseBody).toMatchObject({
-      "currentPrescriptions": [{
-        "issueDate": "2023-01-01",
-        "itemsPendingCancellation": false,
-        "nhsNumber": 9999999999,
-        "prescriptionId": "01ABC123",
-        "prescriptionPendingCancellation": false,
-        "prescriptionTreatmentType": "0001",
-        "statusCode": "0001"
+    expect(responseBody).toEqual({
+      currentPrescriptions: [{
+        isDeleted: false,
+        issueDate: "2023-01-01",
+        itemsPendingCancellation: false,
+        nhsNumber: "9999999999",
+        prescriptionId: "01ABC123",
+        prescriptionPendingCancellation: false,
+        prescriptionTreatmentType: "0001",
+        statusCode: "0001"
       }],
-      "futurePrescriptions": [],
-      "pastPrescriptions": [],
-      "patient": {
-        "nhsNumber": "9999999999"
-      }})
+      futurePrescriptions: [],
+      pastPrescriptions: [],
+      patient: {
+        nhsNumber: "9999999999"
+      },
+      patientFallback: true
+    })
   })
 
   it("Returns a 404 if prescription is not found", async () => {

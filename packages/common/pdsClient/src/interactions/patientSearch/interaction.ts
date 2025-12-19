@@ -1,29 +1,25 @@
 
-import {Client} from "../../client"
-import {
-  Name,
-  NameFromStringOutcomeType,
-  DateOfBirth,
-  DateOfBirthFromStringOutcomeType,
-  Postcode,
-  PostcodeFromStringOutcomeType,
-  ValidatedParameter,
-  PatientSearchParameters
-} from "./types"
-import * as axios from "../../axios_wrapper"
-import {AxiosResponse} from "axios"
-import {
-  PatientAddressUse,
-  PatientMetaCode,
-  PatientNameUse,
-  ResponseType,
-  ResponseValidator,
-  SuccessfulResponse,
-  UnrestrictedPatientResource
-} from "./schema"
-import {ErrorObject} from "ajv"
 import {PatientSummary} from "@cpt-ui-common/common-types"
 import {exhaustive_switch_guard} from "@cpt-ui-common/lambdaUtils"
+import {ErrorObject} from "ajv"
+import {AxiosResponse} from "axios"
+import * as axios from "../../axios_wrapper"
+import {Client} from "../../client"
+import {parsePatient} from "../../parsePatient"
+import {ResourceType} from "../../schema/elements"
+import {PatientMetaCode, UnrestrictedPatient} from "../../schema/patient"
+import {ResponseValidator} from "../../schema/responseValidator"
+import {PDSPatientSearchResponse, pdsPatientSearchResponseSchema, SuccessfulResponse} from "./schema"
+import {
+  DateOfBirth,
+  DateOfBirthFromStringOutcomeType,
+  Name,
+  NameFromStringOutcomeType,
+  PatientSearchParameters,
+  Postcode,
+  PostcodeFromStringOutcomeType,
+  ValidatedParameter
+} from "./types"
 
 enum PatientSearchOutcomeType {
   SUCCESS = "SUCCESS",
@@ -106,7 +102,7 @@ async function patientSearch(
     }
   }
 
-  const responseValidator = new ResponseValidator()
+  const responseValidator = new ResponseValidator<PDSPatientSearchResponse>(pdsPatientSearchResponseSchema)
   const isValidResponse = responseValidator.validate(data)
   if (!isValidResponse) {
     return {
@@ -119,7 +115,7 @@ async function patientSearch(
   // (Response is a 200, and the body is an OperationOutcome.
   // Response body is either a bundle or a
   // too many matches operation outcome as verified by the schema)
-  if(data.resourceType === ResponseType.OPERATION_OUTCOME){
+  if(data.resourceType === ResourceType.OPERATION_OUTCOME){
     return {
       type: PatientSearchOutcomeType.TOO_MANY_MATCHES,
       searchParameters
@@ -139,8 +135,8 @@ async function patientSearch(
     .entry
     // Filter out restricted/redacted patients
     .filter((entry) => entry.resource.meta.security[0].code === PatientMetaCode.UNRESTRICTED)
-    .map((entry) => entry.resource as UnrestrictedPatientResource)
-    .map(parseResource)
+    .map((entry) => entry.resource as UnrestrictedPatient)
+    .map(parsePatient)
 
   return {
     type: PatientSearchOutcomeType.SUCCESS,
@@ -231,32 +227,6 @@ const validatePostcode = (
   }
 
   return [postcode, validationErrors]
-}
-
-const parseResource = (resource: UnrestrictedPatientResource): PatientSummary => {
-  const nhsNumber = resource.id
-  const gender = resource.gender
-  const dateOfBirth = resource.birthDate
-
-  // Find the usual name (validated in the schema to be present)
-  const usualName = resource.name.find((name) => name.use === PatientNameUse.USUAL)!
-  const familyName = usualName.family
-  const givenName = usualName.given
-
-  // Find the home address (validated in the schema to be present)
-  const homeAddress = resource.address.find((address) => address.use === PatientAddressUse.HOME)!
-  const address = homeAddress.line
-  const postcode = homeAddress.postalCode
-
-  return {
-    nhsNumber,
-    gender,
-    dateOfBirth,
-    familyName,
-    givenName,
-    address,
-    postcode
-  }
 }
 
 export {

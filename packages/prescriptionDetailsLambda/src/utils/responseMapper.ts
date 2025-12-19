@@ -8,12 +8,7 @@ import {
   RequestGroupAction
 } from "fhir/r4"
 import {DoHSData} from "./types"
-import {
-  mapPrescriptionOrigin,
-  extractPatientDetails,
-  mapMessageHistoryTitleToMessageCode,
-  extractItems
-} from "./fhirMappers"
+import {mapPrescriptionOrigin, mapMessageHistoryTitleToMessageCode, extractItems} from "./fhirMappers"
 import {
   findExtensionByKey,
   findExtensionsByKey,
@@ -25,7 +20,8 @@ import {
   MessageHistory,
   DispenseNotificationItem,
   OrgSummary,
-  PrescriptionDetailsResponse
+  PrescriptionDetailsResponse,
+  PatientSummary
 } from "@cpt-ui-common/common-types"
 import {DoHSOrg} from "@cpt-ui-common/doHSClient"
 import {Logger} from "@aws-lambda-powertools/logger"
@@ -178,6 +174,8 @@ export const mergePrescriptionDetails = (
   }: PrescriptionOdsCodes,
   logger?: Logger
 ): PrescriptionDetailsResponse => {
+
+  // TODO: This needs refactoring to remove unnecessary iterations through the same arrays
   // Extract resources from bundle
   const requestGroup = extractResourcesFromBundle<RequestGroup>(bundle, "RequestGroup")[0]
   const patient = extractResourcesFromBundle<Patient>(bundle, "Patient")[0]
@@ -215,7 +213,15 @@ export const mergePrescriptionDetails = (
   )
 
   // extract and format all the data
-  const patientDetails = extractPatientDetails(patient)
+  const patientDetails: PatientSummary = {
+    nhsNumber: patient?.identifier?.[0].value as string,
+    gender: patient?.gender,
+    dateOfBirth: patient?.birthDate,
+    familyName: patient?.name?.[0].family,
+    givenName: patient?.name?.[0].given,
+    address: patient?.address?.[0].line,
+    postcode: patient?.address?.[0].postalCode
+  }
   const items = extractItems(medicationRequests, medicationDispenses)
   const messageHistory = extractMessageHistory(requestGroup, doHSData, medicationRequests, medicationDispenses, logger)
 

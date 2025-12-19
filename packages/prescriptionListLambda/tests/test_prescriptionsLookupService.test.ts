@@ -55,7 +55,7 @@ describe("Prescriptions Lookup Service Tests", () => {
         prescriptionTreatmentType: TreatmentType.ACUTE,
         prescriptionPendingCancellation: false,
         itemsPendingCancellation: false,
-        nhsNumber: 9999999999
+        nhsNumber: "9999999999"
       })
     })
 
@@ -134,7 +134,7 @@ describe("Prescriptions Lookup Service Tests", () => {
         prescriptionTreatmentType: TreatmentType.ACUTE,
         prescriptionPendingCancellation: false,
         itemsPendingCancellation: false,
-        nhsNumber: 9999999999
+        nhsNumber: "9999999999"
       })
     })
 
