@@ -30,10 +30,8 @@ export type TrackerUserInfo = {
 export type TrackerUserInfoResult = {
   rolesWithAccess: Array<RoleDetails>,
   rolesWithoutAccess: Array<RoleDetails>,
-  hasNoAccess: boolean
   selectedRole: RoleDetails | undefined,
   userDetails: UserDetails | undefined,
-  hasSingleRoleAccess: boolean,
   isConcurrentSession: boolean,
   invalidSessionCause: string | undefined,
   sessionId: string | undefined,

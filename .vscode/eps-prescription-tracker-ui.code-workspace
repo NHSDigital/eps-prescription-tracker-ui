@@ -67,7 +67,7 @@
       {
         "name": "packages/common/lambdaUtils",
         "path": "../packages/common/lambdaUtils"
-      }
+      },
       {
         "name": "packages/common/testing",
         "path": "../packages/common/testing"

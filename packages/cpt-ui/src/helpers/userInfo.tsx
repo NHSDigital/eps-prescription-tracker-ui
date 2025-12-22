@@ -18,10 +18,8 @@ type AuthErrorResponse = {
 export const getTrackerUserInfo = async (): Promise<TrackerUserInfoResult> => {
   let rolesWithAccess: Array<RoleDetails> = []
   let rolesWithoutAccess: Array<RoleDetails> = []
-  let hasNoAccess: boolean = true
   let selectedRole: RoleDetails | undefined = undefined
   let userDetails: UserDetails | undefined = undefined
-  let hasSingleRoleAccess: boolean = false
   let isConcurrentSession: boolean = false
   let invalidSessionCause: string | undefined = undefined
   let error: string | null = null
@@ -56,11 +54,9 @@ export const getTrackerUserInfo = async (): Promise<TrackerUserInfoResult> => {
       currentlySelectedRole = undefined
     }
 
-    hasNoAccess = userInfo.roles_with_access.length === 0 && !currentlySelectedRole
     rolesWithoutAccess = userInfo.roles_without_access || []
     selectedRole = currentlySelectedRole
     userDetails = userInfo.user_details
-    hasSingleRoleAccess = userInfo.roles_with_access.length === 1 && userInfo.roles_without_access.length === 0
 
     isConcurrentSession = userInfo.is_concurrent_session || false
     sessionId = userInfo.sessionId
@@ -91,10 +87,8 @@ export const getTrackerUserInfo = async (): Promise<TrackerUserInfoResult> => {
   return {
     rolesWithAccess,
     rolesWithoutAccess,
-    hasNoAccess,
     selectedRole,
     userDetails,
-    hasSingleRoleAccess,
     isConcurrentSession,
     invalidSessionCause,
     sessionId,
@@ -115,6 +109,6 @@ export const updateRemoteSelectedRole = async (newRole: RoleDetails) => {
   }
 
   return {
-    rolesWithAccess: response.data.userInfo.rolesWithAccess || []
+    currentlySelectedRole: response.data.userInfo.currentlySelectedRole
   }
 }

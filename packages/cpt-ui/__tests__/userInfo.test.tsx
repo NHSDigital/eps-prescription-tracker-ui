@@ -5,8 +5,6 @@ jest.mock("@/helpers/axios")
 const mockedAxios = axios as jest.Mocked<typeof axios>
 
 type ExpectedResult = {
-  hasNoAccess: boolean,
-  hasSingleRoleAccess: boolean,
   numberOfCallsToUpdateSelectedRole: number
 }
 type TestCase = {
@@ -48,8 +46,6 @@ describe("getTrackerUserInfo", () => {
         given_name: "GIVEN"
       },
       expected: {
-        hasNoAccess: false,
-        hasSingleRoleAccess: true,
         numberOfCallsToUpdateSelectedRole: 0
       }
     },
@@ -71,8 +67,6 @@ describe("getTrackerUserInfo", () => {
         given_name: "JOHN"
       },
       expected: {
-        hasNoAccess: true,
-        hasSingleRoleAccess: false,
         numberOfCallsToUpdateSelectedRole: 0
       }
     },
@@ -107,8 +101,6 @@ describe("getTrackerUserInfo", () => {
         given_name: "ANNA"
       },
       expected: {
-        hasNoAccess: false,
-        hasSingleRoleAccess: false,
         numberOfCallsToUpdateSelectedRole: 0
       }
     }
@@ -141,15 +133,13 @@ describe("getTrackerUserInfo", () => {
       expect(result.rolesWithAccess).toStrictEqual(rolesWithAccess)
       expect(result.rolesWithoutAccess).toStrictEqual(rolesWithoutAccess)
       expect(result.userDetails).toStrictEqual(userDetails)
-      expect(result.hasNoAccess).toBe(expected.hasNoAccess)
-      expect(result.hasSingleRoleAccess).toBe(expected.hasSingleRoleAccess)
       expect(result.error).toBeNull()
       expect(mockedAxios.put).toHaveBeenCalledTimes(expected.numberOfCallsToUpdateSelectedRole)
     }
   )
 
   describe("updateRemoteSelectedRole", () => {
-    it("should successfully update selected role and return rolesWithAccess", async () => {
+    it("should successfully update selected role and return currentlySelectedRole", async () => {
       const newRole = {
         role_id: "ROLE456",
         role_name: "Admin",
@@ -158,28 +148,18 @@ describe("getTrackerUserInfo", () => {
         site_address: "456 Admin Street"
       }
 
-      const expectedRolesWithAccess = [
-        {
-          role_id: "ROLE456",
-          role_name: "Admin",
-          org_name: "Admin Org",
-          org_code: "ORG456",
-          site_address: "456 Admin Street"
-        }
-      ]
-
       mockedAxios.put.mockResolvedValue({
         status: 200,
         data: {
           userInfo: {
-            rolesWithAccess: expectedRolesWithAccess
+            currentlySelectedRole: newRole
           }
         }
       })
 
       const result = await updateRemoteSelectedRole(newRole)
 
-      expect(result.rolesWithAccess).toEqual(expectedRolesWithAccess)
+      expect(result.currentlySelectedRole).toEqual(newRole)
     })
 
     it("should throw error when server returns non-200 status", async () => {

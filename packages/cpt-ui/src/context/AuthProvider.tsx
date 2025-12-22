@@ -30,13 +30,12 @@ export interface AuthContextType {
   sessionId: string | undefined
   rolesWithAccess: Array<RoleDetails>
   rolesWithoutAccess: Array<RoleDetails>
-  hasNoAccess: boolean
-  hasSingleRoleAccess: boolean
   selectedRole: RoleDetails | undefined
   userDetails: UserDetails | undefined
   cognitoSignIn: (input?: SignInWithRedirectInput) => Promise<void>
   cognitoSignOut: (redirectUri?: string) => Promise<boolean>
   clearAuthState: () => void
+  hasSingleRoleAccess: () => boolean
   updateSelectedRole: (value: RoleDetails) => Promise<void>
   updateTrackerUserInfo: () => Promise<TrackerUserInfoResult>
   updateInvalidSessionCause: (cause: string) => void
@@ -64,11 +63,6 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
     "rolesWithoutAccess",
     "rolesWithoutAccess",
     [])
-  const [hasNoAccess, setHasNoAccess] = useLocalStorageState<boolean>(
-    "noAccess",
-    "noAccess",
-    true
-  )
   const [selectedRole, setSelectedRole] = useLocalStorageState<RoleDetails | undefined>(
     "selectedRole",
     "selectedRole",
@@ -79,18 +73,11 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
     "userDetails",
     undefined
   )
-  const [hasSingleRoleAccess, setHasSingleRoleAccess] = useLocalStorageState<boolean>(
-    "singleAccess",
-    "singleAccess",
-    false
-  )
   /**
    * Fetch and update the auth tokens
    */
 
   const clearAuthState = () => {
-    setHasNoAccess(true)
-    setHasSingleRoleAccess(false)
     setSelectedRole(undefined)
     setUserDetails(undefined)
     setRolesWithAccess([])
@@ -106,10 +93,8 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
     const trackerUserInfo = await getTrackerUserInfo()
     setRolesWithAccess(trackerUserInfo.rolesWithAccess)
     setRolesWithoutAccess(trackerUserInfo.rolesWithoutAccess)
-    setHasNoAccess(trackerUserInfo.hasNoAccess)
     setSelectedRole(trackerUserInfo.selectedRole)
     setUserDetails(trackerUserInfo.userDetails)
-    setHasSingleRoleAccess(trackerUserInfo.hasSingleRoleAccess)
     setError(trackerUserInfo.error)
     setIsConcurrentSession(trackerUserInfo.isConcurrentSession)
     setInvalidSessionCause(trackerUserInfo.invalidSessionCause)
@@ -223,12 +208,15 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
 
   const updateSelectedRole = async (newRole: RoleDetails) => {
     const selectedRole = await updateRemoteSelectedRole(newRole)
-    setRolesWithAccess(selectedRole.rolesWithAccess)
-    setSelectedRole(newRole)
+    setSelectedRole(selectedRole.currentlySelectedRole)
   }
 
   const updateInvalidSessionCause = (cause: string | undefined) => {
     setInvalidSessionCause(cause)
+  }
+
+  const hasSingleRoleAccess = () => {
+    return rolesWithAccess.length === 1 && rolesWithoutAccess.length === 0
   }
 
   return (
@@ -240,8 +228,6 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
       isSigningOut,
       rolesWithAccess,
       rolesWithoutAccess,
-      hasNoAccess,
-      hasSingleRoleAccess,
       selectedRole,
       userDetails,
       isConcurrentSession,
@@ -250,6 +236,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
       cognitoSignIn,
       cognitoSignOut,
       clearAuthState,
+      hasSingleRoleAccess,
       updateSelectedRole,
       updateTrackerUserInfo,
       updateInvalidSessionCause,

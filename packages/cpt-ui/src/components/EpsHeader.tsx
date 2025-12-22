@@ -49,7 +49,7 @@ export default function AppHeader() {
       path !== FRONTEND_PATHS.LOGOUT &&
       path !== FRONTEND_PATHS.SESSION_LOGGED_OUT &&
       isSignedIn &&
-      !authContext.hasSingleRoleAccess &&
+      !authContext.hasSingleRoleAccess() &&
       !authContext.selectedRole
     )
 
@@ -60,7 +60,7 @@ export default function AppHeader() {
       path !== FRONTEND_PATHS.CHANGE_YOUR_ROLE &&
       path !== FRONTEND_PATHS.LOGOUT &&
       isSignedIn &&
-      !authContext.hasSingleRoleAccess &&
+      !authContext.hasSingleRoleAccess() &&
       authContext.selectedRole !== undefined
     )
 
@@ -70,7 +70,7 @@ export default function AppHeader() {
     // Show the "Exit" button under these conditions
     setShouldShowExitButton(
       (path === FRONTEND_PATHS.LOGOUT && !auth?.isSignedIn) ||
-      (path === FRONTEND_PATHS.SELECT_YOUR_ROLE && authContext.hasNoAccess) ||
+      (path === FRONTEND_PATHS.SELECT_YOUR_ROLE && authContext.rolesWithAccess.length === 0) ||
       (path === "/notfound")
     )
   }, [location, auth, authContext])
