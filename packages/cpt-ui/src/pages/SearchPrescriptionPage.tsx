@@ -15,11 +15,29 @@ import BasicDetailsSearch from "@/components/prescriptionSearch/BasicDetailsSear
 import {HERO_TEXT} from "@/constants/ui-strings/SearchForAPrescriptionStrings"
 import {PRESCRIPTION_SEARCH_TABS} from "@/constants/ui-strings/SearchTabStrings"
 import "@/styles/searchforaprescription.scss"
+import {useSearchContext} from "@/context/SearchProvider"
 
 export default function SearchPrescriptionPage() {
   const location = useLocation()
   const navigate = useNavigate()
   const pathname = location.pathname
+  const searchContext = useSearchContext()
+
+  // Clear search context contamination when navigating to search pages
+  useEffect(() => {
+    const allParams = searchContext.getAllSearchParameters()
+
+    // Check if we have contamination from multiple search types
+    const hasPrescriptionId = !!allParams.prescriptionId
+    const hasNhsNumber = !!allParams.nhsNumber
+    const hasBasicDetails = !!(allParams.firstName || allParams.lastName || allParams.dobDay)
+
+    const contaminationCount = [hasPrescriptionId, hasNhsNumber, hasBasicDetails].filter(Boolean).length
+
+    if (contaminationCount > 1) {
+      searchContext.clearSearchParameters()
+    }
+  }, [pathname, searchContext])
 
   const [activeTab, setActiveTab] = useState(0)
   const [ariaLiveMessage, setAriaLiveMessage] = useState("")
