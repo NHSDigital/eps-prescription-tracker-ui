@@ -25,7 +25,10 @@ export default function SearchPrescriptionPage() {
 
   // Clear search context contamination when navigating to search pages
   useEffect(() => {
+    if (!searchContext) return
+
     const allParams = searchContext.getAllSearchParameters()
+    if (!allParams) return
 
     // Check if we have contamination from multiple search types
     const hasPrescriptionId = !!allParams.prescriptionId
