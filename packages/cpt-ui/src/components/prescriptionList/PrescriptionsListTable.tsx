@@ -347,9 +347,7 @@ const PrescriptionsListTable = ({
           headers={headerId}
           className="eps-prescription-table-rows"
         >
-          <div className="eps-prescription-id">
-            {row.prescriptionId}
-          </div>
+          <span className="eps-prescription-id">{row.prescriptionId}</span>
           <div>
             {row.isDeleted ? (
               <span

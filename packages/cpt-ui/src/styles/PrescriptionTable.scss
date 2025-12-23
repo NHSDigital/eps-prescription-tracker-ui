@@ -169,11 +169,16 @@
   height: 12px;
 }
 
+.eps-prescription-table-rows {
+  user-select: none;
+}
+
 .eps-prescription-id {
   white-space: nowrap;
   max-width: 12rem;
   overflow-wrap: break-word;
   word-break: break-word;
+  user-select: text;
 }
 
 .eps-prescription-id-container {
