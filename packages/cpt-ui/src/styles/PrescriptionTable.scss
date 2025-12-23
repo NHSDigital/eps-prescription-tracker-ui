@@ -176,6 +176,27 @@
   word-break: break-word;
 }
 
+.eps-prescription-id-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  user-select: text;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+}
+
+.eps-prescription-id-container .eps-prescription-id {
+  display: block;
+  line-height: 1.4;
+}
+
+.eps-prescription-id-container .eps-prescription-action {
+  display: block;
+  line-height: 1.4;
+  margin-top: 0.125rem;
+}
+
 .eps-prescription-table-sort-icon-wrapper span:last-child {
   display: block;
   height: 12px;

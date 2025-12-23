@@ -365,6 +365,8 @@ const PrescriptionsListTable = ({
                 onClick={() => setSearchPrescriptionState(row.prescriptionId, row.issueNumber?.toString())}
               >
                 {PRESCRIPTION_LIST_TABLE_TEXT.viewPrescription}
+                <span className="nhsuk-u-visually-hidden">
+                  {PRESCRIPTION_LIST_TABLE_TEXT.viewPrescriptionScreenReader} {row.prescriptionId}</span>
               </Link>
             )}
           </div>
