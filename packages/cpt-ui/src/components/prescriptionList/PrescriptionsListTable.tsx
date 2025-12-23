@@ -268,7 +268,7 @@ const PrescriptionsListTable = ({
         <Table.Cell
           key={key}
           headers={headerId}
-          className="eps-prescription-table-rows nowrap-cell"
+          className="prescription-list-table-item"
           data-testid="issue-date-column"
         >
           <div>{formatDateForPrescriptions(row.issueDate)}</div>
@@ -281,7 +281,7 @@ const PrescriptionsListTable = ({
         <Table.Cell
           key={key}
           headers={headerId}
-          className="eps-prescription-table-rows prescription-type-cell"
+          className="prescription-list-table-item"
           data-testid="prescription-type-column"
         >
           <div>
@@ -300,7 +300,7 @@ const PrescriptionsListTable = ({
         <Table.Cell
           key={key}
           headers={headerId}
-          className="eps-prescription-table-rows"
+          className="prescription-list-table-item"
           data-testid="status-code-column"
         >
           <Tag color={getStatusTagColour(row.statusCode)}>
@@ -318,7 +318,7 @@ const PrescriptionsListTable = ({
         <Table.Cell
           key={key}
           headers={headerId}
-          className="eps-prescription-table-rows narrow-cancellation-column"
+          className="prescription-list-table-item"
           data-testid="cancellation-warning-column"
         >
           {showWarning ? (
@@ -347,7 +347,7 @@ const PrescriptionsListTable = ({
           headers={headerId}
           className="eps-prescription-table-rows"
         >
-          <span className="eps-prescription-id">{row.prescriptionId}</span>
+          <span className="prescription-list-table-item">{row.prescriptionId}</span>
           <div>
             {row.isDeleted ? (
               <span
