@@ -5,7 +5,7 @@ import {
   Routes,
   useLocation
 } from "react-router-dom"
-import {render, screen} from "@testing-library/react"
+import {render, screen, waitFor} from "@testing-library/react"
 import "@testing-library/jest-dom"
 
 import EpsTabs, {TabHeader} from "@/components/EpsTabs"
@@ -15,7 +15,8 @@ function LocationIndicator() {
   return <div data-testid="current-path">{location.pathname}</div>
 }
 
-function Harness({variant = "default" as const}) {
+type HarnessProps = { variant?: "default" | "large" }
+function Harness({variant = "default"}: HarnessProps) {
   const location = useLocation()
   const tabHeaderArray: Array<TabHeader> = [
     {title: "(1)", link: "/prescription-list-current"},
@@ -39,7 +40,7 @@ function Harness({variant = "default" as const}) {
 }
 
 describe("EpsTabs", () => {
-  it("navigates between tabs with ArrowRight/ArrowLeft", () => {
+  it("navigates between tabs with ArrowRight/ArrowLeft", async () => {
     render(
       <MemoryRouter initialEntries={["/prescription-list-current"]}>
         <Routes>
@@ -53,19 +54,27 @@ describe("EpsTabs", () => {
 
     // ArrowRight to future
     window.dispatchEvent(new KeyboardEvent("keydown", {key: "ArrowRight"}))
-    expect(screen.getByTestId("current-path")).toHaveTextContent("/prescription-list-future")
+    await waitFor(() => {
+      expect(screen.getByTestId("current-path")).toHaveTextContent("/prescription-list-future")
+    })
 
     // ArrowRight to past
     window.dispatchEvent(new KeyboardEvent("keydown", {key: "ArrowRight"}))
-    expect(screen.getByTestId("current-path")).toHaveTextContent("/prescription-list-past")
+    await waitFor(() => {
+      expect(screen.getByTestId("current-path")).toHaveTextContent("/prescription-list-past")
+    })
 
     // ArrowRight at last stays on past
     window.dispatchEvent(new KeyboardEvent("keydown", {key: "ArrowRight"}))
-    expect(screen.getByTestId("current-path")).toHaveTextContent("/prescription-list-past")
+    await waitFor(() => {
+      expect(screen.getByTestId("current-path")).toHaveTextContent("/prescription-list-past")
+    })
 
     // ArrowLeft goes back to future
     window.dispatchEvent(new KeyboardEvent("keydown", {key: "ArrowLeft"}))
-    expect(screen.getByTestId("current-path")).toHaveTextContent("/prescription-list-future")
+    await waitFor(() => {
+      expect(screen.getByTestId("current-path")).toHaveTextContent("/prescription-list-future")
+    })
   })
 
   it("does not navigate when focus is inside an input", () => {
