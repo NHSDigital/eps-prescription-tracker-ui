@@ -36,7 +36,6 @@ export default function PrivacyNoticePage() {
           </ul>
 
           <InsetText className="nhsuk-inset-text">
-            <span className="nhsuk-u-visually-hidden">Information: </span>
             <p>{PrivacyNoticeStrings.intro.p6}</p>
           </InsetText>
 
@@ -159,7 +158,6 @@ export default function PrivacyNoticePage() {
           </ol>
 
           <InsetText className="nhsuk-inset-text">
-            <span className="nhsuk-u-visually-hidden">Information: </span>
             <p> {PrivacyNoticeStrings.rights.method}
               {createEmailLink(contactInfo.emails.dpo)}
             </p>
@@ -171,7 +169,6 @@ export default function PrivacyNoticePage() {
           <p>{PrivacyNoticeStrings.changes.body}</p>
 
           <InsetText className="nhsuk-inset-text">
-            <span className="nhsuk-u-visually-hidden">Information: </span>
             <p> {PrivacyNoticeStrings.changes.changeDate}
             </p>
           </InsetText>
