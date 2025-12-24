@@ -1,4 +1,9 @@
-import React, {Fragment, useState, useEffect} from "react"
+import React, {
+  Fragment,
+  useState,
+  useEffect,
+  useRef
+} from "react"
 import {
   Col,
   Container,
@@ -44,6 +49,7 @@ export default function SearchPrescriptionPage() {
 
   const [activeTab, setActiveTab] = useState(0)
   const [ariaLiveMessage, setAriaLiveMessage] = useState("")
+  const activeTabRef = useRef(activeTab)
 
   const pathToIndex: Record<string, number> = {
     "/search-by-prescription-id": 0,
@@ -65,35 +71,44 @@ export default function SearchPrescriptionPage() {
   }, [pathname])
 
   useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      const activeElement = document.activeElement
-      const isInputFocused = activeElement && (
-        activeElement.tagName === "INPUT" ||
-        activeElement.tagName === "TEXTAREA" ||
-        activeElement.tagName === "SELECT" ||
-        activeElement.hasAttribute("contenteditable")
-      )
+    activeTabRef.current = activeTab
+  }, [activeTab])
 
-      if (isInputFocused) {
-        return
-      }
+  const handleKeyDown = (event: KeyboardEvent) => {
+    const activeElement = document.activeElement as HTMLElement | null
+    const isInputFocused = !!activeElement && (
+      activeElement.tagName === "INPUT" ||
+      activeElement.tagName === "TEXTAREA" ||
+      activeElement.tagName === "SELECT" ||
+      activeElement.hasAttribute("contenteditable")
+    )
 
-      if (event.key === "ArrowLeft") {
-        event.preventDefault()
-        const newIndex = activeTab > 0 ? activeTab - 1 : PRESCRIPTION_SEARCH_TABS.length - 1
-        handleTabClick(newIndex, true)
-      } else if (event.key === "ArrowRight") {
-        event.preventDefault()
-        const newIndex = activeTab < PRESCRIPTION_SEARCH_TABS.length - 1 ? activeTab + 1 : 0
-        handleTabClick(newIndex, true)
-      }
+    if (isInputFocused) {
+      return
     }
 
+    if (event.key === "ArrowLeft") {
+      event.preventDefault()
+      const currentIndex = activeTabRef.current
+      const newIndex = currentIndex > 0 ? currentIndex - 1 : PRESCRIPTION_SEARCH_TABS.length - 1
+      handleTabClick(newIndex, true)
+      return
+    }
+
+    if (event.key === "ArrowRight") {
+      event.preventDefault()
+      const currentIndex = activeTabRef.current
+      const newIndex = currentIndex < PRESCRIPTION_SEARCH_TABS.length - 1 ? currentIndex + 1 : 0
+      handleTabClick(newIndex, true)
+    }
+  }
+
+  useEffect(() => {
     document.addEventListener("keydown", handleKeyDown)
     return () => {
       document.removeEventListener("keydown", handleKeyDown)
     }
-  }, [activeTab])
+  }, [])
 
   const handleTabClick = (tabIndex: number, fromKeyboard: boolean = false) => {
 
