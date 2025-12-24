@@ -38,7 +38,7 @@ export default function EpsTabs({
     }
     const tabs = tabHeaderArray
     const currentTabIndex = tabs.findIndex(
-      (tab) => tab.link.includes(activeTabPath)
+      (tab) => activeTabPath.startsWith(tab.link)
     )
 
     let newTabIndex = currentTabIndex
@@ -52,13 +52,13 @@ export default function EpsTabs({
       const newTab = tabs[newTabIndex]
       navigate(newTab.link)
     }
-  }, [navigate])
+  }, [navigate, tabHeaderArray, activeTabPath])
 
   useEffect(() => {
-    window.addEventListener("keydown", handleKeyDown)
+    document.addEventListener("keydown", handleKeyDown)
 
     return () => {
-      window.removeEventListener("keydown", handleKeyDown)
+      document.removeEventListener("keydown", handleKeyDown)
     }
   }, [handleKeyDown])
 
