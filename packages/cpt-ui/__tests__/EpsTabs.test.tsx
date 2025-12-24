@@ -176,4 +176,100 @@ describe("EpsTabs", () => {
     const container = contentsTitle.closest(".nhsuk-tabs--large")
     expect(container).toBeInTheDocument()
   })
+
+  it("renders accessible titles with count patterns", () => {
+    const tabHeaderArray: Array<TabHeader> = [
+      {title: "Current prescriptions (5)", link: "/prescription-list-current"},
+      {title: "Future-dated prescriptions (0)", link: "/prescription-list-future"},
+      {title: "Simple title", link: "/prescription-list-past"}
+    ]
+
+    function AccessibleTitleHarness() {
+      const location = useLocation()
+      return (
+        <EpsTabs
+          activeTabPath={location.pathname}
+          tabHeaderArray={tabHeaderArray}
+        >
+          <div>Test content</div>
+        </EpsTabs>
+      )
+    }
+
+    render(
+      <MemoryRouter initialEntries={["/prescription-list-current"]}>
+        <Routes>
+          <Route path="*" element={<AccessibleTitleHarness />} />
+        </Routes>
+      </MemoryRouter>
+    )
+
+    // Check that count pattern creates accessible structure
+    const currentTab = screen.getByTestId("eps-tab-heading /prescription-list-current")
+    expect(currentTab.querySelector('[aria-hidden="true"]')).toBeInTheDocument()
+    expect(currentTab.querySelector(".nhsuk-u-visually-hidden")).toHaveTextContent("5 prescriptions")
+
+    // Check that simple title renders as-is
+    const pastTab = screen.getByTestId("eps-tab-heading /prescription-list-past")
+    expect(pastTab).toHaveTextContent("Simple title")
+    expect(pastTab.querySelector(".nhsuk-u-visually-hidden")).not.toBeInTheDocument()
+  })
+
+  it("handles edge cases in title patterns", () => {
+    const edgeCaseTabHeaders: Array<TabHeader> = [
+      {title: "No count here", link: "/test1"},
+      {title: "Multiple (5) content (3)", link: "/test2"},
+      {title: "Empty prefix (10)", link: "/test3"},
+      {title: "Number only (0)", link: "/test4"}
+    ]
+
+    function EdgeCaseHarness() {
+      const location = useLocation()
+      return (
+        <EpsTabs
+          activeTabPath={location.pathname}
+          tabHeaderArray={edgeCaseTabHeaders}
+        >
+          <div>Test content</div>
+        </EpsTabs>
+      )
+    }
+
+    render(
+      <MemoryRouter initialEntries={["/test1"]}>
+        <Routes>
+          <Route path="*" element={<EdgeCaseHarness />} />
+        </Routes>
+      </MemoryRouter>
+    )
+
+    // Non-matching pattern should render as-is
+    const noCountTab = screen.getByTestId("eps-tab-heading /test1")
+    expect(noCountTab).toHaveTextContent("No count here")
+    expect(noCountTab.querySelector(".nhsuk-u-visually-hidden")).not.toBeInTheDocument()
+
+    // Pattern that ends with count should match
+    const multipleTab = screen.getByTestId("eps-tab-heading /test2")
+    expect(multipleTab.querySelector(".nhsuk-u-visually-hidden")).toHaveTextContent("3 prescriptions")
+  })
+
+  it("focuses active tab when activeTabPath changes", async () => {
+    render(
+      <MemoryRouter initialEntries={["/prescription-list-current"]}>
+        <Routes>
+          <Route path="*" element={<Harness />} />
+        </Routes>
+      </MemoryRouter>
+    )
+
+    // Navigate to future tab
+    await userEvent.keyboard("{ArrowRight}")
+    await waitFor(() => {
+      expect(screen.getByTestId("current-path")).toHaveTextContent("/prescription-list-future")
+    })
+
+    // Check that the future tab link is focused
+    const futureTab = screen.getByTestId("eps-tab-heading /prescription-list-future")
+    expect(futureTab).toHaveFocus()
+  })
 })
