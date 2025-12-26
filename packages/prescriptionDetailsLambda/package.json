@@ -18,7 +18,7 @@
     "@aws-lambda-powertools/parameters": "^2.30.0",
     "@aws-sdk/client-dynamodb": "^3.956.0",
     "@aws-sdk/client-lambda": "^3.958.0",
-    "@aws-sdk/client-secrets-manager": "^3.956.0",
+    "@aws-sdk/client-secrets-manager": "^3.958.0",
     "@aws-sdk/lib-dynamodb": "^3.958.0",
     "@cpt-ui-common/authFunctions": "^1.0.0",
     "@cpt-ui-common/common-types": "^1.0.0",
