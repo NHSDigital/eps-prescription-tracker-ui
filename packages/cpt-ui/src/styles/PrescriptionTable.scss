@@ -138,7 +138,6 @@
   word-wrap: break-word !important;
 }
 
-.eps-prescription-table-sort-text.issueDate,
 .eps-prescription-table-sort-text.statusCode {
   white-space: nowrap;
 }
@@ -169,11 +168,43 @@
   height: 12px;
 }
 
-.eps-prescription-id {
+.eps-prescription-table-rows {
+  user-select: none;
+}
+
+
+.prescription-list-table-item {
   white-space: nowrap;
   max-width: 12rem;
   overflow-wrap: break-word;
   word-break: break-word;
+  user-select: text;
+}
+
+.eps-prescription-table td[headers="header-issue-date"].prescription-list-table-item {
+  white-space: nowrap !important;
+}
+
+
+.eps-prescription-id-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  user-select: text;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+}
+
+.eps-prescription-id-container .eps-prescription-id {
+  display: block;
+  line-height: 1.4;
+}
+
+.eps-prescription-id-container .eps-prescription-action {
+  display: block;
+  line-height: 1.4;
+  margin-top: 0.125rem;
 }
 
 .eps-prescription-table-sort-icon-wrapper span:last-child {
@@ -234,10 +265,6 @@
   .eps-prescription-table-sort-text {
     font-size: 1rem !important;
   }
-
-  .narrow-cancellation-column {
-    width: 9rem !important;
-  }
 }
 
 @media (max-width: 768px) {
@@ -256,10 +283,6 @@
   .eps-prescription-table td,
   .eps-prescription-table-sort-text {
     font-size: 0.95rem !important;
-  }
-
-  .narrow-cancellation-column {
-    width: 8rem !important;
   }
 }
 
