@@ -70,7 +70,6 @@ export default function RoleSelectionPage({
     caption,
     titleNoAccess,
     captionNoAccess,
-    insetText,
     confirmButton,
     alternativeMessage,
     organisation,
@@ -243,9 +242,6 @@ export default function RoleSelectionPage({
             {auth.selectedRole && (
               <section aria-label="Login Information">
                 <InsetText data-testid="eps_select_your_role_pre_role_selected">
-                  <span className="nhsuk-u-visually-hidden">
-                    {insetText.visuallyHidden}
-                  </span>
                   {loginInfoMessage && (
                     <p
                       dangerouslySetInnerHTML={{__html: loginInfoMessage}}
