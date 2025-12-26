@@ -205,6 +205,8 @@ jobs:
 
           echo "REDEPLOY_STATEFUL_STACK=$REDEPLOY_STATEFUL_STACK" >> "$GITHUB_OUTPUT"
         shell: bash
+        env:
+          AWS_MAX_ATTEMPTS: 20
 
       - name: fix cdk.json for deployment stateful stack
         run: |
@@ -345,6 +347,8 @@ jobs:
           aws s3 cp ".build/packages/staticContent/jwks/${{ inputs.TARGET_ENVIRONMENT }}/jwks.json" "s3://${staticBucketName}/jwks.json"
           aws s3 cp --recursive ".build/packages/cpt-ui/dist/" "s3://${staticBucketName}/${{ inputs.VERSION_NUMBER }}/"
           aws s3 cp  ".build/packages/cpt-ui/dist/assets/" "s3://${staticBucketName}/source_maps/${{ inputs.COMMIT_ID }}/site/assets/" --exclude "*" --include "*.map" --recursive
+        env:
+          AWS_MAX_ATTEMPTS: 20
 
       - name: fix cdk.json for deployment for stateless stack
         run: |
@@ -421,6 +425,8 @@ jobs:
       - name: update cloudfront kvs
         id: update_cloudfront_kvs
         shell: bash
+        env:
+          AWS_MAX_ATTEMPTS: 20
         run: |
           # shellcheck disable=SC2140
           keyValueStore=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='"${{ inputs.SERVICE_NAME }}-stateless-resources:KeyValueStore:Arn"'].Value" --output text)
