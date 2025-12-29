@@ -42,6 +42,52 @@ function Harness({variant = "default", includeQuery = false}: HarnessProps) {
 }
 
 describe("EpsTabs", () => {
+  it("specifically tests renderAccessibleTitle function branches", () => {
+    const branchTestHeaders: Array<TabHeader> = [
+      {title: "No Pattern Here", link: "/no-pattern"},
+      {title: "Current prescriptions (42)", link: "/with-pattern"}
+    ]
+
+    function BranchTestHarness() {
+      const location = useLocation()
+      return (
+        <EpsTabs
+          activeTabPath={location.pathname}
+          tabHeaderArray={branchTestHeaders}
+        >
+          <div>Branch test content</div>
+        </EpsTabs>
+      )
+    }
+
+    render(
+      <MemoryRouter initialEntries={["/no-pattern"]}>
+        <Routes>
+          <Route path="*" element={<BranchTestHarness />} />
+        </Routes>
+      </MemoryRouter>
+    )
+
+    const noPatternTab = screen.getByTestId("eps-tab-heading /no-pattern")
+    expect(noPatternTab).toHaveTextContent("No Pattern Here")
+    expect(noPatternTab.querySelector(".nhsuk-u-visually-hidden")).not.toBeInTheDocument()
+
+    const patternTab = screen.getByTestId("eps-tab-heading /with-pattern")
+
+    const allSpans = patternTab.querySelectorAll("span")
+    expect(allSpans.length).toBeGreaterThan(1)
+
+    const prefixSpan = patternTab.querySelector("span > span:first-child")
+    expect(prefixSpan?.textContent).toContain("Current prescriptions")
+
+    const ariaHiddenSpans = patternTab.querySelectorAll("span[aria-hidden=\"true\"]")
+    expect(ariaHiddenSpans).toHaveLength(3)
+    expect(ariaHiddenSpans[1]).toHaveTextContent("42")
+
+    const visuallyHiddenSpan = patternTab.querySelector(".nhsuk-u-visually-hidden")
+    expect(visuallyHiddenSpan?.textContent).toContain("42 prescriptions")
+  })
+
   it("navigates between tabs with ArrowRight/ArrowLeft", async () => {
     render(
       <MemoryRouter initialEntries={["/prescription-list-current"]}>
