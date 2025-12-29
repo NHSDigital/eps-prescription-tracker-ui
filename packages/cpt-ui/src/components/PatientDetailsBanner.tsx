@@ -89,15 +89,23 @@ export default function PatientDetailsBanner() {
       data-testid="patient-details-banner"
       id="patient-details-banner"
     >
-      <div
-        className={"patient-detail-banner-row"}
-      > {nameText ?
-          <div className = "patient-detail-name"> {nameText}</div> : null }
-        <div>{STRINGS.GENDER}: {genderText}</div>
-        <div>{STRINGS.NHS_NUMBER}: {nhsNumberText}</div>
-        <div>{STRINGS.DOB}: {formatDobTextForDisplay(dobText)}</div>
-        <div>{STRINGS.ADDRESS}: {addressText}</div>
+      <div>
+        <div
+          className={"patient-detail-banner-row"}
+        > {nameText ?
+            <div className = "patient-detail-name"> {nameText}</div> : null }
+          <dl>
+            <dt>{STRINGS.GENDER}:</dt> <dd>{genderText}</dd>
+            <dt>{STRINGS.NHS_NUMBER}:</dt>
+            <dd>{nhsNumberText}</dd>
+            <dt>{STRINGS.DOB}:</dt>
+            <dd>{formatDobTextForDisplay(dobText)}</dd>
+            <dt>{STRINGS.ADDRESS}:</dt>
+            <dd>{addressText}</dd>
+          </dl>
+        </div>
       </div>
+
       {
         // Places the missing data message on the next line
         !successfulDetails && (
