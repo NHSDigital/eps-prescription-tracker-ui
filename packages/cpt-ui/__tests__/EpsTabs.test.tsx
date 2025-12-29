@@ -253,6 +253,55 @@ describe("EpsTabs", () => {
     expect(multipleTab.querySelector(".nhsuk-u-visually-hidden")).toHaveTextContent("3 prescriptions")
   })
 
+  it("renders complete accessible markup structure for count patterns", () => {
+    const tabHeaderArray: Array<TabHeader> = [
+      {title: "Current prescriptions (5)", link: "/prescription-list-current"},
+      {title: "Future-dated prescriptions (0)", link: "/prescription-list-future"}
+    ]
+
+    function MarkupTestHarness() {
+      const location = useLocation()
+      return (
+        <EpsTabs
+          activeTabPath={location.pathname}
+          tabHeaderArray={tabHeaderArray}
+        >
+          <div>Test content</div>
+        </EpsTabs>
+      )
+    }
+
+    render(
+      <MemoryRouter initialEntries={["/prescription-list-current"]}>
+        <Routes>
+          <Route path="*" element={<MarkupTestHarness />} />
+        </Routes>
+      </MemoryRouter>
+    )
+
+    const currentTab = screen.getByTestId("eps-tab-heading /prescription-list-current")
+
+    const mainSpan = currentTab.querySelector("span")
+    expect(mainSpan).toBeInTheDocument()
+
+    const prefixSpan = currentTab.querySelector("span > span:first-child")
+    expect(prefixSpan?.textContent).toMatch(/Current prescriptions\s*/)
+
+    const ariaHiddenElements = currentTab.querySelectorAll("span[aria-hidden=\"true\"]")
+    expect(ariaHiddenElements).toHaveLength(3)
+    expect(ariaHiddenElements[0]).toHaveTextContent("(")
+    expect(ariaHiddenElements[1]).toHaveTextContent("5")
+    expect(ariaHiddenElements[2]).toHaveTextContent(")")
+
+    const visuallyHidden = currentTab.querySelector(".nhsuk-u-visually-hidden")
+    expect(visuallyHidden?.textContent).toMatch(/\s*5 prescriptions/)
+
+    const futureTab = screen.getByTestId("eps-tab-heading /prescription-list-future")
+    const futureAriaHidden = futureTab.querySelectorAll("span[aria-hidden=\"true\"]")
+    expect(futureAriaHidden[1]).toHaveTextContent("0")
+    expect(futureTab.querySelector(".nhsuk-u-visually-hidden")?.textContent).toMatch(/\s*0 prescriptions/)
+  })
+
   it("focuses active tab when activeTabPath changes", async () => {
     render(
       <MemoryRouter initialEntries={["/prescription-list-current"]}>
