@@ -51,28 +51,23 @@ describe("EpsTabs", () => {
       </MemoryRouter>
     )
 
-    // Starts on current
     expect(screen.getByTestId("current-path")).toHaveTextContent("/prescription-list-current")
 
-    // ArrowRight to future
     await userEvent.keyboard("{ArrowRight}")
     await waitFor(() => {
       expect(screen.getByTestId("current-path")).toHaveTextContent("/prescription-list-future")
     })
 
-    // ArrowRight to past
     await userEvent.keyboard("{ArrowRight}")
     await waitFor(() => {
       expect(screen.getByTestId("current-path")).toHaveTextContent("/prescription-list-past")
     })
 
-    // ArrowRight at last stays on past
     await userEvent.keyboard("{ArrowRight}")
     await waitFor(() => {
       expect(screen.getByTestId("current-path")).toHaveTextContent("/prescription-list-past")
     })
 
-    // ArrowLeft goes back to future
     await userEvent.keyboard("{ArrowLeft}")
     await waitFor(() => {
       expect(screen.getByTestId("current-path")).toHaveTextContent("/prescription-list-future")
@@ -88,7 +83,6 @@ describe("EpsTabs", () => {
       </MemoryRouter>
     )
 
-    // Focus input then press ArrowRight – should not change tab
     const input = screen.getByTestId("dummy-input") as HTMLInputElement
     input.focus()
     await userEvent.keyboard("{ArrowRight}")
@@ -119,7 +113,6 @@ describe("EpsTabs", () => {
       </MemoryRouter>
     )
 
-    // With query in activeTabPath, startsWith should still match and allow navigation
     expect(screen.getByTestId("current-path")).toHaveTextContent("/prescription-list-current")
     await userEvent.keyboard("{ArrowRight}")
     await waitFor(() => {
@@ -137,10 +130,7 @@ describe("EpsTabs", () => {
     )
 
     unmount()
-    // Dispatching events after unmount should not change the path
     window.dispatchEvent(new KeyboardEvent("keydown", {key: "ArrowRight"}))
-    // Nothing to assert about path change here since component is unmounted;
-    // this test ensures no errors are thrown during cleanup.
     expect(true).toBe(true)
   })
 
@@ -171,7 +161,6 @@ describe("EpsTabs", () => {
       </MemoryRouter>
     )
 
-    // Container should have the large variant class
     const contentsTitle = screen.getByText("Contents")
     const container = contentsTitle.closest(".nhsuk-tabs--large")
     expect(container).toBeInTheDocument()
@@ -204,12 +193,10 @@ describe("EpsTabs", () => {
       </MemoryRouter>
     )
 
-    // Check that count pattern creates accessible structure
     const currentTab = screen.getByTestId("eps-tab-heading /prescription-list-current")
     expect(currentTab.querySelector('[aria-hidden="true"]')).toBeInTheDocument()
     expect(currentTab.querySelector(".nhsuk-u-visually-hidden")).toHaveTextContent("5 prescriptions")
 
-    // Check that simple title renders as-is
     const pastTab = screen.getByTestId("eps-tab-heading /prescription-list-past")
     expect(pastTab).toHaveTextContent("Simple title")
     expect(pastTab.querySelector(".nhsuk-u-visually-hidden")).not.toBeInTheDocument()
@@ -243,14 +230,57 @@ describe("EpsTabs", () => {
       </MemoryRouter>
     )
 
-    // Non-matching pattern should render as-is
     const noCountTab = screen.getByTestId("eps-tab-heading /test1")
     expect(noCountTab).toHaveTextContent("No count here")
     expect(noCountTab.querySelector(".nhsuk-u-visually-hidden")).not.toBeInTheDocument()
 
-    // Pattern that ends with count should match
     const multipleTab = screen.getByTestId("eps-tab-heading /test2")
     expect(multipleTab.querySelector(".nhsuk-u-visually-hidden")).toHaveTextContent("3 prescriptions")
+  })
+
+  it("covers both match and non-match paths in renderAccessibleTitle", () => {
+    const testTabHeaders: Array<TabHeader> = [
+      {title: "Matching pattern (5)", link: "/match-test"},
+      {title: "Non matching pattern", link: "/no-match-test"}
+    ]
+
+    function CoverageTestHarness() {
+      const location = useLocation()
+      return (
+        <EpsTabs
+          activeTabPath={location.pathname}
+          tabHeaderArray={testTabHeaders}
+        >
+          <div>Test content</div>
+        </EpsTabs>
+      )
+    }
+
+    const {unmount: unmount1} = render(
+      <MemoryRouter initialEntries={["/no-match-test"]}>
+        <Routes>
+          <Route path="*" element={<CoverageTestHarness />} />
+        </Routes>
+      </MemoryRouter>
+    )
+
+    const noMatchTab = screen.getByTestId("eps-tab-heading /no-match-test")
+    expect(noMatchTab).toHaveTextContent("Non matching pattern")
+    expect(noMatchTab.querySelector(".nhsuk-u-visually-hidden")).not.toBeInTheDocument()
+
+    unmount1()
+
+    render(
+      <MemoryRouter initialEntries={["/match-test"]}>
+        <Routes>
+          <Route path="*" element={<CoverageTestHarness />} />
+        </Routes>
+      </MemoryRouter>
+    )
+
+    const matchTab = screen.getByTestId("eps-tab-heading /match-test")
+    expect(matchTab.querySelector(".nhsuk-u-visually-hidden")).toHaveTextContent("5 prescriptions")
+    expect(matchTab.querySelectorAll("span[aria-hidden=\"true\"]")).toHaveLength(3)
   })
 
   it("renders complete accessible markup structure for count patterns", () => {
@@ -285,7 +315,7 @@ describe("EpsTabs", () => {
     expect(mainSpan).toBeInTheDocument()
 
     const prefixSpan = currentTab.querySelector("span > span:first-child")
-    expect(prefixSpan?.textContent).toMatch(/Current prescriptions\s*/)
+    expect(prefixSpan?.textContent).toBe("Current prescriptions ")
 
     const ariaHiddenElements = currentTab.querySelectorAll("span[aria-hidden=\"true\"]")
     expect(ariaHiddenElements).toHaveLength(3)
@@ -294,12 +324,12 @@ describe("EpsTabs", () => {
     expect(ariaHiddenElements[2]).toHaveTextContent(")")
 
     const visuallyHidden = currentTab.querySelector(".nhsuk-u-visually-hidden")
-    expect(visuallyHidden?.textContent).toMatch(/\s*5 prescriptions/)
+    expect(visuallyHidden?.textContent).toBe(" 5 prescriptions")
 
     const futureTab = screen.getByTestId("eps-tab-heading /prescription-list-future")
     const futureAriaHidden = futureTab.querySelectorAll("span[aria-hidden=\"true\"]")
     expect(futureAriaHidden[1]).toHaveTextContent("0")
-    expect(futureTab.querySelector(".nhsuk-u-visually-hidden")?.textContent).toMatch(/\s*0 prescriptions/)
+    expect(futureTab.querySelector(".nhsuk-u-visually-hidden")?.textContent).toBe(" 0 prescriptions")
   })
 
   it("focuses active tab when activeTabPath changes", async () => {
@@ -311,13 +341,11 @@ describe("EpsTabs", () => {
       </MemoryRouter>
     )
 
-    // Navigate to future tab
     await userEvent.keyboard("{ArrowRight}")
     await waitFor(() => {
       expect(screen.getByTestId("current-path")).toHaveTextContent("/prescription-list-future")
     })
 
-    // Check that the future tab link is focused
     const futureTab = screen.getByTestId("eps-tab-heading /prescription-list-future")
     expect(futureTab).toHaveFocus()
   })
