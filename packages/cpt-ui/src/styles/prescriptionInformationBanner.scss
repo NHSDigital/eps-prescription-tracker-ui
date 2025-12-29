@@ -71,6 +71,18 @@
     padding-bottom: 0;
   }
 }
+
+.copy-button.nhsuk-button--secondary:not(:focus):not(:active)::before,
+.copy-button.nhsuk-button--secondary-solid:not(:focus):not(:active)::before {
+  border-color: #007f3b;
+}
+
+.copy-button.nhsuk-button--secondary,
+.copy-button.nhsuk-button--secondary::after,
+.copy-button.nhsuk-button--secondary-solid,
+.copy-button.nhsuk-button--secondary-solid::after {
+  box-shadow: 0 4px 0 #004721;
+}
 .nhsuk-u-margin-1 {
   margin: 4px !important;
 }

@@ -268,7 +268,7 @@ const PrescriptionsListTable = ({
         <Table.Cell
           key={key}
           headers={headerId}
-          className="eps-prescription-table-rows nowrap-cell"
+          className="prescription-list-table-item"
           data-testid="issue-date-column"
         >
           <div>{formatDateForPrescriptions(row.issueDate)}</div>
@@ -281,7 +281,7 @@ const PrescriptionsListTable = ({
         <Table.Cell
           key={key}
           headers={headerId}
-          className="eps-prescription-table-rows prescription-type-cell"
+          className="prescription-list-table-item"
           data-testid="prescription-type-column"
         >
           <div>
@@ -300,7 +300,7 @@ const PrescriptionsListTable = ({
         <Table.Cell
           key={key}
           headers={headerId}
-          className="eps-prescription-table-rows"
+          className="prescription-list-table-item"
           data-testid="status-code-column"
         >
           <Tag color={getStatusTagColour(row.statusCode)}>
@@ -318,7 +318,7 @@ const PrescriptionsListTable = ({
         <Table.Cell
           key={key}
           headers={headerId}
-          className="eps-prescription-table-rows narrow-cancellation-column"
+          className="prescription-list-table-item"
           data-testid="cancellation-warning-column"
         >
           {showWarning ? (
@@ -347,9 +347,7 @@ const PrescriptionsListTable = ({
           headers={headerId}
           className="eps-prescription-table-rows"
         >
-          <div className="eps-prescription-id">
-            {row.prescriptionId}
-          </div>
+          <span className="prescription-list-table-item">{row.prescriptionId}</span>
           <div>
             {row.isDeleted ? (
               <span
@@ -365,6 +363,8 @@ const PrescriptionsListTable = ({
                 onClick={() => setSearchPrescriptionState(row.prescriptionId, row.issueNumber?.toString())}
               >
                 {PRESCRIPTION_LIST_TABLE_TEXT.viewPrescription}
+                <span className="nhsuk-u-visually-hidden">
+                  {PRESCRIPTION_LIST_TABLE_TEXT.viewPrescriptionScreenReader} {row.prescriptionId}</span>
               </Link>
             )}
           </div>
