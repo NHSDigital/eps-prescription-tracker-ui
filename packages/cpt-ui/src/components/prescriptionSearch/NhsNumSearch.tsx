@@ -42,7 +42,11 @@ export default function NhsNumSearch() {
 
   const displayedError = useMemo(() => errorKey ? errorMessages[errorKey] : "", [errorKey])
 
-  usePageTitle(STRINGS.PAGE_TITLE)
+  // usePageTitle(STRINGS.PAGE_TITLE)
+
+  usePageTitle(errorKey
+    ? STRINGS.PAGE_TITLE_ERROR
+    : STRINGS.PAGE_TITLE)
 
   useEffect(() => {
     if (searchContext.nhsNumber && searchContext.searchType === "nhs") {

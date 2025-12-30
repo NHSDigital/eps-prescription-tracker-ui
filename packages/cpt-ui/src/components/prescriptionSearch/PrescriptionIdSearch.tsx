@@ -50,7 +50,9 @@ export default function PrescriptionIdSearch() {
     }
   }, [navigationContext])
 
-  usePageTitle(PRESCRIPTION_ID_SEARCH_STRINGS.PAGE_TITLE)
+  usePageTitle(errorKey
+    ? PRESCRIPTION_ID_SEARCH_STRINGS.PAGE_TITLE_ERROR
+    : PRESCRIPTION_ID_SEARCH_STRINGS.PAGE_TITLE)
 
   // Maps a validation error key to the corresponding user-facing message.
   // Treats "checksum" as "noMatch" to simplify the error display logic.

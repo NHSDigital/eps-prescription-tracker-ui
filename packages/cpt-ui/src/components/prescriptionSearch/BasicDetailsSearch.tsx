@@ -40,7 +40,9 @@ export default function BasicDetailsSearch() {
   const searchContext = useSearchContext()
   const navigationContext = useNavigationContext()
 
-  usePageTitle(STRINGS.PAGE_TITLE)
+  usePageTitle(errors.length > 0
+    ? STRINGS.PAGE_TITLE_ERROR
+    : STRINGS.PAGE_TITLE)
 
   // Inline error lookup: used to find the error message string for specific field(s)
   // Returns the first match found in the array of inline error tuples
