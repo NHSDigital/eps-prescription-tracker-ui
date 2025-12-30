@@ -89,6 +89,7 @@ export default function PatientDetailsBanner() {
       data-testid="patient-details-banner"
       id="patient-details-banner"
     >
+      <h2 className="nhsuk-u-visually-hidden">{STRINGS.HEADER}</h2>
       <div>
         <div
           className={"patient-detail-banner-row"}
