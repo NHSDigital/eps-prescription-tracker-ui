@@ -7,9 +7,12 @@ import {getHomeLink} from "@/helpers/loginFunctions"
 import {Breadcrumb, InsetText} from "nhsuk-react-components"
 import {useAuth} from "@/context/AuthProvider"
 import {FRONTEND_PATHS} from "@/constants/environment"
+import {usePageTitle} from "@/hooks/usePageTitle"
 
 export default function PrivacyNoticePage() {
   const auth = useAuth()
+
+  usePageTitle(PrivacyNoticeStrings.PAGE_TITLE)
 
   return (
     <main className="nhsuk-width-container nhsuk-u-margin-top-4">
