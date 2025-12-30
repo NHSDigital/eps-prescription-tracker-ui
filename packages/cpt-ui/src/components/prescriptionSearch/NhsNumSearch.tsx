@@ -24,6 +24,7 @@ import {FRONTEND_PATHS} from "@/constants/environment"
 import {useSearchContext} from "@/context/SearchProvider"
 import {useNavigationContext} from "@/context/NavigationProvider"
 import {validateNhsNumber, normalizeNhsNumber, NhsNumberValidationError} from "@/helpers/validateNhsNumber"
+import {usePageTitle} from "@/hooks/usePageTitle"
 
 export default function NhsNumSearch() {
   const navigate = useNavigate()
@@ -40,6 +41,8 @@ export default function NhsNumSearch() {
   const errorMessages = STRINGS.errors
 
   const displayedError = useMemo(() => errorKey ? errorMessages[errorKey] : "", [errorKey])
+
+  usePageTitle(STRINGS.PAGE_TITLE)
 
   useEffect(() => {
     if (searchContext.nhsNumber && searchContext.searchType === "nhs") {

@@ -30,6 +30,7 @@ import {
 } from "@/helpers/validatePrescriptionDetailsSearch"
 import {useSearchContext} from "@/context/SearchProvider"
 import {useNavigationContext} from "@/context/NavigationProvider"
+import {usePageTitle} from "@/hooks/usePageTitle"
 
 export default function PrescriptionIdSearch() {
   const navigate = useNavigate()
@@ -48,6 +49,8 @@ export default function PrescriptionIdSearch() {
       setPrescriptionId(relevantParams.prescriptionId || "")
     }
   }, [navigationContext])
+
+  usePageTitle(PRESCRIPTION_ID_SEARCH_STRINGS.PAGE_TITLE)
 
   // Maps a validation error key to the corresponding user-facing message.
   // Treats "checksum" as "noMatch" to simplify the error display logic.

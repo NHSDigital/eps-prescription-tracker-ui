@@ -1,4 +1,5 @@
 export const STRINGS = {
+  PAGE_TITLE: "Search for a prescription - Prescription Tracker",
   heading: "Search using basic details",
   visuallyHiddenPrefix: "Search by",
   // eslint-disable-next-line max-len

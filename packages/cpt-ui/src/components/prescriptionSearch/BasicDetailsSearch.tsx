@@ -21,6 +21,7 @@ import {STRINGS} from "@/constants/ui-strings/BasicDetailsSearchStrings"
 import {FRONTEND_PATHS} from "@/constants/environment"
 import {useSearchContext} from "@/context/SearchProvider"
 import {useNavigationContext} from "@/context/NavigationProvider"
+import {usePageTitle} from "@/hooks/usePageTitle"
 
 export default function BasicDetailsSearch() {
   const navigate = useNavigate()
@@ -38,6 +39,8 @@ export default function BasicDetailsSearch() {
   const inlineErrors = getInlineErrors(errors)
   const searchContext = useSearchContext()
   const navigationContext = useNavigationContext()
+
+  usePageTitle(STRINGS.PAGE_TITLE)
 
   // Inline error lookup: used to find the error message string for specific field(s)
   // Returns the first match found in the array of inline error tuples

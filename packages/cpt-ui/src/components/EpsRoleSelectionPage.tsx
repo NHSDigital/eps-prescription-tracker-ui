@@ -21,6 +21,7 @@ import {logger} from "@/helpers/logger"
 import {usePageTitle} from "@/hooks/usePageTitle"
 import axios from "axios"
 import {handleRestartLogin} from "@/helpers/logout"
+import {CHANGE_YOUR_ROLE_PAGE_TEXT} from "@/constants/ui-strings/ChangeRolePageStrings"
 
 // This is passed to the EPS card component.
 export type RolesWithAccessProps = {
@@ -94,7 +95,7 @@ export default function RoleSelectionPage({
   const [roleCardPropsWithAccess, setRoleCardPropsWithAccess] = useState<Array<RolesWithAccessProps>>([])
   const [roleCardPropsWithoutAccess, setRoleCardPropsWithoutAccess] = useState<Array<RolesWithoutAccessProps>>([])
 
-  usePageTitle(contentText.PAGE_TITLE)
+  usePageTitle(auth.hasNoAccess ? CHANGE_YOUR_ROLE_PAGE_TEXT.NO_ACCESS_PAGE_TITLE : contentText.PAGE_TITLE)
 
   const handleSetSelectedRole = async (
     e: React.MouseEvent | React.KeyboardEvent,

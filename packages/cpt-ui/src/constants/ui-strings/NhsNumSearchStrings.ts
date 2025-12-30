@@ -1,4 +1,5 @@
 export const STRINGS = {
+  PAGE_TITLE: "Search for a prescription - Prescription Tracker",
   labelText: "Search using NHS number",
   hintText: "This is a 10 digit number, like 485 777 3456.",
   hiddenText: "Search by",
