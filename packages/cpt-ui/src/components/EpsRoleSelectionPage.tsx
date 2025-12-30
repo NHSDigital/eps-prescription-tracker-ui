@@ -18,6 +18,7 @@ import {Button} from "./ReactRouterButton"
 import {FRONTEND_PATHS} from "@/constants/environment"
 import {getSearchParams} from "@/helpers/getSearchParams"
 import {logger} from "@/helpers/logger"
+import {usePageTitle} from "@/hooks/usePageTitle"
 import axios from "axios"
 import {handleRestartLogin} from "@/helpers/logout"
 
@@ -37,6 +38,7 @@ export type RolesWithoutAccessProps = {
 
 interface RoleSelectionPageProps {
   contentText: {
+    PAGE_TITLE: string
     title: string
     caption: string
     titleNoAccess: string
@@ -91,6 +93,8 @@ export default function RoleSelectionPage({
 
   const [roleCardPropsWithAccess, setRoleCardPropsWithAccess] = useState<Array<RolesWithAccessProps>>([])
   const [roleCardPropsWithoutAccess, setRoleCardPropsWithoutAccess] = useState<Array<RolesWithoutAccessProps>>([])
+
+  usePageTitle(contentText.PAGE_TITLE)
 
   const handleSetSelectedRole = async (
     e: React.MouseEvent | React.KeyboardEvent,
@@ -224,6 +228,7 @@ export default function RoleSelectionPage({
       className="nhsuk-main-wrapper"
       data-testid="eps_roleSelectionComponent"
     >
+
       <Container role="contentinfo">
         <Row>
           <Col width="two-thirds">
