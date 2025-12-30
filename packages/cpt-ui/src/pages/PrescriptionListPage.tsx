@@ -26,6 +26,7 @@ import {useSearchContext} from "@/context/SearchProvider"
 import {handleRestartLogin, signOut} from "@/helpers/logout"
 import {useAuth} from "@/context/AuthProvider"
 import {AUTH_CONFIG} from "@/constants/environment"
+import {usePageTitle} from "@/hooks/usePageTitle"
 
 export default function PrescriptionListPage() {
   const {setPatientDetails} = usePatientDetails()
@@ -39,6 +40,7 @@ export default function PrescriptionListPage() {
   const [loading, setLoading] = useState(true)
   const [showNotFound, setShowNotFound] = useState(false)
   const [error, setError] = useState(false)
+  usePageTitle(PRESCRIPTION_LIST_PAGE_STRINGS.PAGE_TITLE)
 
   const auth = useAuth()
   const navigate = useNavigate()
