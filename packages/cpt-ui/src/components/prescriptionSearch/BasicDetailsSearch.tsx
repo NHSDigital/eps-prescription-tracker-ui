@@ -218,7 +218,8 @@ export default function BasicDetailsSearch() {
               <Label htmlFor="first-name" className="nhsuk-label-h3" data-testid="first-name-label">
                 {STRINGS.firstNameLabel}
               </Label>
-              {getInlineError("firstName") && <ErrorMessage>{getInlineError("firstName")}</ErrorMessage>}
+              {getInlineError("firstName") &&
+              <ErrorMessage id="first-name-error">{getInlineError("firstName")}</ErrorMessage>}
               <TextInput
                 id="first-name"
                 name="first-name"
@@ -226,6 +227,7 @@ export default function BasicDetailsSearch() {
                 onChange={e => setFirstName((e.target as HTMLInputElement).value)}
                 className={`nhsuk-input--width-20 $  {getInlineError("firstName") ?   "nhsuk-input--error" : ""}`}
                 data-testid="first-name-input"
+                aria-describedby={getInlineError("firstName") ? "first-name-error" : undefined}
               />
             </FormGroup>
 
@@ -234,7 +236,8 @@ export default function BasicDetailsSearch() {
               <Label htmlFor="last-name" className="nhsuk-label-h3" data-testid="last-name-label">
                 {STRINGS.lastNameLabel}
               </Label>
-              {getInlineError("lastName") && <ErrorMessage>{getInlineError("lastName")}</ErrorMessage>}
+              {getInlineError("lastName") &&
+              <ErrorMessage id="last-name-error">{getInlineError("lastName")}</ErrorMessage>}
               <TextInput
                 id="last-name"
                 name="last-name"
@@ -242,6 +245,7 @@ export default function BasicDetailsSearch() {
                 onChange={e => setLastName((e.target as HTMLInputElement).value)}
                 className={`nhsuk-input--width-20 $  {getInlineError("lastName") ?   "nhsuk-input--error" : ""}`}
                 data-testid="last-name-input"
+                aria-describedby={getInlineError("lastName") ? "last-name-error" : undefined}
               />
             </FormGroup>
 
@@ -277,7 +281,7 @@ export default function BasicDetailsSearch() {
                   "dobInvalidDate",
                   "dobFutureDate"
                 ) && (
-                  <ErrorMessage>
+                  <ErrorMessage id="dob-error">
                     {getInlineError(
                       "dobRequired",
                       "dobDayRequired",
@@ -295,7 +299,18 @@ export default function BasicDetailsSearch() {
                 <DateInput
                   id="dob"
                   aria-labelledby="dob-label"
-                  aria-describedby="dob-hint"
+                  aria-describedby={getInlineError(
+                    "dobRequired",
+                    "dobDayRequired",
+                    "dobMonthRequired",
+                    "dobYearRequired",
+                    "dobNonNumericDay",
+                    "dobNonNumericMonth",
+                    "dobNonNumericYear",
+                    "dobYearTooShort",
+                    "dobInvalidDate",
+                    "dobFutureDate"
+                  ) ? "dob-hint dob-error" : "dob-hint"}
                   data-testid="dob-input-group"
                 >
                   {/* Day */}
@@ -348,8 +363,9 @@ export default function BasicDetailsSearch() {
               <Label htmlFor="postcode-only" className="nhsuk-label-h3">
                 {STRINGS.postcodeLabel}
               </Label>
-              <HintText>{STRINGS.postcodeHint}</HintText>
-              {getInlineError("postcode") && <ErrorMessage>{getInlineError("postcode")}</ErrorMessage>}
+              <HintText id="postcode-hint">{STRINGS.postcodeHint}</HintText>
+              {getInlineError("postcode") &&
+               <ErrorMessage id="postcode-error">{getInlineError("postcode")}</ErrorMessage>}
               <TextInput
                 id="postcode-only"
                 name="postcode-only"
@@ -357,6 +373,7 @@ export default function BasicDetailsSearch() {
                 onChange={e => setPostcode((e.target as HTMLInputElement).value)}
                 className={`nhsuk-input--width-10 ${getInlineError("postcode") ? "nhsuk-input--error" : ""}`}
                 data-testid="postcode-input"
+                aria-describedby={getInlineError("postcode") ? "postcode-hint postcode-error" : "postcode-hint"}
               />
             </FormGroup>
           </FormGroup>

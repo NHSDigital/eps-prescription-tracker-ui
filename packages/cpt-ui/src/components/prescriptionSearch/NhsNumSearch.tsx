@@ -126,7 +126,7 @@ export default function NhsNumSearch() {
             </HintText>
 
             {errorKey && (
-              <ErrorMessage data-testid={`error-message-${errorKey}`}>
+              <ErrorMessage id="nhs-number-error" data-testid={`error-message-${errorKey}`}>
                 {displayedError}
               </ErrorMessage>
             )}
@@ -138,7 +138,7 @@ export default function NhsNumSearch() {
               onChange={handleChange}
               autoComplete="off"
               className={`nhsuk-input--width-10 ${errorKey ? "nhsuk-input--error" : ""}`}
-              aria-describedby="nhs-number-hint"
+              aria-describedby={errorKey ? "nhs-number-hint nhs-number-error" : "nhs-number-hint"}
               aria-labelledby="nhs-number-label"
               data-testid="nhs-number-input"
             />

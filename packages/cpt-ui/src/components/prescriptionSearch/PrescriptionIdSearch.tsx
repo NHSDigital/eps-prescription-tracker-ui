@@ -159,7 +159,7 @@ export default function PrescriptionIdSearch() {
               className={errorKey ? "nhsuk-input nhsuk-input--error" : "nhsuk-input"}
               autoComplete="off"
               data-testid="prescription-id-input"
-              aria-describedby={errorKey ? "presc-id-error" : undefined}
+              aria-describedby={errorKey ? "presc-id-hint presc-id-error" : "presc-id-hint"}
             />
           </FormGroup>
           <Button type="submit" data-testid="find-prescription-button">
