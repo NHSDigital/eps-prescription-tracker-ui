@@ -6,9 +6,6 @@ import React, {
 } from "react"
 import {useNavigate} from "react-router-dom"
 import {
-  Container,
-  Row,
-  Col,
   Form,
   FormGroup,
   Label,
@@ -101,60 +98,57 @@ export default function NhsNumSearch() {
   }
 
   return (
-    <Container className="nhsuk-width-container-fluid" data-testid="patient-search-form-container">
-      <Row>
-        <Col width="one-half">
-          <Form onSubmit={handleSubmit} noValidate data-testid="nhs-number-form">
+    <>
+      {errorKey && (
+        <ErrorSummary ref={errorRef} data-testid="error-summary" className="prescription-id-aligned-element">
+          <ErrorSummary.Title>{STRINGS.errorSummaryHeading}</ErrorSummary.Title>
+          <ErrorSummary.Body>
+            <ErrorSummary.List>
+              <ErrorSummary.Item>
+                <a href="#nhs-number-input">{displayedError}</a>
+              </ErrorSummary.Item>
+            </ErrorSummary.List>
+          </ErrorSummary.Body>
+        </ErrorSummary>
+      )}
+      <div className="prescription-id-aligned-element">
+        <Form onSubmit={handleSubmit} noValidate data-testid="nhs-number-form">
+          <FormGroup className={errorKey ? "nhsuk-form-group--error" : ""}>
+            <Label htmlFor="nhs-number-input" id="nhs-number-label" data-testid="nhs-number-label">
+              <h2 className="nhsuk-heading-m nhsuk-u-margin-bottom-1 no-outline"
+                data-testid="nhs-number-search-heading">
+                <span className="nhsuk-u-visually-hidden">{STRINGS.hiddenText}</span>
+                {STRINGS.labelText}
+              </h2>
+            </Label>
+            <HintText id="nhs-number-hint" data-testid="nhs-number-hint">
+              {STRINGS.hintText}
+            </HintText>
+
             {errorKey && (
-              <ErrorSummary ref={errorRef} data-testid="error-summary">
-                <ErrorSummary.Title>{STRINGS.errorSummaryHeading}</ErrorSummary.Title>
-                <ErrorSummary.Body>
-                  <ErrorSummary.List>
-                    <ErrorSummary.Item>
-                      <a href="#nhs-number-input">{displayedError}</a>
-                    </ErrorSummary.Item>
-                  </ErrorSummary.List>
-                </ErrorSummary.Body>
-              </ErrorSummary>
+              <ErrorMessage data-testid={`error-message-${errorKey}`}>
+                {displayedError}
+              </ErrorMessage>
             )}
 
-            <FormGroup className={errorKey ? "nhsuk-form-group--error" : ""}>
-              <Label htmlFor="nhs-number-input" id="nhs-number-label" data-testid="nhs-number-label">
-                <h2 className="nhsuk-heading-m nhsuk-u-margin-bottom-1 no-outline"
-                  data-testid="nhs-number-search-heading">
-                  <span className="nhsuk-u-visually-hidden">{STRINGS.hiddenText}</span>
-                  {STRINGS.labelText}
-                </h2>
-              </Label>
-              <HintText id="nhs-number-hint" data-testid="nhs-number-hint">
-                {STRINGS.hintText}
-              </HintText>
+            <TextInput
+              id="nhs-number-input"
+              name="nhsNumber"
+              value={nhsNumber}
+              onChange={handleChange}
+              autoComplete="off"
+              className={`nhsuk-input--width-10 ${errorKey ? "nhsuk-input--error" : ""}`}
+              aria-describedby="nhs-number-hint"
+              aria-labelledby="nhs-number-label"
+              data-testid="nhs-number-input"
+            />
+          </FormGroup>
 
-              {errorKey && (
-                <ErrorMessage data-testid={`error-message-${errorKey}`}>
-                  {displayedError}
-                </ErrorMessage>
-              )}
-
-              <TextInput
-                id="nhs-number-input"
-                name="nhsNumber"
-                value={nhsNumber}
-                onChange={handleChange}
-                autoComplete="off"
-                className={`nhsuk-input--width-10 ${errorKey ? "nhsuk-input--error" : ""}`}
-                aria-describedby="nhs-number-hint"
-                aria-labelledby="nhs-number-label"
-                data-testid="nhs-number-input"
-              />
-            </FormGroup>
-
-            <Button type="submit" id="nhs-number-submit" data-testid="find-patient-button">
-              {STRINGS.buttonText}
-            </Button>
-          </Form>
-        </Col>
-      </Row>
-    </Container>
+          <Button type="submit" id="nhs-number-submit" data-testid="find-patient-button">
+            {STRINGS.buttonText}
+          </Button>
+        </Form>
+      </div>
+    </>
   )
 }
