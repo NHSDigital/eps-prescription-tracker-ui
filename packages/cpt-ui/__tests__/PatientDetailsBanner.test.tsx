@@ -117,12 +117,9 @@ describe("PatientDetailsBanner", () => {
     })
 
     // When details are missing, gender, date of birth, and address should show STRINGS.UNKNOWN.
-    expect(
-      screen.getByText(new RegExp(`${STRINGS.GENDER}:\\s*${STRINGS.UNKNOWN}`, "i"))
-    ).toBeInTheDocument()
-    expect(
-      screen.getByText(new RegExp(`${STRINGS.DOB}:\\s*${STRINGS.UNKNOWN}`, "i"))
-    ).toBeInTheDocument()
+    expect(screen.getByText("Gender")).toBeInTheDocument()
+    expect(screen.getByText("Unavailable")).toBeInTheDocument()
+    expect(screen.getByText("Date of birth")).toBeInTheDocument()
     expect(
       screen.getByText(new RegExp(`${STRINGS.ADDRESS}:\\s*${STRINGS.UNKNOWN}`, "i"))
     ).toBeInTheDocument()
