@@ -41,10 +41,6 @@ export function EpsModal({children, isOpen, onClose, ariaLabelledBy}: EpsModalPr
       aria-labelledby={ariaLabelledBy}
       data-testid="eps-modal-overlay"
     >
-      <button className="eps-modal-close-button" onClick={onClose} aria-label="Close modal">
-        ×
-      </button>
-
       {children}
 
     </dialog>
