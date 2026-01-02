@@ -1,13 +1,83 @@
-import React, {useEffect} from "react"
+import React, {useEffect, useRef} from "react"
 
 interface EpsModalProps {
   readonly children: React.ReactNode
   readonly isOpen: boolean
   readonly onClose: () => void
+  readonly ariaLabelledBy?: string
 }
 
-export function EpsModal({children, isOpen, onClose}: EpsModalProps) {
-  // Close modal on `Escape` key
+export function EpsModal({children, isOpen, onClose, ariaLabelledBy}: EpsModalProps) {
+  const modalRef = useRef<HTMLDialogElement>(null)
+  const lastActiveElementRef = useRef<HTMLElement | null>(null)
+
+  useEffect(() => {
+    if (!isOpen) return
+
+    lastActiveElementRef.current = document.activeElement as HTMLElement
+
+    const mainContent = document.querySelector("main, #__next, body > div:first-child")
+    if (mainContent && !mainContent.contains(modalRef.current)) {
+      mainContent.setAttribute("inert", "")
+    }
+
+    setTimeout(() => {
+      const focusableElements = modalRef.current?.querySelectorAll(
+        "button:not([disabled]), [href]:not([disabled]), input:not([disabled]), " +
+        "select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex=\"-1\"]):not([disabled])"
+      )
+      if (focusableElements && focusableElements.length > 0) {
+        (focusableElements[0] as HTMLElement).focus()
+      }
+    }, 0)
+
+    const handleTabKey = (e: KeyboardEvent) => {
+      if (e.key !== "Tab" || !modalRef.current) return
+
+      const focusableElements = Array.from(
+        modalRef.current.querySelectorAll(
+          "button:not([disabled]), [href]:not([disabled]), input:not([disabled]), " +
+          "select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex=\"-1\"]):not([disabled])"
+        )
+      ).filter(el => {
+        const element = el as HTMLElement
+        return element.offsetWidth > 0 && element.offsetHeight > 0 && !element.hidden
+      }) as Array<HTMLElement>
+
+      if (focusableElements.length === 0) return
+
+      const firstElement = focusableElements[0]
+      const lastElement = focusableElements[focusableElements.length - 1]
+      const activeElement = document.activeElement as HTMLElement
+
+      if (e.shiftKey) {
+        if (activeElement === firstElement) {
+          e.preventDefault()
+          lastElement.focus()
+        }
+      } else {
+        if (activeElement === lastElement) {
+          e.preventDefault()
+          firstElement.focus()
+        }
+      }
+    }
+
+    document.addEventListener("keydown", handleTabKey)
+
+    return () => {
+      if (lastActiveElementRef.current && document.body.contains(lastActiveElementRef.current)) {
+        lastActiveElementRef.current.focus()
+      }
+
+      if (mainContent) {
+        mainContent.removeAttribute("inert")
+      }
+
+      document.removeEventListener("keydown", handleTabKey)
+    }
+  }, [isOpen])
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -15,42 +85,31 @@ export function EpsModal({children, isOpen, onClose}: EpsModalProps) {
       }
     }
 
-    window.addEventListener("keydown", handleKeyDown)
-    return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [onClose])
+    if (isOpen) {
+      window.addEventListener("keydown", handleKeyDown)
+      return () => window.removeEventListener("keydown", handleKeyDown)
+    }
+  }, [onClose, isOpen])
 
-  // Close if user clicks outside the modal content
   const handleBackdropClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) {
       onClose()
     }
   }
 
-  // Close if user activates on the background
-  const handleBackdropActivate = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" || e.key === " ") {
-      onClose()
-    }
-  }
-
-  // If the modal isn’t open, don’t render anything
   if (!isOpen) return null
 
   return (
-    // This should be a button for accessibility, but we can't have buttons be descendants of buttons,
-    // and the modal children will have buttons in it.
-    // (making this a button does actually work, so this might be a FIXME to solve the hydration error)
     <div
-      role="button"
       className="eps-modal-overlay"
       onClick={handleBackdropClick}
-      tabIndex={0}
-      onKeyDown={handleBackdropActivate}
       data-testid="eps-modal-overlay"
     >
       <dialog
+        ref={modalRef}
         className="eps-modal-content"
         aria-modal="true"
+        aria-labelledby={ariaLabelledBy}
         data-testid="eps-modal-content"
       >
         <button className="eps-modal-close-button" onClick={onClose} aria-label="Close modal">
