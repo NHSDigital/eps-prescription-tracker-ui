@@ -1,4 +1,5 @@
 export const PrivacyNoticeStrings = {
+  PAGE_TITLE: "Privacy notice - Prescription Tracker",
   home: "Home",
   privacyNotice: "Privacy Notice",
   header: "Privacy notice for the Prescription Tracker",

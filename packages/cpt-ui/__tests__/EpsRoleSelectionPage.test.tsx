@@ -44,6 +44,7 @@ const mockUseAuth = useAuth as jest.Mock
 const mockGetSearchParams = getSearchParams as jest.Mock
 
 const defaultContentText = {
+  PAGE_TITLE: "Test Page Title",
   title: "Select your role",
   caption: "Choose a role to continue",
   titleNoAccess: "You do not have access",

@@ -12,9 +12,11 @@ import {YOUR_SELECTED_ROLE_STRINGS} from "@/constants/ui-strings/YourSelectedRol
 import {useAuth} from "@/context/AuthProvider"
 import {Button} from "@/components/ReactRouterButton"
 import {FRONTEND_PATHS} from "@/constants/environment"
+import {usePageTitle} from "@/hooks/usePageTitle"
 
 export default function YourSelectedRolePage() {
   const {selectedRole} = useAuth()
+  usePageTitle(YOUR_SELECTED_ROLE_STRINGS.PAGE_TITLE)
 
   const [roleName, setRoleName] = useState<string>(YOUR_SELECTED_ROLE_STRINGS.noRoleName)
   const [orgName, setOrgName] = useState<string>(YOUR_SELECTED_ROLE_STRINGS.noOrgName)

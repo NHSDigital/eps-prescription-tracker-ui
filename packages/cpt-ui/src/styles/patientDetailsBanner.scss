@@ -27,3 +27,22 @@
     font-weight: "bold";
     font-size: "1.1rem";
 }
+
+.patient-detail-banner-row dl {
+    display: flex;
+    flex-wrap: wrap;
+    margin: 0;
+}
+
+.patient-detail-banner-row dt,
+.patient-detail-banner-row dd {
+    margin: 0;
+}
+
+.patient-detail-banner-row dt {
+    margin-right: 0.25rem;
+}
+
+.patient-detail-banner-row dd {
+    margin-right: 3rem;
+}
