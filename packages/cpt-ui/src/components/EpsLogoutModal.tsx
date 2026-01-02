@@ -14,10 +14,11 @@ interface EpsLogoutModalProps {
 export function EpsLogoutModal({isOpen, onClose, onConfirm}: EpsLogoutModalProps) {
 
   return (
-    <EpsModal isOpen={isOpen} onClose={onClose}>
+    <EpsModal isOpen={isOpen} onClose={onClose} ariaLabelledBy="logout-modal-title">
       <Container>
 
         <h2
+          id="logout-modal-title"
           style={{
             paddingTop: "1rem"
           }}
