@@ -38,12 +38,27 @@
     .nhsuk-header__link {
         display: block;
         width: 3.125rem;
-        height: 2.5rem; 
+        height: 2.5rem;
+
 
         .nhsuk-logo {
             width: 3.125rem;
             height: 2.5rem;
             border: 0;
+        }
+
+        &:hover {
+            position: relative;
+            
+            &::after {
+                content: '';
+                position: absolute;
+                top: 32px;
+                left: 0;
+                width: 50px;
+                height: 1px;
+                background-color: #fff;
+            }
         }
     }
 }
