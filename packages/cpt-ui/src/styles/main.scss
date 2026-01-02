@@ -27,3 +27,8 @@
 .nhsuk-u-visually-hidden::before::after {
     content: none;
 }
+
+/* Prevent horizontal page drift/scrolling while navigating tabs */
+html, body {
+    overflow-x: hidden;
+}
