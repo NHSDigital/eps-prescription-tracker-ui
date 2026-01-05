@@ -155,7 +155,10 @@ export default function NewHeader() {
               {shouldShowLogoutLink && (
                 <a
                   href="#"
-                  onClick={handleLogoutClick}
+                  onClick={(e: React.MouseEvent) => {
+                    handleLogoutClick(e)
+                    setIsDropdownOpen(false)
+                  }}
                   className="new-header__nav-item"
                   data-testid="new_header_logout"
                 >
@@ -169,6 +172,7 @@ export default function NewHeader() {
                   onClick={(e: React.MouseEvent) => {
                     e.preventDefault()
                     navigate(getHomeLink(false))
+                    setIsDropdownOpen(false)
                   }}
                   className="new-header__nav-item"
                   data-testid="new_header_exit"
