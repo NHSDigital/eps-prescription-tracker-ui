@@ -1,5 +1,5 @@
 .new-header {
-  background-color: #005eb8; 
+  background-color: #005eb8;
   min-height: 46px;
   width: 100%;
   display: flex;
@@ -21,6 +21,11 @@
     padding: 0 12px;
     min-height: 42px;
   }
+}
+
+.nhsuk-skip-link:active,
+.nhsuk-skip-link:focus {
+  z-index: 9999 !important;
 }
 
 .new-header__content {
@@ -86,12 +91,12 @@
     .new-header__logo {
       box-shadow: none;
       
-      .new-header__logo-background {
-        fill: #212b32;
+      .nhs-logo__background {
+        fill: #212b32 !important;
       }
       
-      .new-header__logo-text {
-        fill: #ffeb3b;
+      .nhs-logo__text {
+        fill: #ffeb3b !important;
       }
     }
   }
@@ -137,14 +142,6 @@
   }
 }
 
-.new-header__logo-background {
-  fill: #ffffff;
-}
-
-.new-header__logo-text {
-  fill: #005eb8;
-}
-
 .new-header__nav {
   display: flex;
   width: 100%;
@@ -155,10 +152,30 @@
   margin: 0;
   gap: 4px;
   list-style: none;
+  position: relative;
 
   @media (max-width: 48.0625em) {
     justify-content: flex-start;
     margin-top: 10px;
+  }
+}
+
+.new-header__nav-desktop {
+  display: flex;
+  gap: 4px;
+  
+  @media (max-width: 768px) {
+    display: none;
+  }
+}
+
+.new-header__nav-mobile {
+  display: none;
+  position: relative;
+  margin-left: auto;
+  
+  @media (max-width: 768px) {
+    display: block;
   }
 }
 
@@ -198,12 +215,13 @@
   }
 
   &:focus {
-    border-color: transparent transparent #212b32;
+    border: none;
     background-color: #ffeb3b;
     color: #212b32;
     fill: #212b32;
     border-radius: 0;
     outline: none;
+    box-shadow: inset 0 -4px 0 0 #212b32;
     
     .text {
       text-decoration: none;
@@ -214,4 +232,169 @@
     font-size: 14px;
     padding: 0 12px;
   }
+}
+
+.new-header__menu-toggle {
+  position: relative;
+  display: flex;
+  border-top: none;
+  margin-bottom: 0;
+  list-style-type: none;
+  height: 46px;
+  flex-shrink: 0;
+  padding: 0 16px;
+  border: none;
+  border-width: 4px 0;
+  border-style: solid;
+  border-color: transparent;
+  background: transparent;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 500;
+  text-decoration: none;
+  text-align: end;
+  align-items: center;
+  cursor: pointer;
+  font-family: inherit;
+  gap: 6px;
+  top: -3px;
+
+  .text {
+    margin: 0;
+  }
+
+  .new-header__menu-icon {
+    width: 24px;
+    height: 24px;
+    transition: transform 0.2s ease;
+    fill: #ffffff;
+  }
+
+  &--expanded {
+    .new-header__menu-icon {
+      transform: rotate(180deg);
+    }
+  }
+
+  &:hover,
+  &:visited,
+  &:active {
+    border-color: transparent;
+    background-color: unset;
+    color: #ffffff;
+    
+    .text {
+      text-decoration: underline;
+    }
+  }
+
+  &:focus {
+    border: none;
+    background-color: #ffeb3b;
+    color: #212b32;
+    fill: #212b32;
+    border-radius: 0;
+    outline: none;
+    box-shadow: inset 0 -4px 0 0 #212b32;
+    
+    .text {
+      text-decoration: none;
+    }
+    
+    .new-header__menu-icon {
+      fill: #212b32;
+    }
+  }
+
+  @media (max-width: 768px) {
+    font-size: 14px;
+    padding: 0 12px;
+  }
+}
+
+.new-header__dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  left: auto;
+  margin: 0;
+  border-top: none;
+  border-bottom: none;
+  background-color: transparent;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  min-width: 250px;
+  width: max-content;
+  z-index: 9999;
+
+  @media (max-width: 480px) {
+    right: 20px;
+  }
+}
+
+.new-header__dropdown--hidden {
+  display: none !important;
+}
+
+.new-header__dropdown-item {
+  display: block;
+  background: #005eb8;
+  margin: 0;
+  border: none;
+  border-bottom: 1px solid #4d8ecd;
+  width: 100%;
+  cursor: pointer;
+  text-align: right;
+  justify-content: flex-end;
+  padding: 12px 16px;
+  color: #ffffff;
+  text-decoration: none;
+  font-size: 16px;
+  font-weight: 500;
+
+  .text {
+    margin: 0;
+  }
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    
+    .text {
+      text-decoration: underline;
+    }
+  }
+
+  &:focus {
+    background-color: #ffeb3b;
+    color: #212b32;
+    outline: none;
+    
+    .text {
+      text-decoration: none;
+    }
+  }
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  @media (max-width: 768px) {
+    font-size: 14px;
+    padding: 10px 12px;
+  }
+}
+
+.new-header__logo-background {
+  fill: #ffffff;
+}
+
+.new-header__logo-text {
+  fill: #005eb8;
+}
+
+.nhs-logo__background {
+  fill: #ffffff;
+}
+
+.nhs-logo__text {
+  fill: #005eb8;
 }
