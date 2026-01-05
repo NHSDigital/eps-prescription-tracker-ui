@@ -53,14 +53,14 @@ export default function BasicDetailsSearch() {
 
   // restore original search parameters when available
   useEffect(() => {
-    const originalParams = navigationContext.getOriginalSearchParameters()
-    if (originalParams) {
-      setFirstName(originalParams.firstName || "")
-      setLastName(originalParams.lastName || "")
-      setDobDay(originalParams.dobDay || "")
-      setDobMonth(originalParams.dobMonth || "")
-      setDobYear(originalParams.dobYear || "")
-      setPostcode(originalParams.postcode || "")
+    const relevantParams = navigationContext.getRelevantSearchParameters("basicDetails")
+    if (relevantParams) {
+      setFirstName(relevantParams.firstName || "")
+      setLastName(relevantParams.lastName || "")
+      setDobDay(relevantParams.dobDay || "")
+      setDobMonth(relevantParams.dobMonth || "")
+      setDobYear(relevantParams.dobYear || "")
+      setPostcode(relevantParams.postcode || "")
     }
   }, [navigationContext])
 
@@ -180,7 +180,7 @@ export default function BasicDetailsSearch() {
     <Container className="nhsuk-width-container-fluid" data-testid="basic-details-search-form-container">
       <Row className="patient-search-form">
         <Col width="three-quarters">
-          <Form onSubmit={handleSubmit} noValidate data-testid="basic-details-form">
+          <Form onSubmit={handleSubmit} noValidate autoComplete="off" data-testid="basic-details-form">
             {inlineErrors.length > 0 && (
               <ErrorSummary ref={errorRef} data-testid="error-summary">
                 <ErrorSummary.Title>{STRINGS.errorSummaryHeading}</ErrorSummary.Title>

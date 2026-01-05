@@ -43,9 +43,9 @@ export default function PrescriptionIdSearch() {
   const errorMessages = PRESCRIPTION_ID_SEARCH_STRINGS.errors
 
   useEffect(() => {
-    const originalParams = navigationContext.getOriginalSearchParameters()
-    if (originalParams && originalParams.prescriptionId) {
-      setPrescriptionId(originalParams.prescriptionId || "")
+    const relevantParams = navigationContext.getRelevantSearchParameters("prescriptionId")
+    if (relevantParams && relevantParams.prescriptionId) {
+      setPrescriptionId(relevantParams.prescriptionId || "")
     }
   }, [navigationContext])
 

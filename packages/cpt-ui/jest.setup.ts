@@ -1,6 +1,12 @@
 /* eslint-disable no-undef */
 
 import "@testing-library/jest-dom"
+
+// Mock CSS/SCSS imports
+jest.mock("*.css", () => ({}), {virtual: true})
+jest.mock("*.scss", () => ({}), {virtual: true})
+jest.mock("@/styles/searchforaprescription.scss", () => ({}), {virtual: true})
+
 const cwr_cookie_value_string = JSON.stringify({"sessionId":"my_rum_session_id"})
 const cwr_cookie_value_encoded = Buffer.from(cwr_cookie_value_string, "utf-8").toString("base64")
 
