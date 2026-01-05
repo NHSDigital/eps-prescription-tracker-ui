@@ -29,7 +29,7 @@
   align-items: center;
   justify-content: space-between;
   color: white;
-  font-family: Arial, sans-serif;
+  font-family: Frutiger W01, Arial, Sans-serif;
 }
 
 .new-header__logo-link {
@@ -122,8 +122,8 @@
 }
 
 .new-header__service-name {
-  font-size: 18px;
-  font-weight: 600;
+  font-size: 16px;
+  font-weight: 400;
   margin: 0;
   text-decoration: none;
   color: white;
@@ -143,4 +143,75 @@
 
 .new-header__logo-text {
   fill: #005eb8;
+}
+
+.new-header__nav {
+  display: flex;
+  width: 100%;
+  align-items: right;
+  justify-content: right;
+  padding-left: 0;
+  border-top: none;
+  margin: 0;
+  gap: 4px;
+  list-style: none;
+
+  @media (max-width: 48.0625em) {
+    justify-content: flex-start;
+    margin-top: 10px;
+  }
+}
+
+.new-header__nav-item {
+  position: relative;
+  display: flex;
+  border-top: none;
+  margin-bottom: 0;
+  list-style-type: none;
+  height: 46px;
+  flex-shrink: 0;
+  padding: 0 16px;
+  border: none;
+  border-width: 4px 0;
+  border-style: solid;
+  border-color: transparent;
+  color: #ffffff;
+  font-weight: 500;
+  text-decoration: none;
+  text-align: end;
+  align-items: center;
+
+  .text {
+    margin: 0;
+  }
+
+  &:hover,
+  &:visited,
+  &:active {
+    border-color: transparent;
+    background-color: unset;
+    color: #ffffff;
+    
+    .text {
+      text-decoration: underline;
+    }
+  }
+
+  &:focus {
+    border-color: transparent transparent #212b32;
+    background-color: #ffeb3b;
+    color: #212b32;
+    fill: #212b32;
+    border-radius: 0;
+    outline: none;
+    
+    .text {
+      text-decoration: none;
+    }
+  }
+
+  @media (max-width: 768px) {
+    font-size: 14px;
+    padding: 0 12px;
+  }
 }
