@@ -1,6 +1,6 @@
 export const STRINGS = {
-  PAGE_TITLE: "Search for a prescription - Prescription Tracker",
-  PAGE_TITLE_ERROR: "No prescriptions found - Prescription Tracker",
+  pageTitle: "Search for a prescription - Prescription Tracker",
+  pageTitle_ERROR: "No prescriptions found - Prescription Tracker",
   heading: "Search using basic details",
   visuallyHiddenPrefix: "Search by",
   // eslint-disable-next-line max-len

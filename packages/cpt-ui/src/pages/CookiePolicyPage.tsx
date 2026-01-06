@@ -11,7 +11,7 @@ import {useLocalStorageState} from "@/helpers/useLocalStorageState"
 import {usePageTitle} from "@/hooks/usePageTitle"
 
 const CookiePolicyPage = () => {
-  usePageTitle(CookieStrings.PAGE_TITLE)
+  usePageTitle(CookieStrings.pageTitle)
   const essentialCookies: Array<Cookie> = CookieStrings.essential
 
   const analyticsCookies: Array<Cookie> = CookieStrings.analytics

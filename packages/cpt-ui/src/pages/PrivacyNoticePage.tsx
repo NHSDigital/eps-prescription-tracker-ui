@@ -12,7 +12,7 @@ import {usePageTitle} from "@/hooks/usePageTitle"
 export default function PrivacyNoticePage() {
   const auth = useAuth()
 
-  usePageTitle(PrivacyNoticeStrings.PAGE_TITLE)
+  usePageTitle(PrivacyNoticeStrings.pageTitle)
 
   return (
     <main className="nhsuk-width-container nhsuk-u-margin-top-4">

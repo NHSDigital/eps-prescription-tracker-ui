@@ -15,7 +15,7 @@ export default function SessionSelectionPage() {
   const navigate = useNavigate()
   const auth = useAuth()
 
-  usePageTitle(SESSION_SELECTION_PAGE_STRINGS.PAGE_TITLE)
+  usePageTitle(SESSION_SELECTION_PAGE_STRINGS.pageTitle)
 
   const logout = async () => {
     signOut(auth, AUTH_CONFIG.REDIRECT_SIGN_OUT)

@@ -13,7 +13,7 @@ export default function NotFoundPage() {
   const [body3, setBody3] = useState("")
   const [body3Link, setBody3Link] = useState("")
   const [body3PostLink, setBody3PostLink] = useState("")
-  usePageTitle(NOT_FOUND_PAGE_STRINGS.PAGE_TITLE)
+  usePageTitle(NOT_FOUND_PAGE_STRINGS.pageTitle)
 
   useEffect(() => {
     setHeaderText(NOT_FOUND_PAGE_STRINGS.headerText)

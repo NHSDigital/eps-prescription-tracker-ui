@@ -1,10 +1,10 @@
 export const EpsLogoutStrings = {
-  PAGE_TITLE: "We have logged you out - Prescription Tracker",
-  PAGE_TITLE_ANOTHER_SESSION: "Logged out because of another session - Prescription Tracker",
+  pageTitle: "We have logged you out - Prescription Tracker",
+  pageTitle_ANOTHER_SESSION: "Logged out because of another session - Prescription Tracker",
   loading: "Logging out",
   title: "Logout successful",
   body: "You are now logged out of the service. To continue using the service, you must log in again.",
-  login_link: "Log in",
+  loginLink: "Log in",
   logoutConcurrentTitle: "You have been logged out",
   logoutConcurrentDescription: "We have logged you out because you started another session in a new window or browser.",
   logoutConcurrentContact: "Contact the NHS national service desk at",

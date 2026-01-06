@@ -9,8 +9,8 @@ export default function SessionLoggedOutPage() {
   const auth = useAuth()
 
   usePageTitle(auth.invalidSessionCause === "ConcurrentSession"
-    ? EpsLogoutStrings.PAGE_TITLE
-    : EpsLogoutStrings.PAGE_TITLE_ANOTHER_SESSION)
+    ? EpsLogoutStrings.pageTitle
+    : EpsLogoutStrings.pageTitle_ANOTHER_SESSION)
 
   if (auth.invalidSessionCause === "ConcurrentSession") {
     return (
@@ -28,7 +28,7 @@ export default function SessionLoggedOutPage() {
                 </a>{" "}
                 {EpsLogoutStrings.logoutConcurrentFurther}
               </p>
-              <Link to="/login" data-testid="login-link">{EpsLogoutStrings.login_link}</Link>
+              <Link to="/login" data-testid="login-link">{EpsLogoutStrings.loginLink}</Link>
             </Col>
           </Row>
         </Container>

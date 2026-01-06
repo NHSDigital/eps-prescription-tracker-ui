@@ -45,7 +45,7 @@ export default function PrescriptionDetailsPage() {
   const [messageHistory, setMessageHistory] = useState<Array<MessageHistory>>([])
   const searchContext = useSearchContext()
   const navigate = useNavigate()
-  usePageTitle(STRINGS.PRESCRIPTION_DETAILS_PAGE_TITLE)
+  usePageTitle(STRINGS.PRESCRIPTION_DETAILS_pageTitle)
 
   const getPrescriptionDetails = async (
     prescriptionId: string,

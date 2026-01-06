@@ -2,7 +2,8 @@ import React, {
   useState,
   useEffect,
   useRef,
-  useMemo
+  useMemo,
+  Fragment
 } from "react"
 import {useNavigate} from "react-router-dom"
 
@@ -48,8 +49,8 @@ export default function PrescriptionIdSearch() {
   }, [navigationContext])
 
   usePageTitle(errorKey
-    ? PRESCRIPTION_ID_SEARCH_STRINGS.PAGE_TITLE_ERROR
-    : PRESCRIPTION_ID_SEARCH_STRINGS.PAGE_TITLE)
+    ? PRESCRIPTION_ID_SEARCH_STRINGS.pageTitle_ERROR
+    : PRESCRIPTION_ID_SEARCH_STRINGS.pageTitle)
 
   // Maps a validation error key to the corresponding user-facing message.
   // Treats "checksum" as "noMatch" to simplify the error display logic.
@@ -115,7 +116,7 @@ export default function PrescriptionIdSearch() {
   }
 
   return (
-    <>
+    <Fragment>
       {errorKey && (
         <ErrorSummary
           data-testid="error-summary"
@@ -167,6 +168,6 @@ export default function PrescriptionIdSearch() {
           </Button>
         </Form>
       </div>
-    </>
+    </Fragment>
   )
 }

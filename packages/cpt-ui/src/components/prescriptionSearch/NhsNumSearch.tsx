@@ -1,4 +1,5 @@
 import React, {
+  Fragment,
   useEffect,
   useMemo,
   useRef,
@@ -39,11 +40,11 @@ export default function NhsNumSearch() {
 
   const displayedError = useMemo(() => errorKey ? errorMessages[errorKey] : "", [errorKey])
 
-  // usePageTitle(STRINGS.PAGE_TITLE)
+  // usePageTitle(STRINGS.pageTitle)
 
   usePageTitle(errorKey
-    ? STRINGS.PAGE_TITLE_ERROR
-    : STRINGS.PAGE_TITLE)
+    ? STRINGS.pageTitle_ERROR
+    : STRINGS.pageTitle)
 
   useEffect(() => {
     if (searchContext.nhsNumber && searchContext.searchType === "nhs") {
@@ -98,7 +99,7 @@ export default function NhsNumSearch() {
   }
 
   return (
-    <>
+    <Fragment>
       {errorKey && (
         <ErrorSummary ref={errorRef} data-testid="error-summary" className="prescription-id-aligned-element">
           <ErrorSummary.Title>{STRINGS.errorSummaryHeading}</ErrorSummary.Title>
@@ -149,6 +150,6 @@ export default function NhsNumSearch() {
           </Button>
         </Form>
       </div>
-    </>
+    </Fragment>
   )
 }

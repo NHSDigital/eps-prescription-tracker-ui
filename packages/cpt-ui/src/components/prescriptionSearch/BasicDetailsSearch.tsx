@@ -1,4 +1,9 @@
-import React, {useState, useEffect, useRef} from "react"
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  Fragment
+} from "react"
 import {
   DateInput,
   Form,
@@ -38,8 +43,8 @@ export default function BasicDetailsSearch() {
   const navigationContext = useNavigationContext()
 
   usePageTitle(errors.length > 0
-    ? STRINGS.PAGE_TITLE_ERROR
-    : STRINGS.PAGE_TITLE)
+    ? STRINGS.pageTitle_ERROR
+    : STRINGS.pageTitle)
 
   // Inline error lookup: used to find the error message string for specific field(s)
   // Returns the first match found in the array of inline error tuples
@@ -179,7 +184,7 @@ export default function BasicDetailsSearch() {
   }
 
   return (
-    <>
+    <Fragment>
       {errors.length > 0 && (
         <ErrorSummary ref={errorRef} data-testid="error-summary" className="prescription-id-aligned-element">
           <ErrorSummary.Title>{STRINGS.errorSummaryHeading}</ErrorSummary.Title>
@@ -383,6 +388,6 @@ export default function BasicDetailsSearch() {
           </Button>
         </Form>
       </div>
-    </>
+    </Fragment>
   )
 }

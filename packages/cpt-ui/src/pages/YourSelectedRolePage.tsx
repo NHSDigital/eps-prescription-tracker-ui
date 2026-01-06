@@ -16,7 +16,7 @@ import {usePageTitle} from "@/hooks/usePageTitle"
 
 export default function YourSelectedRolePage() {
   const {selectedRole} = useAuth()
-  usePageTitle(YOUR_SELECTED_ROLE_STRINGS.PAGE_TITLE)
+  usePageTitle(YOUR_SELECTED_ROLE_STRINGS.pageTitle)
 
   const [roleName, setRoleName] = useState<string>(YOUR_SELECTED_ROLE_STRINGS.noRoleName)
   const [orgName, setOrgName] = useState<string>(YOUR_SELECTED_ROLE_STRINGS.noOrgName)

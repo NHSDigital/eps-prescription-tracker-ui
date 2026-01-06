@@ -11,7 +11,7 @@ import {usePageTitle} from "@/hooks/usePageTitle"
 export default function LogoutPage() {
   const auth = useAuth()
 
-  usePageTitle(EpsLogoutStrings.PAGE_TITLE)
+  usePageTitle(EpsLogoutStrings.pageTitle)
 
   useEffect(() => {
     if (auth.isSignedIn || auth.isSigningIn) {

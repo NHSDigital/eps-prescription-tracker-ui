@@ -39,7 +39,7 @@ export type RolesWithoutAccessProps = {
 
 interface RoleSelectionPageProps {
   contentText: {
-    PAGE_TITLE: string
+    pageTitle: string
     title: string
     caption: string
     titleNoAccess: string
@@ -95,7 +95,7 @@ export default function RoleSelectionPage({
   const [roleCardPropsWithAccess, setRoleCardPropsWithAccess] = useState<Array<RolesWithAccessProps>>([])
   const [roleCardPropsWithoutAccess, setRoleCardPropsWithoutAccess] = useState<Array<RolesWithoutAccessProps>>([])
 
-  usePageTitle(auth.hasNoAccess ? CHANGE_YOUR_ROLE_PAGE_TEXT.NO_ACCESS_PAGE_TITLE : contentText.PAGE_TITLE)
+  usePageTitle(auth.hasNoAccess ? CHANGE_YOUR_ROLE_PAGE_TEXT.NO_ACCESS_pageTitle : contentText.pageTitle)
 
   const handleSetSelectedRole = async (
     e: React.MouseEvent | React.KeyboardEvent,
