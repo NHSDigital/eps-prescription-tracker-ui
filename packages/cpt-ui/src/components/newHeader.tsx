@@ -32,6 +32,7 @@ export default function NewHeader() {
   const [shouldShowExitButton, setShouldShowExitButton] = useState(false)
   const [showLogoutModal, setShowLogoutModal] = useState(false)
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+  const [isMobileView, setIsMobileView] = useState(false)
 
   useEffect(() => {
     const isSignedIn = auth?.isSignedIn as boolean
@@ -67,12 +68,23 @@ export default function NewHeader() {
     )
   }, [location, auth, authContext])
 
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.matchMedia("(max-width: 768px)").matches
+      setIsMobileView(mobile)
+    }
+
+    handleResize()
+    window.addEventListener("resize", handleResize)
+    return () => window.removeEventListener("resize", handleResize)
+  }, [])
+
   const redirectToLogin = async (e: React.MouseEvent | React.KeyboardEvent) => {
     e.preventDefault()
     navigate(getHomeLink(auth?.isSignedIn || false))
   }
 
-  const handleLogoutClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+  const handleLogoutClick = (e: React.MouseEvent) => {
     e.preventDefault()
     setShowLogoutModal(true)
   }
@@ -113,115 +125,17 @@ export default function NewHeader() {
           </Link>
 
           <nav className="new-header__nav" id="new-header-navigation">
-            <div className="new-header__nav-desktop">
-              {shouldShowSelectRole && (
-                <a
-                  href="#"
-                  onClick={(e: React.MouseEvent) => {
-                    e.preventDefault()
-                    navigate(HEADER_SELECT_YOUR_ROLE_TARGET)
-                  }}
-                  className="new-header__nav-item"
-                  data-testid="new_header_selectYourRoleLink"
-                >
-                  <span className="text">{HEADER_SELECT_YOUR_ROLE_BUTTON}</span>
-                </a>
-              )}
-
-              {shouldShowChangeRole && (
-                <a
-                  href="#"
-                  onClick={(e: React.MouseEvent) => {
-                    e.preventDefault()
-                    navigate(HEADER_CHANGE_ROLE_TARGET)
-                  }}
-                  className="new-header__nav-item"
-                  data-testid="new_header_changeRoleLink"
-                >
-                  <span className="text">{HEADER_CHANGE_ROLE_BUTTON}</span>
-                </a>
-              )}
-
-              <a
-                href={HEADER_FEEDBACK_TARGET}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="new-header__nav-item"
-                data-testid="new_header_feedbackLink"
-              >
-                <span className="text">{HEADER_FEEDBACK_BUTTON}</span>
-              </a>
-
-              {shouldShowLogoutLink && (
-                <a
-                  href="#"
-                  onClick={(e: React.MouseEvent) => {
-                    handleLogoutClick(e)
-                    setIsDropdownOpen(false)
-                  }}
-                  className="new-header__nav-item"
-                  data-testid="new_header_logout"
-                >
-                  <span className="text">{HEADER_LOG_OUT_BUTTON}</span>
-                </a>
-              )}
-
-              {shouldShowExitButton && (
-                <a
-                  href="#"
-                  onClick={(e: React.MouseEvent) => {
-                    e.preventDefault()
-                    navigate(getHomeLink(false))
-                    setIsDropdownOpen(false)
-                  }}
-                  className="new-header__nav-item"
-                  data-testid="new_header_exit"
-                >
-                  <span className="text">Exit</span>
-                </a>
-              )}
-            </div>
-
-            <div className="new-header__nav-mobile">
-              <button
-                className={`new-header__menu-toggle ${
-                  isDropdownOpen ? "new-header__menu-toggle--expanded" : " "
-                }`}
-                onClick={toggleDropdown}
-                aria-label="Toggle navigation menu"
-                data-testid="new_header_menuToggle"
-              >
-                <span className="text">More</span>
-                <svg
-                  className="new-header__menu-icon"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <polyline
-                    points="9,11 12,14 15,11"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    fill="none"
-                  />
-                </svg>
-              </button>
-
-              <div className={`new-header__dropdown ${
-                isDropdownOpen ? " " : "new-header__dropdown--hidden"
-              }`}>
+            {!isMobileView && (
+              <div className="new-header__nav-desktop">
                 {shouldShowSelectRole && (
                   <a
                     href="#"
                     onClick={(e: React.MouseEvent) => {
                       e.preventDefault()
                       navigate(HEADER_SELECT_YOUR_ROLE_TARGET)
-                      setIsDropdownOpen(false)
                     }}
-                    className="new-header__dropdown-item"
-                    data-testid="new_header_selectYourRoleLink_mobile"
+                    className="new-header__nav-item"
+                    data-testid="new_header_selectYourRoleLink"
                   >
                     <span className="text">{HEADER_SELECT_YOUR_ROLE_BUTTON}</span>
                   </a>
@@ -233,10 +147,9 @@ export default function NewHeader() {
                     onClick={(e: React.MouseEvent) => {
                       e.preventDefault()
                       navigate(HEADER_CHANGE_ROLE_TARGET)
-                      setIsDropdownOpen(false)
                     }}
-                    className="new-header__dropdown-item"
-                    data-testid="new_header_changeRoleLink_mobile"
+                    className="new-header__nav-item"
+                    data-testid="new_header_changeRoleLink"
                   >
                     <span className="text">{HEADER_CHANGE_ROLE_BUTTON}</span>
                   </a>
@@ -246,9 +159,8 @@ export default function NewHeader() {
                   href={HEADER_FEEDBACK_TARGET}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="new-header__dropdown-item"
-                  data-testid="new_header_feedbackLink_mobile"
-                  onClick={() => setIsDropdownOpen(false)}
+                  className="new-header__nav-item"
+                  data-testid="new_header_feedbackLink"
                 >
                   <span className="text">{HEADER_FEEDBACK_BUTTON}</span>
                 </a>
@@ -260,8 +172,8 @@ export default function NewHeader() {
                       handleLogoutClick(e)
                       setIsDropdownOpen(false)
                     }}
-                    className="new-header__dropdown-item"
-                    data-testid="new_header_logout_mobile"
+                    className="new-header__nav-item"
+                    data-testid="new_header_logout"
                   >
                     <span className="text">{HEADER_LOG_OUT_BUTTON}</span>
                   </a>
@@ -275,14 +187,118 @@ export default function NewHeader() {
                       navigate(getHomeLink(false))
                       setIsDropdownOpen(false)
                     }}
-                    className="new-header__dropdown-item"
-                    data-testid="new_header_exit_mobile"
+                    className="new-header__nav-item"
+                    data-testid="new_header_exit"
                   >
                     <span className="text">Exit</span>
                   </a>
                 )}
               </div>
-            </div>
+            )}
+
+            {isMobileView && (
+              <div className="new-header__nav-mobile">
+                <button
+                  className={`new-header__menu-toggle ${
+                    isDropdownOpen ? "new-header__menu-toggle--expanded" : " "
+                  }`}
+                  onClick={toggleDropdown}
+                  aria-label="Toggle navigation menu"
+                  data-testid="new_header_menuToggle"
+                >
+                  <span className="text">More</span>
+                  <svg
+                    className="new-header__menu-icon"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <polyline
+                      points="9,11 12,14 15,11"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      fill="none"
+                    />
+                  </svg>
+                </button>
+
+                <div className={`new-header__dropdown ${
+                  isDropdownOpen ? " " : "new-header__dropdown--hidden"
+                }`}>
+                  {shouldShowSelectRole && (
+                    <a
+                      href="#"
+                      onClick={(e: React.MouseEvent) => {
+                        e.preventDefault()
+                        navigate(HEADER_SELECT_YOUR_ROLE_TARGET)
+                        setIsDropdownOpen(false)
+                      }}
+                      className="new-header__dropdown-item"
+                      data-testid="new_header_selectYourRoleLink_mobile"
+                    >
+                      <span className="text">{HEADER_SELECT_YOUR_ROLE_BUTTON}</span>
+                    </a>
+                  )}
+
+                  {shouldShowChangeRole && (
+                    <a
+                      href="#"
+                      onClick={(e: React.MouseEvent) => {
+                        e.preventDefault()
+                        navigate(HEADER_CHANGE_ROLE_TARGET)
+                        setIsDropdownOpen(false)
+                      }}
+                      className="new-header__dropdown-item"
+                      data-testid="new_header_changeRoleLink_mobile"
+                    >
+                      <span className="text">{HEADER_CHANGE_ROLE_BUTTON}</span>
+                    </a>
+                  )}
+
+                  <a
+                    href={HEADER_FEEDBACK_TARGET}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="new-header__dropdown-item"
+                    data-testid="new_header_feedbackLink_mobile"
+                    onClick={() => setIsDropdownOpen(false)}
+                  >
+                    <span className="text">{HEADER_FEEDBACK_BUTTON}</span>
+                  </a>
+
+                  {shouldShowLogoutLink && (
+                    <a
+                      href="#"
+                      onClick={(e: React.MouseEvent) => {
+                        handleLogoutClick(e)
+                        setIsDropdownOpen(false)
+                      }}
+                      className="new-header__dropdown-item"
+                      data-testid="new_header_logout_mobile"
+                    >
+                      <span className="text">{HEADER_LOG_OUT_BUTTON}</span>
+                    </a>
+                  )}
+
+                  {shouldShowExitButton && (
+                    <a
+                      href="#"
+                      onClick={(e: React.MouseEvent) => {
+                        e.preventDefault()
+                        navigate(getHomeLink(false))
+                        setIsDropdownOpen(false)
+                      }}
+                      className="new-header__dropdown-item"
+                      data-testid="new_header_exit_mobile"
+                    >
+                      <span className="text">Exit</span>
+                    </a>
+                  )}
+                </div>
+              </div>
+            )}
           </nav>
         </div>
       </header>
