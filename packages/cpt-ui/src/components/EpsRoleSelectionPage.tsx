@@ -95,7 +95,9 @@ export default function RoleSelectionPage({
   const [roleCardPropsWithAccess, setRoleCardPropsWithAccess] = useState<Array<RolesWithAccessProps>>([])
   const [roleCardPropsWithoutAccess, setRoleCardPropsWithoutAccess] = useState<Array<RolesWithoutAccessProps>>([])
 
-  usePageTitle(auth.hasNoAccess ? CHANGE_YOUR_ROLE_PAGE_TEXT.NO_ACCESS_pageTitle : contentText.pageTitle)
+  usePageTitle(auth.rolesWithAccess.length === 0
+    ? CHANGE_YOUR_ROLE_PAGE_TEXT.NO_ACCESS_pageTitle
+    : contentText.pageTitle)
 
   const handleSetSelectedRole = async (
     e: React.MouseEvent | React.KeyboardEvent,
@@ -129,7 +131,7 @@ export default function RoleSelectionPage({
 
   useEffect(() => {
     // Transform roles data for display
-    setRoleCardPropsWithAccess(auth.hasNoAccess
+    setRoleCardPropsWithAccess(auth.rolesWithAccess.length === 0
       ? []
       : auth.rolesWithAccess.map((role: RoleDetails, index) => ({
         uuid: `role_with_access_${index}`,
@@ -167,7 +169,7 @@ export default function RoleSelectionPage({
   }, [auth.isSigningIn])
 
   useEffect(() => {
-    if (auth.hasSingleRoleAccess && auth.isSignedIn) {
+    if (auth.hasSingleRoleAccess() && auth.isSignedIn) {
       navigate(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
     }
   }, [auth.hasSingleRoleAccess, auth.isSignedIn])
@@ -236,16 +238,16 @@ export default function RoleSelectionPage({
             <h1 className="nhsuk-heading-xl">
               <span role="text" data-testid="eps_header_selectYourRole">
                 <span className="nhsuk-title">
-                  {auth.hasNoAccess ? titleNoAccess : title}
+                  {auth.rolesWithAccess.length === 0 ? titleNoAccess : title}
                 </span>
                 <span className="nhsuk-caption-l nhsuk-caption--bottom">
                   <span className="nhsuk-u-visually-hidden"> - </span>
-                  {(!auth.hasNoAccess) && caption}
+                  {(auth.rolesWithAccess.length > 0) && caption}
                 </span>
               </span>
             </h1>
 
-            {auth.hasNoAccess && <p>{captionNoAccess}</p>}
+            {auth.rolesWithAccess.length === 0 && <p>{captionNoAccess}</p>}
             {auth.selectedRole && (
               <section aria-label="Login Information">
                 <InsetText data-testid="eps_select_your_role_pre_role_selected">
@@ -269,7 +271,7 @@ export default function RoleSelectionPage({
             )}
           </Col>
 
-          {(!auth.hasNoAccess) && (roleCardPropsWithAccess.length > 0) && (
+          {(auth.rolesWithAccess.length > 0) && (roleCardPropsWithAccess.length > 0) && (
             <Col width="two-thirds">
               <div className="section">
                 {roleCardPropsWithAccess

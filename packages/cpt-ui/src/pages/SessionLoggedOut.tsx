@@ -10,7 +10,7 @@ export default function SessionLoggedOutPage() {
 
   usePageTitle(auth.invalidSessionCause === "ConcurrentSession"
     ? EpsLogoutStrings.pageTitle
-    : EpsLogoutStrings.pageTitle_ANOTHER_SESSION)
+    : EpsLogoutStrings.pageTitleAnotherSession)
 
   if (auth.invalidSessionCause === "ConcurrentSession") {
     return (
