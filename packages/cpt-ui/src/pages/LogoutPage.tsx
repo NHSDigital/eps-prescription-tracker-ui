@@ -28,7 +28,7 @@ export default function LogoutPage() {
           <Fragment>
             <h1>{EpsLogoutStrings.title}</h1>
             <p>{EpsLogoutStrings.body}</p>
-            <Link to="/login">{EpsLogoutStrings.login_link}</Link>
+            <Link to="/login">{EpsLogoutStrings.loginLink}</Link>
           </Fragment>
         ) : (
           <Fragment>

@@ -44,7 +44,7 @@ export default function SessionLoggedOutPage() {
             <p data-testid="timeout-description">
               {EpsLogoutStrings.logoutTimeoutDescription}</p>
             <p data-testid="timeout-description2">{EpsLogoutStrings.logoutTimeoutFurther}</p>
-            <Link to="/login" data-testid="login-link">{EpsLogoutStrings.login_link}</Link>
+            <Link to="/login" data-testid="login-link">{EpsLogoutStrings.loginLink}</Link>
           </Col>
         </Row>
       </Container>

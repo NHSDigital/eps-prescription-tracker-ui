@@ -129,13 +129,13 @@ export default function RoleSelectionPage({
 
   useEffect(() => {
     // Transform roles data for display
-    setRoleCardPropsWithAccess((!auth.hasNoAccess)
-      ? auth.rolesWithAccess.map((role: RoleDetails, index) => ({
+    setRoleCardPropsWithAccess(auth.hasNoAccess
+      ? []
+      : auth.rolesWithAccess.map((role: RoleDetails, index) => ({
         uuid: `role_with_access_${index}`,
         role,
         link: FRONTEND_PATHS.YOUR_SELECTED_ROLE
       }))
-      : []
     )
 
     setRoleCardPropsWithoutAccess(auth.rolesWithoutAccess.map((role, index) => ({
