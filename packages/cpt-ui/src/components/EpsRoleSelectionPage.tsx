@@ -47,6 +47,7 @@ interface RoleSelectionPageProps {
     insetText: {
       visuallyHidden: string
       message: string
+      loggedInTemplate: string
     }
     confirmButton: {
       link: string
@@ -88,7 +89,6 @@ export default function RoleSelectionPage({
 
   const auth = useAuth()
 
-  const [loginInfoMessage, setLoginInfoMessage] = useState<string | null>(null)
   const navigate = useNavigate()
   const redirecting = useRef(false)
 
@@ -174,16 +174,6 @@ export default function RoleSelectionPage({
     }
   }, [auth.hasSingleRoleAccess, auth.isSignedIn])
 
-  // Set login message when selected role is available
-  useEffect(() => {
-    if (!loginInfoMessage && auth.selectedRole) {
-      setLoginInfoMessage(
-        `You are currently logged in at ${auth.selectedRole.org_name || noOrgName} ` +
-        `(ODS: ${auth.selectedRole.org_code || noODSCode}) with ${auth.selectedRole.role_name || noRoleName}.`
-      )
-    }
-  }, [auth.selectedRole, loginInfoMessage])
-
   // Show spinner while loading or redirecting
   if (redirecting.current) {
     return (
@@ -251,14 +241,12 @@ export default function RoleSelectionPage({
             {auth.selectedRole && (
               <section aria-label="Login Information">
                 <InsetText data-testid="eps_select_your_role_pre_role_selected">
-                  <span className="nhsuk-u-visually-hidden">
-                    {insetText.visuallyHidden}
-                  </span>
-                  {loginInfoMessage && (
-                    <p
-                      dangerouslySetInnerHTML={{__html: loginInfoMessage}}
-                    ></p>
-                  )}
+                  <p>
+                    {insetText.loggedInTemplate
+                      .replace("{orgName}", auth.selectedRole.org_name || noOrgName)
+                      .replace("{odsCode}", auth.selectedRole.org_code || noODSCode)
+                      .replace("{roleName}", auth.selectedRole.role_name || noRoleName)}
+                  </p>
                 </InsetText>
                 <Button
                   to={confirmButton.link}

@@ -52,7 +52,8 @@ const defaultContentText = {
   captionNoAccess: "Please contact support.",
   insetText: {
     visuallyHidden: "Info:",
-    message: "You are logged in as"
+    message: "You are logged in as",
+    loggedInTemplate: "You are currently logged in at {orgName} (ODS: {odsCode}) with {roleName}."
   },
   confirmButton: {
     link: "/continue",
