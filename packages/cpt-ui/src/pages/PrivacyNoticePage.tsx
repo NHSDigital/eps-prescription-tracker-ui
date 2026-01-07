@@ -35,6 +35,10 @@ export default function PrivacyNoticePage() {
             <li>{PrivacyNoticeStrings.intro.p5}</li>
           </ul>
 
+          <InsetText className="nhsuk-inset-text">
+            <p>{PrivacyNoticeStrings.intro.p6}</p>
+          </InsetText>
+
           <h2 className="nhsuk-heading-l">{PrivacyNoticeStrings.about.header}</h2>
           <p>{PrivacyNoticeStrings.about.body}</p>
 
@@ -70,7 +74,6 @@ export default function PrivacyNoticePage() {
           <h2 className="nhsuk-heading-l">
             {PrivacyNoticeStrings.legal.header}
           </h2>
-          <p>{PrivacyNoticeStrings.legal.basis}</p>
           <ol>
             <li>
               {PrivacyNoticeStrings.legal.base1}
@@ -128,7 +131,7 @@ export default function PrivacyNoticePage() {
             {PrivacyNoticeStrings.rights.header}</h2>
           <p>
             {PrivacyNoticeStrings.rights.contact}
-            {createEmailLink(contactInfo.emails.dpo)}
+            {createEmailLink(contactInfo.emails.general)}
           </p>
           <ol>
             <li>
@@ -155,9 +158,8 @@ export default function PrivacyNoticePage() {
           </ol>
 
           <InsetText className="nhsuk-inset-text">
-            <span className="nhsuk-u-visually-hidden">Information: </span>
             <p> {PrivacyNoticeStrings.rights.method}
-              {createEmailLink(contactInfo.emails.general)}
+              {createEmailLink(contactInfo.emails.dpo)}
             </p>
           </InsetText>
 
@@ -165,6 +167,11 @@ export default function PrivacyNoticePage() {
             {PrivacyNoticeStrings.changes.header}
           </h2>
           <p>{PrivacyNoticeStrings.changes.body}</p>
+
+          <InsetText className="nhsuk-inset-text">
+            <p> {PrivacyNoticeStrings.changes.changeDate}
+            </p>
+          </InsetText>
 
           <h2 className="nhsuk-heading-l">
             {PrivacyNoticeStrings.security.header}

@@ -44,6 +44,7 @@ interface RoleSelectionPageProps {
     insetText: {
       visuallyHidden: string
       message: string
+      loggedInTemplate: string
     }
     confirmButton: {
       link: string
@@ -201,13 +202,11 @@ export default function RoleSelectionPage({
             {auth.selectedRole && (
               <section aria-label="Login Information">
                 <InsetText data-testid="eps_select_your_role_pre_role_selected">
-                  <span className="nhsuk-u-visually-hidden">
-                    {insetText.visuallyHidden}
-                  </span>
                   <p>
-                    You are currently logged in at {auth.selectedRole.org_name || noOrgName}
-                    (ODS: {auth.selectedRole.org_code || noODSCode})
-                    with {auth.selectedRole.role_name || noRoleName}.
+                    {insetText.loggedInTemplate
+                      .replace("{orgName}", auth.selectedRole.org_name || noOrgName)
+                      .replace("{odsCode}", auth.selectedRole.org_code || noODSCode)
+                      .replace("{roleName}", auth.selectedRole.role_name || noRoleName)}
                   </p>
                 </InsetText>
                 <Button
