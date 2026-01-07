@@ -1,6 +1,7 @@
 import {PrescriptionDetailsResponse} from "@cpt-ui-common/common-types"
 
 export const STRINGS = {
+  PRESCRIPTION_INFORMATION: "Prescription Information",
   PRESCRIPTION_ID: "Prescription ID",
   COPY_BUTTON_ARIA_LABEL: "Copy this prescription ID to the clipboard",
   COPY_BUTTON_TEXT: "Copy",

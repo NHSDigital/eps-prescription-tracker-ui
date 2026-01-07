@@ -43,8 +43,8 @@ export default function BasicDetailsSearch() {
   const navigationContext = useNavigationContext()
 
   usePageTitle(errors.length > 0
-    ? STRINGS.pageTitle_ERROR
-    : STRINGS.pageTitle)
+    ? STRINGS.PAGE_TITLE_ERROR
+    : STRINGS.PAGE_TITLE)
 
   // Inline error lookup: used to find the error message string for specific field(s)
   // Returns the first match found in the array of inline error tuples
@@ -125,16 +125,16 @@ export default function BasicDetailsSearch() {
       setErrors(newErrors)
 
       const dobErrorKeys = new Set([
-        "dobRequired",
-        "dobDayRequired",
-        "dobMonthRequired",
-        "dobYearRequired",
-        "dobNonNumericDay",
-        "dobNonNumericMonth",
-        "dobNonNumericYear",
-        "dobYearTooShort",
-        "dobInvalidDate",
-        "dobFutureDate"
+        "DOB_REQUIRED",
+        "DOB_DAY_REQUIRED",
+        "DOB_MONTH_REQUIRED",
+        "DOB_YEAR_REQUIRED",
+        "DOB_NON_NUMERIC_DAY",
+        "DOB_NON_NUMERIC_MONTH",
+        "DOB_NON_NUMERIC_YEAR",
+        "DOB_YEAR_TOO_SHORT",
+        "DOB_INVALID_DATE",
+        "DOB_FUTURE_DATE"
       ])
 
       const hasDobRelatedError = newErrors.some((error) =>
@@ -187,7 +187,7 @@ export default function BasicDetailsSearch() {
     <Fragment>
       {errors.length > 0 && (
         <ErrorSummary ref={errorRef} data-testid="error-summary" className="prescription-id-aligned-element">
-          <ErrorSummary.Title>{STRINGS.errorSummaryHeading}</ErrorSummary.Title>
+          <ErrorSummary.Title>{STRINGS.ERROR_SUMMARY_HEADING}</ErrorSummary.Title>
           <ErrorSummary.Body>
             <ErrorSummary.List>
               {inlineErrors.map(([key, message]) => (
@@ -212,16 +212,16 @@ export default function BasicDetailsSearch() {
               tabIndex={-1}
               data-testid="basic-details-search-heading">
               <span className="nhsuk-u-visually-hidden">
-                {STRINGS.visuallyHiddenPrefix}
+                {STRINGS.VISUALLY_HIDDEN_PREFIX}
               </span>
-              {STRINGS.heading}
+              {STRINGS.HEADING}
             </h2>
-            <p data-testid="intro-text">{STRINGS.introText}</p>
+            <p data-testid="intro-text">{STRINGS.INTRO_TEXT}</p>
 
             {/* First Name */}
             <FormGroup className={getInlineError("firstName") ? "nhsuk-form-group--error" : ""}>
               <Label htmlFor="first-name" className="nhsuk-label-h3" data-testid="first-name-label">
-                {STRINGS.firstNameLabel}
+                {STRINGS.FIRST_NAME_LABEL}
               </Label>
               {getInlineError("firstName") &&
               <ErrorMessage id="first-name-error">{getInlineError("firstName")}</ErrorMessage>}
@@ -239,7 +239,7 @@ export default function BasicDetailsSearch() {
             {/* Last Name */}
             <FormGroup className={getInlineError("lastName") ? "nhsuk-form-group--error" : ""}>
               <Label htmlFor="last-name" className="nhsuk-label-h3" data-testid="last-name-label">
-                {STRINGS.lastNameLabel}
+                {STRINGS.LAST_NAME_LABEL}
               </Label>
               {getInlineError("lastName") &&
               <ErrorMessage id="last-name-error">{getInlineError("lastName")}</ErrorMessage>}
@@ -256,48 +256,48 @@ export default function BasicDetailsSearch() {
 
             {/* Date of Birth */}
             <FormGroup className={getInlineError(
-              "dobRequired",
-              "dobDayRequired",
-              "dobMonthRequired",
-              "dobYearRequired",
-              "dobNonNumericDay",
-              "dobNonNumericMonth",
-              "dobNonNumericYear",
-              "dobYearTooShort",
-              "dobInvalidDate",
-              "dobFutureDate"
+              "DOB_REQUIRED",
+              "DOB_DAY_REQUIRED",
+              "DOB_MONTH_REQUIRED",
+              "DOB_YEAR_REQUIRED",
+              "DOB_NON_NUMERIC_DAY",
+              "DOB_NON_NUMERIC_MONTH",
+              "DOB_NON_NUMERIC_YEAR",
+              "DOB_YEAR_TOO_SHORT",
+              "DOB_INVALID_DATE",
+              "DOB_FUTURE_DATE"
             ) ? "nhsuk-form-group--error" : ""}>
               <Fieldset >
                 <Fieldset.Legend headingLevel="h3" id="dob-label">
-                  <span className="nhsuk-label-h3">{STRINGS.dobLabel}</span>
+                  <span className="nhsuk-label-h3">{STRINGS.DOB_LABEL}</span>
                 </Fieldset.Legend>
-                <HintText id="dob-hint" data-testid="dob-hint">{STRINGS.dobHint}</HintText>
+                <HintText id="dob-hint" data-testid="dob-hint">{STRINGS.DOB_HINT}</HintText>
 
                 {/* Inline error for DOB (shown once above all inputs) */}
                 {getInlineError(
-                  "dobRequired",
-                  "dobDayRequired",
-                  "dobMonthRequired",
-                  "dobYearRequired",
-                  "dobNonNumericDay",
-                  "dobNonNumericMonth",
-                  "dobNonNumericYear",
-                  "dobYearTooShort",
-                  "dobInvalidDate",
-                  "dobFutureDate"
+                  "DOB_REQUIRED",
+                  "DOB_DAY_REQUIRED",
+                  "DOB_MONTH_REQUIRED",
+                  "DOB_YEAR_REQUIRED",
+                  "DOB_NON_NUMERIC_DAY",
+                  "DOB_NON_NUMERIC_MONTH",
+                  "DOB_NON_NUMERIC_YEAR",
+                  "DOB_YEAR_TOO_SHORT",
+                  "DOB_INVALID_DATE",
+                  "DOB_FUTURE_DATE"
                 ) && (
                   <ErrorMessage id="dob-error">
                     {getInlineError(
-                      "dobRequired",
-                      "dobDayRequired",
-                      "dobMonthRequired",
-                      "dobYearRequired",
-                      "dobNonNumericDay",
-                      "dobNonNumericMonth",
-                      "dobNonNumericYear",
-                      "dobYearTooShort",
-                      "dobInvalidDate",
-                      "dobFutureDate"
+                      "DOB_REQUIRED",
+                      "DOB_DAY_REQUIRED",
+                      "DOB_MONTH_REQUIRED",
+                      "DOB_YEAR_REQUIRED",
+                      "DOB_NON_NUMERIC_DAY",
+                      "DOB_NON_NUMERIC_MONTH",
+                      "DOB_NON_NUMERIC_YEAR",
+                      "DOB_YEAR_TOO_SHORT",
+                      "DOB_INVALID_DATE",
+                      "DOB_FUTURE_DATE"
                     )}
                   </ErrorMessage>
                 )}
@@ -326,7 +326,7 @@ export default function BasicDetailsSearch() {
                     onChange={e => setDobDay((e.target as HTMLInputElement).value)}
                     error={hasDobFieldError("day")}
                     labelProps={{
-                      children: STRINGS.dobDay,
+                      children: STRINGS.DOB_DAY,
                       bold: false
                     }}
                     data-testid="dob-day-input"
@@ -340,7 +340,7 @@ export default function BasicDetailsSearch() {
                     onChange={e => setDobMonth((e.target as HTMLInputElement).value)}
                     error={hasDobFieldError("month")}
                     labelProps={{
-                      children: STRINGS.dobMonth,
+                      children: STRINGS.DOB_MONTH,
                       bold: false
                     }}
                     data-testid="dob-month-input"
@@ -354,7 +354,7 @@ export default function BasicDetailsSearch() {
                     onChange={e => setDobYear((e.target as HTMLInputElement).value)}
                     error={hasDobFieldError("year")}
                     labelProps={{
-                      children: STRINGS.dobYear,
+                      children: STRINGS.DOB_YEAR,
                       bold: false
                     }}
                     data-testid="dob-year-input"
@@ -366,9 +366,9 @@ export default function BasicDetailsSearch() {
             {/* Postcode */}
             <FormGroup className={getInlineError("postcode") ? "nhsuk-form-group--error" : ""}>
               <Label htmlFor="postcode-only" className="nhsuk-label-h3">
-                {STRINGS.postcodeLabel}
+                {STRINGS.POSTCODE_LABEL}
               </Label>
-              <HintText id="postcode-hint">{STRINGS.postcodeHint}</HintText>
+              <HintText id="postcode-hint">{STRINGS.POSTCODE_HINT}</HintText>
               {getInlineError("postcode") &&
                <ErrorMessage id="postcode-error">{getInlineError("postcode")}</ErrorMessage>}
               <TextInput
@@ -384,7 +384,7 @@ export default function BasicDetailsSearch() {
           </FormGroup>
 
           <Button id="basic-details-submit" type="submit" data-testid="find-patient-button">
-            {STRINGS.buttonText}
+            {STRINGS.BUTTON_TEXT}
           </Button>
         </Form>
       </div>
