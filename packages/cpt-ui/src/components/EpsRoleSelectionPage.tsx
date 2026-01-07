@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useRef} from "react"
+import React from "react"
 import {useNavigate} from "react-router-dom"
 import {
   Container,
@@ -44,6 +44,7 @@ interface RoleSelectionPageProps {
     insetText: {
       visuallyHidden: string
       message: string
+      loggedInTemplate: string
     }
     confirmButton: {
       link: string
@@ -70,6 +71,7 @@ export default function RoleSelectionPage({
     caption,
     titleNoAccess,
     captionNoAccess,
+    insetText,
     confirmButton,
     alternativeMessage,
     organisation,
@@ -83,22 +85,45 @@ export default function RoleSelectionPage({
   } = contentText
 
   const auth = useAuth()
-
-  const [loginInfoMessage, setLoginInfoMessage] = useState<string | null>(null)
   const navigate = useNavigate()
-  const redirecting = useRef(false)
 
-  const [roleCardPropsWithAccess, setRoleCardPropsWithAccess] = useState<Array<RolesWithAccessProps>>([])
-  const [roleCardPropsWithoutAccess, setRoleCardPropsWithoutAccess] = useState<Array<RolesWithoutAccessProps>>([])
+  if (auth.isSigningIn) {
+    const {codeParams, stateParams} = getSearchParams(window)
+    if (codeParams && stateParams) {
+      // we are in a redirect from login flow so show spinner
+      return (
+        <main id="main-content" className="nhsuk-main-wrapper">
+          <Container>
+            <Row>
+              <Col width="full">
+                <EpsSpinner />
+              </Col>
+            </Row>
+          </Container>
+        </main>
+      )
+    } else {
+      // something has gone wrong so go back to login
+      auth.clearAuthState()
+      navigate(FRONTEND_PATHS.LOGIN)
+      return
+    }
+  }
+
+  // Handle auto-redirect for single role
+  if (auth.hasSingleRoleAccess() && auth.isSignedIn && auth.selectedRole !== undefined) {
+    navigate(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
+    return
+  }
 
   const handleSetSelectedRole = async (
     e: React.MouseEvent | React.KeyboardEvent,
-    roleCardProps: RolesWithAccessProps
+    role: RoleDetails
   ) => {
     e.preventDefault()
     try {
-      await auth.updateSelectedRole(roleCardProps.role)
-      navigate(roleCardProps.link)
+      await auth.updateSelectedRole(role)
+      navigate(FRONTEND_PATHS.YOUR_SELECTED_ROLE)
     } catch (err) {
       if (axios.isAxiosError(err) && (err.response?.status === 401)) {
         const invalidSessionCause = err.response?.data?.invalidSessionCause
@@ -109,86 +134,16 @@ export default function RoleSelectionPage({
     }
   }
 
-  const handleCardKeyDown = (e: React.KeyboardEvent, roleCardProps: RolesWithAccessProps) => {
+  const handleCardKeyDown = (e: React.KeyboardEvent, role: RoleDetails) => {
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault()
-      handleSetSelectedRole(e, roleCardProps)
+      handleSetSelectedRole(e, role)
     }
   }
 
-  const handleCardClick = (e: React.MouseEvent, roleCardProps: RolesWithAccessProps) => {
+  const handleCardClick = (e: React.MouseEvent, role: RoleDetails) => {
     e.preventDefault()
-    handleSetSelectedRole(e, roleCardProps)
-  }
-
-  useEffect(() => {
-    // Transform roles data for display
-    setRoleCardPropsWithAccess((!auth.hasNoAccess)
-      ? auth.rolesWithAccess.map((role: RoleDetails, index) => ({
-        uuid: `role_with_access_${index}`,
-        role,
-        link: FRONTEND_PATHS.YOUR_SELECTED_ROLE
-      }))
-      : []
-    )
-
-    setRoleCardPropsWithoutAccess(auth.rolesWithoutAccess.map((role, index) => ({
-      uuid: `role_without_access_${index}`,
-      roleName: role.role_name || noRoleName,
-      orgName: role.org_name || noOrgName,
-      odsCode: role.org_code || noODSCode
-    })))
-
-    logger.warn("RoleCardPropsWithAccess length: ", {roleCardPropsWithAccess, error: auth.error})
-  }, [auth.rolesWithAccess, auth.rolesWithoutAccess])
-
-  // Handle auto-redirect for single role
-  useEffect(() => {
-    if (auth.isSigningIn) {
-      const {codeParams, stateParams} = getSearchParams(window)
-      if (codeParams && stateParams) {
-        // we are in a redirect from login flow so carry on
-        redirecting.current = true
-        return
-      } else {
-        // something has gone wrong so go back to login
-        auth.clearAuthState()
-        navigate(FRONTEND_PATHS.LOGIN)
-      }
-    } else {
-      redirecting.current = false
-    }
-  }, [auth.isSigningIn])
-
-  useEffect(() => {
-    if (auth.hasSingleRoleAccess && auth.isSignedIn) {
-      navigate(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
-    }
-  }, [auth.hasSingleRoleAccess, auth.isSignedIn])
-
-  // Set login message when selected role is available
-  useEffect(() => {
-    if (!loginInfoMessage && auth.selectedRole) {
-      setLoginInfoMessage(
-        `You are currently logged in at ${auth.selectedRole.org_name || noOrgName} ` +
-        `(ODS: ${auth.selectedRole.org_code || noODSCode}) with ${auth.selectedRole.role_name || noRoleName}.`
-      )
-    }
-  }, [auth.selectedRole, loginInfoMessage])
-
-  // Show spinner while loading or redirecting
-  if (redirecting.current) {
-    return (
-      <main id="main-content" className="nhsuk-main-wrapper">
-        <Container>
-          <Row>
-            <Col width="full">
-              <EpsSpinner />
-            </Col>
-          </Row>
-        </Container>
-      </main>
-    )
+    handleSetSelectedRole(e, role)
   }
 
   // Show error if present
@@ -217,6 +172,11 @@ export default function RoleSelectionPage({
     )
   }
 
+  const hasNoAccess = auth.rolesWithAccess.length === 0
+  const unselectedRolesWithAccess = auth.rolesWithAccess.filter(
+    (role) => role.role_id !== auth.selectedRole?.role_id
+  )
+
   return (
     <main
       id="main-content"
@@ -229,24 +189,25 @@ export default function RoleSelectionPage({
             <h1 className="nhsuk-heading-xl">
               <span role="text" data-testid="eps_header_selectYourRole">
                 <span className="nhsuk-title">
-                  {auth.hasNoAccess ? titleNoAccess : title}
+                  {hasNoAccess ? titleNoAccess : title}
                 </span>
                 <span className="nhsuk-caption-l nhsuk-caption--bottom">
                   <span className="nhsuk-u-visually-hidden"> - </span>
-                  {(!auth.hasNoAccess) && caption}
+                  {(!hasNoAccess) && caption}
                 </span>
               </span>
             </h1>
 
-            {auth.hasNoAccess && <p>{captionNoAccess}</p>}
+            {hasNoAccess && <p>{captionNoAccess}</p>}
             {auth.selectedRole && (
               <section aria-label="Login Information">
                 <InsetText data-testid="eps_select_your_role_pre_role_selected">
-                  {loginInfoMessage && (
-                    <p
-                      dangerouslySetInnerHTML={{__html: loginInfoMessage}}
-                    ></p>
-                  )}
+                  <p>
+                    {insetText.loggedInTemplate
+                      .replace("{orgName}", auth.selectedRole.org_name || noOrgName)
+                      .replace("{odsCode}", auth.selectedRole.org_code || noODSCode)
+                      .replace("{roleName}", auth.selectedRole.role_name || noRoleName)}
+                  </p>
                 </InsetText>
                 <Button
                   to={confirmButton.link}
@@ -259,36 +220,35 @@ export default function RoleSelectionPage({
             )}
           </Col>
 
-          {(!auth.hasNoAccess) && (roleCardPropsWithAccess.length > 0) && (
+          {(unselectedRolesWithAccess.length > 0) && (
             <Col width="two-thirds">
               <div className="section">
-                {roleCardPropsWithAccess
-                  .filter((duplicateRole) => duplicateRole.role.role_id !== auth.selectedRole?.role_id)
-                  .map((roleCardProps: RolesWithAccessProps) => (
+                {unselectedRolesWithAccess
+                  .map(role => (
                     <Card
-                      key={roleCardProps.uuid}
+                      key={`role_with_access_${role.role_id}`}
                       data-testid="eps-card"
                       className="nhsuk-card nhsuk-card--primary nhsuk-u-margin-bottom-4"
                       tabIndex={0}
-                      onKeyDown={(e) => handleCardKeyDown(e, roleCardProps)}
-                      onClick={(e) => handleCardClick(e, roleCardProps)}
+                      onKeyDown={(e) => handleCardKeyDown(e, role)}
+                      onClick={(e) => handleCardClick(e, role)}
                       style={{cursor: "pointer"}}
                     >
                       <Card.Content>
                         <div className="eps-card__layout">
                           <div>
                             <Card.Heading className="nhsuk-heading-s eps-card__org-name">
-                              {roleCardProps.role.org_name || noOrgName}
+                              {role.org_name || noOrgName}
                               <br />
-                              (ODS: {roleCardProps.role.org_code || noODSCode})
+                              (ODS: {role.org_code || noODSCode})
                             </Card.Heading>
                             <Card.Description className="nhsuk-u-margin-top-2">
-                              {roleCardProps.role.role_name || noRoleName}
+                              {role.role_name || noRoleName}
                             </Card.Description>
                           </div>
                           <div className="eps-card__address">
                             <Card.Description>
-                              {(roleCardProps.role.site_address || contentText.noAddress)
+                              {(role.site_address || contentText.noAddress)
                                 .split("\n")
                                 .map((line: string, index: number) => (
                                   <span key={index}>
@@ -321,14 +281,14 @@ export default function RoleSelectionPage({
                     </Table.Row>
                   </Table.Head>
                   <Table.Body>
-                    {roleCardPropsWithoutAccess.map(
-                      (roleItem: RolesWithoutAccessProps) => (
-                        <Table.Row key={roleItem.uuid}>
+                    {auth.rolesWithoutAccess.map(
+                      role => (
+                        <Table.Row key={`role_without_access_${role.role_id}`}>
                           <Table.Cell data-testid="change-role-name-cell">
-                            {roleItem.orgName} (ODS: {roleItem.odsCode})
+                            {role.org_name || noOrgName} (ODS: {role.org_code || noODSCode})
                           </Table.Cell>
                           <Table.Cell data-testid="change-role-role-cell">
-                            {roleItem.roleName}
+                            {role.role_name || noRoleName}
                           </Table.Cell>
                         </Table.Row>
                       )
