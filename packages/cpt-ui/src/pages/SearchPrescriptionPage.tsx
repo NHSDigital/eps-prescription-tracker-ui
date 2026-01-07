@@ -32,7 +32,7 @@ export default function SearchPrescriptionPage() {
   return (
     <Fragment>
       <title>Search for a prescription</title>
-      <main id="search-for-a-prescription" data-testid="search-for-a-prescription">
+      <main id="main-content" className="search-for-a-prescription" data-testid="search-for-a-prescription">
         <Container className="hero-container" data-testid="search-hero-container">
           <Row>
             <Col width="full">
