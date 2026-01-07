@@ -41,10 +41,8 @@ const userDetails = {
 const mockUserInfo = {
   rolesWithAccess: rolesWithAccess,
   rolesWithoutAccess: [],
-  hasNoAccess: false,
   selectedRole: currentlySelectedRole,
   userDetails: userDetails,
-  hasSingleRoleAccess: true,
   error: undefined
 }
 
@@ -142,10 +140,8 @@ const TestConsumer = () => {
       <div data-testid="isSigningIn">{auth.isSigningIn.toString()}</div>
       <div data-testid="rolesWithAccess">{JSON.stringify(auth.rolesWithAccess, null, 2)}</div>
       <div data-testid="rolesWithoutAccess">{JSON.stringify(auth.rolesWithoutAccess, null, 2)}</div>
-      <div data-testid="noAccess">{auth.hasNoAccess.toString()}</div>
       <div data-testid="selectedRole">{JSON.stringify(auth.selectedRole, null, 2)}</div>
       <div data-testid="userDetails">{JSON.stringify(auth.userDetails, null, 2)}</div>
-      <div data-testid="singleAccess">{auth.hasSingleRoleAccess.toString()}</div>
     </div>
   )
 }
@@ -265,10 +261,8 @@ describe("AuthProvider", () => {
       expect(screen.getByTestId("user").textContent).toBe("test_user")
       expect(screen.getByTestId("rolesWithAccess").textContent).toBe(JSON.stringify(rolesWithAccess, null, 2))
       expect(screen.getByTestId("rolesWithoutAccess").textContent).toBe("[]")
-      expect(screen.getByTestId("noAccess").textContent).toBe("false")
       expect(screen.getByTestId("selectedRole").textContent).toBe(JSON.stringify(currentlySelectedRole, null, 2))
       expect(screen.getByTestId("userDetails").textContent).toBe(JSON.stringify(userDetails, null, 2))
-      expect(screen.getByTestId("singleAccess").textContent).toBe("true")
     })
   })
 
@@ -326,10 +320,8 @@ describe("AuthProvider", () => {
       expect(screen.getByTestId("error").textContent).toBe("")
       expect(screen.getByTestId("rolesWithAccess").textContent).toBe("[]")
       expect(screen.getByTestId("rolesWithoutAccess").textContent).toBe("[]")
-      expect(screen.getByTestId("noAccess").textContent).toBe("true")
       expect(screen.getByTestId("selectedRole").textContent).toBe("")
       expect(screen.getByTestId("userDetails").textContent).toBe("")
-      expect(screen.getByTestId("singleAccess").textContent).toBe("false")
     })
   })
 
@@ -395,7 +387,7 @@ describe("AuthProvider", () => {
       };
 
       (updateRemoteSelectedRole as jest.Mock).mockResolvedValue({
-        rolesWithAccess: [newRole]
+        currentlySelectedRole: newRole
       })
 
       let contextValue: AuthContextType | null

@@ -23,7 +23,7 @@ export default function SessionLoggedOutPage() {
                 </a>{" "}
                 if you did not start another session in another window or browser.
               </p>
-              <Link to="/login" data-testid="login-link">{EpsLogoutStrings.login_link}</Link>
+              <Link to="/login" data-testid="login-link">{EpsLogoutStrings.LOGIN_LINK}</Link>
             </Col>
           </Row>
         </Container>
@@ -39,7 +39,7 @@ export default function SessionLoggedOutPage() {
             <p data-testid="timeout-description">
               We have logged you out because you did not do anything for 15 minutes.</p>
             <p data-testid="timeout-description2">This is to protect patient information.</p>
-            <Link to="/login" data-testid="login-link">{EpsLogoutStrings.login_link}</Link>
+            <Link to="/login" data-testid="login-link">{EpsLogoutStrings.LOGIN_LINK}</Link>
           </Col>
         </Row>
       </Container>

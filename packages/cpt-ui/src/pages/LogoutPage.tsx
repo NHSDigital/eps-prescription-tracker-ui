@@ -24,13 +24,13 @@ export default function LogoutPage() {
       <Container>
         {!auth?.isSignedIn && !auth.isSigningIn ? (
           <Fragment>
-            <h1>{EpsLogoutStrings.title}</h1>
-            <p>{EpsLogoutStrings.body}</p>
-            <Link to="/login">{EpsLogoutStrings.login_link}</Link>
+            <h1>{EpsLogoutStrings.TITLE}</h1>
+            <p>{EpsLogoutStrings.BODY}</p>
+            <Link to="/login">{EpsLogoutStrings.LOGIN_LINK}</Link>
           </Fragment>
         ) : (
           <Fragment>
-            <h1>{EpsLogoutStrings.loading}</h1>
+            <h1>{EpsLogoutStrings.LOADING}</h1>
             <EpsSpinner />
           </Fragment>
         )}

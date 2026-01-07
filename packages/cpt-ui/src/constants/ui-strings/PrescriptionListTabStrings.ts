@@ -9,17 +9,17 @@ export interface FormattableTabHeader {
 
 export const PRESCRIPTION_LIST_TABS: Record<string, FormattableTabHeader> = {
   current: {
-    title: (count: number) => `Current prescriptions (${count})`,
+    title: (count: number) => `(${count})`,
     link: () =>
       FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT
   },
   future: {
-    title: (count: number) => `Future-dated prescriptions (${count})`,
+    title: (count: number) => `(${count})`,
     link: () =>
       FRONTEND_PATHS.PRESCRIPTION_LIST_FUTURE
   },
   past: {
-    title: (count: number) => `Claimed and expired prescriptions (${count})`,
+    title: (count: number) => `(${count})`,
     link: () =>
       FRONTEND_PATHS.PRESCRIPTION_LIST_PAST
   }

@@ -73,75 +73,14 @@ const lambdaHandler = async (event: APIGatewayProxyEventBase<AuthResult>): Promi
 
   // Extract rolesWithAccess and currentlySelectedRole from the DynamoDB response
   const rolesWithAccess = tokenMappingItem?.rolesWithAccess || []
-  const currentSelectedRole = tokenMappingItem?.currentlySelectedRole // Could be undefined
 
   // Identify the new selected role from request
   const userSelectedRoleId = userInfoSelectedRole.currently_selected_role?.role_id
   const newSelectedRole = rolesWithAccess.find(role => role.role_id === userSelectedRoleId)
 
-  // Log extracted role details
-  logger.debug("Extracted role data", {
-    username: username,
-    rolesWithAccessCount: rolesWithAccess.length,
-    rolesWithAccess: rolesWithAccess.map(role => ({
-      role_id: role.role_id,
-      role_name: role.role_name,
-      org_code: role.org_code
-    })),
-    previousSelectedRole: currentSelectedRole
-      ? {
-        role_id: currentSelectedRole.role_id,
-        role_name: currentSelectedRole.role_name,
-        org_code: currentSelectedRole.org_code
-      }
-      : "No previous role selected",
-    newSelectedRole: newSelectedRole
-      ? {
-        role_id: newSelectedRole.role_id,
-        role_name: newSelectedRole.role_name,
-        org_code: newSelectedRole.org_code
-      }
-      : "Role not found in rolesWithAccess"
-  })
-
-  // Construct updated roles list
-  const updatedRolesWithAccess = [
-    ...rolesWithAccess.filter(role => role.role_id !== userSelectedRoleId), // Remove the new selected role
-
-    // Move the previously selected role back into rolesWithAccess, but only if it was set
-    ...(currentSelectedRole && Object.keys(currentSelectedRole).length > 0
-      ? [currentSelectedRole]
-      : [])
-  ]
-
-  logger.debug("Updated roles list before database update", {
-    username: username,
-    newSelectedRole: newSelectedRole
-      ? {
-        role_id: newSelectedRole.role_id,
-        role_name: newSelectedRole.role_name,
-        org_code: newSelectedRole.org_code
-      }
-      : "No role selected",
-    returningRoleToAccessList: currentSelectedRole
-      ? {
-        role_id: currentSelectedRole.role_id,
-        role_name: currentSelectedRole.role_name,
-        org_code: currentSelectedRole.org_code
-      }
-      : "No previous role to return",
-    updatedRolesWithAccessCount: updatedRolesWithAccess.length,
-    updatedRolesWithAccess: updatedRolesWithAccess.map(role => ({
-      role_id: role.role_id,
-      role_name: role.role_name,
-      org_code: role.org_code
-    }))
-  })
-
   // Prepare the updated user info to be stored in DynamoDB
   const updatedUserInfo = {
     currentlySelectedRole: newSelectedRole || undefined, // If no role is found, store `undefined`
-    rolesWithAccess: updatedRolesWithAccess,
     selectedRoleId: userSelectedRoleId
   }
 
@@ -154,7 +93,6 @@ const lambdaHandler = async (event: APIGatewayProxyEventBase<AuthResult>): Promi
   const item = {
     username: username,
     currentlySelectedRole: updatedUserInfo.currentlySelectedRole || {},
-    rolesWithAccess: updatedUserInfo.rolesWithAccess || [],
     selectedRoleId: updatedUserInfo.selectedRoleId || "",
     lastActivityTime: Date.now()
   }
