@@ -48,9 +48,9 @@ export default function NhsNumSearch() {
   }, [searchContext.nhsNumber, searchContext.searchType])
 
   useEffect(() => {
-    const originalParams = navigationContext.getOriginalSearchParameters()
-    if (originalParams && originalParams.nhsNumber) {
-      setNhsNumber(originalParams.nhsNumber || "")
+    const relevantParams = navigationContext.getRelevantSearchParameters("nhsNumber")
+    if (relevantParams && relevantParams.nhsNumber) {
+      setNhsNumber(relevantParams.nhsNumber || "")
     }
   }, [navigationContext])
 
