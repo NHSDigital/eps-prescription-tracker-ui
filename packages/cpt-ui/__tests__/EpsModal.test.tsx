@@ -23,7 +23,7 @@ beforeAll(() => {
   const originalAddEventListener = HTMLElement.prototype.addEventListener
   const originalRemoveEventListener = HTMLElement.prototype.removeEventListener
 
-  HTMLElement.prototype.addEventListener = function(...args) {
+  HTMLElement.prototype.addEventListener = function(...args: Parameters<typeof originalAddEventListener>) {
     if (this.tagName === "DIALOG") {
       mockAddEventListener.apply(this, args)
     } else {
@@ -31,7 +31,7 @@ beforeAll(() => {
     }
   }
 
-  HTMLElement.prototype.removeEventListener = function(...args) {
+  HTMLElement.prototype.removeEventListener = function(...args: Parameters<typeof originalRemoveEventListener>) {
     if (this.tagName === "DIALOG") {
       mockRemoveEventListener.apply(this, args)
     } else {
@@ -77,7 +77,7 @@ describe("EpsModal", () => {
   })
 
   test("calls onClose when cancel event is fired", () => {
-    let cancelHandler: (event: Event) => void | null = null
+    let cancelHandler: ((event: Event) => void) | null = null
 
     mockAddEventListener.mockImplementation((type, listener) => {
       if (type === "cancel" && typeof listener === "function") {
@@ -96,7 +96,7 @@ describe("EpsModal", () => {
 
     if (cancelHandler) {
       const mockEvent = {preventDefault: jest.fn()} as unknown as Event
-      cancelHandler(mockEvent)
+      ;(cancelHandler as (event: Event) => void)(mockEvent)
 
       expect(mockEvent.preventDefault).toHaveBeenCalled()
       expect(mockOnClose).toHaveBeenCalledTimes(1)
@@ -152,7 +152,7 @@ describe("EpsModal", () => {
   })
 
   test("cleans up event listener on unmount", () => {
-    let cancelHandler: (event: Event) => void | null = null
+    let cancelHandler: ((event: Event) => void) | null = null
 
     mockAddEventListener.mockImplementation((type, listener) => {
       if (type === "cancel" && typeof listener === "function") {
