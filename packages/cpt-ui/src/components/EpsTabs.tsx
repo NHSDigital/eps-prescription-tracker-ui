@@ -38,7 +38,7 @@ export default function EpsTabs({
     }
     const tabs = tabHeaderArray
     const currentTabIndex = tabs.findIndex(
-      (tab) => tab.link.includes(activeTabPath)
+      (tab) => activeTabPath.startsWith(tab.link)
     )
 
     let newTabIndex = currentTabIndex
@@ -52,15 +52,41 @@ export default function EpsTabs({
       const newTab = tabs[newTabIndex]
       navigate(newTab.link)
     }
-  }, [navigate])
+  }, [navigate, tabHeaderArray, activeTabPath])
 
   useEffect(() => {
-    window.addEventListener("keydown", handleKeyDown)
+    document.addEventListener("keydown", handleKeyDown)
 
     return () => {
-      window.removeEventListener("keydown", handleKeyDown)
+      document.removeEventListener("keydown", handleKeyDown)
     }
   }, [handleKeyDown])
+
+  // Ensure focus moves to the active tab when the route/tab changes
+  useEffect(() => {
+    const activeId = `tab_${activeTabPath.substring(1)}`
+    const activeEl = document.getElementById(activeId) as HTMLAnchorElement | null
+    if (activeEl) {
+      activeEl.focus()
+    }
+  }, [activeTabPath])
+
+  const renderAccessibleTitle = (title: string) => {
+    const match = title.match(/^(.*)\s\((\d+)\)$/)
+    if (!match) return title
+
+    const prefix = match[1]
+    const count = match[2]
+    return (
+      <span>
+        <span>{prefix} </span>
+        <span aria-hidden="true">(</span>
+        <span aria-hidden="true">{count}</span>
+        <span className="nhsuk-u-visually-hidden"> {count} prescriptions</span>
+        <span aria-hidden="true">)</span>
+      </span>
+    )
+  }
 
   return (
     <div className={tabClass}>
@@ -88,7 +114,7 @@ export default function EpsTabs({
                 data-testid={`eps-tab-heading ${tab.link}`}
                 tabIndex={isActive ? 0 : -1}
               >
-                {tab.title}
+                {renderAccessibleTitle(tab.title)}
               </Link>
             </li>
           )
